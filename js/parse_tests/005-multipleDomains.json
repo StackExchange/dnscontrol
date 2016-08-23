@@ -1,0 +1,35 @@
+        { "registrars": [
+		    {
+		      "name": "Third-Party",
+		      "type": "NONE"
+		    }
+		  ],
+		  "dns_service_providers": [
+		    {
+		      "name": "Cloudflare",
+		      "type": "CLOUDFLAREAPI"
+		    }
+		  ],
+		  "domains": [
+		    {
+		      "name": "foo.com",
+		      "registrar": "Third-Party",
+		      "dsps": [
+		        "Cloudflare"
+		      ],
+		      "records": [
+		        {
+		          "type": "A",
+		          "name": "@",
+		          "target": "1.2.3.4"
+		        }
+		      ]
+		    },
+		    {
+		      "name": "foo.com",
+		      "registrar": "Third-Party",
+		      "dsps": [],
+		      "records": []
+		    }
+		  ]
+		}
