@@ -13,11 +13,10 @@ echo 'Building Darwin'
 export GOOS=darwin
 go build -o dnscontrol-Darwin -ldflags "$FLAGS" $PKG
 
-ls -lah dnscontrol*
-
-echo 'Compressing executables'
-upx dnscontrol.exe
-upx dnscontrol-Linux
-upx dnscontrol-Darwin
-
-ls -lah dnscontrol*
+if [ "$COMPRESS" = "1" ]
+then
+    echo 'Compressing executables'
+    upx dnscontrol.exe
+    upx dnscontrol-Linux
+    upx dnscontrol-Darwin
+fi
