@@ -1,7 +1,16 @@
+if [ ! -z $1 ] 
+then 
+    SHA=$1
+else
+    SHA=`git rev-parse HEAD`
+fi
+
 
 PKG=github.com/StackExchange/dnscontrol
-FLAGS="-s -w"
-
+DATE=`date +%s`
+FLAGS="-s -w -X main.SHA=$SHA -X main.BuildTime=$DATE"
+echo $FLAGS
+set +e
 echo 'Building Linux'
 go build -o dnscontrol-Linux -ldflags "$FLAGS" $PKG
 

@@ -8,7 +8,9 @@ import (
 	"io/ioutil"
 	"log"
 	"os"
+	"strconv"
 	"strings"
+	"time"
 
 	"github.com/StackExchange/dnscontrol/js"
 	"github.com/StackExchange/dnscontrol/models"
@@ -46,18 +48,12 @@ var domains = flag.String("domains", "", "Comma seperated list of domain names t
 
 var interactive = flag.Bool("i", false, "Confirm or Exclude each correction before they run")
 
-var (
-	SHA       = ""
-	Version   = ""
-	BuildTime = ""
-)
-
 func main() {
 	log.SetFlags(log.LstdFlags | log.Lshortfile)
 	flag.Parse()
 	command := flag.Arg(0)
 	if command == "version" {
-		printVersion()
+		fmt.Println(versionString())
 		return
 	}
 	if command == "web" {
@@ -300,22 +296,35 @@ func storeNameservers(from, to *models.DomainConfig) {
 	}
 }
 
-// printVersion prints the version banner.
-func printVersion() {
-	if Version == "" {
-		Version = "dev"
-	}
-	sha := ""
-	if SHA != "" {
-		sha = fmt.Sprintf(" (%s)", SHA)
-	}
-	if BuildTime != "" {
-		sha = sha + fmt.Sprintf(" built %s", BuildTime)
-	}
-	fmt.Printf("dnscontrol %s%s\n", Version, sha)
-}
-
 func runWebServer() {
 	fmt.Printf("Running Webserver on :8080 (js = %s , creds = %s)", *jsFile, *configFile)
 	web.Serve(*jsFile, *configFile, *devMode)
+}
+
+// Version management. 2 Goals:
+// 1. Someone who just does "go get" has at least some information.
+// 2. If built with build.sh, more specific build information gets put in.
+// Update the number here manually each release, so at least we have a range for go-get people.
+var (
+	SHA       = ""
+	Version   = "0.1.0"
+	BuildTime = ""
+)
+
+// printVersion prints the version banner.
+func versionString() string {
+	var version string
+	if SHA != "" {
+		version = fmt.Sprintf("%s (%s)", Version, SHA)
+	} else {
+		version = fmt.Sprintf("%s-dev", Version) //no SHA. '0.x.y-dev' indeicates it is run form source without build script.
+	}
+	if BuildTime != "" {
+		i, err := strconv.ParseInt(BuildTime, 10, 64)
+		if err == nil {
+			tm := time.Unix(i, 0)
+			version += fmt.Sprintf(" built %s", tm.Format(time.RFC822))
+		}
+	}
+	return fmt.Sprintf("dnscontrol %s", version)
 }
