@@ -5,10 +5,10 @@ import (
 	"net"
 	"strings"
 
-	"github.com/miekg/dns"
-	"github.com/miekg/dns/dnsutil"
 	"github.com/StackExchange/dnscontrol/models"
 	"github.com/StackExchange/dnscontrol/transform"
+	"github.com/miekg/dns"
+	"github.com/miekg/dns/dnsutil"
 )
 
 // Returns false if label does not validate.
@@ -138,19 +138,27 @@ func import_transform(src_domain, dst_domain *models.DomainConfig, transforms []
 	// 4. For As, change the target as described the transforms.
 
 	for _, rec := range src_domain.Records {
-		var newrec models.RecordConfig
-		newrec = *rec
-		newrec.Name = newrec.NameFQDN
-		newrec.NameFQDN = dnsutil.AddOrigin(newrec.Name, dst_domain.Name)
+		newRec := func() *models.RecordConfig {
+			rec2, _ := rec.Copy()
+			rec2.Name = rec2.NameFQDN
+			rec2.NameFQDN = dnsutil.AddOrigin(rec2.Name, dst_domain.Name)
+			return rec2
+		}
 		switch rec.Type {
 		case "A":
-			tr, err := transform.TransformIP(net.ParseIP(newrec.Target), transforms)
+			trs, err := transform.TransformIPToList(net.ParseIP(rec.Target), transforms)
 			if err != nil {
-				return fmt.Errorf("import_transform: TransformIP(%v, %v) returned err=%s", newrec.Target, transforms, err)
+				return fmt.Errorf("import_transform: TransformIP(%v, %v) returned err=%s", rec.Target, transforms, err)
 			}
-			newrec.Target = tr.String()
+			for _, tr := range trs {
+				r := newRec()
+				r.Target = tr.String()
+				dst_domain.Records = append(dst_domain.Records, r)
+			}
 		case "CNAME":
-			newrec.Target = transform_cname(newrec.Target, src_domain.Name, dst_domain.Name)
+			r := newRec()
+			r.Target = transform_cname(r.Target, src_domain.Name, dst_domain.Name)
+			dst_domain.Records = append(dst_domain.Records, r)
 		case "MX", "NS", "TXT":
 			// Not imported.
 			continue
@@ -158,7 +166,6 @@ func import_transform(src_domain, dst_domain *models.DomainConfig, transforms []
 			return fmt.Errorf("import_transform: Unimplemented record type %v (%v)",
 				rec.Type, rec.Name)
 		}
-		dst_domain.Records = append(dst_domain.Records, &newrec)
 	}
 	return nil
 }

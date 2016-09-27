@@ -111,7 +111,7 @@ func TransformIPToList(address net.IP, transforms []IpConversion) ([]net.IP, err
 			return nil, err
 		}
 		if (thisIP >= min) && (thisIP <= max) {
-			if conv.NewIPs != nil {
+			if len(conv.NewIPs) > 0 {
 				return conv.NewIPs, nil
 			}
 			list := []net.IP{}
