@@ -1,0 +1,34 @@
+{
+		  "registrars": [
+		    {
+		      "name": "Third-Party",
+		      "type": "NONE"
+		    }
+		  ],
+		  "dns_service_providers": [
+		    {
+		      "name": "Cloudflare",
+		      "type": "CLOUDFLAREAPI"
+		    }
+		  ],
+		  "domains": [
+		    {
+		      "name": "foo.com",
+		      "registrar": "Third-Party",
+		      "dsps": [
+		        "Cloudflare"
+		      ],
+		      "records": [
+		        {
+		          "type": "A",
+		          "name": "@",
+		          "target": "1.2.3.4",
+		          "meta": {
+		            "transform": "0.0.0.0 ~ 1.1.1.1 ~ 2.2.2.2 ~  ; 1.1.1.1 ~ 2.2.2.2 ~ 3.3.3.3,4.4.4.4,5.5.5.5 ~  ; 1.1.1.1 ~ 2.2.2.2 ~  ~ 3.3.3.3,4.4.4.4,5.5.5.5"
+		          }
+		        }
+		      ],
+		      "keepunknown": false
+		    }
+		  ]
+		}

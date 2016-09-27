@@ -29,7 +29,7 @@ import (
 	_ "github.com/StackExchange/dnscontrol/providers/route53"
 )
 
-//go:generate esc -modtime 0 -o js/static.go -pkg js -ignore go -prefix js js
+//go:generate esc -modtime 0 -o js/static.go -pkg js -include helpers\.js -ignore go -prefix js js
 //go:generate esc -modtime 0 -o web/static.go -pkg web -include=bundle\.js -ignore node_modules -prefix web web
 
 // One of these config options must be set.
