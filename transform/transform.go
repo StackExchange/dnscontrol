@@ -7,8 +7,9 @@ import (
 )
 
 type IpConversion struct {
-	Low, High, NewBase net.IP
-	NewIPs             []net.IP
+	Low, High net.IP
+	NewBases  []net.IP
+	NewIPs    []net.IP
 }
 
 func ipToUint(i net.IP) (uint32, error) {
@@ -42,19 +43,30 @@ func DecodeTransformTable(transforms string) ([]IpConversion, error) {
 		}
 
 		con := IpConversion{
-			Low:     net.ParseIP(items[0]),
-			High:    net.ParseIP(items[1]),
-			NewBase: net.ParseIP(items[2]),
+			Low:  net.ParseIP(items[0]),
+			High: net.ParseIP(items[1]),
 		}
-		for _, ip := range strings.Split(items[3], ",") {
-			if ip == "" {
-				continue
+		parseList := func(s string) ([]net.IP, error) {
+			ips := []net.IP{}
+			for _, ip := range strings.Split(s, ",") {
+
+				if ip == "" {
+					continue
+				}
+				addr := net.ParseIP(ip)
+				if addr == nil {
+					return nil, fmt.Errorf("%s is not a valid ip address", ip)
+				}
+				ips = append(ips, addr)
 			}
-			addr := net.ParseIP(ip)
-			if addr == nil {
-				return nil, fmt.Errorf("%s is not a valid ip address", ip)
-			}
-			con.NewIPs = append(con.NewIPs, addr)
+			return ips, nil
+		}
+		var err error
+		if con.NewBases, err = parseList(items[2]); err != nil {
+			return nil, err
+		}
+		if con.NewIPs, err = parseList(items[3]); err != nil {
+			return nil, err
 		}
 
 		low, _ := ipToUint(con.Low)
@@ -62,8 +74,8 @@ func DecodeTransformTable(transforms string) ([]IpConversion, error) {
 		if low > high {
 			return nil, fmt.Errorf("transform_table Low should be less than High. row (%v) %v>%v (%v)\n", ri, con.Low, con.High, transforms)
 		}
-		if con.NewBase != nil && con.NewIPs != nil {
-			return nil, fmt.Errorf("transform_table_rows should only specify one of NewBase or NewIP. Not both.")
+		if len(con.NewBases) > 0 && len(con.NewIPs) > 0 {
+			return nil, fmt.Errorf("transform_table_rows should only specify one of NewBases or NewIPs, Not both")
 		}
 		result = append(result, con)
 	}
@@ -102,11 +114,15 @@ func TransformIPToList(address net.IP, transforms []IpConversion) ([]net.IP, err
 			if conv.NewIPs != nil {
 				return conv.NewIPs, nil
 			}
-			newbase, err := ipToUint(conv.NewBase)
-			if err != nil {
-				return nil, err
+			list := []net.IP{}
+			for _, nb := range conv.NewBases {
+				newbase, err := ipToUint(nb)
+				if err != nil {
+					return nil, err
+				}
+				list = append(list, UintToIP(newbase+(thisIP-min)))
 			}
-			return []net.IP{UintToIP(newbase + (thisIP - min))}, nil
+			return list, nil
 		}
 	}
 	return []net.IP{address}, nil
