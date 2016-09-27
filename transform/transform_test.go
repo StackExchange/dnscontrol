@@ -126,6 +126,7 @@ func Test_TransformIP(t *testing.T) {
 		High:     net.ParseIP("55.255.0.0"),
 		NewBases: []net.IP{net.ParseIP("66.0.0.0"), net.ParseIP("77.0.0.0")},
 	}}
+	//NO TRANSFORMS ON 99.x.x.x PLZ
 
 	var tests = []struct {
 		experiment string
@@ -150,6 +151,7 @@ func Test_TransformIP(t *testing.T) {
 		{"44.44.44.24", "100.100.100.44"},
 		{"44.44.44.44", "44.44.44.44"},
 		{"55.0.42.42", "66.0.42.42,77.0.42.42"},
+		{"99.0.0.42", "99.0.0.42"},
 	}
 
 	for _, test := range tests {
