@@ -156,10 +156,18 @@ function format_tt(transform_table) {
             newIP = num2dot(newIP);
         }
     }
+    var newBase = ip.newBase;
+    if (newBase){
+        if(_.isArray(newBase)){
+            newBase = _.map(newBase,function(i){return num2dot(i)}).join(",")
+        }else{
+            newBase = num2dot(newBase);
+        }
+    }
     var row = [
       num2dot(ip.low),
       num2dot(ip.high),
-      num2dot(ip.newBase),
+      newBase,
       newIP
     ]
     lines.push(row.join(" ~ "))
