@@ -49,17 +49,23 @@ func (c *adProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Co
 		foundDiffRecords = append(foundDiffRecords, rec)
 	}
 
-	_, create, _, mod := diff.IncrementalDiff(foundDiffRecords, expectedRecords)
+	_, creates, dels, modifications := diff.IncrementalDiff(foundDiffRecords, expectedRecords)
 	// NOTE(tlim): This provider does not delete records.  If
 	// you need to delete a record, either delete it manually
 	// or see providers/activedir/doc.md for implementation tips.
 
 	// Generate changes.
 	corrections := []*models.Correction{}
-	for _, d := range create {
-		corrections = append(corrections, c.createRec(dc.Name, d.Desired.(*models.RecordConfig))...)
+	for _, del := range dels {
+		if dc.KeepUnknown {
+			break
+		}
+		corrections = append(corrections, c.deleteRec(dc.Name, del.Existing.(*models.RecordConfig)))
 	}
-	for _, m := range mod {
+	for _, cre := range creates {
+		corrections = append(corrections, c.createRec(dc.Name, cre.Desired.(*models.RecordConfig))...)
+	}
+	for _, m := range modifications {
 		corrections = append(corrections, c.modifyRec(dc.Name, m))
 	}
 	return corrections, nil
@@ -267,6 +273,14 @@ func (c *adProvider) generatePowerShellModify(domainname, recName, recType, oldC
 	return text
 }
 
+func (c *adProvider) generatePowerShellDelete(domainname, recName, recType, content string) string {
+	text := fmt.Sprintf(`echo "DELETE %s %s %s"`, recType, recName, content)
+	text += "\r\n"
+	text += `# Remove-DnsServerResourceRecord -Force -ComputerName "%s" -ZoneName "%s" -Name "%s" -RRType "%s" -RecordData "%s" -WhatIf`
+	text += "\r\n"
+	return fmt.Sprintf(text, c.adServer, domainname, recName, recType, content)
+}
+
 func (c *adProvider) createRec(domainname string, rec *models.RecordConfig) []*models.Correction {
 	arr := []*models.Correction{
 		{
@@ -288,6 +302,15 @@ func (c *adProvider) modifyRec(domainname string, m diff.Correlation) *models.Co
 		Msg: m.String(),
 		F: func() error {
 			return powerShellDoCommand(c.generatePowerShellModify(domainname, rec.Name, rec.Type, oldContent, newContent, old.TTL, rec.TTL))
+		},
+	}
+}
+
+func (c *adProvider) deleteRec(domainname string, rec *models.RecordConfig) *models.Correction {
+	return &models.Correction{
+		Msg: fmt.Sprintf("DELETE record: %s %s ttl(%d) %s", rec.Name, rec.Type, rec.TTL, rec.Target),
+		F: func() error {
+			return powerShellDoCommand(c.generatePowerShellDelete(domainname, rec.Name, rec.Type, rec.Target))
 		},
 	}
 }
