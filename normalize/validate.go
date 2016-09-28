@@ -142,6 +142,7 @@ func import_transform(src_domain, dst_domain *models.DomainConfig, transforms []
 			rec2, _ := rec.Copy()
 			rec2.Name = rec2.NameFQDN
 			rec2.NameFQDN = dnsutil.AddOrigin(rec2.Name, dst_domain.Name)
+			rec2.TTL = 60
 			return rec2
 		}
 		switch rec.Type {
