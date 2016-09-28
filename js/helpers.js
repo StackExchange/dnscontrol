@@ -176,10 +176,13 @@ function format_tt(transform_table) {
 }
 
 // IMPORT_TRANSFORM(translation_table, domain)
-function IMPORT_TRANSFORM(translation_table, domain) {
+function IMPORT_TRANSFORM(translation_table, domain,ttl) {
     return function(d) {
-        addRecord(d, "IMPORT_TRANSFORM", "@", domain, [
+        var rec = addRecord(d, "IMPORT_TRANSFORM", "@", domain, [
             {'transform_table': format_tt(translation_table)}])
+        if (ttl){
+            rec.ttl = ttl;
+        }
     }
 }
 
@@ -231,6 +234,7 @@ function addRecord(d,type,name,target,mods) {
         }
     }
     d.records.push(rec);
+    return rec;
 }
 
 //ip conversion functions from http://stackoverflow.com/a/8105740/121660
