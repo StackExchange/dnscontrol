@@ -130,7 +130,7 @@ func transform_cname(target, old_domain, new_domain string) string {
 }
 
 // import_transform imports the records of one zone into another, modifying records along the way.
-func import_transform(src_domain, dst_domain *models.DomainConfig, transforms []transform.IpConversion) error {
+func import_transform(src_domain, dst_domain *models.DomainConfig, transforms []transform.IpConversion, ttl uint32) error {
 	// Read src_domain.Records, transform, and append to dst_domain.Records:
 	// 1. Skip any that aren't A or CNAMEs.
 	// 2. Append dest_domainname to the end of the label.
@@ -142,7 +142,9 @@ func import_transform(src_domain, dst_domain *models.DomainConfig, transforms []
 			rec2, _ := rec.Copy()
 			rec2.Name = rec2.NameFQDN
 			rec2.NameFQDN = dnsutil.AddOrigin(rec2.Name, dst_domain.Name)
-			rec2.TTL = 60
+			if ttl != 0 {
+				rec2.TTL = ttl
+			}
 			return rec2
 		}
 		switch rec.Type {
@@ -222,7 +224,7 @@ func NormalizeAndValidateConfig(config *models.DNSConfig) (errs []error) {
 					errs = append(errs, err)
 					continue
 				}
-				err = import_transform(config.FindDomain(rec.Target), domain, table)
+				err = import_transform(config.FindDomain(rec.Target), domain, table, rec.TTL)
 				if err != nil {
 					errs = append(errs, err)
 				}
