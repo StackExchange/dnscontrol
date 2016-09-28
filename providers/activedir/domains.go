@@ -270,9 +270,12 @@ func (c *adProvider) generatePowerShellModify(domainname, recName, recType, oldC
 	return text
 }
 
-func (c *adProvider) generatePowerShellDelete(domainname, recName, recType string) string {
-	text := `# Remove-DnsServerResourceRecord -ComputerName "%s" -ZoneName "%s" -Name "%s" -RRType "%s"\r\n` //comment for now
-	return fmt.Sprintf(text, c.adServer, domainname, recName, recType)
+func (c *adProvider) generatePowerShellDelete(domainname, recName, recType, content string) string {
+	text := fmt.Sprintf(`echo "DELETE %s %s"`, recType, recName)
+	text += "\r\n"
+	text += `# Remove-DnsServerResourceRecord -Force -ComputerName "%s" -ZoneName "%s" -Name "%s" -RRType "%s" -RecordData "%s"` //comment for now
+	text += "\r\n"
+	return fmt.Sprintf(text, c.adServer, domainname, recName, recType, content)
 }
 
 func (c *adProvider) createRec(domainname string, rec *models.RecordConfig) []*models.Correction {
@@ -304,7 +307,7 @@ func (c *adProvider) deleteRec(domainname string, rec *models.RecordConfig) *mod
 	return &models.Correction{
 		Msg: fmt.Sprintf("DELETE record: %s %s ttl(%d) %s", rec.Name, rec.Type, rec.TTL, rec.Target),
 		F: func() error {
-			return powerShellDoCommand(c.generatePowerShellDelete(domainname, rec.Name, rec.Type))
+			return powerShellDoCommand(c.generatePowerShellDelete(domainname, rec.Name, rec.Type, rec.Target))
 		},
 	}
 }
