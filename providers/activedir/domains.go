@@ -271,7 +271,7 @@ func (c *adProvider) generatePowerShellModify(domainname, recName, recType, oldC
 }
 
 func (c *adProvider) generatePowerShellDelete(domainname, recName, recType string) string {
-	text := `# Remove-DnsServerResourceRecord -ComputerName "%s" -ZoneName "%s" -Name "%s" -RRType "%s"` //comment for now
+	text := `# Remove-DnsServerResourceRecord -ComputerName "%s" -ZoneName "%s" -Name "%s" -RRType "%s"\r\n` //comment for now
 	return fmt.Sprintf(text, c.adServer, domainname, recName, recType)
 }
 
