@@ -63,7 +63,7 @@ func (c *adProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Co
 		corrections = append(corrections, c.modifyRec(dc.Name, m))
 	}
 	for _, del := range dels {
-		corrections = append(corrections, c.deleteRec(dc.Name, del.Existing.(*models.RecordConfig))
+		corrections = append(corrections, c.deleteRec(dc.Name, del.Existing.(*models.RecordConfig)))
 	}
 	return corrections, nil
 
@@ -270,7 +270,7 @@ func (c *adProvider) generatePowerShellModify(domainname, recName, recType, oldC
 	return text
 }
 
-func (c *adProvider) generatePowerShellDelete(domainname, recName, recType) string {
+func (c *adProvider) generatePowerShellDelete(domainname, recName, recType string) string {
 	text := `# Remove-DnsServerResourceRecord -ComputerName "%s" -ZoneName "%s" -Name "%s" -RRType "%s"` //comment for now
 	return fmt.Sprintf(text, c.adServer, domainname, recName, recType)
 }
