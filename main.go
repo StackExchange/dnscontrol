@@ -150,6 +150,7 @@ func main() {
 				if err != nil {
 					log.Fatal(err)
 				}
+				dc.Nameservers = nil
 				shouldrun, useNS := shouldRunProvider(prov, dc)
 				statusLbl := ""
 				if !shouldrun {
