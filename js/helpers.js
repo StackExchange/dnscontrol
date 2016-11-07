@@ -145,7 +145,9 @@ function NAMESERVER(name, target) {
 function NAMESERVERS_FROM(){
     var args = arguments;
     return function(d) {
-        d.nameservers_from = [];
+        if (!d.nameservers_from){
+            d.nameservers_from = [];
+        }
         for (var i = 0;i<args.length; i++) {
             d.nameservers_from.push(args[i]);
         }
