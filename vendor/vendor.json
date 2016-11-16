@@ -201,6 +201,12 @@
 			"revisionTime": "2015-04-13T22:18:30+03:00"
 		},
 		{
+			"checksumSHA1": "ZEnHtRxD15ZR+Gr5BFoq+zsASTA=",
+			"path": "github.com/mhenderson-so/godnsmadeeasy/src/GoDNSMadeEasy",
+			"revision": "b729b3fcc82ec96133a7513926b3f3f32747b4e0",
+			"revisionTime": "2016-11-16T20:43:13Z"
+		},
+		{
 			"checksumSHA1": "OUZ1FFXyKs+Cfg9M9rmXqqweQck=",
 			"path": "github.com/miekg/dns",
 			"revision": "db96a2b759cdef4f11a34506a42eb8d1290c598e",
