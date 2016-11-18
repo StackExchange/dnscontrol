@@ -12,7 +12,7 @@ import (
 )
 
 type dmeProvider struct {
-	client *GoDNSMadeEasy.GoDNSMadeEasy
+	client *GoDNSMadeEasy.GoDMEConfig
 	zones  map[string]*GoDNSMadeEasy.Domain
 }
 
@@ -25,7 +25,7 @@ func newDNSMadeEasy(m map[string]string, metadata json.RawMessage) (providers.DN
 		return nil, fmt.Errorf("DNS Made Easy API URL must be provided")
 	}
 
-	dmeClient, err := GoDNSMadeEasy.NewGoDNSMadeEasy(&GoDNSMadeEasy.GoDNSMadeEasy{
+	dmeClient, err := GoDNSMadeEasy.NewGoDNSMadeEasy(&GoDNSMadeEasy.GoDMEConfig{
 		APIKey:    keyID,
 		SecretKey: secretKey,
 		APIUrl:    apiURL,
@@ -213,7 +213,7 @@ func (r *dmeProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*models.C
 					&models.Correction{
 						Msg: fmt.Sprintf("UPDATE %s %s %s %v", rec.Type, rec.Name, rec.Value, rec.TTL),
 						F: func() error {
-							_, err := r.client.UpdateRecord(zone.ID, &GoDNSMadeEasy.Record{
+							err := r.client.UpdateRecord(zone.ID, &GoDNSMadeEasy.Record{
 								ID:          recID,
 								Type:        newRecord.Type,
 								Name:        fixRecordName(newRecord.Name),
