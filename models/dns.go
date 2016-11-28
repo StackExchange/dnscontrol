@@ -10,8 +10,8 @@ import (
 	"reflect"
 	"strconv"
 
-	"github.com/miekg/dns"
 	"github.com/StackExchange/dnscontrol/transform"
+	"github.com/miekg/dns"
 )
 
 const DefaultTTL = uint32(300)
@@ -139,13 +139,14 @@ type Nameserver struct {
 }
 
 type DomainConfig struct {
-	Name        string            `json:"name"` // NO trailing "."
-	Registrar   string            `json:"registrar"`
-	Dsps        []string          `json:"dsps"`
-	Metadata    map[string]string `json:"meta,omitempty"`
-	Records     []*RecordConfig   `json:"records"`
-	Nameservers []*Nameserver     `json:"nameservers,omitempty"`
-	KeepUnknown bool              `json:"keepunknown"`
+	Name            string            `json:"name"` // NO trailing "."
+	Registrar       string            `json:"registrar"`
+	Dsps            []string          `json:"dsps"`
+	Metadata        map[string]string `json:"meta,omitempty"`
+	Records         []*RecordConfig   `json:"records"`
+	Nameservers     []*Nameserver     `json:"nameservers,omitempty"`
+	KeepUnknown     bool              `json:"keepunknown"`
+	NameserversFrom []string          `json:"nameservers_from"`
 }
 
 func (dc *DomainConfig) Copy() (*DomainConfig, error) {
