@@ -1,0 +1,14 @@
+{
+		  "registrars": [],
+		  "dns_service_providers": [],
+		  "domains": [
+		    {
+		      "name": "a.com",
+		      "registrar": "A",
+		      "dsps": [],
+		      "records": [],
+		      "keepunknown": false,
+		      "nameservers_from": ["foo","bar"]
+		    }
+		  ]
+		}
