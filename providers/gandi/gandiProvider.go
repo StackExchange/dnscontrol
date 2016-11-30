@@ -71,7 +71,9 @@ func (c *cfRecord) GetComparisionData() string {
 	}
 	return fmt.Sprintf("%d", c.Ttl)
 }
-
+func (c *GandiApi) GetNameservers(domain string) ([]string, error) {
+	return nil, nil
+}
 func (c *GandiApi) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Correction, error) {
 
 	if c.domainIndex == nil {

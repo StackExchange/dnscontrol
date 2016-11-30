@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"net/http"
 	"net/http/httptest"
+	"strings"
 	"testing"
 
 	"github.com/StackExchange/dnscontrol/models"
@@ -30,7 +31,7 @@ func teardown() {
 	server.Close()
 }
 
-func TestGetNameservers(t *testing.T) {
+func TestGetNameserversRaw(t *testing.T) {
 	for i, test := range []struct {
 		givenNs, expected string
 	}{
@@ -54,7 +55,7 @@ func TestGetNameservers(t *testing.T) {
 			w.Write(domainResponse(test.givenNs))
 		})
 
-		found, err := client.getNameservers("example.tld")
+		found, err := client.getNameserversRaw("example.tld")
 		if err != nil {
 			if test.expected == "ERR" {
 				continue
@@ -66,7 +67,7 @@ func TestGetNameservers(t *testing.T) {
 			t.Errorf("Expected error on test %d, but was none", i)
 			continue
 		}
-		if found != test.expected {
+		if strings.Join(found, ",") != test.expected {
 			t.Errorf("Test %d: Expected '%s', but found '%s'", i, test.expected, found)
 		}
 	}
@@ -148,3 +149,34 @@ func domainResponse(ns string) []byte {
 }
 
 var nameComError = []byte(`{"result":{"code":251,"message":"Authentication Error - Invalid Username Or Api Token"}}`)
+
+func TestGetNameservers(t *testing.T) {
+	const d = "ns1.name.com,ns2.name.com,ns3.name.com,ns4.name.com"
+	for i, test := range []struct {
+		givenNs, expected string
+	}{
+		//empty or external dsp, use ns1-4.name.com
+		{"", d},
+		{`"foo.ns.tld","bar.ns.tld"`, d},
+		//if already on name.com, use the existing nameservers
+		{`"ns1aaa.name.com","ns2bbb.name.com","ns3ccc.name.com","ns4ddd.name.com"`, "ns1aaa.name.com,ns2bbb.name.com,ns3ccc.name.com,ns4ddd.name.com"},
+		//also handle half and half
+		{`"ns1aaa.name.com","ns2bbb.name.com","ns3ccc.aws.net","ns4ddd.awsdns.org"`, "ns1aaa.name.com,ns2bbb.name.com,ns3.name.com,ns4.name.com"},
+		{`"nsa.azuredns.com","ns2b.gandhi.net","ns3ccc.name.com","ns4ddd.name.com"`, "ns1.name.com,ns2.name.com,ns3ccc.name.com,ns4ddd.name.com"},
+	} {
+		setup()
+		defer teardown()
+
+		mux.HandleFunc("/domain/get/example.tld", func(w http.ResponseWriter, r *http.Request) {
+			w.Write(domainResponse(test.givenNs))
+		})
+		found, err := client.GetNameservers("example.tld")
+		if err != nil {
+			t.Errorf("Test %d: %s", i, err)
+			continue
+		}
+		if strings.Join(found, ",") != test.expected {
+			t.Errorf("Test %d: Expected '%s', but found '%s'", i, test.expected, found)
+		}
+	}
+}

@@ -17,7 +17,6 @@ var defaultNameservers = []*models.Nameserver{
 }
 
 func (n *nameDotCom) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Correction, error) {
-	dc.Nameservers = defaultNameservers
 	records, err := n.getRecords(dc.Name)
 	if err != nil {
 		return nil, err

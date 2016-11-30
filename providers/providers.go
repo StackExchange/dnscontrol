@@ -15,6 +15,7 @@ type Registrar interface {
 
 //DNSServiceProvider is able to generate a set of corrections that need to be made to correct records for a domain
 type DNSServiceProvider interface {
+	GetNameservers(domain string) ([]string, error)
 	GetDomainCorrections(dc *models.DomainConfig) ([]*models.Correction, error)
 }
 
@@ -101,6 +102,10 @@ func CreateDsps(d *models.DNSConfig, providerConfigs map[string]map[string]strin
 type None struct{}
 
 func (n None) GetRegistrarCorrections(dc *models.DomainConfig) ([]*models.Correction, error) {
+	return nil, nil
+}
+
+func (n None) GetNameservers(string) ([]string, error) {
 	return nil, nil
 }
 

@@ -9,14 +9,44 @@ import (
 	"github.com/StackExchange/dnscontrol/models"
 )
 
-func (n *nameDotCom) GetRegistrarCorrections(dc *models.DomainConfig) ([]*models.Correction, error) {
-	foundNameservers, err := n.getNameservers(dc.Name)
+var nsRegex = regexp.MustCompile(`ns([1-4])[a-z]{3}\.name\.com`)
+
+func (n *nameDotCom) GetNameservers(domain string) ([]string, error) {
+	//This is an interesting edge case. Name.com expects you to SET the nameservers to ns[1-4].name.com,
+	//but it will internally set it to ns1xyz.name.com, where xyz is a uniqueish 3 letters.
+	//In order to avoid endless loops, we will use the unique nameservers if present, or else the generic ones if not.
+	nss, err := n.getNameserversRaw(domain)
 	if err != nil {
 		return nil, err
 	}
-	if defaultNsRegexp.MatchString(foundNameservers) {
-		foundNameservers = "ns1.name.com,ns2.name.com,ns3.name.com,ns4.name.com"
+	toUse := []string{"ns1.name.com", "ns2.name.com", "ns3.name.com", "ns4.name.com"}
+	for _, ns := range nss {
+		if matches := nsRegex.FindStringSubmatch(ns); len(matches) == 2 && len(matches[1]) == 1 {
+			idx := matches[1][0] - '1' //regex ensures proper range
+			toUse[idx] = matches[0]
+		}
 	}
+	return toUse, nil
+}
+
+func (n *nameDotCom) getNameserversRaw(domain string) ([]string, error) {
+	result := &getDomainResult{}
+	if err := n.get(apiGetDomain(domain), result); err != nil {
+		return nil, err
+	}
+	if err := result.getErr(); err != nil {
+		return nil, err
+	}
+	sort.Strings(result.Nameservers)
+	return result.Nameservers, nil
+}
+
+func (n *nameDotCom) GetRegistrarCorrections(dc *models.DomainConfig) ([]*models.Correction, error) {
+	nss, err := n.getNameserversRaw(dc.Name)
+	if err != nil {
+		return nil, err
+	}
+	foundNameservers := strings.Join(nss, ",")
 	expected := []string{}
 	for _, ns := range dc.Nameservers {
 		name := strings.TrimRight(ns.Name, ".")
@@ -50,19 +80,6 @@ type getDomainResult struct {
 	*apiResult
 	DomainName  string   `json:"domain_name"`
 	Nameservers []string `json:"nameservers"`
-}
-
-// returns comma joined list of nameservers (in alphabetical order)
-func (n *nameDotCom) getNameservers(domain string) (string, error) {
-	result := &getDomainResult{}
-	if err := n.get(apiGetDomain(domain), result); err != nil {
-		return "", err
-	}
-	if err := result.getErr(); err != nil {
-		return "", err
-	}
-	sort.Strings(result.Nameservers)
-	return strings.Join(result.Nameservers, ","), nil
 }
 
 func (n *nameDotCom) updateNameservers(ns []string, domain string) func() error {

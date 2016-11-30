@@ -20,7 +20,7 @@ const (
 // get list of domains for account. Cache so the ids can be looked up from domain name
 func (c *CloudflareApi) fetchDomainList() error {
 	c.domainIndex = map[string]string{}
-	c.nameservers = map[string][]*models.Nameserver{}
+	c.nameservers = map[string][]string{}
 	page := 1
 	for {
 		zr := &zoneResponse{}
@@ -34,7 +34,7 @@ func (c *CloudflareApi) fetchDomainList() error {
 		for _, zone := range zr.Result {
 			c.domainIndex[zone.Name] = zone.ID
 			for _, ns := range zone.Nameservers {
-				c.nameservers[zone.Name] = append(c.nameservers[zone.Name], &models.Nameserver{Name: ns})
+				c.nameservers[zone.Name] = append(c.nameservers[zone.Name], ns)
 			}
 		}
 		ri := zr.ResultInfo

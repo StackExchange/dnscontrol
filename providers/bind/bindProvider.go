@@ -152,6 +152,10 @@ func makeDefaultNS(origin string, names []string) []*models.RecordConfig {
 	return result
 }
 
+func (c *Bind) GetNameservers(string) ([]string, error) {
+	return c.Default_ns, nil
+}
+
 func (c *Bind) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Correction, error) {
 
 	// Phase 1: Copy everything to []*models.RecordConfig:
@@ -208,6 +212,7 @@ func (c *Bind) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Correcti
 	}
 
 	// Add NS records:
+	// TODO: main driver should add these, so we won't need to.
 	if len(c.Default_ns) != 0 && !dc.HasRecordTypeName("NS", "@") {
 		expectedRecords = append(expectedRecords, makeDefaultNS(dc.Name, c.Default_ns)...)
 		dc.Records = append(dc.Records, makeDefaultNS(dc.Name, c.Default_ns)...)

@@ -8,11 +8,11 @@ import (
 	"strings"
 	"time"
 
-	"github.com/miekg/dns/dnsutil"
 	"github.com/StackExchange/dnscontrol/models"
 	"github.com/StackExchange/dnscontrol/providers"
 	"github.com/StackExchange/dnscontrol/providers/diff"
 	"github.com/StackExchange/dnscontrol/transform"
+	"github.com/miekg/dns/dnsutil"
 )
 
 /*
@@ -38,7 +38,7 @@ type CloudflareApi struct {
 	ApiKey        string `json:"apikey"`
 	ApiUser       string `json:"apiuser"`
 	domainIndex   map[string]string
-	nameservers   map[string][]*models.Nameserver
+	nameservers   map[string][]string
 	ipConversions []transform.IpConversion
 	secretIPs     []net.IP
 	ignoredLabels []string
@@ -53,6 +53,18 @@ func labelMatches(label string, matches []string) bool {
 	}
 	return false
 }
+func (c *CloudflareApi) GetNameservers(domain string) ([]string, error) {
+	if c.domainIndex == nil {
+		if err := c.fetchDomainList(); err != nil {
+			return nil, err
+		}
+	}
+	ns, ok := c.nameservers[domain]
+	if !ok {
+		return nil, fmt.Errorf("Nameservers for %s not found in cloudflare account", domain)
+	}
+	return ns, nil
+}
 
 func (c *CloudflareApi) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Correction, error) {
 	if c.domainIndex == nil {
@@ -64,8 +76,6 @@ func (c *CloudflareApi) GetDomainCorrections(dc *models.DomainConfig) ([]*models
 	if !ok {
 		return nil, fmt.Errorf("%s not listed in zones for cloudflare account", dc.Name)
 	}
-
-	dc.Nameservers = c.nameservers[dc.Name]
 	if err := c.preprocessConfig(dc); err != nil {
 		return nil, err
 	}

@@ -3,16 +3,17 @@ package route53
 import (
 	"encoding/json"
 	"fmt"
+	"log"
 	"strings"
 	"time"
 
+	"github.com/StackExchange/dnscontrol/models"
+	"github.com/StackExchange/dnscontrol/providers"
+	"github.com/StackExchange/dnscontrol/providers/diff"
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/credentials"
 	"github.com/aws/aws-sdk-go/aws/session"
 	r53 "github.com/aws/aws-sdk-go/service/route53"
-	"github.com/StackExchange/dnscontrol/models"
-	"github.com/StackExchange/dnscontrol/providers"
-	"github.com/StackExchange/dnscontrol/providers/diff"
 )
 
 type route53Provider struct {
@@ -40,8 +41,10 @@ func init() {
 func sPtr(s string) *string {
 	return &s
 }
-
 func (r *route53Provider) getZones() error {
+	if r.zones != nil {
+		return nil
+	}
 	var nextMarker *string
 	r.zones = make(map[string]*r53.HostedZone)
 	for {
@@ -72,12 +75,31 @@ func getKey(r diff.Record) key {
 	return key{r.GetName(), r.GetType()}
 }
 
-func (r *route53Provider) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Correction, error) {
-	if r.zones == nil {
-		if err := r.getZones(); err != nil {
-			return nil, err
-		}
+func (r *route53Provider) GetNameservers(domain string) ([]string, error) {
+	if err := r.getZones(); err != nil {
+		return nil, err
 	}
+	zone, ok := r.zones[domain]
+	if !ok {
+		log.Printf("WARNING: Domain %s is not on your route 53 account. Dnscontrol will add it, but you will need to run a second time to configure nameservers properly.", domain)
+		return nil, nil
+	}
+	z, err := r.client.GetHostedZone(&r53.GetHostedZoneInput{Id: zone.Id})
+	if err != nil {
+		return nil, err
+	}
+	ns := []string{}
+	for _, nsPtr := range z.DelegationSet.NameServers {
+		ns = append(ns, *nsPtr)
+	}
+	return ns, nil
+}
+
+func (r *route53Provider) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Correction, error) {
+	if err := r.getZones(); err != nil {
+		return nil, err
+	}
+
 	var corrections = []*models.Correction{}
 	zone, ok := r.zones[dc.Name]
 	// add zone if it doesn't exist
@@ -109,13 +131,10 @@ func (r *route53Provider) GetDomainCorrections(dc *models.DomainConfig) ([]*mode
 
 	//convert to dnscontrol RecordConfig format
 	dc.Nameservers = nil
-	var existingRecords = []*models.RecordConfig{}
+	var existingRecords = []diff.Record{}
 	for _, set := range records {
 		for _, rec := range set.ResourceRecords {
 			if *set.Type == "SOA" {
-				continue
-			} else if *set.Type == "NS" && strings.TrimSuffix(*set.Name, ".") == dc.Name {
-				dc.Nameservers = append(dc.Nameservers, &models.Nameserver{Name: strings.TrimSuffix(*rec.Value, ".")})
 				continue
 			}
 			r := &models.RecordConfig{
@@ -127,10 +146,7 @@ func (r *route53Provider) GetDomainCorrections(dc *models.DomainConfig) ([]*mode
 			existingRecords = append(existingRecords, r)
 		}
 	}
-	e, w := []diff.Record{}, []diff.Record{}
-	for _, ex := range existingRecords {
-		e = append(e, ex)
-	}
+	w := []diff.Record{}
 	for _, want := range dc.Records {
 		if want.TTL == 0 {
 			want.TTL = 300
@@ -146,7 +162,7 @@ func (r *route53Provider) GetDomainCorrections(dc *models.DomainConfig) ([]*mode
 
 	//diff
 	changeDesc := ""
-	_, create, delete, modify := diff.IncrementalDiff(e, w)
+	_, create, delete, modify := diff.IncrementalDiff(existingRecords, w)
 
 	namesToUpdate := map[key]bool{}
 	for _, c := range create {
@@ -184,7 +200,7 @@ func (r *route53Provider) GetDomainCorrections(dc *models.DomainConfig) ([]*mode
 		var rrset *r53.ResourceRecordSet
 		if len(recs) == 0 {
 			chg.Action = sPtr("DELETE")
-			// on delete just submit the original resource set we got from r53.
+			// on delete just submit the original reso                  urce set we got from r53.
 			for _, r := range records {
 				if *r.Name == k.Name+"." && *r.Type == k.Type {
 					rrset = r

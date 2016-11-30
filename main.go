@@ -144,8 +144,7 @@ func main() {
 				continue
 			}
 			fmt.Printf("******************** Domain: %s\n", domain.Name)
-			for pi, prov := range domain.Dsps {
-
+			for _, prov := range domain.Dsps {
 				dc, err := domain.Copy()
 				if err != nil {
 					log.Fatal(err)
