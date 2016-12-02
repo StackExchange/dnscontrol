@@ -24,7 +24,7 @@ type RecordConfigJson struct {
 	TTL  uint32 `json:"timetolive"`
 }
 
-func (c *adProvider) GetNameservers(string) ([]string, error) {
+func (c *adProvider) GetNameservers(string) ([]*models.Nameserver, error) {
 	//TODO: If using AD for publicly hosted zones, probably pull these from config.
 	return nil, nil
 }

@@ -1,8 +1,9 @@
 package normalize
 
 import (
-	"github.com/StackExchange/dnscontrol/models"
 	"testing"
+
+	"github.com/StackExchange/dnscontrol/models"
 )
 
 func Test_assert_no_enddot(t *testing.T) {
@@ -102,6 +103,20 @@ func Test_transform_cname(t *testing.T) {
 		if test.expected != actual {
 			t.Errorf("%v: expected (%v) got (%v)\n", test.experiment, test.expected, actual)
 		}
+	}
+}
+
+func TestNSAtRoot(t *testing.T) {
+	//do not allow ns records for @
+	rec := &models.RecordConfig{Name: "test", Type: "NS", Target: "ns1.name.com."}
+	errs := validateTargets(rec, "foo.com")
+	if len(errs) > 0 {
+		t.Error("Expect no error with ns record on subdomain")
+	}
+	rec.Name = "@"
+	errs = validateTargets(rec, "foo.com")
+	if len(errs) != 1 {
+		t.Error("Expect error with ns record on @")
 	}
 }
 

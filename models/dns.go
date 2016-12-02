@@ -138,6 +138,14 @@ type Nameserver struct {
 	Target string `json:"target"`
 }
 
+func StringsToNameservers(nss []string) []*Nameserver {
+	nservers := []*Nameserver{}
+	for _, ns := range nss {
+		nservers = append(nservers, &Nameserver{Name: ns})
+	}
+	return nservers
+}
+
 type DomainConfig struct {
 	Name            string            `json:"name"` // NO trailing "."
 	Registrar       string            `json:"registrar"`

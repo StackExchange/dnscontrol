@@ -50,16 +50,16 @@ func assert_valid_ipv6(label string) error {
 }
 
 // assert_valid_cname_target returns 1 if target is not valid for cnames.
-func assert_valid_target(label string) error {
-	if label == "@" {
+func assert_valid_target(target string) error {
+	if target == "@" {
 		return nil
 	}
-	if len(label) < 1 {
-		return fmt.Errorf("WARNING: null label.")
+	if len(target) < 1 {
+		return fmt.Errorf("WARNING: null target.")
 	}
 	// If it containts a ".", it must end in a ".".
-	if strings.ContainsRune(label, '.') && label[len(label)-1] != '.' {
-		return fmt.Errorf("WARNING: label (%v) includes a (.), must end with a (.)", label)
+	if strings.ContainsRune(target, '.') && target[len(target)-1] != '.' {
+		return fmt.Errorf("WARNING: target (%v) includes a (.), must end with a (.)", target)
 	}
 	return nil
 }
@@ -112,6 +112,9 @@ func validateTargets(rec *models.RecordConfig, domain_name string) (errs []error
 		check(assert_no_enddot(label))
 		check(assert_no_underscores(label))
 		check(assert_valid_target(target))
+		if label == "@" {
+			check(fmt.Errorf("cannot create NS record for bare domain. Use NAMESERVER instead"))
+		}
 	case "TXT", "IMPORT_TRANSFORM":
 	default:
 		errs = append(errs, fmt.Errorf("Unimplemented record type (%v) domain=%v name=%v",

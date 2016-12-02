@@ -16,6 +16,9 @@ import (
 
 // fetchDomainList gets list of domains for account. Cache ids for easy lookup.
 func (c *GandiApi) fetchDomainList() error {
+	if c.domainIndex != nil {
+		return nil
+	}
 	c.domainIndex = map[string]int64{}
 	gc := gandiclient.New(c.ApiKey, gandiclient.Production)
 	domain := gandidomain.New(gc)

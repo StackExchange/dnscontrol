@@ -75,7 +75,7 @@ func getKey(r diff.Record) key {
 	return key{r.GetName(), r.GetType()}
 }
 
-func (r *route53Provider) GetNameservers(domain string) ([]string, error) {
+func (r *route53Provider) GetNameservers(domain string) ([]*models.Nameserver, error) {
 	if err := r.getZones(); err != nil {
 		return nil, err
 	}
@@ -88,9 +88,9 @@ func (r *route53Provider) GetNameservers(domain string) ([]string, error) {
 	if err != nil {
 		return nil, err
 	}
-	ns := []string{}
+	ns := []*models.Nameserver{}
 	for _, nsPtr := range z.DelegationSet.NameServers {
-		ns = append(ns, *nsPtr)
+		ns = append(ns, &models.Nameserver{Name: *nsPtr})
 	}
 	return ns, nil
 }

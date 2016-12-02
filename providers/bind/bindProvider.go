@@ -49,8 +49,9 @@ func (s SoaInfo) String() string {
 }
 
 type Bind struct {
-	Default_ns  []string `json:"default_ns"`
-	Default_Soa SoaInfo  `json:"default_soa"`
+	Default_NS  []string             `json:"default_ns"`
+	Default_Soa SoaInfo              `json:"default_soa"`
+	nameservers []*models.Nameserver `json:"-"`
 }
 
 var bindBaseDir = flag.String("bindtree", "zones", "BIND: Directory that stores BIND zonefiles.")
@@ -138,22 +139,8 @@ func makeDefaultSOA(info SoaInfo, origin string) *models.RecordConfig {
 	return &soa_rec
 }
 
-func makeDefaultNS(origin string, names []string) []*models.RecordConfig {
-	var result []*models.RecordConfig
-	for _, n := range names {
-		rc := &models.RecordConfig{
-			Type:   "NS",
-			Name:   "@",
-			Target: n,
-		}
-		rc.NameFQDN = dnsutil.AddOrigin(rc.Name, origin)
-		result = append(result, rc)
-	}
-	return result
-}
-
-func (c *Bind) GetNameservers(string) ([]string, error) {
-	return c.Default_ns, nil
+func (c *Bind) GetNameservers(string) ([]*models.Nameserver, error) {
+	return c.nameservers, nil
 }
 
 func (c *Bind) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Correction, error) {
@@ -211,12 +198,6 @@ func (c *Bind) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Correcti
 		}
 	}
 
-	// Add NS records:
-	// TODO: main driver should add these, so we won't need to.
-	if len(c.Default_ns) != 0 && !dc.HasRecordTypeName("NS", "@") {
-		expectedRecords = append(expectedRecords, makeDefaultNS(dc.Name, c.Default_ns)...)
-		dc.Records = append(dc.Records, makeDefaultNS(dc.Name, c.Default_ns)...)
-	}
 	// Add SOA record:
 	if !dc.HasRecordTypeName("SOA", "@") {
 		expectedRecords = append(expectedRecords, soa_rec)
@@ -291,7 +272,7 @@ func (c *Bind) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Correcti
 }
 
 func initBind(config map[string]string, providermeta json.RawMessage) (providers.DNSServiceProvider, error) {
-	// m -- the json blob from creds.json
+	// config -- the key/values from creds.json
 	// meta -- the json blob from NewReq('name', 'TYPE', meta)
 
 	api := &Bind{}
@@ -301,6 +282,7 @@ func initBind(config map[string]string, providermeta json.RawMessage) (providers
 			return nil, err
 		}
 	}
+	api.nameservers = models.StringsToNameservers(api.Default_NS)
 	return api, nil
 }
 

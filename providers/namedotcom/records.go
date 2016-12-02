@@ -2,6 +2,7 @@ package namedotcom
 
 import (
 	"fmt"
+	"log"
 
 	"github.com/miekg/dns/dnsutil"
 
@@ -26,12 +27,16 @@ func (n *nameDotCom) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Co
 		actual[i] = records[i]
 	}
 
-	desired := make([]diff.Record, len(dc.Records))
-	for i, rec := range dc.Records {
+	desired := make([]diff.Record, 0, len(dc.Records))
+	for _, rec := range dc.Records {
 		if rec.TTL == 0 {
 			rec.TTL = 300
 		}
-		desired[i] = rec
+		if rec.Type == "NS" && rec.NameFQDN == dc.Name {
+			log.Println("!!!!", rec.Target, rec.NameFQDN, dc.Name)
+			continue
+		}
+		desired = append(desired, rec)
 	}
 
 	_, create, del, mod := diff.IncrementalDiff(actual, desired)

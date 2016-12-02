@@ -11,7 +11,7 @@ import (
 
 var nsRegex = regexp.MustCompile(`ns([1-4])[a-z]{3}\.name\.com`)
 
-func (n *nameDotCom) GetNameservers(domain string) ([]string, error) {
+func (n *nameDotCom) GetNameservers(domain string) ([]*models.Nameserver, error) {
 	//This is an interesting edge case. Name.com expects you to SET the nameservers to ns[1-4].name.com,
 	//but it will internally set it to ns1xyz.name.com, where xyz is a uniqueish 3 letters.
 	//In order to avoid endless loops, we will use the unique nameservers if present, or else the generic ones if not.
@@ -26,7 +26,7 @@ func (n *nameDotCom) GetNameservers(domain string) ([]string, error) {
 			toUse[idx] = matches[0]
 		}
 	}
-	return toUse, nil
+	return models.StringsToNameservers(toUse), nil
 }
 
 func (n *nameDotCom) getNameserversRaw(domain string) ([]string, error) {

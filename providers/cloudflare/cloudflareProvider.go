@@ -53,7 +53,7 @@ func labelMatches(label string, matches []string) bool {
 	}
 	return false
 }
-func (c *CloudflareApi) GetNameservers(domain string) ([]string, error) {
+func (c *CloudflareApi) GetNameservers(domain string) ([]*models.Nameserver, error) {
 	if c.domainIndex == nil {
 		if err := c.fetchDomainList(); err != nil {
 			return nil, err
@@ -63,7 +63,7 @@ func (c *CloudflareApi) GetNameservers(domain string) ([]string, error) {
 	if !ok {
 		return nil, fmt.Errorf("Nameservers for %s not found in cloudflare account", domain)
 	}
-	return ns, nil
+	return models.StringsToNameservers(ns), nil
 }
 
 func (c *CloudflareApi) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Correction, error) {

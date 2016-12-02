@@ -14,6 +14,7 @@ import (
 
 	"github.com/StackExchange/dnscontrol/js"
 	"github.com/StackExchange/dnscontrol/models"
+	"github.com/StackExchange/dnscontrol/nameservers"
 	"github.com/StackExchange/dnscontrol/normalize"
 	"github.com/StackExchange/dnscontrol/providers"
 	"github.com/StackExchange/dnscontrol/providers/config"
@@ -144,22 +145,26 @@ func main() {
 				continue
 			}
 			fmt.Printf("******************** Domain: %s\n", domain.Name)
+			nsList, err := nameservers.DetermineNameservers(domain, 0, dsps)
+			if err != nil {
+				log.Fatal(err)
+			}
+			domain.Nameservers = nsList
+			nameservers.AddNSRecords(domain)
 			for _, prov := range domain.Dsps {
 				dc, err := domain.Copy()
 				if err != nil {
 					log.Fatal(err)
 				}
-				dc.Nameservers = nil
-				shouldrun, useNS := shouldRunProvider(prov, dc)
+				shouldrun := shouldRunProvider(prov, dc)
 				statusLbl := ""
 				if !shouldrun {
-					if useNS {
-						statusLbl = "(get nameservers only)"
-					} else {
-						statusLbl = "(skipping)"
-					}
+					statusLbl = "(skipping)"
 				}
 				fmt.Printf("----- DNS Provider: %s%s\n", prov, statusLbl)
+				if !shouldrun {
+					continue
+				}
 				dsp, ok := dsps[prov]
 				if !ok {
 					log.Fatalf("DSP %s not declared.", prov)
@@ -170,16 +175,10 @@ func main() {
 					fmt.Printf("Error getting corrections: %s\n", err)
 					continue DomainLoop
 				}
-				if useNS {
-					storeNameservers(dc, domain)
-				}
-				if !shouldrun {
-					continue
-				}
 				totalCorrections += len(corrections)
 				anyErrors = printOrRunCorrections(corrections, command) || anyErrors
 			}
-			if run, _ := shouldRunProvider(domain.Registrar, domain); !run {
+			if run := shouldRunProvider(domain.Registrar, domain); !run {
 				continue
 			}
 			fmt.Printf("----- Registrar: %s\n", domain.Registrar)
@@ -254,13 +253,12 @@ func printOrRunCorrections(corrections []*models.Correction, command string) (an
 	return anyErrors
 }
 
-func shouldRunProvider(p string, dc *models.DomainConfig) (shouldRun, useNameservers bool) {
-	should := false
+func shouldRunProvider(p string, dc *models.DomainConfig) bool {
 	if *flagProviders == "all" {
-		should = true
+		return true
 	}
 	if *flagProviders == "" {
-		should = (p != "bind")
+		return (p != "bind")
 		// NOTE(tlim): Hardcoding bind is a hacky way to make it off by default.
 		// As a result, bind only runs if you list it in -providers or use
 		// -providers=all.
@@ -275,17 +273,10 @@ func shouldRunProvider(p string, dc *models.DomainConfig) (shouldRun, useNameser
 	}
 	for _, prov := range strings.Split(*flagProviders, ",") {
 		if prov == p {
-			should = true
+			return true
 		}
 	}
-	useNs := false
-	for _, prov := range dc.NameserversFrom {
-		if prov == p {
-			useNs = true
-			break
-		}
-	}
-	return should, useNs
+	return false
 }
 
 func shouldRunDomain(d string) bool {
