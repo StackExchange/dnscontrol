@@ -33,9 +33,16 @@ func (n *nameDotCom) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Co
 		if rec.TTL == 0 {
 			rec.TTL = 300
 		}
-		if rec.Type == "NS" && rec.NameFQDN == dc.Name {
-			if !strings.HasSuffix(rec.Target, ".name.com.") {
-				log.Printf("Warning: name.com does not allow NS records on base domain to be modified. %s will not be added.", rec.Target)
+		if rec.Type == "NS" {
+			// name.com does not really let you manage NS records via api. They explicitly state that you cannot change the base domain NS records,
+			// but the api also will not return you NS records for subdomains either. Maybe a bug.
+			// dnscontrol will print warnings if you try to manage NS records
+			if rec.NameFQDN == dc.Name {
+				if !strings.HasSuffix(rec.Target, ".name.com.") {
+					log.Printf("Warning: name.com does not allow NS records on base domain to be modified. %s will not be added.", rec.Target)
+				}
+			} else {
+				log.Printf("Warning: name.com does not allow NS records to be modified via api. NS for %s will not be managed.", rec.Name)
 			}
 			continue
 		}
