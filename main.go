@@ -291,12 +291,6 @@ func shouldRunDomain(d string) bool {
 	return false
 }
 
-func storeNameservers(from, to *models.DomainConfig) {
-	if len(from.Nameservers) > 0 {
-		to.Nameservers = append(to.Nameservers, from.Nameservers...)
-	}
-}
-
 func runWebServer() {
 	fmt.Printf("Running Webserver on :8080 (js = %s , creds = %s)", *jsFile, *configFile)
 	web.Serve(*jsFile, *configFile, *devMode)
