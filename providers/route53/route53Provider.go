@@ -200,7 +200,7 @@ func (r *route53Provider) GetDomainCorrections(dc *models.DomainConfig) ([]*mode
 		var rrset *r53.ResourceRecordSet
 		if len(recs) == 0 {
 			chg.Action = sPtr("DELETE")
-			// on delete just submit the original reso                  urce set we got from r53.
+			// on delete just submit the original resource set we got from r53.
 			for _, r := range records {
 				if *r.Name == k.Name+"." && *r.Type == k.Type {
 					rrset = r
