@@ -104,6 +104,12 @@ func (c *CloudflareApi) GetDomainCorrections(dc *models.DomainConfig) ([]*models
 			log.Fatalf("FATAL: dnsconfig contains label that matches ignored_labels: %#v is in %v)\n", rec.Name, c.ignoredLabels)
 			// Since we log.Fatalf, we don't need to be clean here.
 		}
+		if rec.Type == "NS" && rec.NameFQDN == dc.Name {
+			if !strings.HasSuffix(rec.Target, ".ns.cloudflare.com.") {
+				log.Printf("Warning: cloudflare does not support modifying NS records on base domain. %s will not be added.", rec.Target)
+			}
+			continue
+		}
 		expectedRecords = append(expectedRecords, recordWrapper{rec})
 	}
 	_, create, del, mod := diff.IncrementalDiff(records, expectedRecords)

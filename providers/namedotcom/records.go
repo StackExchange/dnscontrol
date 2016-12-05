@@ -3,6 +3,7 @@ package namedotcom
 import (
 	"fmt"
 	"log"
+	"strings"
 
 	"github.com/miekg/dns/dnsutil"
 
@@ -33,7 +34,9 @@ func (n *nameDotCom) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Co
 			rec.TTL = 300
 		}
 		if rec.Type == "NS" && rec.NameFQDN == dc.Name {
-			log.Println("!!!!", rec.Target, rec.NameFQDN, dc.Name)
+			if !strings.HasSuffix(rec.Target, ".name.com.") {
+				log.Printf("Warning: name.com does not allow NS records on base domain to be modified. %s will not be added.", rec.Target)
+			}
 			continue
 		}
 		desired = append(desired, rec)
@@ -121,10 +124,8 @@ func (n *nameDotCom) getRecords(domain string) ([]*nameComRecord, error) {
 	for _, rc := range result.Records {
 		if rc.Type == "CNAME" || rc.Type == "MX" || rc.Type == "NS" {
 			rc.Content = rc.Content + "."
-
 		}
 	}
-
 	return result.Records, nil
 }
 

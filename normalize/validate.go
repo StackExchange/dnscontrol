@@ -200,7 +200,6 @@ func NormalizeAndValidateConfig(config *models.DNSConfig) (errs []error) {
 
 		// Normalize Records.
 		for _, rec := range domain.Records {
-
 			// Validate the unmodified inputs:
 			if err := validateRecordTypes(rec, domain.Name); err != nil {
 				errs = append(errs, err)

@@ -142,6 +142,18 @@ function NAMESERVER(name, target) {
     }
 }
 
+function NAMESERVERS_FROM(){
+    var args = arguments;
+    return function(d) {
+        if (!d.nameservers_from){
+            d.nameservers_from = [];
+        }
+        for (var i = 0;i<args.length; i++) {
+            d.nameservers_from.push(args[i]);
+        }
+    }
+}
+
 function format_tt(transform_table) {
   // Turn [[low: 1, high: 2, newBase: 3], [low: 4, high: 5, newIP: 6]]
   // into "1 ~ 2 ~ 3 ~; 4 ~ 5 ~  ~ 6"

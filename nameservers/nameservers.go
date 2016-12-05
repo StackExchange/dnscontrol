@@ -88,9 +88,10 @@ func nsCountPerProvider(max int, dc *models.DomainConfig) (int, error) {
 func AddNSRecords(dc *models.DomainConfig) {
 	for _, ns := range dc.Nameservers {
 		rc := &models.RecordConfig{
-			Type:   "NS",
-			Name:   "@",
-			Target: ns.Name + ".",
+			Type:     "NS",
+			Name:     "@",
+			Target:   ns.Name + ".",
+			Metadata: map[string]string{},
 		}
 		rc.NameFQDN = dnsutil.AddOrigin(rc.Name, dc.Name)
 		dc.Records = append(dc.Records, rc)
