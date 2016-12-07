@@ -10,7 +10,7 @@
 		    {
 		      "name": "foo.com",
 		      "registrar": "Cloudflare",
-		      "dsps": [],
+		      "dsps": {},
 		      "records": [
 		        {
 		          "type": "A",

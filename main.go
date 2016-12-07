@@ -18,7 +18,6 @@ import (
 	"github.com/StackExchange/dnscontrol/normalize"
 	"github.com/StackExchange/dnscontrol/providers"
 	"github.com/StackExchange/dnscontrol/providers/config"
-	"github.com/StackExchange/dnscontrol/web"
 
 	//Define all known providers here. They should each register themselves with the providers package via init function.
 	_ "github.com/StackExchange/dnscontrol/providers/activedir"
@@ -55,10 +54,6 @@ func main() {
 	command := flag.Arg(0)
 	if command == "version" {
 		fmt.Println(versionString())
-		return
-	}
-	if command == "web" {
-		runWebServer()
 		return
 	}
 
@@ -151,7 +146,7 @@ func main() {
 			}
 			domain.Nameservers = nsList
 			nameservers.AddNSRecords(domain)
-			for _, prov := range domain.Dsps {
+			for prov := range domain.Dsps {
 				dc, err := domain.Copy()
 				if err != nil {
 					log.Fatal(err)
@@ -289,11 +284,6 @@ func shouldRunDomain(d string) bool {
 		}
 	}
 	return false
-}
-
-func runWebServer() {
-	fmt.Printf("Running Webserver on :8080 (js = %s , creds = %s)", *jsFile, *configFile)
-	web.Serve(*jsFile, *configFile, *devMode)
 }
 
 // Version management. 2 Goals:

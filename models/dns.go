@@ -147,14 +147,13 @@ func StringsToNameservers(nss []string) []*Nameserver {
 }
 
 type DomainConfig struct {
-	Name            string            `json:"name"` // NO trailing "."
-	Registrar       string            `json:"registrar"`
-	Dsps            []string          `json:"dsps"`
-	Metadata        map[string]string `json:"meta,omitempty"`
-	Records         []*RecordConfig   `json:"records"`
-	Nameservers     []*Nameserver     `json:"nameservers,omitempty"`
-	KeepUnknown     bool              `json:"keepunknown"`
-	NameserversFrom []string          `json:"nameservers_from"`
+	Name        string            `json:"name"` // NO trailing "."
+	Registrar   string            `json:"registrar"`
+	Dsps        map[string]int    `json:"dsps"`
+	Metadata    map[string]string `json:"meta,omitempty"`
+	Records     []*RecordConfig   `json:"records"`
+	Nameservers []*Nameserver     `json:"nameservers,omitempty"`
+	KeepUnknown bool              `json:"keepunknown"`
 }
 
 func (dc *DomainConfig) Copy() (*DomainConfig, error) {

@@ -15,9 +15,9 @@
 		    {
 		      "name": "foo.com",
 		      "registrar": "Third-Party",
-		      "dsps": [
-		        "Cloudflare"
-		      ],
+		      "dsps": {
+		        "Cloudflare":0
+					},
 		      "records": [
 		        { "type": "A","name": "@","target": "1.2.3.4"},
                 { "type": "A","name": "p1","target": "1.2.3.5"},

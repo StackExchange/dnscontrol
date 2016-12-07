@@ -5,7 +5,7 @@
 		    {
 		      "name": "foo.com",
 		      "registrar": "reg",
-		      "dsps": [],
+		      "dsps": {},
 		      "records": [
 		        {
 		          "type": "IMPORT_TRANSFORM",

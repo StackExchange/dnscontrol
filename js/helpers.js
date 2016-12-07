@@ -36,7 +36,7 @@ function NewDSP(name, type, meta) {
 }
 
 function newDomain(name,registrar) {
-    return {name: name, registrar: registrar, meta:{}, records:[], dsps: [], defaultTTL: 0, nameservers:[]};
+    return {name: name, registrar: registrar, meta:{}, records:[], dsps: {}, defaultTTL: 0, nameservers:[]};
 }
 
 function processDargs(m, domain) {
@@ -44,7 +44,6 @@ function processDargs(m, domain) {
         // function: call it with domain
         // array: process recursively
         // object: merge it into metadata
-        // string: assume it is a dsp
         if (_.isFunction(m)) {
                m(domain);
         } else if (_.isArray(m)) {
@@ -53,8 +52,6 @@ function processDargs(m, domain) {
             }
         } else if (_.isObject(m)) {
             _.extend(domain.meta,m);
-        } else if (_.isString(m)) {
-            domain.dsps.push(m);
         } else {
           console.log("WARNING: domain modifier type unsupported: ", typeof m, " Domain: ", domain)
         }
@@ -67,8 +64,7 @@ function D(name,registrar) {
         var m = arguments[i];
         processDargs(m, domain)
     }
-    var toAdd = _(defaultDsps).difference(domain.dsps);
-    _(toAdd).each(function(x) { domain.dsps.push(x)});
+    //TODO: FIGURE OUT DEFAULT DSPS (Perhaps a general COMMON(mods...) function?)
    conf.domains.push(domain)
 }
 
@@ -83,6 +79,18 @@ function TTL(v) {
 function DefaultTTL(v) {
     return function(d) {
         d.defaultTTL = v;
+    }
+}
+
+// DSP("providerName", 0) 
+// nsCount of 0 means don't use or register any nameservers.
+// nsCount not provider means use all.
+function DSP(name, nsCount){
+    if(typeof nsCount === 'undefined'){
+        nsCount = -1;
+    }
+    return function(d) {
+        d.dsps[name] = nsCount;
     }
 }
 
@@ -139,18 +147,6 @@ function NS(name, target) {
 function NAMESERVER(name, target) {
     return function(d) {
         d.nameservers.push({name: name, target: target})
-    }
-}
-
-function NAMESERVERS_FROM(){
-    var args = arguments;
-    return function(d) {
-        if (!d.nameservers_from){
-            d.nameservers_from = [];
-        }
-        for (var i = 0;i<args.length; i++) {
-            d.nameservers_from.push(args[i]);
-        }
     }
 }
 
