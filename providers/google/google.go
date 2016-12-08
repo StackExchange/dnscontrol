@@ -123,12 +123,13 @@ func (g *gcloud) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Correc
 		if want.TTL == 0 {
 			want.TTL = 300
 		}
-		// if want.Type == "MX" {
-		// 	want.Target = fmt.Sprintf("%d %s", want.Priority, want.Target)
-		// 	want.Priority = 0
-		// } else if want.Type == "TXT" {
-		// 	want.Target = fmt.Sprintf(`"%s"`, want.Target)
-		// }
+		if want.Type == "MX" {
+			want.Target = fmt.Sprintf("%d %s", want.Priority, want.Target)
+			want.Priority = 0
+		} else if want.Type == "TXT" {
+			//add quotes to txts
+			want.Target = fmt.Sprintf(`"%s"`, want.Target)
+		}
 		w = append(w, want)
 	}
 
