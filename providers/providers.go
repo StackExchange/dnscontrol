@@ -85,12 +85,10 @@ func CreateDsps(d *models.DNSConfig, providerConfigs map[string]map[string]strin
 		//log.Printf("dsp.Name=%#v\n", dsp.Name)
 		rawMsg, ok := providerConfigs[dsp.Name]
 		if !ok {
-			return nil, fmt.Errorf("DNSServiceProvider %s not listed in -providers file.", dsp.Name)
+			return nil, fmt.Errorf("DNSServiceProvider %s not listed in -providers file", dsp.Name)
 		}
 		provider, err := createDNSProvider(dsp.Type, rawMsg, dsp.Metadata)
 		if err != nil {
-			log.Printf("createDNSProvider provider=%#v\n", provider)
-			log.Printf("createDNSProvider err=%#v\n", err)
 			return nil, err
 		}
 		dsps[dsp.Name] = provider

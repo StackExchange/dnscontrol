@@ -3,6 +3,7 @@ package nameservers
 
 import (
 	"fmt"
+	"strings"
 
 	"github.com/StackExchange/dnscontrol/models"
 	"github.com/StackExchange/dnscontrol/providers"
@@ -45,8 +46,11 @@ func AddNSRecords(dc *models.DomainConfig) {
 		rc := &models.RecordConfig{
 			Type:     "NS",
 			Name:     "@",
-			Target:   ns.Name + ".",
+			Target:   ns.Name,
 			Metadata: map[string]string{},
+		}
+		if !strings.HasSuffix(rc.Target, ".") {
+			rc.Target += "."
 		}
 		rc.NameFQDN = dnsutil.AddOrigin(rc.Name, dc.Name)
 		dc.Records = append(dc.Records, rc)
