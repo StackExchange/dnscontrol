@@ -6,7 +6,7 @@ var conf = {
     domains: []
 };
 
-var defaultDsps = [];
+var defaultArgs = [];
 
 function initialize(){
     conf = {
@@ -14,7 +14,7 @@ function initialize(){
         dns_service_providers: [],
         domains: []
     };
-    defaultDsps = [];
+    defaultArgs = [];
 }
 
 function NewRegistrar(name,type,meta) {
@@ -53,7 +53,7 @@ function processDargs(m, domain) {
         } else if (_.isObject(m)) {
             _.extend(domain.meta,m);
         } else {
-          console.log("WARNING: domain modifier type unsupported: ", typeof m, " Domain: ", domain)
+          throw "WARNING: domain modifier type unsupported: "+ typeof m + " Domain: "+ domain.name;
         }
 }
 
@@ -64,8 +64,19 @@ function D(name,registrar) {
         var m = arguments[i];
         processDargs(m, domain)
     }
-    //TODO: FIGURE OUT DEFAULT DSPS (Perhaps a general COMMON(mods...) function?)
+   for (var i = 0; i< defaultArgs.length; i++){
+       processDargs(defaultArgs[i],domain)
+   }
    conf.domains.push(domain)
+}
+
+// DEFAULTS provides a set of default arguments to apply to all future domains.
+// Each call to DEFAULTS will clear any previous values set.
+function DEFAULTS(){
+    defaultArgs = [];
+    for (var i = 0; i<arguments.length; i++) {
+        defaultArgs.push(arguments[i]);
+    }
 }
 
 // TTL(v): Set the TTL for a DNS record.
@@ -81,6 +92,8 @@ function DefaultTTL(v) {
         d.defaultTTL = v;
     }
 }
+
+
 
 // DSP("providerName", 0) 
 // nsCount of 0 means don't use or register any nameservers.
