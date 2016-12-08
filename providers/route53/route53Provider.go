@@ -130,7 +130,6 @@ func (r *route53Provider) GetDomainCorrections(dc *models.DomainConfig) ([]*mode
 	}
 
 	//convert to dnscontrol RecordConfig format
-	dc.Nameservers = nil
 	var existingRecords = []diff.Record{}
 	for _, set := range records {
 		for _, rec := range set.ResourceRecords {
