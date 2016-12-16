@@ -3,10 +3,12 @@ package nameservers
 
 import (
 	"fmt"
+	"strings"
 
 	"github.com/StackExchange/dnscontrol/models"
 	"github.com/StackExchange/dnscontrol/providers"
 	"github.com/miekg/dns/dnsutil"
+	"strconv"
 )
 
 //DetermineNameservers will find all nameservers we should use for a domain. It follows the following rules:
@@ -15,7 +17,7 @@ import (
 func DetermineNameservers(dc *models.DomainConfig, maxNS int, dsps map[string]providers.DNSServiceProvider) ([]*models.Nameserver, error) {
 	//always take explicit
 	ns := dc.Nameservers
-	for dsp, n := range dc.Dsps {
+	for dsp, n := range dc.DNSProviders {
 		if n == 0 {
 			continue
 		}
@@ -41,12 +43,25 @@ func DetermineNameservers(dc *models.DomainConfig, maxNS int, dsps map[string]pr
 
 //AddNSRecords creates NS records on a domain corresponding to the nameservers specified.
 func AddNSRecords(dc *models.DomainConfig) {
+	ttl := uint32(300)
+	if ttls, ok := dc.Metadata["ns_ttl"]; ok {
+		t, err := strconv.ParseUint(ttls, 10, 32)
+		if err != nil {
+			fmt.Printf("WARNING: ns_ttl fpr %s (%s) is not a valid int", dc.Name, ttls)
+		} else {
+			ttl = uint32(t)
+		}
+	}
 	for _, ns := range dc.Nameservers {
 		rc := &models.RecordConfig{
 			Type:     "NS",
 			Name:     "@",
-			Target:   ns.Name + ".",
+			Target:   ns.Name,
 			Metadata: map[string]string{},
+			TTL:      ttl,
+		}
+		if !strings.HasSuffix(rc.Target, ".") {
+			rc.Target += "."
 		}
 		rc.NameFQDN = dnsutil.AddOrigin(rc.Name, dc.Name)
 		dc.Records = append(dc.Records, rc)

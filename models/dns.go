@@ -18,7 +18,7 @@ const DefaultTTL = uint32(300)
 
 type DNSConfig struct {
 	Registrars   []*RegistrarConfig   `json:"registrars"`
-	DNSProviders []*DNSProviderConfig `json:"dns_service_providers"`
+	DNSProviders []*DNSProviderConfig `json:"dns_providers"`
 	Domains      []*DomainConfig      `json:"domains"`
 }
 
@@ -147,13 +147,13 @@ func StringsToNameservers(nss []string) []*Nameserver {
 }
 
 type DomainConfig struct {
-	Name        string            `json:"name"` // NO trailing "."
-	Registrar   string            `json:"registrar"`
-	Dsps        map[string]int    `json:"dsps"`
-	Metadata    map[string]string `json:"meta,omitempty"`
-	Records     []*RecordConfig   `json:"records"`
-	Nameservers []*Nameserver     `json:"nameservers,omitempty"`
-	KeepUnknown bool              `json:"keepunknown"`
+	Name         string            `json:"name"` // NO trailing "."
+	Registrar    string            `json:"registrar"`
+	DNSProviders map[string]int    `json:"dnsProviders"`
+	Metadata     map[string]string `json:"meta,omitempty"`
+	Records      []*RecordConfig   `json:"records"`
+	Nameservers  []*Nameserver     `json:"nameservers,omitempty"`
+	KeepUnknown  bool              `json:"keepunknown"`
 }
 
 func (dc *DomainConfig) Copy() (*DomainConfig, error) {

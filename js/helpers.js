@@ -2,7 +2,7 @@
 
 var conf = {
     registrars: [],
-    dns_service_providers: [],
+    dns_providers: [],
     domains: []
 };
 
@@ -11,7 +11,7 @@ var defaultArgs = [];
 function initialize(){
     conf = {
         registrars: [],
-        dns_service_providers: [],
+        dns_providers: [],
         domains: []
     };
     defaultArgs = [];
@@ -26,17 +26,17 @@ function NewRegistrar(name,type,meta) {
     return name;
 }
 
-function NewDSP(name, type, meta) {
+function NewDnsProvider(name, type, meta) {
     if  ((typeof meta === 'object') && ('ip_conversions' in meta)) {
         meta.ip_conversions = format_tt(meta.ip_conversions)
     }
     var dsp = {name: name, type: type, meta: meta};
-    conf.dns_service_providers.push(dsp);
+    conf.dns_providers.push(dsp);
     return name;
 }
 
 function newDomain(name,registrar) {
-    return {name: name, registrar: registrar, meta:{}, records:[], dsps: {}, defaultTTL: 0, nameservers:[]};
+    return {name: name, registrar: registrar, meta:{}, records:[], dnsProviders: {}, defaultTTL: 0, nameservers:[]};
 }
 
 function processDargs(m, domain) {
@@ -95,15 +95,15 @@ function DefaultTTL(v) {
 
 
 
-// DSP("providerName", 0) 
+// DnsProvider("providerName", 0) 
 // nsCount of 0 means don't use or register any nameservers.
 // nsCount not provider means use all.
-function DSP(name, nsCount){
+function DnsProvider(name, nsCount){
     if(typeof nsCount === 'undefined'){
         nsCount = -1;
     }
     return function(d) {
-        d.dsps[name] = nsCount;
+        d.dnsProviders[name] = nsCount;
     }
 }
 

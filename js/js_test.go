@@ -59,6 +59,7 @@ func TestParsedFiles(t *testing.T) {
 			t.Error("Expected and actual json don't match")
 			t.Log("Expected:", string(expectedJson))
 			t.Log("Actual:", string(actualJson))
+			t.FailNow()
 		}
 	}
 }
