@@ -24,6 +24,11 @@ type RecordConfigJson struct {
 	TTL  uint32 `json:"timetolive"`
 }
 
+func (c *adProvider) GetNameservers(string) ([]*models.Nameserver, error) {
+	//TODO: If using AD for publicly hosted zones, probably pull these from config.
+	return nil, nil
+}
+
 // GetDomainCorrections gets existing records, diffs them against existing, and returns corrections.
 func (c *adProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Correction, error) {
 

@@ -15,6 +15,7 @@ type Registrar interface {
 
 //DNSServiceProvider is able to generate a set of corrections that need to be made to correct records for a domain
 type DNSServiceProvider interface {
+	GetNameservers(domain string) ([]*models.Nameserver, error)
 	GetDomainCorrections(dc *models.DomainConfig) ([]*models.Correction, error)
 }
 
@@ -84,12 +85,10 @@ func CreateDsps(d *models.DNSConfig, providerConfigs map[string]map[string]strin
 		//log.Printf("dsp.Name=%#v\n", dsp.Name)
 		rawMsg, ok := providerConfigs[dsp.Name]
 		if !ok {
-			return nil, fmt.Errorf("DNSServiceProvider %s not listed in -providers file.", dsp.Name)
+			return nil, fmt.Errorf("DNSServiceProvider %s not listed in -providers file", dsp.Name)
 		}
 		provider, err := createDNSProvider(dsp.Type, rawMsg, dsp.Metadata)
 		if err != nil {
-			log.Printf("createDNSProvider provider=%#v\n", provider)
-			log.Printf("createDNSProvider err=%#v\n", err)
 			return nil, err
 		}
 		dsps[dsp.Name] = provider
@@ -104,6 +103,10 @@ func (n None) GetRegistrarCorrections(dc *models.DomainConfig) ([]*models.Correc
 	return nil, nil
 }
 
+func (n None) GetNameservers(string) ([]*models.Nameserver, error) {
+	return nil, nil
+}
+
 func (n None) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Correction, error) {
 	return nil, nil
 }
@@ -112,8 +115,4 @@ func init() {
 	RegisterRegistrarType("NONE", func(map[string]string) (Registrar, error) {
 		return None{}, nil
 	})
-	RegisterDomainServiceProviderType("NONE", func(map[string]string, json.RawMessage) (DNSServiceProvider, error) {
-		return None{}, nil
-	})
-
 }

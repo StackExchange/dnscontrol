@@ -5,7 +5,7 @@
 		      "type": "NONE"
 		    }
 		  ],
-		  "dns_service_providers": [
+		  "dns_providers": [
 		    {
 		      "name": "Cloudflare",
 		      "type": "CLOUDFLAREAPI"
@@ -15,9 +15,9 @@
 		    {
 		      "name": "foo.com",
 		      "registrar": "Third-Party",
-		      "dsps": [
-		        "Cloudflare"
-		      ],
+		      "dnsProviders": {
+		        "Cloudflare":-1
+					},
 		      "records": [
 		        {
 		          "type": "A",

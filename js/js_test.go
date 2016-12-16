@@ -10,10 +10,16 @@ import (
 	"github.com/StackExchange/dnscontrol/models"
 )
 
-const testDir = "js/parse_tests"
+const (
+	testDir  = "js/parse_tests"
+	errorDir = "js/error_tests"
+)
+
+func init() {
+	os.Chdir("..") // go up a directory so we helpers.js is in a consistent place.
+}
 
 func TestParsedFiles(t *testing.T) {
-	os.Chdir("..") // go up a directory so we helpers.js is in a consistent place.
 	files, err := ioutil.ReadDir(testDir)
 	if err != nil {
 		t.Fatal(err)
@@ -53,6 +59,27 @@ func TestParsedFiles(t *testing.T) {
 			t.Error("Expected and actual json don't match")
 			t.Log("Expected:", string(expectedJson))
 			t.Log("Actual:", string(actualJson))
+			t.FailNow()
+		}
+	}
+}
+
+func TestErrors(t *testing.T) {
+	files, err := ioutil.ReadDir(errorDir)
+	if err != nil {
+		t.Fatal(err)
+	}
+	for _, f := range files {
+		if filepath.Ext(f.Name()) != ".js" {
+			continue
+		}
+		t.Log(f.Name(), "------")
+		content, err := ioutil.ReadFile(filepath.Join(errorDir, f.Name()))
+		if err != nil {
+			t.Fatal(err)
+		}
+		if _, err = ExecuteJavascript(string(content), true); err == nil {
+			t.Fatal("Expected error but found none")
 		}
 	}
 }

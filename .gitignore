@@ -3,3 +3,7 @@ dnscontrol-Darwin
 dnscontrol-Linux
 dnscontrol.exe
 dnscontrol
+dnsconfig.js
+creds.json
+integrationTest
+ExternalDNS

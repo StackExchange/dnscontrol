@@ -10,6 +10,7 @@ import (
 	"github.com/StackExchange/dnscontrol/providers"
 	"github.com/StackExchange/dnscontrol/providers/diff"
 
+	gandidomain "github.com/prasmussen/gandi-api/domain"
 	gandirecord "github.com/prasmussen/gandi-api/domain/zone/record"
 )
 
@@ -72,31 +73,37 @@ func (c *cfRecord) GetComparisionData() string {
 	return fmt.Sprintf("%d", c.Ttl)
 }
 
-func (c *GandiApi) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Correction, error) {
-
-	if c.domainIndex == nil {
-		if err := c.fetchDomainList(); err != nil {
-			return nil, err
-		}
+func (c *GandiApi) getDomainInfo(domain string) (*gandidomain.DomainInfo, error) {
+	if err := c.fetchDomainList(); err != nil {
+		return nil, err
 	}
-
-	_, ok := c.domainIndex[dc.Name]
+	_, ok := c.domainIndex[domain]
 	if !ok {
-		return nil, fmt.Errorf("%s not listed in zones for gandi account", dc.Name)
+		return nil, fmt.Errorf("%s not listed in zones for gandi account", domain)
 	}
+	return c.fetchDomainInfo(domain)
+}
 
-	domaininfo, err := c.fetchDomainInfo(dc.Name)
+func (c *GandiApi) GetNameservers(domain string) ([]*models.Nameserver, error) {
+	domaininfo, err := c.getDomainInfo(domain)
 	if err != nil {
 		return nil, err
 	}
+	ns := []*models.Nameserver{}
 	for _, nsname := range domaininfo.Nameservers {
-		dc.Nameservers = append(dc.Nameservers, &models.Nameserver{Name: nsname})
+		ns = append(ns, &models.Nameserver{Name: nsname})
+	}
+	return ns, nil
+}
+func (c *GandiApi) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Correction, error) {
+	domaininfo, err := c.getDomainInfo(dc.Name)
+	if err != nil {
+		return nil, err
 	}
 	foundRecords, err := c.getZoneRecords(domaininfo.ZoneId)
 	if err != nil {
 		return nil, err
 	}
-
 	// Convert to []diff.Records and compare:
 	foundDiffRecords := make([]diff.Record, len(foundRecords))
 	for i, rec := range foundRecords {

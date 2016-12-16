@@ -14,23 +14,23 @@ import (
 
 	"github.com/StackExchange/dnscontrol/js"
 	"github.com/StackExchange/dnscontrol/models"
+	"github.com/StackExchange/dnscontrol/nameservers"
 	"github.com/StackExchange/dnscontrol/normalize"
 	"github.com/StackExchange/dnscontrol/providers"
 	"github.com/StackExchange/dnscontrol/providers/config"
-	"github.com/StackExchange/dnscontrol/web"
 
 	//Define all known providers here. They should each register themselves with the providers package via init function.
 	_ "github.com/StackExchange/dnscontrol/providers/activedir"
 	_ "github.com/StackExchange/dnscontrol/providers/bind"
 	_ "github.com/StackExchange/dnscontrol/providers/cloudflare"
 	_ "github.com/StackExchange/dnscontrol/providers/gandi"
+	_ "github.com/StackExchange/dnscontrol/providers/google"
 	_ "github.com/StackExchange/dnscontrol/providers/namecheap"
 	_ "github.com/StackExchange/dnscontrol/providers/namedotcom"
 	_ "github.com/StackExchange/dnscontrol/providers/route53"
 )
 
 //go:generate esc -modtime 0 -o js/static.go -pkg js -include helpers\.js -ignore go -prefix js js
-//go:generate esc -modtime 0 -o web/static.go -pkg web -include=bundle\.js -ignore node_modules -prefix web web
 
 // One of these config options must be set.
 var jsFile = flag.String("js", "dnsconfig.js", "Javascript file containing dns config")
@@ -54,10 +54,6 @@ func main() {
 	command := flag.Arg(0)
 	if command == "version" {
 		fmt.Println(versionString())
-		return
-	}
-	if command == "web" {
-		runWebServer()
 		return
 	}
 
@@ -144,21 +140,25 @@ func main() {
 				continue
 			}
 			fmt.Printf("******************** Domain: %s\n", domain.Name)
-			for pi, prov := range domain.Dsps {
-
+			nsList, err := nameservers.DetermineNameservers(domain, 0, dsps)
+			if err != nil {
+				log.Fatal(err)
+			}
+			domain.Nameservers = nsList
+			nameservers.AddNSRecords(domain)
+			for prov := range domain.DNSProviders {
 				dc, err := domain.Copy()
 				if err != nil {
 					log.Fatal(err)
 				}
-				shouldrun := shouldRunProvider(prov)
-				if shouldrun {
-					fmt.Printf("----- DNS Provider: %s\n", prov)
-				} else {
-					if pi == 0 {
-						fmt.Printf("----- DNS Provider: %s (read-only)\n", prov)
-					} else {
-						fmt.Printf("----- DNS Provider: %s (skipping)\n", prov)
-					}
+				shouldrun := shouldRunProvider(prov, dc)
+				statusLbl := ""
+				if !shouldrun {
+					statusLbl = "(skipping)"
+				}
+				fmt.Printf("----- DNS Provider: %s%s\n", prov, statusLbl)
+				if !shouldrun {
+					continue
 				}
 				dsp, ok := dsps[prov]
 				if !ok {
@@ -170,14 +170,10 @@ func main() {
 					fmt.Printf("Error getting corrections: %s\n", err)
 					continue DomainLoop
 				}
-				storeNameservers(dc, domain)
-				if !shouldrun {
-					continue
-				}
 				totalCorrections += len(corrections)
 				anyErrors = printOrRunCorrections(corrections, command) || anyErrors
 			}
-			if !shouldRunProvider(domain.Registrar) {
+			if run := shouldRunProvider(domain.Registrar, domain); !run {
 				continue
 			}
 			fmt.Printf("----- Registrar: %s\n", domain.Registrar)
@@ -252,12 +248,12 @@ func printOrRunCorrections(corrections []*models.Correction, command string) (an
 	return anyErrors
 }
 
-func shouldRunProvider(p string) bool {
+func shouldRunProvider(p string, dc *models.DomainConfig) bool {
 	if *flagProviders == "all" {
 		return true
 	}
 	if *flagProviders == "" {
-		return p != "bind"
+		return (p != "bind")
 		// NOTE(tlim): Hardcoding bind is a hacky way to make it off by default.
 		// As a result, bind only runs if you list it in -providers or use
 		// -providers=all.
@@ -288,17 +284,6 @@ func shouldRunDomain(d string) bool {
 		}
 	}
 	return false
-}
-
-func storeNameservers(from, to *models.DomainConfig) {
-	if len(to.Nameservers) == 0 && len(from.Nameservers) > 0 {
-		to.Nameservers = from.Nameservers
-	}
-}
-
-func runWebServer() {
-	fmt.Printf("Running Webserver on :8080 (js = %s , creds = %s)", *jsFile, *configFile)
-	web.Serve(*jsFile, *configFile, *devMode)
 }
 
 // Version management. 2 Goals:
