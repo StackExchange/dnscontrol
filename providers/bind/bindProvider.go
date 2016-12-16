@@ -160,8 +160,11 @@ func (c *Bind) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Correcti
 
 	// Read expectedRecords:
 	expectedRecords := make([]*models.RecordConfig, 0, len(dc.Records))
-	for i := range dc.Records {
-		expectedRecords = append(expectedRecords, dc.Records[i])
+	for _, r := range dc.Records {
+		if r.TTL == 0 {
+			r.TTL = models.DefaultTTL
+		}
+		expectedRecords = append(expectedRecords, r)
 	}
 	// Read foundRecords:
 	foundRecords := make([]*models.RecordConfig, 0)
