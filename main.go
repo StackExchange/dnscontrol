@@ -146,7 +146,7 @@ func main() {
 			}
 			domain.Nameservers = nsList
 			nameservers.AddNSRecords(domain)
-			for prov := range domain.Dsps {
+			for prov := range domain.DNSProviders {
 				dc, err := domain.Copy()
 				if err != nil {
 					log.Fatal(err)

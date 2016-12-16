@@ -16,7 +16,7 @@ import (
 )
 
 func init() {
-	providers.RegisterDomainServiceProviderType("GCLOUD", newDSP)
+	providers.RegisterDomainServiceProviderType("GCLOUD", New)
 }
 
 type gcloud struct {
@@ -25,7 +25,7 @@ type gcloud struct {
 	zones   map[string]*dns.ManagedZone
 }
 
-func newDSP(cfg map[string]string, _ json.RawMessage) (providers.DNSServiceProvider, error) {
+func New(cfg map[string]string, _ json.RawMessage) (providers.DNSServiceProvider, error) {
 	for _, key := range []string{"clientId", "clientSecret", "refreshToken", "project"} {
 		if cfg[key] == "" {
 			return nil, fmt.Errorf("%s required for google cloud provider", key)

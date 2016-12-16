@@ -48,7 +48,10 @@ func (r *route53Provider) getZones() error {
 	var nextMarker *string
 	r.zones = make(map[string]*r53.HostedZone)
 	for {
-		inp := &r53.ListHostedZonesInput{MaxItems: sPtr("1"), Marker: nextMarker}
+		if nextMarker != nil {
+			fmt.Println(*nextMarker)
+		}
+		inp := &r53.ListHostedZonesInput{Marker: nextMarker}
 		out, err := r.client.ListHostedZones(inp)
 		if err != nil {
 			return err

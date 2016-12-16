@@ -5,12 +5,12 @@
 		      "type": "CLOUDFLAREAPI"
 		    }
 		  ],
-		  "dns_service_providers": [],
+		  "dns_providers": [],
 		  "domains": [
 		    {
 		      "name": "foo.com",
 		      "registrar": "Cloudflare",
-		      "dsps": {},
+		      "dnsProviders": {},
 		      "records": [
 		        {
 		          "type": "A",
