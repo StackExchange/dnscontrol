@@ -72,9 +72,6 @@ func rrToRecord(rr dns.RR, origin string, replace_serial uint32) (models.RecordC
 	rc.NameFQDN = strings.ToLower(strings.TrimSuffix(header.Name, "."))
 	rc.Name = strings.ToLower(dnsutil.TrimDomainName(header.Name, origin))
 	rc.TTL = header.Ttl
-	if rc.TTL == models.DefaultTTL {
-		rc.TTL = 0
-	}
 	switch v := rr.(type) {
 	case *dns.A:
 		rc.Target = v.A.String()
