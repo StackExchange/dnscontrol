@@ -2,6 +2,8 @@ package namedotcom
 
 import (
 	"fmt"
+	"log"
+	"strings"
 
 	"github.com/miekg/dns/dnsutil"
 
@@ -17,7 +19,6 @@ var defaultNameservers = []*models.Nameserver{
 }
 
 func (n *nameDotCom) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Correction, error) {
-	dc.Nameservers = defaultNameservers
 	records, err := n.getRecords(dc.Name)
 	if err != nil {
 		return nil, err
@@ -27,12 +28,19 @@ func (n *nameDotCom) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Co
 		actual[i] = records[i]
 	}
 
-	desired := make([]diff.Record, len(dc.Records))
-	for i, rec := range dc.Records {
+	desired := make([]diff.Record, 0, len(dc.Records))
+	for _, rec := range dc.Records {
 		if rec.TTL == 0 {
 			rec.TTL = 300
 		}
-		desired[i] = rec
+		if rec.Type == "NS" && rec.NameFQDN == dc.Name {
+			// name.com does change base domain NS records. dnscontrol will print warnings if you try to set them to anything besides the name.com defaults.
+			if !strings.HasSuffix(rec.Target, ".name.com.") {
+				log.Printf("Warning: name.com does not allow NS records on base domain to be modified. %s will not be added.", rec.Target)
+			}
+			continue
+		}
+		desired = append(desired, rec)
 	}
 
 	_, create, del, mod := diff.IncrementalDiff(actual, desired)
@@ -117,10 +125,8 @@ func (n *nameDotCom) getRecords(domain string) ([]*nameComRecord, error) {
 	for _, rc := range result.Records {
 		if rc.Type == "CNAME" || rc.Type == "MX" || rc.Type == "NS" {
 			rc.Content = rc.Content + "."
-
 		}
 	}
-
 	return result.Records, nil
 }
 

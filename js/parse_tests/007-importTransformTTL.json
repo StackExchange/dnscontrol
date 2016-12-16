@@ -1,11 +1,11 @@
 {
 		  "registrars": [],
-		  "dns_service_providers": [],
+		  "dns_providers": [],
 		  "domains": [
 		    {
 		      "name": "foo.com",
 		      "registrar": "reg",
-		      "dsps": [],
+		      "dnsProviders": {},
 		      "records": [
 		        {
 		          "type": "IMPORT_TRANSFORM",

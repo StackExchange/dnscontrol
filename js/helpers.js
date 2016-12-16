@@ -2,19 +2,19 @@
 
 var conf = {
     registrars: [],
-    dns_service_providers: [],
+    dns_providers: [],
     domains: []
 };
 
-var defaultDsps = [];
+var defaultArgs = [];
 
 function initialize(){
     conf = {
         registrars: [],
-        dns_service_providers: [],
+        dns_providers: [],
         domains: []
     };
-    defaultDsps = [];
+    defaultArgs = [];
 }
 
 function NewRegistrar(name,type,meta) {
@@ -26,17 +26,17 @@ function NewRegistrar(name,type,meta) {
     return name;
 }
 
-function NewDSP(name, type, meta) {
+function NewDnsProvider(name, type, meta) {
     if  ((typeof meta === 'object') && ('ip_conversions' in meta)) {
         meta.ip_conversions = format_tt(meta.ip_conversions)
     }
     var dsp = {name: name, type: type, meta: meta};
-    conf.dns_service_providers.push(dsp);
+    conf.dns_providers.push(dsp);
     return name;
 }
 
 function newDomain(name,registrar) {
-    return {name: name, registrar: registrar, meta:{}, records:[], dsps: [], defaultTTL: 0, nameservers:[]};
+    return {name: name, registrar: registrar, meta:{}, records:[], dnsProviders: {}, defaultTTL: 0, nameservers:[]};
 }
 
 function processDargs(m, domain) {
@@ -44,7 +44,6 @@ function processDargs(m, domain) {
         // function: call it with domain
         // array: process recursively
         // object: merge it into metadata
-        // string: assume it is a dsp
         if (_.isFunction(m)) {
                m(domain);
         } else if (_.isArray(m)) {
@@ -53,10 +52,8 @@ function processDargs(m, domain) {
             }
         } else if (_.isObject(m)) {
             _.extend(domain.meta,m);
-        } else if (_.isString(m)) {
-            domain.dsps.push(m);
         } else {
-          console.log("WARNING: domain modifier type unsupported: ", typeof m, " Domain: ", domain)
+          throw "WARNING: domain modifier type unsupported: "+ typeof m + " Domain: "+ domain.name;
         }
 }
 
@@ -67,9 +64,19 @@ function D(name,registrar) {
         var m = arguments[i];
         processDargs(m, domain)
     }
-    var toAdd = _(defaultDsps).difference(domain.dsps);
-    _(toAdd).each(function(x) { domain.dsps.push(x)});
+   for (var i = 0; i< defaultArgs.length; i++){
+       processDargs(defaultArgs[i],domain)
+   }
    conf.domains.push(domain)
+}
+
+// DEFAULTS provides a set of default arguments to apply to all future domains.
+// Each call to DEFAULTS will clear any previous values set.
+function DEFAULTS(){
+    defaultArgs = [];
+    for (var i = 0; i<arguments.length; i++) {
+        defaultArgs.push(arguments[i]);
+    }
 }
 
 // TTL(v): Set the TTL for a DNS record.
@@ -83,6 +90,20 @@ function TTL(v) {
 function DefaultTTL(v) {
     return function(d) {
         d.defaultTTL = v;
+    }
+}
+
+
+
+// DnsProvider("providerName", 0) 
+// nsCount of 0 means don't use or register any nameservers.
+// nsCount not provider means use all.
+function DnsProvider(name, nsCount){
+    if(typeof nsCount === 'undefined'){
+        nsCount = -1;
+    }
+    return function(d) {
+        d.dnsProviders[name] = nsCount;
     }
 }
 

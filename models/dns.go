@@ -10,15 +10,15 @@ import (
 	"reflect"
 	"strconv"
 
-	"github.com/miekg/dns"
 	"github.com/StackExchange/dnscontrol/transform"
+	"github.com/miekg/dns"
 )
 
 const DefaultTTL = uint32(300)
 
 type DNSConfig struct {
 	Registrars   []*RegistrarConfig   `json:"registrars"`
-	DNSProviders []*DNSProviderConfig `json:"dns_service_providers"`
+	DNSProviders []*DNSProviderConfig `json:"dns_providers"`
 	Domains      []*DomainConfig      `json:"domains"`
 }
 
@@ -138,14 +138,22 @@ type Nameserver struct {
 	Target string `json:"target"`
 }
 
+func StringsToNameservers(nss []string) []*Nameserver {
+	nservers := []*Nameserver{}
+	for _, ns := range nss {
+		nservers = append(nservers, &Nameserver{Name: ns})
+	}
+	return nservers
+}
+
 type DomainConfig struct {
-	Name        string            `json:"name"` // NO trailing "."
-	Registrar   string            `json:"registrar"`
-	Dsps        []string          `json:"dsps"`
-	Metadata    map[string]string `json:"meta,omitempty"`
-	Records     []*RecordConfig   `json:"records"`
-	Nameservers []*Nameserver     `json:"nameservers,omitempty"`
-	KeepUnknown bool              `json:"keepunknown"`
+	Name         string            `json:"name"` // NO trailing "."
+	Registrar    string            `json:"registrar"`
+	DNSProviders map[string]int    `json:"dnsProviders"`
+	Metadata     map[string]string `json:"meta,omitempty"`
+	Records      []*RecordConfig   `json:"records"`
+	Nameservers  []*Nameserver     `json:"nameservers,omitempty"`
+	KeepUnknown  bool              `json:"keepunknown"`
 }
 
 func (dc *DomainConfig) Copy() (*DomainConfig, error) {

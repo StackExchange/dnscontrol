@@ -115,21 +115,20 @@ func TestWriteZoneFileOrder(t *testing.T) {
 		r, _ := dns.NewRR(fmt.Sprintf("%s 300 IN A 1.2.3.%d", name, i))
 		records = append(records, r)
 	}
-	records[0].Header().Name = "stackoverflow.com."
-	records[1].Header().Name = "@"
 
 	buf := &bytes.Buffer{}
 	WriteZoneFile(buf, records, "stackoverflow.com.", 300)
 	// Compare
 	if buf.String() != testdataOrder {
+		t.Log("Found:")
 		t.Log(buf.String())
+		t.Log("Expected:")
 		t.Log(testdataOrder)
 		t.Fatalf("Zone file does not match.")
 	}
 	parseAndRegen(t, buf, testdataOrder)
 
 	// Now shuffle the list many times and make sure it still works:
-
 	for iteration := 5; iteration > 0; iteration-- {
 		// Randomize the list:
 		perm := rand.Perm(len(records))
