@@ -60,13 +60,13 @@ function processDargs(m, domain) {
 // D(name,registrar): Create a DNS Domain. Use the parameters as records and mods.
 function D(name,registrar) {
     var domain = newDomain(name,registrar);
+    for (var i = 0; i< defaultArgs.length; i++){
+       processDargs(defaultArgs[i],domain)
+   }
     for (var i = 2; i<arguments.length; i++) {
         var m = arguments[i];
         processDargs(m, domain)
     }
-   for (var i = 0; i< defaultArgs.length; i++){
-       processDargs(defaultArgs[i],domain)
-   }
    conf.domains.push(domain)
 }
 
