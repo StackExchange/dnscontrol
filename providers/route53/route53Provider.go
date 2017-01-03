@@ -40,6 +40,7 @@ func init() {
 func sPtr(s string) *string {
 	return &s
 }
+
 func (r *route53Provider) getZones() error {
 	if r.zones != nil {
 		return nil
@@ -73,8 +74,8 @@ type key struct {
 	Name, Type string
 }
 
-func getKey(r diff.Record) key {
-	return key{r.GetName(), r.GetType()}
+func getKey(r *models.RecordConfig) key {
+	return key{r.NameFQDN, r.Type}
 }
 
 type errNoExist struct {
@@ -121,8 +122,7 @@ func (r *route53Provider) GetDomainCorrections(dc *models.DomainConfig) ([]*mode
 		return nil, err
 	}
 
-	//convert to dnscontrol RecordConfig format
-	var existingRecords = []diff.Record{}
+	var existingRecords = []*models.RecordConfig{}
 	for _, set := range records {
 		for _, rec := range set.ResourceRecords {
 			if *set.Type == "SOA" {
@@ -137,23 +137,19 @@ func (r *route53Provider) GetDomainCorrections(dc *models.DomainConfig) ([]*mode
 			existingRecords = append(existingRecords, r)
 		}
 	}
-	w := []diff.Record{}
 	for _, want := range dc.Records {
-		if want.TTL == 0 {
-			want.TTL = 300
-		}
 		if want.Type == "MX" {
 			want.Target = fmt.Sprintf("%d %s", want.Priority, want.Target)
 			want.Priority = 0
 		} else if want.Type == "TXT" {
 			want.Target = fmt.Sprintf(`"%s"`, want.Target) //FIXME: better escaping/quoting
 		}
-		w = append(w, want)
 	}
 
 	//diff
 	changeDesc := ""
-	_, create, delete, modify := diff.IncrementalDiff(existingRecords, w)
+	differ := diff.New(dc)
+	_, create, delete, modify := differ.IncrementalDiff(existingRecords)
 
 	namesToUpdate := map[key]bool{}
 	for _, c := range create {
