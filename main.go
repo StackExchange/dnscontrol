@@ -133,6 +133,23 @@ func main() {
 	fmt.Printf("Initialized %d registrars and %d dns service providers.\n", len(registrars), len(dsps))
 	anyErrors, totalCorrections := false, 0
 	switch command {
+	case "create-domains":
+		for _, domain := range dnsConfig.Domains {
+			fmt.Println("*** ", domain.Name)
+			for prov := range domain.DNSProviders {
+				dsp, ok := dsps[prov]
+				if !ok {
+					log.Fatalf("DSP %s not declared.", prov)
+				}
+				if creator, ok := dsp.(providers.DomainCreator); ok {
+					fmt.Println("  -", prov)
+					err := creator.EnsureDomainExists(domain.Name)
+					if err != nil {
+						fmt.Printf("Error creating domain: %s\n", err)
+					}
+				}
+			}
+		}
 	case "preview", "push":
 	DomainLoop:
 		for _, domain := range dnsConfig.Domains {
