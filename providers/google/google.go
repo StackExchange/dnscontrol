@@ -4,15 +4,16 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"log"
+	"strings"
 
-	"github.com/StackExchange/dnscontrol/models"
-	"github.com/StackExchange/dnscontrol/providers"
-
-	"github.com/StackExchange/dnscontrol/providers/diff"
 	"golang.org/x/oauth2"
 	gauth "golang.org/x/oauth2/google"
 	"google.golang.org/api/dns/v1"
-	"strings"
+
+	"github.com/StackExchange/dnscontrol/models"
+	"github.com/StackExchange/dnscontrol/providers"
+	"github.com/StackExchange/dnscontrol/providers/diff"
 )
 
 func init() {
@@ -25,6 +26,7 @@ type gcloud struct {
 	zones   map[string]*dns.ManagedZone
 }
 
+// New creates a new gcloud provider
 func New(cfg map[string]string, _ json.RawMessage) (providers.DNSServiceProvider, error) {
 	for _, key := range []string{"clientId", "clientSecret", "refreshToken", "project"} {
 		if cfg[key] == "" {
@@ -50,6 +52,14 @@ func New(cfg map[string]string, _ json.RawMessage) (providers.DNSServiceProvider
 	}, nil
 }
 
+type errNoExist struct {
+	domain string
+}
+
+func (e errNoExist) Error() string {
+	return fmt.Sprintf("Domain %s not found in gcloud account", e.domain)
+}
+
 func (g *gcloud) getZone(domain string) (*dns.ManagedZone, error) {
 	if g.zones == nil {
 		g.zones = map[string]*dns.ManagedZone{}
@@ -68,7 +78,7 @@ func (g *gcloud) getZone(domain string) (*dns.ManagedZone, error) {
 		}
 	}
 	if g.zones[domain+"."] == nil {
-		return nil, fmt.Errorf("Domain %s not found in gcloud account", domain)
+		return nil, errNoExist{domain}
 	}
 	return g.zones[domain+"."], nil
 }
@@ -76,6 +86,10 @@ func (g *gcloud) getZone(domain string) (*dns.ManagedZone, error) {
 func (g *gcloud) GetNameservers(domain string) ([]*models.Nameserver, error) {
 	zone, err := g.getZone(domain)
 	if err != nil {
+		if _, ok := err.(errNoExist); ok {
+			log.Printf("WARNING: Domain %s is not on your google cloud account. Dnscontrol will add it, but you will need to run a second time to configure nameservers properly.", domain)
+			return nil, nil
+		}
 		return nil, err
 	}
 	return models.StringsToNameservers(zone.NameServers), nil
@@ -94,9 +108,16 @@ func keyForRec(r *models.RecordConfig) key {
 }
 
 func (g *gcloud) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Correction, error) {
+	corrections := []*models.Correction{}
 	rrs, zoneName, err := g.getRecords(dc.Name)
 	if err != nil {
-		return nil, err
+		if _, ok := err.(errNoExist); ok {
+			c, zn := g.addZone(dc.Name)
+			corrections = append(corrections, c)
+			zoneName = zn
+		} else {
+			return nil, err
+		}
 	}
 	//convert to dnscontrol RecordConfig format
 	existingRecords := []diff.Record{}
@@ -179,12 +200,11 @@ func (g *gcloud) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Correc
 		_, err := g.client.Changes.Create(g.project, zoneName, chg).Do()
 		return err
 	}
-	return []*models.Correction{
-		{
-			Msg: desc,
-			F:   runChange,
-		},
-	}, nil
+	corrections = append(corrections, &models.Correction{
+		Msg: desc,
+		F:   runChange,
+	})
+	return corrections, nil
 }
 
 func (g *gcloud) getRecords(domain string) ([]*dns.ResourceRecordSet, string, error) {
@@ -214,4 +234,21 @@ func (g *gcloud) getRecords(domain string) ([]*dns.ResourceRecordSet, string, er
 		}
 	}
 	return sets, zone.Name, nil
+}
+
+func (g *gcloud) addZone(name string) (*models.Correction, string) {
+	mz := &dns.ManagedZone{}
+	mz.DnsName = name + "."
+	mz.Name = strings.Replace(name, ".", "-", -1)
+	mz.Description = "zone added by dnscontrol"
+	return &models.Correction{
+		Msg: fmt.Sprintf("Add zone for %s", name),
+		F: func() error {
+			_, err := g.client.ManagedZones.Create(g.project, mz).Do()
+			if err != nil {
+				return err
+			}
+			return nil
+		},
+	}, mz.Name
 }
