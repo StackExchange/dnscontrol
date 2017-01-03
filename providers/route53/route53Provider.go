@@ -3,7 +3,6 @@ package route53
 import (
 	"encoding/json"
 	"fmt"
-	"log"
 	"strings"
 	"time"
 
@@ -78,14 +77,21 @@ func getKey(r diff.Record) key {
 	return key{r.GetName(), r.GetType()}
 }
 
+type errNoExist struct {
+	domain string
+}
+
+func (e errNoExist) Error() string {
+	return fmt.Sprintf("Domain %s not found in your route 53 account", e.domain)
+}
+
 func (r *route53Provider) GetNameservers(domain string) ([]*models.Nameserver, error) {
 	if err := r.getZones(); err != nil {
 		return nil, err
 	}
 	zone, ok := r.zones[domain]
 	if !ok {
-		log.Printf("WARNING: Domain %s is not on your route 53 account. Dnscontrol will add it, but you will need to run a second time to configure nameservers properly.", domain)
-		return nil, nil
+		return nil, errNoExist{domain}
 	}
 	z, err := r.client.GetHostedZone(&r53.GetHostedZoneInput{Id: zone.Id})
 	if err != nil {
@@ -107,24 +113,7 @@ func (r *route53Provider) GetDomainCorrections(dc *models.DomainConfig) ([]*mode
 	zone, ok := r.zones[dc.Name]
 	// add zone if it doesn't exist
 	if !ok {
-		//add correction to add zone
-		corrections = append(corrections,
-			&models.Correction{
-				Msg: "Add zone to aws",
-				F: func() error {
-					in := &r53.CreateHostedZoneInput{
-						Name:            &dc.Name,
-						CallerReference: sPtr(fmt.Sprint(time.Now().UnixNano())),
-					}
-					out, err := r.client.CreateHostedZone(in)
-					zone = out.HostedZone
-					return err
-				},
-			})
-		//fake zone
-		zone = &r53.HostedZone{
-			Id: sPtr(""),
-		}
+		return nil, errNoExist{dc.Name}
 	}
 
 	records, err := r.fetchRecordSets(zone.Id)
@@ -284,4 +273,22 @@ func unescape(s *string) string {
 	name := strings.TrimSuffix(*s, ".")
 	name = strings.Replace(name, `\052`, "*", -1) //TODO: escape all octal sequences
 	return name
+}
+
+func (r *route53Provider) EnsureDomainExists(domain string) error {
+	err := r.getZones()
+	if err != nil {
+		return err
+	}
+	if _, ok := r.zones[domain]; ok {
+		return nil
+	}
+	fmt.Printf("Adding zone for %s to route 53 account\n", domain)
+	in := &r53.CreateHostedZoneInput{
+		Name:            &domain,
+		CallerReference: sPtr(fmt.Sprint(time.Now().UnixNano())),
+	}
+	_, err = r.client.CreateHostedZone(in)
+	return err
+
 }
