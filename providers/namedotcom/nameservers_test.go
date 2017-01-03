@@ -175,7 +175,11 @@ func TestGetNameservers(t *testing.T) {
 			t.Errorf("Test %d: %s", i, err)
 			continue
 		}
-		if strings.Join(found, ",") != test.expected {
+		fStrs := []string{}
+		for _, n := range found {
+			fStrs = append(fStrs, n.Name)
+		}
+		if strings.Join(fStrs, ",") != test.expected {
 			t.Errorf("Test %d: Expected '%s', but found '%s'", i, test.expected, found)
 		}
 	}
