@@ -51,6 +51,14 @@ func New(cfg map[string]string, _ json.RawMessage) (providers.DNSServiceProvider
 	}, nil
 }
 
+type errNoExist struct {
+	domain string
+}
+
+func (e errNoExist) Error() string {
+	return fmt.Sprintf("Domain %s not found in gcloud account", e.domain)
+}
+
 func (g *gcloud) getZone(domain string) (*dns.ManagedZone, error) {
 	if g.zones == nil {
 		g.zones = map[string]*dns.ManagedZone{}
@@ -69,7 +77,7 @@ func (g *gcloud) getZone(domain string) (*dns.ManagedZone, error) {
 		}
 	}
 	if g.zones[domain+"."] == nil {
-		return nil, fmt.Errorf("Domain %s not found in gcloud account", domain)
+		return nil, errNoExist{domain}
 	}
 	return g.zones[domain+"."], nil
 }
@@ -214,4 +222,25 @@ func (g *gcloud) getRecords(domain string) ([]*dns.ResourceRecordSet, string, er
 		}
 	}
 	return sets, zone.Name, nil
+}
+
+func (g *gcloud) EnsureDomainExists(domain string) error {
+	z, err := g.getZone(domain)
+	if err != nil {
+		if _, ok := err.(errNoExist); !ok {
+			return err
+		}
+	}
+	if z != nil {
+		return nil
+	}
+	fmt.Printf("Adding zone for %s to gcloud account", domain)
+	mz := &dns.ManagedZone{
+		DnsName:     domain + ".",
+		Name:        strings.Replace(domain, ".", "-", -1),
+		Description: "zone added by dnscontrol",
+	}
+	g.zones = nil //reset cache
+	_, err = g.client.ManagedZones.Create(g.project, mz).Do()
+	return err
 }

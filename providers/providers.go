@@ -19,6 +19,12 @@ type DNSServiceProvider interface {
 	GetDomainCorrections(dc *models.DomainConfig) ([]*models.Correction, error)
 }
 
+//DomainCreator should be implemented by providers that have the ability to add domains to an account. the create-domains command
+//can be run to ensure all domains are present before running preview/push
+type DomainCreator interface {
+	EnsureDomainExists(domain string) error
+}
+
 //RegistrarInitializer is a function to create a registrar. Function will be passed the unprocessed json payload from the configuration file for the given provider.
 type RegistrarInitializer func(map[string]string) (Registrar, error)
 
