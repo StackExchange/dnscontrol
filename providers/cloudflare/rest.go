@@ -7,7 +7,6 @@ import (
 	"net/http"
 
 	"github.com/StackExchange/dnscontrol/models"
-	"github.com/StackExchange/dnscontrol/providers/diff"
 )
 
 const (
@@ -47,10 +46,10 @@ func (c *CloudflareApi) fetchDomainList() error {
 }
 
 // get all records for a domain
-func (c *CloudflareApi) getRecordsForDomain(id string) ([]diff.Record, error) {
+func (c *CloudflareApi) getRecordsForDomain(id string, domain string) ([]*models.RecordConfig, error) {
 	url := fmt.Sprintf(recordsURL, id)
 	page := 1
-	records := []diff.Record{}
+	records := []*models.RecordConfig{}
 	for {
 		reqURL := fmt.Sprintf("%s?page=%d&per_page=100", url, page)
 		var data recordsResponse
@@ -61,7 +60,7 @@ func (c *CloudflareApi) getRecordsForDomain(id string) ([]diff.Record, error) {
 			return nil, fmt.Errorf("Error fetching record list cloudflare: %s", stringifyErrors(data.Errors))
 		}
 		for _, rec := range data.Result {
-			records = append(records, rec)
+			records = append(records, rec.toRecord(domain))
 		}
 		ri := data.ResultInfo
 		if len(data.Result) == 0 || ri.Page*ri.PerPage >= ri.TotalCount {

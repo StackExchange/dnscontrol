@@ -119,15 +119,20 @@ func TestMetaChange(t *testing.T) {
 	existing[0].Metadata["k"] = "aa"
 	desired[0].Metadata["k"] = "bb"
 	checkLengths(t, existing, desired, 1, 0, 0, 0)
-	checkLengths(t, existing, desired, 0, 0, 0, 1, "k")
+	getMeta := func(r *models.RecordConfig) map[string]string {
+		return map[string]string{
+			"k": r.Metadata["k"],
+		}
+	}
+	checkLengths(t, existing, desired, 0, 0, 0, 1, getMeta)
 }
 
-func checkLengths(t *testing.T, existing, desired []*models.RecordConfig, unCount, createCount, delCount, modCount int, metaKeys ...string) (un, cre, del, mod Changeset) {
+func checkLengths(t *testing.T, existing, desired []*models.RecordConfig, unCount, createCount, delCount, modCount int, valFuncs ...func(*models.RecordConfig) map[string]string) (un, cre, del, mod Changeset) {
 	dc := &models.DomainConfig{
 		Name:    "example.com",
 		Records: desired,
 	}
-	d := New(dc, metaKeys...)
+	d := New(dc, valFuncs...)
 	un, cre, del, mod = d.IncrementalDiff(existing)
 	if len(un) != unCount {
 		t.Errorf("Got %d unchanged records, but expected %d", len(un), unCount)

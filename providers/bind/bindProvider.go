@@ -158,14 +158,6 @@ func (c *Bind) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Correcti
 	// Default SOA record.  If we see one in the zone, this will be replaced.
 	soa_rec := makeDefaultSOA(c.Default_Soa, dc.Name)
 
-	// Read expectedRecords:
-	expectedRecords := make([]*models.RecordConfig, 0, len(dc.Records))
-	for _, r := range dc.Records {
-		if r.TTL == 0 {
-			r.TTL = models.DefaultTTL
-		}
-		expectedRecords = append(expectedRecords, r)
-	}
 	// Read foundRecords:
 	foundRecords := make([]*models.RecordConfig, 0)
 	var old_serial, new_serial uint32
@@ -198,22 +190,13 @@ func (c *Bind) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Correcti
 		}
 	}
 
-	// Add SOA record:
+	// Add SOA record to expected set:
 	if !dc.HasRecordTypeName("SOA", "@") {
-		expectedRecords = append(expectedRecords, soa_rec)
 		dc.Records = append(dc.Records, soa_rec)
 	}
 
-	// Convert to []diff.Records and compare:
-	foundDiffRecords := make([]diff.Record, len(foundRecords))
-	for i := range foundRecords {
-		foundDiffRecords[i] = foundRecords[i]
-	}
-	expectedDiffRecords := make([]diff.Record, len(expectedRecords))
-	for i := range expectedRecords {
-		expectedDiffRecords[i] = expectedRecords[i]
-	}
-	_, create, del, mod := diff.IncrementalDiff(foundDiffRecords, expectedDiffRecords)
+	differ := diff.New(dc)
+	_, create, del, mod := differ.IncrementalDiff(foundRecords)
 
 	// Print a list of changes. Generate an actual change that is the zone
 	changes := false
@@ -269,6 +252,10 @@ func (c *Bind) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Correcti
 	}
 
 	return corrections, nil
+}
+
+func getRecords() {
+
 }
 
 func initBind(config map[string]string, providermeta json.RawMessage) (providers.DNSServiceProvider, error) {

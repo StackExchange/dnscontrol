@@ -18,16 +18,16 @@ type Differ interface {
 	IncrementalDiff(existing []*models.RecordConfig) (unchanged, create, toDelete, modify Changeset)
 }
 
-func New(dc *models.DomainConfig, metadataKeys ...string) Differ {
+func New(dc *models.DomainConfig, extraValues ...func(*models.RecordConfig) map[string]string) Differ {
 	return &differ{
-		dc:           dc,
-		metadataKeys: metadataKeys,
+		dc:          dc,
+		extraValues: extraValues,
 	}
 }
 
 type differ struct {
-	dc           *models.DomainConfig
-	metadataKeys []string
+	dc          *models.DomainConfig
+	extraValues []func(*models.RecordConfig) map[string]string
 }
 
 // get normalized content for record. target, ttl, mxprio, and specified metadata
@@ -37,12 +37,10 @@ func (d *differ) content(r *models.RecordConfig) string {
 		content += fmt.Sprintf(" priority=%d", r.Priority)
 	}
 
-	for _, key := range d.metadataKeys {
-		val := ""
-		if r.Metadata != nil {
-			val = r.Metadata[key]
+	for _, f := range d.extraValues {
+		for k, v := range f(r) {
+			content += fmt.Sprintf(" %s=%s", k, v)
 		}
-		content += fmt.Sprintf(" %s=%s", key, val)
 	}
 	return content
 }
