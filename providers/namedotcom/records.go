@@ -98,7 +98,7 @@ func (r *nameComRecord) toRecord() *models.RecordConfig {
 	ttl, _ := strconv.ParseUint(r.TTL, 10, 32)
 	prio, _ := strconv.ParseUint(r.Priority, 10, 16)
 	return &models.RecordConfig{
-		Name:     r.Name,
+		NameFQDN: r.Name,
 		Type:     r.Type,
 		Target:   r.Content,
 		TTL:      uint32(ttl),
