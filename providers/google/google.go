@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"strings"
 
-	"golang.org/x/oauth2"
 	gauth "golang.org/x/oauth2/google"
 	"google.golang.org/api/dns/v1"
 
@@ -27,27 +26,23 @@ type gcloud struct {
 
 // New creates a new gcloud provider
 func New(cfg map[string]string, _ json.RawMessage) (providers.DNSServiceProvider, error) {
-	for _, key := range []string{"clientId", "clientSecret", "refreshToken", "project"} {
-		if cfg[key] == "" {
-			return nil, fmt.Errorf("%s required for google cloud provider", key)
-		}
+	raw, err := json.Marshal(cfg)
+	if err != nil {
+		return nil, err
 	}
-	ocfg := &oauth2.Config{
-		Endpoint:     gauth.Endpoint,
-		ClientID:     cfg["clientId"],
-		ClientSecret: cfg["clientSecret"],
+	config, err := gauth.JWTConfigFromJSON(raw, "https://www.googleapis.com/auth/ndev.clouddns.readwrite")
+	if err != nil {
+		return nil, err
 	}
-	tok := &oauth2.Token{
-		RefreshToken: cfg["refreshToken"],
-	}
-	client := ocfg.Client(context.Background(), tok)
-	dcli, err := dns.New(client)
+	ctx := context.Background()
+	hc := config.Client(ctx)
+	dcli, err := dns.New(hc)
 	if err != nil {
 		return nil, err
 	}
 	return &gcloud{
 		client:  dcli,
-		project: cfg["project"],
+		project: cfg["project_id"],
 	}, nil
 }
 
