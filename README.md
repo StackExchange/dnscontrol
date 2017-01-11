@@ -34,7 +34,7 @@ history.  Using CI enables us to include unit-tests and system-tests.
 Remember when you forgot to include a "." at the end of an MX record?
 We haven't had that problem since we included a test to make sure
 Tom doesn't make that mistake... again.
-* Variables safe time!  Assign an IP address to a constant and use
+* Variables save time!  Assign an IP address to a constant and use
 the variable name throughout the file. Need to change the IP address
 globally? Just change the variable and "recompile."
 * Macros!  Define your SPF records, MX records, or other repeated
