@@ -3,3 +3,5 @@ collections:
     output: true
   functions:
 
+
+theme: jekyll-theme-merlot
