@@ -1,0 +1,5 @@
+collections:
+  providers:
+    output: true
+  functions:
+
