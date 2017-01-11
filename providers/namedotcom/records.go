@@ -9,6 +9,7 @@ import (
 
 	"github.com/StackExchange/dnscontrol/models"
 	"github.com/StackExchange/dnscontrol/providers/diff"
+	"strconv"
 )
 
 var defaultNameservers = []*models.Nameserver{
@@ -23,42 +24,30 @@ func (n *nameDotCom) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Co
 	if err != nil {
 		return nil, err
 	}
-	actual := make([]diff.Record, len(records))
-	for i := range records {
-		actual[i] = records[i]
+	actual := make([]*models.RecordConfig, len(records))
+	for i, r := range records {
+		actual[i] = r.toRecord()
 	}
 
-	desired := make([]diff.Record, 0, len(dc.Records))
-	for _, rec := range dc.Records {
-		if rec.TTL == 0 {
-			rec.TTL = 300
-		}
-		if rec.Type == "NS" && rec.NameFQDN == dc.Name {
-			// name.com does change base domain NS records. dnscontrol will print warnings if you try to set them to anything besides the name.com defaults.
-			if !strings.HasSuffix(rec.Target, ".name.com.") {
-				log.Printf("Warning: name.com does not allow NS records on base domain to be modified. %s will not be added.", rec.Target)
-			}
-			continue
-		}
-		desired = append(desired, rec)
-	}
+	checkNSModifications(dc)
 
-	_, create, del, mod := diff.IncrementalDiff(actual, desired)
+	differ := diff.New(dc)
+	_, create, del, mod := differ.IncrementalDiff(actual)
 	corrections := []*models.Correction{}
 
 	for _, d := range del {
-		rec := d.Existing.(*nameComRecord)
+		rec := d.Existing.Original.(*nameComRecord)
 		c := &models.Correction{Msg: d.String(), F: func() error { return n.deleteRecord(rec.RecordID, dc.Name) }}
 		corrections = append(corrections, c)
 	}
 	for _, cre := range create {
-		rec := cre.Desired.(*models.RecordConfig)
+		rec := cre.Desired.Original.(*models.RecordConfig)
 		c := &models.Correction{Msg: cre.String(), F: func() error { return n.createRecord(rec, dc.Name) }}
 		corrections = append(corrections, c)
 	}
 	for _, chng := range mod {
-		old := chng.Existing.(*nameComRecord)
-		new := chng.Desired.(*models.RecordConfig)
+		old := chng.Existing.Original.(*nameComRecord)
+		new := chng.Desired
 		c := &models.Correction{Msg: chng.String(), F: func() error {
 			err := n.deleteRecord(old.RecordID, dc.Name)
 			if err != nil {
@@ -90,21 +79,32 @@ type nameComRecord struct {
 	Priority string `json:"priority"`
 }
 
-func (r *nameComRecord) GetName() string {
-	return r.Name
-}
-func (r *nameComRecord) GetType() string {
-	return r.Type
-}
-func (r *nameComRecord) GetContent() string {
-	return r.Content
-}
-func (r *nameComRecord) GetComparisionData() string {
-	mxPrio := ""
-	if r.Type == "MX" {
-		mxPrio = fmt.Sprintf(" %s ", r.Priority)
+func checkNSModifications(dc *models.DomainConfig) {
+	newList := make([]*models.RecordConfig, 0, len(dc.Records))
+	for _, rec := range dc.Records {
+		if rec.Type == "NS" && rec.NameFQDN == dc.Name {
+			// name.com does change base domain NS records. dnscontrol will print warnings if you try to set them to anything besides the name.com defaults.
+			if !strings.HasSuffix(rec.Target, ".name.com.") {
+				log.Printf("Warning: name.com does not allow NS records on base domain to be modified. %s will not be added.", rec.Target)
+			}
+			continue
+		}
+		newList = append(newList, rec)
 	}
-	return fmt.Sprintf("%s%s", r.TTL, mxPrio)
+	dc.Records = newList
+}
+
+func (r *nameComRecord) toRecord() *models.RecordConfig {
+	ttl, _ := strconv.ParseUint(r.TTL, 10, 32)
+	prio, _ := strconv.ParseUint(r.Priority, 10, 16)
+	return &models.RecordConfig{
+		NameFQDN: r.Name,
+		Type:     r.Type,
+		Target:   r.Content,
+		TTL:      uint32(ttl),
+		Priority: uint16(prio),
+		Original: r,
+	}
 }
 
 type listRecordsResponse struct {

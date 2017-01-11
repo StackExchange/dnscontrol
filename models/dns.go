@@ -66,23 +66,19 @@ type RecordConfig struct {
 	Metadata map[string]string `json:"meta,omitempty"`
 	NameFQDN string            `json:"-"` // Must end with ".$origin". See below.
 	Priority uint16            `json:"priority,omitempty"`
+
+	Original interface{} `json:"-"` // Store pointer to provider-specific record object. Used in diffing.
 }
 
-func (r *RecordConfig) GetName() string {
-	return r.NameFQDN
-}
-func (r *RecordConfig) GetType() string {
-	return r.Type
-}
-func (r *RecordConfig) GetContent() string {
-	return r.Target
-}
-func (r *RecordConfig) GetComparisionData() string {
-	mxPrio := ""
+func (r *RecordConfig) String() string {
+	content := fmt.Sprintf("%s %s %s %d", r.Type, r.NameFQDN, r.Target, r.TTL)
 	if r.Type == "MX" {
-		mxPrio = fmt.Sprintf(" %d ", r.Priority)
+		content += fmt.Sprintf(" priority=%d", r.Priority)
 	}
-	return fmt.Sprintf("%d%s", r.TTL, mxPrio)
+	for k, v := range r.Metadata {
+		content += fmt.Sprintf(" %s=%s", k, v)
+	}
+	return content
 }
 
 /// Convert RecordConfig -> dns.RR.
