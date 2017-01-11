@@ -38,23 +38,8 @@ func (c *adProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Co
 		return nil, fmt.Errorf("c.getExistingRecords(%v) failed: %v", dc.Name, err)
 	}
 
-	// Read expectedRecords:
-	//expectedRecords := make([]*models.RecordConfig, len(dc.Records))
-	expectedRecords := make([]diff.Record, len(dc.Records))
-	for i, r := range dc.Records {
-		if r.TTL == 0 {
-			r.TTL = models.DefaultTTL
-		}
-		expectedRecords[i] = r
-	}
-
-	// Convert to []diff.Records and compare:
-	foundDiffRecords := make([]diff.Record, 0, len(foundRecords))
-	for _, rec := range foundRecords {
-		foundDiffRecords = append(foundDiffRecords, rec)
-	}
-
-	_, creates, dels, modifications := diff.IncrementalDiff(foundDiffRecords, expectedRecords)
+	differ := diff.New(dc)
+	_, creates, dels, modifications := differ.IncrementalDiff(foundRecords)
 	// NOTE(tlim): This provider does not delete records.  If
 	// you need to delete a record, either delete it manually
 	// or see providers/activedir/doc.md for implementation tips.
@@ -65,10 +50,10 @@ func (c *adProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Co
 		if dc.KeepUnknown {
 			break
 		}
-		corrections = append(corrections, c.deleteRec(dc.Name, del.Existing.(*models.RecordConfig)))
+		corrections = append(corrections, c.deleteRec(dc.Name, del.Existing))
 	}
 	for _, cre := range creates {
-		corrections = append(corrections, c.createRec(dc.Name, cre.Desired.(*models.RecordConfig))...)
+		corrections = append(corrections, c.createRec(dc.Name, cre.Desired)...)
 	}
 	for _, m := range modifications {
 		corrections = append(corrections, c.modifyRec(dc.Name, m))
@@ -298,15 +283,11 @@ func (c *adProvider) createRec(domainname string, rec *models.RecordConfig) []*m
 }
 
 func (c *adProvider) modifyRec(domainname string, m diff.Correlation) *models.Correction {
-
-	old, rec := m.Existing.(*models.RecordConfig), m.Desired.(*models.RecordConfig)
-	oldContent := old.GetContent()
-	newContent := rec.GetContent()
-
+	old, rec := m.Existing, m.Desired
 	return &models.Correction{
 		Msg: m.String(),
 		F: func() error {
-			return powerShellDoCommand(c.generatePowerShellModify(domainname, rec.Name, rec.Type, oldContent, newContent, old.TTL, rec.TTL))
+			return powerShellDoCommand(c.generatePowerShellModify(domainname, rec.Name, rec.Type, old.Target, rec.Target, old.TTL, rec.TTL))
 		},
 	}
 }

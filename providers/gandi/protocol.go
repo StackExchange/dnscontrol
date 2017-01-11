@@ -3,15 +3,13 @@ package gandi
 import (
 	"fmt"
 
-	"github.com/StackExchange/dnscontrol/providers/diff"
-)
-
-import (
 	gandiclient "github.com/prasmussen/gandi-api/client"
 	gandidomain "github.com/prasmussen/gandi-api/domain"
 	gandizone "github.com/prasmussen/gandi-api/domain/zone"
 	gandirecord "github.com/prasmussen/gandi-api/domain/zone/record"
 	gandiversion "github.com/prasmussen/gandi-api/domain/zone/version"
+
+	"github.com/StackExchange/dnscontrol/models"
 )
 
 // fetchDomainList gets list of domains for account. Cache ids for easy lookup.
@@ -41,10 +39,18 @@ func (c *GandiApi) fetchDomainInfo(fqdn string) (*gandidomain.DomainInfo, error)
 }
 
 // getRecordsForDomain returns a list of records for a zone.
-func (c *GandiApi) getZoneRecords(zoneid int64) ([]*gandirecord.RecordInfo, error) {
+func (c *GandiApi) getZoneRecords(zoneid int64) ([]*models.RecordConfig, error) {
 	gc := gandiclient.New(c.ApiKey, gandiclient.Production)
 	record := gandirecord.New(gc)
-	return record.List(zoneid, 0)
+	recs, err := record.List(zoneid, 0)
+	if err != nil {
+		return nil, err
+	}
+	rcs := make([]*models.RecordConfig, 0, len(recs))
+	for _, r := range recs {
+		rcs = append(rcs, convert(r))
+	}
+	return rcs, nil
 }
 
 // listZones retrieves the list of zones.
@@ -73,11 +79,6 @@ func (c *GandiApi) createZone(name string) (*gandizone.ZoneInfo, error) {
 	gc := gandiclient.New(c.ApiKey, gandiclient.Production)
 	zone := gandizone.New(gc)
 	return zone.Create(name)
-}
-
-// replaceZoneContents
-func (c *GandiApi) replaceZoneContents(zone_id int64, version_id int64, records []diff.Record) error {
-	return fmt.Errorf("replaceZoneContents unimplemented")
 }
 
 func (c *GandiApi) getEditableZone(domainname string, zoneinfo *gandizone.ZoneInfo) (int64, error) {
@@ -168,4 +169,14 @@ func (c *GandiApi) createGandiZone(domainname string, zone_id int64, records []g
 	}
 
 	return nil
+}
+
+func convert(r *gandirecord.RecordInfo) *models.RecordConfig {
+	return &models.RecordConfig{
+		NameFQDN: r.Name,
+		Type:     r.Type,
+		Original: r,
+		Target:   r.Value,
+		TTL:      uint32(r.Ttl),
+	}
 }

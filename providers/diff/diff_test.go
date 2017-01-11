@@ -1,58 +1,52 @@
 package diff
 
 import (
-	"fmt"
+	"strconv"
 	"strings"
 	"testing"
 
+	"github.com/StackExchange/dnscontrol/models"
 	"github.com/miekg/dns/dnsutil"
 )
 
-type myRecord string //@ A 1 1.2.3.4
-
-func (m myRecord) GetName() string {
-	name := strings.SplitN(string(m), " ", 4)[0]
-	return dnsutil.AddOrigin(name, "example.com")
-}
-func (m myRecord) GetType() string {
-	return strings.SplitN(string(m), " ", 4)[1]
-}
-func (m myRecord) GetContent() string {
-	return strings.SplitN(string(m), " ", 4)[3]
-}
-func (m myRecord) GetComparisionData() string {
-	return fmt.Sprint(strings.SplitN(string(m), " ", 4)[2])
+func myRecord(s string) *models.RecordConfig {
+	parts := strings.Split(s, " ")
+	ttl, _ := strconv.ParseUint(parts[2], 10, 32)
+	return &models.RecordConfig{
+		NameFQDN: dnsutil.AddOrigin(parts[0], "example.com"),
+		Type:     parts[1],
+		TTL:      uint32(ttl),
+		Target:   parts[3],
+		Metadata: map[string]string{},
+	}
 }
 
 func TestAdditionsOnly(t *testing.T) {
-	desired := []Record{
+	desired := []*models.RecordConfig{
 		myRecord("@ A 1 1.2.3.4"),
 	}
-	existing := []Record{}
+	existing := []*models.RecordConfig{}
 	checkLengths(t, existing, desired, 0, 1, 0, 0)
 }
 
 func TestDeletionsOnly(t *testing.T) {
-	existing := []Record{
+	existing := []*models.RecordConfig{
 		myRecord("@ A 1 1.2.3.4"),
 	}
-	desired := []Record{}
+	desired := []*models.RecordConfig{}
 	checkLengths(t, existing, desired, 0, 0, 1, 0)
 }
 
 func TestModification(t *testing.T) {
-	existing := []Record{
+	existing := []*models.RecordConfig{
 		myRecord("www A 1 1.1.1.1"),
 		myRecord("@ A 1 1.2.3.4"),
 	}
-	desired := []Record{
+	desired := []*models.RecordConfig{
 		myRecord("@ A 32 1.2.3.4"),
 		myRecord("www A 1 1.1.1.1"),
 	}
 	un, _, _, mod := checkLengths(t, existing, desired, 1, 0, 0, 1)
-	if t.Failed() {
-		return
-	}
 	if un[0].Desired != desired[1] || un[0].Existing != existing[0] {
 		t.Error("Expected unchanged records to be correlated")
 	}
@@ -62,10 +56,10 @@ func TestModification(t *testing.T) {
 }
 
 func TestUnchangedWithAddition(t *testing.T) {
-	existing := []Record{
+	existing := []*models.RecordConfig{
 		myRecord("www A 1 1.1.1.1"),
 	}
-	desired := []Record{
+	desired := []*models.RecordConfig{
 		myRecord("www A 1 1.2.3.4"),
 		myRecord("www A 1 1.1.1.1"),
 	}
@@ -76,12 +70,12 @@ func TestUnchangedWithAddition(t *testing.T) {
 }
 
 func TestOutOfOrderRecords(t *testing.T) {
-	existing := []Record{
+	existing := []*models.RecordConfig{
 		myRecord("www A 1 1.1.1.1"),
 		myRecord("www A 1 2.2.2.2"),
 		myRecord("www A 1 3.3.3.3"),
 	}
-	desired := []Record{
+	desired := []*models.RecordConfig{
 		myRecord("www A 1 1.1.1.1"),
 		myRecord("www A 1 2.2.2.2"),
 		myRecord("www A 1 2.2.2.3"),
@@ -91,11 +85,55 @@ func TestOutOfOrderRecords(t *testing.T) {
 	if mods[0].Desired != desired[3] || mods[0].Existing != existing[2] {
 		t.Fatalf("Expected to match %s and %s, but matched %s and %s", existing[2], desired[3], mods[0].Existing, mods[0].Desired)
 	}
-
 }
 
-func checkLengths(t *testing.T, existing, desired []Record, unCount, createCount, delCount, modCount int) (un, cre, del, mod Changeset) {
-	un, cre, del, mod = IncrementalDiff(existing, desired)
+func TestMxPrio(t *testing.T) {
+	existing := []*models.RecordConfig{
+		myRecord("www MX 1 1.1.1.1"),
+	}
+	desired := []*models.RecordConfig{
+		myRecord("www MX 1 1.1.1.1"),
+	}
+	existing[0].Priority = 10
+	desired[0].Priority = 20
+	checkLengths(t, existing, desired, 0, 0, 0, 1)
+}
+
+func TestTTLChange(t *testing.T) {
+	existing := []*models.RecordConfig{
+		myRecord("www MX 1 1.1.1.1"),
+	}
+	desired := []*models.RecordConfig{
+		myRecord("www MX 10 1.1.1.1"),
+	}
+	checkLengths(t, existing, desired, 0, 0, 0, 1)
+}
+
+func TestMetaChange(t *testing.T) {
+	existing := []*models.RecordConfig{
+		myRecord("www MX 1 1.1.1.1"),
+	}
+	desired := []*models.RecordConfig{
+		myRecord("www MX 1 1.1.1.1"),
+	}
+	existing[0].Metadata["k"] = "aa"
+	desired[0].Metadata["k"] = "bb"
+	checkLengths(t, existing, desired, 1, 0, 0, 0)
+	getMeta := func(r *models.RecordConfig) map[string]string {
+		return map[string]string{
+			"k": r.Metadata["k"],
+		}
+	}
+	checkLengths(t, existing, desired, 0, 0, 0, 1, getMeta)
+}
+
+func checkLengths(t *testing.T, existing, desired []*models.RecordConfig, unCount, createCount, delCount, modCount int, valFuncs ...func(*models.RecordConfig) map[string]string) (un, cre, del, mod Changeset) {
+	dc := &models.DomainConfig{
+		Name:    "example.com",
+		Records: desired,
+	}
+	d := New(dc, valFuncs...)
+	un, cre, del, mod = d.IncrementalDiff(existing)
 	if len(un) != unCount {
 		t.Errorf("Got %d unchanged records, but expected %d", len(un), unCount)
 	}
@@ -107,6 +145,9 @@ func checkLengths(t *testing.T, existing, desired []Record, unCount, createCount
 	}
 	if len(mod) != modCount {
 		t.Errorf("Got %d records to modify, but expected %d", len(mod), modCount)
+	}
+	if t.Failed() {
+		t.FailNow()
 	}
 	return
 }
