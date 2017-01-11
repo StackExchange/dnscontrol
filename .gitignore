@@ -7,3 +7,4 @@ dnsconfig.js
 creds.json
 integrationTest
 ExternalDNS
+docs/_site
