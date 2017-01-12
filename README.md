@@ -1,4 +1,6 @@
-# DNSControl 
+# DNSControl
+
+[![Build Status](https://travis-ci.com/StackExchange/dnscontrol.svg?token=HrFVrjWbEEsPKcqzoQuy&branch=master)](https://travis-ci.com/StackExchange/dnscontrol)
 
 DNSControl is a system for maintaining DNS zones.  It has two parts:
 a domain specific language (DSL) for describing DNS zones plus
