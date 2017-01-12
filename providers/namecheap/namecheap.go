@@ -4,9 +4,9 @@ import (
 	"fmt"
 	"strings"
 
-	nc "github.com/billputer/go-namecheap"
 	"github.com/StackExchange/dnscontrol/models"
 	"github.com/StackExchange/dnscontrol/providers"
+	nc "github.com/billputer/go-namecheap"
 )
 
 type Namecheap struct {
