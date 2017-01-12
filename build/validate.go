@@ -25,6 +25,9 @@ func main() {
 		fmt.Println(err)
 		appendErrorStatus("needs go generate")
 	}
+	if status != "" {
+		os.Exit(1)
+	}
 }
 
 func checkGoFmt() error {
