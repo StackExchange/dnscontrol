@@ -3,5 +3,7 @@ language: go
 go:
   - 1.7.x
 
+install: pwd
+
 script: 
   - go run build/validate.go
