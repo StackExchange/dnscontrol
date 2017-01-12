@@ -16,7 +16,7 @@ func ExecuteJavascript(script string, devMode bool) (*models.DNSConfig, error) {
 
 	helperJs := GetHelpers(devMode)
 	// run helper script to prime vm and initialize variables
-	if _, err := vm.Run(string(helperJs)); err != nil {
+	if _, err := vm.Run(helperJs); err != nil {
 		return nil, err
 	}
 
