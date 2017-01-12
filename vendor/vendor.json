@@ -231,6 +231,12 @@
 			"revisionTime": "2016-07-26T03:20:27Z"
 		},
 		{
+			"checksumSHA1": "x4C8qUa39JVIwhD+5nacBaQHcII=",
+			"path": "github.com/mjibson/esc/embed",
+			"revision": "703e8aee0a5417c480f8d6a3f072c9eb4f8904ea",
+			"revisionTime": "2017-01-12T13:50:19Z"
+		},
+		{
 			"checksumSHA1": "nS4kKHjMlJpQg3sixqelpCg1jyk=",
 			"path": "github.com/prasmussen/gandi-api/client",
 			"revision": "13205dc554f4aeb75c93e8b57ad1e3d6fa3be5d5",

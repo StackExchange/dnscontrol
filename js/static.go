@@ -129,27 +129,27 @@ func (f *_escFile) Sys() interface{} {
 	return f
 }
 
-// FS returns a http.Filesystem for the embedded assets. If useLocal is true,
+// _escFS returns a http.Filesystem for the embedded assets. If useLocal is true,
 // the filesystem's contents are instead used.
-func FS(useLocal bool) http.FileSystem {
+func _escFS(useLocal bool) http.FileSystem {
 	if useLocal {
 		return _escLocal
 	}
 	return _escStatic
 }
 
-// Dir returns a http.Filesystem for the embedded assets on a given prefix dir.
+// _escDir returns a http.Filesystem for the embedded assets on a given prefix dir.
 // If useLocal is true, the filesystem's contents are instead used.
-func Dir(useLocal bool, name string) http.FileSystem {
+func _escDir(useLocal bool, name string) http.FileSystem {
 	if useLocal {
 		return _escDirectory{fs: _escLocal, name: name}
 	}
 	return _escDirectory{fs: _escStatic, name: name}
 }
 
-// FSByte returns the named file from the embedded assets. If useLocal is
+// _escFSByte returns the named file from the embedded assets. If useLocal is
 // true, the filesystem's contents are instead used.
-func FSByte(useLocal bool, name string) ([]byte, error) {
+func _escFSByte(useLocal bool, name string) ([]byte, error) {
 	if useLocal {
 		f, err := _escLocal.Open(name)
 		if err != nil {
@@ -166,24 +166,24 @@ func FSByte(useLocal bool, name string) ([]byte, error) {
 	return f.data, nil
 }
 
-// FSMustByte is the same as FSByte, but panics if name is not present.
-func FSMustByte(useLocal bool, name string) []byte {
-	b, err := FSByte(useLocal, name)
+// _escFSMustByte is the same as _escFSByte, but panics if name is not present.
+func _escFSMustByte(useLocal bool, name string) []byte {
+	b, err := _escFSByte(useLocal, name)
 	if err != nil {
 		panic(err)
 	}
 	return b
 }
 
-// FSString is the string version of FSByte.
-func FSString(useLocal bool, name string) (string, error) {
-	b, err := FSByte(useLocal, name)
+// _escFSString is the string version of _escFSByte.
+func _escFSString(useLocal bool, name string) (string, error) {
+	b, err := _escFSByte(useLocal, name)
 	return string(b), err
 }
 
-// FSMustString is the string version of FSMustByte.
-func FSMustString(useLocal bool, name string) string {
-	return string(FSMustByte(useLocal, name))
+// _escFSMustString is the string version of _escFSMustByte.
+func _escFSMustString(useLocal bool, name string) string {
+	return string(_escFSMustByte(useLocal, name))
 }
 
 var _escData = map[string]*_escFile{
@@ -193,7 +193,7 @@ var _escData = map[string]*_escFile{
 		size:    7196,
 		modtime: 0,
 		compressed: `
-H4sIAAAAAAAA/7RZfU/jzBH/P59iaqkXu/gc4A5aOU+qpgc8OpUEBKFFiiK02JtkOdtr7a6TUhQ+e7Uv
+H4sIAAAJbogA/7RZfU/jzBH/P59iaqkXu/gc4A5aOU+qpgc8OpUEBKFFiiK02JtkOdtr7a6TUhQ+e7Uv
 ttdxcoD0HH+E2Dsvv3nZ2dmJU3AMXDASCaff6awQg4hmcxjASwcAgOEF4YIhxkOYznz1Ls74Q87oisS4
 8ZqmiGTqRWdjZMV4jopEDNmCwwCms36nMy+ySBCaAcmIICgh/8Oup5U1NO/T/hME2yjk86avwbWAbCwo
 Y7y+KVW5GUqxL55z7KdYIM/AIXNw5UuvgiefYDAAZzQc3w0vHa1ooz6l7QwvpDFSXAhKqGIJ1acPUnio
