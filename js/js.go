@@ -42,5 +42,5 @@ func ExecuteJavascript(script string, devMode bool) (*models.DNSConfig, error) {
 }
 
 func GetHelpers(devMode bool) string {
-	return FSMustString(devMode, "/helpers.js")
+	return _escFSMustString(devMode, "/helpers.js")
 }
