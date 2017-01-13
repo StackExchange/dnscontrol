@@ -97,7 +97,7 @@ func rrToRecord(rr dns.RR, origin string, replace_serial uint32) (models.RecordC
 	case *dns.TXT:
 		rc.Target = strings.Join(v.Txt, " ")
 	default:
-		log.Fatalf("Unimplemented zone record type=%s (%v)\n", rc.Type, rr)
+		log.Printf("Unimplemented zone record type=%s (%v)\n", rc.Type, rr)
 	}
 	return rc, old_serial
 }
