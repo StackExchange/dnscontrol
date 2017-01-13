@@ -41,7 +41,7 @@ func (n *nameDotCom) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Co
 		corrections = append(corrections, c)
 	}
 	for _, cre := range create {
-		rec := cre.Desired.Original.(*models.RecordConfig)
+		rec := cre.Desired
 		c := &models.Correction{Msg: cre.String(), F: func() error { return n.createRecord(rec, dc.Name) }}
 		corrections = append(corrections, c)
 	}
