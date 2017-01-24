@@ -59,7 +59,7 @@ func assert_valid_target(target string) error {
 	}
 	// If it containts a ".", it must end in a ".".
 	if strings.ContainsRune(target, '.') && target[len(target)-1] != '.' {
-		return fmt.Errorf("WARNING: target (%v) includes a (.), must end with a (.)", target)
+		return fmt.Errorf("WARNING: target (%v) must end with a (.) [Required if target is not single label]", target)
 	}
 	return nil
 }
@@ -91,25 +91,31 @@ func validateTargets(rec *models.RecordConfig, domain_name string) (errs []error
 			errs = append(errs, e)
 		}
 	}
+	check(assert_no_enddot(label))
 	switch rec.Type {
 	case "A":
-		check(assert_no_enddot(label))
 		check(assert_no_underscores(label))
 		check(assert_valid_ipv4(target))
 	case "AAAA":
-		check(assert_no_enddot(label))
 		check(assert_no_underscores(label))
 		check(assert_valid_ipv6(target))
 	case "CNAME":
-		check(assert_no_enddot(label))
-		check(assert_no_underscores(label))
+		// NOTE(tlim): In theory a CNAME's label should abide by the assertions
+		// of the record type it points to.
+		// i.e. a If the CNAME target points at an MX record, the label should
+		// be validated as if it is an MX record.
+		// However, that's rather difficult to do, and impossible if the CNAME
+		// points at a record outside of dnscontrol's control.  Therefore we do
+		// simple hacks to guess the target type.
+		// Assumption: If the label contains "._domainkey", this is an TXT.
 		check(assert_valid_target(target))
+		if !strings.Contains(label, "._domainkey") {
+			check(assert_no_underscores(label))
+		}
 	case "MX":
-		check(assert_no_enddot(label))
 		check(assert_no_underscores(label))
 		check(assert_valid_target(target))
 	case "NS":
-		check(assert_no_enddot(label))
 		check(assert_no_underscores(label))
 		check(assert_valid_target(target))
 		if label == "@" {
