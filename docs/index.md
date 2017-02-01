@@ -10,3 +10,7 @@ layout: default
 ## [Javascript Reference]({{site.github.url}}/js)
 
 ## [Writing Providers]()
+
+## FAQs and design notes
+
+[Why CNAME/MX/NS targets require a trailing "dot"](why-the-dot)
