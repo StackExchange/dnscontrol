@@ -30,19 +30,19 @@ ambiguous and are therefore are considered errors.
 How are they ambiguous?
 
   * Should $DOMAIN be added to "bar.com"?  Well, obviously not, because it already ends with ".com" and we all know that "bar.com.bar.com" is probably not what they want. Or is it?  
-  * Should $DOMAIN be added to "meta.xyz"?  Everyone knows that ".xyz" isn't a TLD, so obviously yes it should be appended. However, wait...  .xyz is now an actual TLD (as June 2014).  We don't want to be surprised by changes like that.  Also, users should not be required to memorize all the TLDs, a reasonable expectation when there was just "com/org/net/gov" but not any more.
-  * What if $DOMAIN is "bar.com"? Shouldn't that be enough to know that "x.bar.com" is an FQDN and should not be turned into "x.bar.com.bar.com"? Maybe. What if we are copying 100 lines of dnsconfig.js from one `D()` to another. Burried in the middle is this one CNAME.  In the other `D()` it means something entirely different. This error may not be noticed for weeks.
+  * Should $DOMAIN be added to "meta.xyz"?  Everyone knows that ".xyz" isn't a TLD. Obviously, yes, $DOMAIN should be appended. However, wait...  ".xyz" became a TLD in June 2014.  We don't want to be surprised by changes like that.  Also, users should not be required to memorize all the TLDs. (When there was just "gov/edu/com/mil/org/net " that was a reasonable expectation, but that hasn't been true since around 2000. By the way, we forgot to include "int" and you didn't notice.)
+  * What if $DOMAIN is "bar.com"? Shouldn't that be enough to know that "x.bar.com" is an FQDN and should not be turned into "x.bar.com.bar.com"? Maybe. What if we are copying 100 lines of dnsconfig.js from one `D()` to another. Buried in the middle is this one CNAME that means something entirely different when in a new $DOMAIN. We've seen similar mistakes and want to prevent them.
 
 Yes, we could layer rule upon rule upon rule.  Eventually we'd get
 all the rules right.  However, now a user would have to know all the
-rules to be able to use dnscontrol.  The point of this DSL
+rules to be able to use Dnscontrol.  The point of the Dnscontrol DSL
 is to enable the casual user to be able to make DNS updates. By
 "casual user" we mean someone someone that lives and breathes DNS
 like you and I do.  In fact, we mean someone that hasn't memorized
 the list of rules.
 
 We know of no time where a human intentionally wanted
-"foo.domain.com.domain.com" as the target of an MX record.
+"foo.example.com.domain.com" as the target of an MX record.
 In fact, the opposite is true. StackExchange.com had
 a big email outage in 2013 because MX records were updated and the
 "trailing dot" was forgotten. Our MX records became
