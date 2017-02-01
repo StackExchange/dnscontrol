@@ -219,6 +219,11 @@
 			"revisionTime": "2015-04-13T22:18:30+03:00"
 		},
 		{
+			"path": "github.com/mhenderson-so/godnsmadeeasy/src/GoDNSMadeEasy",
+			"revision": "6c4a59b678872a0033a9ff286865d1c937cff047",
+			"revisionTime": "2016-11-17T16:01:34-05:00"
+		},
+		{
 			"checksumSHA1": "OUZ1FFXyKs+Cfg9M9rmXqqweQck=",
 			"path": "github.com/miekg/dns",
 			"revision": "db96a2b759cdef4f11a34506a42eb8d1290c598e",
