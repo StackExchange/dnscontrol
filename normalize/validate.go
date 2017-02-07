@@ -147,6 +147,9 @@ func import_transform(src_domain, dst_domain *models.DomainConfig, transforms []
 	// 4. For As, change the target as described the transforms.
 
 	for _, rec := range src_domain.Records {
+		if dst_domain.HasRecordTypeName(rec.Type, rec.NameFQDN) {
+			continue
+		}
 		newRec := func() *models.RecordConfig {
 			rec2, _ := rec.Copy()
 			rec2.Name = rec2.NameFQDN
