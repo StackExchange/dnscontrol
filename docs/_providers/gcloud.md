@@ -50,7 +50,7 @@ D("example.tld", REG_NAMECOM, DnsProvider(GCLOUD),
 1. Go to your app-engine console and select the appropriate project.
 2. Go to "API Manager > Credentials", and create a new "Service Account Key"
 
-    <img src="{{ site.github.url }}/assets/gcloud-json.png" alt="New Service Account" style="width: 900px;"/>
+    <img src="{{ site.github.url }}/assets/gcloud-json-screen.png" alt="New Service Account" style="width: 900px;"/>
 
 3. Choose an existing user, or create a new one. The user requires "App Engine Admin" rights.
 4. Download the JSON key and copy it into your `creds.json` under the name of your gcloud provider.
