@@ -173,8 +173,9 @@ func main() {
 				if !shouldrun {
 					statusLbl = "(skipping)"
 				}
-				fmt.Printf("----- DNS Provider: %s%s\n", prov, statusLbl)
+				fmt.Printf("----- DNS Provider: %s... %s", prov, statusLbl)
 				if !shouldrun {
+					fmt.Println()
 					continue
 				}
 				dsp, ok := dsps[prov]
@@ -183,11 +184,17 @@ func main() {
 				}
 				corrections, err := dsp.GetDomainCorrections(dc)
 				if err != nil {
+					fmt.Println("ERROR")
 					anyErrors = true
 					fmt.Printf("Error getting corrections: %s\n", err)
 					continue DomainLoop
 				}
 				totalCorrections += len(corrections)
+				plural := "s"
+				if len(corrections) == 1 {
+					plural = ""
+				}
+				fmt.Printf("%d correction%s\n", len(corrections), plural)
 				anyErrors = printOrRunCorrections(corrections, command) || anyErrors
 			}
 			if run := shouldRunProvider(domain.Registrar, domain); !run {
