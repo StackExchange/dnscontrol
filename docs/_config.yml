@@ -2,6 +2,3 @@ collections:
   providers:
     output: true
   functions:
-
-
-theme: jekyll-theme-merlot
