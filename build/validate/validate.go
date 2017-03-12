@@ -69,7 +69,7 @@ func checkGoGenerate() error {
 		return err
 	}
 	if len(modified) != 0 {
-		return fmt.Errorf("ERROR: The following files were modified by go generate:\n%s", strings.Join(modified, "\n"))
+		return fmt.Errorf("ERROR: The following files are modified after go generate:\n%s", strings.Join(modified, "\n"))
 	}
 	return nil
 }
