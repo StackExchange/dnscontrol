@@ -9,3 +9,7 @@
 .collapse-arrow {
     display:none;
 }
+
+body {
+    padding-bottom: 50px;
+}

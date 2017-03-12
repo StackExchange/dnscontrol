@@ -8,15 +8,21 @@ jsId: GCLOUD
 
 ## Configuration
 
-In your providers config json file you must provide the following fields:
+For Google cloud authentication, DNSControl requires a JSON 'Service Account Key' for your project. Copy the full JSON object into your `creds.json` like so:
 {% highlight json %}
 {
- "gcloud":{
-      "clientId": "abc123",
-      "clientSecret": "abc123",
-      "refreshToken":"abc123",
-      "project": "your-gcloud-project-name",
- }
+    "gcloud":{
+        "type": "service_account",
+        "project_id": "mydnsproject",
+        "private_key_id": "a05483aa208364c56716b384efff33c0574d365b",
+        "private_key": "-----BEGIN PRIVATE KEY-----\nMIIEvAIBADL2dhlY7YZbx7tpsfksOX\nih0DbxhiQ==\n-----END PRIVATE KEY-----\n",
+        "client_email": "dnscontrolacct@mydnsproject.iam.gserviceaccount.com",
+        "client_id": "107996619231234567750",
+        "auth_uri": "https://accounts.google.com/o/oauth2/auth",
+        "token_uri": "https://accounts.google.com/o/oauth2/token",
+        "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
+        "client_x509_cert_url": "https://www.googleapis.com/robot/v1/metadata/x509/dnscontrolsdfsdfsdf%40craigdnstest.iam.gserviceaccount.com"
+    }
 }
 {% endhighlight %}
 
@@ -24,7 +30,7 @@ See [the Activation section](#activation) for some tips on obtaining these crede
 
 ## Metadata
 
-This provider does not recognize any special metadata fields unique to googel cloud dns.
+This provider does not recognize any special metadata fields unique to google cloud dns.
 
 ## Usage
 
@@ -41,25 +47,10 @@ D("example.tld", REG_NAMECOM, DnsProvider(GCLOUD),
 
 ## Activation
 
-Because this provider depends on Oauth for authentication, generating the correct tokens can be a bit daunting. We recommend using the 
-[Google Oauth2 Playground](https://developers.google.com/oauthplayground/) to generate refresh tokens.
+1. Go to your app-engine console and select the appropriate project.
+2. Go to "API Manager > Credentials", and create a new "Service Account Key"
 
-1. In the google cloud platform console, create a project to host your DNS zones.
-2. Go to API Manager / Credentials and create a new OAuth2 Client ID. Create it for a Web Application. 
-  Make sure to add https://developers.google.com/oauthplayground to the "Authorized redirect URIs" section.
+    <img src="{{ site.github.url }}/assets/gcloud-json.png" alt="New Service Account" style="width: 900px;"/>
 
-    ![New Oauth Client ID]({{ site.github.url }}/assets/gcloud-credentials.png)
-
-3. Save your client id and client secret, along with your project name in your providers.json for DNSControl.
-4. Go to the [Google Oauth2 Playground](https://developers.google.com/oauthplayground/). Click the settings icon on the top right side and select
-"Use your own OAuth credentials". Enter your client id and client secret as obtained above.
-
-    ![Settings Panel]({{ site.github.url }}/assets/gcloud-settings.png)
-
-5. Select the scope for "Google Cloud DNS API v1 > https://www.googleapis.com/auth/ndev.clouddns.readwrite".
-6. Make sure you authorize the api as the user you intend to make API requests with. 
-7. Click "Exchange authorization code for tokens" and get a refresh and access token:
-
-    ![Refresh Token]({{ site.github.url }}/assets/gcloud-token.png)
- 
- 8. Store the refresh token in your providers.json for DNSControl. It will take care of refreshing the token as needed.
+3. Choose an existing user, or create a new one. The user requires "App Engine Admin" rights.
+4. Download the JSON key and copy it into your `creds.json` under the name of your gcloud provider.
