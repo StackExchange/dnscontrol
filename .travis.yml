@@ -6,5 +6,5 @@ go:
 install: pwd
 
 script: 
-  - go run build/validate.go
+  - go run build/validate/validate.go
   - go test ./...

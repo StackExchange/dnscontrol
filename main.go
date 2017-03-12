@@ -30,7 +30,7 @@ import (
 	_ "github.com/StackExchange/dnscontrol/providers/route53"
 )
 
-//go:generate go run build/generate.go
+//go:generate go run build/generate/generate.go
 
 // One of these config options must be set.
 var jsFile = flag.String("js", "dnsconfig.js", "Javascript file containing dns config")
