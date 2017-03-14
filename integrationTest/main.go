@@ -55,9 +55,13 @@ func runTests(prv providers.DNSServiceProvider, domainName string) {
 			dom.Records = append(dom.Records, &rc)
 		}
 		dom2, _ := dom.Copy()
+		// get corrections for first time
 		corrections, err := prv.GetDomainCorrections(dom)
 		if err != nil {
 			log.Printf("Error! %s", err)
+		}
+		if i != 0 && len(corrections) == 0 {
+			log.Printf("Expect changes for all tests, but got none")
 		}
 		for _, c := range corrections {
 			log.Println(c.Msg)
@@ -71,9 +75,11 @@ func runTests(prv providers.DNSServiceProvider, domainName string) {
 		corrections, err = prv.GetDomainCorrections(dom2)
 		if err != nil {
 			log.Printf("Error! %s", err)
+			break
 		}
 		if len(corrections) != 0 {
 			log.Printf("Expected 0 corrections on second run, but found %d.", len(corrections))
+			break
 		}
 
 	}
