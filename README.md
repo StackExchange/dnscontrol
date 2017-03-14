@@ -2,6 +2,7 @@
 
 [![Build Status](https://travis-ci.org/StackExchange/dnscontrol.svg?branch=master)](https://travis-ci.org/StackExchange/dnscontrol)
 [![Gitter chat](https://badges.gitter.im/dnscontrol/Lobby.png)](https://gitter.im/dnscontrol/Lobby)
+
 DNSControl is a system for maintaining DNS zones.  It has two parts:
 a domain specific language (DSL) for describing DNS zones plus
 software that processes the DSL and pushes the resulting zones to
