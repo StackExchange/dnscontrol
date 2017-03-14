@@ -18,6 +18,7 @@ bind -
 */
 
 import (
+	"bytes"
 	"encoding/json"
 	"flag"
 	"fmt"
@@ -200,30 +201,32 @@ func (c *Bind) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Correcti
 	differ := diff.New(dc)
 	_, create, del, mod := differ.IncrementalDiff(foundRecords)
 
+	buf := &bytes.Buffer{}
 	// Print a list of changes. Generate an actual change that is the zone
 	changes := false
 	for _, i := range create {
 		changes = true
 		if zone_file_found {
-			fmt.Println(i)
+			fmt.Fprintln(buf, i)
 		}
 	}
 	for _, i := range del {
 		changes = true
 		if zone_file_found {
-			fmt.Println(i)
+			fmt.Fprintln(buf, i)
 		}
 	}
 	for _, i := range mod {
 		changes = true
 		if zone_file_found {
-			fmt.Println(i)
+			fmt.Fprintln(buf, i)
 		}
 	}
-	msg := fmt.Sprintf("GENERATE_ZONEFILE: %s", dc.Name)
+	msg := fmt.Sprintf("GENERATE_ZONEFILE: %s\n", dc.Name)
 	if !zone_file_found {
-		msg = msg + fmt.Sprintf(" (%d records)", len(create))
+		msg = msg + fmt.Sprintf(" (%d records)\n", len(create))
 	}
+	msg += buf.String()
 	corrections := []*models.Correction{}
 	if changes {
 		corrections = append(corrections,
