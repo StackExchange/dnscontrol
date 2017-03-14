@@ -59,7 +59,7 @@ func createRegistrar(rType string, config map[string]string) (Registrar, error) 
 	return initer(config)
 }
 
-func createDNSProvider(dType string, config map[string]string, meta json.RawMessage) (DNSServiceProvider, error) {
+func CreateDNSProvider(dType string, config map[string]string, meta json.RawMessage) (DNSServiceProvider, error) {
 	initer, ok := dspTypes[dType]
 	if !ok {
 		return nil, fmt.Errorf("DSP type %s not declared", dType)
@@ -93,7 +93,7 @@ func CreateDsps(d *models.DNSConfig, providerConfigs map[string]map[string]strin
 		if !ok {
 			return nil, fmt.Errorf("DNSServiceProvider %s not listed in -providers file", dsp.Name)
 		}
-		provider, err := createDNSProvider(dsp.Type, rawMsg, dsp.Metadata)
+		provider, err := CreateDNSProvider(dsp.Type, rawMsg, dsp.Metadata)
 		if err != nil {
 			return nil, err
 		}

@@ -10,3 +10,4 @@ ExternalDNS
 docs/_site
 powershell.log
 zones/
+integrationTest/providers.json
