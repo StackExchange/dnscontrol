@@ -19,6 +19,27 @@ to an intermediate representation (IR).  Compiler back-ends use the
 IR to update your DNS zones on services such as Route53, CloudFlare,
 and Gandi, or systems such as BIND and ActiveDirectory.
 
+# An Example
+
+`dnsconfig.js`:
+
+```
+// define our registrar and providers
+var namecom = NewRegistrar("name.com", "NAMEDOTCOM");
+var r53 = NewDnsProvider("r53", "ROUTE53")
+
+D("example.com", namecom, DnsProvider(r53),
+  A("@", "1.2.3.4"),
+  CNAME("www","@"),
+  MX("@",5,"mail.myserver.com"),
+  A("test", "5.6.7.8")
+)
+```
+
+Running `dnscontrol preview` will talk to the providers (here name.com as registrar and route 53 as the dns host), and determine what changes need to be made.
+
+Running `dnscontrol push` will make those changes with the provider and my dns records will be correclty updated.
+
 # Benefits
 
 * Editing zone files is error-prone.  Clicking buttons on a web
@@ -51,6 +72,6 @@ Writing new plugins is very easy.
 
 # Installation
 
-`go get github.com/StackExchange/DNSControl`
+`go get github.com/StackExchange/dnsontrol`
 
 or get prebuilt binaries from our github page.
