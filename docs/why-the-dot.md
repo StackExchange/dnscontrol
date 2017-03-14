@@ -37,7 +37,7 @@ Yes, we could layer rule upon rule upon rule.  Eventually we'd get
 all the rules right.  However, now a user would have to know all the
 rules to be able to use Dnscontrol.  The point of the Dnscontrol DSL
 is to enable the casual user to be able to make DNS updates. By
-"casual user" we mean someone someone that lives and breathes DNS
+"casual user" we do not mean someone someone that lives and breathes DNS
 like you and I do.  In fact, we mean someone that hasn't memorized
 the list of rules.
 
@@ -93,4 +93,4 @@ future solutions from being upward compatible. By simply giving an
 error we open the door to new solutions.
 
 We should warn you, however, that any new proposals should be
-simplier than "add a dot".
+simpler than "add a dot".

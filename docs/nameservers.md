@@ -42,7 +42,7 @@ After this process we have a list of "Authoritative Nameservers" for the domain.
 
 As much as possible, all dns servers should agree on this nameserver list, and serve identical NS records. DNSControl will generate
 NS records for the authoritative nameserver list and automatically add them to the domain's records.
-NS records for the base domain should not be specidied manually, as that will result in an error.
+NS records for the base domain should not be specified manually, as that will result in an error.
 
 {% include alert.html text="Note: Not all providers allow full control over the NS records of your zone. It is not recommended to use these providers in complicated scenarios such as hosting across multiple providers. See individual provider docs for more info." %}
 
