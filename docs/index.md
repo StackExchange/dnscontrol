@@ -13,5 +13,5 @@ layout: default
 
 ## FAQs and design notes
 
-- [Why CNAME/MX/NS targets require a trailing "dot"]{{site.github.url}}/(why-the-dot)
+- [Why CNAME/MX/NS targets require a trailing "dot"]({{site.github.url}}/why-the-dot)
 - [Writing Providers]({{site.github.url}}/writing-providers)
