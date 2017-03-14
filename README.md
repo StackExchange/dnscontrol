@@ -40,6 +40,8 @@ Running `dnscontrol preview` will talk to the providers (here name.com as regist
 
 Running `dnscontrol push` will make those changes with the provider and my dns records will be correclty updated.
 
+See [Getting Started](https://stackexchange.github.io/dnscontrol/getting-started) page on documentation site.
+
 # Benefits
 
 * Editing zone files is error-prone.  Clicking buttons on a web
@@ -74,4 +76,4 @@ Writing new plugins is very easy.
 
 `go get github.com/StackExchange/dnsontrol`
 
-or get prebuilt binaries from our github page.
+or get prebuilt binaries from [github releases](https://github.com/StackExchange/dnscontrol/releases/latest).
