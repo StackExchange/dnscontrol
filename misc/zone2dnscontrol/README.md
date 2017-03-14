@@ -12,11 +12,12 @@ Output is sent to stdout.
 Example:
 
 """
-./convert stackoverflow.com zone.stackoverflow.com
+./zone2dnscontrol stackoverflow.com zone.stackoverflow.com
 """
 
 Caveats:
 
 * TTLs are stripped out and/or ignored.
+* TXT records that include a ";" will not be translated properly.
 * `$INCLUDE` may not be handled correctly if you are not in the right directory.
 * `$GENERATE` is not handled at all.
