@@ -1,0 +1,144 @@
+#!/usr/bin/perl
+# Copyright 2005 Thomas A. Limoncelli
+# 
+#     This program is free software; you can redistribute it and/or modify
+#     it under the terms of the GNU General Public License as published by
+#     the Free Software Foundation; either version 2 of the License, or
+#     (at your option) any later version.
+#     This program is distributed in the hope that it will be useful,
+#     but WITHOUT ANY WARRANTY; without even the implied warranty of
+#     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#     GNU General Public License for more details.
+# 
+# 
+#     You should have received a copy of the GNU General Public License
+#     along with this program; if not, write to the Free Software
+#     Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
+
+# canonzone [domain]
+#   Purpose: Cannonicalize a zone file so that dumber scripts can have
+#				an easier time parsing it.
+#	Input: A real zone file with many formatting nasties.
+#	Output: The zone file with one RR per line
+#				$ORIGIN's removed
+#				$TTL's removed
+#				$INCLUDE's replaced with the file's contents
+#				Lines that include TTL's have TTL's removed.
+#				Lines that begin with whitespace turning into regular RR's
+#				All hostnames turned into FQDN's (with exception listed below)
+#				If a FQDN ends with [domain], it is removed.
+#				Output in a strict format of:
+#						HOSTNAME.domain.<TABS>IN<SPACE>TYPE<TAB>DATA\n
+#				or for hosts in the [domain]:
+#						HOSTNAME<TABS>IN<SPACE>TYPE<TAB>DATA\n
+#
+#	Defaults:
+#		If "domain" is left off the command line, we assume "bell-labs.com."
+
+#
+# TODO:
+#   Handle $GENERATE better.  Include an option that expands the hosts.
+#
+
+if ($ARGV[0] =~ /-n/) {
+	shift @ARGV;
+	$nostripend = 1;
+}
+
+# our defaults
+$origin   = 'cibernet.com.';
+$origin = shift @ARGV if defined($ARGV[0]);
+
+$stripend = $origin; $stripend =~ s/(\.)/\\$1/g;
+#print STDERR "; $origin $stripend\n";
+
+die "ARGV[1] $stripend does not end in ." unless $stripend =~ /\.$/;
+die "ARGV[1] $origin does not end in ." unless $origin =~ /\.$/;
+
+# intialize things
+$defname = '';
+$host = '';
+#$noprevioushost = 1;
+
+&doit(STDIN);
+
+sub doit {
+	local(*FILE) = @_;
+	while (<FILE>) {
+
+		# process whitespace, comments, and continuations:
+		chomp;
+		# the order of the next three lines is very important
+		s/;.*//;        # toss comments
+		next if /^\s*$/;        # skip blank lines
+		redo if ( /\(/ && ! /\)/ ) && ($_ .= <>);     # handle continuations
+
+		# Handle the meta stuff:
+		if (/^\$ORIGIN\s+/) {		# handle the $ORIGIN statements
+			($junk, $origin, @junk) = split;
+#			$noprevioushost = 1;
+			die "ORIGIN $origin does not end in ." unless $origin =~ /\.$/;
+			chomp;
+			next;
+		} elsif (/^\$GENERATE\s+/) {	# handle the $GENERATE statement
+			s/\s+/ /g;	# change whitespace to a single space
+			print; print "\n";
+			next;
+		} elsif (/^\$TTL\s+/) {	# handle the $TTL statement
+			# do nothing
+			next;
+		} elsif (/^\$INCLUDE\s+/) {	# handle the $INCLUDE statements
+			($junk, $filename, @junk) = split;
+			die "INCLUDE file doesn't exist" unless -f $filename;
+			print "; INCLUDE BEGIN $filename\n";
+			open(INCFILE, "<" . $filename) || die "Can not read $filename: $!";
+			&doit(INCFILE);
+			close INCFILE;
+			print "; INCLUDE END   $filename\n";
+			next;
+		} elsif (/^\$/) {
+			die "ERROR1: I don't understand this \$ line: $_\n";
+		}
+
+		# ASSERTION at this point we know the line is just a RR.
+
+		# if the line begins with whitespace, prepend the last host.
+		# BUG: this may not handle "last host" across $INCLUDEs properly
+		if (/^\s/)	{		# line begins with whitespace
+			$_ = $defname . " " . $_;
+		}
+
+		# Extract the host, type, and data from the RR:
+		if (/(\S+)\s+(\d*)\s+IN\s+(\S+)\s+(.*)/i) { # host ttl IN rrtype data
+			($h, $junk, $TYPE, $data) = ($1, $2, $3, $4);
+			#print "read: HOST:$h JUNK:$junk TYPE:$TYPE DATA:$data\n";
+		} elsif (/(\S+)\s+IN\s+(\S+)\s+(.*)/i) { # host IN rrtype data
+			($h, $TYPE, $data) = ($1, $2, $3);
+			#print "read: HOST:$h TYPE:$TYPE DATA:$data\n";
+		} elsif (/(\S+)\s+(\S+)\s+(.*)/i) { # host IN rrtype data
+			($h, $TYPE, $data) = ($1, $2, $3);
+			#print "read: HOST:$h TYPE:$TYPE DATA:$data\n";
+		} else {
+			die "ERROR2: I don't understand this line:\n$_\n";
+		}
+
+		$h = $origin if $h eq '@';		# "@" is shorthand for the origin
+
+		# if the hostname is not a FQDN, append the $origin
+		if ( $h =~ /\.$/ ) {
+			$host = $h;
+		} else {
+			$host = $h . "." . $origin;
+		}
+
+		$defname = $host;	# record what will be the next line's default hostname
+
+		# remove the domain we are stripping the zone:
+		$host =~ s/\.$stripend$//i unless $nostripend;
+
+		# Format and print the RR:
+		$TAB = ''; $TAB = "\t" if length($host) < 8;
+		print "${host}\t${TAB}IN ${TYPE}\t$data\n";
+
+	}
+}
