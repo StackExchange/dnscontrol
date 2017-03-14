@@ -17,17 +17,8 @@ import (
 	"github.com/StackExchange/dnscontrol/nameservers"
 	"github.com/StackExchange/dnscontrol/normalize"
 	"github.com/StackExchange/dnscontrol/providers"
+	_ "github.com/StackExchange/dnscontrol/providers/_all"
 	"github.com/StackExchange/dnscontrol/providers/config"
-
-	//Define all known providers here. They should each register themselves with the providers package via init function.
-	_ "github.com/StackExchange/dnscontrol/providers/activedir"
-	_ "github.com/StackExchange/dnscontrol/providers/bind"
-	_ "github.com/StackExchange/dnscontrol/providers/cloudflare"
-	_ "github.com/StackExchange/dnscontrol/providers/gandi"
-	_ "github.com/StackExchange/dnscontrol/providers/google"
-	_ "github.com/StackExchange/dnscontrol/providers/namecheap"
-	_ "github.com/StackExchange/dnscontrol/providers/namedotcom"
-	_ "github.com/StackExchange/dnscontrol/providers/route53"
 )
 
 //go:generate go run build/generate/generate.go
