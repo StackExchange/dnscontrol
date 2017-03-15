@@ -18,6 +18,6 @@ Example:
 Caveats:
 
 * TTLs are stripped out and/or ignored.
-* TXT records that include a ";" will not be translated properly.
+* Comments must start on the beginning of the line.
 * `$INCLUDE` may not be handled correctly if you are not in the right directory.
 * `$GENERATE` is not handled at all.
