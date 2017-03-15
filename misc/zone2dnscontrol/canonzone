@@ -69,9 +69,12 @@ sub doit {
 		# process whitespace, comments, and continuations:
 		chomp;
 		# the order of the next three lines is very important
-		s/;.*//;        # toss comments
+    s/^;.*//;        # toss lines that start with a comment.
 		next if /^\s*$/;        # skip blank lines
 		redo if ( /\(/ && ! /\)/ ) && ($_ .= <>);     # handle continuations
+    # BUG: This doesn't handle comments that start in the middle of the line.
+    # Doing this would require handling quoted strings that include semicolons,
+    # which is difficult.
 
 		# Handle the meta stuff:
 		if (/^\$ORIGIN\s+/) {		# handle the $ORIGIN statements
@@ -111,13 +114,13 @@ sub doit {
 		# Extract the host, type, and data from the RR:
 		if (/(\S+)\s+(\d*)\s+IN\s+(\S+)\s+(.*)/i) { # host ttl IN rrtype data
 			($h, $junk, $TYPE, $data) = ($1, $2, $3, $4);
-			#print "read: HOST:$h JUNK:$junk TYPE:$TYPE DATA:$data\n";
+      #print "readA: HOST:$h JUNK:$junk TYPE:$TYPE DATA:$data\n";
 		} elsif (/(\S+)\s+IN\s+(\S+)\s+(.*)/i) { # host IN rrtype data
 			($h, $TYPE, $data) = ($1, $2, $3);
-			#print "read: HOST:$h TYPE:$TYPE DATA:$data\n";
+      #print "readB: HOST:$h TYPE:$TYPE DATA:$data\n";
 		} elsif (/(\S+)\s+(\S+)\s+(.*)/i) { # host IN rrtype data
 			($h, $TYPE, $data) = ($1, $2, $3);
-			#print "read: HOST:$h TYPE:$TYPE DATA:$data\n";
+      #print "readC: HOST:$h TYPE:$TYPE DATA:$data\n";
 		} else {
 			die "ERROR2: I don't understand this line:\n$_\n";
 		}
@@ -133,7 +136,7 @@ sub doit {
 
 		$defname = $host;	# record what will be the next line's default hostname
 
-		# remove the domain we are stripping the zone:
+		# remove the domain if we are stripping the zone:
 		$host =~ s/\.$stripend$//i unless $nostripend;
 
 		# Format and print the RR:
