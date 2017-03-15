@@ -9,7 +9,7 @@ import (
 
 	"github.com/StackExchange/dnscontrol/models"
 	"github.com/StackExchange/dnscontrol/providers"
-	"github.com/aeden/dnscontrol/providers/diff"
+	"github.com/StackExchange/dnscontrol/providers/diff"
 	"github.com/miekg/dns/dnsutil"
 
 	dnsimpleapi "github.com/dnsimple/dnsimple-go/dnsimple"
@@ -187,6 +187,7 @@ func (c *DnsimpleApi) updateNameserversFunc(nameServerNames []string, domainName
 	}
 }
 
+// Returns a function that can be invoked to create a record in a zone.
 func (c *DnsimpleApi) createRecordFunc(rc *models.RecordConfig, domainName string) func() error {
 	return func() error {
 		client := dnsimpleapi.NewClient(dnsimpleapi.NewOauthTokenCredentials(c.AccountToken))
@@ -213,6 +214,7 @@ func (c *DnsimpleApi) createRecordFunc(rc *models.RecordConfig, domainName strin
 	}
 }
 
+// Returns a function that can be invoked to delete a record in a zone.
 func (c *DnsimpleApi) deleteRecordFunc(recordId int, domainName string) func() error {
 	return func() error {
 		client := dnsimpleapi.NewClient(dnsimpleapi.NewOauthTokenCredentials(c.AccountToken))
@@ -232,6 +234,7 @@ func (c *DnsimpleApi) deleteRecordFunc(recordId int, domainName string) func() e
 	}
 }
 
+// Returns a function that can be invoked to update a record in a zone.
 func (c *DnsimpleApi) updateRecordFunc(old *dnsimpleapi.ZoneRecord, rc *models.RecordConfig, domainName string) func() error {
 	return func() error {
 		client := dnsimpleapi.NewClient(dnsimpleapi.NewOauthTokenCredentials(c.AccountToken))
