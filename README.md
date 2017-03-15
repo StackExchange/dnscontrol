@@ -9,7 +9,17 @@ software that processes the DSL and pushes the resulting zones to
 DNS providers such as Route53, CloudFlare, and Gandi.  It can talk
 to Microsoft ActiveDirectory and it generates the most beautiful
 BIND zone files ever.  It run anywhere Go runs (Linux, macOS,
-Windows).
+Windows). The provider model is extensible, so more providers can be added.
+
+Currently supported DNS providers:
+ - Active Directory
+ - Bind
+ - CloudFlare
+ - Gandi
+ - Google
+ - Namecheap
+ - Name.com
+ - Route 53
 
 At Stack Overflow, we use this system to manage hundreds of domains
 and subdomains across multiple registrars and DNS providers.
@@ -75,6 +85,8 @@ Writing new plugins is very easy.
 
 # Installation
 
-`go get github.com/StackExchange/dnsontrol`
+```cmd
+go get github.com/StackExchange/dnscontrol
+```
 
 or get prebuilt binaries from [github releases](https://github.com/StackExchange/dnscontrol/releases/latest).
