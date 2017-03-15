@@ -13,15 +13,11 @@ In your providers config json file you must provide your DNSimple account access
 ### example config
 
 ```
-var DNSIMPLE = NewRegistrar("dnsimple","DNSIMPLE");
-var DNSIMPLEDSP = NewDSP("dnsimple","DNSIMPLE")
+var DNSIMPLE_REG = NewRegistrar("dnsimple","DNSIMPLE");
+var DNSIMPLE = NewDnsProvider("dnsimple","DNSIMPLE");
 
-D("exammple.tld", DNSIMPLE, DNSIMPLEDSP,
-   //ns[1-4].dnsimple.com used by default as nameservers
-      
+D("exammple.tld", DNSIMPLE_REG, DnsProvider(DNSIMPLE),
    A("test","1.2.3.4"),
-   
-   //override ttl for one record only
    CNAME("foo","some.otherdomain.tld.",TTL(100))
-)
+);
 ```
