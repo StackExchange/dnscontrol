@@ -5,8 +5,16 @@
 In your providers config json file you must provide your DNSimple account access token:
 
 ```
-"yourDnsimpleProviderName":{
+"dnsimple":{
   "token": "your-dnsimple-account-access-token"
+}
+```
+
+You may also specify the baseurl to connect with sandbox:
+
+"dnsimple":{
+  "token": "your-sandbox-account-access-token",
+  "baseurl": "https://api.sandbox.dnsimple.com"
 }
 ```
 
