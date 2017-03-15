@@ -13,7 +13,7 @@ Windows). The provider model is extensible, so more providers can be added.
 
 Currently supported DNS providers:
  - Active Directory
- - Bind
+ - BIND
  - CloudFlare
  - Gandi
  - Google
