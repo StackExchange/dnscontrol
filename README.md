@@ -24,7 +24,7 @@ and Gandi, or systems such as BIND and ActiveDirectory.
 
 `dnsconfig.js`:
 
-```
+```js
 // define our registrar and providers
 var namecom = NewRegistrar("name.com", "NAMEDOTCOM");
 var r53 = NewDnsProvider("r53", "ROUTE53")
