@@ -46,23 +46,25 @@ func (c *DnsimpleApi) GetDomainCorrections(dc *models.DomainConfig) ([]*models.C
 		return nil, err
 	}
 
-	actual := make([]*models.RecordConfig, len(records))
-	for i, r := range records {
-		actual[i] = &models.RecordConfig{
-			NameFQDN: r.Name, // TODO: join name with domain name
+	var actual []*models.RecordConfig
+	for _, r := range records {
+		fqdn := r.Name + "." + dc.Name
+		fqdn = strings.TrimLeft(fqdn, ".")
+		actual = append(actual, &models.RecordConfig{
+			NameFQDN: fqdn,
 			Type:     r.Type,
 			Target:   r.Content,
 			TTL:      uint32(r.TTL),
 			Priority: uint16(r.Priority),
 			Original: r,
-		}
+		})
 	}
 
 	differ := diff.New(dc)
 	_, create, delete, modify := differ.IncrementalDiff(actual)
 
 	for _, del := range delete {
-		rec := del.Existing.Original.(*dnsimpleapi.ZoneRecord)
+		rec := del.Existing.Original.(dnsimpleapi.ZoneRecord)
 		corrections = append(corrections, &models.Correction{
 			Msg: del.String(),
 			F:   c.deleteRecordFunc(rec.ID, dc.Name),
@@ -78,11 +80,11 @@ func (c *DnsimpleApi) GetDomainCorrections(dc *models.DomainConfig) ([]*models.C
 	}
 
 	for _, mod := range modify {
-		old := mod.Existing.Original.(*dnsimpleapi.ZoneRecord)
+		old := mod.Existing.Original.(dnsimpleapi.ZoneRecord)
 		new := mod.Desired
 		corrections = append(corrections, &models.Correction{
 			Msg: mod.String(),
-			F:   c.updateRecordFunc(old, new, dc.Name),
+			F:   c.updateRecordFunc(&old, new, dc.Name),
 		})
 	}
 
@@ -134,7 +136,19 @@ func (c *DnsimpleApi) getAccountId() (string, error) {
 }
 
 func (c *DnsimpleApi) getRecords(domainName string) ([]dnsimpleapi.ZoneRecord, error) {
-	return nil, nil
+	client := dnsimpleapi.NewClient(dnsimpleapi.NewOauthTokenCredentials(c.AccountToken))
+
+	accountId, err := c.getAccountId()
+	if err != nil {
+		return nil, err
+	}
+
+	recordsResponse, err := client.Zones.ListRecords(accountId, domainName, nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return recordsResponse.Data, nil
 }
 
 // Returns the name server names that should be used. If the domain is registered
