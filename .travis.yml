@@ -13,7 +13,6 @@ notifications:
   email:
     on_success: never # default: change
     on_failure: always # default: always
-    notifications:
   webhooks:
     urls:
       - https://webhooks.gitter.im/e/4f27a4a85d6f4475be19
