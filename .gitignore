@@ -5,9 +5,8 @@ dnscontrol.exe
 dnscontrol
 dnsconfig.js
 creds.json
-integration
 ExternalDNS
 docs/_site
 powershell.log
 zones/
-integrationTest/providers.json
+integrationTest/.env
