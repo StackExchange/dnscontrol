@@ -11,30 +11,8 @@ import (
 	"github.com/miekg/dns/dnsutil"
 )
 
-// Returns false if label does not validate.
-func assert_no_enddot(label string) error {
-	if label == "@" {
-		return nil
-	}
-	if len(label) < 1 {
-		return fmt.Errorf("WARNING: null label.")
-	}
-	if label[len(label)-1] == '.' {
-		return fmt.Errorf("WARNING: label (%v) ends with a (.)", label)
-	}
-	return nil
-}
-
-// Returns false if label does not validate.
-func assert_no_underscores(label string) error {
-	if strings.ContainsRune(label, '_') {
-		return fmt.Errorf("WARNING: label (%v) contains an underscore", label)
-	}
-	return nil
-}
-
 // Returns false if target does not validate.
-func assert_valid_ipv4(label string) error {
+func checkIPv4(label string) error {
 	if net.ParseIP(label).To4() == nil {
 		return fmt.Errorf("WARNING: target (%v) is not an IPv4 address", label)
 	}
@@ -42,24 +20,24 @@ func assert_valid_ipv4(label string) error {
 }
 
 // Returns false if target does not validate.
-func assert_valid_ipv6(label string) error {
+func checkIPv6(label string) error {
 	if net.ParseIP(label).To16() == nil {
 		return fmt.Errorf("WARNING: target (%v) is not an IPv6 address", label)
 	}
 	return nil
 }
 
-// assert_valid_cname_target returns 1 if target is not valid for cnames.
-func assert_valid_target(target string) error {
+// make sure target is valid reference for cnames, mx, etc.
+func checkTarget(target string) error {
 	if target == "@" {
 		return nil
 	}
 	if len(target) < 1 {
-		return fmt.Errorf("WARNING: null target.")
+		return fmt.Errorf("empty target")
 	}
 	// If it containts a ".", it must end in a ".".
 	if strings.ContainsRune(target, '.') && target[len(target)-1] != '.' {
-		return fmt.Errorf("WARNING: target (%v) must end with a (.) [Required if target is not single label]", target)
+		return fmt.Errorf("target (%v) must end with a (.) [Required if target is not single label]", target)
 	}
 	return nil
 }
@@ -82,54 +60,73 @@ func validateRecordTypes(rec *models.RecordConfig, domain_name string) error {
 	return nil
 }
 
-// validateTargets returns true if rec.Target is valid for the rec.Type.
-func validateTargets(rec *models.RecordConfig, domain_name string) (errs []error) {
+var expectedUnderscores = []string{"._domainkey"}
+
+func checkLabel(rec *models.RecordConfig, domain string) error {
+	label := rec.Name
+	if label == "@" {
+		return nil
+	}
+	if len(label) < 1 {
+		return fmt.Errorf("empty %s label in %s", rec.Type, domain)
+	}
+	if label[len(label)-1] == '.' {
+		return fmt.Errorf("label %s.%s ends with a (.)", label, domain)
+	}
+
+	//underscores are warnings
+	if strings.ContainsRune(rec.Name, '_') {
+		//unless it is in our exclusion list
+		ok := false
+		for _, ex := range expectedUnderscores {
+			if strings.Contains(rec.Name, ex) {
+				ok = true
+				break
+			}
+		}
+		if !ok {
+			return Warning{fmt.Errorf("label %s.%s contains an underscore", rec.Name, domain)}
+		}
+	}
+	return nil
+}
+
+// checkTargets returns true if rec.Target is valid for the rec.Type.
+func checkTargets(rec *models.RecordConfig, domain string) (errs []error) {
 	label := rec.Name
 	target := rec.Target
 	check := func(e error) {
 		if e != nil {
-			errs = append(errs, e)
+			err := fmt.Errorf("In %s %s.%s: %s", rec.Type, rec.Name, domain, e.Error())
+			if _, ok := e.(Warning); ok {
+				err = Warning{err}
+			}
+			errs = append(errs, err)
 		}
 	}
-	check(assert_no_enddot(label))
 	switch rec.Type {
 	case "A":
-		check(assert_no_underscores(label))
-		check(assert_valid_ipv4(target))
+		check(checkIPv4(target))
 	case "AAAA":
-		check(assert_no_underscores(label))
-		check(assert_valid_ipv6(target))
+		check(checkIPv6(target))
 	case "CNAME":
-		// NOTE(tlim): In theory a CNAME's label should abide by the assertions
-		// of the record type it points to.
-		// i.e. a If the CNAME target points at an MX record, the label should
-		// be validated as if it is an MX record.
-		// However, that's rather difficult to do, and impossible if the CNAME
-		// points at a record outside of dnscontrol's control.  Therefore we do
-		// simple hacks to guess the target type.
-		// Assumption: If the label contains "._domainkey", this is an TXT.
-		check(assert_valid_target(target))
-		if !strings.Contains(label, "._domainkey") {
-			check(assert_no_underscores(label))
-		}
+		check(checkTarget(target))
 	case "MX":
-		check(assert_no_underscores(label))
-		check(assert_valid_target(target))
+		check(checkTarget(target))
 	case "NS":
-		check(assert_no_underscores(label))
-		check(assert_valid_target(target))
+		check(checkTarget(target))
 		if label == "@" {
 			check(fmt.Errorf("cannot create NS record for bare domain. Use NAMESERVER instead"))
 		}
 	case "TXT", "IMPORT_TRANSFORM":
 	default:
 		errs = append(errs, fmt.Errorf("Unimplemented record type (%v) domain=%v name=%v",
-			rec.Type, domain_name, rec.Name))
+			rec.Type, domain, rec.Name))
 	}
 	return
 }
 
-func transform_cname(target, old_domain, new_domain string) string {
+func transformCNAME(target, old_domain, new_domain string) string {
 	// Canonicalize. If it isn't a FQDN, add the new_domain.
 	result := dnsutil.AddOrigin(target, old_domain)
 	if dns.IsFqdn(result) {
@@ -172,7 +169,7 @@ func import_transform(src_domain, dst_domain *models.DomainConfig, transforms []
 			}
 		case "CNAME":
 			r := newRec()
-			r.Target = transform_cname(r.Target, src_domain.Name, dst_domain.Name)
+			r.Target = transformCNAME(r.Target, src_domain.Name, dst_domain.Name)
 			dst_domain.Records = append(dst_domain.Records, r)
 		case "MX", "NS", "TXT":
 			// Not imported.
@@ -195,12 +192,15 @@ func deleteImportTransformRecords(domain *models.DomainConfig) {
 	}
 }
 
-func NormalizeAndValidateConfig(config *models.DNSConfig) (errs []error) {
-	// TODO(tlim): Before any changes are made, we should check the rules
-	// such as MX/CNAME/NS .Target must be a single word, "@", or FQDN.
-	// Validate and normalize
-	for _, domain := range config.Domains {
+// Warning is a wrapper around error that can be used to indicate it should not
+// stop execution, but is still likely a problem.
+type Warning struct {
+	error
+}
 
+func NormalizeAndValidateConfig(config *models.DNSConfig) (errs []error) {
+
+	for _, domain := range config.Domains {
 		// Normalize Nameservers.
 		for _, ns := range domain.Nameservers {
 			ns.Name = dnsutil.AddOrigin(ns.Name, domain.Name)
@@ -216,7 +216,10 @@ func NormalizeAndValidateConfig(config *models.DNSConfig) (errs []error) {
 			if err := validateRecordTypes(rec, domain.Name); err != nil {
 				errs = append(errs, err)
 			}
-			if errs2 := validateTargets(rec, domain.Name); errs2 != nil {
+			if err := checkLabel(rec, domain.Name); err != nil {
+				errs = append(errs, err)
+			}
+			if errs2 := checkTargets(rec, domain.Name); errs2 != nil {
 				errs = append(errs, errs2...)
 			}
 
@@ -254,29 +257,6 @@ func NormalizeAndValidateConfig(config *models.DNSConfig) (errs []error) {
 	for _, domain := range config.Domains {
 		if err := applyRecordTransforms(domain); err != nil {
 			errs = append(errs, err)
-		}
-	}
-
-	// Verify all labels are FQDN ending with ".":
-	for _, domain := range config.Domains {
-		for _, rec := range domain.Records {
-			// .Name must NOT end in "."
-			if rec.Name[len(rec.Name)-1] == '.' {
-				errs = append(errs, fmt.Errorf("Should not happen: Label ends with '.': %v %v %v %v %v",
-					domain.Name, rec.Name, rec.NameFQDN, rec.Type, rec.Target))
-			}
-			// .NameFQDN must NOT end in "."
-			if rec.NameFQDN[len(rec.NameFQDN)-1] == '.' {
-				errs = append(errs, fmt.Errorf("Should not happen: FQDN ends with '.': %v %v %v %v %v",
-					domain.Name, rec.Name, rec.NameFQDN, rec.Type, rec.Target))
-			}
-			// .Target MUST end in "."
-			if rec.Type == "CNAME" || rec.Type == "NS" || rec.Type == "MX" {
-				if rec.Target[len(rec.Target)-1] != '.' {
-					errs = append(errs, fmt.Errorf("Should not happen: Target does NOT ends with '.': %v %v %v %v %v",
-						domain.Name, rec.Name, rec.NameFQDN, rec.Type, rec.Target))
-				}
-			}
 		}
 	}
 	return errs
