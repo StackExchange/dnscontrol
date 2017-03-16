@@ -148,8 +148,8 @@ var tests = []*TestCase{
 	// INTERNATIONAL: TODO: figure out how we want to present/handle these. As much as possible I want the human form in our DSLs
 	// I suspect providers will vary on if they want things raw or punycoded. Don't really want each provider to have to process records, but maybe we do.
 	// A helper like `domain.Records.PunyCode()` may be all we need for providers that require it.
-	//tc("Internationalized name", a("ööö", "1.2.3.4")),
-	//tc("Change IDN", a("ööö", "2.2.2.2")),
-	//tc("Internationalized CNAME Target", cname("a", "ööö.com.")),
-	//tc("IDN CNAME AND Target", cname("öoö", "ööö.ööö.")),
+	tc("Internationalized name", a("ööö", "1.2.3.4")),
+	tc("Change IDN", a("ööö", "2.2.2.2")),
+	tc("Internationalized CNAME Target", cname("a", "ööö.com.")),
+	tc("IDN CNAME AND Target", cname("öoö", "ööö.ööö.")),
 }
