@@ -2,7 +2,6 @@ package main
 
 import (
 	"flag"
-	"log"
 	"testing"
 
 	"fmt"
@@ -10,45 +9,68 @@ import (
 	"github.com/StackExchange/dnscontrol/models"
 	"github.com/StackExchange/dnscontrol/nameservers"
 	"github.com/StackExchange/dnscontrol/providers"
+	_ "github.com/StackExchange/dnscontrol/providers/_all"
 	"github.com/StackExchange/dnscontrol/providers/config"
-	_ "github.com/StackExchange/dnscontrol/providers/google"
 	"github.com/miekg/dns/dnsutil"
 )
 
-func TestDNSProviders(t *testing.T) {
-	jsons, err := config.LoadProviderConfigs("providers.json")
-	if err != nil {
-		log.Fatalf("Error loading provider configs: %s", err)
-	}
-	for name, cfg := range jsons {
-		t.Run(fmt.Sprintf("%s(%s)", name, cfg["domain"]), func(t *testing.T) {
-			provider, err := providers.CreateDNSProvider(cfg["providerType"], cfg, nil)
-			if err != nil {
-				t.Fatal(err)
-			}
-			runTests(t, provider, cfg["domain"])
-		})
-	}
+var providerToRun = flag.String("provider", "", "Provider to run")
+var dual = flag.Bool("dualProviders", false, "Set true to simulate a second DNS Provider")
+
+func init() {
+	flag.Parse()
 }
 
-var dual = flag.Bool("dualProviders", false, "Set true to simulate a second DNS Provider")
-var thourough = flag.Bool("query", false, "Actually query dns servers to verify results")
+func getProvider(t *testing.T) (providers.DNSServiceProvider, string) {
+	if *providerToRun == "" {
+		t.Log("No provider specified with -provider")
+		return nil, ""
+	}
+	jsons, err := config.LoadProviderConfigs("providers.json")
+	if err != nil {
+		t.Fatalf("Error loading provider configs: %s", err)
+	}
+	for name, cfg := range jsons {
+		if *providerToRun != name {
+			continue
+		}
+		provider, err := providers.CreateDNSProvider(cfg["providerType"], cfg, nil)
+		if err != nil {
+			t.Fatal(err)
+		}
+		return provider, cfg["domain"]
+	}
+	t.Fatalf("Provider %s not found", *providerToRun)
+	return nil, ""
+}
 
-func runTests(t *testing.T, prv providers.DNSServiceProvider, domainName string) {
+func TestDNSProviders(t *testing.T) {
+	provider, domain := getProvider(t)
+	if provider == nil {
+		return
+	}
+	t.Run(fmt.Sprintf("%s", domain), func(t *testing.T) {
+		runTests(t, provider, domain)
+	})
+
+}
+
+func getDomainConfigWithNameservers(t *testing.T, prv providers.DNSServiceProvider, domainName string) *models.DomainConfig {
 	dc := &models.DomainConfig{
 		Name: domainName,
 	}
 	// fix up nameservers
 	ns, err := prv.GetNameservers(domainName)
 	if err != nil {
-		log.Println("Failed getting nameservers", err)
-		return
-	}
-	if *dual {
-		ns = append(ns, models.StringsToNameservers([]string{"ns1.foo.com", "ns2.foo.org"})...)
+		t.Fatal("Failed getting nameservers", err)
 	}
 	dc.Nameservers = ns
 	nameservers.AddNSRecords(dc)
+	return dc
+}
+
+func runTests(t *testing.T, prv providers.DNSServiceProvider, domainName string) {
+	dc := getDomainConfigWithNameservers(t, prv, domainName)
 	// run tests one at a time
 	for i, tst := range tests {
 		if t.Failed() {
@@ -87,6 +109,44 @@ func runTests(t *testing.T, prv providers.DNSServiceProvider, domainName string)
 			}
 		})
 
+	}
+}
+
+func TestDualProviders(t *testing.T) {
+	p, domain := getProvider(t)
+	if p == nil {
+		return
+	}
+	dc := getDomainConfigWithNameservers(t, p, domain)
+	// clear everything
+	run := func() {
+		cs, err := p.GetDomainCorrections(dc)
+		if err != nil {
+			t.Fatal(err)
+		}
+		for i, c := range cs {
+			t.Logf("#%d: %s", i+1, c.Msg)
+			if err = c.F(); err != nil {
+				t.Fatal(err)
+			}
+		}
+	}
+	t.Log("Clearing everything")
+	run()
+	// add bogus nameservers
+	dc.Records = []*models.RecordConfig{}
+	dc.Nameservers = append(dc.Nameservers, models.StringsToNameservers([]string{"ns1.otherdomain.tld", "ns2.otherdomain.tld"})...)
+	nameservers.AddNSRecords(dc)
+	t.Log("Adding nameservers from another provider")
+	run()
+	// run again to make sure no corrections
+	t.Log("Running again to ensure stability")
+	cs, err := p.GetDomainCorrections(dc)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(cs) != 0 {
+		t.Fatal("Expect no corrections on second run")
 	}
 }
 
@@ -145,9 +205,8 @@ var tests = []*TestCase{
 	tc("Change it", cname("foo", "google2.com.")),
 	tc("Change to A record", a("foo", "1.2.3.4")),
 	tc("Change back to CNAME", cname("foo", "google.com.")),
-	// INTERNATIONAL: TODO: figure out how we want to present/handle these. As much as possible I want the human form in our DSLs
-	// I suspect providers will vary on if they want things raw or punycoded. Don't really want each provider to have to process records, but maybe we do.
-	// A helper like `domain.Records.PunyCode()` may be all we need for providers that require it.
+
+	//IDNAs
 	tc("Internationalized name", a("ööö", "1.2.3.4")),
 	tc("Change IDN", a("ööö", "2.2.2.2")),
 	tc("Internationalized CNAME Target", cname("a", "ööö.com.")),
