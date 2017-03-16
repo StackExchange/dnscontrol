@@ -49,7 +49,7 @@ func (c *DnsimpleApi) GetDomainCorrections(dc *models.DomainConfig) ([]*models.C
 
 	var actual []*models.RecordConfig
 	for _, r := range records {
-		fqdn := r.Name + "." + dc.Name
+		fqdn := dnsutil.AddOrigin(r.Name, dc.Name)
 		fqdn = strings.TrimLeft(fqdn, ".")
 		actual = append(actual, &models.RecordConfig{
 			NameFQDN: fqdn,
