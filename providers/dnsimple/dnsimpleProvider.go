@@ -31,12 +31,7 @@ type DnsimpleApi struct {
 }
 
 func (c *DnsimpleApi) GetNameservers(domainName string) ([]*models.Nameserver, error) {
-	nameServerNames, err := c.getNameservers(domainName)
-	if err != nil {
-		return nil, err
-	}
-
-	return models.StringsToNameservers(nameServerNames), nil
+	return models.StringsToNameservers(defaultNameServerNames), nil
 }
 
 func (c *DnsimpleApi) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Correction, error) {
@@ -49,18 +44,26 @@ func (c *DnsimpleApi) GetDomainCorrections(dc *models.DomainConfig) ([]*models.C
 
 	var actual []*models.RecordConfig
 	for _, r := range records {
-		fqdn := dnsutil.AddOrigin(r.Name, dc.Name)
-		fqdn = strings.TrimLeft(fqdn, ".")
-		actual = append(actual, &models.RecordConfig{
-			NameFQDN: fqdn,
+		if r.Type == "SOA" || r.Type == "NS" {
+			continue
+		}
+		if r.Name == "" {
+			r.Name = "@"
+		}
+		if r.Type == "CNAME" || r.Type == "MX" {
+			r.Content += "."
+		}
+		rec := &models.RecordConfig{
+			NameFQDN: dnsutil.AddOrigin(r.Name, dc.Name),
 			Type:     r.Type,
 			Target:   r.Content,
 			TTL:      uint32(r.TTL),
 			Priority: uint16(r.Priority),
 			Original: r,
-		})
+		}
+		actual = append(actual, rec)
 	}
-
+	removeOtherNS(dc)
 	differ := diff.New(dc)
 	_, create, delete, modify := differ.IncrementalDiff(actual)
 
@@ -138,7 +141,9 @@ func (c *DnsimpleApi) getAccountId() (string, error) {
 		if err != nil {
 			return "", err
 		}
-
+		if whoamiResponse.Data.User != nil && whoamiResponse.Data.Account == nil {
+			return "", fmt.Errorf("DNSimple token appears to be a user token. Please supply an account token")
+		}
 		c.accountId = strconv.Itoa(whoamiResponse.Data.Account.ID)
 	}
 	return c.accountId, nil
@@ -311,4 +316,20 @@ func newProvider(m map[string]string, metadata json.RawMessage) (*DnsimpleApi, e
 func init() {
 	providers.RegisterRegistrarType("DNSIMPLE", newReg)
 	providers.RegisterDomainServiceProviderType("DNSIMPLE", newDsp)
+}
+
+// remove all non-dnsimple NS records from our desired state.
+// if any are found, print a warning
+func removeOtherNS(dc *models.DomainConfig) {
+	newList := make([]*models.RecordConfig, 0, len(dc.Records))
+	for _, rec := range dc.Records {
+		if rec.Type == "NS" && rec.NameFQDN == dc.Name {
+			if !strings.HasSuffix(rec.Target, ".dnsimple.com.") {
+				fmt.Printf("Warning: dnsimple.com does not allow NS records on base domain to be modified. %s will not be added.", rec.Target)
+			}
+			continue
+		}
+		newList = append(newList, rec)
+	}
+	dc.Records = newList
 }
