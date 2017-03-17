@@ -98,7 +98,9 @@ func keyForRec(r *models.RecordConfig) key {
 }
 
 func (g *gcloud) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Correction, error) {
-
+	if err := dc.Punycode(); err != nil {
+		return nil, err
+	}
 	rrs, zoneName, err := g.getRecords(dc.Name)
 	if err != nil {
 		return nil, err

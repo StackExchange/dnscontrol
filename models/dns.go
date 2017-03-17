@@ -12,6 +12,7 @@ import (
 
 	"github.com/StackExchange/dnscontrol/transform"
 	"github.com/miekg/dns"
+	"golang.org/x/net/idna"
 )
 
 const DefaultTTL = uint32(300)
@@ -162,6 +163,32 @@ func (r *RecordConfig) Copy() (*RecordConfig, error) {
 	newR := &RecordConfig{}
 	err := copyObj(r, newR)
 	return newR, err
+}
+
+//Punycode will convert all records to punycode format.
+//It will encode:
+//- Name
+//- NameFQDN
+//- Target (CNAME and MX only)
+func (dc *DomainConfig) Punycode() error {
+	var err error
+	for _, rec := range dc.Records {
+		rec.Name, err = idna.ToASCII(rec.Name)
+		if err != nil {
+			return err
+		}
+		rec.NameFQDN, err = idna.ToASCII(rec.NameFQDN)
+		if err != nil {
+			return err
+		}
+		if rec.Type == "MX" || rec.Type == "CNAME" {
+			rec.Target, err = idna.ToASCII(rec.Target)
+			if err != nil {
+				return err
+			}
+		}
+	}
+	return nil
 }
 
 func copyObj(input interface{}, output interface{}) error {
