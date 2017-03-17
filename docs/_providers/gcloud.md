@@ -26,6 +26,8 @@ For Google cloud authentication, DNSControl requires a JSON 'Service Account Key
 }
 {% endhighlight %}
 
+**Note**: The `project_id`, `private_key`, and `client_email`, are the only fields that are strictly required, but it is sometimes easier to just paste the entire json object in. Either way is fine.
+
 See [the Activation section](#activation) for some tips on obtaining these credentials.
 
 ## Metadata
