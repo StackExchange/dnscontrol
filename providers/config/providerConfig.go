@@ -34,14 +34,11 @@ func LoadProviderConfigs(fname string) (map[string]map[string]string, error) {
 }
 
 func replaceEnvVars(m map[string]map[string]string) error {
-	for provider, keys := range m {
+	for _, keys := range m {
 		for k, v := range keys {
 			if strings.HasPrefix(v, "$") {
 				env := v[1:]
 				newVal := os.Getenv(env)
-				if newVal == "" {
-					return fmt.Errorf("Provider %s references environment variable %s, but has no value.", provider, env)
-				}
 				keys[k] = newVal
 			}
 		}

@@ -351,6 +351,12 @@
 			"revisionTime": "2016-11-15T21:05:04Z"
 		},
 		{
+			"checksumSHA1": "GIGmSrYACByf5JDIP9ByBZksY80=",
+			"path": "golang.org/x/net/idna",
+			"revision": "a6577fac2d73be281a500b310739095313165611",
+			"revisionTime": "2017-03-08T20:54:49Z"
+		},
+		{
 			"checksumSHA1": "XH7CgbL5Z8COUc+MKrYqS3FFosY=",
 			"path": "golang.org/x/oauth2",
 			"revision": "3c3a985cb79f52a3190fbc056984415ca6763d01",
