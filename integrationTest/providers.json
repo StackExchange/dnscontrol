@@ -1,7 +1,6 @@
 {
-    "gcloud": {
-        "providerType": "GCLOUD",
-        "domain": "dnscontroltest.com",
+    "GCLOUD": {
+        "domain": "$GCLOUD_DOMAIN",
         "project_id": "$GCLOUD_PROJECT",
         "private_key": "$GCLOUD_PRIVATEKEY",
         "client_email": "$GCLOUD_EMAIL",

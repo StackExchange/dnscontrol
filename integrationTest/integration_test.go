@@ -15,7 +15,6 @@ import (
 )
 
 var providerToRun = flag.String("provider", "", "Provider to run")
-var dual = flag.Bool("dualProviders", false, "Set true to simulate a second DNS Provider")
 
 func init() {
 	flag.Parse()
@@ -34,7 +33,7 @@ func getProvider(t *testing.T) (providers.DNSServiceProvider, string) {
 		if *providerToRun != name {
 			continue
 		}
-		provider, err := providers.CreateDNSProvider(cfg["providerType"], cfg, nil)
+		provider, err := providers.CreateDNSProvider(name, cfg, nil)
 		if err != nil {
 			t.Fatal(err)
 		}
