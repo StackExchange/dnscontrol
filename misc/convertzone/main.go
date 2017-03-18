@@ -15,11 +15,13 @@ convertzone: Read BIND-style zonefile and output.
 
 import (
 	"bufio"
+	"errors"
 	"flag"
 	"fmt"
 	"io"
 	"log"
 	"os"
+	"strconv"
 	"strings"
 
 	"github.com/StackExchange/dnscontrol/providers/bind"
@@ -27,105 +29,125 @@ import (
 	"github.com/miekg/dns/dnsutil"
 )
 
-var output_mode = flag.String("mode", "tsv", "tsv|dsl")
-var flag_defaultTtl = flag.Uint("ttl", 300, "help message")
+var output_mode = flag.String("mode", "tsv", "tsv|dsl|pretty")
+var flag_defaultTtl = flag.Uint("ttl", 300, "Default TTL")
 var flag_registrar = flag.String("registrar", "REG_FILL_IN", "registrar text")
 var flag_provider = flag.String("provider", "DNS_FILL_IN", "provider text")
 
-func main() {
-	flag.Parse()
+// parseargs parses the non-flag arguments.
+func parseargs(args []string) (zonename string, filename string, r io.Reader, err error) {
+	// 1 args: first arg is the zonename. Read stdin.
+	// 2 args: first arg is the zonename. 2nd is the filename.
 
-	if flag.NArg() < 1 {
-		flag.Usage()
-		os.Exit(1)
+	if len(args) < 1 {
+		return "", "", nil, errors.New("Not enough parameters")
 	}
-	zonename := flag.Arg(0)
-	zonenamedot := zonename + "."
 
-	var err error
-	var reader io.Reader
-	var filename string
-	if flag.NArg() < 2 {
+	zonename = args[0]
+
+	if len(args) < 2 {
 		filename = "stdin"
-		reader = bufio.NewReader(os.Stdin)
+		r = bufio.NewReader(os.Stdin)
 	} else {
 		filename = flag.Arg(1)
-		reader, err = os.Open(filename)
+		r, err = os.Open(filename)
 		if err != nil {
 			log.Fatal(err)
 		}
 	}
 
+	return zonename, filename, r, nil
+}
+
+// pretty outputs the zonefile using the prettyprinter.
+func pretty(zonename string, filename string, r io.Reader, defaultTtl uint32) {
 	var pretty_list []dns.RR
-
-	switch *output_mode {
-	case "dsl":
-		fmt.Printf("D(\"%s\", %s, DnsProvider(%s)", zonename, *flag_registrar, *flag_provider)
-	default:
-	}
-
-	for x := range dns.ParseZone(reader, zonename, filename) {
+	for x := range dns.ParseZone(r, zonename, filename) {
 		if x.Error == nil {
+			pretty_list = append(pretty_list, x.RR)
+		}
+	}
+	bind.WriteZoneFile(bufio.NewWriter(os.Stdout), pretty_list, zonename, defaultTtl)
+}
 
-			line := x.String()
-			if line[0] == ';' {
+// rr_format outputs the zonefile in either DSL or TSV format.
+func rr_format(zonename string, filename string, r io.Reader, defaultTtl uint32, dsl bool) {
+	zonenamedot := zonename + "."
+
+	for x := range dns.ParseZone(r, zonename, filename) {
+		if x.Error != nil {
+			continue
+		}
+
+		// Skip comments. Parse the formatted version.
+		line := x.String()
+		if line[0] == ';' {
+			continue
+		}
+		items := strings.SplitN(line, "\t", 5)
+		if len(items) < 5 {
+			log.Fatalf("Too few items in: %v", line)
+		}
+
+		target := items[4]
+
+		hdr := x.Header()
+		nameFqdn := hdr.Name
+		name := dnsutil.TrimDomainName(nameFqdn, zonenamedot)
+		ttl := strconv.FormatUint(uint64(hdr.Ttl), 10)
+		classStr := dns.ClassToString[hdr.Class]
+		typeStr := dns.TypeToString[hdr.Rrtype]
+
+		// MX records should split out the prio vs. target.
+		if hdr.Rrtype == dns.TypeMX {
+			target = strings.Replace(target, " ", "\t", 1)
+		}
+
+		if !dsl { // TSV format:
+			fmt.Printf("%s\t%s\t%s\t%s\t%s\n", name, ttl, classStr, typeStr, target)
+		} else { // DSL format:
+			switch hdr.Rrtype {
+			case dns.TypeMX:
+				mxi := strings.SplitN(target, "\t", 2)
+				target = mxi[0] + ", '" + mxi[1] + "'"
+			case dns.TypeSOA:
 				continue
+			case dns.TypeTXT:
+				// Leave target as-is.
+			default:
+				target = "'" + target + "'"
 			}
-
-			items := strings.SplitN(line, "\t", 5)
-			if len(items) < 5 {
-				log.Fatalf("Too few items in: %v", line)
+			if hdr.Ttl == defaultTtl {
+				ttl = ""
+			} else {
+				ttl = fmt.Sprintf(", TTL(%d)", hdr.Ttl)
 			}
-
-			hdr := x.Header()
-			nameFqdn := hdr.Name
-			name := dnsutil.TrimDomainName(nameFqdn, zonenamedot)
-			ttl := fmt.Sprintf("%d", hdr.Ttl)
-			classStr := items[2]
-			typeStr := dns.TypeToString[hdr.Rrtype]
-			target := items[4]
-
-			// MX records should split out the prio vs. target.
-			if hdr.Rrtype == dns.TypeMX {
-				target = strings.Replace(target, " ", "\t", 1)
-			}
-
-			switch *output_mode {
-
-			case "tsv":
-				fmt.Printf("%s\t%s\t%s\t%s\t%s\n", name, ttl, classStr, typeStr, target)
-
-			case "dsl":
-				switch hdr.Rrtype {
-				case dns.TypeSOA:
-					continue
-				case dns.TypeTXT:
-				case dns.TypeMX:
-					mxi := strings.SplitN(target, "\t", 2)
-					target = mxi[0] + ", '" + mxi[1] + "'"
-				default:
-					target = "'" + target + "'"
-				}
-				if int64(hdr.Ttl) == int64(*flag_defaultTtl) {
-					ttl = ""
-				} else {
-					ttl = fmt.Sprintf(", TTL(%d)", hdr.Ttl)
-				}
-				fmt.Printf(",\n\t%s('%s', %s%s)", typeStr, name, target, ttl)
-
-			case "pretty":
-				pretty_list = append(pretty_list, x.RR)
-			}
-
+			fmt.Printf(",\n\t%s('%s', %s%s)", typeStr, name, target, ttl)
 		}
 	}
 
-	switch *output_mode {
-	case "dsl":
-		fmt.Println("\n)")
-	case "pretty":
+}
 
-		bind.WriteZoneFile(bufio.NewWriter(os.Stdout), pretty_list, zonename, uint32(*flag_defaultTtl))
-	default:
+func main() {
+	flag.Parse()
+	zonename, filename, reader, err := parseargs(flag.Args())
+	if err != nil {
+		flag.Usage()
 	}
+
+	defttl := uint32(*flag_defaultTtl)
+
+	switch *output_mode {
+	case "pretty":
+		pretty(zonename, filename, reader, defttl)
+	case "dsl":
+		fmt.Printf(`D("%s", %s, DnsProvider(%s)`, zonename, *flag_registrar, *flag_provider)
+		rr_format(zonename, filename, reader, defttl, true)
+		fmt.Println("\n)")
+	case "tsv":
+		rr_format(zonename, filename, reader, defttl, false)
+	default:
+		flag.Usage()
+	}
+
 }
