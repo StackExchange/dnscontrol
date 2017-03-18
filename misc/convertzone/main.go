@@ -67,7 +67,7 @@ func pretty(zonename string, filename string, r io.Reader, defaultTtl uint32) {
 			pretty_list = append(pretty_list, x.RR)
 		}
 	}
-	bind.WriteZoneFile(bufio.NewWriter(os.Stdout), pretty_list, zonename, defaultTtl)
+	bind.WriteZoneFile(os.Stdout, pretty_list, zonename, defaultTtl)
 }
 
 // rr_format outputs the zonefile in either DSL or TSV format.
