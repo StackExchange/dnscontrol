@@ -194,6 +194,12 @@
 			"revisionTime": "2016-08-11T21:32:45Z"
 		},
 		{
+			"checksumSHA1": "yP+hlSaIhYwxErc/s286p9M+LIs=",
+			"path": "github.com/dnsimple/dnsimple-go/dnsimple",
+			"revision": "d0bdd43deaa2cbeee96532b109ea635457423f25",
+			"revisionTime": "2017-03-07T17:17:48Z"
+		},
+		{
 			"checksumSHA1": "OnSTHmTPGTAwFMfqCSZj4z5BnEo=",
 			"origin": "github.com/aws/aws-sdk-go/vendor/github.com/go-ini/ini",
 			"path": "github.com/go-ini/ini",
@@ -205,6 +211,12 @@
 			"path": "github.com/golang/protobuf/proto",
 			"revision": "45760678a2e5102a51433d40069dbc9ec5b26753",
 			"revisionTime": "2016-02-25T03:18:00Z"
+		},
+		{
+			"checksumSHA1": "yyAzHoiVLu+xywYI2BDyRq6sOqE=",
+			"path": "github.com/google/go-querystring/query",
+			"revision": "9235644dd9e52eeae6fa48efd539fdc351a0af53",
+			"revisionTime": "2016-03-11T01:20:12Z"
 		},
 		{
 			"checksumSHA1": "Wbsfxh89xfnFDZzoEOzpfUV9+u8=",
@@ -337,6 +349,12 @@
 			"path": "golang.org/x/net/context/ctxhttp",
 			"revision": "4971afdc2f162e82d185353533d3cf16188a9f4e",
 			"revisionTime": "2016-11-15T21:05:04Z"
+		},
+		{
+			"checksumSHA1": "GIGmSrYACByf5JDIP9ByBZksY80=",
+			"path": "golang.org/x/net/idna",
+			"revision": "a6577fac2d73be281a500b310739095313165611",
+			"revisionTime": "2017-03-08T20:54:49Z"
 		},
 		{
 			"checksumSHA1": "XH7CgbL5Z8COUc+MKrYqS3FFosY=",

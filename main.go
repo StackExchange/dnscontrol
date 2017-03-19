@@ -69,13 +69,13 @@ func main() {
 	}
 
 	if flag.NArg() != 1 {
-		fmt.Println("Usage: dnscontrol [options] cmd")
-		fmt.Println("        cmd:")
-		fmt.Println("           preview: Show changed that would happen.")
-		fmt.Println("           push:    Make changes for real.")
-		fmt.Println("           version: Print program version string.")
-		fmt.Println("           print:   Print compiled data.")
-		fmt.Println("")
+		fmt.Println(`Usage: dnscontrol [options] cmd
+		        cmd:
+		           preview: Show changed that would happen.
+		           push:    Make changes for real.
+		           version: Print program version string.
+		           print:   Print compiled data.
+		`)
 		flag.PrintDefaults()
 		return
 	}
