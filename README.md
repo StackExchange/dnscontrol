@@ -15,6 +15,7 @@ Currently supported DNS providers:
  - Active Directory
  - BIND
  - CloudFlare
+ - DNSimple
  - Gandi
  - Google
  - Namecheap
