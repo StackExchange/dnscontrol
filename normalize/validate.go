@@ -43,8 +43,8 @@ func checkTarget(target string) error {
 }
 
 // validateRecordTypes list of valid rec.Type values. Returns true if this is a real DNS record type, false means it is a pseudo-type used internally.
-func validateRecordTypes(rec *models.RecordConfig, domain_name string) error {
-	var valid_types = map[string]bool{
+func validateRecordTypes(rec *models.RecordConfig, domain string) error {
+	var validTypes = map[string]bool{
 		"A":                true,
 		"AAAA":             true,
 		"CNAME":            true,
@@ -54,38 +54,37 @@ func validateRecordTypes(rec *models.RecordConfig, domain_name string) error {
 		"NS":               true,
 	}
 
-	if _, ok := valid_types[rec.Type]; !ok {
-		return fmt.Errorf("Unsupported record type (%v) domain=%v name=%v", rec.Type, domain_name, rec.Name)
+	if _, ok := validTypes[rec.Type]; !ok {
+		return fmt.Errorf("Unsupported record type (%v) domain=%v name=%v", rec.Type, domain, rec.Name)
 	}
 	return nil
 }
 
-var expectedUnderscores = []string{"._domainkey"}
+var expectedUnderscores = []string{"_domainkey"}
 
-func checkLabel(rec *models.RecordConfig, domain string) error {
-	label := rec.Name
+func checkLabel(label string, rType string, domain string) error {
 	if label == "@" {
 		return nil
 	}
 	if len(label) < 1 {
-		return fmt.Errorf("empty %s label in %s", rec.Type, domain)
+		return fmt.Errorf("empty %s label in %s", rType, domain)
 	}
 	if label[len(label)-1] == '.' {
 		return fmt.Errorf("label %s.%s ends with a (.)", label, domain)
 	}
 
 	//underscores are warnings
-	if strings.ContainsRune(rec.Name, '_') {
+	if strings.ContainsRune(label, '_') {
 		//unless it is in our exclusion list
 		ok := false
 		for _, ex := range expectedUnderscores {
-			if strings.Contains(rec.Name, ex) {
+			if strings.Contains(label, ex) {
 				ok = true
 				break
 			}
 		}
 		if !ok {
-			return Warning{fmt.Errorf("label %s.%s contains an underscore", rec.Name, domain)}
+			return Warning{fmt.Errorf("label %s.%s contains an underscore", label, domain)}
 		}
 	}
 	return nil
@@ -126,31 +125,31 @@ func checkTargets(rec *models.RecordConfig, domain string) (errs []error) {
 	return
 }
 
-func transformCNAME(target, old_domain, new_domain string) string {
-	// Canonicalize. If it isn't a FQDN, add the new_domain.
-	result := dnsutil.AddOrigin(target, old_domain)
+func transformCNAME(target, oldDomain, newDomain string) string {
+	// Canonicalize. If it isn't a FQDN, add the newDomain.
+	result := dnsutil.AddOrigin(target, oldDomain)
 	if dns.IsFqdn(result) {
 		result = result[:len(result)-1]
 	}
-	return dnsutil.AddOrigin(result, new_domain) + "."
+	return dnsutil.AddOrigin(result, newDomain) + "."
 }
 
 // import_transform imports the records of one zone into another, modifying records along the way.
-func import_transform(src_domain, dst_domain *models.DomainConfig, transforms []transform.IpConversion, ttl uint32) error {
-	// Read src_domain.Records, transform, and append to dst_domain.Records:
+func importTransform(srcDomain, dstDomain *models.DomainConfig, transforms []transform.IpConversion, ttl uint32) error {
+	// Read srcDomain.Records, transform, and append to dstDomain.Records:
 	// 1. Skip any that aren't A or CNAMEs.
-	// 2. Append dest_domainname to the end of the label.
-	// 3. For CNAMEs, append dest_domainname to the end of the target.
+	// 2. Append destDomainname to the end of the label.
+	// 3. For CNAMEs, append destDomainname to the end of the target.
 	// 4. For As, change the target as described the transforms.
 
-	for _, rec := range src_domain.Records {
-		if dst_domain.HasRecordTypeName(rec.Type, rec.NameFQDN) {
+	for _, rec := range srcDomain.Records {
+		if dstDomain.HasRecordTypeName(rec.Type, rec.NameFQDN) {
 			continue
 		}
 		newRec := func() *models.RecordConfig {
 			rec2, _ := rec.Copy()
 			rec2.Name = rec2.NameFQDN
-			rec2.NameFQDN = dnsutil.AddOrigin(rec2.Name, dst_domain.Name)
+			rec2.NameFQDN = dnsutil.AddOrigin(rec2.Name, dstDomain.Name)
 			if ttl != 0 {
 				rec2.TTL = ttl
 			}
@@ -165,12 +164,12 @@ func import_transform(src_domain, dst_domain *models.DomainConfig, transforms []
 			for _, tr := range trs {
 				r := newRec()
 				r.Target = tr.String()
-				dst_domain.Records = append(dst_domain.Records, r)
+				dstDomain.Records = append(dstDomain.Records, r)
 			}
 		case "CNAME":
 			r := newRec()
-			r.Target = transformCNAME(r.Target, src_domain.Name, dst_domain.Name)
-			dst_domain.Records = append(dst_domain.Records, r)
+			r.Target = transformCNAME(r.Target, srcDomain.Name, dstDomain.Name)
+			dstDomain.Records = append(dstDomain.Records, r)
 		case "MX", "NS", "TXT":
 			// Not imported.
 			continue
@@ -216,7 +215,7 @@ func NormalizeAndValidateConfig(config *models.DNSConfig) (errs []error) {
 			if err := validateRecordTypes(rec, domain.Name); err != nil {
 				errs = append(errs, err)
 			}
-			if err := checkLabel(rec, domain.Name); err != nil {
+			if err := checkLabel(rec.Name, rec.Type, domain.Name); err != nil {
 				errs = append(errs, err)
 			}
 			if errs2 := checkTargets(rec, domain.Name); errs2 != nil {
@@ -241,7 +240,7 @@ func NormalizeAndValidateConfig(config *models.DNSConfig) (errs []error) {
 					errs = append(errs, err)
 					continue
 				}
-				err = import_transform(config.FindDomain(rec.Target), domain, table, rec.TTL)
+				err = importTransform(config.FindDomain(rec.Target), domain, table, rec.TTL)
 				if err != nil {
 					errs = append(errs, err)
 				}
