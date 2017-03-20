@@ -105,6 +105,14 @@ func main() {
 	if err != nil {
 		log.Fatalf(err.Error())
 	}
+	nonDefaultProviders := []string{}
+	for name, vals := range providerConfigs {
+		// add "_exclude_from_defaults":"true" to a domain to exclude it from being run unless
+		// -providers=all or -providers=name
+		if vals["_exclude_from_defaults"] == "true" {
+			nonDefaultProviders = append(nonDefaultProviders, name)
+		}
+	}
 	registrars, err := providers.CreateRegistrars(dnsConfig, providerConfigs)
 	if err != nil {
 		log.Fatalf("Error creating registrars: %v\n", err)
@@ -152,7 +160,7 @@ func main() {
 				if err != nil {
 					log.Fatal(err)
 				}
-				shouldrun := shouldRunProvider(prov, dc)
+				shouldrun := shouldRunProvider(prov, dc, nonDefaultProviders)
 				statusLbl := ""
 				if !shouldrun {
 					statusLbl = "(skipping)"
@@ -181,7 +189,7 @@ func main() {
 				fmt.Printf("%d correction%s\n", len(corrections), plural)
 				anyErrors = printOrRunCorrections(corrections, command) || anyErrors
 			}
-			if run := shouldRunProvider(domain.Registrar, domain); !run {
+			if run := shouldRunProvider(domain.Registrar, domain, nonDefaultProviders); !run {
 				continue
 			}
 			fmt.Printf("----- Registrar: %s\n", domain.Registrar)
@@ -256,11 +264,16 @@ func printOrRunCorrections(corrections []*models.Correction, command string) (an
 	return anyErrors
 }
 
-func shouldRunProvider(p string, dc *models.DomainConfig) bool {
+func shouldRunProvider(p string, dc *models.DomainConfig, nonDefaultProviders []string) bool {
 	if *flagProviders == "all" {
 		return true
 	}
 	if *flagProviders == "" {
+		for _, pr := range nonDefaultProviders {
+			if pr == p {
+				return false
+			}
+		}
 		return true
 	}
 	for _, prov := range strings.Split(*flagProviders, ",") {
