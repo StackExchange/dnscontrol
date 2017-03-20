@@ -19,14 +19,12 @@ Output is sent to stdout.
 
 Example:
 
-"""
-convertzone stackoverflow.com zone.stackoverflow.com >new/stackoverflow.com
-"""
+    convertzone stackoverflow.com zone.stackoverflow.com >new/stackoverflow.com
 
 
-## mode=tsv:
+## -mode=tsv:
 
-This is useful for AWK and other systems that deal best with a
+This is useful for `awk` and other systems that expect a very
 uniform set of input.
 
 Example: Print all CNAMEs:
@@ -34,7 +32,7 @@ Example: Print all CNAMEs:
     convertzone -mode=tsv foo.com <zone.foo.com | awk '$4 == "CNAME" { print $1 " -> " $5 }'
 
 
-## mode=pretty:
+## -mode=pretty:
 
 This is useful for cleaning up a zonefile. It sorts the records,
 moving SOA and NS records to the top of the zone; all other records
@@ -48,7 +46,7 @@ Example: Clean up a zone file:
     convertzone -mode=pretty foo.com <old/zone.foo.com >new/zone.foo.com
 
 
-## mode=dsl:
+## -mode=dsl:
 
 This is useful for generating your draft `dnsconfig.js` configuration.
 Pass the old zone through this program with `-mode=dsl` and append
