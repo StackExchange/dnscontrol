@@ -268,18 +268,7 @@ func shouldRunProvider(p string, dc *models.DomainConfig) bool {
 		return true
 	}
 	if *flagProviders == "" {
-		return (p != "bind")
-		// NOTE(tlim): Hardcoding bind is a hacky way to make it off by default.
-		// As a result, bind only runs if you list it in -providers or use
-		// -providers=all.
-		// If you always want bind to run, call it something else in dnsconfig.js
-		// for example `NewDSP('bindyes', 'BIND',`.
-		// We don't want this hack, but we shouldn't need this in the future
-		// so it doesn't make sense to write a lot of code to make it work.
-		// In the future, the above `return p != "bind"` can become `return true`.
-		// Alternatively we might want to add a complex system that permits
-		// fancy whitelist/blacklisting of providers with defaults and so on.
-		// In that case, all of this hack will go away.
+		return true
 	}
 	for _, prov := range strings.Split(*flagProviders, ",") {
 		if prov == p {

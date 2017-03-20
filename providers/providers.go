@@ -88,12 +88,8 @@ func CreateRegistrars(d *models.DNSConfig, providerConfigs map[string]map[string
 func CreateDsps(d *models.DNSConfig, providerConfigs map[string]map[string]string) (map[string]DNSServiceProvider, error) {
 	dsps := map[string]DNSServiceProvider{}
 	for _, dsp := range d.DNSProviders {
-		//log.Printf("dsp.Name=%#v\n", dsp.Name)
-		rawMsg, ok := providerConfigs[dsp.Name]
-		if !ok {
-			return nil, fmt.Errorf("DNSServiceProvider %s not listed in -providers file", dsp.Name)
-		}
-		provider, err := CreateDNSProvider(dsp.Type, rawMsg, dsp.Metadata)
+		vals := providerConfigs[dsp.Name]
+		provider, err := CreateDNSProvider(dsp.Type, vals, dsp.Metadata)
 		if err != nil {
 			return nil, err
 		}
