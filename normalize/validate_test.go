@@ -6,7 +6,7 @@ import (
 	"github.com/StackExchange/dnscontrol/models"
 )
 
-func Test_assert_no_enddot(t *testing.T) {
+func TestCheckLabel(t *testing.T) {
 	var tests = []struct {
 		experiment string
 		isError    bool
@@ -16,10 +16,12 @@ func Test_assert_no_enddot(t *testing.T) {
 		{"foo.bar", false},
 		{"foo.", true},
 		{"foo.bar.", true},
+		{"foo_bar", true},
+		{"_domainkey", false},
 	}
 
 	for _, test := range tests {
-		err := assert_no_enddot(test.experiment)
+		err := checkLabel(test.experiment, "A", "foo.com")
 		checkError(t, err, test.isError, test.experiment)
 	}
 }
@@ -30,24 +32,6 @@ func checkError(t *testing.T, err error, shouldError bool, experiment string) {
 	}
 	if err == nil && shouldError {
 		t.Errorf("%v: Expected error but got none \n", experiment)
-	}
-}
-
-func Test_assert_no_underscores(t *testing.T) {
-	var tests = []struct {
-		experiment string
-		isError    bool
-	}{
-		{"@", false},
-		{"foo", false},
-		{"_foo", true},
-		{"foo_", true},
-		{"fo_o", true},
-	}
-
-	for _, test := range tests {
-		err := assert_no_underscores(test.experiment)
-		checkError(t, err, test.isError, test.experiment)
 	}
 }
 
@@ -63,7 +47,7 @@ func Test_assert_valid_ipv4(t *testing.T) {
 	}
 
 	for _, test := range tests {
-		err := assert_valid_ipv4(test.experiment)
+		err := checkIPv4(test.experiment)
 		checkError(t, err, test.isError, test.experiment)
 	}
 }
@@ -81,7 +65,7 @@ func Test_assert_valid_target(t *testing.T) {
 	}
 
 	for _, test := range tests {
-		err := assert_valid_target(test.experiment)
+		err := checkTarget(test.experiment)
 		checkError(t, err, test.isError, test.experiment)
 	}
 }
@@ -99,7 +83,7 @@ func Test_transform_cname(t *testing.T) {
 	}
 
 	for _, test := range tests {
-		actual := transform_cname(test.experiment, "old.com", "new.com")
+		actual := transformCNAME(test.experiment, "old.com", "new.com")
 		if test.expected != actual {
 			t.Errorf("%v: expected (%v) got (%v)\n", test.experiment, test.expected, actual)
 		}
@@ -109,12 +93,12 @@ func Test_transform_cname(t *testing.T) {
 func TestNSAtRoot(t *testing.T) {
 	//do not allow ns records for @
 	rec := &models.RecordConfig{Name: "test", Type: "NS", Target: "ns1.name.com."}
-	errs := validateTargets(rec, "foo.com")
+	errs := checkTargets(rec, "foo.com")
 	if len(errs) > 0 {
 		t.Error("Expect no error with ns record on subdomain")
 	}
 	rec.Name = "@"
-	errs = validateTargets(rec, "foo.com")
+	errs = checkTargets(rec, "foo.com")
 	if len(errs) != 1 {
 		t.Error("Expect error with ns record on @")
 	}

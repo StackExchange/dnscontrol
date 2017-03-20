@@ -90,8 +90,17 @@ func main() {
 	errs := normalize.NormalizeAndValidateConfig(dnsConfig)
 	if len(errs) > 0 {
 		fmt.Printf("%d Validation errors:\n", len(errs))
-		for i, err := range errs {
-			fmt.Printf("%d: %s\n", i+1, err)
+		fatal := false
+		for _, err := range errs {
+			if _, ok := err.(normalize.Warning); ok {
+				fmt.Printf("WARNING: %s\n", err)
+			} else {
+				fatal = true
+				fmt.Printf("ERROR: %s\n", err)
+			}
+		}
+		if fatal {
+			log.Fatal("Exiting due to validation errors")
 		}
 	}
 
