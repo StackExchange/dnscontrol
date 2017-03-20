@@ -12,6 +12,7 @@ convertzone: Read BIND-style zonefile and output.
      zonename    The FQDN of the zone name.
      filename    File to read (default: stdin)
 
+
 mode=tsv:
 
 This is useful for AWK and other systems that deal best with a
