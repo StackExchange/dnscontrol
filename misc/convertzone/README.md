@@ -67,8 +67,10 @@ be entirely sure you've done the conversion correctly.
 Example: Convert a zone filem and add it to your configuration:
 
     convertzone -mode=dsl foo.com <old/zone.foo.com >>dnsconfig.js
-		# Do these next two steps until you've fixed all errors.
-		dnscontrol preview
-		vim dnsconfig.js
-		# When everything is as you wish, push the changes live:
-		dnscontrol push
+    #
+    dnscontrol preview
+    vim dnsconfig.js
+    # (repeat until all warnings/errors are resolved)
+    #
+    # When everything is as you wish, push the changes live:
+    dnscontrol push
