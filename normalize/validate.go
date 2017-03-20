@@ -60,7 +60,9 @@ func validateRecordTypes(rec *models.RecordConfig, domain string) error {
 	return nil
 }
 
-var expectedUnderscores = []string{"_domainkey"}
+// underscores in names are often used erroneously. They are valid for dns records, but invalid for urls.
+// here we list common records expected to have underscores. Anything else containing an underscore will print a warning.
+var expectedUnderscores = []string{"_domainkey", "_dmarc"}
 
 func checkLabel(label string, rType string, domain string) error {
 	if label == "@" {
