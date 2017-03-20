@@ -11,10 +11,6 @@ bind -
 	if an update is actually needed. The old zonefile is also used
 	as the basis for generating the new SOA serial number.
 
-	If -bind_skeletin_src and -bind_skeletin_dst is defined, a
-	recursive file copy is performed from src to dst.  This is
-	useful for copying named.ca and other static files.
-
 */
 
 import (

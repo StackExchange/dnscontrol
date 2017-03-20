@@ -19,6 +19,10 @@ func LoadProviderConfigs(fname string) (map[string]map[string]string, error) {
 	var results = map[string]map[string]string{}
 	dat, err := utfutil.ReadFile(fname, utfutil.POSIX)
 	if err != nil {
+		//no creds file is ok. Bind requires nothing for example. Individual providers will error if things not found.
+		if os.IsNotExist(err) {
+			return results, nil
+		}
 		return nil, fmt.Errorf("While reading provider credentials file %v: %v", fname, err)
 	}
 	s := string(dat)

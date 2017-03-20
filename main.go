@@ -23,15 +23,12 @@ import (
 
 //go:generate go run build/generate/generate.go
 
-// One of these config options must be set.
 var jsFile = flag.String("js", "dnsconfig.js", "Javascript file containing dns config")
-var stdin = flag.Bool("stdin", false, "Read domain config JSON from stdin")
-var jsonInput = flag.String("json", "", "Read domain config from specified JSON file.")
+var credsFile = flag.String("creds", "creds.json", "Provider credentials JSON file")
 
 var jsonOutputPre = flag.String("debugrawjson", "", "Write JSON intermediate to this file pre-normalization.")
 var jsonOutputPost = flag.String("debugjson", "", "During preview, write JSON intermediate to this file instead of stdout.")
 
-var configFile = flag.String("creds", "creds.json", "Provider credentials JSON file")
 var devMode = flag.Bool("dev", false, "Use helpers.js from disk instead of embedded")
 
 var flagProviders = flag.String("providers", "", "Providers to enable (comma seperated list); default is all-but-bind. Specify 'all' for all (including bind)")
@@ -49,11 +46,7 @@ func main() {
 	}
 
 	var dnsConfig *models.DNSConfig
-	if *stdin {
-		log.Fatal("Read from stdin not implemented yet.")
-	} else if *jsonInput != "" {
-		log.Fatal("Direct JSON read not implemented")
-	} else if *jsFile != "" {
+	if *jsFile != "" {
 		text, err := ioutil.ReadFile(*jsFile)
 		if err != nil {
 			log.Fatalf("Error reading %v: %v\n", *jsFile, err)
@@ -108,9 +101,9 @@ func main() {
 		return
 	}
 
-	providerConfigs, err := config.LoadProviderConfigs(*configFile)
+	providerConfigs, err := config.LoadProviderConfigs(*credsFile)
 	if err != nil {
-		log.Fatalf("error loading provider configurations: %s", err)
+		log.Fatalf(err.Error())
 	}
 	registrars, err := providers.CreateRegistrars(dnsConfig, providerConfigs)
 	if err != nil {
