@@ -61,7 +61,6 @@ Example: Convert a zone filem and add it to your configuration:
 		vim dnsconfig.js
 		# When everything is as you wish, push the changes live:
 		dnscontrol push
-
 */
 
 import (
