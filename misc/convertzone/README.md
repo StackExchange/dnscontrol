@@ -11,11 +11,9 @@ convertzone converts an old-style DNS zone file into one of three formats:
     zonename    The FQDN of the zone name.
     filename    File to read (optional. Defaults to stdin)
 
-You must give the script both the zone name (i.e. "stackoverflow.com")
-and the filename of the zonefile to read (or stdin). The domainname is not
-automatically guessed from the input.
-
 Output is sent to stdout.
+
+The zonename is required as it can not be guessed automatically from the input.
 
 Example:
 
@@ -49,23 +47,45 @@ Example: Clean up a zone file:
 ## -mode=dsl:
 
 This is useful for generating your draft `dnsconfig.js` configuration.
-Pass the old zone through this program with `-mode=dsl` and append
-it to your dnsconfig.js file. You'll probably need to clean it up
-a bit: remove NS records (DnsProvider() inserts NS records for you,
-change the order to be more logical and readable, manually check
-over the results.
+The output can be appended to the `dnsconfig.js` file as a good first draft.
+You'll probably need to clean it up
+a bit:
 
-When converting a zonefile to DSL, we recommend first doing a
-straightforward conversion, do not change any records at this time.
-Now you can run `dnscontrol preview` to verify that dnsconfig.js
-file is correct, and you will see that it has found zero changes
-are needed. That means you have done the conversion property.  After
-that step, do any cleanups you'd like to do (remove obsolete records,
-etc.).  If you do such cleanups earlier in the process you can't
-be entirely sure you've done the conversion correctly.
+* remove NS records. DnsProvider() inserts NS records for you.
+* re-order the records to be more logical and readable. (remember that the last item in a list must not end with a comma)
+* manually check over the results.
 
-Example: Convert a zone filem and add it to your configuration:
+When converting a zonefile to DSL, we recommend a 2-phase process.  First
+create a dnsconfig.js file that exactly replicates your existing configuration.
+Only when that is complete should you make any changes to the DNS zone data.
+This is not required, but it is a lot safer.
 
+### Phase 1: Convert exactly as-is.
+
+In this phase the goal is to create a dnsconfig.js that exactly
+replicates the existing DNS data.
+
+Edit dnsconfig.js until `dnscontrol preview` shows no errors and
+no changes to be made. This means the conversion of your old DNS
+data is correct.
+
+Resist the temptation to clean up and old, obsolete, records or to
+add anything new. Experience has shown that making changes at this
+time leads to difficult-to-find errors.
+
+If convertzone could have done a better job, please let us know!
+
+### Phase 2: Make any changes you desire.
+
+Once `dnscontrol preview` lists no changes, do any cleanups
+you want.  For example, remove obsolete records or add new ones.
+
+### Example workflow
+
+Example: Convert a zone file and add it to your configuration:
+
+    # Note this command uses ">>" to append to dnsconfig.js.  Do
+    # not use ">" as that will erase the existing file.
     convertzone -mode=dsl foo.com <old/zone.foo.com >>dnsconfig.js
     #
     dnscontrol preview
@@ -73,4 +93,11 @@ Example: Convert a zone filem and add it to your configuration:
     # (repeat until all warnings/errors are resolved)
     #
     # When everything is as you wish, push the changes live:
+    dnscontrol push
+    # (this should be a no-op)
+    #
+    # Make any changes you do desire:
+    vim dnsconfig.js
+    dnscontrol preview
+    # (repeat until all warnings/errors are resolved)
     dnscontrol push
