@@ -33,4 +33,4 @@ This will print out a list of "corrections" that need to be performed. It will n
 
 ## 4. Run `dnscontrol push`
 
-This will actually generate `zones/example.com.zoone` for you. The bind provider is more configurable, and you can read more information [here.]({{site.github.url}}/providers/bind)
+This will actually generate `zones/example.com.zone` for you. The bind provider is more configurable, and you can read more information [here.]({{site.github.url}}/providers/bind)
