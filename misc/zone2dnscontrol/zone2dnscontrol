@@ -1,8 +1,0 @@
-#! /usr/bin/env bash
-
-if [[ $# != 2 ]]; then
-  echo "Usage: $0 zonename filename"
-  exit 1
-fi
-
-./canonzone $1"." <$2 | awk -v domain="$1" -f ./awkfile.awk
