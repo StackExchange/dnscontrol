@@ -11,6 +11,8 @@ Dnscontrol is a platform for seamlessly managing your dns configuration across a
 
 ## [Language Reference]({{site.github.url}}/js)
 
+## [Examples]({{site.github.url}}/examples)
+
 ## [github](https://github.com/StackExchange/dnscontrol)
 
 
