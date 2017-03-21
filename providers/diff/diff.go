@@ -16,6 +16,7 @@ type Changeset []Correlation
 
 type Differ interface {
 	IncrementalDiff(existing []*models.RecordConfig) (unchanged, create, toDelete, modify Changeset)
+	ChangedGroups(existing []*models.RecordConfig) map[models.RecordKey][]string
 }
 
 func New(dc *models.DomainConfig, extraValues ...func(*models.RecordConfig) map[string]string) Differ {
@@ -146,6 +147,21 @@ func (d *differ) IncrementalDiff(existing []*models.RecordConfig) (unchanged, cr
 		}
 	}
 	return
+}
+
+func (d *differ) ChangedGroups(existing []*models.RecordConfig) map[models.RecordKey][]string {
+	changedKeys := map[models.RecordKey][]string{}
+	_, create, delete, modify := d.IncrementalDiff(existing)
+	for _, c := range create {
+		changedKeys[c.Desired.Key()] = append(changedKeys[c.Desired.Key()], c.String())
+	}
+	for _, d := range delete {
+		changedKeys[d.Existing.Key()] = append(changedKeys[d.Existing.Key()], d.String())
+	}
+	for _, m := range modify {
+		changedKeys[m.Desired.Key()] = append(changedKeys[m.Desired.Key()], m.String())
+	}
+	return changedKeys
 }
 
 func (c Correlation) String() string {
