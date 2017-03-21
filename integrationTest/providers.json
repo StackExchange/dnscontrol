@@ -3,9 +3,10 @@
         "domain": "$GCLOUD_DOMAIN",
         "project_id": "$GCLOUD_PROJECT",
         "private_key": "$GCLOUD_PRIVATEKEY",
-        "client_email": "$GCLOUD_EMAIL",
+        "client_email": "$GCLOUD_EMAIL"
     },
     "DNSIMPLE":{
+        "knownFailures": "16,17",
         "domain": "$DNSIMPLE_DOMAIN",
         "token": "$DNSIMPLE_TOKEN",
         "baseurl": "https://api.sandbox.dnsimple.com"

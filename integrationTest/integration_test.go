@@ -6,6 +6,9 @@ import (
 
 	"fmt"
 
+	"strconv"
+	"strings"
+
 	"github.com/StackExchange/dnscontrol/models"
 	"github.com/StackExchange/dnscontrol/nameservers"
 	"github.com/StackExchange/dnscontrol/providers"
@@ -15,20 +18,24 @@ import (
 )
 
 var providerToRun = flag.String("provider", "", "Provider to run")
+var startIdx = flag.Int("start", 0, "Test number to begin with")
+var endIdx = flag.Int("end", 0, "Test index to stop after")
+var verbose = flag.Bool("verbose", false, "Print corrections as you run them")
 
 func init() {
 	flag.Parse()
 }
 
-func getProvider(t *testing.T) (providers.DNSServiceProvider, string) {
+func getProvider(t *testing.T) (providers.DNSServiceProvider, string, map[int]bool) {
 	if *providerToRun == "" {
 		t.Log("No provider specified with -provider")
-		return nil, ""
+		return nil, "", nil
 	}
 	jsons, err := config.LoadProviderConfigs("providers.json")
 	if err != nil {
 		t.Fatalf("Error loading provider configs: %s", err)
 	}
+	fails := map[int]bool{}
 	for name, cfg := range jsons {
 		if *providerToRun != name {
 			continue
@@ -37,19 +44,28 @@ func getProvider(t *testing.T) (providers.DNSServiceProvider, string) {
 		if err != nil {
 			t.Fatal(err)
 		}
-		return provider, cfg["domain"]
+		if f := cfg["knownFailures"]; f != "" {
+			for _, s := range strings.Split(f, ",") {
+				i, err := strconv.Atoi(s)
+				if err != nil {
+					t.Fatal(err)
+				}
+				fails[i] = true
+			}
+		}
+		return provider, cfg["domain"], fails
 	}
 	t.Fatalf("Provider %s not found", *providerToRun)
-	return nil, ""
+	return nil, "", nil
 }
 
 func TestDNSProviders(t *testing.T) {
-	provider, domain := getProvider(t)
+	provider, domain, fails := getProvider(t)
 	if provider == nil {
 		return
 	}
 	t.Run(fmt.Sprintf("%s", domain), func(t *testing.T) {
-		runTests(t, provider, domain)
+		runTests(t, provider, domain, fails)
 	})
 
 }
@@ -68,14 +84,23 @@ func getDomainConfigWithNameservers(t *testing.T, prv providers.DNSServiceProvid
 	return dc
 }
 
-func runTests(t *testing.T, prv providers.DNSServiceProvider, domainName string) {
+func runTests(t *testing.T, prv providers.DNSServiceProvider, domainName string, knownFailures map[int]bool) {
 	dc := getDomainConfigWithNameservers(t, prv, domainName)
 	// run tests one at a time
-	for i, tst := range tests {
+	end := *endIdx
+	if end == 0 || end >= len(tests) {
+		end = len(tests) - 1
+	}
+	for i := *startIdx; i <= end; i++ {
+		tst := tests[i]
 		if t.Failed() {
 			break
 		}
 		t.Run(fmt.Sprintf("%d: %s", i, tst.Desc), func(t *testing.T) {
+			if knownFailures[i] {
+				t.Log("SKIPPING KNOWN FAILURE CASE")
+				return
+			}
 			dom, _ := dc.Copy()
 			for _, r := range tst.Records {
 				rc := models.RecordConfig(*r)
@@ -88,10 +113,13 @@ func runTests(t *testing.T, prv providers.DNSServiceProvider, domainName string)
 			if err != nil {
 				t.Fatal(err)
 			}
-			if i != 0 && len(corrections) == 0 {
+			if i != *startIdx && len(corrections) == 0 {
 				t.Fatalf("Expect changes for all tests, but got none")
 			}
 			for _, c := range corrections {
+				if *verbose {
+					t.Log(c.Msg)
+				}
 				err = c.F()
 				if err != nil {
 					t.Fatal(err)
@@ -112,7 +140,7 @@ func runTests(t *testing.T, prv providers.DNSServiceProvider, domainName string)
 }
 
 func TestDualProviders(t *testing.T) {
-	p, domain := getProvider(t)
+	p, domain, _ := getProvider(t)
 	if p == nil {
 		return
 	}
@@ -164,6 +192,10 @@ func cname(name, target string) *rec {
 	return makeRec(name, target, "CNAME")
 }
 
+func ns(name, target string) *rec {
+	return makeRec(name, target, "NS")
+}
+
 func makeRec(name, target, typ string) *rec {
 	return &rec{
 		Name:   name,
@@ -185,6 +217,7 @@ func tc(desc string, recs ...*rec) *TestCase {
 	}
 }
 
+//ALWAYS ADD TO BOTTOM OF LIST. Order and indexes matter.
 var tests = []*TestCase{
 	// A
 	tc("Empty"),
@@ -198,12 +231,17 @@ var tests = []*TestCase{
 	tc("Delete one", a("@", "1.2.3.4").ttl(500), a("www", "5.6.7.8").ttl(400)),
 	tc("Add back and change ttl", a("www", "5.6.7.8").ttl(700), a("www", "1.2.3.4").ttl(700)),
 	tc("Change targets and ttls", a("www", "1.1.1.1"), a("www", "2.2.2.2")),
+
 	// CNAMES
 	tc("Empty"),
 	tc("Create a CNAME", cname("foo", "google.com.")),
 	tc("Change it", cname("foo", "google2.com.")),
 	tc("Change to A record", a("foo", "1.2.3.4")),
 	tc("Change back to CNAME", cname("foo", "google.com.")),
+
+	//NS
+	tc("NS for subdomain", ns("xyz", "ns2.foo.com.")),
+	tc("Dual NS for subdomain", ns("xyz", "ns2.foo.com."), ns("xyz", "ns1.foo.com.")),
 
 	//IDNAs
 	tc("Internationalized name", a("ööö", "1.2.3.4")),
