@@ -9,5 +9,9 @@
         "domain": "$DNSIMPLE_DOMAIN",
         "token": "$DNSIMPLE_TOKEN",
         "baseurl": "https://api.sandbox.dnsimple.com"
+    },
+    "NS1":{
+        "domain": "$NS1_DOMAIN",
+        "api_token": "$NS1_TOKEN"
     }
 }
