@@ -140,7 +140,7 @@ func (c *Bind) GetNameservers(string) ([]*models.Nameserver, error) {
 }
 
 func (c *Bind) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Correction, error) {
-
+	dc.Punycode()
 	// Phase 1: Copy everything to []*models.RecordConfig:
 	//    expectedRecords < dc.Records[i]
 	//    foundRecords < zonefile
