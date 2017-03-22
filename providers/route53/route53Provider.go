@@ -106,6 +106,7 @@ func (r *route53Provider) GetNameservers(domain string) ([]*models.Nameserver, e
 }
 
 func (r *route53Provider) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Correction, error) {
+	dc.Punycode()
 	if err := r.getZones(); err != nil {
 		return nil, err
 	}
@@ -147,22 +148,18 @@ func (r *route53Provider) GetDomainCorrections(dc *models.DomainConfig) ([]*mode
 	}
 
 	//diff
-	changeDesc := ""
 	differ := diff.New(dc)
 	_, create, delete, modify := differ.IncrementalDiff(existingRecords)
 
-	namesToUpdate := map[key]bool{}
+	namesToUpdate := map[key][]string{}
 	for _, c := range create {
-		namesToUpdate[getKey(c.Desired)] = true
-		changeDesc += fmt.Sprintln(c)
+		namesToUpdate[getKey(c.Desired)] = append(namesToUpdate[getKey(c.Desired)], c.String())
 	}
 	for _, d := range delete {
-		namesToUpdate[getKey(d.Existing)] = true
-		changeDesc += fmt.Sprintln(d)
+		namesToUpdate[getKey(d.Existing)] = append(namesToUpdate[getKey(d.Existing)], d.String())
 	}
 	for _, m := range modify {
-		namesToUpdate[getKey(m.Desired)] = true
-		changeDesc += fmt.Sprintln(m)
+		namesToUpdate[getKey(m.Desired)] = append(namesToUpdate[getKey(m.Desired)], m.String())
 	}
 
 	if len(namesToUpdate) == 0 {
@@ -180,13 +177,17 @@ func (r *route53Provider) GetDomainCorrections(dc *models.DomainConfig) ([]*mode
 		}
 	}
 
+	dels := []*r53.Change{}
 	changes := []*r53.Change{}
+	changeDesc := ""
+	delDesc := ""
 	for k, recs := range updates {
 		chg := &r53.Change{}
-		changes = append(changes, chg)
 		var rrset *r53.ResourceRecordSet
 		if len(recs) == 0 {
+			dels = append(dels, chg)
 			chg.Action = sPtr("DELETE")
+			delDesc += strings.Join(namesToUpdate[k], "\n") + "\n"
 			// on delete just submit the original resource set we got from r53.
 			for _, r := range records {
 				if *r.Name == k.Name+"." && *r.Type == k.Type {
@@ -195,6 +196,8 @@ func (r *route53Provider) GetDomainCorrections(dc *models.DomainConfig) ([]*mode
 				}
 			}
 		} else {
+			changes = append(changes, chg)
+			changeDesc += strings.Join(namesToUpdate[k], "\n") + "\n"
 			//on change or create, just build a new record set from our desired state
 			chg.Action = sPtr("UPSERT")
 			rrset = &r53.ResourceRecordSet{
@@ -218,16 +221,28 @@ func (r *route53Provider) GetDomainCorrections(dc *models.DomainConfig) ([]*mode
 	changeReq := &r53.ChangeResourceRecordSetsInput{
 		ChangeBatch: &r53.ChangeBatch{Changes: changes},
 	}
+	delReq := &r53.ChangeResourceRecordSetsInput{
+		ChangeBatch: &r53.ChangeBatch{Changes: dels},
+	}
 
-	corrections = append(corrections,
-		&models.Correction{
-			Msg: changeDesc,
-			F: func() error {
-				changeReq.HostedZoneId = zone.Id
-				_, err := r.client.ChangeResourceRecordSets(changeReq)
-				return err
-			},
-		})
+	addCorrection := func(req *r53.ChangeResourceRecordSetsInput) {
+		corrections = append(corrections,
+			&models.Correction{
+				Msg: changeDesc,
+				F: func() error {
+					req.HostedZoneId = zone.Id
+					_, err := r.client.ChangeResourceRecordSets(req)
+					return err
+				},
+			})
+	}
+	if len(dels) > 0 {
+		addCorrection(delReq)
+	}
+	if len(changes) > 0 {
+		addCorrection(changeReq)
+	}
+
 	return corrections, nil
 
 }

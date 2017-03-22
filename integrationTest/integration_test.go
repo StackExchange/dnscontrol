@@ -270,4 +270,6 @@ var tests = []*TestCase{
 	tc("Delete one", mx("@", 5, "foo2.com."), mx("@", 15, "foo3.com.")),
 	tc("Change to other name", mx("@", 5, "foo2.com."), mx("mail", 15, "foo3.com.")),
 	tc("Change Priority", mx("@", 7, "foo2.com."), mx("mail", 15, "foo3.com.")),
+
+	tc("IDN pre-punycoded", cname("xn--o-0gab", "xn--o-0gab.xn--o-0gab.")),
 }

@@ -1,17 +1,22 @@
 {
+    "BIND": {
+        "domain": "example.com"
+    },
+    "DNSIMPLE": {
+        "knownFailures": "16,17",
+        "domain": "$DNSIMPLE_DOMAIN",
+        "token": "$DNSIMPLE_TOKEN",
+        "baseurl": "https://api.sandbox.dnsimple.com"
+    },
     "GCLOUD": {
         "domain": "$GCLOUD_DOMAIN",
         "project_id": "$GCLOUD_PROJECT",
         "private_key": "$GCLOUD_PRIVATEKEY",
         "client_email": "$GCLOUD_EMAIL"
     },
-    "DNSIMPLE":{
-        "knownFailures": "16,17",
-        "domain": "$DNSIMPLE_DOMAIN",
-        "token": "$DNSIMPLE_TOKEN",
-        "baseurl": "https://api.sandbox.dnsimple.com"
-    },
-    "BIND":{
-        "domain": "example.com"
+    "ROUTE53": {
+        "domain": "$R53_DOMAIN",
+        "KeyId": "$R53_KEY_ID",
+        "SecretKey": "$R53_KEY"
     }
 }
