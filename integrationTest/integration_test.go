@@ -131,7 +131,10 @@ func runTests(t *testing.T, prv providers.DNSServiceProvider, domainName string,
 				t.Fatal(err)
 			}
 			if len(corrections) != 0 {
-				t.Fatalf("Expected 0 corrections on second run, but found %d.", len(corrections))
+				t.Logf("Expected 0 corrections on second run, but found %d.", len(corrections))
+				for i, c := range corrections {
+					t.Logf("#%d: %s", i, c.Msg)
+				}
 
 			}
 		})
