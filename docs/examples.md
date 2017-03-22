@@ -7,6 +7,31 @@ layout: default
 * TOC
 {:toc}
 
+## Typical DNS Records
+
+{% highlight javascript %}
+
+D('example.com', REG, DnsProvider('GCLOUD'),
+    A('@', '1.2.3.4'),  // The naked or 'apex' domain.
+    A('server1', '2.3.4.5'),
+    AAAA('wide', '2001:0db8:85a3:0000:0000:8a2e:0370:7334'),
+    CNAME('www', 'server1'),
+    CNAME('another', 'service.mycloud.com.'),
+    MX('mail, 10, 'mailserver'),
+    MX('mail', 20, 'mailqueue'),
+    TXT('the', 'message'),
+    NS('delegated', 'ns1.dnsexample.com.'),
+    NS('delegated', 'ns2.dnsexample.com.'),
+)
+
+{% endhighlight %}
+
+## Set a specific TTL for a record
+
+{% highlight javascript %}
+    A('one', '1.2.3.4', TTL(400)),
+{% endhighlight %}
+
 ## Variables for common IP Addresses
 
 {% highlight javascript %}
