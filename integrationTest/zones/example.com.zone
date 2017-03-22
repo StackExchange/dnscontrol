@@ -1,0 +1,4 @@
+$TTL 300
+@                IN SOA   DEFAULT_NOT_SET. DEFAULT_NOT_SET. 2017032059 3600 600 604800 1440
+                IN NS foo.com.
+xn--o-0gab       IN CNAME xn--ndaaa.xn--ndaaa.
