@@ -25,7 +25,7 @@ D("example.com", registrar, DnsProvider(bind),
 );
 {%endhighlight%}
 
-You may modify this files to match your particular providers and domains. See [the javascript docs]({{site.github.url}}/js) and  [the provider docs]({{site.github.url}}/provider-list) for more details. If you are using other providers, you will likely need to make a `creds.json` file with api tokens and other account information.
+You may modify this file to match your particular providers and domains. See [the javascript docs]({{site.github.url}}/js) and  [the provider docs]({{site.github.url}}/provider-list) for more details. If you are using other providers, you will likely need to make a `creds.json` file with api tokens and other account information.
 
 ## 3. Run `dnscontrol preview`
 
