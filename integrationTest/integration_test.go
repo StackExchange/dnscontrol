@@ -97,9 +97,10 @@ func runTests(t *testing.T, prv providers.DNSServiceProvider, domainName string,
 			break
 		}
 		t.Run(fmt.Sprintf("%d: %s", i, tst.Desc), func(t *testing.T) {
+			skipVal := false
 			if knownFailures[i] {
-				t.Log("SKIPPING KNOWN FAILURE CASE")
-				return
+				t.Log("SKIPPING VALIDATION FOR KNOWN FAILURE CASE")
+				skipVal = true
 			}
 			dom, _ := dc.Copy()
 			for _, r := range tst.Records {
@@ -113,7 +114,7 @@ func runTests(t *testing.T, prv providers.DNSServiceProvider, domainName string,
 			if err != nil {
 				t.Fatal(err)
 			}
-			if i != *startIdx && len(corrections) == 0 {
+			if !skipVal && i != *startIdx && len(corrections) == 0 {
 				t.Fatalf("Expect changes for all tests, but got none")
 			}
 			for _, c := range corrections {
@@ -130,15 +131,14 @@ func runTests(t *testing.T, prv providers.DNSServiceProvider, domainName string,
 			if err != nil {
 				t.Fatal(err)
 			}
-			if len(corrections) != 0 {
+			if !skipVal && len(corrections) != 0 {
 				t.Logf("Expected 0 corrections on second run, but found %d.", len(corrections))
 				for i, c := range corrections {
 					t.Logf("#%d: %s", i, c.Msg)
 				}
-
+				t.FailNow()
 			}
 		})
-
 	}
 }
 
@@ -150,7 +150,8 @@ func TestDualProviders(t *testing.T) {
 	dc := getDomainConfigWithNameservers(t, p, domain)
 	// clear everything
 	run := func() {
-		cs, err := p.GetDomainCorrections(dc)
+		dom, _ := dc.Copy()
+		cs, err := p.GetDomainCorrections(dom)
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -176,7 +177,11 @@ func TestDualProviders(t *testing.T) {
 		t.Fatal(err)
 	}
 	if len(cs) != 0 {
-		t.Fatal("Expect no corrections on second run")
+		t.Logf("Expect no corrections on second run, but found %d.", len(cs))
+		for i, c := range cs {
+			t.Logf("#%d: %s", i, c.Msg)
+		}
+		t.FailNow()
 	}
 }
 
@@ -197,6 +202,12 @@ func cname(name, target string) *rec {
 
 func ns(name, target string) *rec {
 	return makeRec(name, target, "NS")
+}
+
+func mx(name string, prio uint16, target string) *rec {
+	r := makeRec(name, target, "MX")
+	r.Priority = prio
+	return r
 }
 
 func makeRec(name, target, typ string) *rec {
@@ -251,4 +262,12 @@ var tests = []*TestCase{
 	tc("Change IDN", a("ööö", "2.2.2.2")),
 	tc("Internationalized CNAME Target", cname("a", "ööö.com.")),
 	tc("IDN CNAME AND Target", cname("öoö", "ööö.ööö.")),
+
+	//MX
+	tc("MX record", mx("@", 5, "foo.com.")),
+	tc("Second MX record, same prio", mx("@", 5, "foo.com."), mx("@", 5, "foo2.com.")),
+	tc("3 MX", mx("@", 5, "foo.com."), mx("@", 5, "foo2.com."), mx("@", 15, "foo3.com.")),
+	tc("Delete one", mx("@", 5, "foo2.com."), mx("@", 15, "foo3.com.")),
+	tc("Change to other name", mx("@", 5, "foo2.com."), mx("mail", 15, "foo3.com.")),
+	tc("Change Priority", mx("@", 7, "foo2.com."), mx("mail", 15, "foo3.com.")),
 }

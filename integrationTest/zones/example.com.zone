@@ -1,3 +1,4 @@
 $TTL 300
-@                IN SOA   DEFAULT_NOT_SET. DEFAULT_NOT_SET. 2017032173 3600 600 604800 1440
-xn--o-0gab       IN CNAME xn--ndaaa.xn--ndaaa.
+@                IN SOA   DEFAULT_NOT_SET. DEFAULT_NOT_SET. 2017032394 3600 600 604800 1440
+                 IN MX    7 foo2.com.
+mail             IN MX    15 foo3.com.
