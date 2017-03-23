@@ -3,10 +3,13 @@ package gandi
 import (
 	"encoding/json"
 	"fmt"
+	"log"
 
 	"github.com/StackExchange/dnscontrol/models"
 	"github.com/StackExchange/dnscontrol/providers"
 	"github.com/StackExchange/dnscontrol/providers/diff"
+
+	"strings"
 
 	gandidomain "github.com/prasmussen/gandi-api/domain"
 	gandirecord "github.com/prasmussen/gandi-api/domain/zone/record"
@@ -56,48 +59,62 @@ func (c *GandiApi) GetNameservers(domain string) ([]*models.Nameserver, error) {
 }
 
 func (c *GandiApi) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Correction, error) {
+	dc.Punycode()
+	dc.CombineMXs()
 	domaininfo, err := c.getDomainInfo(dc.Name)
 	if err != nil {
 		return nil, err
 	}
-	foundRecords, err := c.getZoneRecords(domaininfo.ZoneId)
+	foundRecords, err := c.getZoneRecords(domaininfo.ZoneId, dc.Name)
 	if err != nil {
 		return nil, err
 	}
 
-	expectedRecordSets := make([]gandirecord.RecordSet, len(dc.Records))
-	for i, rec := range dc.Records {
-		if rec.Type == "MX" {
-			rec.Target = fmt.Sprintf("%d %s", rec.Priority, rec.Target)
+	expectedRecordSets := make([]gandirecord.RecordSet, 0, len(dc.Records))
+	recordsToKeep := make([]*models.RecordConfig, 0, len(dc.Records))
+	for _, rec := range dc.Records {
+		if rec.TTL < 300 {
+			log.Printf("WARNiNG: Gandi does not support ttls < 300. %s will not be set to %d.", rec.NameFQDN, rec.TTL)
+			rec.TTL = 300
 		}
 		if rec.Type == "TXT" {
 			rec.Target = "\"" + rec.Target + "\"" // FIXME(tlim): Should do proper quoting.
 		}
-		expectedRecordSets[i] = gandirecord.RecordSet{}
-		expectedRecordSets[i]["type"] = rec.Type
-		expectedRecordSets[i]["name"] = rec.Name
-		expectedRecordSets[i]["value"] = rec.Target
-		expectedRecordSets[i]["ttl"] = rec.TTL
+		if rec.Type == "NS" && rec.Name == "@" {
+			if !strings.HasSuffix(rec.Target, ".gandi.net.") {
+				log.Printf("WARNiNG: Gandi does not support changing apex NS records. %s will not be added.", rec.Target)
+			}
+			continue
+		}
+		rs := gandirecord.RecordSet{}
+		rs["type"] = rec.Type
+		rs["name"] = rec.Name
+		rs["value"] = rec.Target
+		rs["ttl"] = rec.TTL
+		expectedRecordSets = append(expectedRecordSets, rs)
+		recordsToKeep = append(recordsToKeep, rec)
 	}
+	dc.Records = recordsToKeep
 	differ := diff.New(dc)
 	_, create, del, mod := differ.IncrementalDiff(foundRecords)
 
 	// Print a list of changes. Generate an actual change that is the zone
 	changes := false
+	desc := ""
 	for _, i := range create {
 		changes = true
-		fmt.Println(i)
+		desc += "\n" + i.String()
 	}
 	for _, i := range del {
 		changes = true
-		fmt.Println(i)
+		desc += "\n" + i.String()
 	}
 	for _, i := range mod {
 		changes = true
-		fmt.Println(i)
+		desc += "\n" + i.String()
 	}
 
-	msg := fmt.Sprintf("GENERATE_ZONE: %s (%d records)", dc.Name, len(dc.Records))
+	msg := fmt.Sprintf("GENERATE_ZONE: %s (%d records)%s", dc.Name, len(dc.Records), desc)
 	corrections := []*models.Correction{}
 	if changes {
 		corrections = append(corrections,

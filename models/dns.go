@@ -191,6 +191,17 @@ func (dc *DomainConfig) Punycode() error {
 	return nil
 }
 
+// CombineMXs will merge the priority into the target field for all mx records.
+// Useful for providers that desire them as one field.
+func (dc *DomainConfig) CombineMXs() {
+	for _, rec := range dc.Records {
+		if rec.Type == "MX" {
+			rec.Target = fmt.Sprintf("%d %s", rec.Priority, rec.Target)
+			rec.Priority = 0
+		}
+	}
+}
+
 func copyObj(input interface{}, output interface{}) error {
 	buf := &bytes.Buffer{}
 	enc := gob.NewEncoder(buf)
