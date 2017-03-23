@@ -131,7 +131,7 @@ func runTests(t *testing.T, prv providers.DNSServiceProvider, domainName string,
 					t.Log(c.Msg)
 				}
 				err = c.F()
-				if err != nil {
+				if !skipVal && err != nil {
 					t.Fatal(err)
 				}
 			}
