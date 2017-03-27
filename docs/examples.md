@@ -63,7 +63,7 @@ D('example.com', REG, DnsProvider('R53'),
 
 {% highlight javascript %}
 
-var GOOGLE_APPS_DOMAIN_MX = [
+var GOOGLE_APPS_RECORDS = [
     MX('@', 1, 'aspmx.l.google.com.'),
     MX('@', 5, 'alt1.aspmx.l.google.com.'),
     MX('@', 5, 'alt2.aspmx.l.google.com.'),
@@ -77,9 +77,31 @@ var GOOGLE_APPS_DOMAIN_MX = [
 ]
 
 D('example.com', REG, DnsProvider('R53'),
-   GOOGLE_APPS_DOMAIN_MX,
+   GOOGLE_APPS_RECORDS,
    A('@', '1.2.3.4')
 )
+{% endhighlight %}
+
+## Add comments along complex SPF records
+
+You can't normally put comments in the middle of a string,
+but with a little bit of creativity you can document
+each element of an SPF record this way.
+
+{% highlight javascript %}
+
+var SPF_RECORDS = TXT('@', [
+    'v=spf1',
+    'ip4:1.2.3.0/24',           // NY mail server
+    'ip4:4.3.2.0/24',           // CO mail server
+    'include:_spf.google.com',  // Google Apps
+    'include:mailgun.org',      // Mailgun (requested by Ticket#12345)
+    'include:servers.mcsv.net', // MailChimp (requested by Ticket#54321)
+    'include:sendgrid.net',     // SendGrid (requested by Ticket#23456)
+    'include:spf.mtasv.net',    // Desk.com (needed by IT team)
+    '~all'
+].join(' '));
+
 {% endhighlight %}
 
 ## Dual DNS Providers
