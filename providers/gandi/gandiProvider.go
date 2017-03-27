@@ -74,7 +74,7 @@ func (c *GandiApi) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Corr
 	recordsToKeep := make([]*models.RecordConfig, 0, len(dc.Records))
 	for _, rec := range dc.Records {
 		if rec.TTL < 300 {
-			log.Printf("WARNiNG: Gandi does not support ttls < 300. %s will not be set to %d.", rec.NameFQDN, rec.TTL)
+			log.Printf("WARNING: Gandi does not support ttls < 300. %s will not be set to %d.", rec.NameFQDN, rec.TTL)
 			rec.TTL = 300
 		}
 		if rec.Type == "TXT" {
@@ -82,15 +82,16 @@ func (c *GandiApi) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Corr
 		}
 		if rec.Type == "NS" && rec.Name == "@" {
 			if !strings.HasSuffix(rec.Target, ".gandi.net.") {
-				log.Printf("WARNiNG: Gandi does not support changing apex NS records. %s will not be added.", rec.Target)
+				log.Printf("WARNING: Gandi does not support changing apex NS records. %s will not be added.", rec.Target)
 			}
 			continue
 		}
-		rs := gandirecord.RecordSet{}
-		rs["type"] = rec.Type
-		rs["name"] = rec.Name
-		rs["value"] = rec.Target
-		rs["ttl"] = rec.TTL
+		rs := gandirecord.RecordSet{
+			"type":  rec.Type,
+			"name":  rec.Name,
+			"value": rec.Target,
+			"ttl":   rec.TTL,
+		}
 		expectedRecordSets = append(expectedRecordSets, rs)
 		recordsToKeep = append(recordsToKeep, rec)
 	}
