@@ -59,7 +59,7 @@ D('example.com', REG, DnsProvider('R53'),
 )
 {% endhighlight %}
 
-## Macro to group repeated records
+## Macro to for repeated records
 
 {% highlight javascript %}
 
@@ -74,17 +74,19 @@ var GOOGLE_APPS_RECORDS = [
     CNAME('mail', 'ghs.googlehosted.com.'),
     CNAME('groups', 'ghs.googlehosted.com.'),
     CNAME('sites', 'ghs.googlehosted.com.'),
+    CNAME('start', 'ghs.googlehosted.com.'),
 ]
 
 D('example.com', REG, DnsProvider('R53'),
    GOOGLE_APPS_RECORDS,
    A('@', '1.2.3.4')
 )
+
 {% endhighlight %}
 
 ## Add comments along complex SPF records
 
-You can't normally put comments in the middle of a string,
+You normally can't put comments in the middle of a string,
 but with a little bit of creativity you can document
 each element of an SPF record this way.
 
@@ -101,6 +103,10 @@ var SPF_RECORDS = TXT('@', [
     'include:spf.mtasv.net',    // Desk.com (needed by IT team)
     '~all'
 ].join(' '));
+
+D('example.com', REG, DnsProvider('R53'),
+   SPF_RECORDS,
+)
 
 {% endhighlight %}
 
