@@ -26,7 +26,8 @@ This provider does not recognize any special metadata fields unique to DNSimple.
 Example javascript:
 
 {% highlight js %}
-var DNSIMPLE = NewDnsProvider("dnsimple", DNSIMPLE);
+var REG_DNSIMPLE = NewRegistrar("dnsimple", "DNSIMPLE");
+var DNSIMPLE = NewDnsProvider("dnsimple", "DNSIMPLE");
 
 D("example.tld", REG_DNSIMPLE, DnsProvider(DNSIMPLE),
     A("test","1.2.3.4")
