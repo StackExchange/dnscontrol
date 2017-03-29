@@ -12,6 +12,8 @@ import (
 
 	"strings"
 
+	"strconv"
+
 	"github.com/StackExchange/dnscontrol/providers/diff"
 	"github.com/miekg/dns/dnsutil"
 	"gopkg.in/ns1/ns1-go.v2/rest"
@@ -43,7 +45,6 @@ func (n *nsone) GetNameservers(domain string) ([]*models.Nameserver, error) {
 
 func (n *nsone) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Correction, error) {
 	dc.Punycode()
-	dc.CombineMXs()
 	z, _, err := n.Zones.Get(dc.Name)
 	if err != nil {
 		return nil, err
@@ -51,7 +52,11 @@ func (n *nsone) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Correct
 
 	found := models.Records{}
 	for _, r := range z.Records {
-		found = append(found, convert(r, dc.Name)...)
+		zrs, err := convert(r, dc.Name)
+		if err != nil {
+			return nil, err
+		}
+		found = append(found, zrs...)
 	}
 	foundGrouped := found.Grouped()
 	desiredGrouped := dc.Records.Grouped()
@@ -110,17 +115,35 @@ func buildRecord(recs models.Records, domain string, id string) *dns.Record {
 	}
 
 	for _, r := range recs {
+		data := []string{}
+		if r.Type == "MX" {
+			data = append(data, fmt.Sprint(r.Priority))
+		}
+		data = append(data, r.Target)
 		ans := &dns.Answer{
-			Rdata: []string{r.Target},
+			Rdata: data,
 		}
 		rec.AddAnswer(ans)
 	}
 	return rec
 }
 
-func convert(zr *dns.ZoneRecord, domain string) []*models.RecordConfig {
+func convert(zr *dns.ZoneRecord, domain string) ([]*models.RecordConfig, error) {
 	found := []*models.RecordConfig{}
 	for _, ans := range zr.ShortAns {
+		var prio uint16
+		if zr.Type == "MX" {
+			parts := strings.Split(ans, " ")
+			if len(parts) != 2 {
+				return nil, fmt.Errorf("Error in MX %s. Unexpected MX Format: %s", zr.Domain, ans)
+			}
+			p, err := strconv.ParseUint(parts[0], 10, 16)
+			if err != nil {
+				return nil, fmt.Errorf("Error parsing priority of MX %s: %s", zr.Domain, err)
+			}
+			prio = uint16(p)
+			ans = parts[1]
+		}
 		rec := &models.RecordConfig{
 			NameFQDN: zr.Domain,
 			Name:     dnsutil.TrimDomainName(zr.Domain, domain),
@@ -128,8 +151,9 @@ func convert(zr *dns.ZoneRecord, domain string) []*models.RecordConfig {
 			Target:   ans,
 			Original: zr,
 			Type:     zr.Type,
+			Priority: prio,
 		}
 		found = append(found, rec)
 	}
-	return found
+	return found, nil
 }
