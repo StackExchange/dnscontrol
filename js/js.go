@@ -2,6 +2,8 @@ package js
 
 import (
 	"encoding/json"
+	"fmt"
+	"io/ioutil"
 
 	"github.com/StackExchange/dnscontrol/models"
 
@@ -13,6 +15,8 @@ import (
 //ExecuteJavascript accepts a javascript string and runs it, returning the resulting dnsConfig.
 func ExecuteJavascript(script string, devMode bool) (*models.DNSConfig, error) {
 	vm := otto.New()
+
+	vm.Set("require", require)
 
 	helperJs := GetHelpers(devMode)
 	// run helper script to prime vm and initialize variables
@@ -43,4 +47,18 @@ func ExecuteJavascript(script string, devMode bool) (*models.DNSConfig, error) {
 
 func GetHelpers(devMode bool) string {
 	return _escFSMustString(devMode, "/helpers.js")
+}
+
+func require(call otto.FunctionCall) otto.Value {
+	file := call.Argument(0).String()
+	fmt.Printf("requiring: %s\n", file)
+	data, err := ioutil.ReadFile(file)
+	if err != nil {
+		panic(err)
+	}
+	_, err = call.Otto.Run(string(data))
+	if err != nil {
+		panic(err)
+	}
+	return otto.TrueValue()
 }

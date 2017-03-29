@@ -6,6 +6,7 @@ import (
 	"os"
 	"path/filepath"
 	"testing"
+	"unicode"
 
 	"github.com/StackExchange/dnscontrol/models"
 )
@@ -25,7 +26,8 @@ func TestParsedFiles(t *testing.T) {
 		t.Fatal(err)
 	}
 	for _, f := range files {
-		if filepath.Ext(f.Name()) != ".js" {
+		//run all js files that start with a number. Skip others.
+		if filepath.Ext(f.Name()) != ".js" || !unicode.IsNumber(rune(f.Name()[0])) {
 			continue
 		}
 		t.Log(f.Name(), "------")

@@ -50,7 +50,7 @@ D("example.com", namecom, DnsProvider(r53),
 
 Running `dnscontrol preview` will talk to the providers (here name.com as registrar and route 53 as the dns host), and determine what changes need to be made.
 
-Running `dnscontrol push` will make those changes with the provider and my dns records will be correclty updated.
+Running `dnscontrol push` will make those changes with the provider and my dns records will be correctly updated.
 
 See [Getting Started](https://stackexchange.github.io/dnscontrol/getting-started) page on documentation site.
 

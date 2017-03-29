@@ -1,17 +1,33 @@
 {
-    "GCLOUD": {
-        "domain": "$GCLOUD_DOMAIN",
-        "project_id": "$GCLOUD_PROJECT",
-        "private_key": "$GCLOUD_PRIVATEKEY",
-        "client_email": "$GCLOUD_EMAIL",
+    "BIND": {
+        "domain": "example.com"
     },
-    "DNSIMPLE":{
+    "DNSIMPLE": {
+        //16/17: no ns records managable. Not even for subdomains.
+        "knownFailures": "16,17",
         "domain": "$DNSIMPLE_DOMAIN",
         "token": "$DNSIMPLE_TOKEN",
         "baseurl": "https://api.sandbox.dnsimple.com"
     },
+    "GANDI":{
+        //5: gandi does not accept ttls less than 300
+        "knownFailures": "5",
+        "domain": "$GANDI_DOMAIN",
+        "apikey": "$GANDI_KEY"
+    },
+    "GCLOUD": {
+        "domain": "$GCLOUD_DOMAIN",
+        "project_id": "$GCLOUD_PROJECT",
+        "private_key": "$GCLOUD_PRIVATEKEY",
+        "client_email": "$GCLOUD_EMAIL"
+    },
     "NS1":{
         "domain": "$NS1_DOMAIN",
         "api_token": "$NS1_TOKEN"
+    },
+    "ROUTE53": {
+        "domain": "$R53_DOMAIN",
+        "KeyId": "$R53_KEY_ID",
+        "SecretKey": "$R53_KEY"
     }
 }

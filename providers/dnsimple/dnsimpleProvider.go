@@ -323,10 +323,12 @@ func init() {
 func removeOtherNS(dc *models.DomainConfig) {
 	newList := make([]*models.RecordConfig, 0, len(dc.Records))
 	for _, rec := range dc.Records {
-		if rec.Type == "NS" && rec.NameFQDN == dc.Name {
-			if !strings.HasSuffix(rec.Target, ".dnsimple.com.") {
-				fmt.Printf("Warning: dnsimple.com does not allow NS records on base domain to be modified. %s will not be added.", rec.Target)
+		if rec.Type == "NS" {
+			// apex NS inside dnsimple are expected.
+			if rec.NameFQDN == dc.Name && strings.HasSuffix(rec.Target, ".dnsimple.com.") {
+				continue
 			}
+			fmt.Printf("Warning: dnsimple.com does not allow NS records to be modified. %s will not be added.\n", rec.Target)
 			continue
 		}
 		newList = append(newList, rec)
