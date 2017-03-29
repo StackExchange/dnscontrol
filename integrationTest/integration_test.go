@@ -254,16 +254,19 @@ var tests = []*TestCase{
 	tc("Change back to CNAME", cname("foo", "google.com.")),
 
 	//NS
+	tc("Empty"),
 	tc("NS for subdomain", ns("xyz", "ns2.foo.com.")),
 	tc("Dual NS for subdomain", ns("xyz", "ns2.foo.com."), ns("xyz", "ns1.foo.com.")),
 
 	//IDNAs
+	tc("Empty"),
 	tc("Internationalized name", a("ööö", "1.2.3.4")),
 	tc("Change IDN", a("ööö", "2.2.2.2")),
 	tc("Internationalized CNAME Target", cname("a", "ööö.com.")),
 	tc("IDN CNAME AND Target", cname("öoö", "ööö.ööö.")),
 
 	//MX
+	tc("Empty"),
 	tc("MX record", mx("@", 5, "foo.com.")),
 	tc("Second MX record, same prio", mx("@", 5, "foo.com."), mx("@", 5, "foo2.com.")),
 	tc("3 MX", mx("@", 5, "foo.com."), mx("@", 5, "foo2.com."), mx("@", 15, "foo3.com.")),
