@@ -5,7 +5,7 @@ jsId: GANDI
 ---
 # Gandi Provider
 
-Gandi provides bot a registrar and a dns provider implementation.
+Gandi provides both a registrar and a dns provider implementation.
 
 ## Configuration
 
@@ -21,7 +21,7 @@ In your providers config json file you must provide your Gandi.net api key:
 
 ## Metadata
 
-This provider does not recognize any special metadata fields unique to DNSimple.
+This provider does not recognize any special metadata fields unique to Gandi.
 
 ## Usage
 

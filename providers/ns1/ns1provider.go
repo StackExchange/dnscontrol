@@ -43,6 +43,7 @@ func (n *nsone) GetNameservers(domain string) ([]*models.Nameserver, error) {
 
 func (n *nsone) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Correction, error) {
 	dc.Punycode()
+	dc.CombineMXs()
 	z, _, err := n.Zones.Get(dc.Name)
 	if err != nil {
 		return nil, err
