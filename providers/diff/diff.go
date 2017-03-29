@@ -15,7 +15,10 @@ type Correlation struct {
 type Changeset []Correlation
 
 type Differ interface {
+	//IncrementalDiff performs a diff on a record-by-record basis, and returns a sets for which records need to be created, deleted, or modified.
 	IncrementalDiff(existing []*models.RecordConfig) (unchanged, create, toDelete, modify Changeset)
+	// ChangedGroups performs a diff more appropriate for providers with a "RecordSet" model, where all records with the same name and type are grouped.
+	// Individual record changes are often not useful in such scenarios. Instead we return a map of record keys to a list of change descriptions within that group.
 	ChangedGroups(existing []*models.RecordConfig) map[models.RecordKey][]string
 }
 
