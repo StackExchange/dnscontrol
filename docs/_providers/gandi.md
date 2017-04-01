@@ -5,7 +5,7 @@ jsId: GANDI
 ---
 # Gandi Provider
 
-Gandi provides bot a registrar and a dns provider implementation.
+Gandi provides both a registrar and a dns provider implementation.
 
 ## Configuration
 
@@ -35,4 +35,3 @@ D("example.tld", REG_GANDI, DnsProvider(GANDI),
     A("test","1.2.3.4")
 );
 {% endhighlight %}
-
