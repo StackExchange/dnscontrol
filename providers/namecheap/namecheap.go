@@ -2,6 +2,7 @@ package namecheap
 
 import (
 	"fmt"
+	"sort"
 	"strings"
 
 	"github.com/StackExchange/dnscontrol/models"
@@ -34,20 +35,20 @@ func (n *Namecheap) GetRegistrarCorrections(dc *models.DomainConfig) ([]*models.
 	if err != nil {
 		return nil, err
 	}
-	//todo: sort both
+	sort.Strings(info.DNSDetails.Nameservers)
 	found := strings.Join(info.DNSDetails.Nameservers, ",")
-	desired := ""
+	desiredNs := []string{}
 	for _, d := range dc.Nameservers {
-		if desired != "" {
-			desired += ","
-		}
-		desired += d.Name
+		desiredNs = append(desiredNs, d.Name)
 	}
+	sort.Strings(desiredNs)
+	desired := strings.Join(desiredNs, ",")
 	if found != desired {
 		parts := strings.SplitN(dc.Name, ".", 2)
 		sld, tld := parts[0], parts[1]
 		return []*models.Correction{
-			{Msg: fmt.Sprintf("Change Nameservers from '%s' to '%s'", found, desired),
+			{
+				Msg: fmt.Sprintf("Change Nameservers from '%s' to '%s'", found, desired),
 				F: func() error {
 					_, err := n.client.DomainDNSSetCustom(sld, tld, desired)
 					if err != nil {
