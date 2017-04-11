@@ -17,19 +17,19 @@ import (
 
 /*
 
-Cloudflare APi DNS provider:
+Cloudflare API DNS provider:
 
 Info required in `creds.json`:
    - apikey
    - apiuser
 
-Record level metadata availible:
-   - cloudflare_proxy ("true" or "false")
+Record level metadata available:
+   - cloudflare_proxy ("on", "off", or "full")
 
-Domain level metadata availible:
-   - cloudflare_proxy_default ("true" or "false")
+Domain level metadata available:
+   - cloudflare_proxy_default ("on", "off", or "full")
 
- Provider level metadata availible:
+ Provider level metadata available:
    - ip_conversions
 */
 
