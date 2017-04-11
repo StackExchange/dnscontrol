@@ -22,10 +22,10 @@ username and access token:
 ## Metadata
 
 Record level metadata availible:
-   * cloudflare_proxy ("true" or "false")
+   * cloudflare_proxy ("on", "off", or "full")
 
 Domain level metadata availible:
-   * cloudflare_proxy_default ("true" or "false")
+   * cloudflare_proxy_default ("on", "off", or "full")
 
 Provider level metadata availible:
    * ip_conversions
