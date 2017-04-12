@@ -141,10 +141,22 @@ function TXT(name, target) {
 
 // MX(name,priority,target, recordModifiers...)
 function MX(name, priority, target) {
+    checkArgs([_.isString, _.isNumber, _.isString], arguments, "MX expects (name, priority, target)")
     var mods = getModifiers(arguments,3)
     return function(d) {
         mods.push(priority);
         addRecord(d, "MX", name, target, mods)
+    }
+}
+
+function checkArgs(checks, args, desc){
+    if (args.length < checks.length){
+        throw(desc)
+    }
+    for (var i = 0; i< checks.length; i++){
+        if (!checks[i](args[i])){
+            throw(desc+" - argument "+i+" is not correct type")
+        }
     }
 }
 
