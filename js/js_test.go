@@ -67,21 +67,17 @@ func TestParsedFiles(t *testing.T) {
 }
 
 func TestErrors(t *testing.T) {
-	files, err := ioutil.ReadDir(errorDir)
-	if err != nil {
-		t.Fatal(err)
+	tests := []struct{ desc, text string }{
+		{"old dsp style", `D("foo.com","reg","dsp")`},
+		{"MX no priority", `D("foo.com","reg",MX("@","test."))`},
+		{"MX reversed", `D("foo.com","reg",MX("@","test.", 5))`},
 	}
-	for _, f := range files {
-		if filepath.Ext(f.Name()) != ".js" {
-			continue
-		}
-		t.Log(f.Name(), "------")
-		content, err := ioutil.ReadFile(filepath.Join(errorDir, f.Name()))
-		if err != nil {
-			t.Fatal(err)
-		}
-		if _, err = ExecuteJavascript(string(content), true); err == nil {
-			t.Fatal("Expected error but found none")
-		}
+	for _, tst := range tests {
+		t.Run(tst.desc, func(t *testing.T) {
+			if _, err := ExecuteJavascript(tst.text, true); err == nil {
+				t.Fatal("Expected error but found none")
+			}
+		})
+
 	}
 }
