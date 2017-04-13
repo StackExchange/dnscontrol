@@ -60,7 +60,17 @@ create a dnsconfig.js file that exactly replicates your existing configuration.
 Only when that is complete should you make any changes to the DNS zone data.
 This is not required, but it is a lot safer.
 
-### Phase 1: Convert exactly as-is.
+### Step 0: Build the software.
+
+Build the software and install in your personal bin:
+
+```cmd
+$ cd misc/convertzone/
+$ go build
+$ cp convertzone ~/bin/.
+```
+
+### Step 1: Convert exactly as-is.
 
 In this phase the goal is to create a dnsconfig.js that exactly
 replicates the existing DNS data.
@@ -75,7 +85,7 @@ time leads to difficult-to-find errors.
 
 If convertzone could have done a better job, please let us know!
 
-### Phase 2: Make any changes you desire.
+### Step 2: Make any changes you desire.
 
 Once `dnscontrol preview` lists no changes, do any cleanups
 you want.  For example, remove obsolete records or add new ones.

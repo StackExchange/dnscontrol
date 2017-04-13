@@ -86,8 +86,15 @@ Writing new plugins is very easy.
 
 # Installation
 
+## From source
+
+This command will download the source code, compile it, and put the resulting
+binary in `~/bin/`
+
 ```cmd
 go get github.com/StackExchange/dnscontrol
 ```
 
-or get prebuilt binaries from [github releases](https://github.com/StackExchange/dnscontrol/releases/latest).
+## Via packages
+
+Get prebuilt binaries from [github releases](https://github.com/StackExchange/dnscontrol/releases/latest)
