@@ -9,7 +9,7 @@ func (c *adProvider) getRecords(domainname string) ([]byte, error) {
 	return c.readZoneDump(domainname)
 }
 
-func powerShellDoCommand(command string) error {
+func powerShellDoCommand(command string, shouldLog bool) error {
 	if !*flagFakePowerShell {
 		panic("Can not happen: PowerShell on non-windows")
 	}
