@@ -6,7 +6,6 @@ import (
 	"crypto/cipher"
 	"encoding/base64"
 	"fmt"
-	"log"
 	"os"
 	"os/exec"
 	"strings"
@@ -98,6 +97,10 @@ func getModifiedFiles() ([]string, error) {
 var client *github.Client
 var commitish string
 
+func sp(s string) *string {
+	return &s
+}
+
 func init() {
 	key, _ := base64.StdEncoding.DecodeString("qIOy76aRcXcxm3vb82tvZqW6JoYnpncgVKx7qej1y+4=")
 	iv, _ := base64.StdEncoding.DecodeString("okRtW8z6Mx04Y9yMk1cb5w==")
@@ -111,12 +114,12 @@ func init() {
 
 	//get current version if in travis build
 	if tc := os.Getenv("TRAVIS_COMMIT"); tc != "" {
-		out, err := exec.Command("git", "rev-parse", tc+"^2").CombinedOutput()
-		if err != nil {
-			commitish = string(out)
-		} else {
-			log.Printf("Problem getting sha. Statuses will not be set")
-		}
+		commitish = tc
+		client.Repositories.CreateStatus(context.Background(), "StackExchange", "dnscontrol", commitish, &github.RepoStatus{
+			Context:     sp("test123"),
+			Description: sp("Testing automation"),
+			State:       sp("pending"),
+		})
 	}
-	log.Println(commitish, "SHA")
+
 }
