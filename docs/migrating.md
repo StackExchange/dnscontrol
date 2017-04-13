@@ -8,7 +8,7 @@ least one zone.  You should have a working `dnsconfig.js` file and
 `creds.json` file as explained in the
 [Getting Started]({{site.github.url}}/getting-started) doc.
 
-## General advice:
+## General advice
 
 First, use the 
 [Getting Started]({{site.github.url}}/getting-started) doc
@@ -61,11 +61,13 @@ data is correct.
 
 Resist the temptation to clean up and old, obsolete, records or to
 add anything new. Experience has shown that making changes at this
-time leads to unhappy surprises. Of course, once `dnscontrol preview`
-runs cleanly, you can do any kind of cleanups you want.  In fact,
-they should be easier to do now that you are using DNSControl!
+time leads to unhappy surprises, and people will blame DNSControl.
+Of course, once `dnscontrol preview` runs cleanly, you can do any
+kind of cleanups you want.  In fact, they should be easier to do
+now that you are using DNSControl!
 
-If convertzone could have done a better job, please let us know!
+If convertzone could have done a better job, please
+[let us know](https://github.com/StackExchange/dnscontrol/issues)!
 
 ## Example workflow
 
