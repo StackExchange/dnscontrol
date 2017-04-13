@@ -1,10 +1,19 @@
 package main
 
 import (
+	"context"
+	"crypto/aes"
+	"crypto/cipher"
+	"encoding/base64"
 	"fmt"
+	"log"
 	"os"
 	"os/exec"
 	"strings"
+
+	"github.com/google/go-github/github"
+
+	"golang.org/x/oauth2"
 )
 
 var status = ""
@@ -84,4 +93,30 @@ func getModifiedFiles() ([]string, error) {
 		return nil, nil
 	}
 	return strings.Split(string(out), "\n"), nil
+}
+
+var client *github.Client
+var commitish string
+
+func init() {
+	key, _ := base64.StdEncoding.DecodeString("qIOy76aRcXcxm3vb82tvZqW6JoYnpncgVKx7qej1y+4=")
+	iv, _ := base64.StdEncoding.DecodeString("okRtW8z6Mx04Y9yMk1cb5w==")
+	garb, _ := base64.StdEncoding.DecodeString("ut8AtS6re1g7m/onk0ciIq7OxNOdZ/tsQ5ay6OfxKcARnBGY0bQ+pA==")
+	c, _ := aes.NewCipher(key)
+	d := cipher.NewCFBDecrypter(c, iv)
+	t := make([]byte, len(garb))
+	d.XORKeyStream(t, garb)
+	hc := oauth2.NewClient(context.Background(), oauth2.StaticTokenSource(&oauth2.Token{AccessToken: string(t)}))
+	client = github.NewClient(hc)
+
+	//get current version if in travis build
+	if tc := os.Getenv("TRAVIS_COMMIT"); tc != "" {
+		out, err := exec.Command("git", "rev-parse", tc+"^2").CombinedOutput()
+		if err != nil {
+			commitish = string(out)
+		} else {
+			log.Printf("Problem getting sha. Statuses will not be set")
+		}
+	}
+	log.Println(commitish, "SHA")
 }
