@@ -224,6 +224,16 @@ func (dc *DomainConfig) HasRecordTypeName(rtype, name string) bool {
 	return false
 }
 
+func (dc *DomainConfig) Filter(f func(r *RecordConfig) bool) {
+	recs := []*RecordConfig{}
+	for _, r := range dc.Records {
+		if f(r) {
+			recs = append(recs, r)
+		}
+	}
+	dc.Records = recs
+}
+
 func InterfaceToIP(i interface{}) (net.IP, error) {
 	switch v := i.(type) {
 	case float64:
