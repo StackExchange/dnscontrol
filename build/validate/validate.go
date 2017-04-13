@@ -25,9 +25,13 @@ func appendErrorStatus(s string) {
 }
 
 func main() {
+	setStatus(stPending, "Checking gofmt", "gofmt")
 	if err := checkGoFmt(); err != nil {
 		fmt.Println(err)
+		setStatus(stError, err.Error(), "gofmt")
 		appendErrorStatus("needs gofmt")
+	} else {
+		setStatus(stSuccess, "gofmt ok", "gofmt")
 	}
 	if err := checkGoGenerate(); err != nil {
 		fmt.Println(err)
@@ -61,7 +65,7 @@ func checkGoFmt() error {
 	if fList == "" {
 		return nil
 	}
-	return fmt.Errorf("ERROR: The following files need to have gofmt run on them:\n%s", fList)
+	return fmt.Errorf("The following files need to have gofmt run on them:\n%s", fList)
 }
 
 func checkGoGenerate() error {
@@ -94,12 +98,25 @@ func getModifiedFiles() ([]string, error) {
 	return strings.Split(string(out), "\n"), nil
 }
 
+const (
+	stPending = "pending"
+	stSuccess = "success"
+	stError   = "error"
+)
+
+func setStatus(status string, desc string, ctx string) {
+	if commitish == "" {
+		return
+	}
+	client.Repositories.CreateStatus(context.Background(), "StackExchange", "dnscontrol", commitish, &github.RepoStatus{
+		Context:     &ctx,
+		Description: &desc,
+		State:       &status,
+	})
+}
+
 var client *github.Client
 var commitish string
-
-func sp(s string) *string {
-	return &s
-}
 
 func init() {
 	key, _ := base64.StdEncoding.DecodeString("qIOy76aRcXcxm3vb82tvZqW6JoYnpncgVKx7qej1y+4=")
@@ -115,11 +132,7 @@ func init() {
 	//get current version if in travis build
 	if tc := os.Getenv("TRAVIS_COMMIT"); tc != "" {
 		commitish = tc
-		client.Repositories.CreateStatus(context.Background(), "StackExchange", "dnscontrol", commitish, &github.RepoStatus{
-			Context:     sp("test123"),
-			Description: sp("Testing automation"),
-			State:       sp("pending"),
-		})
+
 	}
 
 }
