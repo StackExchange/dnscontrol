@@ -34,3 +34,16 @@ This will print out a list of "corrections" that need to be performed. It will n
 ## 4. Run `dnscontrol push`
 
 This will actually generate `zones/example.com.zone` for you. The bind provider is more configurable, and you can read more information [here.]({{site.github.url}}/providers/bind)
+
+# Converting from other providers
+
+Once you have the system working for a test zone, try converting
+other zones.  Most providers have an option to export all DNS records
+as a BIND-style zone file.  The utility
+[convertzone](https://github.com/StackExchange/dnscontrol/blob/master/misc/convertzone/README.md)
+(in the `misc` subdirectory) can read a zonefile and output the
+first draft of a `D()` statement for a zone.
+
+Add the output to the `dnsconfig.js` and clean it up until
+`dnscontrol preview` lists no changes. At that point,
+it matches the running zone precisely and the conversion is done.
