@@ -16,4 +16,11 @@ Please add a page to the docs folder for your provider, and add it to the list i
 
 ## Vendoring Dependencies
 
-If your provider depends on other go packages, then you must vendor them. To do this, use [govendor](https://github.com/kardianos/govendor).
+If your provider depends on other go packages, then you must vendor them. To do this, use [govendor](https://github.com/kardianos/govendor). 
+
+```
+go get github.com/kardianos/govendor
+govendor add +e
+```
+
+is usually sufficient.
