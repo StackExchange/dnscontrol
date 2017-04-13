@@ -3,6 +3,8 @@ package normalize
 import (
 	"testing"
 
+	"fmt"
+
 	"github.com/StackExchange/dnscontrol/models"
 )
 
@@ -135,5 +137,35 @@ func TestTransforms(t *testing.T) {
 				continue
 			}
 		}
+	}
+}
+
+func TestCNAMEMutex(t *testing.T) {
+	var recA = &models.RecordConfig{Type: "CNAME", Name: "foo", NameFQDN: "foo.example.com", Target: "example.com."}
+	tests := []struct {
+		rType string
+		name  string
+		fail  bool
+	}{
+		{"A", "foo", true},
+		{"A", "foo2", false},
+		{"CNAME", "foo", true},
+		{"CNAME", "foo2", false},
+	}
+	for _, tst := range tests {
+		t.Run(fmt.Sprintf("%s %s", tst.rType, tst.name), func(t *testing.T) {
+			var recB = &models.RecordConfig{Type: tst.rType, Name: tst.name, NameFQDN: tst.name + ".example.com", Target: "example2.com."}
+			dc := &models.DomainConfig{
+				Name:    "example.com",
+				Records: []*models.RecordConfig{recA, recB},
+			}
+			errs := checkCNAMEs(dc)
+			if errs != nil && !tst.fail {
+				t.Error("Got error but expected none")
+			}
+			if errs == nil && tst.fail {
+				t.Error("Expected error but got none")
+			}
+		})
 	}
 }
