@@ -34,3 +34,15 @@ This will print out a list of "corrections" that need to be performed. It will n
 ## 4. Run `dnscontrol push`
 
 This will actually generate `zones/example.com.zone` for you. The bind provider is more configurable, and you can read more information [here.]({{site.github.url}}/providers/bind)
+
+# Migrate more zones
+
+Once you have the system working for a test zone, migrate other
+zones.  You can manually create the `D()` statements, or you can
+generate them automatically using the
+[convertzone](https://github.com/StackExchange/dnscontrol/blob/master/misc/convertzone/README.md)
+utility that is included in the DNSControl repo (it converts
+BIND-style zone files to DNSControl's language). To make sure the
+migration is correct, use `dnscontrol preview` and make sure it
+sees no differences.
+[Migration]({{site.github.url}}/migration) doc gives more detailed advice.
