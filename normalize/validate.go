@@ -260,7 +260,28 @@ func NormalizeAndValidateConfig(config *models.DNSConfig) (errs []error) {
 			errs = append(errs, err)
 		}
 	}
+	for _, d := range config.Domains {
+		errs = append(errs, checkCNAMEs(d)...)
+	}
 	return errs
+}
+
+func checkCNAMEs(dc *models.DomainConfig) (errs []error) {
+	cnames := map[string]bool{}
+	for _, r := range dc.Records {
+		if r.Type == "CNAME" {
+			if cnames[r.Name] {
+				errs = append(errs, fmt.Errorf("Cannot have multiple CNAMEs with same name: %s", r.NameFQDN))
+			}
+			cnames[r.Name] = true
+		}
+	}
+	for _, r := range dc.Records {
+		if cnames[r.Name] && r.Type != "CNAME" {
+			errs = append(errs, fmt.Errorf("Cannot have CNAME and %s record with same name: %s", r.Type, r.NameFQDN))
+		}
+	}
+	return
 }
 
 func applyRecordTransforms(domain *models.DomainConfig) error {
