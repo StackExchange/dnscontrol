@@ -6,9 +6,11 @@ import (
 	"io/ioutil"
 
 	"github.com/StackExchange/dnscontrol/models"
+	"github.com/StackExchange/dnscontrol/transform"
 
 	"github.com/robertkrimen/otto"
 	//load underscore js into vm by default
+
 	_ "github.com/robertkrimen/otto/underscore"
 )
 
@@ -17,6 +19,7 @@ func ExecuteJavascript(script string, devMode bool) (*models.DNSConfig, error) {
 	vm := otto.New()
 
 	vm.Set("require", require)
+	vm.Set("REVERSE", reverse)
 
 	helperJs := GetHelpers(devMode)
 	// run helper script to prime vm and initialize variables
@@ -50,15 +53,36 @@ func GetHelpers(devMode bool) string {
 }
 
 func require(call otto.FunctionCall) otto.Value {
+	if len(call.ArgumentList) != 1 {
+		throw(call.Otto, "require takes exactly one argument")
+	}
 	file := call.Argument(0).String()
 	fmt.Printf("requiring: %s\n", file)
 	data, err := ioutil.ReadFile(file)
 	if err != nil {
-		panic(err)
+		throw(call.Otto, err.Error())
 	}
 	_, err = call.Otto.Run(string(data))
 	if err != nil {
-		panic(err)
+		throw(call.Otto, err.Error())
 	}
 	return otto.TrueValue()
+}
+
+func throw(vm *otto.Otto, str string) {
+	panic(vm.MakeCustomError("Error", str))
+}
+
+func reverse(call otto.FunctionCall) otto.Value {
+	if len(call.ArgumentList) != 1 {
+		throw(call.Otto, "REVERSE takes exactly one argument")
+	}
+	dom := call.Argument(0).String()
+	rev, err := transform.ReverseDomainName(dom)
+	fmt.Println(dom, rev, err)
+	if err != nil {
+		throw(call.Otto, err.Error())
+	}
+	v, _ := otto.ToValue(rev)
+	return v
 }
