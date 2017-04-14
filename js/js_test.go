@@ -71,6 +71,7 @@ func TestErrors(t *testing.T) {
 		{"old dsp style", `D("foo.com","reg","dsp")`},
 		{"MX no priority", `D("foo.com","reg",MX("@","test."))`},
 		{"MX reversed", `D("foo.com","reg",MX("@","test.", 5))`},
+		{"Bad cidr", `D(reverse("foo.com"), "reg")`},
 	}
 	for _, tst := range tests {
 		t.Run(tst.desc, func(t *testing.T) {
