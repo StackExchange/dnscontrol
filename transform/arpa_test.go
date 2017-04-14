@@ -27,6 +27,8 @@ func TestReverse(t *testing.T) {
 		//Errror Cases:
 		{"0.0.0.0/0", true, ""},
 		{"2001::/0", true, ""},
+		{"4.5/16", true, ""},
+		{"foo.com", true, ""},
 	}
 	for i, tst := range tests {
 		t.Run(fmt.Sprintf("%d--%s", i, tst.in), func(t *testing.T) {

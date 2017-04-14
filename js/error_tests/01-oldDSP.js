@@ -1,1 +1,0 @@
-D("foo.com","reg","dsp")
