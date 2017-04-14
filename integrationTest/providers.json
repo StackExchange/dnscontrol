@@ -9,6 +9,12 @@
         "token": "$DNSIMPLE_TOKEN",
         "baseurl": "https://api.sandbox.dnsimple.com"
     },
+    "DYN": {
+        "domain": "$DYN_DOMAIN",
+        "customer": "$DYN_CUSTOMER",
+        "username":"$DYN_USER",
+        "password": "$DYN_PW"
+    },
     "GANDI":{
         //5: gandi does not accept ttls less than 300
         "knownFailures": "5",
