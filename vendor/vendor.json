@@ -213,6 +213,12 @@
 			"revisionTime": "2016-02-25T03:18:00Z"
 		},
 		{
+			"checksumSHA1": "pKcCESD4Ezs4SpbZ0Kbl4XsZKt0=",
+			"path": "github.com/google/go-github/github",
+			"revision": "6896997c7c9fe603fb9d2e8e92303bb18481e60a",
+			"revisionTime": "2017-04-09T17:43:40Z"
+		},
+		{
 			"checksumSHA1": "yyAzHoiVLu+xywYI2BDyRq6sOqE=",
 			"path": "github.com/google/go-querystring/query",
 			"revision": "9235644dd9e52eeae6fa48efd539fdc351a0af53",
@@ -247,6 +253,12 @@
 			"path": "github.com/mjibson/esc/embed",
 			"revision": "703e8aee0a5417c480f8d6a3f072c9eb4f8904ea",
 			"revisionTime": "2017-01-12T13:50:19Z"
+		},
+		{
+			"checksumSHA1": "h5ifd33z1qoBpTzMSoEjcuhTpLQ=",
+			"path": "github.com/nesv/go-dynect/dynect",
+			"revision": "be20024edc62af4296f4bcd58727431e61b456ba",
+			"revisionTime": "2016-09-27T22:41:21Z"
 		},
 		{
 			"checksumSHA1": "ynJSWoF6v+3zMnh9R0QmmG6iGV8=",

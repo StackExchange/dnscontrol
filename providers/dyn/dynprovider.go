@@ -160,6 +160,8 @@ func buildRecord(r *models.RecordConfig, domain string) *dynect.RecordRequest {
 	case "MX":
 		rec.RData.Exchange = r.Target
 		rec.RData.Preference = int(r.Priority)
+	case "TXT":
+		rec.RData.TxtData = r.Target
 	default:
 		panic("OOOOOOO")
 	}
@@ -179,6 +181,8 @@ func convertToRecord(r *dynect.BaseRecord, domain string) *models.RecordConfig {
 	case "MX":
 		content = r.RData.Exchange
 		priority = uint16(r.RData.Preference)
+	case "TXT":
+		content = r.RData.TxtData
 	case "SOA":
 		return nil
 	default:
