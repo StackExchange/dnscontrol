@@ -277,7 +277,7 @@ func checkCNAMEs(dc *models.DomainConfig) (errs []error) {
 		}
 	}
 	for _, r := range dc.Records {
-		if cnames[r.Name] && r.Type != "CNAME" {
+		if cnames[r.Name] && r.Name != "@" && r.Type != "CNAME" {
 			errs = append(errs, fmt.Errorf("Cannot have CNAME and %s record with same name: %s", r.Type, r.NameFQDN))
 		}
 	}

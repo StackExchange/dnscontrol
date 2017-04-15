@@ -141,23 +141,28 @@ func TestTransforms(t *testing.T) {
 }
 
 func TestCNAMEMutex(t *testing.T) {
-	var recA = &models.RecordConfig{Type: "CNAME", Name: "foo", NameFQDN: "foo.example.com", Target: "example.com."}
+	var recFoo = &models.RecordConfig{Type: "CNAME", Name: "foo", NameFQDN: "foo.example.com", Target: "example.com."}
+	var recApex = &models.RecordConfig{Type: "MX", Name: "@", NameFQDN: "example.com", Target: "mx.example.com."}
 	tests := []struct {
-		rType string
-		name  string
-		fail  bool
+		otherRec *models.RecordConfig
+		rType    string
+		name     string
+		fail     bool
 	}{
-		{"A", "foo", true},
-		{"A", "foo2", false},
-		{"CNAME", "foo", true},
-		{"CNAME", "foo2", false},
+		{recFoo, "A", "foo", true},
+		{recFoo, "A", "foo2", false},
+		{recFoo, "CNAME", "foo", true},
+		{recFoo, "CNAME", "foo2", false},
+		{recFoo, "CNAME", "@", false},
+		{recApex, "CNAME", "@", false},
+		{recApex, "CNAME", "foo", false},
 	}
 	for _, tst := range tests {
 		t.Run(fmt.Sprintf("%s %s", tst.rType, tst.name), func(t *testing.T) {
-			var recB = &models.RecordConfig{Type: tst.rType, Name: tst.name, NameFQDN: tst.name + ".example.com", Target: "example2.com."}
+			var rec = &models.RecordConfig{Type: tst.rType, Name: tst.name, NameFQDN: tst.name + ".example.com", Target: "example2.com."}
 			dc := &models.DomainConfig{
 				Name:    "example.com",
-				Records: []*models.RecordConfig{recA, recB},
+				Records: []*models.RecordConfig{tst.otherRec, rec},
 			}
 			errs := checkCNAMEs(dc)
 			if errs != nil && !tst.fail {
