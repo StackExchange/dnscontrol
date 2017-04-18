@@ -45,4 +45,4 @@ utility that is included in the DNSControl repo (it converts
 BIND-style zone files to DNSControl's language). To make sure the
 migration is correct, use `dnscontrol preview` and make sure it
 sees no differences.
-[Migration]({{site.github.url}}/migration) doc gives more detailed advice.
+[Migrating]({{site.github.url}}/migrating) doc gives more detailed advice.
