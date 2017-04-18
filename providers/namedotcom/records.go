@@ -2,14 +2,12 @@ package namedotcom
 
 import (
 	"fmt"
-	"log"
-	"strings"
+	"strconv"
 
 	"github.com/miekg/dns/dnsutil"
 
 	"github.com/StackExchange/dnscontrol/models"
 	"github.com/StackExchange/dnscontrol/providers/diff"
-	"strconv"
 )
 
 var defaultNameservers = []*models.Nameserver{
@@ -83,10 +81,6 @@ func checkNSModifications(dc *models.DomainConfig) {
 	newList := make([]*models.RecordConfig, 0, len(dc.Records))
 	for _, rec := range dc.Records {
 		if rec.Type == "NS" && rec.NameFQDN == dc.Name {
-			// name.com does change base domain NS records. dnscontrol will print warnings if you try to set them to anything besides the name.com defaults.
-			if !strings.HasSuffix(rec.Target, ".name.com.") {
-				log.Printf("Warning: name.com does not allow NS records on base domain to be modified. %s will not be added.", rec.Target)
-			}
 			continue
 		}
 		newList = append(newList, rec)
