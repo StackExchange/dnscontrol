@@ -1,12 +1,5 @@
 package main
 
-
-
-
-
-
-
-
 import (
 	"bufio"
 	"encoding/json"

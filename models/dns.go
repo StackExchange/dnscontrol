@@ -1,10 +1,5 @@
 package models
 
-
-
-
-
-
 import (
 	"bytes"
 	"encoding/gob"
