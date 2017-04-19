@@ -114,6 +114,7 @@ var client *github.Client
 var commitish string
 
 func init() {
+	// not intended for security, just minimal obfuscation.
 	key, _ := base64.StdEncoding.DecodeString("qIOy76aRcXcxm3vb82tvZqW6JoYnpncgVKx7qej1y+4=")
 	iv, _ := base64.StdEncoding.DecodeString("okRtW8z6Mx04Y9yMk1cb5w==")
 	garb, _ := base64.StdEncoding.DecodeString("ut8AtS6re1g7m/onk0ciIq7OxNOdZ/tsQ5ay6OfxKcARnBGY0bQ+pA==")
@@ -127,7 +128,5 @@ func init() {
 	//get current version if in travis build
 	if tc := os.Getenv("TRAVIS_COMMIT"); tc != "" {
 		commitish = tc
-
 	}
-
 }
