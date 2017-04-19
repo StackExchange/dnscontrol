@@ -14,7 +14,7 @@ username and access token:
 {
   "cloudflare.com":{
     "apikey": "your-cloudflare-api-key",
-    "apiuser": "your-cloudflare-username"
+    "apiuser": "your-cloudflare-email-address"
   }
 }
 {% endhighlight %}
