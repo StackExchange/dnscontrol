@@ -37,12 +37,12 @@ func main() {
 	}
 	c := github.NewClient(oauth2.NewClient(bg(), oauth2.StaticTokenSource(&oauth2.Token{AccessToken: tok})))
 
+	log.Println("Getting release info")
+	rel, _, err := c.Repositories.GetReleaseByTag(bg(), owner, repo, tag)
+	check(err)
+
 	for _, f := range files {
 		log.Printf("--- %s", f)
-
-		log.Println("Getting release info")
-		rel, _, err := c.Repositories.GetReleaseByTag(bg(), owner, repo, tag)
-		check(err)
 
 		var found *github.ReleaseAsset
 		var foundOld *github.ReleaseAsset
@@ -50,7 +50,7 @@ func main() {
 			if ass.GetName() == f {
 				found = &ass
 			}
-			if ass.GetName()+".old" == f {
+			if ass.GetName() == f+".old" {
 				foundOld = &ass
 			}
 		}
@@ -60,13 +60,12 @@ func main() {
 		if found != nil {
 			n := found.GetName() + ".old"
 			found.Name = &n
-			log.Println("Renaming old asset")
-			log.Println(found.GetName(), found.GetID())
+			log.Printf("Renaming old asset %s(%d) to .old", found.GetName(), found.GetID())
 			_, _, err = c.Repositories.EditReleaseAsset(bg(), owner, repo, found.GetID(), found)
 			check(err)
 		}
 
-		log.Println("Uploading new file")
+		log.Printf("Uploading new file %s", f)
 		upOpts := &github.UploadOptions{}
 		upOpts.Name = f
 		f, err := os.Open(f)
@@ -82,11 +81,6 @@ func main() {
 	}
 
 	log.Println("Editing release body")
-
-	log.Println("Getting release info")
-	rel, _, err := c.Repositories.GetReleaseByTag(bg(), owner, repo, tag)
-	check(err)
-
 	body := strings.TrimSpace(rel.GetBody())
 	lines := strings.Split(body, "\n")
 	last := lines[len(lines)-1]
