@@ -25,7 +25,7 @@ func newRoute53(m map[string]string, metadata json.RawMessage) (providers.DNSSer
 	keyId, secretKey := m["KeyId"], m["SecretKey"]
 
 	config := &aws.Config{
-		Region:      aws.String("us-west-2"),
+		Region: aws.String("us-west-2"),
 	}
 
 	if keyId != "" || secretKey != "" {
