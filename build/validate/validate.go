@@ -15,29 +15,24 @@ import (
 	"golang.org/x/oauth2"
 )
 
-var status = ""
-
-func appendErrorStatus(s string) {
-	if status != "" {
-		status += ", "
-	}
-	status += s
-}
-
 func main() {
-	setStatus(stPending, "Checking gofmt", "gofmt")
-	if err := checkGoFmt(); err != nil {
-		fmt.Println(err)
-		setStatus(stError, err.Error(), "gofmt")
-		appendErrorStatus("needs gofmt")
-	} else {
-		setStatus(stSuccess, "gofmt ok", "gofmt")
+	failed := false
+
+	run := func(ctx string, preStatus string, goodStatus string, f func() error) {
+		setStatus(stPending, preStatus, ctx)
+		if err := f(); err != nil {
+			fmt.Println(err)
+			setStatus(stError, err.Error(), ctx)
+			failed = true
+		} else {
+			setStatus(stSuccess, goodStatus, ctx)
+		}
 	}
-	if err := checkGoGenerate(); err != nil {
-		fmt.Println(err)
-		appendErrorStatus("needs go generate")
-	}
-	if status != "" {
+
+	run("gofmt", "Checking gofmt", "gofmt ok", checkGoFmt)
+	run("gogen", "Checking go generate", "go generate ok", checkGoGenerate)
+
+	if failed {
 		os.Exit(1)
 	}
 }
