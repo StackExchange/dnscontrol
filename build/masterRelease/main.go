@@ -91,7 +91,7 @@ func main() {
 	if !strings.HasPrefix(last, "Last updated:") {
 		log.Fatal("Release body is not what I expected. Abort!")
 	}
-	last = fmt.Sprintf("Last updated: %s", time.Now().Format("Mon Jan 2 2006 @15:04 MST"))
+	last = fmt.Sprintf("Last updated: %s", time.Now().Format("Mon Jan 2 2006 @ 15:04 MST"))
 	lines[len(lines)-1] = last
 	body = strings.Join(lines, "\n")
 	rel.Body = &body
