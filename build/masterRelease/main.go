@@ -44,24 +44,28 @@ func main() {
 	for _, f := range files {
 		log.Printf("--- %s", f)
 
-		var found *github.ReleaseAsset
-		var foundOld *github.ReleaseAsset
+		var found github.ReleaseAsset
+		var exists bool
+		var foundOld bool
 		for _, ass := range rel.Assets {
 			if ass.GetName() == f {
-				found = &ass
+				exists = true
+				found = ass
 			}
 			if ass.GetName() == f+".old" {
-				foundOld = &ass
+				foundOld = true
 			}
 		}
-		if foundOld != nil {
+
+		if foundOld {
 			log.Fatalf("%s.old was already found. Previous deploy likely failed. Please check and manually delete.", f)
 		}
-		if found != nil {
-			n := found.GetName() + ".old"
+		if exists {
+			oldN := found.GetName()
+			n := oldN + ".old"
 			found.Name = &n
-			log.Printf("Renaming old asset %s(%d) to .old", found.GetName(), found.GetID())
-			_, _, err = c.Repositories.EditReleaseAsset(bg(), owner, repo, found.GetID(), found)
+			log.Printf("Renaming old asset %s(%d) to %s", oldN, found.GetID(), found.GetName())
+			_, _, err = c.Repositories.EditReleaseAsset(bg(), owner, repo, found.GetID(), &found)
 			check(err)
 		}
 
@@ -73,7 +77,7 @@ func main() {
 		_, _, err = c.Repositories.UploadReleaseAsset(bg(), owner, repo, rel.GetID(), upOpts, f)
 		check(err)
 
-		if found != nil {
+		if exists {
 			log.Println("Deleting old asset")
 			_, err = c.Repositories.DeleteReleaseAsset(bg(), owner, repo, found.GetID())
 			check(err)
