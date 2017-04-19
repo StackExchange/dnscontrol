@@ -1,12 +1,14 @@
 package namecheap
 
 import (
+	"encoding/json"
 	"fmt"
 	"sort"
 	"strings"
 
 	"github.com/StackExchange/dnscontrol/models"
 	"github.com/StackExchange/dnscontrol/providers"
+	"github.com/StackExchange/dnscontrol/providers/diff"
 	nc "github.com/billputer/go-namecheap"
 )
 
@@ -18,9 +20,136 @@ type Namecheap struct {
 
 func init() {
 	providers.RegisterRegistrarType("NAMECHEAP", newReg)
+	providers.RegisterDomainServiceProviderType("NAMECHEAP", newDsp)
 }
 
-func newReg(m map[string]string) (providers.Registrar, error) {
+func newDsp(conf map[string]string, metadata json.RawMessage) (providers.DNSServiceProvider, error) {
+	return newProvider(conf, metadata)
+}
+
+func newReg(conf map[string]string) (providers.Registrar, error) {
+	return newProvider(conf, nil)
+}
+
+func splitDomain(domain string) (string, string) {
+	ds := strings.Split(domain, ".")
+	dl := len(ds)
+	tld := ds[dl-1]
+	sld := ds[dl-2]
+	return sld, tld
+}
+
+func (n *Namecheap) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Correction, error) {
+
+	sld, tld := splitDomain(dc.Name)
+	records, err := n.client.DomainsDNSGetHosts(sld, tld)
+	if err != nil {
+		return nil, err
+	}
+
+	var actual []*models.RecordConfig
+	for _, r := range records.Hosts {
+		if r.Type == "SOA" || r.Type == "NS" {
+			continue
+		}
+
+		if r.Name == "@" {
+			r.Name = dc.Name
+		} else {
+			r.Name = r.Name + "." + dc.Name
+		}
+
+		rec := &models.RecordConfig{
+			NameFQDN: r.Name,
+			Type:     r.Type,
+			Target:   r.Address,
+			TTL:      uint32(r.TTL),
+			Priority: uint16(r.MXPref),
+			Original: r,
+		}
+		actual = append(actual, rec)
+
+	}
+
+	differ := diff.New(dc)
+	_, create, delete, modify := differ.IncrementalDiff(actual)
+
+	// because namecheap doesn't have selective create, delete, modify,
+	// we bundle them all up to send at once.  We *do* want to see the
+	// changes though
+
+	changes := false
+	desc := ""
+	for _, i := range create {
+		changes = true
+		desc += "\n" + i.String()
+	}
+	for _, i := range delete {
+		changes = true
+		desc += "\n" + i.String()
+	}
+	for _, i := range modify {
+		changes = true
+		desc += "\n" + i.String()
+	}
+
+	msg := fmt.Sprintf("GENERATE_ZONE: %s (%d records)%s", dc.Name, len(dc.Records), desc)
+	corrections := []*models.Correction{}
+
+	if changes {
+		corrections = append(corrections,
+			&models.Correction{
+				Msg: msg,
+				F: func() error {
+					fmt.Printf("RECREATING ZONE: %v\n", dc.Name)
+					return n.UpdateRecords(dc)
+				},
+			})
+	}
+
+	return corrections, nil
+}
+
+func (n *Namecheap) GetNameservers(domainName string) ([]*models.Nameserver, error) {
+	// not exactly sure what is wanted here, but currently not needed (TODO)
+	ns := []string{}
+
+	return models.StringsToNameservers(ns), nil
+}
+
+// UpdateRecords bundles up the expected zone and sends it wholesale to
+// namecheap.
+func (n *Namecheap) UpdateRecords(dc *models.DomainConfig) error {
+
+	var recs []nc.DomainDNSHost
+
+	id := 1
+	for _, r := range dc.Records {
+		name := strings.Split(r.NameFQDN, "."+dc.Name)[0]
+		if name == dc.Name {
+			name = "@"
+		}
+
+		rec := nc.DomainDNSHost{
+			ID:      id,
+			Name:    name,
+			Type:    r.Type,
+			Address: r.Target,
+			MXPref:  int(r.Priority),
+			TTL:     int(r.TTL),
+		}
+		recs = append(recs, rec)
+		id++
+	}
+
+	sld, tld := splitDomain(dc.Name)
+	result, err := n.client.DomainDNSSetHosts(sld, tld, recs)
+	fmt.Println("Namecheap returns:", result)
+
+	return err
+}
+
+func newProvider(m map[string]string, metadata json.RawMessage) (*Namecheap, error) {
 	api := &Namecheap{}
 	api.ApiUser, api.ApiKey = m["apiuser"], m["apikey"]
 	if api.ApiKey == "" || api.ApiUser == "" {
