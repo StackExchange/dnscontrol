@@ -21,14 +21,17 @@ type route53Provider struct {
 }
 
 func newRoute53(m map[string]string, metadata json.RawMessage) (providers.DNSServiceProvider, error) {
+
 	keyId, secretKey := m["KeyId"], m["SecretKey"]
-	if keyId == "" || secretKey == "" {
-		return nil, fmt.Errorf("Route53 KeyId and SecretKey must be provided.")
-	}
-	sess := session.New(&aws.Config{
+
+	config := &aws.Config{
 		Region:      aws.String("us-west-2"),
-		Credentials: credentials.NewStaticCredentials(keyId, secretKey, ""),
-	})
+	}
+
+	if keyId != "" || secretKey != "" {
+		config.Credentials = credentials.NewStaticCredentials(keyId, secretKey, "")
+	}
+	sess := session.New(config)
 
 	api := &route53Provider{client: r53.New(sess)}
 	return api, nil
