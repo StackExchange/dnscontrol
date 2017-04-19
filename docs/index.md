@@ -23,3 +23,4 @@ Dnscontrol is a platform for seamlessly managing your dns configuration across a
 
 - [Why CNAME/MX/NS targets require a trailing "dot"]({{site.github.url}}/why-the-dot)
 - [Writing Providers]({{site.github.url}}/writing-providers)
+- [ALIAS records in dnscontrol]({{site.github.url}}/alias)

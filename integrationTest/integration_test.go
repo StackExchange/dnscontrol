@@ -97,6 +97,10 @@ func runTests(t *testing.T, prv providers.DNSServiceProvider, domainName string,
 			break
 		}
 		t.Run(fmt.Sprintf("%d: %s", i, tst.Desc), func(t *testing.T) {
+			if tst.SkipUnless != 0 && !providers.ProviderHasCabability(*providerToRun, tst.SkipUnless) {
+				t.Log("Skipping because provider does not support test features")
+				return
+			}
 			skipVal := false
 			if knownFailures[i] {
 				t.Log("SKIPPING VALIDATION FOR KNOWN FAILURE CASE")
@@ -186,8 +190,9 @@ func TestDualProviders(t *testing.T) {
 }
 
 type TestCase struct {
-	Desc    string
-	Records []*rec
+	Desc       string
+	Records    []*rec
+	SkipUnless providers.Capability
 }
 
 type rec models.RecordConfig
@@ -198,6 +203,10 @@ func a(name, target string) *rec {
 
 func cname(name, target string) *rec {
 	return makeRec(name, target, "CNAME")
+}
+
+func alias(name, target string) *rec {
+	return makeRec(name, target, "ALIAS")
 }
 
 func ns(name, target string) *rec {
@@ -229,6 +238,11 @@ func tc(desc string, recs ...*rec) *TestCase {
 		Desc:    desc,
 		Records: recs,
 	}
+}
+
+func (tc *TestCase) IfHasCapability(c providers.Capability) *TestCase {
+	tc.SkipUnless = c
+	return tc
 }
 
 //ALWAYS ADD TO BOTTOM OF LIST. Order and indexes matter.
@@ -274,5 +288,12 @@ var tests = []*TestCase{
 	tc("Change to other name", mx("@", 5, "foo2.com."), mx("mail", 15, "foo3.com.")),
 	tc("Change Priority", mx("@", 7, "foo2.com."), mx("mail", 15, "foo3.com.")),
 
-	tc("IDN pre-punycoded", cname("xn--o-0gab", "xn--o-0gab.xn--o-0gab.")),
+	//ALIAS
+	tc("EMPTY"),
+	tc("ALIAS at root", alias("@", "foo.com.")).IfHasCapability(providers.CanUseAlias),
+	tc("change it", alias("@", "foo2.com.")).IfHasCapability(providers.CanUseAlias),
+	tc("ALIAS at subdomain", alias("test", "foo.com.")).IfHasCapability(providers.CanUseAlias),
+
+	//TODO: in validation, check that everything is given in unicode. This case hurts too much.
+	//tc("IDN pre-punycoded", cname("xn--o-0gab", "xn--o-0gab.xn--o-0gab.")),
 }

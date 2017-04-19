@@ -123,6 +123,15 @@ function AAAA(name, ip) {
     }
 }
 
+// ALIAS(name,target, recordModifiers...)
+function ALIAS(name, target) {
+    var mods = getModifiers(arguments,2)
+    return function(d) {
+        addRecord(d,"ALIAS",name,target,mods)
+    }
+}
+
+
 // CNAME(name,target, recordModifiers...)
 function CNAME(name, target) {
     var mods = getModifiers(arguments,2)

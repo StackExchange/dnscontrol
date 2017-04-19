@@ -30,39 +30,40 @@ func TestParsedFiles(t *testing.T) {
 		if filepath.Ext(f.Name()) != ".js" || !unicode.IsNumber(rune(f.Name()[0])) {
 			continue
 		}
-		t.Log(f.Name(), "------")
-		content, err := ioutil.ReadFile(filepath.Join(testDir, f.Name()))
-		if err != nil {
-			t.Fatal(err)
-		}
-		conf, err := ExecuteJavascript(string(content), true)
-		if err != nil {
-			t.Fatal(err)
-		}
-		actualJson, err := json.MarshalIndent(conf, "", "  ")
-		if err != nil {
-			t.Fatal(err)
-		}
-		expectedFile := filepath.Join(testDir, f.Name()[:len(f.Name())-3]+".json")
-		expectedData, err := ioutil.ReadFile(expectedFile)
-		if err != nil {
-			t.Fatal(err)
-		}
-		conf = &models.DNSConfig{}
-		err = json.Unmarshal(expectedData, conf)
-		if err != nil {
-			t.Fatal(err)
-		}
-		expectedJson, err := json.MarshalIndent(conf, "", "  ")
-		if err != nil {
-			t.Fatal(err)
-		}
-		if string(expectedJson) != string(actualJson) {
-			t.Error("Expected and actual json don't match")
-			t.Log("Expected:", string(expectedJson))
-			t.Log("Actual:", string(actualJson))
-			t.FailNow()
-		}
+		t.Run(f.Name(), func(t *testing.T) {
+			content, err := ioutil.ReadFile(filepath.Join(testDir, f.Name()))
+			if err != nil {
+				t.Fatal(err)
+			}
+			conf, err := ExecuteJavascript(string(content), true)
+			if err != nil {
+				t.Fatal(err)
+			}
+			actualJSON, err := json.MarshalIndent(conf, "", "  ")
+			if err != nil {
+				t.Fatal(err)
+			}
+			expectedFile := filepath.Join(testDir, f.Name()[:len(f.Name())-3]+".json")
+			expectedData, err := ioutil.ReadFile(expectedFile)
+			if err != nil {
+				t.Fatal(err)
+			}
+			conf = &models.DNSConfig{}
+			//unmarshal and remarshal to not require manual formatting
+			err = json.Unmarshal(expectedData, conf)
+			if err != nil {
+				t.Fatal(err)
+			}
+			expectedJSON, err := json.MarshalIndent(conf, "", "  ")
+			if err != nil {
+				t.Fatal(err)
+			}
+			if string(expectedJSON) != string(actualJSON) {
+				t.Error("Expected and actual json don't match")
+				t.Log("Expected:", string(expectedJSON))
+				t.Log("Actual:", string(actualJSON))
+			}
+		})
 	}
 }
 
