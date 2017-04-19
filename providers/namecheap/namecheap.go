@@ -32,10 +32,10 @@ func newReg(conf map[string]string) (providers.Registrar, error) {
 	return newProvider(conf, nil)
 }
 
-func splitDomain(domain string) (string, string) {
-	tld, _ := ps.PublicSuffix(domain)
+func splitDomain(domain string) (sld string, tld string) {
+	tld, _ = ps.PublicSuffix(domain)
 	d, _ := ps.EffectiveTLDPlusOne(domain)
-	sld := strings.Split(d, ".")[0]
+	sld = strings.Split(d, ".")[0]
 	return sld, tld
 }
 
