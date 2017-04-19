@@ -10,6 +10,7 @@ import (
 	"github.com/StackExchange/dnscontrol/providers"
 	"github.com/StackExchange/dnscontrol/providers/diff"
 	nc "github.com/billputer/go-namecheap"
+	ps "golang.org/x/net/publicsuffix"
 )
 
 type Namecheap struct {
@@ -32,10 +33,9 @@ func newReg(conf map[string]string) (providers.Registrar, error) {
 }
 
 func splitDomain(domain string) (string, string) {
-	ds := strings.Split(domain, ".")
-	dl := len(ds)
-	tld := ds[dl-1]
-	sld := ds[dl-2]
+	tld, _ := ps.PublicSuffix(domain)
+	d, _ := ps.EffectiveTLDPlusOne(domain)
+	sld := strings.Split(d, ".")[0]
 	return sld, tld
 }
 
