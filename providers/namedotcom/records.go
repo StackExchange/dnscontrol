@@ -81,7 +81,7 @@ func checkNSModifications(dc *models.DomainConfig) {
 	newList := make([]*models.RecordConfig, 0, len(dc.Records))
 	for _, rec := range dc.Records {
 		if rec.Type == "NS" && rec.NameFQDN == dc.Name {
-			continue
+			continue // Apex NS records are automatically created for the domain's nameservers and cannot be managed otherwise via the name.com API.
 		}
 		newList = append(newList, rec)
 	}
