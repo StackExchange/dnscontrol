@@ -6,7 +6,7 @@ jsId: NAMECHEAP
 
 # Namecheap Provider
 
-Namecheap only provides a registrar provider implementation.
+Namecheap provides a registrar provider and dns provider implementation.
 
 ## Configuration
 
