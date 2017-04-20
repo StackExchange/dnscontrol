@@ -1,4 +1,2 @@
 $TTL 300
-@                IN SOA   DEFAULT_NOT_SET. DEFAULT_NOT_SET. 2017032394 3600 600 604800 1440
-                 IN MX    7 foo2.com.
-mail             IN MX    15 foo3.com.
+@                IN SOA   DEFAULT_NOT_SET. DEFAULT_NOT_SET. 2017041717 3600 600 604800 1440

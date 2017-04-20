@@ -1,6 +1,16 @@
 {
+    "ACTIVEDIRECTORY_PS": {
+        "knownFailures": "17,18,19,25,26,27,28,29,30",
+        "domain": "$AD_DOMAIN",
+        "ADServer": "$AD_SERVER"
+    },
     "BIND": {
         "domain": "example.com"
+    },
+    "CLOUDFLAREAPI":{
+        "domain": "$CF_DOMAIN",
+        "apiuser": "$CF_USER",
+        "apikey": "$CF_KEY"
     },
     "DNSIMPLE": {
         //16/17: no ns records managable. Not even for subdomains.
@@ -15,7 +25,7 @@
         "username":"$DYN_USER",
         "password": "$DYN_PW"
     },
-    "GANDI":{
+    "GANDI": {
         //5: gandi does not accept ttls less than 300
         "knownFailures": "5",
         "domain": "$GANDI_DOMAIN",
@@ -31,10 +41,5 @@
         "domain": "$R53_DOMAIN",
         "KeyId": "$R53_KEY_ID",
         "SecretKey": "$R53_KEY"
-    },
-    "ACTIVEDIRECTORY_PS":{
-        "knownFailures": "17,18,19,25,26,27,28,29,30",
-        "domain": "$AD_DOMAIN",
-        "ADServer": "$AD_SERVER"
     }
 }
