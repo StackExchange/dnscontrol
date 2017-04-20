@@ -14,6 +14,8 @@ import (
 	ps "golang.org/x/net/publicsuffix"
 )
 
+var NamecheapDefaultNs = []string{"dns1.registrar-servers.com", "dns2.registrar-servers.com"}
+
 type Namecheap struct {
 	ApiKey  string
 	ApiUser string
@@ -49,11 +51,30 @@ func (n *Namecheap) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Cor
 	}
 
 	var actual []*models.RecordConfig
+
+	// namecheap does not allow setting @ NS with basic DNS
+	dc.Filter(func(r *models.RecordConfig) bool {
+		if r.Type == "NS" && r.Name == "@" {
+			//check to make sure it looks like a namecheap server and print a warning if it does not.
+			nsIsDefault := false
+			for _, n := range NamecheapDefaultNs {
+				if n+"." == r.Target {
+					nsIsDefault = true
+				}
+
+			}
+			if !nsIsDefault {
+				fmt.Println("\n", r.Target, "is not a default NS, Namecheap will reject this")
+			}
+			return false
+		}
+		return true
+	})
+
 	for _, r := range records.Hosts {
 		if r.Type == "SOA" {
 			continue
 		}
-
 		rec := &models.RecordConfig{
 			NameFQDN: dnsutil.AddOrigin(r.Name, dc.Name),
 			Type:     r.Type,
@@ -103,8 +124,8 @@ func (n *Namecheap) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Cor
 }
 
 func (n *Namecheap) GetNameservers(domainName string) ([]*models.Nameserver, error) {
-	// not exactly sure what is wanted here, but currently not needed (TODO)
-	ns := []string{}
+	// return default namecheap nameservers
+	ns := NamecheapDefaultNs
 
 	return models.StringsToNameservers(ns), nil
 }
