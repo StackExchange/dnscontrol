@@ -10,6 +10,7 @@ import (
 	"github.com/StackExchange/dnscontrol/providers"
 	"github.com/StackExchange/dnscontrol/providers/diff"
 	nc "github.com/billputer/go-namecheap"
+	"github.com/miekg/dns/dnsutil"
 	ps "golang.org/x/net/publicsuffix"
 )
 
@@ -49,18 +50,12 @@ func (n *Namecheap) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Cor
 
 	var actual []*models.RecordConfig
 	for _, r := range records.Hosts {
-		if r.Type == "SOA" || r.Type == "NS" {
+		if r.Type == "SOA" {
 			continue
 		}
 
-		if r.Name == "@" {
-			r.Name = dc.Name
-		} else {
-			r.Name = r.Name + "." + dc.Name
-		}
-
 		rec := &models.RecordConfig{
-			NameFQDN: r.Name,
+			NameFQDN: dnsutil.AddOrigin(r.Name, dc.Name),
 			Type:     r.Type,
 			Target:   r.Address,
 			TTL:      uint32(r.TTL),
@@ -125,10 +120,7 @@ func (n *Namecheap) UpdateRecords(dc *models.DomainConfig) error {
 
 	id := 1
 	for _, r := range dc.Records {
-		name := strings.Split(r.NameFQDN, "."+dc.Name)[0]
-		if name == dc.Name {
-			name = "@"
-		}
+		name := dnsutil.TrimDomainName(r.NameFQDN, dc.Name)
 
 		rec := nc.DomainDNSHost{
 			ID:      id,
