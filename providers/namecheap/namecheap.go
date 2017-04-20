@@ -135,8 +135,7 @@ func (n *Namecheap) UpdateRecords(dc *models.DomainConfig) error {
 	}
 
 	sld, tld := splitDomain(dc.Name)
-	result, err := n.client.DomainDNSSetHosts(sld, tld, recs)
-	fmt.Println("Namecheap returns:", result)
+	_, err := n.client.DomainDNSSetHosts(sld, tld, recs)
 
 	return err
 }
