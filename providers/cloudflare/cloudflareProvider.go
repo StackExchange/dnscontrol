@@ -176,7 +176,7 @@ func (c *CloudflareApi) preprocessConfig(dc *models.DomainConfig) error {
 		if rec.TTL != 1 && rec.TTL < 120 {
 			rec.TTL = 120
 		}
-		if rec.Type != "A" && rec.Type != "CNAME" && rec.Type != "AAAA" {
+		if rec.Type != "A" && rec.Type != "CNAME" && rec.Type != "AAAA" && rec.Type != "ALIAS" {
 			if rec.Metadata[metaProxy] != "" {
 				return fmt.Errorf("cloudflare_proxy set on %v record: %#v cloudflare_proxy=%#v", rec.Type, rec.Name, rec.Metadata[metaProxy])
 			}
