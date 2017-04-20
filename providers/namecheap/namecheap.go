@@ -73,25 +73,22 @@ func (n *Namecheap) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Cor
 	// we bundle them all up to send at once.  We *do* want to see the
 	// changes though
 
-	changes := false
-	desc := ""
+	var desc []string
 	for _, i := range create {
-		changes = true
-		desc += "\n" + i.String()
+		desc = append(desc, "\n"+i.String())
 	}
 	for _, i := range delete {
-		changes = true
-		desc += "\n" + i.String()
+		desc = append(desc, "\n"+i.String())
 	}
 	for _, i := range modify {
-		changes = true
-		desc += "\n" + i.String()
+		desc = append(desc, "\n"+i.String())
 	}
 
 	msg := fmt.Sprintf("GENERATE_ZONE: %s (%d records)%s", dc.Name, len(dc.Records), desc)
 	corrections := []*models.Correction{}
 
-	if changes {
+	// only create corrections if there are changes
+	if len(desc) > 0 {
 		corrections = append(corrections,
 			&models.Correction{
 				Msg: msg,
