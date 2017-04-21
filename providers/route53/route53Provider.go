@@ -13,6 +13,7 @@ import (
 	"github.com/aws/aws-sdk-go/aws/credentials"
 	"github.com/aws/aws-sdk-go/aws/session"
 	r53 "github.com/aws/aws-sdk-go/service/route53"
+	"github.com/pkg/errors"
 )
 
 type route53Provider struct {
@@ -21,7 +22,6 @@ type route53Provider struct {
 }
 
 func newRoute53(m map[string]string, metadata json.RawMessage) (providers.DNSServiceProvider, error) {
-
 	keyId, secretKey := m["KeyId"], m["SecretKey"]
 
 	config := &aws.Config{
@@ -34,6 +34,10 @@ func newRoute53(m map[string]string, metadata json.RawMessage) (providers.DNSSer
 	sess := session.New(config)
 
 	api := &route53Provider{client: r53.New(sess)}
+	err := api.getZones()
+	if err != nil {
+		return nil, err
+	}
 	return api, nil
 }
 
@@ -45,9 +49,6 @@ func sPtr(s string) *string {
 }
 
 func (r *route53Provider) getZones() error {
-	if r.zones != nil {
-		return nil
-	}
 	var nextMarker *string
 	r.zones = make(map[string]*r53.HostedZone)
 	for {
@@ -56,7 +57,9 @@ func (r *route53Provider) getZones() error {
 		}
 		inp := &r53.ListHostedZonesInput{Marker: nextMarker}
 		out, err := r.client.ListHostedZones(inp)
-		if err != nil {
+		if err != nil && strings.Contains(err.Error(), "is not authorized") {
+			return errors.New("Check your credentials, your not authorized to perform actions on Route 53 AWS Service")
+		} else if err != nil {
 			return err
 		}
 		for _, z := range out.HostedZones {
@@ -90,9 +93,7 @@ func (e errNoExist) Error() string {
 }
 
 func (r *route53Provider) GetNameservers(domain string) ([]*models.Nameserver, error) {
-	if err := r.getZones(); err != nil {
-		return nil, err
-	}
+
 	zone, ok := r.zones[domain]
 	if !ok {
 		return nil, errNoExist{domain}
@@ -102,17 +103,16 @@ func (r *route53Provider) GetNameservers(domain string) ([]*models.Nameserver, e
 		return nil, err
 	}
 	ns := []*models.Nameserver{}
-	for _, nsPtr := range z.DelegationSet.NameServers {
-		ns = append(ns, &models.Nameserver{Name: *nsPtr})
+	if z.DelegationSet != nil {
+		for _, nsPtr := range z.DelegationSet.NameServers {
+			ns = append(ns, &models.Nameserver{Name: *nsPtr})
+		}
 	}
 	return ns, nil
 }
 
 func (r *route53Provider) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Correction, error) {
 	dc.Punycode()
-	if err := r.getZones(); err != nil {
-		return nil, err
-	}
 
 	var corrections = []*models.Correction{}
 	zone, ok := r.zones[dc.Name]
@@ -290,10 +290,6 @@ func unescape(s *string) string {
 }
 
 func (r *route53Provider) EnsureDomainExists(domain string) error {
-	err := r.getZones()
-	if err != nil {
-		return err
-	}
 	if _, ok := r.zones[domain]; ok {
 		return nil
 	}
@@ -302,7 +298,7 @@ func (r *route53Provider) EnsureDomainExists(domain string) error {
 		Name:            &domain,
 		CallerReference: sPtr(fmt.Sprint(time.Now().UnixNano())),
 	}
-	_, err = r.client.CreateHostedZone(in)
+	_, err := r.client.CreateHostedZone(in)
 	return err
 
 }
