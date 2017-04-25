@@ -148,6 +148,14 @@ function TXT(name, target) {
     }
 }
 
+// URL(name,target, recordModifiers...)
+function URL(name, target) {
+    var mods = getModifiers(arguments,2)
+    return function(d) {
+        addRecord(d,"URL",name,target,mods)
+    }
+}
+
 // MX(name,priority,target, recordModifiers...)
 function MX(name, priority, target) {
     checkArgs([_.isString, _.isNumber, _.isString], arguments, "MX expects (name, priority, target)")
