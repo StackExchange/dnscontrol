@@ -27,6 +27,13 @@ func newReg(m map[string]string) (providers.Registrar, error) {
 		return nil, fmt.Errorf("Namecheap apikey and apiuser must be provided.")
 	}
 	api.client = nc.NewClient(api.ApiUser, api.ApiKey, api.ApiUser)
+
+	// if BaseURL is specified in creds, use that url
+	BaseURL, ok := m["BaseURL"]
+	if ok {
+		api.client.BaseURL = BaseURL
+	}
+
 	return api, nil
 }
 
