@@ -24,7 +24,7 @@ type Namecheap struct {
 
 func init() {
 	providers.RegisterRegistrarType("NAMECHEAP", newReg)
-	providers.RegisterDomainServiceProviderType("NAMECHEAP", newDsp)
+	providers.RegisterDomainServiceProviderType("NAMECHEAP", newDsp, providers.CanUseURL)
 }
 
 func newDsp(conf map[string]string, metadata json.RawMessage) (providers.DNSServiceProvider, error) {
