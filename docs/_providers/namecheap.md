@@ -22,6 +22,22 @@ username and key:
 }
 {% endhighlight %}
 
+You can optionally specify BaseURL to use a different endpoint - typically the
+sandbox:
+
+{% highlight json %}
+{
+  "namecheap.com":{
+    "apikey": "yourApiKeyFromNameCheap",
+    "apiuser": "yourUsername"
+    "BaseURL": "https://api.sandbox.namecheap.com/xml.response"
+  }
+}
+{% endhighlight %}
+
+if BaseURL is omitted, the production namecheap url is used.
+
+
 ## Metadata
 
 This provider does not recognize any special metadata fields unique to

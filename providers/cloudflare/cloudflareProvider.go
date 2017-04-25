@@ -81,7 +81,6 @@ func (c *CloudflareApi) GetDomainCorrections(dc *models.DomainConfig) ([]*models
 	if err != nil {
 		return nil, err
 	}
-	//for _, rec := range records {
 	for i := len(records) - 1; i >= 0; i-- {
 		rec := records[i]
 		// Delete ignore labels
@@ -91,9 +90,11 @@ func (c *CloudflareApi) GetDomainCorrections(dc *models.DomainConfig) ([]*models
 		}
 	}
 	for _, rec := range dc.Records {
+		if rec.Type == "ALIAS" {
+			rec.Type = "CNAME"
+		}
 		if labelMatches(rec.Name, c.ignoredLabels) {
 			log.Fatalf("FATAL: dnsconfig contains label that matches ignored_labels: %#v is in %v)\n", rec.Name, c.ignoredLabels)
-			// Since we log.Fatalf, we don't need to be clean here.
 		}
 	}
 	checkNSModifications(dc)
@@ -166,10 +167,16 @@ func (c *CloudflareApi) preprocessConfig(dc *models.DomainConfig) error {
 	// A and CNAMEs: Validate. If null, set to default.
 	// else: Make sure it wasn't set.  Set to default.
 	for _, rec := range dc.Records {
+		if rec.Metadata == nil {
+			rec.Metadata = map[string]string{}
+		}
 		if rec.TTL == 0 || rec.TTL == 300 {
 			rec.TTL = 1
 		}
-		if rec.Type != "A" && rec.Type != "CNAME" && rec.Type != "AAAA" {
+		if rec.TTL != 1 && rec.TTL < 120 {
+			rec.TTL = 120
+		}
+		if rec.Type != "A" && rec.Type != "CNAME" && rec.Type != "AAAA" && rec.Type != "ALIAS" {
 			if rec.Metadata[metaProxy] != "" {
 				return fmt.Errorf("cloudflare_proxy set on %v record: %#v cloudflare_proxy=%#v", rec.Type, rec.Name, rec.Metadata[metaProxy])
 			}
@@ -243,7 +250,7 @@ func newCloudflare(m map[string]string, metadata json.RawMessage) (providers.DNS
 }
 
 func init() {
-	providers.RegisterDomainServiceProviderType("CLOUDFLAREAPI", newCloudflare)
+	providers.RegisterDomainServiceProviderType("CLOUDFLAREAPI", newCloudflare, providers.CanUseAlias)
 }
 
 // Used on the "existing" records.

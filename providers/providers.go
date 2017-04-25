@@ -34,6 +34,21 @@ var registrarTypes = map[string]RegistrarInitializer{}
 type DspInitializer func(map[string]string, json.RawMessage) (DNSServiceProvider, error)
 
 var dspTypes = map[string]DspInitializer{}
+var dspCapabilities = map[string]Capability{}
+
+//Capability is a bitmasked set of "features" that a provider supports. Only use constants from this package.
+type Capability uint32
+
+const (
+	// CanUseAlias indicates the provider support ALIAS records (or flattened CNAMES). Up to the provider to translate them to the appropriate record type.
+	CanUseAlias Capability = 1 << iota
+	// CanUsePTR indicates the provider can handle PTR records
+	CanUsePTR
+)
+
+func ProviderHasCabability(pType string, cap Capability) bool {
+	return dspCapabilities[pType]&cap != 0
+}
 
 //RegisterRegistrarType adds a registrar type to the registry by providing a suitable initialization function.
 func RegisterRegistrarType(name string, init RegistrarInitializer) {
@@ -44,11 +59,16 @@ func RegisterRegistrarType(name string, init RegistrarInitializer) {
 }
 
 //RegisterDomainServiceProviderType adds a dsp to the registry with the given initialization function.
-func RegisterDomainServiceProviderType(name string, init DspInitializer) {
+func RegisterDomainServiceProviderType(name string, init DspInitializer, caps ...Capability) {
 	if _, ok := dspTypes[name]; ok {
 		log.Fatalf("Cannot register registrar type %s multiple times", name)
 	}
+	var abilities Capability
+	for _, c := range caps {
+		abilities |= c
+	}
 	dspTypes[name] = init
+	dspCapabilities[name] = abilities
 }
 
 func createRegistrar(rType string, config map[string]string) (Registrar, error) {
