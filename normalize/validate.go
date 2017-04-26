@@ -55,6 +55,8 @@ func validateRecordTypes(rec *models.RecordConfig, domain string) error {
 		"NS":               true,
 		"ALIAS":            false,
 		"URL":              false,
+		"URL301":           false,
+		"FRAME":            false,
 	}
 
 	if _, ok := validTypes[rec.Type]; !ok {
@@ -127,7 +129,7 @@ func checkTargets(rec *models.RecordConfig, domain string) (errs []error) {
 		}
 	case "ALIAS":
 		check(checkTarget(target))
-	case "TXT", "IMPORT_TRANSFORM", "URL":
+	case "TXT", "IMPORT_TRANSFORM", "URL", "URL301", "FRAME":
 	default:
 		errs = append(errs, fmt.Errorf("Unimplemented record type (%v) domain=%v name=%v",
 			rec.Type, domain, rec.Name))
