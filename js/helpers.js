@@ -123,6 +123,15 @@ function AAAA(name, ip) {
     }
 }
 
+// ALIAS(name,target, recordModifiers...)
+function ALIAS(name, target) {
+    var mods = getModifiers(arguments,2)
+    return function(d) {
+        addRecord(d,"ALIAS",name,target,mods)
+    }
+}
+
+
 // CNAME(name,target, recordModifiers...)
 function CNAME(name, target) {
     var mods = getModifiers(arguments,2)
@@ -136,6 +145,31 @@ function TXT(name, target) {
     var mods = getModifiers(arguments,2)
     return function(d) {
         addRecord(d,"TXT",name,target,mods)
+    }
+}
+
+// URL/URL301/FRAME are namecheap specific see https://www.namecheap.com/support/api/methods/domains-dns/set-hosts.aspx
+// URL(name,target, recordModifiers...)
+function URL(name, target) {
+    var mods = getModifiers(arguments,2)
+    return function(d) {
+        addRecord(d,"URL",name,target,mods)
+    }
+}
+
+// URL301(name,target, recordModifiers...301)
+function URL301(name, target) {
+    var mods = getModifiers(arguments,2)
+    return function(d) {
+        addRecord(d,"URL301",name,target,mods)
+    }
+}
+
+// FRAME(name,target, recordModifiers...)
+function FRAME(name, target) {
+    var mods = getModifiers(arguments,2)
+    return function(d) {
+        addRecord(d,"FRAME",name,target,mods)
     }
 }
 

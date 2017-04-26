@@ -6,6 +6,7 @@ import (
 	"strings"
 
 	"github.com/StackExchange/dnscontrol/models"
+	"github.com/StackExchange/dnscontrol/providers"
 	"github.com/StackExchange/dnscontrol/transform"
 	"github.com/miekg/dns"
 	"github.com/miekg/dns/dnsutil"
@@ -52,6 +53,10 @@ func validateRecordTypes(rec *models.RecordConfig, domain string) error {
 		"MX":               true,
 		"TXT":              true,
 		"NS":               true,
+		"ALIAS":            false,
+		"URL":              false,
+		"URL301":           false,
+		"FRAME":            false,
 	}
 
 	if _, ok := validTypes[rec.Type]; !ok {
@@ -112,6 +117,9 @@ func checkTargets(rec *models.RecordConfig, domain string) (errs []error) {
 		check(checkIPv6(target))
 	case "CNAME":
 		check(checkTarget(target))
+		if label == "@" {
+			check(fmt.Errorf("cannot create CNAME record for bare domain"))
+		}
 	case "MX":
 		check(checkTarget(target))
 	case "NS":
@@ -119,7 +127,9 @@ func checkTargets(rec *models.RecordConfig, domain string) (errs []error) {
 		if label == "@" {
 			check(fmt.Errorf("cannot create NS record for bare domain. Use NAMESERVER instead"))
 		}
-	case "TXT", "IMPORT_TRANSFORM":
+	case "ALIAS":
+		check(checkTarget(target))
+	case "TXT", "IMPORT_TRANSFORM", "URL", "URL301", "FRAME":
 	default:
 		errs = append(errs, fmt.Errorf("Unimplemented record type (%v) domain=%v name=%v",
 			rec.Type, domain, rec.Name))
@@ -260,9 +270,20 @@ func NormalizeAndValidateConfig(config *models.DNSConfig) (errs []error) {
 			errs = append(errs, err)
 		}
 	}
+
+	//Check that CNAMES don't have to co-exist with any other records
 	for _, d := range config.Domains {
 		errs = append(errs, checkCNAMEs(d)...)
 	}
+
+	//Check that if any aliases are used in a domain, every provider for that domain supports them
+	for _, d := range config.Domains {
+		err := checkALIASes(d, config.DNSProviders)
+		if err != nil {
+			errs = append(errs, nil)
+		}
+	}
+
 	return errs
 }
 
@@ -282,6 +303,30 @@ func checkCNAMEs(dc *models.DomainConfig) (errs []error) {
 		}
 	}
 	return
+}
+
+func checkALIASes(dc *models.DomainConfig, pList []*models.DNSProviderConfig) error {
+	hasAlias := false
+	for _, r := range dc.Records {
+		if r.Type == "ALIAS" {
+			hasAlias = true
+			break
+		}
+	}
+	if !hasAlias {
+		return nil
+	}
+	for pName := range dc.DNSProviders {
+		for _, p := range pList {
+			if p.Name == pName {
+				if !providers.ProviderHasCabability(p.Type, providers.CanUseAlias) {
+					return fmt.Errorf("Domain %s uses ALIAS records, but DNS provider type %s does not support them", dc.Name, p.Type)
+				}
+				break
+			}
+		}
+	}
+	return nil
 }
 
 func applyRecordTransforms(domain *models.DomainConfig) error {

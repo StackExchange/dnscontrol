@@ -213,6 +213,12 @@
 			"revisionTime": "2016-02-25T03:18:00Z"
 		},
 		{
+			"checksumSHA1": "pKcCESD4Ezs4SpbZ0Kbl4XsZKt0=",
+			"path": "github.com/google/go-github/github",
+			"revision": "6896997c7c9fe603fb9d2e8e92303bb18481e60a",
+			"revisionTime": "2017-04-09T17:43:40Z"
+		},
+		{
 			"checksumSHA1": "yyAzHoiVLu+xywYI2BDyRq6sOqE=",
 			"path": "github.com/google/go-querystring/query",
 			"revision": "9235644dd9e52eeae6fa48efd539fdc351a0af53",
@@ -361,6 +367,12 @@
 			"path": "golang.org/x/net/idna",
 			"revision": "a6577fac2d73be281a500b310739095313165611",
 			"revisionTime": "2017-03-08T20:54:49Z"
+		},
+		{
+			"checksumSHA1": "kEO69MIsqWDxBOIs3ez1faofNSg=",
+			"path": "golang.org/x/net/publicsuffix",
+			"revision": "d1e1b351919c6738fdeb9893d5c998b161464f0c",
+			"revisionTime": "2016-12-29T22:47:41Z"
 		},
 		{
 			"checksumSHA1": "XH7CgbL5Z8COUc+MKrYqS3FFosY=",
