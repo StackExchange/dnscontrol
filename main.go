@@ -36,6 +36,8 @@ var domains = flag.String("domains", "", "Comma seperated list of domain names t
 
 var interactive = flag.Bool("i", false, "Confirm or Exclude each correction before they run")
 
+var delay = flag.Int64("d", 0, "delay between domains to avoid rate limits (in ms)")
+
 func main() {
 	log.SetFlags(log.LstdFlags | log.Lshortfile)
 	flag.Parse()
@@ -222,6 +224,8 @@ func main() {
 			}
 			totalCorrections += len(corrections)
 			anyErrors = printOrRunCorrections(corrections, command) || anyErrors
+
+			time.Sleep(time.Duration(*delay) * time.Millisecond)
 		}
 	default:
 		log.Fatalf("Unknown command %s", command)
