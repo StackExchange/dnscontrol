@@ -26,6 +26,7 @@ and renaming it.
 The file looks like:
 
 {% highlight js %}
+
 // Providers:
 
 var REG_NONE = NewRegistrar('none', 'NONE');    // No registrar.
@@ -94,6 +95,7 @@ It will use APIs if needed to find out what DNS entries currently exist.
 It should look something like this:
 
 {% highlight js %}
+
 $ dnscontrol preview
 Initialized 1 registrars and 1 dns service providers.
 ******************** Domain: example.com
