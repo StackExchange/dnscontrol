@@ -39,7 +39,9 @@ var REG_NAMECOM = NewRegistrar("name.com","NAMEDOTCOM");
 var CFLARE = NewDnsProvider("cloudflare.com","CLOUDFLAREAPI");
 
 D("example.tld", REG_NAMECOM, DnsProvider(CFLARE),
-    A("test","1.2.3.4")
+    A("test","1.2.3.4"),
+    A("www","1.2.3.4", {cloudlfare_proxy:"on"}),
+    ALIAS("@","test.example.tld",{cloudflare_proxy:"on"})
 );
 {%endhighlight%}
 
