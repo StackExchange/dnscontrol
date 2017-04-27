@@ -25,7 +25,20 @@ D("example.com", registrar, DnsProvider(bind),
 );
 {%endhighlight%}
 
-You may modify this file to match your particular providers and domains. See [the javascript docs]({{site.github.url}}/js) and  [the provider docs]({{site.github.url}}/provider-list) for more details. If you are using other providers, you will likely need to make a `creds.json` file with api tokens and other account information.
+You may modify this file to match your particular providers and domains. See [the javascript docs]({{site.github.url}}/js) and  [the provider docs]({{site.github.url}}/provider-list) for more details. If you are using other providers, you will likely need to make a `creds.json` file with api tokens and other account information. For example, to use both name.com and Cloudflare, you would have:
+
+{% highlight js %}
+{
+  "cloudflare":{
+    "apikey": "key",
+    "apiuser": "name"
+  },
+  "name":{
+    "apikey": "key",
+    "apiuser": "name"
+  }
+}
+{%endhighlight%}
 
 ## 3. Run `dnscontrol preview`
 
