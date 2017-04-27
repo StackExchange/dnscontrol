@@ -29,13 +29,13 @@ You may modify this file to match your particular providers and domains. See [th
 
 {% highlight js %}
 {
-  "cloudflare":{
-    "apikey": "key",
-    "apiuser": "name"
+  "cloudflare":{ //provider name to be used in dnsconfig.js
+    "apikey": "key", //API key
+    "apiuser": "username" //username for cloudflare
   },
-  "name":{
-    "apikey": "key",
-    "apiuser": "name"
+  "namecom":{ //provider name to be used in dnsconfig.js
+    "apikey": "key", //API Key
+    "apiuser": "username" //username for name.com
   }
 }
 {%endhighlight%}
