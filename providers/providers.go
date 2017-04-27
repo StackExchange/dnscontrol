@@ -30,7 +30,7 @@ type RegistrarInitializer func(map[string]string) (Registrar, error)
 
 var registrarTypes = map[string]RegistrarInitializer{}
 
-//DspInitializer is a function to create a registrar. Function will be passed the unprocessed json payload from the configuration file for the given provider.
+//DspInitializer is a function to create a DNS service provider. Function will be passed the unprocessed json payload from the configuration file for the given provider.
 type DspInitializer func(map[string]string, json.RawMessage) (DNSServiceProvider, error)
 
 var dspTypes = map[string]DspInitializer{}
@@ -118,7 +118,7 @@ func CreateDsps(d *models.DNSConfig, providerConfigs map[string]map[string]strin
 	return dsps, nil
 }
 
-// None is a basivc provider type that does absolutely nothing. Can be useful as a placeholder for third parties or unimplemented providers.
+// None is a basic provider type that does absolutely nothing. Can be useful as a placeholder for third parties or unimplemented providers.
 type None struct{}
 
 func (n None) GetRegistrarCorrections(dc *models.DomainConfig) ([]*models.Correction, error) {
