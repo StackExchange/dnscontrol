@@ -10,6 +10,7 @@ layout: default
 ## Typical DNS Records
 
 {% highlight javascript %}
+
 D('example.com', REG, DnsProvider('GCLOUD'),
     A('@', '1.2.3.4'),  // The naked or 'apex' domain.
     A('server1', '2.3.4.5'),
