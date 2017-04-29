@@ -57,8 +57,34 @@ func (z *zoneGenData) Less(i, j int) bool {
 	return a.String() < b.String()
 }
 
+// mostCommonTtl returns the most common TTL in a set of records.
+func mostCommonTtl(records []dns.RR) uint32 {
+	// Index the TTLs in use:
+	d := make(map[uint32]int)
+	for _, r := range records {
+		d[r.Header().Ttl]++
+	}
+	// Find the largest count:
+	var mc int
+	for _, value := range d {
+		if value > mc {
+			mc = value
+		}
+	}
+	// Find the largest key with that count:
+	var mk uint32
+	for key, value := range d {
+		if value == mc {
+			if key > mk {
+				mk = key
+			}
+		}
+	}
+	return mk
+}
+
 // WriteZoneFile writes a beautifully formatted zone file.
-func WriteZoneFile(w io.Writer, records []dns.RR, origin string, defaultTtl uint32) error {
+func WriteZoneFile(w io.Writer, records []dns.RR, origin string) error {
 	// This function prioritizes beauty over efficiency.
 	// * The zone records are sorted by label, grouped by subzones to
 	//   be easy to read and pleasant to the eye.
@@ -68,6 +94,8 @@ func WriteZoneFile(w io.Writer, records []dns.RR, origin string, defaultTtl uint
 	// * Repeated labels are removed.
 	// * $TTL is used to eliminate clutter.
 	// * "@" is used instead of the apex domain name.
+
+	defaultTtl := mostCommonTtl(records)
 
 	z := &zoneGenData{
 		Origin:     origin,

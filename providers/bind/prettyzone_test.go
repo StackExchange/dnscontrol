@@ -27,12 +27,42 @@ func parseAndRegen(t *testing.T, buf *bytes.Buffer, expected string) {
 	}
 	// Generate it back:
 	buf2 := &bytes.Buffer{}
-	WriteZoneFile(buf2, parsed, "bosun.org.", 300)
+	WriteZoneFile(buf2, parsed, "bosun.org.")
 
 	// Compare:
 	if buf2.String() != expected {
 		t.Fatalf("Regenerated zonefile does not match: got=(\n%v\n)\nexpected=(\n%v\n)\n", buf2.String(), expected)
 	}
+}
+
+func TestMostCommonTtl(t *testing.T) {
+	var records []dns.RR
+	var g, e uint32
+	r1, _ := dns.NewRR("bosun.org. 100 IN A 1.1.1.1")
+	r2, _ := dns.NewRR("bosun.org. 200 IN A 1.1.1.1")
+	r3, _ := dns.NewRR("bosun.org. 300 IN A 1.1.1.1")
+
+	records = nil
+	records, e = append(records, r1, r1, r1), 100
+	g = mostCommonTtl(records)
+	if e != g {
+		t.Fatalf("expected %d; got %d\n", e, g)
+	}
+
+	records = nil
+	records, e = append(records, r1, r2, r2), 200
+	g = mostCommonTtl(records)
+	if e != g {
+		t.Fatalf("expected %d; got %d\n", e, g)
+	}
+
+	records = nil
+	records, e = append(records, r1, r2, r3), 300
+	g = mostCommonTtl(records)
+	if e != g {
+		t.Fatalf("expected %d; got %d\n", e, g)
+	}
+
 }
 
 // func WriteZoneFile
@@ -42,11 +72,33 @@ func TestWriteZoneFileSimple(t *testing.T) {
 	r2, _ := dns.NewRR("bosun.org. 300 IN A 192.30.252.154")
 	r3, _ := dns.NewRR("www.bosun.org. 300 IN CNAME bosun.org.")
 	buf := &bytes.Buffer{}
-	WriteZoneFile(buf, []dns.RR{r1, r2, r3}, "bosun.org.", 300)
+	WriteZoneFile(buf, []dns.RR{r1, r2, r3}, "bosun.org.")
 	expected := `$TTL 300
 @                IN A     192.30.252.153
                  IN A     192.30.252.154
 www              IN CNAME bosun.org.
+`
+	if buf.String() != expected {
+		t.Log(buf.String())
+		t.Log(expected)
+		t.Fatalf("Zone file does not match.")
+	}
+
+	parseAndRegen(t, buf, expected)
+}
+
+func TestWriteZoneFileSimpleTtl(t *testing.T) {
+	r1, _ := dns.NewRR("bosun.org. 100 IN A 192.30.252.153")
+	r2, _ := dns.NewRR("bosun.org. 100 IN A 192.30.252.154")
+	r3, _ := dns.NewRR("bosun.org. 100 IN A 192.30.252.155")
+	r4, _ := dns.NewRR("www.bosun.org. 300 IN CNAME bosun.org.")
+	buf := &bytes.Buffer{}
+	WriteZoneFile(buf, []dns.RR{r1, r2, r3, r4}, "bosun.org.")
+	expected := `$TTL 100
+@                IN A     192.30.252.153
+                 IN A     192.30.252.154
+                 IN A     192.30.252.155
+www        300   IN CNAME bosun.org.
 `
 	if buf.String() != expected {
 		t.Log(buf.String())
@@ -70,7 +122,7 @@ func TestWriteZoneFileMx(t *testing.T) {
 	r8, _ := dns.NewRR(`_domainkey.bosun.org. 300 IN TXT "vvvv"`)
 	r9, _ := dns.NewRR(`google._domainkey.bosun.org. 300 IN TXT "\"foo\""`)
 	buf := &bytes.Buffer{}
-	WriteZoneFile(buf, []dns.RR{r1, r2, r3, r4, r5, r6, r7, r8, r9}, "bosun.org", 300)
+	WriteZoneFile(buf, []dns.RR{r1, r2, r3, r4, r5, r6, r7, r8, r9}, "bosun.org")
 	if buf.String() != testdataZFMX {
 		t.Log(buf.String())
 		t.Log(testdataZFMX)
@@ -117,7 +169,7 @@ func TestWriteZoneFileOrder(t *testing.T) {
 	}
 
 	buf := &bytes.Buffer{}
-	WriteZoneFile(buf, records, "stackoverflow.com.", 300)
+	WriteZoneFile(buf, records, "stackoverflow.com.")
 	// Compare
 	if buf.String() != testdataOrder {
 		t.Log("Found:")
@@ -138,7 +190,7 @@ func TestWriteZoneFileOrder(t *testing.T) {
 		}
 		// Generate
 		buf := &bytes.Buffer{}
-		WriteZoneFile(buf, records, "stackoverflow.com.", 300)
+		WriteZoneFile(buf, records, "stackoverflow.com.")
 		// Compare
 		if buf.String() != testdataOrder {
 			t.Log(buf.String())
