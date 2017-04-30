@@ -41,7 +41,10 @@ func TestMostCommonTtl(t *testing.T) {
 	r1, _ := dns.NewRR("bosun.org. 100 IN A 1.1.1.1")
 	r2, _ := dns.NewRR("bosun.org. 200 IN A 1.1.1.1")
 	r3, _ := dns.NewRR("bosun.org. 300 IN A 1.1.1.1")
+	r4, _ := dns.NewRR("bosun.org. 400 IN NS foo.bosun.org.")
+	r5, _ := dns.NewRR("bosun.org. 400 IN NS bar.bosun.org.")
 
+	// All records are TTL=100
 	records = nil
 	records, e = append(records, r1, r1, r1), 100
 	g = mostCommonTtl(records)
@@ -49,6 +52,7 @@ func TestMostCommonTtl(t *testing.T) {
 		t.Fatalf("expected %d; got %d\n", e, g)
 	}
 
+	// Mixture of TTLs with an obvious winner.
 	records = nil
 	records, e = append(records, r1, r2, r2), 200
 	g = mostCommonTtl(records)
@@ -56,8 +60,17 @@ func TestMostCommonTtl(t *testing.T) {
 		t.Fatalf("expected %d; got %d\n", e, g)
 	}
 
+	// 3-way tie. Largest TTL should be used.
 	records = nil
 	records, e = append(records, r1, r2, r3), 300
+	g = mostCommonTtl(records)
+	if e != g {
+		t.Fatalf("expected %d; got %d\n", e, g)
+	}
+
+	// NS records are ignored.
+	records = nil
+	records, e = append(records, r1, r4, r5), 100
 	g = mostCommonTtl(records)
 	if e != g {
 		t.Fatalf("expected %d; got %d\n", e, g)
