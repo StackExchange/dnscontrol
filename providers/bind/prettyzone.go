@@ -23,10 +23,7 @@ type zoneGenData struct {
 func (z *zoneGenData) Len() int      { return len(z.Records) }
 func (z *zoneGenData) Swap(i, j int) { z.Records[i], z.Records[j] = z.Records[j], z.Records[i] }
 func (z *zoneGenData) Less(i, j int) bool {
-	//fmt.Printf("DEBUG: i=%#v j=%#v\n", i, j)
-	//fmt.Printf("DEBUG: z.Records=%#v\n", len(z.Records))
 	a, b := z.Records[i], z.Records[j]
-	//fmt.Printf("DEBUG: a=%#v b=%#v\n", a, b)
 	compA, compB := dnsutil.AddOrigin(a.Header().Name, z.Origin+"."), dnsutil.AddOrigin(b.Header().Name, z.Origin+".")
 	if compA != compB {
 		if compA == z.Origin+"." {
