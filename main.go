@@ -68,6 +68,7 @@ func main() {
 		           push:    Make changes for real.
 		           version: Print program version string.
 		           print:   Print compiled data.
+		           create-domains:   Pre-create domains in R53
 		`)
 		flag.PrintDefaults()
 		return
