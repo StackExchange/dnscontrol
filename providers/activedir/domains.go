@@ -55,9 +55,6 @@ func (c *adProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Co
 	// Generate changes.
 	corrections := []*models.Correction{}
 	for _, del := range dels {
-		if dc.KeepUnknown {
-			break
-		}
 		corrections = append(corrections, c.deleteRec(dc.Name, del.Existing))
 	}
 	for _, cre := range creates {
