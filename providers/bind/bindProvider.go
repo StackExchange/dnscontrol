@@ -238,7 +238,7 @@ func (c *Bind) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Correcti
 					for _, r := range dc.Records {
 						zonefilerecords = append(zonefilerecords, r.RR())
 					}
-					err = WriteZoneFile(zf, zonefilerecords, dc.Name, models.DefaultTTL)
+					err = WriteZoneFile(zf, zonefilerecords, dc.Name)
 
 					if err != nil {
 						log.Fatalf("WriteZoneFile error: %v\n", err)
