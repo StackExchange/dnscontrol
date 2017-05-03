@@ -88,6 +88,27 @@ func (c *CloudflareApi) deleteRec(rec *cfRecord, domainID string) *models.Correc
 	}
 }
 
+func (c *CloudflareApi) createZone(domainName string) error{
+	tpe createZone struct {
+		Name     string `json:"name"`
+	}
+	endpoint := zonesURL
+
+	buf := &bytes.Buffer{}
+
+	encoder := json.NewEncoder(buf)
+	if err := encoder.Encode(cf); err != nil {
+		return err
+	}
+	req, err := http.NewRequest("POST", endpoint, buf)
+	if err != nil {
+		return err
+	}
+	c.setHeaders(req)
+	id, err = handleActionResponse(http.DefaultClient.Do(req))
+	return err
+}
+
 func (c *CloudflareApi) createRec(rec *models.RecordConfig, domainID string) []*models.Correction {
 	type createRecord struct {
 		Name     string `json:"name"`
