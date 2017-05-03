@@ -38,3 +38,10 @@ D("example.tld", REG_NAMECOM, DnsProvider(R53),
 ## Activation
 
 DNSControl depends on a standard [aws access key](https://aws.amazon.com/developers/access-keys/) with permission to create and update hosted zones.
+
+## New domains
+
+If a domain does not exist in your Route53 account, DNSControl 
+will *not* automatically add it. You can do that either manually
+via the control panel, or via the command `dnscontrol create-domains`
+command.
