@@ -35,3 +35,9 @@ D("example.tld", REG_NAMECOM, DnsProvider(GANDI),
     A("test","1.2.3.4")
 );
 {% endhighlight %}
+
+## New domains
+
+If a domain does not exist in your Gandi account, DNSControl
+will *not* automatically add it. You'll need to do that via the
+control panel manually.
