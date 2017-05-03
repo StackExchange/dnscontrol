@@ -103,9 +103,6 @@ func (c *CloudflareApi) GetDomainCorrections(dc *models.DomainConfig) ([]*models
 	corrections := []*models.Correction{}
 
 	for _, d := range del {
-		if dc.KeepUnknown {
-			continue
-		}
 		corrections = append(corrections, c.deleteRec(d.Existing.Original.(*cfRecord), id))
 	}
 	for _, d := range create {
@@ -306,9 +303,7 @@ func getProxyMetadata(r *models.RecordConfig) map[string]string {
 
 func (c *CloudflareApi) EnsureDomainExists(domain string) error {
 	err := c.fetchDomainList()
-
 	var id string
-
 	if err != nil {
 		return err
 	}
@@ -316,11 +311,7 @@ func (c *CloudflareApi) EnsureDomainExists(domain string) error {
 		return nil
 	}
 	fmt.Printf("Adding zone for %s to Cloudflare account\n", domain)
-
 	id, err = c.createZone(domain)
-
-	fmt.Printf("ID: %s", id)
-
 	return err
 
 }

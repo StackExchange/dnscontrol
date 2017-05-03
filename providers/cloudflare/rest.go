@@ -92,20 +92,15 @@ func (c *CloudflareApi) createZone(domainName string) (string, error) {
 	type createZone struct {
 		Name string `json:"name"`
 	}
-	endpoint := zonesURL
-
 	var id string
-
 	cz := &createZone{
 		Name: domainName}
-
 	buf := &bytes.Buffer{}
-
 	encoder := json.NewEncoder(buf)
 	if err := encoder.Encode(cz); err != nil {
 		return "", err
 	}
-	req, err := http.NewRequest("POST", endpoint, buf)
+	req, err := http.NewRequest("POST", zonesURL, buf)
 	if err != nil {
 		return "", err
 	}
