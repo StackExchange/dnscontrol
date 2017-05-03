@@ -138,3 +138,10 @@ func init() {
 		return None{}, nil
 	})
 }
+
+// RegisterCustomRecordType registers a record type that is only valid for one provider.
+// Record type to use in js is $PROVIDER_$NAME.
+// After validating, record type will be replaced with just $NAME.
+func RegisterCustomRecordType(name, provider) {
+
+}
