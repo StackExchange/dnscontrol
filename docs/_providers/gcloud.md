@@ -56,3 +56,9 @@ D("example.tld", REG_NAMECOM, DnsProvider(GCLOUD),
 
 3. Choose an existing user, or create a new one. The user requires "App Engine Admin" rights.
 4. Download the JSON key and copy it into your `creds.json` under the name of your gcloud provider.
+
+## New domains
+
+If a domain does not exist in your Google Cloud DNS account, DNSControl
+will *not* automatically add it. You'll need to do that via the
+control panel manually.
