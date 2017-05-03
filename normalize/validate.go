@@ -277,7 +277,7 @@ func NormalizeAndValidateConfig(config *models.DNSConfig) (errs []error) {
 	for _, d := range config.Domains {
 		err := checkALIASes(d, config.DNSProviders)
 		if err != nil {
-			errs = append(errs, err)
+			errs = append(errs, nil)
 		}
 	}
 

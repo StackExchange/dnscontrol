@@ -128,14 +128,9 @@ func TestMetaChange(t *testing.T) {
 }
 
 func checkLengths(t *testing.T, existing, desired []*models.RecordConfig, unCount, createCount, delCount, modCount int, valFuncs ...func(*models.RecordConfig) map[string]string) (un, cre, del, mod Changeset) {
-	return checkLengthsFull(t, existing, desired, unCount, createCount, delCount, modCount, false, valFuncs...)
-}
-
-func checkLengthsFull(t *testing.T, existing, desired []*models.RecordConfig, unCount, createCount, delCount, modCount int, keepUnknown bool, valFuncs ...func(*models.RecordConfig) map[string]string) (un, cre, del, mod Changeset) {
 	dc := &models.DomainConfig{
-		Name:        "example.com",
-		Records:     desired,
-		KeepUnknown: keepUnknown,
+		Name:    "example.com",
+		Records: desired,
 	}
 	d := New(dc, valFuncs...)
 	un, cre, del, mod = d.IncrementalDiff(existing)
@@ -155,16 +150,4 @@ func checkLengthsFull(t *testing.T, existing, desired []*models.RecordConfig, un
 		t.FailNow()
 	}
 	return
-}
-
-func TestNoPurge(t *testing.T) {
-	existing := []*models.RecordConfig{
-		myRecord("www MX 1 1.1.1.1"),
-		myRecord("www MX 1 2.2.2.2"),
-		myRecord("www2 MX 1 1.1.1.1"),
-	}
-	desired := []*models.RecordConfig{
-		myRecord("www MX 1 1.1.1.1"),
-	}
-	checkLengthsFull(t, existing, desired, 1, 0, 1, 0, true)
 }

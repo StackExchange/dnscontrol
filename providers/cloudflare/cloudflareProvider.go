@@ -305,18 +305,22 @@ func getProxyMetadata(r *models.RecordConfig) map[string]string {
 }
 
 func (c *CloudflareApi) EnsureDomainExists(domain string) error {
-	err := c.getZones()
+	err := c.fetchDomainList()
+
+	var id string
+
 	if err != nil {
 		return err
 	}
-	if _, ok := r.zones[domain]; ok {
+	if _, ok := c.domainIndex[domain]; ok {
 		return nil
 	}
 	fmt.Printf("Adding zone for %s to Cloudflare account\n", domain)
 
-	in := c.createZone(domain)
+	id, err = c.createZone(domain)
 
-	_, err = r.client.CreateHostedZone(in)
+	fmt.Printf("ID: %s", id)
+
 	return err
 
 }
