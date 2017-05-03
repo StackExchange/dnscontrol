@@ -303,7 +303,6 @@ func getProxyMetadata(r *models.RecordConfig) map[string]string {
 
 func (c *CloudflareApi) EnsureDomainExists(domain string) error {
 	err := c.fetchDomainList()
-	var id string
 	if err != nil {
 		return err
 	}
@@ -311,7 +310,6 @@ func (c *CloudflareApi) EnsureDomainExists(domain string) error {
 		return nil
 	}
 	fmt.Printf("Adding zone for %s to Cloudflare account\n", domain)
-	id, err = c.createZone(domain)
+	_, err = c.createZone(domain)
 	return err
-
 }
