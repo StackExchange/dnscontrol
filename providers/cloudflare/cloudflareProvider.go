@@ -314,7 +314,8 @@ func (c *CloudflareApi) EnsureDomainExists(domain string) error {
 	if _, ok := c.domainIndex[domain]; ok {
 		return nil
 	}
-	fmt.Printf("Adding zone for %s to Cloudflare account\n", domain)
-	_, err = c.createZone(domain)
+	var id string
+	id, err = c.createZone(domain)
+	fmt.Printf("Added zone for %s to Cloudflare account: %s\n", domain, id)
 	return err
 }
