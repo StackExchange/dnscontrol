@@ -227,6 +227,11 @@ func newCloudflare(m map[string]string, metadata json.RawMessage) (providers.DNS
 		return nil, fmt.Errorf("Cloudflare apikey and apiuser must be provided.")
 	}
 
+	err := c.fetchDomainList()
+	if err != nil {
+		return err
+	}
+
 	if len(metadata) > 0 {
 		parsedMeta := &struct {
 			IPConversions string   `json:"ip_conversions"`
