@@ -149,8 +149,6 @@ func main() {
 					if err != nil {
 						fmt.Printf("Error creating domain: %s\n", err)
 					}
-				} else {
-					fmt.Println("NOPE", prov)
 				}
 			}
 		}

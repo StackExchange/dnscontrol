@@ -227,9 +227,9 @@ func newCloudflare(m map[string]string, metadata json.RawMessage) (providers.DNS
 		return nil, fmt.Errorf("Cloudflare apikey and apiuser must be provided.")
 	}
 
-	err := c.fetchDomainList()
+	err := api.fetchDomainList()
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	if len(metadata) > 0 {
@@ -307,10 +307,6 @@ func getProxyMetadata(r *models.RecordConfig) map[string]string {
 }
 
 func (c *CloudflareApi) EnsureDomainExists(domain string) error {
-	err := c.fetchDomainList()
-	if err != nil {
-		return err
-	}
 	if _, ok := c.domainIndex[domain]; ok {
 		return nil
 	}
