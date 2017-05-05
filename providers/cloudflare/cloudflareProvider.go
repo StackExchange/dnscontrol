@@ -227,6 +227,11 @@ func newCloudflare(m map[string]string, metadata json.RawMessage) (providers.DNS
 		return nil, fmt.Errorf("Cloudflare apikey and apiuser must be provided.")
 	}
 
+	err := api.fetchDomainList()
+	if err != nil {
+		return nil, err
+	}
+
 	if len(metadata) > 0 {
 		parsedMeta := &struct {
 			IPConversions string   `json:"ip_conversions"`
@@ -299,4 +304,14 @@ func getProxyMetadata(r *models.RecordConfig) map[string]string {
 	return map[string]string{
 		"proxy": fmt.Sprint(proxied),
 	}
+}
+
+func (c *CloudflareApi) EnsureDomainExists(domain string) error {
+	if _, ok := c.domainIndex[domain]; ok {
+		return nil
+	}
+	var id string
+	id, err := c.createZone(domain)
+	fmt.Printf("Added zone for %s to Cloudflare account: %s\n", domain, id)
+	return err
 }
