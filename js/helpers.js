@@ -303,3 +303,15 @@ function num2dot(num)
     }
     return d;
 }
+
+// CUSTOM, PROVIDER SPECIFIC RECORD TYPES
+function CF_REDIRECT(src, dst) {
+    return function(d) {
+        addRecord(d,"CF_REDIRECT","@",src+","+dst)
+    }
+}
+function CF_TEMP_REDIRECT(src, dst) {
+    return function(d) {
+        addRecord(d,"CF_TEMP_REDIRECT","@",src+","+dst)
+    }
+}

@@ -33,6 +33,12 @@ Domain level metadata available:
    - ip_conversions
 */
 
+func init() {
+	providers.RegisterDomainServiceProviderType("CLOUDFLAREAPI", newCloudflare, providers.CanUseAlias)
+	providers.RegisterCustomRecordType("CF_REDIRECT", "CLOUDFLAREAPI", "PAGE_RULE_301")
+	providers.RegisterCustomRecordType("CF_TEMP_REDIRECT", "CLOUDFLAREAPI", "PAGE_RULE_302")
+}
+
 type CloudflareApi struct {
 	ApiKey        string `json:"apikey"`
 	ApiUser       string `json:"apiuser"`
@@ -51,6 +57,7 @@ func labelMatches(label string, matches []string) bool {
 	}
 	return false
 }
+
 func (c *CloudflareApi) GetNameservers(domain string) ([]*models.Nameserver, error) {
 	if c.domainIndex == nil {
 		if err := c.fetchDomainList(); err != nil {
@@ -247,10 +254,6 @@ func newCloudflare(m map[string]string, metadata json.RawMessage) (providers.DNS
 		}
 	}
 	return api, nil
-}
-
-func init() {
-	providers.RegisterDomainServiceProviderType("CLOUDFLAREAPI", newCloudflare, providers.CanUseAlias)
 }
 
 // Used on the "existing" records.
