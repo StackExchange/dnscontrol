@@ -68,7 +68,9 @@ func validateRecordTypes(rec *models.RecordConfig, domain string, pTypes []strin
 		}
 		//it is ok. Lets replace the type with real type and add metadata to say we checked it
 		rec.Metadata["orig_custom_type"] = rec.Type
-		rec.Type = cType.RealType
+		if cType.RealType != "" {
+			rec.Type = cType.RealType
+		}
 	}
 	return nil
 }

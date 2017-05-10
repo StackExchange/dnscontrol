@@ -35,8 +35,8 @@ Domain level metadata available:
 
 func init() {
 	providers.RegisterDomainServiceProviderType("CLOUDFLAREAPI", newCloudflare, providers.CanUseAlias)
-	providers.RegisterCustomRecordType("CF_REDIRECT", "CLOUDFLAREAPI", "PAGE_RULE_301")
-	providers.RegisterCustomRecordType("CF_TEMP_REDIRECT", "CLOUDFLAREAPI", "PAGE_RULE_302")
+	providers.RegisterCustomRecordType("CF_REDIRECT", "CLOUDFLAREAPI", "")
+	providers.RegisterCustomRecordType("CF_TEMP_REDIRECT", "CLOUDFLAREAPI", "")
 }
 
 type CloudflareApi struct {
@@ -96,6 +96,11 @@ func (c *CloudflareApi) GetDomainCorrections(dc *models.DomainConfig) ([]*models
 			records = append(records[:i], records[i+1:]...)
 		}
 	}
+	prs, err := c.getPageRules(id, dc.Name)
+	if err != nil {
+		return nil, err
+	}
+	records = append(records, prs...)
 	for _, rec := range dc.Records {
 		if rec.Type == "ALIAS" {
 			rec.Type = "CNAME"
@@ -110,19 +115,45 @@ func (c *CloudflareApi) GetDomainCorrections(dc *models.DomainConfig) ([]*models
 	corrections := []*models.Correction{}
 
 	for _, d := range del {
-		corrections = append(corrections, c.deleteRec(d.Existing.Original.(*cfRecord), id))
+		ex := d.Existing
+		if ex.Type == "PAGE_RULE" {
+			corrections = append(corrections, &models.Correction{
+				Msg: d.String(),
+				F:   func() error { return c.deletePageRule(ex.Original.(*pageRule).ID, id) },
+			})
+
+		} else {
+			corrections = append(corrections, c.deleteRec(ex.Original.(*cfRecord), id))
+		}
 	}
 	for _, d := range create {
-		corrections = append(corrections, c.createRec(d.Desired, id)...)
+		des := d.Desired
+		if des.Type == "PAGE_RULE" {
+			corrections = append(corrections, &models.Correction{
+				Msg: d.String(),
+				F:   func() error { return c.createPageRule(id, des.Target) },
+			})
+		} else {
+			corrections = append(corrections, c.createRec(des, id)...)
+		}
 	}
 
 	for _, d := range mod {
-		e, rec := d.Existing.Original.(*cfRecord), d.Desired
-		proxy := e.Proxiable && rec.Metadata[metaProxy] != "off"
-		corrections = append(corrections, &models.Correction{
-			Msg: d.String(),
-			F:   func() error { return c.modifyRecord(id, e.ID, proxy, rec) },
-		})
+		rec := d.Desired
+		ex := d.Existing
+		if rec.Type == "PAGE_RULE" {
+			corrections = append(corrections, &models.Correction{
+				Msg: d.String(),
+				F:   func() error { return c.updatePageRule(ex.Original.(*pageRule).ID, id, rec.Target) },
+			})
+		} else {
+			e := ex.Original.(*cfRecord)
+			proxy := e.Proxiable && rec.Metadata[metaProxy] != "off"
+			corrections = append(corrections, &models.Correction{
+				Msg: d.String(),
+				F:   func() error { return c.modifyRecord(id, e.ID, proxy, rec) },
+			})
+		}
 	}
 	return corrections, nil
 }
@@ -170,10 +201,14 @@ func (c *CloudflareApi) preprocessConfig(dc *models.DomainConfig) error {
 		}
 	}
 
+	currentPrPrio := 1
+
 	// Normalize the proxy setting for each record.
 	// A and CNAMEs: Validate. If null, set to default.
 	// else: Make sure it wasn't set.  Set to default.
-	for _, rec := range dc.Records {
+	// iterate backwards so first defined page rules have highest priority
+	for i := len(dc.Records) - 1; i >= 0; i-- {
+		rec := dc.Records[i]
 		if rec.Metadata == nil {
 			rec.Metadata = map[string]string{}
 		}
@@ -199,6 +234,20 @@ func (c *CloudflareApi) preprocessConfig(dc *models.DomainConfig) error {
 				}
 				rec.Metadata[metaProxy] = val
 			}
+		}
+		// CF_REDIRECT record types. Encode target as $FROM,$TO,$PRIO,$CODE
+		if rec.Type == "CF_REDIRECT" || rec.Type == "CF_TEMP_REDIRECT" {
+			parts := strings.Split(rec.Target, ",")
+			if len(parts) != 2 {
+				return fmt.Errorf("Invalid data specified for cloudflare redirect record")
+			}
+			code := 301
+			if rec.Type == "CF_TEMP_REDIRECT" {
+				code = 302
+			}
+			rec.Target = fmt.Sprintf("%s,%d,%d", rec.Target, currentPrPrio, code)
+			currentPrPrio++
+			rec.Type = "PAGE_RULE"
 		}
 	}
 
