@@ -326,9 +326,6 @@ func (c *CloudflareApi) sendPageRule(endpoint, method string, data string) error
 	if err != nil {
 		return err
 	}
-	// fmt.Println("????", data)
-	// fmt.Println(endpoint)
-	// fmt.Println(buf.String())
 	c.setHeaders(req)
 	_, err = handleActionResponse(http.DefaultClient.Do(req))
 	return err
