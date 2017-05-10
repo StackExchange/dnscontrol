@@ -5,7 +5,7 @@ jsId: GANDI
 ---
 # Gandi Provider
 
-Gandi provides both a dns provider implementation.
+Gandi provides a DnsProvider but not a Registrar.
 
 ## Configuration
 
@@ -21,17 +21,16 @@ In your providers config json file you must provide your Gandi.net api key:
 
 ## Metadata
 
-This provider does not recognize any special metadata fields unique to DNSimple.
+This provider does not recognize any special metadata fields unique to Gandi.
 
 ## Usage
 
 Example javascript:
 
 {% highlight js %}
-var REG_NAMECOM = NewRegistrar("name.com","NAMEDOTCOM");
 var GANDI = NewDnsProvider("gandi", "GANDI");
 
-D("example.tld", REG_NAMECOM, DnsProvider(GANDI),
+D("example.tld", REG_GANDI, DnsProvider(GANDI),
     A("test","1.2.3.4")
 );
 {% endhighlight %}
