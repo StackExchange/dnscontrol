@@ -303,3 +303,10 @@ function num2dot(num)
     }
     return d;
 }
+
+// Cloudflare aliases:
+var CF_PROXY_OFF = {'cloudflare_proxy': 'off'};     // Default/off.
+var CF_PROXY_ON = {'cloudflare_proxy': 'on'};       // Sites safe to proxy.
+var CF_PROXY_FULL = {'cloudflare_proxy': 'full'};   // Sites safe to railgun.
+var SET_PROXY_DEFAULT_TRUE = CF_PROXY_ON; // Turn on CF proxy for entire domain.
+var SET_PROXY_DEFAULT_FALSE = CF_PROXY_OFF; // basically a no-op.

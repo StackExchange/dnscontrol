@@ -30,6 +30,37 @@ Domain level metadata availible:
 Provider level metadata availible:
    * ip_conversions
 
+Note: Aliases are pre-defined as follows:
+
+{% highlight json %}
+var CF_PROXY_OFF = {'cloudflare_proxy': 'off'};     // Default/off.
+var CF_PROXY_ON = {'cloudflare_proxy': 'on'};       // Sites safe to proxy.
+var CF_PROXY_FULL = {'cloudflare_proxy': 'full'};   // Sites safe to railgun.
+var SET_PROXY_DEFAULT_TRUE = CF_PROXY_ON; // Turn on CF proxy for entire domain.
+var SET_PROXY_DEFAULT_FALSE = CF_PROXY_OFF; // basically a no-op.
+{% endhighlight %}
+
+Thus metadata items can be used in a more readable way:
+
+{% highlight json %}
+D("example.tld", REG_NAMECOM, DnsProvider(CFLARE),
+    A("www1","1.2.3.11", CF_PROXY_ON),
+    A("www2","1.2.3.12", CF_PROXY_OFF), // default is OFF, this is a no-op.
+);
+{% endhighlight %}
+
+or simply:
+
+{% highlight json %}
+D("example.tld", REG_NAMECOM, DnsProvider(CFLARE),
+    SET_PROXY_DEFAULT_TRUE,  // Enable CF proxy for all items:
+    A("www1","1.2.3.11"),
+    A("www2","1.2.3.12"),
+    A("www3","1.2.3.13", CF_PROXY_OFF),  // Except this one!
+);
+{% endhighlight %}
+
+
 ## Usage
 
 Example javascript:
