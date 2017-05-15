@@ -305,8 +305,13 @@ function num2dot(num)
 }
 
 // Cloudflare aliases:
-var CF_PROXY_OFF = {'cloudflare_proxy': 'off'};     // Default/off.
-var CF_PROXY_ON = {'cloudflare_proxy': 'on'};       // Sites safe to proxy.
-var CF_PROXY_FULL = {'cloudflare_proxy': 'full'};   // Sites safe to railgun.
-var SET_PROXY_DEFAULT_TRUE = CF_PROXY_ON; // Turn on CF proxy for entire domain.
-var SET_PROXY_DEFAULT_FALSE = CF_PROXY_OFF; // basically a no-op.
+
+// Meta settings for individual records.
+var CF_PROXY_OFF = {'cloudflare_proxy': 'off'};     // Proxy disabled.
+var CF_PROXY_ON = {'cloudflare_proxy': 'on'};       // Proxy enabled.
+var CF_PROXY_FULL = {'cloudflare_proxy': 'full'};   // Proxy+Railgun enabled.
+// Per-domain meta settings:
+// Proxy default off for entire domain (the default):
+var CF_PROXY_DEFAULT_OFF = {'cloudflare_proxy_default': 'off'};
+// Proxy default on for entire domain:
+var CF_PROXY_DEFAULT_ON = {'cloudflare_proxy_default': 'on'};
