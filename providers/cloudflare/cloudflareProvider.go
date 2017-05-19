@@ -40,12 +40,13 @@ func init() {
 }
 
 type CloudflareApi struct {
-	ApiKey        string `json:"apikey"`
-	ApiUser       string `json:"apiuser"`
-	domainIndex   map[string]string
-	nameservers   map[string][]string
-	ipConversions []transform.IpConversion
-	ignoredLabels []string
+	ApiKey          string `json:"apikey"`
+	ApiUser         string `json:"apiuser"`
+	domainIndex     map[string]string
+	nameservers     map[string][]string
+	ipConversions   []transform.IpConversion
+	ignoredLabels   []string
+	manageRedirects bool
 }
 
 func labelMatches(label string, matches []string) bool {
@@ -96,11 +97,13 @@ func (c *CloudflareApi) GetDomainCorrections(dc *models.DomainConfig) ([]*models
 			records = append(records[:i], records[i+1:]...)
 		}
 	}
-	prs, err := c.getPageRules(id, dc.Name)
-	if err != nil {
-		return nil, err
+	if c.manageRedirects {
+		prs, err := c.getPageRules(id, dc.Name)
+		if err != nil {
+			return nil, err
+		}
+		records = append(records, prs...)
 	}
-	records = append(records, prs...)
 	for _, rec := range dc.Records {
 		if rec.Type == "ALIAS" {
 			rec.Type = "CNAME"
@@ -237,6 +240,9 @@ func (c *CloudflareApi) preprocessConfig(dc *models.DomainConfig) error {
 		}
 		// CF_REDIRECT record types. Encode target as $FROM,$TO,$PRIO,$CODE
 		if rec.Type == "CF_REDIRECT" || rec.Type == "CF_TEMP_REDIRECT" {
+			if !c.manageRedirects {
+				return fmt.Errorf("you must add 'manage_redirects: true' metadata to cloudflare provider to use CF_REDIRECT records")
+			}
 			parts := strings.Split(rec.Target, ",")
 			if len(parts) != 2 {
 				return fmt.Errorf("Invalid data specified for cloudflare redirect record")
@@ -280,7 +286,7 @@ func newCloudflare(m map[string]string, metadata json.RawMessage) (providers.DNS
 	api.ApiUser, api.ApiKey = m["apiuser"], m["apikey"]
 	// check api keys from creds json file
 	if api.ApiKey == "" || api.ApiUser == "" {
-		return nil, fmt.Errorf("Cloudflare apikey and apiuser must be provided.")
+		return nil, fmt.Errorf("cloudflare apikey and apiuser must be provided")
 	}
 
 	err := api.fetchDomainList()
@@ -290,13 +296,15 @@ func newCloudflare(m map[string]string, metadata json.RawMessage) (providers.DNS
 
 	if len(metadata) > 0 {
 		parsedMeta := &struct {
-			IPConversions string   `json:"ip_conversions"`
-			IgnoredLabels []string `json:"ignored_labels"`
+			IPConversions   string   `json:"ip_conversions"`
+			IgnoredLabels   []string `json:"ignored_labels"`
+			ManageRedirects bool     `json:"manage_redirects"`
 		}{}
 		err := json.Unmarshal([]byte(metadata), parsedMeta)
 		if err != nil {
 			return nil, err
 		}
+		api.manageRedirects = parsedMeta.ManageRedirects
 		// ignored_labels:
 		for _, l := range parsedMeta.IgnoredLabels {
 			api.ignoredLabels = append(api.ignoredLabels, l)
