@@ -303,3 +303,21 @@ function num2dot(num)
     }
     return d;
 }
+
+// CUSTOM, PROVIDER SPECIFIC RECORD TYPES
+function CF_REDIRECT(src, dst) {
+    return function(d) {
+        if (src.indexOf(",") !== -1 || dst.indexOf(",") !== -1){
+            throw("redirect src and dst must not have commas")
+        }
+        addRecord(d,"CF_REDIRECT","@",src+","+dst)
+    }
+}
+function CF_TEMP_REDIRECT(src, dst) {
+    return function(d) {
+        if (src.indexOf(",") !== -1 || dst.indexOf(",") !== -1){
+            throw("redirect src and dst must not have commas")
+        }
+        addRecord(d,"CF_TEMP_REDIRECT","@",src+","+dst)
+    }
+}

@@ -88,7 +88,7 @@ Set a Go function that returns something useful
 ```go
 vm.Set("twoPlus", func(call otto.FunctionCall) otto.Value {
     right, _ := call.Argument(0).ToInteger()
-    return, _ := vm.ToValue(2 + right)
+    result, _ := vm.ToValue(2 + right)
     return result
 })
 ```
@@ -114,7 +114,7 @@ http://godoc.org/github.com/robertkrimen/otto/parser
 Parse and return an AST
 
 ```go
-filenamee := "" // A filename is optional
+filename := "" // A filename is optional
 src := `
     // Sample xyzzy example
     (function(){
@@ -167,6 +167,7 @@ The following are some limitations with otto:
 
     * "use strict" will parse, but does nothing.
     * The regular expression engine (re2/regexp) is not fully compatible with the ECMA5 specification.
+    * Otto targets ES5. ES6 features (eg: Typed Arrays) are not supported.
 
 
 ### Regular Expression Incompatibility
