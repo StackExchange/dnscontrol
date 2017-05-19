@@ -310,9 +310,11 @@ func newCloudflare(m map[string]string, metadata json.RawMessage) (providers.DNS
 			api.ignoredLabels = append(api.ignoredLabels, l)
 		}
 		// parse provider level metadata
-		api.ipConversions, err = transform.DecodeTransformTable(parsedMeta.IPConversions)
-		if err != nil {
-			return nil, err
+		if len(parsedMeta.IPConversions) > 0 {
+			api.ipConversions, err = transform.DecodeTransformTable(parsedMeta.IPConversions)
+			if err != nil {
+				return nil, err
+			}
 		}
 	}
 	return api, nil
