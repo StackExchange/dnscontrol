@@ -1,8 +1,11 @@
 package spf
 
 import (
-	"fmt"
+	"encoding/json"
+	"io/ioutil"
 	"net"
+
+	"github.com/pkg/errors"
 )
 
 // This file includes all the DNS Resolvers used by package spf.
@@ -27,7 +30,7 @@ func NewResolverLive(filename string) *dnsLive {
 
 func (c *dnsLive) GetTxt(label string) ([]string, error) {
 	// Try the cache.
-	txts, ok := c.dnsGet(label, "txt")
+	txts, ok := c.cache.dnsGet(label, "txt")
 	if ok {
 		return txts, nil
 	}
@@ -43,34 +46,36 @@ func (c *dnsLive) GetTxt(label string) ([]string, error) {
 
 func (c *dnsLive) Close() {
 	// Write out and close the file.
-	fmt.Printf("UNIMPLEMENTED: Create file %#v with %#v\n", c.filename, c.cache)
+	m, _ := json.MarshalIndent(c.cache, "", "  ")
+	m = append(m, "\n"...)
+	ioutil.WriteFile(c.filename, m, 0666)
 }
 
 // The "Pre-Cached DNS" Resolver:
 
 type dnsPreloaded struct {
-	filename string
-	cache    dnsCache
+	cache dnsCache
 }
 
-func NewResolverPreloaded(filename string) *dnsPreloaded {
-	c := &dnsPreloaded{filename: filename}
-	return c
+func NewResolverPreloaded(filename string) (*dnsPreloaded, error) {
+	c := &dnsPreloaded{}
+	j, err := ioutil.ReadFile(filename)
+	if err != nil {
+		return nil, err
+	}
+	err = json.Unmarshal(j, &(*c).cache)
+	return c, err
 }
 
-func (c *dnsCache) GetTxt(label string) ([]string, error) {
-	// If in c.cache, return it.
-	// Otherwise: return error.
-	return nil, nil
+func (c *dnsPreloaded) DumpCache() dnsCache {
+	return c.cache
 }
 
-// Notes
-
-// var m = dnsCache{
-// 	"_spf.google.com": {
-// 		"txt": "foo",
-// 	},
-// 	"mail.zendesk.com.google.com": {
-// 		"txt": "bar",
-// 	},
-// }
+func (c *dnsPreloaded) GetTxt(label string) ([]string, error) {
+	// Try the cache.
+	txts, ok := c.cache.dnsGet(label, "txt")
+	if ok {
+		return txts, nil
+	}
+	return nil, errors.Errorf("No preloaded DNS entry for: %#v", label)
+}

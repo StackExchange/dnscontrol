@@ -15,6 +15,9 @@ func (c *dnsCache) dnsGet(label, rtype string) ([]string, bool) {
 }
 
 func (c *dnsCache) dnsPut(label, rtype string, answers []string) {
+	if *c == nil {
+		*c = make(dnsCache)
+	}
 	_, ok := (*c)[label]
 	if !ok {
 		(*c)[label] = make(map[string][]string)
