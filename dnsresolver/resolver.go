@@ -1,4 +1,4 @@
-package spf
+package dnsresolver
 
 import (
 	"encoding/json"
@@ -25,12 +25,13 @@ type dnsLive struct {
 func NewResolverLive(filename string) *dnsLive {
 	// Does live DNS lookups. Records them. Writes file on Close.
 	c := &dnsLive{filename: filename}
+	c.cache = dnsCache{}
 	return c
 }
 
 func (c *dnsLive) GetTxt(label string) ([]string, error) {
 	// Try the cache.
-	txts, ok := c.cache.dnsGet(label, "txt")
+	txts, ok := c.cache.get(label, "txt")
 	if ok {
 		return txts, nil
 	}
@@ -38,7 +39,7 @@ func (c *dnsLive) GetTxt(label string) ([]string, error) {
 	// Populate the cache:
 	t, err := net.LookupTXT(label)
 	if err == nil {
-		c.cache.dnsPut(label, "txt", t)
+		c.cache.put(label, "txt", t)
 	}
 
 	return t, err
@@ -59,6 +60,7 @@ type dnsPreloaded struct {
 
 func NewResolverPreloaded(filename string) (*dnsPreloaded, error) {
 	c := &dnsPreloaded{}
+	c.cache = dnsCache{}
 	j, err := ioutil.ReadFile(filename)
 	if err != nil {
 		return nil, err
@@ -73,7 +75,7 @@ func (c *dnsPreloaded) DumpCache() dnsCache {
 
 func (c *dnsPreloaded) GetTxt(label string) ([]string, error) {
 	// Try the cache.
-	txts, ok := c.cache.dnsGet(label, "txt")
+	txts, ok := c.cache.get(label, "txt")
 	if ok {
 		return txts, nil
 	}
