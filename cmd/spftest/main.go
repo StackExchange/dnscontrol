@@ -27,9 +27,11 @@ func main() {
 	fmt.Println("---------------------")
 	fmt.Println()
 
-	res := dnsresolver.NewResolverLive("preload-dns.json")
-	//res := dnsresolver.NewResolverPreloaded("preload-dns.json")
-
+	//res := dnsresolver.NewResolverLive("spf-store2.json")
+	res, err := dnsresolver.NewResolverPreloaded("spf-store2.json")
+	if err != nil {
+		panic(err)
+	}
 	rec, err := spflib.Parse(strings.Join([]string{"v=spf1",
 		"ip4:198.252.206.0/24",
 		"ip4:192.111.0.0/24",
@@ -51,7 +53,7 @@ func main() {
 	fmt.Println()
 
 	var spf string
-	spf, err = spflib.Lookup("stackex.com", res)
+	spf, err = spflib.Lookup("whatexit.org", res)
 	if err != nil {
 		panic(err)
 	}
@@ -60,5 +62,5 @@ func main() {
 		panic(err)
 	}
 	spflib.DumpSPF(rec, "")
-
+	//res.Close()
 }

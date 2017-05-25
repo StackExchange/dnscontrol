@@ -40,6 +40,9 @@ func Lookup(target string, dnsres dnsresolver.DnsResolver) (string, error) {
 
 var qualifiers = map[byte]bool{
 	'?': true,
+	'~': true,
+	'-': true,
+	'+': true,
 }
 
 func Parse(text string, dnsres dnsresolver.DnsResolver) (*SPFRecord, error) {
@@ -59,6 +62,7 @@ func Parse(text string, dnsres dnsresolver.DnsResolver) (*SPFRecord, error) {
 			break
 		} else if strings.HasPrefix(part, "a") || strings.HasPrefix(part, "mx") {
 			rec.Lookups++
+			p.Lookups = 1
 		} else if strings.HasPrefix(part, "ip4:") || strings.HasPrefix(part, "ip6:") {
 			//ip address, 0 lookups
 			continue
@@ -74,6 +78,7 @@ func Parse(text string, dnsres dnsresolver.DnsResolver) (*SPFRecord, error) {
 				return nil, fmt.Errorf("In included spf: %s", err)
 			}
 			rec.Lookups += p.IncludeRecord.Lookups
+			p.Lookups = p.IncludeRecord.Lookups + 1
 		} else {
 			return nil, fmt.Errorf("Unsupported spf part %s", part)
 		}
@@ -92,8 +97,10 @@ func DumpSPF(rec *SPFRecord, indent string) {
 	fmt.Println()
 	indent += "\t"
 	for _, p := range rec.Parts {
-		if p.IncludeRecord != nil {
+		if p.Lookups > 0 {
 			fmt.Println(indent + p.Text)
+		}
+		if p.IncludeRecord != nil {
 			DumpSPF(p.IncludeRecord, indent+"\t")
 		}
 	}
