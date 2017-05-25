@@ -17,7 +17,7 @@ const (
 )
 
 func init() {
-	os.Chdir("..") // go up a directory so we helpers.js is in a consistent place.
+	os.Chdir("../..") // go up a directory so we helpers.js is in a consistent place.
 }
 
 func TestParsedFiles(t *testing.T) {

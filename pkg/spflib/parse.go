@@ -46,6 +46,7 @@ func Parse(text string, dnsres dnsresolver.DnsResolver) (*SPFRecord, error) {
 	rec := &SPFRecord{}
 	for _, part := range parts[1:] {
 		p := &SPFPart{Text: part}
+		first := part[0]
 		rec.Parts = append(rec.Parts, p)
 		if part == "~all" || part == "-all" || part == "?all" {
 			//all. nothing else matters.
