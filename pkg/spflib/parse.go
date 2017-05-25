@@ -38,6 +38,10 @@ func Lookup(target string, dnsres dnsresolver.DnsResolver) (string, error) {
 	return result[0], nil
 }
 
+var qualifiers = map[byte]bool{
+	'?': true,
+}
+
 func Parse(text string, dnsres dnsresolver.DnsResolver) (*SPFRecord, error) {
 	if !strings.HasPrefix(text, "v=spf1 ") {
 		return nil, fmt.Errorf("Not an spf record")
@@ -46,9 +50,11 @@ func Parse(text string, dnsres dnsresolver.DnsResolver) (*SPFRecord, error) {
 	rec := &SPFRecord{}
 	for _, part := range parts[1:] {
 		p := &SPFPart{Text: part}
-		first := part[0]
+		if qualifiers[part[0]] {
+			part = part[1:]
+		}
 		rec.Parts = append(rec.Parts, p)
-		if part == "~all" || part == "-all" || part == "?all" {
+		if part == "all" {
 			//all. nothing else matters.
 			break
 		} else if strings.HasPrefix(part, "ip4:") || strings.HasPrefix(part, "ip6:") {
