@@ -1,10 +1,17 @@
 package spflib
 
-import "testing"
-import "strings"
-import "fmt"
+import (
+	"strings"
+	"testing"
+
+	"github.com/StackExchange/dnscontrol/dnsresolver"
+)
 
 func TestParse(t *testing.T) {
+	dnsres, err := dnsresolver.NewResolverPreloaded("testdata-dns1.json")
+	if err != nil {
+		t.Fatal(err)
+	}
 	rec, err := Parse(strings.Join([]string{"v=spf1",
 		"ip4:198.252.206.0/24",
 		"ip4:192.111.0.0/24",
@@ -15,25 +22,9 @@ func TestParse(t *testing.T) {
 		"include:servers.mcsv.net",
 		"include:sendgrid.net",
 		"include:spf.mtasv.net",
-		"~all"}, " "))
+		"~all"}, " "), dnsres)
 	if err != nil {
 		t.Fatal(err)
 	}
-	printSPF(rec, "")
-}
-
-func DumpSPF(rec *SPFRecord, indent string) {
-	fmt.Printf("%sTotal Lookups: %d\n", indent, rec.Lookups)
-	fmt.Print(indent + "v=spf1")
-	for _, p := range rec.Parts {
-		fmt.Print(" " + p.Text)
-	}
-	fmt.Println()
-	indent += "\t"
-	for _, p := range rec.Parts {
-		if p.IncludeRecord != nil {
-			fmt.Println(indent + p.Text)
-			printSPF(p.IncludeRecord, indent+"\t")
-		}
-	}
+	DumpSPF(rec, "")
 }
