@@ -10,7 +10,7 @@ import (
 	"reflect"
 	"strconv"
 
-	"github.com/StackExchange/dnscontrol/transform"
+	"github.com/StackExchange/dnscontrol/pkg/transform"
 	"github.com/miekg/dns"
 	"golang.org/x/net/idna"
 )

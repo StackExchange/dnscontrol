@@ -12,12 +12,12 @@ import (
 )
 
 const (
-	testDir  = "js/parse_tests"
-	errorDir = "js/error_tests"
+	testDir  = "pkg/js/parse_tests"
+	errorDir = "pkg/js/error_tests"
 )
 
 func init() {
-	os.Chdir("..") // go up a directory so we helpers.js is in a consistent place.
+	os.Chdir("../..") // go up a directory so we helpers.js is in a consistent place.
 }
 
 func TestParsedFiles(t *testing.T) {

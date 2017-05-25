@@ -9,9 +9,9 @@ import (
 	"time"
 
 	"github.com/StackExchange/dnscontrol/models"
+	"github.com/StackExchange/dnscontrol/pkg/transform"
 	"github.com/StackExchange/dnscontrol/providers"
 	"github.com/StackExchange/dnscontrol/providers/diff"
-	"github.com/StackExchange/dnscontrol/transform"
 	"github.com/miekg/dns/dnsutil"
 )
 
