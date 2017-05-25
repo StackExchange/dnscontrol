@@ -10,7 +10,7 @@ import (
 	"strings"
 
 	"github.com/StackExchange/dnscontrol/models"
-	"github.com/StackExchange/dnscontrol/nameservers"
+	"github.com/StackExchange/dnscontrol/pkg/nameservers"
 	"github.com/StackExchange/dnscontrol/providers"
 	_ "github.com/StackExchange/dnscontrol/providers/_all"
 	"github.com/StackExchange/dnscontrol/providers/config"

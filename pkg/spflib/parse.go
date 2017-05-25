@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/StackExchange/dnscontrol/dnsresolver"
+	"github.com/StackExchange/dnscontrol/pkg/dnsresolver"
 )
 
 type SPFRecord struct {
@@ -18,10 +18,10 @@ type SPFPart struct {
 	IncludeRecord *SPFRecord
 }
 
-func Lookup(target string, dnsres dnsresolver.DnsResolver) ([]string, error) {
+func Lookup(target string, dnsres dnsresolver.DnsResolver) (string, error) {
 	txts, err := dnsres.GetTxt(target)
 	if err != nil {
-		return nil, err
+		return "", err
 	}
 	var result []string
 	for _, txt := range txts {
@@ -29,7 +29,13 @@ func Lookup(target string, dnsres dnsresolver.DnsResolver) ([]string, error) {
 			result = append(result, txt)
 		}
 	}
-	return result, nil
+	if len(result) == 0 {
+		return "", fmt.Errorf("%s has no spf TXT records", target)
+	}
+	if len(result) != 1 {
+		return "", fmt.Errorf("%s has multiple spf TXT records", target)
+	}
+	return result[0], nil
 }
 
 func Parse(text string, dnsres dnsresolver.DnsResolver) (*SPFRecord, error) {
@@ -50,7 +56,7 @@ func Parse(text string, dnsres dnsresolver.DnsResolver) (*SPFRecord, error) {
 		} else if strings.HasPrefix(part, "include:") {
 			rec.Lookups++
 			includeTarget := strings.TrimPrefix(part, "include:")
-			subRecord, err := resolveSPF(includeTarget, dnsres)
+			subRecord, err := Lookup(includeTarget, dnsres)
 			if err != nil {
 				return nil, err
 			}
@@ -82,17 +88,4 @@ func DumpSPF(rec *SPFRecord, indent string) {
 			DumpSPF(p.IncludeRecord, indent+"\t")
 		}
 	}
-}
-
-func resolveSPF(target string, dnsres dnsresolver.DnsResolver) (string, error) {
-	recs, err := dnsres.GetTxt(target)
-	if err != nil {
-		return "", err
-	}
-	for _, r := range recs {
-		if strings.HasPrefix(r, "v=spf1 ") {
-			return r, nil
-		}
-	}
-	return "", fmt.Errorf("No SPF records found for %s", target)
 }
