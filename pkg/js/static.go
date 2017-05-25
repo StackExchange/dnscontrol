@@ -189,7 +189,7 @@ func _escFSMustString(useLocal bool, name string) string {
 var _escData = map[string]*_escFile{
 
 	"/helpers.js": {
-		local:   "js/helpers.js",
+		local:   "pkg/js/helpers.js",
 		size:    8320,
 		modtime: 0,
 		compressed: `
@@ -240,6 +240,6 @@ juGPPwSZXUc736wWxSGRz1JGA/lBJGQc4pypseoabTAEaRwj1nqyQmvwU+ljuaLdYjToWa7VE3qVnY+p
 
 	"/": {
 		isDir: true,
-		local: "js",
+		local: "pkg/js",
 	},
 }

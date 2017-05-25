@@ -4,7 +4,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/StackExchange/dnscontrol/dnsresolver"
+	"github.com/StackExchange/dnscontrol/pkg/dnsresolver"
 )
 
 func TestParse(t *testing.T) {
