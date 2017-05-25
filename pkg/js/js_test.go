@@ -12,8 +12,8 @@ import (
 )
 
 const (
-	testDir  = "js/parse_tests"
-	errorDir = "js/error_tests"
+	testDir  = "pkg/js/parse_tests"
+	errorDir = "pkg/js/error_tests"
 )
 
 func init() {

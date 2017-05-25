@@ -57,6 +57,8 @@ func Parse(text string, dnsres dnsresolver.DnsResolver) (*SPFRecord, error) {
 		if part == "all" {
 			//all. nothing else matters.
 			break
+		} else if strings.HasPrefix(part, "a") || strings.HasPrefix(part, "mx") {
+			rec.Lookups++
 		} else if strings.HasPrefix(part, "ip4:") || strings.HasPrefix(part, "ip6:") {
 			//ip address, 0 lookups
 			continue
