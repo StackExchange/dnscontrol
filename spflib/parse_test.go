@@ -1,4 +1,4 @@
-package spf
+package spflib
 
 import "testing"
 import "strings"
@@ -22,7 +22,7 @@ func TestParse(t *testing.T) {
 	printSPF(rec, "")
 }
 
-func printSPF(rec *SPFRecord, indent string) {
+func DumpSPF(rec *SPFRecord, indent string) {
 	fmt.Printf("%sTotal Lookups: %d\n", indent, rec.Lookups)
 	fmt.Print(indent + "v=spf1")
 	for _, p := range rec.Parts {

@@ -12,7 +12,7 @@ import (
 
 // DnsResolver looks up txt strings associated with a FQDN.
 type DnsResolver interface {
-	GetTxt(string) []string // Given a DNS label, return the TXT values records.
+	GetTxt(string) ([]string, error) // Given a DNS label, return the TXT values records.
 }
 
 // The "Live DNS" Resolver:
