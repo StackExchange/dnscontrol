@@ -9,9 +9,9 @@ import (
 	"time"
 
 	"github.com/StackExchange/dnscontrol/models"
+	"github.com/StackExchange/dnscontrol/pkg/transform"
 	"github.com/StackExchange/dnscontrol/providers"
 	"github.com/StackExchange/dnscontrol/providers/diff"
-	"github.com/StackExchange/dnscontrol/transform"
 	"github.com/miekg/dns/dnsutil"
 )
 
@@ -33,13 +33,20 @@ Domain level metadata available:
    - ip_conversions
 */
 
+func init() {
+	providers.RegisterDomainServiceProviderType("CLOUDFLAREAPI", newCloudflare, providers.CanUseAlias)
+	providers.RegisterCustomRecordType("CF_REDIRECT", "CLOUDFLAREAPI", "")
+	providers.RegisterCustomRecordType("CF_TEMP_REDIRECT", "CLOUDFLAREAPI", "")
+}
+
 type CloudflareApi struct {
-	ApiKey        string `json:"apikey"`
-	ApiUser       string `json:"apiuser"`
-	domainIndex   map[string]string
-	nameservers   map[string][]string
-	ipConversions []transform.IpConversion
-	ignoredLabels []string
+	ApiKey          string `json:"apikey"`
+	ApiUser         string `json:"apiuser"`
+	domainIndex     map[string]string
+	nameservers     map[string][]string
+	ipConversions   []transform.IpConversion
+	ignoredLabels   []string
+	manageRedirects bool
 }
 
 func labelMatches(label string, matches []string) bool {
@@ -51,6 +58,7 @@ func labelMatches(label string, matches []string) bool {
 	}
 	return false
 }
+
 func (c *CloudflareApi) GetNameservers(domain string) ([]*models.Nameserver, error) {
 	if c.domainIndex == nil {
 		if err := c.fetchDomainList(); err != nil {
@@ -89,6 +97,13 @@ func (c *CloudflareApi) GetDomainCorrections(dc *models.DomainConfig) ([]*models
 			records = append(records[:i], records[i+1:]...)
 		}
 	}
+	if c.manageRedirects {
+		prs, err := c.getPageRules(id, dc.Name)
+		if err != nil {
+			return nil, err
+		}
+		records = append(records, prs...)
+	}
 	for _, rec := range dc.Records {
 		if rec.Type == "ALIAS" {
 			rec.Type = "CNAME"
@@ -103,19 +118,45 @@ func (c *CloudflareApi) GetDomainCorrections(dc *models.DomainConfig) ([]*models
 	corrections := []*models.Correction{}
 
 	for _, d := range del {
-		corrections = append(corrections, c.deleteRec(d.Existing.Original.(*cfRecord), id))
+		ex := d.Existing
+		if ex.Type == "PAGE_RULE" {
+			corrections = append(corrections, &models.Correction{
+				Msg: d.String(),
+				F:   func() error { return c.deletePageRule(ex.Original.(*pageRule).ID, id) },
+			})
+
+		} else {
+			corrections = append(corrections, c.deleteRec(ex.Original.(*cfRecord), id))
+		}
 	}
 	for _, d := range create {
-		corrections = append(corrections, c.createRec(d.Desired, id)...)
+		des := d.Desired
+		if des.Type == "PAGE_RULE" {
+			corrections = append(corrections, &models.Correction{
+				Msg: d.String(),
+				F:   func() error { return c.createPageRule(id, des.Target) },
+			})
+		} else {
+			corrections = append(corrections, c.createRec(des, id)...)
+		}
 	}
 
 	for _, d := range mod {
-		e, rec := d.Existing.Original.(*cfRecord), d.Desired
-		proxy := e.Proxiable && rec.Metadata[metaProxy] != "off"
-		corrections = append(corrections, &models.Correction{
-			Msg: d.String(),
-			F:   func() error { return c.modifyRecord(id, e.ID, proxy, rec) },
-		})
+		rec := d.Desired
+		ex := d.Existing
+		if rec.Type == "PAGE_RULE" {
+			corrections = append(corrections, &models.Correction{
+				Msg: d.String(),
+				F:   func() error { return c.updatePageRule(ex.Original.(*pageRule).ID, id, rec.Target) },
+			})
+		} else {
+			e := ex.Original.(*cfRecord)
+			proxy := e.Proxiable && rec.Metadata[metaProxy] != "off"
+			corrections = append(corrections, &models.Correction{
+				Msg: d.String(),
+				F:   func() error { return c.modifyRecord(id, e.ID, proxy, rec) },
+			})
+		}
 	}
 	return corrections, nil
 }
@@ -163,10 +204,14 @@ func (c *CloudflareApi) preprocessConfig(dc *models.DomainConfig) error {
 		}
 	}
 
+	currentPrPrio := 1
+
 	// Normalize the proxy setting for each record.
 	// A and CNAMEs: Validate. If null, set to default.
 	// else: Make sure it wasn't set.  Set to default.
-	for _, rec := range dc.Records {
+	// iterate backwards so first defined page rules have highest priority
+	for i := len(dc.Records) - 1; i >= 0; i-- {
+		rec := dc.Records[i]
 		if rec.Metadata == nil {
 			rec.Metadata = map[string]string{}
 		}
@@ -192,6 +237,23 @@ func (c *CloudflareApi) preprocessConfig(dc *models.DomainConfig) error {
 				}
 				rec.Metadata[metaProxy] = val
 			}
+		}
+		// CF_REDIRECT record types. Encode target as $FROM,$TO,$PRIO,$CODE
+		if rec.Type == "CF_REDIRECT" || rec.Type == "CF_TEMP_REDIRECT" {
+			if !c.manageRedirects {
+				return fmt.Errorf("you must add 'manage_redirects: true' metadata to cloudflare provider to use CF_REDIRECT records")
+			}
+			parts := strings.Split(rec.Target, ",")
+			if len(parts) != 2 {
+				return fmt.Errorf("Invalid data specified for cloudflare redirect record")
+			}
+			code := 301
+			if rec.Type == "CF_TEMP_REDIRECT" {
+				code = 302
+			}
+			rec.Target = fmt.Sprintf("%s,%d,%d", rec.Target, currentPrPrio, code)
+			currentPrPrio++
+			rec.Type = "PAGE_RULE"
 		}
 	}
 
@@ -224,7 +286,7 @@ func newCloudflare(m map[string]string, metadata json.RawMessage) (providers.DNS
 	api.ApiUser, api.ApiKey = m["apiuser"], m["apikey"]
 	// check api keys from creds json file
 	if api.ApiKey == "" || api.ApiUser == "" {
-		return nil, fmt.Errorf("Cloudflare apikey and apiuser must be provided.")
+		return nil, fmt.Errorf("cloudflare apikey and apiuser must be provided")
 	}
 
 	err := api.fetchDomainList()
@@ -234,28 +296,28 @@ func newCloudflare(m map[string]string, metadata json.RawMessage) (providers.DNS
 
 	if len(metadata) > 0 {
 		parsedMeta := &struct {
-			IPConversions string   `json:"ip_conversions"`
-			IgnoredLabels []string `json:"ignored_labels"`
+			IPConversions   string   `json:"ip_conversions"`
+			IgnoredLabels   []string `json:"ignored_labels"`
+			ManageRedirects bool     `json:"manage_redirects"`
 		}{}
 		err := json.Unmarshal([]byte(metadata), parsedMeta)
 		if err != nil {
 			return nil, err
 		}
+		api.manageRedirects = parsedMeta.ManageRedirects
 		// ignored_labels:
 		for _, l := range parsedMeta.IgnoredLabels {
 			api.ignoredLabels = append(api.ignoredLabels, l)
 		}
 		// parse provider level metadata
-		api.ipConversions, err = transform.DecodeTransformTable(parsedMeta.IPConversions)
-		if err != nil {
-			return nil, err
+		if len(parsedMeta.IPConversions) > 0 {
+			api.ipConversions, err = transform.DecodeTransformTable(parsedMeta.IPConversions)
+			if err != nil {
+				return nil, err
+			}
 		}
 	}
 	return api, nil
-}
-
-func init() {
-	providers.RegisterDomainServiceProviderType("CLOUDFLAREAPI", newCloudflare, providers.CanUseAlias)
 }
 
 // Used on the "existing" records.

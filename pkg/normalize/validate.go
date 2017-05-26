@@ -6,8 +6,8 @@ import (
 	"strings"
 
 	"github.com/StackExchange/dnscontrol/models"
+	"github.com/StackExchange/dnscontrol/pkg/transform"
 	"github.com/StackExchange/dnscontrol/providers"
-	"github.com/StackExchange/dnscontrol/transform"
 	"github.com/miekg/dns"
 	"github.com/miekg/dns/dnsutil"
 )
@@ -44,7 +44,7 @@ func checkTarget(target string) error {
 }
 
 // validateRecordTypes list of valid rec.Type values. Returns true if this is a real DNS record type, false means it is a pseudo-type used internally.
-func validateRecordTypes(rec *models.RecordConfig, domain string) error {
+func validateRecordTypes(rec *models.RecordConfig, domain string, pTypes []string) error {
 	var validTypes = map[string]bool{
 		"A":                true,
 		"AAAA":             true,
@@ -55,9 +55,22 @@ func validateRecordTypes(rec *models.RecordConfig, domain string) error {
 		"NS":               true,
 		"ALIAS":            false,
 	}
-
-	if _, ok := validTypes[rec.Type]; !ok {
-		return fmt.Errorf("Unsupported record type (%v) domain=%v name=%v", rec.Type, domain, rec.Name)
+	_, ok := validTypes[rec.Type]
+	if !ok {
+		cType := providers.GetCustomRecordType(rec.Type)
+		if cType == nil {
+			return fmt.Errorf("Unsupported record type (%v) domain=%v name=%v", rec.Type, domain, rec.Name)
+		}
+		for _, providerType := range pTypes {
+			if providerType != cType.Provider {
+				return fmt.Errorf("Custom record type %s is not compatible with provider type %s", rec.Type, providerType)
+			}
+		}
+		//it is ok. Lets replace the type with real type and add metadata to say we checked it
+		rec.Metadata["orig_custom_type"] = rec.Type
+		if cType.RealType != "" {
+			rec.Type = cType.RealType
+		}
 	}
 	return nil
 }
@@ -128,6 +141,10 @@ func checkTargets(rec *models.RecordConfig, domain string) (errs []error) {
 		check(checkTarget(target))
 	case "TXT", "IMPORT_TRANSFORM":
 	default:
+		if rec.Metadata["orig_custom_type"] != "" {
+			//it is a valid custom type. We perform no validation on target
+			return
+		}
 		errs = append(errs, fmt.Errorf("Unimplemented record type (%v) domain=%v name=%v",
 			rec.Type, domain, rec.Name))
 	}
@@ -207,21 +224,34 @@ type Warning struct {
 }
 
 func NormalizeAndValidateConfig(config *models.DNSConfig) (errs []error) {
+	ptypeMap := map[string]string{}
+	for _, p := range config.DNSProviders {
+		ptypeMap[p.Name] = p.Type
+	}
 
 	for _, domain := range config.Domains {
+		pTypes := []string{}
+		for p := range domain.DNSProviders {
+			pType, ok := ptypeMap[p]
+			if !ok {
+				errs = append(errs, fmt.Errorf("%s uses undefined DNS provider %s", domain.Name, p))
+			} else {
+				pTypes = append(pTypes, pType)
+			}
+		}
+
 		// Normalize Nameservers.
 		for _, ns := range domain.Nameservers {
 			ns.Name = dnsutil.AddOrigin(ns.Name, domain.Name)
 			ns.Name = strings.TrimRight(ns.Name, ".")
 		}
-
 		// Normalize Records.
 		for _, rec := range domain.Records {
 			if rec.TTL == 0 {
 				rec.TTL = models.DefaultTTL
 			}
 			// Validate the unmodified inputs:
-			if err := validateRecordTypes(rec, domain.Name); err != nil {
+			if err := validateRecordTypes(rec, domain.Name, pTypes); err != nil {
 				errs = append(errs, err)
 			}
 			if err := checkLabel(rec.Name, rec.Type, domain.Name); err != nil {
