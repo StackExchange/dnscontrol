@@ -240,7 +240,7 @@ The [Migrating]({{site.github.url}}/migrating) doc has advice
 about converting from other systems.
 You can manually create the `D()` statements, or you can
 generate them automatically using the
-[convertzone](https://github.com/StackExchange/dnscontrol/blob/master/misc/convertzone/README.md)
+[convertzone](https://github.com/StackExchange/dnscontrol/blob/master/cmd/convertzone/README.md)
 utility that is included in the DNSControl repo (it converts
 BIND-style zone files to DNSControl's language).
 
