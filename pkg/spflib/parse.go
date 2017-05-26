@@ -4,6 +4,10 @@ import (
 	"fmt"
 	"strings"
 
+	"bytes"
+
+	"io"
+
 	"github.com/StackExchange/dnscontrol/pkg/dnsresolver"
 )
 
@@ -69,16 +73,18 @@ func Parse(text string, dnsres dnsresolver.DnsResolver) (*SPFRecord, error) {
 		} else if strings.HasPrefix(part, "include:") {
 			rec.Lookups++
 			includeTarget := strings.TrimPrefix(part, "include:")
-			subRecord, err := Lookup(includeTarget, dnsres)
-			if err != nil {
-				return nil, err
+			if dnsres != nil {
+				subRecord, err := Lookup(includeTarget, dnsres)
+				if err != nil {
+					return nil, err
+				}
+				p.IncludeRecord, err = Parse(subRecord, dnsres)
+				if err != nil {
+					return nil, fmt.Errorf("In included spf: %s", err)
+				}
+				rec.Lookups += p.IncludeRecord.Lookups
+				p.Lookups = p.IncludeRecord.Lookups + 1
 			}
-			p.IncludeRecord, err = Parse(subRecord, dnsres)
-			if err != nil {
-				return nil, fmt.Errorf("In included spf: %s", err)
-			}
-			rec.Lookups += p.IncludeRecord.Lookups
-			p.Lookups = p.IncludeRecord.Lookups + 1
 		} else {
 			return nil, fmt.Errorf("Unsupported spf part %s", part)
 		}
@@ -87,21 +93,27 @@ func Parse(text string, dnsres dnsresolver.DnsResolver) (*SPFRecord, error) {
 	return rec, nil
 }
 
-// DumpSPF outputs an SPFRecord and related data for debugging purposes.
-func DumpSPF(rec *SPFRecord, indent string) {
-	fmt.Printf("%sTotal Lookups: %d\n", indent, rec.Lookups)
-	fmt.Print(indent + "v=spf1")
+func dump(rec *SPFRecord, indent string, w io.Writer) string {
+
+	fmt.Fprintf(w, "%sTotal Lookups: %d\n", indent, rec.Lookups)
+	fmt.Fprint(w, indent+"v=spf1")
 	for _, p := range rec.Parts {
-		fmt.Print(" " + p.Text)
+		fmt.Fprint(w, " "+p.Text)
 	}
-	fmt.Println()
+	fmt.Fprintln(w)
 	indent += "\t"
 	for _, p := range rec.Parts {
 		if p.Lookups > 0 {
-			fmt.Println(indent + p.Text)
+			fmt.Fprintln(w, indent+p.Text)
 		}
 		if p.IncludeRecord != nil {
-			DumpSPF(p.IncludeRecord, indent+"\t")
+			dump(p.IncludeRecord, indent+"\t", w)
 		}
 	}
+}
+
+func (rec *SPFRecord) Print() string {
+	w := &bytes.Buffer{}
+	dump(rec, "", w)
+	return w.String()
 }

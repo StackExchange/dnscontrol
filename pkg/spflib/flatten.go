@@ -34,20 +34,29 @@ func (s *SPFRecord) split(thisfqdn string, pattern string, nextIdx int, m map[st
 		m[thisfqdn] = base
 		return
 	}
+
 	// we need to trim.
 	// take parts while we fit
 	nextFQDN := fmt.Sprintf(pattern, nextIdx)
 	lastPart := s.Parts[len(s.Parts)-1] // all part TODO: verify that this is an ALL clause
 	tail := " include:" + nextFQDN + " " + lastPart.Text
 	thisText := "v=spf1"
+
 	newRec := &SPFRecord{}
 	over := false
+	addedCount := 0
 	for _, part := range s.Parts {
 		if !over {
 			if len(thisText)+1+len(part.Text)+len(tail) <= maxLen {
 				thisText += " " + part.Text
+				addedCount++
 			} else {
 				over = true
+				if addedCount == 0 {
+					//the first part is too big to include. We kinda have to give up here.
+					m[thisfqdn] = base
+					return
+				}
 			}
 		}
 		if over {
