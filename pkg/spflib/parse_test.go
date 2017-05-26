@@ -26,5 +26,5 @@ func TestParse(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	DumpSPF(rec, "")
+	t.Log(rec.Print())
 }

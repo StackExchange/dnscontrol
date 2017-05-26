@@ -93,7 +93,7 @@ func Parse(text string, dnsres dnsresolver.DnsResolver) (*SPFRecord, error) {
 	return rec, nil
 }
 
-func dump(rec *SPFRecord, indent string, w io.Writer) string {
+func dump(rec *SPFRecord, indent string, w io.Writer) {
 
 	fmt.Fprintf(w, "%sTotal Lookups: %d\n", indent, rec.Lookups)
 	fmt.Fprint(w, indent+"v=spf1")
