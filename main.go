@@ -12,10 +12,10 @@ import (
 	"strings"
 	"time"
 
-	"github.com/StackExchange/dnscontrol/js"
 	"github.com/StackExchange/dnscontrol/models"
-	"github.com/StackExchange/dnscontrol/nameservers"
-	"github.com/StackExchange/dnscontrol/normalize"
+	"github.com/StackExchange/dnscontrol/pkg/js"
+	"github.com/StackExchange/dnscontrol/pkg/nameservers"
+	"github.com/StackExchange/dnscontrol/pkg/normalize"
 	"github.com/StackExchange/dnscontrol/providers"
 	_ "github.com/StackExchange/dnscontrol/providers/_all"
 	"github.com/StackExchange/dnscontrol/providers/config"
@@ -207,8 +207,8 @@ func main() {
 			if !ok {
 				log.Fatalf("Registrar %s not declared.", reg)
 			}
-			if len(domain.Nameservers) == 0 {
-				//fmt.Printf("No nameservers declared; skipping registrar.\n")
+			if len(domain.Nameservers) == 0 && domain.Metadata["no_ns"] != "true" {
+				fmt.Printf("No nameservers declared; skipping registrar. Add {no_ns:'true'} to force.\n")
 				continue
 			}
 			dc, err := domain.Copy()

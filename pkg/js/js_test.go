@@ -12,12 +12,12 @@ import (
 )
 
 const (
-	testDir  = "js/parse_tests"
-	errorDir = "js/error_tests"
+	testDir  = "pkg/js/parse_tests"
+	errorDir = "pkg/js/error_tests"
 )
 
 func init() {
-	os.Chdir("..") // go up a directory so we helpers.js is in a consistent place.
+	os.Chdir("../..") // go up a directory so we helpers.js is in a consistent place.
 }
 
 func TestParsedFiles(t *testing.T) {
@@ -72,6 +72,8 @@ func TestErrors(t *testing.T) {
 		{"old dsp style", `D("foo.com","reg","dsp")`},
 		{"MX no priority", `D("foo.com","reg",MX("@","test."))`},
 		{"MX reversed", `D("foo.com","reg",MX("@","test.", 5))`},
+		{"CF_REDIRECT With comma", `D("foo.com","reg",CF_REDIRECT("foo.com,","baaa"))`},
+		{"CF_TEMP_REDIRECT With comma", `D("foo.com","reg",CF_TEMP_REDIRECT("foo.com","baa,a"))`},
 	}
 	for _, tst := range tests {
 		t.Run(tst.desc, func(t *testing.T) {

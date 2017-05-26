@@ -5,7 +5,7 @@ import (
 	"testing"
 
 	"github.com/StackExchange/dnscontrol/models"
-	"github.com/StackExchange/dnscontrol/transform"
+	"github.com/StackExchange/dnscontrol/pkg/transform"
 )
 
 func newDomainConfig() *models.DomainConfig {
