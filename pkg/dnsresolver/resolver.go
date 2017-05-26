@@ -19,13 +19,13 @@ type DnsResolver interface {
 
 type dnsLive struct {
 	filename string
-	cache    dnsCache
+	cache    *dnsCache
 }
 
 func NewResolverLive(filename string) *dnsLive {
 	// Does live DNS lookups. Records them. Writes file on Close.
 	c := &dnsLive{filename: filename}
-	c.cache = dnsCache{}
+	c.cache = &dnsCache{m: map[string]map[string][]string{}}
 	return c
 }
 
@@ -55,21 +55,21 @@ func (c *dnsLive) Close() {
 // The "Pre-Cached DNS" Resolver:
 
 type dnsPreloaded struct {
-	cache dnsCache
+	cache *dnsCache
 }
 
 func NewResolverPreloaded(filename string) (*dnsPreloaded, error) {
 	c := &dnsPreloaded{}
-	c.cache = dnsCache{}
+	c.cache = &dnsCache{m: map[string]map[string][]string{}}
 	j, err := ioutil.ReadFile(filename)
 	if err != nil {
 		return nil, err
 	}
-	err = json.Unmarshal(j, &(*c).cache)
+	err = json.Unmarshal(j, &c.cache.m)
 	return c, err
 }
 
-func (c *dnsPreloaded) DumpCache() dnsCache {
+func (c *dnsPreloaded) DumpCache() *dnsCache {
 	return c.cache
 }
 

@@ -12,14 +12,27 @@ import (
 )
 
 type SPFRecord struct {
-	Lookups int
-	Parts   []*SPFPart
+	Parts []*SPFPart
+}
+
+func (s *SPFRecord) Lookups() int {
+	count := 0
+	for _, p := range s.Parts {
+		if p.IsLookup {
+			count++
+		}
+		if p.IncludeRecord != nil {
+			count += p.IncludeRecord.Lookups()
+		}
+	}
+	return count
 }
 
 type SPFPart struct {
 	Text          string
-	Lookups       int
+	IsLookup      bool
 	IncludeRecord *SPFRecord
+	IncludeDomain string
 }
 
 func Lookup(target string, dnsres dnsresolver.DnsResolver) (string, error) {
@@ -65,16 +78,15 @@ func Parse(text string, dnsres dnsresolver.DnsResolver) (*SPFRecord, error) {
 			//all. nothing else matters.
 			break
 		} else if strings.HasPrefix(part, "a") || strings.HasPrefix(part, "mx") {
-			rec.Lookups++
-			p.Lookups = 1
+			p.IsLookup = true
 		} else if strings.HasPrefix(part, "ip4:") || strings.HasPrefix(part, "ip6:") {
 			//ip address, 0 lookups
 			continue
 		} else if strings.HasPrefix(part, "include:") {
-			rec.Lookups++
-			includeTarget := strings.TrimPrefix(part, "include:")
+			p.IsLookup = true
+			p.IncludeDomain = strings.TrimPrefix(part, "include:")
 			if dnsres != nil {
-				subRecord, err := Lookup(includeTarget, dnsres)
+				subRecord, err := Lookup(p.IncludeDomain, dnsres)
 				if err != nil {
 					return nil, err
 				}
@@ -82,8 +94,6 @@ func Parse(text string, dnsres dnsresolver.DnsResolver) (*SPFRecord, error) {
 				if err != nil {
 					return nil, fmt.Errorf("In included spf: %s", err)
 				}
-				rec.Lookups += p.IncludeRecord.Lookups
-				p.Lookups = p.IncludeRecord.Lookups + 1
 			}
 		} else {
 			return nil, fmt.Errorf("Unsupported spf part %s", part)
@@ -95,7 +105,7 @@ func Parse(text string, dnsres dnsresolver.DnsResolver) (*SPFRecord, error) {
 
 func dump(rec *SPFRecord, indent string, w io.Writer) {
 
-	fmt.Fprintf(w, "%sTotal Lookups: %d\n", indent, rec.Lookups)
+	fmt.Fprintf(w, "%sTotal Lookups: %d\n", indent, rec.Lookups())
 	fmt.Fprint(w, indent+"v=spf1")
 	for _, p := range rec.Parts {
 		fmt.Fprint(w, " "+p.Text)
@@ -103,7 +113,7 @@ func dump(rec *SPFRecord, indent string, w io.Writer) {
 	fmt.Fprintln(w)
 	indent += "\t"
 	for _, p := range rec.Parts {
-		if p.Lookups > 0 {
+		if p.IsLookup {
 			fmt.Fprintln(w, indent+p.Text)
 		}
 		if p.IncludeRecord != nil {

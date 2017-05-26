@@ -2,6 +2,7 @@ package spflib
 
 import (
 	"fmt"
+	"strings"
 )
 
 func (s *SPFRecord) TXT() string {
@@ -65,4 +66,37 @@ func (s *SPFRecord) split(thisfqdn string, pattern string, nextIdx int, m map[st
 	}
 	m[thisfqdn] = thisText + tail
 	newRec.split(nextFQDN, pattern, nextIdx+1, m)
+}
+
+func (s *SPFRecord) Flatten(spec string) *SPFRecord {
+	newRec := &SPFRecord{}
+	for _, p := range s.Parts {
+		if p.IncludeRecord == nil {
+			// non-includes copy straight over
+			newRec.Parts = append(newRec.Parts, p)
+		} else if !matchesFlatSpec(spec, p.IncludeDomain) {
+			//includes that don't match get copied straight across
+			newRec.Parts = append(newRec.Parts, p)
+		} else {
+			//flatten child recursively
+			flattenedChild := p.IncludeRecord.Flatten(spec)
+			// include their parts (skipping final all term)
+			for _, childPart := range flattenedChild.Parts[:len(flattenedChild.Parts)-1] {
+				newRec.Parts = append(newRec.Parts, childPart)
+			}
+		}
+	}
+	return newRec
+}
+
+func matchesFlatSpec(spec, fqdn string) bool {
+	if spec == "*" {
+		return true
+	}
+	for _, p := range strings.Split(spec, ",") {
+		if p == fqdn {
+			return true
+		}
+	}
+	return false
 }
