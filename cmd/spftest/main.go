@@ -46,7 +46,7 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
-	spflib.DumpSPF(rec, "")
+	fmt.Println(rec.Print())
 
 	fmt.Println()
 	fmt.Println("---------------------")
@@ -61,6 +61,6 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
-	spflib.DumpSPF(rec, "")
+	fmt.Println(rec.Print())
 	//res.Close()
 }
