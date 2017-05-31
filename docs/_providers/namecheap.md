@@ -49,7 +49,7 @@ Example javascript:
 
 {% highlight js %}
 var namecheap = NewRegistrar("namecheap.com","NAMECHEAP");
-var R53 = NewDnsProvider("r53", ROUTE53);
+var R53 = NewDnsProvider("r53", "ROUTE53");
 
 D("example.tld", namecheap, DnsProvider(R53),
     A("test","1.2.3.4")
