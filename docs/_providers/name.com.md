@@ -40,7 +40,7 @@ Example javascript (Registrar only. DNS hosted elsewhere):
 
 {% highlight js %}
 var REG_NAMECOM = NewRegistrar("name.com","NAMEDOTCOM");
-var R53 = NewDnsProvider("r53", ROUTE53);
+var R53 = NewDnsProvider("r53", "ROUTE53");
 
 D("example.tld", REG_NAMECOM, DnsProvider(R53),
     A("test","1.2.3.4")
