@@ -264,6 +264,8 @@ func NormalizeAndValidateConfig(config *models.DNSConfig) (errs []error) {
 			// Canonicalize Targets.
 			if rec.Type == "CNAME" || rec.Type == "MX" || rec.Type == "NS" {
 				rec.Target = dnsutil.AddOrigin(rec.Target, domain.Name+".")
+			} else if rec.Type == "A" || rec.Type == "AAAA" {
+				rec.Target = net.ParseIP(rec.Target).String()
 			}
 			// Populate FQDN:
 			rec.NameFQDN = dnsutil.AddOrigin(rec.Name, domain.Name)
