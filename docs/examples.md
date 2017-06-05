@@ -26,10 +26,16 @@ D('example.com', REG, DnsProvider('GCLOUD'),
 
 {% endhighlight %}
 
-## Set a specific TTL for a record
+## Set TTLs
 
 {% highlight javascript %}
-    A('one', '1.2.3.4', TTL(400)),
+
+D('example.com', registrar,
+    DefaultTTL(400), // Default for a domain
+    A('@', '1.2.3.4', TTL(400)), // individual record
+    {'ns_ttl': '400'} // On domain apex NS RRs
+);
+
 {% endhighlight %}
 
 ## Variables for common IP Addresses
