@@ -6,7 +6,7 @@ import (
 	"io/ioutil"
 
 	"github.com/StackExchange/dnscontrol/models"
-	"github.com/StackExchange/dnscontrol/transform"
+	"github.com/StackExchange/dnscontrol/pkg/transform"
 
 	"github.com/robertkrimen/otto"
 	//load underscore js into vm by default
