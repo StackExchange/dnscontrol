@@ -304,6 +304,19 @@ function num2dot(num)
     return d;
 }
 
+
+// Cloudflare aliases:
+
+// Meta settings for individual records.
+var CF_PROXY_OFF = {'cloudflare_proxy': 'off'};     // Proxy disabled.
+var CF_PROXY_ON = {'cloudflare_proxy': 'on'};       // Proxy enabled.
+var CF_PROXY_FULL = {'cloudflare_proxy': 'full'};   // Proxy+Railgun enabled.
+// Per-domain meta settings:
+// Proxy default off for entire domain (the default):
+var CF_PROXY_DEFAULT_OFF = {'cloudflare_proxy_default': 'off'};
+// Proxy default on for entire domain:
+var CF_PROXY_DEFAULT_ON = {'cloudflare_proxy_default': 'on'};
+
 // CUSTOM, PROVIDER SPECIFIC RECORD TYPES
 function CF_REDIRECT(src, dst) {
     return function(d) {
