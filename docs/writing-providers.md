@@ -18,11 +18,14 @@ the specific changes so the user knows exactly what changed.
 
 Here are some tips:
 
+* A provider can be a DnsProvider, a Registrar, or both. We recommend you write the DnsProvider first, release it, and then write the Registrar if needed.
 * Create a directory for the provider called `providers/name` where `name` is all lowercase and represents the commonly-used name for the service.
 * The main driver should be called `providers/name/nameProvider.go`.  The API abstraction is usually in a separate file (often called `api.go`).
 * List the provider in `providers/_all/all.go` so DNSControl knows it exists.
 * Implement all the calls in [providers.DNSServiceProvider interface.](https://godoc.org/github.com/StackExchange/dnscontrol/providers#DNSServiceProvider).  The function `GetDomainCorrections` is a bit interesting. It returns a list of corrections to be made. These are in the form of functions that DNSControl can call to actually make the corrections.
-* If you have any questions, please dicuss them in the Github issue related to the request for this provider. Please let us know what was confusing so we can update this document with advice for future authors (or feel free to update this document yourself!).
+* If you have any questions, please dicuss them in the Github issue related to the request for this provider. Please let us know what was confusing so we can update this document with advice for future authors (or feel free to update [this document](https://github.com/StackExchange/dnscontrol/blob/master/docs/writing-providers.md) yourself!).
+* Add the provider to the provider list: [docs/provider-list.html](https://github.com/StackExchange/dnscontrol/blob/master/docs/provider-list.html).
+* Add the provider to the README: [README.md](https://github.com/StackExchange/dnscontrol)
 
 ## Documentation
 
