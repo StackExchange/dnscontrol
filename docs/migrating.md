@@ -41,9 +41,9 @@ The `convertzone` tool can automate 90% of the conversion for you. It
 reads a BIND-style zone file and outputs a `D()` statement
 that is usually fairly complete. You may need to touch it up a bit.
 
-The convertzone command is in the `misc/convertzone` subdirectory.
+The convertzone command is in the `cmd/convertzone` subdirectory.
 Build instructions are
-[here](https://github.com/StackExchange/dnscontrol/blob/master/misc/convertzone/README.md).
+[here](https://github.com/StackExchange/dnscontrol/blob/master/cmd/convertzone/README.md).
 
 If you do not use BIND already, most DNS providers will export your
 existing zone data to a file called the BIND zone file format.

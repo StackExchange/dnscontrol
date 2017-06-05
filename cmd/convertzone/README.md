@@ -5,7 +5,7 @@
 Build the software and install in your personal bin:
 
 ```cmd
-$ cd misc/convertzone/
+$ cd cmd/convertzone
 $ go build
 $ cp convertzone ~/bin/.
 ```
