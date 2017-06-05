@@ -70,7 +70,7 @@ func pretty(zonename string, filename string, r io.Reader, defaultTTL uint32) {
 			l = append(l, x.RR)
 		}
 	}
-	bind.WriteZoneFile(os.Stdout, l, zonename, defaultTTL)
+	bind.WriteZoneFile(os.Stdout, l, zonename)
 }
 
 // rrFormat outputs the zonefile in either DSL or TSV format.

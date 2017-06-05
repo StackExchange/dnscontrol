@@ -11,9 +11,11 @@ Dnscontrol is a platform for seamlessly managing your dns configuration across a
 
 ## [Language Reference]({{site.github.url}}/js): Description of the DNSControl language (DSL).
 
-## [Examples]({{site.github.url}}/examples): DSL examples.
+## [Examples]({{site.github.url}}/examples): The DNSControl language by example.
 
 ## [Migrating]({{site.github.url}}/migrating): Migrating zones to DNSControl.
+
+## [Testing]({{site.github.url}}/unittests): Unit Testing DNS Data.
 
 ## [github](https://github.com/StackExchange/dnscontrol): Get the source!
 
@@ -23,3 +25,4 @@ Dnscontrol is a platform for seamlessly managing your dns configuration across a
 
 - [Why CNAME/MX/NS targets require a trailing "dot"]({{site.github.url}}/why-the-dot)
 - [Writing Providers]({{site.github.url}}/writing-providers)
+- [ALIAS records in dnscontrol]({{site.github.url}}/alias)
