@@ -36,4 +36,19 @@ func TestRR(t *testing.T) {
 	if found != expected {
 		t.Errorf("RR expected (%#v) got (%#v)\n", expected, found)
 	}
+
+	experiment = RecordConfig{
+		Type:     "CAA",
+		Name:     "@",
+		Target:   "mailto:test@example.com",
+		TTL:      300,
+		NameFQDN: "example.com",
+		CaaTag:   "iodef",
+		CaaFlags: 1,
+	}
+	expected = "example.com.\t300\tIN\tCAA\t1 iodef \"mailto:test@example.com\""
+	found = experiment.ToRR().String()
+	if found != expected {
+		t.Errorf("RR expected (%#v) got (%#v)\n", expected, found)
+	}
 }

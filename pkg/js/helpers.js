@@ -118,6 +118,20 @@ function DefaultTTL(v) {
     }
 }
 
+function caaFlag(flag){
+    return function(){
+        return function(r){
+            if(!r.caa_flags){
+                r.caa_flags = 0
+            }
+            r.caa_flags |= flag
+        }
+    }
+}
+
+// CAA_CRITICAL(): Set the critical flag
+var CAA_CRITICAL = caaFlag(1);
+
 
 
 // DnsProvider("providerName", 0) 
@@ -153,6 +167,18 @@ function ALIAS(name, target) {
     var mods = getModifiers(arguments,2)
     return function(d) {
         addRecord(d,"ALIAS",name,target,mods)
+    }
+}
+
+// CAA(name,tag,value, recordModifiers...)
+function CAA(name, tag, value){
+    checkArgs([_.isString, _.isString, _.isString], arguments, "CAA expects (name, tag, value)")
+
+    var mods = getModifiers(arguments,3)
+    mods.push({caa_tag: tag})
+
+    return function(d) {
+        addRecord(d,"CAA",name,value,mods)
     }
 }
 
