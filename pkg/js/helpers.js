@@ -329,6 +329,9 @@ function addRecord(d,type,name,target,mods) {
             var m = mods[i]
             if (_.isFunction(m)) {
                 m(rec);
+            } else if (_.isObject(m) && m.caa_tag) {
+                // caa_tag is a top level object, not in meta
+                rec.caa_tag = m.caa_tag;
             } else if (_.isObject(m)) {
                  //convert transforms to strings
                  if (m.transform && _.isArray(m.transform)){
