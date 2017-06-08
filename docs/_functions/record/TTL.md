@@ -20,17 +20,17 @@ The value can be:
     * n (nonths) (30 days in a nonth)
     * y (years) (If you set a TTL to a year, we assume you also do crossword puzzles in pen. Show off!)
     * If no unit is specified, the default is seconds.
-  * We highly recommend using units instead of the number of seconds. Would your coworkers understand your intention better if you wrote 14400 or "4h"?
+  * We highly recommend using units instead of the number of seconds. Would your coworkers understand your intention better if you wrote `14400` or `'4h'`?
 
 {% include startExample.html %}
 {% highlight js %}
 
-D("example.com", REGISTRAR, DnsProvider("R53"),
+D('example.com', REGISTRAR, DnsProvider('R53'),
   DefaultTTL(2000),
-  A("@","1.2.3.4"), // uses default
-  A("foo", "2.3.4.5", TTL(500)), // overrides default
-  A("demo1", "3.4.5.11", TTL("5d")),  // 5 days
-  A("demo2", "3.4.5.12", TTL("5w")),  // 5 weeks
+  A('@','1.2.3.4'), // uses default
+  A('foo', '2.3.4.5', TTL(500)), // overrides default
+  A('demo1', '3.4.5.11', TTL('5d')),  // 5 days
+  A('demo2', '3.4.5.12', TTL('5w')),  // 5 weeks
 );
 {%endhighlight%}
 {% include endExample.html %}
