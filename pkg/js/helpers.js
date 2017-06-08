@@ -81,13 +81,38 @@ function DEFAULTS(){
 
 // TTL(v): Set the TTL for a DNS record.
 function TTL(v) {
+    if (_.isString(v)){
+        v = stringToDuration(v);
+    }
     return function(r) {
         r.ttl = v;
     }
 }
 
+function stringToDuration(v){
+    var matches = v.match(/^(\d+)([smhdwny]?)$/);
+    if (matches == null){
+        throw v + " is not a valid duration string"
+    }
+    unit = "s"
+    if (matches[2]){
+        unit = matches[2]
+    }
+    v = parseInt(matches[1])
+    var u = {"s":1, "m":60, "h":3600}
+    u["d"] = u.h * 24
+    u["w"] = u.d * 7
+    u["n"] = u.d * 30
+    u["y"] = u.d * 365
+    v *= u[unit];
+    return v
+}
+
 // DefaultTTL(v): Set the default TTL for the domain.
 function DefaultTTL(v) {
+    if (_.isString(v)){
+        v = stringToDuration(v);
+    }
     return function(d) {
         d.defaultTTL = v;
     }
