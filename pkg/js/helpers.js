@@ -140,6 +140,15 @@ function CNAME(name, target) {
     }
 }
 
+// SRV(name,priority,weight,port,target, recordModifiers...)
+function SRV(name, priority, weight, port, target) {
+    checkArgs([_.isString, _.isNumber, _.isNumber, _.isNumber, _.isString], arguments, "SRV expects (name, priority, weight, port, target)")
+    var mods = getModifiers(arguments,5)
+    return function(d) {
+        addRecordSRV(d, "SRV", name, priority, weight, port, target, mods)
+    }
+}
+
 // TXT(name,target, recordModifiers...)
 function TXT(name, target) {
     var mods = getModifiers(arguments,2)
@@ -270,6 +279,33 @@ function addRecord(d,type,name,target,mods) {
                 _.extend(rec.meta,m);
             } else if (_.isNumber(m) && type == "MX") {
                rec.priority = m;
+            } else {
+                console.log("WARNING: Modifier type unsupported:", typeof m, "(Skipping!)");
+            }
+        }
+    }
+    d.records.push(rec);
+    return rec;
+}
+
+function addRecordSRV(d,type,name,priority,weight,port,target,mods) {
+    var rec = {type: type, name: name, priority: priority, weight: weight, port: port, target: target, ttl:d.defaultTTL, meta:{}};
+    // for each modifier, decide based on type:
+    // - Function: call is with the record as the argument
+    // - Object: merge it into the metadata
+    // FIXME(tlim): Factor this code out to its own function.
+    if (mods) {
+        for (var i = 0; i< mods.length; i++) {
+            var m = mods[i]
+            if (_.isFunction(m)) {
+                m(rec);
+            } else if (_.isObject(m)) {
+                 //convert transforms to strings
+                 if (m.transform && _.isArray(m.transform)){
+                    m.transform = format_tt(m.transform)
+                 }
+                _.extend(rec.meta,m);
+                _.extend(rec.meta,m);
             } else {
                 console.log("WARNING: Modifier type unsupported:", typeof m, "(Skipping!)");
             }

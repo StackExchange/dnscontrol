@@ -44,6 +44,8 @@ const (
 	CanUseAlias Capability = 1 << iota
 	// CanUsePTR indicates the provider can handle PTR records
 	CanUsePTR
+	// CanUseSRV indicates the provider can handle SRV records
+	CanUseSRV
 )
 
 func ProviderHasCabability(pType string, cap Capability) bool {

@@ -51,6 +51,7 @@ func validateRecordTypes(rec *models.RecordConfig, domain string, pTypes []strin
 		"CNAME":            true,
 		"IMPORT_TRANSFORM": false,
 		"MX":               true,
+		"SRV":              true,
 		"TXT":              true,
 		"NS":               true,
 		"ALIAS":            false,
@@ -91,7 +92,7 @@ func checkLabel(label string, rType string, domain string) error {
 	}
 
 	//underscores are warnings
-	if strings.ContainsRune(label, '_') {
+	if rType != "SRV" && strings.ContainsRune(label, '_') {
 		//unless it is in our exclusion list
 		ok := false
 		for _, ex := range expectedUnderscores {
@@ -138,6 +139,8 @@ func checkTargets(rec *models.RecordConfig, domain string) (errs []error) {
 			check(fmt.Errorf("cannot create NS record for bare domain. Use NAMESERVER instead"))
 		}
 	case "ALIAS":
+		check(checkTarget(target))
+	case "SRV":
 		check(checkTarget(target))
 	case "TXT", "IMPORT_TRANSFORM":
 	default:
@@ -196,7 +199,7 @@ func importTransform(srcDomain, dstDomain *models.DomainConfig, transforms []tra
 			r := newRec()
 			r.Target = transformCNAME(r.Target, srcDomain.Name, dstDomain.Name)
 			dstDomain.Records = append(dstDomain.Records, r)
-		case "MX", "NS", "TXT":
+		case "MX", "NS", "SRV", "TXT":
 			// Not imported.
 			continue
 		default:

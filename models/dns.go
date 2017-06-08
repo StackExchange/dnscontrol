@@ -67,6 +67,8 @@ type RecordConfig struct {
 	Metadata map[string]string `json:"meta,omitempty"`
 	NameFQDN string            `json:"-"` // Must end with ".$origin". See below.
 	Priority uint16            `json:"priority,omitempty"`
+	Weight   uint16            `json:"weight,omitempty"`
+	Port     uint16            `json:"port,omitempty"`
 
 	Original interface{} `json:"-"` // Store pointer to provider-specific record object. Used in diffing.
 }

@@ -21,7 +21,7 @@ type adProvider struct {
 // Register with the dnscontrol system.
 //   This establishes the name (all caps), and the function to call to initialize it.
 func init() {
-	providers.RegisterDomainServiceProviderType("ACTIVEDIRECTORY_PS", newDNS)
+	providers.RegisterDomainServiceProviderType("ACTIVEDIRECTORY_PS", newDNS, providers.CanUseSRV)
 }
 
 func newDNS(config map[string]string, metadata json.RawMessage) (providers.DNSServiceProvider, error) {
