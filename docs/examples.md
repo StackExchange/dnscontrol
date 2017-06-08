@@ -31,9 +31,9 @@ D('example.com', REG, DnsProvider('GCLOUD'),
 {% highlight javascript %}
 
 D('example.com', registrar,
-    DefaultTTL(400), // Default for a domain
-    A('@', '1.2.3.4', TTL(400)), // individual record
-    {'ns_ttl': '400'} // On domain apex NS RRs
+    DefaultTTL('5m'), // Default for a domain
+    A('@', '1.2.3.4', TTL('10m')), // individual record
+    {'ns_ttl': '600'} // On domain apex NS RRs
 );
 
 {% endhighlight %}
