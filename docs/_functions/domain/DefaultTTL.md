@@ -15,9 +15,9 @@ D("example.com", REGISTRAR, DnsProvider("R53"),
   A("@","1.2.3.4"), // uses default
   A("foo", "2.3.4.5", TTL(500)) // overrides default
 );
+{%endhighlight%}
 
 The DefaultTTL duration can take the same values as [TTL](#TTL):
 an integer number of seconds or a string with a unit such as `"4d"`.
 
-{%endhighlight%}
 {% include endExample.html %}
