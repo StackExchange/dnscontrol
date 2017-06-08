@@ -17,7 +17,7 @@ D("example.com", REGISTRAR, DnsProvider("R53"),
 );
 {%endhighlight%}
 
-The DefaultTTL duration can take the same values as [TTL](#TTL):
-an integer number of seconds or a string with a unit such as `"4d"`.
+The DefaultTTL duration is the same format as [TTL](#TTL): an integer number of seconds
+or a string with a unit such as `"4d"`.
 
 {% include endExample.html %}
