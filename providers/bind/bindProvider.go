@@ -93,6 +93,11 @@ func rrToRecord(rr dns.RR, origin string, replaceSerial uint32) (models.RecordCo
 		}
 		rc.Target = fmt.Sprintf("%v %v %v %v %v %v %v",
 			v.Ns, v.Mbox, new_serial, v.Refresh, v.Retry, v.Expire, v.Minttl)
+	case *dns.SRV:
+		rc.Target = v.Target
+		rc.Port = v.Port
+		rc.Weight = v.Weight
+		rc.Priority = v.Priority
 	case *dns.TXT:
 		rc.Target = strings.Join(v.Txt, " ")
 	default:

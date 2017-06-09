@@ -51,6 +51,21 @@ func (z *zoneGenData) Less(i, j int) bool {
 		pa, pb := ta2.Preference, tb2.Preference
 		return pa < pb
 	}
+	if rrtypeA == dns.TypeSRV {
+		ta2, tb2 := a.(*dns.SRV), b.(*dns.SRV)
+		pa, pb := ta2.Port, tb2.Port
+		if pa != pb {
+			return pa < pb
+		}
+		pa, pb = ta2.Priority, tb2.Priority
+		if pa != pb {
+			return pa < pb
+		}
+		pa, pb = ta2.Weight, tb2.Weight
+		if pa != pb {
+			return pa < pb
+		}
+	}
 	return a.String() < b.String()
 }
 
@@ -91,6 +106,7 @@ func WriteZoneFile(w io.Writer, records []dns.RR, origin string) error {
 	//   be easy to read and pleasant to the eye.
 	// * Within a label, SOA and NS records are listed first.
 	// * MX records are sorted numericly by preference value.
+	// * SRV records are sorted numericly by port, then priority, then weight.
 	// * A records are sorted by IP address, not lexicographically.
 	// * Repeated labels are removed.
 	// * $TTL is used to eliminate clutter. The most common TTL value is used.
