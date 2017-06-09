@@ -94,7 +94,7 @@ func CreateRegistrars(d *models.DNSConfig, providerConfigs map[string]map[string
 	for _, reg := range d.Registrars {
 		rawMsg, ok := providerConfigs[reg.Name]
 		if !ok && reg.Type != "NONE" {
-			return nil, fmt.Errorf("Registrar %s not listed in -providers file.", reg.Name)
+			return nil, fmt.Errorf("Registrar %s not listed in creds.json file.", reg.Name)
 		}
 		registrar, err := createRegistrar(reg.Type, rawMsg)
 		if err != nil {
