@@ -65,10 +65,10 @@ type RecordConfig struct {
 	Target   string            `json:"target"` // If a name, must end with "."
 	TTL      uint32            `json:"ttl,omitempty"`
 	Metadata map[string]string `json:"meta,omitempty"`
-	NameFQDN string            `json:"-"` // Must end with ".$origin". See below.
-	Priority uint16            `json:"priority,omitempty"`
-	Weight   uint16            `json:"weight,omitempty"`
-	Port     uint16            `json:"port,omitempty"`
+	NameFQDN string            `json:"-"`                  // Must end with ".$origin". See below.
+	Priority uint16            `json:"priority,omitempty"` // Used by SRV
+	Weight   uint16            `json:"weight,omitempty"`   // Used by SRV
+	Port     uint16            `json:"port,omitempty"`     // Used by SRV
 
 	Original interface{} `json:"-"` // Store pointer to provider-specific record object. Used in diffing.
 }
