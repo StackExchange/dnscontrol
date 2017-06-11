@@ -64,6 +64,10 @@ func Test_assert_valid_target(t *testing.T) {
 		{"foo.bar.", false},
 		{"foo.", false},
 		{"foo.bar", true},
+		{"foo&bar", true},
+		{"foo bar", true},
+		{"elb21.freshdesk.com/", true},
+		{"elb21.freshdesk.com/.", true},
 	}
 
 	for _, test := range tests {

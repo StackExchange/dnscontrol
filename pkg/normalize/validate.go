@@ -10,6 +10,7 @@ import (
 	"github.com/StackExchange/dnscontrol/providers"
 	"github.com/miekg/dns"
 	"github.com/miekg/dns/dnsutil"
+	"github.com/pkg/errors"
 )
 
 // Returns false if target does not validate.
@@ -35,6 +36,9 @@ func checkTarget(target string) error {
 	}
 	if len(target) < 1 {
 		return fmt.Errorf("empty target")
+	}
+	if strings.ContainsAny(target, `'" +,|!£$%&/()=?^*ç°§;:<>[]()@`) {
+		return errors.Errorf("target (%v) includes invalid char", target)
 	}
 	// If it containts a ".", it must end in a ".".
 	if strings.ContainsRune(target, '.') && target[len(target)-1] != '.' {
