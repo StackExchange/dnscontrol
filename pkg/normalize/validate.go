@@ -37,7 +37,7 @@ func checkTarget(target string) error {
 	if len(target) < 1 {
 		return fmt.Errorf("empty target")
 	}
-	if strings.ContainsAny(target, `'" +,|!£$%&/()=?^*ç°§;:_<>[]()@`) {
+	if strings.ContainsAny(target, `'" +,|!£$%&/()=?^*ç°§;:<>[]()@`) {
 		return errors.Errorf("target (%v) includes invalid char", target)
 	}
 	// If it containts a ".", it must end in a ".".
