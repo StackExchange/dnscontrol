@@ -79,7 +79,7 @@ func (c *GandiApi) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Corr
 			rec.TTL = 300
 		}
 		if rec.TTL > 2592000 {
-			return nil, errors.Errorf("ERROR: Gandi does not support ttls > 30 days. %s will not be set to %d.", rec.NameFQDN, rec.TTL)
+			return nil, errors.Errorf("ERROR: Gandi does not support TTLs > 30 days (TTL=%d)", rec.TTL)
 		}
 		if rec.Type == "TXT" {
 			rec.Target = "\"" + rec.Target + "\"" // FIXME(tlim): Should do proper quoting.
