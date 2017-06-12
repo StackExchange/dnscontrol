@@ -1,9 +1,9 @@
 package google
 
 import (
-	"context"
 	"encoding/json"
 	"fmt"
+	"golang.org/x/net/context"
 	"strings"
 
 	gauth "golang.org/x/oauth2/google"
