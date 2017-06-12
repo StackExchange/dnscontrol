@@ -1,7 +1,7 @@
 package google
 
 import (
-	"context"
+	"golang.org/x/net/context"
 	"encoding/json"
 	"fmt"
 	"strings"
