@@ -88,12 +88,11 @@ Writing new plugins is very easy.
 
 ## From source
 
-This command will download the source code, compile it, and put the resulting
-binary in `~/bin/`
+DNSControl can be built with Go version 1.7 or higher. To install, simply run 
 
-```cmd
-go get github.com/StackExchange/dnscontrol
-```
+`go get github.com/StackExchange/dnscontrol`
+
+dnscontrol should be installed in $GOPATH/bin
 
 ## Via packages
 
