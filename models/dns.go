@@ -12,6 +12,7 @@ import (
 
 	"github.com/StackExchange/dnscontrol/pkg/transform"
 	"github.com/miekg/dns"
+	"github.com/pkg/errors"
 	"golang.org/x/net/idna"
 )
 
@@ -80,6 +81,30 @@ func (r *RecordConfig) String() string {
 		content += fmt.Sprintf(" %s=%s", k, v)
 	}
 	return content
+}
+
+// MarshalJSON is an dns.RR-aware JSON marshaller.
+func (r *RecordConfig) MarshalJSON() ([]byte, error) {
+	type Alias RecordConfig
+
+	var pref uint16
+
+	switch r.Type {
+	case "A", "AAAA", "ALIAS", "CF_REDIRECT", "CF_TEMP_REDIRECT", "CNAME", "IMPORT_TRANSFORM":
+	case "MX":
+		pref = r.RR.(*dns.MX).Preference
+	case "NS":
+	default:
+		return nil, errors.Errorf("MarshalJSON unimplemented for type (%v)", r.Type)
+	}
+
+	return json.Marshal(&struct {
+		Priority uint16 `json:"priority,omitempty"`
+		*Alias
+	}{
+		Priority: pref,
+		Alias:    (*Alias)(r),
+	})
 }
 
 /// Convert RecordConfig -> dns.RR.
