@@ -43,7 +43,7 @@ D('ds.stackexchange.com', REG_NONE,
 
 ## Special Windows stuff
 
-This provider needs to do 2 things:
+There are two different interactions with AD that this driver needs to do:
 
 * Get a list of zone records:
   * powerShellDump: Runs a PS command that dumps the zone to JSON.
@@ -59,7 +59,7 @@ the PS code.  Here's which algorithm is used for each case:
 
   * If -fakewindows is used on any system: readZoneDump and powerShellRecord is used.
   * On Windows (without -fakewindows): powerShellDump and powerShellExec is used.
-  * On Linux (wihtout -fakewindows): the provider loads as "NONE" and nothing happens.
+  * On Linux (without -fakewindows): the provider loads as "NONE" and nothing happens.
 
 
 ## Note to future devs
