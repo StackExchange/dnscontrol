@@ -60,6 +60,18 @@ type DNSProviderConfig struct {
 // NameFQDN:
 //    This is the FQDN version of Name.
 //    It should never have a trailiing ".".
+// RR:
+//    This stores extra fields such as the MX record's Preference
+//    and (in the future) the SRV record's Priority, Weight and Port.
+//    Note that certain fields are duplicates (e.g. RecordConfig.Type
+//    and RecordConfig.Hdr.Type). When this is the case, the
+//    RecordConfig field is used and the other is ignored. There is no
+//    attempt to keep them in sync.
+//    TODO(tlim): Eventually we should refactor so that RR.Hdr fields
+//    are used and can be removed from RecordConfig. Hdr.TTL is probably
+//    the easiest and best place to start.  The problem with making this
+//    change is that every place where RecordConfig{} is used as a constructor,
+//    will need to be replaced by a custom constructor.
 type RecordConfig struct {
 	Type     string            `json:"type"`
 	Name     string            `json:"name"`   // The short name. See below.
