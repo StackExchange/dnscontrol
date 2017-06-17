@@ -85,7 +85,7 @@ func (r *RecordConfig) String() string {
 }
 
 /// Convert RecordConfig -> dns.RR.
-func (r *RecordConfig) RR() dns.RR {
+func (r *RecordConfig) ToRR() dns.RR {
 
 	// Note: The label is a FQDN ending in a ".".  It will not put "@" in the Name field.
 
