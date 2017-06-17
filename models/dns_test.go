@@ -32,7 +32,7 @@ func TestRR(t *testing.T) {
 		Priority: 0,
 	}
 	expected := "foo.example.com.\t300\tIN\tA\t1.2.3.4"
-	found := experiment.RR().String()
+	found := experiment.ToRR().String()
 	if found != expected {
 		t.Errorf("RR expected (%#v) got (%#v)\n", expected, found)
 	}
