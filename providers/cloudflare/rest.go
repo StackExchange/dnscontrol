@@ -12,6 +12,8 @@ import (
 	"strconv"
 
 	"github.com/StackExchange/dnscontrol/models"
+	"github.com/miekg/dns"
+	"github.com/pkg/errors"
 )
 
 const (
@@ -131,19 +133,26 @@ func (c *CloudflareApi) createRec(rec *models.RecordConfig, domainID string) []*
 	}
 	prio := ""
 	if rec.Type == "MX" {
-		prio = fmt.Sprintf(" %d ", rec.Priority)
+		prio = fmt.Sprintf(" %d ", rec.RR.(*dns.MX).Preference)
 	}
 	arr := []*models.Correction{{
 		Msg: fmt.Sprintf("CREATE record: %s %s %d%s %s", rec.Name, rec.Type, rec.TTL, prio, content),
 		F: func() error {
 
 			cf := &createRecord{
-				Name:     rec.Name,
-				Type:     rec.Type,
-				TTL:      rec.TTL,
-				Content:  content,
-				Priority: rec.Priority,
+				Name:    rec.Name,
+				Type:    rec.Type,
+				TTL:     rec.TTL,
+				Content: content,
 			}
+			switch rec.Type {
+			case "A", "AAAA", "CNAME":
+			case "MX":
+				cf.Priority = rec.RR.(*dns.MX).Preference
+			default:
+				panic(errors.Errorf("unimplemented type (%)", rec.Type))
+			}
+
 			endpoint := fmt.Sprintf(recordsURL, domainID)
 			buf := &bytes.Buffer{}
 			encoder := json.NewEncoder(buf)
@@ -181,7 +190,11 @@ func (c *CloudflareApi) modifyRecord(domainID, recID string, proxied bool, rec *
 		Priority uint16 `json:"priority"`
 		TTL      uint32 `json:"ttl"`
 	}
-	r := record{recID, proxied, rec.Name, rec.Type, rec.Target, rec.Priority, rec.TTL}
+	var preference uint16
+	if rec.Type == "MX" {
+		preference = rec.RR.(*dns.MX).Preference
+	}
+	r := record{recID, proxied, rec.Name, rec.Type, rec.Target, preference, rec.TTL}
 	endpoint := fmt.Sprintf(singleRecordURL, domainID, recID)
 	buf := &bytes.Buffer{}
 	encoder := json.NewEncoder(buf)

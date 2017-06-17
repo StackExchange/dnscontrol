@@ -78,7 +78,6 @@ func rrToRecord(rr dns.RR, origin string, replaceSerial uint32) (models.RecordCo
 		rc.Target = v.Target
 	case *dns.MX:
 		rc.Target = v.Mx
-		rc.Priority = v.Preference
 	case *dns.NS:
 		rc.Target = v.Ns
 	case *dns.SOA:

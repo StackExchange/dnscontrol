@@ -6,19 +6,27 @@ import (
 	"testing"
 
 	"github.com/StackExchange/dnscontrol/models"
+	"github.com/miekg/dns"
 	"github.com/miekg/dns/dnsutil"
 )
 
 func myRecord(s string) *models.RecordConfig {
 	parts := strings.Split(s, " ")
 	ttl, _ := strconv.ParseUint(parts[2], 10, 32)
-	return &models.RecordConfig{
+	r := &models.RecordConfig{
 		NameFQDN: dnsutil.AddOrigin(parts[0], "example.com"),
 		Type:     parts[1],
 		TTL:      uint32(ttl),
 		Target:   parts[3],
 		Metadata: map[string]string{},
 	}
+	switch parts[1] {
+	case "MX":
+		prio, _ := strconv.ParseUint(parts[2], 10, 16)
+		r.RR = &dns.MX{Preference: uint16(prio), Mx: parts[3]}
+	default:
+	}
+	return r
 }
 
 func TestAdditionsOnly(t *testing.T) {
@@ -94,8 +102,8 @@ func TestMxPrio(t *testing.T) {
 	desired := []*models.RecordConfig{
 		myRecord("www MX 1 1.1.1.1"),
 	}
-	existing[0].Priority = 10
-	desired[0].Priority = 20
+	existing[0].RR = &dns.MX{Preference: 10, Mx: "1.1.1.1"}
+	desired[0].RR = &dns.MX{Preference: 20, Mx: "1.1.1.1"}
 	checkLengths(t, existing, desired, 0, 0, 0, 1)
 }
 

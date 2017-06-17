@@ -66,7 +66,7 @@ type RecordConfig struct {
 	TTL      uint32            `json:"ttl,omitempty"`
 	Metadata map[string]string `json:"meta,omitempty"`
 	NameFQDN string            `json:"-"` // Must end with ".$origin". See below.
-	Priority uint16            `json:"priority,omitempty"`
+	RR       dns.RR            `json:"-,omitempty"`
 
 	Original interface{} `json:"-"` // Store pointer to provider-specific record object. Used in diffing.
 }
@@ -74,7 +74,7 @@ type RecordConfig struct {
 func (r *RecordConfig) String() string {
 	content := fmt.Sprintf("%s %s %s %d", r.Type, r.NameFQDN, r.Target, r.TTL)
 	if r.Type == "MX" {
-		content += fmt.Sprintf(" priority=%d", r.Priority)
+		content += fmt.Sprintf(" priority=%d", r.RR.(*dns.MX).Preference)
 	}
 	for k, v := range r.Metadata {
 		content += fmt.Sprintf(" %s=%s", k, v)
@@ -108,7 +108,7 @@ func (r *RecordConfig) ToRR() dns.RR {
 	switch rdtype {
 	case dns.TypeMX:
 		// Has a Priority field.
-		return &dns.MX{Hdr: hdr, Preference: r.Priority, Mx: r.Target}
+		return &dns.MX{Hdr: hdr, Preference: r.RR.(*dns.MX).Preference, Mx: r.Target}
 	case dns.TypeTXT:
 		// Assure no problems due to quoting/unquoting:
 		return &dns.TXT{Hdr: hdr, Txt: []string{r.Target}}
@@ -196,8 +196,8 @@ func (dc *DomainConfig) Punycode() error {
 func (dc *DomainConfig) CombineMXs() {
 	for _, rec := range dc.Records {
 		if rec.Type == "MX" {
-			rec.Target = fmt.Sprintf("%d %s", rec.Priority, rec.Target)
-			rec.Priority = 0
+			rec.Target = fmt.Sprintf("%d %s", rec.RR.(*dns.MX).Preference, rec.Target)
+			rec.RR.(*dns.MX).Preference = 0
 		}
 	}
 }
