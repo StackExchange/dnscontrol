@@ -7,6 +7,7 @@ import (
 	"strings"
 
 	miekgdns "github.com/miekg/dns"
+	"github.com/pkg/errors"
 	gauth "golang.org/x/oauth2/google"
 	"google.golang.org/api/dns/v1"
 
@@ -121,6 +122,14 @@ func (g *gcloud) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Correc
 				Type:     set.Type,
 				Target:   rec,
 				TTL:      uint32(set.Ttl),
+			}
+			switch set.Type {
+			case "A", "AAAA", "CNAME":
+			case "MX":
+				// Split target?
+				r.RR = &miekgdns.MX{Preference: rec.Preference, Mx: rec}
+			default:
+				return nil, errors.Errorf("gcloud unimplemented type (%v)", set.Type)
 			}
 			existingRecords = append(existingRecords, r)
 		}
