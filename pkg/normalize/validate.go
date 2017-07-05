@@ -47,21 +47,6 @@ func checkTarget(target string) error {
 	return nil
 }
 
-// make sure target is valid reference for PTR
-func checkPtrTarget(target string) error {
-	if len(target) < 1 {
-		return fmt.Errorf("empty PTR target")
-	}
-	//	if strings.ContainsAny(target, `'" +,|!£$%&/()=?^*ç°§;:<>[]()@`) {
-	//		return errors.Errorf("target (%v) includes invalid char", target)
-	//	}
-	//	// If it containts a ".", it must end in a ".".
-	//	if strings.ContainsRune(target, '.') && target[len(target)-1] != '.' {
-	//		return fmt.Errorf("target (%v) must end with a (.) [Required if target is not single label]", target)
-	//	}
-	return nil
-}
-
 // validateRecordTypes list of valid rec.Type values. Returns true if this is a real DNS record type, false means it is a pseudo-type used internally.
 func validateRecordTypes(rec *models.RecordConfig, domain string, pTypes []string) error {
 	var validTypes = map[string]bool{
@@ -158,7 +143,7 @@ func checkTargets(rec *models.RecordConfig, domain string) (errs []error) {
 			check(fmt.Errorf("cannot create NS record for bare domain. Use NAMESERVER instead"))
 		}
 	case "PTR":
-		check(checkPtrTarget(target))
+		check(checkTarget(target))
 	case "ALIAS":
 		check(checkTarget(target))
 	case "TXT", "IMPORT_TRANSFORM":
