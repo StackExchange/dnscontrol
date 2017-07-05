@@ -8,6 +8,7 @@ import (
 	"io"
 	"log"
 	"sort"
+	"strconv"
 	"strings"
 
 	"github.com/miekg/dns"
@@ -180,6 +181,11 @@ func formatLine(lengths []int, fields []string) string {
 	return strings.TrimRight(result, " ")
 }
 
+func isNumeric(s string) bool {
+	_, err := strconv.ParseFloat(s, 64)
+	return err == nil
+}
+
 func zoneLabelLess(a, b string) bool {
 	// Compare two zone labels for the purpose of sorting the RRs in a Zone.
 
@@ -221,8 +227,30 @@ func zoneLabelLess(a, b string) bool {
 
 	// Skip the matching highest elements, then compare the next item.
 	for i, j := ia, ib; min >= 0; i, j, min = i-1, j-1, min-1 {
+		// Compare as[i] < bs[j]
+		// Sort @ at the top, then *, then everything else.
+		// i.e. @ always is less. * is is less than everything but @.
+		// If both are numeric, compare as integers, otherwise as strings.
+
 		if as[i] != bs[j] {
-			return as[i] < bs[j]
+
+			// If the first element is *, it is always less.
+			if i == 0 && as[i] == "*" {
+				return true
+			}
+			if j == 0 && bs[j] == "*" {
+				return false
+			}
+
+			// If the elements are both numeric, compare as integers:
+			au, aerr := strconv.ParseUint(as[i], 10, 64)
+			bu, berr := strconv.ParseUint(bs[j], 10, 64)
+			if aerr == nil && berr == nil {
+				return au < bu
+			} else {
+				// otherwise, compare as strings:
+				return as[i] < bs[j]
+			}
 		}
 	}
 	// The min top elements were equal, so the shorter name is less.
