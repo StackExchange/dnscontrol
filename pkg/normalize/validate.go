@@ -58,6 +58,7 @@ func validateRecordTypes(rec *models.RecordConfig, domain string, pTypes []strin
 		"SRV":              true,
 		"TXT":              true,
 		"NS":               true,
+		"PTR":              true,
 		"ALIAS":            false,
 	}
 	_, ok := validTypes[rec.Type]
@@ -142,6 +143,8 @@ func checkTargets(rec *models.RecordConfig, domain string) (errs []error) {
 		if label == "@" {
 			check(fmt.Errorf("cannot create NS record for bare domain. Use NAMESERVER instead"))
 		}
+	case "PTR":
+		check(checkTarget(target))
 	case "ALIAS":
 		check(checkTarget(target))
 	case "SRV":
@@ -152,7 +155,7 @@ func checkTargets(rec *models.RecordConfig, domain string) (errs []error) {
 			//it is a valid custom type. We perform no validation on target
 			return
 		}
-		errs = append(errs, fmt.Errorf("Unimplemented record type (%v) domain=%v name=%v",
+		errs = append(errs, fmt.Errorf("checkTargets: Unimplemented record type (%v) domain=%v name=%v",
 			rec.Type, domain, rec.Name))
 	}
 	return

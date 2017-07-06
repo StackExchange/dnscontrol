@@ -291,6 +291,10 @@ func TestZoneLabelLess(t *testing.T) {
 		  mup
 		  a.mup
 		  bzt.mup
+		  *.bzt.mup
+		  1.bzt.mup
+		  2.bzt.mup
+		  10.bzt.mup
 		  aaa.bzt.mup
 		  zzz.bzt.mup
 		  nnn.mup
@@ -318,6 +322,10 @@ func TestZoneLabelLess(t *testing.T) {
 		{"a.mup", "aa.mup", true},
 		{"zt.mup", "aaa.bzt.mup", false},
 		{"aaa.bzt.mup", "mup", false},
+		{"*.bzt.mup", "aaa.bzt.mup", true},
+		{"1.bzt.mup", "aaa.bzt.mup", true},
+		{"1.bzt.mup", "2.bzt.mup", true},
+		{"10.bzt.mup", "2.bzt.mup", false},
 		{"nnn.mup", "aaa.bzt.mup", false},
 		{`www\.miek.nl`, `www.miek.nl`, false},
 	}

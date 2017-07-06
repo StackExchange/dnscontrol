@@ -165,6 +165,14 @@ function CNAME(name, target) {
     }
 }
 
+// PTR(name,target, recordModifiers...)
+function PTR(name, target) {
+    var mods = getModifiers(arguments,2)
+    return function(d) {
+        addRecord(d,"PTR",name,target,mods)
+    }
+}
+
 // SRV(name,priority,weight,port,target, recordModifiers...)
 function SRV(name, priority, weight, port, target) {
     checkArgs([_.isString, _.isNumber, _.isNumber, _.isNumber, _.isString], arguments, "SRV expects (name, priority, weight, port, target)")
