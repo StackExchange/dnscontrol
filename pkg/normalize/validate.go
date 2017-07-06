@@ -275,7 +275,7 @@ func NormalizeAndValidateConfig(config *models.DNSConfig) (errs []error) {
 				rec.Target = net.ParseIP(rec.Target).String()
 			} else if rec.Type == "PTR" {
 				var err error
-				if rec.Name, err = PtrNameMagic(rec.Name, domain.Name); err != nil {
+				if rec.Name, err = transform.PtrNameMagic(rec.Name, domain.Name); err != nil {
 					errs = append(errs, err)
 				}
 			}

@@ -24,7 +24,7 @@ func TestReverse(t *testing.T) {
 		{"174.136.107.14/32", false, "14.107.136.174.in-addr.arpa"},
 		{"2001:0db8:0123:4567:89ab:cdef:1234:5678/128", false, "8.7.6.5.4.3.2.1.f.e.d.c.b.a.9.8.7.6.5.4.3.2.1.0.8.b.d.0.1.0.0.2.ip6.arpa"},
 
-		//Error Cases:
+		//Errror Cases:
 		{"0.0.0.0/0", true, ""},
 		{"2001::/0", true, ""},
 		{"4.5/16", true, ""},
