@@ -52,7 +52,8 @@ func main() {
 		if err != nil {
 			log.Fatalf("Error reading %v: %v\n", *jsonFile, err)
 		}
-		if err = json.Unmarshal([]byte(text), dnsConfig); err != nil {
+		err = json.Unmarshal(text, &dnsConfig)
+		if err != nil {
 			log.Fatalf("Error parsing JSON in (%v): %v", *jsonFile, err)
 		}
 	} else if *jsFile != "" {
