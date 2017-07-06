@@ -165,6 +165,14 @@ function CNAME(name, target) {
     }
 }
 
+// PTR(name,target, recordModifiers...)
+function PTR(name, target) {
+    var mods = getModifiers(arguments,2)
+    return function(d) {
+        addRecord(d,"PTR",name,target,mods)
+    }
+}
+
 // TXT(name,target, recordModifiers...)
 function TXT(name, target) {
     var mods = getModifiers(arguments,2)

@@ -81,6 +81,8 @@ func rrToRecord(rr dns.RR, origin string, replaceSerial uint32) (models.RecordCo
 		rc.Priority = v.Preference
 	case *dns.NS:
 		rc.Target = v.Ns
+	case *dns.PTR:
+		rc.Target = v.Ptr
 	case *dns.SOA:
 		old_serial = v.Serial
 		if old_serial == 0 {
