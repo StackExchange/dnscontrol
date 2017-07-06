@@ -25,6 +25,7 @@ import (
 
 var jsFile = flag.String("js", "dnsconfig.js", "Javascript file containing dns config")
 var credsFile = flag.String("creds", "creds.json", "Provider credentials JSON file")
+var jsonFile = flag.String("json", "", "File containing intermediate JSON")
 
 var jsonOutputPre = flag.String("debugrawjson", "", "Write JSON intermediate to this file pre-normalization.")
 var jsonOutputPost = flag.String("debugjson", "", "During preview, write JSON intermediate to this file instead of stdout.")
@@ -46,7 +47,16 @@ func main() {
 	}
 
 	var dnsConfig *models.DNSConfig
-	if *jsFile != "" {
+	if *jsonFile != "" {
+		text, err := ioutil.ReadFile(*jsonFile)
+		if err != nil {
+			log.Fatalf("Error reading %v: %v\n", *jsonFile, err)
+		}
+		err = json.Unmarshal(text, &dnsConfig)
+		if err != nil {
+			log.Fatalf("Error parsing JSON in (%v): %v", *jsonFile, err)
+		}
+	} else if *jsFile != "" {
 		text, err := ioutil.ReadFile(*jsFile)
 		if err != nil {
 			log.Fatalf("Error reading %v: %v\n", *jsFile, err)
