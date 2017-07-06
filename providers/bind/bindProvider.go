@@ -31,6 +31,25 @@ import (
 	"github.com/StackExchange/dnscontrol/providers/diff"
 )
 
+func initBind(config map[string]string, providermeta json.RawMessage) (providers.DNSServiceProvider, error) {
+	// config -- the key/values from creds.json
+	// meta -- the json blob from NewReq('name', 'TYPE', meta)
+
+	api := &Bind{}
+	if len(providermeta) != 0 {
+		err := json.Unmarshal(providermeta, api)
+		if err != nil {
+			return nil, err
+		}
+	}
+	api.nameservers = models.StringsToNameservers(api.DefaultNS)
+	return api, nil
+}
+
+func init() {
+	providers.RegisterDomainServiceProviderType("BIND", initBind, providers.CanUsePTR)
+}
+
 type SoaInfo struct {
 	Ns      string `json:"master"`
 	Mbox    string `json:"mbox"`
@@ -260,23 +279,4 @@ func (c *Bind) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Correcti
 	}
 
 	return corrections, nil
-}
-
-func initBind(config map[string]string, providermeta json.RawMessage) (providers.DNSServiceProvider, error) {
-	// config -- the key/values from creds.json
-	// meta -- the json blob from NewReq('name', 'TYPE', meta)
-
-	api := &Bind{}
-	if len(providermeta) != 0 {
-		err := json.Unmarshal(providermeta, api)
-		if err != nil {
-			return nil, err
-		}
-	}
-	api.nameservers = models.StringsToNameservers(api.DefaultNS)
-	return api, nil
-}
-
-func init() {
-	providers.RegisterDomainServiceProviderType("BIND", initBind, providers.CanUseSRV)
 }

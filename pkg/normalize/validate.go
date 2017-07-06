@@ -315,9 +315,9 @@ func NormalizeAndValidateConfig(config *models.DNSConfig) (errs []error) {
 		errs = append(errs, checkCNAMEs(d)...)
 	}
 
-	//Check that if any aliases are used in a domain, every provider for that domain supports them
+	//Check that if any aliases / ptr / etc.. are used in a domain, every provider for that domain supports them
 	for _, d := range config.Domains {
-		err := checkALIASes(d, config.DNSProviders)
+		err := checkProviderCapabilities(d, config.DNSProviders)
 		if err != nil {
 			errs = append(errs, err)
 		}
@@ -344,24 +344,33 @@ func checkCNAMEs(dc *models.DomainConfig) (errs []error) {
 	return
 }
 
-func checkALIASes(dc *models.DomainConfig, pList []*models.DNSProviderConfig) error {
-	hasAlias := false
-	for _, r := range dc.Records {
-		if r.Type == "ALIAS" {
-			hasAlias = true
-			break
-		}
+func checkProviderCapabilities(dc *models.DomainConfig, pList []*models.DNSProviderConfig) error {
+	types := []struct {
+		rType string
+		cap   providers.Capability
+	}{
+		{"ALIAS", providers.CanUseAlias},
+		{"PTR", providers.CanUsePTR},
 	}
-	if !hasAlias {
-		return nil
-	}
-	for pName := range dc.DNSProviders {
-		for _, p := range pList {
-			if p.Name == pName {
-				if !providers.ProviderHasCabability(p.Type, providers.CanUseAlias) {
-					return fmt.Errorf("Domain %s uses ALIAS records, but DNS provider type %s does not support them", dc.Name, p.Type)
-				}
+	for _, ty := range types {
+		hasAny := false
+		for _, r := range dc.Records {
+			if r.Type == ty.rType {
+				hasAny = true
 				break
+			}
+		}
+		if !hasAny {
+			continue
+		}
+		for pName := range dc.DNSProviders {
+			for _, p := range pList {
+				if p.Name == pName {
+					if !providers.ProviderHasCabability(p.Type, ty.cap) {
+						return fmt.Errorf("Domain %s uses %s records, but DNS provider type %s does not support them", dc.Name, ty.rType, p.Type)
+					}
+					break
+				}
 			}
 		}
 	}
