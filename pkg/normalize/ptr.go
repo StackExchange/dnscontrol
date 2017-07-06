@@ -14,9 +14,9 @@ func PtrNameMagic(name, domain string) (string, error) {
 	// reverse it and truncate it).
 
 	if strings.HasSuffix(domain, ".in-addr.arpa.") {
-		return ptrmagic(name, domain, 4), nil
+		return ptrmagic(name, domain, 4)
 	} else if strings.HasSuffix(domain, ".ip6.arpa.") {
-		return ptrmagic(name, domain, 16), nil
+		return ptrmagic(name, domain, 16)
 	} else {
 		return name, nil
 	}
@@ -26,12 +26,14 @@ func ptrmagic(name, domain string, al int) (string, error) {
 	ip := net.ParseIP(name)
 	if ip == nil || (al == 4 && ip.To4() == nil) || (al == 16 && ip.To16() == nil) {
 		// Not a valid IP address, or correct IP version. Leave it alone.
-		return name
+		return name, nil
 	}
-	rev = transform.ReverseDomainName(ip.String() + "/32")
-	var r error
+	rev, err := transform.ReverseDomainName(ip.String() + "/32")
+	if err != nil {
+		return name, err
+	}
 	if !strings.HasSuffix(rev, "."+domain) {
-		errors.Errorf("ERROR: PTR record %v in wrong domain (%v)", name, domain)
+		err = errors.Errorf("ERROR: PTR record %v in wrong domain (%v)", name, domain)
 	}
-	return strings.TrimSuffix(rev, "."+domain), r
+	return strings.TrimSuffix(rev, "."+domain), err
 }

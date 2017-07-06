@@ -6,7 +6,6 @@ import (
 	"strings"
 
 	"github.com/StackExchange/dnscontrol/models"
-	"github.com/StackExchange/dnscontrol/pkg/normalize"
 	"github.com/StackExchange/dnscontrol/pkg/transform"
 	"github.com/StackExchange/dnscontrol/providers"
 	"github.com/miekg/dns"
@@ -275,7 +274,8 @@ func NormalizeAndValidateConfig(config *models.DNSConfig) (errs []error) {
 			} else if rec.Type == "A" || rec.Type == "AAAA" {
 				rec.Target = net.ParseIP(rec.Target).String()
 			} else if rec.Type == "PTR" {
-				if rec.Name, err = normalize.PtrNameMagic(rec.Name, domain.Name); err != nil {
+				var err error
+				if rec.Name, err = PtrNameMagic(rec.Name, domain.Name); err != nil {
 					errs = append(errs, err)
 				}
 			}

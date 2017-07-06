@@ -20,6 +20,9 @@ func TestPtrMagic(t *testing.T) {
 	for _, tst := range tests {
 		t.Run(fmt.Sprintf("%s %s", tst.name, tst.domain), func(t *testing.T) {
 			o, errs := ptrmagic(tst.name, tst.domain, tst.version)
+			if o != tst.output {
+				t.Errorf("Got (%v) expected (%v)", o, tst.output)
+			}
 			if errs != nil && !tst.fail {
 				t.Error("Got error but expected none")
 			}
