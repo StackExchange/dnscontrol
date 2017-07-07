@@ -22,11 +22,21 @@ D(REV('1.2.3.0/24'), REGISTRAR, DnsProvider(BIND),
   PTR("1", 'foo.example.com.'),
   PTR("2", 'bar.example.com.'),
   PTR("3", 'baz.example.com.'),
+  // These take advantage of DNSControl's ability to generate the right name:
+  PTR("1.2.3.10", 'ten.example.com.'),
 );
 
 D(REV('2001:db8:302::/48'), REGISTRAR, DnsProvider(BIND),
   PTR("1.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0", 'foo.example.com.'),  // 2001:db8:302::1
+  // These take advantage of DNSControl's ability to generate the right name:
+  PTR("2001:db8:302::2", 'two.example.com.'),                          // 2.0.0. etc. etc.
+  PTR("2001:db8:302::3", 'three.example.com.'),                        // 
 );
+
 
 {%endhighlight%}
 {% include endExample.html %}
+
+In the future we plan on adding a flag to `A()` which will insert 
+the correct PTR() record if the approprate `D(REV()` domain (i.e. `.arpa` domain) has been
+defined.

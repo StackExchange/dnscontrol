@@ -32,7 +32,7 @@ func ReverseDomainName(cidr string) (string, error) {
 		}
 		toTrim = (total - bits) / 4
 	} else {
-		return "", fmt.Errorf("Invalid mask bit size: %d", total)
+		return "", fmt.Errorf("Address is not IPv4 or IPv6: %v", cidr)
 	}
 
 	parts := strings.SplitN(base, ".", toTrim+1)
