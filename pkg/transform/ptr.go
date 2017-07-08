@@ -45,7 +45,7 @@ func ipv4magic(name, domain string) (string, error) {
 		return name, err
 	}
 	if !strings.HasSuffix(rev, "."+domain) {
-		err = errors.Errorf("ERROR: PTR record %v in wrong IPv4 domain (%v)", name, domain)
+		err = errors.Errorf("PTR record %v in wrong IPv4 domain (%v)", name, domain)
 	}
 	return strings.TrimSuffix(rev, "."+domain), err
 }
@@ -63,7 +63,7 @@ func ipv6magic(name, domain string) (string, error) {
 		return name, err
 	}
 	if !strings.HasSuffix(rev, "."+domain) {
-		err = errors.Errorf("ERROR: PTR record %v in wrong IPv6 domain (%v)", name, domain)
+		err = errors.Errorf("PTR record %v in wrong IPv6 domain (%v)", name, domain)
 	}
 	return strings.TrimSuffix(rev, "."+domain), err
 }
