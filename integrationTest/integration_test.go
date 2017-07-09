@@ -220,6 +220,10 @@ func mx(name string, prio uint16, target string) *rec {
 	return r
 }
 
+func ptr(name, target string) *rec {
+	return makeRec(name, target, "PTR")
+}
+
 func makeRec(name, target, typ string) *rec {
 	return &rec{
 		Name:   name,
@@ -288,6 +292,11 @@ var tests = []*TestCase{
 	tc("Delete one", mx("@", 5, "foo2.com."), mx("@", 15, "foo3.com.")),
 	tc("Change to other name", mx("@", 5, "foo2.com."), mx("mail", 15, "foo3.com.")),
 	tc("Change Priority", mx("@", 7, "foo2.com."), mx("mail", 15, "foo3.com.")),
+
+	//PTR
+	tc("Empty"),
+	tc("Create PTR record", ptr("4", "foo.com.")),
+	tc("Modify PTR record", ptr("4", "bar.com.")),
 
 	//ALIAS
 	tc("EMPTY"),

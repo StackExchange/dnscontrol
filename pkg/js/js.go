@@ -19,7 +19,7 @@ func ExecuteJavascript(script string, devMode bool) (*models.DNSConfig, error) {
 	vm := otto.New()
 
 	vm.Set("require", require)
-	vm.Set("REVERSE", reverse)
+	vm.Set("REV", reverse)
 
 	helperJs := GetHelpers(devMode)
 	// run helper script to prime vm and initialize variables
@@ -75,11 +75,10 @@ func throw(vm *otto.Otto, str string) {
 
 func reverse(call otto.FunctionCall) otto.Value {
 	if len(call.ArgumentList) != 1 {
-		throw(call.Otto, "REVERSE takes exactly one argument")
+		throw(call.Otto, "REV takes exactly one argument")
 	}
 	dom := call.Argument(0).String()
 	rev, err := transform.ReverseDomainName(dom)
-	fmt.Println(dom, rev, err)
 	if err != nil {
 		throw(call.Otto, err.Error())
 	}
