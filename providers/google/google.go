@@ -15,7 +15,7 @@ import (
 )
 
 func init() {
-	providers.RegisterDomainServiceProviderType("GCLOUD", New)
+	providers.RegisterDomainServiceProviderType("GCLOUD", New, providers.CanUsePTR)
 }
 
 type gcloud struct {
