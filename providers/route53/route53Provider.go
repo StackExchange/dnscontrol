@@ -42,7 +42,7 @@ func newRoute53(m map[string]string, metadata json.RawMessage) (providers.DNSSer
 }
 
 func init() {
-	providers.RegisterDomainServiceProviderType("ROUTE53", newRoute53, providers.CanUseSRV)
+	providers.RegisterDomainServiceProviderType("ROUTE53", newRoute53, providers.CanUsePTR, providers.CanUseSRV)
 }
 func sPtr(s string) *string {
 	return &s
