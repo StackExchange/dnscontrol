@@ -146,5 +146,5 @@ func newGandi(m map[string]string, metadata json.RawMessage) (providers.DNSServi
 }
 
 func init() {
-	providers.RegisterDomainServiceProviderType("GANDI", newGandi, providers.CanUseSRV)
+	providers.RegisterDomainServiceProviderType("GANDI", newGandi, providers.CanUsePTR, providers.CanUseSRV)
 }
