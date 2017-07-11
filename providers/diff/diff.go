@@ -33,10 +33,22 @@ type differ struct {
 
 // get normalized content for record. target, ttl, mxprio, and specified metadata
 func (d *differ) content(r *models.RecordConfig) string {
-	content := fmt.Sprintf("%s %d", r.Target, r.TTL)
-	if r.Type == "MX" {
-		content += fmt.Sprintf(" priority=%d", r.Priority)
-	}
+	content := fmt.Sprintf("%v + ttl=%d", r.Content(), r.TTL)
+	//	content := fmt.Sprintf("%s %d", r.Target, r.TTL)
+	//	switch r.Type {
+	//	case "MX":
+	//		content += fmt.Sprintf(" priority=%d", r.Priority)
+	//	case "SRV":
+	//		if r.SrvPriority != 0 || r.SrvWeight != 0 || r.SrvPort != 0 {
+	//			content += fmt.Sprintf(" pwp=(%d,%d,%d)", r.SrvPriority, r.SrvWeight, r.SrvPort)
+	//		}
+	//	case "A", "AAAA", "CNAME", "NS", "PAGE_RULE", "PTR", "SOA", "TXT":
+	//		// All rtypes are explicitly listed in this switch
+	//		// statement so that when adding new records we are
+	//		// sure to notice if we forgot to add a case here.
+	//	default:
+	//		panic(fmt.Sprintf("content: Unimplemented rtype=%v", r.Type))
+	//	}
 
 	for _, f := range d.extraValues {
 		for k, v := range f(r) {

@@ -223,6 +223,14 @@ func ptr(name, target string) *rec {
 	return makeRec(name, target, "PTR")
 }
 
+func srv(name string, priority, weight, port uint16, target string) *rec {
+	r := makeRec(name, target, "SRV")
+	r.SrvPriority = priority
+	r.SrvWeight = weight
+	r.SrvPort = port
+	return r
+}
+
 func makeRec(name, target, typ string) *rec {
 	return &rec{
 		Name:   name,
@@ -291,6 +299,17 @@ var tests = []*TestCase{
 	tc("Delete one", mx("@", 5, "foo2.com."), mx("@", 15, "foo3.com.")),
 	tc("Change to other name", mx("@", 5, "foo2.com."), mx("mail", 15, "foo3.com.")),
 	tc("Change Priority", mx("@", 7, "foo2.com."), mx("mail", 15, "foo3.com.")),
+
+	//SRV
+	tc("Empty"),
+	tc("SRV record", srv("@", 5, 6, 7, "foo.com.")),
+	tc("Second SRV record, same prio", srv("@", 5, 6, 7, "foo.com."), srv("@", 5, 60, 70, "foo2.com.")),
+	tc("3 SRV", srv("@", 5, 6, 7, "foo.com."), srv("@", 5, 60, 70, "foo2.com."), srv("@", 15, 65, 75, "foo3.com.")),
+	tc("Delete one", srv("@", 5, 6, 7, "foo.com."), srv("@", 15, 65, 75, "foo3.com.")),
+	tc("Change Target", srv("@", 5, 6, 7, "foo.com."), srv("@", 15, 65, 75, "foo4.com.")),
+	tc("Change Priority", srv("@", 52, 6, 7, "foo.com."), srv("@", 15, 65, 75, "foo4.com.")),
+	tc("Change Weight", srv("@", 52, 62, 7, "foo.com."), srv("@", 15, 65, 75, "foo4.com.")),
+	tc("Change Port", srv("@", 52, 62, 72, "foo.com."), srv("@", 15, 65, 75, "foo4.com.")),
 
 	//PTR
 	tc("Empty"),

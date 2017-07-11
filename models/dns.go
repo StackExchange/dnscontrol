@@ -9,6 +9,7 @@ import (
 	"net"
 	"reflect"
 	"strconv"
+	"strings"
 
 	"github.com/StackExchange/dnscontrol/pkg/transform"
 	"github.com/miekg/dns"
@@ -60,28 +61,69 @@ type DNSProviderConfig struct {
 //    This is the FQDN version of Name.
 //    It should never have a trailiing ".".
 type RecordConfig struct {
-	Type     string            `json:"type"`
-	Name     string            `json:"name"`   // The short name. See below.
-	Target   string            `json:"target"` // If a name, must end with "."
-	TTL      uint32            `json:"ttl,omitempty"`
-	Metadata map[string]string `json:"meta,omitempty"`
-	NameFQDN string            `json:"-"`                  // Must end with ".$origin". See below.
-	Priority uint16            `json:"priority,omitempty"` // Used by SRV
-	Weight   uint16            `json:"weight,omitempty"`   // Used by SRV
-	Port     uint16            `json:"port,omitempty"`     // Used by SRV
+	Type        string            `json:"type"`
+	Name        string            `json:"name"`   // The short name. See below.
+	Target      string            `json:"target"` // If a name, must end with "."
+	TTL         uint32            `json:"ttl,omitempty"`
+	Metadata    map[string]string `json:"meta,omitempty"`
+	NameFQDN    string            `json:"-"`                  // Must end with ".$origin". See below.
+	Priority    uint16            `json:"priority,omitempty"` // MX
+	SrvPriority uint16            `json:"SrvPriority,omitempty"`
+	SrvWeight   uint16            `json:"SrvWeight,omitempty"`
+	SrvPort     uint16            `json:"SrvPort,omitempty"`
 
 	Original interface{} `json:"-"` // Store pointer to provider-specific record object. Used in diffing.
 }
 
 func (r *RecordConfig) String() string {
 	content := fmt.Sprintf("%s %s %s %d", r.Type, r.NameFQDN, r.Target, r.TTL)
-	if r.Type == "MX" {
+	switch r.Type {
+	case "MX":
 		content += fmt.Sprintf(" priority=%d", r.Priority)
+	case "A", "AAAA", "PTR", "SOA":
+		// All rtypes are explicitly listed in this switch
+		// statement so that when adding new records we are
+		// sure to notice if we forgot to add a case here.
+	default:
+		panic(fmt.Sprintf("rc.String rtype %v unimplemented", r.Type))
 	}
 	for k, v := range r.Metadata {
 		content += fmt.Sprintf(" %s=%s", k, v)
 	}
 	return content
+}
+
+// Content combines Target and other fields into one string.
+func (r *RecordConfig) Content() string {
+
+	// If this is a pseudo record, just return the target.
+	if _, ok := dns.StringToType[r.Type]; !ok {
+		return r.Target
+	}
+
+	// We cheat by converting to a dns.RR and use the String() function.
+	// Sadly that function always includes a header, which we must strip out.
+	// TODO(tlim): Request the dns project add a function that returns
+	// the string without the header.
+	rr := r.ToRR()
+	header := rr.Header().String()
+	full := rr.String()
+	if !strings.HasPrefix(full, header) {
+		panic("dns.Hdr.String() not acting as we expect")
+	}
+	return full[len(header):]
+}
+
+// MergeToTarget combines "extra" fields into .Target, and zeros the merged fields.
+func (r *RecordConfig) MergeToTarget() {
+	// Merge "extra" fields into the Target.
+	r.Target = r.Content()
+
+	// Zap any fields that may have been merged.
+	r.Priority = 0
+	r.SrvPriority = 0
+	r.SrvWeight = 0
+	r.SrvPort = 0
 }
 
 /// Convert RecordConfig -> dns.RR.
@@ -111,6 +153,13 @@ func (r *RecordConfig) ToRR() dns.RR {
 	case dns.TypeMX:
 		// Has a Priority field.
 		return &dns.MX{Hdr: hdr, Preference: r.Priority, Mx: r.Target}
+	case dns.TypeSRV:
+		// Has a Priority, Weight, and Port fields.
+		return &dns.SRV{Hdr: hdr,
+			Priority: r.SrvPriority,
+			Weight:   r.SrvWeight,
+			Port:     r.SrvPort,
+			Target:   r.Target}
 	case dns.TypeTXT:
 		// Assure no problems due to quoting/unquoting:
 		return &dns.TXT{Hdr: hdr, Txt: []string{r.Target}}

@@ -142,12 +142,7 @@ func (r *route53Provider) GetDomainCorrections(dc *models.DomainConfig) ([]*mode
 		}
 	}
 	for _, want := range dc.Records {
-		if want.Type == "MX" {
-			want.Target = fmt.Sprintf("%d %s", want.Priority, want.Target)
-			want.Priority = 0
-		} else if want.Type == "TXT" {
-			want.Target = fmt.Sprintf(`"%s"`, want.Target) //FIXME: better escaping/quoting
-		}
+		want.MergeToTarget()
 	}
 
 	//diff

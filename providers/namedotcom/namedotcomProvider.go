@@ -36,6 +36,7 @@ func newProvider(conf map[string]string) (*nameDotCom, error) {
 func init() {
 	providers.RegisterRegistrarType("NAMEDOTCOM", newReg)
 	providers.RegisterDomainServiceProviderType("NAMEDOTCOM", newDsp, providers.CanUseSRV)
+	// PTR records are not supported https://www.name.com/support/articles/205188508-Reverse-DNS-records (2017-05-08)
 }
 
 ///

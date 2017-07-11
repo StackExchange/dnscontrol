@@ -116,13 +116,13 @@ func rrToRecord(rr dns.RR, origin string, replaceSerial uint32) (models.RecordCo
 			v.Ns, v.Mbox, new_serial, v.Refresh, v.Retry, v.Expire, v.Minttl)
 	case *dns.SRV:
 		rc.Target = v.Target
-		rc.Port = v.Port
-		rc.Weight = v.Weight
-		rc.Priority = v.Priority
+		rc.SrvPort = v.Port
+		rc.SrvWeight = v.Weight
+		rc.SrvPriority = v.Priority
 	case *dns.TXT:
 		rc.Target = strings.Join(v.Txt, " ")
 	default:
-		log.Fatalf("Unimplemented zone record type=%s (%v)\n", rc.Type, rr)
+		log.Fatalf("rrToRecord: Unimplemented zone record type=%s (%v)\n", rc.Type, rr)
 	}
 	return rc, old_serial
 }

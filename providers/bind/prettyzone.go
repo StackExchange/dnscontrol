@@ -39,20 +39,21 @@ func (z *zoneGenData) Less(i, j int) bool {
 	if rrtypeA != rrtypeB {
 		return zoneRrtypeLess(rrtypeA, rrtypeB)
 	}
-	if rrtypeA == dns.TypeA {
+	switch rrtypeA {
+	case dns.TypeNS, dns.TypeTXT:
+		// pass through.
+	case dns.TypeA:
 		ta2, tb2 := a.(*dns.A), b.(*dns.A)
 		ipa, ipb := ta2.A.To4(), tb2.A.To4()
 		if ipa == nil || ipb == nil {
 			log.Fatalf("should not happen: IPs are not 4 bytes: %#v %#v", ta2, tb2)
 		}
 		return bytes.Compare(ipa, ipb) == -1
-	}
-	if rrtypeA == dns.TypeMX {
+	case dns.TypeMX:
 		ta2, tb2 := a.(*dns.MX), b.(*dns.MX)
 		pa, pb := ta2.Preference, tb2.Preference
 		return pa < pb
-	}
-	if rrtypeA == dns.TypeSRV {
+	case dns.TypeSRV:
 		ta2, tb2 := a.(*dns.SRV), b.(*dns.SRV)
 		pa, pb := ta2.Port, tb2.Port
 		if pa != pb {
@@ -66,6 +67,8 @@ func (z *zoneGenData) Less(i, j int) bool {
 		if pa != pb {
 			return pa < pb
 		}
+	default:
+		panic(fmt.Sprintf("zoneGenData Less: unimplemented rtype %v", dns.TypeToString[rrtypeA]))
 	}
 	return a.String() < b.String()
 }
@@ -164,7 +167,7 @@ func (z *zoneGenData) generateZoneFileHelper(w io.Writer) error {
 
 		// items[2]: class
 		if hdr.Class != dns.ClassINET {
-			log.Fatalf("Unimplemented class=%v", items[2])
+			log.Fatalf("generateZoneFileHelper: Unimplemented class=%v", items[2])
 		}
 
 		// items[3]: type

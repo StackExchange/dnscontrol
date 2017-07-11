@@ -321,8 +321,8 @@ function addRecord(d,type,name,target,mods) {
     return rec;
 }
 
-function addRecordSRV(d,type,name,priority,weight,port,target,mods) {
-    var rec = {type: type, name: name, priority: priority, weight: weight, port: port, target: target, ttl:d.defaultTTL, meta:{}};
+function addRecordSRV(d,type,name,srvpriority,srvweight,srvport,target,mods) {
+    var rec = {type: type, name: name, srvpriority: srvpriority, srvweight: srvweight, srvport: srvport, target: target, ttl:d.defaultTTL, meta:{}};
     // for each modifier, decide based on type:
     // - Function: call is with the record as the argument
     // - Object: merge it into the metadata
