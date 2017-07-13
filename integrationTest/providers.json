@@ -13,14 +13,14 @@
         "apikey": "$CF_KEY"
     },
     "DNSIMPLE": {
-        //16/17: no ns records managable. Not even for subdomains.
+        "COMMENT": "16/17: no ns records managable. Not even for subdomains.",
         "knownFailures": "17,18",
         "domain": "$DNSIMPLE_DOMAIN",
         "token": "$DNSIMPLE_TOKEN",
         "baseurl": "https://api.sandbox.dnsimple.com"
     },
     "GANDI": {
-        //5: gandi does not accept ttls less than 300
+        "COMMENT": "5: gandi does not accept ttls less than 300",
         "knownFailures": "5",
         "domain": "$GANDI_DOMAIN",
         "apikey": "$GANDI_KEY"
