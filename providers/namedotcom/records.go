@@ -58,14 +58,14 @@ func (n *nameDotCom) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Co
 	return corrections, nil
 }
 
-func apiGetRecords(domain string) string {
-	return fmt.Sprintf("%s/dns/list/%s", apiBase, domain)
+func (n *nameDotCom) apiGetRecords(domain string) string {
+	return fmt.Sprintf("%s/dns/list/%s", n.APIUrl, domain)
 }
-func apiCreateRecord(domain string) string {
-	return fmt.Sprintf("%s/dns/create/%s", apiBase, domain)
+func (n *nameDotCom) apiCreateRecord(domain string) string {
+	return fmt.Sprintf("%s/dns/create/%s", n.APIUrl, domain)
 }
-func apiDeleteRecord(domain string) string {
-	return fmt.Sprintf("%s/dns/delete/%s", apiBase, domain)
+func (n *nameDotCom) apiDeleteRecord(domain string) string {
+	return fmt.Sprintf("%s/dns/delete/%s", n.APIUrl, domain)
 }
 
 type nameComRecord struct {
@@ -108,7 +108,7 @@ type listRecordsResponse struct {
 
 func (n *nameDotCom) getRecords(domain string) ([]*nameComRecord, error) {
 	result := &listRecordsResponse{}
-	err := n.get(apiGetRecords(domain), result)
+	err := n.get(n.apiGetRecords(domain), result)
 	if err != nil {
 		return nil, err
 	}
@@ -149,7 +149,7 @@ func (n *nameDotCom) createRecord(rc *models.RecordConfig, domain string) error 
 	if dat.Hostname == "@" {
 		dat.Hostname = ""
 	}
-	resp, err := n.post(apiCreateRecord(domain), dat)
+	resp, err := n.post(n.apiCreateRecord(domain), dat)
 	if err != nil {
 		return err
 	}
@@ -160,7 +160,7 @@ func (n *nameDotCom) deleteRecord(id, domain string) error {
 	dat := struct {
 		ID string `json:"record_id"`
 	}{id}
-	resp, err := n.post(apiDeleteRecord(domain), dat)
+	resp, err := n.post(n.apiDeleteRecord(domain), dat)
 	if err != nil {
 		return err
 	}

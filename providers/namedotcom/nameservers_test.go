@@ -23,8 +23,8 @@ func setup() {
 	client = &nameDotCom{
 		APIUser: "bob",
 		APIKey:  "123",
+		APIUrl:  server.URL,
 	}
-	apiBase = server.URL
 }
 
 func teardown() {
