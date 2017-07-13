@@ -31,6 +31,11 @@
     "private_key": "$GCLOUD_PRIVATEKEY",
     "project_id": "$GCLOUD_PROJECT"
   },
+  "NAMEDOTCOM": {
+    "apikey": "$NAMEDOTCOM_KEY",
+    "apiurl": "$NAMEDOTCOM_URL",
+    "apiuser": "$NAMEDOTCOM_USER"
+  },
   "ROUTE53": {
     "KeyId": "$R53_KEY_ID",
     "SecretKey": "$R53_KEY",
