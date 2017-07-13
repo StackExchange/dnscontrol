@@ -8,7 +8,6 @@ import (
 	"log"
 	"net"
 	"reflect"
-	"strconv"
 	"strings"
 
 	"github.com/StackExchange/dnscontrol/pkg/transform"
@@ -138,11 +137,11 @@ func (r *RecordConfig) ToRR() dns.RR {
 		log.Fatalf("No such DNS type as (%#v)\n", r.Type)
 	}
 
-	var ttl string
+	var ttl uint32
 	if r.TTL == 0 {
-		ttl = strconv.FormatUint(uint64(DefaultTTL), 10)
+		ttl = DefaultTTL
 	} else {
-		ttl = strconv.FormatUint(uint64(r.TTL), 10)
+		ttl = r.TTL
 	}
 
 	hdr := dns.RR_Header{
