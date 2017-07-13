@@ -34,7 +34,8 @@
   "NAMEDOTCOM": {
     "apikey": "$NAMEDOTCOM_KEY",
     "apiurl": "$NAMEDOTCOM_URL",
-    "apiuser": "$NAMEDOTCOM_USER"
+    "apiuser": "$NAMEDOTCOM_USER",
+    "domain": "$NAMEDOTCOM_DOMAIN"
   },
   "ROUTE53": {
     "KeyId": "$R53_KEY_ID",
