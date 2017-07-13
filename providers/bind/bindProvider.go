@@ -134,12 +134,11 @@ func makeDefaultSOA(info SoaInfo, origin string) *models.RecordConfig {
 		Name: "@",
 	}
 	soaRec.NameFQDN = dnsutil.AddOrigin(soaRec.Name, origin)
-	//TODO(cpeterson): are these sane defaults?
 	if len(info.Ns) == 0 {
-		info.Ns = "DEFAULT_NOT_SET"
+		info.Ns = "DEFAULT_NOT_SET."
 	}
 	if len(info.Mbox) == 0 {
-		info.Mbox = "DEFAULT_NOT_SET"
+		info.Mbox = "DEFAULT_NOT_SET."
 	}
 	if info.Serial == 0 {
 		info.Serial = 1

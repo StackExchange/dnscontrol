@@ -119,7 +119,12 @@ func runTests(t *testing.T, prv providers.DNSServiceProvider, domainName string,
 				t.Fatal(err)
 			}
 			if !skipVal && i != *startIdx && len(corrections) == 0 {
-				t.Fatalf("Expect changes for all tests, but got none")
+				if tst.Desc != "Empty" {
+					// There are "no corrections" if the last test was programatically
+					// skipped.  We detect this (possibly inaccurately) by checking to
+					// see if .Desc is "Empty".
+					t.Fatalf("Expect changes for all tests, but got none")
+				}
 			}
 			for _, c := range corrections {
 				if *verbose {
@@ -306,7 +311,7 @@ var tests = []*TestCase{
 	tc("Modify PTR record", ptr("4", "bar.com.")),
 
 	//ALIAS
-	tc("EMPTY"),
+	tc("Empty"),
 	tc("ALIAS at root", alias("@", "foo.com.")).IfHasCapability(providers.CanUseAlias),
 	tc("change it", alias("@", "foo2.com.")).IfHasCapability(providers.CanUseAlias),
 	tc("ALIAS at subdomain", alias("test", "foo.com.")).IfHasCapability(providers.CanUseAlias),

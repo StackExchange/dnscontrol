@@ -8,6 +8,7 @@ import (
 	"log"
 	"net"
 	"reflect"
+	"strconv"
 	"strings"
 
 	"github.com/StackExchange/dnscontrol/pkg/transform"
@@ -76,10 +77,12 @@ type RecordConfig struct {
 
 func (r *RecordConfig) String() (content string) {
 	switch r.Type {
+	case "A", "AAAA", "PTR":
+		content = fmt.Sprintf("%s %s %s %d", r.Type, r.NameFQDN, r.Target, r.TTL)
 	case "MX":
 		content = fmt.Sprintf(" priority=%d", r.Priority)
-	case "A", "AAAA", "PTR", "SOA":
-		content = fmt.Sprintf("%s %s %s %d", r.Type, r.NameFQDN, r.Target, r.TTL)
+	case "SOA":
+		content = fmt.Sprintf("%s %s %s %d", r.Type, r.Name, r.Target, r.TTL)
 	default:
 		panic(fmt.Sprintf("rc.String rtype %v unimplemented", r.Type))
 	}
@@ -123,58 +126,72 @@ func (r *RecordConfig) MergeToTarget() {
 }
 
 /// Convert RecordConfig -> dns.RR.
-func (r *RecordConfig) ToRR() dns.RR {
+func (rc *RecordConfig) ToRR() dns.RR {
 
-	// Note: The label is a FQDN ending in a ".".  It will not put "@" in the Name field.
-
-	// NB(tlim): An alternative way to do this would be
-	// to create the rr via: rr := TypeToRR[x]()
-	// then set the parameters. A benchmark may find that
-	// faster. This was faster to implement.
-
-	rdtype, ok := dns.StringToType[r.Type]
+	// Don't call this on fake types.
+	rdtype, ok := dns.StringToType[rc.Type]
 	if !ok {
-		log.Fatalf("No such DNS type as (%#v)\n", r.Type)
+		log.Fatalf("No such DNS type as (%#v)\n", rc.Type)
 	}
 
-	var ttl uint32
-	if r.TTL == 0 {
-		ttl = DefaultTTL
-	} else {
-		ttl = r.TTL
+	// Magicallly create an RR of the correct type.
+	rr := dns.TypeToRR[rdtype]()
+
+	// Fill in the header.
+	rr.Header().Name = rc.NameFQDN + "."
+	rr.Header().Rrtype = rdtype
+	rr.Header().Class = dns.ClassINET
+	rr.Header().Ttl = rc.TTL
+	if rc.TTL == 0 {
+		rr.Header().Ttl = DefaultTTL
 	}
 
-	hdr := dns.RR_Header{
-		Name:   r.NameFQDN + ".",
-		Rrtype: rdtype,
-		Class:  dns.ClassINET,
-		Ttl:    ttl,
-	}
-
-	// Handle some special cases:
+	// Fill in the data.
 	switch rdtype {
+	case dns.TypeA:
+		rr.(*dns.A).A = net.ParseIP(rc.Target)
+	case dns.TypeCNAME:
+		rr.(*dns.CNAME).Target = rc.Target
+	case dns.TypePTR:
+		rr.(*dns.PTR).Ptr = rc.Target
 	case dns.TypeMX:
-		// Has a Priority field.
-		return &dns.MX{Hdr: hdr, Preference: r.Priority, Mx: r.Target}
+		rr.(*dns.MX).Preference = rc.Priority
+		rr.(*dns.MX).Mx = rc.Target
+	case dns.TypeNS:
+		rr.(*dns.NS).Ns = rc.Target
+	case dns.TypeSOA:
+		t := strings.Replace(rc.Target, `\ `, ` `, -1)
+		//fmt.Println()
+		//fmt.Println("TARGET SPLIT", t)
+		//fmt.Println()
+		parts := strings.Fields(t)
+		rr.(*dns.SOA).Ns = parts[0]
+		rr.(*dns.SOA).Mbox = parts[1]
+		rr.(*dns.SOA).Serial = atou32(parts[2])
+		rr.(*dns.SOA).Refresh = atou32(parts[3])
+		rr.(*dns.SOA).Retry = atou32(parts[4])
+		rr.(*dns.SOA).Expire = atou32(parts[5])
+		rr.(*dns.SOA).Minttl = atou32(parts[6])
 	case dns.TypeSRV:
-		// Has a Priority, Weight, and Port fields.
-		return &dns.SRV{Hdr: hdr,
-			Priority: r.SrvPriority,
-			Weight:   r.SrvWeight,
-			Port:     r.SrvPort,
-			Target:   r.Target}
+		rr.(*dns.SRV).Priority = rc.SrvPriority
+		rr.(*dns.SRV).Weight = rc.SrvWeight
+		rr.(*dns.SRV).Port = rc.SrvPort
+		rr.(*dns.SRV).Target = rc.Target
 	case dns.TypeTXT:
-		// Assure no problems due to quoting/unquoting:
-		return &dns.TXT{Hdr: hdr, Txt: []string{r.Target}}
+		rr.(*dns.TXT).Txt = []string{rc.Target}
 	default:
+		panic(fmt.Sprintf("ToRR: Unimplemented rtype %v", rc.Type))
 	}
 
-	s := fmt.Sprintf("%s %s IN %s %s", r.NameFQDN, ttl, r.Type, r.Target)
-	rc, err := dns.NewRR(s)
+	return rr
+}
+
+func atou32(s string) uint32 {
+	i64, err := strconv.ParseInt(s, 10, 32)
 	if err != nil {
-		log.Fatalf("NewRR rejected RecordConfig: %#v (t=%#v)\n%v\n", s, r.Target, err)
+		panic(fmt.Sprintf("atou32 failed (%v) (err=%v", s, err))
 	}
-	return rc
+	return uint32(i64)
 }
 
 type Nameserver struct {

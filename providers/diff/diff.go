@@ -33,6 +33,7 @@ type differ struct {
 
 // get normalized content for record. target, ttl, mxprio, and specified metadata
 func (d *differ) content(r *models.RecordConfig) string {
+	//content := fmt.Sprintf("%v %d", r.Content(), r.TTL)
 	content := fmt.Sprintf("%v + ttl=%d", r.Content(), r.TTL)
 	//	content := fmt.Sprintf("%s %d", r.Target, r.TTL)
 	//	switch r.Type {
