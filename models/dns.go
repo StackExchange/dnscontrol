@@ -75,15 +75,12 @@ type RecordConfig struct {
 	Original interface{} `json:"-"` // Store pointer to provider-specific record object. Used in diffing.
 }
 
-func (r *RecordConfig) String() string {
-	content := fmt.Sprintf("%s %s %s %d", r.Type, r.NameFQDN, r.Target, r.TTL)
+func (r *RecordConfig) String() (content string) {
 	switch r.Type {
 	case "MX":
-		content += fmt.Sprintf(" priority=%d", r.Priority)
+		content = fmt.Sprintf(" priority=%d", r.Priority)
 	case "A", "AAAA", "PTR", "SOA":
-		// All rtypes are explicitly listed in this switch
-		// statement so that when adding new records we are
-		// sure to notice if we forgot to add a case here.
+		content = fmt.Sprintf("%s %s %s %d", r.Type, r.NameFQDN, r.Target, r.TTL)
 	default:
 		panic(fmt.Sprintf("rc.String rtype %v unimplemented", r.Type))
 	}
@@ -141,11 +138,18 @@ func (r *RecordConfig) ToRR() dns.RR {
 		log.Fatalf("No such DNS type as (%#v)\n", r.Type)
 	}
 
+	var ttl string
+	if r.TTL == 0 {
+		ttl = strconv.FormatUint(uint64(DefaultTTL), 10)
+	} else {
+		ttl = strconv.FormatUint(uint64(r.TTL), 10)
+	}
+
 	hdr := dns.RR_Header{
 		Name:   r.NameFQDN + ".",
 		Rrtype: rdtype,
 		Class:  dns.ClassINET,
-		Ttl:    r.TTL,
+		Ttl:    ttl,
 	}
 
 	// Handle some special cases:
@@ -164,13 +168,6 @@ func (r *RecordConfig) ToRR() dns.RR {
 		// Assure no problems due to quoting/unquoting:
 		return &dns.TXT{Hdr: hdr, Txt: []string{r.Target}}
 	default:
-	}
-
-	var ttl string
-	if r.TTL == 0 {
-		ttl = strconv.FormatUint(uint64(DefaultTTL), 10)
-	} else {
-		ttl = strconv.FormatUint(uint64(r.TTL), 10)
 	}
 
 	s := fmt.Sprintf("%s %s IN %s %s", r.NameFQDN, ttl, r.Type, r.Target)
