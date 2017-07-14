@@ -385,6 +385,7 @@ func applyRecordTransforms(domain *models.DomainConfig) error {
 			continue
 		}
 		tt, ok := rec.Metadata["transform"]
+		delete(rec.Metadata, "transform")
 		if !ok {
 			continue
 		}
@@ -398,13 +399,22 @@ func applyRecordTransforms(domain *models.DomainConfig) error {
 			return err
 		}
 		for i, newIP := range newIPs {
+			isV6 := (newIP.To4() == nil)
 			if i == 0 && !newIP.Equal(ip) {
+				if isV6 {
+					rec.Type = "AAAA"
+				}
 				rec.Target = newIP.String() //replace target of first record if different
 			} else if i > 0 {
 				// any additional ips need identical records with the alternate ip added to the domain
 				copy, err := rec.Copy()
 				if err != nil {
 					return err
+				}
+				if isV6 {
+					copy.Type = "AAAA"
+				} else {
+					copy.Type = "A"
 				}
 				copy.Target = newIP.String()
 				domain.Records = append(domain.Records, copy)
