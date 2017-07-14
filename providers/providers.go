@@ -30,10 +30,25 @@ type RegistrarInitializer func(map[string]string) (Registrar, error)
 
 var registrarTypes = map[string]RegistrarInitializer{}
 
-//DspInitializer is a function to create a registrar. Function will be passed the unprocessed json payload from the configuration file for the given provider.
+//DspInitializer is a function to create a DNS service provider. Function will be passed the unprocessed json payload from the configuration file for the given provider.
 type DspInitializer func(map[string]string, json.RawMessage) (DNSServiceProvider, error)
 
 var dspTypes = map[string]DspInitializer{}
+var dspCapabilities = map[string]Capability{}
+
+//Capability is a bitmasked set of "features" that a provider supports. Only use constants from this package.
+type Capability uint32
+
+const (
+	// CanUseAlias indicates the provider support ALIAS records (or flattened CNAMES). Up to the provider to translate them to the appropriate record type.
+	CanUseAlias Capability = 1 << iota
+	// CanUsePTR indicates the provider can handle PTR records
+	CanUsePTR
+)
+
+func ProviderHasCabability(pType string, cap Capability) bool {
+	return dspCapabilities[pType]&cap != 0
+}
 
 //RegisterRegistrarType adds a registrar type to the registry by providing a suitable initialization function.
 func RegisterRegistrarType(name string, init RegistrarInitializer) {
@@ -44,11 +59,16 @@ func RegisterRegistrarType(name string, init RegistrarInitializer) {
 }
 
 //RegisterDomainServiceProviderType adds a dsp to the registry with the given initialization function.
-func RegisterDomainServiceProviderType(name string, init DspInitializer) {
+func RegisterDomainServiceProviderType(name string, init DspInitializer, caps ...Capability) {
 	if _, ok := dspTypes[name]; ok {
 		log.Fatalf("Cannot register registrar type %s multiple times", name)
 	}
+	var abilities Capability
+	for _, c := range caps {
+		abilities |= c
+	}
 	dspTypes[name] = init
+	dspCapabilities[name] = abilities
 }
 
 func createRegistrar(rType string, config map[string]string) (Registrar, error) {
@@ -59,7 +79,7 @@ func createRegistrar(rType string, config map[string]string) (Registrar, error) 
 	return initer(config)
 }
 
-func createDNSProvider(dType string, config map[string]string, meta json.RawMessage) (DNSServiceProvider, error) {
+func CreateDNSProvider(dType string, config map[string]string, meta json.RawMessage) (DNSServiceProvider, error) {
 	initer, ok := dspTypes[dType]
 	if !ok {
 		return nil, fmt.Errorf("DSP type %s not declared", dType)
@@ -74,7 +94,7 @@ func CreateRegistrars(d *models.DNSConfig, providerConfigs map[string]map[string
 	for _, reg := range d.Registrars {
 		rawMsg, ok := providerConfigs[reg.Name]
 		if !ok && reg.Type != "NONE" {
-			return nil, fmt.Errorf("Registrar %s not listed in -providers file.", reg.Name)
+			return nil, fmt.Errorf("Registrar %s not listed in creds.json file.", reg.Name)
 		}
 		registrar, err := createRegistrar(reg.Type, rawMsg)
 		if err != nil {
@@ -88,12 +108,8 @@ func CreateRegistrars(d *models.DNSConfig, providerConfigs map[string]map[string
 func CreateDsps(d *models.DNSConfig, providerConfigs map[string]map[string]string) (map[string]DNSServiceProvider, error) {
 	dsps := map[string]DNSServiceProvider{}
 	for _, dsp := range d.DNSProviders {
-		//log.Printf("dsp.Name=%#v\n", dsp.Name)
-		rawMsg, ok := providerConfigs[dsp.Name]
-		if !ok {
-			return nil, fmt.Errorf("DNSServiceProvider %s not listed in -providers file", dsp.Name)
-		}
-		provider, err := createDNSProvider(dsp.Type, rawMsg, dsp.Metadata)
+		vals := providerConfigs[dsp.Name]
+		provider, err := CreateDNSProvider(dsp.Type, vals, dsp.Metadata)
 		if err != nil {
 			return nil, err
 		}
@@ -102,7 +118,7 @@ func CreateDsps(d *models.DNSConfig, providerConfigs map[string]map[string]strin
 	return dsps, nil
 }
 
-// None is a basivc provider type that does absolutely nothing. Can be useful as a placeholder for third parties or unimplemented providers.
+// None is a basic provider type that does absolutely nothing. Can be useful as a placeholder for third parties or unimplemented providers.
 type None struct{}
 
 func (n None) GetRegistrarCorrections(dc *models.DomainConfig) ([]*models.Correction, error) {
@@ -122,3 +138,24 @@ func init() {
 		return None{}, nil
 	})
 }
+
+type CustomRType struct {
+	Name     string
+	Provider string
+	RealType string
+}
+
+// RegisterCustomRecordType registers a record type that is only valid for one provider.
+// provider is the registered type of provider this is valid with
+// name is the record type as it will appear in the js. (should be something like $PROVIDER_FOO)
+// realType is the record type it will be replaced with after validation
+func RegisterCustomRecordType(name, provider, realType string) {
+	customRecordTypes[name] = &CustomRType{Name: name, Provider: provider, RealType: realType}
+}
+
+// GetCustomRecordType returns a registered custom record type, or nil if none
+func GetCustomRecordType(rType string) *CustomRType {
+	return customRecordTypes[rType]
+}
+
+var customRecordTypes = map[string]*CustomRType{}

@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"strings"
 
-	"golang.org/x/oauth2"
 	gauth "golang.org/x/oauth2/google"
 	"google.golang.org/api/dns/v1"
 
@@ -16,7 +15,7 @@ import (
 )
 
 func init() {
-	providers.RegisterDomainServiceProviderType("GCLOUD", New)
+	providers.RegisterDomainServiceProviderType("GCLOUD", New, providers.CanUsePTR)
 }
 
 type gcloud struct {
@@ -27,27 +26,23 @@ type gcloud struct {
 
 // New creates a new gcloud provider
 func New(cfg map[string]string, _ json.RawMessage) (providers.DNSServiceProvider, error) {
-	for _, key := range []string{"clientId", "clientSecret", "refreshToken", "project"} {
-		if cfg[key] == "" {
-			return nil, fmt.Errorf("%s required for google cloud provider", key)
-		}
+	raw, err := json.Marshal(cfg)
+	if err != nil {
+		return nil, err
 	}
-	ocfg := &oauth2.Config{
-		Endpoint:     gauth.Endpoint,
-		ClientID:     cfg["clientId"],
-		ClientSecret: cfg["clientSecret"],
+	config, err := gauth.JWTConfigFromJSON(raw, "https://www.googleapis.com/auth/ndev.clouddns.readwrite")
+	if err != nil {
+		return nil, err
 	}
-	tok := &oauth2.Token{
-		RefreshToken: cfg["refreshToken"],
-	}
-	client := ocfg.Client(context.Background(), tok)
-	dcli, err := dns.New(client)
+	ctx := context.Background()
+	hc := config.Client(ctx)
+	dcli, err := dns.New(hc)
 	if err != nil {
 		return nil, err
 	}
 	return &gcloud{
 		client:  dcli,
-		project: cfg["project"],
+		project: cfg["project_id"],
 	}, nil
 }
 
@@ -103,13 +98,15 @@ func keyForRec(r *models.RecordConfig) key {
 }
 
 func (g *gcloud) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Correction, error) {
-
+	if err := dc.Punycode(); err != nil {
+		return nil, err
+	}
 	rrs, zoneName, err := g.getRecords(dc.Name)
 	if err != nil {
 		return nil, err
 	}
 	//convert to dnscontrol RecordConfig format
-	existingRecords := []diff.Record{}
+	existingRecords := []*models.RecordConfig{}
 	oldRRs := map[key]*dns.ResourceRecordSet{}
 	for _, set := range rrs {
 		nameWithoutDot := set.Name
@@ -128,11 +125,7 @@ func (g *gcloud) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Correc
 		}
 	}
 
-	w := []diff.Record{}
 	for _, want := range dc.Records {
-		if want.TTL == 0 {
-			want.TTL = 300
-		}
 		if want.Type == "MX" {
 			want.Target = fmt.Sprintf("%d %s", want.Priority, want.Target)
 			want.Priority = 0
@@ -140,24 +133,24 @@ func (g *gcloud) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Correc
 			//add quotes to txts
 			want.Target = fmt.Sprintf(`"%s"`, want.Target)
 		}
-		w = append(w, want)
 	}
 
 	// first collect keys that have changed
-	_, create, delete, modify := diff.IncrementalDiff(existingRecords, w)
+	differ := diff.New(dc)
+	_, create, delete, modify := differ.IncrementalDiff(existingRecords)
 	changedKeys := map[key]bool{}
 	desc := ""
 	for _, c := range create {
 		desc += fmt.Sprintln(c)
-		changedKeys[keyForRec(c.Desired.(*models.RecordConfig))] = true
+		changedKeys[keyForRec(c.Desired)] = true
 	}
 	for _, d := range delete {
 		desc += fmt.Sprintln(d)
-		changedKeys[keyForRec(d.Existing.(*models.RecordConfig))] = true
+		changedKeys[keyForRec(d.Existing)] = true
 	}
 	for _, m := range modify {
 		desc += fmt.Sprintln(m)
-		changedKeys[keyForRec(m.Existing.(*models.RecordConfig))] = true
+		changedKeys[keyForRec(m.Existing)] = true
 	}
 	if len(changedKeys) == 0 {
 		return nil, nil

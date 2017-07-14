@@ -3,15 +3,14 @@ package gandi
 import (
 	"fmt"
 
-	"github.com/StackExchange/dnscontrol/providers/diff"
-)
-
-import (
 	gandiclient "github.com/prasmussen/gandi-api/client"
 	gandidomain "github.com/prasmussen/gandi-api/domain"
 	gandizone "github.com/prasmussen/gandi-api/domain/zone"
 	gandirecord "github.com/prasmussen/gandi-api/domain/zone/record"
 	gandiversion "github.com/prasmussen/gandi-api/domain/zone/version"
+
+	"github.com/StackExchange/dnscontrol/models"
+	"github.com/miekg/dns/dnsutil"
 )
 
 // fetchDomainList gets list of domains for account. Cache ids for easy lookup.
@@ -41,10 +40,18 @@ func (c *GandiApi) fetchDomainInfo(fqdn string) (*gandidomain.DomainInfo, error)
 }
 
 // getRecordsForDomain returns a list of records for a zone.
-func (c *GandiApi) getZoneRecords(zoneid int64) ([]*gandirecord.RecordInfo, error) {
+func (c *GandiApi) getZoneRecords(zoneid int64, origin string) ([]*models.RecordConfig, error) {
 	gc := gandiclient.New(c.ApiKey, gandiclient.Production)
 	record := gandirecord.New(gc)
-	return record.List(zoneid, 0)
+	recs, err := record.List(zoneid, 0)
+	if err != nil {
+		return nil, err
+	}
+	rcs := make([]*models.RecordConfig, 0, len(recs))
+	for _, r := range recs {
+		rcs = append(rcs, convert(r, origin))
+	}
+	return rcs, nil
 }
 
 // listZones retrieves the list of zones.
@@ -73,11 +80,6 @@ func (c *GandiApi) createZone(name string) (*gandizone.ZoneInfo, error) {
 	gc := gandiclient.New(c.ApiKey, gandiclient.Production)
 	zone := gandizone.New(gc)
 	return zone.Create(name)
-}
-
-// replaceZoneContents
-func (c *GandiApi) replaceZoneContents(zone_id int64, version_id int64, records []diff.Record) error {
-	return fmt.Errorf("replaceZoneContents unimplemented")
 }
 
 func (c *GandiApi) getEditableZone(domainname string, zoneinfo *gandizone.ZoneInfo) (int64, error) {
@@ -132,40 +134,51 @@ func (c *GandiApi) activateVersion(zone_id, version_id int64) (bool, error) {
 	return version.Set(zone_id, version_id)
 }
 
-func (c *GandiApi) createGandiZone(domainname string, zone_id int64, records []gandirecord.RecordSet) error {
+func (c *GandiApi) createGandiZone(domainname string, zoneID int64, records []gandirecord.RecordSet) error {
 
 	// Get the zone_id of the zone we'll be updating.
-	zoneinfo, err := c.getZoneInfo(zone_id)
+	zoneinfo, err := c.getZoneInfo(zoneID)
 	if err != nil {
 		return err
 	}
 	//fmt.Println("ZONEINFO:", zoneinfo)
-	zone_id, err = c.getEditableZone(domainname, zoneinfo)
+	zoneID, err = c.getEditableZone(domainname, zoneinfo)
 	if err != nil {
 		return err
 	}
 
-	// Get the version_id of the zone we're updating.
-	version_id, err := c.makeEditableZone(zone_id)
+	// Get the versionID of the zone we're updating.
+	versionID, err := c.makeEditableZone(zoneID)
 	if err != nil {
 		return err
 	}
 
 	// Update the new version.
-	_, err = c.setZoneRecords(zone_id, version_id, records)
+	_, err = c.setZoneRecords(zoneID, versionID, records)
 	if err != nil {
 		return err
 	}
 
 	// Activate zone version
-	_, err = c.activateVersion(zone_id, version_id)
+	_, err = c.activateVersion(zoneID, versionID)
 	if err != nil {
 		return err
 	}
-	_, err = c.setZones(domainname, zone_id)
+	_, err = c.setZones(domainname, zoneID)
 	if err != nil {
 		return err
 	}
 
 	return nil
+}
+
+func convert(r *gandirecord.RecordInfo, origin string) *models.RecordConfig {
+	return &models.RecordConfig{
+		NameFQDN: dnsutil.AddOrigin(r.Name, origin),
+		Name:     r.Name,
+		Type:     r.Type,
+		Original: r,
+		Target:   r.Value,
+		TTL:      uint32(r.Ttl),
+	}
 }

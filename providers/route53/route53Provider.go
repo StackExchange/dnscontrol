@@ -13,6 +13,7 @@ import (
 	"github.com/aws/aws-sdk-go/aws/credentials"
 	"github.com/aws/aws-sdk-go/aws/session"
 	r53 "github.com/aws/aws-sdk-go/service/route53"
+	"github.com/pkg/errors"
 )
 
 type route53Provider struct {
@@ -22,28 +23,32 @@ type route53Provider struct {
 
 func newRoute53(m map[string]string, metadata json.RawMessage) (providers.DNSServiceProvider, error) {
 	keyId, secretKey := m["KeyId"], m["SecretKey"]
-	if keyId == "" || secretKey == "" {
-		return nil, fmt.Errorf("Route53 KeyId and SecretKey must be provided.")
+
+	config := &aws.Config{
+		Region: aws.String("us-west-2"),
 	}
-	sess := session.New(&aws.Config{
-		Region:      aws.String("us-west-2"),
-		Credentials: credentials.NewStaticCredentials(keyId, secretKey, ""),
-	})
+
+	if keyId != "" || secretKey != "" {
+		config.Credentials = credentials.NewStaticCredentials(keyId, secretKey, "")
+	}
+	sess := session.New(config)
 
 	api := &route53Provider{client: r53.New(sess)}
+	err := api.getZones()
+	if err != nil {
+		return nil, err
+	}
 	return api, nil
 }
 
 func init() {
-	providers.RegisterDomainServiceProviderType("ROUTE53", newRoute53)
+	providers.RegisterDomainServiceProviderType("ROUTE53", newRoute53, providers.CanUsePTR)
 }
 func sPtr(s string) *string {
 	return &s
 }
+
 func (r *route53Provider) getZones() error {
-	if r.zones != nil {
-		return nil
-	}
 	var nextMarker *string
 	r.zones = make(map[string]*r53.HostedZone)
 	for {
@@ -52,7 +57,9 @@ func (r *route53Provider) getZones() error {
 		}
 		inp := &r53.ListHostedZonesInput{Marker: nextMarker}
 		out, err := r.client.ListHostedZones(inp)
-		if err != nil {
+		if err != nil && strings.Contains(err.Error(), "is not authorized") {
+			return errors.New("Check your credentials, your not authorized to perform actions on Route 53 AWS Service")
+		} else if err != nil {
 			return err
 		}
 		for _, z := range out.HostedZones {
@@ -73,8 +80,8 @@ type key struct {
 	Name, Type string
 }
 
-func getKey(r diff.Record) key {
-	return key{r.GetName(), r.GetType()}
+func getKey(r *models.RecordConfig) key {
+	return key{r.NameFQDN, r.Type}
 }
 
 type errNoExist struct {
@@ -86,9 +93,7 @@ func (e errNoExist) Error() string {
 }
 
 func (r *route53Provider) GetNameservers(domain string) ([]*models.Nameserver, error) {
-	if err := r.getZones(); err != nil {
-		return nil, err
-	}
+
 	zone, ok := r.zones[domain]
 	if !ok {
 		return nil, errNoExist{domain}
@@ -98,16 +103,16 @@ func (r *route53Provider) GetNameservers(domain string) ([]*models.Nameserver, e
 		return nil, err
 	}
 	ns := []*models.Nameserver{}
-	for _, nsPtr := range z.DelegationSet.NameServers {
-		ns = append(ns, &models.Nameserver{Name: *nsPtr})
+	if z.DelegationSet != nil {
+		for _, nsPtr := range z.DelegationSet.NameServers {
+			ns = append(ns, &models.Nameserver{Name: *nsPtr})
+		}
 	}
 	return ns, nil
 }
 
 func (r *route53Provider) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Correction, error) {
-	if err := r.getZones(); err != nil {
-		return nil, err
-	}
+	dc.Punycode()
 
 	var corrections = []*models.Correction{}
 	zone, ok := r.zones[dc.Name]
@@ -121,8 +126,7 @@ func (r *route53Provider) GetDomainCorrections(dc *models.DomainConfig) ([]*mode
 		return nil, err
 	}
 
-	//convert to dnscontrol RecordConfig format
-	var existingRecords = []diff.Record{}
+	var existingRecords = []*models.RecordConfig{}
 	for _, set := range records {
 		for _, rec := range set.ResourceRecords {
 			if *set.Type == "SOA" {
@@ -137,36 +141,28 @@ func (r *route53Provider) GetDomainCorrections(dc *models.DomainConfig) ([]*mode
 			existingRecords = append(existingRecords, r)
 		}
 	}
-	w := []diff.Record{}
 	for _, want := range dc.Records {
-		if want.TTL == 0 {
-			want.TTL = 300
-		}
 		if want.Type == "MX" {
 			want.Target = fmt.Sprintf("%d %s", want.Priority, want.Target)
 			want.Priority = 0
 		} else if want.Type == "TXT" {
 			want.Target = fmt.Sprintf(`"%s"`, want.Target) //FIXME: better escaping/quoting
 		}
-		w = append(w, want)
 	}
 
 	//diff
-	changeDesc := ""
-	_, create, delete, modify := diff.IncrementalDiff(existingRecords, w)
+	differ := diff.New(dc)
+	_, create, delete, modify := differ.IncrementalDiff(existingRecords)
 
-	namesToUpdate := map[key]bool{}
+	namesToUpdate := map[key][]string{}
 	for _, c := range create {
-		namesToUpdate[getKey(c.Desired)] = true
-		changeDesc += fmt.Sprintln(c)
+		namesToUpdate[getKey(c.Desired)] = append(namesToUpdate[getKey(c.Desired)], c.String())
 	}
 	for _, d := range delete {
-		namesToUpdate[getKey(d.Existing)] = true
-		changeDesc += fmt.Sprintln(d)
+		namesToUpdate[getKey(d.Existing)] = append(namesToUpdate[getKey(d.Existing)], d.String())
 	}
 	for _, m := range modify {
-		namesToUpdate[getKey(m.Desired)] = true
-		changeDesc += fmt.Sprintln(m)
+		namesToUpdate[getKey(m.Desired)] = append(namesToUpdate[getKey(m.Desired)], m.String())
 	}
 
 	if len(namesToUpdate) == 0 {
@@ -184,13 +180,17 @@ func (r *route53Provider) GetDomainCorrections(dc *models.DomainConfig) ([]*mode
 		}
 	}
 
+	dels := []*r53.Change{}
 	changes := []*r53.Change{}
+	changeDesc := ""
+	delDesc := ""
 	for k, recs := range updates {
 		chg := &r53.Change{}
-		changes = append(changes, chg)
 		var rrset *r53.ResourceRecordSet
 		if len(recs) == 0 {
+			dels = append(dels, chg)
 			chg.Action = sPtr("DELETE")
+			delDesc += strings.Join(namesToUpdate[k], "\n") + "\n"
 			// on delete just submit the original resource set we got from r53.
 			for _, r := range records {
 				if *r.Name == k.Name+"." && *r.Type == k.Type {
@@ -199,6 +199,8 @@ func (r *route53Provider) GetDomainCorrections(dc *models.DomainConfig) ([]*mode
 				}
 			}
 		} else {
+			changes = append(changes, chg)
+			changeDesc += strings.Join(namesToUpdate[k], "\n") + "\n"
 			//on change or create, just build a new record set from our desired state
 			chg.Action = sPtr("UPSERT")
 			rrset = &r53.ResourceRecordSet{
@@ -223,15 +225,30 @@ func (r *route53Provider) GetDomainCorrections(dc *models.DomainConfig) ([]*mode
 		ChangeBatch: &r53.ChangeBatch{Changes: changes},
 	}
 
-	corrections = append(corrections,
-		&models.Correction{
-			Msg: changeDesc,
-			F: func() error {
-				changeReq.HostedZoneId = zone.Id
-				_, err := r.client.ChangeResourceRecordSets(changeReq)
-				return err
-			},
-		})
+	delReq := &r53.ChangeResourceRecordSetsInput{
+		ChangeBatch: &r53.ChangeBatch{Changes: dels},
+	}
+
+	addCorrection := func(msg string, req *r53.ChangeResourceRecordSetsInput) {
+		corrections = append(corrections,
+			&models.Correction{
+				Msg: msg,
+				F: func() error {
+					req.HostedZoneId = zone.Id
+					_, err := r.client.ChangeResourceRecordSets(req)
+					return err
+				},
+			})
+	}
+
+	if len(dels) > 0 {
+		addCorrection(delDesc, delReq)
+	}
+
+	if len(changes) > 0 {
+		addCorrection(changeDesc, changeReq)
+	}
+
 	return corrections, nil
 
 }
@@ -276,10 +293,6 @@ func unescape(s *string) string {
 }
 
 func (r *route53Provider) EnsureDomainExists(domain string) error {
-	err := r.getZones()
-	if err != nil {
-		return err
-	}
 	if _, ok := r.zones[domain]; ok {
 		return nil
 	}
@@ -288,7 +301,7 @@ func (r *route53Provider) EnsureDomainExists(domain string) error {
 		Name:            &domain,
 		CallerReference: sPtr(fmt.Sprint(time.Now().UnixNano())),
 	}
-	_, err = r.client.CreateHostedZone(in)
+	_, err := r.client.CreateHostedZone(in)
 	return err
 
 }

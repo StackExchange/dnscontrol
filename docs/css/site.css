@@ -1,0 +1,15 @@
+.expanded > .expand-arrow {
+   display: none;
+}
+
+.expanded > .collapse-arrow {
+    display: inherit;
+}
+
+.collapse-arrow {
+    display:none;
+}
+
+body {
+    padding-bottom: 50px;
+}

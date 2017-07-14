@@ -12,35 +12,24 @@ import (
 	"strings"
 	"time"
 
-	"github.com/StackExchange/dnscontrol/js"
 	"github.com/StackExchange/dnscontrol/models"
-	"github.com/StackExchange/dnscontrol/nameservers"
-	"github.com/StackExchange/dnscontrol/normalize"
+	"github.com/StackExchange/dnscontrol/pkg/js"
+	"github.com/StackExchange/dnscontrol/pkg/nameservers"
+	"github.com/StackExchange/dnscontrol/pkg/normalize"
 	"github.com/StackExchange/dnscontrol/providers"
+	_ "github.com/StackExchange/dnscontrol/providers/_all"
 	"github.com/StackExchange/dnscontrol/providers/config"
-
-	//Define all known providers here. They should each register themselves with the providers package via init function.
-	_ "github.com/StackExchange/dnscontrol/providers/activedir"
-	_ "github.com/StackExchange/dnscontrol/providers/bind"
-	_ "github.com/StackExchange/dnscontrol/providers/cloudflare"
-	_ "github.com/StackExchange/dnscontrol/providers/gandi"
-	_ "github.com/StackExchange/dnscontrol/providers/google"
-	_ "github.com/StackExchange/dnscontrol/providers/namecheap"
-	_ "github.com/StackExchange/dnscontrol/providers/namedotcom"
-	_ "github.com/StackExchange/dnscontrol/providers/route53"
 )
 
-//go:generate esc -modtime 0 -o js/static.go -pkg js -include helpers\.js -ignore go -prefix js js
+//go:generate go run build/generate/generate.go
 
-// One of these config options must be set.
 var jsFile = flag.String("js", "dnsconfig.js", "Javascript file containing dns config")
-var stdin = flag.Bool("stdin", false, "Read domain config JSON from stdin")
-var jsonInput = flag.String("json", "", "Read domain config from specified JSON file.")
+var credsFile = flag.String("creds", "creds.json", "Provider credentials JSON file")
+var jsonFile = flag.String("json", "", "File containing intermediate JSON")
 
 var jsonOutputPre = flag.String("debugrawjson", "", "Write JSON intermediate to this file pre-normalization.")
 var jsonOutputPost = flag.String("debugjson", "", "During preview, write JSON intermediate to this file instead of stdout.")
 
-var configFile = flag.String("creds", "creds.json", "Provider credentials JSON file")
 var devMode = flag.Bool("dev", false, "Use helpers.js from disk instead of embedded")
 
 var flagProviders = flag.String("providers", "", "Providers to enable (comma seperated list); default is all-but-bind. Specify 'all' for all (including bind)")
@@ -58,10 +47,15 @@ func main() {
 	}
 
 	var dnsConfig *models.DNSConfig
-	if *stdin {
-		log.Fatal("Read from stdin not implemented yet.")
-	} else if *jsonInput != "" {
-		log.Fatal("Direct JSON read not implemented")
+	if *jsonFile != "" {
+		text, err := ioutil.ReadFile(*jsonFile)
+		if err != nil {
+			log.Fatalf("Error reading %v: %v\n", *jsonFile, err)
+		}
+		err = json.Unmarshal(text, &dnsConfig)
+		if err != nil {
+			log.Fatalf("Error parsing JSON in (%v): %v", *jsonFile, err)
+		}
 	} else if *jsFile != "" {
 		text, err := ioutil.ReadFile(*jsFile)
 		if err != nil {
@@ -78,13 +72,14 @@ func main() {
 	}
 
 	if flag.NArg() != 1 {
-		fmt.Println("Usage: dnscontrol [options] cmd")
-		fmt.Println("        cmd:")
-		fmt.Println("           preview: Show changed that would happen.")
-		fmt.Println("           push:    Make changes for real.")
-		fmt.Println("           version: Print program version string.")
-		fmt.Println("           print:   Print compiled data.")
-		fmt.Println("")
+		fmt.Println(`Usage: dnscontrol [options] cmd
+		        cmd:
+		           preview: Show changed that would happen.
+		           push:    Make changes for real.
+		           version: Print program version string.
+		           print:   Print compiled data.
+		           create-domains:   Pre-create domains in R53
+		`)
 		flag.PrintDefaults()
 		return
 	}
@@ -99,8 +94,17 @@ func main() {
 	errs := normalize.NormalizeAndValidateConfig(dnsConfig)
 	if len(errs) > 0 {
 		fmt.Printf("%d Validation errors:\n", len(errs))
-		for i, err := range errs {
-			fmt.Printf("%d: %s\n", i+1, err)
+		fatal := false
+		for _, err := range errs {
+			if _, ok := err.(normalize.Warning); ok {
+				fmt.Printf("WARNING: %s\n", err)
+			} else {
+				fatal = true
+				fmt.Printf("ERROR: %s\n", err)
+			}
+		}
+		if fatal {
+			log.Fatal("Exiting due to validation errors")
 		}
 	}
 
@@ -117,9 +121,17 @@ func main() {
 		return
 	}
 
-	providerConfigs, err := config.LoadProviderConfigs(*configFile)
+	providerConfigs, err := config.LoadProviderConfigs(*credsFile)
 	if err != nil {
-		log.Fatalf("error loading provider configurations: %s", err)
+		log.Fatalf(err.Error())
+	}
+	nonDefaultProviders := []string{}
+	for name, vals := range providerConfigs {
+		// add "_exclude_from_defaults":"true" to a domain to exclude it from being run unless
+		// -providers=all or -providers=name
+		if vals["_exclude_from_defaults"] == "true" {
+			nonDefaultProviders = append(nonDefaultProviders, name)
+		}
 	}
 	registrars, err := providers.CreateRegistrars(dnsConfig, providerConfigs)
 	if err != nil {
@@ -168,13 +180,14 @@ func main() {
 				if err != nil {
 					log.Fatal(err)
 				}
-				shouldrun := shouldRunProvider(prov, dc)
+				shouldrun := shouldRunProvider(prov, dc, nonDefaultProviders)
 				statusLbl := ""
 				if !shouldrun {
 					statusLbl = "(skipping)"
 				}
-				fmt.Printf("----- DNS Provider: %s%s\n", prov, statusLbl)
+				fmt.Printf("----- DNS Provider: %s... %s", prov, statusLbl)
 				if !shouldrun {
+					fmt.Println()
 					continue
 				}
 				dsp, ok := dsps[prov]
@@ -183,14 +196,20 @@ func main() {
 				}
 				corrections, err := dsp.GetDomainCorrections(dc)
 				if err != nil {
+					fmt.Println("ERROR")
 					anyErrors = true
 					fmt.Printf("Error getting corrections: %s\n", err)
 					continue DomainLoop
 				}
 				totalCorrections += len(corrections)
+				plural := "s"
+				if len(corrections) == 1 {
+					plural = ""
+				}
+				fmt.Printf("%d correction%s\n", len(corrections), plural)
 				anyErrors = printOrRunCorrections(corrections, command) || anyErrors
 			}
-			if run := shouldRunProvider(domain.Registrar, domain); !run {
+			if run := shouldRunProvider(domain.Registrar, domain, nonDefaultProviders); !run {
 				continue
 			}
 			fmt.Printf("----- Registrar: %s\n", domain.Registrar)
@@ -198,8 +217,8 @@ func main() {
 			if !ok {
 				log.Fatalf("Registrar %s not declared.", reg)
 			}
-			if len(domain.Nameservers) == 0 {
-				//fmt.Printf("No nameservers declared; skipping registrar.\n")
+			if len(domain.Nameservers) == 0 && domain.Metadata["no_ns"] != "true" {
+				fmt.Printf("No nameservers declared; skipping registrar. Add {no_ns:'true'} to force.\n")
 				continue
 			}
 			dc, err := domain.Copy()
@@ -265,23 +284,17 @@ func printOrRunCorrections(corrections []*models.Correction, command string) (an
 	return anyErrors
 }
 
-func shouldRunProvider(p string, dc *models.DomainConfig) bool {
+func shouldRunProvider(p string, dc *models.DomainConfig, nonDefaultProviders []string) bool {
 	if *flagProviders == "all" {
 		return true
 	}
 	if *flagProviders == "" {
-		return (p != "bind")
-		// NOTE(tlim): Hardcoding bind is a hacky way to make it off by default.
-		// As a result, bind only runs if you list it in -providers or use
-		// -providers=all.
-		// If you always want bind to run, call it something else in dnsconfig.js
-		// for example `NewDSP('bindyes', 'BIND',`.
-		// We don't want this hack, but we shouldn't need this in the future
-		// so it doesn't make sense to write a lot of code to make it work.
-		// In the future, the above `return p != "bind"` can become `return true`.
-		// Alternatively we might want to add a complex system that permits
-		// fancy whitelist/blacklisting of providers with defaults and so on.
-		// In that case, all of this hack will go away.
+		for _, pr := range nonDefaultProviders {
+			if pr == p {
+				return false
+			}
+		}
+		return true
 	}
 	for _, prov := range strings.Split(*flagProviders, ",") {
 		if prov == p {

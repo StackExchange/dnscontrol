@@ -8,6 +8,7 @@ import (
 	"io"
 	"log"
 	"sort"
+	"strconv"
 	"strings"
 
 	"github.com/miekg/dns"
@@ -23,10 +24,7 @@ type zoneGenData struct {
 func (z *zoneGenData) Len() int      { return len(z.Records) }
 func (z *zoneGenData) Swap(i, j int) { z.Records[i], z.Records[j] = z.Records[j], z.Records[i] }
 func (z *zoneGenData) Less(i, j int) bool {
-	//fmt.Printf("DEBUG: i=%#v j=%#v\n", i, j)
-	//fmt.Printf("DEBUG: z.Records=%#v\n", len(z.Records))
 	a, b := z.Records[i], z.Records[j]
-	//fmt.Printf("DEBUG: a=%#v b=%#v\n", a, b)
 	compA, compB := dnsutil.AddOrigin(a.Header().Name, z.Origin+"."), dnsutil.AddOrigin(b.Header().Name, z.Origin+".")
 	if compA != compB {
 		if compA == z.Origin+"." {
@@ -57,8 +55,38 @@ func (z *zoneGenData) Less(i, j int) bool {
 	return a.String() < b.String()
 }
 
+// mostCommonTtl returns the most common TTL in a set of records. If there is
+// a tie, the highest TTL is selected. This makes the results consistent.
+// NS records are not included in the analysis because Tom said so.
+func mostCommonTtl(records []dns.RR) uint32 {
+	// Index the TTLs in use:
+	d := make(map[uint32]int)
+	for _, r := range records {
+		if r.Header().Rrtype != dns.TypeNS {
+			d[r.Header().Ttl]++
+		}
+	}
+	// Find the largest count:
+	var mc int
+	for _, value := range d {
+		if value > mc {
+			mc = value
+		}
+	}
+	// Find the largest key with that count:
+	var mk uint32
+	for key, value := range d {
+		if value == mc {
+			if key > mk {
+				mk = key
+			}
+		}
+	}
+	return mk
+}
+
 // WriteZoneFile writes a beautifully formatted zone file.
-func WriteZoneFile(w io.Writer, records []dns.RR, origin string, defaultTtl uint32) error {
+func WriteZoneFile(w io.Writer, records []dns.RR, origin string) error {
 	// This function prioritizes beauty over efficiency.
 	// * The zone records are sorted by label, grouped by subzones to
 	//   be easy to read and pleasant to the eye.
@@ -66,8 +94,10 @@ func WriteZoneFile(w io.Writer, records []dns.RR, origin string, defaultTtl uint
 	// * MX records are sorted numericly by preference value.
 	// * A records are sorted by IP address, not lexicographically.
 	// * Repeated labels are removed.
-	// * $TTL is used to eliminate clutter.
+	// * $TTL is used to eliminate clutter. The most common TTL value is used.
 	// * "@" is used instead of the apex domain name.
+
+	defaultTtl := mostCommonTtl(records)
 
 	z := &zoneGenData{
 		Origin:     origin,
@@ -151,6 +181,11 @@ func formatLine(lengths []int, fields []string) string {
 	return strings.TrimRight(result, " ")
 }
 
+func isNumeric(s string) bool {
+	_, err := strconv.ParseFloat(s, 64)
+	return err == nil
+}
+
 func zoneLabelLess(a, b string) bool {
 	// Compare two zone labels for the purpose of sorting the RRs in a Zone.
 
@@ -192,8 +227,30 @@ func zoneLabelLess(a, b string) bool {
 
 	// Skip the matching highest elements, then compare the next item.
 	for i, j := ia, ib; min >= 0; i, j, min = i-1, j-1, min-1 {
+		// Compare as[i] < bs[j]
+		// Sort @ at the top, then *, then everything else.
+		// i.e. @ always is less. * is is less than everything but @.
+		// If both are numeric, compare as integers, otherwise as strings.
+
 		if as[i] != bs[j] {
-			return as[i] < bs[j]
+
+			// If the first element is *, it is always less.
+			if i == 0 && as[i] == "*" {
+				return true
+			}
+			if j == 0 && bs[j] == "*" {
+				return false
+			}
+
+			// If the elements are both numeric, compare as integers:
+			au, aerr := strconv.ParseUint(as[i], 10, 64)
+			bu, berr := strconv.ParseUint(bs[j], 10, 64)
+			if aerr == nil && berr == nil {
+				return au < bu
+			} else {
+				// otherwise, compare as strings:
+				return as[i] < bs[j]
+			}
 		}
 	}
 	// The min top elements were equal, so the shorter name is less.

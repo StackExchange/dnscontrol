@@ -64,6 +64,7 @@ func (client *Client) DomainDNSSetHosts(
 		requestInfo.params.Set(fmt.Sprintf("HostName%v", i+1), hosts[i].Name)
 		requestInfo.params.Set(fmt.Sprintf("RecordType%v", i+1), hosts[i].Type)
 		requestInfo.params.Set(fmt.Sprintf("Address%v", i+1), hosts[i].Address)
+		requestInfo.params.Set(fmt.Sprintf("MXPref%v", i+1), strconv.Itoa(hosts[i].MXPref))
 		requestInfo.params.Set(fmt.Sprintf("TTL%v", i+1), strconv.Itoa(hosts[i].TTL))
 
 	}

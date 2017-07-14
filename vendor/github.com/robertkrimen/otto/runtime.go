@@ -302,7 +302,11 @@ func (self *_runtime) convertCallParameter(v Value, t reflect.Type) reflect.Valu
 	}
 
 	if t.Kind() == reflect.Interface {
-		iv := reflect.ValueOf(v.export())
+		e := v.export()
+		if e == nil {
+			return reflect.Zero(t)
+		}
+		iv := reflect.ValueOf(e)
 		if iv.Type().AssignableTo(t) {
 			return iv
 		}
@@ -352,20 +356,52 @@ func (self *_runtime) convertCallParameter(v Value, t reflect.Type) reflect.Valu
 
 				tt := t.Elem()
 
-				for i := int64(0); i < l; i++ {
-					p, ok := o.property[strconv.FormatInt(i, 10)]
-					if !ok {
-						continue
+				if o.class == "Array" {
+					for i := int64(0); i < l; i++ {
+						p, ok := o.property[strconv.FormatInt(i, 10)]
+						if !ok {
+							continue
+						}
+
+						e, ok := p.value.(Value)
+						if !ok {
+							continue
+						}
+
+						ev := self.convertCallParameter(e, tt)
+
+						s.Index(int(i)).Set(ev)
+					}
+				} else if o.class == "GoArray" {
+
+					var gslice bool
+					switch o.value.(type) {
+					case *_goSliceObject:
+						gslice = true
+					case *_goArrayObject:
+						gslice = false
 					}
 
-					e, ok := p.value.(Value)
-					if !ok {
-						continue
+					for i := int64(0); i < l; i++ {
+						var p *_property
+						if gslice {
+							p = goSliceGetOwnProperty(o, strconv.FormatInt(i, 10))
+						} else {
+							p = goArrayGetOwnProperty(o, strconv.FormatInt(i, 10))
+						}
+						if p == nil {
+							continue
+						}
+
+						e, ok := p.value.(Value)
+						if !ok {
+							continue
+						}
+
+						ev := self.convertCallParameter(e, tt)
+
+						s.Index(int(i)).Set(ev)
 					}
-
-					ev := self.convertCallParameter(e, tt)
-
-					s.Index(int(i)).Set(ev)
 				}
 
 				return s

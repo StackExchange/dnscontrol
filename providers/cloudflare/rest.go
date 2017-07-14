@@ -5,16 +5,22 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"time"
+
+	"strings"
+
+	"strconv"
 
 	"github.com/StackExchange/dnscontrol/models"
-	"github.com/StackExchange/dnscontrol/providers/diff"
 )
 
 const (
-	baseURL         = "https://api.cloudflare.com/client/v4/"
-	zonesURL        = baseURL + "zones/"
-	recordsURL      = zonesURL + "%s/dns_records/"
-	singleRecordURL = recordsURL + "%s"
+	baseURL           = "https://api.cloudflare.com/client/v4/"
+	zonesURL          = baseURL + "zones/"
+	recordsURL        = zonesURL + "%s/dns_records/"
+	pageRulesURL      = zonesURL + "%s/pagerules/"
+	singlePageRuleURL = pageRulesURL + "%s"
+	singleRecordURL   = recordsURL + "%s"
 )
 
 // get list of domains for account. Cache so the ids can be looked up from domain name
@@ -47,10 +53,10 @@ func (c *CloudflareApi) fetchDomainList() error {
 }
 
 // get all records for a domain
-func (c *CloudflareApi) getRecordsForDomain(id string) ([]diff.Record, error) {
+func (c *CloudflareApi) getRecordsForDomain(id string, domain string) ([]*models.RecordConfig, error) {
 	url := fmt.Sprintf(recordsURL, id)
 	page := 1
-	records := []diff.Record{}
+	records := []*models.RecordConfig{}
 	for {
 		reqURL := fmt.Sprintf("%s?page=%d&per_page=100", url, page)
 		var data recordsResponse
@@ -61,7 +67,7 @@ func (c *CloudflareApi) getRecordsForDomain(id string) ([]diff.Record, error) {
 			return nil, fmt.Errorf("Error fetching record list cloudflare: %s", stringifyErrors(data.Errors))
 		}
 		for _, rec := range data.Result {
-			records = append(records, rec)
+			records = append(records, rec.toRecord(domain))
 		}
 		ri := data.ResultInfo
 		if len(data.Result) == 0 || ri.Page*ri.PerPage >= ri.TotalCount {
@@ -87,6 +93,27 @@ func (c *CloudflareApi) deleteRec(rec *cfRecord, domainID string) *models.Correc
 			return err
 		},
 	}
+}
+
+func (c *CloudflareApi) createZone(domainName string) (string, error) {
+	type createZone struct {
+		Name string `json:"name"`
+	}
+	var id string
+	cz := &createZone{
+		Name: domainName}
+	buf := &bytes.Buffer{}
+	encoder := json.NewEncoder(buf)
+	if err := encoder.Encode(cz); err != nil {
+		return "", err
+	}
+	req, err := http.NewRequest("POST", zonesURL, buf)
+	if err != nil {
+		return "", err
+	}
+	c.setHeaders(req)
+	id, err = handleActionResponse(http.DefaultClient.Do(req))
+	return id, err
 }
 
 func (c *CloudflareApi) createRec(rec *models.RecordConfig, domainID string) []*models.Correction {
@@ -211,6 +238,99 @@ func (c *CloudflareApi) get(endpoint string, target interface{}) error {
 	return decoder.Decode(target)
 }
 
+func (c *CloudflareApi) getPageRules(id string, domain string) ([]*models.RecordConfig, error) {
+	url := fmt.Sprintf(pageRulesURL, id)
+	data := pageRuleResponse{}
+	if err := c.get(url, &data); err != nil {
+		return nil, fmt.Errorf("Error fetching page rule list from cloudflare: %s", err)
+	}
+	if !data.Success {
+		return nil, fmt.Errorf("Error fetching page rule list cloudflare: %s", stringifyErrors(data.Errors))
+	}
+	recs := []*models.RecordConfig{}
+	for _, pr := range data.Result {
+		// only interested in forwarding rules. Lets be very specific, and skip anything else
+		if len(pr.Actions) != 1 || len(pr.Targets) != 1 {
+			continue
+		}
+		if pr.Actions[0].ID != "forwarding_url" {
+			continue
+		}
+		err := json.Unmarshal([]byte(pr.Actions[0].Value), &pr.ForwardingInfo)
+		if err != nil {
+			return nil, err
+		}
+		var thisPr = pr
+		recs = append(recs, &models.RecordConfig{
+			Name:     "@",
+			NameFQDN: domain,
+			Type:     "PAGE_RULE",
+			//$FROM,$TO,$PRIO,$CODE
+			Target:   fmt.Sprintf("%s,%s,%d,%d", pr.Targets[0].Constraint.Value, pr.ForwardingInfo.URL, pr.Priority, pr.ForwardingInfo.StatusCode),
+			Original: thisPr,
+			TTL:      1,
+		})
+	}
+	return recs, nil
+}
+
+func (c *CloudflareApi) deletePageRule(recordID, domainID string) error {
+	endpoint := fmt.Sprintf(singlePageRuleURL, domainID, recordID)
+	req, err := http.NewRequest("DELETE", endpoint, nil)
+	if err != nil {
+		return err
+	}
+	c.setHeaders(req)
+	_, err = handleActionResponse(http.DefaultClient.Do(req))
+	return err
+}
+
+func (c *CloudflareApi) updatePageRule(recordID, domainID string, target string) error {
+	if err := c.deletePageRule(recordID, domainID); err != nil {
+		return err
+	}
+	return c.createPageRule(domainID, target)
+}
+
+func (c *CloudflareApi) createPageRule(domainID string, target string) error {
+	endpoint := fmt.Sprintf(pageRulesURL, domainID)
+	return c.sendPageRule(endpoint, "POST", target)
+}
+
+func (c *CloudflareApi) sendPageRule(endpoint, method string, data string) error {
+	//from to priority code
+	parts := strings.Split(data, ",")
+	priority, _ := strconv.Atoi(parts[2])
+	code, _ := strconv.Atoi(parts[3])
+	fwdInfo := &pageRuleFwdInfo{
+		StatusCode: code,
+		URL:        parts[1],
+	}
+	dat, _ := json.Marshal(fwdInfo)
+	pr := &pageRule{
+		Status:   "active",
+		Priority: priority,
+		Targets: []pageRuleTarget{
+			{Target: "url", Constraint: pageRuleConstraint{Operator: "matches", Value: parts[0]}},
+		},
+		Actions: []pageRuleAction{
+			{ID: "forwarding_url", Value: json.RawMessage(dat)},
+		},
+	}
+	buf := &bytes.Buffer{}
+	enc := json.NewEncoder(buf)
+	if err := enc.Encode(pr); err != nil {
+		return err
+	}
+	req, err := http.NewRequest(method, endpoint, buf)
+	if err != nil {
+		return err
+	}
+	c.setHeaders(req)
+	_, err = handleActionResponse(http.DefaultClient.Do(req))
+	return err
+}
+
 func stringifyErrors(errors []interface{}) string {
 	dat, err := json.Marshal(errors)
 	if err != nil {
@@ -224,6 +344,7 @@ type recordsResponse struct {
 	Result     []*cfRecord `json:"result"`
 	ResultInfo pagingInfo  `json:"result_info"`
 }
+
 type basicResponse struct {
 	Success  bool          `json:"success"`
 	Errors   []interface{} `json:"errors"`
@@ -231,6 +352,43 @@ type basicResponse struct {
 	Result   struct {
 		ID string `json:"id"`
 	} `json:"result"`
+}
+
+type pageRuleResponse struct {
+	basicResponse
+	Result     []*pageRule `json:"result"`
+	ResultInfo pagingInfo  `json:"result_info"`
+}
+
+type pageRule struct {
+	ID             string           `json:"id,omitempty"`
+	Targets        []pageRuleTarget `json:"targets"`
+	Actions        []pageRuleAction `json:"actions"`
+	Priority       int              `json:"priority"`
+	Status         string           `json:"status"`
+	ModifiedOn     time.Time        `json:"modified_on,omitempty"`
+	CreatedOn      time.Time        `json:"created_on,omitempty"`
+	ForwardingInfo *pageRuleFwdInfo `json:"-"`
+}
+
+type pageRuleTarget struct {
+	Target     string             `json:"target"`
+	Constraint pageRuleConstraint `json:"constraint"`
+}
+
+type pageRuleConstraint struct {
+	Operator string `json:"operator"`
+	Value    string `json:"value"`
+}
+
+type pageRuleAction struct {
+	ID    string          `json:"id"`
+	Value json.RawMessage `json:"value"`
+}
+
+type pageRuleFwdInfo struct {
+	URL        string `json:"url"`
+	StatusCode int    `json:"status_code"`
 }
 
 type zoneResponse struct {

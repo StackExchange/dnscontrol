@@ -5,7 +5,7 @@ import (
 	"testing"
 
 	"github.com/StackExchange/dnscontrol/models"
-	"github.com/StackExchange/dnscontrol/transform"
+	"github.com/StackExchange/dnscontrol/pkg/transform"
 )
 
 func newDomainConfig() *models.DomainConfig {
@@ -91,7 +91,7 @@ func TestIpRewriting(t *testing.T) {
 	}
 	cf := &CloudflareApi{}
 	domain := newDomainConfig()
-	cf.ipConversions = []transform.IpConversion{{net.ParseIP("1.2.3.0"), net.ParseIP("1.2.3.40"), net.ParseIP("255.255.255.0"), nil}}
+	cf.ipConversions = []transform.IpConversion{{net.ParseIP("1.2.3.0"), net.ParseIP("1.2.3.40"), []net.IP{net.ParseIP("255.255.255.0")}, nil}}
 	for _, tst := range tests {
 		rec := &models.RecordConfig{Type: "A", Target: tst.Given, Metadata: map[string]string{metaProxy: tst.Proxy}}
 		domain.Records = append(domain.Records, rec)
@@ -109,8 +109,4 @@ func TestIpRewriting(t *testing.T) {
 			t.Fatalf("At index %d, expected original_ip to be set", i)
 		}
 	}
-}
-
-func TestCnameValidation(t *testing.T) {
-
 }

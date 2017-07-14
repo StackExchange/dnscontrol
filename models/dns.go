@@ -10,8 +10,9 @@ import (
 	"reflect"
 	"strconv"
 
-	"github.com/StackExchange/dnscontrol/transform"
+	"github.com/StackExchange/dnscontrol/pkg/transform"
 	"github.com/miekg/dns"
+	"golang.org/x/net/idna"
 )
 
 const DefaultTTL = uint32(300)
@@ -66,27 +67,23 @@ type RecordConfig struct {
 	Metadata map[string]string `json:"meta,omitempty"`
 	NameFQDN string            `json:"-"` // Must end with ".$origin". See below.
 	Priority uint16            `json:"priority,omitempty"`
+
+	Original interface{} `json:"-"` // Store pointer to provider-specific record object. Used in diffing.
 }
 
-func (r *RecordConfig) GetName() string {
-	return r.NameFQDN
-}
-func (r *RecordConfig) GetType() string {
-	return r.Type
-}
-func (r *RecordConfig) GetContent() string {
-	return r.Target
-}
-func (r *RecordConfig) GetComparisionData() string {
-	mxPrio := ""
+func (r *RecordConfig) String() string {
+	content := fmt.Sprintf("%s %s %s %d", r.Type, r.NameFQDN, r.Target, r.TTL)
 	if r.Type == "MX" {
-		mxPrio = fmt.Sprintf(" %d ", r.Priority)
+		content += fmt.Sprintf(" priority=%d", r.Priority)
 	}
-	return fmt.Sprintf("%d%s", r.TTL, mxPrio)
+	for k, v := range r.Metadata {
+		content += fmt.Sprintf(" %s=%s", k, v)
+	}
+	return content
 }
 
 /// Convert RecordConfig -> dns.RR.
-func (r *RecordConfig) RR() dns.RR {
+func (r *RecordConfig) ToRR() dns.RR {
 
 	// Note: The label is a FQDN ending in a ".".  It will not put "@" in the Name field.
 
@@ -168,6 +165,43 @@ func (r *RecordConfig) Copy() (*RecordConfig, error) {
 	return newR, err
 }
 
+//Punycode will convert all records to punycode format.
+//It will encode:
+//- Name
+//- NameFQDN
+//- Target (CNAME and MX only)
+func (dc *DomainConfig) Punycode() error {
+	var err error
+	for _, rec := range dc.Records {
+		rec.Name, err = idna.ToASCII(rec.Name)
+		if err != nil {
+			return err
+		}
+		rec.NameFQDN, err = idna.ToASCII(rec.NameFQDN)
+		if err != nil {
+			return err
+		}
+		if rec.Type == "MX" || rec.Type == "CNAME" {
+			rec.Target, err = idna.ToASCII(rec.Target)
+			if err != nil {
+				return err
+			}
+		}
+	}
+	return nil
+}
+
+// CombineMXs will merge the priority into the target field for all mx records.
+// Useful for providers that desire them as one field.
+func (dc *DomainConfig) CombineMXs() {
+	for _, rec := range dc.Records {
+		if rec.Type == "MX" {
+			rec.Target = fmt.Sprintf("%d %s", rec.Priority, rec.Target)
+			rec.Priority = 0
+		}
+	}
+}
+
 func copyObj(input interface{}, output interface{}) error {
 	buf := &bytes.Buffer{}
 	enc := gob.NewEncoder(buf)
@@ -188,6 +222,16 @@ func (dc *DomainConfig) HasRecordTypeName(rtype, name string) bool {
 		}
 	}
 	return false
+}
+
+func (dc *DomainConfig) Filter(f func(r *RecordConfig) bool) {
+	recs := []*RecordConfig{}
+	for _, r := range dc.Records {
+		if f(r) {
+			recs = append(recs, r)
+		}
+	}
+	dc.Records = recs
 }
 
 func InterfaceToIP(i interface{}) (net.IP, error) {
