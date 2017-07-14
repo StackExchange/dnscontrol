@@ -6,6 +6,7 @@ import (
 	"sort"
 
 	"github.com/StackExchange/dnscontrol/models"
+	"github.com/miekg/dns"
 )
 
 type Correlation struct {
@@ -35,7 +36,7 @@ type differ struct {
 func (d *differ) content(r *models.RecordConfig) string {
 	content := fmt.Sprintf("%s %d", r.Target, r.TTL)
 	if r.Type == "MX" {
-		content += fmt.Sprintf(" priority=%d", r.Priority)
+		content += fmt.Sprintf(" priority=%d", r.RR.(*dns.MX).Preference)
 	}
 
 	for _, f := range d.extraValues {

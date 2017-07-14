@@ -14,6 +14,7 @@ import (
 	"github.com/StackExchange/dnscontrol/providers"
 	_ "github.com/StackExchange/dnscontrol/providers/_all"
 	"github.com/StackExchange/dnscontrol/providers/config"
+	"github.com/miekg/dns"
 	"github.com/miekg/dns/dnsutil"
 )
 
@@ -215,7 +216,7 @@ func ns(name, target string) *rec {
 
 func mx(name string, prio uint16, target string) *rec {
 	r := makeRec(name, target, "MX")
-	r.Priority = prio
+	r.RR = &dns.MX{Preference: prio, Mx: target}
 	return r
 }
 

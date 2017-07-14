@@ -29,7 +29,6 @@ func TestRR(t *testing.T) {
 		Target:   "1.2.3.4",
 		TTL:      0,
 		NameFQDN: "foo.example.com",
-		Priority: 0,
 	}
 	expected := "foo.example.com.\t300\tIN\tA\t1.2.3.4"
 	found := experiment.ToRR().String()

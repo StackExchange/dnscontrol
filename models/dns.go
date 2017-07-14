@@ -12,6 +12,7 @@ import (
 
 	"github.com/StackExchange/dnscontrol/pkg/transform"
 	"github.com/miekg/dns"
+	"github.com/pkg/errors"
 	"golang.org/x/net/idna"
 )
 
@@ -59,6 +60,18 @@ type DNSProviderConfig struct {
 // NameFQDN:
 //    This is the FQDN version of Name.
 //    It should never have a trailiing ".".
+// RR:
+//    This stores extra fields such as the MX record's Preference
+//    and (in the future) the SRV record's Priority, Weight and Port.
+//    Note that certain fields are duplicates (e.g. RecordConfig.Type
+//    and RecordConfig.Hdr.Type). When this is the case, the
+//    RecordConfig field is used and the other is ignored. There is no
+//    attempt to keep them in sync.
+//    TODO(tlim): Eventually we should refactor so that RR.Hdr fields
+//    are used and can be removed from RecordConfig. Hdr.TTL is probably
+//    the easiest and best place to start.  The problem with making this
+//    change is that every place where RecordConfig{} is used as a constructor,
+//    will need to be replaced by a custom constructor.
 type RecordConfig struct {
 	Type     string            `json:"type"`
 	Name     string            `json:"name"`   // The short name. See below.
@@ -66,7 +79,7 @@ type RecordConfig struct {
 	TTL      uint32            `json:"ttl,omitempty"`
 	Metadata map[string]string `json:"meta,omitempty"`
 	NameFQDN string            `json:"-"` // Must end with ".$origin". See below.
-	Priority uint16            `json:"priority,omitempty"`
+	RR       dns.RR            `json:"-,omitempty"`
 
 	Original interface{} `json:"-"` // Store pointer to provider-specific record object. Used in diffing.
 }
@@ -74,12 +87,36 @@ type RecordConfig struct {
 func (r *RecordConfig) String() string {
 	content := fmt.Sprintf("%s %s %s %d", r.Type, r.NameFQDN, r.Target, r.TTL)
 	if r.Type == "MX" {
-		content += fmt.Sprintf(" priority=%d", r.Priority)
+		content += fmt.Sprintf(" priority=%d", r.RR.(*dns.MX).Preference)
 	}
 	for k, v := range r.Metadata {
 		content += fmt.Sprintf(" %s=%s", k, v)
 	}
 	return content
+}
+
+// MarshalJSON is an dns.RR-aware JSON marshaller.
+func (r *RecordConfig) MarshalJSON() ([]byte, error) {
+	type Alias RecordConfig
+
+	var pref uint16
+
+	switch r.Type {
+	case "A", "AAAA", "ALIAS", "CF_REDIRECT", "CF_TEMP_REDIRECT", "CNAME", "IMPORT_TRANSFORM":
+	case "MX":
+		pref = r.RR.(*dns.MX).Preference
+	case "NS":
+	default:
+		return nil, errors.Errorf("MarshalJSON unimplemented for type (%v)", r.Type)
+	}
+
+	return json.Marshal(&struct {
+		Priority uint16 `json:"priority,omitempty"`
+		*Alias
+	}{
+		Priority: pref,
+		Alias:    (*Alias)(r),
+	})
 }
 
 /// Convert RecordConfig -> dns.RR.
@@ -108,7 +145,7 @@ func (r *RecordConfig) ToRR() dns.RR {
 	switch rdtype {
 	case dns.TypeMX:
 		// Has a Priority field.
-		return &dns.MX{Hdr: hdr, Preference: r.Priority, Mx: r.Target}
+		return &dns.MX{Hdr: hdr, Preference: r.RR.(*dns.MX).Preference, Mx: r.Target}
 	case dns.TypeTXT:
 		// Assure no problems due to quoting/unquoting:
 		return &dns.TXT{Hdr: hdr, Txt: []string{r.Target}}
@@ -196,8 +233,8 @@ func (dc *DomainConfig) Punycode() error {
 func (dc *DomainConfig) CombineMXs() {
 	for _, rec := range dc.Records {
 		if rec.Type == "MX" {
-			rec.Target = fmt.Sprintf("%d %s", rec.Priority, rec.Target)
-			rec.Priority = 0
+			rec.Target = fmt.Sprintf("%d %s", rec.RR.(*dns.MX).Preference, rec.Target)
+			rec.RR.(*dns.MX).Preference = 0
 		}
 	}
 }

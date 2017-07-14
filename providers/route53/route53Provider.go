@@ -13,6 +13,7 @@ import (
 	"github.com/aws/aws-sdk-go/aws/credentials"
 	"github.com/aws/aws-sdk-go/aws/session"
 	r53 "github.com/aws/aws-sdk-go/service/route53"
+	"github.com/miekg/dns"
 	"github.com/pkg/errors"
 )
 
@@ -143,8 +144,7 @@ func (r *route53Provider) GetDomainCorrections(dc *models.DomainConfig) ([]*mode
 	}
 	for _, want := range dc.Records {
 		if want.Type == "MX" {
-			want.Target = fmt.Sprintf("%d %s", want.Priority, want.Target)
-			want.Priority = 0
+			want.Target = fmt.Sprintf("%d %s", want.RR.(*dns.MX).Preference, want.Target)
 		} else if want.Type == "TXT" {
 			want.Target = fmt.Sprintf(`"%s"`, want.Target) //FIXME: better escaping/quoting
 		}

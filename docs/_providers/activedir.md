@@ -10,6 +10,10 @@ with AD via PowerShell commands that are generated and executed on the local mac
 This means that DNSControl must be run on a Windows host.
 This driver automatically deactivates itself when run on non-Windows systems.
 
+WARNING: This provider currently only implements A and CNAME record
+types because those are the only types need by Stack Overflow at
+this time.  Adding support for other types should be easy. PRs welcome.
+
 # Running on Non-Windows systems
 
 For debugging and testing on non-Windows systems,

@@ -10,7 +10,9 @@ import (
 	"github.com/StackExchange/dnscontrol/models"
 	"github.com/StackExchange/dnscontrol/providers"
 	"github.com/StackExchange/dnscontrol/providers/diff"
+	"github.com/miekg/dns"
 	"github.com/miekg/dns/dnsutil"
+	"github.com/pkg/errors"
 
 	dnsimpleapi "github.com/dnsimple/dnsimple-go/dnsimple"
 )
@@ -58,8 +60,13 @@ func (c *DnsimpleApi) GetDomainCorrections(dc *models.DomainConfig) ([]*models.C
 			Type:     r.Type,
 			Target:   r.Content,
 			TTL:      uint32(r.TTL),
-			Priority: uint16(r.Priority),
 			Original: r,
+		}
+		switch r.Type {
+		case "MX":
+			rec.RR = &dns.MX{Preference: uint16(r.Priority), Mx: r.Content}
+		default:
+			return nil, errors.Errorf("DnsimpleApi zone contains unimplemented type (%v)", r.Type)
 		}
 		actual = append(actual, rec)
 	}
@@ -226,11 +233,17 @@ func (c *DnsimpleApi) createRecordFunc(rc *models.RecordConfig, domainName strin
 		}
 
 		record := dnsimpleapi.ZoneRecord{
-			Name:     dnsutil.TrimDomainName(rc.NameFQDN, domainName),
-			Type:     rc.Type,
-			Content:  rc.Target,
-			TTL:      int(rc.TTL),
-			Priority: int(rc.Priority),
+			Name:    dnsutil.TrimDomainName(rc.NameFQDN, domainName),
+			Type:    rc.Type,
+			Content: rc.Target,
+			TTL:     int(rc.TTL),
+		}
+		switch rc.Type {
+		case "A", "AAAA", "CNAME":
+		case "MX":
+			record.Priority = int(rc.RR.(*dns.MX).Preference)
+		default:
+			panic(errors.Errorf("unimplemented type (%v)", rc.Type))
 		}
 
 		_, err = client.Zones.CreateRecord(accountId, domainName, record)
@@ -273,11 +286,17 @@ func (c *DnsimpleApi) updateRecordFunc(old *dnsimpleapi.ZoneRecord, rc *models.R
 		}
 
 		record := dnsimpleapi.ZoneRecord{
-			Name:     dnsutil.TrimDomainName(rc.NameFQDN, domainName),
-			Type:     rc.Type,
-			Content:  rc.Target,
-			TTL:      int(rc.TTL),
-			Priority: int(rc.Priority),
+			Name:    dnsutil.TrimDomainName(rc.NameFQDN, domainName),
+			Type:    rc.Type,
+			Content: rc.Target,
+			TTL:     int(rc.TTL),
+		}
+		switch rc.Type {
+		case "A", "AAAA", "CNAME":
+		case "MX":
+			record.Priority = int(rc.RR.(*dns.MX).Preference)
+		default:
+			panic(errors.Errorf("unimplemented record type (%v)", rc.Type))
 		}
 
 		_, err = client.Zones.UpdateRecord(accountId, domainName, old.ID, record)

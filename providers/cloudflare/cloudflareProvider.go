@@ -12,7 +12,9 @@ import (
 	"github.com/StackExchange/dnscontrol/pkg/transform"
 	"github.com/StackExchange/dnscontrol/providers"
 	"github.com/StackExchange/dnscontrol/providers/diff"
+	"github.com/miekg/dns"
 	"github.com/miekg/dns/dnsutil"
+	"github.com/pkg/errors"
 )
 
 /*
@@ -343,14 +345,22 @@ func (c *cfRecord) toRecord(domain string) *models.RecordConfig {
 	if c.Type == "CNAME" || c.Type == "MX" || c.Type == "NS" {
 		c.Content = dnsutil.AddOrigin(c.Content+".", domain)
 	}
-	return &models.RecordConfig{
+	r := &models.RecordConfig{
 		NameFQDN: c.Name,
 		Type:     c.Type,
 		Target:   c.Content,
-		Priority: c.Priority,
 		TTL:      c.TTL,
 		Original: c,
 	}
+	switch c.Type {
+	case "A", "AAAA", "CNAME":
+	case "MX":
+		r.RR = &dns.MX{Preference: uint16(c.Priority), Mx: c.Content}
+	default:
+		panic(errors.Errorf("CloudflareApi zone contains unimplemented type (%v)", r.Type))
+	}
+	return r
+
 }
 
 func getProxyMetadata(r *models.RecordConfig) map[string]string {

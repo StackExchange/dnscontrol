@@ -34,7 +34,7 @@ func (c *adProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Co
 
 	dc.Filter(func(r *models.RecordConfig) bool {
 		if r.Type != "A" && r.Type != "CNAME" {
-			log.Printf("WARNING: Active Directory only manages A and CNAME records. Won't consider %s %s", r.Type, r.NameFQDN)
+			log.Printf("WARNING: The Active Directory provider only manages A and CNAME records. Won't consider %s %s", r.Type, r.NameFQDN)
 			return false
 		}
 		return true

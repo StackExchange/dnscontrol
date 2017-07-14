@@ -4,7 +4,9 @@ import (
 	"fmt"
 	"strconv"
 
+	"github.com/miekg/dns"
 	"github.com/miekg/dns/dnsutil"
+	"github.com/pkg/errors"
 
 	"github.com/StackExchange/dnscontrol/models"
 	"github.com/StackExchange/dnscontrol/providers/diff"
@@ -90,15 +92,22 @@ func checkNSModifications(dc *models.DomainConfig) {
 
 func (r *nameComRecord) toRecord() *models.RecordConfig {
 	ttl, _ := strconv.ParseUint(r.TTL, 10, 32)
-	prio, _ := strconv.ParseUint(r.Priority, 10, 16)
-	return &models.RecordConfig{
+	cm := &models.RecordConfig{
 		NameFQDN: r.Name,
 		Type:     r.Type,
 		Target:   r.Content,
 		TTL:      uint32(ttl),
-		Priority: uint16(prio),
 		Original: r,
 	}
+	switch r.Type {
+	case "A", "AAAA", "CNAME":
+	case "MX":
+		prio, _ := strconv.ParseUint(r.Priority, 10, 16)
+		cm.RR.(*dns.MX).Preference = uint16(prio)
+	default:
+		panic(errors.Errorf("Unknown type (%v)", r.Type))
+	}
+	return cm
 }
 
 type listRecordsResponse struct {
@@ -133,6 +142,10 @@ func (n *nameDotCom) createRecord(rc *models.RecordConfig, domain string) error 
 			return fmt.Errorf("Unexpected. CNAME/MX/NS target did not end with dot.\n")
 		}
 	}
+	var preference uint16
+	if rc.Type == "MX" {
+		preference = rc.RR.(*dns.MX).Preference
+	}
 	dat := struct {
 		Hostname string `json:"hostname"`
 		Type     string `json:"type"`
@@ -144,7 +157,7 @@ func (n *nameDotCom) createRecord(rc *models.RecordConfig, domain string) error 
 		Type:     rc.Type,
 		Content:  target,
 		TTL:      rc.TTL,
-		Priority: rc.Priority,
+		Priority: preference,
 	}
 	if dat.Hostname == "@" {
 		dat.Hostname = ""
