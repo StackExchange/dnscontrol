@@ -161,9 +161,6 @@ func (rc *RecordConfig) ToRR() dns.RR {
 		rr.(*dns.NS).Ns = rc.Target
 	case dns.TypeSOA:
 		t := strings.Replace(rc.Target, `\ `, ` `, -1)
-		//fmt.Println()
-		//fmt.Println("TARGET SPLIT", t)
-		//fmt.Println()
 		parts := strings.Fields(t)
 		rr.(*dns.SOA).Ns = parts[0]
 		rr.(*dns.SOA).Mbox = parts[1]
