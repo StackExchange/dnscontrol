@@ -3,6 +3,7 @@ package namedotcom
 import (
 	"fmt"
 	"strconv"
+	"strings"
 
 	"github.com/miekg/dns/dnsutil"
 
@@ -91,14 +92,31 @@ func checkNSModifications(dc *models.DomainConfig) {
 func (r *nameComRecord) toRecord() *models.RecordConfig {
 	ttl, _ := strconv.ParseUint(r.TTL, 10, 32)
 	prio, _ := strconv.ParseUint(r.Priority, 10, 16)
-	return &models.RecordConfig{
+	rc := &models.RecordConfig{
 		NameFQDN: r.Name,
 		Type:     r.Type,
 		Target:   r.Content,
 		TTL:      uint32(ttl),
-		Priority: uint16(prio),
 		Original: r,
 	}
+	switch r.Type {
+	case "A", "AAAA", "CNAME", "NS", "TXT":
+		// nothing additional.
+	case "MX":
+		rc.Priority = uint16(prio)
+	case "SRV":
+		parts := strings.Split(r.Content, " ")
+		weight, _ := strconv.ParseInt(parts[0], 10, 32)
+		port, _ := strconv.ParseInt(parts[1], 10, 32)
+		rc.SrvWeight = uint16(weight)
+		rc.SrvPort = uint16(port)
+		rc.SrvPriority = uint16(prio)
+		rc.Priority = 0
+		rc.Target = parts[2] + "."
+	default:
+		panic(fmt.Sprintf("toRecord unimplemented rtype %v", r.Type))
+	}
+	return rc
 }
 
 type listRecordsResponse struct {
@@ -148,6 +166,15 @@ func (n *nameDotCom) createRecord(rc *models.RecordConfig, domain string) error 
 	}
 	if dat.Hostname == "@" {
 		dat.Hostname = ""
+	}
+	switch rc.Type {
+	case "A", "AAAA", "CNAME", "MX", "NS", "TXT":
+		// nothing
+	case "SRV":
+		dat.Content = fmt.Sprintf("%d %d %v", rc.SrvWeight, rc.SrvPort, rc.Target)
+		dat.Priority = rc.SrvPriority
+	default:
+		panic(fmt.Sprintf("createRecord rtype %v unimplemented", rc.Type))
 	}
 	resp, err := n.post(n.apiCreateRecord(domain), dat)
 	if err != nil {
