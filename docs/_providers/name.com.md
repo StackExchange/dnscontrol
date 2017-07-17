@@ -19,6 +19,11 @@ In your providers config json file you must provide your name.com api username a
 }
 {% endhighlight %}
 
+There is another key name `apiurl` but it is optional and defaults to the correct value. If you
+want to use the test environment ("OT&E"), then add this:
+
+    "apiurl": "https://api.dev.name.com",
+
 ## Metadata
 
 This provider does not recognize any special metadata fields unique to name.com.

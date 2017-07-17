@@ -74,6 +74,7 @@ func TestErrors(t *testing.T) {
 		{"MX reversed", `D("foo.com","reg",MX("@","test.", 5))`},
 		{"CF_REDIRECT With comma", `D("foo.com","reg",CF_REDIRECT("foo.com,","baaa"))`},
 		{"CF_TEMP_REDIRECT With comma", `D("foo.com","reg",CF_TEMP_REDIRECT("foo.com","baa,a"))`},
+		{"Bad cidr", `D(reverse("foo.com"), "reg")`},
 	}
 	for _, tst := range tests {
 		t.Run(tst.desc, func(t *testing.T) {

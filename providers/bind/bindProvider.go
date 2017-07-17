@@ -31,6 +31,25 @@ import (
 	"github.com/StackExchange/dnscontrol/providers/diff"
 )
 
+func initBind(config map[string]string, providermeta json.RawMessage) (providers.DNSServiceProvider, error) {
+	// config -- the key/values from creds.json
+	// meta -- the json blob from NewReq('name', 'TYPE', meta)
+
+	api := &Bind{}
+	if len(providermeta) != 0 {
+		err := json.Unmarshal(providermeta, api)
+		if err != nil {
+			return nil, err
+		}
+	}
+	api.nameservers = models.StringsToNameservers(api.DefaultNS)
+	return api, nil
+}
+
+func init() {
+	providers.RegisterDomainServiceProviderType("BIND", initBind, providers.CanUsePTR)
+}
+
 type SoaInfo struct {
 	Ns      string `json:"master"`
 	Mbox    string `json:"mbox"`
@@ -81,6 +100,8 @@ func rrToRecord(rr dns.RR, origin string, replaceSerial uint32) (models.RecordCo
 		rc.Priority = v.Preference
 	case *dns.NS:
 		rc.Target = v.Ns
+	case *dns.PTR:
+		rc.Target = v.Ptr
 	case *dns.SOA:
 		old_serial = v.Serial
 		if old_serial == 0 {
@@ -160,7 +181,7 @@ func (c *Bind) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Correcti
 	// Read foundRecords:
 	foundRecords := make([]*models.RecordConfig, 0)
 	var oldSerial, newSerial uint32
-	zonefile := filepath.Join(*bindBaseDir, strings.ToLower(dc.Name)+".zone")
+	zonefile := filepath.Join(*bindBaseDir, strings.Replace(strings.ToLower(dc.Name), "/", "_", -1)+".zone")
 	foundFH, err := os.Open(zonefile)
 	zoneFileFound := err == nil
 	if err != nil && !os.IsNotExist(os.ErrNotExist) {
@@ -236,7 +257,7 @@ func (c *Bind) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Correcti
 					}
 					zonefilerecords := make([]dns.RR, 0, len(dc.Records))
 					for _, r := range dc.Records {
-						zonefilerecords = append(zonefilerecords, r.RR())
+						zonefilerecords = append(zonefilerecords, r.ToRR())
 					}
 					err = WriteZoneFile(zf, zonefilerecords, dc.Name)
 
@@ -253,23 +274,4 @@ func (c *Bind) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Correcti
 	}
 
 	return corrections, nil
-}
-
-func initBind(config map[string]string, providermeta json.RawMessage) (providers.DNSServiceProvider, error) {
-	// config -- the key/values from creds.json
-	// meta -- the json blob from NewReq('name', 'TYPE', meta)
-
-	api := &Bind{}
-	if len(providermeta) != 0 {
-		err := json.Unmarshal(providermeta, api)
-		if err != nil {
-			return nil, err
-		}
-	}
-	api.nameservers = models.StringsToNameservers(api.DefaultNS)
-	return api, nil
-}
-
-func init() {
-	providers.RegisterDomainServiceProviderType("BIND", initBind)
 }

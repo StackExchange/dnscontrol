@@ -42,7 +42,7 @@ func newRoute53(m map[string]string, metadata json.RawMessage) (providers.DNSSer
 }
 
 func init() {
-	providers.RegisterDomainServiceProviderType("ROUTE53", newRoute53)
+	providers.RegisterDomainServiceProviderType("ROUTE53", newRoute53, providers.CanUsePTR)
 }
 func sPtr(s string) *string {
 	return &s
@@ -224,14 +224,15 @@ func (r *route53Provider) GetDomainCorrections(dc *models.DomainConfig) ([]*mode
 	changeReq := &r53.ChangeResourceRecordSetsInput{
 		ChangeBatch: &r53.ChangeBatch{Changes: changes},
 	}
+
 	delReq := &r53.ChangeResourceRecordSetsInput{
 		ChangeBatch: &r53.ChangeBatch{Changes: dels},
 	}
 
-	addCorrection := func(req *r53.ChangeResourceRecordSetsInput) {
+	addCorrection := func(msg string, req *r53.ChangeResourceRecordSetsInput) {
 		corrections = append(corrections,
 			&models.Correction{
-				Msg: changeDesc,
+				Msg: msg,
 				F: func() error {
 					req.HostedZoneId = zone.Id
 					_, err := r.client.ChangeResourceRecordSets(req)
@@ -239,11 +240,13 @@ func (r *route53Provider) GetDomainCorrections(dc *models.DomainConfig) ([]*mode
 				},
 			})
 	}
+
 	if len(dels) > 0 {
-		addCorrection(delReq)
+		addCorrection(delDesc, delReq)
 	}
+
 	if len(changes) > 0 {
-		addCorrection(changeReq)
+		addCorrection(changeDesc, changeReq)
 	}
 
 	return corrections, nil
