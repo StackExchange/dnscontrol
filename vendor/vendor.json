@@ -134,6 +134,18 @@
 			"revisionTime": "2016-08-11T16:24:59Z"
 		},
 		{
+			"checksumSHA1": "O6hcK24yI6w7FA+g4Pbr+eQ7pys=",
+			"path": "github.com/aws/aws-sdk-go/private/protocol/json/jsonutil",
+			"revision": "aafdacd0d6e625a7a2782bef5f9942d6fc4c9f30",
+			"revisionTime": "2017-07-14T21:00:53Z"
+		},
+		{
+			"checksumSHA1": "R00RL5jJXRYq1iiK1+PGvMfvXyM=",
+			"path": "github.com/aws/aws-sdk-go/private/protocol/jsonrpc",
+			"revision": "aafdacd0d6e625a7a2782bef5f9942d6fc4c9f30",
+			"revisionTime": "2017-07-14T21:00:53Z"
+		},
+		{
 			"checksumSHA1": "isoix7lTx4qIq2zI2xFADtti5SI=",
 			"path": "github.com/aws/aws-sdk-go/private/protocol/query",
 			"revision": "f80e7d0182a463dff0c0da6bbed57f21369d4346",
@@ -178,6 +190,12 @@
 		{
 			"checksumSHA1": "y6jKUvrpTJxj5uh6OqQ4FujhCHU=",
 			"path": "github.com/aws/aws-sdk-go/service/route53",
+			"revision": "f80e7d0182a463dff0c0da6bbed57f21369d4346",
+			"revisionTime": "2016-08-11T16:24:59Z"
+		},
+		{
+			"checksumSHA1": "qS3eZZfhdDM6haTZp7OeyhMDlV8=",
+			"path": "github.com/aws/aws-sdk-go/service/route53domains",
 			"revision": "f80e7d0182a463dff0c0da6bbed57f21369d4346",
 			"revisionTime": "2016-08-11T16:24:59Z"
 		},
