@@ -13,9 +13,9 @@ import (
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/credentials"
 	"github.com/aws/aws-sdk-go/aws/session"
+	"github.com/aws/aws-sdk-go/private/waiter"
 	r53 "github.com/aws/aws-sdk-go/service/route53"
 	r53d "github.com/aws/aws-sdk-go/service/route53domains"
-	"github.com/aws/aws-sdk-go/private/waiter"
 	"github.com/pkg/errors"
 )
 
@@ -57,7 +57,7 @@ func newRoute53(m map[string]string, metadata json.RawMessage) (*route53Provider
 }
 
 func init() {
-	providers.RegisterDomainServiceProviderType("ROUTE53", newRoute53, providers.CanUsePTR, providers.CanUseSRV)
+	providers.RegisterDomainServiceProviderType("ROUTE53", newRoute53Dsp, providers.CanUsePTR, providers.CanUseSRV)
 	providers.RegisterRegistrarType("ROUTE53", newRoute53Reg)
 }
 
@@ -316,7 +316,7 @@ func (r *route53Provider) getRegistrarNameservers(domainName *string) ([]string,
 
 func (r *route53Provider) updateRegistrarNameservers(domainName string, nameservers []string) (*string, error) {
 	servers := []*r53d.Nameserver{}
-	for i, _ := range nameservers {
+	for i := range nameservers {
 		servers = append(servers, &r53d.Nameserver{Name: &nameservers[i]})
 	}
 
