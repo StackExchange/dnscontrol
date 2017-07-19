@@ -47,7 +47,7 @@ func initBind(config map[string]string, providermeta json.RawMessage) (providers
 }
 
 func init() {
-	providers.RegisterDomainServiceProviderType("BIND", initBind, providers.CanUsePTR)
+	providers.RegisterDomainServiceProviderType("BIND", initBind, providers.CanUsePTR, providers.CanUseSRV)
 }
 
 type SoaInfo struct {
