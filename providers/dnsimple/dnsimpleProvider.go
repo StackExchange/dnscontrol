@@ -315,7 +315,7 @@ func newProvider(m map[string]string, metadata json.RawMessage) (*DnsimpleApi, e
 
 func init() {
 	providers.RegisterRegistrarType("DNSIMPLE", newReg)
-	providers.RegisterDomainServiceProviderType("DNSIMPLE", newDsp)
+	providers.RegisterDomainServiceProviderType("DNSIMPLE", newDsp, providers.CanUsePTR)
 }
 
 // remove all non-dnsimple NS records from our desired state.
