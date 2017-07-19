@@ -28,6 +28,12 @@ func (n *nameDotCom) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Co
 		actual[i] = r.toRecord()
 	}
 
+	for _, rec := range dc.Records {
+		if rec.Type == "ALIAS" {
+			rec.Type = "ANAME"
+		}
+	}
+
 	checkNSModifications(dc)
 
 	differ := diff.New(dc)
