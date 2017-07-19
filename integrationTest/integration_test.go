@@ -220,7 +220,7 @@ func ns(name, target string) *rec {
 
 func mx(name string, prio uint16, target string) *rec {
 	r := makeRec(name, target, "MX")
-	r.Priority = prio
+	r.MxPreference = prio
 	return r
 }
 
@@ -303,7 +303,7 @@ var tests = []*TestCase{
 	tc("3 MX", mx("@", 5, "foo.com."), mx("@", 5, "foo2.com."), mx("@", 15, "foo3.com.")),
 	tc("Delete one", mx("@", 5, "foo2.com."), mx("@", 15, "foo3.com.")),
 	tc("Change to other name", mx("@", 5, "foo2.com."), mx("mail", 15, "foo3.com.")),
-	tc("Change Priority", mx("@", 7, "foo2.com."), mx("mail", 15, "foo3.com.")),
+	tc("Change Preference", mx("@", 7, "foo2.com."), mx("mail", 15, "foo3.com.")),
 
 	//PTR
 	tc("Empty"),

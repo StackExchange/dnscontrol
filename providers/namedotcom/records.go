@@ -109,7 +109,7 @@ func (r *nameComRecord) toRecord() *models.RecordConfig {
 	case "A", "AAAA", "CNAME", "NS", "TXT":
 		// nothing additional.
 	case "MX":
-		rc.Priority = uint16(prio)
+		rc.MxPreference = uint16(prio)
 	case "SRV":
 		parts := strings.Split(r.Content, " ")
 		weight, _ := strconv.ParseInt(parts[0], 10, 32)
@@ -117,7 +117,7 @@ func (r *nameComRecord) toRecord() *models.RecordConfig {
 		rc.SrvWeight = uint16(weight)
 		rc.SrvPort = uint16(port)
 		rc.SrvPriority = uint16(prio)
-		rc.Priority = 0
+		rc.MxPreference = 0
 		rc.Target = parts[2] + "."
 	default:
 		panic(fmt.Sprintf("toRecord unimplemented rtype %v", r.Type))
@@ -168,7 +168,7 @@ func (n *nameDotCom) createRecord(rc *models.RecordConfig, domain string) error 
 		Type:     rc.Type,
 		Content:  target,
 		TTL:      rc.TTL,
-		Priority: rc.Priority,
+		Priority: rc.MxPreference,
 	}
 	if dat.Hostname == "@" {
 		dat.Hostname = ""

@@ -61,16 +61,16 @@ type DNSProviderConfig struct {
 //    This is the FQDN version of Name.
 //    It should never have a trailiing ".".
 type RecordConfig struct {
-	Type        string            `json:"type"`
-	Name        string            `json:"name"`   // The short name. See below.
-	Target      string            `json:"target"` // If a name, must end with "."
-	TTL         uint32            `json:"ttl,omitempty"`
-	Metadata    map[string]string `json:"meta,omitempty"`
-	NameFQDN    string            `json:"-"`                  // Must end with ".$origin". See below.
-	Priority    uint16            `json:"priority,omitempty"` // MX
-	SrvPriority uint16            `json:"SrvPriority,omitempty"`
-	SrvWeight   uint16            `json:"SrvWeight,omitempty"`
-	SrvPort     uint16            `json:"SrvPort,omitempty"`
+	Type         string            `json:"type"`
+	Name         string            `json:"name"`   // The short name. See below.
+	Target       string            `json:"target"` // If a name, must end with "."
+	TTL          uint32            `json:"ttl,omitempty"`
+	Metadata     map[string]string `json:"meta,omitempty"`
+	NameFQDN     string            `json:"-"`                      // Must end with ".$origin". See below.
+	MxPreference uint16            `json:"mxpreference,omitempty"` // FIXME(tlim): Rename to MxPreference
+	SrvPriority  uint16            `json:"srvpriority,omitempty"`
+	SrvWeight    uint16            `json:"srvweight,omitempty"`
+	SrvPort      uint16            `json:"srvport,omitempty"`
 
 	Original interface{} `json:"-"` // Store pointer to provider-specific record object. Used in diffing.
 }
@@ -80,7 +80,7 @@ func (r *RecordConfig) String() (content string) {
 	case "A", "AAAA", "PTR":
 		content = fmt.Sprintf("%s %s %s %d", r.Type, r.NameFQDN, r.Target, r.TTL)
 	case "MX":
-		content = fmt.Sprintf(" priority=%d", r.Priority)
+		content = fmt.Sprintf(" priority=%d", r.MxPreference)
 	case "SOA":
 		content = fmt.Sprintf("%s %s %s %d", r.Type, r.Name, r.Target, r.TTL)
 	default:
@@ -119,7 +119,7 @@ func (r *RecordConfig) MergeToTarget() {
 	r.Target = r.Content()
 
 	// Zap any fields that may have been merged.
-	r.Priority = 0
+	r.MxPreference = 0
 	r.SrvPriority = 0
 	r.SrvWeight = 0
 	r.SrvPort = 0
@@ -155,7 +155,7 @@ func (rc *RecordConfig) ToRR() dns.RR {
 	case dns.TypePTR:
 		rr.(*dns.PTR).Ptr = rc.Target
 	case dns.TypeMX:
-		rr.(*dns.MX).Preference = rc.Priority
+		rr.(*dns.MX).Preference = rc.MxPreference
 		rr.(*dns.MX).Mx = rc.Target
 	case dns.TypeNS:
 		rr.(*dns.NS).Ns = rc.Target
@@ -257,8 +257,8 @@ func (dc *DomainConfig) Punycode() error {
 func (dc *DomainConfig) CombineMXs() {
 	for _, rec := range dc.Records {
 		if rec.Type == "MX" {
-			rec.Target = fmt.Sprintf("%d %s", rec.Priority, rec.Target)
-			rec.Priority = 0
+			rec.Target = fmt.Sprintf("%d %s", rec.MxPreference, rec.Target)
+			rec.MxPreference = 0
 		}
 	}
 }
