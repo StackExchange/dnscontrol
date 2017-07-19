@@ -131,7 +131,7 @@ func (c *CloudflareApi) createRec(rec *models.RecordConfig, domainID string) []*
 	}
 	prio := ""
 	if rec.Type == "MX" {
-		prio = fmt.Sprintf(" %d ", rec.Priority)
+		prio = fmt.Sprintf(" %d ", rec.MxPreference)
 	}
 	arr := []*models.Correction{{
 		Msg: fmt.Sprintf("CREATE record: %s %s %d%s %s", rec.Name, rec.Type, rec.TTL, prio, content),
@@ -142,7 +142,7 @@ func (c *CloudflareApi) createRec(rec *models.RecordConfig, domainID string) []*
 				Type:     rec.Type,
 				TTL:      rec.TTL,
 				Content:  content,
-				Priority: rec.Priority,
+				Priority: rec.MxPreference,
 			}
 			endpoint := fmt.Sprintf(recordsURL, domainID)
 			buf := &bytes.Buffer{}
@@ -181,7 +181,7 @@ func (c *CloudflareApi) modifyRecord(domainID, recID string, proxied bool, rec *
 		Priority uint16 `json:"priority"`
 		TTL      uint32 `json:"ttl"`
 	}
-	r := record{recID, proxied, rec.Name, rec.Type, rec.Target, rec.Priority, rec.TTL}
+	r := record{recID, proxied, rec.Name, rec.Type, rec.Target, rec.MxPreference, rec.TTL}
 	endpoint := fmt.Sprintf(singleRecordURL, domainID, recID)
 	buf := &bytes.Buffer{}
 	encoder := json.NewEncoder(buf)

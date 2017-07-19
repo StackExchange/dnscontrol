@@ -344,12 +344,12 @@ func (c *cfRecord) toRecord(domain string) *models.RecordConfig {
 		c.Content = dnsutil.AddOrigin(c.Content+".", domain)
 	}
 	return &models.RecordConfig{
-		NameFQDN: c.Name,
-		Type:     c.Type,
-		Target:   c.Content,
-		Priority: c.Priority,
-		TTL:      c.TTL,
-		Original: c,
+		NameFQDN:     c.Name,
+		Type:         c.Type,
+		Target:       c.Content,
+		MxPreference: c.Priority,
+		TTL:          c.TTL,
+		Original:     c,
 	}
 }
 

@@ -54,12 +54,12 @@ func (c *DnsimpleApi) GetDomainCorrections(dc *models.DomainConfig) ([]*models.C
 			r.Content += "."
 		}
 		rec := &models.RecordConfig{
-			NameFQDN: dnsutil.AddOrigin(r.Name, dc.Name),
-			Type:     r.Type,
-			Target:   r.Content,
-			TTL:      uint32(r.TTL),
-			Priority: uint16(r.Priority),
-			Original: r,
+			NameFQDN:     dnsutil.AddOrigin(r.Name, dc.Name),
+			Type:         r.Type,
+			Target:       r.Content,
+			TTL:          uint32(r.TTL),
+			MxPreference: uint16(r.Priority),
+			Original:     r,
 		}
 		actual = append(actual, rec)
 	}
@@ -230,7 +230,7 @@ func (c *DnsimpleApi) createRecordFunc(rc *models.RecordConfig, domainName strin
 			Type:     rc.Type,
 			Content:  rc.Target,
 			TTL:      int(rc.TTL),
-			Priority: int(rc.Priority),
+			Priority: int(rc.MxPreference),
 		}
 
 		_, err = client.Zones.CreateRecord(accountId, domainName, record)
@@ -277,7 +277,7 @@ func (c *DnsimpleApi) updateRecordFunc(old *dnsimpleapi.ZoneRecord, rc *models.R
 			Type:     rc.Type,
 			Content:  rc.Target,
 			TTL:      int(rc.TTL),
-			Priority: int(rc.Priority),
+			Priority: int(rc.MxPreference),
 		}
 
 		_, err = client.Zones.UpdateRecord(accountId, domainName, old.ID, record)
