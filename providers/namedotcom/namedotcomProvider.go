@@ -41,7 +41,7 @@ func newProvider(conf map[string]string) (*nameDotCom, error) {
 
 func init() {
 	providers.RegisterRegistrarType("NAMEDOTCOM", newReg)
-	providers.RegisterDomainServiceProviderType("NAMEDOTCOM", newDsp)
+	providers.RegisterDomainServiceProviderType("NAMEDOTCOM", newDsp, providers.CanUseAlias)
 }
 
 ///
