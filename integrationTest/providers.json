@@ -20,7 +20,7 @@
     "token": "$DNSIMPLE_TOKEN"
   },
   "GANDI": {
-    "COMMENT": "5: gandi does not accept ttls less than 300",
+    "COMMENT": "5: gandi does not accept TTLs less than 300",
     "apikey": "$GANDI_KEY",
     "domain": "$GANDI_DOMAIN",
     "knownFailures": "5"

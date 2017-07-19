@@ -97,7 +97,7 @@ func rrToRecord(rr dns.RR, origin string, replaceSerial uint32) (models.RecordCo
 		rc.Target = v.Target
 	case *dns.MX:
 		rc.Target = v.Mx
-		rc.Priority = v.Preference
+		rc.MxPreference = v.Preference
 	case *dns.NS:
 		rc.Target = v.Ns
 	case *dns.PTR:
@@ -114,10 +114,15 @@ func rrToRecord(rr dns.RR, origin string, replaceSerial uint32) (models.RecordCo
 		}
 		rc.Target = fmt.Sprintf("%v %v %v %v %v %v %v",
 			v.Ns, v.Mbox, new_serial, v.Refresh, v.Retry, v.Expire, v.Minttl)
+	case *dns.SRV:
+		rc.Target = v.Target
+		rc.SrvPort = v.Port
+		rc.SrvWeight = v.Weight
+		rc.SrvPriority = v.Priority
 	case *dns.TXT:
 		rc.Target = strings.Join(v.Txt, " ")
 	default:
-		log.Fatalf("Unimplemented zone record type=%s (%v)\n", rc.Type, rr)
+		log.Fatalf("rrToRecord: Unimplemented zone record type=%s (%v)\n", rc.Type, rr)
 	}
 	return rc, old_serial
 }
@@ -129,12 +134,11 @@ func makeDefaultSOA(info SoaInfo, origin string) *models.RecordConfig {
 		Name: "@",
 	}
 	soaRec.NameFQDN = dnsutil.AddOrigin(soaRec.Name, origin)
-	//TODO(cpeterson): are these sane defaults?
 	if len(info.Ns) == 0 {
-		info.Ns = "DEFAULT_NOT_SET"
+		info.Ns = "DEFAULT_NOT_SET."
 	}
 	if len(info.Mbox) == 0 {
-		info.Mbox = "DEFAULT_NOT_SET"
+		info.Mbox = "DEFAULT_NOT_SET."
 	}
 	if info.Serial == 0 {
 		info.Serial = 1

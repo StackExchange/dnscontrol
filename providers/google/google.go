@@ -126,13 +126,7 @@ func (g *gcloud) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Correc
 	}
 
 	for _, want := range dc.Records {
-		if want.Type == "MX" {
-			want.Target = fmt.Sprintf("%d %s", want.Priority, want.Target)
-			want.Priority = 0
-		} else if want.Type == "TXT" {
-			//add quotes to txts
-			want.Target = fmt.Sprintf(`"%s"`, want.Target)
-		}
+		want.MergeToTarget()
 	}
 
 	// first collect keys that have changed

@@ -42,7 +42,7 @@ func newRoute53(m map[string]string, metadata json.RawMessage) (providers.DNSSer
 }
 
 func init() {
-	providers.RegisterDomainServiceProviderType("ROUTE53", newRoute53, providers.CanUsePTR)
+	providers.RegisterDomainServiceProviderType("ROUTE53", newRoute53, providers.CanUsePTR, providers.CanUseSRV)
 }
 func sPtr(s string) *string {
 	return &s
@@ -142,12 +142,7 @@ func (r *route53Provider) GetDomainCorrections(dc *models.DomainConfig) ([]*mode
 		}
 	}
 	for _, want := range dc.Records {
-		if want.Type == "MX" {
-			want.Target = fmt.Sprintf("%d %s", want.Priority, want.Target)
-			want.Priority = 0
-		} else if want.Type == "TXT" {
-			want.Target = fmt.Sprintf(`"%s"`, want.Target) //FIXME: better escaping/quoting
-		}
+		want.MergeToTarget()
 	}
 
 	//diff
