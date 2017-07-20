@@ -106,7 +106,7 @@ func (r *nameComRecord) toRecord() *models.RecordConfig {
 		Original: r,
 	}
 	switch r.Type {
-	case "A", "AAAA", "CNAME", "NS", "TXT":
+	case "A", "AAAA", "ANAME", "CNAME", "NS", "TXT":
 		// nothing additional.
 	case "MX":
 		rc.MxPreference = uint16(prio)
@@ -141,7 +141,7 @@ func (n *nameDotCom) getRecords(domain string) ([]*nameComRecord, error) {
 	}
 
 	for _, rc := range result.Records {
-		if rc.Type == "CNAME" || rc.Type == "MX" || rc.Type == "NS" {
+		if rc.Type == "CNAME" || rc.Type == "ANAME" || rc.Type == "MX" || rc.Type == "NS" {
 			rc.Content = rc.Content + "."
 		}
 	}
@@ -150,7 +150,7 @@ func (n *nameDotCom) getRecords(domain string) ([]*nameComRecord, error) {
 
 func (n *nameDotCom) createRecord(rc *models.RecordConfig, domain string) error {
 	target := rc.Target
-	if rc.Type == "CNAME" || rc.Type == "MX" || rc.Type == "NS" {
+	if rc.Type == "CNAME" || rc.Type == "ANAME" || rc.Type == "MX" || rc.Type == "NS" {
 		if target[len(target)-1] == '.' {
 			target = target[:len(target)-1]
 		} else {
@@ -174,7 +174,7 @@ func (n *nameDotCom) createRecord(rc *models.RecordConfig, domain string) error 
 		dat.Hostname = ""
 	}
 	switch rc.Type {
-	case "A", "AAAA", "CNAME", "MX", "NS", "TXT":
+	case "A", "AAAA", "ANAME", "CNAME", "MX", "NS", "TXT":
 		// nothing
 	case "SRV":
 		dat.Content = fmt.Sprintf("%d %d %v", rc.SrvWeight, rc.SrvPort, rc.Target)
