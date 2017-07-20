@@ -356,6 +356,7 @@ func checkProviderCapabilities(dc *models.DomainConfig, pList []*models.DNSProvi
 	}{
 		{"ALIAS", providers.CanUseAlias},
 		{"PTR", providers.CanUsePTR},
+		{"SRV", providers.CanUseSRV},
 	}
 	for _, ty := range types {
 		hasAny := false
