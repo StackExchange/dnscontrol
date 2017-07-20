@@ -8,7 +8,8 @@ import (
 	"testing"
 	"unicode"
 
-	"github.com/StackExchange/dnscontrol/models"
+	"github.com/tdewolff/minify"
+	minjson "github.com/tdewolff/minify/json"
 )
 
 const (
@@ -30,6 +31,8 @@ func TestParsedFiles(t *testing.T) {
 		if filepath.Ext(f.Name()) != ".js" || !unicode.IsNumber(rune(f.Name()[0])) {
 			continue
 		}
+		m := minify.New()
+		m.AddFunc("json", minjson.Minify)
 		t.Run(f.Name(), func(t *testing.T) {
 			content, err := ioutil.ReadFile(filepath.Join(testDir, f.Name()))
 			if err != nil {
@@ -43,25 +46,24 @@ func TestParsedFiles(t *testing.T) {
 			if err != nil {
 				t.Fatal(err)
 			}
+			actualJSON, err = m.Bytes("json", actualJSON)
+			if err != nil {
+				t.Fatal(err)
+			}
 			expectedFile := filepath.Join(testDir, f.Name()[:len(f.Name())-3]+".json")
 			expectedData, err := ioutil.ReadFile(expectedFile)
 			if err != nil {
 				t.Fatal(err)
 			}
-			conf = &models.DNSConfig{}
-			//unmarshal and remarshal to not require manual formatting
-			err = json.Unmarshal(expectedData, conf)
-			if err != nil {
-				t.Fatal(err)
-			}
-			expectedJSON, err := json.MarshalIndent(conf, "", "  ")
+
+			expectedJSON, err := m.String("json", string(expectedData))
 			if err != nil {
 				t.Fatal(err)
 			}
 			if string(expectedJSON) != string(actualJSON) {
 				t.Error("Expected and actual json don't match")
 				t.Log("Expected:", string(expectedJSON))
-				t.Log("Actual:", string(actualJSON))
+				t.Log("Actual  :", string(actualJSON))
 			}
 		})
 	}
