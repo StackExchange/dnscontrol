@@ -72,10 +72,16 @@ type RecordConfig struct {
 	SrvWeight    uint16            `json:"srvweight,omitempty"`
 	SrvPort      uint16            `json:"srvport,omitempty"`
 
+	CombinedTarget bool `json:"omit"`
+
 	Original interface{} `json:"-"` // Store pointer to provider-specific record object. Used in diffing.
 }
 
 func (r *RecordConfig) String() (content string) {
+	if r.CombinedTarget {
+		return r.Target
+	}
+
 	switch r.Type {
 	case "A", "AAAA", "PTR":
 		content = fmt.Sprintf("%s %s %s %d", r.Type, r.NameFQDN, r.Target, r.TTL)
@@ -94,6 +100,9 @@ func (r *RecordConfig) String() (content string) {
 
 // Content combines Target and other fields into one string.
 func (r *RecordConfig) Content() string {
+	if r.CombinedTarget {
+		return r.Target
+	}
 
 	// If this is a pseudo record, just return the target.
 	if _, ok := dns.StringToType[r.Type]; !ok {
@@ -115,6 +124,11 @@ func (r *RecordConfig) Content() string {
 
 // MergeToTarget combines "extra" fields into .Target, and zeros the merged fields.
 func (r *RecordConfig) MergeToTarget() {
+	if r.CombinedTarget {
+		pm := strings.Join([]string{"MergeToTarget: Already collapsed: ", r.Name, r.Target}, " ")
+		panic(pm)
+	}
+
 	// Merge "extra" fields into the Target.
 	r.Target = r.Content()
 
@@ -123,6 +137,8 @@ func (r *RecordConfig) MergeToTarget() {
 	r.SrvPriority = 0
 	r.SrvWeight = 0
 	r.SrvPort = 0
+
+	r.CombinedTarget = true
 }
 
 /// Convert RecordConfig -> dns.RR.
@@ -259,8 +275,13 @@ func (dc *DomainConfig) Punycode() error {
 func (dc *DomainConfig) CombineMXs() {
 	for _, rec := range dc.Records {
 		if rec.Type == "MX" {
+			if rec.CombinedTarget {
+				pm := strings.Join([]string{"CombineMXs: Already collapsed: ", rec.Name, rec.Target}, " ")
+				panic(pm)
+			}
 			rec.Target = fmt.Sprintf("%d %s", rec.MxPreference, rec.Target)
 			rec.MxPreference = 0
+			rec.CombinedTarget = true
 		}
 	}
 }

@@ -133,10 +133,11 @@ func (r *route53Provider) GetDomainCorrections(dc *models.DomainConfig) ([]*mode
 				continue
 			}
 			r := &models.RecordConfig{
-				NameFQDN: unescape(set.Name),
-				Type:     *set.Type,
-				Target:   *rec.Value,
-				TTL:      uint32(*set.TTL),
+				NameFQDN:       unescape(set.Name),
+				Type:           *set.Type,
+				Target:         *rec.Value,
+				TTL:            uint32(*set.TTL),
+				CombinedTarget: true,
 			}
 			existingRecords = append(existingRecords, r)
 		}
