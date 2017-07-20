@@ -150,6 +150,8 @@ func (rc *RecordConfig) ToRR() dns.RR {
 	switch rdtype {
 	case dns.TypeA:
 		rr.(*dns.A).A = net.ParseIP(rc.Target)
+	case dns.TypeAAAA:
+		rr.(*dns.AAAA).AAAA = net.ParseIP(rc.Target)
 	case dns.TypeCNAME:
 		rr.(*dns.CNAME).Target = rc.Target
 	case dns.TypePTR:
