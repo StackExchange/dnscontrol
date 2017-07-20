@@ -114,3 +114,18 @@ func (args *PrintJSONArgs) flags() []cli.Flag {
 		},
 	}
 }
+
+type GetCredentialsArgs struct {
+	CredsFile string
+}
+
+func (args *GetCredentialsArgs) flags() []cli.Flag {
+	return []cli.Flag{
+		cli.StringFlag{
+			Name:        "creds",
+			Destination: &args.CredsFile,
+			Usage:       "Provider credentials JSON file",
+			Value:       "creds.json",
+		},
+	}
+}

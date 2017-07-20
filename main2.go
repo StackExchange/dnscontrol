@@ -2,10 +2,8 @@ package main
 
 import (
 	"bufio"
-	"encoding/json"
 	"flag"
 	"fmt"
-	"io/ioutil"
 	"log"
 	"os"
 	"strconv"
@@ -14,10 +12,8 @@ import (
 
 	"github.com/StackExchange/dnscontrol/models"
 	"github.com/StackExchange/dnscontrol/pkg/nameservers"
-	"github.com/StackExchange/dnscontrol/pkg/normalize"
 	"github.com/StackExchange/dnscontrol/providers"
 	_ "github.com/StackExchange/dnscontrol/providers/_all"
-	"github.com/StackExchange/dnscontrol/providers/config"
 )
 
 //go:generate go run build/generate/generate.go
@@ -40,96 +36,7 @@ func main() {
 	}
 
 	var dnsConfig *models.DNSConfig
-	if *jsonFile != "" {
-		text, err := ioutil.ReadFile(*jsonFile)
-		if err != nil {
-			log.Fatalf("Error reading %v: %v\n", *jsonFile, err)
-		}
-		err = json.Unmarshal(text, &dnsConfig)
-		if err != nil {
-			log.Fatalf("Error parsing JSON in (%v): %v", *jsonFile, err)
-		}
-	} else if *jsFile != "" {
-		// text, err := ioutil.ReadFile(*jsFile)
-		// if err != nil {
-		// 	log.Fatalf("Error reading %v: %v\n", *jsFile, err)
-		// }
-		// dnsConfig, err = js.ExecuteJavascript(string(text), *devMode)
-		// if err != nil {
-		// 	log.Fatalf("Error executing javasscript in (%v): %v", *jsFile, err)
-		// }
-	}
 
-	// if dnsConfig == nil {
-	// 	log.Fatal("No config specified.")
-	// }
-
-	if flag.NArg() != 1 {
-		fmt.Println(`Usage: dnscontrol [options] cmd
-		        cmd:
-		           preview: Show changed that would happen.
-		           push:    Make changes for real.
-		           version: Print program version string.
-		           print:   Print compiled data.
-		           create-domains:   Pre-create domains in R53
-		`)
-		flag.PrintDefaults()
-		return
-	}
-
-	errs := normalize.NormalizeAndValidateConfig(dnsConfig)
-	if len(errs) > 0 {
-		fmt.Printf("%d Validation errors:\n", len(errs))
-		fatal := false
-		for _, err := range errs {
-			if _, ok := err.(normalize.Warning); ok {
-				fmt.Printf("WARNING: %s\n", err)
-			} else {
-				fatal = true
-				fmt.Printf("ERROR: %s\n", err)
-			}
-		}
-		if fatal {
-			log.Fatal("Exiting due to validation errors")
-		}
-	}
-
-	if command == "print" {
-		dat, _ := json.MarshalIndent(dnsConfig, "", "  ")
-		if *jsonOutputPost == "" {
-			fmt.Println("While running JS:", string(dat))
-		} else {
-			err := ioutil.WriteFile(*jsonOutputPost, dat, 0644)
-			if err != nil {
-				panic(err)
-			}
-		}
-		return
-	}
-
-	providerConfigs, err := config.LoadProviderConfigs(*credsFile)
-	if err != nil {
-		log.Fatalf(err.Error())
-	}
-	nonDefaultProviders := []string{}
-	for name, vals := range providerConfigs {
-		// add "_exclude_from_defaults":"true" to a domain to exclude it from being run unless
-		// -providers=all or -providers=name
-		if vals["_exclude_from_defaults"] == "true" {
-			nonDefaultProviders = append(nonDefaultProviders, name)
-		}
-	}
-	registrars, err := providers.CreateRegistrars(dnsConfig, providerConfigs)
-	if err != nil {
-		log.Fatalf("Error creating registrars: %v\n", err)
-	}
-	dsps, err := providers.CreateDsps(dnsConfig, providerConfigs)
-	if err != nil {
-		log.Fatalf("Error creating dsps: %v\n", err)
-	}
-
-	fmt.Printf("Initialized %d registrars and %d dns service providers.\n", len(registrars), len(dsps))
-	anyErrors, totalCorrections := false, 0
 	switch command {
 	case "create-domains":
 		for _, domain := range dnsConfig.Domains {

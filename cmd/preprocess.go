@@ -4,7 +4,6 @@ import (
 	"fmt"
 
 	"github.com/StackExchange/dnscontrol/pkg/normalize"
-	_ "github.com/StackExchange/dnscontrol/providers/_all"
 	"github.com/urfave/cli"
 )
 
@@ -36,20 +35,25 @@ func DebugPreprocess(args DebugPreprocessArgs) error {
 	}
 	fmt.Println(len(cfg.Domains))
 	errs := normalize.NormalizeAndValidateConfig(cfg)
-	if len(errs) > 0 {
-		fmt.Printf("%d Validation errors:\n", len(errs))
-		fatal := false
-		for _, err := range errs {
-			if _, ok := err.(normalize.Warning); ok {
-				fmt.Printf("WARNING: %s\n", err)
-			} else {
-				fatal = true
-				fmt.Printf("ERROR: %s\n", err)
-			}
-		}
-		if fatal {
-			return fmt.Errorf("Exiting due to validation errors")
+	if PrintValidationErrors(errs) {
+		return fmt.Errorf("Exiting due to validation errors")
+	}
+
+	return PrintJSON(args.PrintJSONArgs, cfg)
+}
+
+func PrintValidationErrors(errs []error) (fatal bool) {
+	if len(errs) == 0 {
+		return false
+	}
+	fmt.Printf("%d Validation errors:\n", len(errs))
+	for _, err := range errs {
+		if _, ok := err.(normalize.Warning); ok {
+			fmt.Printf("WARNING: %s\n", err)
+		} else {
+			fatal = true
+			fmt.Printf("ERROR: %s\n", err)
 		}
 	}
-	return PrintJSON(args.PrintJSONArgs, cfg)
+	return
 }
