@@ -311,7 +311,7 @@ function addRecord(d,type,name,target,mods) {
                 _.extend(rec.meta,m);
                 _.extend(rec.meta,m);
             } else if (_.isNumber(m) && type == "MX") {
-               rec.priority = m;
+               rec.mxpreference = m;
             } else {
                 console.log("WARNING: Modifier type unsupported:", typeof m, "(Skipping!)");
             }
