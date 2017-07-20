@@ -213,7 +213,7 @@ type DomainConfig struct {
 	Metadata     map[string]string `json:"meta,omitempty"`
 	Records      []*RecordConfig   `json:"records"`
 	Nameservers  []*Nameserver     `json:"nameservers,omitempty"`
-	KeepUnknown  bool              `json:"keepunknown"`
+	KeepUnknown  bool              `json:"keepunknown,omitempty"`
 }
 
 func (dc *DomainConfig) Copy() (*DomainConfig, error) {

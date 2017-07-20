@@ -17,8 +17,7 @@
 		          "name": "@",
 		          "target": "test.foo.com,https://goo.com/$1"
 		        }
-		      ],
-		      "keepunknown": false
+		      ]
 		    }
 		  ]
 		}
