@@ -287,7 +287,17 @@ func NormalizeAndValidateConfig(config *models.DNSConfig) (errs []error) {
 		}
 	}
 
-	// Process any pseudo-records:
+	// SPF flattening
+	for _, domain := range config.Domains {
+		if hasSpfRecords(domain.Records) {
+			err := flattenSpf(domain)
+			if err != nil {
+				errs = append(errs, err)
+			}
+		}
+	}
+
+	// Process IMPORT_TRANSFORM
 	for _, domain := range config.Domains {
 		for _, rec := range domain.Records {
 			if rec.Type == "IMPORT_TRANSFORM" {
@@ -307,7 +317,6 @@ func NormalizeAndValidateConfig(config *models.DNSConfig) (errs []error) {
 	for _, domain := range config.Domains {
 		deleteImportTransformRecords(domain)
 	}
-
 	// Run record transforms
 	for _, domain := range config.Domains {
 		if err := applyRecordTransforms(domain); err != nil {
