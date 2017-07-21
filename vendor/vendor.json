@@ -225,6 +225,18 @@
 			"revisionTime": "2016-03-11T01:20:12Z"
 		},
 		{
+			"checksumSHA1": "yIkYzW7bzAD81zHyuCNmEj4+oxQ=",
+			"path": "github.com/gopherjs/gopherjs/js",
+			"revision": "2b1d432c8a82c9bff0b0baffaeb3ec6e92974112",
+			"revisionTime": "2017-07-02T15:34:43Z"
+		},
+		{
+			"checksumSHA1": "iNjXacWvaUH3ci7dIpwHFwn1tbQ=",
+			"path": "github.com/gopherjs/jquery",
+			"revision": "55a713a3102d1d7426bfc3f501ecf6c5908a6e46",
+			"revisionTime": "2017-04-24T13:20:13Z"
+		},
+		{
 			"checksumSHA1": "Wbsfxh89xfnFDZzoEOzpfUV9+u8=",
 			"origin": "github.com/aws/aws-sdk-go/vendor/github.com/jmespath/go-jmespath",
 			"path": "github.com/jmespath/go-jmespath",
