@@ -82,11 +82,12 @@ func (r *RecordConfig) String() (content string) {
 		return r.Target
 	}
 
+	content = fmt.Sprintf("%s %s %s %d", r.Type, r.NameFQDN, r.Target, r.TTL)
 	switch r.Type {
-	case "A", "AAAA", "PTR":
-		content = fmt.Sprintf("%s %s %s %d", r.Type, r.NameFQDN, r.Target, r.TTL)
+	case "A", "AAAA", "PTR", "TXT":
+		//
 	case "MX":
-		content = fmt.Sprintf(" priority=%d", r.MxPreference)
+		content += fmt.Sprintf(" priority=%d", r.MxPreference)
 	case "SOA":
 		content = fmt.Sprintf("%s %s %s %d", r.Type, r.Name, r.Target, r.TTL)
 	default:
