@@ -12,8 +12,7 @@
 		          "name": "@",
 		          "target": "foo.com."
 		        }
-		      ],
-		      "keepunknown": false
+		      ]
 		    }
 		  ]
 		}

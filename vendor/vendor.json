@@ -351,6 +351,42 @@
 			"revisionTime": "2016-07-28T22:04:12Z"
 		},
 		{
+			"checksumSHA1": "SOB3whm8gc2xsL6j7exUFghj94s=",
+			"path": "github.com/tdewolff/buffer",
+			"revision": "df6253e2a2cda5aba1b5d0c59fc5bdf0a98ae192",
+			"revisionTime": "2017-01-15T11:41:28Z"
+		},
+		{
+			"checksumSHA1": "aOx9JqecdG4tSpzdRyohR56FUMo=",
+			"path": "github.com/tdewolff/minify",
+			"revision": "2d28d6e43c68537a32f9b835a89d5038ebcb6ec9",
+			"revisionTime": "2017-06-05T20:11:15Z"
+		},
+		{
+			"checksumSHA1": "w9vp7arHrzUEi6KyAM9K8hAP3hM=",
+			"path": "github.com/tdewolff/minify/json",
+			"revision": "2d28d6e43c68537a32f9b835a89d5038ebcb6ec9",
+			"revisionTime": "2017-06-05T20:11:15Z"
+		},
+		{
+			"checksumSHA1": "EiTbuOQ08YQ0Foy0R8y4WlbVcvA=",
+			"path": "github.com/tdewolff/parse",
+			"revision": "e4ac711ab0bf625c08270ba17557c30b2c1c5c2d",
+			"revisionTime": "2017-07-12T11:51:05Z"
+		},
+		{
+			"checksumSHA1": "kVJVV52ifqE4j6vNiWi9UiXOscs=",
+			"path": "github.com/tdewolff/parse/json",
+			"revision": "e4ac711ab0bf625c08270ba17557c30b2c1c5c2d",
+			"revisionTime": "2017-07-12T11:51:05Z"
+		},
+		{
+			"checksumSHA1": "hR7GEsOkEtR/doq2kiCmOF8spEg=",
+			"path": "github.com/tdewolff/strconv",
+			"revision": "3e8091f4417ebaaa3910da63a45ea394ebbfb0e3",
+			"revisionTime": "2016-04-27T18:05:39Z"
+		},
+		{
 			"checksumSHA1": "9jjO5GjLa0XF/nfWihF02RoH4qc=",
 			"path": "golang.org/x/net/context",
 			"revision": "4971afdc2f162e82d185353533d3cf16188a9f4e",
