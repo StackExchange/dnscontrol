@@ -238,7 +238,7 @@ func srv(name string, priority, weight, port uint16, target string) *rec {
 
 func caa(name string, tag string, flag uint8, target string) *rec {
 	r := makeRec(name, target, "CAA")
-	r.CaaFlags = flag
+	r.CaaFlag = flag
 	r.CaaTag = tag
 	return r
 }

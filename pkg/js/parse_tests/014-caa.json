@@ -1,45 +1,43 @@
 {
-    "registrars": [],
-    "dns_providers": [],
-    "domains": [
+  "registrars":[],
+  "dns_providers":[],
+  "domains":[
+    {
+      "name":"foo.com",
+      "registrar":"none",
+      "dnsProviders":{},
+      "records":[
         {
-            "name": "foo.com",
-            "registrar": "none",
-            "dnsProviders": {},
-            "records": [
-                {
-                    "type": "CAA",
-                    "name": "@",
-                    "caatag": "issue",
-                    "target": "letsencrypt.org"
-                },
-                {
-                    "type": "CAA",
-                    "name": "@",
-                    "caatag": "issuewild",
-                    "target": ";"
-                },
-                {
-                    "type": "CAA",
-                    "name": "@",
-                    "caatag": "iodef",
-                    "caaflags": 1,
-                    "target": "mailto:test@example.com"
-                },
-                {
-                    "type": "CAA",
-                    "name": "@",
-                    "caatag": "issue",
-                    "target": "http://example.com"
-                },
-                {
-                    "type": "CAA",
-                    "name": "@",
-                    "caatag": "issue",
-                    "caaflags": 1,
-                    "target": "https://example.com"
-                }
-            ]
+          "type":"CAA",
+          "name":"@",
+          "target":"letsencrypt.org",
+          "caatag":"issue"
+        },
+        {
+          "type":"CAA",
+          "name":"@",
+          "target":";",
+          "caatag":"issuewild"
+        },
+        {
+          "type":"CAA",
+          "name":"@",
+          "target":"mailto:test@example.com",
+          "caatag":"iodef"
+        },
+        {
+          "type":"CAA",
+          "name":"@",
+          "target":"http://example.com",
+          "caatag":"iodef"
+        },
+        {
+          "type":"CAA",
+          "name":"@",
+          "target":"https://example.com",
+          "caatag":"iodef"
         }
-    ]
+      ]
+    }
+  ]
 }
