@@ -71,8 +71,8 @@ type RecordConfig struct {
 	SrvPriority  uint16            `json:"srvpriority,omitempty"`
 	SrvWeight    uint16            `json:"srvweight,omitempty"`
 	SrvPort      uint16            `json:"srvport,omitempty"`
-	CaaTag       string            `json:"caa_tag,omitempty"`
-	CaaFlags     uint8             `json:"caa_flags,omitempty"`
+	CaaTag       string            `json:"caatag,omitempty"`
+	CaaFlags     uint8             `json:"caaflags,omitempty"`
 
 	CombinedTarget bool `json:"omit"`
 
@@ -93,7 +93,7 @@ func (r *RecordConfig) String() (content string) {
 	case "SOA":
 		content = fmt.Sprintf("%s %s %s %d", r.Type, r.Name, r.Target, r.TTL)
 	case "CAA":
-		content += fmt.Sprintf(" caa_tag=%s caa_flags=%d", r.CaaTag, r.CaaFlags)
+		content += fmt.Sprintf(" caatag=%s caaflags=%d", r.CaaTag, r.CaaFlags)
 	default:
 		panic(fmt.Sprintf("rc.String rtype %v unimplemented", r.Type))
 	}

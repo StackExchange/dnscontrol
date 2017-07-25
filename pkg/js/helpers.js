@@ -118,20 +118,8 @@ function DefaultTTL(v) {
     }
 }
 
-function caaFlag(flag){
-    return function(){
-        return function(r){
-            if(!r.caa_flags){
-                r.caa_flags = 0
-            }
-            r.caa_flags |= flag
-        }
-    }
-}
-
-// CAA_CRITICAL(): Set the critical flag
-var CAA_CRITICAL = caaFlag(1);
-
+// CAA_CRITICAL: Critical CAA flag
+var CAA_CRITICAL = 1<<0;
 
 
 // DnsProvider("providerName", 0) 
@@ -172,10 +160,10 @@ function ALIAS(name, target) {
 
 // CAA(name,tag,value, recordModifiers...)
 function CAA(name, tag, value){
-    checkArgs([_.isString, _.isString, _.isString], arguments, "CAA expects (name, tag, value)")
+    checkArgs([_.isString, _.isString, _.isString], arguments, "CAA expects (name, tag, value) plus optional flag as a meta argument")
 
     var mods = getModifiers(arguments,3)
-    mods.push({caa_tag: tag})
+    mods.push({caatag: tag});
 
     return function(d) {
         addRecord(d,"CAA",name,value,mods)
@@ -329,9 +317,9 @@ function addRecord(d,type,name,target,mods) {
             var m = mods[i]
             if (_.isFunction(m)) {
                 m(rec);
-            } else if (_.isObject(m) && m.caa_tag) {
-                // caa_tag is a top level object, not in meta
-                rec.caa_tag = m.caa_tag;
+            } else if (_.isObject(m) && m.caatag) {
+                // caatag is a top level object, not in meta
+                rec.caatag = m.caatag;
             } else if (_.isObject(m)) {
                  //convert transforms to strings
                  if (m.transform && _.isArray(m.transform)){
@@ -341,6 +329,8 @@ function addRecord(d,type,name,target,mods) {
                 _.extend(rec.meta,m);
             } else if (_.isNumber(m) && type == "MX") {
                rec.mxpreference = m;
+            } else if (_.isNumber(m) && type == "CAA") {
+               rec.caaflags |= m;
             } else {
                 console.log("WARNING: Modifier type unsupported:", typeof m, "(Skipping!)");
             }
