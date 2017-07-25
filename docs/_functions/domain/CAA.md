@@ -9,7 +9,9 @@ parameters:
 
 CAA adds a CAA record to a domain. The name should be the relative label for the record. Use `@` for the domain apex.
 
-Tag can be one of "issue", "issuewild" or "iodef". Value depends on the tag, and is automatically quoted.
+Tag can be one of "issue", "issuewild" or "iodef".
+
+Value is a string. The contents depend on the tag. If it includes spaces or other characters that must be escaped, DNSControl will do that for you (similar to TXT records). For example use `CAA("@", "issue", "letsencrypt.org")` rather than `CAA("@", "issue", "\"letsencrypt.org\"")`.
 
 Flags are controlled by modifier.:
 
