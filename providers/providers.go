@@ -47,6 +47,8 @@ const (
 	CanUsePTR
 	// CanUseSRV indicates the provider can handle SRV records
 	CanUseSRV
+	// CanUseCAA indicates the provider can handle CAA records
+	CanUseCAA
 )
 
 func ProviderHasCabability(pType string, cap Capability) bool {

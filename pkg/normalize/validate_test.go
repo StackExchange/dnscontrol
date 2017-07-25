@@ -173,3 +173,21 @@ func TestCNAMEMutex(t *testing.T) {
 		})
 	}
 }
+
+func TestCAAValidation(t *testing.T) {
+	config := &models.DNSConfig{
+		Domains: []*models.DomainConfig{
+			{
+				Name:      "example.com",
+				Registrar: "BIND",
+				Records: []*models.RecordConfig{
+					{Name: "@", Type: "CAA", CaaTag: "invalid", Target: "example.com"},
+				},
+			},
+		},
+	}
+	errs := NormalizeAndValidateConfig(config)
+	if len(errs) != 1 {
+		t.Error("Expect error on invalid CAA but got none")
+	}
+}

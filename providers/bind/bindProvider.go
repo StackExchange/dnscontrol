@@ -47,7 +47,7 @@ func initBind(config map[string]string, providermeta json.RawMessage) (providers
 }
 
 func init() {
-	providers.RegisterDomainServiceProviderType("BIND", initBind, providers.CanUsePTR, providers.CanUseSRV)
+	providers.RegisterDomainServiceProviderType("BIND", initBind, providers.CanUsePTR, providers.CanUseSRV, providers.CanUseCAA)
 }
 
 type SoaInfo struct {
@@ -93,6 +93,10 @@ func rrToRecord(rr dns.RR, origin string, replaceSerial uint32) (models.RecordCo
 		rc.Target = v.A.String()
 	case *dns.AAAA:
 		rc.Target = v.AAAA.String()
+	case *dns.CAA:
+		rc.CaaTag = v.Tag
+		rc.CaaFlag = v.Flag
+		rc.Target = v.Value
 	case *dns.CNAME:
 		rc.Target = v.Target
 	case *dns.MX:
