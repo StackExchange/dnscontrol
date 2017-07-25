@@ -118,6 +118,8 @@ function DefaultTTL(v) {
     }
 }
 
+// CAA_CRITICAL: Critical CAA flag
+var CAA_CRITICAL = 1<<0;
 
 
 // DnsProvider("providerName", 0) 
@@ -153,6 +155,18 @@ function ALIAS(name, target) {
     var mods = getModifiers(arguments,2)
     return function(d) {
         addRecord(d,"ALIAS",name,target,mods)
+    }
+}
+
+// CAA(name,tag,value, recordModifiers...)
+function CAA(name, tag, value){
+    checkArgs([_.isString, _.isString, _.isString], arguments, "CAA expects (name, tag, value) plus optional flag as a meta argument")
+
+    var mods = getModifiers(arguments,3)
+    mods.push({caatag: tag});
+
+    return function(d) {
+        addRecord(d,"CAA",name,value,mods)
     }
 }
 
@@ -303,6 +317,9 @@ function addRecord(d,type,name,target,mods) {
             var m = mods[i]
             if (_.isFunction(m)) {
                 m(rec);
+            } else if (_.isObject(m) && m.caatag) {
+                // caatag is a top level object, not in meta
+                rec.caatag = m.caatag;
             } else if (_.isObject(m)) {
                  //convert transforms to strings
                  if (m.transform && _.isArray(m.transform)){
@@ -312,6 +329,8 @@ function addRecord(d,type,name,target,mods) {
                 _.extend(rec.meta,m);
             } else if (_.isNumber(m) && type == "MX") {
                rec.mxpreference = m;
+            } else if (_.isNumber(m) && type == "CAA") {
+               rec.caaflags |= m;
             } else {
                 console.log("WARNING: Modifier type unsupported:", typeof m, "(Skipping!)");
             }
