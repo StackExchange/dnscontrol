@@ -282,6 +282,10 @@ func NormalizeAndValidateConfig(config *models.DNSConfig) (errs []error) {
 				if rec.Name, err = transform.PtrNameMagic(rec.Name, domain.Name); err != nil {
 					errs = append(errs, err)
 				}
+			} else if rec.Type == "CAA" {
+				if rec.CaaTag != "issue" && rec.CaaTag != "issuewild" && rec.CaaTag != "iodef" {
+					errs = append(errs, fmt.Errorf("CAA tag %s is invalid", rec.CaaTag))
+				}
 			}
 			// Populate FQDN:
 			rec.NameFQDN = dnsutil.AddOrigin(rec.Name, domain.Name)
