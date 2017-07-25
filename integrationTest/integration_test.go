@@ -236,6 +236,13 @@ func srv(name string, priority, weight, port uint16, target string) *rec {
 	return r
 }
 
+func caa(name string, tag string, flag uint8, target string) *rec {
+	r := makeRec(name, target, "CAA")
+	r.CaaFlags = flag
+	r.CaaTag = tag
+	return r
+}
+
 func makeRec(name, target, typ string) *rec {
 	return &rec{
 		Name:   name,
@@ -326,6 +333,15 @@ var tests = []*TestCase{
 	tc("Change Priority", srv("@", 52, 6, 7, "foo.com."), srv("@", 15, 65, 75, "foo4.com.")).IfHasCapability(providers.CanUseSRV),
 	tc("Change Weight", srv("@", 52, 62, 7, "foo.com."), srv("@", 15, 65, 75, "foo4.com.")).IfHasCapability(providers.CanUseSRV),
 	tc("Change Port", srv("@", 52, 62, 72, "foo.com."), srv("@", 15, 65, 75, "foo4.com.")).IfHasCapability(providers.CanUseSRV),
+
+	//CAA
+	tc("Empty").IfHasCapability(providers.CanUseCAA),
+	tc("CAA record", caa("@", "issue", 0, "letsencrypt.org")).IfHasCapability(providers.CanUseCAA),
+	tc("CAA change tag", caa("@", "issuewild", 0, "letsencrypt.org")).IfHasCapability(providers.CanUseCAA),
+	tc("CAA change target", caa("@", "issuewild", 0, "example.com")).IfHasCapability(providers.CanUseCAA),
+	tc("CAA change flag", caa("@", "issuewild", 1, "example.com")).IfHasCapability(providers.CanUseCAA),
+	tc("CAA many records", caa("@", "issue", 0, "letsencrypt.org"), caa("@", "issuewild", 0, ";"), caa("@", "iodef", 1, "mailto:test@example.com")).IfHasCapability(providers.CanUseCAA),
+	tc("CAA delete", caa("@", "issue", 0, "letsencrypt.org")).IfHasCapability(providers.CanUseCAA),
 
 	//TODO: in validation, check that everything is given in unicode. This case hurts too much.
 	//tc("IDN pre-punycoded", cname("xn--o-0gab", "xn--o-0gab.xn--o-0gab.")),
