@@ -53,6 +53,7 @@ func validateRecordTypes(rec *models.RecordConfig, domain string, pTypes []strin
 		"A":                true,
 		"AAAA":             true,
 		"CNAME":            true,
+		"CAA":              true,
 		"IMPORT_TRANSFORM": false,
 		"MX":               true,
 		"SRV":              true,
@@ -149,7 +150,7 @@ func checkTargets(rec *models.RecordConfig, domain string) (errs []error) {
 		check(checkTarget(target))
 	case "SRV":
 		check(checkTarget(target))
-	case "TXT", "IMPORT_TRANSFORM":
+	case "TXT", "IMPORT_TRANSFORM", "CAA":
 	default:
 		if rec.Metadata["orig_custom_type"] != "" {
 			//it is a valid custom type. We perform no validation on target
@@ -206,7 +207,7 @@ func importTransform(srcDomain, dstDomain *models.DomainConfig, transforms []tra
 			r := newRec()
 			r.Target = transformCNAME(r.Target, srcDomain.Name, dstDomain.Name)
 			dstDomain.Records = append(dstDomain.Records, r)
-		case "MX", "NS", "SRV", "TXT":
+		case "MX", "NS", "SRV", "TXT", "CAA":
 			// Not imported.
 			continue
 		default:
@@ -280,6 +281,10 @@ func NormalizeAndValidateConfig(config *models.DNSConfig) (errs []error) {
 				var err error
 				if rec.Name, err = transform.PtrNameMagic(rec.Name, domain.Name); err != nil {
 					errs = append(errs, err)
+				}
+			} else if rec.Type == "CAA" {
+				if rec.CaaTag != "issue" && rec.CaaTag != "issuewild" && rec.CaaTag != "iodef" {
+					errs = append(errs, fmt.Errorf("CAA tag %s is invalid", rec.CaaTag))
 				}
 			}
 			// Populate FQDN:
@@ -357,6 +362,7 @@ func checkProviderCapabilities(dc *models.DomainConfig, pList []*models.DNSProvi
 		{"ALIAS", providers.CanUseAlias},
 		{"PTR", providers.CanUsePTR},
 		{"SRV", providers.CanUseSRV},
+		{"CAA", providers.CanUseCAA},
 	}
 	for _, ty := range types {
 		hasAny := false

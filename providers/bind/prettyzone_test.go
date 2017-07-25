@@ -181,6 +181,33 @@ var testdataZFSRV = `$TTL 300
                  IN SRV   10 10 9999 foo.com.
 `
 
+func TestWriteZoneFileCaa(t *testing.T) {
+	//exhibits explicit ttls and long name
+	r1, _ := dns.NewRR(`bosun.org. 300 IN CAA 0 issuewild ";"`)
+	r2, _ := dns.NewRR(`bosun.org. 300 IN CAA 0 issue "letsencrypt.org"`)
+	r3, _ := dns.NewRR(`bosun.org. 300 IN CAA 1 iodef "http://example.com"`)
+	r4, _ := dns.NewRR(`bosun.org. 300 IN CAA 0 iodef "https://example.com"`)
+	r5, _ := dns.NewRR(`bosun.org. 300 IN CAA 0 iodef "https://example.net"`)
+	r6, _ := dns.NewRR(`bosun.org. 300 IN CAA 1 iodef "mailto:example.com"`)
+	buf := &bytes.Buffer{}
+	WriteZoneFile(buf, []dns.RR{r1, r2, r3, r4, r5, r6}, "bosun.org")
+	if buf.String() != testdataZFCAA {
+		t.Log(buf.String())
+		t.Log(testdataZFCAA)
+		t.Fatalf("Zone file does not match.")
+	}
+	parseAndRegen(t, buf, testdataZFCAA)
+}
+
+var testdataZFCAA = `$TTL 300
+@                IN CAA   1 iodef "http://example.com"
+                 IN CAA   1 iodef "mailto:example.com"
+                 IN CAA   0 iodef "https://example.com"
+                 IN CAA   0 iodef "https://example.net"
+                 IN CAA   0 issue "letsencrypt.org"
+                 IN CAA   0 issuewild ";"
+`
+
 func TestWriteZoneFileOrder(t *testing.T) {
 	var records []dns.RR
 	for i, td := range []string{
