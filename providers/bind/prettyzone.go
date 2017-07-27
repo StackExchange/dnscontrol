@@ -67,6 +67,19 @@ func (z *zoneGenData) Less(i, j int) bool {
 		if pa != pb {
 			return pa < pb
 		}
+	case dns.TypeCAA:
+		ta2, tb2 := a.(*dns.CAA), b.(*dns.CAA)
+		// sort by tag
+		pa, pb := ta2.Tag, tb2.Tag
+		if pa != pb {
+			return pa < pb
+		}
+		// then flag
+		fa, fb := ta2.Flag, tb2.Flag
+		if fa != fb {
+			// flag set goes before ones without flag set
+			return fa > fb
+		}
 	default:
 		panic(fmt.Sprintf("zoneGenData Less: unimplemented rtype %v", dns.TypeToString[rrtypeA]))
 	}

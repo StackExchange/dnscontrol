@@ -71,8 +71,10 @@ type RecordConfig struct {
 	SrvPriority  uint16            `json:"srvpriority,omitempty"`
 	SrvWeight    uint16            `json:"srvweight,omitempty"`
 	SrvPort      uint16            `json:"srvport,omitempty"`
+	CaaTag       string            `json:"caatag,omitempty"`
+	CaaFlag      uint8             `json:"caaflag,omitempty"`
 
-	CombinedTarget bool `json:"omit"`
+	CombinedTarget bool `json:"-"`
 
 	Original interface{} `json:"-"` // Store pointer to provider-specific record object. Used in diffing.
 }
@@ -90,6 +92,8 @@ func (r *RecordConfig) String() (content string) {
 		content += fmt.Sprintf(" priority=%d", r.MxPreference)
 	case "SOA":
 		content = fmt.Sprintf("%s %s %s %d", r.Type, r.Name, r.Target, r.TTL)
+	case "CAA":
+		content += fmt.Sprintf(" caatag=%s caaflag=%d", r.CaaTag, r.CaaFlag)
 	default:
 		panic(fmt.Sprintf("rc.String rtype %v unimplemented", r.Type))
 	}
@@ -138,6 +142,8 @@ func (r *RecordConfig) MergeToTarget() {
 	r.SrvPriority = 0
 	r.SrvWeight = 0
 	r.SrvPort = 0
+	r.CaaFlag = 0
+	r.CaaTag = ""
 
 	r.CombinedTarget = true
 }
@@ -193,6 +199,10 @@ func (rc *RecordConfig) ToRR() dns.RR {
 		rr.(*dns.SRV).Weight = rc.SrvWeight
 		rr.(*dns.SRV).Port = rc.SrvPort
 		rr.(*dns.SRV).Target = rc.Target
+	case dns.TypeCAA:
+		rr.(*dns.CAA).Flag = rc.CaaFlag
+		rr.(*dns.CAA).Tag = rc.CaaTag
+		rr.(*dns.CAA).Value = rc.Target
 	case dns.TypeTXT:
 		rr.(*dns.TXT).Txt = []string{rc.Target}
 	default:
