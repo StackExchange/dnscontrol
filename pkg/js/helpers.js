@@ -135,84 +135,86 @@ function DnsProvider(name, nsCount){
 }
 
 // A(name,ip, recordModifiers...)
-function A(name, ip) {
-    var mods = getModifiers(arguments,2)
-    return function(d) {
-        addRecord(d,"A",name,ip,mods)
-    }
-}
+var A = recordBuilder({
+    type: 'A',
+});
 
 // AAAA(name,ip, recordModifiers...)
-function AAAA(name, ip) {
-    var mods = getModifiers(arguments,2)
-    return function(d) {
-        addRecord(d,"AAAA",name,ip,mods)
-    }
-}
+var AAAA = recordBuilder({
+    type: 'AAAA',
+});
 
 // ALIAS(name,target, recordModifiers...)
-function ALIAS(name, target) {
-    var mods = getModifiers(arguments,2)
-    return function(d) {
-        addRecord(d,"ALIAS",name,target,mods)
-    }
-}
+var ALIAS = recordBuilder({
+    type: 'ALIAS',
+});
 
 // CAA(name,tag,value, recordModifiers...)
-function CAA(name, tag, value){
-    checkArgs([_.isString, _.isString, _.isString], arguments, "CAA expects (name, tag, value) plus optional flag as a meta argument")
-
-    var mods = getModifiers(arguments,3)
-    mods.push({caatag: tag});
-
-    return function(d) {
-        addRecord(d,"CAA",name,value,mods)
-    }
-}
-
+var CAA = recordBuilder({
+    type: 'CAA',
+    args: [
+        ['name', _.isString],
+        ['tag', _.isString],
+        ['value', _.isString],
+    ],
+    transform: function(record, args, modifiers){
+        record.name = args.name;
+        record.caatag = args.tag;
+        record.target = args.value;
+    },
+    modifierNumber: function(record, value){
+        record.caaflags |= value;
+    },
+});
 
 // CNAME(name,target, recordModifiers...)
-function CNAME(name, target) {
-    var mods = getModifiers(arguments,2)
-    return function(d) {
-        addRecord(d,"CNAME",name,target,mods)
-    }
-}
+var CNAME = recordBuilder({
+    type: 'CNAME',
+});
 
 // PTR(name,target, recordModifiers...)
-function PTR(name, target) {
-    var mods = getModifiers(arguments,2)
-    return function(d) {
-        addRecord(d,"PTR",name,target,mods)
-    }
-}
+var PTR = recordBuilder({
+    type: 'PTR',
+});
 
 // SRV(name,priority,weight,port,target, recordModifiers...)
-function SRV(name, priority, weight, port, target) {
-    checkArgs([_.isString, _.isNumber, _.isNumber, _.isNumber, _.isString], arguments, "SRV expects (name, priority, weight, port, target)")
-    var mods = getModifiers(arguments,5)
-    return function(d) {
-        addRecordSRV(d, "SRV", name, priority, weight, port, target, mods)
-    }
-}
+var SRV = recordBuilder({
+    type: 'SRV',
+    args: [
+        ['name', _.isString],
+        ['priority', _.isNumber],
+        ['weight', _.isNumber],
+        ['port', _.isNumber],
+        ['target', _.isString],
+    ],
+    transform: function(record, args, modifiers){
+        record.name = args.name;
+        record.srvpriority = args.priority;
+        record.srvweight = args.weight;
+        record.srvport = args.port;
+        record.target = args.value;
+    },
+});
 
 // TXT(name,target, recordModifiers...)
-function TXT(name, target) {
-    var mods = getModifiers(arguments,2)
-    return function(d) {
-        addRecord(d,"TXT",name,target,mods)
-    }
-}
+var TXT = recordBuilder({
+    type: 'TXT',
+});
 
 // MX(name,priority,target, recordModifiers...)
-function MX(name, priority, target) {
-    checkArgs([_.isString, _.isNumber, _.isString], arguments, "MX expects (name, priority, target)")
-    var mods = getModifiers(arguments,3)
-    return function(d) {
-        mods.push(priority);
-        addRecord(d, "MX", name, target, mods)
-    }
-}
+var MX = recordBuilder({
+    type: 'MX',
+    args: [
+        ['name', _.isString],
+        ['priority', _.isNumber],
+        ['target', _.isString],
+    ],
+    transform: function(record, args, modifiers){
+        record.name = args.name;
+        record.mxpreference = args.priority;
+        record.target = args.target;
+    },
+});
 
 function checkArgs(checks, args, desc){
     if (args.length < checks.length){
@@ -226,12 +228,9 @@ function checkArgs(checks, args, desc){
 }
 
 // NS(name,target, recordModifiers...)
-function NS(name, target) {
-    var mods = getModifiers(arguments,2)
-    return function(d) {
-        addRecord(d,"NS",name,target,mods)
-    }
-}
+var NS = recordBuilder({
+    type: 'NS',
+});
 
 // NAMESERVER(name,target)
 function NAMESERVER(name, target) {
@@ -274,15 +273,21 @@ function format_tt(transform_table) {
 }
 
 // IMPORT_TRANSFORM(translation_table, domain)
-function IMPORT_TRANSFORM(translation_table, domain,ttl) {
-    return function(d) {
-        var rec = addRecord(d, "IMPORT_TRANSFORM", "@", domain, [
-            {'transform_table': format_tt(translation_table)}])
-        if (ttl){
-            rec.ttl = ttl;
-        }
+var IMPORT_TRANSFORM = recordBuilder({
+    type: 'IMPORT_TRANSFORM',
+    args: [
+        ['translation_table'],
+        ['domain'],
+    ],
+    transform: function(record, args, modifiers){
+        record.name = '@';
+        record.target = args.domain;
+        record.meta['transform_table'] = format_tt(args.translation_table);
+    },
+    modifierNumber: function(record, value){
+        record.ttl = value;
     }
-}
+});
 
 // PURGE()
 function PURGE(d) {
@@ -294,6 +299,9 @@ function NO_PURGE(d) {
   d.KeepUnknown = true
 }
 
+/**
+ * @deprecated
+ */
 function getModifiers(args,start) {
     var mods = [];
     for (var i = start;i<args.length; i++) {
@@ -302,6 +310,125 @@ function getModifiers(args,start) {
     return mods;
 }
 
+/**
+ * Record type builder
+ * @param {string} opts.args[][0] Argument name
+ * @param {function=} opts.args[][1] Optional validator
+ * @param {function=} opts.transform Function to apply arguments to record.
+ *        Take (record, args, modifier) as arguments. Any modifiers will be
+ *        applied before this function. It should mutate the given record.
+ * @param {function=} opts.modifierNumber Function to handle modifiers with number type.
+ *        Take (record, value) as arguments. Default to show a warning
+ * @param {function=} opts.modifierString Function to handle modifiers with String type.
+ *        Take (record, value) as arguments. Default to show a warning
+ * @param {function=} opts.modifierBoolean Function to handle modifiers with boolean type.
+ *        Take (record, value) as arguments. Default to show a warning
+ * @param {function=} opts.applyModifier Function to apply modifiers to the record
+ */
+function recordBuilder(opts){
+    opts = _.defaults(opts, {
+        args: [
+            ['name', _.isString],
+            ['target'],
+        ],
+
+        transform: function(record, args, modifiers) {
+            // record will have modifiers already applied
+            // args will be an object for parameters defined
+            record.name = args.name;
+            if (_.isNumber(args.target)) {
+                record.target = num2dot(args.target);
+            } else {
+                record.target = args.target;
+            }
+        },
+
+        modifierNumber: function(record, value) {
+            console.log("WARNING: Number modifier not supported (skipping!)");
+        },
+
+        modifierString: function(record, value) {
+            console.log("WARNING: Number modifier not supported (skipping!)");
+        },
+
+        modifierBoolean: function(record, value) {
+            console.log("WARNING: Number modifier not supported (skipping!)");
+        },
+
+        applyModifier: function(record, modifiers) {
+            for (var i = 0; i < modifiers.length; i++) {
+                var mod = modifiers[i];
+
+                if (_.isFunction(mod)) {
+                    mod(record);
+                } else if (_.isNumber(mod)) {
+                    opts.modifierNumber(record, mod);
+                } else if (_.isString(mod)) {
+                    opts.modifierString(record, mod);
+                } else if (_.isBoolean(mod)) {
+                    opts.modifierBoolean(record, mod);
+                } else if (_.isObject(mod)) {
+                    // convert transforms to strings
+                    if (mod.transform && _.isArray(mod.transform)) {
+                        mod.transform = format_tt(mod.transform);
+                    }
+                    _.extend(record.meta, mod);
+                } else {
+                    throw "ERROR: Unknown modifier type";
+                }
+            }
+        },
+    });
+
+    return function(){
+        var parsedArgs = {};
+        var modifiers = [];
+
+        if (arguments.length < opts.args.length) {
+            var argumentsList = opts.args.map(function(item){
+                return item[0];
+            }).join(', ');
+            throw opts.type + " record requires " + opts.args.length + " arguments (" + argumentsList + "). Only " + arguments.length + " were supplied";
+            return;
+        }
+
+        // collect arguments
+        for (var i = 0; i < opts.args.length; i++) {
+            var argDefinition = opts.args[i];
+            var value = arguments[i];
+            if (argDefinition.length > 1) {
+                // run validator if supplied
+                if(!argDefinition[1](value)){
+                    throw opts.type + " record " + argDefinition[0] + " argument validation failed";
+                }
+            }
+            parsedArgs[argDefinition[0]] = value;
+        }
+
+        // collect modifiers
+        for (var i = opts.args.length; i < arguments.length; i++) {
+            modifiers.push(arguments[i]);
+        }
+
+        return function(d){
+            var record = {
+                type: opts.type,
+                meta: {},
+                ttl: d.defaultTTL,
+            };
+
+            opts.applyModifier(record, modifiers);
+            opts.transform(record, parsedArgs, modifiers);
+
+            d.records.push(record);
+            return record;
+        };
+    };
+}
+
+/**
+ * @deprecated
+ */
 function addRecord(d,type,name,target,mods) {
     // if target is number, assume ip address. convert it.
     if (_.isNumber(target)) {
@@ -312,40 +439,6 @@ function addRecord(d,type,name,target,mods) {
     // - Function: call is with the record as the argument
     // - Object: merge it into the metadata
     // - Number: IF MX record assume it is priority
-    if (mods) {
-        for (var i = 0; i< mods.length; i++) {
-            var m = mods[i]
-            if (_.isFunction(m)) {
-                m(rec);
-            } else if (_.isObject(m) && m.caatag) {
-                // caatag is a top level object, not in meta
-                rec.caatag = m.caatag;
-            } else if (_.isObject(m)) {
-                 //convert transforms to strings
-                 if (m.transform && _.isArray(m.transform)){
-                    m.transform = format_tt(m.transform)
-                 }
-                _.extend(rec.meta,m);
-                _.extend(rec.meta,m);
-            } else if (_.isNumber(m) && type == "MX") {
-               rec.mxpreference = m;
-            } else if (_.isNumber(m) && type == "CAA") {
-               rec.caaflags |= m;
-            } else {
-                console.log("WARNING: Modifier type unsupported:", typeof m, "(Skipping!)");
-            }
-        }
-    }
-    d.records.push(rec);
-    return rec;
-}
-
-function addRecordSRV(d,type,name,srvpriority,srvweight,srvport,target,mods) {
-    var rec = {type: type, name: name, srvpriority: srvpriority, srvweight: srvweight, srvport: srvport, target: target, ttl:d.defaultTTL, meta:{}};
-    // for each modifier, decide based on type:
-    // - Function: call is with the record as the argument
-    // - Object: merge it into the metadata
-    // FIXME(tlim): Factor this code out to its own function.
     if (mods) {
         for (var i = 0; i< mods.length; i++) {
             var m = mods[i]
@@ -406,19 +499,34 @@ var CF_PROXY_DEFAULT_OFF = {'cloudflare_proxy_default': 'off'};
 var CF_PROXY_DEFAULT_ON = {'cloudflare_proxy_default': 'on'};
 
 // CUSTOM, PROVIDER SPECIFIC RECORD TYPES
-function CF_REDIRECT(src, dst) {
-    return function(d) {
-        if (src.indexOf(",") !== -1 || dst.indexOf(",") !== -1){
-            throw("redirect src and dst must not have commas")
-        }
-        addRecord(d,"CF_REDIRECT","@",src+","+dst)
+
+function _validateCloudFlareRedirect(value){
+    if(!_.isString(value)){
+        return false;
     }
+    return value.indexOf(",") === -1;
 }
-function CF_TEMP_REDIRECT(src, dst) {
-    return function(d) {
-        if (src.indexOf(",") !== -1 || dst.indexOf(",") !== -1){
-            throw("redirect src and dst must not have commas")
-        }
-        addRecord(d,"CF_TEMP_REDIRECT","@",src+","+dst)
-    }
-}
+
+var CF_REDIRECT = recordBuilder({
+    type: "CF_REDIRECT",
+    args: [
+        ["source", _validateCloudFlareRedirect],
+        ["destination", _validateCloudFlareRedirect],
+    ],
+    transform: function(record, args, modifiers){
+        record.name = "@";
+        record.target = args.source + "," + args.destination;
+    },
+});
+
+var CF_TEMP_REDIRECT = recordBuilder({
+    type: "CF_TEMP_REDIRECT",
+    args: [
+        ["source", _validateCloudFlareRedirect],
+        ["destination", _validateCloudFlareRedirect],
+    ],
+    transform: function(record, args, modifiers){
+        record.name = "@";
+        record.target = args.source + "," + args.destination;
+    },
+});
