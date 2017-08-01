@@ -86,8 +86,6 @@ func (r *RecordConfig) String() (content string) {
 
 	content = fmt.Sprintf("%s %s %s %d", r.Type, r.NameFQDN, r.Target, r.TTL)
 	switch r.Type {
-	case "A", "AAAA", "PTR", "TXT":
-		//
 	case "MX":
 		content += fmt.Sprintf(" priority=%d", r.MxPreference)
 	case "SOA":
@@ -95,7 +93,7 @@ func (r *RecordConfig) String() (content string) {
 	case "CAA":
 		content += fmt.Sprintf(" caatag=%s caaflag=%d", r.CaaTag, r.CaaFlag)
 	default:
-		panic(fmt.Sprintf("rc.String rtype %v unimplemented", r.Type))
+		// assume nothing special for A,CNAME,AAAA, and other simple types.
 	}
 	for k, v := range r.Metadata {
 		content += fmt.Sprintf(" %s=%s", k, v)
