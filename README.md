@@ -2,7 +2,7 @@
 
 [![Build Status](https://travis-ci.org/StackExchange/dnscontrol.svg?branch=master)](https://travis-ci.org/StackExchange/dnscontrol)
 [![Gitter chat](https://badges.gitter.im/dnscontrol/Lobby.png)](https://gitter.im/dnscontrol/Lobby)
-[![Google Group chat]()](https://groups.google.com/forum/#!forum/dnscontrol-discuss)
+[![Google Group chat](https://img.shields.io/badge/google%20group-chat-green.svg)](https://groups.google.com/forum/#!forum/dnscontrol-discuss)
 
 DNSControl is a system for maintaining DNS zones.  It has two parts:
 a domain specific language (DSL) for describing DNS zones plus
