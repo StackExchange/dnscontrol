@@ -117,10 +117,10 @@ D("chiphacker.com", REG_NAMECOM, DnsProvider(CFLARE),
     A("meta", "1.2.3.4", CF_PROXY_ON),
 
     // 302 for meta subdomain
-    CF_TEMP_REDIRECT("meta.chiphacker.com/*", "https://electronics.meta.stackexchange.com/$1),
+    CF_TEMP_REDIRECT("meta.chiphacker.com/*", "https://electronics.meta.stackexchange.com/$1"),
 
     // 301 all subdomains and preserve path
-    CF_REDIRECT("*chiphacker.com/*", "https://electronics.stackexchange.com/$2),
+    CF_REDIRECT("*chiphacker.com/*", "https://electronics.stackexchange.com/$2"),
 );
 {%endhighlight%}
 
