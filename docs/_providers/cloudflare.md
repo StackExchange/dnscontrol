@@ -110,6 +110,8 @@ The cloudflare provider can manage Page-Rule based redirects for your domains. S
 
 // chiphacker.com is an alias for electronics.stackexchange.com
 
+var CFLARE = NewDnsProvider('cloudflare.com','CLOUDFLAREAPI', {"manage_redirects": true}); // enable manage_redirects
+
 D("chiphacker.com", REG_NAMECOM, DnsProvider(CFLARE),
     // must have A records with orange cloud on. Otherwise page rule will never run.
     A("@","1.2.3.4", CF_PROXY_ON),
