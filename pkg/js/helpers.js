@@ -192,7 +192,7 @@ var SRV = recordBuilder({
         record.srvpriority = args.priority;
         record.srvweight = args.weight;
         record.srvport = args.port;
-        record.target = args.value;
+        record.target = args.target;
     },
 });
 
