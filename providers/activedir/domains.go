@@ -165,7 +165,7 @@ func (r *RecordConfigJson) unpackRecord(origin string) *models.RecordConfig {
 	rc.Type = r.Type
 	rc.TTL = r.TTL
 
-	switch rc.Type {
+	switch rc.Type { // #rtype_variations
 	case "A":
 		rc.Target = r.Data
 	case "CNAME":
@@ -200,7 +200,7 @@ func (c *adProvider) generatePowerShellCreate(domainname string, rec *models.Rec
 	text += fmt.Sprintf(` -ZoneName "%s"`, domainname)
 	text += fmt.Sprintf(` -Name "%s"`, rec.Name)
 	text += fmt.Sprintf(` -TimeToLive $(New-TimeSpan -Seconds %d)`, rec.TTL)
-	switch rec.Type {
+	switch rec.Type { // #rtype_variations
 	case "CNAME":
 		text += fmt.Sprintf(` -HostNameAlias "%s"`, content)
 	case "A":
@@ -209,6 +209,8 @@ func (c *adProvider) generatePowerShellCreate(domainname string, rec *models.Rec
 		text = fmt.Sprintf("\r\n"+`echo "Skipping NS update (%v %v)"`+"\r\n", rec.Name, rec.Target)
 	default:
 		panic(fmt.Errorf("ERROR: generatePowerShellCreate() does not yet handle recType=%s recName=%#v content=%#v)\n", rec.Type, rec.Name, content))
+		// We panic so that we quickly find any switch statements
+		// that have not been updated for a new RR type.
 	}
 	text += "\r\n"
 
@@ -220,7 +222,7 @@ func (c *adProvider) generatePowerShellModify(domainname, recName, recType, oldC
 
 	var queryField, queryContent string
 
-	switch recType {
+	switch recType { // #rtype_variations
 	case "A":
 		queryField = "IPv4address"
 		queryContent = `"` + oldContent + `"`
@@ -229,6 +231,8 @@ func (c *adProvider) generatePowerShellModify(domainname, recName, recType, oldC
 		queryContent = `"` + oldContent + `"`
 	default:
 		panic(fmt.Errorf("ERROR: generatePowerShellModify() does not yet handle recType=%s recName=%#v content=(%#v, %#v)\n", recType, recName, oldContent, newContent))
+		// We panic so that we quickly find any switch statements
+		// that have not been updated for a new RR type.
 	}
 
 	text := "\r\n" // Skip a line.
