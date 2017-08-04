@@ -80,7 +80,7 @@ func (api *DoApi) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Corre
 	}
 
 	existingRecords := make([]*models.RecordConfig, len(records))
-	for i, _ := range records {
+	for i := range records {
 		existingRecords[i] = toRc(dc, &records[i])
 	}
 
