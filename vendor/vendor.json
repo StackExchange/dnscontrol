@@ -194,6 +194,18 @@
 			"revisionTime": "2017-04-24T18:15:40Z"
 		},
 		{
+			"checksumSHA1": "cGY7ZInpebRCbyfMs9IZbUBHcgE=",
+			"path": "github.com/digitalocean/godo",
+			"revision": "34840385860db94c88d044571153b6a200ca40b2",
+			"revisionTime": "2017-07-06T20:03:01Z"
+		},
+		{
+			"checksumSHA1": "YpWoCsk+u9H5ctWNKKSVPf4b2as=",
+			"path": "github.com/digitalocean/godo/context",
+			"revision": "34840385860db94c88d044571153b6a200ca40b2",
+			"revisionTime": "2017-07-06T20:03:01Z"
+		},
+		{
 			"checksumSHA1": "yP+hlSaIhYwxErc/s286p9M+LIs=",
 			"path": "github.com/dnsimple/dnsimple-go/dnsimple",
 			"revision": "d0bdd43deaa2cbeee96532b109ea635457423f25",
@@ -385,6 +397,12 @@
 			"path": "github.com/tdewolff/strconv",
 			"revision": "3e8091f4417ebaaa3910da63a45ea394ebbfb0e3",
 			"revisionTime": "2016-04-27T18:05:39Z"
+		},
+		{
+			"checksumSHA1": "GQ9bu6PuydK3Yor1JgtVKUfEJm8=",
+			"path": "github.com/tent/http-link-go",
+			"revision": "ac974c61c2f990f4115b119354b5e0b47550e888",
+			"revisionTime": "2013-07-02T22:55:49Z"
 		},
 		{
 			"checksumSHA1": "9jjO5GjLa0XF/nfWihF02RoH4qc=",
