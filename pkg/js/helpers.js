@@ -118,8 +118,14 @@ function DefaultTTL(v) {
     }
 }
 
+function makeCAAFlag(value){
+    return function(record){
+        record.caaflag |= value;
+    };
+}
+
 // CAA_CRITICAL: Critical CAA flag
-var CAA_CRITICAL = 1<<0;
+var CAA_CRITICAL = makeCAAFlag(1<<0);
 
 
 // DnsProvider("providerName", 0) 
@@ -266,9 +272,6 @@ var IMPORT_TRANSFORM = recordBuilder('IMPORT_TRANSFORM', {
         record.target = args.domain;
         record.meta['transform_table'] = format_tt(args.translation_table);
     },
-    modifierNumber: function(record, value){
-        record.ttl = value;
-    }
 });
 
 // PURGE()
@@ -300,12 +303,6 @@ function getModifiers(args,start) {
  * @param {function=} opts.transform Function to apply arguments to record.
  *        Take (record, args, modifier) as arguments. Any modifiers will be
  *        applied before this function. It should mutate the given record.
- * @param {function=} opts.modifierNumber Function to handle modifiers with number type.
- *        Take (record, value) as arguments. Default to show a warning
- * @param {function=} opts.modifierString Function to handle modifiers with String type.
- *        Take (record, value) as arguments. Default to show a warning
- * @param {function=} opts.modifierBoolean Function to handle modifiers with boolean type.
- *        Take (record, value) as arguments. Default to show a warning
  * @param {function=} opts.applyModifier Function to apply modifiers to the record
  */
 function recordBuilder(type, opts){
@@ -326,30 +323,12 @@ function recordBuilder(type, opts){
             }
         },
 
-        modifierNumber: function(record, value) {
-            console.log("WARNING: Number modifier not supported (skipping!)");
-        },
-
-        modifierString: function(record, value) {
-            console.log("WARNING: Number modifier not supported (skipping!)");
-        },
-
-        modifierBoolean: function(record, value) {
-            console.log("WARNING: Number modifier not supported (skipping!)");
-        },
-
         applyModifier: function(record, modifiers) {
             for (var i = 0; i < modifiers.length; i++) {
                 var mod = modifiers[i];
 
                 if (_.isFunction(mod)) {
                     mod(record);
-                } else if (_.isNumber(mod)) {
-                    opts.modifierNumber(record, mod);
-                } else if (_.isString(mod)) {
-                    opts.modifierString(record, mod);
-                } else if (_.isBoolean(mod)) {
-                    opts.modifierBoolean(record, mod);
                 } else if (_.isObject(mod)) {
                     // convert transforms to strings
                     if (mod.transform && _.isArray(mod.transform)) {
