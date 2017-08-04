@@ -43,7 +43,7 @@ information to print a human-readable list of what is being changed,
 but upload the entire new zone.
 
 
-## Step 3: Create the driver skeletin
+## Step 3: Create the driver skeleton
 
 Create a directory for the provider called `providers/name` where
 `name` is all lowercase and represents the commonly-used name for
@@ -71,9 +71,10 @@ that DNSControl can call to actually make the corrections.
 
 ## Step 6: Unit Test
 
-Make sure the unit tests all work.  Please add unit tests for your
-code. We do not want 100% code coverage, but any complex algorithms
-should have tests.
+Make sure the existing unit tests work.  Add unit tests for any
+complex algorithms in the new code.
+
+Run the unit tests with this command:
 
     cd dnscontrol
     go test ./...
@@ -113,37 +114,41 @@ go test -v -verbose -provider ROUTE53
 
 ## Step 6: Submit a PR
 
-At this point you can submit a PR.  (Actually you can submit the
-PR even earlier if you just want feedback, input, or have questions.)
+At this point you can submit a PR.
+
+Actually you can submit the PR even earlier if you just want feedback,
+input, or have questions.  This is just a good stopping place to
+submit a PR. At a minimum a new provider should pass all the
+integration tests. Everything else is a bonus.
 
 
 ## Step 7: Capabilities
 
-The last step is to add the optional provider capabilities. You can
+The last step is to add any optional provider capabilities. You can
 submit these as a separate PR once the main provider is working.
 Don't feel obligated to implement everything at once. In fact, we'd
-prefer a few small PRs than one big one.
+prefer a few small PRs than one big one. Focus on getting the basic
+provider working well before adding these extras.
 
 Operational features have names like `providers.CanUseSRV` and
 `providers.CanUseAlias`.  The list of optional "capabilities" are
 in the file `dnscontrol/providers/providers.go` (look for `CanUseAlias`).
 
-Not all providers support these features.  If (for example) a
+Capabilities are processed early by DNSControl.  For example if a
 provider doesn't support SRV records, DNSControl will error out
-early in the process (when parsing dnscontrol.js)
-rather than waiting until the API fails (at the very end).
+when parsing dnscontrol.js rather than waiting until the API fails
+at the very end.
 
 Enable optional capabilities in the nameProvider.go file and run
 the integration tests to see what works and what doesn't.  Fix any
 bugs and repeat.
 
+
 ## Vendoring Dependencies
 
-If your provider depends on other go packages, then you must vendor them. To do this, use [govendor](https://github.com/kardianos/govendor). 
+If your provider depends on other go packages, then you must vendor them. To do this, use [govendor](https://github.com/kardianos/govendor).  A command like this is usually suffient:
 
 ```
 go get github.com/kardianos/govendor
 govendor add +e
 ```
-
-is usually sufficient.
