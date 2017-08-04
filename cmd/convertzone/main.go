@@ -109,7 +109,7 @@ func rrFormat(zonename string, filename string, r io.Reader, defaultTTL uint32, 
 		if !dsl { // TSV format:
 			fmt.Printf("%s\t%s\t%s\t%s\t%s\n", name, ttl, classStr, typeStr, target)
 		} else { // DSL format:
-			switch hdr.Rrtype {
+			switch hdr.Rrtype { // #rtype_variations
 			case dns.TypeMX:
 				m := strings.SplitN(target, "\t", 2)
 				target = m[0] + ", '" + m[1] + "'"

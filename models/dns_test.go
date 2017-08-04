@@ -44,7 +44,7 @@ func TestRR(t *testing.T) {
 		TTL:      300,
 		NameFQDN: "example.com",
 		CaaTag:   "iodef",
-		CaaFlags: 1,
+		CaaFlag:  1,
 	}
 	expected = "example.com.\t300\tIN\tCAA\t1 iodef \"mailto:test@example.com\""
 	found = experiment.ToRR().String()
