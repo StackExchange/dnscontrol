@@ -1,17 +1,17 @@
 package digitalocean
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
-	"context"
 
 	"github.com/StackExchange/dnscontrol/models"
 	"github.com/StackExchange/dnscontrol/providers"
 	"github.com/StackExchange/dnscontrol/providers/diff"
 	"github.com/miekg/dns/dnsutil"
 
-	"golang.org/x/oauth2"
 	"github.com/digitalocean/godo"
+	"golang.org/x/oauth2"
 )
 
 /*
@@ -39,8 +39,8 @@ func newDo(m map[string]string, metadata json.RawMessage) (providers.DNSServiceP
 	}
 
 	oauthClient := oauth2.NewClient(
-	    context.Background(),
-	    oauth2.StaticTokenSource(&oauth2.Token{AccessToken: m["token"]}),
+		context.Background(),
+		oauth2.StaticTokenSource(&oauth2.Token{AccessToken: m["token"]}),
 	)
 	client := godo.NewClient(oauthClient)
 
@@ -56,8 +56,8 @@ func (api *DoApi) EnsureDomain(domain string) error {
 	ctx := context.Background()
 	_, resp, err := api.client.Domains.Get(ctx, domain)
 	if resp.Status == "404" {
-		_, _, err := api.client.Domains.Create(ctx, &godo.DomainCreateRequest {
-			Name: domain,
+		_, _, err := api.client.Domains.Create(ctx, &godo.DomainCreateRequest{
+			Name:      domain,
 			IPAddress: "",
 		})
 		return err
@@ -128,14 +128,14 @@ func (api *DoApi) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Corre
 	return corrections, nil
 }
 
-func toRc(dc *models.DomainConfig, r *godo.DomainRecord) (*models.RecordConfig) {
+func toRc(dc *models.DomainConfig, r *godo.DomainRecord) *models.RecordConfig {
 	// This handles "@" etc.
 	name := dnsutil.AddOrigin(r.Name, dc.Name)
 
 	target := r.Data
 	// Make target FQDN
 	if r.Type == "CNAME" || r.Type == "MX" || r.Type == "NS" {
-		target = dnsutil.AddOrigin(target + ".", dc.Name)
+		target = dnsutil.AddOrigin(target+".", dc.Name)
 	}
 
 	return &models.RecordConfig{
@@ -151,7 +151,7 @@ func toRc(dc *models.DomainConfig, r *godo.DomainRecord) (*models.RecordConfig) 
 	}
 }
 
-func toReq(dc *models.DomainConfig, rc *models.RecordConfig) (*godo.DomainRecordEditRequest) {
+func toReq(dc *models.DomainConfig, rc *models.RecordConfig) *godo.DomainRecordEditRequest {
 	// DO wants the short name, e.g. @
 	name := dnsutil.TrimDomainName(rc.NameFQDN, dc.Name)
 
