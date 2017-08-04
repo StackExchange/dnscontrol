@@ -127,7 +127,7 @@ func checkTargets(rec *models.RecordConfig, domain string) (errs []error) {
 			errs = append(errs, err)
 		}
 	}
-	switch rec.Type {
+	switch rec.Type { // #rtype_variations
 	case "A":
 		check(checkIPv4(target))
 	case "AAAA":
@@ -192,7 +192,7 @@ func importTransform(srcDomain, dstDomain *models.DomainConfig, transforms []tra
 			}
 			return rec2
 		}
-		switch rec.Type {
+		switch rec.Type { // #rtype_variations
 		case "A":
 			trs, err := transform.TransformIPToList(net.ParseIP(rec.Target), transforms)
 			if err != nil {
