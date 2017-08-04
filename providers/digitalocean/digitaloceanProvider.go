@@ -133,7 +133,7 @@ func toRc(dc *models.DomainConfig, r *godo.DomainRecord) *models.RecordConfig {
 	name := dnsutil.AddOrigin(r.Name, dc.Name)
 
 	target := r.Data
-	// Make target FQDN
+	// Make target FQDN (#rtype_variations)
 	if r.Type == "CNAME" || r.Type == "MX" || r.Type == "NS" {
 		target = dnsutil.AddOrigin(target+".", dc.Name)
 	}
@@ -157,7 +157,7 @@ func toReq(dc *models.DomainConfig, rc *models.RecordConfig) *godo.DomainRecordE
 
 	// DO uses the same property for MX and SRV priority
 	priority := 0
-	switch rc.Type {
+	switch rc.Type { // #rtype_variations
 	case "MX":
 		priority = int(rc.MxPreference)
 	case "SRV":
