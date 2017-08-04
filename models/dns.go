@@ -277,7 +277,7 @@ func (dc *DomainConfig) Punycode() error {
 			return err
 		}
 		switch rec.Type { // #rtype_variations
-		case "ALIAS", "MX", "NS", "CNAME", "SRV":
+		case "ALIAS", "MX", "NS", "CNAME", "PTR", "SRV":
 			rec.Target, err = idna.ToASCII(rec.Target)
 			if err != nil {
 				return err
