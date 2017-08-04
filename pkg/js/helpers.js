@@ -135,23 +135,16 @@ function DnsProvider(name, nsCount){
 }
 
 // A(name,ip, recordModifiers...)
-var A = recordBuilder({
-    type: 'A',
-});
+var A = recordBuilder('A');
 
 // AAAA(name,ip, recordModifiers...)
-var AAAA = recordBuilder({
-    type: 'AAAA',
-});
+var AAAA = recordBuilder('AAAA');
 
 // ALIAS(name,target, recordModifiers...)
-var ALIAS = recordBuilder({
-    type: 'ALIAS',
-});
+var ALIAS = recordBuilder('ALIAS');
 
 // CAA(name,tag,value, recordModifiers...)
-var CAA = recordBuilder({
-    type: 'CAA',
+var CAA = recordBuilder('CAA', {
     args: [
         ['name', _.isString],
         ['tag', _.isString],
@@ -168,18 +161,13 @@ var CAA = recordBuilder({
 });
 
 // CNAME(name,target, recordModifiers...)
-var CNAME = recordBuilder({
-    type: 'CNAME',
-});
+var CNAME = recordBuilder('CNAME');
 
 // PTR(name,target, recordModifiers...)
-var PTR = recordBuilder({
-    type: 'PTR',
-});
+var PTR = recordBuilder('PTR');
 
 // SRV(name,priority,weight,port,target, recordModifiers...)
-var SRV = recordBuilder({
-    type: 'SRV',
+var SRV = recordBuilder('SRV', {
     args: [
         ['name', _.isString],
         ['priority', _.isNumber],
@@ -197,13 +185,10 @@ var SRV = recordBuilder({
 });
 
 // TXT(name,target, recordModifiers...)
-var TXT = recordBuilder({
-    type: 'TXT',
-});
+var TXT = recordBuilder('TXT');
 
 // MX(name,priority,target, recordModifiers...)
-var MX = recordBuilder({
-    type: 'MX',
+var MX = recordBuilder('MX', {
     args: [
         ['name', _.isString],
         ['priority', _.isNumber],
@@ -228,9 +213,7 @@ function checkArgs(checks, args, desc){
 }
 
 // NS(name,target, recordModifiers...)
-var NS = recordBuilder({
-    type: 'NS',
-});
+var NS = recordBuilder('NS');
 
 // NAMESERVER(name,target)
 function NAMESERVER(name, target) {
@@ -273,8 +256,7 @@ function format_tt(transform_table) {
 }
 
 // IMPORT_TRANSFORM(translation_table, domain)
-var IMPORT_TRANSFORM = recordBuilder({
-    type: 'IMPORT_TRANSFORM',
+var IMPORT_TRANSFORM = recordBuilder('IMPORT_TRANSFORM', {
     args: [
         ['translation_table'],
         ['domain'],
@@ -312,6 +294,7 @@ function getModifiers(args,start) {
 
 /**
  * Record type builder
+ * @param {string} type Record type
  * @param {string} opts.args[][0] Argument name
  * @param {function=} opts.args[][1] Optional validator
  * @param {function=} opts.transform Function to apply arguments to record.
@@ -325,8 +308,8 @@ function getModifiers(args,start) {
  *        Take (record, value) as arguments. Default to show a warning
  * @param {function=} opts.applyModifier Function to apply modifiers to the record
  */
-function recordBuilder(opts){
-    opts = _.defaults(opts, {
+function recordBuilder(type, opts){
+    opts = _.defaults({}, opts, {
         args: [
             ['name', _.isString],
             ['target'],
@@ -388,7 +371,7 @@ function recordBuilder(opts){
             var argumentsList = opts.args.map(function(item){
                 return item[0];
             }).join(', ');
-            throw opts.type + " record requires " + opts.args.length + " arguments (" + argumentsList + "). Only " + arguments.length + " were supplied";
+            throw type + " record requires " + opts.args.length + " arguments (" + argumentsList + "). Only " + arguments.length + " were supplied";
             return;
         }
 
@@ -399,7 +382,7 @@ function recordBuilder(opts){
             if (argDefinition.length > 1) {
                 // run validator if supplied
                 if(!argDefinition[1](value)){
-                    throw opts.type + " record " + argDefinition[0] + " argument validation failed";
+                    throw type + " record " + argDefinition[0] + " argument validation failed";
                 }
             }
             parsedArgs[argDefinition[0]] = value;
@@ -412,7 +395,7 @@ function recordBuilder(opts){
 
         return function(d){
             var record = {
-                type: opts.type,
+                type: type,
                 meta: {},
                 ttl: d.defaultTTL,
             };
@@ -507,8 +490,7 @@ function _validateCloudFlareRedirect(value){
     return value.indexOf(",") === -1;
 }
 
-var CF_REDIRECT = recordBuilder({
-    type: "CF_REDIRECT",
+var CF_REDIRECT = recordBuilder("CF_REDIRECT", {
     args: [
         ["source", _validateCloudFlareRedirect],
         ["destination", _validateCloudFlareRedirect],
@@ -519,8 +501,7 @@ var CF_REDIRECT = recordBuilder({
     },
 });
 
-var CF_TEMP_REDIRECT = recordBuilder({
-    type: "CF_TEMP_REDIRECT",
+var CF_TEMP_REDIRECT = recordBuilder("CF_TEMP_REDIRECT", {
     args: [
         ["source", _validateCloudFlareRedirect],
         ["destination", _validateCloudFlareRedirect],
