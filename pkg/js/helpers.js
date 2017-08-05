@@ -266,11 +266,13 @@ var IMPORT_TRANSFORM = recordBuilder('IMPORT_TRANSFORM', {
     args: [
         ['translation_table'],
         ['domain'],
+        ['ttl', _.isNumber],
     ],
     transform: function(record, args, modifiers){
         record.name = '@';
         record.target = args.domain;
         record.meta['transform_table'] = format_tt(args.translation_table);
+        record.ttl = args.ttl;
     },
 });
 
