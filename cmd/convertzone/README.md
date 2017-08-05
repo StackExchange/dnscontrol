@@ -1,5 +1,9 @@
 # convertzone -- Converts a standard DNS zonefile into tsv, pretty, or DSL
 
+This is a crude hack we put together to read a BIND-style zonefile
+and output a draft DNSControl dnsconfig.js file. It does about 90%
+of the work, but it isn't complete.
+
 ## Building the software
 
 Build the software and install in your personal bin:
