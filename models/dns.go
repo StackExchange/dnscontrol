@@ -310,6 +310,23 @@ func (dc *DomainConfig) CombineMXs() {
 	}
 }
 
+// SplitCombinedMxValue splits a combined MX preference and target into
+// separate entities, i.e. splitting "10 aspmx2.googlemail.com."
+// into "10" and "aspmx2.googlemail.com.".
+func SplitCombinedMxValue(s string) (preference uint16, target string, err error) {
+	parts := strings.Fields(s)
+
+	if len(parts) != 2 {
+		return 0, "", fmt.Errorf("MX value %#v contains too many fields", s)
+	}
+
+	n64, err := strconv.ParseUint(parts[0], 10, 16)
+	if err != nil {
+		return 0, "", fmt.Errorf("MX preference %#v does not fit into a uint16", parts[0])
+	}
+	return uint16(n64), parts[1], nil
+}
+
 func copyObj(input interface{}, output interface{}) error {
 	buf := &bytes.Buffer{}
 	enc := gob.NewEncoder(buf)
