@@ -73,7 +73,7 @@ func (self *Record) Update(args RecordUpdate) ([]*RecordInfo, error) {
 		"value": args.Value,
 		"ttl":   args.Ttl,
 	}
-	updateOpts := map[string]int64{
+	updateOpts := map[string]string{
 		"id": args.Id,
 	}
 
