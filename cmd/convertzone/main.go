@@ -106,6 +106,11 @@ func rrFormat(zonename string, filename string, r io.Reader, defaultTTL uint32, 
 			target = strings.Replace(target, " ", "\t", 1)
 		}
 
+		// NS records at the apex should be NAMESERVER() records.
+		if hdr.Rrtype == dns.TypeNS && name == "@" {
+			typeStr = "NAMESERVER"
+		}
+
 		if !dsl { // TSV format:
 			fmt.Printf("%s\t%s\t%s\t%s\t%s\n", name, ttl, classStr, typeStr, target)
 		} else { // DSL format:
