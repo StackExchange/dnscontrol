@@ -325,14 +325,14 @@ var tests = []*TestCase{
 
 	//SRV
 	tc("Empty").IfHasCapability(providers.CanUseSRV),
-	tc("SRV record", srv("@", 5, 6, 7, "foo.com.")).IfHasCapability(providers.CanUseSRV),
-	tc("Second SRV record, same prio", srv("@", 5, 6, 7, "foo.com."), srv("@", 5, 60, 70, "foo2.com.")).IfHasCapability(providers.CanUseSRV),
-	tc("3 SRV", srv("@", 5, 6, 7, "foo.com."), srv("@", 5, 60, 70, "foo2.com."), srv("@", 15, 65, 75, "foo3.com.")).IfHasCapability(providers.CanUseSRV),
-	tc("Delete one", srv("@", 5, 6, 7, "foo.com."), srv("@", 15, 65, 75, "foo3.com.")).IfHasCapability(providers.CanUseSRV),
-	tc("Change Target", srv("@", 5, 6, 7, "foo.com."), srv("@", 15, 65, 75, "foo4.com.")).IfHasCapability(providers.CanUseSRV),
-	tc("Change Priority", srv("@", 52, 6, 7, "foo.com."), srv("@", 15, 65, 75, "foo4.com.")).IfHasCapability(providers.CanUseSRV),
-	tc("Change Weight", srv("@", 52, 62, 7, "foo.com."), srv("@", 15, 65, 75, "foo4.com.")).IfHasCapability(providers.CanUseSRV),
-	tc("Change Port", srv("@", 52, 62, 72, "foo.com."), srv("@", 15, 65, 75, "foo4.com.")).IfHasCapability(providers.CanUseSRV),
+	tc("SRV record", srv("_service._protocol", 5, 6, 7, "foo.com.")).IfHasCapability(providers.CanUseSRV),
+	tc("Second SRV record, same prio", srv("_service._protocol", 5, 6, 7, "foo.com."), srv("_service._protocol", 5, 60, 70, "foo2.com.")).IfHasCapability(providers.CanUseSRV),
+	tc("3 SRV", srv("_service._protocol", 5, 6, 7, "foo.com."), srv("_service._protocol", 5, 60, 70, "foo2.com."), srv("_service._protocol", 15, 65, 75, "foo3.com.")).IfHasCapability(providers.CanUseSRV),
+	tc("Delete one", srv("_service._protocol", 5, 6, 7, "foo.com."), srv("_service._protocol", 15, 65, 75, "foo3.com.")).IfHasCapability(providers.CanUseSRV),
+	tc("Change Target", srv("_service._protocol", 5, 6, 7, "foo.com."), srv("_service._protocol", 15, 65, 75, "foo4.com.")).IfHasCapability(providers.CanUseSRV),
+	tc("Change Priority", srv("_service._protocol", 52, 6, 7, "foo.com."), srv("_service._protocol", 15, 65, 75, "foo4.com.")).IfHasCapability(providers.CanUseSRV),
+	tc("Change Weight", srv("_service._protocol", 52, 62, 7, "foo.com."), srv("_service._protocol", 15, 65, 75, "foo4.com.")).IfHasCapability(providers.CanUseSRV),
+	tc("Change Port", srv("_service._protocol", 52, 62, 72, "foo.com."), srv("_service._protocol", 15, 65, 75, "foo4.com.")).IfHasCapability(providers.CanUseSRV),
 
 	//CAA
 	tc("Empty").IfHasCapability(providers.CanUseCAA),

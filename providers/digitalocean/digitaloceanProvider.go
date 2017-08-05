@@ -48,8 +48,7 @@ func newDo(m map[string]string, metadata json.RawMessage) (providers.DNSServiceP
 }
 
 func init() {
-	// Disabled SRV support as the SRV test cases don't follow format _service._protocol
-	providers.RegisterDomainServiceProviderType("DIGITALOCEAN", newDo)
+	providers.RegisterDomainServiceProviderType("DIGITALOCEAN", newDo, providers.CanUseSRV)
 }
 
 func (api *DoApi) EnsureDomain(domain string) error {
@@ -134,7 +133,7 @@ func toRc(dc *models.DomainConfig, r *godo.DomainRecord) *models.RecordConfig {
 
 	target := r.Data
 	// Make target FQDN (#rtype_variations)
-	if r.Type == "CNAME" || r.Type == "MX" || r.Type == "NS" {
+	if r.Type == "CNAME" || r.Type == "MX" || r.Type == "NS" || r.Type == "SRV" {
 		target = dnsutil.AddOrigin(target+".", dc.Name)
 	}
 
