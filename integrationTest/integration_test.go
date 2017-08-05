@@ -301,7 +301,7 @@ var tests = []*TestCase{
 	tc("Internationalized name", a("ööö", "1.2.3.4")),
 	tc("Change IDN", a("ööö", "2.2.2.2")),
 	tc("Internationalized CNAME Target", cname("a", "ööö.com.")),
-	tc("IDN CNAME AND Target", cname("öoö", "ööö.ööö.")),
+	tc("IDN CNAME AND Target", cname("öoö", "ööö.企业.")),
 
 	//MX
 	tc("Empty"),
