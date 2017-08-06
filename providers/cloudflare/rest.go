@@ -116,6 +116,19 @@ func (c *CloudflareApi) createZone(domainName string) (string, error) {
 	return id, err
 }
 
+func cfSrvData(rec *models.RecordConfig) *cfRecData {
+	serverParts := strings.Split(rec.NameFQDN, ".")
+	return &cfRecData{
+		Service:  serverParts[0],
+		Proto:    serverParts[1],
+		Name:     strings.Join(serverParts[2:], "."),
+		Port:     rec.SrvPort,
+		Priority: rec.SrvPriority,
+		Weight:   rec.SrvWeight,
+		Target:   rec.Target,
+	}
+}
+
 func (c *CloudflareApi) createRec(rec *models.RecordConfig, domainID string) []*models.Correction {
 	type createRecord struct {
 		Name     string `json:"name"`
@@ -123,6 +136,7 @@ func (c *CloudflareApi) createRec(rec *models.RecordConfig, domainID string) []*
 		Content  string `json:"content"`
 		TTL      uint32 `json:"ttl"`
 		Priority uint16 `json:"priority"`
+		Data     *cfRecData `json:"data"`
 	}
 	var id string
 	content := rec.Target
@@ -143,6 +157,10 @@ func (c *CloudflareApi) createRec(rec *models.RecordConfig, domainID string) []*
 				TTL:      rec.TTL,
 				Content:  content,
 				Priority: rec.MxPreference,
+			}
+			if rec.Type=="SRV" {
+				cf.Data = cfSrvData(rec)
+				cf.Name =  rec.NameFQDN
 			}
 			endpoint := fmt.Sprintf(recordsURL, domainID)
 			buf := &bytes.Buffer{}
@@ -180,8 +198,13 @@ func (c *CloudflareApi) modifyRecord(domainID, recID string, proxied bool, rec *
 		Content  string `json:"content"`
 		Priority uint16 `json:"priority"`
 		TTL      uint32 `json:"ttl"`
+		Data     *cfRecData `json:"data"`
 	}
-	r := record{recID, proxied, rec.Name, rec.Type, rec.Target, rec.MxPreference, rec.TTL}
+	r := record{recID, proxied, rec.Name, rec.Type, rec.Target, rec.MxPreference, rec.TTL, nil}
+	if rec.Type=="SRV" {
+		r.Data = cfSrvData(rec)
+		r.Name =  rec.NameFQDN
+	}
 	endpoint := fmt.Sprintf(singleRecordURL, domainID, recID)
 	buf := &bytes.Buffer{}
 	encoder := json.NewEncoder(buf)
