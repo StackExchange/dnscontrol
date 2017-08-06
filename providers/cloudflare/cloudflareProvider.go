@@ -321,36 +321,36 @@ func newCloudflare(m map[string]string, metadata json.RawMessage) (providers.DNS
 }
 
 // Used on the "existing" records.
-type cfRecData struct{
-	Service    string    `json:"service"`
-	Proto      string    `json:"proto"`
-	Name       string    `json:"name"`
-	Priority   uint16    `json:"priority"`
-	Weight     uint16    `json:"weight"`
-	Port       uint16    `json:"port"`
-	Target     string    `json:"target"`
+type cfRecData struct {
+	Service  string `json:"service"`
+	Proto    string `json:"proto"`
+	Name     string `json:"name"`
+	Priority uint16 `json:"priority"`
+	Weight   uint16 `json:"weight"`
+	Port     uint16 `json:"port"`
+	Target   string `json:"target"`
 }
 
 type cfRecord struct {
-	ID         string      `json:"id"`
-	Type       string      `json:"type"`
-	Name       string      `json:"name"`
-	Content    string      `json:"content"`
-	Proxiable  bool        `json:"proxiable"`
-	Proxied    bool        `json:"proxied"`
-	TTL        uint32      `json:"ttl"`
-	Locked     bool        `json:"locked"`
-	ZoneID     string      `json:"zone_id"`
-	ZoneName   string      `json:"zone_name"`
-	CreatedOn  time.Time   `json:"created_on"`
-	ModifiedOn time.Time   `json:"modified_on"`
-	Data       *cfRecData  `json:"data"`
-	Priority   uint16      `json:"priority"`
+	ID         string     `json:"id"`
+	Type       string     `json:"type"`
+	Name       string     `json:"name"`
+	Content    string     `json:"content"`
+	Proxiable  bool       `json:"proxiable"`
+	Proxied    bool       `json:"proxied"`
+	TTL        uint32     `json:"ttl"`
+	Locked     bool       `json:"locked"`
+	ZoneID     string     `json:"zone_id"`
+	ZoneName   string     `json:"zone_name"`
+	CreatedOn  time.Time  `json:"created_on"`
+	ModifiedOn time.Time  `json:"modified_on"`
+	Data       *cfRecData `json:"data"`
+	Priority   uint16     `json:"priority"`
 }
 
 func (c *cfRecord) toRecord(domain string) *models.RecordConfig {
 	//normalize cname,mx,ns records with dots to be consistent with our config format.
-	if c.Type == "CNAME" || c.Type == "MX" || c.Type == "NS" || c.Type=="SRV" {
+	if c.Type == "CNAME" || c.Type == "MX" || c.Type == "NS" || c.Type == "SRV" {
 		c.Content = dnsutil.AddOrigin(c.Content+".", domain)
 	}
 	rc := &models.RecordConfig{
@@ -364,9 +364,9 @@ func (c *cfRecord) toRecord(domain string) *models.RecordConfig {
 	if c.Type == "SRV" {
 		data := *c.Data
 		rc.SrvPriority = data.Priority
-		rc.SrvWeight   = data.Weight
-		rc.SrvPort     = data.Port
-		rc.Target      = dnsutil.AddOrigin(data.Target+".", domain)
+		rc.SrvWeight = data.Weight
+		rc.SrvPort = data.Port
+		rc.Target = dnsutil.AddOrigin(data.Target+".", domain)
 	}
 	return rc
 }
