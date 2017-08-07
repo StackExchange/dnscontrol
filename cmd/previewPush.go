@@ -1,11 +1,9 @@
 package cmd
 
 import (
-	"bufio"
 	"fmt"
 	"log"
 	"os"
-	"strings"
 	"time"
 
 	"github.com/StackExchange/dnscontrol/models"
@@ -203,38 +201,21 @@ func InitializeProviders(credsFile string, cfg *models.DNSConfig) (registrars ma
 	return
 }
 
-var reader = bufio.NewReader(os.Stdin)
-
-func printOrRunCorrections(corrections []*models.Correction, push bool, interactive bool) (anyErrors bool) {
+func printOrRunCorrections(corrections []*models.Correction, out CLI, push bool, interactive bool) (anyErrors bool) {
 	anyErrors = false
 	if len(corrections) == 0 {
-		return anyErrors
+		return 0
 	}
 	for i, correction := range corrections {
-		fmt.Printf("#%d: %s\n", i+1, correction.Msg)
+		out.PrintCorrection(i, correction)
 		if push {
-			if interactive {
-				fmt.Print("Run? (Y/n): ")
-				txt, err := reader.ReadString('\n')
-				run := true
-				if err != nil {
-					run = false
-				}
-				txt = strings.ToLower(strings.TrimSpace(txt))
-				if txt != "y" {
-					run = false
-				}
-				if !run {
-					fmt.Println("Skipping")
-					continue
-				}
+			if interactive && !out.PromptToRun() {
+				continue
 			}
 			err := correction.F()
+			out.EndCorrection(err)
 			if err != nil {
-				fmt.Println("FAILURE!", err)
 				anyErrors = true
-			} else {
-				fmt.Println("SUCCESS!")
 			}
 		}
 	}

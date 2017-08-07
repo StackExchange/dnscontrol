@@ -103,6 +103,12 @@ func checkDirectOutput() error {
 		"fmt.Print",
 		"log.Print",
 	}
+	// files allowed to direct print
+	var allowances = map[string]bool{
+		`cmd\printer.go`:         true,
+		`cmd\debugJs.go`:         true,
+		`cmd\debugPreprocess.go`: true,
+	}
 	var rd func(string)
 	rd = func(path string) {
 		if path == ".git" || path == "vendor" || path == "build" {
@@ -119,6 +125,9 @@ func checkDirectOutput() error {
 			if fi.IsDir() {
 				rd(fp)
 			} else if filepath.Ext(n) == ".go" {
+				if allowances[fp] {
+					continue
+				}
 				var dat []byte
 				dat, err = ioutil.ReadFile(fp)
 				if err != nil {
