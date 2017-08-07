@@ -9,8 +9,6 @@ import (
 	"github.com/urfave/cli"
 )
 
-var app = cli.NewApp()
-
 // categories of commands
 const (
 	catMain     = "main"
@@ -18,7 +16,10 @@ const (
 	catUtils    = "utility"
 )
 
-func init() {
+// Run will execute the CLI
+func Run(version string) error {
+	app := cli.NewApp()
+	app.Version = version
 	app.Name = "dnscontrol"
 	app.Usage = "dnscontrol is a compiler and dsl for managing cloud dns zones"
 	app.Commands = []cli.Command{
@@ -28,10 +29,6 @@ func init() {
 		*debugPreprocessCommand,
 	}
 	app.EnableBashCompletion = true
-}
-
-// Run will execute the CLI
-func Run() error {
 	app.Run(os.Args)
 	return nil
 }
