@@ -50,11 +50,11 @@ provided to help community members support their code independently.
 
 Maintainers of contributed providers:
 
-* digital ocean  <!-- @Deraen -->
-* dnsimple  <!-- @aeden -->
+* digital ocean  @Deraen
+* dnsimple  @aeden
 * gandi @TomOnTime
 * namecheap @captncraig
-* OVH <!-- @Oprax -->
+* OVH @Oprax
 
 ### Requested providers
 
