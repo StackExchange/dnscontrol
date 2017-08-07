@@ -76,15 +76,15 @@ var globalPushArgs PushArgs
 var globalPreviewArgs PreviewArgs
 
 func Preview(args PreviewArgs) error {
-	return run(args, false, false)
+	return run(args, false, false, ConsolePrinter{})
 }
 
 func Push(args PushArgs) error {
-	return run(args.PreviewArgs, true, args.Interactive)
+	return run(args.PreviewArgs, true, args.Interactive, ConsolePrinter{})
 }
 
 // run is the main routine common to preview/push
-func run(args PreviewArgs, push bool, interactive bool) error {
+func run(args PreviewArgs, push bool, interactive bool, out CLI) error {
 	// TODO: make truly CLI independent. Perhaps return results on a channel as they occur
 	cfg, err := GetDNSConfig(args.GetDNSConfigArgs)
 	if err != nil {
@@ -98,7 +98,7 @@ func run(args PreviewArgs, push bool, interactive bool) error {
 	if err != nil {
 		return err
 	}
-	fmt.Printf("Initialized %d registrars and %d dns service providers.\n", len(registrars), len(dnsProviders))
+	out.Debugf("Initialized %d registrars and %d dns service providers.\n", len(registrars), len(dnsProviders))
 	anyErrors := false
 	totalCorrections := 0
 DomainLoop:
@@ -106,57 +106,48 @@ DomainLoop:
 		if !args.shouldRunDomain(domain.Name) {
 			continue
 		}
-		fmt.Printf("******************** Domain: %s\n", domain.Name)
+		out.StartDomain(domain.Name)
 		nsList, err := nameservers.DetermineNameservers(domain, 0, dnsProviders)
 		if err != nil {
-			log.Fatal(err)
+			return err
 		}
 		domain.Nameservers = nsList
 		nameservers.AddNSRecords(domain)
 		for prov := range domain.DNSProviders {
 			dc, err := domain.Copy()
 			if err != nil {
-				log.Fatal(err)
+				return err
 			}
 			shouldrun := args.shouldRunProvider(prov, dc, nonDefaultProviders)
-			statusLbl := ""
+			out.StartDNSProvider(prov, !shouldrun)
 			if !shouldrun {
-				statusLbl = "(skipping)"
-			}
-			fmt.Printf("----- DNS Provider: %s... %s", prov, statusLbl)
-			if !shouldrun {
-				fmt.Println()
 				continue
 			}
+			// TODO: make provider discovery like this a validate-time operation
 			dsp, ok := dnsProviders[prov]
 			if !ok {
 				log.Fatalf("DSP %s not declared.", prov)
 			}
 			corrections, err := dsp.GetDomainCorrections(dc)
+			out.EndProvider(len(corrections), err)
 			if err != nil {
-				fmt.Println("ERROR")
 				anyErrors = true
-				fmt.Printf("Error getting corrections: %s\n", err)
 				continue DomainLoop
 			}
 			totalCorrections += len(corrections)
-			plural := "s"
-			if len(corrections) == 1 {
-				plural = ""
-			}
-			fmt.Printf("%d correction%s\n", len(corrections), plural)
 			anyErrors = printOrRunCorrections(corrections, push, interactive) || anyErrors
 		}
-		if run := args.shouldRunProvider(domain.Registrar, domain, nonDefaultProviders); !run {
+		run := args.shouldRunProvider(domain.Registrar, domain, nonDefaultProviders)
+		out.StartRegistrar(domain.Registrar, !run)
+		if !run {
 			continue
 		}
-		fmt.Printf("----- Registrar: %s\n", domain.Registrar)
 		reg, ok := registrars[domain.Registrar]
 		if !ok {
 			log.Fatalf("Registrar %s not declared.", reg)
 		}
 		if len(domain.Nameservers) == 0 && domain.Metadata["no_ns"] != "true" {
-			fmt.Printf("No nameservers declared; skipping registrar. Add {no_ns:'true'} to force.\n")
+			out.Warnf("No nameservers declared; skipping registrar. Add {no_ns:'true'} to force.\n")
 			continue
 		}
 		dc, err := domain.Copy()
@@ -164,8 +155,8 @@ DomainLoop:
 			log.Fatal(err)
 		}
 		corrections, err := reg.GetRegistrarCorrections(dc)
+		out.EndProvider(len(corrections), err)
 		if err != nil {
-			fmt.Printf("Error getting corrections: %s\n", err)
 			anyErrors = true
 			continue
 		}
@@ -178,7 +169,7 @@ DomainLoop:
 	if os.Getenv("TEAMCITY_VERSION") != "" {
 		fmt.Fprintf(os.Stderr, "##teamcity[buildStatus status='SUCCESS' text='%d corrections']", totalCorrections)
 	}
-	fmt.Printf("Done. %d corrections.\n", totalCorrections)
+	out.Debugf("Done. %d corrections.\n", totalCorrections)
 	if anyErrors {
 		return fmt.Errorf("Completed with errors")
 	}
