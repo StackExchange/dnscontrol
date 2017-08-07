@@ -9,6 +9,10 @@ You essentially need to implement the
 [providers.DNSServiceProvider interface.](https://godoc.org/github.com/StackExchange/dnscontrol/providers#DNSServiceProvider)
 and the system takes care of the rest.
 
+Please do note that if you submit a new provider you will be
+assigned bugs related to the provider in the future (unless
+you designate someone else as the maintainer). More details
+[here](provider-list.md).
 
 ## Step 1: General advice
 
@@ -108,7 +112,7 @@ go test -v -verbose -provider ROUTE53
 ## Step 5: Update docs
 
 * Edit [README.md](https://github.com/StackExchange/dnscontrol): Add the provider to the bullet list.
-* Edit [docs/provider-list.html](https://github.com/StackExchange/dnscontrol/blob/master/docs/provider-list.html): Add the provider to the provider list.
+* Edit [docs/provider-list.md](https://github.com/StackExchange/dnscontrol/blob/master/docs/provider-list.md): Add the provider to the provider list.
 * Create `docs/_providers/PROVIDERNAME.md`: Use one of the other files in that directory as a base.
 
 
