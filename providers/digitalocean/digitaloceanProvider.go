@@ -73,9 +73,28 @@ func (api *DoApi) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Corre
 	ctx := context.Background()
 	dc.Punycode()
 
-	records, _, err := api.client.Domains.Records(ctx, dc.Name, nil)
-	if err != nil {
-		return nil, err
+	records := []godo.DomainRecord{}
+	opt := &godo.ListOptions{}
+	for {
+		result, resp, err := api.client.Domains.Records(ctx, dc.Name, opt)
+		if err != nil {
+			return nil, err
+		}
+
+		for _, d := range result {
+			records = append(records, d)
+		}
+
+		if resp.Links == nil || resp.Links.IsLastPage() {
+			break
+		}
+
+		page, err := resp.Links.CurrentPage()
+		if err != nil {
+			return nil, err
+		}
+
+		opt.Page = page + 1
 	}
 
 	existingRecords := make([]*models.RecordConfig, len(records))
