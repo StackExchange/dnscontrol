@@ -1,39 +1,45 @@
 {
-    "ACTIVEDIRECTORY_PS": {
-        "knownFailures": "17,18,19,25,26,27,28,29,30",
-        "domain": "$AD_DOMAIN",
-        "ADServer": "$AD_SERVER"
-    },
-    "BIND": {
-        "domain": "example.com"
-    },
-    "CLOUDFLAREAPI":{
-        "domain": "$CF_DOMAIN",
-        "apiuser": "$CF_USER",
-        "apikey": "$CF_KEY"
-    },
-    "DNSIMPLE": {
-        //16/17: no ns records managable. Not even for subdomains.
-        "knownFailures": "17,18",
-        "domain": "$DNSIMPLE_DOMAIN",
-        "token": "$DNSIMPLE_TOKEN",
-        "baseurl": "https://api.sandbox.dnsimple.com"
-    },
-    "GANDI": {
-        //5: gandi does not accept ttls less than 300
-        "knownFailures": "5",
-        "domain": "$GANDI_DOMAIN",
-        "apikey": "$GANDI_KEY"
-    },
-    "GCLOUD": {
-        "domain": "$GCLOUD_DOMAIN",
-        "project_id": "$GCLOUD_PROJECT",
-        "private_key": "$GCLOUD_PRIVATEKEY",
-        "client_email": "$GCLOUD_EMAIL"
-    },
-    "ROUTE53": {
-        "domain": "$R53_DOMAIN",
-        "KeyId": "$R53_KEY_ID",
-        "SecretKey": "$R53_KEY"
-    }
+  "ACTIVEDIRECTORY_PS": {
+    "ADServer": "$AD_SERVER",
+    "domain": "$AD_DOMAIN",
+    "knownFailures": "17,18,19,25,26,27,28,29,30"
+  },
+  "BIND": {
+    "domain": "example.com"
+  },
+  "CLOUDFLAREAPI": {
+    "apikey": "$CF_KEY",
+    "apiuser": "$CF_USER",
+    "domain": "$CF_DOMAIN"
+  },
+  "DNSIMPLE": {
+    "COMMENT": "16/17: no ns records managable. Not even for subdomains.",
+    "baseurl": "https://api.sandbox.dnsimple.com",
+    "domain": "$DNSIMPLE_DOMAIN",
+    "knownFailures": "17,18",
+    "token": "$DNSIMPLE_TOKEN"
+  },
+  "GANDI": {
+    "COMMENT": "5: gandi does not accept TTLs less than 300",
+    "apikey": "$GANDI_KEY",
+    "domain": "$GANDI_DOMAIN",
+    "knownFailures": "5"
+  },
+  "GCLOUD": {
+    "client_email": "$GCLOUD_EMAIL",
+    "domain": "$GCLOUD_DOMAIN",
+    "private_key": "$GCLOUD_PRIVATEKEY",
+    "project_id": "$GCLOUD_PROJECT"
+  },
+  "NAMEDOTCOM": {
+    "apikey": "$NAMEDOTCOM_KEY",
+    "apiurl": "$NAMEDOTCOM_URL",
+    "apiuser": "$NAMEDOTCOM_USER",
+    "domain": "$NAMEDOTCOM_DOMAIN"
+  },
+  "ROUTE53": {
+    "KeyId": "$R53_KEY_ID",
+    "SecretKey": "$R53_KEY",
+    "domain": "$R53_DOMAIN"
+  }
 }

@@ -41,9 +41,14 @@ type Capability uint32
 
 const (
 	// CanUseAlias indicates the provider support ALIAS records (or flattened CNAMES). Up to the provider to translate them to the appropriate record type.
+	// If you add something to this list, you probably want to add it to pkg/normalize/validate.go checkProviderCapabilities() or somewhere near there.
 	CanUseAlias Capability = 1 << iota
 	// CanUsePTR indicates the provider can handle PTR records
 	CanUsePTR
+	// CanUseSRV indicates the provider can handle SRV records
+	CanUseSRV
+	// CanUseCAA indicates the provider can handle CAA records
+	CanUseCAA
 )
 
 func ProviderHasCabability(pType string, cap Capability) bool {

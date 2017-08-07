@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"net"
 	"strings"
+
+	"github.com/pkg/errors"
 )
 
 func ReverseDomainName(cidr string) (string, error) {
@@ -16,11 +18,26 @@ func ReverseDomainName(cidr string) (string, error) {
 		return "", err
 	}
 	base = strings.TrimRight(base, ".")
+	if !a.Equal(c.IP) {
+		return "", errors.Errorf("CIDR %v has 1 bits beyond the mask", cidr)
+	}
+
 	bits, total := c.Mask.Size()
 	var toTrim int
 	if bits == 0 {
 		return "", fmt.Errorf("Cannot use /0 in reverse cidr")
 	}
+
+	// Handle IPv4 "Classless in-addr.arpa delegation" RFC2317:
+	if total == 32 && bits >= 25 && bits < 32 {
+		// first address / netmask . Class-b-arpa.
+		fparts := strings.Split(c.IP.String(), ".")
+		first := fparts[3]
+		bparts := strings.SplitN(base, ".", 2)
+		return fmt.Sprintf("%s/%d.%s", first, bits, bparts[1]), nil
+	}
+
+	// Handle IPv4 Class-full and IPv6:
 	if total == 32 {
 		if bits%8 != 0 {
 			return "", fmt.Errorf("IPv4 mask must be multiple of 8 bits")
@@ -32,7 +49,7 @@ func ReverseDomainName(cidr string) (string, error) {
 		}
 		toTrim = (total - bits) / 4
 	} else {
-		return "", fmt.Errorf("Invalid mask bit size: %d", total)
+		return "", fmt.Errorf("Address is not IPv4 or IPv6: %v", cidr)
 	}
 
 	parts := strings.SplitN(base, ".", toTrim+1)

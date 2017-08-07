@@ -1,2 +1,4 @@
 $TTL 300
-@                IN SOA   DEFAULT_NOT_SET. DEFAULT_NOT_SET. 2017041717 3600 600 604800 1440
+@                IN SOA   DEFAULT_NOT_SET. DEFAULT_NOT_SET. 2017072603 3600 600 604800 1440
+                 IN NS    ns1.otherdomain.tld.
+                 IN NS    ns2.otherdomain.tld.

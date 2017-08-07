@@ -134,6 +134,18 @@
 			"revisionTime": "2016-08-11T16:24:59Z"
 		},
 		{
+			"checksumSHA1": "O6hcK24yI6w7FA+g4Pbr+eQ7pys=",
+			"path": "github.com/aws/aws-sdk-go/private/protocol/json/jsonutil",
+			"revision": "aafdacd0d6e625a7a2782bef5f9942d6fc4c9f30",
+			"revisionTime": "2017-07-14T21:00:53Z"
+		},
+		{
+			"checksumSHA1": "R00RL5jJXRYq1iiK1+PGvMfvXyM=",
+			"path": "github.com/aws/aws-sdk-go/private/protocol/jsonrpc",
+			"revision": "aafdacd0d6e625a7a2782bef5f9942d6fc4c9f30",
+			"revisionTime": "2017-07-14T21:00:53Z"
+		},
+		{
 			"checksumSHA1": "isoix7lTx4qIq2zI2xFADtti5SI=",
 			"path": "github.com/aws/aws-sdk-go/private/protocol/query",
 			"revision": "f80e7d0182a463dff0c0da6bbed57f21369d4346",
@@ -178,6 +190,12 @@
 		{
 			"checksumSHA1": "y6jKUvrpTJxj5uh6OqQ4FujhCHU=",
 			"path": "github.com/aws/aws-sdk-go/service/route53",
+			"revision": "f80e7d0182a463dff0c0da6bbed57f21369d4346",
+			"revisionTime": "2016-08-11T16:24:59Z"
+		},
+		{
+			"checksumSHA1": "qS3eZZfhdDM6haTZp7OeyhMDlV8=",
+			"path": "github.com/aws/aws-sdk-go/service/route53domains",
 			"revision": "f80e7d0182a463dff0c0da6bbed57f21369d4346",
 			"revisionTime": "2016-08-11T16:24:59Z"
 		},
@@ -237,10 +255,10 @@
 			"revisionTime": "2015-04-13T22:18:30+03:00"
 		},
 		{
-			"checksumSHA1": "OUZ1FFXyKs+Cfg9M9rmXqqweQck=",
+			"checksumSHA1": "lxO8OJ+oWgBLoHNELCXxxTVc84w=",
 			"path": "github.com/miekg/dns",
-			"revision": "db96a2b759cdef4f11a34506a42eb8d1290c598e",
-			"revisionTime": "2016-07-26T03:20:27Z"
+			"revision": "765aea0018871a5acd99796645585323343ba39c",
+			"revisionTime": "2017-03-22T06:49:16Z"
 		},
 		{
 			"checksumSHA1": "9SrLPArdQmp45MGosz7IEGX46Ng=",
@@ -259,6 +277,12 @@
 			"path": "github.com/pkg/errors",
 			"revision": "ff09b135c25aae272398c51a07235b90a75aa4f0",
 			"revisionTime": "2017-03-16T20:15:38Z"
+		},
+		{
+			"checksumSHA1": "02kfHQp1KLch4P2FG1OrEG/24t8=",
+			"path": "github.com/prasmussen/gandi-api",
+			"revision": "d5d052a11e7dd3bd477e9dda181c2c5dfa8cf16f",
+			"revisionTime": "2017-08-05T17:47:16Z"
 		},
 		{
 			"checksumSHA1": "nS4kKHjMlJpQg3sixqelpCg1jyk=",
@@ -349,6 +373,42 @@
 			"path": "github.com/robertkrimen/otto/underscore",
 			"revision": "7d9cbc2befca39869eb0e5bcb0f44c0692c2f8ff",
 			"revisionTime": "2016-07-28T22:04:12Z"
+		},
+		{
+			"checksumSHA1": "SOB3whm8gc2xsL6j7exUFghj94s=",
+			"path": "github.com/tdewolff/buffer",
+			"revision": "df6253e2a2cda5aba1b5d0c59fc5bdf0a98ae192",
+			"revisionTime": "2017-01-15T11:41:28Z"
+		},
+		{
+			"checksumSHA1": "aOx9JqecdG4tSpzdRyohR56FUMo=",
+			"path": "github.com/tdewolff/minify",
+			"revision": "2d28d6e43c68537a32f9b835a89d5038ebcb6ec9",
+			"revisionTime": "2017-06-05T20:11:15Z"
+		},
+		{
+			"checksumSHA1": "w9vp7arHrzUEi6KyAM9K8hAP3hM=",
+			"path": "github.com/tdewolff/minify/json",
+			"revision": "2d28d6e43c68537a32f9b835a89d5038ebcb6ec9",
+			"revisionTime": "2017-06-05T20:11:15Z"
+		},
+		{
+			"checksumSHA1": "EiTbuOQ08YQ0Foy0R8y4WlbVcvA=",
+			"path": "github.com/tdewolff/parse",
+			"revision": "e4ac711ab0bf625c08270ba17557c30b2c1c5c2d",
+			"revisionTime": "2017-07-12T11:51:05Z"
+		},
+		{
+			"checksumSHA1": "kVJVV52ifqE4j6vNiWi9UiXOscs=",
+			"path": "github.com/tdewolff/parse/json",
+			"revision": "e4ac711ab0bf625c08270ba17557c30b2c1c5c2d",
+			"revisionTime": "2017-07-12T11:51:05Z"
+		},
+		{
+			"checksumSHA1": "hR7GEsOkEtR/doq2kiCmOF8spEg=",
+			"path": "github.com/tdewolff/strconv",
+			"revision": "3e8091f4417ebaaa3910da63a45ea394ebbfb0e3",
+			"revisionTime": "2016-04-27T18:05:39Z"
 		},
 		{
 			"checksumSHA1": "9jjO5GjLa0XF/nfWihF02RoH4qc=",

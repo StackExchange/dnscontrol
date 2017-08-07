@@ -94,8 +94,8 @@ func TestMxPrio(t *testing.T) {
 	desired := []*models.RecordConfig{
 		myRecord("www MX 1 1.1.1.1"),
 	}
-	existing[0].Priority = 10
-	desired[0].Priority = 20
+	existing[0].MxPreference = 10
+	desired[0].MxPreference = 20
 	checkLengths(t, existing, desired, 0, 0, 0, 1)
 }
 

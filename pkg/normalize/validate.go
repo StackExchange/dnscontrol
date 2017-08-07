@@ -53,8 +53,10 @@ func validateRecordTypes(rec *models.RecordConfig, domain string, pTypes []strin
 		"A":                true,
 		"AAAA":             true,
 		"CNAME":            true,
+		"CAA":              true,
 		"IMPORT_TRANSFORM": false,
 		"MX":               true,
+		"SRV":              true,
 		"TXT":              true,
 		"NS":               true,
 		"PTR":              true,
@@ -96,7 +98,7 @@ func checkLabel(label string, rType string, domain string) error {
 	}
 
 	//underscores are warnings
-	if strings.ContainsRune(label, '_') {
+	if rType != "SRV" && strings.ContainsRune(label, '_') {
 		//unless it is in our exclusion list
 		ok := false
 		for _, ex := range expectedUnderscores {
@@ -125,7 +127,7 @@ func checkTargets(rec *models.RecordConfig, domain string) (errs []error) {
 			errs = append(errs, err)
 		}
 	}
-	switch rec.Type {
+	switch rec.Type { // #rtype_variations
 	case "A":
 		check(checkIPv4(target))
 	case "AAAA":
@@ -146,7 +148,9 @@ func checkTargets(rec *models.RecordConfig, domain string) (errs []error) {
 		check(checkTarget(target))
 	case "ALIAS":
 		check(checkTarget(target))
-	case "TXT", "IMPORT_TRANSFORM":
+	case "SRV":
+		check(checkTarget(target))
+	case "TXT", "IMPORT_TRANSFORM", "CAA":
 	default:
 		if rec.Metadata["orig_custom_type"] != "" {
 			//it is a valid custom type. We perform no validation on target
@@ -188,7 +192,7 @@ func importTransform(srcDomain, dstDomain *models.DomainConfig, transforms []tra
 			}
 			return rec2
 		}
-		switch rec.Type {
+		switch rec.Type { // #rtype_variations
 		case "A":
 			trs, err := transform.TransformIPToList(net.ParseIP(rec.Target), transforms)
 			if err != nil {
@@ -203,7 +207,7 @@ func importTransform(srcDomain, dstDomain *models.DomainConfig, transforms []tra
 			r := newRec()
 			r.Target = transformCNAME(r.Target, srcDomain.Name, dstDomain.Name)
 			dstDomain.Records = append(dstDomain.Records, r)
-		case "MX", "NS", "TXT":
+		case "MX", "NS", "SRV", "TXT", "CAA":
 			// Not imported.
 			continue
 		default:
@@ -273,6 +277,15 @@ func NormalizeAndValidateConfig(config *models.DNSConfig) (errs []error) {
 				rec.Target = dnsutil.AddOrigin(rec.Target, domain.Name+".")
 			} else if rec.Type == "A" || rec.Type == "AAAA" {
 				rec.Target = net.ParseIP(rec.Target).String()
+			} else if rec.Type == "PTR" {
+				var err error
+				if rec.Name, err = transform.PtrNameMagic(rec.Name, domain.Name); err != nil {
+					errs = append(errs, err)
+				}
+			} else if rec.Type == "CAA" {
+				if rec.CaaTag != "issue" && rec.CaaTag != "issuewild" && rec.CaaTag != "iodef" {
+					errs = append(errs, fmt.Errorf("CAA tag %s is invalid", rec.CaaTag))
+				}
 			}
 			// Populate FQDN:
 			rec.NameFQDN = dnsutil.AddOrigin(rec.Name, domain.Name)
@@ -348,6 +361,8 @@ func checkProviderCapabilities(dc *models.DomainConfig, pList []*models.DNSProvi
 	}{
 		{"ALIAS", providers.CanUseAlias},
 		{"PTR", providers.CanUsePTR},
+		{"SRV", providers.CanUseSRV},
+		{"CAA", providers.CanUseCAA},
 	}
 	for _, ty := range types {
 		hasAny := false

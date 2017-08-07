@@ -47,7 +47,7 @@ func initBind(config map[string]string, providermeta json.RawMessage) (providers
 }
 
 func init() {
-	providers.RegisterDomainServiceProviderType("BIND", initBind, providers.CanUsePTR)
+	providers.RegisterDomainServiceProviderType("BIND", initBind, providers.CanUsePTR, providers.CanUseSRV, providers.CanUseCAA)
 }
 
 type SoaInfo struct {
@@ -88,16 +88,20 @@ func rrToRecord(rr dns.RR, origin string, replaceSerial uint32) (models.RecordCo
 	rc.NameFQDN = strings.ToLower(strings.TrimSuffix(header.Name, "."))
 	rc.Name = strings.ToLower(dnsutil.TrimDomainName(header.Name, origin))
 	rc.TTL = header.Ttl
-	switch v := rr.(type) {
+	switch v := rr.(type) { // #rtype_variations
 	case *dns.A:
 		rc.Target = v.A.String()
 	case *dns.AAAA:
 		rc.Target = v.AAAA.String()
+	case *dns.CAA:
+		rc.CaaTag = v.Tag
+		rc.CaaFlag = v.Flag
+		rc.Target = v.Value
 	case *dns.CNAME:
 		rc.Target = v.Target
 	case *dns.MX:
 		rc.Target = v.Mx
-		rc.Priority = v.Preference
+		rc.MxPreference = v.Preference
 	case *dns.NS:
 		rc.Target = v.Ns
 	case *dns.PTR:
@@ -114,10 +118,15 @@ func rrToRecord(rr dns.RR, origin string, replaceSerial uint32) (models.RecordCo
 		}
 		rc.Target = fmt.Sprintf("%v %v %v %v %v %v %v",
 			v.Ns, v.Mbox, new_serial, v.Refresh, v.Retry, v.Expire, v.Minttl)
+	case *dns.SRV:
+		rc.Target = v.Target
+		rc.SrvPort = v.Port
+		rc.SrvWeight = v.Weight
+		rc.SrvPriority = v.Priority
 	case *dns.TXT:
 		rc.Target = strings.Join(v.Txt, " ")
 	default:
-		log.Fatalf("Unimplemented zone record type=%s (%v)\n", rc.Type, rr)
+		log.Fatalf("rrToRecord: Unimplemented zone record type=%s (%v)\n", rc.Type, rr)
 	}
 	return rc, old_serial
 }
@@ -129,12 +138,11 @@ func makeDefaultSOA(info SoaInfo, origin string) *models.RecordConfig {
 		Name: "@",
 	}
 	soaRec.NameFQDN = dnsutil.AddOrigin(soaRec.Name, origin)
-	//TODO(cpeterson): are these sane defaults?
 	if len(info.Ns) == 0 {
-		info.Ns = "DEFAULT_NOT_SET"
+		info.Ns = "DEFAULT_NOT_SET."
 	}
 	if len(info.Mbox) == 0 {
-		info.Mbox = "DEFAULT_NOT_SET"
+		info.Mbox = "DEFAULT_NOT_SET."
 	}
 	if info.Serial == 0 {
 		info.Serial = 1
@@ -181,7 +189,7 @@ func (c *Bind) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Correcti
 	// Read foundRecords:
 	foundRecords := make([]*models.RecordConfig, 0)
 	var oldSerial, newSerial uint32
-	zonefile := filepath.Join(*bindBaseDir, strings.ToLower(dc.Name)+".zone")
+	zonefile := filepath.Join(*bindBaseDir, strings.Replace(strings.ToLower(dc.Name), "/", "_", -1)+".zone")
 	foundFH, err := os.Open(zonefile)
 	zoneFileFound := err == nil
 	if err != nil && !os.IsNotExist(os.ErrNotExist) {

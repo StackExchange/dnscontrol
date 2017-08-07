@@ -9,6 +9,7 @@ import (
 	"net"
 	"reflect"
 	"strconv"
+	"strings"
 
 	"github.com/StackExchange/dnscontrol/pkg/transform"
 	"github.com/miekg/dns"
@@ -60,21 +61,44 @@ type DNSProviderConfig struct {
 //    This is the FQDN version of Name.
 //    It should never have a trailiing ".".
 type RecordConfig struct {
-	Type     string            `json:"type"`
-	Name     string            `json:"name"`   // The short name. See below.
-	Target   string            `json:"target"` // If a name, must end with "."
-	TTL      uint32            `json:"ttl,omitempty"`
-	Metadata map[string]string `json:"meta,omitempty"`
-	NameFQDN string            `json:"-"` // Must end with ".$origin". See below.
-	Priority uint16            `json:"priority,omitempty"`
+	Type         string            `json:"type"`
+	Name         string            `json:"name"`   // The short name. See below.
+	Target       string            `json:"target"` // If a name, must end with "."
+	TTL          uint32            `json:"ttl,omitempty"`
+	Metadata     map[string]string `json:"meta,omitempty"`
+	NameFQDN     string            `json:"-"`                      // Must end with ".$origin". See below.
+	MxPreference uint16            `json:"mxpreference,omitempty"` // FIXME(tlim): Rename to MxPreference
+	SrvPriority  uint16            `json:"srvpriority,omitempty"`
+	SrvWeight    uint16            `json:"srvweight,omitempty"`
+	SrvPort      uint16            `json:"srvport,omitempty"`
+	CaaTag       string            `json:"caatag,omitempty"`
+	CaaFlag      uint8             `json:"caaflag,omitempty"`
+
+	CombinedTarget bool `json:"-"`
 
 	Original interface{} `json:"-"` // Store pointer to provider-specific record object. Used in diffing.
 }
 
-func (r *RecordConfig) String() string {
-	content := fmt.Sprintf("%s %s %s %d", r.Type, r.NameFQDN, r.Target, r.TTL)
-	if r.Type == "MX" {
-		content += fmt.Sprintf(" priority=%d", r.Priority)
+func (r *RecordConfig) String() (content string) {
+	if r.CombinedTarget {
+		return r.Target
+	}
+
+	content = fmt.Sprintf("%s %s %s %d", r.Type, r.NameFQDN, r.Target, r.TTL)
+	switch r.Type { // #rtype_variations
+	case "A", "AAAA", "CNAME", "PTR", "TXT":
+		// Nothing special.
+	case "MX":
+		content += fmt.Sprintf(" priority=%d", r.MxPreference)
+	case "SOA":
+		content = fmt.Sprintf("%s %s %s %d", r.Type, r.Name, r.Target, r.TTL)
+	case "CAA":
+		content += fmt.Sprintf(" caatag=%s caaflag=%d", r.CaaTag, r.CaaFlag)
+	default:
+		msg := fmt.Sprintf("rc.String rtype %v unimplemented", r.Type)
+		panic(msg)
+		// We panic so that we quickly find any switch statements
+		// that have not been updated for a new RR type.
 	}
 	for k, v := range r.Metadata {
 		content += fmt.Sprintf(" %s=%s", k, v)
@@ -82,52 +106,123 @@ func (r *RecordConfig) String() string {
 	return content
 }
 
+// Content combines Target and other fields into one string.
+func (r *RecordConfig) Content() string {
+	if r.CombinedTarget {
+		return r.Target
+	}
+
+	// If this is a pseudo record, just return the target.
+	if _, ok := dns.StringToType[r.Type]; !ok {
+		return r.Target
+	}
+
+	// We cheat by converting to a dns.RR and use the String() function.
+	// Sadly that function always includes a header, which we must strip out.
+	// TODO(tlim): Request the dns project add a function that returns
+	// the string without the header.
+	rr := r.ToRR()
+	header := rr.Header().String()
+	full := rr.String()
+	if !strings.HasPrefix(full, header) {
+		panic("dns.Hdr.String() not acting as we expect")
+	}
+	return full[len(header):]
+}
+
+// MergeToTarget combines "extra" fields into .Target, and zeros the merged fields.
+func (r *RecordConfig) MergeToTarget() {
+	if r.CombinedTarget {
+		pm := strings.Join([]string{"MergeToTarget: Already collapsed: ", r.Name, r.Target}, " ")
+		panic(pm)
+	}
+
+	// Merge "extra" fields into the Target.
+	r.Target = r.Content()
+
+	// Zap any fields that may have been merged.
+	r.MxPreference = 0
+	r.SrvPriority = 0
+	r.SrvWeight = 0
+	r.SrvPort = 0
+	r.CaaFlag = 0
+	r.CaaTag = ""
+
+	r.CombinedTarget = true
+}
+
 /// Convert RecordConfig -> dns.RR.
-func (r *RecordConfig) ToRR() dns.RR {
+func (rc *RecordConfig) ToRR() dns.RR {
 
-	// Note: The label is a FQDN ending in a ".".  It will not put "@" in the Name field.
-
-	// NB(tlim): An alternative way to do this would be
-	// to create the rr via: rr := TypeToRR[x]()
-	// then set the parameters. A benchmark may find that
-	// faster. This was faster to implement.
-
-	rdtype, ok := dns.StringToType[r.Type]
+	// Don't call this on fake types.
+	rdtype, ok := dns.StringToType[rc.Type]
 	if !ok {
-		log.Fatalf("No such DNS type as (%#v)\n", r.Type)
+		log.Fatalf("No such DNS type as (%#v)\n", rc.Type)
 	}
 
-	hdr := dns.RR_Header{
-		Name:   r.NameFQDN + ".",
-		Rrtype: rdtype,
-		Class:  dns.ClassINET,
-		Ttl:    r.TTL,
+	// Magicallly create an RR of the correct type.
+	rr := dns.TypeToRR[rdtype]()
+
+	// Fill in the header.
+	rr.Header().Name = rc.NameFQDN + "."
+	rr.Header().Rrtype = rdtype
+	rr.Header().Class = dns.ClassINET
+	rr.Header().Ttl = rc.TTL
+	if rc.TTL == 0 {
+		rr.Header().Ttl = DefaultTTL
 	}
 
-	// Handle some special cases:
-	switch rdtype {
+	// Fill in the data.
+	switch rdtype { // #rtype_variations
+	case dns.TypeA:
+		rr.(*dns.A).A = net.ParseIP(rc.Target)
+	case dns.TypeAAAA:
+		rr.(*dns.AAAA).AAAA = net.ParseIP(rc.Target)
+	case dns.TypeCNAME:
+		rr.(*dns.CNAME).Target = rc.Target
+	case dns.TypePTR:
+		rr.(*dns.PTR).Ptr = rc.Target
 	case dns.TypeMX:
-		// Has a Priority field.
-		return &dns.MX{Hdr: hdr, Preference: r.Priority, Mx: r.Target}
+		rr.(*dns.MX).Preference = rc.MxPreference
+		rr.(*dns.MX).Mx = rc.Target
+	case dns.TypeNS:
+		rr.(*dns.NS).Ns = rc.Target
+	case dns.TypeSOA:
+		t := strings.Replace(rc.Target, `\ `, ` `, -1)
+		parts := strings.Fields(t)
+		rr.(*dns.SOA).Ns = parts[0]
+		rr.(*dns.SOA).Mbox = parts[1]
+		rr.(*dns.SOA).Serial = atou32(parts[2])
+		rr.(*dns.SOA).Refresh = atou32(parts[3])
+		rr.(*dns.SOA).Retry = atou32(parts[4])
+		rr.(*dns.SOA).Expire = atou32(parts[5])
+		rr.(*dns.SOA).Minttl = atou32(parts[6])
+	case dns.TypeSRV:
+		rr.(*dns.SRV).Priority = rc.SrvPriority
+		rr.(*dns.SRV).Weight = rc.SrvWeight
+		rr.(*dns.SRV).Port = rc.SrvPort
+		rr.(*dns.SRV).Target = rc.Target
+	case dns.TypeCAA:
+		rr.(*dns.CAA).Flag = rc.CaaFlag
+		rr.(*dns.CAA).Tag = rc.CaaTag
+		rr.(*dns.CAA).Value = rc.Target
 	case dns.TypeTXT:
-		// Assure no problems due to quoting/unquoting:
-		return &dns.TXT{Hdr: hdr, Txt: []string{r.Target}}
+		rr.(*dns.TXT).Txt = []string{rc.Target}
 	default:
+		panic(fmt.Sprintf("ToRR: Unimplemented rtype %v", rc.Type))
+		// We panic so that we quickly find any switch statements
+		// that have not been updated for a new RR type.
 	}
 
-	var ttl string
-	if r.TTL == 0 {
-		ttl = strconv.FormatUint(uint64(DefaultTTL), 10)
-	} else {
-		ttl = strconv.FormatUint(uint64(r.TTL), 10)
-	}
+	return rr
+}
 
-	s := fmt.Sprintf("%s %s IN %s %s", r.NameFQDN, ttl, r.Type, r.Target)
-	rc, err := dns.NewRR(s)
+func atou32(s string) uint32 {
+	i64, err := strconv.ParseInt(s, 10, 32)
 	if err != nil {
-		log.Fatalf("NewRR rejected RecordConfig: %#v (t=%#v)\n%v\n", s, r.Target, err)
+		panic(fmt.Sprintf("atou32 failed (%v) (err=%v", s, err))
 	}
-	return rc
+	return uint32(i64)
 }
 
 type Nameserver struct {
@@ -150,7 +245,7 @@ type DomainConfig struct {
 	Metadata     map[string]string `json:"meta,omitempty"`
 	Records      []*RecordConfig   `json:"records"`
 	Nameservers  []*Nameserver     `json:"nameservers,omitempty"`
-	KeepUnknown  bool              `json:"keepunknown"`
+	KeepUnknown  bool              `json:"keepunknown,omitempty"`
 }
 
 func (dc *DomainConfig) Copy() (*DomainConfig, error) {
@@ -181,11 +276,19 @@ func (dc *DomainConfig) Punycode() error {
 		if err != nil {
 			return err
 		}
-		if rec.Type == "MX" || rec.Type == "CNAME" {
+		switch rec.Type { // #rtype_variations
+		case "ALIAS", "MX", "NS", "CNAME", "PTR", "SRV":
 			rec.Target, err = idna.ToASCII(rec.Target)
 			if err != nil {
 				return err
 			}
+		case "A", "AAAA", "CAA", "TXT":
+			// Nothing to do.
+		default:
+			msg := fmt.Sprintf("Punycode rtype %v unimplemented", rec.Type)
+			panic(msg)
+			// We panic so that we quickly find any switch statements
+			// that have not been updated for a new RR type.
 		}
 	}
 	return nil
@@ -196,10 +299,32 @@ func (dc *DomainConfig) Punycode() error {
 func (dc *DomainConfig) CombineMXs() {
 	for _, rec := range dc.Records {
 		if rec.Type == "MX" {
-			rec.Target = fmt.Sprintf("%d %s", rec.Priority, rec.Target)
-			rec.Priority = 0
+			if rec.CombinedTarget {
+				pm := strings.Join([]string{"CombineMXs: Already collapsed: ", rec.Name, rec.Target}, " ")
+				panic(pm)
+			}
+			rec.Target = fmt.Sprintf("%d %s", rec.MxPreference, rec.Target)
+			rec.MxPreference = 0
+			rec.CombinedTarget = true
 		}
 	}
+}
+
+// SplitCombinedMxValue splits a combined MX preference and target into
+// separate entities, i.e. splitting "10 aspmx2.googlemail.com."
+// into "10" and "aspmx2.googlemail.com.".
+func SplitCombinedMxValue(s string) (preference uint16, target string, err error) {
+	parts := strings.Fields(s)
+
+	if len(parts) != 2 {
+		return 0, "", fmt.Errorf("MX value %#v contains too many fields", s)
+	}
+
+	n64, err := strconv.ParseUint(parts[0], 10, 16)
+	if err != nil {
+		return 0, "", fmt.Errorf("MX preference %#v does not fit into a uint16", parts[0])
+	}
+	return uint16(n64), parts[1], nil
 }
 
 func copyObj(input interface{}, output interface{}) error {

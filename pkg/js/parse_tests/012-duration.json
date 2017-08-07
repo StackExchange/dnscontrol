@@ -37,9 +37,7 @@
 		          "target": "1.2.3.4",
                   "ttl":259200
 		        }
-		      ],
-              
-		      "keepunknown": false
+		      ]
 		    }
 		  ]
 		}

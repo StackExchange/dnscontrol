@@ -118,6 +118,8 @@ function DefaultTTL(v) {
     }
 }
 
+// CAA_CRITICAL: Critical CAA flag
+var CAA_CRITICAL = 1<<0;
 
 
 // DnsProvider("providerName", 0) 
@@ -156,6 +158,18 @@ function ALIAS(name, target) {
     }
 }
 
+// CAA(name,tag,value, recordModifiers...)
+function CAA(name, tag, value){
+    checkArgs([_.isString, _.isString, _.isString], arguments, "CAA expects (name, tag, value) plus optional flag as a meta argument")
+
+    var mods = getModifiers(arguments,3)
+    mods.push({caatag: tag});
+
+    return function(d) {
+        addRecord(d,"CAA",name,value,mods)
+    }
+}
+
 
 // CNAME(name,target, recordModifiers...)
 function CNAME(name, target) {
@@ -170,6 +184,15 @@ function PTR(name, target) {
     var mods = getModifiers(arguments,2)
     return function(d) {
         addRecord(d,"PTR",name,target,mods)
+    }
+}
+
+// SRV(name,priority,weight,port,target, recordModifiers...)
+function SRV(name, priority, weight, port, target) {
+    checkArgs([_.isString, _.isNumber, _.isNumber, _.isNumber, _.isString], arguments, "SRV expects (name, priority, weight, port, target)")
+    var mods = getModifiers(arguments,5)
+    return function(d) {
+        addRecordSRV(d, "SRV", name, priority, weight, port, target, mods)
     }
 }
 
@@ -294,6 +317,9 @@ function addRecord(d,type,name,target,mods) {
             var m = mods[i]
             if (_.isFunction(m)) {
                 m(rec);
+            } else if (_.isObject(m) && m.caatag) {
+                // caatag is a top level object, not in meta
+                rec.caatag = m.caatag;
             } else if (_.isObject(m)) {
                  //convert transforms to strings
                  if (m.transform && _.isArray(m.transform)){
@@ -302,7 +328,36 @@ function addRecord(d,type,name,target,mods) {
                 _.extend(rec.meta,m);
                 _.extend(rec.meta,m);
             } else if (_.isNumber(m) && type == "MX") {
-               rec.priority = m;
+               rec.mxpreference = m;
+            } else if (_.isNumber(m) && type == "CAA") {
+               rec.caaflags |= m;
+            } else {
+                console.log("WARNING: Modifier type unsupported:", typeof m, "(Skipping!)");
+            }
+        }
+    }
+    d.records.push(rec);
+    return rec;
+}
+
+function addRecordSRV(d,type,name,srvpriority,srvweight,srvport,target,mods) {
+    var rec = {type: type, name: name, srvpriority: srvpriority, srvweight: srvweight, srvport: srvport, target: target, ttl:d.defaultTTL, meta:{}};
+    // for each modifier, decide based on type:
+    // - Function: call is with the record as the argument
+    // - Object: merge it into the metadata
+    // FIXME(tlim): Factor this code out to its own function.
+    if (mods) {
+        for (var i = 0; i< mods.length; i++) {
+            var m = mods[i]
+            if (_.isFunction(m)) {
+                m(rec);
+            } else if (_.isObject(m)) {
+                 //convert transforms to strings
+                 if (m.transform && _.isArray(m.transform)){
+                    m.transform = format_tt(m.transform)
+                 }
+                _.extend(rec.meta,m);
+                _.extend(rec.meta,m);
             } else {
                 console.log("WARNING: Modifier type unsupported:", typeof m, "(Skipping!)");
             }

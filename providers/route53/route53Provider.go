@@ -3,6 +3,7 @@ package route53
 import (
 	"encoding/json"
 	"fmt"
+	"sort"
 	"strings"
 	"time"
 
@@ -12,20 +13,34 @@ import (
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/credentials"
 	"github.com/aws/aws-sdk-go/aws/session"
+	"github.com/aws/aws-sdk-go/private/waiter"
 	r53 "github.com/aws/aws-sdk-go/service/route53"
+	r53d "github.com/aws/aws-sdk-go/service/route53domains"
 	"github.com/pkg/errors"
 )
 
 type route53Provider struct {
-	client *r53.Route53
-	zones  map[string]*r53.HostedZone
+	client    *r53.Route53
+	registrar *r53d.Route53Domains
+	zones     map[string]*r53.HostedZone
 }
 
-func newRoute53(m map[string]string, metadata json.RawMessage) (providers.DNSServiceProvider, error) {
+func newRoute53Reg(conf map[string]string) (providers.Registrar, error) {
+	return newRoute53(conf, nil)
+}
+
+func newRoute53Dsp(conf map[string]string, metadata json.RawMessage) (providers.DNSServiceProvider, error) {
+	return newRoute53(conf, metadata)
+}
+
+func newRoute53(m map[string]string, metadata json.RawMessage) (*route53Provider, error) {
 	keyId, secretKey := m["KeyId"], m["SecretKey"]
 
+	// Route53 uses a global endpoint and route53domains
+	// currently only has a single regional endpoint in us-east-1
+	// http://docs.aws.amazon.com/general/latest/gr/rande.html#r53_region
 	config := &aws.Config{
-		Region: aws.String("us-west-2"),
+		Region: aws.String("us-east-1"),
 	}
 
 	if keyId != "" || secretKey != "" {
@@ -33,7 +48,7 @@ func newRoute53(m map[string]string, metadata json.RawMessage) (providers.DNSSer
 	}
 	sess := session.New(config)
 
-	api := &route53Provider{client: r53.New(sess)}
+	api := &route53Provider{client: r53.New(sess), registrar: r53d.New(sess)}
 	err := api.getZones()
 	if err != nil {
 		return nil, err
@@ -42,8 +57,10 @@ func newRoute53(m map[string]string, metadata json.RawMessage) (providers.DNSSer
 }
 
 func init() {
-	providers.RegisterDomainServiceProviderType("ROUTE53", newRoute53)
+	providers.RegisterDomainServiceProviderType("ROUTE53", newRoute53Dsp, providers.CanUsePTR, providers.CanUseSRV)
+	providers.RegisterRegistrarType("ROUTE53", newRoute53Reg)
 }
+
 func sPtr(s string) *string {
 	return &s
 }
@@ -133,21 +150,17 @@ func (r *route53Provider) GetDomainCorrections(dc *models.DomainConfig) ([]*mode
 				continue
 			}
 			r := &models.RecordConfig{
-				NameFQDN: unescape(set.Name),
-				Type:     *set.Type,
-				Target:   *rec.Value,
-				TTL:      uint32(*set.TTL),
+				NameFQDN:       unescape(set.Name),
+				Type:           *set.Type,
+				Target:         *rec.Value,
+				TTL:            uint32(*set.TTL),
+				CombinedTarget: true,
 			}
 			existingRecords = append(existingRecords, r)
 		}
 	}
 	for _, want := range dc.Records {
-		if want.Type == "MX" {
-			want.Target = fmt.Sprintf("%d %s", want.Priority, want.Target)
-			want.Priority = 0
-		} else if want.Type == "TXT" {
-			want.Target = fmt.Sprintf(`"%s"`, want.Target) //FIXME: better escaping/quoting
-		}
+		want.MergeToTarget()
 	}
 
 	//diff
@@ -224,14 +237,15 @@ func (r *route53Provider) GetDomainCorrections(dc *models.DomainConfig) ([]*mode
 	changeReq := &r53.ChangeResourceRecordSetsInput{
 		ChangeBatch: &r53.ChangeBatch{Changes: changes},
 	}
+
 	delReq := &r53.ChangeResourceRecordSetsInput{
 		ChangeBatch: &r53.ChangeBatch{Changes: dels},
 	}
 
-	addCorrection := func(req *r53.ChangeResourceRecordSetsInput) {
+	addCorrection := func(msg string, req *r53.ChangeResourceRecordSetsInput) {
 		corrections = append(corrections,
 			&models.Correction{
-				Msg: changeDesc,
+				Msg: msg,
 				F: func() error {
 					req.HostedZoneId = zone.Id
 					_, err := r.client.ChangeResourceRecordSets(req)
@@ -239,15 +253,80 @@ func (r *route53Provider) GetDomainCorrections(dc *models.DomainConfig) ([]*mode
 				},
 			})
 	}
+
 	if len(dels) > 0 {
-		addCorrection(delReq)
+		addCorrection(delDesc, delReq)
 	}
+
 	if len(changes) > 0 {
-		addCorrection(changeReq)
+		addCorrection(changeDesc, changeReq)
 	}
 
 	return corrections, nil
 
+}
+
+func (r *route53Provider) GetRegistrarCorrections(dc *models.DomainConfig) ([]*models.Correction, error) {
+	corrections := []*models.Correction{}
+	actualSet, err := r.getRegistrarNameservers(&dc.Name)
+	if err != nil {
+		return nil, err
+	}
+	sort.Strings(actualSet)
+	actual := strings.Join(actualSet, ",")
+
+	expectedSet := []string{}
+	for _, ns := range dc.Nameservers {
+		expectedSet = append(expectedSet, ns.Name)
+	}
+	sort.Strings(expectedSet)
+	expected := strings.Join(expectedSet, ",")
+
+	if actual != expected {
+		return []*models.Correction{
+			{
+				Msg: fmt.Sprintf("Update nameservers %s -> %s", actual, expected),
+				F: func() error {
+					operationId, err := r.updateRegistrarNameservers(dc.Name, expectedSet)
+					if err != nil {
+						return err
+					}
+
+					return r.waitUntilNameserversUpdate(operationId)
+				},
+			},
+		}, nil
+	}
+
+	return corrections, nil
+}
+
+func (r *route53Provider) getRegistrarNameservers(domainName *string) ([]string, error) {
+	domainDetail, err := r.registrar.GetDomainDetail(&r53d.GetDomainDetailInput{DomainName: domainName})
+	if err != nil {
+		return nil, err
+	}
+
+	nameservers := []string{}
+	for _, ns := range domainDetail.Nameservers {
+		nameservers = append(nameservers, *ns.Name)
+	}
+
+	return nameservers, nil
+}
+
+func (r *route53Provider) updateRegistrarNameservers(domainName string, nameservers []string) (*string, error) {
+	servers := []*r53d.Nameserver{}
+	for i := range nameservers {
+		servers = append(servers, &r53d.Nameserver{Name: &nameservers[i]})
+	}
+
+	domainUpdate, err := r.registrar.UpdateDomainNameservers(&r53d.UpdateDomainNameserversInput{DomainName: &domainName, Nameservers: servers})
+	if err != nil {
+		return nil, err
+	}
+
+	return domainUpdate.OperationId, nil
 }
 
 func (r *route53Provider) fetchRecordSets(zoneID *string) ([]*r53.ResourceRecordSet, error) {
@@ -301,4 +380,32 @@ func (r *route53Provider) EnsureDomainExists(domain string) error {
 	_, err := r.client.CreateHostedZone(in)
 	return err
 
+}
+
+func (r *route53Provider) waitUntilNameserversUpdate(operationId *string) error {
+	fmt.Print("Waiting for registrar update to complete...")
+
+	waiterCfg := waiter.Config{
+		Operation:   "GetOperationDetail",
+		Delay:       30,
+		MaxAttempts: 10,
+		Acceptors: []waiter.WaitAcceptor{
+			{
+				State:    "success",
+				Matcher:  "path",
+				Argument: "Status",
+				Expected: "SUCCESSFUL",
+			},
+		},
+	}
+
+	w := waiter.Waiter{
+		Client: r.registrar,
+		Input: &r53d.GetOperationDetailInput{
+			OperationId: operationId,
+		},
+		Config: waiterCfg,
+	}
+
+	return w.Wait()
 }
