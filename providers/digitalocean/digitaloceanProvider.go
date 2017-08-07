@@ -51,7 +51,7 @@ func init() {
 	providers.RegisterDomainServiceProviderType("DIGITALOCEAN", newDo, providers.CanUseSRV)
 }
 
-func (api *DoApi) EnsureDomain(domain string) error {
+func (api *DoApi) EnsureDomainExists(domain string) error {
 	ctx := context.Background()
 	_, resp, err := api.client.Domains.Get(ctx, domain)
 	if resp.Status == "404" {
