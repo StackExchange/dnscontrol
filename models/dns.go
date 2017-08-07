@@ -85,7 +85,9 @@ func (r *RecordConfig) String() (content string) {
 	}
 
 	content = fmt.Sprintf("%s %s %s %d", r.Type, r.NameFQDN, r.Target, r.TTL)
-	switch r.Type {
+	switch r.Type { // #rtype_variations
+	case "A", "AAAA", "CNAME", "PTR", "TXT":
+		// Nothing special.
 	case "MX":
 		content += fmt.Sprintf(" priority=%d", r.MxPreference)
 	case "SOA":
@@ -93,7 +95,10 @@ func (r *RecordConfig) String() (content string) {
 	case "CAA":
 		content += fmt.Sprintf(" caatag=%s caaflag=%d", r.CaaTag, r.CaaFlag)
 	default:
-		// assume nothing special for A,CNAME,AAAA, and other simple types.
+		msg := fmt.Sprintf("rc.String rtype %v unimplemented", r.Type)
+		panic(msg)
+		// We panic so that we quickly find any switch statements
+		// that have not been updated for a new RR type.
 	}
 	for k, v := range r.Metadata {
 		content += fmt.Sprintf(" %s=%s", k, v)
@@ -168,7 +173,7 @@ func (rc *RecordConfig) ToRR() dns.RR {
 	}
 
 	// Fill in the data.
-	switch rdtype {
+	switch rdtype { // #rtype_variations
 	case dns.TypeA:
 		rr.(*dns.A).A = net.ParseIP(rc.Target)
 	case dns.TypeAAAA:
@@ -205,6 +210,8 @@ func (rc *RecordConfig) ToRR() dns.RR {
 		rr.(*dns.TXT).Txt = []string{rc.Target}
 	default:
 		panic(fmt.Sprintf("ToRR: Unimplemented rtype %v", rc.Type))
+		// We panic so that we quickly find any switch statements
+		// that have not been updated for a new RR type.
 	}
 
 	return rr
@@ -269,11 +276,19 @@ func (dc *DomainConfig) Punycode() error {
 		if err != nil {
 			return err
 		}
-		if rec.Type == "MX" || rec.Type == "CNAME" {
+		switch rec.Type { // #rtype_variations
+		case "ALIAS", "MX", "NS", "CNAME", "PTR", "SRV":
 			rec.Target, err = idna.ToASCII(rec.Target)
 			if err != nil {
 				return err
 			}
+		case "A", "AAAA", "CAA", "TXT":
+			// Nothing to do.
+		default:
+			msg := fmt.Sprintf("Punycode rtype %v unimplemented", rec.Type)
+			panic(msg)
+			// We panic so that we quickly find any switch statements
+			// that have not been updated for a new RR type.
 		}
 	}
 	return nil
@@ -293,6 +308,23 @@ func (dc *DomainConfig) CombineMXs() {
 			rec.CombinedTarget = true
 		}
 	}
+}
+
+// SplitCombinedMxValue splits a combined MX preference and target into
+// separate entities, i.e. splitting "10 aspmx2.googlemail.com."
+// into "10" and "aspmx2.googlemail.com.".
+func SplitCombinedMxValue(s string) (preference uint16, target string, err error) {
+	parts := strings.Fields(s)
+
+	if len(parts) != 2 {
+		return 0, "", fmt.Errorf("MX value %#v contains too many fields", s)
+	}
+
+	n64, err := strconv.ParseUint(parts[0], 10, 16)
+	if err != nil {
+		return 0, "", fmt.Errorf("MX preference %#v does not fit into a uint16", parts[0])
+	}
+	return uint16(n64), parts[1], nil
 }
 
 func copyObj(input interface{}, output interface{}) error {

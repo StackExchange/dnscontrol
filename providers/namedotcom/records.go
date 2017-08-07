@@ -19,6 +19,7 @@ var defaultNameservers = []*models.Nameserver{
 }
 
 func (n *nameDotCom) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Correction, error) {
+	dc.Punycode()
 	records, err := n.getRecords(dc.Name)
 	if err != nil {
 		return nil, err
@@ -105,7 +106,7 @@ func (r *nameComRecord) toRecord() *models.RecordConfig {
 		TTL:      uint32(ttl),
 		Original: r,
 	}
-	switch r.Type {
+	switch r.Type { // #rtype_variations
 	case "A", "AAAA", "ANAME", "CNAME", "NS", "TXT":
 		// nothing additional.
 	case "MX":
@@ -121,6 +122,8 @@ func (r *nameComRecord) toRecord() *models.RecordConfig {
 		rc.Target = parts[2] + "."
 	default:
 		panic(fmt.Sprintf("toRecord unimplemented rtype %v", r.Type))
+		// We panic so that we quickly find any switch statements
+		// that have not been updated for a new RR type.
 	}
 	return rc
 }
@@ -173,7 +176,7 @@ func (n *nameDotCom) createRecord(rc *models.RecordConfig, domain string) error 
 	if dat.Hostname == "@" {
 		dat.Hostname = ""
 	}
-	switch rc.Type {
+	switch rc.Type { // #rtype_variations
 	case "A", "AAAA", "ANAME", "CNAME", "MX", "NS", "TXT":
 		// nothing
 	case "SRV":
@@ -181,6 +184,8 @@ func (n *nameDotCom) createRecord(rc *models.RecordConfig, domain string) error 
 		dat.Priority = rc.SrvPriority
 	default:
 		panic(fmt.Sprintf("createRecord rtype %v unimplemented", rc.Type))
+		// We panic so that we quickly find any switch statements
+		// that have not been updated for a new RR type.
 	}
 	resp, err := n.post(n.apiCreateRecord(domain), dat)
 	if err != nil {
