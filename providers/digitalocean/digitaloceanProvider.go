@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"net/http"
 
 	"github.com/StackExchange/dnscontrol/models"
 	"github.com/StackExchange/dnscontrol/providers"
@@ -38,13 +39,25 @@ func newDo(m map[string]string, metadata json.RawMessage) (providers.DNSServiceP
 		return nil, fmt.Errorf("Digitalocean Token must be provided.")
 	}
 
+	ctx := context.Background()
 	oauthClient := oauth2.NewClient(
-		context.Background(),
+		ctx,
 		oauth2.StaticTokenSource(&oauth2.Token{AccessToken: m["token"]}),
 	)
 	client := godo.NewClient(oauthClient)
 
-	return &DoApi{client: client}, nil
+	api := &DoApi{client: client}
+
+	// Get a domain to validate the token
+	_, resp, err := api.client.Domains.List(ctx, &godo.ListOptions{PerPage: 1})
+	if resp.StatusCode != http.StatusOK {
+		return nil, fmt.Errorf("Digitalocean Token is not valid.")
+	}
+	if err != nil {
+		return nil, err
+	}
+
+	return api, nil
 }
 
 func init() {
@@ -54,7 +67,7 @@ func init() {
 func (api *DoApi) EnsureDomainExists(domain string) error {
 	ctx := context.Background()
 	_, resp, err := api.client.Domains.Get(ctx, domain)
-	if resp.Status == "404" {
+	if resp.StatusCode == http.StatusNotFound {
 		_, _, err := api.client.Domains.Create(ctx, &godo.DomainCreateRequest{
 			Name:      domain,
 			IPAddress: "",
