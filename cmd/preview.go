@@ -27,8 +27,8 @@ type PreviewArgs struct {
 }
 
 func (args *PreviewArgs) flags() []cli.Flag {
-	flags := globalPreviewArgs.GetDNSConfigArgs.flags()
-	flags = append(flags, globalPreviewArgs.GetCredentialsArgs.flags()...)
+	flags := args.GetDNSConfigArgs.flags()
+	flags = append(flags, args.GetCredentialsArgs.flags()...)
 	return flags
 }
 
@@ -60,7 +60,7 @@ func InitializeProviders(credsFile string, cfg *models.DNSConfig) (registrars ma
 	}
 	nonDefaultProviders = []string{}
 	for name, vals := range providerConfigs {
-		// add "_exclude_from_defaults":"true" to a domain to exclude it from being run unless
+		// add "_exclude_from_defaults":"true" to a provider to exclude it from being run unless
 		// -providers=all or -providers=name
 		if vals["_exclude_from_defaults"] == "true" {
 			nonDefaultProviders = append(nonDefaultProviders, name)
