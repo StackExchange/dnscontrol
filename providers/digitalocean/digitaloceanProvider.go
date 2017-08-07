@@ -73,28 +73,9 @@ func (api *DoApi) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Corre
 	ctx := context.Background()
 	dc.Punycode()
 
-	records := []godo.DomainRecord{}
-	opt := &godo.ListOptions{}
-	for {
-		result, resp, err := api.client.Domains.Records(ctx, dc.Name, opt)
-		if err != nil {
-			return nil, err
-		}
-
-		for _, d := range result {
-			records = append(records, d)
-		}
-
-		if resp.Links == nil || resp.Links.IsLastPage() {
-			break
-		}
-
-		page, err := resp.Links.CurrentPage()
-		if err != nil {
-			return nil, err
-		}
-
-		opt.Page = page + 1
+	records, err := getRecords(api, dc.Name)
+	if err != nil {
+		return nil, err
 	}
 
 	existingRecords := make([]*models.RecordConfig, len(records))
@@ -144,6 +125,36 @@ func (api *DoApi) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Corre
 	}
 
 	return corrections, nil
+}
+
+func getRecords(api *DoApi, name string) ([]godo.DomainRecord, error) {
+	ctx := context.Background()
+
+	records := []godo.DomainRecord{}
+	opt := &godo.ListOptions{}
+	for {
+		result, resp, err := api.client.Domains.Records(ctx, name, opt)
+		if err != nil {
+			return nil, err
+		}
+
+		for _, d := range result {
+			records = append(records, d)
+		}
+
+		if resp.Links == nil || resp.Links.IsLastPage() {
+			break
+		}
+
+		page, err := resp.Links.CurrentPage()
+		if err != nil {
+			return nil, err
+		}
+
+		opt.Page = page + 1
+	}
+
+	return records, nil
 }
 
 func toRc(dc *models.DomainConfig, r *godo.DomainRecord) *models.RecordConfig {
