@@ -152,6 +152,9 @@ func toRc(dc *models.DomainConfig, r *godo.DomainRecord) *models.RecordConfig {
 
 	target := r.Data
 	// Make target FQDN (#rtype_variations)
+	if r.Type == "CNAME" && target == "@" {
+		target = dc.Name
+	}
 	if r.Type == "CNAME" || r.Type == "MX" || r.Type == "NS" || r.Type == "SRV" {
 		target = dnsutil.AddOrigin(target+".", dc.Name)
 	}
