@@ -3,6 +3,7 @@ package cmd
 import (
 	"encoding/json"
 	"os"
+	"strings"
 
 	"github.com/StackExchange/dnscontrol/models"
 	"github.com/urfave/cli"
@@ -128,4 +129,58 @@ func (args *GetCredentialsArgs) flags() []cli.Flag {
 			Value:       "creds.json",
 		},
 	}
+}
+
+type FilterArgs struct {
+	Providers string
+	Domains   string
+}
+
+func (args *FilterArgs) flags() []cli.Flag {
+	return []cli.Flag{
+		cli.StringFlag{
+			Name:        "providers",
+			Destination: &args.Providers,
+			Usage:       `Providers to enable (comma seperated list); default is all. Can exclude individual providers from default by adding '"_exclude_from_defaults": "true"' to the credentials file for a provider`,
+			Value:       "",
+		},
+		cli.StringFlag{
+			Name:        "domains",
+			Destination: &args.Domains,
+			Usage:       `Comma seperated list of domain names to include`,
+			Value:       "",
+		},
+	}
+}
+
+func (args *FilterArgs) shouldRunProvider(p string, dc *models.DomainConfig, nonDefaultProviders []string) bool {
+	if args.Providers == "all" {
+		return true
+	}
+	if args.Providers == "" {
+		for _, pr := range nonDefaultProviders {
+			if pr == p {
+				return false
+			}
+		}
+		return true
+	}
+	for _, prov := range strings.Split(args.Providers, ",") {
+		if prov == p {
+			return true
+		}
+	}
+	return false
+}
+
+func (args *FilterArgs) shouldRunDomain(d string) bool {
+	if args.Domains == "" {
+		return true
+	}
+	for _, dom := range strings.Split(args.Domains, ",") {
+		if dom == d {
+			return true
+		}
+	}
+	return false
 }
