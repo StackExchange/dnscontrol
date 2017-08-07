@@ -176,10 +176,12 @@ func toRc(dc *models.DomainConfig, r *godo.DomainRecord) *models.RecordConfig {
 
 	target := r.Data
 	// Make target FQDN (#rtype_variations)
-	if r.Type == "CNAME" && target == "@" {
-		target = dc.Name
-	}
 	if r.Type == "CNAME" || r.Type == "MX" || r.Type == "NS" || r.Type == "SRV" {
+		// If target is the domainname, e.g. cname foo.example.com -> example.com,
+		// DO returns "@" on read even if fqdn was written.
+		if target == "@" {
+			target = dc.Name
+		}
 		target = dnsutil.AddOrigin(target+".", dc.Name)
 	}
 
