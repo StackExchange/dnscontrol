@@ -9,6 +9,7 @@ import (
 	"github.com/StackExchange/dnscontrol/models"
 	"github.com/StackExchange/dnscontrol/pkg/nameservers"
 	"github.com/StackExchange/dnscontrol/pkg/normalize"
+	"github.com/StackExchange/dnscontrol/pkg/printer"
 	"github.com/StackExchange/dnscontrol/providers"
 	"github.com/StackExchange/dnscontrol/providers/config"
 	"github.com/urfave/cli"
@@ -74,15 +75,15 @@ var globalPushArgs PushArgs
 var globalPreviewArgs PreviewArgs
 
 func Preview(args PreviewArgs) error {
-	return run(args, false, false, ConsolePrinter{})
+	return run(args, false, false, printer.ConsolePrinter{})
 }
 
 func Push(args PushArgs) error {
-	return run(args.PreviewArgs, true, args.Interactive, ConsolePrinter{})
+	return run(args.PreviewArgs, true, args.Interactive, printer.ConsolePrinter{})
 }
 
 // run is the main routine common to preview/push
-func run(args PreviewArgs, push bool, interactive bool, out CLI) error {
+func run(args PreviewArgs, push bool, interactive bool, out printer.CLI) error {
 	// TODO: make truly CLI independent. Perhaps return results on a channel as they occur
 	cfg, err := GetDNSConfig(args.GetDNSConfigArgs)
 	if err != nil {
@@ -133,7 +134,7 @@ DomainLoop:
 				continue DomainLoop
 			}
 			totalCorrections += len(corrections)
-			anyErrors = printOrRunCorrections(corrections, push, interactive) || anyErrors
+			anyErrors = printOrRunCorrections(corrections, out, push, interactive) || anyErrors
 		}
 		run := args.shouldRunProvider(domain.Registrar, domain, nonDefaultProviders)
 		out.StartRegistrar(domain.Registrar, !run)
@@ -159,7 +160,7 @@ DomainLoop:
 			continue
 		}
 		totalCorrections += len(corrections)
-		anyErrors = printOrRunCorrections(corrections, push, interactive) || anyErrors
+		anyErrors = printOrRunCorrections(corrections, out, push, interactive) || anyErrors
 		if args.Delay != 0 {
 			time.Sleep(time.Duration(args.Delay) * time.Millisecond)
 		}
@@ -201,10 +202,10 @@ func InitializeProviders(credsFile string, cfg *models.DNSConfig) (registrars ma
 	return
 }
 
-func printOrRunCorrections(corrections []*models.Correction, out CLI, push bool, interactive bool) (anyErrors bool) {
+func printOrRunCorrections(corrections []*models.Correction, out printer.CLI, push bool, interactive bool) (anyErrors bool) {
 	anyErrors = false
 	if len(corrections) == 0 {
-		return 0
+		return false
 	}
 	for i, correction := range corrections {
 		out.PrintCorrection(i, correction)
