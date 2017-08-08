@@ -11,3 +11,4 @@ providers/ns1 @captncraig
 # providers/route53
 # providers/softlayer
 providers/vultr  @geek1011
+providers/ovh @masterzen

@@ -495,6 +495,12 @@
 			"revisionTime": "2017-09-11T04:08:19Z"
 		},
 		{
+			"checksumSHA1": "MLGPYuRc7BtUuKmIV8f/jXpYWvg=",
+			"path": "github.com/xlucas/go-ovh/ovh",
+			"revision": "ef0d1f19f39c291ed08d5d5258175d8a2134ab1c",
+			"revisionTime": "2015-12-21T16:03:54Z"
+		},
+		{
 			"checksumSHA1": "9jjO5GjLa0XF/nfWihF02RoH4qc=",
 			"path": "golang.org/x/net/context",
 			"revision": "4971afdc2f162e82d185353533d3cf16188a9f4e",
