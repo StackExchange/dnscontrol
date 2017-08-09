@@ -50,11 +50,11 @@ func newDo(m map[string]string, metadata json.RawMessage) (providers.DNSServiceP
 
 	// Get a domain to validate the token
 	_, resp, err := api.client.Domains.List(ctx, &godo.ListOptions{PerPage: 1})
-	if resp.StatusCode != http.StatusOK {
-		return nil, fmt.Errorf("Digitalocean Token is not valid.")
-	}
 	if err != nil {
 		return nil, err
+	}
+	if resp.StatusCode != http.StatusOK {
+		return nil, fmt.Errorf("Digitalocean Token is not valid.")
 	}
 
 	return api, nil
