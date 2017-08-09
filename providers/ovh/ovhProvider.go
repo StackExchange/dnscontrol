@@ -18,7 +18,7 @@ type ovhProvider struct {
 }
 
 var docNotes = providers.DocumentationNotes{
-	providers.DocDualHost:            providers.Cannot(),
+	providers.DocDualHost:            providers.Can(),
 	providers.DocCreateDomains:       providers.Cannot("New domains require registration"),
 	providers.DocOfficiallySupported: providers.Cannot(),
 	providers.CanUseAlias:            providers.Cannot(),
@@ -97,11 +97,6 @@ func (c *ovhProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*models.C
 			continue
 		}
 
-		// skip ovh managed apex NS
-		if r.FieldType == "NS" && r.SubDomain == "" {
-			continue
-		}
-
 		if r.SubDomain == "" {
 			r.SubDomain = "@"
 		}
@@ -130,16 +125,6 @@ func (c *ovhProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*models.C
 
 	// Normalize
 	models.Downcase(actual)
-
-	newList := make([]*models.RecordConfig, 0, len(dc.Records))
-	for _, rec := range dc.Records {
-		// apex NS can't be managed directly
-		if rec.Type == "NS" && rec.NameFQDN == dc.Name {
-			continue
-		}
-		newList = append(newList, rec)
-	}
-	dc.Records = newList
 
 	differ := diff.New(dc)
 	_, create, delete, modify := differ.IncrementalDiff(actual)

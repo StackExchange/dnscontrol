@@ -120,7 +120,7 @@ control panel manually.
 ## Dual providers scenario
 
 Since OVH doesn't allow to host DNS for a domain that is not registered in their registrar, some dual providers
-scenario might not be possible:
+scenario are not possible:
 
 | registrar | zone        | working? |
 |:---------:|:-----------:|:--------:|
