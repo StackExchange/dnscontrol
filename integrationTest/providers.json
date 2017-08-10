@@ -12,6 +12,10 @@
     "apiuser": "$CF_USER",
     "domain": "$CF_DOMAIN"
   },
+  "DIGITALOCEAN": {
+    "token": "$DO_TOKEN",
+    "domain": "$DO_DOMAIN"
+  },
   "DNSIMPLE": {
     "COMMENT": "16/17: no ns records managable. Not even for subdomains.",
     "baseurl": "https://api.sandbox.dnsimple.com",
