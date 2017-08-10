@@ -34,7 +34,7 @@ Domain level metadata available:
 */
 
 func init() {
-	providers.RegisterDomainServiceProviderType("CLOUDFLAREAPI", newCloudflare, providers.CanUseAlias)
+	providers.RegisterDomainServiceProviderType("CLOUDFLAREAPI", newCloudflare, providers.CanUseSRV, providers.CanUseAlias)
 	providers.RegisterCustomRecordType("CF_REDIRECT", "CLOUDFLAREAPI", "")
 	providers.RegisterCustomRecordType("CF_TEMP_REDIRECT", "CLOUDFLAREAPI", "")
 }
@@ -321,29 +321,39 @@ func newCloudflare(m map[string]string, metadata json.RawMessage) (providers.DNS
 }
 
 // Used on the "existing" records.
+type cfRecData struct {
+	Service  string `json:"service"`
+	Proto    string `json:"proto"`
+	Name     string `json:"name"`
+	Priority uint16 `json:"priority"`
+	Weight   uint16 `json:"weight"`
+	Port     uint16 `json:"port"`
+	Target   string `json:"target"`
+}
+
 type cfRecord struct {
-	ID         string      `json:"id"`
-	Type       string      `json:"type"`
-	Name       string      `json:"name"`
-	Content    string      `json:"content"`
-	Proxiable  bool        `json:"proxiable"`
-	Proxied    bool        `json:"proxied"`
-	TTL        uint32      `json:"ttl"`
-	Locked     bool        `json:"locked"`
-	ZoneID     string      `json:"zone_id"`
-	ZoneName   string      `json:"zone_name"`
-	CreatedOn  time.Time   `json:"created_on"`
-	ModifiedOn time.Time   `json:"modified_on"`
-	Data       interface{} `json:"data"`
-	Priority   uint16      `json:"priority"`
+	ID         string     `json:"id"`
+	Type       string     `json:"type"`
+	Name       string     `json:"name"`
+	Content    string     `json:"content"`
+	Proxiable  bool       `json:"proxiable"`
+	Proxied    bool       `json:"proxied"`
+	TTL        uint32     `json:"ttl"`
+	Locked     bool       `json:"locked"`
+	ZoneID     string     `json:"zone_id"`
+	ZoneName   string     `json:"zone_name"`
+	CreatedOn  time.Time  `json:"created_on"`
+	ModifiedOn time.Time  `json:"modified_on"`
+	Data       *cfRecData `json:"data"`
+	Priority   uint16     `json:"priority"`
 }
 
 func (c *cfRecord) toRecord(domain string) *models.RecordConfig {
 	//normalize cname,mx,ns records with dots to be consistent with our config format.
-	if c.Type == "CNAME" || c.Type == "MX" || c.Type == "NS" {
+	if c.Type == "CNAME" || c.Type == "MX" || c.Type == "NS" || c.Type == "SRV" {
 		c.Content = dnsutil.AddOrigin(c.Content+".", domain)
 	}
-	return &models.RecordConfig{
+	rc := &models.RecordConfig{
 		NameFQDN:     c.Name,
 		Type:         c.Type,
 		Target:       c.Content,
@@ -351,6 +361,14 @@ func (c *cfRecord) toRecord(domain string) *models.RecordConfig {
 		TTL:          c.TTL,
 		Original:     c,
 	}
+	if c.Type == "SRV" {
+		data := *c.Data
+		rc.SrvPriority = data.Priority
+		rc.SrvWeight = data.Weight
+		rc.SrvPort = data.Port
+		rc.Target = dnsutil.AddOrigin(data.Target+".", domain)
+	}
+	return rc
 }
 
 func getProxyMetadata(r *models.RecordConfig) map[string]string {
