@@ -18,6 +18,8 @@ type Namecheap struct {
 
 func init() {
 	providers.RegisterRegistrarType("NAMECHEAP", newReg)
+	// NOTE(tlim): If in the future the DNS Service Provider is implemented,
+	// most likely it will require providers.CantUseNOPURGE.
 }
 
 func newReg(m map[string]string) (providers.Registrar, error) {

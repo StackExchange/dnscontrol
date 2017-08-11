@@ -49,6 +49,11 @@ const (
 	CanUseSRV
 	// CanUseCAA indicates the provider can handle CAA records
 	CanUseCAA
+	// CantUseNOPURGE indicates NO_PURGE is broken for this provider. To make it
+	// work would require complex emulation of an incremental update mechanism,
+	// so it is easier to simply mark this feature as not working for this
+	// provider.
+	CantUseNOPURGE
 )
 
 func ProviderHasCabability(pType string, cap Capability) bool {
