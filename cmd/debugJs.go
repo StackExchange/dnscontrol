@@ -26,7 +26,7 @@ var debugJSCommand = &cli.Command{
 	Action: func(c *cli.Context) error {
 		return exit(DebugJS(globalDebugJSArgs))
 	},
-	Category: catPlumbing,
+	Category: catDebug,
 	Flags:    globalDebugJSArgs.flags(),
 }
 

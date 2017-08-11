@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"encoding/json"
+	"fmt"
 	"os"
 	"strings"
 
@@ -11,9 +12,9 @@ import (
 
 // categories of commands
 const (
-	catMain     = "main"
-	catPlumbing = "plumbing"
-	catUtils    = "utility"
+	catMain  = "main"
+	catDebug = "debug"
+	catUtils = "utility"
 )
 
 // Run will execute the CLI
@@ -21,12 +22,21 @@ func Run(version string) error {
 	app := cli.NewApp()
 	app.Version = version
 	app.Name = "dnscontrol"
+	app.HideVersion = true
 	app.Usage = "dnscontrol is a compiler and dsl for managing cloud dns zones"
 	app.Commands = []cli.Command{
 		*previewCommand,
 		*pushCommand,
 		*debugJSCommand,
 		*debugPreprocessCommand,
+		cli.Command{
+			Name:  "version",
+			Usage: "Print version information",
+			Action: func(c *cli.Context) {
+				fmt.Println(version)
+			},
+			Category: catDebug,
+		},
 	}
 	app.EnableBashCompletion = true
 	app.Run(os.Args)

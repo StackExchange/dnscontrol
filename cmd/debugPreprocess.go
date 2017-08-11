@@ -13,7 +13,7 @@ var debugPreprocessCommand = &cli.Command{
 	Action: func(c *cli.Context) error {
 		return exit(DebugPreprocess(globalDebugPreprocessArgs))
 	},
-	Category: catPlumbing,
+	Category: catDebug,
 	Flags:    globalDebugPreprocessArgs.flags(),
 }
 
