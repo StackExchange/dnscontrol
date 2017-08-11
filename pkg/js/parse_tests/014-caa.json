@@ -23,7 +23,8 @@
           "type":"CAA",
           "name":"@",
           "target":"mailto:test@example.com",
-          "caatag":"iodef"
+          "caatag":"iodef",
+          "caaflag":1
         },
         {
           "type":"CAA",
@@ -35,7 +36,8 @@
           "type":"CAA",
           "name":"@",
           "target":"https://example.com",
-          "caatag":"iodef"
+          "caatag":"iodef",
+          "caaflag":1
         }
       ]
     }
