@@ -39,9 +39,41 @@ var interactive = flag.Bool("i", false, "Confirm or Exclude each correction befo
 
 var delay = flag.Int64("d", 0, "delay between domains to avoid rate limits (in ms)")
 
+// for forward compatibility:
+// allow command to be before or after flags
+func permuteArgs() {
+	args := os.Args
+	if len(args) <= 1 {
+		return
+	}
+	first := args[1]
+	if strings.HasPrefix(first, "-") {
+		return
+	}
+	//non-flag is first arg. Move it to back
+	for i := 2; i < len(args); i++ {
+		args[i-1] = args[i]
+	}
+	args[len(args)-1] = first
+}
+
 func main() {
 	log.SetFlags(log.LstdFlags | log.Lshortfile)
+
+	permuteArgs()
 	flag.Parse()
+	if flag.NArg() != 1 {
+		fmt.Println(`Usage: dnscontrol [options] cmd
+		        cmd:
+		           preview: Show changed that would happen.
+		           push:    Make changes for real.
+		           version: Print program version string.
+		           print:   Print compiled data.
+		           create-domains:   Pre-create domains in R53
+		`)
+		flag.PrintDefaults()
+		return
+	}
 	command := flag.Arg(0)
 	if command == "version" {
 		fmt.Println(versionString())
@@ -68,22 +100,8 @@ func main() {
 			log.Fatalf("Error executing javasscript in (%v): %v", *jsFile, err)
 		}
 	}
-
 	if dnsConfig == nil {
 		log.Fatal("No config specified.")
-	}
-
-	if flag.NArg() != 1 {
-		fmt.Println(`Usage: dnscontrol [options] cmd
-		        cmd:
-		           preview: Show changed that would happen.
-		           push:    Make changes for real.
-		           version: Print program version string.
-		           print:   Print compiled data.
-		           create-domains:   Pre-create domains in R53
-		`)
-		flag.PrintDefaults()
-		return
 	}
 	if *jsonOutputPre != "" {
 		dat, _ := json.MarshalIndent(dnsConfig, "", "  ")
