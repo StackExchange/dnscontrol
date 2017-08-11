@@ -110,6 +110,9 @@ func runTests(t *testing.T, prv providers.DNSServiceProvider, domainName string,
 			for _, r := range tst.Records {
 				rc := models.RecordConfig(*r)
 				rc.NameFQDN = dnsutil.AddOrigin(rc.Name, domainName)
+				if rc.Target == "**current-domain**" {
+					rc.Target = domainName + "."
+				}
 				dom.Records = append(dom.Records, &rc)
 			}
 			dom2, _ := dom.Copy()
@@ -290,11 +293,13 @@ var tests = []*TestCase{
 	tc("Change it", cname("foo", "google2.com.")),
 	tc("Change to A record", a("foo", "1.2.3.4")),
 	tc("Change back to CNAME", cname("foo", "google.com.")),
+	tc("Record pointing to @", cname("foo", "**current-domain**")),
 
 	//NS
 	tc("Empty"),
 	tc("NS for subdomain", ns("xyz", "ns2.foo.com.")),
 	tc("Dual NS for subdomain", ns("xyz", "ns2.foo.com."), ns("xyz", "ns1.foo.com.")),
+	tc("Record pointing to @", ns("foo", "**current-domain**")),
 
 	//IDNAs
 	tc("Empty"),
@@ -311,6 +316,7 @@ var tests = []*TestCase{
 	tc("Delete one", mx("@", 5, "foo2.com."), mx("@", 15, "foo3.com.")),
 	tc("Change to other name", mx("@", 5, "foo2.com."), mx("mail", 15, "foo3.com.")),
 	tc("Change Preference", mx("@", 7, "foo2.com."), mx("mail", 15, "foo3.com.")),
+	tc("Record pointing to @", mx("foo", 8, "**current-domain**")),
 
 	//PTR
 	tc("Empty").IfHasCapability(providers.CanUsePTR),
@@ -325,14 +331,14 @@ var tests = []*TestCase{
 
 	//SRV
 	tc("Empty").IfHasCapability(providers.CanUseSRV),
-	tc("SRV record", srv("@", 5, 6, 7, "foo.com.")).IfHasCapability(providers.CanUseSRV),
-	tc("Second SRV record, same prio", srv("@", 5, 6, 7, "foo.com."), srv("@", 5, 60, 70, "foo2.com.")).IfHasCapability(providers.CanUseSRV),
-	tc("3 SRV", srv("@", 5, 6, 7, "foo.com."), srv("@", 5, 60, 70, "foo2.com."), srv("@", 15, 65, 75, "foo3.com.")).IfHasCapability(providers.CanUseSRV),
-	tc("Delete one", srv("@", 5, 6, 7, "foo.com."), srv("@", 15, 65, 75, "foo3.com.")).IfHasCapability(providers.CanUseSRV),
-	tc("Change Target", srv("@", 5, 6, 7, "foo.com."), srv("@", 15, 65, 75, "foo4.com.")).IfHasCapability(providers.CanUseSRV),
-	tc("Change Priority", srv("@", 52, 6, 7, "foo.com."), srv("@", 15, 65, 75, "foo4.com.")).IfHasCapability(providers.CanUseSRV),
-	tc("Change Weight", srv("@", 52, 62, 7, "foo.com."), srv("@", 15, 65, 75, "foo4.com.")).IfHasCapability(providers.CanUseSRV),
-	tc("Change Port", srv("@", 52, 62, 72, "foo.com."), srv("@", 15, 65, 75, "foo4.com.")).IfHasCapability(providers.CanUseSRV),
+	tc("SRV record", srv("_service._protocol", 5, 6, 7, "foo.com.")).IfHasCapability(providers.CanUseSRV),
+	tc("Second SRV record, same prio", srv("_service._protocol", 5, 6, 7, "foo.com."), srv("_service._protocol", 5, 60, 70, "foo2.com.")).IfHasCapability(providers.CanUseSRV),
+	tc("3 SRV", srv("_service._protocol", 5, 6, 7, "foo.com."), srv("_service._protocol", 5, 60, 70, "foo2.com."), srv("_service._protocol", 15, 65, 75, "foo3.com.")).IfHasCapability(providers.CanUseSRV),
+	tc("Delete one", srv("_service._protocol", 5, 6, 7, "foo.com."), srv("_service._protocol", 15, 65, 75, "foo3.com.")).IfHasCapability(providers.CanUseSRV),
+	tc("Change Target", srv("_service._protocol", 5, 6, 7, "foo.com."), srv("_service._protocol", 15, 65, 75, "foo4.com.")).IfHasCapability(providers.CanUseSRV),
+	tc("Change Priority", srv("_service._protocol", 52, 6, 7, "foo.com."), srv("_service._protocol", 15, 65, 75, "foo4.com.")).IfHasCapability(providers.CanUseSRV),
+	tc("Change Weight", srv("_service._protocol", 52, 62, 7, "foo.com."), srv("_service._protocol", 15, 65, 75, "foo4.com.")).IfHasCapability(providers.CanUseSRV),
+	tc("Change Port", srv("_service._protocol", 52, 62, 72, "foo.com."), srv("_service._protocol", 15, 65, 75, "foo4.com.")).IfHasCapability(providers.CanUseSRV),
 
 	//CAA
 	tc("Empty").IfHasCapability(providers.CanUseCAA),

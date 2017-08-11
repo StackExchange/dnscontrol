@@ -249,6 +249,11 @@ func NormalizeAndValidateConfig(config *models.DNSConfig) (errs []error) {
 			} else {
 				pTypes = append(pTypes, pType)
 			}
+
+			//If NO_PURGE is in use, make sure this *isn't* a provider that *doesn't* support NO_PURGE.
+			if domain.KeepUnknown && providers.ProviderHasCabability(pType, providers.CantUseNOPURGE) {
+				errs = append(errs, fmt.Errorf("%s uses NO_PURGE which is not supported by %s(%s)", domain.Name, p, pType))
+			}
 		}
 
 		// Normalize Nameservers.
