@@ -67,6 +67,12 @@ func (z *zoneGenData) Less(i, j int) bool {
 		if pa != pb {
 			return pa < pb
 		}
+	case dns.TypePTR:
+		ta2, tb2 := a.(*dns.PTR), b.(*dns.PTR)
+		pa, pb := ta2.Ptr, tb2.Ptr
+		if pa != pb {
+			return pa < pb
+		}
 	case dns.TypeCAA:
 		ta2, tb2 := a.(*dns.CAA), b.(*dns.CAA)
 		// sort by tag

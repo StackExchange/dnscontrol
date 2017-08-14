@@ -181,6 +181,27 @@ var testdataZFSRV = `$TTL 300
                  IN SRV   10 10 9999 foo.com.
 `
 
+func TestWriteZoneFilePtr(t *testing.T) {
+	//exhibits explicit ttls and long name
+	r1, _ := dns.NewRR(`bosun.org. 300 IN PTR chell.bosun.org`)
+	r2, _ := dns.NewRR(`bosun.org. 300 IN PTR barney.bosun.org.`)
+	r3, _ := dns.NewRR(`bosun.org. 300 IN PTR alex.bosun.org.`)
+	buf := &bytes.Buffer{}
+	WriteZoneFile(buf, []dns.RR{r1, r2, r3}, "bosun.org")
+	if buf.String() != testdataZFPTR {
+		t.Log(buf.String())
+		t.Log(testdataZFPTR)
+		t.Fatalf("Zone file does not match.")
+	}
+	parseAndRegen(t, buf, testdataZFPTR)
+}
+
+var testdataZFPTR = `$TTL 300
+@                IN PTR   alex.bosun.org.
+                 IN PTR   barney.bosun.org.
+                 IN PTR   chell.bosun.org.
+`
+
 func TestWriteZoneFileCaa(t *testing.T) {
 	//exhibits explicit ttls and long name
 	r1, _ := dns.NewRR(`bosun.org. 300 IN CAA 0 issuewild ";"`)
