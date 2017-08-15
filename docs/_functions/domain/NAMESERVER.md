@@ -7,7 +7,7 @@ parameters:
 ---
 
 NAMESERVER NS instructs DNSControl to inform the domain's registrar where to find this zone.
-For some registrars this will also add NS records to the zone.
+For some registrars this will also add NS records to the zone itself.
 
 `ip` is optional, and is only required if glue records need to be generated in the parent zone.
 
