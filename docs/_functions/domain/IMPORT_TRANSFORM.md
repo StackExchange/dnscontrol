@@ -26,6 +26,7 @@ be very error prone. Therefore instead you maintain foo.com and
 let IMPORT_TRANSFORM automatically generate bar.com.
 
 {% include startExample.html %}
+{% highlight html %}
 
 foo.com:
     one.foo.com.    IN A 1.2.3.1
@@ -40,11 +41,13 @@ bar.com:
     three.foo.com.bar.com.  IN A 123.123.123.113
     four.foo.com.bar.com.   IN A 123.123.123.114
 
+{%endhighlight%}
 {% include endExample.html %}
 
 Here's how you'd implement this in DNSControl:
 
 {% include startExample.html %}
+{% highlight js %}
 
 var TRANSFORM_INT = [
     // RANGE_START, RANGE_END, NEW_BASE
@@ -64,6 +67,7 @@ D("bar.com", .... ,
   IMPORT_TRANSFORM(TRANSFORM_INT, 'foo.com', 300),
 );
 
+{%endhighlight%}
 {% include endExample.html %}
 
 Transform rules are: RANGE_START, RANGE_END, NEW_BASE.  NEW_BASE may be:
