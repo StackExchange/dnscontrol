@@ -7,7 +7,7 @@ parameters:
   - modifiers...
 ---
 
-Don't use this. It was added for a very specific situation. Bugs
+Don't use this feature. It was added for a very specific situation. Bugs
 and feature requests from outside that situation will be rejected.
 
 IMPORT_TRANSFORM adds to the domain all the records from another
@@ -26,6 +26,7 @@ be very error prone. Therefore instead you maintain foo.com and
 let IMPORT_TRANSFORM automatically generate bar.com.
 
 {% include startExample.html %}
+
 foo.com:
     one.foo.com.    IN A 1.2.3.1
     two.foo.com.    IN A 1.2.3.2
@@ -38,6 +39,7 @@ bar.com:
     two.foo.com.bar.com.    IN A 1.2.3.2
     three.foo.com.bar.com.  IN A 123.123.123.113
     four.foo.com.bar.com.   IN A 123.123.123.114
+
 {% include endExample.html %}
 
 Here's how you'd implement this in DNSControl:
@@ -61,6 +63,7 @@ D("bar.com", .... ,
   A("www","123.123.123.123")
   IMPORT_TRANSFORM(TRANSFORM_INT, 'foo.com', 300),
 );
+
 {% include endExample.html %}
 
 Transform rules are: RANGE_START, RANGE_END, NEW_BASE.  NEW_BASE may be:
