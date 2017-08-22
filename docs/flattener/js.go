@@ -38,53 +38,77 @@ func (g gResolver) GetTxt(fqdn string) ([]string, error) {
 }
 
 var jq = jquery.NewJQuery
+var parsed *spflib.SPFRecord
+var domain string
 
 func main() {
 	jq(func() {
 		print("Your current jQuery version is: " + jq().Jquery)
 		jq("#lookup_btn").On(jquery.CLICK, func(e jquery.Event) {
 			go func() {
-				dom := jq("#domain").Val()
-				rec, err := spflib.Lookup(dom, gResolver{})
+				domain = jq("#domain").Val()
+				rec, err := spflib.Lookup(domain, gResolver{})
 				if err != nil {
 					panic(err)
 				}
-				parsed, err := spflib.Parse(rec, gResolver{})
+				parsed, err = spflib.Parse(rec, gResolver{})
 				if err != nil {
+					// todo: show a better error
 					panic(err)
 				}
-				jq("#results").SetHtml(buildHTML(parsed, dom))
-
-				jq("#star").SetText(parsed.Flatten("mailgun.org,spf-basic.fogcreek.com").TXT())
+				jq("#results").SetHtml(buildHTML(parsed, domain))
+				renderResults()
 			}()
 		})
 	})
 }
 
+func renderResults() {
+	flat := parsed.Flatten("*")
+	content := fmt.Sprintf(`
+<h3> Fully flattened (length %d)</h3><code>%s</code>	
+`, len(flat.TXT()), flat.TXT())
+	split := flat.TXTSplit("_netblocks%d." + domain)
+	if len(split) > 0 {
+		content += fmt.Sprintf("<h3>Fully flattened split (%d lookups)</h3>", len(split)-1)
+		for k, v := range split {
+			content += fmt.Sprintf("<h4>%s</h4><code>%s</code>", k, v)
+		}
+	}
+	jq("#flattened").SetHtml(content)
+}
+
 func buildHTML(rec *spflib.SPFRecord, domain string) string {
 	h := "<h1>" + domain + "</h1>"
 	h += fmt.Sprintf("<h2>%d lookups</h2>", rec.Lookups())
-	return h + recHTML(rec)
+	return h + genRoot(rec)
 }
 
-func recHTML(rec *spflib.SPFRecord) string {
-	//open panel
-	h := fmt.Sprintf(`<div class="panel panel-default">
-  		<div class="panel-heading">%s (%d lookups)</div><div class="panel-body"><ul class="list-group">`, rec.TXT(), rec.Lookups())
+// html based on https://codepen.io/khoama/pen/hpljA
+func genRoot(rec *spflib.SPFRecord) string {
+	h := fmt.Sprintf(` 
+<ul>
+	<li class='root'>%s</li>
+	`, rec.TXT())
 	for _, p := range rec.Parts {
-		class := "list-group-item-success"
-		if p.IsLookup {
-			class = "list-group-item-danger"
-		}
-		// open list item
-		h += fmt.Sprintf("<li class='list-group-item %s'>%s", class, p.Text)
-		if p.IncludeRecord != nil {
-			h += recHTML(p.IncludeRecord)
-		}
-		// close list item
-		h += "</li>"
+		h += genPart(p)
 	}
-	//close panel
-	h += "</ul></div></div>"
+	h += "</ul>"
+	return h
+}
+
+func genPart(rec *spflib.SPFPart) string {
+	if !rec.IsLookup {
+		return fmt.Sprintf(`<li>%s</li>`, rec.Text)
+	}
+	h := fmt.Sprintf(`<li>
+	<input type="checkbox" id="%s" name="%s" />
+	<label for="%s">%s(%d lookups)</label>`, rec.IncludeDomain, rec.IncludeDomain, rec.IncludeDomain, rec.Text, rec.IncludeRecord.Lookups()+1)
+	h += fmt.Sprintf("<ul>")
+	for _, p := range rec.IncludeRecord.Parts {
+		h += genPart(p)
+	}
+	h += "</ul>"
+	h += "</li>"
 	return h
 }
