@@ -57,6 +57,9 @@ func main() {
 					panic(err)
 				}
 				jq("#results").SetHtml(buildHTML(parsed, domain))
+				jq(".cb").On(jquery.CHANGE, func(e jquery.Event) {
+					renderResults()
+				})
 				renderResults()
 			}()
 		})
@@ -64,17 +67,36 @@ func main() {
 }
 
 func renderResults() {
-	flat := parsed.Flatten("*")
-	content := fmt.Sprintf(`
-<h3> Fully flattened (length %d)</h3><code>%s</code>	
-`, len(flat.TXT()), flat.TXT())
-	split := flat.TXTSplit("_netblocks%d." + domain)
-	if len(split) > 0 {
-		content += fmt.Sprintf("<h3>Fully flattened split (%d lookups)</h3>", len(split)-1)
-		for k, v := range split {
-			content += fmt.Sprintf("<h4>%s</h4><code>%s</code>", k, v)
+	content := ""
+	addFlattened := func(mode string, filter string) {
+		flat := parsed.Flatten(filter)
+		lookups := 0
+		if filter != "*" {
+			lookups = parsed.Lookups() - len(strings.Split(filter, ","))
+		}
+		content += fmt.Sprintf(`
+<h3> %s flattened (length %d, %d lookups)</h3><code>%s</code>	
+`, mode, len(flat.TXT()), lookups, flat.TXT())
+		split := flat.TXTSplit("_spf%d." + domain)
+		if len(split) > 1 {
+			lookups += len(split) - 1
+			content += fmt.Sprintf("<h3>%s flattened split (%d lookups)</h3>", mode, lookups)
+			for k, v := range split {
+				content += fmt.Sprintf("<h4>%s</h4><code>%s</code>", k, v)
+			}
 		}
 	}
+	addFlattened("Fully", "*")
+
+	// look for selected divs
+	filters := []string{}
+	jq("input:checked").Each(func(i int, el interface{}) {
+		filters = append(filters, jq(el).Attr("id"))
+	})
+	if len(filters) > 0 {
+		addFlattened("Selectively", strings.Join(filters, ","))
+	}
+
 	jq("#flattened").SetHtml(content)
 }
 
@@ -102,7 +124,7 @@ func genPart(rec *spflib.SPFPart) string {
 		return fmt.Sprintf(`<li>%s</li>`, rec.Text)
 	}
 	h := fmt.Sprintf(`<li>
-	<input type="checkbox" id="%s" name="%s" />
+	<input type="checkbox" class='cb' id="%s" name="%s" />
 	<label for="%s">%s(%d lookups)</label>`, rec.IncludeDomain, rec.IncludeDomain, rec.IncludeDomain, rec.Text, rec.IncludeRecord.Lookups()+1)
 	h += fmt.Sprintf("<ul>")
 	for _, p := range rec.IncludeRecord.Parts {
