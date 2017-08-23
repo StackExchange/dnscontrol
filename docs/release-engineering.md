@@ -34,7 +34,7 @@ Submit the release.
 
 Email the mailing list:
 
-To: dnscontrol-discuss@groups.google.com
+To: dnscontrol-discuss@googlegroups.com
 Subject: New release: dnscontrol v0.1.5
 
 https://github.com/StackExchange/dnscontrol/releases/tag/v0.1.5
@@ -48,3 +48,7 @@ So many new providers and features! Plus, a new testing framework that makes it 
 
 
 ```
+
+Add this release to your weekly accomplishments:
+ https://github.com/StackExchange/dnscontrol/releases/tag/v0.1.5
+
