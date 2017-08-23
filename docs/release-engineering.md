@@ -2,6 +2,9 @@
 
 Here are my notes from producing the v0.1.5 release.
 
+0.  Run the integration tests (if you are at StackOverflow, thisis "DNS > Integration Tests"
+
+
 1. Edit the "Version" variable in `main.go`
 
 ```
