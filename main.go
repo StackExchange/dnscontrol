@@ -344,7 +344,7 @@ func shouldRunDomain(d string) bool {
 // Update the number here manually each release, so at least we have a range for go-get people.
 var (
 	SHA       = ""
-	Version   = "0.1.0"
+	Version   = "0.1.5"
 	BuildTime = ""
 )
 
