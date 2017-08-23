@@ -24,6 +24,7 @@ func (g gResolver) GetTxt(fqdn string) ([]string, error) {
 	if err != nil {
 		return nil, err
 	}
+
 	defer resp.Body.Close()
 	dec := json.NewDecoder(resp.Body)
 	dat := &gResp{}
@@ -43,7 +44,6 @@ var domain string
 
 func main() {
 	jq(func() {
-		print("Your current jQuery version is: " + jq().Jquery)
 		jq("#lookup_btn").On(jquery.CLICK, func(e jquery.Event) {
 			go func() {
 				domain = jq("#domain").Val()
@@ -58,10 +58,26 @@ func main() {
 				}
 				jq("#results").SetHtml(buildHTML(parsed, domain))
 				jq(".cb").On(jquery.CHANGE, func(e jquery.Event) {
+					updateDisabledChecks()
 					renderResults()
 				})
+				updateDisabledChecks()
 				renderResults()
 			}()
+		})
+	})
+}
+
+func updateDisabledChecks() {
+	jq("input:checkbox").Each(func(i int, el interface{}) {
+		fmt.Println(jq(el).Prop("disabled"))
+		jq(el).SetProp("disabled", false)
+	})
+	jq("input:checkbox:not(:checked)").Each(func(i int, el interface{}) {
+		fmt.Println(jq(el).Attr("id"))
+		jq(el).Next().Next().Find("input:checkbox").Each(func(i int, el interface{}) {
+			fmt.Println("^^", jq(el).Attr("id"))
+			jq(el).SetProp("disabled", true)
 		})
 	})
 }
