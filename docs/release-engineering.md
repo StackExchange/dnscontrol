@@ -43,7 +43,7 @@ This is what it looks like when you did it right:
 
 ```
 $ ./dnscontrol-Darwin version
-dnscontrol 0.1.5 ("6fdf78997815055bbe119c0116c9e2d60310a515[dirty]") built 24 Aug 17 11:26 EDT
+dnscontrol 0.1.5 ("6fdf78997815055bbe119c0116c9e2d60310a515") built 24 Aug 17 11:26 EDT
 ```
 
 This is what it looks like when there was a file that should have been checked in:
