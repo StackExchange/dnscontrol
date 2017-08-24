@@ -274,71 +274,71 @@ func (tc *TestCase) IfHasCapability(c providers.Capability) *TestCase {
 
 //ALWAYS ADD TO BOTTOM OF LIST. Order and indexes matter.
 var tests = []*TestCase{
-	// A
-	tc("Empty"),
-	tc("Create an A record", a("@", "1.1.1.1")),
-	tc("Change it", a("@", "1.2.3.4")),
-	tc("Add another", a("@", "1.2.3.4"), a("www", "1.2.3.4")),
-	tc("Add another(same name)", a("@", "1.2.3.4"), a("www", "1.2.3.4"), a("www", "5.6.7.8")),
-	tc("Change a ttl", a("@", "1.2.3.4").ttl(1000), a("www", "1.2.3.4"), a("www", "5.6.7.8")),
-	tc("Change single target from set", a("@", "1.2.3.4").ttl(1000), a("www", "2.2.2.2"), a("www", "5.6.7.8")),
-	tc("Change all ttls", a("@", "1.2.3.4").ttl(500), a("www", "2.2.2.2").ttl(400), a("www", "5.6.7.8").ttl(400)),
-	tc("Delete one", a("@", "1.2.3.4").ttl(500), a("www", "5.6.7.8").ttl(400)),
-	tc("Add back and change ttl", a("www", "5.6.7.8").ttl(700), a("www", "1.2.3.4").ttl(700)),
-	tc("Change targets and ttls", a("www", "1.1.1.1"), a("www", "2.2.2.2")),
-
-	// CNAMES
-	tc("Empty"),
-	tc("Create a CNAME", cname("foo", "google.com.")),
-	tc("Change it", cname("foo", "google2.com.")),
-	tc("Change to A record", a("foo", "1.2.3.4")),
-	tc("Change back to CNAME", cname("foo", "google.com.")),
-	tc("Record pointing to @", cname("foo", "**current-domain**")),
-
-	//NS
-	tc("Empty"),
-	tc("NS for subdomain", ns("xyz", "ns2.foo.com.")),
-	tc("Dual NS for subdomain", ns("xyz", "ns2.foo.com."), ns("xyz", "ns1.foo.com.")),
-	tc("Record pointing to @", ns("foo", "**current-domain**")),
-
-	//IDNAs
-	tc("Empty"),
-	tc("Internationalized name", a("ööö", "1.2.3.4")),
-	tc("Change IDN", a("ööö", "2.2.2.2")),
-	tc("Internationalized CNAME Target", cname("a", "ööö.com.")),
-	tc("IDN CNAME AND Target", cname("öoö", "ööö.企业.")),
-
-	//MX
-	tc("Empty"),
-	tc("MX record", mx("@", 5, "foo.com.")),
-	tc("Second MX record, same prio", mx("@", 5, "foo.com."), mx("@", 5, "foo2.com.")),
-	tc("3 MX", mx("@", 5, "foo.com."), mx("@", 5, "foo2.com."), mx("@", 15, "foo3.com.")),
-	tc("Delete one", mx("@", 5, "foo2.com."), mx("@", 15, "foo3.com.")),
-	tc("Change to other name", mx("@", 5, "foo2.com."), mx("mail", 15, "foo3.com.")),
-	tc("Change Preference", mx("@", 7, "foo2.com."), mx("mail", 15, "foo3.com.")),
-	tc("Record pointing to @", mx("foo", 8, "**current-domain**")),
-
-	//PTR
-	tc("Empty").IfHasCapability(providers.CanUsePTR),
-	tc("Create PTR record", ptr("4", "foo.com.")).IfHasCapability(providers.CanUsePTR),
-	tc("Modify PTR record", ptr("4", "bar.com.")).IfHasCapability(providers.CanUsePTR),
-
-	//ALIAS
-	tc("Empty").IfHasCapability(providers.CanUseAlias),
-	tc("ALIAS at root", alias("@", "foo.com.")).IfHasCapability(providers.CanUseAlias),
-	tc("change it", alias("@", "foo2.com.")).IfHasCapability(providers.CanUseAlias),
-	tc("ALIAS at subdomain", alias("test", "foo.com.")).IfHasCapability(providers.CanUseAlias),
+	//	// A
+	//	tc("Empty"),
+	//	tc("Create an A record", a("@", "1.1.1.1")),
+	//	tc("Change it", a("@", "1.2.3.4")),
+	//	tc("Add another", a("@", "1.2.3.4"), a("www", "1.2.3.4")),
+	//	tc("Add another(same name)", a("@", "1.2.3.4"), a("www", "1.2.3.4"), a("www", "5.6.7.8")),
+	//	tc("Change a ttl", a("@", "1.2.3.4").ttl(1000), a("www", "1.2.3.4"), a("www", "5.6.7.8")),
+	//	tc("Change single target from set", a("@", "1.2.3.4").ttl(1000), a("www", "2.2.2.2"), a("www", "5.6.7.8")),
+	//	tc("Change all ttls", a("@", "1.2.3.4").ttl(500), a("www", "2.2.2.2").ttl(400), a("www", "5.6.7.8").ttl(400)),
+	//	tc("Delete one", a("@", "1.2.3.4").ttl(500), a("www", "5.6.7.8").ttl(400)),
+	//	tc("Add back and change ttl", a("www", "5.6.7.8").ttl(700), a("www", "1.2.3.4").ttl(700)),
+	//	tc("Change targets and ttls", a("www", "1.1.1.1"), a("www", "2.2.2.2")),
+	//
+	//	// CNAMES
+	//	tc("Empty"),
+	//	tc("Create a CNAME", cname("foo", "google.com.")),
+	//	tc("Change it", cname("foo", "google2.com.")),
+	//	tc("Change to A record", a("foo", "1.2.3.4")),
+	//	tc("Change back to CNAME", cname("foo", "google.com.")),
+	//	tc("Record pointing to @", cname("foo", "**current-domain**")),
+	//
+	//	//NS
+	//	tc("Empty"),
+	//	tc("NS for subdomain", ns("xyz", "ns2.foo.com.")),
+	//	tc("Dual NS for subdomain", ns("xyz", "ns2.foo.com."), ns("xyz", "ns1.foo.com.")),
+	//	tc("Record pointing to @", ns("foo", "**current-domain**")),
+	//
+	//	//IDNAs
+	//	tc("Empty"),
+	//	tc("Internationalized name", a("ööö", "1.2.3.4")),
+	//	tc("Change IDN", a("ööö", "2.2.2.2")),
+	//	tc("Internationalized CNAME Target", cname("a", "ööö.com.")),
+	//	tc("IDN CNAME AND Target", cname("öoö", "ööö.企业.")),
+	//
+	//	//MX
+	//	tc("Empty"),
+	//	tc("MX record", mx("@", 5, "foo.com.")),
+	//	tc("Second MX record, same prio", mx("@", 5, "foo.com."), mx("@", 5, "foo2.com.")),
+	//	tc("3 MX", mx("@", 5, "foo.com."), mx("@", 5, "foo2.com."), mx("@", 15, "foo3.com.")),
+	//	tc("Delete one", mx("@", 5, "foo2.com."), mx("@", 15, "foo3.com.")),
+	//	tc("Change to other name", mx("@", 5, "foo2.com."), mx("mail", 15, "foo3.com.")),
+	//	tc("Change Preference", mx("@", 7, "foo2.com."), mx("mail", 15, "foo3.com.")),
+	//	tc("Record pointing to @", mx("foo", 8, "**current-domain**")),
+	//
+	//	//PTR
+	//	tc("Empty").IfHasCapability(providers.CanUsePTR),
+	//	tc("Create PTR record", ptr("4", "foo.com.")).IfHasCapability(providers.CanUsePTR),
+	//	tc("Modify PTR record", ptr("4", "bar.com.")).IfHasCapability(providers.CanUsePTR),
+	//
+	//	//ALIAS
+	//	tc("Empty").IfHasCapability(providers.CanUseAlias),
+	//	tc("ALIAS at root", alias("@", "foo.com.")).IfHasCapability(providers.CanUseAlias),
+	//	tc("change it", alias("@", "foo2.com.")).IfHasCapability(providers.CanUseAlias),
+	//	tc("ALIAS at subdomain", alias("test", "foo.com.")).IfHasCapability(providers.CanUseAlias),
 
 	//SRV
 	tc("Empty").IfHasCapability(providers.CanUseSRV),
-	tc("SRV record", srv("_service._protocol", 5, 6, 7, "foo.com.")).IfHasCapability(providers.CanUseSRV),
-	tc("Second SRV record, same prio", srv("_service._protocol", 5, 6, 7, "foo.com."), srv("_service._protocol", 5, 60, 70, "foo2.com.")).IfHasCapability(providers.CanUseSRV),
-	tc("3 SRV", srv("_service._protocol", 5, 6, 7, "foo.com."), srv("_service._protocol", 5, 60, 70, "foo2.com."), srv("_service._protocol", 15, 65, 75, "foo3.com.")).IfHasCapability(providers.CanUseSRV),
-	tc("Delete one", srv("_service._protocol", 5, 6, 7, "foo.com."), srv("_service._protocol", 15, 65, 75, "foo3.com.")).IfHasCapability(providers.CanUseSRV),
-	tc("Change Target", srv("_service._protocol", 5, 6, 7, "foo.com."), srv("_service._protocol", 15, 65, 75, "foo4.com.")).IfHasCapability(providers.CanUseSRV),
-	tc("Change Priority", srv("_service._protocol", 52, 6, 7, "foo.com."), srv("_service._protocol", 15, 65, 75, "foo4.com.")).IfHasCapability(providers.CanUseSRV),
-	tc("Change Weight", srv("_service._protocol", 52, 62, 7, "foo.com."), srv("_service._protocol", 15, 65, 75, "foo4.com.")).IfHasCapability(providers.CanUseSRV),
-	tc("Change Port", srv("_service._protocol", 52, 62, 72, "foo.com."), srv("_service._protocol", 15, 65, 75, "foo4.com.")).IfHasCapability(providers.CanUseSRV),
+	tc("SRV record", srv("_sip._tcp", 5, 6, 7, "foo.com.")).IfHasCapability(providers.CanUseSRV),
+	tc("Second SRV record, same prio", srv("_sip._tcp", 5, 6, 7, "foo.com."), srv("_sip._tcp", 5, 60, 70, "foo2.com.")).IfHasCapability(providers.CanUseSRV),
+	tc("3 SRV", srv("_sip._tcp", 5, 6, 7, "foo.com."), srv("_sip._tcp", 5, 60, 70, "foo2.com."), srv("_sip._tcp", 15, 65, 75, "foo3.com.")).IfHasCapability(providers.CanUseSRV),
+	tc("Delete one", srv("_sip._tcp", 5, 6, 7, "foo.com."), srv("_sip._tcp", 15, 65, 75, "foo3.com.")).IfHasCapability(providers.CanUseSRV),
+	tc("Change Target", srv("_sip._tcp", 5, 6, 7, "foo.com."), srv("_sip._tcp", 15, 65, 75, "foo4.com.")).IfHasCapability(providers.CanUseSRV),
+	tc("Change Priority", srv("_sip._tcp", 52, 6, 7, "foo.com."), srv("_sip._tcp", 15, 65, 75, "foo4.com.")).IfHasCapability(providers.CanUseSRV),
+	tc("Change Weight", srv("_sip._tcp", 52, 62, 7, "foo.com."), srv("_sip._tcp", 15, 65, 75, "foo4.com.")).IfHasCapability(providers.CanUseSRV),
+	tc("Change Port", srv("_sip._tcp", 52, 62, 72, "foo.com."), srv("_sip._tcp", 15, 65, 75, "foo4.com.")).IfHasCapability(providers.CanUseSRV),
 
 	//CAA
 	tc("Empty").IfHasCapability(providers.CanUseCAA),
