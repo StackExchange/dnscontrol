@@ -359,7 +359,7 @@ func SplitCombinedSrvValue(s string) (priority, weight, port uint16, target stri
     if err != nil {
         return 0, 0, 0, "", fmt.Errorf("SRV preference %#v does not fit into a uint16", parts[0])
     }
-	return uint16(priority), uint16(weight), uint16(port), parts[5], nil
+	return priority, weight, port, parts[5], nil
 }
 
 func copyObj(input interface{}, output interface{}) error {
