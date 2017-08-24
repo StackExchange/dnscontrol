@@ -327,6 +327,41 @@ func SplitCombinedMxValue(s string) (preference uint16, target string, err error
 	return uint16(n64), parts[1], nil
 }
 
+// CombineSRVs will merge the priority into the target field for all srv records.
+// Useful for providers that desire them as one field.
+func (dc *DomainConfig) CombineSRVs() {
+	for _, rec := range dc.Records {
+		if rec.Type == "SRV" {
+			if rec.CombinedTarget {
+				pm := strings.Join([]string{"CombineSRVs: Already collapsed: ", rec.Name, rec.Target}, " ")
+				panic(pm)
+			}
+			rec.Target = fmt.Sprintf("%d %d %d %s", rec.SrvPriority, rec.SrvWeight, rec.SrvPort, rec.Target)
+			rec.MxPreference = 0
+			rec.CombinedTarget = true
+		}
+	}
+}
+
+// SplitCombinedSrvValue splits a combined SRV preference and target into
+// separate entities, some DNS providers want "10" and "foo.com.", others want "10 foo.com.".
+func SplitCombinedSrvValue(s string) (priority, weight, port uint16, target string, err error) {
+	parts := strings.Fields(s)
+
+	if len(parts) != 5 {
+		return 0, 0, 0, "", fmt.Errorf("SRV value %#v contains too many fields", s, s)
+	}
+
+	priority = uint16(priority)
+	weight = uint16(weight)
+	port = uint16(port)
+
+    if err != nil {
+        return 0, 0, 0, "", fmt.Errorf("SRV preference %#v does not fit into a uint16", parts[0])
+    }
+	return uint16(priority), uint16(weight), uint16(port), parts[5], nil
+}
+
 func copyObj(input interface{}, output interface{}) error {
 	buf := &bytes.Buffer{}
 	enc := gob.NewEncoder(buf)
