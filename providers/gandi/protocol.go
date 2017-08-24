@@ -184,6 +184,12 @@ func convert(r *gandirecord.RecordInfo, origin string) *models.RecordConfig {
 	}
 	switch r.Type {
 	case "A", "AAAA", "NS", "CNAME", "PTR", "TXT":
+	case "SRV":
+	   	var err error
+		rc.SrvPriority, rc.SrvWeight, rc.SrvPort, rc.Target, err = models.SplitCombinedSrvValue(r.Value)
+		if err != nil {
+			panic(fmt.Sprintf("gandi.convert bad srv value format: %#v (%s)", r.Value, err))
+		}
 		// no-op
 	case "MX":
 		var err error
