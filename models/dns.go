@@ -327,7 +327,7 @@ func SplitCombinedMxValue(s string) (preference uint16, target string, err error
 	return uint16(n64), parts[1], nil
 }
 
-// CombineSRVs will merge the priority into the target field for all srv records.
+// CombineSRVs will merge the priority, weight, and port into the target field for all srv records.
 // Useful for providers that desire them as one field.
 func (dc *DomainConfig) CombineSRVs() {
 	for _, rec := range dc.Records {
@@ -337,31 +337,34 @@ func (dc *DomainConfig) CombineSRVs() {
 				panic(pm)
 			}
 			rec.Target = fmt.Sprintf("%d %d %d %s", rec.SrvPriority, rec.SrvWeight, rec.SrvPort, rec.Target)
-			rec.SrvPriority = 0
-			rec.SrvWeight = 0
-			rec.SrvPort = 0
 			rec.CombinedTarget = true
 		}
 	}
 }
 
-// SplitCombinedSrvValue splits a combined SRV preference and target into
-// separate entities, some DNS providers want "10" and "foo.com.", others want "10 foo.com.".
+//SplitCombinedSrvValue splits a combined SRV priority, weight, port and target into
+//separate entities, some DNS providers want "5" "10" 15" and "foo.com.",
+//while other providers want "5 10 15 foo.com.".
 func SplitCombinedSrvValue(s string) (priority, weight, port uint16, target string, err error) {
 	parts := strings.Fields(s)
 
-	if len(parts) != 5 {
-		return 0, 0, 0, "", fmt.Errorf("SRV value %#v contains too many fields", s, s)
+	if len(parts) != 4 {
+		return 0, 0, 0, "", fmt.Errorf("SRV value %#v contains too many fields", s)
 	}
 
-	priority = uint16(priority)
-	weight = uint16(weight)
-	port = uint16(port)
-
+	priorityconv, err := strconv.ParseInt(parts[0], 10, 16)
 	if err != nil {
-		return 0, 0, 0, "", fmt.Errorf("SRV preference %#v does not fit into a uint16", parts[0])
+		return 0, 0, 0, "", fmt.Errorf("Priority %#v does not fit into a uint16", parts[0])
 	}
-	return priority, weight, port, parts[5], nil
+	weightconv, err := strconv.ParseInt(parts[1], 10, 16)
+	if err != nil {
+		return 0, 0, 0, "", fmt.Errorf("Weight %#v does not fit into a uint16", parts[0])
+	}
+	portconv, err := strconv.ParseInt(parts[2], 10, 16)
+	if err != nil {
+		return 0, 0, 0, "", fmt.Errorf("Port %#v does not fit into a uint16", parts[0])
+	}
+	return uint16(priorityconv), uint16(weightconv), uint16(portconv), parts[3], nil
 }
 
 func copyObj(input interface{}, output interface{}) error {
