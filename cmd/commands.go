@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"os"
+	"sort"
 	"strings"
 
 	"github.com/StackExchange/dnscontrol/models"
@@ -17,27 +18,33 @@ const (
 	catUtils = "utility"
 )
 
+var commands = []cli.Command{}
+var version string
+
+func cmd(cat string, c *cli.Command) bool {
+	c.Category = cat
+	commands = append(commands, *c)
+	return true
+}
+
+var _ = cmd(catDebug, &cli.Command{
+	Name:  "version",
+	Usage: "Print version information",
+	Action: func(c *cli.Context) {
+		fmt.Println(version)
+	},
+})
+
 // Run will execute the CLI
-func Run(version string) error {
+func Run(v string) error {
+	version = v
 	app := cli.NewApp()
 	app.Version = version
 	app.Name = "dnscontrol"
 	app.HideVersion = true
-	app.Usage = "dnscontrol is a compiler and dsl for managing cloud dns zones"
-	app.Commands = []cli.Command{
-		*previewCommand,
-		*pushCommand,
-		*debugJSCommand,
-		*debugPreprocessCommand,
-		cli.Command{
-			Name:  "version",
-			Usage: "Print version information",
-			Action: func(c *cli.Context) {
-				fmt.Println(version)
-			},
-			Category: catDebug,
-		},
-	}
+	app.Usage = "dnscontrol is a compiler and DSL for managing dns zones"
+	sort.Sort(cli.CommandsByName(commands))
+	app.Commands = commands
 	app.EnableBashCompletion = true
 	app.Run(os.Args)
 	return nil
@@ -56,8 +63,14 @@ func (args *GetDNSConfigArgs) flags() []cli.Flag {
 	return append(args.ExecuteDSLArgs.flags(),
 		cli.StringFlag{
 			Destination: &args.JSONFile,
+			Name:        "ir",
+			Usage:       "Read IR (json) directly from this file. Do not process javascript at all",
+		},
+		cli.StringFlag{
+			Destination: &args.JSONFile,
 			Name:        "json",
-			Usage:       "file containing intermediate json",
+			Hidden:      true,
+			Usage:       "same as -ir. only here for backwards compatibility, hence hidden",
 		},
 	)
 }
@@ -89,10 +102,17 @@ type ExecuteDSLArgs struct {
 func (args *ExecuteDSLArgs) flags() []cli.Flag {
 	return []cli.Flag{
 		cli.StringFlag{
-			Name:        "js",
+			Name:        "config",
 			Value:       "dnsconfig.js",
 			Destination: &args.JSFile,
 			Usage:       "Javascript file containing dns config",
+		},
+		cli.StringFlag{
+			Name:        "js",
+			Value:       "dnsconfig.js",
+			Hidden:      true,
+			Destination: &args.JSFile,
+			Usage:       "same as config. for back compatibility",
 		},
 		cli.BoolFlag{
 			Name:        "dev",
@@ -113,12 +133,12 @@ func (args *PrintJSONArgs) flags() []cli.Flag {
 		cli.BoolFlag{
 			Name:        "pretty",
 			Destination: &args.Pretty,
-			Usage:       "Pretty print json",
+			Usage:       "Pretty print IR JSON",
 		},
 		cli.StringFlag{
 			Name:        "out",
 			Destination: &args.Output,
-			Usage:       "File to write json to",
+			Usage:       "File to write IR JSON to (default stdout)",
 		},
 	}
 }
@@ -154,7 +174,7 @@ func (args *FilterArgs) flags() []cli.Flag {
 		cli.StringFlag{
 			Name:        "domains",
 			Destination: &args.Domains,
-			Usage:       `Comma seperated list of domain names to include`,
+			Usage:       `Comma separated list of domain names to include`,
 			Value:       "",
 		},
 	}

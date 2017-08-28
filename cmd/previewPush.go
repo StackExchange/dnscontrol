@@ -15,15 +15,14 @@ import (
 	"github.com/urfave/cli"
 )
 
-var previewCommand = &cli.Command{
+var _ = cmd(catMain, &cli.Command{
 	Name:  "preview",
 	Usage: "read live configuration and identify changes to be made, without applying them",
 	Action: func(ctx *cli.Context) error {
 		return exit(Preview(globalPreviewArgs))
 	},
-	Category: catMain,
-	Flags:    globalPreviewArgs.flags(),
-}
+	Flags: globalPreviewArgs.flags(),
+})
 
 // PreviewArgs contains all data/flags needed to run preview, independently of CLI
 type PreviewArgs struct {
@@ -45,15 +44,14 @@ func (args *PreviewArgs) flags() []cli.Flag {
 	return flags
 }
 
-var pushCommand = &cli.Command{
+var _ = cmd(catMain, &cli.Command{
 	Name:  "push",
 	Usage: "identify changes to be made, and perform them",
 	Action: func(ctx *cli.Context) error {
 		return exit(Push(globalPushArgs))
 	},
-	Category: catMain,
-	Flags:    globalPushArgs.flags(),
-}
+	Flags: globalPushArgs.flags(),
+})
 
 type PushArgs struct {
 	PreviewArgs

@@ -20,15 +20,14 @@ func exit(err error) error {
 	return cli.NewExitError(err, 1)
 }
 
-var debugJSCommand = &cli.Command{
+var _ = cmd(catDebug, &cli.Command{
 	Name:  "debug-js",
-	Usage: "Execute javascript and print generated json",
+	Usage: "Output intermediate representation (IR) after JavaScript is executed but before any validation/normalization",
 	Action: func(c *cli.Context) error {
 		return exit(DebugJS(globalDebugJSArgs))
 	},
-	Category: catDebug,
-	Flags:    globalDebugJSArgs.flags(),
-}
+	Flags: globalDebugJSArgs.flags(),
+})
 
 type DebugJSArgs struct {
 	PrintJSONArgs

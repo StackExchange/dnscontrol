@@ -7,28 +7,27 @@ import (
 	"github.com/urfave/cli"
 )
 
-var debugPreprocessCommand = &cli.Command{
-	Name:  "debug-preprocess",
-	Usage: "Run validation and normalization logic, and print resulting json",
+var _ = cmd(catDebug, &cli.Command{
+	Name:  "output-ir",
+	Usage: "Output intermediate representation (IR) after running validation and normalization logic.",
 	Action: func(c *cli.Context) error {
 		return exit(DebugPreprocess(globalDebugPreprocessArgs))
 	},
-	Category: catDebug,
-	Flags:    globalDebugPreprocessArgs.flags(),
-}
+	Flags: globalDebugPreprocessArgs.flags(),
+})
 
-type DebugPreprocessArgs struct {
+type OutputIRArgs struct {
 	GetDNSConfigArgs
 	PrintJSONArgs
 }
 
-func (args *DebugPreprocessArgs) flags() []cli.Flag {
+func (args *OutputIRArgs) flags() []cli.Flag {
 	return append(args.GetDNSConfigArgs.flags(), args.PrintJSONArgs.flags()...)
 }
 
-var globalDebugPreprocessArgs DebugPreprocessArgs
+var globalDebugPreprocessArgs OutputIRArgs
 
-func DebugPreprocess(args DebugPreprocessArgs) error {
+func DebugPreprocess(args OutputIRArgs) error {
 	cfg, err := GetDNSConfig(args.GetDNSConfigArgs)
 	if err != nil {
 		return err
