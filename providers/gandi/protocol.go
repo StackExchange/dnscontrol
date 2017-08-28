@@ -172,6 +172,7 @@ func (c *GandiApi) createGandiZone(domainname string, zoneID int64, records []ga
 	return nil
 }
 
+// convert takes a DNS record from Gandi and returns our native RecordConfig format.
 func convert(r *gandirecord.RecordInfo, origin string) *models.RecordConfig {
 	rc := &models.RecordConfig{
 		NameFQDN: dnsutil.AddOrigin(r.Name, origin),
@@ -182,7 +183,7 @@ func convert(r *gandirecord.RecordInfo, origin string) *models.RecordConfig {
 		TTL:      uint32(r.Ttl),
 	}
 	switch r.Type {
-	case "A", "AAAA", "NS", "CNAME", "TXT":
+	case "A", "AAAA", "NS", "CNAME", "PTR", "TXT":
 		// no-op
 	case "MX":
 		var err error
