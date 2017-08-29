@@ -22,7 +22,7 @@ such information and saves a copy in a file called `adzonedump.ZONE.json`
 (where "ZONE" is replaced with the zone name).  When `-fakeps` is enabled,
 the PowerShell command is not run, but the `adzonedump.ZONE.json` file is
 read. You can generate this file on a Windows system.
-* Zone Changes: Normally when DNSControl needs to change DNS records, it 
+* Zone Changes: Normally when DNSControl needs to change DNS records, it
 executes PowerShell commands as required.  When `-fakeps` is enabled, these
 commands are simply logged to a file `dns_update_commands.ps1`.
 

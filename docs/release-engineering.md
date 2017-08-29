@@ -12,7 +12,7 @@ Edit the "Version" variable in `main.go` and commit.
 
 ```
 vi main.go
-git commit -m'Release v1.5' main.go 
+git commit -m'Release v1.5' main.go
 git tag v0.1.5
 git push origin tag v0.1.5
 ```
@@ -33,7 +33,7 @@ Review the git log using this command:
 
 Create the binaries and attach them to the release:
 
-    go run build/build.go 
+    go run build/build.go
 
 NOTE: This command creates binaries with the version number and git hash embedded. It also builds the releases for all supported platforms (i.e. creates a .exe for Windows even if you are running on Linux.  Isn't Go amazing?)
 
@@ -75,7 +75,7 @@ https://github.com/StackExchange/dnscontrol/releases/tag/v0.1.5
 So many new providers and features! Plus, a new testing framework that makes it easier to add big features without fear of breaking old ones.
 
 * list
-* of 
+* of
 * major
 * changes
 ```

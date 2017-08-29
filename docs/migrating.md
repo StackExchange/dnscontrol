@@ -10,7 +10,7 @@ least one zone.  You should have a working `dnsconfig.js` file and
 
 ## General advice
 
-First, use the 
+First, use the
 [Getting Started]({{site.github.url}}/getting-started) doc
 so that you have a working `dnsconfig.js` with at least one domain.
 
