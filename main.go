@@ -6,7 +6,6 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/StackExchange/dnscontrol/cmd"
 	_ "github.com/StackExchange/dnscontrol/providers/_all"
 )
 
@@ -19,7 +18,7 @@ func main() {
 
 // Version management. 2 Goals:
 // 1. Someone who just does "go get" has at least some information.
-// 2. If built with build.sh, more specific build information gets put in.
+// 2. If built with build/build.go, more specific build information gets put in.
 // Update the number here manually each release, so at least we have a range for go-get people.
 var (
 	SHA       = ""
