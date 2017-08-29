@@ -22,7 +22,7 @@ DNSControl attempts to manage these records for you as much as possible, accordi
 
 There are several different ways to declare nameservers for a zone:
 
-1. Explicit [`NAMESERVER`](/js#NAMESERVER) records in a domain: 
+1. Explicit [`NAMESERVER`](/js#NAMESERVER) records in a domain:
 
     `NAMESERVER("ns1.myhost.tld")`
 2. Request all nameservers to use from a provider (usually via api):

@@ -31,11 +31,11 @@ is inappropriate for the domain.  For example
 `PTR('1.2.3.4', 'f.co.')` is valid for the domain `D("3.2.1.in-addr.arpa',`
  but DNSControl will generate an error if the domain is `D("9.9.9.in-addr.arpa',`.
 This is because `1.2.3.4` is contained in `1.2.3.0/24` but not `9.9.9.0/24`.
-This validation works for IPv6, IPv4, and 
+This validation works for IPv6, IPv4, and
 RFC2317 "Classless in-addr.arpa delegation" domains.
 
 *Automatic truncation:* DNSControl will automatically truncate FQDNs
-as needed. 
+as needed.
 If the name is a FQDN ending with `.`, DNSControl will verify that the
 name is contained within the CIDR block implied by domain.  For example
 if name is `4.3.2.1.in-addr.arpa.` (note the trailing `.`)
