@@ -9,12 +9,12 @@ import (
 )
 
 var _ = cmd(catDebug, &cli.Command{
-	Name:  "output-ir",
+	Name:  "dump-ir",
 	Usage: "Output intermediate representation (IR) after running validation and normalization logic.",
 	Action: func(c *cli.Context) error {
-		return exit(DebugPreprocess(globalDebugPreprocessArgs))
+		return exit(DebugPreprocess(globalDumpIRArgs))
 	},
-	Flags: globalDebugPreprocessArgs.flags(),
+	Flags: globalDumpIRArgs.flags(),
 })
 
 var _ = cmd(catDebug, &cli.Command{
@@ -22,26 +22,26 @@ var _ = cmd(catDebug, &cli.Command{
 	Usage: "Check and validate dnsconfig.js. Do not access providers.",
 	Action: func(c *cli.Context) error {
 		// This is the same as output-ir but output defaults to /dev/null.
-		if globalDebugPreprocessArgs.Output == "" {
-			globalDebugPreprocessArgs.Output = os.DevNull
+		if globalDumpIRArgs.Output == "" {
+			globalDumpIRArgs.Output = os.DevNull
 		}
-		return exit(DebugPreprocess(globalDebugPreprocessArgs))
+		return exit(DebugPreprocess(globalDumpIRArgs))
 	},
-	Flags: globalDebugPreprocessArgs.flags(),
+	Flags: globalDumpIRArgs.flags(),
 })
 
-type OutputIRArgs struct {
+type DumpIRArgs struct {
 	GetDNSConfigArgs
 	PrintJSONArgs
 }
 
-func (args *OutputIRArgs) flags() []cli.Flag {
+func (args *DumpIRArgs) flags() []cli.Flag {
 	return append(args.GetDNSConfigArgs.flags(), args.PrintJSONArgs.flags()...)
 }
 
-var globalDebugPreprocessArgs OutputIRArgs
+var globalDumpIRArgs DumpIRArgs
 
-func DebugPreprocess(args OutputIRArgs) error {
+func DebugPreprocess(args DumpIRArgs) error {
 	cfg, err := GetDNSConfig(args.GetDNSConfigArgs)
 	if err != nil {
 		return err

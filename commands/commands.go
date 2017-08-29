@@ -13,7 +13,7 @@ import (
 
 // categories of commands
 const (
-	catMain  = "main"
+	catMain  = "\b main" // screwed up to alphebatize first
 	catDebug = "debug"
 	catUtils = "utility"
 )
