@@ -6,6 +6,7 @@ import (
 	"strconv"
 	"time"
 
+	"github.com/StackExchange/dnscontrol/commands"
 	_ "github.com/StackExchange/dnscontrol/providers/_all"
 )
 
@@ -13,7 +14,7 @@ import (
 
 func main() {
 	log.SetFlags(log.LstdFlags | log.Lshortfile)
-	cmd.Run(versionString())
+	commands.Run(versionString())
 }
 
 // Version management. 2 Goals:
