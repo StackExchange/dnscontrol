@@ -61,6 +61,7 @@ func (c *GandiApi) GetNameservers(domain string) ([]*models.Nameserver, error) {
 
 func (c *GandiApi) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Correction, error) {
 	dc.Punycode()
+	dc.CombineSRVs()
 	dc.CombineMXs()
 	domaininfo, err := c.getDomainInfo(dc.Name)
 	if err != nil {
