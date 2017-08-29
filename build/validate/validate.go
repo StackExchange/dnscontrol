@@ -6,10 +6,8 @@ import (
 	"crypto/cipher"
 	"encoding/base64"
 	"fmt"
-	"io/ioutil"
 	"os"
 	"os/exec"
-	"path/filepath"
 	"strings"
 
 	"github.com/google/go-github/github"
@@ -33,7 +31,7 @@ func main() {
 
 	run("gofmt", "Checking gofmt", "gofmt ok", checkGoFmt)
 	run("gogen", "Checking go generate", "go generate ok", checkGoGenerate)
-	run("", "Checking for direct console output", "", checkDirectOutput)
+	//run("", "Checking for direct console output", "", checkDirectOutput)
 
 	if failed {
 		os.Exit(1)
@@ -96,61 +94,63 @@ func getModifiedFiles() ([]string, error) {
 	return strings.Split(string(out), "\n"), nil
 }
 
-func checkDirectOutput() error {
-	var files []string
-	var err error
-	var badStrings = []string{
-		"fmt.Print",
-		"log.Print",
-	}
-	// files allowed to direct print
-	var allowances = map[string]bool{
-		`cmd\printer.go`:         true,
-		`cmd\debugJs.go`:         true,
-		`cmd\debugPreprocess.go`: true,
-	}
-	var rd func(string)
-	rd = func(path string) {
-		if path == ".git" || path == "vendor" || path == "build" {
-			return
-		}
-		var fis []os.FileInfo
-		fis, err = ioutil.ReadDir(path)
-		if err != nil {
-			return
-		}
-		for _, fi := range fis {
-			n := fi.Name()
-			fp := filepath.Join(path, n)
-			if fi.IsDir() {
-				rd(fp)
-			} else if filepath.Ext(n) == ".go" {
-				if allowances[fp] {
-					continue
-				}
-				var dat []byte
-				dat, err = ioutil.ReadFile(fp)
-				if err != nil {
-					return
-				}
-				for _, bs := range badStrings {
-					if strings.Contains(string(dat), bs) {
-						files = append(files, fp)
-						break
-					}
-				}
-			}
-		}
-	}
-	rd(".")
-	if err != nil {
-		return err
-	}
-	err = fmt.Errorf("The following files contain printing direct to console:\n%s", strings.Join(files, "\n"))
-	// eat error for now, just print as info until we clean it
-	fmt.Println(err.Error())
-	return nil
-}
+//TODO: in the future we want to eliminate any code that directly prints to console with fmt.Println and friends.
+// This will help find and eliminate code that does that.
+// func checkDirectOutput() error {
+// 	var files []string
+// 	var err error
+// 	var badStrings = []string{
+// 		"fmt.Print",
+// 		"log.Print",
+// 	}
+// 	// files allowed to direct print
+// 	var allowances = map[string]bool{
+// 		`cmd\printer.go`:         true,
+// 		`cmd\debugJs.go`:         true,
+// 		`cmd\debugPreprocess.go`: true,
+// 	}
+// 	var rd func(string)
+// 	rd = func(path string) {
+// 		if path == ".git" || path == "vendor" || path == "build" {
+// 			return
+// 		}
+// 		var fis []os.FileInfo
+// 		fis, err = ioutil.ReadDir(path)
+// 		if err != nil {
+// 			return
+// 		}
+// 		for _, fi := range fis {
+// 			n := fi.Name()
+// 			fp := filepath.Join(path, n)
+// 			if fi.IsDir() {
+// 				rd(fp)
+// 			} else if filepath.Ext(n) == ".go" {
+// 				if allowances[fp] {
+// 					continue
+// 				}
+// 				var dat []byte
+// 				dat, err = ioutil.ReadFile(fp)
+// 				if err != nil {
+// 					return
+// 				}
+// 				for _, bs := range badStrings {
+// 					if strings.Contains(string(dat), bs) {
+// 						files = append(files, fp)
+// 						break
+// 					}
+// 				}
+// 			}
+// 		}
+// 	}
+// 	rd(".")
+// 	if err != nil {
+// 		return err
+// 	}
+// 	err = fmt.Errorf("The following files contain printing direct to console:\n%s", strings.Join(files, "\n"))
+// 	// eat error for now, just print as info until we clean it
+// 	fmt.Println(err.Error())
+// 	return nil
+// }
 
 const (
 	stPending = "pending"
