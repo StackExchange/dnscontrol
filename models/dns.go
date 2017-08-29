@@ -327,6 +327,46 @@ func SplitCombinedMxValue(s string) (preference uint16, target string, err error
 	return uint16(n64), parts[1], nil
 }
 
+// CombineSRVs will merge the priority, weight, and port into the target field for all srv records.
+// Useful for providers that desire them as one field.
+func (dc *DomainConfig) CombineSRVs() {
+	for _, rec := range dc.Records {
+		if rec.Type == "SRV" {
+			if rec.CombinedTarget {
+				pm := strings.Join([]string{"CombineSRVs: Already collapsed: ", rec.Name, rec.Target}, " ")
+				panic(pm)
+			}
+			rec.Target = fmt.Sprintf("%d %d %d %s", rec.SrvPriority, rec.SrvWeight, rec.SrvPort, rec.Target)
+			rec.CombinedTarget = true
+		}
+	}
+}
+
+//SplitCombinedSrvValue splits a combined SRV priority, weight, port and target into
+//separate entities, some DNS providers want "5" "10" 15" and "foo.com.",
+//while other providers want "5 10 15 foo.com.".
+func SplitCombinedSrvValue(s string) (priority, weight, port uint16, target string, err error) {
+	parts := strings.Fields(s)
+
+	if len(parts) != 4 {
+		return 0, 0, 0, "", fmt.Errorf("SRV value %#v contains too many fields", s)
+	}
+
+	priorityconv, err := strconv.ParseInt(parts[0], 10, 16)
+	if err != nil {
+		return 0, 0, 0, "", fmt.Errorf("Priority %#v does not fit into a uint16", parts[0])
+	}
+	weightconv, err := strconv.ParseInt(parts[1], 10, 16)
+	if err != nil {
+		return 0, 0, 0, "", fmt.Errorf("Weight %#v does not fit into a uint16", parts[0])
+	}
+	portconv, err := strconv.ParseInt(parts[2], 10, 16)
+	if err != nil {
+		return 0, 0, 0, "", fmt.Errorf("Port %#v does not fit into a uint16", parts[0])
+	}
+	return uint16(priorityconv), uint16(weightconv), uint16(portconv), parts[3], nil
+}
+
 func copyObj(input interface{}, output interface{}) error {
 	buf := &bytes.Buffer{}
 	enc := gob.NewEncoder(buf)
