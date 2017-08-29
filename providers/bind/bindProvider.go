@@ -16,7 +16,6 @@ bind -
 import (
 	"bytes"
 	"encoding/json"
-	"flag"
 	"fmt"
 	"log"
 	"os"
@@ -34,8 +33,9 @@ import (
 func initBind(config map[string]string, providermeta json.RawMessage) (providers.DNSServiceProvider, error) {
 	// config -- the key/values from creds.json
 	// meta -- the json blob from NewReq('name', 'TYPE', meta)
-
-	api := &Bind{}
+	api := &Bind{
+		directory: config["directory"],
+	}
 	if len(providermeta) != 0 {
 		err := json.Unmarshal(providermeta, api)
 		if err != nil {
@@ -68,9 +68,8 @@ type Bind struct {
 	DefaultNS   []string `json:"default_ns"`
 	DefaultSoa  SoaInfo  `json:"default_soa"`
 	nameservers []*models.Nameserver
+	directory   string
 }
-
-var bindBaseDir = flag.String("bindtree", "zones", "BIND: Directory that stores BIND zonefiles.")
 
 //var bindSkeletin = flag.String("bind_skeletin", "skeletin/master/var/named/chroot/var/named/master", "")
 
@@ -189,7 +188,7 @@ func (c *Bind) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Correcti
 	// Read foundRecords:
 	foundRecords := make([]*models.RecordConfig, 0)
 	var oldSerial, newSerial uint32
-	zonefile := filepath.Join(*bindBaseDir, strings.Replace(strings.ToLower(dc.Name), "/", "_", -1)+".zone")
+	zonefile := filepath.Join(c.directory, strings.Replace(strings.ToLower(dc.Name), "/", "_", -1)+".zone")
 	foundFH, err := os.Open(zonefile)
 	zoneFileFound := err == nil
 	if err != nil && !os.IsNotExist(os.ErrNotExist) {
