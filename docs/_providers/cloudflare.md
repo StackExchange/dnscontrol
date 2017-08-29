@@ -128,6 +128,6 @@ D("chiphacker.com", REG_NAMECOM, DnsProvider(CFLARE),
 
 Notice a few details:
 
-1. We need an A record with cloudflare proxy on, or the page rule will never run. 
+1. We need an A record with cloudflare proxy on, or the page rule will never run.
 2. The IP address in those A records may be mostly irrelevant, as cloudflare should handle all requests (assuming some page rule matches).
 3. Ordering matters for priority. CF_REDIRECT records will be added in the order they appear in your js. So put catch-alls at the bottom.
