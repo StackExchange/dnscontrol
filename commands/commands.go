@@ -64,7 +64,7 @@ func (args *GetDNSConfigArgs) flags() []cli.Flag {
 		cli.StringFlag{
 			Destination: &args.JSONFile,
 			Name:        "ir",
-			Usage:       "Read IR (json) directly from this file. Do not process javascript at all",
+			Usage:       "Read IR (json) directly from this file. Do not process DSL at all",
 		},
 		cli.StringFlag{
 			Destination: &args.JSONFile,
@@ -92,7 +92,7 @@ func GetDNSConfig(args GetDNSConfigArgs) (*models.DNSConfig, error) {
 	return ExecuteDSL(args.ExecuteDSLArgs)
 }
 
-// ExecuteDSLArgs are used anytime we need to read and execute dnscontrol javascript
+// ExecuteDSLArgs are used anytime we need to read and execute dnscontrol DSL
 type ExecuteDSLArgs struct {
 	JSFile   string
 	JSONFile string
@@ -105,7 +105,7 @@ func (args *ExecuteDSLArgs) flags() []cli.Flag {
 			Name:        "config",
 			Value:       "dnsconfig.js",
 			Destination: &args.JSFile,
-			Usage:       "Javascript file containing dns config",
+			Usage:       "File containing dns config in javascript DSL",
 		},
 		cli.StringFlag{
 			Name:        "js",
