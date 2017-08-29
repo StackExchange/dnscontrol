@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"fmt"
+	"os"
 
 	"github.com/StackExchange/dnscontrol/pkg/normalize"
 	"github.com/urfave/cli"
@@ -11,6 +12,19 @@ var _ = cmd(catDebug, &cli.Command{
 	Name:  "output-ir",
 	Usage: "Output intermediate representation (IR) after running validation and normalization logic.",
 	Action: func(c *cli.Context) error {
+		return exit(DebugPreprocess(globalDebugPreprocessArgs))
+	},
+	Flags: globalDebugPreprocessArgs.flags(),
+})
+
+var _ = cmd(catDebug, &cli.Command{
+	Name:  "check",
+	Usage: "Check and validate dnsconfig.js. Do not access providers.",
+	Action: func(c *cli.Context) error {
+		// This is the same as output-ir but output defaults to /dev/null.
+		if globalDebugPreprocessArgs.Output == "" {
+			globalDebugPreprocessArgs.Output = os.DevNull
+		}
 		return exit(DebugPreprocess(globalDebugPreprocessArgs))
 	},
 	Flags: globalDebugPreprocessArgs.flags(),
