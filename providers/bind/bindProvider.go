@@ -36,6 +36,9 @@ func initBind(config map[string]string, providermeta json.RawMessage) (providers
 	api := &Bind{
 		directory: config["directory"],
 	}
+	if api.directory == "" {
+		api.directory = "zones"
+	}
 	if len(providermeta) != 0 {
 		err := json.Unmarshal(providermeta, api)
 		if err != nil {
