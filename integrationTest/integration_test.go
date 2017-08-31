@@ -267,6 +267,14 @@ func tc(desc string, recs ...*rec) *TestCase {
 	}
 }
 
+func manyA(namePattern, target string, n int) []*rec {
+	recs := []*rec{}
+	for i := 0; i < n; i++ {
+		recs = append(recs, makeRec(fmt.Sprintf(namePattern, i), target, "A"))
+	}
+	return recs
+}
+
 func (tc *TestCase) IfHasCapability(c providers.Capability) *TestCase {
 	tc.SkipUnless = c
 	return tc
@@ -348,6 +356,13 @@ var tests = []*TestCase{
 	tc("CAA change flag", caa("@", "issuewild", 1, "example.com")).IfHasCapability(providers.CanUseCAA),
 	tc("CAA many records", caa("@", "issue", 0, "letsencrypt.org"), caa("@", "issuewild", 0, ";"), caa("@", "iodef", 1, "mailto:test@example.com")).IfHasCapability(providers.CanUseCAA),
 	tc("CAA delete", caa("@", "issue", 0, "letsencrypt.org")).IfHasCapability(providers.CanUseCAA),
+
+	// Test large zonefiles.
+	// Gandi pages 100 items at a time.
+	tc("Empty"),
+	tc("99 records", manyA("rec%04d", "1.2.3.4", 99)...),
+	tc("100 records", manyA("rec%04d", "1.2.3.4", 100)...),
+	tc("101 records", manyA("rec%04d", "1.2.3.4", 101)...),
 
 	//TODO: in validation, check that everything is given in unicode. This case hurts too much.
 	//tc("IDN pre-punycoded", cname("xn--o-0gab", "xn--o-0gab.xn--o-0gab.")),
