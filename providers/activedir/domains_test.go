@@ -11,7 +11,7 @@ func TestGetExistingRecords(t *testing.T) {
 
 	cf := &adProvider{}
 
-	*flagFakePowerShell = true
+	cf.fake = true
 	actual, err := cf.getExistingRecords("test2")
 	if err != nil {
 		t.Fatal(err)
