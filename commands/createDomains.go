@@ -8,14 +8,17 @@ import (
 	"github.com/urfave/cli"
 )
 
-var _ = cmd(catUtils, &cli.Command{
-	Name:  "create-domains",
-	Usage: "ensures that all domains in your configuration are present in all providers.",
-	Action: func(ctx *cli.Context) error {
-		return exit(CreateDomains(globalCreateDomainsArgs))
-	},
-	Flags: globalPreviewArgs.flags(),
-})
+var _ = cmd(catUtils, func() *cli.Command {
+	var args CreateDomainsArgs
+	return &cli.Command{
+		Name:  "create-domains",
+		Usage: "ensures that all domains in your configuration are present in all providers.",
+		Action: func(ctx *cli.Context) error {
+			return exit(CreateDomains(args))
+		},
+		Flags: args.flags(),
+	}
+}())
 
 type CreateDomainsArgs struct {
 	GetDNSConfigArgs
@@ -27,8 +30,6 @@ func (args *CreateDomainsArgs) flags() []cli.Flag {
 	flags = append(flags, args.GetCredentialsArgs.flags()...)
 	return flags
 }
-
-var globalCreateDomainsArgs CreateDomainsArgs
 
 func CreateDomains(args CreateDomainsArgs) error {
 	cfg, err := GetDNSConfig(args.GetDNSConfigArgs)

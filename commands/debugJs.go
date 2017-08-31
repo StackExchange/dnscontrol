@@ -20,14 +20,17 @@ func exit(err error) error {
 	return cli.NewExitError(err, 1)
 }
 
-var _ = cmd(catDebug, &cli.Command{
-	Name:  "debug-js",
-	Usage: "Output intermediate representation (IR) after JavaScript is executed but before any validation/normalization",
-	Action: func(c *cli.Context) error {
-		return exit(DebugJS(globalDebugJSArgs))
-	},
-	Flags: globalDebugJSArgs.flags(),
-})
+var _ = cmd(catDebug, func() *cli.Command {
+	var args DebugJSArgs
+	return &cli.Command{
+		Name:  "debug-js",
+		Usage: "Output intermediate representation (IR) after JavaScript is executed but before any validation/normalization",
+		Action: func(c *cli.Context) error {
+			return exit(DebugJS(args))
+		},
+		Flags: args.flags(),
+	}
+}())
 
 type DebugJSArgs struct {
 	PrintJSONArgs
@@ -37,8 +40,6 @@ type DebugJSArgs struct {
 func (args *DebugJSArgs) flags() []cli.Flag {
 	return append(args.ExecuteDSLArgs.flags(), args.PrintJSONArgs.flags()...)
 }
-
-var globalDebugJSArgs DebugJSArgs
 
 func DebugJS(args DebugJSArgs) error {
 	config, err := ExecuteDSL(args.ExecuteDSLArgs)

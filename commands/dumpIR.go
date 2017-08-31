@@ -8,27 +8,33 @@ import (
 	"github.com/urfave/cli"
 )
 
-var _ = cmd(catDebug, &cli.Command{
-	Name:  "dump-ir",
-	Usage: "Output intermediate representation (IR) after running validation and normalization logic.",
-	Action: func(c *cli.Context) error {
-		return exit(DebugPreprocess(globalDumpIRArgs))
-	},
-	Flags: globalDumpIRArgs.flags(),
-})
+var _ = cmd(catDebug, func() *cli.Command {
+	var args DumpIRArgs
+	return &cli.Command{
+		Name:  "dump-ir",
+		Usage: "Output intermediate representation (IR) after running validation and normalization logic.",
+		Action: func(c *cli.Context) error {
+			return exit(DumpIR(args))
+		},
+		Flags: args.flags(),
+	}
+}())
 
-var _ = cmd(catDebug, &cli.Command{
-	Name:  "check",
-	Usage: "Check and validate dnsconfig.js. Do not access providers.",
-	Action: func(c *cli.Context) error {
-		// This is the same as output-ir but output defaults to /dev/null.
-		if globalDumpIRArgs.Output == "" {
-			globalDumpIRArgs.Output = os.DevNull
-		}
-		return exit(DebugPreprocess(globalDumpIRArgs))
-	},
-	Flags: globalDumpIRArgs.flags(),
-})
+var _ = cmd(catDebug, func() *cli.Command {
+	var args DumpIRArgs
+	// This is the same as dump-ir but output defaults to /dev/null.
+	return &cli.Command{
+		Name:  "check",
+		Usage: "Check and validate dnsconfig.js. Do not access providers.",
+		Action: func(c *cli.Context) error {
+			if args.Output == "" {
+				args.Output = os.DevNull
+			}
+			return exit(DumpIR(args))
+		},
+		Flags: args.flags(),
+	}
+}())
 
 type DumpIRArgs struct {
 	GetDNSConfigArgs
@@ -39,9 +45,7 @@ func (args *DumpIRArgs) flags() []cli.Flag {
 	return append(args.GetDNSConfigArgs.flags(), args.PrintJSONArgs.flags()...)
 }
 
-var globalDumpIRArgs DumpIRArgs
-
-func DebugPreprocess(args DumpIRArgs) error {
+func DumpIR(args DumpIRArgs) error {
 	cfg, err := GetDNSConfig(args.GetDNSConfigArgs)
 	if err != nil {
 		return err
