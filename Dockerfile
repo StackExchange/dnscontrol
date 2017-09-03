@@ -7,5 +7,5 @@ RUN dnscontrol version
 FROM alpine
 COPY --from=build-env /go/bin/dnscontrol /usr/local/bin/
 RUN ls -la /usr/local/bin/
-RUN dnscontrol version
+RUN /usr/local/bin/dnscontrol version
 ENTRYPOINT ./dnscontrol
