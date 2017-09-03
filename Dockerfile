@@ -9,5 +9,6 @@ WORKDIR /
 COPY --from=build-env /go/bin/dnscontrol /dnscontrol
 RUN ls -la
 RUN pwd
+RUN echo $PATH
 RUN /dnscontrol version
 ENTRYPOINT ./dnscontrol
