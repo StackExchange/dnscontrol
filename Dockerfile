@@ -5,10 +5,9 @@ RUN go install .
 RUN dnscontrol version
 
 FROM alpine
-WORKDIR /
-COPY --from=build-env /go/bin/dnscontrol /dnscontrol
+COPY --from=build-env /go/bin/dnscontrol /usr/local/bin
 RUN ls -la
 RUN pwd
 RUN echo $PATH
-RUN /dnscontrol version
+RUN dnscontrol version
 ENTRYPOINT ./dnscontrol
