@@ -8,5 +8,5 @@ FROM alpine
 WORKDIR /
 COPY --from=build-env /go/bin/dnscontrol .
 RUN ls
-RUN dnscontrol version
+RUN ./dnscontrol version
 ENTRYPOINT ./dnscontrol
