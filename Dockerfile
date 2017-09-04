@@ -5,6 +5,7 @@ RUN go install .
 RUN dnscontrol version
 
 FROM ubuntu:xenial
-COPY --from=build-env /go/bin/dnscontrol /
-RUN /dnscontrol version
-CMD /dnscontrol
+COPY --from=build-env /go/bin/dnscontrol /usr/local/bin
+WORKDIR /dns
+RUN dnscontrol version
+CMD dnscontrol
