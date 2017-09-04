@@ -154,3 +154,104 @@ func (c *ovhProvider) fetchNS(fqdn string) ([]string, error) {
 
 	return zone.NameServers, nil
 }
+
+type CurrentNameServer struct {
+	ToDelete bool   `json:"toDelete,omitempty"`
+	Ip       string `json:"ip,omitempty"`
+	IsUsed   bool   `json:"isUsed,omitempty"`
+	Id       int    `json:"id,omitempty"`
+	Host     string `json:"host,omitempty"`
+}
+
+// Retrieve the NS currently being deployed to the registrar
+func (c *ovhProvider) fetchRegistrarNS(fqdn string) ([]string, error) {
+	var nameServersId []int
+	err := c.client.Call("GET", "/domain/"+fqdn+"/nameServer", nil, &nameServersId)
+	if err != nil {
+		return nil, err
+	}
+
+	var nameServers []string
+	for _, id := range nameServersId {
+		var ns CurrentNameServer
+		err = c.client.Call("GET", fmt.Sprintf("/domain/%s/nameServer/%d", fqdn, id), nil, &ns)
+		if err != nil {
+			return nil, err
+		}
+
+		// skip NS that we asked for deletion
+		if ns.ToDelete {
+			continue
+		}
+		nameServers = append(nameServers, ns.Host)
+	}
+
+	return nameServers, nil
+}
+
+type DomainNS struct {
+	Host string `json:"host,omitempty"`
+	Ip   string `json:"ip,omitempty"`
+}
+
+type UpdateNS struct {
+	NameServers []DomainNS `json:"nameServers"`
+}
+
+type Task struct {
+	Function      string `json:"function,omitempty"`
+	Status        string `json:"status,omitempty"`
+	CanAccelerate bool   `json:"canAccelerate,omitempty"`
+	LastUpdate    string `json:"lastUpdate,omitempty"`
+	CreationDate  string `json:"creationDate,omitempty"`
+	Comment       string `json:"comment,omitempty"`
+	TodoDate      string `json:"todoDate,omitempty"`
+	Id            int64  `json:"id,omitempty"`
+	CanCancel     bool   `json:"canCancel,omitempty"`
+	DoneDate      string `json:"doneDate,omitempty"`
+	CanRelaunch   bool   `json:"canRelaunch,omitempty"`
+}
+
+type Domain struct {
+	NameServerType     string `json:"nameServerType,omitempty"`
+	TransferLockStatus string `json:"transferLockStatus,omitempty"`
+}
+
+func (c *ovhProvider) updateNS(fqdn string, ns []string) error {
+	// we first need to make sure we can edit the NS
+	// by default zones are in "hosted" mode meaning they default
+	// to OVH default NS. In this mode, the NS can't be updated.
+	domain := Domain{NameServerType: "external"}
+	err := c.client.Call("PUT", fmt.Sprintf("/domain/%s", fqdn), &domain, &Void{})
+	if err != nil {
+		return err
+	}
+
+	var newNs []DomainNS
+	for _, n := range ns {
+		newNs = append(newNs, DomainNS{
+			Host: n,
+		})
+	}
+
+	update := UpdateNS{
+		NameServers: newNs,
+	}
+	var task Task
+	err = c.client.Call("POST", fmt.Sprintf("/domain/%s/nameServers/update", fqdn), &update, &task)
+	if err != nil {
+		return err
+	}
+
+	if task.Status == "error" {
+		return fmt.Errorf("API error while updating ns for %s: %s", fqdn, task.Comment)
+	}
+
+	// we don't wait for the task execution. One of the reason is that
+	// NS modification can take time in the registrar, the other is that every task
+	// in OVH is usually executed a few minutes after they have been registered.
+	// We count on the fact that `GetNameservers` uses the registrar API to get
+	// a coherent view (including pending modifications) of the registered NS.
+
+	return nil
+}

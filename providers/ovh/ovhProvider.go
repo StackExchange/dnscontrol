@@ -8,6 +8,8 @@ import (
 	"github.com/StackExchange/dnscontrol/providers/diff"
 	"github.com/miekg/dns/dnsutil"
 	"github.com/xlucas/go-ovh/ovh"
+	"sort"
+	"strings"
 )
 
 type ovhProvider struct {
@@ -42,7 +44,12 @@ func newDsp(conf map[string]string, metadata json.RawMessage) (providers.DNSServ
 	return newOVH(conf, metadata)
 }
 
+func newReg(conf map[string]string) (providers.Registrar, error) {
+	return newOVH(conf, nil)
+}
+
 func init() {
+	providers.RegisterRegistrarType("OVH", newReg)
 	providers.RegisterDomainServiceProviderType("OVH", newDsp, providers.CanUseSRV, providers.CanUseTLSA, docNotes)
 }
 
@@ -174,4 +181,37 @@ func (c *ovhProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*models.C
 	}
 
 	return corrections, nil
+}
+
+func (c *ovhProvider) GetRegistrarCorrections(dc *models.DomainConfig) ([]*models.Correction, error) {
+
+	ns, err := c.fetchRegistrarNS(dc.Name)
+	if err != nil {
+		return nil, err
+	}
+
+	sort.Strings(ns)
+	found := strings.Join(ns, ",")
+
+	desiredNs := []string{}
+	for _, d := range dc.Nameservers {
+		desiredNs = append(desiredNs, d.Name)
+	}
+	sort.Strings(desiredNs)
+	desired := strings.Join(desiredNs, ",")
+
+	if found != desired {
+		return []*models.Correction{
+			{
+				Msg: fmt.Sprintf("Change Nameservers from '%s' to '%s'", found, desired),
+				F: func() error {
+					err := c.updateNS(dc.Name, desiredNs)
+					if err != nil {
+						return err
+					}
+					return nil
+				}},
+		}, nil
+	}
+	return nil, nil
 }

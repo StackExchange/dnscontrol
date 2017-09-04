@@ -39,6 +39,18 @@ D("example.tld", REG_OVH, DnsProvider(OVH),
 );
 {% endhighlight %}
 
+Example javascript (Registrar only. DNS hosted elsewhere):
+
+{% highlight js %}
+var REG_OVH = NewRegistrar("ovh", "OVH");
+var R53 = NewDnsProvider("r53", "ROUTE53");
+
+D("example.tld", REG_OVH, DnsProvider(R53),
+    A("test","1.2.3.4")
+);
+{%endhighlight%}
+
+
 ## Activation
 
 To obtain the OVH keys, one need to register an app at OVH by following the
@@ -62,16 +74,24 @@ curl -XPOST -H"X-Ovh-Application: <you-app-key>" -H "Content-type: application/j
       "path": "/domain/zone/*"
     },
     {
-      "method": "GET",
-      "path": "/domain/*"
-    },
-    {
       "method": "POST",
       "path": "/domain/zone/*"
     },
     {
       "method": "PUT",
       "path": "/domain/zone/*"
+    },
+    {
+      "method": "GET",
+      "path": "/domain/*"
+    },
+    {
+      "method": "PUT",
+      "path": "/domain/*"
+    },
+    {
+      "method": "POST",
+      "path": "/domain/*/nameServers/update"
     }
   ]
 }'
@@ -97,3 +117,19 @@ If a domain does not exist in your OVH account, DNSControl
 will *not* automatically add it. You'll need to do that via the
 control panel manually.
 
+## Dual providers scenario
+
+Since OVH doesn't allow to host DNS for a domain that is not registered in their registrar, some dual providers
+scenario might not be possible:
+
+| registrar | zone        | working? |
+|:---------:|:-----------:|:--------:|
+|  OVH      | other       |    √     |
+|  OVH      | OVH + other |    √     |
+|  other    | OVH         |    X     |
+
+## Caveat
+
+OVH doesn't allow resetting the zone to the OVH DNS through the API. If for any reasons OVH NS entries were
+removed the only way to add them back is by using the OVH Control Panel (in the DNS Servers tab, click on the "Reset the
+DNS servers" button.
