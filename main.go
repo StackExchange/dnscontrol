@@ -32,8 +32,8 @@ var jsonOutputPost = flag.String("debugjson", "", "During preview, write JSON in
 
 var devMode = flag.Bool("dev", false, "Use helpers.js from disk instead of embedded")
 
-var flagProviders = flag.String("providers", "", "Providers to enable (comma seperated list); default is all-but-bind. Specify 'all' for all (including bind)")
-var domains = flag.String("domains", "", "Comma seperated list of domain names to include")
+var flagProviders = flag.String("providers", "", "Providers to enable (comma separated list); default is all-but-bind. Specify 'all' for all (including bind)")
+var domains = flag.String("domains", "", "Comma separated list of domain names to include")
 
 var interactive = flag.Bool("i", false, "Confirm or Exclude each correction before they run")
 
@@ -65,7 +65,7 @@ func main() {
 	if flag.NArg() != 1 {
 		fmt.Println(`Usage: dnscontrol [options] cmd
 		        cmd:
-		           preview: Show changed that would happen.
+		           preview: Show changes that would happen.
 		           push:    Make changes for real.
 		           version: Print program version string.
 		           print:   Print compiled data.
@@ -97,7 +97,7 @@ func main() {
 		}
 		dnsConfig, err = js.ExecuteJavascript(string(text), *devMode)
 		if err != nil {
-			log.Fatalf("Error executing javasscript in (%v): %v", *jsFile, err)
+			log.Fatalf("Error executing javascript in (%v): %v", *jsFile, err)
 		}
 	}
 	if dnsConfig == nil {
@@ -354,7 +354,7 @@ func versionString() string {
 	if SHA != "" {
 		version = fmt.Sprintf("%s (%s)", Version, SHA)
 	} else {
-		version = fmt.Sprintf("%s-dev", Version) //no SHA. '0.x.y-dev' indeicates it is run form source without build script.
+		version = fmt.Sprintf("%s-dev", Version) //no SHA. '0.x.y-dev' indicates it is run fromm source without build script.
 	}
 	if BuildTime != "" {
 		i, err := strconv.ParseInt(BuildTime, 10, 64)
