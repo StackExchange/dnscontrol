@@ -32,8 +32,8 @@ var jsonOutputPost = flag.String("debugjson", "", "During preview, write JSON in
 
 var devMode = flag.Bool("dev", false, "Use helpers.js from disk instead of embedded")
 
-var flagProviders = flag.String("providers", "", "Providers to enable (comma seperated list); default is all-but-bind. Specify 'all' for all (including bind)")
-var domains = flag.String("domains", "", "Comma seperated list of domain names to include")
+var flagProviders = flag.String("providers", "", "Providers to enable (comma separated list); default is all-but-bind. Specify 'all' for all (including bind)")
+var domains = flag.String("domains", "", "Comma separated list of domain names to include")
 
 var interactive = flag.Bool("i", false, "Confirm or Exclude each correction before they run")
 
