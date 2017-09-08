@@ -35,16 +35,25 @@ func (self *Domain) Info(name string) (*DomainInfo, error) {
 
 // List domains associated to the contact represented by apikey
 func (self *Domain) List() ([]*DomainInfoBase, error) {
-	var res []interface{}
-	params := []interface{}{self.Key}
-	if err := self.Call("domain.list", params, &res); err != nil {
-		return nil, err
-	}
-
+	opts := &struct {
+		Page int `xmlrpc:"page"`
+	}{0}
+	const perPage = 100
+	params := []interface{}{self.Key, opts}
 	domains := make([]*DomainInfoBase, 0)
-	for _, r := range res {
-		domain := ToDomainInfoBase(r.(map[string]interface{}))
-		domains = append(domains, domain)
+	for {
+		var res []interface{}
+		if err := self.Call("domain.list", params, &res); err != nil {
+			return nil, err
+		}
+		for _, r := range res {
+			domain := ToDomainInfoBase(r.(map[string]interface{}))
+			domains = append(domains, domain)
+		}
+		if len(res) < perPage {
+			break
+		}
+		opts.Page++
 	}
 	return domains, nil
 }
