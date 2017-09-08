@@ -151,6 +151,7 @@ var ALIAS = recordBuilder('ALIAS');
 
 // CAA(name,tag,value, recordModifiers...)
 var CAA = recordBuilder('CAA', {
+  // TODO(tlim): It should be an error if value is not 0 or 128.
     args: [
         ['name', _.isString],
         ['tag', _.isString],
