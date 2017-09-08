@@ -353,8 +353,8 @@ var tests = []*TestCase{
 	tc("CAA record", caa("@", "issue", 0, "letsencrypt.org")).IfHasCapability(providers.CanUseCAA),
 	tc("CAA change tag", caa("@", "issuewild", 0, "letsencrypt.org")).IfHasCapability(providers.CanUseCAA),
 	tc("CAA change target", caa("@", "issuewild", 0, "example.com")).IfHasCapability(providers.CanUseCAA),
-	tc("CAA change flag", caa("@", "issuewild", 1, "example.com")).IfHasCapability(providers.CanUseCAA),
-	tc("CAA many records", caa("@", "issue", 0, "letsencrypt.org"), caa("@", "issuewild", 0, ";"), caa("@", "iodef", 1, "mailto:test@example.com")).IfHasCapability(providers.CanUseCAA),
+	tc("CAA change flag", caa("@", "issuewild", 128, "example.com")).IfHasCapability(providers.CanUseCAA),
+	tc("CAA many records", caa("@", "issue", 0, "letsencrypt.org"), caa("@", "issuewild", 0, ";"), caa("@", "iodef", 128, "mailto:test@example.com")).IfHasCapability(providers.CanUseCAA),
 	tc("CAA delete", caa("@", "issue", 0, "letsencrypt.org")).IfHasCapability(providers.CanUseCAA),
 
 	// Test large zonefiles.
