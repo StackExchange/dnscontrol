@@ -7,34 +7,34 @@ Dnscontrol is a platform for seamlessly managing your dns configuration across a
 
 ## Getting Started
 
-### [Getting Started](getting-started): A walk-through of the basics.
+### [Getting Started]({{site.github.url}}/getting-started): A walk-through of the basics.
 
-### [Providers](provider-list): Which DNS providers are supported.
+### [Providers]({{site.github.url}}/provider-list): Which DNS providers are supported.
 
-### [Examples](examples): The DNSControl language by example.
+### [Examples]({{site.github.url}}/examples): The DNSControl language by example.
 
-### [Migrating](migrating): Migrating zones to DNSControl.
+### [Migrating]({{site.github.url}}/migrating): Migrating zones to DNSControl.
 
 
 ## Reference
 
-### [Language Reference](js): Description of the DNSControl language (DSL).
+### [Language Reference]({{site.github.url}}/js): Description of the DNSControl language (DSL).
 
-### [ALIAS / ANAME records in dnscontrol](alias)
+### [ALIAS / ANAME records in dnscontrol]({{site.github.url}}/alias)
 
-### [Why CNAME/MX/NS targets require a trailing "dot"](why-the-dot)
+### [Why CNAME/MX/NS targets require a trailing "dot"]({{site.github.url}}/why-the-dot)
 
 
 ## Advanced Usage
 
-### [Testing](unittests): Unit Testing for you DNS Data.
+### [Testing]({{site.github.url}}/unittests): Unit Testing for you DNS Data.
 
 
 ## Developer info
 
 ### [github](https://github.com/StackExchange/dnscontrol): Get the source!
 
-### [Writing Providers](writing-providers)
+### [Writing Providers]({{site.github.url}}/writing-providers)
 
-### [Adding new DNS record types](adding-new-rtypes)
+### [Adding new DNS record types]({{site.github.url}}/adding-new-rtypes)
 
