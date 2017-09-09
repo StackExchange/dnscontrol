@@ -40,7 +40,7 @@ func (z *zoneGenData) Less(i, j int) bool {
 		return zoneRrtypeLess(rrtypeA, rrtypeB)
 	}
 	switch rrtypeA { // #rtype_variations
-	case dns.TypeNS, dns.TypeTXT:
+	case dns.TypeNS, dns.TypeTXT, dns.TypeTLSA:
 		// pass through.
 	case dns.TypeA:
 		ta2, tb2 := a.(*dns.A), b.(*dns.A)
