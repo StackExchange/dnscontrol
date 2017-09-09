@@ -73,6 +73,9 @@ type RecordConfig struct {
 	SrvPort      uint16            `json:"srvport,omitempty"`
 	CaaTag       string            `json:"caatag,omitempty"`
 	CaaFlag      uint8             `json:"caaflag,omitempty"`
+	TlsaUsage    uint8             `json:"tlsausage,omitempty"`
+	TlsaSelector uint8             `json:"tlsaselector,omitempty"`
+	TlsaMatchingType uint8         `json:"tlsamatchingtype,omitempty"`
 
 	CombinedTarget bool `json:"-"`
 
@@ -147,6 +150,9 @@ func (r *RecordConfig) MergeToTarget() {
 	r.SrvPort = 0
 	r.CaaFlag = 0
 	r.CaaTag = ""
+	r.TlsaUsage = 0
+	r.TlsaMatchingType = 0
+	r.TlsaSelector = 0
 
 	r.CombinedTarget = true
 }
@@ -206,6 +212,11 @@ func (rc *RecordConfig) ToRR() dns.RR {
 		rr.(*dns.CAA).Flag = rc.CaaFlag
 		rr.(*dns.CAA).Tag = rc.CaaTag
 		rr.(*dns.CAA).Value = rc.Target
+	case dns.TypeTLSA:
+		rr.(*dns.TLSA).Usage = rc.TlsaUsage
+		rr.(*dns.TLSA).MatchingType = rc.TlsaMatchingType
+		rr.(*dns.TLSA).Selector = rc.TlsaSelector
+		rr.(*dns.TLSA).Certificate = rc.Target
 	case dns.TypeTXT:
 		rr.(*dns.TXT).Txt = []string{rc.Target}
 	default:
@@ -282,7 +293,7 @@ func (dc *DomainConfig) Punycode() error {
 			if err != nil {
 				return err
 			}
-		case "A", "AAAA", "CAA", "TXT":
+		case "A", "AAAA", "CAA", "TXT", "TLSA":
 			// Nothing to do.
 		default:
 			msg := fmt.Sprintf("Punycode rtype %v unimplemented", rec.Type)

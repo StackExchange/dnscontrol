@@ -54,6 +54,7 @@ func validateRecordTypes(rec *models.RecordConfig, domain string, pTypes []strin
 		"AAAA":             true,
 		"CNAME":            true,
 		"CAA":              true,
+		"TLSA":             true,
 		"IMPORT_TRANSFORM": false,
 		"MX":               true,
 		"SRV":              true,
@@ -98,17 +99,22 @@ func checkLabel(label string, rType string, domain string) error {
 	}
 
 	//underscores are warnings
-	if rType != "SRV" && strings.ContainsRune(label, '_') {
-		//unless it is in our exclusion list
-		ok := false
-		for _, ex := range expectedUnderscores {
-			if strings.Contains(label, ex) {
-				ok = true
-				break
+	if strings.ContainsRune(label, '_') {
+		switch rType {
+		// Record types that are expected to have underscore labels
+		case "SRV", "TLSA", "TXT":
+		default:
+			//unless it is in our exclusion list
+			ok := false
+			for _, ex := range expectedUnderscores {
+				if strings.Contains(label, ex) {
+					ok = true
+					break
+				}
 			}
-		}
-		if !ok {
-			return Warning{fmt.Errorf("label %s.%s contains an underscore", label, domain)}
+			if !ok {
+				return Warning{fmt.Errorf("label %s.%s contains an underscore", label, domain)}
+			}
 		}
 	}
 	return nil
@@ -150,7 +156,7 @@ func checkTargets(rec *models.RecordConfig, domain string) (errs []error) {
 		check(checkTarget(target))
 	case "SRV":
 		check(checkTarget(target))
-	case "TXT", "IMPORT_TRANSFORM", "CAA":
+	case "TXT", "IMPORT_TRANSFORM", "CAA", "TLSA":
 	default:
 		if rec.Metadata["orig_custom_type"] != "" {
 			//it is a valid custom type. We perform no validation on target
@@ -207,7 +213,7 @@ func importTransform(srcDomain, dstDomain *models.DomainConfig, transforms []tra
 			r := newRec()
 			r.Target = transformCNAME(r.Target, srcDomain.Name, dstDomain.Name)
 			dstDomain.Records = append(dstDomain.Records, r)
-		case "MX", "NS", "SRV", "TXT", "CAA":
+		case "MX", "NS", "SRV", "TXT", "CAA", "TLSA":
 			// Not imported.
 			continue
 		default:
@@ -291,7 +297,18 @@ func NormalizeAndValidateConfig(config *models.DNSConfig) (errs []error) {
 				if rec.CaaTag != "issue" && rec.CaaTag != "issuewild" && rec.CaaTag != "iodef" {
 					errs = append(errs, fmt.Errorf("CAA tag %s is invalid", rec.CaaTag))
 				}
+			} else if rec.Type == "TLSA" {
+				if rec.TlsaUsage < 0 || rec.TlsaUsage > 3 {
+					errs = append(errs, fmt.Errorf("TLSA Usage %d is invalid in record %s (domain %s)", rec.TlsaUsage, rec.Name, domain.Name))
+				}
+				if rec.TlsaSelector < 0 || rec.TlsaSelector > 1 {
+					errs = append(errs, fmt.Errorf("TLSA Selector %d is invalid in record %s (domain %s)", rec.TlsaSelector, rec.Name, domain.Name))
+				}
+				if rec.TlsaMatchingType < 0 || rec.TlsaMatchingType > 2 {
+					errs = append(errs, fmt.Errorf("TLSA MatchingType %d is invalid in record %s (domain %s)", rec.TlsaMatchingType, rec.Name, domain.Name))
+				}
 			}
+
 			// Populate FQDN:
 			rec.NameFQDN = dnsutil.AddOrigin(rec.Name, domain.Name)
 		}
@@ -368,6 +385,7 @@ func checkProviderCapabilities(dc *models.DomainConfig, pList []*models.DNSProvi
 		{"PTR", providers.CanUsePTR},
 		{"SRV", providers.CanUseSRV},
 		{"CAA", providers.CanUseCAA},
+		{"TLSA", providers.CanUseTLSA},
 	}
 	for _, ty := range types {
 		hasAny := false

@@ -246,6 +246,15 @@ func caa(name string, tag string, flag uint8, target string) *rec {
 	return r
 }
 
+func tlsa(name string, usage, selector, matchingtype uint8, target string) *rec {
+	r := makeRec(name, target, "TLSA")
+	r.TlsaUsage = usage
+	r.TlsaSelector = selector
+	r.TlsaMatchingType = matchingtype
+	r.Target = target
+	return r
+}
+
 func makeRec(name, target, typ string) *rec {
 	return &rec{
 		Name:   name,
@@ -356,6 +365,14 @@ var tests = []*TestCase{
 	tc("CAA change flag", caa("@", "issuewild", 128, "example.com")).IfHasCapability(providers.CanUseCAA),
 	tc("CAA many records", caa("@", "issue", 0, "letsencrypt.org"), caa("@", "issuewild", 0, ";"), caa("@", "iodef", 128, "mailto:test@example.com")).IfHasCapability(providers.CanUseCAA),
 	tc("CAA delete", caa("@", "issue", 0, "letsencrypt.org")).IfHasCapability(providers.CanUseCAA),
+
+	//TLSA
+	tc("Empty").IfHasCapability(providers.CanUseTLSA),
+	tc("TLSA record", tlsa("_443._tcp", 3, 1, 1, "abcdef0123456789==")).IfHasCapability(providers.CanUseTLSA),
+	tc("TLSA change usage", tlsa("_443._tcp", 2, 1, 1, "abcdef0123456789==")).IfHasCapability(providers.CanUseTLSA),
+	tc("TLSA change selector", tlsa("_443._tcp", 2, 0, 1, "abcdef0123456789==")).IfHasCapability(providers.CanUseTLSA),
+	tc("TLSA change matchingtype", tlsa("_443._tcp", 2, 0, 0, "abcdef0123456789==")).IfHasCapability(providers.CanUseTLSA),
+	tc("TLSA change certificate", tlsa("_443._tcp", 2, 0, 0, "0123456789abcdef==")).IfHasCapability(providers.CanUseTLSA),
 
 	// Test large zonefiles.
 	// Gandi pages 100 items at a time.
