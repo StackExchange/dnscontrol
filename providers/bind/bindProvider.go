@@ -47,7 +47,7 @@ func initBind(config map[string]string, providermeta json.RawMessage) (providers
 }
 
 func init() {
-	providers.RegisterDomainServiceProviderType("BIND", initBind, providers.CanUsePTR, providers.CanUseSRV, providers.CanUseCAA, providers.CantUseNOPURGE)
+	providers.RegisterDomainServiceProviderType("BIND", initBind, providers.CanUsePTR, providers.CanUseSRV, providers.CanUseTLSA, providers.CanUseCAA, providers.CantUseNOPURGE)
 }
 
 type SoaInfo struct {
@@ -123,6 +123,11 @@ func rrToRecord(rr dns.RR, origin string, replaceSerial uint32) (models.RecordCo
 		rc.SrvPort = v.Port
 		rc.SrvWeight = v.Weight
 		rc.SrvPriority = v.Priority
+	case *dns.TLSA:
+		rc.TlsaCertificate = v.Certificate
+		rc.TlsaUsage = v.Usage
+		rc.TlsaSelector = v.Selector
+		rc.TlsaMatchingType = v.MatchingType
 	case *dns.TXT:
 		rc.Target = strings.Join(v.Txt, " ")
 	default:

@@ -51,4 +51,20 @@ func TestRR(t *testing.T) {
 	if found != expected {
 		t.Errorf("RR expected (%#v) got (%#v)\n", expected, found)
 	}
+
+	experiment = RecordConfig{
+		Type:         "TLSA",
+		Name:         "@",
+		TlsaCert:     "abcdef0123456789",
+		TTL:          300,
+		NameFQDN:     "_443._tcp.example.com",
+		TlsaUsage:    0,
+		TlsaSelector: 0,
+		TlsaType:     1,
+	}
+	expected = "_443._tcp.example.com.\t300\tIN\tTLSA\t0 0 1 abcdef0123456789"
+	found = experiment.ToRR().String()
+	if found != expected {
+		t.Errorf("RR expected (%#v) got (%#v)\n", expected, found)
+	}
 }

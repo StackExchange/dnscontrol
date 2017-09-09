@@ -1,0 +1,30 @@
+{
+  "registrars":[],
+  "dns_providers":[],
+  "domains":[
+    {
+      "name":"foo.com",
+      "registrar":"none",
+      "dnsProviders":{},
+      "records":[
+        {
+          "type":"TLSA",
+          "name":"_443._tcp",
+          "tlsacertificate":"abcdef0123456789",
+          "tlsaselector":1,
+          "tlsamatchingtype":1,
+          "tlsausage":3
+        },
+        {
+          "type":"TLSA",
+          "name":"_443._tcp",
+          "tlsacertificate":"MDFiYTQ3MTljODBiNmZlOTExYjA5MWE3YzA1MTI0YjY0ZWVlY2U5NjRlMDljMDU4ZWY4Zjk4MDVkYWNhNTQ2YiAgLQo=",
+          "tlsaselector":1,
+          "tlsamatchingtype":1,
+          "tlsausage":3
+        }
+      ]
+    }
+  ]
+}
+

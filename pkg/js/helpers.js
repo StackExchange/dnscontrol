@@ -191,6 +191,24 @@ var SRV = recordBuilder('SRV', {
     },
 });
 
+// name, usage, selector, tlsatype, certificate
+var TLSA = recordBuilder('TLSA', {
+    args: [
+        ['name', _.isString],
+        ['usage', _.isNumber],
+        ['selector', _.isNumber],
+        ['matchingtype', _.isNumber],
+        ['certificate', _.isString],
+    ],
+    transform: function(record, args, modifiers){
+        record.name = args.name;
+        record.tlsausage = args.usage;
+        record.tlsaselector = args.selector;
+        record.tlsamatchingtype = args.matchingtype;
+        record.tlsacertificate = args.certificate;
+    },
+});
+
 // TXT(name,target, recordModifiers...)
 var TXT = recordBuilder('TXT');
 
