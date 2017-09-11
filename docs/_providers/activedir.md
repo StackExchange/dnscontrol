@@ -13,18 +13,11 @@ This driver automatically deactivates itself when run on non-Windows systems.
 # Running on Non-Windows systems
 
 For debugging and testing on non-Windows systems,
-a "fake powershel" mode can be used, which will activate the driver and
-simulate PowersShell as follows:
+a "fake PowerShell" mode can be used, which will activate the driver and
+simulate PowerShell as follows:
 
-* Zone Input: Normally when DNSControl needs to know the contents
-of an existing DNS zone, it generates a PowerShell command to gather
-such information and saves a copy in a file called `adzonedump.ZONE.json`
-(where "ZONE" is replaced with the zone name).  When "fake ps" mode is enabled,
-the PowerShell command is not run, but the `adzonedump.ZONE.json` file is
-read. You can generate this file on a Windows system.
-* Zone Changes: Normally when DNSControl needs to change DNS records, it
-executes PowerShell commands as required.  When "fake ps" mode is enabled, these
-commands are simply logged to a file `dns_update_commands.ps1`.
+* Zone Input: Normally when DNSControl needs to know the contents of an existing DNS zone, it generates a PowerShell command to gather such information and saves a copy in a file called `adzonedump.ZONE.json` (where "ZONE" is replaced with the zone name).  When "fake PowerShell" mode is enabled, the PowerShell command is not run, but the `adzonedump.ZONE.json` file is read. You must generate this file ahead of time (often on a different machine, one that runs PowerShell).
+* Zone Changes: Normally when DNSControl needs to change DNS records, it executes PowerShell commands as required.  When "fake PowerShell" mode is enabled, these commands are simply logged to a file `dns_update_commands.ps1` and the system assumes they executed.
 
 To activate this mode, set `"fakeps":"true"` inside your credentials file for the provider.
 
@@ -74,3 +67,5 @@ hand-craft such a file on a non-Windows system, you may need to
 convert it from UTF-8 to UTF-16LE using:
 
     iconv -f UTF8  -t UTF-16LE <adzonedump.FOO.json.utf0 > adzonedump.FOO.json
+
+If you check these files into Git, you should mark them as "binary" in `.gitattributes`.
