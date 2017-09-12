@@ -103,5 +103,5 @@ Get prebuilt binaries from [github releases](https://github.com/StackExchange/dn
 ## Via [docker](https://hub.docker.com/r/stackexchange/dnscontrol/)
 
 ```
-docker run --rm -it -v `pwd`/dnsconfig.js:/dns/dnsconfig.js -v `pwd`/creds.json:/dns/creds.json stackexchange/dnscontrol dnscontrol preview
+docker run --rm -it -v $(pwd)/dnsconfig.js:/dns/dnsconfig.js -v $(pwd)/creds.json:/dns/creds.json stackexchange/dnscontrol dnscontrol preview
 ```
