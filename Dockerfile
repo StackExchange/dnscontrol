@@ -9,5 +9,4 @@ COPY --from=build-env /go/bin/dnscontrol /usr/local/bin
 WORKDIR /dns
 RUN apt-get update
 RUN apt-get install -y ca-certificates
-RUN dnscontrol version
 CMD dnscontrol
