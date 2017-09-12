@@ -191,7 +191,7 @@ var SRV = recordBuilder('SRV', {
     },
 });
 
-// name, usage, selector, tlsatype, certificate
+// name, usage, selector, matchingtype, certificate
 var TLSA = recordBuilder('TLSA', {
     args: [
         ['name', _.isString],
