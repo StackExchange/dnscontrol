@@ -57,7 +57,7 @@ func newRoute53(m map[string]string, metadata json.RawMessage) (*route53Provider
 }
 
 func init() {
-	providers.RegisterDomainServiceProviderType("ROUTE53", newRoute53Dsp, providers.CanUsePTR, providers.CanUseSRV)
+	providers.RegisterDomainServiceProviderType("ROUTE53", newRoute53Dsp, providers.CanUsePTR, providers.CanUseSRV, providers.CanUseCAA)
 	providers.RegisterRegistrarType("ROUTE53", newRoute53Reg)
 }
 

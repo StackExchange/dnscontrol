@@ -168,7 +168,7 @@ func (args *FilterArgs) flags() []cli.Flag {
 		cli.StringFlag{
 			Name:        "providers",
 			Destination: &args.Providers,
-			Usage:       `Providers to enable (comma seperated list); default is all. Can exclude individual providers from default by adding '"_exclude_from_defaults": "true"' to the credentials file for a provider`,
+			Usage:       `Providers to enable (comma separated list); default is all. Can exclude individual providers from default by adding '"_exclude_from_defaults": "true"' to the credentials file for a provider`,
 			Value:       "",
 		},
 		cli.StringFlag{

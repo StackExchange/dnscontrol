@@ -267,6 +267,14 @@ func tc(desc string, recs ...*rec) *TestCase {
 	}
 }
 
+func manyA(namePattern, target string, n int) []*rec {
+	recs := []*rec{}
+	for i := 0; i < n; i++ {
+		recs = append(recs, makeRec(fmt.Sprintf(namePattern, i), target, "A"))
+	}
+	return recs
+}
+
 func (tc *TestCase) IfHasCapability(c providers.Capability) *TestCase {
 	tc.SkipUnless = c
 	return tc
@@ -331,23 +339,30 @@ var tests = []*TestCase{
 
 	//SRV
 	tc("Empty").IfHasCapability(providers.CanUseSRV),
-	tc("SRV record", srv("_service._protocol", 5, 6, 7, "foo.com.")).IfHasCapability(providers.CanUseSRV),
-	tc("Second SRV record, same prio", srv("_service._protocol", 5, 6, 7, "foo.com."), srv("_service._protocol", 5, 60, 70, "foo2.com.")).IfHasCapability(providers.CanUseSRV),
-	tc("3 SRV", srv("_service._protocol", 5, 6, 7, "foo.com."), srv("_service._protocol", 5, 60, 70, "foo2.com."), srv("_service._protocol", 15, 65, 75, "foo3.com.")).IfHasCapability(providers.CanUseSRV),
-	tc("Delete one", srv("_service._protocol", 5, 6, 7, "foo.com."), srv("_service._protocol", 15, 65, 75, "foo3.com.")).IfHasCapability(providers.CanUseSRV),
-	tc("Change Target", srv("_service._protocol", 5, 6, 7, "foo.com."), srv("_service._protocol", 15, 65, 75, "foo4.com.")).IfHasCapability(providers.CanUseSRV),
-	tc("Change Priority", srv("_service._protocol", 52, 6, 7, "foo.com."), srv("_service._protocol", 15, 65, 75, "foo4.com.")).IfHasCapability(providers.CanUseSRV),
-	tc("Change Weight", srv("_service._protocol", 52, 62, 7, "foo.com."), srv("_service._protocol", 15, 65, 75, "foo4.com.")).IfHasCapability(providers.CanUseSRV),
-	tc("Change Port", srv("_service._protocol", 52, 62, 72, "foo.com."), srv("_service._protocol", 15, 65, 75, "foo4.com.")).IfHasCapability(providers.CanUseSRV),
+	tc("SRV record", srv("_sip._tcp", 5, 6, 7, "foo.com.")).IfHasCapability(providers.CanUseSRV),
+	tc("Second SRV record, same prio", srv("_sip._tcp", 5, 6, 7, "foo.com."), srv("_sip._tcp", 5, 60, 70, "foo2.com.")).IfHasCapability(providers.CanUseSRV),
+	tc("3 SRV", srv("_sip._tcp", 5, 6, 7, "foo.com."), srv("_sip._tcp", 5, 60, 70, "foo2.com."), srv("_sip._tcp", 15, 65, 75, "foo3.com.")).IfHasCapability(providers.CanUseSRV),
+	tc("Delete one", srv("_sip._tcp", 5, 6, 7, "foo.com."), srv("_sip._tcp", 15, 65, 75, "foo3.com.")).IfHasCapability(providers.CanUseSRV),
+	tc("Change Target", srv("_sip._tcp", 5, 6, 7, "foo.com."), srv("_sip._tcp", 15, 65, 75, "foo4.com.")).IfHasCapability(providers.CanUseSRV),
+	tc("Change Priority", srv("_sip._tcp", 52, 6, 7, "foo.com."), srv("_sip._tcp", 15, 65, 75, "foo4.com.")).IfHasCapability(providers.CanUseSRV),
+	tc("Change Weight", srv("_sip._tcp", 52, 62, 7, "foo.com."), srv("_sip._tcp", 15, 65, 75, "foo4.com.")).IfHasCapability(providers.CanUseSRV),
+	tc("Change Port", srv("_sip._tcp", 52, 62, 72, "foo.com."), srv("_sip._tcp", 15, 65, 75, "foo4.com.")).IfHasCapability(providers.CanUseSRV),
 
 	//CAA
 	tc("Empty").IfHasCapability(providers.CanUseCAA),
 	tc("CAA record", caa("@", "issue", 0, "letsencrypt.org")).IfHasCapability(providers.CanUseCAA),
 	tc("CAA change tag", caa("@", "issuewild", 0, "letsencrypt.org")).IfHasCapability(providers.CanUseCAA),
 	tc("CAA change target", caa("@", "issuewild", 0, "example.com")).IfHasCapability(providers.CanUseCAA),
-	tc("CAA change flag", caa("@", "issuewild", 1, "example.com")).IfHasCapability(providers.CanUseCAA),
-	tc("CAA many records", caa("@", "issue", 0, "letsencrypt.org"), caa("@", "issuewild", 0, ";"), caa("@", "iodef", 1, "mailto:test@example.com")).IfHasCapability(providers.CanUseCAA),
+	tc("CAA change flag", caa("@", "issuewild", 128, "example.com")).IfHasCapability(providers.CanUseCAA),
+	tc("CAA many records", caa("@", "issue", 0, "letsencrypt.org"), caa("@", "issuewild", 0, ";"), caa("@", "iodef", 128, "mailto:test@example.com")).IfHasCapability(providers.CanUseCAA),
 	tc("CAA delete", caa("@", "issue", 0, "letsencrypt.org")).IfHasCapability(providers.CanUseCAA),
+
+	// Test large zonefiles.
+	// Gandi pages 100 items at a time.
+	tc("Empty"),
+	tc("99 records", manyA("rec%04d", "1.2.3.4", 99)...),
+	tc("100 records", manyA("rec%04d", "1.2.3.4", 100)...),
+	tc("101 records", manyA("rec%04d", "1.2.3.4", 101)...),
 
 	//TODO: in validation, check that everything is given in unicode. This case hurts too much.
 	//tc("IDN pre-punycoded", cname("xn--o-0gab", "xn--o-0gab.xn--o-0gab.")),

@@ -29,7 +29,6 @@ Dnscontrol is a platform for seamlessly managing your dns configuration across a
 
 ### [Testing]({{site.github.url}}/unittests): Unit Testing for you DNS Data.
 
-
 ## Developer info
 
 ### [github](https://github.com/StackExchange/dnscontrol): Get the source!
