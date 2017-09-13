@@ -225,6 +225,25 @@ func atou32(s string) uint32 {
 	return uint32(i64)
 }
 
+type Records []*RecordConfig
+
+func (r Records) Grouped() map[RecordKey]Records {
+	groups := map[RecordKey]Records{}
+	for _, rec := range r {
+		groups[rec.Key()] = append(groups[rec.Key()], rec)
+	}
+	return groups
+}
+
+type RecordKey struct {
+	Name string
+	Type string
+}
+
+func (r *RecordConfig) Key() RecordKey {
+	return RecordKey{r.Name, r.Type}
+}
+
 type Nameserver struct {
 	Name   string `json:"name"` // Normalized to a FQDN with NO trailing "."
 	Target string `json:"target"`
@@ -243,7 +262,7 @@ type DomainConfig struct {
 	Registrar    string            `json:"registrar"`
 	DNSProviders map[string]int    `json:"dnsProviders"`
 	Metadata     map[string]string `json:"meta,omitempty"`
-	Records      []*RecordConfig   `json:"records"`
+	Records      Records           `json:"records"`
 	Nameservers  []*Nameserver     `json:"nameservers,omitempty"`
 	KeepUnknown  bool              `json:"keepunknown,omitempty"`
 }
