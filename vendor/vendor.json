@@ -627,6 +627,42 @@
 			"revisionTime": "2016-11-07T22:51:02Z"
 		},
 		{
+			"checksumSHA1": "e7eKqt/2RnmGPYJtcJd4IY2M/DU=",
+			"path": "gopkg.in/ns1/ns1-go.v2/rest",
+			"revision": "e2aebc8e980e326990999e4351c1c026c9d00c4a",
+			"revisionTime": "2017-03-21T06:31:15Z"
+		},
+		{
+			"checksumSHA1": "tdMxXKsUHn3yZpur14ZNLMVyQJM=",
+			"path": "gopkg.in/ns1/ns1-go.v2/rest/model/account",
+			"revision": "e2aebc8e980e326990999e4351c1c026c9d00c4a",
+			"revisionTime": "2017-03-21T06:31:15Z"
+		},
+		{
+			"checksumSHA1": "gBVND8veklEQV0gxF3lERV6mSZk=",
+			"path": "gopkg.in/ns1/ns1-go.v2/rest/model/data",
+			"revision": "e2aebc8e980e326990999e4351c1c026c9d00c4a",
+			"revisionTime": "2017-03-21T06:31:15Z"
+		},
+		{
+			"checksumSHA1": "GbL7ThrBZfKs1lhzguxzscIynac=",
+			"path": "gopkg.in/ns1/ns1-go.v2/rest/model/dns",
+			"revision": "e2aebc8e980e326990999e4351c1c026c9d00c4a",
+			"revisionTime": "2017-03-21T06:31:15Z"
+		},
+		{
+			"checksumSHA1": "CuurmNep8iMdYFodxRxAeewowsQ=",
+			"path": "gopkg.in/ns1/ns1-go.v2/rest/model/filter",
+			"revision": "e2aebc8e980e326990999e4351c1c026c9d00c4a",
+			"revisionTime": "2017-03-21T06:31:15Z"
+		},
+		{
+			"checksumSHA1": "B0C8F5th11AHl1fo8k0I8+DvrjE=",
+			"path": "gopkg.in/ns1/ns1-go.v2/rest/model/monitor",
+			"revision": "e2aebc8e980e326990999e4351c1c026c9d00c4a",
+			"revisionTime": "2017-03-21T06:31:15Z"
+		},
+		{
 			"checksumSHA1": "XvQ3McEKtKXKcU4lL447qeKi1RM=",
 			"path": "gopkg.in/sourcemap.v1",
 			"revision": "8cd1e2e0ddc78dcb4511bcb184d23171bed15c67",
