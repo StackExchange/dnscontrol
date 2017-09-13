@@ -372,6 +372,8 @@ func makeTests(t *testing.T) []*TestCase {
 
 	// Test large zonefiles.
 	// Mostly to test paging. Many providers page at 100
+	// Known page sizes:
+	//  - gandi: 100
 	skip := map[string]bool{
 		"NS1": true, //ns1 free acct only allows 50 records
 	}
