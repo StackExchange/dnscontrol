@@ -124,10 +124,10 @@ func rrToRecord(rr dns.RR, origin string, replaceSerial uint32) (models.RecordCo
 		rc.SrvWeight = v.Weight
 		rc.SrvPriority = v.Priority
 	case *dns.TLSA:
-		rc.TlsaCertificate = v.Certificate
 		rc.TlsaUsage = v.Usage
 		rc.TlsaSelector = v.Selector
 		rc.TlsaMatchingType = v.MatchingType
+		rc.TlsaCertificate = v.Certificate
 	case *dns.TXT:
 		rc.Target = strings.Join(v.Txt, " ")
 	default:
