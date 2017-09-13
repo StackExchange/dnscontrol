@@ -5,11 +5,7 @@ jsId: GANDI
 ---
 # Gandi Provider
 
-<<<<<<< HEAD
-Gandi provides both a registrar and a dns provider implementation.
-=======
 Gandi provides a DnsProvider but not a Registrar.
->>>>>>> master
 
 ## Configuration
 
