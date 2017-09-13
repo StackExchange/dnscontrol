@@ -3,15 +3,15 @@
 package activedir
 
 func (c *adProvider) getRecords(domainname string) ([]byte, error) {
-	if !*flagFakePowerShell {
+	if !c.fake {
 		panic("Can not happen: PowerShell on non-windows")
 	}
 	return c.readZoneDump(domainname)
 }
 
-func powerShellDoCommand(command string, shouldLog bool) error {
-	if !*flagFakePowerShell {
+func (c *adProvider) powerShellDoCommand(command string, shouldLog bool) error {
+	if !c.fake {
 		panic("Can not happen: PowerShell on non-windows")
 	}
-	return powerShellRecord(command)
+	return c.powerShellRecord(command)
 }
