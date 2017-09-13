@@ -15,7 +15,7 @@ import (
 )
 
 func init() {
-	providers.RegisterDomainServiceProviderType("GCLOUD", New)
+	providers.RegisterDomainServiceProviderType("GCLOUD", New, providers.CanUsePTR, providers.CanUseSRV, providers.CanUseCAA)
 }
 
 type gcloud struct {
@@ -116,23 +116,18 @@ func (g *gcloud) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Correc
 		oldRRs[keyFor(set)] = set
 		for _, rec := range set.Rrdatas {
 			r := &models.RecordConfig{
-				NameFQDN: nameWithoutDot,
-				Type:     set.Type,
-				Target:   rec,
-				TTL:      uint32(set.Ttl),
+				NameFQDN:       nameWithoutDot,
+				Type:           set.Type,
+				Target:         rec,
+				TTL:            uint32(set.Ttl),
+				CombinedTarget: true,
 			}
 			existingRecords = append(existingRecords, r)
 		}
 	}
 
 	for _, want := range dc.Records {
-		if want.Type == "MX" {
-			want.Target = fmt.Sprintf("%d %s", want.Priority, want.Target)
-			want.Priority = 0
-		} else if want.Type == "TXT" {
-			//add quotes to txts
-			want.Target = fmt.Sprintf(`"%s"`, want.Target)
-		}
+		want.MergeToTarget()
 	}
 
 	// first collect keys that have changed

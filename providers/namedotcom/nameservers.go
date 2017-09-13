@@ -31,7 +31,7 @@ func (n *nameDotCom) GetNameservers(domain string) ([]*models.Nameserver, error)
 
 func (n *nameDotCom) getNameserversRaw(domain string) ([]string, error) {
 	result := &getDomainResult{}
-	if err := n.get(apiGetDomain(domain), result); err != nil {
+	if err := n.get(n.apiGetDomain(domain), result); err != nil {
 		return nil, err
 	}
 	if err := result.getErr(); err != nil {
@@ -69,11 +69,11 @@ func (n *nameDotCom) GetRegistrarCorrections(dc *models.DomainConfig) ([]*models
 //even if you provide them "ns1.name.com", they will set it to "ns1qrt.name.com". This will match that pattern to see if defaults are in use.
 var defaultNsRegexp = regexp.MustCompile(`ns1[a-z]{0,3}\.name\.com,ns2[a-z]{0,3}\.name\.com,ns3[a-z]{0,3}\.name\.com,ns4[a-z]{0,3}\.name\.com`)
 
-func apiGetDomain(domain string) string {
-	return fmt.Sprintf("%s/domain/get/%s", apiBase, domain)
+func (n *nameDotCom) apiGetDomain(domain string) string {
+	return fmt.Sprintf("%s/domain/get/%s", n.APIUrl, domain)
 }
-func apiUpdateNS(domain string) string {
-	return fmt.Sprintf("%s/domain/update_nameservers/%s", apiBase, domain)
+func (n *nameDotCom) apiUpdateNS(domain string) string {
+	return fmt.Sprintf("%s/domain/update_nameservers/%s", n.APIUrl, domain)
 }
 
 type getDomainResult struct {
@@ -87,7 +87,7 @@ func (n *nameDotCom) updateNameservers(ns []string, domain string) func() error 
 		dat := struct {
 			Nameservers []string `json:"nameservers"`
 		}{ns}
-		resp, err := n.post(apiUpdateNS(domain), dat)
+		resp, err := n.post(n.apiUpdateNS(domain), dat)
 		if err != nil {
 			return err
 		}

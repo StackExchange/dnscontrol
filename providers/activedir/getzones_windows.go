@@ -5,36 +5,44 @@ import (
 	"os/exec"
 	"strconv"
 	"strings"
+	"sync"
 )
+
+var checkPS sync.Once
+var psAvailible = false
 
 func (c *adProvider) getRecords(domainname string) ([]byte, error) {
 
-	if !*flagFakePowerShell {
-		// If we are using PowerShell, make sure it is enabled
-		// and then run the PS1 command to generate the adzonedump file.
+	// If we are using PowerShell, make sure it is enabled
+	// and then run the PS1 command to generate the adzonedump file.
 
-		if !isPowerShellReady() {
-			fmt.Printf("\n\n\n")
-			fmt.Printf("***********************************************\n")
-			fmt.Printf("PowerShell DnsServer module not installed.\n")
-			fmt.Printf("See http://social.technet.microsoft.com/wiki/contents/articles/2202.remote-server-administration-tools-rsat-for-windows-client-and-windows-server-dsforum2wiki.aspx\n")
-			fmt.Printf("***********************************************\n")
-			fmt.Printf("\n\n\n")
-			return nil, fmt.Errorf("PowerShell module DnsServer not installed.")
+	if !c.fake {
+		checkPS.Do(func() {
+			psAvailible = c.isPowerShellReady()
+			if !psAvailible {
+				fmt.Printf("\n\n\n")
+				fmt.Printf("***********************************************\n")
+				fmt.Printf("PowerShell DnsServer module not installed.\n")
+				fmt.Printf("See http://social.technet.microsoft.com/wiki/contents/articles/2202.remote-server-administration-tools-rsat-for-windows-client-and-windows-server-dsforum2wiki.aspx\n")
+				fmt.Printf("***********************************************\n")
+				fmt.Printf("\n\n\n")
+			}
+		})
+		if !psAvailible {
+			return nil, fmt.Errorf("powershell module DnsServer not installed")
 		}
 
-		_, err := powerShellExecCombined(c.generatePowerShellZoneDump(domainname))
+		_, err := c.powerShellExec(c.generatePowerShellZoneDump(domainname), true)
 		if err != nil {
 			return []byte{}, err
 		}
 	}
-
 	// Return the contents of zone.*.json file instead.
 	return c.readZoneDump(domainname)
 }
 
-func isPowerShellReady() bool {
-	query, _ := powerShellExec(`(Get-Module -ListAvailable DnsServer) -ne $null`)
+func (c *adProvider) isPowerShellReady() bool {
+	query, _ := c.powerShellExec(`(Get-Module -ListAvailable DnsServer) -ne $null`, true)
 	q, err := strconv.ParseBool(strings.TrimSpace(string(query)))
 	if err != nil {
 		return false
@@ -42,52 +50,33 @@ func isPowerShellReady() bool {
 	return q
 }
 
-func powerShellDoCommand(command string) error {
-	if *flagFakePowerShell {
+func (c *adProvider) powerShellDoCommand(command string, shouldLog bool) error {
+	if c.fake {
 		// If fake, just record the command.
-		return powerShellRecord(command)
+		return c.powerShellRecord(command)
 	}
-	_, err := powerShellExec(command)
+	_, err := c.powerShellExec(command, shouldLog)
 	return err
 }
 
-func powerShellExec(command string) ([]byte, error) {
+func (c *adProvider) powerShellExec(command string, shouldLog bool) ([]byte, error) {
 	// log it.
-	err := powerShellLogCommand(command)
+	err := c.logCommand(command)
 	if err != nil {
-		return []byte{}, err
+		return nil, err
 	}
 
 	// Run it.
 	out, err := exec.Command("powershell", "-NoProfile", command).CombinedOutput()
 	if err != nil {
 		// If there was an error, log it.
-		powerShellLogErr(err)
+		c.logErr(err)
 	}
-	// Return the result.
-	return out, err
-}
-
-// powerShellExecCombined runs a PS1 command and logs the output. This is useful when the output should be none or very small.
-func powerShellExecCombined(command string) ([]byte, error) {
-	// log it.
-	err := powerShellLogCommand(command)
-	if err != nil {
-		return []byte{}, err
-	}
-
-	// Run it.
-	out, err := exec.Command("powershell", "-NoProfile", command).CombinedOutput()
-	if err != nil {
-		// If there was an error, log it.
-		powerShellLogErr(err)
-		return out, err
-	}
-
-	// Log output.
-	err = powerShellLogOutput(string(out))
-	if err != nil {
-		return []byte{}, err
+	if shouldLog {
+		err = c.logOutput(string(out))
+		if err != nil {
+			return []byte{}, err
+		}
 	}
 
 	// Return the result.

@@ -5,7 +5,11 @@ jsId: GANDI
 ---
 # Gandi Provider
 
+<<<<<<< HEAD
 Gandi provides both a registrar and a dns provider implementation.
+=======
+Gandi provides a DnsProvider but not a Registrar.
+>>>>>>> master
 
 ## Configuration
 
@@ -28,7 +32,6 @@ This provider does not recognize any special metadata fields unique to Gandi.
 Example javascript:
 
 {% highlight js %}
-var REG_GANDI = NewRegistrar("gandi", "GANDI");
 var GANDI = NewDnsProvider("gandi", "GANDI");
 
 D("example.tld", REG_GANDI, DnsProvider(GANDI),
@@ -36,3 +39,8 @@ D("example.tld", REG_GANDI, DnsProvider(GANDI),
 );
 {% endhighlight %}
 
+## New domains
+
+If a domain does not exist in your Gandi account, DNSControl
+will *not* automatically add it. You'll need to do that via the
+control panel manually.

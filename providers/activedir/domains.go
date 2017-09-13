@@ -32,6 +32,14 @@ func (c *adProvider) GetNameservers(string) ([]*models.Nameserver, error) {
 // GetDomainCorrections gets existing records, diffs them against existing, and returns corrections.
 func (c *adProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Correction, error) {
 
+	dc.Filter(func(r *models.RecordConfig) bool {
+		if r.Type != "A" && r.Type != "CNAME" {
+			log.Printf("WARNING: Active Directory only manages A and CNAME records. Won't consider %s %s", r.Type, r.NameFQDN)
+			return false
+		}
+		return true
+	})
+
 	// Read foundRecords:
 	foundRecords, err := c.getExistingRecords(dc.Name)
 	if err != nil {
@@ -47,9 +55,6 @@ func (c *adProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Co
 	// Generate changes.
 	corrections := []*models.Correction{}
 	for _, del := range dels {
-		if dc.KeepUnknown {
-			break
-		}
 		corrections = append(corrections, c.deleteRec(dc.Name, del.Existing))
 	}
 	for _, cre := range creates {
@@ -80,48 +85,48 @@ func (c *adProvider) readZoneDump(domainname string) ([]byte, error) {
 }
 
 // powerShellLogCommand logs to flagPsLog that a PowerShell command is going to be run.
-func powerShellLogCommand(command string) error {
-	return logHelper(fmt.Sprintf("# %s\r\n%s\r\n", time.Now().UTC(), strings.TrimSpace(command)))
+func (c *adProvider) logCommand(command string) error {
+	return c.logHelper(fmt.Sprintf("# %s\r\n%s\r\n", time.Now().UTC(), strings.TrimSpace(command)))
 }
 
 // powerShellLogOutput logs to flagPsLog that a PowerShell command is going to be run.
-func powerShellLogOutput(s string) error {
-	return logHelper(fmt.Sprintf("OUTPUT: START\r\n%s\r\nOUTPUT: END\r\n", s))
+func (c *adProvider) logOutput(s string) error {
+	return c.logHelper(fmt.Sprintf("OUTPUT: START\r\n%s\r\nOUTPUT: END\r\n", s))
 }
 
 // powerShellLogErr logs that a PowerShell command had an error.
-func powerShellLogErr(e error) error {
-	err := logHelper(fmt.Sprintf("ERROR: %v\r\r", e)) //Log error to powershell.log
+func (c *adProvider) logErr(e error) error {
+	err := c.logHelper(fmt.Sprintf("ERROR: %v\r\r", e)) //Log error to powershell.log
 	if err != nil {
 		return err //Bubble up error created in logHelper
 	}
 	return e //Bubble up original error
 }
 
-func logHelper(s string) error {
-	logfile, err := os.OpenFile(*flagPsLog, os.O_APPEND|os.O_RDWR|os.O_CREATE, 0660)
+func (c *adProvider) logHelper(s string) error {
+	logfile, err := os.OpenFile(c.psLog, os.O_APPEND|os.O_RDWR|os.O_CREATE, 0660)
 	if err != nil {
-		return fmt.Errorf("ERROR: Can not create/append to %#v: %v\n", *flagPsLog, err)
+		return fmt.Errorf("error: Can not create/append to %#v: %v", c.psLog, err)
 	}
 	_, err = fmt.Fprintln(logfile, s)
 	if err != nil {
-		return fmt.Errorf("ERROR: Append to %#v failed: %v\n", *flagPsLog, err)
+		return fmt.Errorf("Append to %#v failed: %v", c.psLog, err)
 	}
 	if logfile.Close() != nil {
-		return fmt.Errorf("ERROR: Closing %#v failed: %v\n", *flagPsLog, err)
+		return fmt.Errorf("Closing %#v failed: %v", c.psLog, err)
 	}
 	return nil
 }
 
 // powerShellRecord records that a PowerShell command should be executed later.
-func powerShellRecord(command string) error {
-	recordfile, err := os.OpenFile(*flagPsFuture, os.O_APPEND|os.O_RDWR|os.O_CREATE, 0660)
+func (c *adProvider) powerShellRecord(command string) error {
+	recordfile, err := os.OpenFile(c.psOut, os.O_APPEND|os.O_RDWR|os.O_CREATE, 0660)
 	if err != nil {
-		return fmt.Errorf("ERROR: Can not create/append to %#v: %v\n", *flagPsFuture, err)
+		return fmt.Errorf("Can not create/append to %#v: %v\n", c.psOut, err)
 	}
 	_, err = recordfile.WriteString(command)
 	if err != nil {
-		return fmt.Errorf("ERROR: Append to %#v failed: %v\n", *flagPsFuture, err)
+		return fmt.Errorf("Append to %#v failed: %v\n", c.psOut, err)
 	}
 	return recordfile.Close()
 }
@@ -132,19 +137,19 @@ func (c *adProvider) getExistingRecords(domainname string) ([]*models.RecordConf
 	// Get the JSON either from adzonedump or by running a PowerShell script.
 	data, err := c.getRecords(domainname)
 	if err != nil {
-		return nil, fmt.Errorf("getRecords failed on %#v: %v\n", domainname, err)
+		return nil, fmt.Errorf("getRecords failed on %#v: %v", domainname, err)
 	}
 
 	var recs []*RecordConfigJson
 	err = json.Unmarshal(data, &recs)
 	if err != nil {
-		return nil, fmt.Errorf("json.Unmarshal failed on %#v: %v\n", domainname, err)
+		return nil, fmt.Errorf("json.Unmarshal failed on %#v: %v", domainname, err)
 	}
 
 	result := make([]*models.RecordConfig, 0, len(recs))
 	for i := range recs {
-		t, err := recs[i].unpackRecord(domainname)
-		if err == nil {
+		t := recs[i].unpackRecord(domainname)
+		if t != nil {
 			result = append(result, t)
 		}
 	}
@@ -152,7 +157,7 @@ func (c *adProvider) getExistingRecords(domainname string) ([]*models.RecordConf
 	return result, nil
 }
 
-func (r *RecordConfigJson) unpackRecord(origin string) (*models.RecordConfig, error) {
+func (r *RecordConfigJson) unpackRecord(origin string) *models.RecordConfig {
 	rc := models.RecordConfig{}
 
 	rc.Name = strings.ToLower(r.Name)
@@ -160,43 +165,42 @@ func (r *RecordConfigJson) unpackRecord(origin string) (*models.RecordConfig, er
 	rc.Type = r.Type
 	rc.TTL = r.TTL
 
-	switch rc.Type {
+	switch rc.Type { // #rtype_variations
 	case "A":
 		rc.Target = r.Data
 	case "CNAME":
 		rc.Target = strings.ToLower(r.Data)
-	case "AAAA", "MX", "NAPTR", "NS", "SOA", "SRV":
-		return nil, fmt.Errorf("Unimplemented: %v", r.Type)
+	case "NS", "SOA":
+		return nil
 	default:
-		log.Fatalf("Unhandled models.RecordConfigJson type: %v (%v)\n", rc.Type, r)
+		log.Printf("Warning: Record of type %s found in AD zone. Will be ignored.", rc.Type)
+		return nil
 	}
-
-	return &rc, nil
+	return &rc
 }
 
 // powerShellDump runs a PowerShell command to get a dump of all records in a DNS zone.
 func (c *adProvider) generatePowerShellZoneDump(domainname string) string {
-	cmd_txt := `@("REPLACE_WITH_ZONE") | %{
+	cmdTxt := `@("REPLACE_WITH_ZONE") | %{
 Get-DnsServerResourceRecord -ComputerName REPLACE_WITH_COMPUTER_NAME -ZoneName $_ | select hostname,recordtype,@{n="timestamp";e={$_.timestamp.tostring()}},@{n="timetolive";e={$_.timetolive.totalseconds}},@{n="recorddata";e={($_.recorddata.ipv4address,$_.recorddata.ipv6address,$_.recorddata.HostNameAlias,"other_record" -ne $null)[0]-as [string]}} | ConvertTo-Json > REPLACE_WITH_FILENAMEPREFIX.REPLACE_WITH_ZONE.json
 }`
-	cmd_txt = strings.Replace(cmd_txt, "REPLACE_WITH_ZONE", domainname, -1)
-	cmd_txt = strings.Replace(cmd_txt, "REPLACE_WITH_COMPUTER_NAME", c.adServer, -1)
-	cmd_txt = strings.Replace(cmd_txt, "REPLACE_WITH_FILENAMEPREFIX", zoneDumpFilenamePrefix, -1)
+	cmdTxt = strings.Replace(cmdTxt, "REPLACE_WITH_ZONE", domainname, -1)
+	cmdTxt = strings.Replace(cmdTxt, "REPLACE_WITH_COMPUTER_NAME", c.adServer, -1)
+	cmdTxt = strings.Replace(cmdTxt, "REPLACE_WITH_FILENAMEPREFIX", zoneDumpFilenamePrefix, -1)
 
-	return cmd_txt
+	return cmdTxt
 }
 
 // generatePowerShellCreate generates PowerShell commands to ADD a record.
 func (c *adProvider) generatePowerShellCreate(domainname string, rec *models.RecordConfig) string {
-
 	content := rec.Target
-
 	text := "\r\n" // Skip a line.
 	text += fmt.Sprintf("Add-DnsServerResourceRecord%s", rec.Type)
 	text += fmt.Sprintf(` -ComputerName "%s"`, c.adServer)
 	text += fmt.Sprintf(` -ZoneName "%s"`, domainname)
 	text += fmt.Sprintf(` -Name "%s"`, rec.Name)
-	switch rec.Type {
+	text += fmt.Sprintf(` -TimeToLive $(New-TimeSpan -Seconds %d)`, rec.TTL)
+	switch rec.Type { // #rtype_variations
 	case "CNAME":
 		text += fmt.Sprintf(` -HostNameAlias "%s"`, content)
 	case "A":
@@ -205,6 +209,8 @@ func (c *adProvider) generatePowerShellCreate(domainname string, rec *models.Rec
 		text = fmt.Sprintf("\r\n"+`echo "Skipping NS update (%v %v)"`+"\r\n", rec.Name, rec.Target)
 	default:
 		panic(fmt.Errorf("ERROR: generatePowerShellCreate() does not yet handle recType=%s recName=%#v content=%#v)\n", rec.Type, rec.Name, content))
+		// We panic so that we quickly find any switch statements
+		// that have not been updated for a new RR type.
 	}
 	text += "\r\n"
 
@@ -216,7 +222,7 @@ func (c *adProvider) generatePowerShellModify(domainname, recName, recType, oldC
 
 	var queryField, queryContent string
 
-	switch recType {
+	switch recType { // #rtype_variations
 	case "A":
 		queryField = "IPv4address"
 		queryContent = `"` + oldContent + `"`
@@ -225,6 +231,8 @@ func (c *adProvider) generatePowerShellModify(domainname, recName, recType, oldC
 		queryContent = `"` + oldContent + `"`
 	default:
 		panic(fmt.Errorf("ERROR: generatePowerShellModify() does not yet handle recType=%s recName=%#v content=(%#v, %#v)\n", recType, recName, oldContent, newContent))
+		// We panic so that we quickly find any switch statements
+		// that have not been updated for a new RR type.
 	}
 
 	text := "\r\n" // Skip a line.
@@ -276,7 +284,7 @@ func (c *adProvider) createRec(domainname string, rec *models.RecordConfig) []*m
 		{
 			Msg: fmt.Sprintf("CREATE record: %s %s ttl(%d) %s", rec.Name, rec.Type, rec.TTL, rec.Target),
 			F: func() error {
-				return powerShellDoCommand(c.generatePowerShellCreate(domainname, rec))
+				return c.powerShellDoCommand(c.generatePowerShellCreate(domainname, rec), true)
 			}},
 	}
 	return arr
@@ -287,7 +295,7 @@ func (c *adProvider) modifyRec(domainname string, m diff.Correlation) *models.Co
 	return &models.Correction{
 		Msg: m.String(),
 		F: func() error {
-			return powerShellDoCommand(c.generatePowerShellModify(domainname, rec.Name, rec.Type, old.Target, rec.Target, old.TTL, rec.TTL))
+			return c.powerShellDoCommand(c.generatePowerShellModify(domainname, rec.Name, rec.Type, old.Target, rec.Target, old.TTL, rec.TTL), true)
 		},
 	}
 }
@@ -296,7 +304,7 @@ func (c *adProvider) deleteRec(domainname string, rec *models.RecordConfig) *mod
 	return &models.Correction{
 		Msg: fmt.Sprintf("DELETE record: %s %s ttl(%d) %s", rec.Name, rec.Type, rec.TTL, rec.Target),
 		F: func() error {
-			return powerShellDoCommand(c.generatePowerShellDelete(domainname, rec.Name, rec.Type, rec.Target))
+			return c.powerShellDoCommand(c.generatePowerShellDelete(domainname, rec.Name, rec.Type, rec.Target), true)
 		},
 	}
 }

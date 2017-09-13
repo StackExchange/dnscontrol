@@ -24,15 +24,30 @@ func TestHasRecordTypeName(t *testing.T) {
 
 func TestRR(t *testing.T) {
 	experiment := RecordConfig{
-		Type:     "A",
-		Name:     "foo",
-		Target:   "1.2.3.4",
-		TTL:      0,
-		NameFQDN: "foo.example.com",
-		Priority: 0,
+		Type:         "A",
+		Name:         "foo",
+		Target:       "1.2.3.4",
+		TTL:          0,
+		NameFQDN:     "foo.example.com",
+		MxPreference: 0,
 	}
 	expected := "foo.example.com.\t300\tIN\tA\t1.2.3.4"
-	found := experiment.RR().String()
+	found := experiment.ToRR().String()
+	if found != expected {
+		t.Errorf("RR expected (%#v) got (%#v)\n", expected, found)
+	}
+
+	experiment = RecordConfig{
+		Type:     "CAA",
+		Name:     "@",
+		Target:   "mailto:test@example.com",
+		TTL:      300,
+		NameFQDN: "example.com",
+		CaaTag:   "iodef",
+		CaaFlag:  1,
+	}
+	expected = "example.com.\t300\tIN\tCAA\t1 iodef \"mailto:test@example.com\""
+	found = experiment.ToRR().String()
 	if found != expected {
 		t.Errorf("RR expected (%#v) got (%#v)\n", expected, found)
 	}

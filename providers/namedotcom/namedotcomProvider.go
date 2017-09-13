@@ -11,7 +11,10 @@ import (
 	"github.com/StackExchange/dnscontrol/providers"
 )
 
+const defaultApiBase = "https://api.name.com/api"
+
 type nameDotCom struct {
+	APIUrl  string `json:"apiurl"`
 	APIUser string `json:"apiuser"`
 	APIKey  string `json:"apikey"`
 }
@@ -26,16 +29,20 @@ func newDsp(conf map[string]string, meta json.RawMessage) (providers.DNSServiceP
 
 func newProvider(conf map[string]string) (*nameDotCom, error) {
 	api := &nameDotCom{}
-	api.APIUser, api.APIKey = conf["apiuser"], conf["apikey"]
+	api.APIUser, api.APIKey, api.APIUrl = conf["apiuser"], conf["apikey"], conf["apiurl"]
 	if api.APIKey == "" || api.APIUser == "" {
 		return nil, fmt.Errorf("Name.com apikey and apiuser must be provided.")
+	}
+	if api.APIUrl == "" {
+		api.APIUrl = defaultApiBase
 	}
 	return api, nil
 }
 
 func init() {
 	providers.RegisterRegistrarType("NAMEDOTCOM", newReg)
-	providers.RegisterDomainServiceProviderType("NAMEDOTCOM", newDsp)
+	providers.RegisterDomainServiceProviderType("NAMEDOTCOM", newDsp, providers.CanUseAlias, providers.CanUseSRV)
+	// PTR records are not supported https://www.name.com/support/articles/205188508-Reverse-DNS-records (2017-05-08)
 }
 
 ///
@@ -66,8 +73,6 @@ func (r *apiResult) getErr() error {
 	}
 	return nil
 }
-
-var apiBase = "https://api.name.com/api"
 
 //perform http GET and unmarshal response json into target struct
 func (n *nameDotCom) get(url string, target interface{}) error {

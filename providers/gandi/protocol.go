@@ -172,8 +172,9 @@ func (c *GandiApi) createGandiZone(domainname string, zoneID int64, records []ga
 	return nil
 }
 
+// convert takes a DNS record from Gandi and returns our native RecordConfig format.
 func convert(r *gandirecord.RecordInfo, origin string) *models.RecordConfig {
-	return &models.RecordConfig{
+	rc := &models.RecordConfig{
 		NameFQDN: dnsutil.AddOrigin(r.Name, origin),
 		Name:     r.Name,
 		Type:     r.Type,
@@ -181,4 +182,25 @@ func convert(r *gandirecord.RecordInfo, origin string) *models.RecordConfig {
 		Target:   r.Value,
 		TTL:      uint32(r.Ttl),
 	}
+	switch r.Type {
+	case "A", "AAAA", "NS", "CNAME", "PTR", "TXT":
+	case "SRV":
+		var err error
+		rc.SrvPriority, rc.SrvWeight, rc.SrvPort, rc.Target, err = models.SplitCombinedSrvValue(r.Value)
+		if err != nil {
+			panic(fmt.Sprintf("gandi.convert bad srv value format: %#v (%s)", r.Value, err))
+		}
+		// no-op
+	case "MX":
+		var err error
+		rc.MxPreference, rc.Target, err = models.SplitCombinedMxValue(r.Value)
+		if err != nil {
+			panic(fmt.Sprintf("gandi.convert bad mx value format: %#v", r.Value))
+		}
+	default:
+		panic(fmt.Sprintf("gandi.convert unimplemented rtype %v", r.Type))
+		// We panic so that we quickly find any switch statements
+		// that have not been updated for a new RR type.
+	}
+	return rc
 }

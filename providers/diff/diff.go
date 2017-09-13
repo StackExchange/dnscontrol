@@ -2,6 +2,7 @@ package diff
 
 import (
 	"fmt"
+	"log"
 	"sort"
 
 	"github.com/StackExchange/dnscontrol/models"
@@ -36,11 +37,7 @@ type differ struct {
 
 // get normalized content for record. target, ttl, mxprio, and specified metadata
 func (d *differ) content(r *models.RecordConfig) string {
-	content := fmt.Sprintf("%s %d", r.Target, r.TTL)
-	if r.Type == "MX" {
-		content += fmt.Sprintf(" priority=%d", r.Priority)
-	}
-
+	content := fmt.Sprintf("%v ttl=%d", r.Content(), r.TTL)
 	for _, f := range d.extraValues {
 		for k, v := range f(r) {
 			content += fmt.Sprintf(" %s=%s", k, v)
@@ -69,6 +66,15 @@ func (d *differ) IncrementalDiff(existing []*models.RecordConfig) (unchanged, cr
 	for _, d := range desired {
 		k := key{d.NameFQDN, d.Type}
 		desiredByNameAndType[k] = append(desiredByNameAndType[k], d)
+	}
+	//if NO_PURGE is set, just remove anything that is only in existing.
+	if d.dc.KeepUnknown {
+		for k := range existingByNameAndType {
+			if _, ok := desiredByNameAndType[k]; !ok {
+				log.Printf("Ignoring record set %s %s due to NO_PURGE", k.rType, k.name)
+				delete(existingByNameAndType, k)
+			}
+		}
 	}
 	// Look through existing records. This will give us changes and deletions and some additions.
 	// Each iteration is only for a single type/name record set

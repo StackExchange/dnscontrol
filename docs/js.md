@@ -4,8 +4,8 @@ layout: default
 
 # Javascript DSL
 
-DNSControl uses javascript as its primary input language to provide power and flexibility to configure your domains. The ultimate purpose of the javascript is to consturct a
-[DNSConfig](https://godoc.org/github.com/StackExchange/dnscontrol/models#DNSConfig) object that will be passed to the go backend and operated on. 
+DNSControl uses javascript as its primary input language to provide power and flexibility to configure your domains. The ultimate purpose of the javascript is to construct a
+[DNSConfig](https://godoc.org/github.com/StackExchange/dnscontrol/models#DNSConfig) object that will be passed to the go backend and operated on.
 
 {% include funcList.md title="Top Level Functions" dir="global" %}
 
@@ -23,6 +23,6 @@ DNSControl uses javascript as its primary input language to provide power and fl
             }
         }
         f();
-        $(window).on('hashchange',f); 
+        $(window).on('hashchange',f);
     })
 </script>

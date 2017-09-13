@@ -5,10 +5,20 @@ jsId: BIND
 ---
 # Bind Provider
 
-This provider simply maintains a directory with a collection of .zone files. We currently copy zone files to our production servers and restart bind via 
+This provider simply maintains a directory with a collection of .zone files. We currently copy zone files to our production servers and restart bind via
 a script external to DNSControl.
 
 ## Configuration
+
+In your credentials file (`creds.json`), you can specify a `directory` where the provider will look for and create zone files. The default is the `zones` directory where dnscontrol is run.
+
+{% highlight javascript %}
+{
+  "bind":{
+    "directory": "myzones"
+  }
+}
+{% endhighlight %}
 
 The BIND provider does not require anything in `creds.json`. It does accept some (optional) metadata via your dns config when you create the provider:
 
@@ -33,4 +43,3 @@ var bind = NewDnsProvider('bind', 'BIND', {
 
 If you need to customize your SOA or NS records, you can do it with this setup.
 
-You can also provide a `-bindtree=directoryName` flag to change where the provider will look for and create zone files. The default is the `zones` directory where dnscontrol is run.

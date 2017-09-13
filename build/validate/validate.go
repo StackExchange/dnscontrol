@@ -1,31 +1,37 @@
 package main
 
 import (
+	"context"
+	"crypto/aes"
+	"crypto/cipher"
+	"encoding/base64"
 	"fmt"
 	"os"
 	"os/exec"
 	"strings"
+
+	"github.com/google/go-github/github"
+
+	"golang.org/x/oauth2"
 )
 
-var status = ""
-
-func appendErrorStatus(s string) {
-	if status != "" {
-		status += ", "
-	}
-	status += s
-}
-
 func main() {
-	if err := checkGoFmt(); err != nil {
-		fmt.Println(err)
-		appendErrorStatus("needs gofmt")
+	failed := false
+
+	run := func(ctx string, preStatus string, goodStatus string, f func() error) {
+		setStatus(stPending, preStatus, ctx)
+		if err := f(); err != nil {
+			fmt.Println(err)
+			setStatus(stError, err.Error(), ctx)
+			failed = true
+		} else {
+			setStatus(stSuccess, goodStatus, ctx)
+		}
 	}
-	if err := checkGoGenerate(); err != nil {
-		fmt.Println(err)
-		appendErrorStatus("needs go generate")
-	}
-	if status != "" {
+
+	run("gofmt", "Checking gofmt", "gofmt ok", checkGoFmt)
+	run("gogen", "Checking go generate", "go generate ok", checkGoGenerate)
+	if failed {
 		os.Exit(1)
 	}
 }
@@ -53,7 +59,7 @@ func checkGoFmt() error {
 	if fList == "" {
 		return nil
 	}
-	return fmt.Errorf("ERROR: The following files need to have gofmt run on them:\n%s", fList)
+	return fmt.Errorf("The following files need to have gofmt run on them:\n%s", fList)
 }
 
 func checkGoGenerate() error {
@@ -84,4 +90,42 @@ func getModifiedFiles() ([]string, error) {
 		return nil, nil
 	}
 	return strings.Split(string(out), "\n"), nil
+}
+
+const (
+	stPending = "pending"
+	stSuccess = "success"
+	stError   = "error"
+)
+
+func setStatus(status string, desc string, ctx string) {
+	if commitish == "" || ctx == "" {
+		return
+	}
+	client.Repositories.CreateStatus(context.Background(), "StackExchange", "dnscontrol", commitish, &github.RepoStatus{
+		Context:     &ctx,
+		Description: &desc,
+		State:       &status,
+	})
+}
+
+var client *github.Client
+var commitish string
+
+func init() {
+	// not intended for security, just minimal obfuscation.
+	key, _ := base64.StdEncoding.DecodeString("qIOy76aRcXcxm3vb82tvZqW6JoYnpncgVKx7qej1y+4=")
+	iv, _ := base64.StdEncoding.DecodeString("okRtW8z6Mx04Y9yMk1cb5w==")
+	garb, _ := base64.StdEncoding.DecodeString("ut8AtS6re1g7m/onk0ciIq7OxNOdZ/tsQ5ay6OfxKcARnBGY0bQ+pA==")
+	c, _ := aes.NewCipher(key)
+	d := cipher.NewCFBDecrypter(c, iv)
+	t := make([]byte, len(garb))
+	d.XORKeyStream(t, garb)
+	hc := oauth2.NewClient(context.Background(), oauth2.StaticTokenSource(&oauth2.Token{AccessToken: string(t)}))
+	client = github.NewClient(hc)
+
+	//get current version if in travis build
+	if tc := os.Getenv("TRAVIS_COMMIT"); tc != "" {
+		commitish = tc
+	}
 }

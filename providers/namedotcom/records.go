@@ -2,14 +2,13 @@ package namedotcom
 
 import (
 	"fmt"
-	"log"
+	"strconv"
 	"strings"
 
 	"github.com/miekg/dns/dnsutil"
 
 	"github.com/StackExchange/dnscontrol/models"
 	"github.com/StackExchange/dnscontrol/providers/diff"
-	"strconv"
 )
 
 var defaultNameservers = []*models.Nameserver{
@@ -20,6 +19,7 @@ var defaultNameservers = []*models.Nameserver{
 }
 
 func (n *nameDotCom) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Correction, error) {
+	dc.Punycode()
 	records, err := n.getRecords(dc.Name)
 	if err != nil {
 		return nil, err
@@ -27,6 +27,12 @@ func (n *nameDotCom) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Co
 	actual := make([]*models.RecordConfig, len(records))
 	for i, r := range records {
 		actual[i] = r.toRecord()
+	}
+
+	for _, rec := range dc.Records {
+		if rec.Type == "ALIAS" {
+			rec.Type = "ANAME"
+		}
 	}
 
 	checkNSModifications(dc)
@@ -60,14 +66,14 @@ func (n *nameDotCom) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Co
 	return corrections, nil
 }
 
-func apiGetRecords(domain string) string {
-	return fmt.Sprintf("%s/dns/list/%s", apiBase, domain)
+func (n *nameDotCom) apiGetRecords(domain string) string {
+	return fmt.Sprintf("%s/dns/list/%s", n.APIUrl, domain)
 }
-func apiCreateRecord(domain string) string {
-	return fmt.Sprintf("%s/dns/create/%s", apiBase, domain)
+func (n *nameDotCom) apiCreateRecord(domain string) string {
+	return fmt.Sprintf("%s/dns/create/%s", n.APIUrl, domain)
 }
-func apiDeleteRecord(domain string) string {
-	return fmt.Sprintf("%s/dns/delete/%s", apiBase, domain)
+func (n *nameDotCom) apiDeleteRecord(domain string) string {
+	return fmt.Sprintf("%s/dns/delete/%s", n.APIUrl, domain)
 }
 
 type nameComRecord struct {
@@ -83,11 +89,7 @@ func checkNSModifications(dc *models.DomainConfig) {
 	newList := make([]*models.RecordConfig, 0, len(dc.Records))
 	for _, rec := range dc.Records {
 		if rec.Type == "NS" && rec.NameFQDN == dc.Name {
-			// name.com does change base domain NS records. dnscontrol will print warnings if you try to set them to anything besides the name.com defaults.
-			if !strings.HasSuffix(rec.Target, ".name.com.") {
-				log.Printf("Warning: name.com does not allow NS records on base domain to be modified. %s will not be added.", rec.Target)
-			}
-			continue
+			continue // Apex NS records are automatically created for the domain's nameservers and cannot be managed otherwise via the name.com API.
 		}
 		newList = append(newList, rec)
 	}
@@ -97,14 +99,33 @@ func checkNSModifications(dc *models.DomainConfig) {
 func (r *nameComRecord) toRecord() *models.RecordConfig {
 	ttl, _ := strconv.ParseUint(r.TTL, 10, 32)
 	prio, _ := strconv.ParseUint(r.Priority, 10, 16)
-	return &models.RecordConfig{
+	rc := &models.RecordConfig{
 		NameFQDN: r.Name,
 		Type:     r.Type,
 		Target:   r.Content,
 		TTL:      uint32(ttl),
-		Priority: uint16(prio),
 		Original: r,
 	}
+	switch r.Type { // #rtype_variations
+	case "A", "AAAA", "ANAME", "CNAME", "NS", "TXT":
+		// nothing additional.
+	case "MX":
+		rc.MxPreference = uint16(prio)
+	case "SRV":
+		parts := strings.Split(r.Content, " ")
+		weight, _ := strconv.ParseInt(parts[0], 10, 32)
+		port, _ := strconv.ParseInt(parts[1], 10, 32)
+		rc.SrvWeight = uint16(weight)
+		rc.SrvPort = uint16(port)
+		rc.SrvPriority = uint16(prio)
+		rc.MxPreference = 0
+		rc.Target = parts[2] + "."
+	default:
+		panic(fmt.Sprintf("toRecord unimplemented rtype %v", r.Type))
+		// We panic so that we quickly find any switch statements
+		// that have not been updated for a new RR type.
+	}
+	return rc
 }
 
 type listRecordsResponse struct {
@@ -114,7 +135,7 @@ type listRecordsResponse struct {
 
 func (n *nameDotCom) getRecords(domain string) ([]*nameComRecord, error) {
 	result := &listRecordsResponse{}
-	err := n.get(apiGetRecords(domain), result)
+	err := n.get(n.apiGetRecords(domain), result)
 	if err != nil {
 		return nil, err
 	}
@@ -123,7 +144,7 @@ func (n *nameDotCom) getRecords(domain string) ([]*nameComRecord, error) {
 	}
 
 	for _, rc := range result.Records {
-		if rc.Type == "CNAME" || rc.Type == "MX" || rc.Type == "NS" {
+		if rc.Type == "CNAME" || rc.Type == "ANAME" || rc.Type == "MX" || rc.Type == "NS" {
 			rc.Content = rc.Content + "."
 		}
 	}
@@ -132,7 +153,7 @@ func (n *nameDotCom) getRecords(domain string) ([]*nameComRecord, error) {
 
 func (n *nameDotCom) createRecord(rc *models.RecordConfig, domain string) error {
 	target := rc.Target
-	if rc.Type == "CNAME" || rc.Type == "MX" || rc.Type == "NS" {
+	if rc.Type == "CNAME" || rc.Type == "ANAME" || rc.Type == "MX" || rc.Type == "NS" {
 		if target[len(target)-1] == '.' {
 			target = target[:len(target)-1]
 		} else {
@@ -150,12 +171,23 @@ func (n *nameDotCom) createRecord(rc *models.RecordConfig, domain string) error 
 		Type:     rc.Type,
 		Content:  target,
 		TTL:      rc.TTL,
-		Priority: rc.Priority,
+		Priority: rc.MxPreference,
 	}
 	if dat.Hostname == "@" {
 		dat.Hostname = ""
 	}
-	resp, err := n.post(apiCreateRecord(domain), dat)
+	switch rc.Type { // #rtype_variations
+	case "A", "AAAA", "ANAME", "CNAME", "MX", "NS", "TXT":
+		// nothing
+	case "SRV":
+		dat.Content = fmt.Sprintf("%d %d %v", rc.SrvWeight, rc.SrvPort, rc.Target)
+		dat.Priority = rc.SrvPriority
+	default:
+		panic(fmt.Sprintf("createRecord rtype %v unimplemented", rc.Type))
+		// We panic so that we quickly find any switch statements
+		// that have not been updated for a new RR type.
+	}
+	resp, err := n.post(n.apiCreateRecord(domain), dat)
 	if err != nil {
 		return err
 	}
@@ -166,7 +198,7 @@ func (n *nameDotCom) deleteRecord(id, domain string) error {
 	dat := struct {
 		ID string `json:"record_id"`
 	}{id}
-	resp, err := n.post(apiDeleteRecord(domain), dat)
+	resp, err := n.post(n.apiDeleteRecord(domain), dat)
 	if err != nil {
 		return err
 	}

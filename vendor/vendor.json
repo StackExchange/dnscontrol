@@ -134,6 +134,18 @@
 			"revisionTime": "2016-08-11T16:24:59Z"
 		},
 		{
+			"checksumSHA1": "O6hcK24yI6w7FA+g4Pbr+eQ7pys=",
+			"path": "github.com/aws/aws-sdk-go/private/protocol/json/jsonutil",
+			"revision": "aafdacd0d6e625a7a2782bef5f9942d6fc4c9f30",
+			"revisionTime": "2017-07-14T21:00:53Z"
+		},
+		{
+			"checksumSHA1": "R00RL5jJXRYq1iiK1+PGvMfvXyM=",
+			"path": "github.com/aws/aws-sdk-go/private/protocol/jsonrpc",
+			"revision": "aafdacd0d6e625a7a2782bef5f9942d6fc4c9f30",
+			"revisionTime": "2017-07-14T21:00:53Z"
+		},
+		{
 			"checksumSHA1": "isoix7lTx4qIq2zI2xFADtti5SI=",
 			"path": "github.com/aws/aws-sdk-go/private/protocol/query",
 			"revision": "f80e7d0182a463dff0c0da6bbed57f21369d4346",
@@ -182,16 +194,34 @@
 			"revisionTime": "2016-08-11T16:24:59Z"
 		},
 		{
+			"checksumSHA1": "qS3eZZfhdDM6haTZp7OeyhMDlV8=",
+			"path": "github.com/aws/aws-sdk-go/service/route53domains",
+			"revision": "f80e7d0182a463dff0c0da6bbed57f21369d4346",
+			"revisionTime": "2016-08-11T16:24:59Z"
+		},
+		{
 			"checksumSHA1": "nH/itbdeFHpl4ysegdtgww9bFSA=",
 			"path": "github.com/aws/aws-sdk-go/service/sts",
 			"revision": "f80e7d0182a463dff0c0da6bbed57f21369d4346",
 			"revisionTime": "2016-08-11T16:24:59Z"
 		},
 		{
-			"checksumSHA1": "TXJTqz9rg4ttab1r7H7npjHaLsM=",
+			"checksumSHA1": "1zjIuntUcKPUpENZZl1MD+aemPs=",
 			"path": "github.com/billputer/go-namecheap",
-			"revision": "fcc3af79f774b09a3ef95ef48b03ee6e76141e91",
-			"revisionTime": "2016-08-11T21:32:45Z"
+			"revision": "7e62cd9a88279c621b6daf38a9ef0dd11c4d47e3",
+			"revisionTime": "2017-04-24T18:15:40Z"
+		},
+		{
+			"checksumSHA1": "cGY7ZInpebRCbyfMs9IZbUBHcgE=",
+			"path": "github.com/digitalocean/godo",
+			"revision": "34840385860db94c88d044571153b6a200ca40b2",
+			"revisionTime": "2017-07-06T20:03:01Z"
+		},
+		{
+			"checksumSHA1": "YpWoCsk+u9H5ctWNKKSVPf4b2as=",
+			"path": "github.com/digitalocean/godo/context",
+			"revision": "34840385860db94c88d044571153b6a200ca40b2",
+			"revisionTime": "2017-07-06T20:03:01Z"
 		},
 		{
 			"checksumSHA1": "yP+hlSaIhYwxErc/s286p9M+LIs=",
@@ -213,6 +243,12 @@
 			"revisionTime": "2016-02-25T03:18:00Z"
 		},
 		{
+			"checksumSHA1": "pKcCESD4Ezs4SpbZ0Kbl4XsZKt0=",
+			"path": "github.com/google/go-github/github",
+			"revision": "6896997c7c9fe603fb9d2e8e92303bb18481e60a",
+			"revisionTime": "2017-04-09T17:43:40Z"
+		},
+		{
 			"checksumSHA1": "yyAzHoiVLu+xywYI2BDyRq6sOqE=",
 			"path": "github.com/google/go-querystring/query",
 			"revision": "9235644dd9e52eeae6fa48efd539fdc351a0af53",
@@ -231,10 +267,10 @@
 			"revisionTime": "2015-04-13T22:18:30+03:00"
 		},
 		{
-			"checksumSHA1": "OUZ1FFXyKs+Cfg9M9rmXqqweQck=",
+			"checksumSHA1": "lxO8OJ+oWgBLoHNELCXxxTVc84w=",
 			"path": "github.com/miekg/dns",
-			"revision": "db96a2b759cdef4f11a34506a42eb8d1290c598e",
-			"revisionTime": "2016-07-26T03:20:27Z"
+			"revision": "765aea0018871a5acd99796645585323343ba39c",
+			"revisionTime": "2017-03-22T06:49:16Z"
 		},
 		{
 			"checksumSHA1": "9SrLPArdQmp45MGosz7IEGX46Ng=",
@@ -255,52 +291,58 @@
 			"revisionTime": "2017-03-16T20:15:38Z"
 		},
 		{
-			"checksumSHA1": "nS4kKHjMlJpQg3sixqelpCg1jyk=",
-			"path": "github.com/prasmussen/gandi-api/client",
-			"revision": "13205dc554f4aeb75c93e8b57ad1e3d6fa3be5d5",
-			"revisionTime": "2016-04-18T18:49:04Z"
+			"checksumSHA1": "02kfHQp1KLch4P2FG1OrEG/24t8=",
+			"path": "github.com/prasmussen/gandi-api",
+			"revision": "d5d052a11e7dd3bd477e9dda181c2c5dfa8cf16f",
+			"revisionTime": "2017-08-05T17:47:16Z"
 		},
 		{
-			"checksumSHA1": "JZSh5mPC7r4AHhSg+IjD897n22A=",
+			"checksumSHA1": "nS4kKHjMlJpQg3sixqelpCg1jyk=",
+			"path": "github.com/prasmussen/gandi-api/client",
+			"revision": "931915c3a2ca2661373f0b25bbedfee9e1958d2b",
+			"revisionTime": "2017-09-08T20:15:21Z"
+		},
+		{
+			"checksumSHA1": "tT8xSQc+QM3/JPs16WjDtTFY7j0=",
 			"path": "github.com/prasmussen/gandi-api/domain",
-			"revision": "13205dc554f4aeb75c93e8b57ad1e3d6fa3be5d5",
-			"revisionTime": "2016-04-18T18:49:04Z"
+			"revision": "931915c3a2ca2661373f0b25bbedfee9e1958d2b",
+			"revisionTime": "2017-09-08T20:15:21Z"
 		},
 		{
 			"checksumSHA1": "/t4nBKtJF6W3PHzTBNAzgcw54GU=",
 			"path": "github.com/prasmussen/gandi-api/domain/zone",
-			"revision": "13205dc554f4aeb75c93e8b57ad1e3d6fa3be5d5",
-			"revisionTime": "2016-04-18T18:49:04Z"
+			"revision": "931915c3a2ca2661373f0b25bbedfee9e1958d2b",
+			"revisionTime": "2017-09-08T20:15:21Z"
 		},
 		{
-			"checksumSHA1": "QXUT2Olct3vKqg6RIgdoUqJHsFU=",
+			"checksumSHA1": "wers/RRtpv1SXRpnUg6ptC1nKoM=",
 			"path": "github.com/prasmussen/gandi-api/domain/zone/record",
-			"revision": "13205dc554f4aeb75c93e8b57ad1e3d6fa3be5d5",
-			"revisionTime": "2016-04-18T18:49:04Z"
+			"revision": "931915c3a2ca2661373f0b25bbedfee9e1958d2b",
+			"revisionTime": "2017-09-08T20:15:21Z"
 		},
 		{
 			"checksumSHA1": "avzpVkEeXzDiaNLsl4agXWm9tm0=",
 			"path": "github.com/prasmussen/gandi-api/domain/zone/version",
-			"revision": "13205dc554f4aeb75c93e8b57ad1e3d6fa3be5d5",
-			"revisionTime": "2016-04-18T18:49:04Z"
+			"revision": "931915c3a2ca2661373f0b25bbedfee9e1958d2b",
+			"revisionTime": "2017-09-08T20:15:21Z"
 		},
 		{
 			"checksumSHA1": "txVNPkzE0Jkag20VZ1hLj/Td+O4=",
 			"path": "github.com/prasmussen/gandi-api/operation",
-			"revision": "13205dc554f4aeb75c93e8b57ad1e3d6fa3be5d5",
-			"revisionTime": "2016-04-18T18:49:04Z"
+			"revision": "931915c3a2ca2661373f0b25bbedfee9e1958d2b",
+			"revisionTime": "2017-09-08T20:15:21Z"
 		},
 		{
 			"checksumSHA1": "FwIh1Rk/XNANaxCz3Fw/vQ3Hu5E=",
 			"path": "github.com/prasmussen/gandi-api/util",
-			"revision": "13205dc554f4aeb75c93e8b57ad1e3d6fa3be5d5",
-			"revisionTime": "2016-04-18T18:49:04Z"
+			"revision": "931915c3a2ca2661373f0b25bbedfee9e1958d2b",
+			"revisionTime": "2017-09-08T20:15:21Z"
 		},
 		{
-			"checksumSHA1": "UH75lsKCrVFdCZvJchkAPo2QXjw=",
+			"checksumSHA1": "EqyHXBcg5cWi4ERsMXN6g1opi1o=",
 			"path": "github.com/robertkrimen/otto",
-			"revision": "7d9cbc2befca39869eb0e5bcb0f44c0692c2f8ff",
-			"revisionTime": "2016-07-28T22:04:12Z"
+			"revision": "21ec96599b1279b5673e4df0097dd56bb8360068",
+			"revisionTime": "2017-04-24T10:46:44Z"
 		},
 		{
 			"checksumSHA1": "qgziiO3/QDVJMKw2nGrUbC8QldY=",
@@ -345,6 +387,54 @@
 			"revisionTime": "2016-07-28T22:04:12Z"
 		},
 		{
+			"checksumSHA1": "SOB3whm8gc2xsL6j7exUFghj94s=",
+			"path": "github.com/tdewolff/buffer",
+			"revision": "df6253e2a2cda5aba1b5d0c59fc5bdf0a98ae192",
+			"revisionTime": "2017-01-15T11:41:28Z"
+		},
+		{
+			"checksumSHA1": "aOx9JqecdG4tSpzdRyohR56FUMo=",
+			"path": "github.com/tdewolff/minify",
+			"revision": "2d28d6e43c68537a32f9b835a89d5038ebcb6ec9",
+			"revisionTime": "2017-06-05T20:11:15Z"
+		},
+		{
+			"checksumSHA1": "w9vp7arHrzUEi6KyAM9K8hAP3hM=",
+			"path": "github.com/tdewolff/minify/json",
+			"revision": "2d28d6e43c68537a32f9b835a89d5038ebcb6ec9",
+			"revisionTime": "2017-06-05T20:11:15Z"
+		},
+		{
+			"checksumSHA1": "EiTbuOQ08YQ0Foy0R8y4WlbVcvA=",
+			"path": "github.com/tdewolff/parse",
+			"revision": "e4ac711ab0bf625c08270ba17557c30b2c1c5c2d",
+			"revisionTime": "2017-07-12T11:51:05Z"
+		},
+		{
+			"checksumSHA1": "kVJVV52ifqE4j6vNiWi9UiXOscs=",
+			"path": "github.com/tdewolff/parse/json",
+			"revision": "e4ac711ab0bf625c08270ba17557c30b2c1c5c2d",
+			"revisionTime": "2017-07-12T11:51:05Z"
+		},
+		{
+			"checksumSHA1": "hR7GEsOkEtR/doq2kiCmOF8spEg=",
+			"path": "github.com/tdewolff/strconv",
+			"revision": "3e8091f4417ebaaa3910da63a45ea394ebbfb0e3",
+			"revisionTime": "2016-04-27T18:05:39Z"
+		},
+		{
+			"checksumSHA1": "GQ9bu6PuydK3Yor1JgtVKUfEJm8=",
+			"path": "github.com/tent/http-link-go",
+			"revision": "ac974c61c2f990f4115b119354b5e0b47550e888",
+			"revisionTime": "2013-07-02T22:55:49Z"
+		},
+		{
+			"checksumSHA1": "9LeR7BH4PSu8LRDZ8bY7QY1HXJE=",
+			"path": "github.com/urfave/cli",
+			"revision": "4b90d79a682b4bf685762c7452db20f2a676ecb2",
+			"revisionTime": "2017-07-06T19:46:25Z"
+		},
+		{
 			"checksumSHA1": "9jjO5GjLa0XF/nfWihF02RoH4qc=",
 			"path": "golang.org/x/net/context",
 			"revision": "4971afdc2f162e82d185353533d3cf16188a9f4e",
@@ -361,6 +451,12 @@
 			"path": "golang.org/x/net/idna",
 			"revision": "a6577fac2d73be281a500b310739095313165611",
 			"revisionTime": "2017-03-08T20:54:49Z"
+		},
+		{
+			"checksumSHA1": "kEO69MIsqWDxBOIs3ez1faofNSg=",
+			"path": "golang.org/x/net/publicsuffix",
+			"revision": "d1e1b351919c6738fdeb9893d5c998b161464f0c",
+			"revisionTime": "2016-12-29T22:47:41Z"
 		},
 		{
 			"checksumSHA1": "XH7CgbL5Z8COUc+MKrYqS3FFosY=",

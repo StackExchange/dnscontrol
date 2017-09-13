@@ -10,7 +10,7 @@ import (
 	"strings"
 
 	"github.com/StackExchange/dnscontrol/models"
-	"github.com/StackExchange/dnscontrol/nameservers"
+	"github.com/StackExchange/dnscontrol/pkg/nameservers"
 	"github.com/StackExchange/dnscontrol/providers"
 	_ "github.com/StackExchange/dnscontrol/providers/_all"
 	"github.com/StackExchange/dnscontrol/providers/config"
@@ -97,6 +97,10 @@ func runTests(t *testing.T, prv providers.DNSServiceProvider, domainName string,
 			break
 		}
 		t.Run(fmt.Sprintf("%d: %s", i, tst.Desc), func(t *testing.T) {
+			if tst.SkipUnless != 0 && !providers.ProviderHasCabability(*providerToRun, tst.SkipUnless) {
+				t.Log("Skipping because provider does not support test features")
+				return
+			}
 			skipVal := false
 			if knownFailures[i] {
 				t.Log("SKIPPING VALIDATION FOR KNOWN FAILURE CASE")
@@ -106,6 +110,9 @@ func runTests(t *testing.T, prv providers.DNSServiceProvider, domainName string,
 			for _, r := range tst.Records {
 				rc := models.RecordConfig(*r)
 				rc.NameFQDN = dnsutil.AddOrigin(rc.Name, domainName)
+				if rc.Target == "**current-domain**" {
+					rc.Target = domainName + "."
+				}
 				dom.Records = append(dom.Records, &rc)
 			}
 			dom2, _ := dom.Copy()
@@ -115,7 +122,12 @@ func runTests(t *testing.T, prv providers.DNSServiceProvider, domainName string,
 				t.Fatal(err)
 			}
 			if !skipVal && i != *startIdx && len(corrections) == 0 {
-				t.Fatalf("Expect changes for all tests, but got none")
+				if tst.Desc != "Empty" {
+					// There are "no corrections" if the last test was programatically
+					// skipped.  We detect this (possibly inaccurately) by checking to
+					// see if .Desc is "Empty".
+					t.Fatalf("Expect changes for all tests, but got none")
+				}
 			}
 			for _, c := range corrections {
 				if *verbose {
@@ -186,8 +198,9 @@ func TestDualProviders(t *testing.T) {
 }
 
 type TestCase struct {
-	Desc    string
-	Records []*rec
+	Desc       string
+	Records    []*rec
+	SkipUnless providers.Capability
 }
 
 type rec models.RecordConfig
@@ -200,13 +213,36 @@ func cname(name, target string) *rec {
 	return makeRec(name, target, "CNAME")
 }
 
+func alias(name, target string) *rec {
+	return makeRec(name, target, "ALIAS")
+}
+
 func ns(name, target string) *rec {
 	return makeRec(name, target, "NS")
 }
 
 func mx(name string, prio uint16, target string) *rec {
 	r := makeRec(name, target, "MX")
-	r.Priority = prio
+	r.MxPreference = prio
+	return r
+}
+
+func ptr(name, target string) *rec {
+	return makeRec(name, target, "PTR")
+}
+
+func srv(name string, priority, weight, port uint16, target string) *rec {
+	r := makeRec(name, target, "SRV")
+	r.SrvPriority = priority
+	r.SrvWeight = weight
+	r.SrvPort = port
+	return r
+}
+
+func caa(name string, tag string, flag uint8, target string) *rec {
+	r := makeRec(name, target, "CAA")
+	r.CaaFlag = flag
+	r.CaaTag = tag
 	return r
 }
 
@@ -231,6 +267,19 @@ func tc(desc string, recs ...*rec) *TestCase {
 	}
 }
 
+func manyA(namePattern, target string, n int) []*rec {
+	recs := []*rec{}
+	for i := 0; i < n; i++ {
+		recs = append(recs, makeRec(fmt.Sprintf(namePattern, i), target, "A"))
+	}
+	return recs
+}
+
+func (tc *TestCase) IfHasCapability(c providers.Capability) *TestCase {
+	tc.SkipUnless = c
+	return tc
+}
+
 //ALWAYS ADD TO BOTTOM OF LIST. Order and indexes matter.
 var tests = []*TestCase{
 	// A
@@ -239,8 +288,8 @@ var tests = []*TestCase{
 	tc("Change it", a("@", "1.2.3.4")),
 	tc("Add another", a("@", "1.2.3.4"), a("www", "1.2.3.4")),
 	tc("Add another(same name)", a("@", "1.2.3.4"), a("www", "1.2.3.4"), a("www", "5.6.7.8")),
-	tc("Change a ttl", a("@", "1.2.3.4").ttl(100), a("www", "1.2.3.4"), a("www", "5.6.7.8")),
-	tc("Change single target from set", a("@", "1.2.3.4").ttl(100), a("www", "2.2.2.2"), a("www", "5.6.7.8")),
+	tc("Change a ttl", a("@", "1.2.3.4").ttl(1000), a("www", "1.2.3.4"), a("www", "5.6.7.8")),
+	tc("Change single target from set", a("@", "1.2.3.4").ttl(1000), a("www", "2.2.2.2"), a("www", "5.6.7.8")),
 	tc("Change all ttls", a("@", "1.2.3.4").ttl(500), a("www", "2.2.2.2").ttl(400), a("www", "5.6.7.8").ttl(400)),
 	tc("Delete one", a("@", "1.2.3.4").ttl(500), a("www", "5.6.7.8").ttl(400)),
 	tc("Add back and change ttl", a("www", "5.6.7.8").ttl(700), a("www", "1.2.3.4").ttl(700)),
@@ -252,24 +301,69 @@ var tests = []*TestCase{
 	tc("Change it", cname("foo", "google2.com.")),
 	tc("Change to A record", a("foo", "1.2.3.4")),
 	tc("Change back to CNAME", cname("foo", "google.com.")),
+	tc("Record pointing to @", cname("foo", "**current-domain**")),
 
 	//NS
+	tc("Empty"),
 	tc("NS for subdomain", ns("xyz", "ns2.foo.com.")),
 	tc("Dual NS for subdomain", ns("xyz", "ns2.foo.com."), ns("xyz", "ns1.foo.com.")),
+	tc("Record pointing to @", ns("foo", "**current-domain**")),
 
 	//IDNAs
+	tc("Empty"),
 	tc("Internationalized name", a("ööö", "1.2.3.4")),
 	tc("Change IDN", a("ööö", "2.2.2.2")),
 	tc("Internationalized CNAME Target", cname("a", "ööö.com.")),
-	tc("IDN CNAME AND Target", cname("öoö", "ööö.ööö.")),
+	tc("IDN CNAME AND Target", cname("öoö", "ööö.企业.")),
 
 	//MX
+	tc("Empty"),
 	tc("MX record", mx("@", 5, "foo.com.")),
 	tc("Second MX record, same prio", mx("@", 5, "foo.com."), mx("@", 5, "foo2.com.")),
 	tc("3 MX", mx("@", 5, "foo.com."), mx("@", 5, "foo2.com."), mx("@", 15, "foo3.com.")),
 	tc("Delete one", mx("@", 5, "foo2.com."), mx("@", 15, "foo3.com.")),
 	tc("Change to other name", mx("@", 5, "foo2.com."), mx("mail", 15, "foo3.com.")),
-	tc("Change Priority", mx("@", 7, "foo2.com."), mx("mail", 15, "foo3.com.")),
+	tc("Change Preference", mx("@", 7, "foo2.com."), mx("mail", 15, "foo3.com.")),
+	tc("Record pointing to @", mx("foo", 8, "**current-domain**")),
 
-	tc("IDN pre-punycoded", cname("xn--o-0gab", "xn--o-0gab.xn--o-0gab.")),
+	//PTR
+	tc("Empty").IfHasCapability(providers.CanUsePTR),
+	tc("Create PTR record", ptr("4", "foo.com.")).IfHasCapability(providers.CanUsePTR),
+	tc("Modify PTR record", ptr("4", "bar.com.")).IfHasCapability(providers.CanUsePTR),
+
+	//ALIAS
+	tc("Empty").IfHasCapability(providers.CanUseAlias),
+	tc("ALIAS at root", alias("@", "foo.com.")).IfHasCapability(providers.CanUseAlias),
+	tc("change it", alias("@", "foo2.com.")).IfHasCapability(providers.CanUseAlias),
+	tc("ALIAS at subdomain", alias("test", "foo.com.")).IfHasCapability(providers.CanUseAlias),
+
+	//SRV
+	tc("Empty").IfHasCapability(providers.CanUseSRV),
+	tc("SRV record", srv("_sip._tcp", 5, 6, 7, "foo.com.")).IfHasCapability(providers.CanUseSRV),
+	tc("Second SRV record, same prio", srv("_sip._tcp", 5, 6, 7, "foo.com."), srv("_sip._tcp", 5, 60, 70, "foo2.com.")).IfHasCapability(providers.CanUseSRV),
+	tc("3 SRV", srv("_sip._tcp", 5, 6, 7, "foo.com."), srv("_sip._tcp", 5, 60, 70, "foo2.com."), srv("_sip._tcp", 15, 65, 75, "foo3.com.")).IfHasCapability(providers.CanUseSRV),
+	tc("Delete one", srv("_sip._tcp", 5, 6, 7, "foo.com."), srv("_sip._tcp", 15, 65, 75, "foo3.com.")).IfHasCapability(providers.CanUseSRV),
+	tc("Change Target", srv("_sip._tcp", 5, 6, 7, "foo.com."), srv("_sip._tcp", 15, 65, 75, "foo4.com.")).IfHasCapability(providers.CanUseSRV),
+	tc("Change Priority", srv("_sip._tcp", 52, 6, 7, "foo.com."), srv("_sip._tcp", 15, 65, 75, "foo4.com.")).IfHasCapability(providers.CanUseSRV),
+	tc("Change Weight", srv("_sip._tcp", 52, 62, 7, "foo.com."), srv("_sip._tcp", 15, 65, 75, "foo4.com.")).IfHasCapability(providers.CanUseSRV),
+	tc("Change Port", srv("_sip._tcp", 52, 62, 72, "foo.com."), srv("_sip._tcp", 15, 65, 75, "foo4.com.")).IfHasCapability(providers.CanUseSRV),
+
+	//CAA
+	tc("Empty").IfHasCapability(providers.CanUseCAA),
+	tc("CAA record", caa("@", "issue", 0, "letsencrypt.org")).IfHasCapability(providers.CanUseCAA),
+	tc("CAA change tag", caa("@", "issuewild", 0, "letsencrypt.org")).IfHasCapability(providers.CanUseCAA),
+	tc("CAA change target", caa("@", "issuewild", 0, "example.com")).IfHasCapability(providers.CanUseCAA),
+	tc("CAA change flag", caa("@", "issuewild", 128, "example.com")).IfHasCapability(providers.CanUseCAA),
+	tc("CAA many records", caa("@", "issue", 0, "letsencrypt.org"), caa("@", "issuewild", 0, ";"), caa("@", "iodef", 128, "mailto:test@example.com")).IfHasCapability(providers.CanUseCAA),
+	tc("CAA delete", caa("@", "issue", 0, "letsencrypt.org")).IfHasCapability(providers.CanUseCAA),
+
+	// Test large zonefiles.
+	// Gandi pages 100 items at a time.
+	tc("Empty"),
+	tc("99 records", manyA("rec%04d", "1.2.3.4", 99)...),
+	tc("100 records", manyA("rec%04d", "1.2.3.4", 100)...),
+	tc("101 records", manyA("rec%04d", "1.2.3.4", 101)...),
+
+	//TODO: in validation, check that everything is given in unicode. This case hurts too much.
+	//tc("IDN pre-punycoded", cname("xn--o-0gab", "xn--o-0gab.xn--o-0gab.")),
 }

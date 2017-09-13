@@ -43,6 +43,7 @@ func replaceEnvVars(m map[string]map[string]string) error {
 			if strings.HasPrefix(v, "$") {
 				env := v[1:]
 				newVal := os.Getenv(env)
+				fmt.Println("ENV", k, "!", newVal)
 				keys[k] = newVal
 			}
 		}
