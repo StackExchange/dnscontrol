@@ -85,48 +85,48 @@ func (c *adProvider) readZoneDump(domainname string) ([]byte, error) {
 }
 
 // powerShellLogCommand logs to flagPsLog that a PowerShell command is going to be run.
-func logCommand(command string) error {
-	return logHelper(fmt.Sprintf("# %s\r\n%s\r\n", time.Now().UTC(), strings.TrimSpace(command)))
+func (c *adProvider) logCommand(command string) error {
+	return c.logHelper(fmt.Sprintf("# %s\r\n%s\r\n", time.Now().UTC(), strings.TrimSpace(command)))
 }
 
 // powerShellLogOutput logs to flagPsLog that a PowerShell command is going to be run.
-func logOutput(s string) error {
-	return logHelper(fmt.Sprintf("OUTPUT: START\r\n%s\r\nOUTPUT: END\r\n", s))
+func (c *adProvider) logOutput(s string) error {
+	return c.logHelper(fmt.Sprintf("OUTPUT: START\r\n%s\r\nOUTPUT: END\r\n", s))
 }
 
 // powerShellLogErr logs that a PowerShell command had an error.
-func logErr(e error) error {
-	err := logHelper(fmt.Sprintf("ERROR: %v\r\r", e)) //Log error to powershell.log
+func (c *adProvider) logErr(e error) error {
+	err := c.logHelper(fmt.Sprintf("ERROR: %v\r\r", e)) //Log error to powershell.log
 	if err != nil {
 		return err //Bubble up error created in logHelper
 	}
 	return e //Bubble up original error
 }
 
-func logHelper(s string) error {
-	logfile, err := os.OpenFile(*flagPsLog, os.O_APPEND|os.O_RDWR|os.O_CREATE, 0660)
+func (c *adProvider) logHelper(s string) error {
+	logfile, err := os.OpenFile(c.psLog, os.O_APPEND|os.O_RDWR|os.O_CREATE, 0660)
 	if err != nil {
-		return fmt.Errorf("error: Can not create/append to %#v: %v", *flagPsLog, err)
+		return fmt.Errorf("error: Can not create/append to %#v: %v", c.psLog, err)
 	}
 	_, err = fmt.Fprintln(logfile, s)
 	if err != nil {
-		return fmt.Errorf("error: Append to %#v failed: %v", *flagPsLog, err)
+		return fmt.Errorf("Append to %#v failed: %v", c.psLog, err)
 	}
 	if logfile.Close() != nil {
-		return fmt.Errorf("ERROR: Closing %#v failed: %v", *flagPsLog, err)
+		return fmt.Errorf("Closing %#v failed: %v", c.psLog, err)
 	}
 	return nil
 }
 
 // powerShellRecord records that a PowerShell command should be executed later.
-func powerShellRecord(command string) error {
-	recordfile, err := os.OpenFile(*flagPsFuture, os.O_APPEND|os.O_RDWR|os.O_CREATE, 0660)
+func (c *adProvider) powerShellRecord(command string) error {
+	recordfile, err := os.OpenFile(c.psOut, os.O_APPEND|os.O_RDWR|os.O_CREATE, 0660)
 	if err != nil {
-		return fmt.Errorf("ERROR: Can not create/append to %#v: %v\n", *flagPsFuture, err)
+		return fmt.Errorf("Can not create/append to %#v: %v\n", c.psOut, err)
 	}
 	_, err = recordfile.WriteString(command)
 	if err != nil {
-		return fmt.Errorf("ERROR: Append to %#v failed: %v\n", *flagPsFuture, err)
+		return fmt.Errorf("Append to %#v failed: %v\n", c.psOut, err)
 	}
 	return recordfile.Close()
 }
@@ -284,7 +284,7 @@ func (c *adProvider) createRec(domainname string, rec *models.RecordConfig) []*m
 		{
 			Msg: fmt.Sprintf("CREATE record: %s %s ttl(%d) %s", rec.Name, rec.Type, rec.TTL, rec.Target),
 			F: func() error {
-				return powerShellDoCommand(c.generatePowerShellCreate(domainname, rec), true)
+				return c.powerShellDoCommand(c.generatePowerShellCreate(domainname, rec), true)
 			}},
 	}
 	return arr
@@ -295,7 +295,7 @@ func (c *adProvider) modifyRec(domainname string, m diff.Correlation) *models.Co
 	return &models.Correction{
 		Msg: m.String(),
 		F: func() error {
-			return powerShellDoCommand(c.generatePowerShellModify(domainname, rec.Name, rec.Type, old.Target, rec.Target, old.TTL, rec.TTL), true)
+			return c.powerShellDoCommand(c.generatePowerShellModify(domainname, rec.Name, rec.Type, old.Target, rec.Target, old.TTL, rec.TTL), true)
 		},
 	}
 }
@@ -304,7 +304,7 @@ func (c *adProvider) deleteRec(domainname string, rec *models.RecordConfig) *mod
 	return &models.Correction{
 		Msg: fmt.Sprintf("DELETE record: %s %s ttl(%d) %s", rec.Name, rec.Type, rec.TTL, rec.Target),
 		F: func() error {
-			return powerShellDoCommand(c.generatePowerShellDelete(domainname, rec.Name, rec.Type, rec.Target), true)
+			return c.powerShellDoCommand(c.generatePowerShellDelete(domainname, rec.Name, rec.Type, rec.Target), true)
 		},
 	}
 }
