@@ -59,8 +59,8 @@ provided to help community members support their code independently.
 
 Maintainers of contributed providers:
 
-* digital ocean  @Deraen
-* dnsimple  @aeden
+* digital ocean @Deraen
+* dnsimple @aeden
 * gandi @TomOnTime
 * namecheap @captncraig
 * ns1 @captncraig
@@ -80,5 +80,4 @@ code to support this provider, please re-open the issue. We'd be glad to help in
   <li>Hurricane Electric (dns.he.net) (<a href="https://github.com/StackExchange/dnscontrol/issues/118">#118</a>)</li>
   <li>Linode (<a href="https://github.com/StackExchange/dnscontrol/issues/121">#121</a>)</li>
   <li>OVH (<a href="https://github.com/StackExchange/dnscontrol/issues/143">#143</a>)</li>
-</ul>
 </ul>
