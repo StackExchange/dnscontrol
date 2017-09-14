@@ -26,10 +26,10 @@ func generateFeatureMatrix() error {
 	matrix := &FeatureMatrix{
 		Providers: map[string]FeatureMap{},
 		Features: []FeatureDef{
-			{"Official Support", "This means the provider is actively used at stack exchange, and we offer a stronger guarantee it will work"},
+			{"Official Support", "This means the provider is actively used at Stack Exchange, bugs are more likely to be fixed, and failing integration tests will block a release. See below for details"},
 			{"Registrar", "The provider has registrar capabilities to set nameservers for zones"},
 			{"DNS Provider", "Can manage and serve DNS zones"},
-			{"ALIAS", "Provider supports some kind of ALIAS,ANAME or flattened CNAME record type"},
+			{"ALIAS", "Provider supports some kind of ALIAS, ANAME or flattened CNAME record type"},
 			{"SRV", "Driver has explicitly implemented SRV record management"},
 			{"PTR", "Provider supports adding PTR records for reverse lookup zones"},
 			{"CAA", "Provider can manage CAA records"},
