@@ -87,41 +87,6 @@ func generateFeatureMatrix() error {
 	return ioutil.WriteFile("docs/_includes/matrix.html", buf.Bytes(), 0644)
 }
 
-type featureStatus byte
-
-const (
-	StUndefined featureStatus = iota
-	StOK
-	StNotOk
-	StInfo
-)
-
-func (f featureStatus) TDClass() string {
-	switch f {
-	case StOK:
-		return "success"
-	case StNotOk:
-		return "danger"
-	case StInfo:
-		return "info"
-	default:
-		return ""
-	}
-}
-
-func (f featureStatus) GlyphClass() string {
-	switch f {
-	case StOK:
-		return "fa-check text-success"
-	case StNotOk:
-		return "fa-times text-danger"
-	case StInfo:
-		return "fa-info text-info"
-	default:
-		return ""
-	}
-}
-
 type FeatureDef struct {
 	Name, Desc string
 }
