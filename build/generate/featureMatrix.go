@@ -125,8 +125,8 @@ var tmpl = template.Must(template.New("").Funcs(template.FuncMap{
 		{{range $pname, $features := $providers}}{{$f := index $features $name}}{{if $f -}}
 		<td class="{{if $f.HasFeature}}success{{else}}danger{{end}}"
 			{{- if $f.Comment}} data-toggle="tooltip" data-container="body" data-placement="top" title="{{$f.Comment}}"{{end}}>
-			<i class="fa {{if $f.Comment}}has-tooltip {{end}}
-				{{- if $f.HasFeature}}fa-check text-success{{else}}fa-times text-danger{{end}}" aria-hidden="true"></i>
+			{{if $f.Link}}<a href="{{$f.Link}}">{{end}}<i class="fa {{if $f.Comment}}has-tooltip {{end}}
+				{{- if $f.HasFeature}}fa-check text-success{{else}}fa-times text-danger{{end}}" aria-hidden="true"></i>{{if $f.Link}}</a>{{end}}
 		</td>
 		{{- else}}<td><i class="fa fa-minus dim"></i></td>{{end}}
 		{{end -}}
