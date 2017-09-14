@@ -2,7 +2,6 @@ package providers
 
 import (
 	"log"
-	"strings"
 )
 
 //Capability is a bitmasked set of "features" that a provider supports. Only use constants from this package.
@@ -45,6 +44,7 @@ func ProviderHasCabability(pType string, cap Capability) bool {
 type DocumentationNote struct {
 	HasFeature bool
 	Comment    string
+	Link       string
 }
 
 // DocumentationNotes is a full list of notes for a single provider
@@ -79,19 +79,30 @@ func unwrapProviderCapabilities(pName string, meta []ProviderMetadata) {
 }
 
 // Can is a small helper for concisely creating Documentation Notes
-// comments are variadic for easy ommission, so you generally should pass 0 or 1 only.
+// comments are variadic for easy ommission. First is comment, second is link, the rest are ignored.
 func Can(comments ...string) *DocumentationNote {
-	return &DocumentationNote{
+	n := &DocumentationNote{
 		HasFeature: true,
-		Comment:    strings.Join(comments, " "),
 	}
+	n.addStrings(comments)
+	return n
 }
 
 // Cannot is a small helper for concisely creating Documentation Notes
-// comments are variadic for easy ommission, so you generally should pass 0 or 1 only.
+// comments are variadic for easy ommission. First is comment, second is link, the rest are ignored.
 func Cannot(comments ...string) *DocumentationNote {
-	return &DocumentationNote{
+	n := &DocumentationNote{
 		HasFeature: false,
-		Comment:    strings.Join(comments, " "),
+	}
+	n.addStrings(comments)
+	return n
+}
+
+func (n *DocumentationNote) addStrings(comments []string) {
+	if len(comments) > 0 {
+		n.Comment = comments[0]
+	}
+	if len(comments) > 1 {
+		n.Link = comments[1]
 	}
 }

@@ -23,7 +23,7 @@ var docNotes = providers.DocumentationNotes{
 	providers.DocDualHost:            providers.Cannot("Apex NS records not editable"),
 	providers.DocCreateDomains:       providers.Cannot("New domains require registration"),
 	providers.DocOfficiallySupported: providers.Can(),
-	providers.CanUsePTR:              providers.Cannot("PTR records are not supported https://www.name.com/support/articles/205188508-Reverse-DNS-records (2017-05-08)"),
+	providers.CanUsePTR:              providers.Cannot("PTR records are not supported (See Link)", "https://www.name.com/support/articles/205188508-Reverse-DNS-records"),
 }
 
 func newReg(conf map[string]string) (providers.Registrar, error) {
