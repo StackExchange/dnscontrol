@@ -18,8 +18,14 @@ import (
 	"gopkg.in/ns1/ns1-go.v2/rest/model/dns"
 )
 
+var docNotes = providers.DocumentationNotes{
+	providers.DocCreateDomains:       providers.Cannot(),
+	providers.DocOfficiallySupported: providers.Cannot(),
+	providers.DocDualHost:            providers.Can(),
+}
+
 func init() {
-	providers.RegisterDomainServiceProviderType("NS1", newProvider)
+	providers.RegisterDomainServiceProviderType("NS1", newProvider, docNotes)
 }
 
 type nsone struct {

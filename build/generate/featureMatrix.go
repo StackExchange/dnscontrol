@@ -27,12 +27,17 @@ func generateFeatureMatrix() error {
 	matrix := &FeatureMatrix{
 		Providers: map[string]FeatureMap{},
 		Features: []FeatureDef{
+			{"Official Support", "This means the provider is actively used at stack exchange, and we offer a stronger guarantee it will work"},
 			{"Registrar", "The provider has registrar capabilities to set nameservers for zones"},
 			{"DNS Provider", "Can manage and serve DNS zones"},
 			{"ALIAS", "Provider supports some kind of ALIAS,ANAME or flattened CNAME record type"},
 			{"SRV", "Driver has explicitly implemented SRV record management"},
 			{"PTR", "Provider supports adding PTR records for reverse lookup zones"},
 			{"CAA", "Provider can manage CAA records"},
+
+			{"dual host", "This provider is recommended for use in 'dual hosting' scenarios. Usually this means the provider allows full control over the apex NS records"},
+			{"create-domains", "This means the provider can automatically create domains that do not currently exist on your account. The 'dnscontrol create-domains' command will initialize any missing domains"},
+			{"no_purge", "indicates you can use NO_PURGE macro to prevent deleting records not managed by dnscontrol. A few providers that generate the entire zone from scratch have a problem implementing this."},
 		},
 	}
 	for _, p := range providerTypes {
@@ -40,16 +45,39 @@ func generateFeatureMatrix() error {
 			continue
 		}
 		fm := FeatureMap{}
-		fm.SetSimple("Registrar", func() bool { return providers.RegistrarTypes[p] != nil })
-		fm.SetSimple("DNS Provider", func() bool { return providers.DNSProviderTypes[p] != nil })
-		setCap := func(name string, cap providers.Capability) {
-			fm.SetSimple(name, func() bool { return providers.ProviderHasCabability(p, cap) })
+		notes := providers.Notes[p]
+		if notes == nil {
+			notes = providers.DocumentationNotes{}
 		}
+		setCap := func(name string, cap providers.Capability) {
+			if notes[cap] != nil {
+				fm[name] = notes[cap]
+				return
+			}
+			fm.SetSimple(name, true, func() bool { return providers.ProviderHasCabability(p, cap) })
+		}
+		setDoc := func(name string, cap providers.Capability) {
+			if notes[cap] != nil {
+				fm[name] = notes[cap]
+			}
+		}
+		setDoc("Official Support", providers.DocOfficiallySupported)
+		fm.SetSimple("Registrar", false, func() bool { return providers.RegistrarTypes[p] != nil })
+		fm.SetSimple("DNS Provider", false, func() bool { return providers.DNSProviderTypes[p] != nil })
 		setCap("ALIAS", providers.CanUseAlias)
 		setCap("SRV", providers.CanUseSRV)
 		setCap("PTR", providers.CanUsePTR)
 		setCap("CAA", providers.CanUseCAA)
+		setDoc("dual host", providers.DocDualHost)
+		setDoc("create-domains", providers.DocCreateDomains)
 
+		// no purge is a freaky double negative
+		cap := providers.CantUseNOPURGE
+		if notes[cap] != nil {
+			fm["no_purge"] = notes[cap]
+		} else {
+			fm.SetSimple("no_purge", false, func() bool { return !providers.ProviderHasCabability(p, cap) })
+		}
 		matrix.Providers[p] = fm
 	}
 	buf := &bytes.Buffer{}
@@ -96,18 +124,16 @@ func (f featureStatus) GlyphClass() string {
 	}
 }
 
-type FeatureState struct {
-	Status  featureStatus
-	Comment string
-}
 type FeatureDef struct {
 	Name, Desc string
 }
-type FeatureMap map[string]*FeatureState
+type FeatureMap map[string]*providers.DocumentationNote
 
-func (fm FeatureMap) SetSimple(name string, f func() bool) {
+func (fm FeatureMap) SetSimple(name string, unknownsAllowed bool, f func() bool) {
 	if f() {
-		fm[name] = &FeatureState{Status: StOK}
+		fm[name] = &providers.DocumentationNote{HasFeature: true}
+	} else if !unknownsAllowed {
+		fm[name] = &providers.DocumentationNote{HasFeature: false}
 	}
 }
 
@@ -132,10 +158,10 @@ var tmpl = template.Must(template.New("").Funcs(template.FuncMap{
 	{{range .Features}}{{$name := .Name}}<tr>
 		<th class="row-header" style="text-decoration: underline;" data-toggle="tooltip" data-container="body" data-placement="top" title="{{.Desc}}">{{$name}}</th>
 		{{range $pname, $features := $providers}}{{$f := index $features $name}}{{if $f -}}
-		<td class="{{$f.Status.TDClass}}"
+		<td class="{{if $f.HasFeature}}success{{else}}danger{{end}}"
 			{{- if $f.Comment}} data-toggle="tooltip" data-container="body" data-placement="top" title="{{$f.Comment}}"{{end}}>
 			<i class="fa {{if $f.Comment}}has-tooltip {{end}}
-				{{- $f.Status.GlyphClass}}" aria-hidden="true"></i>
+				{{- if $f.HasFeature}}fa-check text-success{{else}}fa-times text-danger{{end}}" aria-hidden="true"></i>
 		</td>
 		{{- else}}<td><i class="fa fa-minus dim"></i></td>{{end}}
 		{{end -}}
