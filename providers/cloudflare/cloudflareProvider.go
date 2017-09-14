@@ -33,8 +33,15 @@ Domain level metadata available:
    - ip_conversions
 */
 
+var docNotes = providers.DocumentationNotes{
+	providers.DocDualHost:            providers.Cannot("Cloudflare will not work well in situations where it is not the only DNS server"),
+	providers.DocCreateDomains:       providers.Can(),
+	providers.DocOfficiallySupported: providers.Can(),
+	providers.CanUseAlias:            providers.Can("CF automatically flattens CNAME records into A records dynamically"),
+}
+
 func init() {
-	providers.RegisterDomainServiceProviderType("CLOUDFLAREAPI", newCloudflare, providers.CanUseSRV, providers.CanUseAlias)
+	providers.RegisterDomainServiceProviderType("CLOUDFLAREAPI", newCloudflare, providers.CanUseSRV, providers.CanUseAlias, docNotes)
 	providers.RegisterCustomRecordType("CF_REDIRECT", "CLOUDFLAREAPI", "")
 	providers.RegisterCustomRecordType("CF_TEMP_REDIRECT", "CLOUDFLAREAPI", "")
 }

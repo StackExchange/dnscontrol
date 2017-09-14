@@ -60,8 +60,13 @@ func newDo(m map[string]string, metadata json.RawMessage) (providers.DNSServiceP
 	return api, nil
 }
 
+var docNotes = providers.DocumentationNotes{
+	providers.DocCreateDomains:       providers.Can(),
+	providers.DocOfficiallySupported: providers.Cannot(),
+}
+
 func init() {
-	providers.RegisterDomainServiceProviderType("DIGITALOCEAN", newDo, providers.CanUseSRV)
+	providers.RegisterDomainServiceProviderType("DIGITALOCEAN", newDo, providers.CanUseSRV, docNotes)
 }
 
 func (api *DoApi) EnsureDomainExists(domain string) error {

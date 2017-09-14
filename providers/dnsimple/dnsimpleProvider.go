@@ -15,6 +15,17 @@ import (
 	dnsimpleapi "github.com/dnsimple/dnsimple-go/dnsimple"
 )
 
+var docNotes = providers.DocumentationNotes{
+	providers.DocDualHost:            providers.Cannot("DNSimple does not allow sufficient control over the apex NS records"),
+	providers.DocCreateDomains:       providers.Cannot(),
+	providers.DocOfficiallySupported: providers.Cannot(),
+}
+
+func init() {
+	providers.RegisterRegistrarType("DNSIMPLE", newReg)
+	providers.RegisterDomainServiceProviderType("DNSIMPLE", newDsp, providers.CanUsePTR, docNotes)
+}
+
 const stateRegistered = "registered"
 
 var defaultNameServerNames = []string{
@@ -311,11 +322,6 @@ func newProvider(m map[string]string, metadata json.RawMessage) (*DnsimpleApi, e
 	}
 
 	return api, nil
-}
-
-func init() {
-	providers.RegisterRegistrarType("DNSIMPLE", newReg)
-	providers.RegisterDomainServiceProviderType("DNSIMPLE", newDsp, providers.CanUsePTR)
 }
 
 // remove all non-dnsimple NS records from our desired state.

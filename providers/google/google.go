@@ -14,8 +14,14 @@ import (
 	"github.com/StackExchange/dnscontrol/providers/diff"
 )
 
+var docNotes = providers.DocumentationNotes{
+	providers.DocDualHost:            providers.Can(),
+	providers.DocCreateDomains:       providers.Can(),
+	providers.DocOfficiallySupported: providers.Can(),
+}
+
 func init() {
-	providers.RegisterDomainServiceProviderType("GCLOUD", New, providers.CanUsePTR, providers.CanUseSRV, providers.CanUseCAA)
+	providers.RegisterDomainServiceProviderType("GCLOUD", New, providers.CanUsePTR, providers.CanUseSRV, providers.CanUseCAA, docNotes)
 }
 
 type gcloud struct {

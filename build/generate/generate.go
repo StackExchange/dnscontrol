@@ -1,6 +1,8 @@
 package main
 
 import (
+	"log"
+
 	"github.com/mjibson/esc/embed"
 )
 
@@ -14,4 +16,8 @@ func main() {
 		Files:      []string{`pkg/js/helpers.js`},
 	}
 	embed.Run(conf)
+
+	if err := generateFeatureMatrix(); err != nil {
+		log.Fatal(err)
+	}
 }

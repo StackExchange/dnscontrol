@@ -30,6 +30,12 @@ import (
 	"github.com/StackExchange/dnscontrol/providers/diff"
 )
 
+var docNotes = providers.DocumentationNotes{
+	providers.DocDualHost:            providers.Can(),
+	providers.DocCreateDomains:       providers.Can("Driver just maintains list of zone files. It should automatically add missing ones."),
+	providers.DocOfficiallySupported: providers.Can(),
+}
+
 func initBind(config map[string]string, providermeta json.RawMessage) (providers.DNSServiceProvider, error) {
 	// config -- the key/values from creds.json
 	// meta -- the json blob from NewReq('name', 'TYPE', meta)
@@ -50,7 +56,8 @@ func initBind(config map[string]string, providermeta json.RawMessage) (providers
 }
 
 func init() {
-	providers.RegisterDomainServiceProviderType("BIND", initBind, providers.CanUsePTR, providers.CanUseSRV, providers.CanUseCAA, providers.CantUseNOPURGE)
+	providers.RegisterDomainServiceProviderType("BIND", initBind, providers.CanUsePTR,
+		providers.CanUseSRV, providers.CanUseCAA, providers.CantUseNOPURGE, docNotes)
 }
 
 type SoaInfo struct {
