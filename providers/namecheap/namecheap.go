@@ -26,6 +26,7 @@ type Namecheap struct {
 var docNotes = providers.DocumentationNotes{
 	providers.DocCreateDomains:       providers.Cannot("Requires domain registered through their service"),
 	providers.DocOfficiallySupported: providers.Cannot(),
+	providers.DocDualHost:            providers.Cannot("Doesn't allow control of apex NS records"),
 }
 
 func init() {
