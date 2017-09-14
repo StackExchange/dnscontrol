@@ -10,7 +10,7 @@ import (
 	_ "github.com/StackExchange/dnscontrol/providers/_all"
 )
 
-//go:generate go run build/generate/generate.go
+//go:generate go run build/generate/generate.go build/generate/featureMatrix.go
 
 func main() {
 	log.SetFlags(log.LstdFlags | log.Lshortfile)

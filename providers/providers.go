@@ -28,12 +28,12 @@ type DomainCreator interface {
 //RegistrarInitializer is a function to create a registrar. Function will be passed the unprocessed json payload from the configuration file for the given provider.
 type RegistrarInitializer func(map[string]string) (Registrar, error)
 
-var registrarTypes = map[string]RegistrarInitializer{}
+var RegistrarTypes = map[string]RegistrarInitializer{}
 
 //DspInitializer is a function to create a DNS service provider. Function will be passed the unprocessed json payload from the configuration file for the given provider.
 type DspInitializer func(map[string]string, json.RawMessage) (DNSServiceProvider, error)
 
-var dspTypes = map[string]DspInitializer{}
+var DNSProviderTypes = map[string]DspInitializer{}
 var dspCapabilities = map[string]Capability{}
 
 //Capability is a bitmasked set of "features" that a provider supports. Only use constants from this package.
@@ -62,27 +62,27 @@ func ProviderHasCabability(pType string, cap Capability) bool {
 
 //RegisterRegistrarType adds a registrar type to the registry by providing a suitable initialization function.
 func RegisterRegistrarType(name string, init RegistrarInitializer) {
-	if _, ok := registrarTypes[name]; ok {
+	if _, ok := RegistrarTypes[name]; ok {
 		log.Fatalf("Cannot register registrar type %s multiple times", name)
 	}
-	registrarTypes[name] = init
+	RegistrarTypes[name] = init
 }
 
 //RegisterDomainServiceProviderType adds a dsp to the registry with the given initialization function.
 func RegisterDomainServiceProviderType(name string, init DspInitializer, caps ...Capability) {
-	if _, ok := dspTypes[name]; ok {
+	if _, ok := DNSProviderTypes[name]; ok {
 		log.Fatalf("Cannot register registrar type %s multiple times", name)
 	}
 	var abilities Capability
 	for _, c := range caps {
 		abilities |= c
 	}
-	dspTypes[name] = init
+	DNSProviderTypes[name] = init
 	dspCapabilities[name] = abilities
 }
 
 func createRegistrar(rType string, config map[string]string) (Registrar, error) {
-	initer, ok := registrarTypes[rType]
+	initer, ok := RegistrarTypes[rType]
 	if !ok {
 		return nil, fmt.Errorf("Registrar type %s not declared.", rType)
 	}
@@ -90,7 +90,7 @@ func createRegistrar(rType string, config map[string]string) (Registrar, error) 
 }
 
 func CreateDNSProvider(dType string, config map[string]string, meta json.RawMessage) (DNSServiceProvider, error) {
-	initer, ok := dspTypes[dType]
+	initer, ok := DNSProviderTypes[dType]
 	if !ok {
 		return nil, fmt.Errorf("DSP type %s not declared", dType)
 	}
