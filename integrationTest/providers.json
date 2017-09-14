@@ -45,6 +45,11 @@
     "apiuser": "$NAMEDOTCOM_USER",
     "domain": "$NAMEDOTCOM_DOMAIN"
   },
+  "NAMECHEAP": {
+    "apikey": "$NAMECHEAP_KEY",
+    "apiuser": "$NAMECHEAP_USER",
+    "domain": "$NAMECHEAP_DOMAIN"
+  },
   "ROUTE53": {
     "KeyId": "$R53_KEY_ID",
     "SecretKey": "$R53_KEY",
