@@ -2,7 +2,6 @@ package main
 
 import (
 	"bytes"
-	"fmt"
 	"html/template"
 	"io/ioutil"
 	"sort"
@@ -85,7 +84,6 @@ func generateFeatureMatrix() error {
 	if err != nil {
 		return err
 	}
-	fmt.Println(buf.String())
 	return ioutil.WriteFile("docs/_includes/matrix.html", buf.Bytes(), 0644)
 }
 
