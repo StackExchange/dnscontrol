@@ -105,8 +105,8 @@ func (n *Namecheap) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Cor
 		return true
 	})
 
-	// namecheap has this really crappy feature where they add some parking records if you have no records.
-	// This is really crappy for our purposes, specifically the integration tests.
+	// namecheap has this really annoying feature where they add some parking records if you have no records.
+	// This causes a few problems for our purposes, specifically the integration tests.
 	// lets detect that one case and pretend it is a no-op.
 	if len(dc.Records) == 0 && len(records.Hosts) == 2 {
 		if records.Hosts[0].Type == "CNAME" &&
@@ -158,7 +158,7 @@ func (n *Namecheap) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Cor
 			&models.Correction{
 				Msg: msg,
 				F: func() error {
-					return n.UpdateRecords(dc)
+					return n.generateRecords(dc)
 				},
 			})
 	}
@@ -166,7 +166,7 @@ func (n *Namecheap) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Cor
 	return corrections, nil
 }
 
-func (n *Namecheap) UpdateRecords(dc *models.DomainConfig) error {
+func (n *Namecheap) generateRecords(dc *models.DomainConfig) error {
 
 	var recs []nc.DomainDNSHost
 
