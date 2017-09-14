@@ -16,16 +16,25 @@ layout: default
 {% endfor %}
 </table>
 
+<h2> Provider Features </h2>
+
+<p>The table below shows various features supported, or not supported by DNSControl providers.
+  Underlined items have tooltips for more detailed explanation. This table is automatically generated
+  from metadata supplied by the provider when they register themselves inside dnscontrol.
+</p>
+<p>
+  An empty space may indicate the feature is not supported by a provider, or it may simply mean
+  the feature has not been investigated and implemented yet. If a feature you need is missing from 
+  a provider that supports it, we'd love your contribution to ensure it works correctly and add it to this matrix.
+</p>
+<p>If a feature is definitively not supported for whatever reason, we would also like a PR to clarify why it is not supported, and fill in this entire matrix.</p>
+<br/>
+<br/>
+
+{% include matrix.html %}
+
+
 ### Providers with "official support"
-
-The following providers have official support:
-
-* ACTIVEDIRECTORY_PS
-* BIND
-* CLOUDFLAREAPI
-* GCLOUD
-* NAMEDOTCOM
-* ROUTE53
 
 Official support means:
 
@@ -50,10 +59,11 @@ provided to help community members support their code independently.
 
 Maintainers of contributed providers:
 
-* digital ocean  @Deraen
-* dnsimple  @aeden
+* digital ocean @Deraen
+* dnsimple @aeden
 * gandi @TomOnTime
 * namecheap @captncraig
+* ns1 @captncraig
 * OVH @Oprax
 
 ### Requested providers
@@ -62,7 +72,6 @@ We have received requests for the following providers. If you would like to cont
 code to support this provider, please re-open the issue. We'd be glad to help in any way.
 
 <ul>
-  <li>AWS R53 (DNS works. Request is to add Registrar support) (<a href="https://github.com/StackExchange/dnscontrol/issues/68">#68</a>)</li>
   <li>Azure (<a href="https://github.com/StackExchange/dnscontrol/issues/42">#42</a>)</li>
   <li>ClouDNS (<a href="https://github.com/StackExchange/dnscontrol/issues/114">#114</a>)</li>
   <li>Dyn (<a href="https://github.com/StackExchange/dnscontrol/issues/61">#61</a>)</li>
@@ -71,5 +80,4 @@ code to support this provider, please re-open the issue. We'd be glad to help in
   <li>Hurricane Electric (dns.he.net) (<a href="https://github.com/StackExchange/dnscontrol/issues/118">#118</a>)</li>
   <li>Linode (<a href="https://github.com/StackExchange/dnscontrol/issues/121">#121</a>)</li>
   <li>OVH (<a href="https://github.com/StackExchange/dnscontrol/issues/143">#143</a>)</li>
-</ul>
 </ul>
