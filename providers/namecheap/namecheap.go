@@ -67,7 +67,9 @@ func splitDomain(domain string) (sld string, tld string) {
 // namecheap has request limiting at unpublished limits
 // this channel acts as a global rate limiter
 // read from it before every request
-// from support: "The limits for the API calls will be 20/Min, 700/Hour and 8000/Day for one user. If you can limit the requests within these it should be fine."
+// from support in SEP-2017:
+//    "The limits for the API calls will be 20/Min, 700/Hour and 8000/Day for one user.
+//     If you can limit the requests within these it should be fine."
 var throttle = make(chan bool, 20)
 
 func init() {
@@ -187,8 +189,7 @@ func (n *Namecheap) generateRecords(dc *models.DomainConfig) error {
 	}
 	sld, tld := splitDomain(dc.Name)
 	<-throttle
-	res, err := n.client.DomainDNSSetHosts(sld, tld, recs)
-	fmt.Println(res.IsSuccess)
+	_, err := n.client.DomainDNSSetHosts(sld, tld, recs)
 	return err
 }
 
