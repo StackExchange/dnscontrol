@@ -36,7 +36,7 @@ var _ = cmd(catDebug, &cli.Command{
 })
 
 // Run will execute the CLI
-func Run(v string) error {
+func Run(v string) int {
 	version = v
 	app := cli.NewApp()
 	app.Version = version
@@ -46,8 +46,10 @@ func Run(v string) error {
 	sort.Sort(cli.CommandsByName(commands))
 	app.Commands = commands
 	app.EnableBashCompletion = true
-	app.Run(os.Args)
-	return nil
+	if err := app.Run(os.Args); err != nil {
+		return 1
+	}
+	return 0
 }
 
 // Shared config types

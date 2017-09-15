@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"log"
+	"os"
 	"strconv"
 	"time"
 
@@ -14,7 +15,7 @@ import (
 
 func main() {
 	log.SetFlags(log.LstdFlags | log.Lshortfile)
-	commands.Run(versionString())
+	os.Exit(commands.Run(versionString()))
 }
 
 // Version management. 2 Goals:
