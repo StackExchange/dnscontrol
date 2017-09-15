@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"log"
 	"os"
-	"time"
 
 	"github.com/StackExchange/dnscontrol/models"
 	"github.com/StackExchange/dnscontrol/pkg/nameservers"
@@ -32,18 +31,12 @@ type PreviewArgs struct {
 	GetDNSConfigArgs
 	GetCredentialsArgs
 	FilterArgs
-	Delay int
 }
 
 func (args *PreviewArgs) flags() []cli.Flag {
 	flags := args.GetDNSConfigArgs.flags()
 	flags = append(flags, args.GetCredentialsArgs.flags()...)
 	flags = append(flags, args.FilterArgs.flags()...)
-	flags = append(flags, cli.IntFlag{
-		Name:        "d",
-		Destination: &args.Delay,
-		Usage:       "delay between domains to avoid rate limits (in ms)",
-	})
 	return flags
 }
 
@@ -161,9 +154,6 @@ DomainLoop:
 		}
 		totalCorrections += len(corrections)
 		anyErrors = printOrRunCorrections(corrections, out, push, interactive) || anyErrors
-		if args.Delay != 0 {
-			time.Sleep(time.Duration(args.Delay) * time.Millisecond)
-		}
 	}
 	if os.Getenv("TEAMCITY_VERSION") != "" {
 		fmt.Fprintf(os.Stderr, "##teamcity[buildStatus status='SUCCESS' text='%d corrections']", totalCorrections)
