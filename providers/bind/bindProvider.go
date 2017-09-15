@@ -16,7 +16,6 @@ bind -
 import (
 	"bytes"
 	"encoding/json"
-	"flag"
 	"fmt"
 	"log"
 	"os"
@@ -31,11 +30,21 @@ import (
 	"github.com/StackExchange/dnscontrol/providers/diff"
 )
 
+var docNotes = providers.DocumentationNotes{
+	providers.DocDualHost:            providers.Can(),
+	providers.DocCreateDomains:       providers.Can("Driver just maintains list of zone files. It should automatically add missing ones."),
+	providers.DocOfficiallySupported: providers.Can(),
+}
+
 func initBind(config map[string]string, providermeta json.RawMessage) (providers.DNSServiceProvider, error) {
 	// config -- the key/values from creds.json
 	// meta -- the json blob from NewReq('name', 'TYPE', meta)
-
-	api := &Bind{}
+	api := &Bind{
+		directory: config["directory"],
+	}
+	if api.directory == "" {
+		api.directory = "zones"
+	}
 	if len(providermeta) != 0 {
 		err := json.Unmarshal(providermeta, api)
 		if err != nil {
@@ -47,7 +56,8 @@ func initBind(config map[string]string, providermeta json.RawMessage) (providers
 }
 
 func init() {
-	providers.RegisterDomainServiceProviderType("BIND", initBind, providers.CanUsePTR, providers.CanUseSRV, providers.CanUseTLSA, providers.CanUseCAA, providers.CantUseNOPURGE)
+	providers.RegisterDomainServiceProviderType("BIND", initBind, providers.CanUsePTR,
+		providers.CanUseSRV, providers.CanUseCAA, providers.CantUseNOPURGE, docNotes)
 }
 
 type SoaInfo struct {
@@ -68,9 +78,8 @@ type Bind struct {
 	DefaultNS   []string `json:"default_ns"`
 	DefaultSoa  SoaInfo  `json:"default_soa"`
 	nameservers []*models.Nameserver
+	directory   string
 }
-
-var bindBaseDir = flag.String("bindtree", "zones", "BIND: Directory that stores BIND zonefiles.")
 
 //var bindSkeletin = flag.String("bind_skeletin", "skeletin/master/var/named/chroot/var/named/master", "")
 
@@ -194,7 +203,7 @@ func (c *Bind) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Correcti
 	// Read foundRecords:
 	foundRecords := make([]*models.RecordConfig, 0)
 	var oldSerial, newSerial uint32
-	zonefile := filepath.Join(*bindBaseDir, strings.Replace(strings.ToLower(dc.Name), "/", "_", -1)+".zone")
+	zonefile := filepath.Join(c.directory, strings.Replace(strings.ToLower(dc.Name), "/", "_", -1)+".zone")
 	foundFH, err := os.Open(zonefile)
 	zoneFileFound := err == nil
 	if err != nil && !os.IsNotExist(os.ErrNotExist) {

@@ -31,7 +31,6 @@ func main() {
 
 	run("gofmt", "Checking gofmt", "gofmt ok", checkGoFmt)
 	run("gogen", "Checking go generate", "go generate ok", checkGoGenerate)
-
 	if failed {
 		os.Exit(1)
 	}
@@ -100,7 +99,7 @@ const (
 )
 
 func setStatus(status string, desc string, ctx string) {
-	if commitish == "" {
+	if commitish == "" || ctx == "" {
 		return
 	}
 	client.Repositories.CreateStatus(context.Background(), "StackExchange", "dnscontrol", commitish, &github.RepoStatus{

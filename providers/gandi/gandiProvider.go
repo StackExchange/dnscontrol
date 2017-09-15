@@ -25,6 +25,16 @@ Info required in `creds.json`:
 
 */
 
+var docNotes = providers.DocumentationNotes{
+	providers.DocCreateDomains:       providers.Cannot("Can only manage domains registered through their service"),
+	providers.DocOfficiallySupported: providers.Cannot(),
+}
+
+func init() {
+	providers.RegisterDomainServiceProviderType("GANDI", newGandi, providers.CanUsePTR,
+		providers.CanUseSRV, docNotes, providers.CantUseNOPURGE)
+}
+
 type GandiApi struct {
 	ApiKey      string
 	domainIndex map[string]int64 // Map of domainname to index
@@ -144,8 +154,4 @@ func newGandi(m map[string]string, metadata json.RawMessage) (providers.DNSServi
 	}
 
 	return api, nil
-}
-
-func init() {
-	providers.RegisterDomainServiceProviderType("GANDI", newGandi, providers.CanUsePTR, providers.CanUseSRV)
 }

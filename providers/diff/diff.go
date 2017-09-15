@@ -16,7 +16,11 @@ type Correlation struct {
 type Changeset []Correlation
 
 type Differ interface {
+	//IncrementalDiff performs a diff on a record-by-record basis, and returns a sets for which records need to be created, deleted, or modified.
 	IncrementalDiff(existing []*models.RecordConfig) (unchanged, create, toDelete, modify Changeset)
+	// ChangedGroups performs a diff more appropriate for providers with a "RecordSet" model, where all records with the same name and type are grouped.
+	// Individual record changes are often not useful in such scenarios. Instead we return a map of record keys to a list of change descriptions within that group.
+	ChangedGroups(existing []*models.RecordConfig) map[models.RecordKey][]string
 }
 
 func New(dc *models.DomainConfig, extraValues ...func(*models.RecordConfig) map[string]string) Differ {
@@ -152,6 +156,21 @@ func (d *differ) IncrementalDiff(existing []*models.RecordConfig) (unchanged, cr
 		}
 	}
 	return
+}
+
+func (d *differ) ChangedGroups(existing []*models.RecordConfig) map[models.RecordKey][]string {
+	changedKeys := map[models.RecordKey][]string{}
+	_, create, delete, modify := d.IncrementalDiff(existing)
+	for _, c := range create {
+		changedKeys[c.Desired.Key()] = append(changedKeys[c.Desired.Key()], c.String())
+	}
+	for _, d := range delete {
+		changedKeys[d.Existing.Key()] = append(changedKeys[d.Existing.Key()], d.String())
+	}
+	for _, m := range modify {
+		changedKeys[m.Desired.Key()] = append(changedKeys[m.Desired.Key()], m.String())
+	}
+	return changedKeys
 }
 
 func (c Correlation) String() string {

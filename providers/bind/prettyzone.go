@@ -49,6 +49,10 @@ func (z *zoneGenData) Less(i, j int) bool {
 			log.Fatalf("should not happen: IPs are not 4 bytes: %#v %#v", ta2, tb2)
 		}
 		return bytes.Compare(ipa, ipb) == -1
+	case dns.TypeAAAA:
+		ta2, tb2 := a.(*dns.AAAA), b.(*dns.AAAA)
+		ipa, ipb := ta2.AAAA.To16(), tb2.AAAA.To16()
+		return bytes.Compare(ipa, ipb) == -1
 	case dns.TypeMX:
 		ta2, tb2 := a.(*dns.MX), b.(*dns.MX)
 		pa, pb := ta2.Preference, tb2.Preference
