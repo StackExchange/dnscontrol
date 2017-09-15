@@ -85,7 +85,10 @@ func validateRecordTypes(rec *models.RecordConfig, domain string, pTypes []strin
 
 // underscores in names are often used erroneously. They are valid for dns records, but invalid for urls.
 // here we list common records expected to have underscores. Anything else containing an underscore will print a warning.
-var expectedUnderscores = []string{"_domainkey", "_dmarc", "_amazonses"}
+var labelUnderscores = []string{"_domainkey", "_dmarc", "_amazonses"}
+
+//these record types may contain underscores
+var rTypeUnderscores = []string{"SRV", "TLSA", "TXT"}
 
 func checkLabel(label string, rType string, domain string) error {
 	if label == "@" {
@@ -97,25 +100,19 @@ func checkLabel(label string, rType string, domain string) error {
 	if label[len(label)-1] == '.' {
 		return fmt.Errorf("label %s.%s ends with a (.)", label, domain)
 	}
-
+	for _, ex := range rTypeUnderscores {
+		if rType == ex {
+			return nil
+		}
+	}
+	for _, ex := range labelUnderscores {
+		if strings.Contains(label, ex) {
+			return nil
+		}
+	}
 	//underscores are warnings
 	if strings.ContainsRune(label, '_') {
-		switch rType {
-		// Record types that are expected to have underscore labels
-		case "SRV", "TLSA", "TXT":
-		default:
-			//unless it is in our exclusion list
-			ok := false
-			for _, ex := range expectedUnderscores {
-				if strings.Contains(label, ex) {
-					ok = true
-					break
-				}
-			}
-			if !ok {
-				return Warning{fmt.Errorf("label %s.%s contains an underscore", label, domain)}
-			}
-		}
+		return Warning{fmt.Errorf("label %s.%s contains an underscore", label, domain)}
 	}
 	return nil
 }
@@ -300,15 +297,15 @@ func NormalizeAndValidateConfig(config *models.DNSConfig) (errs []error) {
 			} else if rec.Type == "TLSA" {
 				if rec.TlsaUsage < 0 || rec.TlsaUsage > 3 {
 					errs = append(errs, fmt.Errorf("TLSA Usage %d is invalid in record %s (domain %s)",
-					rec.TlsaUsage, rec.Name, domain.Name))
+						rec.TlsaUsage, rec.Name, domain.Name))
 				}
 				if rec.TlsaSelector < 0 || rec.TlsaSelector > 1 {
 					errs = append(errs, fmt.Errorf("TLSA Selector %d is invalid in record %s (domain %s)",
-					rec.TlsaSelector, rec.Name, domain.Name))
+						rec.TlsaSelector, rec.Name, domain.Name))
 				}
 				if rec.TlsaMatchingType < 0 || rec.TlsaMatchingType > 2 {
 					errs = append(errs, fmt.Errorf("TLSA MatchingType %d is invalid in record %s (domain %s)",
-					rec.TlsaMatchingType, rec.Name, domain.Name))
+						rec.TlsaMatchingType, rec.Name, domain.Name))
 				}
 			}
 
