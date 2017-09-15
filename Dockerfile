@@ -1,7 +1,8 @@
 FROM golang:1.9 AS build-env
 WORKDIR /go/src/github.com/StackExchange/dnscontrol
 ADD . .
-RUN go install .
+RUN go run build/build.go
+RUN cp dnscontrol-Linux /go/bin/dnscontrol
 RUN dnscontrol version
 
 FROM ubuntu:xenial

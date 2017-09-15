@@ -34,7 +34,7 @@ func versionString() string {
 	if SHA != "" {
 		version = fmt.Sprintf("%s (%s)", Version, SHA)
 	} else {
-		version = fmt.Sprintf("%s-dev", Version) //no SHA. '0.x.y-dev' indicates it is run fromm source without build script.
+		version = fmt.Sprintf("%s-dev", Version) //no SHA. '0.x.y-dev' indicates it is run from source without build script.
 	}
 	if BuildTime != "" {
 		i, err := strconv.ParseInt(BuildTime, 10, 64)
