@@ -10,21 +10,24 @@ import (
 
 func TestCheckLabel(t *testing.T) {
 	var tests = []struct {
-		experiment string
-		isError    bool
+		label   string
+		rType   string
+		target  string
+		isError bool
 	}{
-		{"@", false},
-		{"foo", false},
-		{"foo.bar", false},
-		{"foo.", true},
-		{"foo.bar.", true},
-		{"foo_bar", true},
-		{"_domainkey", false},
+		{"@", "A", "0.0.0.0", false},
+		{"@", "A", "foo.tld", true},
+		{"foo.bar", "A", "0.0.0.0", false},
+		{"_foo", "SRV", "foo.tld", false},
+		{"_foo", "TLSA", "foo.tld", false},
+		{"_foo", "TXT", "foo.tld", false},
 	}
 
 	for _, test := range tests {
-		err := checkLabel(test.experiment, "A", "foo.com")
-		checkError(t, err, test.isError, test.experiment)
+		err := checkLabel(test.label, test.rType, test.target)
+		if err != nil && test.isError {
+			t.Errorf("%v: Expected error but got none \n", "TestCheckLabel")
+		}
 	}
 }
 
@@ -189,5 +192,23 @@ func TestCAAValidation(t *testing.T) {
 	errs := NormalizeAndValidateConfig(config)
 	if len(errs) != 1 {
 		t.Error("Expect error on invalid CAA but got none")
+	}
+}
+
+func TestTLSAValidation(t *testing.T) {
+	config := &models.DNSConfig{
+		Domains: []*models.DomainConfig{
+			{
+				Name:      "_443._tcp.example.com",
+				Registrar: "BIND",
+				Records: []*models.RecordConfig{
+					{Name: "_443._tcp", Type: "TLSA", TlsaUsage: 4, TlsaSelector: 1, TlsaMatchingType: 1, Target: "abcdef0"},
+				},
+			},
+		},
+	}
+	errs := NormalizeAndValidateConfig(config)
+	if len(errs) != 1 {
+		t.Error("Expect error on invalid TLSA but got none")
 	}
 }

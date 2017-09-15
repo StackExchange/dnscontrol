@@ -242,6 +242,15 @@ func caa(name string, tag string, flag uint8, target string) *rec {
 	return r
 }
 
+func tlsa(name string, usage, selector, matchingtype uint8, target string) *rec {
+	r := makeRec(name, target, "TLSA")
+	r.TlsaUsage = usage
+	r.TlsaSelector = selector
+	r.TlsaMatchingType = matchingtype
+	r.Target = target
+	return r
+}
+
 func makeRec(name, target, typ string) *rec {
 	return &rec{
 		Name:   name,
@@ -367,6 +376,19 @@ func makeTests(t *testing.T) []*TestCase {
 			tc("CAA change flag", caa("@", "issuewild", 128, "example.com")),
 			tc("CAA many records", caa("@", "issue", 0, "letsencrypt.org"), caa("@", "issuewild", 0, ";"), caa("@", "iodef", 128, "mailto:test@example.com")),
 			tc("CAA delete", caa("@", "issue", 0, "letsencrypt.org")),
+		)
+	}
+
+	//TLSA
+	if !providers.ProviderHasCabability(*providerToRun, providers.CanUseTLSA) {
+		t.Log("Skipping TLSA Tests because provider does not support them")
+	} else {
+		tests = append(tests, tc("Empty"),
+			tc("TLSA record", tlsa("_443._tcp", 3, 1, 1, "abcdef0123456789==")),
+			tc("TLSA change usage", tlsa("_443._tcp", 2, 1, 1, "abcdef0123456789==")),
+			tc("TLSA change selector", tlsa("_443._tcp", 2, 0, 1, "abcdef0123456789==")),
+			tc("TLSA change matchingtype", tlsa("_443._tcp", 2, 0, 0, "abcdef0123456789==")),
+			tc("TLSA change certificate", tlsa("_443._tcp", 2, 0, 0, "0123456789abcdef==")),
 		)
 	}
 
