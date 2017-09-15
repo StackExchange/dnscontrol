@@ -26,7 +26,9 @@ var _ = cmd(catDebug, func() *cli.Command {
 
 var _ = cmd(catDebug, func() *cli.Command {
 	var args PrintIRArgs
-	// This is the same as print-ir but output defaults to /dev/null.
+	// This is the same as print-ir with the following changes:
+	// - output defaults to /dev/null.
+	// - prints "No errors." if there were no errors.
 	return &cli.Command{
 		Name:  "check",
 		Usage: "Check and validate dnsconfig.js. Do not access providers.",
@@ -34,7 +36,11 @@ var _ = cmd(catDebug, func() *cli.Command {
 			if args.Output == "" {
 				args.Output = os.DevNull
 			}
-			return exit(PrintIR(args))
+			err := exit(PrintIR(args))
+			if err == nil {
+				fmt.Fprintf(os.Stderr, "No errors.\n")
+			}
+			return err
 		},
 		Flags: args.flags(),
 	}
