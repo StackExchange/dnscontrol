@@ -380,12 +380,17 @@ func makeTests(t *testing.T) []*TestCase {
 	}
 
 	//TLSA
-	tc("Empty").IfHasCapability(providers.CanUseTLSA),
-	tc("TLSA record", tlsa("_443._tcp", 3, 1, 1, "abcdef0123456789==")).IfHasCapability(providers.CanUseTLSA),
-	tc("TLSA change usage", tlsa("_443._tcp", 2, 1, 1, "abcdef0123456789==")).IfHasCapability(providers.CanUseTLSA),
-	tc("TLSA change selector", tlsa("_443._tcp", 2, 0, 1, "abcdef0123456789==")).IfHasCapability(providers.CanUseTLSA),
-	tc("TLSA change matchingtype", tlsa("_443._tcp", 2, 0, 0, "abcdef0123456789==")).IfHasCapability(providers.CanUseTLSA),
-	tc("TLSA change certificate", tlsa("_443._tcp", 2, 0, 0, "0123456789abcdef==")).IfHasCapability(providers.CanUseTLSA),
+	if !providers.ProviderHasCabability(*providerToRun, providers.CanUseTLSA) {
+		t.Log("Skipping TLSA Tests because provider does not support them")
+	} else {
+		tests = append(tests, tc("Empty"),
+			tc("TLSA record", tlsa("_443._tcp", 3, 1, 1, "abcdef0123456789==")),
+			tc("TLSA change usage", tlsa("_443._tcp", 2, 1, 1, "abcdef0123456789==")),
+			tc("TLSA change selector", tlsa("_443._tcp", 2, 0, 1, "abcdef0123456789==")),
+			tc("TLSA change matchingtype", tlsa("_443._tcp", 2, 0, 0, "abcdef0123456789==")),
+			tc("TLSA change certificate", tlsa("_443._tcp", 2, 0, 0, "0123456789abcdef==")),
+		)
+	}
 
 	// Test large zonefiles.
 	// Mostly to test paging. Many providers page at 100

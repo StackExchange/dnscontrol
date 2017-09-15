@@ -299,13 +299,16 @@ func NormalizeAndValidateConfig(config *models.DNSConfig) (errs []error) {
 				}
 			} else if rec.Type == "TLSA" {
 				if rec.TlsaUsage < 0 || rec.TlsaUsage > 3 {
-					errs = append(errs, fmt.Errorf("TLSA Usage %d is invalid in record %s (domain %s)", rec.TlsaUsage, rec.Name, domain.Name))
+					errs = append(errs, fmt.Errorf("TLSA Usage %d is invalid in record %s (domain %s)",
+					rec.TlsaUsage, rec.Name, domain.Name))
 				}
 				if rec.TlsaSelector < 0 || rec.TlsaSelector > 1 {
-					errs = append(errs, fmt.Errorf("TLSA Selector %d is invalid in record %s (domain %s)", rec.TlsaSelector, rec.Name, domain.Name))
+					errs = append(errs, fmt.Errorf("TLSA Selector %d is invalid in record %s (domain %s)",
+					rec.TlsaSelector, rec.Name, domain.Name))
 				}
 				if rec.TlsaMatchingType < 0 || rec.TlsaMatchingType > 2 {
-					errs = append(errs, fmt.Errorf("TLSA MatchingType %d is invalid in record %s (domain %s)", rec.TlsaMatchingType, rec.Name, domain.Name))
+					errs = append(errs, fmt.Errorf("TLSA MatchingType %d is invalid in record %s (domain %s)",
+					rec.TlsaMatchingType, rec.Name, domain.Name))
 				}
 			}
 
