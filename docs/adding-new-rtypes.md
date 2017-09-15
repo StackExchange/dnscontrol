@@ -60,7 +60,12 @@ is the Javascript file that defines `dnsconfig.js`'s functions like
 `A()` and `MX()`.  Look at the definition of A, MX and CAA for good
 examples to use as a base.
 
-Please add the function alphabetically with the others.
+Please add the function alphabetically with the others. Also, please run
+[prettier](https://github.com/prettier/prettier) on the file to ensure
+your code conforms to our coding standard:
+
+   npm install prettier
+   node_modules/.bin/prettier --write pkg/js/helpers.js
 
 ## Step 3: Search for `#rtype_variations`
 
