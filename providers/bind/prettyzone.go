@@ -40,7 +40,7 @@ func (z *zoneGenData) Less(i, j int) bool {
 		return zoneRrtypeLess(rrtypeA, rrtypeB)
 	}
 	switch rrtypeA { // #rtype_variations
-	case dns.TypeNS, dns.TypeTXT:
+	case dns.TypeNS, dns.TypeTXT, dns.TypeTLSA:
 		// pass through.
 	case dns.TypeA:
 		ta2, tb2 := a.(*dns.A), b.(*dns.A)
@@ -48,6 +48,10 @@ func (z *zoneGenData) Less(i, j int) bool {
 		if ipa == nil || ipb == nil {
 			log.Fatalf("should not happen: IPs are not 4 bytes: %#v %#v", ta2, tb2)
 		}
+		return bytes.Compare(ipa, ipb) == -1
+	case dns.TypeAAAA:
+		ta2, tb2 := a.(*dns.AAAA), b.(*dns.AAAA)
+		ipa, ipb := ta2.AAAA.To16(), tb2.AAAA.To16()
 		return bytes.Compare(ipa, ipb) == -1
 	case dns.TypeMX:
 		ta2, tb2 := a.(*dns.MX), b.(*dns.MX)
@@ -64,6 +68,12 @@ func (z *zoneGenData) Less(i, j int) bool {
 			return pa < pb
 		}
 		pa, pb = ta2.Weight, tb2.Weight
+		if pa != pb {
+			return pa < pb
+		}
+	case dns.TypePTR:
+		ta2, tb2 := a.(*dns.PTR), b.(*dns.PTR)
+		pa, pb := ta2.Ptr, tb2.Ptr
 		if pa != pb {
 			return pa < pb
 		}

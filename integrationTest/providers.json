@@ -12,6 +12,10 @@
     "apiuser": "$CF_USER",
     "domain": "$CF_DOMAIN"
   },
+  "DIGITALOCEAN": {
+    "token": "$DO_TOKEN",
+    "domain": "$DO_DOMAIN"
+  },
   "DNSIMPLE": {
     "COMMENT": "16/17: no ns records managable. Not even for subdomains.",
     "baseurl": "https://api.sandbox.dnsimple.com",
@@ -30,6 +34,10 @@
     "domain": "$GCLOUD_DOMAIN",
     "private_key": "$GCLOUD_PRIVATEKEY",
     "project_id": "$GCLOUD_PROJECT"
+  },
+  "NS1": {
+    "domain": "$NS1_DOMAIN",
+    "api_token": "$NS1_TOKEN"
   },
   "NAMEDOTCOM": {
     "apikey": "$NAMEDOTCOM_KEY",

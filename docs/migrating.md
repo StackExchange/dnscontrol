@@ -10,7 +10,7 @@ least one zone.  You should have a working `dnsconfig.js` file and
 
 ## General advice
 
-First, use the 
+First, use the
 [Getting Started]({{site.github.url}}/getting-started) doc
 so that you have a working `dnsconfig.js` with at least one domain.
 
@@ -21,8 +21,8 @@ more important, zones as you gain confidence.
 Experience has taught us that the best way to migrate a zone is
 to create an exact duplicate first. That is, convert the old DNS records
 with no changes.  It is tempting to clean up the data as you do the migration...
-removing that old CNAME that nobody uses any more, or adding that missing
-A record you noticed. Resist that temptation.  If you make any
+removing that old CNAME that nobody uses any more, or adding an
+A record you discovered was missing. Resist that temptation.  If you make any
 changes it will be difficult to tell which changes were intentional
 and which are typos. During the migration you will know you are done
 when `dnscontrol preview` says there are no changes needed. If there
@@ -58,6 +58,11 @@ Add the contents of `first-draft.js` to `dnsconfig.js`
 Edit dnsconfig.js until `dnscontrol preview` shows no errors and
 no changes to be made. This means the conversion of your old DNS
 data is correct.
+
+convertzone makes a guess at what to do with NS records. If
+they An NS record at the AP is turned into a NAMESERVER() call, the
+rest are left as NS().  You probably want to check each of them for
+correctness.
 
 Resist the temptation to clean up and old, obsolete, records or to
 add anything new. Experience has shown that making changes at this

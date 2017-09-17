@@ -16,6 +16,7 @@ Currently supported DNS providers:
  - Active Directory
  - BIND
  - CloudFlare
+ - Digitalocean
  - DNSimple
  - Gandi
  - Google
@@ -98,3 +99,9 @@ dnscontrol should be installed in $GOPATH/bin
 ## Via packages
 
 Get prebuilt binaries from [github releases](https://github.com/StackExchange/dnscontrol/releases/latest)
+
+## Via [docker](https://hub.docker.com/r/stackexchange/dnscontrol/)
+
+```
+docker run --rm -it -v $(pwd)/dnsconfig.js:/dns/dnsconfig.js -v $(pwd)/creds.json:/dns/creds.json stackexchange/dnscontrol dnscontrol preview
+```

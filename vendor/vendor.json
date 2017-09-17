@@ -134,6 +134,18 @@
 			"revisionTime": "2016-08-11T16:24:59Z"
 		},
 		{
+			"checksumSHA1": "O6hcK24yI6w7FA+g4Pbr+eQ7pys=",
+			"path": "github.com/aws/aws-sdk-go/private/protocol/json/jsonutil",
+			"revision": "aafdacd0d6e625a7a2782bef5f9942d6fc4c9f30",
+			"revisionTime": "2017-07-14T21:00:53Z"
+		},
+		{
+			"checksumSHA1": "R00RL5jJXRYq1iiK1+PGvMfvXyM=",
+			"path": "github.com/aws/aws-sdk-go/private/protocol/jsonrpc",
+			"revision": "aafdacd0d6e625a7a2782bef5f9942d6fc4c9f30",
+			"revisionTime": "2017-07-14T21:00:53Z"
+		},
+		{
 			"checksumSHA1": "isoix7lTx4qIq2zI2xFADtti5SI=",
 			"path": "github.com/aws/aws-sdk-go/private/protocol/query",
 			"revision": "f80e7d0182a463dff0c0da6bbed57f21369d4346",
@@ -182,6 +194,12 @@
 			"revisionTime": "2016-08-11T16:24:59Z"
 		},
 		{
+			"checksumSHA1": "qS3eZZfhdDM6haTZp7OeyhMDlV8=",
+			"path": "github.com/aws/aws-sdk-go/service/route53domains",
+			"revision": "f80e7d0182a463dff0c0da6bbed57f21369d4346",
+			"revisionTime": "2016-08-11T16:24:59Z"
+		},
+		{
 			"checksumSHA1": "nH/itbdeFHpl4ysegdtgww9bFSA=",
 			"path": "github.com/aws/aws-sdk-go/service/sts",
 			"revision": "f80e7d0182a463dff0c0da6bbed57f21369d4346",
@@ -192,6 +210,18 @@
 			"path": "github.com/billputer/go-namecheap",
 			"revision": "7e62cd9a88279c621b6daf38a9ef0dd11c4d47e3",
 			"revisionTime": "2017-04-24T18:15:40Z"
+		},
+		{
+			"checksumSHA1": "cGY7ZInpebRCbyfMs9IZbUBHcgE=",
+			"path": "github.com/digitalocean/godo",
+			"revision": "34840385860db94c88d044571153b6a200ca40b2",
+			"revisionTime": "2017-07-06T20:03:01Z"
+		},
+		{
+			"checksumSHA1": "YpWoCsk+u9H5ctWNKKSVPf4b2as=",
+			"path": "github.com/digitalocean/godo/context",
+			"revision": "34840385860db94c88d044571153b6a200ca40b2",
+			"revisionTime": "2017-07-06T20:03:01Z"
 		},
 		{
 			"checksumSHA1": "yP+hlSaIhYwxErc/s286p9M+LIs=",
@@ -273,46 +303,52 @@
 			"revisionTime": "2017-03-16T20:15:38Z"
 		},
 		{
-			"checksumSHA1": "nS4kKHjMlJpQg3sixqelpCg1jyk=",
-			"path": "github.com/prasmussen/gandi-api/client",
-			"revision": "13205dc554f4aeb75c93e8b57ad1e3d6fa3be5d5",
-			"revisionTime": "2016-04-18T18:49:04Z"
+			"checksumSHA1": "02kfHQp1KLch4P2FG1OrEG/24t8=",
+			"path": "github.com/prasmussen/gandi-api",
+			"revision": "d5d052a11e7dd3bd477e9dda181c2c5dfa8cf16f",
+			"revisionTime": "2017-08-05T17:47:16Z"
 		},
 		{
-			"checksumSHA1": "JZSh5mPC7r4AHhSg+IjD897n22A=",
+			"checksumSHA1": "nS4kKHjMlJpQg3sixqelpCg1jyk=",
+			"path": "github.com/prasmussen/gandi-api/client",
+			"revision": "931915c3a2ca2661373f0b25bbedfee9e1958d2b",
+			"revisionTime": "2017-09-08T20:15:21Z"
+		},
+		{
+			"checksumSHA1": "tT8xSQc+QM3/JPs16WjDtTFY7j0=",
 			"path": "github.com/prasmussen/gandi-api/domain",
-			"revision": "13205dc554f4aeb75c93e8b57ad1e3d6fa3be5d5",
-			"revisionTime": "2016-04-18T18:49:04Z"
+			"revision": "931915c3a2ca2661373f0b25bbedfee9e1958d2b",
+			"revisionTime": "2017-09-08T20:15:21Z"
 		},
 		{
 			"checksumSHA1": "/t4nBKtJF6W3PHzTBNAzgcw54GU=",
 			"path": "github.com/prasmussen/gandi-api/domain/zone",
-			"revision": "13205dc554f4aeb75c93e8b57ad1e3d6fa3be5d5",
-			"revisionTime": "2016-04-18T18:49:04Z"
+			"revision": "931915c3a2ca2661373f0b25bbedfee9e1958d2b",
+			"revisionTime": "2017-09-08T20:15:21Z"
 		},
 		{
-			"checksumSHA1": "QXUT2Olct3vKqg6RIgdoUqJHsFU=",
+			"checksumSHA1": "wers/RRtpv1SXRpnUg6ptC1nKoM=",
 			"path": "github.com/prasmussen/gandi-api/domain/zone/record",
-			"revision": "13205dc554f4aeb75c93e8b57ad1e3d6fa3be5d5",
-			"revisionTime": "2016-04-18T18:49:04Z"
+			"revision": "931915c3a2ca2661373f0b25bbedfee9e1958d2b",
+			"revisionTime": "2017-09-08T20:15:21Z"
 		},
 		{
 			"checksumSHA1": "avzpVkEeXzDiaNLsl4agXWm9tm0=",
 			"path": "github.com/prasmussen/gandi-api/domain/zone/version",
-			"revision": "13205dc554f4aeb75c93e8b57ad1e3d6fa3be5d5",
-			"revisionTime": "2016-04-18T18:49:04Z"
+			"revision": "931915c3a2ca2661373f0b25bbedfee9e1958d2b",
+			"revisionTime": "2017-09-08T20:15:21Z"
 		},
 		{
 			"checksumSHA1": "txVNPkzE0Jkag20VZ1hLj/Td+O4=",
 			"path": "github.com/prasmussen/gandi-api/operation",
-			"revision": "13205dc554f4aeb75c93e8b57ad1e3d6fa3be5d5",
-			"revisionTime": "2016-04-18T18:49:04Z"
+			"revision": "931915c3a2ca2661373f0b25bbedfee9e1958d2b",
+			"revisionTime": "2017-09-08T20:15:21Z"
 		},
 		{
 			"checksumSHA1": "FwIh1Rk/XNANaxCz3Fw/vQ3Hu5E=",
 			"path": "github.com/prasmussen/gandi-api/util",
-			"revision": "13205dc554f4aeb75c93e8b57ad1e3d6fa3be5d5",
-			"revisionTime": "2016-04-18T18:49:04Z"
+			"revision": "931915c3a2ca2661373f0b25bbedfee9e1958d2b",
+			"revisionTime": "2017-09-08T20:15:21Z"
 		},
 		{
 			"checksumSHA1": "EqyHXBcg5cWi4ERsMXN6g1opi1o=",
@@ -397,6 +433,18 @@
 			"path": "github.com/tdewolff/strconv",
 			"revision": "3e8091f4417ebaaa3910da63a45ea394ebbfb0e3",
 			"revisionTime": "2016-04-27T18:05:39Z"
+		},
+		{
+			"checksumSHA1": "GQ9bu6PuydK3Yor1JgtVKUfEJm8=",
+			"path": "github.com/tent/http-link-go",
+			"revision": "ac974c61c2f990f4115b119354b5e0b47550e888",
+			"revisionTime": "2013-07-02T22:55:49Z"
+		},
+		{
+			"checksumSHA1": "9LeR7BH4PSu8LRDZ8bY7QY1HXJE=",
+			"path": "github.com/urfave/cli",
+			"revision": "4b90d79a682b4bf685762c7452db20f2a676ecb2",
+			"revisionTime": "2017-07-06T19:46:25Z"
 		},
 		{
 			"checksumSHA1": "9jjO5GjLa0XF/nfWihF02RoH4qc=",
@@ -589,6 +637,42 @@
 			"path": "google.golang.org/appengine/urlfetch",
 			"revision": "c7b8227c83007befd67b324a64c969ebc1d7475d",
 			"revisionTime": "2016-11-07T22:51:02Z"
+		},
+		{
+			"checksumSHA1": "e7eKqt/2RnmGPYJtcJd4IY2M/DU=",
+			"path": "gopkg.in/ns1/ns1-go.v2/rest",
+			"revision": "e2aebc8e980e326990999e4351c1c026c9d00c4a",
+			"revisionTime": "2017-03-21T06:31:15Z"
+		},
+		{
+			"checksumSHA1": "tdMxXKsUHn3yZpur14ZNLMVyQJM=",
+			"path": "gopkg.in/ns1/ns1-go.v2/rest/model/account",
+			"revision": "e2aebc8e980e326990999e4351c1c026c9d00c4a",
+			"revisionTime": "2017-03-21T06:31:15Z"
+		},
+		{
+			"checksumSHA1": "gBVND8veklEQV0gxF3lERV6mSZk=",
+			"path": "gopkg.in/ns1/ns1-go.v2/rest/model/data",
+			"revision": "e2aebc8e980e326990999e4351c1c026c9d00c4a",
+			"revisionTime": "2017-03-21T06:31:15Z"
+		},
+		{
+			"checksumSHA1": "GbL7ThrBZfKs1lhzguxzscIynac=",
+			"path": "gopkg.in/ns1/ns1-go.v2/rest/model/dns",
+			"revision": "e2aebc8e980e326990999e4351c1c026c9d00c4a",
+			"revisionTime": "2017-03-21T06:31:15Z"
+		},
+		{
+			"checksumSHA1": "CuurmNep8iMdYFodxRxAeewowsQ=",
+			"path": "gopkg.in/ns1/ns1-go.v2/rest/model/filter",
+			"revision": "e2aebc8e980e326990999e4351c1c026c9d00c4a",
+			"revisionTime": "2017-03-21T06:31:15Z"
+		},
+		{
+			"checksumSHA1": "B0C8F5th11AHl1fo8k0I8+DvrjE=",
+			"path": "gopkg.in/ns1/ns1-go.v2/rest/model/monitor",
+			"revision": "e2aebc8e980e326990999e4351c1c026c9d00c4a",
+			"revisionTime": "2017-03-21T06:31:15Z"
 		},
 		{
 			"checksumSHA1": "XvQ3McEKtKXKcU4lL447qeKi1RM=",

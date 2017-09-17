@@ -16,8 +16,15 @@ type Namecheap struct {
 	client  *nc.Client
 }
 
+var docNotes = providers.DocumentationNotes{
+	providers.DocCreateDomains:       providers.Cannot("Requires domain registered through their service"),
+	providers.DocOfficiallySupported: providers.Cannot(),
+}
+
 func init() {
-	providers.RegisterRegistrarType("NAMECHEAP", newReg)
+	providers.RegisterRegistrarType("NAMECHEAP", newReg, docNotes)
+	// NOTE(tlim): If in the future the DNS Service Provider is implemented,
+	// most likely it will require providers.CantUseNOPURGE.
 }
 
 func newReg(m map[string]string) (providers.Registrar, error) {
