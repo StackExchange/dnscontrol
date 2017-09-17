@@ -31,6 +31,9 @@ func (c *dnsCache) get(label, rtype string) ([]string, bool) {
 func (c *dnsCache) put(label, rtype string, answers []string) {
 	c.Lock()
 	defer c.Unlock()
+	if c.m == nil {
+		c.m = make(map[string]map[string][]string)
+	}
 	_, ok := c.m[label]
 	if !ok {
 		c.m[label] = make(map[string][]string)

@@ -11,7 +11,7 @@ import (
 func hasSpfRecords(recs []*models.RecordConfig) bool {
 	for _, rec := range recs {
 		if rec.Type == "TXT" && strings.HasPrefix(rec.Target, "v=spf1 ") {
-			if m, ok := rec.Metadata["unroll"]; ok {
+			if _, ok := rec.Metadata["unroll"]; ok {
 				//fmt.Println("spf_unroll", m, rec)
 				return true
 			}

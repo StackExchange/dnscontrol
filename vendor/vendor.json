@@ -257,14 +257,14 @@
 		{
 			"checksumSHA1": "yIkYzW7bzAD81zHyuCNmEj4+oxQ=",
 			"path": "github.com/gopherjs/gopherjs/js",
-			"revision": "2b1d432c8a82c9bff0b0baffaeb3ec6e92974112",
-			"revisionTime": "2017-07-02T15:34:43Z"
+			"revision": "b40cd48c38f9a18eb3db20d163bad78de12cf0b7",
+			"revisionTime": "2017-09-06T18:39:36Z"
 		},
 		{
-			"checksumSHA1": "iNjXacWvaUH3ci7dIpwHFwn1tbQ=",
+			"checksumSHA1": "BUo9WyIijKvTCquOJ9qySb4m7vg=",
 			"path": "github.com/gopherjs/jquery",
-			"revision": "55a713a3102d1d7426bfc3f501ecf6c5908a6e46",
-			"revisionTime": "2017-04-24T13:20:13Z"
+			"revision": "c5b71b8699e312469a95c0927c19833fa42359e6",
+			"revisionTime": "2017-09-04T14:04:05Z"
 		},
 		{
 			"checksumSHA1": "Wbsfxh89xfnFDZzoEOzpfUV9+u8=",
