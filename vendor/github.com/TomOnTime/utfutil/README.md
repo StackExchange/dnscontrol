@@ -2,13 +2,34 @@
 
 Utilities to make it easier to read text encoded as UTF-16.
 
-## Dealing with UTF-16 files from Windows.
+## Dealing with UTF-16 files you receive from Windows.
 
-Ever have code that worked for years until you received a file from a MS-Windows system that just didn't work at all?  Looking at a hex dump you realize every other byte is \0.  WTF?  No, UTF.  More specifically UTF-16LE with an optional BOM.
+Have you encountered this situation?  Code that has worked for years
+suddenly breaks.  It turns out someone tried to use it with a file
+that came from a MS-Windows system. Now this perfectly good code stops
+working.
+
+Looking at a hex dump you realize every other byte is \0.  WTF?
+No, UTF.  More specifically UTF-16LE with an optional BOM.
 
 What does all that mean?  Well, first you should read ["The Absolute Minimum Every Software Developer Absolutely, Positively Must Know About Unicode and Character Sets (No Excuses!)"](http://www.joelonsoftware.com/articles/Unicode.html) by Joel Spolsky.
 
-Now you are an expert.  You can spend an afternoon trying to figure out how the heck to put all that together and use `golang.org/x/text/encoding/unicode` to decode UTF-16LE.  However I've already done that for you. Now you can take the easy way out change ioutil.ReadFile() to utfutil.ReadFile().  Everything will just work.
+Now you understand what the problem is, but how do you fix it?
+Well, you can spend a week trying to figure out how to use
+`golang.org/x/text/encoding/unicode` and you'll be able to
+decode UTF-16LE files. (No offense to the authors of that
+module. It is a fantastic module but if you aren't already
+an expert in Unicode encoding, it is pretty difficult to use.)
+
+If you don't have a week, you can just use this module.
+Take the easy way out!  Just change `ioutil.ReadFile()` to
+`utfutil.ReadFile()`.
+Everything will just work.
+
+The goal of `utfutl` is to provide replacement functions
+that magically do the right thing. There is a demo
+program that shows how to use it called [catutf](https://github.com/TomOnTime/utfutil/blob/master/catutf/main.go).
+
 
 ### utfutil.ReadFile() is the equivalent of ioutil.ReadFile()
 
@@ -46,14 +67,13 @@ It works like os.Open():
 		s, err := utfutil.NewScanner(filename, utfutil.HTML5)
 ```
 
-
 ## Encoding hints:
 
-What's that second argument all about?
+What's that second argument all about?    utfutil.UTF8?  utfutil.HTML5?
 
-Since it is impossible to guess 100% correctly if there is no BOM,
-the functions take a 2nd parameter of type "EncodingHint" where you
-specify the default encoding for BOM-less files.
+If a file has no BOM, it is impossible to guess the file encoding with
+100% accuracy.  Therefore, the 2nd parameter is an
+"EncodingHint" that specifies what to assume for BOM-less files.
 
 ```
 UTF8        No BOM?  Assume UTF-8
