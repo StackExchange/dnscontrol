@@ -10,3 +10,4 @@ docs/_site
 powershell.log
 zones/
 *.env
+certs/

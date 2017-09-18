@@ -60,6 +60,7 @@ var docNotes = providers.DocumentationNotes{
 	providers.DocDualHost:            providers.Can(),
 	providers.DocCreateDomains:       providers.Can(),
 	providers.DocOfficiallySupported: providers.Can(),
+	providers.CanUseAlias:            providers.Cannot("R53 does not provide a generic ALIAS functionality. They do have 'ALIAS' CNAME types to point at various AWS infrastructure, but dnscontrol has not implemented those."),
 }
 
 func init() {

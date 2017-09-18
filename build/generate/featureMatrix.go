@@ -33,6 +33,7 @@ func generateFeatureMatrix() error {
 			{"SRV", "Driver has explicitly implemented SRV record management"},
 			{"PTR", "Provider supports adding PTR records for reverse lookup zones"},
 			{"CAA", "Provider can manage CAA records"},
+			{"TLSA", "Provider can manage TLSA records"},
 
 			{"dual host", "This provider is recommended for use in 'dual hosting' scenarios. Usually this means the provider allows full control over the apex NS records"},
 			{"create-domains", "This means the provider can automatically create domains that do not currently exist on your account. The 'dnscontrol create-domains' command will initialize any missing domains"},
@@ -67,6 +68,7 @@ func generateFeatureMatrix() error {
 		setCap("SRV", providers.CanUseSRV)
 		setCap("PTR", providers.CanUsePTR)
 		setCap("CAA", providers.CanUseCAA)
+		setCap("TLSA", providers.CanUseTLSA)
 		setDoc("dual host", providers.DocDualHost)
 		setDoc("create-domains", providers.DocCreateDomains)
 
