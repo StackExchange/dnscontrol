@@ -13,13 +13,13 @@ can build servers and resolvers with it.
 
 We try to keep the "master" branch as sane as possible and at the bleeding edge
 of standards, avoiding breaking changes wherever reasonable. We support the last
-two versions of Go, currently: 1.6 and 1.7.
+two versions of Go, currently: 1.7 and 1.8.
 
 # Goals
 
 * KISS;
 * Fast;
-* Small API, if its easy to code in Go, don't make a function for it.
+* Small API. If it's easy to code in Go, don't make a function for it.
 
 # Users
 
@@ -57,6 +57,9 @@ A not-so-up-to-date-list-that-may-be-actually-current:
 * https://github.com/fffaraz/microdns
 * http://quilt.io
 * https://github.com/ipdcode/hades (JD.COM)
+* https://github.com/StackExchange/dnscontrol/
+* https://www.dnsperf.com/
+* https://dnssectest.net/
 
 Send pull request if you want to be listed here.
 
