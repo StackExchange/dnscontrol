@@ -224,10 +224,10 @@
 			"revisionTime": "2017-07-06T20:03:01Z"
 		},
 		{
-			"checksumSHA1": "yP+hlSaIhYwxErc/s286p9M+LIs=",
+			"checksumSHA1": "3IwwCJMg+LDIP3062EXHQR4guAI=",
 			"path": "github.com/dnsimple/dnsimple-go/dnsimple",
-			"revision": "d0bdd43deaa2cbeee96532b109ea635457423f25",
-			"revisionTime": "2017-03-07T17:17:48Z"
+			"revision": "84b1b693f39ee2d2749fd651148024c014679dbd",
+			"revisionTime": "2017-08-30T08:48:20Z"
 		},
 		{
 			"checksumSHA1": "OnSTHmTPGTAwFMfqCSZj4z5BnEo=",
@@ -237,16 +237,16 @@
 			"revisionTime": "2015-11-04T20:00:20-05:00"
 		},
 		{
-			"checksumSHA1": "Ph3AzJaMHZxUdyqWL+Lx3CufxRw=",
+			"checksumSHA1": "yqF125xVSkmfLpIVGrLlfE05IUk=",
 			"path": "github.com/golang/protobuf/proto",
-			"revision": "45760678a2e5102a51433d40069dbc9ec5b26753",
-			"revisionTime": "2016-02-25T03:18:00Z"
+			"revision": "11b8df160996e00fd4b55cbaafb3d84ec6d50fa8",
+			"revisionTime": "2017-09-14T23:13:19Z"
 		},
 		{
-			"checksumSHA1": "pKcCESD4Ezs4SpbZ0Kbl4XsZKt0=",
+			"checksumSHA1": "sszzCqQye59sgQguD6wcQ61lPUg=",
 			"path": "github.com/google/go-github/github",
-			"revision": "6896997c7c9fe603fb9d2e8e92303bb18481e60a",
-			"revisionTime": "2017-04-09T17:43:40Z"
+			"revision": "eee178af22a1827e634e972b42fed57757688fc6",
+			"revisionTime": "2017-09-17T20:26:33Z"
 		},
 		{
 			"checksumSHA1": "p3IB18uJRs4dL2K5yx24MrLYE9A=",
@@ -267,22 +267,22 @@
 			"revisionTime": "2015-04-13T22:18:30+03:00"
 		},
 		{
-			"checksumSHA1": "lxO8OJ+oWgBLoHNELCXxxTVc84w=",
+			"checksumSHA1": "Ewgc6lPiuDZVOf1407rxzSgAOag=",
 			"path": "github.com/miekg/dns",
-			"revision": "765aea0018871a5acd99796645585323343ba39c",
-			"revisionTime": "2017-03-22T06:49:16Z"
+			"revision": "e4205768578dc90c2669e75a2f8a8bf77e3083a4",
+			"revisionTime": "2017-08-18T13:14:42Z"
 		},
 		{
 			"checksumSHA1": "9SrLPArdQmp45MGosz7IEGX46Ng=",
 			"path": "github.com/miekg/dns/dnsutil",
-			"revision": "db96a2b759cdef4f11a34506a42eb8d1290c598e",
-			"revisionTime": "2016-07-26T03:20:27Z"
+			"revision": "e4205768578dc90c2669e75a2f8a8bf77e3083a4",
+			"revisionTime": "2017-08-18T13:14:42Z"
 		},
 		{
-			"checksumSHA1": "x4C8qUa39JVIwhD+5nacBaQHcII=",
+			"checksumSHA1": "QLKPqiHoCTknOwOiNj5Miaze6HI=",
 			"path": "github.com/mjibson/esc/embed",
-			"revision": "703e8aee0a5417c480f8d6a3f072c9eb4f8904ea",
-			"revisionTime": "2017-01-12T13:50:19Z"
+			"revision": "58d9cde84f237ecdd89bd7f61c2de2853f4c5c6e",
+			"revisionTime": "2017-09-07T07:13:03Z"
 		},
 		{
 			"checksumSHA1": "rJab1YdNhQooDiBWNnt7TLWPyBU=",
@@ -345,52 +345,52 @@
 			"revisionTime": "2017-09-08T20:15:21Z"
 		},
 		{
-			"checksumSHA1": "EqyHXBcg5cWi4ERsMXN6g1opi1o=",
+			"checksumSHA1": "iscXwx3+hPMLz1v8ul05R1gnUg4=",
 			"path": "github.com/robertkrimen/otto",
-			"revision": "21ec96599b1279b5673e4df0097dd56bb8360068",
-			"revisionTime": "2017-04-24T10:46:44Z"
+			"revision": "a813c59b1b4471ff7ecd3b533bac2f7e7d178784",
+			"revisionTime": "2017-08-18T08:51:46Z"
 		},
 		{
-			"checksumSHA1": "qgziiO3/QDVJMKw2nGrUbC8QldY=",
+			"checksumSHA1": "q1HKpLIWi3tTT5W5LqMlwPcGmyQ=",
 			"path": "github.com/robertkrimen/otto/ast",
-			"revision": "7d9cbc2befca39869eb0e5bcb0f44c0692c2f8ff",
-			"revisionTime": "2016-07-28T22:04:12Z"
+			"revision": "a813c59b1b4471ff7ecd3b533bac2f7e7d178784",
+			"revisionTime": "2017-08-18T08:51:46Z"
 		},
 		{
 			"checksumSHA1": "L0KsB2EzTlPgv0iae3q3SukNW7U=",
 			"path": "github.com/robertkrimen/otto/dbg",
-			"revision": "7d9cbc2befca39869eb0e5bcb0f44c0692c2f8ff",
-			"revisionTime": "2016-07-28T22:04:12Z"
+			"revision": "a813c59b1b4471ff7ecd3b533bac2f7e7d178784",
+			"revisionTime": "2017-08-18T08:51:46Z"
 		},
 		{
 			"checksumSHA1": "euDLJKhw4doeTSxjEoezjxYXLzs=",
 			"path": "github.com/robertkrimen/otto/file",
-			"revision": "7d9cbc2befca39869eb0e5bcb0f44c0692c2f8ff",
-			"revisionTime": "2016-07-28T22:04:12Z"
+			"revision": "a813c59b1b4471ff7ecd3b533bac2f7e7d178784",
+			"revisionTime": "2017-08-18T08:51:46Z"
 		},
 		{
 			"checksumSHA1": "LLuLITFO8chqSG0+APJIy5NtOHU=",
 			"path": "github.com/robertkrimen/otto/parser",
-			"revision": "7d9cbc2befca39869eb0e5bcb0f44c0692c2f8ff",
-			"revisionTime": "2016-07-28T22:04:12Z"
+			"revision": "a813c59b1b4471ff7ecd3b533bac2f7e7d178784",
+			"revisionTime": "2017-08-18T08:51:46Z"
 		},
 		{
 			"checksumSHA1": "7J/7NaYRqKhBvZ+dTIutsEoEgFw=",
 			"path": "github.com/robertkrimen/otto/registry",
-			"revision": "7d9cbc2befca39869eb0e5bcb0f44c0692c2f8ff",
-			"revisionTime": "2016-07-28T22:04:12Z"
+			"revision": "a813c59b1b4471ff7ecd3b533bac2f7e7d178784",
+			"revisionTime": "2017-08-18T08:51:46Z"
 		},
 		{
 			"checksumSHA1": "/jMXYuXycBpTqWhRyJ2xsqvHvQI=",
 			"path": "github.com/robertkrimen/otto/token",
-			"revision": "7d9cbc2befca39869eb0e5bcb0f44c0692c2f8ff",
-			"revisionTime": "2016-07-28T22:04:12Z"
+			"revision": "a813c59b1b4471ff7ecd3b533bac2f7e7d178784",
+			"revisionTime": "2017-08-18T08:51:46Z"
 		},
 		{
 			"checksumSHA1": "PEC19eE84u8Fsg+NT+4x47h+7CQ=",
 			"path": "github.com/robertkrimen/otto/underscore",
-			"revision": "7d9cbc2befca39869eb0e5bcb0f44c0692c2f8ff",
-			"revisionTime": "2016-07-28T22:04:12Z"
+			"revision": "a813c59b1b4471ff7ecd3b533bac2f7e7d178784",
+			"revisionTime": "2017-08-18T08:51:46Z"
 		},
 		{
 			"checksumSHA1": "Dsu5YKdxGeL3Q2VkQ3kuMuebFDc=",
@@ -399,16 +399,16 @@
 			"revisionTime": "2017-09-01T09:15:40Z"
 		},
 		{
-			"checksumSHA1": "aOx9JqecdG4tSpzdRyohR56FUMo=",
+			"checksumSHA1": "dItWxMXxf9u6rwsdLxIYM+JTh1g=",
 			"path": "github.com/tdewolff/minify",
-			"revision": "2d28d6e43c68537a32f9b835a89d5038ebcb6ec9",
-			"revisionTime": "2017-06-05T20:11:15Z"
+			"revision": "d515420d53baa000cbf801c6fafd43e774704413",
+			"revisionTime": "2017-09-10T18:59:44Z"
 		},
 		{
-			"checksumSHA1": "w9vp7arHrzUEi6KyAM9K8hAP3hM=",
+			"checksumSHA1": "RqMkXmFKyTxx/pxIcDgFf8sutag=",
 			"path": "github.com/tdewolff/minify/json",
-			"revision": "2d28d6e43c68537a32f9b835a89d5038ebcb6ec9",
-			"revisionTime": "2017-06-05T20:11:15Z"
+			"revision": "d515420d53baa000cbf801c6fafd43e774704413",
+			"revisionTime": "2017-09-10T18:59:44Z"
 		},
 		{
 			"checksumSHA1": "EiTbuOQ08YQ0Foy0R8y4WlbVcvA=",
@@ -435,10 +435,10 @@
 			"revisionTime": "2013-07-02T22:55:49Z"
 		},
 		{
-			"checksumSHA1": "9LeR7BH4PSu8LRDZ8bY7QY1HXJE=",
+			"checksumSHA1": "7Qm/EUxEnhQgbMPWUsKrVswLUsc=",
 			"path": "github.com/urfave/cli",
-			"revision": "4b90d79a682b4bf685762c7452db20f2a676ecb2",
-			"revisionTime": "2017-07-06T19:46:25Z"
+			"revision": "7fb9c86b14e6a702a4157ccb5a863f07d844a207",
+			"revisionTime": "2017-09-11T04:08:19Z"
 		},
 		{
 			"checksumSHA1": "9jjO5GjLa0XF/nfWihF02RoH4qc=",

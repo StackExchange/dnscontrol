@@ -128,7 +128,7 @@ type DomainRegisterRequest struct {
 //
 // See https://developer.dnsimple.com/v2/registrar/#register
 func (s *RegistrarService) RegisterDomain(accountID string, domainName string, request *DomainRegisterRequest) (*domainRegistrationResponse, error) {
-	path := versioned(fmt.Sprintf("/%v/registrar/domains/%v/registration", accountID, domainName))
+	path := versioned(fmt.Sprintf("/%v/registrar/domains/%v/registrations", accountID, domainName))
 	registrationResponse := &domainRegistrationResponse{}
 
 	// TODO: validate mandatory attributes RegistrantID
@@ -181,7 +181,7 @@ type DomainTransferRequest struct {
 //
 // See https://developer.dnsimple.com/v2/registrar/#transfer
 func (s *RegistrarService) TransferDomain(accountID string, domainName string, request *DomainTransferRequest) (*domainTransferResponse, error) {
-	path := versioned(fmt.Sprintf("/%v/registrar/domains/%v/transfer", accountID, domainName))
+	path := versioned(fmt.Sprintf("/%v/registrar/domains/%v/transfers", accountID, domainName))
 	transferResponse := &domainTransferResponse{}
 
 	// TODO: validate mandatory attributes RegistrantID
@@ -205,7 +205,7 @@ type domainTransferOutResponse struct {
 //
 // See https://developer.dnsimple.com/v2/registrar/#transfer-out
 func (s *RegistrarService) TransferDomainOut(accountID string, domainName string) (*domainTransferOutResponse, error) {
-	path := versioned(fmt.Sprintf("/%v/registrar/domains/%v/transfer_out", accountID, domainName))
+	path := versioned(fmt.Sprintf("/%v/registrar/domains/%v/authorize_transfer_out", accountID, domainName))
 	transferResponse := &domainTransferOutResponse{}
 
 	resp, err := s.client.post(path, nil, nil)
@@ -245,7 +245,7 @@ type DomainRenewRequest struct {
 //
 // See https://developer.dnsimple.com/v2/registrar/#register
 func (s *RegistrarService) RenewDomain(accountID string, domainName string, request *DomainRenewRequest) (*domainRenewalResponse, error) {
-	path := versioned(fmt.Sprintf("/%v/registrar/domains/%v/renewal", accountID, domainName))
+	path := versioned(fmt.Sprintf("/%v/registrar/domains/%v/renewals", accountID, domainName))
 	renewalResponse := &domainRenewalResponse{}
 
 	resp, err := s.client.post(path, request, renewalResponse)
