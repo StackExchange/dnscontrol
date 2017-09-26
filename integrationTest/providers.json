@@ -49,5 +49,12 @@
     "KeyId": "$R53_KEY_ID",
     "SecretKey": "$R53_KEY",
     "domain": "$R53_DOMAIN"
+  },
+  "SOFTLAYER": {
+    "COMMENT": "22-25 softlayer fails at direct internationalization, puncode works though",
+    "knownFailures": "22,23,24,25",
+    "domain": "$SL_DOMAIN",
+    "username": "$SL_USERNAME",
+    "api_key": "$SL_API_KEY"
   }
 }
