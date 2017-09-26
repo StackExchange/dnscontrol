@@ -7,6 +7,7 @@ RUN cp dnscontrol-Linux /go/bin/dnscontrol
 RUN dnscontrol version
 
 FROM alpine
+RUN apk add --no-cache ca-certificates
 COPY --from=build-env /go/bin/dnscontrol /usr/local/bin
 WORKDIR /dns
 RUN dnscontrol version
