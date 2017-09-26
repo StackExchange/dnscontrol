@@ -12,6 +12,8 @@ import (
 
 var sha = flag.String("sha", "", "SHA of current commit")
 
+var goos = flag.String("os", "", "OS to build (linux, windows, or darwin) Defaults to all.")
+
 func main() {
 	flag.Parse()
 	flags := fmt.Sprintf(`-s -w -X main.SHA="%s" -X main.BuildTime=%d`, getVersion(), time.Now().Unix())
@@ -29,9 +31,17 @@ func main() {
 		}
 	}
 
-	build("dnscontrol-Linux", "linux")
-	build("dnscontrol.exe", "windows")
-	build("dnscontrol-Darwin", "darwin")
+	for _, env := range []struct {
+		binary, goos string
+	}{
+		{"dnscontrol-Linux", "linux"},
+		{"dnscontrol.exe", "windows"},
+		{"dnscontrol-Darwin", "darwin"},
+	} {
+		if *goos == "" || *goos == env.goos {
+			build(env.binary, env.goos)
+		}
+	}
 }
 
 func getVersion() string {
