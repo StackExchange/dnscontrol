@@ -7,8 +7,6 @@ import (
 	"bytes"
 
 	"io"
-
-	"github.com/StackExchange/dnscontrol/pkg/dnsresolver"
 )
 
 type SPFRecord struct {
@@ -35,26 +33,6 @@ type SPFPart struct {
 	IncludeDomain string
 }
 
-func Lookup(target string, dnsres dnsresolver.DnsResolver) (string, error) {
-	txts, err := dnsres.GetTxt(target)
-	if err != nil {
-		return "", err
-	}
-	var result []string
-	for _, txt := range txts {
-		if strings.HasPrefix(txt, "v=spf1 ") {
-			result = append(result, txt)
-		}
-	}
-	if len(result) == 0 {
-		return "", fmt.Errorf("%s has no spf TXT records", target)
-	}
-	if len(result) != 1 {
-		return "", fmt.Errorf("%s has multiple spf TXT records", target)
-	}
-	return result[0], nil
-}
-
 var qualifiers = map[byte]bool{
 	'?': true,
 	'~': true,
@@ -62,7 +40,7 @@ var qualifiers = map[byte]bool{
 	'+': true,
 }
 
-func Parse(text string, dnsres dnsresolver.DnsResolver) (*SPFRecord, error) {
+func Parse(text string, dnsres Resolver) (*SPFRecord, error) {
 	if !strings.HasPrefix(text, "v=spf1 ") {
 		return nil, fmt.Errorf("Not an spf record")
 	}
@@ -86,7 +64,7 @@ func Parse(text string, dnsres dnsresolver.DnsResolver) (*SPFRecord, error) {
 			p.IsLookup = true
 			p.IncludeDomain = strings.TrimPrefix(part, "include:")
 			if dnsres != nil {
-				subRecord, err := Lookup(p.IncludeDomain, dnsres)
+				subRecord, err := dnsres.GetSPF(p.IncludeDomain)
 				if err != nil {
 					return nil, err
 				}
