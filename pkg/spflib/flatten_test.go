@@ -28,8 +28,6 @@ func TestFlatten(t *testing.T) {
 	}
 	t.Log(rec.Print())
 	rec = rec.Flatten("mailgun.org")
-	//fmt.Println(rec.TXT())
-	//fmt.Println(rec.TXTSplit("_spf%d.stackoverflow.com"))
 	t.Log(rec.Print())
 }
 
@@ -88,7 +86,6 @@ var splitTests = [][]string{
 }
 
 func TestSplit(t *testing.T) {
-
 	for _, tst := range splitTests {
 		t.Run(tst[0], func(t *testing.T) {
 			rec, err := Parse(tst[1], nil)
