@@ -12,34 +12,33 @@ import (
 
 // hasSpfRecords returns true if this record requests SPF unrolling.
 func flattenSPFs(cfg *models.DNSConfig) []error {
-	cache, err := spflib.NewCache("spfcache.json")
-	if err != nil {
-		return []error{err}
-	}
+	var cache spflib.CachingResolver
 	var errs []error
+	var err error
 	for _, domain := range cfg.Domains {
 		apexTXTs := domain.Records.Grouped()[models.RecordKey{Type: "TXT", Name: "@"}]
 		// flatten all spf records that have the "flatten" metadata
 		for _, txt := range apexTXTs {
 			var rec *spflib.SPFRecord
-			if flatten, ok := txt.Metadata["flatten"]; ok && strings.HasPrefix(txt.Target, "v=spf1") {
+			if txt.Metadata["flatten"] != "" || txt.Metadata["split"] != "" {
+				if cache == nil {
+					cache, err = spflib.NewCache("spfcache.json")
+					if err != nil {
+						return []error{err}
+					}
+				}
 				rec, err = spflib.Parse(txt.Target, cache)
 				if err != nil {
 					errs = append(errs, err)
 					continue
 				}
+			}
+			if flatten, ok := txt.Metadata["flatten"]; ok && strings.HasPrefix(txt.Target, "v=spf1") {
 				rec = rec.Flatten(flatten)
 				txt.Target = rec.TXT()
 			}
 			// now split if needed
 			if split, ok := txt.Metadata["split"]; ok {
-				if rec == nil {
-					rec, err = spflib.Parse(txt.Target, cache)
-					if err != nil {
-						errs = append(errs, err)
-						continue
-					}
-				}
 				if !strings.Contains(split, "%d") {
 					errs = append(errs, Warning{fmt.Errorf("Split format `%s` in `%s` is not proper format (should have %%d in it)", split, txt.NameFQDN)})
 					continue
@@ -58,6 +57,9 @@ func flattenSPFs(cfg *models.DNSConfig) []error {
 				}
 			}
 		}
+	}
+	if cache == nil {
+		return errs
 	}
 	// check if cache is stale
 	for _, e := range cache.ResolveErrors() {

@@ -39,7 +39,7 @@ func (s *SPFRecord) split(thisfqdn string, pattern string, nextIdx int, m map[st
 	// we need to trim.
 	// take parts while we fit
 	nextFQDN := fmt.Sprintf(pattern, nextIdx)
-	lastPart := s.Parts[len(s.Parts)-1] // all part TODO: verify that this is an ALL clause
+	lastPart := s.Parts[len(s.Parts)-1]
 	tail := " include:" + nextFQDN + " " + lastPart.Text
 	thisText := "v=spf1"
 
