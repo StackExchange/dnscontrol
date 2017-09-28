@@ -20,7 +20,7 @@ type LiveResolver struct{}
 func (l LiveResolver) GetSPF(name string) (string, error) {
 	vals, err := net.LookupTXT(name)
 	if err != nil {
-		return "", nil
+		return "", err
 	}
 	spf := ""
 	for _, v := range vals {
