@@ -32,9 +32,6 @@ type gcloud struct {
 
 // New creates a new gcloud provider
 func New(cfg map[string]string, _ json.RawMessage) (providers.DNSServiceProvider, error) {
-	//	if cfg["type"] == "" {
-	//cfg["type"] = "service_account"
-	//}
 	raw, err := json.Marshal(cfg)
 	if err != nil {
 		return nil, err
@@ -43,7 +40,6 @@ func New(cfg map[string]string, _ json.RawMessage) (providers.DNSServiceProvider
 	if err != nil {
 		return nil, err
 	}
-	fmt.Printf("TEST 2\n")
 	ctx := context.Background()
 	hc := config.Client(ctx)
 	dcli, err := dns.New(hc)
