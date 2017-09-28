@@ -34,7 +34,7 @@ var defaultNameServerNames = []string{
 	"ns3.digitalocean.com",
 }
 
-func newDo(m map[string]string, metadata json.RawMessage) (providers.DNSServiceProvider, error) {
+func NewDo(m map[string]string, metadata json.RawMessage) (providers.DNSServiceProvider, error) {
 	if m["token"] == "" {
 		return nil, fmt.Errorf("Digitalocean Token must be provided.")
 	}
@@ -66,7 +66,7 @@ var docNotes = providers.DocumentationNotes{
 }
 
 func init() {
-	providers.RegisterDomainServiceProviderType("DIGITALOCEAN", newDo, providers.CanUseSRV, docNotes)
+	providers.RegisterDomainServiceProviderType("DIGITALOCEAN", NewDo, providers.CanUseSRV, docNotes)
 }
 
 func (api *DoApi) EnsureDomainExists(domain string) error {
