@@ -3,12 +3,10 @@ package spflib
 import (
 	"strings"
 	"testing"
-
-	"github.com/StackExchange/dnscontrol/pkg/dnsresolver"
 )
 
 func TestFlatten(t *testing.T) {
-	res, err := dnsresolver.NewResolverPreloaded("testdata-dns1.json")
+	res, err := NewCache("testdata-dns1.json")
 	if err != nil {
 		t.Fatal(err)
 	}
