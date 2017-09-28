@@ -30,6 +30,7 @@
     "knownFailures": "5"
   },
   "GCLOUD": {
+    "type": "$GCLOUD_TYPE",
     "client_email": "$GCLOUD_EMAIL",
     "domain": "$GCLOUD_DOMAIN",
     "private_key": "$GCLOUD_PRIVATEKEY",
