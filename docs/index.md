@@ -6,7 +6,7 @@ layout: default
 	<div class="col-md-12">
 		<div>
 			<h1 class="hometitle">DnsControl</h1>
-			<p class="lead">DnsControl is a platform for seamlessly managing your dns configuration across any number of DNS hosts, both in the cloud or in your own infrastructure. It manages all of the domains for the Stack Exchange network.</p>
+			<p class="lead">DnsControl is a platform for seamlessly managing your DNS configuration across any number of DNS hosts, both in the cloud or in your own infrastructure. It manages all of the domains for the Stack Exchange network.</p>
 		</div>
 	</div>
 </div>
@@ -14,11 +14,11 @@ layout: default
 <div class="row text-center" style="padding-top: 75px;">
 	<div class="col-md-4">
 		<h3>Try It</h3>
-		<p>Want to jump right in? Follow our <strong><a href="/quickstart">quick start tutorial</a></strong> to get Bosun, OpenTSDB, and scollector up quickly using our published docker images.</p>
+		<p>Want to jump right in? Follow our <strong><a href="getting-started">quick start tutorial</a></strong> on a new domain or <strong><a href="migrating">migrate</a></strong> an existing one.</p>
 	</div>
 	<div class="col-md-4">
 		<h3>Download It</h3>
-		<p>Download the prebuilt binaries for <strong><a href="/downloads">Bosun</a></strong> and our optional but valuable monitoring agent (Currently works only with OpenTSDB) <strong><a href="/scollector">scollector</a></strong> for Windows, Linux, and Mac.</p>
+		<p>Download the prebuilt binaries for <strong><a href="https://github.com/StackExchange/dnscontrol/releases">binaries</a></strong> and our optional but valuable monitoring agent (Currently works only with OpenTSDB) <strong><a href="/scollector">scollector</a></strong> for Windows, Linux, and Mac.</p>
 	</div>
 	<div class="col-md-4">
 		<h3>Get Help</h3>
