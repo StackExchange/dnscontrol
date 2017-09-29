@@ -143,3 +143,10 @@ FILL IN THE SEQUENCE OF COMMANDS TO MAINTAIN THE CACHE.
 # Interactive mode
 
 FILL IN INFO ABOUT THE INTERACTIVE MDOE.
+
+# Future
+
+We'd like to add other optimizations such as:
+
+* De-dup
+* Remove overlapping CIDR blocks
