@@ -1,6 +1,10 @@
+---
+layout: default
+---
+
 # Unit Testing DNS Data
 
-## Testing
+## Built-in Tests
 
 DNSControl performs a number of tests during the validation stage.
 You can find them in `pkg/normalize/validate.go`.
