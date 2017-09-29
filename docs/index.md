@@ -75,7 +75,7 @@ layout: default
 			<img class="fpicon" src="public/cog.svg" style="max-height: 40px; max-width: 40px;">
 		</div>
 		<div class="col-md-10">
-			<p class="smaller">Assign an IP address to a constant and use the variable name throughout the configuration. Need to change the IP address globally? Just change the variable and "recompile."</p>
+			<p class="smaller">Eliminate vendor lock-in. Switch between DNS providers easily.</p>
 		</div>
 	</div>
 	<div class="col-md-6 right">
@@ -92,7 +92,7 @@ layout: default
 			<img class="fpicon" src="public/cog.svg" style="max-height: 40px; max-width: 40px;">
 		</div>
 		<div class="col-md-10">
-			<p class="smaller">All the benefits of Git (or any VCS) for your DNS zone data.</p>
+			<p class="smaller">Supports 10+ DNS Providers including BIND, AWS Route 53, Google DNS, and name.com</p>
 		</div>
 	</div>
 	<div class="col-md-6 right">
@@ -109,7 +109,7 @@ layout: default
 			<img class="fpicon" src="public/cog.svg" style="max-height: 40px; max-width: 40px;">
 		</div>
 		<div class="col-md-10">
-			<p class="smaller">Supports 10+ DNS Providers including BIND, AWS Route 53, Google DNS, and name.com</p>
+			<p class="smaller">All the benefits of Git (or any VCS) for your DNS zone data.</p>
 		</div>
 	</div>
 	<div class="col-md-6 right">
@@ -143,7 +143,7 @@ layout: default
 			<img class="fpicon" src="public/cog.svg" style="max-height: 40px; max-width: 40px;">
 		</div>
 		<div class="col-md-10">
-			<p class="smaller">Eliminate vendor lock-in. Switch between DNS providers easily.</p>
+			<p class="smaller">Assign an IP address to a constant and use the variable name throughout the configuration. Need to change the IP address globally? Just change the variable and "recompile."</p>
 		</div>
 	</div>
 	<div class="col-md-6 right">

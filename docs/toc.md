@@ -22,9 +22,11 @@ layout: default
 ### [Why CNAME/MX/NS targets require a trailing "dot"]({{site.github.url}}/why-the-dot)
 
 
-## Advanced Usage
+## Advanced Topics
 
 ### [Testing]({{site.github.url}}/unittests): Unit Testing for you DNS Data.
+
+### [SPF Optimizer]({{site.github.url}}/spf): Optimize your SPF records.
 
 ## Developer info
 
