@@ -38,4 +38,4 @@ Dnscontrol is a platform for seamlessly managing your dns configuration across a
 ### [Adding new DNS record types]({{site.github.url}}/adding-new-rtypes)
 
 
-(Preview the new [frontpage]({{site.github.url}}/new-index.md)
+(Preview the new [frontpage]({{site.github.url}}/new-index))
