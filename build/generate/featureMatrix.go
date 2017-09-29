@@ -56,12 +56,16 @@ func generateFeatureMatrix() error {
 			}
 			fm.SetSimple(name, true, func() bool { return providers.ProviderHasCabability(p, cap) })
 		}
-		setDoc := func(name string, cap providers.Capability) {
+		setDoc := func(name string, cap providers.Capability, defaultNo bool) {
 			if notes[cap] != nil {
 				fm[name] = notes[cap]
+			} else if defaultNo {
+				fm[name] = &providers.DocumentationNote{
+					HasFeature: false,
+				}
 			}
 		}
-		setDoc("Official Support", providers.DocOfficiallySupported)
+		setDoc("Official Support", providers.DocOfficiallySupported, true)
 		fm.SetSimple("Registrar", false, func() bool { return providers.RegistrarTypes[p] != nil })
 		fm.SetSimple("DNS Provider", false, func() bool { return providers.DNSProviderTypes[p] != nil })
 		setCap("ALIAS", providers.CanUseAlias)
@@ -69,8 +73,8 @@ func generateFeatureMatrix() error {
 		setCap("PTR", providers.CanUsePTR)
 		setCap("CAA", providers.CanUseCAA)
 		setCap("TLSA", providers.CanUseTLSA)
-		setDoc("dual host", providers.DocDualHost)
-		setDoc("create-domains", providers.DocCreateDomains)
+		setDoc("dual host", providers.DocDualHost, false)
+		setDoc("create-domains", providers.DocCreateDomains, true)
 
 		// no purge is a freaky double negative
 		cap := providers.CantUseNOPURGE

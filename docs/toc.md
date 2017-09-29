@@ -1,9 +1,6 @@
 ---
 layout: default
 ---
-# DNSControl
-
-Dnscontrol is a platform for seamlessly managing your dns configuration across any number of DNS hosts, both in the cloud or in your own infrastructure. It manages all of the domains for the Stack Exchange network.
 
 ## Getting Started
 
@@ -25,9 +22,11 @@ Dnscontrol is a platform for seamlessly managing your dns configuration across a
 ### [Why CNAME/MX/NS targets require a trailing "dot"]({{site.github.url}}/why-the-dot)
 
 
-## Advanced Usage
+## Advanced Topics
 
 ### [Testing]({{site.github.url}}/unittests): Unit Testing for you DNS Data.
+
+### [SPF Optimizer]({{site.github.url}}/spf): Optimize your SPF records.
 
 ## Developer info
 
@@ -37,5 +36,3 @@ Dnscontrol is a platform for seamlessly managing your dns configuration across a
 
 ### [Adding new DNS record types]({{site.github.url}}/adding-new-rtypes)
 
-
-(Preview the new [frontpage]({{site.github.url}}/new-index.md)

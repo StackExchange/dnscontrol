@@ -1,3 +1,7 @@
+---
+layout: default
+---
+
 # Migrating zones to DNSControl
 
 This document explains how to migrate (convert) DNS zones from
