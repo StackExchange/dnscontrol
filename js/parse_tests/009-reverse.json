@@ -1,0 +1,13 @@
+{
+		  "registrars": [],
+		  "dns_providers": [],
+		  "domains": [
+		    {
+		      "name": "2.1.in-addr.arpa",
+		      "registrar": "none",
+		      "dnsProviders": {},
+		      "records": [],
+		      "keepunknown": false
+		    }
+		  ]
+		}

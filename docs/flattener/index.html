@@ -1,0 +1,62 @@
+<html >
+
+<head>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css" integrity="sha384-1q8mTJOASx8j1Au+a5WDVnPi2lkFfwwEAa8hDDdjZlpLegxhjVME1fgjWPGmkzs7" crossorigin="anonymous">
+    <script src="https://code.jquery.com/jquery-3.2.1.min.js"></script>
+    <script src="flattener.js"></script>
+    <style>
+
+ul {
+  margin: 0px 0px 0px 20px;
+  list-style: none;
+  line-height: 2em;
+  font-family: Arial;
+}
+ul li {
+  font-size: 16px;
+  position: relative;
+}
+ul li:before {
+  position: absolute;
+  left: -15px;
+  top: 0px;
+  content: '';
+  display: block;
+  border-left: 1px solid #ddd;
+  height: 1em;
+  border-bottom: 1px solid #ddd;
+  width: 10px;
+}
+ul li:after {
+  position: absolute;
+  left: -15px;
+  bottom: -7px;
+  content: '';
+  display: block;
+  border-left: 1px solid #ddd;
+  height: 100%;
+}
+ul li.root {
+  margin: 0px 0px 0px -20px;
+}
+ul li.root:before {
+  display: none;
+}
+ul li.root:after {
+  display: none;
+}
+ul li:last-child:after {
+  display: none;
+}
+
+        </style>
+</head>
+
+<body>
+    <div class='container' style='padding-bottom:50px'>
+    <input type="text" id="domain" value="stackoverflow.com"></input>
+    <button id="lookup_btn">Lookup</button>
+    <div id="results"></div>
+    <div id="flattened"></div>
+    </div>
+</body>
