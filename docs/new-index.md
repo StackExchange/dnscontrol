@@ -55,14 +55,14 @@ layout: default
 <div class="row">
 	<div class="col-md-6 left">
 		<div class="col-md-2 left ">
-			<img class="fpicon" src="public/cog.svg" style="max-height: 40px; max-width: 40px;">
+			<img class="fpicon" src="public/biology.svg" style="max-height: 40px; max-width: 40px;">
 		</div>
 		<div class="col-md-10">
 			<p class="smaller">Maintain your DNS data as a high-level DS, with macros, and variables for easier updates.</p>
 		</div>
 	</div>
 	<div class="col-md-6 right">
-		<div class="col-md-2 left"><img class="fpicon" src="public/cog.svg" style="max-height: 40px; max-width: 40px;"></div>
+		<div class="col-md-2 left"><img class="fpicon" src="public/light-bulb.svg" style="max-height: 40px; max-width: 40px;"></div>
 		<div class="col-md-10">
 		<p class="smaller">Super extensible! Plug-in architecture makes adding new DNS providers and Registrars easy!</p>
 		</div>
@@ -72,16 +72,16 @@ layout: default
 <div class="row">
 	<div class="col-md-6 left">
 		<div class="col-md-2 left ">
-			<img class="fpicon" src="public/cog.svg" style="max-height: 40px; max-width: 40px;">
+			<img class="fpicon" src="public/group.svg" style="max-height: 40px; max-width: 40px;">
 		</div>
 		<div class="col-md-10">
-			<p class="smaller">Eliminate vendor lock-in. Switch between DNS providers easily.</p>
+			<p class="smaller">Eliminate vendor lock-in. Switch DNS providers easily, any time, with full fidelity.</p>
 		</div>
 	</div>
 	<div class="col-md-6 right">
-		<div class="col-md-2 left"><img class="fpicon" src="public/cog.svg" style="max-height: 40px; max-width: 40px;"></div>
+		<div class="col-md-2 left"><img class="fpicon" src="public/layers.svg" style="max-height: 40px; max-width: 40px;"></div>
 		<div class="col-md-10">
-		<p class="smaller">Reduce points of failure: Easily maintain  dual DNS providers.</p>
+		<p class="smaller">Reduce points of failure: Easily maintain dual DNS providers and easily drop one that is down.</p>
 		</div>
 	</div>
 </div>
@@ -89,14 +89,14 @@ layout: default
 <div class="row">
 	<div class="col-md-6 left">
 		<div class="col-md-2 left ">
-			<img class="fpicon" src="public/cog.svg" style="max-height: 40px; max-width: 40px;">
+			<img class="fpicon" src="public/cancel.svg" style="max-height: 40px; max-width: 40px;">
 		</div>
 		<div class="col-md-10">
 			<p class="smaller">Supports 10+ DNS Providers including BIND, AWS Route 53, Google DNS, and name.com</p>
 		</div>
 	</div>
 	<div class="col-md-6 right">
-		<div class="col-md-2 left"><img class="fpicon" src="public/cog.svg" style="max-height: 40px; max-width: 40px;"></div>
+		<div class="col-md-2 left"><img class="fpicon" src="public/share.svg" style="max-height: 40px; max-width: 40px;"></div>
 		<div class="col-md-10">
 		<p class="smaller">Apply CI/CD principles to DNS: Unit-tests, system-tests, automated deployment.</p>
 		</div>
@@ -106,16 +106,16 @@ layout: default
 <div class="row">
 	<div class="col-md-6 left">
 		<div class="col-md-2 left ">
-			<img class="fpicon" src="public/cog.svg" style="max-height: 40px; max-width: 40px;">
+			<img class="fpicon" src="public/document.svg" style="max-height: 40px; max-width: 40px;">
 		</div>
 		<div class="col-md-10">
-			<p class="smaller">All the benefits of Git (or any VCS) for your DNS zone data.</p>
+			<p class="smaller">All the benefits of Git (or any VCS) for your DNS zone data. View history. Accept PRs.</p>
 		</div>
 	</div>
 	<div class="col-md-6 right">
-		<div class="col-md-2 left"><img class="fpicon" src="public/cog.svg" style="max-height: 40px; max-width: 40px;"></div>
+		<div class="col-md-2 left"><img class="fpicon" src="public/mail.svg" style="max-height: 40px; max-width: 40px;"></div>
 		<div class="col-md-10">
-		<p class="smaller">Optimize DNS with SPF optimizer (coming soon!)</p>
+		<p class="smaller">Optimize DNS with SPF optimizer. Detect too many lookups. Flatten includes.</p>
 		</div>
 	</div>
 </div>
@@ -123,14 +123,14 @@ layout: default
 <div class="row">
 	<div class="col-md-6 left">
 		<div class="col-md-2 left ">
-			<img class="fpicon" src="public/cog.svg" style="max-height: 40px; max-width: 40px;">
+			<img class="fpicon" src="public/speech-bubble.svg" style="max-height: 40px; max-width: 40px;">
 		</div>
 		<div class="col-md-10">
 			<p class="smaller">Runs on Linux, Windows, Mac, or any operating system supported by Go.</p>
 		</div>
 	</div>
 	<div class="col-md-6 right">
-		<div class="col-md-2 left"><img class="fpicon" src="public/cog.svg" style="max-height: 40px; max-width: 40px;"></div>
+		<div class="col-md-2 left"><img class="fpicon" src="public/cloud-computing.svg" style="max-height: 40px; max-width: 40px;"></div>
 		<div class="col-md-10">
 		<p class="smaller">Enable/disable Cloudflare proxying (the "orange cloud" button) directly from your DNSControl files.</p>
 		</div>
@@ -140,14 +140,14 @@ layout: default
 <div class="row">
 	<div class="col-md-6 left">
 		<div class="col-md-2 left ">
-			<img class="fpicon" src="public/cog.svg" style="max-height: 40px; max-width: 40px;">
+			<img class="fpicon" src="public/compass.svg" style="max-height: 40px; max-width: 40px;">
 		</div>
 		<div class="col-md-10">
 			<p class="smaller">Assign an IP address to a constant and use the variable name throughout the configuration. Need to change the IP address globally? Just change the variable and "recompile."</p>
 		</div>
 	</div>
 	<div class="col-md-6 right">
-		<div class="col-md-2 left"><img class="fpicon" src="public/cog.svg" style="max-height: 40px; max-width: 40px;"></div>
+		<div class="col-md-2 left"><img class="fpicon" src="public/attachment.svg" style="max-height: 40px; max-width: 40px;"></div>
 		<div class="col-md-10">
 		<p class="smaller">Keep similar domains in sync with transforms, macros, and variables.</p>
 		</div>
@@ -157,3 +157,5 @@ layout: default
 
 <div class="row" style="padding-top: 75px"><div class='col-md-4 col-md-offset-4'><h2 class="text-center feature-header"><a href="toc">Read More</a></h2></div></div>
 <hr class="feature">
+
+<p><small>Icons made by Freepik from <a href="http://www.flaticon.com">www.flaticon.com</a></small></p>
