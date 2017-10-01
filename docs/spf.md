@@ -25,6 +25,41 @@ changed the contents of the SPF records?
 
 We figured that DNSControl could do a better job.
 
+# For the impatient
+
+## Step 1: Define your SPF like this
+
+    var SPF_LIST_NORMAL = [
+        'v=spf1',
+        'ip4:198.252.206.0/24',           // comment
+        'ip4:192.111.0.0/24',             // comment
+        'include:_spf.google.com',        // comment
+        'include:mailgun.org',            // comment
+        'include:spf-basic.fogcreek.com', // comment
+        '~all'
+    ].join(" ");
+                                   // Change these to the ones that should be flattened:
+    var SPF_NORMAL = [             //        VVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVV
+        TXT("@", SPF_LIST_NORMAL, {flatten: "spf-basic.fogcreek.com,mailgun.org", split: "_spf%d"}),
+        TXT("_rawspf", SPF_LIST_NORMAL) // keep unmodified availible for other tools
+    ]
+
+## Step 2: For a domain that needs that SPF record, include `SPF_NORMAL` as if it is a record.
+
+    D('example.com', ...
+      SPF_NORMAL,
+      ...
+    )
+
+## Step 3: Push the changes
+
+`dnscontrol preview` and `dnscontrol push` work as you'd expect.  However now
+your SPF record will be optimized for you.
+
+You might want to check out the web-based SPF tool described below.
+
+
+
 ## Better comments
 
 Here's how we define our SPF record:
@@ -142,7 +177,14 @@ FILL IN THE SEQUENCE OF COMMANDS TO MAINTAIN THE CACHE.
 
 # Interactive mode
 
-FILL IN INFO ABOUT THE INTERACTIVE MDOE.
+To help you decide what to flatten, load `docs/flattener/index.html`
+into your web browser and you will be able to play with your SPF
+records.  We suggest you flatten only the minimum required to reach
+10 or fewer lookups.
+
+This tool runs entirely in your browser.
+
+Start interactive mode: [interactive SPF tool](flattener/index.html)
 
 # Future
 
