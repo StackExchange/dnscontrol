@@ -125,11 +125,15 @@ func (c *cache) ResolveErrors() (errs []error) {
 	return
 }
 func (c *cache) Save(filename string) error {
-	for _, entry := range c.records {
+	outRecs := make(map[string]*cacheEntry, len(c.records))
+	for k, entry := range c.records {
+		// move resolved data into cached field
+		// only take those we actually resolved
 		if entry.resolvedSPF != "" {
 			entry.SPF = entry.resolvedSPF
+			outRecs[k] = entry
 		}
 	}
-	dat, _ := json.MarshalIndent(c.records, "", "  ")
+	dat, _ := json.MarshalIndent(outRecs, "", "  ")
 	return ioutil.WriteFile(filename, dat, 0644)
 }
