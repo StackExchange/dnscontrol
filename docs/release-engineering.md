@@ -4,7 +4,10 @@ Here are my notes from producing the v0.1.5 release.  Change the version number 
 
 ## Step 1.  Run the integration tests
 
-If you are at StackOverflow, this is in TC as "DNS > Integration Tests".
+* If you are at StackOverflow, this is in TC as "DNS > Integration Tests".
+* Otherwise:
+  * Run "go test" (documented in [Creating new DNS Resource Types](adding-new-rtypes))
+  * Run the integration tests (documented in [Writing new DNS providers](writing-providers)
 
 ## Step 2. Bump the verison number
 
