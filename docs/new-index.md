@@ -53,109 +53,111 @@ layout: default
 <hr class="feature">
 
 <div class="row">
-	<div class="col-md-6 left">
-		<div class="col-md-2 left ">
-			<img class="fpicon" src="public/biology.svg" style="max-height: 40px; max-width: 40px;">
+    {% include feature.html text="Maintain your DNS data as a high-level DS, with macros, and variables for easier updates." img="biology.svg" %}
+	{% include feature.html text="Super extensible! Plug-in architecture makes adding new DNS providers and Registrars easy!" img="light-bulb.svg" %}
+	{% include feature.html text="Eliminate vendor lock-in. Switch DNS providers easily, any time, with full fidelity." img="group.svg" %}
+	{% include feature.html text="Reduce points of failure: Easily maintain dual DNS providers and easily drop one that is down." img="layers.svg" %}
+	{% include feature.html text="Supports 10+ DNS Providers including BIND, AWS Route 53, Google DNS, and name.com" img="cancel.svg" %}
+	{% include feature.html text="Apply CI/CD principles to DNS: Unit-tests, system-tests, automated deployment." img="share.svg" %}
+	{% include feature.html text="All the benefits of Git (or any VCS) for your DNS zone data. View history. Accept PRs." img="document.svg" %}
+	{% include feature.html text="Optimize DNS with SPF optimizer. Detect too many lookups. Flatten includes." img="mail.svg" %}
+	{% include feature.html text="Runs on Linux, Windows, Mac, or any operating system supported by Go." img="speech-bubble.svg" %}
+	{% include feature.html text="Enable/disable Cloudflare proxying (the \"orange cloud\" button) directly from your DNSControl files." img="cloud-computing.svg" %}
+	{% include feature.html text="Assign an IP address to a constant and use the variable name throughout the configuration. Need to change the IP address globally? Just change the variable and \"recompile.\"" img="compass.svg" %}
+	{% include feature.html text="Keep similar domains in sync with transforms, macros, and variables." img="attachment.svg" %}
+</div>
+
+<hr class="feature">
+
+<div class="container-fluid">
+	<div class="row">
+		<div class="col-md-4">
+			<h2>
+				Getting Started
+			</h2>
+			<p>
+				Information for new users and the curious.
+			</p>
+
+			<ul>
+				<li>
+          <a href="{{site.github.url}}/getting-started">Getting Started</a>: A walk-through of the basics
+				</li>
+				<li>
+					<a href="{{site.github.url}}/provider-list">Providers</a>: Which DNS providers are supported
+				</li>
+				<li>
+					<a href="{{site.github.url}}/examples">Examples</a>: The DNSControl language by example
+				</li>
+				<li>
+					<a href="{{site.github.url}}/migrating">Migrating</a>: Migrating zones to DNSControl
+				</li>
+			</ul>
 		</div>
-		<div class="col-md-10">
-			<p class="smaller">Maintain your DNS data as a high-level DS, with macros, and variables for easier updates.</p>
+		<div class="col-md-4">
+			<h2>
+				Reference
+			</h2>
+			<p>
+				Language resources and procedures.
+			</p>
+
+			<ul>
+				<li>
+					<a href="{{site.github.url}}/js">Language Reference</a>: Description of the entire language
+				</li>
+				<li>
+					<a href="{{site.github.url}}/alias">ALIAS / ANAME records in dnscontrol</a>
+				</li>
+				<li>
+					<a href="{{site.github.url}}/spf">SPF Optimizer</a>: Optimize your SPF records
+				</li>
+			</ul>
+		</div>
+		<div class="col-md-4">
+			<h2>
+				Advanced Topics
+			</h2>
+			<p>
+				Take advantage of DNSControl's unique features.
+			</p>
+			<ul>
+				<li>
+					<a href="">Why CNAME/MX/NS targets require a trailing "dot{{site.github.url}}/why-the-dot"</a>
+				</li>
+				<li>
+					<a href="{{site.github.url}}/unittests">Testing</a>: Unit Testing for you DNS Data
+				</li>
+
+			</ul>
 		</div>
 	</div>
-	<div class="col-md-6 right">
-		<div class="col-md-2 left"><img class="fpicon" src="public/light-bulb.svg" style="max-height: 40px; max-width: 40px;"></div>
-		<div class="col-md-10">
-		<p class="smaller">Super extensible! Plug-in architecture makes adding new DNS providers and Registrars easy!</p>
+	<div class="row">
+		<div class="col-md-12">
+			<h2>
+				Developer Info
+			</h2>
+			<p>
+				It is easy to add features and new providers to DNSControl. The code is very modular and easy to modify. There are extensive integration tests that make it easy to boldly make changes with confidence that you'll know if anything is broken. Our mailing list is friendly. Afraid to make your first PR? We'll gladly mentor you through the process. Many major code contributions have come from <a href="https://everythingsysadmin.com/2017/08/go-get-up-to-speed.html">first-time Go users</a>!
+			</p>
+			<ul>
+				<li>
+					Github: <a href="https://github.com/StackExchange/dnscontrol">https://github.com/StackExchange/dnscontrol</a>
+				</li>
+				<li>
+					Mailing list: <a href="https://groups.google.com/forum/#!forum/dnscontrol-discuss">dnscontrol-discuss</a>: The friendly best place to ask questions and propose new features
+				</li>
+				<li>
+					<a href="{{site.github.url}}/writing-providers">Step-by-Step Guide: Writing Providers</a>: How to write a DNS or Registrar Provider
+				</li>
+				<li>
+					<a href="{{site.github.url}}/adding-new-rtypes">Step-by-Step Guide: Adding new DNS rtypes</a>: How to add a new DNS record type
+				</li>
+			</ul>
 		</div>
 	</div>
 </div>
 
-<div class="row">
-	<div class="col-md-6 left">
-		<div class="col-md-2 left ">
-			<img class="fpicon" src="public/group.svg" style="max-height: 40px; max-width: 40px;">
-		</div>
-		<div class="col-md-10">
-			<p class="smaller">Eliminate vendor lock-in. Switch DNS providers easily, any time, with full fidelity.</p>
-		</div>
-	</div>
-	<div class="col-md-6 right">
-		<div class="col-md-2 left"><img class="fpicon" src="public/layers.svg" style="max-height: 40px; max-width: 40px;"></div>
-		<div class="col-md-10">
-		<p class="smaller">Reduce points of failure: Easily maintain dual DNS providers and easily drop one that is down.</p>
-		</div>
-	</div>
-</div>
-
-<div class="row">
-	<div class="col-md-6 left">
-		<div class="col-md-2 left ">
-			<img class="fpicon" src="public/cancel.svg" style="max-height: 40px; max-width: 40px;">
-		</div>
-		<div class="col-md-10">
-			<p class="smaller">Supports 10+ DNS Providers including BIND, AWS Route 53, Google DNS, and name.com</p>
-		</div>
-	</div>
-	<div class="col-md-6 right">
-		<div class="col-md-2 left"><img class="fpicon" src="public/share.svg" style="max-height: 40px; max-width: 40px;"></div>
-		<div class="col-md-10">
-		<p class="smaller">Apply CI/CD principles to DNS: Unit-tests, system-tests, automated deployment.</p>
-		</div>
-	</div>
-</div>
-
-<div class="row">
-	<div class="col-md-6 left">
-		<div class="col-md-2 left ">
-			<img class="fpicon" src="public/document.svg" style="max-height: 40px; max-width: 40px;">
-		</div>
-		<div class="col-md-10">
-			<p class="smaller">All the benefits of Git (or any VCS) for your DNS zone data. View history. Accept PRs.</p>
-		</div>
-	</div>
-	<div class="col-md-6 right">
-		<div class="col-md-2 left"><img class="fpicon" src="public/mail.svg" style="max-height: 40px; max-width: 40px;"></div>
-		<div class="col-md-10">
-		<p class="smaller">Optimize DNS with SPF optimizer. Detect too many lookups. Flatten includes.</p>
-		</div>
-	</div>
-</div>
-
-<div class="row">
-	<div class="col-md-6 left">
-		<div class="col-md-2 left ">
-			<img class="fpicon" src="public/speech-bubble.svg" style="max-height: 40px; max-width: 40px;">
-		</div>
-		<div class="col-md-10">
-			<p class="smaller">Runs on Linux, Windows, Mac, or any operating system supported by Go.</p>
-		</div>
-	</div>
-	<div class="col-md-6 right">
-		<div class="col-md-2 left"><img class="fpicon" src="public/cloud-computing.svg" style="max-height: 40px; max-width: 40px;"></div>
-		<div class="col-md-10">
-		<p class="smaller">Enable/disable Cloudflare proxying (the "orange cloud" button) directly from your DNSControl files.</p>
-		</div>
-	</div>
-</div>
-
-<div class="row">
-	<div class="col-md-6 left">
-		<div class="col-md-2 left ">
-			<img class="fpicon" src="public/compass.svg" style="max-height: 40px; max-width: 40px;">
-		</div>
-		<div class="col-md-10">
-			<p class="smaller">Assign an IP address to a constant and use the variable name throughout the configuration. Need to change the IP address globally? Just change the variable and "recompile."</p>
-		</div>
-	</div>
-	<div class="col-md-6 right">
-		<div class="col-md-2 left"><img class="fpicon" src="public/attachment.svg" style="max-height: 40px; max-width: 40px;"></div>
-		<div class="col-md-10">
-		<p class="smaller">Keep similar domains in sync with transforms, macros, and variables.</p>
-		</div>
-	</div>
-</div>
-
-
-<div class="row" style="padding-top: 75px"><div class='col-md-4 col-md-offset-4'><h2 class="text-center feature-header"><a href="toc">Read More</a></h2></div></div>
 <hr class="feature">
 
 <p><small>Icons made by Freepik from <a href="http://www.flaticon.com">www.flaticon.com</a></small></p>
