@@ -153,6 +153,9 @@ layout: default
 				<li>
 					<a href="{{site.github.url}}/adding-new-rtypes">Step-by-Step Guide: Adding new DNS rtypes</a>: How to add a new DNS record type
 				</li>
+				<li>
+					<a href="{{site.github.url}}/release-engineering">Release Engineering</a>: How to build and ship a release
+				</li>
 			</ul>
 		</div>
 	</div>
