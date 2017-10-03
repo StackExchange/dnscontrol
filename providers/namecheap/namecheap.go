@@ -27,6 +27,11 @@ var docNotes = providers.DocumentationNotes{
 	providers.DocCreateDomains:       providers.Cannot("Requires domain registered through their service"),
 	providers.DocOfficiallySupported: providers.Cannot(),
 	providers.DocDualHost:            providers.Cannot("Doesn't allow control of apex NS records"),
+	providers.CanUseAlias:            providers.Cannot(),
+	providers.CanUseCAA:              providers.Cannot(),
+	providers.CanUseSRV:              providers.Unimplemented("namecheap supports srv records, we just need someone to implement it and make sure the tests pass."),
+	providers.CanUsePTR:              providers.Cannot(),
+	providers.CanUseTLSA:             providers.Cannot(),
 }
 
 func init() {
