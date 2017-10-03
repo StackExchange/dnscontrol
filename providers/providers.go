@@ -1,7 +1,6 @@
 package providers
 
 import (
-	"encoding/json"
 	"fmt"
 	"log"
 
@@ -30,59 +29,12 @@ func RegisterDomainServiceProviderType(name string, init models.DspInitializer, 
 	unwrapProviderCapabilities(name, pm)
 }
 
-func createRegistrar(rType string, config map[string]string) (models.RegistrarDriver, error) {
-	initer, ok := registrarTypes[rType]
-	if !ok {
-		return nil, fmt.Errorf("Registrar type %s not declared.", rType)
-	}
-	return initer(config)
-}
-
-func CreateDNSProvider(dType string, config map[string]string, meta json.RawMessage) (models.DNSServiceProviderDriver, error) {
-	initer, ok := dnsProviderTypes[dType]
-	if !ok {
-		return nil, fmt.Errorf("DSP type %s not declared", dType)
-	}
-	return initer(config, meta)
-}
-
-//CreateRegistrars will load all registrars from the dns config, and create instances of the correct type using data from
-//the provider config to load relevant keys and options.
-func CreateRegistrars(d *models.DNSConfig, providerConfigs map[string]map[string]string) (map[string]models.RegistrarDriver, error) {
-	regs := map[string]models.RegistrarDriver{}
-	for _, reg := range d.Registrars {
-		rawMsg, ok := providerConfigs[reg.Name]
-		if !ok && reg.Type != "NONE" {
-			return nil, fmt.Errorf("Registrar %s not listed in creds.json file.", reg.Name)
-		}
-		registrar, err := createRegistrar(reg.Type, rawMsg)
-		if err != nil {
-			return nil, err
-		}
-		regs[reg.Name] = registrar
-	}
-	return regs, nil
-}
-
-func CreateDsps(d *models.DNSConfig, providerConfigs map[string]map[string]string) (map[string]models.DNSServiceProviderDriver, error) {
-	dsps := map[string]models.DNSServiceProviderDriver{}
-	for _, dsp := range d.DNSProviders {
-		vals := providerConfigs[dsp.Name]
-		provider, err := CreateDNSProvider(dsp.Type, vals, dsp.Metadata)
-		if err != nil {
-			return nil, err
-		}
-		dsps[dsp.Name] = provider
-	}
-	return dsps, nil
-}
-
 // CreateProviders will initialize all dns providers and registrars, and store them in all domains as needed.
-func CreateProviders(d *models.DNSConfig, providerConfigs map[string]map[string]string) error {
+func CreateProviders(cfg *models.DNSConfig, providerConfigs map[string]map[string]string) error {
 	dnsProvidersByName := map[string]models.DNSServiceProviderDriver{}
 	registrarsByName := map[string]models.RegistrarDriver{}
 	// create dns providers
-	for _, dnsProvider := range d.DNSProviders {
+	for _, dnsProvider := range cfg.DNSProviders {
 		vals := providerConfigs[dnsProvider.Name]
 		initer, ok := dnsProviderTypes[dnsProvider.Type]
 		if !ok {
@@ -95,7 +47,7 @@ func CreateProviders(d *models.DNSConfig, providerConfigs map[string]map[string]
 		}
 	}
 	// create registrars
-	for _, reg := range d.Registrars {
+	for _, reg := range cfg.Registrars {
 		vals := providerConfigs[reg.Name]
 		initer, ok := registrarTypes[reg.Type]
 		if !ok {
@@ -105,6 +57,38 @@ func CreateProviders(d *models.DNSConfig, providerConfigs map[string]map[string]
 			registrarsByName[reg.Name] = provider
 		} else {
 			return err
+		}
+	}
+	// everything that does not explicitly include "_exclude_from_defaults: true" in creds.json is default
+	isDefault := func(name string) bool {
+		if vals, ok := providerConfigs[name]; ok {
+			if exclude := vals["_exclude_from_defaults"]; exclude == "true" {
+				return false
+			}
+		}
+		return true
+	}
+	for _, d := range cfg.Domains {
+		if reg, ok := registrarsByName[d.RegistrarName]; ok {
+			d.Registrar = &registrar{
+				RegistrarDriver: reg,
+				name:            d.RegistrarName,
+				isDefault:       isDefault(d.RegistrarName),
+			}
+		} else {
+			return fmt.Errorf("Registrar '%s' for %s not defined", d.RegistrarName, d.Name)
+		}
+		for dspName, num := range d.DNSProviderNames {
+			if prov, ok := dnsProvidersByName[dspName]; ok {
+				d.DNSProviders = append(d.DNSProviders, &dnsProvider{
+					DNSServiceProviderDriver: prov,
+					name:           dspName,
+					isDefault:      isDefault(dspName),
+					numNameservers: num,
+				})
+			} else {
+				return fmt.Errorf("DNS Provider '%s' for %s not defined", dspName, d.Name)
+			}
 		}
 	}
 	return nil
@@ -151,3 +135,23 @@ func GetCustomRecordType(rType string) *CustomRType {
 }
 
 var customRecordTypes = map[string]*CustomRType{}
+
+type registrar struct {
+	models.RegistrarDriver
+	name      string
+	isDefault bool
+}
+
+func (r *registrar) Name() string       { return r.name }
+func (r *registrar) RunByDefault() bool { return r.isDefault }
+
+type dnsProvider struct {
+	models.DNSServiceProviderDriver
+	name           string
+	isDefault      bool
+	numNameservers int
+}
+
+func (r *dnsProvider) Name() string                  { return r.name }
+func (r *dnsProvider) RunByDefault() bool            { return r.isDefault }
+func (r *dnsProvider) NumberOfNameserversToUse() int { return r.numNameservers }

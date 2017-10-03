@@ -187,7 +187,7 @@ func importTransform(srcDomain, dstDomain *models.DomainConfig, transforms []tra
 			continue
 		}
 		newRec := func() *models.RecordConfig {
-			rec2, _ := rec.Copy()
+			rec2 := rec.Copy()
 			rec2.Name = rec2.NameFQDN
 			rec2.NameFQDN = dnsutil.AddOrigin(rec2.Name, dstDomain.Name)
 			if ttl != 0 {
@@ -439,12 +439,9 @@ func applyRecordTransforms(domain *models.DomainConfig) error {
 				rec.Target = newIP.String() //replace target of first record if different
 			} else if i > 0 {
 				// any additional ips need identical records with the alternate ip added to the domain
-				copy, err := rec.Copy()
-				if err != nil {
-					return err
-				}
-				copy.Target = newIP.String()
-				domain.Records = append(domain.Records, copy)
+				cp := rec.Copy()
+				cp.Target = newIP.String()
+				domain.Records = append(domain.Records, cp)
 			}
 		}
 	}

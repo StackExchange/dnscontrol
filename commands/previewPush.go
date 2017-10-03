@@ -2,7 +2,6 @@ package commands
 
 import (
 	"fmt"
-	"log"
 	"os"
 
 	"github.com/StackExchange/dnscontrol/models"
@@ -86,11 +85,9 @@ func run(args PreviewArgs, push bool, interactive bool, out printer.CLI) error {
 	if PrintValidationErrors(errs) {
 		return fmt.Errorf("Exiting due to validation errors")
 	}
-	registrars, dnsProviders, nonDefaultProviders, err := InitializeProviders(args.CredsFile, cfg)
-	if err != nil {
+	if err = InitializeProviders(args.CredsFile, cfg); err != nil {
 		return err
 	}
-	out.Debugf("Initialized %d registrars and %d dns service providers.\n", len(registrars), len(dnsProviders))
 	anyErrors := false
 	totalCorrections := 0
 DomainLoop:
@@ -99,28 +96,20 @@ DomainLoop:
 			continue
 		}
 		out.StartDomain(domain.Name)
-		nsList, err := nameservers.DetermineNameservers(domain, 0, dnsProviders)
+		nsList, err := nameservers.DetermineNameservers(domain)
 		if err != nil {
 			return err
 		}
 		domain.Nameservers = nsList
 		nameservers.AddNSRecords(domain)
-		for prov := range domain.DNSProviderNames {
-			dc, err := domain.Copy()
-			if err != nil {
-				return err
-			}
-			shouldrun := args.shouldRunProvider(prov, dc, nonDefaultProviders)
-			out.StartDNSProvider(prov, !shouldrun)
+		for _, provider := range domain.DNSProviders {
+			dc := domain.Copy()
+			shouldrun := args.shouldRunProvider(provider)
+			out.StartDNSProvider(provider.Name(), !shouldrun)
 			if !shouldrun {
 				continue
 			}
-			// TODO: make provider discovery like this a validate-time operation
-			dsp, ok := dnsProviders[prov]
-			if !ok {
-				log.Fatalf("DSP %s not declared.", prov)
-			}
-			corrections, err := dsp.GetDomainCorrections(dc)
+			corrections, err := provider.GetDomainCorrections(dc)
 			out.EndProvider(len(corrections), err)
 			if err != nil {
 				anyErrors = true
@@ -129,24 +118,17 @@ DomainLoop:
 			totalCorrections += len(corrections)
 			anyErrors = printOrRunCorrections(corrections, out, push, interactive) || anyErrors
 		}
-		run := args.shouldRunProvider(domain.RegistrarName, domain, nonDefaultProviders)
-		out.StartRegistrar(domain.RegistrarName, !run)
+		run := args.shouldRunProvider(domain.Registrar)
+		out.StartRegistrar(domain.Registrar.Name(), !run)
 		if !run {
 			continue
-		}
-		reg, ok := registrars[domain.RegistrarName]
-		if !ok {
-			log.Fatalf("Registrar %s not declared.", reg)
 		}
 		if len(domain.Nameservers) == 0 && domain.Metadata["no_ns"] != "true" {
 			out.Warnf("No nameservers declared; skipping registrar. Add {no_ns:'true'} to force.\n")
 			continue
 		}
-		dc, err := domain.Copy()
-		if err != nil {
-			log.Fatal(err)
-		}
-		corrections, err := reg.GetRegistrarCorrections(dc)
+		dc := domain.Copy()
+		corrections, err := domain.Registrar.GetRegistrarCorrections(dc)
 		out.EndProvider(len(corrections), err)
 		if err != nil {
 			anyErrors = true
@@ -167,29 +149,12 @@ DomainLoop:
 
 // InitializeProviders takes a creds file path and a DNSConfig object. Creates all providers with the proper types, and returns them.
 // nonDefaultProviders is a list of providers that should not be run unless explicitly asked for by flags.
-func InitializeProviders(credsFile string, cfg *models.DNSConfig) (registrars map[string]models.RegistrarDriver, dnsProviders map[string]models.DNSServiceProviderDriver, nonDefaultProviders []string, err error) {
-	var providerConfigs map[string]map[string]string
-	providerConfigs, err = config.LoadProviderConfigs(credsFile)
+func InitializeProviders(credsFile string, cfg *models.DNSConfig) error {
+	providerConfigs, err := config.LoadProviderConfigs(credsFile)
 	if err != nil {
-		return
+		return err
 	}
-	nonDefaultProviders = []string{}
-	for name, vals := range providerConfigs {
-		// add "_exclude_from_defaults":"true" to a provider to exclude it from being run unless
-		// -providers=all or -providers=name
-		if vals["_exclude_from_defaults"] == "true" {
-			nonDefaultProviders = append(nonDefaultProviders, name)
-		}
-	}
-	registrars, err = providers.CreateRegistrars(cfg, providerConfigs)
-	if err != nil {
-		return
-	}
-	dnsProviders, err = providers.CreateDsps(cfg, providerConfigs)
-	if err != nil {
-		return
-	}
-	return
+	return providers.CreateProviders(cfg, providerConfigs)
 }
 
 func printOrRunCorrections(corrections []*models.Correction, out printer.CLI, push bool, interactive bool) (anyErrors bool) {

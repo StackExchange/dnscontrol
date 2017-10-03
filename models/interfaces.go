@@ -7,10 +7,29 @@ type RegistrarDriver interface {
 	GetRegistrarCorrections(*DomainConfig) ([]*Correction, error)
 }
 
-//DNSServiceProvider is able to generate a set of corrections that need to be made to correct records for a domain
+// Provider is a base interface for basic provider information
+type Provider interface {
+	Name() string
+	RunByDefault() bool
+}
+
+// Registrar is a RegistrarDriver with its' associated instance information
+type Registrar interface {
+	RegistrarDriver
+	Provider
+}
+
+//DNSServiceProviderDriver is able to generate a set of corrections that need to be made to correct records for a domain
 type DNSServiceProviderDriver interface {
 	GetNameservers(domain string) ([]*Nameserver, error)
 	GetDomainCorrections(dc *DomainConfig) ([]*Correction, error)
+}
+
+// DNSProvider is a DNSServiceProviderDriver with its' associated instance information
+type DNSProvider interface {
+	DNSServiceProviderDriver
+	Provider
+	NumberOfNameserversToUse() int
 }
 
 //DomainCreator should be implemented by providers that have the ability to add domains to an account. the create-domains command
