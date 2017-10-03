@@ -8,30 +8,30 @@ import (
 	"github.com/StackExchange/dnscontrol/models"
 )
 
-var RegistrarTypes = map[string]models.RegistrarInitializer{}
+var registrarTypes = map[string]models.RegistrarInitializer{}
 
-var DNSProviderTypes = map[string]models.DspInitializer{}
+var dnsProviderTypes = map[string]models.DspInitializer{}
 
 //RegisterRegistrarType adds a registrar type to the registry by providing a suitable initialization function.
 func RegisterRegistrarType(name string, init models.RegistrarInitializer, pm ...ProviderMetadata) {
-	if _, ok := RegistrarTypes[name]; ok {
+	if _, ok := registrarTypes[name]; ok {
 		log.Fatalf("Cannot register registrar type %s multiple times", name)
 	}
-	RegistrarTypes[name] = init
+	registrarTypes[name] = init
 	unwrapProviderCapabilities(name, pm)
 }
 
 //RegisterDomainServiceProviderType adds a dsp to the registry with the given initialization function.
 func RegisterDomainServiceProviderType(name string, init models.DspInitializer, pm ...ProviderMetadata) {
-	if _, ok := DNSProviderTypes[name]; ok {
+	if _, ok := dnsProviderTypes[name]; ok {
 		log.Fatalf("Cannot register registrar type %s multiple times", name)
 	}
-	DNSProviderTypes[name] = init
+	dnsProviderTypes[name] = init
 	unwrapProviderCapabilities(name, pm)
 }
 
 func createRegistrar(rType string, config map[string]string) (models.Registrar, error) {
-	initer, ok := RegistrarTypes[rType]
+	initer, ok := registrarTypes[rType]
 	if !ok {
 		return nil, fmt.Errorf("Registrar type %s not declared.", rType)
 	}
@@ -39,7 +39,7 @@ func createRegistrar(rType string, config map[string]string) (models.Registrar, 
 }
 
 func CreateDNSProvider(dType string, config map[string]string, meta json.RawMessage) (models.DNSServiceProvider, error) {
-	initer, ok := DNSProviderTypes[dType]
+	initer, ok := dnsProviderTypes[dType]
 	if !ok {
 		return nil, fmt.Errorf("DSP type %s not declared", dType)
 	}
@@ -75,6 +75,39 @@ func CreateDsps(d *models.DNSConfig, providerConfigs map[string]map[string]strin
 		dsps[dsp.Name] = provider
 	}
 	return dsps, nil
+}
+
+// CreateProviders will initialize all dns providers and registrars, and store them in all domains as needed.
+func CreateProviders(d *models.DNSConfig, providerConfigs map[string]map[string]string) error {
+	dnsProvidersByName := map[string]models.DNSServiceProvider{}
+	registrarsByName := map[string]models.Registrar{}
+	// create dns providers
+	for _, dnsProvider := range d.DNSProviders {
+		vals := providerConfigs[dnsProvider.Name]
+		initer, ok := dnsProviderTypes[dnsProvider.Type]
+		if !ok {
+			return fmt.Errorf("DNS Provider type %s not declared", dnsProvider.Type)
+		}
+		if provider, err := initer(vals, dnsProvider.Metadata); err == nil {
+			dnsProvidersByName[dnsProvider.Name] = provider
+		} else {
+			return err
+		}
+	}
+	// create registrars
+	for _, reg := range d.Registrars {
+		vals := providerConfigs[reg.Name]
+		initer, ok := registrarTypes[reg.Type]
+		if !ok {
+			return fmt.Errorf("Registrar type %s not declared", reg.Type)
+		}
+		if provider, err := initer(vals); err == nil {
+			registrarsByName[reg.Name] = provider
+		} else {
+			return err
+		}
+	}
+	return nil
 }
 
 // None is a basic provider type that does absolutely nothing. Can be useful as a placeholder for third parties or unimplemented providers.
