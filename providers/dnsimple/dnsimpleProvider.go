@@ -302,11 +302,11 @@ func (c *DnsimpleApi) updateRecordFunc(old *dnsimpleapi.ZoneRecord, rc *models.R
 
 // constructors
 
-func newReg(conf map[string]string) (providers.Registrar, error) {
+func newReg(conf map[string]string) (models.Registrar, error) {
 	return newProvider(conf, nil)
 }
 
-func newDsp(conf map[string]string, metadata json.RawMessage) (providers.DNSServiceProvider, error) {
+func newDsp(conf map[string]string, metadata json.RawMessage) (models.DNSServiceProvider, error) {
 	return newProvider(conf, metadata)
 }
 

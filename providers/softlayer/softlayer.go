@@ -25,7 +25,7 @@ func init() {
 	providers.RegisterDomainServiceProviderType("SOFTLAYER", newReg, providers.CanUseSRV)
 }
 
-func newReg(conf map[string]string, _ json.RawMessage) (providers.DNSServiceProvider, error) {
+func newReg(conf map[string]string, _ json.RawMessage) (models.DNSServiceProvider, error) {
 	s := session.New(conf["username"], conf["api_key"], conf["endpoint_url"], conf["timeout"])
 
 	if len(s.UserName) == 0 || len(s.APIKey) == 0 {

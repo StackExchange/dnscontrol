@@ -105,7 +105,7 @@ DomainLoop:
 		}
 		domain.Nameservers = nsList
 		nameservers.AddNSRecords(domain)
-		for prov := range domain.DNSProviders {
+		for prov := range domain.DNSProviderNames {
 			dc, err := domain.Copy()
 			if err != nil {
 				return err
@@ -129,12 +129,12 @@ DomainLoop:
 			totalCorrections += len(corrections)
 			anyErrors = printOrRunCorrections(corrections, out, push, interactive) || anyErrors
 		}
-		run := args.shouldRunProvider(domain.Registrar, domain, nonDefaultProviders)
-		out.StartRegistrar(domain.Registrar, !run)
+		run := args.shouldRunProvider(domain.RegistrarName, domain, nonDefaultProviders)
+		out.StartRegistrar(domain.RegistrarName, !run)
 		if !run {
 			continue
 		}
-		reg, ok := registrars[domain.Registrar]
+		reg, ok := registrars[domain.RegistrarName]
 		if !ok {
 			log.Fatalf("Registrar %s not declared.", reg)
 		}
@@ -167,7 +167,7 @@ DomainLoop:
 
 // InitializeProviders takes a creds file path and a DNSConfig object. Creates all providers with the proper types, and returns them.
 // nonDefaultProviders is a list of providers that should not be run unless explicitly asked for by flags.
-func InitializeProviders(credsFile string, cfg *models.DNSConfig) (registrars map[string]providers.Registrar, dnsProviders map[string]providers.DNSServiceProvider, nonDefaultProviders []string, err error) {
+func InitializeProviders(credsFile string, cfg *models.DNSConfig) (registrars map[string]models.Registrar, dnsProviders map[string]models.DNSServiceProvider, nonDefaultProviders []string, err error) {
 	var providerConfigs map[string]map[string]string
 	providerConfigs, err = config.LoadProviderConfigs(credsFile)
 	if err != nil {

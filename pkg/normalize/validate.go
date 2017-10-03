@@ -245,7 +245,7 @@ func NormalizeAndValidateConfig(config *models.DNSConfig) (errs []error) {
 
 	for _, domain := range config.Domains {
 		pTypes := []string{}
-		for p := range domain.DNSProviders {
+		for p := range domain.DNSProviderNames {
 			pType, ok := ptypeMap[p]
 			if !ok {
 				errs = append(errs, fmt.Errorf("%s uses undefined DNS provider %s", domain.Name, p))
@@ -402,7 +402,7 @@ func checkProviderCapabilities(dc *models.DomainConfig, pList []*models.DNSProvi
 		if !hasAny {
 			continue
 		}
-		for pName := range dc.DNSProviders {
+		for pName := range dc.DNSProviderNames {
 			for _, p := range pList {
 				if p.Name == pName {
 					if !providers.ProviderHasCabability(p.Type, ty.cap) {

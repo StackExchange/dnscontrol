@@ -8,35 +8,12 @@ import (
 	"github.com/StackExchange/dnscontrol/models"
 )
 
-//Registrar is an interface for a domain registrar. It can return a list of needed corrections to be applied in the future.
-type Registrar interface {
-	GetRegistrarCorrections(dc *models.DomainConfig) ([]*models.Correction, error)
-}
+var RegistrarTypes = map[string]models.RegistrarInitializer{}
 
-//DNSServiceProvider is able to generate a set of corrections that need to be made to correct records for a domain
-type DNSServiceProvider interface {
-	GetNameservers(domain string) ([]*models.Nameserver, error)
-	GetDomainCorrections(dc *models.DomainConfig) ([]*models.Correction, error)
-}
-
-//DomainCreator should be implemented by providers that have the ability to add domains to an account. the create-domains command
-//can be run to ensure all domains are present before running preview/push
-type DomainCreator interface {
-	EnsureDomainExists(domain string) error
-}
-
-//RegistrarInitializer is a function to create a registrar. Function will be passed the unprocessed json payload from the configuration file for the given provider.
-type RegistrarInitializer func(map[string]string) (Registrar, error)
-
-var RegistrarTypes = map[string]RegistrarInitializer{}
-
-//DspInitializer is a function to create a DNS service provider. Function will be passed the unprocessed json payload from the configuration file for the given provider.
-type DspInitializer func(map[string]string, json.RawMessage) (DNSServiceProvider, error)
-
-var DNSProviderTypes = map[string]DspInitializer{}
+var DNSProviderTypes = map[string]models.DspInitializer{}
 
 //RegisterRegistrarType adds a registrar type to the registry by providing a suitable initialization function.
-func RegisterRegistrarType(name string, init RegistrarInitializer, pm ...ProviderMetadata) {
+func RegisterRegistrarType(name string, init models.RegistrarInitializer, pm ...ProviderMetadata) {
 	if _, ok := RegistrarTypes[name]; ok {
 		log.Fatalf("Cannot register registrar type %s multiple times", name)
 	}
@@ -45,7 +22,7 @@ func RegisterRegistrarType(name string, init RegistrarInitializer, pm ...Provide
 }
 
 //RegisterDomainServiceProviderType adds a dsp to the registry with the given initialization function.
-func RegisterDomainServiceProviderType(name string, init DspInitializer, pm ...ProviderMetadata) {
+func RegisterDomainServiceProviderType(name string, init models.DspInitializer, pm ...ProviderMetadata) {
 	if _, ok := DNSProviderTypes[name]; ok {
 		log.Fatalf("Cannot register registrar type %s multiple times", name)
 	}
@@ -53,7 +30,7 @@ func RegisterDomainServiceProviderType(name string, init DspInitializer, pm ...P
 	unwrapProviderCapabilities(name, pm)
 }
 
-func createRegistrar(rType string, config map[string]string) (Registrar, error) {
+func createRegistrar(rType string, config map[string]string) (models.Registrar, error) {
 	initer, ok := RegistrarTypes[rType]
 	if !ok {
 		return nil, fmt.Errorf("Registrar type %s not declared.", rType)
@@ -61,7 +38,7 @@ func createRegistrar(rType string, config map[string]string) (Registrar, error) 
 	return initer(config)
 }
 
-func CreateDNSProvider(dType string, config map[string]string, meta json.RawMessage) (DNSServiceProvider, error) {
+func CreateDNSProvider(dType string, config map[string]string, meta json.RawMessage) (models.DNSServiceProvider, error) {
 	initer, ok := DNSProviderTypes[dType]
 	if !ok {
 		return nil, fmt.Errorf("DSP type %s not declared", dType)
@@ -71,8 +48,8 @@ func CreateDNSProvider(dType string, config map[string]string, meta json.RawMess
 
 //CreateRegistrars will load all registrars from the dns config, and create instances of the correct type using data from
 //the provider config to load relevant keys and options.
-func CreateRegistrars(d *models.DNSConfig, providerConfigs map[string]map[string]string) (map[string]Registrar, error) {
-	regs := map[string]Registrar{}
+func CreateRegistrars(d *models.DNSConfig, providerConfigs map[string]map[string]string) (map[string]models.Registrar, error) {
+	regs := map[string]models.Registrar{}
 	for _, reg := range d.Registrars {
 		rawMsg, ok := providerConfigs[reg.Name]
 		if !ok && reg.Type != "NONE" {
@@ -87,8 +64,8 @@ func CreateRegistrars(d *models.DNSConfig, providerConfigs map[string]map[string
 	return regs, nil
 }
 
-func CreateDsps(d *models.DNSConfig, providerConfigs map[string]map[string]string) (map[string]DNSServiceProvider, error) {
-	dsps := map[string]DNSServiceProvider{}
+func CreateDsps(d *models.DNSConfig, providerConfigs map[string]map[string]string) (map[string]models.DNSServiceProvider, error) {
+	dsps := map[string]models.DNSServiceProvider{}
 	for _, dsp := range d.DNSProviders {
 		vals := providerConfigs[dsp.Name]
 		provider, err := CreateDNSProvider(dsp.Type, vals, dsp.Metadata)
@@ -116,7 +93,7 @@ func (n None) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Correctio
 }
 
 func init() {
-	RegisterRegistrarType("NONE", func(map[string]string) (Registrar, error) {
+	RegisterRegistrarType("NONE", func(map[string]string) (models.Registrar, error) {
 		return None{}, nil
 	})
 }

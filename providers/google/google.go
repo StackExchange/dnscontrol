@@ -31,7 +31,7 @@ type gcloud struct {
 }
 
 // New creates a new gcloud provider
-func New(cfg map[string]string, _ json.RawMessage) (providers.DNSServiceProvider, error) {
+func New(cfg map[string]string, _ json.RawMessage) (models.DNSServiceProvider, error) {
 	raw, err := json.Marshal(cfg)
 	if err != nil {
 		return nil, err

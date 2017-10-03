@@ -8,6 +8,7 @@ import (
 	"io/ioutil"
 	"net/http"
 
+	"github.com/StackExchange/dnscontrol/models"
 	"github.com/StackExchange/dnscontrol/providers"
 )
 
@@ -26,11 +27,11 @@ var docNotes = providers.DocumentationNotes{
 	providers.CanUsePTR:              providers.Cannot("PTR records are not supported (See Link)", "https://www.name.com/support/articles/205188508-Reverse-DNS-records"),
 }
 
-func newReg(conf map[string]string) (providers.Registrar, error) {
+func newReg(conf map[string]string) (models.Registrar, error) {
 	return newProvider(conf)
 }
 
-func newDsp(conf map[string]string, meta json.RawMessage) (providers.DNSServiceProvider, error) {
+func newDsp(conf map[string]string, meta json.RawMessage) (models.DNSServiceProvider, error) {
 	return newProvider(conf)
 }
 
