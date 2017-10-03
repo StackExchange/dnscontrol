@@ -129,10 +129,10 @@ var tmpl = template.Must(template.New("").Funcs(template.FuncMap{
 	{{range .Features}}{{$name := .Name}}<tr>
 		<th class="row-header" style="text-decoration: underline;" data-toggle="tooltip" data-container="body" data-placement="top" title="{{.Desc}}">{{$name}}</th>
 		{{range $pname, $features := $providers}}{{$f := index $features $name}}{{if $f -}}
-		<td class="{{if $f.HasFeature}}success{{else}}danger{{end}}"
+		<td class="{{if $f.HasFeature}}success{{else if $f.Unimplemented}}info{{else}}danger{{end}}"
 			{{- if $f.Comment}} data-toggle="tooltip" data-container="body" data-placement="top" title="{{$f.Comment}}"{{end}}>
-			{{if $f.Link}}<a href="{{$f.Link}}">{{end}}<i class="fa {{if $f.Comment}}has-tooltip {{end}}
-				{{- if $f.HasFeature}}fa-check text-success{{else}}fa-times text-danger{{end}}" aria-hidden="true"></i>{{if $f.Link}}</a>{{end}}
+			{{if $f.Link}}<a href="{{$f.Link}}">{{end}}<i class="fa {{if and $f.Comment (not $f.Unimplemented)}}has-tooltip {{end}}
+				{{- if $f.HasFeature}}fa-check text-success{{else if $f.Unimplemented}}fa-circle-o text-info{{else}}fa-times text-danger{{end}}" aria-hidden="true"></i>{{if $f.Link}}</a>{{end}}
 		</td>
 		{{- else}}<td><i class="fa fa-minus dim"></i></td>{{end}}
 		{{end -}}
