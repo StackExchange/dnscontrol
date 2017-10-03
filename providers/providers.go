@@ -30,7 +30,7 @@ func RegisterDomainServiceProviderType(name string, init models.DspInitializer, 
 	unwrapProviderCapabilities(name, pm)
 }
 
-func createRegistrar(rType string, config map[string]string) (models.Registrar, error) {
+func createRegistrar(rType string, config map[string]string) (models.RegistrarDriver, error) {
 	initer, ok := registrarTypes[rType]
 	if !ok {
 		return nil, fmt.Errorf("Registrar type %s not declared.", rType)
@@ -38,7 +38,7 @@ func createRegistrar(rType string, config map[string]string) (models.Registrar, 
 	return initer(config)
 }
 
-func CreateDNSProvider(dType string, config map[string]string, meta json.RawMessage) (models.DNSServiceProvider, error) {
+func CreateDNSProvider(dType string, config map[string]string, meta json.RawMessage) (models.DNSServiceProviderDriver, error) {
 	initer, ok := dnsProviderTypes[dType]
 	if !ok {
 		return nil, fmt.Errorf("DSP type %s not declared", dType)
@@ -48,8 +48,8 @@ func CreateDNSProvider(dType string, config map[string]string, meta json.RawMess
 
 //CreateRegistrars will load all registrars from the dns config, and create instances of the correct type using data from
 //the provider config to load relevant keys and options.
-func CreateRegistrars(d *models.DNSConfig, providerConfigs map[string]map[string]string) (map[string]models.Registrar, error) {
-	regs := map[string]models.Registrar{}
+func CreateRegistrars(d *models.DNSConfig, providerConfigs map[string]map[string]string) (map[string]models.RegistrarDriver, error) {
+	regs := map[string]models.RegistrarDriver{}
 	for _, reg := range d.Registrars {
 		rawMsg, ok := providerConfigs[reg.Name]
 		if !ok && reg.Type != "NONE" {
@@ -64,8 +64,8 @@ func CreateRegistrars(d *models.DNSConfig, providerConfigs map[string]map[string
 	return regs, nil
 }
 
-func CreateDsps(d *models.DNSConfig, providerConfigs map[string]map[string]string) (map[string]models.DNSServiceProvider, error) {
-	dsps := map[string]models.DNSServiceProvider{}
+func CreateDsps(d *models.DNSConfig, providerConfigs map[string]map[string]string) (map[string]models.DNSServiceProviderDriver, error) {
+	dsps := map[string]models.DNSServiceProviderDriver{}
 	for _, dsp := range d.DNSProviders {
 		vals := providerConfigs[dsp.Name]
 		provider, err := CreateDNSProvider(dsp.Type, vals, dsp.Metadata)
@@ -79,8 +79,8 @@ func CreateDsps(d *models.DNSConfig, providerConfigs map[string]map[string]strin
 
 // CreateProviders will initialize all dns providers and registrars, and store them in all domains as needed.
 func CreateProviders(d *models.DNSConfig, providerConfigs map[string]map[string]string) error {
-	dnsProvidersByName := map[string]models.DNSServiceProvider{}
-	registrarsByName := map[string]models.Registrar{}
+	dnsProvidersByName := map[string]models.DNSServiceProviderDriver{}
+	registrarsByName := map[string]models.RegistrarDriver{}
 	// create dns providers
 	for _, dnsProvider := range d.DNSProviders {
 		vals := providerConfigs[dnsProvider.Name]
@@ -126,7 +126,7 @@ func (n None) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Correctio
 }
 
 func init() {
-	RegisterRegistrarType("NONE", func(map[string]string) (models.Registrar, error) {
+	RegisterRegistrarType("NONE", func(map[string]string) (models.RegistrarDriver, error) {
 		return None{}, nil
 	})
 }

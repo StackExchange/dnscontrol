@@ -146,7 +146,7 @@ func (c *GandiApi) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Corr
 	return corrections, nil
 }
 
-func newGandi(m map[string]string, metadata json.RawMessage) (models.DNSServiceProvider, error) {
+func newGandi(m map[string]string, metadata json.RawMessage) (models.DNSServiceProviderDriver, error) {
 	api := &GandiApi{}
 	api.ApiKey = m["apikey"]
 	if api.ApiKey == "" {

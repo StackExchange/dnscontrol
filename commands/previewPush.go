@@ -167,7 +167,7 @@ DomainLoop:
 
 // InitializeProviders takes a creds file path and a DNSConfig object. Creates all providers with the proper types, and returns them.
 // nonDefaultProviders is a list of providers that should not be run unless explicitly asked for by flags.
-func InitializeProviders(credsFile string, cfg *models.DNSConfig) (registrars map[string]models.Registrar, dnsProviders map[string]models.DNSServiceProvider, nonDefaultProviders []string, err error) {
+func InitializeProviders(credsFile string, cfg *models.DNSConfig) (registrars map[string]models.RegistrarDriver, dnsProviders map[string]models.DNSServiceProviderDriver, nonDefaultProviders []string, err error) {
 	var providerConfigs map[string]map[string]string
 	providerConfigs, err = config.LoadProviderConfigs(credsFile)
 	if err != nil {

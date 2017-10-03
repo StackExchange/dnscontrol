@@ -32,7 +32,7 @@ type nsone struct {
 	*rest.Client
 }
 
-func newProvider(creds map[string]string, meta json.RawMessage) (models.DNSServiceProvider, error) {
+func newProvider(creds map[string]string, meta json.RawMessage) (models.DNSServiceProviderDriver, error) {
 	if creds["api_token"] == "" {
 		return nil, fmt.Errorf("api_token required for ns1")
 	}

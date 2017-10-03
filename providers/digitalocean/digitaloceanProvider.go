@@ -34,7 +34,7 @@ var defaultNameServerNames = []string{
 	"ns3.digitalocean.com",
 }
 
-func NewDo(m map[string]string, metadata json.RawMessage) (models.DNSServiceProvider, error) {
+func NewDo(m map[string]string, metadata json.RawMessage) (models.DNSServiceProviderDriver, error) {
 	if m["token"] == "" {
 		return nil, fmt.Errorf("Digitalocean Token must be provided.")
 	}

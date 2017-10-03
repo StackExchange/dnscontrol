@@ -27,11 +27,11 @@ var docNotes = providers.DocumentationNotes{
 	providers.CanUsePTR:              providers.Cannot("PTR records are not supported (See Link)", "https://www.name.com/support/articles/205188508-Reverse-DNS-records"),
 }
 
-func newReg(conf map[string]string) (models.Registrar, error) {
+func newReg(conf map[string]string) (models.RegistrarDriver, error) {
 	return newProvider(conf)
 }
 
-func newDsp(conf map[string]string, meta json.RawMessage) (models.DNSServiceProvider, error) {
+func newDsp(conf map[string]string, meta json.RawMessage) (models.DNSServiceProviderDriver, error) {
 	return newProvider(conf)
 }
 

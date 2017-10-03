@@ -25,11 +25,11 @@ type route53Provider struct {
 	zones     map[string]*r53.HostedZone
 }
 
-func newRoute53Reg(conf map[string]string) (models.Registrar, error) {
+func newRoute53Reg(conf map[string]string) (models.RegistrarDriver, error) {
 	return newRoute53(conf, nil)
 }
 
-func newRoute53Dsp(conf map[string]string, metadata json.RawMessage) (models.DNSServiceProvider, error) {
+func newRoute53Dsp(conf map[string]string, metadata json.RawMessage) (models.DNSServiceProviderDriver, error) {
 	return newRoute53(conf, metadata)
 }
 
