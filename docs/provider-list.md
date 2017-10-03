@@ -6,7 +6,7 @@ layout: default
 <table class='table table-bordered'>
   <thead>
     <th>Name</th>
-    <th>Javascript Identifier</th>
+    <th>Identifier</th>
   </thead>
 {% for p in site.providers %}
 <tr>

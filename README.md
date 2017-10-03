@@ -23,6 +23,7 @@ Currently supported DNS providers:
  - Namecheap
  - Name.com
  - Route 53
+ - SoftLayer
 
 At Stack Overflow, we use this system to manage hundreds of domains
 and subdomains across multiple registrars and DNS providers.

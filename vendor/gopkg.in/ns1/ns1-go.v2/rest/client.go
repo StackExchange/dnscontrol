@@ -286,3 +286,8 @@ func SetBoolParam(key string, b bool) func(*url.Values) {
 func SetStringParam(key, val string) func(*url.Values) {
 	return func(v *url.Values) { v.Set(key, val) }
 }
+
+// SetIntParam sets a url integer query param given the parameters name.
+func SetIntParam(key string, val int) func(*url.Values) {
+	return func(v *url.Values) { v.Set(key, strconv.Itoa(val)) }
+}
