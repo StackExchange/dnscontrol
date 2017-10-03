@@ -44,9 +44,10 @@ func ProviderHasCabability(pType string, cap Capability) bool {
 
 // DocumentationNote is a way for providers to give more detail about what features they support.
 type DocumentationNote struct {
-	HasFeature bool
-	Comment    string
-	Link       string
+	HasFeature    bool
+	Unimplemented bool
+	Comment       string
+	Link          string
 }
 
 // DocumentationNotes is a full list of notes for a single provider
@@ -95,6 +96,17 @@ func Can(comments ...string) *DocumentationNote {
 func Cannot(comments ...string) *DocumentationNote {
 	n := &DocumentationNote{
 		HasFeature: false,
+	}
+	n.addStrings(comments)
+	return n
+}
+
+// Unimplemented is a small helper for concisely creating Documentation Notes
+// comments are variadic for easy ommission. First is comment, second is link, the rest are ignored.
+func Unimplemented(comments ...string) *DocumentationNote {
+	n := &DocumentationNote{
+		HasFeature:    false,
+		Unimplemented: true,
 	}
 	n.addStrings(comments)
 	return n
