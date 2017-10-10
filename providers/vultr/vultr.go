@@ -27,6 +27,9 @@ Info required in `creds.json`:
 var docNotes = providers.DocumentationNotes{
 	providers.DocCreateDomains:       providers.Can(),
 	providers.DocOfficiallySupported: providers.Cannot(),
+	providers.CanUseAlias:            providers.Cannot(),
+	providers.CanUseTLSA:             providers.Cannot(),
+	providers.CanUsePTR:              providers.Cannot(),
 }
 
 func init() {
