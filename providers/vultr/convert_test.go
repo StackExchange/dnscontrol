@@ -13,44 +13,44 @@ func TestConversion(t *testing.T) {
 	}
 
 	records := []*vultr.DNSRecord{
-		&vultr.DNSRecord{
+		{
 			Type: "A",
 			Name: "",
 			Data: "127.0.0.1",
 			TTL:  300,
 		},
-		&vultr.DNSRecord{
+		{
 			Type: "CNAME",
 			Name: "*",
 			Data: "example.com",
 			TTL:  300,
 		},
-		&vultr.DNSRecord{
+		{
 			Type:     "SRV",
 			Name:     "_ssh_.tcp",
 			Data:     "5 22 ssh.example.com",
 			Priority: 5,
 			TTL:      300,
 		},
-		&vultr.DNSRecord{
+		{
 			Type: "MX",
 			Name: "",
 			Data: "mail.example.com",
 			TTL:  300,
 		},
-		&vultr.DNSRecord{
+		{
 			Type: "NS",
 			Name: "",
 			Data: "ns1.example.net",
 			TTL:  300,
 		},
-		&vultr.DNSRecord{
+		{
 			Type: "TXT",
 			Name: "test",
 			Data: "\"testasd asda sdas dasd\"",
 			TTL:  300,
 		},
-		&vultr.DNSRecord{
+		{
 			Type: "CAA",
 			Name: "testasd",
 			Data: "0 issue \"test.example.net\"",
