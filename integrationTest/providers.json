@@ -62,5 +62,9 @@
     "domain": "$SL_DOMAIN",
     "username": "$SL_USERNAME",
     "api_key": "$SL_API_KEY"
+  },
+  "VULTR": {
+    "token": "$VULTR_TOKEN",
+    "domain": "$VULTR_DOMAIN"
   }
 }
