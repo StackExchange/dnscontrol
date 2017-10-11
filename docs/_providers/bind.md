@@ -7,6 +7,10 @@ jsId: BIND
 # BIND Provider
 This provider maintains a directory with a collection of .zone files.
 
+This provider does not generate or update the named.conf file, nor does it deploy the .zone files to the BIND master.
+Both of those tasks are different at each site, so they are best done by a locally-written script.
+
+
 ## Configuration
 In your credentials file (`creds.json`), you can specify a `directory` where the provider will look for and create zone files. The default is the `zones` directory where dnscontrol is run.
 
