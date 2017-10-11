@@ -12,10 +12,12 @@ To authenticate with softlayer requires at least a `username` and `api_key` for 
 It can also optionally take a `timeout` and `endpoint_url` parameter however these are optional and will use standard defaults if not provided.
 These can be supplied via the standard 'creds.json' like so:
 {% highlight json %}
-    "softlayer": {
-        "username": "myusername",
-        "api_key": "mysecretapikey"
-    }
+{
+  "softlayer": {
+    "username": "myusername",
+    "api_key": "mysecretapikey"
+  }
+}
 {% endhighlight %}
 
 To maintain compatibility with existing softlayer CLI services these can also be provided by the `SL_USERNAME` and `SL_API_KEY` environment variables or specified in the ~/.softlayer.
@@ -26,10 +28,10 @@ More information about these methods can be found at [the softlayer-go library d
 Use this provider like any other DNS Provider:
 
 {% highlight js %}
-var registrar = NewRegistrar("none","NONE"); // no registrar
-var softlayer = NewDnsProvider("softlayer", "SOFTLAYER");
+var REG_NONE = NewRegistrar("none","NONE"); // no registrar
+var SOFTLAYER = NewDnsProvider("softlayer", "SOFTLAYER");
 
-D("example.tld", registrary, DnsProvider(softlayer),
+D("example.tld", registrary, DnsProvider(SOFTLAYER),
     A("test","1.2.3.4")
 );
 {%endhighlight%}
@@ -40,7 +42,7 @@ This provider does not recognize any special metadata fields unique to SoftLayer
 For compatibility with the pre-generated NAMESERVER fields it's recommended to set the NS TTL to 86400 such as:
 
 {% highlight js %}
-D("example.tld", registrary, DnsProvider(softlayer),
+D("example.tld", REG_NONE, DnsProvider(SOFTLAYER),
     {"ns_ttl": "86400"},
 
     A("test","1.2.3.4")

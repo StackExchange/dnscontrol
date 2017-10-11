@@ -15,7 +15,7 @@ username and key:
 
 {% highlight json %}
 {
-  "namecheap.com":{
+  "namecheap":{
     "apikey": "yourApiKeyFromNameCheap",
     "apiuser": "yourUsername"
   }
@@ -48,10 +48,10 @@ Namecheap.
 Example javascript:
 
 {% highlight js %}
-var namecheap = NewRegistrar("namecheap.com","NAMECHEAP");
+var REG_NAMECHEAP = NewRegistrar("namecheap","NAMECHEAP");
 var R53 = NewDnsProvider("r53", "ROUTE53");
 
-D("example.tld", namecheap, DnsProvider(R53),
+D("example.tld", REG_NAMECHEAP, DnsProvider(R53),
     A("test","1.2.3.4")
 );
 {%endhighlight%}

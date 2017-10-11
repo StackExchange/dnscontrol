@@ -13,7 +13,7 @@ In your providers config json file you must provide your Gandi.net api key:
 
 {% highlight json %}
 {
-  "gandi":{
+  "gandi": {
     "apikey": "your-gandi-key"
   }
 }

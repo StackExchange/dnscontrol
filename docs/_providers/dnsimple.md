@@ -11,7 +11,7 @@ In your providers config json file you must provide a DNSimple account access to
 
 {% highlight json %}
 {
-  "dnsimple":{
+  "dnsimple": {
     "token": "your-dnsimple-account-access-token"
   }
 }

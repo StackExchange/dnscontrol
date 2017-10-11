@@ -33,10 +33,10 @@ This provider does not recognize any special metadata fields unique to route 53.
 Example javascript:
 
 {% highlight js %}
-var REG_NAMECOM = NewRegistrar("name.com","NAMEDOTCOM");
+var REG_NONE = NewRegistrar("none","NONE");
 var R53 = NewDnsProvider("r53", "ROUTE53");
 
-D("example.tld", REG_NAMECOM, DnsProvider(R53),
+D("example.tld", REG_NONE, DnsProvider(R53),
     A("test","1.2.3.4")
 );
 {%endhighlight%}
