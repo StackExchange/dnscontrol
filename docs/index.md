@@ -21,7 +21,7 @@ title: DnsControl
          <strong><a href="migrating">migrate</a></strong>
          an existing one. Read the
          <strong><a href="js">language spec</a></strong>
-         for more info.
+         for more info. You can also <strong><a href="toc">view a list of all topics</a></strong>.
     </p>
 	</div>
 
