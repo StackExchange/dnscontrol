@@ -1,5 +1,6 @@
 ---
 name: Vultr
+title: Vultr Provider
 layout: default
 jsId: VULTR
 ---
