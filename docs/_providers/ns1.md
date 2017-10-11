@@ -1,5 +1,6 @@
 ---
 name: NS1
+title: NS1 Provider
 layout: default
 jsId: NS1
 ---

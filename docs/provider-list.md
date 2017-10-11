@@ -1,7 +1,8 @@
 ---
 layout: default
+title: Service Providers
 ---
-<h1> Service providers </h1>
+<h1> Service Providers </h1>
 
 <table class='table table-bordered'>
   <thead>

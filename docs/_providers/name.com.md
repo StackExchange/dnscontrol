@@ -1,5 +1,6 @@
 ---
-name: "Name.com"
+name: Name.com
+title: Name.com Provider
 layout: default
 jsId: NAMEDOTCOM
 ---

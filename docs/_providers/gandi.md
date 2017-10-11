@@ -1,5 +1,6 @@
 ---
 name: Gandi
+title: Gandi Provider
 layout: default
 jsId: GANDI
 ---
