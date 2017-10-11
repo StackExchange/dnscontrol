@@ -17,12 +17,14 @@ You can specify the API credentials in the credentials json file:
 }
 {% endhighlight %}
 
-You can also use environment variables, but this is discouraged.
+You can also use environment variables, but this is discouraged, unless your environment provides them already.
 
 ```
 $ export AWS_ACCESS_KEY_ID=XXXXXXXXX
 $ export AWS_SECRET_ACCESS_KEY=YYYYYYYYY
 ```
+
+You can find some other ways to authenticate to Route53 in the [go sdk configuration](https://docs.aws.amazon.com/sdk-for-go/v1/developer-guide/configuring-sdk.html).
 
 ## Metadata
 This provider does not recognize any special metadata fields unique to route 53.
