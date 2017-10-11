@@ -105,10 +105,10 @@ title: DnsControl
 
 			<ul>
 				<li>
-					<a href="{{site.github.url}}/js">Language Reference</a>: Description of the entire language
+					<a href="{{site.github.url}}/js">Language Reference</a>: Full language description
 				</li>
 				<li>
-					<a href="{{site.github.url}}/alias">ALIAS / ANAME records in dnscontrol</a>
+					<a href="{{site.github.url}}/alias">Aliases</a>: ALIAS/ANAME records
 				</li>
 				<li>
 					<a href="{{site.github.url}}/spf">SPF Optimizer</a>: Optimize your SPF records
@@ -124,7 +124,7 @@ title: DnsControl
 			</p>
 			<ul>
 				<li>
-					<a href="">Why CNAME/MX/NS targets require a trailing "dot{{site.github.url}}/why-the-dot"</a>
+					<a href="{{site.github.url}}/why-the-dot">Why CNAME/MX/NS targets require a "trailing dot"</a>
 				</li>
 				<li>
 					<a href="{{site.github.url}}/unittests">Testing</a>: Unit Testing for you DNS Data
