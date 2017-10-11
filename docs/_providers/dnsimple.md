@@ -6,8 +6,7 @@ jsId: DNSIMPLE
 ---
 # DNSimple Provider
 ## Configuration
-
-In your providers config json file you must provide a DNSimple account access token:
+In your providers credentials file you must provide a DNSimple account access token:
 
 {% highlight json %}
 {
@@ -18,12 +17,10 @@ In your providers config json file you must provide a DNSimple account access to
 {% endhighlight %}
 
 ## Metadata
-
 This provider does not recognize any special metadata fields unique to DNSimple.
 
 ## Usage
-
-Example javascript:
+Example Javascript:
 
 {% highlight js %}
 var REG_DNSIMPLE = NewRegistrar("dnsimple", "DNSIMPLE");
@@ -35,5 +32,4 @@ D("example.tld", REG_DNSIMPLE, DnsProvider(DNSIMPLE),
 {% endhighlight %}
 
 ## Activation
-
 DNSControl depends on a DNSimple account access token.
