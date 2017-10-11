@@ -1,6 +1,6 @@
 ---
 layout: default
-title: Namservers
+title: Nameservers
 ---
 
 # Nameservers
