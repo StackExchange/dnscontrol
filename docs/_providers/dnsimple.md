@@ -1,10 +1,10 @@
 ---
-name: Dnsimple
+name: DNSimple
+title: DNSimple Provider
 layout: default
 jsId: DNSIMPLE
 ---
-# Dnsimple Provider
-
+# DNSimple Provider
 ## Configuration
 
 In your providers config json file you must provide a DNSimple account access token:

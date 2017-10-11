@@ -1,8 +1,9 @@
 ---
 layout: default
+title: Namservers
 ---
 
-# Nameservers in DNSControl
+# Nameservers
 
 DNSControl can handle a variety of provider scenarios for you:
 

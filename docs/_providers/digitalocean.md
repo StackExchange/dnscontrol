@@ -1,9 +1,10 @@
 ---
-name: Digitalocean
+name: DigitalOcean
+title: DigitalOcean Provider
 layout: default
 jsId: DIGITALOCEAN
 ---
-# Digitalocean Provider
+# DigitalOcean Provider
 
 ## Configuration
 

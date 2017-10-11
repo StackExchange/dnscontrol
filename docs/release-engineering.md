@@ -1,3 +1,8 @@
+---
+layout: default
+title: How to build and ship a release
+---
+
 # How to build and ship a release
 
 Here are my notes from producing the v0.2.2 release.  Change the version number as appropriate.
