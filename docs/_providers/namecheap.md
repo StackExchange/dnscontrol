@@ -53,7 +53,7 @@ D("example.tld", REG_NAMECHEAP, DnsProvider(R53),
 {%endhighlight%}
 
 ## Activation
-In order to activate PI functionality on your Namecheap account, you must
+In order to activate API functionality on your Namecheap account, you must
 enable it for your account and wait for their review process. More information
 on enabling API access is [located
 here](https://www.namecheap.com/support/api/intro.aspx).
