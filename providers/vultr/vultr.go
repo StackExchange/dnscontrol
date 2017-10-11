@@ -188,21 +188,21 @@ func (api *VultrApi) isDomainInAccount(domain string) (bool, error) {
 	return true, nil
 }
 
-// toRecordConfig converts a Vultr DNSRecord to a RecordConfig
+// toRecordConfig converts a Vultr DNSRecord to a RecordConfig #rtype_variations
 func toRecordConfig(dc *models.DomainConfig, r *vultr.DNSRecord) (*models.RecordConfig, error) {
 	// Turns r.Name into a FQDN
 	// Vultr uses "" as the apex domain, instead of "@", and this handles it fine.
 	name := dnsutil.AddOrigin(r.Name, dc.Name)
 
 	data := r.Data
-	// Make target into a FQDN if it is a CNAME, NS, MX, or SRV #rtype_variations
+	// Make target into a FQDN if it is a CNAME, NS, MX, or SRV
 	if r.Type == "CNAME" || r.Type == "NS" || r.Type == "MX" {
 		if !strings.HasSuffix(data, ".") {
 			data = data + "."
 		}
 		data = dnsutil.AddOrigin(data, dc.Name)
 	}
-	// Remove quotes if it is a TXT #rtype_variations
+	// Remove quotes if it is a TXT
 	if r.Type == "TXT" {
 		if !strings.HasPrefix(data, `"`) || !strings.HasSuffix(data, `"`) {
 			return nil, errors.New("Unexpected lack of quotes in TXT record from Vultr")
@@ -218,12 +218,10 @@ func toRecordConfig(dc *models.DomainConfig, r *vultr.DNSRecord) (*models.Record
 		Original: r,
 	}
 
-	// #rtype_variations
 	if r.Type == "MX" {
 		rc.MxPreference = uint16(r.Priority)
 	}
 
-	// #rtype_variations
 	if r.Type == "SRV" {
 		rc.SrvPriority = uint16(r.Priority)
 
@@ -252,7 +250,6 @@ func toRecordConfig(dc *models.DomainConfig, r *vultr.DNSRecord) (*models.Record
 		rc.Target = dnsutil.AddOrigin(target, dc.Name)
 	}
 
-	// #rtype_variations
 	if r.Type == "CAA" {
 		// Vultr returns in the format "[flag] [tag] [value]"
 		splitData := strings.SplitN(rc.Target, " ", 3)
@@ -281,12 +278,11 @@ func toRecordConfig(dc *models.DomainConfig, r *vultr.DNSRecord) (*models.Record
 	return rc, nil
 }
 
-// toVultrRecord converts a RecordConfig converted by toRecordConfig back to a Vultr DNSRecord
+// toVultrRecord converts a RecordConfig converted by toRecordConfig back to a Vultr DNSRecord #rtype_variations
 func toVultrRecord(dc *models.DomainConfig, rc *models.RecordConfig) *vultr.DNSRecord {
 	name := dnsutil.TrimDomainName(rc.NameFQDN, dc.Name)
 
 	// Vultr uses a blank string to represent the apex domain
-	// #rtype_variations
 	if name == "@" {
 		name = ""
 	}
@@ -298,19 +294,16 @@ func toVultrRecord(dc *models.DomainConfig, rc *models.RecordConfig) *vultr.DNSR
 		data = data[:len(data)-1]
 	}
 	// Vultr needs TXT record in quotes
-	// #rtype_variations
 	if rc.Type == "TXT" {
 		data = fmt.Sprintf(`"%s"`, data)
 	}
 
 	priority := 0
 
-	// #rtype_variations
 	if rc.Type == "MX" {
 		priority = int(rc.MxPreference)
 	}
 
-	// #rtype_variations
 	if rc.Type == "SRV" {
 		priority = int(rc.SrvPriority)
 	}
@@ -323,7 +316,6 @@ func toVultrRecord(dc *models.DomainConfig, rc *models.RecordConfig) *vultr.DNSR
 		Priority: priority,
 	}
 
-	// #rtype_variations
 	if rc.Type == "SRV" {
 		target := rc.Target
 		if strings.HasSuffix(target, ".") {
@@ -333,7 +325,6 @@ func toVultrRecord(dc *models.DomainConfig, rc *models.RecordConfig) *vultr.DNSR
 		r.Data = fmt.Sprintf("%v %v %s", rc.SrvWeight, rc.SrvPort, target)
 	}
 
-	// #rtype_variations
 	if rc.Type == "CAA" {
 		r.Data = fmt.Sprintf(`%v %s "%s"`, rc.CaaFlag, rc.CaaTag, rc.Target)
 	}
