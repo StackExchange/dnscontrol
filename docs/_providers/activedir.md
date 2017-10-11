@@ -2,6 +2,7 @@
 name: ActiveDirectory_PS
 layout: default
 jsId: ACTIVEDIRECTORY_PS
+title: ActiveDirectory_PS Provider
 ---
 # ActiveDirectory_PS Provider
 

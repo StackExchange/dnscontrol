@@ -1,5 +1,5 @@
 ---
-name: "Namecheap"
+name: Namecheap Provider
 layout: default
 jsId: NAMECHEAP
 ---

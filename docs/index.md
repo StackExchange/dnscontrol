@@ -1,5 +1,6 @@
 ---
 layout: default
+title: DnsControl
 ---
 
 <div class="row jumbotron">
@@ -81,7 +82,7 @@ layout: default
 
 			<ul>
 				<li>
-          <a href="{{site.github.url}}/getting-started">Getting Started</a>: A walk-through of the basics
+          			<a href="{{site.github.url}}/getting-started">Getting Started</a>: A walk-through of the basics
 				</li>
 				<li>
 					<a href="{{site.github.url}}/provider-list">Providers</a>: Which DNS providers are supported

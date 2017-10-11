@@ -1,10 +1,11 @@
 ---
-name: "Google cloud DNS"
+name: Google Cloud DNS
+title: Google Cloud DNS Provider 
 layout: default
 jsId: GCLOUD
 ---
 
-# Google cloud DNS Provider
+# Google Cloud DNS Provider
 
 ## Configuration
 

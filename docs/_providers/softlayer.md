@@ -1,5 +1,6 @@
 ---
-name: "SoftLayer DNS"
+name: SoftLayer DNS
+title: SoftLayer DNS Provider
 layout: default
 jsId: SOFTLAYER
 ---
@@ -8,7 +9,7 @@ jsId: SOFTLAYER
 
 ## Configuration
 
-To authenticate with softlayer requires at least a `username` and `api_key` for authentication.
+To authenticate with SoftLayer requires at least a `username` and `api_key` for authentication.
 It can also optionally take a `timeout` and `endpoint_url` parameter however these are optional and will use standard defaults if not provided.
 These can be supplied via the standard 'creds.json' like so:
 {% highlight json %}
