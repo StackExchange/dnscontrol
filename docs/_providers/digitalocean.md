@@ -7,8 +7,7 @@ jsId: DIGITALOCEAN
 # DigitalOcean Provider
 
 ## Configuration
-
-In your providers config json file you must provide your
+In your credentials file, you must provide your
 [Digitalocean OAuth Token](https://cloud.digitalocean.com/settings/applications)
 
 {% highlight json %}
@@ -20,12 +19,10 @@ In your providers config json file you must provide your
 {% endhighlight %}
 
 ## Metadata
-
-This provider does not recognize any special metadata fields unique to route 53.
+This provider does not recognize any special metadata fields unique to DigitalOcean.
 
 ## Usage
-
-Example javascript:
+Example Javascript:
 
 {% highlight js %}
 var REG_NONE = NewRegistrar('none', 'NONE')
@@ -37,5 +34,4 @@ D("example.tld", REG_NONE, DnsProvider(DIGITALOCEAN),
 {%endhighlight%}
 
 ## Activation
-
 [Create OAuth Token](https://cloud.digitalocean.com/settings/applications)
