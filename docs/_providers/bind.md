@@ -15,7 +15,7 @@ In your credentials file (`creds.json`), you can specify a `directory` where the
 
 {% highlight javascript %}
 {
-  "bind":{
+  "bind": {
     "directory": "myzones"
   }
 }
@@ -24,21 +24,21 @@ In your credentials file (`creds.json`), you can specify a `directory` where the
 The BIND provider does not require anything in `creds.json`. It does accept some (optional) metadata via your dns config when you create the provider:
 
 {% highlight javascript %}
-var bind = NewDnsProvider('bind', 'BIND', {
-  'default_soa': {
-    'master': 'ns1.mydomain.com.',
-    'mbox': 'sysadmin.mydomain.com.',
-    'refresh': 3600,
-    'retry': 600,
-    'expire': 604800,
-    'minttl': 1440,
-  },
-  'default_ns': [
-        'ns1.mydomain.com.',
-        'ns2.mydomain.com.',
-        'ns3.mydomain.com.',
-        'ns4.mydomain.com.'
-  ]
+var BIND = NewDnsProvider('bind', 'BIND', {
+        'default_soa': {
+        'master': 'ns1.example.tld.',
+        'mbox': 'sysadmin.example.tld.',
+        'refresh': 3600,
+        'retry': 600,
+        'expire': 604800,
+        'minttl': 1440,
+    },
+    'default_ns': [
+        'ns1.example.tld.',
+        'ns2.example.tld.',
+        'ns3.example.tld.',
+        'ns4.example.tld.'
+    ]
 })
 {% endhighlight %}
 

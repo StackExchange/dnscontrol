@@ -52,10 +52,10 @@ Here is a simple dns configuration. dnsconfig.js:
 
 {% highlight javascript %}
 var REG_NONE = NewRegistrar('none', 'NONE')
-var DSP_ACTIVEDIRECTORY_DS = NewDnsProvider("activedir", "ACTIVEDIRECTORY_PS");
+var ACTIVEDIRECTORY = NewDnsProvider("activedir", "ACTIVEDIRECTORY_PS");
 
-D('ds.stackexchange.com', REG_NONE, DnsProvider(DSP_ACTIVEDIRECTORY_DS),
-      A("api","172.30.20.100")
+D('example.tld', REG_NONE, DnsProvider(ACTIVEDIRECTORY),
+      A("test","1.2.3.4")
 )
 {% endhighlight %}
 

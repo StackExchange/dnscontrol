@@ -12,7 +12,7 @@ jsId: GCLOUD
 For Google cloud authentication, DNSControl requires a JSON 'Service Account Key' for your project. Copy the full JSON object into your `creds.json` like so:
 {% highlight json %}
 {
-    "gcloud":{
+    "gcloud": {
         "type": "service_account",
         "project_id": "mydnsproject",
         "private_key_id": "a05483aa208364c56716b384efff33c0574d365b",
