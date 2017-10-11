@@ -5,11 +5,9 @@ jsId: NAMECHEAP
 ---
 
 # Namecheap Provider
-
 Namecheap only provides a registrar provider implementation.
 
 ## Configuration
-
 In your providers config json file you must provide your Namecheap api
 username and key:
 
@@ -39,13 +37,11 @@ if BaseURL is omitted, the production namecheap url is used.
 
 
 ## Metadata
-
 This provider does not recognize any special metadata fields unique to
 Namecheap.
 
 ## Usage
-
-Example javascript:
+Example Javascript:
 
 {% highlight js %}
 var REG_NAMECHEAP = NewRegistrar("namecheap","NAMECHEAP");
@@ -57,8 +53,7 @@ D("example.tld", REG_NAMECHEAP, DnsProvider(R53),
 {%endhighlight%}
 
 ## Activation
-
-In order to activate api functionality on your Namecheap account, you must
+In order to activate PI functionality on your Namecheap account, you must
 enable it for your account and wait for their review process. More information
 on enabling API access is [located
 here](https://www.namecheap.com/support/api/intro.aspx).
