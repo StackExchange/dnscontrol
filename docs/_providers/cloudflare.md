@@ -13,7 +13,7 @@ username and access token:
 
 {% highlight json %}
 {
-  "cloudflare.com":{
+  "cloudflare": {
     "apikey": "your-cloudflare-api-key",
     "apiuser": "your-cloudflare-email-address"
   }
@@ -58,9 +58,9 @@ var CF_PROXY_DEFAULT_ON = {'cloudflare_proxy_default': 'on'};
 The following example shows how to set meta variables with and without aliases:
 
 {% highlight json %}
-D('example.tld', REG_NAMECOM, DnsProvider(CFLARE),
-    A('www1','1.2.3.11', CF_PROXY_ON),       // turn proxy ON.
-    A('www2','1.2.3.12', CF_PROXY_OFF),      // default is OFF, this is a no-op.
+D('example.tld', REG_NONE, DnsProvider(CLOUDFLARE),
+    A('www1','1.2.3.11', CF_PROXY_ON),        // turn proxy ON.
+    A('www2','1.2.3.12', CF_PROXY_OFF),       // default is OFF, this is a no-op.
     A('www3','1.2.3.13', {'cloudflare_proxy': 'on'}) // why would anyone do this?
 );
 {% endhighlight %}
@@ -70,11 +70,11 @@ D('example.tld', REG_NAMECOM, DnsProvider(CFLARE),
 Example javascript:
 
 {% highlight js %}
-var REG_NAMECOM = NewRegistrar('name.com','NAMEDOTCOM');
-var CFLARE = NewDnsProvider('cloudflare.com','CLOUDFLAREAPI');
+var REG_NONE = NewRegistrar('none', 'NONE')
+var CLOUDFLARE = NewDnsProvider('cloudflare','CLOUDFLAREAPI');
 
 // Example domain where the CF proxy abides by the default (off).
-D('example.tld', REG_NAMECOM, DnsProvider(CFLARE),
+D('example.tld', REG_NONE, DnsProvider(CLOUDFLARE),
     A('proxied','1.2.3.4', CF_PROXY_ON),
     A('notproxied','1.2.3.5'),
     A('another','1.2.3.6', CF_PROXY_ON),
@@ -83,7 +83,7 @@ D('example.tld', REG_NAMECOM, DnsProvider(CFLARE),
 );
 
 // Example domain where the CF proxy default is set to "on":
-D('example2.tld', REG_NAMECOM, DnsProvider(CFLARE),
+D('example2.tld', REG_NONE, DnsProvider(CLOUDFLARE),
     CF_PROXY_DEFAULT_ON, // Enable CF proxy for all items unless otherwise noted.
     A('proxied','1.2.3.4'),
     A('notproxied','1.2.3.5', CF_PROXY_OFF),
@@ -111,9 +111,9 @@ The cloudflare provider can manage Page-Rule based redirects for your domains. S
 
 // chiphacker.com is an alias for electronics.stackexchange.com
 
-var CFLARE = NewDnsProvider('cloudflare.com','CLOUDFLAREAPI', {"manage_redirects": true}); // enable manage_redirects
+var CLOUDFLARE = NewDnsProvider('cloudflare','CLOUDFLAREAPI', {"manage_redirects": true}); // enable manage_redirects
 
-D("chiphacker.com", REG_NAMECOM, DnsProvider(CFLARE),
+D("chiphacker.com", REG_NONE, DnsProvider(CLOUDFLARE),
     // must have A records with orange cloud on. Otherwise page rule will never run.
     A("@","1.2.3.4", CF_PROXY_ON),
     A("www", "1.2.3.4", CF_PROXY_ON)

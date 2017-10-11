@@ -29,9 +29,10 @@ This provider does not recognize any special metadata fields unique to ns1.
 Example javascript:
 
 {% highlight js %}
+var REG_NONE = NewRegistrar('none', 'NONE')
 var NS1 = NewDnsProvider("ns1", "NS1");
 
-D("example.tld", MY_REGISTRAR, DnsProvider(NS1),
+D("example.tld", REG_NONE, DnsProvider(NS1),
     A("test","1.2.3.4")
 );
 {% endhighlight %}

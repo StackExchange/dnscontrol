@@ -13,7 +13,7 @@ In your providers config json file you must provide your
 
 {% highlight json %}
 {
-  "digitalocean":{
+  "digitalocean": {
     "token": "your-digitalocean-ouath-token"
   }
 }
@@ -28,10 +28,10 @@ This provider does not recognize any special metadata fields unique to route 53.
 Example javascript:
 
 {% highlight js %}
-var REG_NAMECOM = NewRegistrar("name.com","NAMEDOTCOM");
-var DO = NewDnsProvider("do", "DIGITALOCEAN");
+var REG_NONE = NewRegistrar('none', 'NONE')
+var DIGITALOCEAN = NewDnsProvider("do", "DIGITALOCEAN");
 
-D("example.tld", REG_NAMECOM, DnsProvider(DO),
+D("example.tld", REG_NONE, DnsProvider(DIGITALOCEAN),
     A("test","1.2.3.4")
 );
 {%endhighlight%}
