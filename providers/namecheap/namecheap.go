@@ -37,6 +37,7 @@ var docNotes = providers.DocumentationNotes{
 func init() {
 	providers.RegisterRegistrarType("NAMECHEAP", newReg, docNotes)
 	providers.RegisterDomainServiceProviderType("NAMECHEAP", newDsp, providers.CantUseNOPURGE)
+	providers.RegisterCustomRecordType("URL", "NAMECHEAP", "")
 }
 
 func newDsp(conf map[string]string, metadata json.RawMessage) (providers.DNSServiceProvider, error) {
