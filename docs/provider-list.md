@@ -66,6 +66,7 @@ Maintainers of contributed providers:
 * namecheap @captncraig
 * ns1 @captncraig
 * OVH @Oprax
+* Vultr @geek1011
 
 ### Requested providers
 
