@@ -32,6 +32,12 @@
 			"revisionTime": "2013-01-12T09:33:55Z"
 		},
 		{
+			"checksumSHA1": "E0NbOzBCBYViPKvM4XcloBu6GWE=",
+			"path": "github.com/JamesClonk/vultr/lib",
+			"revision": "2fd0705ce648e602e6c9c57329a174270a4f6688",
+			"revisionTime": "2017-08-08T19:54:39Z"
+		},
+		{
 			"checksumSHA1": "GZj+/EV9o0GyIsZ5/S8gSy3ceKM=",
 			"path": "github.com/TomOnTime/utfutil",
 			"revision": "2eac7962c5478fc8b8123d73ef7d33f05f9cd8f0",
@@ -266,6 +272,12 @@
 			"path": "github.com/jmespath/go-jmespath",
 			"revision": "3433f3ea46d9f8019119e7dd41274e112a2359a9",
 			"revisionTime": "2015-11-17T09:58:22-08:00"
+		},
+		{
+			"checksumSHA1": "a8Ge6pE7oxux9ZMZVAlyEeGzCng=",
+			"path": "github.com/juju/ratelimit",
+			"revision": "5b9ff866471762aa2ab2dced63c9fb6f53921342",
+			"revisionTime": "2017-05-23T01:21:41Z"
 		},
 		{
 			"path": "github.com/kolo/xmlrpc",
