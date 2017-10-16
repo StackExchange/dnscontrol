@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"sort"
 	"strings"
+	"time"
 
 	"golang.org/x/net/publicsuffix"
 
@@ -87,6 +88,7 @@ func init() {
 				default:
 				}
 			}
+			time.Sleep(time.Minute)
 		}
 	}()
 }
