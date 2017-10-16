@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"sort"
 	"strings"
+	"time"
 
 	"golang.org/x/net/publicsuffix"
 
@@ -75,20 +76,12 @@ func splitDomain(domain string) (sld string, tld string) {
 // from support in SEP-2017:
 //    "The limits for the API calls will be 20/Min, 700/Hour and 8000/Day for one user.
 //     If you can limit the requests within these it should be fine."
-var throttle = make(chan bool, 20)
+
+var throttle <-chan time.Time
 
 func init() {
-	go func() {
-		for {
-			// add (up to) 20 requests every minute
-			for i := 0; i < 20; i++ {
-				select {
-				case throttle <- true:
-				default:
-				}
-			}
-		}
-	}()
+	rate := time.Minute / 20
+	throttle = time.Tick(rate)
 }
 
 func (n *Namecheap) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Correction, error) {
