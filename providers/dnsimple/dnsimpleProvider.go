@@ -23,7 +23,7 @@ var docNotes = providers.DocumentationNotes{
 
 func init() {
 	providers.RegisterRegistrarType("DNSIMPLE", newReg)
-	providers.RegisterDomainServiceProviderType("DNSIMPLE", newDsp, providers.CanUsePTR, docNotes)
+	providers.RegisterDomainServiceProviderType("DNSIMPLE", newDsp, providers.CanUsePTR, providers.CanUseAlias, docNotes)
 }
 
 const stateRegistered = "registered"
@@ -61,8 +61,13 @@ func (c *DnsimpleApi) GetDomainCorrections(dc *models.DomainConfig) ([]*models.C
 		if r.Name == "" {
 			r.Name = "@"
 		}
-		if r.Type == "CNAME" || r.Type == "MX" {
+		if r.Type == "CNAME" || r.Type == "MX" || r.Type == "ALIAS" {
 			r.Content += "."
+		}
+		// dnsimple adds these odd txt records that mirror the alias records.
+		// they seem to manage them on deletes and things, so we'll just pretend they don't exist
+		if r.Type == "TXT" && strings.HasPrefix(r.Content, "ALIAS for ") {
+			continue
 		}
 		rec := &models.RecordConfig{
 			NameFQDN:     dnsutil.AddOrigin(r.Name, dc.Name),
