@@ -47,7 +47,7 @@ func (c *DnsimpleApi) GetNameservers(domainName string) ([]*models.Nameserver, e
 
 func (c *DnsimpleApi) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Correction, error) {
 	corrections := []*models.Correction{}
-
+	dc.Punycode()
 	records, err := c.getRecords(dc.Name)
 	if err != nil {
 		return nil, err
@@ -168,12 +168,23 @@ func (c *DnsimpleApi) getRecords(domainName string) ([]dnsimpleapi.ZoneRecord, e
 		return nil, err
 	}
 
-	recordsResponse, err := client.Zones.ListRecords(accountId, domainName, nil)
-	if err != nil {
-		return nil, err
+	opts := &dnsimpleapi.ZoneRecordListOptions{}
+	recs := []dnsimpleapi.ZoneRecord{}
+	opts.Page = 1
+	for {
+		recordsResponse, err := client.Zones.ListRecords(accountId, domainName, opts)
+		if err != nil {
+			return nil, err
+		}
+		recs = append(recs, recordsResponse.Data...)
+		pg := recordsResponse.Pagination
+		if pg.CurrentPage == pg.TotalPages {
+			break
+		}
+		opts.Page++
 	}
 
-	return recordsResponse.Data, nil
+	return recs, nil
 }
 
 // Returns the name server names that should be used. If the domain is registered
