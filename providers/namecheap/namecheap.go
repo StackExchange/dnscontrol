@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"sort"
 	"strings"
+	"time"
 
 	"golang.org/x/net/publicsuffix"
 
@@ -35,7 +36,7 @@ var docNotes = providers.DocumentationNotes{
 }
 
 func init() {
-	providers.RegisterRegistrarType("NAMECHEAP", NewReg, docNotes)
+	providers.RegisterRegistrarType("NAMECHEAP", newReg, docNotes)
 	providers.RegisterDomainServiceProviderType("NAMECHEAP", newDsp, providers.CantUseNOPURGE)
 }
 
@@ -43,7 +44,7 @@ func newDsp(conf map[string]string, metadata json.RawMessage) (providers.DNSServ
 	return newProvider(conf, metadata)
 }
 
-func NewReg(conf map[string]string) (providers.Registrar, error) {
+func newReg(conf map[string]string) (providers.Registrar, error) {
 	return newProvider(conf, nil)
 }
 
@@ -87,7 +88,7 @@ func init() {
 				default:
 				}
 			}
-			//time.Sleep(time.Minute)
+			time.Sleep(time.Minute)
 		}
 	}()
 }
