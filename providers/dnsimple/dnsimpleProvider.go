@@ -23,7 +23,7 @@ var docNotes = providers.DocumentationNotes{
 
 func init() {
 	providers.RegisterRegistrarType("DNSIMPLE", newReg)
-	providers.RegisterDomainServiceProviderType("DNSIMPLE", newDsp, providers.CanUsePTR, providers.CanUseAlias, docNotes)
+	providers.RegisterDomainServiceProviderType("DNSIMPLE", newDsp, providers.CanUsePTR, providers.CanUseAlias, providers.CanUseCAA, docNotes)
 }
 
 const stateRegistered = "registered"
@@ -77,9 +77,18 @@ func (c *DnsimpleApi) GetDomainCorrections(dc *models.DomainConfig) ([]*models.C
 			MxPreference: uint16(r.Priority),
 			Original:     r,
 		}
+		if r.Type == "CAA" {
+			rec.CombinedTarget = true
+		}
 		actual = append(actual, rec)
 	}
 	removeOtherNS(dc)
+	dc.Filter(func(r *models.RecordConfig) bool {
+		if r.Type == "CAA" {
+			r.MergeToTarget()
+		}
+		return true
+	})
 	differ := diff.New(dc)
 	_, create, delete, modify := differ.IncrementalDiff(actual)
 
@@ -251,7 +260,6 @@ func (c *DnsimpleApi) createRecordFunc(rc *models.RecordConfig, domainName strin
 		if err != nil {
 			return err
 		}
-
 		record := dnsimpleapi.ZoneRecord{
 			Name:     dnsutil.TrimDomainName(rc.NameFQDN, domainName),
 			Type:     rc.Type,
@@ -259,7 +267,6 @@ func (c *DnsimpleApi) createRecordFunc(rc *models.RecordConfig, domainName strin
 			TTL:      int(rc.TTL),
 			Priority: int(rc.MxPreference),
 		}
-
 		_, err = client.Zones.CreateRecord(accountId, domainName, record)
 		if err != nil {
 			return err
