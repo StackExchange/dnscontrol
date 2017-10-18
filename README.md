@@ -22,6 +22,7 @@ Currently supported DNS providers:
  - Google
  - Namecheap
  - Name.com
+ - NS1
  - Route 53
  - SoftLayer
  - Vultr
