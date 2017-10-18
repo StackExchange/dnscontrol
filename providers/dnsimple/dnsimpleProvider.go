@@ -19,11 +19,12 @@ var docNotes = providers.DocumentationNotes{
 	providers.DocDualHost:            providers.Cannot("DNSimple does not allow sufficient control over the apex NS records"),
 	providers.DocCreateDomains:       providers.Cannot(),
 	providers.DocOfficiallySupported: providers.Cannot(),
+	providers.CanUseTLSA:             providers.Cannot(),
 }
 
 func init() {
 	providers.RegisterRegistrarType("DNSIMPLE", newReg)
-	providers.RegisterDomainServiceProviderType("DNSIMPLE", newDsp, providers.CanUsePTR, providers.CanUseAlias, providers.CanUseCAA, docNotes)
+	providers.RegisterDomainServiceProviderType("DNSIMPLE", newDsp, providers.CanUsePTR, providers.CanUseAlias, providers.CanUseCAA, providers.CanUseSRV, docNotes)
 }
 
 const stateRegistered = "registered"
@@ -61,7 +62,7 @@ func (c *DnsimpleApi) GetDomainCorrections(dc *models.DomainConfig) ([]*models.C
 		if r.Name == "" {
 			r.Name = "@"
 		}
-		if r.Type == "CNAME" || r.Type == "MX" || r.Type == "ALIAS" {
+		if r.Type == "CNAME" || r.Type == "MX" || r.Type == "ALIAS" || r.Type == "SRV" {
 			r.Content += "."
 		}
 		// dnsimple adds these odd txt records that mirror the alias records.
@@ -77,14 +78,14 @@ func (c *DnsimpleApi) GetDomainCorrections(dc *models.DomainConfig) ([]*models.C
 			MxPreference: uint16(r.Priority),
 			Original:     r,
 		}
-		if r.Type == "CAA" {
+		if r.Type == "CAA" || r.Type == "SRV" {
 			rec.CombinedTarget = true
 		}
 		actual = append(actual, rec)
 	}
 	removeOtherNS(dc)
 	dc.Filter(func(r *models.RecordConfig) bool {
-		if r.Type == "CAA" {
+		if r.Type == "CAA" || r.Type == "SRV" {
 			r.MergeToTarget()
 		}
 		return true
