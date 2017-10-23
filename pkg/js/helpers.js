@@ -529,3 +529,7 @@ var CF_TEMP_REDIRECT = recordBuilder('CF_TEMP_REDIRECT', {
         record.target = args.source + ',' + args.destination;
     },
 });
+
+var URL = recordBuilder('URL')
+var URL301 = recordBuilder('URL301')
+var FRAME = recordBuilder('FRAME')
