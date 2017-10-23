@@ -77,11 +77,19 @@ func splitDomain(domain string) (sld string, tld string) {
 //    "The limits for the API calls will be 20/Min, 700/Hour and 8000/Day for one user.
 //     If you can limit the requests within these it should be fine."
 
-var throttle <-chan time.Time
-
 func init() {
-	rate := time.Minute / 20
-	throttle = time.Tick(rate)
+	go func() {
+		for {
+			// add (up to) 20 requests every minute
+			for i := 0; i < 20; i++ {
+				select {
+				case throttle <- true:
+				default:
+				}
+			}
+			time.Sleep(time.Minute)
+		}
+	}()
 }
 
 func (n *Namecheap) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Correction, error) {
