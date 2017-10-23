@@ -6,8 +6,6 @@ jsId: NAMECHEAP
 
 # Namecheap Provider
 
-Namecheap only provides a registrar provider implementation.
-
 ## Configuration
 
 In your providers config json file you must provide your Namecheap api
@@ -55,6 +53,20 @@ D("example.tld", REG_NAMECHEAP, DnsProvider(R53),
     A("test","1.2.3.4")
 );
 {%endhighlight%}
+
+Namecheap provides custom redirect records URL, URL301, and FRAME.  These
+records can be used like any other record:
+
+{% highlight js %}
+var REG_NAMECHEAP = NewRegistrar("namecheap","NAMECHEAP");
+var NAMECHEAP = NewDnsProvider("namecheap","NAMECHEAP");
+
+D("example.tld", REG_NAMECHEAP, DnsProvider(NAMECHEAP),
+  URL('@', 'http://example.com/'),
+  URL('www', 'http://example.com/'),
+  URL301('backup', 'http://backup.example.com/')
+)
+{% endhighlight %}
 
 ## Activation
 
