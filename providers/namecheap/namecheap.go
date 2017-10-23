@@ -31,17 +31,17 @@ var docNotes = providers.DocumentationNotes{
 	providers.DocDualHost:            providers.Cannot("Doesn't allow control of apex NS records"),
 	providers.CanUseAlias:            providers.Cannot(),
 	providers.CanUseCAA:              providers.Cannot(),
-	providers.CanUseSRV:              providers.Unimplemented("namecheap supports srv records, we just need someone to implement it and make sure the tests pass."),
+	providers.CanUseSRV:              providers.Cannot("The namecheap web console allows you to make SRV records, but their api does not let you read or set them"),
 	providers.CanUsePTR:              providers.Cannot(),
 	providers.CanUseTLSA:             providers.Cannot(),
 }
 
 func init() {
 	providers.RegisterRegistrarType("NAMECHEAP", newReg)
-	providers.RegisterDomainServiceProviderType("NAMECHEAP", NewDsp, providers.CantUseNOPURGE, docNotes)
+	providers.RegisterDomainServiceProviderType("NAMECHEAP", newDsp, providers.CantUseNOPURGE, providers.CanUseSRV, docNotes)
 }
 
-func NewDsp(conf map[string]string, metadata json.RawMessage) (providers.DNSServiceProvider, error) {
+func newDsp(conf map[string]string, metadata json.RawMessage) (providers.DNSServiceProvider, error) {
 	return newProvider(conf, metadata)
 }
 
