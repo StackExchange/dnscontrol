@@ -192,7 +192,7 @@ var _escData = map[string]*_escFile{
 
 	"/helpers.js": {
 		local:   "pkg/js/helpers.js",
-		size:    14714,
+		size:    14786,
 		modtime: 0,
 		compressed: `
 H4sIAAAAAAAC/+w7a3MbOXLf+St6XckOKdFDSl77rijzcjw9rlTRqyjK8RXDqCAOSMKeBwNgqFUc+ren
@@ -259,8 +259,8 @@ dE+ettQiBzscQhAGcAiRp2YYFX18cZZHixhRDCgmiGE2UE/OmMsGZC68h6SRpBHZkChHsekFD1WXzsXj
 jsMxIvEyT0tcYgbTt6ZJ32bBoFXSrttCs8VChcKUk6L7GtpW52hn4JKnO6obOfWo15Uc8+ya1jdt2uZm
 7y6Sq0oRHu4nt9dduBvffro8Ox/D/d356eXF5SmMz09vx2cw+dvd+b1lTI86t8dShS4E/jGOCBUxymkP
 k/cWux22dmMxabEq4NeUVS4ISRrhX28X8o1KmuvbI6nE+ujj87PL8fmpp5HCmtzRAcGynM5lFbT5XE7L
-Q4QZJ6m827xq1e/7fKOOI3xAV/gA9aRTUuw+tmgWTs6v73bz0YH4JzMbmfkwvqrz72F8FXRa/xcAAP//
-Lfs/X3o5AAA=
+Q4QZJ6m827xq1e/7fKOOI3xAV/gA9aRTUuw+tmgWTs6v73bz0YH4JzMbmfkwvqrz72F8FXTM9Lv+kRfi
+Xf9IA12Mvd2PcjjotP4vAAD//6EjD2vCOQAA
 `,
 	},
 
