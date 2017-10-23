@@ -93,10 +93,20 @@ func init() {
 	}()
 }
 
+func doThrottle() {
+	select {
+	case <-throttle:
+	default:
+		fmt.Println("\nNamecheap request limit reached. Waiting for more requests to be available")
+		<-throttle
+	}
+
+}
+
 func (n *Namecheap) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Correction, error) {
 	dc.Punycode()
 	sld, tld := splitDomain(dc.Name)
-	<-throttle
+	doThrottle()
 	records, err := n.client.DomainsDNSGetHosts(sld, tld)
 	if err != nil {
 		return nil, err
@@ -208,7 +218,7 @@ func (n *Namecheap) GetNameservers(domainName string) ([]*models.Nameserver, err
 }
 
 func (n *Namecheap) GetRegistrarCorrections(dc *models.DomainConfig) ([]*models.Correction, error) {
-	<-throttle
+	doThrottle()
 	info, err := n.client.DomainGetInfo(dc.Name)
 	if err != nil {
 		return nil, err
@@ -228,7 +238,7 @@ func (n *Namecheap) GetRegistrarCorrections(dc *models.DomainConfig) ([]*models.
 			{
 				Msg: fmt.Sprintf("Change Nameservers from '%s' to '%s'", found, desired),
 				F: func() error {
-					<-throttle
+					doThrottle()
 					_, err := n.client.DomainDNSSetCustom(sld, tld, desired)
 					if err != nil {
 						return err
