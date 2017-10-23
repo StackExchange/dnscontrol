@@ -38,7 +38,7 @@ var docNotes = providers.DocumentationNotes{
 
 func init() {
 	providers.RegisterRegistrarType("NAMECHEAP", newReg)
-  providers.RegisterDomainServiceProviderType("NAMECHEAP", newDsp, providers.CantUseNOPURGE, docNotes)
+	providers.RegisterDomainServiceProviderType("NAMECHEAP", newDsp, providers.CantUseNOPURGE, docNotes)
 	providers.RegisterCustomRecordType("URL", "NAMECHEAP", "")
 	providers.RegisterCustomRecordType("URL301", "NAMECHEAP", "")
 	providers.RegisterCustomRecordType("FRAME", "NAMECHEAP", "")
