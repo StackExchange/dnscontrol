@@ -1,17 +1,19 @@
 ---
-name: "Google cloud DNS"
+name: Google Cloud DNS
+title: Google Cloud DNS Provider 
 layout: default
 jsId: GCLOUD
 ---
 
-# Google cloud DNS Provider
+# Google Cloud DNS Provider
 
 ## Configuration
 
-For Google cloud authentication, DNSControl requires a JSON 'Service Account Key' for your project. Copy the full JSON object into your `creds.json` like so:
+For Google cloud authentication, DNSControl requires a JSON 'Service Account Key' for your project. Newlines in the private key need to be replaced with `\n`.Copy the full JSON object into your `creds.json` like so:
+
 {% highlight json %}
 {
-    "gcloud":{
+    "gcloud": {
         "type": "service_account",
         "project_id": "mydnsproject",
         "private_key_id": "a05483aa208364c56716b384efff33c0574d365b",
@@ -31,11 +33,9 @@ For Google cloud authentication, DNSControl requires a JSON 'Service Account Key
 See [the Activation section](#activation) for some tips on obtaining these credentials.
 
 ## Metadata
-
 This provider does not recognize any special metadata fields unique to google cloud dns.
 
 ## Usage
-
 Use this provider like any other DNS Provider:
 
 {% highlight js %}
@@ -48,7 +48,6 @@ D("example.tld", REG_NAMECOM, DnsProvider(GCLOUD),
 {%endhighlight%}
 
 ## Activation
-
 1. Go to your app-engine console and select the appropriate project.
 2. Go to "API Manager > Credentials", and create a new "Service Account Key"
 
@@ -58,7 +57,6 @@ D("example.tld", REG_NAMECOM, DnsProvider(GCLOUD),
 4. Download the JSON key and copy it into your `creds.json` under the name of your gcloud provider.
 
 ## New domains
-
 If a domain does not exist in your Google Cloud DNS account, DNSControl
-will *not* automatically add it. You'll need to do that via the
+will *not* automatically add it with the `create-domains` account. You'll need to do that via the
 control panel manually.

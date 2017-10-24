@@ -1,5 +1,6 @@
 ---
 layout: default
+title: Writing new DNS providers
 ---
 
 # Writing new DNS providers

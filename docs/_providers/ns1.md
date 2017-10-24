@@ -1,15 +1,14 @@
 ---
 name: NS1
+title: NS1 Provider
 layout: default
 jsId: NS1
 ---
 # NS1 Provider
 
-NS1 provides a dns provider implementation for ns1 dns.
-
 ## Configuration
 
-In your providers config json file you must provide your ns1 api key:
+In your credentials json file you must provide your NS1 api key:
 
 {% highlight json %}
 {
@@ -20,17 +19,16 @@ In your providers config json file you must provide your ns1 api key:
 {% endhighlight %}
 
 ## Metadata
-
-This provider does not recognize any special metadata fields unique to ns1.
+This provider does not recognize any special metadata fields unique to NS1.
 
 ## Usage
-
-Example javascript:
+Example Javascript:
 
 {% highlight js %}
+var REG_NONE = NewRegistrar('none', 'NONE')
 var NS1 = NewDnsProvider("ns1", "NS1");
 
-D("example.tld", MY_REGISTRAR, DnsProvider(NS1),
+D("example.tld", REG_NONE, DnsProvider(NS1),
     A("test","1.2.3.4")
 );
 {% endhighlight %}

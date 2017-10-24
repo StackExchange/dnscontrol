@@ -19,11 +19,12 @@ var docNotes = providers.DocumentationNotes{
 	providers.DocDualHost:            providers.Cannot("DNSimple does not allow sufficient control over the apex NS records"),
 	providers.DocCreateDomains:       providers.Cannot(),
 	providers.DocOfficiallySupported: providers.Cannot(),
+	providers.CanUseTLSA:             providers.Cannot(),
 }
 
 func init() {
 	providers.RegisterRegistrarType("DNSIMPLE", newReg)
-	providers.RegisterDomainServiceProviderType("DNSIMPLE", newDsp, providers.CanUsePTR, docNotes)
+	providers.RegisterDomainServiceProviderType("DNSIMPLE", newDsp, providers.CanUsePTR, providers.CanUseAlias, providers.CanUseCAA, providers.CanUseSRV, docNotes)
 }
 
 const stateRegistered = "registered"
@@ -47,7 +48,7 @@ func (c *DnsimpleApi) GetNameservers(domainName string) ([]*models.Nameserver, e
 
 func (c *DnsimpleApi) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Correction, error) {
 	corrections := []*models.Correction{}
-
+	dc.Punycode()
 	records, err := c.getRecords(dc.Name)
 	if err != nil {
 		return nil, err
@@ -61,8 +62,13 @@ func (c *DnsimpleApi) GetDomainCorrections(dc *models.DomainConfig) ([]*models.C
 		if r.Name == "" {
 			r.Name = "@"
 		}
-		if r.Type == "CNAME" || r.Type == "MX" {
+		if r.Type == "CNAME" || r.Type == "MX" || r.Type == "ALIAS" || r.Type == "SRV" {
 			r.Content += "."
+		}
+		// dnsimple adds these odd txt records that mirror the alias records.
+		// they seem to manage them on deletes and things, so we'll just pretend they don't exist
+		if r.Type == "TXT" && strings.HasPrefix(r.Content, "ALIAS for ") {
+			continue
 		}
 		rec := &models.RecordConfig{
 			NameFQDN:     dnsutil.AddOrigin(r.Name, dc.Name),
@@ -72,9 +78,18 @@ func (c *DnsimpleApi) GetDomainCorrections(dc *models.DomainConfig) ([]*models.C
 			MxPreference: uint16(r.Priority),
 			Original:     r,
 		}
+		if r.Type == "CAA" || r.Type == "SRV" {
+			rec.CombinedTarget = true
+		}
 		actual = append(actual, rec)
 	}
 	removeOtherNS(dc)
+	dc.Filter(func(r *models.RecordConfig) bool {
+		if r.Type == "CAA" || r.Type == "SRV" {
+			r.MergeToTarget()
+		}
+		return true
+	})
 	differ := diff.New(dc)
 	_, create, delete, modify := differ.IncrementalDiff(actual)
 
@@ -168,12 +183,23 @@ func (c *DnsimpleApi) getRecords(domainName string) ([]dnsimpleapi.ZoneRecord, e
 		return nil, err
 	}
 
-	recordsResponse, err := client.Zones.ListRecords(accountId, domainName, nil)
-	if err != nil {
-		return nil, err
+	opts := &dnsimpleapi.ZoneRecordListOptions{}
+	recs := []dnsimpleapi.ZoneRecord{}
+	opts.Page = 1
+	for {
+		recordsResponse, err := client.Zones.ListRecords(accountId, domainName, opts)
+		if err != nil {
+			return nil, err
+		}
+		recs = append(recs, recordsResponse.Data...)
+		pg := recordsResponse.Pagination
+		if pg.CurrentPage == pg.TotalPages {
+			break
+		}
+		opts.Page++
 	}
 
-	return recordsResponse.Data, nil
+	return recs, nil
 }
 
 // Returns the name server names that should be used. If the domain is registered
@@ -235,7 +261,6 @@ func (c *DnsimpleApi) createRecordFunc(rc *models.RecordConfig, domainName strin
 		if err != nil {
 			return err
 		}
-
 		record := dnsimpleapi.ZoneRecord{
 			Name:     dnsutil.TrimDomainName(rc.NameFQDN, domainName),
 			Type:     rc.Type,
@@ -243,7 +268,6 @@ func (c *DnsimpleApi) createRecordFunc(rc *models.RecordConfig, domainName strin
 			TTL:      int(rc.TTL),
 			Priority: int(rc.MxPreference),
 		}
-
 		_, err = client.Zones.CreateRecord(accountId, domainName, record)
 		if err != nil {
 			return err

@@ -1,5 +1,6 @@
 ---
 layout: default
+title: DnsControl
 ---
 
 <div class="row jumbotron">
@@ -20,7 +21,7 @@ layout: default
          <strong><a href="migrating">migrate</a></strong>
          an existing one. Read the
          <strong><a href="js">language spec</a></strong>
-         for more info.
+         for more info. You can also <strong><a href="toc">view a list of all topics</a></strong>.
     </p>
 	</div>
 
@@ -81,7 +82,7 @@ layout: default
 
 			<ul>
 				<li>
-          <a href="{{site.github.url}}/getting-started">Getting Started</a>: A walk-through of the basics
+          			<a href="{{site.github.url}}/getting-started">Getting Started</a>: A walk-through of the basics
 				</li>
 				<li>
 					<a href="{{site.github.url}}/provider-list">Providers</a>: Which DNS providers are supported
@@ -104,10 +105,10 @@ layout: default
 
 			<ul>
 				<li>
-					<a href="{{site.github.url}}/js">Language Reference</a>: Description of the entire language
+					<a href="{{site.github.url}}/js">Language Reference</a>: Full language description
 				</li>
 				<li>
-					<a href="{{site.github.url}}/alias">ALIAS / ANAME records in dnscontrol</a>
+					<a href="{{site.github.url}}/alias">Aliases</a>: ALIAS/ANAME records
 				</li>
 				<li>
 					<a href="{{site.github.url}}/spf">SPF Optimizer</a>: Optimize your SPF records
@@ -123,7 +124,7 @@ layout: default
 			</p>
 			<ul>
 				<li>
-					<a href="">Why CNAME/MX/NS targets require a trailing "dot{{site.github.url}}/why-the-dot"</a>
+					<a href="{{site.github.url}}/why-the-dot">Why CNAME/MX/NS targets require a "trailing dot"</a>
 				</li>
 				<li>
 					<a href="{{site.github.url}}/unittests">Testing</a>: Unit Testing for you DNS Data

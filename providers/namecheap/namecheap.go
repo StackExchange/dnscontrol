@@ -3,8 +3,10 @@ package namecheap
 import (
 	"encoding/json"
 	"fmt"
+	"log"
 	"sort"
 	"strings"
+	"time"
 
 	"golang.org/x/net/publicsuffix"
 
@@ -29,14 +31,17 @@ var docNotes = providers.DocumentationNotes{
 	providers.DocDualHost:            providers.Cannot("Doesn't allow control of apex NS records"),
 	providers.CanUseAlias:            providers.Cannot(),
 	providers.CanUseCAA:              providers.Cannot(),
-	providers.CanUseSRV:              providers.Unimplemented("namecheap supports srv records, we just need someone to implement it and make sure the tests pass."),
+	providers.CanUseSRV:              providers.Cannot("The namecheap web console allows you to make SRV records, but their api does not let you read or set them"),
 	providers.CanUsePTR:              providers.Cannot(),
 	providers.CanUseTLSA:             providers.Cannot(),
 }
 
 func init() {
-	providers.RegisterRegistrarType("NAMECHEAP", newReg, docNotes)
-	providers.RegisterDomainServiceProviderType("NAMECHEAP", newDsp, providers.CantUseNOPURGE)
+	providers.RegisterRegistrarType("NAMECHEAP", newReg)
+	providers.RegisterDomainServiceProviderType("NAMECHEAP", newDsp, providers.CantUseNOPURGE, docNotes)
+	providers.RegisterCustomRecordType("URL", "NAMECHEAP", "")
+	providers.RegisterCustomRecordType("URL301", "NAMECHEAP", "")
+	providers.RegisterCustomRecordType("FRAME", "NAMECHEAP", "")
 }
 
 func newDsp(conf map[string]string, metadata json.RawMessage) (models.DNSServiceProviderDriver, error) {
@@ -70,32 +75,43 @@ func splitDomain(domain string) (sld string, tld string) {
 }
 
 // namecheap has request limiting at unpublished limits
-// this channel acts as a global rate limiter
-// read from it before every request
 // from support in SEP-2017:
 //    "The limits for the API calls will be 20/Min, 700/Hour and 8000/Day for one user.
 //     If you can limit the requests within these it should be fine."
-var throttle = make(chan bool, 20)
-
-func init() {
-	go func() {
-		for {
-			// add (up to) 20 requests every minute
-			for i := 0; i < 20; i++ {
-				select {
-				case throttle <- true:
-				default:
-				}
-			}
+// this helper performs some api action, checks for rate limited response, and if so, enters a retry loop until it resolves
+// if you are consistently hitting this, you may have success asking their support to increase your account's limits.
+func doWithRetry(f func() error) {
+	// sleep 5 seconds at a time, up to 23 times (1 minute, 15 seconds)
+	const maxRetries = 23
+	const sleepTime = 5 * time.Second
+	var currentRetry int
+	for {
+		err := f()
+		if err == nil {
+			return
 		}
-	}()
+		if strings.Contains(err.Error(), "Error 500000: Too many requests") {
+			currentRetry++
+			if currentRetry >= maxRetries {
+				return
+			}
+			log.Printf("Namecheap rate limit exceeded. Waiting %s to retry.", sleepTime)
+			time.Sleep(sleepTime)
+		} else {
+			return
+		}
+	}
 }
 
 func (n *Namecheap) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Correction, error) {
 	dc.Punycode()
 	sld, tld := splitDomain(dc.Name)
-	<-throttle
-	records, err := n.client.DomainsDNSGetHosts(sld, tld)
+	var records *nc.DomainDNSGetHostsResult
+	var err error
+	doWithRetry(func() error {
+		records, err = n.client.DomainsDNSGetHosts(sld, tld)
+		return err
+	})
 	if err != nil {
 		return nil, err
 	}
@@ -193,8 +209,11 @@ func (n *Namecheap) generateRecords(dc *models.DomainConfig) error {
 		id++
 	}
 	sld, tld := splitDomain(dc.Name)
-	<-throttle
-	_, err := n.client.DomainDNSSetHosts(sld, tld, recs)
+	var err error
+	doWithRetry(func() error {
+		_, err = n.client.DomainDNSSetHosts(sld, tld, recs)
+		return err
+	})
 	return err
 }
 
@@ -206,8 +225,12 @@ func (n *Namecheap) GetNameservers(domainName string) ([]*models.Nameserver, err
 }
 
 func (n *Namecheap) GetRegistrarCorrections(dc *models.DomainConfig) ([]*models.Correction, error) {
-	<-throttle
-	info, err := n.client.DomainGetInfo(dc.Name)
+	var info *nc.DomainInfo
+	var err error
+	doWithRetry(func() error {
+		info, err = n.client.DomainGetInfo(dc.Name)
+		return err
+	})
 	if err != nil {
 		return nil, err
 	}
@@ -225,13 +248,12 @@ func (n *Namecheap) GetRegistrarCorrections(dc *models.DomainConfig) ([]*models.
 		return []*models.Correction{
 			{
 				Msg: fmt.Sprintf("Change Nameservers from '%s' to '%s'", found, desired),
-				F: func() error {
-					<-throttle
-					_, err := n.client.DomainDNSSetCustom(sld, tld, desired)
-					if err != nil {
+				F: func() (err error) {
+					doWithRetry(func() error {
+						_, err = n.client.DomainDNSSetCustom(sld, tld, desired)
 						return err
-					}
-					return nil
+					})
+					return
 				}},
 		}, nil
 	}

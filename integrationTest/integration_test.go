@@ -308,7 +308,7 @@ func makeTests(t *testing.T) []*TestCase {
 		tc("Empty"),
 		tc("NS for subdomain", ns("xyz", "ns2.foo.com.")),
 		tc("Dual NS for subdomain", ns("xyz", "ns2.foo.com."), ns("xyz", "ns1.foo.com.")),
-		tc("Record pointing to @", ns("foo", "**current-domain**")),
+		tc("NS Record pointing to @", ns("foo", "**current-domain**")),
 
 		//IDNAs
 		tc("Empty"),
