@@ -1,6 +1,6 @@
 ---
 layout: default
-title: Namservers
+title: Nameservers
 ---
 
 # Nameservers
@@ -51,11 +51,10 @@ DnsControl will also register the authoritative nameserver list with the registr
 
 ## 3. Backup providers
 
-It is also possible to specify a Dns Provider that is not "authoritative" by using `DnsProvider("name", 0)`. This means the provider will be updated
+It is also possible to specify a DNS Provider that is not "authoritative" by using `DnsProvider("name", 0)`. This means the provider will be updated
 with all records to match the authoritative ones, but it will not be registered in the tld name servers, and will not take traffic.
 It's nameservers will not be added to the authoritative set. While this may seem an attractive option, there are a few things to note:
 
-1. Backup nameservers will still be updated with the NS records from the authoritative nameserver list. This means the records
-    will still need to be updated to correctly "activate" the provider.
+1. Backup nameservers will still be updated with the NS records from the authoritative nameserver list. This means the records will still need to be updated to correctly "activate" the provider.
 2. Costs generally scale with utilization, so there is often no real savings associated with an active-passive setup vs an active-active one anyway.
 

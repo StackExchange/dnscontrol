@@ -4,18 +4,15 @@ title: How to build and ship a release
 ---
 
 # How to build and ship a release
-
 Here are my notes from producing the v0.2.2 release.  Change the version number as appropriate.
 
-## Step 1.  Run the integration tests
-
+## Step 1. Run the integration tests
 * If you are at StackOverflow, this is in TC as "DNS > Integration Tests".
 * Otherwise:
   * Run "go test" (documented in [Creating new DNS Resource Types](adding-new-rtypes))
   * Run the integration tests (documented in [Writing new DNS providers](writing-providers)
 
 ## Step 2. Bump the verison number
-
 Edit the "Version" variable in `main.go` and commit.
 
 ```
@@ -26,7 +23,6 @@ git push origin tag v0.2.2
 ```
 
 ## Step 3. Make the draft release.
-
 [On github.com, click on "Draft a new release"](https://github.com/StackExchange/dnscontrol/releases/new)
 
 Pick the v0.2.2 tag
@@ -66,13 +62,11 @@ dnscontrol 0.1.5 ("6fdf78997815055bbe119c0116c9e2d60310a515[dirty]") built 24 Au
 ```
 
 ## Step 4. Attach the binaries and release.
-
 Drag and drop binaries into the web form.
 
 Submit the release.
 
 ## Step 5. Announce it
-
 Email the mailing list: (note the format of the Subject line and that the first line of the email is the URL of the release)
 
 ```
@@ -91,5 +85,4 @@ So many new providers and features! Plus, a new testing framework that makes it 
 
 
 ## Step 6. Get credit!
-
 Mention the fact that you did this release in your weekly accomplishments.
