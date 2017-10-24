@@ -49,7 +49,7 @@ var defaultNS = []string{
 }
 
 // NewVultr initializes a Vultr DNSServiceProvider
-func NewVultr(m map[string]string, metadata json.RawMessage) (providers.DNSServiceProvider, error) {
+func NewVultr(m map[string]string, metadata json.RawMessage) (models.DNSServiceProviderDriver, error) {
 	api := &VultrApi{
 		token: m["token"],
 	}
