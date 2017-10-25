@@ -4,6 +4,7 @@ var conf = {
     registrars: [],
     dns_providers: [],
     domains: [],
+    domain_names: [],
 };
 
 var defaultArgs = [];
@@ -78,7 +79,11 @@ function D(name, registrar) {
         var m = arguments[i];
         processDargs(m, domain);
     }
+    if(conf.domain_names.indexOf(name) !== -1) {
+        throw name + " is declared more than once"
+    }
     conf.domains.push(domain);
+    conf.domain_names.push(name);
 }
 
 // DEFAULTS provides a set of default arguments to apply to all future domains.
