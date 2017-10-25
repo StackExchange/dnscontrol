@@ -24,8 +24,6 @@ const (
 	// so it is easier to simply mark this feature as not working for this
 	// provider.
 	CantUseNOPURGE
-	// CasePreserving indicates the provider preserves case in DNS names.
-	CasePreserving
 
 	// DocOfficiallySupported means it is actively used and maintained by stack exchange
 	DocOfficiallySupported
