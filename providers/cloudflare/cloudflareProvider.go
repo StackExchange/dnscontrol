@@ -38,6 +38,7 @@ var docNotes = providers.DocumentationNotes{
 	providers.DocCreateDomains:       providers.Can(),
 	providers.DocOfficiallySupported: providers.Can(),
 	providers.CanUseAlias:            providers.Can("CF automatically flattens CNAME records into A records dynamically"),
+	providers.CasePreserving:         providers.Can(),
 }
 
 func init() {

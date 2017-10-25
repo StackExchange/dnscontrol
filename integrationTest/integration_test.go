@@ -392,6 +392,26 @@ func makeTests(t *testing.T) []*TestCase {
 		)
 	}
 
+	// Case Preserving
+	if !providers.ProviderHasCabability(*providerToRun, providers.CasePreserving) {
+		t.Log("Skipping case preserving tests because provider does not support them")
+	} else {
+		tests = append(tests, tc("Empty"),
+			// Create down, and change.
+			tc("Create Downcase", a("foo", "1.1.1.1")),
+			tc("Upcase", a("FOO", "1.1.1.1")),
+			tc("Downcase", a("foo", "1.1.1.1")),
+			tc("Change target", a("foo", "2.2.2.2")),
+			tc("Upcase and change target", a("FOO", "3.3.3.3")),
+			// Create up, and change.
+			tc("Create Upcase", a("BAR", "1.1.1.1")),
+			tc("Downcase", a("bar", "1.1.1.1")),
+			tc("Upcase", a("BAR", "1.1.1.1")),
+			tc("Change target", a("BAR", "2.2.2.2")),
+			tc("Downcase and change target", a("bar", "3.3.3.3")),
+		)
+	}
+
 	// Test large zonefiles.
 	// Mostly to test paging. Many providers page at 100
 	// Known page sizes:
