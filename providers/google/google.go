@@ -136,6 +136,9 @@ func (g *gcloud) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Correc
 		want.MergeToTarget()
 	}
 
+	// Normalize
+	models.Downcase(existingRecords)
+
 	// first collect keys that have changed
 	differ := diff.New(dc)
 	_, create, delete, modify := differ.IncrementalDiff(existingRecords)

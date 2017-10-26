@@ -101,6 +101,9 @@ func (api *DoApi) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Corre
 		existingRecords[i] = toRc(dc, &records[i])
 	}
 
+	// Normalize
+	models.Downcase(existingRecords)
+
 	differ := diff.New(dc)
 	_, create, delete, modify := differ.IncrementalDiff(existingRecords)
 

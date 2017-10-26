@@ -46,6 +46,9 @@ func (c *adProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Co
 		return nil, fmt.Errorf("c.getExistingRecords(%v) failed: %v", dc.Name, err)
 	}
 
+	// Normalize
+	models.Downcase(foundRecords)
+
 	differ := diff.New(dc)
 	_, creates, dels, modifications := differ.IncrementalDiff(foundRecords)
 	// NOTE(tlim): This provider does not delete records.  If

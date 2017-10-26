@@ -163,6 +163,9 @@ func (s *SoftLayer) getExistingRecords(domain *datatypes.Dns_Domain) ([]*models.
 		actual = append(actual, recConfig)
 	}
 
+	// Normalize
+	models.Downcase(actual)
+
 	return actual, nil
 }
 
