@@ -256,7 +256,7 @@ func Downcase(recs []*RecordConfig) {
 		r.Name = strings.ToLower(r.Name)
 		r.NameFQDN = strings.ToLower(r.NameFQDN)
 		switch r.Type {
-		case "CNAME", "MX", "NS", "PTR":
+		case "ANAME", "CNAME", "MX", "NS", "PTR":
 			r.Target = strings.ToLower(r.Target)
 		case "A", "AAAA", "ALIAS", "CAA", "IMPORT_TRANSFORM", "SRV", "TLSA", "TXT", "SOA":
 			// Do nothing.
