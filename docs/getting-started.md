@@ -21,7 +21,7 @@ install `dnscontrol` in your `bin` directory.
 
 Create a directory where you'll be storing your configuration files.
 We highly recommend storing these files in a Git repo, but for
-simnple tests anything will do.
+simple tests anything will do.
 
 Note: Do **not** store your creds.json file in Git unencrypted.
 That is unsafe. In fact you should include `creds.json` in your
