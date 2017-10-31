@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"runtime"
 
+	"github.com/StackExchange/dnscontrol/models"
 	"github.com/StackExchange/dnscontrol/providers"
 )
 
@@ -32,7 +33,7 @@ func init() {
 	providers.RegisterDomainServiceProviderType("ACTIVEDIRECTORY_PS", newDNS, docNotes)
 }
 
-func newDNS(config map[string]string, metadata json.RawMessage) (providers.DNSServiceProvider, error) {
+func newDNS(config map[string]string, metadata json.RawMessage) (models.DNSServiceProviderDriver, error) {
 
 	fake := false
 	if fVal := config["fakeps"]; fVal == "true" {

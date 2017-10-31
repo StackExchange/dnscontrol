@@ -26,7 +26,7 @@ func init() {
 	flag.Parse()
 }
 
-func getProvider(t *testing.T) (providers.DNSServiceProvider, string, map[int]bool) {
+func getProvider(t *testing.T) (models.DNSServiceProviderDriver, string, map[int]bool) {
 	if *providerToRun == "" {
 		t.Log("No provider specified with -provider")
 		return nil, "", nil
@@ -40,7 +40,25 @@ func getProvider(t *testing.T) (providers.DNSServiceProvider, string, map[int]bo
 		if *providerToRun != name {
 			continue
 		}
-		provider, err := providers.CreateDNSProvider(name, cfg, nil)
+		// make a fake config to use providers.CreateProviders magic.
+		// This is not optimal, and we should have a more granular way to do this.
+		dnscfg := &models.DNSConfig{
+			Domains: []*models.DomainConfig{
+				{
+					DNSProviderNames: map[string]int{
+						name: 0,
+					},
+				},
+			},
+			DNSProviders: []*models.DNSProviderConfig{
+				{Name: name, Type: name},
+			},
+			Registrars: []*models.RegistrarConfig{
+				{Name: "", Type: "NONE"},
+			},
+		}
+		fmt.Println(name, jsons[name])
+		err = providers.CreateProviders(dnscfg, jsons)
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -53,7 +71,7 @@ func getProvider(t *testing.T) (providers.DNSServiceProvider, string, map[int]bo
 				fails[i] = true
 			}
 		}
-		return provider, cfg["domain"], fails
+		return dnscfg.Domains[0].DNSProviders[0], cfg["domain"], fails
 	}
 	t.Fatalf("Provider %s not found", *providerToRun)
 	return nil, "", nil
@@ -70,7 +88,7 @@ func TestDNSProviders(t *testing.T) {
 
 }
 
-func getDomainConfigWithNameservers(t *testing.T, prv providers.DNSServiceProvider, domainName string) *models.DomainConfig {
+func getDomainConfigWithNameservers(t *testing.T, prv models.DNSServiceProviderDriver, domainName string) *models.DomainConfig {
 	dc := &models.DomainConfig{
 		Name: domainName,
 	}
@@ -84,7 +102,7 @@ func getDomainConfigWithNameservers(t *testing.T, prv providers.DNSServiceProvid
 	return dc
 }
 
-func runTests(t *testing.T, prv providers.DNSServiceProvider, domainName string, knownFailures map[int]bool) {
+func runTests(t *testing.T, prv models.DNSServiceProviderDriver, domainName string, knownFailures map[int]bool) {
 	dc := getDomainConfigWithNameservers(t, prv, domainName)
 	// run tests one at a time
 	end := *endIdx
@@ -103,7 +121,7 @@ func runTests(t *testing.T, prv providers.DNSServiceProvider, domainName string,
 				t.Log("SKIPPING VALIDATION FOR KNOWN FAILURE CASE")
 				skipVal = true
 			}
-			dom, _ := dc.Copy()
+			dom := dc.Copy()
 			for _, r := range tst.Records {
 				rc := models.RecordConfig(*r)
 				rc.NameFQDN = dnsutil.AddOrigin(rc.Name, domainName)
@@ -112,7 +130,7 @@ func runTests(t *testing.T, prv providers.DNSServiceProvider, domainName string,
 				}
 				dom.Records = append(dom.Records, &rc)
 			}
-			dom2, _ := dom.Copy()
+			dom2 := dom.Copy()
 			// get corrections for first time
 			corrections, err := prv.GetDomainCorrections(dom)
 			if err != nil {
@@ -159,7 +177,7 @@ func TestDualProviders(t *testing.T) {
 	dc := getDomainConfigWithNameservers(t, p, domain)
 	// clear everything
 	run := func() {
-		dom, _ := dc.Copy()
+		dom := dc.Copy()
 		cs, err := p.GetDomainCorrections(dom)
 		if err != nil {
 			t.Fatal(err)

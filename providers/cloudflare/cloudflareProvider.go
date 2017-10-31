@@ -288,7 +288,7 @@ func (c *CloudflareApi) preprocessConfig(dc *models.DomainConfig) error {
 	return nil
 }
 
-func newCloudflare(m map[string]string, metadata json.RawMessage) (providers.DNSServiceProvider, error) {
+func newCloudflare(m map[string]string, metadata json.RawMessage) (models.DNSServiceProviderDriver, error) {
 	api := &CloudflareApi{}
 	api.ApiUser, api.ApiKey = m["apiuser"], m["apikey"]
 	// check api keys from creds json file

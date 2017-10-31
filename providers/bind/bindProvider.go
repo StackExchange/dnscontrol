@@ -36,7 +36,7 @@ var docNotes = providers.DocumentationNotes{
 	providers.DocOfficiallySupported: providers.Can(),
 }
 
-func initBind(config map[string]string, providermeta json.RawMessage) (providers.DNSServiceProvider, error) {
+func initBind(config map[string]string, providermeta json.RawMessage) (models.DNSServiceProviderDriver, error) {
 	// config -- the key/values from creds.json
 	// meta -- the json blob from NewReq('name', 'TYPE', meta)
 	api := &Bind{

@@ -48,7 +48,7 @@ func flattenSPFs(cfg *models.DNSConfig) []error {
 					if k == "@" {
 						txt.Target = v
 					} else {
-						cp, _ := txt.Copy()
+						cp := txt.Copy()
 						cp.Target = v
 						cp.NameFQDN = k
 						cp.Name = dnsutil.TrimDomainName(k, domain.Name)

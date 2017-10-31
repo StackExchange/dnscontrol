@@ -82,6 +82,33 @@ type RecordConfig struct {
 	Original interface{} `json:"-"` // Store pointer to provider-specific record object. Used in diffing.
 }
 
+// Copy will create a deep-copy of the record. Used before passing things to providers that may modify them.
+func (r *RecordConfig) Copy() *RecordConfig {
+	meta := make(map[string]string, len(r.Metadata))
+	for k, v := range r.Metadata {
+		meta[k] = v
+	}
+	return &RecordConfig{
+		Type:             r.Type,
+		Name:             r.Name,
+		Target:           r.Target,
+		TTL:              r.TTL,
+		Metadata:         meta,
+		NameFQDN:         r.NameFQDN,
+		MxPreference:     r.MxPreference,
+		SrvPriority:      r.SrvPriority,
+		SrvWeight:        r.SrvWeight,
+		SrvPort:          r.SrvPort,
+		CaaTag:           r.CaaTag,
+		CaaFlag:          r.CaaFlag,
+		TlsaUsage:        r.TlsaUsage,
+		TlsaSelector:     r.TlsaSelector,
+		TlsaMatchingType: r.TlsaMatchingType,
+		CombinedTarget:   r.CombinedTarget,
+		Original:         r.Original,
+	}
+}
+
 func (r *RecordConfig) String() (content string) {
 	if r.CombinedTarget {
 		return r.Target
@@ -246,6 +273,14 @@ func (r Records) Grouped() map[RecordKey]Records {
 	return groups
 }
 
+func (r Records) Copy() Records {
+	r2 := make(Records, len(r))
+	for i, rec := range r {
+		r2[i] = rec.Copy()
+	}
+	return r2
+}
+
 type RecordKey struct {
 	Name string
 	Type string
@@ -269,25 +304,33 @@ func StringsToNameservers(nss []string) []*Nameserver {
 }
 
 type DomainConfig struct {
-	Name         string            `json:"name"` // NO trailing "."
-	Registrar    string            `json:"registrar"`
-	DNSProviders map[string]int    `json:"dnsProviders"`
-	Metadata     map[string]string `json:"meta,omitempty"`
-	Records      Records           `json:"records"`
-	Nameservers  []*Nameserver     `json:"nameservers,omitempty"`
-	KeepUnknown  bool              `json:"keepunknown,omitempty"`
+	Name             string            `json:"name"` // NO trailing "."
+	RegistrarName    string            `json:"registrar"`
+	Registrar        Registrar         `json:"-"`
+	DNSProviderNames map[string]int    `json:"dnsProviders"`
+	DNSProviders     []DNSProvider     `json:"-"`
+	Metadata         map[string]string `json:"meta,omitempty"`
+	Records          Records           `json:"records"`
+	Nameservers      []*Nameserver     `json:"nameservers,omitempty"`
+	KeepUnknown      bool              `json:"keepunknown,omitempty"`
 }
 
-func (dc *DomainConfig) Copy() (*DomainConfig, error) {
-	newDc := &DomainConfig{}
-	err := copyObj(dc, newDc)
-	return newDc, err
-}
-
-func (r *RecordConfig) Copy() (*RecordConfig, error) {
-	newR := &RecordConfig{}
-	err := copyObj(r, newR)
-	return newR, err
+func (dc *DomainConfig) Copy() *DomainConfig {
+	meta := make(map[string]string, len(dc.Metadata))
+	for k, v := range dc.Metadata {
+		meta[k] = v
+	}
+	return &DomainConfig{
+		Name:             dc.Name,
+		RegistrarName:    dc.RegistrarName,
+		Registrar:        dc.Registrar,
+		DNSProviderNames: dc.DNSProviderNames,
+		DNSProviders:     dc.DNSProviders,
+		Metadata:         meta,
+		Records:          dc.Records.Copy(),
+		Nameservers:      dc.Nameservers,
+		KeepUnknown:      dc.KeepUnknown,
+	}
 }
 
 //Punycode will convert all records to punycode format.

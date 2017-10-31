@@ -182,20 +182,15 @@ func (args *FilterArgs) flags() []cli.Flag {
 	}
 }
 
-func (args *FilterArgs) shouldRunProvider(p string, dc *models.DomainConfig, nonDefaultProviders []string) bool {
+func (args *FilterArgs) shouldRunProvider(provider models.Provider) bool {
 	if args.Providers == "all" {
 		return true
 	}
 	if args.Providers == "" {
-		for _, pr := range nonDefaultProviders {
-			if pr == p {
-				return false
-			}
-		}
-		return true
+		return provider.RunByDefault()
 	}
 	for _, prov := range strings.Split(args.Providers, ",") {
-		if prov == p {
+		if prov == provider.Name() {
 			return true
 		}
 	}

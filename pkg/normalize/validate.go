@@ -187,7 +187,7 @@ func importTransform(srcDomain, dstDomain *models.DomainConfig, transforms []tra
 			continue
 		}
 		newRec := func() *models.RecordConfig {
-			rec2, _ := rec.Copy()
+			rec2 := rec.Copy()
 			rec2.Name = rec2.NameFQDN
 			rec2.NameFQDN = dnsutil.AddOrigin(rec2.Name, dstDomain.Name)
 			if ttl != 0 {
@@ -245,7 +245,7 @@ func NormalizeAndValidateConfig(config *models.DNSConfig) (errs []error) {
 
 	for _, domain := range config.Domains {
 		pTypes := []string{}
-		for p := range domain.DNSProviders {
+		for p := range domain.DNSProviderNames {
 			pType, ok := ptypeMap[p]
 			if !ok {
 				errs = append(errs, fmt.Errorf("%s uses undefined DNS provider %s", domain.Name, p))
@@ -402,7 +402,7 @@ func checkProviderCapabilities(dc *models.DomainConfig, pList []*models.DNSProvi
 		if !hasAny {
 			continue
 		}
-		for pName := range dc.DNSProviders {
+		for pName := range dc.DNSProviderNames {
 			for _, p := range pList {
 				if p.Name == pName {
 					if !providers.ProviderHasCabability(p.Type, ty.cap) {
@@ -439,12 +439,9 @@ func applyRecordTransforms(domain *models.DomainConfig) error {
 				rec.Target = newIP.String() //replace target of first record if different
 			} else if i > 0 {
 				// any additional ips need identical records with the alternate ip added to the domain
-				copy, err := rec.Copy()
-				if err != nil {
-					return err
-				}
-				copy.Target = newIP.String()
-				domain.Records = append(domain.Records, copy)
+				cp := rec.Copy()
+				cp.Target = newIP.String()
+				domain.Records = append(domain.Records, cp)
 			}
 		}
 	}
