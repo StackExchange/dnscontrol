@@ -36,7 +36,7 @@ If you want to modify the "fake powershell" mode details, you can set them in th
     "ADServer": "ny-dc01",
     "fakeps": "true",
     "pslog": "powershell.log",
-    "psout: "commandsToRun.ps1"
+    "psout": "commandsToRun.ps1"
   }
 }
 {% endhighlight %}
