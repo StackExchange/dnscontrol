@@ -71,7 +71,7 @@ Drag and drop binaries into the web form.
 
 Submit the release.
 
-## Step 5. Announce it
+## Step 5. Announce it via email
 
 Email the mailing list: (note the format of the Subject line and that the first line of the email is the URL of the release)
 
@@ -90,6 +90,15 @@ So many new providers and features! Plus, a new testing framework that makes it 
 ```
 
 
-## Step 6. Get credit!
+## Step 6. Announce it via chat
+
+Mention on [https://gitter.im/dnscontrol/Lobby](https://gitter.im/dnscontrol/Lobby) that the new release has shipped.
+
+```
+dnscontrol 2.2 has been released! https://github.com/StackExchange/dnscontrol/releases/tag/v0.2.2
+```
+
+
+## Step 7. Get credit!
 
 Mention the fact that you did this release in your weekly accomplishments.
