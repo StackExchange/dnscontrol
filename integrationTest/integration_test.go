@@ -112,6 +112,7 @@ func runTests(t *testing.T, prv providers.DNSServiceProvider, domainName string,
 				}
 				dom.Records = append(dom.Records, &rc)
 			}
+			models.Downcase(dom.Records)
 			dom2, _ := dom.Copy()
 			// get corrections for first time
 			corrections, err := prv.GetDomainCorrections(dom)
@@ -391,6 +392,16 @@ func makeTests(t *testing.T) []*TestCase {
 			tc("TLSA change certificate", tlsa("_443._tcp", 2, 0, 0, "0123456789abcdef==")),
 		)
 	}
+
+	// Case
+	tests = append(tests, tc("Empty"),
+		tc("Empty"),
+		tc("Create CAPS", mx("BAR", 5, "BAR.com.")),
+		tc("Downcase label", mx("bar", 5, "BAR.com."), a("decoy", "1.1.1.1")),
+		tc("Downcase target", mx("bar", 5, "bar.com."), a("decoy", "2.2.2.2")),
+		tc("Upcase both", mx("BAR", 5, "BAR.COM."), a("decoy", "3.3.3.3")),
+		// The decoys are required so that there is at least one actual change in each tc.
+	)
 
 	// Test large zonefiles.
 	// Mostly to test paging. Many providers page at 100

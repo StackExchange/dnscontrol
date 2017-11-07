@@ -97,6 +97,9 @@ func (api *VultrApi) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Co
 		curRecords[i] = r
 	}
 
+	// Normalize
+	models.Downcase(curRecords)
+
 	differ := diff.New(dc)
 	_, create, delete, modify := differ.IncrementalDiff(curRecords)
 

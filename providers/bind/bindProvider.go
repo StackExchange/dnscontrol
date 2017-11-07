@@ -237,6 +237,9 @@ func (c *Bind) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Correcti
 		dc.Records = append(dc.Records, soaRec)
 	}
 
+	// Normalize
+	models.Downcase(foundRecords)
+
 	differ := diff.New(dc)
 	_, create, del, mod := differ.IncrementalDiff(foundRecords)
 

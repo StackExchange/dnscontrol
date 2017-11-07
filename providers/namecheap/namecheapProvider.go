@@ -155,6 +155,9 @@ func (n *Namecheap) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Cor
 		actual = append(actual, rec)
 	}
 
+	// Normalize
+	models.Downcase(actual)
+
 	differ := diff.New(dc)
 	_, create, delete, modify := differ.IncrementalDiff(actual)
 

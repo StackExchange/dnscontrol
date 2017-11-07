@@ -90,6 +90,10 @@ func (c *DnsimpleApi) GetDomainCorrections(dc *models.DomainConfig) ([]*models.C
 		}
 		return true
 	})
+
+	// Normalize
+	models.Downcase(actual)
+
 	differ := diff.New(dc)
 	_, create, delete, modify := differ.IncrementalDiff(actual)
 
