@@ -213,6 +213,9 @@ the integration tests to see what works and what doesn't.  Fix any
 bugs and repeat, repeat, repeat until you have all the capabilities
 you want to implement.
 
+FYI: If a provider's capabilities changes, run `go generate` to update
+the documentation.
+
 
 ## Vendoring Dependencies
 

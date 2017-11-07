@@ -11,7 +11,30 @@ opinions about how things should work.
 This page documents those opinions.
 
 
-# Opinion #1: Non-experts should be able to safely make DNS changes.
+# Opinion #1: DNS should be treated like code.
+
+Code is written in a high-level language, version controlled,
+commented, tested, and reviewed by a third party... and all of that
+happens before it goes into production.
+
+DNS information should be stored in a version control system, like
+Git or Mercurial, and receive all the benefits of using VCS.  Changes
+should be in the form of PRs that are approved by someone-other-than-you.
+
+DNS information should be tested for syntax, pass unit tests and
+policy tests, all in an automated CI system that assures all changes
+are made the same way. (We don't provide a CI system, but DNSControl
+makes it easy to use one; and not use one when an emergency update
+is needed.)
+
+Pushing the changes into production should be effortless, not
+requiring people to know which domains are on which providers, or
+that certain providers do things differently that others.  The
+credentials for updates should be controlled such that anyone can
+write a PR, but not everyone has access to the credentials.
+
+
+# Opinion #2: Non-experts should be able to safely make DNS changes.
 
 The goal of DNSControl is to create a system that is set up by DNS
 experts like you, but updates and changes can be made by your
@@ -34,7 +57,7 @@ much training. The system should block them from doing dangerous
 things (even if they are technically legal).
 
 
-# Opinion #2: dnsconfig.js are not zonefiles.
+# Opinion #3: dnsconfig.js are not zonefiles.
 
 A zonefile can list any kind of DNS record. It has no judgement and
 no morals. It will let you do bad practices as long as the bits are
@@ -44,10 +67,10 @@ dnsconfig.js is a high-level description of your DNS zone data.
 Being high-level permits the code to understand intent, and stop
 bad behavior.
 
-TODO: List an example.]
+TODO: List an example.
 
 
-# Opinion #3: All DNS is lowercase (for languages that have such a concept)
+# Opinion #4: All DNS is lowercase for languages that have such a concept.
 
 DNSControl downcases all DNS names (domains, labels, and targets).  #sorrynotsorry
 
@@ -57,10 +80,10 @@ the DNS names are downcased.
 This reduces code complexity, reduces the number of edge-cases that must
 be tested, and makes the system safer to operate.
 
-Yes, we know that DNS is case insensitive.  See rule #2.
+Yes, we know that DNS is case insensitive.  See Opinion #3.
 
 
-# Opinion #4: Users should state what they want, and DNSControl should do the rest.
+# Opinion #5: Users should state what they want, and DNSControl should do the rest.
 
 When possible, dnsconfig.js lists a high-level description of what
 is desired and the compiler does the hard work for you.
@@ -71,13 +94,13 @@ Some examples:
 * TXT strings are expressed as JavaScript strings, with no weird DNS-required special escape charactors.  DNSControl does the escaping for you.
 * Domain names with Unicode are listed as real Unicode.  Punycode translation is done for you.
 * IP addresses are expressed as IP addresses; and reversing them to in-addr.arpa addresses is done for you.
-* SPF records are stated in the most verbose way; DNSControl optimizes it.
+* SPF records are stated in the most verbose way; DNSControl optimizes it for you in a safe, opt-in way.
 
 
-# Opinion #5 If it is ambiguous in DNS, it is forbidden in DNSControl.
+# Opinion #6 If it is ambiguous in DNS, it is forbidden in DNSControl.
 
 When there is ambiguity an expert knows what the system will do.
-Your coworkers should not be expected to be experts.
+Your coworkers should not be expected to be experts. (See Opinion #2).
 
 We would rather DNSControl error out than require users to be DNS experts.
 
@@ -87,7 +110,7 @@ We know that "bar.com." is a FQDN because it ends with a dot.
 
 Is "bar.com" a FQDN? Well, obviously it is, because it already ends
 with ".com" and we all know that "bar.com.bar.com" is probably not
-what the user intented.
+what the user intended.
 
 We know that "bar" is *not* an FQDN because it doesn't contain any dots.
 
@@ -98,10 +121,10 @@ then it is obvious that it is a FQDN.  However, can anyone really memorize
 all the TLDSs?  There used to be just gov/edu/com/mil/org/net and everyone
 could memorize them easily.  As of 2000, there are many, many, more.
 You can't memorize them all.  In fact, even before 2000 you couldn't
-memorize them all. (Did anyone reading this realize we left out "int"?)
+memorize them all. (In fact, you didn't even realize that we left out "int"!)
 
 "xyz" became a TLD in June 2014.  Thus, after 2014 a system like DNSControl
-should act differently.  We don't want to be surprised by changes
+would have to act differently.  We don't want to be surprised by changes
 like that.
 
 Therefore, we require all CNAME, MX, and NS targets to be FQDNs (they must
