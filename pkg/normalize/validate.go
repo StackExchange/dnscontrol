@@ -265,6 +265,7 @@ func NormalizeAndValidateConfig(config *models.DNSConfig) (errs []error) {
 			ns.Name = strings.TrimRight(ns.Name, ".")
 		}
 		// Normalize Records.
+		models.Downcase(domain.Records)
 		for _, rec := range domain.Records {
 			if rec.TTL == 0 {
 				rec.TTL = models.DefaultTTL

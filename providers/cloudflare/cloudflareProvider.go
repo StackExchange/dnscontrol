@@ -120,6 +120,10 @@ func (c *CloudflareApi) GetDomainCorrections(dc *models.DomainConfig) ([]*models
 		}
 	}
 	checkNSModifications(dc)
+
+	// Normalize
+	models.Downcase(records)
+
 	differ := diff.New(dc, getProxyMetadata)
 	_, create, del, mod := differ.IncrementalDiff(records)
 	corrections := []*models.Correction{}

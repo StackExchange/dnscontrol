@@ -170,6 +170,9 @@ func (r *route53Provider) GetDomainCorrections(dc *models.DomainConfig) ([]*mode
 		want.MergeToTarget()
 	}
 
+	// Normalize
+	models.Downcase(existingRecords)
+
 	//diff
 	differ := diff.New(dc)
 	_, create, delete, modify := differ.IncrementalDiff(existingRecords)
