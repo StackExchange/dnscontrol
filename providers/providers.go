@@ -76,11 +76,11 @@ func CreateRegistrars(d *models.DNSConfig, providerConfigs map[string]map[string
 	for _, reg := range d.Registrars {
 		rawMsg, ok := providerConfigs[reg.Name]
 		if !ok && reg.Type != "NONE" {
-			return nil, fmt.Errorf("Registrar %s not listed in creds.json file.", reg.Name)
+			return nil, fmt.Errorf("Registrar %s not listed in creds.json file", reg.Name)
 		}
 		registrar, err := createRegistrar(reg.Type, rawMsg)
 		if err != nil {
-			return nil, err
+			return nil, fmt.Errorf("Creating %s registrar: %s", reg.Name, err)
 		}
 		regs[reg.Name] = registrar
 	}
@@ -93,7 +93,7 @@ func CreateDsps(d *models.DNSConfig, providerConfigs map[string]map[string]strin
 		vals := providerConfigs[dsp.Name]
 		provider, err := CreateDNSProvider(dsp.Type, vals, dsp.Metadata)
 		if err != nil {
-			return nil, err
+			return nil, fmt.Errorf("Creating %s dns provider: %s", dsp.Name, err)
 		}
 		dsps[dsp.Name] = provider
 	}
