@@ -258,12 +258,10 @@ func Downcase(recs []*RecordConfig) {
 		switch r.Type {
 		case "ANAME", "CNAME", "MX", "NS", "PTR":
 			r.Target = strings.ToLower(r.Target)
-		case "A", "AAAA", "ALIAS", "CAA", "IMPORT_TRANSFORM", "SRV", "TLSA", "TXT", "SOA":
+		case "A", "AAAA", "ALIAS", "CAA", "IMPORT_TRANSFORM", "SRV", "TLSA", "TXT", "SOA", "CF_REDIRECT", "CF_TEMP_REDIRECT":
 			// Do nothing.
 		default:
-			panic(fmt.Sprintf("Downcase: Unimplemented rtype %v", r.Type))
-			// We panic so that we quickly find any switch statements
-			// that have not been updated for a new RR type.
+			// TODO: we'd like to panic here, but custom record types complicate things.
 		}
 	}
 	return
