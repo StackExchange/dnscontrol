@@ -13,7 +13,6 @@ import (
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/credentials"
 	"github.com/aws/aws-sdk-go/aws/session"
-	"github.com/aws/aws-sdk-go/private/waiter"
 	r53 "github.com/aws/aws-sdk-go/service/route53"
 	r53d "github.com/aws/aws-sdk-go/service/route53domains"
 	"github.com/pkg/errors"
@@ -297,12 +296,8 @@ func (r *route53Provider) GetRegistrarCorrections(dc *models.DomainConfig) ([]*m
 			{
 				Msg: fmt.Sprintf("Update nameservers %s -> %s", actual, expected),
 				F: func() error {
-					operationId, err := r.updateRegistrarNameservers(dc.Name, expectedSet)
-					if err != nil {
-						return err
-					}
-
-					return r.waitUntilNameserversUpdate(operationId)
+					_, err := r.updateRegistrarNameservers(dc.Name, expectedSet)
+					return err
 				},
 			},
 		}, nil
@@ -390,32 +385,4 @@ func (r *route53Provider) EnsureDomainExists(domain string) error {
 	_, err := r.client.CreateHostedZone(in)
 	return err
 
-}
-
-func (r *route53Provider) waitUntilNameserversUpdate(operationId *string) error {
-	fmt.Print("Waiting for registrar update to complete...")
-
-	waiterCfg := waiter.Config{
-		Operation:   "GetOperationDetail",
-		Delay:       30,
-		MaxAttempts: 10,
-		Acceptors: []waiter.WaitAcceptor{
-			{
-				State:    "success",
-				Matcher:  "path",
-				Argument: "Status",
-				Expected: "SUCCESSFUL",
-			},
-		},
-	}
-
-	w := waiter.Waiter{
-		Client: r.registrar,
-		Input: &r53d.GetOperationDetailInput{
-			OperationId: operationId,
-		},
-		Config: waiterCfg,
-	}
-
-	return w.Wait()
 }
