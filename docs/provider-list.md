@@ -74,13 +74,16 @@ We have received requests for the following providers. If you would like to cont
 code to support this provider, please re-open the issue. We'd be glad to help in any way.
 
 <ul>
+  <li>AXFR/DDNS (<a href="https://github.com/StackExchange/dnscontrol/issues/259">#259</a>)</li>
   <li>Azure (<a href="https://github.com/StackExchange/dnscontrol/issues/42">#42</a>)</li>
   <li>ClouDNS (<a href="https://github.com/StackExchange/dnscontrol/issues/114">#114</a>)</li>
   <li>Dyn (<a href="https://github.com/StackExchange/dnscontrol/issues/61">#61</a>)</li>
-  <li>AXFR/DDNS (<a href="https://github.com/StackExchange/dnscontrol/issues/259">#259</a>)</li>
   <li>Gandi (DNS works. Request is to add Registrar support) (<a href="https://github.com/StackExchange/dnscontrol/issues/87">#87</a>)</li>
+  <li>Gandi LIVEDNS) (<a href="https://github.com/StackExchange/dnscontrol/issues/266">#266</a>)</li>
   <li>GoDaddy (<a href="https://github.com/StackExchange/dnscontrol/issues/145">#145</a>)</li>
   <li>Hurricane Electric (dns.he.net) (<a href="https://github.com/StackExchange/dnscontrol/issues/118">#118</a>)</li>
   <li>INWX (<a href="https://github.com/StackExchange/dnscontrol/issues/254">#254</a>)</li>
   <li>Linode (<a href="https://github.com/StackExchange/dnscontrol/issues/121">#121</a>)</li>
+  <li>NameSilo (<a href="https://github.com/StackExchange/dnscontrol/issues/220">#220</a>)</li>
+  <li>OVH (<a href="https://github.com/StackExchange/dnscontrol/issues/143">#143</a>)</li>
 </ul>
