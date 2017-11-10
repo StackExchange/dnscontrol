@@ -66,5 +66,11 @@
   "VULTR": {
     "token": "$VULTR_TOKEN",
     "domain": "$VULTR_DOMAIN"
+  },
+  "OVH": {
+    "app-key": "$OVH_APP_KEY",
+    "app-secret-key": "$OVH_APP_SECRET_KEY",
+    "consumer-key": "$OVH_CONSUMER_KEY",
+    "domain": "$OVH_DOMAIN"
   }
 }
