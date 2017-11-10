@@ -144,7 +144,7 @@ func WriteZoneFile(w io.Writer, records []dns.RR, origin string) error {
 	defaultTtl := mostCommonTtl(records)
 
 	z := &zoneGenData{
-		Origin:     origin,
+		Origin:     dnsutil.AddOrigin(origin, "."),
 		DefaultTtl: defaultTtl,
 	}
 	z.Records = nil

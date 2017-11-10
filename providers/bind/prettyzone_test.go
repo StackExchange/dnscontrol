@@ -272,7 +272,6 @@ func TestWriteZoneFileOrder(t *testing.T) {
 		perm := rand.Perm(len(records))
 		for i, v := range perm {
 			records[i], records[v] = records[v], records[i]
-			//fmt.Println(i, v)
 		}
 		// Generate
 		buf := &bytes.Buffer{}
