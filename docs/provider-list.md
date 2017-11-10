@@ -65,7 +65,7 @@ Maintainers of contributed providers:
 * gandi @TomOnTime
 * namecheap @captncraig
 * ns1 @captncraig
-* OVH @Oprax
+* OVH @masterzen
 * Vultr @geek1011
 
 ### Requested providers
@@ -83,5 +83,4 @@ code to support this provider, please re-open the issue. We'd be glad to help in
   <li>Hurricane Electric (dns.he.net) (<a href="https://github.com/StackExchange/dnscontrol/issues/118">#118</a>)</li>
   <li>INWX (<a href="https://github.com/StackExchange/dnscontrol/issues/254">#254</a>)</li>
   <li>Linode (<a href="https://github.com/StackExchange/dnscontrol/issues/121">#121</a>)</li>
-  <li>OVH (<a href="https://github.com/StackExchange/dnscontrol/issues/143">#143</a>)</li>
 </ul>
