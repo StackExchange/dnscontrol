@@ -285,16 +285,22 @@
 			"revisionTime": "2015-04-13T22:18:30+03:00"
 		},
 		{
-			"checksumSHA1": "DpaOH7hx9TRqhDnhOjaXfjNsitQ=",
+			"checksumSHA1": "XXk8LwyJ+B2MNVn6fkwjDjBBsrA=",
 			"path": "github.com/miekg/dns",
-			"revision": "b298ef4ab3162f2a6eaa1665f0e21e84a3daff96",
-			"revisionTime": "2017-11-08T15:38:01Z"
+			"revision": "9fc4eb252eedf0ef8adc05169ce35da5e31beaba",
+			"revisionTime": "2017-11-10T10:33:17Z"
 		},
 		{
 			"checksumSHA1": "9SrLPArdQmp45MGosz7IEGX46Ng=",
 			"path": "github.com/miekg/dns/dnsutil",
 			"revision": "e4205768578dc90c2669e75a2f8a8bf77e3083a4",
 			"revisionTime": "2017-08-18T13:14:42Z"
+		},
+		{
+			"checksumSHA1": "AYjG78HsyaohvBTuzCgdxU48dFE=",
+			"path": "github.com/miekg/dns/internal/socket",
+			"revision": "9fc4eb252eedf0ef8adc05169ce35da5e31beaba",
+			"revisionTime": "2017-11-10T10:33:17Z"
 		},
 		{
 			"checksumSHA1": "QLKPqiHoCTknOwOiNj5Miaze6HI=",
