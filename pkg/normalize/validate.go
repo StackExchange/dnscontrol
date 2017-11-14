@@ -85,7 +85,7 @@ func validateRecordTypes(rec *models.RecordConfig, domain string, pTypes []strin
 
 // underscores in names are often used erroneously. They are valid for dns records, but invalid for urls.
 // here we list common records expected to have underscores. Anything else containing an underscore will print a warning.
-var labelUnderscores = []string{"_domainkey", "_dmarc", "_amazonses"}
+var labelUnderscores = []string{"_domainkey", "_dmarc", "_amazonses", "_acme-challenge"}
 
 //these record types may contain underscores
 var rTypeUnderscores = []string{"SRV", "TLSA", "TXT"}
