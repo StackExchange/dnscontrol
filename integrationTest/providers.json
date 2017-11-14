@@ -36,6 +36,12 @@
     "private_key": "$GCLOUD_PRIVATEKEY",
     "project_id": "$GCLOUD_PROJECT"
   },
+  "LINODE": {
+    "COMMENT": "25: Linode's hostname validation does not allow the target domain TLD",
+    "token": "$LINODE_TOKEN",
+    "domain": "$LINODE_DOMAIN",
+    "knownFailures": "25"
+  },
   "NS1": {
     "domain": "$NS1_DOMAIN",
     "api_token": "$NS1_TOKEN"
