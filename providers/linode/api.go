@@ -3,10 +3,10 @@ package linode
 import (
 	"bytes"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"net/http"
 	"net/url"
-	"errors"
 )
 
 const (
@@ -234,7 +234,7 @@ type recordEditRequest struct {
 	Service  string `json:"service,omitempty"`
 	Protocol string `json:"protocol,omitempty"`
 	// Documented as field `ttl` in the documentation, but in reality `ttl_sec` should be used
-	TTL      int    `json:"ttl_sec,omitempty"`
+	TTL int `json:"ttl_sec,omitempty"`
 }
 
 type errorResponse struct {
