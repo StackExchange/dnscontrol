@@ -216,12 +216,12 @@ type domainRecord struct {
 	Type     string `json:"type"`
 	Name     string `json:"name"`
 	Target   string `json:"target"`
-	Priority int    `json:"priority"`
-	Weight   int    `json:"weight"`
-	Port     int    `json:"port"`
+	Priority uint16 `json:"priority"`
+	Weight   uint16 `json:"weight"`
+	Port     uint16 `json:"port"`
 	Service  string `json:"service"`
 	Protocol string `json:"protocol"`
-	TTLSec   int    `json:"ttl_sec"`
+	TTLSec   uint32 `json:"ttl_sec"`
 }
 
 type recordEditRequest struct {

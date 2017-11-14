@@ -137,6 +137,9 @@ func (api *LinodeApi) GetDomainCorrections(dc *models.DomainConfig) ([]*models.C
 		})
 	}
 
+	// Normalize
+	models.Downcase(existingRecords)
+
 	// Linode doesn't allow selecting an arbitrary TTL, only a set of predefined values
 	// We need to make sure we don't change it every time if it is as close as it's going to get
 	// By experimentation, Linode always rounds up. 300 -> 300, 301 -> 3600.
@@ -148,7 +151,7 @@ func (api *LinodeApi) GetDomainCorrections(dc *models.DomainConfig) ([]*models.C
 	differ := diff.New(dc)
 	_, create, del, modify := differ.IncrementalDiff(existingRecords)
 
-	var corrections = []*models.Correction{}
+	var corrections []*models.Correction
 
 	// Deletes first so changing type works etc.
 	for _, m := range del {
@@ -225,10 +228,10 @@ func toRc(dc *models.DomainConfig, r *domainRecord) *models.RecordConfig {
 		NameFQDN:     name,
 		Type:         r.Type,
 		Target:       target,
-		TTL:          uint32(r.TTLSec),
-		MxPreference: uint16(r.Priority),
-		SrvPriority:  uint16(r.Priority),
-		SrvWeight:    uint16(r.Weight),
+		TTL:          r.TTLSec,
+		MxPreference: r.Priority,
+		SrvPriority:  r.Priority,
+		SrvWeight:    r.Weight,
 		SrvPort:      uint16(r.Port),
 		Original:     r,
 	}
@@ -252,6 +255,8 @@ func toReq(dc *models.DomainConfig, rc *models.RecordConfig) (*recordEditRequest
 
 	// Linode uses the same property for MX and SRV priority
 	switch rc.Type { // #rtype_variations
+	case "A", "AAAA", "NS", "PTR", "TXT", "SOA", "TLSA", "CAA":
+		// Nothing special.
 	case "MX":
 		req.Priority = int(rc.MxPreference)
 		req.Target = fixTarget(req.Target, dc.Name)
@@ -273,6 +278,11 @@ func toReq(dc *models.DomainConfig, rc *models.RecordConfig) (*recordEditRequest
 		req.Name = ""
 	case "CNAME":
 		req.Target = fixTarget(req.Target, dc.Name)
+	default:
+		msg := fmt.Sprintf("linode.toReq rtype %v unimplemented", rc.Type)
+		panic(msg)
+		// We panic so that we quickly find any switch statements
+		// that have not been updated for a new RR type.
 	}
 
 	return req, nil
