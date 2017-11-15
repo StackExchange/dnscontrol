@@ -63,6 +63,7 @@ Maintainers of contributed providers:
 * digital ocean @Deraen
 * dnsimple @aeden
 * gandi @TomOnTime
+* Linode @koesie10
 * namecheap @captncraig
 * ns1 @captncraig
 * OVH @masterzen
@@ -83,7 +84,6 @@ code to support this provider, please re-open the issue. We'd be glad to help in
   <li>GoDaddy (<a href="https://github.com/StackExchange/dnscontrol/issues/145">#145</a>)</li>
   <li>Hurricane Electric (dns.he.net) (<a href="https://github.com/StackExchange/dnscontrol/issues/118">#118</a>)</li>
   <li>INWX (<a href="https://github.com/StackExchange/dnscontrol/issues/254">#254</a>)</li>
-  <li>Linode (<a href="https://github.com/StackExchange/dnscontrol/issues/121">#121</a>)</li>
   <li>NameSilo (<a href="https://github.com/StackExchange/dnscontrol/issues/220">#220</a>)</li>
   <li>OVH (<a href="https://github.com/StackExchange/dnscontrol/issues/143">#143</a>)</li>
 </ul>
