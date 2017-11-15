@@ -90,7 +90,7 @@ var labelUnderscores = []string{"_domainkey", "_dmarc", "_amazonses", "_acme-cha
 //these record types may contain underscores
 var rTypeUnderscores = []string{"SRV", "TLSA", "TXT"}
 
-func checkLabel(label string, rType string, domain string) error {
+func checkLabel(label string, rType string, domain string, meta map[string]string) error {
 	if label == "@" {
 		return nil
 	}
@@ -100,6 +100,12 @@ func checkLabel(label string, rType string, domain string) error {
 	if label[len(label)-1] == '.' {
 		return fmt.Errorf("label %s.%s ends with a (.)", label, domain)
 	}
+	if strings.HasSuffix(label, domain) {
+		if m := meta["skip_fqdn_check"]; m != "true" {
+			return fmt.Errorf(`label %s ends with domain name %s. Record names should not be fully qualified. Add {skip_fqdn_check:"true"} to this record if you really want to make %s.%s`, label, domain, label, domain)
+		}
+	}
+	// check for underscores last
 	for _, ex := range rTypeUnderscores {
 		if rType == ex {
 			return nil
@@ -114,6 +120,7 @@ func checkLabel(label string, rType string, domain string) error {
 	if strings.ContainsRune(label, '_') {
 		return Warning{fmt.Errorf("label %s.%s contains an underscore", label, domain)}
 	}
+
 	return nil
 }
 
@@ -274,7 +281,7 @@ func NormalizeAndValidateConfig(config *models.DNSConfig) (errs []error) {
 			if err := validateRecordTypes(rec, domain.Name, pTypes); err != nil {
 				errs = append(errs, err)
 			}
-			if err := checkLabel(rec.Name, rec.Type, domain.Name); err != nil {
+			if err := checkLabel(rec.Name, rec.Type, domain.Name, rec.Metadata); err != nil {
 				errs = append(errs, err)
 			}
 			if errs2 := checkTargets(rec, domain.Name); errs2 != nil {
