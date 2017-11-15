@@ -1,0 +1,15 @@
+# providers/activedir
+providers/bind @tlimoncelli
+# providers/cloudflare
+providers/digitalocean @Deraen
+providers/dnsimple @aeden
+providers/gandi @TomOnTime
+# providers/gcloud
+providers/linode @koesie10
+providers/namecheap @captncraig
+# providers/namedotcom
+providers/ns1 @captncraig
+# providers/route53
+# providers/softlayer
+providers/vultr  @geek1011
+providers/ovh @masterzen

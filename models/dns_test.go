@@ -68,3 +68,23 @@ func TestRR(t *testing.T) {
 		t.Errorf("RR expected (%#v) got (%#v)\n", expected, found)
 	}
 }
+
+func TestDowncase(t *testing.T) {
+	dc := DomainConfig{Records: Records{
+		&RecordConfig{Type: "MX", Name: "lower", Target: "targetmx"},
+		&RecordConfig{Type: "MX", Name: "UPPER", Target: "TARGETMX"},
+	}}
+	Downcase(dc.Records)
+	if !dc.HasRecordTypeName("MX", "lower") {
+		t.Errorf("%v: expected (%v) got (%v)\n", dc.Records, false, true)
+	}
+	if !dc.HasRecordTypeName("MX", "upper") {
+		t.Errorf("%v: expected (%v) got (%v)\n", dc.Records, false, true)
+	}
+	if dc.Records[0].Target != "targetmx" {
+		t.Errorf("%v: target0 expected (%v) got (%v)\n", dc.Records, "targetmx", dc.Records[0].Target)
+	}
+	if dc.Records[1].Target != "targetmx" {
+		t.Errorf("%v: target1 expected (%v) got (%v)\n", dc.Records, "targetmx", dc.Records[1].Target)
+	}
+}

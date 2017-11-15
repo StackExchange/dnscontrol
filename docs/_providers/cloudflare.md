@@ -7,9 +7,7 @@ jsId: CLOUDFLAREAPI
 # Cloudflare Provider
 
 ## Configuration
-
-In your providers config json file you must provide your cloudflare.com api
-username and access token:
+In the credentials file you must provide your Cloudflare API username and access token:
 
 {% highlight json %}
 {
@@ -21,7 +19,6 @@ username and access token:
 {% endhighlight %}
 
 ## Metadata
-
 Record level metadata availible:
    * `cloudflare_proxy` ("on", "off", or "full")
 
@@ -40,10 +37,10 @@ What does on/off/full mean?
 
 **Aliases:**
 
-To make configuration files more readable and less prone to typos,
+To make configuration files more readable and less prone to errors,
 the following aliases are pre-defined:
 
-{% highlight json %}
+{% highlight js %}
 // Meta settings for individual records.
 var CF_PROXY_OFF = {'cloudflare_proxy': 'off'};     // Proxy disabled.
 var CF_PROXY_ON = {'cloudflare_proxy': 'on'};       // Proxy enabled.
@@ -57,7 +54,7 @@ var CF_PROXY_DEFAULT_ON = {'cloudflare_proxy_default': 'on'};
 
 The following example shows how to set meta variables with and without aliases:
 
-{% highlight json %}
+{% highlight js %}
 D('example.tld', REG_NONE, DnsProvider(CLOUDFLARE),
     A('www1','1.2.3.11', CF_PROXY_ON),        // turn proxy ON.
     A('www2','1.2.3.12', CF_PROXY_OFF),       // default is OFF, this is a no-op.
@@ -66,8 +63,7 @@ D('example.tld', REG_NONE, DnsProvider(CLOUDFLARE),
 {% endhighlight %}
 
 ## Usage
-
-Example javascript:
+Example Javascript:
 
 {% highlight js %}
 var REG_NONE = NewRegistrar('none', 'NONE')
@@ -94,18 +90,15 @@ D('example2.tld', REG_NONE, DnsProvider(CLOUDFLARE),
 {%endhighlight%}
 
 ## Activation
-
 DNSControl depends on a Cloudflare Global API Key that's available under "My Settings".
 
 ## New domains
-
 If a domain does not exist in your CloudFlare account, DNSControl
 will *not* automatically add it. You'll need to do that via the
 control panel manually or via the `dnscontrol create-domains` command.
 
 ## Redirects
-
-The cloudflare provider can manage Page-Rule based redirects for your domains. Simply use the `CF_REDIRECT` and `CF_TEMP_REDIRECT` functions to make redirects:
+The Cloudflare provider can manage Page-Rule based redirects for your domains. Simply use the `CF_REDIRECT` and `CF_TEMP_REDIRECT` functions to make redirects:
 
 {% highlight js %}
 

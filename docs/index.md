@@ -7,7 +7,7 @@ title: DnsControl
 	<div class="col-md-12">
 		<div>
 			<h1 class="hometitle">DnsControl</h1>
-			<p class="lead">DnsControl is a platform for seamlessly managing your DNS configuration across any number of DNS hosts, both in the cloud or in your own infrastructure. It manages all of the domains for the Stack Overflow network, and can do the same for you!</p>
+			<p class="lead">DnsControl is an <strong><a href="opinions">opinionated</a></strong> platform for seamlessly managing your DNS configuration across any number of DNS hosts, both in the cloud or in your own infrastructure. It manages all of the domains for the Stack Overflow network, and can do the same for you!</p>
 		</div>
 	</div>
 </div>
@@ -21,7 +21,7 @@ title: DnsControl
          <strong><a href="migrating">migrate</a></strong>
          an existing one. Read the
          <strong><a href="js">language spec</a></strong>
-         for more info.
+         for more info. You can also <strong><a href="toc">view a list of all topics</a></strong>.
     </p>
 	</div>
 

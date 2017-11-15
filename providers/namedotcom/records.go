@@ -37,6 +37,9 @@ func (n *nameDotCom) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Co
 
 	checkNSModifications(dc)
 
+	// Normalize
+	models.Downcase(actual)
+
 	differ := diff.New(dc)
 	_, create, del, mod := differ.IncrementalDiff(actual)
 	corrections := []*models.Correction{}

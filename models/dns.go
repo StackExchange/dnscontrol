@@ -89,12 +89,16 @@ func (r *RecordConfig) String() (content string) {
 
 	content = fmt.Sprintf("%s %s %s %d", r.Type, r.NameFQDN, r.Target, r.TTL)
 	switch r.Type { // #rtype_variations
-	case "A", "AAAA", "CNAME", "PTR", "TXT":
+	case "A", "AAAA", "CNAME", "NS", "PTR", "TXT":
 		// Nothing special.
 	case "MX":
-		content += fmt.Sprintf(" priority=%d", r.MxPreference)
+		content += fmt.Sprintf(" pref=%d", r.MxPreference)
 	case "SOA":
 		content = fmt.Sprintf("%s %s %s %d", r.Type, r.Name, r.Target, r.TTL)
+	case "SRV":
+		content += fmt.Sprintf(" srvpriority=%d srvweight=%d srvport=%d", r.SrvPriority, r.SrvWeight, r.SrvPort)
+	case "TLSA":
+		content += fmt.Sprintf(" tlsausage=%d tlsaselector=%d tlsamatchingtype=%d", r.TlsaUsage, r.TlsaSelector, r.TlsaMatchingType)
 	case "CAA":
 		content += fmt.Sprintf(" caatag=%s caaflag=%d", r.CaaTag, r.CaaFlag)
 	default:
@@ -246,6 +250,23 @@ func (r Records) Grouped() map[RecordKey]Records {
 	return groups
 }
 
+// Downcase converts all labels and targets to lowercase in a list of RecordConfig.
+func Downcase(recs []*RecordConfig) {
+	for _, r := range recs {
+		r.Name = strings.ToLower(r.Name)
+		r.NameFQDN = strings.ToLower(r.NameFQDN)
+		switch r.Type {
+		case "ANAME", "CNAME", "MX", "NS", "PTR":
+			r.Target = strings.ToLower(r.Target)
+		case "A", "AAAA", "ALIAS", "CAA", "IMPORT_TRANSFORM", "SRV", "TLSA", "TXT", "SOA", "CF_REDIRECT", "CF_TEMP_REDIRECT":
+			// Do nothing.
+		default:
+			// TODO: we'd like to panic here, but custom record types complicate things.
+		}
+	}
+	return
+}
+
 type RecordKey struct {
 	Name string
 	Type string
@@ -307,7 +328,7 @@ func (dc *DomainConfig) Punycode() error {
 			return err
 		}
 		switch rec.Type { // #rtype_variations
-		case "ALIAS", "MX", "NS", "CNAME", "PTR", "SRV":
+		case "ALIAS", "MX", "NS", "CNAME", "PTR", "SRV", "URL", "URL301", "FRAME":
 			rec.Target, err = idna.ToASCII(rec.Target)
 			if err != nil {
 				return err

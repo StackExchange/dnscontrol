@@ -32,6 +32,12 @@
 			"revisionTime": "2013-01-12T09:33:55Z"
 		},
 		{
+			"checksumSHA1": "E0NbOzBCBYViPKvM4XcloBu6GWE=",
+			"path": "github.com/JamesClonk/vultr/lib",
+			"revision": "2fd0705ce648e602e6c9c57329a174270a4f6688",
+			"revisionTime": "2017-08-08T19:54:39Z"
+		},
+		{
 			"checksumSHA1": "GZj+/EV9o0GyIsZ5/S8gSy3ceKM=",
 			"path": "github.com/TomOnTime/utfutil",
 			"revision": "2eac7962c5478fc8b8123d73ef7d33f05f9cd8f0",
@@ -268,21 +274,33 @@
 			"revisionTime": "2015-11-17T09:58:22-08:00"
 		},
 		{
+			"checksumSHA1": "a8Ge6pE7oxux9ZMZVAlyEeGzCng=",
+			"path": "github.com/juju/ratelimit",
+			"revision": "5b9ff866471762aa2ab2dced63c9fb6f53921342",
+			"revisionTime": "2017-05-23T01:21:41Z"
+		},
+		{
 			"path": "github.com/kolo/xmlrpc",
 			"revision": "0826b98aaa29c0766956cb40d45cf7482a597671",
 			"revisionTime": "2015-04-13T22:18:30+03:00"
 		},
 		{
-			"checksumSHA1": "Ewgc6lPiuDZVOf1407rxzSgAOag=",
+			"checksumSHA1": "XXk8LwyJ+B2MNVn6fkwjDjBBsrA=",
 			"path": "github.com/miekg/dns",
-			"revision": "e4205768578dc90c2669e75a2f8a8bf77e3083a4",
-			"revisionTime": "2017-08-18T13:14:42Z"
+			"revision": "9fc4eb252eedf0ef8adc05169ce35da5e31beaba",
+			"revisionTime": "2017-11-10T10:33:17Z"
 		},
 		{
 			"checksumSHA1": "9SrLPArdQmp45MGosz7IEGX46Ng=",
 			"path": "github.com/miekg/dns/dnsutil",
 			"revision": "e4205768578dc90c2669e75a2f8a8bf77e3083a4",
 			"revisionTime": "2017-08-18T13:14:42Z"
+		},
+		{
+			"checksumSHA1": "AYjG78HsyaohvBTuzCgdxU48dFE=",
+			"path": "github.com/miekg/dns/internal/socket",
+			"revision": "9fc4eb252eedf0ef8adc05169ce35da5e31beaba",
+			"revisionTime": "2017-11-10T10:33:17Z"
 		},
 		{
 			"checksumSHA1": "QLKPqiHoCTknOwOiNj5Miaze6HI=",
@@ -481,6 +499,12 @@
 			"path": "github.com/urfave/cli",
 			"revision": "7fb9c86b14e6a702a4157ccb5a863f07d844a207",
 			"revisionTime": "2017-09-11T04:08:19Z"
+		},
+		{
+			"checksumSHA1": "MLGPYuRc7BtUuKmIV8f/jXpYWvg=",
+			"path": "github.com/xlucas/go-ovh/ovh",
+			"revision": "ef0d1f19f39c291ed08d5d5258175d8a2134ab1c",
+			"revisionTime": "2015-12-21T16:03:54Z"
 		},
 		{
 			"checksumSHA1": "9jjO5GjLa0XF/nfWihF02RoH4qc=",
