@@ -20,6 +20,7 @@ Currently supported DNS providers:
  - DNSimple
  - Gandi
  - Google
+ - Linode
  - Namecheap
  - Name.com
  - NS1
