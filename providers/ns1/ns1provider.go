@@ -126,8 +126,11 @@ func buildRecord(recs models.Records, domain string, id string) *dns.Record {
 		Zone:   domain,
 	}
 	for _, r := range recs {
-		ans := &dns.Answer{
-			Rdata: strings.Split(r.Target, " "),
+		var ans *dns.Answer
+		if r.Type == "TXT" {
+			ans := &dns.Answer{Rdata: []string{r.Target}}
+		} else {
+			ans := &dns.Answer{Rdata: strings.Split(r.Target, " ")}
 		}
 		rec.AddAnswer(ans)
 	}
