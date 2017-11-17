@@ -236,6 +236,10 @@ func srv(name string, priority, weight, port uint16, target string) *rec {
 	return r
 }
 
+func txt(name, target string) *rec {
+	return makeRec(name, target, "TXT")
+}
+
 func caa(name string, tag string, flag uint8, target string) *rec {
 	r := makeRec(name, target, "CAA")
 	r.CaaFlag = flag
@@ -422,6 +426,16 @@ func makeTests(t *testing.T) []*TestCase {
 			tc("101 records", manyA("rec%04d", "1.2.3.4", 101)...),
 		)
 	}
+
+	// Case
+	tests = append(tests, tc("Empty"),
+		// TXT
+		tc("Empty"),
+		tc("Create a TXT", txt("foo", "simple")),
+		tc("Change a TXT", txt("foo", "changed")),
+		tc("Create a TXT with spaces", txt("foo", "with spaces")),
+		tc("Change a TXT with spaces", txt("foo", "with whitespace")),
+	)
 
 	return tests
 }
