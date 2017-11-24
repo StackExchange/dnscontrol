@@ -65,7 +65,7 @@ func (self *Record) Add(args RecordAdd) (*RecordInfo, error) {
 }
 
 // Remove a record from a zone/version
-func (self *Record) Delete(zoneId, version, recordId int64) (bool, error) {
+func (self *Record) Delete(zoneId, version int64, recordId string) (bool, error) {
 	var res int64
 	deleteArgs := map[string]interface{}{"id": recordId}
 	params := []interface{}{self.Key, zoneId, version, deleteArgs}
