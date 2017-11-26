@@ -48,6 +48,7 @@ func (c *OpenSRSApi) GetRegistrarCorrections(dc *models.DomainConfig) ([]*models
 		return nil, err
 	}
 
+	sort.Strings(nameServers)
 	actual := strings.Join(nameServers, ",")
 
 	expectedSet := []string{}
