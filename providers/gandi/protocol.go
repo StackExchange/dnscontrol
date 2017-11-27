@@ -5,9 +5,11 @@ import (
 
 	gandiclient "github.com/prasmussen/gandi-api/client"
 	gandidomain "github.com/prasmussen/gandi-api/domain"
+	gandinameservers "github.com/prasmussen/gandi-api/domain/nameservers"
 	gandizone "github.com/prasmussen/gandi-api/domain/zone"
 	gandirecord "github.com/prasmussen/gandi-api/domain/zone/record"
 	gandiversion "github.com/prasmussen/gandi-api/domain/zone/version"
+	gandioperation "github.com/prasmussen/gandi-api/operation"
 
 	"github.com/StackExchange/dnscontrol/models"
 	"github.com/miekg/dns/dnsutil"
@@ -37,6 +39,13 @@ func (c *GandiApi) fetchDomainInfo(fqdn string) (*gandidomain.DomainInfo, error)
 	gc := gandiclient.New(c.ApiKey, gandiclient.Production)
 	domain := gandidomain.New(gc)
 	return domain.Info(fqdn)
+}
+
+// setDomainNameservers updates the nameservers of a domain.
+func (c *GandiApi) setDomainNameservers(fqdn string, nameservers []string) (*gandioperation.OperationInfo, error) {
+	gc := gandiclient.New(c.ApiKey, gandiclient.Production)
+	nameserversapi := gandinameservers.New(gc)
+	return nameserversapi.Set(fqdn, nameservers)
 }
 
 // getRecordsForDomain returns a list of records for a zone.
