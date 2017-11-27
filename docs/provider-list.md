@@ -96,7 +96,6 @@ These providers have an open pr with (potentially) working code. They may be rea
   $.get("https://api.github.com/repos/StackExchange/dnscontrol/issues?state=all&labels=provider-request&direction=asc")
   .done(function(data){
     for(var i of data){
-      console.log(i)
       var el = $(`<li><a href='${i.html_url}'>${i.title}</a> (#${i.number})</li>`)
       var target = $("#requests");
       if (i.state == "open") target = $("#inprog");
