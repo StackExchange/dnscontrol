@@ -33,8 +33,8 @@ type OpenSRSApi struct {
 	UserName string // reseller user name
 	ApiKey   string // API Key
 
-	BaseURL string // An alternate base URI
-	client *opensrs.Client // Client
+	BaseURL string          // An alternate base URI
+	client  *opensrs.Client // Client
 }
 
 func (c *OpenSRSApi) GetNameservers(domainName string) ([]*models.Nameserver, error) {
