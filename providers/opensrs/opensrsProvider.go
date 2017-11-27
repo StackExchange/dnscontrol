@@ -34,6 +34,7 @@ type OpenSRSApi struct {
 	ApiKey   string // API Key
 
 	BaseURL string // An alternate base URI
+	client *opensrs.Client // Client
 }
 
 func (c *OpenSRSApi) GetNameservers(domainName string) ([]*models.Nameserver, error) {
@@ -73,11 +74,7 @@ func (c *OpenSRSApi) GetRegistrarCorrections(dc *models.DomainConfig) ([]*models
 // OpenSRS calls
 
 func (c *OpenSRSApi) getClient() *opensrs.Client {
-	client := opensrs.NewClient(opensrs.NewApiKeyMD5Credentials(c.UserName, c.ApiKey))
-	if c.BaseURL != "" {
-		client.BaseURL = c.BaseURL
-	}
-	return client
+	return c.client
 }
 
 // Returns the name server names that should be used. If the domain is registered
@@ -136,6 +133,11 @@ func newProvider(m map[string]string, metadata json.RawMessage) (*OpenSRSApi, er
 
 	if m["baseurl"] != "" {
 		api.BaseURL = m["baseurl"]
+	}
+
+	api.client = opensrs.NewClient(opensrs.NewApiKeyMD5Credentials(api.UserName, api.ApiKey))
+	if api.BaseURL != "" {
+		api.client.BaseURL = api.BaseURL
 	}
 
 	return api, nil
