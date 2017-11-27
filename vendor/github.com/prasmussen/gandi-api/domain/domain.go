@@ -16,7 +16,8 @@ func New(c *client.Client) *Domain {
 // Check the availability of some domain
 func (self *Domain) Available(name string) (string, error) {
 	var result map[string]interface{}
-	params := []interface{}{self.Key, name}
+	domain := []string{name}
+	params := []interface{}{self.Key, domain}
 	if err := self.Call("domain.available", params, &result); err != nil {
 		return "", err
 	}

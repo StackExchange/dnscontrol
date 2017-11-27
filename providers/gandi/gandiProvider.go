@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"log"
+	"sort"
 
 	"github.com/StackExchange/dnscontrol/models"
 	"github.com/StackExchange/dnscontrol/providers"
@@ -31,8 +32,9 @@ var docNotes = providers.DocumentationNotes{
 }
 
 func init() {
-	providers.RegisterDomainServiceProviderType("GANDI", newGandi, providers.CanUsePTR,
+	providers.RegisterDomainServiceProviderType("GANDI", newDsp, providers.CanUsePTR,
 		providers.CanUseSRV, docNotes, providers.CantUseNOPURGE)
+	providers.RegisterRegistrarType("GANDI", newReg)
 }
 
 type GandiApi struct {
@@ -150,7 +152,15 @@ func (c *GandiApi) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Corr
 	return corrections, nil
 }
 
-func newGandi(m map[string]string, metadata json.RawMessage) (providers.DNSServiceProvider, error) {
+func newDsp(conf map[string]string, metadata json.RawMessage) (providers.DNSServiceProvider, error) {
+	return newGandi(conf, metadata)
+}
+
+func newReg(conf map[string]string) (providers.Registrar, error) {
+	return newGandi(conf, nil)
+}
+
+func newGandi(m map[string]string, metadata json.RawMessage) (*GandiApi, error) {
 	api := &GandiApi{}
 	api.ApiKey = m["apikey"]
 	if api.ApiKey == "" {
@@ -158,4 +168,30 @@ func newGandi(m map[string]string, metadata json.RawMessage) (providers.DNSServi
 	}
 
 	return api, nil
+}
+
+func (c *GandiApi) GetRegistrarCorrections(dc *models.DomainConfig) ([]*models.Correction, error) {
+	domaininfo, err := c.getDomainInfo(dc.Name)
+	if err != nil {
+		return nil, err
+	}
+	sort.Strings(domaininfo.Nameservers)
+	found := strings.Join(domaininfo.Nameservers, ",")
+	desiredNs := []string{}
+	for _, d := range dc.Nameservers {
+		desiredNs = append(desiredNs, d.Name)
+	}
+	sort.Strings(desiredNs)
+	desired := strings.Join(desiredNs, ",")
+	if found != desired {
+		return []*models.Correction{
+			{
+				Msg: fmt.Sprintf("Change Nameservers from '%s' to '%s'", found, desired),
+				F: func() (err error) {
+					_, err = c.setDomainNameservers(dc.Name, desiredNs)
+					return
+				}},
+		}, nil
+	}
+	return nil, nil
 }
