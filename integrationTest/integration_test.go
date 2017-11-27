@@ -236,6 +236,10 @@ func srv(name string, priority, weight, port uint16, target string) *rec {
 	return r
 }
 
+func txt(name, target string) *rec {
+	return makeRec(name, target, "TXT")
+}
+
 func caa(name string, tag string, flag uint8, target string) *rec {
 	r := makeRec(name, target, "CAA")
 	r.CaaFlag = flag
@@ -384,12 +388,15 @@ func makeTests(t *testing.T) []*TestCase {
 	if !providers.ProviderHasCabability(*providerToRun, providers.CanUseTLSA) {
 		t.Log("Skipping TLSA Tests because provider does not support them")
 	} else {
+		sha256hash := strings.Repeat("0123456789abcdef", 4)
+		sha512hash := strings.Repeat("0123456789abcdef", 8)
+		reversedSha512 := strings.Repeat("fedcba9876543210", 8)
 		tests = append(tests, tc("Empty"),
-			tc("TLSA record", tlsa("_443._tcp", 3, 1, 1, "abcdef0123456789==")),
-			tc("TLSA change usage", tlsa("_443._tcp", 2, 1, 1, "abcdef0123456789==")),
-			tc("TLSA change selector", tlsa("_443._tcp", 2, 0, 1, "abcdef0123456789==")),
-			tc("TLSA change matchingtype", tlsa("_443._tcp", 2, 0, 0, "abcdef0123456789==")),
-			tc("TLSA change certificate", tlsa("_443._tcp", 2, 0, 0, "0123456789abcdef==")),
+			tc("TLSA record", tlsa("_443._tcp", 3, 1, 1, sha256hash)),
+			tc("TLSA change usage", tlsa("_443._tcp", 2, 1, 1, sha256hash)),
+			tc("TLSA change selector", tlsa("_443._tcp", 2, 0, 1, sha256hash)),
+			tc("TLSA change matchingtype", tlsa("_443._tcp", 2, 0, 2, sha512hash)),
+			tc("TLSA change certificate", tlsa("_443._tcp", 2, 0, 2, reversedSha512)),
 		)
 	}
 
@@ -419,6 +426,16 @@ func makeTests(t *testing.T) []*TestCase {
 			tc("101 records", manyA("rec%04d", "1.2.3.4", 101)...),
 		)
 	}
+
+	// Case
+	tests = append(tests, tc("Empty"),
+		// TXT
+		tc("Empty"),
+		tc("Create a TXT", txt("foo", "simple")),
+		tc("Change a TXT", txt("foo", "changed")),
+		tc("Create a TXT with spaces", txt("foo", "with spaces")),
+		tc("Change a TXT with spaces", txt("foo", "with whitespace")),
+	)
 
 	return tests
 }

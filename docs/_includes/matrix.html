@@ -13,9 +13,11 @@
 	<th class="rotate"><div><span>DNSIMPLE</span></div></th>
 	<th class="rotate"><div><span>GANDI</span></div></th>
 	<th class="rotate"><div><span>GCLOUD</span></div></th>
+	<th class="rotate"><div><span>LINODE</span></div></th>
 	<th class="rotate"><div><span>NAMECHEAP</span></div></th>
 	<th class="rotate"><div><span>NAMEDOTCOM</span></div></th>
 	<th class="rotate"><div><span>NS1</span></div></th>
+	<th class="rotate"><div><span>OVH</span></div></th>
 	<th class="rotate"><div><span>ROUTE53</span></div></th>
 	<th class="rotate"><div><span>SOFTLAYER</span></div></th>
 	<th class="rotate"><div><span>VULTR</span></div></th>
@@ -48,8 +50,14 @@
 		<td class="danger">
 			<i class="fa fa-times text-danger" aria-hidden="true"></i>
 		</td>
+		<td class="danger">
+			<i class="fa fa-times text-danger" aria-hidden="true"></i>
+		</td>
 		<td class="success">
 			<i class="fa fa-check text-success" aria-hidden="true"></i>
+		</td>
+		<td class="danger">
+			<i class="fa fa-times text-danger" aria-hidden="true"></i>
 		</td>
 		<td class="danger">
 			<i class="fa fa-times text-danger" aria-hidden="true"></i>
@@ -87,6 +95,9 @@
 		<td class="danger">
 			<i class="fa fa-times text-danger" aria-hidden="true"></i>
 		</td>
+		<td class="danger">
+			<i class="fa fa-times text-danger" aria-hidden="true"></i>
+		</td>
 		<td class="success">
 			<i class="fa fa-check text-success" aria-hidden="true"></i>
 		</td>
@@ -95,6 +106,9 @@
 		</td>
 		<td class="danger">
 			<i class="fa fa-times text-danger" aria-hidden="true"></i>
+		</td>
+		<td class="success">
+			<i class="fa fa-check text-success" aria-hidden="true"></i>
 		</td>
 		<td class="success">
 			<i class="fa fa-check text-success" aria-hidden="true"></i>
@@ -108,6 +122,12 @@
 		</tr>
 	<tr>
 		<th class="row-header" style="text-decoration: underline;" data-toggle="tooltip" data-container="body" data-placement="top" title="Can manage and serve DNS zones">DNS Provider</th>
+		<td class="success">
+			<i class="fa fa-check text-success" aria-hidden="true"></i>
+		</td>
+		<td class="success">
+			<i class="fa fa-check text-success" aria-hidden="true"></i>
+		</td>
 		<td class="success">
 			<i class="fa fa-check text-success" aria-hidden="true"></i>
 		</td>
@@ -163,6 +183,7 @@
 		</td>
 		<td><i class="fa fa-minus dim"></i></td>
 		<td><i class="fa fa-minus dim"></i></td>
+		<td><i class="fa fa-minus dim"></i></td>
 		<td class="danger">
 			<i class="fa fa-times text-danger" aria-hidden="true"></i>
 		</td>
@@ -170,6 +191,9 @@
 			<i class="fa fa-check text-success" aria-hidden="true"></i>
 		</td>
 		<td><i class="fa fa-minus dim"></i></td>
+		<td class="danger">
+			<i class="fa fa-times text-danger" aria-hidden="true"></i>
+		</td>
 		<td class="danger" data-toggle="tooltip" data-container="body" data-placement="top" title="R53 does not provide a generic ALIAS functionality. They do have &#39;ALIAS&#39; CNAME types to point at various AWS infrastructure, but dnscontrol has not implemented those.">
 			<i class="fa has-tooltip fa-times text-danger" aria-hidden="true"></i>
 		</td>
@@ -201,6 +225,7 @@
 		<td class="success">
 			<i class="fa fa-check text-success" aria-hidden="true"></i>
 		</td>
+		<td><i class="fa fa-minus dim"></i></td>
 		<td class="danger" data-toggle="tooltip" data-container="body" data-placement="top" title="The namecheap web console allows you to make SRV records, but their api does not let you read or set them">
 			<i class="fa has-tooltip fa-times text-danger" aria-hidden="true"></i>
 		</td>
@@ -208,6 +233,9 @@
 			<i class="fa fa-check text-success" aria-hidden="true"></i>
 		</td>
 		<td><i class="fa fa-minus dim"></i></td>
+		<td class="success">
+			<i class="fa fa-check text-success" aria-hidden="true"></i>
+		</td>
 		<td class="success">
 			<i class="fa fa-check text-success" aria-hidden="true"></i>
 		</td>
@@ -237,6 +265,7 @@
 		<td class="success">
 			<i class="fa fa-check text-success" aria-hidden="true"></i>
 		</td>
+		<td><i class="fa fa-minus dim"></i></td>
 		<td class="danger">
 			<i class="fa fa-times text-danger" aria-hidden="true"></i>
 		</td>
@@ -244,6 +273,9 @@
 			<a href="https://www.name.com/support/articles/205188508-Reverse-DNS-records"><i class="fa has-tooltip fa-times text-danger" aria-hidden="true"></i></a>
 		</td>
 		<td><i class="fa fa-minus dim"></i></td>
+		<td class="danger">
+			<i class="fa fa-times text-danger" aria-hidden="true"></i>
+		</td>
 		<td class="success">
 			<i class="fa fa-check text-success" aria-hidden="true"></i>
 		</td>
@@ -269,11 +301,15 @@
 		<td class="success">
 			<i class="fa fa-check text-success" aria-hidden="true"></i>
 		</td>
+		<td><i class="fa fa-minus dim"></i></td>
 		<td class="danger">
 			<i class="fa fa-times text-danger" aria-hidden="true"></i>
 		</td>
 		<td><i class="fa fa-minus dim"></i></td>
 		<td><i class="fa fa-minus dim"></i></td>
+		<td class="danger">
+			<i class="fa fa-times text-danger" aria-hidden="true"></i>
+		</td>
 		<td class="success">
 			<i class="fa fa-check text-success" aria-hidden="true"></i>
 		</td>
@@ -295,11 +331,15 @@
 		</td>
 		<td><i class="fa fa-minus dim"></i></td>
 		<td><i class="fa fa-minus dim"></i></td>
+		<td><i class="fa fa-minus dim"></i></td>
 		<td class="danger">
 			<i class="fa fa-times text-danger" aria-hidden="true"></i>
 		</td>
 		<td><i class="fa fa-minus dim"></i></td>
 		<td><i class="fa fa-minus dim"></i></td>
+		<td class="success">
+			<i class="fa fa-check text-success" aria-hidden="true"></i>
+		</td>
 		<td><i class="fa fa-minus dim"></i></td>
 		<td><i class="fa fa-minus dim"></i></td>
 		<td class="danger">
@@ -325,11 +365,17 @@
 		<td class="success">
 			<i class="fa fa-check text-success" aria-hidden="true"></i>
 		</td>
+		<td class="danger">
+			<i class="fa fa-times text-danger" aria-hidden="true"></i>
+		</td>
 		<td class="danger" data-toggle="tooltip" data-container="body" data-placement="top" title="Doesn&#39;t allow control of apex NS records">
 			<i class="fa has-tooltip fa-times text-danger" aria-hidden="true"></i>
 		</td>
 		<td class="danger" data-toggle="tooltip" data-container="body" data-placement="top" title="Apex NS records not editable">
 			<i class="fa has-tooltip fa-times text-danger" aria-hidden="true"></i>
+		</td>
+		<td class="success">
+			<i class="fa fa-check text-success" aria-hidden="true"></i>
 		</td>
 		<td class="success">
 			<i class="fa fa-check text-success" aria-hidden="true"></i>
@@ -363,6 +409,9 @@
 		<td class="success">
 			<i class="fa fa-check text-success" aria-hidden="true"></i>
 		</td>
+		<td class="danger">
+			<i class="fa fa-times text-danger" aria-hidden="true"></i>
+		</td>
 		<td class="danger" data-toggle="tooltip" data-container="body" data-placement="top" title="Requires domain registered through their service">
 			<i class="fa has-tooltip fa-times text-danger" aria-hidden="true"></i>
 		</td>
@@ -371,6 +420,9 @@
 		</td>
 		<td class="danger">
 			<i class="fa fa-times text-danger" aria-hidden="true"></i>
+		</td>
+		<td class="danger" data-toggle="tooltip" data-container="body" data-placement="top" title="New domains require registration">
+			<i class="fa has-tooltip fa-times text-danger" aria-hidden="true"></i>
 		</td>
 		<td class="success">
 			<i class="fa fa-check text-success" aria-hidden="true"></i>
@@ -405,8 +457,14 @@
 		<td class="success">
 			<i class="fa fa-check text-success" aria-hidden="true"></i>
 		</td>
+		<td class="success">
+			<i class="fa fa-check text-success" aria-hidden="true"></i>
+		</td>
 		<td class="danger">
 			<i class="fa fa-times text-danger" aria-hidden="true"></i>
+		</td>
+		<td class="success">
+			<i class="fa fa-check text-success" aria-hidden="true"></i>
 		</td>
 		<td class="success">
 			<i class="fa fa-check text-success" aria-hidden="true"></i>

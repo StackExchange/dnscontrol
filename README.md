@@ -20,12 +20,14 @@ Currently supported DNS providers:
  - DNSimple
  - Gandi
  - Google
+ - Linode
  - Namecheap
  - Name.com
  - NS1
  - Route 53
  - SoftLayer
  - Vultr
+ - OVH
 
 At Stack Overflow, we use this system to manage hundreds of domains
 and subdomains across multiple registrars and DNS providers.

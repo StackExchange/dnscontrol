@@ -63,9 +63,10 @@ Maintainers of contributed providers:
 * digital ocean @Deraen
 * dnsimple @aeden
 * gandi @TomOnTime
+* Linode @koesie10
 * namecheap @captncraig
 * ns1 @captncraig
-* OVH @Oprax
+* OVH @masterzen
 * Vultr @geek1011
 
 ### Requested providers
