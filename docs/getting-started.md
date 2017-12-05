@@ -125,6 +125,9 @@ jq:
 
     jq < creds.json
 
+FYI: `creds.json` fields can be an environment variable. The field must begin with a `$` followed by the variable name. No other text. For example:
+
+    "apiuser": "$GANDI_APIUSER",
 
 ## 5. Test the sample files.
 
