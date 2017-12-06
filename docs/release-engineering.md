@@ -40,6 +40,8 @@ Review the git log using this command:
 
     git log v0.2.2...v0.1.5
 
+(Don't create the release yet!)
+
 Create the binaries and attach them to the release:
 
     go run build/build.go
