@@ -548,28 +548,19 @@ var FRAME = recordBuilder('FRAME')
 // flatten: A list of domains to be flattened.
 
 function SPF_BUILDER(value) {
+  if (!value.parts || value.parts.length < 2) {
+    throw "SPF_BUILDER requires at least 2 elements";
+  }
   if (!value.label) {
     value.label = "@";
   }
   if (!value.raw) {
     value.raw = "_rawspf";
   }
-  if (!value.overflow) {
-    value.overflow = "_spf%d";
-  }
-  if (!value.overflow) {
-    value.overflow = "_spf%d";
-  }
-
-  if (!value.parts || value.parts.length < 2) {
-    throw "SPF_BUILDER requires at least 3 elements";
-  }
-  rawspf = value.parts.join(" ");
 
   r = []  // The list of records to return.
-  p = {  // The metaparameters to set on the main TXT record.
-    split: value.overflow
-  };
+  p = {}  // The metaparameters to set on the main TXT record.
+  rawspf = value.parts.join(" "); // The unaltered SPF settings.
 
   // If flattening is requested, generate a TXT record with the raw SPF settings.
   if (value.flatten && value.flatten.length > 0) {
@@ -577,7 +568,12 @@ function SPF_BUILDER(value) {
     r.push(TXT(value.raw, rawspf))
   }
 
-  // Generate a TXT record with the metaparameters:
+  // If overflow is specified, enable splitting.
+  if (value.overflow) {
+    p.split = value.overflow
+  }
+
+  // Generate a TXT record with the metaparameters.
   r.push(TXT(value.label, rawspf, p))
 
   return r

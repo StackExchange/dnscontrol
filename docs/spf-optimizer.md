@@ -80,7 +80,7 @@ D("example.tld", REG, DSP, ...
   ...
   SPF_BUILDER({
     label: "@",
-    overflow: "_spf%d",  // Delete this line if the default is sufficient.
+    overflow: "_spf%d",  // Delete this line if you don't want continuations.
     raw: "_rawspf",  // Delete this line if the default is sufficient.
     parts: [
       "v=spf1",
@@ -99,7 +99,7 @@ D("example.tld", REG, DSP, ...
 The parameters are:
 
 * `label:` The label of the first TXT record. (Optional. Default: `"@"`)
-* `overflow:` If the optimizer needs to continue the SPF settings to additional DNS records, this determines the template for what the additional labels will be named. (Optional. Default: `"_spf%d"`)
+* `overflow:` If set, SPF strings longer than 255 chars will be split into multiple TXT records. The value of this setting determines the template for what the additional labels will be named. If not set, no splitting will occur and dnscontrol may generate TXT strings that are too long.
 * `raw:` The label of the unaltered SPF settings. (Optional. Default: `"_rawspf"`)
 * `parts:` The individual parts of the SPF settings.
 * `flatten:` Which includes should be inlined. For safety purposes the flattening is done on an opt-in basis. If `"*"` is listed, all includes will be flattened... this might create more problems than is solves due to length limitations.
@@ -201,7 +201,7 @@ fully flatten it. i.e. This is what it would look like if all the
 checkboxes were checked. Note that this result is likely to be
 longer than 255 bytes, the limit for a single TXT string.
 
-3. Fully flattened split: This taks the "fully flattened" result
+3. Fully flattened split: This takes the "fully flattened" result
 and splits it into multiple DNS records.  To continue to the next
 record an include is added.
 
