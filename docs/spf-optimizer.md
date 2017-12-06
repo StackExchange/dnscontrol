@@ -80,7 +80,7 @@ D("example.tld", REG, DSP, ...
   ...
   SPF_BUILDER({
     label: "@",
-    overflow: "_spf%d",  // Delete this line if you don't want continuations.
+    overflow: "_spf%d",  // Delete this line if you don't want big strings split.
     raw: "_rawspf",  // Delete this line if the default is sufficient.
     parts: [
       "v=spf1",
@@ -109,7 +109,7 @@ The parameters are:
   * `TXT("@", "v=spf1 .... ~all")`
     *  This is the optimized configuration.
   * `TXT("_spf1", "...")`
-    * If the optimizer needs to add continuation TXT records, they will be generated with labels `_spf1`, `_spf2`, `_spf3`, etc.
+    * If the optimizer needs to split a long string across multiple TXT records, the additional TXT records will have labels `_spf1`, `_spf2`, `_spf3`, etc.
   * `TXT("_rawspf", "v=spf1 .... ~all")`
     * This is the unaltered SPF configuration. This is purely for debugging purposes and is not used by any email or anti-spam system.  It is only generated if flattening is requested.
 
