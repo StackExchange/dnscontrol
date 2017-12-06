@@ -79,8 +79,8 @@ function D(name, registrar) {
         var m = arguments[i];
         processDargs(m, domain);
     }
-    if(conf.domain_names.indexOf(name) !== -1) {
-        throw name + " is declared more than once"
+    if (conf.domain_names.indexOf(name) !== -1) {
+        throw name + ' is declared more than once';
     }
     conf.domains.push(domain);
     conf.domain_names.push(name);
@@ -535,46 +535,45 @@ var CF_TEMP_REDIRECT = recordBuilder('CF_TEMP_REDIRECT', {
     },
 });
 
-var URL = recordBuilder('URL')
-var URL301 = recordBuilder('URL301')
-var FRAME = recordBuilder('FRAME')
-
+var URL = recordBuilder('URL');
+var URL301 = recordBuilder('URL301');
+var FRAME = recordBuilder('FRAME');
 
 // SPF_BUILDER takes an object:
 // parts: The parts of the SPF record (to be joined with ' ').
 // label: The DNS label for the primary SPF record. (default: '@')
-// raw: If defined, also 
+// raw: Where (which label) to store an unaltered version of the SPF settings.
 // split: The template for additional records to be created (default: '_spf%d')
 // flatten: A list of domains to be flattened.
 
 function SPF_BUILDER(value) {
-  if (!value.parts || value.parts.length < 2) {
-    throw "SPF_BUILDER requires at least 2 elements";
-  }
-  if (!value.label) {
-    value.label = "@";
-  }
-  if (!value.raw) {
-    value.raw = "_rawspf";
-  }
+    if (!value.parts || value.parts.length < 2) {
+        throw 'SPF_BUILDER requires at least 2 elements';
+    }
+    if (!value.label) {
+        value.label = '@';
+    }
+    if (!value.raw) {
+        value.raw = '_rawspf';
+    }
 
-  r = []  // The list of records to return.
-  p = {}  // The metaparameters to set on the main TXT record.
-  rawspf = value.parts.join(" "); // The unaltered SPF settings.
+    r = []; // The list of records to return.
+    p = {}; // The metaparameters to set on the main TXT record.
+    rawspf = value.parts.join(' '); // The unaltered SPF settings.
 
-  // If flattening is requested, generate a TXT record with the raw SPF settings.
-  if (value.flatten && value.flatten.length > 0) {
-    p.flatten = value.flatten.join(",");
-    r.push(TXT(value.raw, rawspf))
-  }
+    // If flattening is requested, generate a TXT record with the raw SPF settings.
+    if (value.flatten && value.flatten.length > 0) {
+        p.flatten = value.flatten.join(',');
+        r.push(TXT(value.raw, rawspf));
+    }
 
-  // If overflow is specified, enable splitting.
-  if (value.overflow) {
-    p.split = value.overflow
-  }
+    // If overflow is specified, enable splitting.
+    if (value.overflow) {
+        p.split = value.overflow;
+    }
 
-  // Generate a TXT record with the metaparameters.
-  r.push(TXT(value.label, rawspf, p))
+    // Generate a TXT record with the metaparameters.
+    r.push(TXT(value.label, rawspf, p));
 
-  return r
+    return r;
 }
