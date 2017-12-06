@@ -20,6 +20,7 @@ Here are my notes from producing the v0.2.2 release.  Change the version number 
 Edit the "Version" variable in `main.go` and commit.
 
 ```
+git checkout master
 vi main.go
 git commit -m'Release v2.2' main.go
 git tag v0.2.2
@@ -38,7 +39,7 @@ Fill in the text box with something friendly like, "So many new features!" then 
 
 Review the git log using this command:
 
-    git log v0.2.2...v0.1.5
+    git log v0.2.2...v0.2.1
 
 (Don't create the release yet!)
 
