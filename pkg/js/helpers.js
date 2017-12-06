@@ -538,3 +538,47 @@ var CF_TEMP_REDIRECT = recordBuilder('CF_TEMP_REDIRECT', {
 var URL = recordBuilder('URL')
 var URL301 = recordBuilder('URL301')
 var FRAME = recordBuilder('FRAME')
+
+
+// SPF_BUILDER takes an object:
+// parts: The parts of the SPF record (to be joined with ' ').
+// label: The DNS label for the primary SPF record. (default: '@')
+// raw: If defined, also 
+// split: The template for additional records to be created (default: '_spf%d')
+// flatten: A list of domains to be flattened.
+
+function SPF_BUILDER(value) {
+  if (!value.label) {
+    value.label = "@";
+  }
+  if (!value.raw) {
+    value.raw = "_rawspf";
+  }
+  if (!value.overflow) {
+    value.overflow = "_spf%d";
+  }
+  if (!value.overflow) {
+    value.overflow = "_spf%d";
+  }
+
+  if (!value.parts || value.parts.length < 2) {
+    throw "SPF_BUILDER requires at least 3 elements";
+  }
+  rawspf = value.parts.join(" ");
+
+  r = []  // The list of records to return.
+  p = {  // The metaparameters to set on the main TXT record.
+    split: value.overflow
+  };
+
+  // If flattening is requested, generate a TXT record with the raw SPF settings.
+  if (value.flatten && value.flatten.length > 0) {
+    p.flatten = value.flatten.join(",");
+    r.push(TXT(value.raw, rawspf))
+  }
+
+  // Generate a TXT record with the metaparameters:
+  r.push(TXT(value.label, rawspf, p))
+
+  return r
+}

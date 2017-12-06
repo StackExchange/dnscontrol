@@ -111,7 +111,7 @@ title: DnsControl
 					<a href="{{site.github.url}}/alias">Aliases</a>: ALIAS/ANAME records
 				</li>
 				<li>
-					<a href="{{site.github.url}}/spf">SPF Optimizer</a>: Optimize your SPF records
+					<a href="{{site.github.url}}/spf-optimizer">SPF Optimizer</a>: Optimize your SPF records
 				</li>
 			</ul>
 		</div>
