@@ -91,7 +91,11 @@ func TestIpRewriting(t *testing.T) {
 	}
 	cf := &CloudflareApi{}
 	domain := newDomainConfig()
-	cf.ipConversions = []transform.IpConversion{{net.ParseIP("1.2.3.0"), net.ParseIP("1.2.3.40"), []net.IP{net.ParseIP("255.255.255.0")}, nil}}
+	cf.ipConversions = []transform.IpConversion{{
+		Low:      net.ParseIP("1.2.3.0"),
+		High:     net.ParseIP("1.2.3.40"),
+		NewBases: []net.IP{net.ParseIP("255.255.255.0")},
+		NewIPs:   nil}}
 	for _, tst := range tests {
 		rec := &models.RecordConfig{Type: "A", Target: tst.Given, Metadata: map[string]string{metaProxy: tst.Proxy}}
 		domain.Records = append(domain.Records, rec)
