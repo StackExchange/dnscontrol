@@ -26,7 +26,7 @@ Example Javascript:
 
 {% highlight js %}
 var REG_NONE = NewRegistrar('none', 'NONE')
-var DIGITALOCEAN = NewDnsProvider("do", "DIGITALOCEAN");
+var DIGITALOCEAN = NewDnsProvider("digitalocean", "DIGITALOCEAN");
 
 D("example.tld", REG_NONE, DnsProvider(DIGITALOCEAN),
     A("test","1.2.3.4")
