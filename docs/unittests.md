@@ -19,7 +19,9 @@ tests on this data.
 
 Output the intermediate representation:
 
-    dnscontrol -debugjson foo.json print
+    dnscontrol print-ir --out foo.json --pretty
+
+NOTE: The `--pretty` flag is optional.
 
 Here is a sample test written in `bash` using the [jq](https://stedolan.github.io/jq/) command.  This fails if the number of MX records in the `stackex.com` domain is not exactly 5:
 
