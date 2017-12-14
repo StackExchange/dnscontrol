@@ -167,14 +167,14 @@ export R53_KEY='CHANGE_TO_THE_KEY'
 go test -v -verbose -provider ROUTE53
 ```
 
-## Step 5: Update docs
+## Step 8: Update docs
 
 * Edit [README.md](https://github.com/StackExchange/dnscontrol): Add the provider to the bullet list.
 * Edit [docs/provider-list.md](https://github.com/StackExchange/dnscontrol/blob/master/docs/provider-list.md): Add the provider to the provider list.
 * Create `docs/_providers/PROVIDERNAME.md`: Use one of the other files in that directory as a base.
 * Edit [OWNERS](https://github.com/StackExchange/dnscontrol/blob/master/OWNERS): Add the directory name and your github id.
 
-## Step 6: Submit a PR
+## Step 9: Submit a PR
 
 At this point you can submit a PR.
 
@@ -183,7 +183,7 @@ input, or have questions.  This is just a good stopping place to
 submit a PR if you haven't already.
 
 
-## Step 7: Capabilities
+## Step 10: Capabilities
 
 Some DNS providers have features that others do not.  For example some
 support the SRV record.  A provider announces what it can do using
