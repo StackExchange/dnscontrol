@@ -122,7 +122,7 @@ func rrToRecord(rr dns.RR, origin string, replaceSerial uint32) (models.RecordCo
 			old_serial = 1
 		}
 		new_serial = v.Serial
-		if rc.Name == "@" && replaceSerial != 0 {
+		if (dnsutil.TrimDomainName(rc.Name, origin+".") == "@") && replaceSerial != 0 {
 			new_serial = replaceSerial
 		}
 		rc.Target = fmt.Sprintf("%v %v %v %v %v %v %v",
