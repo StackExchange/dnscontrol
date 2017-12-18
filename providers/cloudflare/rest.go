@@ -67,6 +67,7 @@ func (c *CloudflareApi) getRecordsForDomain(id string, domain string) ([]*models
 			return nil, fmt.Errorf("Error fetching record list cloudflare: %s", stringifyErrors(data.Errors))
 		}
 		for _, rec := range data.Result {
+			//fmt.Printf("REC: %+v\n", rec)
 			records = append(records, rec.toRecord(domain))
 		}
 		ri := data.ResultInfo
@@ -75,6 +76,7 @@ func (c *CloudflareApi) getRecordsForDomain(id string, domain string) ([]*models
 		}
 		page++
 	}
+	//fmt.Printf("DEBUG REORDS=%v\n", records)
 	return records, nil
 }
 
@@ -146,6 +148,8 @@ func (c *CloudflareApi) createRec(rec *models.RecordConfig, domainID string) []*
 	prio := ""
 	if rec.Type == "MX" {
 		prio = fmt.Sprintf(" %d ", rec.MxPreference)
+	} else if rec.Type == "CAA" {
+		content = rec.Content()
 	}
 	arr := []*models.Correction{{
 		Msg: fmt.Sprintf("CREATE record: %s %s %d%s %s", rec.Name, rec.Type, rec.TTL, prio, content),
