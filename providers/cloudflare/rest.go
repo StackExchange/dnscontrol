@@ -131,6 +131,14 @@ func cfSrvData(rec *models.RecordConfig) *cfRecData {
 	}
 }
 
+func cfCaaData(rec *models.RecordConfig) *cfRecData {
+	return &cfRecData{
+		Tag:   rec.CaaTag,
+		Flags: rec.CaaFlag,
+		Value: rec.Target,
+	}
+}
+
 func (c *CloudflareApi) createRec(rec *models.RecordConfig, domainID string) []*models.Correction {
 	type createRecord struct {
 		Name     string     `json:"name"`
@@ -148,8 +156,6 @@ func (c *CloudflareApi) createRec(rec *models.RecordConfig, domainID string) []*
 	prio := ""
 	if rec.Type == "MX" {
 		prio = fmt.Sprintf(" %d ", rec.MxPreference)
-	} else if rec.Type == "CAA" {
-		content = rec.Content()
 	}
 	arr := []*models.Correction{{
 		Msg: fmt.Sprintf("CREATE record: %s %s %d%s %s", rec.Name, rec.Type, rec.TTL, prio, content),
@@ -165,6 +171,10 @@ func (c *CloudflareApi) createRec(rec *models.RecordConfig, domainID string) []*
 			if rec.Type == "SRV" {
 				cf.Data = cfSrvData(rec)
 				cf.Name = rec.NameFQDN
+			} else if rec.Type == "CAA" {
+				cf.Data = cfCaaData(rec)
+				cf.Name = rec.NameFQDN
+				cf.Content = ""
 			}
 			endpoint := fmt.Sprintf(recordsURL, domainID)
 			buf := &bytes.Buffer{}
@@ -208,6 +218,10 @@ func (c *CloudflareApi) modifyRecord(domainID, recID string, proxied bool, rec *
 	if rec.Type == "SRV" {
 		r.Data = cfSrvData(rec)
 		r.Name = rec.NameFQDN
+	} else if rec.Type == "CAA" {
+		r.Data = cfCaaData(rec)
+		r.Name = rec.NameFQDN
+		r.Content = ""
 	}
 	endpoint := fmt.Sprintf(singleRecordURL, domainID, recID)
 	buf := &bytes.Buffer{}

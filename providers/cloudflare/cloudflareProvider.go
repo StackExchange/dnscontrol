@@ -333,13 +333,16 @@ func newCloudflare(m map[string]string, metadata json.RawMessage) (providers.DNS
 
 // Used on the "existing" records.
 type cfRecData struct {
-	Service  string `json:"service"`
-	Proto    string `json:"proto"`
 	Name     string `json:"name"`
-	Priority uint16 `json:"priority"`
-	Weight   uint16 `json:"weight"`
-	Port     uint16 `json:"port"`
 	Target   string `json:"target"`
+	Service  string `json:"service"`  // SRV
+	Proto    string `json:"proto"`    // SRV
+	Priority uint16 `json:"priority"` // SRV
+	Weight   uint16 `json:"weight"`   // SRV
+	Port     uint16 `json:"port"`     // SRV
+	Tag      string `json:"tag"`      // CAA
+	Flags    uint8  `json:"flags"`    // CAA
+	Value    string `json:"value"`    // CAA
 }
 
 type cfRecord struct {
