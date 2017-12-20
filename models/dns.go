@@ -60,6 +60,18 @@ type DNSProviderConfig struct {
 // NameFQDN:
 //    This is the FQDN version of Name.
 //    It should never have a trailiing ".".
+// Valid types:
+//    A
+//    AAAA
+//    ANAME
+//    CAA
+//    CNAME
+//    MX
+//    NS
+//    SRV
+//    TXT
+//    PAGE_RULE  // pseudo rtype
+//    TODO(tal): Add all the pseudo types
 type RecordConfig struct {
 	Type             string            `json:"type"`
 	Name             string            `json:"name"`   // The short name. See below.
@@ -416,6 +428,32 @@ func SplitCombinedSrvValue(s string) (priority, weight, port uint16, target stri
 		return 0, 0, 0, "", fmt.Errorf("Port %#v does not fit into a uint16", parts[0])
 	}
 	return uint16(priorityconv), uint16(weightconv), uint16(portconv), parts[3], nil
+}
+
+func SplitCombinedCaaValue(s string) (tag string, flag uint8, value string, err error) {
+
+	splitData := strings.SplitN(s, " ", 3)
+	if len(splitData) != 3 {
+		err = fmt.Errorf("Unexpected data for CAA record returned by Vultr")
+		return
+	}
+
+	lflag, err := strconv.ParseUint(splitData[0], 10, 8)
+	if err != nil {
+		return
+	}
+	flag = uint8(lflag)
+
+	tag = splitData[1]
+
+	value = splitData[2]
+	if strings.HasPrefix(value, `"`) && strings.HasSuffix(value, `"`) {
+		value = value[1 : len(value)-1]
+	}
+	if strings.HasPrefix(value, `'`) && strings.HasSuffix(value, `'`) {
+		value = value[1 : len(value)-1]
+	}
+	return
 }
 
 func copyObj(input interface{}, output interface{}) error {

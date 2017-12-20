@@ -255,6 +255,11 @@ func toRecordConfig(dc *models.DomainConfig, r *vultr.DNSRecord) (*models.Record
 
 	if r.Type == "CAA" {
 		// Vultr returns in the format "[flag] [tag] [value]"
+		// TODO(tal): I copied this code into models/dns.go.  At this point
+		// we can probably replace the code below with:
+		// rc.CaaFlag, rc.CaaTag, rc.Target, err := models.SplitCombinedCaaValue(rc.Target)
+		// return rc, err
+
 		splitData := strings.SplitN(rc.Target, " ", 3)
 		if len(splitData) != 3 {
 			return nil, fmt.Errorf("Unexpected data for CAA record returned by Vultr")
