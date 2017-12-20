@@ -67,6 +67,7 @@ func (c *CloudflareApi) getRecordsForDomain(id string, domain string) ([]*models
 			return nil, fmt.Errorf("Error fetching record list cloudflare: %s", stringifyErrors(data.Errors))
 		}
 		for _, rec := range data.Result {
+			//fmt.Printf("REC: %+v\n", rec)
 			records = append(records, rec.toRecord(domain))
 		}
 		ri := data.ResultInfo
@@ -75,6 +76,7 @@ func (c *CloudflareApi) getRecordsForDomain(id string, domain string) ([]*models
 		}
 		page++
 	}
+	//fmt.Printf("DEBUG REORDS=%v\n", records)
 	return records, nil
 }
 
@@ -129,6 +131,14 @@ func cfSrvData(rec *models.RecordConfig) *cfRecData {
 	}
 }
 
+func cfCaaData(rec *models.RecordConfig) *cfRecData {
+	return &cfRecData{
+		Tag:   rec.CaaTag,
+		Flags: rec.CaaFlag,
+		Value: rec.Target,
+	}
+}
+
 func (c *CloudflareApi) createRec(rec *models.RecordConfig, domainID string) []*models.Correction {
 	type createRecord struct {
 		Name     string     `json:"name"`
@@ -161,6 +171,10 @@ func (c *CloudflareApi) createRec(rec *models.RecordConfig, domainID string) []*
 			if rec.Type == "SRV" {
 				cf.Data = cfSrvData(rec)
 				cf.Name = rec.NameFQDN
+			} else if rec.Type == "CAA" {
+				cf.Data = cfCaaData(rec)
+				cf.Name = rec.NameFQDN
+				cf.Content = ""
 			}
 			endpoint := fmt.Sprintf(recordsURL, domainID)
 			buf := &bytes.Buffer{}
@@ -204,6 +218,10 @@ func (c *CloudflareApi) modifyRecord(domainID, recID string, proxied bool, rec *
 	if rec.Type == "SRV" {
 		r.Data = cfSrvData(rec)
 		r.Name = rec.NameFQDN
+	} else if rec.Type == "CAA" {
+		r.Data = cfCaaData(rec)
+		r.Name = rec.NameFQDN
+		r.Content = ""
 	}
 	endpoint := fmt.Sprintf(singleRecordURL, domainID, recID)
 	buf := &bytes.Buffer{}

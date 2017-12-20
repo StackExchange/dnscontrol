@@ -41,7 +41,7 @@ var docNotes = providers.DocumentationNotes{
 }
 
 func init() {
-	providers.RegisterDomainServiceProviderType("CLOUDFLAREAPI", newCloudflare, providers.CanUseSRV, providers.CanUseAlias, docNotes)
+	providers.RegisterDomainServiceProviderType("CLOUDFLAREAPI", newCloudflare, providers.CanUseSRV, providers.CanUseAlias, providers.CanUseCAA, docNotes)
 	providers.RegisterCustomRecordType("CF_REDIRECT", "CLOUDFLAREAPI", "")
 	providers.RegisterCustomRecordType("CF_TEMP_REDIRECT", "CLOUDFLAREAPI", "")
 }
@@ -333,13 +333,16 @@ func newCloudflare(m map[string]string, metadata json.RawMessage) (providers.DNS
 
 // Used on the "existing" records.
 type cfRecData struct {
-	Service  string `json:"service"`
-	Proto    string `json:"proto"`
 	Name     string `json:"name"`
-	Priority uint16 `json:"priority"`
-	Weight   uint16 `json:"weight"`
-	Port     uint16 `json:"port"`
 	Target   string `json:"target"`
+	Service  string `json:"service"`  // SRV
+	Proto    string `json:"proto"`    // SRV
+	Priority uint16 `json:"priority"` // SRV
+	Weight   uint16 `json:"weight"`   // SRV
+	Port     uint16 `json:"port"`     // SRV
+	Tag      string `json:"tag"`      // CAA
+	Flags    uint8  `json:"flags"`    // CAA
+	Value    string `json:"value"`    // CAA
 }
 
 type cfRecord struct {
@@ -365,20 +368,35 @@ func (c *cfRecord) toRecord(domain string) *models.RecordConfig {
 		c.Content = dnsutil.AddOrigin(c.Content+".", domain)
 	}
 	rc := &models.RecordConfig{
-		NameFQDN:     c.Name,
-		Type:         c.Type,
-		Target:       c.Content,
-		MxPreference: c.Priority,
-		TTL:          c.TTL,
-		Original:     c,
+		NameFQDN: c.Name,
+		Type:     c.Type,
+		Target:   c.Content,
+		TTL:      c.TTL,
+		Original: c,
 	}
-	if c.Type == "SRV" {
+	switch c.Type { // #rtype_variations
+	case "A", "AAAA", "ANAME", "CNAME", "NS", "TXT":
+		// nothing additional needed.
+	case "CAA":
+		var err error
+		rc.CaaTag, rc.CaaFlag, rc.Target, err = models.SplitCombinedCaaValue(c.Content)
+		if err != nil {
+			panic(err)
+		}
+	case "MX":
+		rc.MxPreference = c.Priority
+	case "SRV":
 		data := *c.Data
 		rc.SrvPriority = data.Priority
 		rc.SrvWeight = data.Weight
 		rc.SrvPort = data.Port
 		rc.Target = dnsutil.AddOrigin(data.Target+".", domain)
+	default:
+		panic(fmt.Sprintf("toRecord unimplemented rtype %v", c.Type))
+		// We panic so that we quickly find any switch statements
+		// that have not been updated for a new RR type.
 	}
+
 	return rc
 }
 
