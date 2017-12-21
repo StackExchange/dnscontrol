@@ -50,7 +50,7 @@ You'll need to mark which providers support this record type.  The
 initial PR should implement this record for the `bind` provider at
 a minimum.
 
-* Add the capability to the file `dnscontrol/providers/providers.go` (look for `CanUseAlias` and add
+* Add the capability to the file `dnscontrol/providers/capabilities.go` (look for `CanUseAlias` and add
 it to the end of the list.)
 * Mark the `bind` provider as supporting this record type by updating `dnscontrol/providers/bind/bindProvider.go` (look for `providers.CanUs` and you'll see what to do).
 
