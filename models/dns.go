@@ -61,25 +61,38 @@ type DNSProviderConfig struct {
 //    This is the FQDN version of Name.
 //    It should never have a trailiing ".".
 // Valid types:
-//    A
-//    AAAA
-//    ANAME
-//    CAA
-//    CNAME
-//    MX
-//    NS
-//    SRV
-//    TXT
-//    PAGE_RULE  // pseudo rtype
-//    TODO(tal): Add all the pseudo types
+//   Official:
+//     A
+//     AAAA
+//     ANAME
+//     CAA
+//     CNAME
+//     MX
+//     NS
+//     PTR
+//     SRV
+//     TLSA
+//     TXT
+//   Pseudo-Types:
+//     ALIAs
+//     CF_REDIRECT
+//     CF_TEMP_REDIRECT
+//     FRAME
+//     IMPORT_TRANSFORM
+//     NAMESERVER
+//     NO_PURGE
+//     PAGE_RULE
+//     PURGE
+//     URL
+//     URL301
 type RecordConfig struct {
 	Type             string            `json:"type"`
 	Name             string            `json:"name"`   // The short name. See below.
 	Target           string            `json:"target"` // If a name, must end with "."
 	TTL              uint32            `json:"ttl,omitempty"`
 	Metadata         map[string]string `json:"meta,omitempty"`
-	NameFQDN         string            `json:"-"`                      // Must end with ".$origin". See below.
-	MxPreference     uint16            `json:"mxpreference,omitempty"` // FIXME(tlim): Rename to MxPreference
+	NameFQDN         string            `json:"-"` // Must end with ".$origin". See below.
+	MxPreference     uint16            `json:"mxpreference,omitempty"`
 	SrvPriority      uint16            `json:"srvpriority,omitempty"`
 	SrvWeight        uint16            `json:"srvweight,omitempty"`
 	SrvPort          uint16            `json:"srvport,omitempty"`
