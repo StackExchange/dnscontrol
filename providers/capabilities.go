@@ -8,17 +8,23 @@ import (
 type Capability uint32
 
 const (
-	// CanUseAlias indicates the provider support ALIAS records (or flattened CNAMES). Up to the provider to translate them to the appropriate record type.
 	// If you add something to this list, you probably want to add it to pkg/normalize/validate.go checkProviderCapabilities() or somewhere near there.
+
+	// CanUseAlias indicates the provider support ALIAS records (or flattened CNAMES). Up to the provider to translate them to the appropriate record type.
 	CanUseAlias Capability = iota
+
 	// CanUsePTR indicates the provider can handle PTR records
 	CanUsePTR
+
 	// CanUseSRV indicates the provider can handle SRV records
 	CanUseSRV
+
 	// CanUseCAA indicates the provider can handle CAA records
 	CanUseCAA
+
 	// CanUseTLSA indicates the provider can handle TLSA records
 	CanUseTLSA
+
 	// CantUseNOPURGE indicates NO_PURGE is broken for this provider. To make it
 	// work would require complex emulation of an incremental update mechanism,
 	// so it is easier to simply mark this feature as not working for this
