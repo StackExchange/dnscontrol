@@ -252,6 +252,7 @@ func NormalizeAndValidateConfig(config *models.DNSConfig) (errs []error) {
 
 	for _, domain := range config.Domains {
 		pTypes := []string{}
+		txtMultiDissenters := []string{}
 		for p := range domain.DNSProviders {
 			pType, ok := ptypeMap[p]
 			if !ok {
@@ -263,6 +264,11 @@ func NormalizeAndValidateConfig(config *models.DNSConfig) (errs []error) {
 			//If NO_PURGE is in use, make sure this *isn't* a provider that *doesn't* support NO_PURGE.
 			if domain.KeepUnknown && providers.ProviderHasCabability(pType, providers.CantUseNOPURGE) {
 				errs = append(errs, fmt.Errorf("%s uses NO_PURGE which is not supported by %s(%s)", domain.Name, p, pType))
+			}
+
+			// Record if any providers do not support TXTMulti:
+			if !providers.ProviderHasCabability(pType, providers.CanUseTXTMulti) {
+				txtMultiDissenters = append(txtMultiDissenters, p)
 			}
 		}
 
@@ -315,10 +321,12 @@ func NormalizeAndValidateConfig(config *models.DNSConfig) (errs []error) {
 					errs = append(errs, fmt.Errorf("TLSA MatchingType %d is invalid in record %s (domain %s)",
 						rec.TlsaMatchingType, rec.Name, domain.Name))
 				}
-			} else if rec.Type == "TXT" {
-				if len(rec.TxtStrings) > 1 && !providers.ProviderHasCabability(pType, providers.CanUseTXTMulti) {
-					errs = append(errs, fmt.Errorf("Provider does not support TXT records with multiple strings (label %v domain: %v)", rec.Name, domain.Name))
-				}
+			} else if rec.Type == "TXT" && len(txtMultiDissenters) != 0 && len(rec.TxtStrings) > 1 {
+				// There are providers that  don't support TXTMulti yet there is
+				// a TXT record with multiple strings:
+				errs = append(errs,
+					fmt.Errorf("TXT records with multiple strings (label %v domain: %v) not supported by %s",
+						rec.Name, domain.Name, strings.Join(txtMultiDissenters, ",")))
 			}
 
 			// Populate FQDN:
