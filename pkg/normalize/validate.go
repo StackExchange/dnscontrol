@@ -315,6 +315,10 @@ func NormalizeAndValidateConfig(config *models.DNSConfig) (errs []error) {
 					errs = append(errs, fmt.Errorf("TLSA MatchingType %d is invalid in record %s (domain %s)",
 						rec.TlsaMatchingType, rec.Name, domain.Name))
 				}
+			} else if rec.Type == "TXT" {
+				if len(rec.TxtStrings) > 1 && !providers.ProviderHasCabability(pType, providers.CanUseTXTMulti) {
+					errs = append(errs, fmt.Errorf("Provider does not support TXT records with multiple strings (label %v domain: %v)", rec.Name, domain.Name))
+				}
 			}
 
 			// Populate FQDN:

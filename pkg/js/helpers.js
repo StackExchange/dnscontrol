@@ -221,27 +221,25 @@ var TLSA = recordBuilder('TLSA', {
 });
 
 function isStringOrArray(x) {
-  return ( _.isString(x)  || _.isArray(x) )
+  return _.isString(x) || _.isArray(x);
 }
 
 // TXT(name,target, recordModifiers...)
-var TXT = recordBuilder('TXT', {
-    args: [
-        ['name', _.isString],
-        ['target', isStringOrArray ],
-    ],
-    transform: function(record, args, modifiers) {
-      // Store the strings twice: .target is all the strings joined together. .txtstrings is the individual strings.
-        record.name = args.name;
-        if (_.isString(args.target)) {
-          record.target = args.target;
-          record.txtstrings = [args.target];
-        } else {
-          // If it is a list of strings, join them for backwards compatibility.
-          record.target = args.target.join('');
-          record.txtstrings = args.target;
-        }
+var TXT = recordBuilder("TXT", {
+  args: [["name", _.isString], ["target", isStringOrArray]],
+  transform: function(record, args, modifiers) {
+    record.name = args.name;
+    // Store the strings twice:
+    //   .target is all the strings joined together.
+    //   .txtstrings is the individual strings.
+    if (_.isString(args.target)) {
+      record.target = args.target;
+      record.txtstrings = [args.target];
+    } else {
+      record.target = args.target.join("");
+      record.txtstrings = args.target;
     }
+  }
 });
 
 // MX(name,priority,target, recordModifiers...)
