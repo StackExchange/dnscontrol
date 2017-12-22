@@ -19,11 +19,13 @@ type nameDotCom struct {
 	APIKey  string `json:"apikey"`
 }
 
-var docNotes = providers.DocumentationNotes{
-	providers.DocDualHost:            providers.Cannot("Apex NS records not editable"),
-	providers.DocCreateDomains:       providers.Cannot("New domains require registration"),
-	providers.DocOfficiallySupported: providers.Can(),
+var features = providers.DocumentationNotes{
+	providers.CanUseAlias:            providers.Can(),
 	providers.CanUsePTR:              providers.Cannot("PTR records are not supported (See Link)", "https://www.name.com/support/articles/205188508-Reverse-DNS-records"),
+	providers.CanUseSRV:              providers.Can(),
+	providers.DocCreateDomains:       providers.Cannot("New domains require registration"),
+	providers.DocDualHost:            providers.Cannot("Apex NS records not editable"),
+	providers.DocOfficiallySupported: providers.Can(),
 }
 
 func newReg(conf map[string]string) (providers.Registrar, error) {
@@ -48,7 +50,7 @@ func newProvider(conf map[string]string) (*nameDotCom, error) {
 
 func init() {
 	providers.RegisterRegistrarType("NAMEDOTCOM", newReg)
-	providers.RegisterDomainServiceProviderType("NAMEDOTCOM", newDsp, providers.CanUseAlias, providers.CanUseSRV, docNotes)
+	providers.RegisterDomainServiceProviderType("NAMEDOTCOM", newDsp, features)
 }
 
 ///

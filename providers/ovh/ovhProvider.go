@@ -3,13 +3,14 @@ package ovh
 import (
 	"encoding/json"
 	"fmt"
+	"sort"
+	"strings"
+
 	"github.com/StackExchange/dnscontrol/models"
 	"github.com/StackExchange/dnscontrol/providers"
 	"github.com/StackExchange/dnscontrol/providers/diff"
 	"github.com/miekg/dns/dnsutil"
 	"github.com/xlucas/go-ovh/ovh"
-	"sort"
-	"strings"
 )
 
 type ovhProvider struct {
@@ -17,14 +18,15 @@ type ovhProvider struct {
 	zones  map[string]bool
 }
 
-var docNotes = providers.DocumentationNotes{
-	providers.DocDualHost:            providers.Can(),
-	providers.DocCreateDomains:       providers.Cannot("New domains require registration"),
-	providers.DocOfficiallySupported: providers.Cannot(),
+var features = providers.DocumentationNotes{
 	providers.CanUseAlias:            providers.Cannot(),
-	providers.CanUseTLSA:             providers.Can(),
 	providers.CanUseCAA:              providers.Cannot(),
 	providers.CanUsePTR:              providers.Cannot(),
+	providers.CanUseSRV:              providers.Can(),
+	providers.CanUseTLSA:             providers.Can(),
+	providers.DocCreateDomains:       providers.Cannot("New domains require registration"),
+	providers.DocDualHost:            providers.Can(),
+	providers.DocOfficiallySupported: providers.Cannot(),
 }
 
 func newOVH(m map[string]string, metadata json.RawMessage) (*ovhProvider, error) {
@@ -50,7 +52,7 @@ func newReg(conf map[string]string) (providers.Registrar, error) {
 
 func init() {
 	providers.RegisterRegistrarType("OVH", newReg)
-	providers.RegisterDomainServiceProviderType("OVH", newDsp, providers.CanUseSRV, providers.CanUseTLSA, docNotes)
+	providers.RegisterDomainServiceProviderType("OVH", newDsp, features)
 }
 
 func (c *ovhProvider) GetNameservers(domain string) ([]*models.Nameserver, error) {
