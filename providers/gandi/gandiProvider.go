@@ -32,8 +32,13 @@ var docNotes = providers.DocumentationNotes{
 }
 
 func init() {
-	providers.RegisterDomainServiceProviderType("GANDI", newDsp, providers.CanUsePTR,
-		providers.CanUseSRV, docNotes, providers.CantUseNOPURGE)
+	providers.RegisterDomainServiceProviderType("GANDI", newDsp,
+		providers.CanUseCAA,
+		providers.CanUsePTR,
+		providers.CanUseSRV,
+		providers.CantUseNOPURGE,
+		docNotes,
+	)
 	providers.RegisterRegistrarType("GANDI", newReg)
 }
 
@@ -74,6 +79,7 @@ func (c *GandiApi) GetNameservers(domain string) ([]*models.Nameserver, error) {
 func (c *GandiApi) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Correction, error) {
 	dc.Punycode()
 	dc.CombineSRVs()
+	dc.CombineCAAs()
 	dc.CombineMXs()
 	domaininfo, err := c.getDomainInfo(dc.Name)
 	if err != nil {
