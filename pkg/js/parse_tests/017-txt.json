@@ -1,0 +1,25 @@
+{
+  "registrars": [],
+  "dns_providers": [],
+  "domains": [
+    {
+      "name": "foo.com",
+      "registrar": "none",
+      "dnsProviders": {},
+      "records": [
+        {
+          "type": "TXT",
+          "name": "@",
+          "target": "simple",
+          "txtstrings": ["simple"]
+        },
+        {
+          "type": "TXT",
+          "name": "@",
+          "target": "one",
+          "txtstrings": ["one"]
+        }
+      ]
+    }
+  ]
+}

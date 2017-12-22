@@ -101,7 +101,7 @@ type RecordConfig struct {
 	TlsaUsage        uint8             `json:"tlsausage,omitempty"`
 	TlsaSelector     uint8             `json:"tlsaselector,omitempty"`
 	TlsaMatchingType uint8             `json:"tlsamatchingtype,omitempty"`
-	TxtStrings       []string          `json:"-"`
+	TxtStrings       []string          `json:"txtstrings,omitempty"`
 
 	CombinedTarget bool `json:"-"`
 
