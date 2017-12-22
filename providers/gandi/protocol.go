@@ -193,13 +193,19 @@ func convert(r *gandirecord.RecordInfo, origin string) *models.RecordConfig {
 	}
 	switch r.Type {
 	case "A", "AAAA", "NS", "CNAME", "PTR", "TXT":
+		// no-op
+	case "CAA":
+		var err error
+		rc.CaaTag, rc.CaaFlag, rc.Target, err = models.SplitCombinedCaaValue(r.Value)
+		if err != nil {
+			panic(fmt.Sprintf("gandi.convert bad caa value format: %#v (%s)", r.Value, err))
+		}
 	case "SRV":
 		var err error
 		rc.SrvPriority, rc.SrvWeight, rc.SrvPort, rc.Target, err = models.SplitCombinedSrvValue(r.Value)
 		if err != nil {
 			panic(fmt.Sprintf("gandi.convert bad srv value format: %#v (%s)", r.Value, err))
 		}
-		// no-op
 	case "MX":
 		var err error
 		rc.MxPreference, rc.Target, err = models.SplitCombinedMxValue(r.Value)
