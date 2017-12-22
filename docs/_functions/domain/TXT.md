@@ -30,6 +30,7 @@ D("example.com", REGISTRAR, ....,
   TXT('listserve', 'google-site-verification=12345'),
   TXT('multiple', ['one', 'two', 'three']),  // Multiple strings
   TXT('quoted', 'any "quotes" and escapes? ugh; no worries!'),
+  TXT('_domainkey', 't=y; o=-;') // Escapes are done for you automatically.
 );
 
 {%endhighlight%}
