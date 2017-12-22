@@ -1,25 +1,48 @@
 {
-  "registrars": [],
   "dns_providers": [],
   "domains": [
     {
-      "name": "foo.com",
-      "registrar": "none",
       "dnsProviders": {},
+      "name": "foo.com",
       "records": [
         {
-          "type": "TXT",
           "name": "@",
           "target": "simple",
-          "txtstrings": ["simple"]
+          "txtstrings": [
+            "simple"
+          ],
+          "type": "TXT"
         },
         {
-          "type": "TXT",
           "name": "@",
           "target": "one",
-          "txtstrings": ["one"]
+          "txtstrings": [
+            "one"
+          ],
+          "type": "TXT"
+        },
+        {
+          "name": "@",
+          "target": "bonieclyde",
+          "txtstrings": [
+            "bonie",
+            "clyde"
+          ],
+          "type": "TXT"
+        },
+        {
+          "name": "@",
+          "target": "strawwoodbrick",
+          "txtstrings": [
+            "straw",
+            "wood",
+            "brick"
+          ],
+          "type": "TXT"
         }
-      ]
+      ],
+      "registrar": "none"
     }
-  ]
+  ],
+  "registrars": []
 }
