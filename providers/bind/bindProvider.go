@@ -61,6 +61,7 @@ func init() {
 		providers.CanUseSRV,
 		providers.CanUseCAA,
 		providers.CanUseTLSA,
+		providers.CanUseTXTMulti,
 		providers.CantUseNOPURGE,
 		docNotes)
 }
@@ -144,6 +145,7 @@ func rrToRecord(rr dns.RR, origin string, replaceSerial uint32) (models.RecordCo
 		rc.Target = v.Certificate
 	case *dns.TXT:
 		rc.Target = strings.Join(v.Txt, " ")
+		rc.TxtStrings = v.Txt
 	default:
 		log.Fatalf("rrToRecord: Unimplemented zone record type=%s (%v)\n", rc.Type, rr)
 	}
