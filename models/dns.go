@@ -443,6 +443,22 @@ func SplitCombinedSrvValue(s string) (priority, weight, port uint16, target stri
 	return uint16(priorityconv), uint16(weightconv), uint16(portconv), parts[3], nil
 }
 
+// CombineCAAs will merge the tags and flags into the target field for all CAA records.
+// Useful for providers that desire them as one field.
+func (dc *DomainConfig) CombineCAAs() {
+	for _, rec := range dc.Records {
+		if rec.Type == "CAA" {
+			if rec.CombinedTarget {
+				pm := strings.Join([]string{"CombineCAAs: Already collapsed: ", rec.Name, rec.Target}, " ")
+				panic(pm)
+			}
+			rec.Target = rec.Content()
+			fmt.Printf("DEBUG: NEW TARGET: %v\n", rec.Target)
+			rec.CombinedTarget = true
+		}
+	}
+}
+
 func SplitCombinedCaaValue(s string) (tag string, flag uint8, value string, err error) {
 
 	splitData := strings.SplitN(s, " ", 3)
