@@ -30,7 +30,7 @@ var features = providers.DocumentationNotes{
 	providers.CanUseCAA:              providers.Can(),
 	providers.CanUsePTR:              providers.Can(),
 	providers.CanUseSRV:              providers.Can(),
-	providers.CantUseNOPURGE:         nil,
+	providers.CantUseNOPURGE:         providers.Cannot(),
 	providers.DocCreateDomains:       providers.Cannot("Can only manage domains registered through their service"),
 	providers.DocOfficiallySupported: providers.Cannot(),
 }
