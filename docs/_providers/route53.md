@@ -10,7 +10,7 @@ You can specify the API credentials in the credentials json file:
 
 {% highlight json %}
 {
- "r53":{
+ "r53_main":{
       "KeyId": "your-aws-key",
       "SecretKey": "your-aws-secret-key"
  }
@@ -33,11 +33,11 @@ This provider does not recognize any special metadata fields unique to route 53.
 Example Javascript:
 
 {% highlight js %}
-var REG_NONE = NewRegistrar("none","NONE");
-var R53 = NewDnsProvider("r53", "ROUTE53");
+var REG_NONE = NewRegistrar('none','NONE');
+var R53 = NewDnsProvider('r53_main', 'ROUTE53');
 
-D("example.tld", REG_NONE, DnsProvider(R53),
-    A("test","1.2.3.4")
+D('example.tld', REG_NONE, DnsProvider(R53),
+    A('test','1.2.3.4')
 );
 {%endhighlight%}
 
@@ -55,10 +55,43 @@ but not as a DnsProvider.  The situation is described in
 In this situation you will see a message like:
 
 ```
------ Registrar: r53
+----- Registrar: r53_main
 Error getting corrections: AccessDeniedException: User: arn:aws:iam::868399730840:user/dnscontrol is not authorized to perform: route53domains:GetDomainDetail
   status code: 400, request id: 48b534a1-7902-11e7-afa6-a3fffd2ce139
 Done. 1 corrections.
 ```
 
 If this happens to you, we'd appreciate it if you could help us fix the code.  In the meanwhile, you can give the account additional IAM permissions so that it can do DNS-related actions, or simply use `NewRegistrar(..., 'NONE')` for now.
+
+## Error messages
+
+### Creds key mismatch
+
+```
+$ dnscontrol preview
+Creating r53 dns provider: NoCredentialProviders: no valid providers in chain. Deprecated.
+	For verbose messaging see aws.Config.CredentialsChainVerboseErrors
+```
+
+This means that the creds.json entry isn't found. Either there is no entry, or the entry name doesn't match the first parameter in the `NewDnsProvider()` call.  In the above example, note
+that the string `r53_main` is specified in `NewDnsProvider('r53_main', 'ROUTE53')` and that is the exact key used in the creds file above.
+
+### Invalid KeyId
+
+```
+$ dnscontrol preview
+Creating r53_main dns provider: InvalidClientTokenId: The security token included in the request is invalid.
+	status code: 403, request id: 8c006a24-e7df-11e7-9162-01963394e1df
+```
+
+This means the KeyId is unknown to AWS.
+
+### Invalid SecretKey
+
+```
+$ dnscontrol preview
+Creating r53_main dns provider: SignatureDoesNotMatch: The request signature we calculated does not match the signature you provided. Check your AWS Secret Access Key and signing method. Consult the service documentation for details.
+	status code: 403, request id: 9171d89a-e7df-11e7-8586-cbea3ea4e710
+```
+
+This means the SecretKey is incorrect. It may be a quoting issue.
