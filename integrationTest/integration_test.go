@@ -243,7 +243,7 @@ func txt(name, target string) *rec {
 }
 
 func txtmulti(name string, target []string) *rec {
-	r := makeRec(name, strings.Join(target, ""), "TXT")
+	r := makeRec(name, target[0], "TXT")
 	r.TxtStrings = target
 	return r
 }

@@ -101,7 +101,7 @@ type RecordConfig struct {
 	TlsaUsage        uint8             `json:"tlsausage,omitempty"`
 	TlsaSelector     uint8             `json:"tlsaselector,omitempty"`
 	TlsaMatchingType uint8             `json:"tlsamatchingtype,omitempty"`
-	TxtStrings       []string          `json:"txtstrings,omitempty"`
+	TxtStrings       []string          `json:"txtstrings,omitempty"` //TXTSTrings has all strings including first. If multiple strings, Target will contain only first one.
 
 	CombinedTarget bool `json:"-"`
 
