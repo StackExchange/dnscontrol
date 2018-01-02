@@ -26,19 +26,17 @@ Info required in `creds.json`:
 
 */
 
-var docNotes = providers.DocumentationNotes{
+var features = providers.DocumentationNotes{
+	providers.CanUseCAA:              providers.Can(),
+	providers.CanUsePTR:              providers.Can(),
+	providers.CanUseSRV:              providers.Can(),
+	providers.CantUseNOPURGE:         providers.Cannot(),
 	providers.DocCreateDomains:       providers.Cannot("Can only manage domains registered through their service"),
 	providers.DocOfficiallySupported: providers.Cannot(),
 }
 
 func init() {
-	providers.RegisterDomainServiceProviderType("GANDI", newDsp,
-		providers.CanUseCAA,
-		providers.CanUsePTR,
-		providers.CanUseSRV,
-		providers.CantUseNOPURGE,
-		docNotes,
-	)
+	providers.RegisterDomainServiceProviderType("GANDI", newDsp, features)
 	providers.RegisterRegistrarType("GANDI", newReg)
 }
 

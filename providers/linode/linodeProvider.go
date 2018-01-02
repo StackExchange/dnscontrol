@@ -13,9 +13,10 @@ import (
 
 	"net/url"
 
-	"golang.org/x/oauth2"
 	"regexp"
 	"strings"
+
+	"golang.org/x/oauth2"
 )
 
 /*
@@ -84,14 +85,14 @@ func NewLinode(m map[string]string, metadata json.RawMessage) (providers.DNSServ
 	return api, nil
 }
 
-var docNotes = providers.DocumentationNotes{
-	providers.DocOfficiallySupported: providers.Cannot(),
+var features = providers.DocumentationNotes{
 	providers.DocDualHost:            providers.Cannot(),
+	providers.DocOfficiallySupported: providers.Cannot(),
 }
 
 func init() {
 	// SRV support is in this provider, but Linode doesn't seem to support it properly
-	providers.RegisterDomainServiceProviderType("LINODE", NewLinode, docNotes)
+	providers.RegisterDomainServiceProviderType("LINODE", NewLinode, features)
 }
 
 func (api *LinodeApi) GetNameservers(domain string) ([]*models.Nameserver, error) {

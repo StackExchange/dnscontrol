@@ -24,16 +24,18 @@ Info required in `creds.json`:
 
 */
 
-var docNotes = providers.DocumentationNotes{
+var features = providers.DocumentationNotes{
+	providers.CanUseAlias:            providers.Cannot(),
+	providers.CanUseCAA:              providers.Can(),
+	providers.CanUsePTR:              providers.Cannot(),
+	providers.CanUseSRV:              providers.Can(),
+	providers.CanUseTLSA:             providers.Cannot(),
 	providers.DocCreateDomains:       providers.Can(),
 	providers.DocOfficiallySupported: providers.Cannot(),
-	providers.CanUseAlias:            providers.Cannot(),
-	providers.CanUseTLSA:             providers.Cannot(),
-	providers.CanUsePTR:              providers.Cannot(),
 }
 
 func init() {
-	providers.RegisterDomainServiceProviderType("VULTR", NewVultr, providers.CanUseSRV, providers.CanUseCAA, docNotes)
+	providers.RegisterDomainServiceProviderType("VULTR", NewVultr, features)
 }
 
 // VultrApi represents the Vultr DNSServiceProvider
