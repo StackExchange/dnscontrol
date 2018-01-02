@@ -101,6 +101,7 @@ type RecordConfig struct {
 	TlsaUsage        uint8             `json:"tlsausage,omitempty"`
 	TlsaSelector     uint8             `json:"tlsaselector,omitempty"`
 	TlsaMatchingType uint8             `json:"tlsamatchingtype,omitempty"`
+	TxtStrings       []string          `json:"txtstrings,omitempty"`
 
 	CombinedTarget bool `json:"-"`
 
@@ -247,7 +248,7 @@ func (rc *RecordConfig) ToRR() dns.RR {
 		rr.(*dns.TLSA).Selector = rc.TlsaSelector
 		rr.(*dns.TLSA).Certificate = rc.Target
 	case dns.TypeTXT:
-		rr.(*dns.TXT).Txt = []string{rc.Target}
+		rr.(*dns.TXT).Txt = rc.TxtStrings
 	default:
 		panic(fmt.Sprintf("ToRR: Unimplemented rtype %v", rc.Type))
 		// We panic so that we quickly find any switch statements

@@ -237,7 +237,15 @@ func srv(name string, priority, weight, port uint16, target string) *rec {
 }
 
 func txt(name, target string) *rec {
-	return makeRec(name, target, "TXT")
+	r := makeRec(name, target, "TXT")
+	r.TxtStrings = []string{target}
+	return r
+}
+
+func txtmulti(name string, target []string) *rec {
+	r := makeRec(name, strings.Join(target, ""), "TXT")
+	r.TxtStrings = target
+	return r
 }
 
 func caa(name string, tag string, flag uint8, target string) *rec {
@@ -427,15 +435,41 @@ func makeTests(t *testing.T) []*TestCase {
 		)
 	}
 
-	// Case
+	// TXT (single)
 	tests = append(tests, tc("Empty"),
-		// TXT
 		tc("Empty"),
 		tc("Create a TXT", txt("foo", "simple")),
 		tc("Change a TXT", txt("foo", "changed")),
 		tc("Create a TXT with spaces", txt("foo", "with spaces")),
 		tc("Change a TXT with spaces", txt("foo", "with whitespace")),
+		tc("Create 1 TXT as array", txtmulti("foo", []string{"simple"})),
 	)
+
+	// TXTMulti
+	if !providers.ProviderHasCabability(*providerToRun, providers.CanUseTXTMulti) {
+		t.Log("Skipping TXTMulti Tests because provider does not support them")
+	} else {
+		tests = append(tests,
+			tc("Empty"),
+			tc("Create TXTMulti 1",
+				txtmulti("foo", []string{"simple"}),
+			),
+			tc("Create TXTMulti 2",
+				txtmulti("foo", []string{"simple"}),
+				txtmulti("foo", []string{"one", "two"}),
+			),
+			tc("Create TXTMulti 3",
+				txtmulti("foo", []string{"simple"}),
+				txtmulti("foo", []string{"one", "two"}),
+				txtmulti("foo", []string{"eh", "bee", "cee"}),
+			),
+			tc("Change TXTMulti",
+				txtmulti("foo", []string{"dimple"}),
+				txtmulti("foo", []string{"fun", "two"}),
+				txtmulti("foo", []string{"eh", "bzz", "cee"}),
+			),
+		)
+	}
 
 	return tests
 }

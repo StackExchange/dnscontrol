@@ -19,6 +19,9 @@ const (
 	// CanUseSRV indicates the provider can handle SRV records
 	CanUseSRV
 
+	// CanUseTXTMulti indicates the provider can handle TXT records with multiple strings
+	CanUseTXTMulti
+
 	// CanUseCAA indicates the provider can handle CAA records
 	CanUseCAA
 
