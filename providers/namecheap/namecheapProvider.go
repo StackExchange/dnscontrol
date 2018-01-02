@@ -25,20 +25,21 @@ type Namecheap struct {
 	client  *nc.Client
 }
 
-var docNotes = providers.DocumentationNotes{
-	providers.DocCreateDomains:       providers.Cannot("Requires domain registered through their service"),
-	providers.DocOfficiallySupported: providers.Cannot(),
-	providers.DocDualHost:            providers.Cannot("Doesn't allow control of apex NS records"),
+var features = providers.DocumentationNotes{
 	providers.CanUseAlias:            providers.Cannot(),
 	providers.CanUseCAA:              providers.Cannot(),
-	providers.CanUseSRV:              providers.Cannot("The namecheap web console allows you to make SRV records, but their api does not let you read or set them"),
 	providers.CanUsePTR:              providers.Cannot(),
+	providers.CanUseSRV:              providers.Cannot("The namecheap web console allows you to make SRV records, but their api does not let you read or set them"),
 	providers.CanUseTLSA:             providers.Cannot(),
+	providers.CantUseNOPURGE:         providers.Cannot(),
+	providers.DocCreateDomains:       providers.Cannot("Requires domain registered through their service"),
+	providers.DocDualHost:            providers.Cannot("Doesn't allow control of apex NS records"),
+	providers.DocOfficiallySupported: providers.Cannot(),
 }
 
 func init() {
 	providers.RegisterRegistrarType("NAMECHEAP", newReg)
-	providers.RegisterDomainServiceProviderType("NAMECHEAP", newDsp, providers.CantUseNOPURGE, docNotes)
+	providers.RegisterDomainServiceProviderType("NAMECHEAP", newDsp, features)
 	providers.RegisterCustomRecordType("URL", "NAMECHEAP", "")
 	providers.RegisterCustomRecordType("URL301", "NAMECHEAP", "")
 	providers.RegisterCustomRecordType("FRAME", "NAMECHEAP", "")
