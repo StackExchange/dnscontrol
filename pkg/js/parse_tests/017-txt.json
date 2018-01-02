@@ -22,13 +22,13 @@
         {
           "type": "TXT",
           "name": "@",
-          "target": "bonieclyde",
+          "target": "bonie",
           "txtstrings": [ "bonie", "clyde" ]
         },
         {
           "type": "TXT",
           "name": "@",
-          "target": "strawwoodbrick",
+          "target": "straw",
           "txtstrings": [ "straw", "wood", "brick" ]
         }
       ]
