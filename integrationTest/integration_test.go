@@ -237,7 +237,9 @@ func srv(name string, priority, weight, port uint16, target string) *rec {
 }
 
 func txt(name, target string) *rec {
-	return makeRec(name, target, "TXT")
+	r := makeRec(name, target, "TXT")
+	r.TxtStrings = []string{target}
+	return r
 }
 
 func txtmulti(name string, target []string) *rec {
