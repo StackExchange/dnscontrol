@@ -230,13 +230,18 @@ var TXT = recordBuilder("TXT", {
   transform: function(record, args, modifiers) {
     record.name = args.name;
     // Store the strings twice:
-    //   .target is all the strings joined together.
+    //   .target is the first string
     //   .txtstrings is the individual strings.
+    //   NOTE: If there are more than 1 string, providers should only access
+    //   .txtstrings, thus it doesn't matter what we store in .target.
+    //   However, by storing the first string there, it improves backwards
+    //   compatibility when the len(array) == 1 and (intentionally) breaks
+    //   broken providers early in the integration tests.
     if (_.isString(args.target)) {
       record.target = args.target;
       record.txtstrings = [args.target];
     } else {
-      record.target = args.target.join("");
+      record.target = args.target[0]
       record.txtstrings = args.target;
     }
   }

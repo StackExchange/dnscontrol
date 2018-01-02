@@ -442,6 +442,7 @@ func makeTests(t *testing.T) []*TestCase {
 		tc("Change a TXT", txt("foo", "changed")),
 		tc("Create a TXT with spaces", txt("foo", "with spaces")),
 		tc("Change a TXT with spaces", txt("foo", "with whitespace")),
+		tc("Create 1 TXT as array", txtmulti("foo", []string{"simple"})),
 	)
 
 	// TXTMulti
