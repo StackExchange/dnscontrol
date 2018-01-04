@@ -100,7 +100,7 @@ func (api *VultrApi) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Co
 	}
 
 	// Normalize
-	models.Downcase(curRecords)
+	models.PostProcessRecords(curRecords)
 
 	differ := diff.New(dc)
 	_, create, delete, modify := differ.IncrementalDiff(curRecords)

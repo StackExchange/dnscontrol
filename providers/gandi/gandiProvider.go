@@ -119,7 +119,7 @@ func (c *GandiApi) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Corr
 	dc.Records = recordsToKeep
 
 	// Normalize
-	models.Downcase(foundRecords)
+	models.PostProcessRecords(foundRecords)
 
 	differ := diff.New(dc)
 	_, create, del, mod := differ.IncrementalDiff(foundRecords)

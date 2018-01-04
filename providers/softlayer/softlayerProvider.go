@@ -168,7 +168,7 @@ func (s *SoftLayer) getExistingRecords(domain *datatypes.Dns_Domain) ([]*models.
 	}
 
 	// Normalize
-	models.Downcase(actual)
+	models.PostProcessRecords(actual)
 
 	return actual, nil
 }

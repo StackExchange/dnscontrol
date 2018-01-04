@@ -140,7 +140,7 @@ func (g *gcloud) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Correc
 	}
 
 	// Normalize
-	models.Downcase(existingRecords)
+	models.PostProcessRecords(existingRecords)
 
 	// first collect keys that have changed
 	differ := diff.New(dc)

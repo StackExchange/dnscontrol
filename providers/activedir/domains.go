@@ -47,7 +47,7 @@ func (c *adProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Co
 	}
 
 	// Normalize
-	models.Downcase(foundRecords)
+	models.PostProcessRecords(foundRecords)
 
 	differ := diff.New(dc)
 	_, creates, dels, modifications := differ.IncrementalDiff(foundRecords)

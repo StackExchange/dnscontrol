@@ -139,7 +139,7 @@ func (api *LinodeApi) GetDomainCorrections(dc *models.DomainConfig) ([]*models.C
 	}
 
 	// Normalize
-	models.Downcase(existingRecords)
+	models.PostProcessRecords(existingRecords)
 
 	// Linode doesn't allow selecting an arbitrary TTL, only a set of predefined values
 	// We need to make sure we don't change it every time if it is as close as it's going to get

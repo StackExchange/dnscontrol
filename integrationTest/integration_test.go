@@ -112,7 +112,7 @@ func runTests(t *testing.T, prv providers.DNSServiceProvider, domainName string,
 				}
 				dom.Records = append(dom.Records, &rc)
 			}
-			models.Downcase(dom.Records)
+			models.PostProcessRecords(dom.Records)
 			dom2, _ := dom.Copy()
 			// get corrections for first time
 			corrections, err := prv.GetDomainCorrections(dom)
@@ -437,6 +437,7 @@ func makeTests(t *testing.T) []*TestCase {
 		)
 	}
 
+	tests = []*TestCase{}
 	// TXT (single)
 	tests = append(tests, tc("Empty"),
 		tc("Empty"),

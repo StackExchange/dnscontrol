@@ -69,6 +69,25 @@ func TestRR(t *testing.T) {
 	}
 }
 
+// func TestSetTxtParse(t *testing.T) {
+// 	tests := []struct {
+// 		d1 string
+// 		e1 string
+// 		e2 []string
+// 	}{
+// 		{``, ``, []string{``}},
+// 		{`foo`, `foo`, []string{`foo`}},
+// 	}
+// 	for i, test := range tests {
+// 		x := &RecordConfig{Type: "TXT"}
+// 		x.SetTxtParse(test.d1)
+// 		if x.Target != test.e1 {
+// 			t.Errorf("%v: expected Target=(%v) got (%v)", i, x.Target, test.e1)
+// 		}
+// 		if len()
+// 	}
+// }
+
 func TestDowncase(t *testing.T) {
 	dc := DomainConfig{Records: Records{
 		&RecordConfig{Type: "MX", Name: "lower", Target: "targetmx"},

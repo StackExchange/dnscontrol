@@ -103,7 +103,7 @@ func (api *DoApi) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Corre
 	}
 
 	// Normalize
-	models.Downcase(existingRecords)
+	models.PostProcessRecords(existingRecords)
 
 	differ := diff.New(dc)
 	_, create, delete, modify := differ.IncrementalDiff(existingRecords)

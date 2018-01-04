@@ -174,7 +174,7 @@ func (r *route53Provider) GetDomainCorrections(dc *models.DomainConfig) ([]*mode
 	}
 
 	// Normalize
-	models.Downcase(existingRecords)
+	models.PostProcessRecords(existingRecords)
 
 	//diff
 	differ := diff.New(dc)

@@ -276,6 +276,12 @@ func (r Records) Grouped() map[RecordKey]Records {
 	return groups
 }
 
+// PostProcessRecords does any post-processing of the downloaded DNS records.
+func PostProcessRecords(recs []*RecordConfig) {
+	Downcase(recs)
+	fixTxt(recs)
+}
+
 // Downcase converts all labels and targets to lowercase in a list of RecordConfig.
 func Downcase(recs []*RecordConfig) {
 	for _, r := range recs {
@@ -291,6 +297,21 @@ func Downcase(recs []*RecordConfig) {
 		}
 	}
 	return
+}
+
+// fixTxt converts all labels and targets to lowercase in a list of RecordConfig.
+func fixTxt(recs []*RecordConfig) {
+	for _, r := range recs {
+		if r.Type == "TXT" {
+			fmt.Printf("DEBUG: label=%s txt=%s txtstr=%v", r.Name, r.Target, r.TxtStrings)
+			if len(r.TxtStrings) == 0 {
+				r.TxtStrings = []string{r.Target}
+				fmt.Printf(" FIXED!!!\n")
+			} else {
+				fmt.Printf("\n")
+			}
+		}
+	}
 }
 
 type RecordKey struct {
