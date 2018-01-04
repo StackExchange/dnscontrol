@@ -471,7 +471,6 @@ func (dc *DomainConfig) CombineCAAs() {
 				panic(pm)
 			}
 			rec.Target = rec.Content()
-			fmt.Printf("DEBUG: NEW TARGET: %v\n", rec.Target)
 			rec.CombinedTarget = true
 		}
 	}
