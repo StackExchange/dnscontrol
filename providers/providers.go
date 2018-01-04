@@ -56,7 +56,7 @@ func RegisterDomainServiceProviderType(name string, init DspInitializer, pm ...P
 func createRegistrar(rType string, config map[string]string) (Registrar, error) {
 	initer, ok := RegistrarTypes[rType]
 	if !ok {
-		return nil, fmt.Errorf("Registrar type %s not declared.", rType)
+		return nil, fmt.Errorf("registrar type %s not declared", rType)
 	}
 	return initer(config)
 }

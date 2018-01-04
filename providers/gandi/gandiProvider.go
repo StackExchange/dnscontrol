@@ -40,6 +40,7 @@ func init() {
 	providers.RegisterRegistrarType("GANDI", newReg)
 }
 
+// GandiApi is the API handle for this module.
 type GandiApi struct {
 	ApiKey      string
 	domainIndex map[string]int64 // Map of domainname to index
@@ -62,6 +63,7 @@ func (c *GandiApi) getDomainInfo(domain string) (*gandidomain.DomainInfo, error)
 	return c.fetchDomainInfo(domain)
 }
 
+// GetNameservers returns the nameservers for domain.
 func (c *GandiApi) GetNameservers(domain string) ([]*models.Nameserver, error) {
 	domaininfo, err := c.getDomainInfo(domain)
 	if err != nil {
@@ -74,6 +76,7 @@ func (c *GandiApi) GetNameservers(domain string) ([]*models.Nameserver, error) {
 	return ns, nil
 }
 
+// GetDomainCorrections returns a list of corrections recommended for this domain.
 func (c *GandiApi) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Correction, error) {
 	dc.Punycode()
 	dc.CombineSRVs()
@@ -168,12 +171,13 @@ func newGandi(m map[string]string, metadata json.RawMessage) (*GandiApi, error) 
 	api := &GandiApi{}
 	api.ApiKey = m["apikey"]
 	if api.ApiKey == "" {
-		return nil, fmt.Errorf("Gandi apikey must be provided.")
+		return nil, fmt.Errorf("missing Gandi apikey")
 	}
 
 	return api, nil
 }
 
+// GetRegistrarCorrections returns a list of corrections for this registrar.
 func (c *GandiApi) GetRegistrarCorrections(dc *models.DomainConfig) ([]*models.Correction, error) {
 	domaininfo, err := c.getDomainInfo(dc.Name)
 	if err != nil {

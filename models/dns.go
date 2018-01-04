@@ -16,14 +16,17 @@ import (
 	"golang.org/x/net/idna"
 )
 
+// DefaultTTL is applied to any DNS record without an explicit TTL.
 const DefaultTTL = uint32(300)
 
+// DNSConfig describes the desired DNS configuration, usually loaded from dnsconfig.js.
 type DNSConfig struct {
 	Registrars   []*RegistrarConfig   `json:"registrars"`
 	DNSProviders []*DNSProviderConfig `json:"dns_providers"`
 	Domains      []*DomainConfig      `json:"domains"`
 }
 
+// FindDomain returns the *DomainConfig for domain query in config.
 func (config *DNSConfig) FindDomain(query string) *DomainConfig {
 	for _, b := range config.Domains {
 		if b.Name == query {
@@ -33,12 +36,14 @@ func (config *DNSConfig) FindDomain(query string) *DomainConfig {
 	return nil
 }
 
+// RegistrarConfig describes a registrar.
 type RegistrarConfig struct {
 	Name     string          `json:"name"`
 	Type     string          `json:"type"`
 	Metadata json.RawMessage `json:"meta,omitempty"`
 }
 
+// DNSProviderConfig describes a DNS service provider.
 type DNSProviderConfig struct {
 	Name     string          `json:"name"`
 	Type     string          `json:"type"`
@@ -108,53 +113,53 @@ type RecordConfig struct {
 	Original interface{} `json:"-"` // Store pointer to provider-specific record object. Used in diffing.
 }
 
-func (r *RecordConfig) String() (content string) {
-	if r.CombinedTarget {
-		return r.Target
+func (rc *RecordConfig) String() (content string) {
+	if rc.CombinedTarget {
+		return rc.Target
 	}
 
-	content = fmt.Sprintf("%s %s %s %d", r.Type, r.NameFQDN, r.Target, r.TTL)
-	switch r.Type { // #rtype_variations
+	content = fmt.Sprintf("%s %s %s %d", rc.Type, rc.NameFQDN, rc.Target, rc.TTL)
+	switch rc.Type { // #rtype_variations
 	case "A", "AAAA", "CNAME", "NS", "PTR", "TXT":
 		// Nothing special.
 	case "MX":
-		content += fmt.Sprintf(" pref=%d", r.MxPreference)
+		content += fmt.Sprintf(" pref=%d", rc.MxPreference)
 	case "SOA":
-		content = fmt.Sprintf("%s %s %s %d", r.Type, r.Name, r.Target, r.TTL)
+		content = fmt.Sprintf("%s %s %s %d", rc.Type, rc.Name, rc.Target, rc.TTL)
 	case "SRV":
-		content += fmt.Sprintf(" srvpriority=%d srvweight=%d srvport=%d", r.SrvPriority, r.SrvWeight, r.SrvPort)
+		content += fmt.Sprintf(" srvpriority=%d srvweight=%d srvport=%d", rc.SrvPriority, rc.SrvWeight, rc.SrvPort)
 	case "TLSA":
-		content += fmt.Sprintf(" tlsausage=%d tlsaselector=%d tlsamatchingtype=%d", r.TlsaUsage, r.TlsaSelector, r.TlsaMatchingType)
+		content += fmt.Sprintf(" tlsausage=%d tlsaselector=%d tlsamatchingtype=%d", rc.TlsaUsage, rc.TlsaSelector, rc.TlsaMatchingType)
 	case "CAA":
-		content += fmt.Sprintf(" caatag=%s caaflag=%d", r.CaaTag, r.CaaFlag)
+		content += fmt.Sprintf(" caatag=%s caaflag=%d", rc.CaaTag, rc.CaaFlag)
 	default:
-		msg := fmt.Sprintf("rc.String rtype %v unimplemented", r.Type)
+		msg := fmt.Sprintf("rc.String rtype %v unimplemented", rc.Type)
 		panic(msg)
 		// We panic so that we quickly find any switch statements
 		// that have not been updated for a new RR type.
 	}
-	for k, v := range r.Metadata {
+	for k, v := range rc.Metadata {
 		content += fmt.Sprintf(" %s=%s", k, v)
 	}
 	return content
 }
 
 // Content combines Target and other fields into one string.
-func (r *RecordConfig) Content() string {
-	if r.CombinedTarget {
-		return r.Target
+func (rc *RecordConfig) Content() string {
+	if rc.CombinedTarget {
+		return rc.Target
 	}
 
 	// If this is a pseudo record, just return the target.
-	if _, ok := dns.StringToType[r.Type]; !ok {
-		return r.Target
+	if _, ok := dns.StringToType[rc.Type]; !ok {
+		return rc.Target
 	}
 
 	// We cheat by converting to a dns.RR and use the String() function.
 	// Sadly that function always includes a header, which we must strip out.
 	// TODO(tlim): Request the dns project add a function that returns
 	// the string without the header.
-	rr := r.ToRR()
+	rr := rc.ToRR()
 	header := rr.Header().String()
 	full := rr.String()
 	if !strings.HasPrefix(full, header) {
@@ -164,30 +169,30 @@ func (r *RecordConfig) Content() string {
 }
 
 // MergeToTarget combines "extra" fields into .Target, and zeros the merged fields.
-func (r *RecordConfig) MergeToTarget() {
-	if r.CombinedTarget {
-		pm := strings.Join([]string{"MergeToTarget: Already collapsed: ", r.Name, r.Target}, " ")
+func (rc *RecordConfig) MergeToTarget() {
+	if rc.CombinedTarget {
+		pm := strings.Join([]string{"MergeToTarget: Already collapsed: ", rc.Name, rc.Target}, " ")
 		panic(pm)
 	}
 
 	// Merge "extra" fields into the Target.
-	r.Target = r.Content()
+	rc.Target = rc.Content()
 
 	// Zap any fields that may have been merged.
-	r.MxPreference = 0
-	r.SrvPriority = 0
-	r.SrvWeight = 0
-	r.SrvPort = 0
-	r.CaaFlag = 0
-	r.CaaTag = ""
-	r.TlsaUsage = 0
-	r.TlsaMatchingType = 0
-	r.TlsaSelector = 0
+	rc.MxPreference = 0
+	rc.SrvPriority = 0
+	rc.SrvWeight = 0
+	rc.SrvPort = 0
+	rc.CaaFlag = 0
+	rc.CaaTag = ""
+	rc.TlsaUsage = 0
+	rc.TlsaMatchingType = 0
+	rc.TlsaSelector = 0
 
-	r.CombinedTarget = true
+	rc.CombinedTarget = true
 }
 
-/// Convert RecordConfig -> dns.RR.
+// ToRR converts a RecordConfig to a dns.RR.
 func (rc *RecordConfig) ToRR() dns.RR {
 
 	// Don't call this on fake types.
@@ -266,8 +271,10 @@ func atou32(s string) uint32 {
 	return uint32(i64)
 }
 
+// Records is a list of *RecordConfig.
 type Records []*RecordConfig
 
+// Grouped returns a map of keys to records.
 func (r Records) Grouped() map[RecordKey]Records {
 	groups := map[RecordKey]Records{}
 	for _, rec := range r {
@@ -310,20 +317,24 @@ func fixTxt(recs []*RecordConfig) {
 	}
 }
 
+// RecordKey represents a resource record in a format used by some systems.
 type RecordKey struct {
 	Name string
 	Type string
 }
 
-func (r *RecordConfig) Key() RecordKey {
-	return RecordKey{r.Name, r.Type}
+// Key converts a RecordConfig into a RecordKey.
+func (rc *RecordConfig) Key() RecordKey {
+	return RecordKey{rc.Name, rc.Type}
 }
 
+// Nameserver describes a nameserver.
 type Nameserver struct {
 	Name   string `json:"name"` // Normalized to a FQDN with NO trailing "."
 	Target string `json:"target"`
 }
 
+// StringsToNameservers constructs a list of *Nameserver structs using a list of FQDNs.
 func StringsToNameservers(nss []string) []*Nameserver {
 	nservers := []*Nameserver{}
 	for _, ns := range nss {
@@ -332,6 +343,7 @@ func StringsToNameservers(nss []string) []*Nameserver {
 	return nservers
 }
 
+// DomainConfig describes a DNS domain (tecnically a  DNS zone).
 type DomainConfig struct {
 	Name         string            `json:"name"` // NO trailing "."
 	Registrar    string            `json:"registrar"`
@@ -342,15 +354,17 @@ type DomainConfig struct {
 	KeepUnknown  bool              `json:"keepunknown,omitempty"`
 }
 
+// Copy returns a deep copy of the DomainConfig.
 func (dc *DomainConfig) Copy() (*DomainConfig, error) {
 	newDc := &DomainConfig{}
 	err := copyObj(dc, newDc)
 	return newDc, err
 }
 
-func (r *RecordConfig) Copy() (*RecordConfig, error) {
+// Copy returns a deep copy of a RecordConfig.
+func (rc *RecordConfig) Copy() (*RecordConfig, error) {
 	newR := &RecordConfig{}
-	err := copyObj(r, newR)
+	err := copyObj(rc, newR)
 	return newR, err
 }
 
@@ -477,6 +491,7 @@ func (dc *DomainConfig) CombineCAAs() {
 	}
 }
 
+// SplitCombinedCaaValue parses a string listing the parts of a CAA record into its components.
 func SplitCombinedCaaValue(s string) (tag string, flag uint8, value string, err error) {
 
 	splitData := strings.SplitN(s, " ", 3)
@@ -510,12 +525,10 @@ func copyObj(input interface{}, output interface{}) error {
 	if err := enc.Encode(input); err != nil {
 		return err
 	}
-	if err := dec.Decode(output); err != nil {
-		return err
-	}
-	return nil
+	return dec.Decode(output)
 }
 
+// HasRecordTypeName returns True if there is a record with this rtype and name.
 func (dc *DomainConfig) HasRecordTypeName(rtype, name string) bool {
 	for _, r := range dc.Records {
 		if r.Type == rtype && r.Name == name {
@@ -525,6 +538,7 @@ func (dc *DomainConfig) HasRecordTypeName(rtype, name string) bool {
 	return false
 }
 
+// Filter removes all records that don't match the filter f.
 func (dc *DomainConfig) Filter(f func(r *RecordConfig) bool) {
 	recs := []*RecordConfig{}
 	for _, r := range dc.Records {
@@ -535,6 +549,10 @@ func (dc *DomainConfig) Filter(f func(r *RecordConfig) bool) {
 	dc.Records = recs
 }
 
+// InterfaceToIP returns an IP address when given a 32-bit value or a string. That is,
+// dnsconfig.js output may represent IP addresses as either  a string ("1.2.3.4")
+// or as an numeric value (the integer representation of the 32-bit value). This function
+// converts either to a net.IP.
 func InterfaceToIP(i interface{}) (net.IP, error) {
 	switch v := i.(type) {
 	case float64:
@@ -546,7 +564,7 @@ func InterfaceToIP(i interface{}) (net.IP, error) {
 		}
 		return nil, fmt.Errorf("%s is not a valid ip address", v)
 	default:
-		return nil, fmt.Errorf("Cannot convert type %s to ip.", reflect.TypeOf(i))
+		return nil, fmt.Errorf("cannot convert type %s to ip", reflect.TypeOf(i))
 	}
 }
 

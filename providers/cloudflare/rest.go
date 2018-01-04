@@ -202,7 +202,7 @@ func (c *CloudflareApi) createRec(rec *models.RecordConfig, domainID string) []*
 
 func (c *CloudflareApi) modifyRecord(domainID, recID string, proxied bool, rec *models.RecordConfig) error {
 	if domainID == "" || recID == "" {
-		return fmt.Errorf("Cannot modify record if domain or record id are empty.")
+		return fmt.Errorf("cannot modify record if domain or record id are empty")
 	}
 	type record struct {
 		ID       string     `json:"id"`
@@ -273,7 +273,7 @@ func (c *CloudflareApi) get(endpoint string, target interface{}) error {
 	}
 	defer resp.Body.Close()
 	if resp.StatusCode != 200 {
-		return fmt.Errorf("Bad status code from cloudflare: %d not 200.", resp.StatusCode)
+		return fmt.Errorf("bad status code from cloudflare: %d not 200", resp.StatusCode)
 	}
 	decoder := json.NewDecoder(resp.Body)
 	return decoder.Decode(target)

@@ -8,13 +8,17 @@ import (
 	"github.com/StackExchange/dnscontrol/models"
 )
 
+// Correlation stores a difference between two domains.
 type Correlation struct {
 	d        *differ
 	Existing *models.RecordConfig
 	Desired  *models.RecordConfig
 }
+
+// Changeset stores many Correlation.
 type Changeset []Correlation
 
+// Differ is an interface for computing the difference between two zones.
 type Differ interface {
 	//IncrementalDiff performs a diff on a record-by-record basis, and returns a sets for which records need to be created, deleted, or modified.
 	IncrementalDiff(existing []*models.RecordConfig) (unchanged, create, toDelete, modify Changeset)
@@ -23,6 +27,7 @@ type Differ interface {
 	ChangedGroups(existing []*models.RecordConfig) map[models.RecordKey][]string
 }
 
+// New is a constructor for a Differ.
 func New(dc *models.DomainConfig, extraValues ...func(*models.RecordConfig) map[string]string) Differ {
 	return &differ{
 		dc:          dc,

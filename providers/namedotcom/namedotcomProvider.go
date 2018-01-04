@@ -40,7 +40,7 @@ func newProvider(conf map[string]string) (*nameDotCom, error) {
 	api := &nameDotCom{}
 	api.APIUser, api.APIKey, api.APIUrl = conf["apiuser"], conf["apikey"], conf["apiurl"]
 	if api.APIKey == "" || api.APIUser == "" {
-		return nil, fmt.Errorf("Name.com apikey and apiuser must be provided.")
+		return nil, fmt.Errorf("missing Name.com apikey or apiuser")
 	}
 	if api.APIUrl == "" {
 		api.APIUrl = defaultApiBase

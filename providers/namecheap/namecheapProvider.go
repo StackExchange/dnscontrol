@@ -57,7 +57,7 @@ func newProvider(m map[string]string, metadata json.RawMessage) (*Namecheap, err
 	api := &Namecheap{}
 	api.ApiUser, api.ApiKey = m["apiuser"], m["apikey"]
 	if api.ApiKey == "" || api.ApiUser == "" {
-		return nil, fmt.Errorf("Namecheap apikey and apiuser must be provided.")
+		return nil, fmt.Errorf("missing Namecheap apikey and apiuser")
 	}
 	api.client = nc.NewClient(api.ApiUser, api.ApiKey, api.ApiUser)
 	// if BaseURL is specified in creds, use that url

@@ -91,9 +91,6 @@ func (n *nameDotCom) updateNameservers(ns []string, domain string) func() error 
 		if err != nil {
 			return err
 		}
-		if err = resp.getErr(); err != nil {
-			return err
-		}
-		return nil
+		return resp.getErr()
 	}
 }

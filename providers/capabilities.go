@@ -44,6 +44,7 @@ const (
 
 var providerCapabilities = map[string]map[Capability]bool{}
 
+// ProviderHasCabability returns true if provider has capability.
 func ProviderHasCabability(pType string, cap Capability) bool {
 	if providerCapabilities[pType] == nil {
 		return false

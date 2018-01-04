@@ -160,7 +160,7 @@ func (n *nameDotCom) createRecord(rc *models.RecordConfig, domain string) error 
 		if target[len(target)-1] == '.' {
 			target = target[:len(target)-1]
 		} else {
-			return fmt.Errorf("Unexpected. CNAME/MX/NS target did not end with dot.\n")
+			return fmt.Errorf("unexpected: CNAME/MX/NS target did not end with dot")
 		}
 	}
 	dat := struct {

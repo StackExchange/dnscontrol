@@ -61,7 +61,7 @@ var defaultNameServerNames = []string{
 
 func NewLinode(m map[string]string, metadata json.RawMessage) (providers.DNSServiceProvider, error) {
 	if m["token"] == "" {
-		return nil, fmt.Errorf("Linode Token must be provided.")
+		return nil, fmt.Errorf("Missing Linode token")
 	}
 
 	ctx := context.Background()
@@ -293,9 +293,8 @@ func fixTarget(target, domain string) string {
 	// Linode always wants a fully qualified target name
 	if target[len(target)-1] == '.' {
 		return target[:len(target)-1]
-	} else {
-		return fmt.Sprintf("%s.%s", target, domain)
 	}
+	return fmt.Sprintf("%s.%s", target, domain)
 }
 
 func fixTTL(ttl uint32) uint32 {
