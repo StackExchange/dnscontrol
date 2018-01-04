@@ -234,9 +234,8 @@ func (c *DnsimpleApi) getNameservers(domainName string) ([]string, error) {
 		}
 
 		return *delegationResponse.Data, nil
-	} else {
-		return defaultNameServerNames, nil
 	}
+	return defaultNameServerNames, nil
 }
 
 // Returns a function that can be invoked to change the delegation of the domain to the given name server names.
@@ -346,7 +345,7 @@ func newProvider(m map[string]string, metadata json.RawMessage) (*DnsimpleApi, e
 	api := &DnsimpleApi{}
 	api.AccountToken = m["token"]
 	if api.AccountToken == "" {
-		return nil, fmt.Errorf("DNSimple token must be provided.")
+		return nil, fmt.Errorf("missing DNSimple token")
 	}
 
 	if m["baseurl"] != "" {

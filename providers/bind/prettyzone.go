@@ -291,10 +291,9 @@ func zoneLabelLess(a, b string) bool {
 			bu, berr := strconv.ParseUint(bs[j], 10, 64)
 			if aerr == nil && berr == nil {
 				return au < bu
-			} else {
-				// otherwise, compare as strings:
-				return as[i] < bs[j]
 			}
+			// otherwise, compare as strings:
+			return as[i] < bs[j]
 		}
 	}
 	// The min top elements were equal, so the shorter name is less.

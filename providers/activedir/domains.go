@@ -125,11 +125,11 @@ func (c *adProvider) logHelper(s string) error {
 func (c *adProvider) powerShellRecord(command string) error {
 	recordfile, err := os.OpenFile(c.psOut, os.O_APPEND|os.O_RDWR|os.O_CREATE, 0660)
 	if err != nil {
-		return fmt.Errorf("Can not create/append to %#v: %v\n", c.psOut, err)
+		return fmt.Errorf("can not create/append to %#v: %v", c.psOut, err)
 	}
 	_, err = recordfile.WriteString(command)
 	if err != nil {
-		return fmt.Errorf("Append to %#v failed: %v\n", c.psOut, err)
+		return fmt.Errorf("append to %#v failed: %v", c.psOut, err)
 	}
 	return recordfile.Close()
 }
@@ -211,7 +211,7 @@ func (c *adProvider) generatePowerShellCreate(domainname string, rec *models.Rec
 	case "NS":
 		text = fmt.Sprintf("\r\n"+`echo "Skipping NS update (%v %v)"`+"\r\n", rec.Name, rec.Target)
 	default:
-		panic(fmt.Errorf("ERROR: generatePowerShellCreate() does not yet handle recType=%s recName=%#v content=%#v)\n", rec.Type, rec.Name, content))
+		panic(fmt.Errorf("generatePowerShellCreate() does not yet handle recType=%s recName=%#v content=%#v)", rec.Type, rec.Name, content))
 		// We panic so that we quickly find any switch statements
 		// that have not been updated for a new RR type.
 	}
@@ -233,7 +233,7 @@ func (c *adProvider) generatePowerShellModify(domainname, recName, recType, oldC
 		queryField = "HostNameAlias"
 		queryContent = `"` + oldContent + `"`
 	default:
-		panic(fmt.Errorf("ERROR: generatePowerShellModify() does not yet handle recType=%s recName=%#v content=(%#v, %#v)\n", recType, recName, oldContent, newContent))
+		panic(fmt.Errorf("generatePowerShellModify() does not yet handle recType=%s recName=%#v content=(%#v, %#v)", recType, recName, oldContent, newContent))
 		// We panic so that we quickly find any switch statements
 		// that have not been updated for a new RR type.
 	}
