@@ -10,22 +10,18 @@ func (rc *RecordConfig) SetTxt(s string) {
 }
 */
 
-/*
 // SetTxts sets the value of a TXT record to the list of strings s.
 func (rc *RecordConfig) SetTxts(s []string) {
 	rc.Target = s[0]
 	rc.TxtStrings = s
 }
-*/
 
 // SetTxtParse sets the value of TXT record if the list of strings is combined into one string.
 // `foo`  -> []string{"foo"}
 // `"foo"` -> []string{"foo"}
 // `"foo" "bar"` -> []string{"foo" "bar"}
 func (rc *RecordConfig) SetTxtParse(s string) {
-	ss := ParseQuotedTxt(s)
-	rc.Target = ss[0]
-	rc.TxtStrings = ss
+	rc.SetTxts(ParseQuotedTxt(s))
 }
 
 // IsQuoted returns true if the string starts and ends with a double quote.
