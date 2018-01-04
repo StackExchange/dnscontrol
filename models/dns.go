@@ -101,7 +101,7 @@ type RecordConfig struct {
 	TlsaUsage        uint8             `json:"tlsausage,omitempty"`
 	TlsaSelector     uint8             `json:"tlsaselector,omitempty"`
 	TlsaMatchingType uint8             `json:"tlsamatchingtype,omitempty"`
-	TxtStrings       []string          `json:"txtstrings,omitempty"` //TXTSTrings has all strings including first. If multiple strings, Target will contain only first one.
+	TxtStrings       []string          `json:"txtstrings,omitempty"` // TxtStrings stores all strings (including the first). Target stores only the first one.
 
 	CombinedTarget bool `json:"-"`
 
@@ -303,12 +303,12 @@ func Downcase(recs []*RecordConfig) {
 func fixTxt(recs []*RecordConfig) {
 	for _, r := range recs {
 		if r.Type == "TXT" {
-			fmt.Printf("DEBUG: label=%s txt=%s txtstr=%v", r.Name, r.Target, r.TxtStrings)
+			//fmt.Printf("DEBUG: label=%s txt=%s txtstr=%v", r.Name, r.Target, r.TxtStrings)
 			if len(r.TxtStrings) == 0 {
 				r.TxtStrings = []string{r.Target}
-				fmt.Printf(" FIXED!!!\n")
+				//fmt.Printf(" FIXED!!!\n")
 			} else {
-				fmt.Printf("\n")
+				//fmt.Printf("\n")
 			}
 		}
 	}

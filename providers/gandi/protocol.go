@@ -195,7 +195,7 @@ func convert(r *gandirecord.RecordInfo, origin string) *models.RecordConfig {
 	case "A", "AAAA", "NS", "CNAME", "PTR":
 		// no-op
 	case "TXT":
-		r.SetTxt(txt.Parse(r.Value))
+		rc.SetTxtParse(r.Value)
 	case "CAA":
 		var err error
 		rc.CaaTag, rc.CaaFlag, rc.Target, err = models.SplitCombinedCaaValue(r.Value)
