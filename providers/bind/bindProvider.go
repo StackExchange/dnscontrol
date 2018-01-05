@@ -30,9 +30,15 @@ import (
 	"github.com/StackExchange/dnscontrol/providers/diff"
 )
 
-var docNotes = providers.DocumentationNotes{
-	providers.DocDualHost:            providers.Can(),
+var features = providers.DocumentationNotes{
+	providers.CanUseCAA:              providers.Can(),
+	providers.CanUsePTR:              providers.Can(),
+	providers.CanUseSRV:              providers.Can(),
+	providers.CanUseTLSA:             providers.Can(),
+	providers.CanUseTXTMulti:         providers.Can(),
+	providers.CantUseNOPURGE:         providers.Cannot(),
 	providers.DocCreateDomains:       providers.Can("Driver just maintains list of zone files. It should automatically add missing ones."),
+	providers.DocDualHost:            providers.Can(),
 	providers.DocOfficiallySupported: providers.Can(),
 }
 
@@ -56,13 +62,7 @@ func initBind(config map[string]string, providermeta json.RawMessage) (providers
 }
 
 func init() {
-	providers.RegisterDomainServiceProviderType("BIND", initBind,
-		providers.CanUsePTR,
-		providers.CanUseSRV,
-		providers.CanUseCAA,
-		providers.CanUseTLSA,
-		providers.CantUseNOPURGE,
-		docNotes)
+	providers.RegisterDomainServiceProviderType("BIND", initBind, features)
 }
 
 type SoaInfo struct {
@@ -144,6 +144,7 @@ func rrToRecord(rr dns.RR, origin string, replaceSerial uint32) (models.RecordCo
 		rc.Target = v.Certificate
 	case *dns.TXT:
 		rc.Target = strings.Join(v.Txt, " ")
+		rc.TxtStrings = v.Txt
 	default:
 		log.Fatalf("rrToRecord: Unimplemented zone record type=%s (%v)\n", rc.Type, rr)
 	}
@@ -243,7 +244,7 @@ func (c *Bind) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Correcti
 	}
 
 	// Normalize
-	models.Downcase(foundRecords)
+	models.PostProcessRecords(foundRecords)
 
 	differ := diff.New(dc)
 	_, create, del, mod := differ.IncrementalDiff(foundRecords)

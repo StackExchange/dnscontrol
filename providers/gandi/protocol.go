@@ -192,8 +192,10 @@ func convert(r *gandirecord.RecordInfo, origin string) *models.RecordConfig {
 		TTL:      uint32(r.Ttl),
 	}
 	switch r.Type {
-	case "A", "AAAA", "NS", "CNAME", "PTR", "TXT":
+	case "A", "AAAA", "NS", "CNAME", "PTR":
 		// no-op
+	case "TXT":
+		rc.SetTxtParse(r.Value)
 	case "CAA":
 		var err error
 		rc.CaaTag, rc.CaaFlag, rc.Target, err = models.SplitCombinedCaaValue(r.Value)

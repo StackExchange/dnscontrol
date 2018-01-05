@@ -13,9 +13,10 @@ import (
 
 	"net/url"
 
-	"golang.org/x/oauth2"
 	"regexp"
 	"strings"
+
+	"golang.org/x/oauth2"
 )
 
 /*
@@ -84,14 +85,14 @@ func NewLinode(m map[string]string, metadata json.RawMessage) (providers.DNSServ
 	return api, nil
 }
 
-var docNotes = providers.DocumentationNotes{
-	providers.DocOfficiallySupported: providers.Cannot(),
+var features = providers.DocumentationNotes{
 	providers.DocDualHost:            providers.Cannot(),
+	providers.DocOfficiallySupported: providers.Cannot(),
 }
 
 func init() {
 	// SRV support is in this provider, but Linode doesn't seem to support it properly
-	providers.RegisterDomainServiceProviderType("LINODE", NewLinode, docNotes)
+	providers.RegisterDomainServiceProviderType("LINODE", NewLinode, features)
 }
 
 func (api *LinodeApi) GetNameservers(domain string) ([]*models.Nameserver, error) {
@@ -138,7 +139,7 @@ func (api *LinodeApi) GetDomainCorrections(dc *models.DomainConfig) ([]*models.C
 	}
 
 	// Normalize
-	models.Downcase(existingRecords)
+	models.PostProcessRecords(existingRecords)
 
 	// Linode doesn't allow selecting an arbitrary TTL, only a set of predefined values
 	// We need to make sure we don't change it every time if it is as close as it's going to get

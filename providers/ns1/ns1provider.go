@@ -67,7 +67,7 @@ func (n *nsone) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Correct
 	desiredGrouped := dc.Records.Grouped()
 
 	//  Normalize
-	models.Downcase(found)
+	models.PostProcessRecords(found)
 
 	differ := diff.New(dc)
 	changedGroups := differ.ChangedGroups(found)

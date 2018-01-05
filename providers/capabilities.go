@@ -19,6 +19,9 @@ const (
 	// CanUseSRV indicates the provider can handle SRV records
 	CanUseSRV
 
+	// CanUseTXTMulti indicates the provider can handle TXT records with multiple strings
+	CanUseTXTMulti
+
 	// CanUseCAA indicates the provider can handle CAA records
 	CanUseCAA
 
@@ -66,12 +69,12 @@ type ProviderMetadata interface{}
 var Notes = map[string]DocumentationNotes{}
 
 func unwrapProviderCapabilities(pName string, meta []ProviderMetadata) {
+	if providerCapabilities[pName] == nil {
+		providerCapabilities[pName] = map[Capability]bool{}
+	}
 	for _, pm := range meta {
 		switch x := pm.(type) {
 		case Capability:
-			if providerCapabilities[pName] == nil {
-				providerCapabilities[pName] = map[Capability]bool{}
-			}
 			providerCapabilities[pName][x] = true
 		case DocumentationNotes:
 			if Notes[pName] == nil {
@@ -79,6 +82,7 @@ func unwrapProviderCapabilities(pName string, meta []ProviderMetadata) {
 			}
 			for k, v := range x {
 				Notes[pName][k] = v
+				providerCapabilities[pName][k] = v.HasFeature
 			}
 		default:
 			log.Fatalf("Unrecognized ProviderMetadata type: %T", pm)
