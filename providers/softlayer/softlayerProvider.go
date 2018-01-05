@@ -21,8 +21,12 @@ type SoftLayer struct {
 	Session *session.Session
 }
 
+var features = providers.DocumentationNotes{
+	providers.CanUseSRV: providers.Can(),
+}
+
 func init() {
-	providers.RegisterDomainServiceProviderType("SOFTLAYER", newReg, providers.CanUseSRV)
+	providers.RegisterDomainServiceProviderType("SOFTLAYER", newReg, features)
 }
 
 func newReg(conf map[string]string, _ json.RawMessage) (providers.DNSServiceProvider, error) {
@@ -164,7 +168,7 @@ func (s *SoftLayer) getExistingRecords(domain *datatypes.Dns_Domain) ([]*models.
 	}
 
 	// Normalize
-	models.Downcase(actual)
+	models.PostProcessRecords(actual)
 
 	return actual, nil
 }

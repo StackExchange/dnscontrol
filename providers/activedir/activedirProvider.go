@@ -16,20 +16,20 @@ type adProvider struct {
 	psLog    string
 }
 
-var docNotes = providers.DocumentationNotes{
-	providers.DocDualHost:            providers.Cannot("This driver does not manage NS records, so should not be used for dual-host scenarios"),
-	providers.DocCreateDomains:       providers.Cannot("AD depends on the zone already existing on the dns server"),
-	providers.DocOfficiallySupported: providers.Can(),
+var features = providers.DocumentationNotes{
 	providers.CanUseAlias:            providers.Cannot(),
-	providers.CanUseSRV:              providers.Cannot(),
-	providers.CanUsePTR:              providers.Cannot(),
 	providers.CanUseCAA:              providers.Cannot(),
+	providers.CanUsePTR:              providers.Cannot(),
+	providers.CanUseSRV:              providers.Cannot(),
+	providers.DocCreateDomains:       providers.Cannot("AD depends on the zone already existing on the dns server"),
+	providers.DocDualHost:            providers.Cannot("This driver does not manage NS records, so should not be used for dual-host scenarios"),
+	providers.DocOfficiallySupported: providers.Can(),
 }
 
 // Register with the dnscontrol system.
 //   This establishes the name (all caps), and the function to call to initialize it.
 func init() {
-	providers.RegisterDomainServiceProviderType("ACTIVEDIRECTORY_PS", newDNS, docNotes)
+	providers.RegisterDomainServiceProviderType("ACTIVEDIRECTORY_PS", newDNS, features)
 }
 
 func newDNS(config map[string]string, metadata json.RawMessage) (providers.DNSServiceProvider, error) {

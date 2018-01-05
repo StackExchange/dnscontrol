@@ -55,15 +55,19 @@ func newRoute53(m map[string]string, metadata json.RawMessage) (*route53Provider
 	return api, nil
 }
 
-var docNotes = providers.DocumentationNotes{
-	providers.DocDualHost:            providers.Can(),
-	providers.DocCreateDomains:       providers.Can(),
-	providers.DocOfficiallySupported: providers.Can(),
+var features = providers.DocumentationNotes{
 	providers.CanUseAlias:            providers.Cannot("R53 does not provide a generic ALIAS functionality. They do have 'ALIAS' CNAME types to point at various AWS infrastructure, but dnscontrol has not implemented those."),
+	providers.DocCreateDomains:       providers.Can(),
+	providers.DocDualHost:            providers.Can(),
+	providers.DocOfficiallySupported: providers.Can(),
+	providers.CanUsePTR:              providers.Can(),
+	providers.CanUseSRV:              providers.Can(),
+	providers.CanUseTXTMulti:         providers.Can(),
+	providers.CanUseCAA:              providers.Can(),
 }
 
 func init() {
-	providers.RegisterDomainServiceProviderType("ROUTE53", newRoute53Dsp, providers.CanUsePTR, providers.CanUseSRV, providers.CanUseCAA, docNotes)
+	providers.RegisterDomainServiceProviderType("ROUTE53", newRoute53Dsp, features)
 	providers.RegisterRegistrarType("ROUTE53", newRoute53Reg)
 }
 
@@ -170,7 +174,7 @@ func (r *route53Provider) GetDomainCorrections(dc *models.DomainConfig) ([]*mode
 	}
 
 	// Normalize
-	models.Downcase(existingRecords)
+	models.PostProcessRecords(existingRecords)
 
 	//diff
 	differ := diff.New(dc)

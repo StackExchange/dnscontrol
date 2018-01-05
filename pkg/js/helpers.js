@@ -220,8 +220,32 @@ var TLSA = recordBuilder('TLSA', {
     },
 });
 
+function isStringOrArray(x) {
+  return _.isString(x) || _.isArray(x);
+}
+
 // TXT(name,target, recordModifiers...)
-var TXT = recordBuilder('TXT');
+var TXT = recordBuilder("TXT", {
+  args: [["name", _.isString], ["target", isStringOrArray]],
+  transform: function(record, args, modifiers) {
+    record.name = args.name;
+    // Store the strings twice:
+    //   .target is the first string
+    //   .txtstrings is the individual strings.
+    //   NOTE: If there are more than 1 string, providers should only access
+    //   .txtstrings, thus it doesn't matter what we store in .target.
+    //   However, by storing the first string there, it improves backwards
+    //   compatibility when the len(array) == 1 and (intentionally) breaks
+    //   broken providers early in the integration tests.
+    if (_.isString(args.target)) {
+      record.target = args.target;
+      record.txtstrings = [args.target];
+    } else {
+      record.target = args.target[0]
+      record.txtstrings = args.target;
+    }
+  }
+});
 
 // MX(name,priority,target, recordModifiers...)
 var MX = recordBuilder('MX', {

@@ -252,6 +252,7 @@ func NormalizeAndValidateConfig(config *models.DNSConfig) (errs []error) {
 
 	for _, domain := range config.Domains {
 		pTypes := []string{}
+		txtMultiDissenters := []string{}
 		for p := range domain.DNSProviders {
 			pType, ok := ptypeMap[p]
 			if !ok {
@@ -264,6 +265,11 @@ func NormalizeAndValidateConfig(config *models.DNSConfig) (errs []error) {
 			if domain.KeepUnknown && providers.ProviderHasCabability(pType, providers.CantUseNOPURGE) {
 				errs = append(errs, fmt.Errorf("%s uses NO_PURGE which is not supported by %s(%s)", domain.Name, p, pType))
 			}
+
+			// Record if any providers do not support TXTMulti:
+			if !providers.ProviderHasCabability(pType, providers.CanUseTXTMulti) {
+				txtMultiDissenters = append(txtMultiDissenters, p)
+			}
 		}
 
 		// Normalize Nameservers.
@@ -272,7 +278,7 @@ func NormalizeAndValidateConfig(config *models.DNSConfig) (errs []error) {
 			ns.Name = strings.TrimRight(ns.Name, ".")
 		}
 		// Normalize Records.
-		models.Downcase(domain.Records)
+		models.PostProcessRecords(domain.Records)
 		for _, rec := range domain.Records {
 			if rec.TTL == 0 {
 				rec.TTL = models.DefaultTTL
@@ -315,6 +321,12 @@ func NormalizeAndValidateConfig(config *models.DNSConfig) (errs []error) {
 					errs = append(errs, fmt.Errorf("TLSA MatchingType %d is invalid in record %s (domain %s)",
 						rec.TlsaMatchingType, rec.Name, domain.Name))
 				}
+			} else if rec.Type == "TXT" && len(txtMultiDissenters) != 0 && len(rec.TxtStrings) > 1 {
+				// There are providers that  don't support TXTMulti yet there is
+				// a TXT record with multiple strings:
+				errs = append(errs,
+					fmt.Errorf("TXT records with multiple strings (label %v domain: %v) not supported by %s",
+						rec.Name, domain.Name, strings.Join(txtMultiDissenters, ",")))
 			}
 
 			// Populate FQDN:

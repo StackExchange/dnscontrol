@@ -14,14 +14,17 @@ import (
 	"github.com/StackExchange/dnscontrol/providers/diff"
 )
 
-var docNotes = providers.DocumentationNotes{
-	providers.DocDualHost:            providers.Can(),
+var features = providers.DocumentationNotes{
 	providers.DocCreateDomains:       providers.Can(),
+	providers.DocDualHost:            providers.Can(),
 	providers.DocOfficiallySupported: providers.Can(),
+	providers.CanUsePTR:              providers.Can(),
+	providers.CanUseSRV:              providers.Can(),
+	providers.CanUseCAA:              providers.Can(),
 }
 
 func init() {
-	providers.RegisterDomainServiceProviderType("GCLOUD", New, providers.CanUsePTR, providers.CanUseSRV, providers.CanUseCAA, docNotes)
+	providers.RegisterDomainServiceProviderType("GCLOUD", New, features)
 }
 
 type gcloud struct {
@@ -137,7 +140,7 @@ func (g *gcloud) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Correc
 	}
 
 	// Normalize
-	models.Downcase(existingRecords)
+	models.PostProcessRecords(existingRecords)
 
 	// first collect keys that have changed
 	differ := diff.New(dc)

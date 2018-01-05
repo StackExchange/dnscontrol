@@ -15,16 +15,20 @@ import (
 	dnsimpleapi "github.com/dnsimple/dnsimple-go/dnsimple"
 )
 
-var docNotes = providers.DocumentationNotes{
-	providers.DocDualHost:            providers.Cannot("DNSimple does not allow sufficient control over the apex NS records"),
-	providers.DocCreateDomains:       providers.Cannot(),
-	providers.DocOfficiallySupported: providers.Cannot(),
+var features = providers.DocumentationNotes{
+	providers.CanUseAlias:            providers.Can(),
+	providers.CanUseCAA:              providers.Can(),
+	providers.CanUsePTR:              providers.Can(),
+	providers.CanUseSRV:              providers.Can(),
 	providers.CanUseTLSA:             providers.Cannot(),
+	providers.DocCreateDomains:       providers.Cannot(),
+	providers.DocDualHost:            providers.Cannot("DNSimple does not allow sufficient control over the apex NS records"),
+	providers.DocOfficiallySupported: providers.Cannot(),
 }
 
 func init() {
 	providers.RegisterRegistrarType("DNSIMPLE", newReg)
-	providers.RegisterDomainServiceProviderType("DNSIMPLE", newDsp, providers.CanUsePTR, providers.CanUseAlias, providers.CanUseCAA, providers.CanUseSRV, docNotes)
+	providers.RegisterDomainServiceProviderType("DNSIMPLE", newDsp, features)
 }
 
 const stateRegistered = "registered"
@@ -92,7 +96,7 @@ func (c *DnsimpleApi) GetDomainCorrections(dc *models.DomainConfig) ([]*models.C
 	})
 
 	// Normalize
-	models.Downcase(actual)
+	models.PostProcessRecords(actual)
 
 	differ := diff.New(dc)
 	_, create, delete, modify := differ.IncrementalDiff(actual)
