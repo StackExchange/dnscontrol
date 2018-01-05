@@ -79,6 +79,7 @@ func rrFormat(zonename string, filename string, r io.Reader, defaultTTL uint32, 
 
 	for x := range dns.ParseZone(r, zonename, filename) {
 		if x.Error != nil {
+			log.Println(x.Error)
 			continue
 		}
 
@@ -121,9 +122,11 @@ func rrFormat(zonename string, filename string, r io.Reader, defaultTTL uint32, 
 			case dns.TypeSOA:
 				continue
 			case dns.TypeTXT:
-				// Leave target as-is.
-				//				if len(
-				//				target =
+				if len(x.RR.(*dns.TXT).Txt) == 1 {
+					target = `'` + x.RR.(*dns.TXT).Txt[0] + `'`
+				} else {
+					target = `['` + strings.Join(x.RR.(*dns.TXT).Txt, `', '`) + `']`
+				}
 			default:
 				target = "'" + target + "'"
 			}
