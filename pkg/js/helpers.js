@@ -601,3 +601,12 @@ function SPF_BUILDER(value) {
 
     return r;
 }
+
+// Split a DKIM string if it is >254 bytes.
+function DKIM(arr) {
+  chunkSize = 255;
+  var R = [];
+  for (var i = 0, len = arr.length; i < len; i += chunkSize)
+    R.push(arr.slice(i, i + chunkSize));
+  return R;
+}
