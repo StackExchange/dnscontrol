@@ -9,10 +9,12 @@ import (
 	"io"
 )
 
+// SPFRecord stores the parts of an SPF record.
 type SPFRecord struct {
 	Parts []*SPFPart
 }
 
+// Lookups returns the number of DNS lookups required by s.
 func (s *SPFRecord) Lookups() int {
 	count := 0
 	for _, p := range s.Parts {
@@ -26,6 +28,7 @@ func (s *SPFRecord) Lookups() int {
 	return count
 }
 
+// SPFPart stores a part of an SPF record, with attributes.
 type SPFPart struct {
 	Text          string
 	IsLookup      bool
@@ -40,6 +43,7 @@ var qualifiers = map[byte]bool{
 	'+': true,
 }
 
+// Parse parses a raw SPF record.
 func Parse(text string, dnsres Resolver) (*SPFRecord, error) {
 	if !strings.HasPrefix(text, "v=spf1 ") {
 		return nil, fmt.Errorf("Not an spf record")
@@ -100,8 +104,9 @@ func dump(rec *SPFRecord, indent string, w io.Writer) {
 	}
 }
 
-func (rec *SPFRecord) Print() string {
+// Print prints an SPFRecord.
+func (s *SPFRecord) Print() string {
 	w := &bytes.Buffer{}
-	dump(rec, "", w)
+	dump(s, "", w)
 	return w.String()
 }

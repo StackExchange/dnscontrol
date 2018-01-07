@@ -1,6 +1,7 @@
+package bind
+
 // Generate zonefiles.
 // This generates a zonefile that prioritizes beauty over efficiency.
-package bind
 
 import (
 	"bytes"
@@ -98,10 +99,10 @@ func (z *zoneGenData) Less(i, j int) bool {
 	return a.String() < b.String()
 }
 
-// mostCommonTtl returns the most common TTL in a set of records. If there is
+// mostCommonTTL returns the most common TTL in a set of records. If there is
 // a tie, the highest TTL is selected. This makes the results consistent.
 // NS records are not included in the analysis because Tom said so.
-func mostCommonTtl(records []dns.RR) uint32 {
+func mostCommonTTL(records []dns.RR) uint32 {
 	// Index the TTLs in use:
 	d := make(map[uint32]int)
 	for _, r := range records {
@@ -141,7 +142,7 @@ func WriteZoneFile(w io.Writer, records []dns.RR, origin string) error {
 	// * $TTL is used to eliminate clutter. The most common TTL value is used.
 	// * "@" is used instead of the apex domain name.
 
-	defaultTtl := mostCommonTtl(records)
+	defaultTtl := mostCommonTTL(records)
 
 	z := &zoneGenData{
 		Origin:     dnsutil.AddOrigin(origin, "."),

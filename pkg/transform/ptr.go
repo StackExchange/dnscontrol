@@ -10,6 +10,7 @@ import (
 	"github.com/pkg/errors"
 )
 
+// PtrNameMagic implements the PTR magic.
 func PtrNameMagic(name, domain string) (string, error) {
 	// Implement the PTR name magic.  If the name is a properly formed
 	// IPv4 or IPv6 address, we replace it with the right string (i.e

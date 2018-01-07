@@ -244,6 +244,7 @@ type Warning struct {
 	error
 }
 
+// NormalizeAndValidateConfig performs and normalization and/or validation of the IR.
 func NormalizeAndValidateConfig(config *models.DNSConfig) (errs []error) {
 	ptypeMap := map[string]string{}
 	for _, p := range config.DNSProviders {

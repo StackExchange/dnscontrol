@@ -5,6 +5,7 @@ import (
 	"strings"
 )
 
+// TXT outputs s as a TXT record.
 func (s *SPFRecord) TXT() string {
 	text := "v=spf1"
 	for _, p := range s.Parts {
@@ -68,6 +69,7 @@ func (s *SPFRecord) split(thisfqdn string, pattern string, nextIdx int, m map[st
 	newRec.split(nextFQDN, pattern, nextIdx+1, m)
 }
 
+// Flatten optimizes s.
 func (s *SPFRecord) Flatten(spec string) *SPFRecord {
 	newRec := &SPFRecord{}
 	for _, p := range s.Parts {

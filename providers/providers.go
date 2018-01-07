@@ -25,14 +25,16 @@ type DomainCreator interface {
 	EnsureDomainExists(domain string) error
 }
 
-//RegistrarInitializer is a function to create a registrar. Function will be passed the unprocessed json payload from the configuration file for the given provider.
+// RegistrarInitializer is a function to create a registrar. Function will be passed the unprocessed json payload from the configuration file for the given provider.
 type RegistrarInitializer func(map[string]string) (Registrar, error)
 
+// RegistrarTypes stores initializer for each registrar.
 var RegistrarTypes = map[string]RegistrarInitializer{}
 
-//DspInitializer is a function to create a DNS service provider. Function will be passed the unprocessed json payload from the configuration file for the given provider.
+// DspInitializer is a function to create a DNS service provider. Function will be passed the unprocessed json payload from the configuration file for the given provider.
 type DspInitializer func(map[string]string, json.RawMessage) (DNSServiceProvider, error)
 
+// DNSProviderTypes stores initializer for each DSP.
 var DNSProviderTypes = map[string]DspInitializer{}
 
 //RegisterRegistrarType adds a registrar type to the registry by providing a suitable initialization function.
@@ -61,6 +63,7 @@ func createRegistrar(rType string, config map[string]string) (Registrar, error) 
 	return initer(config)
 }
 
+// CreateDNSProvider returnsa DSP's initializer.
 func CreateDNSProvider(dType string, config map[string]string, meta json.RawMessage) (DNSServiceProvider, error) {
 	initer, ok := DNSProviderTypes[dType]
 	if !ok {
@@ -69,8 +72,8 @@ func CreateDNSProvider(dType string, config map[string]string, meta json.RawMess
 	return initer(config, meta)
 }
 
-//CreateRegistrars will load all registrars from the dns config, and create instances of the correct type using data from
-//the provider config to load relevant keys and options.
+// CreateRegistrars will load all registrars from the dns config, and create instances of the correct type using data from
+// the provider config to load relevant keys and options.
 func CreateRegistrars(d *models.DNSConfig, providerConfigs map[string]map[string]string) (map[string]Registrar, error) {
 	regs := map[string]Registrar{}
 	for _, reg := range d.Registrars {
@@ -87,6 +90,7 @@ func CreateRegistrars(d *models.DNSConfig, providerConfigs map[string]map[string
 	return regs, nil
 }
 
+// CreateDsps creates a DSP.
 func CreateDsps(d *models.DNSConfig, providerConfigs map[string]map[string]string) (map[string]DNSServiceProvider, error) {
 	dsps := map[string]DNSServiceProvider{}
 	for _, dsp := range d.DNSProviders {
@@ -103,14 +107,17 @@ func CreateDsps(d *models.DNSConfig, providerConfigs map[string]map[string]strin
 // None is a basic provider type that does absolutely nothing. Can be useful as a placeholder for third parties or unimplemented providers.
 type None struct{}
 
+// GetRegistrarCorrections returns corrections to update registrars.
 func (n None) GetRegistrarCorrections(dc *models.DomainConfig) ([]*models.Correction, error) {
 	return nil, nil
 }
 
+// GetNameservers returns the current nameservers for a domain.
 func (n None) GetNameservers(string) ([]*models.Nameserver, error) {
 	return nil, nil
 }
 
+// GetDomainCorrections returns corrections to update a domain.
 func (n None) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Correction, error) {
 	return nil, nil
 }
@@ -121,6 +128,7 @@ func init() {
 	})
 }
 
+// CustomRType stores an rtype that is only valid for this DSP.
 type CustomRType struct {
 	Name     string
 	Provider string

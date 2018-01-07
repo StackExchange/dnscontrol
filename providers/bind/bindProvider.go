@@ -65,6 +65,7 @@ func init() {
 	providers.RegisterDomainServiceProviderType("BIND", initBind, features)
 }
 
+// SoaInfo contains the parts of a SOA rtype.
 type SoaInfo struct {
 	Ns      string `json:"master"`
 	Mbox    string `json:"mbox"`
@@ -79,6 +80,7 @@ func (s SoaInfo) String() string {
 	return fmt.Sprintf("%s %s %d %d %d %d %d", s.Ns, s.Mbox, s.Serial, s.Refresh, s.Retry, s.Expire, s.Minttl)
 }
 
+// Bind is the provider handle for the Bind driver.
 type Bind struct {
 	DefaultNS   []string `json:"default_ns"`
 	DefaultSoa  SoaInfo  `json:"default_soa"`
@@ -95,7 +97,7 @@ func rrToRecord(rr dns.RR, origin string, replaceSerial uint32) (models.RecordCo
 	// replaceSerial != 0, change the serial to replaceSerial.
 	// WARNING(tlim): This assumes SOAs do not have serial=0.
 	// If one is found, we replace it with serial=1.
-	var old_serial, new_serial uint32
+	var oldSerial, newSerial uint32
 	header := rr.Header()
 	rc := models.RecordConfig{}
 	rc.Type = dns.TypeToString[header.Rrtype]
@@ -121,17 +123,17 @@ func rrToRecord(rr dns.RR, origin string, replaceSerial uint32) (models.RecordCo
 	case *dns.PTR:
 		rc.Target = v.Ptr
 	case *dns.SOA:
-		old_serial = v.Serial
-		if old_serial == 0 {
+		oldSerial = v.Serial
+		if oldSerial == 0 {
 			// For SOA records, we never return a 0 serial number.
-			old_serial = 1
+			oldSerial = 1
 		}
-		new_serial = v.Serial
+		newSerial = v.Serial
 		if (dnsutil.TrimDomainName(rc.Name, origin+".") == "@") && replaceSerial != 0 {
-			new_serial = replaceSerial
+			newSerial = replaceSerial
 		}
 		rc.Target = fmt.Sprintf("%v %v %v %v %v %v %v",
-			v.Ns, v.Mbox, new_serial, v.Refresh, v.Retry, v.Expire, v.Minttl)
+			v.Ns, v.Mbox, newSerial, v.Refresh, v.Retry, v.Expire, v.Minttl)
 	case *dns.SRV:
 		rc.Target = v.Target
 		rc.SrvPort = v.Port
@@ -148,7 +150,7 @@ func rrToRecord(rr dns.RR, origin string, replaceSerial uint32) (models.RecordCo
 	default:
 		log.Fatalf("rrToRecord: Unimplemented zone record type=%s (%v)\n", rc.Type, rr)
 	}
-	return rc, old_serial
+	return rc, oldSerial
 }
 
 func makeDefaultSOA(info SoaInfo, origin string) *models.RecordConfig {
@@ -184,10 +186,12 @@ func makeDefaultSOA(info SoaInfo, origin string) *models.RecordConfig {
 	return &soaRec
 }
 
+// GetNameservers returns the nameservers for a domain.
 func (c *Bind) GetNameservers(string) ([]*models.Nameserver, error) {
 	return c.nameservers, nil
 }
 
+// GetDomainCorrections returns a list of corrections to update a domain.
 func (c *Bind) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Correction, error) {
 	dc.Punycode()
 	// Phase 1: Copy everything to []*models.RecordConfig:
@@ -228,7 +232,7 @@ func (c *Bind) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Correcti
 				if serial != 0 {
 					// This was an SOA record. Update the serial.
 					oldSerial = serial
-					newSerial = generate_serial(oldSerial)
+					newSerial = generateSerial(oldSerial)
 					// Regenerate with new serial:
 					*soaRec, _ = rrToRecord(x.RR, dc.Name, newSerial)
 					rec = *soaRec

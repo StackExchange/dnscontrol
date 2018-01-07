@@ -6,6 +6,7 @@ import (
 	"strings"
 )
 
+// IpConversion describes an IP conversion.
 type IpConversion struct {
 	Low, High net.IP
 	NewBases  []net.IP

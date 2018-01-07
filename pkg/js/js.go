@@ -11,7 +11,7 @@ import (
 	"github.com/robertkrimen/otto"
 	//load underscore js into vm by default
 
-	_ "github.com/robertkrimen/otto/underscore"
+	_ "github.com/robertkrimen/otto/underscore" // load underscore module
 )
 
 //ExecuteJavascript accepts a javascript string and runs it, returning the resulting dnsConfig.
@@ -48,6 +48,7 @@ func ExecuteJavascript(script string, devMode bool) (*models.DNSConfig, error) {
 	return conf, nil
 }
 
+// GetHelpers returns the filename of helpers.js, or the esc'ed version.
 func GetHelpers(devMode bool) string {
 	return _escFSMustString(devMode, "/helpers.js")
 }
