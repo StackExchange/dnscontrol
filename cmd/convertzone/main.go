@@ -40,7 +40,7 @@ func parseargs(args []string) (zonename string, filename string, r io.Reader, er
 	// 2 args: first arg is the zonename. 2nd is the filename.
 	// Anything else returns an error.
 
-	if len(args) < 1 {
+	if len(args) < 2 {
 		return "", "", nil, fmt.Errorf("no command line parameters. Zone name required")
 	}
 
@@ -79,6 +79,7 @@ func rrFormat(zonename string, filename string, r io.Reader, defaultTTL uint32, 
 
 	for x := range dns.ParseZone(r, zonename, filename) {
 		if x.Error != nil {
+			log.Println(x.Error)
 			continue
 		}
 
@@ -121,7 +122,11 @@ func rrFormat(zonename string, filename string, r io.Reader, defaultTTL uint32, 
 			case dns.TypeSOA:
 				continue
 			case dns.TypeTXT:
-				// Leave target as-is.
+				if len(x.RR.(*dns.TXT).Txt) == 1 {
+					target = `'` + x.RR.(*dns.TXT).Txt[0] + `'`
+				} else {
+					target = `['` + strings.Join(x.RR.(*dns.TXT).Txt, `', '`) + `']`
+				}
 			default:
 				target = "'" + target + "'"
 			}
@@ -140,7 +145,10 @@ func main() {
 	flag.Parse()
 	zonename, filename, reader, err := parseargs(flag.Args())
 	if err != nil {
+		fmt.Printf("ERROR: %v\n\n", err)
+		fmt.Println("convertzone [-flags] ZONENAME FILENAME")
 		flag.Usage()
+		os.Exit(1)
 	}
 
 	defTTL := uint32(*flagDefaultTTL)
@@ -155,6 +163,7 @@ func main() {
 	case "tsv":
 		rrFormat(zonename, filename, reader, defTTL, false)
 	default:
+		fmt.Println("convertzone [-flags] ZONENAME FILENAME")
 		flag.Usage()
 	}
 

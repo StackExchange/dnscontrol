@@ -2,13 +2,11 @@ package models
 
 import "strings"
 
-/*
 // SetTxt sets the value of a TXT record to s.
 func (rc *RecordConfig) SetTxt(s string) {
 	rc.Target = s
 	rc.TxtStrings = []string{s}
 }
-*/
 
 // SetTxts sets the value of a TXT record to the list of strings s.
 func (rc *RecordConfig) SetTxts(s []string) {
