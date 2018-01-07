@@ -7,7 +7,7 @@ import (
 	"time"
 )
 
-var nowFunc time.Time = time.Now
+var nowFunc = time.Now
 
 // generate_serial takes an old SOA serial number and increments it.
 func generate_serial(old_serial uint32) uint32 {
