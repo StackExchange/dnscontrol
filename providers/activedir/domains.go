@@ -17,6 +17,7 @@ import (
 
 const zoneDumpFilenamePrefix = "adzonedump"
 
+// RecordConfigJson RecordConfig, reconfigured for JSON input/output.
 type RecordConfigJson struct {
 	Name string `json:"hostname"`
 	Type string `json:"recordtype"`
