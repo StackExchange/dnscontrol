@@ -11,7 +11,7 @@ import (
 	"github.com/StackExchange/dnscontrol/providers"
 )
 
-const defaultApiBase = "https://api.name.com/api"
+const defaultAPIBase = "https://api.name.com/api"
 
 type nameDotCom struct {
 	APIUrl  string `json:"apiurl"`
@@ -43,7 +43,7 @@ func newProvider(conf map[string]string) (*nameDotCom, error) {
 		return nil, fmt.Errorf("missing Name.com apikey or apiuser")
 	}
 	if api.APIUrl == "" {
-		api.APIUrl = defaultApiBase
+		api.APIUrl = defaultAPIBase
 	}
 	return api, nil
 }

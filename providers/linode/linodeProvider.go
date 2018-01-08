@@ -45,6 +45,7 @@ var allowedTTLValues = []uint32{
 
 var srvRegexp = regexp.MustCompile(`^_(?P<Service>\w+)\.\_(?P<Protocol>\w+)$`)
 
+// LinodeApi is the handle for this provider.
 type LinodeApi struct {
 	client      *http.Client
 	baseURL     *url.URL
@@ -59,6 +60,7 @@ var defaultNameServerNames = []string{
 	"ns5.linode.com",
 }
 
+// NewLinode creates the provider.
 func NewLinode(m map[string]string, metadata json.RawMessage) (providers.DNSServiceProvider, error) {
 	if m["token"] == "" {
 		return nil, fmt.Errorf("Missing Linode token")
@@ -95,10 +97,12 @@ func init() {
 	providers.RegisterDomainServiceProviderType("LINODE", NewLinode, features)
 }
 
+// GetNameservers returns the nameservers for a domain.
 func (api *LinodeApi) GetNameservers(domain string) ([]*models.Nameserver, error) {
 	return models.StringsToNameservers(defaultNameServerNames), nil
 }
 
+// GetDomainCorrections returns the corrections for a domain.
 func (api *LinodeApi) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Correction, error) {
 	dc, err := dc.Copy()
 	if err != nil {

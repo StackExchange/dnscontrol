@@ -142,11 +142,11 @@ func WriteZoneFile(w io.Writer, records []dns.RR, origin string) error {
 	// * $TTL is used to eliminate clutter. The most common TTL value is used.
 	// * "@" is used instead of the apex domain name.
 
-	defaultTtl := mostCommonTTL(records)
+	defaultTTL := mostCommonTTL(records)
 
 	z := &zoneGenData{
 		Origin:     dnsutil.AddOrigin(origin, "."),
-		DefaultTtl: defaultTtl,
+		DefaultTtl: defaultTTL,
 	}
 	z.Records = nil
 	for _, r := range records {

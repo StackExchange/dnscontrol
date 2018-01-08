@@ -22,6 +22,7 @@ func ipToUint(i net.IP) (uint32, error) {
 	return r, nil
 }
 
+// UintToIP convert a 32-bit into into a net.IP.
 func UintToIP(u uint32) net.IP {
 	return net.IPv4(
 		byte((u>>24)&255),
