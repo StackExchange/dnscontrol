@@ -26,7 +26,7 @@ type RecordConfigJson struct {
 }
 
 func (c *adProvider) GetNameservers(string) ([]*models.Nameserver, error) {
-	//TODO: If using AD for publicly hosted zones, probably pull these from config.
+	// TODO: If using AD for publicly hosted zones, probably pull these from config.
 	return nil, nil
 }
 
@@ -100,11 +100,11 @@ func (c *adProvider) logOutput(s string) error {
 
 // powerShellLogErr logs that a PowerShell command had an error.
 func (c *adProvider) logErr(e error) error {
-	err := c.logHelper(fmt.Sprintf("ERROR: %v\r\r", e)) //Log error to powershell.log
+	err := c.logHelper(fmt.Sprintf("ERROR: %v\r\r", e)) // Log error to powershell.log
 	if err != nil {
-		return err //Bubble up error created in logHelper
+		return err // Bubble up error created in logHelper
 	}
-	return e //Bubble up original error
+	return e // Bubble up original error
 }
 
 func (c *adProvider) logHelper(s string) error {
@@ -136,7 +136,7 @@ func (c *adProvider) powerShellRecord(command string) error {
 }
 
 func (c *adProvider) getExistingRecords(domainname string) ([]*models.RecordConfig, error) {
-	//log.Printf("getExistingRecords(%s)\n", domainname)
+	// log.Printf("getExistingRecords(%s)\n", domainname)
 
 	// Get the JSON either from adzonedump or by running a PowerShell script.
 	data, err := c.getRecords(domainname)

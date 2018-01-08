@@ -1,4 +1,4 @@
-//Package namedotcom implements a registrar that uses the name.com api to set name servers. It will self register it's providers when imported.
+// Package namedotcom implements a registrar that uses the name.com api to set name servers. It will self register it's providers when imported.
 package namedotcom
 
 import (
@@ -53,9 +53,7 @@ func init() {
 	providers.RegisterDomainServiceProviderType("NAMEDOTCOM", newDsp, features)
 }
 
-///
-//various http helpers for interacting with api
-///
+// various http helpers for interacting with api
 
 func (n *nameDotCom) addAuth(r *http.Request) {
 	r.Header.Add("Api-Username", n.APIUser)
@@ -82,7 +80,7 @@ func (r *apiResult) getErr() error {
 	return nil
 }
 
-//perform http GET and unmarshal response json into target struct
+// perform http GET and unmarshal response json into target struct
 func (n *nameDotCom) get(url string, target interface{}) error {
 	req, err := http.NewRequest("GET", url, nil)
 	if err != nil {

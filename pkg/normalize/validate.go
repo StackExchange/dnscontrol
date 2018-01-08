@@ -74,7 +74,7 @@ func validateRecordTypes(rec *models.RecordConfig, domain string, pTypes []strin
 				return fmt.Errorf("Custom record type %s is not compatible with provider type %s", rec.Type, providerType)
 			}
 		}
-		//it is ok. Lets replace the type with real type and add metadata to say we checked it
+		// it is ok. Lets replace the type with real type and add metadata to say we checked it
 		rec.Metadata["orig_custom_type"] = rec.Type
 		if cType.RealType != "" {
 			rec.Type = cType.RealType
@@ -87,7 +87,7 @@ func validateRecordTypes(rec *models.RecordConfig, domain string, pTypes []strin
 // here we list common records expected to have underscores. Anything else containing an underscore will print a warning.
 var labelUnderscores = []string{"_domainkey", "_dmarc", "_amazonses", "_acme-challenge"}
 
-//these record types may contain underscores
+// these record types may contain underscores
 var rTypeUnderscores = []string{"SRV", "TLSA", "TXT"}
 
 func checkLabel(label string, rType string, domain string, meta map[string]string) error {
@@ -116,7 +116,7 @@ func checkLabel(label string, rType string, domain string, meta map[string]strin
 			return nil
 		}
 	}
-	//underscores are warnings
+	// underscores are warnings
 	if strings.ContainsRune(label, '_') {
 		return Warning{fmt.Errorf("label %s.%s contains an underscore", label, domain)}
 	}
@@ -163,7 +163,7 @@ func checkTargets(rec *models.RecordConfig, domain string) (errs []error) {
 	case "TXT", "IMPORT_TRANSFORM", "CAA", "TLSA":
 	default:
 		if rec.Metadata["orig_custom_type"] != "" {
-			//it is a valid custom type. We perform no validation on target
+			// it is a valid custom type. We perform no validation on target
 			return
 		}
 		errs = append(errs, fmt.Errorf("checkTargets: Unimplemented record type (%v) domain=%v name=%v",
@@ -262,7 +262,7 @@ func NormalizeAndValidateConfig(config *models.DNSConfig) (errs []error) {
 				pTypes = append(pTypes, pType)
 			}
 
-			//If NO_PURGE is in use, make sure this *isn't* a provider that *doesn't* support NO_PURGE.
+			// If NO_PURGE is in use, make sure this *isn't* a provider that *doesn't* support NO_PURGE.
 			if domain.KeepUnknown && providers.ProviderHasCabability(pType, providers.CantUseNOPURGE) {
 				errs = append(errs, fmt.Errorf("%s uses NO_PURGE which is not supported by %s(%s)", domain.Name, p, pType))
 			}
@@ -367,12 +367,12 @@ func NormalizeAndValidateConfig(config *models.DNSConfig) (errs []error) {
 		}
 	}
 
-	//Check that CNAMES don't have to co-exist with any other records
+	// Check that CNAMES don't have to co-exist with any other records
 	for _, d := range config.Domains {
 		errs = append(errs, checkCNAMEs(d)...)
 	}
 
-	//Check that if any aliases / ptr / etc.. are used in a domain, every provider for that domain supports them
+	// Check that if any aliases / ptr / etc.. are used in a domain, every provider for that domain supports them
 	for _, d := range config.Domains {
 		err := checkProviderCapabilities(d, config.DNSProviders)
 		if err != nil {
@@ -450,14 +450,14 @@ func applyRecordTransforms(domain *models.DomainConfig) error {
 		if err != nil {
 			return err
 		}
-		ip := net.ParseIP(rec.Target) //ip already validated above
+		ip := net.ParseIP(rec.Target) // ip already validated above
 		newIPs, err := transform.TransformIPToList(net.ParseIP(rec.Target), table)
 		if err != nil {
 			return err
 		}
 		for i, newIP := range newIPs {
 			if i == 0 && !newIP.Equal(ip) {
-				rec.Target = newIP.String() //replace target of first record if different
+				rec.Target = newIP.String() // replace target of first record if different
 			} else if i > 0 {
 				// any additional ips need identical records with the alternate ip added to the domain
 				copy, err := rec.Copy()

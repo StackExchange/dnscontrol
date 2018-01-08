@@ -37,7 +37,7 @@ func newReg(conf map[string]string, _ json.RawMessage) (providers.DNSServiceProv
 		return nil, fmt.Errorf("SoftLayer UserName and APIKey must be provided")
 	}
 
-	//s.Debug = true
+	// s.Debug = true
 
 	api := &SoftLayer{
 		Session: s,

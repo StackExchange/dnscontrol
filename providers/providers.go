@@ -8,19 +8,19 @@ import (
 	"github.com/StackExchange/dnscontrol/models"
 )
 
-//Registrar is an interface for a domain registrar. It can return a list of needed corrections to be applied in the future.
+// Registrar is an interface for a domain registrar. It can return a list of needed corrections to be applied in the future.
 type Registrar interface {
 	GetRegistrarCorrections(dc *models.DomainConfig) ([]*models.Correction, error)
 }
 
-//DNSServiceProvider is able to generate a set of corrections that need to be made to correct records for a domain
+// DNSServiceProvider is able to generate a set of corrections that need to be made to correct records for a domain
 type DNSServiceProvider interface {
 	GetNameservers(domain string) ([]*models.Nameserver, error)
 	GetDomainCorrections(dc *models.DomainConfig) ([]*models.Correction, error)
 }
 
-//DomainCreator should be implemented by providers that have the ability to add domains to an account. the create-domains command
-//can be run to ensure all domains are present before running preview/push
+// DomainCreator should be implemented by providers that have the ability to add domains to an account. the create-domains command
+// can be run to ensure all domains are present before running preview/push
 type DomainCreator interface {
 	EnsureDomainExists(domain string) error
 }
@@ -37,7 +37,7 @@ type DspInitializer func(map[string]string, json.RawMessage) (DNSServiceProvider
 // DNSProviderTypes stores initializer for each DSP.
 var DNSProviderTypes = map[string]DspInitializer{}
 
-//RegisterRegistrarType adds a registrar type to the registry by providing a suitable initialization function.
+// RegisterRegistrarType adds a registrar type to the registry by providing a suitable initialization function.
 func RegisterRegistrarType(name string, init RegistrarInitializer, pm ...ProviderMetadata) {
 	if _, ok := RegistrarTypes[name]; ok {
 		log.Fatalf("Cannot register registrar type %s multiple times", name)
@@ -46,7 +46,7 @@ func RegisterRegistrarType(name string, init RegistrarInitializer, pm ...Provide
 	unwrapProviderCapabilities(name, pm)
 }
 
-//RegisterDomainServiceProviderType adds a dsp to the registry with the given initialization function.
+// RegisterDomainServiceProviderType adds a dsp to the registry with the given initialization function.
 func RegisterDomainServiceProviderType(name string, init DspInitializer, pm ...ProviderMetadata) {
 	if _, ok := DNSProviderTypes[name]; ok {
 		log.Fatalf("Cannot register registrar type %s multiple times", name)

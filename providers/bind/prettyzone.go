@@ -201,9 +201,6 @@ func (z *zoneGenData) generateZoneFileHelper(w io.Writer) error {
 
 		// items[4]: the remaining line
 		target := items[4]
-		//if typeStr == "TXT" {
-		//	fmt.Printf("generateZoneFileHelper.go: target=%#v\n", target)
-		//}
 
 		fmt.Fprintln(w, formatLine([]int{10, 5, 2, 5, 0}, []string{name, ttl, "IN", typeStr, target}))
 	}

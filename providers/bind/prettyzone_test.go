@@ -123,7 +123,7 @@ www        300   IN CNAME bosun.org.
 }
 
 func TestWriteZoneFileMx(t *testing.T) {
-	//exhibits explicit ttls and long name
+	// exhibits explicit ttls and long name
 	r1, _ := dns.NewRR(`bosun.org. 300 IN TXT "aaa"`)
 	r2, _ := dns.NewRR(`bosun.org. 300 IN TXT "bbb"`)
 	r2.(*dns.TXT).Txt[0] = `b"bb`
@@ -157,7 +157,7 @@ google._domainkey IN TXT  "\"foo\""
 `
 
 func TestWriteZoneFileSrv(t *testing.T) {
-	//exhibits explicit ttls and long name
+	// exhibits explicit ttls and long name
 	r1, _ := dns.NewRR(`bosun.org. 300 IN SRV 10 10 9999 foo.com.`)
 	r2, _ := dns.NewRR(`bosun.org. 300 IN SRV 10 20 5050 foo.com.`)
 	r3, _ := dns.NewRR(`bosun.org. 300 IN SRV 10 10 5050 foo.com.`)
@@ -182,7 +182,7 @@ var testdataZFSRV = `$TTL 300
 `
 
 func TestWriteZoneFilePtr(t *testing.T) {
-	//exhibits explicit ttls and long name
+	// exhibits explicit ttls and long name
 	r1, _ := dns.NewRR(`bosun.org. 300 IN PTR chell.bosun.org`)
 	r2, _ := dns.NewRR(`bosun.org. 300 IN PTR barney.bosun.org.`)
 	r3, _ := dns.NewRR(`bosun.org. 300 IN PTR alex.bosun.org.`)
@@ -203,7 +203,7 @@ var testdataZFPTR = `$TTL 300
 `
 
 func TestWriteZoneFileCaa(t *testing.T) {
-	//exhibits explicit ttls and long name
+	// exhibits explicit ttls and long name
 	r1, _ := dns.NewRR(`bosun.org. 300 IN CAA 0 issuewild ";"`)
 	r2, _ := dns.NewRR(`bosun.org. 300 IN CAA 0 issue "letsencrypt.org"`)
 	r3, _ := dns.NewRR(`bosun.org. 300 IN CAA 1 iodef "http://example.com"`)

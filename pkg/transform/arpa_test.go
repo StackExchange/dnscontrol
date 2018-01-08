@@ -71,7 +71,7 @@ func TestReverse(t *testing.T) {
 		{"174.1.0.0/31", false, "0/31.0.1.174.in-addr.arpa"},
 		{"174.1.0.2/31", false, "2/31.0.1.174.in-addr.arpa"},
 
-		//Errror Cases:
+		// Error Cases:
 		{"0.0.0.0/0", true, ""},
 		{"2001::/0", true, ""},
 		{"4.5/16", true, ""},

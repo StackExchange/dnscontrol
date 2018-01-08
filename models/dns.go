@@ -368,11 +368,11 @@ func (rc *RecordConfig) Copy() (*RecordConfig, error) {
 	return newR, err
 }
 
-//Punycode will convert all records to punycode format.
-//It will encode:
-//- Name
-//- NameFQDN
-//- Target (CNAME and MX only)
+// Punycode will convert all records to punycode format.
+// It will encode:
+// - Name
+// - NameFQDN
+// - Target (CNAME and MX only)
 func (dc *DomainConfig) Punycode() error {
 	var err error
 	for _, rec := range dc.Records {
@@ -450,9 +450,9 @@ func (dc *DomainConfig) CombineSRVs() {
 	}
 }
 
-//SplitCombinedSrvValue splits a combined SRV priority, weight, port and target into
-//separate entities, some DNS providers want "5" "10" 15" and "foo.com.",
-//while other providers want "5 10 15 foo.com.".
+// SplitCombinedSrvValue splits a combined SRV priority, weight, port and target into
+// separate entities, some DNS providers want "5" "10" 15" and "foo.com.",
+// while other providers want "5 10 15 foo.com.".
 func SplitCombinedSrvValue(s string) (priority, weight, port uint16, target string, err error) {
 	parts := strings.Fields(s)
 
@@ -567,7 +567,7 @@ func InterfaceToIP(i interface{}) (net.IP, error) {
 	}
 }
 
-//Correction is anything that can be run. Implementation is up to the specific provider.
+// Correction is anything that can be run. Implementation is up to the specific provider.
 type Correction struct {
 	F   func() error `json:"-"`
 	Msg string

@@ -67,7 +67,7 @@ func (c *CloudflareApi) getRecordsForDomain(id string, domain string) ([]*models
 			return nil, fmt.Errorf("Error fetching record list cloudflare: %s", stringifyErrors(data.Errors))
 		}
 		for _, rec := range data.Result {
-			//fmt.Printf("REC: %+v\n", rec)
+			// fmt.Printf("REC: %+v\n", rec)
 			records = append(records, rec.toRecord(domain))
 		}
 		ri := data.ResultInfo
@@ -76,7 +76,7 @@ func (c *CloudflareApi) getRecordsForDomain(id string, domain string) ([]*models
 		}
 		page++
 	}
-	//fmt.Printf("DEBUG REORDS=%v\n", records)
+	// fmt.Printf("DEBUG REORDS=%v\n", records)
 	return records, nil
 }
 
@@ -306,7 +306,7 @@ func (c *CloudflareApi) getPageRules(id string, domain string) ([]*models.Record
 			Name:     "@",
 			NameFQDN: domain,
 			Type:     "PAGE_RULE",
-			//$FROM,$TO,$PRIO,$CODE
+			// $FROM,$TO,$PRIO,$CODE
 			Target:   fmt.Sprintf("%s,%s,%d,%d", pr.Targets[0].Constraint.Value, pr.ForwardingInfo.URL, pr.Priority, pr.ForwardingInfo.StatusCode),
 			Original: thisPr,
 			TTL:      1,
@@ -339,7 +339,7 @@ func (c *CloudflareApi) createPageRule(domainID string, target string) error {
 }
 
 func (c *CloudflareApi) sendPageRule(endpoint, method string, data string) error {
-	//from to priority code
+	// from to priority code
 	parts := strings.Split(data, ",")
 	priority, _ := strconv.Atoi(parts[2])
 	code, _ := strconv.Atoi(parts[3])

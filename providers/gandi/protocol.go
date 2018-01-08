@@ -25,7 +25,7 @@ func (c *GandiApi) fetchDomainList() error {
 	domain := gandidomain.New(gc)
 	domains, err := domain.List()
 	if err != nil {
-		//	fmt.Println(err)
+		// fmt.Println(err)
 		return err
 	}
 	for _, d := range domains {
@@ -150,7 +150,7 @@ func (c *GandiApi) createGandiZone(domainname string, zoneID int64, records []ga
 	if err != nil {
 		return err
 	}
-	//fmt.Println("ZONEINFO:", zoneinfo)
+	// fmt.Println("ZONEINFO:", zoneinfo)
 	zoneID, err = c.getEditableZone(domainname, zoneinfo)
 	if err != nil {
 		return err

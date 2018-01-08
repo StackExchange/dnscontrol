@@ -124,7 +124,7 @@ func init() {
 	hc := oauth2.NewClient(context.Background(), oauth2.StaticTokenSource(&oauth2.Token{AccessToken: string(t)}))
 	client = github.NewClient(hc)
 
-	//get current version if in travis build
+	// get current version if in travis build
 	if tc := os.Getenv("TRAVIS_COMMIT"); tc != "" {
 		commitish = tc
 	}

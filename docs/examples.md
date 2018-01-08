@@ -46,8 +46,8 @@ D('example.com', registrar,
 var addrA = IP('1.2.3.4')
 
 D('example.com', REG, DnsProvider('R53'),
-    A('@', addrA), //1.2.3.4
-    A('www', addrA + 1), //1.2.3.5
+    A('@', addrA), // 1.2.3.4
+    A('www', addrA + 1), // 1.2.3.5
 )
 {% endhighlight %}
 

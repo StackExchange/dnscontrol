@@ -83,7 +83,7 @@ func TestGetCorrections(t *testing.T) {
 		{`"bar.ns.tld","foo.ns.tld"`, 0},
 		{`"foo.ns.tld"`, 1},
 		{`"1.ns.aaa","2.ns.www"`, 1},
-		{"ERR", -1}, //-1 means we expect an error
+		{"ERR", -1}, // -1 means we expect an error
 		{"MSGERR", -1},
 	} {
 		setup()
@@ -155,12 +155,12 @@ func TestGetNameservers(t *testing.T) {
 	for i, test := range []struct {
 		givenNs, expected string
 	}{
-		//empty or external dsp, use ns1-4.name.com
+		// empty or external dsp, use ns1-4.name.com
 		{"", d},
 		{`"foo.ns.tld","bar.ns.tld"`, d},
-		//if already on name.com, use the existing nameservers
+		// if already on name.com, use the existing nameservers
 		{`"ns1aaa.name.com","ns2bbb.name.com","ns3ccc.name.com","ns4ddd.name.com"`, "ns1aaa.name.com,ns2bbb.name.com,ns3ccc.name.com,ns4ddd.name.com"},
-		//also handle half and half
+		// also handle half and half
 		{`"ns1aaa.name.com","ns2bbb.name.com","ns3ccc.aws.net","ns4ddd.awsdns.org"`, "ns1aaa.name.com,ns2bbb.name.com,ns3.name.com,ns4.name.com"},
 		{`"nsa.azuredns.com","ns2b.gandhi.net","ns3ccc.name.com","ns4ddd.name.com"`, "ns1.name.com,ns2.name.com,ns3ccc.name.com,ns4ddd.name.com"},
 	} {

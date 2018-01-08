@@ -88,7 +88,7 @@ type Bind struct {
 	directory   string
 }
 
-//var bindSkeletin = flag.String("bind_skeletin", "skeletin/master/var/named/chroot/var/named/master", "")
+// var bindSkeletin = flag.String("bind_skeletin", "skeletin/master/var/named/chroot/var/named/master", "")
 
 func rrToRecord(rr dns.RR, origin string, replaceSerial uint32) (models.RecordConfig, uint32) {
 	// Convert's dns.RR into our native data type (models.RecordConfig).

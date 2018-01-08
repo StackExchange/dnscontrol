@@ -12,9 +12,9 @@ import (
 var nsRegex = regexp.MustCompile(`ns([1-4])[a-z]{3}\.name\.com`)
 
 func (n *nameDotCom) GetNameservers(domain string) ([]*models.Nameserver, error) {
-	//This is an interesting edge case. Name.com expects you to SET the nameservers to ns[1-4].name.com,
-	//but it will internally set it to ns1xyz.name.com, where xyz is a uniqueish 3 letters.
-	//In order to avoid endless loops, we will use the unique nameservers if present, or else the generic ones if not.
+	// This is an interesting edge case. Name.com expects you to SET the nameservers to ns[1-4].name.com,
+	// but it will internally set it to ns1xyz.name.com, where xyz is a uniqueish 3 letters.
+	// In order to avoid endless loops, we will use the unique nameservers if present, or else the generic ones if not.
 	nss, err := n.getNameserversRaw(domain)
 	if err != nil {
 		return nil, err
@@ -22,7 +22,7 @@ func (n *nameDotCom) GetNameservers(domain string) ([]*models.Nameserver, error)
 	toUse := []string{"ns1.name.com", "ns2.name.com", "ns3.name.com", "ns4.name.com"}
 	for _, ns := range nss {
 		if matches := nsRegex.FindStringSubmatch(ns); len(matches) == 2 && len(matches[1]) == 1 {
-			idx := matches[1][0] - '1' //regex ensures proper range
+			idx := matches[1][0] - '1' // regex ensures proper range
 			toUse[idx] = matches[0]
 		}
 	}
@@ -66,7 +66,7 @@ func (n *nameDotCom) GetRegistrarCorrections(dc *models.DomainConfig) ([]*models
 	return nil, nil
 }
 
-//even if you provide them "ns1.name.com", they will set it to "ns1qrt.name.com". This will match that pattern to see if defaults are in use.
+// even if you provide them "ns1.name.com", they will set it to "ns1qrt.name.com". This will match that pattern to see if defaults are in use.
 var defaultNsRegexp = regexp.MustCompile(`ns1[a-z]{0,3}\.name\.com,ns2[a-z]{0,3}\.name\.com,ns3[a-z]{0,3}\.name\.com,ns4[a-z]{0,3}\.name\.com`)
 
 func (n *nameDotCom) apiGetDomain(domain string) string {

@@ -48,7 +48,7 @@ func Test_DecodeTransformTable_0(t *testing.T) {
 	testIP(t, "low", "1.2.3.4", result[0].Low)
 	testIP(t, "high", "2.3.4.5", result[0].High)
 	testIP(t, "newBase", "3.4.5.6", result[0].NewBases[0])
-	//test_ip(t, "newIP", "", result[0].NewIPs)
+	// test_ip(t, "newIP", "", result[0].NewIPs)
 }
 
 func Test_DecodeTransformTable_1(t *testing.T) {
@@ -62,11 +62,11 @@ func Test_DecodeTransformTable_1(t *testing.T) {
 	testIP(t, "Low[0]", "1.2.3.4", result[0].Low)
 	testIP(t, "High[0]", "2.3.4.5", result[0].High)
 	testIP(t, "NewBase[0]", "3.4.5.6", result[0].NewBases[0])
-	//test_ip(t, "newIP[0]", "", result[0].NewIP)
+	// test_ip(t, "newIP[0]", "", result[0].NewIP)
 	testIP(t, "Low[1]", "8.7.6.5", result[1].Low)
 	testIP(t, "High[1]", "9.8.7.6", result[1].High)
 	testIP(t, "NewBase[1]", "7.6.5.4", result[1].NewBases[0])
-	//test_ip(t, "newIP[1]", "", result[0].NewIP)
+	// test_ip(t, "newIP[1]", "", result[0].NewIP)
 }
 func Test_DecodeTransformTable_NewIP(t *testing.T) {
 	result, err := DecodeTransformTable("1.2.3.4 ~ 2.3.4.5 ~  ~ 3.4.5.6 ")
@@ -126,7 +126,7 @@ func Test_TransformIP(t *testing.T) {
 		High:     net.ParseIP("55.255.0.0"),
 		NewBases: []net.IP{net.ParseIP("66.0.0.0"), net.ParseIP("77.0.0.0")},
 	}}
-	//NO TRANSFORMS ON 99.x.x.x PLZ
+	// NO TRANSFORMS ON 99.x.x.x PLZ
 
 	var tests = []struct {
 		experiment string

@@ -60,7 +60,7 @@ type CloudflareApi struct {
 }
 
 func labelMatches(label string, matches []string) bool {
-	//log.Printf("DEBUG: labelMatches(%#v, %#v)\n", label, matches)
+	// log.Printf("DEBUG: labelMatches(%#v, %#v)\n", label, matches)
 	for _, tst := range matches {
 		if label == tst {
 			return true
@@ -278,7 +278,7 @@ func (c *CloudflareApi) preprocessConfig(dc *models.DomainConfig) error {
 		if rec.Type != "A" {
 			continue
 		}
-		//only transform "full"
+		// only transform "full"
 		if rec.Metadata[metaProxy] != "full" {
 			continue
 		}
@@ -368,7 +368,7 @@ type cfRecord struct {
 }
 
 func (c *cfRecord) toRecord(domain string) *models.RecordConfig {
-	//normalize cname,mx,ns records with dots to be consistent with our config format.
+	// normalize cname,mx,ns records with dots to be consistent with our config format.
 	if c.Type == "CNAME" || c.Type == "MX" || c.Type == "NS" || c.Type == "SRV" {
 		c.Content = dnsutil.AddOrigin(c.Content+".", domain)
 	}
