@@ -8,6 +8,7 @@ import (
 	"github.com/StackExchange/dnscontrol/models"
 	"github.com/StackExchange/dnscontrol/pkg/nameservers"
 	"github.com/StackExchange/dnscontrol/pkg/normalize"
+	"github.com/StackExchange/dnscontrol/pkg/notifications"
 	"github.com/StackExchange/dnscontrol/pkg/printer"
 	"github.com/StackExchange/dnscontrol/providers"
 	"github.com/StackExchange/dnscontrol/providers/config"
@@ -31,12 +32,18 @@ type PreviewArgs struct {
 	GetDNSConfigArgs
 	GetCredentialsArgs
 	FilterArgs
+	Notify bool
 }
 
 func (args *PreviewArgs) flags() []cli.Flag {
 	flags := args.GetDNSConfigArgs.flags()
 	flags = append(flags, args.GetCredentialsArgs.flags()...)
 	flags = append(flags, args.FilterArgs.flags()...)
+	flags = append(flags, cli.BoolFlag{
+		Name:        "notify",
+		Destination: &args.Notify,
+		Usage:       `set to true to send notifications to configured destinations`,
+	})
 	return flags
 }
 
@@ -86,7 +93,7 @@ func run(args PreviewArgs, push bool, interactive bool, out printer.CLI) error {
 	if PrintValidationErrors(errs) {
 		return fmt.Errorf("Exiting due to validation errors")
 	}
-	registrars, dnsProviders, nonDefaultProviders, err := InitializeProviders(args.CredsFile, cfg)
+	registrars, dnsProviders, nonDefaultProviders, nofitier, err := InitializeProviders(args.CredsFile, cfg, args.Notify)
 	if err != nil {
 		return err
 	}
@@ -127,7 +134,7 @@ DomainLoop:
 				continue DomainLoop
 			}
 			totalCorrections += len(corrections)
-			anyErrors = printOrRunCorrections(corrections, out, push, interactive) || anyErrors
+			anyErrors = printOrRunCorrections(domain.Name, prov, corrections, out, push, interactive, nofitier) || anyErrors
 		}
 		run := args.shouldRunProvider(domain.Registrar, domain, nonDefaultProviders)
 		out.StartRegistrar(domain.Registrar, !run)
@@ -153,7 +160,7 @@ DomainLoop:
 			continue
 		}
 		totalCorrections += len(corrections)
-		anyErrors = printOrRunCorrections(corrections, out, push, interactive) || anyErrors
+		anyErrors = printOrRunCorrections(domain.Name, domain.Registrar, corrections, out, push, interactive, nofitier) || anyErrors
 	}
 	if os.Getenv("TEAMCITY_VERSION") != "" {
 		fmt.Fprintf(os.Stderr, "##teamcity[buildStatus status='SUCCESS' text='%d corrections']", totalCorrections)
@@ -167,11 +174,18 @@ DomainLoop:
 
 // InitializeProviders takes a creds file path and a DNSConfig object. Creates all providers with the proper types, and returns them.
 // nonDefaultProviders is a list of providers that should not be run unless explicitly asked for by flags.
-func InitializeProviders(credsFile string, cfg *models.DNSConfig) (registrars map[string]providers.Registrar, dnsProviders map[string]providers.DNSServiceProvider, nonDefaultProviders []string, err error) {
+func InitializeProviders(credsFile string, cfg *models.DNSConfig, notifyFlag bool) (registrars map[string]providers.Registrar, dnsProviders map[string]providers.DNSServiceProvider, nonDefaultProviders []string, notify notifications.Notifier, err error) {
 	var providerConfigs map[string]map[string]string
+	var notificationCfg map[string]string
+	defer func() {
+		notify = notifications.Init(notificationCfg)
+	}()
 	providerConfigs, err = config.LoadProviderConfigs(credsFile)
 	if err != nil {
 		return
+	}
+	if notifyFlag {
+		notificationCfg = providerConfigs["notifications"]
 	}
 	nonDefaultProviders = []string{}
 	for name, vals := range providerConfigs {
@@ -192,23 +206,25 @@ func InitializeProviders(credsFile string, cfg *models.DNSConfig) (registrars ma
 	return
 }
 
-func printOrRunCorrections(corrections []*models.Correction, out printer.CLI, push bool, interactive bool) (anyErrors bool) {
+func printOrRunCorrections(domain string, provider string, corrections []*models.Correction, out printer.CLI, push bool, interactive bool, notifier notifications.Notifier) (anyErrors bool) {
 	anyErrors = false
 	if len(corrections) == 0 {
 		return false
 	}
 	for i, correction := range corrections {
 		out.PrintCorrection(i, correction)
+		var err error
 		if push {
 			if interactive && !out.PromptToRun() {
 				continue
 			}
-			err := correction.F()
+			err = correction.F()
 			out.EndCorrection(err)
 			if err != nil {
 				anyErrors = true
 			}
 		}
+		notifier(domain, provider, correction.Msg, err, !push)
 	}
 	return anyErrors
 }
