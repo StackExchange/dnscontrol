@@ -66,8 +66,8 @@ func TestPtrMagic(t *testing.T) {
 		{"2001:db8::1", "9.9.ip6.arpa", "", true},
 
 		// These should be errors but we don't check for them at this time:
-		//{"blurg", "3.4.in-addr.arpa", "blurg", true},
-		//{"1", "3.4.in-addr.arpa", "1", true},
+		// {"blurg", "3.4.in-addr.arpa", "blurg", true},
+		// {"1", "3.4.in-addr.arpa", "1", true},
 	}
 	for _, tst := range tests {
 		t.Run(fmt.Sprintf("%s %s", tst.name, tst.domain), func(t *testing.T) {

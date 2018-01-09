@@ -136,7 +136,7 @@ func runTests(t *testing.T, prv providers.DNSServiceProvider, domainName string,
 					t.Fatal(err)
 				}
 			}
-			//run a second time and expect zero corrections
+			// run a second time and expect zero corrections
 			corrections, err = prv.GetDomainCorrections(dom2)
 			if err != nil {
 				t.Fatal(err)
@@ -296,7 +296,7 @@ func manyA(namePattern, target string, n int) []*rec {
 }
 
 func makeTests(t *testing.T) []*TestCase {
-	//ALWAYS ADD TO BOTTOM OF LIST. Order and indexes matter.
+	// ALWAYS ADD TO BOTTOM OF LIST. Order and indexes matter.
 	tests := []*TestCase{
 		// A
 		tc("Empty"),
@@ -319,20 +319,20 @@ func makeTests(t *testing.T) []*TestCase {
 		tc("Change back to CNAME", cname("foo", "google.com.")),
 		tc("Record pointing to @", cname("foo", "**current-domain**")),
 
-		//NS
+		// NS
 		tc("Empty"),
 		tc("NS for subdomain", ns("xyz", "ns2.foo.com.")),
 		tc("Dual NS for subdomain", ns("xyz", "ns2.foo.com."), ns("xyz", "ns1.foo.com.")),
 		tc("NS Record pointing to @", ns("foo", "**current-domain**")),
 
-		//IDNAs
+		// IDNAs
 		tc("Empty"),
 		tc("Internationalized name", a("ööö", "1.2.3.4")),
 		tc("Change IDN", a("ööö", "2.2.2.2")),
 		tc("Internationalized CNAME Target", cname("a", "ööö.com.")),
 		tc("IDN CNAME AND Target", cname("öoö", "ööö.企业.")),
 
-		//MX
+		// MX
 		tc("Empty"),
 		tc("MX record", mx("@", 5, "foo.com.")),
 		tc("Second MX record, same prio", mx("@", 5, "foo.com."), mx("@", 5, "foo2.com.")),
@@ -394,7 +394,7 @@ func makeTests(t *testing.T) []*TestCase {
 		)
 	}
 
-	//TLSA
+	// TLSA
 	if !providers.ProviderHasCabability(*providerToRun, providers.CanUseTLSA) {
 		t.Log("Skipping TLSA Tests because provider does not support them")
 	} else {
@@ -425,7 +425,7 @@ func makeTests(t *testing.T) []*TestCase {
 	// Known page sizes:
 	//  - gandi: 100
 	skip := map[string]bool{
-		"NS1": true, //ns1 free acct only allows 50 records
+		"NS1": true, // ns1 free acct only allows 50 records
 	}
 	if skip[*providerToRun] {
 		t.Log("Skipping Large record count Tests because provider does not support them")

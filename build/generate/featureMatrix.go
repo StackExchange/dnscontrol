@@ -93,11 +93,15 @@ func generateFeatureMatrix() error {
 	return ioutil.WriteFile("docs/_includes/matrix.html", buf.Bytes(), 0644)
 }
 
+// FeatureDef describes features.
 type FeatureDef struct {
 	Name, Desc string
 }
+
+// FeatureMap maps provider names to compliance documentation.
 type FeatureMap map[string]*providers.DocumentationNote
 
+// SetSimple configures a provider's setting in fm.
 func (fm FeatureMap) SetSimple(name string, unknownsAllowed bool, f func() bool) {
 	if f() {
 		fm[name] = &providers.DocumentationNote{HasFeature: true}
@@ -106,6 +110,7 @@ func (fm FeatureMap) SetSimple(name string, unknownsAllowed bool, f func() bool)
 	}
 }
 
+// FeatureMatrix describes features and which providers support it.
 type FeatureMatrix struct {
 	Features  []FeatureDef
 	Providers map[string]FeatureMap

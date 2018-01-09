@@ -37,7 +37,7 @@ D('ds.stackexchange.com', REG_NONE,
 )
 
 
-    //records handled by another provider...
+    // records handled by another provider...
 );
 ```
 

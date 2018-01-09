@@ -17,8 +17,10 @@ import (
 	"github.com/miekg/dns/dnsutil"
 )
 
+// NamecheapDefaultNs lists the default nameservers for this provider.
 var NamecheapDefaultNs = []string{"dns1.registrar-servers.com", "dns2.registrar-servers.com"}
 
+// Namecheap is the handle for this provider.
 type Namecheap struct {
 	ApiKey  string
 	ApiUser string
@@ -57,7 +59,7 @@ func newProvider(m map[string]string, metadata json.RawMessage) (*Namecheap, err
 	api := &Namecheap{}
 	api.ApiUser, api.ApiKey = m["apiuser"], m["apikey"]
 	if api.ApiKey == "" || api.ApiUser == "" {
-		return nil, fmt.Errorf("Namecheap apikey and apiuser must be provided.")
+		return nil, fmt.Errorf("missing Namecheap apikey and apiuser")
 	}
 	api.client = nc.NewClient(api.ApiUser, api.ApiKey, api.ApiUser)
 	// if BaseURL is specified in creds, use that url
@@ -104,6 +106,7 @@ func doWithRetry(f func() error) {
 	}
 }
 
+// GetDomainCorrections returns the corrections for the domain.
 func (n *Namecheap) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Correction, error) {
 	dc.Punycode()
 	sld, tld := splitDomain(dc.Name)
@@ -221,6 +224,7 @@ func (n *Namecheap) generateRecords(dc *models.DomainConfig) error {
 	return err
 }
 
+// GetNameservers returns the nameservers for a domain.
 func (n *Namecheap) GetNameservers(domainName string) ([]*models.Nameserver, error) {
 	// return default namecheap nameservers
 	ns := NamecheapDefaultNs
@@ -228,6 +232,7 @@ func (n *Namecheap) GetNameservers(domainName string) ([]*models.Nameserver, err
 	return models.StringsToNameservers(ns), nil
 }
 
+// GetRegistrarCorrections returns corrections to update nameservers.
 func (n *Namecheap) GetRegistrarCorrections(dc *models.DomainConfig) ([]*models.Correction, error) {
 	var info *nc.DomainInfo
 	var err error

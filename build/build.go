@@ -48,18 +48,18 @@ func getVersion() string {
 	if *sha != "" {
 		return *sha
 	}
-	//check teamcity build version
+	// check teamcity build version
 	if v := os.Getenv("BUILD_VCS_NUMBER"); v != "" {
 		return v
 	}
-	//check git
+	// check git
 	cmd := exec.Command("git", "rev-parse", "HEAD")
 	v, err := cmd.CombinedOutput()
 	if err != nil {
 		return ""
 	}
 	ver := strings.TrimSpace(string(v))
-	//see if dirty
+	// see if dirty
 	cmd = exec.Command("git", "diff-index", "--quiet", "HEAD", "--")
 	err = cmd.Run()
 	// exit status 1 indicates dirty tree

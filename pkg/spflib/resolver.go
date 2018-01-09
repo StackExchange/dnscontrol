@@ -17,6 +17,7 @@ type Resolver interface {
 // LiveResolver simply queries DNS to resolve SPF records.
 type LiveResolver struct{}
 
+// GetSPF looks up the SPF record named "name".
 func (l LiveResolver) GetSPF(name string) (string, error) {
 	vals, err := net.LookupTXT(name)
 	if err != nil {
@@ -66,6 +67,7 @@ type cache struct {
 	inner Resolver
 }
 
+// NewCache creates a new cache file named filename.
 func NewCache(filename string) (CachingResolver, error) {
 	f, err := os.Open(filename)
 	if err != nil {

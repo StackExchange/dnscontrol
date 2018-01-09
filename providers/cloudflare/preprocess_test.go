@@ -81,12 +81,12 @@ func TestIpRewriting(t *testing.T) {
 		Given, Expected string
 		Proxy           string
 	}{
-		//outside of range
+		// outside of range
 		{"5.5.5.5", "5.5.5.5", "full"},
 		{"5.5.5.5", "5.5.5.5", "on"},
 		// inside range, but not proxied
 		{"1.2.3.4", "1.2.3.4", "on"},
-		//inside range and proxied
+		// inside range and proxied
 		{"1.2.3.4", "255.255.255.4", "full"},
 	}
 	cf := &CloudflareApi{}

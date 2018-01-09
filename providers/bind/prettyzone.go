@@ -1,6 +1,7 @@
+package bind
+
 // Generate zonefiles.
 // This generates a zonefile that prioritizes beauty over efficiency.
-package bind
 
 import (
 	"bytes"
@@ -98,10 +99,10 @@ func (z *zoneGenData) Less(i, j int) bool {
 	return a.String() < b.String()
 }
 
-// mostCommonTtl returns the most common TTL in a set of records. If there is
+// mostCommonTTL returns the most common TTL in a set of records. If there is
 // a tie, the highest TTL is selected. This makes the results consistent.
 // NS records are not included in the analysis because Tom said so.
-func mostCommonTtl(records []dns.RR) uint32 {
+func mostCommonTTL(records []dns.RR) uint32 {
 	// Index the TTLs in use:
 	d := make(map[uint32]int)
 	for _, r := range records {
@@ -141,11 +142,11 @@ func WriteZoneFile(w io.Writer, records []dns.RR, origin string) error {
 	// * $TTL is used to eliminate clutter. The most common TTL value is used.
 	// * "@" is used instead of the apex domain name.
 
-	defaultTtl := mostCommonTtl(records)
+	defaultTTL := mostCommonTTL(records)
 
 	z := &zoneGenData{
 		Origin:     dnsutil.AddOrigin(origin, "."),
-		DefaultTtl: defaultTtl,
+		DefaultTtl: defaultTTL,
 	}
 	z.Records = nil
 	for _, r := range records {
@@ -200,9 +201,6 @@ func (z *zoneGenData) generateZoneFileHelper(w io.Writer) error {
 
 		// items[4]: the remaining line
 		target := items[4]
-		//if typeStr == "TXT" {
-		//	fmt.Printf("generateZoneFileHelper.go: target=%#v\n", target)
-		//}
 
 		fmt.Fprintln(w, formatLine([]int{10, 5, 2, 5, 0}, []string{name, ttl, "IN", typeStr, target}))
 	}
@@ -291,10 +289,9 @@ func zoneLabelLess(a, b string) bool {
 			bu, berr := strconv.ParseUint(bs[j], 10, 64)
 			if aerr == nil && berr == nil {
 				return au < bu
-			} else {
-				// otherwise, compare as strings:
-				return as[i] < bs[j]
 			}
+			// otherwise, compare as strings:
+			return as[i] < bs[j]
 		}
 	}
 	// The min top elements were equal, so the shorter name is less.
