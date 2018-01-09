@@ -173,10 +173,10 @@ func (c *LinodeApi) handleErrors(resp *http.Response) error {
 	errs := &errorResponse{}
 
 	if err := decoder.Decode(errs); err != nil {
-		return fmt.Errorf("Bad status code from Linode: %d not 200. Failed to decode response.", resp.StatusCode)
+		return fmt.Errorf("bad status code from Linode: %d not 200. Failed to decode response", resp.StatusCode)
 	}
 
-	buf := bytes.NewBufferString(fmt.Sprintf("Bad status code from Linode: %d not 200.", resp.StatusCode))
+	buf := bytes.NewBufferString(fmt.Sprintf("bad status code from Linode: %d not 200", resp.StatusCode))
 
 	for _, err := range errs.Errors {
 		buf.WriteString("\n- ")

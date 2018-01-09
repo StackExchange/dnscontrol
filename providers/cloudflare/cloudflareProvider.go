@@ -48,6 +48,7 @@ func init() {
 	providers.RegisterCustomRecordType("CF_TEMP_REDIRECT", "CLOUDFLAREAPI", "")
 }
 
+// CloudflareApi is the handle for API calls.
 type CloudflareApi struct {
 	ApiKey          string `json:"apikey"`
 	ApiUser         string `json:"apiuser"`
@@ -59,7 +60,7 @@ type CloudflareApi struct {
 }
 
 func labelMatches(label string, matches []string) bool {
-	//log.Printf("DEBUG: labelMatches(%#v, %#v)\n", label, matches)
+	// log.Printf("DEBUG: labelMatches(%#v, %#v)\n", label, matches)
 	for _, tst := range matches {
 		if label == tst {
 			return true
@@ -68,6 +69,7 @@ func labelMatches(label string, matches []string) bool {
 	return false
 }
 
+// GetNameservers returns the nameservers for a domain.
 func (c *CloudflareApi) GetNameservers(domain string) ([]*models.Nameserver, error) {
 	if c.domainIndex == nil {
 		if err := c.fetchDomainList(); err != nil {
@@ -81,6 +83,7 @@ func (c *CloudflareApi) GetNameservers(domain string) ([]*models.Nameserver, err
 	return models.StringsToNameservers(ns), nil
 }
 
+// GetDomainCorrections returns a list of corrections to update a domain.
 func (c *CloudflareApi) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Correction, error) {
 	if c.domainIndex == nil {
 		if err := c.fetchDomainList(); err != nil {
@@ -275,7 +278,7 @@ func (c *CloudflareApi) preprocessConfig(dc *models.DomainConfig) error {
 		if rec.Type != "A" {
 			continue
 		}
-		//only transform "full"
+		// only transform "full"
 		if rec.Metadata[metaProxy] != "full" {
 			continue
 		}
@@ -365,7 +368,7 @@ type cfRecord struct {
 }
 
 func (c *cfRecord) toRecord(domain string) *models.RecordConfig {
-	//normalize cname,mx,ns records with dots to be consistent with our config format.
+	// normalize cname,mx,ns records with dots to be consistent with our config format.
 	if c.Type == "CNAME" || c.Type == "MX" || c.Type == "NS" || c.Type == "SRV" {
 		c.Content = dnsutil.AddOrigin(c.Content+".", domain)
 	}
@@ -417,6 +420,7 @@ func getProxyMetadata(r *models.RecordConfig) map[string]string {
 	}
 }
 
+// EnsureDomainExists returns an error of domain does not exist.
 func (c *CloudflareApi) EnsureDomainExists(domain string) error {
 	if _, ok := c.domainIndex[domain]; ok {
 		return nil

@@ -6,6 +6,7 @@ import (
 	"strings"
 )
 
+// IpConversion describes an IP conversion.
 type IpConversion struct {
 	Low, High net.IP
 	NewBases  []net.IP
@@ -21,6 +22,7 @@ func ipToUint(i net.IP) (uint32, error) {
 	return r, nil
 }
 
+// UintToIP convert a 32-bit into into a net.IP.
 func UintToIP(u uint32) net.IP {
 	return net.IPv4(
 		byte((u>>24)&255),
@@ -36,7 +38,7 @@ func DecodeTransformTable(transforms string) ([]IpConversion, error) {
 	for ri, row := range rows {
 		items := strings.Split(row, "~")
 		if len(items) != 4 {
-			return nil, fmt.Errorf("transform_table rows should have 4 elements. (%v) found in row (%v) of %#v\n", len(items), ri, transforms)
+			return nil, fmt.Errorf("transform_table rows should have 4 elements. (%v) found in row (%v) of %#v", len(items), ri, transforms)
 		}
 		for i, item := range items {
 			items[i] = strings.TrimSpace(item)
@@ -72,7 +74,7 @@ func DecodeTransformTable(transforms string) ([]IpConversion, error) {
 		low, _ := ipToUint(con.Low)
 		high, _ := ipToUint(con.High)
 		if low > high {
-			return nil, fmt.Errorf("transform_table Low should be less than High. row (%v) %v>%v (%v)\n", ri, con.Low, con.High, transforms)
+			return nil, fmt.Errorf("transform_table Low should be less than High. row (%v) %v>%v (%v)", ri, con.Low, con.High, transforms)
 		}
 		if len(con.NewBases) > 0 && len(con.NewIPs) > 0 {
 			return nil, fmt.Errorf("transform_table_rows should only specify one of NewBases or NewIPs, Not both")

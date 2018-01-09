@@ -5,6 +5,7 @@ import (
 	"strings"
 )
 
+// TXT outputs s as a TXT record.
 func (s *SPFRecord) TXT() string {
 	text := "v=spf1"
 	for _, p := range s.Parts {
@@ -15,12 +16,12 @@ func (s *SPFRecord) TXT() string {
 
 const maxLen = 255
 
-//TXTSplit returns a set of txt records to use for SPF.
-//pattern given is used to name all chained spf records.
-//patern should include %d, which will be replaced by a counter.
-//should result in fqdn after replacement
-//returned map will have keys with fqdn of resulting records.
-//root record will be under key "@"
+// TXTSplit returns a set of txt records to use for SPF.
+// pattern given is used to name all chained spf records.
+// patern should include %d, which will be replaced by a counter.
+// should result in fqdn after replacement
+// returned map will have keys with fqdn of resulting records.
+// root record will be under key "@"
 func (s *SPFRecord) TXTSplit(pattern string) map[string]string {
 	m := map[string]string{}
 	s.split("@", pattern, 1, m)
@@ -54,7 +55,7 @@ func (s *SPFRecord) split(thisfqdn string, pattern string, nextIdx int, m map[st
 			} else {
 				over = true
 				if addedCount == 0 {
-					//the first part is too big to include. We kinda have to give up here.
+					// the first part is too big to include. We kinda have to give up here.
 					m[thisfqdn] = base
 					return
 				}
@@ -68,6 +69,7 @@ func (s *SPFRecord) split(thisfqdn string, pattern string, nextIdx int, m map[st
 	newRec.split(nextFQDN, pattern, nextIdx+1, m)
 }
 
+// Flatten optimizes s.
 func (s *SPFRecord) Flatten(spec string) *SPFRecord {
 	newRec := &SPFRecord{}
 	for _, p := range s.Parts {
@@ -75,10 +77,10 @@ func (s *SPFRecord) Flatten(spec string) *SPFRecord {
 			// non-includes copy straight over
 			newRec.Parts = append(newRec.Parts, p)
 		} else if !matchesFlatSpec(spec, p.IncludeDomain) {
-			//includes that don't match get copied straight across
+			// includes that don't match get copied straight across
 			newRec.Parts = append(newRec.Parts, p)
 		} else {
-			//flatten child recursively
+			// flatten child recursively
 			flattenedChild := p.IncludeRecord.Flatten(spec)
 			// include their parts (skipping final all term)
 			for _, childPart := range flattenedChild.Parts[:len(flattenedChild.Parts)-1] {

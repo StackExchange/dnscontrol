@@ -137,7 +137,7 @@ func (c *ovhProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*models.C
 		rec := del.Existing.Original.(*Record)
 		corrections = append(corrections, &models.Correction{
 			Msg: del.String(),
-			F:   c.deleteRecordFunc(rec.Id, dc.Name),
+			F:   c.deleteRecordFunc(rec.ID, dc.Name),
 		})
 	}
 

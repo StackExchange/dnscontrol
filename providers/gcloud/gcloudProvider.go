@@ -114,7 +114,7 @@ func (g *gcloud) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Correc
 	if err != nil {
 		return nil, err
 	}
-	//convert to dnscontrol RecordConfig format
+	// convert to dnscontrol RecordConfig format
 	existingRecords := []*models.RecordConfig{}
 	oldRRs := map[key]*dns.ResourceRecordSet{}
 	for _, set := range rrs {
@@ -168,7 +168,7 @@ func (g *gcloud) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Correc
 		if old, ok := oldRRs[ck]; ok {
 			chg.Deletions = append(chg.Deletions, old)
 		}
-		//collect records to replace with
+		// collect records to replace with
 		newRRs := &dns.ResourceRecordSet{
 			Name: ck.Name,
 			Type: ck.Type,
@@ -240,7 +240,7 @@ func (g *gcloud) EnsureDomainExists(domain string) error {
 		Name:        strings.Replace(domain, ".", "-", -1),
 		Description: "zone added by dnscontrol",
 	}
-	g.zones = nil //reset cache
+	g.zones = nil // reset cache
 	_, err = g.client.ManagedZones.Create(g.project, mz).Do()
 	return err
 }

@@ -112,7 +112,7 @@ func Test_transform_cname(t *testing.T) {
 }
 
 func TestNSAtRoot(t *testing.T) {
-	//do not allow ns records for @
+	// do not allow ns records for @
 	rec := &models.RecordConfig{Name: "test", Type: "NS", Target: "ns1.name.com."}
 	errs := checkTargets(rec, "foo.com")
 	if len(errs) > 0 {

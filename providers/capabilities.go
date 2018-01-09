@@ -4,7 +4,7 @@ import (
 	"log"
 )
 
-//Capability is a bitmasked set of "features" that a provider supports. Only use constants from this package.
+// Capability is a bitmasked set of "features" that a provider supports. Only use constants from this package.
 type Capability uint32
 
 const (
@@ -44,6 +44,7 @@ const (
 
 var providerCapabilities = map[string]map[Capability]bool{}
 
+// ProviderHasCabability returns true if provider has capability.
 func ProviderHasCabability(pType string, cap Capability) bool {
 	if providerCapabilities[pType] == nil {
 		return false

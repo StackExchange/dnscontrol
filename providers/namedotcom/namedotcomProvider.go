@@ -1,4 +1,4 @@
-//Package namedotcom implements a registrar that uses the name.com api to set name servers. It will self register it's providers when imported.
+// Package namedotcom implements a registrar that uses the name.com api to set name servers. It will self register it's providers when imported.
 package namedotcom
 
 import (
@@ -11,7 +11,7 @@ import (
 	"github.com/StackExchange/dnscontrol/providers"
 )
 
-const defaultApiBase = "https://api.name.com/api"
+const defaultAPIBase = "https://api.name.com/api"
 
 type nameDotCom struct {
 	APIUrl  string `json:"apiurl"`
@@ -40,10 +40,10 @@ func newProvider(conf map[string]string) (*nameDotCom, error) {
 	api := &nameDotCom{}
 	api.APIUser, api.APIKey, api.APIUrl = conf["apiuser"], conf["apikey"], conf["apiurl"]
 	if api.APIKey == "" || api.APIUser == "" {
-		return nil, fmt.Errorf("Name.com apikey and apiuser must be provided.")
+		return nil, fmt.Errorf("missing Name.com apikey or apiuser")
 	}
 	if api.APIUrl == "" {
-		api.APIUrl = defaultApiBase
+		api.APIUrl = defaultAPIBase
 	}
 	return api, nil
 }
@@ -53,9 +53,7 @@ func init() {
 	providers.RegisterDomainServiceProviderType("NAMEDOTCOM", newDsp, features)
 }
 
-///
-//various http helpers for interacting with api
-///
+// various http helpers for interacting with api
 
 func (n *nameDotCom) addAuth(r *http.Request) {
 	r.Header.Add("Api-Username", n.APIUser)
@@ -82,7 +80,7 @@ func (r *apiResult) getErr() error {
 	return nil
 }
 
-//perform http GET and unmarshal response json into target struct
+// perform http GET and unmarshal response json into target struct
 func (n *nameDotCom) get(url string, target interface{}) error {
 	req, err := http.NewRequest("GET", url, nil)
 	if err != nil {

@@ -100,7 +100,7 @@ list.
 Each entry in the list is a new state.  For example:
 
 ```
-  //MX
+  // MX
   tc("Empty"),                                    <<< 1
   tc("MX record", mx("@", 5, "foo.com.")),        <<< 2
   tc("Change MX pref", mx("@", 10, "foo.com.")),  <<< 3

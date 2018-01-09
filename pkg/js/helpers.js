@@ -209,7 +209,7 @@ var TLSA = recordBuilder('TLSA', {
         ['usage', _.isNumber],
         ['selector', _.isNumber],
         ['matchingtype', _.isNumber],
-        ['target', _.isString], //recordBuilder needs a "target" argument
+        ['target', _.isString], // recordBuilder needs a "target" argument
     ],
     transform: function(record, args, modifiers) {
         record.name = args.name;
@@ -474,7 +474,7 @@ function addRecord(d, type, name, target, mods) {
             if (_.isFunction(m)) {
                 m(rec);
             } else if (_.isObject(m)) {
-                //convert transforms to strings
+                // convert transforms to strings
                 if (m.transform && _.isArray(m.transform)) {
                     m.transform = format_tt(m.transform);
                 }
@@ -493,7 +493,7 @@ function addRecord(d, type, name, target, mods) {
     return rec;
 }
 
-//ip conversion functions from http://stackoverflow.com/a/8105740/121660
+// ip conversion functions from http://stackoverflow.com/a/8105740/121660
 // via http://javascript.about.com/library/blipconvert.htm
 function IP(dot) {
     var d = dot.split('.');

@@ -33,7 +33,7 @@ func newRoute53Dsp(conf map[string]string, metadata json.RawMessage) (providers.
 }
 
 func newRoute53(m map[string]string, metadata json.RawMessage) (*route53Provider, error) {
-	keyId, secretKey := m["KeyId"], m["SecretKey"]
+	keyID, secretKey := m["KeyId"], m["SecretKey"]
 
 	// Route53 uses a global endpoint and route53domains
 	// currently only has a single regional endpoint in us-east-1
@@ -42,8 +42,8 @@ func newRoute53(m map[string]string, metadata json.RawMessage) (*route53Provider
 		Region: aws.String("us-east-1"),
 	}
 
-	if keyId != "" || secretKey != "" {
-		config.Credentials = credentials.NewStaticCredentials(keyId, secretKey, "")
+	if keyID != "" || secretKey != "" {
+		config.Credentials = credentials.NewStaticCredentials(keyID, secretKey, "")
 	}
 	sess := session.New(config)
 
@@ -102,7 +102,7 @@ func (r *route53Provider) getZones() error {
 	return nil
 }
 
-//map key for grouping records
+// map key for grouping records
 type key struct {
 	Name, Type string
 }
@@ -176,7 +176,7 @@ func (r *route53Provider) GetDomainCorrections(dc *models.DomainConfig) ([]*mode
 	// Normalize
 	models.PostProcessRecords(existingRecords)
 
-	//diff
+	// diff
 	differ := diff.New(dc)
 	_, create, delete, modify := differ.IncrementalDiff(existingRecords)
 
@@ -196,7 +196,7 @@ func (r *route53Provider) GetDomainCorrections(dc *models.DomainConfig) ([]*mode
 	}
 
 	updates := map[key][]*models.RecordConfig{}
-	//for each name we need to update, collect relevant records from dc
+	// for each name we need to update, collect relevant records from dc
 	for k := range namesToUpdate {
 		updates[k] = nil
 		for _, rc := range dc.Records {
@@ -227,7 +227,7 @@ func (r *route53Provider) GetDomainCorrections(dc *models.DomainConfig) ([]*mode
 		} else {
 			changes = append(changes, chg)
 			changeDesc += strings.Join(namesToUpdate[k], "\n") + "\n"
-			//on change or create, just build a new record set from our desired state
+			// on change or create, just build a new record set from our desired state
 			chg.Action = sPtr("UPSERT")
 			rrset = &r53.ResourceRecordSet{
 				Name:            sPtr(k.Name),
@@ -241,7 +241,7 @@ func (r *route53Provider) GetDomainCorrections(dc *models.DomainConfig) ([]*mode
 				}
 				rrset.ResourceRecords = append(rrset.ResourceRecords, rr)
 				i := int64(r.TTL)
-				rrset.TTL = &i //TODO: make sure that ttls are consistent within a set
+				rrset.TTL = &i // TODO: make sure that ttls are consistent within a set
 			}
 		}
 		chg.ResourceRecordSet = rrset
@@ -367,13 +367,13 @@ func (r *route53Provider) fetchRecordSets(zoneID *string) ([]*r53.ResourceRecord
 	return records, nil
 }
 
-//we have to process names from route53 to match what we expect and to remove their odd octal encoding
+// we have to process names from route53 to match what we expect and to remove their odd octal encoding
 func unescape(s *string) string {
 	if s == nil {
 		return ""
 	}
 	name := strings.TrimSuffix(*s, ".")
-	name = strings.Replace(name, `\052`, "*", -1) //TODO: escape all octal sequences
+	name = strings.Replace(name, `\052`, "*", -1) // TODO: escape all octal sequences
 	return name
 }
 

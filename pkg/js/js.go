@@ -9,12 +9,12 @@ import (
 	"github.com/StackExchange/dnscontrol/pkg/transform"
 
 	"github.com/robertkrimen/otto"
-	//load underscore js into vm by default
+	// load underscore js into vm by default
 
-	_ "github.com/robertkrimen/otto/underscore"
+	_ "github.com/robertkrimen/otto/underscore" // required by otto
 )
 
-//ExecuteJavascript accepts a javascript string and runs it, returning the resulting dnsConfig.
+// ExecuteJavascript accepts a javascript string and runs it, returning the resulting dnsConfig.
 func ExecuteJavascript(script string, devMode bool) (*models.DNSConfig, error) {
 	vm := otto.New()
 
@@ -48,6 +48,7 @@ func ExecuteJavascript(script string, devMode bool) (*models.DNSConfig, error) {
 	return conf, nil
 }
 
+// GetHelpers returns the filename of helpers.js, or the esc'ed version.
 func GetHelpers(devMode bool) string {
 	return _escFSMustString(devMode, "/helpers.js")
 }

@@ -52,6 +52,7 @@ var _ = cmd(catMain, func() *cli.Command {
 	}
 }())
 
+// PushArgs contains all data/flags needed to run push, independently of CLI
 type PushArgs struct {
 	PreviewArgs
 	Interactive bool
@@ -67,10 +68,12 @@ func (args *PushArgs) flags() []cli.Flag {
 	return flags
 }
 
+// Preview implements the preview subcommand.
 func Preview(args PreviewArgs) error {
 	return run(args, false, false, printer.ConsolePrinter{})
 }
 
+// Push implements the push subcommand.
 func Push(args PushArgs) error {
 	return run(args.PreviewArgs, true, args.Interactive, printer.ConsolePrinter{})
 }

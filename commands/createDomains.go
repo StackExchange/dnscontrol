@@ -20,6 +20,7 @@ var _ = cmd(catUtils, func() *cli.Command {
 	}
 }())
 
+// CreateDomainsArgs args required for the create-domain subcommand.
 type CreateDomainsArgs struct {
 	GetDNSConfigArgs
 	GetCredentialsArgs
@@ -31,6 +32,7 @@ func (args *CreateDomainsArgs) flags() []cli.Flag {
 	return flags
 }
 
+// CreateDomains contains all data/flags needed to run create-domains, independently of CLI.
 func CreateDomains(args CreateDomainsArgs) error {
 	cfg, err := GetDNSConfig(args.GetDNSConfigArgs)
 	if err != nil {

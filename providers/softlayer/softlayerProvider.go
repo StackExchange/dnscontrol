@@ -17,6 +17,7 @@ import (
 	"github.com/softlayer/softlayer-go/session"
 )
 
+// SoftLayer is the protocol handle for this provider.
 type SoftLayer struct {
 	Session *session.Session
 }
@@ -36,7 +37,7 @@ func newReg(conf map[string]string, _ json.RawMessage) (providers.DNSServiceProv
 		return nil, fmt.Errorf("SoftLayer UserName and APIKey must be provided")
 	}
 
-	//s.Debug = true
+	// s.Debug = true
 
 	api := &SoftLayer{
 		Session: s,
@@ -45,12 +46,14 @@ func newReg(conf map[string]string, _ json.RawMessage) (providers.DNSServiceProv
 	return api, nil
 }
 
+// GetNameservers returns the nameservers for a domain.
 func (s *SoftLayer) GetNameservers(domain string) ([]*models.Nameserver, error) {
 	// Always use the same nameservers for softlayer
 	nservers := []string{"ns1.softlayer.com", "ns2.softlayer.com"}
 	return models.StringsToNameservers(nservers), nil
 }
 
+// GetDomainCorrections returns corrections to update a domain.
 func (s *SoftLayer) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Correction, error) {
 	corrections := []*models.Correction{}
 
@@ -174,16 +177,16 @@ func (s *SoftLayer) getExistingRecords(domain *datatypes.Dns_Domain) ([]*models.
 }
 
 func (s *SoftLayer) createRecordFunc(desired *models.RecordConfig, domain *datatypes.Dns_Domain) func() error {
-	var ttl, preference, domainId int = int(desired.TTL), int(desired.MxPreference), *domain.Id
+	var ttl, preference, domainID int = int(desired.TTL), int(desired.MxPreference), *domain.Id
 	var weight, priority, port int = int(desired.SrvWeight), int(desired.SrvPriority), int(desired.SrvPort)
 	var host, data, newType string = desired.Name, desired.Target, desired.Type
-	var err error = nil
+	var err error
 
 	srvRegexp := regexp.MustCompile(`^_(?P<Service>\w+)\.\_(?P<Protocol>\w+)$`)
 
 	return func() error {
 		newRecord := datatypes.Dns_Domain_ResourceRecord{
-			DomainId: &domainId,
+			DomainId: &domainID,
 			Ttl:      &ttl,
 			Type:     &newType,
 			Data:     &data,
@@ -232,11 +235,11 @@ func (s *SoftLayer) createRecordFunc(desired *models.RecordConfig, domain *datat
 	}
 }
 
-func (s *SoftLayer) deleteRecordFunc(resId int) func() error {
+func (s *SoftLayer) deleteRecordFunc(resID int) func() error {
 	// seems to be no problem deleting MX and SRV records via common interface
 	return func() error {
 		_, err := services.GetDnsDomainResourceRecordService(s.Session).
-			Id(resId).
+			Id(resID).
 			DeleteObject()
 
 		return err
@@ -248,8 +251,8 @@ func (s *SoftLayer) updateRecordFunc(existing *datatypes.Dns_Domain_ResourceReco
 	var priority, weight, port int = int(desired.SrvPriority), int(desired.SrvWeight), int(desired.SrvPort)
 
 	return func() error {
-		var changes bool = false
-		var err error = nil
+		var changes = false
+		var err error
 
 		switch desired.Type {
 		case "MX":
@@ -277,7 +280,7 @@ func (s *SoftLayer) updateRecordFunc(existing *datatypes.Dns_Domain_ResourceReco
 			}
 
 			if !changes {
-				return fmt.Errorf("Error: Didn't find changes when I expect some.")
+				return fmt.Errorf("didn't find changes when I expect some")
 			}
 
 			_, err = service.Id(*existing.Id).EditObject(&updated)
@@ -320,7 +323,7 @@ func (s *SoftLayer) updateRecordFunc(existing *datatypes.Dns_Domain_ResourceReco
 			// delete and recreate?
 
 			if !changes {
-				return fmt.Errorf("Error: Didn't find changes when I expect some.")
+				return fmt.Errorf("didn't find changes when I expect some")
 			}
 
 			_, err = service.Id(*existing.Id).EditObject(&updated)
@@ -345,7 +348,7 @@ func (s *SoftLayer) updateRecordFunc(existing *datatypes.Dns_Domain_ResourceReco
 			}
 
 			if !changes {
-				return fmt.Errorf("Error: Didn't find changes when I expect some.")
+				return fmt.Errorf("didn't find changes when I expect some")
 			}
 
 			_, err = service.Id(*existing.Id).EditObject(&updated)
