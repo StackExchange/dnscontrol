@@ -77,6 +77,7 @@ func (args *GetDNSConfigArgs) flags() []cli.Flag {
 	)
 }
 
+// GetDNSConfig reads the json-formatted IR file.
 func GetDNSConfig(args GetDNSConfigArgs) (*models.DNSConfig, error) {
 	if args.JSONFile != "" {
 		f, err := os.Open(args.JSONFile)
@@ -145,6 +146,7 @@ func (args *PrintJSONArgs) flags() []cli.Flag {
 	}
 }
 
+// GetCredentialsArgs encapsulates the flags/args for sub-commands that use the creds.json file.
 type GetCredentialsArgs struct {
 	CredsFile string
 }
@@ -160,6 +162,7 @@ func (args *GetCredentialsArgs) flags() []cli.Flag {
 	}
 }
 
+// FilterArgs encapsulates the flags/args for sub-commands that can filter by provider or domain.
 type FilterArgs struct {
 	Providers string
 	Domains   string

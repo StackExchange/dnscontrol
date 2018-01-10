@@ -112,6 +112,7 @@ func runTests(t *testing.T, prv providers.DNSServiceProvider, domainName string,
 				}
 				dom.Records = append(dom.Records, &rc)
 			}
+			models.PostProcessRecords(dom.Records)
 			dom2, _ := dom.Copy()
 			// get corrections for first time
 			corrections, err := prv.GetDomainCorrections(dom)
@@ -135,7 +136,7 @@ func runTests(t *testing.T, prv providers.DNSServiceProvider, domainName string,
 					t.Fatal(err)
 				}
 			}
-			//run a second time and expect zero corrections
+			// run a second time and expect zero corrections
 			corrections, err = prv.GetDomainCorrections(dom2)
 			if err != nil {
 				t.Fatal(err)
@@ -235,6 +236,20 @@ func srv(name string, priority, weight, port uint16, target string) *rec {
 	return r
 }
 
+func txt(name, target string) *rec {
+	// FYI: This must match the algorithm in pkg/js/helpers.js TXT.
+	r := makeRec(name, target, "TXT")
+	r.TxtStrings = []string{target}
+	return r
+}
+
+func txtmulti(name string, target []string) *rec {
+	// FYI: This must match the algorithm in pkg/js/helpers.js TXT.
+	r := makeRec(name, target[0], "TXT")
+	r.TxtStrings = target
+	return r
+}
+
 func caa(name string, tag string, flag uint8, target string) *rec {
 	r := makeRec(name, target, "CAA")
 	r.CaaFlag = flag
@@ -281,7 +296,7 @@ func manyA(namePattern, target string, n int) []*rec {
 }
 
 func makeTests(t *testing.T) []*TestCase {
-	//ALWAYS ADD TO BOTTOM OF LIST. Order and indexes matter.
+	// ALWAYS ADD TO BOTTOM OF LIST. Order and indexes matter.
 	tests := []*TestCase{
 		// A
 		tc("Empty"),
@@ -304,20 +319,20 @@ func makeTests(t *testing.T) []*TestCase {
 		tc("Change back to CNAME", cname("foo", "google.com.")),
 		tc("Record pointing to @", cname("foo", "**current-domain**")),
 
-		//NS
+		// NS
 		tc("Empty"),
 		tc("NS for subdomain", ns("xyz", "ns2.foo.com.")),
 		tc("Dual NS for subdomain", ns("xyz", "ns2.foo.com."), ns("xyz", "ns1.foo.com.")),
-		tc("Record pointing to @", ns("foo", "**current-domain**")),
+		tc("NS Record pointing to @", ns("foo", "**current-domain**")),
 
-		//IDNAs
+		// IDNAs
 		tc("Empty"),
 		tc("Internationalized name", a("ööö", "1.2.3.4")),
 		tc("Change IDN", a("ööö", "2.2.2.2")),
 		tc("Internationalized CNAME Target", cname("a", "ööö.com.")),
 		tc("IDN CNAME AND Target", cname("öoö", "ööö.企业.")),
 
-		//MX
+		// MX
 		tc("Empty"),
 		tc("MX record", mx("@", 5, "foo.com.")),
 		tc("Second MX record, same prio", mx("@", 5, "foo.com."), mx("@", 5, "foo2.com.")),
@@ -379,25 +394,38 @@ func makeTests(t *testing.T) []*TestCase {
 		)
 	}
 
-	//TLSA
+	// TLSA
 	if !providers.ProviderHasCabability(*providerToRun, providers.CanUseTLSA) {
 		t.Log("Skipping TLSA Tests because provider does not support them")
 	} else {
+		sha256hash := strings.Repeat("0123456789abcdef", 4)
+		sha512hash := strings.Repeat("0123456789abcdef", 8)
+		reversedSha512 := strings.Repeat("fedcba9876543210", 8)
 		tests = append(tests, tc("Empty"),
-			tc("TLSA record", tlsa("_443._tcp", 3, 1, 1, "abcdef0123456789==")),
-			tc("TLSA change usage", tlsa("_443._tcp", 2, 1, 1, "abcdef0123456789==")),
-			tc("TLSA change selector", tlsa("_443._tcp", 2, 0, 1, "abcdef0123456789==")),
-			tc("TLSA change matchingtype", tlsa("_443._tcp", 2, 0, 0, "abcdef0123456789==")),
-			tc("TLSA change certificate", tlsa("_443._tcp", 2, 0, 0, "0123456789abcdef==")),
+			tc("TLSA record", tlsa("_443._tcp", 3, 1, 1, sha256hash)),
+			tc("TLSA change usage", tlsa("_443._tcp", 2, 1, 1, sha256hash)),
+			tc("TLSA change selector", tlsa("_443._tcp", 2, 0, 1, sha256hash)),
+			tc("TLSA change matchingtype", tlsa("_443._tcp", 2, 0, 2, sha512hash)),
+			tc("TLSA change certificate", tlsa("_443._tcp", 2, 0, 2, reversedSha512)),
 		)
 	}
+
+	// Case
+	tests = append(tests, tc("Empty"),
+		tc("Empty"),
+		tc("Create CAPS", mx("BAR", 5, "BAR.com.")),
+		tc("Downcase label", mx("bar", 5, "BAR.com."), a("decoy", "1.1.1.1")),
+		tc("Downcase target", mx("bar", 5, "bar.com."), a("decoy", "2.2.2.2")),
+		tc("Upcase both", mx("BAR", 5, "BAR.COM."), a("decoy", "3.3.3.3")),
+		// The decoys are required so that there is at least one actual change in each tc.
+	)
 
 	// Test large zonefiles.
 	// Mostly to test paging. Many providers page at 100
 	// Known page sizes:
 	//  - gandi: 100
 	skip := map[string]bool{
-		"NS1": true, //ns1 free acct only allows 50 records
+		"NS1": true, // ns1 free acct only allows 50 records
 	}
 	if skip[*providerToRun] {
 		t.Log("Skipping Large record count Tests because provider does not support them")
@@ -406,6 +434,43 @@ func makeTests(t *testing.T) []*TestCase {
 			tc("99 records", manyA("rec%04d", "1.2.3.4", 99)...),
 			tc("100 records", manyA("rec%04d", "1.2.3.4", 100)...),
 			tc("101 records", manyA("rec%04d", "1.2.3.4", 101)...),
+		)
+	}
+
+	// TXT (single)
+	tests = append(tests, tc("Empty"),
+		tc("Empty"),
+		tc("Create a TXT", txt("foo", "simple")),
+		tc("Change a TXT", txt("foo", "changed")),
+		tc("Empty"),
+		tc("Create a TXT with spaces", txt("foo", "with spaces")),
+		tc("Change a TXT with spaces", txt("foo", "with whitespace")),
+		tc("Create 1 TXT as array", txtmulti("foo", []string{"simple"})),
+	)
+
+	// TXTMulti
+	if !providers.ProviderHasCabability(*providerToRun, providers.CanUseTXTMulti) {
+		t.Log("Skipping TXTMulti Tests because provider does not support them")
+	} else {
+		tests = append(tests,
+			tc("Empty"),
+			tc("Create TXTMulti 1",
+				txtmulti("foo1", []string{"simple"}),
+			),
+			tc("Create TXTMulti 2",
+				txtmulti("foo1", []string{"simple"}),
+				txtmulti("foo2", []string{"one", "two"}),
+			),
+			tc("Create TXTMulti 3",
+				txtmulti("foo1", []string{"simple"}),
+				txtmulti("foo2", []string{"one", "two"}),
+				txtmulti("foo3", []string{"eh", "bee", "cee"}),
+			),
+			tc("Change TXTMulti",
+				txtmulti("foo1", []string{"dimple"}),
+				txtmulti("foo2", []string{"fun", "two"}),
+				txtmulti("foo3", []string{"eh", "bzz", "cee"}),
+			),
 		)
 	}
 

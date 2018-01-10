@@ -1,8 +1,9 @@
 ---
 layout: default
+title: ALIAS Records
 ---
 
-# ALIAS records
+# ALIAS Records
 
 ALIAS records are not widely standardized across DNS providers. Some (Route 53, DNSimple) have a native ALIAS record type. Others (Cloudflare) implement transparent CNAME flattening.
 

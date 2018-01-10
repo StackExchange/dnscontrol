@@ -24,6 +24,7 @@ Info required in `creds.json`:
 
 */
 
+// DoApi is the handle for operations.
 type DoApi struct {
 	client *godo.Client
 }
@@ -34,9 +35,10 @@ var defaultNameServerNames = []string{
 	"ns3.digitalocean.com",
 }
 
+// NewDo creates a DO-specific DNS provider.
 func NewDo(m map[string]string, metadata json.RawMessage) (providers.DNSServiceProvider, error) {
 	if m["token"] == "" {
-		return nil, fmt.Errorf("Digitalocean Token must be provided.")
+		return nil, fmt.Errorf("no Digitalocean token provided")
 	}
 
 	ctx := context.Background()
@@ -54,21 +56,23 @@ func NewDo(m map[string]string, metadata json.RawMessage) (providers.DNSServiceP
 		return nil, err
 	}
 	if resp.StatusCode != http.StatusOK {
-		return nil, fmt.Errorf("Digitalocean Token is not valid.")
+		return nil, fmt.Errorf("token for digitalocean is not valid")
 	}
 
 	return api, nil
 }
 
-var docNotes = providers.DocumentationNotes{
+var features = providers.DocumentationNotes{
 	providers.DocCreateDomains:       providers.Can(),
 	providers.DocOfficiallySupported: providers.Cannot(),
+	providers.CanUseSRV:              providers.Can(),
 }
 
 func init() {
-	providers.RegisterDomainServiceProviderType("DIGITALOCEAN", NewDo, providers.CanUseSRV, docNotes)
+	providers.RegisterDomainServiceProviderType("DIGITALOCEAN", NewDo, features)
 }
 
+// EnsureDomainExists returns an error if domain doesn't exist.
 func (api *DoApi) EnsureDomainExists(domain string) error {
 	ctx := context.Background()
 	_, resp, err := api.client.Domains.Get(ctx, domain)
@@ -78,15 +82,16 @@ func (api *DoApi) EnsureDomainExists(domain string) error {
 			IPAddress: "",
 		})
 		return err
-	} else {
-		return err
 	}
+	return err
 }
 
+// GetNameservers returns the nameservers for domain.
 func (api *DoApi) GetNameservers(domain string) ([]*models.Nameserver, error) {
 	return models.StringsToNameservers(defaultNameServerNames), nil
 }
 
+// GetDomainCorrections returns a list of corretions for the  domain.
 func (api *DoApi) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Correction, error) {
 	ctx := context.Background()
 	dc.Punycode()
@@ -100,6 +105,9 @@ func (api *DoApi) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Corre
 	for i := range records {
 		existingRecords[i] = toRc(dc, &records[i])
 	}
+
+	// Normalize
+	models.PostProcessRecords(existingRecords)
 
 	differ := diff.New(dc)
 	_, create, delete, modify := differ.IncrementalDiff(existingRecords)

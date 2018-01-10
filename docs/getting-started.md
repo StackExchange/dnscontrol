@@ -1,5 +1,6 @@
 ---
 layout: default
+title: Getting Started
 ---
 # Getting Started
 
@@ -20,7 +21,7 @@ install `dnscontrol` in your `bin` directory.
 
 Create a directory where you'll be storing your configuration files.
 We highly recommend storing these files in a Git repo, but for
-simnple tests anything will do.
+simple tests anything will do.
 
 Note: Do **not** store your creds.json file in Git unencrypted.
 That is unsafe. In fact you should include `creds.json` in your
@@ -63,13 +64,13 @@ If you are using other providers, you will likely need to make a `creds.json` fi
 
 {% highlight js %}
 {
-  "cloudflare":{ //provider name to be used in dnsconfig.js
-    "apikey": "key", //API key
-    "apiuser": "username" //username for cloudflare
+  "cloudflare":{ // provider name to be used in dnsconfig.js
+    "apikey": "key", // API key
+    "apiuser": "username" // username for cloudflare
   },
-  "namecom":{ //provider name to be used in dnsconfig.js
-    "apikey": "key", //API Key
-    "apiuser": "username" //username for name.com
+  "namecom":{ // provider name to be used in dnsconfig.js
+    "apikey": "key", // API Key
+    "apiuser": "username" // username for name.com
   }
 }
 {%endhighlight%}
@@ -124,6 +125,9 @@ jq:
 
     jq < creds.json
 
+FYI: `creds.json` fields can be an environment variable. The field must begin with a `$` followed by the variable name. No other text. For example:
+
+    "apiuser": "$GANDI_APIUSER",
 
 ## 5. Test the sample files.
 

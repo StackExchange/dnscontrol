@@ -1,8 +1,9 @@
 ---
 layout: default
+title: Creating new DNS Resource Types (rtypes)
 ---
 
-# Creating new DNS Resource Types (Rtypes)
+# Creating new DNS Resource Types (rtypes)
 
 Everyone is familiar with A, AAAA, CNAME, NS and other Rtypes.
 However there are new record types being added all the time (possibly
@@ -49,11 +50,11 @@ You'll need to mark which providers support this record type.  The
 initial PR should implement this record for the `bind` provider at
 a minimum.
 
-* Add the capability to the file `dnscontrol/providers/providers.go` (look for `CanUseAlias` and add
+* Add the capability to the file `dnscontrol/providers/capabilities.go` (look for `CanUseAlias` and add
 it to the end of the list.)
 * Mark the `bind` provider as supporting this record type by updating `dnscontrol/providers/bind/bindProvider.go` (look for `providers.CanUs` and you'll see what to do).
 
-## Step 2: Add a helper function
+## Step 3: Add a helper function
 
 Add a function to `pkg/js/helpers.js` for the new record type.  This
 is the Javascript file that defines `dnsconfig.js`'s functions like
@@ -67,13 +68,13 @@ your code conforms to our coding standard:
    npm install prettier
    node_modules/.bin/prettier --write pkg/js/helpers.js
 
-## Step 3: Search for `#rtype_variations`
+## Step 4: Search for `#rtype_variations`
 
 Anywhere a rtype requires special handling has been marked with a
 comment that includes the string `#rtype_variations`.  Search for
 this string and add your new type to this code.
 
-## Step 4: Add a `parse_tests` test case.
+## Step 5: Add a `parse_tests` test case.
 
 Add at least one test case to the `pkg/js/parse_tests` directory.
 Test `013-mx.js` is a very simple one and is good for cloning.
@@ -90,7 +91,7 @@ As you debug, if there are places that haven't been marked
 `#rtype_variations` that should be, add such a comment.
 Every time you do this, an angel gets its wings.
 
-## Step 5: Add an `integrationTest` test case.
+## Step 6: Add an `integrationTest` test case.
 
 Add at least one test case to the `integrationTest/integration_test.go`
 file. Look for `var tests =` and add the test to the end of this
@@ -99,7 +100,7 @@ list.
 Each entry in the list is a new state.  For example:
 
 ```
-  //MX
+  // MX
   tc("Empty"),                                    <<< 1
   tc("MX record", mx("@", 5, "foo.com.")),        <<< 2
   tc("Change MX pref", mx("@", 10, "foo.com.")),  <<< 3
@@ -142,7 +143,7 @@ As you debug, if there are places that haven't been marked
 `#rtype_variations` that should be, add such a comment.
 If you fail to do this, God kills a cute little kitten.
 
-## Step 6: Support more providers
+## Step 7: Support more providers
 
 Now add support other providers.  Add the `providers.CanUse...`
 flag to the provider and re-run the integration tests:
@@ -153,3 +154,13 @@ For example, this will run the tests on Amazon AWS Route53:
     export R53_KEY_ID=CHANGE_TO_THE_ID
     export R53_KEY='CHANGE_TO_THE_KEY'
     go test -v -verbose -provider ROUTE53
+
+The test should reveal any bugs. Keep iterating between fixing the
+code and running the tests. When the tests all work, you are done.
+(Well, you might want to clean up some code a bit, but at least you
+know that everything is working.)
+
+If you find bugs that aren't covered by the tests, please please
+please add a test that demonstrates the bug THEN fix the bug. This
+will help all future contributors. If you need help with adding
+tests, please ask!

@@ -5,6 +5,8 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/namedotcom/go/namecom"
+
 	"github.com/miekg/dns/dnsutil"
 
 	"github.com/StackExchange/dnscontrol/models"
@@ -18,7 +20,7 @@ var defaultNameservers = []*models.Nameserver{
 	{Name: "ns4.name.com"},
 }
 
-func (n *nameDotCom) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Correction, error) {
+func (n *NameCom) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Correction, error) {
 	dc.Punycode()
 	records, err := n.getRecords(dc.Name)
 	if err != nil {
@@ -26,7 +28,7 @@ func (n *nameDotCom) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Co
 	}
 	actual := make([]*models.RecordConfig, len(records))
 	for i, r := range records {
-		actual[i] = r.toRecord()
+		actual[i] = toRecord(r)
 	}
 
 	for _, rec := range dc.Records {
@@ -37,13 +39,16 @@ func (n *nameDotCom) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Co
 
 	checkNSModifications(dc)
 
+	// Normalize
+	models.PostProcessRecords(actual)
+
 	differ := diff.New(dc)
 	_, create, del, mod := differ.IncrementalDiff(actual)
 	corrections := []*models.Correction{}
 
 	for _, d := range del {
-		rec := d.Existing.Original.(*nameComRecord)
-		c := &models.Correction{Msg: d.String(), F: func() error { return n.deleteRecord(rec.RecordID, dc.Name) }}
+		rec := d.Existing.Original.(*namecom.Record)
+		c := &models.Correction{Msg: d.String(), F: func() error { return n.deleteRecord(rec.ID, dc.Name) }}
 		corrections = append(corrections, c)
 	}
 	for _, cre := range create {
@@ -52,10 +57,10 @@ func (n *nameDotCom) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Co
 		corrections = append(corrections, c)
 	}
 	for _, chng := range mod {
-		old := chng.Existing.Original.(*nameComRecord)
+		old := chng.Existing.Original.(*namecom.Record)
 		new := chng.Desired
 		c := &models.Correction{Msg: chng.String(), F: func() error {
-			err := n.deleteRecord(old.RecordID, dc.Name)
+			err := n.deleteRecord(old.ID, dc.Name)
 			if err != nil {
 				return err
 			}
@@ -64,25 +69,6 @@ func (n *nameDotCom) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Co
 		corrections = append(corrections, c)
 	}
 	return corrections, nil
-}
-
-func (n *nameDotCom) apiGetRecords(domain string) string {
-	return fmt.Sprintf("%s/dns/list/%s", n.APIUrl, domain)
-}
-func (n *nameDotCom) apiCreateRecord(domain string) string {
-	return fmt.Sprintf("%s/dns/create/%s", n.APIUrl, domain)
-}
-func (n *nameDotCom) apiDeleteRecord(domain string) string {
-	return fmt.Sprintf("%s/dns/delete/%s", n.APIUrl, domain)
-}
-
-type nameComRecord struct {
-	RecordID string `json:"record_id"`
-	Name     string `json:"name"`
-	Type     string `json:"type"`
-	Content  string `json:"content"`
-	TTL      string `json:"ttl"`
-	Priority string `json:"priority"`
 }
 
 func checkNSModifications(dc *models.DomainConfig) {
@@ -96,28 +82,26 @@ func checkNSModifications(dc *models.DomainConfig) {
 	dc.Records = newList
 }
 
-func (r *nameComRecord) toRecord() *models.RecordConfig {
-	ttl, _ := strconv.ParseUint(r.TTL, 10, 32)
-	prio, _ := strconv.ParseUint(r.Priority, 10, 16)
+func toRecord(r *namecom.Record) *models.RecordConfig {
 	rc := &models.RecordConfig{
-		NameFQDN: r.Name,
+		NameFQDN: r.Fqdn,
 		Type:     r.Type,
-		Target:   r.Content,
-		TTL:      uint32(ttl),
+		Target:   r.Answer,
+		TTL:      r.TTL,
 		Original: r,
 	}
 	switch r.Type { // #rtype_variations
 	case "A", "AAAA", "ANAME", "CNAME", "NS", "TXT":
 		// nothing additional.
 	case "MX":
-		rc.MxPreference = uint16(prio)
+		rc.MxPreference = uint16(r.Priority)
 	case "SRV":
-		parts := strings.Split(r.Content, " ")
+		parts := strings.Split(r.Answer, " ")
 		weight, _ := strconv.ParseInt(parts[0], 10, 32)
 		port, _ := strconv.ParseInt(parts[1], 10, 32)
 		rc.SrvWeight = uint16(weight)
 		rc.SrvPort = uint16(port)
-		rc.SrvPriority = uint16(prio)
+		rc.SrvPriority = uint16(r.Priority)
 		rc.MxPreference = 0
 		rc.Target = parts[2] + "."
 	default:
@@ -128,79 +112,67 @@ func (r *nameComRecord) toRecord() *models.RecordConfig {
 	return rc
 }
 
-type listRecordsResponse struct {
-	*apiResult
-	Records []*nameComRecord `json:"records"`
-}
+func (n *NameCom) getRecords(domain string) ([]*namecom.Record, error) {
+	var (
+		err      error
+		records  []*namecom.Record
+		response *namecom.ListRecordsResponse
+	)
 
-func (n *nameDotCom) getRecords(domain string) ([]*nameComRecord, error) {
-	result := &listRecordsResponse{}
-	err := n.get(n.apiGetRecords(domain), result)
-	if err != nil {
-		return nil, err
-	}
-	if err = result.getErr(); err != nil {
-		return nil, err
+	request := &namecom.ListRecordsRequest{
+		DomainName: domain,
+		Page:       1,
 	}
 
-	for _, rc := range result.Records {
+	for request.Page > 0 {
+		response, err = n.client.ListRecords(request)
+		if err != nil {
+			return nil, err
+		}
+
+		records = append(records, response.Records...)
+		request.Page = response.NextPage
+	}
+
+	for _, rc := range records {
 		if rc.Type == "CNAME" || rc.Type == "ANAME" || rc.Type == "MX" || rc.Type == "NS" {
-			rc.Content = rc.Content + "."
+			rc.Answer = rc.Answer + "."
 		}
 	}
-	return result.Records, nil
+	return records, nil
 }
 
-func (n *nameDotCom) createRecord(rc *models.RecordConfig, domain string) error {
-	target := rc.Target
-	if rc.Type == "CNAME" || rc.Type == "ANAME" || rc.Type == "MX" || rc.Type == "NS" {
-		if target[len(target)-1] == '.' {
-			target = target[:len(target)-1]
-		} else {
-			return fmt.Errorf("Unexpected. CNAME/MX/NS target did not end with dot.\n")
-		}
+func (n *NameCom) createRecord(rc *models.RecordConfig, domain string) error {
+	record := &namecom.Record{
+		DomainName: domain,
+		Host:       dnsutil.TrimDomainName(rc.NameFQDN, domain),
+		Type:       rc.Type,
+		Answer:     rc.Target,
+		TTL:        rc.TTL,
+		Priority:   uint32(rc.MxPreference),
 	}
-	dat := struct {
-		Hostname string `json:"hostname"`
-		Type     string `json:"type"`
-		Content  string `json:"content"`
-		TTL      uint32 `json:"ttl,omitempty"`
-		Priority uint16 `json:"priority,omitempty"`
-	}{
-		Hostname: dnsutil.TrimDomainName(rc.NameFQDN, domain),
-		Type:     rc.Type,
-		Content:  target,
-		TTL:      rc.TTL,
-		Priority: rc.MxPreference,
-	}
-	if dat.Hostname == "@" {
-		dat.Hostname = ""
-	}
+
 	switch rc.Type { // #rtype_variations
 	case "A", "AAAA", "ANAME", "CNAME", "MX", "NS", "TXT":
 		// nothing
 	case "SRV":
-		dat.Content = fmt.Sprintf("%d %d %v", rc.SrvWeight, rc.SrvPort, rc.Target)
-		dat.Priority = rc.SrvPriority
+		record.Answer = fmt.Sprintf("%d %d %v", rc.SrvWeight, rc.SrvPort, rc.Target)
+		record.Priority = uint32(rc.SrvPriority)
 	default:
 		panic(fmt.Sprintf("createRecord rtype %v unimplemented", rc.Type))
 		// We panic so that we quickly find any switch statements
 		// that have not been updated for a new RR type.
 	}
-	resp, err := n.post(n.apiCreateRecord(domain), dat)
-	if err != nil {
-		return err
-	}
-	return resp.getErr()
+	_, err := n.client.CreateRecord(record)
+	return err
 }
 
-func (n *nameDotCom) deleteRecord(id, domain string) error {
-	dat := struct {
-		ID string `json:"record_id"`
-	}{id}
-	resp, err := n.post(n.apiDeleteRecord(domain), dat)
-	if err != nil {
-		return err
+func (n *NameCom) deleteRecord(id int32, domain string) error {
+	request := &namecom.DeleteRecordRequest{
+		DomainName: domain,
+		ID:         id,
 	}
-	return resp.getErr()
+
+	_, err := n.client.DeleteRecord(request)
+	return err
 }

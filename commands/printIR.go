@@ -46,6 +46,7 @@ var _ = cmd(catDebug, func() *cli.Command {
 	}
 }())
 
+// PrintIRArgs encapsulates the flags/arguments for the print-ir command.
 type PrintIRArgs struct {
 	GetDNSConfigArgs
 	PrintJSONArgs
@@ -62,6 +63,7 @@ func (args *PrintIRArgs) flags() []cli.Flag {
 	return flags
 }
 
+// PrintIR implements the print-ir subcommand.
 func PrintIR(args PrintIRArgs) error {
 	cfg, err := GetDNSConfig(args.GetDNSConfigArgs)
 	if err != nil {
@@ -76,6 +78,7 @@ func PrintIR(args PrintIRArgs) error {
 	return PrintJSON(args.PrintJSONArgs, cfg)
 }
 
+// PrintValidationErrors formats and prints the validation errors and warnings.
 func PrintValidationErrors(errs []error) (fatal bool) {
 	if len(errs) == 0 {
 		return false
@@ -92,6 +95,7 @@ func PrintValidationErrors(errs []error) (fatal bool) {
 	return
 }
 
+// ExecuteDSL executes the dnsconfig.js contents.
 func ExecuteDSL(args ExecuteDSLArgs) (*models.DNSConfig, error) {
 	if args.JSFile == "" {
 		return nil, fmt.Errorf("No config specified")
@@ -107,6 +111,7 @@ func ExecuteDSL(args ExecuteDSLArgs) (*models.DNSConfig, error) {
 	return dnsConfig, nil
 }
 
+// PrintJSON outputs/prettyprints the IR data.
 func PrintJSON(args PrintJSONArgs, config *models.DNSConfig) (err error) {
 	var dat []byte
 	if args.Pretty {

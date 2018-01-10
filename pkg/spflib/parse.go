@@ -4,38 +4,36 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/StackExchange/dnscontrol/pkg/dnsresolver"
+	"bytes"
+
+	"io"
 )
 
+// SPFRecord stores the parts of an SPF record.
 type SPFRecord struct {
-	Lookups int
-	Parts   []*SPFPart
+	Parts []*SPFPart
 }
 
-type SPFPart struct {
-	Text          string
-	Lookups       int
-	IncludeRecord *SPFRecord
-}
-
-func Lookup(target string, dnsres dnsresolver.DnsResolver) (string, error) {
-	txts, err := dnsres.GetTxt(target)
-	if err != nil {
-		return "", err
-	}
-	var result []string
-	for _, txt := range txts {
-		if strings.HasPrefix(txt, "v=spf1 ") {
-			result = append(result, txt)
+// Lookups returns the number of DNS lookups required by s.
+func (s *SPFRecord) Lookups() int {
+	count := 0
+	for _, p := range s.Parts {
+		if p.IsLookup {
+			count++
+		}
+		if p.IncludeRecord != nil {
+			count += p.IncludeRecord.Lookups()
 		}
 	}
-	if len(result) == 0 {
-		return "", fmt.Errorf("%s has no spf TXT records", target)
-	}
-	if len(result) != 1 {
-		return "", fmt.Errorf("%s has multiple spf TXT records", target)
-	}
-	return result[0], nil
+	return count
+}
+
+// SPFPart stores a part of an SPF record, with attributes.
+type SPFPart struct {
+	Text          string
+	IsLookup      bool
+	IncludeRecord *SPFRecord
+	IncludeDomain string
 }
 
 var qualifiers = map[byte]bool{
@@ -45,7 +43,8 @@ var qualifiers = map[byte]bool{
 	'+': true,
 }
 
-func Parse(text string, dnsres dnsresolver.DnsResolver) (*SPFRecord, error) {
+// Parse parses a raw SPF record.
+func Parse(text string, dnsres Resolver) (*SPFRecord, error) {
 	if !strings.HasPrefix(text, "v=spf1 ") {
 		return nil, fmt.Errorf("Not an spf record")
 	}
@@ -58,27 +57,26 @@ func Parse(text string, dnsres dnsresolver.DnsResolver) (*SPFRecord, error) {
 		}
 		rec.Parts = append(rec.Parts, p)
 		if part == "all" {
-			//all. nothing else matters.
+			// all. nothing else matters.
 			break
 		} else if strings.HasPrefix(part, "a") || strings.HasPrefix(part, "mx") {
-			rec.Lookups++
-			p.Lookups = 1
+			p.IsLookup = true
 		} else if strings.HasPrefix(part, "ip4:") || strings.HasPrefix(part, "ip6:") {
-			//ip address, 0 lookups
+			// ip address, 0 lookups
 			continue
 		} else if strings.HasPrefix(part, "include:") {
-			rec.Lookups++
-			includeTarget := strings.TrimPrefix(part, "include:")
-			subRecord, err := Lookup(includeTarget, dnsres)
-			if err != nil {
-				return nil, err
+			p.IsLookup = true
+			p.IncludeDomain = strings.TrimPrefix(part, "include:")
+			if dnsres != nil {
+				subRecord, err := dnsres.GetSPF(p.IncludeDomain)
+				if err != nil {
+					return nil, err
+				}
+				p.IncludeRecord, err = Parse(subRecord, dnsres)
+				if err != nil {
+					return nil, fmt.Errorf("In included spf: %s", err)
+				}
 			}
-			p.IncludeRecord, err = Parse(subRecord, dnsres)
-			if err != nil {
-				return nil, fmt.Errorf("In included spf: %s", err)
-			}
-			rec.Lookups += p.IncludeRecord.Lookups
-			p.Lookups = p.IncludeRecord.Lookups + 1
 		} else {
 			return nil, fmt.Errorf("Unsupported spf part %s", part)
 		}
@@ -87,21 +85,28 @@ func Parse(text string, dnsres dnsresolver.DnsResolver) (*SPFRecord, error) {
 	return rec, nil
 }
 
-// DumpSPF outputs an SPFRecord and related data for debugging purposes.
-func DumpSPF(rec *SPFRecord, indent string) {
-	fmt.Printf("%sTotal Lookups: %d\n", indent, rec.Lookups)
-	fmt.Print(indent + "v=spf1")
+func dump(rec *SPFRecord, indent string, w io.Writer) {
+
+	fmt.Fprintf(w, "%sTotal Lookups: %d\n", indent, rec.Lookups())
+	fmt.Fprint(w, indent+"v=spf1")
 	for _, p := range rec.Parts {
-		fmt.Print(" " + p.Text)
+		fmt.Fprint(w, " "+p.Text)
 	}
-	fmt.Println()
+	fmt.Fprintln(w)
 	indent += "\t"
 	for _, p := range rec.Parts {
-		if p.Lookups > 0 {
-			fmt.Println(indent + p.Text)
+		if p.IsLookup {
+			fmt.Fprintln(w, indent+p.Text)
 		}
 		if p.IncludeRecord != nil {
-			DumpSPF(p.IncludeRecord, indent+"\t")
+			dump(p.IncludeRecord, indent+"\t", w)
 		}
 	}
+}
+
+// Print prints an SPFRecord.
+func (s *SPFRecord) Print() string {
+	w := &bytes.Buffer{}
+	dump(s, "", w)
+	return w.String()
 }

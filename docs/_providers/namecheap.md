@@ -1,5 +1,5 @@
 ---
-name: "Namecheap"
+name: Namecheap Provider
 layout: default
 jsId: NAMECHEAP
 ---
@@ -9,13 +9,12 @@ jsId: NAMECHEAP
 Namecheap only provides a registrar provider implementation.
 
 ## Configuration
-
 In your providers config json file you must provide your Namecheap api
 username and key:
 
 {% highlight json %}
 {
-  "namecheap.com":{
+  "namecheap":{
     "apikey": "yourApiKeyFromNameCheap",
     "apiuser": "yourUsername"
   }
@@ -39,26 +38,37 @@ if BaseURL is omitted, the production namecheap url is used.
 
 
 ## Metadata
-
 This provider does not recognize any special metadata fields unique to
 Namecheap.
 
 ## Usage
-
-Example javascript:
+Example Javascript:
 
 {% highlight js %}
-var namecheap = NewRegistrar("namecheap.com","NAMECHEAP");
+var REG_NAMECHEAP = NewRegistrar("namecheap","NAMECHEAP");
 var R53 = NewDnsProvider("r53", "ROUTE53");
 
-D("example.tld", namecheap, DnsProvider(R53),
+D("example.tld", REG_NAMECHEAP, DnsProvider(R53),
     A("test","1.2.3.4")
 );
 {%endhighlight%}
 
-## Activation
+Namecheap provides custom redirect records URL, URL301, and FRAME.  These
+records can be used like any other record:
 
-In order to activate api functionality on your Namecheap account, you must
+{% highlight js %}
+var REG_NAMECHEAP = NewRegistrar("namecheap","NAMECHEAP");
+var NAMECHEAP = NewDnsProvider("namecheap","NAMECHEAP");
+
+D("example.tld", REG_NAMECHEAP, DnsProvider(NAMECHEAP),
+  URL('@', 'http://example.com/'),
+  URL('www', 'http://example.com/'),
+  URL301('backup', 'http://backup.example.com/')
+)
+{% endhighlight %}
+
+## Activation
+In order to activate API functionality on your Namecheap account, you must
 enable it for your account and wait for their review process. More information
 on enabling API access is [located
 here](https://www.namecheap.com/support/api/intro.aspx).

@@ -4,6 +4,7 @@ var conf = {
     registrars: [],
     dns_providers: [],
     domains: [],
+    domain_names: [],
 };
 
 var defaultArgs = [];
@@ -78,7 +79,11 @@ function D(name, registrar) {
         var m = arguments[i];
         processDargs(m, domain);
     }
+    if (conf.domain_names.indexOf(name) !== -1) {
+        throw name + ' is declared more than once';
+    }
     conf.domains.push(domain);
+    conf.domain_names.push(name);
 }
 
 // DEFAULTS provides a set of default arguments to apply to all future domains.
@@ -204,7 +209,7 @@ var TLSA = recordBuilder('TLSA', {
         ['usage', _.isNumber],
         ['selector', _.isNumber],
         ['matchingtype', _.isNumber],
-        ['target', _.isString], //recordBuilder needs a "target" argument
+        ['target', _.isString], // recordBuilder needs a "target" argument
     ],
     transform: function(record, args, modifiers) {
         record.name = args.name;
@@ -215,8 +220,32 @@ var TLSA = recordBuilder('TLSA', {
     },
 });
 
+function isStringOrArray(x) {
+    return _.isString(x) || _.isArray(x);
+}
+
 // TXT(name,target, recordModifiers...)
-var TXT = recordBuilder('TXT');
+var TXT = recordBuilder('TXT', {
+    args: [['name', _.isString], ['target', isStringOrArray]],
+    transform: function(record, args, modifiers) {
+        record.name = args.name;
+        // Store the strings twice:
+        //   .target is the first string
+        //   .txtstrings is the individual strings.
+        //   NOTE: If there are more than 1 string, providers should only access
+        //   .txtstrings, thus it doesn't matter what we store in .target.
+        //   However, by storing the first string there, it improves backwards
+        //   compatibility when the len(array) == 1 and (intentionally) breaks
+        //   broken providers early in the integration tests.
+        if (_.isString(args.target)) {
+            record.target = args.target;
+            record.txtstrings = [args.target];
+        } else {
+            record.target = args.target[0];
+            record.txtstrings = args.target;
+        }
+    },
+});
 
 // MX(name,priority,target, recordModifiers...)
 var MX = recordBuilder('MX', {
@@ -445,7 +474,7 @@ function addRecord(d, type, name, target, mods) {
             if (_.isFunction(m)) {
                 m(rec);
             } else if (_.isObject(m)) {
-                //convert transforms to strings
+                // convert transforms to strings
                 if (m.transform && _.isArray(m.transform)) {
                     m.transform = format_tt(m.transform);
                 }
@@ -464,7 +493,7 @@ function addRecord(d, type, name, target, mods) {
     return rec;
 }
 
-//ip conversion functions from http://stackoverflow.com/a/8105740/121660
+// ip conversion functions from http://stackoverflow.com/a/8105740/121660
 // via http://javascript.about.com/library/blipconvert.htm
 function IP(dot) {
     var d = dot.split('.');
@@ -529,3 +558,55 @@ var CF_TEMP_REDIRECT = recordBuilder('CF_TEMP_REDIRECT', {
         record.target = args.source + ',' + args.destination;
     },
 });
+
+var URL = recordBuilder('URL');
+var URL301 = recordBuilder('URL301');
+var FRAME = recordBuilder('FRAME');
+
+// SPF_BUILDER takes an object:
+// parts: The parts of the SPF record (to be joined with ' ').
+// label: The DNS label for the primary SPF record. (default: '@')
+// raw: Where (which label) to store an unaltered version of the SPF settings.
+// split: The template for additional records to be created (default: '_spf%d')
+// flatten: A list of domains to be flattened.
+
+function SPF_BUILDER(value) {
+    if (!value.parts || value.parts.length < 2) {
+        throw 'SPF_BUILDER requires at least 2 elements';
+    }
+    if (!value.label) {
+        value.label = '@';
+    }
+    if (!value.raw) {
+        value.raw = '_rawspf';
+    }
+
+    r = []; // The list of records to return.
+    p = {}; // The metaparameters to set on the main TXT record.
+    rawspf = value.parts.join(' '); // The unaltered SPF settings.
+
+    // If flattening is requested, generate a TXT record with the raw SPF settings.
+    if (value.flatten && value.flatten.length > 0) {
+        p.flatten = value.flatten.join(',');
+        r.push(TXT(value.raw, rawspf));
+    }
+
+    // If overflow is specified, enable splitting.
+    if (value.overflow) {
+        p.split = value.overflow;
+    }
+
+    // Generate a TXT record with the metaparameters.
+    r.push(TXT(value.label, rawspf, p));
+
+    return r;
+}
+
+// Split a DKIM string if it is >254 bytes.
+function DKIM(arr) {
+    chunkSize = 255;
+    var R = [];
+    for (var i = 0, len = arr.length; i < len; i += chunkSize)
+        R.push(arr.slice(i, i + chunkSize));
+    return R;
+}

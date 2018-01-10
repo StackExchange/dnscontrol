@@ -1,12 +1,13 @@
 ---
 layout: default
+title: Service Providers
 ---
-<h1> Service providers </h1>
+<h1> Service Providers </h1>
 
 <table class='table table-bordered'>
   <thead>
     <th>Name</th>
-    <th>Javascript Identifier</th>
+    <th>Identifier</th>
   </thead>
 {% for p in site.providers %}
 <tr>
@@ -16,6 +17,7 @@ layout: default
 {% endfor %}
 </table>
 
+<a name="features"></a>
 <h2> Provider Features </h2>
 
 <p>The table below shows various features supported, or not supported by DNSControl providers.
@@ -62,22 +64,49 @@ Maintainers of contributed providers:
 * digital ocean @Deraen
 * dnsimple @aeden
 * gandi @TomOnTime
+* Linode @koesie10
 * namecheap @captncraig
 * ns1 @captncraig
-* OVH @Oprax
+* OVH @masterzen
+* Vultr @geek1011
 
 ### Requested providers
 
 We have received requests for the following providers. If you would like to contribute
 code to support this provider, please re-open the issue. We'd be glad to help in any way.
 
-<ul>
-  <li>Azure (<a href="https://github.com/StackExchange/dnscontrol/issues/42">#42</a>)</li>
-  <li>ClouDNS (<a href="https://github.com/StackExchange/dnscontrol/issues/114">#114</a>)</li>
-  <li>Dyn (<a href="https://github.com/StackExchange/dnscontrol/issues/61">#61</a>)</li>
-  <li>Gandi (DNS works. Request is to add Registrar support) (<a href="https://github.com/StackExchange/dnscontrol/issues/87">#87</a>)</li>
-  <li>GoDaddy (<a href="https://github.com/StackExchange/dnscontrol/issues/145">#145</a>)</li>
-  <li>Hurricane Electric (dns.he.net) (<a href="https://github.com/StackExchange/dnscontrol/issues/118">#118</a>)</li>
-  <li>Linode (<a href="https://github.com/StackExchange/dnscontrol/issues/121">#121</a>)</li>
-  <li>OVH (<a href="https://github.com/StackExchange/dnscontrol/issues/143">#143</a>)</li>
+<ul id='requests'>
+
 </ul>
+
+### In progress providers
+
+These requests have *open* issues, which indicates somebody is actively working on it. Feel free to follow the issue, or pitch in if you think you can help.
+
+<ul id='inprog'>
+</ul>
+
+### Providers with open PRs
+
+These providers have an open pr with (potentially) working code. They may be ready to merge, or may have blockers. See issue and pr for details.
+
+<ul id='haspr'>
+</ul>
+
+<script>
+  $.get("https://api.github.com/repos/StackExchange/dnscontrol/issues?state=all&labels=provider-request&direction=asc")
+  .done(function(data){
+    for(var i of data){
+      var el = $(`<li><a href='${i.html_url}'>${i.title}</a> (#${i.number})</li>`)
+      var target = $("#requests");
+      if (i.state == "open") target = $("#inprog");
+      for(var l of i.labels){
+        if (l.name == "has-pr") target = $("#haspr");
+      }
+      target.append(el);
+    }
+  })
+  .fail(function(err){
+    console.log("???", err)
+  })
+</script>

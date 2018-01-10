@@ -10,6 +10,7 @@ import (
 	"github.com/pkg/errors"
 )
 
+// PtrNameMagic implements the PTR magic.
 func PtrNameMagic(name, domain string) (string, error) {
 	// Implement the PTR name magic.  If the name is a properly formed
 	// IPv4 or IPv6 address, we replace it with the right string (i.e
@@ -20,9 +21,8 @@ func PtrNameMagic(name, domain string) (string, error) {
 	if strings.HasSuffix(name, ".in-addr.arpa.") || strings.HasSuffix(name, ".ip6.arpa.") {
 		if strings.HasSuffix(name, "."+domain+".") {
 			return strings.TrimSuffix(name, "."+domain+"."), nil
-		} else {
-			return name, errors.Errorf("PTR record %v in wrong domain (%v)", name, domain)
 		}
+		return name, errors.Errorf("PTR record %v in wrong domain (%v)", name, domain)
 	}
 
 	// If the domain is .arpa, we do magic.

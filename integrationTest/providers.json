@@ -20,7 +20,7 @@
     "COMMENT": "16/17: no ns records managable. Not even for subdomains.",
     "baseurl": "https://api.sandbox.dnsimple.com",
     "domain": "$DNSIMPLE_DOMAIN",
-    "knownFailures": "17,18",
+    "knownFailures": "18,19,20",
     "token": "$DNSIMPLE_TOKEN"
   },
   "GANDI": {
@@ -30,10 +30,17 @@
     "knownFailures": "5"
   },
   "GCLOUD": {
+    "type": "$GCLOUD_TYPE",
     "client_email": "$GCLOUD_EMAIL",
     "domain": "$GCLOUD_DOMAIN",
     "private_key": "$GCLOUD_PRIVATEKEY",
     "project_id": "$GCLOUD_PROJECT"
+  },
+  "LINODE": {
+    "COMMENT": "25: Linode's hostname validation does not allow the target domain TLD",
+    "token": "$LINODE_TOKEN",
+    "domain": "$LINODE_DOMAIN",
+    "knownFailures": "25"
   },
   "NS1": {
     "domain": "$NS1_DOMAIN",
@@ -44,6 +51,11 @@
     "apiurl": "$NAMEDOTCOM_URL",
     "apiuser": "$NAMEDOTCOM_USER",
     "domain": "$NAMEDOTCOM_DOMAIN"
+  },
+  "NAMECHEAP": {
+    "apikey": "$NAMECHEAP_KEY",
+    "apiuser": "$NAMECHEAP_USER",
+    "domain": "$NAMECHEAP_DOMAIN"
   },
   "ROUTE53": {
     "KeyId": "$R53_KEY_ID",
@@ -56,5 +68,15 @@
     "domain": "$SL_DOMAIN",
     "username": "$SL_USERNAME",
     "api_key": "$SL_API_KEY"
+  },
+  "VULTR": {
+    "token": "$VULTR_TOKEN",
+    "domain": "$VULTR_DOMAIN"
+  },
+  "OVH": {
+    "app-key": "$OVH_APP_KEY",
+    "app-secret-key": "$OVH_APP_SECRET_KEY",
+    "consumer-key": "$OVH_CONSUMER_KEY",
+    "domain": "$OVH_DOMAIN"
   }
 }

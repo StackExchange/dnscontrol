@@ -1,5 +1,6 @@
 ---
 layout: default
+title: JavaScript DSL
 ---
 
 # Javascript DSL

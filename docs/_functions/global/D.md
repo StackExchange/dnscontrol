@@ -22,13 +22,13 @@ Modifier arguments are processed according to type as follows:
 var REGISTRAR = NewRegistrar("name.com", "NAMEDOTCOM");
 var r53 = NewDnsProvider("R53","ROUTE53");
 
-//simple domain
+// simple domain
 D("example.com", REGISTRAR, DnsProvider(r53),
   A("@","1.2.3.4"),
   CNAME("test", "foo.example2.com.")
 );
 
-//"macro" for records that can be mixed into any zone
+// "macro" for records that can be mixed into any zone
 var GOOGLE_APPS_DOMAIN_MX = [
     MX('@', 1, 'aspmx.l.google.com.'),
     MX('@', 5, 'alt1.aspmx.l.google.com.'),

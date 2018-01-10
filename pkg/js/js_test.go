@@ -27,7 +27,7 @@ func TestParsedFiles(t *testing.T) {
 		t.Fatal(err)
 	}
 	for _, f := range files {
-		//run all js files that start with a number. Skip others.
+		// run all js files that start with a number. Skip others.
 		if filepath.Ext(f.Name()) != ".js" || !unicode.IsNumber(rune(f.Name()[0])) {
 			continue
 		}
@@ -77,6 +77,7 @@ func TestErrors(t *testing.T) {
 		{"CF_REDIRECT With comma", `D("foo.com","reg",CF_REDIRECT("foo.com,","baaa"))`},
 		{"CF_TEMP_REDIRECT With comma", `D("foo.com","reg",CF_TEMP_REDIRECT("foo.com","baa,a"))`},
 		{"Bad cidr", `D(reverse("foo.com"), "reg")`},
+		{"Dup domains", `D("example.org", "reg"); D("example.org", "reg")`},
 	}
 	for _, tst := range tests {
 		t.Run(tst.desc, func(t *testing.T) {

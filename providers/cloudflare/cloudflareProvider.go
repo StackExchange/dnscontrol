@@ -33,19 +33,22 @@ Domain level metadata available:
    - ip_conversions
 */
 
-var docNotes = providers.DocumentationNotes{
-	providers.DocDualHost:            providers.Cannot("Cloudflare will not work well in situations where it is not the only DNS server"),
-	providers.DocCreateDomains:       providers.Can(),
-	providers.DocOfficiallySupported: providers.Can(),
+var features = providers.DocumentationNotes{
 	providers.CanUseAlias:            providers.Can("CF automatically flattens CNAME records into A records dynamically"),
+	providers.CanUseCAA:              providers.Can(),
+	providers.CanUseSRV:              providers.Can(),
+	providers.DocCreateDomains:       providers.Can(),
+	providers.DocDualHost:            providers.Cannot("Cloudflare will not work well in situations where it is not the only DNS server"),
+	providers.DocOfficiallySupported: providers.Can(),
 }
 
 func init() {
-	providers.RegisterDomainServiceProviderType("CLOUDFLAREAPI", newCloudflare, providers.CanUseSRV, providers.CanUseAlias, docNotes)
+	providers.RegisterDomainServiceProviderType("CLOUDFLAREAPI", newCloudflare, features)
 	providers.RegisterCustomRecordType("CF_REDIRECT", "CLOUDFLAREAPI", "")
 	providers.RegisterCustomRecordType("CF_TEMP_REDIRECT", "CLOUDFLAREAPI", "")
 }
 
+// CloudflareApi is the handle for API calls.
 type CloudflareApi struct {
 	ApiKey          string `json:"apikey"`
 	ApiUser         string `json:"apiuser"`
@@ -57,7 +60,7 @@ type CloudflareApi struct {
 }
 
 func labelMatches(label string, matches []string) bool {
-	//log.Printf("DEBUG: labelMatches(%#v, %#v)\n", label, matches)
+	// log.Printf("DEBUG: labelMatches(%#v, %#v)\n", label, matches)
 	for _, tst := range matches {
 		if label == tst {
 			return true
@@ -66,6 +69,7 @@ func labelMatches(label string, matches []string) bool {
 	return false
 }
 
+// GetNameservers returns the nameservers for a domain.
 func (c *CloudflareApi) GetNameservers(domain string) ([]*models.Nameserver, error) {
 	if c.domainIndex == nil {
 		if err := c.fetchDomainList(); err != nil {
@@ -79,6 +83,7 @@ func (c *CloudflareApi) GetNameservers(domain string) ([]*models.Nameserver, err
 	return models.StringsToNameservers(ns), nil
 }
 
+// GetDomainCorrections returns a list of corrections to update a domain.
 func (c *CloudflareApi) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Correction, error) {
 	if c.domainIndex == nil {
 		if err := c.fetchDomainList(); err != nil {
@@ -120,6 +125,10 @@ func (c *CloudflareApi) GetDomainCorrections(dc *models.DomainConfig) ([]*models
 		}
 	}
 	checkNSModifications(dc)
+
+	// Normalize
+	models.PostProcessRecords(records)
+
 	differ := diff.New(dc, getProxyMetadata)
 	_, create, del, mod := differ.IncrementalDiff(records)
 	corrections := []*models.Correction{}
@@ -269,7 +278,7 @@ func (c *CloudflareApi) preprocessConfig(dc *models.DomainConfig) error {
 		if rec.Type != "A" {
 			continue
 		}
-		//only transform "full"
+		// only transform "full"
 		if rec.Metadata[metaProxy] != "full" {
 			continue
 		}
@@ -329,13 +338,16 @@ func newCloudflare(m map[string]string, metadata json.RawMessage) (providers.DNS
 
 // Used on the "existing" records.
 type cfRecData struct {
-	Service  string `json:"service"`
-	Proto    string `json:"proto"`
 	Name     string `json:"name"`
-	Priority uint16 `json:"priority"`
-	Weight   uint16 `json:"weight"`
-	Port     uint16 `json:"port"`
 	Target   string `json:"target"`
+	Service  string `json:"service"`  // SRV
+	Proto    string `json:"proto"`    // SRV
+	Priority uint16 `json:"priority"` // SRV
+	Weight   uint16 `json:"weight"`   // SRV
+	Port     uint16 `json:"port"`     // SRV
+	Tag      string `json:"tag"`      // CAA
+	Flags    uint8  `json:"flags"`    // CAA
+	Value    string `json:"value"`    // CAA
 }
 
 type cfRecord struct {
@@ -356,25 +368,40 @@ type cfRecord struct {
 }
 
 func (c *cfRecord) toRecord(domain string) *models.RecordConfig {
-	//normalize cname,mx,ns records with dots to be consistent with our config format.
+	// normalize cname,mx,ns records with dots to be consistent with our config format.
 	if c.Type == "CNAME" || c.Type == "MX" || c.Type == "NS" || c.Type == "SRV" {
 		c.Content = dnsutil.AddOrigin(c.Content+".", domain)
 	}
 	rc := &models.RecordConfig{
-		NameFQDN:     c.Name,
-		Type:         c.Type,
-		Target:       c.Content,
-		MxPreference: c.Priority,
-		TTL:          c.TTL,
-		Original:     c,
+		NameFQDN: c.Name,
+		Type:     c.Type,
+		Target:   c.Content,
+		TTL:      c.TTL,
+		Original: c,
 	}
-	if c.Type == "SRV" {
+	switch c.Type { // #rtype_variations
+	case "A", "AAAA", "ANAME", "CNAME", "NS", "TXT":
+		// nothing additional needed.
+	case "CAA":
+		var err error
+		rc.CaaTag, rc.CaaFlag, rc.Target, err = models.SplitCombinedCaaValue(c.Content)
+		if err != nil {
+			panic(err)
+		}
+	case "MX":
+		rc.MxPreference = c.Priority
+	case "SRV":
 		data := *c.Data
 		rc.SrvPriority = data.Priority
 		rc.SrvWeight = data.Weight
 		rc.SrvPort = data.Port
 		rc.Target = dnsutil.AddOrigin(data.Target+".", domain)
+	default:
+		panic(fmt.Sprintf("toRecord unimplemented rtype %v", c.Type))
+		// We panic so that we quickly find any switch statements
+		// that have not been updated for a new RR type.
 	}
+
 	return rc
 }
 
@@ -393,6 +420,7 @@ func getProxyMetadata(r *models.RecordConfig) map[string]string {
 	}
 }
 
+// EnsureDomainExists returns an error of domain does not exist.
 func (c *CloudflareApi) EnsureDomainExists(domain string) error {
 	if _, ok := c.domainIndex[domain]; ok {
 		return nil

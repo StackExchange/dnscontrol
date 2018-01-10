@@ -16,14 +16,17 @@ import (
 	"golang.org/x/net/idna"
 )
 
+// DefaultTTL is applied to any DNS record without an explicit TTL.
 const DefaultTTL = uint32(300)
 
+// DNSConfig describes the desired DNS configuration, usually loaded from dnsconfig.js.
 type DNSConfig struct {
 	Registrars   []*RegistrarConfig   `json:"registrars"`
 	DNSProviders []*DNSProviderConfig `json:"dns_providers"`
 	Domains      []*DomainConfig      `json:"domains"`
 }
 
+// FindDomain returns the *DomainConfig for domain query in config.
 func (config *DNSConfig) FindDomain(query string) *DomainConfig {
 	for _, b := range config.Domains {
 		if b.Name == query {
@@ -33,12 +36,14 @@ func (config *DNSConfig) FindDomain(query string) *DomainConfig {
 	return nil
 }
 
+// RegistrarConfig describes a registrar.
 type RegistrarConfig struct {
 	Name     string          `json:"name"`
 	Type     string          `json:"type"`
 	Metadata json.RawMessage `json:"meta,omitempty"`
 }
 
+// DNSProviderConfig describes a DNS service provider.
 type DNSProviderConfig struct {
 	Name     string          `json:"name"`
 	Type     string          `json:"type"`
@@ -60,14 +65,39 @@ type DNSProviderConfig struct {
 // NameFQDN:
 //    This is the FQDN version of Name.
 //    It should never have a trailiing ".".
+// Valid types:
+//   Official:
+//     A
+//     AAAA
+//     ANAME
+//     CAA
+//     CNAME
+//     MX
+//     NS
+//     PTR
+//     SRV
+//     TLSA
+//     TXT
+//   Pseudo-Types:
+//     ALIAs
+//     CF_REDIRECT
+//     CF_TEMP_REDIRECT
+//     FRAME
+//     IMPORT_TRANSFORM
+//     NAMESERVER
+//     NO_PURGE
+//     PAGE_RULE
+//     PURGE
+//     URL
+//     URL301
 type RecordConfig struct {
 	Type             string            `json:"type"`
 	Name             string            `json:"name"`   // The short name. See below.
 	Target           string            `json:"target"` // If a name, must end with "."
 	TTL              uint32            `json:"ttl,omitempty"`
 	Metadata         map[string]string `json:"meta,omitempty"`
-	NameFQDN         string            `json:"-"`                      // Must end with ".$origin". See below.
-	MxPreference     uint16            `json:"mxpreference,omitempty"` // FIXME(tlim): Rename to MxPreference
+	NameFQDN         string            `json:"-"` // Must end with ".$origin". See below.
+	MxPreference     uint16            `json:"mxpreference,omitempty"`
 	SrvPriority      uint16            `json:"srvpriority,omitempty"`
 	SrvWeight        uint16            `json:"srvweight,omitempty"`
 	SrvPort          uint16            `json:"srvport,omitempty"`
@@ -76,55 +106,60 @@ type RecordConfig struct {
 	TlsaUsage        uint8             `json:"tlsausage,omitempty"`
 	TlsaSelector     uint8             `json:"tlsaselector,omitempty"`
 	TlsaMatchingType uint8             `json:"tlsamatchingtype,omitempty"`
+	TxtStrings       []string          `json:"txtstrings,omitempty"` // TxtStrings stores all strings (including the first). Target stores only the first one.
 
 	CombinedTarget bool `json:"-"`
 
 	Original interface{} `json:"-"` // Store pointer to provider-specific record object. Used in diffing.
 }
 
-func (r *RecordConfig) String() (content string) {
-	if r.CombinedTarget {
-		return r.Target
+func (rc *RecordConfig) String() (content string) {
+	if rc.CombinedTarget {
+		return rc.Target
 	}
 
-	content = fmt.Sprintf("%s %s %s %d", r.Type, r.NameFQDN, r.Target, r.TTL)
-	switch r.Type { // #rtype_variations
-	case "A", "AAAA", "CNAME", "PTR", "TXT":
+	content = fmt.Sprintf("%s %s %s %d", rc.Type, rc.NameFQDN, rc.Target, rc.TTL)
+	switch rc.Type { // #rtype_variations
+	case "A", "AAAA", "CNAME", "NS", "PTR", "TXT":
 		// Nothing special.
 	case "MX":
-		content += fmt.Sprintf(" priority=%d", r.MxPreference)
+		content += fmt.Sprintf(" pref=%d", rc.MxPreference)
 	case "SOA":
-		content = fmt.Sprintf("%s %s %s %d", r.Type, r.Name, r.Target, r.TTL)
+		content = fmt.Sprintf("%s %s %s %d", rc.Type, rc.Name, rc.Target, rc.TTL)
+	case "SRV":
+		content += fmt.Sprintf(" srvpriority=%d srvweight=%d srvport=%d", rc.SrvPriority, rc.SrvWeight, rc.SrvPort)
+	case "TLSA":
+		content += fmt.Sprintf(" tlsausage=%d tlsaselector=%d tlsamatchingtype=%d", rc.TlsaUsage, rc.TlsaSelector, rc.TlsaMatchingType)
 	case "CAA":
-		content += fmt.Sprintf(" caatag=%s caaflag=%d", r.CaaTag, r.CaaFlag)
+		content += fmt.Sprintf(" caatag=%s caaflag=%d", rc.CaaTag, rc.CaaFlag)
 	default:
-		msg := fmt.Sprintf("rc.String rtype %v unimplemented", r.Type)
+		msg := fmt.Sprintf("rc.String rtype %v unimplemented", rc.Type)
 		panic(msg)
 		// We panic so that we quickly find any switch statements
 		// that have not been updated for a new RR type.
 	}
-	for k, v := range r.Metadata {
+	for k, v := range rc.Metadata {
 		content += fmt.Sprintf(" %s=%s", k, v)
 	}
 	return content
 }
 
 // Content combines Target and other fields into one string.
-func (r *RecordConfig) Content() string {
-	if r.CombinedTarget {
-		return r.Target
+func (rc *RecordConfig) Content() string {
+	if rc.CombinedTarget {
+		return rc.Target
 	}
 
 	// If this is a pseudo record, just return the target.
-	if _, ok := dns.StringToType[r.Type]; !ok {
-		return r.Target
+	if _, ok := dns.StringToType[rc.Type]; !ok {
+		return rc.Target
 	}
 
 	// We cheat by converting to a dns.RR and use the String() function.
 	// Sadly that function always includes a header, which we must strip out.
 	// TODO(tlim): Request the dns project add a function that returns
 	// the string without the header.
-	rr := r.ToRR()
+	rr := rc.ToRR()
 	header := rr.Header().String()
 	full := rr.String()
 	if !strings.HasPrefix(full, header) {
@@ -134,30 +169,30 @@ func (r *RecordConfig) Content() string {
 }
 
 // MergeToTarget combines "extra" fields into .Target, and zeros the merged fields.
-func (r *RecordConfig) MergeToTarget() {
-	if r.CombinedTarget {
-		pm := strings.Join([]string{"MergeToTarget: Already collapsed: ", r.Name, r.Target}, " ")
+func (rc *RecordConfig) MergeToTarget() {
+	if rc.CombinedTarget {
+		pm := strings.Join([]string{"MergeToTarget: Already collapsed: ", rc.Name, rc.Target}, " ")
 		panic(pm)
 	}
 
 	// Merge "extra" fields into the Target.
-	r.Target = r.Content()
+	rc.Target = rc.Content()
 
 	// Zap any fields that may have been merged.
-	r.MxPreference = 0
-	r.SrvPriority = 0
-	r.SrvWeight = 0
-	r.SrvPort = 0
-	r.CaaFlag = 0
-	r.CaaTag = ""
-	r.TlsaUsage = 0
-	r.TlsaMatchingType = 0
-	r.TlsaSelector = 0
+	rc.MxPreference = 0
+	rc.SrvPriority = 0
+	rc.SrvWeight = 0
+	rc.SrvPort = 0
+	rc.CaaFlag = 0
+	rc.CaaTag = ""
+	rc.TlsaUsage = 0
+	rc.TlsaMatchingType = 0
+	rc.TlsaSelector = 0
 
-	r.CombinedTarget = true
+	rc.CombinedTarget = true
 }
 
-/// Convert RecordConfig -> dns.RR.
+// ToRR converts a RecordConfig to a dns.RR.
 func (rc *RecordConfig) ToRR() dns.RR {
 
 	// Don't call this on fake types.
@@ -218,7 +253,7 @@ func (rc *RecordConfig) ToRR() dns.RR {
 		rr.(*dns.TLSA).Selector = rc.TlsaSelector
 		rr.(*dns.TLSA).Certificate = rc.Target
 	case dns.TypeTXT:
-		rr.(*dns.TXT).Txt = []string{rc.Target}
+		rr.(*dns.TXT).Txt = rc.TxtStrings
 	default:
 		panic(fmt.Sprintf("ToRR: Unimplemented rtype %v", rc.Type))
 		// We panic so that we quickly find any switch statements
@@ -236,8 +271,10 @@ func atou32(s string) uint32 {
 	return uint32(i64)
 }
 
+// Records is a list of *RecordConfig.
 type Records []*RecordConfig
 
+// Grouped returns a map of keys to records.
 func (r Records) Grouped() map[RecordKey]Records {
 	groups := map[RecordKey]Records{}
 	for _, rec := range r {
@@ -246,20 +283,58 @@ func (r Records) Grouped() map[RecordKey]Records {
 	return groups
 }
 
+// PostProcessRecords does any post-processing of the downloaded DNS records.
+func PostProcessRecords(recs []*RecordConfig) {
+	Downcase(recs)
+	fixTxt(recs)
+}
+
+// Downcase converts all labels and targets to lowercase in a list of RecordConfig.
+func Downcase(recs []*RecordConfig) {
+	for _, r := range recs {
+		r.Name = strings.ToLower(r.Name)
+		r.NameFQDN = strings.ToLower(r.NameFQDN)
+		switch r.Type {
+		case "ANAME", "CNAME", "MX", "NS", "PTR":
+			r.Target = strings.ToLower(r.Target)
+		case "A", "AAAA", "ALIAS", "CAA", "IMPORT_TRANSFORM", "SRV", "TLSA", "TXT", "SOA", "CF_REDIRECT", "CF_TEMP_REDIRECT":
+			// Do nothing.
+		default:
+			// TODO: we'd like to panic here, but custom record types complicate things.
+		}
+	}
+	return
+}
+
+// fixTxt fixes TXT records generated by providers that do not understand CanUseTXTMulti.
+func fixTxt(recs []*RecordConfig) {
+	for _, r := range recs {
+		if r.Type == "TXT" {
+			if len(r.TxtStrings) == 0 {
+				r.TxtStrings = []string{r.Target}
+			}
+		}
+	}
+}
+
+// RecordKey represents a resource record in a format used by some systems.
 type RecordKey struct {
 	Name string
 	Type string
 }
 
-func (r *RecordConfig) Key() RecordKey {
-	return RecordKey{r.Name, r.Type}
+// Key converts a RecordConfig into a RecordKey.
+func (rc *RecordConfig) Key() RecordKey {
+	return RecordKey{rc.Name, rc.Type}
 }
 
+// Nameserver describes a nameserver.
 type Nameserver struct {
 	Name   string `json:"name"` // Normalized to a FQDN with NO trailing "."
 	Target string `json:"target"`
 }
 
+// StringsToNameservers constructs a list of *Nameserver structs using a list of FQDNs.
 func StringsToNameservers(nss []string) []*Nameserver {
 	nservers := []*Nameserver{}
 	for _, ns := range nss {
@@ -268,6 +343,7 @@ func StringsToNameservers(nss []string) []*Nameserver {
 	return nservers
 }
 
+// DomainConfig describes a DNS domain (tecnically a  DNS zone).
 type DomainConfig struct {
 	Name string `json:"name"` // NO trailing "."
 	// xxxName fields are populated in json from DSL
@@ -282,23 +358,25 @@ type DomainConfig struct {
 	KeepUnknown          bool                   `json:"keepunknown,omitempty"`
 }
 
+// Copy returns a deep copy of the DomainConfig.
 func (dc *DomainConfig) Copy() (*DomainConfig, error) {
 	newDc := &DomainConfig{}
 	err := copyObj(dc, newDc)
 	return newDc, err
 }
 
-func (r *RecordConfig) Copy() (*RecordConfig, error) {
+// Copy returns a deep copy of a RecordConfig.
+func (rc *RecordConfig) Copy() (*RecordConfig, error) {
 	newR := &RecordConfig{}
-	err := copyObj(r, newR)
+	err := copyObj(rc, newR)
 	return newR, err
 }
 
-//Punycode will convert all records to punycode format.
-//It will encode:
-//- Name
-//- NameFQDN
-//- Target (CNAME and MX only)
+// Punycode will convert all records to punycode format.
+// It will encode:
+// - Name
+// - NameFQDN
+// - Target (CNAME and MX only)
 func (dc *DomainConfig) Punycode() error {
 	var err error
 	for _, rec := range dc.Records {
@@ -311,7 +389,7 @@ func (dc *DomainConfig) Punycode() error {
 			return err
 		}
 		switch rec.Type { // #rtype_variations
-		case "ALIAS", "MX", "NS", "CNAME", "PTR", "SRV":
+		case "ALIAS", "MX", "NS", "CNAME", "PTR", "SRV", "URL", "URL301", "FRAME":
 			rec.Target, err = idna.ToASCII(rec.Target)
 			if err != nil {
 				return err
@@ -376,9 +454,9 @@ func (dc *DomainConfig) CombineSRVs() {
 	}
 }
 
-//SplitCombinedSrvValue splits a combined SRV priority, weight, port and target into
-//separate entities, some DNS providers want "5" "10" 15" and "foo.com.",
-//while other providers want "5 10 15 foo.com.".
+// SplitCombinedSrvValue splits a combined SRV priority, weight, port and target into
+// separate entities, some DNS providers want "5" "10" 15" and "foo.com.",
+// while other providers want "5 10 15 foo.com.".
 func SplitCombinedSrvValue(s string) (priority, weight, port uint16, target string, err error) {
 	parts := strings.Fields(s)
 
@@ -401,6 +479,48 @@ func SplitCombinedSrvValue(s string) (priority, weight, port uint16, target stri
 	return uint16(priorityconv), uint16(weightconv), uint16(portconv), parts[3], nil
 }
 
+// CombineCAAs will merge the tags and flags into the target field for all CAA records.
+// Useful for providers that desire them as one field.
+func (dc *DomainConfig) CombineCAAs() {
+	for _, rec := range dc.Records {
+		if rec.Type == "CAA" {
+			if rec.CombinedTarget {
+				pm := strings.Join([]string{"CombineCAAs: Already collapsed: ", rec.Name, rec.Target}, " ")
+				panic(pm)
+			}
+			rec.Target = rec.Content()
+			rec.CombinedTarget = true
+		}
+	}
+}
+
+// SplitCombinedCaaValue parses a string listing the parts of a CAA record into its components.
+func SplitCombinedCaaValue(s string) (tag string, flag uint8, value string, err error) {
+
+	splitData := strings.SplitN(s, " ", 3)
+	if len(splitData) != 3 {
+		err = fmt.Errorf("Unexpected data for CAA record returned by Vultr")
+		return
+	}
+
+	lflag, err := strconv.ParseUint(splitData[0], 10, 8)
+	if err != nil {
+		return
+	}
+	flag = uint8(lflag)
+
+	tag = splitData[1]
+
+	value = splitData[2]
+	if strings.HasPrefix(value, `"`) && strings.HasSuffix(value, `"`) {
+		value = value[1 : len(value)-1]
+	}
+	if strings.HasPrefix(value, `'`) && strings.HasSuffix(value, `'`) {
+		value = value[1 : len(value)-1]
+	}
+	return
+}
+
 func copyObj(input interface{}, output interface{}) error {
 	buf := &bytes.Buffer{}
 	enc := gob.NewEncoder(buf)
@@ -408,12 +528,10 @@ func copyObj(input interface{}, output interface{}) error {
 	if err := enc.Encode(input); err != nil {
 		return err
 	}
-	if err := dec.Decode(output); err != nil {
-		return err
-	}
-	return nil
+	return dec.Decode(output)
 }
 
+// HasRecordTypeName returns True if there is a record with this rtype and name.
 func (dc *DomainConfig) HasRecordTypeName(rtype, name string) bool {
 	for _, r := range dc.Records {
 		if r.Type == rtype && r.Name == name {
@@ -423,6 +541,7 @@ func (dc *DomainConfig) HasRecordTypeName(rtype, name string) bool {
 	return false
 }
 
+// Filter removes all records that don't match the filter f.
 func (dc *DomainConfig) Filter(f func(r *RecordConfig) bool) {
 	recs := []*RecordConfig{}
 	for _, r := range dc.Records {
@@ -433,6 +552,10 @@ func (dc *DomainConfig) Filter(f func(r *RecordConfig) bool) {
 	dc.Records = recs
 }
 
+// InterfaceToIP returns an IP address when given a 32-bit value or a string. That is,
+// dnsconfig.js output may represent IP addresses as either  a string ("1.2.3.4")
+// or as an numeric value (the integer representation of the 32-bit value). This function
+// converts either to a net.IP.
 func InterfaceToIP(i interface{}) (net.IP, error) {
 	switch v := i.(type) {
 	case float64:
@@ -444,11 +567,11 @@ func InterfaceToIP(i interface{}) (net.IP, error) {
 		}
 		return nil, fmt.Errorf("%s is not a valid ip address", v)
 	default:
-		return nil, fmt.Errorf("Cannot convert type %s to ip.", reflect.TypeOf(i))
+		return nil, fmt.Errorf("cannot convert type %s to ip", reflect.TypeOf(i))
 	}
 }
 
-//Correction is anything that can be run. Implementation is up to the specific provider.
+// Correction is anything that can be run. Implementation is up to the specific provider.
 type Correction struct {
 	F   func() error `json:"-"`
 	Msg string

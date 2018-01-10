@@ -10,24 +10,36 @@ import (
 
 func TestCheckLabel(t *testing.T) {
 	var tests = []struct {
-		label   string
-		rType   string
-		target  string
-		isError bool
+		label       string
+		rType       string
+		isError     bool
+		hasSkipMeta bool
 	}{
-		{"@", "A", "0.0.0.0", false},
-		{"@", "A", "foo.tld", true},
-		{"foo.bar", "A", "0.0.0.0", false},
-		{"_foo", "SRV", "foo.tld", false},
-		{"_foo", "TLSA", "foo.tld", false},
-		{"_foo", "TXT", "foo.tld", false},
+		{"@", "A", false, false},
+		{"foo.bar", "A", false, false},
+		{"_foo", "A", true, false},
+		{"_foo", "SRV", false, false},
+		{"_foo", "TLSA", false, false},
+		{"_foo", "TXT", false, false},
+		{"test.foo.tld", "A", true, false},
+		{"test.foo.tld", "A", false, true},
 	}
 
 	for _, test := range tests {
-		err := checkLabel(test.label, test.rType, test.target)
-		if err != nil && test.isError {
-			t.Errorf("%v: Expected error but got none \n", "TestCheckLabel")
-		}
+		t.Run(fmt.Sprintf("%s %s", test.label, test.rType), func(t *testing.T) {
+			meta := map[string]string{}
+			if test.hasSkipMeta {
+				meta["skip_fqdn_check"] = "true"
+			}
+			err := checkLabel(test.label, test.rType, "foo.tld", meta)
+			if err != nil && !test.isError {
+				t.Errorf(" Expected no error but got %s", err)
+			}
+			if err == nil && test.isError {
+				t.Errorf(" Expected error but got none")
+			}
+		})
+
 	}
 }
 
@@ -100,7 +112,7 @@ func Test_transform_cname(t *testing.T) {
 }
 
 func TestNSAtRoot(t *testing.T) {
-	//do not allow ns records for @
+	// do not allow ns records for @
 	rec := &models.RecordConfig{Name: "test", Type: "NS", Target: "ns1.name.com."}
 	errs := checkTargets(rec, "foo.com")
 	if len(errs) > 0 {

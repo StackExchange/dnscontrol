@@ -24,7 +24,7 @@ func main() {
 // Update the number here manually each release, so at least we have a range for go-get people.
 var (
 	SHA       = ""
-	Version   = "0.2.1"
+	Version   = "0.2.4"
 	BuildTime = ""
 )
 
@@ -34,7 +34,7 @@ func versionString() string {
 	if SHA != "" {
 		version = fmt.Sprintf("%s (%s)", Version, SHA)
 	} else {
-		version = fmt.Sprintf("%s-dev", Version) //no SHA. '0.x.y-dev' indicates it is run from source without build script.
+		version = fmt.Sprintf("%s-dev", Version) // no SHA. '0.x.y-dev' indicates it is run from source without build script.
 	}
 	if BuildTime != "" {
 		i, err := strconv.ParseInt(BuildTime, 10, 64)

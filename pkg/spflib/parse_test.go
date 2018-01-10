@@ -3,12 +3,10 @@ package spflib
 import (
 	"strings"
 	"testing"
-
-	"github.com/StackExchange/dnscontrol/pkg/dnsresolver"
 )
 
 func TestParse(t *testing.T) {
-	dnsres, err := dnsresolver.NewResolverPreloaded("testdata-dns1.json")
+	dnsres, err := NewCache("testdata-dns1.json")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -26,5 +24,5 @@ func TestParse(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	DumpSPF(rec, "")
+	t.Log(rec.Print())
 }

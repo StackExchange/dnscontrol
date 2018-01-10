@@ -8,21 +8,26 @@ import (
 	"github.com/StackExchange/dnscontrol/models"
 )
 
+// Correlation stores a difference between two domains.
 type Correlation struct {
 	d        *differ
 	Existing *models.RecordConfig
 	Desired  *models.RecordConfig
 }
+
+// Changeset stores many Correlation.
 type Changeset []Correlation
 
+// Differ is an interface for computing the difference between two zones.
 type Differ interface {
-	//IncrementalDiff performs a diff on a record-by-record basis, and returns a sets for which records need to be created, deleted, or modified.
+	// IncrementalDiff performs a diff on a record-by-record basis, and returns a sets for which records need to be created, deleted, or modified.
 	IncrementalDiff(existing []*models.RecordConfig) (unchanged, create, toDelete, modify Changeset)
 	// ChangedGroups performs a diff more appropriate for providers with a "RecordSet" model, where all records with the same name and type are grouped.
 	// Individual record changes are often not useful in such scenarios. Instead we return a map of record keys to a list of change descriptions within that group.
 	ChangedGroups(existing []*models.RecordConfig) map[models.RecordKey][]string
 }
 
+// New is a constructor for a Differ.
 func New(dc *models.DomainConfig, extraValues ...func(*models.RecordConfig) map[string]string) Differ {
 	return &differ{
 		dc:          dc,
@@ -53,7 +58,7 @@ func (d *differ) IncrementalDiff(existing []*models.RecordConfig) (unchanged, cr
 	modify = Changeset{}
 	desired := d.dc.Records
 
-	//sort existing and desired by name
+	// sort existing and desired by name
 	type key struct {
 		name, rType string
 	}
@@ -67,7 +72,7 @@ func (d *differ) IncrementalDiff(existing []*models.RecordConfig) (unchanged, cr
 		k := key{d.NameFQDN, d.Type}
 		desiredByNameAndType[k] = append(desiredByNameAndType[k], d)
 	}
-	//if NO_PURGE is set, just remove anything that is only in existing.
+	// if NO_PURGE is set, just remove anything that is only in existing.
 	if d.dc.KeepUnknown {
 		for k := range existingByNameAndType {
 			if _, ok := desiredByNameAndType[k]; !ok {
@@ -80,12 +85,12 @@ func (d *differ) IncrementalDiff(existing []*models.RecordConfig) (unchanged, cr
 	// Each iteration is only for a single type/name record set
 	for key, existingRecords := range existingByNameAndType {
 		desiredRecords := desiredByNameAndType[key]
-		//first look through records that are the same target on both sides. Those are either modifications or unchanged
+		// first look through records that are the same target on both sides. Those are either modifications or unchanged
 		for i := len(existingRecords) - 1; i >= 0; i-- {
 			ex := existingRecords[i]
 			for j, de := range desiredRecords {
 				if de.Target == ex.Target {
-					//they're either identical or should be a modification of each other (ttl or metadata changes)
+					// they're either identical or should be a modification of each other (ttl or metadata changes)
 					if d.content(de) == d.content(ex) {
 						unchanged = append(unchanged, Correlation{d, ex, de})
 					} else {
@@ -124,7 +129,7 @@ func (d *differ) IncrementalDiff(existing []*models.RecordConfig) (unchanged, cr
 				delete(desiredLookup, norm)
 			}
 		}
-		//sort records by normalized text. Keeps behaviour deterministic
+		// sort records by normalized text. Keeps behaviour deterministic
 		existingStrings, desiredStrings := sortedKeys(existingLookup), sortedKeys(desiredLookup)
 		// Modifications. Take 1 from each side.
 		for len(desiredStrings) > 0 && len(existingStrings) > 0 {
@@ -146,7 +151,7 @@ func (d *differ) IncrementalDiff(existing []*models.RecordConfig) (unchanged, cr
 		delete(desiredByNameAndType, key)
 	}
 
-	//any name/type sets not already processed are pure additions
+	// any name/type sets not already processed are pure additions
 	for name := range existingByNameAndType {
 		delete(desiredByNameAndType, name)
 	}

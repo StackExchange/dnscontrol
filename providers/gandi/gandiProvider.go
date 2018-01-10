@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"log"
+	"sort"
 
 	"github.com/StackExchange/dnscontrol/models"
 	"github.com/StackExchange/dnscontrol/providers"
@@ -25,16 +26,21 @@ Info required in `creds.json`:
 
 */
 
-var docNotes = providers.DocumentationNotes{
+var features = providers.DocumentationNotes{
+	providers.CanUseCAA:              providers.Can(),
+	providers.CanUsePTR:              providers.Can(),
+	providers.CanUseSRV:              providers.Can(),
+	providers.CantUseNOPURGE:         providers.Cannot(),
 	providers.DocCreateDomains:       providers.Cannot("Can only manage domains registered through their service"),
 	providers.DocOfficiallySupported: providers.Cannot(),
 }
 
 func init() {
-	providers.RegisterDomainServiceProviderType("GANDI", newGandi, providers.CanUsePTR,
-		providers.CanUseSRV, docNotes, providers.CantUseNOPURGE)
+	providers.RegisterDomainServiceProviderType("GANDI", newDsp, features)
+	providers.RegisterRegistrarType("GANDI", newReg)
 }
 
+// GandiApi is the API handle for this module.
 type GandiApi struct {
 	ApiKey      string
 	domainIndex map[string]int64 // Map of domainname to index
@@ -57,6 +63,7 @@ func (c *GandiApi) getDomainInfo(domain string) (*gandidomain.DomainInfo, error)
 	return c.fetchDomainInfo(domain)
 }
 
+// GetNameservers returns the nameservers for domain.
 func (c *GandiApi) GetNameservers(domain string) ([]*models.Nameserver, error) {
 	domaininfo, err := c.getDomainInfo(domain)
 	if err != nil {
@@ -69,9 +76,11 @@ func (c *GandiApi) GetNameservers(domain string) ([]*models.Nameserver, error) {
 	return ns, nil
 }
 
+// GetDomainCorrections returns a list of corrections recommended for this domain.
 func (c *GandiApi) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Correction, error) {
 	dc.Punycode()
 	dc.CombineSRVs()
+	dc.CombineCAAs()
 	dc.CombineMXs()
 	domaininfo, err := c.getDomainInfo(dc.Name)
 	if err != nil {
@@ -111,6 +120,10 @@ func (c *GandiApi) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Corr
 		recordsToKeep = append(recordsToKeep, rec)
 	}
 	dc.Records = recordsToKeep
+
+	// Normalize
+	models.PostProcessRecords(foundRecords)
+
 	differ := diff.New(dc)
 	_, create, del, mod := differ.IncrementalDiff(foundRecords)
 
@@ -146,12 +159,47 @@ func (c *GandiApi) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Corr
 	return corrections, nil
 }
 
-func newGandi(m map[string]string, metadata json.RawMessage) (providers.DNSServiceProvider, error) {
+func newDsp(conf map[string]string, metadata json.RawMessage) (providers.DNSServiceProvider, error) {
+	return newGandi(conf, metadata)
+}
+
+func newReg(conf map[string]string) (providers.Registrar, error) {
+	return newGandi(conf, nil)
+}
+
+func newGandi(m map[string]string, metadata json.RawMessage) (*GandiApi, error) {
 	api := &GandiApi{}
 	api.ApiKey = m["apikey"]
 	if api.ApiKey == "" {
-		return nil, fmt.Errorf("Gandi apikey must be provided.")
+		return nil, fmt.Errorf("missing Gandi apikey")
 	}
 
 	return api, nil
+}
+
+// GetRegistrarCorrections returns a list of corrections for this registrar.
+func (c *GandiApi) GetRegistrarCorrections(dc *models.DomainConfig) ([]*models.Correction, error) {
+	domaininfo, err := c.getDomainInfo(dc.Name)
+	if err != nil {
+		return nil, err
+	}
+	sort.Strings(domaininfo.Nameservers)
+	found := strings.Join(domaininfo.Nameservers, ",")
+	desiredNs := []string{}
+	for _, d := range dc.Nameservers {
+		desiredNs = append(desiredNs, d.Name)
+	}
+	sort.Strings(desiredNs)
+	desired := strings.Join(desiredNs, ",")
+	if found != desired {
+		return []*models.Correction{
+			{
+				Msg: fmt.Sprintf("Change Nameservers from '%s' to '%s'", found, desired),
+				F: func() (err error) {
+					_, err = c.setDomainNameservers(dc.Name, desiredNs)
+					return
+				}},
+		}, nil
+	}
+	return nil, nil
 }

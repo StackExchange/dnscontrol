@@ -8,6 +8,7 @@ import (
 	"github.com/pkg/errors"
 )
 
+// ReverseDomainName turns a CIDR block into a reversed (in-addr) name.
 func ReverseDomainName(cidr string) (string, error) {
 	a, c, err := net.ParseCIDR(cidr)
 	if err != nil {

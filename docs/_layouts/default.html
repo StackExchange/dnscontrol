@@ -1,3 +1,4 @@
+<!DOCTYPE html>
 <html>
 
 <head>
@@ -10,9 +11,12 @@
         crossorigin="anonymous"></script>
     <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js" integrity="sha384-0mSbJDEHialfmuBBQP6A4Qrprq5OVfW37PRR3j5ELqxss1yVqOtnepnHVP9aJ7xS"
         crossorigin="anonymous"></script>
-     <link rel="stylesheet" href="{{site.github.url}}/css/site.css">
+    <link rel="stylesheet" href="{{site.github.url}}/css/site.css">
     <link rel="stylesheet" href="{{site.github.url}}/css/syntax.css">
-
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>{{ page.title }}</title>
 </head>
 
 <body>
@@ -20,11 +24,11 @@
         <div class="container">
             <div class="navbar-header">
                 <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#nav-collapse" aria-expanded="false">
-        <span class="sr-only">Toggle navigation</span>
-        <span class="icon-bar"></span>
-        <span class="icon-bar"></span>
-        <span class="icon-bar"></span>
-      </button>
+                    <span class="sr-only">Toggle navigation</span>
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                </button>
                 <a class="navbar-brand" href="{{site.github.url}}/">
                     DNSControl
                 </a>
@@ -36,27 +40,27 @@
                     <li><a href="{{site.github.url}}/provider-list">Providers</a></li>
                     <li>
                         <a href="https://github.com/StackExchange/dnscontrol" style="padding:10px 12px"><span class="fa fa-github fa-2x" aria-hidden="true"></span></a>
-</li>
-</ul>
-</div>
-</div>
-</nav>
-<div class='container'>
-    {{ content}}
-</div>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+    <div class='container'>
+        {{ content }}
+    </div>
 
- {% comment %} This script makes the examples collapse appropriately {% endcomment %}
+    {% comment %} This script makes the examples collapse appropriately {% endcomment %}
 
-<script>
-    $('.example-collapse').click(function (e) {
-        e.preventDefault();
-        $(this).parent().next().collapse('toggle');
-        $(this).toggleClass('expanded')
-    });
-    $(function () {
-        $('[data-toggle="tooltip"]').tooltip()
-    })
-</script>
+    <script>
+        $('.example-collapse').click(function (e) {
+            e.preventDefault();
+            $(this).parent().next().collapse('toggle');
+            $(this).toggleClass('expanded')
+        });
+        $(function () {
+            $('[data-toggle="tooltip"]').tooltip()
+        })
+    </script>
 </body>
 
 </html>

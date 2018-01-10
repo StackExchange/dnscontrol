@@ -1,4 +1,4 @@
-//Package nameservers provides logic for dynamically finding nameservers for a domain, and configuring NS records for them.
+// Package nameservers provides logic for dynamically finding nameservers for a domain, and configuring NS records for them.
 package nameservers
 
 import (
@@ -11,11 +11,11 @@ import (
 	"github.com/miekg/dns/dnsutil"
 )
 
-//DetermineNameservers will find all nameservers we should use for a domain. It follows the following rules:
-//1. All explicitly defined NAMESERVER records will be used.
-//2. Each DSP declares how many nameservers to use. Default is all. 0 indicates to use none.
-func DetermineNameservers(dc *models.DomainConfig, maxNS int) ([]*models.Nameserver, error) {
-	//always take explicit
+// DetermineNameservers will find all nameservers we should use for a domain. It follows the following rules:
+// 1. All explicitly defined NAMESERVER records will be used.
+// 2. Each DSP declares how many nameservers to use. Default is all. 0 indicates to use none.
+func DetermineNameservers(dc *models.DomainConfig) ([]*models.Nameserver, error) {
+	// always take explicit
 	ns := dc.Nameservers
 	for _, dnsProvider := range dc.DNSProviderInstances {
 		n := dnsProvider.NumberOfNameservers
@@ -38,7 +38,7 @@ func DetermineNameservers(dc *models.DomainConfig, maxNS int) ([]*models.Nameser
 	return ns, nil
 }
 
-//AddNSRecords creates NS records on a domain corresponding to the nameservers specified.
+// AddNSRecords creates NS records on a domain corresponding to the nameservers specified.
 func AddNSRecords(dc *models.DomainConfig) {
 	ttl := uint32(300)
 	if ttls, ok := dc.Metadata["ns_ttl"]; ok {

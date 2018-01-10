@@ -25,7 +25,7 @@ var docNotes = providers.DocumentationNotes{
 }
 
 func init() {
-	providers.RegisterDomainServiceProviderType("NS1", newProvider, docNotes)
+	providers.RegisterDomainServiceProviderType("NS1", newProvider, providers.CanUseSRV, docNotes)
 }
 
 type nsone struct {
@@ -65,6 +65,9 @@ func (n *nsone) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Correct
 	}
 	foundGrouped := found.Grouped()
 	desiredGrouped := dc.Records.Grouped()
+
+	//  Normalize
+	models.PostProcessRecords(found)
 
 	differ := diff.New(dc)
 	changedGroups := differ.ChangedGroups(found)
@@ -123,10 +126,13 @@ func buildRecord(recs models.Records, domain string, id string) *dns.Record {
 		Zone:   domain,
 	}
 	for _, r := range recs {
-		ans := &dns.Answer{
-			Rdata: strings.Split(r.Target, " "),
+		if r.Type == "TXT" {
+			rec.AddAnswer(&dns.Answer{Rdata: []string{r.Target}})
+		} else if r.Type == "SRV" {
+			rec.AddAnswer(&dns.Answer{Rdata: strings.Split(fmt.Sprintf("%d %d %d %v", r.SrvPriority, r.SrvWeight, r.SrvPort, r.Target), " ")})
+		} else {
+			rec.AddAnswer(&dns.Answer{Rdata: strings.Split(r.Target, " ")})
 		}
-		rec.AddAnswer(ans)
 	}
 	return rec
 }
@@ -142,7 +148,7 @@ func convert(zr *dns.ZoneRecord, domain string) ([]*models.RecordConfig, error) 
 			Original: zr,
 			Type:     zr.Type,
 		}
-		if zr.Type == "MX" {
+		if zr.Type == "MX" || zr.Type == "SRV" {
 			rec.CombinedTarget = true
 		}
 		found = append(found, rec)

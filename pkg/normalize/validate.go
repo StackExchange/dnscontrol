@@ -74,7 +74,7 @@ func validateRecordTypes(rec *models.RecordConfig, domain string, pTypes []strin
 				return fmt.Errorf("Custom record type %s is not compatible with provider type %s", rec.Type, providerType)
 			}
 		}
-		//it is ok. Lets replace the type with real type and add metadata to say we checked it
+		// it is ok. Lets replace the type with real type and add metadata to say we checked it
 		rec.Metadata["orig_custom_type"] = rec.Type
 		if cType.RealType != "" {
 			rec.Type = cType.RealType
@@ -85,12 +85,12 @@ func validateRecordTypes(rec *models.RecordConfig, domain string, pTypes []strin
 
 // underscores in names are often used erroneously. They are valid for dns records, but invalid for urls.
 // here we list common records expected to have underscores. Anything else containing an underscore will print a warning.
-var labelUnderscores = []string{"_domainkey", "_dmarc", "_amazonses"}
+var labelUnderscores = []string{"_domainkey", "_dmarc", "_amazonses", "_acme-challenge"}
 
-//these record types may contain underscores
+// these record types may contain underscores
 var rTypeUnderscores = []string{"SRV", "TLSA", "TXT"}
 
-func checkLabel(label string, rType string, domain string) error {
+func checkLabel(label string, rType string, domain string, meta map[string]string) error {
 	if label == "@" {
 		return nil
 	}
@@ -100,6 +100,12 @@ func checkLabel(label string, rType string, domain string) error {
 	if label[len(label)-1] == '.' {
 		return fmt.Errorf("label %s.%s ends with a (.)", label, domain)
 	}
+	if strings.HasSuffix(label, domain) {
+		if m := meta["skip_fqdn_check"]; m != "true" {
+			return fmt.Errorf(`label %s ends with domain name %s. Record names should not be fully qualified. Add {skip_fqdn_check:"true"} to this record if you really want to make %s.%s`, label, domain, label, domain)
+		}
+	}
+	// check for underscores last
 	for _, ex := range rTypeUnderscores {
 		if rType == ex {
 			return nil
@@ -110,10 +116,11 @@ func checkLabel(label string, rType string, domain string) error {
 			return nil
 		}
 	}
-	//underscores are warnings
+	// underscores are warnings
 	if strings.ContainsRune(label, '_') {
 		return Warning{fmt.Errorf("label %s.%s contains an underscore", label, domain)}
 	}
+
 	return nil
 }
 
@@ -156,7 +163,7 @@ func checkTargets(rec *models.RecordConfig, domain string) (errs []error) {
 	case "TXT", "IMPORT_TRANSFORM", "CAA", "TLSA":
 	default:
 		if rec.Metadata["orig_custom_type"] != "" {
-			//it is a valid custom type. We perform no validation on target
+			// it is a valid custom type. We perform no validation on target
 			return
 		}
 		errs = append(errs, fmt.Errorf("checkTargets: Unimplemented record type (%v) domain=%v name=%v",
@@ -237,15 +244,21 @@ type Warning struct {
 	error
 }
 
+// NormalizeAndValidateConfig performs and normalization and/or validation of the IR.
 func NormalizeAndValidateConfig(config *models.DNSConfig) (errs []error) {
 	for _, domain := range config.Domains {
 		pTypes := []string{}
+		txtMultiDissenters := []string{}
 		for _, provider := range domain.DNSProviderInstances {
-			pTypes = append(pTypes, provider.ProviderType)
+			pType := provider.ProviderType
+			// If NO_PURGE is in use, make sure this *isn't* a provider that *doesn't* support NO_PURGE.
+			if domain.KeepUnknown && providers.ProviderHasCabability(pType, providers.CantUseNOPURGE) {
+				errs = append(errs, fmt.Errorf("%s uses NO_PURGE which is not supported by %s(%s)", domain.Name, provider.Name, pType))
+			}
 
-			//If NO_PURGE is in use, make sure this *isn't* a provider that *doesn't* support NO_PURGE.
-			if domain.KeepUnknown && providers.ProviderHasCabability(provider.ProviderType, providers.CantUseNOPURGE) {
-				errs = append(errs, fmt.Errorf("%s uses NO_PURGE which is not supported by %s(%s)", domain.Name, provider.Name, provider.ProviderType))
+			// Record if any providers do not support TXTMulti:
+			if !providers.ProviderHasCabability(pType, providers.CanUseTXTMulti) {
+				txtMultiDissenters = append(txtMultiDissenters, provider.Name)
 			}
 		}
 
@@ -255,6 +268,7 @@ func NormalizeAndValidateConfig(config *models.DNSConfig) (errs []error) {
 			ns.Name = strings.TrimRight(ns.Name, ".")
 		}
 		// Normalize Records.
+		models.PostProcessRecords(domain.Records)
 		for _, rec := range domain.Records {
 			if rec.TTL == 0 {
 				rec.TTL = models.DefaultTTL
@@ -263,7 +277,7 @@ func NormalizeAndValidateConfig(config *models.DNSConfig) (errs []error) {
 			if err := validateRecordTypes(rec, domain.Name, pTypes); err != nil {
 				errs = append(errs, err)
 			}
-			if err := checkLabel(rec.Name, rec.Type, domain.Name); err != nil {
+			if err := checkLabel(rec.Name, rec.Type, domain.Name, rec.Metadata); err != nil {
 				errs = append(errs, err)
 			}
 			if errs2 := checkTargets(rec, domain.Name); errs2 != nil {
@@ -297,6 +311,12 @@ func NormalizeAndValidateConfig(config *models.DNSConfig) (errs []error) {
 					errs = append(errs, fmt.Errorf("TLSA MatchingType %d is invalid in record %s (domain %s)",
 						rec.TlsaMatchingType, rec.Name, domain.Name))
 				}
+			} else if rec.Type == "TXT" && len(txtMultiDissenters) != 0 && len(rec.TxtStrings) > 1 {
+				// There are providers that  don't support TXTMulti yet there is
+				// a TXT record with multiple strings:
+				errs = append(errs,
+					fmt.Errorf("TXT records with multiple strings (label %v domain: %v) not supported by %s",
+						rec.Name, domain.Name, strings.Join(txtMultiDissenters, ",")))
 			}
 
 			// Populate FQDN:
@@ -304,7 +324,12 @@ func NormalizeAndValidateConfig(config *models.DNSConfig) (errs []error) {
 		}
 	}
 
-	// Process any pseudo-records:
+	// SPF flattening
+	if ers := flattenSPFs(config); len(ers) > 0 {
+		errs = append(errs, ers...)
+	}
+
+	// Process IMPORT_TRANSFORM
 	for _, domain := range config.Domains {
 		for _, rec := range domain.Records {
 			if rec.Type == "IMPORT_TRANSFORM" {
@@ -324,7 +349,6 @@ func NormalizeAndValidateConfig(config *models.DNSConfig) (errs []error) {
 	for _, domain := range config.Domains {
 		deleteImportTransformRecords(domain)
 	}
-
 	// Run record transforms
 	for _, domain := range config.Domains {
 		if err := applyRecordTransforms(domain); err != nil {
@@ -332,12 +356,12 @@ func NormalizeAndValidateConfig(config *models.DNSConfig) (errs []error) {
 		}
 	}
 
-	//Check that CNAMES don't have to co-exist with any other records
+	// Check that CNAMES don't have to co-exist with any other records
 	for _, d := range config.Domains {
 		errs = append(errs, checkCNAMEs(d)...)
 	}
 
-	//Check that if any aliases / ptr / etc.. are used in a domain, every provider for that domain supports them
+	// Check that if any aliases / ptr / etc.. are used in a domain, every provider for that domain supports them
 	for _, d := range config.Domains {
 		err := checkProviderCapabilities(d)
 		if err != nil {
@@ -410,14 +434,14 @@ func applyRecordTransforms(domain *models.DomainConfig) error {
 		if err != nil {
 			return err
 		}
-		ip := net.ParseIP(rec.Target) //ip already validated above
+		ip := net.ParseIP(rec.Target) // ip already validated above
 		newIPs, err := transform.TransformIPToList(net.ParseIP(rec.Target), table)
 		if err != nil {
 			return err
 		}
 		for i, newIP := range newIPs {
 			if i == 0 && !newIP.Equal(ip) {
-				rec.Target = newIP.String() //replace target of first record if different
+				rec.Target = newIP.String() // replace target of first record if different
 			} else if i > 0 {
 				// any additional ips need identical records with the alternate ip added to the domain
 				copy, err := rec.Copy()

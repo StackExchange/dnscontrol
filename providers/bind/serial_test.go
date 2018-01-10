@@ -43,7 +43,7 @@ func Test_generate_serial_1(t *testing.T) {
 		nowFunc = func() time.Time {
 			return tst.Today
 		}
-		found := generate_serial(tst.Given)
+		found := generateSerial(tst.Given)
 		if expected != found {
 			t.Fatalf("Test:%d/%v: Expected (%d) got (%d)\n", i, tst.Given, expected, found)
 		}

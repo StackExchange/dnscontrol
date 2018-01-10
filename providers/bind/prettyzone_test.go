@@ -47,7 +47,7 @@ func TestMostCommonTtl(t *testing.T) {
 	// All records are TTL=100
 	records = nil
 	records, e = append(records, r1, r1, r1), 100
-	g = mostCommonTtl(records)
+	g = mostCommonTTL(records)
 	if e != g {
 		t.Fatalf("expected %d; got %d\n", e, g)
 	}
@@ -55,7 +55,7 @@ func TestMostCommonTtl(t *testing.T) {
 	// Mixture of TTLs with an obvious winner.
 	records = nil
 	records, e = append(records, r1, r2, r2), 200
-	g = mostCommonTtl(records)
+	g = mostCommonTTL(records)
 	if e != g {
 		t.Fatalf("expected %d; got %d\n", e, g)
 	}
@@ -63,7 +63,7 @@ func TestMostCommonTtl(t *testing.T) {
 	// 3-way tie. Largest TTL should be used.
 	records = nil
 	records, e = append(records, r1, r2, r3), 300
-	g = mostCommonTtl(records)
+	g = mostCommonTTL(records)
 	if e != g {
 		t.Fatalf("expected %d; got %d\n", e, g)
 	}
@@ -71,7 +71,7 @@ func TestMostCommonTtl(t *testing.T) {
 	// NS records are ignored.
 	records = nil
 	records, e = append(records, r1, r4, r5), 100
-	g = mostCommonTtl(records)
+	g = mostCommonTTL(records)
 	if e != g {
 		t.Fatalf("expected %d; got %d\n", e, g)
 	}
@@ -123,7 +123,7 @@ www        300   IN CNAME bosun.org.
 }
 
 func TestWriteZoneFileMx(t *testing.T) {
-	//exhibits explicit ttls and long name
+	// exhibits explicit ttls and long name
 	r1, _ := dns.NewRR(`bosun.org. 300 IN TXT "aaa"`)
 	r2, _ := dns.NewRR(`bosun.org. 300 IN TXT "bbb"`)
 	r2.(*dns.TXT).Txt[0] = `b"bb`
@@ -157,7 +157,7 @@ google._domainkey IN TXT  "\"foo\""
 `
 
 func TestWriteZoneFileSrv(t *testing.T) {
-	//exhibits explicit ttls and long name
+	// exhibits explicit ttls and long name
 	r1, _ := dns.NewRR(`bosun.org. 300 IN SRV 10 10 9999 foo.com.`)
 	r2, _ := dns.NewRR(`bosun.org. 300 IN SRV 10 20 5050 foo.com.`)
 	r3, _ := dns.NewRR(`bosun.org. 300 IN SRV 10 10 5050 foo.com.`)
@@ -182,7 +182,7 @@ var testdataZFSRV = `$TTL 300
 `
 
 func TestWriteZoneFilePtr(t *testing.T) {
-	//exhibits explicit ttls and long name
+	// exhibits explicit ttls and long name
 	r1, _ := dns.NewRR(`bosun.org. 300 IN PTR chell.bosun.org`)
 	r2, _ := dns.NewRR(`bosun.org. 300 IN PTR barney.bosun.org.`)
 	r3, _ := dns.NewRR(`bosun.org. 300 IN PTR alex.bosun.org.`)
@@ -203,7 +203,7 @@ var testdataZFPTR = `$TTL 300
 `
 
 func TestWriteZoneFileCaa(t *testing.T) {
-	//exhibits explicit ttls and long name
+	// exhibits explicit ttls and long name
 	r1, _ := dns.NewRR(`bosun.org. 300 IN CAA 0 issuewild ";"`)
 	r2, _ := dns.NewRR(`bosun.org. 300 IN CAA 0 issue "letsencrypt.org"`)
 	r3, _ := dns.NewRR(`bosun.org. 300 IN CAA 1 iodef "http://example.com"`)
@@ -272,7 +272,6 @@ func TestWriteZoneFileOrder(t *testing.T) {
 		perm := rand.Perm(len(records))
 		for i, v := range perm {
 			records[i], records[v] = records[v], records[i]
-			//fmt.Println(i, v)
 		}
 		// Generate
 		buf := &bytes.Buffer{}
