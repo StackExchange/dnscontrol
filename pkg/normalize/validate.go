@@ -238,24 +238,14 @@ type Warning struct {
 }
 
 func NormalizeAndValidateConfig(config *models.DNSConfig) (errs []error) {
-	ptypeMap := map[string]string{}
-	for _, p := range config.DNSProviders {
-		ptypeMap[p.Name] = p.Type
-	}
-
 	for _, domain := range config.Domains {
 		pTypes := []string{}
-		for p := range domain.DNSProviders {
-			pType, ok := ptypeMap[p]
-			if !ok {
-				errs = append(errs, fmt.Errorf("%s uses undefined DNS provider %s", domain.Name, p))
-			} else {
-				pTypes = append(pTypes, pType)
-			}
+		for _, provider := range domain.DNSProviderInstances {
+			pTypes = append(pTypes, provider.ProviderType)
 
 			//If NO_PURGE is in use, make sure this *isn't* a provider that *doesn't* support NO_PURGE.
-			if domain.KeepUnknown && providers.ProviderHasCabability(pType, providers.CantUseNOPURGE) {
-				errs = append(errs, fmt.Errorf("%s uses NO_PURGE which is not supported by %s(%s)", domain.Name, p, pType))
+			if domain.KeepUnknown && providers.ProviderHasCabability(provider.ProviderType, providers.CantUseNOPURGE) {
+				errs = append(errs, fmt.Errorf("%s uses NO_PURGE which is not supported by %s(%s)", domain.Name, provider.Name, provider.ProviderType))
 			}
 		}
 
@@ -349,7 +339,7 @@ func NormalizeAndValidateConfig(config *models.DNSConfig) (errs []error) {
 
 	//Check that if any aliases / ptr / etc.. are used in a domain, every provider for that domain supports them
 	for _, d := range config.Domains {
-		err := checkProviderCapabilities(d, config.DNSProviders)
+		err := checkProviderCapabilities(d)
 		if err != nil {
 			errs = append(errs, err)
 		}
@@ -376,7 +366,7 @@ func checkCNAMEs(dc *models.DomainConfig) (errs []error) {
 	return
 }
 
-func checkProviderCapabilities(dc *models.DomainConfig, pList []*models.DNSProviderConfig) error {
+func checkProviderCapabilities(dc *models.DomainConfig) error {
 	types := []struct {
 		rType string
 		cap   providers.Capability
@@ -398,14 +388,9 @@ func checkProviderCapabilities(dc *models.DomainConfig, pList []*models.DNSProvi
 		if !hasAny {
 			continue
 		}
-		for pName := range dc.DNSProviders {
-			for _, p := range pList {
-				if p.Name == pName {
-					if !providers.ProviderHasCabability(p.Type, ty.cap) {
-						return fmt.Errorf("Domain %s uses %s records, but DNS provider type %s does not support them", dc.Name, ty.rType, p.Type)
-					}
-					break
-				}
+		for _, provider := range dc.DNSProviderInstances {
+			if !providers.ProviderHasCabability(provider.ProviderType, ty.cap) {
+				return fmt.Errorf("Domain %s uses %s records, but DNS provider type %s does not support them", dc.Name, ty.rType, provider.ProviderType)
 			}
 		}
 	}

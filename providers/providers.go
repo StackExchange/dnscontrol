@@ -10,13 +10,12 @@ import (
 
 //Registrar is an interface for a domain registrar. It can return a list of needed corrections to be applied in the future.
 type Registrar interface {
-	GetRegistrarCorrections(dc *models.DomainConfig) ([]*models.Correction, error)
+	models.Registrar
 }
 
 //DNSServiceProvider is able to generate a set of corrections that need to be made to correct records for a domain
 type DNSServiceProvider interface {
-	GetNameservers(domain string) ([]*models.Nameserver, error)
-	GetDomainCorrections(dc *models.DomainConfig) ([]*models.Correction, error)
+	models.DNSProvider
 }
 
 //DomainCreator should be implemented by providers that have the ability to add domains to an account. the create-domains command
