@@ -27,13 +27,14 @@ func generateFeatureMatrix() error {
 		Providers: map[string]FeatureMap{},
 		Features: []FeatureDef{
 			{"Official Support", "This means the provider is actively used at Stack Exchange, bugs are more likely to be fixed, and failing integration tests will block a release. See below for details"},
-			{"Registrar", "The provider has registrar capabilities to set nameservers for zones"},
 			{"DNS Provider", "Can manage and serve DNS zones"},
+			{"Registrar", "The provider has registrar capabilities to set nameservers for zones"},
 			{"ALIAS", "Provider supports some kind of ALIAS, ANAME or flattened CNAME record type"},
-			{"SRV", "Driver has explicitly implemented SRV record management"},
-			{"PTR", "Provider supports adding PTR records for reverse lookup zones"},
 			{"CAA", "Provider can manage CAA records"},
+			{"PTR", "Provider supports adding PTR records for reverse lookup zones"},
+			{"SRV", "Driver has explicitly implemented SRV record management"},
 			{"TLSA", "Provider can manage TLSA records"},
+			{"TXTMulti", "Provider can manage TXT records with multiple strings"},
 
 			{"dual host", "This provider is recommended for use in 'dual hosting' scenarios. Usually this means the provider allows full control over the apex NS records"},
 			{"create-domains", "This means the provider can automatically create domains that do not currently exist on your account. The 'dnscontrol create-domains' command will initialize any missing domains"},
@@ -66,13 +67,14 @@ func generateFeatureMatrix() error {
 			}
 		}
 		setDoc("Official Support", providers.DocOfficiallySupported, true)
-		fm.SetSimple("Registrar", false, func() bool { return providers.RegistrarTypes[p] != nil })
 		fm.SetSimple("DNS Provider", false, func() bool { return providers.DNSProviderTypes[p] != nil })
+		fm.SetSimple("Registrar", false, func() bool { return providers.RegistrarTypes[p] != nil })
 		setCap("ALIAS", providers.CanUseAlias)
-		setCap("SRV", providers.CanUseSRV)
-		setCap("PTR", providers.CanUsePTR)
 		setCap("CAA", providers.CanUseCAA)
+		setCap("PTR", providers.CanUsePTR)
+		setCap("SRV", providers.CanUseSRV)
 		setCap("TLSA", providers.CanUseTLSA)
+		setCap("TXTMulti", providers.CanUseTXTMulti)
 		setDoc("dual host", providers.DocDualHost, false)
 		setDoc("create-domains", providers.DocCreateDomains, true)
 
