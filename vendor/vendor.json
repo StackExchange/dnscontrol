@@ -321,6 +321,12 @@
 			"revisionTime": "2017-09-07T07:13:03Z"
 		},
 		{
+			"checksumSHA1": "Xg6Xt9/7LCldfHizto5H+B9hkCA=",
+			"path": "github.com/namedotcom/go/namecom",
+			"revision": "8e652d1a756f2480f1ad28dc211c77a25264e02d",
+			"revisionTime": "2018-01-09T18:53:19Z"
+		},
+		{
 			"checksumSHA1": "rJab1YdNhQooDiBWNnt7TLWPyBU=",
 			"path": "github.com/pkg/errors",
 			"revision": "2b3a18b5f0fb6b4f9190549597d3f962c02bc5eb",
