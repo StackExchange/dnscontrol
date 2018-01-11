@@ -93,7 +93,7 @@ func run(args PreviewArgs, push bool, interactive bool, out printer.CLI) error {
 	if PrintValidationErrors(errs) {
 		return fmt.Errorf("Exiting due to validation errors")
 	}
-	registrars, dnsProviders, nonDefaultProviders, nofitier, err := InitializeProviders(args.CredsFile, cfg, args.Notify)
+	registrars, dnsProviders, nonDefaultProviders, notifier, err := InitializeProviders(args.CredsFile, cfg, args.Notify)
 	if err != nil {
 		return err
 	}
@@ -134,7 +134,7 @@ DomainLoop:
 				continue DomainLoop
 			}
 			totalCorrections += len(corrections)
-			anyErrors = printOrRunCorrections(domain.Name, prov, corrections, out, push, interactive, nofitier) || anyErrors
+			anyErrors = printOrRunCorrections(domain.Name, prov, corrections, out, push, interactive, notifier) || anyErrors
 		}
 		run := args.shouldRunProvider(domain.Registrar, domain, nonDefaultProviders)
 		out.StartRegistrar(domain.Registrar, !run)
@@ -160,12 +160,12 @@ DomainLoop:
 			continue
 		}
 		totalCorrections += len(corrections)
-		anyErrors = printOrRunCorrections(domain.Name, domain.Registrar, corrections, out, push, interactive, nofitier) || anyErrors
+		anyErrors = printOrRunCorrections(domain.Name, domain.Registrar, corrections, out, push, interactive, notifier) || anyErrors
 	}
 	if os.Getenv("TEAMCITY_VERSION") != "" {
 		fmt.Fprintf(os.Stderr, "##teamcity[buildStatus status='SUCCESS' text='%d corrections']", totalCorrections)
 	}
-	nofitier.Done()
+	notifier.Done()
 	out.Debugf("Done. %d corrections.\n", totalCorrections)
 	if anyErrors {
 		return fmt.Errorf("Completed with errors")
