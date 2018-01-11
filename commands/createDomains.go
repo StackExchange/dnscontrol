@@ -38,7 +38,7 @@ func CreateDomains(args CreateDomainsArgs) error {
 	if err != nil {
 		return err
 	}
-	registrars, dnsProviders, _, err := InitializeProviders(args.CredsFile, cfg)
+	registrars, dnsProviders, _, _, err := InitializeProviders(args.CredsFile, cfg, false)
 	if err != nil {
 		return err
 	}
