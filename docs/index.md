@@ -129,6 +129,9 @@ title: DnsControl
 				<li>
 					<a href="{{site.github.url}}/unittests">Testing</a>: Unit Testing for you DNS Data
 				</li>
+				<li>
+					<a href="{{site.github.url}}/notifications">Notifications</a>: Be alerted when your domains are changed
+				</li>
 
 			</ul>
 		</div>
