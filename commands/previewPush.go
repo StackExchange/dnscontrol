@@ -165,6 +165,7 @@ DomainLoop:
 	if os.Getenv("TEAMCITY_VERSION") != "" {
 		fmt.Fprintf(os.Stderr, "##teamcity[buildStatus status='SUCCESS' text='%d corrections']", totalCorrections)
 	}
+	nofitier.Done()
 	out.Debugf("Done. %d corrections.\n", totalCorrections)
 	if anyErrors {
 		return fmt.Errorf("Completed with errors")
@@ -224,7 +225,7 @@ func printOrRunCorrections(domain string, provider string, corrections []*models
 				anyErrors = true
 			}
 		}
-		notifier(domain, provider, correction.Msg, err, !push)
+		notifier.Notify(domain, provider, correction.Msg, err, !push)
 	}
 	return anyErrors
 }

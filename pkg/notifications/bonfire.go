@@ -9,7 +9,7 @@ import (
 func init() {
 	initers = append(initers, func(cfg map[string]string) Notifier {
 		if url, ok := cfg["bonfire_url"]; ok {
-			return bonfireNotifier(url).Notify
+			return bonfireNotifier(url)
 		}
 		return nil
 	})
@@ -29,3 +29,5 @@ func (b bonfireNotifier) Notify(domain, provider, msg string, err error, preview
 	}
 	http.Post(string(b), "text/markdown", strings.NewReader(payload))
 }
+
+func (b bonfireNotifier) Done() {}
