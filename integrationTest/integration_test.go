@@ -466,11 +466,17 @@ func makeTests(t *testing.T) []*TestCase {
 				txtmulti("foo2", []string{"one", "two"}),
 				txtmulti("foo3", []string{"eh", "bee", "cee"}),
 			),
+			tc("Create TXTMulti with quotes",
+				txtmulti("foo1", []string{"simple"}),
+				txtmulti("foo2", []string{"o\"ne", "tw\"o"}),
+				txtmulti("foo3", []string{"eh", "bee", "cee"}),
+			),
 			tc("Change TXTMulti",
 				txtmulti("foo1", []string{"dimple"}),
 				txtmulti("foo2", []string{"fun", "two"}),
 				txtmulti("foo3", []string{"eh", "bzz", "cee"}),
 			),
+			tc("Empty"),
 		)
 	}
 

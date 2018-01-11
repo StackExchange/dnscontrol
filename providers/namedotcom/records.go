@@ -169,7 +169,10 @@ func (n *NameCom) createRecord(rc *models.RecordConfig, domain string) error {
 		// nothing
 	case "TXT":
 		if len(rc.TxtStrings) > 1 {
-			record.Answer = "\"" + strings.Join(rc.TxtStrings, "\"\"") + "\""
+			record.Answer = ""
+			for _, t := range rc.TxtStrings {
+				record.Answer += "\"" + strings.Replace(t, "\"", "\\\"", -1) + "\""
+			}
 		}
 	case "SRV":
 		record.Answer = fmt.Sprintf("%d %d %v", rc.SrvWeight, rc.SrvPort, rc.Target)
