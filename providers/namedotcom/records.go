@@ -2,6 +2,7 @@ package namedotcom
 
 import (
 	"fmt"
+	"regexp"
 	"strconv"
 	"strings"
 
@@ -82,6 +83,9 @@ func checkNSModifications(dc *models.DomainConfig) {
 	dc.Records = newList
 }
 
+// finds a string surrounded by quotes that might contain an escaped quote charactor.
+var quotedStringRegexp = regexp.MustCompile("\"((?:[^\"\\\\]|\\\\.)*)\"")
+
 func toRecord(r *namecom.Record) *models.RecordConfig {
 	rc := &models.RecordConfig{
 		NameFQDN: r.Fqdn,
@@ -91,8 +95,16 @@ func toRecord(r *namecom.Record) *models.RecordConfig {
 		Original: r,
 	}
 	switch r.Type { // #rtype_variations
-	case "A", "AAAA", "ANAME", "CNAME", "NS", "TXT":
+	case "A", "AAAA", "ANAME", "CNAME", "NS":
 		// nothing additional.
+	case "TXT":
+		if r.Answer[0] == '"' && r.Answer[len(r.Answer)-1] == '"' {
+			txtStrings := []string{}
+			for _, t := range quotedStringRegexp.FindAllStringSubmatch(r.Answer, -1) {
+				txtStrings = append(txtStrings, t[1])
+			}
+			rc.SetTxts(txtStrings)
+		}
 	case "MX":
 		rc.MxPreference = uint16(r.Priority)
 	case "SRV":
@@ -153,8 +165,12 @@ func (n *NameCom) createRecord(rc *models.RecordConfig, domain string) error {
 	}
 
 	switch rc.Type { // #rtype_variations
-	case "A", "AAAA", "ANAME", "CNAME", "MX", "NS", "TXT":
+	case "A", "AAAA", "ANAME", "CNAME", "MX", "NS":
 		// nothing
+	case "TXT":
+		if len(rc.TxtStrings) > 1 {
+			record.Answer = "\"" + strings.Join(rc.TxtStrings, "\"\"") + "\""
+		}
 	case "SRV":
 		record.Answer = fmt.Sprintf("%d %d %v", rc.SrvWeight, rc.SrvPort, rc.Target)
 		record.Priority = uint32(rc.SrvPriority)
