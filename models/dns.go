@@ -363,7 +363,20 @@ type DomainConfig struct {
 // Copy returns a deep copy of the DomainConfig.
 func (dc *DomainConfig) Copy() (*DomainConfig, error) {
 	newDc := &DomainConfig{}
+	// provider instances are interfaces that gob hates if you don't register them.
+	// and the specific types are not gob encodable since nothing is exported.
+	// should find a better solution for this now.
+	//
+	// current strategy: remove everything, gob copy it. Then set both to stored copy.
+	reg := dc.RegistrarInstance
+	dnsps := dc.DNSProviderInstances
+	dc.RegistrarInstance = nil
+	dc.DNSProviderInstances = nil
 	err := copyObj(dc, newDc)
+	dc.RegistrarInstance = reg
+	newDc.RegistrarInstance = reg
+	dc.DNSProviderInstances = dnsps
+	newDc.DNSProviderInstances = dnsps
 	return newDc, err
 }
 

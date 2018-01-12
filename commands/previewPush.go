@@ -202,6 +202,7 @@ func InitializeProviders(credsFile string, cfg *models.DNSConfig, notifyFlag boo
 			registrars[d.RegistrarName] = r
 		}
 		d.RegistrarInstance.Driver = registrars[d.RegistrarName]
+		d.RegistrarInstance.IsDefault = !isNonDefault[d.RegistrarName]
 		for _, pInst := range d.DNSProviderInstances {
 			if dnsProviders[pInst.Name] == nil {
 				dCfg := cfg.DNSProvidersByName[pInst.Name]
@@ -212,6 +213,7 @@ func InitializeProviders(credsFile string, cfg *models.DNSConfig, notifyFlag boo
 				dnsProviders[pInst.Name] = prov
 			}
 			pInst.Driver = dnsProviders[pInst.Name]
+			pInst.IsDefault = !isNonDefault[pInst.Name]
 		}
 	}
 	return
