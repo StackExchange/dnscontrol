@@ -21,9 +21,11 @@ const DefaultTTL = uint32(300)
 
 // DNSConfig describes the desired DNS configuration, usually loaded from dnsconfig.js.
 type DNSConfig struct {
-	Registrars   []*RegistrarConfig   `json:"registrars"`
-	DNSProviders []*DNSProviderConfig `json:"dns_providers"`
-	Domains      []*DomainConfig      `json:"domains"`
+	Registrars         []*RegistrarConfig            `json:"registrars"`
+	DNSProviders       []*DNSProviderConfig          `json:"dns_providers"`
+	Domains            []*DomainConfig               `json:"domains"`
+	RegistrarsByName   map[string]*RegistrarConfig   `json:"-"`
+	DNSProvidersByName map[string]*DNSProviderConfig `json:"-"`
 }
 
 // FindDomain returns the *DomainConfig for domain query in config.

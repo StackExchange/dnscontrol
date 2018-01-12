@@ -2,7 +2,6 @@ package commands
 
 import (
 	"fmt"
-	"log"
 
 	"github.com/StackExchange/dnscontrol/providers"
 	"github.com/urfave/cli"
@@ -38,21 +37,13 @@ func CreateDomains(args CreateDomainsArgs) error {
 	if err != nil {
 		return err
 	}
-	registrars, dnsProviders, _, _, err := InitializeProviders(args.CredsFile, cfg, false)
-	if err != nil {
-		return err
-	}
-	fmt.Printf("Initialized %d registrars and %d dns service providers.\n", len(registrars), len(dnsProviders))
+	// TODO:
+	// registrars, dnsProviders, _, _, err := InitializeProviders(args.CredsFile, cfg, false)
 	for _, domain := range cfg.Domains {
 		fmt.Println("*** ", domain.Name)
-		for prov := range domain.DNSProviders {
-			dsp, ok := dnsProviders[prov]
-			if !ok {
-				log.Fatalf("DSP %s not declared.", prov)
-			}
-			if creator, ok := dsp.(providers.DomainCreator); ok {
-				fmt.Println("  -", prov)
-				// TODO: maybe return bool if it did anything.
+		for _, provider := range domain.DNSProviderInstances {
+			if creator, ok := provider.Driver.(providers.DomainCreator); ok {
+				fmt.Println("  -", provider.Name)
 				err := creator.EnsureDomainExists(domain.Name)
 				if err != nil {
 					fmt.Printf("Error creating domain: %s\n", err)

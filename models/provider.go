@@ -17,11 +17,11 @@ type ProviderBase struct {
 
 type RegistrarInstance struct {
 	ProviderBase
-	Registrar
+	Driver Registrar
 }
 
 type DNSProviderInstance struct {
 	ProviderBase
-	DNSProvider
+	Driver              DNSProvider
 	NumberOfNameservers int
 }

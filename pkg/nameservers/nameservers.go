@@ -23,7 +23,7 @@ func DetermineNameservers(dc *models.DomainConfig) ([]*models.Nameserver, error)
 			continue
 		}
 		fmt.Printf("----- Getting nameservers from: %s\n", dnsProvider.Name)
-		nss, err := dnsProvider.GetNameservers(dc.Name)
+		nss, err := dnsProvider.Driver.GetNameservers(dc.Name)
 		if err != nil {
 			return nil, err
 		}
