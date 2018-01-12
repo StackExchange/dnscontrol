@@ -97,7 +97,10 @@ func run(args PreviewArgs, push bool, interactive bool, out printer.CLI) error {
 		return fmt.Errorf("Exiting due to validation errors")
 	}
 	// TODO:
-	//registrars, dnsProviders, nonDefaultProviders, notifier, err := InitializeProviders(args.CredsFile, cfg, args.Notify)
+	notifier, err := InitializeProviders(args.CredsFile, cfg, args.Notify)
+	if err != nil {
+		return err
+	}
 	anyErrors := false
 	totalCorrections := 0
 DomainLoop:
@@ -166,7 +169,7 @@ DomainLoop:
 
 // InitializeProviders takes a creds file path and a DNSConfig object. Creates all providers with the proper types, and returns them.
 // nonDefaultProviders is a list of providers that should not be run unless explicitly asked for by flags.
-func InitializeProviders(credsFile string, cfg *models.DNSConfig, notifyFlag bool) (registrars map[string]providers.Registrar, dnsProviders map[string]providers.DNSServiceProvider, nonDefaultProviders []string, notify notifications.Notifier, err error) {
+func InitializeProviders(credsFile string, cfg *models.DNSConfig, notifyFlag bool) (notify notifications.Notifier, err error) {
 	var providerConfigs map[string]map[string]string
 	var notificationCfg map[string]string
 	defer func() {
@@ -179,21 +182,37 @@ func InitializeProviders(credsFile string, cfg *models.DNSConfig, notifyFlag boo
 	if notifyFlag {
 		notificationCfg = providerConfigs["notifications"]
 	}
-	nonDefaultProviders = []string{}
+	isNonDefault := map[string]bool{}
 	for name, vals := range providerConfigs {
 		// add "_exclude_from_defaults":"true" to a provider to exclude it from being run unless
 		// -providers=all or -providers=name
 		if vals["_exclude_from_defaults"] == "true" {
-			nonDefaultProviders = append(nonDefaultProviders, name)
+			isNonDefault[name] = true
 		}
 	}
-	registrars, err = providers.CreateRegistrars(cfg, providerConfigs)
-	if err != nil {
-		return
-	}
-	dnsProviders, err = providers.CreateDsps(cfg, providerConfigs)
-	if err != nil {
-		return
+	registrars := map[string]providers.Registrar{}
+	dnsProviders := map[string]providers.DNSServiceProvider{}
+	for _, d := range cfg.Domains {
+		if registrars[d.RegistrarName] == nil {
+			rCfg := cfg.RegistrarsByName[d.RegistrarName]
+			r, err := providers.CreateRegistrar(rCfg.Type, providerConfigs[d.RegistrarName])
+			if err != nil {
+				return nil, err
+			}
+			registrars[d.RegistrarName] = r
+		}
+		d.RegistrarInstance.Driver = registrars[d.RegistrarName]
+		for _, pInst := range d.DNSProviderInstances {
+			if dnsProviders[pInst.Name] == nil {
+				dCfg := cfg.DNSProvidersByName[pInst.Name]
+				prov, err := providers.CreateDNSProvider(dCfg.Type, providerConfigs[dCfg.Name], dCfg.Metadata)
+				if err != nil {
+					return nil, err
+				}
+				dnsProviders[pInst.Name] = prov
+			}
+			pInst.Driver = dnsProviders[pInst.Name]
+		}
 	}
 	return
 }

@@ -37,8 +37,10 @@ func CreateDomains(args CreateDomainsArgs) error {
 	if err != nil {
 		return err
 	}
-	// TODO:
-	// registrars, dnsProviders, _, _, err := InitializeProviders(args.CredsFile, cfg, false)
+	_, err = InitializeProviders(args.CredsFile, cfg, false)
+	if err != nil {
+		return err
+	}
 	for _, domain := range cfg.Domains {
 		fmt.Println("*** ", domain.Name)
 		for _, provider := range domain.DNSProviderInstances {

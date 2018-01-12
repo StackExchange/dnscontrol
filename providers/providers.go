@@ -54,7 +54,8 @@ func RegisterDomainServiceProviderType(name string, init DspInitializer, pm ...P
 	unwrapProviderCapabilities(name, pm)
 }
 
-func createRegistrar(rType string, config map[string]string) (Registrar, error) {
+// CreateRegistrar initializes a registrar instance from given credentials.
+func CreateRegistrar(rType string, config map[string]string) (Registrar, error) {
 	initer, ok := RegistrarTypes[rType]
 	if !ok {
 		return nil, fmt.Errorf("registrar type %s not declared", rType)
@@ -62,45 +63,13 @@ func createRegistrar(rType string, config map[string]string) (Registrar, error) 
 	return initer(config)
 }
 
-// CreateDNSProvider returnsa DSP's initializer.
+// CreateDNSProvider initializes a dns provider instance from given credentials.
 func CreateDNSProvider(dType string, config map[string]string, meta json.RawMessage) (DNSServiceProvider, error) {
 	initer, ok := DNSProviderTypes[dType]
 	if !ok {
 		return nil, fmt.Errorf("DSP type %s not declared", dType)
 	}
 	return initer(config, meta)
-}
-
-// CreateRegistrars will load all registrars from the dns config, and create instances of the correct type using data from
-// the provider config to load relevant keys and options.
-func CreateRegistrars(d *models.DNSConfig, providerConfigs map[string]map[string]string) (map[string]Registrar, error) {
-	regs := map[string]Registrar{}
-	for _, reg := range d.Registrars {
-		rawMsg, ok := providerConfigs[reg.Name]
-		if !ok && reg.Type != "NONE" {
-			return nil, fmt.Errorf("Registrar %s not listed in creds.json file", reg.Name)
-		}
-		registrar, err := createRegistrar(reg.Type, rawMsg)
-		if err != nil {
-			return nil, fmt.Errorf("Creating %s registrar: %s", reg.Name, err)
-		}
-		regs[reg.Name] = registrar
-	}
-	return regs, nil
-}
-
-// CreateDsps creates a DSP.
-func CreateDsps(d *models.DNSConfig, providerConfigs map[string]map[string]string) (map[string]DNSServiceProvider, error) {
-	dsps := map[string]DNSServiceProvider{}
-	for _, dsp := range d.DNSProviders {
-		vals := providerConfigs[dsp.Name]
-		provider, err := CreateDNSProvider(dsp.Type, vals, dsp.Metadata)
-		if err != nil {
-			return nil, fmt.Errorf("Creating %s dns provider: %s", dsp.Name, err)
-		}
-		dsps[dsp.Name] = provider
-	}
-	return dsps, nil
 }
 
 // None is a basic provider type that does absolutely nothing. Can be useful as a placeholder for third parties or unimplemented providers.
