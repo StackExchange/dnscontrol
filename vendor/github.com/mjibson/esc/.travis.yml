@@ -1,0 +1,17 @@
+language: go
+matrix:
+  include:
+    - go: 1.8.x
+    - go: 1.9.x
+
+install:
+  - go get github.com/golang/lint/golint
+  - go install .
+
+script:
+  - esc -o static.go main.go
+  - go vet ./...
+  - LINT=$(golint ./...) && echo $LINT
+  - test -z "$LINT"
+  - GOFMT=$(gofmt -s -d .) && echo $GOFMT
+  - test -z "$GOFMT"

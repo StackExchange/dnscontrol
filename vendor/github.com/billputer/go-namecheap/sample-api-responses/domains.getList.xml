@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ApiResponse Status="OK" xmlns="http://api.namecheap.com/xml.response">
+  <Errors />
+  <Warnings />
+  <RequestedCommand>namecheap.domains.getList</RequestedCommand>
+  <CommandResponse Type="namecheap.domains.getList">
+    <DomainGetListResult>
+      <Domain ID="57579" Name="example.shiksha" User="billwiens" Created="11/04/2014" Expires="11/04/2015" IsExpired="false" IsLocked="false" AutoRenew="false" WhoisGuard="ENABLED" />
+      <Domain ID="57590" Name="billwiens.biz" User="billwiens" Created="11/04/2014" Expires="11/04/2015" IsExpired="false" IsLocked="false" AutoRenew="true" WhoisGuard="ENABLED" />
+      <Domain ID="57589" Name="billwiens.co.uk" User="billwiens" Created="11/04/2014" Expires="11/04/2015" IsExpired="false" IsLocked="false" AutoRenew="true" WhoisGuard="NOTPRESENT" />
+      <Domain ID="57582" Name="billwiens.com" User="billwiens" Created="11/04/2014" Expires="11/04/2015" IsExpired="false" IsLocked="false" AutoRenew="true" WhoisGuard="ENABLED" />
+      <Domain ID="57592" Name="billwiens.de" User="billwiens" Created="11/04/2013" Expires="11/04/2015" IsExpired="false" IsLocked="false" AutoRenew="true" WhoisGuard="NOTPRESENT" />
+      <Domain ID="57588" Name="billwiens.guru" User="billwiens" Created="11/04/2014" Expires="11/04/2015" IsExpired="false" IsLocked="false" AutoRenew="true" WhoisGuard="ENABLED" />
+      <Domain ID="57591" Name="billwiens.info" User="billwiens" Created="11/04/2014" Expires="11/04/2015" IsExpired="false" IsLocked="false" AutoRenew="true" WhoisGuard="ENABLED" />
+      <Domain ID="57587" Name="billwiens.net" User="billwiens" Created="11/04/2014" Expires="11/04/2015" IsExpired="false" IsLocked="false" AutoRenew="true" WhoisGuard="ENABLED" />
+      <Domain ID="57583" Name="billwiens.org" User="billwiens" Created="11/04/2014" Expires="11/04/2015" IsExpired="false" IsLocked="false" AutoRenew="true" WhoisGuard="ENABLED" />
+      <Domain ID="57586" Name="billwiens.us" User="billwiens" Created="11/04/2014" Expires="11/04/2015" IsExpired="false" IsLocked="false" AutoRenew="true" WhoisGuard="NOTPRESENT" />
+      <Domain ID="57584" Name="github.guru" User="billwiens" Created="11/04/2014" Expires="11/04/2015" IsExpired="false" IsLocked="false" AutoRenew="true" WhoisGuard="ENABLED" />
+      <Domain ID="57585" Name="github.us" User="billwiens" Created="11/04/2014" Expires="11/04/2015" IsExpired="false" IsLocked="false" AutoRenew="true" WhoisGuard="NOTPRESENT" />
+    </DomainGetListResult>
+    <Paging>
+      <TotalItems>12</TotalItems>
+      <CurrentPage>1</CurrentPage>
+      <PageSize>20</PageSize>
+    </Paging>
+  </CommandResponse>
+  <Server>WEB1-SANDBOX1</Server>
+  <GMTTimeDifference>--5:00</GMTTimeDifference>
+  <ExecutionTime>0.009</ExecutionTime>
+</ApiResponse>

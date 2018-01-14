@@ -12,7 +12,7 @@ To start working with this package, create a client with user credentials
 
 To check if the username and token are correct using the HelloFunc endpoint
 
-    response, err := nc.HelloFunc(&HelloRequest{})
+    response, err := nc.HelloFunc(&namecom.HelloRequest{})
     if err != nil {
         // TODO: handle error
     }
@@ -269,6 +269,8 @@ type Contact struct {
 	Phone string `json:"phone,omitempty"`
 	// Fax number of the contact. Should be specified in the following format: "+cc.llllllll" where cc is the country code and llllllll is the local number.
 	Fax string `json:"fax,omitempty"`
+	// Email of the contact. Should be a complete and valid email address.
+	Email string `json:"email,omitempty"`
 }
 
 // Contacts stores the contact information for the roles related to domains.

@@ -273,9 +273,6 @@ type Ticket_Activity struct {
 type Ticket_Attachment struct {
 	Entity
 
-	// no documentation yet
-	AssignedAgent *User_Customer `json:"assignedAgent,omitempty" xmlrpc:"assignedAgent,omitempty"`
-
 	// The internal identifier of an item that is attached to a ticket.
 	AttachmentId *int `json:"attachmentId,omitempty" xmlrpc:"attachmentId,omitempty"`
 
@@ -284,9 +281,6 @@ type Ticket_Attachment struct {
 
 	// A ticket attachment's internal identifier.
 	Id *int `json:"id,omitempty" xmlrpc:"id,omitempty"`
-
-	// no documentation yet
-	ScheduledAction *Provisioning_Version1_Transaction `json:"scheduledAction,omitempty" xmlrpc:"scheduledAction,omitempty"`
 
 	// The ticket that an item is attached to.
 	Ticket *Ticket `json:"ticket,omitempty" xmlrpc:"ticket,omitempty"`
@@ -298,6 +292,9 @@ type Ticket_Attachment struct {
 // no documentation yet
 type Ticket_Attachment_Assigned_Agent struct {
 	Ticket_Attachment
+
+	// no documentation yet
+	AssignedAgent *User_Customer `json:"assignedAgent,omitempty" xmlrpc:"assignedAgent,omitempty"`
 
 	// The internal identifier of an assigned Agent that is attached to a ticket.
 	AssignedAgentId *int `json:"assignedAgentId,omitempty" xmlrpc:"assignedAgentId,omitempty"`
@@ -314,11 +311,11 @@ type Ticket_Attachment_CardChangeRequest struct {
 	Resource *Billing_Payment_Card_ChangeRequest `json:"resource,omitempty" xmlrpc:"resource,omitempty"`
 }
 
-// SoftLayer tickets have the ability to be associated with specific pieces of dedicated hosts in a customer's inventory. Attaching a dedicated host to a ticket can greatly increase response time from SoftLayer for issues that are related to one or more specific servers on a customer's account. The SoftLayer_Ticket_Attachment_Dedicated_Host data type models the relationship between a dedicated host and a ticket. Only one attachment record may exist per dedicated host item per ticket.
+// SoftLayer tickets have the ability to be associated with specific dedicated hosts in a customer's inventory. Attaching a dedicated host to a ticket can greatly increase response time from SoftLayer for issues that are related to one or more specific hosts on a customer's account. The SoftLayer_Ticket_Attachment_Dedicated_Host data type models the relationship between a dedicated host and a ticket. Only one attachment record can exist per dedicated host item per ticket.
 type Ticket_Attachment_Dedicated_Host struct {
 	Ticket_Attachment
 
-	// The Dedicated Host that is attached to a ticket.
+	// The dedicated dost that is attached to a ticket.
 	DedicatedHost *Virtual_DedicatedHost `json:"dedicatedHost,omitempty" xmlrpc:"dedicatedHost,omitempty"`
 
 	// The internal identifier of the Dedicated Host that is attached to a ticket.
@@ -381,11 +378,25 @@ type Ticket_Attachment_Hardware struct {
 }
 
 // This datatype contains tickets referenced from manual payments
-type Ticket_Attachment_ManualPayment struct {
+type Ticket_Attachment_Manual_Payment struct {
 	Ticket_Attachment
 
 	// The manual payment that is attached to a ticket.
 	Resource *Billing_Payment_Card_ManualPayment `json:"resource,omitempty" xmlrpc:"resource,omitempty"`
+}
+
+// no documentation yet
+type Ticket_Attachment_Network_Storage_Mass_Data_Migration struct {
+	Ticket_Attachment
+
+	// The Mass Data Migration request that is attached to a ticket.
+	Request *Network_Storage_MassDataMigration_Request `json:"request,omitempty" xmlrpc:"request,omitempty"`
+
+	// no documentation yet
+	RequestId *int `json:"requestId,omitempty" xmlrpc:"requestId,omitempty"`
+
+	// The Mass Data Migration request that is attached to a ticket.
+	Resource *Network_Storage_MassDataMigration_Request `json:"resource,omitempty" xmlrpc:"resource,omitempty"`
 }
 
 // no documentation yet
@@ -397,6 +408,9 @@ type Ticket_Attachment_Scheduled_Action struct {
 
 	// The internal identifier of a scheduled action transaction that is attached to a ticket.
 	RunDate *Time `json:"runDate,omitempty" xmlrpc:"runDate,omitempty"`
+
+	// no documentation yet
+	ScheduledAction *Provisioning_Version1_Transaction `json:"scheduledAction,omitempty" xmlrpc:"scheduledAction,omitempty"`
 
 	// no documentation yet
 	Transaction *Provisioning_Version1_Transaction `json:"transaction,omitempty" xmlrpc:"transaction,omitempty"`

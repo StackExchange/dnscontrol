@@ -1,0 +1,12 @@
+workspace:
+  base: /go
+  path: src/github.com/prasmussen/gandi-api
+pipeline:
+  dep:
+    image: tjamet/dep
+    commands: dep ensure
+  build:
+    image: golang:1.8-alpine
+    commands:
+      - pwd
+      - ./ci/test

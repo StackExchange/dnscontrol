@@ -45,6 +45,9 @@ type Locale_Country struct {
 	IsEuropeanUnionFlag *int `json:"isEuropeanUnionFlag,omitempty" xmlrpc:"isEuropeanUnionFlag,omitempty"`
 
 	// no documentation yet
+	IsoCodeAlphaThree *string `json:"isoCodeAlphaThree,omitempty" xmlrpc:"isoCodeAlphaThree,omitempty"`
+
+	// no documentation yet
 	LongName *string `json:"longName,omitempty" xmlrpc:"longName,omitempty"`
 
 	// no documentation yet
@@ -61,6 +64,9 @@ type Locale_Country struct {
 
 	// States that belong to this country.
 	States []Locale_StateProvince `json:"states,omitempty" xmlrpc:"states,omitempty"`
+
+	// no documentation yet
+	VatIdRegex *string `json:"vatIdRegex,omitempty" xmlrpc:"vatIdRegex,omitempty"`
 }
 
 // This object represents a state or province for a country.

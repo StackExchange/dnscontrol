@@ -24,6 +24,9 @@ package datatypes
 type Billing_Currency struct {
 	Entity
 
+	// The current exchange rate
+	CurrentExchangeRate *Billing_Currency_ExchangeRate `json:"currentExchangeRate,omitempty" xmlrpc:"currentExchangeRate,omitempty"`
+
 	// no documentation yet
 	Id *int `json:"id,omitempty" xmlrpc:"id,omitempty"`
 
@@ -324,6 +327,9 @@ type Billing_Invoice struct {
 	// The last name of the account holder at the time an invoice is created.
 	LastName *string `json:"lastName,omitempty" xmlrpc:"lastName,omitempty"`
 
+	// Exchange rate used for billing this invoice.
+	LocalCurrencyExchangeRate *Billing_Currency_ExchangeRate `json:"localCurrencyExchangeRate,omitempty" xmlrpc:"localCurrencyExchangeRate,omitempty"`
+
 	// The date an invoice was last modified.
 	ModifyDate *Time `json:"modifyDate,omitempty" xmlrpc:"modifyDate,omitempty"`
 
@@ -541,6 +547,9 @@ type Billing_Invoice_Item struct {
 
 	// A Billing Item's total, including any child billing items if they exist.'
 	TotalRecurringTaxAmount *Float64 `json:"totalRecurringTaxAmount,omitempty" xmlrpc:"totalRecurringTaxAmount,omitempty"`
+
+	// Indicating whether this invoice item is for the usage charge.
+	UsageChargeFlag *bool `json:"usageChargeFlag,omitempty" xmlrpc:"usageChargeFlag,omitempty"`
 }
 
 // The SoftLayer_Billing_Invoice_Item_Hardware data type contains a "resource". This resource is a link to the hardware tied to a SoftLayer_Billing_item whose category code is "server".
@@ -1366,11 +1375,17 @@ type Billing_Item_Network_Firewall struct {
 // The SoftLayer_Billing_Item_Network_Firewall_Module_Context data type describes the billing items related to VLAN Firewalls.
 type Billing_Item_Network_Firewall_Module_Context struct {
 	Billing_Item
+
+	// The total public outbound bandwidth for this firewall for the current billing cycle.
+	BillingCyclePublicUsageOut *Float64 `json:"billingCyclePublicUsageOut,omitempty" xmlrpc:"billingCyclePublicUsageOut,omitempty"`
 }
 
 // A SoftLayer_Billing_Item_Network_Interconnect represents the [[SoftLayer_Billing_Item|billing item]] related to a network interconnect instance.
 type Billing_Item_Network_Interconnect struct {
 	Billing_Item
+
+	// The interconnect tenant that the billing item is associated with.
+	Resource *Network_Interconnect_Tenant `json:"resource,omitempty" xmlrpc:"resource,omitempty"`
 }
 
 // A SoftLayer_Billing_Item_Network_LoadBalancer represents the [[SoftLayer_Billing_Item|billing item]] related to a single [[SoftLayer_Network_LoadBalancer|load balancer]] instance.
@@ -1405,9 +1420,6 @@ type Billing_Item_Network_Message_Delivery struct {
 // The SoftLayer_Billing_Item_Network_Message_Queue data describes the related billing item.
 type Billing_Item_Network_Message_Queue struct {
 	Billing_Item
-
-	// The object this billing item is associated with.
-	Resource *Network_Message_Queue `json:"resource,omitempty" xmlrpc:"resource,omitempty"`
 }
 
 // The SoftLayer_Billing_Item_Network_Message_Queue data describes the related billing item.
@@ -1484,7 +1496,7 @@ type Billing_Item_Network_Tunnel struct {
 	Resource *Network_Tunnel_Module_Context `json:"resource,omitempty" xmlrpc:"resource,omitempty"`
 }
 
-// The SoftLayer_Billing_Item_Network_Vlant data type contains general information relating to a single SoftLayer billing item whose item category code is one of the following:
+// The SoftLayer_Billing_Item_Network_Vlan data type contains general information relating to a single SoftLayer billing item whose item category code is one of the following:
 // * network_vlan
 //
 //
@@ -1983,6 +1995,12 @@ type Billing_Order_Item struct {
 
 	// no documentation yet
 	ParentId *int `json:"parentId,omitempty" xmlrpc:"parentId,omitempty"`
+
+	// The SoftLayer_Product_Package_Preset related to this order item.
+	Preset *Product_Package_Preset `json:"preset,omitempty" xmlrpc:"preset,omitempty"`
+
+	// The id for the preset configuration ordered.
+	PresetId *int `json:"presetId,omitempty" xmlrpc:"presetId,omitempty"`
 
 	// no documentation yet
 	PromoCodeId *int `json:"promoCodeId,omitempty" xmlrpc:"promoCodeId,omitempty"`

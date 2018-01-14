@@ -25,6 +25,12 @@ type Location struct {
 	Entity
 
 	// A count of
+	ActivePresaleEventCount *uint `json:"activePresaleEventCount,omitempty" xmlrpc:"activePresaleEventCount,omitempty"`
+
+	// no documentation yet
+	ActivePresaleEvents []Sales_Presale_Event `json:"activePresaleEvents,omitempty" xmlrpc:"activePresaleEvents,omitempty"`
+
+	// A count of
 	BackboneDependentCount *uint `json:"backboneDependentCount,omitempty" xmlrpc:"backboneDependentCount,omitempty"`
 
 	// no documentation yet
@@ -103,12 +109,6 @@ type Location_Datacenter struct {
 
 	// no documentation yet
 	ActiveItemPresaleEvents []Sales_Presale_Event `json:"activeItemPresaleEvents,omitempty" xmlrpc:"activeItemPresaleEvents,omitempty"`
-
-	// A count of
-	ActivePresaleEventCount *uint `json:"activePresaleEventCount,omitempty" xmlrpc:"activePresaleEventCount,omitempty"`
-
-	// no documentation yet
-	ActivePresaleEvents []Sales_Presale_Event `json:"activePresaleEvents,omitempty" xmlrpc:"activePresaleEvents,omitempty"`
 
 	// A count of
 	BackendHardwareRouterCount *uint `json:"backendHardwareRouterCount,omitempty" xmlrpc:"backendHardwareRouterCount,omitempty"`
@@ -271,8 +271,14 @@ type Location_Region struct {
 	// A unique key name for a region. Provided for easy debugging. This is to be sent in with an order.
 	Keyname *string `json:"keyname,omitempty" xmlrpc:"keyname,omitempty"`
 
-	// Each region can have many datacenter locations tied to it. However, this is the location we currently provision to for a region. This location is the current valid location for a region.
+	// Each region can have many locations tied to it. However, this is the location we currently provision to for a region. This location is the current valid location for a region. (Deprecated, use 'locations')
 	Location *Location_Region_Location `json:"location,omitempty" xmlrpc:"location,omitempty"`
+
+	// A count of the locations (like datacenters or PoPs) in this region.
+	LocationCount *uint `json:"locationCount,omitempty" xmlrpc:"locationCount,omitempty"`
+
+	// The locations (like datacenters or PoPs) in this region.
+	Locations []Location_Region_Location `json:"locations,omitempty" xmlrpc:"locations,omitempty"`
 
 	// An integer representing the order in which this element is displayed.
 	SortOrder *int `json:"sortOrder,omitempty" xmlrpc:"sortOrder,omitempty"`
@@ -388,7 +394,7 @@ type Location_Reservation_Rack_Member struct {
 	LocationId *int `json:"locationId,omitempty" xmlrpc:"locationId,omitempty"`
 
 	// no documentation yet
-	LocationReservationRack *Location_Reservation `json:"locationReservationRack,omitempty" xmlrpc:"locationReservationRack,omitempty"`
+	LocationReservationRack *Location_Reservation_Rack `json:"locationReservationRack,omitempty" xmlrpc:"locationReservationRack,omitempty"`
 }
 
 // SoftLayer_Location_Root extends the [[SoftLayer_Location]] data type to include root-specific properties.

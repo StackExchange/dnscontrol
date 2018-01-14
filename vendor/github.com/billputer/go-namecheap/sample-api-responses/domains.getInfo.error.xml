@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ApiResponse Status="ERROR" xmlns="http://api.namecheap.com/xml.response">
+  <Errors>
+    <Error Number="2030166">Domain is invalid</Error>
+  </Errors>
+  <Warnings />
+  <RequestedCommand>namecheap.domains.getInfo</RequestedCommand>
+  <CommandResponse Type="namecheap.domains.getInfo">
+    <DomainGetInfoResult ID="0" IsOwner="false" />
+  </CommandResponse>
+  <Server>WEB1-SANDBOX1</Server>
+  <GMTTimeDifference>--5:00</GMTTimeDifference>
+  <ExecutionTime>0.01</ExecutionTime>
+</ApiResponse>

@@ -1,0 +1,119 @@
+
+# Gopkg.toml example
+#
+# Refer to https://github.com/golang/dep/blob/master/docs/Gopkg.toml.md
+# for detailed Gopkg.toml documentation.
+#
+# required = ["github.com/user/thing/cmd/thing"]
+# ignored = ["github.com/user/project/pkgX", "bitbucket.org/user/project/pkgA/pkgY"]
+#
+# [[constraint]]
+#   name = "github.com/user/project"
+#   version = "1.0.0"
+#
+# [[constraint]]
+#   name = "github.com/user/project2"
+#   branch = "dev"
+#   source = "github.com/myfork/project2"
+#
+# [[override]]
+#  name = "github.com/x/y"
+#  version = "2.4.0"
+
+
+[[constraint]]
+  branch = "master"
+  name = "github.com/DisposaBoy/JsonConfigReader"
+
+[[constraint]]
+  name = "github.com/JamesClonk/vultr"
+  version = "1.15.0"
+
+[[constraint]]
+  branch = "master"
+  name = "github.com/StackExchange/dnscontrol"
+
+[[constraint]]
+  branch = "master"
+  name = "github.com/TomOnTime/utfutil"
+
+[[constraint]]
+  name = "github.com/aws/aws-sdk-go"
+  version = "1.12.61"
+
+[[constraint]]
+  branch = "master"
+  name = "github.com/billputer/go-namecheap"
+
+[[constraint]]
+  name = "github.com/digitalocean/godo"
+  version = "1.1.1"
+
+[[constraint]]
+  name = "github.com/dnsimple/dnsimple-go"
+  version = "0.15.0"
+
+[[constraint]]
+  branch = "master"
+  name = "github.com/google/go-github"
+
+[[constraint]]
+  branch = "master"
+  name = "github.com/gopherjs/jquery"
+
+[[constraint]]
+  name = "github.com/miekg/dns"
+  version = "1.0.3"
+
+[[constraint]]
+  name = "github.com/mjibson/esc"
+  version = "0.1.0"
+
+[[constraint]]
+  branch = "master"
+  name = "github.com/namedotcom/go"
+
+[[constraint]]
+  name = "github.com/pkg/errors"
+  version = "0.8.0"
+
+[[constraint]]
+  name = "github.com/prasmussen/gandi-api"
+  branch = "live_dns"
+  source = "github.com/tjamet/gandi-api"
+
+[[constraint]]
+  branch = "master"
+  name = "github.com/robertkrimen/otto"
+
+[[constraint]]
+  branch = "master"
+  name = "github.com/softlayer/softlayer-go"
+
+[[constraint]]
+  name = "github.com/tdewolff/minify"
+  version = "2.3.4"
+
+[[constraint]]
+  name = "github.com/urfave/cli"
+  version = "1.20.0"
+
+[[constraint]]
+  branch = "master"
+  name = "github.com/xlucas/go-ovh"
+
+[[constraint]]
+  branch = "master"
+  name = "golang.org/x/net"
+
+[[constraint]]
+  branch = "master"
+  name = "golang.org/x/oauth2"
+
+[[constraint]]
+  branch = "master"
+  name = "google.golang.org/api"
+
+[[constraint]]
+  branch = "v2"
+  name = "gopkg.in/ns1/ns1-go.v2"

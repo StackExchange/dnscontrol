@@ -82,6 +82,17 @@ func (r User_Customer) AddApiAuthenticationKey() (resp string, err error) {
 	return
 }
 
+// Grants the user access to one or more dedicated host devices.  The user will only be allowed to see and access devices in both the portal and the API to which they have been granted access.  If the user's account has devices to which the user has not been granted access, then "not found" exceptions are thrown if the user attempts to access any of these devices.
+//
+// Users can assign device access to their child users, but not to themselves. An account's master has access to all devices on their customer account and can set dedicated host access for any of the other users on their account.
+func (r User_Customer) AddBulkDedicatedHostAccess(dedicatedHostIds []int) (resp bool, err error) {
+	params := []interface{}{
+		dedicatedHostIds,
+	}
+	err = r.Session.DoRequest("SoftLayer_User_Customer", "addBulkDedicatedHostAccess", params, &r.Options, &resp)
+	return
+}
+
 // Add multiple hardware to a portal user's hardware access list. A user's hardware access list controls which of an account's hardware objects a user has access to in the SoftLayer customer portal and API. Hardware does not exist in the SoftLayer portal and returns "not found" exceptions in the API if the user doesn't have access to it. addBulkHardwareAccess() does not attempt to add hardware access if the given user already has access to that hardware object.
 //
 // Users can assign hardware access to their child users, but not to themselves. An account's master has access to all hardware on their customer account and can set hardware access for any of the other users on their account.
@@ -124,6 +135,17 @@ func (r User_Customer) AddBulkVirtualGuestAccess(virtualGuestIds []int) (resp bo
 		virtualGuestIds,
 	}
 	err = r.Session.DoRequest("SoftLayer_User_Customer", "addBulkVirtualGuestAccess", params, &r.Options, &resp)
+	return
+}
+
+// Grants the user access to a single dedicated host device.  The user will only be allowed to see and access devices in both the portal and the API to which they have been granted access.  If the user's account has devices to which the user has not been granted access, then "not found" exceptions are thrown if the user attempts to access any of these devices.
+//
+// Users can assign device access to their child users, but not to themselves. An account's master has access to all devices on their customer account and can set dedicated host access for any of the other users on their account.
+func (r User_Customer) AddDedicatedHostAccess(dedicatedHostId *int) (resp bool, err error) {
+	params := []interface{}{
+		dedicatedHostId,
+	}
+	err = r.Session.DoRequest("SoftLayer_User_Customer", "addDedicatedHostAccess", params, &r.Options, &resp)
 	return
 }
 
@@ -231,7 +253,7 @@ func (r User_Customer) CreateNotificationSubscriber(keyName *string, resourceTab
 	return
 }
 
-// Create a new user in the SoftLayer customer portal. createObject() creates a user's portal record and adds them into the SoftLayer community forums. It is no longer possible to set up the SSL or PPTP enable flag in this call since the manage permissions have not yet been set.  You will need to make a subsequent call to edit object in order to enable VPN access. An account's master user and sub-users who have the User Manage permission can add new users. createObject() creates users with a default permission set. After adding a user it may be helpful to set their permissions and hardware access.
+// Create a new user in the SoftLayer customer portal. createObject() creates a user's portal record and adds them into the SoftLayer community forums. It is not possible to set up SLL or PPTP enable flags during object creation. These flags are ignored during object creation. You will need to make a subsequent call to edit object in order to enable VPN access. An account's master user and sub-users who have the User Manage permission can add new users. createObject() creates users with a default permission set. After adding a user it may be helpful to set their permissions and hardware access.
 //
 // Note, neither password nor vpnPassword parameters are required.
 //
@@ -330,6 +352,12 @@ func (r User_Customer) GetAdditionalEmails() (resp []datatypes.User_Customer_Add
 }
 
 // no documentation yet
+func (r User_Customer) GetAllowedDedicatedHostIds() (resp []int, err error) {
+	err = r.Session.DoRequest("SoftLayer_User_Customer", "getAllowedDedicatedHostIds", nil, &r.Options, &resp)
+	return
+}
+
+// no documentation yet
 func (r User_Customer) GetAllowedHardwareIds() (resp []int, err error) {
 	err = r.Session.DoRequest("SoftLayer_User_Customer", "getAllowedHardwareIds", nil, &r.Options, &resp)
 	return
@@ -371,6 +399,12 @@ func (r User_Customer) GetChildUsers() (resp []datatypes.User_Customer, err erro
 // Retrieve An user's associated closed tickets.
 func (r User_Customer) GetClosedTickets() (resp []datatypes.Ticket, err error) {
 	err = r.Session.DoRequest("SoftLayer_User_Customer", "getClosedTickets", nil, &r.Options, &resp)
+	return
+}
+
+// Retrieve The dedicated hosts to which the user has been granted access.
+func (r User_Customer) GetDedicatedHosts() (resp []datatypes.Virtual_DedicatedHost, err error) {
+	err = r.Session.DoRequest("SoftLayer_User_Customer", "getDedicatedHosts", nil, &r.Options, &resp)
 	return
 }
 
@@ -419,6 +453,12 @@ func (r User_Customer) GetHardwareNotifications() (resp []datatypes.User_Custome
 // Retrieve Whether or not a user has acknowledged the support policy.
 func (r User_Customer) GetHasAcknowledgedSupportPolicyFlag() (resp bool, err error) {
 	err = r.Session.DoRequest("SoftLayer_User_Customer", "getHasAcknowledgedSupportPolicyFlag", nil, &r.Options, &resp)
+	return
+}
+
+// Retrieve Permission granting the user access to all Dedicated Host devices on the account.
+func (r User_Customer) GetHasFullDedicatedHostAccessFlag() (resp bool, err error) {
+	err = r.Session.DoRequest("SoftLayer_User_Customer", "getHasFullDedicatedHostAccessFlag", nil, &r.Options, &resp)
 	return
 }
 
@@ -816,6 +856,14 @@ func (r User_Customer) ProcessPasswordSetRequest(passwordSet *datatypes.Containe
 	return
 }
 
+// Revoke access to all dedicated hosts on the account for this user. The user will only be allowed to see and access devices in both the portal and the API to which they have been granted access.  If the user's account has devices to which the user has not been granted access or the access has been revoked, then "not found" exceptions are thrown if the user attempts to access any of these devices. If the current user does not have administrative privileges over this user, an inadequate permissions exception will get thrown.
+//
+// Users can call this function on child users, but not to themselves. An account's master has access to all users permissions on their account.
+func (r User_Customer) RemoveAllDedicatedHostAccessForThisUser() (resp bool, err error) {
+	err = r.Session.DoRequest("SoftLayer_User_Customer", "removeAllDedicatedHostAccessForThisUser", nil, &r.Options, &resp)
+	return
+}
+
 // Remove all hardware from a portal user's hardware access list. A user's hardware access list controls which of an account's hardware objects a user has access to in the SoftLayer customer portal and API. If the current user does not have administrative privileges over this user, an inadequate permissions exception will get thrown.
 //
 // Users can call this function on child users, but not to themselves. An account's master has access to all users permissions on their account.
@@ -838,6 +886,19 @@ func (r User_Customer) RemoveApiAuthenticationKey(keyId *int) (resp bool, err er
 		keyId,
 	}
 	err = r.Session.DoRequest("SoftLayer_User_Customer", "removeApiAuthenticationKey", params, &r.Options, &resp)
+	return
+}
+
+// Revokes access for the user to one or more dedicated host devices.  The user will only be allowed to see and access devices in both the portal and the API to which they have been granted access.  If the user's account has devices to which the user has not been granted access or the access has been revoked, then "not found" exceptions are thrown if the user attempts to access any of these devices.
+//
+// Users can assign device access to their child users, but not to themselves. An account's master has access to all devices on their customer account and can set dedicated host access for any of the other users on their account.
+//
+// If the user has full dedicatedHost access, then it will provide access to "ALL but passed in" dedicatedHost ids.
+func (r User_Customer) RemoveBulkDedicatedHostAccess(dedicatedHostIds []int) (resp bool, err error) {
+	params := []interface{}{
+		dedicatedHostIds,
+	}
+	err = r.Session.DoRequest("SoftLayer_User_Customer", "removeBulkDedicatedHostAccess", params, &r.Options, &resp)
 	return
 }
 
@@ -885,6 +946,17 @@ func (r User_Customer) RemoveBulkVirtualGuestAccess(virtualGuestIds []int) (resp
 		virtualGuestIds,
 	}
 	err = r.Session.DoRequest("SoftLayer_User_Customer", "removeBulkVirtualGuestAccess", params, &r.Options, &resp)
+	return
+}
+
+// Revokes access for the user to a single dedicated host device.  The user will only be allowed to see and access devices in both the portal and the API to which they have been granted access.  If the user's account has devices to which the user has not been granted access or the access has been revoked, then "not found" exceptions are thrown if the user attempts to access any of these devices.
+//
+// Users can assign device access to their child users, but not to themselves. An account's master has access to all devices on their customer account and can set dedicated host access for any of the other users on their account.
+func (r User_Customer) RemoveDedicatedHostAccess(dedicatedHostId *int) (resp bool, err error) {
+	params := []interface{}{
+		dedicatedHostId,
+	}
+	err = r.Session.DoRequest("SoftLayer_User_Customer", "removeDedicatedHostAccess", params, &r.Options, &resp)
 	return
 }
 
@@ -2470,6 +2542,17 @@ func (r User_Customer_OpenIdConnect) AddApiAuthenticationKey() (resp string, err
 	return
 }
 
+// Grants the user access to one or more dedicated host devices.  The user will only be allowed to see and access devices in both the portal and the API to which they have been granted access.  If the user's account has devices to which the user has not been granted access, then "not found" exceptions are thrown if the user attempts to access any of these devices.
+//
+// Users can assign device access to their child users, but not to themselves. An account's master has access to all devices on their customer account and can set dedicated host access for any of the other users on their account.
+func (r User_Customer_OpenIdConnect) AddBulkDedicatedHostAccess(dedicatedHostIds []int) (resp bool, err error) {
+	params := []interface{}{
+		dedicatedHostIds,
+	}
+	err = r.Session.DoRequest("SoftLayer_User_Customer_OpenIdConnect", "addBulkDedicatedHostAccess", params, &r.Options, &resp)
+	return
+}
+
 // Add multiple hardware to a portal user's hardware access list. A user's hardware access list controls which of an account's hardware objects a user has access to in the SoftLayer customer portal and API. Hardware does not exist in the SoftLayer portal and returns "not found" exceptions in the API if the user doesn't have access to it. addBulkHardwareAccess() does not attempt to add hardware access if the given user already has access to that hardware object.
 //
 // Users can assign hardware access to their child users, but not to themselves. An account's master has access to all hardware on their customer account and can set hardware access for any of the other users on their account.
@@ -2512,6 +2595,17 @@ func (r User_Customer_OpenIdConnect) AddBulkVirtualGuestAccess(virtualGuestIds [
 		virtualGuestIds,
 	}
 	err = r.Session.DoRequest("SoftLayer_User_Customer_OpenIdConnect", "addBulkVirtualGuestAccess", params, &r.Options, &resp)
+	return
+}
+
+// Grants the user access to a single dedicated host device.  The user will only be allowed to see and access devices in both the portal and the API to which they have been granted access.  If the user's account has devices to which the user has not been granted access, then "not found" exceptions are thrown if the user attempts to access any of these devices.
+//
+// Users can assign device access to their child users, but not to themselves. An account's master has access to all devices on their customer account and can set dedicated host access for any of the other users on their account.
+func (r User_Customer_OpenIdConnect) AddDedicatedHostAccess(dedicatedHostId *int) (resp bool, err error) {
+	params := []interface{}{
+		dedicatedHostId,
+	}
+	err = r.Session.DoRequest("SoftLayer_User_Customer_OpenIdConnect", "addDedicatedHostAccess", params, &r.Options, &resp)
 	return
 }
 
@@ -2631,7 +2725,7 @@ func (r User_Customer_OpenIdConnect) CreateNotificationSubscriber(keyName *strin
 	return
 }
 
-// Create a new user in the SoftLayer customer portal. createObject() creates a user's portal record and adds them into the SoftLayer community forums. It is no longer possible to set up the SSL or PPTP enable flag in this call since the manage permissions have not yet been set.  You will need to make a subsequent call to edit object in order to enable VPN access. An account's master user and sub-users who have the User Manage permission can add new users. createObject() creates users with a default permission set. After adding a user it may be helpful to set their permissions and hardware access.
+// Create a new user in the SoftLayer customer portal. createObject() creates a user's portal record and adds them into the SoftLayer community forums. It is not possible to set up SLL or PPTP enable flags during object creation. These flags are ignored during object creation. You will need to make a subsequent call to edit object in order to enable VPN access. An account's master user and sub-users who have the User Manage permission can add new users. createObject() creates users with a default permission set. After adding a user it may be helpful to set their permissions and hardware access.
 //
 // Note, neither password nor vpnPassword parameters are required.
 //
@@ -2646,7 +2740,7 @@ func (r User_Customer_OpenIdConnect) CreateNotificationSubscriber(keyName *strin
 // vpnPassword If the vpnPassword is provided, then the user's vpnPassword will be set to the provided password.  When creating a vpn only user, the vpnPassword MUST be supplied.  If the vpnPassword is not provided, then the user will need to use the portal to edit their profile and set the vpnPassword.
 //
 //
-func (r User_Customer_OpenIdConnect) CreateObject(templateObject *datatypes.User_Customer, password *string, vpnPassword *string) (resp datatypes.User_Customer, err error) {
+func (r User_Customer_OpenIdConnect) CreateObject(templateObject *datatypes.User_Customer_OpenIdConnect, password *string, vpnPassword *string) (resp datatypes.User_Customer_OpenIdConnect, err error) {
 	params := []interface{}{
 		templateObject,
 		password,
@@ -2753,6 +2847,12 @@ func (r User_Customer_OpenIdConnect) GetAdditionalEmails() (resp []datatypes.Use
 }
 
 // no documentation yet
+func (r User_Customer_OpenIdConnect) GetAllowedDedicatedHostIds() (resp []int, err error) {
+	err = r.Session.DoRequest("SoftLayer_User_Customer_OpenIdConnect", "getAllowedDedicatedHostIds", nil, &r.Options, &resp)
+	return
+}
+
+// no documentation yet
 func (r User_Customer_OpenIdConnect) GetAllowedHardwareIds() (resp []int, err error) {
 	err = r.Session.DoRequest("SoftLayer_User_Customer_OpenIdConnect", "getAllowedHardwareIds", nil, &r.Options, &resp)
 	return
@@ -2794,6 +2894,12 @@ func (r User_Customer_OpenIdConnect) GetChildUsers() (resp []datatypes.User_Cust
 // Retrieve An user's associated closed tickets.
 func (r User_Customer_OpenIdConnect) GetClosedTickets() (resp []datatypes.Ticket, err error) {
 	err = r.Session.DoRequest("SoftLayer_User_Customer_OpenIdConnect", "getClosedTickets", nil, &r.Options, &resp)
+	return
+}
+
+// Retrieve The dedicated hosts to which the user has been granted access.
+func (r User_Customer_OpenIdConnect) GetDedicatedHosts() (resp []datatypes.Virtual_DedicatedHost, err error) {
+	err = r.Session.DoRequest("SoftLayer_User_Customer_OpenIdConnect", "getDedicatedHosts", nil, &r.Options, &resp)
 	return
 }
 
@@ -2842,6 +2948,12 @@ func (r User_Customer_OpenIdConnect) GetHardwareNotifications() (resp []datatype
 // Retrieve Whether or not a user has acknowledged the support policy.
 func (r User_Customer_OpenIdConnect) GetHasAcknowledgedSupportPolicyFlag() (resp bool, err error) {
 	err = r.Session.DoRequest("SoftLayer_User_Customer_OpenIdConnect", "getHasAcknowledgedSupportPolicyFlag", nil, &r.Options, &resp)
+	return
+}
+
+// Retrieve Permission granting the user access to all Dedicated Host devices on the account.
+func (r User_Customer_OpenIdConnect) GetHasFullDedicatedHostAccessFlag() (resp bool, err error) {
+	err = r.Session.DoRequest("SoftLayer_User_Customer_OpenIdConnect", "getHasFullDedicatedHostAccessFlag", nil, &r.Options, &resp)
 	return
 }
 
@@ -3281,6 +3393,14 @@ func (r User_Customer_OpenIdConnect) ProcessPasswordSetRequest(passwordSet *data
 	return
 }
 
+// Revoke access to all dedicated hosts on the account for this user. The user will only be allowed to see and access devices in both the portal and the API to which they have been granted access.  If the user's account has devices to which the user has not been granted access or the access has been revoked, then "not found" exceptions are thrown if the user attempts to access any of these devices. If the current user does not have administrative privileges over this user, an inadequate permissions exception will get thrown.
+//
+// Users can call this function on child users, but not to themselves. An account's master has access to all users permissions on their account.
+func (r User_Customer_OpenIdConnect) RemoveAllDedicatedHostAccessForThisUser() (resp bool, err error) {
+	err = r.Session.DoRequest("SoftLayer_User_Customer_OpenIdConnect", "removeAllDedicatedHostAccessForThisUser", nil, &r.Options, &resp)
+	return
+}
+
 // Remove all hardware from a portal user's hardware access list. A user's hardware access list controls which of an account's hardware objects a user has access to in the SoftLayer customer portal and API. If the current user does not have administrative privileges over this user, an inadequate permissions exception will get thrown.
 //
 // Users can call this function on child users, but not to themselves. An account's master has access to all users permissions on their account.
@@ -3303,6 +3423,19 @@ func (r User_Customer_OpenIdConnect) RemoveApiAuthenticationKey(keyId *int) (res
 		keyId,
 	}
 	err = r.Session.DoRequest("SoftLayer_User_Customer_OpenIdConnect", "removeApiAuthenticationKey", params, &r.Options, &resp)
+	return
+}
+
+// Revokes access for the user to one or more dedicated host devices.  The user will only be allowed to see and access devices in both the portal and the API to which they have been granted access.  If the user's account has devices to which the user has not been granted access or the access has been revoked, then "not found" exceptions are thrown if the user attempts to access any of these devices.
+//
+// Users can assign device access to their child users, but not to themselves. An account's master has access to all devices on their customer account and can set dedicated host access for any of the other users on their account.
+//
+// If the user has full dedicatedHost access, then it will provide access to "ALL but passed in" dedicatedHost ids.
+func (r User_Customer_OpenIdConnect) RemoveBulkDedicatedHostAccess(dedicatedHostIds []int) (resp bool, err error) {
+	params := []interface{}{
+		dedicatedHostIds,
+	}
+	err = r.Session.DoRequest("SoftLayer_User_Customer_OpenIdConnect", "removeBulkDedicatedHostAccess", params, &r.Options, &resp)
 	return
 }
 
@@ -3350,6 +3483,17 @@ func (r User_Customer_OpenIdConnect) RemoveBulkVirtualGuestAccess(virtualGuestId
 		virtualGuestIds,
 	}
 	err = r.Session.DoRequest("SoftLayer_User_Customer_OpenIdConnect", "removeBulkVirtualGuestAccess", params, &r.Options, &resp)
+	return
+}
+
+// Revokes access for the user to a single dedicated host device.  The user will only be allowed to see and access devices in both the portal and the API to which they have been granted access.  If the user's account has devices to which the user has not been granted access or the access has been revoked, then "not found" exceptions are thrown if the user attempts to access any of these devices.
+//
+// Users can assign device access to their child users, but not to themselves. An account's master has access to all devices on their customer account and can set dedicated host access for any of the other users on their account.
+func (r User_Customer_OpenIdConnect) RemoveDedicatedHostAccess(dedicatedHostId *int) (resp bool, err error) {
+	params := []interface{}{
+		dedicatedHostId,
+	}
+	err = r.Session.DoRequest("SoftLayer_User_Customer_OpenIdConnect", "removeDedicatedHostAccess", params, &r.Options, &resp)
 	return
 }
 

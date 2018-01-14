@@ -1,0 +1,9 @@
+#!/bin/sh -e
+
+wd=$(pwd)
+
+
+for dir in $(go list -f '{{.Dir}}' ./... | grep -v vendor); do
+    cd $dir
+    go test -v -cover ./...
+done
