@@ -2,7 +2,10 @@ package gandi
 
 import (
 	"fmt"
+	"log"
+	"strings"
 
+	"github.com/pkg/errors"
 	gandiclient "github.com/prasmussen/gandi-api/client"
 	gandidomain "github.com/prasmussen/gandi-api/domain"
 	gandinameservers "github.com/prasmussen/gandi-api/domain/nameservers"
@@ -179,6 +182,39 @@ func (c *GandiApi) createGandiZone(domainname string, zoneID int64, records []ga
 	}
 
 	return nil
+}
+
+// getRecordUpdates generates gandi record sets and filters incompatible entries from native records format
+func getRecordUpdates(records models.Records) ([]gandirecord.RecordSet, []*models.RecordConfig, error) {
+	expectedRecordSets := make([]gandirecord.RecordSet, 0, len(records))
+	recordsToKeep := make([]*models.RecordConfig, 0, len(records))
+	for _, rec := range records {
+		if rec.TTL < 300 {
+			log.Printf("WARNING: Gandi does not support ttls < 300. %s will not be set to %d.", rec.NameFQDN, rec.TTL)
+			rec.TTL = 300
+		}
+		if rec.TTL > 2592000 {
+			return nil, nil, errors.Errorf("ERROR: Gandi does not support TTLs > 30 days (TTL=%d)", rec.TTL)
+		}
+		if rec.Type == "TXT" {
+			rec.Target = "\"" + rec.Target + "\"" // FIXME(tlim): Should do proper quoting.
+		}
+		if rec.Type == "NS" && rec.Name == "@" {
+			if !strings.HasSuffix(rec.Target, ".gandi.net.") {
+				log.Printf("WARNING: Gandi does not support changing apex NS records. %s will not be added.", rec.Target)
+			}
+			continue
+		}
+		rs := gandirecord.RecordSet{
+			"type":  rec.Type,
+			"name":  rec.Name,
+			"value": rec.Target,
+			"ttl":   rec.TTL,
+		}
+		expectedRecordSets = append(expectedRecordSets, rs)
+		recordsToKeep = append(recordsToKeep, rec)
+	}
+	return expectedRecordSets, recordsToKeep, nil
 }
 
 // convert takes a DNS record from Gandi and returns our native RecordConfig format.

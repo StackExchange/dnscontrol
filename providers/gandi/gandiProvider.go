@@ -3,13 +3,11 @@ package gandi
 import (
 	"encoding/json"
 	"fmt"
-	"log"
 	"sort"
 
 	"github.com/StackExchange/dnscontrol/models"
 	"github.com/StackExchange/dnscontrol/providers"
 	"github.com/StackExchange/dnscontrol/providers/diff"
-	"github.com/pkg/errors"
 
 	"strings"
 
@@ -43,6 +41,7 @@ func init() {
 // GandiApi is the API handle for this module.
 type GandiApi struct {
 	ApiKey      string
+	APIVersion  string
 	domainIndex map[string]int64 // Map of domainname to index
 	nameservers map[string][]*models.Nameserver
 	ZoneId      int64
@@ -65,6 +64,9 @@ func (c *GandiApi) getDomainInfo(domain string) (*gandidomain.DomainInfo, error)
 
 // GetNameservers returns the nameservers for domain.
 func (c *GandiApi) GetNameservers(domain string) ([]*models.Nameserver, error) {
+	if c.APIVersion == "LiveDNS" {
+		return c.liveDNSGetNameservers(domain)
+	}
 	domaininfo, err := c.getDomainInfo(domain)
 	if err != nil {
 		return nil, err
@@ -82,44 +84,43 @@ func (c *GandiApi) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Corr
 	dc.CombineSRVs()
 	dc.CombineCAAs()
 	dc.CombineMXs()
-	domaininfo, err := c.getDomainInfo(dc.Name)
-	if err != nil {
-		return nil, err
-	}
-	foundRecords, err := c.getZoneRecords(domaininfo.ZoneId, dc.Name)
-	if err != nil {
-		return nil, err
-	}
+	var update func() error
+	var foundRecords []*models.RecordConfig
+	if c.APIVersion == "LiveDNS" {
+		var err error
+		foundRecords, err = c.liveDNSGetDomainRecords(dc.Name)
+		if err != nil {
+			return nil, err
+		}
+		expectedRecordSets, recordsToKeep, err := liveDNSGetRecordUpdates(dc.Records)
+		if err != nil {
+			return nil, err
+		}
+		dc.Records = recordsToKeep
+		update = func() error {
+			fmt.Printf("CREATING ZONE: %v\n", dc.Name)
+			return c.liveDNSCreateGandiZone(dc.Name, expectedRecordSets)
+		}
+	} else {
+		domaininfo, err := c.getDomainInfo(dc.Name)
+		if err != nil {
+			return nil, err
+		}
+		foundRecords, err = c.getZoneRecords(domaininfo.ZoneId, dc.Name)
+		if err != nil {
+			return nil, err
+		}
 
-	expectedRecordSets := make([]gandirecord.RecordSet, 0, len(dc.Records))
-	recordsToKeep := make([]*models.RecordConfig, 0, len(dc.Records))
-	for _, rec := range dc.Records {
-		if rec.TTL < 300 {
-			log.Printf("WARNING: Gandi does not support ttls < 300. %s will not be set to %d.", rec.NameFQDN, rec.TTL)
-			rec.TTL = 300
+		expectedRecordSets, recordsToKeep, err := getRecordUpdates(dc.Records)
+		if err != nil {
+			return nil, err
 		}
-		if rec.TTL > 2592000 {
-			return nil, errors.Errorf("ERROR: Gandi does not support TTLs > 30 days (TTL=%d)", rec.TTL)
+		dc.Records = recordsToKeep
+		update = func() error {
+			fmt.Printf("CREATING ZONE: %v\n", dc.Name)
+			return c.createGandiZone(dc.Name, domaininfo.ZoneId, expectedRecordSets)
 		}
-		if rec.Type == "TXT" {
-			rec.Target = "\"" + rec.Target + "\"" // FIXME(tlim): Should do proper quoting.
-		}
-		if rec.Type == "NS" && rec.Name == "@" {
-			if !strings.HasSuffix(rec.Target, ".gandi.net.") {
-				log.Printf("WARNING: Gandi does not support changing apex NS records. %s will not be added.", rec.Target)
-			}
-			continue
-		}
-		rs := gandirecord.RecordSet{
-			"type":  rec.Type,
-			"name":  rec.Name,
-			"value": rec.Target,
-			"ttl":   rec.TTL,
-		}
-		expectedRecordSets = append(expectedRecordSets, rs)
-		recordsToKeep = append(recordsToKeep, rec)
 	}
-	dc.Records = recordsToKeep
 
 	// Normalize
 	models.PostProcessRecords(foundRecords)
@@ -149,10 +150,7 @@ func (c *GandiApi) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Corr
 		corrections = append(corrections,
 			&models.Correction{
 				Msg: msg,
-				F: func() error {
-					fmt.Printf("CREATING ZONE: %v\n", dc.Name)
-					return c.createGandiZone(dc.Name, domaininfo.ZoneId, expectedRecordSets)
-				},
+				F:   update,
 			})
 	}
 
