@@ -44,7 +44,16 @@ type differ struct {
 func (d *differ) content(r *models.RecordConfig) string {
 	content := fmt.Sprintf("%v ttl=%d", r.Content(), r.TTL)
 	for _, f := range d.extraValues {
-		for k, v := range f(r) {
+		// sort the extra values map keys to perform a deterministic
+		// comparison since Golang maps iteration order is not guaranteed
+		valueMap := f(r)
+		keys := make([]string, 0)
+		for k := range valueMap {
+			keys = append(keys, k)
+		}
+		sort.Strings(keys)
+		for _, k := range keys {
+			v := valueMap[k]
 			content += fmt.Sprintf(" %s=%s", k, v)
 		}
 	}
