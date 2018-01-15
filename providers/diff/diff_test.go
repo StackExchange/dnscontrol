@@ -13,6 +13,7 @@ func myRecord(s string) *models.RecordConfig {
 	parts := strings.Split(s, " ")
 	ttl, _ := strconv.ParseUint(parts[2], 10, 32)
 	return &models.RecordConfig{
+		Name:     parts[0],
 		NameFQDN: dnsutil.AddOrigin(parts[0], "example.com"),
 		Type:     parts[1],
 		TTL:      uint32(ttl),
@@ -128,14 +129,19 @@ func TestMetaChange(t *testing.T) {
 }
 
 func checkLengths(t *testing.T, existing, desired []*models.RecordConfig, unCount, createCount, delCount, modCount int, valFuncs ...func(*models.RecordConfig) map[string]string) (un, cre, del, mod Changeset) {
-	return checkLengthsFull(t, existing, desired, unCount, createCount, delCount, modCount, false, valFuncs...)
+	return checkLengthsWithKeepUnknown(t, existing, desired, unCount, createCount, delCount, modCount, false, valFuncs...)
 }
 
-func checkLengthsFull(t *testing.T, existing, desired []*models.RecordConfig, unCount, createCount, delCount, modCount int, keepUnknown bool, valFuncs ...func(*models.RecordConfig) map[string]string) (un, cre, del, mod Changeset) {
+func checkLengthsWithKeepUnknown(t *testing.T, existing, desired []*models.RecordConfig, unCount, createCount, delCount, modCount int, keepUnknown bool, valFuncs ...func(*models.RecordConfig) map[string]string) (un, cre, del, mod Changeset) {
+	return checkLengthsFull(t, existing, desired, unCount, createCount, delCount, modCount, keepUnknown, []string{}, valFuncs...)
+}
+
+func checkLengthsFull(t *testing.T, existing, desired []*models.RecordConfig, unCount, createCount, delCount, modCount int, keepUnknown bool, ignoredRecords []string, valFuncs ...func(*models.RecordConfig) map[string]string) (un, cre, del, mod Changeset) {
 	dc := &models.DomainConfig{
-		Name:        "example.com",
-		Records:     desired,
-		KeepUnknown: keepUnknown,
+		Name:          "example.com",
+		Records:       desired,
+		KeepUnknown:   keepUnknown,
+		IgnoredLabels: ignoredRecords,
 	}
 	d := New(dc, valFuncs...)
 	un, cre, del, mod = d.IncrementalDiff(existing)
@@ -166,5 +172,36 @@ func TestNoPurge(t *testing.T) {
 	desired := []*models.RecordConfig{
 		myRecord("www MX 1 1.1.1.1"),
 	}
-	checkLengthsFull(t, existing, desired, 1, 0, 1, 0, true)
+	checkLengthsWithKeepUnknown(t, existing, desired, 1, 0, 1, 0, true)
+}
+
+func TestIgnoredRecords(t *testing.T) {
+	existing := []*models.RecordConfig{
+		myRecord("www1 MX 1 1.1.1.1"),
+		myRecord("www2 MX 1 1.1.1.1"),
+		myRecord("www3 MX 1 1.1.1.1"),
+	}
+	desired := []*models.RecordConfig{
+		myRecord("www3 MX 1 2.2.2.2"),
+	}
+	checkLengthsFull(t, existing, desired, 0, 0, 0, 1, false, []string{"www1", "www2"})
+}
+
+func TestModifyingIgnoredRecords(t *testing.T) {
+	existing := []*models.RecordConfig{
+		myRecord("www1 MX 1 1.1.1.1"),
+		myRecord("www2 MX 1 1.1.1.1"),
+		myRecord("www3 MX 1 1.1.1.1"),
+	}
+	desired := []*models.RecordConfig{
+		myRecord("www2 MX 1 2.2.2.2"),
+	}
+
+	defer func() {
+		if r := recover(); r == nil {
+			t.Errorf("should panic: modification of IGNOREd record")
+		}
+	}()
+
+	checkLengthsFull(t, existing, desired, 0, 0, 0, 1, false, []string{"www1", "www2"})
 }

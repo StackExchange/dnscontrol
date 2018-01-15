@@ -65,12 +65,20 @@ func (d *differ) IncrementalDiff(existing []*models.RecordConfig) (unchanged, cr
 	existingByNameAndType := map[key][]*models.RecordConfig{}
 	desiredByNameAndType := map[key][]*models.RecordConfig{}
 	for _, e := range existing {
-		k := key{e.NameFQDN, e.Type}
-		existingByNameAndType[k] = append(existingByNameAndType[k], e)
+		if d.matchIgnored(e.Name) {
+			log.Printf("Ignoring record %s %s due to IGNORE", e.Name, e.Type)
+		} else {
+			k := key{e.NameFQDN, e.Type}
+			existingByNameAndType[k] = append(existingByNameAndType[k], e)
+		}
 	}
-	for _, d := range desired {
-		k := key{d.NameFQDN, d.Type}
-		desiredByNameAndType[k] = append(desiredByNameAndType[k], d)
+	for _, dr := range desired {
+		if d.matchIgnored(dr.Name) {
+			panic(fmt.Sprintf("Trying to update/add IGNOREd record: %s %s", dr.Name, dr.Type))
+		} else {
+			k := key{dr.NameFQDN, dr.Type}
+			desiredByNameAndType[k] = append(desiredByNameAndType[k], dr)
+		}
 	}
 	// if NO_PURGE is set, just remove anything that is only in existing.
 	if d.dc.KeepUnknown {
@@ -195,4 +203,13 @@ func sortedKeys(m map[string]*models.RecordConfig) []string {
 	}
 	sort.Strings(s)
 	return s
+}
+
+func (d *differ) matchIgnored(name string) bool {
+	for _, tst := range d.dc.IgnoredLabels {
+		if name == tst {
+			return true
+		}
+	}
+	return false
 }

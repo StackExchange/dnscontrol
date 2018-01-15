@@ -45,6 +45,7 @@ function newDomain(name, registrar) {
         dnsProviders: {},
         defaultTTL: 0,
         nameservers: [],
+        ignored_labels: [],
     };
 }
 
@@ -312,6 +313,13 @@ function format_tt(transform_table) {
         lines.push(row.join(' ~ '));
     }
     return lines.join(' ; ');
+}
+
+// IGNORE(name)
+function IGNORE(name) {
+    return function (d) {
+        d.ignored_labels.push(name);
+    };
 }
 
 // IMPORT_TRANSFORM(translation_table, domain)

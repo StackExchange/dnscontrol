@@ -112,6 +112,7 @@ func runTests(t *testing.T, prv providers.DNSServiceProvider, domainName string,
 				}
 				dom.Records = append(dom.Records, &rc)
 			}
+			dom.IgnoredLabels = tst.IgnoredLabels
 			models.PostProcessRecords(dom.Records)
 			dom2, _ := dom.Copy()
 			// get corrections for first time
@@ -196,8 +197,9 @@ func TestDualProviders(t *testing.T) {
 }
 
 type TestCase struct {
-	Desc    string
-	Records []*rec
+	Desc          string
+	Records       []*rec
+	IgnoredLabels []string
 }
 
 type rec models.RecordConfig
@@ -266,6 +268,13 @@ func tlsa(name string, usage, selector, matchingtype uint8, target string) *rec 
 	return r
 }
 
+func ignore(name string) *rec {
+	return &rec{
+		Name: name,
+		Type: "IGNORE",
+	}
+}
+
 func makeRec(name, target, typ string) *rec {
 	return &rec{
 		Name:   name,
@@ -281,9 +290,19 @@ func (r *rec) ttl(t uint32) *rec {
 }
 
 func tc(desc string, recs ...*rec) *TestCase {
+	var records []*rec
+	var ignored []string
+	for _, r := range recs {
+		if r.Type == "IGNORE" {
+			ignored = append(ignored, r.Name)
+		} else {
+			records = append(records, r)
+		}
+	}
 	return &TestCase{
-		Desc:    desc,
-		Records: recs,
+		Desc:          desc,
+		Records:       records,
+		IgnoredLabels: ignored,
 	}
 }
 
@@ -479,6 +498,13 @@ func makeTests(t *testing.T) []*TestCase {
 			tc("Empty"),
 		)
 	}
+
+	// ignored recrods
+	tests = append(tests,
+		tc("Empty"),
+		tc("Create some records", txt("foo", "simple"), a("foo", "1.2.3.4")),
+		tc("Add a new record - ignoring foo", a("bar", "1.2.3.4"), ignore("foo")),
+	)
 
 	return tests
 }
