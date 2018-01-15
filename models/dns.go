@@ -345,13 +345,14 @@ func StringsToNameservers(nss []string) []*Nameserver {
 
 // DomainConfig describes a DNS domain (tecnically a  DNS zone).
 type DomainConfig struct {
-	Name         string            `json:"name"` // NO trailing "."
-	Registrar    string            `json:"registrar"`
-	DNSProviders map[string]int    `json:"dnsProviders"`
-	Metadata     map[string]string `json:"meta,omitempty"`
-	Records      Records           `json:"records"`
-	Nameservers  []*Nameserver     `json:"nameservers,omitempty"`
-	KeepUnknown  bool              `json:"keepunknown,omitempty"`
+	Name          string            `json:"name"` // NO trailing "."
+	Registrar     string            `json:"registrar"`
+	DNSProviders  map[string]int    `json:"dnsProviders"`
+	Metadata      map[string]string `json:"meta,omitempty"`
+	Records       Records           `json:"records"`
+	Nameservers   []*Nameserver     `json:"nameservers,omitempty"`
+	KeepUnknown   bool              `json:"keepunknown,omitempty"`
+	IgnoredLabels []string          `json:"ignored_labels,omitempty"`
 }
 
 // Copy returns a deep copy of the DomainConfig.

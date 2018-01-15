@@ -325,6 +325,9 @@ func newCloudflare(m map[string]string, metadata json.RawMessage) (providers.DNS
 		for _, l := range parsedMeta.IgnoredLabels {
 			api.ignoredLabels = append(api.ignoredLabels, l)
 		}
+		if len(api.ignoredLabels) > 0 {
+			log.Println("Warning: Cloudflare 'ignored_labels' configuration is deprecated and might be removed. Please use the IGNORE domain directive to achieve the same effect.")
+		}
 		// parse provider level metadata
 		if len(parsedMeta.IPConversions) > 0 {
 			api.ipConversions, err = transform.DecodeTransformTable(parsedMeta.IPConversions)
