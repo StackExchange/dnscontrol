@@ -40,6 +40,9 @@ const (
 	DocDualHost
 	// DocCreateDomains means provider can add domains with the `dnscontrol create-domains` command
 	DocCreateDomains
+
+	// CanUseRoute53Alias indicates the provider support the specific R53_ALIAS records that only the Route53 provider supports
+	CanUseRoute53Alias
 )
 
 var providerCapabilities = map[string]map[Capability]bool{}
