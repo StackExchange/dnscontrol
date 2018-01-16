@@ -107,6 +107,7 @@ type RecordConfig struct {
 	TlsaSelector     uint8             `json:"tlsaselector,omitempty"`
 	TlsaMatchingType uint8             `json:"tlsamatchingtype,omitempty"`
 	TxtStrings       []string          `json:"txtstrings,omitempty"` // TxtStrings stores all strings (including the first). Target stores only the first one.
+	R53Alias         map[string]string `json:"r53_alias,omitempty"`
 
 	CombinedTarget bool `json:"-"`
 
@@ -132,6 +133,8 @@ func (rc *RecordConfig) String() (content string) {
 		content += fmt.Sprintf(" tlsausage=%d tlsaselector=%d tlsamatchingtype=%d", rc.TlsaUsage, rc.TlsaSelector, rc.TlsaMatchingType)
 	case "CAA":
 		content += fmt.Sprintf(" caatag=%s caaflag=%d", rc.CaaTag, rc.CaaFlag)
+	case "R53_ALIAS":
+		content += fmt.Sprintf(" type=%s zone_id=%s", rc.R53Alias["type"], rc.R53Alias["zone_id"])
 	default:
 		msg := fmt.Sprintf("rc.String rtype %v unimplemented", rc.Type)
 		panic(msg)
@@ -386,7 +389,7 @@ func (dc *DomainConfig) Punycode() error {
 			return err
 		}
 		switch rec.Type { // #rtype_variations
-		case "ALIAS", "MX", "NS", "CNAME", "PTR", "SRV", "URL", "URL301", "FRAME":
+		case "ALIAS", "MX", "NS", "CNAME", "PTR", "SRV", "URL", "URL301", "FRAME", "R53_ALIAS":
 			rec.Target, err = idna.ToASCII(rec.Target)
 			if err != nil {
 				return err

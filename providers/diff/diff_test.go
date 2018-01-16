@@ -128,6 +128,26 @@ func TestMetaChange(t *testing.T) {
 	checkLengths(t, existing, desired, 0, 0, 0, 1, getMeta)
 }
 
+func TestMetaOrdering(t *testing.T) {
+	existing := []*models.RecordConfig{
+		myRecord("www MX 1 1.1.1.1"),
+	}
+	desired := []*models.RecordConfig{
+		myRecord("www MX 1 1.1.1.1"),
+	}
+	existing[0].Metadata["k"] = "aa"
+	existing[0].Metadata["x"] = "cc"
+	desired[0].Metadata["k"] = "aa"
+	desired[0].Metadata["x"] = "cc"
+	checkLengths(t, existing, desired, 1, 0, 0, 0)
+	getMeta := func(r *models.RecordConfig) map[string]string {
+		return map[string]string{
+			"k": r.Metadata["k"],
+		}
+	}
+	checkLengths(t, existing, desired, 1, 0, 0, 0, getMeta)
+}
+
 func checkLengths(t *testing.T, existing, desired []*models.RecordConfig, unCount, createCount, delCount, modCount int, valFuncs ...func(*models.RecordConfig) map[string]string) (un, cre, del, mod Changeset) {
 	return checkLengthsWithKeepUnknown(t, existing, desired, unCount, createCount, delCount, modCount, false, valFuncs...)
 }

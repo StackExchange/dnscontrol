@@ -107,8 +107,8 @@ func runTests(t *testing.T, prv providers.DNSServiceProvider, domainName string,
 			for _, r := range tst.Records {
 				rc := models.RecordConfig(*r)
 				rc.NameFQDN = dnsutil.AddOrigin(rc.Name, domainName)
-				if rc.Target == "**current-domain**" {
-					rc.Target = domainName + "."
+				if strings.Contains(rc.Target, "**current-domain**") {
+					rc.Target = strings.Replace(rc.Target, "**current-domain**", domainName, 1) + "."
 				}
 				dom.Records = append(dom.Records, &rc)
 			}
@@ -214,6 +214,14 @@ func cname(name, target string) *rec {
 
 func alias(name, target string) *rec {
 	return makeRec(name, target, "ALIAS")
+}
+
+func r53alias(name, aliasType, target string) *rec {
+	r := makeRec(name, target, "R53_ALIAS")
+	r.R53Alias = map[string]string{
+		"type": aliasType,
+	}
+	return r
 }
 
 func ns(name, target string) *rec {
@@ -505,6 +513,17 @@ func makeTests(t *testing.T) []*TestCase {
 		tc("Create some records", txt("foo", "simple"), a("foo", "1.2.3.4")),
 		tc("Add a new record - ignoring foo", a("bar", "1.2.3.4"), ignore("foo")),
 	)
+
+	// R53_ALIAS
+	if !providers.ProviderHasCabability(*providerToRun, providers.CanUseRoute53Alias) {
+		t.Log("Skipping Route53 ALIAS Tests because provider does not support them")
+	} else {
+		tests = append(tests, tc("Empty"),
+			tc("create dependent records", a("foo", "1.2.3.4"), a("quux", "2.3.4.5")),
+			tc("ALIAS to A record in same zone", a("foo", "1.2.3.4"), a("quux", "2.3.4.5"), r53alias("bar", "A", "foo.**current-domain**")),
+			tc("change it", a("foo", "1.2.3.4"), a("quux", "2.3.4.5"), r53alias("bar", "A", "quux.**current-domain**")),
+		)
+	}
 
 	return tests
 }
