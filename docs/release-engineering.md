@@ -20,26 +20,28 @@ Here are my notes from producing the v0.2.2 release.  Change the version number 
 Edit the "Version" variable in `main.go` and commit.
 
 ```
+export PREVVERSION=2.4
+export VERSION=2.5
 git checkout master
 vi main.go
-git commit -m'Release v2.2' main.go
-git tag v0.2.2
-git push origin tag v0.2.2
+git commit -m'Release v'"$VERSION" main.go
+git tag v0."$VERSION"
+git push origin tag v0."$VERSION"
 ```
 
 ## Step 3. Make the draft release.
 
 [On github.com, click on "Draft a new release"](https://github.com/StackExchange/dnscontrol/releases/new)
 
-Pick the v0.2.2 tag
+Pick the v0.$VERSION tag
 
-Release title: Release v0.2.2
+Release title: Release v0.$VERSION
 
 Fill in the text box with something friendly like, "So many new features!" then make a bullet list of major new functionality.
 
 Review the git log using this command:
 
-    git log v0.2.2...v0.2.1
+    git log v0."$VERSION"...v0."$PREVVERSION"
 
 (Don't create the release yet!)
 
@@ -80,9 +82,9 @@ Email the mailing list: (note the format of the Subject line and that the first 
 
 ```
 To: dnscontrol-discuss@googlegroups.com
-Subject: New release: dnscontrol v0.2.2
+Subject: New release: dnscontrol v0.$VERSION
 
-https://github.com/StackExchange/dnscontrol/releases/tag/v0.2.2
+https://github.com/StackExchange/dnscontrol/releases/tag/v0.$VERSION
 
 So many new providers and features! Plus, a new testing framework that makes it easier to add big features without fear of breaking old ones.
 
@@ -98,7 +100,7 @@ So many new providers and features! Plus, a new testing framework that makes it 
 Mention on [https://gitter.im/dnscontrol/Lobby](https://gitter.im/dnscontrol/Lobby) that the new release has shipped.
 
 ```
-dnscontrol 2.2 has been released! https://github.com/StackExchange/dnscontrol/releases/tag/v0.2.2
+dnscontrol $VERSION has been released! https://github.com/StackExchange/dnscontrol/releases/tag/v0.$VERSION
 ```
 
 
