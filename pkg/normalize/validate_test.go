@@ -193,8 +193,8 @@ func TestCAAValidation(t *testing.T) {
 	config := &models.DNSConfig{
 		Domains: []*models.DomainConfig{
 			{
-				Name:      "example.com",
-				Registrar: "BIND",
+				Name:          "example.com",
+				RegistrarName: "BIND",
 				Records: []*models.RecordConfig{
 					{Name: "@", Type: "CAA", CaaTag: "invalid", Target: "example.com"},
 				},
@@ -211,8 +211,8 @@ func TestTLSAValidation(t *testing.T) {
 	config := &models.DNSConfig{
 		Domains: []*models.DomainConfig{
 			{
-				Name:      "_443._tcp.example.com",
-				Registrar: "BIND",
+				Name:          "_443._tcp.example.com",
+				RegistrarName: "BIND",
 				Records: []*models.RecordConfig{
 					{Name: "_443._tcp", Type: "TLSA", TlsaUsage: 4, TlsaSelector: 1, TlsaMatchingType: 1, Target: "abcdef0"},
 				},
