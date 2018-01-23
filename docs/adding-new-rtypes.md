@@ -52,6 +52,7 @@ a minimum.
 
 * Add the capability to the file `dnscontrol/providers/capabilities.go` (look for `CanUseAlias` and add
 it to the end of the list.)
+* Add this feature to the feature matrix in `dnscontrol/build/generate/featureMatrix.go` (Add it to the variable `matrix` then add it later in the file with a `setCap()` statement.
 * Mark the `bind` provider as supporting this record type by updating `dnscontrol/providers/bind/bindProvider.go` (look for `providers.CanUs` and you'll see what to do).
 
 ## Step 3: Add a helper function

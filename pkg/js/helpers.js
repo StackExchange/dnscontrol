@@ -45,6 +45,7 @@ function newDomain(name, registrar) {
         dnsProviders: {},
         defaultTTL: 0,
         nameservers: [],
+        ignored_labels: [],
     };
 }
 
@@ -163,6 +164,38 @@ var AAAA = recordBuilder('AAAA');
 
 // ALIAS(name,target, recordModifiers...)
 var ALIAS = recordBuilder('ALIAS');
+
+// R53_ALIAS(name, target, type, recordModifiers...)
+var R53_ALIAS = recordBuilder('R53_ALIAS', {
+    args: [['name', _.isString], ['type', validateR53AliasType], ['target', _.isString]],
+    transform: function (record, args, modifiers) {
+        record.name = args.name;
+        record.target = args.target;
+        if (_.isObject(record.r53_alias)) {
+            record.r53_alias['type'] = args.type;
+        } else {
+            record.r53_alias = { 'type': args.type };
+        }
+    },
+});
+
+// R53_ZONE(zone_id)
+function R53_ZONE(zone_id) {
+    return function (r) {
+        if (_.isObject(r.r53_alias)) {
+            r.r53_alias['zone_id'] = zone_id;
+        } else {
+            r.r53_alias = { 'zone_id': zone_id }
+        }
+    };
+}
+
+function validateR53AliasType(value) {
+    if (!_.isString(value)) {
+        return false;
+    }
+    return ['A', 'AAAA', 'CNAME', 'CAA', 'MX', 'TXT', 'PTR', 'SPF', 'SRV', 'NAPTR'].indexOf(value) != -1;
+}
 
 // CAA(name,tag,value, recordModifiers...)
 var CAA = recordBuilder('CAA', {
@@ -312,6 +345,13 @@ function format_tt(transform_table) {
         lines.push(row.join(' ~ '));
     }
     return lines.join(' ; ');
+}
+
+// IGNORE(name)
+function IGNORE(name) {
+    return function (d) {
+        d.ignored_labels.push(name);
+    };
 }
 
 // IMPORT_TRANSFORM(translation_table, domain)

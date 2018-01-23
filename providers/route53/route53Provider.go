@@ -56,7 +56,7 @@ func newRoute53(m map[string]string, metadata json.RawMessage) (*route53Provider
 }
 
 var features = providers.DocumentationNotes{
-	providers.CanUseAlias:            providers.Cannot("R53 does not provide a generic ALIAS functionality. They do have 'ALIAS' CNAME types to point at various AWS infrastructure, but dnscontrol has not implemented those."),
+	providers.CanUseAlias:            providers.Cannot("R53 does not provide a generic ALIAS functionality. Use R53_ALIAS instead."),
 	providers.DocCreateDomains:       providers.Can(),
 	providers.DocDualHost:            providers.Can(),
 	providers.DocOfficiallySupported: providers.Can(),
@@ -64,6 +64,7 @@ var features = providers.DocumentationNotes{
 	providers.CanUseSRV:              providers.Can(),
 	providers.CanUseTXTMulti:         providers.Can(),
 	providers.CanUseCAA:              providers.Can(),
+	providers.CanUseRoute53Alias:     providers.Can(),
 }
 
 func init() {
@@ -155,29 +156,48 @@ func (r *route53Provider) GetDomainCorrections(dc *models.DomainConfig) ([]*mode
 
 	var existingRecords = []*models.RecordConfig{}
 	for _, set := range records {
-		for _, rec := range set.ResourceRecords {
-			if *set.Type == "SOA" {
-				continue
+		if set.AliasTarget == nil {
+			for _, rec := range set.ResourceRecords {
+				if *set.Type == "SOA" {
+					continue
+				}
+				r := &models.RecordConfig{
+					NameFQDN:       unescape(set.Name),
+					Type:           *set.Type,
+					Target:         *rec.Value,
+					TTL:            uint32(*set.TTL),
+					CombinedTarget: true,
+				}
+				existingRecords = append(existingRecords, r)
 			}
+		} else {
 			r := &models.RecordConfig{
 				NameFQDN:       unescape(set.Name),
-				Type:           *set.Type,
-				Target:         *rec.Value,
-				TTL:            uint32(*set.TTL),
+				Type:           "R53_ALIAS",
+				Target:         aws.StringValue(set.AliasTarget.DNSName),
 				CombinedTarget: true,
+				TTL:            300,
+				R53Alias: map[string]string{
+					"type":    *set.Type,
+					"zone_id": *set.AliasTarget.HostedZoneId,
+				},
 			}
 			existingRecords = append(existingRecords, r)
 		}
 	}
 	for _, want := range dc.Records {
 		want.MergeToTarget()
+		// update zone_id to current zone.id if not specified by the user
+		if want.Type == "R53_ALIAS" && want.R53Alias["zone_id"] == "" {
+			want.R53Alias["zone_id"] = getZoneID(zone, want)
+		}
 	}
 
 	// Normalize
 	models.PostProcessRecords(existingRecords)
 
 	// diff
-	differ := diff.New(dc)
+	differ := diff.New(dc, getAliasMap)
 	_, create, delete, modify := differ.IncrementalDiff(existingRecords)
 
 	namesToUpdate := map[key][]string{}
@@ -219,7 +239,7 @@ func (r *route53Provider) GetDomainCorrections(dc *models.DomainConfig) ([]*mode
 			delDesc += strings.Join(namesToUpdate[k], "\n") + "\n"
 			// on delete just submit the original resource set we got from r53.
 			for _, r := range records {
-				if *r.Name == k.Name+"." && *r.Type == k.Type {
+				if *r.Name == k.Name+"." && (*r.Type == k.Type || k.Type == "R53_ALIAS") {
 					rrset = r
 					break
 				}
@@ -230,18 +250,21 @@ func (r *route53Provider) GetDomainCorrections(dc *models.DomainConfig) ([]*mode
 			// on change or create, just build a new record set from our desired state
 			chg.Action = sPtr("UPSERT")
 			rrset = &r53.ResourceRecordSet{
-				Name:            sPtr(k.Name),
-				Type:            sPtr(k.Type),
-				ResourceRecords: []*r53.ResourceRecord{},
+				Name: sPtr(k.Name),
+				Type: sPtr(k.Type),
 			}
 			for _, r := range recs {
 				val := r.Target
-				rr := &r53.ResourceRecord{
-					Value: &val,
+				if r.Type != "R53_ALIAS" {
+					rr := &r53.ResourceRecord{
+						Value: &val,
+					}
+					rrset.ResourceRecords = append(rrset.ResourceRecords, rr)
+					i := int64(r.TTL)
+					rrset.TTL = &i // TODO: make sure that ttls are consistent within a set
+				} else {
+					rrset = aliasToRRSet(zone, r)
 				}
-				rrset.ResourceRecords = append(rrset.ResourceRecords, rr)
-				i := int64(r.TTL)
-				rrset.TTL = &i // TODO: make sure that ttls are consistent within a set
 			}
 		}
 		chg.ResourceRecordSet = rrset
@@ -277,6 +300,39 @@ func (r *route53Provider) GetDomainCorrections(dc *models.DomainConfig) ([]*mode
 
 	return corrections, nil
 
+}
+
+func getAliasMap(r *models.RecordConfig) map[string]string {
+	if r.Type != "R53_ALIAS" {
+		return nil
+	}
+	return r.R53Alias
+}
+
+func aliasToRRSet(zone *r53.HostedZone, r *models.RecordConfig) *r53.ResourceRecordSet {
+	rrset := &r53.ResourceRecordSet{
+		Name: sPtr(r.NameFQDN),
+		Type: sPtr(r.R53Alias["type"]),
+	}
+	zoneID := getZoneID(zone, r)
+	targetHealth := false
+	rrset.AliasTarget = &r53.AliasTarget{
+		DNSName:              &r.Target,
+		HostedZoneId:         aws.String(zoneID),
+		EvaluateTargetHealth: &targetHealth,
+	}
+	return rrset
+}
+
+func getZoneID(zone *r53.HostedZone, r *models.RecordConfig) string {
+	zoneID := r.R53Alias["zone_id"]
+	if zoneID == "" {
+		zoneID = aws.StringValue(zone.Id)
+	}
+	if strings.HasPrefix(zoneID, "/hostedzone/") {
+		zoneID = strings.TrimPrefix(zoneID, "/hostedzone/")
+	}
+	return zoneID
 }
 
 func (r *route53Provider) GetRegistrarCorrections(dc *models.DomainConfig) ([]*models.Correction, error) {
