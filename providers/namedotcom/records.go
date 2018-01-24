@@ -88,7 +88,7 @@ var quotedStringRegexp = regexp.MustCompile("\"((?:[^\"\\\\]|\\\\.)*)\"")
 
 func toRecord(r *namecom.Record) *models.RecordConfig {
 	rc := &models.RecordConfig{
-		NameFQDN: r.Fqdn,
+		NameFQDN: strings.TrimSuffix(r.Fqdn, "."),
 		Type:     r.Type,
 		Target:   r.Answer,
 		TTL:      r.TTL,
