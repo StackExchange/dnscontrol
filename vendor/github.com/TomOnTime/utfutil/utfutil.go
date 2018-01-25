@@ -12,12 +12,13 @@ package utfutil
 // utfutil.NewReader() rewraps an existing scanner to make it UTF-encoding agnostic.
 // utfutil.BytesReader() takes a []byte and decodes it to UTF-8.
 
-// Since it is impossible to guess 100% correctly if there is no BOM,
-// the functions take a 2nd parameter of type "EncodingHint" where you
-// specify the default encoding for BOM-less data.
+// When there is no BOM, it is impossible to guess correctly 100%
+// of the time.  Therefore, the functions take a 2nd parameter of type
+// "EncodingHint" where you specify the default encoding for BOM-less
+// data.
 
-// If someone writes a golang equivalent of uchatdet, I'll add
-// a hint called "AUTO" which uses it.
+// In the future we'd like to have a hint called AUTO that uses
+// uchatdet (or a Go rewrite) to guess.
 
 // Inspiration: I wrote this after spending half a day trying
 // to figure out how to use unicode.BOMOverride.

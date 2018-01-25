@@ -245,8 +245,8 @@ type Account struct {
 	// Private template group objects (parent and children) and the shared template group objects (parent only) for an account.
 	BlockDeviceTemplateGroups []Virtual_Guest_Block_Device_Template_Group `json:"blockDeviceTemplateGroups,omitempty" xmlrpc:"blockDeviceTemplateGroups,omitempty"`
 
-	// Indicates whether this account requires blue id authentication.
-	BlueIdAuthenticationRequiredFlag *bool `json:"blueIdAuthenticationRequiredFlag,omitempty" xmlrpc:"blueIdAuthenticationRequiredFlag,omitempty"`
+	// The Bluemix account link associated with this SoftLayer account, if one exists.
+	BluemixAccountLink *Account_Link_Bluemix `json:"bluemixAccountLink,omitempty" xmlrpc:"bluemixAccountLink,omitempty"`
 
 	// Returns true if this account is linked to IBM Bluemix, false if not.
 	BluemixLinkedFlag *bool `json:"bluemixLinkedFlag,omitempty" xmlrpc:"bluemixLinkedFlag,omitempty"`
@@ -262,6 +262,9 @@ type Account struct {
 
 	// The brand keyName.
 	BrandKeyName *string `json:"brandKeyName,omitempty" xmlrpc:"brandKeyName,omitempty"`
+
+	// The Business Partner details for the account. Country Enterprise Code, Channel ID, and Segment ID.
+	BusinessPartner *Account_Partner_Business `json:"businessPartner,omitempty" xmlrpc:"businessPartner,omitempty"`
 
 	// Indicating whether this account can order additional Vlans.
 	CanOrderAdditionalVlansFlag *bool `json:"canOrderAdditionalVlansFlag,omitempty" xmlrpc:"canOrderAdditionalVlansFlag,omitempty"`
@@ -530,11 +533,17 @@ type Account struct {
 	// Unique identifier for a customer used throughout IBM.
 	IbmCustomerNumber *string `json:"ibmCustomerNumber,omitempty" xmlrpc:"ibmCustomerNumber,omitempty"`
 
+	// Indicates whether this account requires IBMid authentication.
+	IbmIdAuthenticationRequiredFlag *bool `json:"ibmIdAuthenticationRequiredFlag,omitempty" xmlrpc:"ibmIdAuthenticationRequiredFlag,omitempty"`
+
 	// Timestamp representing the point in time when an account is required to use IBMid authentication.
 	IbmIdMigrationExpirationTimestamp *string `json:"ibmIdMigrationExpirationTimestamp,omitempty" xmlrpc:"ibmIdMigrationExpirationTimestamp,omitempty"`
 
 	// A customer account's internal identifier. Account numbers are typically preceded by the string "SL" in the customer portal. Every SoftLayer account has at least one portal user whose username follows the "SL" + account number naming scheme.
 	Id *int `json:"id,omitempty" xmlrpc:"id,omitempty"`
+
+	// An in progress request to switch billing systems.
+	InProgressExternalAccountSetup *Account_External_Setup `json:"inProgressExternalAccountSetup,omitempty" xmlrpc:"inProgressExternalAccountSetup,omitempty"`
 
 	// A count of
 	InternalNoteCount *uint `json:"internalNoteCount,omitempty" xmlrpc:"internalNoteCount,omitempty"`
@@ -658,12 +667,6 @@ type Account struct {
 
 	// An account's media transfer service requests.
 	MediaDataTransferRequests []Account_Media_Data_Transfer_Request `json:"mediaDataTransferRequests,omitempty" xmlrpc:"mediaDataTransferRequests,omitempty"`
-
-	// A count of an account's associated Message Queue accounts.
-	MessageQueueAccountCount *uint `json:"messageQueueAccountCount,omitempty" xmlrpc:"messageQueueAccountCount,omitempty"`
-
-	// An account's associated Message Queue accounts.
-	MessageQueueAccounts []Network_Message_Queue `json:"messageQueueAccounts,omitempty" xmlrpc:"messageQueueAccounts,omitempty"`
 
 	// The date an account was last modified.
 	ModifyDate *Time `json:"modifyDate,omitempty" xmlrpc:"modifyDate,omitempty"`
@@ -1090,6 +1093,9 @@ type Account struct {
 
 	// Indicates whether newly created users under this account will be associated with IBMid via an email requiring a response, or not.
 	RequireSilentIBMidUserCreation *bool `json:"requireSilentIBMidUserCreation,omitempty" xmlrpc:"requireSilentIBMidUserCreation,omitempty"`
+
+	// The Reseller level of the account.
+	ResellerLevel *int `json:"resellerLevel,omitempty" xmlrpc:"resellerLevel,omitempty"`
 
 	// A count of an account's associated top-level resource groups.
 	ResourceGroupCount *uint `json:"resourceGroupCount,omitempty" xmlrpc:"resourceGroupCount,omitempty"`
@@ -1854,7 +1860,41 @@ type Account_Contact_Type struct {
 }
 
 // no documentation yet
+type Account_External_Setup struct {
+	Entity
+
+	// The SoftLayer customer account the request belongs to.
+	AccountId *int `json:"accountId,omitempty" xmlrpc:"accountId,omitempty"`
+
+	// The currency requested after the billing switch.
+	CurrencyId *int `json:"currencyId,omitempty" xmlrpc:"currencyId,omitempty"`
+
+	// The unique identifier for this setup request.
+	Id *int `json:"id,omitempty" xmlrpc:"id,omitempty"`
+
+	// The external system that will handle billing.
+	ServiceProviderId *int `json:"serviceProviderId,omitempty" xmlrpc:"serviceProviderId,omitempty"`
+
+	// The status of the account setup request.
+	StatusCode *string `json:"statusCode,omitempty" xmlrpc:"statusCode,omitempty"`
+
+	// no documentation yet
+	TypeCode *string `json:"typeCode,omitempty" xmlrpc:"typeCode,omitempty"`
+
+	// The transaction information related to verifying the customer credit card.
+	VerifyCardTransaction *Billing_Payment_Card_Transaction `json:"verifyCardTransaction,omitempty" xmlrpc:"verifyCardTransaction,omitempty"`
+
+	// The related credit card transaction record for card verification.
+	VerifyCardTransactionId *int `json:"verifyCardTransactionId,omitempty" xmlrpc:"verifyCardTransactionId,omitempty"`
+}
+
+// no documentation yet
 type Account_Historical_Report struct {
+	Entity
+}
+
+// no documentation yet
+type Account_Internal_Ibm struct {
 	Entity
 }
 
@@ -2281,6 +2321,23 @@ type Account_Note_Type struct {
 
 	// no documentation yet
 	ValueExpression *string `json:"valueExpression,omitempty" xmlrpc:"valueExpression,omitempty"`
+}
+
+// The SoftLayer_Account_Partner_Business data type contains specific information concerning an Account's relationship with Business Partner Data, in the form of the Account's Country Experience Identifier (CEID), Channel ID, and Segment ID.
+type Account_Partner_Business struct {
+	Entity
+
+	// The SoftLayer customer account associated with this business partner data.
+	Account *Account `json:"account,omitempty" xmlrpc:"account,omitempty"`
+
+	// The Channel ID associated with the Account.
+	ChannelId *int `json:"channelId,omitempty" xmlrpc:"channelId,omitempty"`
+
+	// The Country Enterprise Code associated with the Account.
+	CountryEnterpriseCode *string `json:"countryEnterpriseCode,omitempty" xmlrpc:"countryEnterpriseCode,omitempty"`
+
+	// The Segment ID associated with the Account.
+	SegmentId *int `json:"segmentId,omitempty" xmlrpc:"segmentId,omitempty"`
 }
 
 // no documentation yet

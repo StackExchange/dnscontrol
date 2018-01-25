@@ -19,9 +19,11 @@ package session
 import (
 	"encoding/json"
 	"fmt"
+	"math/rand"
 	"net/http"
 	"net/http/httputil"
 	"strings"
+	"time"
 
 	"github.com/renier/xmlrpc"
 	"github.com/softlayer/softlayer-go/sl"
@@ -97,7 +99,14 @@ func (x *XmlRpcTransport) DoRequest(
 		authenticate["complexType"] = "PortalLoginToken"
 	}
 
+	// For cases where session is built from the raw structure and not using New() , the UserAgent would be empty
+	if sess.userAgent == "" {
+		sess.userAgent = getDefaultUserAgent()
+	}
+
 	headers := map[string]interface{}{}
+	headers["User-Agent"] = sess.userAgent
+
 	if len(authenticate) > 0 {
 		headers["authenticate"] = authenticate
 	}
@@ -157,12 +166,53 @@ func (x *XmlRpcTransport) DoRequest(
 		params = append(params, arg)
 	}
 
-	err = client.Call(method, params, pResult)
+	retries := sess.Retries
+	if retries < 2 {
+		err = client.Call(method, params, pResult)
+	} else {
+		wait := sess.RetryWait
+		if wait == 0 {
+			wait = DefaultRetryWait
+		}
+
+		err = makeXmlRequest(retries, wait, client, method, params, pResult)
+	}
+
 	if xmlRpcError, ok := err.(*xmlrpc.XmlRpcError); ok {
-		return sl.Error{
+		err = sl.Error{
 			StatusCode: xmlRpcError.HttpStatusCode,
 			Exception:  xmlRpcError.Code.(string),
 			Message:    xmlRpcError.Err,
+		}
+	}
+	return err
+}
+
+func makeXmlRequest(
+	retries int, wait time.Duration, client *xmlrpc.Client,
+	method string, params []interface{}, pResult interface{}) error {
+
+	err := client.Call(method, params, pResult)
+
+	if xmlRpcError, ok := err.(*xmlrpc.XmlRpcError); ok {
+		err = sl.Error{
+			StatusCode: xmlRpcError.HttpStatusCode,
+			Exception:  xmlRpcError.Code.(string),
+			Message:    xmlRpcError.Err,
+		}
+	}
+
+	if err != nil {
+		if !isRetryable(err) {
+			return err
+		}
+
+		if retries--; retries > 0 {
+			jitter := time.Duration(rand.Int63n(int64(wait)))
+			wait = wait + jitter/2
+			time.Sleep(wait)
+			return makeXmlRequest(
+				retries, wait, client, method, params, pResult)
 		}
 	}
 

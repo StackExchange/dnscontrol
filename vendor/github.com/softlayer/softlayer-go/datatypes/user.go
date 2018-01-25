@@ -185,6 +185,12 @@ type User_Customer struct {
 	// Whether a portal user's time zone is affected by Daylight Savings Time.
 	DaylightSavingsTimeFlag *bool `json:"daylightSavingsTimeFlag,omitempty" xmlrpc:"daylightSavingsTimeFlag,omitempty"`
 
+	// A count of the dedicated hosts to which the user has been granted access.
+	DedicatedHostCount *uint `json:"dedicatedHostCount,omitempty" xmlrpc:"dedicatedHostCount,omitempty"`
+
+	// The dedicated hosts to which the user has been granted access.
+	DedicatedHosts []Virtual_DedicatedHost `json:"dedicatedHosts,omitempty" xmlrpc:"dedicatedHosts,omitempty"`
+
 	// Flag used to deny access to all hardware and cloud computing instances upon user creation.
 	DenyAllResourceAccessOnCreateFlag *bool `json:"denyAllResourceAccessOnCreateFlag,omitempty" xmlrpc:"denyAllResourceAccessOnCreateFlag,omitempty"`
 
@@ -220,6 +226,9 @@ type User_Customer struct {
 
 	// Whether or not a user has acknowledged the support policy.
 	HasAcknowledgedSupportPolicyFlag *bool `json:"hasAcknowledgedSupportPolicyFlag,omitempty" xmlrpc:"hasAcknowledgedSupportPolicyFlag,omitempty"`
+
+	// Permission granting the user access to all Dedicated Host devices on the account.
+	HasFullDedicatedHostAccessFlag *bool `json:"hasFullDedicatedHostAccessFlag,omitempty" xmlrpc:"hasFullDedicatedHostAccessFlag,omitempty"`
 
 	// Whether or not a portal user has access to all hardware on their account.
 	HasFullHardwareAccessFlag *bool `json:"hasFullHardwareAccessFlag,omitempty" xmlrpc:"hasFullHardwareAccessFlag,omitempty"`
@@ -645,6 +654,9 @@ type User_Customer_Invitation struct {
 	ExpirationDate *Time `json:"expirationDate,omitempty" xmlrpc:"expirationDate,omitempty"`
 
 	// no documentation yet
+	IbmIdUsername *string `json:"ibmIdUsername,omitempty" xmlrpc:"ibmIdUsername,omitempty"`
+
+	// no documentation yet
 	Id *int `json:"id,omitempty" xmlrpc:"id,omitempty"`
 
 	// no documentation yet
@@ -681,6 +693,9 @@ type User_Customer_Link struct {
 
 	// no documentation yet
 	DestinationUserId *int `json:"destinationUserId,omitempty" xmlrpc:"destinationUserId,omitempty"`
+
+	// no documentation yet
+	IbmIdUniqueIdentifier *string `json:"ibmIdUniqueIdentifier,omitempty" xmlrpc:"ibmIdUniqueIdentifier,omitempty"`
 
 	// no documentation yet
 	Id *int `json:"id,omitempty" xmlrpc:"id,omitempty"`

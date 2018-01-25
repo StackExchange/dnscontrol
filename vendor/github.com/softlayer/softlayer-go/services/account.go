@@ -143,6 +143,20 @@ func (r Account) CreateUser(templateObject *datatypes.User_Customer, password *s
 	return
 }
 
+// disableEuLocalizedProcessing will disable the EU localized processing flag on the account. Disabling the flag allows personnel and systems in non-EU countries to perform processing activities on the account's systems and data.
+func (r Account) DisableEuLocalizedProcessing() (err error) {
+	var resp datatypes.Void
+	err = r.Session.DoRequest("SoftLayer_Account", "disableEuLocalizedProcessing", nil, &r.Options, &resp)
+	return
+}
+
+// enableEuLocalizedProcessing will enable the EU localized processing flag on the account. This flag indicates that an account should have all resources located in EU compliant datacenters.
+func (r Account) EnableEuLocalizedProcessing() (err error) {
+	var resp datatypes.Void
+	err = r.Session.DoRequest("SoftLayer_Account", "enableEuLocalizedProcessing", nil, &r.Options, &resp)
+	return
+}
+
 // Retrieve An email address that is responsible for abuse and legal inquiries on behalf of an account. For instance, new legal and abuse tickets are sent to this address.
 func (r Account) GetAbuseEmail() (resp string, err error) {
 	err = r.Session.DoRequest("SoftLayer_Account", "getAbuseEmail", nil, &r.Options, &resp)
@@ -485,9 +499,9 @@ func (r Account) GetBlockDeviceTemplateGroups() (resp []datatypes.Virtual_Guest_
 	return
 }
 
-// Retrieve Indicates whether this account requires blue id authentication.
-func (r Account) GetBlueIdAuthenticationRequiredFlag() (resp bool, err error) {
-	err = r.Session.DoRequest("SoftLayer_Account", "getBlueIdAuthenticationRequiredFlag", nil, &r.Options, &resp)
+// Retrieve The Bluemix account link associated with this SoftLayer account, if one exists.
+func (r Account) GetBluemixAccountLink() (resp datatypes.Account_Link_Bluemix, err error) {
+	err = r.Session.DoRequest("SoftLayer_Account", "getBluemixAccountLink", nil, &r.Options, &resp)
 	return
 }
 
@@ -512,6 +526,12 @@ func (r Account) GetBrandAccountFlag() (resp bool, err error) {
 // Retrieve The brand keyName.
 func (r Account) GetBrandKeyName() (resp string, err error) {
 	err = r.Session.DoRequest("SoftLayer_Account", "getBrandKeyName", nil, &r.Options, &resp)
+	return
+}
+
+// Retrieve The Business Partner details for the account. Country Enterprise Code, Channel ID, and Segment ID.
+func (r Account) GetBusinessPartner() (resp datatypes.Account_Partner_Business, err error) {
+	err = r.Session.DoRequest("SoftLayer_Account", "getBusinessPartner", nil, &r.Options, &resp)
 	return
 }
 
@@ -910,9 +930,21 @@ func (r Account) GetIbmCustomerNumber() (resp string, err error) {
 	return
 }
 
+// Retrieve Indicates whether this account requires IBMid authentication.
+func (r Account) GetIbmIdAuthenticationRequiredFlag() (resp bool, err error) {
+	err = r.Session.DoRequest("SoftLayer_Account", "getIbmIdAuthenticationRequiredFlag", nil, &r.Options, &resp)
+	return
+}
+
 // Retrieve Timestamp representing the point in time when an account is required to use IBMid authentication.
 func (r Account) GetIbmIdMigrationExpirationTimestamp() (resp string, err error) {
 	err = r.Session.DoRequest("SoftLayer_Account", "getIbmIdMigrationExpirationTimestamp", nil, &r.Options, &resp)
+	return
+}
+
+// Retrieve An in progress request to switch billing systems.
+func (r Account) GetInProgressExternalAccountSetup() (resp datatypes.Account_External_Setup, err error) {
+	err = r.Session.DoRequest("SoftLayer_Account", "getInProgressExternalAccountSetup", nil, &r.Options, &resp)
 	return
 }
 
@@ -940,7 +972,7 @@ func (r Account) GetIscsiNetworkStorage() (resp []datatypes.Network_Storage, err
 	return
 }
 
-// no documentation yet
+// Computes the number of available public secondary IP addresses, aligned to a subnet size.
 func (r Account) GetLargestAllowedSubnetCidr(numberOfHosts *int, locationId *int) (resp int, err error) {
 	params := []interface{}{
 		numberOfHosts,
@@ -1061,12 +1093,6 @@ func (r Account) GetMasterUser() (resp datatypes.User_Customer, err error) {
 // Retrieve An account's media transfer service requests.
 func (r Account) GetMediaDataTransferRequests() (resp []datatypes.Account_Media_Data_Transfer_Request, err error) {
 	err = r.Session.DoRequest("SoftLayer_Account", "getMediaDataTransferRequests", nil, &r.Options, &resp)
-	return
-}
-
-// Retrieve An account's associated Message Queue accounts.
-func (r Account) GetMessageQueueAccounts() (resp []datatypes.Network_Message_Queue, err error) {
-	err = r.Session.DoRequest("SoftLayer_Account", "getMessageQueueAccounts", nil, &r.Options, &resp)
 	return
 }
 
@@ -2016,6 +2042,17 @@ func (r Account) SetAbuseEmails(emails []string) (resp bool, err error) {
 	return
 }
 
+// Set the total number of servers that are to be maintained in the given pool. When a server is ordered a new server will be put in the pool to replace the server that was removed to fill an order to maintain the desired pool availability quantity.
+func (r Account) SetManagedPoolQuantity(poolKeyName *string, backendRouter *string, quantity *int) (resp []byte, err error) {
+	params := []interface{}{
+		poolKeyName,
+		backendRouter,
+		quantity,
+	}
+	err = r.Session.DoRequest("SoftLayer_Account", "setManagedPoolQuantity", params, &r.Options, &resp)
+	return
+}
+
 // Set the flag that enables or disables automatic private network VLAN spanning for a SoftLayer customer account. Enabling VLAN spanning allows an account's servers to talk on the same broadcast domain even if they reside within different private vlans.
 func (r Account) SetVlanSpan(enabled *bool) (resp bool, err error) {
 	params := []interface{}{
@@ -2043,7 +2080,7 @@ func (r Account) UpdateVpnUsersForResource(objectId *int, objectType *string) (r
 	return
 }
 
-// This method will validate the following account fields. Included are the allowed characters for each field. Email Address*: letters, numbers, space, period, dash, parenthesis, exclamation point, at sign, ampersand, colon, comma, underscore, apostrophe, octothorpe. Company Name*: alphabet, numbers, space, period, dash, octothorpe, forward slash, backward slash, comma, colon, at sign, ampersand, underscore, apostrophe, parenthesis, exclamation point. (Note: may not contain an email address) First Name*: alphabet, space, period, dash, comma, apostrophe. Last Name*: alphabet, space, period, dash, comma, apostrophe. Address 1*: alphabet, numbers, space, period, dash, octothorpe, forward slash, backward slash, comma, colon, at sign, ampersand, underscore, apostrophe. Address 2: alphabet, numbers, space, period, dash, octothorpe, forward slash, backward slash, comma, colon, at sign, ampersand, underscore, apostrophe. City*: alphabet, space, period, dash, apostrophe. State*: Required if country is US or Canada. Must be valid two-letter state code for that country. Postal Code*: alphabet, numbers, dash, space. Country*: alphabet, numbers. Office Phone*: alphabet, numbers, space, period, dash, parenthesis, plus sign. Alternate Phone: alphabet, numbers, space, period, dash, parenthesis, plus sign. Fax Phone: alphabet, numbers, space, period, dash, parenthesis, plus sign.
+// This method will validate the following account fields. Included are the allowed characters for each field.<br> <strong>Email Address<sup>*</sup>:</strong> letters, numbers, space, period, dash, parenthesis, exclamation point, at sign, ampersand, colon, comma, underscore, apostrophe, octothorpe.<br><br> <strong>Company Name<sup>*</sup>:</strong> alphabet, numbers, space, period, dash, octothorpe, forward slash, backward slash, comma, colon, at sign, ampersand, underscore, apostrophe, parenthesis, exclamation point. (Note: may not contain an email address)<br> <strong>First Name<sup>*</sup>:</strong> alphabet, space, period, dash, comma, apostrophe.<br> <strong>Last Name<sup>*</sup>:</strong> alphabet, space, period, dash, comma, apostrophe.<br> <strong>Address 1<sup>*</sup>:</strong> alphabet, numbers, space, period, dash, octothorpe, forward slash, backward slash, comma, colon, at sign, ampersand, underscore, apostrophe.<br> <strong>Address 2:</strong> alphabet, numbers, space, period, dash, octothorpe, forward slash, backward slash, comma, colon, at sign, ampersand, underscore, apostrophe.<br> <strong>City<sup>*</sup>:</strong> alphabet, space, period, dash, apostrophe.<br> <strong>State<sup>*</sup>:</strong> Required if country is US or Canada. Must be valid Alpha-2 ISO 3166-1 state code for that country.<br> <strong>Postal Code<sup>*</sup>:</strong> alphabet, numbers, dash, space.<br> <strong>Country<sup>*</sup>:</strong> alphabet, numbers. Must be valid Alpha-2 ISO 3166-1 country code.<br> <strong>Office Phone<sup>*</sup>:</strong> alphabet, numbers, space, period, dash, parenthesis, plus sign.<br> <strong>Alternate Phone:</strong> alphabet, numbers, space, period, dash, parenthesis, plus sign.<br> <strong>Fax Phone:</strong> alphabet, numbers, space, period, dash, parenthesis, plus sign.<br>
 // * denotes a required field.
 func (r Account) Validate(account *datatypes.Account) (resp []string, err error) {
 	params := []interface{}{
@@ -2683,6 +2720,67 @@ func (r Account_Contact) GetType() (resp datatypes.Account_Contact_Type, err err
 }
 
 // no documentation yet
+type Account_External_Setup struct {
+	Session *session.Session
+	Options sl.Options
+}
+
+// GetAccountExternalSetupService returns an instance of the Account_External_Setup SoftLayer service
+func GetAccountExternalSetupService(sess *session.Session) Account_External_Setup {
+	return Account_External_Setup{Session: sess}
+}
+
+func (r Account_External_Setup) Id(id int) Account_External_Setup {
+	r.Options.Id = &id
+	return r
+}
+
+func (r Account_External_Setup) Mask(mask string) Account_External_Setup {
+	if !strings.HasPrefix(mask, "mask[") && (strings.Contains(mask, "[") || strings.Contains(mask, ",")) {
+		mask = fmt.Sprintf("mask[%s]", mask)
+	}
+
+	r.Options.Mask = mask
+	return r
+}
+
+func (r Account_External_Setup) Filter(filter string) Account_External_Setup {
+	r.Options.Filter = filter
+	return r
+}
+
+func (r Account_External_Setup) Limit(limit int) Account_External_Setup {
+	r.Options.Limit = &limit
+	return r
+}
+
+func (r Account_External_Setup) Offset(offset int) Account_External_Setup {
+	r.Options.Offset = &offset
+	return r
+}
+
+// Calling this method signals that the account with the provided account id is ready to be billed by the external billing system.
+func (r Account_External_Setup) FinalizeExternalBillingForAccount(accountId *int) (resp datatypes.Container_Account_External_Setup_ProvisioningHoldLifted, err error) {
+	params := []interface{}{
+		accountId,
+	}
+	err = r.Session.DoRequest("SoftLayer_Account_External_Setup", "finalizeExternalBillingForAccount", params, &r.Options, &resp)
+	return
+}
+
+// no documentation yet
+func (r Account_External_Setup) GetObject() (resp datatypes.Account_External_Setup, err error) {
+	err = r.Session.DoRequest("SoftLayer_Account_External_Setup", "getObject", nil, &r.Options, &resp)
+	return
+}
+
+// Retrieve The transaction information related to verifying the customer credit card.
+func (r Account_External_Setup) GetVerifyCardTransaction() (resp datatypes.Billing_Payment_Card_Transaction, err error) {
+	err = r.Session.DoRequest("SoftLayer_Account_External_Setup", "getVerifyCardTransaction", nil, &r.Options, &resp)
+	return
+}
+
+// no documentation yet
 type Account_Historical_Report struct {
 	Session *session.Session
 	Options sl.Options
@@ -2803,6 +2901,112 @@ func (r Account_Historical_Report) GetUrlUptimeGraphData(configurationValueId *i
 		endDate,
 	}
 	err = r.Session.DoRequest("SoftLayer_Account_Historical_Report", "getUrlUptimeGraphData", params, &r.Options, &resp)
+	return
+}
+
+// no documentation yet
+type Account_Internal_Ibm struct {
+	Session *session.Session
+	Options sl.Options
+}
+
+// GetAccountInternalIbmService returns an instance of the Account_Internal_Ibm SoftLayer service
+func GetAccountInternalIbmService(sess *session.Session) Account_Internal_Ibm {
+	return Account_Internal_Ibm{Session: sess}
+}
+
+func (r Account_Internal_Ibm) Id(id int) Account_Internal_Ibm {
+	r.Options.Id = &id
+	return r
+}
+
+func (r Account_Internal_Ibm) Mask(mask string) Account_Internal_Ibm {
+	if !strings.HasPrefix(mask, "mask[") && (strings.Contains(mask, "[") || strings.Contains(mask, ",")) {
+		mask = fmt.Sprintf("mask[%s]", mask)
+	}
+
+	r.Options.Mask = mask
+	return r
+}
+
+func (r Account_Internal_Ibm) Filter(filter string) Account_Internal_Ibm {
+	r.Options.Filter = filter
+	return r
+}
+
+func (r Account_Internal_Ibm) Limit(limit int) Account_Internal_Ibm {
+	r.Options.Limit = &limit
+	return r
+}
+
+func (r Account_Internal_Ibm) Offset(offset int) Account_Internal_Ibm {
+	r.Options.Offset = &offset
+	return r
+}
+
+// Validates request and, if the request is approved, returns a list of allowed uses for an automatically created IBMer IaaS account.
+func (r Account_Internal_Ibm) GetAccountTypes() (resp []string, err error) {
+	err = r.Session.DoRequest("SoftLayer_Account_Internal_Ibm", "getAccountTypes", nil, &r.Options, &resp)
+	return
+}
+
+// Gets the URL used to perform manager validation.
+func (r Account_Internal_Ibm) GetAuthorizationUrl(requestId *int) (resp string, err error) {
+	params := []interface{}{
+		requestId,
+	}
+	err = r.Session.DoRequest("SoftLayer_Account_Internal_Ibm", "getAuthorizationUrl", params, &r.Options, &resp)
+	return
+}
+
+// Exchanges a code for a token during manager validation.
+func (r Account_Internal_Ibm) GetEmployeeAccessToken(unverifiedAuthenticationCode *string) (resp string, err error) {
+	params := []interface{}{
+		unverifiedAuthenticationCode,
+	}
+	err = r.Session.DoRequest("SoftLayer_Account_Internal_Ibm", "getEmployeeAccessToken", params, &r.Options, &resp)
+	return
+}
+
+// After validating the requesting user through the access token, generates a container with the relevant request information and returns it.
+func (r Account_Internal_Ibm) GetManagerPreview(requestId *int, accessToken *string) (resp datatypes.Container_Account_Internal_Ibm_Request, err error) {
+	params := []interface{}{
+		requestId,
+		accessToken,
+	}
+	err = r.Session.DoRequest("SoftLayer_Account_Internal_Ibm", "getManagerPreview", params, &r.Options, &resp)
+	return
+}
+
+// Applies manager approval to a pending internal IBM account request. If cost recovery is already configured, this will create an account. If not, this will remind the internal team to configure cost recovery and create the account when possible.
+func (r Account_Internal_Ibm) ManagerApprove(requestId *int, accessToken *string) (err error) {
+	var resp datatypes.Void
+	params := []interface{}{
+		requestId,
+		accessToken,
+	}
+	err = r.Session.DoRequest("SoftLayer_Account_Internal_Ibm", "managerApprove", params, &r.Options, &resp)
+	return
+}
+
+// Denies a pending request and prevents additional requests from the same applicant for as long as the manager remains the same.
+func (r Account_Internal_Ibm) ManagerDeny(requestId *int, accessToken *string) (err error) {
+	var resp datatypes.Void
+	params := []interface{}{
+		requestId,
+		accessToken,
+	}
+	err = r.Session.DoRequest("SoftLayer_Account_Internal_Ibm", "managerDeny", params, &r.Options, &resp)
+	return
+}
+
+// Validates request and kicks off the approval process.
+func (r Account_Internal_Ibm) RequestAccount(requestContainer *datatypes.Container_Account_Internal_Ibm_Request) (err error) {
+	var resp datatypes.Void
+	params := []interface{}{
+		requestContainer,
+	}
+	err = r.Session.DoRequest("SoftLayer_Account_Internal_Ibm", "requestAccount", params, &r.Options, &resp)
 	return
 }
 
@@ -3515,6 +3719,58 @@ func (r Account_Note_Type) GetAllObjects() (resp []datatypes.Account_Note_Type, 
 // no documentation yet
 func (r Account_Note_Type) GetObject() (resp datatypes.Account_Note_Type, err error) {
 	err = r.Session.DoRequest("SoftLayer_Account_Note_Type", "getObject", nil, &r.Options, &resp)
+	return
+}
+
+// The SoftLayer_Account_Partner_Business data type contains specific information concerning an Account's relationship with Business Partner Data, in the form of the Account's Country Experience Identifier (CEID), Channel ID, and Segment ID.
+type Account_Partner_Business struct {
+	Session *session.Session
+	Options sl.Options
+}
+
+// GetAccountPartnerBusinessService returns an instance of the Account_Partner_Business SoftLayer service
+func GetAccountPartnerBusinessService(sess *session.Session) Account_Partner_Business {
+	return Account_Partner_Business{Session: sess}
+}
+
+func (r Account_Partner_Business) Id(id int) Account_Partner_Business {
+	r.Options.Id = &id
+	return r
+}
+
+func (r Account_Partner_Business) Mask(mask string) Account_Partner_Business {
+	if !strings.HasPrefix(mask, "mask[") && (strings.Contains(mask, "[") || strings.Contains(mask, ",")) {
+		mask = fmt.Sprintf("mask[%s]", mask)
+	}
+
+	r.Options.Mask = mask
+	return r
+}
+
+func (r Account_Partner_Business) Filter(filter string) Account_Partner_Business {
+	r.Options.Filter = filter
+	return r
+}
+
+func (r Account_Partner_Business) Limit(limit int) Account_Partner_Business {
+	r.Options.Limit = &limit
+	return r
+}
+
+func (r Account_Partner_Business) Offset(offset int) Account_Partner_Business {
+	r.Options.Offset = &offset
+	return r
+}
+
+// Retrieve The SoftLayer customer account associated with this business partner data.
+func (r Account_Partner_Business) GetAccount() (resp datatypes.Account, err error) {
+	err = r.Session.DoRequest("SoftLayer_Account_Partner_Business", "getAccount", nil, &r.Options, &resp)
+	return
+}
+
+// no documentation yet
+func (r Account_Partner_Business) GetObject() (resp datatypes.Account_Partner_Business, err error) {
+	err = r.Session.DoRequest("SoftLayer_Account_Partner_Business", "getObject", nil, &r.Options, &resp)
 	return
 }
 

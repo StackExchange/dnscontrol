@@ -124,6 +124,12 @@ func (r Locale_Country) Offset(offset int) Locale_Country {
 	return r
 }
 
+// This method is to get the collection of VAT country codes and VAT ID Regexes.
+func (r Locale_Country) GetAllVatCountryCodesAndVatIdRegexes() (resp []datatypes.Container_Collection_Locale_VatCountryCodeAndFormat, err error) {
+	err = r.Session.DoRequest("SoftLayer_Locale_Country", "getAllVatCountryCodesAndVatIdRegexes", nil, &r.Options, &resp)
+	return
+}
+
 // Use this method to retrieve a list of countries and locale information available to the current user.
 func (r Locale_Country) GetAvailableCountries() (resp []datatypes.Locale_Country, err error) {
 	err = r.Session.DoRequest("SoftLayer_Locale_Country", "getAvailableCountries", nil, &r.Options, &resp)
@@ -137,6 +143,15 @@ func (r Locale_Country) GetCountries() (resp []datatypes.Locale_Country, err err
 }
 
 // no documentation yet
+func (r Locale_Country) GetCountriesAndStates(usFirstFlag *bool) (resp []datatypes.Container_Collection_Locale_CountryCode, err error) {
+	params := []interface{}{
+		usFirstFlag,
+	}
+	err = r.Session.DoRequest("SoftLayer_Locale_Country", "getCountriesAndStates", params, &r.Options, &resp)
+	return
+}
+
+// no documentation yet
 func (r Locale_Country) GetObject() (resp datatypes.Locale_Country, err error) {
 	err = r.Session.DoRequest("SoftLayer_Locale_Country", "getObject", nil, &r.Options, &resp)
 	return
@@ -145,6 +160,15 @@ func (r Locale_Country) GetObject() (resp datatypes.Locale_Country, err error) {
 // Retrieve States that belong to this country.
 func (r Locale_Country) GetStates() (resp []datatypes.Locale_StateProvince, err error) {
 	err = r.Session.DoRequest("SoftLayer_Locale_Country", "getStates", nil, &r.Options, &resp)
+	return
+}
+
+// no documentation yet
+func (r Locale_Country) IsEuropeanUnionCountry(iso2CountryCode *string) (resp bool, err error) {
+	params := []interface{}{
+		iso2CountryCode,
+	}
+	err = r.Session.DoRequest("SoftLayer_Locale_Country", "isEuropeanUnionCountry", params, &r.Options, &resp)
 	return
 }
 

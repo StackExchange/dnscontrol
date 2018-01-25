@@ -19,7 +19,7 @@ import (
 
 const (
 	// Version of this libary
-	Version = "1.13.0"
+	Version = "1.15.0"
 
 	// APIVersion of Vultr
 	APIVersion = "v1"
@@ -56,7 +56,13 @@ type Client struct {
 
 	// Throttling struct
 	bucket *ratelimit.Bucket
+
+	// Optional function called after every successful request made to the API
+	onRequestCompleted RequestCompletionCallback
 }
+
+// RequestCompletionCallback defines the type of the request callback function
+type RequestCompletionCallback func(*http.Request, *http.Response)
 
 // Options represents optional settings and flags that can be passed to NewClient
 type Options struct {
@@ -120,13 +126,6 @@ func apiPath(path string) string {
 	return fmt.Sprintf("/%s/%s", APIVersion, path)
 }
 
-func apiKeyPath(path, apiKey string) string {
-	if strings.Contains(path, "?") {
-		return path + "&api_key=" + apiKey
-	}
-	return path + "?api_key=" + apiKey
-}
-
 func (c *Client) get(path string, data interface{}) error {
 	req, err := c.newRequest("GET", apiPath(path), nil)
 	if err != nil {
@@ -143,8 +142,13 @@ func (c *Client) post(path string, values url.Values, data interface{}) error {
 	return c.do(req, data)
 }
 
+// OnRequestCompleted sets the API request completion callback
+func (c *Client) OnRequestCompleted(rc RequestCompletionCallback) {
+	c.onRequestCompleted = rc
+}
+
 func (c *Client) newRequest(method string, path string, body io.Reader) (*http.Request, error) {
-	relPath, err := url.Parse(apiKeyPath(path, c.APIKey))
+	relPath, err := url.Parse(path)
 	if err != nil {
 		return nil, err
 	}
@@ -156,6 +160,7 @@ func (c *Client) newRequest(method string, path string, body io.Reader) (*http.R
 		return nil, err
 	}
 
+	req.Header.Add("API-Key", c.APIKey)
 	req.Header.Add("User-Agent", c.UserAgent)
 	req.Header.Add("Accept", mediaType)
 
@@ -191,6 +196,10 @@ func (c *Client) do(req *http.Request, data interface{}) error {
 		resp, err := c.client.Do(req)
 		if err != nil {
 			return err
+		}
+
+		if c.onRequestCompleted != nil {
+			c.onRequestCompleted(req, resp)
 		}
 
 		body, err := ioutil.ReadAll(resp.Body)

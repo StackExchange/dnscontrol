@@ -402,6 +402,12 @@ func (r Product_Item_Price) GetCategories() (resp []datatypes.Product_Item_Categ
 	return
 }
 
+// Retrieve Signifies pricing that is only available on a dedicated host virtual server order.
+func (r Product_Item_Price) GetDedicatedHostInstanceFlag() (resp bool, err error) {
+	err = r.Session.DoRequest("SoftLayer_Product_Item_Price", "getDedicatedHostInstanceFlag", nil, &r.Options, &resp)
+	return
+}
+
 // Retrieve Whether this price defines a software license for its product item.
 func (r Product_Item_Price) GetDefinedSoftwareLicenseFlag() (resp bool, err error) {
 	err = r.Session.DoRequest("SoftLayer_Product_Item_Price", "getDefinedSoftwareLicenseFlag", nil, &r.Options, &resp)
@@ -447,6 +453,12 @@ func (r Product_Item_Price) GetPackages() (resp []datatypes.Product_Package, err
 // Retrieve A list of preset configurations this price is used in.'
 func (r Product_Item_Price) GetPresetConfigurations() (resp []datatypes.Product_Package_Preset_Configuration, err error) {
 	err = r.Session.DoRequest("SoftLayer_Product_Item_Price", "getPresetConfigurations", nil, &r.Options, &resp)
+	return
+}
+
+// Retrieve The type keyname of this price which can be STANDARD or TIERED.
+func (r Product_Item_Price) GetPriceType() (resp string, err error) {
+	err = r.Session.DoRequest("SoftLayer_Product_Item_Price", "getPriceType", nil, &r.Options, &resp)
 	return
 }
 
@@ -1189,6 +1201,12 @@ func (r Product_Package) Offset(offset int) Product_Package {
 	return r
 }
 
+// Retrieve The preset configurations available only for the authenticated account and this package.
+func (r Product_Package) GetAccountRestrictedActivePresets() (resp []datatypes.Product_Package_Preset, err error) {
+	err = r.Session.DoRequest("SoftLayer_Product_Package", "getAccountRestrictedActivePresets", nil, &r.Options, &resp)
+	return
+}
+
 // Retrieve The results from this call are similar to [[SoftLayer_Product_Package/getCategories|getCategories]], but these ONLY include account-restricted prices. Not all accounts have restricted pricing.
 func (r Product_Package) GetAccountRestrictedCategories() (resp []datatypes.Product_Item_Category, err error) {
 	err = r.Session.DoRequest("SoftLayer_Product_Package", "getAccountRestrictedCategories", nil, &r.Options, &resp)
@@ -1506,6 +1524,12 @@ func (r Product_Package) GetOrderPremiums() (resp []datatypes.Product_Item_Price
 	return
 }
 
+// Retrieve This flag indicates if the package may be available in PoP locations in addition to Datacenters.
+func (r Product_Package) GetPopLocationAvailabilityFlag() (resp bool, err error) {
+	err = r.Session.DoRequest("SoftLayer_Product_Package", "getPopLocationAvailabilityFlag", nil, &r.Options, &resp)
+	return
+}
+
 // Retrieve This flag indicates the package is pre-configured. (Deprecated)
 func (r Product_Package) GetPreconfiguredFlag() (resp bool, err error) {
 	err = r.Session.DoRequest("SoftLayer_Product_Package", "getPreconfiguredFlag", nil, &r.Options, &resp)
@@ -1542,7 +1566,7 @@ func (r Product_Package) GetPrivateNetworkOnlyFlag() (resp bool, err error) {
 	return
 }
 
-// Retrieve Whether the package is a specialized mass storage QuantaStor package.
+// Retrieve Whether the package is a specialized mass storage QuantaStor package. (Deprecated)
 func (r Product_Package) GetQuantaStorPackageFlag() (resp bool, err error) {
 	err = r.Session.DoRequest("SoftLayer_Product_Package", "getQuantaStorPackageFlag", nil, &r.Options, &resp)
 	return
@@ -1650,6 +1674,12 @@ func (r Product_Package_Preset) GetCategories() (resp []datatypes.Product_Item_C
 	return
 }
 
+// Retrieve The compute family this configuration belongs to.
+func (r Product_Package_Preset) GetComputeGroup() (resp datatypes.Product_Item_Server_Group, err error) {
+	err = r.Session.DoRequest("SoftLayer_Product_Package_Preset", "getComputeGroup", nil, &r.Options, &resp)
+	return
+}
+
 // Retrieve The preset configuration (category and price).
 func (r Product_Package_Preset) GetConfiguration() (resp []datatypes.Product_Package_Preset_Configuration, err error) {
 	err = r.Session.DoRequest("SoftLayer_Product_Package_Preset", "getConfiguration", nil, &r.Options, &resp)
@@ -1659,6 +1689,12 @@ func (r Product_Package_Preset) GetConfiguration() (resp []datatypes.Product_Pac
 // Retrieve A package preset with this flag set will not allow the price's defined in the preset configuration to be overriden during order placement.
 func (r Product_Package_Preset) GetFixedConfigurationFlag() (resp bool, err error) {
 	err = r.Session.DoRequest("SoftLayer_Product_Package_Preset", "getFixedConfigurationFlag", nil, &r.Options, &resp)
+	return
+}
+
+// Retrieve The locations this preset configuration is available in. If empty the preset is available in all locations the package is available in.
+func (r Product_Package_Preset) GetLocations() (resp []datatypes.Location, err error) {
+	err = r.Session.DoRequest("SoftLayer_Product_Package_Preset", "getLocations", nil, &r.Options, &resp)
 	return
 }
 

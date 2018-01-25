@@ -24,6 +24,9 @@ package datatypes
 type Hardware struct {
 	Entity
 
+	// Determine if hardware object has Software Guard Extension (SGX) enabled.
+	SGXEnabled *bool `json:"SGXEnabled,omitempty" xmlrpc:"SGXEnabled,omitempty"`
+
 	// The account associated with a piece of hardware.
 	Account *Account `json:"account,omitempty" xmlrpc:"account,omitempty"`
 
@@ -137,6 +140,9 @@ type Hardware struct {
 
 	// The name of the datacenter in which a piece of hardware resides.
 	DatacenterName *string `json:"datacenterName,omitempty" xmlrpc:"datacenterName,omitempty"`
+
+	// Number of day(s) a server have been in spare pool.
+	DaysInSparePool *int `json:"daysInSparePool,omitempty" xmlrpc:"daysInSparePool,omitempty"`
 
 	// A piece of hardware's local network domain name.
 	Domain *string `json:"domain,omitempty" xmlrpc:"domain,omitempty"`
@@ -689,9 +695,6 @@ type Hardware_Chassis struct {
 	BayCapacity *string `json:"bayCapacity,omitempty" xmlrpc:"bayCapacity,omitempty"`
 
 	// no documentation yet
-	BookCapacity *string `json:"bookCapacity,omitempty" xmlrpc:"bookCapacity,omitempty"`
-
-	// no documentation yet
 	DriveCapacity *string `json:"driveCapacity,omitempty" xmlrpc:"driveCapacity,omitempty"`
 
 	// no documentation yet
@@ -711,6 +714,9 @@ type Hardware_Chassis struct {
 
 	// A hardware chassis' manufacturer.
 	Manufacturer *string `json:"manufacturer,omitempty" xmlrpc:"manufacturer,omitempty"`
+
+	// no documentation yet
+	ModuleCapacity *string `json:"moduleCapacity,omitempty" xmlrpc:"moduleCapacity,omitempty"`
 
 	// A hardware chassis' name.
 	Name *string `json:"name,omitempty" xmlrpc:"name,omitempty"`
@@ -737,6 +743,9 @@ type Hardware_Component struct {
 
 	// A count of a components sub components. Devices that are usually integrated or in some way attached to a component.
 	ChildrenCount *uint `json:"childrenCount,omitempty" xmlrpc:"childrenCount,omitempty"`
+
+	// A component's Revision.
+	ComponentRevision *string `json:"componentRevision,omitempty" xmlrpc:"componentRevision,omitempty"`
 
 	// A count of
 	DownlinkHardwareComponentCount *uint `json:"downlinkHardwareComponentCount,omitempty" xmlrpc:"downlinkHardwareComponentCount,omitempty"`
@@ -807,6 +816,9 @@ type Hardware_Component struct {
 	// A RAID controllers RAID mode.
 	RaidMode *string `json:"raidMode,omitempty" xmlrpc:"raidMode,omitempty"`
 
+	// The component revision designation.
+	Revision *Hardware_Component_Revision `json:"revision,omitempty" xmlrpc:"revision,omitempty"`
+
 	// The component serial number.
 	SerialNumber *string `json:"serialNumber,omitempty" xmlrpc:"serialNumber,omitempty"`
 
@@ -865,6 +877,75 @@ type Hardware_Component_DriveController struct {
 	Hardware_Component
 }
 
+// no documentation yet
+type Hardware_Component_Firmware struct {
+	Entity
+
+	// no documentation yet
+	BuildDate *Time `json:"buildDate,omitempty" xmlrpc:"buildDate,omitempty"`
+
+	// no documentation yet
+	CreateDate *Time `json:"createDate,omitempty" xmlrpc:"createDate,omitempty"`
+
+	// The Hardware Component Model this Firmware applies to.
+	HardwareComponentModel *Hardware_Component_Model `json:"hardwareComponentModel,omitempty" xmlrpc:"hardwareComponentModel,omitempty"`
+
+	// no documentation yet
+	HardwareComponentModelId *int `json:"hardwareComponentModelId,omitempty" xmlrpc:"hardwareComponentModelId,omitempty"`
+
+	// no documentation yet
+	Id *int `json:"id,omitempty" xmlrpc:"id,omitempty"`
+
+	// no documentation yet
+	IsQualified *int `json:"isQualified,omitempty" xmlrpc:"isQualified,omitempty"`
+
+	// no documentation yet
+	ReleaseNotes *string `json:"releaseNotes,omitempty" xmlrpc:"releaseNotes,omitempty"`
+
+	// no documentation yet
+	Version *string `json:"version,omitempty" xmlrpc:"version,omitempty"`
+}
+
+// The SoftLayer_Hardware_Component_Firmware_Attribute data type contains general information for a hardware model's firmware.
+type Hardware_Component_Firmware_Attribute struct {
+	Entity
+
+	// A hardware component firmware attribute's associated [[SoftLayer_Hardware_Component_Firmware|firmware]].
+	Firmware *Hardware_Component_Firmware `json:"firmware,omitempty" xmlrpc:"firmware,omitempty"`
+
+	// A hardware component firmware attribute's firmware Id.
+	FirmwareId *int `json:"firmwareId,omitempty" xmlrpc:"firmwareId,omitempty"`
+
+	// A hardware component firmware attribute's Id.
+	Id *int `json:"id,omitempty" xmlrpc:"id,omitempty"`
+
+	// A hardware component firmware attribute's associated [[SoftLayer_Hardware_Component_Firmware_Attribute_Type|type]].
+	Type *Hardware_Component_Firmware_Attribute_Type `json:"type,omitempty" xmlrpc:"type,omitempty"`
+
+	// A hardware component firmware attribute's type Id.
+	TypeId *int `json:"typeId,omitempty" xmlrpc:"typeId,omitempty"`
+
+	// A hardware component firmware attribute's value.
+	Value *string `json:"value,omitempty" xmlrpc:"value,omitempty"`
+}
+
+// The SoftLayer_Hardware_Component_Firmware_Attribute_Type data type defines attribute types for a hardware component model's firmware.
+type Hardware_Component_Firmware_Attribute_Type struct {
+	Entity
+
+	// The description for the date that a hardware component attribute type's [[SoftLayer_Hardware_Component_Attribute|Attribute]] contains.
+	Description *string `json:"description,omitempty" xmlrpc:"description,omitempty"`
+
+	// A hardware component firmware attribute type's Id.
+	Id *int `json:"id,omitempty" xmlrpc:"id,omitempty"`
+
+	// A hardware component firmware attribute type's unique name.
+	KeyName *string `json:"keyName,omitempty" xmlrpc:"keyName,omitempty"`
+
+	// A hardware component firmware attribute type's name.
+	Name *string `json:"name,omitempty" xmlrpc:"name,omitempty"`
+}
+
 // The SoftLayer_Hardware_Component_HardDrive data type abstracts information related to a hard drive.
 type Hardware_Component_HardDrive struct {
 	Hardware_Component
@@ -915,6 +996,15 @@ type Hardware_Component_Model struct {
 
 	// A colon delimited list of hardware component model attributes.
 	Description *string `json:"description,omitempty" xmlrpc:"description,omitempty"`
+
+	// A count of
+	FirmwareCount *uint `json:"firmwareCount,omitempty" xmlrpc:"firmwareCount,omitempty"`
+
+	// no documentation yet
+	FirmwareQuantity *uint `json:"firmwareQuantity,omitempty" xmlrpc:"firmwareQuantity,omitempty"`
+
+	// no documentation yet
+	Firmwares []Hardware_Component_Firmware `json:"firmwares,omitempty" xmlrpc:"firmwares,omitempty"`
 
 	// A hardware component model's physical components in inventory.
 	HardwareComponents []Hardware_Component `json:"hardwareComponents,omitempty" xmlrpc:"hardwareComponents,omitempty"`
@@ -1307,6 +1397,32 @@ type Hardware_Component_RemoteManagement_User struct {
 
 	// The username used for this remote management command.
 	Username *string `json:"username,omitempty" xmlrpc:"username,omitempty"`
+}
+
+// no documentation yet
+type Hardware_Component_Revision struct {
+	Entity
+
+	// The firmware build date
+	BiosDate *Time `json:"biosDate,omitempty" xmlrpc:"biosDate,omitempty"`
+
+	// The Firmware installed on this record's Hardware Component.
+	Firmware *Hardware_Component_Firmware `json:"firmware,omitempty" xmlrpc:"firmware,omitempty"`
+
+	// no documentation yet
+	FirmwareVersionId *int `json:"firmwareVersionId,omitempty" xmlrpc:"firmwareVersionId,omitempty"`
+
+	// The Hardware Component this revision record applies to.
+	HardwareComponent *Hardware_Component `json:"hardwareComponent,omitempty" xmlrpc:"hardwareComponent,omitempty"`
+
+	// no documentation yet
+	HardwareComponentId *int `json:"hardwareComponentId,omitempty" xmlrpc:"hardwareComponentId,omitempty"`
+
+	// no documentation yet
+	Id *int `json:"id,omitempty" xmlrpc:"id,omitempty"`
+
+	// The firmware revision
+	Revision *string `json:"revision,omitempty" xmlrpc:"revision,omitempty"`
 }
 
 // The SoftLayer_Hardware_Component_SecurityDevice is used to determine the security devices attached to the hardware component.

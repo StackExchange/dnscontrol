@@ -92,6 +92,15 @@ func (r Ticket) AddAttachedAdditionalEmails(emails []string) (resp bool, err err
 	return
 }
 
+// Attach the given Dedicated Host to a SoftLayer ticket. An attachment provides an easy way for SoftLayer's employees to quickly look up your records in the case of specific issues.
+func (r Ticket) AddAttachedDedicatedHost(dedicatedHostId *int) (resp datatypes.Ticket_Attachment_Dedicated_Host, err error) {
+	params := []interface{}{
+		dedicatedHostId,
+	}
+	err = r.Session.DoRequest("SoftLayer_Ticket", "addAttachedDedicatedHost", params, &r.Options, &resp)
+	return
+}
+
 // Attach the given file to a SoftLayer ticket. A file attachment is a convenient way to submit non-textual error reports to SoftLayer employees in a ticket. File attachments to tickets must have a unique name.
 func (r Ticket) AddAttachedFile(fileAttachment *datatypes.Container_Utility_File_Attachment) (resp datatypes.Ticket_Attachment_File, err error) {
 	params := []interface{}{
@@ -595,64 +604,6 @@ func (r Ticket) UpdateAttachedAdditionalEmails(emails []string) (resp bool, err 
 		emails,
 	}
 	err = r.Session.DoRequest("SoftLayer_Ticket", "updateAttachedAdditionalEmails", params, &r.Options, &resp)
-	return
-}
-
-// SoftLayer tickets have the ability to be associated with specific pieces of dedicated hosts in a customer's inventory. Attaching a dedicated host to a ticket can greatly increase response time from SoftLayer for issues that are related to one or more specific servers on a customer's account. The SoftLayer_Ticket_Attachment_Dedicated_Host data type models the relationship between a dedicated host and a ticket. Only one attachment record may exist per dedicated host item per ticket.
-type Ticket_Attachment_Dedicated_Host struct {
-	Session *session.Session
-	Options sl.Options
-}
-
-// GetTicketAttachmentDedicatedHostService returns an instance of the Ticket_Attachment_Dedicated_Host SoftLayer service
-func GetTicketAttachmentDedicatedHostService(sess *session.Session) Ticket_Attachment_Dedicated_Host {
-	return Ticket_Attachment_Dedicated_Host{Session: sess}
-}
-
-func (r Ticket_Attachment_Dedicated_Host) Id(id int) Ticket_Attachment_Dedicated_Host {
-	r.Options.Id = &id
-	return r
-}
-
-func (r Ticket_Attachment_Dedicated_Host) Mask(mask string) Ticket_Attachment_Dedicated_Host {
-	if !strings.HasPrefix(mask, "mask[") && (strings.Contains(mask, "[") || strings.Contains(mask, ",")) {
-		mask = fmt.Sprintf("mask[%s]", mask)
-	}
-
-	r.Options.Mask = mask
-	return r
-}
-
-func (r Ticket_Attachment_Dedicated_Host) Filter(filter string) Ticket_Attachment_Dedicated_Host {
-	r.Options.Filter = filter
-	return r
-}
-
-func (r Ticket_Attachment_Dedicated_Host) Limit(limit int) Ticket_Attachment_Dedicated_Host {
-	r.Options.Limit = &limit
-	return r
-}
-
-func (r Ticket_Attachment_Dedicated_Host) Offset(offset int) Ticket_Attachment_Dedicated_Host {
-	r.Options.Offset = &offset
-	return r
-}
-
-// Retrieve The Dedicated Host that is attached to a ticket.
-func (r Ticket_Attachment_Dedicated_Host) GetDedicatedHost() (resp datatypes.Virtual_DedicatedHost, err error) {
-	err = r.Session.DoRequest("SoftLayer_Ticket_Attachment_Dedicated_Host", "getDedicatedHost", nil, &r.Options, &resp)
-	return
-}
-
-// no documentation yet
-func (r Ticket_Attachment_Dedicated_Host) GetObject() (resp datatypes.Ticket_Attachment_Dedicated_Host, err error) {
-	err = r.Session.DoRequest("SoftLayer_Ticket_Attachment_Dedicated_Host", "getObject", nil, &r.Options, &resp)
-	return
-}
-
-// Retrieve The Dedicated Host that is attached to a ticket.
-func (r Ticket_Attachment_Dedicated_Host) GetResource() (resp datatypes.Virtual_DedicatedHost, err error) {
-	err = r.Session.DoRequest("SoftLayer_Ticket_Attachment_Dedicated_Host", "getResource", nil, &r.Options, &resp)
 	return
 }
 

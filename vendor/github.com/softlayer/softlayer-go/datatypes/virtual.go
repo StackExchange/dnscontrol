@@ -20,53 +20,53 @@
 
 package datatypes
 
-// This type presents the structure for a DedicatedHost. The type contains relational properties to distinguish a host, associate an account to it.
+// This data type presents the structure for a dedicated host. The data type contains relational properties to distinguish a dedicated host and associate an account to it.
 type Virtual_DedicatedHost struct {
 	Entity
 
-	// The account which dedicated host belongs to.
+	// The account that the dedicated host belongs to.
 	Account *Account `json:"account,omitempty" xmlrpc:"account,omitempty"`
 
-	// Dedicated host's associated account id
+	// The dedicated host's associated account id.
 	AccountId *int `json:"accountId,omitempty" xmlrpc:"accountId,omitempty"`
 
-	// The container representing allocations on a dedicated host.
+	// The container that represents allocations on the dedicated host.
 	AllocationStatus *Container_Virtual_DedicatedHost_AllocationStatus `json:"allocationStatus,omitempty" xmlrpc:"allocationStatus,omitempty"`
 
-	// The backendRouter behind dedicated host's pool.
+	// The backend router behind dedicated host's pool of resources.
 	BackendRouter *Hardware_Router_Backend `json:"backendRouter,omitempty" xmlrpc:"backendRouter,omitempty"`
 
-	// The billing item for a dedicated host.
+	// The billing item for the dedicated host.
 	BillingItem *Billing_Item_Virtual_DedicatedHost `json:"billingItem,omitempty" xmlrpc:"billingItem,omitempty"`
 
-	// Capacity this dedicated host's cpu allocation is restricted to
+	// The capacity that the dedicated host's CPU allocation is restricted to.
 	CpuCount *int `json:"cpuCount,omitempty" xmlrpc:"cpuCount,omitempty"`
 
-	// The date dedicated host was created.
+	// The date that the dedicated host was created.
 	CreateDate *Time `json:"createDate,omitempty" xmlrpc:"createDate,omitempty"`
 
-	// The datacenter that the host resides in.
+	// The datacenter that the dedicated host resides in.
 	Datacenter *Location `json:"datacenter,omitempty" xmlrpc:"datacenter,omitempty"`
 
-	// Capacity this dedicated host's disk allocation is restricted to
+	// The capacity that the dedicated host's disk allocation is restricted to.
 	DiskCapacity *int `json:"diskCapacity,omitempty" xmlrpc:"diskCapacity,omitempty"`
 
-	// A count of the guests associated with a host.
+	// A count of the guests associated with the dedicated host.
 	GuestCount *uint `json:"guestCount,omitempty" xmlrpc:"guestCount,omitempty"`
 
-	// The guests associated with a host.
+	// The guests associated with the dedicated host.
 	Guests []Virtual_Guest `json:"guests,omitempty" xmlrpc:"guests,omitempty"`
 
-	// Unique ID for dedicated host.
+	// The dedicated host's associated unique id.
 	Id *int `json:"id,omitempty" xmlrpc:"id,omitempty"`
 
-	// Capacity this dedicated host's memory allocation is restricted to
+	// The capacity that the dedicated host's memory allocation is restricted to.
 	MemoryCapacity *int `json:"memoryCapacity,omitempty" xmlrpc:"memoryCapacity,omitempty"`
 
-	// The date dedicated host was last modified.
+	// The date that the dedicated host was last modified.
 	ModifyDate *Time `json:"modifyDate,omitempty" xmlrpc:"modifyDate,omitempty"`
 
-	// Dedicated host's name.
+	// The dedicated host's name.
 	Name *string `json:"name,omitempty" xmlrpc:"name,omitempty"`
 }
 
@@ -829,6 +829,9 @@ type Virtual_Guest_Block_Device_Template_Group struct {
 	// The total disk space of all images in a image template group.
 	BlockDevicesDiskSpaceTotal *Float64 `json:"blockDevicesDiskSpaceTotal,omitempty" xmlrpc:"blockDevicesDiskSpaceTotal,omitempty"`
 
+	// A flag indicating that customer is providing the software licenses.
+	ByolFlag *bool `json:"byolFlag,omitempty" xmlrpc:"byolFlag,omitempty"`
+
 	// The image template groups that are clones of an image template group.
 	Children []Virtual_Guest_Block_Device_Template_Group `json:"children,omitempty" xmlrpc:"children,omitempty"`
 
@@ -1145,6 +1148,9 @@ type Virtual_Guest_Status struct {
 type Virtual_Guest_SupplementalCreateObjectOptions struct {
 	Entity
 
+	// When set the startCpus and maxMemory are defined by the flavor. If the flavor includes local storage blockDevice 0 is also defined by the flavor. When startCpus, maxMemory, or blockDevice 0 are also provided on the template object they are validated against the flavor provided.
+	FlavorKeyName *string `json:"flavorKeyName,omitempty" xmlrpc:"flavorKeyName,omitempty"`
+
 	// When explicitly set to true, createObject(s) will fail unless the order is started automatically. This can be used by automated systems to fail an order that might otherwise require manual approval. For multi-guest orders via [[SoftLayer_Virtual_Guest/createObjects|createObjects]], this value must be the exact same for every item.
 	ImmediateApprovalOnlyFlag *bool `json:"immediateApprovalOnlyFlag,omitempty" xmlrpc:"immediateApprovalOnlyFlag,omitempty"`
 
@@ -1226,19 +1232,19 @@ type Virtual_Host struct {
 type Virtual_Network_SecurityGroup_NetworkComponentBinding struct {
 	Entity
 
-	// The unique ID for a binding
+	// The unique ID for a binding.
 	Id *int `json:"id,omitempty" xmlrpc:"id,omitempty"`
 
 	// no documentation yet
 	NetworkComponent *Virtual_Guest_Network_Component `json:"networkComponent,omitempty" xmlrpc:"networkComponent,omitempty"`
 
-	// The ID of the network component
+	// The ID of the network component.
 	NetworkComponentId *int `json:"networkComponentId,omitempty" xmlrpc:"networkComponentId,omitempty"`
 
 	// no documentation yet
 	SecurityGroup *Network_SecurityGroup `json:"securityGroup,omitempty" xmlrpc:"securityGroup,omitempty"`
 
-	// The ID of the security group
+	// The ID of the security group.
 	SecurityGroupId *int `json:"securityGroupId,omitempty" xmlrpc:"securityGroupId,omitempty"`
 }
 

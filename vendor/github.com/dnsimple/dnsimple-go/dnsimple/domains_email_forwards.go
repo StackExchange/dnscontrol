@@ -38,7 +38,7 @@ type emailForwardsResponse struct {
 //
 // See https://developer.dnsimple.com/v2/domains/email-forwards/#list
 func (s *DomainsService) ListEmailForwards(accountID string, domainIdentifier string, options *ListOptions) (*emailForwardsResponse, error) {
-	path := versioned(emailForwardPath(accountID, domainIdentifier , 0))
+	path := versioned(emailForwardPath(accountID, domainIdentifier, 0))
 	forwardsResponse := &emailForwardsResponse{}
 
 	path, err := addURLQueryOptions(path, options)
