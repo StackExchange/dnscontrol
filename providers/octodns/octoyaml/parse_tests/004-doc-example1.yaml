@@ -1,0 +1,22 @@
+---
+'':
+  type: A
+  ttl: 304
+  values:
+    - 1.2.3.4
+    - 1.2.3.5
+'*':
+  type: CNAME
+  value: www.example.com.
+www:
+  type: A
+  ttl: 304
+  values:
+    - 1.2.3.4
+    - 1.2.3.5
+www.sub:
+  type: A
+  ttl: 304
+  values:
+    - 1.2.3.6
+    - 1.2.3.7

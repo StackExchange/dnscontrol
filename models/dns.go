@@ -13,6 +13,7 @@ import (
 
 	"github.com/StackExchange/dnscontrol/pkg/transform"
 	"github.com/miekg/dns"
+	"github.com/miekg/dns/dnsutil"
 	"golang.org/x/net/idna"
 )
 
@@ -147,6 +148,11 @@ func (rc *RecordConfig) String() (content string) {
 	return content
 }
 
+// FixNameFQDN sets the .NameFQDN field.
+func (rc *RecordConfig) FixNameFQDN(origin string) {
+	rc.NameFQDN = dnsutil.AddOrigin(rc.Name, origin)
+}
+
 // Content combines Target and other fields into one string.
 func (rc *RecordConfig) Content() string {
 	if rc.CombinedTarget {
@@ -277,6 +283,19 @@ func atou32(s string) uint32 {
 // Records is a list of *RecordConfig.
 type Records []*RecordConfig
 
+// GroupedByLabel returns a map of keys to records, and their original key order.
+func (r Records) GroupedByLabel() ([]string, map[string]Records) {
+	order := []string{}
+	groups := map[string]Records{}
+	for _, rec := range r {
+		if _, found := groups[rec.Name]; !found {
+			order = append(order, rec.Name)
+		}
+		groups[rec.Name] = append(groups[rec.Name], rec)
+	}
+	return order, groups
+}
+
 // Grouped returns a map of keys to records.
 func (r Records) Grouped() map[RecordKey]Records {
 	groups := map[RecordKey]Records{}
@@ -284,6 +303,17 @@ func (r Records) Grouped() map[RecordKey]Records {
 		groups[rec.Key()] = append(groups[rec.Key()], rec)
 	}
 	return groups
+}
+
+// RecordKey represents a resource record in a format used by some systems.
+type RecordKey struct {
+	Name string
+	Type string
+}
+
+// Key converts a RecordConfig into a RecordKey.
+func (rc *RecordConfig) Key() RecordKey {
+	return RecordKey{rc.Name, rc.Type}
 }
 
 // PostProcessRecords does any post-processing of the downloaded DNS records.
@@ -318,17 +348,6 @@ func fixTxt(recs []*RecordConfig) {
 			}
 		}
 	}
-}
-
-// RecordKey represents a resource record in a format used by some systems.
-type RecordKey struct {
-	Name string
-	Type string
-}
-
-// Key converts a RecordConfig into a RecordKey.
-func (rc *RecordConfig) Key() RecordKey {
-	return RecordKey{rc.Name, rc.Type}
 }
 
 // Nameserver describes a nameserver.
@@ -575,4 +594,13 @@ func InterfaceToIP(i interface{}) (net.IP, error) {
 type Correction struct {
 	F   func() error `json:"-"`
 	Msg string
+}
+
+// MustStringToTTL converts a string to a uinet32 TTL or panics.
+func MustStringToTTL(s string) uint32 {
+	t, err := strconv.ParseUint(s, 10, 32)
+	if err != nil {
+		panic(err)
+	}
+	return uint32(t)
 }

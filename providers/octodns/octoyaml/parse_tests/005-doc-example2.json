@@ -1,0 +1,24 @@
+[
+  {
+    "type": "A",
+    "name": "@",
+    "target": "1.2.3.4"
+  },
+  {
+    "type": "A",
+    "name": "@",
+    "target": "1.2.3.5"
+  },
+  {
+    "type": "MX",
+    "name": "@",
+    "target": "mx1.example.com.",
+    "mxpreference": 10
+  },
+  {
+    "type": "MX",
+    "name": "@",
+    "target": "mx2.example.com.",
+    "mxpreference": 10
+  }
+]

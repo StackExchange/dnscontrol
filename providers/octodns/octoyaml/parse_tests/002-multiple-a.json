@@ -1,0 +1,12 @@
+[
+  {
+    "type":"A",
+    "name":"foo",
+    "target":"1.2.3.4"
+  },
+  {
+    "type":"A",
+    "name":"foo",
+    "target":"1.2.3.5"
+  }
+]
