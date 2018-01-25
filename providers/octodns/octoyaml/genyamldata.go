@@ -6,8 +6,6 @@ import (
 	"log"
 	"net"
 	"sort"
-	"strconv"
-	"strings"
 
 	"github.com/StackExchange/dnscontrol/models"
 	"github.com/miekg/dns/dnsutil"
@@ -101,73 +99,8 @@ func (z *genYamlData) Less(i, j int) bool {
 }
 
 func zoneLabelLess(a, b string) bool {
-	// Compare two zone labels for the purpose of sorting the RRs in a Zone.
-
-	// If they are equal, we are done. All other code is simplified
-	// because we can assume a!=b.
-	if a == b {
-		return false
-	}
-
-	// Sort @ at the top, then *, then everything else lexigraphically.
-	// i.e. @ always is less. * is is less than everything but @.
-	if a == "@" {
-		return true
-	}
-	if b == "@" {
-		return false
-	}
-	if a == "*" {
-		return true
-	}
-	if b == "*" {
-		return false
-	}
-
-	// Split into elements and match up last elements to first. Compare the
-	// first non-equal elements.
-
-	as := strings.Split(a, ".")
-	bs := strings.Split(b, ".")
-	ia := len(as) - 1
-	ib := len(bs) - 1
-
-	var min int
-	if ia < ib {
-		min = len(as) - 1
-	} else {
-		min = len(bs) - 1
-	}
-
-	// Skip the matching highest elements, then compare the next item.
-	for i, j := ia, ib; min >= 0; i, j, min = i-1, j-1, min-1 {
-		// Compare as[i] < bs[j]
-		// Sort @ at the top, then *, then everything else.
-		// i.e. @ always is less. * is is less than everything but @.
-		// If both are numeric, compare as integers, otherwise as strings.
-
-		if as[i] != bs[j] {
-
-			// If the first element is *, it is always less.
-			if i == 0 && as[i] == "*" {
-				return true
-			}
-			if j == 0 && bs[j] == "*" {
-				return false
-			}
-
-			// If the elements are both numeric, compare as integers:
-			au, aerr := strconv.ParseUint(as[i], 10, 64)
-			bu, berr := strconv.ParseUint(bs[j], 10, 64)
-			if aerr == nil && berr == nil {
-				return au < bu
-			}
-			// otherwise, compare as strings:
-			return as[i] < bs[j]
-		}
-	}
-	// The min top elements were equal, so the shorter name is less.
-	return ia < ib
+	return a < b
+	// TODO(tlim): octodns-validate wants a "natural sort" (i.e. foo10 comes after foo3).
 }
 
 func zoneRrtypeLess(a, b string) bool {

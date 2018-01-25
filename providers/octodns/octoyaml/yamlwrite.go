@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"io"
 	"sort"
+	"strings"
 
 	"github.com/StackExchange/dnscontrol/models"
 	"github.com/miekg/dns/dnsutil"
@@ -63,15 +64,15 @@ func (z *genYamlData) labelRanges(w io.Writer) yaml.MapSlice {
 }
 
 type simple struct {
+	TTL   uint32 `yaml:"ttl,omitempty"`
 	Type  string `yaml:"type"`
 	Value string `yaml:"value"`
-	TTL   uint32 `yaml:"ttl,omitempty"`
 }
 
 type many struct {
+	TTL    uint32   `yaml:"ttl,omitempty"`
 	Type   string   `yaml:"type"`
 	Values []string `yaml:"values"`
-	TTL    uint32   `yaml:"ttl,omitempty"`
 }
 
 func sameType(records models.Records) bool {
@@ -101,7 +102,7 @@ func oneLabel(records models.Records) yaml.MapItem {
 				TTL:   records[0].TTL,
 			}
 			if v.Type == "TXT" {
-				v.Value = models.StripQuotes(v.Value)
+				v.Value = strings.Replace(models.StripQuotes(v.Value), `;`, `\;`, -1)
 			}
 			//fmt.Printf("yamlwrite:oneLabel: simple ttl=%d\n", v.TTL)
 			item.Value = v
@@ -162,14 +163,14 @@ func oneLabel(records models.Records) yaml.MapItem {
 
 type complexItems []interface{}
 type complexVals struct {
-	Type   string   `yaml:"type"`
 	TTL    uint32   `yaml:"ttl,omitempty"`
+	Type   string   `yaml:"type"`
 	Value  string   `yaml:"value,omitempty"`
 	Values []string `yaml:"values,omitempty"`
 }
 type complexFields struct {
-	Type   string   `yaml:"type"`
 	TTL    uint32   `yaml:"ttl,omitempty"`
+	Type   string   `yaml:"type"`
 	Fields []fields `yaml:"values,omitempty"`
 }
 type fields struct {
@@ -228,7 +229,7 @@ func oneType(records models.Records) interface{} {
 			TTL:  records[0].TTL,
 		}
 		if len(records) == 1 {
-			vv.Value = models.StripQuotes(records[0].Target)
+			vv.Value = strings.Replace(models.StripQuotes(records[0].Target), `;`, `\;`, -1)
 		} else {
 			for _, rc := range records {
 				vv.Values = append(vv.Values, models.StripQuotes(rc.Content()))
