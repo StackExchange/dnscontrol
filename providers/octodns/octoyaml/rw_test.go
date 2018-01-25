@@ -124,7 +124,11 @@ func TestYamlRead(t *testing.T) {
 
 			content, err := ioutil.ReadFile(filepath.Join(testDir, f.Name()))
 			if err != nil {
-				t.Fatal(err)
+				if os.IsNotExist(err) {
+					content = nil
+				} else {
+					t.Fatal(err)
+				}
 			}
 			recs, err := ReadYaml(bytes.NewBufferString(string(content)), "example.tld")
 			if err != nil {
@@ -153,6 +157,7 @@ func TestYamlRead(t *testing.T) {
 			expectedData, err := ioutil.ReadFile(expectedFile)
 			if err != nil {
 				if os.IsNotExist(err) {
+					fmt.Println("SKIPPING")
 					t.Log("Skipping (no .json)")
 					return
 				}

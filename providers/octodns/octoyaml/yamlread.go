@@ -7,6 +7,7 @@ import (
 	"reflect"
 
 	"github.com/StackExchange/dnscontrol/models"
+	"github.com/pkg/errors"
 	yaml "gopkg.in/yaml.v2"
 )
 
@@ -16,38 +17,38 @@ func ReadYaml(r io.Reader, origin string) (models.Records, error) {
 
 	ydata, err := ioutil.ReadAll(r)
 	if err != nil {
-		return nil, err
+		return nil, errors.Wrapf(err, "can not read yaml filehandle")
 	}
 
 	var mysterydata map[string]interface{}
 	err = yaml.Unmarshal(ydata, &mysterydata)
 	if err != nil {
-		return nil, err
+		return nil, errors.Wrapf(err, "could not unmarshal yaml")
 	}
-	//fmt.Printf("DEBUG: mysterydata == %v\n", mysterydata)
+	//fmt.Printf("ReadYaml: mysterydata == %v\n", mysterydata)
 
 	for k, v := range mysterydata { // Each label
-		//fmt.Printf("DEBUG: NEXT KEY\n")
-		//fmt.Printf("DEBUG:  KEY=%s v.(type)=%s\n", k, reflect.TypeOf(v).String())
+		//fmt.Printf("ReadYaml: NEXT KEY\n")
+		//fmt.Printf("ReadYaml:  KEY=%s v.(type)=%s\n", k, reflect.TypeOf(v).String())
 		switch v.(type) {
 		case map[interface{}]interface{}:
 			results, err = parseLeaf(results, k, v)
 			if err != nil {
-				return results, err
+				return results, errors.Wrapf(err, "leaf (%v) error", v)
 			}
 		case []interface{}:
 			for i, v3 := range v.([]interface{}) { // All the label's list
 				_ = i
-				//fmt.Printf("DEBUG:   list key=%s i=%d v3.(type)=%s\n", k, i, typeof(v3))
+				//fmt.Printf("ReadYaml:   list key=%s i=%d v3.(type)=%s\n", k, i, typeof(v3))
 				switch v3.(type) {
 				case map[interface{}]interface{}:
-					//fmt.Printf("DEBUG:   v3=%v\n", v3)
+					//fmt.Printf("ReadYaml:   v3=%v\n", v3)
 					results, err = parseLeaf(results, k, v3)
 					if err != nil {
-						return results, err
+						return results, errors.Wrapf(err, "leaf v3=%v", v3)
 					}
 				default:
-					e := fmt.Errorf("unknown type in list3: k=%s v.(type)=%T v=%v", k, v, v)
+					e := errors.Errorf("unknown type in list3: k=%s v.(type)=%T v=%v", k, v, v)
 					fmt.Println(e)
 					return nil, e
 				}
@@ -67,7 +68,7 @@ func ReadYaml(r io.Reader, origin string) (models.Records, error) {
 	}
 
 	sortRecs(results, origin)
-	//fmt.Printf("DEBUG: RESULTS=%v\n", results)
+	//fmt.Printf("ReadYaml: RESULTS=%v\n", results)
 	return results, nil
 }
 
@@ -89,14 +90,15 @@ func parseLeaf(results models.Records, k string, v interface{}) (models.Records,
 	rTargets := []string{}
 	var someresults models.Records
 	for k2, v2 := range v.(map[interface{}]interface{}) { // All  the label's items
-		//fmt.Printf("DEBUG: ifs tk2=%s tv2=%s len(rTargets)=%d\n", typeof(k2), typeof(v2), len(rTargets))
+		//fmt.Printf("ReadYaml: ifs tk2=%s tv2=%s len(rTargets)=%d\n", typeof(k2), typeof(v2), len(rTargets))
 		if typeof(k2) == "string" && (typeof(v2) == "string" || typeof(v2) == "int") {
-			//fmt.Printf("DEBUG:   k2=%s v2=%v\n", k2, v2)
+			//fmt.Printf("parseLeaf:   k2=%s v2=%v\n", k2, v2)
 			switch k2.(string) {
 			case "type":
 				rType = v2.(string)
 			case "ttl":
 				rTTL = decodeTTL(v2)
+				//fmt.Printf("parseLeaf: Got ttl=%d\n", rTTL)
 			case "value":
 				rTarget = v2.(string)
 			case "values":
@@ -118,11 +120,18 @@ func parseLeaf(results models.Records, k string, v interface{}) (models.Records,
 				case map[interface{}]interface{}:
 					newRc := newRecordConfig(k, rType, "", rTTL)
 					for k4, v4 := range v3.(map[interface{}]interface{}) {
-						//fmt.Printf("DEBUG: k4=%s v4=%s\n", k4, v4)
+						//fmt.Printf("parseLeaf: k4=%s v4=%s\n", k4, v4)
 						switch k4.(string) {
-						case "priority":
-							newRc.MxPreference = uint16(v4.(int))
-						case "value":
+						case "priority": // MX,SRV
+							priority := uint16(v4.(int))
+							newRc.MxPreference = priority
+							newRc.SrvPriority = priority
+							// Assign it to both places. We'll zap the wrong one later.
+						case "weight": // SRV
+							newRc.SrvWeight = uint16(v4.(int))
+						case "port": // SRV
+							newRc.SrvPort = uint16(v4.(int))
+						case "value": // MX
 							newRc.Target = v4.(string)
 						}
 					}
@@ -141,11 +150,22 @@ func parseLeaf(results models.Records, k string, v interface{}) (models.Records,
 		}
 	}
 	// We've now looped through everything about one label. Make the RecordConfig(s).
-	//fmt.Printf("DEBUG: len(rTargets)=%d\n", len(rTargets))
+	//fmt.Printf("parseLeaf: len(rTargets)=%d\n", len(rTargets))
 	if len(someresults) > 0 {
 		for _, r := range someresults {
 			r.Type = rType
+			r.TTL = rTTL
 			results = append(results, r)
+			// Earlier we didn't know what the priority was for. Now that  we know the rType,
+			// we zap the wrong one.
+			switch r.Type {
+			case "MX":
+				r.SrvPriority = 0
+			case "SRV":
+				r.MxPreference = 0
+			default:
+				panic("ugh")
+			}
 		}
 	} else if rTarget != "" && len(rTargets) == 0 {
 		results = append(results, newRecordConfig(k, rType, rTarget, rTTL))

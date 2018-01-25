@@ -507,7 +507,7 @@ func makeTests(t *testing.T) []*TestCase {
 		)
 	}
 
-	// ignored recrods
+	// ignored records
 	tests = append(tests,
 		tc("Empty"),
 		tc("Create some records", txt("foo", "simple"), a("foo", "1.2.3.4")),

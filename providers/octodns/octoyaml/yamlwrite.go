@@ -7,6 +7,7 @@ import (
 
 	"github.com/StackExchange/dnscontrol/models"
 	"github.com/miekg/dns/dnsutil"
+	"github.com/pkg/errors"
 	yaml "gopkg.in/yaml.v2"
 )
 
@@ -16,9 +17,9 @@ func WriteYaml(w io.Writer, records models.Records, origin string) error {
 		return nil
 	}
 
-	fmt.Printf("WriteYaml records=%+v\n", records)
+	//fmt.Printf("WriteYaml records=%+v\n", records)
 	defaultTTL := mostCommonTTL(records)
-	fmt.Printf("DEBUG: defaultTTL=%d\n", defaultTTL)
+	//fmt.Printf("WriteYaml: defaultTTL=%d\n", defaultTTL)
 
 	recsCopy := models.Records{}
 	for _, r := range records {
@@ -93,21 +94,23 @@ func oneLabel(records models.Records) yaml.MapItem {
 	//  Special case labels with a single record:
 	if len(records) == 1 {
 		switch rtype := records[0].Type; rtype {
-		case "A", "CNAME", "NS":
+		case "A", "CNAME", "NS", "PTR", "TXT":
 			v := simple{
 				Type:  rtype,
 				Value: records[0].Content(),
 				TTL:   records[0].TTL,
 			}
-			fmt.Printf("DEBUG: oneLabel simple ttl=%d\n", v.TTL)
+			if v.Type == "TXT" {
+				v.Value = models.StripQuotes(v.Value)
+			}
+			//fmt.Printf("yamlwrite:oneLabel: simple ttl=%d\n", v.TTL)
 			item.Value = v
-			fmt.Printf("SIMPLE=%v\n", item)
+			//fmt.Printf("yamlwrite:oneLabel: SIMPLE=%v\n", item)
 			return item
-		case "MX":
+		case "MX", "SRV":
 			// Always processed as a complex{}
-			fmt.Println("DEBUG: MX.. skipping simple")
 		default:
-			e := fmt.Errorf("oneLabel:len1 rtype not implemented: %s", rtype)
+			e := fmt.Errorf("yamlwrite:oneLabel:len1 rtype not implemented: %s", rtype)
 			panic(e)
 		}
 	}
@@ -124,9 +127,9 @@ func oneLabel(records models.Records) yaml.MapItem {
 				v.Values = append(v.Values, rec.Content())
 			}
 			item.Value = v
-			fmt.Printf("SIMPLE=%v\n", item)
+			//fmt.Printf("SIMPLE=%v\n", item)
 			return item
-		case "MX":
+		case "MX", "SRV":
 			// Always processed as a complex{}
 		default:
 			e := fmt.Errorf("oneLabel:many rtype not implemented: %s", rtype)
@@ -141,14 +144,14 @@ func oneLabel(records models.Records) yaml.MapItem {
 	var last = records[0].Type
 	for i := range records {
 		if records[i].Type != last {
-			//fmt.Printf("DEBUG: Calling oneType( [%d:%d] ) last=%s type=%s\n", low, i, last, records[0].Type)
+			//fmt.Printf("yamlwrite:oneLabel: Calling oneType( [%d:%d] ) last=%s type=%s\n", low, i, last, records[0].Type)
 			lst = append(lst, oneType(records[low:i]))
 			low = i // Current is the first of a run.
 			last = records[i].Type
 		}
 		if i == (len(records) - 1) {
 			// we are on the last element.
-			//fmt.Printf("DEBUG: Calling oneType( [%d:%d] ) last=%s type=%s\n", low, i+1, last, records[0].Type)
+			//fmt.Printf("yamlwrite:oneLabel: Calling oneType( [%d:%d] ) last=%s type=%s\n", low, i+1, last, records[0].Type)
 			lst = append(lst, oneType(records[low:i+1]))
 		}
 	}
@@ -170,12 +173,14 @@ type complexFields struct {
 	Fields []fields `yaml:"values,omitempty"`
 }
 type fields struct {
-	Priority uint16 `yaml:"priority"`
-	Value    string `yaml:"value"`
+	Priority  uint16 `yaml:"priority,omitempty"`
+	SrvWeight uint16 `yaml:"weight,omitempty"`
+	SrvPort   uint16 `yaml:"port,omitempty"`
+	Value     string `yaml:"value,omitempty"`
 }
 
 func oneType(records models.Records) interface{} {
-	//fmt.Printf("DEBUG: oneType len=%d type=%s\n", len(records), records[0].Type)
+	//fmt.Printf("yamlwrite:oneType len=%d type=%s\n", len(records), records[0].Type)
 	rtype := records[0].Type
 	switch rtype {
 	case "A":
@@ -198,13 +203,43 @@ func oneType(records models.Records) interface{} {
 		}
 		for _, rc := range records {
 			vv.Fields = append(vv.Fields, fields{
-				Priority: rc.MxPreference,
 				Value:    rc.Target,
+				Priority: rc.MxPreference,
 			})
 		}
 		return vv
+	case "SRV":
+		vv := complexFields{
+			Type: rtype,
+			TTL:  records[0].TTL,
+		}
+		for _, rc := range records {
+			vv.Fields = append(vv.Fields, fields{
+				Value:     rc.Target,
+				Priority:  rc.SrvPriority,
+				SrvWeight: rc.SrvWeight,
+				SrvPort:   rc.SrvPort,
+			})
+		}
+		return vv
+	case "TXT":
+		vv := complexVals{
+			Type: rtype,
+			TTL:  records[0].TTL,
+		}
+		if len(records) == 1 {
+			vv.Value = models.StripQuotes(records[0].Target)
+		} else {
+			for _, rc := range records {
+				vv.Values = append(vv.Values, models.StripQuotes(rc.Content()))
+			}
+		}
+		return vv
+
 	default:
-		panic("oneType not implemented")
+		e := errors.Errorf("yamlwrite:oneType rtype=%s not implemented", rtype)
+		fmt.Println(e)
+		panic(e)
 	}
 }
 

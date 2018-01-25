@@ -31,13 +31,14 @@ import (
 	"github.com/StackExchange/dnscontrol/providers"
 	"github.com/StackExchange/dnscontrol/providers/diff"
 	"github.com/StackExchange/dnscontrol/providers/octodns/octoyaml"
+	"github.com/pkg/errors"
 )
 
 var features = providers.DocumentationNotes{
-	providers.CanUseCAA:        providers.Can(),
-	providers.CanUsePTR:        providers.Can(),
-	providers.CanUseSRV:        providers.Can(),
-	providers.CanUseTXTMulti:   providers.Can(),
+	//providers.CanUseCAA: providers.Can(),
+	providers.CanUsePTR: providers.Can(),
+	providers.CanUseSRV: providers.Can(),
+	//providers.CanUseTXTMulti:   providers.Can(),
 	providers.DocCreateDomains: providers.Cannot("Driver just maintains list of OctoDNS config files. You must manually create the master config files that refer these."),
 	providers.DocDualHost:      providers.Cannot("Research is needed."),
 }
@@ -101,7 +102,7 @@ func (c *Provider) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Corr
 	zoneFileFound := err == nil
 	foundRecords, err = octoyaml.ReadYaml(foundFH, dc.Name)
 	if err != nil {
-		return nil, err
+		return nil, errors.Wrapf(err, "can not get corrections")
 	}
 	// Normalize
 	models.PostProcessRecords(foundRecords)
