@@ -1,7 +1,7 @@
 ---
 foo:
   type: A
-  ttl: 302
   values:
   - 1.2.3.4
   - 1.2.3.5
+  ttl: 302

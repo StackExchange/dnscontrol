@@ -1,9 +1,9 @@
 [
-  {"type":"A","name":"@","target":"1.2.3.4"},
-  {"type":"A","name":"@","target":"1.2.3.5"},
+  {"type":"A","name":"@","target":"1.2.3.4","ttl":304},
+  {"type":"A","name":"@","target":"1.2.3.5","ttl":304},
   {"type":"CNAME","name":"*","target":"www.example.com."},
-  {"type":"A","name":"www.sub","target":"1.2.3.6"},
-  {"type":"A","name":"www.sub","target":"1.2.3.7"},
-  {"type":"A","name":"www","target":"1.2.3.4"},
-  {"type":"A","name":"www","target":"1.2.3.5"}
+  {"type":"A","name":"www.sub","target":"1.2.3.6","ttl":304},
+  {"type":"A","name":"www.sub","target":"1.2.3.7","ttl":304},
+  {"type":"A","name":"www","target":"1.2.3.4","ttl":304},
+  {"type":"A","name":"www","target":"1.2.3.5","ttl":304}
 ]

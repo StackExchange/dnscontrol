@@ -1,4 +1,3 @@
-DefaultTTL(307);
 // FYI: go-yaml writes an empty string as ""; python's yaml writes an empty string as "".
 // For that reason:
 // 006-apex:       tests YAML -> JSON.
@@ -8,5 +7,6 @@ DefaultTTL(307);
 var REG = NewRegistrar("Third-Party","NONE");
 var CF = NewDnsProvider("bind", "BIND")
 D("example.tld",REG,DnsProvider(CF),
+    DefaultTTL(307),
     A("@","1.2.3.4")
 );

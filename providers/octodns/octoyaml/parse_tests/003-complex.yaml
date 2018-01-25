@@ -14,5 +14,5 @@ foo:
     value: mx2.example.com.
 one:
   type: A
-  ttl: 303
   value: 1.2.3.3
+  ttl: 303

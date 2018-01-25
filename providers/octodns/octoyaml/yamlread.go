@@ -56,7 +56,6 @@ func ReadYaml(r io.Reader, origin string) (models.Records, error) {
 		default:
 			e := fmt.Errorf("unknown type in list1: k=%s v.(type)=%T v=%v", k, v, v)
 			fmt.Println(e)
-			fmt.Println("EE")
 			return nil, e
 		}
 	}
@@ -72,6 +71,18 @@ func ReadYaml(r io.Reader, origin string) (models.Records, error) {
 	return results, nil
 }
 
+func decodeTTL(ttl interface{}) uint32 {
+	switch ttl.(type) {
+	case string:
+		return models.MustStringToTTL(ttl.(string))
+	case uint32:
+		return ttl.(uint32)
+	case int:
+		return uint32(ttl.(int))
+	}
+	panic("I don't know what type this TTL is")
+}
+
 func parseLeaf(results models.Records, k string, v interface{}) (models.Records, error) {
 	var rType, rTarget string
 	var rTTL uint32
@@ -85,7 +96,7 @@ func parseLeaf(results models.Records, k string, v interface{}) (models.Records,
 			case "type":
 				rType = v2.(string)
 			case "ttl":
-				rTTL = v2.(uint32)
+				rTTL = decodeTTL(v2)
 			case "value":
 				rTarget = v2.(string)
 			case "values":

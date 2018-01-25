@@ -12,8 +12,13 @@ import (
 
 // WriteYaml outputs a yaml version of a list of RecordConfig.
 func WriteYaml(w io.Writer, records models.Records, origin string) error {
+	if len(records) == 0 {
+		return nil
+	}
+
+	fmt.Printf("WriteYaml records=%+v\n", records)
 	defaultTTL := mostCommonTTL(records)
-	//fmt.Printf("DEBUG: defaultTTL=%d\n", defaultTTL)
+	fmt.Printf("DEBUG: defaultTTL=%d\n", defaultTTL)
 
 	recsCopy := models.Records{}
 	for _, r := range records {
@@ -79,12 +84,13 @@ func sameType(records models.Records) bool {
 }
 
 func oneLabel(records models.Records) yaml.MapItem {
-	var item yaml.MapItem
 
-	// Single-item labels:
+	item := yaml.MapItem{
+		// a yaml.MapItem is a YAML map that retains the key order.
+		Key: records[0].Name,
+	}
 
-	item.Key = records[0].Name
-
+	//  Special case labels with a single record:
 	if len(records) == 1 {
 		switch rtype := records[0].Type; rtype {
 		case "A", "CNAME", "NS":
@@ -93,14 +99,20 @@ func oneLabel(records models.Records) yaml.MapItem {
 				Value: records[0].Content(),
 				TTL:   records[0].TTL,
 			}
+			fmt.Printf("DEBUG: oneLabel simple ttl=%d\n", v.TTL)
 			item.Value = v
+			fmt.Printf("SIMPLE=%v\n", item)
+			return item
+		case "MX":
+			// Always processed as a complex{}
+			fmt.Println("DEBUG: MX.. skipping simple")
 		default:
 			e := fmt.Errorf("oneLabel:len1 rtype not implemented: %s", rtype)
 			panic(e)
 		}
-		return item
 	}
 
+	//  Special case labels with many records, all the same rType:
 	if sameType(records) {
 		switch rtype := records[0].Type; rtype {
 		case "A", "CNAME", "NS":
@@ -112,14 +124,17 @@ func oneLabel(records models.Records) yaml.MapItem {
 				v.Values = append(v.Values, rec.Content())
 			}
 			item.Value = v
+			fmt.Printf("SIMPLE=%v\n", item)
+			return item
+		case "MX":
+			// Always processed as a complex{}
 		default:
 			e := fmt.Errorf("oneLabel:many rtype not implemented: %s", rtype)
 			panic(e)
 		}
-		return item
 	}
 
-	// This is a single label with multiple rTypes within it.
+	// All other labels are complexItems
 
 	var low int // First index of a run.
 	var lst complexItems
@@ -162,7 +177,6 @@ type fields struct {
 func oneType(records models.Records) interface{} {
 	//fmt.Printf("DEBUG: oneType len=%d type=%s\n", len(records), records[0].Type)
 	rtype := records[0].Type
-	var v interface{}
 	switch rtype {
 	case "A":
 		vv := complexVals{
@@ -176,7 +190,7 @@ func oneType(records models.Records) interface{} {
 				vv.Values = append(vv.Values, rc.Content())
 			}
 		}
-		v = vv
+		return vv
 	case "MX":
 		vv := complexFields{
 			Type: rtype,
@@ -188,12 +202,10 @@ func oneType(records models.Records) interface{} {
 				Value:    rc.Target,
 			})
 		}
-		v = vv
+		return vv
 	default:
 		panic("oneType not implemented")
 	}
-
-	return v
 }
 
 // mostCommonTTL returns the most common TTL in a set of records. If there is

@@ -35,7 +35,7 @@ func init() {
 	os.Chdir("../..") // go up a directory so we helpers.js is in a consistent place.
 }
 
-func TestYamlOutput(t *testing.T) {
+func TestYamlWrite(t *testing.T) {
 
 	// Read a .JS and make sure we can generate the expected YAML.
 
@@ -98,7 +98,7 @@ func TestYamlOutput(t *testing.T) {
 	}
 }
 
-func TestYamlInput(t *testing.T) {
+func TestYamlRead(t *testing.T) {
 
 	// Read a .YAML and make sure it matches the RecordConfig (.JSON).
 
