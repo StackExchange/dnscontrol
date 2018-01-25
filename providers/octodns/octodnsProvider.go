@@ -50,7 +50,7 @@ func initProvider(config map[string]string, providermeta json.RawMessage) (provi
 		directory: config["directory"],
 	}
 	if api.directory == "" {
-		api.directory = "zones"
+		api.directory = "config"
 	}
 	if len(providermeta) != 0 {
 		err := json.Unmarshal(providermeta, api)
@@ -97,13 +97,22 @@ func (c *Provider) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Corr
 
 	// Read foundRecords:
 	var foundRecords models.Records
-	zonefile := filepath.Join(c.directory, strings.Replace(strings.ToLower(dc.Name), "/", "_", -1)+".yaml")
-	foundFH, err := os.Open(zonefile)
-	zoneFileFound := err == nil
-	foundRecords, err = octoyaml.ReadYaml(foundFH, dc.Name)
+	zoneFileFound := true
+	zoneFileName := filepath.Join(c.directory, strings.Replace(strings.ToLower(dc.Name), "/", "_", -1)+".yaml")
+	foundFH, err := os.Open(zoneFileName)
 	if err != nil {
-		return nil, errors.Wrapf(err, "can not get corrections")
+		if os.IsNotExist(err) {
+			zoneFileFound = false
+		} else {
+			return nil, errors.Wrapf(err, "can't open %s:", zoneFileName)
+		}
+	} else {
+		foundRecords, err = octoyaml.ReadYaml(foundFH, dc.Name)
+		if err != nil {
+			return nil, errors.Wrapf(err, "can not get corrections")
+		}
 	}
+
 	// Normalize
 	models.PostProcessRecords(foundRecords)
 
@@ -115,35 +124,31 @@ func (c *Provider) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Corr
 	changes := false
 	for _, i := range create {
 		changes = true
-		if zoneFileFound {
-			fmt.Fprintln(buf, i)
-		}
+		fmt.Fprintln(buf, i)
 	}
 	for _, i := range del {
 		changes = true
-		if zoneFileFound {
-			fmt.Fprintln(buf, i)
-		}
+		fmt.Fprintln(buf, i)
 	}
 	for _, i := range mod {
 		changes = true
-		if zoneFileFound {
-			fmt.Fprintln(buf, i)
-		}
+		fmt.Fprintln(buf, i)
 	}
-	msg := fmt.Sprintf("GENERATE_ZONEFILE: %s\n", dc.Name)
-	if !zoneFileFound {
-		msg = msg + fmt.Sprintf(" (%d records)\n", len(create))
+	msg := fmt.Sprintf("GENERATE_CONFIGFILE: %s", dc.Name)
+	if zoneFileFound {
+		msg += "\n"
+		msg += buf.String()
+	} else {
+		msg += fmt.Sprintf(" (%d records)\n", len(create))
 	}
-	msg += buf.String()
 	corrections := []*models.Correction{}
 	if changes {
 		corrections = append(corrections,
 			&models.Correction{
 				Msg: msg,
 				F: func() error {
-					fmt.Printf("CREATING ZONEFILE: %v\n", zonefile)
-					zf, err := os.Create(zonefile)
+					fmt.Printf("CREATING CONFIGFILE: %v\n", zoneFileName)
+					zf, err := os.Create(zoneFileName)
 					if err != nil {
 						log.Fatalf("Could not create zonefile: %v", err)
 					}

@@ -183,7 +183,7 @@ func oneType(records models.Records) interface{} {
 	//fmt.Printf("yamlwrite:oneType len=%d type=%s\n", len(records), records[0].Type)
 	rtype := records[0].Type
 	switch rtype {
-	case "A":
+	case "A", "AAAA", "NS":
 		vv := complexVals{
 			Type: rtype,
 			TTL:  records[0].TTL,
