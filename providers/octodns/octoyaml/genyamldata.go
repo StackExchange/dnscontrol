@@ -8,6 +8,7 @@ import (
 	"sort"
 
 	"github.com/StackExchange/dnscontrol/models"
+	"github.com/StackExchange/dnscontrol/pkg/natsort"
 	"github.com/miekg/dns/dnsutil"
 )
 
@@ -99,8 +100,13 @@ func (z *genYamlData) Less(i, j int) bool {
 }
 
 func zoneLabelLess(a, b string) bool {
-	return a < b
-	// TODO(tlim): octodns-validate wants a "natural sort" (i.e. foo10 comes after foo3).
+	return natsort.Less(a, b)
+	// octodns-validate wants a "natural sort" (i.e. foo10 comes after foo3).
+	// We emulate this with the natsort package.
+	// If you need to disable that validatation:
+	//    Edit env/lib/python2.7/site-packages/octodns/yaml.py
+	//    Change line 27: OLD: if key != expected
+	//                    NEW: if False and key != expected
 }
 
 func zoneRrtypeLess(a, b string) bool {
