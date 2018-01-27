@@ -180,6 +180,8 @@ type fields struct {
 	Value     string `yaml:"value,omitempty"`
 }
 
+// FIXME(tlim): An MX record with .Priority=0 will not output the priority.
+
 func oneType(records models.Records) interface{} {
 	//fmt.Printf("yamlwrite:oneType len=%d type=%s\n", len(records), records[0].Type)
 	rtype := records[0].Type
