@@ -20,8 +20,8 @@ package natsort
 
 import (
 	"errors"
-	"fmt"
 	"sort"
+	"strconv"
 	"strings"
 )
 
@@ -37,14 +37,40 @@ func Less(s, t string) bool {
 
 // LessRunes reports whether s is less than t.
 func LessRunes(s, t []rune) bool {
+
 	nprefix := commonPrefix(s, t)
+	// equal?
 	if len(s) == nprefix && len(t) == nprefix {
-		// equal
 		return false
 	}
+	// empty strings are less than anything.
 	if len(s) == 0 || len(t) == 0 {
-		return len(t) != 0
+		return len(s) == 0
 	}
+
+	// both start numeric? Sort by the prefixed digits.
+	lds := leadDigits(s)
+	ldt := leadDigits(t)
+	if lds != 0 && ldt != 0 { // both start with a digit
+		if lds == len(s) && ldt == len(t) { // s and t are all digits.
+			if lds == ldt {
+				// equal length? compare as strings.
+				return string(s) < string(t)
+			}
+			//  otherwise, the shorter one is smaller.
+			return lds < ldt
+		}
+		ss := string(s[:lds])
+		st := string(t[:ldt])
+		ns, _ := strconv.Atoi(ss)
+		nt, _ := strconv.Atoi(st)
+		if ns == nt && lds != ldt {
+			return lds < ldt
+		}
+		return ns < nt
+	}
+
+	// * < digit
 	if strings.HasPrefix(string(s), "*") || strings.HasPrefix(string(t), "*") {
 		if isDigit(t[0]) {
 			return false
@@ -59,30 +85,24 @@ func LessRunes(s, t []rune) bool {
 	if strings.HasPrefix(sps, "-") || strings.HasPrefix(tps, "-") {
 		// digits < -
 		if leadDigits(s[nprefix:]) > 0 && strings.HasPrefix(tps, "-") {
-			fmt.Println("HERE1")
 			return true
 		}
 		if leadDigits(t[nprefix:]) > 0 && strings.HasPrefix(sps, "-") {
-			fmt.Println("HERE2")
 			return false
 		}
 		// . < -
 		if strings.HasPrefix(sps, ".") && strings.HasPrefix(tps, "-") {
-			fmt.Println("HERE5")
 			return false
 		}
 		if strings.HasPrefix(sps, "-") && strings.HasPrefix(tps, ".") {
-			fmt.Println("HERE6")
 			return true
 		}
 	}
 	// digits < .
 	if leadDigits(s[nprefix:]) > 0 && strings.HasPrefix(tps, ".") {
-		fmt.Println("HERE3")
 		return true
 	}
 	if leadDigits(t[nprefix:]) > 0 && strings.HasPrefix(sps, ".") {
-		fmt.Println("HERE4")
 		return false
 	}
 	sEnd := leadDigits(s[nprefix:]) + nprefix
