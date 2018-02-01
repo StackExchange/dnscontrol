@@ -118,19 +118,15 @@ func (g *gcloud) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Correc
 	existingRecords := []*models.RecordConfig{}
 	oldRRs := map[key]*dns.ResourceRecordSet{}
 	for _, set := range rrs {
-		nameWithoutDot := set.Name
-		if strings.HasSuffix(nameWithoutDot, ".") {
-			nameWithoutDot = nameWithoutDot[:len(nameWithoutDot)-1]
-		}
 		oldRRs[keyFor(set)] = set
 		for _, rec := range set.Rrdatas {
 			r := &models.RecordConfig{
-				NameFQDN:       nameWithoutDot,
 				Type:           set.Type,
 				Target:         rec,
 				TTL:            uint32(set.Ttl),
 				CombinedTarget: true,
 			}
+			r.SetLabelFQDN(set.Name, dc.Name)
 			existingRecords = append(existingRecords, r)
 		}
 	}

@@ -60,9 +60,8 @@ type DNSProviderConfig struct {
 //    This is the shortname i.e. the NameFQDN without the origin suffix.
 //    It should never have a trailing "."
 //    It should never be null. It should store "@", not the apex domain, not null, etc.
-//    It shouldn't end with the domain origin. If the origin is "foo.com." then
-//       if Name == "foo.com" then that literally means "foo.com.foo.com." is
-//       the intended FQDN.
+//    If the origin is "foo.com." and Name is "foo.com", this literally means
+//        the intended FQDN is "foo.com.foo.com." (which may look odd)
 // NameFQDN:
 //    This is the FQDN version of Name.
 //    It should never have a trailiing ".".
@@ -93,11 +92,11 @@ type DNSProviderConfig struct {
 //     URL301
 type RecordConfig struct {
 	Type             string            `json:"type"`
-	Name             string            `json:"name"`   // The short name. See below.
+	Name             string            `json:"name"`   // The short name. See above.
 	Target           string            `json:"target"` // If a name, must end with "."
 	TTL              uint32            `json:"ttl,omitempty"`
 	Metadata         map[string]string `json:"meta,omitempty"`
-	NameFQDN         string            `json:"-"` // Must end with ".$origin". See below.
+	NameFQDN         string            `json:"-"` // Must end with ".$origin". See above.
 	MxPreference     uint16            `json:"mxpreference,omitempty"`
 	SrvPriority      uint16            `json:"srvpriority,omitempty"`
 	SrvWeight        uint16            `json:"srvweight,omitempty"`
@@ -113,6 +112,76 @@ type RecordConfig struct {
 	CombinedTarget bool `json:"-"`
 
 	Original interface{} `json:"-"` // Store pointer to provider-specific record object. Used in diffing.
+}
+
+// SetLabel sets the .Name/.NameFQDN fields given a short name and origin.
+func (rc *RecordConfig) SetLabel(short, origin string) {
+	if strings.HasSuffix(origin, ".") {
+		panic(fmt.Errorf("origin (%s) is not supposed to end with a dot", origin))
+	}
+
+	short = strings.ToLower(short)
+	origin = strings.ToLower(origin)
+	if short == "" {
+		rc.Name = "@"
+		rc.NameFQDN = origin
+	} else {
+		if short == origin+"." {
+			rc.Name = "@"
+		} else {
+			rc.Name = short
+		}
+		f := dnsutil.AddOrigin(short, origin)
+		rc.NameFQDN = f[0 : len(f)-1]
+	}
+	rc.CheckIntegrity(origin)
+}
+
+// SetLabelFQDN sets the .Name/.NameFQDN fields given a FQDN and origin.
+func (rc *RecordConfig) SetLabelFQDN(fqdn, origin string) {
+
+	if strings.HasSuffix(origin, ".") {
+		panic(fmt.Errorf("origin (%s) is not supposed to end with a dot", origin))
+	}
+	if strings.HasSuffix(fqdn, "..") {
+		panic(fmt.Errorf("fqdn (%s) is not supposed to end with double dots", origin))
+	}
+
+	if strings.HasSuffix(fqdn, ".") {
+		// Trim off a trailing dot.
+		fqdn = fqdn[:len(fqdn)-1]
+	}
+
+	fqdn = strings.ToLower(fqdn)
+	origin = strings.ToLower(origin)
+	rc.Name = dnsutil.TrimDomainName(fqdn, origin)
+	rc.NameFQDN = fqdn
+	rc.CheckIntegrity(origin)
+}
+
+// Label returns the shortname of the label associated with this RecordConfig.
+// It will never end with "."
+// It does not need further shortening (i.e. if it returns "foo.com" and the
+//   domain is "foo.com" then the FQDN is actually "foo.com.foo.com").
+// It will never be "" (the apex is returned as "@").
+func (rc *RecordConfig) Label() string {
+	return rc.Name
+}
+
+// LabelFQDN returns the FQDN of the label associated with this RecordConfig.
+// It will not end with ".".
+func (rc *RecordConfig) LabelFQDN() string {
+	return rc.NameFQDN
+}
+
+// CheckIntegrity verifies a RecordConfig is internally consistent or panics.
+func (rc *RecordConfig) CheckIntegrity(origin string) {
+	if strings.HasSuffix(rc.Name, ".") {
+		panic(fmt.Errorf("assertion failed: rc.Name should not end with dot (%s) (%s)", rc.Name, origin))
+	}
+	if strings.HasSuffix(rc.NameFQDN, ".") {
+		panic(fmt.Errorf("assertion failed: rc.NameFQDN should not end with dot (%s) (%s)", rc.NameFQDN, origin))
+	}
 }
 
 func (rc *RecordConfig) String() (content string) {

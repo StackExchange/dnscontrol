@@ -78,13 +78,13 @@ func (c *DnsimpleApi) GetDomainCorrections(dc *models.DomainConfig) ([]*models.C
 			continue
 		}
 		rec := &models.RecordConfig{
-			NameFQDN:     dnsutil.AddOrigin(r.Name, dc.Name),
 			Type:         r.Type,
 			Target:       r.Content,
 			TTL:          uint32(r.TTL),
 			MxPreference: uint16(r.Priority),
 			Original:     r,
 		}
+		rec.SetLabel(r.Name, dc.Name)
 		if r.Type == "CAA" || r.Type == "SRV" {
 			rec.CombinedTarget = true
 		}

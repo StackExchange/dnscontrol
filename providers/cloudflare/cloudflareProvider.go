@@ -376,12 +376,13 @@ func (c *cfRecord) toRecord(domain string) *models.RecordConfig {
 		c.Content = dnsutil.AddOrigin(c.Content+".", domain)
 	}
 	rc := &models.RecordConfig{
-		NameFQDN: c.Name,
 		Type:     c.Type,
 		Target:   c.Content,
 		TTL:      c.TTL,
 		Original: c,
 	}
+	rc.SetLabelFQDN(c.Name, domain)
+
 	switch c.Type { // #rtype_variations
 	case "A", "AAAA", "ANAME", "CNAME", "NS", "TXT":
 		// nothing additional needed.

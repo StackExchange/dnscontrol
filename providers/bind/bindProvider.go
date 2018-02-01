@@ -99,14 +99,11 @@ func rrToRecord(rr dns.RR, origin string, replaceSerial uint32) (models.RecordCo
 	// If one is found, we replace it with serial=1.
 	var oldSerial, newSerial uint32
 	header := rr.Header()
-	rc := models.RecordConfig{}
-	rc.Type = dns.TypeToString[header.Rrtype]
-	rc.NameFQDN = strings.ToLower(strings.TrimSuffix(header.Name, "."))
-	rc.Name = strings.ToLower(dnsutil.TrimDomainName(header.Name, origin))
-	if rc.Name == origin+"." {
-		rc.Name = "@"
+	rc := models.RecordConfig{
+		Type: dns.TypeToString[header.Rrtype],
+		TTL:  header.Ttl,
 	}
-	rc.TTL = header.Ttl
+	rc.SetLabelFQDN(strings.TrimSuffix(header.Name, "."), origin)
 	switch v := rr.(type) { // #rtype_variations
 	case *dns.A:
 		rc.Target = v.A.String()

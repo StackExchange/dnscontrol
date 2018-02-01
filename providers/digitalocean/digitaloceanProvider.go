@@ -198,8 +198,7 @@ func toRc(dc *models.DomainConfig, r *godo.DomainRecord) *models.RecordConfig {
 		target = dnsutil.AddOrigin(target+".", dc.Name)
 	}
 
-	return &models.RecordConfig{
-		NameFQDN:     name,
+	t := &models.RecordConfig{
 		Type:         r.Type,
 		Target:       target,
 		TTL:          uint32(r.TTL),
@@ -209,6 +208,8 @@ func toRc(dc *models.DomainConfig, r *godo.DomainRecord) *models.RecordConfig {
 		SrvPort:      uint16(r.Port),
 		Original:     r,
 	}
+	t.SetLabelFQDN(name, dc.Name)
+	return t
 }
 
 func toReq(dc *models.DomainConfig, rc *models.RecordConfig) *godo.DomainRecordEditRequest {
