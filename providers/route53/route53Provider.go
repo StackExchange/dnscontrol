@@ -70,6 +70,7 @@ var features = providers.DocumentationNotes{
 func init() {
 	providers.RegisterDomainServiceProviderType("ROUTE53", newRoute53Dsp, features)
 	providers.RegisterRegistrarType("ROUTE53", newRoute53Reg)
+	providers.RegisterCustomRecordType("R53_ALIAS", "ROUTE53", "")
 }
 
 func sPtr(s string) *string {
