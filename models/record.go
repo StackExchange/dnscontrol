@@ -79,7 +79,7 @@ type RecordConfig struct {
 //   This is
 
 // SetLabel sets the .Name/.NameFQDN fields given a short name and origin.
-// origin may not have a trailing dot.
+// origin must not have a trailing dot.
 func (rc *RecordConfig) SetLabel(short, origin string) {
 	if strings.HasSuffix(origin, ".") {
 		panic(fmt.Errorf("origin (%s) is not supposed to end with a dot", origin))
