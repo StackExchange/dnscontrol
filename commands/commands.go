@@ -77,7 +77,7 @@ func (args *GetDNSConfigArgs) flags() []cli.Flag {
 	)
 }
 
-// GetDNSConfig reads the json-formatted IR file.
+// GetDNSConfig reads the json-formatted IR file. Or executes javascript. All depending on flags provided.
 func GetDNSConfig(args GetDNSConfigArgs) (*models.DNSConfig, error) {
 	if args.JSONFile != "" {
 		f, err := os.Open(args.JSONFile)
@@ -90,9 +90,59 @@ func GetDNSConfig(args GetDNSConfigArgs) (*models.DNSConfig, error) {
 		if err = dec.Decode(cfg); err != nil {
 			return nil, err
 		}
-		return cfg, nil
+		return preloadProviders(cfg, nil)
 	}
-	return ExecuteDSL(args.ExecuteDSLArgs)
+	return preloadProviders(ExecuteDSL(args.ExecuteDSLArgs))
+}
+
+// the json only contains provider names inside domains. This denormalizes the data for more
+// convenient access patterns. Does everything we need to prepare for the validation phase, but
+// cannot do anything that requires the credentials file yet.
+func preloadProviders(cfg *models.DNSConfig, err error) (*models.DNSConfig, error) {
+	if err != nil {
+		return cfg, err
+	}
+	//build name to type maps
+	cfg.RegistrarsByName = map[string]*models.RegistrarConfig{}
+	cfg.DNSProvidersByName = map[string]*models.DNSProviderConfig{}
+	for _, reg := range cfg.Registrars {
+		cfg.RegistrarsByName[reg.Name] = reg
+	}
+	for _, p := range cfg.DNSProviders {
+		cfg.DNSProvidersByName[p.Name] = p
+	}
+	// make registrar and dns provider shims. Include name, type, and other metadata, but can't inatantiate
+	// driver until we load creds in later
+	for _, d := range cfg.Domains {
+		reg, ok := cfg.RegistrarsByName[d.RegistrarName]
+		if !ok {
+			return nil, fmt.Errorf("Registrar named %s expected for %s, but never registered", d.RegistrarName, d.Name)
+		}
+		d.RegistrarInstance = &models.RegistrarInstance{
+			ProviderBase: models.ProviderBase{
+				Name:         reg.Name,
+				ProviderType: reg.Type,
+			},
+		}
+		for pName, n := range d.DNSProviderNames {
+			prov, ok := cfg.DNSProvidersByName[pName]
+			if !ok {
+				return nil, fmt.Errorf("DNS Provider named %s expected for %s, but never registered", pName, d.Name)
+			}
+			d.DNSProviderInstances = append(d.DNSProviderInstances, &models.DNSProviderInstance{
+				ProviderBase: models.ProviderBase{
+					Name:         pName,
+					ProviderType: prov.Type,
+				},
+				NumberOfNameservers: n,
+			})
+		}
+		// sort so everything is deterministic
+		sort.Slice(d.DNSProviderInstances, func(i, j int) bool {
+			return d.DNSProviderInstances[i].Name < d.DNSProviderInstances[j].Name
+		})
+	}
+	return cfg, nil
 }
 
 // ExecuteDSLArgs are used anytime we need to read and execute dnscontrol DSL
@@ -185,20 +235,20 @@ func (args *FilterArgs) flags() []cli.Flag {
 	}
 }
 
-func (args *FilterArgs) shouldRunProvider(p string, dc *models.DomainConfig, nonDefaultProviders []string) bool {
+func (args *FilterArgs) shouldRunProvider(name string, dc *models.DomainConfig) bool {
 	if args.Providers == "all" {
 		return true
 	}
 	if args.Providers == "" {
-		for _, pr := range nonDefaultProviders {
-			if pr == p {
-				return false
+		for _, pri := range dc.DNSProviderInstances {
+			if pri.Name == name {
+				return pri.IsDefault
 			}
 		}
 		return true
 	}
 	for _, prov := range strings.Split(args.Providers, ",") {
-		if prov == p {
+		if prov == name {
 			return true
 		}
 	}

@@ -96,11 +96,11 @@ func run(args PreviewArgs, push bool, interactive bool, out printer.CLI) error {
 	if PrintValidationErrors(errs) {
 		return fmt.Errorf("Exiting due to validation errors")
 	}
-	registrars, dnsProviders, nonDefaultProviders, notifier, err := InitializeProviders(args.CredsFile, cfg, args.Notify)
+	// TODO:
+	notifier, err := InitializeProviders(args.CredsFile, cfg, args.Notify)
 	if err != nil {
 		return err
 	}
-	out.Debugf("Initialized %d registrars and %d dns service providers.\n", len(registrars), len(dnsProviders))
 	anyErrors := false
 	totalCorrections := 0
 DomainLoop:
@@ -109,44 +109,35 @@ DomainLoop:
 			continue
 		}
 		out.StartDomain(domain.Name)
-		nsList, err := nameservers.DetermineNameservers(domain, 0, dnsProviders)
+		nsList, err := nameservers.DetermineNameservers(domain)
 		if err != nil {
 			return err
 		}
 		domain.Nameservers = nsList
 		nameservers.AddNSRecords(domain)
-		for prov := range domain.DNSProviders {
+		for _, provider := range domain.DNSProviderInstances {
 			dc, err := domain.Copy()
 			if err != nil {
 				return err
 			}
-			shouldrun := args.shouldRunProvider(prov, dc, nonDefaultProviders)
-			out.StartDNSProvider(prov, !shouldrun)
+			shouldrun := args.shouldRunProvider(provider.Name, dc)
+			out.StartDNSProvider(provider.Name, !shouldrun)
 			if !shouldrun {
 				continue
 			}
-			// TODO: make provider discovery like this a validate-time operation
-			dsp, ok := dnsProviders[prov]
-			if !ok {
-				log.Fatalf("DSP %s not declared.", prov)
-			}
-			corrections, err := dsp.GetDomainCorrections(dc)
+			corrections, err := provider.Driver.GetDomainCorrections(dc)
 			out.EndProvider(len(corrections), err)
 			if err != nil {
 				anyErrors = true
 				continue DomainLoop
 			}
 			totalCorrections += len(corrections)
-			anyErrors = printOrRunCorrections(domain.Name, prov, corrections, out, push, interactive, notifier) || anyErrors
+			anyErrors = printOrRunCorrections(domain.Name, provider.Name, corrections, out, push, interactive, notifier) || anyErrors
 		}
-		run := args.shouldRunProvider(domain.Registrar, domain, nonDefaultProviders)
-		out.StartRegistrar(domain.Registrar, !run)
+		run := args.shouldRunProvider(domain.RegistrarName, domain)
+		out.StartRegistrar(domain.RegistrarName, !run)
 		if !run {
 			continue
-		}
-		reg, ok := registrars[domain.Registrar]
-		if !ok {
-			log.Fatalf("Registrar %s not declared.", reg)
 		}
 		if len(domain.Nameservers) == 0 && domain.Metadata["no_ns"] != "true" {
 			out.Warnf("No nameservers declared; skipping registrar. Add {no_ns:'true'} to force.\n")
@@ -156,14 +147,14 @@ DomainLoop:
 		if err != nil {
 			log.Fatal(err)
 		}
-		corrections, err := reg.GetRegistrarCorrections(dc)
+		corrections, err := domain.RegistrarInstance.Driver.GetRegistrarCorrections(dc)
 		out.EndProvider(len(corrections), err)
 		if err != nil {
 			anyErrors = true
 			continue
 		}
 		totalCorrections += len(corrections)
-		anyErrors = printOrRunCorrections(domain.Name, domain.Registrar, corrections, out, push, interactive, notifier) || anyErrors
+		anyErrors = printOrRunCorrections(domain.Name, domain.RegistrarName, corrections, out, push, interactive, notifier) || anyErrors
 	}
 	if os.Getenv("TEAMCITY_VERSION") != "" {
 		fmt.Fprintf(os.Stderr, "##teamcity[buildStatus status='SUCCESS' text='%d corrections']", totalCorrections)
@@ -178,7 +169,7 @@ DomainLoop:
 
 // InitializeProviders takes a creds file path and a DNSConfig object. Creates all providers with the proper types, and returns them.
 // nonDefaultProviders is a list of providers that should not be run unless explicitly asked for by flags.
-func InitializeProviders(credsFile string, cfg *models.DNSConfig, notifyFlag bool) (registrars map[string]providers.Registrar, dnsProviders map[string]providers.DNSServiceProvider, nonDefaultProviders []string, notify notifications.Notifier, err error) {
+func InitializeProviders(credsFile string, cfg *models.DNSConfig, notifyFlag bool) (notify notifications.Notifier, err error) {
 	var providerConfigs map[string]map[string]string
 	var notificationCfg map[string]string
 	defer func() {
@@ -191,21 +182,39 @@ func InitializeProviders(credsFile string, cfg *models.DNSConfig, notifyFlag boo
 	if notifyFlag {
 		notificationCfg = providerConfigs["notifications"]
 	}
-	nonDefaultProviders = []string{}
+	isNonDefault := map[string]bool{}
 	for name, vals := range providerConfigs {
 		// add "_exclude_from_defaults":"true" to a provider to exclude it from being run unless
 		// -providers=all or -providers=name
 		if vals["_exclude_from_defaults"] == "true" {
-			nonDefaultProviders = append(nonDefaultProviders, name)
+			isNonDefault[name] = true
 		}
 	}
-	registrars, err = providers.CreateRegistrars(cfg, providerConfigs)
-	if err != nil {
-		return
-	}
-	dnsProviders, err = providers.CreateDsps(cfg, providerConfigs)
-	if err != nil {
-		return
+	registrars := map[string]providers.Registrar{}
+	dnsProviders := map[string]providers.DNSServiceProvider{}
+	for _, d := range cfg.Domains {
+		if registrars[d.RegistrarName] == nil {
+			rCfg := cfg.RegistrarsByName[d.RegistrarName]
+			r, err := providers.CreateRegistrar(rCfg.Type, providerConfigs[d.RegistrarName])
+			if err != nil {
+				return nil, err
+			}
+			registrars[d.RegistrarName] = r
+		}
+		d.RegistrarInstance.Driver = registrars[d.RegistrarName]
+		d.RegistrarInstance.IsDefault = !isNonDefault[d.RegistrarName]
+		for _, pInst := range d.DNSProviderInstances {
+			if dnsProviders[pInst.Name] == nil {
+				dCfg := cfg.DNSProvidersByName[pInst.Name]
+				prov, err := providers.CreateDNSProvider(dCfg.Type, providerConfigs[dCfg.Name], dCfg.Metadata)
+				if err != nil {
+					return nil, err
+				}
+				dnsProviders[pInst.Name] = prov
+			}
+			pInst.Driver = dnsProviders[pInst.Name]
+			pInst.IsDefault = !isNonDefault[pInst.Name]
+		}
 	}
 	return
 }
