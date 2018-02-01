@@ -106,22 +106,19 @@ func rrToRecord(rr dns.RR, origin string, replaceSerial uint32) (models.RecordCo
 	rc.SetLabelFQDN(strings.TrimSuffix(header.Name, "."), origin)
 	switch v := rr.(type) { // #rtype_variations
 	case *dns.A:
-		rc.Target = v.A.String()
+		rc.SetTarget(v.A.String())
 	case *dns.AAAA:
-		rc.Target = v.AAAA.String()
+		rc.SetTarget(v.AAAA.String())
 	case *dns.CAA:
-		rc.CaaTag = v.Tag
-		rc.CaaFlag = v.Flag
-		rc.Target = v.Value
+		rc.SetTargetCAA(v.Tag, v.Flag, v.Value)
 	case *dns.CNAME:
-		rc.Target = v.Target
+		rc.SetTarget(v.Target)
 	case *dns.MX:
-		rc.Target = v.Mx
-		rc.MxPreference = v.Preference
+		rc.SetTargetMX(v.Preference, v.Mx)
 	case *dns.NS:
-		rc.Target = v.Ns
+		rc.SetTarget(v.Ns)
 	case *dns.PTR:
-		rc.Target = v.Ptr
+		rc.SetTarget(v.Ptr)
 	case *dns.SOA:
 		oldSerial = v.Serial
 		if oldSerial == 0 {
@@ -132,21 +129,17 @@ func rrToRecord(rr dns.RR, origin string, replaceSerial uint32) (models.RecordCo
 		if (dnsutil.TrimDomainName(rc.Name, origin+".") == "@") && replaceSerial != 0 {
 			newSerial = replaceSerial
 		}
-		rc.Target = fmt.Sprintf("%v %v %v %v %v %v %v",
-			v.Ns, v.Mbox, newSerial, v.Refresh, v.Retry, v.Expire, v.Minttl)
+		rc.SetTarget(
+			fmt.Sprintf("%v %v %v %v %v %v %v",
+				v.Ns, v.Mbox, newSerial, v.Refresh, v.Retry, v.Expire, v.Minttl),
+		)
+		// FIXME(tlim): SOA should be handled by splitting out the fields.
 	case *dns.SRV:
-		rc.Target = v.Target
-		rc.SrvPort = v.Port
-		rc.SrvWeight = v.Weight
-		rc.SrvPriority = v.Priority
+		rc.SetTargetSRV(v.Priority, v.Weight, v.Port, v.Target)
 	case *dns.TLSA:
-		rc.TlsaUsage = v.Usage
-		rc.TlsaSelector = v.Selector
-		rc.TlsaMatchingType = v.MatchingType
-		rc.Target = v.Certificate
+		rc.SetTargetTLSA(v.Usage, v.Selector, v.MatchingType, v.Certificate)
 	case *dns.TXT:
-		rc.Target = strings.Join(v.Txt, " ")
-		rc.TxtStrings = v.Txt
+		rc.SetTxts(v.Txt)
 	default:
 		log.Fatalf("rrToRecord: Unimplemented zone record type=%s (%v)\n", rc.Type, rr)
 	}
