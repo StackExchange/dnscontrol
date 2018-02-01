@@ -142,7 +142,7 @@ func TestRecordConfigFromInfo(t *testing.T) {
 				assert.Equal(t, data.config, recordConfig)
 			})
 			t.Run("Convert record config to gandi info", func(t *testing.T) {
-				recordInfos, err := c.recordsToInfo(data.config)
+				_, recordInfos, err := c.recordsToInfo(data.config)
 				assert.NoError(t, err)
 				assert.Equal(t, []*record.Info{data.info}, recordInfos)
 			})

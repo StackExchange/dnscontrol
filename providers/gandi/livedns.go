@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 	"strings"
+	"time"
 
 	"github.com/StackExchange/dnscontrol/models"
 	"github.com/StackExchange/dnscontrol/providers"
@@ -94,9 +95,17 @@ func (c *liveClient) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Co
 		return nil, err
 	}
 	foundRecords := c.recordConfigFromInfo(records, dc.Name)
+	recordsToKeep, records, err := c.recordsToInfo(dc.Records)
+	if err != nil {
+		return nil, err
+	}
+	dc.Records = recordsToKeep
+
+	// Normalize
 	models.PostProcessRecords(foundRecords)
 
 	differ := diff.New(dc)
+
 	_, create, del, mod := differ.IncrementalDiff(foundRecords)
 	if len(create)+len(del)+len(mod) > 0 {
 		message := fmt.Sprintf("Setting dns records for %s:", dc.Name)
@@ -107,12 +116,7 @@ func (c *liveClient) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Co
 			{
 				Msg: message,
 				F: func() error {
-					records, err := c.recordsToInfo(dc.Records)
-					if err != nil {
-						return err
-					}
-					c.createZone(dc.Name, records)
-					return nil
+					return c.createZone(dc.Name, records)
 				},
 			},
 		}, nil
@@ -127,12 +131,24 @@ func (c *liveClient) createZone(domainname string, records []*gandiliverecord.In
 	if err != nil {
 		return err
 	}
+	infos.Name = fmt.Sprintf("zone created by dnscontrol for %s on %s", domainname, time.Now().String())
 	// duplicate zone Infos
 	status, err := c.zoneManager.Create(*infos)
 	if err != nil {
 		return err
 	}
 	zoneInfos, err := c.zoneManager.InfoByUUID(*status.UUID)
+	if err != nil {
+		// gandi might take some time to make the new zone available
+		for i := 0; i < 5; i++ {
+			log.Printf("INFO: Failed to retrieve new zone infos: %s. Leaving a delay before retry", err.Error())
+			time.Sleep(50 * time.Millisecond)
+			zoneInfos, err = c.zoneManager.InfoByUUID(*status.UUID)
+			if err == nil {
+				break
+			}
+		}
+	}
 	if err != nil {
 		return err
 	}
@@ -204,9 +220,10 @@ func (c *liveClient) recordConfigFromInfo(infos []*gandiliverecord.Info, origin 
 }
 
 // recordsToInfo generates gandi record sets and filters incompatible entries from native records format
-func (c *liveClient) recordsToInfo(records models.Records) ([]*gandiliverecord.Info, error) {
+func (c *liveClient) recordsToInfo(records models.Records) (models.Records, []*gandiliverecord.Info, error) {
 	recordSets := map[string]map[string]*gandiliverecord.Info{}
 	recordInfos := []*gandiliverecord.Info{}
+	recordToKeep := models.Records{}
 
 	for _, rec := range records {
 		if rec.TTL < 300 {
@@ -214,7 +231,7 @@ func (c *liveClient) recordsToInfo(records models.Records) ([]*gandiliverecord.I
 			rec.TTL = 300
 		}
 		if rec.TTL > 2592000 {
-			return nil, errors.Errorf("ERROR: Gandi does not support TTLs > 30 days (TTL=%d)", rec.TTL)
+			return nil, nil, errors.Errorf("ERROR: Gandi does not support TTLs > 30 days (TTL=%d)", rec.TTL)
 		}
 		if rec.Type == "NS" && rec.Name == "@" {
 			if !strings.HasSuffix(rec.Target, ".gandi.net.") {
@@ -245,6 +262,7 @@ func (c *liveClient) recordsToInfo(records models.Records) ([]*gandiliverecord.I
 				)
 			}
 		}
+		recordToKeep = append(recordToKeep, rec)
 		if rec.Type == "TXT" {
 			for _, t := range rec.TxtStrings {
 				r.Values = append(r.Values, "\""+t+"\"") // FIXME(tlim): Should do proper quoting.
@@ -253,5 +271,5 @@ func (c *liveClient) recordsToInfo(records models.Records) ([]*gandiliverecord.I
 			r.Values = append(r.Values, rec.Content())
 		}
 	}
-	return recordInfos, nil
+	return recordToKeep, recordInfos, nil
 }
