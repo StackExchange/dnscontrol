@@ -6,6 +6,7 @@ import (
 	"sort"
 
 	"github.com/StackExchange/dnscontrol/models"
+	"github.com/miekg/dns/dnsutil"
 )
 
 // Correlation stores a difference between two domains.
@@ -74,16 +75,16 @@ func (d *differ) IncrementalDiff(existing []*models.RecordConfig) (unchanged, cr
 	existingByNameAndType := map[key][]*models.RecordConfig{}
 	desiredByNameAndType := map[key][]*models.RecordConfig{}
 	for _, e := range existing {
-		if d.matchIgnored(e.Name) {
-			log.Printf("Ignoring record %s %s due to IGNORE", e.Name, e.Type)
+		if d.matchIgnored(e.NameFQDN, d.dc.Name) {
+			log.Printf("Ignoring record %s %s due to IGNORE", e.NameFQDN, e.Type)
 		} else {
 			k := key{e.NameFQDN, e.Type}
 			existingByNameAndType[k] = append(existingByNameAndType[k], e)
 		}
 	}
 	for _, dr := range desired {
-		if d.matchIgnored(dr.Name) {
-			panic(fmt.Sprintf("Trying to update/add IGNOREd record: %s %s", dr.Name, dr.Type))
+		if d.matchIgnored(dr.NameFQDN, d.dc.Name) {
+			panic(fmt.Sprintf("Trying to update/add IGNOREd record: %s %s", dr.NameFQDN, dr.Type))
 		} else {
 			k := key{dr.NameFQDN, dr.Type}
 			desiredByNameAndType[k] = append(desiredByNameAndType[k], dr)
@@ -214,9 +215,11 @@ func sortedKeys(m map[string]*models.RecordConfig) []string {
 	return s
 }
 
-func (d *differ) matchIgnored(name string) bool {
+func (d *differ) matchIgnored(nameFQDN, domain string) bool {
+	// ignored labels are not fqdn
+	name := dnsutil.TrimDomainName(nameFQDN, domain)
 	for _, tst := range d.dc.IgnoredLabels {
-		if name == tst {
+		if name == tst || nameFQDN == tst {
 			return true
 		}
 	}
