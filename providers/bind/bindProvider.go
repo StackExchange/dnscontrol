@@ -103,6 +103,9 @@ func rrToRecord(rr dns.RR, origin string, replaceSerial uint32) (models.RecordCo
 	rc.Type = dns.TypeToString[header.Rrtype]
 	rc.NameFQDN = strings.ToLower(strings.TrimSuffix(header.Name, "."))
 	rc.Name = strings.ToLower(dnsutil.TrimDomainName(header.Name, origin))
+	if rc.Name == origin+"." {
+		rc.Name = "@"
+	}
 	rc.TTL = header.Ttl
 	switch v := rr.(type) { // #rtype_variations
 	case *dns.A:

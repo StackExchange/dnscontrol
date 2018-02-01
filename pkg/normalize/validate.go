@@ -280,6 +280,7 @@ func NormalizeAndValidateConfig(config *models.DNSConfig) (errs []error) {
 		}
 		// Normalize Records.
 		models.PostProcessRecords(domain.Records)
+		domain.CheckDomainIntegrity()
 		for _, rec := range domain.Records {
 			if rec.TTL == 0 {
 				rec.TTL = models.DefaultTTL

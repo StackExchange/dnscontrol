@@ -13,6 +13,7 @@ import (
 
 	"github.com/StackExchange/dnscontrol/pkg/transform"
 	"github.com/miekg/dns"
+	"github.com/miekg/dns/dnsutil"
 	"golang.org/x/net/idna"
 )
 
@@ -58,7 +59,7 @@ type DNSProviderConfig struct {
 // Name:
 //    This is the shortname i.e. the NameFQDN without the origin suffix.
 //    It should never have a trailing "."
-//    It should never be null. It should store It "@", not the apex domain, not null, etc.
+//    It should never be null. It should store "@", not the apex domain, not null, etc.
 //    It shouldn't end with the domain origin. If the origin is "foo.com." then
 //       if Name == "foo.com" then that literally means "foo.com.foo.com." is
 //       the intended FQDN.
@@ -316,6 +317,32 @@ func fixTxt(recs []*RecordConfig) {
 			if len(r.TxtStrings) == 0 {
 				r.TxtStrings = []string{r.Target}
 			}
+		}
+	}
+}
+
+// CheckDomainIntegrity performs sanity checks on a DomainConfig
+// and panics if problems are found.
+func (dc DomainConfig) CheckDomainIntegrity() {
+	// Assert:  dc.Name should not end with "."
+	if strings.HasSuffix(dc.Name, ".") {
+		panic(fmt.Errorf("domain name %s ends with dot", dc.Name))
+	}
+	// Assert: RecordConfig.Name and .NameFQDN should match.
+	checkNameFQDN(dc.Records, dc.Name)
+}
+
+// checkNameFQDN panics if there is a Name/NameFQDN mismatch.
+func checkNameFQDN(recs []*RecordConfig, origin string) {
+	for _, r := range recs {
+
+		expectedShort := dnsutil.TrimDomainName(r.NameFQDN, origin)
+		if r.Name != expectedShort {
+			panic(fmt.Errorf("Name/NameFQDN mismatch: short=(%s) but (%s)-(%s)->(%s)", r.Name, r.NameFQDN, origin, expectedShort))
+		}
+		expectedFQDN := dnsutil.AddOrigin(r.Name, origin)
+		if r.NameFQDN != expectedFQDN {
+			panic(fmt.Errorf("Name/NameFQDN mismatch: fqdn=(%s) but (%s)+(%s)->(%s)", r.NameFQDN, r.Name, origin, expectedFQDN))
 		}
 	}
 }
