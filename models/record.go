@@ -141,6 +141,12 @@ func (rc *RecordConfig) LabelFQDN() string {
 	return rc.NameFQDN
 }
 
+// LabelFQDNDot returns the FQDN+"."of the label associated with this RecordConfig.
+// It will  end with ".".
+func (rc *RecordConfig) LabelFQDNDot() string {
+	return rc.NameFQDN + "."
+}
+
 // CheckIntegrity verifies a RecordConfig is internally consistent or panics.
 func (rc *RecordConfig) CheckIntegrity(origin string) {
 	if strings.HasSuffix(rc.Name, ".") {

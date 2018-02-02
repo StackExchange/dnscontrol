@@ -23,7 +23,6 @@ import (
 	"strings"
 
 	"github.com/miekg/dns"
-	"github.com/miekg/dns/dnsutil"
 
 	"github.com/StackExchange/dnscontrol/models"
 	"github.com/StackExchange/dnscontrol/providers"
@@ -126,7 +125,8 @@ func rrToRecord(rr dns.RR, origin string, replaceSerial uint32) (models.RecordCo
 			oldSerial = 1
 		}
 		newSerial = v.Serial
-		if (dnsutil.TrimDomainName(rc.Name, origin+".") == "@") && replaceSerial != 0 {
+		//if (dnsutil.TrimDomainName(rc.Name, origin+".") == "@") && replaceSerial != 0 {
+		if rc.Name == "@" && replaceSerial != 0 {
 			newSerial = replaceSerial
 		}
 		rc.SetTarget(
@@ -150,9 +150,8 @@ func makeDefaultSOA(info SoaInfo, origin string) *models.RecordConfig {
 	// Make a default SOA record in case one isn't found:
 	soaRec := models.RecordConfig{
 		Type: "SOA",
-		Name: "@",
 	}
-	soaRec.NameFQDN = dnsutil.AddOrigin(soaRec.Name, origin)
+	soaRec.SetLabel("@", origin)
 	if len(info.Ns) == 0 {
 		info.Ns = "DEFAULT_NOT_SET."
 	}
@@ -174,7 +173,7 @@ func makeDefaultSOA(info SoaInfo, origin string) *models.RecordConfig {
 	if info.Minttl == 0 {
 		info.Minttl = 1440
 	}
-	soaRec.Target = info.String()
+	soaRec.SetTarget(info.String())
 
 	return &soaRec
 }

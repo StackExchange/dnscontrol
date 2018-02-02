@@ -23,6 +23,9 @@ func (rc *RecordConfig) SetTargetTXTs(s []string) {
 }
 
 // SetTargetTXTString is like SetTargetTXT but accepts one big string.
+// Ex: foo             << 1 string
+//     foo bar         << 1 string
+//     "foo" "bar"     << 2 strings
 func (rc *RecordConfig) SetTargetTXTString(s string) {
 	rc.SetTxtParse(s)
 }

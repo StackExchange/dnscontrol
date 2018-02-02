@@ -125,9 +125,9 @@ func (g *gcloud) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Correc
 		}
 	}
 
-	for _, want := range dc.Records {
-		want.MergeToTarget()
-	}
+	//for _, want := range dc.Records {
+	//	want.MergeToTarget()
+	//}
 
 	// Normalize
 	models.PostProcessRecords(existingRecords)
@@ -166,7 +166,7 @@ func (g *gcloud) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Correc
 		}
 		for _, r := range dc.Records {
 			if keyForRec(r) == ck {
-				newRRs.Rrdatas = append(newRRs.Rrdatas, r.Target)
+				newRRs.Rrdatas = append(newRRs.Rrdatas, r.TargetCombined())
 				newRRs.Ttl = int64(r.TTL)
 			}
 		}
@@ -187,14 +187,13 @@ func (g *gcloud) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Correc
 
 func nativeToRecord(set *dns.ResourceRecordSet, rec, origin string) *models.RecordConfig {
 	r := &models.RecordConfig{
-		Type:   set.Type,
-		Target: rec,
-		TTL:    uint32(set.Ttl),
+		Type: set.Type,
+		TTL:  uint32(set.Ttl),
 	}
 	r.SetLabelFQDN(set.Name, origin)
 	switch rType := set.Type; rType { // #rtype_variations
 	case "A", "AAAA", "ANAME", "CNAME", "NS", "PTR":
-		// do nothing.
+		r.SetTarget(rec)
 	case "CAA":
 		r.SetTargetCAAString(rec)
 	case "MX":
