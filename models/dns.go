@@ -100,6 +100,9 @@ func (dc DomainConfig) CheckDomainIntegrity() {
 func checkNameFQDN(recs []*RecordConfig, origin string) {
 	for _, r := range recs {
 
+		if r.Name == "" || r.NameFQDN == "" {
+			panic(fmt.Errorf("checkNameFQDN: unset short=(%s) fqdn=(%s) doman=(%s)", r.Name, r.NameFQDN, origin))
+		}
 		expectedShort := dnsutil.TrimDomainName(r.NameFQDN, origin)
 		if r.Name != expectedShort {
 			panic(fmt.Errorf("Name/NameFQDN mismatch: short=(%s) but (%s)-(%s)->(%s)", r.Name, r.NameFQDN, origin, expectedShort))
