@@ -59,6 +59,8 @@ func TestSetTxtParse(t *testing.T) {
 		{``, ``, []string{``}},
 		{`foo`, `foo`, []string{`foo`}},
 		{`"foo"`, `foo`, []string{`foo`}},
+		{`"foo bar"`, `foo bar`, []string{`foo bar`}},
+		{`foo bar`, `foo bar`, []string{`foo bar`}},
 		{`"aaa" "bbb"`, `aaa`, []string{`aaa`, `bbb`}},
 	}
 	for i, test := range tests {

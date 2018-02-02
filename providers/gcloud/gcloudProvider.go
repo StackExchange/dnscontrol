@@ -12,6 +12,7 @@ import (
 	"github.com/StackExchange/dnscontrol/models"
 	"github.com/StackExchange/dnscontrol/providers"
 	"github.com/StackExchange/dnscontrol/providers/diff"
+	"github.com/pkg/errors"
 )
 
 var features = providers.DocumentationNotes{
@@ -120,14 +121,7 @@ func (g *gcloud) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Correc
 	for _, set := range rrs {
 		oldRRs[keyFor(set)] = set
 		for _, rec := range set.Rrdatas {
-			r := &models.RecordConfig{
-				Type:           set.Type,
-				Target:         rec,
-				TTL:            uint32(set.Ttl),
-				CombinedTarget: true,
-			}
-			r.SetLabelFQDN(set.Name, dc.Name)
-			existingRecords = append(existingRecords, r)
+			existingRecords = append(existingRecords, nativeToRecord(set, rec, dc.Name))
 		}
 	}
 
@@ -189,6 +183,34 @@ func (g *gcloud) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Correc
 		Msg: desc,
 		F:   runChange,
 	}}, nil
+}
+
+func nativeToRecord(set *dns.ResourceRecordSet, rec, origin string) *models.RecordConfig {
+	r := &models.RecordConfig{
+		Type:   set.Type,
+		Target: rec,
+		TTL:    uint32(set.Ttl),
+	}
+	r.SetLabelFQDN(set.Name, origin)
+	switch rType := set.Type; rType { // #rtype_variations
+	case "A", "AAAA", "ANAME", "CNAME", "NS", "PTR":
+		// do nothing.
+	case "CAA":
+		r.SetTargetCAAString(rec)
+	case "MX":
+		r.SetTargetMXString(rec)
+	case "SRV":
+		r.SetTargetSRVString(rec)
+	case "TLSA":
+		r.SetTargetTLSAString(rec)
+	case "TXT":
+		r.SetTargetTXTString(rec)
+	default:
+		panic(errors.Errorf("nativeToRecord: Unimplemented rtype %v", rType))
+		// We panic so that we quickly find any switch statements
+		// that have not been updated for a new RR type.
+	}
+	return r
 }
 
 func (g *gcloud) getRecords(domain string) ([]*dns.ResourceRecordSet, string, error) {

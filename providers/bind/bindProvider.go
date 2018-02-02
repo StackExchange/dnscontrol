@@ -110,7 +110,7 @@ func rrToRecord(rr dns.RR, origin string, replaceSerial uint32) (models.RecordCo
 	case *dns.AAAA:
 		rc.SetTarget(v.AAAA.String())
 	case *dns.CAA:
-		rc.SetTargetCAA(v.Tag, v.Flag, v.Value)
+		rc.SetTargetCAA(v.Flag, v.Tag, v.Value)
 	case *dns.CNAME:
 		rc.SetTarget(v.Target)
 	case *dns.MX:
