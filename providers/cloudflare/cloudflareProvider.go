@@ -13,6 +13,7 @@ import (
 	"github.com/StackExchange/dnscontrol/providers"
 	"github.com/StackExchange/dnscontrol/providers/diff"
 	"github.com/miekg/dns/dnsutil"
+	"github.com/pkg/errors"
 )
 
 /*
@@ -120,8 +121,8 @@ func (c *CloudflareApi) GetDomainCorrections(dc *models.DomainConfig) ([]*models
 		if rec.Type == "ALIAS" {
 			rec.Type = "CNAME"
 		}
-		if labelMatches(rec.Name, c.ignoredLabels) {
-			log.Fatalf("FATAL: dnsconfig contains label that matches ignored_labels: %#v is in %v)\n", rec.Name, c.ignoredLabels)
+		if labelMatches(rec.Label(), c.ignoredLabels) {
+			log.Fatalf("FATAL: dnsconfig contains label that matches ignored_labels: %#v is in %v)\n", rec.Label(), c.ignoredLabels)
 		}
 	}
 	checkNSModifications(dc)
@@ -150,7 +151,7 @@ func (c *CloudflareApi) GetDomainCorrections(dc *models.DomainConfig) ([]*models
 		if des.Type == "PAGE_RULE" {
 			corrections = append(corrections, &models.Correction{
 				Msg: d.String(),
-				F:   func() error { return c.createPageRule(id, des.Target) },
+				F:   func() error { return c.createPageRule(id, des.TargetField()) },
 			})
 		} else {
 			corrections = append(corrections, c.createRec(des, id)...)
@@ -163,7 +164,7 @@ func (c *CloudflareApi) GetDomainCorrections(dc *models.DomainConfig) ([]*models
 		if rec.Type == "PAGE_RULE" {
 			corrections = append(corrections, &models.Correction{
 				Msg: d.String(),
-				F:   func() error { return c.updatePageRule(ex.Original.(*pageRule).ID, id, rec.Target) },
+				F:   func() error { return c.updatePageRule(ex.Original.(*pageRule).ID, id, rec.TargetField()) },
 			})
 		} else {
 			e := ex.Original.(*cfRecord)
@@ -180,9 +181,9 @@ func (c *CloudflareApi) GetDomainCorrections(dc *models.DomainConfig) ([]*models
 func checkNSModifications(dc *models.DomainConfig) {
 	newList := make([]*models.RecordConfig, 0, len(dc.Records))
 	for _, rec := range dc.Records {
-		if rec.Type == "NS" && rec.NameFQDN == dc.Name {
-			if !strings.HasSuffix(rec.Target, ".ns.cloudflare.com.") {
-				log.Printf("Warning: cloudflare does not support modifying NS records on base domain. %s will not be added.", rec.Target)
+		if rec.Type == "NS" && rec.LabelFQDN() == dc.Name {
+			if !strings.HasSuffix(rec.TargetField(), ".ns.cloudflare.com.") {
+				log.Printf("Warning: cloudflare does not support modifying NS records on base domain. %s will not be added.", rec.TargetField())
 			}
 			continue
 		}
@@ -239,7 +240,7 @@ func (c *CloudflareApi) preprocessConfig(dc *models.DomainConfig) error {
 		}
 		if rec.Type != "A" && rec.Type != "CNAME" && rec.Type != "AAAA" && rec.Type != "ALIAS" {
 			if rec.Metadata[metaProxy] != "" {
-				return fmt.Errorf("cloudflare_proxy set on %v record: %#v cloudflare_proxy=%#v", rec.Type, rec.Name, rec.Metadata[metaProxy])
+				return fmt.Errorf("cloudflare_proxy set on %v record: %#v cloudflare_proxy=%#v", rec.Type, rec.Label(), rec.Metadata[metaProxy])
 			}
 			// Force it to off.
 			rec.Metadata[metaProxy] = "off"
@@ -259,7 +260,7 @@ func (c *CloudflareApi) preprocessConfig(dc *models.DomainConfig) error {
 			if !c.manageRedirects {
 				return fmt.Errorf("you must add 'manage_redirects: true' metadata to cloudflare provider to use CF_REDIRECT records")
 			}
-			parts := strings.Split(rec.Target, ",")
+			parts := strings.Split(rec.TargetField(), ",")
 			if len(parts) != 2 {
 				return fmt.Errorf("Invalid data specified for cloudflare redirect record")
 			}
@@ -267,7 +268,7 @@ func (c *CloudflareApi) preprocessConfig(dc *models.DomainConfig) error {
 			if rec.Type == "CF_TEMP_REDIRECT" {
 				code = 302
 			}
-			rec.Target = fmt.Sprintf("%s,%d,%d", rec.Target, currentPrPrio, code)
+			rec.SetTarget(fmt.Sprintf("%s,%d,%d", rec.TargetField(), currentPrPrio, code))
 			currentPrPrio++
 			rec.Type = "PAGE_RULE"
 		}
@@ -282,16 +283,16 @@ func (c *CloudflareApi) preprocessConfig(dc *models.DomainConfig) error {
 		if rec.Metadata[metaProxy] != "full" {
 			continue
 		}
-		ip := net.ParseIP(rec.Target)
+		ip := net.ParseIP(rec.TargetField())
 		if ip == nil {
-			return fmt.Errorf("%s is not a valid ip address", rec.Target)
+			return fmt.Errorf("%s is not a valid ip address", rec.TargetField())
 		}
 		newIP, err := transform.TransformIP(ip, c.ipConversions)
 		if err != nil {
 			return err
 		}
-		rec.Metadata[metaOriginalIP] = rec.Target
-		rec.Target = newIP.String()
+		rec.Metadata[metaOriginalIP] = rec.TargetField()
+		rec.SetTarget(newIP.String())
 	}
 
 	return nil
@@ -370,38 +371,30 @@ type cfRecord struct {
 	Priority   uint16     `json:"priority"`
 }
 
-func (c *cfRecord) toRecord(domain string) *models.RecordConfig {
+func (c *cfRecord) nativeToRecord(domain string) *models.RecordConfig {
 	// normalize cname,mx,ns records with dots to be consistent with our config format.
 	if c.Type == "CNAME" || c.Type == "MX" || c.Type == "NS" || c.Type == "SRV" {
 		c.Content = dnsutil.AddOrigin(c.Content+".", domain)
 	}
 	rc := &models.RecordConfig{
 		Type:     c.Type,
-		Target:   c.Content,
 		TTL:      c.TTL,
 		Original: c,
 	}
 	rc.SetLabelFQDN(c.Name, domain)
-
-	switch c.Type { // #rtype_variations
-	case "A", "AAAA", "ANAME", "CNAME", "NS", "TXT":
-		// nothing additional needed.
+	switch rType := c.Type; rType { // #rtype_variations
+	case "A", "AAAA", "ANAME", "CNAME", "NS", "PTR", "TXT":
+		rc.SetTarget(c.Content)
 	case "CAA":
-		var err error
-		rc.CaaTag, rc.CaaFlag, rc.Target, err = models.SplitCombinedCaaValue(c.Content)
-		if err != nil {
-			panic(err)
-		}
+		rc.SetTargetCAAString(c.Content)
 	case "MX":
-		rc.MxPreference = c.Priority
+		rc.SetTargetMX(c.Priority, c.Content)
 	case "SRV":
 		data := *c.Data
-		rc.SrvPriority = data.Priority
-		rc.SrvWeight = data.Weight
-		rc.SrvPort = data.Port
-		rc.Target = dnsutil.AddOrigin(data.Target+".", domain)
+		rc.SetTargetSRV(data.Priority, data.Weight, data.Port,
+			dnsutil.AddOrigin(data.Target+".", domain))
 	default:
-		panic(fmt.Sprintf("toRecord unimplemented rtype %v", c.Type))
+		panic(errors.Errorf("nativeToRecord unimplemented rtype %v", rType))
 		// We panic so that we quickly find any switch statements
 		// that have not been updated for a new RR type.
 	}

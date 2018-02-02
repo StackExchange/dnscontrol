@@ -5,11 +5,9 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
-	"time"
-
-	"strings"
-
 	"strconv"
+	"strings"
+	"time"
 
 	"github.com/StackExchange/dnscontrol/models"
 )
@@ -68,7 +66,7 @@ func (c *CloudflareApi) getRecordsForDomain(id string, domain string) ([]*models
 		}
 		for _, rec := range data.Result {
 			// fmt.Printf("REC: %+v\n", rec)
-			records = append(records, rec.toRecord(domain))
+			records = append(records, rec.nativeToRecord(domain))
 		}
 		ri := data.ResultInfo
 		if len(data.Result) == 0 || ri.Page*ri.PerPage >= ri.TotalCount {
@@ -119,7 +117,7 @@ func (c *CloudflareApi) createZone(domainName string) (string, error) {
 }
 
 func cfSrvData(rec *models.RecordConfig) *cfRecData {
-	serverParts := strings.Split(rec.NameFQDN, ".")
+	serverParts := strings.Split(rec.LabelFQDN(), ".")
 	return &cfRecData{
 		Service:  serverParts[0],
 		Proto:    serverParts[1],
@@ -127,7 +125,7 @@ func cfSrvData(rec *models.RecordConfig) *cfRecData {
 		Port:     rec.SrvPort,
 		Priority: rec.SrvPriority,
 		Weight:   rec.SrvWeight,
-		Target:   rec.Target,
+		Target:   rec.TargetField(),
 	}
 }
 
@@ -135,7 +133,7 @@ func cfCaaData(rec *models.RecordConfig) *cfRecData {
 	return &cfRecData{
 		Tag:   rec.CaaTag,
 		Flags: rec.CaaFlag,
-		Value: rec.Target,
+		Value: rec.TargetField(),
 	}
 }
 
@@ -149,7 +147,7 @@ func (c *CloudflareApi) createRec(rec *models.RecordConfig, domainID string) []*
 		Data     *cfRecData `json:"data"`
 	}
 	var id string
-	content := rec.Target
+	content := rec.TargetField()
 	if rec.Metadata[metaOriginalIP] != "" {
 		content = rec.Metadata[metaOriginalIP]
 	}
@@ -158,11 +156,11 @@ func (c *CloudflareApi) createRec(rec *models.RecordConfig, domainID string) []*
 		prio = fmt.Sprintf(" %d ", rec.MxPreference)
 	}
 	arr := []*models.Correction{{
-		Msg: fmt.Sprintf("CREATE record: %s %s %d%s %s", rec.Name, rec.Type, rec.TTL, prio, content),
+		Msg: fmt.Sprintf("CREATE record: %s %s %d%s %s", rec.Label(), rec.Type, rec.TTL, prio, content),
 		F: func() error {
 
 			cf := &createRecord{
-				Name:     rec.Name,
+				Name:     rec.Label(),
 				Type:     rec.Type,
 				TTL:      rec.TTL,
 				Content:  content,
@@ -170,10 +168,10 @@ func (c *CloudflareApi) createRec(rec *models.RecordConfig, domainID string) []*
 			}
 			if rec.Type == "SRV" {
 				cf.Data = cfSrvData(rec)
-				cf.Name = rec.NameFQDN
+				cf.Name = rec.LabelFQDN()
 			} else if rec.Type == "CAA" {
 				cf.Data = cfCaaData(rec)
-				cf.Name = rec.NameFQDN
+				cf.Name = rec.LabelFQDN()
 				cf.Content = ""
 			}
 			endpoint := fmt.Sprintf(recordsURL, domainID)
@@ -193,7 +191,7 @@ func (c *CloudflareApi) createRec(rec *models.RecordConfig, domainID string) []*
 	}}
 	if rec.Metadata[metaProxy] != "off" {
 		arr = append(arr, &models.Correction{
-			Msg: fmt.Sprintf("ACTIVATE PROXY for new record %s %s %d %s", rec.Name, rec.Type, rec.TTL, rec.Target),
+			Msg: fmt.Sprintf("ACTIVATE PROXY for new record %s %s %d %s", rec.Label(), rec.Type, rec.TTL, rec.TargetField()),
 			F:   func() error { return c.modifyRecord(domainID, id, true, rec) },
 		})
 	}
@@ -214,13 +212,22 @@ func (c *CloudflareApi) modifyRecord(domainID, recID string, proxied bool, rec *
 		TTL      uint32     `json:"ttl"`
 		Data     *cfRecData `json:"data"`
 	}
-	r := record{recID, proxied, rec.Name, rec.Type, rec.Target, rec.MxPreference, rec.TTL, nil}
+	r := record{
+		ID:       recID,
+		Proxied:  proxied,
+		Name:     rec.Label(),
+		Type:     rec.Type,
+		Content:  rec.TargetField(),
+		Priority: rec.MxPreference,
+		TTL:      rec.TTL,
+		Data:     nil,
+	}
 	if rec.Type == "SRV" {
 		r.Data = cfSrvData(rec)
-		r.Name = rec.NameFQDN
+		r.Name = rec.LabelFQDN()
 	} else if rec.Type == "CAA" {
 		r.Data = cfCaaData(rec)
-		r.Name = rec.NameFQDN
+		r.Name = rec.LabelFQDN()
 		r.Content = ""
 	}
 	endpoint := fmt.Sprintf(singleRecordURL, domainID, recID)
@@ -302,15 +309,18 @@ func (c *CloudflareApi) getPageRules(id string, domain string) ([]*models.Record
 			return nil, err
 		}
 		var thisPr = pr
-		recs = append(recs, &models.RecordConfig{
-			Name:     "@",
-			NameFQDN: domain,
+		r := &models.RecordConfig{
 			Type:     "PAGE_RULE",
-			// $FROM,$TO,$PRIO,$CODE
-			Target:   fmt.Sprintf("%s,%s,%d,%d", pr.Targets[0].Constraint.Value, pr.ForwardingInfo.URL, pr.Priority, pr.ForwardingInfo.StatusCode),
 			Original: thisPr,
 			TTL:      1,
-		})
+		}
+		r.SetLabel("@", domain)
+		r.SetTarget(fmt.Sprintf("%s,%s,%d,%d", // $FROM,$TO,$PRIO,$CODE
+			pr.Targets[0].Constraint.Value,
+			pr.ForwardingInfo.URL,
+			pr.Priority,
+			pr.ForwardingInfo.StatusCode))
+		recs = append(recs, r)
 	}
 	return recs, nil
 }
