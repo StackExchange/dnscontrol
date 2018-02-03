@@ -1,12 +1,14 @@
 package models
 
 import (
-	"fmt"
+	"strconv"
 	"strings"
+
+	"github.com/pkg/errors"
 )
 
 // SetTargetTLSA sets the TLSA fields.
-func (rc *RecordConfig) SetTargetTLSA(usage, selector, matchingtype uint8, target string) {
+func (rc *RecordConfig) SetTargetTLSA(usage, selector, matchingtype uint8, target string) error {
 	rc.TlsaUsage = usage
 	rc.TlsaSelector = selector
 	rc.TlsaMatchingType = matchingtype
@@ -15,20 +17,31 @@ func (rc *RecordConfig) SetTargetTLSA(usage, selector, matchingtype uint8, targe
 		rc.Type = "TLSA"
 	}
 	if rc.Type != "TLSA" {
-		panic("SetTargetTLSA called when .Type is not TLSA")
+		panic("assertion failed: SetTargetTLSA called when .Type is not TLSA")
 	}
+	return nil
 }
 
 // SetTargetTLSAStrings is like SetTargetTLSA but accepts strings.
-func (rc *RecordConfig) SetTargetTLSAStrings(usage, selector, matchingtype, target string) {
-	rc.SetTargetTLSA(atou8(usage), atou8(selector), atou8(matchingtype), target)
+func (rc *RecordConfig) SetTargetTLSAStrings(usage, selector, matchingtype, target string) error {
+	i64usage, err := strconv.ParseUint(usage, 10, 8)
+	if err == nil {
+		i64selector, err := strconv.ParseUint(selector, 10, 8)
+		if err == nil {
+			i64matchingtype, err := strconv.ParseUint(matchingtype, 10, 8)
+			if err == nil {
+				return rc.SetTargetTLSA(uint8(i64usage), uint8(i64selector), uint8(i64matchingtype), target)
+			}
+		}
+	}
+	return errors.Wrap(err, "TLSA has value that won't fit in field")
 }
 
 // SetTargetTLSAString is like SetTargetTLSA but accepts one big string.
-func (rc *RecordConfig) SetTargetTLSAString(s string) {
+func (rc *RecordConfig) SetTargetTLSAString(s string) error {
 	part := strings.Fields(s)
 	if len(part) != 4 {
-		panic(fmt.Errorf("TLSA value %#v contains too many fields", s))
+		return errors.Errorf("TLSA value does not contain 4 fields: (%#v)", s)
 	}
-	rc.SetTargetTLSAStrings(part[0], part[1], part[2], part[3])
+	return rc.SetTargetTLSAStrings(part[0], part[1], part[2], part[3])
 }

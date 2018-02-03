@@ -139,7 +139,7 @@ func rrToRecord(rr dns.RR, origin string, replaceSerial uint32) (models.RecordCo
 	case *dns.TLSA:
 		rc.SetTargetTLSA(v.Usage, v.Selector, v.MatchingType, v.Certificate)
 	case *dns.TXT:
-		rc.SetTxts(v.Txt)
+		rc.SetTargetTXTs(v.Txt)
 	default:
 		log.Fatalf("rrToRecord: Unimplemented zone record type=%s (%v)\n", rc.Type, rr)
 	}

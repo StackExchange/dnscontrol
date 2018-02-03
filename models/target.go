@@ -45,9 +45,33 @@ func (rc *RecordConfig) TargetDebug() string {
 	return rc.String()
 }
 
+// TargetTXTQuoted returns the TXT target properly quoted.
+func (rc *RecordConfig) TargetTXTQuoted() string {
+	var res []string
+	for _, t := range rc.TxtStrings {
+		res = append(res, "\""+strings.Replace(t, "\"", "\\\"", -1)+"\"")
+	}
+	return strings.Join(res, " ")
+}
+
 // SetTarget sets the target, assuming that the rtype is appropriate.
-func (rc *RecordConfig) SetTarget(target string) {
+func (rc *RecordConfig) SetTarget(target string) error {
 	rc.Target = target
+	return nil
+}
+
+// SetTargetIP sets the target to an IP, verifying this is an appropriate rtype.
+func (rc *RecordConfig) SetTargetIP(target string) error {
+	// TODO(tlim): Verify the rtype is appropriate for an IP.
+	rc.Target = target
+	return nil
+}
+
+// SetTargetFQDN sets the target to an IP, verifying this is an appropriate rtype.
+func (rc *RecordConfig) SetTargetFQDN(target string) error {
+	// TODO(tlim): Verify the rtype is appropriate for an hostname.
+	rc.Target = target
+	return nil
 }
 
 // Legacy Methods
@@ -105,6 +129,9 @@ func (rc *RecordConfig) content() string {
 	full := rr.String()
 	if !strings.HasPrefix(full, header) {
 		panic("dns.Hdr.String() not acting as we expect")
+	}
+	if rc.Type == "TXT" {
+		fmt.Printf("DEBUG: txt stuff (%v) (%v)\n", full, header)
 	}
 	return full[len(header):]
 }

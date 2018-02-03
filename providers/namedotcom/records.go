@@ -3,10 +3,10 @@ package namedotcom
 import (
 	"fmt"
 	"regexp"
-	"strconv"
 	"strings"
 
 	"github.com/namedotcom/go/namecom"
+	"github.com/pkg/errors"
 
 	"github.com/miekg/dns/dnsutil"
 
@@ -21,6 +21,7 @@ var defaultNameservers = []*models.Nameserver{
 	{Name: "ns4.name.com"},
 }
 
+// GetDomainCorrections gathers correctios that would bring n to match dc.
 func (n *NameCom) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Correction, error) {
 	dc.Punycode()
 	records, err := n.getRecords(dc.Name)
@@ -29,7 +30,7 @@ func (n *NameCom) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Corre
 	}
 	actual := make([]*models.RecordConfig, len(records))
 	for i, r := range records {
-		actual[i] = toRecord(r)
+		actual[i] = toRecord(r, dc.Name)
 	}
 
 	for _, rec := range dc.Records {
@@ -86,41 +87,58 @@ func checkNSModifications(dc *models.DomainConfig) {
 // finds a string surrounded by quotes that might contain an escaped quote charactor.
 var quotedStringRegexp = regexp.MustCompile("\"((?:[^\"\\\\]|\\\\.)*)\"")
 
-func toRecord(r *namecom.Record) *models.RecordConfig {
+func toRecord(r *namecom.Record, origin string) *models.RecordConfig {
 	rc := &models.RecordConfig{
-		NameFQDN: strings.TrimSuffix(r.Fqdn, "."),
 		Type:     r.Type,
-		Target:   r.Answer,
 		TTL:      r.TTL,
 		Original: r,
 	}
-	switch r.Type { // #rtype_variations
-	case "A", "AAAA", "ANAME", "CNAME", "NS":
-		// nothing additional.
-	case "TXT":
-		if r.Answer[0] == '"' && r.Answer[len(r.Answer)-1] == '"' {
-			txtStrings := []string{}
-			for _, t := range quotedStringRegexp.FindAllStringSubmatch(r.Answer, -1) {
-				txtStrings = append(txtStrings, t[1])
-			}
-			rc.SetTxts(txtStrings)
-		}
-	case "MX":
-		rc.MxPreference = uint16(r.Priority)
-	case "SRV":
-		parts := strings.Split(r.Answer, " ")
-		weight, _ := strconv.ParseInt(parts[0], 10, 32)
-		port, _ := strconv.ParseInt(parts[1], 10, 32)
-		rc.SrvWeight = uint16(weight)
-		rc.SrvPort = uint16(port)
-		rc.SrvPriority = uint16(r.Priority)
-		rc.MxPreference = 0
-		rc.Target = parts[2] + "."
-	default:
-		panic(fmt.Sprintf("toRecord unimplemented rtype %v", r.Type))
-		// We panic so that we quickly find any switch statements
-		// that have not been updated for a new RR type.
+	if !strings.HasSuffix(r.Fqdn, ".") {
+		panic(errors.Errorf("namedotcom suddenly changed protocol. Bailing. (%v)", r.Fqdn))
 	}
+	fqdn := r.Fqdn[:len(r.Fqdn)-1]
+	rc.SetLabelFQDN(fqdn, origin)
+	switch rtype := r.Type; rtype { // #rtype_variations
+	case "MX":
+		if err := rc.SetTargetMX(uint16(r.Priority), r.Answer); err != nil {
+			panic(errors.Wrap(err, "can not parse MX info received from ndc"))
+		}
+		//	case "TXT":
+		//		if err := rc.SetTargetTXTString(r.Answer); err != nil {
+		//			panic(errors.Wrap(err, "TXT value could not be parsed"))
+		//		}
+	case "SRV":
+		if err := rc.SetTargetSRVPriorityString(uint16(r.Priority), r.Answer+"."); err != nil {
+			panic(errors.Wrap(err, "can not parse SRV info received from ndc"))
+		}
+	default: // "A", "AAAA", "ANAME", "CNAME", "NS"
+		err := rc.PopulateFromString(rtype, r.Answer, r.Fqdn)
+		if err != nil {
+			panic(errors.Wrap(err, "received unparsable data from provider"))
+		}
+	}
+	//	case "TXT":
+	//		if r.Answer[0] == '"' && r.Answer[len(r.Answer)-1] == '"' {
+	//			txtStrings := []string{}
+	//			for _, t := range quotedStringRegexp.FindAllStringSubmatch(r.Answer, -1) {
+	//				txtStrings = append(txtStrings, t[1])
+	//			}
+	//			rc.SetTargetTXTs(txtStrings)
+	//		}
+	//	case "SRV":
+	//		parts := strings.Split(r.Answer, " ")
+	//		weight, _ := strconv.ParseInt(parts[0], 10, 32)
+	//		port, _ := strconv.ParseInt(parts[1], 10, 32)
+	//		rc.SrvWeight = uint16(weight)
+	//		rc.SrvPort = uint16(port)
+	//		rc.SrvPriority = uint16(r.Priority)
+	//		rc.MxPreference = 0
+	//		rc.Target = parts[2] + "."
+	//	default:
+	//		panic(fmt.Sprintf("toRecord unimplemented rtype %v", r.Type))
+	// We panic so that we quickly find any switch statements
+	// that have not been updated for a new RR type.
+	//	}
 	return rc
 }
 
@@ -168,12 +186,23 @@ func (n *NameCom) createRecord(rc *models.RecordConfig, domain string) error {
 	case "A", "AAAA", "ANAME", "CNAME", "MX", "NS":
 		// nothing
 	case "TXT":
+		// if len(rc.TxtStrings) > 1 {
+		// 	record.Answer = ""
+		// 	for _, t := range rc.TxtStrings {
+		// 		record.Answer += "\"" + strings.Replace(t, "\"", "\\\"", -1) + "\""
+		// 	}
+		// }
+		//		txts := rc.TargetCombined()
+		//		if models.IsQuoted(txts) {}
 		if len(rc.TxtStrings) > 1 {
-			record.Answer = ""
-			for _, t := range rc.TxtStrings {
-				record.Answer += "\"" + strings.Replace(t, "\"", "\\\"", -1) + "\""
-			}
+			record.Answer = "\"" + strings.Replace(rc.TargetTXTQuoted(), "\"", "\\\"", -1) + "\""
+		} else {
+			record.Answer = rc.TargetTXTQuoted()
 		}
+		fmt.Printf("DEBUG: createRecord TXT (%v)\n", record.Answer)
+		//	} else {
+		//		record.Answer = `"` + rc.TargetCombined() + `"`
+		//	}
 	case "SRV":
 		record.Answer = fmt.Sprintf("%d %d %v", rc.SrvWeight, rc.SrvPort, rc.Target)
 		record.Priority = uint32(rc.SrvPriority)
