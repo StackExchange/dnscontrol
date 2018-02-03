@@ -7,7 +7,7 @@ func (rc *RecordConfig) SetTargetTXT(s string) {
 		rc.Type = "TXT"
 	}
 	if rc.Type != "TXT" {
-		panic("SetTargetTXT called when .Type is not TXT")
+		panic("assertion failed: SetTargetTXT called when .Type is not TXT")
 	}
 }
 
@@ -18,7 +18,7 @@ func (rc *RecordConfig) SetTargetTXTs(s []string) {
 		rc.Type = "TXT"
 	}
 	if rc.Type != "TXT" {
-		panic("SetTargetTXT called when .Type is not TXT")
+		panic("assertion failed: SetTargetTXT called when .Type is not TXT")
 	}
 }
 

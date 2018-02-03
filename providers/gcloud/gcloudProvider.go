@@ -12,7 +12,6 @@ import (
 	"github.com/StackExchange/dnscontrol/models"
 	"github.com/StackExchange/dnscontrol/providers"
 	"github.com/StackExchange/dnscontrol/providers/diff"
-	"github.com/pkg/errors"
 )
 
 var features = providers.DocumentationNotes{
@@ -125,10 +124,6 @@ func (g *gcloud) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Correc
 		}
 	}
 
-	//for _, want := range dc.Records {
-	//	want.MergeToTarget()
-	//}
-
 	// Normalize
 	models.PostProcessRecords(existingRecords)
 
@@ -186,28 +181,11 @@ func (g *gcloud) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Correc
 }
 
 func nativeToRecord(set *dns.ResourceRecordSet, rec, origin string) *models.RecordConfig {
-	r := &models.RecordConfig{
-		Type: set.Type,
-		TTL:  uint32(set.Ttl),
-	}
+	r := &models.RecordConfig{}
 	r.SetLabelFQDN(set.Name, origin)
-	switch rType := set.Type; rType { // #rtype_variations
-	case "A", "AAAA", "ANAME", "CNAME", "NS", "PTR":
-		r.SetTarget(rec)
-	case "CAA":
-		r.SetTargetCAAString(rec)
-	case "MX":
-		r.SetTargetMXString(rec)
-	case "SRV":
-		r.SetTargetSRVString(rec)
-	case "TLSA":
-		r.SetTargetTLSAString(rec)
-	case "TXT":
-		r.SetTargetTXTString(rec)
-	default:
-		panic(errors.Errorf("nativeToRecord: Unimplemented rtype %v", rType))
-		// We panic so that we quickly find any switch statements
-		// that have not been updated for a new RR type.
+	r.TTL = uint32(set.Ttl)
+	if err := r.PopulateFromString(set.Type, rec, origin); err != nil {
+		panic(err)
 	}
 	return r
 }

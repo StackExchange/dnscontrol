@@ -69,5 +69,13 @@ func TestSetTxtParse(t *testing.T) {
 		if x.Target != test.e1 {
 			t.Errorf("%v: expected Target=(%v) got (%v)", i, test.e1, x.Target)
 		}
+		if len(x.TxtStrings) != len(test.e2) {
+			t.Errorf("%v: expected TxtStrings=(%v) got (%v)", i, test.e2, x.TxtStrings)
+		}
+		for i := range x.TxtStrings {
+			if len(x.TxtStrings[i]) != len(test.e2[i]) {
+				t.Errorf("%v: expected TxtStrings=(%v) got (%v)", i, test.e2, x.TxtStrings)
+			}
+		}
 	}
 }

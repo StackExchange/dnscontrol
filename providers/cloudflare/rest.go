@@ -117,7 +117,7 @@ func (c *CloudflareApi) createZone(domainName string) (string, error) {
 }
 
 func cfSrvData(rec *models.RecordConfig) *cfRecData {
-	serverParts := strings.Split(rec.LabelFQDN(), ".")
+	serverParts := strings.Split(rec.GetLabelFQDN(), ".")
 	return &cfRecData{
 		Service:  serverParts[0],
 		Proto:    serverParts[1],
@@ -156,11 +156,11 @@ func (c *CloudflareApi) createRec(rec *models.RecordConfig, domainID string) []*
 		prio = fmt.Sprintf(" %d ", rec.MxPreference)
 	}
 	arr := []*models.Correction{{
-		Msg: fmt.Sprintf("CREATE record: %s %s %d%s %s", rec.Label(), rec.Type, rec.TTL, prio, content),
+		Msg: fmt.Sprintf("CREATE record: %s %s %d%s %s", rec.GetLabel(), rec.Type, rec.TTL, prio, content),
 		F: func() error {
 
 			cf := &createRecord{
-				Name:     rec.Label(),
+				Name:     rec.GetLabel(),
 				Type:     rec.Type,
 				TTL:      rec.TTL,
 				Content:  content,
@@ -168,10 +168,10 @@ func (c *CloudflareApi) createRec(rec *models.RecordConfig, domainID string) []*
 			}
 			if rec.Type == "SRV" {
 				cf.Data = cfSrvData(rec)
-				cf.Name = rec.LabelFQDN()
+				cf.Name = rec.GetLabelFQDN()
 			} else if rec.Type == "CAA" {
 				cf.Data = cfCaaData(rec)
-				cf.Name = rec.LabelFQDN()
+				cf.Name = rec.GetLabelFQDN()
 				cf.Content = ""
 			}
 			endpoint := fmt.Sprintf(recordsURL, domainID)
@@ -191,7 +191,7 @@ func (c *CloudflareApi) createRec(rec *models.RecordConfig, domainID string) []*
 	}}
 	if rec.Metadata[metaProxy] != "off" {
 		arr = append(arr, &models.Correction{
-			Msg: fmt.Sprintf("ACTIVATE PROXY for new record %s %s %d %s", rec.Label(), rec.Type, rec.TTL, rec.TargetField()),
+			Msg: fmt.Sprintf("ACTIVATE PROXY for new record %s %s %d %s", rec.GetLabel(), rec.Type, rec.TTL, rec.TargetField()),
 			F:   func() error { return c.modifyRecord(domainID, id, true, rec) },
 		})
 	}
@@ -215,7 +215,7 @@ func (c *CloudflareApi) modifyRecord(domainID, recID string, proxied bool, rec *
 	r := record{
 		ID:       recID,
 		Proxied:  proxied,
-		Name:     rec.Label(),
+		Name:     rec.GetLabel(),
 		Type:     rec.Type,
 		Content:  rec.TargetField(),
 		Priority: rec.MxPreference,
@@ -224,10 +224,10 @@ func (c *CloudflareApi) modifyRecord(domainID, recID string, proxied bool, rec *
 	}
 	if rec.Type == "SRV" {
 		r.Data = cfSrvData(rec)
-		r.Name = rec.LabelFQDN()
+		r.Name = rec.GetLabelFQDN()
 	} else if rec.Type == "CAA" {
 		r.Data = cfCaaData(rec)
-		r.Name = rec.LabelFQDN()
+		r.Name = rec.GetLabelFQDN()
 		r.Content = ""
 	}
 	endpoint := fmt.Sprintf(singleRecordURL, domainID, recID)

@@ -37,7 +37,7 @@ func (rc *RecordConfig) TargetSingle() string {
 // TargetCombined returns a string with the various fields combined.
 // For example, an MX record might output `10 mx10.example.tld`.
 func (rc *RecordConfig) TargetCombined() string {
-	return rc.Content()
+	return rc.content()
 }
 
 // TargetDebug returns a string with the various fields spelled out.
@@ -85,8 +85,8 @@ func (rc *RecordConfig) String() (content string) {
 	return content
 }
 
-// Content combines Target and other fields into one string.
-func (rc *RecordConfig) Content() string {
+// content combines Target and other fields into one string.
+func (rc *RecordConfig) content() string {
 	if rc.CombinedTarget {
 		return rc.Target
 	}
@@ -117,7 +117,7 @@ func (rc *RecordConfig) MergeToTarget() {
 	}
 
 	// Merge "extra" fields into the Target.
-	rc.Target = rc.Content()
+	rc.Target = rc.TargetCombined()
 
 	// Zap any fields that may have been merged.
 	rc.MxPreference = 0

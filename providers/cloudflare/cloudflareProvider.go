@@ -121,8 +121,8 @@ func (c *CloudflareApi) GetDomainCorrections(dc *models.DomainConfig) ([]*models
 		if rec.Type == "ALIAS" {
 			rec.Type = "CNAME"
 		}
-		if labelMatches(rec.Label(), c.ignoredLabels) {
-			log.Fatalf("FATAL: dnsconfig contains label that matches ignored_labels: %#v is in %v)\n", rec.Label(), c.ignoredLabels)
+		if labelMatches(rec.GetLabel(), c.ignoredLabels) {
+			log.Fatalf("FATAL: dnsconfig contains label that matches ignored_labels: %#v is in %v)\n", rec.GetLabel(), c.ignoredLabels)
 		}
 	}
 	checkNSModifications(dc)
@@ -181,7 +181,7 @@ func (c *CloudflareApi) GetDomainCorrections(dc *models.DomainConfig) ([]*models
 func checkNSModifications(dc *models.DomainConfig) {
 	newList := make([]*models.RecordConfig, 0, len(dc.Records))
 	for _, rec := range dc.Records {
-		if rec.Type == "NS" && rec.LabelFQDN() == dc.Name {
+		if rec.Type == "NS" && rec.GetLabelFQDN() == dc.Name {
 			if !strings.HasSuffix(rec.TargetField(), ".ns.cloudflare.com.") {
 				log.Printf("Warning: cloudflare does not support modifying NS records on base domain. %s will not be added.", rec.TargetField())
 			}
@@ -240,7 +240,7 @@ func (c *CloudflareApi) preprocessConfig(dc *models.DomainConfig) error {
 		}
 		if rec.Type != "A" && rec.Type != "CNAME" && rec.Type != "AAAA" && rec.Type != "ALIAS" {
 			if rec.Metadata[metaProxy] != "" {
-				return fmt.Errorf("cloudflare_proxy set on %v record: %#v cloudflare_proxy=%#v", rec.Type, rec.Label(), rec.Metadata[metaProxy])
+				return fmt.Errorf("cloudflare_proxy set on %v record: %#v cloudflare_proxy=%#v", rec.Type, rec.GetLabel(), rec.Metadata[metaProxy])
 			}
 			// Force it to off.
 			rec.Metadata[metaProxy] = "off"
@@ -376,27 +376,23 @@ func (c *cfRecord) nativeToRecord(domain string) *models.RecordConfig {
 	if c.Type == "CNAME" || c.Type == "MX" || c.Type == "NS" || c.Type == "SRV" {
 		c.Content = dnsutil.AddOrigin(c.Content+".", domain)
 	}
+
 	rc := &models.RecordConfig{
-		Type:     c.Type,
 		TTL:      c.TTL,
 		Original: c,
 	}
 	rc.SetLabelFQDN(c.Name, domain)
 	switch rType := c.Type; rType { // #rtype_variations
-	case "A", "AAAA", "ANAME", "CNAME", "NS", "PTR", "TXT":
-		rc.SetTarget(c.Content)
-	case "CAA":
-		rc.SetTargetCAAString(c.Content)
 	case "MX":
 		rc.SetTargetMX(c.Priority, c.Content)
 	case "SRV":
 		data := *c.Data
 		rc.SetTargetSRV(data.Priority, data.Weight, data.Port,
 			dnsutil.AddOrigin(data.Target+".", domain))
-	default:
-		panic(errors.Errorf("nativeToRecord unimplemented rtype %v", rType))
-		// We panic so that we quickly find any switch statements
-		// that have not been updated for a new RR type.
+	default: // "A", "AAAA", "ANAME", "CAA", "CNAME", "NS", "PTR", "TXT"
+		if err := rc.PopulateFromString(rType, c.Content, domain); err != nil {
+			panic(errors.Wrap(err, "invalid data from cloudflare"))
+		}
 	}
 
 	return rc

@@ -1,8 +1,9 @@
 package models
 
 import (
-	"fmt"
 	"strings"
+
+	"github.com/pkg/errors"
 )
 
 // SetTargetCAA sets the CAA fields.
@@ -30,7 +31,7 @@ func (rc *RecordConfig) SetTargetCAAString(s string) {
 	// fmt.Printf("DEBUG: caa=(%s)\n", s)
 	part := strings.Fields(s)
 	if len(part) != 3 {
-		panic(fmt.Errorf("CAA value %#v contains too many fields", s))
+		panic(errors.Errorf("CAA value %#v contains too many fields", s))
 	}
 	rc.SetTargetCAAStrings(part[0], part[1], StripQuotes(part[2]))
 }

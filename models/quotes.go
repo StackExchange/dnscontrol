@@ -27,7 +27,7 @@ func StripQuotes(s string) string {
 // ParseQuotedTxt returns the individual strings of a combined quoted string.
 // `foo`  -> []string{"foo"}
 // `"foo"` -> []string{"foo"}
-// `"foo" "bar"` -> []string{"foo" "bar"}
+// `"foo" "bar"` -> []string{"foo", "bar"}
 // NOTE: it is assumed there is exactly one space between the quotes.
 func ParseQuotedTxt(s string) []string {
 	if !IsQuoted(s) {

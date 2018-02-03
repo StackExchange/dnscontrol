@@ -1,8 +1,9 @@
 package models
 
 import (
-	"fmt"
 	"strings"
+
+	"github.com/pkg/errors"
 )
 
 // SetTargetMX sets the MX fields.
@@ -26,7 +27,7 @@ func (rc *RecordConfig) SetTargetMXStrings(pref, target string) {
 func (rc *RecordConfig) SetTargetMXString(s string) {
 	part := strings.Fields(s)
 	if len(part) != 2 {
-		panic(fmt.Errorf("MX value %#v contains too many fields", s))
+		panic(errors.Errorf("MX value (%#v) contains too many fields", s))
 	}
 	rc.SetTargetMXStrings(part[0], part[1])
 }

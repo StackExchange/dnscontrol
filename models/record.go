@@ -38,11 +38,11 @@ import (
 //     URL301
 type RecordConfig struct {
 	Type             string            `json:"type"`
-	Name             string            `json:"name"`   // The short name. See above.
+	Name             string            `json:"name"`   // The short name. See below.
 	Target           string            `json:"target"` // If a name, must end with "."
 	TTL              uint32            `json:"ttl,omitempty"`
 	Metadata         map[string]string `json:"meta,omitempty"`
-	NameFQDN         string            `json:"-"` // Must end with ".$origin". See above.
+	NameFQDN         string            `json:"-"` // Must end with ".$origin". See below.
 	MxPreference     uint16            `json:"mxpreference,omitempty"`
 	SrvPriority      uint16            `json:"srvpriority,omitempty"`
 	SrvWeight        uint16            `json:"srvweight,omitempty"`
@@ -60,9 +60,6 @@ type RecordConfig struct {
 	Original interface{} `json:"-"` // Store pointer to provider-specific record object. Used in diffing.
 }
 
-// Providers are responsible for validating or normalizing the data
-// that goes into a RecordConfig.
-
 // Name:
 //    This is the shortname i.e. the NameFQDN without the origin suffix.
 //    It should never have a trailing "."
@@ -72,34 +69,51 @@ type RecordConfig struct {
 // NameFQDN:
 //    This is the FQDN version of Name.
 //    It should never have a trailiing ".".
-// NOTE: Eventually we will unexport Name/NameFQDN. Please start using
-//     the setters (SetLabel/SetLabelFQDN) and getters (Label/LabelFQDN).
-
+//    NOTE: Eventually we will unexport Name/NameFQDN. Please start using
+//      the setters (SetLabel/SetLabelFQDN) and getters (Label/LabelFQDN).
 // Target:
-//   This is
+//   If CombinedTarget, this is a string containing all the parameters of the record.
+//     For example, an MX record would store `10 foo.example.tld` in .Target.
+//   If !CombinedTarget, this is the host or IP address of the record, with
+//     the other related paramters (weight, priority, etc.) stored in individual
+//     fields.
+//   NOTE: The idea that this record can mean completely different things based
+//     on the value of CombinedTarget is considered a design mistake.
+//     Eventually we will unexport Target. Please start using the
+//     setters (SetTarget*) and getters (Target*) as they will always work.
+//
+// Idioms:
+//  rec.Label() == "@"   // Is this record at the apex?
+
+// Providers are responsible for validating or normalizing the data
+// that goes into a RecordConfig. The easiest way to do this is to
+// always use the getters/setters (Get*(), Target*(), Label*())
 
 // SetLabel sets the .Name/.NameFQDN fields given a short name and origin.
-// origin must not have a trailing dot.
+// origin must not have a trailing dot: The entire code base
+//   maintains dc.Name without the trailig dot. Finding a dot here means
+//   something is very wrong.
+// short must not have a training dot: That would mean you already have
+//   a FQDN, and shouldn't be using SetLabel().  Maybe SetLabelFQDN()?
 func (rc *RecordConfig) SetLabel(short, origin string) {
 	if strings.HasSuffix(origin, ".") {
 		panic(fmt.Errorf("origin (%s) is not supposed to end with a dot", origin))
 	}
+	if strings.HasSuffix(short, ".") {
+		panic(fmt.Errorf("short (%s) is not supposed to end with a dot", origin))
+		// NB(tlim): we should never get this panic.
+	}
 
 	short = strings.ToLower(short)
 	origin = strings.ToLower(origin)
-	if short == "" {
+	if short == "" || short == "@" {
 		rc.Name = "@"
 		rc.NameFQDN = origin
 	} else {
-		if short == origin+"." {
-			rc.Name = "@"
-		} else {
-			rc.Name = short
-		}
-		f := dnsutil.AddOrigin(short, origin)
-		rc.NameFQDN = f[0 : len(f)-1]
+		rc.Name = short
+		rc.NameFQDN = dnsutil.AddOrigin(short, origin)
 	}
-	rc.CheckIntegrity(origin)
+	rc.checkIntegrity(origin)
 }
 
 // SetLabelFQDN sets the .Name/.NameFQDN fields given a FQDN and origin.
@@ -123,32 +137,26 @@ func (rc *RecordConfig) SetLabelFQDN(fqdn, origin string) {
 	origin = strings.ToLower(origin)
 	rc.Name = dnsutil.TrimDomainName(fqdn, origin)
 	rc.NameFQDN = fqdn
-	rc.CheckIntegrity(origin)
+	rc.checkIntegrity(origin)
 }
 
-// Label returns the shortname of the label associated with this RecordConfig.
+// GetLabel returns the shortname of the label associated with this RecordConfig.
 // It will never end with "."
 // It does not need further shortening (i.e. if it returns "foo.com" and the
 //   domain is "foo.com" then the FQDN is actually "foo.com.foo.com").
 // It will never be "" (the apex is returned as "@").
-func (rc *RecordConfig) Label() string {
+func (rc *RecordConfig) GetLabel() string {
 	return rc.Name
 }
 
-// LabelFQDN returns the FQDN of the label associated with this RecordConfig.
+// GetLabelFQDN returns the FQDN of the label associated with this RecordConfig.
 // It will not end with ".".
-func (rc *RecordConfig) LabelFQDN() string {
+func (rc *RecordConfig) GetLabelFQDN() string {
 	return rc.NameFQDN
 }
 
-// LabelFQDNDot returns the FQDN+"."of the label associated with this RecordConfig.
-// It will  end with ".".
-func (rc *RecordConfig) LabelFQDNDot() string {
-	return rc.NameFQDN + "."
-}
-
-// CheckIntegrity verifies a RecordConfig is internally consistent or panics.
-func (rc *RecordConfig) CheckIntegrity(origin string) {
+// checkIntegrity verifies a RecordConfig is internally consistent or panics.
+func (rc *RecordConfig) checkIntegrity(origin string) {
 	if strings.HasSuffix(rc.Name, ".") {
 		panic(fmt.Errorf("assertion failed: rc.Name should not end with dot (%s) (%s)", rc.Name, origin))
 	}
