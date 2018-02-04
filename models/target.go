@@ -19,13 +19,13 @@ field and replace it with setters/getters.  The setters/getters are below
 so that it is easy to do things the right way in preparation.
 */
 
-// TargetField returns the target. There may be other fields (for example
+// GetTargetField returns the target. There may be other fields (for example
 // an MX record also has a .MxPreference field.
 func (rc *RecordConfig) GetTargetField() string {
 	return rc.Target
 }
 
-// TargetSingle returns the target for types that have a single value target
+// GetTargetSingle returns the target for types that have a single value target
 // and panics for all others.
 func (rc *RecordConfig) GetTargetSingle() string {
 	if rc.Type == "MX" || rc.Type == "SRV" || rc.Type == "CAA" || rc.Type == "TLSA" || rc.Type == "TXT" {
@@ -34,13 +34,13 @@ func (rc *RecordConfig) GetTargetSingle() string {
 	return rc.Target
 }
 
-// TargetCombined returns a string with the various fields combined.
+// GetTargetCombined returns a string with the various fields combined.
 // For example, an MX record might output `10 mx10.example.tld`.
 func (rc *RecordConfig) GetTargetCombined() string {
 	return rc.content()
 }
 
-// TargetDebug returns a string with the various fields spelled out.
+// GetTargetDebug returns a string with the various fields spelled out.
 func (rc *RecordConfig) GetTargetDebug() string {
 	return rc.String()
 }
@@ -121,32 +121,32 @@ func (rc *RecordConfig) content() string {
 	if !strings.HasPrefix(full, header) {
 		panic("dns.Hdr.String() not acting as we expect")
 	}
-	if rc.Type == "TXT" {
-		fmt.Printf("DEBUG: txt stuff (%v) (%v)\n", full, header)
-	}
+	// if rc.Type == "TXT" {
+	// 	fmt.Printf("DEBUG: txt stuff (%v) (%v)\n", full, header)
+	// }
 	return full[len(header):]
 }
 
-// MergeToTarget combines "extra" fields into .Target, and zeros the merged fields.
-func (rc *RecordConfig) MergeToTarget() {
-	if rc.CombinedTarget {
-		pm := strings.Join([]string{"MergeToTarget: Already collapsed: ", rc.Name, rc.Target}, " ")
-		panic(pm)
-	}
+// // MergeToTarget combines "extra" fields into .Target, and zeros the merged fields.
+// func (rc *RecordConfig) MergeToTarget() {
+// 	if rc.CombinedTarget {
+// 		pm := strings.Join([]string{"MergeToTarget: Already collapsed: ", rc.Name, rc.Target}, " ")
+// 		panic(pm)
+// 	}
 
-	// Merge "extra" fields into the Target.
-	rc.Target = rc.GetTargetCombined()
+// 	// Merge "extra" fields into the Target.
+// 	rc.Target = rc.GetTargetCombined()
 
-	// Zap any fields that may have been merged.
-	rc.MxPreference = 0
-	rc.SrvPriority = 0
-	rc.SrvWeight = 0
-	rc.SrvPort = 0
-	rc.CaaFlag = 0
-	rc.CaaTag = ""
-	rc.TlsaUsage = 0
-	rc.TlsaMatchingType = 0
-	rc.TlsaSelector = 0
+// 	// Zap any fields that may have been merged.
+// 	rc.MxPreference = 0
+// 	rc.SrvPriority = 0
+// 	rc.SrvWeight = 0
+// 	rc.SrvPort = 0
+// 	rc.CaaFlag = 0
+// 	rc.CaaTag = ""
+// 	rc.TlsaUsage = 0
+// 	rc.TlsaMatchingType = 0
+// 	rc.TlsaSelector = 0
 
-	rc.CombinedTarget = true
-}
+// 	rc.CombinedTarget = true
+// }
