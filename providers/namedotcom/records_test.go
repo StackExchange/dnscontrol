@@ -9,16 +9,16 @@ var txtData = []struct {
 	decoded []string
 	encoded string
 }{
-	{[]string{`simple`}, `"simple"`},
-	{[]string{`changed`}, `"changed"`},
-	{[]string{`with spaces`}, `"with spaces"`},
-	{[]string{`with whitespace`}, `"with whitespace"`},
-	{[]string{"one", "two"}, `"\"one\"\"two\""`},
-	{[]string{"eh", "bee", "cee"}, `"\"eh\"\"bee\"\"cee\""`},
-	{[]string{"o\"ne", "tw\"o"}, `"\"o\\\"ne\"\"tw\\\"o\""`},
-	{[]string{"dimple"}, `"dimple"`},
-	{[]string{"fun", "two"}, `"\"fun\"\"two\""`},
-	{[]string{"eh", "bzz", "cee"}, `"\"eh\"\"bzz\"\"cee\""`},
+	{[]string{`simple`}, `simple`},
+	{[]string{`changed`}, `changed`},
+	{[]string{`with spaces`}, `with spaces`},
+	{[]string{`with whitespace`}, `with whitespace`},
+	{[]string{"one", "two"}, `"one""two"`},
+	{[]string{"eh", "bee", "cee"}, `"eh""bee""cee"`},
+	{[]string{"o\"ne", "tw\"o"}, `"o\"ne""tw\"o"`},
+	{[]string{"dimple"}, `dimple`},
+	{[]string{"fun", "two"}, `"fun""two"`},
+	{[]string{"eh", "bzz", "cee"}, `"eh""bzz""cee"`},
 }
 
 func TestEncodeTxt(t *testing.T) {

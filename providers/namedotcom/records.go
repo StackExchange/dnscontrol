@@ -97,13 +97,7 @@ func toRecord(r *namecom.Record, origin string) *models.RecordConfig {
 	rc.SetLabelFQDN(fqdn, origin)
 	switch rtype := r.Type; rtype { // #rtype_variations
 	case "TXT":
-		if r.Answer[0] == '"' && r.Answer[len(r.Answer)-1] == '"' {
-			txtStrings := []string{}
-			for _, t := range quotedStringRegexp.FindAllStringSubmatch(r.Answer, -1) {
-				txtStrings = append(txtStrings, t[1])
-			}
-			rc.SetTargetTXTs(txtStrings)
-		}
+		rc.SetTargetTXTs(decodeTxt(r.Answer))
 	case "MX":
 		if err := rc.SetTargetMX(uint16(r.Priority), r.Answer); err != nil {
 			panic(errors.Wrap(err, "can not parse MX info received from ndc"))
@@ -188,14 +182,14 @@ func encodeTxt(txts []string) string {
 	if len(txts) > 1 {
 		ans = ""
 		for _, t := range txts {
-			ans += "\"" + strings.Replace(t, "\"", "\\\"", -1) + "\""
+			ans += `"` + strings.Replace(t, `"`, `\"`, -1) + `"`
 		}
 	}
-	return "\"" + strings.Replace(ans, "\"", "\\\"", -1) + "\""
+	return ans
 }
 
 // finds a string surrounded by quotes that might contain an escaped quote charactor.
-var quotedStringRegexp = regexp.MustCompile("\"((?:[^\"\\\\]|\\\\.)*)\"")
+var quotedStringRegexp = regexp.MustCompile(`"((?:[^"\\]|\\.)*)"`)
 
 // decodeTxt decodes the TXT record as received from name.com and
 // returns the list of strings.
@@ -204,7 +198,8 @@ func decodeTxt(s string) []string {
 	if len(s) >= 2 && s[0] == '"' && s[len(s)-1] == '"' {
 		txtStrings := []string{}
 		for _, t := range quotedStringRegexp.FindAllStringSubmatch(s, -1) {
-			txtStrings = append(txtStrings, t[1])
+			txtString := strings.Replace(t[1], `\"`, `"`, -1)
+			txtStrings = append(txtStrings, txtString)
 		}
 		return txtStrings
 	}
