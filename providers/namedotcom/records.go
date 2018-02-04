@@ -168,7 +168,7 @@ func (n *NameCom) createRecord(rc *models.RecordConfig, domain string) error {
 	case "A", "AAAA", "ANAME", "CNAME", "MX", "NS":
 		// nothing
 	case "TXT":
-		record.Answer = encodeTxt(rc)
+		record.Answer = encodeTxt(rc.TxtStrings)
 	case "SRV":
 		record.Answer = fmt.Sprintf("%d %d %v", rc.SrvWeight, rc.SrvPort, rc.Target)
 		record.Priority = uint32(rc.SrvPriority)
@@ -182,12 +182,12 @@ func (n *NameCom) createRecord(rc *models.RecordConfig, domain string) error {
 }
 
 // makeTxt encodes TxtStrings for sending in the CREATE/MODIFY API:
-func encodeTxt(rc *models.RecordConfig) string {
-	ans := rc.TxtStrings[0]
+func encodeTxt(txts []string) string {
+	ans := txts[0]
 
-	if len(rc.TxtStrings) > 1 {
+	if len(txts) > 1 {
 		ans = ""
-		for _, t := range rc.TxtStrings {
+		for _, t := range txts {
 			ans += "\"" + strings.Replace(t, "\"", "\\\"", -1) + "\""
 		}
 	}

@@ -3,8 +3,6 @@ package namedotcom
 import (
 	"strings"
 	"testing"
-
-	"github.com/StackExchange/dnscontrol/models"
 )
 
 var txtData = []struct {
@@ -26,9 +24,7 @@ var txtData = []struct {
 func TestEncodeTxt(t *testing.T) {
 	// Test encoded the lists of strings into a string:
 	for i, test := range txtData {
-		x := &models.RecordConfig{Type: "TXT"}
-		x.TxtStrings = test.decoded
-		enc := encodeTxt(x)
+		enc := encodeTxt(test.decoded)
 		if enc != test.encoded {
 			t.Errorf("%v: txt\n    data: []string{%v}\nexpected: %s\n     got: %s",
 				i, "`"+strings.Join(test.decoded, "`, `")+"`", test.encoded, enc)
