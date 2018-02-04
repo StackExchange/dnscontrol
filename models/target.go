@@ -2,9 +2,11 @@ package models
 
 import (
 	"fmt"
+	"net"
 	"strings"
 
 	"github.com/miekg/dns"
+	"github.com/pkg/errors"
 )
 
 /* .Target is kind of a mess.
@@ -32,6 +34,14 @@ func (rc *RecordConfig) GetTargetSingle() string {
 		panic("TargetSingle called on a type with a multi-parameter rtype.")
 	}
 	return rc.Target
+}
+
+// GetTargetIP returns the net.IP stored in Target.
+func (rc *RecordConfig) GetTargetIP() net.IP {
+	if rc.Type != "A" && rc.Type != "AAAA" {
+		panic(errors.Errorf("GetTargetIP called on an inappropriate rtype (%s)", rc.Type))
+	}
+	return net.ParseIP(rc.Target)
 }
 
 // GetTargetCombined returns a string with the various fields combined.

@@ -9,6 +9,7 @@ import (
 	"github.com/StackExchange/dnscontrol/models"
 	"github.com/StackExchange/dnscontrol/pkg/js"
 	"github.com/StackExchange/dnscontrol/pkg/normalize"
+	"github.com/pkg/errors"
 	"github.com/urfave/cli"
 )
 
@@ -72,7 +73,7 @@ func PrintIR(args PrintIRArgs) error {
 	if !args.Raw {
 		errs := normalize.NormalizeAndValidateConfig(cfg)
 		if PrintValidationErrors(errs) {
-			return fmt.Errorf("Exiting due to validation errors")
+			return errors.Errorf("Exiting due to validation errors")
 		}
 	}
 	return PrintJSON(args.PrintJSONArgs, cfg)
@@ -98,15 +99,15 @@ func PrintValidationErrors(errs []error) (fatal bool) {
 // ExecuteDSL executes the dnsconfig.js contents.
 func ExecuteDSL(args ExecuteDSLArgs) (*models.DNSConfig, error) {
 	if args.JSFile == "" {
-		return nil, fmt.Errorf("No config specified")
+		return nil, errors.Errorf("No config specified")
 	}
 	text, err := ioutil.ReadFile(args.JSFile)
 	if err != nil {
-		return nil, fmt.Errorf("Reading js file %s: %s", args.JSFile, err)
+		return nil, errors.Errorf("Reading js file %s: %s", args.JSFile, err)
 	}
 	dnsConfig, err := js.ExecuteJavascript(string(text), args.DevMode)
 	if err != nil {
-		return nil, fmt.Errorf("Executing javascript in %s: %s", args.JSFile, err)
+		return nil, errors.Errorf("Executing javascript in %s: %s", args.JSFile, err)
 	}
 	return dnsConfig, nil
 }

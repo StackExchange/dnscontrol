@@ -464,8 +464,6 @@ func makeTests(t *testing.T) []*TestCase {
 		)
 	}
 
-	tests = []*TestCase{}
-
 	// TXT (single)
 	tests = append(tests, tc("Empty"),
 		tc("Empty"),

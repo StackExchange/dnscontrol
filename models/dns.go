@@ -11,6 +11,7 @@ import (
 
 	"github.com/StackExchange/dnscontrol/pkg/transform"
 	"github.com/miekg/dns/dnsutil"
+	"github.com/pkg/errors"
 	"golang.org/x/net/idna"
 )
 
@@ -89,7 +90,7 @@ func fixTxt(recs []*RecordConfig) {
 func (dc DomainConfig) CheckDomainIntegrity() {
 	// Assert:  dc.Name should not end with "."
 	if strings.HasSuffix(dc.Name, ".") {
-		panic(fmt.Errorf("domain name %s ends with dot", dc.Name))
+		panic(errors.Errorf("domain name %s ends with dot", dc.Name))
 	}
 	// Assert: RecordConfig.Name and .NameFQDN should match.
 	checkNameFQDN(dc.Records, dc.Name)
@@ -100,15 +101,15 @@ func checkNameFQDN(recs []*RecordConfig, origin string) {
 	for _, r := range recs {
 
 		if r.Name == "" || r.NameFQDN == "" {
-			panic(fmt.Errorf("checkNameFQDN: unset short=(%s) fqdn=(%s) doman=(%s)", r.Name, r.NameFQDN, origin))
+			panic(errors.Errorf("checkNameFQDN: unset short=(%s) fqdn=(%s) doman=(%s)", r.Name, r.NameFQDN, origin))
 		}
 		expectedShort := dnsutil.TrimDomainName(r.NameFQDN, origin)
 		if r.Name != expectedShort {
-			panic(fmt.Errorf("Name/NameFQDN mismatch: short=(%s) but (%s)-(%s)->(%s)", r.Name, r.NameFQDN, origin, expectedShort))
+			panic(errors.Errorf("Name/NameFQDN mismatch: short=(%s) but (%s)-(%s)->(%s)", r.Name, r.NameFQDN, origin, expectedShort))
 		}
 		expectedFQDN := dnsutil.AddOrigin(r.Name, origin)
 		if r.NameFQDN != expectedFQDN {
-			panic(fmt.Errorf("Name/NameFQDN mismatch: fqdn=(%s) but (%s)+(%s)->(%s)", r.NameFQDN, r.Name, origin, expectedFQDN))
+			panic(errors.Errorf("Name/NameFQDN mismatch: fqdn=(%s) but (%s)+(%s)->(%s)", r.NameFQDN, r.Name, origin, expectedFQDN))
 		}
 	}
 }
@@ -311,9 +312,9 @@ func InterfaceToIP(i interface{}) (net.IP, error) {
 		if ip := net.ParseIP(v); ip != nil {
 			return ip, nil
 		}
-		return nil, fmt.Errorf("%s is not a valid ip address", v)
+		return nil, errors.Errorf("%s is not a valid ip address", v)
 	default:
-		return nil, fmt.Errorf("cannot convert type %s to ip", reflect.TypeOf(i))
+		return nil, errors.Errorf("cannot convert type %s to ip", reflect.TypeOf(i))
 	}
 }
 

@@ -8,11 +8,11 @@ import (
 	"strings"
 	"time"
 
-	"github.com/TomOnTime/utfutil"
-	"github.com/miekg/dns/dnsutil"
-
 	"github.com/StackExchange/dnscontrol/models"
 	"github.com/StackExchange/dnscontrol/providers/diff"
+	"github.com/TomOnTime/utfutil"
+	"github.com/miekg/dns/dnsutil"
+	"github.com/pkg/errors"
 )
 
 const zoneDumpFilenamePrefix = "adzonedump"
@@ -44,7 +44,7 @@ func (c *adProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Co
 	// Read foundRecords:
 	foundRecords, err := c.getExistingRecords(dc.Name)
 	if err != nil {
-		return nil, fmt.Errorf("c.getExistingRecords(%v) failed: %v", dc.Name, err)
+		return nil, errors.Errorf("c.getExistingRecords(%v) failed: %v", dc.Name, err)
 	}
 
 	// Normalize
@@ -110,14 +110,14 @@ func (c *adProvider) logErr(e error) error {
 func (c *adProvider) logHelper(s string) error {
 	logfile, err := os.OpenFile(c.psLog, os.O_APPEND|os.O_RDWR|os.O_CREATE, 0660)
 	if err != nil {
-		return fmt.Errorf("error: Can not create/append to %#v: %v", c.psLog, err)
+		return errors.Errorf("error: Can not create/append to %#v: %v", c.psLog, err)
 	}
 	_, err = fmt.Fprintln(logfile, s)
 	if err != nil {
-		return fmt.Errorf("Append to %#v failed: %v", c.psLog, err)
+		return errors.Errorf("Append to %#v failed: %v", c.psLog, err)
 	}
 	if logfile.Close() != nil {
-		return fmt.Errorf("Closing %#v failed: %v", c.psLog, err)
+		return errors.Errorf("Closing %#v failed: %v", c.psLog, err)
 	}
 	return nil
 }
@@ -126,11 +126,11 @@ func (c *adProvider) logHelper(s string) error {
 func (c *adProvider) powerShellRecord(command string) error {
 	recordfile, err := os.OpenFile(c.psOut, os.O_APPEND|os.O_RDWR|os.O_CREATE, 0660)
 	if err != nil {
-		return fmt.Errorf("can not create/append to %#v: %v", c.psOut, err)
+		return errors.Errorf("can not create/append to %#v: %v", c.psOut, err)
 	}
 	_, err = recordfile.WriteString(command)
 	if err != nil {
-		return fmt.Errorf("append to %#v failed: %v", c.psOut, err)
+		return errors.Errorf("append to %#v failed: %v", c.psOut, err)
 	}
 	return recordfile.Close()
 }
@@ -141,13 +141,13 @@ func (c *adProvider) getExistingRecords(domainname string) ([]*models.RecordConf
 	// Get the JSON either from adzonedump or by running a PowerShell script.
 	data, err := c.getRecords(domainname)
 	if err != nil {
-		return nil, fmt.Errorf("getRecords failed on %#v: %v", domainname, err)
+		return nil, errors.Errorf("getRecords failed on %#v: %v", domainname, err)
 	}
 
 	var recs []*RecordConfigJson
 	err = json.Unmarshal(data, &recs)
 	if err != nil {
-		return nil, fmt.Errorf("json.Unmarshal failed on %#v: %v", domainname, err)
+		return nil, errors.Errorf("json.Unmarshal failed on %#v: %v", domainname, err)
 	}
 
 	result := make([]*models.RecordConfig, 0, len(recs))
@@ -212,7 +212,7 @@ func (c *adProvider) generatePowerShellCreate(domainname string, rec *models.Rec
 	case "NS":
 		text = fmt.Sprintf("\r\n"+`echo "Skipping NS update (%v %v)"`+"\r\n", rec.Name, rec.Target)
 	default:
-		panic(fmt.Errorf("generatePowerShellCreate() does not yet handle recType=%s recName=%#v content=%#v)", rec.Type, rec.Name, content))
+		panic(errors.Errorf("generatePowerShellCreate() does not yet handle recType=%s recName=%#v content=%#v)", rec.Type, rec.Name, content))
 		// We panic so that we quickly find any switch statements
 		// that have not been updated for a new RR type.
 	}
@@ -234,7 +234,7 @@ func (c *adProvider) generatePowerShellModify(domainname, recName, recType, oldC
 		queryField = "HostNameAlias"
 		queryContent = `"` + oldContent + `"`
 	default:
-		panic(fmt.Errorf("generatePowerShellModify() does not yet handle recType=%s recName=%#v content=(%#v, %#v)", recType, recName, oldContent, newContent))
+		panic(errors.Errorf("generatePowerShellModify() does not yet handle recType=%s recName=%#v content=(%#v, %#v)", recType, recName, oldContent, newContent))
 		// We panic so that we quickly find any switch statements
 		// that have not been updated for a new RR type.
 	}

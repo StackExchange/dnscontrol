@@ -7,6 +7,8 @@ import (
 	"bytes"
 
 	"io"
+
+	"github.com/pkg/errors"
 )
 
 // SPFRecord stores the parts of an SPF record.
@@ -46,7 +48,7 @@ var qualifiers = map[byte]bool{
 // Parse parses a raw SPF record.
 func Parse(text string, dnsres Resolver) (*SPFRecord, error) {
 	if !strings.HasPrefix(text, "v=spf1 ") {
-		return nil, fmt.Errorf("Not an spf record")
+		return nil, errors.Errorf("Not an spf record")
 	}
 	parts := strings.Split(text, " ")
 	rec := &SPFRecord{}
@@ -74,11 +76,11 @@ func Parse(text string, dnsres Resolver) (*SPFRecord, error) {
 				}
 				p.IncludeRecord, err = Parse(subRecord, dnsres)
 				if err != nil {
-					return nil, fmt.Errorf("In included spf: %s", err)
+					return nil, errors.Errorf("In included spf: %s", err)
 				}
 			}
 		} else {
-			return nil, fmt.Errorf("Unsupported spf part %s", part)
+			return nil, errors.Errorf("Unsupported spf part %s", part)
 		}
 
 	}

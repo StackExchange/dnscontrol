@@ -79,7 +79,7 @@ func (c *CloudflareApi) GetNameservers(domain string) ([]*models.Nameserver, err
 	}
 	ns, ok := c.nameservers[domain]
 	if !ok {
-		return nil, fmt.Errorf("Nameservers for %s not found in cloudflare account", domain)
+		return nil, errors.Errorf("Nameservers for %s not found in cloudflare account", domain)
 	}
 	return models.StringsToNameservers(ns), nil
 }
@@ -93,7 +93,7 @@ func (c *CloudflareApi) GetDomainCorrections(dc *models.DomainConfig) ([]*models
 	}
 	id, ok := c.domainIndex[dc.Name]
 	if !ok {
-		return nil, fmt.Errorf("%s not listed in zones for cloudflare account", dc.Name)
+		return nil, errors.Errorf("%s not listed in zones for cloudflare account", dc.Name)
 	}
 	if err := c.preprocessConfig(dc); err != nil {
 		return nil, err
@@ -202,7 +202,7 @@ const (
 func checkProxyVal(v string) (string, error) {
 	v = strings.ToLower(v)
 	if v != "on" && v != "off" && v != "full" {
-		return "", fmt.Errorf("Bad metadata value for cloudflare_proxy: '%s'. Use on/off/full", v)
+		return "", errors.Errorf("Bad metadata value for cloudflare_proxy: '%s'. Use on/off/full", v)
 	}
 	return v, nil
 }
@@ -240,7 +240,7 @@ func (c *CloudflareApi) preprocessConfig(dc *models.DomainConfig) error {
 		}
 		if rec.Type != "A" && rec.Type != "CNAME" && rec.Type != "AAAA" && rec.Type != "ALIAS" {
 			if rec.Metadata[metaProxy] != "" {
-				return fmt.Errorf("cloudflare_proxy set on %v record: %#v cloudflare_proxy=%#v", rec.Type, rec.GetLabel(), rec.Metadata[metaProxy])
+				return errors.Errorf("cloudflare_proxy set on %v record: %#v cloudflare_proxy=%#v", rec.Type, rec.GetLabel(), rec.Metadata[metaProxy])
 			}
 			// Force it to off.
 			rec.Metadata[metaProxy] = "off"
@@ -258,11 +258,11 @@ func (c *CloudflareApi) preprocessConfig(dc *models.DomainConfig) error {
 		// CF_REDIRECT record types. Encode target as $FROM,$TO,$PRIO,$CODE
 		if rec.Type == "CF_REDIRECT" || rec.Type == "CF_TEMP_REDIRECT" {
 			if !c.manageRedirects {
-				return fmt.Errorf("you must add 'manage_redirects: true' metadata to cloudflare provider to use CF_REDIRECT records")
+				return errors.Errorf("you must add 'manage_redirects: true' metadata to cloudflare provider to use CF_REDIRECT records")
 			}
 			parts := strings.Split(rec.GetTargetField(), ",")
 			if len(parts) != 2 {
-				return fmt.Errorf("Invalid data specified for cloudflare redirect record")
+				return errors.Errorf("Invalid data specified for cloudflare redirect record")
 			}
 			code := 301
 			if rec.Type == "CF_TEMP_REDIRECT" {
@@ -285,7 +285,7 @@ func (c *CloudflareApi) preprocessConfig(dc *models.DomainConfig) error {
 		}
 		ip := net.ParseIP(rec.GetTargetField())
 		if ip == nil {
-			return fmt.Errorf("%s is not a valid ip address", rec.GetTargetField())
+			return errors.Errorf("%s is not a valid ip address", rec.GetTargetField())
 		}
 		newIP, err := transform.TransformIP(ip, c.ipConversions)
 		if err != nil {
@@ -303,7 +303,7 @@ func newCloudflare(m map[string]string, metadata json.RawMessage) (providers.DNS
 	api.ApiUser, api.ApiKey = m["apiuser"], m["apikey"]
 	// check api keys from creds json file
 	if api.ApiKey == "" || api.ApiUser == "" {
-		return nil, fmt.Errorf("cloudflare apikey and apiuser must be provided")
+		return nil, errors.Errorf("cloudflare apikey and apiuser must be provided")
 	}
 
 	err := api.fetchDomainList()

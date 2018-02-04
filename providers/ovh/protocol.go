@@ -5,6 +5,7 @@ import (
 
 	"github.com/StackExchange/dnscontrol/models"
 	"github.com/miekg/dns/dnsutil"
+	"github.com/pkg/errors"
 )
 
 // Void an empty structure.
@@ -253,7 +254,7 @@ func (c *ovhProvider) updateNS(fqdn string, ns []string) error {
 	}
 
 	if task.Status == "error" {
-		return fmt.Errorf("API error while updating ns for %s: %s", fqdn, task.Comment)
+		return errors.Errorf("API error while updating ns for %s: %s", fqdn, task.Comment)
 	}
 
 	// we don't wait for the task execution. One of the reason is that

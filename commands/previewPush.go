@@ -12,6 +12,7 @@ import (
 	"github.com/StackExchange/dnscontrol/pkg/printer"
 	"github.com/StackExchange/dnscontrol/providers"
 	"github.com/StackExchange/dnscontrol/providers/config"
+	"github.com/pkg/errors"
 	"github.com/urfave/cli"
 )
 
@@ -94,7 +95,7 @@ func run(args PreviewArgs, push bool, interactive bool, out printer.CLI) error {
 	}
 	errs := normalize.NormalizeAndValidateConfig(cfg)
 	if PrintValidationErrors(errs) {
-		return fmt.Errorf("Exiting due to validation errors")
+		return errors.Errorf("Exiting due to validation errors")
 	}
 	// TODO:
 	notifier, err := InitializeProviders(args.CredsFile, cfg, args.Notify)
@@ -162,7 +163,7 @@ DomainLoop:
 	notifier.Done()
 	out.Debugf("Done. %d corrections.\n", totalCorrections)
 	if anyErrors {
-		return fmt.Errorf("Completed with errors")
+		return errors.Errorf("Completed with errors")
 	}
 	return nil
 }

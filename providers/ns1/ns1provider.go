@@ -35,7 +35,7 @@ type nsone struct {
 
 func newProvider(creds map[string]string, meta json.RawMessage) (providers.DNSServiceProvider, error) {
 	if creds["api_token"] == "" {
-		return nil, fmt.Errorf("api_token required for ns1")
+		return nil, errors.Errorf("api_token required for ns1")
 	}
 	return &nsone{rest.NewClient(http.DefaultClient, rest.SetAPIKey(creds["api_token"]))}, nil
 }
