@@ -100,20 +100,15 @@ func toRecord(r *namecom.Record, origin string) *models.RecordConfig {
 		rc.SetTargetTXTs(decodeTxt(r.Answer))
 	case "MX":
 		if err := rc.SetTargetMX(uint16(r.Priority), r.Answer); err != nil {
-			panic(errors.Wrap(err, "can not parse MX info received from ndc"))
+			panic(errors.Wrap(err, "unparsable MX record received from ndc"))
 		}
-		//	case "TXT":
-		//		if err := rc.SetTargetTXTString(r.Answer); err != nil {
-		//			panic(errors.Wrap(err, "TXT value could not be parsed"))
-		//		}
 	case "SRV":
 		if err := rc.SetTargetSRVPriorityString(uint16(r.Priority), r.Answer+"."); err != nil {
-			panic(errors.Wrap(err, "can not parse SRV info received from ndc"))
+			panic(errors.Wrap(err, "unparsable SRV record received from ndc"))
 		}
 	default: // "A", "AAAA", "ANAME", "CNAME", "NS"
-		err := rc.PopulateFromString(rtype, r.Answer, r.Fqdn)
-		if err != nil {
-			panic(errors.Wrap(err, "received unparsable data from provider"))
+		if err := rc.PopulateFromString(rtype, r.Answer, r.Fqdn); err != nil {
+			panic(errors.Wrap(err, "unparsable record received from ndc"))
 		}
 	}
 	return rc

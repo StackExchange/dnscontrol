@@ -384,14 +384,18 @@ func (c *cfRecord) nativeToRecord(domain string) *models.RecordConfig {
 	rc.SetLabelFQDN(c.Name, domain)
 	switch rType := c.Type; rType { // #rtype_variations
 	case "MX":
-		rc.SetTargetMX(c.Priority, c.Content)
+		if err := rc.SetTargetMX(c.Priority, c.Content); err != nil {
+			panic(errors.Wrap(err, "unparsable MX record received from cloudflare"))
+		}
 	case "SRV":
 		data := *c.Data
-		rc.SetTargetSRV(data.Priority, data.Weight, data.Port,
-			dnsutil.AddOrigin(data.Target+".", domain))
+		if err := rc.SetTargetSRV(data.Priority, data.Weight, data.Port,
+			dnsutil.AddOrigin(data.Target+".", domain)); err != nil {
+			panic(errors.Wrap(err, "unparsable SRV record received from cloudflare"))
+		}
 	default: // "A", "AAAA", "ANAME", "CAA", "CNAME", "NS", "PTR", "TXT"
 		if err := rc.PopulateFromString(rType, c.Content, domain); err != nil {
-			panic(errors.Wrap(err, "invalid data from cloudflare"))
+			panic(errors.Wrap(err, "unparsable record received from cloudflare"))
 		}
 	}
 

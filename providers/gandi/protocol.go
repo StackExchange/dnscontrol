@@ -3,6 +3,7 @@ package gandi
 import (
 	"fmt"
 
+	"github.com/pkg/errors"
 	gandiclient "github.com/prasmussen/gandi-api/client"
 	gandidomain "github.com/prasmussen/gandi-api/domain"
 	gandinameservers "github.com/prasmussen/gandi-api/domain/nameservers"
@@ -76,7 +77,9 @@ func nativeToRecord(r *gandirecord.RecordInfo, origin string) *models.RecordConf
 	rc.SetLabel(r.Name, origin)
 	switch rtype := r.Type; rtype {
 	default: //  "A", "AAAA", "CAA", "NS", "CNAME", "MX", "PTR", "SRV", "TXT"
-		rc.PopulateFromString(rtype, r.Value, origin)
+		if err := rc.PopulateFromString(rtype, r.Value, origin); err != nil {
+			panic(errors.Wrap(err, "unparsable record received from gandi"))
+		}
 	}
 	return rc
 }

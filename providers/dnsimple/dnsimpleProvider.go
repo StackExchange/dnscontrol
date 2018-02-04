@@ -11,6 +11,7 @@ import (
 	"github.com/StackExchange/dnscontrol/providers"
 	"github.com/StackExchange/dnscontrol/providers/diff"
 	"github.com/miekg/dns/dnsutil"
+	"github.com/pkg/errors"
 
 	dnsimpleapi "github.com/dnsimple/dnsimple-go/dnsimple"
 )
@@ -84,9 +85,13 @@ func (c *DnsimpleApi) GetDomainCorrections(dc *models.DomainConfig) ([]*models.C
 		rec.SetLabel(r.Name, dc.Name)
 		switch rtype := r.Type; rtype {
 		case "MX":
-			rec.SetTargetMX(uint16(r.Priority), r.Content)
+			if err := rec.SetTargetMX(uint16(r.Priority), r.Content); err != nil {
+				panic(errors.Wrap(err, "unparsable record received from dnsimple"))
+			}
 		default:
-			rec.PopulateFromString(r.Type, r.Content, dc.Name)
+			if err := rec.PopulateFromString(r.Type, r.Content, dc.Name); err != nil {
+				panic(errors.Wrap(err, "unparsable record received from dnsimple"))
+			}
 		}
 		actual = append(actual, rec)
 	}

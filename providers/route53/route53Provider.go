@@ -297,7 +297,9 @@ func nativeToRecords(set *r53.ResourceRecordSet, origin string) []*models.Record
 			default:
 				rc := &models.RecordConfig{TTL: uint32(*set.TTL)}
 				rc.SetLabelFQDN(unescape(set.Name), origin)
-				rc.PopulateFromString(*set.Type, *rec.Value, origin)
+				if err := rc.PopulateFromString(*set.Type, *rec.Value, origin); err != nil {
+					panic(errors.Wrap(err, "unparsable record received from R53"))
+				}
 				results = append(results, rc)
 			}
 		}

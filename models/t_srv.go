@@ -23,9 +23,8 @@ func (rc *RecordConfig) SetTargetSRV(priority, weight, port uint16, target strin
 }
 
 // setTargetIntAndStrings is like SetTargetSRV but accepts priority as an int, the other parameters as strings.
-func (rc *RecordConfig) setTargetIntAndStrings(priority uint16, weight, port, target string) error {
+func (rc *RecordConfig) setTargetIntAndStrings(priority uint16, weight, port, target string) (err error) {
 	var i64weight, i64port uint64
-	var err error
 	if i64weight, err = strconv.ParseUint(weight, 10, 16); err == nil {
 		if i64port, err = strconv.ParseUint(port, 10, 16); err == nil {
 			return rc.SetTargetSRV(priority, uint16(i64weight), uint16(i64port), target)
@@ -35,9 +34,8 @@ func (rc *RecordConfig) setTargetIntAndStrings(priority uint16, weight, port, ta
 }
 
 // SetTargetSRVStrings is like SetTargetSRV but accepts all parameters as strings.
-func (rc *RecordConfig) SetTargetSRVStrings(priority, weight, port, target string) error {
+func (rc *RecordConfig) SetTargetSRVStrings(priority, weight, port, target string) (err error) {
 	var i64priority uint64
-	var err error
 	if i64priority, err = strconv.ParseUint(priority, 10, 16); err == nil {
 		return rc.setTargetIntAndStrings(uint16(i64priority), weight, port, target)
 	}

@@ -23,13 +23,11 @@ func (rc *RecordConfig) SetTargetTLSA(usage, selector, matchingtype uint8, targe
 }
 
 // SetTargetTLSAStrings is like SetTargetTLSA but accepts strings.
-func (rc *RecordConfig) SetTargetTLSAStrings(usage, selector, matchingtype, target string) error {
-	i64usage, err := strconv.ParseUint(usage, 10, 8)
-	if err == nil {
-		i64selector, err := strconv.ParseUint(selector, 10, 8)
-		if err == nil {
-			i64matchingtype, err := strconv.ParseUint(matchingtype, 10, 8)
-			if err == nil {
+func (rc *RecordConfig) SetTargetTLSAStrings(usage, selector, matchingtype, target string) (err error) {
+	var i64usage, i64selector, i64matchingtype uint64
+	if i64usage, err = strconv.ParseUint(usage, 10, 8); err == nil {
+		if i64selector, err = strconv.ParseUint(selector, 10, 8); err == nil {
+			if i64matchingtype, err = strconv.ParseUint(matchingtype, 10, 8); err == nil {
 				return rc.SetTargetTLSA(uint8(i64usage), uint8(i64selector), uint8(i64matchingtype), target)
 			}
 		}

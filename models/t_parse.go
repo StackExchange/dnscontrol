@@ -10,7 +10,13 @@ import (
 // Many providers give all the parameters of a resource record in one big
 // string (all the parameters of an MX, SRV, CAA, etc). Rather than have
 // each provider rewrite this code many times, here's a helper function to use.
-// NOTE: This will panic if contents can not be parsed or is invalid.
+//
+// At this time, the idiom is to panic rather than continue with potentially
+// misunderstood data. We do this panic() at the provider level.
+// Therefore the typical calling sequence is:
+//     if err := rc.PopulateFromString(rtype, value, origin); err != nil {
+//         panic(errors.Wrap(err, "unparsable record received from provider"))
+//     }
 func (r *RecordConfig) PopulateFromString(rtype, contents, origin string) error {
 	if r.Type != "" && r.Type != rtype {
 		panic(errors.Errorf("assertion failed: rtype already set (%s) (%s)", rtype, r.Type))

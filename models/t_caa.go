@@ -34,7 +34,6 @@ func (rc *RecordConfig) SetTargetCAAStrings(flag, tag, target string) error {
 // SetTargetCAAString is like SetTargetCAA but accepts one big string.
 // Ex: `0 issue "letsencrypt.org"`
 func (rc *RecordConfig) SetTargetCAAString(s string) error {
-	// fmt.Printf("DEBUG: caa=(%s)\n", s)
 	part := strings.Fields(s)
 	if len(part) != 3 {
 		return errors.Errorf("CAA value does not contain 3 fields: (%#v)", s)

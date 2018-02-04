@@ -55,7 +55,7 @@ type RecordConfig struct {
 	TxtStrings       []string          `json:"txtstrings,omitempty"` // TxtStrings stores all strings (including the first). Target stores only the first one.
 	R53Alias         map[string]string `json:"r53_alias,omitempty"`
 
-	CombinedTarget bool `json:"-"`
+	//CombinedTarget bool `json:"-"`
 
 	Original interface{} `json:"-"` // Store pointer to provider-specific record object. Used in diffing.
 }

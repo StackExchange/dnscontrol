@@ -223,19 +223,19 @@ func (dc *DomainConfig) Punycode() error {
 // CombineMXs will merge the priority into the target field for all mx records.
 // Useful for providers that desire them as one field.
 // DEPRECATED. Do not use in new code.
-func (dc *DomainConfig) CombineMXs() {
-	for _, rec := range dc.Records {
-		if rec.Type == "MX" {
-			if rec.CombinedTarget {
-				pm := strings.Join([]string{"CombineMXs: Already collapsed: ", rec.Name, rec.Target}, " ")
-				panic(pm)
-			}
-			rec.Target = fmt.Sprintf("%d %s", rec.MxPreference, rec.Target)
-			rec.MxPreference = 0
-			rec.CombinedTarget = true
-		}
-	}
-}
+// func (dc *DomainConfig) CombineMXs() {
+// 	for _, rec := range dc.Records {
+// 		if rec.Type == "MX" {
+// 			if rec.CombinedTarget {
+// 				pm := strings.Join([]string{"CombineMXs: Already collapsed: ", rec.Name, rec.Target}, " ")
+// 				panic(pm)
+// 			}
+// 			rec.Target = fmt.Sprintf("%d %s", rec.MxPreference, rec.Target)
+// 			rec.MxPreference = 0
+// 			rec.CombinedTarget = true
+// 		}
+// 	}
+// }
 
 // // CombineSRVs will merge the priority, weight, and port into the target field for all srv records.
 // // Useful for providers that desire them as one field.

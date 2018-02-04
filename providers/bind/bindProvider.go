@@ -23,6 +23,7 @@ import (
 	"strings"
 
 	"github.com/miekg/dns"
+	"github.com/pkg/errors"
 
 	"github.com/StackExchange/dnscontrol/models"
 	"github.com/StackExchange/dnscontrol/providers"
@@ -105,19 +106,19 @@ func rrToRecord(rr dns.RR, origin string, replaceSerial uint32) (models.RecordCo
 	rc.SetLabelFQDN(strings.TrimSuffix(header.Name, "."), origin)
 	switch v := rr.(type) { // #rtype_variations
 	case *dns.A:
-		rc.SetTarget(v.A.String())
+		panicInvalid(rc.SetTarget(v.A.String()))
 	case *dns.AAAA:
-		rc.SetTarget(v.AAAA.String())
+		panicInvalid(rc.SetTarget(v.AAAA.String()))
 	case *dns.CAA:
-		rc.SetTargetCAA(v.Flag, v.Tag, v.Value)
+		panicInvalid(rc.SetTargetCAA(v.Flag, v.Tag, v.Value))
 	case *dns.CNAME:
-		rc.SetTarget(v.Target)
+		panicInvalid(rc.SetTarget(v.Target))
 	case *dns.MX:
-		rc.SetTargetMX(v.Preference, v.Mx)
+		panicInvalid(rc.SetTargetMX(v.Preference, v.Mx))
 	case *dns.NS:
-		rc.SetTarget(v.Ns)
+		panicInvalid(rc.SetTarget(v.Ns))
 	case *dns.PTR:
-		rc.SetTarget(v.Ptr)
+		panicInvalid(rc.SetTarget(v.Ptr))
 	case *dns.SOA:
 		oldSerial = v.Serial
 		if oldSerial == 0 {
@@ -129,21 +130,27 @@ func rrToRecord(rr dns.RR, origin string, replaceSerial uint32) (models.RecordCo
 		if rc.Name == "@" && replaceSerial != 0 {
 			newSerial = replaceSerial
 		}
-		rc.SetTarget(
+		panicInvalid(rc.SetTarget(
 			fmt.Sprintf("%v %v %v %v %v %v %v",
 				v.Ns, v.Mbox, newSerial, v.Refresh, v.Retry, v.Expire, v.Minttl),
-		)
+		))
 		// FIXME(tlim): SOA should be handled by splitting out the fields.
 	case *dns.SRV:
-		rc.SetTargetSRV(v.Priority, v.Weight, v.Port, v.Target)
+		panicInvalid(rc.SetTargetSRV(v.Priority, v.Weight, v.Port, v.Target))
 	case *dns.TLSA:
-		rc.SetTargetTLSA(v.Usage, v.Selector, v.MatchingType, v.Certificate)
+		panicInvalid(rc.SetTargetTLSA(v.Usage, v.Selector, v.MatchingType, v.Certificate))
 	case *dns.TXT:
-		rc.SetTargetTXTs(v.Txt)
+		panicInvalid(rc.SetTargetTXTs(v.Txt))
 	default:
 		log.Fatalf("rrToRecord: Unimplemented zone record type=%s (%v)\n", rc.Type, rr)
 	}
 	return rc, oldSerial
+}
+
+func panicInvalid(err error) {
+	if err != nil {
+		panic(errors.Wrap(err, "unparsable record received from BIND"))
+	}
 }
 
 func makeDefaultSOA(info SoaInfo, origin string) *models.RecordConfig {

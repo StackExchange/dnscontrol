@@ -7,6 +7,7 @@ import (
 
 	"github.com/StackExchange/dnscontrol/models"
 	"github.com/StackExchange/dnscontrol/providers"
+	"github.com/pkg/errors"
 
 	"net/http"
 
@@ -147,7 +148,9 @@ func convert(zr *dns.ZoneRecord, domain string) ([]*models.RecordConfig, error) 
 		rec.SetLabelFQDN(zr.Domain, domain)
 		switch rtype := zr.Type; rtype {
 		default:
-			rec.PopulateFromString(rtype, ans, domain)
+			if err := rec.PopulateFromString(rtype, ans, domain); err != nil {
+				panic(errors.Wrap(err, "unparsable record received from ns1"))
+			}
 		}
 		found = append(found, rec)
 	}

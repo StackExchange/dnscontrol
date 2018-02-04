@@ -68,9 +68,9 @@ func (rc *RecordConfig) SetTargetFQDN(target string) error {
 // Legacy Methods (deprecated)
 
 func (rc *RecordConfig) String() (content string) {
-	if rc.CombinedTarget {
-		return rc.Target
-	}
+	// if rc.CombinedTarget {
+	// 	return rc.Target
+	// }
 
 	content = fmt.Sprintf("%s %s %s %d", rc.Type, rc.NameFQDN, rc.Target, rc.TTL)
 	switch rc.Type { // #rtype_variations
@@ -102,9 +102,9 @@ func (rc *RecordConfig) String() (content string) {
 
 // content combines Target and other fields into one string.
 func (rc *RecordConfig) content() string {
-	if rc.CombinedTarget {
-		return rc.Target
-	}
+	// if rc.CombinedTarget {
+	// 	return rc.Target
+	// }
 
 	// If this is a pseudo record, just return the target.
 	if _, ok := dns.StringToType[rc.Type]; !ok {
