@@ -125,7 +125,7 @@ func cfSrvData(rec *models.RecordConfig) *cfRecData {
 		Port:     rec.SrvPort,
 		Priority: rec.SrvPriority,
 		Weight:   rec.SrvWeight,
-		Target:   rec.TargetField(),
+		Target:   rec.GetTargetField(),
 	}
 }
 
@@ -133,7 +133,7 @@ func cfCaaData(rec *models.RecordConfig) *cfRecData {
 	return &cfRecData{
 		Tag:   rec.CaaTag,
 		Flags: rec.CaaFlag,
-		Value: rec.TargetField(),
+		Value: rec.GetTargetField(),
 	}
 }
 
@@ -147,7 +147,7 @@ func (c *CloudflareApi) createRec(rec *models.RecordConfig, domainID string) []*
 		Data     *cfRecData `json:"data"`
 	}
 	var id string
-	content := rec.TargetField()
+	content := rec.GetTargetField()
 	if rec.Metadata[metaOriginalIP] != "" {
 		content = rec.Metadata[metaOriginalIP]
 	}
@@ -191,7 +191,7 @@ func (c *CloudflareApi) createRec(rec *models.RecordConfig, domainID string) []*
 	}}
 	if rec.Metadata[metaProxy] != "off" {
 		arr = append(arr, &models.Correction{
-			Msg: fmt.Sprintf("ACTIVATE PROXY for new record %s %s %d %s", rec.GetLabel(), rec.Type, rec.TTL, rec.TargetField()),
+			Msg: fmt.Sprintf("ACTIVATE PROXY for new record %s %s %d %s", rec.GetLabel(), rec.Type, rec.TTL, rec.GetTargetField()),
 			F:   func() error { return c.modifyRecord(domainID, id, true, rec) },
 		})
 	}
@@ -217,7 +217,7 @@ func (c *CloudflareApi) modifyRecord(domainID, recID string, proxied bool, rec *
 		Proxied:  proxied,
 		Name:     rec.GetLabel(),
 		Type:     rec.Type,
-		Content:  rec.TargetField(),
+		Content:  rec.GetTargetField(),
 		Priority: rec.MxPreference,
 		TTL:      rec.TTL,
 		Data:     nil,

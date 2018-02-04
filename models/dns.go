@@ -222,7 +222,7 @@ func (dc *DomainConfig) Punycode() error {
 
 // CombineMXs will merge the priority into the target field for all mx records.
 // Useful for providers that desire them as one field.
-// DEPRICATED. Do not use in new code.
+// DEPRECATED. Do not use in new code.
 func (dc *DomainConfig) CombineMXs() {
 	for _, rec := range dc.Records {
 		if rec.Type == "MX" {

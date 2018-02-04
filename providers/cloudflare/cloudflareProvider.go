@@ -151,7 +151,7 @@ func (c *CloudflareApi) GetDomainCorrections(dc *models.DomainConfig) ([]*models
 		if des.Type == "PAGE_RULE" {
 			corrections = append(corrections, &models.Correction{
 				Msg: d.String(),
-				F:   func() error { return c.createPageRule(id, des.TargetField()) },
+				F:   func() error { return c.createPageRule(id, des.GetTargetField()) },
 			})
 		} else {
 			corrections = append(corrections, c.createRec(des, id)...)
@@ -164,7 +164,7 @@ func (c *CloudflareApi) GetDomainCorrections(dc *models.DomainConfig) ([]*models
 		if rec.Type == "PAGE_RULE" {
 			corrections = append(corrections, &models.Correction{
 				Msg: d.String(),
-				F:   func() error { return c.updatePageRule(ex.Original.(*pageRule).ID, id, rec.TargetField()) },
+				F:   func() error { return c.updatePageRule(ex.Original.(*pageRule).ID, id, rec.GetTargetField()) },
 			})
 		} else {
 			e := ex.Original.(*cfRecord)
@@ -182,8 +182,8 @@ func checkNSModifications(dc *models.DomainConfig) {
 	newList := make([]*models.RecordConfig, 0, len(dc.Records))
 	for _, rec := range dc.Records {
 		if rec.Type == "NS" && rec.GetLabelFQDN() == dc.Name {
-			if !strings.HasSuffix(rec.TargetField(), ".ns.cloudflare.com.") {
-				log.Printf("Warning: cloudflare does not support modifying NS records on base domain. %s will not be added.", rec.TargetField())
+			if !strings.HasSuffix(rec.GetTargetField(), ".ns.cloudflare.com.") {
+				log.Printf("Warning: cloudflare does not support modifying NS records on base domain. %s will not be added.", rec.GetTargetField())
 			}
 			continue
 		}
@@ -260,7 +260,7 @@ func (c *CloudflareApi) preprocessConfig(dc *models.DomainConfig) error {
 			if !c.manageRedirects {
 				return fmt.Errorf("you must add 'manage_redirects: true' metadata to cloudflare provider to use CF_REDIRECT records")
 			}
-			parts := strings.Split(rec.TargetField(), ",")
+			parts := strings.Split(rec.GetTargetField(), ",")
 			if len(parts) != 2 {
 				return fmt.Errorf("Invalid data specified for cloudflare redirect record")
 			}
@@ -268,7 +268,7 @@ func (c *CloudflareApi) preprocessConfig(dc *models.DomainConfig) error {
 			if rec.Type == "CF_TEMP_REDIRECT" {
 				code = 302
 			}
-			rec.SetTarget(fmt.Sprintf("%s,%d,%d", rec.TargetField(), currentPrPrio, code))
+			rec.SetTarget(fmt.Sprintf("%s,%d,%d", rec.GetTargetField(), currentPrPrio, code))
 			currentPrPrio++
 			rec.Type = "PAGE_RULE"
 		}
@@ -283,15 +283,15 @@ func (c *CloudflareApi) preprocessConfig(dc *models.DomainConfig) error {
 		if rec.Metadata[metaProxy] != "full" {
 			continue
 		}
-		ip := net.ParseIP(rec.TargetField())
+		ip := net.ParseIP(rec.GetTargetField())
 		if ip == nil {
-			return fmt.Errorf("%s is not a valid ip address", rec.TargetField())
+			return fmt.Errorf("%s is not a valid ip address", rec.GetTargetField())
 		}
 		newIP, err := transform.TransformIP(ip, c.ipConversions)
 		if err != nil {
 			return err
 		}
-		rec.Metadata[metaOriginalIP] = rec.TargetField()
+		rec.Metadata[metaOriginalIP] = rec.GetTargetField()
 		rec.SetTarget(newIP.String())
 	}
 

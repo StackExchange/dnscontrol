@@ -161,7 +161,7 @@ func (g *gcloud) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Correc
 		}
 		for _, r := range dc.Records {
 			if keyForRec(r) == ck {
-				newRRs.Rrdatas = append(newRRs.Rrdatas, r.TargetCombined())
+				newRRs.Rrdatas = append(newRRs.Rrdatas, r.GetTargetCombined())
 				newRRs.Ttl = int64(r.TTL)
 			}
 		}

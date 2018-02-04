@@ -21,13 +21,13 @@ so that it is easy to do things the right way in preparation.
 
 // TargetField returns the target. There may be other fields (for example
 // an MX record also has a .MxPreference field.
-func (rc *RecordConfig) TargetField() string {
+func (rc *RecordConfig) GetTargetField() string {
 	return rc.Target
 }
 
 // TargetSingle returns the target for types that have a single value target
 // and panics for all others.
-func (rc *RecordConfig) TargetSingle() string {
+func (rc *RecordConfig) GetTargetSingle() string {
 	if rc.Type == "MX" || rc.Type == "SRV" || rc.Type == "CAA" || rc.Type == "TLSA" || rc.Type == "TXT" {
 		panic("TargetSingle called on a type with a multi-parameter rtype.")
 	}
@@ -36,22 +36,13 @@ func (rc *RecordConfig) TargetSingle() string {
 
 // TargetCombined returns a string with the various fields combined.
 // For example, an MX record might output `10 mx10.example.tld`.
-func (rc *RecordConfig) TargetCombined() string {
+func (rc *RecordConfig) GetTargetCombined() string {
 	return rc.content()
 }
 
 // TargetDebug returns a string with the various fields spelled out.
-func (rc *RecordConfig) TargetDebug() string {
+func (rc *RecordConfig) GetTargetDebug() string {
 	return rc.String()
-}
-
-// TargetTXTQuoted returns the TXT target properly quoted.
-func (rc *RecordConfig) TargetTXTQuoted() string {
-	var res []string
-	for _, t := range rc.TxtStrings {
-		res = append(res, "\""+strings.Replace(t, "\"", "\\\"", -1)+"\"")
-	}
-	return strings.Join(res, " ")
 }
 
 // SetTarget sets the target, assuming that the rtype is appropriate.
@@ -74,7 +65,7 @@ func (rc *RecordConfig) SetTargetFQDN(target string) error {
 	return nil
 }
 
-// Legacy Methods
+// Legacy Methods (deprecated)
 
 func (rc *RecordConfig) String() (content string) {
 	if rc.CombinedTarget {
@@ -144,7 +135,7 @@ func (rc *RecordConfig) MergeToTarget() {
 	}
 
 	// Merge "extra" fields into the Target.
-	rc.Target = rc.TargetCombined()
+	rc.Target = rc.GetTargetCombined()
 
 	// Zap any fields that may have been merged.
 	rc.MxPreference = 0

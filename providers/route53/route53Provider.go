@@ -227,7 +227,7 @@ func (r *route53Provider) GetDomainCorrections(dc *models.DomainConfig) ([]*mode
 				Type: sPtr(k.Type),
 			}
 			for _, r := range recs {
-				val := r.TargetCombined()
+				val := r.GetTargetCombined()
 				if r.Type != "R53_ALIAS" {
 					rr := &r53.ResourceRecord{
 						Value: &val,
@@ -319,7 +319,7 @@ func aliasToRRSet(zone *r53.HostedZone, r *models.RecordConfig) *r53.ResourceRec
 	}
 	zoneID := getZoneID(zone, r)
 	targetHealth := false
-	target := r.TargetField()
+	target := r.GetTargetField()
 	rrset.AliasTarget = &r53.AliasTarget{
 		DNSName:              &target,
 		HostedZoneId:         aws.String(zoneID),

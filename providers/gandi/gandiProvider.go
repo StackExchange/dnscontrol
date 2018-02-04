@@ -110,7 +110,7 @@ func (c *GandiApi) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Corr
 		rs := gandirecord.RecordSet{
 			"type":  rec.Type,
 			"name":  rec.GetLabel(),
-			"value": rec.TargetCombined(),
+			"value": rec.GetTargetCombined(),
 			"ttl":   rec.TTL,
 		}
 		expectedRecordSets = append(expectedRecordSets, rs)
