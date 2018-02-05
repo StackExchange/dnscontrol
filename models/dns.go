@@ -13,6 +13,7 @@ import (
 
 	"github.com/StackExchange/dnscontrol/pkg/transform"
 	"github.com/miekg/dns"
+	"github.com/pkg/errors"
 	"golang.org/x/net/idna"
 )
 
@@ -452,12 +453,12 @@ func SplitCombinedMxValue(s string) (preference uint16, target string, err error
 	parts := strings.Fields(s)
 
 	if len(parts) != 2 {
-		return 0, "", fmt.Errorf("MX value %#v contains too many fields", s)
+		return 0, "", errors.Errorf("MX value %#v contains too many fields", s)
 	}
 
 	n64, err := strconv.ParseUint(parts[0], 10, 16)
 	if err != nil {
-		return 0, "", fmt.Errorf("MX preference %#v does not fit into a uint16", parts[0])
+		return 0, "", errors.Errorf("MX preference %#v does not fit into a uint16", parts[0])
 	}
 	return uint16(n64), parts[1], nil
 }
@@ -484,20 +485,20 @@ func SplitCombinedSrvValue(s string) (priority, weight, port uint16, target stri
 	parts := strings.Fields(s)
 
 	if len(parts) != 4 {
-		return 0, 0, 0, "", fmt.Errorf("SRV value %#v contains too many fields", s)
+		return 0, 0, 0, "", errors.Errorf("SRV value %#v contains too many fields", s)
 	}
 
 	priorityconv, err := strconv.ParseInt(parts[0], 10, 16)
 	if err != nil {
-		return 0, 0, 0, "", fmt.Errorf("Priority %#v does not fit into a uint16", parts[0])
+		return 0, 0, 0, "", errors.Errorf("Priority %#v does not fit into a uint16", parts[0])
 	}
 	weightconv, err := strconv.ParseInt(parts[1], 10, 16)
 	if err != nil {
-		return 0, 0, 0, "", fmt.Errorf("Weight %#v does not fit into a uint16", parts[0])
+		return 0, 0, 0, "", errors.Errorf("Weight %#v does not fit into a uint16", parts[0])
 	}
 	portconv, err := strconv.ParseInt(parts[2], 10, 16)
 	if err != nil {
-		return 0, 0, 0, "", fmt.Errorf("Port %#v does not fit into a uint16", parts[0])
+		return 0, 0, 0, "", errors.Errorf("Port %#v does not fit into a uint16", parts[0])
 	}
 	return uint16(priorityconv), uint16(weightconv), uint16(portconv), parts[3], nil
 }
@@ -522,7 +523,7 @@ func SplitCombinedCaaValue(s string) (tag string, flag uint8, value string, err 
 
 	splitData := strings.SplitN(s, " ", 3)
 	if len(splitData) != 3 {
-		err = fmt.Errorf("Unexpected data for CAA record returned by Vultr")
+		err = errors.Errorf("Unexpected data for CAA record returned by Vultr")
 		return
 	}
 
@@ -588,9 +589,9 @@ func InterfaceToIP(i interface{}) (net.IP, error) {
 		if ip := net.ParseIP(v); ip != nil {
 			return ip, nil
 		}
-		return nil, fmt.Errorf("%s is not a valid ip address", v)
+		return nil, errors.Errorf("%s is not a valid ip address", v)
 	default:
-		return nil, fmt.Errorf("cannot convert type %s to ip", reflect.TypeOf(i))
+		return nil, errors.Errorf("cannot convert type %s to ip", reflect.TypeOf(i))
 	}
 }
 

@@ -2,17 +2,16 @@ package vultr
 
 import (
 	"encoding/json"
-	"errors"
 	"fmt"
 	"strconv"
 	"strings"
 
+	vultr "github.com/JamesClonk/vultr/lib"
 	"github.com/StackExchange/dnscontrol/models"
 	"github.com/StackExchange/dnscontrol/providers"
 	"github.com/StackExchange/dnscontrol/providers/diff"
 	"github.com/miekg/dns/dnsutil"
-
-	vultr "github.com/JamesClonk/vultr/lib"
+	"github.com/pkg/errors"
 )
 
 /*
@@ -57,7 +56,7 @@ func NewVultr(m map[string]string, metadata json.RawMessage) (providers.DNSServi
 	}
 
 	if api.token == "" {
-		return nil, fmt.Errorf("Vultr API token is required")
+		return nil, errors.Errorf("Vultr API token is required")
 	}
 
 	api.client = vultr.NewClient(api.token, nil)
@@ -81,7 +80,7 @@ func (api *VultrApi) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Co
 	}
 
 	if !ok {
-		return nil, fmt.Errorf("%s is not a domain in the Vultr account", dc.Name)
+		return nil, errors.Errorf("%s is not a domain in the Vultr account", dc.Name)
 	}
 
 	records, err := api.client.GetDNSRecords(dc.Name)
@@ -166,7 +165,7 @@ func (api *VultrApi) EnsureDomainExists(domain string) error {
 			return err
 		}
 		if !ok {
-			return fmt.Errorf("Unexpected error adding domain %s to Vultr account", domain)
+			return errors.Errorf("Unexpected error adding domain %s to Vultr account", domain)
 		}
 	}
 
@@ -233,7 +232,7 @@ func toRecordConfig(dc *models.DomainConfig, r *vultr.DNSRecord) (*models.Record
 		// Vultr returns in the format "[weight] [port] [target]"
 		splitData := strings.SplitN(rc.Target, " ", 3)
 		if len(splitData) != 3 {
-			return nil, fmt.Errorf("Unexpected data for SRV record returned by Vultr")
+			return nil, errors.Errorf("Unexpected data for SRV record returned by Vultr")
 		}
 
 		weight, err := strconv.ParseUint(splitData[0], 10, 16)
@@ -264,7 +263,7 @@ func toRecordConfig(dc *models.DomainConfig, r *vultr.DNSRecord) (*models.Record
 
 		splitData := strings.SplitN(rc.Target, " ", 3)
 		if len(splitData) != 3 {
-			return nil, fmt.Errorf("Unexpected data for CAA record returned by Vultr")
+			return nil, errors.Errorf("Unexpected data for CAA record returned by Vultr")
 		}
 
 		flag, err := strconv.ParseUint(splitData[0], 10, 8)

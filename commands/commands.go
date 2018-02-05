@@ -8,6 +8,7 @@ import (
 	"strings"
 
 	"github.com/StackExchange/dnscontrol/models"
+	"github.com/pkg/errors"
 	"github.com/urfave/cli"
 )
 
@@ -116,7 +117,7 @@ func preloadProviders(cfg *models.DNSConfig, err error) (*models.DNSConfig, erro
 	for _, d := range cfg.Domains {
 		reg, ok := cfg.RegistrarsByName[d.RegistrarName]
 		if !ok {
-			return nil, fmt.Errorf("Registrar named %s expected for %s, but never registered", d.RegistrarName, d.Name)
+			return nil, errors.Errorf("Registrar named %s expected for %s, but never registered", d.RegistrarName, d.Name)
 		}
 		d.RegistrarInstance = &models.RegistrarInstance{
 			ProviderBase: models.ProviderBase{
@@ -127,7 +128,7 @@ func preloadProviders(cfg *models.DNSConfig, err error) (*models.DNSConfig, erro
 		for pName, n := range d.DNSProviderNames {
 			prov, ok := cfg.DNSProvidersByName[pName]
 			if !ok {
-				return nil, fmt.Errorf("DNS Provider named %s expected for %s, but never registered", pName, d.Name)
+				return nil, errors.Errorf("DNS Provider named %s expected for %s, but never registered", pName, d.Name)
 			}
 			d.DNSProviderInstances = append(d.DNSProviderInstances, &models.DNSProviderInstance{
 				ProviderBase: models.ProviderBase{
