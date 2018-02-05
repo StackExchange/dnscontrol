@@ -6,12 +6,12 @@ package config
 
 import (
 	"encoding/json"
-	"fmt"
 	"os"
 	"strings"
 
 	"github.com/DisposaBoy/JsonConfigReader"
 	"github.com/TomOnTime/utfutil"
+	"github.com/pkg/errors"
 )
 
 // LoadProviderConfigs will open the specified file name, and parse its contents. It will replace environment variables it finds if any value matches $[A-Za-z_-0-9]+
@@ -23,13 +23,13 @@ func LoadProviderConfigs(fname string) (map[string]map[string]string, error) {
 		if os.IsNotExist(err) {
 			return results, nil
 		}
-		return nil, fmt.Errorf("While reading provider credentials file %v: %v", fname, err)
+		return nil, errors.Errorf("While reading provider credentials file %v: %v", fname, err)
 	}
 	s := string(dat)
 	r := JsonConfigReader.New(strings.NewReader(s))
 	err = json.NewDecoder(r).Decode(&results)
 	if err != nil {
-		return nil, fmt.Errorf("While parsing provider credentials file %v: %v", fname, err)
+		return nil, errors.Errorf("While parsing provider credentials file %v: %v", fname, err)
 	}
 	if err = replaceEnvVars(results); err != nil {
 		return nil, err

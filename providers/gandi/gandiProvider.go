@@ -58,7 +58,7 @@ func (c *GandiApi) getDomainInfo(domain string) (*gandidomain.DomainInfo, error)
 	}
 	_, ok := c.domainIndex[domain]
 	if !ok {
-		return nil, fmt.Errorf("%s not listed in zones for gandi account", domain)
+		return nil, errors.Errorf("%s not listed in zones for gandi account", domain)
 	}
 	return c.fetchDomainInfo(domain)
 }
@@ -171,7 +171,7 @@ func newGandi(m map[string]string, metadata json.RawMessage) (*GandiApi, error) 
 	api := &GandiApi{}
 	api.ApiKey = m["apikey"]
 	if api.ApiKey == "" {
-		return nil, fmt.Errorf("missing Gandi apikey")
+		return nil, errors.Errorf("missing Gandi apikey")
 	}
 
 	return api, nil

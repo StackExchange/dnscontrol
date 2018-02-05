@@ -6,6 +6,7 @@ import (
 	"runtime"
 
 	"github.com/StackExchange/dnscontrol/providers"
+	"github.com/pkg/errors"
 )
 
 // This is the struct that matches either (or both) of the Registrar and/or DNSProvider interfaces:
@@ -38,7 +39,7 @@ func newDNS(config map[string]string, metadata json.RawMessage) (providers.DNSSe
 	if fVal := config["fakeps"]; fVal == "true" {
 		fake = true
 	} else if fVal != "" && fVal != "false" {
-		return nil, fmt.Errorf("fakeps value must be 'true' or 'false'")
+		return nil, errors.Errorf("fakeps value must be 'true' or 'false'")
 	}
 
 	psOut, psLog := config["psout"], config["pslog"]
@@ -56,7 +57,7 @@ func newDNS(config map[string]string, metadata json.RawMessage) (providers.DNSSe
 	if runtime.GOOS == "windows" {
 		srv := config["ADServer"]
 		if srv == "" {
-			return nil, fmt.Errorf("ADServer required for Active Directory provider")
+			return nil, errors.Errorf("ADServer required for Active Directory provider")
 		}
 		p.adServer = srv
 		return p, nil
