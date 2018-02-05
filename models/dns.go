@@ -7,7 +7,6 @@ import (
 	"fmt"
 	"net"
 	"reflect"
-	"strconv"
 	"strings"
 
 	"github.com/StackExchange/dnscontrol/pkg/transform"
@@ -323,14 +322,4 @@ func InterfaceToIP(i interface{}) (net.IP, error) {
 type Correction struct {
 	F   func() error `json:"-"`
 	Msg string
-}
-
-// MustStringToTTL converts a string to a uinet32 TTL or panics.
-func MustStringToTTL(s string) uint32 {
-	t, err := strconv.ParseUint(s, 10, 32)
-	if err != nil {
-		fmt.Printf("DEBUG:  ttl string = (%s)\n", s)
-		panic(err)
-	}
-	return uint32(t)
 }

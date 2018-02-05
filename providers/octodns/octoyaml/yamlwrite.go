@@ -109,8 +109,7 @@ func oneLabel(records models.Records) yaml.MapItem {
 		case "MX", "SRV":
 			// Always processed as a complex{}
 		default:
-			e := fmt.Errorf("yamlwrite:oneLabel:len1 rtype not implemented: %s", rtype)
-			panic(e)
+			panic(errors.Errorf("yamlwrite:oneLabel:len1 rtype not implemented: %s", rtype))
 		}
 	}
 
@@ -131,8 +130,7 @@ func oneLabel(records models.Records) yaml.MapItem {
 		case "MX", "SRV":
 			// Always processed as a complex{}
 		default:
-			e := fmt.Errorf("oneLabel:many rtype not implemented: %s", rtype)
-			panic(e)
+			panic(errors.Errorf("oneLabel:many rtype not implemented: %s", rtype))
 		}
 	}
 
@@ -238,9 +236,7 @@ func oneType(records models.Records) interface{} {
 		return vv
 
 	default:
-		e := errors.Errorf("yamlwrite:oneType rtype=%s not implemented", rtype)
-		fmt.Println(e)
-		panic(e)
+		panic(errors.Errorf("yamlwrite:oneType rtype=%s not implemented", rtype))
 	}
 }
 

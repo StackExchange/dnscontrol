@@ -1,10 +1,11 @@
 package octoyaml
 
 import (
-	"fmt"
 	"io"
 	"io/ioutil"
+	"math"
 	"reflect"
+	"strconv"
 
 	"github.com/StackExchange/dnscontrol/models"
 	"github.com/pkg/errors"
@@ -48,34 +49,18 @@ func ReadYaml(r io.Reader, origin string) (models.Records, error) {
 						return results, errors.Wrapf(err, "leaf v3=%v", v3)
 					}
 				default:
-					e := errors.Errorf("unknown type in list3: k=%s v.(type)=%T v=%v", k, v, v)
-					fmt.Println(e)
-					return nil, e
+					return nil, errors.Errorf("unknown type in list3: k=%s v.(type)=%T v=%v", k, v, v)
 				}
 			}
 
 		default:
-			e := fmt.Errorf("unknown type in list1: k=%s v.(type)=%T v=%v", k, v, v)
-			fmt.Println(e)
-			return nil, e
+			return nil, errors.Errorf("unknown type in list1: k=%s v.(type)=%T v=%v", k, v, v)
 		}
 	}
 
 	sortRecs(results, origin)
 	//fmt.Printf("ReadYaml: RESULTS=%v\n", results)
 	return results, nil
-}
-
-func decodeTTL(ttl interface{}) uint32 {
-	switch ttl.(type) {
-	case string:
-		return models.MustStringToTTL(ttl.(string))
-	case uint32:
-		return ttl.(uint32)
-	case int:
-		return uint32(ttl.(int))
-	}
-	panic("I don't know what type this TTL is")
 }
 
 func parseLeaf(results models.Records, k string, v interface{}, origin string) (models.Records, error) {
@@ -91,8 +76,11 @@ func parseLeaf(results models.Records, k string, v interface{}, origin string) (
 			case "type":
 				rType = v2.(string)
 			case "ttl":
-				rTTL = decodeTTL(v2)
-				//fmt.Printf("parseLeaf: Got ttl=%d\n", rTTL)
+				var err error
+				rTTL, err = decodeTTL(v2)
+				if err != nil {
+					return nil, errors.Errorf("parseLeaf: can not parse ttl (%v)", v2)
+				}
 			case "value":
 				rTarget = v2.(string)
 			case "values":
@@ -100,9 +88,7 @@ func parseLeaf(results models.Records, k string, v interface{}, origin string) (
 				case string:
 					rTarget = v2.(string)
 				default:
-					e := fmt.Errorf("parseLeaf: unknown type in values: rtpe=%s k=%s k2=%s v2.(type)=%T v2=%v", rType, k, k2, v2, v2)
-					fmt.Println(e)
-					return nil, e
+					return nil, errors.Errorf("parseLeaf: unknown type in values: rtpe=%s k=%s k2=%s v2.(type)=%T v2=%v", rType, k, k2, v2, v2)
 				}
 			}
 		} else if typeof(k2) == "string" && typeof(v2) == "[]interface {}" {
@@ -131,16 +117,11 @@ func parseLeaf(results models.Records, k string, v interface{}, origin string) (
 					}
 					someresults = append(someresults, newRc)
 				default:
-					e := fmt.Errorf("parseLeaf: unknown type in map: rtype=%s k=%s v3.(type)=%T v3=%v", rType, k, v3, v3)
-					fmt.Println(e)
-					return nil, e
+					return nil, errors.Errorf("parseLeaf: unknown type in map: rtype=%s k=%s v3.(type)=%T v3=%v", rType, k, v3, v3)
 				}
 			}
 		} else {
-			e := fmt.Errorf("parseLeaf: unknown type in level 2: k=%s k2=%s v.2(type)=%T v2=%v", k, k2, v2, v2)
-			fmt.Println(e)
-			return nil, e
-
+			return nil, errors.Errorf("parseLeaf: unknown type in level 2: k=%s k2=%s v.2(type)=%T v2=%v", k, k2, v2, v2)
 		}
 	}
 	// We've now looped through everything about one label. Make the RecordConfig(s).
@@ -172,6 +153,7 @@ func parseLeaf(results models.Records, k string, v interface{}, origin string) (
 	}
 	return results, nil
 }
+
 func newRecordConfig(rname, rtype, target string, ttl uint32, origin string) *models.RecordConfig {
 	rc := &models.RecordConfig{
 		Type:   rtype,
@@ -186,4 +168,23 @@ func newRecordConfig(rname, rtype, target string, ttl uint32, origin string) *mo
 func typeof(v interface{}) string {
 	// Cite: https://stackoverflow.com/a/20170555/71978
 	return reflect.TypeOf(v).String()
+}
+
+// decodeTTL decodes an interface into a TTL value.
+func decodeTTL(ttl interface{}) (uint32, error) {
+	switch ttl.(type) {
+	case uint32:
+		return ttl.(uint32), nil
+	case string:
+		s := ttl.(string)
+		t, err := strconv.ParseUint(s, 10, 32)
+		return uint32(t), errors.Wrapf(err, "decodeTTL failed to parse (%s)", s)
+	case int:
+		i := ttl.(int)
+		if i < 0 || i > math.MaxUint32 {
+			return 0, errors.Errorf("ttl won't fit in 32-bits (%d)", i)
+		}
+		return uint32(i), nil
+	}
+	panic("I don't know what type this TTL is")
 }
