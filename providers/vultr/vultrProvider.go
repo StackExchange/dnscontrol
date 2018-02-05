@@ -5,13 +5,12 @@ import (
 	"fmt"
 	"strings"
 
+	vultr "github.com/JamesClonk/vultr/lib"
 	"github.com/StackExchange/dnscontrol/models"
 	"github.com/StackExchange/dnscontrol/providers"
 	"github.com/StackExchange/dnscontrol/providers/diff"
 	"github.com/miekg/dns/dnsutil"
 	"github.com/pkg/errors"
-
-	vultr "github.com/JamesClonk/vultr/lib"
 )
 
 /*
