@@ -3,14 +3,15 @@ package namedotcom
 
 import (
 	"encoding/json"
-	"fmt"
 
 	"github.com/StackExchange/dnscontrol/providers"
 	"github.com/namedotcom/go/namecom"
+	"github.com/pkg/errors"
 )
 
 const defaultAPIBase = "api.name.com"
 
+// NameCom describes a connection to the NDC API.
 type NameCom struct {
 	APIUrl  string `json:"apiurl"`
 	APIUser string `json:"apiuser"`
@@ -43,7 +44,7 @@ func newProvider(conf map[string]string) (*NameCom, error) {
 	api.client.Server = conf["apiurl"]
 	api.APIUser, api.APIKey, api.APIUrl = conf["apiuser"], conf["apikey"], conf["apiurl"]
 	if api.APIKey == "" || api.APIUser == "" {
-		return nil, fmt.Errorf("missing Name.com apikey or apiuser")
+		return nil, errors.Errorf("missing Name.com apikey or apiuser")
 	}
 	if api.APIUrl == "" {
 		api.APIUrl = defaultAPIBase

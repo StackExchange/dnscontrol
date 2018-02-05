@@ -30,6 +30,11 @@ type Differ interface {
 
 // New is a constructor for a Differ.
 func New(dc *models.DomainConfig, extraValues ...func(*models.RecordConfig) map[string]string) Differ {
+	dc.CheckDomainIntegrity()
+	// dc.CheckDomainIntegrity will panic if any cross-checks fail. Once we do
+	// this, we can assume things such as that .Name and .NameFQDN are properly
+	// filled in.
+
 	return &differ{
 		dc:          dc,
 		extraValues: extraValues,
@@ -43,7 +48,7 @@ type differ struct {
 
 // get normalized content for record. target, ttl, mxprio, and specified metadata
 func (d *differ) content(r *models.RecordConfig) string {
-	content := fmt.Sprintf("%v ttl=%d", r.Content(), r.TTL)
+	content := fmt.Sprintf("%v ttl=%d", r.GetTargetCombined(), r.TTL)
 	for _, f := range d.extraValues {
 		// sort the extra values map keys to perform a deterministic
 		// comparison since Golang maps iteration order is not guaranteed

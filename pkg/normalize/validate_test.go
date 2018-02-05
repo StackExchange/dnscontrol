@@ -196,7 +196,7 @@ func TestCAAValidation(t *testing.T) {
 				Name:          "example.com",
 				RegistrarName: "BIND",
 				Records: []*models.RecordConfig{
-					{Name: "@", Type: "CAA", CaaTag: "invalid", Target: "example.com"},
+					{Name: "@", NameFQDN: "example.com", Type: "CAA", CaaTag: "invalid", Target: "example.com"},
 				},
 			},
 		},
@@ -214,7 +214,7 @@ func TestTLSAValidation(t *testing.T) {
 				Name:          "_443._tcp.example.com",
 				RegistrarName: "BIND",
 				Records: []*models.RecordConfig{
-					{Name: "_443._tcp", Type: "TLSA", TlsaUsage: 4, TlsaSelector: 1, TlsaMatchingType: 1, Target: "abcdef0"},
+					{Name: "_443._tcp", NameFQDN: "_443._tcp._443._tcp.example.com", Type: "TLSA", TlsaUsage: 4, TlsaSelector: 1, TlsaMatchingType: 1, Target: "abcdef0"},
 				},
 			},
 		},

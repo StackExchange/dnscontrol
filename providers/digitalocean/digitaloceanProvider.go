@@ -10,6 +10,7 @@ import (
 	"github.com/StackExchange/dnscontrol/providers"
 	"github.com/StackExchange/dnscontrol/providers/diff"
 	"github.com/miekg/dns/dnsutil"
+	"github.com/pkg/errors"
 
 	"github.com/digitalocean/godo"
 	"golang.org/x/oauth2"
@@ -38,7 +39,7 @@ var defaultNameServerNames = []string{
 // NewDo creates a DO-specific DNS provider.
 func NewDo(m map[string]string, metadata json.RawMessage) (providers.DNSServiceProvider, error) {
 	if m["token"] == "" {
-		return nil, fmt.Errorf("no Digitalocean token provided")
+		return nil, errors.Errorf("no Digitalocean token provided")
 	}
 
 	ctx := context.Background()
@@ -56,7 +57,7 @@ func NewDo(m map[string]string, metadata json.RawMessage) (providers.DNSServiceP
 		return nil, err
 	}
 	if resp.StatusCode != http.StatusOK {
-		return nil, fmt.Errorf("token for digitalocean is not valid")
+		return nil, errors.Errorf("token for digitalocean is not valid")
 	}
 
 	return api, nil
@@ -198,8 +199,7 @@ func toRc(dc *models.DomainConfig, r *godo.DomainRecord) *models.RecordConfig {
 		target = dnsutil.AddOrigin(target+".", dc.Name)
 	}
 
-	return &models.RecordConfig{
-		NameFQDN:     name,
+	t := &models.RecordConfig{
 		Type:         r.Type,
 		Target:       target,
 		TTL:          uint32(r.TTL),
@@ -209,6 +209,8 @@ func toRc(dc *models.DomainConfig, r *godo.DomainRecord) *models.RecordConfig {
 		SrvPort:      uint16(r.Port),
 		Original:     r,
 	}
+	t.SetLabelFQDN(name, dc.Name)
+	return t
 }
 
 func toReq(dc *models.DomainConfig, rc *models.RecordConfig) *godo.DomainRecordEditRequest {

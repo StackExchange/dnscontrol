@@ -49,23 +49,3 @@ func TestStripQuotes(t *testing.T) {
 		}
 	}
 }
-
-func TestSetTxtParse(t *testing.T) {
-	tests := []struct {
-		d1 string
-		e1 string
-		e2 []string
-	}{
-		{``, ``, []string{``}},
-		{`foo`, `foo`, []string{`foo`}},
-		{`"foo"`, `foo`, []string{`foo`}},
-		{`"aaa" "bbb"`, `aaa`, []string{`aaa`, `bbb`}},
-	}
-	for i, test := range tests {
-		x := &RecordConfig{Type: "TXT"}
-		x.SetTxtParse(test.d1)
-		if x.Target != test.e1 {
-			t.Errorf("%v: expected Target=(%v) got (%v)", i, test.e1, x.Target)
-		}
-	}
-}

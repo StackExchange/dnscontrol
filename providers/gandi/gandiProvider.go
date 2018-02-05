@@ -58,7 +58,7 @@ func (c *GandiApi) getDomainInfo(domain string) (*gandidomain.DomainInfo, error)
 	}
 	_, ok := c.domainIndex[domain]
 	if !ok {
-		return nil, fmt.Errorf("%s not listed in zones for gandi account", domain)
+		return nil, errors.Errorf("%s not listed in zones for gandi account", domain)
 	}
 	return c.fetchDomainInfo(domain)
 }
@@ -79,9 +79,6 @@ func (c *GandiApi) GetNameservers(domain string) ([]*models.Nameserver, error) {
 // GetDomainCorrections returns a list of corrections recommended for this domain.
 func (c *GandiApi) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Correction, error) {
 	dc.Punycode()
-	dc.CombineSRVs()
-	dc.CombineCAAs()
-	dc.CombineMXs()
 	domaininfo, err := c.getDomainInfo(dc.Name)
 	if err != nil {
 		return nil, err
@@ -95,7 +92,7 @@ func (c *GandiApi) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Corr
 	recordsToKeep := make([]*models.RecordConfig, 0, len(dc.Records))
 	for _, rec := range dc.Records {
 		if rec.TTL < 300 {
-			log.Printf("WARNING: Gandi does not support ttls < 300. %s will not be set to %d.", rec.NameFQDN, rec.TTL)
+			log.Printf("WARNING: Gandi does not support ttls < 300. Setting %s from %d to 300", rec.GetLabelFQDN(), rec.TTL)
 			rec.TTL = 300
 		}
 		if rec.TTL > 2592000 {
@@ -104,7 +101,7 @@ func (c *GandiApi) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Corr
 		if rec.Type == "TXT" {
 			rec.Target = "\"" + rec.Target + "\"" // FIXME(tlim): Should do proper quoting.
 		}
-		if rec.Type == "NS" && rec.Name == "@" {
+		if rec.Type == "NS" && rec.GetLabel() == "@" {
 			if !strings.HasSuffix(rec.Target, ".gandi.net.") {
 				log.Printf("WARNING: Gandi does not support changing apex NS records. %s will not be added.", rec.Target)
 			}
@@ -112,8 +109,8 @@ func (c *GandiApi) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Corr
 		}
 		rs := gandirecord.RecordSet{
 			"type":  rec.Type,
-			"name":  rec.Name,
-			"value": rec.Target,
+			"name":  rec.GetLabel(),
+			"value": rec.GetTargetCombined(),
 			"ttl":   rec.TTL,
 		}
 		expectedRecordSets = append(expectedRecordSets, rs)
@@ -171,7 +168,7 @@ func newGandi(m map[string]string, metadata json.RawMessage) (*GandiApi, error) 
 	api := &GandiApi{}
 	api.ApiKey = m["apikey"]
 	if api.ApiKey == "" {
-		return nil, fmt.Errorf("missing Gandi apikey")
+		return nil, errors.Errorf("missing Gandi apikey")
 	}
 
 	return api, nil

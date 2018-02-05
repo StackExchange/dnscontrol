@@ -18,7 +18,7 @@ import (
 
 type zoneGenData struct {
 	Origin     string
-	DefaultTtl uint32
+	DefaultTTL uint32
 	Records    []dns.RR
 }
 
@@ -146,7 +146,7 @@ func WriteZoneFile(w io.Writer, records []dns.RR, origin string) error {
 
 	z := &zoneGenData{
 		Origin:     dnsutil.AddOrigin(origin, "."),
-		DefaultTtl: defaultTTL,
+		DefaultTTL: defaultTTL,
 	}
 	z.Records = nil
 	for _, r := range records {
@@ -161,7 +161,7 @@ func (z *zoneGenData) generateZoneFileHelper(w io.Writer) error {
 	nameShortPrevious := ""
 
 	sort.Sort(z)
-	fmt.Fprintln(w, "$TTL", z.DefaultTtl)
+	fmt.Fprintln(w, "$TTL", z.DefaultTTL)
 	for i, rr := range z.Records {
 		line := rr.String()
 		if line[0] == ';' {
@@ -187,7 +187,7 @@ func (z *zoneGenData) generateZoneFileHelper(w io.Writer) error {
 
 		// items[1]: ttl
 		ttl := ""
-		if hdr.Ttl != z.DefaultTtl && hdr.Ttl != 0 {
+		if hdr.Ttl != z.DefaultTTL && hdr.Ttl != 0 {
 			ttl = items[1]
 		}
 
