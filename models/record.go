@@ -60,6 +60,7 @@ import (
 //
 // Idioms:
 //  rec.Label() == "@"   // Is this record at the apex?
+//
 type RecordConfig struct {
 	Type             string            `json:"type"`   // All caps rtype name.
 	Name             string            `json:"name"`   // The short name. See above.
