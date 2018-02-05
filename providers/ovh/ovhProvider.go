@@ -10,6 +10,7 @@ import (
 	"github.com/StackExchange/dnscontrol/providers"
 	"github.com/StackExchange/dnscontrol/providers/diff"
 	"github.com/miekg/dns/dnsutil"
+	"github.com/pkg/errors"
 	"github.com/xlucas/go-ovh/ovh"
 )
 
@@ -61,7 +62,7 @@ func (c *ovhProvider) GetNameservers(domain string) ([]*models.Nameserver, error
 	}
 	_, ok := c.zones[domain]
 	if !ok {
-		return nil, fmt.Errorf("%s not listed in zones for ovh account", domain)
+		return nil, errors.Errorf("%s not listed in zones for ovh account", domain)
 	}
 
 	ns, err := c.fetchNS(domain)
