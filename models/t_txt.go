@@ -33,25 +33,3 @@ func (rc *RecordConfig) SetTargetTXTs(s []string) error {
 func (rc *RecordConfig) SetTargetTXTString(s string) error {
 	return rc.SetTargetTXTs(ParseQuotedTxt(s))
 }
-
-// Helper functions:
-
-// // SetTxt sets the value of a TXT record to s.
-// func (rc *RecordConfig) SetTxt(s string) {
-// 	rc.Target = s
-// 	rc.TxtStrings = []string{s}
-// }
-
-// // SetTxts sets the value of a TXT record to the list of strings s.
-// func (rc *RecordConfig) SetTxts(s []string) {
-// 	rc.Target = s[0]
-// 	rc.TxtStrings = s
-// }
-
-// // SetTxtParse sets the value of TXT record if the list of strings is combined into one string.
-// // `foo`  -> []string{"foo"}
-// // `"foo"` -> []string{"foo"}
-// // `"foo" "bar"` -> []string{"foo" "bar"}
-// func (rc *RecordConfig) SetTxtParse(s string) {
-// 	rc.SetTxts(ParseQuotedTxt(s))
-// }
