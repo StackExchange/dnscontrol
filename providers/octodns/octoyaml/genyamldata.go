@@ -30,7 +30,7 @@ func (z *genYamlData) Len() int      { return len(z.Records) }
 func (z *genYamlData) Swap(i, j int) { z.Records[i], z.Records[j] = z.Records[j], z.Records[i] }
 func (z *genYamlData) Less(i, j int) bool {
 	a, b := z.Records[i], z.Records[j]
-	compA, compB := a.Name, b.Name
+	compA, compB := a.GetLabel(), b.GetLabel()
 	if compA != compB {
 		if compA == z.Origin+"." {
 			compA = "@"

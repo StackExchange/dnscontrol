@@ -18,9 +18,7 @@ func WriteYaml(w io.Writer, records models.Records, origin string) error {
 		return nil
 	}
 
-	//fmt.Printf("WriteYaml records=%+v\n", records)
 	defaultTTL := mostCommonTTL(records)
-	//fmt.Printf("WriteYaml: defaultTTL=%d\n", defaultTTL)
 
 	recsCopy := models.Records{}
 	for _, r := range records {
@@ -98,7 +96,7 @@ func oneLabel(records models.Records) yaml.MapItem {
 		case "A", "CNAME", "NS", "PTR", "TXT":
 			v := simple{
 				Type:  rtype,
-				Value: records[0].Content(),
+				Value: records[0].GetTargetField(),
 				TTL:   records[0].TTL,
 			}
 			if v.Type == "TXT" {
@@ -125,7 +123,7 @@ func oneLabel(records models.Records) yaml.MapItem {
 				TTL:  records[0].TTL,
 			}
 			for _, rec := range records {
-				v.Values = append(v.Values, rec.Content())
+				v.Values = append(v.Values, rec.GetTargetField())
 			}
 			item.Value = v
 			//fmt.Printf("SIMPLE=%v\n", item)
@@ -192,10 +190,10 @@ func oneType(records models.Records) interface{} {
 			TTL:  records[0].TTL,
 		}
 		if len(records) == 1 {
-			vv.Value = records[0].Target
+			vv.Value = records[0].GetTargetField()
 		} else {
 			for _, rc := range records {
-				vv.Values = append(vv.Values, rc.Content())
+				vv.Values = append(vv.Values, rc.GetTargetCombined())
 			}
 		}
 		return vv
@@ -206,7 +204,7 @@ func oneType(records models.Records) interface{} {
 		}
 		for _, rc := range records {
 			vv.Fields = append(vv.Fields, fields{
-				Value:    rc.Target,
+				Value:    rc.GetTargetField(),
 				Priority: rc.MxPreference,
 			})
 		}
@@ -218,7 +216,7 @@ func oneType(records models.Records) interface{} {
 		}
 		for _, rc := range records {
 			vv.Fields = append(vv.Fields, fields{
-				Value:     rc.Target,
+				Value:     rc.GetTargetField(),
 				Priority:  rc.SrvPriority,
 				SrvWeight: rc.SrvWeight,
 				SrvPort:   rc.SrvPort,
@@ -231,10 +229,10 @@ func oneType(records models.Records) interface{} {
 			TTL:  records[0].TTL,
 		}
 		if len(records) == 1 {
-			vv.Value = strings.Replace(models.StripQuotes(records[0].Target), `;`, `\;`, -1)
+			vv.Value = strings.Replace(models.StripQuotes(records[0].GetTargetField()), `;`, `\;`, -1)
 		} else {
 			for _, rc := range records {
-				vv.Values = append(vv.Values, models.StripQuotes(rc.Content()))
+				vv.Values = append(vv.Values, models.StripQuotes(rc.GetTargetCombined()))
 			}
 		}
 		return vv

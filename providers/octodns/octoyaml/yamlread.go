@@ -32,7 +32,7 @@ func ReadYaml(r io.Reader, origin string) (models.Records, error) {
 		//fmt.Printf("ReadYaml:  KEY=%s v.(type)=%s\n", k, reflect.TypeOf(v).String())
 		switch v.(type) {
 		case map[interface{}]interface{}:
-			results, err = parseLeaf(results, k, v)
+			results, err = parseLeaf(results, k, v, origin)
 			if err != nil {
 				return results, errors.Wrapf(err, "leaf (%v) error", v)
 			}
@@ -43,7 +43,7 @@ func ReadYaml(r io.Reader, origin string) (models.Records, error) {
 				switch v3.(type) {
 				case map[interface{}]interface{}:
 					//fmt.Printf("ReadYaml:   v3=%v\n", v3)
-					results, err = parseLeaf(results, k, v3)
+					results, err = parseLeaf(results, k, v3, origin)
 					if err != nil {
 						return results, errors.Wrapf(err, "leaf v3=%v", v3)
 					}
@@ -59,12 +59,6 @@ func ReadYaml(r io.Reader, origin string) (models.Records, error) {
 			fmt.Println(e)
 			return nil, e
 		}
-	}
-
-	// Normalize
-	for _, rec := range results {
-		// Create the .NameFQDN field.
-		rec.FixNameFQDN(origin)
 	}
 
 	sortRecs(results, origin)
@@ -84,7 +78,7 @@ func decodeTTL(ttl interface{}) uint32 {
 	panic("I don't know what type this TTL is")
 }
 
-func parseLeaf(results models.Records, k string, v interface{}) (models.Records, error) {
+func parseLeaf(results models.Records, k string, v interface{}, origin string) (models.Records, error) {
 	var rType, rTarget string
 	var rTTL uint32
 	rTargets := []string{}
@@ -118,7 +112,7 @@ func parseLeaf(results models.Records, k string, v interface{}) (models.Records,
 				case string:
 					rTargets = append(rTargets, v3.(string))
 				case map[interface{}]interface{}:
-					newRc := newRecordConfig(k, rType, "", rTTL)
+					newRc := newRecordConfig(k, rType, "", rTTL, origin)
 					for k4, v4 := range v3.(map[interface{}]interface{}) {
 						//fmt.Printf("parseLeaf: k4=%s v4=%s\n", k4, v4)
 						switch k4.(string) {
@@ -168,28 +162,24 @@ func parseLeaf(results models.Records, k string, v interface{}) (models.Records,
 			}
 		}
 	} else if rTarget != "" && len(rTargets) == 0 {
-		results = append(results, newRecordConfig(k, rType, rTarget, rTTL))
+		results = append(results, newRecordConfig(k, rType, rTarget, rTTL, origin))
 	} else if len(rTargets) == 1 {
-		results = append(results, newRecordConfig(k, rType, rTargets[0], rTTL))
+		results = append(results, newRecordConfig(k, rType, rTargets[0], rTTL, origin))
 	} else if len(rTargets) > 1 {
 		for _, target := range rTargets {
-			results = append(results, newRecordConfig(k, rType, target, rTTL))
+			results = append(results, newRecordConfig(k, rType, target, rTTL, origin))
 		}
 	}
 	return results, nil
 }
-func newRecordConfig(rname, rtype, target string, ttl uint32) *models.RecordConfig {
-	if rname == "" {
-		rname = "@"
-	}
-
-	return &models.RecordConfig{
+func newRecordConfig(rname, rtype, target string, ttl uint32, origin string) *models.RecordConfig {
+	rc := &models.RecordConfig{
 		Type:   rtype,
-		Name:   rname,
 		Target: target,
 		TTL:    ttl,
 	}
-
+	rc.SetLabel(rname, origin)
+	return rc
 }
 
 // typeof returns a string that indicates v's type:
