@@ -96,7 +96,7 @@ func (z *genYamlData) Less(i, j int) bool {
 		// We panic so that we quickly find any switch statements
 		// that have not been updated for a new RR type.
 	}
-	return a.String() < b.String()
+	return a.GetTargetSortable() < b.GetTargetSortable()
 }
 
 func zoneLabelLess(a, b string) bool {

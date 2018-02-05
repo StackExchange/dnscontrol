@@ -60,6 +60,7 @@ import (
 //
 // Idioms:
 //  rec.Label() == "@"   // Is this record at the apex?
+//
 type RecordConfig struct {
 	Type             string            `json:"type"`   // All caps rtype name.
 	Name             string            `json:"name"`   // The short name. See above.
@@ -82,11 +83,18 @@ type RecordConfig struct {
 	Original interface{} `json:"-"` // Store pointer to provider-specific record object. Used in diffing.
 }
 
+// Copy returns a deep copy of a RecordConfig.
+func (rc *RecordConfig) Copy() (*RecordConfig, error) {
+	newR := &RecordConfig{}
+	err := copyObj(rc, newR)
+	return newR, err
+}
+
 // SetLabel sets the .Name/.NameFQDN fields given a short name and origin.
 // origin must not have a trailing dot: The entire code base
 //   maintains dc.Name without the trailig dot. Finding a dot here means
 //   something is very wrong.
-// short must not have a training dot: That would mean you already have
+// short must not have a training dot: That would mean you have
 //   a FQDN, and shouldn't be using SetLabel().  Maybe SetLabelFQDN()?
 func (rc *RecordConfig) SetLabel(short, origin string) {
 	if strings.HasSuffix(origin, ".") {
@@ -218,6 +226,17 @@ func (rc *RecordConfig) ToRR() dns.RR {
 	return rr
 }
 
+// RecordKey represents a resource record in a format used by some systems.
+type RecordKey struct {
+	Name string
+	Type string
+}
+
+// Key converts a RecordConfig into a RecordKey.
+func (rc *RecordConfig) Key() RecordKey {
+	return RecordKey{rc.Name, rc.Type}
+}
+
 // Records is a list of *RecordConfig.
 type Records []*RecordConfig
 
@@ -241,4 +260,26 @@ func (r Records) GroupedByLabel() ([]string, map[string]Records) {
 		groups[rec.Name] = append(groups[rec.Name], rec)
 	}
 	return order, groups
+}
+
+// PostProcessRecords does any post-processing of the downloaded DNS records.
+func PostProcessRecords(recs []*RecordConfig) {
+	Downcase(recs)
+}
+
+// Downcase converts all labels and targets to lowercase in a list of RecordConfig.
+func Downcase(recs []*RecordConfig) {
+	for _, r := range recs {
+		r.Name = strings.ToLower(r.Name)
+		r.NameFQDN = strings.ToLower(r.NameFQDN)
+		switch r.Type {
+		case "ANAME", "CNAME", "MX", "NS", "PTR":
+			r.Target = strings.ToLower(r.Target)
+		case "A", "AAAA", "ALIAS", "CAA", "IMPORT_TRANSFORM", "SRV", "TLSA", "TXT", "SOA", "CF_REDIRECT", "CF_TEMP_REDIRECT":
+			// Do nothing.
+		default:
+			// TODO: we'd like to panic here, but custom record types complicate things.
+		}
+	}
+	return
 }
