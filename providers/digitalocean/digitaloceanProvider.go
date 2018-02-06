@@ -197,6 +197,8 @@ func toRc(dc *models.DomainConfig, r *godo.DomainRecord) *models.RecordConfig {
 			target = dc.Name
 		}
 		target = dnsutil.AddOrigin(target+".", dc.Name)
+		// FIXME(tlim): The AddOrigin should be a no-op.
+		// Test whether or not it is actually needed.
 	}
 
 	t := &models.RecordConfig{
@@ -210,26 +212,36 @@ func toRc(dc *models.DomainConfig, r *godo.DomainRecord) *models.RecordConfig {
 		Original:     r,
 	}
 	t.SetLabelFQDN(name, dc.Name)
+	switch rtype := r.Type; rtype {
+	case "TXT":
+		t.SetTargetTXTString(target)
+	default:
+		// nothing additional required
+	}
 	return t
 }
 
 func toReq(dc *models.DomainConfig, rc *models.RecordConfig) *godo.DomainRecordEditRequest {
-	// DO wants the short name, e.g. @
-	name := dnsutil.TrimDomainName(rc.NameFQDN, dc.Name)
+	name := rc.GetLabel()         // DO wants the short name or "@" for apex.
+	target := rc.GetTargetField() // DO uses the target field only for a single value
+	priority := 0                 // DO uses the same property for MX and SRV priority
 
-	// DO uses the same property for MX and SRV priority
-	priority := 0
 	switch rc.Type { // #rtype_variations
 	case "MX":
 		priority = int(rc.MxPreference)
 	case "SRV":
 		priority = int(rc.SrvPriority)
+	case "TXT":
+		// TXT records are the one place where DO combines many items into one field.
+		target = rc.GetTargetCombined()
+	default:
+		// no action required
 	}
 
 	return &godo.DomainRecordEditRequest{
 		Type:     rc.Type,
 		Name:     name,
-		Data:     rc.Target,
+		Data:     target,
 		TTL:      int(rc.TTL),
 		Priority: priority,
 		Port:     int(rc.SrvPort),
