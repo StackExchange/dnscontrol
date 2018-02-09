@@ -142,7 +142,7 @@ function makeCAAFlag(value) {
 }
 
 // CAA_CRITICAL: Critical CAA flag
-var CAA_CRITICAL = makeCAAFlag(1 << 0);
+var CAA_CRITICAL = makeCAAFlag(1 << 7);
 
 // DnsProvider("providerName", 0)
 // nsCount of 0 means don't use or register any nameservers.
