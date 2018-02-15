@@ -103,7 +103,7 @@ func rrToRecord(rr dns.RR, origin string, replaceSerial uint32) (models.RecordCo
 		Type: dns.TypeToString[header.Rrtype],
 		TTL:  header.Ttl,
 	}
-	rc.SetLabelFQDN(strings.TrimSuffix(header.Name, "."), origin)
+	rc.SetLabelFromFQDN(strings.TrimSuffix(header.Name, "."), origin)
 	switch v := rr.(type) { // #rtype_variations
 	case *dns.A:
 		panicInvalid(rc.SetTarget(v.A.String()))

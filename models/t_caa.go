@@ -18,7 +18,11 @@ func (rc *RecordConfig) SetTargetCAA(flag uint8, tag string, target string) erro
 	if rc.Type != "CAA" {
 		panic("assertion failed: SetTargetCAA called when .Type is not CAA")
 	}
-	// TODO(tlim): Validate that tag is one of issue, issuewild, iodef.
+
+	if tag != "issue" && tag != "issuewild" && tag != "iodef" {
+		return errors.Errorf("CAA tag (%v) is not one of issue/issuewild/iodef", tag)
+	}
+
 	return nil
 }
 

@@ -1,7 +1,6 @@
 package models
 
 import (
-	"fmt"
 	"net"
 	"strings"
 
@@ -27,14 +26,14 @@ func (rc *RecordConfig) GetTargetField() string {
 	return rc.Target
 }
 
-// GetTargetSingle returns the target for types that have a single value target
-// and panics for all others.
-func (rc *RecordConfig) GetTargetSingle() string {
-	if rc.Type == "MX" || rc.Type == "SRV" || rc.Type == "CAA" || rc.Type == "TLSA" || rc.Type == "TXT" {
-		panic("TargetSingle called on a type with a multi-parameter rtype.")
-	}
-	return rc.Target
-}
+// // GetTargetSingle returns the target for types that have a single value target
+// // and panics for all others.
+// func (rc *RecordConfig) GetTargetSingle() string {
+// 	if rc.Type == "MX" || rc.Type == "SRV" || rc.Type == "CAA" || rc.Type == "TLSA" || rc.Type == "TXT" {
+// 		panic("TargetSingle called on a type with a multi-parameter rtype.")
+// 	}
+// 	return rc.Target
+// }
 
 // GetTargetIP returns the net.IP stored in Target.
 func (rc *RecordConfig) GetTargetIP() net.IP {
@@ -66,51 +65,51 @@ func (rc *RecordConfig) GetTargetCombined() string {
 	return full[len(header):]
 }
 
-// GetTargetDebug returns a string with the various fields spelled out.
-func (rc *RecordConfig) GetTargetDebug() string {
-	content := fmt.Sprintf("%s %s %s %d", rc.Type, rc.NameFQDN, rc.Target, rc.TTL)
-	switch rc.Type { // #rtype_variations
-	case "A", "AAAA", "CNAME", "NS", "PTR", "TXT":
-		// Nothing special.
-	case "MX":
-		content += fmt.Sprintf(" pref=%d", rc.MxPreference)
-	case "SOA":
-		content = fmt.Sprintf("%s %s %s %d", rc.Type, rc.Name, rc.Target, rc.TTL)
-	case "SRV":
-		content += fmt.Sprintf(" srvpriority=%d srvweight=%d srvport=%d", rc.SrvPriority, rc.SrvWeight, rc.SrvPort)
-	case "TLSA":
-		content += fmt.Sprintf(" tlsausage=%d tlsaselector=%d tlsamatchingtype=%d", rc.TlsaUsage, rc.TlsaSelector, rc.TlsaMatchingType)
-	case "CAA":
-		content += fmt.Sprintf(" caatag=%s caaflag=%d", rc.CaaTag, rc.CaaFlag)
-	case "R53_ALIAS":
-		content += fmt.Sprintf(" type=%s zone_id=%s", rc.R53Alias["type"], rc.R53Alias["zone_id"])
-	default:
-		panic(errors.Errorf("rc.String rtype %v unimplemented", rc.Type))
-		// We panic so that we quickly find any switch statements
-		// that have not been updated for a new RR type.
-	}
-	for k, v := range rc.Metadata {
-		content += fmt.Sprintf(" %s=%s", k, v)
-	}
-	return content
-}
+// // GetTargetDebug returns a string with the various fields spelled out.
+// func (rc *RecordConfig) GetTargetDebug() string {
+// 	content := fmt.Sprintf("%s %s %s %d", rc.Type, rc.NameFQDN, rc.Target, rc.TTL)
+// 	switch rc.Type { // #rtype_variations
+// 	case "A", "AAAA", "CNAME", "NS", "PTR", "TXT":
+// 		// Nothing special.
+// 	case "MX":
+// 		content += fmt.Sprintf(" pref=%d", rc.MxPreference)
+// 	case "SOA":
+// 		content = fmt.Sprintf("%s %s %s %d", rc.Type, rc.Name, rc.Target, rc.TTL)
+// 	case "SRV":
+// 		content += fmt.Sprintf(" srvpriority=%d srvweight=%d srvport=%d", rc.SrvPriority, rc.SrvWeight, rc.SrvPort)
+// 	case "TLSA":
+// 		content += fmt.Sprintf(" tlsausage=%d tlsaselector=%d tlsamatchingtype=%d", rc.TlsaUsage, rc.TlsaSelector, rc.TlsaMatchingType)
+// 	case "CAA":
+// 		content += fmt.Sprintf(" caatag=%s caaflag=%d", rc.CaaTag, rc.CaaFlag)
+// 	case "R53_ALIAS":
+// 		content += fmt.Sprintf(" type=%s zone_id=%s", rc.R53Alias["type"], rc.R53Alias["zone_id"])
+// 	default:
+// 		panic(errors.Errorf("rc.String rtype %v unimplemented", rc.Type))
+// 		// We panic so that we quickly find any switch statements
+// 		// that have not been updated for a new RR type.
+// 	}
+// 	for k, v := range rc.Metadata {
+// 		content += fmt.Sprintf(" %s=%s", k, v)
+// 	}
+// 	return content
+// }
 
-// SetTarget sets the target, assuming that the rtype is appropriate.
-func (rc *RecordConfig) SetTarget(target string) error {
-	rc.Target = target
+// SetTarget sets the target (assumes that the rtype is appropriate).
+func (rc *RecordConfig) SetTarget(fqdn string) error {
+	rc.Target = fqdn
 	return nil
 }
 
 // SetTargetIP sets the target to an IP, verifying this is an appropriate rtype.
-func (rc *RecordConfig) SetTargetIP(target string) error {
+func (rc *RecordConfig) SetTargetIP(ip net.IP) error {
 	// TODO(tlim): Verify the rtype is appropriate for an IP.
-	rc.Target = target
+	rc.Target = ip.String()
 	return nil
 }
 
-// SetTargetFQDN sets the target to an IP, verifying this is an appropriate rtype.
-func (rc *RecordConfig) SetTargetFQDN(target string) error {
-	// TODO(tlim): Verify the rtype is appropriate for an hostname.
-	rc.Target = target
-	return nil
-}
+// // SetTargetFQDN sets the target to an IP, verifying this is an appropriate rtype.
+// func (rc *RecordConfig) SetTargetFQDN(target string) error {
+// 	// TODO(tlim): Verify the rtype is appropriate for an hostname.
+// 	rc.Target = target
+// 	return nil
+// }

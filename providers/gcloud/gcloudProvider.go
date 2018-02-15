@@ -183,7 +183,7 @@ func (g *gcloud) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Correc
 
 func nativeToRecord(set *dns.ResourceRecordSet, rec, origin string) *models.RecordConfig {
 	r := &models.RecordConfig{}
-	r.SetLabelFQDN(set.Name, origin)
+	r.SetLabelFromFQDN(set.Name, origin)
 	r.TTL = uint32(set.Ttl)
 	if err := r.PopulateFromString(set.Type, rec, origin); err != nil {
 		panic(errors.Wrap(err, "unparsable record received from GCLOUD"))

@@ -27,13 +27,13 @@ func (r *RecordConfig) PopulateFromString(rtype, contents, origin string) error 
 		if ip == nil || ip.To4() == nil {
 			return errors.Errorf("A record with invalid IP: %s", contents)
 		}
-		return r.SetTarget(ip.String()) // Reformat to canonical form.
+		return r.SetTargetIP(ip) // Reformat to canonical form.
 	case "AAAA":
 		ip := net.ParseIP(contents)
 		if ip == nil || ip.To16() == nil {
 			return errors.Errorf("AAAA record with invalid IP: %s", contents)
 		}
-		return r.SetTarget(ip.String()) // Reformat to canonical form.
+		return r.SetTargetIP(ip) // Reformat to canonical form.
 	case "ANAME", "CNAME", "NS", "PTR":
 		return r.SetTarget(contents)
 	case "CAA":

@@ -145,7 +145,7 @@ func convert(zr *dns.ZoneRecord, domain string) ([]*models.RecordConfig, error) 
 			TTL:      uint32(zr.TTL),
 			Original: zr,
 		}
-		rec.SetLabelFQDN(zr.Domain, domain)
+		rec.SetLabelFromFQDN(zr.Domain, domain)
 		switch rtype := zr.Type; rtype {
 		default:
 			if err := rec.PopulateFromString(rtype, ans, domain); err != nil {
