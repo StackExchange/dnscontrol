@@ -286,7 +286,7 @@ func nativeToRecords(set *r53.ResourceRecordSet, origin string) []*models.Record
 				"zone_id": *set.AliasTarget.HostedZoneId,
 			},
 		}
-		rc.SetLabelFQDN(unescape(set.Name), origin)
+		rc.SetLabelFromFQDN(unescape(set.Name), origin)
 		rc.SetTarget(aws.StringValue(set.AliasTarget.DNSName))
 		results = append(results, rc)
 	} else {
@@ -296,7 +296,7 @@ func nativeToRecords(set *r53.ResourceRecordSet, origin string) []*models.Record
 				continue
 			default:
 				rc := &models.RecordConfig{TTL: uint32(*set.TTL)}
-				rc.SetLabelFQDN(unescape(set.Name), origin)
+				rc.SetLabelFromFQDN(unescape(set.Name), origin)
 				if err := rc.PopulateFromString(*set.Type, *rec.Value, origin); err != nil {
 					panic(errors.Wrap(err, "unparsable record received from R53"))
 				}

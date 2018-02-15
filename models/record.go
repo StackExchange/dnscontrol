@@ -49,7 +49,7 @@ import (
 //    This is the FQDN version of Name.
 //    It should never have a trailiing ".".
 //    NOTE: Eventually we will unexport Name/NameFQDN. Please start using
-//      the setters (SetLabel/SetLabelFQDN) and getters (GetLabel/GetLabelFQDN).
+//      the setters (SetLabel/SetLabelFromFQDN) and getters (GetLabel/GetLabelFQDN).
 //      as they will always work.
 // Target:
 //   This is the host or IP address of the record, with
@@ -95,15 +95,19 @@ func (rc *RecordConfig) Copy() (*RecordConfig, error) {
 //   maintains dc.Name without the trailig dot. Finding a dot here means
 //   something is very wrong.
 // short must not have a training dot: That would mean you have
-//   a FQDN, and shouldn't be using SetLabel().  Maybe SetLabelFQDN()?
+//   a FQDN, and shouldn't be using SetLabel().  Maybe SetLabelFromFQDN()?
 func (rc *RecordConfig) SetLabel(short, origin string) {
+
+	// Assertions that make sure the function is being used correctly:
 	if strings.HasSuffix(origin, ".") {
 		panic(errors.Errorf("origin (%s) is not supposed to end with a dot", origin))
 	}
 	if strings.HasSuffix(short, ".") {
 		panic(errors.Errorf("short (%s) is not supposed to end with a dot", origin))
-		// NB(tlim): we should never get this panic.
 	}
+
+	// TODO(tlim): We should add more validation here or in a separate validation
+	// module.  We might want to check things like (\w+\.)+
 
 	short = strings.ToLower(short)
 	origin = strings.ToLower(origin)
@@ -116,17 +120,17 @@ func (rc *RecordConfig) SetLabel(short, origin string) {
 	}
 }
 
-// SetLabelFQDN sets the .Name/.NameFQDN fields given a FQDN and origin.
+// SetLabelFromFQDN sets the .Name/.NameFQDN fields given a FQDN and origin.
 // fqdn may have a trailing "." but it is not required.
 // origin may not have a trailing dot.
-func (rc *RecordConfig) SetLabelFQDN(fqdn, origin string) {
+func (rc *RecordConfig) SetLabelFromFQDN(fqdn, origin string) {
 
+	// Assertions that make sure the function is being used correctly:
 	if strings.HasSuffix(origin, ".") {
 		panic(errors.Errorf("origin (%s) is not supposed to end with a dot", origin))
 	}
 	if strings.HasSuffix(fqdn, "..") {
 		panic(errors.Errorf("fqdn (%s) is not supposed to end with double dots", origin))
-		// NB(tlim): we should never get this panic.
 	}
 
 	if strings.HasSuffix(fqdn, ".") {

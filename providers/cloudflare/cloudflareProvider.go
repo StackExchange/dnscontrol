@@ -381,7 +381,7 @@ func (c *cfRecord) nativeToRecord(domain string) *models.RecordConfig {
 		TTL:      c.TTL,
 		Original: c,
 	}
-	rc.SetLabelFQDN(c.Name, domain)
+	rc.SetLabelFromFQDN(c.Name, domain)
 	switch rType := c.Type; rType { // #rtype_variations
 	case "MX":
 		if err := rc.SetTargetMX(c.Priority, c.Content); err != nil {

@@ -94,7 +94,7 @@ func toRecord(r *namecom.Record, origin string) *models.RecordConfig {
 		panic(errors.Errorf("namedotcom suddenly changed protocol. Bailing. (%v)", r.Fqdn))
 	}
 	fqdn := r.Fqdn[:len(r.Fqdn)-1]
-	rc.SetLabelFQDN(fqdn, origin)
+	rc.SetLabelFromFQDN(fqdn, origin)
 	switch rtype := r.Type; rtype { // #rtype_variations
 	case "TXT":
 		rc.SetTargetTXTs(decodeTxt(r.Answer))

@@ -211,7 +211,7 @@ func toRc(dc *models.DomainConfig, r *godo.DomainRecord) *models.RecordConfig {
 		SrvPort:      uint16(r.Port),
 		Original:     r,
 	}
-	t.SetLabelFQDN(name, dc.Name)
+	t.SetLabelFromFQDN(name, dc.Name)
 	switch rtype := r.Type; rtype {
 	case "TXT":
 		t.SetTargetTXTString(target)

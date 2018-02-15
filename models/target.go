@@ -27,14 +27,14 @@ func (rc *RecordConfig) GetTargetField() string {
 	return rc.Target
 }
 
-// GetTargetSingle returns the target for types that have a single value target
-// and panics for all others.
-func (rc *RecordConfig) GetTargetSingle() string {
-	if rc.Type == "MX" || rc.Type == "SRV" || rc.Type == "CAA" || rc.Type == "TLSA" || rc.Type == "TXT" {
-		panic("TargetSingle called on a type with a multi-parameter rtype.")
-	}
-	return rc.Target
-}
+// // GetTargetSingle returns the target for types that have a single value target
+// // and panics for all others.
+// func (rc *RecordConfig) GetTargetSingle() string {
+// 	if rc.Type == "MX" || rc.Type == "SRV" || rc.Type == "CAA" || rc.Type == "TLSA" || rc.Type == "TXT" {
+// 		panic("TargetSingle called on a type with a multi-parameter rtype.")
+// 	}
+// 	return rc.Target
+// }
 
 // GetTargetIP returns the net.IP stored in Target.
 func (rc *RecordConfig) GetTargetIP() net.IP {
@@ -107,15 +107,15 @@ func (rc *RecordConfig) SetTarget(target string) error {
 }
 
 // SetTargetIP sets the target to an IP, verifying this is an appropriate rtype.
-func (rc *RecordConfig) SetTargetIP(target string) error {
+func (rc *RecordConfig) SetTargetIP(ip net.IP) error {
 	// TODO(tlim): Verify the rtype is appropriate for an IP.
-	rc.Target = target
+	rc.Target = ip.String()
 	return nil
 }
 
-// SetTargetFQDN sets the target to an IP, verifying this is an appropriate rtype.
-func (rc *RecordConfig) SetTargetFQDN(target string) error {
-	// TODO(tlim): Verify the rtype is appropriate for an hostname.
-	rc.Target = target
-	return nil
-}
+// // SetTargetFQDN sets the target to an IP, verifying this is an appropriate rtype.
+// func (rc *RecordConfig) SetTargetFQDN(target string) error {
+// 	// TODO(tlim): Verify the rtype is appropriate for an hostname.
+// 	rc.Target = target
+// 	return nil
+// }
