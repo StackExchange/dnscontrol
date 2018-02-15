@@ -9,7 +9,6 @@ import (
 	"github.com/StackExchange/dnscontrol/models"
 	"github.com/StackExchange/dnscontrol/providers"
 	"github.com/StackExchange/dnscontrol/providers/diff"
-	"github.com/miekg/dns/dnsutil"
 	"github.com/pkg/errors"
 	"github.com/xlucas/go-ovh/ovh"
 )
@@ -83,7 +82,7 @@ func (e errNoExist) Error() string {
 
 func (c *ovhProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Correction, error) {
 	dc.Punycode()
-	dc.CombineMXs()
+	//dc.CombineMXs()
 
 	if !c.zones[dc.Name] {
 		return nil, errNoExist{dc.Name}
@@ -96,34 +95,10 @@ func (c *ovhProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*models.C
 
 	var actual []*models.RecordConfig
 	for _, r := range records {
-		if r.FieldType == "SOA" {
-			continue
+		rec := nativeToRecord(r, dc.Name)
+		if rec != nil {
+			actual = append(actual, rec)
 		}
-
-		if r.SubDomain == "" {
-			r.SubDomain = "@"
-		}
-
-		// ovh uses a custom type for SPF and DKIM
-		if r.FieldType == "SPF" || r.FieldType == "DKIM" {
-			r.FieldType = "TXT"
-		}
-
-		// ovh default is 3600
-		if r.TTL == 0 {
-			r.TTL = 3600
-		}
-
-		rec := &models.RecordConfig{
-			NameFQDN:       dnsutil.AddOrigin(r.SubDomain, dc.Name),
-			Name:           r.SubDomain,
-			Type:           r.FieldType,
-			Target:         r.Target,
-			TTL:            uint32(r.TTL),
-			CombinedTarget: true,
-			Original:       r,
-		}
-		actual = append(actual, rec)
 	}
 
 	// Normalize
@@ -169,6 +144,33 @@ func (c *ovhProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*models.C
 	}
 
 	return corrections, nil
+}
+
+func nativeToRecord(r *Record, origin string) *models.RecordConfig {
+	if r.FieldType == "SOA" {
+		return nil
+	}
+	rec := &models.RecordConfig{
+		TTL:      uint32(r.TTL),
+		Original: r,
+	}
+	rtype := r.FieldType
+	rec.SetLabel(r.SubDomain, origin)
+	if err := rec.PopulateFromString(rtype, r.Target, origin); err != nil {
+		panic(errors.Wrap(err, "unparsable record received from ovh"))
+	}
+
+	// ovh uses a custom type for SPF and DKIM
+	if rtype == "SPF" || rtype == "DKIM" {
+		rec.Type = "TXT"
+	}
+
+	// ovh default is 3600
+	if rec.TTL == 0 {
+		rec.TTL = 3600
+	}
+
+	return rec
 }
 
 func (c *ovhProvider) GetRegistrarCorrections(dc *models.DomainConfig) ([]*models.Correction, error) {

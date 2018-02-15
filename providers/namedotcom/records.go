@@ -3,10 +3,10 @@ package namedotcom
 import (
 	"fmt"
 	"regexp"
-	"strconv"
 	"strings"
 
 	"github.com/namedotcom/go/namecom"
+	"github.com/pkg/errors"
 
 	"github.com/miekg/dns/dnsutil"
 
@@ -21,6 +21,7 @@ var defaultNameservers = []*models.Nameserver{
 	{Name: "ns4.name.com"},
 }
 
+// GetDomainCorrections gathers correctios that would bring n to match dc.
 func (n *NameCom) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Correction, error) {
 	dc.Punycode()
 	records, err := n.getRecords(dc.Name)
@@ -29,7 +30,7 @@ func (n *NameCom) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Corre
 	}
 	actual := make([]*models.RecordConfig, len(records))
 	for i, r := range records {
-		actual[i] = toRecord(r)
+		actual[i] = toRecord(r, dc.Name)
 	}
 
 	for _, rec := range dc.Records {
@@ -83,43 +84,32 @@ func checkNSModifications(dc *models.DomainConfig) {
 	dc.Records = newList
 }
 
-// finds a string surrounded by quotes that might contain an escaped quote charactor.
-var quotedStringRegexp = regexp.MustCompile("\"((?:[^\"\\\\]|\\\\.)*)\"")
-
-func toRecord(r *namecom.Record) *models.RecordConfig {
+func toRecord(r *namecom.Record, origin string) *models.RecordConfig {
 	rc := &models.RecordConfig{
-		NameFQDN: strings.TrimSuffix(r.Fqdn, "."),
 		Type:     r.Type,
-		Target:   r.Answer,
 		TTL:      r.TTL,
 		Original: r,
 	}
-	switch r.Type { // #rtype_variations
-	case "A", "AAAA", "ANAME", "CNAME", "NS":
-		// nothing additional.
+	if !strings.HasSuffix(r.Fqdn, ".") {
+		panic(errors.Errorf("namedotcom suddenly changed protocol. Bailing. (%v)", r.Fqdn))
+	}
+	fqdn := r.Fqdn[:len(r.Fqdn)-1]
+	rc.SetLabelFromFQDN(fqdn, origin)
+	switch rtype := r.Type; rtype { // #rtype_variations
 	case "TXT":
-		if r.Answer[0] == '"' && r.Answer[len(r.Answer)-1] == '"' {
-			txtStrings := []string{}
-			for _, t := range quotedStringRegexp.FindAllStringSubmatch(r.Answer, -1) {
-				txtStrings = append(txtStrings, t[1])
-			}
-			rc.SetTxts(txtStrings)
-		}
+		rc.SetTargetTXTs(decodeTxt(r.Answer))
 	case "MX":
-		rc.MxPreference = uint16(r.Priority)
+		if err := rc.SetTargetMX(uint16(r.Priority), r.Answer); err != nil {
+			panic(errors.Wrap(err, "unparsable MX record received from ndc"))
+		}
 	case "SRV":
-		parts := strings.Split(r.Answer, " ")
-		weight, _ := strconv.ParseInt(parts[0], 10, 32)
-		port, _ := strconv.ParseInt(parts[1], 10, 32)
-		rc.SrvWeight = uint16(weight)
-		rc.SrvPort = uint16(port)
-		rc.SrvPriority = uint16(r.Priority)
-		rc.MxPreference = 0
-		rc.Target = parts[2] + "."
-	default:
-		panic(fmt.Sprintf("toRecord unimplemented rtype %v", r.Type))
-		// We panic so that we quickly find any switch statements
-		// that have not been updated for a new RR type.
+		if err := rc.SetTargetSRVPriorityString(uint16(r.Priority), r.Answer+"."); err != nil {
+			panic(errors.Wrap(err, "unparsable SRV record received from ndc"))
+		}
+	default: // "A", "AAAA", "ANAME", "CNAME", "NS"
+		if err := rc.PopulateFromString(rtype, r.Answer, r.Fqdn); err != nil {
+			panic(errors.Wrap(err, "unparsable record received from ndc"))
+		}
 	}
 	return rc
 }
@@ -163,17 +153,11 @@ func (n *NameCom) createRecord(rc *models.RecordConfig, domain string) error {
 		TTL:        rc.TTL,
 		Priority:   uint32(rc.MxPreference),
 	}
-
 	switch rc.Type { // #rtype_variations
 	case "A", "AAAA", "ANAME", "CNAME", "MX", "NS":
 		// nothing
 	case "TXT":
-		if len(rc.TxtStrings) > 1 {
-			record.Answer = ""
-			for _, t := range rc.TxtStrings {
-				record.Answer += "\"" + strings.Replace(t, "\"", "\\\"", -1) + "\""
-			}
-		}
+		record.Answer = encodeTxt(rc.TxtStrings)
 	case "SRV":
 		record.Answer = fmt.Sprintf("%d %d %v", rc.SrvWeight, rc.SrvPort, rc.Target)
 		record.Priority = uint32(rc.SrvPriority)
@@ -184,6 +168,37 @@ func (n *NameCom) createRecord(rc *models.RecordConfig, domain string) error {
 	}
 	_, err := n.client.CreateRecord(record)
 	return err
+}
+
+// makeTxt encodes TxtStrings for sending in the CREATE/MODIFY API:
+func encodeTxt(txts []string) string {
+	ans := txts[0]
+
+	if len(txts) > 1 {
+		ans = ""
+		for _, t := range txts {
+			ans += `"` + strings.Replace(t, `"`, `\"`, -1) + `"`
+		}
+	}
+	return ans
+}
+
+// finds a string surrounded by quotes that might contain an escaped quote charactor.
+var quotedStringRegexp = regexp.MustCompile(`"((?:[^"\\]|\\.)*)"`)
+
+// decodeTxt decodes the TXT record as received from name.com and
+// returns the list of strings.
+func decodeTxt(s string) []string {
+
+	if len(s) >= 2 && s[0] == '"' && s[len(s)-1] == '"' {
+		txtStrings := []string{}
+		for _, t := range quotedStringRegexp.FindAllStringSubmatch(s, -1) {
+			txtString := strings.Replace(t[1], `\"`, `"`, -1)
+			txtStrings = append(txtStrings, txtString)
+		}
+		return txtStrings
+	}
+	return []string{s}
 }
 
 func (n *NameCom) deleteRecord(id int32, domain string) error {

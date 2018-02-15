@@ -23,7 +23,7 @@ import (
 	"strings"
 
 	"github.com/miekg/dns"
-	"github.com/miekg/dns/dnsutil"
+	"github.com/pkg/errors"
 
 	"github.com/StackExchange/dnscontrol/models"
 	"github.com/StackExchange/dnscontrol/providers"
@@ -99,29 +99,26 @@ func rrToRecord(rr dns.RR, origin string, replaceSerial uint32) (models.RecordCo
 	// If one is found, we replace it with serial=1.
 	var oldSerial, newSerial uint32
 	header := rr.Header()
-	rc := models.RecordConfig{}
-	rc.Type = dns.TypeToString[header.Rrtype]
-	rc.NameFQDN = strings.ToLower(strings.TrimSuffix(header.Name, "."))
-	rc.Name = strings.ToLower(dnsutil.TrimDomainName(header.Name, origin))
-	rc.TTL = header.Ttl
+	rc := models.RecordConfig{
+		Type: dns.TypeToString[header.Rrtype],
+		TTL:  header.Ttl,
+	}
+	rc.SetLabelFromFQDN(strings.TrimSuffix(header.Name, "."), origin)
 	switch v := rr.(type) { // #rtype_variations
 	case *dns.A:
-		rc.Target = v.A.String()
+		panicInvalid(rc.SetTarget(v.A.String()))
 	case *dns.AAAA:
-		rc.Target = v.AAAA.String()
+		panicInvalid(rc.SetTarget(v.AAAA.String()))
 	case *dns.CAA:
-		rc.CaaTag = v.Tag
-		rc.CaaFlag = v.Flag
-		rc.Target = v.Value
+		panicInvalid(rc.SetTargetCAA(v.Flag, v.Tag, v.Value))
 	case *dns.CNAME:
-		rc.Target = v.Target
+		panicInvalid(rc.SetTarget(v.Target))
 	case *dns.MX:
-		rc.Target = v.Mx
-		rc.MxPreference = v.Preference
+		panicInvalid(rc.SetTargetMX(v.Preference, v.Mx))
 	case *dns.NS:
-		rc.Target = v.Ns
+		panicInvalid(rc.SetTarget(v.Ns))
 	case *dns.PTR:
-		rc.Target = v.Ptr
+		panicInvalid(rc.SetTarget(v.Ptr))
 	case *dns.SOA:
 		oldSerial = v.Serial
 		if oldSerial == 0 {
@@ -129,37 +126,39 @@ func rrToRecord(rr dns.RR, origin string, replaceSerial uint32) (models.RecordCo
 			oldSerial = 1
 		}
 		newSerial = v.Serial
-		if (dnsutil.TrimDomainName(rc.Name, origin+".") == "@") && replaceSerial != 0 {
+		//if (dnsutil.TrimDomainName(rc.Name, origin+".") == "@") && replaceSerial != 0 {
+		if rc.Name == "@" && replaceSerial != 0 {
 			newSerial = replaceSerial
 		}
-		rc.Target = fmt.Sprintf("%v %v %v %v %v %v %v",
-			v.Ns, v.Mbox, newSerial, v.Refresh, v.Retry, v.Expire, v.Minttl)
+		panicInvalid(rc.SetTarget(
+			fmt.Sprintf("%v %v %v %v %v %v %v",
+				v.Ns, v.Mbox, newSerial, v.Refresh, v.Retry, v.Expire, v.Minttl),
+		))
+		// FIXME(tlim): SOA should be handled by splitting out the fields.
 	case *dns.SRV:
-		rc.Target = v.Target
-		rc.SrvPort = v.Port
-		rc.SrvWeight = v.Weight
-		rc.SrvPriority = v.Priority
+		panicInvalid(rc.SetTargetSRV(v.Priority, v.Weight, v.Port, v.Target))
 	case *dns.TLSA:
-		rc.TlsaUsage = v.Usage
-		rc.TlsaSelector = v.Selector
-		rc.TlsaMatchingType = v.MatchingType
-		rc.Target = v.Certificate
+		panicInvalid(rc.SetTargetTLSA(v.Usage, v.Selector, v.MatchingType, v.Certificate))
 	case *dns.TXT:
-		rc.Target = strings.Join(v.Txt, " ")
-		rc.TxtStrings = v.Txt
+		panicInvalid(rc.SetTargetTXTs(v.Txt))
 	default:
 		log.Fatalf("rrToRecord: Unimplemented zone record type=%s (%v)\n", rc.Type, rr)
 	}
 	return rc, oldSerial
 }
 
+func panicInvalid(err error) {
+	if err != nil {
+		panic(errors.Wrap(err, "unparsable record received from BIND"))
+	}
+}
+
 func makeDefaultSOA(info SoaInfo, origin string) *models.RecordConfig {
 	// Make a default SOA record in case one isn't found:
 	soaRec := models.RecordConfig{
 		Type: "SOA",
-		Name: "@",
 	}
-	soaRec.NameFQDN = dnsutil.AddOrigin(soaRec.Name, origin)
+	soaRec.SetLabel("@", origin)
 	if len(info.Ns) == 0 {
 		info.Ns = "DEFAULT_NOT_SET."
 	}
@@ -181,7 +180,7 @@ func makeDefaultSOA(info SoaInfo, origin string) *models.RecordConfig {
 	if info.Minttl == 0 {
 		info.Minttl = 1440
 	}
-	soaRec.Target = info.String()
+	soaRec.SetTarget(info.String())
 
 	return &soaRec
 }

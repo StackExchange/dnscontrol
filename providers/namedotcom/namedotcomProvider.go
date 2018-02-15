@@ -11,6 +11,7 @@ import (
 
 const defaultAPIBase = "api.name.com"
 
+// NameCom describes a connection to the NDC API.
 type NameCom struct {
 	APIUrl  string `json:"apiurl"`
 	APIUser string `json:"apiuser"`

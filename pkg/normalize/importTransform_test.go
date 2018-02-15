@@ -1,8 +1,9 @@
 package normalize
 
 import (
-	"github.com/StackExchange/dnscontrol/models"
 	"testing"
+
+	"github.com/StackExchange/dnscontrol/models"
 )
 
 func TestImportTransform(t *testing.T) {
@@ -13,14 +14,14 @@ func TestImportTransform(t *testing.T) {
 		Name: "stackexchange.com",
 		Records: []*models.RecordConfig{
 			{Type: "A", Name: "*", NameFQDN: "*.stackexchange.com", Target: "0.0.2.2"},
-			{Type: "A", Name: "www", NameFQDN: "", Target: "0.0.1.1"},
+			{Type: "A", Name: "www", NameFQDN: "www.stackexchange.com", Target: "0.0.1.1"},
 		},
 	}
 	dst := &models.DomainConfig{
 		Name: "internal",
 		Records: []*models.RecordConfig{
 			{Type: "A", Name: "*.stackexchange.com", NameFQDN: "*.stackexchange.com.internal", Target: "0.0.3.3", Metadata: map[string]string{"transform_table": transformSingle}},
-			{Type: "IMPORT_TRANSFORM", Name: "@", Target: "stackexchange.com", Metadata: map[string]string{"transform_table": transformDouble}},
+			{Type: "IMPORT_TRANSFORM", Name: "@", NameFQDN: "internal", Target: "stackexchange.com", Metadata: map[string]string{"transform_table": transformDouble}},
 		},
 	}
 	cfg := &models.DNSConfig{

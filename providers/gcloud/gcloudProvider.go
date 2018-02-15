@@ -12,6 +12,7 @@ import (
 	"github.com/StackExchange/dnscontrol/models"
 	"github.com/StackExchange/dnscontrol/providers"
 	"github.com/StackExchange/dnscontrol/providers/diff"
+	"github.com/pkg/errors"
 )
 
 var features = providers.DocumentationNotes{
@@ -118,25 +119,10 @@ func (g *gcloud) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Correc
 	existingRecords := []*models.RecordConfig{}
 	oldRRs := map[key]*dns.ResourceRecordSet{}
 	for _, set := range rrs {
-		nameWithoutDot := set.Name
-		if strings.HasSuffix(nameWithoutDot, ".") {
-			nameWithoutDot = nameWithoutDot[:len(nameWithoutDot)-1]
-		}
 		oldRRs[keyFor(set)] = set
 		for _, rec := range set.Rrdatas {
-			r := &models.RecordConfig{
-				NameFQDN:       nameWithoutDot,
-				Type:           set.Type,
-				Target:         rec,
-				TTL:            uint32(set.Ttl),
-				CombinedTarget: true,
-			}
-			existingRecords = append(existingRecords, r)
+			existingRecords = append(existingRecords, nativeToRecord(set, rec, dc.Name))
 		}
-	}
-
-	for _, want := range dc.Records {
-		want.MergeToTarget()
 	}
 
 	// Normalize
@@ -176,7 +162,7 @@ func (g *gcloud) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Correc
 		}
 		for _, r := range dc.Records {
 			if keyForRec(r) == ck {
-				newRRs.Rrdatas = append(newRRs.Rrdatas, r.Target)
+				newRRs.Rrdatas = append(newRRs.Rrdatas, r.GetTargetCombined())
 				newRRs.Ttl = int64(r.TTL)
 			}
 		}
@@ -193,6 +179,16 @@ func (g *gcloud) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Correc
 		Msg: desc,
 		F:   runChange,
 	}}, nil
+}
+
+func nativeToRecord(set *dns.ResourceRecordSet, rec, origin string) *models.RecordConfig {
+	r := &models.RecordConfig{}
+	r.SetLabelFromFQDN(set.Name, origin)
+	r.TTL = uint32(set.Ttl)
+	if err := r.PopulateFromString(set.Type, rec, origin); err != nil {
+		panic(errors.Wrap(err, "unparsable record received from GCLOUD"))
+	}
+	return r
 }
 
 func (g *gcloud) getRecords(domain string) ([]*dns.ResourceRecordSet, string, error) {

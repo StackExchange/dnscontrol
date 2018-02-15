@@ -121,8 +121,8 @@ func (c *CloudflareApi) GetDomainCorrections(dc *models.DomainConfig) ([]*models
 		if rec.Type == "ALIAS" {
 			rec.Type = "CNAME"
 		}
-		if labelMatches(rec.Name, c.ignoredLabels) {
-			log.Fatalf("FATAL: dnsconfig contains label that matches ignored_labels: %#v is in %v)\n", rec.Name, c.ignoredLabels)
+		if labelMatches(rec.GetLabel(), c.ignoredLabels) {
+			log.Fatalf("FATAL: dnsconfig contains label that matches ignored_labels: %#v is in %v)\n", rec.GetLabel(), c.ignoredLabels)
 		}
 	}
 	checkNSModifications(dc)
@@ -151,7 +151,7 @@ func (c *CloudflareApi) GetDomainCorrections(dc *models.DomainConfig) ([]*models
 		if des.Type == "PAGE_RULE" {
 			corrections = append(corrections, &models.Correction{
 				Msg: d.String(),
-				F:   func() error { return c.createPageRule(id, des.Target) },
+				F:   func() error { return c.createPageRule(id, des.GetTargetField()) },
 			})
 		} else {
 			corrections = append(corrections, c.createRec(des, id)...)
@@ -164,7 +164,7 @@ func (c *CloudflareApi) GetDomainCorrections(dc *models.DomainConfig) ([]*models
 		if rec.Type == "PAGE_RULE" {
 			corrections = append(corrections, &models.Correction{
 				Msg: d.String(),
-				F:   func() error { return c.updatePageRule(ex.Original.(*pageRule).ID, id, rec.Target) },
+				F:   func() error { return c.updatePageRule(ex.Original.(*pageRule).ID, id, rec.GetTargetField()) },
 			})
 		} else {
 			e := ex.Original.(*cfRecord)
@@ -181,9 +181,9 @@ func (c *CloudflareApi) GetDomainCorrections(dc *models.DomainConfig) ([]*models
 func checkNSModifications(dc *models.DomainConfig) {
 	newList := make([]*models.RecordConfig, 0, len(dc.Records))
 	for _, rec := range dc.Records {
-		if rec.Type == "NS" && rec.NameFQDN == dc.Name {
-			if !strings.HasSuffix(rec.Target, ".ns.cloudflare.com.") {
-				log.Printf("Warning: cloudflare does not support modifying NS records on base domain. %s will not be added.", rec.Target)
+		if rec.Type == "NS" && rec.GetLabelFQDN() == dc.Name {
+			if !strings.HasSuffix(rec.GetTargetField(), ".ns.cloudflare.com.") {
+				log.Printf("Warning: cloudflare does not support modifying NS records on base domain. %s will not be added.", rec.GetTargetField())
 			}
 			continue
 		}
@@ -240,7 +240,7 @@ func (c *CloudflareApi) preprocessConfig(dc *models.DomainConfig) error {
 		}
 		if rec.Type != "A" && rec.Type != "CNAME" && rec.Type != "AAAA" && rec.Type != "ALIAS" {
 			if rec.Metadata[metaProxy] != "" {
-				return errors.Errorf("cloudflare_proxy set on %v record: %#v cloudflare_proxy=%#v", rec.Type, rec.Name, rec.Metadata[metaProxy])
+				return errors.Errorf("cloudflare_proxy set on %v record: %#v cloudflare_proxy=%#v", rec.Type, rec.GetLabel(), rec.Metadata[metaProxy])
 			}
 			// Force it to off.
 			rec.Metadata[metaProxy] = "off"
@@ -260,7 +260,7 @@ func (c *CloudflareApi) preprocessConfig(dc *models.DomainConfig) error {
 			if !c.manageRedirects {
 				return errors.Errorf("you must add 'manage_redirects: true' metadata to cloudflare provider to use CF_REDIRECT records")
 			}
-			parts := strings.Split(rec.Target, ",")
+			parts := strings.Split(rec.GetTargetField(), ",")
 			if len(parts) != 2 {
 				return errors.Errorf("Invalid data specified for cloudflare redirect record")
 			}
@@ -268,7 +268,7 @@ func (c *CloudflareApi) preprocessConfig(dc *models.DomainConfig) error {
 			if rec.Type == "CF_TEMP_REDIRECT" {
 				code = 302
 			}
-			rec.Target = fmt.Sprintf("%s,%d,%d", rec.Target, currentPrPrio, code)
+			rec.SetTarget(fmt.Sprintf("%s,%d,%d", rec.GetTargetField(), currentPrPrio, code))
 			currentPrPrio++
 			rec.Type = "PAGE_RULE"
 		}
@@ -283,16 +283,16 @@ func (c *CloudflareApi) preprocessConfig(dc *models.DomainConfig) error {
 		if rec.Metadata[metaProxy] != "full" {
 			continue
 		}
-		ip := net.ParseIP(rec.Target)
+		ip := net.ParseIP(rec.GetTargetField())
 		if ip == nil {
-			return errors.Errorf("%s is not a valid ip address", rec.Target)
+			return errors.Errorf("%s is not a valid ip address", rec.GetTargetField())
 		}
 		newIP, err := transform.TransformIP(ip, c.ipConversions)
 		if err != nil {
 			return err
 		}
-		rec.Metadata[metaOriginalIP] = rec.Target
-		rec.Target = newIP.String()
+		rec.Metadata[metaOriginalIP] = rec.GetTargetField()
+		rec.SetTarget(newIP.String())
 	}
 
 	return nil
@@ -371,39 +371,32 @@ type cfRecord struct {
 	Priority   uint16     `json:"priority"`
 }
 
-func (c *cfRecord) toRecord(domain string) *models.RecordConfig {
+func (c *cfRecord) nativeToRecord(domain string) *models.RecordConfig {
 	// normalize cname,mx,ns records with dots to be consistent with our config format.
 	if c.Type == "CNAME" || c.Type == "MX" || c.Type == "NS" || c.Type == "SRV" {
 		c.Content = dnsutil.AddOrigin(c.Content+".", domain)
 	}
+
 	rc := &models.RecordConfig{
-		NameFQDN: c.Name,
-		Type:     c.Type,
-		Target:   c.Content,
 		TTL:      c.TTL,
 		Original: c,
 	}
-	switch c.Type { // #rtype_variations
-	case "A", "AAAA", "ANAME", "CNAME", "NS", "TXT":
-		// nothing additional needed.
-	case "CAA":
-		var err error
-		rc.CaaTag, rc.CaaFlag, rc.Target, err = models.SplitCombinedCaaValue(c.Content)
-		if err != nil {
-			panic(err)
-		}
+	rc.SetLabelFromFQDN(c.Name, domain)
+	switch rType := c.Type; rType { // #rtype_variations
 	case "MX":
-		rc.MxPreference = c.Priority
+		if err := rc.SetTargetMX(c.Priority, c.Content); err != nil {
+			panic(errors.Wrap(err, "unparsable MX record received from cloudflare"))
+		}
 	case "SRV":
 		data := *c.Data
-		rc.SrvPriority = data.Priority
-		rc.SrvWeight = data.Weight
-		rc.SrvPort = data.Port
-		rc.Target = dnsutil.AddOrigin(data.Target+".", domain)
-	default:
-		panic(fmt.Sprintf("toRecord unimplemented rtype %v", c.Type))
-		// We panic so that we quickly find any switch statements
-		// that have not been updated for a new RR type.
+		if err := rc.SetTargetSRV(data.Priority, data.Weight, data.Port,
+			dnsutil.AddOrigin(data.Target+".", domain)); err != nil {
+			panic(errors.Wrap(err, "unparsable SRV record received from cloudflare"))
+		}
+	default: // "A", "AAAA", "ANAME", "CAA", "CNAME", "NS", "PTR", "TXT"
+		if err := rc.PopulateFromString(rType, c.Content, domain); err != nil {
+			panic(errors.Wrap(err, "unparsable record received from cloudflare"))
+		}
 	}
 
 	return rc

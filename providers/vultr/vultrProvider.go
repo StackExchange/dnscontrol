@@ -3,7 +3,6 @@ package vultr
 import (
 	"encoding/json"
 	"fmt"
-	"strconv"
 	"strings"
 
 	vultr "github.com/JamesClonk/vultr/lib"
@@ -194,109 +193,54 @@ func (api *VultrApi) isDomainInAccount(domain string) (bool, error) {
 
 // toRecordConfig converts a Vultr DNSRecord to a RecordConfig #rtype_variations
 func toRecordConfig(dc *models.DomainConfig, r *vultr.DNSRecord) (*models.RecordConfig, error) {
-	// Turns r.Name into a FQDN
-	// Vultr uses "" as the apex domain, instead of "@", and this handles it fine.
-	name := dnsutil.AddOrigin(r.Name, dc.Name)
-
+	origin := dc.Name
 	data := r.Data
-	// Make target into a FQDN if it is a CNAME, NS, MX, or SRV
-	if r.Type == "CNAME" || r.Type == "NS" || r.Type == "MX" {
-		if !strings.HasSuffix(data, ".") {
-			data = data + "."
-		}
-		data = dnsutil.AddOrigin(data, dc.Name)
-	}
-	// Remove quotes if it is a TXT
-	if r.Type == "TXT" {
-		if !strings.HasPrefix(data, `"`) || !strings.HasSuffix(data, `"`) {
-			return nil, errors.New("Unexpected lack of quotes in TXT record from Vultr")
-		}
-		data = data[1 : len(data)-1]
-	}
-
 	rc := &models.RecordConfig{
-		NameFQDN: name,
-		Type:     r.Type,
-		Target:   data,
 		TTL:      uint32(r.TTL),
 		Original: r,
 	}
+	rc.SetLabel(r.Name, dc.Name)
 
-	if r.Type == "MX" {
-		rc.MxPreference = uint16(r.Priority)
-	}
-
-	if r.Type == "SRV" {
-		rc.SrvPriority = uint16(r.Priority)
-
-		// Vultr returns in the format "[weight] [port] [target]"
-		splitData := strings.SplitN(rc.Target, " ", 3)
-		if len(splitData) != 3 {
-			return nil, errors.Errorf("Unexpected data for SRV record returned by Vultr")
+	switch rtype := r.Type; rtype {
+	case "CNAME", "NS":
+		rc.Type = r.Type
+		// Make target into a FQDN if it is a CNAME, NS, MX, or SRV
+		if !strings.HasSuffix(data, ".") {
+			data = data + "."
 		}
-
-		weight, err := strconv.ParseUint(splitData[0], 10, 16)
-		if err != nil {
-			return nil, err
-		}
-		rc.SrvWeight = uint16(weight)
-
-		port, err := strconv.ParseUint(splitData[1], 10, 16)
-		if err != nil {
-			return nil, err
-		}
-		rc.SrvPort = uint16(port)
-
-		target := splitData[2]
-		if !strings.HasSuffix(target, ".") {
-			target = target + "."
-		}
-		rc.Target = dnsutil.AddOrigin(target, dc.Name)
-	}
-
-	if r.Type == "CAA" {
+		// FIXME(tlim): the AddOrigin() might be unneeded. Please test.
+		return rc, rc.SetTarget(dnsutil.AddOrigin(data, origin))
+	case "CAA":
 		// Vultr returns in the format "[flag] [tag] [value]"
-		// TODO(tal): I copied this code into models/dns.go.  At this point
-		// we can probably replace the code below with:
-		// rc.CaaFlag, rc.CaaTag, rc.Target, err := models.SplitCombinedCaaValue(rc.Target)
-		// return rc, err
-
-		splitData := strings.SplitN(rc.Target, " ", 3)
-		if len(splitData) != 3 {
-			return nil, errors.Errorf("Unexpected data for CAA record returned by Vultr")
+		return rc, rc.SetTargetCAAString(data)
+	case "MX":
+		if !strings.HasSuffix(data, ".") {
+			data = data + "."
 		}
-
-		flag, err := strconv.ParseUint(splitData[0], 10, 8)
-		if err != nil {
-			return nil, err
+		return rc, rc.SetTargetMX(uint16(r.Priority), data)
+	case "SRV":
+		// Vultr returns in the format "[weight] [port] [target]"
+		return rc, rc.SetTargetSRVPriorityString(uint16(r.Priority), data)
+	case "TXT":
+		// Remove quotes if it is a TXT
+		if !strings.HasPrefix(data, `"`) || !strings.HasSuffix(data, `"`) {
+			return nil, errors.New("Unexpected lack of quotes in TXT record from Vultr")
 		}
-		rc.CaaFlag = uint8(flag)
-
-		rc.CaaTag = splitData[1]
-
-		value := splitData[2]
-		if strings.HasPrefix(value, `"`) && strings.HasSuffix(value, `"`) {
-			value = value[1 : len(value)-1]
-		}
-		if strings.HasPrefix(value, `'`) && strings.HasSuffix(value, `'`) {
-			value = value[1 : len(value)-1]
-		}
-		rc.Target = value
+		return rc, rc.SetTargetTXT(data[1 : len(data)-1])
+	default:
+		return rc, rc.PopulateFromString(rtype, r.Data, origin)
 	}
-
-	return rc, nil
 }
 
 // toVultrRecord converts a RecordConfig converted by toRecordConfig back to a Vultr DNSRecord #rtype_variations
 func toVultrRecord(dc *models.DomainConfig, rc *models.RecordConfig) *vultr.DNSRecord {
 	name := dnsutil.TrimDomainName(rc.NameFQDN, dc.Name)
-
 	// Vultr uses a blank string to represent the apex domain
 	if name == "@" {
 		name = ""
 	}
 
-	data := rc.Target
+	data := rc.GetTargetField()
 
 	// Vultr does not use a period suffix for the server for CNAME, NS, or MX
 	if strings.HasSuffix(data, ".") {
@@ -312,7 +256,6 @@ func toVultrRecord(dc *models.DomainConfig, rc *models.RecordConfig) *vultr.DNSR
 	if rc.Type == "MX" {
 		priority = int(rc.MxPreference)
 	}
-
 	if rc.Type == "SRV" {
 		priority = int(rc.SrvPriority)
 	}
@@ -330,12 +273,11 @@ func toVultrRecord(dc *models.DomainConfig, rc *models.RecordConfig) *vultr.DNSR
 		if strings.HasSuffix(target, ".") {
 			target = target[:len(target)-1]
 		}
-
 		r.Data = fmt.Sprintf("%v %v %s", rc.SrvWeight, rc.SrvPort, target)
 	}
 
 	if rc.Type == "CAA" {
-		r.Data = fmt.Sprintf(`%v %s "%s"`, rc.CaaFlag, rc.CaaTag, rc.Target)
+		r.Data = fmt.Sprintf(`%v %s "%s"`, rc.CaaFlag, rc.CaaTag, rc.GetTargetField())
 	}
 
 	return r

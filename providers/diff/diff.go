@@ -43,7 +43,7 @@ type differ struct {
 
 // get normalized content for record. target, ttl, mxprio, and specified metadata
 func (d *differ) content(r *models.RecordConfig) string {
-	content := fmt.Sprintf("%v ttl=%d", r.Content(), r.TTL)
+	content := fmt.Sprintf("%v ttl=%d", r.GetTargetCombined(), r.TTL)
 	for _, f := range d.extraValues {
 		// sort the extra values map keys to perform a deterministic
 		// comparison since Golang maps iteration order is not guaranteed
