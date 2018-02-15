@@ -3,7 +3,14 @@ package main
 /*
 convertzone: Read BIND-style zonefile and output.
 
-     convertzone [-mode=MODE] zonename [filename]
+     convertzone [-input=INPUT] [-mode=MODE] zonename [filename]
+
+		 Input format:
+
+		 -infmt=zone      Input format is a ZoneFile (default)
+		 -infmt=octodns   Input format is OctoDNS yaml
+
+		 Output format:
 
      -mode=tsv   TAB-separated values (default)
      -mode=dsl   DNSControl DSL
@@ -29,6 +36,7 @@ import (
 	"github.com/pkg/errors"
 )
 
+var flagInfmt = flag.String("infmt", "zone", "zone|octodns")
 var flagMode = flag.String("mode", "tsv", "tsv|dsl|pretty")
 var flagDefaultTTL = flag.Uint("ttl", 300, "Default TTL")
 var flagRegText = flag.String("registrar", "REG_FILL_IN", "registrar text")
