@@ -79,25 +79,29 @@ func (c *DnsimpleApi) GetDomainCorrections(dc *models.DomainConfig) ([]*models.C
 			continue
 		}
 		rec := &models.RecordConfig{
-			NameFQDN:     dnsutil.AddOrigin(r.Name, dc.Name),
-			Type:         r.Type,
-			Target:       r.Content,
-			TTL:          uint32(r.TTL),
-			MxPreference: uint16(r.Priority),
-			Original:     r,
+			TTL:      uint32(r.TTL),
+			Original: r,
 		}
-		if r.Type == "CAA" || r.Type == "SRV" {
-			rec.CombinedTarget = true
+		rec.SetLabel(r.Name, dc.Name)
+		switch rtype := r.Type; rtype {
+		case "MX":
+			if err := rec.SetTargetMX(uint16(r.Priority), r.Content); err != nil {
+				panic(errors.Wrap(err, "unparsable record received from dnsimple"))
+			}
+		default:
+			if err := rec.PopulateFromString(r.Type, r.Content, dc.Name); err != nil {
+				panic(errors.Wrap(err, "unparsable record received from dnsimple"))
+			}
 		}
 		actual = append(actual, rec)
 	}
 	removeOtherNS(dc)
-	dc.Filter(func(r *models.RecordConfig) bool {
-		if r.Type == "CAA" || r.Type == "SRV" {
-			r.MergeToTarget()
-		}
-		return true
-	})
+	// dc.Filter(func(r *models.RecordConfig) bool {
+	// 	if r.Type == "CAA" || r.Type == "SRV" {
+	// 		r.MergeToTarget()
+	// 	}
+	// 	return true
+	// })
 
 	// Normalize
 	models.PostProcessRecords(actual)
@@ -276,7 +280,7 @@ func (c *DnsimpleApi) createRecordFunc(rc *models.RecordConfig, domainName strin
 		record := dnsimpleapi.ZoneRecord{
 			Name:     dnsutil.TrimDomainName(rc.NameFQDN, domainName),
 			Type:     rc.Type,
-			Content:  rc.Target,
+			Content:  rc.GetTargetCombined(),
 			TTL:      int(rc.TTL),
 			Priority: int(rc.MxPreference),
 		}
@@ -322,7 +326,7 @@ func (c *DnsimpleApi) updateRecordFunc(old *dnsimpleapi.ZoneRecord, rc *models.R
 		record := dnsimpleapi.ZoneRecord{
 			Name:     dnsutil.TrimDomainName(rc.NameFQDN, domainName),
 			Type:     rc.Type,
-			Content:  rc.Target,
+			Content:  rc.GetTargetCombined(),
 			TTL:      int(rc.TTL),
 			Priority: int(rc.MxPreference),
 		}
@@ -367,10 +371,10 @@ func removeOtherNS(dc *models.DomainConfig) {
 	for _, rec := range dc.Records {
 		if rec.Type == "NS" {
 			// apex NS inside dnsimple are expected.
-			if rec.NameFQDN == dc.Name && strings.HasSuffix(rec.Target, ".dnsimple.com.") {
+			if rec.NameFQDN == dc.Name && strings.HasSuffix(rec.GetTargetField(), ".dnsimple.com.") {
 				continue
 			}
-			fmt.Printf("Warning: dnsimple.com does not allow NS records to be modified. %s will not be added.\n", rec.Target)
+			fmt.Printf("Warning: dnsimple.com does not allow NS records to be modified. %s will not be added.\n", rec.GetTargetField())
 			continue
 		}
 		newList = append(newList, rec)

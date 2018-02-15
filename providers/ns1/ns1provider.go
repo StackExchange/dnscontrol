@@ -50,7 +50,7 @@ func (n *nsone) GetNameservers(domain string) ([]*models.Nameserver, error) {
 
 func (n *nsone) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Correction, error) {
 	dc.Punycode()
-	dc.CombineMXs()
+	//dc.CombineMXs()
 	z, _, err := n.Zones.Get(dc.Name)
 	if err != nil {
 		return nil, err
@@ -120,7 +120,7 @@ func (n *nsone) modify(recs models.Records, domain string) error {
 func buildRecord(recs models.Records, domain string, id string) *dns.Record {
 	r := recs[0]
 	rec := &dns.Record{
-		Domain: r.NameFQDN,
+		Domain: r.GetLabelFQDN(),
 		Type:   r.Type,
 		ID:     id,
 		TTL:    int(r.TTL),
@@ -128,11 +128,11 @@ func buildRecord(recs models.Records, domain string, id string) *dns.Record {
 	}
 	for _, r := range recs {
 		if r.Type == "TXT" {
-			rec.AddAnswer(&dns.Answer{Rdata: []string{r.Target}})
+			rec.AddAnswer(&dns.Answer{Rdata: r.TxtStrings})
 		} else if r.Type == "SRV" {
-			rec.AddAnswer(&dns.Answer{Rdata: strings.Split(fmt.Sprintf("%d %d %d %v", r.SrvPriority, r.SrvWeight, r.SrvPort, r.Target), " ")})
+			rec.AddAnswer(&dns.Answer{Rdata: strings.Split(fmt.Sprintf("%d %d %d %v", r.SrvPriority, r.SrvWeight, r.SrvPort, r.GetTargetField()), " ")})
 		} else {
-			rec.AddAnswer(&dns.Answer{Rdata: strings.Split(r.Target, " ")})
+			rec.AddAnswer(&dns.Answer{Rdata: strings.Split(r.GetTargetField(), " ")})
 		}
 	}
 	return rec
@@ -142,15 +142,15 @@ func convert(zr *dns.ZoneRecord, domain string) ([]*models.RecordConfig, error) 
 	found := []*models.RecordConfig{}
 	for _, ans := range zr.ShortAns {
 		rec := &models.RecordConfig{
-			NameFQDN: zr.Domain,
-			Name:     dnsutil.TrimDomainName(zr.Domain, domain),
 			TTL:      uint32(zr.TTL),
-			Target:   ans,
 			Original: zr,
-			Type:     zr.Type,
 		}
-		if zr.Type == "MX" || zr.Type == "SRV" {
-			rec.CombinedTarget = true
+		rec.SetLabelFromFQDN(zr.Domain, domain)
+		switch rtype := zr.Type; rtype {
+		default:
+			if err := rec.PopulateFromString(rtype, ans, domain); err != nil {
+				panic(errors.Wrap(err, "unparsable record received from ns1"))
+			}
 		}
 		found = append(found, rec)
 	}

@@ -56,16 +56,24 @@ func TestSetTxtParse(t *testing.T) {
 		e1 string
 		e2 []string
 	}{
-		{``, ``, []string{``}},
 		{`foo`, `foo`, []string{`foo`}},
 		{`"foo"`, `foo`, []string{`foo`}},
+		{`"foo bar"`, `foo bar`, []string{`foo bar`}},
+		{`foo bar`, `foo bar`, []string{`foo bar`}},
 		{`"aaa" "bbb"`, `aaa`, []string{`aaa`, `bbb`}},
 	}
 	for i, test := range tests {
-		x := &RecordConfig{Type: "TXT"}
-		x.SetTxtParse(test.d1)
-		if x.Target != test.e1 {
-			t.Errorf("%v: expected Target=(%v) got (%v)", i, test.e1, x.Target)
+		ls := ParseQuotedTxt(test.d1)
+		if ls[0] != test.e1 {
+			t.Errorf("%v: expected Target=(%v) got (%v)", i, test.e1, ls[0])
+		}
+		if len(ls) != len(test.e2) {
+			t.Errorf("%v: expected TxtStrings=(%v) got (%v)", i, test.e2, ls)
+		}
+		for i := range ls {
+			if len(ls[i]) != len(test.e2[i]) {
+				t.Errorf("%v: expected TxtStrings=(%v) got (%v)", i, test.e2, ls)
+			}
 		}
 	}
 }

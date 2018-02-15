@@ -8,12 +8,11 @@ import (
 	"strings"
 	"time"
 
+	"github.com/StackExchange/dnscontrol/models"
+	"github.com/StackExchange/dnscontrol/providers/diff"
 	"github.com/TomOnTime/utfutil"
 	"github.com/miekg/dns/dnsutil"
 	"github.com/pkg/errors"
-
-	"github.com/StackExchange/dnscontrol/models"
-	"github.com/StackExchange/dnscontrol/providers/diff"
 )
 
 const zoneDumpFilenamePrefix = "adzonedump"

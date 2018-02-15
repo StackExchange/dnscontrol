@@ -110,7 +110,7 @@ type key struct {
 }
 
 func getKey(r *models.RecordConfig) key {
-	return key{r.NameFQDN, r.Type}
+	return key{r.GetLabelFQDN(), r.Type}
 }
 
 type errNoExist struct {
@@ -157,37 +157,9 @@ func (r *route53Provider) GetDomainCorrections(dc *models.DomainConfig) ([]*mode
 
 	var existingRecords = []*models.RecordConfig{}
 	for _, set := range records {
-		if set.AliasTarget == nil {
-			for _, rec := range set.ResourceRecords {
-				if *set.Type == "SOA" {
-					continue
-				}
-				r := &models.RecordConfig{
-					NameFQDN:       unescape(set.Name),
-					Type:           *set.Type,
-					Target:         *rec.Value,
-					TTL:            uint32(*set.TTL),
-					CombinedTarget: true,
-				}
-				existingRecords = append(existingRecords, r)
-			}
-		} else {
-			r := &models.RecordConfig{
-				NameFQDN:       unescape(set.Name),
-				Type:           "R53_ALIAS",
-				Target:         aws.StringValue(set.AliasTarget.DNSName),
-				CombinedTarget: true,
-				TTL:            300,
-				R53Alias: map[string]string{
-					"type":    *set.Type,
-					"zone_id": *set.AliasTarget.HostedZoneId,
-				},
-			}
-			existingRecords = append(existingRecords, r)
-		}
+		existingRecords = append(existingRecords, nativeToRecords(set, dc.Name)...)
 	}
 	for _, want := range dc.Records {
-		want.MergeToTarget()
 		// update zone_id to current zone.id if not specified by the user
 		if want.Type == "R53_ALIAS" && want.R53Alias["zone_id"] == "" {
 			want.R53Alias["zone_id"] = getZoneID(zone, want)
@@ -255,7 +227,7 @@ func (r *route53Provider) GetDomainCorrections(dc *models.DomainConfig) ([]*mode
 				Type: sPtr(k.Type),
 			}
 			for _, r := range recs {
-				val := r.Target
+				val := r.GetTargetCombined()
 				if r.Type != "R53_ALIAS" {
 					rr := &r53.ResourceRecord{
 						Value: &val,
@@ -303,6 +275,38 @@ func (r *route53Provider) GetDomainCorrections(dc *models.DomainConfig) ([]*mode
 
 }
 
+func nativeToRecords(set *r53.ResourceRecordSet, origin string) []*models.RecordConfig {
+	results := []*models.RecordConfig{}
+	if set.AliasTarget != nil {
+		rc := &models.RecordConfig{
+			Type: "R53_ALIAS",
+			TTL:  300,
+			R53Alias: map[string]string{
+				"type":    *set.Type,
+				"zone_id": *set.AliasTarget.HostedZoneId,
+			},
+		}
+		rc.SetLabelFromFQDN(unescape(set.Name), origin)
+		rc.SetTarget(aws.StringValue(set.AliasTarget.DNSName))
+		results = append(results, rc)
+	} else {
+		for _, rec := range set.ResourceRecords {
+			switch rtype := *set.Type; rtype {
+			case "SOA":
+				continue
+			default:
+				rc := &models.RecordConfig{TTL: uint32(*set.TTL)}
+				rc.SetLabelFromFQDN(unescape(set.Name), origin)
+				if err := rc.PopulateFromString(*set.Type, *rec.Value, origin); err != nil {
+					panic(errors.Wrap(err, "unparsable record received from R53"))
+				}
+				results = append(results, rc)
+			}
+		}
+	}
+	return results
+}
+
 func getAliasMap(r *models.RecordConfig) map[string]string {
 	if r.Type != "R53_ALIAS" {
 		return nil
@@ -312,13 +316,14 @@ func getAliasMap(r *models.RecordConfig) map[string]string {
 
 func aliasToRRSet(zone *r53.HostedZone, r *models.RecordConfig) *r53.ResourceRecordSet {
 	rrset := &r53.ResourceRecordSet{
-		Name: sPtr(r.NameFQDN),
+		Name: sPtr(r.GetLabelFQDN()),
 		Type: sPtr(r.R53Alias["type"]),
 	}
 	zoneID := getZoneID(zone, r)
 	targetHealth := false
+	target := r.GetTargetField()
 	rrset.AliasTarget = &r53.AliasTarget{
-		DNSName:              &r.Target,
+		DNSName:              &target,
 		HostedZoneId:         aws.String(zoneID),
 		EvaluateTargetHealth: &targetHealth,
 	}

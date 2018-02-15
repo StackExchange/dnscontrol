@@ -35,7 +35,11 @@ func flattenSPFs(cfg *models.DNSConfig) []error {
 			}
 			if flatten, ok := txt.Metadata["flatten"]; ok && strings.HasPrefix(txt.Target, "v=spf1") {
 				rec = rec.Flatten(flatten)
-				txt.SetTxt(rec.TXT())
+				err = txt.SetTargetTXT(rec.TXT())
+				if err != nil {
+					errs = append(errs, err)
+					continue
+				}
 			}
 			// now split if needed
 			if split, ok := txt.Metadata["split"]; ok {
@@ -46,10 +50,10 @@ func flattenSPFs(cfg *models.DNSConfig) []error {
 				recs := rec.TXTSplit(split + "." + domain.Name)
 				for k, v := range recs {
 					if k == "@" {
-						txt.SetTxt(v)
+						txt.SetTargetTXT(v)
 					} else {
 						cp, _ := txt.Copy()
-						cp.SetTxt(v)
+						cp.SetTargetTXT(v)
 						cp.NameFQDN = k
 						cp.Name = dnsutil.TrimDomainName(k, domain.Name)
 						domain.Records = append(domain.Records, cp)
