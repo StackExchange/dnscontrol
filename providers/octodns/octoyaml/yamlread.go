@@ -9,7 +9,6 @@ data we output models.RecordConfig objects.
 */
 
 import (
-	"fmt"
 	"io"
 	"io/ioutil"
 	"math"
@@ -167,7 +166,7 @@ func parseLeaf(results models.Records, k string, v interface{}, origin string) (
 					// we should have enough to generate a single RecordConfig.
 					newRc := newRecordConfig(k, rType, "", rTTL, origin)
 					for k4, v4 := range v3.(map[interface{}]interface{}) {
-						fmt.Printf("parseLeaf: k4=%s v4=%s\n", k4, v4)
+						//fmt.Printf("parseLeaf: k4=%s v4=%s\n", k4, v4)
 						switch k4.(string) {
 						case "priority": // MX,SRV
 							priority := uint16(v4.(int))
@@ -182,7 +181,7 @@ func parseLeaf(results models.Records, k string, v interface{}, origin string) (
 							newRc.Target = v4.(string)
 						}
 					}
-					fmt.Printf("parseLeaf: append %v\n", newRc)
+					//fmt.Printf("parseLeaf: append %v\n", newRc)
 					someresults = append(someresults, newRc)
 				default:
 					return nil, errors.Errorf("parseLeaf: unknown type in map: rtype=%s k=%s v3.(type)=%T v3=%v", rType, k, v3, v3)
