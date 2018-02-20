@@ -31,8 +31,8 @@
   },
   "GANDI-LIVEDNS": {
     "COMMENT": "5: gandi does not accept TTLs less than 300",
-    "apikey": "$GANDI_KEY",
-    "domain": "$GANDI_DOMAIN",
+    "apikey": "$GANDILIVE_KEY",
+    "domain": "$GANDILIVE_DOMAIN",
     "knownFailures": "5"
   },
   "GCLOUD": {

@@ -11,7 +11,6 @@ import (
 	"github.com/StackExchange/dnscontrol/providers"
 	"github.com/StackExchange/dnscontrol/providers/diff"
 	"github.com/google/uuid"
-	"github.com/miekg/dns/dnsutil"
 	"github.com/pkg/errors"
 	gandiclient "github.com/prasmussen/gandi-api/client"
 	gandilivedomain "github.com/prasmussen/gandi-api/live_dns/domain"
@@ -35,7 +34,7 @@ func init() {
 func newLiveDsp(m map[string]string, metadata json.RawMessage) (providers.DNSServiceProvider, error) {
 	APIKey := m["apikey"]
 	if APIKey == "" {
-		return nil, fmt.Errorf("missing Gandi apikey")
+		return nil, errors.Errorf("missing Gandi apikey")
 	}
 
 	return newLiveClient(APIKey), nil
@@ -73,7 +72,7 @@ func (c *liveClient) GetNameservers(domain string) ([]*models.Nameserver, error)
 	domains := []string{}
 	response, err := c.client.Get("/nameservers/"+domain, &domains)
 	if err != nil {
-		return nil, fmt.Errorf("failed to get nameservers for domain %s", domain)
+		return nil, errors.Errorf("failed to get nameservers for domain %s", domain)
 	}
 	defer response.Body.Close()
 
@@ -87,9 +86,6 @@ func (c *liveClient) GetNameservers(domain string) ([]*models.Nameserver, error)
 // GetDomainCorrections returns a list of corrections recommended for this domain.
 func (c *liveClient) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Correction, error) {
 	dc.Punycode()
-	dc.CombineSRVs()
-	dc.CombineCAAs()
-	dc.CombineMXs()
 	records, err := c.domainManager.Records(dc.Name).List()
 	if err != nil {
 		return nil, err
@@ -110,7 +106,7 @@ func (c *liveClient) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Co
 	if len(create)+len(del)+len(mod) > 0 {
 		message := fmt.Sprintf("Setting dns records for %s:", dc.Name)
 		for _, record := range dc.Records {
-			message += "\n" + record.String()
+			message += "\n" + record.GetTargetCombined()
 		}
 		return []*models.Correction{
 			{
@@ -171,47 +167,19 @@ func (c *liveClient) createZone(domainname string, records []*gandiliverecord.In
 func (c *liveClient) recordConfigFromInfo(infos []*gandiliverecord.Info, origin string) []*models.RecordConfig {
 	rcs := []*models.RecordConfig{}
 	for _, info := range infos {
-		for i, value := range info.Values {
+		for _, value := range info.Values {
 			rc := &models.RecordConfig{
-				NameFQDN: dnsutil.AddOrigin(info.Name, origin),
-				Name:     info.Name,
 				Type:     info.Type,
 				Original: info,
-				Target:   value,
 				TTL:      uint32(info.TTL),
 			}
-			switch info.Type {
-			case "A", "AAAA", "NS", "CNAME", "PTR":
-				// no-op
-			case "TXT":
-				value = strings.Join(info.Values, " ")
-				rc.SetTxtParse(value)
-				rc.Target = value
-				if i > 0 {
-					continue
-				}
-			case "CAA":
-				var err error
-				rc.CaaTag, rc.CaaFlag, rc.Target, err = models.SplitCombinedCaaValue(value)
+			rc.SetLabel(info.Name, origin)
+			switch rtype := info.Type; rtype {
+			default: // "SRV", "CAA", "MX",
+				err := rc.PopulateFromString(rtype, value, origin)
 				if err != nil {
-					panic(fmt.Sprintf("gandi.convert bad caa value format: %#v (%s)", value, err))
+					panic(errors.Wrapf(err, "recordConfigFromInfo failed"))
 				}
-			case "SRV":
-				var err error
-				rc.SrvPriority, rc.SrvWeight, rc.SrvPort, rc.Target, err = models.SplitCombinedSrvValue(value)
-				if err != nil {
-					panic(fmt.Sprintf("gandi-livedns.convert bad srv value format: %#v (%s)", value, err))
-				}
-			case "MX":
-				var err error
-				rc.MxPreference, rc.Target, err = models.SplitCombinedMxValue(value)
-				if err != nil {
-					panic(fmt.Sprintf("gandi-livedns.convert bad mx value format: %#v", value))
-				}
-			default:
-				panic(fmt.Sprintf("gandi-livedns.convert unimplemented rtype %v", info.Type))
-				// We panic so that we quickly find any switch statements
-				// that have not been updated for a new RR type.
 			}
 			rcs = append(rcs, rc)
 		}
@@ -268,7 +236,7 @@ func (c *liveClient) recordsToInfo(records models.Records) (models.Records, []*g
 				r.Values = append(r.Values, "\""+t+"\"") // FIXME(tlim): Should do proper quoting.
 			}
 		} else {
-			r.Values = append(r.Values, rec.Content())
+			r.Values = append(r.Values, rec.GetTargetCombined())
 		}
 	}
 	return recordToKeep, recordInfos, nil

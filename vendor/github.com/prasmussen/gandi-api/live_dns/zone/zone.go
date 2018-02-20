@@ -79,6 +79,7 @@ func (z *Zone) Set(domainName string, zoneInfo Info) (status *Status, err error)
 		return nil, fmt.Errorf("could attach a domain %s to a zone %s without an id", domainName, zoneInfo.Name)
 	}
 	_, err = z.Post(fmt.Sprintf("/zones/%s/domains/%s", zoneInfo.UUID, domainName), nil, &status)
+
 	return
 }
 

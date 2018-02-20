@@ -10,6 +10,7 @@ import (
 	"strings"
 
 	"github.com/kolo/xmlrpc"
+	"github.com/pkg/errors"
 )
 
 const (
@@ -86,7 +87,11 @@ func (c *Client) DoRest(req *http.Request, decoded interface{}) (*http.Response,
 			if e != nil {
 				return nil, e
 			}
+			if resp.StatusCode == http.StatusBadRequest {
+				return nil, errors.Errorf("the server returned 400 bad request (%v)", string(b))
+			}
 		}
+
 		resp.Body = ioutil.NopCloser(bytes.NewReader(b))
 	}
 	return resp, err
