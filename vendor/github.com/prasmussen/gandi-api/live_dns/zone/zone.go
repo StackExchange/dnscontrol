@@ -76,7 +76,7 @@ func (z *Zone) Domains(zoneInfo Info) (domains []*domain.InfoBase, err error) {
 // Set the current zone of a domain
 func (z *Zone) Set(domainName string, zoneInfo Info) (status *Status, err error) {
 	if zoneInfo.UUID == nil {
-		return nil, fmt.Errorf("could attach a domain %s to a zone %s without an id", domainName, zoneInfo.Name)
+		return nil, fmt.Errorf("can not attach a domain %s to a zone %s without an id", domainName, zoneInfo.Name)
 	}
 	_, err = z.Post(fmt.Sprintf("/zones/%s/domains/%s", zoneInfo.UUID, domainName), nil, &status)
 
