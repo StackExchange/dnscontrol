@@ -127,7 +127,8 @@ func (c *liveClient) createZone(domainname string, records []*gandiliverecord.In
 	if err != nil {
 		return err
 	}
-	infos.Name = fmt.Sprintf("zone created by dnscontrol for %s on %s", domainname, time.Now().String())
+	infos.Name = fmt.Sprintf("zone created by dnscontrol for %s on %s", domainname, time.Now().Format(time.RFC3339))
+	fmt.Printf("DEBUG: createZone SharingID=%v\n", infos.SharingID)
 	// duplicate zone Infos
 	status, err := c.zoneManager.Create(*infos)
 	if err != nil {
@@ -175,7 +176,7 @@ func (c *liveClient) recordConfigFromInfo(infos []*gandiliverecord.Info, origin 
 			}
 			rc.SetLabel(info.Name, origin)
 			switch rtype := info.Type; rtype {
-			default: // "SRV", "CAA", "MX",
+			default:
 				err := rc.PopulateFromString(rtype, value, origin)
 				if err != nil {
 					panic(errors.Wrapf(err, "recordConfigFromInfo failed"))

@@ -46,6 +46,7 @@ type GandiApi struct {
 	domainIndex map[string]int64 // Map of domainname to index
 	nameservers map[string][]*models.Nameserver
 	ZoneId      int64
+	SharingID   string // LiveDNS sharing_id code.
 }
 
 type gandiRecord struct {

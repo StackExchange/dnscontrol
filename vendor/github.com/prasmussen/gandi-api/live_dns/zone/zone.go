@@ -28,6 +28,7 @@ func (z *Zone) List() (zones []*Info, err error) {
 // InfoByUUID Gets zone information from its UUID
 func (z *Zone) InfoByUUID(uuid uuid.UUID) (info *Info, err error) {
 	_, err = z.Get(fmt.Sprintf("/zones/%s", uuid), &info)
+	fmt.Printf("DEBUG: InfoByUUID returned SharingID=%v domain=%v\n", info.SharingID, info.Name)
 	return
 }
 
@@ -41,6 +42,7 @@ func (z *Zone) Info(zoneInfo Info) (info *Info, err error) {
 
 // Create creates a new zone
 func (z *Zone) Create(zoneInfo Info) (status *CreateStatus, err error) {
+	fmt.Printf("DEBUG: Create could set SharingID=%v domain=%v\n", zoneInfo.SharingID, zoneInfo.Name)
 	_, err = z.Post("/zones", zoneInfo, &status)
 	return
 }
@@ -78,6 +80,7 @@ func (z *Zone) Set(domainName string, zoneInfo Info) (status *Status, err error)
 	if zoneInfo.UUID == nil {
 		return nil, fmt.Errorf("can not attach a domain %s to a zone %s without an id", domainName, zoneInfo.Name)
 	}
+	fmt.Printf("DEBUG: Set has SharingID=%v domain=%s dn=%v\n", zoneInfo.SharingID, domainName, zoneInfo.Name)
 	_, err = z.Post(fmt.Sprintf("/zones/%s/domains/%s", zoneInfo.UUID, domainName), nil, &status)
 
 	return
