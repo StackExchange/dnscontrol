@@ -50,8 +50,7 @@ func (z *Zone) Create(zoneInfo Info) (status *CreateStatus, err error) {
 	if debug {
 		fmt.Printf("DEBUG: Create WILL SET SharingID=%v domain=%v\n", zoneInfo.SharingID, zoneInfo.Name)
 	}
-	//_, err = z.Post("/zones", zoneInfo, &status)
-	_, err = z.Post("/zones?sharing_id=b21bd6d2-5383-11e7-8261-00163e61ef31", zoneInfo, &status)
+	_, err = z.Post(fmt.Sprintf("/zones?sharing_id=%s", zoneInfo.SharingID), zoneInfo, &status)
 	return
 }
 
@@ -92,7 +91,7 @@ func (z *Zone) Set(domainName string, zoneInfo Info) (status *Status, err error)
 		fmt.Printf("DEBUG: Set WILL SET SharingID=%v domain=%s dn=%v\n", zoneInfo.SharingID, domainName, zoneInfo.Name)
 	}
 	_, err = z.Post(fmt.Sprintf("/zones/%s/domains/%s", zoneInfo.UUID, domainName), nil, &status)
-	//_, err = z.Post(fmt.Sprintf("/zones?sharing_id=%s/%s/domains/%s", "b21bd6d2-5383-11e7-8261-00163e61ef31", zoneInfo.UUID, domainName), nil, &status)
+	//_, err = z.Post(fmt.Sprintf("/zones?sharing_id=%s/%s/domains/%s", "FIND THE CODE", zoneInfo.UUID, domainName), nil, &status)
 	return
 }
 
