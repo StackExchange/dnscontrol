@@ -142,9 +142,9 @@ func (c *liveClient) createZone(domainname string, records []*gandiliverecord.In
 	zoneInfos, err := c.zoneManager.InfoByUUID(*status.UUID)
 	if err != nil {
 		// gandi might take some time to make the new zone available
-		for i := 0; i < 5; i++ {
-			log.Printf("INFO: Failed to retrieve new zone infos: %s. Leaving a delay before retry", err.Error())
-			time.Sleep(50 * time.Millisecond)
+		for i := 0; i < 10; i++ {
+			log.Printf("INFO: zone info not yet available. Delay and retry: %s", err.Error())
+			time.Sleep(100 * time.Millisecond)
 			zoneInfos, err = c.zoneManager.InfoByUUID(*status.UUID)
 			if err == nil {
 				break
