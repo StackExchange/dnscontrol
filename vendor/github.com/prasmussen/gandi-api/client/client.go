@@ -23,6 +23,9 @@ const (
 	LiveDNS
 )
 
+// Enable/disable debug output:
+const debug = false
+
 // SystemType is the type used to resolve gandi API address
 type SystemType int
 
@@ -156,15 +159,22 @@ func (c *Client) Delete(URI string, decoded interface{}) (*http.Response, error)
 // - decodes the returned data if a not null decoded pointer is provided
 // - ensures the status code is an HTTP accepted
 func (c *Client) Post(URI string, data interface{}, decoded interface{}) (*http.Response, error) {
+	if debug {
+		fmt.Printf("DEBUG: POST URI=%s\n", URI)
+	}
 	req, err := c.NewJSONRequest("POST", URI, data)
 	if err != nil {
 		return nil, err
+	}
+	if debug {
+		fmt.Printf("DEBUG: POST req=%v decoded=%v\n", req, decoded)
 	}
 	resp, err := c.DoRest(req, decoded)
 	if err != nil {
 		return nil, err
 	}
 	if resp.StatusCode != http.StatusCreated {
+		//panic(fmt.Errorf("Unexpected http code %d on URL %v. expecting %d", resp.StatusCode, resp.Request.URL, http.StatusCreated))
 		return nil, fmt.Errorf("Unexpected http code %d on URL %v. expecting %d", resp.StatusCode, resp.Request.URL, http.StatusCreated)
 	}
 	return resp, err

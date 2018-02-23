@@ -18,6 +18,9 @@ import (
 	gandilivezone "github.com/prasmussen/gandi-api/live_dns/zone"
 )
 
+// Enable/disable debug output:
+const debug = false
+
 var liveFeatures = providers.DocumentationNotes{
 	providers.CanUseCAA:              providers.Can(),
 	providers.CanUsePTR:              providers.Can(),
@@ -128,7 +131,9 @@ func (c *liveClient) createZone(domainname string, records []*gandiliverecord.In
 		return err
 	}
 	infos.Name = fmt.Sprintf("zone created by dnscontrol for %s on %s", domainname, time.Now().Format(time.RFC3339))
-	fmt.Printf("DEBUG: createZone SharingID=%v\n", infos.SharingID)
+	if debug {
+		fmt.Printf("DEBUG: createZone SharingID=%v\n", infos.SharingID)
+	}
 	// duplicate zone Infos
 	status, err := c.zoneManager.Create(*infos)
 	if err != nil {
