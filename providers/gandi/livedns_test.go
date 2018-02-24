@@ -50,7 +50,7 @@ func TestRecordConfigFromInfo(t *testing.T) {
 					NameFQDN:   "www.example.com",
 					Name:       "www",
 					Type:       "TXT",
-					Target:     "\"test 2\" \"test message test message test message\"",
+					Target:     "test 2",
 					TxtStrings: []string{"test 2", "test message test message test message"},
 					TTL:        500,
 				},

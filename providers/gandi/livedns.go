@@ -173,21 +173,43 @@ func (c *liveClient) createZone(domainname string, records []*gandiliverecord.In
 func (c *liveClient) recordConfigFromInfo(infos []*gandiliverecord.Info, origin string) []*models.RecordConfig {
 	rcs := []*models.RecordConfig{}
 	for _, info := range infos {
-		for _, value := range info.Values {
+		// TXT records might have multiple values. In that case,
+		// they are all for the TXT record at that label.
+		if info.Type == "TXT" {
 			rc := &models.RecordConfig{
 				Type:     info.Type,
 				Original: info,
 				TTL:      uint32(info.TTL),
 			}
 			rc.SetLabel(info.Name, origin)
-			switch rtype := info.Type; rtype {
-			default:
-				err := rc.PopulateFromString(rtype, value, origin)
-				if err != nil {
-					panic(errors.Wrapf(err, "recordConfigFromInfo failed"))
-				}
+			var parsed []string
+			for _, txt := range info.Values {
+				parsed = append(parsed, models.StripQuotes(txt))
+			}
+			err := rc.SetTargetTXTs(parsed)
+			if err != nil {
+				panic(errors.Wrapf(err, "recordConfigFromInfo=TXT failed"))
 			}
 			rcs = append(rcs, rc)
+		} else {
+			// All other record types might have multiple values, but that means
+			// we should create one Recordconfig for each one.
+			for _, value := range info.Values {
+				rc := &models.RecordConfig{
+					Type:     info.Type,
+					Original: info,
+					TTL:      uint32(info.TTL),
+				}
+				rc.SetLabel(info.Name, origin)
+				switch rtype := info.Type; rtype {
+				default:
+					err := rc.PopulateFromString(rtype, value, origin)
+					if err != nil {
+						panic(errors.Wrapf(err, "recordConfigFromInfo failed"))
+					}
+				}
+				rcs = append(rcs, rc)
+			}
 		}
 	}
 	return rcs
