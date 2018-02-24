@@ -10,7 +10,6 @@ import (
 	"strings"
 
 	"github.com/kolo/xmlrpc"
-	"github.com/pkg/errors"
 )
 
 const (
@@ -91,10 +90,9 @@ func (c *Client) DoRest(req *http.Request, decoded interface{}) (*http.Response,
 				return nil, e
 			}
 			if resp.StatusCode == http.StatusBadRequest {
-				return nil, errors.Errorf("the server returned 400 bad request (%v)", string(b))
+				return nil, fmt.Errorf("the server returned 400 bad request (%v)", string(b))
 			}
 		}
-
 		resp.Body = ioutil.NopCloser(bytes.NewReader(b))
 	}
 	return resp, err
@@ -174,7 +172,6 @@ func (c *Client) Post(URI string, data interface{}, decoded interface{}) (*http.
 		return nil, err
 	}
 	if resp.StatusCode != http.StatusCreated {
-		//panic(fmt.Errorf("Unexpected http code %d on URL %v. expecting %d", resp.StatusCode, resp.Request.URL, http.StatusCreated))
 		return nil, fmt.Errorf("Unexpected http code %d on URL %v. expecting %d", resp.StatusCode, resp.Request.URL, http.StatusCreated)
 	}
 	return resp, err
