@@ -15,6 +15,7 @@ import (
 	_ "github.com/StackExchange/dnscontrol/providers/_all"
 	"github.com/StackExchange/dnscontrol/providers/config"
 	"github.com/miekg/dns/dnsutil"
+	"github.com/pkg/errors"
 )
 
 var providerToRun = flag.String("provider", "", "Provider to run")
@@ -118,7 +119,7 @@ func runTests(t *testing.T, prv providers.DNSServiceProvider, domainName string,
 			// get corrections for first time
 			corrections, err := prv.GetDomainCorrections(dom)
 			if err != nil {
-				t.Fatal(err)
+				t.Fatal(errors.Wrap(err, "decode gandi-live"))
 			}
 			if !skipVal && i != *startIdx && len(corrections) == 0 {
 				if tst.Desc != "Empty" {

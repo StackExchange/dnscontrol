@@ -26,7 +26,8 @@ func (rc *RecordConfig) SetTargetTXTs(s []string) error {
 	return nil
 }
 
-// SetTargetTXTString is like SetTargetTXT but accepts one big string.
+// SetTargetTXTString is like SetTargetTXT but accepts one big string,
+// which must be parsed into one or more strings based on how it is quoted.
 // Ex: foo             << 1 string
 //     foo bar         << 1 string
 //     "foo" "bar"     << 2 strings
