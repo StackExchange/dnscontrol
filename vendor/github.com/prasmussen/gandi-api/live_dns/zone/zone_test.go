@@ -145,14 +145,16 @@ func TestList(t *testing.T) {
 }
 
 func TestCreate(t *testing.T) {
+	testuuid, _ := uuid.Parse("d85976ac-16d8-11e7-bbe1-00163e61ef31")
 	RunTest(t,
-		"POST", "/api/v5/zones",
-		`{"name": "example.com Zone"}`,
+		"POST", "/api/v5/zones?sharing_id=d85976ac-16d8-11e7-bbe1-00163e61ef31",
+		`{"sharing_id":"d85976ac-16d8-11e7-bbe1-00163e61ef31", "name": "example.com Zone"}`,
 		`{"message": "Zone Created", "uuid": "12bb7678-e43e-11e7-80c1-00163e6dc886"}`,
 		http.StatusCreated,
 		func(t testing.TB, z *Zone) {
 			zoneInfo := Info{
-				Name: "example.com Zone",
+				Name:      "example.com Zone",
+				SharingID: &testuuid,
 			}
 			info, err := z.Create(zoneInfo)
 			assert.NoError(t, err)

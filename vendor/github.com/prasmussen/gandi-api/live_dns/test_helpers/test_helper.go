@@ -14,6 +14,7 @@ import (
 
 // RunTest starts an http, asserts calls provided as arguments and writes the response
 func RunTest(t testing.TB, method, uri, requestBody, responseBody string, code int, call func(t testing.TB, c *client.Client)) {
+	t.Helper()
 	handler := func(w http.ResponseWriter, r *http.Request) {
 		defer func() {
 			err := r.Body.Close()
