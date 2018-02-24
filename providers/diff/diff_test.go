@@ -1,6 +1,7 @@
 package diff
 
 import (
+	"fmt"
 	"strconv"
 	"strings"
 	"testing"
@@ -70,6 +71,11 @@ func TestUnchangedWithAddition(t *testing.T) {
 	}
 }
 
+// s stringifies a RecordConfig for testing purposes.
+func s(rc *models.RecordConfig) string {
+	return fmt.Sprintf("%s %s %d %s", rc.GetLabel(), rc.Type, rc.TTL, rc.GetTargetCombined())
+}
+
 func TestOutOfOrderRecords(t *testing.T) {
 	existing := []*models.RecordConfig{
 		myRecord("www A 1 1.1.1.1"),
@@ -83,8 +89,8 @@ func TestOutOfOrderRecords(t *testing.T) {
 		myRecord("www A 10 3.3.3.3"),
 	}
 	_, _, _, mods := checkLengths(t, existing, desired, 2, 1, 0, 1)
-	if mods[0].Desired != desired[3] || mods[0].Existing != existing[2] {
-		t.Fatalf("Expected to match %s and %s, but matched %s and %s", existing[2], desired[3], mods[0].Existing, mods[0].Desired)
+	if s(mods[0].Desired) != s(desired[3]) || s(mods[0].Existing) != s(existing[2]) {
+		t.Fatalf("Expected to match %s and %s, but matched %s and %s", s(existing[2]), s(desired[3]), s(mods[0].Existing), s(mods[0].Desired))
 	}
 }
 
