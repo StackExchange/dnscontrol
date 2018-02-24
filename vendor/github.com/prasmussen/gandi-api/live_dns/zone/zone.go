@@ -9,8 +9,8 @@ import (
 	"github.com/prasmussen/gandi-api/live_dns/record"
 )
 
-//var debug = true
-var debug = false
+// Enable/disable debug output:
+const debug = false
 
 // Zone holds the zone client structure
 type Zone struct {
@@ -91,7 +91,6 @@ func (z *Zone) Set(domainName string, zoneInfo Info) (status *Status, err error)
 		fmt.Printf("DEBUG: Set WILL SET SharingID=%v domain=%s dn=%v\n", zoneInfo.SharingID, domainName, zoneInfo.Name)
 	}
 	_, err = z.Post(fmt.Sprintf("/zones/%s/domains/%s", zoneInfo.UUID, domainName), nil, &status)
-	//_, err = z.Post(fmt.Sprintf("/zones?sharing_id=%s/%s/domains/%s", "FIND THE CODE", zoneInfo.UUID, domainName), nil, &status)
 	return
 }
 

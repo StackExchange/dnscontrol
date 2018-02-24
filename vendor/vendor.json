@@ -339,52 +339,87 @@
 			"revisionTime": "2017-09-08T20:15:21Z"
 		},
 		{
-			"checksumSHA1": "iR+qtc2CtY1XRrdavOMZ6R1eJv0=",
+			"checksumSHA1": "g0iJmr5AXMhnbtZRpYdiXJ+wToY=",
 			"path": "github.com/prasmussen/gandi-api/client",
-			"revision": "00637462a528a482a9f3486333be02266bce2086",
-			"revisionTime": "2018-01-16T21:20:20Z"
+			"revision": "58d3d42056619bb56e311c115c1c95294b5ec60b",
+			"revisionTime": "2018-02-24T13:22:02Z"
+		},
+		{
+			"checksumSHA1": "9tjoj3PcsKSKiX47mnZIgoFrs4U=",
+			"origin": "github.com/StackExchange/dnscontrol/vendor/github.com/prasmussen/gandi-api/contact",
+			"path": "github.com/prasmussen/gandi-api/contact",
+			"revision": "58d3d42056619bb56e311c115c1c95294b5ec60b",
+			"revisionTime": "2018-02-24T13:22:02Z"
 		},
 		{
 			"checksumSHA1": "US0LGupyHvXgr2iDH7kw4f7KOcc=",
 			"path": "github.com/prasmussen/gandi-api/domain",
-			"revision": "00637462a528a482a9f3486333be02266bce2086",
-			"revisionTime": "2018-01-16T21:20:20Z"
+			"revision": "58d3d42056619bb56e311c115c1c95294b5ec60b",
+			"revisionTime": "2018-02-24T13:22:02Z"
 		},
 		{
 			"checksumSHA1": "QCTGEMnU3WqIX51TqbRvAuwu4Wo=",
 			"path": "github.com/prasmussen/gandi-api/domain/nameservers",
-			"revision": "00637462a528a482a9f3486333be02266bce2086",
-			"revisionTime": "2018-01-16T21:20:20Z"
+			"revision": "58d3d42056619bb56e311c115c1c95294b5ec60b",
+			"revisionTime": "2018-02-24T13:22:02Z"
 		},
 		{
 			"checksumSHA1": "/t4nBKtJF6W3PHzTBNAzgcw54GU=",
 			"path": "github.com/prasmussen/gandi-api/domain/zone",
-			"revision": "00637462a528a482a9f3486333be02266bce2086",
-			"revisionTime": "2018-01-16T21:20:20Z"
+			"revision": "58d3d42056619bb56e311c115c1c95294b5ec60b",
+			"revisionTime": "2018-02-24T13:22:02Z"
 		},
 		{
 			"checksumSHA1": "wmLJwLc3SlIGhio+vWofJq4XSTU=",
 			"path": "github.com/prasmussen/gandi-api/domain/zone/record",
-			"revision": "00637462a528a482a9f3486333be02266bce2086",
-			"revisionTime": "2018-01-16T21:20:20Z"
+			"revision": "58d3d42056619bb56e311c115c1c95294b5ec60b",
+			"revisionTime": "2018-02-24T13:22:02Z"
 		},
 		{
 			"checksumSHA1": "avzpVkEeXzDiaNLsl4agXWm9tm0=",
 			"path": "github.com/prasmussen/gandi-api/domain/zone/version",
-			"revision": "00637462a528a482a9f3486333be02266bce2086",
-			"revisionTime": "2018-01-16T21:20:20Z"
+			"revision": "58d3d42056619bb56e311c115c1c95294b5ec60b",
+			"revisionTime": "2018-02-24T13:22:02Z"
+		},
+		{
+			"checksumSHA1": "lgixSmeD/e2zKVoMq3xJ+0ormhQ=",
+			"origin": "github.com/StackExchange/dnscontrol/vendor/github.com/prasmussen/gandi-api/live_dns/domain",
+			"path": "github.com/prasmussen/gandi-api/live_dns/domain",
+			"revision": "58d3d42056619bb56e311c115c1c95294b5ec60b",
+			"revisionTime": "2018-02-24T13:22:02Z"
+		},
+		{
+			"checksumSHA1": "YOKj2uCylMIaRNJHaOIVEns0K6c=",
+			"origin": "github.com/StackExchange/dnscontrol/vendor/github.com/prasmussen/gandi-api/live_dns/record",
+			"path": "github.com/prasmussen/gandi-api/live_dns/record",
+			"revision": "58d3d42056619bb56e311c115c1c95294b5ec60b",
+			"revisionTime": "2018-02-24T13:22:02Z"
+		},
+		{
+			"checksumSHA1": "5TdSD8BWzrTLi2OizfUv2zqbbzQ=",
+			"origin": "github.com/StackExchange/dnscontrol/vendor/github.com/prasmussen/gandi-api/live_dns/test_helpers",
+			"path": "github.com/prasmussen/gandi-api/live_dns/test_helpers",
+			"revision": "58d3d42056619bb56e311c115c1c95294b5ec60b",
+			"revisionTime": "2018-02-24T13:22:02Z"
+		},
+		{
+			"checksumSHA1": "qCClQEFkVUcQrQw6n+zWGl0JMwc=",
+			"origin": "github.com/StackExchange/dnscontrol/vendor/github.com/prasmussen/gandi-api/live_dns/zone",
+			"path": "github.com/prasmussen/gandi-api/live_dns/zone",
+			"revision": "58d3d42056619bb56e311c115c1c95294b5ec60b",
+			"revisionTime": "2018-02-24T13:22:02Z"
 		},
 		{
 			"checksumSHA1": "txVNPkzE0Jkag20VZ1hLj/Td+O4=",
 			"path": "github.com/prasmussen/gandi-api/operation",
-			"revision": "00637462a528a482a9f3486333be02266bce2086",
-			"revisionTime": "2018-01-16T21:20:20Z"
+			"revision": "58d3d42056619bb56e311c115c1c95294b5ec60b",
+			"revisionTime": "2018-02-24T13:22:02Z"
 		},
 		{
 			"checksumSHA1": "FwIh1Rk/XNANaxCz3Fw/vQ3Hu5E=",
 			"path": "github.com/prasmussen/gandi-api/util",
-			"revision": "00637462a528a482a9f3486333be02266bce2086",
-			"revisionTime": "2018-01-16T21:20:20Z"
+			"revision": "58d3d42056619bb56e311c115c1c95294b5ec60b",
+			"revisionTime": "2018-02-24T13:22:02Z"
 		},
 		{
 			"checksumSHA1": "NLTyYVX4dn8jV1iad7p494AiZ8E=",
