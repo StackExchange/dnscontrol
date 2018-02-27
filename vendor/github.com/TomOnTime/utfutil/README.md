@@ -8,7 +8,6 @@ Have you encountered this situation?  Code that has worked for years
 suddenly breaks.  It turns out someone tried to use it with a file
 that came from a MS-Windows system. Now this perfectly good code stops
 working.
-
 Looking at a hex dump you realize every other byte is \0.  WTF?
 No, UTF.  More specifically UTF-16LE with an optional BOM.
 
