@@ -119,7 +119,7 @@ func runTests(t *testing.T, prv providers.DNSServiceProvider, domainName string,
 			// get corrections for first time
 			corrections, err := prv.GetDomainCorrections(dom)
 			if err != nil {
-				t.Fatal(errors.Wrap(err, "decode gandi-live"))
+				t.Fatal(errors.Wrap(err, "runTests"))
 			}
 			if !skipVal && i != *startIdx && len(corrections) == 0 {
 				if tst.Desc != "Empty" {
