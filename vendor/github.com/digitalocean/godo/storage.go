@@ -85,6 +85,10 @@ func (svc *StorageServiceOp) ListVolumes(ctx context.Context, params *ListVolume
 	if params != nil {
 		if params.Region != "" && params.Name != "" {
 			path = fmt.Sprintf("%s?name=%s&region=%s", path, params.Name, params.Region)
+		} else if params.Region != "" {
+			path = fmt.Sprintf("%s?region=%s", path, params.Region)
+		} else if params.Name != "" {
+			path = fmt.Sprintf("%s?name=%s", path, params.Name)
 		}
 
 		if params.ListOptions != nil {

@@ -21,11 +21,13 @@ import (
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
+	"math/rand"
 	"net/http"
 	"net/url"
 	"reflect"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/softlayer/softlayer-go/datatypes"
 	"github.com/softlayer/softlayer-go/sl"
@@ -50,7 +52,7 @@ func (r *RestTransport) DoRequest(sess *Session, service string, method string, 
 
 	path := buildPath(service, method, options)
 
-	resp, code, err := makeHTTPRequest(
+	resp, code, err := sendHTTPRequest(
 		sess,
 		path,
 		restMethod,
@@ -58,21 +60,16 @@ func (r *RestTransport) DoRequest(sess *Session, service string, method string, 
 		options)
 
 	if err != nil {
-		return sl.Error{Wrapped: err}
+		//Preserve the original sl error
+		if _, ok := err.(sl.Error); ok {
+			return err
+		}
+		return sl.Error{Wrapped: err, StatusCode: code}
 	}
 
-	if code < 200 || code > 299 {
-		e := sl.Error{StatusCode: code}
-
-		err = json.Unmarshal(resp, &e)
-
-		// If unparseable, wrap the json error
-		if err != nil {
-			e.Wrapped = err
-			e.Message = err.Error()
-		}
-
-		return e
+	err = findResponseError(code, resp)
+	if err != nil {
+		return err
 	}
 
 	// Some APIs that normally return a collection, omit the []'s when the API returns a single value
@@ -136,7 +133,7 @@ func buildPath(service string, method string, options *sl.Options) string {
 
 	// omit the API method name if the method represents one of the basic REST methods
 	if method != "getObject" && method != "deleteObject" && method != "createObject" &&
-		method != "createObjects" && method != "editObject" && method != "editObjects" {
+		method != "editObject" && method != "editObjects" {
 		path = path + "/" + method
 	}
 
@@ -168,7 +165,49 @@ func encodeQuery(opts *sl.Options) string {
 	return query.Encode()
 }
 
-func makeHTTPRequest(session *Session, path string, requestType string, requestBody *bytes.Buffer, options *sl.Options) ([]byte, int, error) {
+func sendHTTPRequest(
+	sess *Session, path string, requestType string,
+	requestBody *bytes.Buffer, options *sl.Options) ([]byte, int, error) {
+
+	retries := sess.Retries
+	if retries < 2 {
+		return makeHTTPRequest(sess, path, requestType, requestBody, options)
+	}
+
+	wait := sess.RetryWait
+	if wait == 0 {
+		wait = DefaultRetryWait
+	}
+
+	return tryHTTPRequest(retries, wait, sess, path, requestType, requestBody, options)
+}
+
+func tryHTTPRequest(
+	retries int, wait time.Duration, sess *Session,
+	path string, requestType string, requestBody *bytes.Buffer,
+	options *sl.Options) ([]byte, int, error) {
+
+	resp, code, err := makeHTTPRequest(sess, path, requestType, requestBody, options)
+	if err != nil {
+		if !isRetryable(err) {
+			return resp, code, err
+		}
+
+		if retries--; retries > 0 {
+			jitter := time.Duration(rand.Int63n(int64(wait)))
+			wait = wait + jitter/2
+			time.Sleep(wait)
+			return tryHTTPRequest(
+				retries, wait, sess, path, requestType, requestBody, options)
+		}
+	}
+
+	return resp, code, err
+}
+
+func makeHTTPRequest(
+	session *Session, path string, requestType string,
+	requestBody *bytes.Buffer, options *sl.Options) ([]byte, int, error) {
 	log := Logger
 	client := http.DefaultClient
 	client.Timeout = DefaultTimeout
@@ -194,6 +233,13 @@ func makeHTTPRequest(session *Session, path string, requestType string, requestB
 		req.SetBasicAuth(fmt.Sprintf("%d", session.UserId), session.AuthToken)
 	}
 
+	// For cases where session is built from the raw structure and not using New() , the UserAgent would be empty
+	if session.userAgent == "" {
+		session.userAgent = getDefaultUserAgent()
+	}
+
+	req.Header.Set("User-Agent", session.userAgent)
+
 	req.URL.RawQuery = encodeQuery(options)
 
 	if session.Debug {
@@ -203,7 +249,16 @@ func makeHTTPRequest(session *Session, path string, requestType string, requestB
 
 	resp, err := client.Do(req)
 	if err != nil {
-		return nil, 520, err
+		statusCode := 520
+		if resp != nil && resp.StatusCode != 0 {
+			statusCode = resp.StatusCode
+		}
+
+		if isTimeout(err) {
+			statusCode = 599
+		}
+
+		return nil, statusCode, err
 	}
 
 	defer resp.Body.Close()
@@ -216,7 +271,8 @@ func makeHTTPRequest(session *Session, path string, requestType string, requestB
 	if session.Debug {
 		log.Println("[DEBUG] Response: ", string(responseBody))
 	}
-	return responseBody, resp.StatusCode, nil
+	err = findResponseError(resp.StatusCode, responseBody)
+	return responseBody, resp.StatusCode, err
 }
 
 func httpMethod(name string, args []interface{}) string {
@@ -229,4 +285,18 @@ func httpMethod(name string, args []interface{}) string {
 	}
 
 	return "GET"
+}
+
+func findResponseError(code int, resp []byte) error {
+	if code < 200 || code > 299 {
+		e := sl.Error{StatusCode: code}
+		err := json.Unmarshal(resp, &e)
+		// If unparseable, wrap the json error
+		if err != nil {
+			e.Wrapped = err
+			e.Message = err.Error()
+		}
+		return e
+	}
+	return nil
 }

@@ -84,13 +84,17 @@ func (r *FirewallRule) UnmarshalJSON(data []byte) (err error) {
 	r.Protocol = fmt.Sprintf("%v", fields["protocol"])
 	r.Port = fmt.Sprintf("%v", fields["port"])
 	subnet := fmt.Sprintf("%v", fields["subnet"])
+	if subnet == "<nil>" {
+		subnet = ""
+	}
 
-	if subnetSize > 0 && len(subnet) > 0 {
+	if len(subnet) > 0 {
 		_, r.Network, err = net.ParseCIDR(fmt.Sprintf("%s/%d", subnet, subnetSize))
 		if err != nil {
 			return fmt.Errorf("Failed to parse subnet from Vultr API")
 		}
 	} else {
+		// This case is used to create a valid default CIDR when the Vultr API does not return a subnet/subnet size at all, e.g. the response after creating a new rule.
 		_, r.Network, _ = net.ParseCIDR("0.0.0.0/0")
 	}
 

@@ -75,6 +75,12 @@ func (r Billing_Currency) GetAllObjects() (resp []datatypes.Billing_Currency, er
 	return
 }
 
+// Retrieve The current exchange rate
+func (r Billing_Currency) GetCurrentExchangeRate() (resp datatypes.Billing_Currency_ExchangeRate, err error) {
+	err = r.Session.DoRequest("SoftLayer_Billing_Currency", "getCurrentExchangeRate", nil, &r.Options, &resp)
+	return
+}
+
 // no documentation yet
 func (r Billing_Currency) GetObject() (resp datatypes.Billing_Currency, err error) {
 	err = r.Session.DoRequest("SoftLayer_Billing_Currency", "getObject", nil, &r.Options, &resp)
@@ -447,6 +453,12 @@ func (r Billing_Invoice) GetItems() (resp []datatypes.Billing_Invoice_Item, err 
 	return
 }
 
+// Retrieve Exchange rate used for billing this invoice.
+func (r Billing_Invoice) GetLocalCurrencyExchangeRate() (resp datatypes.Billing_Currency_ExchangeRate, err error) {
+	err = r.Session.DoRequest("SoftLayer_Billing_Invoice", "getLocalCurrencyExchangeRate", nil, &r.Options, &resp)
+	return
+}
+
 // getObject retrieves the SoftLayer_Billing_Invoice object whose ID number corresponds to the ID number of the init parameter passed to the SoftLayer_Billing_Invoice service. You can only retrieve invoices that are assigned to your portal user's account.
 func (r Billing_Invoice) GetObject() (resp datatypes.Billing_Invoice, err error) {
 	err = r.Session.DoRequest("SoftLayer_Billing_Invoice", "getObject", nil, &r.Options, &resp)
@@ -700,6 +712,12 @@ func (r Billing_Invoice_Item) GetTotalRecurringAmount() (resp datatypes.Float64,
 // Retrieve A Billing Item's total, including any child billing items if they exist.'
 func (r Billing_Invoice_Item) GetTotalRecurringTaxAmount() (resp datatypes.Float64, err error) {
 	err = r.Session.DoRequest("SoftLayer_Billing_Invoice_Item", "getTotalRecurringTaxAmount", nil, &r.Options, &resp)
+	return
+}
+
+// Retrieve Indicating whether this invoice item is for the usage charge.
+func (r Billing_Invoice_Item) GetUsageChargeFlag() (resp bool, err error) {
+	err = r.Session.DoRequest("SoftLayer_Billing_Invoice_Item", "getUsageChargeFlag", nil, &r.Options, &resp)
 	return
 }
 
@@ -2562,6 +2580,12 @@ func (r Billing_Order_Item) GetPackage() (resp datatypes.Product_Package, err er
 // Retrieve The parent order item ID for an item. Items that are associated with a server will have a parent. The parent will be the server item itself.
 func (r Billing_Order_Item) GetParent() (resp datatypes.Billing_Order_Item, err error) {
 	err = r.Session.DoRequest("SoftLayer_Billing_Order_Item", "getParent", nil, &r.Options, &resp)
+	return
+}
+
+// Retrieve The SoftLayer_Product_Package_Preset related to this order item.
+func (r Billing_Order_Item) GetPreset() (resp datatypes.Product_Package_Preset, err error) {
+	err = r.Session.DoRequest("SoftLayer_Billing_Order_Item", "getPreset", nil, &r.Options, &resp)
 	return
 }
 

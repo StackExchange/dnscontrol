@@ -51,7 +51,7 @@ type ZoneRecordListOptions struct {
 
 	// Select records of given type.
 	// Eg. TXT, A, NS.
-	Type string `url:"record_type,omitempty"`
+	Type string `url:"type,omitempty"`
 
 	ListOptions
 }

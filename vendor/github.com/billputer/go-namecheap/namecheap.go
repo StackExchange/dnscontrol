@@ -40,6 +40,7 @@ type ApiRequest struct {
 type ApiResponse struct {
 	Status             string                    `xml:"Status,attr"`
 	Command            string                    `xml:"RequestedCommand"`
+	TLDList            []TLDListResult           `xml:"CommandResponse>Tlds>Tld"`
 	Domains            []DomainGetListResult     `xml:"CommandResponse>DomainGetListResult>Domain"`
 	DomainInfo         *DomainInfo               `xml:"CommandResponse>DomainGetInfoResult"`
 	DomainDNSHosts     *DomainDNSGetHostsResult  `xml:"CommandResponse>DomainDNSGetHostsResult"`
@@ -48,6 +49,7 @@ type ApiResponse struct {
 	DomainsCheck       []DomainCheckResult       `xml:"CommandResponse>DomainCheckResult"`
 	DomainNSInfo       *DomainNSInfoResult       `xml:"CommandResponse>DomainNSInfoResult"`
 	DomainDNSSetCustom *DomainDNSSetCustomResult `xml:"CommandResponse>DomainDNSSetCustomResult"`
+	UsersGetPricing    []UsersGetPricingResult   `xml:"CommandResponse>UserGetPricingResult>ProductType"`
 	Errors             []ApiError                `xml:"Errors>Error"`
 }
 

@@ -29,7 +29,7 @@ import (
 	"github.com/softlayer/softlayer-go/sl"
 )
 
-// This type presents the structure for a DedicatedHost. The type contains relational properties to distinguish a host, associate an account to it.
+// This data type presents the structure for a dedicated host. The data type contains relational properties to distinguish a dedicated host and associate an account to it.
 type Virtual_DedicatedHost struct {
 	Session *session.Session
 	Options sl.Options
@@ -69,13 +69,13 @@ func (r Virtual_DedicatedHost) Offset(offset int) Virtual_DedicatedHost {
 	return r
 }
 
-// This method will cancel a dedicated virtual host immediately.
+// This method will cancel a dedicated host immediately.
 func (r Virtual_DedicatedHost) DeleteObject() (resp bool, err error) {
 	err = r.Session.DoRequest("SoftLayer_Virtual_DedicatedHost", "deleteObject", nil, &r.Options, &resp)
 	return
 }
 
-// Edit a dedicated host's properties
+// Edit a dedicated host's properties.
 func (r Virtual_DedicatedHost) EditObject(templateObject *datatypes.Virtual_DedicatedHost) (resp bool, err error) {
 	params := []interface{}{
 		templateObject,
@@ -84,25 +84,19 @@ func (r Virtual_DedicatedHost) EditObject(templateObject *datatypes.Virtual_Dedi
 	return
 }
 
-// Get the allocation properties for a specified virtual host
-func (r Virtual_DedicatedHost) FetchAllocationStatus() (resp datatypes.Container_Virtual_DedicatedHost_AllocationStatus, err error) {
-	err = r.Session.DoRequest("SoftLayer_Virtual_DedicatedHost", "fetchAllocationStatus", nil, &r.Options, &resp)
-	return
-}
-
-// Retrieve The account which dedicated host belongs to.
+// Retrieve The account that the dedicated host belongs to.
 func (r Virtual_DedicatedHost) GetAccount() (resp datatypes.Account, err error) {
 	err = r.Session.DoRequest("SoftLayer_Virtual_DedicatedHost", "getAccount", nil, &r.Options, &resp)
 	return
 }
 
-// Retrieve The container representing allocations on a dedicated host.
+// Retrieve The container that represents allocations on the dedicated host.
 func (r Virtual_DedicatedHost) GetAllocationStatus() (resp datatypes.Container_Virtual_DedicatedHost_AllocationStatus, err error) {
 	err = r.Session.DoRequest("SoftLayer_Virtual_DedicatedHost", "getAllocationStatus", nil, &r.Options, &resp)
 	return
 }
 
-// This method will get the available backend routers to order [[SoftLayer_Virtual_DedicatedHost]]
+// This method will get the available backend routers to order a dedicated host.
 func (r Virtual_DedicatedHost) GetAvailableRouters(dedicatedHost *datatypes.Virtual_DedicatedHost) (resp []datatypes.Hardware, err error) {
 	params := []interface{}{
 		dedicatedHost,
@@ -111,25 +105,25 @@ func (r Virtual_DedicatedHost) GetAvailableRouters(dedicatedHost *datatypes.Virt
 	return
 }
 
-// Retrieve The backendRouter behind dedicated host's pool.
+// Retrieve The backend router behind dedicated host's pool of resources.
 func (r Virtual_DedicatedHost) GetBackendRouter() (resp datatypes.Hardware_Router_Backend, err error) {
 	err = r.Session.DoRequest("SoftLayer_Virtual_DedicatedHost", "getBackendRouter", nil, &r.Options, &resp)
 	return
 }
 
-// Retrieve The billing item for a dedicated host.
+// Retrieve The billing item for the dedicated host.
 func (r Virtual_DedicatedHost) GetBillingItem() (resp datatypes.Billing_Item_Virtual_DedicatedHost, err error) {
 	err = r.Session.DoRequest("SoftLayer_Virtual_DedicatedHost", "getBillingItem", nil, &r.Options, &resp)
 	return
 }
 
-// Retrieve The datacenter that the host resides in.
+// Retrieve The datacenter that the dedicated host resides in.
 func (r Virtual_DedicatedHost) GetDatacenter() (resp datatypes.Location, err error) {
 	err = r.Session.DoRequest("SoftLayer_Virtual_DedicatedHost", "getDatacenter", nil, &r.Options, &resp)
 	return
 }
 
-// Retrieve The guests associated with a host.
+// Retrieve The guests associated with the dedicated host.
 func (r Virtual_DedicatedHost) GetGuests() (resp []datatypes.Virtual_Guest, err error) {
 	err = r.Session.DoRequest("SoftLayer_Virtual_DedicatedHost", "getGuests", nil, &r.Options, &resp)
 	return
@@ -2103,7 +2097,13 @@ func (r Virtual_Guest_Block_Device_Template_Group) Offset(offset int) Virtual_Gu
 	return r
 }
 
-// <<<EOT
+// This method allows you to mark this image template as customer managed software license (BYOL)
+func (r Virtual_Guest_Block_Device_Template_Group) AddByolAttribute() (resp bool, err error) {
+	err = r.Session.DoRequest("SoftLayer_Virtual_Guest_Block_Device_Template_Group", "addByolAttribute", nil, &r.Options, &resp)
+	return
+}
+
+// This method allows you to mark this image template as cloud init
 func (r Virtual_Guest_Block_Device_Template_Group) AddCloudInitAttribute() (resp bool, err error) {
 	err = r.Session.DoRequest("SoftLayer_Virtual_Guest_Block_Device_Template_Group", "addCloudInitAttribute", nil, &r.Options, &resp)
 	return
@@ -2148,7 +2148,13 @@ func (r Virtual_Guest_Block_Device_Template_Group) CreatePublicArchiveTransactio
 	return
 }
 
-// <<<EOT
+// This method allows you to remove BYOL attribute for a given image template.
+func (r Virtual_Guest_Block_Device_Template_Group) DeleteByolAttribute() (resp bool, err error) {
+	err = r.Session.DoRequest("SoftLayer_Virtual_Guest_Block_Device_Template_Group", "deleteByolAttribute", nil, &r.Options, &resp)
+	return
+}
+
+// This method allows you to remove cloud init attribute for a given image template.
 func (r Virtual_Guest_Block_Device_Template_Group) DeleteCloudInitAttribute() (resp bool, err error) {
 	err = r.Session.DoRequest("SoftLayer_Virtual_Guest_Block_Device_Template_Group", "deleteCloudInitAttribute", nil, &r.Options, &resp)
 	return
@@ -2208,9 +2214,15 @@ func (r Virtual_Guest_Block_Device_Template_Group) GetBlockDevicesDiskSpaceTotal
 	return
 }
 
-// <<<EOT
+// This method returns the boot mode, if any, set on a given image template.
 func (r Virtual_Guest_Block_Device_Template_Group) GetBootMode() (resp string, err error) {
 	err = r.Session.DoRequest("SoftLayer_Virtual_Guest_Block_Device_Template_Group", "getBootMode", nil, &r.Options, &resp)
+	return
+}
+
+// Retrieve A flag indicating that customer is providing the software licenses.
+func (r Virtual_Guest_Block_Device_Template_Group) GetByolFlag() (resp bool, err error) {
+	err = r.Session.DoRequest("SoftLayer_Virtual_Guest_Block_Device_Template_Group", "getByolFlag", nil, &r.Options, &resp)
 	return
 }
 
@@ -2322,7 +2334,13 @@ func (r Virtual_Guest_Block_Device_Template_Group) GetVhdImportSoftwareDescripti
 	return
 }
 
-// <<<EOT
+// This method indicates whether or not this image is a customer supplied license image.
+func (r Virtual_Guest_Block_Device_Template_Group) IsByol() (resp bool, err error) {
+	err = r.Session.DoRequest("SoftLayer_Virtual_Guest_Block_Device_Template_Group", "isByol", nil, &r.Options, &resp)
+	return
+}
+
+// This method indicates whether or not this image is a cloud-init image.
 func (r Virtual_Guest_Block_Device_Template_Group) IsCloudInit() (resp bool, err error) {
 	err = r.Session.DoRequest("SoftLayer_Virtual_Guest_Block_Device_Template_Group", "isCloudInit", nil, &r.Options, &resp)
 	return
@@ -2355,7 +2373,7 @@ func (r Virtual_Guest_Block_Device_Template_Group) SetAvailableLocations(locatio
 	return
 }
 
-// <<<EOT
+// This method allows you to specify the boot mode for a given image template.
 func (r Virtual_Guest_Block_Device_Template_Group) SetBootMode(newBootMode *string) (resp bool, err error) {
 	params := []interface{}{
 		newBootMode,

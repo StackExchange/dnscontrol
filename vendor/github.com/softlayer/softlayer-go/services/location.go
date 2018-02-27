@@ -69,6 +69,12 @@ func (r Location) Offset(offset int) Location {
 	return r
 }
 
+// Retrieve
+func (r Location) GetActivePresaleEvents() (resp []datatypes.Sales_Presale_Event, err error) {
+	err = r.Session.DoRequest("SoftLayer_Location", "getActivePresaleEvents", nil, &r.Options, &resp)
+	return
+}
+
 // Object Storage is only available in select datacenters. This method will return all the datacenters where object storage is available.
 func (r Location) GetAvailableObjectStorageDatacenters() (resp []datatypes.Location, err error) {
 	err = r.Session.DoRequest("SoftLayer_Location", "getAvailableObjectStorageDatacenters", nil, &r.Options, &resp)
@@ -854,7 +860,7 @@ func (r Location_Reservation_Rack_Member) GetLocation() (resp datatypes.Location
 }
 
 // Retrieve
-func (r Location_Reservation_Rack_Member) GetLocationReservationRack() (resp datatypes.Location_Reservation, err error) {
+func (r Location_Reservation_Rack_Member) GetLocationReservationRack() (resp datatypes.Location_Reservation_Rack, err error) {
 	err = r.Session.DoRequest("SoftLayer_Location_Reservation_Rack_Member", "getLocationReservationRack", nil, &r.Options, &resp)
 	return
 }
