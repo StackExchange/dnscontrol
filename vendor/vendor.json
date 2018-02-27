@@ -798,6 +798,12 @@
 			"path": "gopkg.in/sourcemap.v1/base64vlq",
 			"revision": "8cd1e2e0ddc78dcb4511bcb184d23171bed15c67",
 			"revisionTime": "2016-05-31T08:25:40Z"
+		},
+		{
+			"checksumSHA1": "qOmvuDm+F+2nQQecUZBVkZrTn6Y=",
+			"path": "gopkg.in/yaml.v2",
+			"revision": "d670f9405373e636a5a2765eea47fac0c9bc91a4",
+			"revisionTime": "2018-01-09T11:43:31Z"
 		}
 	],
 	"rootPath": "github.com/StackExchange/dnscontrol"

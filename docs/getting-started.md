@@ -31,7 +31,8 @@ like [git-crypt](https://www.agwa.name/projects/git-crypt) or
 
 Create a subdirectory called `zones` in the same directory as the
 configuration files.  (`mkdir zones`).  `zones` is where the BIND
-provider writes the zonefiles it creates.
+provider writes the zonefiles it creates. Even if you don't
+use BIND, it is useful for testing.
 
 
 ## 3. Create the initial `dnsconfig.js`
@@ -246,7 +247,7 @@ You can manually create the `D()` statements, or you can
 generate them automatically using the
 [convertzone](https://github.com/StackExchange/dnscontrol/blob/master/cmd/convertzone/README.md)
 utility that is included in the DNSControl repo (it converts
-BIND-style zone files to DNSControl's language).
+BIND-style zone files and OctoDNS-style YAML files to DNSControl's language).
 
 Now you can make change to the domain(s)  and run `dnscontrol preview`
 

@@ -1,16 +1,36 @@
 package main
 
 /*
-convertzone: Read BIND-style zonefile and output.
+convertzone: Read and write DNS zone files.
 
-     convertzone [-mode=MODE] zonename [filename]
+     convertzone [-in=INPUT] [-out=OUTPUT] zonename [filename]
 
-     -mode=tsv   TAB-separated values (default)
-     -mode=dsl   DNSControl DSL
-     -mode=pretty   Sort and pretty-print records.
+	Input format:
+	-in=bind      BIND-style zonefiles (DEFAULT)
+    -in=octodns   OctoDNS YAML "config" files.
 
-     zonename    The FQDN of the zone name.
-     filename    File to read (default: stdin)
+    Output format:
+
+    -out=dsl      DNSControl DSL language (dnsconfig.js) (DEFAULT)
+    -out=tsv      TAB-separated values
+    -out=pretty   pretty-printed (BIND-style zonefiles)
+
+    zonename    The FQDN of the zone name.
+    filename    File to read (optional. Defaults to stdin)
+
+	The DSL output format is useful for creating the first
+	draft of your dnsconfig.js when importing zones from
+	other services.
+
+	The TSV format makes it easy to process a zonefile with
+	shell tools.  `awk -F"\t" $2 = "A" { print $3 }`
+
+	The PRETTY format is just a nice way to clean up a zonefile.
+
+	If no filename is specified, stdin is assumed.
+	Output is sent to stdout.
+
+	The zonename is required as it can not be guessed automatically from the input.
 */
 
 import (
@@ -24,15 +44,58 @@ import (
 	"strings"
 
 	"github.com/StackExchange/dnscontrol/providers/bind"
+	"github.com/StackExchange/dnscontrol/providers/octodns/octoyaml"
 	"github.com/miekg/dns"
 	"github.com/miekg/dns/dnsutil"
 	"github.com/pkg/errors"
 )
 
-var flagMode = flag.String("mode", "tsv", "tsv|dsl|pretty")
+var flagInfmt = flag.String("in", "zone", "zone|octodns")
+var flagOutfmt = flag.String("out", "dsl", "dsl|tsv|pretty")
 var flagDefaultTTL = flag.Uint("ttl", 300, "Default TTL")
 var flagRegText = flag.String("registrar", "REG_FILL_IN", "registrar text")
 var flagProviderText = flag.String("provider", "DNS_FILL_IN", "provider text")
+
+func main() {
+	flag.Parse()
+	zonename, filename, reader, err := parseargs(flag.Args())
+	if err != nil {
+		fmt.Printf("ERROR: %v\n\n", err)
+		fmt.Println("convertzone [-flags] ZONENAME FILENAME")
+		flag.Usage()
+		os.Exit(1)
+	}
+
+	defTTL := uint32(*flagDefaultTTL)
+
+	var recs []dns.RR
+
+	// Read it in:
+
+	switch *flagInfmt {
+	case "zone":
+		recs = readZone(zonename, reader, filename)
+	case "oct", "octo", "octodns":
+		recs = readOctodns(zonename, reader, filename)
+	}
+
+	// Write it out:
+
+	switch *flagOutfmt {
+	case "pretty":
+		bind.WriteZoneFile(os.Stdout, recs, zonename)
+	case "dsl":
+		fmt.Printf(`D("%s", %s, DnsProvider(%s)`, zonename, *flagRegText, *flagProviderText)
+		rrFormat(zonename, filename, recs, defTTL, true)
+		fmt.Println("\n)")
+	case "tsv":
+		rrFormat(zonename, filename, recs, defTTL, false)
+	default:
+		fmt.Println("convertzone [-flags] ZONENAME FILENAME")
+		flag.Usage()
+	}
+
+}
 
 // parseargs parses the non-flag arguments.
 func parseargs(args []string) (zonename string, filename string, r io.Reader, err error) {
@@ -62,26 +125,42 @@ func parseargs(args []string) (zonename string, filename string, r io.Reader, er
 	return zonename, filename, r, nil
 }
 
-// pretty outputs the zonefile using the prettyprinter.
-func pretty(zonename string, filename string, r io.Reader, defaultTTL uint32) {
+func readZone(zonename string, r io.Reader, filename string) []dns.RR {
 	var l []dns.RR
-	for x := range dns.ParseZone(r, zonename, filename) {
-		if x.Error == nil {
-			l = append(l, x.RR)
-		}
-	}
-	bind.WriteZoneFile(os.Stdout, l, zonename)
-}
-
-// rrFormat outputs the zonefile in either DSL or TSV format.
-func rrFormat(zonename string, filename string, r io.Reader, defaultTTL uint32, dsl bool) {
-	zonenamedot := zonename + "."
-
 	for x := range dns.ParseZone(r, zonename, filename) {
 		if x.Error != nil {
 			log.Println(x.Error)
-			continue
+		} else {
+			l = append(l, x.RR)
 		}
+	}
+	return l
+}
+
+func readOctodns(zonename string, r io.Reader, filename string) []dns.RR {
+	var l []dns.RR
+
+	foundRecords, err := octoyaml.ReadYaml(r, zonename)
+	if err != nil {
+		log.Println(errors.Wrapf(err, "can not get corrections"))
+	}
+
+	for _, x := range foundRecords {
+		l = append(l, x.ToRR())
+	}
+	return l
+}
+
+// pretty outputs the zonefile using the prettyprinter.
+func writePretty(zonename string, recs []dns.RR, defaultTTL uint32) {
+	bind.WriteZoneFile(os.Stdout, recs, zonename)
+}
+
+// rrFormat outputs the zonefile in either DSL or TSV format.
+func rrFormat(zonename string, filename string, recs []dns.RR, defaultTTL uint32, dsl bool) {
+	zonenamedot := zonename + "."
+
+	for _, x := range recs {
 
 		// Skip comments. Parse the formatted version.
 		line := x.String()
@@ -122,10 +201,10 @@ func rrFormat(zonename string, filename string, r io.Reader, defaultTTL uint32, 
 			case dns.TypeSOA:
 				continue
 			case dns.TypeTXT:
-				if len(x.RR.(*dns.TXT).Txt) == 1 {
-					target = `'` + x.RR.(*dns.TXT).Txt[0] + `'`
+				if len(x.(*dns.TXT).Txt) == 1 {
+					target = `'` + x.(*dns.TXT).Txt[0] + `'`
 				} else {
-					target = `['` + strings.Join(x.RR.(*dns.TXT).Txt, `', '`) + `']`
+					target = `['` + strings.Join(x.(*dns.TXT).Txt, `', '`) + `']`
 				}
 			default:
 				target = "'" + target + "'"
@@ -137,34 +216,6 @@ func rrFormat(zonename string, filename string, r io.Reader, defaultTTL uint32, 
 			}
 			fmt.Printf(",\n\t%s('%s', %s%s)", typeStr, name, target, ttl)
 		}
-	}
-
-}
-
-func main() {
-	flag.Parse()
-	zonename, filename, reader, err := parseargs(flag.Args())
-	if err != nil {
-		fmt.Printf("ERROR: %v\n\n", err)
-		fmt.Println("convertzone [-flags] ZONENAME FILENAME")
-		flag.Usage()
-		os.Exit(1)
-	}
-
-	defTTL := uint32(*flagDefaultTTL)
-
-	switch *flagMode {
-	case "pretty":
-		pretty(zonename, filename, reader, defTTL)
-	case "dsl":
-		fmt.Printf(`D("%s", %s, DnsProvider(%s)`, zonename, *flagRegText, *flagProviderText)
-		rrFormat(zonename, filename, reader, defTTL, true)
-		fmt.Println("\n)")
-	case "tsv":
-		rrFormat(zonename, filename, reader, defTTL, false)
-	default:
-		fmt.Println("convertzone [-flags] ZONENAME FILENAME")
-		flag.Usage()
 	}
 
 }
