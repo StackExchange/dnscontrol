@@ -22,6 +22,9 @@ const (
 	LiveDNS
 )
 
+// Enable/disable debug output:
+const debug = false
+
 // SystemType is the type used to resolve gandi API address
 type SystemType int
 
@@ -85,6 +88,9 @@ func (c *Client) DoRest(req *http.Request, decoded interface{}) (*http.Response,
 			e = json.Unmarshal(b, decoded)
 			if e != nil {
 				return nil, e
+			}
+			if resp.StatusCode == http.StatusBadRequest {
+				return nil, fmt.Errorf("the server returned 400 bad request (%v)", string(b))
 			}
 		}
 		resp.Body = ioutil.NopCloser(bytes.NewReader(b))
@@ -151,9 +157,15 @@ func (c *Client) Delete(URI string, decoded interface{}) (*http.Response, error)
 // - decodes the returned data if a not null decoded pointer is provided
 // - ensures the status code is an HTTP accepted
 func (c *Client) Post(URI string, data interface{}, decoded interface{}) (*http.Response, error) {
+	if debug {
+		fmt.Printf("DEBUG: POST URI=%s\n", URI)
+	}
 	req, err := c.NewJSONRequest("POST", URI, data)
 	if err != nil {
 		return nil, err
+	}
+	if debug {
+		fmt.Printf("DEBUG: POST req=%v decoded=%v\n", req, decoded)
 	}
 	resp, err := c.DoRest(req, decoded)
 	if err != nil {

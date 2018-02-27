@@ -84,6 +84,9 @@ func (c *DnsimpleApi) GetDomainCorrections(dc *models.DomainConfig) ([]*models.C
 		}
 		rec.SetLabel(r.Name, dc.Name)
 		switch rtype := r.Type; rtype {
+		case "ALIAS", "URL":
+			rec.Type = r.Type
+			rec.SetTarget(r.Content)
 		case "MX":
 			if err := rec.SetTargetMX(uint16(r.Priority), r.Content); err != nil {
 				panic(errors.Wrap(err, "unparsable record received from dnsimple"))
