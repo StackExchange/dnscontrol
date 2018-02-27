@@ -1,6 +1,7 @@
 package models
 
 import (
+	"fmt"
 	"net"
 	"strings"
 
@@ -65,38 +66,43 @@ func (rc *RecordConfig) GetTargetCombined() string {
 	return full[len(header):]
 }
 
-// // GetTargetDebug returns a string with the various fields spelled out.
-// func (rc *RecordConfig) GetTargetDebug() string {
-// 	content := fmt.Sprintf("%s %s %s %d", rc.Type, rc.NameFQDN, rc.Target, rc.TTL)
-// 	switch rc.Type { // #rtype_variations
-// 	case "A", "AAAA", "CNAME", "NS", "PTR", "TXT":
-// 		// Nothing special.
-// 	case "MX":
-// 		content += fmt.Sprintf(" pref=%d", rc.MxPreference)
-// 	case "SOA":
-// 		content = fmt.Sprintf("%s %s %s %d", rc.Type, rc.Name, rc.Target, rc.TTL)
-// 	case "SRV":
-// 		content += fmt.Sprintf(" srvpriority=%d srvweight=%d srvport=%d", rc.SrvPriority, rc.SrvWeight, rc.SrvPort)
-// 	case "TLSA":
-// 		content += fmt.Sprintf(" tlsausage=%d tlsaselector=%d tlsamatchingtype=%d", rc.TlsaUsage, rc.TlsaSelector, rc.TlsaMatchingType)
-// 	case "CAA":
-// 		content += fmt.Sprintf(" caatag=%s caaflag=%d", rc.CaaTag, rc.CaaFlag)
-// 	case "R53_ALIAS":
-// 		content += fmt.Sprintf(" type=%s zone_id=%s", rc.R53Alias["type"], rc.R53Alias["zone_id"])
-// 	default:
-// 		panic(errors.Errorf("rc.String rtype %v unimplemented", rc.Type))
-// 		// We panic so that we quickly find any switch statements
-// 		// that have not been updated for a new RR type.
-// 	}
-// 	for k, v := range rc.Metadata {
-// 		content += fmt.Sprintf(" %s=%s", k, v)
-// 	}
-// 	return content
-// }
+// GetTargetSortable returns a string that is sortable.
+func (rc *RecordConfig) GetTargetSortable() string {
+	return rc.GetTargetDebug()
+}
 
-// SetTarget sets the target (assumes that the rtype is appropriate).
-func (rc *RecordConfig) SetTarget(fqdn string) error {
-	rc.Target = fqdn
+// GetTargetDebug returns a string with the various fields spelled out.
+func (rc *RecordConfig) GetTargetDebug() string {
+	content := fmt.Sprintf("%s %s %s %d", rc.Type, rc.NameFQDN, rc.Target, rc.TTL)
+	switch rc.Type { // #rtype_variations
+	case "A", "AAAA", "CNAME", "NS", "PTR", "TXT":
+		// Nothing special.
+	case "MX":
+		content += fmt.Sprintf(" pref=%d", rc.MxPreference)
+	case "SOA":
+		content = fmt.Sprintf("%s %s %s %d", rc.Type, rc.Name, rc.Target, rc.TTL)
+	case "SRV":
+		content += fmt.Sprintf(" srvpriority=%d srvweight=%d srvport=%d", rc.SrvPriority, rc.SrvWeight, rc.SrvPort)
+	case "TLSA":
+		content += fmt.Sprintf(" tlsausage=%d tlsaselector=%d tlsamatchingtype=%d", rc.TlsaUsage, rc.TlsaSelector, rc.TlsaMatchingType)
+	case "CAA":
+		content += fmt.Sprintf(" caatag=%s caaflag=%d", rc.CaaTag, rc.CaaFlag)
+	case "R53_ALIAS":
+		content += fmt.Sprintf(" type=%s zone_id=%s", rc.R53Alias["type"], rc.R53Alias["zone_id"])
+	default:
+		panic(errors.Errorf("rc.String rtype %v unimplemented", rc.Type))
+		// We panic so that we quickly find any switch statements
+		// that have not been updated for a new RR type.
+	}
+	for k, v := range rc.Metadata {
+		content += fmt.Sprintf(" %s=%s", k, v)
+	}
+	return content
+}
+
+// SetTarget sets the target, assuming that the rtype is appropriate.
+func (rc *RecordConfig) SetTarget(target string) error {
+	rc.Target = target
 	return nil
 }
 
