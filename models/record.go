@@ -25,7 +25,7 @@ import (
 //     TLSA
 //     TXT
 //   Pseudo-Types:
-//     ALIAs
+//     ALIAS
 //     CF_REDIRECT
 //     CF_TEMP_REDIRECT
 //     FRAME
