@@ -29,9 +29,9 @@ with no changes.  It is tempting to clean up the data as you do the migration...
 removing that old CNAME that nobody uses any more, or adding an
 A record you discovered was missing. Resist that temptation.  If you make any
 changes it will be difficult to tell which changes were intentional
-and which are typos. During the migration you will know you are done
-when `dnscontrol preview` says there are no changes needed. If there
-are items that should be cleaned up, do those cleanups now.
+and which are mistakes. During the migration you will know you are done
+when `dnscontrol preview` says there are no changes needed. At that
+point it is safe to do any cleanups.
 
 ## Create the first draft
 
@@ -43,7 +43,7 @@ hand, possibly with your text editor's search and replace functions.
 However, where's the fun in that?
 
 The `convertzone` tool can automate 90% of the conversion for you. It
-reads a BIND-style zone file and outputs a `D()` statement
+reads a BIND-style zone file or an OctoDNS-style YAML file and outputs a `D()` statement
 that is usually fairly complete. You may need to touch it up a bit.
 
 The convertzone command is in the `cmd/convertzone` subdirectory.
@@ -56,16 +56,21 @@ existing zone data to a file called the BIND zone file format.
 For example, suppose you owned the `foo.com` domain and the zone file
 was in a file called `old/zone.foo.com`. This command will convert the file:
 
-    convertzone -mode=dsl foo.com <old/zone.foo.com >first-draft.js
+    convertzone -out=dsl foo.com <old/zone.foo.com >first-draft.js
+
+If you are converting an OctoDNS file, add the flag `-in=octodns`:
+
+    convertzone -in=octodns -out=dsl foo.com <config/foo.com.yaml >first-draft.js
 
 Add the contents of `first-draft.js` to `dnsconfig.js`
 
+Run `dnscontrol preview` and see if it finds any differences.
 Edit dnsconfig.js until `dnscontrol preview` shows no errors and
 no changes to be made. This means the conversion of your old DNS
 data is correct.
 
-convertzone makes a guess at what to do with NS records. If
-they An NS record at the AP is turned into a NAMESERVER() call, the
+convertzone makes a guess at what to do with NS records.
+An NS record at the apex is turned into a NAMESERVER() call, the
 rest are left as NS().  You probably want to check each of them for
 correctness.
 
@@ -86,7 +91,7 @@ to convert a zone. Lines that start with `#` are comments.
 
     # Note this command uses ">>" to append to dnsconfig.js.  Do
     # not use ">" as that will erase the existing file.
-    convertzone -mode=dsl foo.com <old/zone.foo.com >>dnsconfig.js
+    convertzone -out=dsl foo.com <old/zone.foo.com >>dnsconfig.js
     #
     dnscontrol preview
     vim dnsconfig.js

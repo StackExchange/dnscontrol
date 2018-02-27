@@ -253,10 +253,22 @@ func (r Records) Grouped() map[RecordKey]Records {
 	return groups
 }
 
+// GroupedByLabel returns a map of keys to records, and their original key order.
+func (r Records) GroupedByLabel() ([]string, map[string]Records) {
+	order := []string{}
+	groups := map[string]Records{}
+	for _, rec := range r {
+		if _, found := groups[rec.Name]; !found {
+			order = append(order, rec.Name)
+		}
+		groups[rec.Name] = append(groups[rec.Name], rec)
+	}
+	return order, groups
+}
+
 // PostProcessRecords does any post-processing of the downloaded DNS records.
 func PostProcessRecords(recs []*RecordConfig) {
 	Downcase(recs)
-	//fixTxt(recs)
 }
 
 // Downcase converts all labels and targets to lowercase in a list of RecordConfig.

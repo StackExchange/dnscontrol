@@ -465,6 +465,9 @@ func makeTests(t *testing.T) []*TestCase {
 		)
 	}
 
+	// NB(tlim): To temporarily skip most of the tests, insert a line like this:
+	//tests = nil
+
 	// TXT (single)
 	tests = append(tests, tc("Empty"),
 		tc("Empty"),
@@ -508,7 +511,7 @@ func makeTests(t *testing.T) []*TestCase {
 		)
 	}
 
-	// ignored recrods
+	// ignored records
 	tests = append(tests,
 		tc("Empty"),
 		tc("Create some records", txt("foo", "simple"), a("foo", "1.2.3.4")),
