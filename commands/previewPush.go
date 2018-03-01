@@ -127,6 +127,7 @@ DomainLoop:
 				continue
 			}
 			corrections, err := provider.Driver.GetDomainCorrections(dc)
+			fmt.Printf("DEBUG: DONE! %v\n", err)
 			out.EndProvider(len(corrections), err)
 			if err != nil {
 				anyErrors = true

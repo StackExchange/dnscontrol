@@ -534,15 +534,8 @@ func makeTests(t *testing.T) []*TestCase {
 
 	tests = append(tests,
 		tc("Empty"),
-		tc("wildcard",
-			a("@", "5.6.7.8"),
-			a("*", "5.6.7.9"),
-			a("*.dev", "198.252.206.27"),
-		),
-		tc("del wild",
-			a("@", "5.6.7.8"),
-			a("*", "5.6.7.9"),
-		),
+		tc("wildcards", a("@", "5.6.7.8"), a("*", "5.6.7.9"), a("*.dev", "198.252.206.27")),
+		tc("del wilds", a("@", "5.6.7.8")),
 	)
 
 	return tests
