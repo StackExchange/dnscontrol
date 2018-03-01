@@ -81,9 +81,7 @@ func (r *route53Provider) getZones() error {
 	var nextMarker *string
 	r.zones = make(map[string]*r53.HostedZone)
 	for {
-		if nextMarker != nil {
-			fmt.Println(*nextMarker)
-		}
+
 		inp := &r53.ListHostedZonesInput{Marker: nextMarker}
 		out, err := r.client.ListHostedZones(inp)
 		if err != nil && strings.Contains(err.Error(), "is not authorized") {
@@ -212,7 +210,7 @@ func (r *route53Provider) GetDomainCorrections(dc *models.DomainConfig) ([]*mode
 			delDesc += strings.Join(namesToUpdate[k], "\n") + "\n"
 			// on delete just submit the original resource set we got from r53.
 			for _, r := range records {
-				if *r.Name == k.Name+"." && (*r.Type == k.Type || k.Type == "R53_ALIAS") {
+				if unescape(r.Name) == k.Name && (*r.Type == k.Type || k.Type == "R53_ALIAS") {
 					rrset = r
 					break
 				}

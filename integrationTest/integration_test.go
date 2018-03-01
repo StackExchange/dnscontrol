@@ -338,6 +338,8 @@ func makeTests(t *testing.T) []*TestCase {
 		tc("Delete one", a("@", "1.2.3.4").ttl(500), a("www", "5.6.7.8").ttl(400)),
 		tc("Add back and change ttl", a("www", "5.6.7.8").ttl(700), a("www", "1.2.3.4").ttl(700)),
 		tc("Change targets and ttls", a("www", "1.1.1.1"), a("www", "2.2.2.2")),
+		tc("Create wildcard", a("*", "1.2.3.4"), a("www", "1.1.1.1")),
+		tc("Delete wildcard", a("www", "1.1.1.1")),
 
 		// CNAMES
 		tc("Empty"),
