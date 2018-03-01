@@ -7,7 +7,7 @@ import (
 	"strings"
 
 	gauth "golang.org/x/oauth2/google"
-	"google.golang.org/api/dns/v1"
+	gdns "google.golang.org/api/dns/v1"
 
 	"github.com/StackExchange/dnscontrol/models"
 	"github.com/StackExchange/dnscontrol/providers"
@@ -29,9 +29,9 @@ func init() {
 }
 
 type gcloud struct {
-	client  *dns.Service
+	client  *gdns.Service
 	project string
-	zones   map[string]*dns.ManagedZone
+	zones   map[string]*gdns.ManagedZone
 }
 
 // New creates a new gcloud provider
@@ -46,7 +46,7 @@ func New(cfg map[string]string, _ json.RawMessage) (providers.DNSServiceProvider
 	}
 	ctx := context.Background()
 	hc := config.Client(ctx)
-	dcli, err := dns.New(hc)
+	dcli, err := gdns.New(hc)
 	if err != nil {
 		return nil, err
 	}
@@ -64,9 +64,9 @@ func (e errNoExist) Error() string {
 	return fmt.Sprintf("Domain %s not found in gcloud account", e.domain)
 }
 
-func (g *gcloud) getZone(domain string) (*dns.ManagedZone, error) {
+func (g *gcloud) getZone(domain string) (*gdns.ManagedZone, error) {
 	if g.zones == nil {
-		g.zones = map[string]*dns.ManagedZone{}
+		g.zones = map[string]*gdns.ManagedZone{}
 		pageToken := ""
 		for {
 			resp, err := g.client.ManagedZones.List(g.project).PageToken(pageToken).Do()
@@ -100,7 +100,7 @@ type key struct {
 	Name string
 }
 
-func keyFor(r *dns.ResourceRecordSet) key {
+func keyFor(r *gdns.ResourceRecordSet) key {
 	return key{Type: r.Type, Name: r.Name}
 }
 func keyForRec(r *models.RecordConfig) key {
@@ -117,7 +117,7 @@ func (g *gcloud) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Correc
 	}
 	// convert to dnscontrol RecordConfig format
 	existingRecords := []*models.RecordConfig{}
-	oldRRs := map[key]*dns.ResourceRecordSet{}
+	oldRRs := map[key]*gdns.ResourceRecordSet{}
 	for _, set := range rrs {
 		oldRRs[keyFor(set)] = set
 		for _, rec := range set.Rrdatas {
@@ -148,14 +148,14 @@ func (g *gcloud) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Correc
 	if len(changedKeys) == 0 {
 		return nil, nil
 	}
-	chg := &dns.Change{Kind: "dns#change"}
+	chg := &gdns.Change{Kind: "dns#change"}
 	for ck := range changedKeys {
 		// remove old version (if present)
 		if old, ok := oldRRs[ck]; ok {
 			chg.Deletions = append(chg.Deletions, old)
 		}
 		// collect records to replace with
-		newRRs := &dns.ResourceRecordSet{
+		newRRs := &gdns.ResourceRecordSet{
 			Name: ck.Name,
 			Type: ck.Type,
 			Kind: "dns#resourceRecordSet",
@@ -181,7 +181,7 @@ func (g *gcloud) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Correc
 	}}, nil
 }
 
-func nativeToRecord(set *dns.ResourceRecordSet, rec, origin string) *models.RecordConfig {
+func nativeToRecord(set *gdns.ResourceRecordSet, rec, origin string) *models.RecordConfig {
 	r := &models.RecordConfig{}
 	r.SetLabelFromFQDN(set.Name, origin)
 	r.TTL = uint32(set.Ttl)
@@ -191,13 +191,13 @@ func nativeToRecord(set *dns.ResourceRecordSet, rec, origin string) *models.Reco
 	return r
 }
 
-func (g *gcloud) getRecords(domain string) ([]*dns.ResourceRecordSet, string, error) {
+func (g *gcloud) getRecords(domain string) ([]*gdns.ResourceRecordSet, string, error) {
 	zone, err := g.getZone(domain)
 	if err != nil {
 		return nil, "", err
 	}
 	pageToken := ""
-	sets := []*dns.ResourceRecordSet{}
+	sets := []*gdns.ResourceRecordSet{}
 	for {
 		call := g.client.ResourceRecordSets.List(g.project, zone.Name)
 		if pageToken != "" {
@@ -231,7 +231,7 @@ func (g *gcloud) EnsureDomainExists(domain string) error {
 		return nil
 	}
 	fmt.Printf("Adding zone for %s to gcloud account\n", domain)
-	mz := &dns.ManagedZone{
+	mz := &gdns.ManagedZone{
 		DnsName:     domain + ".",
 		Name:        strings.Replace(domain, ".", "-", -1),
 		Description: "zone added by dnscontrol",
