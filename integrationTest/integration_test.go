@@ -529,14 +529,5 @@ func makeTests(t *testing.T) []*TestCase {
 		)
 	}
 
-	// TODO(tlim): remove this before merging to master:
-	tests = nil
-
-	tests = append(tests,
-		tc("Empty"),
-		tc("wildcards", a("@", "5.6.7.8"), a("*", "5.6.7.9"), a("*.dev", "198.252.206.27")),
-		tc("del wilds", a("@", "5.6.7.8")),
-	)
-
 	return tests
 }
