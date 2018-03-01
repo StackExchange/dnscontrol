@@ -175,7 +175,6 @@ func (g *gcloud) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Correc
 		_, err := g.client.Changes.Create(g.project, zoneName, chg).Do()
 		return err
 	}
-	fmt.Printf("\nDEBUG: CHANGES:\n%v\n", desc)
 	return []*models.Correction{{
 		Msg: desc,
 		F:   runChange,
