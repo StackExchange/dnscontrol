@@ -331,6 +331,12 @@
 			"revisionTime": "2018-01-09T18:53:19Z"
 		},
 		{
+			"checksumSHA1": "ln/74dXVPX/i7aDah00ZKqbdpw8=",
+			"path": "github.com/philhug/opensrs-go/opensrs",
+			"revision": "58112e74137c104eb77bdad4b53c51da22b7b6d5",
+			"revisionTime": "2017-11-26T23:10:42Z"
+		},
+		{
 			"checksumSHA1": "ynJSWoF6v+3zMnh9R0QmmG6iGV8=",
 			"path": "github.com/pkg/errors",
 			"revision": "ff09b135c25aae272398c51a07235b90a75aa4f0",
