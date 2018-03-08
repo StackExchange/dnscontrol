@@ -287,13 +287,15 @@ func nativeToRecords(set *r53.ResourceRecordSet, origin string) []*models.Record
 		rc.SetLabelFromFQDN(unescape(set.Name), origin)
 		rc.SetTarget(aws.StringValue(set.AliasTarget.DNSName))
 		results = append(results, rc)
+	} else if set.TrafficPolicyInstanceId != nil {
+// skip traffic policy records
 	} else {
 		for _, rec := range set.ResourceRecords {
 			switch rtype := *set.Type; rtype {
 			case "SOA":
 				continue
 			default:
-				fmt.Printf("DEBUG: RTYPE=%v TTL=%v REC=%v\n", rtype, set.TTL, rec)                                rc := &models.RecordConfig{TTL: uint32(*set.TTL)}
+				rc := &models.RecordConfig{TTL: uint32(*set.TTL)}
 				rc.SetLabelFromFQDN(unescape(set.Name), origin)
 				if err := rc.PopulateFromString(*set.Type, *rec.Value, origin); err != nil {
 					panic(errors.Wrap(err, "unparsable record received from R53"))
