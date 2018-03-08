@@ -135,12 +135,14 @@ func (api *LinodeApi) GetDomainCorrections(dc *models.DomainConfig) ([]*models.C
 	// Linode always has read-only NS servers, but these are not mentioned in the API response
 	// https://github.com/linode/manager/blob/edd99dc4e1be5ab8190f243c3dbf8b830716255e/src/constants.js#L184
 	for _, name := range defaultNameServerNames {
-		existingRecords = append(existingRecords, &models.RecordConfig{
+		rc := &models.RecordConfig{
 			NameFQDN: dc.Name,
 			Type:     "NS",
-			Target:   name,
 			Original: &domainRecord{},
-		})
+		}
+		rc.SetTarget(name)
+
+		existingRecords = append(existingRecords, rc)
 	}
 
 	// Normalize
@@ -221,19 +223,8 @@ func (api *LinodeApi) GetDomainCorrections(dc *models.DomainConfig) ([]*models.C
 }
 
 func toRc(dc *models.DomainConfig, r *domainRecord) *models.RecordConfig {
-	// This handles "@" etc.
-	name := dnsutil.AddOrigin(r.Name, dc.Name)
-
-	target := r.Target
-	// Make target FQDN (#rtype_variations)
-	if r.Type == "CNAME" || r.Type == "MX" || r.Type == "NS" || r.Type == "SRV" {
-		target = dnsutil.AddOrigin(target+".", dc.Name)
-	}
-
-	return &models.RecordConfig{
-		NameFQDN:     name,
+	rc := &models.RecordConfig{
 		Type:         r.Type,
-		Target:       target,
 		TTL:          r.TTLSec,
 		MxPreference: r.Priority,
 		SrvPriority:  r.Priority,
@@ -241,13 +232,25 @@ func toRc(dc *models.DomainConfig, r *domainRecord) *models.RecordConfig {
 		SrvPort:      uint16(r.Port),
 		Original:     r,
 	}
+	rc.SetLabel(r.Name, dc.Name)
+
+	switch rtype := r.Type; rtype { // #rtype_variations
+	case "TXT":
+		rc.SetTargetTXT(r.Target)
+	case "CNAME", "MX", "NS", "SRV":
+		rc.SetTarget(dnsutil.AddOrigin(r.Target+".", dc.Name))
+	default:
+		rc.SetTarget(r.Target)
+	}
+
+	return rc
 }
 
 func toReq(dc *models.DomainConfig, rc *models.RecordConfig) (*recordEditRequest, error) {
 	req := &recordEditRequest{
 		Type:     rc.Type,
 		Name:     dnsutil.TrimDomainName(rc.NameFQDN, dc.Name),
-		Target:   rc.Target,
+		Target:   rc.GetTargetField(),
 		TTL:      int(rc.TTL),
 		Priority: 0,
 		Port:     int(rc.SrvPort),

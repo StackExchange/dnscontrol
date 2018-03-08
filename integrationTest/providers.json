@@ -46,7 +46,7 @@
     "COMMENT": "25: Linode's hostname validation does not allow the target domain TLD",
     "token": "$LINODE_TOKEN",
     "domain": "$LINODE_DOMAIN",
-    "knownFailures": "25"
+    "knownFailures": "27"
   },
   "NS1": {
     "domain": "$NS1_DOMAIN",
