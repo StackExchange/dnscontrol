@@ -288,7 +288,7 @@ func nativeToRecords(set *r53.ResourceRecordSet, origin string) []*models.Record
 		rc.SetTarget(aws.StringValue(set.AliasTarget.DNSName))
 		results = append(results, rc)
 	} else if set.TrafficPolicyInstanceId != nil {
-// skip traffic policy records
+		// skip traffic policy records
 	} else {
 		for _, rec := range set.ResourceRecords {
 			switch rtype := *set.Type; rtype {
