@@ -233,7 +233,7 @@ func (g *gcloud) EnsureDomainExists(domain string) error {
 	fmt.Printf("Adding zone for %s to gcloud account\n", domain)
 	mz := &gdns.ManagedZone{
 		DnsName:     domain + ".",
-		Name:        strings.Replace(domain, ".", "-", -1),
+		Name:        "zone-" + strings.Replace(domain, ".", "-", -1),
 		Description: "zone added by dnscontrol",
 	}
 	g.zones = nil // reset cache
