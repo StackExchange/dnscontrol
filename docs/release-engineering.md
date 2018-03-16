@@ -43,7 +43,7 @@ Review the git log using this command:
 
     git log v0."$VERSION"...v0."$PREVVERSION"
 
-(Don't create the release yet!)
+(Don't click SAVE until the next step is complete!)
 
 Create the binaries and attach them to the release:
 
@@ -107,3 +107,8 @@ dnscontrol $VERSION has been released! https://github.com/StackExchange/dnscontr
 ## Step 7. Get credit!
 
 Mention the fact that you did this release in your weekly accomplishments.
+
+If you are at Stack Overflow:
+
+  * Add the release to your weekly snippets
+  * Run this build: `dnscontrol_embed - Promote most recent artifact into ExternalDNS repo`
