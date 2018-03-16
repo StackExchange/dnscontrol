@@ -62,10 +62,10 @@ import (
 //  rec.Label() == "@"   // Is this record at the apex?
 //
 type RecordConfig struct {
-	Type             string            `json:"type"`   // All caps rtype name.
-	Name             string            `json:"name"`   // The short name. See above.
-	NameFQDN         string            `json:"-"`      // Must end with ".$origin". See above.
-	Target           string            `json:"target"` // If a name, must end with "."
+	Type             string            `json:"type"` // All caps rtype name.
+	name             string            // The short name. See above.
+	nameFQDN         string            // Must end with ".$origin". See above.
+	target           string            // If a name, must end with "."
 	TTL              uint32            `json:"ttl,omitempty"`
 	Metadata         map[string]string `json:"meta,omitempty"`
 	MxPreference     uint16            `json:"mxpreference,omitempty"`
@@ -81,6 +81,20 @@ type RecordConfig struct {
 	R53Alias         map[string]string `json:"r53_alias,omitempty"`
 
 	Original interface{} `json:"-"` // Store pointer to provider-specific record object. Used in diffing.
+}
+
+type RecordConfigJSON struct {
+	RecordConfig
+	Name     string `json:"name"`
+	NameFQDN string `json:"-"`
+	target   string `json:"target"`
+}
+
+func (rc RecordConfig) MarshalJSON() ([]byte, error)  {
+	j := RecordConfigJSON{}
+	j.Type = rc.Type
+
+	return json.Marshal(
 }
 
 // Copy returns a deep copy of a RecordConfig.
