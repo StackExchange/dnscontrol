@@ -27,11 +27,12 @@ func WriteYaml(w io.Writer, records models.Records, origin string) error {
 	for _, r := range records {
 		recsCopy = append(recsCopy, r)
 	}
-	// for _, r := range recsCopy {
-	// 	if r.GetLabel() == "@" {
-	// 		r.name = ""
-	// 	}
-	// }
+	for _, r := range recsCopy {
+		if r.GetLabel() == "@" {
+			r.SetLabelNull()
+			// 		r.Name = ""
+		}
+	}
 
 	z := &genYamlData{
 		Origin:     dnsutil.AddOrigin(origin, "."),
