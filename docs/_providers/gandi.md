@@ -25,6 +25,7 @@ Example Javascript:
 
 {% highlight js %}
 var GANDI = NewDnsProvider("gandi", "GANDI");
+var REG_GANDI = NewRegistrar("gandi", "GANDI");
 
 D("example.tld", REG_GANDI, DnsProvider(GANDI),
     A("test","1.2.3.4")
