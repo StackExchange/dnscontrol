@@ -77,7 +77,7 @@ func (d *differ) IncrementalDiff(existing []*models.RecordConfig) (unchanged, cr
 		if d.matchIgnored(e.GetLabel()) {
 			log.Printf("Ignoring record %s %s due to IGNORE", e.GetLabel(), e.Type)
 		} else {
-			k := key{e.NameFQDN, e.Type}
+			k := key{e.GetLabelFQDN(), e.Type}
 			existingByNameAndType[k] = append(existingByNameAndType[k], e)
 		}
 	}
@@ -85,7 +85,7 @@ func (d *differ) IncrementalDiff(existing []*models.RecordConfig) (unchanged, cr
 		if d.matchIgnored(dr.GetLabel()) {
 			panic(fmt.Sprintf("Trying to update/add IGNOREd record: %s %s", dr.GetLabel(), dr.Type))
 		} else {
-			k := key{dr.NameFQDN, dr.Type}
+			k := key{dr.GetLabelFQDN(), dr.Type}
 			desiredByNameAndType[k] = append(desiredByNameAndType[k], dr)
 		}
 	}
@@ -106,7 +106,7 @@ func (d *differ) IncrementalDiff(existing []*models.RecordConfig) (unchanged, cr
 		for i := len(existingRecords) - 1; i >= 0; i-- {
 			ex := existingRecords[i]
 			for j, de := range desiredRecords {
-				if de.Target == ex.Target {
+				if de.GetTargetField() == ex.GetTargetField() {
 					// they're either identical or should be a modification of each other (ttl or metadata changes)
 					if d.content(de) == d.content(ex) {
 						unchanged = append(unchanged, Correlation{d, ex, de})
@@ -197,12 +197,12 @@ func (d *differ) ChangedGroups(existing []*models.RecordConfig) map[models.Recor
 
 func (c Correlation) String() string {
 	if c.Existing == nil {
-		return fmt.Sprintf("CREATE %s %s %s", c.Desired.Type, c.Desired.NameFQDN, c.d.content(c.Desired))
+		return fmt.Sprintf("CREATE %s %s %s", c.Desired.Type, c.Desired.GetLabelFQDN(), c.d.content(c.Desired))
 	}
 	if c.Desired == nil {
-		return fmt.Sprintf("DELETE %s %s %s", c.Existing.Type, c.Existing.NameFQDN, c.d.content(c.Existing))
+		return fmt.Sprintf("DELETE %s %s %s", c.Existing.Type, c.Existing.GetLabelFQDN(), c.d.content(c.Existing))
 	}
-	return fmt.Sprintf("MODIFY %s %s: (%s) -> (%s)", c.Existing.Type, c.Existing.NameFQDN, c.d.content(c.Existing), c.d.content(c.Desired))
+	return fmt.Sprintf("MODIFY %s %s: (%s) -> (%s)", c.Existing.Type, c.Existing.GetLabelFQDN(), c.d.content(c.Existing), c.d.content(c.Desired))
 }
 
 func sortedKeys(m map[string]*models.RecordConfig) []string {

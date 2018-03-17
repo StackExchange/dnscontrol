@@ -11,7 +11,7 @@ import (
 func (rc *RecordConfig) SetTargetCAA(flag uint8, tag string, target string) error {
 	rc.CaaTag = tag
 	rc.CaaFlag = flag
-	rc.Target = target
+	rc.target = target
 	if rc.Type == "" {
 		rc.Type = "CAA"
 	}

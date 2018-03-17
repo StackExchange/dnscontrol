@@ -83,19 +83,19 @@ type RecordConfig struct {
 	Original interface{} `json:"-"` // Store pointer to provider-specific record object. Used in diffing.
 }
 
-type RecordConfigJSON struct {
-	RecordConfig
-	Name     string `json:"name"`
-	NameFQDN string `json:"-"`
-	target   string `json:"target"`
-}
-
-func (rc RecordConfig) MarshalJSON() ([]byte, error)  {
-	j := RecordConfigJSON{}
-	j.Type = rc.Type
-
-	return json.Marshal(
-}
+//type RecordConfigJSON struct {
+//	RecordConfig
+//	Name     string `json:"name"`
+//	NameFQDN string `json:"-"`
+//	target   string `json:"target"`
+//}
+//
+//func (rc RecordConfig) MarshalJSON() ([]byte, error)  {
+//	j := RecordConfigJSON{}
+//	j.Type = rc.Type
+//
+//	return json.Marshal(
+//}
 
 // Copy returns a deep copy of a RecordConfig.
 func (rc *RecordConfig) Copy() (*RecordConfig, error) {
@@ -126,11 +126,11 @@ func (rc *RecordConfig) SetLabel(short, origin string) {
 	short = strings.ToLower(short)
 	origin = strings.ToLower(origin)
 	if short == "" || short == "@" {
-		rc.Name = "@"
-		rc.NameFQDN = origin
+		rc.name = "@"
+		rc.nameFQDN = origin
 	} else {
-		rc.Name = short
-		rc.NameFQDN = dnsutil.AddOrigin(short, origin)
+		rc.name = short
+		rc.nameFQDN = dnsutil.AddOrigin(short, origin)
 	}
 }
 
@@ -154,8 +154,8 @@ func (rc *RecordConfig) SetLabelFromFQDN(fqdn, origin string) {
 
 	fqdn = strings.ToLower(fqdn)
 	origin = strings.ToLower(origin)
-	rc.Name = dnsutil.TrimDomainName(fqdn, origin)
-	rc.NameFQDN = fqdn
+	rc.name = dnsutil.TrimDomainName(fqdn, origin)
+	rc.nameFQDN = fqdn
 }
 
 // GetLabel returns the shortname of the label associated with this RecordConfig.
@@ -164,13 +164,13 @@ func (rc *RecordConfig) SetLabelFromFQDN(fqdn, origin string) {
 //   domain is "foo.com" then the FQDN is actually "foo.com.foo.com").
 // It will never be "" (the apex is returned as "@").
 func (rc *RecordConfig) GetLabel() string {
-	return rc.Name
+	return rc.name
 }
 
 // GetLabelFQDN returns the FQDN of the label associated with this RecordConfig.
 // It will not end with ".".
 func (rc *RecordConfig) GetLabelFQDN() string {
-	return rc.NameFQDN
+	return rc.nameFQDN
 }
 
 // ToRR converts a RecordConfig to a dns.RR.
@@ -186,7 +186,7 @@ func (rc *RecordConfig) ToRR() dns.RR {
 	rr := dns.TypeToRR[rdtype]()
 
 	// Fill in the header.
-	rr.Header().Name = rc.NameFQDN + "."
+	rr.Header().Name = rc.nameFQDN + "."
 	rr.Header().Rrtype = rdtype
 	rr.Header().Class = dns.ClassINET
 	rr.Header().Ttl = rc.TTL
@@ -252,7 +252,7 @@ type RecordKey struct {
 
 // Key converts a RecordConfig into a RecordKey.
 func (rc *RecordConfig) Key() RecordKey {
-	return RecordKey{rc.Name, rc.Type}
+	return RecordKey{rc.name, rc.Type}
 }
 
 // Records is a list of *RecordConfig.
@@ -272,27 +272,27 @@ func (r Records) GroupedByLabel() ([]string, map[string]Records) {
 	order := []string{}
 	groups := map[string]Records{}
 	for _, rec := range r {
-		if _, found := groups[rec.Name]; !found {
-			order = append(order, rec.Name)
+		if _, found := groups[rec.name]; !found {
+			order = append(order, rec.name)
 		}
-		groups[rec.Name] = append(groups[rec.Name], rec)
+		groups[rec.name] = append(groups[rec.name], rec)
 	}
 	return order, groups
 }
 
 // PostProcessRecords does any post-processing of the downloaded DNS records.
 func PostProcessRecords(recs []*RecordConfig) {
-	Downcase(recs)
+	downcase(recs)
 }
 
 // Downcase converts all labels and targets to lowercase in a list of RecordConfig.
-func Downcase(recs []*RecordConfig) {
+func downcase(recs []*RecordConfig) {
 	for _, r := range recs {
-		r.Name = strings.ToLower(r.Name)
-		r.NameFQDN = strings.ToLower(r.NameFQDN)
+		r.name = strings.ToLower(r.name)
+		r.nameFQDN = strings.ToLower(r.nameFQDN)
 		switch r.Type {
 		case "ANAME", "CNAME", "MX", "NS", "PTR":
-			r.Target = strings.ToLower(r.Target)
+			r.target = strings.ToLower(r.target)
 		case "A", "AAAA", "ALIAS", "CAA", "IMPORT_TRANSFORM", "SRV", "TLSA", "TXT", "SOA", "CF_REDIRECT", "CF_TEMP_REDIRECT":
 			// Do nothing.
 		default:

@@ -49,7 +49,7 @@ func (dc *DomainConfig) Copy() (*DomainConfig, error) {
 // HasRecordTypeName returns True if there is a record with this rtype and name.
 func (dc *DomainConfig) HasRecordTypeName(rtype, name string) bool {
 	for _, r := range dc.Records {
-		if r.Type == rtype && r.Name == name {
+		if r.Type == rtype && r.GetLabel() == name {
 			return true
 		}
 	}
@@ -73,19 +73,17 @@ func (dc *DomainConfig) Filter(f func(r *RecordConfig) bool) {
 // - NameFQDN
 // - Target (CNAME and MX only)
 func (dc *DomainConfig) Punycode() error {
-	var err error
 	for _, rec := range dc.Records {
-		rec.Name, err = idna.ToASCII(rec.Name)
+		t, err := idna.ToASCII(rec.GetLabelFQDN())
 		if err != nil {
 			return err
 		}
-		rec.NameFQDN, err = idna.ToASCII(rec.NameFQDN)
-		if err != nil {
-			return err
-		}
+		rec.SetLabelFromFQDN(t, dc.Name)
 		switch rec.Type { // #rtype_variations
 		case "ALIAS", "MX", "NS", "CNAME", "PTR", "SRV", "URL", "URL301", "FRAME", "R53_ALIAS":
-			rec.Target, err = idna.ToASCII(rec.Target)
+			// These rtypes are hostnames, therefore need to be converted (unlike, for example, an AAAA record)
+			t, err := idna.ToASCII(rec.GetTargetField())
+			rec.SetTarget(t)
 			if err != nil {
 				return err
 			}

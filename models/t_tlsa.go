@@ -12,7 +12,7 @@ func (rc *RecordConfig) SetTargetTLSA(usage, selector, matchingtype uint8, targe
 	rc.TlsaUsage = usage
 	rc.TlsaSelector = selector
 	rc.TlsaMatchingType = matchingtype
-	rc.Target = target
+	rc.SetTarget(target)
 	if rc.Type == "" {
 		rc.Type = "TLSA"
 	}

@@ -27,11 +27,11 @@ func WriteYaml(w io.Writer, records models.Records, origin string) error {
 	for _, r := range records {
 		recsCopy = append(recsCopy, r)
 	}
-	for _, r := range recsCopy {
-		if r.Name == "@" {
-			r.Name = ""
-		}
-	}
+	// for _, r := range recsCopy {
+	// 	if r.GetLabel() == "@" {
+	// 		r.name = ""
+	// 	}
+	// }
 
 	z := &genYamlData{
 		Origin:     dnsutil.AddOrigin(origin, "."),
@@ -156,7 +156,7 @@ func sameType(records models.Records) bool {
 func oneLabel(records models.Records) yaml.MapItem {
 	item := yaml.MapItem{
 		// a yaml.MapItem is a YAML map that retains the key order.
-		Key: records[0].Name,
+		Key: records[0].GetLabel(),
 	}
 	//  Special case labels with a single record:
 	if len(records) == 1 {

@@ -178,7 +178,7 @@ func parseLeaf(results models.Records, k string, v interface{}, origin string) (
 						case "port": // SRV
 							newRc.SrvPort = uint16(v4.(int))
 						case "value": // MX
-							newRc.Target = v4.(string)
+							newRc.SetTarget(v4.(string))
 						}
 					}
 					//fmt.Printf("parseLeaf: append %v\n", newRc)

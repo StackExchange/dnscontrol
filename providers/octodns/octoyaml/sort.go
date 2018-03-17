@@ -32,12 +32,12 @@ func (z *genYamlData) Less(i, j int) bool {
 	a, b := z.Records[i], z.Records[j]
 	compA, compB := a.GetLabel(), b.GetLabel()
 	if compA != compB {
-		if compA == z.Origin+"." {
-			compA = "@"
-		}
-		if compB == z.Origin+"." {
-			compB = "@"
-		}
+		// if compA == z.Origin+"." {
+		// 	compA = "@"
+		// }
+		// if compB == z.Origin+"." {
+		// 	compB = "@"
+		// }
 		return zoneLabelLess(compA, compB)
 	}
 	rrtypeA, rrtypeB := a.Type, b.Type
@@ -48,14 +48,14 @@ func (z *genYamlData) Less(i, j int) bool {
 	case "NS", "TXT", "TLSA":
 		// pass through.
 	case "A":
-		ta2, tb2 := net.ParseIP(a.Target), net.ParseIP(b.Target)
+		ta2, tb2 := net.ParseIP(a.GetTargetField()), net.ParseIP(b.GetTargetField())
 		ipa, ipb := ta2.To4(), tb2.To4()
 		if ipa == nil || ipb == nil {
 			log.Fatalf("should not happen: IPs are not 4 bytes: %#v %#v", ta2, tb2)
 		}
 		return bytes.Compare(ipa, ipb) == -1
 	case "AAAA":
-		ta2, tb2 := net.ParseIP(a.Target), net.ParseIP(b.Target)
+		ta2, tb2 := net.ParseIP(a.GetTargetField()), net.ParseIP(b.GetTargetField())
 		ipa, ipb := ta2.To16(), tb2.To16()
 		return bytes.Compare(ipa, ipb) == -1
 	case "MX":
@@ -75,7 +75,7 @@ func (z *genYamlData) Less(i, j int) bool {
 			return pa < pb
 		}
 	case "PTR":
-		pa, pb := a.Target, b.Target
+		pa, pb := a.GetTargetField(), b.GetTargetField()
 		if pa != pb {
 			return pa < pb
 		}
@@ -100,6 +100,12 @@ func (z *genYamlData) Less(i, j int) bool {
 }
 
 func zoneLabelLess(a, b string) bool {
+	if a == "@" {
+		a = ""
+	}
+	if b == "@" {
+		b = ""
+	}
 	return natsort.Less(a, b)
 	// octodns-validate wants a "natural sort" (i.e. foo10 comes after foo3).
 	// We emulate this with the natsort package.

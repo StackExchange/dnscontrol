@@ -8,7 +8,6 @@ import (
 	"strconv"
 
 	"github.com/StackExchange/dnscontrol/models"
-	"github.com/miekg/dns/dnsutil"
 )
 
 // DetermineNameservers will find all nameservers we should use for a domain. It follows the following rules:
@@ -52,15 +51,14 @@ func AddNSRecords(dc *models.DomainConfig) {
 	for _, ns := range dc.Nameservers {
 		rc := &models.RecordConfig{
 			Type:     "NS",
-			Name:     "@",
-			Target:   ns.Name,
 			Metadata: map[string]string{},
 			TTL:      ttl,
 		}
-		if !strings.HasSuffix(rc.Target, ".") {
-			rc.Target += "."
+		rc.SetLabel("@", dc.Name)
+		rc.SetTarget(ns.Name)
+		if !strings.HasSuffix(rc.GetTargetField(), ".") {
+			rc.SetTarget(rc.GetTargetField() + ".")
 		}
-		rc.NameFQDN = dnsutil.AddOrigin(rc.Name, dc.Name)
 		dc.Records = append(dc.Records, rc)
 	}
 }
