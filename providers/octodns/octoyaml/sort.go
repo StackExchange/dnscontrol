@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"fmt"
 	"log"
-	"net"
 	"sort"
 
 	"github.com/StackExchange/dnscontrol/models"
@@ -47,17 +46,18 @@ func (z *genYamlData) Less(i, j int) bool {
 	switch rrtypeA { // #rtype_variations
 	case "NS", "TXT", "TLSA":
 		// pass through.
-	case "A":
-		ta2, tb2 := net.ParseIP(a.Target), net.ParseIP(b.Target)
-		ipa, ipb := ta2.To4(), tb2.To4()
+	case "A", "AAAA":
+		//ta2, tb2 := net.ParseIP(a.GetTargetField()), net.ParseIP(b.GetTargetField())
+		//ipa, ipb := ta2.To4(), tb2.To4()
+		ipa, ipb := a.GetTargetIP(), b.GetTargetIP()
 		if ipa == nil || ipb == nil {
-			log.Fatalf("should not happen: IPs are not 4 bytes: %#v %#v", ta2, tb2)
+			log.Fatalf("should not happen: IPs are not 4 bytes: %#v %#v", a.GetTargetField(), b.GetTargetField())
 		}
 		return bytes.Compare(ipa, ipb) == -1
-	case "AAAA":
-		ta2, tb2 := net.ParseIP(a.Target), net.ParseIP(b.Target)
-		ipa, ipb := ta2.To16(), tb2.To16()
-		return bytes.Compare(ipa, ipb) == -1
+	// case "AAAA":
+	// 	ta2, tb2 := net.ParseIP(a.Target), net.ParseIP(b.Target)
+	// 	ipa, ipb := ta2.To16(), tb2.To16()
+	// 	return bytes.Compare(ipa, ipb) == -1
 	case "MX":
 		pa, pb := a.MxPreference, b.MxPreference
 		return pa < pb
@@ -75,7 +75,7 @@ func (z *genYamlData) Less(i, j int) bool {
 			return pa < pb
 		}
 	case "PTR":
-		pa, pb := a.Target, b.Target
+		pa, pb := a.GetTargetField(), b.GetTargetField()
 		if pa != pb {
 			return pa < pb
 		}

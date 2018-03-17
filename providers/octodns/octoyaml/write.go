@@ -28,8 +28,9 @@ func WriteYaml(w io.Writer, records models.Records, origin string) error {
 		recsCopy = append(recsCopy, r)
 	}
 	for _, r := range recsCopy {
-		if r.Name == "@" {
-			r.Name = ""
+		if r.GetLabel() == "@" {
+			r.SetLabelNull()
+			// 		r.Name = ""
 		}
 	}
 
@@ -156,7 +157,7 @@ func sameType(records models.Records) bool {
 func oneLabel(records models.Records) yaml.MapItem {
 	item := yaml.MapItem{
 		// a yaml.MapItem is a YAML map that retains the key order.
-		Key: records[0].Name,
+		Key: records[0].GetLabel(),
 	}
 	//  Special case labels with a single record:
 	if len(records) == 1 {
