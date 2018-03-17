@@ -48,10 +48,11 @@ func (z *genYamlData) Less(i, j int) bool {
 	case "NS", "TXT", "TLSA":
 		// pass through.
 	case "A":
-		ta2, tb2 := net.ParseIP(a.GetTargetField()), net.ParseIP(b.GetTargetField())
-		ipa, ipb := ta2.To4(), tb2.To4()
+		//ta2, tb2 := net.ParseIP(a.GetTargetField()), net.ParseIP(b.GetTargetField())
+		//ipa, ipb := ta2.To4(), tb2.To4()
+		ipa, ipb := a.GetTargetIP(), b.GetTargetIP()
 		if ipa == nil || ipb == nil {
-			log.Fatalf("should not happen: IPs are not 4 bytes: %#v %#v", ta2, tb2)
+			log.Fatalf("should not happen: IPs are not 4 bytes: %#v %#v", a.GetTargetField(), b.GetTargetField())
 		}
 		return bytes.Compare(ipa, ipb) == -1
 	case "AAAA":
