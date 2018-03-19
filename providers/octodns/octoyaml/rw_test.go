@@ -74,7 +74,6 @@ func TestYamlWrite(t *testing.T) {
 				panic(fmt.Sprintf("FILE %s does not mention domain '%s'", f.Name(), "example.tld"))
 			}
 
-			fmt.Printf("DEBUG: YAML\nBEGIN\n%v\nEND\n", actualYAML)
 			err = WriteYaml(
 				actualYAML, conf.FindDomain("example.tld").Records, "example.tld")
 

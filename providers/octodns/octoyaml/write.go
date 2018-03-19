@@ -29,8 +29,8 @@ func WriteYaml(w io.Writer, records models.Records, origin string) error {
 	}
 	for _, r := range recsCopy {
 		if r.GetLabel() == "@" {
+			//r.Name = ""
 			r.SetLabelNull()
-			// 		r.Name = ""
 		}
 	}
 
