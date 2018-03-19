@@ -4,8 +4,6 @@ import (
 	"flag"
 	"testing"
 
-	"github.com/miekg/dns/dnsutil"
-
 	"fmt"
 
 	"strconv"
@@ -16,6 +14,7 @@ import (
 	"github.com/StackExchange/dnscontrol/providers"
 	_ "github.com/StackExchange/dnscontrol/providers/_all"
 	"github.com/StackExchange/dnscontrol/providers/config"
+	"github.com/miekg/dns/dnsutil"
 	"github.com/pkg/errors"
 )
 

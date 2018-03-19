@@ -48,7 +48,6 @@ func (z *genYamlData) Less(i, j int) bool {
 	case "NS", "TXT", "TLSA":
 		// pass through.
 	case "A":
-		// TODO(tlim): Optimize this.
 		ta2, tb2 := net.ParseIP(a.GetTargetField()), net.ParseIP(b.GetTargetField())
 		ipa, ipb := ta2.To4(), tb2.To4()
 		if ipa == nil || ipb == nil {

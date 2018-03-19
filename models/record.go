@@ -83,20 +83,6 @@ type RecordConfig struct {
 	Original interface{} `json:"-"` // Store pointer to provider-specific record object. Used in diffing.
 }
 
-//type RecordConfigJSON struct {
-//	RecordConfig
-//	Name     string `json:"name"`
-//	NameFQDN string `json:"-"`
-//	target   string `json:"target"`
-//}
-//
-//func (rc RecordConfig) MarshalJSON() ([]byte, error)  {
-//	j := RecordConfigJSON{}
-//	j.Type = rc.Type
-//
-//	return json.Marshal(
-//}
-
 // Copy returns a deep copy of a RecordConfig.
 func (rc *RecordConfig) Copy() (*RecordConfig, error) {
 	newR := &RecordConfig{}
@@ -134,11 +120,11 @@ func (rc *RecordConfig) SetLabel(short, origin string) {
 	}
 }
 
-// SetLabelNull sets the label to "". Normally the FQDN is denoted by .Name being
+// UnsafeSetLabelNull sets the label to "". Normally the FQDN is denoted by .Name being
 // "@" however this can be used to violate that assertion. It should only be used
 // on copies of a RecordConfig that is being used for non-standard things like
 // Marshalling yaml.
-func (rc *RecordConfig) SetLabelNull() {
+func (rc *RecordConfig) UnsafeSetLabelNull() {
 	rc.Name = ""
 }
 

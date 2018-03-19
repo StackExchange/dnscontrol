@@ -55,10 +55,12 @@ func AddNSRecords(dc *models.DomainConfig) {
 			TTL:      ttl,
 		}
 		rc.SetLabel("@", dc.Name)
-		rc.SetTarget(ns.Name)
-		if !strings.HasSuffix(rc.GetTargetField(), ".") {
-			rc.SetTarget(rc.GetTargetField() + ".")
+		t := ns.Name
+		if !strings.HasSuffix(t, ".") {
+			rc.SetTarget(t + ".")
 		}
+		rc.SetTarget(t)
+
 		dc.Records = append(dc.Records, rc)
 	}
 }
