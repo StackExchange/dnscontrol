@@ -10,7 +10,6 @@ import (
 	"github.com/StackExchange/dnscontrol/models"
 	"github.com/StackExchange/dnscontrol/providers"
 	"github.com/StackExchange/dnscontrol/providers/diff"
-	"github.com/miekg/dns/dnsutil"
 	"github.com/pkg/errors"
 
 	dnsimpleapi "github.com/dnsimple/dnsimple-go/dnsimple"
@@ -281,7 +280,7 @@ func (c *DnsimpleApi) createRecordFunc(rc *models.RecordConfig, domainName strin
 			return err
 		}
 		record := dnsimpleapi.ZoneRecord{
-			Name:     dnsutil.TrimDomainName(rc.NameFQDN, domainName),
+			Name:     rc.GetLabel(),
 			Type:     rc.Type,
 			Content:  rc.GetTargetCombined(),
 			TTL:      int(rc.TTL),
@@ -327,7 +326,7 @@ func (c *DnsimpleApi) updateRecordFunc(old *dnsimpleapi.ZoneRecord, rc *models.R
 		}
 
 		record := dnsimpleapi.ZoneRecord{
-			Name:     dnsutil.TrimDomainName(rc.NameFQDN, domainName),
+			Name:     rc.GetLabel(),
 			Type:     rc.Type,
 			Content:  rc.GetTargetCombined(),
 			TTL:      int(rc.TTL),
@@ -374,7 +373,7 @@ func removeOtherNS(dc *models.DomainConfig) {
 	for _, rec := range dc.Records {
 		if rec.Type == "NS" {
 			// apex NS inside dnsimple are expected.
-			if rec.NameFQDN == dc.Name && strings.HasSuffix(rec.GetTargetField(), ".dnsimple.com.") {
+			if rec.GetLabelFQDN() == dc.Name && strings.HasSuffix(rec.GetTargetField(), ".dnsimple.com.") {
 				continue
 			}
 			fmt.Printf("Warning: dnsimple.com does not allow NS records to be modified. %s will not be added.\n", rec.GetTargetField())

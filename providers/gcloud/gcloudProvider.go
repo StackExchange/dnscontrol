@@ -104,7 +104,7 @@ func keyFor(r *gdns.ResourceRecordSet) key {
 	return key{Type: r.Type, Name: r.Name}
 }
 func keyForRec(r *models.RecordConfig) key {
-	return key{Type: r.Type, Name: r.NameFQDN + "."}
+	return key{Type: r.Type, Name: r.GetLabelFQDN() + "."}
 }
 
 func (g *gcloud) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Correction, error) {

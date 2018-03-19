@@ -109,11 +109,11 @@ func (rc *RecordConfig) SetTarget(target string) error {
 // SetTargetIP sets the target to an IP, verifying this is an appropriate rtype.
 func (rc *RecordConfig) SetTargetIP(ip net.IP) error {
 	// TODO(tlim): Verify the rtype is appropriate for an IP.
-	rc.Target = ip.String()
+	rc.SetTarget(ip.String())
 	return nil
 }
 
-// // SetTargetFQDN sets the target to an IP, verifying this is an appropriate rtype.
+// // SetTargetFQDN sets the target to a string, verifying this is an appropriate rtype.
 // func (rc *RecordConfig) SetTargetFQDN(target string) error {
 // 	// TODO(tlim): Verify the rtype is appropriate for an hostname.
 // 	rc.Target = target

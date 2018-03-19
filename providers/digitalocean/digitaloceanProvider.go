@@ -203,7 +203,6 @@ func toRc(dc *models.DomainConfig, r *godo.DomainRecord) *models.RecordConfig {
 
 	t := &models.RecordConfig{
 		Type:         r.Type,
-		Target:       target,
 		TTL:          uint32(r.TTL),
 		MxPreference: uint16(r.Priority),
 		SrvPriority:  uint16(r.Priority),
@@ -212,6 +211,7 @@ func toRc(dc *models.DomainConfig, r *godo.DomainRecord) *models.RecordConfig {
 		Original:     r,
 	}
 	t.SetLabelFromFQDN(name, dc.Name)
+	t.SetTarget(target)
 	switch rtype := r.Type; rtype {
 	case "TXT":
 		t.SetTargetTXTString(target)

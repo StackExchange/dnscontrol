@@ -234,7 +234,7 @@ func toRecordConfig(dc *models.DomainConfig, r *vultr.DNSRecord) (*models.Record
 
 // toVultrRecord converts a RecordConfig converted by toRecordConfig back to a Vultr DNSRecord #rtype_variations
 func toVultrRecord(dc *models.DomainConfig, rc *models.RecordConfig) *vultr.DNSRecord {
-	name := dnsutil.TrimDomainName(rc.NameFQDN, dc.Name)
+	name := rc.GetLabel()
 	// Vultr uses a blank string to represent the apex domain
 	if name == "@" {
 		name = ""
@@ -267,17 +267,16 @@ func toVultrRecord(dc *models.DomainConfig, rc *models.RecordConfig) *vultr.DNSR
 		TTL:      int(rc.TTL),
 		Priority: priority,
 	}
-
-	if rc.Type == "SRV" {
-		target := rc.Target
+	switch rtype := rc.Type; rtype { // #rtype_variations
+	case "SRV":
+		target := rc.GetTargetField()
 		if strings.HasSuffix(target, ".") {
 			target = target[:len(target)-1]
 		}
 		r.Data = fmt.Sprintf("%v %v %s", rc.SrvWeight, rc.SrvPort, target)
-	}
-
-	if rc.Type == "CAA" {
+	case "CAA":
 		r.Data = fmt.Sprintf(`%v %s "%s"`, rc.CaaFlag, rc.CaaTag, rc.GetTargetField())
+	default:
 	}
 
 	return r

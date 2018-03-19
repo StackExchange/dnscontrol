@@ -7,20 +7,19 @@ import (
 	"testing"
 
 	"github.com/StackExchange/dnscontrol/models"
-	"github.com/miekg/dns/dnsutil"
 )
 
 func myRecord(s string) *models.RecordConfig {
 	parts := strings.Split(s, " ")
 	ttl, _ := strconv.ParseUint(parts[2], 10, 32)
-	return &models.RecordConfig{
-		Name:     parts[0],
-		NameFQDN: dnsutil.AddOrigin(parts[0], "example.com"),
+	r := &models.RecordConfig{
 		Type:     parts[1],
 		TTL:      uint32(ttl),
-		Target:   parts[3],
 		Metadata: map[string]string{},
 	}
+	r.SetLabel(parts[0], "example.com")
+	r.SetTarget(parts[3])
+	return r
 }
 
 func TestAdditionsOnly(t *testing.T) {

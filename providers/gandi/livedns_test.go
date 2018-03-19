@@ -8,6 +8,11 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
+func makeRC(label, domain, target string, rc models.RecordConfig) *models.RecordConfig {
+	rc.SetLabel(label, domain)
+	rc.SetTarget(target)
+	return &rc
+}
 func TestRecordConfigFromInfo(t *testing.T) {
 
 	for _, data := range []struct {
@@ -22,20 +27,14 @@ func TestRecordConfigFromInfo(t *testing.T) {
 				Values: []string{"127.0.0.1", "127.1.0.1"},
 			},
 			[]*models.RecordConfig{
-				{
-					NameFQDN: "www.example.com",
-					Name:     "www",
-					Type:     "A",
-					Target:   "127.0.0.1",
-					TTL:      500,
-				},
-				{
-					NameFQDN: "www.example.com",
-					Name:     "www",
-					Type:     "A",
-					Target:   "127.1.0.1",
-					TTL:      500,
-				},
+				makeRC("www", "example.com", "127.0.0.1", models.RecordConfig{
+					Type: "A",
+					TTL:  500,
+				}),
+				makeRC("www", "example.com", "127.1.0.1", models.RecordConfig{
+					Type: "A",
+					TTL:  500,
+				}),
 			},
 		},
 		{
@@ -46,14 +45,11 @@ func TestRecordConfigFromInfo(t *testing.T) {
 				Values: []string{"\"test 2\"", "\"test message test message test message\""},
 			},
 			[]*models.RecordConfig{
-				{
-					NameFQDN:   "www.example.com",
-					Name:       "www",
+				makeRC("www", "example.com", "test 2", models.RecordConfig{
 					Type:       "TXT",
-					Target:     "test 2",
 					TxtStrings: []string{"test 2", "test message test message test message"},
 					TTL:        500,
-				},
+				}),
 			},
 		},
 		{
@@ -65,24 +61,18 @@ func TestRecordConfigFromInfo(t *testing.T) {
 				Values: []string{"0 issue \"www.certinomis.com\"", "0 issuewild \"buypass.com\""},
 			},
 			[]*models.RecordConfig{
-				{
-					NameFQDN: "www.example.com",
-					Name:     "www",
-					Type:     "CAA",
-					Target:   "www.certinomis.com",
-					CaaFlag:  0,
-					CaaTag:   "issue",
-					TTL:      500,
-				},
-				{
-					NameFQDN: "www.example.com",
-					Name:     "www",
-					Type:     "CAA",
-					Target:   "buypass.com",
-					CaaFlag:  0,
-					CaaTag:   "issuewild",
-					TTL:      500,
-				},
+				makeRC("www", "example.com", "www.certinomis.com", models.RecordConfig{
+					Type:    "CAA",
+					CaaFlag: 0,
+					CaaTag:  "issue",
+					TTL:     500,
+				}),
+				makeRC("www", "example.com", "buypass.com", models.RecordConfig{
+					Type:    "CAA",
+					CaaFlag: 0,
+					CaaTag:  "issuewild",
+					TTL:     500,
+				}),
 			},
 		},
 		{
@@ -93,16 +83,13 @@ func TestRecordConfigFromInfo(t *testing.T) {
 				Values: []string{"20 0 5060 backupbox.example.com."},
 			},
 			[]*models.RecordConfig{
-				{
-					NameFQDN:    "test.example.com",
-					Name:        "test",
+				makeRC("test", "example.com", "backupbox.example.com.", models.RecordConfig{
 					Type:        "SRV",
-					Target:      "backupbox.example.com.",
 					SrvPriority: 20,
 					SrvWeight:   0,
 					SrvPort:     5060,
 					TTL:         500,
-				},
+				}),
 			},
 		},
 		{
@@ -113,22 +100,16 @@ func TestRecordConfigFromInfo(t *testing.T) {
 				Values: []string{"50 fb.mail.gandi.net.", "10 spool.mail.gandi.net."},
 			},
 			[]*models.RecordConfig{
-				{
-					NameFQDN:     "mail.example.com",
-					Name:         "mail",
+				makeRC("mail", "example.com", "fb.mail.gandi.net.", models.RecordConfig{
 					Type:         "MX",
 					MxPreference: 50,
-					Target:       "fb.mail.gandi.net.",
 					TTL:          500,
-				},
-				{
-					NameFQDN:     "mail.example.com",
-					Name:         "mail",
+				}),
+				makeRC("mail", "example.com", "spool.mail.gandi.net.", models.RecordConfig{
 					Type:         "MX",
 					MxPreference: 10,
-					Target:       "spool.mail.gandi.net.",
 					TTL:          500,
-				},
+				}),
 			},
 		},
 	} {
