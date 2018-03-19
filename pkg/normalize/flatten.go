@@ -27,7 +27,7 @@ func flattenSPFs(cfg *models.DNSConfig) []error {
 						return []error{err}
 					}
 				}
-				rec, err = spflib.Parse(txt.Target, cache)
+				rec, err = spflib.Parse(txt.GetTargetField(), cache)
 				if err != nil {
 					errs = append(errs, err)
 					continue
