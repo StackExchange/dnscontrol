@@ -31,7 +31,7 @@ func TestRecordConfigFromInfo(t *testing.T) {
 					Type: "A",
 					TTL:  500,
 				}),
-				makeRC("www", "example.com", "127.0.0.1", models.RecordConfig{
+				makeRC("www", "example.com", "127.1.0.1", models.RecordConfig{
 					Type: "A",
 					TTL:  500,
 				}),

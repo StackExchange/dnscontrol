@@ -127,7 +127,7 @@ func rrToRecord(rr dns.RR, origin string, replaceSerial uint32) (models.RecordCo
 		}
 		newSerial = v.Serial
 		//if (dnsutil.TrimDomainName(rc.Name, origin+".") == "@") && replaceSerial != 0 {
-		if rc.Name == "@" && replaceSerial != 0 {
+		if rc.GetLabel() == "@" && replaceSerial != 0 {
 			newSerial = replaceSerial
 		}
 		panicInvalid(rc.SetTarget(

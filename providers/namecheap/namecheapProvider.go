@@ -14,7 +14,6 @@ import (
 	"github.com/StackExchange/dnscontrol/providers"
 	"github.com/StackExchange/dnscontrol/providers/diff"
 	nc "github.com/billputer/go-namecheap"
-	"github.com/miekg/dns/dnsutil"
 	"github.com/pkg/errors"
 )
 
@@ -125,9 +124,9 @@ func (n *Namecheap) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Cor
 
 	// namecheap does not allow setting @ NS with basic DNS
 	dc.Filter(func(r *models.RecordConfig) bool {
-		if r.Type == "NS" && r.Name == "@" {
-			if !strings.HasSuffix(r.Target, "registrar-servers.com.") {
-				fmt.Println("\n", r.Target, "Namecheap does not support changing apex NS records. Skipping.")
+		if r.Type == "NS" && r.GetLabel() == "@" {
+			if !strings.HasSuffix(r.GetTargetField(), "registrar-servers.com.") {
+				fmt.Println("\n", r.GetTargetField(), "Namecheap does not support changing apex NS records. Skipping.")
 			}
 			return false
 		}
@@ -150,13 +149,13 @@ func (n *Namecheap) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Cor
 			continue
 		}
 		rec := &models.RecordConfig{
-			NameFQDN:     dnsutil.AddOrigin(r.Name, dc.Name),
 			Type:         r.Type,
-			Target:       r.Address,
 			TTL:          uint32(r.TTL),
 			MxPreference: uint16(r.MXPref),
 			Original:     r,
 		}
+		rec.SetLabel(r.Name, dc.Name)
+		rec.SetTarget(r.Address)
 		actual = append(actual, rec)
 	}
 
@@ -204,12 +203,11 @@ func (n *Namecheap) generateRecords(dc *models.DomainConfig) error {
 
 	id := 1
 	for _, r := range dc.Records {
-		name := dnsutil.TrimDomainName(r.NameFQDN, dc.Name)
 		rec := nc.DomainDNSHost{
 			ID:      id,
-			Name:    name,
+			Name:    r.GetLabel(),
 			Type:    r.Type,
-			Address: r.Target,
+			Address: r.GetTargetField(),
 			MXPref:  int(r.MxPreference),
 			TTL:     int(r.TTL),
 		}
