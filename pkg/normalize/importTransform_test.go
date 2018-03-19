@@ -27,7 +27,7 @@ func TestImportTransform(t *testing.T) {
 		Name: "internal",
 		Records: []*models.RecordConfig{
 			makeRC("*.stackexchange.com", "*.stackexchange.com.internal", "0.0.3.3", models.RecordConfig{Type: "A", Metadata: map[string]string{"transform_table": transformSingle}}),
-			makeRC("@", "internal", "stackexchange.com", models.RecordConfig{Type: "A", Metadata: map[string]string{"transform_table": transformSingle}}),
+			makeRC("@", "internal", "stackexchange.com", models.RecordConfig{Type: "IMPORT_TRANSFORM", Metadata: map[string]string{"transform_table": transformDouble}}),
 		},
 	}
 	cfg := &models.DNSConfig{

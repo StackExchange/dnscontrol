@@ -62,10 +62,10 @@ import (
 //  rec.Label() == "@"   // Is this record at the apex?
 //
 type RecordConfig struct {
-	Type             string            `json:"type"` // All caps rtype name.
-	name             string            // The short name. See above.
-	nameFQDN         string            // Must end with ".$origin". See above.
-	target           string            // If a name, must end with "."
+	Type             string            `json:"type"`   // All caps rtype name.
+	Name             string            `json:"name"`   // The short name. See above.
+	NameFQDN         string            `json:"-"`      // Must end with ".$origin". See above.
+	Target           string            `json:"target"` // If a name, must end with "."
 	TTL              uint32            `json:"ttl,omitempty"`
 	Metadata         map[string]string `json:"meta,omitempty"`
 	MxPreference     uint16            `json:"mxpreference,omitempty"`
@@ -126,11 +126,11 @@ func (rc *RecordConfig) SetLabel(short, origin string) {
 	short = strings.ToLower(short)
 	origin = strings.ToLower(origin)
 	if short == "" || short == "@" {
-		rc.name = "@"
-		rc.nameFQDN = origin
+		rc.Name = "@"
+		rc.NameFQDN = origin
 	} else {
-		rc.name = short
-		rc.nameFQDN = dnsutil.AddOrigin(short, origin)
+		rc.Name = short
+		rc.NameFQDN = dnsutil.AddOrigin(short, origin)
 	}
 }
 
@@ -139,7 +139,7 @@ func (rc *RecordConfig) SetLabel(short, origin string) {
 // on copies of a RecordConfig that is being used for non-standard things like
 // Marshalling yaml.
 func (rc *RecordConfig) SetLabelNull() {
-	rc.name = ""
+	rc.Name = ""
 }
 
 // SetLabelFromFQDN sets the .Name/.NameFQDN fields given a FQDN and origin.
@@ -162,8 +162,8 @@ func (rc *RecordConfig) SetLabelFromFQDN(fqdn, origin string) {
 
 	fqdn = strings.ToLower(fqdn)
 	origin = strings.ToLower(origin)
-	rc.name = dnsutil.TrimDomainName(fqdn, origin)
-	rc.nameFQDN = fqdn
+	rc.Name = dnsutil.TrimDomainName(fqdn, origin)
+	rc.NameFQDN = fqdn
 }
 
 // GetLabel returns the shortname of the label associated with this RecordConfig.
@@ -172,13 +172,13 @@ func (rc *RecordConfig) SetLabelFromFQDN(fqdn, origin string) {
 //   domain is "foo.com" then the FQDN is actually "foo.com.foo.com").
 // It will never be "" (the apex is returned as "@").
 func (rc *RecordConfig) GetLabel() string {
-	return rc.name
+	return rc.Name
 }
 
 // GetLabelFQDN returns the FQDN of the label associated with this RecordConfig.
 // It will not end with ".".
 func (rc *RecordConfig) GetLabelFQDN() string {
-	return rc.nameFQDN
+	return rc.NameFQDN
 }
 
 // ToRR converts a RecordConfig to a dns.RR.
@@ -194,7 +194,7 @@ func (rc *RecordConfig) ToRR() dns.RR {
 	rr := dns.TypeToRR[rdtype]()
 
 	// Fill in the header.
-	rr.Header().Name = rc.nameFQDN + "."
+	rr.Header().Name = rc.NameFQDN + "."
 	rr.Header().Rrtype = rdtype
 	rr.Header().Class = dns.ClassINET
 	rr.Header().Ttl = rc.TTL
@@ -260,7 +260,7 @@ type RecordKey struct {
 
 // Key converts a RecordConfig into a RecordKey.
 func (rc *RecordConfig) Key() RecordKey {
-	return RecordKey{rc.name, rc.Type}
+	return RecordKey{rc.Name, rc.Type}
 }
 
 // Records is a list of *RecordConfig.
@@ -280,10 +280,10 @@ func (r Records) GroupedByLabel() ([]string, map[string]Records) {
 	order := []string{}
 	groups := map[string]Records{}
 	for _, rec := range r {
-		if _, found := groups[rec.name]; !found {
-			order = append(order, rec.name)
+		if _, found := groups[rec.Name]; !found {
+			order = append(order, rec.Name)
 		}
-		groups[rec.name] = append(groups[rec.name], rec)
+		groups[rec.Name] = append(groups[rec.Name], rec)
 	}
 	return order, groups
 }
@@ -296,11 +296,11 @@ func PostProcessRecords(recs []*RecordConfig) {
 // Downcase converts all labels and targets to lowercase in a list of RecordConfig.
 func downcase(recs []*RecordConfig) {
 	for _, r := range recs {
-		r.name = strings.ToLower(r.name)
-		r.nameFQDN = strings.ToLower(r.nameFQDN)
+		r.Name = strings.ToLower(r.Name)
+		r.NameFQDN = strings.ToLower(r.NameFQDN)
 		switch r.Type {
 		case "ANAME", "CNAME", "MX", "NS", "PTR":
-			r.target = strings.ToLower(r.target)
+			r.Target = strings.ToLower(r.Target)
 		case "A", "AAAA", "ALIAS", "CAA", "IMPORT_TRANSFORM", "SRV", "TLSA", "TXT", "SOA", "CF_REDIRECT", "CF_TEMP_REDIRECT":
 			// Do nothing.
 		default:

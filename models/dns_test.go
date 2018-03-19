@@ -7,7 +7,7 @@ import (
 func TestHasRecordTypeName(t *testing.T) {
 	x := &RecordConfig{
 		Type: "A",
-		name: "@",
+		Name: "@",
 	}
 	dc := DomainConfig{}
 	if dc.HasRecordTypeName("A", "@") {
@@ -25,9 +25,9 @@ func TestHasRecordTypeName(t *testing.T) {
 func TestRR(t *testing.T) {
 	experiment := RecordConfig{
 		Type:         "A",
-		name:         "foo",
-		nameFQDN:     "foo.example.com",
-		target:       "1.2.3.4",
+		Name:         "foo",
+		NameFQDN:     "foo.example.com",
+		Target:       "1.2.3.4",
 		TTL:          0,
 		MxPreference: 0,
 	}
@@ -39,9 +39,9 @@ func TestRR(t *testing.T) {
 
 	experiment = RecordConfig{
 		Type:     "CAA",
-		name:     "@",
-		nameFQDN: "example.com",
-		target:   "mailto:test@example.com",
+		Name:     "@",
+		NameFQDN: "example.com",
+		Target:   "mailto:test@example.com",
 		TTL:      300,
 		CaaTag:   "iodef",
 		CaaFlag:  1,
@@ -54,9 +54,9 @@ func TestRR(t *testing.T) {
 
 	experiment = RecordConfig{
 		Type:             "TLSA",
-		name:             "@",
-		nameFQDN:         "_443._tcp.example.com",
-		target:           "abcdef0123456789",
+		Name:             "@",
+		NameFQDN:         "_443._tcp.example.com",
+		Target:           "abcdef0123456789",
 		TTL:              300,
 		TlsaUsage:        0,
 		TlsaSelector:     0,
@@ -71,8 +71,8 @@ func TestRR(t *testing.T) {
 
 func TestDowncase(t *testing.T) {
 	dc := DomainConfig{Records: Records{
-		&RecordConfig{Type: "MX", name: "lower", target: "targetmx"},
-		&RecordConfig{Type: "MX", name: "UPPER", target: "TARGETMX"},
+		&RecordConfig{Type: "MX", Name: "lower", Target: "targetmx"},
+		&RecordConfig{Type: "MX", Name: "UPPER", Target: "TARGETMX"},
 	}}
 	downcase(dc.Records)
 	if !dc.HasRecordTypeName("MX", "lower") {
@@ -81,10 +81,10 @@ func TestDowncase(t *testing.T) {
 	if !dc.HasRecordTypeName("MX", "upper") {
 		t.Errorf("%v: expected (%v) got (%v)\n", dc.Records, false, true)
 	}
-	if dc.Records[0].target != "targetmx" {
-		t.Errorf("%v: target0 expected (%v) got (%v)\n", dc.Records, "targetmx", dc.Records[0].target)
+	if dc.Records[0].GetTargetField() != "targetmx" {
+		t.Errorf("%v: target0 expected (%v) got (%v)\n", dc.Records, "targetmx", dc.Records[0].GetTargetField())
 	}
-	if dc.Records[1].target != "targetmx" {
-		t.Errorf("%v: target1 expected (%v) got (%v)\n", dc.Records, "targetmx", dc.Records[1].target)
+	if dc.Records[1].GetTargetField() != "targetmx" {
+		t.Errorf("%v: target1 expected (%v) got (%v)\n", dc.Records, "targetmx", dc.Records[1].GetTargetField())
 	}
 }
