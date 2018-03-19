@@ -120,6 +120,14 @@ func (rc *RecordConfig) SetLabel(short, origin string) {
 	}
 }
 
+// UnsafeSetLabelNull sets the label to "". Normally the FQDN is denoted by .Name being
+// "@" however this can be used to violate that assertion. It should only be used
+// on copies of a RecordConfig that is being used for non-standard things like
+// Marshalling yaml.
+func (rc *RecordConfig) UnsafeSetLabelNull() {
+	rc.Name = ""
+}
+
 // SetLabelFromFQDN sets the .Name/.NameFQDN fields given a FQDN and origin.
 // fqdn may have a trailing "." but it is not required.
 // origin may not have a trailing dot.
@@ -268,11 +276,11 @@ func (r Records) GroupedByLabel() ([]string, map[string]Records) {
 
 // PostProcessRecords does any post-processing of the downloaded DNS records.
 func PostProcessRecords(recs []*RecordConfig) {
-	Downcase(recs)
+	downcase(recs)
 }
 
 // Downcase converts all labels and targets to lowercase in a list of RecordConfig.
-func Downcase(recs []*RecordConfig) {
+func downcase(recs []*RecordConfig) {
 	for _, r := range recs {
 		r.Name = strings.ToLower(r.Name)
 		r.NameFQDN = strings.ToLower(r.NameFQDN)

@@ -99,11 +99,11 @@ func (c *GandiApi) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Corr
 			return nil, errors.Errorf("ERROR: Gandi does not support TTLs > 30 days (TTL=%d)", rec.TTL)
 		}
 		if rec.Type == "TXT" {
-			rec.Target = "\"" + rec.Target + "\"" // FIXME(tlim): Should do proper quoting.
+			rec.SetTarget("\"" + rec.GetTargetField() + "\"") // FIXME(tlim): Should do proper quoting.
 		}
 		if rec.Type == "NS" && rec.GetLabel() == "@" {
-			if !strings.HasSuffix(rec.Target, ".gandi.net.") {
-				log.Printf("WARNING: Gandi does not support changing apex NS records. %s will not be added.", rec.Target)
+			if !strings.HasSuffix(rec.GetTargetField(), ".gandi.net.") {
+				log.Printf("WARNING: Gandi does not support changing apex NS records. %s will not be added.", rec.GetTargetField())
 			}
 			continue
 		}

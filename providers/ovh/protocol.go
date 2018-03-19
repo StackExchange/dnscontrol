@@ -112,7 +112,7 @@ func (c *ovhProvider) deleteRecordFunc(id int64, fqdn string) func() error {
 func (c *ovhProvider) createRecordFunc(rc *models.RecordConfig, fqdn string) func() error {
 	return func() error {
 		record := Record{
-			SubDomain: dnsutil.TrimDomainName(rc.NameFQDN, fqdn),
+			SubDomain: dnsutil.TrimDomainName(rc.GetLabelFQDN(), fqdn),
 			FieldType: rc.Type,
 			Target:    rc.GetTargetCombined(),
 			TTL:       rc.TTL,
@@ -130,7 +130,7 @@ func (c *ovhProvider) createRecordFunc(rc *models.RecordConfig, fqdn string) fun
 func (c *ovhProvider) updateRecordFunc(old *Record, rc *models.RecordConfig, fqdn string) func() error {
 	return func() error {
 		record := Record{
-			SubDomain: dnsutil.TrimDomainName(rc.NameFQDN, fqdn),
+			SubDomain: rc.GetLabel(),
 			FieldType: rc.Type,
 			Target:    rc.GetTargetCombined(),
 			TTL:       rc.TTL,

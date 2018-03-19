@@ -223,31 +223,31 @@ func (c *liveClient) recordsToInfo(records models.Records) (models.Records, []*g
 
 	for _, rec := range records {
 		if rec.TTL < 300 {
-			log.Printf("WARNING: Gandi does not support ttls < 300. %s will not be set to %d.", rec.NameFQDN, rec.TTL)
+			log.Printf("WARNING: Gandi does not support ttls < 300. %s will not be set to %d.", rec.GetLabelFQDN(), rec.TTL)
 			rec.TTL = 300
 		}
 		if rec.TTL > 2592000 {
 			return nil, nil, errors.Errorf("ERROR: Gandi does not support TTLs > 30 days (TTL=%d)", rec.TTL)
 		}
-		if rec.Type == "NS" && rec.Name == "@" {
-			if !strings.HasSuffix(rec.Target, ".gandi.net.") {
-				log.Printf("WARNING: Gandi does not support changing apex NS records. %s will not be added.", rec.Target)
+		if rec.Type == "NS" && rec.GetLabel() == "@" {
+			if !strings.HasSuffix(rec.GetTargetField(), ".gandi.net.") {
+				log.Printf("WARNING: Gandi does not support changing apex NS records. %s will not be added.", rec.GetTargetField())
 			}
 			continue
 		}
-		r, ok := recordSets[rec.Name][rec.Type]
+		r, ok := recordSets[rec.GetLabel()][rec.Type]
 		if !ok {
-			_, ok := recordSets[rec.Name]
+			_, ok := recordSets[rec.GetLabel()]
 			if !ok {
-				recordSets[rec.Name] = map[string]*gandiliverecord.Info{}
+				recordSets[rec.GetLabel()] = map[string]*gandiliverecord.Info{}
 			}
 			r = &gandiliverecord.Info{
 				Type: rec.Type,
-				Name: rec.Name,
+				Name: rec.GetLabel(),
 				TTL:  int64(rec.TTL),
 			}
 			recordInfos = append(recordInfos, r)
-			recordSets[rec.Name][rec.Type] = r
+			recordSets[rec.GetLabel()][rec.Type] = r
 		} else {
 			if r.TTL != int64(rec.TTL) {
 				log.Printf(

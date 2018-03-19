@@ -9,7 +9,6 @@ import (
 	"github.com/StackExchange/dnscontrol/models"
 	"github.com/StackExchange/dnscontrol/providers"
 	"github.com/StackExchange/dnscontrol/providers/diff"
-	"github.com/miekg/dns/dnsutil"
 	"github.com/pkg/errors"
 
 	"github.com/softlayer/softlayer-go/datatypes"
@@ -129,10 +128,10 @@ func (s *SoftLayer) getExistingRecords(domain *datatypes.Dns_Domain) ([]*models.
 
 		recConfig := &models.RecordConfig{
 			Type:     recType,
-			Target:   *record.Data,
 			TTL:      uint32(*record.Ttl),
 			Original: record,
 		}
+		recConfig.SetTarget(*record.Data)
 
 		switch recType {
 		case "SRV":
@@ -153,21 +152,16 @@ func (s *SoftLayer) getExistingRecords(domain *datatypes.Dns_Domain) ([]*models.
 			if record.Service != nil {
 				service = *record.Service
 			}
-
-			recConfig.Name = fmt.Sprintf("%s.%s", service, strings.ToLower(protocol))
-
+			recConfig.SetLabel(fmt.Sprintf("%s.%s", service, strings.ToLower(protocol)), *domain.Name)
 		case "MX":
 			if record.MxPriority != nil {
 				recConfig.MxPreference = uint16(*record.MxPriority)
 			}
-
 			fallthrough
-
 		default:
-			recConfig.Name = *record.Host
+			recConfig.SetLabel(*record.Host, *domain.Name)
 		}
 
-		recConfig.NameFQDN = dnsutil.AddOrigin(recConfig.Name, *domain.Name)
 		actual = append(actual, recConfig)
 	}
 
@@ -180,7 +174,7 @@ func (s *SoftLayer) getExistingRecords(domain *datatypes.Dns_Domain) ([]*models.
 func (s *SoftLayer) createRecordFunc(desired *models.RecordConfig, domain *datatypes.Dns_Domain) func() error {
 	var ttl, preference, domainID int = int(desired.TTL), int(desired.MxPreference), *domain.Id
 	var weight, priority, port int = int(desired.SrvWeight), int(desired.SrvPriority), int(desired.SrvPort)
-	var host, data, newType string = desired.Name, desired.Target, desired.Type
+	var host, data, newType string = desired.GetLabel(), desired.GetTargetField(), desired.Type
 	var err error
 
 	srvRegexp := regexp.MustCompile(`^_(?P<Service>\w+)\.\_(?P<Protocol>\w+)$`)
@@ -260,13 +254,15 @@ func (s *SoftLayer) updateRecordFunc(existing *datatypes.Dns_Domain_ResourceReco
 			service := services.GetDnsDomainResourceRecordMxTypeService(s.Session)
 			updated := datatypes.Dns_Domain_ResourceRecord_MxType{}
 
-			if desired.Name != *existing.Host {
-				updated.Host = &desired.Name
+			label := desired.GetLabel()
+			if label != *existing.Host {
+				updated.Host = &label
 				changes = true
 			}
 
-			if desired.Target != *existing.Data {
-				updated.Data = &desired.Target
+			target := desired.GetTargetField()
+			if target != *existing.Data {
+				updated.Data = &target
 				changes = true
 			}
 
@@ -290,13 +286,15 @@ func (s *SoftLayer) updateRecordFunc(existing *datatypes.Dns_Domain_ResourceReco
 			service := services.GetDnsDomainResourceRecordSrvTypeService(s.Session)
 			updated := datatypes.Dns_Domain_ResourceRecord_SrvType{}
 
-			if desired.Name != *existing.Host {
-				updated.Host = &desired.Name
+			label := desired.GetLabel()
+			if label != *existing.Host {
+				updated.Host = &label
 				changes = true
 			}
 
-			if desired.Target != *existing.Data {
-				updated.Data = &desired.Target
+			target := desired.GetTargetField()
+			if target != *existing.Data {
+				updated.Data = &target
 				changes = true
 			}
 
@@ -333,13 +331,15 @@ func (s *SoftLayer) updateRecordFunc(existing *datatypes.Dns_Domain_ResourceReco
 			service := services.GetDnsDomainResourceRecordService(s.Session)
 			updated := datatypes.Dns_Domain_ResourceRecord{}
 
-			if desired.Name != *existing.Host {
-				updated.Host = &desired.Name
+			label := desired.GetLabel()
+			if label != *existing.Host {
+				updated.Host = &label
 				changes = true
 			}
 
-			if desired.Target != *existing.Data {
-				updated.Data = &desired.Target
+			target := desired.GetTargetField()
+			if target != *existing.Data {
+				updated.Data = &target
 				changes = true
 			}
 

@@ -56,7 +56,9 @@ func TestYamlWrite(t *testing.T) {
 		m.AddFunc("json", minjson.Minify)
 
 		t.Run(f.Name(), func(t *testing.T) {
-			content, err := ioutil.ReadFile(filepath.Join(testDir, f.Name()))
+			fname := filepath.Join(testDir, f.Name())
+			fmt.Printf("Filename: %v\n", fname)
+			content, err := ioutil.ReadFile(fname)
 			if err != nil {
 				t.Fatal(err)
 			}

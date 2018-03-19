@@ -8,8 +8,6 @@ import (
 	"github.com/namedotcom/go/namecom"
 	"github.com/pkg/errors"
 
-	"github.com/miekg/dns/dnsutil"
-
 	"github.com/StackExchange/dnscontrol/models"
 	"github.com/StackExchange/dnscontrol/providers/diff"
 )
@@ -76,7 +74,7 @@ func (n *NameCom) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Corre
 func checkNSModifications(dc *models.DomainConfig) {
 	newList := make([]*models.RecordConfig, 0, len(dc.Records))
 	for _, rec := range dc.Records {
-		if rec.Type == "NS" && rec.NameFQDN == dc.Name {
+		if rec.Type == "NS" && rec.GetLabel() == "@" {
 			continue // Apex NS records are automatically created for the domain's nameservers and cannot be managed otherwise via the name.com API.
 		}
 		newList = append(newList, rec)
@@ -147,9 +145,9 @@ func (n *NameCom) getRecords(domain string) ([]*namecom.Record, error) {
 func (n *NameCom) createRecord(rc *models.RecordConfig, domain string) error {
 	record := &namecom.Record{
 		DomainName: domain,
-		Host:       dnsutil.TrimDomainName(rc.NameFQDN, domain),
+		Host:       rc.GetLabel(),
 		Type:       rc.Type,
-		Answer:     rc.Target,
+		Answer:     rc.GetTargetField(),
 		TTL:        rc.TTL,
 		Priority:   uint32(rc.MxPreference),
 	}
@@ -159,7 +157,7 @@ func (n *NameCom) createRecord(rc *models.RecordConfig, domain string) error {
 	case "TXT":
 		record.Answer = encodeTxt(rc.TxtStrings)
 	case "SRV":
-		record.Answer = fmt.Sprintf("%d %d %v", rc.SrvWeight, rc.SrvPort, rc.Target)
+		record.Answer = fmt.Sprintf("%d %d %v", rc.SrvWeight, rc.SrvPort, rc.GetTargetField())
 		record.Priority = uint32(rc.SrvPriority)
 	default:
 		panic(fmt.Sprintf("createRecord rtype %v unimplemented", rc.Type))

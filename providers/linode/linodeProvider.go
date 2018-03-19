@@ -136,10 +136,10 @@ func (api *LinodeApi) GetDomainCorrections(dc *models.DomainConfig) ([]*models.C
 	// https://github.com/linode/manager/blob/edd99dc4e1be5ab8190f243c3dbf8b830716255e/src/constants.js#L184
 	for _, name := range defaultNameServerNames {
 		rc := &models.RecordConfig{
-			NameFQDN: dc.Name,
 			Type:     "NS",
 			Original: &domainRecord{},
 		}
+		rc.SetLabelFromFQDN(dc.Name, dc.Name)
 		rc.SetTarget(name)
 
 		existingRecords = append(existingRecords, rc)
@@ -249,7 +249,7 @@ func toRc(dc *models.DomainConfig, r *domainRecord) *models.RecordConfig {
 func toReq(dc *models.DomainConfig, rc *models.RecordConfig) (*recordEditRequest, error) {
 	req := &recordEditRequest{
 		Type:     rc.Type,
-		Name:     dnsutil.TrimDomainName(rc.NameFQDN, dc.Name),
+		Name:     rc.GetLabel(),
 		Target:   rc.GetTargetField(),
 		TTL:      int(rc.TTL),
 		Priority: 0,

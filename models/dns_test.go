@@ -26,9 +26,9 @@ func TestRR(t *testing.T) {
 	experiment := RecordConfig{
 		Type:         "A",
 		Name:         "foo",
+		NameFQDN:     "foo.example.com",
 		Target:       "1.2.3.4",
 		TTL:          0,
-		NameFQDN:     "foo.example.com",
 		MxPreference: 0,
 	}
 	expected := "foo.example.com.\t300\tIN\tA\t1.2.3.4"
@@ -40,9 +40,9 @@ func TestRR(t *testing.T) {
 	experiment = RecordConfig{
 		Type:     "CAA",
 		Name:     "@",
+		NameFQDN: "example.com",
 		Target:   "mailto:test@example.com",
 		TTL:      300,
-		NameFQDN: "example.com",
 		CaaTag:   "iodef",
 		CaaFlag:  1,
 	}
@@ -55,9 +55,9 @@ func TestRR(t *testing.T) {
 	experiment = RecordConfig{
 		Type:             "TLSA",
 		Name:             "@",
+		NameFQDN:         "_443._tcp.example.com",
 		Target:           "abcdef0123456789",
 		TTL:              300,
-		NameFQDN:         "_443._tcp.example.com",
 		TlsaUsage:        0,
 		TlsaSelector:     0,
 		TlsaMatchingType: 1,
@@ -74,17 +74,17 @@ func TestDowncase(t *testing.T) {
 		&RecordConfig{Type: "MX", Name: "lower", Target: "targetmx"},
 		&RecordConfig{Type: "MX", Name: "UPPER", Target: "TARGETMX"},
 	}}
-	Downcase(dc.Records)
+	downcase(dc.Records)
 	if !dc.HasRecordTypeName("MX", "lower") {
 		t.Errorf("%v: expected (%v) got (%v)\n", dc.Records, false, true)
 	}
 	if !dc.HasRecordTypeName("MX", "upper") {
 		t.Errorf("%v: expected (%v) got (%v)\n", dc.Records, false, true)
 	}
-	if dc.Records[0].Target != "targetmx" {
-		t.Errorf("%v: target0 expected (%v) got (%v)\n", dc.Records, "targetmx", dc.Records[0].Target)
+	if dc.Records[0].GetTargetField() != "targetmx" {
+		t.Errorf("%v: target0 expected (%v) got (%v)\n", dc.Records, "targetmx", dc.Records[0].GetTargetField())
 	}
-	if dc.Records[1].Target != "targetmx" {
-		t.Errorf("%v: target1 expected (%v) got (%v)\n", dc.Records, "targetmx", dc.Records[1].Target)
+	if dc.Records[1].GetTargetField() != "targetmx" {
+		t.Errorf("%v: target1 expected (%v) got (%v)\n", dc.Records, "targetmx", dc.Records[1].GetTargetField())
 	}
 }

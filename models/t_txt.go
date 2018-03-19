@@ -2,7 +2,7 @@ package models
 
 // SetTargetTXT sets the TXT fields when there is 1 string.
 func (rc *RecordConfig) SetTargetTXT(s string) error {
-	rc.Target = s
+	rc.SetTarget(s)
 	rc.TxtStrings = []string{s}
 	if rc.Type == "" {
 		rc.Type = "TXT"
@@ -15,7 +15,7 @@ func (rc *RecordConfig) SetTargetTXT(s string) error {
 
 // SetTargetTXTs sets the TXT fields when there are many strings.
 func (rc *RecordConfig) SetTargetTXTs(s []string) error {
-	rc.Target = s[0]
+	rc.SetTarget(s[0])
 	rc.TxtStrings = s
 	if rc.Type == "" {
 		rc.Type = "TXT"

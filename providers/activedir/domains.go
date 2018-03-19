@@ -11,7 +11,6 @@ import (
 	"github.com/StackExchange/dnscontrol/models"
 	"github.com/StackExchange/dnscontrol/providers/diff"
 	"github.com/TomOnTime/utfutil"
-	"github.com/miekg/dns/dnsutil"
 	"github.com/pkg/errors"
 )
 
@@ -35,7 +34,7 @@ func (c *adProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Co
 
 	dc.Filter(func(r *models.RecordConfig) bool {
 		if r.Type != "A" && r.Type != "CNAME" {
-			log.Printf("WARNING: Active Directory only manages A and CNAME records. Won't consider %s %s", r.Type, r.NameFQDN)
+			log.Printf("WARNING: Active Directory only manages A and CNAME records. Won't consider %s %s", r.Type, r.GetLabelFQDN())
 			return false
 		}
 		return true
@@ -162,18 +161,16 @@ func (c *adProvider) getExistingRecords(domainname string) ([]*models.RecordConf
 }
 
 func (r *RecordConfigJson) unpackRecord(origin string) *models.RecordConfig {
-	rc := models.RecordConfig{}
-
-	rc.Name = strings.ToLower(r.Name)
-	rc.NameFQDN = dnsutil.AddOrigin(rc.Name, origin)
-	rc.Type = r.Type
-	rc.TTL = r.TTL
-
-	switch rc.Type { // #rtype_variations
-	case "A":
-		rc.Target = r.Data
+	rc := models.RecordConfig{
+		Type: r.Type,
+		TTL:  r.TTL,
+	}
+	rc.SetLabel(r.Name, origin)
+	switch rtype := rc.Type; rtype { // #rtype_variations
+	case "A", "AAAA":
+		rc.SetTarget(r.Data)
 	case "CNAME":
-		rc.Target = strings.ToLower(r.Data)
+		rc.SetTarget(strings.ToLower(r.Data))
 	case "NS", "SOA":
 		return nil
 	default:
@@ -197,12 +194,12 @@ Get-DnsServerResourceRecord -ComputerName REPLACE_WITH_COMPUTER_NAME -ZoneName $
 
 // generatePowerShellCreate generates PowerShell commands to ADD a record.
 func (c *adProvider) generatePowerShellCreate(domainname string, rec *models.RecordConfig) string {
-	content := rec.Target
+	content := rec.GetTargetField()
 	text := "\r\n" // Skip a line.
 	text += fmt.Sprintf("Add-DnsServerResourceRecord%s", rec.Type)
 	text += fmt.Sprintf(` -ComputerName "%s"`, c.adServer)
 	text += fmt.Sprintf(` -ZoneName "%s"`, domainname)
-	text += fmt.Sprintf(` -Name "%s"`, rec.Name)
+	text += fmt.Sprintf(` -Name "%s"`, rec.GetLabel())
 	text += fmt.Sprintf(` -TimeToLive $(New-TimeSpan -Seconds %d)`, rec.TTL)
 	switch rec.Type { // #rtype_variations
 	case "CNAME":
@@ -210,9 +207,10 @@ func (c *adProvider) generatePowerShellCreate(domainname string, rec *models.Rec
 	case "A":
 		text += fmt.Sprintf(` -IPv4Address "%s"`, content)
 	case "NS":
-		text = fmt.Sprintf("\r\n"+`echo "Skipping NS update (%v %v)"`+"\r\n", rec.Name, rec.Target)
+		text = fmt.Sprintf("\r\n"+`echo "Skipping NS update (%v %v)"`+"\r\n", rec.GetLabel(), rec.GetTargetDebug())
 	default:
-		panic(errors.Errorf("generatePowerShellCreate() does not yet handle recType=%s recName=%#v content=%#v)", rec.Type, rec.Name, content))
+		panic(errors.Errorf("generatePowerShellCreate() does not yet handle recType=%s recName=%#v content=%#v)",
+			rec.Type, rec.GetLabel(), content))
 		// We panic so that we quickly find any switch statements
 		// that have not been updated for a new RR type.
 	}
@@ -286,7 +284,7 @@ func (c *adProvider) generatePowerShellDelete(domainname, recName, recType, cont
 func (c *adProvider) createRec(domainname string, rec *models.RecordConfig) []*models.Correction {
 	arr := []*models.Correction{
 		{
-			Msg: fmt.Sprintf("CREATE record: %s %s ttl(%d) %s", rec.Name, rec.Type, rec.TTL, rec.Target),
+			Msg: fmt.Sprintf("CREATE record: %s %s ttl(%d) %s", rec.GetLabel(), rec.Type, rec.TTL, rec.GetTargetField()),
 			F: func() error {
 				return c.powerShellDoCommand(c.generatePowerShellCreate(domainname, rec), true)
 			}},
@@ -299,16 +297,16 @@ func (c *adProvider) modifyRec(domainname string, m diff.Correlation) *models.Co
 	return &models.Correction{
 		Msg: m.String(),
 		F: func() error {
-			return c.powerShellDoCommand(c.generatePowerShellModify(domainname, rec.Name, rec.Type, old.Target, rec.Target, old.TTL, rec.TTL), true)
+			return c.powerShellDoCommand(c.generatePowerShellModify(domainname, rec.GetLabel(), rec.Type, old.GetTargetField(), rec.GetTargetField(), old.TTL, rec.TTL), true)
 		},
 	}
 }
 
 func (c *adProvider) deleteRec(domainname string, rec *models.RecordConfig) *models.Correction {
 	return &models.Correction{
-		Msg: fmt.Sprintf("DELETE record: %s %s ttl(%d) %s", rec.Name, rec.Type, rec.TTL, rec.Target),
+		Msg: fmt.Sprintf("DELETE record: %s %s ttl(%d) %s", rec.GetLabel(), rec.Type, rec.TTL, rec.GetTargetField()),
 		F: func() error {
-			return c.powerShellDoCommand(c.generatePowerShellDelete(domainname, rec.Name, rec.Type, rec.Target), true)
+			return c.powerShellDoCommand(c.generatePowerShellDelete(domainname, rec.GetLabel(), rec.Type, rec.GetTargetField()), true)
 		},
 	}
 }

@@ -3,7 +3,6 @@ package normalize
 import (
 	"strings"
 
-	"github.com/miekg/dns/dnsutil"
 	"github.com/pkg/errors"
 
 	"github.com/StackExchange/dnscontrol/models"
@@ -27,13 +26,13 @@ func flattenSPFs(cfg *models.DNSConfig) []error {
 						return []error{err}
 					}
 				}
-				rec, err = spflib.Parse(txt.Target, cache)
+				rec, err = spflib.Parse(txt.GetTargetField(), cache)
 				if err != nil {
 					errs = append(errs, err)
 					continue
 				}
 			}
-			if flatten, ok := txt.Metadata["flatten"]; ok && strings.HasPrefix(txt.Target, "v=spf1") {
+			if flatten, ok := txt.Metadata["flatten"]; ok && strings.HasPrefix(txt.GetTargetField(), "v=spf1") {
 				rec = rec.Flatten(flatten)
 				err = txt.SetTargetTXT(rec.TXT())
 				if err != nil {
@@ -44,7 +43,7 @@ func flattenSPFs(cfg *models.DNSConfig) []error {
 			// now split if needed
 			if split, ok := txt.Metadata["split"]; ok {
 				if !strings.Contains(split, "%d") {
-					errs = append(errs, Warning{errors.Errorf("Split format `%s` in `%s` is not proper format (should have %%d in it)", split, txt.NameFQDN)})
+					errs = append(errs, Warning{errors.Errorf("Split format `%s` in `%s` is not proper format (should have %%d in it)", split, txt.GetLabelFQDN())})
 					continue
 				}
 				recs := rec.TXTSplit(split + "." + domain.Name)
@@ -54,8 +53,7 @@ func flattenSPFs(cfg *models.DNSConfig) []error {
 					} else {
 						cp, _ := txt.Copy()
 						cp.SetTargetTXT(v)
-						cp.NameFQDN = k
-						cp.Name = dnsutil.TrimDomainName(k, domain.Name)
+						cp.SetLabelFromFQDN(k, domain.Name)
 						domain.Records = append(domain.Records, cp)
 					}
 				}
