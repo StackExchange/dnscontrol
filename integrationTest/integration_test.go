@@ -4,6 +4,8 @@ import (
 	"flag"
 	"testing"
 
+	"github.com/miekg/dns/dnsutil"
+
 	"fmt"
 
 	"strconv"
@@ -106,9 +108,11 @@ func runTests(t *testing.T, prv providers.DNSServiceProvider, domainName string,
 			dom, _ := dc.Copy()
 			for _, r := range tst.Records {
 				rc := models.RecordConfig(*r)
-				//rc.NameFQDN = dnsutil.AddOrigin(rc.Name, domainName)
 				if strings.Contains(rc.GetTargetField(), "**current-domain**") {
 					rc.SetTarget(strings.Replace(rc.GetTargetField(), "**current-domain**", domainName, 1) + ".")
+				}
+				if strings.Contains(rc.GetLabelFQDN(), "**current-domain**") {
+					rc.SetLabelFromFQDN(strings.Replace(rc.GetLabelFQDN(), "**current-domain**", domainName, 1), domainName)
 				}
 				dom.Records = append(dom.Records, &rc)
 			}
@@ -205,15 +209,16 @@ type TestCase struct {
 type rec models.RecordConfig
 
 func (r *rec) GetLabel() string {
-	return r.GetLabel()
+	return r.Name
 }
 
 func (r *rec) SetLabel(label, domain string) {
-	r.SetLabel(label, domain)
+	r.Name = label
+	r.NameFQDN = dnsutil.AddOrigin(label, "**current-domain**")
 }
 
 func (r *rec) SetTarget(target string) {
-	r.SetTarget(target)
+	r.Target = target
 }
 
 func a(name, target string) *rec {
@@ -284,7 +289,6 @@ func tlsa(name string, usage, selector, matchingtype uint8, target string) *rec 
 	r.TlsaUsage = usage
 	r.TlsaSelector = selector
 	r.TlsaMatchingType = matchingtype
-	//r.Target = target
 	return r
 }
 
@@ -292,7 +296,7 @@ func ignore(name string) *rec {
 	r := &rec{
 		Type: "IGNORE",
 	}
-	r.SetLabel(name, "example2.tld")
+	r.SetLabel(name, "**current-domain**")
 	return r
 }
 
@@ -301,7 +305,7 @@ func makeRec(name, target, typ string) *rec {
 		Type: typ,
 		TTL:  300,
 	}
-	r.SetLabel(name, "example2.tld")
+	r.SetLabel(name, "**current-domain**")
 	r.SetTarget(target)
 	return r
 }
