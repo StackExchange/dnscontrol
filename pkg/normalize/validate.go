@@ -66,7 +66,7 @@ func validateRecordTypes(rec *models.RecordConfig, domain string, pTypes []strin
 	if !ok {
 		cType := providers.GetCustomRecordType(rec.Type)
 		if cType == nil {
-			return errors.Errorf("Unsupported record type (%v) domain=%v name=%v", rec.Type, domain, rec.Name)
+			return errors.Errorf("Unsupported record type (%v) domain=%v name=%v", rec.Type, domain, rec.GetLabel())
 		}
 		for _, providerType := range pTypes {
 			if providerType != cType.Provider {
@@ -125,11 +125,11 @@ func checkLabel(label string, rType string, domain string, meta map[string]strin
 
 // checkTargets returns true if rec.Target is valid for the rec.Type.
 func checkTargets(rec *models.RecordConfig, domain string) (errs []error) {
-	label := rec.Name
-	target := rec.Target
+	label := rec.GetLabel()
+	target := rec.GetTargetField()
 	check := func(e error) {
 		if e != nil {
-			err := errors.Errorf("In %s %s.%s: %s", rec.Type, rec.Name, domain, e.Error())
+			err := errors.Errorf("In %s %s.%s: %s", rec.Type, rec.GetLabel(), domain, e.Error())
 			if _, ok := e.(Warning); ok {
 				err = Warning{err}
 			}
@@ -166,7 +166,7 @@ func checkTargets(rec *models.RecordConfig, domain string) (errs []error) {
 			return
 		}
 		errs = append(errs, errors.Errorf("checkTargets: Unimplemented record type (%v) domain=%v name=%v",
-			rec.Type, domain, rec.Name))
+			rec.Type, domain, rec.GetLabel()))
 	}
 	return
 }
@@ -189,13 +189,13 @@ func importTransform(srcDomain, dstDomain *models.DomainConfig, transforms []tra
 	// 4. For As, change the target as described the transforms.
 
 	for _, rec := range srcDomain.Records {
-		if dstDomain.HasRecordTypeName(rec.Type, rec.NameFQDN) {
+		if dstDomain.HasRecordTypeName(rec.Type, rec.GetLabelFQDN()) {
 			continue
 		}
 		newRec := func() *models.RecordConfig {
 			rec2, _ := rec.Copy()
-			rec2.Name = rec2.NameFQDN
-			rec2.NameFQDN = dnsutil.AddOrigin(rec2.Name, dstDomain.Name)
+			newlabel := rec2.GetLabelFQDN()
+			rec2.SetLabelFromFQDN(newlabel, dstDomain.Name)
 			if ttl != 0 {
 				rec2.TTL = ttl
 			}
@@ -203,25 +203,25 @@ func importTransform(srcDomain, dstDomain *models.DomainConfig, transforms []tra
 		}
 		switch rec.Type { // #rtype_variations
 		case "A":
-			trs, err := transform.TransformIPToList(net.ParseIP(rec.Target), transforms)
+			trs, err := transform.TransformIPToList(net.ParseIP(rec.GetTargetField()), transforms)
 			if err != nil {
-				return errors.Errorf("import_transform: TransformIP(%v, %v) returned err=%s", rec.Target, transforms, err)
+				return errors.Errorf("import_transform: TransformIP(%v, %v) returned err=%s", rec.GetTargetField(), transforms, err)
 			}
 			for _, tr := range trs {
 				r := newRec()
-				r.Target = tr.String()
+				r.SetTarget(tr.String())
 				dstDomain.Records = append(dstDomain.Records, r)
 			}
 		case "CNAME":
 			r := newRec()
-			r.Target = transformCNAME(r.Target, srcDomain.Name, dstDomain.Name)
+			r.SetTarget(transformCNAME(r.GetTargetField(), srcDomain.Name, dstDomain.Name))
 			dstDomain.Records = append(dstDomain.Records, r)
 		case "MX", "NS", "SRV", "TXT", "CAA", "TLSA":
 			// Not imported.
 			continue
 		default:
 			return errors.Errorf("import_transform: Unimplemented record type %v (%v)",
-				rec.Type, rec.Name)
+				rec.Type, rec.GetLabel())
 		}
 	}
 	return nil
@@ -276,7 +276,7 @@ func NormalizeAndValidateConfig(config *models.DNSConfig) (errs []error) {
 			if err := validateRecordTypes(rec, domain.Name, pTypes); err != nil {
 				errs = append(errs, err)
 			}
-			if err := checkLabel(rec.Name, rec.Type, domain.Name, rec.Metadata); err != nil {
+			if err := checkLabel(rec.GetLabel(), rec.Type, domain.Name, rec.Metadata); err != nil {
 				errs = append(errs, err)
 			}
 			if errs2 := checkTargets(rec, domain.Name); errs2 != nil {
@@ -285,14 +285,16 @@ func NormalizeAndValidateConfig(config *models.DNSConfig) (errs []error) {
 
 			// Canonicalize Targets.
 			if rec.Type == "CNAME" || rec.Type == "MX" || rec.Type == "NS" {
-				rec.Target = dnsutil.AddOrigin(rec.Target, domain.Name+".")
+				rec.SetTarget(dnsutil.AddOrigin(rec.GetTargetField(), domain.Name+"."))
 			} else if rec.Type == "A" || rec.Type == "AAAA" {
-				rec.Target = net.ParseIP(rec.Target).String()
+				rec.SetTarget(net.ParseIP(rec.GetTargetField()).String())
 			} else if rec.Type == "PTR" {
 				var err error
-				if rec.Name, err = transform.PtrNameMagic(rec.Name, domain.Name); err != nil {
+				var name string
+				if name, err = transform.PtrNameMagic(rec.GetLabel(), domain.Name); err != nil {
 					errs = append(errs, err)
 				}
+				rec.SetLabel(name, domain.Name)
 			} else if rec.Type == "CAA" {
 				if rec.CaaTag != "issue" && rec.CaaTag != "issuewild" && rec.CaaTag != "iodef" {
 					errs = append(errs, errors.Errorf("CAA tag %s is invalid", rec.CaaTag))
@@ -300,26 +302,26 @@ func NormalizeAndValidateConfig(config *models.DNSConfig) (errs []error) {
 			} else if rec.Type == "TLSA" {
 				if rec.TlsaUsage < 0 || rec.TlsaUsage > 3 {
 					errs = append(errs, errors.Errorf("TLSA Usage %d is invalid in record %s (domain %s)",
-						rec.TlsaUsage, rec.Name, domain.Name))
+						rec.TlsaUsage, rec.GetLabel(), domain.Name))
 				}
 				if rec.TlsaSelector < 0 || rec.TlsaSelector > 1 {
 					errs = append(errs, errors.Errorf("TLSA Selector %d is invalid in record %s (domain %s)",
-						rec.TlsaSelector, rec.Name, domain.Name))
+						rec.TlsaSelector, rec.GetLabel(), domain.Name))
 				}
 				if rec.TlsaMatchingType < 0 || rec.TlsaMatchingType > 2 {
 					errs = append(errs, errors.Errorf("TLSA MatchingType %d is invalid in record %s (domain %s)",
-						rec.TlsaMatchingType, rec.Name, domain.Name))
+						rec.TlsaMatchingType, rec.GetLabel(), domain.Name))
 				}
 			} else if rec.Type == "TXT" && len(txtMultiDissenters) != 0 && len(rec.TxtStrings) > 1 {
 				// There are providers that  don't support TXTMulti yet there is
 				// a TXT record with multiple strings:
 				errs = append(errs,
 					errors.Errorf("TXT records with multiple strings (label %v domain: %v) not supported by %s",
-						rec.Name, domain.Name, strings.Join(txtMultiDissenters, ",")))
+						rec.GetLabel(), domain.Name, strings.Join(txtMultiDissenters, ",")))
 			}
 
 			// Populate FQDN:
-			rec.NameFQDN = dnsutil.AddOrigin(rec.Name, domain.Name)
+			//rec.NameFQDN = dnsutil.AddOrigin(rec.GetLabel(), domain.Name)
 		}
 	}
 
@@ -337,7 +339,7 @@ func NormalizeAndValidateConfig(config *models.DNSConfig) (errs []error) {
 					errs = append(errs, err)
 					continue
 				}
-				err = importTransform(config.FindDomain(rec.Target), domain, table, rec.TTL)
+				err = importTransform(config.FindDomain(rec.GetTargetField()), domain, table, rec.TTL)
 				if err != nil {
 					errs = append(errs, err)
 				}
@@ -375,15 +377,15 @@ func checkCNAMEs(dc *models.DomainConfig) (errs []error) {
 	cnames := map[string]bool{}
 	for _, r := range dc.Records {
 		if r.Type == "CNAME" {
-			if cnames[r.Name] {
-				errs = append(errs, errors.Errorf("Cannot have multiple CNAMEs with same name: %s", r.NameFQDN))
+			if cnames[r.GetLabel()] {
+				errs = append(errs, errors.Errorf("Cannot have multiple CNAMEs with same name: %s", r.GetLabelFQDN()))
 			}
-			cnames[r.Name] = true
+			cnames[r.GetLabel()] = true
 		}
 	}
 	for _, r := range dc.Records {
-		if cnames[r.Name] && r.Type != "CNAME" {
-			errs = append(errs, errors.Errorf("Cannot have CNAME and %s record with same name: %s", r.Type, r.NameFQDN))
+		if cnames[r.GetLabel()] && r.Type != "CNAME" {
+			errs = append(errs, errors.Errorf("Cannot have CNAME and %s record with same name: %s", r.Type, r.GetLabelFQDN()))
 		}
 	}
 	return
@@ -433,21 +435,21 @@ func applyRecordTransforms(domain *models.DomainConfig) error {
 		if err != nil {
 			return err
 		}
-		ip := net.ParseIP(rec.Target) // ip already validated above
-		newIPs, err := transform.TransformIPToList(net.ParseIP(rec.Target), table)
+		ip := net.ParseIP(rec.GetTargetField()) // ip already validated above
+		newIPs, err := transform.TransformIPToList(net.ParseIP(rec.GetTargetField()), table)
 		if err != nil {
 			return err
 		}
 		for i, newIP := range newIPs {
 			if i == 0 && !newIP.Equal(ip) {
-				rec.Target = newIP.String() // replace target of first record if different
+				rec.SetTarget(newIP.String()) // replace target of first record if different
 			} else if i > 0 {
 				// any additional ips need identical records with the alternate ip added to the domain
 				copy, err := rec.Copy()
 				if err != nil {
 					return err
 				}
-				copy.Target = newIP.String()
+				copy.SetTarget(newIP.String())
 				domain.Records = append(domain.Records, copy)
 			}
 		}

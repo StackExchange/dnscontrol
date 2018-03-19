@@ -14,7 +14,6 @@ import (
 	"github.com/StackExchange/dnscontrol/providers"
 	_ "github.com/StackExchange/dnscontrol/providers/_all"
 	"github.com/StackExchange/dnscontrol/providers/config"
-	"github.com/miekg/dns/dnsutil"
 	"github.com/pkg/errors"
 )
 
@@ -107,9 +106,9 @@ func runTests(t *testing.T, prv providers.DNSServiceProvider, domainName string,
 			dom, _ := dc.Copy()
 			for _, r := range tst.Records {
 				rc := models.RecordConfig(*r)
-				rc.NameFQDN = dnsutil.AddOrigin(rc.Name, domainName)
-				if strings.Contains(rc.Target, "**current-domain**") {
-					rc.Target = strings.Replace(rc.Target, "**current-domain**", domainName, 1) + "."
+				//rc.NameFQDN = dnsutil.AddOrigin(rc.Name, domainName)
+				if strings.Contains(rc.GetTargetField(), "**current-domain**") {
+					rc.SetTarget(strings.Replace(rc.GetTargetField(), "**current-domain**", domainName, 1) + ".")
 				}
 				dom.Records = append(dom.Records, &rc)
 			}
@@ -205,6 +204,18 @@ type TestCase struct {
 
 type rec models.RecordConfig
 
+func (r *rec) GetLabel() string {
+	return r.GetLabel()
+}
+
+func (r *rec) SetLabel(label, domain string) {
+	r.SetLabel(label, domain)
+}
+
+func (r *rec) SetTarget(target string) {
+	r.SetTarget(target)
+}
+
 func a(name, target string) *rec {
 	return makeRec(name, target, "A")
 }
@@ -273,24 +284,26 @@ func tlsa(name string, usage, selector, matchingtype uint8, target string) *rec 
 	r.TlsaUsage = usage
 	r.TlsaSelector = selector
 	r.TlsaMatchingType = matchingtype
-	r.Target = target
+	//r.Target = target
 	return r
 }
 
 func ignore(name string) *rec {
-	return &rec{
-		Name: name,
+	r := &rec{
 		Type: "IGNORE",
 	}
+	r.SetLabel(name, "example2.tld")
+	return r
 }
 
 func makeRec(name, target, typ string) *rec {
-	return &rec{
-		Name:   name,
-		Type:   typ,
-		Target: target,
-		TTL:    300,
+	r := &rec{
+		Type: typ,
+		TTL:  300,
 	}
+	r.SetLabel(name, "example2.tld")
+	r.SetTarget(target)
+	return r
 }
 
 func (r *rec) ttl(t uint32) *rec {
@@ -303,7 +316,7 @@ func tc(desc string, recs ...*rec) *TestCase {
 	var ignored []string
 	for _, r := range recs {
 		if r.Type == "IGNORE" {
-			ignored = append(ignored, r.Name)
+			ignored = append(ignored, r.GetLabel())
 		} else {
 			records = append(records, r)
 		}
