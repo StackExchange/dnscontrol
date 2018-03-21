@@ -154,15 +154,17 @@ func nativeToRecord(r *Record, origin string) *models.RecordConfig {
 		TTL:      uint32(r.TTL),
 		Original: r,
 	}
+
 	rtype := r.FieldType
-	rec.SetLabel(r.SubDomain, origin)
-	if err := rec.PopulateFromString(rtype, r.Target, origin); err != nil {
-		panic(errors.Wrap(err, "unparsable record received from ovh"))
-	}
 
 	// ovh uses a custom type for SPF and DKIM
 	if rtype == "SPF" || rtype == "DKIM" {
-		rec.Type = "TXT"
+		rtype = "TXT"
+	}
+
+	rec.SetLabel(r.SubDomain, origin)
+	if err := rec.PopulateFromString(rtype, r.Target, origin); err != nil {
+		panic(errors.Wrap(err, "unparsable record received from ovh"))
 	}
 
 	// ovh default is 3600
