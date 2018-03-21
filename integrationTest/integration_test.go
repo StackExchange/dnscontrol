@@ -125,7 +125,7 @@ func runTests(t *testing.T, prv providers.DNSServiceProvider, domainName string,
 			}
 			if !skipVal && i != *startIdx && len(corrections) == 0 {
 				if tst.Desc != "Empty" {
-					// There are "no corrections" if the last test was programatically
+					// There are "no corrections" if the last test was programmatically
 					// skipped.  We detect this (possibly inaccurately) by checking to
 					// see if .Desc is "Empty".
 					t.Fatalf("Expect changes for all tests, but got none")
