@@ -294,24 +294,16 @@ var MX = recordBuilder('MX', {
     },
 });
 
-function checkArgs(checks, args, desc) {
-    if (args.length < checks.length) {
-        throw desc;
-    }
-    for (var i = 0; i < checks.length; i++) {
-        if (!checks[i](args[i])) {
-            throw desc + ' - argument ' + i + ' is not correct type';
-        }
-    }
-}
-
 // NS(name,target, recordModifiers...)
 var NS = recordBuilder('NS');
 
 // NAMESERVER(name,target)
-function NAMESERVER(name, target) {
+function NAMESERVER(name) {
+    if (arguments.length != 1){
+        throw("NAMESERVER only accepts one argument for name.")
+    }
     return function(d) {
-        d.nameservers.push({ name: name, target: target });
+        d.nameservers.push({ name: name });
     };
 }
 
