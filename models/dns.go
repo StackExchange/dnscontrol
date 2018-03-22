@@ -42,8 +42,7 @@ type DNSProviderConfig struct {
 
 // Nameserver describes a nameserver.
 type Nameserver struct {
-	Name   string `json:"name"` // Normalized to a FQDN with NO trailing "."
-	Target string `json:"target"`
+	Name string `json:"name"` // Normalized to a FQDN with NO trailing "."
 }
 
 // StringsToNameservers constructs a list of *Nameserver structs using a list of FQDNs.

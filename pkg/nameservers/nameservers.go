@@ -57,7 +57,7 @@ func AddNSRecords(dc *models.DomainConfig) {
 		rc.SetLabel("@", dc.Name)
 		t := ns.Name
 		if !strings.HasSuffix(t, ".") {
-			rc.SetTarget(t + ".")
+			t += "."
 		}
 		rc.SetTarget(t)
 
