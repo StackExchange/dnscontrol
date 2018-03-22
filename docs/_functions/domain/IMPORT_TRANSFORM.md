@@ -3,14 +3,12 @@ name: IMPORT_TRANSFORM
 parameters:
   - transform table
   - domain
-  - ttl
   - modifiers...
 ---
 
-Don't use this feature. It was added for a very specific situation. Bugs
-and feature requests from outside that situation will be rejected.
+Don't use this feature. It was added for a very specific situation at Stack Overflow.
 
-IMPORT_TRANSFORM adds to the domain all the records from another
+`IMPORT_TRANSFORM` adds to the domain all the records from another
 domain, after making certain transformations and resetting the TTL.
 
 Example:
@@ -23,7 +21,7 @@ the IP address to be based on 123.123.123.100 (i.e. .113 or .114).
 
 You wouldn't want to maintain bar.com manually, would you?  It would
 be very error prone. Therefore instead you maintain foo.com and
-let IMPORT_TRANSFORM automatically generate bar.com.
+let `IMPORT_TRANSFORM` automatically generate bar.com.
 
 {% include startExample.html %}
 {% highlight html %}
