@@ -229,6 +229,56 @@ var testdataZFCAA = `$TTL 300
                  IN CAA   0 issuewild ";"
 `
 
+// Test 1 of each record type
+
+func mustNewRR(s string) dns.RR {
+	r, err := dns.NewRR(s)
+	if err != nil {
+		panic(err)
+	}
+	return r
+}
+
+func TestWriteZoneFileEach(t *testing.T) {
+	// Each rtype should be listed in this test exactly once.
+	// If an rtype has more than one variations, add a test like TestWriteZoneFileCaa to test each.
+	var d []dns.RR
+	// #rtype_variations
+	d = append(d, mustNewRR(`4.5                  300 IN PTR   y.bosun.org.`)) // Wouldn't actually be in this domain.
+	d = append(d, mustNewRR(`bosun.org.           300 IN A     1.2.3.4`))
+	d = append(d, mustNewRR(`bosun.org.           300 IN MX    1 bosun.org.`))
+	d = append(d, mustNewRR(`bosun.org.           300 IN TXT   "my text"`))
+	d = append(d, mustNewRR(`bosun.org.           300 IN AAAA  4500:fe::1`))
+	d = append(d, mustNewRR(`bosun.org.           300 IN SRV   10 10 9999 foo.com.`))
+	d = append(d, mustNewRR(`bosun.org.           300 IN CAA   0 issue "letsencrypt.org"`))
+	d = append(d, mustNewRR(`_443._tcp.bosun.org. 300 IN TLSA  3 1 1 abcdef0`)) // Label must be _port._proto
+	d = append(d, mustNewRR(`sub.bosun.org.       300 IN NS    bosun.org.`))    // Must be a label with no other records.
+	d = append(d, mustNewRR(`x.bosun.org.         300 IN CNAME bosun.org.`))    // Must be a label with no other records.
+	buf := &bytes.Buffer{}
+	WriteZoneFile(buf, d, "bosun.org")
+	if buf.String() != testdataZFEach {
+		t.Log(buf.String())
+		t.Log(testdataZFEach)
+		t.Fatalf("Zone file does not match.")
+	}
+	parseAndRegen(t, buf, testdataZFEach)
+}
+
+var testdataZFEach = `$TTL 300
+4.5.             IN PTR   y.bosun.org.
+@                IN A     1.2.3.4
+                 IN MX    1 bosun.org.
+                 IN TXT   "my text"
+                 IN AAAA  4500:fe::1
+                 IN SRV   10 10 9999 foo.com.
+                 IN CAA   0 issue "letsencrypt.org"
+_443._tcp        IN TLSA  3 1 1 abcdef0
+sub              IN NS    bosun.org.
+x                IN CNAME bosun.org.
+`
+
+// Test sorting
+
 func TestWriteZoneFileOrder(t *testing.T) {
 	var records []dns.RR
 	for i, td := range []string{
