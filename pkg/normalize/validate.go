@@ -321,7 +321,7 @@ func NormalizeAndValidateConfig(config *models.DNSConfig) (errs []error) {
 			}
 
 			// Populate FQDN:
-			//rec.NameFQDN = dnsutil.AddOrigin(rec.GetLabel(), domain.Name)
+			rec.SetLabel(rec.GetLabel(), domain.Name)
 		}
 	}
 
