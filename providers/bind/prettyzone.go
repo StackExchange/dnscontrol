@@ -41,8 +41,6 @@ func (z *zoneGenData) Less(i, j int) bool {
 		return zoneRrtypeLess(rrtypeA, rrtypeB)
 	}
 	switch rrtypeA { // #rtype_variations
-	case dns.TypeNS, dns.TypeTXT, dns.TypeTLSA:
-		// pass through.
 	case dns.TypeA:
 		ta2, tb2 := a.(*dns.A), b.(*dns.A)
 		ipa, ipb := ta2.A.To4(), tb2.A.To4()
@@ -57,7 +55,11 @@ func (z *zoneGenData) Less(i, j int) bool {
 	case dns.TypeMX:
 		ta2, tb2 := a.(*dns.MX), b.(*dns.MX)
 		pa, pb := ta2.Preference, tb2.Preference
-		return pa < pb
+		// sort by priority. If they are equal, sort by Mx.
+		if pa != pb {
+			return pa < pb
+		}
+		return ta2.Mx < tb2.Mx
 	case dns.TypeSRV:
 		ta2, tb2 := a.(*dns.SRV), b.(*dns.SRV)
 		pa, pb := ta2.Port, tb2.Port
@@ -92,9 +94,7 @@ func (z *zoneGenData) Less(i, j int) bool {
 			return fa > fb
 		}
 	default:
-		panic(fmt.Sprintf("zoneGenData Less: unimplemented rtype %v", dns.TypeToString[rrtypeA]))
-		// We panic so that we quickly find any switch statements
-		// that have not been updated for a new RR type.
+		// pass through. String comparison is sufficient.
 	}
 	return a.String() < b.String()
 }
