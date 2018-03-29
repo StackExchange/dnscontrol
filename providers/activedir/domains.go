@@ -188,7 +188,6 @@ Get-DnsServerResourceRecord -ComputerName REPLACE_WITH_COMPUTER_NAME -ZoneName $
 	cmdTxt = strings.Replace(cmdTxt, "REPLACE_WITH_ZONE", domainname, -1)
 	cmdTxt = strings.Replace(cmdTxt, "REPLACE_WITH_COMPUTER_NAME", c.adServer, -1)
 	cmdTxt = strings.Replace(cmdTxt, "REPLACE_WITH_FILENAMEPREFIX", zoneDumpFilenamePrefix, -1)
-
 	return cmdTxt
 }
 
