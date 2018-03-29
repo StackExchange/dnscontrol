@@ -2,7 +2,7 @@
   "ACTIVEDIRECTORY_PS": {
     "ADServer": "$AD_SERVER",
     "domain": "$AD_DOMAIN",
-    "knownFailures": "20,21,22,29,30,31,32,33,34,35,38,39,40,41"
+    "knownFailures": "20,21,22,29,30,31,32,33,34,35,38,39,40,41,48,49,51,52,53"
   },
   "BIND": {
     "domain": "example.com"
