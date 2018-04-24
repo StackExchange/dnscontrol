@@ -25,7 +25,7 @@ type CertConfig struct {
 }
 
 type Client interface {
-	IssueOrRenewCert(config *CertConfig, renewUnder int) (bool, error)
+	IssueOrRenewCert(config *CertConfig, renewUnder int, verbose bool) (bool, error)
 }
 
 type certManager struct {
@@ -40,8 +40,8 @@ type certManager struct {
 }
 
 const (
-	LetsEncryptLive  = "https://acme-v01.api.letsencrypt.org/directory"
-	LetsEncryptStage = "https://acme-staging.api.letsencrypt.org/directory"
+	LetsEncryptLive  = "https://acme-v02.api.letsencrypt.org/directory"
+	LetsEncryptStage = "https://acme-staging-v02.api.letsencrypt.org/directory"
 )
 
 func New(cfg *models.DNSConfig, directory string, email string, server string) (Client, error) {
@@ -63,9 +63,10 @@ func New(cfg *models.DNSConfig, directory string, email string, server string) (
 // IssueOrRenewCert will obtain a certificate with the given name if it does not exist,
 // or renew it if it is close enough to the expiration date.
 // It will return true if it issued or updated the certificate.
-func (c *certManager) IssueOrRenewCert(cfg *CertConfig, renewUnder int) (bool, error) {
-	// to silence acme logging, uncomment this
-	// acme.Logger = log.New(ioutil.Discard, "", 0)
+func (c *certManager) IssueOrRenewCert(cfg *CertConfig, renewUnder int, verbose bool) (bool, error) {
+	if !verbose {
+		acme.Logger = log.New(ioutil.Discard, "", 0)
+	}
 
 	log.Printf("Checking certificate [%s]", cfg.CertName)
 	if err := os.MkdirAll(filepath.Dir(c.certFile(cfg.CertName, "json")), perms); err != nil {

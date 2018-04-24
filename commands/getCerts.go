@@ -35,6 +35,7 @@ type GetCertsArgs struct {
 	CertDirectory  string
 	Email          string
 	AgreeTOS       bool
+	Verbose        bool
 
 	IgnoredProviders string
 }
@@ -83,6 +84,11 @@ func (args *GetCertsArgs) flags() []cli.Flag {
 		Destination: &args.IgnoredProviders,
 		Value:       "",
 		Usage:       `Provider names to not use for challenges (comma separated)`,
+	})
+	flags = append(flags, cli.BoolFlag{
+		Name:        "verbose",
+		Destination: &args.Verbose,
+		Usage:       "Enable detailed logging from acme library",
 	})
 	return flags
 }
@@ -144,11 +150,10 @@ func GetCerts(args GetCertsArgs) error {
 		return err
 	}
 	for _, cert := range certList {
-		_, err := client.IssueOrRenewCert(cert, args.RenewUnderDays)
+		_, err := client.IssueOrRenewCert(cert, args.RenewUnderDays, args.Verbose)
 		if err != nil {
 			return err
 		}
-		// TODO: maybe print something greppable if updated
 	}
 	return nil
 }
