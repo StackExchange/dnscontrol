@@ -1,19 +1,7 @@
 {
 	"comment": "",
-	"ignore": "test",
+	"ignore": "test js docs/ github.com/gopherjs",
 	"package": [
-		{
-			"path": "appengine",
-			"revision": ""
-		},
-		{
-			"path": "appengine_internal",
-			"revision": ""
-		},
-		{
-			"path": "appengine_internal/base",
-			"revision": ""
-		},
 		{
 			"checksumSHA1": "ZLRh6zW4/DnVsGpgtt+ZiIaEFKc=",
 			"path": "cloud.google.com/go/compute/metadata",
@@ -146,12 +134,6 @@
 			"revisionTime": "2017-11-09T00:14:53Z"
 		},
 		{
-			"checksumSHA1": "Bm6UrYb2QCzpYseLwwgw6aetgRc=",
-			"path": "github.com/aws/aws-sdk-go/private/endpoints",
-			"revision": "f80e7d0182a463dff0c0da6bbed57f21369d4346",
-			"revisionTime": "2016-08-11T16:24:59Z"
-		},
-		{
 			"checksumSHA1": "wk7EyvDaHwb5qqoOP/4d3cV0708=",
 			"path": "github.com/aws/aws-sdk-go/private/protocol",
 			"revision": "50411bcf38b6135440f2a5eb1c79e78f8cef675c",
@@ -198,18 +180,6 @@
 			"path": "github.com/aws/aws-sdk-go/private/protocol/xml/xmlutil",
 			"revision": "50411bcf38b6135440f2a5eb1c79e78f8cef675c",
 			"revisionTime": "2017-11-09T00:14:53Z"
-		},
-		{
-			"checksumSHA1": "UFIw+LmowK/82NZv3IjZ3duRZT4=",
-			"path": "github.com/aws/aws-sdk-go/private/signer/v4",
-			"revision": "8041be5461786460d86b4358305fbdf32d37cfb2",
-			"revisionTime": "2016-02-11T16:23:28-08:00"
-		},
-		{
-			"checksumSHA1": "Eo9yODN5U99BK0pMzoqnBm7PCrY=",
-			"path": "github.com/aws/aws-sdk-go/private/waiter",
-			"revision": "f80e7d0182a463dff0c0da6bbed57f21369d4346",
-			"revisionTime": "2016-08-11T16:24:59Z"
 		},
 		{
 			"checksumSHA1": "J7ie0uuhhyWKkYsveypGUBTP+vM=",
@@ -355,12 +325,6 @@
 			"revisionTime": "2018-02-24T13:22:02Z"
 		},
 		{
-			"checksumSHA1": "9tjoj3PcsKSKiX47mnZIgoFrs4U=",
-			"path": "github.com/prasmussen/gandi-api/contact",
-			"revision": "58d3d42056619bb56e311c115c1c95294b5ec60b",
-			"revisionTime": "2018-02-24T13:22:02Z"
-		},
-		{
 			"checksumSHA1": "US0LGupyHvXgr2iDH7kw4f7KOcc=",
 			"path": "github.com/prasmussen/gandi-api/domain",
 			"revision": "58d3d42056619bb56e311c115c1c95294b5ec60b",
@@ -399,12 +363,6 @@
 		{
 			"checksumSHA1": "YOKj2uCylMIaRNJHaOIVEns0K6c=",
 			"path": "github.com/prasmussen/gandi-api/live_dns/record",
-			"revision": "58d3d42056619bb56e311c115c1c95294b5ec60b",
-			"revisionTime": "2018-02-24T13:22:02Z"
-		},
-		{
-			"checksumSHA1": "5TdSD8BWzrTLi2OizfUv2zqbbzQ=",
-			"path": "github.com/prasmussen/gandi-api/live_dns/test_helpers",
 			"revision": "58d3d42056619bb56e311c115c1c95294b5ec60b",
 			"revisionTime": "2018-02-24T13:22:02Z"
 		},
@@ -565,10 +523,34 @@
 			"revisionTime": "2018-01-06T19:10:48Z"
 		},
 		{
+			"checksumSHA1": "IfxQifbQRgrRHdhHayFeF699/5U=",
+			"path": "github.com/xenolf/lego/acmev2",
+			"revision": "fad2257e11ae4ff31ed03739386873aa405dec2d",
+			"revisionTime": "2018-04-20T00:02:18Z"
+		},
+		{
 			"checksumSHA1": "MLGPYuRc7BtUuKmIV8f/jXpYWvg=",
 			"path": "github.com/xlucas/go-ovh/ovh",
 			"revision": "ef0d1f19f39c291ed08d5d5258175d8a2134ab1c",
 			"revisionTime": "2015-12-21T16:03:54Z"
+		},
+		{
+			"checksumSHA1": "VqyzfAMKyP6SoLnPHcwhkrICBo0=",
+			"path": "golang.org/x/crypto/ed25519",
+			"revision": "c4a91bd4f524f10d064139674cf55852e055ad01",
+			"revisionTime": "2018-03-13T19:10:02Z"
+		},
+		{
+			"checksumSHA1": "0JTAFXPkankmWcZGQJGScLDiaN8=",
+			"path": "golang.org/x/crypto/ed25519/internal/edwards25519",
+			"revision": "c4a91bd4f524f10d064139674cf55852e055ad01",
+			"revisionTime": "2018-03-13T19:10:02Z"
+		},
+		{
+			"checksumSHA1": "6MJzEG/bwAT3Ljra9h+l7UR3il8=",
+			"path": "golang.org/x/crypto/ocsp",
+			"revision": "c4a91bd4f524f10d064139674cf55852e055ad01",
+			"revisionTime": "2018-03-13T19:10:02Z"
 		},
 		{
 			"checksumSHA1": "9jjO5GjLa0XF/nfWihF02RoH4qc=",
@@ -803,6 +785,24 @@
 			"path": "gopkg.in/sourcemap.v1/base64vlq",
 			"revision": "8cd1e2e0ddc78dcb4511bcb184d23171bed15c67",
 			"revisionTime": "2016-05-31T08:25:40Z"
+		},
+		{
+			"checksumSHA1": "kjuiN4OD/B5oVRwSgZ1c+eNjePQ=",
+			"path": "gopkg.in/square/go-jose.v2",
+			"revision": "6ee92191fea850cdcab9a18867abf5f521cdbadb",
+			"revisionTime": "2018-02-28T00:14:22Z"
+		},
+		{
+			"checksumSHA1": "Ho5sr2GbiR8S35IRni7vC54d5Js=",
+			"path": "gopkg.in/square/go-jose.v2/cipher",
+			"revision": "6ee92191fea850cdcab9a18867abf5f521cdbadb",
+			"revisionTime": "2018-02-28T00:14:22Z"
+		},
+		{
+			"checksumSHA1": "JFun0lWY9eqd80Js2iWsehu1gc4=",
+			"path": "gopkg.in/square/go-jose.v2/json",
+			"revision": "6ee92191fea850cdcab9a18867abf5f521cdbadb",
+			"revisionTime": "2018-02-28T00:14:22Z"
 		},
 		{
 			"checksumSHA1": "qOmvuDm+F+2nQQecUZBVkZrTn6Y=",
