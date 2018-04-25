@@ -186,9 +186,6 @@ func (c *certManager) readCertificate(name string) (*acme.CertificateResource, e
 	cr.PrivateKey = keyBytes
 	return cr, nil
 }
-func (c *certManager) Timeout() (timeout, interval time.Duration) {
-	return 5 * time.Minute, time.Second
-}
 
 func (c *certManager) Present(domain, token, keyAuth string) (e error) {
 	d := c.cfg.DomainContainingFQDN(domain)
