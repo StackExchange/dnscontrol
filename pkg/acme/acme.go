@@ -76,10 +76,14 @@ func (c *certManager) IssueOrRenewCert(cfg *CertConfig, renewUnder int, verbose 
 	if err != nil {
 		return false, err
 	}
+
 	var action = func() (acme.CertificateResource, error) {
 		return c.client.ObtainCertificate(cfg.Names, true, nil, true)
 	}
-	if existing != nil {
+
+	if existing == nil {
+		log.Println("No existing cert found. Issuing new...")
+	} else {
 		names, daysLeft, err := getCertInfo(existing.Certificate)
 		if err != nil {
 			return false, err
@@ -99,8 +103,6 @@ func (c *certManager) IssueOrRenewCert(cfg *CertConfig, renewUnder int, verbose 
 				return c.client.RenewCertificate(*existing, true, true)
 			}
 		}
-	} else {
-		log.Println("No existing cert found. Issuing new...")
 	}
 
 	certResource, err := action()
@@ -178,12 +180,6 @@ func (c *certManager) readCertificate(name string) (*acme.CertificateResource, e
 		return nil, err
 	}
 	cr.Certificate = crtBytes
-	// load key
-	keyBytes, err := ioutil.ReadFile(c.certFile(name, "key"))
-	if err != nil {
-		return nil, err
-	}
-	cr.PrivateKey = keyBytes
 	return cr, nil
 }
 
