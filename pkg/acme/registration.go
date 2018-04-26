@@ -12,7 +12,6 @@ import (
 	"log"
 	"os"
 	"path/filepath"
-	"strings"
 
 	"github.com/xenolf/lego/acmev2"
 )
@@ -52,10 +51,9 @@ func (c *certManager) loadOrCreateAccount() error {
 }
 
 func (c *certManager) accountDirectory() string {
-	dir := strings.TrimPrefix(c.acmeDirectory, "https://")
-	dir = strings.TrimPrefix(dir, "http://")
-	return filepath.Join(c.directory, ".letsencrypt", dir)
+	return filepath.Join(c.directory, ".letsencrypt", c.acmeHost)
 }
+
 func (c *certManager) accountFile() string {
 	return filepath.Join(c.accountDirectory(), "account.json")
 }

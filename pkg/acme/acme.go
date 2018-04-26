@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"log"
+	"net/url"
 	"os"
 	"path/filepath"
 	"sort"
@@ -32,6 +33,7 @@ type certManager struct {
 	directory      string
 	email          string
 	acmeDirectory  string
+	acmeHost       string
 	cfg            *models.DNSConfig
 	checkedDomains map[string]bool
 
@@ -45,13 +47,19 @@ const (
 )
 
 func New(cfg *models.DNSConfig, directory string, email string, server string) (Client, error) {
+	u, err := url.Parse(server)
+	if err != nil || u.Host == "" {
+		return nil, fmt.Errorf("ACME directory '%s' is not a valid URL", server)
+	}
 	c := &certManager{
 		directory:      directory,
 		email:          email,
 		acmeDirectory:  server,
+		acmeHost:       u.Host,
 		cfg:            cfg,
 		checkedDomains: map[string]bool{},
 	}
+
 	if err := c.loadOrCreateAccount(); err != nil {
 		return nil, err
 	}
