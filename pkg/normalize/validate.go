@@ -1,6 +1,7 @@
 package normalize
 
 import (
+	"fmt"
 	"net"
 	"strings"
 
@@ -357,16 +358,19 @@ func NormalizeAndValidateConfig(config *models.DNSConfig) (errs []error) {
 		}
 	}
 
-	// Check that CNAMES don't have to co-exist with any other records
 	for _, d := range config.Domains {
+		// Check that CNAMES don't have to co-exist with any other records
 		errs = append(errs, checkCNAMEs(d)...)
-	}
-
-	// Check that if any aliases / ptr / etc.. are used in a domain, every provider for that domain supports them
-	for _, d := range config.Domains {
+		// Check that if any advanced record types are used in a domain, every provider for that domain supports them
 		err := checkProviderCapabilities(d)
 		if err != nil {
 			errs = append(errs, err)
+		}
+		// Validate FQDN consistency
+		for _, r := range d.Records {
+			if r.NameFQDN == "" || !strings.HasSuffix(r.NameFQDN, d.Name) {
+				errs = append(errs, fmt.Errorf("Record named '%s' does not have correct FQDN in domain '%s'. FQDN: %s", r.Name, d.Name, r.NameFQDN))
+			}
 		}
 	}
 
