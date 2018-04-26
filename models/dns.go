@@ -2,6 +2,7 @@ package models
 
 import (
 	"encoding/json"
+	"strings"
 )
 
 // DefaultTTL is applied to any DNS record without an explicit TTL.
@@ -45,6 +46,10 @@ type Nameserver struct {
 	Name string `json:"name"` // Normalized to a FQDN with NO trailing "."
 }
 
+func (n *Nameserver) String() string {
+	return n.Name
+}
+
 // StringsToNameservers constructs a list of *Nameserver structs using a list of FQDNs.
 func StringsToNameservers(nss []string) []*Nameserver {
 	nservers := []*Nameserver{}
@@ -58,4 +63,19 @@ func StringsToNameservers(nss []string) []*Nameserver {
 type Correction struct {
 	F   func() error `json:"-"`
 	Msg string
+}
+
+// DomainContainingFQDN finds the best domain from the dns config for the given record fqdn.
+// It will chose the domain whose name is the longest suffix match for the fqdn.
+func (config *DNSConfig) DomainContainingFQDN(fqdn string) *DomainConfig {
+	fqdn = strings.TrimSuffix(fqdn, ".")
+	longestLength := 0
+	var d *DomainConfig
+	for _, dom := range config.Domains {
+		if (dom.Name == fqdn || strings.HasSuffix(fqdn, "."+dom.Name)) && len(dom.Name) > longestLength {
+			longestLength = len(dom.Name)
+			d = dom
+		}
+	}
+	return d
 }
