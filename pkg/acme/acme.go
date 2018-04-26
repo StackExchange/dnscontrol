@@ -153,6 +153,7 @@ func getCertInfo(pemBytes []byte) (names []string, remaining float64, err error)
 	return cert.DNSNames, daysLeft, nil
 }
 
+// checks two lists of sans to make sure they have all the same names in them.
 func dnsNamesEqual(a []string, b []string) bool {
 	if len(a) != len(b) {
 		return false
