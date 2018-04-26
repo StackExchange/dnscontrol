@@ -195,7 +195,7 @@ func importTransform(srcDomain, dstDomain *models.DomainConfig, transforms []tra
 		newRec := func() *models.RecordConfig {
 			rec2, _ := rec.Copy()
 			newlabel := rec2.GetLabelFQDN()
-			rec2.SetLabelFromFQDN(newlabel, dstDomain.Name)
+			rec2.SetLabel(newlabel, dstDomain.Name)
 			if ttl != 0 {
 				rec2.TTL = ttl
 			}
