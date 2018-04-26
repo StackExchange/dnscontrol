@@ -58,10 +58,10 @@ func (c *adProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Co
 	// Generate changes.
 	corrections := []*models.Correction{}
 	for _, del := range dels {
-		corrections = append(corrections, c.deleteRec(dc.Name, del.Existing))
+		corrections = append(corrections, c.deleteRec(dc.Name, del))
 	}
 	for _, cre := range creates {
-		corrections = append(corrections, c.createRec(dc.Name, cre.Desired)...)
+		corrections = append(corrections, c.createRec(dc.Name, cre)...)
 	}
 	for _, m := range modifications {
 		corrections = append(corrections, c.modifyRec(dc.Name, m))
@@ -280,10 +280,11 @@ func (c *adProvider) generatePowerShellDelete(domainname, recName, recType, cont
 	return fmt.Sprintf(text, c.adServer, domainname, recName, recType, content)
 }
 
-func (c *adProvider) createRec(domainname string, rec *models.RecordConfig) []*models.Correction {
+func (c *adProvider) createRec(domainname string, cre diff.Correlation) []*models.Correction {
+	rec := cre.Desired
 	arr := []*models.Correction{
 		{
-			Msg: fmt.Sprintf("CREATE record: %s %s ttl(%d) %s", rec.GetLabel(), rec.Type, rec.TTL, rec.GetTargetField()),
+			Msg: cre.String(),
 			F: func() error {
 				return c.powerShellDoCommand(c.generatePowerShellCreate(domainname, rec), true)
 			}},
@@ -301,9 +302,10 @@ func (c *adProvider) modifyRec(domainname string, m diff.Correlation) *models.Co
 	}
 }
 
-func (c *adProvider) deleteRec(domainname string, rec *models.RecordConfig) *models.Correction {
+func (c *adProvider) deleteRec(domainname string, cor diff.Correlation) *models.Correction {
+	rec := cor.Existing
 	return &models.Correction{
-		Msg: fmt.Sprintf("DELETE record: %s %s ttl(%d) %s", rec.GetLabel(), rec.Type, rec.TTL, rec.GetTargetField()),
+		Msg: cor.String(),
 		F: func() error {
 			return c.powerShellDoCommand(c.generatePowerShellDelete(domainname, rec.GetLabel(), rec.Type, rec.GetTargetField()), true)
 		},
