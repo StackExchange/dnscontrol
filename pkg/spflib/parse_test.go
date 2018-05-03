@@ -20,6 +20,7 @@ func TestParse(t *testing.T) {
 		"include:servers.mcsv.net",
 		"include:sendgrid.net",
 		"include:spf.mtasv.net",
+		"exists:%{i}._spf.sparkpostmail.com",
 		"~all"}, " "), dnsres)
 	if err != nil {
 		t.Fatal(err)
