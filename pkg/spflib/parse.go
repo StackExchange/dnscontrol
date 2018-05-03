@@ -79,6 +79,8 @@ func Parse(text string, dnsres Resolver) (*SPFRecord, error) {
 					return nil, errors.Errorf("In included spf: %s", err)
 				}
 			}
+		} else if strings.HasPrefix(part, "exists:") {
+			p.IsLookup = true
 		} else {
 			return nil, errors.Errorf("Unsupported spf part %s", part)
 		}
