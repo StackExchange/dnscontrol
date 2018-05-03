@@ -53,6 +53,9 @@ func Parse(text string, dnsres Resolver) (*SPFRecord, error) {
 	parts := strings.Split(text, " ")
 	rec := &SPFRecord{}
 	for _, part := range parts[1:] {
+		if part == "" {
+			continue
+		}
 		p := &SPFPart{Text: part}
 		if qualifiers[part[0]] {
 			part = part[1:]
