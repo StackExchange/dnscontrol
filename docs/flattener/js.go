@@ -21,41 +21,45 @@ type gResp struct {
 	}
 }
 
-func (g gResolver) GetTxt(fqdn string) ([]string, error) {
+func (g gResolver) GetSPF(fqdn string) (string, error) {
 	resp, err := http.Get("https://dns.google.com/resolve?type=txt&name=" + fqdn)
 	if err != nil {
-		return nil, err
+		return "", err
 	}
 
 	defer resp.Body.Close()
 	dec := json.NewDecoder(resp.Body)
 	dat := &gResp{}
 	if err = dec.Decode(dat); err != nil {
-		return nil, err
+		return "", err
 	}
-	list := []string{}
 	for _, a := range dat.Answer {
-		list = append(list, strings.Trim(a.Data, "\""))
+		val := strings.Trim(a.Data, "\"")
+		if strings.HasPrefix(val, "v=spf1 ") {
+			return val, nil
+		}
 	}
-	return list, nil
+	return "", fmt.Errorf("No spf records found")
 }
 
 var jq = jquery.NewJQuery
 var parsed *spflib.SPFRecord
 var domain string
 
+var resolver = gResolver{}
+
 func main() {
 	jq(func() {
 		jq("#lookup_btn").On(jquery.CLICK, func(e jquery.Event) {
 			go func() {
 				domain = jq("#domain").Val()
-				rec, err := spflib.Lookup(domain, gResolver{})
+				text, err := resolver.GetSPF(domain)
+				fmt.Println(text)
 				if err != nil {
 					panic(err)
 				}
-				parsed, err = spflib.Parse(rec, gResolver{})
+				parsed, err = spflib.Parse(text, resolver)
 				if err != nil {
-					// todo: show a better error
 					panic(err)
 				}
 				jq("#results").SetHtml(buildHTML(parsed, domain))
