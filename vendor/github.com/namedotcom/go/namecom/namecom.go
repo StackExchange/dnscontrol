@@ -12,7 +12,7 @@ To start working with this package, create a client with user credentials
 
 To check if the username and token are correct using the HelloFunc endpoint
 
-    response, err := nc.HelloFunc(&HelloRequest{})
+    response, err := nc.HelloFunc(&namecom.HelloRequest{})
     if err != nil {
         // TODO: handle error
     }
@@ -146,11 +146,11 @@ type Record struct {
 	ID int32 `json:"id,omitempty"`
 	// DomainName is the zone that the record belongs to.
 	DomainName string `json:"domainName,omitempty"`
-	// Name is the hostname relative to the zone: e.g. for a record for blog.example.org, domain would be "example.org" and host would be "blog".
+	// Host is the hostname relative to the zone: e.g. for a record for blog.example.org, domain would be "example.org" and host would be "blog".
 	// An apex record would be specified by either an empty host "" or "@".
 	// A SRV record would be specified by "_{service}._{protocal}.{host}": e.g. "_sip._tcp.phone" for _sip._tcp.phone.example.org.
 	Host string `json:"host,omitempty"`
-	// FQDN is the Fully Qualified Domain Name. It is the combination of the host and the domain name. It always ends in a ".".
+	// FQDN is the Fully Qualified Domain Name. It is the combination of the host and the domain name. It always ends in a ".". FQDN is ignored in CreateRecord, specify via the Host field instead.
 	Fqdn string `json:"fqdn,omitempty"`
 	// Type is one of the following: A, AAAA, ANAME, CNAME, MX, NS, SRV, or TXT.
 	Type string `json:"type,omitempty"`
@@ -269,6 +269,8 @@ type Contact struct {
 	Phone string `json:"phone,omitempty"`
 	// Fax number of the contact. Should be specified in the following format: "+cc.llllllll" where cc is the country code and llllllll is the local number.
 	Fax string `json:"fax,omitempty"`
+	// Email of the contact. Should be a complete and valid email address.
+	Email string `json:"email,omitempty"`
 }
 
 // Contacts stores the contact information for the roles related to domains.

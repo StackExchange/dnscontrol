@@ -208,7 +208,7 @@ func (n *NameCom) PurchasePrivacy(request *PrivacyRequest) (*PrivacyResponse, er
 
 // SetNameservers will set the nameservers for the Domain.
 func (n *NameCom) SetNameservers(request *SetNameserversRequest) (*Domain, error) {
-	endpoint := fmt.Sprintf("/v4/domains")
+	endpoint := fmt.Sprintf("/v4/domains/%s:setNameservers", request.DomainName)
 
 	post := &bytes.Buffer{}
 	err := json.NewEncoder(post).Encode(request)
