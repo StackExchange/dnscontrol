@@ -186,9 +186,17 @@ func rrFormat(zonename string, filename string, recs []dns.RR, defaultTTL uint32
 			target = strings.Replace(target, " ", "\t", 1)
 		}
 
+		var ttlop string
+		if hdr.Ttl == defaultTTL {
+			ttlop = ""
+		} else {
+			ttlop = fmt.Sprintf(", TTL(%d)", hdr.Ttl)
+		}
+
 		// NS records at the apex should be NAMESERVER() records.
 		if hdr.Rrtype == dns.TypeNS && name == "@" {
-			typeStr = "NAMESERVER"
+			fmt.Printf(",\n\tNAMESERVER('%s'%s)", target, ttlop)
+			continue
 		}
 
 		if !dsl { // TSV format:
@@ -209,12 +217,7 @@ func rrFormat(zonename string, filename string, recs []dns.RR, defaultTTL uint32
 			default:
 				target = "'" + target + "'"
 			}
-			if hdr.Ttl == defaultTTL {
-				ttl = ""
-			} else {
-				ttl = fmt.Sprintf(", TTL(%d)", hdr.Ttl)
-			}
-			fmt.Printf(",\n\t%s('%s', %s%s)", typeStr, name, target, ttl)
+			fmt.Printf(",\n\t%s('%s', %s%s)", typeStr, name, target, ttlop)
 		}
 	}
 
