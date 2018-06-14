@@ -254,6 +254,15 @@
 			"revisionTime": "2017-11-29T19:10:14Z"
 		},
 		{
+			"checksumSHA1": "8NVOwlGdEBlSFIata3vQABKA0Xs=",
+			"path": "github.com/hexonet/go-sdk",
+			"revision": "e12cede7032b5fb069cbeb6df5d5e86e95cfc654",
+			"revisionTime": "2018-08-03T10:21:36Z",
+			"tree": true,
+			"version": "v1.2.1",
+			"versionExact": "v1.2.1"
+		},
+		{
 			"checksumSHA1": "blwbl9vPvRLtL5QlZgfpLvsFiZ4=",
 			"path": "github.com/jmespath/go-jmespath",
 			"revision": "c2b33e8439af944379acbdd9c3a5fe0bc44bd8a5",

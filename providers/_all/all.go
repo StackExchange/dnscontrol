@@ -10,6 +10,7 @@ import (
 	_ "github.com/StackExchange/dnscontrol/providers/dnsimple"
 	_ "github.com/StackExchange/dnscontrol/providers/gandi"
 	_ "github.com/StackExchange/dnscontrol/providers/gcloud"
+	_ "github.com/StackExchange/dnscontrol/providers/hexonet"
 	_ "github.com/StackExchange/dnscontrol/providers/linode"
 	_ "github.com/StackExchange/dnscontrol/providers/namecheap"
 	_ "github.com/StackExchange/dnscontrol/providers/namedotcom"
