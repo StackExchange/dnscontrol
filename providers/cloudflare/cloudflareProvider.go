@@ -355,20 +355,20 @@ type cfRecData struct {
 }
 
 type cfRecord struct {
-	ID         string     `json:"id"`
-	Type       string     `json:"type"`
-	Name       string     `json:"name"`
-	Content    string     `json:"content"`
-	Proxiable  bool       `json:"proxiable"`
-	Proxied    bool       `json:"proxied"`
-	TTL        uint32     `json:"ttl"`
-	Locked     bool       `json:"locked"`
-	ZoneID     string     `json:"zone_id"`
-	ZoneName   string     `json:"zone_name"`
-	CreatedOn  time.Time  `json:"created_on"`
-	ModifiedOn time.Time  `json:"modified_on"`
-	Data       *cfRecData `json:"data"`
-	Priority   uint16     `json:"priority"`
+	ID         string      `json:"id"`
+	Type       string      `json:"type"`
+	Name       string      `json:"name"`
+	Content    string      `json:"content"`
+	Proxiable  bool        `json:"proxiable"`
+	Proxied    bool        `json:"proxied"`
+	TTL        uint32      `json:"ttl"`
+	Locked     bool        `json:"locked"`
+	ZoneID     string      `json:"zone_id"`
+	ZoneName   string      `json:"zone_name"`
+	CreatedOn  time.Time   `json:"created_on"`
+	ModifiedOn time.Time   `json:"modified_on"`
+	Data       *cfRecData  `json:"data"`
+	Priority   json.Number `json:"priority"`
 }
 
 func (c *cfRecord) nativeToRecord(domain string) *models.RecordConfig {
@@ -384,7 +384,13 @@ func (c *cfRecord) nativeToRecord(domain string) *models.RecordConfig {
 	rc.SetLabelFromFQDN(c.Name, domain)
 	switch rType := c.Type; rType { // #rtype_variations
 	case "MX":
-		if err := rc.SetTargetMX(c.Priority, c.Content); err != nil {
+		var priority uint16
+		if p, err := c.Priority.Int64(); err != nil {
+			panic(errors.Wrap(err, "error decoding priority from cloudflare record"))
+		} else {
+			priority = uint16(p)
+		}
+		if err := rc.SetTargetMX(priority, c.Content); err != nil {
 			panic(errors.Wrap(err, "unparsable MX record received from cloudflare"))
 		}
 	case "SRV":
