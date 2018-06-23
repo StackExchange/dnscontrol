@@ -147,6 +147,7 @@ func (c *DnsimpleApi) GetRegistrarCorrections(dc *models.DomainConfig) ([]*model
 	if err != nil {
 		return nil, err
 	}
+  sort.Strings(nameServers)
 
 	actual := strings.Join(nameServers, ",")
 
