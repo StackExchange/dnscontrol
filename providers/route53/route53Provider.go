@@ -108,7 +108,13 @@ type key struct {
 }
 
 func getKey(r *models.RecordConfig) key {
-	return key{r.GetLabelFQDN(), r.Type}
+	var recordType = r.Type
+
+	if r.R53Alias != nil {
+		recordType = fmt.Sprintf("%s_%s", recordType, r.R53Alias["type"])
+	}
+
+	return key{r.GetLabelFQDN(), recordType}
 }
 
 type errNoExist struct {
