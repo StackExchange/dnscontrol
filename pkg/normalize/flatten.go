@@ -73,7 +73,7 @@ func flattenSPFs(cfg *models.DNSConfig) []error {
 			if err := cache.Save("spfcache.updated.json"); err != nil {
 				errs = append(errs, err)
 			} else {
-				errs = append(errs, Warning{errors.Errorf("%d spf record lookups are out of date with cache (%s).\nWrote changes to spfcache.updated.json. Please rename and commit:\n    $ mv spfcache.updated.json spfcache.json\n    $ git commit spfcache.json", len(changed), strings.Join(changed, ","))})
+				errs = append(errs, Warning{errors.Errorf("%d spf record lookups are out of date with cache (%s).\nWrote changes to spfcache.updated.json. Please rename and commit:\n    $ mv spfcache.updated.json spfcache.json\n    $ git commit -m'Update spfcache.json' spfcache.json", len(changed), strings.Join(changed, ","))})
 			}
 		}
 	}
