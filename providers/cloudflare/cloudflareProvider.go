@@ -385,7 +385,7 @@ func (c *cfRecord) nativeToRecord(domain string) *models.RecordConfig {
 	switch rType := c.Type; rType { // #rtype_variations
 	case "MX":
 		var priority uint16
-		if c.Priority = "" {
+		if c.Priority == "" {
 			priority = 0
 		} else {
 			if p, err := c.Priority.Int64(); err != nil {
