@@ -385,10 +385,14 @@ func (c *cfRecord) nativeToRecord(domain string) *models.RecordConfig {
 	switch rType := c.Type; rType { // #rtype_variations
 	case "MX":
 		var priority uint16
-		if p, err := c.Priority.Int64(); err != nil {
-			panic(errors.Wrap(err, "error decoding priority from cloudflare record"))
+		if c.Priority = "" {
+			priority = 0
 		} else {
-			priority = uint16(p)
+			if p, err := c.Priority.Int64(); err != nil {
+				panic(errors.Wrap(err, "error decoding priority from cloudflare record"))
+			} else {
+				priority = uint16(p)
+			}
 		}
 		if err := rc.SetTargetMX(priority, c.Content); err != nil {
 			panic(errors.Wrap(err, "unparsable MX record received from cloudflare"))
