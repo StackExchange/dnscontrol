@@ -8,18 +8,18 @@ import (
 	"github.com/pkg/errors"
 )
 
-// Registrar is an interface for a domain registrar. It can return a list of needed corrections to be applied in the future.
+// Registrar is an interface for a domain registrar. It can return a list of needed corrections to be applied in the future. Implement this only if the provider is a "registrar" (i.e. can update the NS records of the parent to a domain).
 type Registrar interface {
 	models.Registrar
 }
 
-// DNSServiceProvider is able to generate a set of corrections that need to be made to correct records for a domain
+// DNSServiceProvider is able to generate a set of corrections that need to be made to correct records for a domain. Implement this only if the provider is a DNS Service Provider (can update records in a DNS zone).
 type DNSServiceProvider interface {
 	models.DNSProvider
 }
 
 // DomainCreator should be implemented by providers that have the ability to add domains to an account. the create-domains command
-// can be run to ensure all domains are present before running preview/push
+// can be run to ensure all domains are present before running preview/push.  Implement this only if the provider supoprts the `dnscontrol create-domain` command.
 type DomainCreator interface {
 	EnsureDomainExists(domain string) error
 }
