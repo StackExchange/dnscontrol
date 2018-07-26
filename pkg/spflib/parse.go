@@ -82,9 +82,7 @@ func Parse(text string, dnsres Resolver) (*SPFRecord, error) {
 					return nil, errors.Errorf("In included spf: %s", err)
 				}
 			}
-		} else if strings.HasPrefix(part, "exists:") {
-			p.IsLookup = true
-		} else if strings.HasPrefix(part, "ptr:") {
+		} else if strings.HasPrefix(part, "exists:") || strings.HasPrefix(part, "ptr:") {
 			p.IsLookup = true
 		}
 		} else {
