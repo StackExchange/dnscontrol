@@ -6,6 +6,19 @@ jsId: GANDI
 ---
 # Gandi Provider
 
+There are two providers for Gandi:
+
+ 1. `GANDI` uses the v3 API and is able to act as a registrar provider
+    and a DNS provider. It is not able to handle domains that have
+    migrated to the new LiveDNS API. You need to get the API key from
+    the [v4 interface][].
+
+ 2. `GANDI-LIVEDNS` uses the LiveDNS API and is only able to act as a
+    DNS provider. You need to get the API key from the [v5 interface][].
+
+[v4 interface]: https://v4.gandi.net
+[v5 interface]: https://v5.gandi.net
+
 ## Configuration
 In your credentials file you must provide your Gandi.net API key:
 
