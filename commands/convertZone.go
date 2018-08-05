@@ -111,10 +111,13 @@ func ConvertZone(filename string, reader io.Reader, zonename string, opts Conver
 	// Read it in:
 
 	switch opts.InFormat {
-	case "zone":
+	case "bind", "zone":
 		recs, err = readZone(zonename, reader, filename)
 	case "oct", "octo", "octodns":
 		recs, err = readOctodns(zonename, reader, filename)
+	default:
+		out.Debugf("unrecognized input format: %s", opts.InFormat)
+		return nil
 	}
 	if err != nil {
 		return err
