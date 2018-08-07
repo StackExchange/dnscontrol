@@ -33,7 +33,7 @@ func newRoute53Dsp(conf map[string]string, metadata json.RawMessage) (providers.
 }
 
 func newRoute53(m map[string]string, metadata json.RawMessage) (*route53Provider, error) {
-	keyID, secretKey := m["KeyId"], m["SecretKey"]
+	keyID, secretKey, tokenID := m["KeyId"], m["SecretKey"], m["Token"]
 
 	// Route53 uses a global endpoint and route53domains
 	// currently only has a single regional endpoint in us-east-1
@@ -42,9 +42,12 @@ func newRoute53(m map[string]string, metadata json.RawMessage) (*route53Provider
 		Region: aws.String("us-east-1"),
 	}
 
-	if keyID != "" || secretKey != "" {
+	if tokenID != "" {
+		config.Credentials = credentials.NewStaticCredentials(keyID, secretKey, tokenID)
+	} else {
 		config.Credentials = credentials.NewStaticCredentials(keyID, secretKey, "")
 	}
+
 	sess := session.New(config)
 
 	api := &route53Provider{client: r53.New(sess), registrar: r53d.New(sess)}
