@@ -42,11 +42,14 @@ func newRoute53(m map[string]string, metadata json.RawMessage) (*route53Provider
 		Region: aws.String("us-east-1"),
 	}
 
-	if keyID != "" || secretKey != "" {
+	if tokenID != "" {
 		config.Credentials = credentials.NewStaticCredentials(keyID, secretKey, tokenID)
+		else {
+		config.Credentials = credentials.NewStaticCredentials(keyID, secretKey, "")
 	}
-	sess := session.New(config)
 
+	sess := session.New(config)
+	
 	api := &route53Provider{client: r53.New(sess), registrar: r53d.New(sess)}
 	err := api.getZones()
 	if err != nil {
