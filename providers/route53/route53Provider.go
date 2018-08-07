@@ -44,7 +44,7 @@ func newRoute53(m map[string]string, metadata json.RawMessage) (*route53Provider
 
 	if tokenID != "" {
 		config.Credentials = credentials.NewStaticCredentials(keyID, secretKey, tokenID)
-		else {
+	} else {
 		config.Credentials = credentials.NewStaticCredentials(keyID, secretKey, "")
 	}
 
