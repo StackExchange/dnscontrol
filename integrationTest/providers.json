@@ -23,6 +23,13 @@
     "knownFailures": "18,19,20",
     "token": "$DNSIMPLE_TOKEN"
   },
+  "EXOSCALE": {
+    "dns-endpoint": "https://api.exoscale.ch/dns",
+    "apikey": "$EXOSCALE_API_KEY",
+    "secretkey": "$EXOSCALE_SECRET_KEY",
+    "domain": "$EXOSCALE_DOMAIN",
+    "knownFailures": "20,21,22"
+  },
   "GANDI": {
     "COMMENT": "5: gandi does not accept TTLs less than 300",
     "apikey": "$GANDI_KEY",

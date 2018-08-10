@@ -224,6 +224,12 @@
 			"revisionTime": "2017-08-30T08:48:20Z"
 		},
 		{
+			"checksumSHA1": "qMqL9tE//Z4n/4BQqyjSQ9RdoB8=",
+			"path": "github.com/exoscale/egoscale",
+			"revision": "d0b97c5313da1645585ba6c860e29161299849e1",
+			"revisionTime": "2018-08-02T11:57:13Z"
+		},
+		{
 			"checksumSHA1": "oSwR5RN8idtBQrpnQSy13t8ruoU=",
 			"path": "github.com/go-ini/ini",
 			"revision": "32e4be5f41bb918afb6e37c07426e2ddbcb6647e",

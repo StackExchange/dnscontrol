@@ -8,6 +8,7 @@ import (
 	_ "github.com/StackExchange/dnscontrol/providers/cloudflare"
 	_ "github.com/StackExchange/dnscontrol/providers/digitalocean"
 	_ "github.com/StackExchange/dnscontrol/providers/dnsimple"
+	_ "github.com/StackExchange/dnscontrol/providers/exoscale"
 	_ "github.com/StackExchange/dnscontrol/providers/gandi"
 	_ "github.com/StackExchange/dnscontrol/providers/gcloud"
 	_ "github.com/StackExchange/dnscontrol/providers/linode"
