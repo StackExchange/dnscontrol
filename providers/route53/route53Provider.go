@@ -216,10 +216,13 @@ func (r *route53Provider) GetDomainCorrections(dc *models.DomainConfig) ([]*mode
 			delDesc += strings.Join(namesToUpdate[k], "\n") + "\n"
 			// on delete just submit the original resource set we got from r53.
 			for _, r := range records {
-				if unescape(r.Name) == k.Name && (*r.Type == k.Type || k.Type == "R53_ALIAS") {
+				if unescape(r.Name) == k.Name && (*r.Type == k.Type || k.Type == "R53_ALIAS_"+*r.Type) {
 					rrset = r
 					break
 				}
+			}
+			if rrset == nil {
+				return nil, fmt.Errorf("No record set found to delete. Name: '%s'. Type: '%s'", k.Name, k.Type)
 			}
 		} else {
 			changes = append(changes, chg)
