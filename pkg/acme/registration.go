@@ -63,7 +63,7 @@ func (c *certManager) accountKeyFile() string {
 
 // TODO: probably lock these down more
 const perms os.FileMode = 0644
-const dirPerms os.FileMode = 0755
+const dirPerms os.FileMode = 0700
 
 func (c *certManager) createAccount() error {
 	if err := os.MkdirAll(c.accountDirectory(), dirPerms); err != nil {
