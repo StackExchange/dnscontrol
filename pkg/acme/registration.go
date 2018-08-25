@@ -61,10 +61,12 @@ func (c *certManager) accountKeyFile() string {
 	return filepath.Join(c.accountDirectory(), "account.key")
 }
 
-const perms os.FileMode = 0644 // TODO: probably lock this down more
+// TODO: probably lock these down more
+const perms os.FileMode = 0644
+const dirPerms os.FileMode = 0755
 
 func (c *certManager) createAccount() error {
-	if err := os.MkdirAll(c.accountDirectory(), perms); err != nil {
+	if err := os.MkdirAll(c.accountDirectory(), dirPerms); err != nil {
 		return err
 	}
 	privateKey, err := ecdsa.GenerateKey(elliptic.P384(), rand.Reader)
