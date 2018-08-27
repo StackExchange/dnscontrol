@@ -77,7 +77,7 @@ func (c *certManager) IssueOrRenewCert(cfg *CertConfig, renewUnder int, verbose 
 	}
 
 	log.Printf("Checking certificate [%s]", cfg.CertName)
-	if err := os.MkdirAll(filepath.Dir(c.certFile(cfg.CertName, "json")), perms); err != nil {
+	if err := os.MkdirAll(filepath.Dir(c.certFile(cfg.CertName, "json")), dirPerms); err != nil {
 		return false, err
 	}
 	existing, err := c.readCertificate(cfg.CertName)
