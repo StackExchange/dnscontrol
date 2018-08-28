@@ -102,21 +102,6 @@ func (r *route53Provider) getZones() error {
 	return nil
 }
 
-// map key for grouping records
-type key struct {
-	Name, Type string
-}
-
-func getKey(r *models.RecordConfig) key {
-	var recordType = r.Type
-
-	if r.R53Alias != nil {
-		recordType = fmt.Sprintf("%s_%s", recordType, r.R53Alias["type"])
-	}
-
-	return key{r.GetLabelFQDN(), recordType}
-}
-
 type errNoExist struct {
 	domain string
 }
@@ -175,29 +160,18 @@ func (r *route53Provider) GetDomainCorrections(dc *models.DomainConfig) ([]*mode
 
 	// diff
 	differ := diff.New(dc, getAliasMap)
-	_, create, delete, modify := differ.IncrementalDiff(existingRecords)
-
-	namesToUpdate := map[key][]string{}
-	for _, c := range create {
-		namesToUpdate[getKey(c.Desired)] = append(namesToUpdate[getKey(c.Desired)], c.String())
-	}
-	for _, d := range delete {
-		namesToUpdate[getKey(d.Existing)] = append(namesToUpdate[getKey(d.Existing)], d.String())
-	}
-	for _, m := range modify {
-		namesToUpdate[getKey(m.Desired)] = append(namesToUpdate[getKey(m.Desired)], m.String())
-	}
+	namesToUpdate := differ.ChangedGroups(existingRecords)
 
 	if len(namesToUpdate) == 0 {
 		return nil, nil
 	}
 
-	updates := map[key][]*models.RecordConfig{}
+	updates := map[models.RecordKey][]*models.RecordConfig{}
 	// for each name we need to update, collect relevant records from dc
 	for k := range namesToUpdate {
 		updates[k] = nil
 		for _, rc := range dc.Records {
-			if getKey(rc) == k {
+			if rc.Key() == k {
 				updates[k] = append(updates[k], rc)
 			}
 		}
