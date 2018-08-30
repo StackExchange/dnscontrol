@@ -64,6 +64,7 @@ Maintainers of contributed providers:
 * digital ocean @Deraen
 * dnsimple @aeden
 * gandi @TomOnTime
+* HEXONET @papakai
 * Linode @koesie10
 * namecheap @captncraig
 * ns1 @captncraig
