@@ -42,6 +42,14 @@
     "private_key": "$GCLOUD_PRIVATEKEY",
     "project_id": "$GCLOUD_PROJECT"
   },
+  "HEXONET": {
+    "apilogin": "$HEXONET_UID",
+    "apipassword": "$HEXONET_PW",
+    "apientity": "$HEXONET_ENTITY",
+    "debugmode": "$HEXONET_DEBUGMODE",
+    "ipaddress": "$HEXONET_IP",
+    "domain": "dnscontrol.com"
+  },
   "LINODE": {
     "COMMENT": "25: Linode's hostname validation does not allow the target domain TLD",
     "token": "$LINODE_TOKEN",
