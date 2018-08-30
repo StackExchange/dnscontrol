@@ -254,13 +254,34 @@
 			"revisionTime": "2017-11-29T19:10:14Z"
 		},
 		{
-			"checksumSHA1": "8NVOwlGdEBlSFIata3vQABKA0Xs=",
+			"checksumSHA1": "4DmLGR9Ee0gQBP6AFo2MjTXgfJI=",
 			"path": "github.com/hexonet/go-sdk",
 			"revision": "e12cede7032b5fb069cbeb6df5d5e86e95cfc654",
-			"revisionTime": "2018-08-03T10:21:36Z",
-			"tree": true,
-			"version": "v1.2.1",
-			"versionExact": "v1.2.1"
+			"revisionTime": "2018-08-03T10:21:36Z"
+		},
+		{
+			"checksumSHA1": "PR23QiFfiqfTJHOeS+WNcIta3ug=",
+			"path": "github.com/hexonet/go-sdk/client",
+			"revision": "e12cede7032b5fb069cbeb6df5d5e86e95cfc654",
+			"revisionTime": "2018-08-03T10:21:36Z"
+		},
+		{
+			"checksumSHA1": "LPHnYf0BOVHXinZPaRw4rxqZ5KU=",
+			"path": "github.com/hexonet/go-sdk/client/socketcfg",
+			"revision": "e12cede7032b5fb069cbeb6df5d5e86e95cfc654",
+			"revisionTime": "2018-08-03T10:21:36Z"
+		},
+		{
+			"checksumSHA1": "WeP8qGTOK9lpLeEt6yEU8NQQdF4=",
+			"path": "github.com/hexonet/go-sdk/response/hashresponse",
+			"revision": "e12cede7032b5fb069cbeb6df5d5e86e95cfc654",
+			"revisionTime": "2018-08-03T10:21:36Z"
+		},
+		{
+			"checksumSHA1": "1erVx9DdrpcnVEy5UEqSHTIl6H0=",
+			"path": "github.com/hexonet/go-sdk/response/listresponse",
+			"revision": "e12cede7032b5fb069cbeb6df5d5e86e95cfc654",
+			"revisionTime": "2018-08-03T10:21:36Z"
 		},
 		{
 			"checksumSHA1": "blwbl9vPvRLtL5QlZgfpLvsFiZ4=",
