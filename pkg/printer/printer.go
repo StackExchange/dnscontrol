@@ -3,6 +3,7 @@ package printer
 import (
 	"bufio"
 	"fmt"
+	"io"
 	"os"
 	"strings"
 
@@ -25,28 +26,56 @@ type CLI interface {
 // Printer is a simple abstraction for printing data. Can be passed to providers to give simple output capabilities.
 type Printer interface {
 	Debugf(fmt string, args ...interface{})
+	Printf(fmt string, args ...interface{})
 	Warnf(fmt string, args ...interface{})
 }
 
-var reader = bufio.NewReader(os.Stdin)
+// Debugf is called to print/format debug information.
+func Debugf(fmt string, args ...interface{}) {
+	DefaultPrinter.Debugf(fmt, args...)
+}
+
+// Printf is called to print/format information.
+func Printf(fmt string, args ...interface{}) {
+	DefaultPrinter.Printf(fmt, args...)
+}
+
+// Warnf is called to print/format a warning.
+func Warnf(fmt string, args ...interface{}) {
+	DefaultPrinter.Warnf(fmt, args...)
+}
+
+var (
+	// DefaultPrinter is the default Printer, used by Debugf, Printf, and Warnf.
+	DefaultPrinter = &ConsolePrinter{
+		Reader:  bufio.NewReader(os.Stdin),
+		Writer:  os.Stdout,
+		Verbose: false,
+	}
+)
 
 // ConsolePrinter is a handle for the console printer.
-type ConsolePrinter struct{}
+type ConsolePrinter struct {
+	Reader *bufio.Reader
+	Writer io.Writer
+
+	Verbose bool
+}
 
 // StartDomain is called at the start of each domain.
 func (c ConsolePrinter) StartDomain(domain string) {
-	fmt.Printf("******************** Domain: %s\n", domain)
+	fmt.Fprintf(c.Writer, "******************** Domain: %s\n", domain)
 }
 
 // PrintCorrection is called to print/format each correction.
 func (c ConsolePrinter) PrintCorrection(i int, correction *models.Correction) {
-	fmt.Printf("#%d: %s\n", i+1, correction.Msg)
+	fmt.Fprintf(c.Writer, "#%d: %s\n", i+1, correction.Msg)
 }
 
 // PromptToRun prompts the user to see if they want to execute a correction.
 func (c ConsolePrinter) PromptToRun() bool {
-	fmt.Print("Run? (Y/n): ")
-	txt, err := reader.ReadString('\n')
+	fmt.Fprint(c.Writer, "Run? (Y/n): ")
+	txt, err := c.Reader.ReadString('\n')
 	run := true
 	if err != nil {
 		run = false
@@ -56,7 +85,7 @@ func (c ConsolePrinter) PromptToRun() bool {
 		run = false
 	}
 	if !run {
-		fmt.Println("Skipping")
+		fmt.Fprintln(c.Writer, "Skipping")
 	}
 	return run
 }
@@ -64,9 +93,9 @@ func (c ConsolePrinter) PromptToRun() bool {
 // EndCorrection is called at the end of each correction.
 func (c ConsolePrinter) EndCorrection(err error) {
 	if err != nil {
-		fmt.Println("FAILURE!", err)
+		fmt.Fprintln(c.Writer, "FAILURE!", err)
 	} else {
-		fmt.Println("SUCCESS!")
+		fmt.Fprintln(c.Writer, "SUCCESS!")
 	}
 }
 
@@ -76,7 +105,7 @@ func (c ConsolePrinter) StartDNSProvider(provider string, skip bool) {
 	if skip {
 		lbl = " (skipping)\n"
 	}
-	fmt.Printf("----- DNS Provider: %s...%s", provider, lbl)
+	fmt.Fprintf(c.Writer, "----- DNS Provider: %s...%s", provider, lbl)
 }
 
 // StartRegistrar is called at the start of each new registrar.
@@ -85,29 +114,36 @@ func (c ConsolePrinter) StartRegistrar(provider string, skip bool) {
 	if skip {
 		lbl = " (skipping)\n"
 	}
-	fmt.Printf("----- Registrar: %s...%s", provider, lbl)
+	fmt.Fprintf(c.Writer, "----- Registrar: %s...%s", provider, lbl)
 }
 
 // EndProvider is called at the end of each provider.
 func (c ConsolePrinter) EndProvider(numCorrections int, err error) {
 	if err != nil {
-		fmt.Println("ERROR")
-		fmt.Printf("Error getting corrections: %s\n", err)
+		fmt.Fprintln(c.Writer, "ERROR")
+		fmt.Fprintf(c.Writer, "Error getting corrections: %s\n", err)
 	} else {
 		plural := "s"
 		if numCorrections == 1 {
 			plural = ""
 		}
-		fmt.Printf("%d correction%s\n", numCorrections, plural)
+		fmt.Fprintf(c.Writer, "%d correction%s\n", numCorrections, plural)
 	}
 }
 
 // Debugf is called to print/format debug information.
 func (c ConsolePrinter) Debugf(format string, args ...interface{}) {
-	fmt.Printf(format, args...)
+	if c.Verbose {
+		fmt.Fprintf(c.Writer, format, args...)
+	}
+}
+
+// Printf is called to print/format information.
+func (c ConsolePrinter) Printf(format string, args ...interface{}) {
+	fmt.Fprintf(c.Writer, format, args...)
 }
 
 // Warnf is called to print/format a warning.
 func (c ConsolePrinter) Warnf(format string, args ...interface{}) {
-	fmt.Printf("WARNING: "+format, args...)
+	fmt.Fprintf(c.Writer, "WARNING: "+format, args...)
 }

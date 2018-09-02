@@ -2,10 +2,10 @@ package js
 
 import (
 	"encoding/json"
-	"fmt"
 	"io/ioutil"
 
 	"github.com/StackExchange/dnscontrol/models"
+	"github.com/StackExchange/dnscontrol/pkg/printer"
 	"github.com/StackExchange/dnscontrol/pkg/transform"
 
 	"github.com/robertkrimen/otto"
@@ -58,7 +58,7 @@ func require(call otto.FunctionCall) otto.Value {
 		throw(call.Otto, "require takes exactly one argument")
 	}
 	file := call.Argument(0).String()
-	fmt.Printf("requiring: %s\n", file)
+	printer.Debugf("requiring: %s\n", file)
 	data, err := ioutil.ReadFile(file)
 	if err != nil {
 		throw(call.Otto, err.Error())

@@ -3,10 +3,10 @@ package gandi
 import (
 	"encoding/json"
 	"fmt"
-	"log"
 	"sort"
 
 	"github.com/StackExchange/dnscontrol/models"
+	"github.com/StackExchange/dnscontrol/pkg/printer"
 	"github.com/StackExchange/dnscontrol/providers"
 	"github.com/StackExchange/dnscontrol/providers/diff"
 	"github.com/pkg/errors"
@@ -92,7 +92,7 @@ func (c *GandiApi) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Corr
 	recordsToKeep := make([]*models.RecordConfig, 0, len(dc.Records))
 	for _, rec := range dc.Records {
 		if rec.TTL < 300 {
-			log.Printf("WARNING: Gandi does not support ttls < 300. Setting %s from %d to 300", rec.GetLabelFQDN(), rec.TTL)
+			printer.Warnf("Gandi does not support ttls < 300. Setting %s from %d to 300\n", rec.GetLabelFQDN(), rec.TTL)
 			rec.TTL = 300
 		}
 		if rec.TTL > 2592000 {
@@ -103,7 +103,7 @@ func (c *GandiApi) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Corr
 		}
 		if rec.Type == "NS" && rec.GetLabel() == "@" {
 			if !strings.HasSuffix(rec.GetTargetField(), ".gandi.net.") {
-				log.Printf("WARNING: Gandi does not support changing apex NS records. %s will not be added.", rec.GetTargetField())
+				printer.Warnf("Gandi does not support changing apex NS records. %s will not be added.\n", rec.GetTargetField())
 			}
 			continue
 		}
@@ -147,7 +147,7 @@ func (c *GandiApi) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Corr
 			&models.Correction{
 				Msg: msg,
 				F: func() error {
-					fmt.Printf("CREATING ZONE: %v\n", dc.Name)
+					printer.Printf("CREATING ZONE: %v\n", dc.Name)
 					return c.createGandiZone(dc.Name, domaininfo.ZoneId, expectedRecordSets)
 				},
 			})

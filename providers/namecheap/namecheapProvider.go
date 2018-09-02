@@ -3,7 +3,6 @@ package namecheap
 import (
 	"encoding/json"
 	"fmt"
-	"log"
 	"sort"
 	"strings"
 	"time"
@@ -11,6 +10,7 @@ import (
 	"golang.org/x/net/publicsuffix"
 
 	"github.com/StackExchange/dnscontrol/models"
+	"github.com/StackExchange/dnscontrol/pkg/printer"
 	"github.com/StackExchange/dnscontrol/providers"
 	"github.com/StackExchange/dnscontrol/providers/diff"
 	nc "github.com/billputer/go-namecheap"
@@ -98,7 +98,7 @@ func doWithRetry(f func() error) {
 			if currentRetry >= maxRetries {
 				return
 			}
-			log.Printf("Namecheap rate limit exceeded. Waiting %s to retry.", sleepTime)
+			printer.Printf("Namecheap rate limit exceeded. Waiting %s to retry.\n", sleepTime)
 			time.Sleep(sleepTime)
 		} else {
 			return
