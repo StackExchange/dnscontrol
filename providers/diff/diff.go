@@ -68,16 +68,14 @@ func (d *differ) IncrementalDiff(existing []*models.RecordConfig) (unchanged, cr
 	desired := d.dc.Records
 
 	// sort existing and desired by name
-	type key struct {
-		name, rType string
-	}
-	existingByNameAndType := map[key][]*models.RecordConfig{}
-	desiredByNameAndType := map[key][]*models.RecordConfig{}
+
+	existingByNameAndType := map[models.RecordKey][]*models.RecordConfig{}
+	desiredByNameAndType := map[models.RecordKey][]*models.RecordConfig{}
 	for _, e := range existing {
 		if d.matchIgnored(e.GetLabel()) {
 			log.Printf("Ignoring record %s %s due to IGNORE", e.GetLabel(), e.Type)
 		} else {
-			k := key{e.GetLabelFQDN(), e.Type}
+			k := e.Key()
 			existingByNameAndType[k] = append(existingByNameAndType[k], e)
 		}
 	}
@@ -85,7 +83,7 @@ func (d *differ) IncrementalDiff(existing []*models.RecordConfig) (unchanged, cr
 		if d.matchIgnored(dr.GetLabel()) {
 			panic(fmt.Sprintf("Trying to update/add IGNOREd record: %s %s", dr.GetLabel(), dr.Type))
 		} else {
-			k := key{dr.GetLabelFQDN(), dr.Type}
+			k := dr.Key()
 			desiredByNameAndType[k] = append(desiredByNameAndType[k], dr)
 		}
 	}
@@ -93,7 +91,7 @@ func (d *differ) IncrementalDiff(existing []*models.RecordConfig) (unchanged, cr
 	if d.dc.KeepUnknown {
 		for k := range existingByNameAndType {
 			if _, ok := desiredByNameAndType[k]; !ok {
-				log.Printf("Ignoring record set %s %s due to NO_PURGE", k.rType, k.name)
+				log.Printf("Ignoring record set %s %s due to NO_PURGE", k.Type, k.Name)
 				delete(existingByNameAndType, k)
 			}
 		}
