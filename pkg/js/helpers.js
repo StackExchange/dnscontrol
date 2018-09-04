@@ -307,6 +307,14 @@ function NAMESERVER(name) {
     };
 }
 
+// NAMESERVER_TTL(v): Set the TTL for NAMESERVER records.
+function NAMESERVER_TTL(v) {
+    if (_.isString(v)) {
+        v = stringToDuration(v);
+    }
+    return {ns_ttl: v.toString()};
+}
+
 function format_tt(transform_table) {
     // Turn [[low: 1, high: 2, newBase: 3], [low: 4, high: 5, newIP: 6]]
     // into "1 ~ 2 ~ 3 ~; 4 ~ 5 ~  ~ 6"

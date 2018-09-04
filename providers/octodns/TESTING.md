@@ -62,7 +62,7 @@ Add:
  DEFAULTS(
    DnsProvider(SERVERFAULT, 0),
 +  DnsProvider(OCT, 0),
-   { ns_ttl: "172800" },
+   NAMESERVER_TTL("2d"),
  END);
 ```
 

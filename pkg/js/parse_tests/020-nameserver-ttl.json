@@ -1,0 +1,24 @@
+{
+  "registrars": [],
+  "dns_providers": [],
+  "domains": [
+    {
+      "name": "foo.com",
+      "registrar": "none",
+      "dnsProviders": {},
+      "meta": {
+        "ns_ttl": "86400"
+      },
+      "records": []
+    },
+    {
+      "name": "bar.com",
+      "registrar": "none",
+      "dnsProviders": {},
+      "meta": {
+        "ns_ttl": "300"
+      },
+      "records": []
+    }
+  ]
+}
