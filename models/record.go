@@ -246,7 +246,15 @@ type RecordKey struct {
 
 // Key converts a RecordConfig into a RecordKey.
 func (rc *RecordConfig) Key() RecordKey {
-	return RecordKey{rc.Name, rc.Type}
+	t := rc.Type
+	if rc.R53Alias != nil {
+		if v, ok := rc.R53Alias["type"]; ok {
+			// Route53 aliases append their alias type, so that records for the same
+			// label with different alias types are considered separate.
+			t = fmt.Sprintf("%s_%s", t, v)
+		}
+	}
+	return RecordKey{rc.Name, t}
 }
 
 // Records is a list of *RecordConfig.
