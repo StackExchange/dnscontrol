@@ -40,10 +40,8 @@ For compatibility with the pre-generated NAMESERVER fields it's recommended to s
 
 {% highlight js %}
 D("example.tld", REG_NONE, DnsProvider(SOFTLAYER),
-    {"ns_ttl": "86400"},
+    NAMESERVER_TTL(86400),
 
     A("test","1.2.3.4")
 );
 {%endhighlight%}
-
-`ns_ttl` is a standard metadata field that applies to all providers.
