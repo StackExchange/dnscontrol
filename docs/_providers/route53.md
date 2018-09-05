@@ -12,7 +12,8 @@ You can specify the API credentials in the credentials json file:
 {
  "r53_main":{
       "KeyId": "your-aws-key",
-      "SecretKey": "your-aws-secret-key"
+      "SecretKey": "your-aws-secret-key",
+      "Token": "optional-sts-token"
  }
 }
 {% endhighlight %}
@@ -22,7 +23,17 @@ You can also use environment variables, but this is discouraged, unless your env
 ```
 $ export AWS_ACCESS_KEY_ID=XXXXXXXXX
 $ export AWS_SECRET_ACCESS_KEY=YYYYYYYYY
+$ export AWS_SESSION_TOKEN=ZZZZZZZZ
 ```
+
+{% highlight json %}
+{
+ "r53_main":{
+      "KeyId": "$AWS_ACCESS_KEY_ID",
+      "SecretKey": "$AWS_SECRET_ACCESS_KEY"
+ }
+}
+{% endhighlight %}
 
 You can find some other ways to authenticate to Route53 in the [go sdk configuration](https://docs.aws.amazon.com/sdk-for-go/v1/developer-guide/configuring-sdk.html).
 
