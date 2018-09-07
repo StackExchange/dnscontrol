@@ -240,8 +240,8 @@ func (rc *RecordConfig) ToRR() dns.RR {
 
 // RecordKey represents a resource record in a format used by some systems.
 type RecordKey struct {
-	Name string
-	Type string
+	NameFQDN string
+	Type     string
 }
 
 // Key converts a RecordConfig into a RecordKey.
@@ -254,7 +254,7 @@ func (rc *RecordConfig) Key() RecordKey {
 			t = fmt.Sprintf("%s_%s", t, v)
 		}
 	}
-	return RecordKey{rc.Name, t}
+	return RecordKey{rc.NameFQDN, t}
 }
 
 // Records is a list of *RecordConfig.
