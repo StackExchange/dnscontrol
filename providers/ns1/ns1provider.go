@@ -14,7 +14,6 @@ import (
 	"strings"
 
 	"github.com/StackExchange/dnscontrol/providers/diff"
-	"github.com/miekg/dns/dnsutil"
 	"gopkg.in/ns1/ns1-go.v2/rest"
 	"gopkg.in/ns1/ns1-go.v2/rest/model/dns"
 )
@@ -108,7 +107,7 @@ func (n *nsone) add(recs models.Records, domain string) error {
 }
 
 func (n *nsone) remove(key models.RecordKey, domain string) error {
-	_, err := n.Records.Delete(domain, dnsutil.AddOrigin(key.Name, domain), key.Type)
+	_, err := n.Records.Delete(domain, key.NameFQDN, key.Type)
 	return err
 }
 

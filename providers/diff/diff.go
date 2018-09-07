@@ -91,7 +91,7 @@ func (d *differ) IncrementalDiff(existing []*models.RecordConfig) (unchanged, cr
 	if d.dc.KeepUnknown {
 		for k := range existingByNameAndType {
 			if _, ok := desiredByNameAndType[k]; !ok {
-				log.Printf("Ignoring record set %s %s due to NO_PURGE", k.Type, k.Name)
+				log.Printf("Ignoring record set %s %s due to NO_PURGE", k.Type, k.NameFQDN)
 				delete(existingByNameAndType, k)
 			}
 		}

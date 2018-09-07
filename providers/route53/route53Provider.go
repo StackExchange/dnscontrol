@@ -191,13 +191,13 @@ func (r *route53Provider) GetDomainCorrections(dc *models.DomainConfig) ([]*mode
 			delDesc += strings.Join(namesToUpdate[k], "\n") + "\n"
 			// on delete just submit the original resource set we got from r53.
 			for _, r := range records {
-				if unescape(r.Name) == k.Name && (*r.Type == k.Type || k.Type == "R53_ALIAS_"+*r.Type) {
+				if unescape(r.Name) == k.NameFQDN && (*r.Type == k.Type || k.Type == "R53_ALIAS_"+*r.Type) {
 					rrset = r
 					break
 				}
 			}
 			if rrset == nil {
-				return nil, fmt.Errorf("No record set found to delete. Name: '%s'. Type: '%s'", k.Name, k.Type)
+				return nil, fmt.Errorf("No record set found to delete. Name: '%s'. Type: '%s'", k.NameFQDN, k.Type)
 			}
 		} else {
 			changes = append(changes, chg)
@@ -205,7 +205,7 @@ func (r *route53Provider) GetDomainCorrections(dc *models.DomainConfig) ([]*mode
 			// on change or create, just build a new record set from our desired state
 			chg.Action = sPtr("UPSERT")
 			rrset = &r53.ResourceRecordSet{
-				Name: sPtr(k.Name),
+				Name: sPtr(k.NameFQDN),
 				Type: sPtr(k.Type),
 			}
 			for _, r := range recs {

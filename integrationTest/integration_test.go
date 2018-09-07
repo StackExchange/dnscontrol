@@ -547,5 +547,7 @@ func makeTests(t *testing.T) []*TestCase {
 		)
 	}
 
+	// Empty last
+	tc("Empty")
 	return tests
 }
