@@ -8,20 +8,20 @@ func TestKey(t *testing.T) {
 		expected RecordKey
 	}{
 		{
-			RecordConfig{Type: "A", Name: "@"},
-			RecordKey{Type: "A", Name: "@"},
+			RecordConfig{Type: "A", NameFQDN: "example.com"},
+			RecordKey{Type: "A", NameFQDN: "example.com"},
 		},
 		{
-			RecordConfig{Type: "R53_ALIAS", Name: "@"},
-			RecordKey{Type: "R53_ALIAS", Name: "@"},
+			RecordConfig{Type: "R53_ALIAS", NameFQDN: "example.com"},
+			RecordKey{Type: "R53_ALIAS", NameFQDN: "example.com"},
 		},
 		{
-			RecordConfig{Type: "R53_ALIAS", Name: "@", R53Alias: map[string]string{"foo": "bar"}},
-			RecordKey{Type: "R53_ALIAS", Name: "@"},
+			RecordConfig{Type: "R53_ALIAS", NameFQDN: "example.com", R53Alias: map[string]string{"foo": "bar"}},
+			RecordKey{Type: "R53_ALIAS", NameFQDN: "example.com"},
 		},
 		{
-			RecordConfig{Type: "R53_ALIAS", Name: "@", R53Alias: map[string]string{"type": "AAAA"}},
-			RecordKey{Type: "R53_ALIAS_AAAA", Name: "@"},
+			RecordConfig{Type: "R53_ALIAS", NameFQDN: "example.com", R53Alias: map[string]string{"type": "AAAA"}},
+			RecordKey{Type: "R53_ALIAS_AAAA", NameFQDN: "example.com"},
 		},
 	}
 	for i, test := range tests {
