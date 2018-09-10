@@ -553,10 +553,22 @@
 			"revisionTime": "2018-01-06T19:10:48Z"
 		},
 		{
+			"checksumSHA1": "hOQeoMW+s2bHogWrQWV2UkEKOWM=",
+			"path": "github.com/xenolf/lego/acme",
+			"revision": "035c27cdb70e8e9c120eaa471f068d6d08ce9dee",
+			"revisionTime": "2018-09-10T07:52:43Z"
+		},
+		{
 			"checksumSHA1": "IfxQifbQRgrRHdhHayFeF699/5U=",
 			"path": "github.com/xenolf/lego/acmev2",
 			"revision": "fad2257e11ae4ff31ed03739386873aa405dec2d",
 			"revisionTime": "2018-04-20T00:02:18Z"
+		},
+		{
+			"checksumSHA1": "CARCjcQthzCLPHhJ+dukfu7Bhpk=",
+			"path": "github.com/xenolf/lego/log",
+			"revision": "035c27cdb70e8e9c120eaa471f068d6d08ce9dee",
+			"revisionTime": "2018-09-10T07:52:43Z"
 		},
 		{
 			"checksumSHA1": "MLGPYuRc7BtUuKmIV8f/jXpYWvg=",

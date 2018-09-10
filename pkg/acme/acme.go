@@ -3,21 +3,19 @@ package acme
 
 import (
 	"crypto/x509"
-	"encoding/json"
 	"encoding/pem"
 	"fmt"
 	"io/ioutil"
 	"log"
 	"net/url"
-	"os"
-	"path/filepath"
 	"sort"
 	"strings"
 	"time"
 
 	"github.com/StackExchange/dnscontrol/models"
 	"github.com/StackExchange/dnscontrol/pkg/nameservers"
-	"github.com/xenolf/lego/acmev2"
+	"github.com/xenolf/lego/acme"
+	acmelog "github.com/xenolf/lego/log"
 )
 
 type CertConfig struct {
@@ -30,15 +28,15 @@ type Client interface {
 }
 
 type certManager struct {
-	directory      string
-	email          string
-	acmeDirectory  string
-	acmeHost       string
+	email         string
+	acmeDirectory string
+	acmeHost      string
+
+	storage        Storage
 	cfg            *models.DNSConfig
 	checkedDomains map[string]bool
 
-	account *account
-	client  *acme.Client
+	client *acme.Client
 }
 
 const (
@@ -52,7 +50,7 @@ func New(cfg *models.DNSConfig, directory string, email string, server string) (
 		return nil, fmt.Errorf("ACME directory '%s' is not a valid URL", server)
 	}
 	c := &certManager{
-		directory:      directory,
+		storage:        directoryStorage(directory),
 		email:          email,
 		acmeDirectory:  server,
 		acmeHost:       u.Host,
@@ -60,11 +58,13 @@ func New(cfg *models.DNSConfig, directory string, email string, server string) (
 		checkedDomains: map[string]bool{},
 	}
 
-	if err := c.loadOrCreateAccount(); err != nil {
+	client, err := c.createAcmeClient()
+	if err != nil {
 		return nil, err
 	}
-	c.client.ExcludeChallenges([]acme.Challenge{acme.HTTP01})
-	c.client.SetChallengeProvider(acme.DNS01, c)
+	client.ExcludeChallenges([]acme.Challenge{acme.HTTP01})
+	client.SetChallengeProvider(acme.DNS01, c)
+	c.client = client
 	return c, nil
 }
 
@@ -73,19 +73,16 @@ func New(cfg *models.DNSConfig, directory string, email string, server string) (
 // It will return true if it issued or updated the certificate.
 func (c *certManager) IssueOrRenewCert(cfg *CertConfig, renewUnder int, verbose bool) (bool, error) {
 	if !verbose {
-		acme.Logger = log.New(ioutil.Discard, "", 0)
+		acmelog.Logger = log.New(ioutil.Discard, "", 0)
 	}
 
 	log.Printf("Checking certificate [%s]", cfg.CertName)
-	if err := os.MkdirAll(filepath.Dir(c.certFile(cfg.CertName, "json")), dirPerms); err != nil {
-		return false, err
-	}
-	existing, err := c.readCertificate(cfg.CertName)
+	existing, err := c.storage.GetCertificate(cfg.CertName)
 	if err != nil {
 		return false, err
 	}
 
-	var action = func() (acme.CertificateResource, error) {
+	var action = func() (*acme.CertificateResource, error) {
 		return c.client.ObtainCertificate(cfg.Names, true, nil, true)
 	}
 
@@ -107,7 +104,7 @@ func (c *certManager) IssueOrRenewCert(cfg *CertConfig, renewUnder int, verbose 
 			log.Println("DNS Names don't match expected set. Reissuing.")
 		} else {
 			log.Println("Renewing cert")
-			action = func() (acme.CertificateResource, error) {
+			action = func() (*acme.CertificateResource, error) {
 				return c.client.RenewCertificate(*existing, true, true)
 			}
 		}
@@ -118,26 +115,7 @@ func (c *certManager) IssueOrRenewCert(cfg *CertConfig, renewUnder int, verbose 
 		return false, err
 	}
 	fmt.Printf("Obtained certificate for %s\n", cfg.CertName)
-	return true, c.writeCertificate(cfg.CertName, &certResource)
-}
-
-// filename for certifiacte / key / json file
-func (c *certManager) certFile(name, ext string) string {
-	return filepath.Join(c.directory, "certificates", name, name+"."+ext)
-}
-
-func (c *certManager) writeCertificate(name string, cr *acme.CertificateResource) error {
-	jDAt, err := json.MarshalIndent(cr, "", "  ")
-	if err != nil {
-		return err
-	}
-	if err = ioutil.WriteFile(c.certFile(name, "json"), jDAt, perms); err != nil {
-		return err
-	}
-	if err = ioutil.WriteFile(c.certFile(name, "crt"), cr.Certificate, perms); err != nil {
-		return err
-	}
-	return ioutil.WriteFile(c.certFile(name, "key"), cr.PrivateKey, perms)
+	return true, c.storage.StoreCertificate(cfg.CertName, certResource)
 }
 
 func getCertInfo(pemBytes []byte) (names []string, remaining float64, err error) {
@@ -166,30 +144,6 @@ func dnsNamesEqual(a []string, b []string) bool {
 		}
 	}
 	return true
-}
-
-func (c *certManager) readCertificate(name string) (*acme.CertificateResource, error) {
-	f, err := os.Open(c.certFile(name, "json"))
-	if err != nil && os.IsNotExist(err) {
-		// if json does not exist, nothing does
-		return nil, nil
-	}
-	if err != nil {
-		return nil, err
-	}
-	defer f.Close()
-	dec := json.NewDecoder(f)
-	cr := &acme.CertificateResource{}
-	if err = dec.Decode(cr); err != nil {
-		return nil, err
-	}
-	// load cert
-	crtBytes, err := ioutil.ReadFile(c.certFile(name, "crt"))
-	if err != nil {
-		return nil, err
-	}
-	cr.Certificate = crtBytes
-	return cr, nil
 }
 
 func (c *certManager) Present(domain, token, keyAuth string) (e error) {

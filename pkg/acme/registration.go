@@ -5,119 +5,84 @@ import (
 	"crypto/ecdsa"
 	"crypto/elliptic"
 	"crypto/rand"
-	"crypto/x509"
-	"encoding/json"
-	"encoding/pem"
-	"io/ioutil"
-	"log"
-	"os"
-	"path/filepath"
 
-	"github.com/xenolf/lego/acmev2"
+	"github.com/xenolf/lego/acme"
 )
 
-func (c *certManager) loadOrCreateAccount() error {
-	f, err := os.Open(c.accountFile())
-	if err != nil && os.IsNotExist(err) {
-		return c.createAccount()
-	}
+func (c *certManager) createAcmeClient() (*acme.Client, error) {
+	account, err := c.storage.GetAccount(c.acmeHost)
 	if err != nil {
-		return err
+		return nil, err
 	}
-	defer f.Close()
-	dec := json.NewDecoder(f)
-	acct := &account{}
-	if err = dec.Decode(acct); err != nil {
-		return err
+	if account == nil {
+		// register new
+		account, err = c.createAccount(c.email)
+		if err != nil {
+			return nil, err
+		}
+		if err := c.storage.StoreAccount(c.acmeHost, account); err != nil {
+			return nil, err
+		}
 	}
-	c.account = acct
-	keyBytes, err := ioutil.ReadFile(c.accountKeyFile())
+	client, err := acme.NewClient(c.acmeDirectory, account, acme.RSA2048) // TODO: possibly make configurable on a cert-by cert basis
 	if err != nil {
-		return err
+		return nil, err
 	}
-	keyBlock, _ := pem.Decode(keyBytes)
-	if keyBlock == nil {
-		log.Fatal("WTF", keyBytes)
-	}
-	c.account.key, err = x509.ParseECPrivateKey(keyBlock.Bytes)
-	if err != nil {
-		return err
-	}
-	c.client, err = acme.NewClient(c.acmeDirectory, c.account, acme.RSA2048) // TODO: possibly make configurable on a cert-by cert basis
-	if err != nil {
-		return err
-	}
-	return nil
+	return client, nil
 }
 
-func (c *certManager) accountDirectory() string {
-	return filepath.Join(c.directory, ".letsencrypt", c.acmeHost)
-}
-
-func (c *certManager) accountFile() string {
-	return filepath.Join(c.accountDirectory(), "account.json")
-}
-func (c *certManager) accountKeyFile() string {
-	return filepath.Join(c.accountDirectory(), "account.key")
-}
-
-// TODO: probably lock these down more
-const perms os.FileMode = 0644
-const dirPerms os.FileMode = 0700
-
-func (c *certManager) createAccount() error {
-	if err := os.MkdirAll(c.accountDirectory(), dirPerms); err != nil {
-		return err
-	}
+func (c *certManager) createAccount(email string) (*Account, error) {
+	// if err := os.MkdirAll(c.accountDirectory(), dirPerms); err != nil {
+	// 	return err
+	// }
 	privateKey, err := ecdsa.GenerateKey(elliptic.P384(), rand.Reader)
 	if err != nil {
-		return err
+		return nil, err
 	}
-	acct := &account{
+	acct := &Account{
 		key:   privateKey,
 		Email: c.email,
 	}
-	c.account = acct
-	c.client, err = acme.NewClient(c.acmeDirectory, c.account, acme.EC384)
+	c.client, err = acme.NewClient(c.acmeDirectory, acct, acme.EC384)
 	if err != nil {
-		return err
+		return nil, err
 	}
 	reg, err := c.client.Register(true)
 	if err != nil {
-		return err
+		return nil, err
 	}
-	c.account.Registration = reg
-	acctBytes, err := json.MarshalIndent(c.account, "", "  ")
-	if err != nil {
-		return err
-	}
-	if err = ioutil.WriteFile(c.accountFile(), acctBytes, perms); err != nil {
-		return err
-	}
-	keyBytes, err := x509.MarshalECPrivateKey(privateKey)
-	if err != nil {
-		return err
-	}
-	pemKey := &pem.Block{Type: "EC PRIVATE KEY", Bytes: keyBytes}
-	pemBytes := pem.EncodeToMemory(pemKey)
-	if err = ioutil.WriteFile(c.accountKeyFile(), pemBytes, perms); err != nil {
-		return err
-	}
-	return nil
+	acct.Registration = reg
+	return acct, nil
+	// acctBytes, err := json.MarshalIndent(c.account, "", "  ")
+	// if err != nil {
+	// 	return err
+	// }
+	// if err = ioutil.WriteFile(c.accountFile(), acctBytes, perms); err != nil {
+	// 	return err
+	// }
+	// keyBytes, err := x509.MarshalECPrivateKey(privateKey)
+	// if err != nil {
+	// 	return err
+	// }
+	// pemKey := &pem.Block{Type: "EC PRIVATE KEY", Bytes: keyBytes}
+	// pemBytes := pem.EncodeToMemory(pemKey)
+	// if err = ioutil.WriteFile(c.accountKeyFile(), pemBytes, perms); err != nil {
+	// 	return err
+	// }
 }
 
-type account struct {
-	Email        string `json:"email"`
-	key          crypto.PrivateKey
+type Account struct {
+	Email        string                     `json:"email"`
+	key          crypto.PrivateKey          `json:"-"`
 	Registration *acme.RegistrationResource `json:"registration"`
 }
 
-func (a *account) GetEmail() string {
+func (a *Account) GetEmail() string {
 	return a.Email
 }
-func (a *account) GetPrivateKey() crypto.PrivateKey {
+func (a *Account) GetPrivateKey() crypto.PrivateKey {
 	return a.key
 }
-func (a *account) GetRegistration() *acme.RegistrationResource {
+func (a *Account) GetRegistration() *acme.RegistrationResource {
 	return a.Registration
 }

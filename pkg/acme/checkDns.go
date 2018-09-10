@@ -4,7 +4,7 @@ import (
 	"log"
 	"time"
 
-	"github.com/xenolf/lego/acmev2"
+	"github.com/xenolf/lego/acme"
 )
 
 func init() {
