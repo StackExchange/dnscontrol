@@ -47,12 +47,16 @@ const (
 )
 
 func New(cfg *models.DNSConfig, directory string, email string, server string) (Client, error) {
+	return commonNew(cfg, directoryStorage(directory), email, server)
+}
+
+func commonNew(cfg *models.DNSConfig, storage Storage, email string, server string) (Client, error) {
 	u, err := url.Parse(server)
 	if err != nil || u.Host == "" {
 		return nil, fmt.Errorf("ACME directory '%s' is not a valid URL", server)
 	}
 	c := &certManager{
-		storage:       directoryStorage(directory),
+		storage:       storage,
 		email:         email,
 		acmeDirectory: server,
 		acmeHost:      u.Host,
@@ -68,6 +72,14 @@ func New(cfg *models.DNSConfig, directory string, email string, server string) (
 	client.SetChallengeProvider(acme.DNS01, c)
 	c.client = client
 	return c, nil
+}
+
+func NewVault(cfg *models.DNSConfig, vaultPath string, email string, server string) (Client, error) {
+	storage, err := makeVaultStorage(vaultPath)
+	if err != nil {
+		return nil, err
+	}
+	return commonNew(cfg, storage, email, server)
 }
 
 // IssueOrRenewCert will obtain a certificate with the given name if it does not exist,

@@ -14,13 +14,12 @@ func (c *certManager) preCheckDNS(fqdn, value string) (bool, error) {
 	// have the expected records.
 	// Sometimes the Let's Encrypt verification fails anyway because records have not propagated the provider's network fully.
 	// So we add an additional 20 second sleep just for safety.
-	start := time.Now()
 	v, err := acmePreCheck(fqdn, value)
 	if err != nil {
 		return v, err
 	}
 	if !c.waitedOnce {
-		log.Printf("DNS ok after %s. Waiting again for propagation", time.Now().Sub(start))
+		log.Printf("DNS ok. Waiting another 20s to ensure stability.")
 		time.Sleep(20 * time.Second)
 		c.waitedOnce = true
 	}
