@@ -15,7 +15,7 @@ import (
 // directoryStorage implements storage in a local file directory
 type directoryStorage string
 
-// filename for certifiacte / key / json file
+// filename for certificate / key / json file
 func (d directoryStorage) certFile(name, ext string) string {
 	return filepath.Join(d.certDir(name), name+"."+ext)
 }
@@ -104,7 +104,7 @@ func (d directoryStorage) GetAccount(acmeHost string) (*Account, error) {
 	}
 	keyBlock, _ := pem.Decode(keyBytes)
 	if keyBlock == nil {
-		return nil, fmt.Errorf("Error decoding account private key.")
+		return nil, fmt.Errorf("Error decoding account private key")
 	}
 	acct.key, err = x509.ParseECPrivateKey(keyBlock.Bytes)
 	if err != nil {
@@ -112,6 +112,23 @@ func (d directoryStorage) GetAccount(acmeHost string) (*Account, error) {
 	}
 	return acct, nil
 }
+
 func (d directoryStorage) StoreAccount(acmeHost string, account *Account) error {
-	return nil
+	if err := os.MkdirAll(d.accountDirectory(acmeHost), dirPerms); err != nil {
+		return err
+	}
+	acctBytes, err := json.MarshalIndent(account, "", "  ")
+	if err != nil {
+		return err
+	}
+	if err = ioutil.WriteFile(d.accountFile(acmeHost), acctBytes, perms); err != nil {
+		return err
+	}
+	keyBytes, err := x509.MarshalECPrivateKey(account.key)
+	if err != nil {
+		return err
+	}
+	pemKey := &pem.Block{Type: "EC PRIVATE KEY", Bytes: keyBytes}
+	pemBytes := pem.EncodeToMemory(pemKey)
+	return ioutil.WriteFile(d.accountKeyFile(acmeHost), pemBytes, perms)
 }

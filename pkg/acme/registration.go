@@ -32,9 +32,6 @@ func (c *certManager) createAcmeClient() (*acme.Client, error) {
 }
 
 func (c *certManager) createAccount(email string) (*Account, error) {
-	// if err := os.MkdirAll(c.accountDirectory(), dirPerms); err != nil {
-	// 	return err
-	// }
 	privateKey, err := ecdsa.GenerateKey(elliptic.P384(), rand.Reader)
 	if err != nil {
 		return nil, err
@@ -53,27 +50,11 @@ func (c *certManager) createAccount(email string) (*Account, error) {
 	}
 	acct.Registration = reg
 	return acct, nil
-	// acctBytes, err := json.MarshalIndent(c.account, "", "  ")
-	// if err != nil {
-	// 	return err
-	// }
-	// if err = ioutil.WriteFile(c.accountFile(), acctBytes, perms); err != nil {
-	// 	return err
-	// }
-	// keyBytes, err := x509.MarshalECPrivateKey(privateKey)
-	// if err != nil {
-	// 	return err
-	// }
-	// pemKey := &pem.Block{Type: "EC PRIVATE KEY", Bytes: keyBytes}
-	// pemBytes := pem.EncodeToMemory(pemKey)
-	// if err = ioutil.WriteFile(c.accountKeyFile(), pemBytes, perms); err != nil {
-	// 	return err
-	// }
 }
 
 type Account struct {
 	Email        string                     `json:"email"`
-	key          crypto.PrivateKey          `json:"-"`
+	key          *ecdsa.PrivateKey          `json:"-"`
 	Registration *acme.RegistrationResource `json:"registration"`
 }
 
