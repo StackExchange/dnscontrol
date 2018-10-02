@@ -96,7 +96,7 @@ Writing new plugins is very easy.
 
 ## From source
 
-DNSControl can be built with Go version 1.7 or higher. To install, simply run 
+DNSControl can be built with Go version 1.10 or higher. To install, simply run
 
 `go get github.com/StackExchange/dnscontrol`
 
