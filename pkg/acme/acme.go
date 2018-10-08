@@ -3,21 +3,19 @@ package acme
 
 import (
 	"crypto/x509"
-	"encoding/json"
 	"encoding/pem"
 	"fmt"
 	"io/ioutil"
 	"log"
 	"net/url"
-	"os"
-	"path/filepath"
 	"sort"
 	"strings"
 	"time"
 
 	"github.com/StackExchange/dnscontrol/models"
 	"github.com/StackExchange/dnscontrol/pkg/nameservers"
-	"github.com/xenolf/lego/acmev2"
+	"github.com/xenolf/lego/acme"
+	acmelog "github.com/xenolf/lego/log"
 )
 
 type CertConfig struct {
@@ -30,15 +28,17 @@ type Client interface {
 }
 
 type certManager struct {
-	directory      string
-	email          string
-	acmeDirectory  string
-	acmeHost       string
-	cfg            *models.DNSConfig
-	checkedDomains map[string]bool
+	email         string
+	acmeDirectory string
+	acmeHost      string
 
-	account *account
-	client  *acme.Client
+	storage         Storage
+	cfg             *models.DNSConfig
+	domains         map[string]*models.DomainConfig
+	originalDomains []*models.DomainConfig
+	client          *acme.Client
+
+	waitedOnce bool
 }
 
 const (
@@ -47,25 +47,39 @@ const (
 )
 
 func New(cfg *models.DNSConfig, directory string, email string, server string) (Client, error) {
+	return commonNew(cfg, directoryStorage(directory), email, server)
+}
+
+func commonNew(cfg *models.DNSConfig, storage Storage, email string, server string) (Client, error) {
 	u, err := url.Parse(server)
 	if err != nil || u.Host == "" {
 		return nil, fmt.Errorf("ACME directory '%s' is not a valid URL", server)
 	}
 	c := &certManager{
-		directory:      directory,
-		email:          email,
-		acmeDirectory:  server,
-		acmeHost:       u.Host,
-		cfg:            cfg,
-		checkedDomains: map[string]bool{},
+		storage:       storage,
+		email:         email,
+		acmeDirectory: server,
+		acmeHost:      u.Host,
+		cfg:           cfg,
+		domains:       map[string]*models.DomainConfig{},
 	}
 
-	if err := c.loadOrCreateAccount(); err != nil {
+	client, err := c.createAcmeClient()
+	if err != nil {
 		return nil, err
 	}
-	c.client.ExcludeChallenges([]acme.Challenge{acme.HTTP01})
-	c.client.SetChallengeProvider(acme.DNS01, c)
+	client.ExcludeChallenges([]acme.Challenge{acme.HTTP01, acme.TLSALPN01})
+	client.SetChallengeProvider(acme.DNS01, c)
+	c.client = client
 	return c, nil
+}
+
+func NewVault(cfg *models.DNSConfig, vaultPath string, email string, server string) (Client, error) {
+	storage, err := makeVaultStorage(vaultPath)
+	if err != nil {
+		return nil, err
+	}
+	return commonNew(cfg, storage, email, server)
 }
 
 // IssueOrRenewCert will obtain a certificate with the given name if it does not exist,
@@ -73,19 +87,17 @@ func New(cfg *models.DNSConfig, directory string, email string, server string) (
 // It will return true if it issued or updated the certificate.
 func (c *certManager) IssueOrRenewCert(cfg *CertConfig, renewUnder int, verbose bool) (bool, error) {
 	if !verbose {
-		acme.Logger = log.New(ioutil.Discard, "", 0)
+		acmelog.Logger = log.New(ioutil.Discard, "", 0)
 	}
+	defer c.finalCleanUp()
 
 	log.Printf("Checking certificate [%s]", cfg.CertName)
-	if err := os.MkdirAll(filepath.Dir(c.certFile(cfg.CertName, "json")), dirPerms); err != nil {
-		return false, err
-	}
-	existing, err := c.readCertificate(cfg.CertName)
+	existing, err := c.storage.GetCertificate(cfg.CertName)
 	if err != nil {
 		return false, err
 	}
 
-	var action = func() (acme.CertificateResource, error) {
+	var action = func() (*acme.CertificateResource, error) {
 		return c.client.ObtainCertificate(cfg.Names, true, nil, true)
 	}
 
@@ -107,37 +119,25 @@ func (c *certManager) IssueOrRenewCert(cfg *CertConfig, renewUnder int, verbose 
 			log.Println("DNS Names don't match expected set. Reissuing.")
 		} else {
 			log.Println("Renewing cert")
-			action = func() (acme.CertificateResource, error) {
+			action = func() (*acme.CertificateResource, error) {
 				return c.client.RenewCertificate(*existing, true, true)
 			}
 		}
 	}
+
+	acme.PreCheckDNS = c.preCheckDNS
+	defer func() { acme.PreCheckDNS = acmePreCheck }()
 
 	certResource, err := action()
 	if err != nil {
 		return false, err
 	}
 	fmt.Printf("Obtained certificate for %s\n", cfg.CertName)
-	return true, c.writeCertificate(cfg.CertName, &certResource)
-}
+	if err = c.storage.StoreCertificate(cfg.CertName, certResource); err != nil {
+		return true, err
+	}
 
-// filename for certifiacte / key / json file
-func (c *certManager) certFile(name, ext string) string {
-	return filepath.Join(c.directory, "certificates", name, name+"."+ext)
-}
-
-func (c *certManager) writeCertificate(name string, cr *acme.CertificateResource) error {
-	jDAt, err := json.MarshalIndent(cr, "", "  ")
-	if err != nil {
-		return err
-	}
-	if err = ioutil.WriteFile(c.certFile(name, "json"), jDAt, perms); err != nil {
-		return err
-	}
-	if err = ioutil.WriteFile(c.certFile(name, "crt"), cr.Certificate, perms); err != nil {
-		return err
-	}
-	return ioutil.WriteFile(c.certFile(name, "key"), cr.PrivateKey, perms)
+	return true, nil
 }
 
 func getCertInfo(pemBytes []byte) (names []string, remaining float64, err error) {
@@ -168,67 +168,49 @@ func dnsNamesEqual(a []string, b []string) bool {
 	return true
 }
 
-func (c *certManager) readCertificate(name string) (*acme.CertificateResource, error) {
-	f, err := os.Open(c.certFile(name, "json"))
-	if err != nil && os.IsNotExist(err) {
-		// if json does not exist, nothing does
-		return nil, nil
-	}
-	if err != nil {
-		return nil, err
-	}
-	defer f.Close()
-	dec := json.NewDecoder(f)
-	cr := &acme.CertificateResource{}
-	if err = dec.Decode(cr); err != nil {
-		return nil, err
-	}
-	// load cert
-	crtBytes, err := ioutil.ReadFile(c.certFile(name, "crt"))
-	if err != nil {
-		return nil, err
-	}
-	cr.Certificate = crtBytes
-	return cr, nil
-}
-
 func (c *certManager) Present(domain, token, keyAuth string) (e error) {
 	d := c.cfg.DomainContainingFQDN(domain)
-	// fix NS records for this domain's DNS providers
-	// only need to do this once per domain
-	const metaKey = "x-fixed-nameservers"
-	if d.Metadata[metaKey] == "" {
+	name := d.Name
+	if seen := c.domains[name]; seen != nil {
+		// we've already pre-processed this domain, just need to add to it.
+		d = seen
+	} else {
+		// one-time tasks to get this domain ready.
+		// if multiple validations on a single domain, we don't need to rebuild all this.
+
+		// fix NS records for this domain's DNS providers
 		nsList, err := nameservers.DetermineNameservers(d)
 		if err != nil {
 			return err
 		}
 		d.Nameservers = nsList
 		nameservers.AddNSRecords(d)
-		d.Metadata[metaKey] = "true"
+
+		// make sure we have the latest config before we change anything.
+		// alternately, we could avoid a lot of this trouble if we really really trusted no-purge in all cases
+		if err := c.ensureNoPendingCorrections(d); err != nil {
+			return err
+		}
+
+		// copy domain and work from copy from now on. That way original config can be used to "restore" when we are all done.
+		copy, err := d.Copy()
+		if err != nil {
+			return err
+		}
+		c.originalDomains = append(c.originalDomains, d)
+		c.domains[name] = copy
+		d = copy
 	}
-	// copy now so we can add txt record safely, and just run unmodified version later to cleanup
-	d, err := d.Copy()
-	if err != nil {
-		return err
-	}
-	if err := c.ensureNoPendingCorrections(d); err != nil {
-		return err
-	}
+
 	fqdn, val, _ := acme.DNS01Record(domain, keyAuth)
-	fmt.Println(fqdn, val)
 	txt := &models.RecordConfig{Type: "TXT"}
 	txt.SetTargetTXT(val)
 	txt.SetLabelFromFQDN(fqdn, d.Name)
 	d.Records = append(d.Records, txt)
-
 	return getAndRunCorrections(d)
 }
 
 func (c *certManager) ensureNoPendingCorrections(d *models.DomainConfig) error {
-	// only need to check a domain once per app run
-	if c.checkedDomains[d.Name] {
-		return nil
-	}
 	corrections, err := getCorrections(d)
 	if err != nil {
 		return err
@@ -285,6 +267,18 @@ func getAndRunCorrections(d *models.DomainConfig) error {
 }
 
 func (c *certManager) CleanUp(domain, token, keyAuth string) error {
-	d := c.cfg.DomainContainingFQDN(domain)
-	return getAndRunCorrections(d)
+	// do nothing for now. We will do a final clean up step at the very end.
+	return nil
+}
+
+func (c *certManager) finalCleanUp() error {
+	log.Println("Cleaning up all records we made")
+	var lastError error
+	for _, d := range c.originalDomains {
+		if err := getAndRunCorrections(d); err != nil {
+			log.Printf("ERROR cleaning up: %s", err)
+			lastError = err
+		}
+	}
+	return lastError
 }
