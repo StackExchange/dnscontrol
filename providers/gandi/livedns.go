@@ -3,11 +3,11 @@ package gandi
 import (
 	"encoding/json"
 	"fmt"
-	"log"
 	"strings"
 	"time"
 
 	"github.com/StackExchange/dnscontrol/models"
+	"github.com/StackExchange/dnscontrol/pkg/printer"
 	"github.com/StackExchange/dnscontrol/providers"
 	"github.com/StackExchange/dnscontrol/providers/diff"
 	"github.com/google/uuid"
@@ -17,9 +17,6 @@ import (
 	gandiliverecord "github.com/prasmussen/gandi-api/live_dns/record"
 	gandilivezone "github.com/prasmussen/gandi-api/live_dns/zone"
 )
-
-// Enable/disable debug output:
-const debug = false
 
 var liveFeatures = providers.DocumentationNotes{
 	providers.CanUseCAA:              providers.Can(),
@@ -131,9 +128,8 @@ func (c *liveClient) createZone(domainname string, records []*gandiliverecord.In
 		return err
 	}
 	infos.Name = fmt.Sprintf("zone created by dnscontrol for %s on %s", domainname, time.Now().Format(time.RFC3339))
-	if debug {
-		fmt.Printf("DEBUG: createZone SharingID=%v\n", infos.SharingID)
-	}
+	printer.Debugf("DEBUG: createZone SharingID=%v\n", infos.SharingID)
+
 	// duplicate zone Infos
 	status, err := c.zoneManager.Create(*infos)
 	if err != nil {
@@ -143,7 +139,7 @@ func (c *liveClient) createZone(domainname string, records []*gandiliverecord.In
 	if err != nil {
 		// gandi might take some time to make the new zone available
 		for i := 0; i < 10; i++ {
-			log.Printf("INFO: zone info not yet available. Delay and retry: %s", err.Error())
+			printer.Printf("zone info not yet available. Delay and retry: %s\n", err.Error())
 			time.Sleep(100 * time.Millisecond)
 			zoneInfos, err = c.zoneManager.InfoByUUID(*status.UUID)
 			if err == nil {
@@ -223,7 +219,7 @@ func (c *liveClient) recordsToInfo(records models.Records) (models.Records, []*g
 
 	for _, rec := range records {
 		if rec.TTL < 300 {
-			log.Printf("WARNING: Gandi does not support ttls < 300. %s will not be set to %d.", rec.GetLabelFQDN(), rec.TTL)
+			printer.Warnf("Gandi does not support ttls < 300. %s will not be set to %d.\n", rec.GetLabelFQDN(), rec.TTL)
 			rec.TTL = 300
 		}
 		if rec.TTL > 2592000 {
@@ -231,7 +227,7 @@ func (c *liveClient) recordsToInfo(records models.Records) (models.Records, []*g
 		}
 		if rec.Type == "NS" && rec.GetLabel() == "@" {
 			if !strings.HasSuffix(rec.GetTargetField(), ".gandi.net.") {
-				log.Printf("WARNING: Gandi does not support changing apex NS records. %s will not be added.", rec.GetTargetField())
+				printer.Warnf("Gandi does not support changing apex NS records. %s will not be added.\n", rec.GetTargetField())
 			}
 			continue
 		}
@@ -250,8 +246,8 @@ func (c *liveClient) recordsToInfo(records models.Records) (models.Records, []*g
 			recordSets[rec.GetLabel()][rec.Type] = r
 		} else {
 			if r.TTL != int64(rec.TTL) {
-				log.Printf(
-					"WARNING: Gandi liveDNS API does not support different TTL for the couple fqdn/type. Will use TTL of %d for %s %s",
+				printer.Warnf(
+					"Gandi liveDNS API does not support different TTL for the couple fqdn/type. Will use TTL of %d for %s %s\n",
 					r.TTL,
 					r.Type,
 					r.Name,

@@ -78,12 +78,12 @@ func (args *PushArgs) flags() []cli.Flag {
 
 // Preview implements the preview subcommand.
 func Preview(args PreviewArgs) error {
-	return run(args, false, false, printer.ConsolePrinter{})
+	return run(args, false, false, printer.DefaultPrinter)
 }
 
 // Push implements the push subcommand.
 func Push(args PushArgs) error {
-	return run(args.PreviewArgs, true, args.Interactive, printer.ConsolePrinter{})
+	return run(args.PreviewArgs, true, args.Interactive, printer.DefaultPrinter)
 }
 
 // run is the main routine common to preview/push
@@ -161,7 +161,7 @@ DomainLoop:
 		fmt.Fprintf(os.Stderr, "##teamcity[buildStatus status='SUCCESS' text='%d corrections']", totalCorrections)
 	}
 	notifier.Done()
-	out.Debugf("Done. %d corrections.\n", totalCorrections)
+	out.Printf("Done. %d corrections.\n", totalCorrections)
 	if anyErrors {
 		return errors.Errorf("Completed with errors")
 	}

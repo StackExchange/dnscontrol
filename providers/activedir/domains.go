@@ -3,12 +3,12 @@ package activedir
 import (
 	"encoding/json"
 	"fmt"
-	"log"
 	"os"
 	"strings"
 	"time"
 
 	"github.com/StackExchange/dnscontrol/models"
+	"github.com/StackExchange/dnscontrol/pkg/printer"
 	"github.com/StackExchange/dnscontrol/providers/diff"
 	"github.com/TomOnTime/utfutil"
 	"github.com/pkg/errors"
@@ -34,7 +34,7 @@ func (c *adProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Co
 
 	dc.Filter(func(r *models.RecordConfig) bool {
 		if r.Type != "A" && r.Type != "CNAME" {
-			log.Printf("WARNING: Active Directory only manages A and CNAME records. Won't consider %s %s", r.Type, r.GetLabelFQDN())
+			printer.Warnf("Active Directory only manages A and CNAME records. Won't consider %s %s\n", r.Type, r.GetLabelFQDN())
 			return false
 		}
 		return true
@@ -81,8 +81,8 @@ func (c *adProvider) readZoneDump(domainname string) ([]byte, error) {
 	// File not found is considered an error.
 	dat, err := utfutil.ReadFile(zoneDumpFilename(domainname), utfutil.WINDOWS)
 	if err != nil {
-		fmt.Println("Powershell to generate zone dump:")
-		fmt.Println(c.generatePowerShellZoneDump(domainname))
+		printer.Printf("Powershell to generate zone dump:\n")
+		printer.Printf("%v\n", c.generatePowerShellZoneDump(domainname))
 	}
 	return dat, err
 }
@@ -135,8 +135,6 @@ func (c *adProvider) powerShellRecord(command string) error {
 }
 
 func (c *adProvider) getExistingRecords(domainname string) ([]*models.RecordConfig, error) {
-	// log.Printf("getExistingRecords(%s)\n", domainname)
-
 	// Get the JSON either from adzonedump or by running a PowerShell script.
 	data, err := c.getRecords(domainname)
 	if err != nil {
@@ -174,7 +172,7 @@ func (r *RecordConfigJson) unpackRecord(origin string) *models.RecordConfig {
 	case "NS", "SOA":
 		return nil
 	default:
-		log.Printf("Warning: Record of type %s found in AD zone. Will be ignored.", rc.Type)
+		printer.Warnf("Record of type %s found in AD zone. Will be ignored.\n", rc.Type)
 		return nil
 	}
 	return &rc

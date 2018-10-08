@@ -9,6 +9,7 @@ import (
 	"time"
 
 	"github.com/StackExchange/dnscontrol/models"
+	"github.com/StackExchange/dnscontrol/pkg/printer"
 	"github.com/StackExchange/dnscontrol/pkg/transform"
 	"github.com/StackExchange/dnscontrol/providers"
 	"github.com/StackExchange/dnscontrol/providers/diff"
@@ -61,7 +62,7 @@ type CloudflareApi struct {
 }
 
 func labelMatches(label string, matches []string) bool {
-	// log.Printf("DEBUG: labelMatches(%#v, %#v)\n", label, matches)
+	printer.Debugf("DEBUG: labelMatches(%#v, %#v)\n", label, matches)
 	for _, tst := range matches {
 		if label == tst {
 			return true
@@ -106,7 +107,7 @@ func (c *CloudflareApi) GetDomainCorrections(dc *models.DomainConfig) ([]*models
 		rec := records[i]
 		// Delete ignore labels
 		if labelMatches(dnsutil.TrimDomainName(rec.Original.(*cfRecord).Name, dc.Name), c.ignoredLabels) {
-			fmt.Printf("ignored_label: %s\n", rec.Original.(*cfRecord).Name)
+			printer.Debugf("ignored_label: %s\n", rec.Original.(*cfRecord).Name)
 			records = append(records[:i], records[i+1:]...)
 		}
 	}
@@ -183,7 +184,7 @@ func checkNSModifications(dc *models.DomainConfig) {
 	for _, rec := range dc.Records {
 		if rec.Type == "NS" && rec.GetLabelFQDN() == dc.Name {
 			if !strings.HasSuffix(rec.GetTargetField(), ".ns.cloudflare.com.") {
-				log.Printf("Warning: cloudflare does not support modifying NS records on base domain. %s will not be added.", rec.GetTargetField())
+				printer.Warnf("cloudflare does not support modifying NS records on base domain. %s will not be added.\n", rec.GetTargetField())
 			}
 			continue
 		}
@@ -327,7 +328,7 @@ func newCloudflare(m map[string]string, metadata json.RawMessage) (providers.DNS
 			api.ignoredLabels = append(api.ignoredLabels, l)
 		}
 		if len(api.ignoredLabels) > 0 {
-			log.Println("Warning: Cloudflare 'ignored_labels' configuration is deprecated and might be removed. Please use the IGNORE domain directive to achieve the same effect.")
+			printer.Warnf("Cloudflare 'ignored_labels' configuration is deprecated and might be removed. Please use the IGNORE domain directive to achieve the same effect.\n")
 		}
 		// parse provider level metadata
 		if len(parsedMeta.IPConversions) > 0 {

@@ -2,10 +2,10 @@ package diff
 
 import (
 	"fmt"
-	"log"
 	"sort"
 
 	"github.com/StackExchange/dnscontrol/models"
+	"github.com/StackExchange/dnscontrol/pkg/printer"
 )
 
 // Correlation stores a difference between two domains.
@@ -73,7 +73,7 @@ func (d *differ) IncrementalDiff(existing []*models.RecordConfig) (unchanged, cr
 	desiredByNameAndType := map[models.RecordKey][]*models.RecordConfig{}
 	for _, e := range existing {
 		if d.matchIgnored(e.GetLabel()) {
-			log.Printf("Ignoring record %s %s due to IGNORE", e.GetLabel(), e.Type)
+			printer.Debugf("Ignoring record %s %s due to IGNORE\n", e.GetLabel(), e.Type)
 		} else {
 			k := e.Key()
 			existingByNameAndType[k] = append(existingByNameAndType[k], e)
@@ -91,7 +91,7 @@ func (d *differ) IncrementalDiff(existing []*models.RecordConfig) (unchanged, cr
 	if d.dc.KeepUnknown {
 		for k := range existingByNameAndType {
 			if _, ok := desiredByNameAndType[k]; !ok {
-				log.Printf("Ignoring record set %s %s due to NO_PURGE", k.Type, k.NameFQDN)
+				printer.Debugf("Ignoring record set %s %s due to NO_PURGE\n", k.Type, k.NameFQDN)
 				delete(existingByNameAndType, k)
 			}
 		}
