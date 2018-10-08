@@ -10,6 +10,7 @@ import (
 	"github.com/StackExchange/dnscontrol/models"
 	"github.com/StackExchange/dnscontrol/pkg/acme"
 	"github.com/StackExchange/dnscontrol/pkg/normalize"
+	"github.com/StackExchange/dnscontrol/pkg/printer"
 	"github.com/urfave/cli"
 )
 
@@ -88,7 +89,7 @@ func (args *GetCertsArgs) flags() []cli.Flag {
 	flags = append(flags, cli.BoolFlag{
 		Name:        "verbose",
 		Destination: &args.Verbose,
-		Usage:       "Enable detailed logging from acme library",
+		Usage:       "Enable detailed logging (deprecated: use the global -v flag)",
 	})
 	return flags
 }
@@ -150,7 +151,8 @@ func GetCerts(args GetCertsArgs) error {
 		return err
 	}
 	for _, cert := range certList {
-		_, err := client.IssueOrRenewCert(cert, args.RenewUnderDays, args.Verbose)
+		v := args.Verbose || printer.DefaultPrinter.Verbose
+		_, err := client.IssueOrRenewCert(cert, args.RenewUnderDays, v)
 		if err != nil {
 			return err
 		}

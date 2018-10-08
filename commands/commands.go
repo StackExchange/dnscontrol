@@ -8,6 +8,7 @@ import (
 	"strings"
 
 	"github.com/StackExchange/dnscontrol/models"
+	"github.com/StackExchange/dnscontrol/pkg/printer"
 	"github.com/pkg/errors"
 	"github.com/urfave/cli"
 )
@@ -44,6 +45,13 @@ func Run(v string) int {
 	app.Name = "dnscontrol"
 	app.HideVersion = true
 	app.Usage = "dnscontrol is a compiler and DSL for managing dns zones"
+	app.Flags = []cli.Flag{
+		cli.BoolFlag{
+			Name:        "v",
+			Usage:       "Enable detailed logging",
+			Destination: &printer.DefaultPrinter.Verbose,
+		},
+	}
 	sort.Sort(cli.CommandsByName(commands))
 	app.Commands = commands
 	app.EnableBashCompletion = true
