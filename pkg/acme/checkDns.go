@@ -4,25 +4,27 @@ import (
 	"log"
 	"time"
 
-	"github.com/xenolf/lego/acmev2"
+	"github.com/xenolf/lego/acme"
 )
 
-func init() {
+var acmePreCheck = acme.PreCheckDNS
+
+func (c *certManager) preCheckDNS(fqdn, value string) (bool, error) {
 	// default record verification in the client library makes sure the authoritative nameservers
 	// have the expected records.
 	// Sometimes the Let's Encrypt verification fails anyway because records have not propagated the provider's network fully.
 	// So we add an additional 20 second sleep just for safety.
-	origCheck := acme.PreCheckDNS
-	acme.PreCheckDNS = func(fqdn, value string) (bool, error) {
-		start := time.Now()
-		v, err := origCheck(fqdn, value)
-		if err != nil {
-			return v, err
-		}
-		log.Printf("DNS ok after %s. Waiting again for propagation", time.Now().Sub(start))
-		time.Sleep(20 * time.Second)
+	v, err := acmePreCheck(fqdn, value)
+	if err != nil {
 		return v, err
 	}
+	if !c.waitedOnce {
+		log.Printf("DNS ok. Waiting another 20s to ensure stability.")
+		time.Sleep(20 * time.Second)
+		c.waitedOnce = true
+	}
+	log.Printf("DNS records seem to exist. Proceeding to request validation")
+	return v, err
 }
 
 // Timeout increases the client-side polling check time to five minutes with one second waits in-between.

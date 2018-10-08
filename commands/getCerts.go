@@ -37,6 +37,8 @@ type GetCertsArgs struct {
 	Email          string
 	AgreeTOS       bool
 	Verbose        bool
+	Vault          bool
+	VaultPath      string
 
 	IgnoredProviders string
 }
@@ -79,6 +81,17 @@ func (args *GetCertsArgs) flags() []cli.Flag {
 		Name:        "agreeTOS",
 		Destination: &args.AgreeTOS,
 		Usage:       `Must provide this to agree to Let's Encrypt terms of service`,
+	})
+	flags = append(flags, cli.BoolFlag{
+		Name:        "vault",
+		Destination: &args.Vault,
+		Usage:       `Store certificates as secrets in hashicorp vault instead of on disk.`,
+	})
+	flags = append(flags, cli.StringFlag{
+		Name:        "vaultPath",
+		Destination: &args.VaultPath,
+		Value:       "/secret/certs",
+		Usage:       `Path in vault to store certificates`,
 	})
 	flags = append(flags, cli.StringFlag{
 		Name:        "skip",
@@ -140,13 +153,21 @@ func GetCerts(args GetCertsArgs) error {
 	if err = validateCertificateList(certList, cfg); err != nil {
 		return err
 	}
+
 	acmeServer := args.ACMEServer
 	if acmeServer == "live" {
 		acmeServer = acme.LetsEncryptLive
 	} else if acmeServer == "staging" {
 		acmeServer = acme.LetsEncryptStage
 	}
-	client, err := acme.New(cfg, args.CertDirectory, args.Email, acmeServer)
+
+	var client acme.Client
+
+	if args.Vault {
+		client, err = acme.NewVault(cfg, args.VaultPath, args.Email, acmeServer)
+	} else {
+		client, err = acme.New(cfg, args.CertDirectory, args.Email, acmeServer)
+	}
 	if err != nil {
 		return err
 	}
