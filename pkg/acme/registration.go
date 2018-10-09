@@ -9,26 +9,21 @@ import (
 	"github.com/xenolf/lego/acme"
 )
 
-func (c *certManager) createAcmeClient() (*acme.Client, error) {
+func (c *certManager) getOrCreateAccount() (*Account, error) {
 	account, err := c.storage.GetAccount(c.acmeHost)
 	if err != nil {
 		return nil, err
 	}
-	if account == nil {
-		// register new
-		account, err = c.createAccount(c.email)
-		if err != nil {
-			return nil, err
-		}
-		if err := c.storage.StoreAccount(c.acmeHost, account); err != nil {
-			return nil, err
-		}
+	if account != nil {
+		return account, nil
 	}
-	client, err := acme.NewClient(c.acmeDirectory, account, acme.RSA2048) // TODO: possibly make configurable on a cert-by cert basis
+	// register new
+	account, err = c.createAccount(c.email)
 	if err != nil {
 		return nil, err
 	}
-	return client, nil
+	err = c.storage.StoreAccount(c.acmeHost, account)
+	return account, err
 }
 
 func (c *certManager) createAccount(email string) (*Account, error) {
@@ -40,11 +35,11 @@ func (c *certManager) createAccount(email string) (*Account, error) {
 		key:   privateKey,
 		Email: c.email,
 	}
-	c.client, err = acme.NewClient(c.acmeDirectory, acct, acme.EC384)
+	client, err := acme.NewClient(c.acmeDirectory, acct, acme.EC384)
 	if err != nil {
 		return nil, err
 	}
-	reg, err := c.client.Register(true)
+	reg, err := client.Register(true)
 	if err != nil {
 		return nil, err
 	}

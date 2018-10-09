@@ -21,6 +21,7 @@ import (
 type CertConfig struct {
 	CertName string   `json:"cert_name"`
 	Names    []string `json:"names"`
+	UseECC   bool     `json:"use_ecc"`
 }
 
 type Client interface {
@@ -36,8 +37,8 @@ type certManager struct {
 	cfg             *models.DNSConfig
 	domains         map[string]*models.DomainConfig
 	originalDomains []*models.DomainConfig
-	client          *acme.Client
 
+	account    *Account
 	waitedOnce bool
 }
 
@@ -64,13 +65,11 @@ func commonNew(cfg *models.DNSConfig, storage Storage, email string, server stri
 		domains:       map[string]*models.DomainConfig{},
 	}
 
-	client, err := c.createAcmeClient()
+	acct, err := c.getOrCreateAccount()
 	if err != nil {
 		return nil, err
 	}
-	client.ExcludeChallenges([]acme.Challenge{acme.HTTP01, acme.TLSALPN01})
-	client.SetChallengeProvider(acme.DNS01, c)
-	c.client = client
+	c.account = acct
 	return c, nil
 }
 
@@ -97,8 +96,10 @@ func (c *certManager) IssueOrRenewCert(cfg *CertConfig, renewUnder int, verbose 
 		return false, err
 	}
 
+	var client *acme.Client
+
 	var action = func() (*acme.CertificateResource, error) {
-		return c.client.ObtainCertificate(cfg.Names, true, nil, true)
+		return client.ObtainCertificate(cfg.Names, true, nil, true)
 	}
 
 	if existing == nil {
@@ -120,10 +121,21 @@ func (c *certManager) IssueOrRenewCert(cfg *CertConfig, renewUnder int, verbose 
 		} else {
 			log.Println("Renewing cert")
 			action = func() (*acme.CertificateResource, error) {
-				return c.client.RenewCertificate(*existing, true, true)
+				return client.RenewCertificate(*existing, true, true)
 			}
 		}
 	}
+
+	kt := acme.RSA2048
+	if cfg.UseECC {
+		kt = acme.EC256
+	}
+	client, err = acme.NewClient(c.acmeDirectory, c.account, kt)
+	if err != nil {
+		return false, err
+	}
+	client.ExcludeChallenges([]acme.Challenge{acme.HTTP01, acme.TLSALPN01})
+	client.SetChallengeProvider(acme.DNS01, c)
 
 	acme.PreCheckDNS = c.preCheckDNS
 	defer func() { acme.PreCheckDNS = acmePreCheck }()
