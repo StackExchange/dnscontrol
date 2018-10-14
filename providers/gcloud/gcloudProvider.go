@@ -22,6 +22,7 @@ var features = providers.DocumentationNotes{
 	providers.CanUsePTR:              providers.Can(),
 	providers.CanUseSRV:              providers.Can(),
 	providers.CanUseCAA:              providers.Can(),
+	providers.CanUseTXTMulti:         providers.Can(),
 }
 
 func init() {
