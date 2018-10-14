@@ -17,10 +17,10 @@
     "domain": "$DO_DOMAIN"
   },
   "DNSIMPLE": {
-    "COMMENT": "16/17: no ns records managable. Not even for subdomains.",
+    "COMMENT": "20-22: no ns records managable. Not even for subdomains.",
     "baseurl": "https://api.sandbox.dnsimple.com",
     "domain": "$DNSIMPLE_DOMAIN",
-    "knownFailures": "18,19,20",
+    "knownFailures": "20,21,22",
     "token": "$DNSIMPLE_TOKEN"
   },
   "GANDI": {
