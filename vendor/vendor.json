@@ -218,10 +218,10 @@
 			"revisionTime": "2017-07-06T20:03:01Z"
 		},
 		{
-			"checksumSHA1": "3IwwCJMg+LDIP3062EXHQR4guAI=",
+			"checksumSHA1": "uFkT28ZLvtGetOZ2BmuSyh0eaH0=",
 			"path": "github.com/dnsimple/dnsimple-go/dnsimple",
-			"revision": "84b1b693f39ee2d2749fd651148024c014679dbd",
-			"revisionTime": "2017-08-30T08:48:20Z"
+			"revision": "234ec949d37c6b7f18d669d45191d30db2c49fb3",
+			"revisionTime": "2018-10-01T13:03:57Z"
 		},
 		{
 			"checksumSHA1": "oSwR5RN8idtBQrpnQSy13t8ruoU=",
