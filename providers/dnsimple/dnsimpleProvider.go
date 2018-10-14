@@ -1,6 +1,7 @@
 package dnsimple
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"sort"
@@ -11,6 +12,7 @@ import (
 	"github.com/StackExchange/dnscontrol/providers"
 	"github.com/StackExchange/dnscontrol/providers/diff"
 	"github.com/pkg/errors"
+	"golang.org/x/oauth2"
 
 	dnsimpleapi "github.com/dnsimple/dnsimple-go/dnsimple"
 )
@@ -171,7 +173,12 @@ func (c *DnsimpleApi) GetRegistrarCorrections(dc *models.DomainConfig) ([]*model
 // DNSimple calls
 
 func (c *DnsimpleApi) getClient() *dnsimpleapi.Client {
-	client := dnsimpleapi.NewClient(dnsimpleapi.NewOauthTokenCredentials(c.AccountToken))
+	ts := oauth2.StaticTokenSource(&oauth2.Token{AccessToken: c.AccountToken})
+	tc := oauth2.NewClient(context.Background(), ts)
+
+	// new client
+	client := dnsimpleapi.NewClient(tc)
+
 	if c.BaseURL != "" {
 		client.BaseURL = c.BaseURL
 	}
@@ -188,7 +195,7 @@ func (c *DnsimpleApi) getAccountID() (string, error) {
 		if whoamiResponse.Data.User != nil && whoamiResponse.Data.Account == nil {
 			return "", errors.Errorf("DNSimple token appears to be a user token. Please supply an account token")
 		}
-		c.accountID = strconv.Itoa(whoamiResponse.Data.Account.ID)
+		c.accountID = strconv.FormatInt(whoamiResponse.Data.Account.ID, 10)
 	}
 	return c.accountID, nil
 }
@@ -295,7 +302,7 @@ func (c *DnsimpleApi) createRecordFunc(rc *models.RecordConfig, domainName strin
 }
 
 // Returns a function that can be invoked to delete a record in a zone.
-func (c *DnsimpleApi) deleteRecordFunc(recordID int, domainName string) func() error {
+func (c *DnsimpleApi) deleteRecordFunc(recordID int64, domainName string) func() error {
 	return func() error {
 		client := c.getClient()
 
