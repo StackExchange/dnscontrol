@@ -384,7 +384,7 @@ func removeOtherNS(dc *models.DomainConfig) {
 }
 
 // Return the correct combined content for all special record types, Target for everything else
-// We used to use RecordConfig.MergeToContent() but that's not provided anymore
+// Using RecordConfig.GetTargetCombined returns priority in the string, which we do not allow
 func getTargetRecordContent(rc *models.RecordConfig) string {
 	switch rtype := rc.Type; rtype {
 	case "CAA":
