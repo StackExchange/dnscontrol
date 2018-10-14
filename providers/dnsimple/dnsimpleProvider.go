@@ -90,6 +90,10 @@ func (c *DnsimpleApi) GetDomainCorrections(dc *models.DomainConfig) ([]*models.C
 			if err := rec.SetTargetMX(uint16(r.Priority), r.Content); err != nil {
 				panic(errors.Wrap(err, "unparsable record received from dnsimple"))
 			}
+		case "SRV":
+			if err := rec.SetTargetSRVPriorityString(uint16(r.Priority), r.Content); err != nil {
+				panic(errors.Wrap(err, "unparsable record received from dnsimple"))
+			}
 		default:
 			if err := rec.PopulateFromString(r.Type, r.Content, dc.Name); err != nil {
 				panic(errors.Wrap(err, "unparsable record received from dnsimple"))
@@ -98,20 +102,14 @@ func (c *DnsimpleApi) GetDomainCorrections(dc *models.DomainConfig) ([]*models.C
 		actual = append(actual, rec)
 	}
 	removeOtherNS(dc)
-	// dc.Filter(func(r *models.RecordConfig) bool {
-	// 	if r.Type == "CAA" || r.Type == "SRV" {
-	// 		r.MergeToTarget()
-	// 	}
-	// 	return true
-	// })
 
 	// Normalize
 	models.PostProcessRecords(actual)
 
 	differ := diff.New(dc)
-	_, create, delete, modify := differ.IncrementalDiff(actual)
+	_, create, del, modify := differ.IncrementalDiff(actual)
 
-	for _, del := range delete {
+	for _, del := range del {
 		rec := del.Existing.Original.(dnsimpleapi.ZoneRecord)
 		corrections = append(corrections, &models.Correction{
 			Msg: del.String(),
@@ -129,10 +127,10 @@ func (c *DnsimpleApi) GetDomainCorrections(dc *models.DomainConfig) ([]*models.C
 
 	for _, mod := range modify {
 		old := mod.Existing.Original.(dnsimpleapi.ZoneRecord)
-		new := mod.Desired
+		rec := mod.Desired
 		corrections = append(corrections, &models.Correction{
 			Msg: mod.String(),
-			F:   c.updateRecordFunc(&old, new, dc.Name),
+			F:   c.updateRecordFunc(&old, rec, dc.Name),
 		})
 	}
 
@@ -283,9 +281,9 @@ func (c *DnsimpleApi) createRecordFunc(rc *models.RecordConfig, domainName strin
 		record := dnsimpleapi.ZoneRecord{
 			Name:     rc.GetLabel(),
 			Type:     rc.Type,
-			Content:  rc.GetTargetCombined(),
+			Content:  getTargetRecordContent(rc),
 			TTL:      int(rc.TTL),
-			Priority: int(rc.MxPreference),
+			Priority: getTargetRecordPriority(rc),
 		}
 		_, err = client.Zones.CreateRecord(accountID, domainName, record)
 		if err != nil {
@@ -329,9 +327,9 @@ func (c *DnsimpleApi) updateRecordFunc(old *dnsimpleapi.ZoneRecord, rc *models.R
 		record := dnsimpleapi.ZoneRecord{
 			Name:     rc.GetLabel(),
 			Type:     rc.Type,
-			Content:  rc.GetTargetCombined(),
+			Content:  getTargetRecordContent(rc),
 			TTL:      int(rc.TTL),
-			Priority: int(rc.MxPreference),
+			Priority: getTargetRecordPriority(rc),
 		}
 
 		_, err = client.Zones.UpdateRecord(accountID, domainName, old.ID, record)
@@ -383,4 +381,29 @@ func removeOtherNS(dc *models.DomainConfig) {
 		newList = append(newList, rec)
 	}
 	dc.Records = newList
+}
+
+// Return the correct combined content for all special record types, Target for everything else
+// We used to use RecordConfig.MergeToContent() but that's not provided anymore
+func getTargetRecordContent(rc *models.RecordConfig) string {
+	switch rtype := rc.Type; rtype {
+	case "CAA":
+		return rc.GetTargetCombined()
+	case "SRV":
+		return fmt.Sprintf("%d %d %s", rc.SrvWeight, rc.SrvPort, rc.GetTargetField())
+	default:
+		return rc.GetTargetField()
+	}
+}
+
+// Return the correct priority for the record type, 0 for records without priority
+func getTargetRecordPriority(rc *models.RecordConfig) int {
+	switch rtype := rc.Type; rtype {
+	case "MX":
+		return int(rc.MxPreference)
+	case "SRV":
+		return int(rc.SrvPriority)
+	default:
+		return 0
+	}
 }
