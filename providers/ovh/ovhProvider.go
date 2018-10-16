@@ -39,7 +39,11 @@ func newOVH(m map[string]string, metadata json.RawMessage) (*ovhProvider, error)
 		return nil, err
 	}
 
-	return &ovhProvider{client: c}, nil
+	ovh := &ovhProvider{client: c}
+	if err := ovh.fetchZones(); err != nil {
+		return nil, err
+	}
+	return ovh, nil
 }
 
 func newDsp(conf map[string]string, metadata json.RawMessage) (providers.DNSServiceProvider, error) {
@@ -56,9 +60,6 @@ func init() {
 }
 
 func (c *ovhProvider) GetNameservers(domain string) ([]*models.Nameserver, error) {
-	if err := c.fetchZones(); err != nil {
-		return nil, err
-	}
 	_, ok := c.zones[domain]
 	if !ok {
 		return nil, errors.Errorf("%s not listed in zones for ovh account", domain)
