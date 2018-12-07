@@ -423,7 +423,6 @@ func makeTests(t *testing.T) []*TestCase {
 			tc("Change Priority", srv("_sip._tcp", 52, 6, 7, "foo.com."), srv("_sip._tcp", 15, 65, 75, "foo4.com.")),
 			tc("Change Weight", srv("_sip._tcp", 52, 62, 7, "foo.com."), srv("_sip._tcp", 15, 65, 75, "foo4.com.")),
 			tc("Change Port", srv("_sip._tcp", 52, 62, 72, "foo.com."), srv("_sip._tcp", 15, 65, 75, "foo4.com.")),
-			tc("Short Target", srv("_sip._tcp", 52, 62, 72, "short"), srv("_sip._tcp", 15, 65, 75, "foo4.com.")),
 		)
 	}
 
