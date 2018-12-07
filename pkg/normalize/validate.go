@@ -286,6 +286,10 @@ func NormalizeAndValidateConfig(config *models.DNSConfig) (errs []error) {
 
 			// Canonicalize Targets.
 			if rec.Type == "CNAME" || rec.Type == "MX" || rec.Type == "NS" || rec.Type == "SRV" {
+				// #rtype_variations
+				// These record types have a target that is a hostname.
+				// We normalize them to a FQDN so there is less variation to handle.  If a
+				// provider API requires a shortname, the provider must do the shortening.
 				rec.SetTarget(dnsutil.AddOrigin(rec.GetTargetField(), domain.Name+"."))
 			} else if rec.Type == "A" || rec.Type == "AAAA" {
 				rec.SetTarget(net.ParseIP(rec.GetTargetField()).String())

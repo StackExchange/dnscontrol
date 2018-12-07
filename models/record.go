@@ -292,10 +292,12 @@ func downcase(recs []*RecordConfig) {
 	for _, r := range recs {
 		r.Name = strings.ToLower(r.Name)
 		r.NameFQDN = strings.ToLower(r.NameFQDN)
-		switch r.Type {
+		switch r.Type { // #rtype_variations
 		case "ANAME", "CNAME", "MX", "NS", "PTR", "SRV":
+			// These record types have a target that is case insensitive, so we downcase it.
 			r.Target = strings.ToLower(r.Target)
 		case "A", "AAAA", "ALIAS", "CAA", "IMPORT_TRANSFORM", "TLSA", "TXT", "SOA", "CF_REDIRECT", "CF_TEMP_REDIRECT":
+			// These record types have a target that is case sensitive, or is an IP address. We leave them alone.
 			// Do nothing.
 		default:
 			// TODO: we'd like to panic here, but custom record types complicate things.
