@@ -22,8 +22,8 @@ func (rc *RecordConfig) SetTargetSRV(priority, weight, port uint16, target strin
 	return nil
 }
 
-// setTargetIntAndStrings is like SetTargetSRV but accepts priority as an int, the other parameters as strings.
-func (rc *RecordConfig) setTargetIntAndStrings(priority uint16, weight, port, target string) (err error) {
+// setTargetSRVIntAndStrings is like SetTargetSRV but accepts priority as an int, the other parameters as strings.
+func (rc *RecordConfig) setTargetSRVIntAndStrings(priority uint16, weight, port, target string) (err error) {
 	var i64weight, i64port uint64
 	if i64weight, err = strconv.ParseUint(weight, 10, 16); err == nil {
 		if i64port, err = strconv.ParseUint(port, 10, 16); err == nil {
@@ -37,7 +37,7 @@ func (rc *RecordConfig) setTargetIntAndStrings(priority uint16, weight, port, ta
 func (rc *RecordConfig) SetTargetSRVStrings(priority, weight, port, target string) (err error) {
 	var i64priority uint64
 	if i64priority, err = strconv.ParseUint(priority, 10, 16); err == nil {
-		return rc.setTargetIntAndStrings(uint16(i64priority), weight, port, target)
+		return rc.setTargetSRVIntAndStrings(uint16(i64priority), weight, port, target)
 	}
 	return errors.Wrap(err, "SRV value too big for uint16")
 }
@@ -51,7 +51,7 @@ func (rc *RecordConfig) SetTargetSRVPriorityString(priority uint16, s string) er
 	if len(part) != 3 {
 		return errors.Errorf("SRV value does not contain 3 fields: (%#v)", s)
 	}
-	return rc.setTargetIntAndStrings(priority, part[0], part[1], part[2])
+	return rc.setTargetSRVIntAndStrings(priority, part[0], part[1], part[2])
 }
 
 // SetTargetSRVString is like SetTargetSRV but accepts one big string to be parsed.
