@@ -212,6 +212,11 @@ func (c *Bind) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Correcti
 	// Read foundRecords:
 	foundRecords := make([]*models.RecordConfig, 0)
 	var oldSerial, newSerial uint32
+
+	if _, err := os.Stat(c.directory); os.IsNotExist(err) {
+		fmt.Printf("\nWARNING: BIND directory %q does not exist!\n", c.directory)
+	}
+
 	zonefile := filepath.Join(c.directory, strings.Replace(strings.ToLower(dc.Name), "/", "_", -1)+".zone")
 	foundFH, err := os.Open(zonefile)
 	zoneFileFound := err == nil
