@@ -6,6 +6,7 @@ package config
 
 import (
 	"encoding/json"
+	"fmt"
 	"os"
 	"strings"
 
@@ -21,6 +22,7 @@ func LoadProviderConfigs(fname string) (map[string]map[string]string, error) {
 	if err != nil {
 		// no creds file is ok. Bind requires nothing for example. Individual providers will error if things not found.
 		if os.IsNotExist(err) {
+			fmt.Printf("INFO: Config file %q does not exist. Skipping.\n", fname)
 			return results, nil
 		}
 		return nil, errors.Errorf("While reading provider credentials file %v: %v", fname, err)
