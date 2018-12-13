@@ -1,45 +1,45 @@
 {
-  "registrars":[],
-  "dns_providers":[],
-  "domains":[
+  "dns_providers": [],
+  "domains": [
     {
-      "name":"foo.com",
-      "registrar":"none",
-      "dnsProviders":{},
-      "records":[
+      "dnsProviders": {},
+      "name": "foo.com",
+      "records": [
         {
-          "type":"CAA",
-          "name":"@",
-          "target":"letsencrypt.org",
-          "caatag":"issue"
+          "caatag": "issue",
+          "name": "@",
+          "target": "letsencrypt.org",
+          "type": "CAA"
         },
         {
-          "type":"CAA",
-          "name":"@",
-          "target":";",
-          "caatag":"issuewild"
+          "caatag": "issuewild",
+          "name": "@",
+          "target": ";",
+          "type": "CAA"
         },
         {
-          "type":"CAA",
-          "name":"@",
-          "target":"mailto:test@example.com",
-          "caatag":"iodef",
-          "caaflag":128
+          "caaflag": 128,
+          "caatag": "iodef",
+          "name": "@",
+          "target": "mailto:test@example.com",
+          "type": "CAA"
         },
         {
-          "type":"CAA",
-          "name":"@",
-          "target":"http://example.com",
-          "caatag":"iodef"
+          "caatag": "iodef",
+          "name": "@",
+          "target": "http://example.com",
+          "type": "CAA"
         },
         {
-          "type":"CAA",
-          "name":"@",
-          "target":"https://example.com",
-          "caatag":"iodef",
-          "caaflag":128
+          "caaflag": 128,
+          "caatag": "iodef",
+          "name": "@",
+          "target": "https://example.com",
+          "type": "CAA"
         }
-      ]
+      ],
+      "registrar": "none"
     }
-  ]
+  ],
+  "registrars": []
 }
