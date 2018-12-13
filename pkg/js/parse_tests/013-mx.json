@@ -1,19 +1,19 @@
 {
-    "registrars": [],
-    "dns_providers": [],
-    "domains": [
+  "dns_providers": [],
+  "domains": [
+    {
+      "dnsProviders": {},
+      "name": "foo.com",
+      "records": [
         {
-            "name": "foo.com",
-            "registrar": "none",
-            "dnsProviders": {},
-            "records": [
-                {
-                    "type": "MX",
-                    "name": "@",
-                    "target": "foo.com.",
-                    "mxpreference": 15
-                }
-            ]
+          "mxpreference": 15,
+          "name": "@",
+          "target": "foo.com.",
+          "type": "MX"
         }
-    ]
+      ],
+      "registrar": "none"
+    }
+  ],
+  "registrars": []
 }
