@@ -46,7 +46,6 @@ func TestParsedFiles(t *testing.T) {
 			if err != nil {
 				t.Fatal(err)
 			}
-			//rawaj := actualJSON
 			actualJSON, err = m.Bytes("json", actualJSON)
 			if err != nil {
 				t.Fatal(err)
