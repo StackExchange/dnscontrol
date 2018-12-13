@@ -8,7 +8,6 @@ import (
 	"testing"
 	"unicode"
 
-	"github.com/andreyvit/diff"
 	"github.com/tdewolff/minify"
 	minjson "github.com/tdewolff/minify/json"
 )
@@ -68,8 +67,6 @@ func TestParsedFiles(t *testing.T) {
 				t.Errorf("Expected and actual json don't match: %s", f.Name())
 				t.Logf("Expected(%v): %s", len(es), es)
 				t.Logf("Actual  (%v): %s", len(as), as)
-				t.Logf("DIFF:\n%v\n", diff.LineDiff(es, as))
-				//t.Log("ActualR :", string(rawaj))
 			}
 		})
 	}
