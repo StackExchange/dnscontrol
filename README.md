@@ -106,6 +106,10 @@ dnscontrol should be installed in $GOPATH/bin
 
 Get prebuilt binaries from [github releases](https://github.com/StackExchange/dnscontrol/releases/latest)
 
+Alternatively, on Mac you can install it using homebrew:
+
+`brew install dnscontrol`
+
 ## Via [docker](https://hub.docker.com/r/stackexchange/dnscontrol/)
 
 ```
