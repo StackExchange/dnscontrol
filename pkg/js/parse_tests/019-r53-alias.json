@@ -1,111 +1,111 @@
 {
-  "registrars": [],
   "dns_providers": [],
   "domains": [
     {
-      "name": "foo.com",
-      "registrar": "none",
       "dnsProviders": {},
+      "name": "foo.com",
       "records": [
         {
-          "type": "R53_ALIAS",
           "name": "mxtest",
-          "target": "foo.com.",
           "r53_alias": {
             "type": "MX"
-          }
+          },
+          "target": "foo.com.",
+          "type": "R53_ALIAS"
         },
         {
-          "type": "R53_ALIAS",
           "name": "atest",
-          "target": "foo.com.",
           "r53_alias": {
             "type": "A"
-          }
+          },
+          "target": "foo.com.",
+          "type": "R53_ALIAS"
         },
         {
-          "type": "R53_ALIAS",
           "name": "atest",
-          "target": "foo.com.",
           "r53_alias": {
             "type": "A",
             "zone_id": "Z2FTEDLFRTF"
-          }
+          },
+          "target": "foo.com.",
+          "type": "R53_ALIAS"
         },
         {
-          "type": "R53_ALIAS",
           "name": "aaaatest",
-          "target": "foo.com.",
           "r53_alias": {
             "type": "AAAA"
-          }
+          },
+          "target": "foo.com.",
+          "type": "R53_ALIAS"
         },
         {
-          "type": "R53_ALIAS",
           "name": "aaaatest",
-          "target": "foo.com.",
           "r53_alias": {
             "type": "AAAA",
             "zone_id": "ERERTFGFGF"
-          }
+          },
+          "target": "foo.com.",
+          "type": "R53_ALIAS"
         },
         {
-          "type": "R53_ALIAS",
           "name": "cnametest",
-          "target": "foo.com.",
           "r53_alias": {
             "type": "CNAME"
-          }
+          },
+          "target": "foo.com.",
+          "type": "R53_ALIAS"
         },
         {
-          "type": "R53_ALIAS",
           "name": "ptrtest",
-          "target": "foo.com.",
           "r53_alias": {
             "type": "PTR"
-          }
+          },
+          "target": "foo.com.",
+          "type": "R53_ALIAS"
         },
         {
-          "type": "R53_ALIAS",
           "name": "txttest",
-          "target": "foo.com.",
           "r53_alias": {
             "type": "TXT"
-          }
+          },
+          "target": "foo.com.",
+          "type": "R53_ALIAS"
         },
         {
-          "type": "R53_ALIAS",
           "name": "srvtest",
-          "target": "foo.com.",
           "r53_alias": {
             "type": "SRV"
-          }
+          },
+          "target": "foo.com.",
+          "type": "R53_ALIAS"
         },
         {
-          "type": "R53_ALIAS",
           "name": "spftest",
-          "target": "foo.com.",
           "r53_alias": {
             "type": "SPF"
-          }
+          },
+          "target": "foo.com.",
+          "type": "R53_ALIAS"
         },
         {
-          "type": "R53_ALIAS",
           "name": "caatest",
-          "target": "foo.com.",
           "r53_alias": {
             "type": "CAA"
-          }
+          },
+          "target": "foo.com.",
+          "type": "R53_ALIAS"
         },
         {
-          "type": "R53_ALIAS",
           "name": "naptrtest",
-          "target": "foo.com.",
           "r53_alias": {
             "type": "NAPTR"
-          }
+          },
+          "target": "foo.com.",
+          "type": "R53_ALIAS"
         }
-      ]
+      ],
+      "registrar": "none"
     }
-  ]
+  ],
+  "registrars": []
 }
