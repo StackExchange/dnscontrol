@@ -7,16 +7,16 @@
 DNSControl is a system for maintaining DNS zones.  It has two parts:
 a domain specific language (DSL) for describing DNS zones plus
 software that processes the DSL and pushes the resulting zones to
-DNS providers such as Route53, CloudFlare, and Gandi.  It can talk
-to Microsoft ActiveDirectory and it generates the most beautiful
+DNS providers such as Route53, Cloudflare, and Gandi.  It can talk
+to Microsoft Active Directory and it generates the most beautiful
 BIND zone files ever.  It runs anywhere Go runs (Linux, macOS,
 Windows). The provider model is extensible, so more providers can be added.
 
 Currently supported DNS providers:
  - Active Directory
  - BIND
- - CloudFlare
- - Digitalocean
+ - Cloudflare
+ - DigitalOcean
  - DNSimple
  - Gandi
  - Google
@@ -36,8 +36,8 @@ and subdomains across multiple registrars and DNS providers.
 You can think of it as a DNS compiler.  The configuration files are
 written in a DSL that looks a lot like JavaScript.  It is compiled
 to an intermediate representation (IR).  Compiler back-ends use the
-IR to update your DNS zones on services such as Route53, CloudFlare,
-and Gandi, or systems such as BIND and ActiveDirectory.
+IR to update your DNS zones on services such as Route53, Cloudflare,
+and Gandi, or systems such as BIND and Active Directory.
 
 # An Example
 
@@ -84,7 +84,7 @@ the variable name throughout the file. Need to change the IP address
 globally? Just change the variable and "recompile."
 * Macros!  Define your SPF records, MX records, or other repeated
 data once and re-use them for all domains.
-* Control CloudFlare from a single location.  Enable/disable
+* Control Cloudflare from a single location.  Enable/disable
 Cloudflare proxying (the "orange cloud" button) directly from your
 DNSControl files.
 * Keep similar domains in sync with transforms and other features.

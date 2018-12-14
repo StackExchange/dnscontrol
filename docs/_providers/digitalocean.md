@@ -8,7 +8,7 @@ jsId: DIGITALOCEAN
 
 ## Configuration
 In your credentials file, you must provide your
-[Digitalocean OAuth Token](https://cloud.digitalocean.com/settings/applications)
+[DigitalOcean OAuth Token](https://cloud.digitalocean.com/settings/applications)
 
 {% highlight json %}
 {

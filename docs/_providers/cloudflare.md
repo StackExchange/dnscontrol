@@ -93,7 +93,7 @@ D('example2.tld', REG_NONE, DnsProvider(CLOUDFLARE),
 DNSControl depends on a Cloudflare Global API Key that's available under "My Settings".
 
 ## New domains
-If a domain does not exist in your CloudFlare account, DNSControl
+If a domain does not exist in your Cloudflare account, DNSControl
 will *not* automatically add it. You'll need to do that via the
 control panel manually or via the `dnscontrol create-domains` command.
 
