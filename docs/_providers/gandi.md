@@ -47,3 +47,12 @@ D("example.tld", REG_GANDI, DnsProvider(GANDI),
 
 ## New domains
 If a domain does not exist in your Gandi account, DNSControl will *not* automatically add it with the `create-domains` command. You'll need to do that via the control panel manually.
+
+
+## Common errors
+
+This is the error we see when someone uses GANDI instead of GANDI-LIVEDNS.
+
+```
+Error getting corrections: error: "Error on object : OBJECT_ZONE (CAUSE_NOTFOUND) [no such zone (id: 0)]" code: 581042
+```
