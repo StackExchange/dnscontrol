@@ -24,7 +24,7 @@ func main() {
 // Update the number here manually each release, so at least we have a range for go-get people.
 var (
 	SHA       = ""
-	Version   = "0.2.7"
+	Version   = "0.2.8"
 	BuildTime = ""
 )
 
