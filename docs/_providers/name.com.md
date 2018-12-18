@@ -71,7 +71,8 @@ Means you are setting `export NAMEDOTCOM_URL='api.name.com/api'` and need to rem
 
 When running integration tests, this error:
 
-export NAMEDOTCOM_URL='https://api.name.com/api'
 ```
 integration_test.go:81: Failed getting nameservers Get https://https//api.name.com/api/v4/domains/stackosphere.com?: dial tcp: lookup https: no such host
 ```
+
+It means you included the `https://` in the `NAMEDOTCOM_URL` variable. You meant to do something like `export NAMEDOTCOM_URL='api.name.com' instead.
