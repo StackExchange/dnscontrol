@@ -23,6 +23,9 @@ There is another key name `apiurl` but it is optional and defaults to the correc
 
     "apiurl": "https://api.dev.name.com",
 
+export NAMEDOTCOM_URL='api.name.com'
+
+
 ## Metadata
 This provider does not recognize any special metadata fields unique to name.com.
 
@@ -54,3 +57,21 @@ D("example.tld", REG_NAMECOM, DnsProvider(R53),
 
 ## Activation
 In order to activate API functionality on your Name.com account, you must apply to the API program. The application form is [located here](https://www.name.com/reseller/apply). It usually takes a few days to get a response. After you are accepted, you should receive your API token via email.
+
+## Tips:
+
+When running integration tests, this error:
+
+```
+integration_test.go:140: api returned unexpected response: invalid character '<' looking for beginning of value
+```
+
+Means you are setting `export NAMEDOTCOM_URL='api.name.com/api'` and need to remove the `/api`.
+
+
+When running integration tests, this error:
+
+export NAMEDOTCOM_URL='https://api.name.com/api'
+```
+integration_test.go:81: Failed getting nameservers Get https://https//api.name.com/api/v4/domains/stackosphere.com?: dial tcp: lookup https: no such host
+```
