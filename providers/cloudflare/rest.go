@@ -99,10 +99,21 @@ func (c *CloudflareApi) deleteRec(rec *cfRecord, domainID string) *models.Correc
 func (c *CloudflareApi) createZone(domainName string) (string, error) {
 	type createZone struct {
 		Name string `json:"name"`
+
+		Account struct {
+			ID   string `json:"id"`
+			Name string `json:"name"`
+		} `json:"account"`
 	}
 	var id string
 	cz := &createZone{
 		Name: domainName}
+
+	if c.AccountID != "" || c.AccountName != "" {
+		cz.Account.ID = c.AccountID
+		cz.Account.Name = c.AccountName
+	}
+
 	buf := &bytes.Buffer{}
 	encoder := json.NewEncoder(buf)
 	if err := encoder.Encode(cz); err != nil {

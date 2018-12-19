@@ -24,6 +24,8 @@ Cloudflare API DNS provider:
 Info required in `creds.json`:
    - apikey
    - apiuser
+   - accountid (optional)
+   - accountname (optional)
 
 Record level metadata available:
    - cloudflare_proxy ("on", "off", or "full")
@@ -54,6 +56,8 @@ func init() {
 type CloudflareApi struct {
 	ApiKey          string `json:"apikey"`
 	ApiUser         string `json:"apiuser"`
+	AccountID       string `json:"accountid"`
+	AccountName     string `json:"accountname"`
 	domainIndex     map[string]string
 	nameservers     map[string][]string
 	ipConversions   []transform.IpConversion
@@ -305,6 +309,12 @@ func newCloudflare(m map[string]string, metadata json.RawMessage) (providers.DNS
 	// check api keys from creds json file
 	if api.ApiKey == "" || api.ApiUser == "" {
 		return nil, errors.Errorf("cloudflare apikey and apiuser must be provided")
+	}
+
+	// Check account data if set
+	api.AccountID, api.AccountName = m["accountid"], m["accountname"]
+	if (api.AccountID != "" && api.AccountName == "") || (api.AccountID == "" && api.AccountName != "") {
+		return nil, errors.Errorf("either both cloudflare accountid and accountname must be provided or neither")
 	}
 
 	err := api.fetchDomainList()
