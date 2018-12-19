@@ -54,7 +54,7 @@ D("example.tld", REG_OVH, DnsProvider(R53),
 ## Activation
 
 To obtain the OVH keys, one need to register an app at OVH by following the
-[OVH API Getting Started](https://api.ovh.com/g934.first_step_with_api)
+[OVH API Getting Started](https://docs.ovh.com/gb/en/customer/first-steps-with-ovh-api/)
 
 It consist in declaring the app at https://eu.api.ovh.com/createApp/
 which gives the `app-key` and `app-secret-key`.
