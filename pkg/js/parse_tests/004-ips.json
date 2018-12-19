@@ -1,4 +1,10 @@
 {
+  "registrars": [
+    {
+      "name": "Third-Party",
+      "type": "NONE"
+    }
+  ],
   "dns_providers": [
     {
       "name": "Cloudflare",
@@ -7,34 +13,28 @@
   ],
   "domains": [
     {
+      "name": "foo.com",
+      "registrar": "Third-Party",
       "dnsProviders": {
         "Cloudflare": 0
       },
-      "name": "foo.com",
       "records": [
         {
+          "type": "A",
           "name": "@",
-          "target": "1.2.3.4",
-          "type": "A"
+          "target": "1.2.3.4"
         },
         {
+          "type": "A",
           "name": "p1",
-          "target": "1.2.3.5",
-          "type": "A"
+          "target": "1.2.3.5"
         },
         {
+          "type": "A",
           "name": "p255",
-          "target": "1.2.4.3",
-          "type": "A"
+          "target": "1.2.4.3"
         }
-      ],
-      "registrar": "Third-Party"
-    }
-  ],
-  "registrars": [
-    {
-      "name": "Third-Party",
-      "type": "NONE"
+      ]
     }
   ]
 }
