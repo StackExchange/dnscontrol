@@ -18,6 +18,19 @@ In the credentials file you must provide your Cloudflare API username and access
 }
 {% endhighlight %}
 
+If your Cloudflare account has access to multiple Cloudflare accounts, you can specify which Cloudflare account should be used when adding new domains:
+
+{% highlight json %}
+{
+  "cloudflare": {
+    "apikey": "...",
+    "apiuser": "...",
+    "accountid": "your-cloudflare-account-id",
+    "accountname": "your-cloudflare-account-name"
+  }
+}
+{% endhighlight %}
+
 ## Metadata
 Record level metadata availible:
    * `cloudflare_proxy` ("on", "off", or "full")
