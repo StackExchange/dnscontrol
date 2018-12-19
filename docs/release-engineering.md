@@ -5,7 +5,7 @@ title: How to build and ship a release
 
 # How to build and ship a release
 
-Here are my notes from producing the v0.2.2 release.  Change the version number as appropriate.
+Here are my notes from producing the v0.2.8 release.  Change the version number as appropriate.
 
 ## Step 1. Run the integration tests
 
@@ -20,8 +20,8 @@ Here are my notes from producing the v0.2.2 release.  Change the version number 
 Edit the "Version" variable in `main.go` and commit.
 
 ```
-export PREVVERSION=2.4
-export VERSION=2.5
+export PREVVERSION=2.7
+export VERSION=2.8
 git checkout master
 vi main.go
 git commit -m'Release v'"$VERSION" main.go
@@ -33,7 +33,10 @@ git push origin tag v0."$VERSION"
 
 [On github.com, click on "Draft a new release"](https://github.com/StackExchange/dnscontrol/releases/new)
 
-Pick the v0.$VERSION tag
+Fill in the `Tag version` @ `Target` with:
+
+  * Tag version: v0.$VERSION (this should be the first tag listed)
+  * Target: master (this should be the default)
 
 Release title: Release v0.$VERSION
 
@@ -57,24 +60,32 @@ This is what it looks like when you did it right:
 
 ```
 $ ./dnscontrol-Darwin version
-dnscontrol 0.1.5 ("6fdf78997815055bbe119c0116c9e2d60310a515") built 24 Aug 17 11:26 EDT
+dnscontrol 0.2.8 ("ee5208bd5f19b9e5dd0bdba8d0e13403c43a469a") built 19 Dec 18 11:16 EST
 ```
 
 This is what it looks like when there was a file that should have been checked in:
 
 ```
 $ ./dnscontrol-Darwin version
-dnscontrol 0.1.5 ("6fdf78997815055bbe119c0116c9e2d60310a515[dirty]") built 24 Aug 17 11:27 EDT
+dnscontrol 0.2.8 ("ee5208bd5f19b9e5dd0bdba8d0e13403c43a469a[dirty]") built 19 Dec 18 11:14 EST
                                                             ^^^^^
-                                                            ^^^^^ See?
+                                                            ^^^^^
                                                             ^^^^^
 ```
 
 ## Step 4. Attach the binaries and release.
 
-Drag and drop binaries into the web form.
+a. Drag and drop binaries into the web form.
 
-Submit the release.
+There is a box labeled "Atttach binaries by dropping them here or
+selecting them".  Drag dnscontrol-Darwin, dnscontrol-Linux, and
+dnscontrol.exe onto that box (one at a time or all at once). This
+will upload the binaries.
+
+b. Submit the release.
+
+Make sure the "This is a pre-release" checkbox is UNchecked. Then click "Publish Release".
+
 
 ## Step 5. Announce it via email
 
