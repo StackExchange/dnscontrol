@@ -1,18 +1,18 @@
 {
+  "registrars": [],
   "dns_providers": [],
   "domains": [
     {
-      "dnsProviders": {},
       "name": "foo.com",
+      "registrar": "none",
+      "dnsProviders": {},
       "records": [
         {
+          "type": "ALIAS",
           "name": "@",
-          "target": "foo.com.",
-          "type": "ALIAS"
+          "target": "foo.com."
         }
-      ],
-      "registrar": "none"
+      ]
     }
-  ],
-  "registrars": []
+  ]
 }
