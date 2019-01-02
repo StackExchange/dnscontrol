@@ -66,8 +66,10 @@ Please add the function alphabetically with the others. Also, please run
 [prettier](https://github.com/prettier/prettier) on the file to ensure
 your code conforms to our coding standard:
 
-   npm install prettier
-   node_modules/.bin/prettier --write pkg/js/helpers.js
+    npm install prettier
+    node_modules/.bin/prettier --write pkg/js/helpers.js
+
+FYI: If you change `pkg/js/helpers.js`, run `go generate` to update `pkg/js/static.go`.
 
 ## Step 4: Search for `#rtype_variations`
 

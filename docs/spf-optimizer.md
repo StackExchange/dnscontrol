@@ -62,7 +62,7 @@ D("example.tld", REG, DSP, ...
 );
 ```
 
-By using the `SPF_BUILDER` we gain many benefits:
+By using the `SPF_BUILDER()` we gain many benefits:
 
 * Comments can appear next to the element they refer to.
 * Diffs will be shorter and more specific; therefore easier to read.
@@ -71,7 +71,7 @@ By using the `SPF_BUILDER` we gain many benefits:
 ## Syntax
 
 When you want to specify SPF settings for a domain, use the
-`SPF_BUILD()` function.
+`SPF_BUILDER()` function.
 
 ```
 D("example.tld", REG, DSP, ...
