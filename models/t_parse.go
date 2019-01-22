@@ -42,6 +42,8 @@ func (r *RecordConfig) PopulateFromString(rtype, contents, origin string) error 
 		return r.SetTargetMXString(contents)
 	case "SRV":
 		return r.SetTargetSRVString(contents)
+	case "SSHFP":
+		return r.SetTargetSSHFPString(contents)
 	case "TLSA":
 		return r.SetTargetTLSAString(contents)
 	case "TXT":

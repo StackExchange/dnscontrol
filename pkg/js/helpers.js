@@ -235,6 +235,22 @@ var SRV = recordBuilder('SRV', {
     },
 });
 
+// SSHFP(name,algorithm,type,value, recordModifiers...)
+var SSHFP = recordBuilder('SSHFP', {
+    args: [
+        ['name', _.isString],
+        ['algorithm', _.isNumber],
+        ['fingerprint', _.isNumber],
+        ['value', _.isString],
+    ],
+    transform: function(record, args, modifiers) {
+        record.name = args.name;
+        record.sshfpalgorithm = args.algorithm;
+        record.sshfpfingerprint = args.fingerprint;
+        record.target = args.value;
+    },
+});
+
 // name, usage, selector, matchingtype, certificate
 var TLSA = recordBuilder('TLSA', {
     args: [
