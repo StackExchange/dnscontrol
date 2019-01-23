@@ -262,10 +262,10 @@ func srv(name string, priority, weight, port uint16, target string) *rec {
 	return r
 }
 
-func sshfp(name string, algorithm uint8, flag uint8, target string) *rec {
+func sshfp(name string, algorithm uint8, fingerprint uint8, target string) *rec {
 	r := makeRec(name, target, "SSHFP")
 	r.SshfpAlgorithm = algorithm
-	r.SshfpType = fingerprint
+	r.SshfpFingerprint = fingerprint
 	return r
 }
 
