@@ -16,14 +16,9 @@ import (
 
 var filePathStack []string
 
-func trackFile(file string) error {
-	if d, err := filepath.Abs(filepath.Dir(file)); err != nil {
-		return err
-	} else {
-		filePathStack = append(filePathStack, d)
-	}
-
-	return nil
+func trackFile(file string) {
+	d := filepath.Clean(filepath.Dir(file))
+	filePathStack = append(filePathStack, d)
 }
 
 // ExecuteJavascript accepts a javascript string and runs it, returning the resulting dnsConfig.
@@ -33,9 +28,7 @@ func ExecuteJavascript(file string, devMode bool) (*models.DNSConfig, error) {
 		return nil, errors.Errorf("Reading js file %s: %s", file, err)
 	}
 
-	if trackFile(file) != nil {
-		return nil, errors.Errorf("Reading js file %s: %s", file, err)
-	}
+	trackFile(file)
 
 	vm := otto.New()
 
@@ -96,9 +89,7 @@ func require(call otto.FunctionCall) otto.Value {
 		throw(call.Otto, err.Error())
 	}
 
-	if trackFile(absFile) != nil {
-		throw(call.Otto, err.Error())
-	}
+	trackFile(absFile)
 
 	_, err = call.Otto.Run(string(data))
 	if err != nil {
