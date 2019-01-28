@@ -1,3 +1,8 @@
+require('pkg/js/parse_tests/complexImports/b/d/d.js');
+
 function b() {
-    return CNAME("B", "foo.com.")
+    return [
+        d(),
+        CNAME("B", "foo.com.")
+    ];
 }

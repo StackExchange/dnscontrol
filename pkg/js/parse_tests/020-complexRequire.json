@@ -24,6 +24,11 @@
         },
         {
           "type": "CNAME",
+          "name": "D",
+          "target": "foo.com."
+        },
+        {
+          "type": "CNAME",
           "name": "B",
           "target": "foo.com."
         }

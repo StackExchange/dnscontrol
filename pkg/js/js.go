@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"io/ioutil"
 	"path/filepath"
+	"strings"
 
 	"github.com/StackExchange/dnscontrol/models"
 	"github.com/StackExchange/dnscontrol/pkg/printer"
@@ -84,8 +85,13 @@ func require(call otto.FunctionCall) otto.Value {
 		throw(call.Otto, err.Error())
 	}
 
+	if strings.HasPrefix(file, ".") {
+		file = absFile
+	}
+
 	printer.Debugf("requiring: %s\n", absFile)
-	data, err := ioutil.ReadFile(absFile)
+	data, err := ioutil.ReadFile(file)
+
 	if err != nil {
 		throw(call.Otto, err.Error())
 	}
