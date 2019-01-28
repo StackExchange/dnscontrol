@@ -22,6 +22,9 @@ const (
 	// CanUseSRV indicates the provider can handle SRV records
 	CanUseSRV
 
+	// CanUseSSHFP indicates the provider can handle SSHFP records
+	CanUseSSHFP
+
 	// CanUseTLSA indicates the provider can handle TLSA records
 	CanUseTLSA
 

@@ -58,6 +58,7 @@ func validateRecordTypes(rec *models.RecordConfig, domain string, pTypes []strin
 		"IMPORT_TRANSFORM": false,
 		"MX":               true,
 		"SRV":              true,
+		"SSHFP":            true,
 		"TXT":              true,
 		"NS":               true,
 		"PTR":              true,
@@ -160,7 +161,7 @@ func checkTargets(rec *models.RecordConfig, domain string) (errs []error) {
 		check(checkTarget(target))
 	case "SRV":
 		check(checkTarget(target))
-	case "TXT", "IMPORT_TRANSFORM", "CAA", "TLSA":
+	case "TXT", "IMPORT_TRANSFORM", "CAA", "SSHFP", "TLSA":
 	default:
 		if rec.Metadata["orig_custom_type"] != "" {
 			// it is a valid custom type. We perform no validation on target

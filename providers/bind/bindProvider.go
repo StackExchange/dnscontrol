@@ -34,6 +34,7 @@ var features = providers.DocumentationNotes{
 	providers.CanUseCAA:              providers.Can(),
 	providers.CanUsePTR:              providers.Can(),
 	providers.CanUseSRV:              providers.Can(),
+	providers.CanUseSSHFP:            providers.Can(),
 	providers.CanUseTLSA:             providers.Can(),
 	providers.CanUseTXTMulti:         providers.Can(),
 	providers.CantUseNOPURGE:         providers.Cannot(),
@@ -137,6 +138,8 @@ func rrToRecord(rr dns.RR, origin string, replaceSerial uint32) (models.RecordCo
 		// FIXME(tlim): SOA should be handled by splitting out the fields.
 	case *dns.SRV:
 		panicInvalid(rc.SetTargetSRV(v.Priority, v.Weight, v.Port, v.Target))
+	case *dns.SSHFP:
+		panicInvalid(rc.SetTargetSSHFP(v.Algorithm, v.Type, v.FingerPrint))
 	case *dns.TLSA:
 		panicInvalid(rc.SetTargetTLSA(v.Usage, v.Selector, v.MatchingType, v.Certificate))
 	case *dns.TXT:
