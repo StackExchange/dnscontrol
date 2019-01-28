@@ -1,0 +1,10 @@
+D("foo.com","none",
+    SSHFP("@",1,1,"66c7d5540b7d75a1fb4c84febfa178ad99bdd67c"),
+    SSHFP("@",1,2,"745a635bc46a397a5c4f21d437483005bcc40d7511ff15fbfafe913a081559bc"),
+    SSHFP("@",2,1,"66c7d5540b7d75a1fb4c84febfa178ad99bdd67c"),
+    SSHFP("@",2,2,"745a635bc46a397a5c4f21d437483005bcc40d7511ff15fbfafe913a081559bc"),
+    SSHFP("@",3,1,"66c7d5540b7d75a1fb4c84febfa178ad99bdd67c"),
+    SSHFP("@",3,2,"745a635bc46a397a5c4f21d437483005bcc40d7511ff15fbfafe913a081559bc"),
+    SSHFP("@",4,1,"66c7d5540b7d75a1fb4c84febfa178ad99bdd67c"),
+    SSHFP("@",4,2,"745a635bc46a397a5c4f21d437483005bcc40d7511ff15fbfafe913a081559bc")
+);

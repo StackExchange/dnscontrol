@@ -22,6 +22,7 @@ import (
 //     NS
 //     PTR
 //     SRV
+//     SSHFP
 //     TLSA
 //     TXT
 //   Pseudo-Types:
@@ -74,6 +75,8 @@ type RecordConfig struct {
 	SrvPort          uint16            `json:"srvport,omitempty"`
 	CaaTag           string            `json:"caatag,omitempty"`
 	CaaFlag          uint8             `json:"caaflag,omitempty"`
+	SshfpAlgorithm   uint8             `json:"sshfpalgorithm,omitempty"`
+	SshfpFingerprint uint8             `json:"sshfpfingerprint,omitempty"`
 	TlsaUsage        uint8             `json:"tlsausage,omitempty"`
 	TlsaSelector     uint8             `json:"tlsaselector,omitempty"`
 	TlsaMatchingType uint8             `json:"tlsamatchingtype,omitempty"`
@@ -218,6 +221,10 @@ func (rc *RecordConfig) ToRR() dns.RR {
 		rr.(*dns.SRV).Weight = rc.SrvWeight
 		rr.(*dns.SRV).Port = rc.SrvPort
 		rr.(*dns.SRV).Target = rc.GetTargetField()
+	case dns.TypeSSHFP:
+		rr.(*dns.SSHFP).Algorithm = rc.SshfpAlgorithm
+		rr.(*dns.SSHFP).Type = rc.SshfpFingerprint
+		rr.(*dns.SSHFP).FingerPrint = rc.GetTargetField()
 	case dns.TypeCAA:
 		rr.(*dns.CAA).Flag = rc.CaaFlag
 		rr.(*dns.CAA).Tag = rc.CaaTag
@@ -296,7 +303,7 @@ func downcase(recs []*RecordConfig) {
 		case "ANAME", "CNAME", "MX", "NS", "PTR", "SRV":
 			// These record types have a target that is case insensitive, so we downcase it.
 			r.Target = strings.ToLower(r.Target)
-		case "A", "AAAA", "ALIAS", "CAA", "IMPORT_TRANSFORM", "TLSA", "TXT", "SOA", "CF_REDIRECT", "CF_TEMP_REDIRECT":
+		case "A", "AAAA", "ALIAS", "CAA", "IMPORT_TRANSFORM", "TLSA", "TXT", "SOA", "SSHFP", "CF_REDIRECT", "CF_TEMP_REDIRECT":
 			// These record types have a target that is case sensitive, or is an IP address. We leave them alone.
 			// Do nothing.
 		default:

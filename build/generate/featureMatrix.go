@@ -33,6 +33,7 @@ func generateFeatureMatrix() error {
 			{"CAA", "Provider can manage CAA records"},
 			{"PTR", "Provider supports adding PTR records for reverse lookup zones"},
 			{"SRV", "Driver has explicitly implemented SRV record management"},
+			{"SSHFP", "Provider can manage SSHFP records"},
 			{"TLSA", "Provider can manage TLSA records"},
 			{"TXTMulti", "Provider can manage TXT records with multiple strings"},
 			{"R53_ALIAS", "Provider supports Route 53 limited ALIAS"},
@@ -74,6 +75,7 @@ func generateFeatureMatrix() error {
 		setCap("CAA", providers.CanUseCAA)
 		setCap("PTR", providers.CanUsePTR)
 		setCap("SRV", providers.CanUseSRV)
+		setCap("SSHFP", providers.CanUseSSHFP)
 		setCap("TLSA", providers.CanUseTLSA)
 		setCap("TXTMulti", providers.CanUseTXTMulti)
 		setCap("R53_ALIAS", providers.CanUseRoute53Alias)
