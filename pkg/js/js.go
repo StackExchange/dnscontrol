@@ -3,19 +3,39 @@ package js
 import (
 	"encoding/json"
 	"io/ioutil"
+	"path/filepath"
 
 	"github.com/StackExchange/dnscontrol/models"
 	"github.com/StackExchange/dnscontrol/pkg/printer"
 	"github.com/StackExchange/dnscontrol/pkg/transform"
-
-	"github.com/robertkrimen/otto"
-	// load underscore js into vm by default
-
+	"github.com/pkg/errors"
+	"github.com/robertkrimen/otto"              // load underscore js into vm by default
 	_ "github.com/robertkrimen/otto/underscore" // required by otto
 )
 
+var filePathStack []string
+
+func trackFile(file string) error {
+	if d, err := filepath.Abs(filepath.Dir(file)); err != nil {
+		return err
+	} else {
+		filePathStack = append(filePathStack, d)
+	}
+
+	return nil
+}
+
 // ExecuteJavascript accepts a javascript string and runs it, returning the resulting dnsConfig.
-func ExecuteJavascript(script string, devMode bool) (*models.DNSConfig, error) {
+func ExecuteJavascript(file string, devMode bool) (*models.DNSConfig, error) {
+	script, err := ioutil.ReadFile(file)
+	if err != nil {
+		return nil, errors.Errorf("Reading js file %s: %s", file, err)
+	}
+
+	if trackFile(file) != nil {
+		return nil, errors.Errorf("Reading js file %s: %s", file, err)
+	}
+
 	vm := otto.New()
 
 	vm.Set("require", require)
@@ -58,15 +78,29 @@ func require(call otto.FunctionCall) otto.Value {
 		throw(call.Otto, "require takes exactly one argument")
 	}
 	file := call.Argument(0).String()
-	printer.Debugf("requiring: %s\n", file)
-	data, err := ioutil.ReadFile(file)
+
+	absFile, err := filepath.Abs(filepath.Join(filePathStack[len(filePathStack)-1], file))
 	if err != nil {
 		throw(call.Otto, err.Error())
 	}
+
+	printer.Debugf("requiring: %s\n", absFile)
+	data, err := ioutil.ReadFile(absFile)
+	if err != nil {
+		throw(call.Otto, err.Error())
+	}
+
+	if trackFile(absFile) != nil {
+		throw(call.Otto, err.Error())
+	}
+
 	_, err = call.Otto.Run(string(data))
 	if err != nil {
 		throw(call.Otto, err.Error())
 	}
+
+	filePathStack = filePathStack[:len(filePathStack)-1]
+
 	return otto.TrueValue()
 }
 
