@@ -73,10 +73,7 @@ func require(call otto.FunctionCall) otto.Value {
 	}
 	file := call.Argument(0).String()
 
-	absFile, err := filepath.Abs(filepath.Join(filePathStack[len(filePathStack)-1], file))
-	if err != nil {
-		throw(call.Otto, err.Error())
-	}
+	absFile := filepath.Clean(filepath.Join(filePathStack[len(filePathStack)-1], file))
 
 	if strings.HasPrefix(file, ".") {
 		file = absFile
