@@ -3,19 +3,35 @@ package js
 import (
 	"encoding/json"
 	"io/ioutil"
+	"path/filepath"
+	"strings"
 
 	"github.com/StackExchange/dnscontrol/models"
 	"github.com/StackExchange/dnscontrol/pkg/printer"
 	"github.com/StackExchange/dnscontrol/pkg/transform"
-
-	"github.com/robertkrimen/otto"
-	// load underscore js into vm by default
-
+	"github.com/pkg/errors"
+	"github.com/robertkrimen/otto"              // load underscore js into vm by default
 	_ "github.com/robertkrimen/otto/underscore" // required by otto
 )
 
+// currentDirectory is the current directory as used by require().
+// This is used to emulate nodejs-style require() directory handling.
+// If require("a/b/c.js") is called, any require() statement in c.js
+// needs to be accessed relative to "a/b".  Therefore we
+// track the currentDirectory (which is the current directory as
+// far as require() is concerned, not the actual os.Getwd().
+var currentDirectory string
+
 // ExecuteJavascript accepts a javascript string and runs it, returning the resulting dnsConfig.
-func ExecuteJavascript(script string, devMode bool) (*models.DNSConfig, error) {
+func ExecuteJavascript(file string, devMode bool) (*models.DNSConfig, error) {
+	script, err := ioutil.ReadFile(file)
+	if err != nil {
+		return nil, errors.Errorf("Reading js file %s: %s", file, err)
+	}
+
+	// Record the directory path leading up to this file.
+	currentDirectory = filepath.Clean(filepath.Dir(file))
+
 	vm := otto.New()
 
 	vm.Set("require", require)
@@ -57,16 +73,36 @@ func require(call otto.FunctionCall) otto.Value {
 	if len(call.ArgumentList) != 1 {
 		throw(call.Otto, "require takes exactly one argument")
 	}
-	file := call.Argument(0).String()
-	printer.Debugf("requiring: %s\n", file)
-	data, err := ioutil.ReadFile(file)
+	file := call.Argument(0).String() // The filename as given by the user
+
+	// relFile is the file we're actually going to pass to ReadFile().
+	// It defaults to the user-provided name unless it is relative.
+	relFile := file
+	cleanFile := filepath.Clean(filepath.Join(currentDirectory, file))
+	if strings.HasPrefix(file, ".") {
+		relFile = cleanFile
+	}
+
+	// Record the old currentDirectory so that we can return there.
+	currentDirectoryOld := currentDirectory
+	// Record the directory path leading up to the file we're about to require.
+	currentDirectory = filepath.Clean(filepath.Dir(cleanFile))
+
+	printer.Debugf("requiring: %s (%s)\n", file, relFile)
+	data, err := ioutil.ReadFile(relFile)
+
 	if err != nil {
 		throw(call.Otto, err.Error())
 	}
+
 	_, err = call.Otto.Run(string(data))
 	if err != nil {
 		throw(call.Otto, err.Error())
 	}
+
+	// Pop back to the old directory.
+	currentDirectory = currentDirectoryOld
+
 	return otto.TrueValue()
 }
 

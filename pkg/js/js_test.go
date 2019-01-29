@@ -34,11 +34,7 @@ func TestParsedFiles(t *testing.T) {
 		m := minify.New()
 		m.AddFunc("json", minjson.Minify)
 		t.Run(f.Name(), func(t *testing.T) {
-			content, err := ioutil.ReadFile(filepath.Join(testDir, f.Name()))
-			if err != nil {
-				t.Fatal(err)
-			}
-			conf, err := ExecuteJavascript(string(content), true)
+			conf, err := ExecuteJavascript(string(filepath.Join(testDir, f.Name())), true)
 			if err != nil {
 				t.Fatal(err)
 			}
