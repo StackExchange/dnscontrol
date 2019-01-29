@@ -18,3 +18,4 @@ spfcache*
 adzonedump.*
 zones/
 stack.sh
+.idea/

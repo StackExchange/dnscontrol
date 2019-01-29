@@ -3,7 +3,6 @@ package commands
 import (
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
 	"os"
 
 	"github.com/StackExchange/dnscontrol/models"
@@ -101,11 +100,8 @@ func ExecuteDSL(args ExecuteDSLArgs) (*models.DNSConfig, error) {
 	if args.JSFile == "" {
 		return nil, errors.Errorf("No config specified")
 	}
-	text, err := ioutil.ReadFile(args.JSFile)
-	if err != nil {
-		return nil, errors.Errorf("Reading js file %s: %s", args.JSFile, err)
-	}
-	dnsConfig, err := js.ExecuteJavascript(string(text), args.DevMode)
+
+	dnsConfig, err := js.ExecuteJavascript(args.JSFile, args.DevMode)
 	if err != nil {
 		return nil, errors.Errorf("Executing javascript in %s: %s", args.JSFile, err)
 	}
