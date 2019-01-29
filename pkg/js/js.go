@@ -73,21 +73,23 @@ func require(call otto.FunctionCall) otto.Value {
 	if len(call.ArgumentList) != 1 {
 		throw(call.Otto, "require takes exactly one argument")
 	}
-	file := call.Argument(0).String()
+	file := call.Argument(0).String() // The filename as given by the user
 
-	absFile := filepath.Clean(filepath.Join(currentDirectory, file))
-
+	// relFile is the file we're actually going to pass to ReadFile().
+	// It defaults to the user-provided name unless it is relative.
+	relFile := file
+	cleanFile := filepath.Clean(filepath.Join(currentDirectory, file))
 	if strings.HasPrefix(file, ".") {
-		file = absFile
+		relFile = cleanFile
 	}
 
 	// Record the old currentDirectory so that we can return there.
 	currentDirectoryOld := currentDirectory
 	// Record the directory path leading up to the file we're about to require.
-	currentDirectory = filepath.Clean(filepath.Dir(absFile))
+	currentDirectory = filepath.Clean(filepath.Dir(cleanFile))
 
-	printer.Debugf("requiring: %s\n", absFile)
-	data, err := ioutil.ReadFile(file)
+	printer.Debugf("requiring: %s (%s)\n", file, relFile)
+	data, err := ioutil.ReadFile(relFile)
 
 	if err != nil {
 		throw(call.Otto, err.Error())
