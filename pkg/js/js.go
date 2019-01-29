@@ -14,12 +14,13 @@ import (
 	_ "github.com/robertkrimen/otto/underscore" // required by otto
 )
 
-var filePathStack []string
-
-func trackFile(file string) {
-	d := filepath.Clean(filepath.Dir(file))
-	filePathStack = append(filePathStack, d)
-}
+// currentDirectory is the current directory as used by require().
+// This is used to emulate nodejs-style require() directory handling.
+// If require("a/b/c.js") is called, any require() statement in c.js
+// needs to be accessed relative to "a/b".  Therefore we
+// track the currentDirectory (which is the current directory as
+// far as require() is concerned, not the actual os.Getwd().
+var currentDirectory string
 
 // ExecuteJavascript accepts a javascript string and runs it, returning the resulting dnsConfig.
 func ExecuteJavascript(file string, devMode bool) (*models.DNSConfig, error) {
@@ -28,7 +29,8 @@ func ExecuteJavascript(file string, devMode bool) (*models.DNSConfig, error) {
 		return nil, errors.Errorf("Reading js file %s: %s", file, err)
 	}
 
-	trackFile(file)
+	// Record the directory path leading up to this file.
+	currentDirectory = filepath.Clean(filepath.Dir(file))
 
 	vm := otto.New()
 
@@ -73,11 +75,16 @@ func require(call otto.FunctionCall) otto.Value {
 	}
 	file := call.Argument(0).String()
 
-	absFile := filepath.Clean(filepath.Join(filePathStack[len(filePathStack)-1], file))
+	absFile := filepath.Clean(filepath.Join(currentDirectory, file))
 
 	if strings.HasPrefix(file, ".") {
 		file = absFile
 	}
+
+	// Record the old currentDirectory so that we can return there.
+	currentDirectoryOld := currentDirectory
+	// Record the directory path leading up to the file we're about to require.
+	currentDirectory = filepath.Clean(filepath.Dir(absFile))
 
 	printer.Debugf("requiring: %s\n", absFile)
 	data, err := ioutil.ReadFile(file)
@@ -86,14 +93,13 @@ func require(call otto.FunctionCall) otto.Value {
 		throw(call.Otto, err.Error())
 	}
 
-	trackFile(absFile)
-
 	_, err = call.Otto.Run(string(data))
 	if err != nil {
 		throw(call.Otto, err.Error())
 	}
 
-	filePathStack = filePathStack[:len(filePathStack)-1]
+	// Pop back to the old directory.
+	currentDirectory = currentDirectoryOld
 
 	return otto.TrueValue()
 }
