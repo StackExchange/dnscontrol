@@ -487,6 +487,12 @@
 			"revisionTime": "2018-04-03T03:42:16Z"
 		},
 		{
+			"checksumSHA1": "wXJyKf04IIo5zDLZTHQaFVGM/n8=",
+			"path": "github.com/ovh/go-ovh/ovh",
+			"revision": "ba5adb4cf0148a3dbdbd30586f075266256a77b1",
+			"revisionTime": "2018-11-09T15:29:53Z"
+		},
+		{
 			"checksumSHA1": "ln/74dXVPX/i7aDah00ZKqbdpw8=",
 			"path": "github.com/philhug/opensrs-go/opensrs",
 			"revision": "58112e74137c104eb77bdad4b53c51da22b7b6d5",
@@ -991,6 +997,12 @@
 			"path": "google.golang.org/appengine/urlfetch",
 			"revision": "d9a072cfa7b9736e44311ef77b3e09d804bfa599",
 			"revisionTime": "2017-08-14T19:09:42Z"
+		},
+		{
+			"checksumSHA1": "8yg3QdSXVEmuHm2CgWXEMFN3K6Q=",
+			"path": "gopkg.in/ini.v1",
+			"revision": "6ed8d5f64cd79a498d1f3fab5880cc376ce41bbe",
+			"revisionTime": "2019-01-03T01:53:35Z"
 		},
 		{
 			"checksumSHA1": "uOY+V62vyPFerpl1oYb9iwHZIl0=",
