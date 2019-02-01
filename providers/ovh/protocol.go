@@ -21,7 +21,7 @@ func (c *ovhProvider) fetchZones() error {
 
 	var response []string
 
-	err := c.client.Call("GET", "/domain/zone", nil, &response)
+	err := c.client.CallAPI("GET", "/domain/zone", nil, &response, true)
 
 	if err != nil {
 		return err
@@ -45,7 +45,7 @@ type Zone struct {
 func (c *ovhProvider) fetchZone(fqdn string) (*Zone, error) {
 	var response Zone
 
-	err := c.client.Call("GET", "/domain/zone/"+fqdn, nil, &response)
+	err := c.client.CallAPI("GET", "/domain/zone/"+fqdn, nil, &response, true)
 	if err != nil {
 		return nil, err
 	}
@@ -70,7 +70,7 @@ type records struct {
 func (c *ovhProvider) fetchRecords(fqdn string) ([]*Record, error) {
 	var recordIds []int
 
-	err := c.client.Call("GET", "/domain/zone/"+fqdn+"/record", nil, &recordIds)
+	err := c.client.CallAPI("GET", "/domain/zone/"+fqdn+"/record", nil, &recordIds, true)
 	if err != nil {
 		return nil, err
 	}
@@ -90,7 +90,7 @@ func (c *ovhProvider) fetchRecords(fqdn string) ([]*Record, error) {
 func (c *ovhProvider) fecthRecord(fqdn string, id int) (*Record, error) {
 	var response Record
 
-	err := c.client.Call("GET", fmt.Sprintf("/domain/zone/%s/record/%d", fqdn, id), nil, &response)
+	err := c.client.CallAPI("GET", fmt.Sprintf("/domain/zone/%s/record/%d", fqdn, id), nil, &response, true)
 	if err != nil {
 		return nil, err
 	}
@@ -100,7 +100,7 @@ func (c *ovhProvider) fecthRecord(fqdn string, id int) (*Record, error) {
 // Returns a function that can be invoked to delete a record in a zone.
 func (c *ovhProvider) deleteRecordFunc(id int64, fqdn string) func() error {
 	return func() error {
-		err := c.client.Call("DELETE", fmt.Sprintf("/domain/zone/%s/record/%d", fqdn, id), nil, nil)
+		err := c.client.CallAPI("DELETE", fmt.Sprintf("/domain/zone/%s/record/%d", fqdn, id), nil, nil, true)
 		if err != nil {
 			return err
 		}
@@ -121,7 +121,7 @@ func (c *ovhProvider) createRecordFunc(rc *models.RecordConfig, fqdn string) fun
 			record.SubDomain = ""
 		}
 		var response Record
-		err := c.client.Call("POST", fmt.Sprintf("/domain/zone/%s/record", fqdn), &record, &response)
+		err := c.client.CallAPI("POST", fmt.Sprintf("/domain/zone/%s/record", fqdn), &record, &response, true)
 		return err
 	}
 }
@@ -141,12 +141,12 @@ func (c *ovhProvider) updateRecordFunc(old *Record, rc *models.RecordConfig, fqd
 			record.SubDomain = ""
 		}
 
-		return c.client.Call("PUT", fmt.Sprintf("/domain/zone/%s/record/%d", fqdn, old.ID), &record, &Void{})
+		return c.client.CallAPI("PUT", fmt.Sprintf("/domain/zone/%s/record/%d", fqdn, old.ID), &record, &Void{}, true)
 	}
 }
 
 func (c *ovhProvider) refreshZone(fqdn string) error {
-	return c.client.Call("POST", fmt.Sprintf("/domain/zone/%s/refresh", fqdn), nil, &Void{})
+	return c.client.CallAPI("POST", fmt.Sprintf("/domain/zone/%s/refresh", fqdn), nil, &Void{}, true)
 }
 
 // fetch the NS OVH attributed to this zone (which is distinct from fetchRealNS which
@@ -172,7 +172,7 @@ type CurrentNameServer struct {
 // Retrieve the NS currently being deployed to the registrar
 func (c *ovhProvider) fetchRegistrarNS(fqdn string) ([]string, error) {
 	var nameServersID []int
-	err := c.client.Call("GET", "/domain/"+fqdn+"/nameServer", nil, &nameServersID)
+	err := c.client.CallAPI("GET", "/domain/"+fqdn+"/nameServer", nil, &nameServersID, true)
 	if err != nil {
 		return nil, err
 	}
@@ -180,7 +180,7 @@ func (c *ovhProvider) fetchRegistrarNS(fqdn string) ([]string, error) {
 	var nameServers []string
 	for _, id := range nameServersID {
 		var ns CurrentNameServer
-		err = c.client.Call("GET", fmt.Sprintf("/domain/%s/nameServer/%d", fqdn, id), nil, &ns)
+		err = c.client.CallAPI("GET", fmt.Sprintf("/domain/%s/nameServer/%d", fqdn, id), nil, &ns, true)
 		if err != nil {
 			return nil, err
 		}
@@ -232,7 +232,7 @@ func (c *ovhProvider) updateNS(fqdn string, ns []string) error {
 	// by default zones are in "hosted" mode meaning they default
 	// to OVH default NS. In this mode, the NS can't be updated.
 	domain := Domain{NameServerType: "external"}
-	err := c.client.Call("PUT", fmt.Sprintf("/domain/%s", fqdn), &domain, &Void{})
+	err := c.client.CallAPI("PUT", fmt.Sprintf("/domain/%s", fqdn), &domain, &Void{}, true)
 	if err != nil {
 		return err
 	}
@@ -248,7 +248,7 @@ func (c *ovhProvider) updateNS(fqdn string, ns []string) error {
 		NameServers: newNs,
 	}
 	var task Task
-	err = c.client.Call("POST", fmt.Sprintf("/domain/%s/nameServers/update", fqdn), &update, &task)
+	err = c.client.CallAPI("POST", fmt.Sprintf("/domain/%s/nameServers/update", fqdn), &update, &task, true)
 	if err != nil {
 		return err
 	}

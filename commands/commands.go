@@ -120,7 +120,7 @@ func preloadProviders(cfg *models.DNSConfig, err error) (*models.DNSConfig, erro
 	for _, p := range cfg.DNSProviders {
 		cfg.DNSProvidersByName[p.Name] = p
 	}
-	// make registrar and dns provider shims. Include name, type, and other metadata, but can't inatantiate
+	// make registrar and dns provider shims. Include name, type, and other metadata, but can't instantiate
 	// driver until we load creds in later
 	for _, d := range cfg.Domains {
 		reg, ok := cfg.RegistrarsByName[d.RegistrarName]
