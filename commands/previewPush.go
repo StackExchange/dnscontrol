@@ -165,9 +165,6 @@ DomainLoop:
 	if anyErrors {
 		return errors.Errorf("Completed with errors")
 	}
-	if totalCorrections != 0 {
-		return errors.Errorf("Corrections pending")
-	}
 	return nil
 }
 
