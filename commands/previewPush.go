@@ -34,6 +34,7 @@ type PreviewArgs struct {
 	GetCredentialsArgs
 	FilterArgs
 	Notify bool
+	WarnChanges bool
 }
 
 func (args *PreviewArgs) flags() []cli.Flag {
@@ -44,6 +45,11 @@ func (args *PreviewArgs) flags() []cli.Flag {
 		Name:        "notify",
 		Destination: &args.Notify,
 		Usage:       `set to true to send notifications to configured destinations`,
+	})
+	flags = append(flags, cli.BoolFlag{
+		Name:        "expect-no-changes",
+		Destination: &args.WarnChanges,
+		Usage:       `set to true for non-zero return code if there are changes`,
 	})
 	return flags
 }
@@ -164,6 +170,9 @@ DomainLoop:
 	out.Printf("Done. %d corrections.\n", totalCorrections)
 	if anyErrors {
 		return errors.Errorf("Completed with errors")
+	}
+	if totalCorrections != 0 && args.WarnChanges {
+		return errors.Errorf("There are pending changes")
 	}
 	return nil
 }
