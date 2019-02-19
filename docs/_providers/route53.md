@@ -13,7 +13,8 @@ You can specify the API credentials in the credentials json file:
  "r53_main":{
       "KeyId": "your-aws-key",
       "SecretKey": "your-aws-secret-key",
-      "Token": "optional-sts-token"
+      "Token": "optional-sts-token",
+      "DelegationSet" : "optional-delegation-set-id"
  }
 }
 {% endhighlight %}
@@ -56,7 +57,32 @@ D('example.tld', REG_NONE, DnsProvider(R53),
 DNSControl depends on a standard [AWS access key](https://aws.amazon.com/developers/access-keys/) with permission to list, create and update hosted zones.
 
 ## New domains
-If a domain does not exist in your Route53 account, DNSControl will *not* automatically add it with the `create-domains` command. You can do that either manually via the control panel, or via the command `dnscontrol create-domains` command.
+If a domain does not exist in your Route53 account, DNSControl will *not* automatically add it with the `push` command. You can do that either manually via the control panel, or via the command `dnscontrol create-domains` command.
+
+## Delegation Sets
+Creation of new delegation sets are not supported by this code.  However, if you have a delegation set already created, ala:
+
+```
+$ aws route53 create-reusable-delegation-set --caller-reference "foo"
+{
+    "Location": "https://route53.amazonaws.com/2013-04-01/delegationset/12312312123",
+    "DelegationSet": {
+        "Id": "/delegationset/12312312123",
+        "CallerReference": "foo",
+        "NameServers": [
+            "ns-1056.awsdns-04.org",
+            "ns-215.awsdns-26.com",
+            "ns-1686.awsdns-18.co.uk",
+            "ns-970.awsdns-57.net"
+        ]
+    }
+}
+```
+
+You can then reference the DelegationSet.Id in your `r53_main` block (with your other credentials) to have all created domains placed in that
+delegation set.  Note that you you only want the portion of the `Id` after the `/delegationset/` (the `12312312123` in the example above).
+
+> Delegation sets only apply during `create-domains` at the moment.  Further work needs to be done to have them apply during `push`.
 
 ## Caveats
 This code may not function properly if a domain has R53 as a Registrar
