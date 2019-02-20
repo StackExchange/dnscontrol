@@ -148,18 +148,25 @@ func (c *adProvider) getExistingRecords(domainname string) ([]*models.RecordConf
 	}
 
 	result := make([]*models.RecordConfig, 0, len(recs))
-	for i := range recs {
-		t := recs[i].unpackRecord(domainname)
+	unsupportedCounts := map[string]int{}
+	for _, rec := range recs {
+		t, supportedType := rec.unpackRecord(domainname)
+		if !supportedType {
+			unsupportedCounts[rec.Type]++
+		}
 		if t != nil {
 			result = append(result, t)
 		}
+	}
+	for t, count := range unsupportedCounts {
+		printer.Warnf("%d records of type %s found in AD zone. These will be ignored.\n", count, t)
 	}
 
 	return result, nil
 }
 
-func (r *RecordConfigJson) unpackRecord(origin string) *models.RecordConfig {
-	rc := models.RecordConfig{
+func (r *RecordConfigJson) unpackRecord(origin string) (rc *models.RecordConfig, supported bool) {
+	rc = &models.RecordConfig{
 		Type: r.Type,
 		TTL:  r.TTL,
 	}
@@ -169,13 +176,12 @@ func (r *RecordConfigJson) unpackRecord(origin string) *models.RecordConfig {
 		rc.SetTarget(r.Data)
 	case "CNAME":
 		rc.SetTarget(strings.ToLower(r.Data))
-	case "NS", "SOA":
-		return nil
+	case "SOA":
+		return nil, true
 	default:
-		printer.Warnf("Record of type %s found in AD zone. Will be ignored.\n", rc.Type)
-		return nil
+		return nil, false
 	}
-	return &rc
+	return rc, true
 }
 
 // powerShellDump runs a PowerShell command to get a dump of all records in a DNS zone.
