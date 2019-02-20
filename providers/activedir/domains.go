@@ -155,7 +155,8 @@ func (c *adProvider) getExistingRecords(domainname string) ([]*models.RecordConf
 
 	var recs []*RecordConfigJson
 	jdata := string(data)
-	// single record does not get wrapped in array. This breaks go json.
+	// when there is only a single record, AD powershell does not
+	// wrap it in an array as our types expect. This makes sure it is always an array.
 	if strings.HasPrefix(strings.TrimSpace(jdata), "{") {
 		jdata = "[" + jdata + "]"
 		data = []byte(jdata)
