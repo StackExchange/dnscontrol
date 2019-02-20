@@ -42,6 +42,9 @@ var supportedTypes = map[string]bool{
 func (c *adProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Correction, error) {
 
 	dc.Filter(func(r *models.RecordConfig) bool {
+		if r.Type == "NS" && r.Name == "@" {
+			return false
+		}
 		if !supportedTypes[r.Type] {
 			printer.Warnf("Active Directory only manages certain record types. Won't consider %s %s\n", r.Type, r.GetLabelFQDN())
 			return false
@@ -192,6 +195,10 @@ func (r *RecordConfigJson) unpackRecord(origin string) (rc *models.RecordConfig,
 	case "CNAME":
 		rc.SetTarget(strings.ToLower(r.Data))
 	case "NS":
+		// skip root NS
+		if rc.Name == "@" {
+			return nil, true
+		}
 		rc.SetTarget(strings.ToLower(r.Data))
 	case "SOA":
 		return nil, true
