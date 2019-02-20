@@ -151,6 +151,12 @@ func (c *adProvider) getExistingRecords(domainname string) ([]*models.RecordConf
 	}
 
 	var recs []*RecordConfigJson
+	jdata := string(data)
+	// single record does not get wrapped in array. This breaks go json.
+	if strings.HasPrefix(strings.TrimSpace(jdata), "{") {
+		jdata = "[" + jdata + "]"
+		data = []byte(jdata)
+	}
 	err = json.Unmarshal(data, &recs)
 	if err != nil {
 		return nil, errors.Errorf("json.Unmarshal failed on %#v: %v", domainname, err)
