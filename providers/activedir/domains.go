@@ -29,12 +29,21 @@ func (c *adProvider) GetNameservers(string) ([]*models.Nameserver, error) {
 	return nil, nil
 }
 
+// list of types this provider supports.
+// until it is up to speed with all the built-in types.
+var supportedTypes = map[string]bool{
+	"A":     true,
+	"AAAA":  true,
+	"CNAME": true,
+	"NS":    true,
+}
+
 // GetDomainCorrections gets existing records, diffs them against existing, and returns corrections.
 func (c *adProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Correction, error) {
 
 	dc.Filter(func(r *models.RecordConfig) bool {
-		if r.Type != "A" && r.Type != "CNAME" {
-			printer.Warnf("Active Directory only manages A and CNAME records. Won't consider %s %s\n", r.Type, r.GetLabelFQDN())
+		if !supportedTypes[r.Type] {
+			printer.Warnf("Active Directory only manages certain record types. Won't consider %s %s\n", r.Type, r.GetLabelFQDN())
 			return false
 		}
 		return true
@@ -176,6 +185,8 @@ func (r *RecordConfigJson) unpackRecord(origin string) (rc *models.RecordConfig,
 		rc.SetTarget(r.Data)
 	case "CNAME":
 		rc.SetTarget(strings.ToLower(r.Data))
+	case "NS":
+		rc.SetTarget(strings.ToLower(r.Data))
 	case "SOA":
 		return nil, true
 	default:
@@ -187,7 +198,7 @@ func (r *RecordConfigJson) unpackRecord(origin string) (rc *models.RecordConfig,
 // powerShellDump runs a PowerShell command to get a dump of all records in a DNS zone.
 func (c *adProvider) generatePowerShellZoneDump(domainname string) string {
 	cmdTxt := `@("REPLACE_WITH_ZONE") | %{
-Get-DnsServerResourceRecord -ComputerName REPLACE_WITH_COMPUTER_NAME -ZoneName $_ | select hostname,recordtype,@{n="timestamp";e={$_.timestamp.tostring()}},@{n="timetolive";e={$_.timetolive.totalseconds}},@{n="recorddata";e={($_.recorddata.ipv4address,$_.recorddata.ipv6address,$_.recorddata.HostNameAlias,"other_record" -ne $null)[0]-as [string]}} | ConvertTo-Json > REPLACE_WITH_FILENAMEPREFIX.REPLACE_WITH_ZONE.json
+Get-DnsServerResourceRecord -ComputerName REPLACE_WITH_COMPUTER_NAME -ZoneName $_ | select hostname,recordtype,@{n="timestamp";e={$_.timestamp.tostring()}},@{n="timetolive";e={$_.timetolive.totalseconds}},@{n="recorddata";e={($_.recorddata.ipv4address,$_.recorddata.ipv6address,$_.recorddata.HostNameAlias,$_.recorddata.NameServer,"unsupported_record_type" -ne $null)[0]-as [string]}} | ConvertTo-Json > REPLACE_WITH_FILENAMEPREFIX.REPLACE_WITH_ZONE.json
 }`
 	cmdTxt = strings.Replace(cmdTxt, "REPLACE_WITH_ZONE", domainname, -1)
 	cmdTxt = strings.Replace(cmdTxt, "REPLACE_WITH_COMPUTER_NAME", c.adServer, -1)
@@ -199,7 +210,11 @@ Get-DnsServerResourceRecord -ComputerName REPLACE_WITH_COMPUTER_NAME -ZoneName $
 func (c *adProvider) generatePowerShellCreate(domainname string, rec *models.RecordConfig) string {
 	content := rec.GetTargetField()
 	text := "\r\n" // Skip a line.
-	text += fmt.Sprintf("Add-DnsServerResourceRecord%s", rec.Type)
+	funcSuffix := rec.Type
+	if rec.Type == "NS" {
+		funcSuffix = ""
+	}
+	text += fmt.Sprintf("Add-DnsServerResourceRecord%s", funcSuffix)
 	text += fmt.Sprintf(` -ComputerName "%s"`, c.adServer)
 	text += fmt.Sprintf(` -ZoneName "%s"`, domainname)
 	text += fmt.Sprintf(` -Name "%s"`, rec.GetLabel())
@@ -210,7 +225,7 @@ func (c *adProvider) generatePowerShellCreate(domainname string, rec *models.Rec
 	case "A":
 		text += fmt.Sprintf(` -IPv4Address "%s"`, content)
 	case "NS":
-		text = fmt.Sprintf("\r\n"+`echo "Skipping NS update (%v %v)"`+"\r\n", rec.GetLabel(), rec.GetTargetDebug())
+		text += fmt.Sprintf(` -NS -NameServer "%s"`, content)
 	default:
 		panic(errors.Errorf("generatePowerShellCreate() does not yet handle recType=%s recName=%#v content=%#v)",
 			rec.Type, rec.GetLabel(), content))
@@ -226,14 +241,15 @@ func (c *adProvider) generatePowerShellCreate(domainname string, rec *models.Rec
 func (c *adProvider) generatePowerShellModify(domainname, recName, recType, oldContent, newContent string, oldTTL, newTTL uint32) string {
 
 	var queryField, queryContent string
+	queryContent = `"` + oldContent + `"`
 
 	switch recType { // #rtype_variations
 	case "A":
 		queryField = "IPv4address"
-		queryContent = `"` + oldContent + `"`
 	case "CNAME":
 		queryField = "HostNameAlias"
-		queryContent = `"` + oldContent + `"`
+	case "NS":
+		queryField = "NameServer"
 	default:
 		panic(errors.Errorf("generatePowerShellModify() does not yet handle recType=%s recName=%#v content=(%#v, %#v)", recType, recName, oldContent, newContent))
 		// We panic so that we quickly find any switch statements
