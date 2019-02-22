@@ -2,6 +2,7 @@ package exoscale
 
 import (
 	"encoding/json"
+	"fmt"
 	"strings"
 
 	"github.com/exoscale/egoscale"
@@ -30,7 +31,7 @@ var features = providers.DocumentationNotes{
 	providers.CanUseSRV:              providers.Can(),
 	providers.CanUseTLSA:             providers.Cannot(),
 	providers.DocCreateDomains:       providers.Cannot(),
-	providers.DocDualHost:            providers.Cannot(),
+	providers.DocDualHost:            providers.Cannot("Exoscale does not allow sufficient control over the apex NS records"),
 	providers.DocOfficiallySupported: providers.Cannot(),
 }
 
@@ -100,6 +101,7 @@ func (c *exoscaleProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*mod
 		}
 		existingRecords = append(existingRecords, rec)
 	}
+	removeOtherNS(dc)
 
 	// Normalize
 	models.PostProcessRecords(existingRecords)
@@ -215,4 +217,29 @@ func (c *exoscaleProvider) updateRecordFunc(old *egoscale.DNSRecord, rc *models.
 
 		return nil
 	}
+}
+
+func defaultNSSUffix(defNS string) bool {
+	return (strings.HasSuffix(defNS, ".exoscale.io.") ||
+		strings.HasSuffix(defNS, ".exoscale.com.") ||
+		strings.HasSuffix(defNS, ".exoscale.ch.") ||
+		strings.HasSuffix(defNS, ".exoscale.net."))
+}
+
+// remove all non-exoscale NS records from our desired state.
+// if any are found, print a warning
+func removeOtherNS(dc *models.DomainConfig) {
+	newList := make([]*models.RecordConfig, 0, len(dc.Records))
+	for _, rec := range dc.Records {
+		if rec.Type == "NS" {
+			// apex NS inside exoscale are expected.
+			if rec.GetLabelFQDN() == dc.Name && defaultNSSUffix(rec.GetTargetField()) {
+				continue
+			}
+			fmt.Printf("Warning: exoscale.com(.io, .ch, .net) does not allow NS records to be modified. %s will not be added.\n", rec.GetTargetField())
+			continue
+		}
+		newList = append(newList, rec)
+	}
+	dc.Records = newList
 }
