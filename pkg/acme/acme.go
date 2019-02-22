@@ -14,6 +14,7 @@ import (
 
 	"github.com/StackExchange/dnscontrol/models"
 	"github.com/StackExchange/dnscontrol/pkg/nameservers"
+	"github.com/StackExchange/dnscontrol/pkg/notifications"
 	"github.com/xenolf/lego/acme"
 	acmelog "github.com/xenolf/lego/log"
 )
@@ -38,6 +39,8 @@ type certManager struct {
 	domains         map[string]*models.DomainConfig
 	originalDomains []*models.DomainConfig
 
+	notifier notifications.Notifier
+
 	account    *Account
 	waitedOnce bool
 }
@@ -47,11 +50,11 @@ const (
 	LetsEncryptStage = "https://acme-staging-v02.api.letsencrypt.org/directory"
 )
 
-func New(cfg *models.DNSConfig, directory string, email string, server string) (Client, error) {
-	return commonNew(cfg, directoryStorage(directory), email, server)
+func New(cfg *models.DNSConfig, directory string, email string, server string, notify notifications.Notifier) (Client, error) {
+	return commonNew(cfg, directoryStorage(directory), email, server, notify)
 }
 
-func commonNew(cfg *models.DNSConfig, storage Storage, email string, server string) (Client, error) {
+func commonNew(cfg *models.DNSConfig, storage Storage, email string, server string, notify notifications.Notifier) (Client, error) {
 	u, err := url.Parse(server)
 	if err != nil || u.Host == "" {
 		return nil, fmt.Errorf("ACME directory '%s' is not a valid URL", server)
@@ -63,6 +66,7 @@ func commonNew(cfg *models.DNSConfig, storage Storage, email string, server stri
 		acmeHost:      u.Host,
 		cfg:           cfg,
 		domains:       map[string]*models.DomainConfig{},
+		notifier:      notify,
 	}
 
 	acct, err := c.getOrCreateAccount()
@@ -73,12 +77,12 @@ func commonNew(cfg *models.DNSConfig, storage Storage, email string, server stri
 	return c, nil
 }
 
-func NewVault(cfg *models.DNSConfig, vaultPath string, email string, server string) (Client, error) {
+func NewVault(cfg *models.DNSConfig, vaultPath string, email string, server string, notify notifications.Notifier) (Client, error) {
 	storage, err := makeVaultStorage(vaultPath)
 	if err != nil {
 		return nil, err
 	}
-	return commonNew(cfg, storage, email, server)
+	return commonNew(cfg, storage, email, server, notify)
 }
 
 // IssueOrRenewCert will obtain a certificate with the given name if it does not exist,
@@ -219,11 +223,11 @@ func (c *certManager) Present(domain, token, keyAuth string) (e error) {
 	txt.SetTargetTXT(val)
 	txt.SetLabelFromFQDN(fqdn, d.Name)
 	d.Records = append(d.Records, txt)
-	return getAndRunCorrections(d)
+	return c.getAndRunCorrections(d)
 }
 
 func (c *certManager) ensureNoPendingCorrections(d *models.DomainConfig) error {
-	corrections, err := getCorrections(d)
+	corrections, err := c.getCorrections(d)
 	if err != nil {
 		return err
 	}
@@ -240,7 +244,7 @@ func (c *certManager) ensureNoPendingCorrections(d *models.DomainConfig) error {
 // IgnoredProviders is a lit of provider names that should not be used to fill challenges.
 var IgnoredProviders = map[string]bool{}
 
-func getCorrections(d *models.DomainConfig) ([]*models.Correction, error) {
+func (c *certManager) getCorrections(d *models.DomainConfig) ([]*models.Correction, error) {
 	cs := []*models.Correction{}
 	for _, p := range d.DNSProviderInstances {
 		if IgnoredProviders[p.Name] {
@@ -262,15 +266,16 @@ func getCorrections(d *models.DomainConfig) ([]*models.Correction, error) {
 	return cs, nil
 }
 
-func getAndRunCorrections(d *models.DomainConfig) error {
-	cs, err := getCorrections(d)
+func (c *certManager) getAndRunCorrections(d *models.DomainConfig) error {
+	cs, err := c.getCorrections(d)
 	if err != nil {
 		return err
 	}
 	fmt.Printf("%d corrections\n", len(cs))
-	for _, c := range cs {
-		fmt.Printf("Running [%s]\n", c.Msg)
-		err = c.F()
+	for _, corr := range cs {
+		fmt.Printf("Running [%s]\n", corr.Msg)
+		err = corr.F()
+		c.notifier.Notify(d.Name, "certs", corr.Msg, err, false)
 		if err != nil {
 			return err
 		}
@@ -287,7 +292,7 @@ func (c *certManager) finalCleanUp() error {
 	log.Println("Cleaning up all records we made")
 	var lastError error
 	for _, d := range c.originalDomains {
-		if err := getAndRunCorrections(d); err != nil {
+		if err := c.getAndRunCorrections(d); err != nil {
 			log.Printf("ERROR cleaning up: %s", err)
 			lastError = err
 		}
