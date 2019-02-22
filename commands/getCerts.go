@@ -40,6 +40,8 @@ type GetCertsArgs struct {
 	Vault          bool
 	VaultPath      string
 
+	Notify bool
+
 	IgnoredProviders string
 }
 
@@ -104,6 +106,11 @@ func (args *GetCertsArgs) flags() []cli.Flag {
 		Destination: &args.Verbose,
 		Usage:       "Enable detailed logging (deprecated: use the global -v flag)",
 	})
+	flags = append(flags, cli.BoolFlag{
+		Name:        "notify",
+		Destination: &args.Notify,
+		Usage:       `set to true to send notifications to configured destinations`,
+	})
 	return flags
 }
 
@@ -126,7 +133,7 @@ func GetCerts(args GetCertsArgs) error {
 	if PrintValidationErrors(errs) {
 		return fmt.Errorf("Exiting due to validation errors")
 	}
-	_, err = InitializeProviders(args.CredsFile, cfg, false)
+	notifier, err := InitializeProviders(args.CredsFile, cfg, args.Notify)
 	if err != nil {
 		return err
 	}
@@ -164,20 +171,24 @@ func GetCerts(args GetCertsArgs) error {
 	var client acme.Client
 
 	if args.Vault {
-		client, err = acme.NewVault(cfg, args.VaultPath, args.Email, acmeServer)
+		client, err = acme.NewVault(cfg, args.VaultPath, args.Email, acmeServer, notifier)
 	} else {
-		client, err = acme.New(cfg, args.CertDirectory, args.Email, acmeServer)
+		client, err = acme.New(cfg, args.CertDirectory, args.Email, acmeServer, notifier)
 	}
 	if err != nil {
 		return err
 	}
 	for _, cert := range certList {
 		v := args.Verbose || printer.DefaultPrinter.Verbose
-		_, err := client.IssueOrRenewCert(cert, args.RenewUnderDays, v)
+		issued, err := client.IssueOrRenewCert(cert, args.RenewUnderDays, v)
+		if issued || err != nil {
+			notifier.Notify(cert.CertName, "certificate", "Issued new certificate", err, false)
+		}
 		if err != nil {
 			return err
 		}
 	}
+	notifier.Done()
 	return nil
 }
 
