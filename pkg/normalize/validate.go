@@ -91,6 +91,9 @@ var labelUnderscores = []string{
 	"_amazonses",
 	"_dmarc",
 	"_domainkey",
+	"_jabber",
+	"_sip",
+	"_xmpp",
 }
 
 // these record types may contain underscores
@@ -113,7 +116,7 @@ func checkLabel(label string, rType string, domain string, meta map[string]strin
 	}
 
 	// Underscores are permitted in labels, but we print a warning unless they
-	// are used in a way we consider typical.  Yes, we're biased here.
+	// are used in a way we consider typical.  Yes, we're opinionated here.
 
 	// Don't warn for certain rtypes:
 	for _, ex := range rTypeUnderscores {
