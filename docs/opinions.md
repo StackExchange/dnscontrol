@@ -91,7 +91,7 @@ is desired and the compiler does the hard work for you.
 Some examples:
 
 * Macros and iterators permit you to state something once, correctly, and repeat it many places.
-* TXT strings are expressed as JavaScript strings, with no weird DNS-required special escape charactors.  DNSControl does the escaping for you.
+* TXT strings are expressed as JavaScript strings, with no weird DNS-required special escape characters.  DNSControl does the escaping for you.
 * Domain names with Unicode are listed as real Unicode.  Punycode translation is done for you.
 * IP addresses are expressed as IP addresses; and reversing them to in-addr.arpa addresses is done for you.
 * SPF records are stated in the most verbose way; DNSControl optimizes it for you in a safe, opt-in way.
@@ -130,3 +130,29 @@ like that.
 Therefore, we require all CNAME, MX, and NS targets to be FQDNs (they must
 end with a "."), or to be a shortname (no dots at all).  Everything
 else is ambiguous and therefore an error.
+
+# Opinion #7 Hostnames don't have underscores
+
+Hostnames shouldn't have `_` in them.  That's pretty
+non-controversial.
+
+We print a warning if a hostname includes an underscore because
+it may be a naive user that has confused the hyphen (`-`) and the
+underscore (`_`).
+
+However that leads to an interesting problem. When is a DNS label
+a hostname and when it it just a label? Non-hostname labels
+can have underscores. To quote
+[the Wikipedia entry on hostnames](https://en.wikipedia.org/wiki/Hostname#Restrictions_on_valid_hostnames)
+"While a hostname may not contain other characters, such as the
+underscore character (`_`), other DNS names may contain the
+underscore. Systems such as DomainKeys and service records use
+the underscore as a means to assure that their special character
+is not confused with hostnames. For example,
+`_http._sctp.www.example.com` specifies a service pointer for an
+SCTP capable webserver host (www) in the domain example.com."
+
+Therefore we print a warning if a label has an underscore in it,
+unless the rtype is SRV, TLSA, TXT, or if the name starts with
+`_dmarc` and a few other prefixes.  We're always willing to
+[add more exceptions](https://github.com/StackExchange/dnscontrol/pull/453/files).
