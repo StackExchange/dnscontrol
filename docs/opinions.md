@@ -133,17 +133,14 @@ else is ambiguous and therefore an error.
 
 # Opinion #7 Hostnames don't have underscores
 
-Hostnames shouldn't have `_` in them.  That's pretty
-non-controversial.
+DNSControl prints warnings if a hostname includes an underscore
+(`_`) because underscores are not permitted in hostnames.  
 
-We print a warning if a hostname includes an underscore because
-it may be a naive user that has confused the hyphen (`-`) and the
-underscore (`_`).
+We want to prevent a naive user from including an underscore
+when they meant to use a hyphen (`-`).
 
-However that leads to an interesting problem. When is a DNS label
-a hostname and when it it just a label? Non-hostname labels
-can have underscores. To quote
-[the Wikipedia entry on hostnames](https://en.wikipedia.org/wiki/Hostname#Restrictions_on_valid_hostnames)
+Hostnames are more restrictive than general DNS labels.
+To quote [the Wikipedia entry on hostnames](https://en.wikipedia.org/wiki/Hostname#Restrictions_on_valid_hostnames)
 "While a hostname may not contain other characters, such as the
 underscore character (`_`), other DNS names may contain the
 underscore. Systems such as DomainKeys and service records use
@@ -152,7 +149,11 @@ is not confused with hostnames. For example,
 `_http._sctp.www.example.com` specifies a service pointer for an
 SCTP capable webserver host (www) in the domain example.com."
 
+However that leads to an interesting problem. When is a DNS label
+a hostname and when it it just a DNS label?  There is no way to
+know for sure because code can't guess intention.
+
 Therefore we print a warning if a label has an underscore in it,
 unless the rtype is SRV, TLSA, TXT, or if the name starts with
-`_dmarc` and a few other prefixes.  We're always willing to
+certain prefixes such as `_dmarc`.  We're always willing to
 [add more exceptions](https://github.com/StackExchange/dnscontrol/pull/453/files).
