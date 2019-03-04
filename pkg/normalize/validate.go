@@ -106,18 +106,23 @@ func checkLabel(label string, rType string, domain string, meta map[string]strin
 			return errors.Errorf(`label %s ends with domain name %s. Record names should not be fully qualified. Add {skip_fqdn_check:"true"} to this record if you really want to make %s.%s`, label, domain, label, domain)
 		}
 	}
-	// check for underscores last
+
+	// Underscores are permitted in labels, but we print a warning unless they
+	// are used in a way we consider typical.  Yes, we're biased here.
+
+	// Don't warn for certain rtypes:
 	for _, ex := range rTypeUnderscores {
 		if rType == ex {
 			return nil
 		}
 	}
+	// Don't warn for certain label substrings
 	for _, ex := range labelUnderscores {
 		if strings.Contains(label, ex) {
 			return nil
 		}
 	}
-	// underscores are warnings
+	// Otherwise, warn.
 	if strings.ContainsRune(label, '_') {
 		return Warning{errors.Errorf("label %s.%s contains an underscore", label, domain)}
 	}
