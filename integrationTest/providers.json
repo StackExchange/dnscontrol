@@ -82,6 +82,11 @@
     "domain": "example.com",
     "directory": "config"
   },
+  "OPENSRS": {
+    "apikey": "$OPENSRS_APIKEY",
+    "baseurl": "$OPENSRS_BASEURL",
+    "username": "$OPENSRS_USERNAME"
+  },
   "ROUTE53": {
     "KeyId": "$R53_KEY_ID",
     "SecretKey": "$R53_KEY",

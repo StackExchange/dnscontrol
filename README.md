@@ -26,6 +26,7 @@ Currently supported DNS providers:
  - Namecheap
  - Name.com
  - NS1
+ - OpenSRS
  - Route 53
  - SoftLayer
  - Vultr

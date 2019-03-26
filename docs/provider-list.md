@@ -68,6 +68,7 @@ Maintainers of contributed providers:
 * Linode @koesie10
 * namecheap @captncraig
 * ns1 @captncraig
+* OpenSRS @philhug
 * OVH @masterzen
 * Vultr @geek1011
 

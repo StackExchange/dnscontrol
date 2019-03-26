@@ -8,6 +8,7 @@ providers/gandi @TomOnTime
 providers/hexonet @papakai
 providers/linode @koesie10
 providers/namecheap @captncraig
+providers/opensrs @philhug
 # providers/namedotcom
 providers/ns1 @captncraig
 # providers/route53
