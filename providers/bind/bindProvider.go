@@ -33,6 +33,7 @@ import (
 var features = providers.DocumentationNotes{
 	providers.CanUseCAA:              providers.Can(),
 	providers.CanUsePTR:              providers.Can(),
+	providers.CanUseNAPTR:              providers.Can(),
 	providers.CanUseSRV:              providers.Can(),
 	providers.CanUseSSHFP:            providers.Can(),
 	providers.CanUseTLSA:             providers.Can(),

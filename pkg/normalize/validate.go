@@ -62,6 +62,7 @@ func validateRecordTypes(rec *models.RecordConfig, domain string, pTypes []strin
 		"TXT":              true,
 		"NS":               true,
 		"PTR":              true,
+		"NAPTR":            true,
 		"ALIAS":            false,
 	}
 	_, ok := validTypes[rec.Type]
@@ -169,6 +170,8 @@ func checkTargets(rec *models.RecordConfig, domain string) (errs []error) {
 			check(errors.Errorf("cannot create NS record for bare domain. Use NAMESERVER instead"))
 		}
 	case "PTR":
+		check(checkTarget(target))
+	case "NAPTR":
 		check(checkTarget(target))
 	case "ALIAS":
 		check(checkTarget(target))
