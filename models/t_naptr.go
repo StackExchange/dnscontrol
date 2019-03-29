@@ -14,7 +14,8 @@ func (rc *RecordConfig) SetTargetNAPTR(order uint16, preference uint16, flags st
 	rc.NaptrFlags = flags
 	rc.NaptrService = service
 	rc.NaptrRegexp = regexp
-	rc.NaptrReplacement = target
+	rc.SetTarget(target)
+
 	if rc.Type == "" {
 		rc.Type = "NAPTR"
 	}

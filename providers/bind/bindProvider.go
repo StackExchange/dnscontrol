@@ -33,7 +33,7 @@ import (
 var features = providers.DocumentationNotes{
 	providers.CanUseCAA:              providers.Can(),
 	providers.CanUsePTR:              providers.Can(),
-	providers.CanUseNAPTR:              providers.Can(),
+	providers.CanUseNAPTR:            providers.Can(),
 	providers.CanUseSRV:              providers.Can(),
 	providers.CanUseSSHFP:            providers.Can(),
 	providers.CanUseTLSA:             providers.Can(),
@@ -121,6 +121,8 @@ func rrToRecord(rr dns.RR, origin string, replaceSerial uint32) (models.RecordCo
 		panicInvalid(rc.SetTarget(v.Ns))
 	case *dns.PTR:
 		panicInvalid(rc.SetTarget(v.Ptr))
+	case *dns.NAPTR:
+		panicInvalid(rc.SetTargetNAPTR(v.Order, v.Preference, v.Flags, v.Service, v.Regexp, v.Replacement))
 	case *dns.SOA:
 		oldSerial = v.Serial
 		if oldSerial == 0 {

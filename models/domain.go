@@ -80,14 +80,14 @@ func (dc *DomainConfig) Punycode() error {
 		}
 		rec.SetLabelFromFQDN(t, dc.Name)
 		switch rec.Type { // #rtype_variations
-		case "ALIAS", "MX", "NS", "CNAME", "PTR", "NAPTR", "SRV", "URL", "URL301", "FRAME", "R53_ALIAS":
+		case "ALIAS", "MX", "NS", "CNAME", "PTR", "SRV", "URL", "URL301", "FRAME", "R53_ALIAS":
 			// These rtypes are hostnames, therefore need to be converted (unlike, for example, an AAAA record)
 			t, err := idna.ToASCII(rec.GetTargetField())
 			rec.SetTarget(t)
 			if err != nil {
 				return err
 			}
-		case "A", "AAAA", "CAA", "SSHFP", "TXT", "TLSA":
+		case "A", "AAAA", "CAA", "NAPTR", "SSHFP", "TXT", "TLSA":
 			// Nothing to do.
 		default:
 			msg := fmt.Sprintf("Punycode rtype %v unimplemented", rec.Type)
