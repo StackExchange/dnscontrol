@@ -171,13 +171,11 @@ func checkTargets(rec *models.RecordConfig, domain string) (errs []error) {
 		}
 	case "PTR":
 		check(checkTarget(target))
-	case "NAPTR":
-		check(checkTarget(target))
 	case "ALIAS":
 		check(checkTarget(target))
 	case "SRV":
 		check(checkTarget(target))
-	case "TXT", "IMPORT_TRANSFORM", "CAA", "SSHFP", "TLSA":
+	case "TXT", "IMPORT_TRANSFORM", "CAA", "NAPTR", "SSHFP", "TLSA":
 	default:
 		if rec.Metadata["orig_custom_type"] != "" {
 			// it is a valid custom type. We perform no validation on target
