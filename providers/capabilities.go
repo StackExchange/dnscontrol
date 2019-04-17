@@ -19,6 +19,9 @@ const (
 	// CanUsePTR indicates the provider can handle PTR records
 	CanUsePTR
 
+	// CanUseNAPTR indicates the provider can handle PTR records
+	CanUseNAPTR
+
 	// CanUseSRV indicates the provider can handle SRV records
 	CanUseSRV
 
