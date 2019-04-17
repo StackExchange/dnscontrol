@@ -213,6 +213,47 @@ func TestCAAValidation(t *testing.T) {
 	}
 }
 
+func TestCheckDuplicates_pos(t *testing.T) {
+	records := []*models.RecordConfig{
+		makeRC("@", "example.com", "1.1.1.1", models.RecordConfig{Type: "A"}),
+		makeRC("@", "example.com", "5.5.5.5", models.RecordConfig{Type: "A"}),
+		makeRC("www", "example.com", "4.4.4.4", models.RecordConfig{Type: "A"}),
+		makeRC("www", "example.com", "5.5.5.5", models.RecordConfig{Type: "A"}),
+		makeRC("zzz", "example.com", "4.4.4.4", models.RecordConfig{Type: "A", TTL: 111}),
+		makeRC("zzz", "example.com", "4.4.4.4", models.RecordConfig{Type: "A", TTL: 222}), // Not a dup since TTL is different
+		makeRC("@", "example.com", "ns1.foo.com.", models.RecordConfig{Type: "NS"}),
+		makeRC("@", "example.com", "ns2.foo.com.", models.RecordConfig{Type: "NS"}),
+		makeRC("@", "example.com", "ns3.foo.com.", models.RecordConfig{Type: "NS"}),
+	}
+	errs := checkDuplicates(records)
+	if len(errs) != 0 {
+		t.Errorf("Expect duplicate NOT found but found %q", errs)
+	}
+}
+
+func TestCheckDuplicates_ns(t *testing.T) {
+	records := []*models.RecordConfig{
+		makeRC("@", "example.com", "ns1.foo.com.", models.RecordConfig{Type: "NS"}),
+		makeRC("@", "example.com", "ns2.foo.com.", models.RecordConfig{Type: "NS"}),
+		makeRC("@", "example.com", "ns2.foo.com.", models.RecordConfig{Type: "NS"}), // DUP
+	}
+	errs := checkDuplicates(records)
+	if len(errs) == 0 {
+		t.Error("Expect duplicate found but found none")
+	}
+}
+
+func TestCheckDuplicates_a1(t *testing.T) {
+	records := []*models.RecordConfig{
+		makeRC("@", "example.com", "1.1.1.1", models.RecordConfig{Type: "A"}),
+		makeRC("@", "example.com", "1.1.1.1", models.RecordConfig{Type: "A"}), // DUP
+	}
+	errs := checkDuplicates(records)
+	if len(errs) == 0 {
+		t.Error("Expect duplicate found but found none")
+	}
+}
+
 func TestTLSAValidation(t *testing.T) {
 	config := &models.DNSConfig{
 		Domains: []*models.DomainConfig{

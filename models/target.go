@@ -3,6 +3,7 @@ package models
 import (
 	"fmt"
 	"net"
+	"sort"
 	"strings"
 
 	"github.com/miekg/dns"
@@ -64,6 +65,31 @@ func (rc *RecordConfig) GetTargetCombined() string {
 		panic("assertion failed. dns.Hdr.String() behavior has changed in an incompatible way")
 	}
 	return full[len(header):]
+}
+
+// GetTargetDiffable returns a string that is comparible by a differ.
+// extraMaps: a list of maps that should be included in the comparison.
+func (rc *RecordConfig) GetTargetDiffable(extraMaps ...map[string]string) string {
+	content := fmt.Sprintf("%v ttl=%d", rc.GetTargetCombined(), rc.TTL)
+	for _, valueMap := range extraMaps {
+		// sort the extra values map keys to perform a deterministic
+		// comparison since Golang maps iteration order is not guaranteed
+
+		// FIXME(tlim) The keys of each map is sorted per-map, not across
+		// all maps. This may be intentional since we'd have no way to
+		// deal with duplicates.
+
+		keys := make([]string, 0)
+		for k := range valueMap {
+			keys = append(keys, k)
+		}
+		sort.Strings(keys)
+		for _, k := range keys {
+			v := valueMap[k]
+			content += fmt.Sprintf(" %s=%s", k, v)
+		}
+	}
+	return content
 }
 
 // GetTargetSortable returns a string that is sortable.
