@@ -432,15 +432,15 @@ func makeTests(t *testing.T) []*TestCase {
 		t.Log("Skipping NAPTR Tests because provider does not support them")
 	} else {
 		tests = append(tests, tc("Empty"),
-			tc("NAPTR record", naptr("example", 100, 10, "U", "E2U+sip", "!^.*$!sip:customer-service@example.com!", "foo.com")),
-			tc("NAPTR second record", naptr("example", 102, 10, "U", "E2U+email", "!^.*$!mailto:information@example.com!", "foo.com.")),
-			tc("NAPTR delete record", naptr("example", 102, 10, "U", "E2U+email", "!^.*$!mailto:information@example.com!", "foo.com.")),
-			tc("NAPTR change target", naptr("example", 102, 10, "U", "E2U+email", "!^.*$!mailto:information@example.com!", "foo2.com.")),
-			tc("NAPTR change order", naptr("example", 103, 10, "U", "E2U+email", "!^.*$!mailto:information@example.com!", "foo2.com.")),
-			tc("NAPTR change preference", naptr("example", 103, 20, "U", "E2U+email", "!^.*$!mailto:information@example.com!", "foo2.com.")),
-			tc("NAPTR change flags", naptr("example", 103, 20, "A", "E2U+email", "!^.*$!mailto:information@example.com!", "foo2.com.")),
-			tc("NAPTR change service", naptr("example", 103, 20, "A", "E2U+sip", "!^.*$!mailto:information@example.com!", "foo2.com.")),
-			tc("NAPTR change regexp", naptr("example", 103, 20, "A", "E2U+sip", "!^.*$!sip:customer-service@example.com!", "foo2.com.")),
+			tc("NAPTR record", naptr("test", 100, 10, "U", "E2U+sip", "!^.*$!sip:customer-service@example.com!", "example.foo.com.")),
+			tc("NAPTR second record", naptr("test", 102, 10, "U", "E2U+email", "!^.*$!mailto:information@example.com!", "example.foo.com.")),
+			tc("NAPTR delete record", naptr("test", 100, 10, "U", "E2U+email", "!^.*$!mailto:information@example.com!", "example.foo.com.")),
+			tc("NAPTR change target", naptr("test", 100, 10, "U", "E2U+email", "!^.*$!mailto:information@example.com!", "example2.foo.com.")),
+			tc("NAPTR change order", naptr("test", 103, 10, "U", "E2U+email", "!^.*$!mailto:information@example.com!", "example2.foo.com.")),
+			tc("NAPTR change preference", naptr("test", 103, 20, "U", "E2U+email", "!^.*$!mailto:information@example.com!", "example2.foo.com.")),
+			tc("NAPTR change flags", naptr("test", 103, 20, "A", "E2U+email", "!^.*$!mailto:information@example.com!", "example2.foo.com.")),
+			tc("NAPTR change service", naptr("test", 103, 20, "A", "E2U+sip", "!^.*$!mailto:information@example.com!", "example2.foo.com.")),
+			tc("NAPTR change regexp", naptr("test", 103, 20, "A", "E2U+sip", "!^.*$!sip:customer-service@example.com!", "example2.foo.com.")),
 		)
 	}
 
