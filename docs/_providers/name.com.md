@@ -67,8 +67,8 @@ integration_test.go:140: api returned unexpected response: invalid character '<'
 ```
 
 This error means an invalid URL is being used to reach the API
-endpoint.  It usually means a setting is `api.name.com/api` when you
-should specify just `api.name.com` (remove the `/api`).
+endpoint.  It usually means a setting is `api.name.com/api` when
+`api.name.com` is correct (i.e. remove the `/api`).
 
 In integration tests:
 
@@ -93,4 +93,5 @@ You meant to do something like `export NAMEDOTCOM_URL='api.name.com' instead.
 
 In production, the `apiurl` setting in creds.json needs to be
 adjusted. You can simply leave this option out and use the default,
-which is correct.
+which is correct. If you are using the EO&T system, leave the
+protocol (`http://`) off the URL.
