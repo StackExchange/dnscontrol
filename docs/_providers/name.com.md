@@ -58,16 +58,21 @@ D("example.tld", REG_NAMECOM, DnsProvider(R53),
 ## Activation
 In order to activate API functionality on your Name.com account, you must apply to the API program. The application form is [located here](https://www.name.com/reseller/apply). It usually takes a few days to get a response. After you are accepted, you should receive your API token via email.
 
-## Tips:
+## Integration Test Notes:
 
-When running integration tests, this error:
+### invalid character '<'
+
+When running integration tests, this error
+means you are setting `export NAMEDOTCOM_URL='api.name.com/api'` and need to remove the `/api`.
 
 ```
 integration_test.go:140: api returned unexpected response: invalid character '<' looking for beginning of value
 ```
 
-Means you are setting `export NAMEDOTCOM_URL='api.name.com/api'` and need to remove the `/api`.
+TODO(tlim): Improve the error message. (Volunteer needed!)
 
+
+### dial tcp: lookup https: no such host
 
 When running integration tests, this error:
 
