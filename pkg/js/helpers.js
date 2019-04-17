@@ -217,6 +217,28 @@ var CNAME = recordBuilder('CNAME');
 // PTR(name,target, recordModifiers...)
 var PTR = recordBuilder('PTR');
 
+// NAPTR(name,order,preference,flags,service,regexp,target, recordModifiers...)
+var NAPTR = recordBuilder('NAPTR', {
+    args: [
+        ['name', _.isString],
+        ['order', _.isNumber],
+        ['preference', _.isNumber],
+        ['flags', _.isString],
+        ['service', _.isString],
+        ['regexp', _.isString],
+        ['target', _.isString],
+    ],
+    transform: function(record, args, modifiers) {
+        record.name = args.name;
+        record.naptrorder = args.order;
+        record.naptrpreference = args.preference;
+        record.naptrflags = args.flags;
+        record.naptrservice = args.service;
+        record.naptrregexp = args.regexp;
+        record.target = args.target;
+    },
+});
+
 // SRV(name,priority,weight,port,target, recordModifiers...)
 var SRV = recordBuilder('SRV', {
     args: [
