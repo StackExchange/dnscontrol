@@ -19,9 +19,9 @@ import (
 //     CAA
 //     CNAME
 //     MX
+//     NAPTR
 //     NS
 //     PTR
-//     NAPTR
 //     SRV
 //     SSHFP
 //     TLSA
