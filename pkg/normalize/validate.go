@@ -62,6 +62,7 @@ func validateRecordTypes(rec *models.RecordConfig, domain string, pTypes []strin
 		"TXT":              true,
 		"NS":               true,
 		"PTR":              true,
+		"NAPTR":            true,
 		"ALIAS":            false,
 	}
 	_, ok := validTypes[rec.Type]
@@ -170,6 +171,8 @@ func checkTargets(rec *models.RecordConfig, domain string) (errs []error) {
 		}
 	case "PTR":
 		check(checkTarget(target))
+	case "NAPTR":
+		check(checkTarget(target))
 	case "ALIAS":
 		check(checkTarget(target))
 	case "SRV":
@@ -231,7 +234,7 @@ func importTransform(srcDomain, dstDomain *models.DomainConfig, transforms []tra
 			r := newRec()
 			r.SetTarget(transformCNAME(r.GetTargetField(), srcDomain.Name, dstDomain.Name))
 			dstDomain.Records = append(dstDomain.Records, r)
-		case "MX", "NS", "SRV", "TXT", "CAA", "TLSA":
+		case "MX", "NAPTR", "NS", "SRV", "TXT", "CAA", "TLSA":
 			// Not imported.
 			continue
 		default:
@@ -299,7 +302,7 @@ func NormalizeAndValidateConfig(config *models.DNSConfig) (errs []error) {
 			}
 
 			// Canonicalize Targets.
-			if rec.Type == "CNAME" || rec.Type == "MX" || rec.Type == "NS" || rec.Type == "SRV" {
+			if rec.Type == "CNAME" || rec.Type == "MX" || rec.Type == "NAPTR" || rec.Type == "NS" || rec.Type == "SRV" {
 				// #rtype_variations
 				// These record types have a target that is a hostname.
 				// We normalize them to a FQDN so there is less variation to handle.  If a
