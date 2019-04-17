@@ -58,26 +58,39 @@ D("example.tld", REG_NAMECOM, DnsProvider(R53),
 ## Activation
 In order to activate API functionality on your Name.com account, you must apply to the API program. The application form is [located here](https://www.name.com/reseller/apply). It usually takes a few days to get a response. After you are accepted, you should receive your API token via email.
 
-## Integration Test Notes:
+## Tips and error messages
 
 ### invalid character '<'
-
-When running integration tests, this error
-means you are setting `export NAMEDOTCOM_URL='api.name.com/api'` and need to remove the `/api`.
 
 ```
 integration_test.go:140: api returned unexpected response: invalid character '<' looking for beginning of value
 ```
+
+This error means an invalid URL is being used to reach the API
+endpoint.  It usually means a setting is `api.name.com/api` when you
+should specify just `api.name.com` (remove the `/api`).
+
+In integration tests:
+
+ * Wrong: `export NAMEDOTCOM_URL='api.name.com/api'`
+ * Right: `export NAMEDOTCOM_URL='api.name.com'`
+
+In production, the `apiurl` setting in creds.json is wrong. You can
+simply leave this option out and use the default, which is correct.
 
 TODO(tlim): Improve the error message. (Volunteer needed!)
 
 
 ### dial tcp: lookup https: no such host
 
-When running integration tests, this error:
-
 ```
 integration_test.go:81: Failed getting nameservers Get https://https//api.name.com/api/v4/domains/stackosphere.com?: dial tcp: lookup https: no such host
 ```
 
-It means you included the `https://` in the `NAMEDOTCOM_URL` variable. You meant to do something like `export NAMEDOTCOM_URL='api.name.com' instead.
+When running integration tests, this error
+means you included the `https://` in the `NAMEDOTCOM_URL` variable.
+You meant to do something like `export NAMEDOTCOM_URL='api.name.com' instead.
+
+In production, the `apiurl` setting in creds.json needs to be
+adjusted. You can simply leave this option out and use the default,
+which is correct.
