@@ -8,11 +8,8 @@ import (
 	_ "github.com/StackExchange/dnscontrol/providers/cloudflare"
 	_ "github.com/StackExchange/dnscontrol/providers/digitalocean"
 	_ "github.com/StackExchange/dnscontrol/providers/dnsimple"
-<<<<<<< HEAD
 	_ "github.com/StackExchange/dnscontrol/providers/dyn"
-=======
 	_ "github.com/StackExchange/dnscontrol/providers/exoscale"
->>>>>>> master
 	_ "github.com/StackExchange/dnscontrol/providers/gandi"
 	_ "github.com/StackExchange/dnscontrol/providers/gcloud"
 	_ "github.com/StackExchange/dnscontrol/providers/hexonet"
