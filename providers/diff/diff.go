@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"sort"
 
+	"github.com/gobwas/glob"
+
 	"github.com/StackExchange/dnscontrol/models"
 	"github.com/StackExchange/dnscontrol/pkg/printer"
 )
@@ -32,12 +34,17 @@ func New(dc *models.DomainConfig, extraValues ...func(*models.RecordConfig) map[
 	return &differ{
 		dc:          dc,
 		extraValues: extraValues,
+
+		// compile IGNORE glob patterns
+		compiledIgnoredLabels: compileIgnoredLabels(dc.IgnoredLabels),
 	}
 }
 
 type differ struct {
 	dc          *models.DomainConfig
 	extraValues []func(*models.RecordConfig) map[string]string
+
+	compiledIgnoredLabels []glob.Glob
 }
 
 // get normalized content for record. target, ttl, mxprio, and specified metadata
@@ -212,9 +219,24 @@ func sortedKeys(m map[string]*models.RecordConfig) []string {
 	return s
 }
 
+func compileIgnoredLabels(ignoredLabels []string) []glob.Glob {
+	result := make([]glob.Glob, 0, len(ignoredLabels))
+
+	for _, tst := range ignoredLabels {
+		g, err := glob.Compile(tst, '.')
+		if err != nil {
+			panic(fmt.Sprintf("Failed to compile IGNORE pattern %q: %v", tst, err))
+		}
+
+		result = append(result, g)
+	}
+
+	return result
+}
+
 func (d *differ) matchIgnored(name string) bool {
-	for _, tst := range d.dc.IgnoredLabels {
-		if name == tst {
+	for _, tst := range d.compiledIgnoredLabels {
+		if tst.Match(name) {
 			return true
 		}
 	}

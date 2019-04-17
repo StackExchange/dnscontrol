@@ -230,3 +230,35 @@ func TestModifyingIgnoredRecords(t *testing.T) {
 
 	checkLengthsFull(t, existing, desired, 0, 0, 0, 1, false, []string{"www1", "www2"})
 }
+
+func TestGlobIgnoredRecords(t *testing.T) {
+	existing := []*models.RecordConfig{
+		myRecord("www1 MX 1 1.1.1.1"),
+		myRecord("foo.www2 MX 1 1.1.1.1"),
+		myRecord("foo.bar.www3 MX 1 1.1.1.1"),
+		myRecord("www4 MX 1 1.1.1.1"),
+	}
+	desired := []*models.RecordConfig{
+		myRecord("www4 MX 1 2.2.2.2"),
+	}
+	checkLengthsFull(t, existing, desired, 0, 0, 0, 1, false, []string{"www1", "*.www2", "**.www3"})
+}
+
+func TestInvalidGlobIgnoredRecord(t *testing.T) {
+	existing := []*models.RecordConfig{
+		myRecord("www1 MX 1 1.1.1.1"),
+		myRecord("www2 MX 1 1.1.1.1"),
+		myRecord("www3 MX 1 1.1.1.1"),
+	}
+	desired := []*models.RecordConfig{
+		myRecord("www4 MX 1 2.2.2.2"),
+	}
+
+	defer func() {
+		if r := recover(); r == nil {
+			t.Errorf("should panic: invalid glob pattern for IGNORE")
+		}
+	}()
+
+	checkLengthsFull(t, existing, desired, 0, 1, 0, 0, false, []string{"www1", "www2", "[.www3"})
+}
