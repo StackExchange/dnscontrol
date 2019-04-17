@@ -8,6 +8,7 @@ import (
 	"github.com/pkg/errors"
 )
 
+// ReverseDomainName turns a CIDR block into a reversed (in-addr) name.
 func ReverseDomainName(cidr string) (string, error) {
 	a, c, err := net.ParseCIDR(cidr)
 	if err != nil {
@@ -25,7 +26,7 @@ func ReverseDomainName(cidr string) (string, error) {
 	bits, total := c.Mask.Size()
 	var toTrim int
 	if bits == 0 {
-		return "", fmt.Errorf("Cannot use /0 in reverse cidr")
+		return "", errors.Errorf("Cannot use /0 in reverse cidr")
 	}
 
 	// Handle IPv4 "Classless in-addr.arpa delegation" RFC2317:
@@ -40,16 +41,16 @@ func ReverseDomainName(cidr string) (string, error) {
 	// Handle IPv4 Class-full and IPv6:
 	if total == 32 {
 		if bits%8 != 0 {
-			return "", fmt.Errorf("IPv4 mask must be multiple of 8 bits")
+			return "", errors.Errorf("IPv4 mask must be multiple of 8 bits")
 		}
 		toTrim = (total - bits) / 8
 	} else if total == 128 {
 		if bits%4 != 0 {
-			return "", fmt.Errorf("IPv6 mask must be multiple of 4 bits")
+			return "", errors.Errorf("IPv6 mask must be multiple of 4 bits")
 		}
 		toTrim = (total - bits) / 4
 	} else {
-		return "", fmt.Errorf("Address is not IPv4 or IPv6: %v", cidr)
+		return "", errors.Errorf("Address is not IPv4 or IPv6: %v", cidr)
 	}
 
 	parts := strings.SplitN(base, ".", toTrim+1)

@@ -3,12 +3,10 @@ package spflib
 import (
 	"strings"
 	"testing"
-
-	"github.com/StackExchange/dnscontrol/pkg/dnsresolver"
 )
 
 func TestParse(t *testing.T) {
-	dnsres, err := dnsresolver.NewResolverPreloaded("testdata-dns1.json")
+	dnsres, err := NewCache("testdata-dns1.json")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -22,9 +20,23 @@ func TestParse(t *testing.T) {
 		"include:servers.mcsv.net",
 		"include:sendgrid.net",
 		"include:spf.mtasv.net",
+		"exists:%{i}._spf.sparkpostmail.com",
+		"ptr:sparkpostmail.com",
 		"~all"}, " "), dnsres)
 	if err != nil {
 		t.Fatal(err)
 	}
-	DumpSPF(rec, "")
+	t.Log(rec.Print())
+}
+
+func TestParseWithDoubleSpaces(t *testing.T) {
+	dnsres, err := NewCache("testdata-dns1.json")
+	if err != nil {
+		t.Fatal(err)
+	}
+	rec, err := Parse("v=spf1 ip4:192.111.0.0/24  ip4:192.111.1.0/24 -all", dnsres)
+	if err != nil {
+		t.Fatal(err)
+	}
+	t.Log(rec.Print())
 }

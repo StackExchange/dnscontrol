@@ -1,26 +1,26 @@
 {
-		  "registrars": [
-		    {
-		      "name": "Cloudflare",
-		      "type": "CLOUDFLAREAPI"
-		    }
-		  ],
-		  "dns_providers": [],
-		  "domains": [
-		    {
-		      "name": "foo.com",
-		      "registrar": "Cloudflare",
-		      "dnsProviders": {},
-		      "records": [
-		        {
-		          "type": "A",
-		          "name": "@",
-		          "target": "1.2.3.4",
-		          "meta": {
-		            "cloudflare_proxy": "ON"
-		          }
-		        }
-		      ]
-		    }
-		  ]
-		}
+  "registrars": [
+    {
+      "name": "Cloudflare",
+      "type": "CLOUDFLAREAPI"
+    }
+  ],
+  "dns_providers": [],
+  "domains": [
+    {
+      "name": "foo.com",
+      "registrar": "Cloudflare",
+      "dnsProviders": {},
+      "records": [
+        {
+          "type": "A",
+          "name": "@",
+          "target": "1.2.3.4",
+          "meta": {
+            "cloudflare_proxy": "ON"
+          }
+        }
+      ]
+    }
+  ]
+}

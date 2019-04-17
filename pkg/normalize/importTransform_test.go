@@ -1,9 +1,16 @@
 package normalize
 
 import (
-	"github.com/StackExchange/dnscontrol/models"
 	"testing"
+
+	"github.com/StackExchange/dnscontrol/models"
 )
+
+func makeRC(label, domain, target string, rc models.RecordConfig) *models.RecordConfig {
+	rc.SetLabel(label, domain)
+	rc.SetTarget(target)
+	return &rc
+}
 
 func TestImportTransform(t *testing.T) {
 
@@ -12,15 +19,15 @@ func TestImportTransform(t *testing.T) {
 	src := &models.DomainConfig{
 		Name: "stackexchange.com",
 		Records: []*models.RecordConfig{
-			{Type: "A", Name: "*", NameFQDN: "*.stackexchange.com", Target: "0.0.2.2"},
-			{Type: "A", Name: "www", NameFQDN: "", Target: "0.0.1.1"},
+			makeRC("*", "stackexchange.com", "0.0.2.2", models.RecordConfig{Type: "A"}),
+			makeRC("www", "stackexchange.com", "0.0.1.1", models.RecordConfig{Type: "A"}),
 		},
 	}
 	dst := &models.DomainConfig{
 		Name: "internal",
 		Records: []*models.RecordConfig{
-			{Type: "A", Name: "*.stackexchange.com", NameFQDN: "*.stackexchange.com.internal", Target: "0.0.3.3", Metadata: map[string]string{"transform_table": transformSingle}},
-			{Type: "IMPORT_TRANSFORM", Name: "@", Target: "stackexchange.com", Metadata: map[string]string{"transform_table": transformDouble}},
+			makeRC("*.stackexchange.com", "*.stackexchange.com.internal", "0.0.3.3", models.RecordConfig{Type: "A", Metadata: map[string]string{"transform_table": transformSingle}}),
+			makeRC("@", "internal", "stackexchange.com", models.RecordConfig{Type: "IMPORT_TRANSFORM", Metadata: map[string]string{"transform_table": transformDouble}}),
 		},
 	}
 	cfg := &models.DNSConfig{

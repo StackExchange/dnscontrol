@@ -1,0 +1,84 @@
+---
+providers:
+  config:
+    class: octodns.provider.yaml.YamlProvider
+    directory: ./config
+zones:
+  apptivate.ms.:
+    sources:
+      - config
+  askubuntu.com.:
+    sources:
+      - config
+  blogoverflow.com.:
+    sources:
+      - config
+  bosun.org.:
+    sources:
+      - config
+  hashcode.ru.:
+    sources:
+      - config
+  isstackoverflowdownforeveryoneorjustme.com.:
+    sources:
+      - config
+  mathoverflow.net.:
+    sources:
+      - config
+  miniprofiler.com.:
+    sources:
+      - config
+  s.tk.:
+    sources:
+      - config
+  serverfault.com.:
+    sources:
+      - config
+  sezn.ru.:
+    sources:
+      - config
+  sstatic.net.:
+    sources:
+      - config
+  stackapps.com.:
+    sources:
+      - config
+  stackauth.com.:
+    sources:
+      - config
+  stackenterprise.co.:
+    sources:
+      - config
+  stackex.com.:
+    sources:
+      - config
+  stackexchange.com.:
+    sources:
+      - config
+  stackoverflow.blog.:
+    sources:
+      - config
+  stackoverflow.com.:
+    sources:
+      - config
+  stackoverflow.design.:
+    sources:
+      - config
+  stackoverflow.email.:
+    sources:
+      - config
+  stackoverflow.ru.:
+    sources:
+      - config
+  stackoverflowbusiness.com.:
+    sources:
+      - config
+  stacksnippets.net.:
+    sources:
+      - config
+  superuser.com.:
+    sources:
+      - config
+  teststackoverflow.com.:
+    sources:
+      - config

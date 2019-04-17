@@ -1,5 +1,6 @@
 ---
 layout: default
+title: Examples
 ---
 
 # Examples
@@ -33,7 +34,7 @@ D('example.com', REG, DnsProvider('GCLOUD'),
 D('example.com', registrar,
     DefaultTTL('5m'), // Default for a domain
     A('@', '1.2.3.4', TTL('10m')), // individual record
-    {'ns_ttl': '600'} // On domain apex NS RRs
+    NAMESERVER_TTL('10m') // On domain apex NS RRs
 );
 
 {% endhighlight %}
@@ -45,8 +46,8 @@ D('example.com', registrar,
 var addrA = IP('1.2.3.4')
 
 D('example.com', REG, DnsProvider('R53'),
-    A('@', addrA), //1.2.3.4
-    A('www', addrA + 1), //1.2.3.5
+    A('@', addrA), // 1.2.3.4
+    A('www', addrA + 1), // 1.2.3.5
 )
 {% endhighlight %}
 

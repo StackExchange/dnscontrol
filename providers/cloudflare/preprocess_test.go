@@ -16,14 +16,25 @@ func newDomainConfig() *models.DomainConfig {
 	}
 }
 
+func makeRCmeta(meta map[string]string) *models.RecordConfig {
+	rc := models.RecordConfig{
+		Type:     "A",
+		Metadata: meta,
+	}
+	rc.SetLabel("foo", "example.tld")
+	rc.SetTarget("1.2.3.4")
+	return &rc
+}
+
 func TestPreprocess_BoolValidation(t *testing.T) {
 	cf := &CloudflareApi{}
+
 	domain := newDomainConfig()
-	domain.Records = append(domain.Records, &models.RecordConfig{Type: "A", Target: "1.2.3.4", Metadata: map[string]string{metaProxy: "on"}})
-	domain.Records = append(domain.Records, &models.RecordConfig{Type: "A", Target: "1.2.3.4", Metadata: map[string]string{metaProxy: "fUll"}})
-	domain.Records = append(domain.Records, &models.RecordConfig{Type: "A", Target: "1.2.3.4", Metadata: map[string]string{}})
-	domain.Records = append(domain.Records, &models.RecordConfig{Type: "A", Target: "1.2.3.4", Metadata: map[string]string{metaProxy: "Off"}})
-	domain.Records = append(domain.Records, &models.RecordConfig{Type: "A", Target: "1.2.3.4", Metadata: map[string]string{metaProxy: "off"}})
+	domain.Records = append(domain.Records, makeRCmeta(map[string]string{metaProxy: "on"}))
+	domain.Records = append(domain.Records, makeRCmeta(map[string]string{metaProxy: "fUll"}))
+	domain.Records = append(domain.Records, makeRCmeta(map[string]string{}))
+	domain.Records = append(domain.Records, makeRCmeta(map[string]string{metaProxy: "Off"}))
+	domain.Records = append(domain.Records, makeRCmeta(map[string]string{metaProxy: "off"}))
 	err := cf.preprocessConfig(domain)
 	if err != nil {
 		t.Fatal(err)
@@ -51,9 +62,9 @@ func TestPreprocess_DefaultProxy(t *testing.T) {
 	cf := &CloudflareApi{}
 	domain := newDomainConfig()
 	domain.Metadata[metaProxyDefault] = "full"
-	domain.Records = append(domain.Records, &models.RecordConfig{Type: "A", Target: "1.2.3.4", Metadata: map[string]string{metaProxy: "on"}})
-	domain.Records = append(domain.Records, &models.RecordConfig{Type: "A", Target: "1.2.3.4", Metadata: map[string]string{metaProxy: "off"}})
-	domain.Records = append(domain.Records, &models.RecordConfig{Type: "A", Target: "1.2.3.4", Metadata: map[string]string{}})
+	domain.Records = append(domain.Records, makeRCmeta(map[string]string{metaProxy: "on"}))
+	domain.Records = append(domain.Records, makeRCmeta(map[string]string{metaProxy: "off"}))
+	domain.Records = append(domain.Records, makeRCmeta(map[string]string{}))
 	err := cf.preprocessConfig(domain)
 	if err != nil {
 		t.Fatal(err)
@@ -81,19 +92,24 @@ func TestIpRewriting(t *testing.T) {
 		Given, Expected string
 		Proxy           string
 	}{
-		//outside of range
+		// outside of range
 		{"5.5.5.5", "5.5.5.5", "full"},
 		{"5.5.5.5", "5.5.5.5", "on"},
 		// inside range, but not proxied
 		{"1.2.3.4", "1.2.3.4", "on"},
-		//inside range and proxied
+		// inside range and proxied
 		{"1.2.3.4", "255.255.255.4", "full"},
 	}
 	cf := &CloudflareApi{}
 	domain := newDomainConfig()
-	cf.ipConversions = []transform.IpConversion{{net.ParseIP("1.2.3.0"), net.ParseIP("1.2.3.40"), []net.IP{net.ParseIP("255.255.255.0")}, nil}}
+	cf.ipConversions = []transform.IpConversion{{
+		Low:      net.ParseIP("1.2.3.0"),
+		High:     net.ParseIP("1.2.3.40"),
+		NewBases: []net.IP{net.ParseIP("255.255.255.0")},
+		NewIPs:   nil}}
 	for _, tst := range tests {
-		rec := &models.RecordConfig{Type: "A", Target: tst.Given, Metadata: map[string]string{metaProxy: tst.Proxy}}
+		rec := &models.RecordConfig{Type: "A", Metadata: map[string]string{metaProxy: tst.Proxy}}
+		rec.SetTarget(tst.Given)
 		domain.Records = append(domain.Records, rec)
 	}
 	err := cf.preprocessConfig(domain)
@@ -102,8 +118,8 @@ func TestIpRewriting(t *testing.T) {
 	}
 	for i, tst := range tests {
 		rec := domain.Records[i]
-		if rec.Target != tst.Expected {
-			t.Fatalf("At index %d, expected target of %s, but found %s.", i, tst.Expected, rec.Target)
+		if rec.GetTargetField() != tst.Expected {
+			t.Fatalf("At index %d, expected target of %s, but found %s.", i, tst.Expected, rec.GetTargetField())
 		}
 		if tst.Proxy == "full" && tst.Given != tst.Expected && rec.Metadata[metaOriginalIP] != tst.Given {
 			t.Fatalf("At index %d, expected original_ip to be set", i)

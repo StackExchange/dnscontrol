@@ -1,6 +1,27 @@
 ---
 layout: default
+title: Why CNAME/MX/NS targets require a "dot"
 ---
+
+# Short version
+
+You received this error message:
+
+```
+ 1: ERROR: target (ghs.googlehosted.com) includes a (.), must end with a (.)
+```
+
+This means you should add a "." to the end of the target.
+
+```
+OLD   CNAME("foo", "ghs.googlehosted.com"),
+NEW   CNAME("foo", "ghs.googlehosted.com."),
+                                        ^
+                                        ^
+                                        ^
+                                        ^Add this dot.
+```
+
 
 # Why CNAME/MX/NS targets require a "dot"
 
@@ -11,16 +32,18 @@ People are often confused about this error message:
 ```
 
 What this means is that CNAME/MX/NS records (anything where
-the "target" is a hostname) must either contain no dots or
-must end in a dot.
+the "target" is a hostname) must end with a "." to indicate
+that it is a FQDN.  The exception to this is that if it is
+simply a "short name" (i.e. no dots) then DNSControl will
+add the domain to it.
 
 Here are four examples:
 
 ```
     CNAME("foo", "bar)        // Permitted. (expands to bar.$DOMAIN)
-    CNAME("foo", "bar.com.")  // Permitted.
-    CNAME("foo", "bar.com")   // ERROR
-    CNAME("foo", "meta.xyz")  // ERROR
+    CNAME("foo", "bar.com.")  // Permitted. (we are certain what the user wants)
+    CNAME("foo", "bar.com")   // ERROR (amgiuous)
+    CNAME("foo", "meta.xyz")  // ERROR (amgiuous)
 
 ```
 
@@ -29,9 +52,9 @@ ambiguous and are therefore are considered errors.
 
 How are they ambiguous?
 
-  * Should $DOMAIN be added to "bar.com"?  Well, obviously not, because it already ends with ".com" and we all know that "bar.com.bar.com" is probably not what they want. Or is it?  
-  * Should $DOMAIN be added to "meta.xyz"?  Everyone knows that ".xyz" isn't a TLD. Obviously, yes, $DOMAIN should be appended. However, wait...  ".xyz" became a TLD in June 2014.  We don't want to be surprised by changes like that.  Also, users should not be required to memorize all the TLDs. (When there was just "gov/edu/com/mil/org/net " that was a reasonable expectation, but that hasn't been true since around 2000. By the way, we forgot to include "int" and you didn't notice.)
-  * What if $DOMAIN is "bar.com"? Shouldn't that be enough to know that "x.bar.com" is an FQDN and should not be turned into "x.bar.com.bar.com"? Maybe. What if we are copying 100 lines of dnsconfig.js from one `D()` to another. Buried in the middle is this one CNAME that means something entirely different when in a new $DOMAIN. We've seen similar mistakes and want to prevent them.
+  * Should $DOMAIN be added to "bar.com"?  Well, obviously not, because it already ends with ".com" and we all know that "bar.com.bar.com" is probably not what they want. No, it isn't that obvious!  Why?  (see the next bullet point)
+  * Should $DOMAIN be added to "meta.xyz"?  Everyone knows that ".xyz" isn't a TLD. Obviously, yes, $DOMAIN should be appended. However, wait...  ".xyz" became a TLD in June 2014.  We don't want to be surprised by changes like that.  Also, users should not be required to memorize all the TLDs. (In the old days it was reasonable to expect people to memorize the 7 TLDS (gov/edu/com/mil/org/net) but since 2000 that's all changed. By the way, we forgot to include "int" in the original and you didn't notice.)
+  * What is the CNAME target is "www.bar.com" and the domain is "bar.com".  Then It is reasonable to infer the user's intent, right?  "www.bar.com.bar.com." would be silly, right?  Maybe. What if we are copying 100 lines of dnsconfig.js from one `D()` to another. Buried in the middle is this one CNAME that means something entirely different when in a new $DOMAIN. That would be bad.  We've seen this in production and want to prevent this kind of error.
 
 Yes, we could layer rule upon rule upon rule.  Eventually we'd get
 all the rules right.  However, now a user would have to know all the

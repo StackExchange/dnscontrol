@@ -47,7 +47,7 @@ func TestMostCommonTtl(t *testing.T) {
 	// All records are TTL=100
 	records = nil
 	records, e = append(records, r1, r1, r1), 100
-	g = mostCommonTtl(records)
+	g = mostCommonTTL(records)
 	if e != g {
 		t.Fatalf("expected %d; got %d\n", e, g)
 	}
@@ -55,7 +55,7 @@ func TestMostCommonTtl(t *testing.T) {
 	// Mixture of TTLs with an obvious winner.
 	records = nil
 	records, e = append(records, r1, r2, r2), 200
-	g = mostCommonTtl(records)
+	g = mostCommonTTL(records)
 	if e != g {
 		t.Fatalf("expected %d; got %d\n", e, g)
 	}
@@ -63,7 +63,7 @@ func TestMostCommonTtl(t *testing.T) {
 	// 3-way tie. Largest TTL should be used.
 	records = nil
 	records, e = append(records, r1, r2, r3), 300
-	g = mostCommonTtl(records)
+	g = mostCommonTTL(records)
 	if e != g {
 		t.Fatalf("expected %d; got %d\n", e, g)
 	}
@@ -71,7 +71,7 @@ func TestMostCommonTtl(t *testing.T) {
 	// NS records are ignored.
 	records = nil
 	records, e = append(records, r1, r4, r5), 100
-	g = mostCommonTtl(records)
+	g = mostCommonTTL(records)
 	if e != g {
 		t.Fatalf("expected %d; got %d\n", e, g)
 	}
@@ -123,7 +123,7 @@ www        300   IN CNAME bosun.org.
 }
 
 func TestWriteZoneFileMx(t *testing.T) {
-	//exhibits explicit ttls and long name
+	// exhibits explicit ttls and long name
 	r1, _ := dns.NewRR(`bosun.org. 300 IN TXT "aaa"`)
 	r2, _ := dns.NewRR(`bosun.org. 300 IN TXT "bbb"`)
 	r2.(*dns.TXT).Txt[0] = `b"bb`
@@ -155,6 +155,129 @@ var testdataZFMX = `$TTL 300
 _domainkey       IN TXT   "vvvv"
 google._domainkey IN TXT  "\"foo\""
 `
+
+func TestWriteZoneFileSrv(t *testing.T) {
+	// exhibits explicit ttls and long name
+	r1, _ := dns.NewRR(`bosun.org. 300 IN SRV 10 10 9999 foo.com.`)
+	r2, _ := dns.NewRR(`bosun.org. 300 IN SRV 10 20 5050 foo.com.`)
+	r3, _ := dns.NewRR(`bosun.org. 300 IN SRV 10 10 5050 foo.com.`)
+	r4, _ := dns.NewRR(`bosun.org. 300 IN SRV 20 10 5050 foo.com.`)
+	r5, _ := dns.NewRR(`bosun.org. 300 IN SRV 10 10 5050 foo.com.`)
+	buf := &bytes.Buffer{}
+	WriteZoneFile(buf, []dns.RR{r1, r2, r3, r4, r5}, "bosun.org")
+	if buf.String() != testdataZFSRV {
+		t.Log(buf.String())
+		t.Log(testdataZFSRV)
+		t.Fatalf("Zone file does not match.")
+	}
+	parseAndRegen(t, buf, testdataZFSRV)
+}
+
+var testdataZFSRV = `$TTL 300
+@                IN SRV   10 10 5050 foo.com.
+                 IN SRV   10 10 5050 foo.com.
+                 IN SRV   10 20 5050 foo.com.
+                 IN SRV   20 10 5050 foo.com.
+                 IN SRV   10 10 9999 foo.com.
+`
+
+func TestWriteZoneFilePtr(t *testing.T) {
+	// exhibits explicit ttls and long name
+	r1, _ := dns.NewRR(`bosun.org. 300 IN PTR chell.bosun.org`)
+	r2, _ := dns.NewRR(`bosun.org. 300 IN PTR barney.bosun.org.`)
+	r3, _ := dns.NewRR(`bosun.org. 300 IN PTR alex.bosun.org.`)
+	buf := &bytes.Buffer{}
+	WriteZoneFile(buf, []dns.RR{r1, r2, r3}, "bosun.org")
+	if buf.String() != testdataZFPTR {
+		t.Log(buf.String())
+		t.Log(testdataZFPTR)
+		t.Fatalf("Zone file does not match.")
+	}
+	parseAndRegen(t, buf, testdataZFPTR)
+}
+
+var testdataZFPTR = `$TTL 300
+@                IN PTR   alex.bosun.org.
+                 IN PTR   barney.bosun.org.
+                 IN PTR   chell.bosun.org.
+`
+
+func TestWriteZoneFileCaa(t *testing.T) {
+	// exhibits explicit ttls and long name
+	r1, _ := dns.NewRR(`bosun.org. 300 IN CAA 0 issuewild ";"`)
+	r2, _ := dns.NewRR(`bosun.org. 300 IN CAA 0 issue "letsencrypt.org"`)
+	r3, _ := dns.NewRR(`bosun.org. 300 IN CAA 1 iodef "http://example.com"`)
+	r4, _ := dns.NewRR(`bosun.org. 300 IN CAA 0 iodef "https://example.com"`)
+	r5, _ := dns.NewRR(`bosun.org. 300 IN CAA 0 iodef "https://example.net"`)
+	r6, _ := dns.NewRR(`bosun.org. 300 IN CAA 1 iodef "mailto:example.com"`)
+	buf := &bytes.Buffer{}
+	WriteZoneFile(buf, []dns.RR{r1, r2, r3, r4, r5, r6}, "bosun.org")
+	if buf.String() != testdataZFCAA {
+		t.Log(buf.String())
+		t.Log(testdataZFCAA)
+		t.Fatalf("Zone file does not match.")
+	}
+	parseAndRegen(t, buf, testdataZFCAA)
+}
+
+var testdataZFCAA = `$TTL 300
+@                IN CAA   1 iodef "http://example.com"
+                 IN CAA   1 iodef "mailto:example.com"
+                 IN CAA   0 iodef "https://example.com"
+                 IN CAA   0 iodef "https://example.net"
+                 IN CAA   0 issue "letsencrypt.org"
+                 IN CAA   0 issuewild ";"
+`
+
+// Test 1 of each record type
+
+func mustNewRR(s string) dns.RR {
+	r, err := dns.NewRR(s)
+	if err != nil {
+		panic(err)
+	}
+	return r
+}
+
+func TestWriteZoneFileEach(t *testing.T) {
+	// Each rtype should be listed in this test exactly once.
+	// If an rtype has more than one variations, add a test like TestWriteZoneFileCaa to test each.
+	var d []dns.RR
+	// #rtype_variations
+	d = append(d, mustNewRR(`4.5                  300 IN PTR   y.bosun.org.`)) // Wouldn't actually be in this domain.
+	d = append(d, mustNewRR(`bosun.org.           300 IN A     1.2.3.4`))
+	d = append(d, mustNewRR(`bosun.org.           300 IN MX    1 bosun.org.`))
+	d = append(d, mustNewRR(`bosun.org.           300 IN TXT   "my text"`))
+	d = append(d, mustNewRR(`bosun.org.           300 IN AAAA  4500:fe::1`))
+	d = append(d, mustNewRR(`bosun.org.           300 IN SRV   10 10 9999 foo.com.`))
+	d = append(d, mustNewRR(`bosun.org.           300 IN CAA   0 issue "letsencrypt.org"`))
+	d = append(d, mustNewRR(`_443._tcp.bosun.org. 300 IN TLSA  3 1 1 abcdef0`)) // Label must be _port._proto
+	d = append(d, mustNewRR(`sub.bosun.org.       300 IN NS    bosun.org.`))    // Must be a label with no other records.
+	d = append(d, mustNewRR(`x.bosun.org.         300 IN CNAME bosun.org.`))    // Must be a label with no other records.
+	buf := &bytes.Buffer{}
+	WriteZoneFile(buf, d, "bosun.org")
+	if buf.String() != testdataZFEach {
+		t.Log(buf.String())
+		t.Log(testdataZFEach)
+		t.Fatalf("Zone file does not match.")
+	}
+	parseAndRegen(t, buf, testdataZFEach)
+}
+
+var testdataZFEach = `$TTL 300
+4.5.             IN PTR   y.bosun.org.
+@                IN A     1.2.3.4
+                 IN MX    1 bosun.org.
+                 IN TXT   "my text"
+                 IN AAAA  4500:fe::1
+                 IN SRV   10 10 9999 foo.com.
+                 IN CAA   0 issue "letsencrypt.org"
+_443._tcp        IN TLSA  3 1 1 abcdef0
+sub              IN NS    bosun.org.
+x                IN CNAME bosun.org.
+`
+
+// Test sorting
 
 func TestWriteZoneFileOrder(t *testing.T) {
 	var records []dns.RR
@@ -199,7 +322,6 @@ func TestWriteZoneFileOrder(t *testing.T) {
 		perm := rand.Perm(len(records))
 		for i, v := range perm {
 			records[i], records[v] = records[v], records[i]
-			//fmt.Println(i, v)
 		}
 		// Generate
 		buf := &bytes.Buffer{}

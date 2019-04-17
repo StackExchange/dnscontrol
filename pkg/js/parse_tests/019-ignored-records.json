@@ -1,0 +1,15 @@
+{
+  "registrars": [],
+  "dns_providers": [],
+  "domains": [
+    {
+      "name": "foo.com",
+      "registrar": "none",
+      "dnsProviders": {},
+      "records": [],
+      "ignored_labels": [
+        "testignore"
+      ]
+    }
+  ]
+}

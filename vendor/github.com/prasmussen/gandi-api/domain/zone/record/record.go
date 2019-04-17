@@ -1,6 +1,8 @@
 package record
 
-import "github.com/prasmussen/gandi-api/client"
+import (
+	"github.com/prasmussen/gandi-api/client"
+)
 
 type Record struct {
 	*client.Client
@@ -22,16 +24,25 @@ func (self *Record) Count(zoneId, version int64) (int64, error) {
 
 // List records of a version of a DNS zone
 func (self *Record) List(zoneId, version int64) ([]*RecordInfo, error) {
-	var res []interface{}
-	params := []interface{}{self.Key, zoneId, version}
-	if err := self.Call("domain.zone.record.list", params, &res); err != nil {
-		return nil, err
-	}
-
+	opts := &struct {
+		Page int `xmlrpc:"page"`
+	}{0}
+	const perPage = 100
+	params := []interface{}{self.Key, zoneId, version, opts}
 	records := make([]*RecordInfo, 0)
-	for _, r := range res {
-		record := ToRecordInfo(r.(map[string]interface{}))
-		records = append(records, record)
+	for {
+		var res []interface{}
+		if err := self.Call("domain.zone.record.list", params, &res); err != nil {
+			return nil, err
+		}
+		for _, r := range res {
+			record := ToRecordInfo(r.(map[string]interface{}))
+			records = append(records, record)
+		}
+		if len(res) < perPage {
+			break
+		}
+		opts.Page++
 	}
 	return records, nil
 }
@@ -54,7 +65,7 @@ func (self *Record) Add(args RecordAdd) (*RecordInfo, error) {
 }
 
 // Remove a record from a zone/version
-func (self *Record) Delete(zoneId, version, recordId int64) (bool, error) {
+func (self *Record) Delete(zoneId, version int64, recordId string) (bool, error) {
 	var res int64
 	deleteArgs := map[string]interface{}{"id": recordId}
 	params := []interface{}{self.Key, zoneId, version, deleteArgs}
@@ -73,7 +84,7 @@ func (self *Record) Update(args RecordUpdate) ([]*RecordInfo, error) {
 		"value": args.Value,
 		"ttl":   args.Ttl,
 	}
-	updateOpts := map[string]int64{
+	updateOpts := map[string]string{
 		"id": args.Id,
 	}
 

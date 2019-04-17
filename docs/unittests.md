@@ -1,6 +1,11 @@
+---
+layout: default
+title: Unit Testing DNS Data
+---
+
 # Unit Testing DNS Data
 
-## Testing
+## Built-in Tests
 
 DNSControl performs a number of tests during the validation stage.
 You can find them in `pkg/normalize/validate.go`.
@@ -14,7 +19,9 @@ tests on this data.
 
 Output the intermediate representation:
 
-    dnscontrol -debugjson foo.json print
+    dnscontrol print-ir --out foo.json --pretty
+
+NOTE: The `--pretty` flag is optional.
 
 Here is a sample test written in `bash` using the [jq](https://stedolan.github.io/jq/) command.  This fails if the number of MX records in the `stackex.com` domain is not exactly 5:
 

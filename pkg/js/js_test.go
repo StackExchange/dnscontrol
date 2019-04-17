@@ -8,7 +8,8 @@ import (
 	"testing"
 	"unicode"
 
-	"github.com/StackExchange/dnscontrol/models"
+	"github.com/tdewolff/minify"
+	minjson "github.com/tdewolff/minify/json"
 )
 
 const (
@@ -26,20 +27,22 @@ func TestParsedFiles(t *testing.T) {
 		t.Fatal(err)
 	}
 	for _, f := range files {
-		//run all js files that start with a number. Skip others.
+		// run all js files that start with a number. Skip others.
 		if filepath.Ext(f.Name()) != ".js" || !unicode.IsNumber(rune(f.Name()[0])) {
 			continue
 		}
+		m := minify.New()
+		m.AddFunc("json", minjson.Minify)
 		t.Run(f.Name(), func(t *testing.T) {
-			content, err := ioutil.ReadFile(filepath.Join(testDir, f.Name()))
-			if err != nil {
-				t.Fatal(err)
-			}
-			conf, err := ExecuteJavascript(string(content), true)
+			conf, err := ExecuteJavascript(string(filepath.Join(testDir, f.Name())), true)
 			if err != nil {
 				t.Fatal(err)
 			}
 			actualJSON, err := json.MarshalIndent(conf, "", "  ")
+			if err != nil {
+				t.Fatal(err)
+			}
+			actualJSON, err = m.Bytes("json", actualJSON)
 			if err != nil {
 				t.Fatal(err)
 			}
@@ -48,20 +51,17 @@ func TestParsedFiles(t *testing.T) {
 			if err != nil {
 				t.Fatal(err)
 			}
-			conf = &models.DNSConfig{}
-			//unmarshal and remarshal to not require manual formatting
-			err = json.Unmarshal(expectedData, conf)
+
+			expectedJSON, err := m.String("json", string(expectedData))
 			if err != nil {
 				t.Fatal(err)
 			}
-			expectedJSON, err := json.MarshalIndent(conf, "", "  ")
-			if err != nil {
-				t.Fatal(err)
-			}
-			if string(expectedJSON) != string(actualJSON) {
-				t.Error("Expected and actual json don't match")
-				t.Log("Expected:", string(expectedJSON))
-				t.Log("Actual:", string(actualJSON))
+			es := string(expectedJSON)
+			as := string(actualJSON)
+			if es != as {
+				t.Errorf("Expected and actual json don't match: %s", f.Name())
+				t.Logf("Expected(%v): %s", len(es), es)
+				t.Logf("Actual  (%v): %s", len(as), as)
 			}
 		})
 	}
@@ -75,6 +75,8 @@ func TestErrors(t *testing.T) {
 		{"CF_REDIRECT With comma", `D("foo.com","reg",CF_REDIRECT("foo.com,","baaa"))`},
 		{"CF_TEMP_REDIRECT With comma", `D("foo.com","reg",CF_TEMP_REDIRECT("foo.com","baa,a"))`},
 		{"Bad cidr", `D(reverse("foo.com"), "reg")`},
+		{"Dup domains", `D("example.org", "reg"); D("example.org", "reg")`},
+		{"Bad NAMESERVER", `D("example.com","reg", NAMESERVER("@","ns1.foo.com."))`},
 	}
 	for _, tst := range tests {
 		t.Run(tst.desc, func(t *testing.T) {

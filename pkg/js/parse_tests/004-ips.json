@@ -1,28 +1,40 @@
 {
-		  "registrars": [
-		    {
-		      "name": "Third-Party",
-		      "type": "NONE"
-		    }
-		  ],
-		  "dns_providers": [
-		    {
-		      "name": "Cloudflare",
-		      "type": "CLOUDFLAREAPI"
-		    }
-		  ],
-		  "domains": [
-		    {
-		      "name": "foo.com",
-		      "registrar": "Third-Party",
-		      "dnsProviders": {
-		        "Cloudflare":0
-					},
-		      "records": [
-		        { "type": "A","name": "@","target": "1.2.3.4"},
-                { "type": "A","name": "p1","target": "1.2.3.5"},
-                { "type": "A","name": "p255","target": "1.2.4.3"}
-		      ]
-		    }
-		  ]
-		}
+  "registrars": [
+    {
+      "name": "Third-Party",
+      "type": "NONE"
+    }
+  ],
+  "dns_providers": [
+    {
+      "name": "Cloudflare",
+      "type": "CLOUDFLAREAPI"
+    }
+  ],
+  "domains": [
+    {
+      "name": "foo.com",
+      "registrar": "Third-Party",
+      "dnsProviders": {
+        "Cloudflare": 0
+      },
+      "records": [
+        {
+          "type": "A",
+          "name": "@",
+          "target": "1.2.3.4"
+        },
+        {
+          "type": "A",
+          "name": "p1",
+          "target": "1.2.3.5"
+        },
+        {
+          "type": "A",
+          "name": "p255",
+          "target": "1.2.4.3"
+        }
+      ]
+    }
+  ]
+}

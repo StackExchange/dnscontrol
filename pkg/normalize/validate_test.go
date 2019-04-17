@@ -10,21 +10,36 @@ import (
 
 func TestCheckLabel(t *testing.T) {
 	var tests = []struct {
-		experiment string
-		isError    bool
+		label       string
+		rType       string
+		isError     bool
+		hasSkipMeta bool
 	}{
-		{"@", false},
-		{"foo", false},
-		{"foo.bar", false},
-		{"foo.", true},
-		{"foo.bar.", true},
-		{"foo_bar", true},
-		{"_domainkey", false},
+		{"@", "A", false, false},
+		{"foo.bar", "A", false, false},
+		{"_foo", "A", true, false},
+		{"_foo", "SRV", false, false},
+		{"_foo", "TLSA", false, false},
+		{"_foo", "TXT", false, false},
+		{"test.foo.tld", "A", true, false},
+		{"test.foo.tld", "A", false, true},
 	}
 
 	for _, test := range tests {
-		err := checkLabel(test.experiment, "A", "foo.com")
-		checkError(t, err, test.isError, test.experiment)
+		t.Run(fmt.Sprintf("%s %s", test.label, test.rType), func(t *testing.T) {
+			meta := map[string]string{}
+			if test.hasSkipMeta {
+				meta["skip_fqdn_check"] = "true"
+			}
+			err := checkLabel(test.label, test.rType, "foo.tld", meta)
+			if err != nil && !test.isError {
+				t.Errorf(" Expected no error but got %s", err)
+			}
+			if err == nil && test.isError {
+				t.Errorf(" Expected error but got none")
+			}
+		})
+
 	}
 }
 
@@ -97,13 +112,15 @@ func Test_transform_cname(t *testing.T) {
 }
 
 func TestNSAtRoot(t *testing.T) {
-	//do not allow ns records for @
-	rec := &models.RecordConfig{Name: "test", Type: "NS", Target: "ns1.name.com."}
+	// do not allow ns records for @
+	rec := &models.RecordConfig{Type: "NS"}
+	rec.SetLabel("test", "foo.com")
+	rec.SetTarget("ns1.name.com.")
 	errs := checkTargets(rec, "foo.com")
 	if len(errs) > 0 {
 		t.Error("Expect no error with ns record on subdomain")
 	}
-	rec.Name = "@"
+	rec.SetLabel("@", "foo.com")
 	errs = checkTargets(rec, "foo.com")
 	if len(errs) != 1 {
 		t.Error("Expect error with ns record on @")
@@ -123,7 +140,7 @@ func TestTransforms(t *testing.T) {
 	for i, test := range tests {
 		dc := &models.DomainConfig{
 			Records: []*models.RecordConfig{
-				{Type: "A", Target: test.givenIP, Metadata: map[string]string{"transform": transform}},
+				makeRC("f", "example.tld", test.givenIP, models.RecordConfig{Type: "A", Metadata: map[string]string{"transform": transform}}),
 			},
 		}
 		err := applyRecordTransforms(dc)
@@ -136,8 +153,8 @@ func TestTransforms(t *testing.T) {
 			continue
 		}
 		for r, rec := range dc.Records {
-			if rec.Target != test.expectedRecords[r] {
-				t.Errorf("test %d at index %d: records don't match. Expect %s but found %s.", i, r, test.expectedRecords[r], rec.Target)
+			if rec.GetTargetField() != test.expectedRecords[r] {
+				t.Errorf("test %d at index %d: records don't match. Expect %s but found %s.", i, r, test.expectedRecords[r], rec.GetTargetField())
 				continue
 			}
 		}
@@ -145,7 +162,9 @@ func TestTransforms(t *testing.T) {
 }
 
 func TestCNAMEMutex(t *testing.T) {
-	var recA = &models.RecordConfig{Type: "CNAME", Name: "foo", NameFQDN: "foo.example.com", Target: "example.com."}
+	var recA = &models.RecordConfig{Type: "CNAME"}
+	recA.SetLabel("foo", "foo.example.com")
+	recA.SetTarget("example.com.")
 	tests := []struct {
 		rType string
 		name  string
@@ -158,7 +177,9 @@ func TestCNAMEMutex(t *testing.T) {
 	}
 	for _, tst := range tests {
 		t.Run(fmt.Sprintf("%s %s", tst.rType, tst.name), func(t *testing.T) {
-			var recB = &models.RecordConfig{Type: tst.rType, Name: tst.name, NameFQDN: tst.name + ".example.com", Target: "example2.com."}
+			var recB = &models.RecordConfig{Type: tst.rType}
+			recB.SetLabel(tst.name, "example.com")
+			recB.SetTarget("example2.com.")
 			dc := &models.DomainConfig{
 				Name:    "example.com",
 				Records: []*models.RecordConfig{recA, recB},
@@ -171,5 +192,42 @@ func TestCNAMEMutex(t *testing.T) {
 				t.Error("Expected error but got none")
 			}
 		})
+	}
+}
+
+func TestCAAValidation(t *testing.T) {
+	config := &models.DNSConfig{
+		Domains: []*models.DomainConfig{
+			{
+				Name:          "example.com",
+				RegistrarName: "BIND",
+				Records: []*models.RecordConfig{
+					makeRC("@", "example.com", "example.com", models.RecordConfig{Type: "CAA", CaaTag: "invalid"}),
+				},
+			},
+		},
+	}
+	errs := NormalizeAndValidateConfig(config)
+	if len(errs) != 1 {
+		t.Error("Expect error on invalid CAA but got none")
+	}
+}
+
+func TestTLSAValidation(t *testing.T) {
+	config := &models.DNSConfig{
+		Domains: []*models.DomainConfig{
+			{
+				Name:          "_443._tcp.example.com",
+				RegistrarName: "BIND",
+				Records: []*models.RecordConfig{
+					makeRC("_443._tcp", "_443._tcp.example.com", "abcdef0", models.RecordConfig{
+						Type: "TLSA", TlsaUsage: 4, TlsaSelector: 1, TlsaMatchingType: 1}),
+				},
+			},
+		},
+	}
+	errs := NormalizeAndValidateConfig(config)
+	if len(errs) != 1 {
+		t.Error("Expect error on invalid TLSA but got none")
 	}
 }

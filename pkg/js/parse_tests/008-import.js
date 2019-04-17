@@ -1,2 +1,2 @@
 
-require("pkg/js/parse_tests/import.js")
+require("./import.js")

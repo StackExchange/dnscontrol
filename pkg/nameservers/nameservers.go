@@ -1,32 +1,28 @@
-//Package nameservers provides logic for dynamically finding nameservers for a domain, and configuring NS records for them.
+// Package nameservers provides logic for dynamically finding nameservers for a domain, and configuring NS records for them.
 package nameservers
 
 import (
 	"fmt"
 	"strings"
 
-	"github.com/StackExchange/dnscontrol/models"
-	"github.com/StackExchange/dnscontrol/providers"
-	"github.com/miekg/dns/dnsutil"
 	"strconv"
+
+	"github.com/StackExchange/dnscontrol/models"
 )
 
-//DetermineNameservers will find all nameservers we should use for a domain. It follows the following rules:
-//1. All explicitly defined NAMESERVER records will be used.
-//2. Each DSP declares how many nameservers to use. Default is all. 0 indicates to use none.
-func DetermineNameservers(dc *models.DomainConfig, maxNS int, dsps map[string]providers.DNSServiceProvider) ([]*models.Nameserver, error) {
-	//always take explicit
+// DetermineNameservers will find all nameservers we should use for a domain. It follows the following rules:
+// 1. All explicitly defined NAMESERVER records will be used.
+// 2. Each DSP declares how many nameservers to use. Default is all. 0 indicates to use none.
+func DetermineNameservers(dc *models.DomainConfig) ([]*models.Nameserver, error) {
+	// always take explicit
 	ns := dc.Nameservers
-	for dsp, n := range dc.DNSProviders {
+	for _, dnsProvider := range dc.DNSProviderInstances {
+		n := dnsProvider.NumberOfNameservers
 		if n == 0 {
 			continue
 		}
-		fmt.Printf("----- Getting nameservers from: %s\n", dsp)
-		p, ok := dsps[dsp]
-		if !ok {
-			return nil, fmt.Errorf("DNS provider %s not declared", dsp)
-		}
-		nss, err := p.GetNameservers(dc.Name)
+		fmt.Printf("----- Getting nameservers from: %s\n", dnsProvider.Name)
+		nss, err := dnsProvider.Driver.GetNameservers(dc.Name)
 		if err != nil {
 			return nil, err
 		}
@@ -41,7 +37,7 @@ func DetermineNameservers(dc *models.DomainConfig, maxNS int, dsps map[string]pr
 	return ns, nil
 }
 
-//AddNSRecords creates NS records on a domain corresponding to the nameservers specified.
+// AddNSRecords creates NS records on a domain corresponding to the nameservers specified.
 func AddNSRecords(dc *models.DomainConfig) {
 	ttl := uint32(300)
 	if ttls, ok := dc.Metadata["ns_ttl"]; ok {
@@ -55,15 +51,16 @@ func AddNSRecords(dc *models.DomainConfig) {
 	for _, ns := range dc.Nameservers {
 		rc := &models.RecordConfig{
 			Type:     "NS",
-			Name:     "@",
-			Target:   ns.Name,
 			Metadata: map[string]string{},
 			TTL:      ttl,
 		}
-		if !strings.HasSuffix(rc.Target, ".") {
-			rc.Target += "."
+		rc.SetLabel("@", dc.Name)
+		t := ns.Name
+		if !strings.HasSuffix(t, ".") {
+			t += "."
 		}
-		rc.NameFQDN = dnsutil.AddOrigin(rc.Name, dc.Name)
+		rc.SetTarget(t)
+
 		dc.Records = append(dc.Records, rc)
 	}
 }
