@@ -32,6 +32,7 @@ func generateFeatureMatrix() error {
 			{"ALIAS", "Provider supports some kind of ALIAS, ANAME or flattened CNAME record type"},
 			{"CAA", "Provider can manage CAA records"},
 			{"PTR", "Provider supports adding PTR records for reverse lookup zones"},
+			{"NAPTR", "Provider can manage NAPTR records"},
 			{"SRV", "Driver has explicitly implemented SRV record management"},
 			{"SSHFP", "Provider can manage SSHFP records"},
 			{"TLSA", "Provider can manage TLSA records"},
@@ -74,6 +75,7 @@ func generateFeatureMatrix() error {
 		setCap("ALIAS", providers.CanUseAlias)
 		setCap("CAA", providers.CanUseCAA)
 		setCap("PTR", providers.CanUsePTR)
+		setCap("NAPTR", providers.CanUseNAPTR)
 		setCap("SRV", providers.CanUseSRV)
 		setCap("SSHFP", providers.CanUseSSHFP)
 		setCap("TLSA", providers.CanUseTLSA)

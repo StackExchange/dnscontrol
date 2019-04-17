@@ -21,6 +21,7 @@ import (
 //     MX
 //     NS
 //     PTR
+//     NAPTR
 //     SRV
 //     SSHFP
 //     TLSA
@@ -75,6 +76,11 @@ type RecordConfig struct {
 	SrvPort          uint16            `json:"srvport,omitempty"`
 	CaaTag           string            `json:"caatag,omitempty"`
 	CaaFlag          uint8             `json:"caaflag,omitempty"`
+	NaptrOrder       uint16            `json:"naptrorder,omitempty"`
+	NaptrPreference  uint16            `json:"naptrpreference,omitempty"`
+	NaptrFlags       string            `json:"naptrflags,omitempty"`
+	NaptrService     string            `json:"naptrservice,omitempty"`
+	NaptrRegexp      string            `json:"naptrregexp,omitempty"`
 	SshfpAlgorithm   uint8             `json:"sshfpalgorithm,omitempty"`
 	SshfpFingerprint uint8             `json:"sshfpfingerprint,omitempty"`
 	TlsaUsage        uint8             `json:"tlsausage,omitempty"`
@@ -201,6 +207,13 @@ func (rc *RecordConfig) ToRR() dns.RR {
 		rr.(*dns.CNAME).Target = rc.GetTargetField()
 	case dns.TypePTR:
 		rr.(*dns.PTR).Ptr = rc.GetTargetField()
+	case dns.TypeNAPTR:
+		rr.(*dns.NAPTR).Order = rc.NaptrOrder
+		rr.(*dns.NAPTR).Preference = rc.NaptrPreference
+		rr.(*dns.NAPTR).Flags = rc.NaptrFlags
+		rr.(*dns.NAPTR).Service = rc.NaptrService
+		rr.(*dns.NAPTR).Regexp = rc.NaptrRegexp
+		rr.(*dns.NAPTR).Replacement = rc.GetTargetField()
 	case dns.TypeMX:
 		rr.(*dns.MX).Preference = rc.MxPreference
 		rr.(*dns.MX).Mx = rc.GetTargetField()
@@ -300,7 +313,7 @@ func downcase(recs []*RecordConfig) {
 		r.Name = strings.ToLower(r.Name)
 		r.NameFQDN = strings.ToLower(r.NameFQDN)
 		switch r.Type { // #rtype_variations
-		case "ANAME", "CNAME", "MX", "NS", "PTR", "SRV":
+		case "ANAME", "CNAME", "MX", "NS", "PTR", "NAPTR", "SRV":
 			// These record types have a target that is case insensitive, so we downcase it.
 			r.Target = strings.ToLower(r.Target)
 		case "A", "AAAA", "ALIAS", "CAA", "IMPORT_TRANSFORM", "TLSA", "TXT", "SOA", "SSHFP", "CF_REDIRECT", "CF_TEMP_REDIRECT":

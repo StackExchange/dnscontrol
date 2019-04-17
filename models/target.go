@@ -77,6 +77,8 @@ func (rc *RecordConfig) GetTargetDebug() string {
 	switch rc.Type { // #rtype_variations
 	case "A", "AAAA", "CNAME", "NS", "PTR", "TXT":
 		// Nothing special.
+	case "NAPTR":
+		content += fmt.Sprintf(" naptrorder=%d naptrpreference=%d naptrflags=%s naptrservice=%s naptrregexp=%s", rc.NaptrOrder, rc.NaptrPreference, rc.NaptrFlags, rc.NaptrService, rc.NaptrRegexp)
 	case "MX":
 		content += fmt.Sprintf(" pref=%d", rc.MxPreference)
 	case "SOA":
