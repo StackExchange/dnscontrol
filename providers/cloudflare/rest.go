@@ -5,15 +5,21 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"strconv"
+	"strings"
+	"time"
 
 	"github.com/StackExchange/dnscontrol/models"
+	"github.com/pkg/errors"
 )
 
 const (
-	baseURL         = "https://api.cloudflare.com/client/v4/"
-	zonesURL        = baseURL + "zones/"
-	recordsURL      = zonesURL + "%s/dns_records/"
-	singleRecordURL = recordsURL + "%s"
+	baseURL           = "https://api.cloudflare.com/client/v4/"
+	zonesURL          = baseURL + "zones/"
+	recordsURL        = zonesURL + "%s/dns_records/"
+	pageRulesURL      = zonesURL + "%s/pagerules/"
+	singlePageRuleURL = pageRulesURL + "%s"
+	singleRecordURL   = recordsURL + "%s"
 )
 
 // get list of domains for account. Cache so the ids can be looked up from domain name
@@ -25,10 +31,10 @@ func (c *CloudflareApi) fetchDomainList() error {
 		zr := &zoneResponse{}
 		url := fmt.Sprintf("%s?page=%d&per_page=50", zonesURL, page)
 		if err := c.get(url, zr); err != nil {
-			return fmt.Errorf("Error fetching domain list from cloudflare: %s", err)
+			return errors.Errorf("Error fetching domain list from cloudflare: %s", err)
 		}
 		if !zr.Success {
-			return fmt.Errorf("Error fetching domain list from cloudflare: %s", stringifyErrors(zr.Errors))
+			return errors.Errorf("Error fetching domain list from cloudflare: %s", stringifyErrors(zr.Errors))
 		}
 		for _, zone := range zr.Result {
 			c.domainIndex[zone.Name] = zone.ID
@@ -54,13 +60,14 @@ func (c *CloudflareApi) getRecordsForDomain(id string, domain string) ([]*models
 		reqURL := fmt.Sprintf("%s?page=%d&per_page=100", url, page)
 		var data recordsResponse
 		if err := c.get(reqURL, &data); err != nil {
-			return nil, fmt.Errorf("Error fetching record list from cloudflare: %s", err)
+			return nil, errors.Errorf("Error fetching record list from cloudflare: %s", err)
 		}
 		if !data.Success {
-			return nil, fmt.Errorf("Error fetching record list cloudflare: %s", stringifyErrors(data.Errors))
+			return nil, errors.Errorf("Error fetching record list cloudflare: %s", stringifyErrors(data.Errors))
 		}
 		for _, rec := range data.Result {
-			records = append(records, rec.toRecord(domain))
+			// fmt.Printf("REC: %+v\n", rec)
+			records = append(records, rec.nativeToRecord(domain))
 		}
 		ri := data.ResultInfo
 		if len(data.Result) == 0 || ri.Page*ri.PerPage >= ri.TotalCount {
@@ -68,6 +75,7 @@ func (c *CloudflareApi) getRecordsForDomain(id string, domain string) ([]*models
 		}
 		page++
 	}
+	// fmt.Printf("DEBUG REORDS=%v\n", records)
 	return records, nil
 }
 
@@ -88,33 +96,95 @@ func (c *CloudflareApi) deleteRec(rec *cfRecord, domainID string) *models.Correc
 	}
 }
 
-func (c *CloudflareApi) createRec(rec *models.RecordConfig, domainID string) []*models.Correction {
-	type createRecord struct {
-		Name     string `json:"name"`
-		Type     string `json:"type"`
-		Content  string `json:"content"`
-		TTL      uint32 `json:"ttl"`
-		Priority uint16 `json:"priority"`
+func (c *CloudflareApi) createZone(domainName string) (string, error) {
+	type createZone struct {
+		Name string `json:"name"`
+
+		Account struct {
+			ID   string `json:"id"`
+			Name string `json:"name"`
+		} `json:"account"`
 	}
 	var id string
-	content := rec.Target
+	cz := &createZone{
+		Name: domainName}
+
+	if c.AccountID != "" || c.AccountName != "" {
+		cz.Account.ID = c.AccountID
+		cz.Account.Name = c.AccountName
+	}
+
+	buf := &bytes.Buffer{}
+	encoder := json.NewEncoder(buf)
+	if err := encoder.Encode(cz); err != nil {
+		return "", err
+	}
+	req, err := http.NewRequest("POST", zonesURL, buf)
+	if err != nil {
+		return "", err
+	}
+	c.setHeaders(req)
+	id, err = handleActionResponse(http.DefaultClient.Do(req))
+	return id, err
+}
+
+func cfSrvData(rec *models.RecordConfig) *cfRecData {
+	serverParts := strings.Split(rec.GetLabelFQDN(), ".")
+	return &cfRecData{
+		Service:  serverParts[0],
+		Proto:    serverParts[1],
+		Name:     strings.Join(serverParts[2:], "."),
+		Port:     rec.SrvPort,
+		Priority: rec.SrvPriority,
+		Weight:   rec.SrvWeight,
+		Target:   rec.GetTargetField(),
+	}
+}
+
+func cfCaaData(rec *models.RecordConfig) *cfRecData {
+	return &cfRecData{
+		Tag:   rec.CaaTag,
+		Flags: rec.CaaFlag,
+		Value: rec.GetTargetField(),
+	}
+}
+
+func (c *CloudflareApi) createRec(rec *models.RecordConfig, domainID string) []*models.Correction {
+	type createRecord struct {
+		Name     string     `json:"name"`
+		Type     string     `json:"type"`
+		Content  string     `json:"content"`
+		TTL      uint32     `json:"ttl"`
+		Priority uint16     `json:"priority"`
+		Data     *cfRecData `json:"data"`
+	}
+	var id string
+	content := rec.GetTargetField()
 	if rec.Metadata[metaOriginalIP] != "" {
 		content = rec.Metadata[metaOriginalIP]
 	}
 	prio := ""
 	if rec.Type == "MX" {
-		prio = fmt.Sprintf(" %d ", rec.Priority)
+		prio = fmt.Sprintf(" %d ", rec.MxPreference)
 	}
 	arr := []*models.Correction{{
-		Msg: fmt.Sprintf("CREATE record: %s %s %d%s %s", rec.Name, rec.Type, rec.TTL, prio, content),
+		Msg: fmt.Sprintf("CREATE record: %s %s %d%s %s", rec.GetLabel(), rec.Type, rec.TTL, prio, content),
 		F: func() error {
 
 			cf := &createRecord{
-				Name:     rec.Name,
+				Name:     rec.GetLabel(),
 				Type:     rec.Type,
 				TTL:      rec.TTL,
 				Content:  content,
-				Priority: rec.Priority,
+				Priority: rec.MxPreference,
+			}
+			if rec.Type == "SRV" {
+				cf.Data = cfSrvData(rec)
+				cf.Name = rec.GetLabelFQDN()
+			} else if rec.Type == "CAA" {
+				cf.Data = cfCaaData(rec)
+				cf.Name = rec.GetLabelFQDN()
+				cf.Content = ""
 			}
 			endpoint := fmt.Sprintf(recordsURL, domainID)
 			buf := &bytes.Buffer{}
@@ -133,7 +203,7 @@ func (c *CloudflareApi) createRec(rec *models.RecordConfig, domainID string) []*
 	}}
 	if rec.Metadata[metaProxy] != "off" {
 		arr = append(arr, &models.Correction{
-			Msg: fmt.Sprintf("ACTIVATE PROXY for new record %s %s %d %s", rec.Name, rec.Type, rec.TTL, rec.Target),
+			Msg: fmt.Sprintf("ACTIVATE PROXY for new record %s %s %d %s", rec.GetLabel(), rec.Type, rec.TTL, rec.GetTargetField()),
 			F:   func() error { return c.modifyRecord(domainID, id, true, rec) },
 		})
 	}
@@ -142,18 +212,36 @@ func (c *CloudflareApi) createRec(rec *models.RecordConfig, domainID string) []*
 
 func (c *CloudflareApi) modifyRecord(domainID, recID string, proxied bool, rec *models.RecordConfig) error {
 	if domainID == "" || recID == "" {
-		return fmt.Errorf("Cannot modify record if domain or record id are empty.")
+		return errors.Errorf("cannot modify record if domain or record id are empty")
 	}
 	type record struct {
-		ID       string `json:"id"`
-		Proxied  bool   `json:"proxied"`
-		Name     string `json:"name"`
-		Type     string `json:"type"`
-		Content  string `json:"content"`
-		Priority uint16 `json:"priority"`
-		TTL      uint32 `json:"ttl"`
+		ID       string     `json:"id"`
+		Proxied  bool       `json:"proxied"`
+		Name     string     `json:"name"`
+		Type     string     `json:"type"`
+		Content  string     `json:"content"`
+		Priority uint16     `json:"priority"`
+		TTL      uint32     `json:"ttl"`
+		Data     *cfRecData `json:"data"`
 	}
-	r := record{recID, proxied, rec.Name, rec.Type, rec.Target, rec.Priority, rec.TTL}
+	r := record{
+		ID:       recID,
+		Proxied:  proxied,
+		Name:     rec.GetLabel(),
+		Type:     rec.Type,
+		Content:  rec.GetTargetField(),
+		Priority: rec.MxPreference,
+		TTL:      rec.TTL,
+		Data:     nil,
+	}
+	if rec.Type == "SRV" {
+		r.Data = cfSrvData(rec)
+		r.Name = rec.GetLabelFQDN()
+	} else if rec.Type == "CAA" {
+		r.Data = cfCaaData(rec)
+		r.Name = rec.GetLabelFQDN()
+		r.Content = ""
+	}
 	endpoint := fmt.Sprintf(singleRecordURL, domainID, recID)
 	buf := &bytes.Buffer{}
 	encoder := json.NewEncoder(buf)
@@ -178,10 +266,10 @@ func handleActionResponse(resp *http.Response, err error) (id string, e error) {
 	result := &basicResponse{}
 	decoder := json.NewDecoder(resp.Body)
 	if err = decoder.Decode(result); err != nil {
-		return "", fmt.Errorf("Unknown error. Status code: %d", resp.StatusCode)
+		return "", errors.Errorf("Unknown error. Status code: %d", resp.StatusCode)
 	}
 	if resp.StatusCode != 200 {
-		return "", fmt.Errorf(stringifyErrors(result.Errors))
+		return "", errors.Errorf(stringifyErrors(result.Errors))
 	}
 	return result.Result.ID, nil
 }
@@ -204,10 +292,106 @@ func (c *CloudflareApi) get(endpoint string, target interface{}) error {
 	}
 	defer resp.Body.Close()
 	if resp.StatusCode != 200 {
-		return fmt.Errorf("Bad status code from cloudflare: %d not 200.", resp.StatusCode)
+		return errors.Errorf("bad status code from cloudflare: %d not 200", resp.StatusCode)
 	}
 	decoder := json.NewDecoder(resp.Body)
 	return decoder.Decode(target)
+}
+
+func (c *CloudflareApi) getPageRules(id string, domain string) ([]*models.RecordConfig, error) {
+	url := fmt.Sprintf(pageRulesURL, id)
+	data := pageRuleResponse{}
+	if err := c.get(url, &data); err != nil {
+		return nil, errors.Errorf("Error fetching page rule list from cloudflare: %s", err)
+	}
+	if !data.Success {
+		return nil, errors.Errorf("Error fetching page rule list cloudflare: %s", stringifyErrors(data.Errors))
+	}
+	recs := []*models.RecordConfig{}
+	for _, pr := range data.Result {
+		// only interested in forwarding rules. Lets be very specific, and skip anything else
+		if len(pr.Actions) != 1 || len(pr.Targets) != 1 {
+			continue
+		}
+		if pr.Actions[0].ID != "forwarding_url" {
+			continue
+		}
+		err := json.Unmarshal([]byte(pr.Actions[0].Value), &pr.ForwardingInfo)
+		if err != nil {
+			return nil, err
+		}
+		var thisPr = pr
+		r := &models.RecordConfig{
+			Type:     "PAGE_RULE",
+			Original: thisPr,
+			TTL:      1,
+		}
+		r.SetLabel("@", domain)
+		r.SetTarget(fmt.Sprintf("%s,%s,%d,%d", // $FROM,$TO,$PRIO,$CODE
+			pr.Targets[0].Constraint.Value,
+			pr.ForwardingInfo.URL,
+			pr.Priority,
+			pr.ForwardingInfo.StatusCode))
+		recs = append(recs, r)
+	}
+	return recs, nil
+}
+
+func (c *CloudflareApi) deletePageRule(recordID, domainID string) error {
+	endpoint := fmt.Sprintf(singlePageRuleURL, domainID, recordID)
+	req, err := http.NewRequest("DELETE", endpoint, nil)
+	if err != nil {
+		return err
+	}
+	c.setHeaders(req)
+	_, err = handleActionResponse(http.DefaultClient.Do(req))
+	return err
+}
+
+func (c *CloudflareApi) updatePageRule(recordID, domainID string, target string) error {
+	if err := c.deletePageRule(recordID, domainID); err != nil {
+		return err
+	}
+	return c.createPageRule(domainID, target)
+}
+
+func (c *CloudflareApi) createPageRule(domainID string, target string) error {
+	endpoint := fmt.Sprintf(pageRulesURL, domainID)
+	return c.sendPageRule(endpoint, "POST", target)
+}
+
+func (c *CloudflareApi) sendPageRule(endpoint, method string, data string) error {
+	// from to priority code
+	parts := strings.Split(data, ",")
+	priority, _ := strconv.Atoi(parts[2])
+	code, _ := strconv.Atoi(parts[3])
+	fwdInfo := &pageRuleFwdInfo{
+		StatusCode: code,
+		URL:        parts[1],
+	}
+	dat, _ := json.Marshal(fwdInfo)
+	pr := &pageRule{
+		Status:   "active",
+		Priority: priority,
+		Targets: []pageRuleTarget{
+			{Target: "url", Constraint: pageRuleConstraint{Operator: "matches", Value: parts[0]}},
+		},
+		Actions: []pageRuleAction{
+			{ID: "forwarding_url", Value: json.RawMessage(dat)},
+		},
+	}
+	buf := &bytes.Buffer{}
+	enc := json.NewEncoder(buf)
+	if err := enc.Encode(pr); err != nil {
+		return err
+	}
+	req, err := http.NewRequest(method, endpoint, buf)
+	if err != nil {
+		return err
+	}
+	c.setHeaders(req)
+	_, err = handleActionResponse(http.DefaultClient.Do(req))
+	return err
 }
 
 func stringifyErrors(errors []interface{}) string {
@@ -223,6 +407,7 @@ type recordsResponse struct {
 	Result     []*cfRecord `json:"result"`
 	ResultInfo pagingInfo  `json:"result_info"`
 }
+
 type basicResponse struct {
 	Success  bool          `json:"success"`
 	Errors   []interface{} `json:"errors"`
@@ -230,6 +415,43 @@ type basicResponse struct {
 	Result   struct {
 		ID string `json:"id"`
 	} `json:"result"`
+}
+
+type pageRuleResponse struct {
+	basicResponse
+	Result     []*pageRule `json:"result"`
+	ResultInfo pagingInfo  `json:"result_info"`
+}
+
+type pageRule struct {
+	ID             string           `json:"id,omitempty"`
+	Targets        []pageRuleTarget `json:"targets"`
+	Actions        []pageRuleAction `json:"actions"`
+	Priority       int              `json:"priority"`
+	Status         string           `json:"status"`
+	ModifiedOn     time.Time        `json:"modified_on,omitempty"`
+	CreatedOn      time.Time        `json:"created_on,omitempty"`
+	ForwardingInfo *pageRuleFwdInfo `json:"-"`
+}
+
+type pageRuleTarget struct {
+	Target     string             `json:"target"`
+	Constraint pageRuleConstraint `json:"constraint"`
+}
+
+type pageRuleConstraint struct {
+	Operator string `json:"operator"`
+	Value    string `json:"value"`
+}
+
+type pageRuleAction struct {
+	ID    string          `json:"id"`
+	Value json.RawMessage `json:"value"`
+}
+
+type pageRuleFwdInfo struct {
+	URL        string `json:"url"`
+	StatusCode int    `json:"status_code"`
 }
 
 type zoneResponse struct {

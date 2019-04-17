@@ -1,48 +1,262 @@
 ---
 layout: default
+title: Getting Started
 ---
 # Getting Started
 
-## 1. Get the binaries
 
-You can either download the latest [github release](https://github.com/StackExchange/dnscontrol/releases), or build from the go source:
+## 1. Install the software
 
-`go get github.com/StackExchange/dnscontrol`
+You can either download the latest
+[github release](https://github.com/StackExchange/dnscontrol/releases),
+or build from the go source:
 
-## 2. Create files
+    go get github.com/StackExchange/dnscontrol
 
-The first file you will need is a javascript file to describe your domains.
-Individual providers will vary slightly. See [the provider docs]({{site.github.url}}/provider-list) for specifics.
-For this example we will use a single "BIND" provider that will generate zone files on our local file system.
-The default name is `dnsconfig.js`:
+The `go get` command will will download the source, compile it, and
+install `dnscontrol` in your `bin` directory.
+
+
+## 2. Create a place for the config files.
+
+Create a directory where you'll be storing your configuration files.
+We highly recommend storing these files in a Git repo, but for
+simple tests anything will do.
+
+Note: Do **not** store your creds.json file in Git unencrypted.
+That is unsafe. In fact you should include `creds.json` in your
+`.gitignore` file.  We recommend you encrypt the file using something
+like [git-crypt](https://www.agwa.name/projects/git-crypt) or
+[Blackbox](https://github.com/StackExchange/blackbox).
+
+Create a subdirectory called `zones` in the same directory as the
+configuration files.  (`mkdir zones`).  `zones` is where the BIND
+provider writes the zonefiles it creates. Even if you don't
+use BIND, it is useful for testing.
+
+
+## 3. Create the initial `dnsconfig.js`
+
+`dnsconfig.js` is the main configuration and defines providers, DNS
+domains, and so on.
+
+Start your `dnsconfig.js` file by downloading
+[dnsconfig.js-example.txt]({{ site.github.url }}/assets/dnsconfig.js-example.txt))
+and renaming it.
+
+The file looks like:
 
 {% highlight js %}
-var registrar = NewRegistrar("none","NONE"); // no registrar
-var bind = NewDnsProvider("bind","BIND");
 
-D("example.com", registrar, DnsProvider(bind),
-  A("@", "1.2.3.4")
+// Providers:
+
+var REG_NONE = NewRegistrar('none', 'NONE');    // No registrar.
+var DNS_BIND = NewDnsProvider('bind', 'BIND');  // ISC BIND.
+
+// Domains:
+
+D('example.com', REG_NONE, DnsProvider(DNS_BIND),
+    A('@', '1.2.3.4')
 );
 {%endhighlight%}
 
-You may modify this file to match your particular providers and domains. See [the javascript docs]({{site.github.url}}/js) and  [the provider docs]({{site.github.url}}/provider-list) for more details. If you are using other providers, you will likely need to make a `creds.json` file with api tokens and other account information.
+You may modify this file to match your particular providers and domains. See [the javascript docs]({{site.github.url}}/js) and  [the provider docs]({{site.github.url}}/provider-list) for more details.
+If you are using other providers, you will likely need to make a `creds.json` file with api tokens and other account information. For example, to use both name.com and Cloudflare, you would have:
 
-## 3. Run `dnscontrol preview`
+{% highlight js %}
+{
+  "cloudflare":{ // provider name to be used in dnsconfig.js
+    "apikey": "key", // API key
+    "apiuser": "username" // username for cloudflare
+  },
+  "namecom":{ // provider name to be used in dnsconfig.js
+    "apikey": "key", // API Key
+    "apiuser": "username" // username for name.com
+  }
+}
+{%endhighlight%}
 
-This will print out a list of "corrections" that need to be performed. It will not actually make any changes.
+There are 2 types of providers:
 
-## 4. Run `dnscontrol push`
+A "Registrar" is who you register the domain with.  Start with
+`REG_NONE`, which is a provider that never talks to or updates the
+registrar.  You can define your registrar later when you want to
+use advanced features.
 
-This will actually generate `zones/example.com.zone` for you. The bind provider is more configurable, and you can read more information [here.]({{site.github.url}}/providers/bind)
+The `DnsProvider` is the service that actually provides DNS service
+(port 53) and may be the same or different company. Even if both
+your Registrar and DnsProvider are the same company, two different
+defintions must be included in `dnsconfig.js`.
 
-# Migrate more zones
 
-Once you have the system working for a test zone, migrate other
-zones.  You can manually create the `D()` statements, or you can
+## 4. Create the initial `creds.json`
+
+`creds.json` stores credentials and a few global settings.
+It is only needed if any providers require credentials (API keys,
+usernames, passwords, etc.).
+
+Start your `creds.json` file by downloading
+[creds.json-example.txt]({{ site.github.url }}/assets/creds.json-example.txt))
+and renaming it.
+
+The file looks like:
+
+{% highlight js %}
+{
+  "bind": {
+  },
+  "r53_ACCOUNTNAME": {
+    "KeyId": "change_to_your_keyid",
+    "SecretKey": "change_to_your_secretkey"
+  }
+}
+{%endhighlight%}
+
+Ignore the `r53_ACCOUNTNAME` section.  It is a placeholder and will be ignored. You
+can use it later when you define your first set of API credentials.
+
+Note that `creds.json` is a JSON file. JSON is very strict about commas
+and other formatting.  There are a few different ways to check for typos:
+
+Python:
+
+    python -m json.tool creds.json
+
+jq:
+
+    jq < creds.json
+
+FYI: `creds.json` fields can be an environment variable. The field must begin with a `$` followed by the variable name. No other text. For example:
+
+    "apiuser": "$GANDI_APIUSER",
+
+## 5. Test the sample files.
+
+Before you edit the sample files, verify that the system is working.
+
+First run `dnscontrol preview` and make sure that it completes with
+no errors.  The preview command is the "dry run" mode that shows
+what changes need to be made and never makes any actual changes.
+It will use APIs if needed to find out what DNS entries currently
+exist.
+
+It should look something like this:
+
+{% highlight js %}
+
+$ dnscontrol preview
+Initialized 1 registrars and 1 dns service providers.
+******************** Domain: example.com
+----- Getting nameservers from: bind
+----- DNS Provider: bind... 1 correction
+#1: GENERATE_ZONEFILE: example.com
+ (2 records)
+
+----- Registrar: none
+Done. 1 corrections.
+{%endhighlight%}
+
+Next run `dnscontrol push` to actually make the changes. In this
+case, the change will be to create a zone file where one didn't
+previously exist.
+
+{% highlight js %}
+$ dnscontrol push
+Initialized 1 registrars and 1 dns service providers.
+******************** Domain: example.com
+----- Getting nameservers from: bind
+----- DNS Provider: bind... 1 correction
+#1: GENERATE_ZONEFILE: example.com
+ (2 records)
+
+CREATING ZONEFILE: zones/example.com.zone
+SUCCESS!
+----- Registrar: none
+Done. 1 corrections.
+{%endhighlight%}
+
+
+## 6. Make a change.
+
+Try making a change to `dnsconfig.js`. For example, change the IP
+address of in `A('@', '1.2.3.4')` or add an additional A record.
+
+In our case, we changed the IP address to 10.10.10.10. Previewing
+our change looks like this:
+
+{% highlight js %}
+$ dnscontrol preview
+Initialized 1 registrars and 1 dns service providers.
+******************** Domain: example.com
+----- Getting nameservers from: bind
+----- DNS Provider: bind... 1 correction
+#1: GENERATE_ZONEFILE: example.com
+MODIFY A example.com: (1.2.3.4 300) -> (10.10.10.10 300)
+
+----- Registrar: none
+Done. 1 corrections.
+{%endhighlight%}
+
+Notice that it read the old zone file and was able to produce a
+"diff" between the old `A` record and the new one.  If the zonefile
+didn't exist, the output would look different because the zone file
+was being created from scratch.
+
+Run `dnscontrol push` to see the system generate a new zone file.
+
+Other providers use an API do do updates. In those cases the
+individual changes will translate into API calls that update the
+specific records.
+
+Take a look at the `zones/example.com.zone` file.  It should look
+like:
+
+{% highlight js %}
+$TTL 300
+@                IN SOA   DEFAULT_NOT_SET. DEFAULT_NOT_SET. 1 3600 600 604800 1440
+                 IN A     10.10.10.10
+{%endhighlight%}
+
+You can change the "DEFAULT_NOT_SET" text by following the documentation
+for the [BIND provider]({{site.github.url}}/providers/bind) to set
+the "master" and "mbox" settings.  Try that now.
+
+
+## 7. Use your own domains
+
+Now that we know the system is working for test data, try controlling
+a real domain (or a test domain if you have one).
+
+Set up the provider:  Add the providers's definition to `dnsconfig.js`
+and list any credentials in `creds.json`.  Each provider is different.
+See [the provider docs]({{site.github.url}}/provider-list) for
+specifics.
+
+Edit the domain: Add the `D()` entry for the domain, or repurpose
+the `example.com` domain.  Add individual `A()`, `MX()` and other
+records as needed.  Remember that the first parameter to `D()` is
+always a Registrar.
+
+Run `dnscontrol preview` to test your work. It may take a few tries
+to list all the DNS records that make up the domain.  When preview
+shows no changes required, then you know you are at feature parity.
+
+The [Migrating]({{site.github.url}}/migrating) doc has advice
+about converting from other systems.
+You can manually create the `D()` statements, or you can
 generate them automatically using the
-[convertzone](https://github.com/StackExchange/dnscontrol/blob/master/misc/convertzone/README.md)
+[convertzone](https://github.com/StackExchange/dnscontrol/blob/master/cmd/convertzone/README.md)
 utility that is included in the DNSControl repo (it converts
-BIND-style zone files to DNSControl's language). To make sure the
-migration is correct, use `dnscontrol preview` and make sure it
-sees no differences.
-[Migrating]({{site.github.url}}/migrating) doc gives more detailed advice.
+BIND-style zone files and OctoDNS-style YAML files to DNSControl's language).
+
+Now you can make change to the domain(s)  and run `dnscontrol preview`
+
+
+## 8. Production Advice
+
+If you are going to use this in production, we highly recommend the following:
+
+* Store the configuration files in Git.
+* Encrypt the `creds.json` file before storing it in Git.
+* Use a CI/CD tool like Jenkins to automatically push DNS changes.
+* Join the DNSControl community. File [issues and PRs](https://github.com/StackExchange/dnscontrol).

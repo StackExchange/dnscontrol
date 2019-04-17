@@ -2,6 +2,7 @@
 
 [![Build Status](https://travis-ci.org/StackExchange/dnscontrol.svg?branch=master)](https://travis-ci.org/StackExchange/dnscontrol)
 [![Gitter chat](https://badges.gitter.im/dnscontrol/Lobby.png)](https://gitter.im/dnscontrol/Lobby)
+[![Google Group chat](https://img.shields.io/badge/google%20group-chat-green.svg)](https://groups.google.com/forum/#!forum/dnscontrol-discuss)
 
 DNSControl is a system for maintaining DNS zones.  It has two parts:
 a domain specific language (DSL) for describing DNS zones plus
@@ -15,12 +16,20 @@ Currently supported DNS providers:
  - Active Directory
  - BIND
  - CloudFlare
+ - Digitalocean
  - DNSimple
+ - Exoscale
  - Gandi
  - Google
+ - HEXONET
+ - Linode
  - Namecheap
  - Name.com
+ - NS1
  - Route 53
+ - SoftLayer
+ - Vultr
+ - OVH
 
 At Stack Overflow, we use this system to manage hundreds of domains
 and subdomains across multiple registrars and DNS providers.
@@ -88,13 +97,22 @@ Writing new plugins is very easy.
 
 ## From source
 
-This command will download the source code, compile it, and put the resulting
-binary in `~/bin/`
+DNSControl can be built with Go version 1.10 or higher. To install, simply run
 
-```cmd
-go get github.com/StackExchange/dnscontrol
-```
+`go get github.com/StackExchange/dnscontrol`
+
+dnscontrol should be installed in $GOPATH/bin
 
 ## Via packages
 
 Get prebuilt binaries from [github releases](https://github.com/StackExchange/dnscontrol/releases/latest)
+
+Alternatively, on Mac you can install it using homebrew:
+
+`brew install dnscontrol`
+
+## Via [docker](https://hub.docker.com/r/stackexchange/dnscontrol/)
+
+```
+docker run --rm -it -v $(pwd)/dnsconfig.js:/dns/dnsconfig.js -v $(pwd)/creds.json:/dns/creds.json stackexchange/dnscontrol dnscontrol preview
+```

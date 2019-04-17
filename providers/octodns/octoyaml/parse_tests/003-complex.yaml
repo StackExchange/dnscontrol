@@ -1,0 +1,18 @@
+---
+foo:
+- ttl: 303
+  type: A
+  values:
+  - 1.2.3.4
+  - 1.2.3.5
+- ttl: 303
+  type: MX
+  values:
+  - priority: 10
+    value: mx1.example.com.
+  - priority: 10
+    value: mx2.example.com.
+one:
+  ttl: 303
+  type: A
+  value: 1.2.3.3

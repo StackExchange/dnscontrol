@@ -1,10 +1,9 @@
-// +build !windows,!plan9
+// +build !windows
 
 package dns
 
 import (
 	"net"
-	"syscall"
 )
 
 // SessionUDP holds the remote address and the associated
@@ -17,29 +16,6 @@ type SessionUDP struct {
 // RemoteAddr returns the remote network address.
 func (s *SessionUDP) RemoteAddr() net.Addr { return s.raddr }
 
-// setUDPSocketOptions sets the UDP socket options.
-// This function is implemented on a per platform basis. See udp_*.go for more details
-func setUDPSocketOptions(conn *net.UDPConn) error {
-	sa, err := getUDPSocketName(conn)
-	if err != nil {
-		return err
-	}
-	switch sa.(type) {
-	case *syscall.SockaddrInet6:
-		v6only, err := getUDPSocketOptions6Only(conn)
-		if err != nil {
-			return err
-		}
-		setUDPSocketOptions6(conn)
-		if !v6only {
-			setUDPSocketOptions4(conn)
-		}
-	case *syscall.SockaddrInet4:
-		setUDPSocketOptions4(conn)
-	}
-	return nil
-}
-
 // ReadFromSessionUDP acts just like net.UDPConn.ReadFrom(), but returns a session object instead of a
 // net.UDPAddr.
 func ReadFromSessionUDP(conn *net.UDPConn, b []byte) (int, *SessionUDP, error) {
@@ -51,8 +27,19 @@ func ReadFromSessionUDP(conn *net.UDPConn, b []byte) (int, *SessionUDP, error) {
 	return n, &SessionUDP{raddr, oob[:oobn]}, err
 }
 
-// WriteToSessionUDP acts just like net.UDPConn.WritetTo(), but uses a *SessionUDP instead of a net.Addr.
+// WriteToSessionUDP acts just like net.UDPConn.WriteTo(), but uses a *SessionUDP instead of a net.Addr.
 func WriteToSessionUDP(conn *net.UDPConn, b []byte, session *SessionUDP) (int, error) {
-	n, _, err := conn.WriteMsgUDP(b, session.context, session.raddr)
+	oob := correctSource(session.context)
+	n, _, err := conn.WriteMsgUDP(b, oob, session.raddr)
 	return n, err
+}
+
+// correctSource takes oob data and returns new oob data with the Src equal to the Dst
+func correctSource(oob []byte) []byte {
+	dst, err := parseUDPSocketDst(oob)
+	// If the destination could not be determined, ignore.
+	if err != nil || dst == nil {
+		return nil
+	}
+	return marshalUDPSocketSrc(dst)
 }

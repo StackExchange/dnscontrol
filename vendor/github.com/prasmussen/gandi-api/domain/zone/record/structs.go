@@ -1,7 +1,7 @@
 package record
 
 type RecordInfo struct {
-	Id    int64
+	Id    string
 	Name  string
 	Ttl   int64
 	Type  string
@@ -24,7 +24,7 @@ type RecordUpdate struct {
 	Type    string `goptions:"-t, --type, obligatory, description='Record type'"`
 	Value   string `goptions:"-V, --value, obligatory, description='Value for record. Semantics depends on the record type.'"`
 	Ttl     int64  `goptions:"-T, --ttl, description='Time to live, in seconds, between 5 minutes and 30 days'"`
-	Id      int64  `goptions:"-r, --record, obligatory, description='Record id'"`
+	Id      string `goptions:"-r, --record, obligatory, description='Record id'"`
 }
 
 type RecordSet map[string]interface{}

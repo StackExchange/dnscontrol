@@ -12,6 +12,7 @@ import (
 
 	"github.com/DisposaBoy/JsonConfigReader"
 	"github.com/TomOnTime/utfutil"
+	"github.com/pkg/errors"
 )
 
 // LoadProviderConfigs will open the specified file name, and parse its contents. It will replace environment variables it finds if any value matches $[A-Za-z_-0-9]+
@@ -19,17 +20,18 @@ func LoadProviderConfigs(fname string) (map[string]map[string]string, error) {
 	var results = map[string]map[string]string{}
 	dat, err := utfutil.ReadFile(fname, utfutil.POSIX)
 	if err != nil {
-		//no creds file is ok. Bind requires nothing for example. Individual providers will error if things not found.
+		// no creds file is ok. Bind requires nothing for example. Individual providers will error if things not found.
 		if os.IsNotExist(err) {
+			fmt.Printf("INFO: Config file %q does not exist. Skipping.\n", fname)
 			return results, nil
 		}
-		return nil, fmt.Errorf("While reading provider credentials file %v: %v", fname, err)
+		return nil, errors.Errorf("While reading provider credentials file %v: %v", fname, err)
 	}
 	s := string(dat)
 	r := JsonConfigReader.New(strings.NewReader(s))
 	err = json.NewDecoder(r).Decode(&results)
 	if err != nil {
-		return nil, fmt.Errorf("While parsing provider credentials file %v: %v", fname, err)
+		return nil, errors.Errorf("While parsing provider credentials file %v: %v", fname, err)
 	}
 	if err = replaceEnvVars(results); err != nil {
 		return nil, err

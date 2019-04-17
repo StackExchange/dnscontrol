@@ -11,6 +11,7 @@ import (
 	"strings"
 
 	"github.com/google/go-github/github"
+	"github.com/pkg/errors"
 
 	"golang.org/x/oauth2"
 )
@@ -31,7 +32,6 @@ func main() {
 
 	run("gofmt", "Checking gofmt", "gofmt ok", checkGoFmt)
 	run("gogen", "Checking go generate", "go generate ok", checkGoGenerate)
-
 	if failed {
 		os.Exit(1)
 	}
@@ -60,7 +60,7 @@ func checkGoFmt() error {
 	if fList == "" {
 		return nil
 	}
-	return fmt.Errorf("The following files need to have gofmt run on them:\n%s", fList)
+	return errors.Errorf("The following files need to have gofmt run on them:\n%s", fList)
 }
 
 func checkGoGenerate() error {
@@ -76,7 +76,7 @@ func checkGoGenerate() error {
 		return err
 	}
 	if len(modified) != 0 {
-		return fmt.Errorf("ERROR: The following files are modified after go generate:\n%s", strings.Join(modified, "\n"))
+		return errors.Errorf("ERROR: The following files are modified after go generate:\n%s", strings.Join(modified, "\n"))
 	}
 	return nil
 }
@@ -100,7 +100,7 @@ const (
 )
 
 func setStatus(status string, desc string, ctx string) {
-	if commitish == "" {
+	if commitish == "" || ctx == "" {
 		return
 	}
 	client.Repositories.CreateStatus(context.Background(), "StackExchange", "dnscontrol", commitish, &github.RepoStatus{
@@ -125,7 +125,7 @@ func init() {
 	hc := oauth2.NewClient(context.Background(), oauth2.StaticTokenSource(&oauth2.Token{AccessToken: string(t)}))
 	client = github.NewClient(hc)
 
-	//get current version if in travis build
+	// get current version if in travis build
 	if tc := os.Getenv("TRAVIS_COMMIT"); tc != "" {
 		commitish = tc
 	}

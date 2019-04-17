@@ -1,0 +1,4 @@
+[
+  {"type":"A","name":"foo","target":"1.2.3.4","ttl":302},
+  {"type":"A","name":"foo","target":"1.2.3.5","ttl":302}
+]

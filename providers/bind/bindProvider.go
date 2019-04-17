@@ -16,7 +16,6 @@ bind -
 import (
 	"bytes"
 	"encoding/json"
-	"flag"
 	"fmt"
 	"log"
 	"os"
@@ -24,13 +23,51 @@ import (
 	"strings"
 
 	"github.com/miekg/dns"
-	"github.com/miekg/dns/dnsutil"
+	"github.com/pkg/errors"
 
 	"github.com/StackExchange/dnscontrol/models"
 	"github.com/StackExchange/dnscontrol/providers"
 	"github.com/StackExchange/dnscontrol/providers/diff"
 )
 
+var features = providers.DocumentationNotes{
+	providers.CanUseCAA:              providers.Can(),
+	providers.CanUsePTR:              providers.Can(),
+	providers.CanUseNAPTR:            providers.Can(),
+	providers.CanUseSRV:              providers.Can(),
+	providers.CanUseSSHFP:            providers.Can(),
+	providers.CanUseTLSA:             providers.Can(),
+	providers.CanUseTXTMulti:         providers.Can(),
+	providers.CantUseNOPURGE:         providers.Cannot(),
+	providers.DocCreateDomains:       providers.Can("Driver just maintains list of zone files. It should automatically add missing ones."),
+	providers.DocDualHost:            providers.Can(),
+	providers.DocOfficiallySupported: providers.Can(),
+}
+
+func initBind(config map[string]string, providermeta json.RawMessage) (providers.DNSServiceProvider, error) {
+	// config -- the key/values from creds.json
+	// meta -- the json blob from NewReq('name', 'TYPE', meta)
+	api := &Bind{
+		directory: config["directory"],
+	}
+	if api.directory == "" {
+		api.directory = "zones"
+	}
+	if len(providermeta) != 0 {
+		err := json.Unmarshal(providermeta, api)
+		if err != nil {
+			return nil, err
+		}
+	}
+	api.nameservers = models.StringsToNameservers(api.DefaultNS)
+	return api, nil
+}
+
+func init() {
+	providers.RegisterDomainServiceProviderType("BIND", initBind, features)
+}
+
+// SoaInfo contains the parts of a SOA rtype.
 type SoaInfo struct {
 	Ns      string `json:"master"`
 	Mbox    string `json:"mbox"`
@@ -45,15 +82,15 @@ func (s SoaInfo) String() string {
 	return fmt.Sprintf("%s %s %d %d %d %d %d", s.Ns, s.Mbox, s.Serial, s.Refresh, s.Retry, s.Expire, s.Minttl)
 }
 
+// Bind is the provider handle for the Bind driver.
 type Bind struct {
 	DefaultNS   []string `json:"default_ns"`
 	DefaultSoa  SoaInfo  `json:"default_soa"`
 	nameservers []*models.Nameserver
+	directory   string
 }
 
-var bindBaseDir = flag.String("bindtree", "zones", "BIND: Directory that stores BIND zonefiles.")
-
-//var bindSkeletin = flag.String("bind_skeletin", "skeletin/master/var/named/chroot/var/named/master", "")
+// var bindSkeletin = flag.String("bind_skeletin", "skeletin/master/var/named/chroot/var/named/master", "")
 
 func rrToRecord(rr dns.RR, origin string, replaceSerial uint32) (models.RecordConfig, uint32) {
 	// Convert's dns.RR into our native data type (models.RecordConfig).
@@ -62,58 +99,77 @@ func rrToRecord(rr dns.RR, origin string, replaceSerial uint32) (models.RecordCo
 	// replaceSerial != 0, change the serial to replaceSerial.
 	// WARNING(tlim): This assumes SOAs do not have serial=0.
 	// If one is found, we replace it with serial=1.
-	var old_serial, new_serial uint32
+	var oldSerial, newSerial uint32
 	header := rr.Header()
-	rc := models.RecordConfig{}
-	rc.Type = dns.TypeToString[header.Rrtype]
-	rc.NameFQDN = strings.ToLower(strings.TrimSuffix(header.Name, "."))
-	rc.Name = strings.ToLower(dnsutil.TrimDomainName(header.Name, origin))
-	rc.TTL = header.Ttl
-	switch v := rr.(type) {
-	case *dns.A:
-		rc.Target = v.A.String()
-	case *dns.AAAA:
-		rc.Target = v.AAAA.String()
-	case *dns.CNAME:
-		rc.Target = v.Target
-	case *dns.MX:
-		rc.Target = v.Mx
-		rc.Priority = v.Preference
-	case *dns.NS:
-		rc.Target = v.Ns
-	case *dns.SOA:
-		old_serial = v.Serial
-		if old_serial == 0 {
-			// For SOA records, we never return a 0 serial number.
-			old_serial = 1
-		}
-		new_serial = v.Serial
-		if rc.Name == "@" && replaceSerial != 0 {
-			new_serial = replaceSerial
-		}
-		rc.Target = fmt.Sprintf("%v %v %v %v %v %v %v",
-			v.Ns, v.Mbox, new_serial, v.Refresh, v.Retry, v.Expire, v.Minttl)
-	case *dns.TXT:
-		rc.Target = strings.Join(v.Txt, " ")
-	default:
-		log.Fatalf("Unimplemented zone record type=%s (%v)\n", rc.Type, rr)
+	rc := models.RecordConfig{
+		Type: dns.TypeToString[header.Rrtype],
+		TTL:  header.Ttl,
 	}
-	return rc, old_serial
+	rc.SetLabelFromFQDN(strings.TrimSuffix(header.Name, "."), origin)
+	switch v := rr.(type) { // #rtype_variations
+	case *dns.A:
+		panicInvalid(rc.SetTarget(v.A.String()))
+	case *dns.AAAA:
+		panicInvalid(rc.SetTarget(v.AAAA.String()))
+	case *dns.CAA:
+		panicInvalid(rc.SetTargetCAA(v.Flag, v.Tag, v.Value))
+	case *dns.CNAME:
+		panicInvalid(rc.SetTarget(v.Target))
+	case *dns.MX:
+		panicInvalid(rc.SetTargetMX(v.Preference, v.Mx))
+	case *dns.NS:
+		panicInvalid(rc.SetTarget(v.Ns))
+	case *dns.PTR:
+		panicInvalid(rc.SetTarget(v.Ptr))
+	case *dns.NAPTR:
+		panicInvalid(rc.SetTargetNAPTR(v.Order, v.Preference, v.Flags, v.Service, v.Regexp, v.Replacement))
+	case *dns.SOA:
+		oldSerial = v.Serial
+		if oldSerial == 0 {
+			// For SOA records, we never return a 0 serial number.
+			oldSerial = 1
+		}
+		newSerial = v.Serial
+		//if (dnsutil.TrimDomainName(rc.Name, origin+".") == "@") && replaceSerial != 0 {
+		if rc.GetLabel() == "@" && replaceSerial != 0 {
+			newSerial = replaceSerial
+		}
+		panicInvalid(rc.SetTarget(
+			fmt.Sprintf("%v %v %v %v %v %v %v",
+				v.Ns, v.Mbox, newSerial, v.Refresh, v.Retry, v.Expire, v.Minttl),
+		))
+		// FIXME(tlim): SOA should be handled by splitting out the fields.
+	case *dns.SRV:
+		panicInvalid(rc.SetTargetSRV(v.Priority, v.Weight, v.Port, v.Target))
+	case *dns.SSHFP:
+		panicInvalid(rc.SetTargetSSHFP(v.Algorithm, v.Type, v.FingerPrint))
+	case *dns.TLSA:
+		panicInvalid(rc.SetTargetTLSA(v.Usage, v.Selector, v.MatchingType, v.Certificate))
+	case *dns.TXT:
+		panicInvalid(rc.SetTargetTXTs(v.Txt))
+	default:
+		log.Fatalf("rrToRecord: Unimplemented zone record type=%s (%v)\n", rc.Type, rr)
+	}
+	return rc, oldSerial
+}
+
+func panicInvalid(err error) {
+	if err != nil {
+		panic(errors.Wrap(err, "unparsable record received from BIND"))
+	}
 }
 
 func makeDefaultSOA(info SoaInfo, origin string) *models.RecordConfig {
 	// Make a default SOA record in case one isn't found:
 	soaRec := models.RecordConfig{
 		Type: "SOA",
-		Name: "@",
 	}
-	soaRec.NameFQDN = dnsutil.AddOrigin(soaRec.Name, origin)
-	//TODO(cpeterson): are these sane defaults?
+	soaRec.SetLabel("@", origin)
 	if len(info.Ns) == 0 {
-		info.Ns = "DEFAULT_NOT_SET"
+		info.Ns = "DEFAULT_NOT_SET."
 	}
 	if len(info.Mbox) == 0 {
-		info.Mbox = "DEFAULT_NOT_SET"
+		info.Mbox = "DEFAULT_NOT_SET."
 	}
 	if info.Serial == 0 {
 		info.Serial = 1
@@ -130,15 +186,17 @@ func makeDefaultSOA(info SoaInfo, origin string) *models.RecordConfig {
 	if info.Minttl == 0 {
 		info.Minttl = 1440
 	}
-	soaRec.Target = info.String()
+	soaRec.SetTarget(info.String())
 
 	return &soaRec
 }
 
+// GetNameservers returns the nameservers for a domain.
 func (c *Bind) GetNameservers(string) ([]*models.Nameserver, error) {
 	return c.nameservers, nil
 }
 
+// GetDomainCorrections returns a list of corrections to update a domain.
 func (c *Bind) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Correction, error) {
 	dc.Punycode()
 	// Phase 1: Copy everything to []*models.RecordConfig:
@@ -160,7 +218,12 @@ func (c *Bind) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Correcti
 	// Read foundRecords:
 	foundRecords := make([]*models.RecordConfig, 0)
 	var oldSerial, newSerial uint32
-	zonefile := filepath.Join(*bindBaseDir, strings.ToLower(dc.Name)+".zone")
+
+	if _, err := os.Stat(c.directory); os.IsNotExist(err) {
+		fmt.Printf("\nWARNING: BIND directory %q does not exist!\n", c.directory)
+	}
+
+	zonefile := filepath.Join(c.directory, strings.Replace(strings.ToLower(dc.Name), "/", "_", -1)+".zone")
 	foundFH, err := os.Open(zonefile)
 	zoneFileFound := err == nil
 	if err != nil && !os.IsNotExist(os.ErrNotExist) {
@@ -179,7 +242,7 @@ func (c *Bind) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Correcti
 				if serial != 0 {
 					// This was an SOA record. Update the serial.
 					oldSerial = serial
-					newSerial = generate_serial(oldSerial)
+					newSerial = generateSerial(oldSerial)
 					// Regenerate with new serial:
 					*soaRec, _ = rrToRecord(x.RR, dc.Name, newSerial)
 					rec = *soaRec
@@ -193,6 +256,9 @@ func (c *Bind) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Correcti
 	if !dc.HasRecordTypeName("SOA", "@") {
 		dc.Records = append(dc.Records, soaRec)
 	}
+
+	// Normalize
+	models.PostProcessRecords(foundRecords)
 
 	differ := diff.New(dc)
 	_, create, del, mod := differ.IncrementalDiff(foundRecords)
@@ -236,9 +302,9 @@ func (c *Bind) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Correcti
 					}
 					zonefilerecords := make([]dns.RR, 0, len(dc.Records))
 					for _, r := range dc.Records {
-						zonefilerecords = append(zonefilerecords, r.RR())
+						zonefilerecords = append(zonefilerecords, r.ToRR())
 					}
-					err = WriteZoneFile(zf, zonefilerecords, dc.Name, models.DefaultTTL)
+					err = WriteZoneFile(zf, zonefilerecords, dc.Name)
 
 					if err != nil {
 						log.Fatalf("WriteZoneFile error: %v\n", err)
@@ -253,23 +319,4 @@ func (c *Bind) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Correcti
 	}
 
 	return corrections, nil
-}
-
-func initBind(config map[string]string, providermeta json.RawMessage) (providers.DNSServiceProvider, error) {
-	// config -- the key/values from creds.json
-	// meta -- the json blob from NewReq('name', 'TYPE', meta)
-
-	api := &Bind{}
-	if len(providermeta) != 0 {
-		err := json.Unmarshal(providermeta, api)
-		if err != nil {
-			return nil, err
-		}
-	}
-	api.nameservers = models.StringsToNameservers(api.DefaultNS)
-	return api, nil
-}
-
-func init() {
-	providers.RegisterDomainServiceProviderType("BIND", initBind)
 }

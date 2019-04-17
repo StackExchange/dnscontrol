@@ -5,19 +5,29 @@ import (
 	"sort"
 
 	"github.com/StackExchange/dnscontrol/models"
+	"github.com/StackExchange/dnscontrol/pkg/printer"
 )
 
+// Correlation stores a difference between two domains.
 type Correlation struct {
 	d        *differ
 	Existing *models.RecordConfig
 	Desired  *models.RecordConfig
 }
+
+// Changeset stores many Correlation.
 type Changeset []Correlation
 
+// Differ is an interface for computing the difference between two zones.
 type Differ interface {
+	// IncrementalDiff performs a diff on a record-by-record basis, and returns a sets for which records need to be created, deleted, or modified.
 	IncrementalDiff(existing []*models.RecordConfig) (unchanged, create, toDelete, modify Changeset)
+	// ChangedGroups performs a diff more appropriate for providers with a "RecordSet" model, where all records with the same name and type are grouped.
+	// Individual record changes are often not useful in such scenarios. Instead we return a map of record keys to a list of change descriptions within that group.
+	ChangedGroups(existing []*models.RecordConfig) map[models.RecordKey][]string
 }
 
+// New is a constructor for a Differ.
 func New(dc *models.DomainConfig, extraValues ...func(*models.RecordConfig) map[string]string) Differ {
 	return &differ{
 		dc:          dc,
@@ -32,13 +42,18 @@ type differ struct {
 
 // get normalized content for record. target, ttl, mxprio, and specified metadata
 func (d *differ) content(r *models.RecordConfig) string {
-	content := fmt.Sprintf("%s %d", r.Target, r.TTL)
-	if r.Type == "MX" {
-		content += fmt.Sprintf(" priority=%d", r.Priority)
-	}
-
+	content := fmt.Sprintf("%v ttl=%d", r.GetTargetCombined(), r.TTL)
 	for _, f := range d.extraValues {
-		for k, v := range f(r) {
+		// sort the extra values map keys to perform a deterministic
+		// comparison since Golang maps iteration order is not guaranteed
+		valueMap := f(r)
+		keys := make([]string, 0)
+		for k := range valueMap {
+			keys = append(keys, k)
+		}
+		sort.Strings(keys)
+		for _, k := range keys {
+			v := valueMap[k]
 			content += fmt.Sprintf(" %s=%s", k, v)
 		}
 	}
@@ -52,30 +67,45 @@ func (d *differ) IncrementalDiff(existing []*models.RecordConfig) (unchanged, cr
 	modify = Changeset{}
 	desired := d.dc.Records
 
-	//sort existing and desired by name
-	type key struct {
-		name, rType string
-	}
-	existingByNameAndType := map[key][]*models.RecordConfig{}
-	desiredByNameAndType := map[key][]*models.RecordConfig{}
+	// sort existing and desired by name
+
+	existingByNameAndType := map[models.RecordKey][]*models.RecordConfig{}
+	desiredByNameAndType := map[models.RecordKey][]*models.RecordConfig{}
 	for _, e := range existing {
-		k := key{e.NameFQDN, e.Type}
-		existingByNameAndType[k] = append(existingByNameAndType[k], e)
+		if d.matchIgnored(e.GetLabel()) {
+			printer.Debugf("Ignoring record %s %s due to IGNORE\n", e.GetLabel(), e.Type)
+		} else {
+			k := e.Key()
+			existingByNameAndType[k] = append(existingByNameAndType[k], e)
+		}
 	}
-	for _, d := range desired {
-		k := key{d.NameFQDN, d.Type}
-		desiredByNameAndType[k] = append(desiredByNameAndType[k], d)
+	for _, dr := range desired {
+		if d.matchIgnored(dr.GetLabel()) {
+			panic(fmt.Sprintf("Trying to update/add IGNOREd record: %s %s", dr.GetLabel(), dr.Type))
+		} else {
+			k := dr.Key()
+			desiredByNameAndType[k] = append(desiredByNameAndType[k], dr)
+		}
+	}
+	// if NO_PURGE is set, just remove anything that is only in existing.
+	if d.dc.KeepUnknown {
+		for k := range existingByNameAndType {
+			if _, ok := desiredByNameAndType[k]; !ok {
+				printer.Debugf("Ignoring record set %s %s due to NO_PURGE\n", k.Type, k.NameFQDN)
+				delete(existingByNameAndType, k)
+			}
+		}
 	}
 	// Look through existing records. This will give us changes and deletions and some additions.
 	// Each iteration is only for a single type/name record set
 	for key, existingRecords := range existingByNameAndType {
 		desiredRecords := desiredByNameAndType[key]
-		//first look through records that are the same target on both sides. Those are either modifications or unchanged
+		// first look through records that are the same target on both sides. Those are either modifications or unchanged
 		for i := len(existingRecords) - 1; i >= 0; i-- {
 			ex := existingRecords[i]
 			for j, de := range desiredRecords {
-				if de.Target == ex.Target {
-					//they're either identical or should be a modification of each other (ttl or metadata changes)
+				if de.GetTargetField() == ex.GetTargetField() {
+					// they're either identical or should be a modification of each other (ttl or metadata changes)
 					if d.content(de) == d.content(ex) {
 						unchanged = append(unchanged, Correlation{d, ex, de})
 					} else {
@@ -114,7 +144,7 @@ func (d *differ) IncrementalDiff(existing []*models.RecordConfig) (unchanged, cr
 				delete(desiredLookup, norm)
 			}
 		}
-		//sort records by normalized text. Keeps behaviour deterministic
+		// sort records by normalized text. Keeps behaviour deterministic
 		existingStrings, desiredStrings := sortedKeys(existingLookup), sortedKeys(desiredLookup)
 		// Modifications. Take 1 from each side.
 		for len(desiredStrings) > 0 && len(existingStrings) > 0 {
@@ -136,7 +166,7 @@ func (d *differ) IncrementalDiff(existing []*models.RecordConfig) (unchanged, cr
 		delete(desiredByNameAndType, key)
 	}
 
-	//any name/type sets not already processed are pure additions
+	// any name/type sets not already processed are pure additions
 	for name := range existingByNameAndType {
 		delete(desiredByNameAndType, name)
 	}
@@ -148,14 +178,29 @@ func (d *differ) IncrementalDiff(existing []*models.RecordConfig) (unchanged, cr
 	return
 }
 
+func (d *differ) ChangedGroups(existing []*models.RecordConfig) map[models.RecordKey][]string {
+	changedKeys := map[models.RecordKey][]string{}
+	_, create, delete, modify := d.IncrementalDiff(existing)
+	for _, c := range create {
+		changedKeys[c.Desired.Key()] = append(changedKeys[c.Desired.Key()], c.String())
+	}
+	for _, d := range delete {
+		changedKeys[d.Existing.Key()] = append(changedKeys[d.Existing.Key()], d.String())
+	}
+	for _, m := range modify {
+		changedKeys[m.Desired.Key()] = append(changedKeys[m.Desired.Key()], m.String())
+	}
+	return changedKeys
+}
+
 func (c Correlation) String() string {
 	if c.Existing == nil {
-		return fmt.Sprintf("CREATE %s %s %s", c.Desired.Type, c.Desired.NameFQDN, c.d.content(c.Desired))
+		return fmt.Sprintf("CREATE %s %s %s", c.Desired.Type, c.Desired.GetLabelFQDN(), c.d.content(c.Desired))
 	}
 	if c.Desired == nil {
-		return fmt.Sprintf("DELETE %s %s %s", c.Existing.Type, c.Existing.NameFQDN, c.d.content(c.Existing))
+		return fmt.Sprintf("DELETE %s %s %s", c.Existing.Type, c.Existing.GetLabelFQDN(), c.d.content(c.Existing))
 	}
-	return fmt.Sprintf("MODIFY %s %s: (%s) -> (%s)", c.Existing.Type, c.Existing.NameFQDN, c.d.content(c.Existing), c.d.content(c.Desired))
+	return fmt.Sprintf("MODIFY %s %s: (%s) -> (%s)", c.Existing.Type, c.Existing.GetLabelFQDN(), c.d.content(c.Existing), c.d.content(c.Desired))
 }
 
 func sortedKeys(m map[string]*models.RecordConfig) []string {
@@ -165,4 +210,13 @@ func sortedKeys(m map[string]*models.RecordConfig) []string {
 	}
 	sort.Strings(s)
 	return s
+}
+
+func (d *differ) matchIgnored(name string) bool {
+	for _, tst := range d.dc.IgnoredLabels {
+		if name == tst {
+			return true
+		}
+	}
+	return false
 }

@@ -3,11 +3,13 @@ package gandi
 import (
 	"encoding/json"
 	"fmt"
-	"log"
+	"sort"
 
 	"github.com/StackExchange/dnscontrol/models"
+	"github.com/StackExchange/dnscontrol/pkg/printer"
 	"github.com/StackExchange/dnscontrol/providers"
 	"github.com/StackExchange/dnscontrol/providers/diff"
+	"github.com/pkg/errors"
 
 	"strings"
 
@@ -24,6 +26,21 @@ Info required in `creds.json`:
 
 */
 
+var features = providers.DocumentationNotes{
+	providers.CanUseCAA:              providers.Can(),
+	providers.CanUsePTR:              providers.Can(),
+	providers.CanUseSRV:              providers.Can(),
+	providers.CantUseNOPURGE:         providers.Cannot(),
+	providers.DocCreateDomains:       providers.Cannot("Can only manage domains registered through their service"),
+	providers.DocOfficiallySupported: providers.Cannot(),
+}
+
+func init() {
+	providers.RegisterDomainServiceProviderType("GANDI", newDsp, features)
+	providers.RegisterRegistrarType("GANDI", newReg)
+}
+
+// GandiApi is the API handle for this module.
 type GandiApi struct {
 	ApiKey      string
 	domainIndex map[string]int64 // Map of domainname to index
@@ -41,11 +58,12 @@ func (c *GandiApi) getDomainInfo(domain string) (*gandidomain.DomainInfo, error)
 	}
 	_, ok := c.domainIndex[domain]
 	if !ok {
-		return nil, fmt.Errorf("%s not listed in zones for gandi account", domain)
+		return nil, errors.Errorf("%s not listed in zones for gandi account", domain)
 	}
 	return c.fetchDomainInfo(domain)
 }
 
+// GetNameservers returns the nameservers for domain.
 func (c *GandiApi) GetNameservers(domain string) ([]*models.Nameserver, error) {
 	domaininfo, err := c.getDomainInfo(domain)
 	if err != nil {
@@ -58,9 +76,9 @@ func (c *GandiApi) GetNameservers(domain string) ([]*models.Nameserver, error) {
 	return ns, nil
 }
 
+// GetDomainCorrections returns a list of corrections recommended for this domain.
 func (c *GandiApi) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Correction, error) {
 	dc.Punycode()
-	dc.CombineMXs()
 	domaininfo, err := c.getDomainInfo(dc.Name)
 	if err != nil {
 		return nil, err
@@ -74,28 +92,35 @@ func (c *GandiApi) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Corr
 	recordsToKeep := make([]*models.RecordConfig, 0, len(dc.Records))
 	for _, rec := range dc.Records {
 		if rec.TTL < 300 {
-			log.Printf("WARNING: Gandi does not support ttls < 300. %s will not be set to %d.", rec.NameFQDN, rec.TTL)
+			printer.Warnf("Gandi does not support ttls < 300. Setting %s from %d to 300\n", rec.GetLabelFQDN(), rec.TTL)
 			rec.TTL = 300
 		}
-		if rec.Type == "TXT" {
-			rec.Target = "\"" + rec.Target + "\"" // FIXME(tlim): Should do proper quoting.
+		if rec.TTL > 2592000 {
+			return nil, errors.Errorf("ERROR: Gandi does not support TTLs > 30 days (TTL=%d)", rec.TTL)
 		}
-		if rec.Type == "NS" && rec.Name == "@" {
-			if !strings.HasSuffix(rec.Target, ".gandi.net.") {
-				log.Printf("WARNING: Gandi does not support changing apex NS records. %s will not be added.", rec.Target)
+		if rec.Type == "TXT" {
+			rec.SetTarget("\"" + rec.GetTargetField() + "\"") // FIXME(tlim): Should do proper quoting.
+		}
+		if rec.Type == "NS" && rec.GetLabel() == "@" {
+			if !strings.HasSuffix(rec.GetTargetField(), ".gandi.net.") {
+				printer.Warnf("Gandi does not support changing apex NS records. %s will not be added.\n", rec.GetTargetField())
 			}
 			continue
 		}
 		rs := gandirecord.RecordSet{
 			"type":  rec.Type,
-			"name":  rec.Name,
-			"value": rec.Target,
+			"name":  rec.GetLabel(),
+			"value": rec.GetTargetCombined(),
 			"ttl":   rec.TTL,
 		}
 		expectedRecordSets = append(expectedRecordSets, rs)
 		recordsToKeep = append(recordsToKeep, rec)
 	}
 	dc.Records = recordsToKeep
+
+	// Normalize
+	models.PostProcessRecords(foundRecords)
+
 	differ := diff.New(dc)
 	_, create, del, mod := differ.IncrementalDiff(foundRecords)
 
@@ -122,7 +147,7 @@ func (c *GandiApi) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Corr
 			&models.Correction{
 				Msg: msg,
 				F: func() error {
-					fmt.Printf("CREATING ZONE: %v\n", dc.Name)
+					printer.Printf("CREATING ZONE: %v\n", dc.Name)
 					return c.createGandiZone(dc.Name, domaininfo.ZoneId, expectedRecordSets)
 				},
 			})
@@ -131,16 +156,47 @@ func (c *GandiApi) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Corr
 	return corrections, nil
 }
 
-func newGandi(m map[string]string, metadata json.RawMessage) (providers.DNSServiceProvider, error) {
+func newDsp(conf map[string]string, metadata json.RawMessage) (providers.DNSServiceProvider, error) {
+	return newGandi(conf, metadata)
+}
+
+func newReg(conf map[string]string) (providers.Registrar, error) {
+	return newGandi(conf, nil)
+}
+
+func newGandi(m map[string]string, metadata json.RawMessage) (*GandiApi, error) {
 	api := &GandiApi{}
 	api.ApiKey = m["apikey"]
 	if api.ApiKey == "" {
-		return nil, fmt.Errorf("Gandi apikey must be provided.")
+		return nil, errors.Errorf("missing Gandi apikey")
 	}
 
 	return api, nil
 }
 
-func init() {
-	providers.RegisterDomainServiceProviderType("GANDI", newGandi)
+// GetRegistrarCorrections returns a list of corrections for this registrar.
+func (c *GandiApi) GetRegistrarCorrections(dc *models.DomainConfig) ([]*models.Correction, error) {
+	domaininfo, err := c.getDomainInfo(dc.Name)
+	if err != nil {
+		return nil, err
+	}
+	sort.Strings(domaininfo.Nameservers)
+	found := strings.Join(domaininfo.Nameservers, ",")
+	desiredNs := []string{}
+	for _, d := range dc.Nameservers {
+		desiredNs = append(desiredNs, d.Name)
+	}
+	sort.Strings(desiredNs)
+	desired := strings.Join(desiredNs, ",")
+	if found != desired {
+		return []*models.Correction{
+			{
+				Msg: fmt.Sprintf("Change Nameservers from '%s' to '%s'", found, desired),
+				F: func() (err error) {
+					_, err = c.setDomainNameservers(dc.Name, desiredNs)
+					return
+				}},
+		}, nil
+	}
+	return nil, nil
 }

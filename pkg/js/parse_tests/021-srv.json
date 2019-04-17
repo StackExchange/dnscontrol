@@ -1,0 +1,51 @@
+{
+  "registrars": [],
+  "dns_providers": [],
+  "domains": [
+    {
+      "name": "foo.com",
+      "registrar": "none",
+      "dnsProviders": {},
+      "records": [
+        {
+          "type": "SRV",
+          "name": "_ntp._udp",
+          "target": "one.foo.com.",
+          "srvpriority": 1,
+          "srvweight": 100,
+          "srvport": 123
+        },
+        {
+          "type": "SRV",
+          "name": "_ntp._udp",
+          "target": "two",
+          "srvpriority": 2,
+          "srvweight": 100,
+          "srvport": 123
+        },
+        {
+          "type": "SRV",
+          "name": "_ntp._udp",
+          "target": "localhost",
+          "srvpriority": 3,
+          "srvweight": 100,
+          "srvport": 123
+        },
+        {
+          "type": "SRV",
+          "name": "_ntp._udp",
+          "target": "three.example.com.",
+          "srvpriority": 4,
+          "srvweight": 100,
+          "srvport": 123
+        },
+        {
+          "type": "SRV",
+          "name": "_ntp._udp",
+          "target": "zeros",
+          "srvport": 1
+        }
+      ]
+    }
+  ]
+}

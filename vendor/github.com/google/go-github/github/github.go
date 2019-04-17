@@ -27,7 +27,7 @@ import (
 )
 
 const (
-	libraryVersion = "6"
+	libraryVersion = "11"
 	defaultBaseURL = "https://api.github.com/"
 	uploadBaseURL  = "https://uploads.github.com/"
 	userAgent      = "go-github/" + libraryVersion
@@ -67,10 +67,6 @@ const (
 	// https://developer.github.com/changes/2016-05-12-reactions-api-preview/
 	mediaTypeReactionsPreview = "application/vnd.github.squirrel-girl-preview"
 
-	// https://developer.github.com/changes/2016-04-01-squash-api-preview/
-	// https://developer.github.com/changes/2016-09-26-pull-request-merge-api-update/
-	mediaTypeSquashPreview = "application/vnd.github.polaris-preview+json"
-
 	// https://developer.github.com/changes/2016-04-04-git-signing-api-preview/
 	mediaTypeGitSigningPreview = "application/vnd.github.cryptographer-preview+json"
 
@@ -92,11 +88,20 @@ const (
 	// https://developer.github.com/changes/2017-01-05-commit-search-api/
 	mediaTypeCommitSearchPreview = "application/vnd.github.cloak-preview+json"
 
-	// https://developer.github.com/changes/2016-12-14-reviews-api/
-	mediaTypePullRequestReviewsPreview = "application/vnd.github.black-cat-preview+json"
-
 	// https://developer.github.com/changes/2017-02-28-user-blocking-apis-and-webhook/
 	mediaTypeBlockUsersPreview = "application/vnd.github.giant-sentry-fist-preview+json"
+
+	// https://developer.github.com/changes/2017-02-09-community-health/
+	mediaTypeRepositoryCommunityHealthMetricsPreview = "application/vnd.github.black-panther-preview+json"
+
+	// https://developer.github.com/changes/2017-05-23-coc-api/
+	mediaTypeCodesOfConductPreview = "application/vnd.github.scarlet-witch-preview+json"
+
+	// https://developer.github.com/changes/2017-07-17-update-topics-on-repositories/
+	mediaTypeTopicsPreview = "application/vnd.github.mercy-preview+json"
+
+	// https://developer.github.com/changes/2017-07-26-team-review-request-thor-preview/
+	mediaTypeTeamReviewPreview = "application/vnd.github.thor-preview+json"
 )
 
 // A Client manages communication with the GitHub API.
@@ -123,11 +128,11 @@ type Client struct {
 	// Services used for talking to different parts of the GitHub API.
 	Activity       *ActivityService
 	Admin          *AdminService
+	Apps           *AppsService
 	Authorizations *AuthorizationsService
 	Gists          *GistsService
 	Git            *GitService
 	Gitignores     *GitignoresService
-	Integrations   *IntegrationsService
 	Issues         *IssuesService
 	Organizations  *OrganizationsService
 	Projects       *ProjectsService
@@ -212,11 +217,11 @@ func NewClient(httpClient *http.Client) *Client {
 	c.common.client = c
 	c.Activity = (*ActivityService)(&c.common)
 	c.Admin = (*AdminService)(&c.common)
+	c.Apps = (*AppsService)(&c.common)
 	c.Authorizations = (*AuthorizationsService)(&c.common)
 	c.Gists = (*GistsService)(&c.common)
 	c.Git = (*GitService)(&c.common)
 	c.Gitignores = (*GitignoresService)(&c.common)
-	c.Integrations = (*IntegrationsService)(&c.common)
 	c.Issues = (*IssuesService)(&c.common)
 	c.Licenses = (*LicensesService)(&c.common)
 	c.Migrations = (*MigrationService)(&c.common)
@@ -236,12 +241,13 @@ func NewClient(httpClient *http.Client) *Client {
 // specified, the value pointed to by body is JSON encoded and included as the
 // request body.
 func (c *Client) NewRequest(method, urlStr string, body interface{}) (*http.Request, error) {
-	rel, err := url.Parse(urlStr)
+	if !strings.HasSuffix(c.BaseURL.Path, "/") {
+		return nil, fmt.Errorf("BaseURL must have a trailing slash, but %q does not", c.BaseURL)
+	}
+	u, err := c.BaseURL.Parse(urlStr)
 	if err != nil {
 		return nil, err
 	}
-
-	u := c.BaseURL.ResolveReference(rel)
 
 	var buf io.ReadWriter
 	if body != nil {
@@ -271,12 +277,14 @@ func (c *Client) NewRequest(method, urlStr string, body interface{}) (*http.Requ
 // urlStr, in which case it is resolved relative to the UploadURL of the Client.
 // Relative URLs should always be specified without a preceding slash.
 func (c *Client) NewUploadRequest(urlStr string, reader io.Reader, size int64, mediaType string) (*http.Request, error) {
-	rel, err := url.Parse(urlStr)
+	if !strings.HasSuffix(c.UploadURL.Path, "/") {
+		return nil, fmt.Errorf("UploadURL must have a trailing slash, but %q does not", c.UploadURL)
+	}
+	u, err := c.UploadURL.Parse(urlStr)
 	if err != nil {
 		return nil, err
 	}
 
-	u := c.UploadURL.ResolveReference(rel)
 	req, err := http.NewRequest("POST", u.String(), reader)
 	if err != nil {
 		return nil, err
@@ -312,6 +320,7 @@ type Response struct {
 }
 
 // newResponse creates a new Response for the provided http.Response.
+// r must not be nil.
 func newResponse(r *http.Response) *Response {
 	response := &Response{Response: r}
 	response.populatePageValues()
@@ -390,13 +399,16 @@ func parseRate(r *http.Response) Rate {
 // The provided ctx must be non-nil. If it is canceled or times out,
 // ctx.Err() will be returned.
 func (c *Client) Do(ctx context.Context, req *http.Request, v interface{}) (*Response, error) {
-	ctx, req = withContext(ctx, req)
+	req = withContext(ctx, req)
 
 	rateLimitCategory := category(req.URL.Path)
 
 	// If we've hit rate limit, don't make further requests before Reset time.
 	if err := c.checkRateLimitBeforeDo(req, rateLimitCategory); err != nil {
-		return nil, err
+		return &Response{
+			Response: err.Response,
+			Rate:     err.Rate,
+		}, err
 	}
 
 	resp, err := c.client.Do(req)
@@ -457,7 +469,7 @@ func (c *Client) Do(ctx context.Context, req *http.Request, v interface{}) (*Res
 // current client state in order to quickly check if *RateLimitError can be immediately returned
 // from Client.Do, and if so, returns it so that Client.Do can skip making a network API call unnecessarily.
 // Otherwise it returns nil, and Client.Do should proceed normally.
-func (c *Client) checkRateLimitBeforeDo(req *http.Request, rateLimitCategory rateLimitCategory) error {
+func (c *Client) checkRateLimitBeforeDo(req *http.Request, rateLimitCategory rateLimitCategory) *RateLimitError {
 	c.rateMu.Lock()
 	rate := c.rateLimits[rateLimitCategory]
 	c.rateMu.Unlock()
@@ -524,9 +536,9 @@ type RateLimitError struct {
 }
 
 func (r *RateLimitError) Error() string {
-	return fmt.Sprintf("%v %v: %d %v; rate reset in %v",
+	return fmt.Sprintf("%v %v: %d %v %v",
 		r.Response.Request.Method, sanitizeURL(r.Response.Request.URL),
-		r.Response.StatusCode, r.Message, r.Rate.Reset.Time.Sub(time.Now()))
+		r.Response.StatusCode, r.Message, formatRateReset(r.Rate.Reset.Time.Sub(time.Now())))
 }
 
 // AcceptedError occurs when GitHub returns 202 Accepted response with an
@@ -872,6 +884,31 @@ func cloneRequest(r *http.Request) *http.Request {
 		r2.Header[k] = append([]string(nil), s...)
 	}
 	return r2
+}
+
+// formatRateReset formats d to look like "[rate reset in 2s]" or
+// "[rate reset in 87m02s]" for the positive durations. And like "[rate limit was reset 87m02s ago]"
+// for the negative cases.
+func formatRateReset(d time.Duration) string {
+	isNegative := d < 0
+	if isNegative {
+		d *= -1
+	}
+	secondsTotal := int(0.5 + d.Seconds())
+	minutes := secondsTotal / 60
+	seconds := secondsTotal - minutes*60
+
+	var timeString string
+	if minutes > 0 {
+		timeString = fmt.Sprintf("%dm%02ds", minutes, seconds)
+	} else {
+		timeString = fmt.Sprintf("%ds", seconds)
+	}
+
+	if isNegative {
+		return fmt.Sprintf("[rate limit was reset %v ago]", timeString)
+	}
+	return fmt.Sprintf("[rate reset in %v]", timeString)
 }
 
 // Bool is a helper routine that allocates a new bool value

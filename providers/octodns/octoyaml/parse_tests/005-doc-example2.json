@@ -1,0 +1,6 @@
+[
+  {"type":"A","name":"@","target":"1.2.3.4","ttl":305},
+  {"type":"A","name":"@","target":"1.2.3.5","ttl":305},
+  {"type":"MX","name":"@","target":"mx1.example.com.","ttl":305,"mxpreference":10},
+  {"type":"MX","name":"@","target":"mx2.example.com.","ttl":305,"mxpreference":10}
+]

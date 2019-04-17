@@ -1,5 +1,6 @@
 ---
 layout: default
+title: Examples
 ---
 
 # Examples
@@ -26,10 +27,16 @@ D('example.com', REG, DnsProvider('GCLOUD'),
 
 {% endhighlight %}
 
-## Set a specific TTL for a record
+## Set TTLs
 
 {% highlight javascript %}
-    A('one', '1.2.3.4', TTL(400)),
+
+D('example.com', registrar,
+    DefaultTTL('5m'), // Default for a domain
+    A('@', '1.2.3.4', TTL('10m')), // individual record
+    NAMESERVER_TTL('10m') // On domain apex NS RRs
+);
+
 {% endhighlight %}
 
 ## Variables for common IP Addresses
@@ -39,8 +46,8 @@ D('example.com', REG, DnsProvider('GCLOUD'),
 var addrA = IP('1.2.3.4')
 
 D('example.com', REG, DnsProvider('R53'),
-    A('@', addrA), //1.2.3.4
-    A('www', addrA + 1), //1.2.3.5
+    A('@', addrA), // 1.2.3.4
+    A('www', addrA + 1), // 1.2.3.5
 )
 {% endhighlight %}
 
