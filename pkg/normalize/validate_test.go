@@ -224,6 +224,8 @@ func TestCheckDuplicates_pos(t *testing.T) {
 		makeRC("@", "example.com", "ns1.foo.com.", models.RecordConfig{Type: "NS"}),
 		makeRC("@", "example.com", "ns2.foo.com.", models.RecordConfig{Type: "NS"}),
 		makeRC("@", "example.com", "ns3.foo.com.", models.RecordConfig{Type: "NS"}),
+		makeRC("aaa", "example.com", "uniquestring.com.", models.RecordConfig{Type: "NS"}),
+		makeRC("aaa", "example.com", "uniquestring.com.", models.RecordConfig{Type: "PTR"}), // Same target but different type
 	}
 	errs := checkDuplicates(records)
 	if len(errs) != 0 {

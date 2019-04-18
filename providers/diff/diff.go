@@ -63,7 +63,7 @@ func (d *differ) content(r *models.RecordConfig) string {
 			content += fmt.Sprintf(" %s=%s", k, v)
 		}
 	}
-	control := r.GetTargetDiffable(allMaps...)
+	control := r.ToDiffable(allMaps...)
 	if control != content {
 		panic("OOPS! control != content")
 	}

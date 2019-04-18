@@ -421,9 +421,9 @@ func checkCNAMEs(dc *models.DomainConfig) (errs []error) {
 func checkDuplicates(records []*models.RecordConfig) (errs []error) {
 	seen := map[string]*models.RecordConfig{}
 	for _, r := range records {
-		diffable := r.GetLabelFQDN() + " " + r.GetTargetDiffable()
+		diffable := fmt.Sprintf("%s %s %s", r.GetLabelFQDN(), r.Type, r.ToDiffable())
 		if seen[diffable] != nil {
-			errs = append(errs, errors.Errorf("Zones may not contain duplicate records: %q === %v", diffable, seen[diffable]))
+			errs = append(errs, errors.Errorf("Exact duplicate record found: %s", diffable))
 		}
 		seen[diffable] = r
 	}
