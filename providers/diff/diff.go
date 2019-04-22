@@ -42,11 +42,17 @@ type differ struct {
 
 // get normalized content for record. target, ttl, mxprio, and specified metadata
 func (d *differ) content(r *models.RecordConfig) string {
+	// NB(tlim): This function will eventually be replaced by calling
+	// r.GetTargetDiffable().  In the meanwhile, this function compares
+	// its output with r.GetTargetDiffable() to make sure the same
+	// results are generated.  Once we have confidence, this function will go away.
 	content := fmt.Sprintf("%v ttl=%d", r.GetTargetCombined(), r.TTL)
+	var allMaps []map[string]string
 	for _, f := range d.extraValues {
 		// sort the extra values map keys to perform a deterministic
 		// comparison since Golang maps iteration order is not guaranteed
 		valueMap := f(r)
+		allMaps = append(allMaps, valueMap)
 		keys := make([]string, 0)
 		for k := range valueMap {
 			keys = append(keys, k)
@@ -56,6 +62,10 @@ func (d *differ) content(r *models.RecordConfig) string {
 			v := valueMap[k]
 			content += fmt.Sprintf(" %s=%s", k, v)
 		}
+	}
+	control := r.ToDiffable(allMaps...)
+	if control != content {
+		panic("OOPS! control != content")
 	}
 	return content
 }

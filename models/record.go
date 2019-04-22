@@ -3,6 +3,7 @@ package models
 import (
 	"fmt"
 	"log"
+	"sort"
 	"strings"
 
 	"github.com/miekg/dns"
@@ -174,6 +175,31 @@ func (rc *RecordConfig) GetLabel() string {
 // It will not end with ".".
 func (rc *RecordConfig) GetLabelFQDN() string {
 	return rc.NameFQDN
+}
+
+// ToDiffable returns a string that is comparable by a differ.
+// extraMaps: a list of maps that should be included in the comparison.
+func (rc *RecordConfig) ToDiffable(extraMaps ...map[string]string) string {
+	content := fmt.Sprintf("%v ttl=%d", rc.GetTargetCombined(), rc.TTL)
+	for _, valueMap := range extraMaps {
+		// sort the extra values map keys to perform a deterministic
+		// comparison since Golang maps iteration order is not guaranteed
+
+		// FIXME(tlim) The keys of each map is sorted per-map, not across
+		// all maps. This may be intentional since we'd have no way to
+		// deal with duplicates.
+
+		keys := make([]string, 0)
+		for k := range valueMap {
+			keys = append(keys, k)
+		}
+		sort.Strings(keys)
+		for _, k := range keys {
+			v := valueMap[k]
+			content += fmt.Sprintf(" %s=%s", k, v)
+		}
+	}
+	return content
 }
 
 // ToRR converts a RecordConfig to a dns.RR.

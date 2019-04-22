@@ -213,6 +213,54 @@ func TestCAAValidation(t *testing.T) {
 	}
 }
 
+func TestCheckDuplicates(t *testing.T) {
+	records := []*models.RecordConfig{
+		// The only difference is the target:
+		makeRC("www", "example.com", "4.4.4.4", models.RecordConfig{Type: "A"}),
+		makeRC("www", "example.com", "5.5.5.5", models.RecordConfig{Type: "A"}),
+		// The only difference is the rType:
+		makeRC("aaa", "example.com", "uniquestring.com.", models.RecordConfig{Type: "NS"}),
+		makeRC("aaa", "example.com", "uniquestring.com.", models.RecordConfig{Type: "PTR"}),
+		// The only difference is the TTL.
+		makeRC("zzz", "example.com", "4.4.4.4", models.RecordConfig{Type: "A", TTL: 111}),
+		makeRC("zzz", "example.com", "4.4.4.4", models.RecordConfig{Type: "A", TTL: 222}),
+		// Three records each with a different target.
+		makeRC("@", "example.com", "ns1.foo.com.", models.RecordConfig{Type: "NS"}),
+		makeRC("@", "example.com", "ns2.foo.com.", models.RecordConfig{Type: "NS"}),
+		makeRC("@", "example.com", "ns3.foo.com.", models.RecordConfig{Type: "NS"}),
+	}
+	errs := checkDuplicates(records)
+	if len(errs) != 0 {
+		t.Errorf("Expect duplicate NOT found but found %q", errs)
+	}
+}
+
+func TestCheckDuplicates_dup_a(t *testing.T) {
+	records := []*models.RecordConfig{
+		// A records that are exact dupliates.
+		makeRC("@", "example.com", "1.1.1.1", models.RecordConfig{Type: "A"}),
+		makeRC("@", "example.com", "1.1.1.1", models.RecordConfig{Type: "A"}),
+	}
+	errs := checkDuplicates(records)
+	if len(errs) == 0 {
+		t.Error("Expect duplicate found but found none")
+	}
+}
+
+func TestCheckDuplicates_dup_ns(t *testing.T) {
+	records := []*models.RecordConfig{
+		// Three records, the last 2 are duplicates.
+		// NB: This is a common issue.
+		makeRC("@", "example.com", "ns1.foo.com.", models.RecordConfig{Type: "NS"}),
+		makeRC("@", "example.com", "ns2.foo.com.", models.RecordConfig{Type: "NS"}),
+		makeRC("@", "example.com", "ns2.foo.com.", models.RecordConfig{Type: "NS"}),
+	}
+	errs := checkDuplicates(records)
+	if len(errs) == 0 {
+		t.Error("Expect duplicate found but found none")
+	}
+}
+
 func TestTLSAValidation(t *testing.T) {
 	config := &models.DNSConfig{
 		Domains: []*models.DomainConfig{
