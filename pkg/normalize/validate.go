@@ -387,6 +387,8 @@ func NormalizeAndValidateConfig(config *models.DNSConfig) (errs []error) {
 		if err != nil {
 			errs = append(errs, err)
 		}
+		// Check for duplicates
+		errs = append(errs, checkDuplicates(d.Records)...)
 		// Validate FQDN consistency
 		for _, r := range d.Records {
 			if r.NameFQDN == "" || !strings.HasSuffix(r.NameFQDN, d.Name) {
@@ -414,6 +416,18 @@ func checkCNAMEs(dc *models.DomainConfig) (errs []error) {
 		}
 	}
 	return
+}
+
+func checkDuplicates(records []*models.RecordConfig) (errs []error) {
+	seen := map[string]*models.RecordConfig{}
+	for _, r := range records {
+		diffable := fmt.Sprintf("%s %s %s", r.GetLabelFQDN(), r.Type, r.ToDiffable())
+		if seen[diffable] != nil {
+			errs = append(errs, errors.Errorf("Exact duplicate record found: %s", diffable))
+		}
+		seen[diffable] = r
+	}
+	return errs
 }
 
 func checkProviderCapabilities(dc *models.DomainConfig) error {
