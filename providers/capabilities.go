@@ -16,6 +16,9 @@ const (
 	// CanUseCAA indicates the provider can handle CAA records
 	CanUseCAA
 
+	// CanUseDs indicates that the provider can handle DS record types
+	CanUseDS
+
 	// CanUsePTR indicates the provider can handle PTR records
 	CanUsePTR
 

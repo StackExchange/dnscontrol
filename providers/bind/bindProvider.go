@@ -32,6 +32,7 @@ import (
 
 var features = providers.DocumentationNotes{
 	providers.CanUseCAA:              providers.Can(),
+	providers.CanUseDS:               providers.Can(),
 	providers.CanUsePTR:              providers.Can(),
 	providers.CanUseNAPTR:            providers.Can(),
 	providers.CanUseSRV:              providers.Can(),
@@ -115,6 +116,8 @@ func rrToRecord(rr dns.RR, origin string, replaceSerial uint32) (models.RecordCo
 		panicInvalid(rc.SetTargetCAA(v.Flag, v.Tag, v.Value))
 	case *dns.CNAME:
 		panicInvalid(rc.SetTarget(v.Target))
+	case *dns.DS:
+		panicInvalid(rc.SetTargetDS(v.KeyTag, v.Algorithm, v.DigestType, v.Digest))
 	case *dns.MX:
 		panicInvalid(rc.SetTargetMX(v.Preference, v.Mx))
 	case *dns.NS:

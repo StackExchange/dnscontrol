@@ -38,6 +38,8 @@ func (r *RecordConfig) PopulateFromString(rtype, contents, origin string) error 
 		return r.SetTarget(contents)
 	case "CAA":
 		return r.SetTargetCAAString(contents)
+	case "DS":
+		return r.SetTargetDSString(contents)
 	case "MX":
 		return r.SetTargetMXString(contents)
 	case "NAPTR":

@@ -264,6 +264,15 @@ func naptr(name string, order uint16, preference uint16, flags string, service s
 	return r
 }
 
+func ds(name string, keytag uint16, algorithm, digesttype uint8, digest, target string) *rec {
+	r := makeRec(name, target, "DS")
+	r.DsKeyTag = keytag
+	r.DsAlgorithm = algorithm
+	r.DsDigestType = digesttype
+	r.DsDigest = digest
+	return r
+}
+
 func srv(name string, priority, weight, port uint16, target string) *rec {
 	r := makeRec(name, target, "SRV")
 	r.SrvPriority = priority
@@ -598,6 +607,15 @@ func makeTests(t *testing.T) []*TestCase {
 			tc("create dependent records", a("foo", "1.2.3.4"), a("quux", "2.3.4.5")),
 			tc("ALIAS to A record in same zone", a("foo", "1.2.3.4"), a("quux", "2.3.4.5"), r53alias("bar", "A", "foo.**current-domain**")),
 			tc("change it", a("foo", "1.2.3.4"), a("quux", "2.3.4.5"), r53alias("bar", "A", "quux.**current-domain**")),
+		)
+	}
+
+	// DS
+	if !providers.ProviderHasCabability(*providerToRun, providers.CanUseRoute53Alias) {
+		t.Log("Skipping Route53 ALIAS Tests because provider does not support them")
+	} else {
+		tests = append(tests,
+			tc("create a ds record", ds()),
 		)
 	}
 
