@@ -373,6 +373,15 @@ func naptr(name string, order uint16, preference uint16, flags string, service s
 	return r
 }
 
+func ds(name string, keytag uint16, algorithm, digesttype uint8, digest, target string) *rec {
+	r := makeRec(name, target, "DS")
+	r.DsKeyTag = keytag
+	r.DsAlgorithm = algorithm
+	r.DsDigestType = digesttype
+	r.DsDigest = digest
+	return r
+}
+
 func srv(name string, priority, weight, port uint16, target string) *rec {
 	r := makeRec(name, target, "SRV")
 	r.SrvPriority = priority
@@ -827,6 +836,11 @@ func makeTests(t *testing.T) []*TestGroup {
 			),
 			tc("3x255-byte TXTMulti",
 				txtmulti("foo3", []string{strings.Repeat("X", 255), strings.Repeat("Y", 255), strings.Repeat("Z", 255)})),
+		),
+
+		testgroup("DS"
+			requires(providers.canUseDS),
+			tc("DS record", ds("foo", 1, 2, 3, "bar")),
 		),
 
 		//

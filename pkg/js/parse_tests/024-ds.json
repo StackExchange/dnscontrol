@@ -1,0 +1,29 @@
+{
+  "registrars": [],
+  "dns_providers": [],
+  "domains": [
+    {
+      "name": "foo.com",
+      "registrar": "none",
+      "dnsProviders": {},
+      "records": [
+        {
+          "type": "DS",
+          "name": "foo.com",
+          "dskeytag": 2371,
+          "dsalgorithm": 13,
+          "dsdigesttype": 2,
+          "dsdigest": "AABBCCDDEEFF"
+        },
+        {
+          "type": "DS",
+          "name": "foo.com",
+          "dskeytag": 1,
+          "dsalgorithm": 1,
+          "dsdigesttype": 1,
+          "dsdigest": "FFFF"
+        }
+      ]
+    }
+  ]
+}
