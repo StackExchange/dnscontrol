@@ -17,6 +17,7 @@ type DomainConfig struct {
 	Nameservers   []*Nameserver     `json:"nameservers,omitempty"`
 	KeepUnknown   bool              `json:"keepunknown,omitempty"`
 	IgnoredLabels []string          `json:"ignored_labels,omitempty"`
+	//DNSSEC        bool              `json:"dnssec,omitempty"`
 
 	// These fields contain instantiated provider instances once everything is linked up.
 	// This linking is in two phases:
