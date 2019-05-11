@@ -14,7 +14,7 @@ Modifier arguments are processed according to type as follows:
 
 - A function argument will be called with the domain object as it's only argument. Most of the [built-in modifier functions](#domain-modifiers) return such functions.
 - An object argument will be merged into the domain's metadata collection.
-- An array arument will have all of it's members evaluated recursively. This allows you to combine multiple common records or modifiers into a variable that can
+- An array argument will have all of it's members evaluated recursively. This allows you to combine multiple common records or modifiers into a variable that can
    be used like a macro in multiple domains.
 
 {% include startExample.html %}

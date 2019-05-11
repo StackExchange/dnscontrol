@@ -15,7 +15,7 @@ Here are my notes from producing the v0.2.8 release.  Change the version number 
   * Run the integration tests (documented in [Writing new DNS providers](writing-providers)
 
 
-## Step 2. Bump the verison number
+## Step 2. Bump the version number
 
 Edit the "Version" variable in `main.go` and commit.
 
@@ -77,7 +77,7 @@ dnscontrol 0.2.8 ("ee5208bd5f19b9e5dd0bdba8d0e13403c43a469a[dirty]") built 19 De
 
 a. Drag and drop binaries into the web form.
 
-There is a box labeled "Atttach binaries by dropping them here or
+There is a box labeled "Attach binaries by dropping them here or
 selecting them".  Drag dnscontrol-Darwin, dnscontrol-Linux, and
 dnscontrol.exe onto that box (one at a time or all at once). This
 will upload the binaries.
