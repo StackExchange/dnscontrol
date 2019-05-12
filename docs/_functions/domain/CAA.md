@@ -11,7 +11,7 @@ CAA adds a CAA record to a domain. The name should be the relative label for the
 
 Tag can be one of "issue", "issuewild" or "iodef".
 
-Value is a string. The format of the contents is different depending on the tag.  DNSControl will handle any escaping or quoting required, similer to TXT records.  For example use `CAA("@", "issue", "letsencrypt.org")` rather than `CAA("@", "issue", "\"letsencrypt.org\"")`.
+Value is a string. The format of the contents is different depending on the tag.  DNSControl will handle any escaping or quoting required, similar to TXT records.  For example use `CAA("@", "issue", "letsencrypt.org")` rather than `CAA("@", "issue", "\"letsencrypt.org\"")`.
 
 Flags are controlled by modifier.:
 

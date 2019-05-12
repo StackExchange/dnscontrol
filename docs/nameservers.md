@@ -8,13 +8,13 @@ title: Nameservers
 DNSControl can handle a variety of provider scenarios for you:
 
 - A single provider manages everything for your domains (Ex: name.com registers and serves dns)
-- A single provider serves dns seperately from the registrar (Ex: name.com registers and cloudflare hosts dns records)
+- A single provider serves dns separately from the registrar (Ex: NAME.COM registers and Cloudflare hosts dns records)
 - Multiple providers "co-host" dns (Ex: Route53 and Google Cloud DNS both serve as authoritative nameservers)
 - One or more "active" dns hosts and another "backup" dns host. (Ex: route53 hosts dns, but I update a local bind server as a backup)
 
 All of these scenarios differ in how they manage:
 
-- The root list of authoritative nameservers stored in the tld zone by your registrar.
+- The root list of authoritative nameservers stored in the TLD zone by your registrar.
 - The list of NS records for the base domain that is served by each dns host.
 
 DNSControl attempts to manage these records for you as much as possible, according the the following processes:
@@ -53,7 +53,7 @@ DnsControl will also register the authoritative nameserver list with the registr
 
 It is also possible to specify a DNS Provider that is not "authoritative" by using `DnsProvider("name", 0)`. This means the provider will be updated
 with all records to match the authoritative ones, but it will not be registered in the tld name servers, and will not take traffic.
-It's nameservers will not be added to the authoritative set. While this may seem an attractive option, there are a few things to note:
+Its nameservers will not be added to the authoritative set. While this may seem an attractive option, there are a few things to note:
 
 1. Backup nameservers will still be updated with the NS records from the authoritative nameserver list. This means the records will still need to be updated to correctly "activate" the provider.
 2. Costs generally scale with utilization, so there is often no real savings associated with an active-passive setup vs an active-active one anyway.

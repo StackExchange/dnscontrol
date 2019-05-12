@@ -86,7 +86,7 @@ use advanced features.
 The `DnsProvider` is the service that actually provides DNS service
 (port 53) and may be the same or different company. Even if both
 your Registrar and DnsProvider are the same company, two different
-defintions must be included in `dnsconfig.js`.
+definitions must be included in `dnsconfig.js`.
 
 
 ## 4. Create the initial `creds.json`
