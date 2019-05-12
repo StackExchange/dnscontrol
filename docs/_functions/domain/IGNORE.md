@@ -5,7 +5,7 @@ name: IGNORE
 IGNORE can be used to ignore some records presents in zone.
 All records (independently of their type) of that name will be completely ignored.
 
-IGNORE is like NO_PURGE except it acts only on some specific records intead of the whole zone.
+IGNORE is like NO_PURGE except it acts only on some specific records instead of the whole zone.
 
 IGNORE is generally used in very specific situations:
 

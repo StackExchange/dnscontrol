@@ -5,7 +5,7 @@ parameters:
   - nsCount
 ---
 
-DnsProvider indicates that the specifid provider should be used to manage
+DnsProvider indicates that the specified provider should be used to manage
 records for this domain. The name must match the name used with [NewDnsProvider](#NewDnsProvider).
 
 The nsCount parameter determines how the nameservers will be managed from this provider.

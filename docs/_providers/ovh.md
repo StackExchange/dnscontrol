@@ -106,7 +106,7 @@ It should return something akin to:
 }
 {% endhighlight %}
 
-Open the "validationUrl" in a brower and log in with your OVH account. This will link the app with your account,
+Open the "validationUrl" in a browser and log in with your OVH account. This will link the app with your account,
 authorizing it to access your zones and domains.
 
 Do not forget to fill the `consumer-key` of your `creds.json`.
