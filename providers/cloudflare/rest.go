@@ -222,6 +222,7 @@ func (c *CloudflareApi) createRec(rec *models.RecordConfig, domainID string) []*
 				cf.Name = rec.GetLabelFQDN()
 			} else if rec.Type == "DS" {
 				cf.Data = cfDSData(rec)
+				cf.Content = ""
 			}
 			endpoint := fmt.Sprintf(recordsURL, domainID)
 			buf := &bytes.Buffer{}
