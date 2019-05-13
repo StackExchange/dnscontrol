@@ -264,11 +264,11 @@ func naptr(name string, order uint16, preference uint16, flags string, service s
 	return r
 }
 
-func ds(name string, keytag uint16, algorithm, digesttype uint8, digest, target string) *rec {
-	r := makeRec(name, target, "DS")
-	r.DsKeyTag = keytag
+func ds(name string, keyTag uint16, algorithm, digestType uint8, digest string) *rec {
+	r := makeRec(name, "", "DS")
+	r.DsKeyTag = keyTag
 	r.DsAlgorithm = algorithm
-	r.DsDigestType = digesttype
+	r.DsDigestType = digestType
 	r.DsDigest = digest
 	return r
 }
@@ -611,11 +611,26 @@ func makeTests(t *testing.T) []*TestCase {
 	}
 
 	// DS
-	if !providers.ProviderHasCabability(*providerToRun, providers.CanUseRoute53Alias) {
-		t.Log("Skipping Route53 ALIAS Tests because provider does not support them")
+	if !providers.ProviderHasCabability(*providerToRun, providers.CanUseDS) {
+		t.Log("Skipping DS record tests because provider does not support them")
 	} else {
 		tests = append(tests,
-			tc("create a ds record", ds()),
+			tc("create a ds record", ds("@", 1, 13, 1, "ADIGEST")),
+			tc("create a ds record", ds("@", 65535, 13, 1, "ADIGEST")),
+			tc("create a ds record", ds("@", 65535, 13, 2, "ADIGEST")),
+			tc("create a ds record", ds("@", 65535, 13, 3, "ADIGEST")),
+			tc("create a ds record", ds("@", 65535, 13, 4, "ADIGEST")),
+			tc("create a ds record", ds("@", 65535, 1, 4, "ADIGEST")),
+			tc("create a ds record", ds("@", 65535, 3, 4, "ADIGEST")),
+			tc("create a ds record", ds("@", 65535, 5, 4, "ADIGEST")),
+			tc("create a ds record", ds("@", 65535, 7, 4, "ADIGEST")),
+			tc("create a ds record", ds("@", 65535, 8, 4, "ADIGEST")),
+			tc("create a ds record", ds("@", 65535, 10, 4, "ADIGEST")),
+			tc("create a ds record", ds("@", 65535, 12, 4, "ADIGEST")),
+			tc("create a ds record", ds("@", 65535, 14, 4, "ADIGEST")),
+			tc("create a ds record", ds("@", 65535, 253, 4, "ADIGEST")),
+			tc("create a ds record", ds("@", 65535, 254, 4, "ADIGEST")),
+			tc("create a ds record", ds("foo", 2, 13, 4, "ADIGEST")),
 		)
 	}
 
