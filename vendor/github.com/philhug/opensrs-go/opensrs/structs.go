@@ -14,40 +14,40 @@ type ARecord struct {
 
 type AAAARecord struct {
 	Ipv6Address string `json:"ipv6_address,omitempty"`
-	SubDomain string `json:"subdomain,omitempty"`
+	SubDomain   string `json:"subdomain,omitempty"`
 }
 
 type CNAMERecord struct {
-	HostName string `json:"hostname,omitempty"`
+	HostName  string `json:"hostname,omitempty"`
 	SubDomain string `json:"subdomain,omitempty"`
 }
 
 type MXRecord struct {
-	Priority string `json:"priority,omitempty"`
+	Priority  string `json:"priority,omitempty"`
 	SubDomain string `json:"subdomain,omitempty"`
-	HostName string `json:"hostname,omitempty"`
+	HostName  string `json:"hostname,omitempty"`
 }
 
 type SRVRecord struct {
-	Priority string `json:"priority,omitempty"`
-	Weight string `json:"weight,omitempty"`
+	Priority  string `json:"priority,omitempty"`
+	Weight    string `json:"weight,omitempty"`
 	SubDomain string `json:"subdomain,omitempty"`
-	HostName string `json:"hostname,omitempty"`
-	Port string `json:"port,omitempty"`
+	HostName  string `json:"hostname,omitempty"`
+	Port      string `json:"port,omitempty"`
 }
 
 type TXTRecord struct {
 	SubDomain string `json:"subdomain,omitempty"`
-	Text string `json:"text,omitempty"`
+	Text      string `json:"text,omitempty"`
 }
 
 type DnsRecords struct {
-	A []ARecord `json:"A,omitempty"`
-	AAAA []AAAARecord `json:"AAAA,omitempty"`
+	A     []ARecord     `json:"A,omitempty"`
+	AAAA  []AAAARecord  `json:"AAAA,omitempty"`
 	CNAME []CNAMERecord `json:"CNAME,omitempty"`
-	MX []MXRecord `json:"MX,omitempty"`
-	SRV []SRVRecord `json:"SRV,omitempty"`
-	TXT []TXTRecord `json:"TXT,omitempty"`
+	MX    []MXRecord    `json:"MX,omitempty"`
+	SRV   []SRVRecord   `json:"SRV,omitempty"`
+	TXT   []TXTRecord   `json:"TXT,omitempty"`
 }
 
 func (n NameserverList) ToString() []string {

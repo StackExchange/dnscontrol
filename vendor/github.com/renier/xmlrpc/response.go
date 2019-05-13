@@ -9,27 +9,27 @@ var (
 )
 
 type failedResponse struct {
-	Code  interface{} `xmlrpc:"faultCode"`
-	Error string `xmlrpc:"faultString"`
+	Code           interface{} `xmlrpc:"faultCode"`
+	Error          string      `xmlrpc:"faultString"`
 	HttpStatusCode int
 }
 
 func (r *failedResponse) err() error {
 	return &XmlRpcError{
-		Code: r.Code,
-		Err:  r.Error,
+		Code:           r.Code,
+		Err:            r.Error,
 		HttpStatusCode: r.HttpStatusCode,
 	}
 }
 
 type Response struct {
-	data []byte
+	data           []byte
 	httpStatusCode int
 }
 
 func NewResponse(data []byte, httpStatusCode int) *Response {
 	return &Response{
-		data: data,
+		data:           data,
 		httpStatusCode: httpStatusCode,
 	}
 }

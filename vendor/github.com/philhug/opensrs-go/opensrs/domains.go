@@ -53,4 +53,3 @@ func (s *DomainsService) GetDNSZone(domainIdentifier string) (*OpsResponse, erro
 	_ = resp
 	return &opsResponse, nil
 }
-

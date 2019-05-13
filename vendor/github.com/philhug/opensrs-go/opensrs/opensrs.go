@@ -56,8 +56,8 @@ func NewClient(credentials Credentials) *Client {
 	proxyUrl, _ := url.Parse("http://127.0.0.1:8080")
 
 	tr := &http.Transport{
-		TLSClientConfig: &tls.Config{InsecureSkipVerify : true},
-		Proxy: http.ProxyURL(proxyUrl),
+		TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
+		Proxy:           http.ProxyURL(proxyUrl),
 	}
 	c := &Client{Credentials: credentials, HttpClient: &http.Client{Transport: tr}, BaseURL: defaultBaseURL}
 	c.Domains = &DomainsService{client: c}

@@ -1,10 +1,10 @@
 package version
 
 import (
-    "time"
+	"time"
 )
 
 type VersionInfo struct {
-    Id int64
-    DateCreated time.Time
+	Id          int64
+	DateCreated time.Time
 }
