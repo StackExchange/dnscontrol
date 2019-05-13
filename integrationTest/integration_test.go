@@ -373,11 +373,11 @@ func naptr(name string, order uint16, preference uint16, flags string, service s
 	return r
 }
 
-func ds(name string, keytag uint16, algorithm, digesttype uint8, digest, target string) *rec {
-	r := makeRec(name, target, "DS")
-	r.DsKeyTag = keytag
+func ds(name string, keyTag uint16, algorithm, digestType uint8, digest string) *rec {
+	r := makeRec(name, "", "DS")
+	r.DsKeyTag = keyTag
 	r.DsAlgorithm = algorithm
-	r.DsDigestType = digesttype
+	r.DsDigestType = digestType
 	r.DsDigest = digest
 	return r
 }
@@ -840,7 +840,22 @@ func makeTests(t *testing.T) []*TestGroup {
 
 		testgroup("DS"
 			requires(providers.canUseDS),
-			tc("DS record", ds("foo", 1, 2, 3, "bar")),
+			tc("create a ds record", ds("@", 1, 13, 1, "ADIGEST")),
+			tc("create a ds record", ds("@", 65535, 13, 1, "ADIGEST")),
+			tc("create a ds record", ds("@", 65535, 13, 2, "ADIGEST")),
+			tc("create a ds record", ds("@", 65535, 13, 3, "ADIGEST")),
+			tc("create a ds record", ds("@", 65535, 13, 4, "ADIGEST")),
+			tc("create a ds record", ds("@", 65535, 1, 4, "ADIGEST")),
+			tc("create a ds record", ds("@", 65535, 3, 4, "ADIGEST")),
+			tc("create a ds record", ds("@", 65535, 5, 4, "ADIGEST")),
+			tc("create a ds record", ds("@", 65535, 7, 4, "ADIGEST")),
+			tc("create a ds record", ds("@", 65535, 8, 4, "ADIGEST")),
+			tc("create a ds record", ds("@", 65535, 10, 4, "ADIGEST")),
+			tc("create a ds record", ds("@", 65535, 12, 4, "ADIGEST")),
+			tc("create a ds record", ds("@", 65535, 14, 4, "ADIGEST")),
+			tc("create a ds record", ds("@", 65535, 253, 4, "ADIGEST")),
+			tc("create a ds record", ds("@", 65535, 254, 4, "ADIGEST")),
+			tc("create a ds record", ds("foo", 2, 13, 4, "ADIGEST")),
 		),
 
 		//
@@ -869,7 +884,7 @@ func makeTests(t *testing.T) []*TestGroup {
 			tc("create dependent records", a("foo", "1.2.3.4"), a("quux", "2.3.4.5")),
 			tc("ALIAS to A record in same zone", a("foo", "1.2.3.4"), a("quux", "2.3.4.5"), r53alias("bar", "A", "foo.**current-domain**")),
 			tc("change it", a("foo", "1.2.3.4"), a("quux", "2.3.4.5"), r53alias("bar", "A", "quux.**current-domain**")),
-		),
+		)
 	}
 
 	return tests

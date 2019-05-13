@@ -127,6 +127,15 @@ func (c *CloudflareApi) createZone(domainName string) (string, error) {
 	return id, err
 }
 
+func cfDSData(rec *models.RecordConfig) *cfRecData {
+	return &cfRecData{
+		KeyTag:     rec.DsKeyTag,
+		Algorithm:  rec.DsAlgorithm,
+		DigestType: rec.DsDigestType,
+		Digest:     rec.DsDigest,
+	}
+}
+
 func cfSrvData(rec *models.RecordConfig) *cfRecData {
 	serverParts := strings.Split(rec.GetLabelFQDN(), ".")
 	c := &cfRecData{
@@ -184,6 +193,9 @@ func (c *CloudflareApi) createRec(rec *models.RecordConfig, domainID string) []*
 	if rec.Type == "MX" {
 		prio = fmt.Sprintf(" %d ", rec.MxPreference)
 	}
+	if rec.Type == "DS" {
+		content = fmt.Sprintf("%d %d %d %s", rec.DsKeyTag, rec.DsAlgorithm, rec.DsDigestType, rec.DsDigest)
+	}
 	arr := []*models.Correction{{
 		Msg: fmt.Sprintf("CREATE record: %s %s %d%s %s", rec.GetLabel(), rec.Type, rec.TTL, prio, content),
 		F: func() error {
@@ -208,6 +220,9 @@ func (c *CloudflareApi) createRec(rec *models.RecordConfig, domainID string) []*
 			} else if rec.Type == "SSHFP" {
 				cf.Data = cfSshfpData(rec)
 				cf.Name = rec.GetLabelFQDN()
+			} else if rec.Type == "DS" {
+				cf.Data = cfDSData(rec)
+				cf.Content = ""
 			}
 			endpoint := fmt.Sprintf(recordsURL, domainID)
 			buf := &bytes.Buffer{}
@@ -270,6 +285,9 @@ func (c *CloudflareApi) modifyRecord(domainID, recID string, proxied bool, rec *
 	} else if rec.Type == "SSHFP" {
 		r.Data = cfSshfpData(rec)
 		r.Name = rec.GetLabelFQDN()
+	} else if rec.Type == "DS" {
+		r.Data = cfDSData(rec)
+		r.Content = ""
 	}
 	endpoint := fmt.Sprintf(singleRecordURL, domainID, recID)
 	buf := &bytes.Buffer{}
