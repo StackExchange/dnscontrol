@@ -20,6 +20,7 @@ import (
 var features = providers.DocumentationNotes{
 	providers.CanUseAlias:            providers.Can(),
 	providers.CanUseCAA:              providers.Can(),
+	providers.CanUseDS:               providers.Can(),
 	providers.CanUsePTR:              providers.Can(),
 	providers.CanUseSRV:              providers.Can(),
 	providers.CanUseTLSA:             providers.Cannot(),
@@ -88,6 +89,10 @@ func (c *DnsimpleApi) GetDomainCorrections(dc *models.DomainConfig) ([]*models.C
 		case "ALIAS", "URL":
 			rec.Type = r.Type
 			rec.SetTarget(r.Content)
+		case "DS":
+			if err := rec.SetTargetDSString(r.Content); err != nil {
+				panic(errors.Wrap(err, "unparsable record received from dnsimple"))
+			}
 		case "MX":
 			if err := rec.SetTargetMX(uint16(r.Priority), r.Content); err != nil {
 				panic(errors.Wrap(err, "unparsable record received from dnsimple"))
@@ -396,6 +401,8 @@ func getTargetRecordContent(rc *models.RecordConfig) string {
 	switch rtype := rc.Type; rtype {
 	case "CAA":
 		return rc.GetTargetCombined()
+	case "DS":
+		return fmt.Sprintf("%d %d %d %s", rc.DsKeyTag, rc.DsAlgorithm, rc.DsDigestType, rc.DsDigest)
 	case "SRV":
 		return fmt.Sprintf("%d %d %s", rc.SrvWeight, rc.SrvPort, rc.GetTargetField())
 	default:
