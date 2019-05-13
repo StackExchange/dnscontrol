@@ -9,15 +9,17 @@
       "records": [
         {
           "type": "DS",
-          "name": "foo.com",
-          "dskeytag": 2371,
+          "name": "@",
+          "target": "",
+          "dskeytag": 1000,
           "dsalgorithm": 13,
           "dsdigesttype": 2,
           "dsdigest": "AABBCCDDEEFF"
         },
         {
           "type": "DS",
-          "name": "foo.com",
+          "name": "@",
+          "target": "",
           "dskeytag": 1,
           "dsalgorithm": 1,
           "dsdigesttype": 1,
