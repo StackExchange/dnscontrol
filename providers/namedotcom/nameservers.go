@@ -54,8 +54,7 @@ func (n *NameCom) GetRegistrarCorrections(dc *models.DomainConfig) ([]*models.Co
 	foundNameservers := strings.Join(nss, ",")
 	expected := []string{}
 	for _, ns := range dc.Nameservers {
-		name := strings.TrimRight(ns.Name, ".")
-		expected = append(expected, name)
+		expected = append(expected, ns.Name)
 	}
 	sort.Strings(expected)
 	expectedNameservers := strings.Join(expected, ",")

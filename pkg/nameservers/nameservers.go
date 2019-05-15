@@ -31,6 +31,7 @@ func DetermineNameservers(dc *models.DomainConfig) ([]*models.Nameserver, error)
 			take = n
 		}
 		for i := 0; i < take; i++ {
+			nss[i].Name = strings.TrimRight(nss[i].Name, ".")
 			ns = append(ns, nss[i])
 		}
 	}
