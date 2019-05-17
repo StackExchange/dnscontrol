@@ -24,9 +24,7 @@ CAA_BUILDER({
     "letsencrypt.org",
     "comodoca.com",
   ],
-  issuewild: [
-    ";",
-  ]
+  issuewild: "none",
 })
 ```
 
@@ -35,8 +33,8 @@ The parameters are:
 * `label:` The label of the CAA record. (Optional. Default: `"@"`)
 * `iodef:` Report all violation to configured mail address.
 * `iodef_critical:` This can be `true` or `false`. If enabled and CA does not support this record, then certificate issue will be refused. (Optional. Default: `false`)
-* `issue:` An array of CAs which are allowed to issue certificates.
-* `issuewild:` An array of CAs which are allowed to issue wildcard certificates. (Can be simply `;` for forbid issuing wildcard certificates for all CAs)
+* `issue:` An array of CAs which are allowed to issue certificates. (Use `"none"` to refuse all CAs)
+* `issuewild:` An array of CAs which are allowed to issue wildcard certificates. (Can be simply `"none"` to refuse issuing wildcard certificates for all CAs)
 
 `CAA_BUILDER()` returns multiple `TXT()` records (when configured as example above):
 

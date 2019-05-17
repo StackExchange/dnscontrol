@@ -691,6 +691,12 @@ function CAA_BUILDER(value) {
     if (!value.label) {
         value.label = '@';
     }
+
+    if (value.issue && value.issue == 'none')
+        value.issue = [ ";" ];
+    if (value.issuewild && value.issuewild == 'none')
+        value.issuewild = [ ";" ];
+
     if ( (!value.issue && !value.issuewild) || ((value.issue && value.issue.length == 0) && (value.issuewild && value.issuewild.length == 0)) ) {
         throw 'CAA_BUILDER requires at least one entry at issue or issuewild';
     }
