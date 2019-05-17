@@ -645,6 +645,7 @@ var FRAME = recordBuilder('FRAME');
 // parts: The parts of the SPF record (to be joined with ' ').
 // label: The DNS label for the primary SPF record. (default: '@')
 // raw: Where (which label) to store an unaltered version of the SPF settings.
+// ttl: The time for TTL, integer or string. (default: not defined, using DefaultTTL)
 // split: The template for additional records to be created (default: '_spf%d')
 // flatten: A list of domains to be flattened.
 
@@ -658,6 +659,10 @@ function SPF_BUILDER(value) {
     if (!value.raw) {
         value.raw = '_rawspf';
     }
+    if (!value.ttl) {
+        value.ttl = defaultArgs['defaultTTL'];
+    }
+    value.ttl = TTL(value.ttl)
 
     r = []; // The list of records to return.
     p = {}; // The metaparameters to set on the main TXT record.
@@ -666,7 +671,7 @@ function SPF_BUILDER(value) {
     // If flattening is requested, generate a TXT record with the raw SPF settings.
     if (value.flatten && value.flatten.length > 0) {
         p.flatten = value.flatten.join(',');
-        r.push(TXT(value.raw, rawspf));
+        r.push(TXT(value.raw, rawspf, value.ttl));
     }
 
     // If overflow is specified, enable splitting.
@@ -675,7 +680,7 @@ function SPF_BUILDER(value) {
     }
 
     // Generate a TXT record with the metaparameters.
-    r.push(TXT(value.label, rawspf, p));
+    r.push(TXT(value.label, rawspf, p, value.ttl));
 
     return r;
 }
