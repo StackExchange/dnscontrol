@@ -659,10 +659,6 @@ function SPF_BUILDER(value) {
     if (!value.raw) {
         value.raw = '_rawspf';
     }
-    if (!value.ttl) {
-        value.ttl = defaultArgs['defaultTTL'];
-    }
-    value.ttl = TTL(value.ttl)
 
     r = []; // The list of records to return.
     p = {}; // The metaparameters to set on the main TXT record.
@@ -671,7 +667,11 @@ function SPF_BUILDER(value) {
     // If flattening is requested, generate a TXT record with the raw SPF settings.
     if (value.flatten && value.flatten.length > 0) {
         p.flatten = value.flatten.join(',');
-        r.push(TXT(value.raw, rawspf, value.ttl));
+        if (value.ttl) {
+            r.push(TXT(value.raw, rawspf, TTL(value.ttl)));
+        } else {
+            r.push(TXT(value.raw, rawspf));
+        }
     }
 
     // If overflow is specified, enable splitting.
@@ -680,7 +680,11 @@ function SPF_BUILDER(value) {
     }
 
     // Generate a TXT record with the metaparameters.
-    r.push(TXT(value.label, rawspf, p, value.ttl));
+    if (value.ttl) {
+        r.push(TXT(value.label, rawspf, p, TTL(value.ttl)));
+    } else {
+        r.push(TXT(value.label, rawspf, p));
+    }
 
     return r;
 }
