@@ -6,6 +6,10 @@ jsId: CLOUDFLAREAPI
 ---
 # Cloudflare Provider
 
+## Important notes
+
+* When using `SPF()` or the `SPF_BUILDER()` the records are converted to RecordType `TXT` as Cloudflare API fails otherwise. See more [here](https://github.com/StackExchange/dnscontrol/issues/446).
+
 ## Configuration
 In the credentials file you must provide your Cloudflare API username and access token:
 
