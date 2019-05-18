@@ -36,7 +36,7 @@ The parameters are:
 * `issue:` An array of CAs which are allowed to issue certificates. (Use `"none"` to refuse all CAs)
 * `issuewild:` An array of CAs which are allowed to issue wildcard certificates. (Can be simply `"none"` to refuse issuing wildcard certificates for all CAs)
 
-`CAA_BUILDER()` returns multiple `TXT()` records (when configured as example above):
+`CAA_BUILDER()` returns multiple records (when configured as example above):
 
   * `CAA("@", "iodef", "test@domain.tld", CAA_CRITICAL)`
   * `CAA("@", "issue", "letsencrypt.org")`
