@@ -20,7 +20,7 @@ type ovhProvider struct {
 
 var features = providers.DocumentationNotes{
 	providers.CanUseAlias:            providers.Cannot(),
-	providers.CanUseCAA:              providers.Cannot(),
+	providers.CanUseCAA:              providers.Can(),
 	providers.CanUsePTR:              providers.Cannot(),
 	providers.CanUseSRV:              providers.Can(),
 	providers.CanUseTLSA:             providers.Can(),
