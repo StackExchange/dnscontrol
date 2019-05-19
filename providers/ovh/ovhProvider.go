@@ -24,6 +24,7 @@ var features = providers.DocumentationNotes{
 	providers.CanUsePTR:              providers.Cannot(),
 	providers.CanUseSRV:              providers.Can(),
 	providers.CanUseTLSA:             providers.Can(),
+	providers.CanUseSSHFP:            providers.Can(),
 	providers.DocCreateDomains:       providers.Cannot("New domains require registration"),
 	providers.DocDualHost:            providers.Can(),
 	providers.DocOfficiallySupported: providers.Cannot(),
