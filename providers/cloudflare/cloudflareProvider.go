@@ -126,6 +126,12 @@ func (c *CloudflareApi) GetDomainCorrections(dc *models.DomainConfig) ([]*models
 		if rec.Type == "ALIAS" {
 			rec.Type = "CNAME"
 		}
+		// As per CF-API documentation proxied records are always forced to have a TTL of 1.
+		// When not forcing this property change here, dnscontrol tries each time to update
+		// the TTL of a record which simply cannot be changed anyway.
+		if rec.Metadata[metaProxy] != "off" {
+			rec.TTL = 1
+		}
 		if labelMatches(rec.GetLabel(), c.ignoredLabels) {
 			log.Fatalf("FATAL: dnsconfig contains label that matches ignored_labels: %#v is in %v)\n", rec.GetLabel(), c.ignoredLabels)
 		}
