@@ -36,5 +36,5 @@ Here is a sample test written in `bash` using the [jq](https://stedolan.github.i
 
 ## Future directions
 
-Manipulting JSON data is difficult. If you implement ways to make it easier, we'd
+Manipulating JSON data is difficult. If you implement ways to make it easier, we'd
 gladly accept contributions.

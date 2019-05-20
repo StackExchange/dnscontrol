@@ -393,6 +393,12 @@ func (c *cfRecord) nativeToRecord(domain string) *models.RecordConfig {
 		Original: c,
 	}
 	rc.SetLabelFromFQDN(c.Name, domain)
+
+	// workaround for https://github.com/StackExchange/dnscontrol/issues/446
+	if c.Type == "SPF" {
+		c.Type = "TXT"
+	}
+
 	switch rType := c.Type; rType { // #rtype_variations
 	case "MX":
 		var priority uint16

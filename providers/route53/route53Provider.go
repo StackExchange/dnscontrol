@@ -19,9 +19,10 @@ import (
 )
 
 type route53Provider struct {
-	client    *r53.Route53
-	registrar *r53d.Route53Domains
-	zones     map[string]*r53.HostedZone
+	client        *r53.Route53
+	registrar     *r53d.Route53Domains
+	delegationSet *string
+	zones         map[string]*r53.HostedZone
 }
 
 func newRoute53Reg(conf map[string]string) (providers.Registrar, error) {
@@ -48,7 +49,12 @@ func newRoute53(m map[string]string, metadata json.RawMessage) (*route53Provider
 	}
 	sess := session.New(config)
 
-	api := &route53Provider{client: r53.New(sess), registrar: r53d.New(sess)}
+	var dls *string = nil
+	if val, ok := m["DelegationSet"]; ok {
+		fmt.Printf("ROUTE53 DelegationSet %s configured\n", val)
+		dls = sPtr(val)
+	}
+	api := &route53Provider{client: r53.New(sess), registrar: r53d.New(sess), delegationSet: dls}
 	err := api.getZones()
 	if err != nil {
 		return nil, err
@@ -78,13 +84,41 @@ func sPtr(s string) *string {
 	return &s
 }
 
+func withRetry(f func() error) {
+	const maxRetries = 23
+	// TODO: exponential backoff
+	const sleepTime = 5 * time.Second
+	var currentRetry int = 0
+	for {
+		err := f()
+		if err == nil {
+			return
+		}
+		if strings.Contains(err.Error(), "Rate exceeded") {
+			currentRetry++
+			if currentRetry >= maxRetries {
+				return
+			}
+			fmt.Printf("============ Route53 rate limit exceeded. Waiting %s to retry.\n", sleepTime)
+			time.Sleep(sleepTime)
+		} else {
+			return
+		}
+	}
+	return
+}
+
 func (r *route53Provider) getZones() error {
 	var nextMarker *string
 	r.zones = make(map[string]*r53.HostedZone)
 	for {
-
-		inp := &r53.ListHostedZonesInput{Marker: nextMarker}
-		out, err := r.client.ListHostedZones(inp)
+		var out *r53.ListHostedZonesOutput
+		var err error
+		withRetry(func() error {
+			inp := &r53.ListHostedZonesInput{Marker: nextMarker}
+			out, err = r.client.ListHostedZones(inp)
+			return err
+		})
 		if err != nil && strings.Contains(err.Error(), "is not authorized") {
 			return errors.New("Check your credentials, your not authorized to perform actions on Route 53 AWS Service")
 		} else if err != nil {
@@ -117,7 +151,12 @@ func (r *route53Provider) GetNameservers(domain string) ([]*models.Nameserver, e
 	if !ok {
 		return nil, errNoExist{domain}
 	}
-	z, err := r.client.GetHostedZone(&r53.GetHostedZoneInput{Id: zone.Id})
+	var z *r53.GetHostedZoneOutput
+	var err error
+	withRetry(func() error {
+		z, err = r.client.GetHostedZone(&r53.GetHostedZoneInput{Id: zone.Id})
+		return err
+	})
 	if err != nil {
 		return nil, err
 	}
@@ -238,8 +277,12 @@ func (r *route53Provider) GetDomainCorrections(dc *models.DomainConfig) ([]*mode
 			&models.Correction{
 				Msg: msg,
 				F: func() error {
+					var err error
 					req.HostedZoneId = zone.Id
-					_, err := r.client.ChangeResourceRecordSets(req)
+					withRetry(func() error {
+						_, err = r.client.ChangeResourceRecordSets(req)
+						return err
+					})
 					return err
 				},
 			})
@@ -357,7 +400,12 @@ func (r *route53Provider) GetRegistrarCorrections(dc *models.DomainConfig) ([]*m
 }
 
 func (r *route53Provider) getRegistrarNameservers(domainName *string) ([]string, error) {
-	domainDetail, err := r.registrar.GetDomainDetail(&r53d.GetDomainDetailInput{DomainName: domainName})
+	var domainDetail *r53d.GetDomainDetailOutput
+	var err error
+	withRetry(func() error {
+		domainDetail, err = r.registrar.GetDomainDetail(&r53d.GetDomainDetailInput{DomainName: domainName})
+		return err
+	})
 	if err != nil {
 		return nil, err
 	}
@@ -375,8 +423,13 @@ func (r *route53Provider) updateRegistrarNameservers(domainName string, nameserv
 	for i := range nameservers {
 		servers = append(servers, &r53d.Nameserver{Name: &nameservers[i]})
 	}
-
-	domainUpdate, err := r.registrar.UpdateDomainNameservers(&r53d.UpdateDomainNameserversInput{DomainName: &domainName, Nameservers: servers})
+	var domainUpdate *r53d.UpdateDomainNameserversOutput
+	var err error
+	withRetry(func() error {
+		domainUpdate, err = r.registrar.UpdateDomainNameservers(&r53d.UpdateDomainNameserversInput{
+			DomainName: &domainName, Nameservers: servers})
+		return err
+	})
 	if err != nil {
 		return nil, err
 	}
@@ -398,10 +451,16 @@ func (r *route53Provider) fetchRecordSets(zoneID *string) ([]*r53.ResourceRecord
 			StartRecordType: nextType,
 			MaxItems:        sPtr("100"),
 		}
-		list, err := r.client.ListResourceRecordSets(listInput)
+		var list *r53.ListResourceRecordSetsOutput
+		var err error
+		withRetry(func() error {
+			list, err = r.client.ListResourceRecordSets(listInput)
+			return err
+		})
 		if err != nil {
 			return nil, err
 		}
+
 		records = append(records, list.ResourceRecordSets...)
 		if list.NextRecordName != nil {
 			next = list.NextRecordName
@@ -427,12 +486,20 @@ func (r *route53Provider) EnsureDomainExists(domain string) error {
 	if _, ok := r.zones[domain]; ok {
 		return nil
 	}
-	fmt.Printf("Adding zone for %s to route 53 account\n", domain)
+	if r.delegationSet != nil {
+		fmt.Printf("Adding zone for %s to route 53 account with delegationSet %s\n", domain, *r.delegationSet)
+	} else {
+		fmt.Printf("Adding zone for %s to route 53 account\n", domain)
+	}
 	in := &r53.CreateHostedZoneInput{
 		Name:            &domain,
+		DelegationSetId: r.delegationSet,
 		CallerReference: sPtr(fmt.Sprint(time.Now().UnixNano())),
 	}
-	_, err := r.client.CreateHostedZone(in)
+	var err error
+	withRetry(func() error {
+		_, err := r.client.CreateHostedZone(in)
+		return err
+	})
 	return err
-
 }

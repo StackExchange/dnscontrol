@@ -44,7 +44,7 @@ Here a working example for our OT&E System:
 
 ## Usage
 
-Here an example DNS Configuration `dnsconfig.js` using our provider module.
+Here's an example DNS Configuration `dnsconfig.js` using our provider module.
 Even though it shows how you use us as Domain Registrar AND DNS Provider, we don't force you to do that.
 You are free to decide if you want to use both of our provider technology or just one of them.
 
@@ -55,7 +55,7 @@ var DNS_HX = NewDnsProvider('hexonet', 'HEXONET');
 
 // Set Default TTL for all RR to reflect our Backend API Default
 // If you use additional DNS Providers, configure a default TTL
-// per domain using the domain modifyer DefaultTTL instead.
+// per domain using the domain modifier DefaultTTL instead.
 // also check this issue for [NAMESERVER TTL](https://github.com/StackExchange/dnscontrol/issues/176).
 DEFAULTS(
     {"ns_ttl":"3600"},

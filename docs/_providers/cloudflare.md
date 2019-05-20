@@ -6,6 +6,10 @@ jsId: CLOUDFLAREAPI
 ---
 # Cloudflare Provider
 
+## Important notes
+
+* When using `SPF()` or the `SPF_BUILDER()` the records are converted to RecordType `TXT` as Cloudflare API fails otherwise. See more [here](https://github.com/StackExchange/dnscontrol/issues/446).
+
 ## Configuration
 In the credentials file you must provide your Cloudflare API username and access token:
 
@@ -32,13 +36,13 @@ If your Cloudflare account has access to multiple Cloudflare accounts, you can s
 {% endhighlight %}
 
 ## Metadata
-Record level metadata availible:
+Record level metadata available:
    * `cloudflare_proxy` ("on", "off", or "full")
 
-Domain level metadata availible:
+Domain level metadata available:
    * `cloudflare_proxy_default` ("on", "off", or "full")
 
-Provider level metadata availible:
+Provider level metadata available:
    * `ip_conversions`
    * `manage_redirects`: set to `true` to manage page-rule based redirects
 

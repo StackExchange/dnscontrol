@@ -8,7 +8,7 @@ return: string
 ---
 
 NewRegistrar registers a registrar provider. The name can be any string value you would like to use.
-The type must match a valid registar provider type identifer (see [provider page.]({{site.github.url}}/provider-list))
+The type must match a valid registrar provider type identifier (see [provider page.]({{site.github.url}}/provider-list))
 
 Metadata is an optional object, that will only be used by certain providers. See [individual provider docs]({{site.github.url}}/provider-list) for specific details.
 

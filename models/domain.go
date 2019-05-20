@@ -17,6 +17,7 @@ type DomainConfig struct {
 	Nameservers   []*Nameserver     `json:"nameservers,omitempty"`
 	KeepUnknown   bool              `json:"keepunknown,omitempty"`
 	IgnoredLabels []string          `json:"ignored_labels,omitempty"`
+	//DNSSEC        bool              `json:"dnssec,omitempty"`
 
 	// These fields contain instantiated provider instances once everything is linked up.
 	// This linking is in two phases:
@@ -87,7 +88,7 @@ func (dc *DomainConfig) Punycode() error {
 			if err != nil {
 				return err
 			}
-		case "A", "AAAA", "CAA", "SSHFP", "TXT", "TLSA":
+		case "A", "AAAA", "CAA", "NAPTR", "SSHFP", "TXT", "TLSA":
 			// Nothing to do.
 		default:
 			msg := fmt.Sprintf("Punycode rtype %v unimplemented", rec.Type)

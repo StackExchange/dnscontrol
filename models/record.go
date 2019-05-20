@@ -3,6 +3,7 @@ package models
 import (
 	"fmt"
 	"log"
+	"sort"
 	"strings"
 
 	"github.com/miekg/dns"
@@ -19,6 +20,7 @@ import (
 //     CAA
 //     CNAME
 //     MX
+//     NAPTR
 //     NS
 //     PTR
 //     SRV
@@ -75,6 +77,11 @@ type RecordConfig struct {
 	SrvPort          uint16            `json:"srvport,omitempty"`
 	CaaTag           string            `json:"caatag,omitempty"`
 	CaaFlag          uint8             `json:"caaflag,omitempty"`
+	NaptrOrder       uint16            `json:"naptrorder,omitempty"`
+	NaptrPreference  uint16            `json:"naptrpreference,omitempty"`
+	NaptrFlags       string            `json:"naptrflags,omitempty"`
+	NaptrService     string            `json:"naptrservice,omitempty"`
+	NaptrRegexp      string            `json:"naptrregexp,omitempty"`
 	SshfpAlgorithm   uint8             `json:"sshfpalgorithm,omitempty"`
 	SshfpFingerprint uint8             `json:"sshfpfingerprint,omitempty"`
 	TlsaUsage        uint8             `json:"tlsausage,omitempty"`
@@ -170,6 +177,31 @@ func (rc *RecordConfig) GetLabelFQDN() string {
 	return rc.NameFQDN
 }
 
+// ToDiffable returns a string that is comparable by a differ.
+// extraMaps: a list of maps that should be included in the comparison.
+func (rc *RecordConfig) ToDiffable(extraMaps ...map[string]string) string {
+	content := fmt.Sprintf("%v ttl=%d", rc.GetTargetCombined(), rc.TTL)
+	for _, valueMap := range extraMaps {
+		// sort the extra values map keys to perform a deterministic
+		// comparison since Golang maps iteration order is not guaranteed
+
+		// FIXME(tlim) The keys of each map is sorted per-map, not across
+		// all maps. This may be intentional since we'd have no way to
+		// deal with duplicates.
+
+		keys := make([]string, 0)
+		for k := range valueMap {
+			keys = append(keys, k)
+		}
+		sort.Strings(keys)
+		for _, k := range keys {
+			v := valueMap[k]
+			content += fmt.Sprintf(" %s=%s", k, v)
+		}
+	}
+	return content
+}
+
 // ToRR converts a RecordConfig to a dns.RR.
 func (rc *RecordConfig) ToRR() dns.RR {
 
@@ -201,6 +233,13 @@ func (rc *RecordConfig) ToRR() dns.RR {
 		rr.(*dns.CNAME).Target = rc.GetTargetField()
 	case dns.TypePTR:
 		rr.(*dns.PTR).Ptr = rc.GetTargetField()
+	case dns.TypeNAPTR:
+		rr.(*dns.NAPTR).Order = rc.NaptrOrder
+		rr.(*dns.NAPTR).Preference = rc.NaptrPreference
+		rr.(*dns.NAPTR).Flags = rc.NaptrFlags
+		rr.(*dns.NAPTR).Service = rc.NaptrService
+		rr.(*dns.NAPTR).Regexp = rc.NaptrRegexp
+		rr.(*dns.NAPTR).Replacement = rc.GetTargetField()
 	case dns.TypeMX:
 		rr.(*dns.MX).Preference = rc.MxPreference
 		rr.(*dns.MX).Mx = rc.GetTargetField()
@@ -300,7 +339,7 @@ func downcase(recs []*RecordConfig) {
 		r.Name = strings.ToLower(r.Name)
 		r.NameFQDN = strings.ToLower(r.NameFQDN)
 		switch r.Type { // #rtype_variations
-		case "ANAME", "CNAME", "MX", "NS", "PTR", "SRV":
+		case "ANAME", "CNAME", "MX", "NS", "PTR", "NAPTR", "SRV":
 			// These record types have a target that is case insensitive, so we downcase it.
 			r.Target = strings.ToLower(r.Target)
 		case "A", "AAAA", "ALIAS", "CAA", "IMPORT_TRANSFORM", "TLSA", "TXT", "SOA", "SSHFP", "CF_REDIRECT", "CF_TEMP_REDIRECT":

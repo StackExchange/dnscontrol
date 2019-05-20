@@ -217,6 +217,28 @@ var CNAME = recordBuilder('CNAME');
 // PTR(name,target, recordModifiers...)
 var PTR = recordBuilder('PTR');
 
+// NAPTR(name,order,preference,flags,service,regexp,target, recordModifiers...)
+var NAPTR = recordBuilder('NAPTR', {
+    args: [
+        ['name', _.isString],
+        ['order', _.isNumber],
+        ['preference', _.isNumber],
+        ['flags', _.isString],
+        ['service', _.isString],
+        ['regexp', _.isString],
+        ['target', _.isString],
+    ],
+    transform: function(record, args, modifiers) {
+        record.name = args.name;
+        record.naptrorder = args.order;
+        record.naptrpreference = args.preference;
+        record.naptrflags = args.flags;
+        record.naptrservice = args.service;
+        record.naptrregexp = args.regexp;
+        record.target = args.target;
+    },
+});
+
 // SRV(name,priority,weight,port,target, recordModifiers...)
 var SRV = recordBuilder('SRV', {
     args: [
@@ -654,6 +676,48 @@ function SPF_BUILDER(value) {
 
     // Generate a TXT record with the metaparameters.
     r.push(TXT(value.label, rawspf, p));
+
+    return r;
+}
+
+// CAA_BUILDER takes an object:
+// label: The DNS label for the CAA record. (default: '@')
+// iodef: The contact mail address. (optional)
+// iodef_critical: Boolean if sending report is required/critical. If not supported, certificate should be refused. (optional)
+// issue: List of CAs which are allowed to issue certificates for the domain (creates one record for each).
+// issuewild: Allowed CAs which can issue wildcard certificates for this domain. (creates one record for each)
+
+function CAA_BUILDER(value) {
+    if (!value.label) {
+        value.label = '@';
+    }
+
+    if (value.issue && value.issue == 'none')
+        value.issue = [ ";" ];
+    if (value.issuewild && value.issuewild == 'none')
+        value.issuewild = [ ";" ];
+
+    if ( (!value.issue && !value.issuewild) || ((value.issue && value.issue.length == 0) && (value.issuewild && value.issuewild.length == 0)) ) {
+        throw 'CAA_BUILDER requires at least one entry at issue or issuewild';
+    }
+
+    r = []; // The list of records to return.
+
+    if (value.iodef) {
+        if (value.iodef_critical) {
+            r.push(CAA(value.label, "iodef", value.iodef, CAA_CRITICAL));
+        } else {
+            r.push(CAA(value.label, "iodef", value.iodef));
+        }
+    }
+
+    if (value.issue)
+        for (var i = 0, len = value.issue.length; i < len; i++)
+            r.push(CAA(value.label, "issue", value.issue[i]));
+
+    if (value.issuewild)
+        for (var i = 0, len = value.issuewild.length; i < len; i++)
+            r.push(CAA(value.label, "issuewild", value.issuewild[i]));
 
     return r;
 }

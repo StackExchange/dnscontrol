@@ -79,7 +79,7 @@ A provider can be a DnsProvider, a Registrar, or both. We recommend
 you write the DnsProvider first, release it, and then write the
 Registrar if needed.
 
-If you have any questions, please dicuss them in the Github issue
+If you have any questions, please discuss them in the Github issue
 related to the request for this provider. Please let us know what
 was confusing so we can update this document with advice for future
 authors (or even better, update [this document](https://github.com/StackExchange/dnscontrol/blob/master/docs/writing-providers.md)
@@ -219,7 +219,7 @@ the documentation.
 
 ## Vendoring Dependencies
 
-If your provider depends on other go packages, then you must vendor them. To do this, use [govendor](https://github.com/kardianos/govendor).  A command like this is usually suffient:
+If your provider depends on other go packages, then you must vendor them. To do this, use [govendor](https://github.com/kardianos/govendor).  A command like this is usually sufficient:
 
 ```
 go get github.com/kardianos/govendor
