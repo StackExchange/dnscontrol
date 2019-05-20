@@ -2,6 +2,7 @@ package ovh
 
 import (
 	"fmt"
+	"strings"
 
 	"github.com/StackExchange/dnscontrol/models"
 	"github.com/miekg/dns/dnsutil"
@@ -77,7 +78,7 @@ func (c *ovhProvider) fetchRecords(fqdn string) ([]*Record, error) {
 
 	records := make([]*Record, len(recordIds))
 	for i, id := range recordIds {
-		r, err := c.fecthRecord(fqdn, id)
+		r, err := c.fetchRecord(fqdn, id)
 		if err != nil {
 			return nil, err
 		}
@@ -87,7 +88,7 @@ func (c *ovhProvider) fetchRecords(fqdn string) ([]*Record, error) {
 	return records, nil
 }
 
-func (c *ovhProvider) fecthRecord(fqdn string, id int) (*Record, error) {
+func (c *ovhProvider) fetchRecord(fqdn string, id int) (*Record, error) {
 	var response Record
 
 	err := c.client.Call("GET", fmt.Sprintf("/domain/zone/%s/record/%d", fqdn, id), nil, &response)
@@ -111,6 +112,9 @@ func (c *ovhProvider) deleteRecordFunc(id int64, fqdn string) func() error {
 // Returns a function that can be invoked to create a record in a zone.
 func (c *ovhProvider) createRecordFunc(rc *models.RecordConfig, fqdn string) func() error {
 	return func() error {
+		if c.isDKIMRecord(rc) {
+			rc.Type = "DKIM"
+		}
 		record := Record{
 			SubDomain: dnsutil.TrimDomainName(rc.GetLabelFQDN(), fqdn),
 			FieldType: rc.Type,
@@ -129,6 +133,9 @@ func (c *ovhProvider) createRecordFunc(rc *models.RecordConfig, fqdn string) fun
 // Returns a function that can be invoked to update a record in a zone.
 func (c *ovhProvider) updateRecordFunc(old *Record, rc *models.RecordConfig, fqdn string) func() error {
 	return func() error {
+		if c.isDKIMRecord(rc) {
+			rc.Type = "DKIM"
+		}
 		record := Record{
 			SubDomain: rc.GetLabel(),
 			FieldType: rc.Type,
@@ -141,8 +148,18 @@ func (c *ovhProvider) updateRecordFunc(old *Record, rc *models.RecordConfig, fqd
 			record.SubDomain = ""
 		}
 
-		return c.client.Call("PUT", fmt.Sprintf("/domain/zone/%s/record/%d", fqdn, old.ID), &record, &Void{})
+		err := c.client.Call("PUT", fmt.Sprintf("/domain/zone/%s/record/%d", fqdn, old.ID), &record, &Void{})
+		if err != nil && rc.Type == "DKIM" && strings.Contains(err.Error(), "alter read-only properties: fieldType") {
+			err = fmt.Errorf("This error is usually caused when DKIM value is longer than the TXT record limit what OVH allows. Delete the TXT record and let the record re-created to get pass this limitation. [Original error: %s]", err.Error())
+		}
+
+		return err
 	}
+}
+
+// Check if provided Record is DKIM
+func (c *ovhProvider) isDKIMRecord(rc *models.RecordConfig) bool {
+	return (rc != nil && rc.Type == "TXT" && strings.Contains(rc.GetLabel(), "._domainkey"))
 }
 
 func (c *ovhProvider) refreshZone(fqdn string) error {
