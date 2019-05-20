@@ -9,8 +9,8 @@ import (
 	"github.com/StackExchange/dnscontrol/models"
 	"github.com/StackExchange/dnscontrol/providers"
 	"github.com/StackExchange/dnscontrol/providers/diff"
+	"github.com/ovh/go-ovh/ovh"
 	"github.com/pkg/errors"
-	"github.com/xlucas/go-ovh/ovh"
 )
 
 type ovhProvider struct {
@@ -20,10 +20,11 @@ type ovhProvider struct {
 
 var features = providers.DocumentationNotes{
 	providers.CanUseAlias:            providers.Cannot(),
-	providers.CanUseCAA:              providers.Cannot(),
+	providers.CanUseCAA:              providers.Can(),
 	providers.CanUsePTR:              providers.Cannot(),
 	providers.CanUseSRV:              providers.Can(),
 	providers.CanUseTLSA:             providers.Can(),
+	providers.CanUseSSHFP:            providers.Can(),
 	providers.DocCreateDomains:       providers.Cannot("New domains require registration"),
 	providers.DocDualHost:            providers.Can(),
 	providers.DocOfficiallySupported: providers.Cannot(),
@@ -32,10 +33,8 @@ var features = providers.DocumentationNotes{
 func newOVH(m map[string]string, metadata json.RawMessage) (*ovhProvider, error) {
 	appKey, appSecretKey, consumerKey := m["app-key"], m["app-secret-key"], m["consumer-key"]
 
-	c := ovh.NewClient(ovh.ENDPOINT_EU_OVHCOM, appKey, appSecretKey, consumerKey, false)
-
-	// Check for time lag
-	if err := c.PollTimeshift(); err != nil {
+	c,err := ovh.NewClient(ovh.OvhEU, appKey, appSecretKey, consumerKey)
+	if c == nil {
 		return nil, err
 	}
 

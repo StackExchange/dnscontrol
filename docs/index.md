@@ -113,6 +113,9 @@ title: DnsControl
 				<li>
 					<a href="{{site.github.url}}/spf-optimizer">SPF Optimizer</a>: Optimize your SPF records
 				</li>
+				<li>
+					<a href="{{site.github.url}}/caa-builder"CAA Builder</a>: Build CAA records the easy way
+				</li>
 			</ul>
 		</div>
 		<div class="col-md-4">
