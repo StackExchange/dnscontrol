@@ -150,14 +150,14 @@ func (c *ovhProvider) updateRecordFunc(old *Record, rc *models.RecordConfig, fqd
 
 		err := c.client.Call("PUT", fmt.Sprintf("/domain/zone/%s/record/%d", fqdn, old.ID), &record, &Void{})
 		if err != nil && rc.Type == "DKIM" && strings.Contains(err.Error(), "alter read-only properties: fieldType") {
-			err = fmt.Errorf("This error is usually caused when DKIM value is longer than the TXT record limit what OVH allows. Delete the TXT record and let the record re-created to get pass this limitation. [Original error: %s]", err.Error())
+			err = fmt.Errorf("This usually occurs when DKIM value is longer than the TXT record limit what OVH allows. Delete the TXT record to get past this limitation. [Original error: %s]", err.Error())
 		}
 
 		return err
 	}
 }
 
-// Check if provided Record is DKIM
+// Check if provided record is DKIM
 func (c *ovhProvider) isDKIMRecord(rc *models.RecordConfig) bool {
 	return (rc != nil && rc.Type == "TXT" && strings.Contains(rc.GetLabel(), "._domainkey"))
 }
