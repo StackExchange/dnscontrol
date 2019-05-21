@@ -39,8 +39,11 @@ Domain level metadata available:
 
 var features = providers.DocumentationNotes{
 	providers.CanUseAlias:            providers.Can("CF automatically flattens CNAME records into A records dynamically"),
+	providers.CanUsePTR:              providers.Cannot(),
 	providers.CanUseCAA:              providers.Can(),
 	providers.CanUseSRV:              providers.Can(),
+	providers.CanUseTLSA:             providers.Can(),
+	providers.CanUseSSHFP:            providers.Can(),
 	providers.DocCreateDomains:       providers.Can(),
 	providers.DocDualHost:            providers.Cannot("Cloudflare will not work well in situations where it is not the only DNS server"),
 	providers.DocOfficiallySupported: providers.Can(),
@@ -359,16 +362,23 @@ func newCloudflare(m map[string]string, metadata json.RawMessage) (providers.DNS
 
 // Used on the "existing" records.
 type cfRecData struct {
-	Name     string `json:"name"`
-	Target   string `json:"target"`
-	Service  string `json:"service"`  // SRV
-	Proto    string `json:"proto"`    // SRV
-	Priority uint16 `json:"priority"` // SRV
-	Weight   uint16 `json:"weight"`   // SRV
-	Port     uint16 `json:"port"`     // SRV
-	Tag      string `json:"tag"`      // CAA
-	Flags    uint8  `json:"flags"`    // CAA
-	Value    string `json:"value"`    // CAA
+	Name          string `json:"name"`
+	Target        string `json:"target"`
+	Service       string `json:"service"`       // SRV
+	Proto         string `json:"proto"`         // SRV
+	Priority      uint16 `json:"priority"`      // SRV
+	Weight        uint16 `json:"weight"`        // SRV
+	Port          uint16 `json:"port"`          // SRV
+	Tag           string `json:"tag"`           // CAA
+	Flags         uint8  `json:"flags"`         // CAA
+	Value         string `json:"value"`         // CAA
+	Usage         uint8  `json:"usage"`         // TLSA
+	Selector      uint8  `json:"selector"`      // TLSA
+	Matching_Type uint8  `json:"matching_type"` // TLSA
+	Certificate   string `json:"certificate"`   // TLSA
+	Algorithm     uint8  `json:"algorithm"`     // SSHFP
+	Hash_Type     uint8  `json:"type"`          // SSHFP
+	Fingerprint   string `json:"fingerprint"`   // SSHFP
 }
 
 type cfRecord struct {

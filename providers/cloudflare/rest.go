@@ -149,6 +149,23 @@ func cfCaaData(rec *models.RecordConfig) *cfRecData {
 	}
 }
 
+func cfTlsaData(rec *models.RecordConfig) *cfRecData {
+	return &cfRecData{
+		Usage:         rec.TlsaUsage,
+		Selector:      rec.TlsaSelector,
+		Matching_Type: rec.TlsaMatchingType,
+		Certificate:   rec.GetTargetField(),
+	}
+}
+
+func cfSshfpData(rec *models.RecordConfig) *cfRecData {
+	return &cfRecData{
+		Algorithm:   rec.SshfpAlgorithm,
+		Hash_Type:   rec.SshfpFingerprint,
+		Fingerprint: rec.GetTargetField(),
+	}
+}
+
 func (c *CloudflareApi) createRec(rec *models.RecordConfig, domainID string) []*models.Correction {
 	type createRecord struct {
 		Name     string     `json:"name"`
@@ -185,6 +202,12 @@ func (c *CloudflareApi) createRec(rec *models.RecordConfig, domainID string) []*
 				cf.Data = cfCaaData(rec)
 				cf.Name = rec.GetLabelFQDN()
 				cf.Content = ""
+			} else if rec.Type == "TLSA" {
+				cf.Data = cfTlsaData(rec)
+				cf.Name = rec.GetLabelFQDN()
+			} else if rec.Type == "SSHFP" {
+				cf.Data = cfSshfpData(rec)
+				cf.Name = rec.GetLabelFQDN()
 			}
 			endpoint := fmt.Sprintf(recordsURL, domainID)
 			buf := &bytes.Buffer{}
@@ -241,6 +264,12 @@ func (c *CloudflareApi) modifyRecord(domainID, recID string, proxied bool, rec *
 		r.Data = cfCaaData(rec)
 		r.Name = rec.GetLabelFQDN()
 		r.Content = ""
+	} else if rec.Type == "TLSA" {
+		r.Data = cfTlsaData(rec)
+		r.Name = rec.GetLabelFQDN()
+	} else if rec.Type == "SSHFP" {
+		r.Data = cfSshfpData(rec)
+		r.Name = rec.GetLabelFQDN()
 	}
 	endpoint := fmt.Sprintf(singleRecordURL, domainID, recID)
 	buf := &bytes.Buffer{}
