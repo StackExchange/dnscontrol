@@ -95,19 +95,24 @@ These providers have an open pr with (potentially) working code. They may be rea
 </ul>
 
 <script>
+$(function() {
   $.get("https://api.github.com/repos/StackExchange/dnscontrol/issues?state=all&labels=provider-request&direction=asc")
-  .done(function(data){
-    for(var i of data){
-      var el = $(`<li><a href='${i.html_url}'>${i.title}</a> (#${i.number})</li>`)
+  .done(function(data) {
+    for(var i of data) {
+      var el = $(`<li><a href='${i.html_url}'>${i.title}</a> (#${i.number})</li>`);
       var target = $("#requests");
-      if (i.state == "open") target = $("#inprog");
-      for(var l of i.labels){
-        if (l.name == "has-pr") target = $("#haspr");
+      if (i.state == "open") {
+        target = $("#inprog");
+        for(var l of i.labels) {
+          if (l.name == "has-pr")
+            target = $("#haspr");
+        }
       }
       target.append(el);
     }
   })
   .fail(function(err){
     console.log("???", err)
-  })
+  });
+});
 </script>
