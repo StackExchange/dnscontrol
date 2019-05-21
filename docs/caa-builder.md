@@ -18,7 +18,7 @@ For example you can use:
 ```
 CAA_BUILDER({
   label: "@",
-  iodef: "test@domain.tld",
+  iodef: "mailto:test@domain.tld",
   iodef_critical: true,
   issue: [
     "letsencrypt.org",
@@ -38,7 +38,7 @@ The parameters are:
 
 `CAA_BUILDER()` returns multiple records (when configured as example above):
 
-  * `CAA("@", "iodef", "test@domain.tld", CAA_CRITICAL)`
+  * `CAA("@", "iodef", "mailto:test@domain.tld", CAA_CRITICAL)`
   * `CAA("@", "issue", "letsencrypt.org")`
   * `CAA("@", "issue", "comodoca.com")`
   * `CAA("@", "issuewild", ";")`

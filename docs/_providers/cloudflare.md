@@ -52,10 +52,19 @@ What does on/off/full mean?
    * "on" enables the Cloudflare proxy (turns on the "orange cloud")
    * "full" is the same as "on" but also enables Railgun.  DNSControl will prevent you from accidentally enabling "full" on a CNAME that points to an A record that is set to "off", as this is generally not desired.
 
+Good to know: You can also set the default proxy mode using `DEFAULTS()` function, see:
+{% highlight js %}
+
+DEFAULTS(
+	CF_PROXY_DEFAULT_OFF // turn proxy off when not specified otherwise
+);
+
+{% endhighlight %}
+
 **Aliases:**
 
 To make configuration files more readable and less prone to errors,
-the following aliases are pre-defined:
+the following aliases are *pre-defined*:
 
 {% highlight js %}
 // Meta settings for individual records.

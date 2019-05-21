@@ -13,11 +13,11 @@ Tag can be one of "issue", "issuewild" or "iodef".
 
 Value is a string. The format of the contents is different depending on the tag.  DNSControl will handle any escaping or quoting required, similar to TXT records.  For example use `CAA("@", "issue", "letsencrypt.org")` rather than `CAA("@", "issue", "\"letsencrypt.org\"")`.
 
-Flags are controlled by modifier.:
+Flags are controlled by modifier:
 
 - CAA_CRITICAL: Issuer critical flag. CA that does not understand this tag will refuse to issue certificate for this domain.
 
-CAA record is supported only by BIND, Google Cloud DNS, and Amazon Route 53. Some certificate authorities may not support this record until the mandatory date of September 2017.
+CAA record is supported only by BIND, Google Cloud DNS, Amazon Route 53 and OVH. Some certificate authorities may not support this record until the mandatory date of September 2017.
 
 {% include startExample.html %}
 {% highlight js %}
