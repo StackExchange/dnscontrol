@@ -5,7 +5,7 @@ jsId: ACTIVEDIRECTORY_PS
 title: ActiveDirectory_PS Provider
 ---
 # ActiveDirectory_PS Provider
-This provider updates an Microsoft ActiveDirectory server DNS server. It interacts with AD via PowerShell commands that are generated and executed on the local machine. This means that DNSControl must be run on a Windows host. This driver automatically deactivates itself when run on non-Windows systems.
+This provider updates an Microsoft Active Directory server DNS server. It interacts with AD via PowerShell commands that are generated and executed on the local machine. This means that DNSControl must be run on a Windows host. This driver automatically deactivates itself when run on non-Windows systems.
 
 # Running on Non-Windows systems
 For debugging and testing on non-Windows systems, a "fake PowerShell" mode can be used, which will activate the driver and simulate PowerShell as follows:

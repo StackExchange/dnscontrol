@@ -5,7 +5,7 @@ parameters:
   - modifiers...
 ---
 
-`CF_REDIRECT` uses CloudFlare-specific features ("page rules") to
+`CF_REDIRECT` uses Cloudflare-specific features ("page rules") to
 generate an HTTP 301 redirect.
 
 WARNING: If the domain has other pagerules in place, they may be

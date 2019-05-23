@@ -7,12 +7,12 @@ title: Let's Encrypt Certificate generation
 
 The `dnscontrol get-certs` command will obtain or renew TLS certificates for your managed domains via [*Let's Encrypt*](https://letsencrypt.org). This can be extremely useful in situations where other acme clients are problematic. Specifically, this may be useful if:
 
-- You are already managing dns records with DnsControl.
+- You are already managing dns records with DNSControl.
 - You have a large number of domains or dns providers in complicated configurations.
 - You want **wildcard** certificates, which *require* dns validation.
 
-At stack overflow we have dual-hosted dns, with most domains having four nameservers from two different cloud DNS providers. DnsControl uses
-the exact same code as the core DnsControl commands to issue certificates. This means is will work the same regardless of your domain layout or what providers you use.
+At stack overflow we have dual-hosted dns, with most domains having four nameservers from two different cloud DNS providers. DNSControl uses
+the exact same code as the core DNSControl commands to issue certificates. This means is will work the same regardless of your domain layout or what providers you use.
 
 ## General Process
 

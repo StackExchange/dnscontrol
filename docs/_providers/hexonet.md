@@ -9,9 +9,9 @@ jsId: HEXONET
 HEXONET is a leading developer and operator of domain names and DNS platforms.
 Individual, service provider and registrars around the globe choose HEXONET for
 domains and DNS because of our advanced technology, operational performance and
-up-time, and most importantly for DNS expertise. DnsControl with HEXONET's DNS
+up-time, and most importantly for DNS expertise. DNSControl with HEXONET's DNS
 marries DNS automation with an industry-leading DNS platform that supports DNSSEC,
-PremiumDNS via Anycast Network, and nearly all of DnsControl's listed provider features.
+PremiumDNS via Anycast Network, and nearly all of DNSControl's listed provider features.
 
 ## Configuration
 

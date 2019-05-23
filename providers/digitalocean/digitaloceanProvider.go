@@ -18,7 +18,7 @@ import (
 
 /*
 
-Digitalocean API DNS provider:
+DigitalOcean API DNS provider:
 
 Info required in `creds.json`:
    - token
@@ -39,7 +39,7 @@ var defaultNameServerNames = []string{
 // NewDo creates a DO-specific DNS provider.
 func NewDo(m map[string]string, metadata json.RawMessage) (providers.DNSServiceProvider, error) {
 	if m["token"] == "" {
-		return nil, errors.Errorf("no Digitalocean token provided")
+		return nil, errors.Errorf("no DigitalOcean token provided")
 	}
 
 	ctx := context.Background()

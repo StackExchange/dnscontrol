@@ -47,7 +47,7 @@ NS records for the base domain should not be specified manually, as that will re
 
 {% include alert.html text="Note: Not all providers allow full control over the NS records of your zone. It is not recommended to use these providers in complicated scenarios such as hosting across multiple providers. See individual provider docs for more info." %}
 
-DnsControl will also register the authoritative nameserver list with the registrar, so that all nameserver are used in the tld registry.
+DNSControl will also register the authoritative nameserver list with the registrar, so that all nameserver are used in the TLD registry.
 
 ## 3. Backup providers
 
@@ -57,4 +57,3 @@ Its nameservers will not be added to the authoritative set. While this may seem 
 
 1. Backup nameservers will still be updated with the NS records from the authoritative nameserver list. This means the records will still need to be updated to correctly "activate" the provider.
 2. Costs generally scale with utilization, so there is often no real savings associated with an active-passive setup vs an active-active one anyway.
-

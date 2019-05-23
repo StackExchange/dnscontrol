@@ -608,7 +608,7 @@ var CF_PROXY_DEFAULT_ON = { cloudflare_proxy_default: 'on' };
 
 // CUSTOM, PROVIDER SPECIFIC RECORD TYPES
 
-function _validateCloudFlareRedirect(value) {
+function _validateCloudflareRedirect(value) {
     if (!_.isString(value)) {
         return false;
     }
@@ -617,8 +617,8 @@ function _validateCloudFlareRedirect(value) {
 
 var CF_REDIRECT = recordBuilder('CF_REDIRECT', {
     args: [
-        ['source', _validateCloudFlareRedirect],
-        ['destination', _validateCloudFlareRedirect],
+        ['source', _validateCloudflareRedirect],
+        ['destination', _validateCloudflareRedirect],
     ],
     transform: function(record, args, modifiers) {
         record.name = '@';
@@ -628,8 +628,8 @@ var CF_REDIRECT = recordBuilder('CF_REDIRECT', {
 
 var CF_TEMP_REDIRECT = recordBuilder('CF_TEMP_REDIRECT', {
     args: [
-        ['source', _validateCloudFlareRedirect],
-        ['destination', _validateCloudFlareRedirect],
+        ['source', _validateCloudflareRedirect],
+        ['destination', _validateCloudflareRedirect],
     ],
     transform: function(record, args, modifiers) {
         record.name = '@';

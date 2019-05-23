@@ -62,6 +62,6 @@ func newDNS(config map[string]string, metadata json.RawMessage) (providers.DNSSe
 		p.adServer = srv
 		return p, nil
 	}
-	fmt.Printf("WARNING: PowerShell not available. ActiveDirectory will not be updated.\n")
+	fmt.Printf("WARNING: PowerShell not available. Active Directory will not be updated.\n")
 	return providers.None{}, nil
 }
