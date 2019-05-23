@@ -2,6 +2,7 @@ package js
 
 import (
 	"encoding/json"
+	"fmt"
 	"io/ioutil"
 	"path/filepath"
 	"strings"
@@ -95,7 +96,16 @@ func require(call otto.FunctionCall) otto.Value {
 		throw(call.Otto, err.Error())
 	}
 
-	_, err = call.Otto.Run(string(data))
+	var value otto.Value = otto.TrueValue()
+
+	// If its a json file return the json value, else default to true
+	if strings.HasSuffix(filepath.Ext(relFile), "json") {
+		cmd := fmt.Sprintf(`JSON.parse(JSON.stringify(%s))`, string(data))
+		value, err = call.Otto.Run(cmd)
+	} else {
+		_, err = call.Otto.Run(string(data))
+	}
+
 	if err != nil {
 		throw(call.Otto, err.Error())
 	}
@@ -103,7 +113,7 @@ func require(call otto.FunctionCall) otto.Value {
 	// Pop back to the old directory.
 	currentDirectory = currentDirectoryOld
 
-	return otto.TrueValue()
+	return value
 }
 
 func throw(vm *otto.Otto, str string) {
