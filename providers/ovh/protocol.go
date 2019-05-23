@@ -36,10 +36,10 @@ func (c *ovhProvider) fetchZones() error {
 
 // Zone describes the attributes of a DNS zone.
 type Zone struct {
-	LastUpdate      string   `json:"lastUpdate,omitempty"`
+	DNSSecSupported bool     `json:"dnssecSupported"`
 	HasDNSAnycast   bool     `json:"hasDNSAnycast,omitempty"`
 	NameServers     []string `json:"nameServers"`
-	DNSSecSupported bool     `json:"dnssecSupported"`
+	LastUpdate      string   `json:"lastUpdate,omitempty"`
 }
 
 // get info about a zone.
