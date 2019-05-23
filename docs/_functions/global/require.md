@@ -14,7 +14,7 @@ to split your configuration across multiple files. If the path starts with a
 // dnsconfig.js
 require('kubernetes/clusters.js');
 
-D("mydomain.net", REG, PROVIDER, 
+D("mydomain.net", REG, PROVIDER,
     IncludeKubernetes()
 );
 
@@ -49,4 +49,30 @@ function includeK8Sdev() {
 }
 
 {%endhighlight%}
+{% include endExample.html %}
+
+You can also use it to require json files and initialize variables with it:
+For Example:
+
+{% include startExample.html %}
+{% highlight js %}
+
+// dnsconfig.js
+var domains = require('./domain-ip-map.json')
+
+for (var domain in domains) {
+    D(domain, REG, PROVIDER,
+        A("@", domains[domain])
+    );
+}
+
+{%endhighlight%}
+
+{%highlight js %}
+// domain-ip-map.json
+{
+    "mydomain.net": "1.1.1.1",
+    "myotherdomain.org": "5.5.5.5"
+}
+{%endhighlight}
 {% include endExample.html %}
