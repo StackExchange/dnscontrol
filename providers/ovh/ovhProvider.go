@@ -64,7 +64,7 @@ func (c *ovhProvider) GetNameservers(domain string) ([]*models.Nameserver, error
 		return nil, errors.Errorf("%s not listed in zones for ovh account", domain)
 	}
 
-	ns, err := c.fetchNS(domain)
+	ns, err := c.fetchRegistrarNS(domain)
 	if err != nil {
 		return nil, err
 	}
@@ -177,27 +177,31 @@ func nativeToRecord(r *Record, origin string) *models.RecordConfig {
 
 func (c *ovhProvider) GetRegistrarCorrections(dc *models.DomainConfig) ([]*models.Correction, error) {
 
-	ns, err := c.fetchRegistrarNS(dc.Name)
+	// get the actual in-use nameservers
+	actualNs, err := c.fetchRegistrarNS(dc.Name)
 	if err != nil {
 		return nil, err
 	}
 
-	sort.Strings(ns)
-	found := strings.Join(ns, ",")
-
-	desiredNs := []string{}
+	// get the actual used ones + the configured one through dnscontrol
+	expectedNs := []string{}
 	for _, d := range dc.Nameservers {
-		desiredNs = append(desiredNs, d.Name)
+		expectedNs = append(expectedNs, d.Name)
 	}
-	sort.Strings(desiredNs)
-	desired := strings.Join(desiredNs, ",")
 
-	if found != desired {
+	sort.Strings(actualNs)
+	actual := strings.Join(actualNs, ",")
+
+	sort.Strings(expectedNs)
+	expected := strings.Join(expectedNs, ",")
+
+	// check if we need to change something
+	if actual != expected {
 		return []*models.Correction{
 			{
-				Msg: fmt.Sprintf("Change Nameservers from '%s' to '%s'", found, desired),
+				Msg: fmt.Sprintf("Change Nameservers from '%s' to '%s'", actual, expected),
 				F: func() error {
-					err := c.updateNS(dc.Name, desiredNs)
+					err := c.updateNS(dc.Name, expectedNs)
 					if err != nil {
 						return err
 					}
@@ -205,5 +209,6 @@ func (c *ovhProvider) GetRegistrarCorrections(dc *models.DomainConfig) ([]*model
 				}},
 		}, nil
 	}
+
 	return nil, nil
 }
