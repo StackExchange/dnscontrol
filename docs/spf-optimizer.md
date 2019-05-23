@@ -41,6 +41,7 @@ D("example.tld", REG, DSP, ...
     label: "@",
     overflow: "_spf%d",
     raw: "_rawspf",
+    ttl: "5m",
     parts: [
       "v=spf1",
       "ip4:198.252.206.0/24", // ny-mail*
@@ -62,7 +63,7 @@ D("example.tld", REG, DSP, ...
 );
 ```
 
-By using the `SPF_BUILDER` we gain many benefits:
+By using the `SPF_BUILDER()` we gain many benefits:
 
 * Comments can appear next to the element they refer to.
 * Diffs will be shorter and more specific; therefore easier to read.
@@ -71,7 +72,7 @@ By using the `SPF_BUILDER` we gain many benefits:
 ## Syntax
 
 When you want to specify SPF settings for a domain, use the
-`SPF_BUILD()` function.
+`SPF_BUILDER()` function.
 
 ```
 D("example.tld", REG, DSP, ...
@@ -101,6 +102,7 @@ The parameters are:
 * `label:` The label of the first TXT record. (Optional. Default: `"@"`)
 * `overflow:` If set, SPF strings longer than 255 chars will be split into multiple TXT records. The value of this setting determines the template for what the additional labels will be named. If not set, no splitting will occur and dnscontrol may generate TXT strings that are too long.
 * `raw:` The label of the unaltered SPF settings. (Optional. Default: `"_rawspf"`)
+* `ttl:` This allows setting a specific TTL on this SPF record. (Optional. Default: using default record TTL)
 * `parts:` The individual parts of the SPF settings.
 * `flatten:` Which includes should be inlined. For safety purposes the flattening is done on an opt-in basis. If `"*"` is listed, all includes will be flattened... this might create more problems than is solves due to length limitations.
 

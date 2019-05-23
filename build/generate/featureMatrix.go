@@ -32,7 +32,9 @@ func generateFeatureMatrix() error {
 			{"ALIAS", "Provider supports some kind of ALIAS, ANAME or flattened CNAME record type"},
 			{"CAA", "Provider can manage CAA records"},
 			{"PTR", "Provider supports adding PTR records for reverse lookup zones"},
+			{"NAPTR", "Provider can manage NAPTR records"},
 			{"SRV", "Driver has explicitly implemented SRV record management"},
+			{"SSHFP", "Provider can manage SSHFP records"},
 			{"TLSA", "Provider can manage TLSA records"},
 			{"TXTMulti", "Provider can manage TXT records with multiple strings"},
 			{"R53_ALIAS", "Provider supports Route 53 limited ALIAS"},
@@ -72,11 +74,13 @@ func generateFeatureMatrix() error {
 		fm.SetSimple("Registrar", false, func() bool { return providers.RegistrarTypes[p] != nil })
 		setCap("ALIAS", providers.CanUseAlias)
 		setCap("CAA", providers.CanUseCAA)
+		setCap("NAPTR", providers.CanUseNAPTR)
 		setCap("PTR", providers.CanUsePTR)
+		setCap("R53_ALIAS", providers.CanUseRoute53Alias)
 		setCap("SRV", providers.CanUseSRV)
+		setCap("SSHFP", providers.CanUseSSHFP)
 		setCap("TLSA", providers.CanUseTLSA)
 		setCap("TXTMulti", providers.CanUseTXTMulti)
-		setCap("R53_ALIAS", providers.CanUseRoute53Alias)
 		setDoc("dual host", providers.DocDualHost, false)
 		setDoc("create-domains", providers.DocCreateDomains, true)
 

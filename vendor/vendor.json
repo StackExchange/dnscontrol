@@ -224,6 +224,12 @@
 			"revisionTime": "2018-10-01T13:03:57Z"
 		},
 		{
+			"checksumSHA1": "qMqL9tE//Z4n/4BQqyjSQ9RdoB8=",
+			"path": "github.com/exoscale/egoscale",
+			"revision": "d0b97c5313da1645585ba6c860e29161299849e1",
+			"revisionTime": "2018-08-02T11:57:13Z"
+		},
+		{
 			"checksumSHA1": "oSwR5RN8idtBQrpnQSy13t8ruoU=",
 			"path": "github.com/go-ini/ini",
 			"revision": "32e4be5f41bb918afb6e37c07426e2ddbcb6647e",
@@ -485,6 +491,12 @@
 			"path": "github.com/namedotcom/go/namecom",
 			"revision": "08470befbe04613bd4b44cb6978b05d50294c4d4",
 			"revisionTime": "2018-04-03T03:42:16Z"
+		},
+		{
+			"checksumSHA1": "wXJyKf04IIo5zDLZTHQaFVGM/n8=",
+			"path": "github.com/ovh/go-ovh/ovh",
+			"revision": "ba5adb4cf0148a3dbdbd30586f075266256a77b1",
+			"revisionTime": "2018-11-09T15:29:53Z"
 		},
 		{
 			"checksumSHA1": "ln/74dXVPX/i7aDah00ZKqbdpw8=",
@@ -991,6 +1003,12 @@
 			"path": "google.golang.org/appengine/urlfetch",
 			"revision": "d9a072cfa7b9736e44311ef77b3e09d804bfa599",
 			"revisionTime": "2017-08-14T19:09:42Z"
+		},
+		{
+			"checksumSHA1": "8yg3QdSXVEmuHm2CgWXEMFN3K6Q=",
+			"path": "gopkg.in/ini.v1",
+			"revision": "6ed8d5f64cd79a498d1f3fab5880cc376ce41bbe",
+			"revisionTime": "2019-01-03T01:53:35Z"
 		},
 		{
 			"checksumSHA1": "uOY+V62vyPFerpl1oYb9iwHZIl0=",

@@ -19,8 +19,14 @@ const (
 	// CanUsePTR indicates the provider can handle PTR records
 	CanUsePTR
 
+	// CanUseNAPTR indicates the provider can handle PTR records
+	CanUseNAPTR
+
 	// CanUseSRV indicates the provider can handle SRV records
 	CanUseSRV
+
+	// CanUseSSHFP indicates the provider can handle SSHFP records
+	CanUseSSHFP
 
 	// CanUseTLSA indicates the provider can handle TLSA records
 	CanUseTLSA

@@ -102,9 +102,13 @@ func (api *DoApi) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Corre
 		return nil, err
 	}
 
-	existingRecords := make([]*models.RecordConfig, len(records))
+	var existingRecords []*models.RecordConfig
 	for i := range records {
-		existingRecords[i] = toRc(dc, &records[i])
+		r := toRc(dc, &records[i])
+		if r.Type == "SOA" {
+			continue
+		}
+		existingRecords = append(existingRecords, r)
 	}
 
 	// Normalize

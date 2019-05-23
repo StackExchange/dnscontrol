@@ -18,6 +18,7 @@ Currently supported DNS providers:
  - Cloudflare
  - DigitalOcean
  - DNSimple
+ - Exoscale
  - Gandi
  - Google
  - HEXONET

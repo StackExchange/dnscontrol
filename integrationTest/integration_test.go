@@ -254,11 +254,28 @@ func ptr(name, target string) *rec {
 	return makeRec(name, target, "PTR")
 }
 
+func naptr(name string, order uint16, preference uint16, flags string, service string, regexp string, target string) *rec {
+	r := makeRec(name, target, "NAPTR")
+	r.NaptrOrder = order
+	r.NaptrPreference = preference
+	r.NaptrFlags = flags
+	r.NaptrService = service
+	r.NaptrRegexp = regexp
+	return r
+}
+
 func srv(name string, priority, weight, port uint16, target string) *rec {
 	r := makeRec(name, target, "SRV")
 	r.SrvPriority = priority
 	r.SrvWeight = weight
 	r.SrvPort = port
+	return r
+}
+
+func sshfp(name string, algorithm uint8, fingerprint uint8, target string) *rec {
+	r := makeRec(name, target, "SSHFP")
+	r.SshfpAlgorithm = algorithm
+	r.SshfpFingerprint = fingerprint
 	return r
 }
 
@@ -410,6 +427,23 @@ func makeTests(t *testing.T) []*TestCase {
 		)
 	}
 
+	// NAPTR
+	if !providers.ProviderHasCabability(*providerToRun, providers.CanUseNAPTR) {
+		t.Log("Skipping NAPTR Tests because provider does not support them")
+	} else {
+		tests = append(tests, tc("Empty"),
+			tc("NAPTR record", naptr("test", 100, 10, "U", "E2U+sip", "!^.*$!sip:customer-service@example.com!", "example.foo.com.")),
+			tc("NAPTR second record", naptr("test", 102, 10, "U", "E2U+email", "!^.*$!mailto:information@example.com!", "example.foo.com.")),
+			tc("NAPTR delete record", naptr("test", 100, 10, "U", "E2U+email", "!^.*$!mailto:information@example.com!", "example.foo.com.")),
+			tc("NAPTR change target", naptr("test", 100, 10, "U", "E2U+email", "!^.*$!mailto:information@example.com!", "example2.foo.com.")),
+			tc("NAPTR change order", naptr("test", 103, 10, "U", "E2U+email", "!^.*$!mailto:information@example.com!", "example2.foo.com.")),
+			tc("NAPTR change preference", naptr("test", 103, 20, "U", "E2U+email", "!^.*$!mailto:information@example.com!", "example2.foo.com.")),
+			tc("NAPTR change flags", naptr("test", 103, 20, "A", "E2U+email", "!^.*$!mailto:information@example.com!", "example2.foo.com.")),
+			tc("NAPTR change service", naptr("test", 103, 20, "A", "E2U+sip", "!^.*$!mailto:information@example.com!", "example2.foo.com.")),
+			tc("NAPTR change regexp", naptr("test", 103, 20, "A", "E2U+sip", "!^.*$!sip:customer-service@example.com!", "example2.foo.com.")),
+		)
+	}
+
 	// SRV
 	if !providers.ProviderHasCabability(*providerToRun, providers.CanUseSRV) {
 		t.Log("Skipping SRV Tests because provider does not support them")
@@ -423,6 +457,20 @@ func makeTests(t *testing.T) []*TestCase {
 			tc("Change Priority", srv("_sip._tcp", 52, 6, 7, "foo.com."), srv("_sip._tcp", 15, 65, 75, "foo4.com.")),
 			tc("Change Weight", srv("_sip._tcp", 52, 62, 7, "foo.com."), srv("_sip._tcp", 15, 65, 75, "foo4.com.")),
 			tc("Change Port", srv("_sip._tcp", 52, 62, 72, "foo.com."), srv("_sip._tcp", 15, 65, 75, "foo4.com.")),
+		)
+	}
+
+	// SSHFP
+	if !providers.ProviderHasCabability(*providerToRun, providers.CanUseSSHFP) {
+		t.Log("Skipping SSHFP Tests because provider does not support them")
+	} else {
+		tests = append(tests, tc("Empty"),
+			tc("SSHFP record", sshfp("@", 1, 1, "66c7d5540b7d75a1fb4c84febfa178ad99bdd67c")),
+			tc("SSHFP change algorithm", sshfp("@", 2, 1, "66c7d5540b7d75a1fb4c84febfa178ad99bdd67c")),
+			tc("SSHFP change value", sshfp("@", 2, 1, "745a635bc46a397a5c4f21d437483005bcc40d7511ff15fbfafe913a081559bc")),
+			tc("SSHFP change fingerprint", sshfp("@", 2, 2, "745a635bc46a397a5c4f21d437483005bcc40d7511ff15fbfafe913a081559bc")),
+			tc("SSHFP many records", sshfp("@", 1, 1, "66c7d5540b7d75a1fb4c84febfa178ad99bdd67c"), sshfp("@", 1, 2, "745a635bc46a397a5c4f21d437483005bcc40d7511ff15fbfafe913a081559bc"), sshfp("@", 2, 1, "66c7d5540b7d75a1fb4c84febfa178ad99bdd67c")),
+			tc("SSHFP delete", sshfp("@", 1, 1, "66c7d5540b7d75a1fb4c84febfa178ad99bdd67c")),
 		)
 	}
 

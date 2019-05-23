@@ -77,12 +77,16 @@ func (rc *RecordConfig) GetTargetDebug() string {
 	switch rc.Type { // #rtype_variations
 	case "A", "AAAA", "CNAME", "NS", "PTR", "TXT":
 		// Nothing special.
+	case "NAPTR":
+		content += fmt.Sprintf(" naptrorder=%d naptrpreference=%d naptrflags=%s naptrservice=%s naptrregexp=%s", rc.NaptrOrder, rc.NaptrPreference, rc.NaptrFlags, rc.NaptrService, rc.NaptrRegexp)
 	case "MX":
 		content += fmt.Sprintf(" pref=%d", rc.MxPreference)
 	case "SOA":
 		content = fmt.Sprintf("%s %s %s %d", rc.Type, rc.Name, rc.Target, rc.TTL)
 	case "SRV":
 		content += fmt.Sprintf(" srvpriority=%d srvweight=%d srvport=%d", rc.SrvPriority, rc.SrvWeight, rc.SrvPort)
+	case "SSHFP":
+		content += fmt.Sprintf(" sshfpalgorithm=%d sshfpfingerprint=%d", rc.SshfpAlgorithm, rc.SshfpFingerprint)
 	case "TLSA":
 		content += fmt.Sprintf(" tlsausage=%d tlsaselector=%d tlsamatchingtype=%d", rc.TlsaUsage, rc.TlsaSelector, rc.TlsaMatchingType)
 	case "CAA":

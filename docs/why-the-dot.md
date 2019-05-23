@@ -42,8 +42,8 @@ Here are four examples:
 ```
     CNAME("foo", "bar)        // Permitted. (expands to bar.$DOMAIN)
     CNAME("foo", "bar.com.")  // Permitted. (we are certain what the user wants)
-    CNAME("foo", "bar.com")   // ERROR (amgiuous)
-    CNAME("foo", "meta.xyz")  // ERROR (amgiuous)
+    CNAME("foo", "bar.com")   // ERROR (ambiguous)
+    CNAME("foo", "meta.xyz")  // ERROR (ambiguous)
 
 ```
 

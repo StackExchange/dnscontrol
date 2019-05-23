@@ -17,7 +17,7 @@ To activate this mode, set `"fakeps":"true"` inside your credentials file for th
 
 ## Configuration
 
-The `ActiveDirectory_PS` provider reads an `ADServer` setting from`creds.json` to know the name of the ActiceDirectory DNS Server to update.
+The `ActiveDirectory_PS` provider reads an `ADServer` setting from `creds.json` to know the name of the ActiveDirectory DNS Server to update.  
 
 {% highlight javascript %}
 {

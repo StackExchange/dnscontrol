@@ -16,7 +16,7 @@ title: TOC
 
 ## Advanced Topics
 - [Testing]({{site.github.url}}/unittests): Unit Testing DNS Data.
-- [SPF Optimizer]({{site.github.url}}/spf): Optimize your SPF records.
+- [SPF Optimizer]({{site.github.url}}/spf-optimizer): Optimize your SPF records.
 
 ## Developer info
 - [GitHub](https://github.com/StackExchange/dnscontrol): Get the source!

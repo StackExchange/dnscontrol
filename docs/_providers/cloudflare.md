@@ -6,6 +6,10 @@ jsId: CLOUDFLAREAPI
 ---
 # Cloudflare Provider
 
+## Important notes
+
+* When using `SPF()` or the `SPF_BUILDER()` the records are converted to RecordType `TXT` as Cloudflare API fails otherwise. See more [here](https://github.com/StackExchange/dnscontrol/issues/446).
+
 ## Configuration
 In the credentials file you must provide your Cloudflare API username and access token:
 
@@ -18,14 +22,27 @@ In the credentials file you must provide your Cloudflare API username and access
 }
 {% endhighlight %}
 
+If your Cloudflare account has access to multiple Cloudflare accounts, you can specify which Cloudflare account should be used when adding new domains:
+
+{% highlight json %}
+{
+  "cloudflare": {
+    "apikey": "...",
+    "apiuser": "...",
+    "accountid": "your-cloudflare-account-id",
+    "accountname": "your-cloudflare-account-name"
+  }
+}
+{% endhighlight %}
+
 ## Metadata
-Record level metadata availible:
+Record level metadata available:
    * `cloudflare_proxy` ("on", "off", or "full")
 
-Domain level metadata availible:
+Domain level metadata available:
    * `cloudflare_proxy_default` ("on", "off", or "full")
 
-Provider level metadata availible:
+Provider level metadata available:
    * `ip_conversions`
    * `manage_redirects`: set to `true` to manage page-rule based redirects
 
@@ -35,10 +52,19 @@ What does on/off/full mean?
    * "on" enables the Cloudflare proxy (turns on the "orange cloud")
    * "full" is the same as "on" but also enables Railgun.  DNSControl will prevent you from accidentally enabling "full" on a CNAME that points to an A record that is set to "off", as this is generally not desired.
 
+Good to know: You can also set the default proxy mode using `DEFAULTS()` function, see:
+{% highlight js %}
+
+DEFAULTS(
+	CF_PROXY_DEFAULT_OFF // turn proxy off when not specified otherwise
+);
+
+{% endhighlight %}
+
 **Aliases:**
 
 To make configuration files more readable and less prone to errors,
-the following aliases are pre-defined:
+the following aliases are *pre-defined*:
 
 {% highlight js %}
 // Meta settings for individual records.

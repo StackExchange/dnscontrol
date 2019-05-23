@@ -24,6 +24,8 @@ Cloudflare API DNS provider:
 Info required in `creds.json`:
    - apikey
    - apiuser
+   - accountid (optional)
+   - accountname (optional)
 
 Record level metadata available:
    - cloudflare_proxy ("on", "off", or "full")
@@ -37,8 +39,11 @@ Domain level metadata available:
 
 var features = providers.DocumentationNotes{
 	providers.CanUseAlias:            providers.Can("CF automatically flattens CNAME records into A records dynamically"),
+	providers.CanUsePTR:              providers.Cannot(),
 	providers.CanUseCAA:              providers.Can(),
 	providers.CanUseSRV:              providers.Can(),
+	providers.CanUseTLSA:             providers.Can(),
+	providers.CanUseSSHFP:            providers.Can(),
 	providers.DocCreateDomains:       providers.Can(),
 	providers.DocDualHost:            providers.Cannot("Cloudflare will not work well in situations where it is not the only DNS server"),
 	providers.DocOfficiallySupported: providers.Can(),
@@ -54,6 +59,8 @@ func init() {
 type CloudflareApi struct {
 	ApiKey          string `json:"apikey"`
 	ApiUser         string `json:"apiuser"`
+	AccountID       string `json:"accountid"`
+	AccountName     string `json:"accountname"`
 	domainIndex     map[string]string
 	nameservers     map[string][]string
 	ipConversions   []transform.IpConversion
@@ -121,6 +128,12 @@ func (c *CloudflareApi) GetDomainCorrections(dc *models.DomainConfig) ([]*models
 	for _, rec := range dc.Records {
 		if rec.Type == "ALIAS" {
 			rec.Type = "CNAME"
+		}
+		// As per CF-API documentation proxied records are always forced to have a TTL of 1.
+		// When not forcing this property change here, dnscontrol tries each time to update
+		// the TTL of a record which simply cannot be changed anyway.
+		if rec.Metadata[metaProxy] != "off" {
+			rec.TTL = 1
 		}
 		if labelMatches(rec.GetLabel(), c.ignoredLabels) {
 			log.Fatalf("FATAL: dnsconfig contains label that matches ignored_labels: %#v is in %v)\n", rec.GetLabel(), c.ignoredLabels)
@@ -307,6 +320,12 @@ func newCloudflare(m map[string]string, metadata json.RawMessage) (providers.DNS
 		return nil, errors.Errorf("cloudflare apikey and apiuser must be provided")
 	}
 
+	// Check account data if set
+	api.AccountID, api.AccountName = m["accountid"], m["accountname"]
+	if (api.AccountID != "" && api.AccountName == "") || (api.AccountID == "" && api.AccountName != "") {
+		return nil, errors.Errorf("either both cloudflare accountid and accountname must be provided or neither")
+	}
+
 	err := api.fetchDomainList()
 	if err != nil {
 		return nil, err
@@ -343,16 +362,23 @@ func newCloudflare(m map[string]string, metadata json.RawMessage) (providers.DNS
 
 // Used on the "existing" records.
 type cfRecData struct {
-	Name     string `json:"name"`
-	Target   string `json:"target"`
-	Service  string `json:"service"`  // SRV
-	Proto    string `json:"proto"`    // SRV
-	Priority uint16 `json:"priority"` // SRV
-	Weight   uint16 `json:"weight"`   // SRV
-	Port     uint16 `json:"port"`     // SRV
-	Tag      string `json:"tag"`      // CAA
-	Flags    uint8  `json:"flags"`    // CAA
-	Value    string `json:"value"`    // CAA
+	Name          string `json:"name"`
+	Target        string `json:"target"`
+	Service       string `json:"service"`       // SRV
+	Proto         string `json:"proto"`         // SRV
+	Priority      uint16 `json:"priority"`      // SRV
+	Weight        uint16 `json:"weight"`        // SRV
+	Port          uint16 `json:"port"`          // SRV
+	Tag           string `json:"tag"`           // CAA
+	Flags         uint8  `json:"flags"`         // CAA
+	Value         string `json:"value"`         // CAA
+	Usage         uint8  `json:"usage"`         // TLSA
+	Selector      uint8  `json:"selector"`      // TLSA
+	Matching_Type uint8  `json:"matching_type"` // TLSA
+	Certificate   string `json:"certificate"`   // TLSA
+	Algorithm     uint8  `json:"algorithm"`     // SSHFP
+	Hash_Type     uint8  `json:"type"`          // SSHFP
+	Fingerprint   string `json:"fingerprint"`   // SSHFP
 }
 
 type cfRecord struct {
@@ -383,6 +409,12 @@ func (c *cfRecord) nativeToRecord(domain string) *models.RecordConfig {
 		Original: c,
 	}
 	rc.SetLabelFromFQDN(c.Name, domain)
+
+	// workaround for https://github.com/StackExchange/dnscontrol/issues/446
+	if c.Type == "SPF" {
+		c.Type = "TXT"
+	}
+
 	switch rType := c.Type; rType { // #rtype_variations
 	case "MX":
 		var priority uint16

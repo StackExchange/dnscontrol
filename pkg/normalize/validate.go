@@ -58,9 +58,11 @@ func validateRecordTypes(rec *models.RecordConfig, domain string, pTypes []strin
 		"IMPORT_TRANSFORM": false,
 		"MX":               true,
 		"SRV":              true,
+		"SSHFP":            true,
 		"TXT":              true,
 		"NS":               true,
 		"PTR":              true,
+		"NAPTR":            true,
 		"ALIAS":            false,
 	}
 	_, ok := validTypes[rec.Type]
@@ -85,7 +87,15 @@ func validateRecordTypes(rec *models.RecordConfig, domain string, pTypes []strin
 
 // underscores in names are often used erroneously. They are valid for dns records, but invalid for urls.
 // here we list common records expected to have underscores. Anything else containing an underscore will print a warning.
-var labelUnderscores = []string{"_domainkey", "_dmarc", "_amazonses", "_acme-challenge"}
+var labelUnderscores = []string{
+	"_acme-challenge",
+	"_amazonses",
+	"_dmarc",
+	"_domainkey",
+	"_jabber",
+	"_sip",
+	"_xmpp",
+}
 
 // these record types may contain underscores
 var rTypeUnderscores = []string{"SRV", "TLSA", "TXT"}
@@ -105,18 +115,23 @@ func checkLabel(label string, rType string, domain string, meta map[string]strin
 			return errors.Errorf(`label %s ends with domain name %s. Record names should not be fully qualified. Add {skip_fqdn_check:"true"} to this record if you really want to make %s.%s`, label, domain, label, domain)
 		}
 	}
-	// check for underscores last
+
+	// Underscores are permitted in labels, but we print a warning unless they
+	// are used in a way we consider typical.  Yes, we're opinionated here.
+
+	// Don't warn for certain rtypes:
 	for _, ex := range rTypeUnderscores {
 		if rType == ex {
 			return nil
 		}
 	}
+	// Don't warn for certain label substrings
 	for _, ex := range labelUnderscores {
 		if strings.Contains(label, ex) {
 			return nil
 		}
 	}
-	// underscores are warnings
+	// Otherwise, warn.
 	if strings.ContainsRune(label, '_') {
 		return Warning{errors.Errorf("label %s.%s contains an underscore", label, domain)}
 	}
@@ -156,11 +171,13 @@ func checkTargets(rec *models.RecordConfig, domain string) (errs []error) {
 		}
 	case "PTR":
 		check(checkTarget(target))
+	case "NAPTR":
+		check(checkTarget(target))
 	case "ALIAS":
 		check(checkTarget(target))
 	case "SRV":
 		check(checkTarget(target))
-	case "TXT", "IMPORT_TRANSFORM", "CAA", "TLSA":
+	case "TXT", "IMPORT_TRANSFORM", "CAA", "SSHFP", "TLSA":
 	default:
 		if rec.Metadata["orig_custom_type"] != "" {
 			// it is a valid custom type. We perform no validation on target
@@ -217,7 +234,7 @@ func importTransform(srcDomain, dstDomain *models.DomainConfig, transforms []tra
 			r := newRec()
 			r.SetTarget(transformCNAME(r.GetTargetField(), srcDomain.Name, dstDomain.Name))
 			dstDomain.Records = append(dstDomain.Records, r)
-		case "MX", "NS", "SRV", "TXT", "CAA", "TLSA":
+		case "MX", "NAPTR", "NS", "SRV", "TXT", "CAA", "TLSA":
 			// Not imported.
 			continue
 		default:
@@ -285,7 +302,7 @@ func NormalizeAndValidateConfig(config *models.DNSConfig) (errs []error) {
 			}
 
 			// Canonicalize Targets.
-			if rec.Type == "CNAME" || rec.Type == "MX" || rec.Type == "NS" || rec.Type == "SRV" {
+			if rec.Type == "CNAME" || rec.Type == "MX" || rec.Type == "NAPTR" || rec.Type == "NS" || rec.Type == "SRV" {
 				// #rtype_variations
 				// These record types have a target that is a hostname.
 				// We normalize them to a FQDN so there is less variation to handle.  If a
@@ -370,6 +387,8 @@ func NormalizeAndValidateConfig(config *models.DNSConfig) (errs []error) {
 		if err != nil {
 			errs = append(errs, err)
 		}
+		// Check for duplicates
+		errs = append(errs, checkDuplicates(d.Records)...)
 		// Validate FQDN consistency
 		for _, r := range d.Records {
 			if r.NameFQDN == "" || !strings.HasSuffix(r.NameFQDN, d.Name) {
@@ -397,6 +416,18 @@ func checkCNAMEs(dc *models.DomainConfig) (errs []error) {
 		}
 	}
 	return
+}
+
+func checkDuplicates(records []*models.RecordConfig) (errs []error) {
+	seen := map[string]*models.RecordConfig{}
+	for _, r := range records {
+		diffable := fmt.Sprintf("%s %s %s", r.GetLabelFQDN(), r.Type, r.ToDiffable())
+		if seen[diffable] != nil {
+			errs = append(errs, errors.Errorf("Exact duplicate record found: %s", diffable))
+		}
+		seen[diffable] = r
+	}
+	return errs
 }
 
 func checkProviderCapabilities(dc *models.DomainConfig) error {

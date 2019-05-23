@@ -80,10 +80,13 @@ func (v *vaultStorage) StoreCertificate(name string, cert *acme.CertificateResou
 	if err != nil {
 		return err
 	}
+	pub := string(cert.Certificate)
+	key := string(cert.PrivateKey)
 	data := map[string]interface{}{
-		"tls.cert": string(cert.Certificate),
-		"tls.key":  string(cert.PrivateKey),
-		"meta":     string(jDat),
+		"tls.cert":     pub,
+		"tls.key":      key,
+		"tls.combined": pub + "\n" + key,
+		"meta":         string(jDat),
 	}
 	_, err = v.client.Write(v.certPath(name), data)
 	return err
