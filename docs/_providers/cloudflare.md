@@ -41,6 +41,7 @@ Record level metadata available:
 
 Domain level metadata available:
    * `cloudflare_proxy_default` ("on", "off", or "full")
+   * `cloudflare_universalssl` ("on, or "off")
 
 Provider level metadata available:
    * `ip_conversions`
@@ -56,7 +57,8 @@ Good to know: You can also set the default proxy mode using `DEFAULTS()` functio
 {% highlight js %}
 
 DEFAULTS(
-	CF_PROXY_DEFAULT_OFF // turn proxy off when not specified otherwise
+	CF_PROXY_DEFAULT_OFF, // turn proxy off when not specified otherwise
+	CF_UNIVERSALSSL_ON // enable universal ssl by default
 );
 
 {% endhighlight %}
@@ -76,6 +78,10 @@ var CF_PROXY_FULL = {'cloudflare_proxy': 'full'};   // Proxy+Railgun enabled.
 var CF_PROXY_DEFAULT_OFF = {'cloudflare_proxy_default': 'off'};
 // Proxy default on for entire domain:
 var CF_PROXY_DEFAULT_ON = {'cloudflare_proxy_default': 'on'};
+// UniversalSSL off for entire domain:
+var CF_UNIVERSALSSL_OFF = { cloudflare_universalssl: 'off' };
+// UniversalSSL on for entire domain:
+var CF_UNIVERSALSSL_ON = { cloudflare_universalssl: 'on' };
 {% endhighlight %}
 
 The following example shows how to set meta variables with and without aliases:
