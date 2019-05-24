@@ -41,7 +41,7 @@ Record level metadata available:
 
 Domain level metadata available:
    * `cloudflare_proxy_default` ("on", "off", or "full")
-   * `cloudflare_universalssl` ("on, or "off")
+   * `cloudflare_universalssl` (unset to keep untouched; otherwise "on, or "off")
 
 Provider level metadata available:
    * `ip_conversions`
@@ -57,8 +57,7 @@ Good to know: You can also set the default proxy mode using `DEFAULTS()` functio
 {% highlight js %}
 
 DEFAULTS(
-	CF_PROXY_DEFAULT_OFF, // turn proxy off when not specified otherwise
-	CF_UNIVERSALSSL_ON // enable universal ssl by default
+	CF_PROXY_DEFAULT_OFF // turn proxy off when not specified otherwise
 );
 
 {% endhighlight %}
