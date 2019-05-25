@@ -28,7 +28,8 @@
   "CLOUDFLAREAPI_OLD": {
     "apikey": "$CF_KEY",
     "apiuser": "$CF_USER",
-    "domain": "$CF_DOMAIN"
+    "domain": "$CF_DOMAIN",
+    "knownFailures": "54"
   },
   "CLOUDNS": {
     "auth-id": "$CLOUDNS_AUTH_ID",
