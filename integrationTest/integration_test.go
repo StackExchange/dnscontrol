@@ -856,6 +856,7 @@ func makeTests(t *testing.T) []*TestGroup {
 			tc("create a ds record", ds("@", 65535, 253, 4, "ADIGEST")),
 			tc("create a ds record", ds("@", 65535, 254, 4, "ADIGEST")),
 			tc("create a ds record", ds("foo", 2, 13, 4, "ADIGEST")),
+			tc("create multiple ds records", ds("foo", 2, 13, 4, "ADIGEST"), ds("@", 65535, 5, 4, "ADIGEST"), ds("@", 65535, 253, 4, "ADIGEST")),
 		),
 
 		//

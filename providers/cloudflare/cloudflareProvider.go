@@ -474,7 +474,7 @@ type cfRecData struct {
 	Selector      uint8    `json:"selector"`      // TLSA
 	Matching_Type uint8    `json:"matching_type"` // TLSA
 	Certificate   string   `json:"certificate"`   // TLSA
-	Algorithm     uint8    `json:"algorithm"`     // SSHFP or DS
+	Algorithm     uint8    `json:"algorithm"`     // SSHFP/DS
 	Hash_Type     uint8    `json:"type"`          // SSHFP
 	Fingerprint   string   `json:"fingerprint"`   // SSHFP
 	KeyTag        uint16   `json:"key_tag"`       // DS
