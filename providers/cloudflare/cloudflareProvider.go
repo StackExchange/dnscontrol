@@ -380,9 +380,9 @@ type cfRecData struct {
 	Hash_Type     uint8  `json:"type"`          // SSHFP
 	Fingerprint   string `json:"fingerprint"`   // SSHFP
 	Algorithm     uint8  `json:"algorithm"`     // SSHFP or DS
-	KeyTag     uint16 `json:"key_tag"`     // DS
-	DigestType uint8  `json:"digest_type"` // DS
-	Digest     string `json:"digest"`      // DS
+	KeyTag        uint16 `json:"key_tag"`       // DS
+	DigestType    uint8  `json:"digest_type"`   // DS
+	Digest        string `json:"digest"`        // DS
 }
 
 type cfRecord struct {
