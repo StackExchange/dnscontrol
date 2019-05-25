@@ -10,7 +10,8 @@
   "CLOUDFLAREAPI": {
     "apikey": "$CF_KEY",
     "apiuser": "$CF_USER",
-    "domain": "$CF_DOMAIN"
+    "domain": "$CF_DOMAIN",
+    "knownFailures": "54"
   },
   "DIGITALOCEAN": {
     "token": "$DO_TOKEN",

@@ -379,7 +379,7 @@ type cfRecData struct {
 	Certificate   string `json:"certificate"`   // TLSA
 	Hash_Type     uint8  `json:"type"`          // SSHFP
 	Fingerprint   string `json:"fingerprint"`   // SSHFP
-	Algorithm     uint8  `json:"algorithm"`     // SSHFP or DS
+	Algorithm     uint8  `json:"algorithm"`     // SSHFP/DS
 	KeyTag        uint16 `json:"key_tag"`       // DS
 	DigestType    uint8  `json:"digest_type"`   // DS
 	Digest        string `json:"digest"`        // DS
