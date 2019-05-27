@@ -24,4 +24,17 @@ D("example.com",
 {%endhighlight%}
 {% include endExample.html %}
 
+IGNORE also supports glob patterns in the style of the [gobwas/glob](https://github.com/gobwas/glob) library. All of 
+the following patterns will work:
+
+* `IGNORE("*.foo")` will ignore all records in the style of `bar.foo`, but will not ignore records using a double
+subdomain, such as `foo.bar.foo`.
+* `IGNORE("**.foo")` will ignore all subdomains of `foo`, including double subdomains.
+* `IGNORE("?oo")` will ignore all records of three symbols ending in `oo`, for example `foo` and `zoo`. It will
+not match `.`
+* `IGNORE("[abc]oo")` will ignore records `aoo`, `boo` and `coo`. `IGNORE("[a-c]oo")` is equivalent.
+* `IGNORE("[!abc]oo")` will ignore all three symbol records ending in `oo`, except for `aoo`, `boo`, `coo`. `IGNORE("[!a-c]oo")` is equivalent.
+* `IGNORE("{bar,[fz]oo}` will ignore `bar`, `foo` and `zoo`.
+* `IGNORE("\\*.foo")` will ignore the literal record `*.foo`.
+
 It is considered as an error to try to manage an ignored record.
