@@ -590,6 +590,12 @@ func makeTests(t *testing.T) []*TestCase {
 		tc("Add a new record - ignoring foo", a("bar", "1.2.3.4"), ignore("foo")),
 	)
 
+	tests = append(tests,
+		tc("Empty"),
+		tc("Create some records", txt("bar.foo", "simple"), a("bar.foo", "1.2.3.4")),
+		tc("Add a new record - ignoring *.foo", a("bar", "1.2.3.4"), ignore("*.foo")),
+	)
+
 	// R53_ALIAS
 	if !providers.ProviderHasCabability(*providerToRun, providers.CanUseRoute53Alias) {
 		t.Log("Skipping Route53 ALIAS Tests because provider does not support them")
