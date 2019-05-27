@@ -20,13 +20,13 @@ Here are my notes from producing the v0.2.8 release.  Change the version number 
 Edit the "Version" variable in `main.go` and commit.
 
 ```
-export PREVVERSION=2.7
-export VERSION=2.8
+export PREVVERSION=2.8
+export VERSION=2.9
 git checkout master
 vi main.go
 git commit -m'Release v'"$VERSION" main.go
-git tag v0."$VERSION"
-git push origin tag v0."$VERSION"
+git tag v"$VERSION"
+git push origin tag v"$VERSION"
 ```
 
 ## Step 3. Make the draft release.
