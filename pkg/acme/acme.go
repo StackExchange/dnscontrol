@@ -20,9 +20,10 @@ import (
 )
 
 type CertConfig struct {
-	CertName string   `json:"cert_name"`
-	Names    []string `json:"names"`
-	UseECC   bool     `json:"use_ecc"`
+	CertName   string   `json:"cert_name"`
+	Names      []string `json:"names"`
+	UseECC     bool     `json:"use_ecc"`
+	MustStaple bool     `json:"must_staple"`
 }
 
 type Client interface {
@@ -103,7 +104,7 @@ func (c *certManager) IssueOrRenewCert(cfg *CertConfig, renewUnder int, verbose 
 	var client *acme.Client
 
 	var action = func() (*acme.CertificateResource, error) {
-		return client.ObtainCertificate(cfg.Names, true, nil, true)
+		return client.ObtainCertificate(cfg.Names, true, nil, cfg.MustStaple)
 	}
 
 	if existing == nil {
@@ -125,7 +126,7 @@ func (c *certManager) IssueOrRenewCert(cfg *CertConfig, renewUnder int, verbose 
 		} else {
 			log.Println("Renewing cert")
 			action = func() (*acme.CertificateResource, error) {
-				return client.RenewCertificate(*existing, true, true)
+				return client.RenewCertificate(*existing, true, cfg.MustStaple)
 			}
 		}
 	}
