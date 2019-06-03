@@ -465,12 +465,21 @@ func makeTests(t *testing.T) []*TestCase {
 		t.Log("Skipping SSHFP Tests because provider does not support them")
 	} else {
 		tests = append(tests, tc("Empty"),
-			tc("SSHFP record", sshfp("@", 1, 1, "66c7d5540b7d75a1fb4c84febfa178ad99bdd67c")),
-			tc("SSHFP change algorithm", sshfp("@", 2, 1, "66c7d5540b7d75a1fb4c84febfa178ad99bdd67c")),
-			tc("SSHFP change value", sshfp("@", 2, 1, "745a635bc46a397a5c4f21d437483005bcc40d7511ff15fbfafe913a081559bc")),
-			tc("SSHFP change fingerprint", sshfp("@", 2, 2, "745a635bc46a397a5c4f21d437483005bcc40d7511ff15fbfafe913a081559bc")),
-			tc("SSHFP many records", sshfp("@", 1, 1, "66c7d5540b7d75a1fb4c84febfa178ad99bdd67c"), sshfp("@", 1, 2, "745a635bc46a397a5c4f21d437483005bcc40d7511ff15fbfafe913a081559bc"), sshfp("@", 2, 1, "66c7d5540b7d75a1fb4c84febfa178ad99bdd67c")),
-			tc("SSHFP delete", sshfp("@", 1, 1, "66c7d5540b7d75a1fb4c84febfa178ad99bdd67c")),
+			tc("SSHFP record",
+				sshfp("@", 1, 1, "66c7d5540b7d75a1fb4c84febfa178ad99bdd67c")),
+			tc("SSHFP change algorithm",
+				sshfp("@", 2, 1, "66c7d5540b7d75a1fb4c84febfa178ad99bdd67c")),
+			tc("SSHFP change type",
+				sshfp("@", 2, 2, "66c7d5540b7d75a1fb4c84febfa178ad99bdd67c")),
+			tc("SSHFP change fingerprint",
+				sshfp("@", 2, 2, "745a635bc46a397a5c4f21d437483005bcc40d7511ff15fbfafe913a081559bc")),
+			tc("SSHFP Delete one"),
+			tc("SSHFP add many records",
+				sshfp("@", 1, 1, "66666666666d75a1fb4c84febfa178ad99bdd67c"),
+				sshfp("@", 1, 2, "777777777777797a5c4f21d437483005bcc40d7511ff15fbfafe913a081559bc"),
+				sshfp("@", 2, 1, "8888888888888888fb4c84febfa178ad99bdd67c")),
+			tc("SSHFP delete two",
+				sshfp("@", 1, 1, "66666666666d75a1fb4c84febfa178ad99bdd67c")),
 		)
 	}
 
@@ -588,6 +597,12 @@ func makeTests(t *testing.T) []*TestCase {
 		tc("Empty"),
 		tc("Create some records", txt("foo", "simple"), a("foo", "1.2.3.4")),
 		tc("Add a new record - ignoring foo", a("bar", "1.2.3.4"), ignore("foo")),
+	)
+
+	tests = append(tests,
+		tc("Empty"),
+		tc("Create some records", txt("bar.foo", "simple"), a("bar.foo", "1.2.3.4")),
+		tc("Add a new record - ignoring *.foo", a("bar", "1.2.3.4"), ignore("*.foo")),
 	)
 
 	// R53_ALIAS
