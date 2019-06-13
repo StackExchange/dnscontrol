@@ -605,6 +605,10 @@ var CF_PROXY_FULL = { cloudflare_proxy: 'full' }; // Proxy+Railgun enabled.
 var CF_PROXY_DEFAULT_OFF = { cloudflare_proxy_default: 'off' };
 // Proxy default on for entire domain:
 var CF_PROXY_DEFAULT_ON = { cloudflare_proxy_default: 'on' };
+// UniversalSSL off for entire domain:
+var CF_UNIVERSALSSL_OFF = { cloudflare_universalssl: 'off' };
+// UniversalSSL on for entire domain:
+var CF_UNIVERSALSSL_ON = { cloudflare_universalssl: 'on' };
 
 // CUSTOM, PROVIDER SPECIFIC RECORD TYPES
 

@@ -286,6 +286,56 @@ func (c *CloudflareApi) modifyRecord(domainID, recID string, proxied bool, rec *
 	return err
 }
 
+// change universal ssl state
+func (c *CloudflareApi) changeUniversalSSL(domainID string, state bool) error {
+	type setUniversalSSL struct {
+		Enabled bool `json:"enabled"`
+	}
+	us := &setUniversalSSL{
+		Enabled: state,
+	}
+
+	// create json
+	buf := &bytes.Buffer{}
+	encoder := json.NewEncoder(buf)
+	if err := encoder.Encode(us); err != nil {
+		return err
+	}
+
+	// send request.
+	endpoint := fmt.Sprintf(zonesURL+"%s/ssl/universal/settings", domainID)
+	req, err := http.NewRequest("PATCH", endpoint, buf)
+	if err != nil {
+		return err
+	}
+	c.setHeaders(req)
+	_, err = handleActionResponse(http.DefaultClient.Do(req))
+
+	return err
+}
+
+// change universal ssl state
+func (c *CloudflareApi) getUniversalSSL(domainID string) (bool, error) {
+	type universalSSLResponse struct {
+		Success  bool          `json:"success"`
+		Errors   []interface{} `json:"errors"`
+		Messages []interface{} `json:"messages"`
+		Result   struct {
+			Enabled bool `json:"enabled"`
+		} `json:"result"`
+	}
+
+	// send request.
+	endpoint := fmt.Sprintf(zonesURL+"%s/ssl/universal/settings", domainID)
+	var result universalSSLResponse
+	err := c.get(endpoint, &result)
+	if err != nil {
+		return true, err
+	}
+
+	return result.Result.Enabled, err
+}
+
 // common error handling for all action responses
 func handleActionResponse(resp *http.Response, err error) (id string, e error) {
 	if err != nil {

@@ -103,9 +103,11 @@ func (c *CloudflareApi) GetDomainCorrections(dc *models.DomainConfig) ([]*models
 	if !ok {
 		return nil, errors.Errorf("%s not listed in zones for cloudflare account", dc.Name)
 	}
+
 	if err := c.preprocessConfig(dc); err != nil {
 		return nil, err
 	}
+
 	records, err := c.getRecordsForDomain(id, dc.Name)
 	if err != nil {
 		return nil, err
@@ -118,6 +120,7 @@ func (c *CloudflareApi) GetDomainCorrections(dc *models.DomainConfig) ([]*models
 			records = append(records[:i], records[i+1:]...)
 		}
 	}
+
 	if c.manageRedirects {
 		prs, err := c.getPageRules(id, dc.Name)
 		if err != nil {
@@ -125,6 +128,7 @@ func (c *CloudflareApi) GetDomainCorrections(dc *models.DomainConfig) ([]*models
 		}
 		records = append(records, prs...)
 	}
+
 	for _, rec := range dc.Records {
 		if rec.Type == "ALIAS" {
 			rec.Type = "CNAME"
@@ -139,6 +143,7 @@ func (c *CloudflareApi) GetDomainCorrections(dc *models.DomainConfig) ([]*models
 			log.Fatalf("FATAL: dnsconfig contains label that matches ignored_labels: %#v is in %v)\n", rec.GetLabel(), c.ignoredLabels)
 		}
 	}
+
 	checkNSModifications(dc)
 
 	// Normalize
@@ -189,6 +194,21 @@ func (c *CloudflareApi) GetDomainCorrections(dc *models.DomainConfig) ([]*models
 			})
 		}
 	}
+
+	// Add universalSSL change to corrections when needed
+	if changed, newState, err := c.checkUniversalSSL(dc, id); err == nil && changed {
+		var newStateString string
+		if newState {
+			newStateString = "enabled"
+		} else {
+			newStateString = "disabled"
+		}
+		corrections = append(corrections, &models.Correction{
+			Msg: fmt.Sprintf("Universal SSL will be %s for this domain.", newStateString),
+			F:   func() error { return c.changeUniversalSSL(id, newState) },
+		})
+	}
+
 	return corrections, nil
 }
 
@@ -206,10 +226,34 @@ func checkNSModifications(dc *models.DomainConfig) {
 	dc.Records = newList
 }
 
+func (c *CloudflareApi) checkUniversalSSL(dc *models.DomainConfig, id string) (changed bool, newState bool, err error) {
+	expected_str := dc.Metadata[metaUniversalSSL]
+	if expected_str == "" {
+		return false, false, errors.Errorf("Metadata not set.")
+	}
+
+	if actual, err := c.getUniversalSSL(id); err == nil {
+		// convert str to bool
+		var expected bool
+		if expected_str == "off" {
+			expected = false
+		} else {
+			expected = true
+		}
+		// did something change?
+		if actual != expected {
+			return true, expected, nil
+		}
+		return false, expected, nil
+	}
+	return false, false, errors.Errorf("error receiving universal ssl state:")
+}
+
 const (
 	metaProxy         = "cloudflare_proxy"
 	metaProxyDefault  = metaProxy + "_default"
-	metaOriginalIP    = "original_ip"    // TODO(tlim): Unclear what this means.
+	metaOriginalIP    = "original_ip" // TODO(tlim): Unclear what this means.
+	metaUniversalSSL  = "cloudflare_universalssl"
 	metaIPConversions = "ip_conversions" // TODO(tlim): Rename to obscure_rules.
 )
 
@@ -235,23 +279,31 @@ func (c *CloudflareApi) preprocessConfig(dc *models.DomainConfig) error {
 		}
 	}
 
-	currentPrPrio := 1
+	// Check UniversalSSL setting
+	if u := dc.Metadata[metaUniversalSSL]; u != "" {
+		u = strings.ToLower(u)
+		if (u != "on" && u != "off") {
+			return errors.Errorf("Bad metadata value for %s: '%s'. Use on/off.", metaUniversalSSL, u)
+		}
+	}
 
 	// Normalize the proxy setting for each record.
 	// A and CNAMEs: Validate. If null, set to default.
 	// else: Make sure it wasn't set.  Set to default.
 	// iterate backwards so first defined page rules have highest priority
+	currentPrPrio := 1
 	for i := len(dc.Records) - 1; i >= 0; i-- {
 		rec := dc.Records[i]
 		if rec.Metadata == nil {
 			rec.Metadata = map[string]string{}
 		}
-		if rec.TTL == 0 || rec.TTL == 300 {
+		if rec.TTL == 0 { // Please read: https://github.com/StackExchange/dnscontrol/issues/490
 			rec.TTL = 1
 		}
 		if rec.TTL != 1 && rec.TTL < 120 {
 			rec.TTL = 120
 		}
+
 		if rec.Type != "A" && rec.Type != "CNAME" && rec.Type != "AAAA" && rec.Type != "ALIAS" {
 			if rec.Metadata[metaProxy] != "" {
 				return errors.Errorf("cloudflare_proxy set on %v record: %#v cloudflare_proxy=%#v", rec.Type, rec.GetLabel(), rec.Metadata[metaProxy])
@@ -269,6 +321,7 @@ func (c *CloudflareApi) preprocessConfig(dc *models.DomainConfig) error {
 				rec.Metadata[metaProxy] = val
 			}
 		}
+
 		// CF_REDIRECT record types. Encode target as $FROM,$TO,$PRIO,$CODE
 		if rec.Type == "CF_REDIRECT" || rec.Type == "CF_TEMP_REDIRECT" {
 			if !c.manageRedirects {
