@@ -297,6 +297,9 @@ func (c *CloudflareApi) preprocessConfig(dc *models.DomainConfig) error {
 		if rec.Metadata == nil {
 			rec.Metadata = map[string]string{}
 		}
+		// cloudflare uses "1" to mean "auto-ttl"
+		// if we get here and ttl is not specified (or is the dnscontrol default of 300), 
+		// use automatic mode instead.
 		if rec.TTL == 0 || rec.TTL == 300{ 
 			rec.TTL = 1
 		}
