@@ -297,7 +297,7 @@ func (c *CloudflareApi) preprocessConfig(dc *models.DomainConfig) error {
 		if rec.Metadata == nil {
 			rec.Metadata = map[string]string{}
 		}
-		if rec.TTL == 0 { // Please read: https://github.com/StackExchange/dnscontrol/issues/490
+		if rec.TTL == 0 || rec.TTL == 300{ 
 			rec.TTL = 1
 		}
 		if rec.TTL != 1 && rec.TTL < 120 {
