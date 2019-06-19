@@ -52,7 +52,7 @@ func Parse(text string, dnsres Resolver) (*SPFRecord, error) {
 	}
 	parts := strings.Split(text, " ")
 	rec := &SPFRecord{}
-	for _, part := range parts[1:] {
+	for pi, part := range parts[1:] {
 		if part == "" {
 			continue
 		}
@@ -69,9 +69,18 @@ func Parse(text string, dnsres Resolver) (*SPFRecord, error) {
 		} else if strings.HasPrefix(part, "ip4:") || strings.HasPrefix(part, "ip6:") {
 			// ip address, 0 lookups
 			continue
-		} else if strings.HasPrefix(part, "include:") {
+		} else if strings.HasPrefix(part, "include:") || strings.HasPrefix(part, "redirect:") {
+			if strings.HasPrefix(part, "redirect:") {
+				// pi + 2: because pi starts at 0 when it iterates starting on parts[1],
+				// and because len(parts) is one bigger than the highest index.
+				if (pi + 2) != len(parts) {
+					return nil, errors.Errorf("%s must be last item", part)
+				}
+				p.IncludeDomain = strings.TrimPrefix(part, "redirect:")
+			} else {
+				p.IncludeDomain = strings.TrimPrefix(part, "include:")
+			}
 			p.IsLookup = true
-			p.IncludeDomain = strings.TrimPrefix(part, "include:")
 			if dnsres != nil {
 				subRecord, err := dnsres.GetSPF(p.IncludeDomain)
 				if err != nil {
