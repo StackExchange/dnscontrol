@@ -47,9 +47,16 @@ func (rc *RecordConfig) GetTargetIP() net.IP {
 // GetTargetCombined returns a string with the various fields combined.
 // For example, an MX record might output `10 mx10.example.tld`.
 func (rc *RecordConfig) GetTargetCombined() string {
-	// If this is a pseudo record, just return the target.
+	// Pseudo records:
 	if _, ok := dns.StringToType[rc.Type]; !ok {
-		return rc.Target
+		switch rc.Type { // #rtype_variations
+		case "R53_ALIAS":
+			// Differentiate between multiple R53_ALIASs on the same label.
+			return fmt.Sprintf("%s type=%s zone_id=%s", rc.Target, rc.R53Alias["type"], rc.R53Alias["zone_id"])
+		default:
+			// Just return the target.
+			return rc.Target
+		}
 	}
 
 	// We cheat by converting to a dns.RR and use the String() function.
