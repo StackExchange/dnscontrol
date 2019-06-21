@@ -178,7 +178,7 @@ could exceed 512 bytes, and will require EDNS or a TCP request.
 3. Dnscontrol does not warn if the number of lookups exceeds 10.
 We hope to implement this some day.
 
-4. The `redirect:` directive is only partially implemented.  We only
+4. The `redirect=` directive is only partially implemented.  We only
 handle the case where redirect is the last item in the SPF record.
 In which case, it is equivalent to `include:`.
 

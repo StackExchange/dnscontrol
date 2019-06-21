@@ -69,14 +69,19 @@ func Parse(text string, dnsres Resolver) (*SPFRecord, error) {
 		} else if strings.HasPrefix(part, "ip4:") || strings.HasPrefix(part, "ip6:") {
 			// ip address, 0 lookups
 			continue
-		} else if strings.HasPrefix(part, "include:") || strings.HasPrefix(part, "redirect:") {
-			if strings.HasPrefix(part, "redirect:") {
+		} else if strings.HasPrefix(part, "include:") || strings.HasPrefix(part, "redirect=") {
+			// redirect is only partially implemented. redirect is a
+			// complex and IMHO ambiguously defined feature.  We only
+			// implement the most simple edge case: when it is the last item
+			// in the string.  In that situation, it is the equivalent of
+			// include:.
+			if strings.HasPrefix(part, "redirect=") {
 				// pi + 2: because pi starts at 0 when it iterates starting on parts[1],
 				// and because len(parts) is one bigger than the highest index.
 				if (pi + 2) != len(parts) {
 					return nil, errors.Errorf("%s must be last item", part)
 				}
-				p.IncludeDomain = strings.TrimPrefix(part, "redirect:")
+				p.IncludeDomain = strings.TrimPrefix(part, "redirect=")
 			} else {
 				p.IncludeDomain = strings.TrimPrefix(part, "include:")
 			}
