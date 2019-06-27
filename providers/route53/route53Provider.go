@@ -207,7 +207,8 @@ func (r *route53Provider) GetDomainCorrections(dc *models.DomainConfig) ([]*mode
 	}
 
 	updates := map[models.RecordKey][]*models.RecordConfig{}
-	// for each name we need to update, collect relevant records from dc
+
+	// for each name we need to update, collect relevant records from our desired domain state
 	for k := range namesToUpdate {
 		updates[k] = nil
 		for _, rc := range dc.Records {
@@ -217,13 +218,18 @@ func (r *route53Provider) GetDomainCorrections(dc *models.DomainConfig) ([]*mode
 		}
 	}
 
+	// we collect all changes into one of two categories now:
+	// pure deletions where we delete an entire record set,
+	// or changes where we upsert an entire record set.
 	dels := []*r53.Change{}
 	changes := []*r53.Change{}
 	changeDesc := ""
 	delDesc := ""
+
 	for k, recs := range updates {
 		chg := &r53.Change{}
 		var rrset *r53.ResourceRecordSet
+		// if there are no records in our desired state for a key, then we just delete it from r53
 		if len(recs) == 0 {
 			dels = append(dels, chg)
 			chg.Action = sPtr("DELETE")
@@ -264,13 +270,9 @@ func (r *route53Provider) GetDomainCorrections(dc *models.DomainConfig) ([]*mode
 		chg.ResourceRecordSet = rrset
 	}
 
-	changeReq := &r53.ChangeResourceRecordSetsInput{
-		ChangeBatch: &r53.ChangeBatch{Changes: changes},
-	}
+	
 
-	delReq := &r53.ChangeResourceRecordSetsInput{
-		ChangeBatch: &r53.ChangeBatch{Changes: dels},
-	}
+	
 
 	addCorrection := func(msg string, req *r53.ChangeResourceRecordSetsInput) {
 		corrections = append(corrections,
@@ -288,11 +290,30 @@ func (r *route53Provider) GetDomainCorrections(dc *models.DomainConfig) ([]*mode
 			})
 	}
 
-	if len(dels) > 0 {
+	getBatchSize := func(size, max int) int{
+		if size > max{
+			return max
+		}
+		return size
+	}
+
+	for len(dels) > 0 {
+		batchSize := getBatchSize(len(dels), 1000)
+		batch := dels[:batchSize]
+		dels = dels[batchSize:]
+		delReq := &r53.ChangeResourceRecordSetsInput{
+			ChangeBatch: &r53.ChangeBatch{Changes: batch},
+		}
 		addCorrection(delDesc, delReq)
 	}
 
-	if len(changes) > 0 {
+	for len(changes) > 0 {
+		batchSize := getBatchSize(len(changes), 500)
+		batch := changes[:batchSize]
+		changes = changes[batchSize:]
+		changeReq := &r53.ChangeResourceRecordSetsInput{
+			ChangeBatch: &r53.ChangeBatch{Changes: batch},
+		}
 		addCorrection(changeDesc, changeReq)
 	}
 
