@@ -29,9 +29,9 @@ jobs:
   displayName: 'Set up the Go workspace'
 
 - job: "compile"
-  workingDirectory: '$(modulePath)'
   steps:
-  - script: |
+  - workingDirectory: '$(modulePath)'
+    script: |
       pwd
       go env
       go run build/build.go
