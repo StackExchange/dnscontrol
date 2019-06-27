@@ -27,9 +27,7 @@ jobs:
 
 - job: "GoFmt"
   steps:
-  - template: build/azure-pipelines/go-env.yaml
   - script: |
       ls -la
       pwd
       go fmt ./...
-    workingDirectory: '$(modulePath)'
