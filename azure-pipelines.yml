@@ -12,18 +12,33 @@ trigger:
 
 jobs:
 
-- job: "Compile"
+# - job: "Compile"
+#   steps:
+#   - template: build/azure-pipelines/go-env.yaml
+#   - script: "go run build/build.go"
+#     workingDirectory: '$(modulePath)'
+
+- job: Compile
+  strategy:
+    maxParallel: 3
+    matrix: 
+      Windows:
+        OS: windows
+      OSX:
+        OS: darwin
+      Linux:
+        OS: linux
   steps:
   - template: build/azure-pipelines/go-env.yaml
-  - script: "go run build/build.go"
+  - script: "echo go build -os $(OS)"
     workingDirectory: '$(modulePath)'
 
-- job: "unittests"
-  displayName: "Run Unit Tests"
-  steps:
-  - template: build/azure-pipelines/go-env.yaml
-  - script: "go test ./..."
-    workingDirectory: '$(modulePath)'
+# - job: "unittests"
+#   displayName: "Run Unit Tests"
+#   steps:
+#   - template: build/azure-pipelines/go-env.yaml
+#   - script: "go test ./..."
+#     workingDirectory: '$(modulePath)'
 
 - job: "GoFmt"
   steps:
