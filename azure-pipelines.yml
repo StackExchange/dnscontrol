@@ -15,8 +15,12 @@ jobs:
 - job: "compile"
   steps:
   - template: build/azure-pipelines/go-env.yaml
-  - script: |
-      pwd
-      go env
-      go run build/build.go
+  - script: "go run build/build.go"
+    workingDirectory: '$(modulePath)'
+
+- job: "unittests"
+  displayName: "Run Unit Tests"
+  steps:
+  - template: build/azure-pipelines/go-env.yaml
+  - script: "go test ./..."
     workingDirectory: '$(modulePath)'
