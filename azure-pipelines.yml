@@ -30,8 +30,8 @@ jobs:
 
 - job: "compile"
   steps:
-  - workingDirectory: '$(modulePath)'
-    script: |
+  - script: |
       pwd
       go env
       go run build/build.go
+    workingDirectory: '$(modulePath)'
