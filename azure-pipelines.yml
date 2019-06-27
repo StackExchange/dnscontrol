@@ -1,0 +1,43 @@
+variables:
+  GOBIN:  '$(GOPATH)/bin' # Go binaries path
+  GOROOT: '/usr/local/go1.12' # Go installation path
+  GOPATH: '$(system.defaultWorkingDirectory)/gopath' # Go workspace path
+  modulePath: '$(GOPATH)/src/github.com/$(build.repository.name)' # Path to the module's code
+
+trigger:
+  batch: "true"
+  branches:
+    include:
+    - master
+
+jobs:
+
+- job: Compile
+  strategy:
+    maxParallel: 3
+    matrix: 
+      Windows:
+        OS: windows
+      OSX:
+        OS: darwin
+      Linux:
+        OS: linux
+  steps:
+  - template: build/azure-pipelines/go-env.yaml
+  - script: "go run build/build.go -os $(OS)"
+    workingDirectory: '$(modulePath)'
+
+- job: "unittests"
+  displayName: "Run Unit Tests"
+  steps:
+  - template: build/azure-pipelines/go-env.yaml
+  - script: "go test ./..."
+    workingDirectory: '$(modulePath)'
+
+- job: "GoFmt"
+  steps:
+  - script: |
+      go fmt ./...
+      git diff
+      git diff --exit-code
+
