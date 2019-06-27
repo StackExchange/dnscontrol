@@ -616,8 +616,8 @@ func makeTests(t *testing.T) []*TestCase {
 		)
 	}
 
-	// test r53 for very very large batch sizes 
-	if *providerToRun == "ROUTE53"{
+	// test r53 for very very large batch sizes
+	if *providerToRun == "ROUTE53" {
 		tests = append(tests,
 			tc("600 records", manyA("rec%04d", "1.2.3.4", 600)...),
 			tc("Update 600 records", manyA("rec%04d", "1.2.3.5", 600)...),
@@ -626,9 +626,9 @@ func makeTests(t *testing.T) []*TestCase {
 			tc("Update 1200 records", manyA("rec%04d", "1.2.3.5", 1200)...),
 			tc("Empty"),
 		)
-	} 
+	}
 
 	// Empty last
-	tests = append(tests,tc("Empty"))
+	tests = append(tests, tc("Empty"))
 	return tests
 }

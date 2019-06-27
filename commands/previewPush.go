@@ -33,7 +33,7 @@ type PreviewArgs struct {
 	GetDNSConfigArgs
 	GetCredentialsArgs
 	FilterArgs
-	Notify bool
+	Notify      bool
 	WarnChanges bool
 }
 
