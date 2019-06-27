@@ -30,4 +30,7 @@ jobs:
 
 - job: "compile"
   steps:
-  - script: "go run build/build.go"
+  - script: |
+      pwd
+      go env
+      go run build/build.go
