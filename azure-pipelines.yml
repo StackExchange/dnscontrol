@@ -30,3 +30,4 @@ jobs:
   - script: |
       go fmt ./...
       git diff
+      git diff --exit-code
