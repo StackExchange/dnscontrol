@@ -28,6 +28,5 @@ jobs:
 - job: "GoFmt"
   steps:
   - script: |
-      ls -la
-      pwd
       go fmt ./...
+      git diff
