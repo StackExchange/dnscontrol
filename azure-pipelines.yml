@@ -12,7 +12,7 @@ trigger:
 
 jobs:
 
-- job: "compile"
+- job: "Compile"
   steps:
   - template: build/azure-pipelines/go-env.yaml
   - script: "go run build/build.go"
@@ -23,4 +23,10 @@ jobs:
   steps:
   - template: build/azure-pipelines/go-env.yaml
   - script: "go test ./..."
+    workingDirectory: '$(modulePath)'
+
+- job: "GoFmt"
+  steps:
+  - template: build/azure-pipelines/go-env.yaml
+  - script: "diff -u <(echo -n) <(gofmt -d ./)"
     workingDirectory: '$(modulePath)'
