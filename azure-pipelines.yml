@@ -31,4 +31,3 @@ jobs:
       go fmt ./...
       git diff
       git diff --exit-code
-
