@@ -29,6 +29,7 @@ jobs:
   displayName: 'Set up the Go workspace'
 
 - job: "compile"
+  workingDirectory: '$(modulePath)'
   steps:
   - script: |
       pwd
