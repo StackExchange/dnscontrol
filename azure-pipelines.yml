@@ -28,5 +28,8 @@ jobs:
 - job: "GoFmt"
   steps:
   - template: build/azure-pipelines/go-env.yaml
-  - script: "diff -u <(echo -n) <(gofmt -d ./)"
+  - script: |
+      go fmt ./...
+      git diff
+      git diff --exit-code
     workingDirectory: '$(modulePath)'
