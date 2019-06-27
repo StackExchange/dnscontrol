@@ -33,7 +33,7 @@ var features = providers.DocumentationNotes{
 func newOVH(m map[string]string, metadata json.RawMessage) (*ovhProvider, error) {
 	appKey, appSecretKey, consumerKey := m["app-key"], m["app-secret-key"], m["consumer-key"]
 
-	c,err := ovh.NewClient(ovh.OvhEU, appKey, appSecretKey, consumerKey)
+	c, err := ovh.NewClient(ovh.OvhEU, appKey, appSecretKey, consumerKey)
 	if c == nil {
 		return nil, err
 	}

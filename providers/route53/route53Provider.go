@@ -270,10 +270,6 @@ func (r *route53Provider) GetDomainCorrections(dc *models.DomainConfig) ([]*mode
 		chg.ResourceRecordSet = rrset
 	}
 
-	
-
-	
-
 	addCorrection := func(msg string, req *r53.ChangeResourceRecordSetsInput) {
 		corrections = append(corrections,
 			&models.Correction{
@@ -290,8 +286,8 @@ func (r *route53Provider) GetDomainCorrections(dc *models.DomainConfig) ([]*mode
 			})
 	}
 
-	getBatchSize := func(size, max int) int{
-		if size > max{
+	getBatchSize := func(size, max int) int {
+		if size > max {
 			return max
 		}
 		return size

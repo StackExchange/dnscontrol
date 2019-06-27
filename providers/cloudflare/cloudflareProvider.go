@@ -282,7 +282,7 @@ func (c *CloudflareApi) preprocessConfig(dc *models.DomainConfig) error {
 	// Check UniversalSSL setting
 	if u := dc.Metadata[metaUniversalSSL]; u != "" {
 		u = strings.ToLower(u)
-		if (u != "on" && u != "off") {
+		if u != "on" && u != "off" {
 			return errors.Errorf("Bad metadata value for %s: '%s'. Use on/off.", metaUniversalSSL, u)
 		}
 	}
@@ -298,9 +298,9 @@ func (c *CloudflareApi) preprocessConfig(dc *models.DomainConfig) error {
 			rec.Metadata = map[string]string{}
 		}
 		// cloudflare uses "1" to mean "auto-ttl"
-		// if we get here and ttl is not specified (or is the dnscontrol default of 300), 
+		// if we get here and ttl is not specified (or is the dnscontrol default of 300),
 		// use automatic mode instead.
-		if rec.TTL == 0 || rec.TTL == 300{ 
+		if rec.TTL == 0 || rec.TTL == 300 {
 			rec.TTL = 1
 		}
 		if rec.TTL != 1 && rec.TTL < 120 {
