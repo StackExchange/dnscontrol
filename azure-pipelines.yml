@@ -1,7 +1,8 @@
-# Starter pipeline
-# Start with a minimal pipeline that you can customize to build and deploy your code.
-# Add steps that build, run tests, deploy, and more:
-# https://aka.ms/yaml
+variables:
+  GOBIN:  '$(GOPATH)/bin' # Go binaries path
+  GOROOT: '/usr/local/go1.12' # Go installation path
+  GOPATH: '$(system.defaultWorkingDirectory)/gopath' # Go workspace path
+  modulePath: '$(GOPATH)/src/github.com/$(build.repository.name)' # Path to the module's code
 
 trigger:
   batch: "true"
@@ -12,9 +13,10 @@ trigger:
 jobs:
 
 - job: "compile"
-  container: golang:1.12
   steps:
+  - template: build/azure-pipelines/go-env.yaml
   - script: |
       pwd
       go env
       go run build/build.go
+    workingDirectory: '$(modulePath)'
