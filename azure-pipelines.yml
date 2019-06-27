@@ -8,10 +8,6 @@ trigger:
   branches:
     include:
     - master
-  pr:
-    branches:
-      include:
-      - '*'
 
 steps:
 - script: echo Hello, world!
