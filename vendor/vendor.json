@@ -794,6 +794,12 @@
 			"revisionTime": "2018-09-10T07:52:43Z"
 		},
 		{
+			"checksumSHA1": "MLGPYuRc7BtUuKmIV8f/jXpYWvg=",
+			"path": "github.com/xlucas/go-ovh/ovh",
+			"revision": "ef0d1f19f39c291ed08d5d5258175d8a2134ab1c",
+			"revisionTime": "2015-12-21T16:03:54Z"
+		},
+		{
 			"checksumSHA1": "VqyzfAMKyP6SoLnPHcwhkrICBo0=",
 			"path": "golang.org/x/crypto/ed25519",
 			"revision": "c4a91bd4f524f10d064139674cf55852e055ad01",
@@ -929,10 +935,31 @@
 			"revisionTime": "2017-01-12T23:38:57Z"
 		},
 		{
+			"checksumSHA1": "CbpjEkkOeh0fdM/V8xKDdI0AA88=",
+			"origin": "github.com/hashicorp/vault/vendor/golang.org/x/text/secure/bidirule",
+			"path": "golang.org/x/text/secure/bidirule",
+			"revision": "c368238fe0eb06b39bab9477f6e31ba4118626b6",
+			"revisionTime": "2018-05-21T13:21:24Z"
+		},
+		{
 			"checksumSHA1": "ziMb9+ANGRJSSIuxYdRbA+cDRBQ=",
 			"path": "golang.org/x/text/transform",
 			"revision": "11dbc599981ccdf4fb18802a28392a8bcf7a9395",
 			"revisionTime": "2017-01-12T23:38:57Z"
+		},
+		{
+			"checksumSHA1": "w8kDfZ1Ug+qAcVU0v8obbu3aDOY=",
+			"origin": "github.com/hashicorp/vault/vendor/golang.org/x/text/unicode/bidi",
+			"path": "golang.org/x/text/unicode/bidi",
+			"revision": "c368238fe0eb06b39bab9477f6e31ba4118626b6",
+			"revisionTime": "2018-05-21T13:21:24Z"
+		},
+		{
+			"checksumSHA1": "BCNYmf4Ek93G4lk5x3ucNi/lTwA=",
+			"origin": "github.com/hashicorp/vault/vendor/golang.org/x/text/unicode/norm",
+			"path": "golang.org/x/text/unicode/norm",
+			"revision": "c368238fe0eb06b39bab9477f6e31ba4118626b6",
+			"revisionTime": "2018-05-21T13:21:24Z"
 		},
 		{
 			"checksumSHA1": "HoCvrd3hEhsFeBOdEw7cbcfyk50=",
