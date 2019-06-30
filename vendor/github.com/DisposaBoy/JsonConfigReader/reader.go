@@ -25,6 +25,24 @@ func consumeComment(s []byte, i int) int {
 			s[i] = ' '
 		}
 	}
+	if i < len(s) && s[i] == '*' {
+		s[i-1] = ' '
+		s[i] = ' '
+		for ; i < len(s); i += 1 {
+			if s[i] != '*' {
+				s[i] = ' '
+			} else {
+				s[i] = ' '
+				i++
+				if i < len(s) {
+					if s[i] == '/' {
+						s[i] = ' '
+						break
+					}
+				}
+			}
+		}
+	}
 	return i
 }
 
