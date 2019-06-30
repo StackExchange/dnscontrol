@@ -1,6 +1,14 @@
+[![Build Status](https://travis-ci.org/DisposaBoy/JsonConfigReader.svg?branch=master)](https://travis-ci.org/DisposaBoy/JsonConfigReader)
+
+<hr/>
+
+
+
+
 JsonConfigReader is a proxy for [golang's io.Reader](http://golang.org/pkg/io/#Reader) that strips line comments and trailing commas, allowing you to use json as a *reasonable* config format.
 
 Comments start with `//` and continue to the end of the line.
+Multiline comments are also supported with `/*` and `*/`.
 
 If a trailing comma is in front of `]` or `}` it will be stripped as well.
 
@@ -9,9 +17,15 @@ Given `settings.json`
 
 	{
 		"key": "value", // k:v
-		
+
 		// a list of numbers
 		"list": [1, 2, 3],
+
+		/* 
+		a list of numbers
+		which are important
+		*/
+		"numbers": [1, 2, 3],
 	}
 
 
