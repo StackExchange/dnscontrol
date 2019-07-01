@@ -20,6 +20,8 @@ jobs:
         Provider: ROUTE53
   steps:
   - template: go-env.yaml
-  - script: "go env"
+  - script: |
+      go env
+      ls -la
     workingDirectory: '$(modulePath)'
 
