@@ -16,8 +16,8 @@ jobs:
   strategy:
     maxParallel: 3
     matrix: 
-      R53:
-        Provider: ROUTE53
+     # R53:
+     #   Provider: ROUTE53
       GCLOUD:
         Provider: GCLOUD
   steps:
