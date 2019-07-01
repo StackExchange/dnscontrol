@@ -18,6 +18,8 @@ jobs:
     matrix: 
       R53:
         Provider: ROUTE53
+      GCLOUD:
+        Provider: GCLOUD
   steps:
   - template: go-env.yaml
   - script: |
@@ -29,4 +31,9 @@ jobs:
       R53_DOMAIN: $(R53_DOMAIN)
       R53_KEY_ID: $(R53_KEY_ID)
       R53_KEY: $(R53_KEY)
+      GCLOUD_DOMAIN: $(GCLOUD_DOMAIN)
+      GCLOUD_TYPE: $(GCLOUD_TYPE)
+      GCLOUD_EMAIL: $(GCLOUD_EMAIL)
+      GCLOUD_PROJECT: $(GCLOUD_PROJECT)
+      GCLOUD_PRIVATEKEY: $(GCLOUD_PRIVATEKEY)
 
