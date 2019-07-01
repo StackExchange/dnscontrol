@@ -3,6 +3,7 @@ variables:
   GOROOT: '/usr/local/go1.12' # Go installation path
   GOPATH: '$(system.defaultWorkingDirectory)/gopath' # Go workspace path
   modulePath: '$(GOPATH)/src/github.com/$(build.repository.name)' # Path to the module's code
+  wd: '$(modulePath)/integrationTest'
 
 trigger:
   batch: "true"
@@ -16,17 +17,22 @@ jobs:
   steps:
   - template: go-env.yaml
   - script: go test -v -verbose -provider ROUTE53
-    workingDirectory: '$(modulePath)/integrationTest'
+    workingDirectory: $(wd)
     env:
       # these are defined in azure pipelines web ui as secret variables
       R53_DOMAIN: $(R53_DOMAIN)
       R53_KEY_ID: $(R53_KEY_ID)
       R53_KEY: $(R53_KEY)
       
-
-# GCLOUD_DOMAIN: $(GCLOUD_DOMAIN)
-#       GCLOUD_TYPE: $(GCLOUD_TYPE)
-#       GCLOUD_EMAIL: $(GCLOUD_EMAIL)
-#       GCLOUD_PROJECT: $(GCLOUD_PROJECT)
-#       GCLOUD_PRIVATEKEY: $(GCLOUD_PRIVATEKEY)
+- job: GCloud
+  steps:
+  - template: go-env.yaml
+  - script: go test -v -verbose -provider GCLOUD
+    workingDirectory: $(wd)
+    env:
+      GCLOUD_DOMAIN: $(GCLOUD_DOMAIN)
+      GCLOUD_TYPE: $(GCLOUD_TYPE)
+      GCLOUD_EMAIL: $(GCLOUD_EMAIL)
+      GCLOUD_PROJECT: $(GCLOUD_PROJECT)
+      GCLOUD_PRIVATEKEY: $(GCLOUD_PRIVATEKEY)
 
