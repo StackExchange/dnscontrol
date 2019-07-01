@@ -12,12 +12,12 @@ trigger:
 
 jobs:
 
-- job: Run Tests
+- job: RunIntegrationTests
   strategy:
     maxParallel: 3
     matrix: 
       R53:
-        OS: windows
+        Provider: ROUTE53
   steps:
   - template: go-env.yaml
   - script: "go env"
