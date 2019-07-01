@@ -24,7 +24,7 @@ jobs:
   steps:
   - template: go-env.yaml
   - script: |
-      echo $Foo
+      echo "aaaa $Foo bbbb"
       go test -v -verbose -provider $(Provider)
       
     workingDirectory: '$(modulePath)/integrationTest'
