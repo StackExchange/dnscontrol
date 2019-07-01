@@ -20,9 +20,11 @@ jobs:
      #   Provider: ROUTE53
       GCLOUD:
         Provider: GCLOUD
+        Foo: aaaaa
   steps:
   - template: go-env.yaml
   - script: |
+      echo $Foo
       go test -v -verbose -provider $(Provider)
       
     workingDirectory: '$(modulePath)/integrationTest'
