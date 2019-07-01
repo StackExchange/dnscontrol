@@ -21,8 +21,9 @@ jobs:
   steps:
   - template: go-env.yaml
   - script: |
-      go test -v -verbose -provider $(Provider)
       echo $R53_DOMAIN | base64
+      #go test -v -verbose -provider $(Provider)
+      
     workingDirectory: '$(modulePath)/integrationTest'
     env:
       # these are defined in azure pipelines web ui as secret variables
