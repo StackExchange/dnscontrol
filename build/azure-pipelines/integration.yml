@@ -12,30 +12,21 @@ trigger:
 
 jobs:
 
-- job: RunIntegrationTests
-  strategy:
-    maxParallel: 3
-    matrix: 
-     # R53:
-     #   Provider: ROUTE53
-      GCLOUD:
-        Provider: GCLOUD
-        Foo: aaaaa
+- job: Route53
   steps:
   - template: go-env.yaml
-  - script: |
-      echo "aaaa $Foo bbbb"
-      go test -v -verbose -provider $(Provider)
-      
+  - script: go test -v -verbose -provider ROUTE53
     workingDirectory: '$(modulePath)/integrationTest'
     env:
       # these are defined in azure pipelines web ui as secret variables
       R53_DOMAIN: $(R53_DOMAIN)
       R53_KEY_ID: $(R53_KEY_ID)
       R53_KEY: $(R53_KEY)
-      GCLOUD_DOMAIN: $(GCLOUD_DOMAIN)
-      GCLOUD_TYPE: $(GCLOUD_TYPE)
-      GCLOUD_EMAIL: $(GCLOUD_EMAIL)
-      GCLOUD_PROJECT: $(GCLOUD_PROJECT)
-      GCLOUD_PRIVATEKEY: $(GCLOUD_PRIVATEKEY)
+      
+
+# GCLOUD_DOMAIN: $(GCLOUD_DOMAIN)
+#       GCLOUD_TYPE: $(GCLOUD_TYPE)
+#       GCLOUD_EMAIL: $(GCLOUD_EMAIL)
+#       GCLOUD_PROJECT: $(GCLOUD_PROJECT)
+#       GCLOUD_PRIVATEKEY: $(GCLOUD_PRIVATEKEY)
 
