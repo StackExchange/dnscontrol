@@ -19,7 +19,7 @@ jobs:
       R53:
         OS: windows
   steps:
-  - template: build/azure-pipelines/go-env.yaml
+  - template: go-env.yaml
   - script: "go env"
     workingDirectory: '$(modulePath)'
 
