@@ -22,4 +22,9 @@ jobs:
   - template: go-env.yaml
   - script: go test -v -verbose -provider $(Provider)
     workingDirectory: '$(modulePath)/integrationTest'
+    env:
+      # these are defined in azure pipelines web ui as secret variables
+      R53_DOMAIN: $(R53_DOMAIN)
+      R53_KEY_ID: $(R53_KEY_ID)
+      R53_KEY: $(R53_KEY)_
 
