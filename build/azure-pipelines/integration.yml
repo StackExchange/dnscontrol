@@ -13,28 +13,28 @@ trigger:
 
 jobs:
 
-# - job: Route53
-#   steps:
-#   - template: go-env.yaml
-#   - script: go test -v -verbose -provider ROUTE53
-#     workingDirectory: $(wd)
-#     env:
-#       # these are defined in azure pipelines web ui as secret variables
-#       R53_DOMAIN: $(R53_DOMAIN)
-#       R53_KEY_ID: $(R53_KEY_ID)
-#       R53_KEY: $(R53_KEY)
+- job: Route53
+  steps:
+  - template: go-env.yaml
+  - script: go test -v -verbose -provider ROUTE53
+    workingDirectory: $(wd)
+    env:
+      # these are defined in azure pipelines web ui as secret variables
+      R53_DOMAIN: $(R53_DOMAIN)
+      R53_KEY_ID: $(R53_KEY_ID)
+      R53_KEY: $(R53_KEY)
       
-# - job: GCloud
-#   steps:
-#   - template: go-env.yaml
-#   - script: go test -v -verbose -provider GCLOUD
-#     workingDirectory: $(wd)
-#     env:
-#       GCLOUD_DOMAIN: $(GCLOUD_DOMAIN)
-#       GCLOUD_TYPE: $(GCLOUD_TYPE)
-#       GCLOUD_EMAIL: $(GCLOUD_EMAIL)
-#       GCLOUD_PROJECT: $(GCLOUD_PROJECT)
-#       GCLOUD_PRIVATEKEY: $(GCLOUD_PRIVATEKEY)
+- job: GCloud
+  steps:
+  - template: go-env.yaml
+  - script: go test -v -verbose -provider GCLOUD
+    workingDirectory: $(wd)
+    env:
+      GCLOUD_DOMAIN: $(GCLOUD_DOMAIN)
+      GCLOUD_TYPE: $(GCLOUD_TYPE)
+      GCLOUD_EMAIL: $(GCLOUD_EMAIL)
+      GCLOUD_PROJECT: $(GCLOUD_PROJECT)
+      GCLOUD_PRIVATEKEY: $(GCLOUD_PRIVATEKEY)
 
 - job: NameDotCom
   steps:
