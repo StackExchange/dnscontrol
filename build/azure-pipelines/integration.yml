@@ -13,8 +13,6 @@ trigger:
 
 jobs:
 
-
-
 # - job: Route53
 #   steps:
 #   - template: go-env.yaml
@@ -38,28 +36,22 @@ jobs:
 #       GCLOUD_PROJECT: $(GCLOUD_PROJECT)
 #       GCLOUD_PRIVATEKEY: $(GCLOUD_PRIVATEKEY)
 
-- job: RunTests
-  strategy:
-    matrix: 
-      # this matrix maps secrets stored in azure pipelines project variables into local pipeline variables
-      NameDotCom:
-        Provider: NAMEDOTCOM
-        NAMEDOTCOM_DOMAIN: $(S_NAMEDOTCOM_DOMAIN)
-        NAMEDOTCOM_KEY: $(NAMEDOTCOM_KEY)
-        NAMEDOTCOM_USER: $(NAMEDOTCOM_USER)
-      Cloudflare:
-        Provider: CLOUDFLAREAPI
-        CF_DOMAIN: $(S_CF_DOMAIN)
-        CF_KEY: $(S_CF_KEY)
-        CF_USER: $(S_CF_USER)
-
+- job: NameDotCom
   steps:
   - template: go-env.yaml
-  - script: |
-      echo "Provider: $(Provider)"
-      env
-      echo "NDC: ${NAMEDOTCOM_DOMAIN}xxx${S_NAMEDOTCOM_DOMAIN}"
-      echo "CF: ${CF_DOMAIN}xxx${S_CF_DOMAIN}"
-      #go test -v -verbose -provider NAMEDOTCOM
+  - script: "env"
     workingDirectory: $(wd)
+    env:
+      NAMEDOTCOM_DOMAIN: $(NAMEDOTCOM_DOMAIN)
+      NAMEDOTCOM_KEY: $(NAMEDOTCOM_KEY)
+      NAMEDOTCOM_USER: $(NAMEDOTCOM_USER)
 
+- job: Cloudflare
+  steps:
+  - template: go-env.yaml
+  - script: "env"
+    workingDirectory: $(wd)
+    env:
+      CF_USER: S(CF_USER)
+      CF_DOMAIN: $(CF_DOMAIN)
+      CF_KEY: $(CF_KEY)
