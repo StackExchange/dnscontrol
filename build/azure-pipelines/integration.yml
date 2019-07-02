@@ -48,23 +48,26 @@ jobs:
         V_NAMEDOTCOM_URL: $(NAMEDOTCOM_URL)
         V_NAMEDOTCOM_KEY: $(NAMEDOTCOM_KEY)
         V_NAMEDOTCOM_USER: $(NAMEDOTCOM_USER)
+      Cloudflare:
+        Provider: CLOUDFLAREAPI
+        V_CF_DOMAIN: $(CF_DOMAIN)
+        V_CF_KEY: $(CF_KEY)
+        V_CF_USER: $(CF_USER)
+
   steps:
   - template: go-env.yaml
-  - script: go test -v -verbose -provider $(Provider)
+  - script: |
+      echo "NDC: $NAMEDOTCOM_DOMAIN"
+      echo "CF: $CF_DOMAIN"
+      #go test -v -verbose -provider $(Provider)
     workingDirectory: $(wd)
     env:
-      # list all possible env vars here. only the ones specifically mapped into each step of the matrix will be populated
+      # list all possible env vars here, referencing the mapped values defined above. only the ones specifically mapped into each step of the matrix will be populated
       NAMEDOTCOM_DOMAIN: $(V_NAMEDOTCOM_DOMAIN)
       NAMEDOTCOM_URL: $(V_NAMEDOTCOM_URL)
       NAMEDOTCOM_KEY: $(V_NAMEDOTCOM_KEY)
       NAMEDOTCOM_USER: $(V_NAMEDOTCOM_USER)
+      CF_DOMAIN: $(V_CF_DOMAIN)
+      CF_KEY: $(V_CF_KEY)
+      CF_USER: $(V_CF_USER)
 
-# - job: Cloudflare
-#   steps:
-#   - template: go-env.yaml
-#   - script: go test -v -verbose -provider CLOUDFLAREAPI
-#     workingDirectory: $(wd)
-#     env:
-#       CF_DOMAIN: $(CF_DOMAIN)
-#       CF_KEY: $(CF_KEY)
-#       CF_USER: $(CF_USER)
