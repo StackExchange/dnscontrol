@@ -17,37 +17,37 @@ trigger:
 
 jobs:
 
-# - job: Route53
-#   steps:
-#   - template: go-env.yaml
-#   - script: go test -v -verbose -provider ROUTE53
-#     workingDirectory: $(wd)
-#     env:
-#       R53_DOMAIN: $(R53_DOMAIN)
-#       R53_KEY_ID: $(R53_KEY_ID)
-#       R53_KEY: $(R53_KEY)
+- job: Route53
+  steps:
+  - template: go-env.yaml
+  - script: go test -v -verbose -provider ROUTE53
+    workingDirectory: $(wd)
+    env:
+      R53_DOMAIN: $(R53_DOMAIN)
+      R53_KEY_ID: $(R53_KEY_ID)
+      R53_KEY: $(R53_KEY)
       
-# - job: GCloud
-#   steps:
-#   - template: go-env.yaml
-#   - script: go test -v -verbose -provider GCLOUD
-#     workingDirectory: $(wd)
-#     env:
-#       GCLOUD_DOMAIN: $(GCLOUD_DOMAIN)
-#       GCLOUD_TYPE: $(GCLOUD_TYPE)
-#       GCLOUD_EMAIL: $(GCLOUD_EMAIL)
-#       GCLOUD_PROJECT: $(GCLOUD_PROJECT)
-#       GCLOUD_PRIVATEKEY: $(GCLOUD_PRIVATEKEY)
+- job: GCloud
+  steps:
+  - template: go-env.yaml
+  - script: go test -v -verbose -provider GCLOUD
+    workingDirectory: $(wd)
+    env:
+      GCLOUD_DOMAIN: $(GCLOUD_DOMAIN)
+      GCLOUD_TYPE: $(GCLOUD_TYPE)
+      GCLOUD_EMAIL: $(GCLOUD_EMAIL)
+      GCLOUD_PROJECT: $(GCLOUD_PROJECT)
+      GCLOUD_PRIVATEKEY: $(GCLOUD_PRIVATEKEY)
 
-# - job: NameDotCom
-#   steps:
-#   - template: go-env.yaml
-#   - script: go test -v -verbose -provider NAMEDOTCOM
-#     workingDirectory: $(wd)
-#     env:
-#       NAMEDOTCOM_DOMAIN: $(NAMEDOTCOM_DOMAIN)
-#       NAMEDOTCOM_KEY: $(NAMEDOTCOM_KEY)
-#       NAMEDOTCOM_USER: $(NAMEDOTCOM_USER)
+- job: NameDotCom
+  steps:
+  - template: go-env.yaml
+  - script: go test -v -verbose -provider NAMEDOTCOM
+    workingDirectory: $(wd)
+    env:
+      NAMEDOTCOM_DOMAIN: $(NAMEDOTCOM_DOMAIN)
+      NAMEDOTCOM_KEY: $(NAMEDOTCOM_KEY)
+      NAMEDOTCOM_USER: $(NAMEDOTCOM_USER)
 
 - job: Cloudflare
   steps:
@@ -59,11 +59,11 @@ jobs:
       CF_DOMAIN: $(CF_DOMAIN)
       CF_KEY: $(CF_KEY)
 
-# - job: DigitalOcean
-#   steps:
-#   - template: go-env.yaml
-#   - script: go test -v -verbose -provider DIGITALOCEAN
-#     workingDirectory: $(wd)
-#     env:
-#       DO_DOMAIN: $(DO_DOMAIN)
-#       DO_TOKEN: $(DO_TOKEN)
+- job: DigitalOcean
+  steps:
+  - template: go-env.yaml
+  - script: go test -v -verbose -provider DIGITALOCEAN
+    workingDirectory: $(wd)
+    env:
+      DO_DOMAIN: $(DO_DOMAIN)
+      DO_TOKEN: $(DO_TOKEN)
