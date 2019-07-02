@@ -44,13 +44,13 @@ jobs:
       # this matrix maps secrets stored in azure pipelines project variables into local pipeline variables
       NameDotCom:
         Provider: NAMEDOTCOM
-        V_NAMEDOTCOM_DOMAIN: $(NAMEDOTCOM_DOMAIN)
+        NAMEDOTCOM_DOMAIN: $(S_NAMEDOTCOM_DOMAIN)
         V_NAMEDOTCOM_URL: $(NAMEDOTCOM_URL)
         V_NAMEDOTCOM_KEY: $(NAMEDOTCOM_KEY)
         V_NAMEDOTCOM_USER: $(NAMEDOTCOM_USER)
       Cloudflare:
         Provider: CLOUDFLAREAPI
-        V_CF_DOMAIN: $(CF_DOMAIN)
+        CF_DOMAIN: $(S_CF_DOMAIN)
         V_CF_KEY: $(CF_KEY)
         V_CF_USER: $(CF_USER)
 
@@ -58,8 +58,8 @@ jobs:
   - template: go-env.yaml
   - script: |
       echo "Provider: $(Provider)"
-      echo "NDC: ${NAMEDOTCOM_DOMAIN}xxx${V_NAMEDOTCOM_DOMAIN}"
-      echo "CF: ${CF_DOMAIN}xxx${V_CF_DOMAIN}"
+      echo "NDC: ${NAMEDOTCOM_DOMAIN}xxx${S_NAMEDOTCOM_DOMAIN}"
+      echo "CF: ${CF_DOMAIN}xxx${S_CF_DOMAIN}"
       #go test -v -verbose -provider $(Provider)
     workingDirectory: $(wd)
 
