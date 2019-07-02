@@ -1,0 +1,69 @@
+variables:
+  GOBIN:  '$(GOPATH)/bin' # Go binaries path
+  GOROOT: '/usr/local/go1.12' # Go installation path
+  GOPATH: '$(system.defaultWorkingDirectory)/gopath' # Go workspace path
+  modulePath: '$(GOPATH)/src/github.com/$(build.repository.name)' # Path to the module's code
+  wd: '$(modulePath)/integrationTest'
+
+trigger:
+  batch: "true"
+  branches:
+    include:
+    - pipeline
+
+# Each provider gets its' own job. These will run in parallel.
+# each job gets setup with only the env vars it needs for that run.
+# these are defined in azure pipelines web ui as secret variables.
+
+jobs:
+
+- job: Route53
+  steps:
+  - template: go-env.yaml
+  - script: go test -v -verbose -provider ROUTE53
+    workingDirectory: $(wd)
+    env:
+      R53_DOMAIN: $(R53_DOMAIN)
+      R53_KEY_ID: $(R53_KEY_ID)
+      R53_KEY: $(R53_KEY)
+      
+- job: GCloud
+  steps:
+  - template: go-env.yaml
+  - script: go test -v -verbose -provider GCLOUD
+    workingDirectory: $(wd)
+    env:
+      GCLOUD_DOMAIN: $(GCLOUD_DOMAIN)
+      GCLOUD_TYPE: $(GCLOUD_TYPE)
+      GCLOUD_EMAIL: $(GCLOUD_EMAIL)
+      GCLOUD_PROJECT: $(GCLOUD_PROJECT)
+      GCLOUD_PRIVATEKEY: $(GCLOUD_PRIVATEKEY)
+
+- job: NameDotCom
+  steps:
+  - template: go-env.yaml
+  - script: go test -v -verbose -provider NAMEDOTCOM
+    workingDirectory: $(wd)
+    env:
+      NAMEDOTCOM_DOMAIN: $(NAMEDOTCOM_DOMAIN)
+      NAMEDOTCOM_KEY: $(NAMEDOTCOM_KEY)
+      NAMEDOTCOM_USER: $(NAMEDOTCOM_USER)
+
+- job: Cloudflare
+  steps:
+  - template: go-env.yaml
+  - script: go test -v -verbose -provider CLOUDFLAREAPI
+    workingDirectory: $(wd)
+    env:
+      CF_USER: $(CF_USER)
+      CF_DOMAIN: $(CF_DOMAIN)
+      CF_KEY: $(CF_KEY)
+
+- job: DigitalOcean
+  steps:
+  - template: go-env.yaml
+  - script: go test -v -verbose -provider DIGITALOCEAN
+    workingDirectory: $(wd)
+    env:
+      DO_DOMAIN: $(DO_DOMAIN)
+      DO_TOKEN: $(DO_TOKEN)
