@@ -39,7 +39,7 @@ jobs:
 - job: NameDotCom
   steps:
   - template: go-env.yaml
-  - script: "env"
+  - script: "env | sort"
     workingDirectory: $(wd)
     env:
       NAMEDOTCOM_DOMAIN: $(NAMEDOTCOM_DOMAIN)
@@ -49,7 +49,7 @@ jobs:
 - job: Cloudflare
   steps:
   - template: go-env.yaml
-  - script: "env"
+  - script: "env | sort"
     workingDirectory: $(wd)
     env:
       CF_USER: S(CF_USER)
