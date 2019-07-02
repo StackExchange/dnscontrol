@@ -12,6 +12,7 @@ to Microsoft Active Directory and it generates the most beautiful
 BIND zone files ever.  It runs anywhere Go runs (Linux, macOS,
 Windows). The provider model is extensible, so more providers can be added.
 
+
 Currently supported DNS providers:
  - Active Directory
  - BIND
