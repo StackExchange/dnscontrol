@@ -371,6 +371,8 @@ func (c *CloudflareApi) get(endpoint string, target interface{}) error {
 	}
 	defer resp.Body.Close()
 	if resp.StatusCode != 200 {
+		dat, _ := ioutil.ReadAll(resp.Body)
+		fmt.Println(string(dat))
 		return errors.Errorf("bad status code from cloudflare: %d not 200", resp.StatusCode)
 	}
 	decoder := json.NewDecoder(resp.Body)
