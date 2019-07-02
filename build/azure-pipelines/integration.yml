@@ -76,3 +76,12 @@ jobs:
     env:
       GANDI_KEY: $(GANDI_KEY)
       GANDI_DOMAIN: $(GANDI_DOMAIN)
+
+- job: GandiLive
+  steps:
+  - template: go-env.yaml
+  - script: go test -v -verbose -provider GANDI-LIVEDNS
+    workingDirectory: $(wd)
+    env:
+      GANDILIVE_KEY: $(GANDI_KEY)
+      GANDILIVE_DOMAIN: $(GANDI_DOMAIN)
