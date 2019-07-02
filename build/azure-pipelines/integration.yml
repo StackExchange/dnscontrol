@@ -67,3 +67,12 @@ jobs:
     env:
       DO_DOMAIN: $(DO_DOMAIN)
       DO_TOKEN: $(DO_TOKEN)
+
+- job: Gandi
+  steps:
+  - template: go-env.yaml
+  - script: go test -v -verbose -provider GANDI
+    workingDirectory: $(wd)
+    env:
+      GANDI_KEY: $(GANDI_KEY)
+      GANDI_DOMAIN: $(GANDI_DOMAIN)
