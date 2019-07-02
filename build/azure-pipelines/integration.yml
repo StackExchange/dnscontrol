@@ -94,3 +94,12 @@ jobs:
     env:
       NS1_TOKEN: $(NS1_TOKEN)
       NS1_DOMAIN: $(NS1_DOMAIN)
+
+- job: DNSIMPLE
+  steps:
+  - template: go-env.yaml
+  - script: go test -v -verbose -provider DNSIMPLE
+    workingDirectory: $(wd)
+    env:
+      DNSIMPLE_TOKEN: $(DNSIMPLE_TOKEN)
+      DNSIMPLE_DOMAIN: $(DNSIMPLE_DOMAIN)
