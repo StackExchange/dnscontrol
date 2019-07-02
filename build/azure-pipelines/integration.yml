@@ -45,14 +45,13 @@ jobs:
       NameDotCom:
         Provider: NAMEDOTCOM
         NAMEDOTCOM_DOMAIN: $(S_NAMEDOTCOM_DOMAIN)
-        V_NAMEDOTCOM_URL: $(NAMEDOTCOM_URL)
-        V_NAMEDOTCOM_KEY: $(NAMEDOTCOM_KEY)
-        V_NAMEDOTCOM_USER: $(NAMEDOTCOM_USER)
+        NAMEDOTCOM_KEY: $(NAMEDOTCOM_KEY)
+        NAMEDOTCOM_USER: $(NAMEDOTCOM_USER)
       Cloudflare:
         Provider: CLOUDFLAREAPI
         CF_DOMAIN: $(S_CF_DOMAIN)
-        V_CF_KEY: $(CF_KEY)
-        V_CF_USER: $(CF_USER)
+        CF_KEY: $(S_CF_KEY)
+        CF_USER: $(S_CF_USER)
 
   steps:
   - template: go-env.yaml
@@ -60,6 +59,6 @@ jobs:
       echo "Provider: $(Provider)"
       echo "NDC: ${NAMEDOTCOM_DOMAIN}xxx${S_NAMEDOTCOM_DOMAIN}"
       echo "CF: ${CF_DOMAIN}xxx${S_CF_DOMAIN}"
-      #go test -v -verbose -provider $(Provider)
+      #go test -v -verbose -provider NAMEDOTCOM
     workingDirectory: $(wd)
 
