@@ -57,6 +57,7 @@ jobs:
   - template: go-env.yaml
   - script: |
       echo "Provider: $(Provider)"
+      env
       echo "NDC: ${NAMEDOTCOM_DOMAIN}xxx${S_NAMEDOTCOM_DOMAIN}"
       echo "CF: ${CF_DOMAIN}xxx${S_CF_DOMAIN}"
       #go test -v -verbose -provider NAMEDOTCOM
