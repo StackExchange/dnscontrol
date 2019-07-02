@@ -83,5 +83,5 @@ jobs:
   - script: go test -v -verbose -provider GANDI-LIVEDNS
     workingDirectory: $(wd)
     env:
-      GANDILIVE_KEY: $(GANDI_KEY)
-      GANDILIVE_DOMAIN: $(GANDI_DOMAIN)
+      GANDILIVE_KEY: $(GANDILIVE_KEY)
+      GANDILIVE_DOMAIN: $(GANDILIVE_DOMAIN)
