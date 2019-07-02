@@ -45,10 +45,8 @@ func New(cfg map[string]string, metadata json.RawMessage) (providers.DNSServiceP
 	// the key as downloaded is json encoded with literal "\n" instead of newlines.
 	// in some cases (round-tripping through env vars) this tends to get messed up.
 	// fix it if we find that.
-	fmt.Println(cfg["private_key"])
 	if key, ok := cfg["private_key"]; ok {
 		cfg["private_key"] = strings.Replace(key, "\\n", "\n", -1)
-		fmt.Println(cfg["private_key"])
 	}
 	raw, err := json.Marshal(cfg)
 	if err != nil {
