@@ -85,3 +85,12 @@ jobs:
     env:
       GANDILIVE_KEY: $(GANDILIVE_KEY)
       GANDILIVE_DOMAIN: $(GANDILIVE_DOMAIN)
+
+- job: NS1
+  steps:
+  - template: go-env.yaml
+  - script: go test -v -verbose -provider NS1
+    workingDirectory: $(wd)
+    env:
+      NS1_TOKEN: $(NS1_TOKEN)
+      NS1_DOMAIN: $(NS1_DOMAIN)
