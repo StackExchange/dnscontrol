@@ -304,6 +304,12 @@
 			"revisionTime": "2018-05-21T13:21:24Z"
 		},
 		{
+			"checksumSHA1": "8Yaquimq1FUYEMV9udv19r/kvIQ=",
+			"path": "github.com/google/go-github",
+			"revision": "7ce06781fd4e9d426dc100ce97783dbd434a9d41",
+			"revisionTime": "2019-07-04T13:04:04Z"
+		},
+		{
 			"checksumSHA1": "sszzCqQye59sgQguD6wcQ61lPUg=",
 			"path": "github.com/google/go-github/github",
 			"revision": "eee178af22a1827e634e972b42fed57757688fc6",
