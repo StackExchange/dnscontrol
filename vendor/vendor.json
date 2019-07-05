@@ -285,6 +285,12 @@
 			"revisionTime": "2018-09-11T21:33:45Z"
 		},
 		{
+			"checksumSHA1": "tNfN5UIDm4HEDfyPUJGwDH3BIW4=",
+			"path": "github.com/golang/protobuf",
+			"revision": "6c65a5562fc06764971b7c5d05c76c75e84bdbf7",
+			"revisionTime": "2019-07-01T18:22:01Z"
+		},
+		{
 			"checksumSHA1": "yqF125xVSkmfLpIVGrLlfE05IUk=",
 			"path": "github.com/golang/protobuf/proto",
 			"revision": "11b8df160996e00fd4b55cbaafb3d84ec6d50fa8",
