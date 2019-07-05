@@ -6,7 +6,8 @@ import (
 	"crypto/elliptic"
 	"crypto/rand"
 
-	"github.com/xenolf/lego/acme"
+	"github.com/go-acme/lego/acme"
+	"github.com/go-acme/lego/registration"
 )
 
 func (c *certManager) getOrCreateAccount() (*Account, error) {
@@ -48,9 +49,9 @@ func (c *certManager) createAccount(email string) (*Account, error) {
 }
 
 type Account struct {
-	Email        string                     `json:"email"`
-	key          *ecdsa.PrivateKey          `json:"-"`
-	Registration *acme.RegistrationResource `json:"registration"`
+	Email        string                 `json:"email"`
+	key          *ecdsa.PrivateKey      `json:"-"`
+	Registration *registration.Resource `json:"registration"`
 }
 
 func (a *Account) GetEmail() string {
@@ -59,6 +60,6 @@ func (a *Account) GetEmail() string {
 func (a *Account) GetPrivateKey() crypto.PrivateKey {
 	return a.key
 }
-func (a *Account) GetRegistration() *acme.RegistrationResource {
+func (a *Account) GetRegistration() *registration.Resource {
 	return a.Registration
 }

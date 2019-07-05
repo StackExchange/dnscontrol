@@ -7,7 +7,8 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/xenolf/lego/acme"
+	"github.com/go-acme/lego/acme"
+	"github.com/go-acme/lego/certificate"
 
 	"github.com/hashicorp/vault/api"
 )
@@ -32,7 +33,7 @@ func makeVaultStorage(vaultPath string) (Storage, error) {
 	return storage, nil
 }
 
-func (v *vaultStorage) GetCertificate(name string) (*acme.CertificateResource, error) {
+func (v *vaultStorage) GetCertificate(name string) (*certificate.Resource, error) {
 	path := v.certPath(name)
 	secret, err := v.client.Read(path)
 	if err != nil {
@@ -75,7 +76,7 @@ func (v *vaultStorage) getString(key string, data map[string]interface{}, path s
 	return []byte(str), nil
 }
 
-func (v *vaultStorage) StoreCertificate(name string, cert *acme.CertificateResource) error {
+func (v *vaultStorage) StoreCertificate(name string, cert *certificate.Resource) error {
 	jDat, err := json.MarshalIndent(cert, "", "  ")
 	if err != nil {
 		return err

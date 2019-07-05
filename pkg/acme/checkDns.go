@@ -4,7 +4,7 @@ import (
 	"log"
 	"time"
 
-	"github.com/xenolf/lego/acme"
+	"github.com/go-acme/lego/acme"
 )
 
 var acmePreCheck = acme.PreCheckDNS

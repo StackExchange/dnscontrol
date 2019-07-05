@@ -15,8 +15,11 @@ import (
 	"github.com/StackExchange/dnscontrol/models"
 	"github.com/StackExchange/dnscontrol/pkg/nameservers"
 	"github.com/StackExchange/dnscontrol/pkg/notifications"
-	"github.com/xenolf/lego/acme"
-	acmelog "github.com/xenolf/lego/log"
+	"github.com/go-acme/lego/acme"
+	"github.com/go-acme/lego/certcrypto"
+	"github.com/go-acme/lego/certificate"
+	"github.com/go-acme/lego/lego"
+	acmelog "github.com/go-acme/lego/log"
 )
 
 type CertConfig struct {
@@ -101,9 +104,9 @@ func (c *certManager) IssueOrRenewCert(cfg *CertConfig, renewUnder int, verbose 
 		return false, err
 	}
 
-	var client *acme.Client
+	var client *lego.Client
 
-	var action = func() (*acme.CertificateResource, error) {
+	var action = func() (*certificate.Resource, error) {
 		return client.ObtainCertificate(cfg.Names, true, nil, cfg.MustStaple)
 	}
 
@@ -125,17 +128,17 @@ func (c *certManager) IssueOrRenewCert(cfg *CertConfig, renewUnder int, verbose 
 			log.Println("DNS Names don't match expected set. Reissuing.")
 		} else {
 			log.Println("Renewing cert")
-			action = func() (*acme.CertificateResource, error) {
+			action = func() (*certificate.Resource, error) {
 				return client.RenewCertificate(*existing, true, cfg.MustStaple)
 			}
 		}
 	}
 
-	kt := acme.RSA2048
+	kt := certcrypto.RSA2048
 	if cfg.UseECC {
-		kt = acme.EC256
+		kt = certcrypto.EC256
 	}
-	client, err = acme.NewClient(c.acmeDirectory, c.account, kt)
+	client, err = lego.NewClient(c.acmeDirectory, c.account, kt)
 	if err != nil {
 		return false, err
 	}
