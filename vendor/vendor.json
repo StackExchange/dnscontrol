@@ -27,12 +27,6 @@
 			"revisionTime": "2017-12-18T18:09:44Z"
 		},
 		{
-			"checksumSHA1": "E0NbOzBCBYViPKvM4XcloBu6GWE=",
-			"path": "github.com/JamesClonk/vultr/lib",
-			"revision": "2fd0705ce648e602e6c9c57329a174270a4f6688",
-			"revisionTime": "2017-08-08T19:54:39Z"
-		},
-		{
 			"checksumSHA1": "dxnNQI0lrvE1S4lNRzJI647hQDY=",
 			"path": "github.com/TomOnTime/utfutil",
 			"revision": "09c41003ee1d5015b75f331e52215512e7145b8d",
@@ -829,6 +823,12 @@
 			"path": "github.com/urfave/cli",
 			"revision": "75104e932ac2ddb944a6ea19d9f9f26316ff1145",
 			"revisionTime": "2018-01-06T19:10:48Z"
+		},
+		{
+			"checksumSHA1": "iTLR4Wv1atBqIf+ooHcF0Ntb8WY=",
+			"path": "github.com/vultr/govultr",
+			"revision": "97c6919f18ab29fe635d9c3eed6abb968bea8943",
+			"revisionTime": "2019-07-10T15:20:12Z"
 		},
 		{
 			"checksumSHA1": "hOQeoMW+s2bHogWrQWV2UkEKOWM=",
