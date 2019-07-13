@@ -35,11 +35,11 @@ var features = providers.DocumentationNotes{
 }
 
 func init() {
-	providers.RegisterDomainServiceProviderType("VULTR", NewVultr, features)
+	providers.RegisterDomainServiceProviderType("VULTR", NewProvider, features)
 }
 
-// VultrApi represents the Vultr DNSServiceProvider.
-type VultrApi struct {
+// Provider represents the Vultr DNSServiceProvider.
+type Provider struct {
 	client *govultr.Client
 	token  string
 }
@@ -50,8 +50,8 @@ var defaultNS = []string{
 	"ns2.vultr.com",
 }
 
-// NewVultr initializes a Vultr DNSServiceProvider.
-func NewVultr(m map[string]string, metadata json.RawMessage) (providers.DNSServiceProvider, error) {
+// NewProvider initializes a Vultr DNSServiceProvider.
+func NewProvider(m map[string]string, metadata json.RawMessage) (providers.DNSServiceProvider, error) {
 	token := m["token"]
 	if token == "" {
 		return nil, errors.Errorf("Vultr API token is required")
@@ -61,11 +61,11 @@ func NewVultr(m map[string]string, metadata json.RawMessage) (providers.DNSServi
 	client.SetUserAgent("dnscontrol")
 
 	_, err := client.Account.GetInfo(context.Background())
-	return &VultrApi{client, token}, err
+	return &Provider{client, token}, err
 }
 
 // GetDomainCorrections gets the corrections for a DomainConfig.
-func (api *VultrApi) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Correction, error) {
+func (api *Provider) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Correction, error) {
 	dc.Punycode()
 
 	records, err := api.client.DNSRecord.List(context.Background(), dc.Name)
@@ -123,12 +123,12 @@ func (api *VultrApi) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Co
 }
 
 // GetNameservers gets the Vultr nameservers for a domain
-func (api *VultrApi) GetNameservers(domain string) ([]*models.Nameserver, error) {
+func (api *Provider) GetNameservers(domain string) ([]*models.Nameserver, error) {
 	return models.StringsToNameservers(defaultNS), nil
 }
 
 // EnsureDomainExists adds a domain to the Vutr DNS service if it does not exist
-func (api *VultrApi) EnsureDomainExists(domain string) error {
+func (api *Provider) EnsureDomainExists(domain string) error {
 	if ok, err := api.isDomainInAccount(domain); err != nil {
 		return err
 	} else if ok {
@@ -139,7 +139,7 @@ func (api *VultrApi) EnsureDomainExists(domain string) error {
 	return api.client.DNSDomain.Create(context.Background(), domain, "0.0.0.0")
 }
 
-func (api *VultrApi) isDomainInAccount(domain string) (bool, error) {
+func (api *Provider) isDomainInAccount(domain string) (bool, error) {
 	domains, err := api.client.DNSDomain.List(context.Background())
 	if err != nil {
 		return false, err
