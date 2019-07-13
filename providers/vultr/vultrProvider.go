@@ -30,6 +30,7 @@ var features = providers.DocumentationNotes{
 	providers.CanUsePTR:              providers.Cannot(),
 	providers.CanUseSRV:              providers.Can(),
 	providers.CanUseTLSA:             providers.Cannot(),
+	providers.CanUseSSHFP:            providers.Can(),
 	providers.DocCreateDomains:       providers.Can(),
 	providers.DocOfficiallySupported: providers.Cannot(),
 }
@@ -233,6 +234,8 @@ func toVultrRecord(dc *models.DomainConfig, rc *models.RecordConfig, vultrID int
 		r.Data = fmt.Sprintf("%v %v %s", rc.SrvWeight, rc.SrvPort, rc.GetTargetField())
 	case "CAA":
 		r.Data = fmt.Sprintf(`%v %s "%s"`, rc.CaaFlag, rc.CaaTag, rc.GetTargetField())
+	case "SSHFP":
+		r.Data = fmt.Sprintf("%d %d %s", rc.SshfpAlgorithm, rc.SshfpFingerprint, rc.GetTargetField())
 	default:
 	}
 
