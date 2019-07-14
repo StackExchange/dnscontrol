@@ -166,11 +166,11 @@ func (c *Client) DoWithContext(ctx context.Context, r *http.Request, data interf
 		c.onRequestCompleted(req, res)
 	}
 
-	defer res.Body.Close()
-
 	if err != nil {
 		return err
 	}
+
+	defer res.Body.Close()
 
 	body, err := ioutil.ReadAll(res.Body)
 

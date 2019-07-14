@@ -825,10 +825,10 @@
 			"revisionTime": "2018-01-06T19:10:48Z"
 		},
 		{
-			"checksumSHA1": "iTLR4Wv1atBqIf+ooHcF0Ntb8WY=",
+			"checksumSHA1": "IXgi3wJQDZY+XCMilbQzAWiOW94=",
 			"path": "github.com/vultr/govultr",
-			"revision": "97c6919f18ab29fe635d9c3eed6abb968bea8943",
-			"revisionTime": "2019-07-10T15:20:12Z"
+			"revision": "4cfc19dfc3d058d94348267969d9a27551ff7476",
+			"revisionTime": "2019-07-14T13:33:55Z"
 		},
 		{
 			"checksumSHA1": "hOQeoMW+s2bHogWrQWV2UkEKOWM=",
