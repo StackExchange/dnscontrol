@@ -67,3 +67,12 @@ jobs:
     env:
       DO_DOMAIN: $(DO_DOMAIN)
       DO_TOKEN: $(DO_TOKEN)
+
+- job: Vultr
+  steps:
+  - template: go-env.yaml
+  - script: go test -v -verbose -provider VULTR
+    workingDirectory: $(wd)
+    env:
+      VULTR_DOMAIN: $(VULTR_DOMAIN)
+      VULTR_TOKEN: $(VULTR_TOKEN)
