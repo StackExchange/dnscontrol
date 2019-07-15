@@ -29,7 +29,7 @@ type Namecheap struct {
 
 var features = providers.DocumentationNotes{
 	providers.CanUseAlias:            providers.Cannot(),
-	providers.CanUseCAA:              providers.Cannot(),
+	providers.CanUseCAA:              providers.Can(),
 	providers.CanUsePTR:              providers.Cannot(),
 	providers.CanUseSRV:              providers.Cannot("The namecheap web console allows you to make SRV records, but their api does not let you read or set them"),
 	providers.CanUseTLSA:             providers.Cannot(),
@@ -155,7 +155,14 @@ func (n *Namecheap) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Cor
 			Original:     r,
 		}
 		rec.SetLabel(r.Name, dc.Name)
-		rec.SetTarget(r.Address)
+		switch rtype := r.Type; rtype { // #rtype_variations
+		case "TXT":
+			rec.SetTargetTXT(r.Address)
+		case "CAA":
+			rec.SetTargetCAAString(r.Address)
+		default:
+			rec.SetTarget(r.Address)
+		}
 		actual = append(actual, rec)
 	}
 
@@ -203,11 +210,19 @@ func (n *Namecheap) generateRecords(dc *models.DomainConfig) error {
 
 	id := 1
 	for _, r := range dc.Records {
+		var value string
+		switch rtype := r.Type; rtype { // #rtype_variations
+		case "CAA":
+			value = r.GetTargetCombined()
+		default:
+			value = r.GetTargetField()
+		}
+
 		rec := nc.DomainDNSHost{
 			ID:      id,
 			Name:    r.GetLabel(),
 			Type:    r.Type,
-			Address: r.GetTargetField(),
+			Address: value,
 			MXPref:  int(r.MxPreference),
 			TTL:     int(r.TTL),
 		}
