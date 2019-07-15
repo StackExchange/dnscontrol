@@ -77,23 +77,23 @@ jobs:
       GANDI_KEY: $(GANDI_KEY)
       GANDI_DOMAIN: $(GANDI_DOMAIN)
 
-- job: GandiLive
-  steps:
-  - template: go-env.yaml
-  - script: go test -v -verbose -provider GANDI-LIVEDNS
-    workingDirectory: $(wd)
-    env:
-      GANDILIVE_KEY: $(GANDILIVE_KEY)
-      GANDILIVE_DOMAIN: $(GANDILIVE_DOMAIN)
+# - job: GandiLive
+#   steps:
+#   - template: go-env.yaml
+#   - script: go test -v -verbose -provider GANDI-LIVEDNS
+#     workingDirectory: $(wd)
+#     env:
+#       GANDILIVE_KEY: $(GANDILIVE_KEY)
+#       GANDILIVE_DOMAIN: $(GANDILIVE_DOMAIN)
 
-- job: NS1
-  steps:
-  - template: go-env.yaml
-  - script: go test -v -verbose -provider NS1
-    workingDirectory: $(wd)
-    env:
-      NS1_TOKEN: $(NS1_TOKEN)
-      NS1_DOMAIN: $(NS1_DOMAIN)
+# - job: NS1
+#   steps:
+#   - template: go-env.yaml
+#   - script: go test -v -verbose -provider NS1
+#     workingDirectory: $(wd)
+#     env:
+#       NS1_TOKEN: $(NS1_TOKEN)
+#       NS1_DOMAIN: $(NS1_DOMAIN)
 
 - job: DNSIMPLE
   steps:
