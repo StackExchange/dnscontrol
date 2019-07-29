@@ -15,8 +15,12 @@ import (
 	"github.com/StackExchange/dnscontrol/models"
 	"github.com/StackExchange/dnscontrol/pkg/nameservers"
 	"github.com/StackExchange/dnscontrol/pkg/notifications"
-	"github.com/xenolf/lego/acme"
-	acmelog "github.com/xenolf/lego/log"
+	"github.com/go-acme/lego/certcrypto"
+	"github.com/go-acme/lego/certificate"
+	"github.com/go-acme/lego/challenge"
+	"github.com/go-acme/lego/challenge/dns01"
+	"github.com/go-acme/lego/lego"
+	acmelog "github.com/go-acme/lego/log"
 )
 
 type CertConfig struct {
@@ -101,10 +105,14 @@ func (c *certManager) IssueOrRenewCert(cfg *CertConfig, renewUnder int, verbose 
 		return false, err
 	}
 
-	var client *acme.Client
+	var client *lego.Client
 
-	var action = func() (*acme.CertificateResource, error) {
-		return client.ObtainCertificate(cfg.Names, true, nil, cfg.MustStaple)
+	var action = func() (*certificate.Resource, error) {
+		return client.Certificate.Obtain(certificate.ObtainRequest{
+			Bundle:     true,
+			Domains:    cfg.Names,
+			MustStaple: cfg.MustStaple,
+		})
 	}
 
 	if existing == nil {
@@ -125,25 +133,28 @@ func (c *certManager) IssueOrRenewCert(cfg *CertConfig, renewUnder int, verbose 
 			log.Println("DNS Names don't match expected set. Reissuing.")
 		} else {
 			log.Println("Renewing cert")
-			action = func() (*acme.CertificateResource, error) {
-				return client.RenewCertificate(*existing, true, cfg.MustStaple)
+			action = func() (*certificate.Resource, error) {
+				return client.Certificate.Renew(*existing, true, cfg.MustStaple)
 			}
 		}
 	}
 
-	kt := acme.RSA2048
+	kt := certcrypto.RSA2048
 	if cfg.UseECC {
-		kt = acme.EC256
+		kt = certcrypto.EC256
 	}
-	client, err = acme.NewClient(c.acmeDirectory, c.account, kt)
+	config := lego.NewConfig(c.account)
+	config.CADirURL = c.acmeDirectory
+	config.Certificate.KeyType = kt
+	client, err = lego.NewClient(config)
 	if err != nil {
 		return false, err
 	}
-	client.ExcludeChallenges([]acme.Challenge{acme.HTTP01, acme.TLSALPN01})
-	client.SetChallengeProvider(acme.DNS01, c)
+	client.Challenge.Remove(challenge.HTTP01)
+	client.Challenge.Remove(challenge.TLSALPN01)
+	client.Challenge.SetDNS01Provider(c)
 
-	acme.PreCheckDNS = c.preCheckDNS
-	defer func() { acme.PreCheckDNS = acmePreCheck }()
+	dns01.WrapPreCheck(c.preCheckDNS)
 
 	certResource, err := action()
 	if err != nil {
@@ -219,7 +230,7 @@ func (c *certManager) Present(domain, token, keyAuth string) (e error) {
 		d = copy
 	}
 
-	fqdn, val, _ := acme.DNS01Record(domain, keyAuth)
+	fqdn, val := dns01.GetRecord(domain, keyAuth)
 	txt := &models.RecordConfig{Type: "TXT"}
 	txt.SetTargetTXT(val)
 	txt.SetLabelFromFQDN(fqdn, d.Name)

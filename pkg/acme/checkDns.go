@@ -4,17 +4,15 @@ import (
 	"log"
 	"time"
 
-	"github.com/xenolf/lego/acme"
+	"github.com/go-acme/lego/challenge/dns01"
 )
 
-var acmePreCheck = acme.PreCheckDNS
-
-func (c *certManager) preCheckDNS(fqdn, value string) (bool, error) {
+func (c *certManager) preCheckDNS(domain, fqdn, value string, native dns01.PreCheckFunc) (bool, error) {
 	// default record verification in the client library makes sure the authoritative nameservers
 	// have the expected records.
 	// Sometimes the Let's Encrypt verification fails anyway because records have not propagated the provider's network fully.
 	// So we add an additional 60 second sleep just for safety.
-	v, err := acmePreCheck(fqdn, value)
+	v, err := native(fqdn, value)
 	if err != nil {
 		return v, err
 	}
