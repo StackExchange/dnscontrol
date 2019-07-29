@@ -10,7 +10,7 @@ import (
 
 	"github.com/hashicorp/errwrap"
 	sockaddr "github.com/hashicorp/go-sockaddr"
-	"github.com/hashicorp/vault/helper/strutil"
+	"github.com/hashicorp/vault/sdk/helper/strutil"
 	"github.com/mitchellh/mapstructure"
 )
 
@@ -20,15 +20,16 @@ func ParseDurationSecond(in interface{}) (time.Duration, error) {
 	if ok {
 		in = jsonIn.String()
 	}
-	switch in.(type) {
+	switch inp := in.(type) {
+	case nil:
+		// return default of zero
 	case string:
-		inp := in.(string)
 		if inp == "" {
-			return time.Duration(0), nil
+			return dur, nil
 		}
 		var err error
 		// Look for a suffix otherwise its a plain second value
-		if strings.HasSuffix(inp, "s") || strings.HasSuffix(inp, "m") || strings.HasSuffix(inp, "h") {
+		if strings.HasSuffix(inp, "s") || strings.HasSuffix(inp, "m") || strings.HasSuffix(inp, "h") || strings.HasSuffix(inp, "ms") {
 			dur, err = time.ParseDuration(inp)
 			if err != nil {
 				return dur, err
@@ -42,17 +43,23 @@ func ParseDurationSecond(in interface{}) (time.Duration, error) {
 			dur = time.Duration(secs) * time.Second
 		}
 	case int:
-		dur = time.Duration(in.(int)) * time.Second
+		dur = time.Duration(inp) * time.Second
 	case int32:
-		dur = time.Duration(in.(int32)) * time.Second
+		dur = time.Duration(inp) * time.Second
 	case int64:
-		dur = time.Duration(in.(int64)) * time.Second
+		dur = time.Duration(inp) * time.Second
 	case uint:
-		dur = time.Duration(in.(uint)) * time.Second
+		dur = time.Duration(inp) * time.Second
 	case uint32:
-		dur = time.Duration(in.(uint32)) * time.Second
+		dur = time.Duration(inp) * time.Second
 	case uint64:
-		dur = time.Duration(in.(uint64)) * time.Second
+		dur = time.Duration(inp) * time.Second
+	case float32:
+		dur = time.Duration(inp) * time.Second
+	case float64:
+		dur = time.Duration(inp) * time.Second
+	case time.Duration:
+		dur = inp
 	default:
 		return 0, errors.New("could not parse duration from input")
 	}
@@ -106,6 +113,10 @@ func ParseBool(in interface{}) (bool, error) {
 }
 
 func ParseCommaStringSlice(in interface{}) ([]string, error) {
+	rawString, ok := in.(string)
+	if ok && rawString == "" {
+		return []string{}, nil
+	}
 	var result []string
 	config := &mapstructure.DecoderConfig{
 		Result:           &result,
