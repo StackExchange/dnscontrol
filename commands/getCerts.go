@@ -39,6 +39,7 @@ type GetCertsArgs struct {
 	Verbose        bool
 	Vault          bool
 	VaultPath      string
+	Only           string
 
 	Notify bool
 
@@ -111,6 +112,11 @@ func (args *GetCertsArgs) flags() []cli.Flag {
 		Destination: &args.Notify,
 		Usage:       `set to true to send notifications to configured destinations`,
 	})
+	flags = append(flags, cli.StringFlag{
+		Name:        "only",
+		Destination: &args.Only,
+		Usage:       `Only check a single cert. Provide cert name.`,
+	})
 	return flags
 }
 
@@ -179,6 +185,9 @@ func GetCerts(args GetCertsArgs) error {
 		return err
 	}
 	for _, cert := range certList {
+		if args.Only != "" && cert.CertName != args.Only {
+			continue
+		}
 		v := args.Verbose || printer.DefaultPrinter.Verbose
 		issued, err := client.IssueOrRenewCert(cert, args.RenewUnderDays, v)
 		if issued || err != nil {
