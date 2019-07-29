@@ -37,7 +37,6 @@ func SetNodeInterface(name string) bool {
 }
 
 func setNodeInterface(name string) bool {
-
 	iname, addr := getHardwareInterface(name) // null implementation for js
 	if iname != "" && addr != nil {
 		ifname = iname
@@ -49,6 +48,7 @@ func setNodeInterface(name string) bool {
 	// does not specify a specific interface generate a random Node ID
 	// (section 4.1.6)
 	if name == "" {
+		ifname = "random"
 		randomBits(nodeID[:])
 		return true
 	}
