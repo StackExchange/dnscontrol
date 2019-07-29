@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"encoding/pem"
 	"fmt"
+	"log"
 	"strings"
 
 	"github.com/go-acme/lego/certificate"
@@ -13,8 +14,10 @@ import (
 )
 
 type vaultStorage struct {
-	path   string
-	client *api.Logical
+	path    string
+	client  *api.Client
+	v2Mount string
+	isV2    bool
 }
 
 func makeVaultStorage(vaultPath string) (Storage, error) {
@@ -27,14 +30,50 @@ func makeVaultStorage(vaultPath string) (Storage, error) {
 	}
 	storage := &vaultStorage{
 		path:   vaultPath,
-		client: client.Logical(),
+		client: client,
 	}
+	storage.inferKVVersion(vaultPath)
 	return storage, nil
+}
+
+func (v *vaultStorage) inferKVVersion(vaultPath string) {
+	mounts, err := v.client.Sys().ListMounts()
+	if err != nil {
+		log.Printf("Error listing vault mounts: '%s'. Assuming KV v1 mount.", err)
+		return
+	}
+	longestMatch := 0
+	var match *api.MountOutput
+	var matchName string
+	for name, m := range mounts {
+		if m.Type != "kv" || !strings.HasPrefix(vaultPath, "/"+name) {
+			continue
+		}
+		if len(name) > longestMatch {
+			longestMatch = len(name)
+			match = m
+			matchName = "/" + name
+		}
+	}
+	if match == nil {
+		log.Printf("Unable to locate kv secret backend matching '%s'. Assuming KV v1 mount.", vaultPath)
+		return
+	}
+	ver := match.Options["version"]
+	if ver == "2" {
+		log.Println("Found kv v2 mount")
+		v.v2Mount = matchName
+		v.isV2 = true
+	} else if ver == "1" {
+		log.Println("Found kv v1 mount")
+	} else {
+		log.Printf("Unknown kv version '%s' Assuming KV v1 mount.", ver)
+	}
 }
 
 func (v *vaultStorage) GetCertificate(name string) (*certificate.Resource, error) {
 	path := v.certPath(name)
-	secret, err := v.client.Read(path)
+	secret, err := v.client.Logical().Read(path)
 	if err != nil {
 		return nil, err
 	}
@@ -64,6 +103,9 @@ func (v *vaultStorage) GetCertificate(name string) (*certificate.Resource, error
 }
 
 func (v *vaultStorage) getString(key string, data map[string]interface{}, path string) ([]byte, error) {
+	if v.isV2 {
+		data = data["data"].(map[string]interface{})
+	}
 	dat, ok := data[key]
 	if !ok {
 		return nil, fmt.Errorf("Secret at %s does not have key %s", path, key)
@@ -88,21 +130,33 @@ func (v *vaultStorage) StoreCertificate(name string, cert *certificate.Resource)
 		"tls.combined": pub + "\n" + key,
 		"meta":         string(jDat),
 	}
-	_, err = v.client.Write(v.certPath(name), data)
+	if v.isV2 {
+		data = map[string]interface{}{
+			"data": data,
+		}
+	}
+	_, err = v.client.Logical().Write(v.certPath(name), data)
 	return err
 }
 
 func (v *vaultStorage) registrationPath(acmeHost string) string {
-	return v.path + ".letsencrypt/" + acmeHost
+	return v.basePath() + ".letsencrypt/" + acmeHost
 }
 
 func (v *vaultStorage) certPath(name string) string {
-	return v.path + name
+	return v.basePath() + name
+}
+
+func (v *vaultStorage) basePath() string {
+	if v.isV2 {
+		return fmt.Sprintf("%sdata/%s", v.v2Mount, strings.TrimPrefix(v.path, v.v2Mount))
+	}
+	return v.path
 }
 
 func (v *vaultStorage) GetAccount(acmeHost string) (*Account, error) {
 	path := v.registrationPath(acmeHost)
-	secret, err := v.client.Read(path)
+	secret, err := v.client.Logical().Read(path)
 	if err != nil {
 		return nil, err
 	}
@@ -141,9 +195,16 @@ func (v *vaultStorage) StoreAccount(acmeHost string, account *Account) error {
 	pemKey := &pem.Block{Type: "EC PRIVATE KEY", Bytes: keyBytes}
 	pemBytes := pem.EncodeToMemory(pemKey)
 
-	_, err = v.client.Write(v.registrationPath(acmeHost), map[string]interface{}{
+	log.Println(v.registrationPath(acmeHost))
+	data := map[string]interface{}{
 		"registration": string(acctBytes),
 		"tls.key":      string(pemBytes),
-	})
+	}
+	if v.isV2 {
+		data = map[string]interface{}{
+			"data": data,
+		}
+	}
+	_, err = v.client.Logical().Write(v.registrationPath(acmeHost), data)
 	return err
 }
