@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"strings"
 
 	"github.com/StackExchange/dnscontrol/models"
 	"github.com/StackExchange/dnscontrol/providers"
@@ -64,6 +65,7 @@ func NewDo(m map[string]string, metadata json.RawMessage) (providers.DNSServiceP
 }
 
 var features = providers.DocumentationNotes{
+    providers.CanUseCAA:              providers.Can(),
 	providers.DocCreateDomains:       providers.Can(),
 	providers.DocOfficiallySupported: providers.Cannot(),
 	providers.CanUseSRV:              providers.Can(),
@@ -217,6 +219,8 @@ func toRc(dc *models.DomainConfig, r *godo.DomainRecord) *models.RecordConfig {
 	t.SetLabelFromFQDN(name, dc.Name)
 	t.SetTarget(target)
 	switch rtype := r.Type; rtype {
+	case "CAA":
+		t.SetTargetCAA(uint8(r.Flags), r.Tag, target)
 	case "TXT":
 		t.SetTargetTXTString(target)
 	default:
@@ -238,6 +242,11 @@ func toReq(dc *models.DomainConfig, rc *models.RecordConfig) *godo.DomainRecordE
 	case "TXT":
 		// TXT records are the one place where DO combines many items into one field.
 		target = rc.GetTargetCombined()
+	case "CAA":
+		// For CAA records, the DO API seems to require that the URL in the Data field ends with a '.'.
+		if !strings.HasSuffix(target, ".") {
+			target += "."
+		}
 	default:
 		// no action required
 	}
@@ -250,5 +259,7 @@ func toReq(dc *models.DomainConfig, rc *models.RecordConfig) *godo.DomainRecordE
 		Priority: priority,
 		Port:     int(rc.SrvPort),
 		Weight:   int(rc.SrvWeight),
+		Flags:    int(rc.CaaFlag),
+		Tag:      rc.CaaTag,
 	}
 }
