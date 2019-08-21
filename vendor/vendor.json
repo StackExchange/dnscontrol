@@ -9,6 +9,60 @@
 			"revisionTime": "2019-07-02T19:49:18Z"
 		},
 		{
+			"checksumSHA1": "BkR4VCZ2v/YZOEsHgBoPb3i9PfY=",
+			"path": "github.com/Azure/azure-sdk-for-go/services/dns/mgmt/2018-05-01/dns",
+			"revision": "07e904809009c506339e781db6167dd06e95cde6",
+			"revisionTime": "2019-08-14T06:57:19Z"
+		},
+		{
+			"checksumSHA1": "foZs5c6mJAqRam0Y/g8iLyqEHFo=",
+			"path": "github.com/Azure/azure-sdk-for-go/version",
+			"revision": "07e904809009c506339e781db6167dd06e95cde6",
+			"revisionTime": "2019-08-14T06:57:19Z"
+		},
+		{
+			"checksumSHA1": "4y63Ndgnx+wF8rFLDX8HhXqrswA=",
+			"path": "github.com/Azure/go-autorest/autorest",
+			"revision": "acabb19a10ec8a56a8b788b177b2911f60ab070c",
+			"revisionTime": "2019-08-15T17:16:02Z"
+		},
+		{
+			"checksumSHA1": "n7/C5KFYqeNcs2h544wdHXoaM5o=",
+			"path": "github.com/Azure/go-autorest/autorest/adal",
+			"revision": "acabb19a10ec8a56a8b788b177b2911f60ab070c",
+			"revisionTime": "2019-08-15T17:16:02Z"
+		},
+		{
+			"checksumSHA1": "q+HttJ8cv7lthyxhvt6meFPNqw0=",
+			"path": "github.com/Azure/go-autorest/autorest/azure",
+			"revision": "acabb19a10ec8a56a8b788b177b2911f60ab070c",
+			"revisionTime": "2019-08-15T17:16:02Z"
+		},
+		{
+			"checksumSHA1": "S2kiNThQpafqZ/UuiCxP7KeDOT4=",
+			"path": "github.com/Azure/go-autorest/autorest/date",
+			"revision": "acabb19a10ec8a56a8b788b177b2911f60ab070c",
+			"revisionTime": "2019-08-15T17:16:02Z"
+		},
+		{
+			"checksumSHA1": "4/Xi3rBCHOtSHEs8UCzJ9NOmmCo=",
+			"path": "github.com/Azure/go-autorest/autorest/to",
+			"revision": "acabb19a10ec8a56a8b788b177b2911f60ab070c",
+			"revisionTime": "2019-08-15T17:16:02Z"
+		},
+		{
+			"checksumSHA1": "nXtlS0uRMjqa8+dmeEqo3j3AXEo=",
+			"path": "github.com/Azure/go-autorest/logger",
+			"revision": "acabb19a10ec8a56a8b788b177b2911f60ab070c",
+			"revisionTime": "2019-08-15T17:16:02Z"
+		},
+		{
+			"checksumSHA1": "StsBozgf+C8kMv6htCiFBJbmmUw=",
+			"path": "github.com/Azure/go-autorest/tracing",
+			"revision": "acabb19a10ec8a56a8b788b177b2911f60ab070c",
+			"revisionTime": "2019-08-15T17:16:02Z"
+		},
+		{
 			"checksumSHA1": "Pc2ORQp+VY3Un/dkh4QwLC7R6lE=",
 			"path": "github.com/BurntSushi/toml",
 			"revision": "3012a1dbe2e4bd1391d42b32f0577cb7bbc7f005",
@@ -206,6 +260,12 @@
 			"path": "github.com/cenkalti/backoff",
 			"revision": "58d6d9f4767affd87737fcb32c478844561aecd2",
 			"revisionTime": "2019-07-27T05:08:04Z"
+		},
+		{
+			"checksumSHA1": "P6u6fDWwSfRL2Bc6uhZ9kcoPsek=",
+			"path": "github.com/dgrijalva/jwt-go",
+			"revision": "5e25c22bd5d6de03265bbe5462dcd162f85046f6",
+			"revisionTime": "2019-06-20T18:01:02Z"
 		},
 		{
 			"checksumSHA1": "Huhc3bTHV4ge7vij7Sui3NBIqm0=",
