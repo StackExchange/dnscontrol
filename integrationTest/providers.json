@@ -4,6 +4,14 @@
     "domain": "$AD_DOMAIN",
     "knownFailures": "29,30,31,32,33,34,35,38,39,40,41,48,49,51,52,53"
   },
+  "AZURE": {
+    "tenantID": "$AZ_TENANTID",
+    "subscriptionID": "$AZ_SUBSCRIPTIONID",
+    "resouceGroupName": "$AZ_RSGNAME",
+    "clientID": "$AZ_CLIENTID",
+    "clientSecret": "$AZ_CLIENTSECRET",
+    "domain": "$AZ_DOMAIN"
+  },
   "BIND": {
     "domain": "example.com"
   },

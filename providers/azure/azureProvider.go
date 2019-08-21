@@ -3,9 +3,11 @@ package azure
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"io/ioutil"
 	"net/http"
 	"strings"
+	"time"
 
 	"github.com/Azure/go-autorest/autorest/to"
 
@@ -41,7 +43,6 @@ type azureConfig struct {
 	clientSecret       string
 	resourceManagerURL string
 	resourceManager    *azureResourceManager
-	authorizer         *autorest.BearerAuthorizer
 	zonesClient        dns.ZonesClient
 	recordsClient      dns.RecordSetsClient
 }
@@ -115,39 +116,186 @@ func New(config map[string]string, metadata json.RawMessage) (providers.DNSServi
 		return nil, err
 	}
 
-	azureConfig.authorizer = autorest.NewBearerAuthorizer(token)
 	azureConfig.zonesClient = dns.NewZonesClient(azureConfig.subscriptionID)
-	azureConfig.zonesClient.Authorizer = azureConfig.authorizer
+	azureConfig.zonesClient.Authorizer = autorest.NewBearerAuthorizer(token)
 	azureConfig.recordsClient = dns.NewRecordSetsClient(azureConfig.subscriptionID)
-	azureConfig.recordsClient.Authorizer = azureConfig.authorizer
+	azureConfig.recordsClient.Authorizer = autorest.NewBearerAuthorizer(token)
 
 	return azureConfig, nil
 }
 
 func (c *azureConfig) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Correction, error) {
+	if err := dc.Punycode(); err != nil {
+		return nil, err
+	}
+
 	existingRecords, err := c.GetZoneRecords(dc.Name)
 	if err != nil {
 		return nil, err
 	}
 
-	models.PostProcessRecords(existingRecords)
-	differ := diff.New(dc)
-	_, create, _, _ := differ.IncrementalDiff(existingRecords)
-
 	var corrections = []*models.Correction{}
 
-	for _, cs := range create {
-		record := RCtoAZRecord(cs.Desired)
+	checkNSModifications(dc)
+	models.PostProcessRecords(existingRecords)
+	differ := diff.New(dc)
 
+	namesToUpdate := differ.ChangedGroups(existingRecords)
+	if len(namesToUpdate) == 0 {
+		return nil, nil
+	}
+
+	//fmt.Println("----", namesToUpdate)
+
+	updates := map[models.RecordKey][]*models.RecordConfig{}
+	// for each name we need to update, collect relevant records from our desired domain state
+	for k := range namesToUpdate {
+		if k.Type == "NS" && k.NameFQDN == dc.Name {
+			//printer.Warnf("azure does not support modifying NS records on base domain. @ will not be modified.\n")
+		} else {
+			updates[k] = nil
+			for _, rc := range dc.Records {
+				if rc.Key() == k {
+					updates[k] = append(updates[k], rc)
+				}
+			}
+		}
+	}
+
+	dels := make(map[string]string)
+
+	for k, recs := range updates {
+		if len(recs) == 0 {
+			dels[k.NameFQDN] = k.Type
+		}
+		for _, ex := range existingRecords {
+			if k.NameFQDN == ex.NameFQDN && (k.Type == "CNAME" || ex.Type == "CNAME") {
+				if ex.Type == "A" || ex.Type == "AAAA" || k.Type == "A" || k.Type == "AAAA" { //Cnames cannot coexist with an A or AA
+					fmt.Println("---- found mismatched type to delete", k.NameFQDN, k.Type, ex.Type)
+					dels[k.NameFQDN] = ex.Type
+				}
+			}
+		}
+
+	}
+
+	for name, recordtype := range dels {
+		localname := strings.Replace(name, fmt.Sprintf(".%s", dc.Name), "", -1)
+		if name == dc.Name {
+			localname = "@"
+		}
+
+		if recordtype == "NS" && localname == "@" {
+			//printer.Warnf("azure does not support modifying NS records on base domain. @ will not be deleted.\n")
+		} else {
+			msg := fmt.Sprintf("delete %s %s", recordtype, localname)
+			fmt.Println("----", msg)
+
+			corr := &models.Correction{
+				Msg: msg,
+				F: func() error {
+					_, err := c.recordsClient.Delete(ctx, c.resouceGroupName, dc.Name, localname, dns.RecordType(recordtype), "")
+					time.Sleep(25 * time.Millisecond) //Artifically slow things down after a delete, as the API can take time to register it. The tests fail if we delete and then recheck too quickly.
+					return err
+				},
+			}
+
+			corrections = append(corrections, corr)
+		}
+	}
+
+	for _, recs := range updates {
+		azureRecord := RStoAZRecord(recs)
+		if azureRecord == nil {
+			continue
+		}
+
+		var msg string
+		for _, rec := range recs {
+			msg += fmt.Sprintf("update %s %s %s\n", rec.Name, rec.Type, rec.GetTargetCombined())
+		}
+
+		fmt.Println("----", msg)
+
+		recordType := dns.RecordType(*azureRecord.Type)
 		corr := &models.Correction{
-			Msg: cs.String(),
+			Msg: msg,
 			F: func() error {
-				_, err := c.recordsClient.CreateOrUpdate(ctx, c.resouceGroupName, dc.Name, "", dns.RecordType(*record.Type), *record, "", "")
+				_, err := c.recordsClient.CreateOrUpdate(ctx, c.resouceGroupName, dc.Name, *azureRecord.Name, recordType, *azureRecord, "", "")
 				return err
 			},
 		}
+
 		corrections = append(corrections, corr)
 	}
+
+	/*
+		_, create, delete, modify := differ.IncrementalDiff(existingRecords)
+
+		var createGrouped = map[string][]diff.Correlation{}
+		var modifyGrouped = map[string][]diff.Correlation{}
+
+		for _, cs := range create {
+			createGrouped[cs.Desired.Name] = append(createGrouped[cs.Desired.Name], cs)
+		}
+
+		for name, changes := range createGrouped {
+			record := CStoAZRecord(changes)
+			var message string
+			for _, change := range changes {
+				message += fmt.Sprintf("%s\n", change.String())
+			}
+
+			corr := &models.Correction{
+				Msg: message,
+				F: func() error {
+					_, err := c.recordsClient.CreateOrUpdate(ctx, c.resouceGroupName, dc.Name, name, dns.RecordType(*record.Type), *record, "", "*") // The * indicates that only new records should be created, no record should be updated (apparently)
+					return err
+				},
+			}
+
+			corrections = append(corrections, corr)
+		}
+
+		for _, cs := range modify {
+			modifyGrouped[cs.Desired.Name] = append(modifyGrouped[cs.Desired.Name], cs)
+		}
+		for name, changes := range modifyGrouped {
+			record := CStoAZRecord(changes)
+			var message string
+			for _, change := range changes {
+				message += fmt.Sprintf("%s\n", change.String())
+			}
+
+			corr := &models.Correction{
+				Msg: message,
+				F: func() error {
+					_, err := c.recordsClient.CreateOrUpdate(ctx, c.resouceGroupName, dc.Name, name, dns.RecordType(*record.Type), *record, "", "")
+					return err
+				},
+			}
+
+			corrections = append(corrections, corr)
+		}
+
+		for _, del := range delete {
+			if del.Existing.Type == "NS" && del.Existing.GetLabelFQDN() == dc.Name {
+				printer.Warnf("azure does not support modifying NS records on base domain. %s will not be deleted.\n", del.Existing.GetTargetField())
+				continue
+			} else {
+				recordType := dns.RecordType(del.Existing.Type)
+				corr := &models.Correction{
+					Msg: del.String(),
+					F: func() error {
+						_, err := c.recordsClient.Delete(ctx, c.resouceGroupName, dc.Name, del.Existing.Name, recordType, "")
+						return err
+					},
+				}
+
+				corrections = append(corrections, corr)
+			}
+		}
+	*/
 
 	return corrections, nil
 }
@@ -170,60 +318,66 @@ func (c *azureConfig) GetNameservers(domain string) ([]*models.Nameserver, error
 
 func (c *azureConfig) GetZoneRecords(zoneName string) (models.Records, error) {
 	itemLimit := int32(1000) //this is an int32 but Azure only supports a maximum of 1,000 records. Hope you don't have more than that.
-	list, err := c.recordsClient.ListAllByDNSZoneComplete(ctx, c.resouceGroupName, zoneName, &itemLimit, "")
+	list, err := c.recordsClient.ListByDNSZone(ctx, c.resouceGroupName, zoneName, &itemLimit, "")
 	if err != nil {
 		return nil, err
 	}
 
 	var records models.Records
 
-	for list.NextWithContext(ctx) == nil {
-		if list.Value().Name == nil {
-			break
-		}
+	for list.NotDone() == false {
+		list.NextWithContext(ctx)
+	}
 
-		recordType := strings.Replace(*list.Value().Type, "Microsoft.Network/dnszones/", "", -1)
+	for _, record := range list.Values() {
+		recordType := strings.Replace(*record.Type, "Microsoft.Network/dnszones/", "", -1)
 
 		switch recordType {
 		case "A":
-			for _, a := range *list.Value().ARecords {
-				thisRecord := newRecord(recordType, *list.Value().Fqdn, zoneName, uint32(*list.Value().TTL))
+			for _, a := range *record.ARecords {
+				thisRecord := newRecord(recordType, *record.Fqdn, zoneName, uint32(*record.TTL))
 				thisRecord.PopulateFromString(thisRecord.Type, *a.Ipv4Address, zoneName)
 				records = append(records, thisRecord)
 			}
 		case "AAAA":
-			for _, aaaa := range *list.Value().AaaaRecords {
-				thisRecord := newRecord(recordType, *list.Value().Fqdn, zoneName, uint32(*list.Value().TTL))
+			for _, aaaa := range *record.AaaaRecords {
+				thisRecord := newRecord(recordType, *record.Fqdn, zoneName, uint32(*record.TTL))
 				thisRecord.PopulateFromString(thisRecord.Type, *aaaa.Ipv6Address, zoneName)
 				records = append(records, thisRecord)
 			}
 		case "CNAME":
-			thisRecord := newRecord(recordType, *list.Value().Fqdn, zoneName, uint32(*list.Value().TTL))
-			thisRecord.PopulateFromString(thisRecord.Type, *list.Value().CnameRecord.Cname, zoneName)
+			thisRecord := newRecord(recordType, *record.Fqdn, zoneName, uint32(*record.TTL))
+			thisRecord.PopulateFromString(thisRecord.Type, *record.CnameRecord.Cname, zoneName)
 			records = append(records, thisRecord)
 		case "NS":
-			for _, ns := range *list.Value().NsRecords {
-				thisRecord := newRecord(recordType, *list.Value().Fqdn, zoneName, uint32(*list.Value().TTL))
+			for _, ns := range *record.NsRecords {
+				thisRecord := newRecord(recordType, *record.Fqdn, zoneName, uint32(*record.TTL))
 				thisRecord.PopulateFromString(thisRecord.Type, *ns.Nsdname, zoneName)
 				records = append(records, thisRecord)
 			}
 		case "TXT":
-			for _, txt := range *list.Value().TxtRecords {
-				thisRecord := newRecord(recordType, *list.Value().Fqdn, zoneName, uint32(*list.Value().TTL))
+			for _, txt := range *record.TxtRecords {
+				thisRecord := newRecord(recordType, *record.Fqdn, zoneName, uint32(*record.TTL))
 				thisRecord.SetTargetTXTs(*txt.Value)
 				records = append(records, thisRecord)
 			}
 		case "MX":
-			for _, mx := range *list.Value().MxRecords {
-				thisRecord := newRecord(recordType, *list.Value().Fqdn, zoneName, uint32(*list.Value().TTL))
+			for _, mx := range *record.MxRecords {
+				thisRecord := newRecord(recordType, *record.Fqdn, zoneName, uint32(*record.TTL))
 				thisRecord.SetTargetMX(uint16(*mx.Preference), *mx.Exchange)
+				records = append(records, thisRecord)
+			}
+		case "PTR":
+			for _, ptr := range *record.PtrRecords {
+				thisRecord := newRecord(recordType, *record.Fqdn, zoneName, uint32(*record.TTL))
+				thisRecord.PopulateFromString(thisRecord.Type, *ptr.Ptrdname, zoneName)
 				records = append(records, thisRecord)
 			}
 		case "SOA":
 			continue
 		case "SRV":
-			for _, srv := range *list.Value().SrvRecords {
-				thisRecord := newRecord(recordType, *list.Value().Fqdn, zoneName, uint32(*list.Value().TTL))
+			for _, srv := range *record.SrvRecords {
+				thisRecord := newRecord(recordType, *record.Fqdn, zoneName, uint32(*record.TTL))
 				thisRecord.SetTargetSRV(uint16(*srv.Priority), uint16(*srv.Weight), uint16(*srv.Port), *srv.Target)
 				records = append(records, thisRecord)
 			}
@@ -242,54 +396,88 @@ func newRecord(recordType, fqdn, zoneName string, ttl uint32) *models.RecordConf
 	return thisRecord
 }
 
-// RCtoAZRecord converts a DNSControl RecordConfig record to an Azure RecordSet record
-func RCtoAZRecord(rc *models.RecordConfig) *dns.RecordSet {
+// RStoAZRecord converts a DNS Control RecordSet to an Azure RecordSet
+func RStoAZRecord(rs []*models.RecordConfig) *dns.RecordSet {
+	if len(rs) == 0 {
+		return nil
+	}
+
 	thisRecord := dns.RecordSet{
+		Name: to.StringPtr(rs[0].Name),
+		Type: to.StringPtr(rs[0].Type),
 		RecordSetProperties: &dns.RecordSetProperties{
-			TTL: to.Int64Ptr(int64(rc.TTL)),
+			TTL: to.Int64Ptr(int64(rs[0].TTL)),
 		},
 	}
 
-	switch rc.Type {
-	case "A":
-		thisRecord.ARecords = &[]dns.ARecord{
-			dns.ARecord{Ipv4Address: to.StringPtr(rc.Target)},
-		}
-	case "AAAA":
-		thisRecord.AaaaRecords = &[]dns.AaaaRecord{
-			dns.AaaaRecord{Ipv6Address: to.StringPtr(rc.Target)},
-		}
-	case "CNAME":
-		thisRecord.CnameRecord = &dns.CnameRecord{
-			Cname: to.StringPtr(rc.Target),
-		}
-	case "NS":
-		thisRecord.NsRecords = &[]dns.NsRecord{
-			dns.NsRecord{Nsdname: to.StringPtr(rc.Target)},
-		}
-	case "TXT":
-		thisRecord.TxtRecords = &[]dns.TxtRecord{
-			dns.TxtRecord{Value: to.StringSlicePtr([]string{rc.Target})},
-		}
-	case "MX":
-		thisRecord.MxRecords = &[]dns.MxRecord{
-			dns.MxRecord{
-				Preference: to.Int32Ptr(int32(rc.MxPreference)),
-				Exchange:   to.StringPtr(rc.Target),
-			},
-		}
-	case "SOA":
-		return nil
-	case "SRV":
-		thisRecord.SrvRecords = &[]dns.SrvRecord{
-			dns.SrvRecord{
-				Port:     to.Int32Ptr(int32(rc.SrvPort)),
-				Priority: to.Int32Ptr(int32(rc.SrvPriority)),
-				Weight:   to.Int32Ptr(int32(rc.SrvWeight)),
-				Target:   to.StringPtr(rc.Target),
-			},
+	for _, cs := range rs {
+		switch *thisRecord.Type {
+		case "A":
+			if thisRecord.ARecords == nil {
+				thisRecord.ARecords = &[]dns.ARecord{}
+			}
+			*thisRecord.ARecords = append(*thisRecord.ARecords, dns.ARecord{Ipv4Address: to.StringPtr(cs.Target)})
+		case "AAAA":
+			if thisRecord.AaaaRecords == nil {
+				thisRecord.AaaaRecords = &[]dns.AaaaRecord{}
+			}
+			*thisRecord.AaaaRecords = append(*thisRecord.AaaaRecords, dns.AaaaRecord{Ipv6Address: to.StringPtr(cs.Target)})
+		case "CNAME":
+			thisRecord.CnameRecord = &dns.CnameRecord{
+				Cname: to.StringPtr(cs.Target),
+			}
+		case "NS":
+			if thisRecord.NsRecords == nil {
+				thisRecord.NsRecords = &[]dns.NsRecord{}
+			}
+			*thisRecord.NsRecords = append(*thisRecord.NsRecords, dns.NsRecord{Nsdname: to.StringPtr(cs.Target)})
+		case "TXT":
+			if thisRecord.NsRecords == nil {
+				thisRecord.NsRecords = &[]dns.NsRecord{}
+			}
+			*thisRecord.TxtRecords = append(*thisRecord.TxtRecords, dns.TxtRecord{Value: to.StringSlicePtr([]string{cs.Target})})
+		case "MX":
+			if thisRecord.MxRecords == nil {
+				thisRecord.MxRecords = &[]dns.MxRecord{}
+			}
+			*thisRecord.MxRecords = append(*thisRecord.MxRecords, dns.MxRecord{
+				Preference: to.Int32Ptr(int32(cs.MxPreference)),
+				Exchange:   to.StringPtr(cs.Target),
+			})
+		case "PTR":
+			if thisRecord.PtrRecords == nil {
+				thisRecord.PtrRecords = &[]dns.PtrRecord{}
+			}
+			*thisRecord.PtrRecords = append(*thisRecord.PtrRecords, dns.PtrRecord{
+				Ptrdname: to.StringPtr(cs.Target),
+			})
+		case "SOA":
+			return nil
+		case "SRV":
+			if thisRecord.SrvRecords == nil {
+				thisRecord.SrvRecords = &[]dns.SrvRecord{}
+			}
+			*thisRecord.SrvRecords = append(*thisRecord.SrvRecords, dns.SrvRecord{
+				Port:     to.Int32Ptr(int32(cs.SrvPort)),
+				Priority: to.Int32Ptr(int32(cs.SrvPriority)),
+				Weight:   to.Int32Ptr(int32(cs.SrvWeight)),
+				Target:   to.StringPtr(cs.Target),
+			})
 		}
 	}
 
 	return &thisRecord
+}
+
+// Stolen from the Cloudflare provider
+func checkNSModifications(dc *models.DomainConfig) {
+	newList := make([]*models.RecordConfig, 0, len(dc.Records))
+	for _, rec := range dc.Records {
+		if rec.Type == "NS" && rec.GetLabelFQDN() == dc.Name {
+			//printer.Warnf("azure does not support modifying NS records on base domain. %s will not be modified.\n", rec.GetTargetField())
+			continue
+		}
+		newList = append(newList, rec)
+	}
+	dc.Records = newList
 }
