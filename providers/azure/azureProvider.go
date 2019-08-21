@@ -195,7 +195,8 @@ func (c *azureConfig) GetDomainCorrections(dc *models.DomainConfig) ([]*models.C
 				Msg: msg,
 				F: func() error {
 					_, err := c.recordsClient.Delete(ctx, c.resouceGroupName, dc.Name, localname, dns.RecordType(recordtype), "")
-					time.Sleep(25 * time.Millisecond) //Artifically slow things down after a delete, as the API can take time to register it. The tests fail if we delete and then recheck too quickly.
+					// Artifically slow things down after a delete, as the API can take time to register it. The tests fail if we delete and then recheck too quickly.
+					time.Sleep(2 * time.Second)
 					return err
 				},
 			}
@@ -228,74 +229,6 @@ func (c *azureConfig) GetDomainCorrections(dc *models.DomainConfig) ([]*models.C
 
 		corrections = append(corrections, corr)
 	}
-
-	/*
-		_, create, delete, modify := differ.IncrementalDiff(existingRecords)
-
-		var createGrouped = map[string][]diff.Correlation{}
-		var modifyGrouped = map[string][]diff.Correlation{}
-
-		for _, cs := range create {
-			createGrouped[cs.Desired.Name] = append(createGrouped[cs.Desired.Name], cs)
-		}
-
-		for name, changes := range createGrouped {
-			record := CStoAZRecord(changes)
-			var message string
-			for _, change := range changes {
-				message += fmt.Sprintf("%s\n", change.String())
-			}
-
-			corr := &models.Correction{
-				Msg: message,
-				F: func() error {
-					_, err := c.recordsClient.CreateOrUpdate(ctx, c.resouceGroupName, dc.Name, name, dns.RecordType(*record.Type), *record, "", "*") // The * indicates that only new records should be created, no record should be updated (apparently)
-					return err
-				},
-			}
-
-			corrections = append(corrections, corr)
-		}
-
-		for _, cs := range modify {
-			modifyGrouped[cs.Desired.Name] = append(modifyGrouped[cs.Desired.Name], cs)
-		}
-		for name, changes := range modifyGrouped {
-			record := CStoAZRecord(changes)
-			var message string
-			for _, change := range changes {
-				message += fmt.Sprintf("%s\n", change.String())
-			}
-
-			corr := &models.Correction{
-				Msg: message,
-				F: func() error {
-					_, err := c.recordsClient.CreateOrUpdate(ctx, c.resouceGroupName, dc.Name, name, dns.RecordType(*record.Type), *record, "", "")
-					return err
-				},
-			}
-
-			corrections = append(corrections, corr)
-		}
-
-		for _, del := range delete {
-			if del.Existing.Type == "NS" && del.Existing.GetLabelFQDN() == dc.Name {
-				printer.Warnf("azure does not support modifying NS records on base domain. %s will not be deleted.\n", del.Existing.GetTargetField())
-				continue
-			} else {
-				recordType := dns.RecordType(del.Existing.Type)
-				corr := &models.Correction{
-					Msg: del.String(),
-					F: func() error {
-						_, err := c.recordsClient.Delete(ctx, c.resouceGroupName, dc.Name, del.Existing.Name, recordType, "")
-						return err
-					},
-				}
-
-				corrections = append(corrections, corr)
-			}
-		}
-	*/
 
 	return corrections, nil
 }
