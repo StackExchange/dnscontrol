@@ -113,3 +113,16 @@ jobs:
       VULTR_DOMAIN: $(VULTR_DOMAIN)
       VULTR_TOKEN: $(VULTR_TOKEN)
 
+- job: Azure
+  steps:
+  - template: go-env.yaml
+  - script: go test -v -verbose -provider VULTR
+    workingDirectory: $(wd)
+    env:
+      AZ_CLIENTID: $(AZ_CLIENTID)
+      AZ_CLIENTSECRET: $(AZ_CLIENTSECRET)
+      AZ_DOMAIN: $(AZ_DOMAIN)
+      AZ_RSGNAME: $(AZ_RSGNAME)
+      AZ_SUBSCRIPTIONID: $(AZ_SUBSCRIPTIONID)
+      AZ_TENANTID: $(AZ_TENANTID)
+
