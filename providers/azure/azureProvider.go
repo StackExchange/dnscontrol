@@ -14,6 +14,7 @@ import (
 	"github.com/Azure/go-autorest/autorest"
 	"github.com/Azure/go-autorest/autorest/adal"
 	"github.com/StackExchange/dnscontrol/models"
+	"github.com/StackExchange/dnscontrol/pkg/printer"
 	"github.com/StackExchange/dnscontrol/providers"
 	"github.com/StackExchange/dnscontrol/providers/diff"
 
@@ -28,7 +29,7 @@ var features = providers.DocumentationNotes{
 	providers.CanUsePTR:              providers.Can(),
 	providers.CanUseSRV:              providers.Can(),
 	providers.CanUseCAA:              providers.Cannot(),
-	providers.CanUseTXTMulti:         providers.Can(),
+	providers.CanUseTXTMulti:         providers.Cannot(),
 	providers.CanUseNAPTR:            providers.Cannot(),
 	providers.CanUseSSHFP:            providers.Cannot(),
 }
@@ -125,7 +126,7 @@ func New(config map[string]string, metadata json.RawMessage) (providers.DNSServi
 }
 
 func (c *azureConfig) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Correction, error) {
-	if err := dc.Punycode(); err != nil {
+	if err := dc.Punycode(); err != nil { //Need punycode formatted entries for Azure
 		return nil, err
 	}
 
@@ -136,23 +137,21 @@ func (c *azureConfig) GetDomainCorrections(dc *models.DomainConfig) ([]*models.C
 
 	var corrections = []*models.Correction{}
 
-	checkNSModifications(dc)
+	checkNSModifications(dc) //Azure does not support modifying apex NS records, so remove them from updates if they are there
 	models.PostProcessRecords(existingRecords)
-	differ := diff.New(dc)
 
-	namesToUpdate := differ.ChangedGroups(existingRecords)
+	differ := diff.New(dc)
+	namesToUpdate := differ.ChangedGroups(existingRecords) //Azure requires sending all the records for a given label. This tells us which labels have been changed
 	if len(namesToUpdate) == 0 {
 		return nil, nil
 	}
 
-	//fmt.Println("----", namesToUpdate)
-
 	updates := map[models.RecordKey][]*models.RecordConfig{}
-	// for each name we need to update, collect relevant records from our desired domain state
+	// For each name we need to update, collect relevant records from our desired domain state
 	for k := range namesToUpdate {
 		if k.Type == "NS" && k.NameFQDN == dc.Name {
-			//printer.Warnf("azure does not support modifying NS records on base domain. @ will not be modified.\n")
-		} else {
+			printer.Warnf("azure does not support modifying NS records on base domain. @ will not be modified.\n")
+		} else { //Collect all of the current records from any label that changed
 			updates[k] = nil
 			for _, rc := range dc.Records {
 				if rc.Key() == k {
@@ -162,41 +161,46 @@ func (c *azureConfig) GetDomainCorrections(dc *models.DomainConfig) ([]*models.C
 		}
 	}
 
-	dels := make(map[string]string)
+	dels := []models.RecordKey{}
 
+	// Figure out if we are going to be deleting the entire record. We know we're doing a delete because
+	// there will be no records in the desired state
 	for k, recs := range updates {
-		if len(recs) == 0 {
-			dels[k.NameFQDN] = k.Type
+		if len(recs) == 0 { // No records? Delete it
+			dels = append(dels, k)
 		}
-		for _, ex := range existingRecords {
+		for _, ex := range existingRecords { //We also need to delete the existing record if we are changing from A/AAAA <> CNAME
 			if k.NameFQDN == ex.NameFQDN && (k.Type == "CNAME" || ex.Type == "CNAME") {
 				if ex.Type == "A" || ex.Type == "AAAA" || k.Type == "A" || k.Type == "AAAA" { //Cnames cannot coexist with an A or AA
-					fmt.Println("---- found mismatched type to delete", k.NameFQDN, k.Type, ex.Type)
-					dels[k.NameFQDN] = ex.Type
+					dels = append(dels, k)
 				}
 			}
 		}
-
 	}
 
-	for name, recordtype := range dels {
-		localname := strings.Replace(name, fmt.Sprintf(".%s", dc.Name), "", -1)
-		if name == dc.Name {
+	// Queue the records we need to delete
+	for _, delete := range dels {
+		// Is there a function inside DNS Control that can do this? Anyway, we need the local name, not the
+		// FQDN
+		localname := strings.Replace(delete.NameFQDN, fmt.Sprintf(".%s", dc.Name), "", -1)
+		if delete.NameFQDN == dc.Name { // If the local name == FQDN, then this is the apex
 			localname = "@"
 		}
 
-		if recordtype == "NS" && localname == "@" {
-			//printer.Warnf("azure does not support modifying NS records on base domain. @ will not be deleted.\n")
+		// Azure DNS can't just take a string
+		localtype := dns.RecordType(delete.Type)
+
+		if localtype == dns.NS && localname == "@" {
+			printer.Warnf("azure does not support modifying NS records on base domain. @ will not be deleted.\n")
 		} else {
-			msg := fmt.Sprintf("delete %s %s", recordtype, localname)
-			fmt.Println("----", msg)
+			msg := fmt.Sprintf("delete %s %s", localtype, localname)
 
 			corr := &models.Correction{
 				Msg: msg,
 				F: func() error {
-					_, err := c.recordsClient.Delete(ctx, c.resouceGroupName, dc.Name, localname, dns.RecordType(recordtype), "")
+					_, err := c.recordsClient.Delete(ctx, c.resouceGroupName, dc.Name, localname, localtype, "")
 					// Artifically slow things down after a delete, as the API can take time to register it. The tests fail if we delete and then recheck too quickly.
-					time.Sleep(2 * time.Second)
+					time.Sleep(25 * time.Millisecond)
 					return err
 				},
 			}
@@ -205,8 +209,9 @@ func (c *azureConfig) GetDomainCorrections(dc *models.DomainConfig) ([]*models.C
 		}
 	}
 
+	// Send ALL the records for each label that we're updating (not just the updated ones)
 	for _, recs := range updates {
-		azureRecord := RStoAZRecord(recs)
+		azureRecord := RStoAZRecord(recs) //Convert the DNSControl recordset to an Azure recordset
 		if azureRecord == nil {
 			continue
 		}
@@ -215,8 +220,6 @@ func (c *azureConfig) GetDomainCorrections(dc *models.DomainConfig) ([]*models.C
 		for _, rec := range recs {
 			msg += fmt.Sprintf("update %s %s %s\n", rec.Name, rec.Type, rec.GetTargetCombined())
 		}
-
-		fmt.Println("----", msg)
 
 		recordType := dns.RecordType(*azureRecord.Type)
 		corr := &models.Correction{
@@ -250,7 +253,7 @@ func (c *azureConfig) GetNameservers(domain string) ([]*models.Nameserver, error
 }
 
 func (c *azureConfig) GetZoneRecords(zoneName string) (models.Records, error) {
-	itemLimit := int32(1000) //this is an int32 but Azure only supports a maximum of 1,000 records. Hope you don't have more than that.
+	itemLimit := int32(1000)
 	list, err := c.recordsClient.ListByDNSZone(ctx, c.resouceGroupName, zoneName, &itemLimit, "")
 	if err != nil {
 		return nil, err
@@ -258,10 +261,14 @@ func (c *azureConfig) GetZoneRecords(zoneName string) (models.Records, error) {
 
 	var records models.Records
 
+	// Results are paginated. If you have more than itemLimit, we'll need to page through all of them
 	for list.NotDone() == false {
 		list.NextWithContext(ctx)
 	}
 
+	// Convert the Azure records into DNSControl records. This expands a single Azure record into
+	// potentially multiple DNSControl records, as Azure groups all records for a single label
+	// into one.
 	for _, record := range list.Values() {
 		recordType := strings.Replace(*record.Type, "Microsoft.Network/dnszones/", "", -1)
 
@@ -307,7 +314,7 @@ func (c *azureConfig) GetZoneRecords(zoneName string) (models.Records, error) {
 				records = append(records, thisRecord)
 			}
 		case "SOA":
-			continue
+			continue //nah
 		case "SRV":
 			for _, srv := range *record.SrvRecords {
 				thisRecord := newRecord(recordType, *record.Fqdn, zoneName, uint32(*record.TTL))
@@ -365,8 +372,8 @@ func RStoAZRecord(rs []*models.RecordConfig) *dns.RecordSet {
 			}
 			*thisRecord.NsRecords = append(*thisRecord.NsRecords, dns.NsRecord{Nsdname: to.StringPtr(cs.Target)})
 		case "TXT":
-			if thisRecord.NsRecords == nil {
-				thisRecord.NsRecords = &[]dns.NsRecord{}
+			if thisRecord.TxtRecords == nil {
+				thisRecord.TxtRecords = &[]dns.TxtRecord{}
 			}
 			*thisRecord.TxtRecords = append(*thisRecord.TxtRecords, dns.TxtRecord{Value: to.StringSlicePtr([]string{cs.Target})})
 		case "MX":
@@ -407,7 +414,7 @@ func checkNSModifications(dc *models.DomainConfig) {
 	newList := make([]*models.RecordConfig, 0, len(dc.Records))
 	for _, rec := range dc.Records {
 		if rec.Type == "NS" && rec.GetLabelFQDN() == dc.Name {
-			//printer.Warnf("azure does not support modifying NS records on base domain. %s will not be modified.\n", rec.GetTargetField())
+			printer.Warnf("azure does not support modifying NS records on base domain. %s will not be modified.\n", rec.GetTargetField())
 			continue
 		}
 		newList = append(newList, rec)
