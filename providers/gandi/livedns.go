@@ -1,6 +1,7 @@
 package gandi
 
 import (
+	"bytes"
 	"encoding/json"
 	"fmt"
 	"strings"
