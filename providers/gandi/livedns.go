@@ -103,11 +103,26 @@ func (c *liveClient) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Co
 	differ := diff.New(dc)
 
 	_, create, del, mod := differ.IncrementalDiff(foundRecords)
-	if len(create)+len(del)+len(mod) > 0 {
+
+	buf := &bytes.Buffer{}
+	// Print a list of changes. Generate an actual change that is the zone
+	changes := false
+	for _, i := range create {
+		changes = true
+		fmt.Fprintln(buf, i)
+	}
+	for _, i := range del {
+		changes = true
+		fmt.Fprintln(buf, i)
+	}
+	for _, i := range mod {
+		changes = true
+		fmt.Fprintln(buf, i)
+	}
+
+	if changes {
 		message := fmt.Sprintf("Setting dns records for %s:", dc.Name)
-		for _, record := range dc.Records {
-			message += "\n" + record.GetTargetCombined()
-		}
+		message += "\n" + buf.String()
 		return []*models.Correction{
 			{
 				Msg: message,
