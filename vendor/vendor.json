@@ -9,6 +9,72 @@
 			"revisionTime": "2019-07-02T19:49:18Z"
 		},
 		{
+			"checksumSHA1": "v0lqzZqdJzUZJo0mT7m8u0Ds4cc=",
+			"path": "github.com/Azure/azure-sdk-for-go/services/dns/mgmt/2018-05-01/dns",
+			"revision": "7a4bf9c092dec78d5d2e5615b2b1980cd9445e4b",
+			"revisionTime": "2019-08-27T02:15:59Z"
+		},
+		{
+			"checksumSHA1": "Dzh5RVM1GRfKp2nHgj54m48SNYU=",
+			"path": "github.com/Azure/azure-sdk-for-go/version",
+			"revision": "7a4bf9c092dec78d5d2e5615b2b1980cd9445e4b",
+			"revisionTime": "2019-08-27T02:15:59Z"
+		},
+		{
+			"checksumSHA1": "4y63Ndgnx+wF8rFLDX8HhXqrswA=",
+			"path": "github.com/Azure/go-autorest/autorest",
+			"revision": "403aff94c3536f190b71fde971cb66963202f6d3",
+			"revisionTime": "2019-08-20T21:00:12Z"
+		},
+		{
+			"checksumSHA1": "KQ9MJORx77nkUhCjGpU1rI38fsg=",
+			"path": "github.com/Azure/go-autorest/autorest/adal",
+			"revision": "403aff94c3536f190b71fde971cb66963202f6d3",
+			"revisionTime": "2019-08-20T21:00:12Z"
+		},
+		{
+			"checksumSHA1": "q+HttJ8cv7lthyxhvt6meFPNqw0=",
+			"path": "github.com/Azure/go-autorest/autorest/azure",
+			"revision": "403aff94c3536f190b71fde971cb66963202f6d3",
+			"revisionTime": "2019-08-20T21:00:12Z"
+		},
+		{
+			"checksumSHA1": "M7ZXsZNzpOwxWcywVKMqiYvjGQY=",
+			"path": "github.com/Azure/go-autorest/autorest/azure/auth",
+			"revision": "403aff94c3536f190b71fde971cb66963202f6d3",
+			"revisionTime": "2019-08-20T21:00:12Z"
+		},
+		{
+			"checksumSHA1": "lEFBZ/pzs6q3KVMtSxokw/6mMSM=",
+			"path": "github.com/Azure/go-autorest/autorest/azure/cli",
+			"revision": "403aff94c3536f190b71fde971cb66963202f6d3",
+			"revisionTime": "2019-08-20T21:00:12Z"
+		},
+		{
+			"checksumSHA1": "I9jacF5Ym6s2GU8dpi9yUT6I1hM=",
+			"path": "github.com/Azure/go-autorest/autorest/date",
+			"revision": "403aff94c3536f190b71fde971cb66963202f6d3",
+			"revisionTime": "2019-08-20T21:00:12Z"
+		},
+		{
+			"checksumSHA1": "o3pFknhovwgqplUNXkr6mOpEw24=",
+			"path": "github.com/Azure/go-autorest/autorest/to",
+			"revision": "403aff94c3536f190b71fde971cb66963202f6d3",
+			"revisionTime": "2019-08-20T21:00:12Z"
+		},
+		{
+			"checksumSHA1": "nXtlS0uRMjqa8+dmeEqo3j3AXEo=",
+			"path": "github.com/Azure/go-autorest/logger",
+			"revision": "403aff94c3536f190b71fde971cb66963202f6d3",
+			"revisionTime": "2019-08-20T21:00:12Z"
+		},
+		{
+			"checksumSHA1": "StsBozgf+C8kMv6htCiFBJbmmUw=",
+			"path": "github.com/Azure/go-autorest/tracing",
+			"revision": "403aff94c3536f190b71fde971cb66963202f6d3",
+			"revisionTime": "2019-08-20T21:00:12Z"
+		},
+		{
 			"checksumSHA1": "Pc2ORQp+VY3Un/dkh4QwLC7R6lE=",
 			"path": "github.com/BurntSushi/toml",
 			"revision": "3012a1dbe2e4bd1391d42b32f0577cb7bbc7f005",
@@ -208,10 +274,22 @@
 			"revisionTime": "2019-07-27T05:08:04Z"
 		},
 		{
+			"checksumSHA1": "P6u6fDWwSfRL2Bc6uhZ9kcoPsek=",
+			"path": "github.com/dgrijalva/jwt-go",
+			"revision": "5e25c22bd5d6de03265bbe5462dcd162f85046f6",
+			"revisionTime": "2019-06-20T18:01:02Z"
+		},
+		{
 			"checksumSHA1": "Huhc3bTHV4ge7vij7Sui3NBIqm0=",
 			"path": "github.com/digitalocean/godo",
 			"revision": "3ec0b9ce8cdefa757e34b8cab427786f9b1684af",
 			"revisionTime": "2019-06-25T19:28:27Z"
+		},
+		{
+			"checksumSHA1": "L7NqEfBxi5sjuvjE8hnDimfGemA=",
+			"path": "github.com/dimchansky/utfbom",
+			"revision": "d2133a1ce379ef6fa992b0514a77146c60db9d1c",
+			"revisionTime": "2018-12-05T23:29:56Z"
 		},
 		{
 			"checksumSHA1": "uFkT28ZLvtGetOZ2BmuSyh0eaH0=",
@@ -956,6 +1034,18 @@
 			"path": "golang.org/x/crypto/pbkdf2",
 			"revision": "4def268fd1a49955bfb3dda92fe3db4f924f2285",
 			"revisionTime": "2019-07-01T08:59:26Z"
+		},
+		{
+			"checksumSHA1": "US9Z/XwhkXQXbHk1sPAQE3qMt5Y=",
+			"path": "golang.org/x/crypto/pkcs12",
+			"revision": "a29dc8fdc73485234dbef99ebedb95d2eced08de",
+			"revisionTime": "2019-04-26T14:07:02Z"
+		},
+		{
+			"checksumSHA1": "p0GC51McIdA7JygoP223twJ1s0E=",
+			"path": "golang.org/x/crypto/pkcs12/internal/rc2",
+			"revision": "a29dc8fdc73485234dbef99ebedb95d2eced08de",
+			"revisionTime": "2019-04-26T14:07:02Z"
 		},
 		{
 			"checksumSHA1": "RGFEeJVsaq+s5qGwd0MzXNMMFSU=",
