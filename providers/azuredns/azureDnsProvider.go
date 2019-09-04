@@ -78,25 +78,11 @@ func (a *azureDnsProvider) getZones() error {
 		return zonesErr
 	}
 	zonesResult := zonesIterator.Response()
-	//for {
-	//	if zonesResult.Value == nil {
-	//		break
-	//	}
-		for _, z := range *zonesResult.Value {
-			domain := strings.TrimSuffix(*z.Name, ".")
-			a.zones[domain] = &z
-		}
+	for _, z := range *zonesResult.Value {
+		domain := strings.TrimSuffix(*z.Name, ".")
+		a.zones[domain] = &z
+	}
 
-	//	if zonesIterator.NotDone() {
-	//		nextErr := zonesIterator.NextWithContext(ctx)
-	//		if nextErr != nil {
-	//			return nextErr
-	//		}
-	//		zonesResult = zonesIterator.Response()
-	//	} else {
-	//		break
-	//	}
-	//}
 	return nil
 }
 
@@ -419,26 +405,11 @@ func (a *azureDnsProvider) fetchRecordSets(zoneName *string) ([]*adns.RecordSet,
 	}
 	recordsResult := recordsIterator.Response()
 
-	//for {
-	//	if recordsResult.Value == nil {
-	//		break
-	//	}
-	//
-		for _, r := range *recordsResult.Value {
-			record := r
-			records = append(records, &record)
-		}
-	//
-	//	if recordsIterator.NotDone() {
-	//		nextErr := recordsIterator.NextWithContext(ctx)
-	//		if nextErr != nil {
-	//			return nil, nextErr
-	//		}
-	//		recordsResult = recordsIterator.Response()
-	//	} else {
-	//		break
-	//	}
-	//}
+	for _, r := range *recordsResult.Value {
+		record := r
+		records = append(records, &record)
+	}
+
 	return records, nil
 }
 
