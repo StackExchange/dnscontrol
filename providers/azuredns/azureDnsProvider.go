@@ -91,7 +91,7 @@ type errNoExist struct {
 }
 
 func (e errNoExist) Error() string {
-	return fmt.Sprintf("Domain %s not found in your route Azure account", e.domain)
+	return fmt.Sprintf("Domain %s not found in you Azure account", e.domain)
 }
 
 func (a *azureDnsProvider) GetNameservers(domain string) ([]*models.Nameserver, error) {
@@ -168,11 +168,12 @@ func (a *azureDnsProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*mod
 						F: func() error {
 							ctx, cancel := context.WithTimeout(context.Background(), 6000*time.Second)
 							defer cancel()
-							resp, err := a.recordsClient.Delete(ctx, *a.resourceGroup, *zone.Name, *rrset.Name, azureRecordToRecordType(rrset.Type), "")
+							_, err := a.recordsClient.Delete(ctx, *a.resourceGroup, *zone.Name, *rrset.Name, azureRecordToRecordType(rrset.Type), "")
+							// Artifically slow things down after a delete, as the API can take time to register it. The tests fail if we delete and then recheck too quickly.
+							time.Sleep(25 * time.Millisecond)
 							if err != nil {
 								return err
 							}
-							fmt.Printf("Got HTTP Status %s", resp.Status)
 							return nil
 						},
 					})
@@ -187,6 +188,31 @@ func (a *azureDnsProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*mod
 				rrset.TTL = &i // TODO: make sure that ttls are consistent within a set
 				recordName = r.Name
 			}
+
+			for _, r := range records {
+				existingRecordType := azureRecordToRecordType(r.Type)
+				changedRecordType := nativeToRecordType(to.StringPtr(k.Type))
+				if strings.TrimSuffix(*r.RecordSetProperties.Fqdn, ".") == k.NameFQDN && (changedRecordType == adns.CNAME || existingRecordType == adns.CNAME) {
+					if existingRecordType == adns.A || existingRecordType == adns.AAAA || changedRecordType == adns.A || changedRecordType == adns.AAAA { //CNAME cannot coexist with an A or AA
+						corrections = append(corrections,
+							&models.Correction{
+								Msg: strings.Join(namesToUpdate[k], "\n"),
+								F: func() error {
+									ctx, cancel := context.WithTimeout(context.Background(), 6000*time.Second)
+									defer cancel()
+									_, err := a.recordsClient.Delete(ctx, *a.resourceGroup, *zone.Name, recordName, existingRecordType, "")
+									// Artifically slow things down after a delete, as the API can take time to register it. The tests fail if we delete and then recheck too quickly.
+									time.Sleep(25 * time.Millisecond)
+									if err != nil {
+										return err
+									}
+									return nil
+								},
+							})
+					}
+				}
+			}
+
 			corrections = append(corrections,
 				&models.Correction{
 					Msg: strings.Join(namesToUpdate[k], "\n"),
@@ -194,6 +220,8 @@ func (a *azureDnsProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*mod
 						ctx, cancel := context.WithTimeout(context.Background(), 6000*time.Second)
 						defer cancel()
 						_, err := a.recordsClient.CreateOrUpdate(ctx, *a.resourceGroup, *zone.Name, recordName, recordType, *rrset, "", "")
+						// Artifically slow things down after a delete, as the API can take time to register it. The tests fail if we delete and then recheck too quickly.
+						time.Sleep(25 * time.Millisecond)
 						if err != nil {
 							return err
 						}
@@ -417,7 +445,7 @@ func (a *azureDnsProvider) EnsureDomainExists(domain string) error {
 	if _, ok := a.zones[domain]; ok {
 		return nil
 	}
-	fmt.Printf("Adding zone for %s to route 53 account\n", domain)
+	fmt.Printf("Adding zone for %s to Azure dns account\n", domain)
 
 	ctx, cancel := context.WithTimeout(context.Background(), 6000*time.Second)
 	defer cancel()

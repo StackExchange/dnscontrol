@@ -10,8 +10,7 @@
     "TenantID": "$AZURE_TENANT_ID",
     "ClientID": "$AZURE_CLIENT_ID",
     "ClientSecret": "$AZURE_CLIENT_SECRET",
-    "domain": "$AZURE_DOMAIN",
-    "knownFailures": "16,26"
+    "domain": "$AZURE_DOMAIN"
   },
   "BIND": {
     "domain": "example.com"
