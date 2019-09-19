@@ -14,6 +14,7 @@ Windows). The provider model is extensible, so more providers can be added.
 
 Currently supported DNS providers:
  - Active Directory
+ - Azure DNS
  - BIND
  - Cloudflare
  - DigitalOcean
