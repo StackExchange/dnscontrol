@@ -645,6 +645,9 @@ var URL = recordBuilder('URL');
 var URL301 = recordBuilder('URL301');
 var FRAME = recordBuilder('FRAME');
 
+var REDIRECT_URL = recordBuilder('REDIRECT_URL');
+var FORWARD_URL = recordBuilder('FORWARD_URL');
+
 // SPF_BUILDER takes an object:
 // parts: The parts of the SPF record (to be joined with ' ').
 // label: The DNS label for the primary SPF record. (default: '@')

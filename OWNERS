@@ -1,4 +1,5 @@
 # providers/activedir
+providers/alidns @timonwong
 providers/azuredns @vatsalyagoel
 providers/bind @tlimoncelli
 # providers/cloudflare

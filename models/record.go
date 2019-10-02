@@ -39,6 +39,8 @@ import (
 //     PURGE
 //     URL
 //     URL301
+//     REDIRECT_URL
+//     FORWARD_URL
 //
 // Notes about the fields:
 //

@@ -4,6 +4,11 @@
     "domain": "$AD_DOMAIN",
     "knownFailures": "29,30,31,32,33,34,35,38,39,40,41,48,49,51,52,53"
   },
+  "ALI_DNS": {
+    "KeyId": "$ALI_KEY_ID",
+    "SecretKey": "$ALI_SECRET_KEY",
+    "domain": "$ALI_DOMAIN"
+  },
   "AZURE_DNS": {
     "SubscriptionID": "$AZURE_SUBSCRIPTION_ID",
     "ResourceGroup": "$AZURE_RESOURCE_GROUP",
