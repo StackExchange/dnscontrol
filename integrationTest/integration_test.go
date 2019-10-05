@@ -24,6 +24,7 @@ var endIdx = flag.Int("end", 0, "Test index to stop after")
 var verbose = flag.Bool("verbose", false, "Print corrections as you run them")
 
 func init() {
+	testing.Init()
 	flag.Parse()
 }
 
