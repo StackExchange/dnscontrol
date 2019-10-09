@@ -281,8 +281,15 @@ func TestCaas(t *testing.T) {
 
 	// this will pass or fail depending on the ordering. Not ok.
 	desired[0].SetTargetCAA(3, "issue", "letsencrypt.org.")
-	desired[2].SetTargetCAA(3, "issue", "amazon.com.")
-	desired[1].SetTargetCAA(3, "issuewild", "letsencrypt.org.")
+	desired[1].SetTargetCAA(3, "issue", "amazon.com.")
+	desired[2].SetTargetCAA(3, "issuewild", "letsencrypt.org.")
+
+	checkLengthsFull(t, existing, desired, 3, 0, 0, 0, false, nil)
+
+	// Make sure it passes with a different ordering. Not ok.
+	desired[2].SetTargetCAA(3, "issue", "letsencrypt.org.")
+	desired[1].SetTargetCAA(3, "issue", "amazon.com.")
+	desired[0].SetTargetCAA(3, "issuewild", "letsencrypt.org.")
 
 	checkLengthsFull(t, existing, desired, 3, 0, 0, 0, false, nil)
 }
