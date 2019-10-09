@@ -117,17 +117,28 @@ func (d *differ) IncrementalDiff(existing []*models.RecordConfig) (unchanged, cr
 	// Each iteration is only for a single type/name record set
 	for key, existingRecords := range existingByNameAndType {
 		desiredRecords := desiredByNameAndType[key]
-		// first look through records that are the same target on both sides. Those are either modifications or unchanged
+
+		// Very first, get rid of any identical records. Easy.
+		for i := len(existingRecords) - 1; i >= 0; i-- {
+			ex := existingRecords[i]
+			for j, de := range desiredRecords {
+				if d.content(de) != d.content(ex) {
+					continue
+				}
+				unchanged = append(unchanged, Correlation{d, ex, de})
+				existingRecords = existingRecords[:i+copy(existingRecords[i:], existingRecords[i+1:])]
+				desiredRecords = desiredRecords[:j+copy(desiredRecords[j:], desiredRecords[j+1:])]
+				break
+			}
+		}
+
+		// Next, match by target. This will give the most natural modifications.
 		for i := len(existingRecords) - 1; i >= 0; i-- {
 			ex := existingRecords[i]
 			for j, de := range desiredRecords {
 				if de.GetTargetField() == ex.GetTargetField() {
-					// they're either identical or should be a modification of each other (ttl or metadata changes)
-					if d.content(de) == d.content(ex) {
-						unchanged = append(unchanged, Correlation{d, ex, de})
-					} else {
-						modify = append(modify, Correlation{d, ex, de})
-					}
+					// two records share a target, but different content (ttl or metadata changes)
+					modify = append(modify, Correlation{d, ex, de})
 					// remove from both slices by index
 					existingRecords = existingRecords[:i+copy(existingRecords[i:], existingRecords[i+1:])]
 					desiredRecords = desiredRecords[:j+copy(desiredRecords[j:], desiredRecords[j+1:])]
