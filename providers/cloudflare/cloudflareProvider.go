@@ -58,6 +58,7 @@ func init() {
 // CloudflareApi is the handle for API calls.
 type CloudflareApi struct {
 	ApiKey          string `json:"apikey"`
+	ApiToken        string `json:apitoken`
 	ApiUser         string `json:"apiuser"`
 	AccountID       string `json:"accountid"`
 	AccountName     string `json:"accountname"`
@@ -370,10 +371,13 @@ func (c *CloudflareApi) preprocessConfig(dc *models.DomainConfig) error {
 
 func newCloudflare(m map[string]string, metadata json.RawMessage) (providers.DNSServiceProvider, error) {
 	api := &CloudflareApi{}
-	api.ApiUser, api.ApiKey = m["apiuser"], m["apikey"]
+	api.ApiUser, api.ApiKey, api.ApiToken = m["apiuser"], m["apikey"], m["apitoken"]
 	// check api keys from creds json file
-	if api.ApiKey == "" || api.ApiUser == "" {
-		return nil, errors.Errorf("cloudflare apikey and apiuser must be provided")
+	if api.ApiToken == "" && (api.ApiKey == "" || api.ApiUser == "") {
+		return nil, errors.Errorf("if cloudflare apitoken is not set, apikey and apiuser must be provided")
+	}
+	if api.ApiToken != "" && (api.ApiKey != "" || api.ApiUser != "") {
+		return nil, errors.Errorf("if cloudflare apitoken is set, apikey and apiuser should not be provided")
 	}
 
 	// Check account data if set
