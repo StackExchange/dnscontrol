@@ -25,7 +25,7 @@ Make sure the token has at least the right read zones and edit DNS records (i.e.
 checkout [Cloudflare's documentation](https://support.cloudflare.com/hc/en-us/articles/200167836-Managing-API-Tokens-and-Keys) for instructions on how to generate and configure permissions on API tokens.
 
 
-Or you can provide your Cloudflare API username and access key instead, but it isn't recommended because those credentials give DNSControl access to the complete Cloudflare API rather:
+Or you can provide your Cloudflare API username and access key instead (but it isn't recommended because those credentials give DNSControl access to the complete Cloudflare API):
 
 {% highlight json %}
 {
