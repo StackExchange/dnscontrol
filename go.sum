@@ -246,6 +246,8 @@ github.com/tdewolff/minify v2.1.1-0.20170910185944-d515420d53ba+incompatible h1:
 github.com/tdewolff/minify v2.1.1-0.20170910185944-d515420d53ba+incompatible/go.mod h1:9Ov578KJUmAWpS6NeZwRZyT56Uf6o3Mcz9CEsg8USYs=
 github.com/tdewolff/parse v2.2.0+incompatible h1:U0qTU+Hs57RaV/w2ZDPciOnEVgDDuXBU7CuA3p06qow=
 github.com/tdewolff/parse v2.2.0+incompatible/go.mod h1:8oBwCsVmUkgHO8M5iCzSIDtpzXOT0WXX9cWhz+bIzJQ=
+github.com/tdewolff/parse v2.3.4+incompatible h1:x05/cnGwIMf4ceLuDMBOdQ1qGniMoxpP46ghf0Qzh38=
+github.com/tdewolff/parse v2.3.4+incompatible/go.mod h1:8oBwCsVmUkgHO8M5iCzSIDtpzXOT0WXX9cWhz+bIzJQ=
 github.com/tdewolff/strconv v1.0.0 h1:24XNqjjvOsomnQpeNgk2YAhjH8CsDhlXsF1Jru+wYw0=
 github.com/tdewolff/strconv v1.0.0/go.mod h1:GsDKvhaPwpcoLZ2SVdfZ0oLc4+X5OT6fabULs+cQGec=
 github.com/tdewolff/test v1.0.5 h1:fM4r4a6Angr+QvNB907/G92ZzRInOxiJGiUJjze+GRM=

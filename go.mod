@@ -47,7 +47,7 @@ require (
 	github.com/stretchr/testify v1.4.0
 	github.com/tdewolff/buffer v2.0.0+incompatible // indirect
 	github.com/tdewolff/minify v2.1.1-0.20170910185944-d515420d53ba+incompatible
-	github.com/tdewolff/parse v2.2.0+incompatible // indirect
+	github.com/tdewolff/parse v2.3.4+incompatible // indirect
 	github.com/tdewolff/strconv v1.0.0 // indirect
 	github.com/tdewolff/test v1.0.5 // indirect
 	github.com/urfave/cli v1.22.1
