@@ -199,6 +199,9 @@ func (c *liveClient) recordConfigFromInfo(infos []*gandiliverecord.Info, origin 
 			for _, txt := range info.Values {
 				parsed = append(parsed, models.StripQuotes(txt))
 			}
+			if len(parsed) == 0 {
+				parsed = append(parsed, "")
+			}
 			err := rc.SetTargetTXTs(parsed)
 			if err != nil {
 				panic(errors.Wrapf(err, "recordConfigFromInfo=TXT failed"))
