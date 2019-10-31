@@ -4,13 +4,14 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"strings"
+	"time"
+
 	"github.com/Azure/go-autorest/autorest/to"
 	"github.com/StackExchange/dnscontrol/models"
 	"github.com/StackExchange/dnscontrol/providers"
 	"github.com/StackExchange/dnscontrol/providers/diff"
 	"github.com/pkg/errors"
-	"strings"
-	"time"
 
 	adns "github.com/Azure/azure-sdk-for-go/services/dns/mgmt/2018-05-01/dns"
 	aauth "github.com/Azure/go-autorest/autorest/azure/auth"
@@ -52,7 +53,7 @@ func newAzureDns(m map[string]string, metadata json.RawMessage) (*azureDnsProvid
 var features = providers.DocumentationNotes{
 	providers.CanUseAlias:            providers.Cannot("Only supported for Azure Resources. Not yet implemented"),
 	providers.DocCreateDomains:       providers.Can(),
-	providers.DocDualHost:            providers.Can(),
+	providers.DocDualHost:            providers.Can("Azure does not permit modifying the existing NS records, only adding/removing additional records."),
 	providers.DocOfficiallySupported: providers.Cannot(),
 	providers.CanUsePTR:              providers.Can(),
 	providers.CanUseSRV:              providers.Can(),
