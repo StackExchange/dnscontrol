@@ -131,15 +131,16 @@ func (c *CloudflareApi) createZone(domainName string) (string, error) {
 
 func cfSrvData(rec *models.RecordConfig) *cfRecData {
 	serverParts := strings.Split(rec.GetLabelFQDN(), ".")
-	return &cfRecData{
+	c := &cfRecData{
 		Service:  serverParts[0],
 		Proto:    serverParts[1],
 		Name:     strings.Join(serverParts[2:], "."),
 		Port:     rec.SrvPort,
 		Priority: rec.SrvPriority,
 		Weight:   rec.SrvWeight,
-		Target:   rec.GetTargetField(),
 	}
+	c.SetTarget(rec.GetTargetField())
+	return c
 }
 
 func cfCaaData(rec *models.RecordConfig) *cfRecData {

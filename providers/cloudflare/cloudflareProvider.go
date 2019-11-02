@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 	"net"
+	"reflect"
 	"strings"
 	"time"
 
@@ -422,23 +423,46 @@ func newCloudflare(m map[string]string, metadata json.RawMessage) (providers.DNS
 
 // Used on the "existing" records.
 type cfRecData struct {
-	Name          string `json:"name"`
-	Target        string `json:"target"`
-	Service       string `json:"service"`       // SRV
-	Proto         string `json:"proto"`         // SRV
-	Priority      uint16 `json:"priority"`      // SRV
-	Weight        uint16 `json:"weight"`        // SRV
-	Port          uint16 `json:"port"`          // SRV
-	Tag           string `json:"tag"`           // CAA
-	Flags         uint8  `json:"flags"`         // CAA
-	Value         string `json:"value"`         // CAA
-	Usage         uint8  `json:"usage"`         // TLSA
-	Selector      uint8  `json:"selector"`      // TLSA
-	Matching_Type uint8  `json:"matching_type"` // TLSA
-	Certificate   string `json:"certificate"`   // TLSA
-	Algorithm     uint8  `json:"algorithm"`     // SSHFP
-	Hash_Type     uint8  `json:"type"`          // SSHFP
-	Fingerprint   string `json:"fingerprint"`   // SSHFP
+	Name          string      `json:"name"`
+	CFTarget      interface{} `json:"target"`
+	Service       string      `json:"service"`       // SRV
+	Proto         string      `json:"proto"`         // SRV
+	Priority      uint16      `json:"priority"`      // SRV
+	Weight        uint16      `json:"weight"`        // SRV
+	Port          uint16      `json:"port"`          // SRV
+	Tag           string      `json:"tag"`           // CAA
+	Flags         uint8       `json:"flags"`         // CAA
+	Value         string      `json:"value"`         // CAA
+	Usage         uint8       `json:"usage"`         // TLSA
+	Selector      uint8       `json:"selector"`      // TLSA
+	Matching_Type uint8       `json:"matching_type"` // TLSA
+	Certificate   string      `json:"certificate"`   // TLSA
+	Algorithm     uint8       `json:"algorithm"`     // SSHFP
+	Hash_Type     uint8       `json:"type"`          // SSHFP
+	Fingerprint   string      `json:"fingerprint"`   // SSHFP
+}
+
+func (c cfRecData) Target() string {
+	switch v := c.CFTarget.(type) {
+	case string:
+		return v
+	case bool:
+		if !v {
+			return "" // the "." is already added by nativeToRecord
+		}
+		panic("unknown value for cfRecData target: bool")
+	default:
+		panic("unknown type for cfRecData target: " + reflect.TypeOf(v).String())
+	}
+}
+
+func (c *cfRecData) SetTarget(target string) {
+	switch target {
+	case "", ".":
+		c.CFTarget = false
+	default:
+		c.CFTarget = target
+	}
 }
 
 type cfRecord struct {
@@ -493,7 +517,7 @@ func (c *cfRecord) nativeToRecord(domain string) *models.RecordConfig {
 	case "SRV":
 		data := *c.Data
 		if err := rc.SetTargetSRV(data.Priority, data.Weight, data.Port,
-			dnsutil.AddOrigin(data.Target+".", domain)); err != nil {
+			dnsutil.AddOrigin(data.Target()+".", domain)); err != nil {
 			panic(errors.Wrap(err, "unparsable SRV record received from cloudflare"))
 		}
 	default: // "A", "AAAA", "ANAME", "CAA", "CNAME", "NS", "PTR", "TXT"
