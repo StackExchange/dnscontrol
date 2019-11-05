@@ -48,10 +48,14 @@ func (rc *RecordConfig) SetTargetSRVStrings(priority, weight, port, target strin
 // field as the SRV priority.
 func (rc *RecordConfig) SetTargetSRVPriorityString(priority uint16, s string) error {
 	part := strings.Fields(s)
-	if len(part) != 3 {
+	switch len(part) {
+	case 3:
+		return rc.setTargetSRVIntAndStrings(priority, part[0], part[1], part[2])
+	case 2:
+		return rc.setTargetSRVIntAndStrings(priority, part[0], part[1], ".")
+	default:
 		return errors.Errorf("SRV value does not contain 3 fields: (%#v)", s)
 	}
-	return rc.setTargetSRVIntAndStrings(priority, part[0], part[1], part[2])
 }
 
 // SetTargetSRVString is like SetTargetSRV but accepts one big string to be parsed.
