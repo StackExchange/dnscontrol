@@ -139,7 +139,7 @@ func cfSrvData(rec *models.RecordConfig) *cfRecData {
 		Priority: rec.SrvPriority,
 		Weight:   rec.SrvWeight,
 	}
-	c.SetTarget(rec.GetTargetField())
+	c.Target = cfTarget(rec.GetTargetField())
 	return c
 }
 
