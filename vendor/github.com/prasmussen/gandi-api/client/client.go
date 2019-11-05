@@ -10,6 +10,7 @@ import (
 	"strings"
 
 	"github.com/kolo/xmlrpc"
+	"github.com/pkg/errors"
 )
 
 const (
@@ -77,6 +78,9 @@ func (c *Client) DoRest(req *http.Request, decoded interface{}) (*http.Response,
 	if resp.StatusCode == http.StatusUnauthorized {
 		return nil, fmt.Errorf("the server returned unauthorized code. Your API key might be invalid or have expired")
 	}
+	if resp.StatusCode == http.StatusNotFound {
+		return nil, fmt.Errorf("the server returned 404 NotFound code: req.URL=(%+v) resp.Status=(%+v)", req.URL, resp.Status)
+	}
 	//
 	defer func() { err = resp.Body.Close() }()
 	if decoded != nil {
@@ -87,7 +91,7 @@ func (c *Client) DoRest(req *http.Request, decoded interface{}) (*http.Response,
 		if len(b) > 0 {
 			e = json.Unmarshal(b, decoded)
 			if e != nil {
-				return nil, e
+				return nil, errors.Wrapf(e, "DoRest failed to Unmarshal (%+v)", string(b))
 			}
 			if resp.StatusCode == http.StatusBadRequest {
 				return nil, fmt.Errorf("the server returned 400 bad request (%v)", string(b))
