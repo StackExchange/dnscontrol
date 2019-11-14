@@ -422,23 +422,66 @@ func newCloudflare(m map[string]string, metadata json.RawMessage) (providers.DNS
 
 // Used on the "existing" records.
 type cfRecData struct {
-	Name          string `json:"name"`
-	Target        string `json:"target"`
-	Service       string `json:"service"`       // SRV
-	Proto         string `json:"proto"`         // SRV
-	Priority      uint16 `json:"priority"`      // SRV
-	Weight        uint16 `json:"weight"`        // SRV
-	Port          uint16 `json:"port"`          // SRV
-	Tag           string `json:"tag"`           // CAA
-	Flags         uint8  `json:"flags"`         // CAA
-	Value         string `json:"value"`         // CAA
-	Usage         uint8  `json:"usage"`         // TLSA
-	Selector      uint8  `json:"selector"`      // TLSA
-	Matching_Type uint8  `json:"matching_type"` // TLSA
-	Certificate   string `json:"certificate"`   // TLSA
-	Algorithm     uint8  `json:"algorithm"`     // SSHFP
-	Hash_Type     uint8  `json:"type"`          // SSHFP
-	Fingerprint   string `json:"fingerprint"`   // SSHFP
+	Name          string   `json:"name"`
+	Target        cfTarget `json:"target"`
+	Service       string   `json:"service"`       // SRV
+	Proto         string   `json:"proto"`         // SRV
+	Priority      uint16   `json:"priority"`      // SRV
+	Weight        uint16   `json:"weight"`        // SRV
+	Port          uint16   `json:"port"`          // SRV
+	Tag           string   `json:"tag"`           // CAA
+	Flags         uint8    `json:"flags"`         // CAA
+	Value         string   `json:"value"`         // CAA
+	Usage         uint8    `json:"usage"`         // TLSA
+	Selector      uint8    `json:"selector"`      // TLSA
+	Matching_Type uint8    `json:"matching_type"` // TLSA
+	Certificate   string   `json:"certificate"`   // TLSA
+	Algorithm     uint8    `json:"algorithm"`     // SSHFP
+	Hash_Type     uint8    `json:"type"`          // SSHFP
+	Fingerprint   string   `json:"fingerprint"`   // SSHFP
+}
+
+// cfTarget is a SRV target. A null target is represented by an empty string, but
+// a dot is so acceptable.
+type cfTarget string
+
+// UnmarshalJSON decodes a SRV target from the Cloudflare API. A null target is
+// represented by a false boolean or a dot. Domain names are FQDNs without a
+// trailing period (as of 2019-11-05).
+func (c *cfTarget) UnmarshalJSON(data []byte) error {
+	var obj interface{}
+	if err := json.Unmarshal(data, &obj); err != nil {
+		return err
+	}
+	switch v := obj.(type) {
+	case string:
+		*c = cfTarget(v)
+	case bool:
+		if v {
+			panic("unknown value for cfTarget bool: true")
+		}
+		*c = "" // the "." is already added by nativeToRecord
+	}
+	return nil
+}
+
+// MarshalJSON encodes cfTarget for the Cloudflare API. Null targets are
+// represented by a single period.
+func (c cfTarget) MarshalJSON() ([]byte, error) {
+	var obj string
+	switch c {
+	case "", ".":
+		obj = "."
+	default:
+		obj = string(c)
+	}
+	return json.Marshal(obj)
+}
+
+// DNSControlString returns cfTarget normalized to be a FQDN. Null targets are
+// represented by a single period.
+func (c cfTarget) FQDN() string {
+	return strings.TrimRight(string(c), ".") + "."
 }
 
 type cfRecord struct {
@@ -493,7 +536,7 @@ func (c *cfRecord) nativeToRecord(domain string) *models.RecordConfig {
 	case "SRV":
 		data := *c.Data
 		if err := rc.SetTargetSRV(data.Priority, data.Weight, data.Port,
-			dnsutil.AddOrigin(data.Target+".", domain)); err != nil {
+			dnsutil.AddOrigin(data.Target.FQDN(), domain)); err != nil {
 			panic(errors.Wrap(err, "unparsable SRV record received from cloudflare"))
 		}
 	default: // "A", "AAAA", "ANAME", "CAA", "CNAME", "NS", "PTR", "TXT"

@@ -199,6 +199,8 @@ func toRc(dc *models.DomainConfig, r *godo.DomainRecord) *models.RecordConfig {
 		// DO returns "@" on read even if fqdn was written.
 		if target == "@" {
 			target = dc.Name
+		} else if target == "." {
+			target = "" // don't append another dot to null records
 		}
 		target = dnsutil.AddOrigin(target+".", dc.Name)
 		// FIXME(tlim): The AddOrigin should be a no-op.
