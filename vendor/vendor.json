@@ -994,10 +994,10 @@
 			"revisionTime": "2018-01-06T19:10:48Z"
 		},
 		{
-			"checksumSHA1": "IXgi3wJQDZY+XCMilbQzAWiOW94=",
+			"checksumSHA1": "hhJWopkGY99e2m+yQbXz7sEIkRc=",
 			"path": "github.com/vultr/govultr",
-			"revision": "4cfc19dfc3d058d94348267969d9a27551ff7476",
-			"revisionTime": "2019-07-14T13:33:55Z"
+			"revision": "fc01711c7c4ef2e578341e5ae462ab4d15d3d3b0",
+			"revisionTime": "2019-11-12T14:12:07Z"
 		},
 		{
 			"checksumSHA1": "IfxQifbQRgrRHdhHayFeF699/5U=",
