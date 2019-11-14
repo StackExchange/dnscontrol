@@ -75,11 +75,8 @@ func (c *Client) DoRest(req *http.Request, decoded interface{}) (*http.Response,
 	if err != nil {
 		return nil, err
 	}
-	if resp.StatusCode == http.StatusUnauthorized {
-		return nil, fmt.Errorf("the server returned unauthorized code. Your API key might be invalid or have expired")
-	}
-	if resp.StatusCode == http.StatusNotFound {
-		return nil, fmt.Errorf("the server returned 404 NotFound code: req.URL=(%+v) resp.Status=(%+v)", req.URL, resp.Status)
+	if resp.StatusCode >= 400 {
+		return nil, fmt.Errorf("the server returned code %d: req.URL=(%+v) resp.Status=(%+v)", resp.StatusCode, req.URL, resp.Status)
 	}
 	//
 	defer func() { err = resp.Body.Close() }()
@@ -91,7 +88,7 @@ func (c *Client) DoRest(req *http.Request, decoded interface{}) (*http.Response,
 		if len(b) > 0 {
 			e = json.Unmarshal(b, decoded)
 			if e != nil {
-				return nil, errors.Wrapf(e, "DoRest failed to Unmarshal (%+v)", string(b))
+				return nil, errors.Wrapf(e, "DoRest failed to Unmarshal (%+v) (%+v)", string(b), req.URL)
 			}
 			if resp.StatusCode == http.StatusBadRequest {
 				return nil, fmt.Errorf("the server returned 400 bad request (%v)", string(b))

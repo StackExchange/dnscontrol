@@ -274,7 +274,10 @@ func (c *liveClient) recordsToInfo(records models.Records) (models.Records, []*g
 		recordToKeep = append(recordToKeep, rec)
 		if rec.Type == "TXT" {
 			for _, t := range rec.TxtStrings {
-				r.Values = append(r.Values, "\""+t+"\"") // FIXME(tlim): Should do proper quoting.
+				// NB(tlim): Gandi doesn't document what kind of quoting they
+				// expect.  This seems to work.
+				munged := strings.ReplaceAll(t, `"`, `\"`)
+				r.Values = append(r.Values, `"`+munged+`"`)
 			}
 		} else {
 			r.Values = append(r.Values, rec.GetTargetCombined())
