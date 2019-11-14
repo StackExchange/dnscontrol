@@ -157,6 +157,9 @@ func (n *NameCom) createRecord(rc *models.RecordConfig, domain string) error {
 	case "TXT":
 		record.Answer = encodeTxt(rc.TxtStrings)
 	case "SRV":
+		if rc.GetTargetField() == "." {
+			return errors.New("SRV records with empty targets are not supported (as of 2019-11-05, the API returns 'Parameter Value Error - Invalid Srv Format')")
+		}
 		record.Answer = fmt.Sprintf("%d %d %v", rc.SrvWeight, rc.SrvPort, rc.GetTargetField())
 		record.Priority = uint32(rc.SrvPriority)
 	default:
