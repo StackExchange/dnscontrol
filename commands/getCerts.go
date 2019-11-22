@@ -207,7 +207,7 @@ func validateCertificateList(certs []*acme.CertConfig, cfg *models.DNSConfig) er
 	for _, cert := range certs {
 		name := cert.CertName
 		if !validCertNamesRegex.MatchString(name) {
-			return fmt.Errorf("'%s' is not a valud certificate name. Only alphanumerics, - and _ allowed", name)
+			return fmt.Errorf("'%s' is not a valid certificate name. Only alphanumerics, - and _ allowed", name)
 		}
 		sans := cert.Names
 		if len(sans) > 100 {
