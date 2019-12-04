@@ -47,7 +47,7 @@ func newRoute53(m map[string]string, metadata json.RawMessage) (*route53Provider
 	if keyID != "" || secretKey != "" {
 		config.Credentials = credentials.NewStaticCredentials(keyID, secretKey, tokenID)
 	}
-	sess := session.New(config)
+	sess := session.Must(session.NewSession(config))
 
 	var dls *string = nil
 	if val, ok := m["DelegationSet"]; ok {
