@@ -15,9 +15,13 @@
   "BIND": {
     "domain": "example.com"
   },
-  "CLOUDFLAREAPI": {
+  "CLOUDFLAREAPI_OLD": {
     "apikey": "$CF_KEY",
     "apiuser": "$CF_USER",
+    "domain": "$CF_DOMAIN"
+  },
+  "CLOUDFLAREAPI": {
+    "apitoken": "$CF_TOKEN",
     "domain": "$CF_DOMAIN"
   },
   "DIGITALOCEAN": {
