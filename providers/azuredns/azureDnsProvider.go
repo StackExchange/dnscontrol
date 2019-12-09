@@ -157,7 +157,7 @@ func (a *azureDnsProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*mod
 		if len(recs) == 0 {
 			var rrset *adns.RecordSet
 			for _, r := range records {
-				if strings.TrimSuffix(*r.RecordSetProperties.Fqdn, ".") == k.NameFQDN && azureRecordToRecordType(r.Type) == nativeToRecordType(to.StringPtr(k.Type)) {
+				if strings.TrimSuffix(*r.RecordSetProperties.Fqdn, ".") == k.NameFQDN && nativeToRecordType(r.Type) == nativeToRecordType(to.StringPtr(k.Type)) {
 					rrset = r
 					break
 				}
@@ -169,7 +169,7 @@ func (a *azureDnsProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*mod
 						F: func() error {
 							ctx, cancel := context.WithTimeout(context.Background(), 6000*time.Second)
 							defer cancel()
-							_, err := a.recordsClient.Delete(ctx, *a.resourceGroup, *zone.Name, *rrset.Name, azureRecordToRecordType(rrset.Type), "")
+							_, err := a.recordsClient.Delete(ctx, *a.resourceGroup, *zone.Name, *rrset.Name, nativeToRecordType(rrset.Type), "")
 							// Artifically slow things down after a delete, as the API can take time to register it. The tests fail if we delete and then recheck too quickly.
 							time.Sleep(25 * time.Millisecond)
 							if err != nil {
@@ -191,7 +191,7 @@ func (a *azureDnsProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*mod
 			}
 
 			for _, r := range records {
-				existingRecordType := azureRecordToRecordType(r.Type)
+				existingRecordType := nativeToRecordType(r.Type)
 				changedRecordType := nativeToRecordType(to.StringPtr(k.Type))
 				if strings.TrimSuffix(*r.RecordSetProperties.Fqdn, ".") == k.NameFQDN && (changedRecordType == adns.CNAME || existingRecordType == adns.CNAME) {
 					if existingRecordType == adns.A || existingRecordType == adns.AAAA || changedRecordType == adns.A || changedRecordType == adns.AAAA { //CNAME cannot coexist with an A or AA
@@ -235,7 +235,8 @@ func (a *azureDnsProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*mod
 }
 
 func nativeToRecordType(recordType *string) adns.RecordType {
-	switch *recordType {
+	recordTypeStripped := strings.TrimPrefix(*recordType, "Microsoft.Network/dnszones/")
+	switch recordTypeStripped {
 	case "A":
 		return adns.A
 	case "AAAA":
@@ -255,33 +256,6 @@ func nativeToRecordType(recordType *string) adns.RecordType {
 	case "TXT":
 		return adns.TXT
 	case "SOA":
-		return adns.SOA
-	default:
-		panic(errors.Errorf("rc.String rtype %v unimplemented", *recordType))
-	}
-}
-
-func azureRecordToRecordType(recordType *string) adns.RecordType {
-	switch *recordType {
-	case "Microsoft.Network/dnszones/A":
-		return adns.A
-	case "Microsoft.Network/dnszones/AAAA":
-		return adns.AAAA
-	case "Microsoft.Network/dnszones/CAA":
-		return adns.CAA
-	case "Microsoft.Network/dnszones/CNAME":
-		return adns.CNAME
-	case "Microsoft.Network/dnszones/MX":
-		return adns.MX
-	case "Microsoft.Network/dnszones/NS":
-		return adns.NS
-	case "Microsoft.Network/dnszones/PTR":
-		return adns.PTR
-	case "Microsoft.Network/dnszones/SRV":
-		return adns.SRV
-	case "Microsoft.Network/dnszones/TXT":
-		return adns.TXT
-	case "Microsoft.Network/dnszones/SOA":
 		return adns.SOA
 	default:
 		panic(errors.Errorf("rc.String rtype %v unimplemented", *recordType))
