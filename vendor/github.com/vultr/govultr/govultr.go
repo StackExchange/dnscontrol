@@ -4,20 +4,39 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"io"
 	"io/ioutil"
 	"net/http"
 	"net/url"
 	"strings"
 	"time"
+
+	"github.com/hashicorp/go-retryablehttp"
 )
 
 const (
-	version     = "0.1.3"
+	version     = "0.1.7"
 	defaultBase = "https://api.vultr.com"
 	userAgent   = "govultr/" + version
 	rateLimit   = 600 * time.Millisecond
+	retryLimit  = 3
 )
+
+// whiteListURI is an array of endpoints that should not have the API Key passed to them
+var whiteListURI = [12]string{"/v1/regions/availability",
+	"/v1/app/list",
+	"/v1/os/list",
+	"/v1/plans/list",
+	"/v1/plans/list_baremetal",
+	"/v1/plans/list_vc2",
+	"/v1/plans/list_vc2z",
+	"/v1/plans/list_vdc2",
+	"/v1/regions/list",
+	"/v1/regions/availability_vc2",
+	"/v1/regions/availability_vdc2",
+	"/v1/regions/availability_baremetal",
+}
 
 // APIKey contains a users API Key for interacting with the API
 type APIKey struct {
@@ -28,7 +47,7 @@ type APIKey struct {
 // Client manages interaction with the Vultr V1 API
 type Client struct {
 	// Http Client used to interact with the Vultr V1 API
-	client *http.Client
+	client *retryablehttp.Client
 
 	// BASE URL for APIs
 	BaseURL *url.URL
@@ -38,9 +57,6 @@ type Client struct {
 
 	// API Key
 	APIKey APIKey
-
-	// API Rate Limit - Vultr rate limits based on time
-	RateLimit time.Duration
 
 	// Services used to interact with the API
 	Account         AccountService
@@ -82,11 +98,16 @@ func NewClient(httpClient *http.Client, key string) *Client {
 	baseURL, _ := url.Parse(defaultBase)
 
 	client := &Client{
-		client:    httpClient,
+		client:    retryablehttp.NewClient(),
 		BaseURL:   baseURL,
 		UserAgent: userAgent,
-		RateLimit: rateLimit,
 	}
+
+	client.client.HTTPClient = httpClient
+	client.client.Logger = nil
+	client.client.ErrorHandler = client.vultrErrorHandler
+	client.SetRetryLimit(retryLimit)
+	client.SetRateLimit(rateLimit)
 
 	client.Account = &AccountServiceHandler{client}
 	client.API = &APIServiceHandler{client}
@@ -141,6 +162,13 @@ func (c *Client) NewRequest(ctx context.Context, method, uri string, body url.Va
 	}
 
 	req.Header.Add("API-key", c.APIKey.key)
+	for _, v := range whiteListURI {
+		if v == uri {
+			req.Header.Del("API-key")
+			break
+		}
+	}
+
 	req.Header.Add("User-Agent", c.UserAgent)
 	req.Header.Add("Accept", "application/json")
 
@@ -156,14 +184,18 @@ func (c *Client) NewRequest(ctx context.Context, method, uri string, body url.Va
 // have their own implements of unmarshal.
 func (c *Client) DoWithContext(ctx context.Context, r *http.Request, data interface{}) error {
 
-	// Sleep this call
-	time.Sleep(c.RateLimit)
+	rreq, err := retryablehttp.FromRequest(r)
 
-	req := r.WithContext(ctx)
-	res, err := c.client.Do(req)
+	if err != nil {
+		return err
+	}
+
+	rreq = rreq.WithContext(ctx)
+
+	res, err := c.client.Do(rreq)
 
 	if c.onRequestCompleted != nil {
-		c.onRequestCompleted(req, res)
+		c.onRequestCompleted(r, res)
 	}
 
 	if err != nil {
@@ -206,9 +238,11 @@ func (c *Client) SetBaseURL(baseURL string) error {
 	return nil
 }
 
-// SetRateLimit Overrides the default rateLimit
+// SetRateLimit Overrides the default rateLimit. For performance, exponential
+// backoff is used with the minimum wait being 2/3rds the time provided.
 func (c *Client) SetRateLimit(time time.Duration) {
-	c.RateLimit = time
+	c.client.RetryWaitMin = time / 3 * 2
+	c.client.RetryWaitMax = time
 }
 
 // SetUserAgent Overrides the default UserAgent
@@ -219,4 +253,21 @@ func (c *Client) SetUserAgent(ua string) {
 // OnRequestCompleted sets the API request completion callback
 func (c *Client) OnRequestCompleted(rc RequestCompletionCallback) {
 	c.onRequestCompleted = rc
+}
+
+// SetRetryLimit overrides the default RetryLimit
+func (c *Client) SetRetryLimit(n int) {
+	c.client.RetryMax = n
+}
+
+func (c *Client) vultrErrorHandler(resp *http.Response, err error, numTries int) (*http.Response, error) {
+	if resp == nil {
+		return nil, fmt.Errorf("gave up after %d attempts, last error unavailable (resp == nil)", c.client.RetryMax+1)
+	}
+
+	buf, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return nil, fmt.Errorf("gave up after %d attempts, last error unavailable (error reading response body: %v)", c.client.RetryMax+1, err)
+	}
+	return nil, fmt.Errorf("gave up after %d attempts, last error: %#v", c.client.RetryMax+1, strings.TrimSpace(string(buf)))
 }

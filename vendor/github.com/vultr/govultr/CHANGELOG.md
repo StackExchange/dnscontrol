@@ -1,5 +1,22 @@
 # Change Log
 
+## [v0.1.7](https://github.com/vultr/govultr/compare/v0.1.6..v0.1.7) (2019-11-11)
+### Enhancement
+*  Version number was missing in v0.1.6 - Attempt was made to fix however it will not work. Cutting new release to remedy this.
+
+
+## [v0.1.6](https://github.com/vultr/govultr/compare/v0.1.5..v0.1.6) (2019-11-07)
+### Enhancement
+*  Retry rate-limited requests with exponential backoff[#28](https://github.com/vultr/govultr/pull/28)
+
+## [v0.1.5](https://github.com/vultr/govultr/compare/v0.1.4..v0.1.5) (2019-10-16)
+### Enhancement
+*  Whitelisting public endpoints that do not require the api key[#24](https://github.com/vultr/govultr/pull/24)
+
+## [v0.1.4](https://github.com/vultr/govultr/compare/v0.1.3..v0.1.4) (2019-07-14)
+### Bug Fixes
+* Fix panic on request failure [#20](https://github.com/vultr/govultr/pull/20)
+
 ## [v0.1.3](https://github.com/vultr/govultr/compare/v0.1.2..v0.1.3) (2019-06-13)
 ### Features
 * added `GetVc2zList` to Plans to retrieve `high-frequency compute` plans [#13](https://github.com/vultr/govultr/pull/13)

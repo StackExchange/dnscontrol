@@ -55,9 +55,7 @@ jobs:
   - script: go test -v -verbose -provider CLOUDFLAREAPI
     workingDirectory: $(wd)
     env:
-      CF_USER: $(CF_USER)
-      CF_DOMAIN: $(CF_DOMAIN)
-      CF_KEY: $(CF_KEY)
+      CF_TOKEN: $(CF_TOKEN)
 
 - job: DigitalOcean
   steps:
