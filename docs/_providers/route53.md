@@ -36,6 +36,13 @@ $ export AWS_SESSION_TOKEN=ZZZZZZZZ
 }
 {% endhighlight %}
 
+Alternatively if you want to used [named profiles](https://docs.aws.amazon.com/cli/latest/userguide/cli-configure-profiles.html) you need to export the following variables
+
+```
+$ export AWS_SDK_LOAD_CONFIG=1 
+$ export AWS_PROFILE=ZZZZZZZZ
+```
+
 You can find some other ways to authenticate to Route53 in the [go sdk configuration](https://docs.aws.amazon.com/sdk-for-go/v1/developer-guide/configuring-sdk.html).
 
 ## Metadata

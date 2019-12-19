@@ -4,12 +4,24 @@
     "domain": "$AD_DOMAIN",
     "knownFailures": "29,30,31,32,33,34,35,38,39,40,41,48,49,51,52,53"
   },
+  "AZURE_DNS": {
+    "SubscriptionID": "$AZURE_SUBSCRIPTION_ID",
+    "ResourceGroup": "$AZURE_RESOURCE_GROUP",
+    "TenantID": "$AZURE_TENANT_ID",
+    "ClientID": "$AZURE_CLIENT_ID",
+    "ClientSecret": "$AZURE_CLIENT_SECRET",
+    "domain": "$AZURE_DOMAIN"
+  },
   "BIND": {
     "domain": "example.com"
   },
-  "CLOUDFLAREAPI": {
+  "CLOUDFLAREAPI_OLD": {
     "apikey": "$CF_KEY",
     "apiuser": "$CF_USER",
+    "domain": "$CF_DOMAIN"
+  },
+  "CLOUDFLAREAPI": {
+    "apitoken": "$CF_TOKEN",
     "domain": "$CF_DOMAIN"
   },
   "DIGITALOCEAN": {

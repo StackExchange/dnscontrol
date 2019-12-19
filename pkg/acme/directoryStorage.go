@@ -9,7 +9,7 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/xenolf/lego/acme"
+	"github.com/go-acme/lego/certificate"
 )
 
 // directoryStorage implements storage in a local file directory
@@ -38,7 +38,7 @@ func (d directoryStorage) accountKeyFile(acmeHost string) string {
 const perms os.FileMode = 0644
 const dirPerms os.FileMode = 0700
 
-func (d directoryStorage) GetCertificate(name string) (*acme.CertificateResource, error) {
+func (d directoryStorage) GetCertificate(name string) (*certificate.Resource, error) {
 	f, err := os.Open(d.certFile(name, "json"))
 	if err != nil && os.IsNotExist(err) {
 		// if json does not exist, nothing does
@@ -49,7 +49,7 @@ func (d directoryStorage) GetCertificate(name string) (*acme.CertificateResource
 	}
 	defer f.Close()
 	dec := json.NewDecoder(f)
-	cr := &acme.CertificateResource{}
+	cr := &certificate.Resource{}
 	if err = dec.Decode(cr); err != nil {
 		return nil, err
 	}
@@ -62,7 +62,7 @@ func (d directoryStorage) GetCertificate(name string) (*acme.CertificateResource
 	return cr, nil
 }
 
-func (d directoryStorage) StoreCertificate(name string, cert *acme.CertificateResource) error {
+func (d directoryStorage) StoreCertificate(name string, cert *certificate.Resource) error {
 	// make sure actual cert data never gets into metadata json
 	if err := os.MkdirAll(d.certDir(name), dirPerms); err != nil {
 		return err

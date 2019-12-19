@@ -71,7 +71,7 @@ func (c *DnsimpleApi) GetDomainCorrections(dc *models.DomainConfig) ([]*models.C
 		if r.Name == "" {
 			r.Name = "@"
 		}
-		if r.Type == "CNAME" || r.Type == "MX" || r.Type == "ALIAS" || r.Type == "SRV" {
+		if r.Type == "CNAME" || r.Type == "MX" || r.Type == "ALIAS" {
 			r.Content += "."
 		}
 		// dnsimple adds these odd txt records that mirror the alias records.
@@ -93,6 +93,10 @@ func (c *DnsimpleApi) GetDomainCorrections(dc *models.DomainConfig) ([]*models.C
 				panic(errors.Wrap(err, "unparsable record received from dnsimple"))
 			}
 		case "SRV":
+			parts := strings.Fields(r.Content)
+			if len(parts) == 3 {
+				r.Content += "."
+			}
 			if err := rec.SetTargetSRVPriorityString(uint16(r.Priority), r.Content); err != nil {
 				panic(errors.Wrap(err, "unparsable record received from dnsimple"))
 			}

@@ -11,7 +11,21 @@ jsId: CLOUDFLAREAPI
 * When using `SPF()` or the `SPF_BUILDER()` the records are converted to RecordType `TXT` as Cloudflare API fails otherwise. See more [here](https://github.com/StackExchange/dnscontrol/issues/446).
 
 ## Configuration
-In the credentials file you must provide your Cloudflare API username and access token:
+In the credentials file you must provide a [Cloudflare API token](https://dash.cloudflare.com/profile/api-tokens):
+
+{% highlight json %}
+{
+  "cloudflare": {
+    "apitoken": "your-cloudflare-api-token"
+  }
+}
+{% endhighlight %}
+
+Make sure the token has at least the right read zones and edit DNS records (i.e. `Zone → Zone → Read` and `Zone → DNS → Edit`);
+checkout [Cloudflare's documentation](https://support.cloudflare.com/hc/en-us/articles/200167836-Managing-API-Tokens-and-Keys) for instructions on how to generate and configure permissions on API tokens.
+
+
+Or you can provide your Cloudflare API username and access key instead (but it isn't recommended because those credentials give DNSControl access to the complete Cloudflare API):
 
 {% highlight json %}
 {
@@ -27,8 +41,7 @@ If your Cloudflare account has access to multiple Cloudflare accounts, you can s
 {% highlight json %}
 {
   "cloudflare": {
-    "apikey": "...",
-    "apiuser": "...",
+    "apitoken": "...",
     "accountid": "your-cloudflare-account-id",
     "accountname": "your-cloudflare-account-name"
   }

@@ -131,15 +131,16 @@ func (c *CloudflareApi) createZone(domainName string) (string, error) {
 
 func cfSrvData(rec *models.RecordConfig) *cfRecData {
 	serverParts := strings.Split(rec.GetLabelFQDN(), ".")
-	return &cfRecData{
+	c := &cfRecData{
 		Service:  serverParts[0],
 		Proto:    serverParts[1],
 		Name:     strings.Join(serverParts[2:], "."),
 		Port:     rec.SrvPort,
 		Priority: rec.SrvPriority,
 		Weight:   rec.SrvWeight,
-		Target:   rec.GetTargetField(),
 	}
+	c.Target = cfTarget(rec.GetTargetField())
+	return c
 }
 
 func cfCaaData(rec *models.RecordConfig) *cfRecData {
@@ -355,8 +356,12 @@ func handleActionResponse(resp *http.Response, err error) (id string, e error) {
 }
 
 func (c *CloudflareApi) setHeaders(req *http.Request) {
-	req.Header.Set("X-Auth-Key", c.ApiKey)
-	req.Header.Set("X-Auth-Email", c.ApiUser)
+	if len(c.ApiToken) > 0 {
+		req.Header.Set("Authorization", "Bearer "+c.ApiToken)
+	} else {
+		req.Header.Set("X-Auth-Key", c.ApiKey)
+		req.Header.Set("X-Auth-Email", c.ApiUser)
+	}
 }
 
 // generic get handler. makes request and unmarshalls response to given interface

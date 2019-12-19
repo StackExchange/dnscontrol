@@ -70,6 +70,7 @@ Maintainers of contributed providers:
 * ns1 @captncraig
 * OVH @masterzen
 * Vultr @geek1011
+* Azure DNS @vatsalyagoel
 
 ### Requested providers
 

@@ -66,8 +66,7 @@ If you are using other providers, you will likely need to make a `creds.json` fi
 {% highlight js %}
 {
   "cloudflare":{ // provider name to be used in dnsconfig.js
-    "apikey": "key", // API key
-    "apiuser": "username" // username for cloudflare
+    "apitoken": "token" // API token
   },
   "namecom":{ // provider name to be used in dnsconfig.js
     "apikey": "key", // API Key

@@ -1,6 +1,7 @@
 package gandi
 
 import (
+	"bytes"
 	"encoding/json"
 	"fmt"
 	"strings"
@@ -22,6 +23,7 @@ var liveFeatures = providers.DocumentationNotes{
 	providers.CanUseCAA:              providers.Can(),
 	providers.CanUsePTR:              providers.Can(),
 	providers.CanUseSRV:              providers.Can(),
+	providers.CanUseTXTMulti:         providers.Can(),
 	providers.CantUseNOPURGE:         providers.Cannot(),
 	providers.DocCreateDomains:       providers.Cannot("Can only manage domains registered through their service"),
 	providers.DocOfficiallySupported: providers.Cannot(),
@@ -103,11 +105,26 @@ func (c *liveClient) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Co
 	differ := diff.New(dc)
 
 	_, create, del, mod := differ.IncrementalDiff(foundRecords)
-	if len(create)+len(del)+len(mod) > 0 {
+
+	buf := &bytes.Buffer{}
+	// Print a list of changes. Generate an actual change that is the zone
+	changes := false
+	for _, i := range create {
+		changes = true
+		fmt.Fprintln(buf, i)
+	}
+	for _, i := range del {
+		changes = true
+		fmt.Fprintln(buf, i)
+	}
+	for _, i := range mod {
+		changes = true
+		fmt.Fprintln(buf, i)
+	}
+
+	if changes {
 		message := fmt.Sprintf("Setting dns records for %s:", dc.Name)
-		for _, record := range dc.Records {
-			message += "\n" + record.GetTargetCombined()
-		}
+		message += "\n" + buf.String()
 		return []*models.Correction{
 			{
 				Msg: message,
