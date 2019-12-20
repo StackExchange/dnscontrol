@@ -381,6 +381,7 @@ func makeTests(t *testing.T) []*TestCase {
 		tc("Change it", cname("foo", "google2.com.")),
 		tc("Change to A record", a("foo", "1.2.3.4")),
 		tc("Change back to CNAME", cname("foo", "google.com.")),
+		tc("Empty"),
 		tc("Record pointing to @", cname("foo", "**current-domain**")),
 
 		// NS
