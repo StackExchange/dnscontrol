@@ -111,7 +111,7 @@ func (client *gandiApi) GetZoneRecords(domain string) ([]*models.RecordConfig, e
 		return nil, err
 	}
 
-	fmt.Printf("RECORDS: %+v\n", records)
+	//	fmt.Printf("RECORDS: %+v\n", records)
 
 	// convert to dnscontrol RecordConfig format
 	existingRecords := []*models.RecordConfig{}
@@ -163,37 +163,51 @@ func (client *gandiApi) GenerateDomainCorrections(dc *models.DomainConfig, exist
 	var corrections = []*models.Correction{}
 
 	// diff
-	differ := diff.New(dc, existing)
-	namesToUpdate := differ.ChangedGroups(existing)
+	differ := diff.New(dc)
+	keysToUpdate := differ.ChangedGroups(existing)
 
-	if len(namesToUpdate) == 0 {
+	if len(keysToUpdate) == 0 {
 		return nil, nil
 	}
 
-	// Gather all the RecordConfigs of any RecordKey (label+rtype) that needs updating.
-	updates := map[models.RecordKey][]*models.RecordConfig{}
-	for k := range namesToUpdate {
-		updates[k] = nil
+	// Gather all the labels that need to be updated, along with the
+	// records to store there.
+	labelsToUpdate := map[string][]*models.RecordConfig{}
+	var msgsForLabel = map[string][]string{}
+	for k, el := range keysToUpdate {
+		label := dnsutil.TrimDomainName(k.NameFQDN, dc.Name)
+		labelsToUpdate[label] = nil
+		msgsForLabel[label] = append(msgsForLabel[label], el...)
 		for _, rc := range dc.Records {
-			if rc.Key() == k {
-				updates[k] = append(updates[k], rc)
+			if rc.GetLabel() == label {
+				labelsToUpdate[label] = append(labelsToUpdate[label], rc)
 			}
 		}
+	}
+
+	// Make a map of what keys exist. This is used later to determine if
+	// labelsToUpdate are on new or existing keys.
+	existingLabels := map[string]bool{}
+	for _, r := range dc.Records {
+		existingLabels[r.GetLabel()] = true
 	}
 
 	g := gandi.New(client.apikey, client.sharingid)
 
 	// For any key with an update, delete or replace those records.
-	for k, recs := range updates {
+	for label, recs := range labelsToUpdate {
 		if len(recs) == 0 {
 			// No records matching this key?  This can only mean that all
 			// the records were deleted. Delete them.
+
+			//domain, label, rtype := dc.Name, dnsutil.TrimDomainName(k.NameFQDN, dc.Name), k.Type
+			domain := dc.Name
+			msgs := strings.Join(msgsForLabel[label], "\n")
 			corrections = append(corrections,
 				&models.Correction{
-					Msg: strings.Join(namesToUpdate[k], "\n"),
+					Msg: msgs,
 					F: func() error {
-						shortname := dnsutil.TrimDomainName(k.NameFQDN, dc.Name)
-						err := g.DeleteDomainRecord(dc.Name, shortname, k.Type)
+						err := g.DeleteDomainRecords(domain, label)
 						if err != nil {
 							return err
 						}
@@ -202,26 +216,63 @@ func (client *gandiApi) GenerateDomainCorrections(dc *models.DomainConfig, exist
 				})
 
 		} else {
-			// Convert all the records to a single ZoneRecord.  The
-			// RrsetValues should be a list of all the targets for this key.
-			ns := recordsToNative(recs, dc.Name)
-			if len(ns) != 1 {
-				panic(errors.Error("Should not happen. Keys should have collapsed down to one ZoneRecord."))
-			}
+			// Replace all the records at a label with our new records.
 
-			corrections = append(corrections,
-				&models.Correction{
-					Msg: strings.Join(namesToUpdate[k], "\n"),
-					F: func() error {
-						res, err := g.ChangeDomainRecordWithNameAndType(dc.Name, recs[0].GetLabel(), recs[0].Type, recs[0].TTL, ns[0].RrsetValues)
-						if err != nil {
-							return errors.Wrapf(err, "%+v", res)
-						}
-						return nil
-					},
-				})
+			// Generate the new data in Gandi's format.
+			ns := recordsToNative(recs, dc.Name)
+			fmt.Printf("NS=%+v\n", ns)
+
+			domain := dc.Name
+			label := recs[0].GetLabel()
+			labelfqdn := recs[0].GetLabelFQDN()
+
+			if _, ok := existingLabels[label]; !ok {
+				// First time putting data on this label.
+
+				// We have to create the label one rtype at a time.
+				for _, n := range ns {
+					rtype := n.RrsetType
+					ttl := n.RrsetTTL
+					values := n.RrsetValues
+					fmt.Printf("VALUES1 = %q\n", values)
+
+					key := models.RecordKey{labelfqdn, rtype}
+					msgs := strings.Join(keysToUpdate[key], "\n")
+
+					corrections = append(corrections,
+						&models.Correction{
+							Msg: msgs,
+							F: func() error {
+								res, err := g.CreateDomainRecord(domain, label, rtype, ttl, values)
+								if err != nil {
+									return errors.Wrapf(err, "%+v", res)
+								}
+								return nil
+							},
+						})
+				}
+
+			} else {
+				// Records exist for this label. Replace them with what we have.
+				msgs := strings.Join(msgsForLabel[label], "\n")
+				fmt.Printf("VALUES2 = %+v\n", ns)
+				corrections = append(corrections,
+					&models.Correction{
+						Msg: msgs,
+						F: func() error {
+							res, err := g.ChangeDomainRecordsWithName(domain, label, ns)
+							if err != nil {
+								return errors.Wrapf(err, "%+v", res)
+							}
+							return nil
+						},
+					})
+
+			}
 		}
+
 	}
+	return corrections, nil
 }
 
 /*
