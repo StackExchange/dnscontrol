@@ -988,6 +988,12 @@
 			"revisionTime": "2016-04-27T18:05:39Z"
 		},
 		{
+			"checksumSHA1": "Xh4zlYYH15FJCnMw+dzCXKe0GZw=",
+			"path": "github.com/tiramiseb/go-gandi-livedns",
+			"revision": "4773a84f8ee7365ed21edc6cd0602aaf93e94e59",
+			"revisionTime": "2018-06-05T21:29:06Z"
+		},
+		{
 			"checksumSHA1": "H1Ne82yYzWRQ2DKBsmRd0Hwcl04=",
 			"path": "github.com/urfave/cli",
 			"revision": "75104e932ac2ddb944a6ea19d9f9f26316ff1145",
