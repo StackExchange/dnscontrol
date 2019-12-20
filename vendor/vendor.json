@@ -777,10 +777,10 @@
 			"revisionTime": "2019-07-01T08:10:48Z"
 		},
 		{
-			"checksumSHA1": "ynJSWoF6v+3zMnh9R0QmmG6iGV8=",
+			"checksumSHA1": "SVinfxcBSupb3+HEKpSBYFZ4Bh4=",
 			"path": "github.com/pkg/errors",
-			"revision": "ff09b135c25aae272398c51a07235b90a75aa4f0",
-			"revisionTime": "2017-03-16T20:15:38Z"
+			"revision": "7f95ac13edff643b8ce5398b6ccab125f8a20c1a",
+			"revisionTime": "2019-11-09T10:23:16Z"
 		},
 		{
 			"checksumSHA1": "02kfHQp1KLch4P2FG1OrEG/24t8=",
