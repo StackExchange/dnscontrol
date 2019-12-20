@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"strings"
+	"time"
 
 	"github.com/miekg/dns/dnsutil"
 	gandi "github.com/tiramiseb/go-gandi-livedns"
@@ -212,6 +213,7 @@ func (client *gandiApi) GenerateDomainCorrections(dc *models.DomainConfig, exist
 						if err != nil {
 							return err
 						}
+						time.Sleep(2 * time.Second)
 						return nil
 					},
 				})
@@ -250,6 +252,7 @@ func (client *gandiApi) GenerateDomainCorrections(dc *models.DomainConfig, exist
 									fmt.Printf("DEBUG: res=%+v\n", res)
 									return errors.Wrapf(err, "%+v", res)
 								}
+								time.Sleep(2 * time.Second)
 								return nil
 							},
 						})
@@ -269,6 +272,7 @@ func (client *gandiApi) GenerateDomainCorrections(dc *models.DomainConfig, exist
 								fmt.Printf("DEBUG: g.res=%+v\n", res)
 								return errors.Wrapf(err, "%+v", res)
 							}
+							time.Sleep(2 * time.Second)
 							return nil
 						},
 					})

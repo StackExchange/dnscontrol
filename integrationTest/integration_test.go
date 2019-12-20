@@ -388,13 +388,17 @@ func makeTests(t *testing.T) []*TestCase {
 		tc("Empty"),
 		tc("NS for subdomain", ns("xyz", "ns2.foo.com.")),
 		tc("Dual NS for subdomain", ns("xyz", "ns2.foo.com."), ns("xyz", "ns1.foo.com.")),
+		tc("Empty"),
 		tc("NS Record pointing to @", ns("foo", "**current-domain**")),
 
 		// IDNAs
 		tc("Empty"),
 		tc("Internationalized name", a("ööö", "1.2.3.4")),
+		tc("Empty"),
 		tc("Change IDN", a("ööö", "2.2.2.2")),
+		tc("Empty"),
 		tc("Internationalized CNAME Target", cname("a", "ööö.com.")),
+		tc("Empty"),
 		tc("IDN CNAME AND Target", cname("öoö", "ööö.企业.")),
 
 		// MX
@@ -405,6 +409,7 @@ func makeTests(t *testing.T) []*TestCase {
 		tc("Delete one", mx("@", 5, "foo2.com."), mx("@", 15, "foo3.com.")),
 		tc("Change to other name", mx("@", 5, "foo2.com."), mx("mail", 15, "foo3.com.")),
 		tc("Change Preference", mx("@", 7, "foo2.com."), mx("mail", 15, "foo3.com.")),
+		tc("Empty"),
 		tc("Record pointing to @", mx("foo", 8, "**current-domain**")),
 	}
 
