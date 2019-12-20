@@ -1,7 +1,10 @@
 package gandi
 
 import (
+	"encoding/json"
+
 	"github.com/StackExchange/dnscontrol/providers"
+	"github.com/pkg/errors"
 )
 
 /*
@@ -26,8 +29,26 @@ var features = providers.DocumentationNotes{
 }
 
 func init() {
-	providers.RegisterDomainServiceProviderType("GANDI_V5", newDsp, features)
-	providers.RegisterRegistrarType("GANDI_V5", newReg)
+	providers.RegisterDomainServiceProviderType("GANDI-V5", newDsp, features)
+	providers.RegisterRegistrarType("GANDI-V5", newReg)
+}
+
+func newDsp(conf map[string]string, metadata json.RawMessage) (providers.DNSServiceProvider, error) {
+	return newGandi(conf, metadata)
+}
+
+func newReg(conf map[string]string) (providers.Registrar, error) {
+	return newGandi(conf, nil)
+}
+
+func newGandi(m map[string]string, metadata json.RawMessage) (*GandiApi, error) {
+	api := &GandiApi{}
+	api.ApiKey = m["apikey"]
+	if api.ApiKey == "" {
+		return nil, errors.Errorf("missing Gandi apikey")
+	}
+
+	return api, nil
 }
 
 // api is the API handle for this module.
@@ -167,24 +188,6 @@ func GetDomainCorrections(dc *DomainConfig) ([]*Correction, error) {
 // 	}
 //
 // 	return corrections, nil
-// }
-//
-// func newDsp(conf map[string]string, metadata json.RawMessage) (providers.DNSServiceProvider, error) {
-// 	return newGandi(conf, metadata)
-// }
-//
-// func newReg(conf map[string]string) (providers.Registrar, error) {
-// 	return newGandi(conf, nil)
-// }
-//
-// func newGandi(m map[string]string, metadata json.RawMessage) (*GandiApi, error) {
-// 	api := &GandiApi{}
-// 	api.ApiKey = m["apikey"]
-// 	if api.ApiKey == "" {
-// 		return nil, errors.Errorf("missing Gandi apikey")
-// 	}
-//
-// 	return api, nil
 // }
 //
 // // GetRegistrarCorrections returns a list of corrections for this registrar.
