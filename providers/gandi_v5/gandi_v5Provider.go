@@ -1,4 +1,4 @@
-package gandi
+package gandi5
 
 import (
 	"encoding/json"
@@ -220,7 +220,7 @@ func (client *gandiApi) GenerateDomainCorrections(dc *models.DomainConfig, exist
 
 			// Generate the new data in Gandi's format.
 			ns := recordsToNative(recs, dc.Name)
-			fmt.Printf("NS=%+v\n", ns)
+			//fmt.Printf("NS=%+v\n", ns)
 
 			domain := dc.Name
 			label := recs[0].GetLabel()
@@ -234,17 +234,19 @@ func (client *gandiApi) GenerateDomainCorrections(dc *models.DomainConfig, exist
 					rtype := n.RrsetType
 					ttl := n.RrsetTTL
 					values := n.RrsetValues
-					fmt.Printf("VALUES1 = %q\n", values)
+					//fmt.Printf("VALUES1 = %q\n", values)
 
-					key := models.RecordKey{labelfqdn, rtype}
+					key := models.RecordKey{NameFQDN: labelfqdn, Type: rtype}
 					msgs := strings.Join(keysToUpdate[key], "\n")
 
 					corrections = append(corrections,
 						&models.Correction{
 							Msg: msgs,
 							F: func() error {
+								fmt.Printf("DEBUG: CreateDomainRecord(%q, %q, %q, %q, %q)\n", domain, label, rtype, ttl, values)
 								res, err := g.CreateDomainRecord(domain, label, rtype, ttl, values)
 								if err != nil {
+									fmt.Printf("DEBUG: res=%+v\n", res)
 									return errors.Wrapf(err, "%+v", res)
 								}
 								return nil
@@ -255,13 +257,15 @@ func (client *gandiApi) GenerateDomainCorrections(dc *models.DomainConfig, exist
 			} else {
 				// Records exist for this label. Replace them with what we have.
 				msgs := strings.Join(msgsForLabel[label], "\n")
-				fmt.Printf("VALUES2 = %+v\n", ns)
+				//fmt.Printf("VALUES2 = %+v\n", ns)
 				corrections = append(corrections,
 					&models.Correction{
 						Msg: msgs,
 						F: func() error {
+							fmt.Printf("DEBUG: g.ChangeDomainRecordsWithName(%q, %q, %q)\n", domain, label, ns)
 							res, err := g.ChangeDomainRecordsWithName(domain, label, ns)
 							if err != nil {
+								fmt.Printf("DEBUG: g.res=%+v\n", res)
 								return errors.Wrapf(err, "%+v", res)
 							}
 							return nil
