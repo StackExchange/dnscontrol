@@ -207,6 +207,7 @@ func (client *gandiApi) GenerateDomainCorrections(dc *models.DomainConfig, exist
 				&models.Correction{
 					Msg: msgs,
 					F: func() error {
+						fmt.Printf("DEBUG: DeleteDomainRecords(%q, %q)\n", domain, label)
 						err := g.DeleteDomainRecords(domain, label)
 						if err != nil {
 							return err
