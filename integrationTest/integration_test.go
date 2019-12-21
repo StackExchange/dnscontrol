@@ -405,7 +405,7 @@ func makeTests(t *testing.T) []*TestCase {
 		tc("Empty"),
 		tc("MX record", mx("@", 5, "foo.com.")),
 		tc("Second MX record, same prio", mx("@", 5, "foo.com."), mx("@", 5, "foo2.com.")),
-		tc("3 MX", mx("@", 5, "foo.com."), mx("@", 5, "foo2.com."), mx("@", 15, "foo3.com.")),
+		tc("3 MX", mx("@", 5, "foo2.com."), mx("@", 15, "foo3.com."), mx("@", 5, "foo.com.")),
 		tc("Delete one", mx("@", 5, "foo2.com."), mx("@", 15, "foo3.com.")),
 		tc("Change to other name", mx("@", 5, "foo2.com."), mx("mail", 15, "foo3.com.")),
 		tc("Change Preference", mx("@", 7, "foo2.com."), mx("mail", 15, "foo3.com.")),

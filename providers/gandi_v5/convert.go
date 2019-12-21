@@ -9,11 +9,14 @@ import (
 	gandi "github.com/tiramiseb/go-gandi-livedns"
 )
 
-// nativeToRecord takes a DNS record from Gandi and returns our native RecordConfig format.
+// nativeToRecord takes a DNS record from Gandi and returns a native RecordConfig struct.
 func nativeToRecords(n gandi.ZoneRecord, origin string) (rcs []*models.RecordConfig) {
 
+	// Gandi returns all the values for a given label/rtype pair in each
+	// gandi.ZoneRecord.  In other words, if there are multiple A
+	// records for a label, all the IP addresses are listed in
+	// n.RrsetValues rather than having many gandi.ZoneRecord's.
 	for _, value := range n.RrsetValues {
-
 		rc := &models.RecordConfig{
 			TTL:      uint32(n.RrsetTTL),
 			Original: n,
@@ -32,11 +35,6 @@ func nativeToRecords(n gandi.ZoneRecord, origin string) (rcs []*models.RecordCon
 }
 
 func recordsToNative(rcs []*models.RecordConfig, origin string) []gandi.ZoneRecord {
-	//fmt.Printf("R2N IN:\n")
-	//for i, j := range rcs {
-	//	fmt.Printf("  %v: %+v\n", i, j)
-	//}
-
 	// Take a list of RecordConfig and return an equivalent list of
 	// ZoneRecords.  Gandi requires one ZoneRecord for each label:key tuple.
 
@@ -59,17 +57,11 @@ func recordsToNative(rcs []*models.RecordConfig, origin string) []gandi.ZoneReco
 				RrsetValues: []string{r.GetTargetCombined()},
 			}
 			zrs = append(zrs, zr)
-			//keys[key] = &zr
-			keys[key] = &zrs[len(zrs)-1]
+			//keys[key] = &zr   // This didn't work.
+			keys[key] = &zrs[len(zrs)-1] // This does work. I don't know why.
 
 		} else {
-			// Update an existing ZoneRecord:
-			//fmt.Printf("APPENDING: %v\n", r.GetTargetCombined())
-			//fmt.Printf("        A: %v\n", zr.RrsetValues)
 			zr.RrsetValues = append(zr.RrsetValues, r.GetTargetCombined())
-			//fmt.Printf("        B: %v\n", zr.RrsetValues)
-			//fmt.Printf("XXXXXXX: %v\n", zrs[len(zrs)-1])
-			//fmt.Printf("YYYYYYY: %v || %v\n", *zr, zrs)
 
 			if r.TTL != uint32(zr.RrsetTTL) {
 				printer.Warnf("All TTLs for a rrset (%v) must be the same. Using smaller of %v and %v.\n", key, r.TTL, zr.RrsetTTL)
@@ -80,12 +72,6 @@ func recordsToNative(rcs []*models.RecordConfig, origin string) []gandi.ZoneReco
 
 		}
 	}
-
-	//fmt.Printf("R2N OUT:\n")
-	//for i, j := range zrs {
-	//	fmt.Printf("  %v: %+v\n", i, j)
-	//}
-	//fmt.Println()
 
 	return zrs
 }
