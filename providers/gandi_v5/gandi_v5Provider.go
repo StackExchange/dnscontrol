@@ -79,16 +79,6 @@ func newHelper(m map[string]string, metadata json.RawMessage) (*gandiApi, error)
 
 // Section 3: DSP-related functions
 
-// GetNameservers returns a list of nameservers for domain.
-func (client *gandiApi) GetNameservers(domain string) ([]*models.Nameserver, error) {
-	g := gandi.New(client.apikey, client.sharingid)
-	nameservers, err := g.GetDomainNS(domain)
-	if err != nil {
-		return nil, err
-	}
-	return models.StringsToNameservers(nameservers), nil
-}
-
 func (client *gandiApi) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Correction, error) {
 
 	existing, err := client.GetZoneRecords(dc.Name)
@@ -333,6 +323,18 @@ func (client *gandiApi) GenerateDomainCorrections(dc *models.DomainConfig, exist
 	}
 
 	return corrections, nil
+}
+
+// Section 3: Registrat-related functions
+
+// GetNameservers returns a list of nameservers for domain.
+func (client *gandiApi) GetNameservers(domain string) ([]*models.Nameserver, error) {
+	g := gandi.New(client.apikey, client.sharingid)
+	nameservers, err := g.GetDomainNS(domain)
+	if err != nil {
+		return nil, err
+	}
+	return models.StringsToNameservers(nameservers), nil
 }
 
 // GetRegistrarCorrections returns a list of corrections for this registrar.
