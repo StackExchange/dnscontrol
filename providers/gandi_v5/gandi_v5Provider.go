@@ -65,7 +65,7 @@ func newReg(conf map[string]string) (providers.Registrar, error) {
 	return newHelper(conf, nil)
 }
 
-// newHelper generates a handle handle.
+// newHelper generates a handle.
 func newHelper(m map[string]string, metadata json.RawMessage) (*gandiApi, error) {
 	api := &gandiApi{}
 	api.apikey = m["apikey"]
@@ -77,8 +77,18 @@ func newHelper(m map[string]string, metadata json.RawMessage) (*gandiApi, error)
 	return api, nil
 }
 
-// Section 3: DSP-related functions
+// Section 3: Domain Service Provider (DSP) related functions
 
+// NB(tal): GetDomainCorrections should be exactly the same for
+// all providers.  Currently every provider does things differently,
+// which is difficult to manage.  Once we make all providers the same,
+// we'll change interface DNSProvider.
+// That will permit us to have convertzone work with all providers.
+// At which point the functionality will be integrated with
+// dnscontrol.
+
+// GetDomainCorrections get the current and existing records,
+// post-process them, and generate corrections.
 func (client *gandiApi) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Correction, error) {
 
 	existing, err := client.GetZoneRecords(dc.Name)
@@ -91,8 +101,8 @@ func (client *gandiApi) GetDomainCorrections(dc *models.DomainConfig) ([]*models
 	return client.GenerateDomainCorrections(dc, clean)
 }
 
-// GetZoneRecords gathers the DNS records and converts them to our
-// standard format.
+// GetZoneRecords gathers the DNS records and converts them to
+// dnscontrol's format.
 func (client *gandiApi) GetZoneRecords(domain string) ([]*models.RecordConfig, error) {
 	g := gandi.New(client.apikey, client.sharingid)
 
@@ -111,12 +121,15 @@ func (client *gandiApi) GetZoneRecords(domain string) ([]*models.RecordConfig, e
 	return existingRecords, nil
 }
 
+// PrepFoundRecords munges any records to make them compatible with
+// this provider. Usually this is a no-op.
 func PrepFoundRecords(recs []*models.RecordConfig) []*models.RecordConfig {
 	// If there are records that need to be modified, removed, etc. we
-	// do it here.  This is usually empty.
+	// do it here.  Usually this is a no-op.
 	return recs
 }
 
+// PrepDesiredRecords munges any records to best suit this provider.
 func PrepDesiredRecords(dc *models.DomainConfig) {
 	// Sort through the dc.Records, eliminate any that can't be
 	// supported; modify any that need adjustments to work with the
@@ -149,12 +162,17 @@ func PrepDesiredRecords(dc *models.DomainConfig) {
 	dc.Records = recordsToKeep
 }
 
+// GenerateDomainCorrections takes the desired and existing records
+// and produces a Correction list.  The correction list is simply
+// a list of functions to call to actually make the desired
+// correction, and a message to output to the user when the change is
+// made.
 func (client *gandiApi) GenerateDomainCorrections(dc *models.DomainConfig, existing models.Records) ([]*models.Correction, error) {
 	//debugRecords("GenDC input", existing)
 
 	var corrections = []*models.Correction{}
 
-	// diff
+	// diff existing vs. current.
 	differ := diff.New(dc)
 	keysToUpdate := differ.ChangedGroups(existing)
 	//diff.DebugKeyMapMap("GenDC diff", keysToUpdate)
@@ -162,9 +180,7 @@ func (client *gandiApi) GenerateDomainCorrections(dc *models.DomainConfig, exist
 		return nil, nil
 	}
 
-	// ChangedGroups returns data grouped by label:RType tuples. We need
-	// that information listed by label.  Extract the info we need in
-	// the format we need for later.
+	// Regroup data by FQDN.  ChangedGroups returns data grouped by label:RType tuples.
 	affectedLabels, msgsForLabel := gatherAffectedLabels(keysToUpdate)
 	_, desiredRecords := dc.Records.GroupedByFQDN()
 	doesLabelExist := existing.FQDNMap()
@@ -184,7 +200,6 @@ func (client *gandiApi) GenerateDomainCorrections(dc *models.DomainConfig, exist
 				&models.Correction{
 					Msg: msgs,
 					F: func() error {
-						//fmt.Printf("DEBUG: DeleteDomainRecords(%q, %q)\n", domain, shortname)
 						err := g.DeleteDomainRecords(domain, shortname)
 						if err != nil {
 							return err
@@ -209,10 +224,8 @@ func (client *gandiApi) GenerateDomainCorrections(dc *models.DomainConfig, exist
 					&models.Correction{
 						Msg: msg,
 						F: func() error {
-							//fmt.Printf("DEBUG: g.ChangeDomainRecordsWithName(%q, %q, %q)\n", domain, shortname, ns)
 							res, err := g.ChangeDomainRecordsWithName(domain, shortname, ns)
 							if err != nil {
-								//fmt.Printf("DEBUG: g.res=%+v\n", res)
 								return errors.Wrapf(err, "%+v", res)
 							}
 							return nil
@@ -224,7 +237,6 @@ func (client *gandiApi) GenerateDomainCorrections(dc *models.DomainConfig, exist
 
 				// We have to create the label one rtype at a time.
 				for _, n := range ns {
-
 					msg := strings.Join(msgsForLabel[label], "\n")
 					domain := dc.Name
 					shortname := dnsutil.TrimDomainName(label, dc.Name)
@@ -235,16 +247,13 @@ func (client *gandiApi) GenerateDomainCorrections(dc *models.DomainConfig, exist
 						&models.Correction{
 							Msg: msg,
 							F: func() error {
-								//fmt.Printf("DEBUG: CreateDomainRecord(%q, %q, %q, %q, %q)\n", domain, label, rtype, ttl, values)
 								res, err := g.CreateDomainRecord(domain, shortname, rtype, ttl, values)
 								if err != nil {
-									//fmt.Printf("DEBUG: res=%+v\n", res)
 									return errors.Wrapf(err, "%+v", res)
 								}
 								return nil
 							},
 						})
-
 				}
 			}
 		}

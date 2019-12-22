@@ -16,6 +16,7 @@ func nativeToRecords(n gandi.ZoneRecord, origin string) (rcs []*models.RecordCon
 	// gandi.ZoneRecord.  In other words, if there are multiple A
 	// records for a label, all the IP addresses are listed in
 	// n.RrsetValues rather than having many gandi.ZoneRecord's.
+	// We must split them out into individual records, one for each value.
 	for _, value := range n.RrsetValues {
 		rc := &models.RecordConfig{
 			TTL:      uint32(n.RrsetTTL),
