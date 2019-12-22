@@ -35,8 +35,9 @@ func nativeToRecords(n gandi.ZoneRecord, origin string) (rcs []*models.RecordCon
 }
 
 func recordsToNative(rcs []*models.RecordConfig, origin string) []gandi.ZoneRecord {
-	// Take a list of RecordConfig and return an equivalent list of
-	// ZoneRecords.  Gandi requires one ZoneRecord for each label:key tuple.
+	// Take a list of RecordConfig and return an equivalent list of ZoneRecords.
+	// Gandi requires one ZoneRecord for each label:key tuple, therefore we
+	// might collapse many RecordConfig into one ZoneRecord.
 
 	var keys = map[models.RecordKey]*gandi.ZoneRecord{}
 	var zrs []gandi.ZoneRecord

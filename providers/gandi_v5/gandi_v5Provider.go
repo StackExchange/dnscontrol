@@ -86,7 +86,7 @@ func (client *gandiApi) GetDomainCorrections(dc *models.DomainConfig) ([]*models
 		return nil, err
 	}
 	models.PostProcessRecords(existing)
-	clean := PrepFoundRecods(existing)
+	clean := PrepFoundRecords(existing)
 	PrepDesiredRecords(dc)
 	return client.GenerateDomainCorrections(dc, clean)
 }
@@ -111,7 +111,7 @@ func (client *gandiApi) GetZoneRecords(domain string) ([]*models.RecordConfig, e
 	return existingRecords, nil
 }
 
-func PrepFoundRecods(recs []*models.RecordConfig) []*models.RecordConfig {
+func PrepFoundRecords(recs []*models.RecordConfig) []*models.RecordConfig {
 	// If there are records that need to be modified, removed, etc. we
 	// do it here.  This is usually empty.
 	return recs
@@ -149,79 +149,7 @@ func PrepDesiredRecords(dc *models.DomainConfig) {
 	dc.Records = recordsToKeep
 }
 
-// debugRecords prints a list of RecordConfig.
-func debugRecords(note string, recs []*models.RecordConfig) {
-	fmt.Println("DEBUG:", note)
-	for k, v := range recs {
-		fmt.Printf("   %v: %v %v %v %v\n", k, v.GetLabel(), v.Type, v.TTL, v.GetTargetCombined())
-	}
-}
-
-// debugKeyMap prints the data returned by ChangedGroups.
-func debugKeyMap(note string, m map[models.RecordKey][]string) {
-	fmt.Println("DEBUG:", note)
-
-	// Extract the keys
-	var keys []models.RecordKey
-	for k := range m {
-		keys = append(keys, k)
-	}
-	sort.SliceStable(keys, func(i, j int) bool {
-		if keys[i].NameFQDN == keys[j].NameFQDN {
-			return keys[i].Type < keys[j].Type
-		}
-		return keys[i].NameFQDN < keys[j].NameFQDN
-	})
-
-	// Pretty print the map:
-	for _, k := range keys {
-		fmt.Printf("   %v %v:\n", k.Type, k.NameFQDN)
-		for _, s := range m[k] {
-			fmt.Printf("      -- %q\n", s)
-		}
-	}
-}
-
-// gatherAffectedLabels takes the output of diff.ChangedGroups and
-// returns a the labels that are mentioned, as well as what messages
-// to output when updating that label.  The two return values probably
-// could be combined, but this works so I'm not going to mess with it.
-func gatherAffectedLabels(groups map[models.RecordKey][]string) (affected map[string]bool, msgs map[string][]string) {
-	affected = map[string]bool{}
-	msgs = map[string][]string{}
-	for k, v := range groups {
-		affected[k.NameFQDN] = true
-		msgs[k.NameFQDN] = append(msgs[k.NameFQDN], v...)
-	}
-	return affected, msgs
-}
-
-// gatherDesiredAtEachLabel extracts the RecordConfigs related to the
-// labels mentioned in map m.
-func gatherDesiredAtEachLabel(m map[string]bool, recs models.Records) (work map[string][]*models.RecordConfig) {
-	//	desiredRecords = gatherDesiredAtEachLabel(affectedLabels, dc.Records)
-	work = map[string][]*models.RecordConfig{}
-	for label, _ := range m {
-		for _, rec := range recs {
-			if rec.GetLabelFQDN() == label {
-				work[label] = append(work[label], rec)
-			}
-		}
-	}
-	return work
-}
-
-// gatherLabels returns a map of the labels mentioned in all the
-// records.
-func gatherLabels(recs []*models.RecordConfig) (labs map[string]bool) {
-	labs = map[string]bool{}
-	for _, r := range recs {
-		labs[r.GetLabelFQDN()] = true
-	}
-	return labs
-}
-
-func (client *gandiApi) GenerateDomainCorrections(dc *models.DomainConfig, existing []*models.RecordConfig) ([]*models.Correction, error) {
+func (client *gandiApi) GenerateDomainCorrections(dc *models.DomainConfig, existing models.Records) ([]*models.Correction, error) {
 	//debugRecords("GenDC input", existing)
 
 	var corrections = []*models.Correction{}
@@ -229,7 +157,7 @@ func (client *gandiApi) GenerateDomainCorrections(dc *models.DomainConfig, exist
 	// diff
 	differ := diff.New(dc)
 	keysToUpdate := differ.ChangedGroups(existing)
-	//debugKeyMap("GenDC diff", keysToUpdate)
+	//diff.DebugKeyMapMap("GenDC diff", keysToUpdate)
 	if len(keysToUpdate) == 0 {
 		return nil, nil
 	}
@@ -238,8 +166,8 @@ func (client *gandiApi) GenerateDomainCorrections(dc *models.DomainConfig, exist
 	// that information listed by label.  Extract the info we need in
 	// the format we need for later.
 	affectedLabels, msgsForLabel := gatherAffectedLabels(keysToUpdate)
-	desiredRecords := gatherDesiredAtEachLabel(affectedLabels, dc.Records)
-	doesLabelExist := gatherLabels(existing)
+	_, desiredRecords := dc.Records.GroupedByFQDN()
+	doesLabelExist := existing.FQDNMap()
 
 	g := gandi.New(client.apikey, client.sharingid)
 
@@ -325,7 +253,28 @@ func (client *gandiApi) GenerateDomainCorrections(dc *models.DomainConfig, exist
 	return corrections, nil
 }
 
-// Section 3: Registrat-related functions
+// debugRecords prints a list of RecordConfig.
+func debugRecords(note string, recs []*models.RecordConfig) {
+	fmt.Println("DEBUG:", note)
+	for k, v := range recs {
+		fmt.Printf("   %v: %v %v %v %v\n", k, v.GetLabel(), v.Type, v.TTL, v.GetTargetCombined())
+	}
+}
+
+// gatherAffectedLabels takes the output of diff.ChangedGroups and
+// regroups it by FQDN of the label, not by Key. It also returns
+// a list of all the FQDNs.
+func gatherAffectedLabels(groups map[models.RecordKey][]string) (labels map[string]bool, msgs map[string][]string) {
+	labels = map[string]bool{}
+	msgs = map[string][]string{}
+	for k, v := range groups {
+		labels[k.NameFQDN] = true
+		msgs[k.NameFQDN] = append(msgs[k.NameFQDN], v...)
+	}
+	return labels, msgs
+}
+
+// Section 3: Registrar-related functions
 
 // GetNameservers returns a list of nameservers for domain.
 func (client *gandiApi) GetNameservers(domain string) ([]*models.Nameserver, error) {
