@@ -11,7 +11,7 @@ import (
 )
 
 const (
-	gandiEndpoint = "https://dns.api.gandi.net/api/v5/"
+	gandiEndpoint = "https://api.gandi.net/v5/"
 	// HTTP Methods
 	mPATCH  = http.MethodPatch
 	mGET    = http.MethodGet
@@ -93,7 +93,8 @@ func (g *Gandi) doAskGandi(method, path string, params []byte, extraHeaders [][2
 	if err != nil {
 		return nil, err
 	}
-	req.Header.Add("X-Api-Key", g.apikey)
+	//req.Header.Add("X-Api-Key", g.apikey)
+	req.Header.Add("Authorization", "Apikey "+g.apikey)
 	req.Header.Add("Content-Type", "application/json")
 	for _, header := range extraHeaders {
 		req.Header.Add(header[0], header[1])

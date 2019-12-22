@@ -338,28 +338,34 @@ func (client *gandiApi) GetNameservers(domain string) ([]*models.Nameserver, err
 }
 
 // GetRegistrarCorrections returns a list of corrections for this registrar.
-func (c *gandiApi) GetRegistrarCorrections(dc *models.DomainConfig) ([]*models.Correction, error) {
-	// 	domaininfo, err := c.getDomainInfo(dc.Name)
-	// 	if err != nil {
-	// 		return nil, err
-	// 	}
-	// 	sort.Strings(domaininfo.Nameservers)
-	// 	found := strings.Join(domaininfo.Nameservers, ",")
-	// 	desiredNs := []string{}
-	// 	for _, d := range dc.Nameservers {
-	// 		desiredNs = append(desiredNs, d.Name)
-	// 	}
-	// 	sort.Strings(desiredNs)
-	// 	desired := strings.Join(desiredNs, ",")
-	// 	if found != desired {
-	// 		return []*models.Correction{
-	// 			{
-	// 				Msg: fmt.Sprintf("Change Nameservers from '%s' to '%s'", found, desired),
-	// 				F: func() (err error) {
-	// 					_, err = c.setDomainNameservers(dc.Name, desiredNs)
-	// 					return
-	// 				}},
-	// 		}, nil
-	// 	}
+func (client *gandiApi) GetRegistrarCorrections(dc *models.DomainConfig) ([]*models.Correction, error) {
+	g := gandi.New(client.apikey, client.sharingid)
+
+	nss, err := client.GetNameservers(dc.Name)
+	if err != nil {
+		return nil, err
+	}
+	existingNs := models.NameserversToStrings(nss)
+
+	sort.Strings(existingNs)
+	existing := strings.Join(existingNs, ",")
+
+	desiredNs := []string{}
+	for _, d := range dc.Nameservers {
+		desiredNs = append(desiredNs, d.Name)
+	}
+	sort.Strings(desiredNs)
+	desired := strings.Join(desiredNs, ",")
+
+	if existing != desired {
+		return []*models.Correction{
+			{
+				Msg: fmt.Sprintf("Change Nameservers from '%s' to '%s'", existing, desired),
+				F: func() (err error) {
+					err = g.UpdateDomainNS(dc.Name, desiredNs)
+					return
+				}},
+		}, nil
+	}
 	return nil, nil
 }

@@ -59,6 +59,19 @@ func StringsToNameservers(nss []string) []*Nameserver {
 	return nservers
 }
 
+// NameserversToStrings constructs a list of lists from *Nameserver structs
+func NameserversToStrings(nss []*Nameserver) (s []string) {
+	for _, ns := range nss {
+		s = append(s, ns.Name)
+	}
+	return s
+}
+
+// FIXME(tal): In hindsight, the Nameserver struct is overkill. We
+// could have just used []string.  Now every provider calls StringsToNameservers
+// and ever user calls StringsToNameservers.  We should refactor this
+// some day.
+
 // Correction is anything that can be run. Implementation is up to the specific provider.
 type Correction struct {
 	F   func() error `json:"-"`

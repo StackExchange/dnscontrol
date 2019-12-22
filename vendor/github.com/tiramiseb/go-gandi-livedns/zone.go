@@ -21,13 +21,13 @@ type Zone struct {
 
 // ListZones lists all zones
 func (g *Gandi) ListZones() (zones []Zone, err error) {
-	_, err = g.askGandi(mGET, "zones", nil, &zones)
+	_, err = g.askGandi(mGET, "livedns/zones", nil, &zones)
 	return
 }
 
 // CreateZone creates a zone
 func (g *Gandi) CreateZone(name string) (response StandardResponse, err error) {
-	headers, err := g.askGandi(mPOST, "zones", Zone{Name: name}, &response)
+	headers, err := g.askGandi(mPOST, "livedns/zones", Zone{Name: name}, &response)
 	spLoc := strings.Split(headers.Get("Location"), "/")
 	response.UUID = spLoc[len(spLoc)-1]
 	return
@@ -35,13 +35,13 @@ func (g *Gandi) CreateZone(name string) (response StandardResponse, err error) {
 
 // GetZone returns a zone
 func (g *Gandi) GetZone(uuid string) (zone Zone, err error) {
-	_, err = g.askGandi(mGET, "zones/"+uuid, nil, &zone)
+	_, err = g.askGandi(mGET, "livedns/zones/"+uuid, nil, &zone)
 	return
 }
 
 // UpdateZone updates a zone (only its name, actually...)
 func (g *Gandi) UpdateZone(uuid, name string) (response StandardResponse, err error) {
-	headers, err := g.askGandi(mPATCH, "zones/"+uuid, Zone{Name: name}, &response)
+	headers, err := g.askGandi(mPATCH, "livedns/zones/"+uuid, Zone{Name: name}, &response)
 	spLoc := strings.Split(headers.Get("Location"), "/")
 	response.UUID = spLoc[len(spLoc)-1]
 	return
@@ -49,18 +49,18 @@ func (g *Gandi) UpdateZone(uuid, name string) (response StandardResponse, err er
 
 // DeleteZone deletes a zone
 func (g *Gandi) DeleteZone(uuid string) (err error) {
-	_, err = g.askGandi(mDELETE, "zones/"+uuid, nil, nil)
+	_, err = g.askGandi(mDELETE, "livedns/zones/"+uuid, nil, nil)
 	return
 }
 
 // GetZoneDomains returns domains attached to a zone
 func (g *Gandi) GetZoneDomains(uuid string) (domains []Domain, err error) {
-	_, err = g.askGandi(mGET, "zones/"+uuid+"/domains", nil, &domains)
+	_, err = g.askGandi(mGET, "livedns/zones/"+uuid+"/domains", nil, &domains)
 	return
 }
 
 // AttachDomainToZone attaches a domain to a zone
 func (g *Gandi) AttachDomainToZone(uuid, fqdn string) (response StandardResponse, err error) {
-	_, err = g.askGandi(mPOST, "zones/"+uuid+"/domains/"+fqdn, nil, &response)
+	_, err = g.askGandi(mPOST, "livedns/zones/"+uuid+"/domains/"+fqdn, nil, &response)
 	return
 }
