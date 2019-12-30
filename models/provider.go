@@ -6,6 +6,15 @@ type DNSProvider interface {
 	GetDomainCorrections(dc *DomainConfig) ([]*Correction, error)
 }
 
+// DNSProvider will replace DNSProvider in 3.0.
+//type DNSProvider interface {
+//	GetNameservers(domain string) ([]*Nameserver, error)
+//	GetZoneRecords(domain string) (Records, error)
+//	PrepFoundRecords(recs Records) Records
+//	PrepDesiredRecords(dc *DomainConfig)
+//	GenerateDomainCorrections(dc *DomainConfig, existing Records) ([]*Correction, error)
+//}
+
 // Registrar is an interface for Registrar plug-ins.
 type Registrar interface {
 	GetRegistrarCorrections(dc *DomainConfig) ([]*Correction, error)

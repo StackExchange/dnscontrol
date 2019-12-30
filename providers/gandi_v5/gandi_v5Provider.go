@@ -90,7 +90,6 @@ func newHelper(m map[string]string, metadata json.RawMessage) (*gandiApi, error)
 // GetDomainCorrections get the current and existing records,
 // post-process them, and generate corrections.
 func (client *gandiApi) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Correction, error) {
-
 	existing, err := client.GetZoneRecords(dc.Name)
 	if err != nil {
 		return nil, err
@@ -103,7 +102,7 @@ func (client *gandiApi) GetDomainCorrections(dc *models.DomainConfig) ([]*models
 
 // GetZoneRecords gathers the DNS records and converts them to
 // dnscontrol's format.
-func (client *gandiApi) GetZoneRecords(domain string) ([]*models.RecordConfig, error) {
+func (client *gandiApi) GetZoneRecords(domain string) (models.Records, error) {
 	g := gandi.New(client.apikey, client.sharingid)
 
 	// Get all the existing records:
@@ -123,7 +122,7 @@ func (client *gandiApi) GetZoneRecords(domain string) ([]*models.RecordConfig, e
 
 // PrepFoundRecords munges any records to make them compatible with
 // this provider. Usually this is a no-op.
-func PrepFoundRecords(recs []*models.RecordConfig) []*models.RecordConfig {
+func PrepFoundRecords(recs models.Records) models.Records {
 	// If there are records that need to be modified, removed, etc. we
 	// do it here.  Usually this is a no-op.
 	return recs
