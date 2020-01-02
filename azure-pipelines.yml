@@ -41,3 +41,10 @@ jobs:
       git diff
       git diff --exit-code
 
+- job: "GoGen"
+  displayName: "Check Go Generate"
+  steps:
+  - script: |
+      go generate .
+      git diff
+      git diff --exit-code
