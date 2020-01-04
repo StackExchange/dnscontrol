@@ -16,11 +16,14 @@ Settings from `creds.json`:
 import (
 	"encoding/json"
 	"fmt"
+	"os"
 	"sort"
+	"strconv"
 	"strings"
 
 	"github.com/miekg/dns/dnsutil"
 	gandi "github.com/tiramiseb/go-gandi-livedns"
+	gandi_livedns "github.com/tiramiseb/go-gandi-livedns/livedns"
 
 	"github.com/StackExchange/dnscontrol/models"
 	"github.com/StackExchange/dnscontrol/pkg/printer"
@@ -53,6 +56,7 @@ var features = providers.DocumentationNotes{
 type gandiApi struct {
 	apikey    string
 	sharingid string
+	debug     bool
 }
 
 // newDsp generates a DNS Service Provider client handle.
@@ -69,9 +73,13 @@ func newReg(conf map[string]string) (providers.Registrar, error) {
 func newHelper(m map[string]string, metadata json.RawMessage) (*gandiApi, error) {
 	api := &gandiApi{}
 	api.apikey = m["apikey"]
-	api.sharingid = m["sharing_id"]
 	if api.apikey == "" {
 		return nil, errors.Errorf("missing Gandi apikey")
+	}
+	api.sharingid = m["sharing_id"]
+	debug, err := strconv.ParseBool(os.Getenv("GANDI_V5_DEBUG"))
+	if err == nil {
+		api.debug = debug
 	}
 
 	return api, nil
@@ -103,7 +111,7 @@ func (client *gandiApi) GetDomainCorrections(dc *models.DomainConfig) ([]*models
 // GetZoneRecords gathers the DNS records and converts them to
 // dnscontrol's format.
 func (client *gandiApi) GetZoneRecords(domain string) (models.Records, error) {
-	g := gandi.New(client.apikey, client.sharingid)
+	g := gandi_livedns.New(client.apikey, &gandi.Config{SharingID: client.sharingid, Debug: client.debug})
 
 	// Get all the existing records:
 	records, err := g.ListDomainRecords(domain)
@@ -184,7 +192,7 @@ func (client *gandiApi) GenerateDomainCorrections(dc *models.DomainConfig, exist
 	_, desiredRecords := dc.Records.GroupedByFQDN()
 	doesLabelExist := existing.FQDNMap()
 
-	g := gandi.New(client.apikey, client.sharingid)
+	g := gandi_livedns.New(client.apikey, &gandi.Config{SharingID: client.sharingid, Debug: client.debug})
 
 	// For any key with an update, delete or replace those records.
 	for label, _ := range affectedLabels {
@@ -199,6 +207,7 @@ func (client *gandiApi) GenerateDomainCorrections(dc *models.DomainConfig, exist
 				&models.Correction{
 					Msg: msgs,
 					F: func() error {
+						//fmt.Printf("DEBUG: g.DeleteDomainRecords(%q, %q)\n", domain, shortname)
 						err := g.DeleteDomainRecords(domain, shortname)
 						if err != nil {
 							return err
@@ -223,6 +232,7 @@ func (client *gandiApi) GenerateDomainCorrections(dc *models.DomainConfig, exist
 					&models.Correction{
 						Msg: msg,
 						F: func() error {
+							//fmt.Printf("DEBUG: g.ChangeDomainRecordsWithName(%q, %q, %q)\n", domain, shortname, ns)
 							res, err := g.ChangeDomainRecordsWithName(domain, shortname, ns)
 							if err != nil {
 								return errors.Wrapf(err, "%+v", res)
@@ -286,7 +296,7 @@ func gatherAffectedLabels(groups map[models.RecordKey][]string) (labels map[stri
 
 // GetNameservers returns a list of nameservers for domain.
 func (client *gandiApi) GetNameservers(domain string) ([]*models.Nameserver, error) {
-	g := gandi.New(client.apikey, client.sharingid)
+	g := gandi_livedns.New(client.apikey, &gandi.Config{SharingID: client.sharingid, Debug: client.debug})
 	nameservers, err := g.GetDomainNS(domain)
 	if err != nil {
 		return nil, err
@@ -296,7 +306,7 @@ func (client *gandiApi) GetNameservers(domain string) ([]*models.Nameserver, err
 
 // GetRegistrarCorrections returns a list of corrections for this registrar.
 func (client *gandiApi) GetRegistrarCorrections(dc *models.DomainConfig) ([]*models.Correction, error) {
-	g := gandi.New(client.apikey, client.sharingid)
+	g := gandi_livedns.New(client.apikey, &gandi.Config{SharingID: client.sharingid, Debug: client.debug})
 
 	nss, err := client.GetNameservers(dc.Name)
 	if err != nil {

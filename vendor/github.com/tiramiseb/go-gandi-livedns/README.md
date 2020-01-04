@@ -4,7 +4,7 @@ Gandi LiveDNS Go library
 [![GoDoc](https://godoc.org/github.com/tiramiseb/go-gandi-livedns?status.svg)](https://godoc.org/github.com/tiramiseb/go-gandi-livedns)
 [![License](https://img.shields.io/badge/license-MIT-blue.svg)](https://raw.githubusercontent.com/tiramiseb/go-gandi-livedns/master/LICENSE)
 
-This library interacts with [Gandi's LiveDNS API](https://api.gandi.net/docs/), to manage domains hosted on Gandi. This library returns some data as HTTP headers, please note those are ignored by this library.
+This library interacts with [Gandi's LiveDNS API](http://doc.livedns.gandi.net/), to manage domains hosted on Gandi. This library returns some data as HTTP headers, please note those are ignored by this library.
 
 **Gandi is currently (as of Nov. 2017) migrating on a new platform, this library is for the NEW platform.**
 
@@ -13,7 +13,7 @@ A simple CLI is also shipped with this library. It returns responses to the requ
 Example
 -------
 
-This example mimics the steps of [the older LiveDNS documentation example](http://doc.livedns.gandi.net/#quick-example) (replaced by [Gandi's newer docs](https://api.gandi.net/docs/).
+This example mimics the steps of [the official LiveDNS documentation example](http://doc.livedns.gandi.net/#quick-example).
 
 First (step 1), [get your API key](https://account.gandi.net/) from the "Security" section in new Account admin panel to be able to make authenticated requests to the API.
 Note: sharing_id is optional. It is used e.g. when the API key is registered to a user, where the domain you want to manage is not registered with that user (but the user does have rights on that zone/organization).
