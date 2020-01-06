@@ -6,8 +6,11 @@ type DNSProvider interface {
 	GetDomainCorrections(dc *DomainConfig) ([]*Correction, error)
 }
 
-// DNSProvider will replace DNSProvider in 3.0.
-//type DNSProvider interface {
+// DNSProvider3 will replace DNSProvider in 3.0.
+// If you want to future-proof your code, implement these
+// functions and implement GetDomainCorrections() as in
+// providers/gandi_v5/gandi_v5Provider.go
+//type DNSProvider3 interface {
 //	GetNameservers(domain string) ([]*Nameserver, error)
 //	GetZoneRecords(domain string) (Records, error)
 //	PrepFoundRecords(recs Records) Records

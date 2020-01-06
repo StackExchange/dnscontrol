@@ -87,13 +87,14 @@ func newHelper(m map[string]string, metadata json.RawMessage) (*gandiApi, error)
 
 // Section 3: Domain Service Provider (DSP) related functions
 
-// NB(tal): GetDomainCorrections should be exactly the same for
-// all providers.  Currently every provider does things differently,
-// which is difficult to manage.  Once we make all providers the same,
-// we'll change interface DNSProvider.
-// That will permit us to have convertzone work with all providers.
-// At which point the functionality will be integrated with
-// dnscontrol.
+// NB(tal): To future-proof your code, all new providers should
+// implement GetDomainCorrections exactly as you see here. In 3.0
+// we plan on using just the individual calls to GetZoneRecords,
+// PostProcessRecords, and so on.
+//
+// Currently every provider does things differently, which prevents
+// us from doing things like using GetZoneRecords() of a provider
+// to make convertzone work with all providers.
 
 // GetDomainCorrections get the current and existing records,
 // post-process them, and generate corrections.
@@ -175,14 +176,18 @@ func PrepDesiredRecords(dc *models.DomainConfig) {
 // correction, and a message to output to the user when the change is
 // made.
 func (client *gandiApi) GenerateDomainCorrections(dc *models.DomainConfig, existing models.Records) ([]*models.Correction, error) {
-	//debugRecords("GenDC input", existing)
+	if client.debug {
+		debugRecords("GenDC input", existing)
+	}
 
 	var corrections = []*models.Correction{}
 
 	// diff existing vs. current.
 	differ := diff.New(dc)
 	keysToUpdate := differ.ChangedGroups(existing)
-	//diff.DebugKeyMapMap("GenDC diff", keysToUpdate)
+	if client.debug {
+		diff.DebugKeyMapMap("GenDC diff", keysToUpdate)
+	}
 	if len(keysToUpdate) == 0 {
 		return nil, nil
 	}
@@ -207,7 +212,6 @@ func (client *gandiApi) GenerateDomainCorrections(dc *models.DomainConfig, exist
 				&models.Correction{
 					Msg: msgs,
 					F: func() error {
-						//fmt.Printf("DEBUG: g.DeleteDomainRecords(%q, %q)\n", domain, shortname)
 						err := g.DeleteDomainRecords(domain, shortname)
 						if err != nil {
 							return err
@@ -232,7 +236,6 @@ func (client *gandiApi) GenerateDomainCorrections(dc *models.DomainConfig, exist
 					&models.Correction{
 						Msg: msg,
 						F: func() error {
-							//fmt.Printf("DEBUG: g.ChangeDomainRecordsWithName(%q, %q, %q)\n", domain, shortname, ns)
 							res, err := g.ChangeDomainRecordsWithName(domain, shortname, ns)
 							if err != nil {
 								return errors.Wrapf(err, "%+v", res)

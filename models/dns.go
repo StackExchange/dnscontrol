@@ -41,6 +41,11 @@ type DNSProviderConfig struct {
 	Metadata json.RawMessage `json:"meta,omitempty"`
 }
 
+// FIXME(tal): In hindsight, the Nameserver struct is overkill. We
+// could have just used []string.  Now every provider calls StringsToNameservers
+// and ever user calls StringsToNameservers.  We should refactor this
+// some day.  https://github.com/StackExchange/dnscontrol/issues/577
+
 // Nameserver describes a nameserver.
 type Nameserver struct {
 	Name string `json:"name"` // Normalized to a FQDN with NO trailing "."
@@ -66,11 +71,6 @@ func NameserversToStrings(nss []*Nameserver) (s []string) {
 	}
 	return s
 }
-
-// FIXME(tal): In hindsight, the Nameserver struct is overkill. We
-// could have just used []string.  Now every provider calls StringsToNameservers
-// and ever user calls StringsToNameservers.  We should refactor this
-// some day.
 
 // Correction is anything that can be run. Implementation is up to the specific provider.
 type Correction struct {
