@@ -1,0 +1,228 @@
+package cloudns
+
+import (
+	"encoding/json"
+	"fmt"
+	"github.com/StackExchange/dnscontrol/models"
+	"github.com/StackExchange/dnscontrol/providers"
+	"github.com/StackExchange/dnscontrol/providers/diff"
+	"github.com/miekg/dns/dnsutil"
+	"github.com/pkg/errors"
+	"strconv"
+)
+
+/*
+
+CloDNS API DNS provider:
+
+Info required in `creds.json`:
+   - auth-id
+   - auth-password
+
+*/
+
+var defaultNameServerNames = []string{
+	"pns101.cloudns.net",
+	"pns102.cloudns.net",
+	"pns103.cloudns.net",
+	"pns104.cloudns.net",
+}
+
+// NewCloudns creates the provider.
+func NewCloudns(m map[string]string, metadata json.RawMessage) (providers.DNSServiceProvider, error) {
+	api := &CloudnsApi{}
+
+	api.creds.id, api.creds.password = m["auth-id"], m["auth-password"]
+	if api.creds.id == "" || api.creds.password == "" {
+		return nil, errors.Errorf("missing ClouDNS auth-id and auth-password")
+	}
+
+	// Get a domain to validate authentication
+	if err := api.fetchDomainList(); err != nil {
+		return nil, err
+	}
+
+	return api, nil
+}
+
+var features = providers.DocumentationNotes{
+	providers.DocDualHost:            providers.Cannot(),
+	providers.DocOfficiallySupported: providers.Cannot(),
+	providers.DocCreateDomains:       providers.Can(),
+	providers.CanUseAlias:            providers.Can(),
+	providers.CanUseSRV:              providers.Can(),
+	// ClouDNS support all below, but not implemented yet
+	providers.CanUsePTR:   providers.Unimplemented(),
+	providers.CanUseSSHFP: providers.Unimplemented(),
+	providers.CanUseCAA:   providers.Unimplemented(),
+	providers.CanUseTLSA:  providers.Unimplemented(),
+}
+
+func init() {
+	providers.RegisterDomainServiceProviderType("CLOUDNS", NewCloudns, features)
+}
+
+// GetNameservers returns the nameservers for a domain.
+func (api *CloudnsApi) GetNameservers(domain string) ([]*models.Nameserver, error) {
+	return models.StringsToNameservers(defaultNameServerNames), nil
+}
+
+// GetDomainCorrections returns the corrections for a domain.
+func (api *CloudnsApi) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Correction, error) {
+	dc, err := dc.Copy()
+	if err != nil {
+		return nil, err
+	}
+
+	dc.Punycode()
+
+	if api.domainIndex == nil {
+		if err := api.fetchDomainList(); err != nil {
+			return nil, err
+		}
+	}
+	domainID, ok := api.domainIndex[dc.Name]
+	if !ok {
+		return nil, errors.Errorf("%s not listed in domains for ClouDNS account", dc.Name)
+	}
+
+	records, err := api.getRecords(domainID)
+	if err != nil {
+		return nil, err
+	}
+
+	existingRecords := make([]*models.RecordConfig, len(records), len(records)+len(defaultNameServerNames))
+	for i := range records {
+		existingRecords[i] = toRc(dc, &records[i])
+	}
+	// Normalize
+	models.PostProcessRecords(existingRecords)
+
+	// ClouDNS doesn't allow selecting an arbitrary TTL, only a set of predefined values https://asia.cloudns.net/wiki/article/188/
+	// We need to make sure we don't change it every time if it is as close as it's going to get
+	for _, record := range dc.Records {
+		record.TTL = fixTTL(record.TTL)
+	}
+
+	differ := diff.New(dc)
+	_, create, del, modify := differ.IncrementalDiff(existingRecords)
+
+	var corrections []*models.Correction
+
+	// Deletes first so changing type works etc.
+	for _, m := range del {
+		id := m.Existing.Original.(*domainRecord).ID
+		corr := &models.Correction{
+			Msg: fmt.Sprintf("%s, ClouDNS ID: %s", m.String(), id),
+			F: func() error {
+				return api.deleteRecord(domainID, id)
+			},
+		}
+		corrections = append(corrections, corr)
+	}
+
+	for _, m := range create {
+		req, err := toReq(m.Desired)
+		if err != nil {
+			return nil, err
+		}
+
+		corr := &models.Correction{
+			Msg: m.String(),
+			F: func() error {
+				return api.createRecord(domainID, req)
+			},
+		}
+		corrections = append(corrections, corr)
+	}
+	for _, m := range modify {
+		id := m.Existing.Original.(*domainRecord).ID
+		req, err := toReq(m.Desired)
+		if err != nil {
+			return nil, err
+		}
+
+		corr := &models.Correction{
+			Msg: fmt.Sprintf("%s, ClouDNS ID: %s: ", m.String(), id),
+			F: func() error {
+				return api.modifyRecord(domainID, id, req)
+			},
+		}
+		corrections = append(corrections, corr)
+	}
+
+	return corrections, nil
+}
+
+// EnsureDomainExists returns an error if domain doesn't exist.
+func (api *CloudnsApi) EnsureDomainExists(domain string) error {
+	if err := api.fetchDomainList(); err != nil {
+		return err
+	}
+	// domain already exists
+	if _, ok := api.domainIndex[domain]; ok {
+		return nil
+	}
+	return api.createDomain(domain)
+}
+
+func toRc(dc *models.DomainConfig, r *domainRecord) *models.RecordConfig {
+
+	ttl, _ := strconv.ParseUint(r.TTL, 10, 32)
+	priority, _ := strconv.ParseUint(r.Priority, 10, 32)
+	weight, _ := strconv.ParseUint(r.Weight, 10, 32)
+	port, _ := strconv.ParseUint(r.Port, 10, 32)
+
+	rc := &models.RecordConfig{
+		Type:         r.Type,
+		TTL:          uint32(ttl),
+		MxPreference: uint16(priority),
+		SrvPriority:  uint16(priority),
+		SrvWeight:    uint16(weight),
+		SrvPort:      uint16(port),
+		Original:     r,
+	}
+	rc.SetLabel(r.Host, dc.Name)
+
+	switch rtype := r.Type; rtype { // #rtype_variations
+	case "TXT":
+		rc.SetTargetTXT(r.Target)
+	case "CNAME", "MX", "NS", "SRV", "ALIAS":
+		rc.SetTarget(dnsutil.AddOrigin(r.Target+".", dc.Name))
+	default:
+		rc.SetTarget(r.Target)
+	}
+
+	return rc
+}
+
+func toReq(rc *models.RecordConfig) (requestParams, error) {
+	req := requestParams{
+		"record-type": rc.Type,
+		"host":        rc.GetLabel(),
+		"record":      rc.GetTargetField(),
+		"ttl":         strconv.Itoa(int(rc.TTL)),
+	}
+
+	// ClouDNS doesn't use "@", it uses an empty name
+	if req["host"] == "@" {
+		req["host"] = ""
+	}
+
+	switch rc.Type { // #rtype_variations
+	case "A", "AAAA", "NS", "PTR", "TXT", "SOA", "TLSA", "CAA", "ALIAS", "CNAME":
+		// Nothing special.
+	case "MX":
+		req["priority"] = strconv.Itoa(int(rc.MxPreference))
+	case "SRV":
+		req["priority"] = strconv.Itoa(int(rc.SrvPriority))
+		req["weight"] = strconv.Itoa(int(rc.SrvWeight))
+		req["port"] = strconv.Itoa(int(rc.SrvPort))
+	default:
+		msg := fmt.Sprintf("ClouDNS.toReq rtype %v unimplemented", rc.Type)
+		panic(msg)
+		// We panic so that we quickly find any switch statements
+	}
+
+	return req, nil
+}

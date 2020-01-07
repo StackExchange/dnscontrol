@@ -15,6 +15,12 @@
   "BIND": {
     "domain": "example.com"
   },
+  "CLOUDNS": {
+    "auth-id": "3650",
+    "auth-password": "123456",
+    "domain": "pragmaticgeek.net"
+  },
+
   "CLOUDFLAREAPI_OLD": {
     "apikey": "$CF_KEY",
     "apiuser": "$CF_USER",
