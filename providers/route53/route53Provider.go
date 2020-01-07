@@ -247,7 +247,6 @@ func (r *route53Provider) GetDomainCorrections(dc *models.DomainConfig) ([]*mode
 		} else {
 			changes = append(changes, chg)
 			changeDesc = append(changeDesc, strings.Join(namesToUpdate[k], "\n"))
-			// changeDesc += strings.Join(namesToUpdate[k], "\n") + "\n"
 			// on change or create, just build a new record set from our desired state
 			chg.Action = sPtr("UPSERT")
 			rrset = &r53.ResourceRecordSet{
