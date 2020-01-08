@@ -26,6 +26,8 @@ Info required in `creds.json`:
 
 */
 
+var deprecationWarned bool
+
 var features = providers.DocumentationNotes{
 	providers.CanUseCAA:              providers.Can(),
 	providers.CanUsePTR:              providers.Can(),
@@ -165,6 +167,10 @@ func newReg(conf map[string]string) (providers.Registrar, error) {
 }
 
 func newGandi(m map[string]string, metadata json.RawMessage) (*GandiApi, error) {
+	if !deprecationWarned {
+		deprecationWarned = true
+		fmt.Printf("WARNING: GANDI is deprecated and will disappear in 3.0. Please migrate to GANDI_V5.\n")
+	}
 	api := &GandiApi{}
 	api.ApiKey = m["apikey"]
 	if api.ApiKey == "" {
