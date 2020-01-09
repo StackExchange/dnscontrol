@@ -1,4 +1,4 @@
-package livedns
+package gandi_livedns
 
 // Tsig contains tsig data (no kidding!)
 type Tsig struct {

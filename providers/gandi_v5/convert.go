@@ -6,8 +6,7 @@ import (
 	"github.com/StackExchange/dnscontrol/models"
 	"github.com/StackExchange/dnscontrol/pkg/printer"
 	"github.com/pkg/errors"
-
-	gandi_livedns "github.com/tiramiseb/go-gandi-livedns/livedns"
+	"github.com/tiramiseb/go-gandi-livedns/gandi_livedns"
 )
 
 // nativeToRecord takes a DNS record from Gandi and returns a native RecordConfig struct.

@@ -9,22 +9,22 @@ import (
 	"net/http/httputil"
 	"strings"
 
-	"github.com/tiramiseb/go-gandi-livedns"
+	config "github.com/tiramiseb/go-gandi-livedns/gandi_config"
 )
 
 const (
 	gandiEndpoint = "https://api.gandi.net/v5/"
 )
 
-// Gandi makes it easier to interact with the Gandi API
+// Gandi is the handle used to interact with the Gandi API
 type Gandi struct {
 	apikey   string
 	endpoint string
-	config   *gandi.Config
+	config   config.Config
 }
 
 // New instantiates a new Gandi instance
-func New(apikey string, config *gandi.Config) *Gandi {
+func New(apikey string, config config.Config) *Gandi {
 	return &Gandi{apikey: apikey, endpoint: gandiEndpoint, config: config}
 }
 
@@ -41,7 +41,7 @@ func (g *Gandi) Post(path string, params, recipient interface{}) (http.Header, e
 }
 
 func (g *Gandi) Patch(path string, params, recipient interface{}) (http.Header, error) {
-	return g.askGandi(http.MethodPost, path, params, recipient)
+	return g.askGandi(http.MethodPatch, path, params, recipient)
 }
 
 func (g *Gandi) Delete(path string, params, recipient interface{}) (http.Header, error) {

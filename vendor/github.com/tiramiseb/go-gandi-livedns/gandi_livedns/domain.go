@@ -1,6 +1,6 @@
-package livedns
+package gandi_livedns
 
-import "github.com/tiramiseb/go-gandi-livedns/client"
+import "github.com/tiramiseb/go-gandi-livedns/internal/client"
 
 // Domain represents a DNS domain
 type Domain struct {
@@ -37,9 +37,9 @@ func (g *LiveDNS) ListDomains() (domains []Domain, err error) {
 	return
 }
 
-// AddDomainToZone adds a domain to a zone
+// CreateDomain adds a domain to a zone
 // It is equivalent to AttachDomainToZone, the only difference is the entry point in the LiveDNS API.
-func (g *LiveDNS) AddDomainToZone(fqdn, uuid string) (response client.StandardResponse, err error) {
+func (g *LiveDNS) CreateDomain(fqdn, uuid string) (response client.StandardResponse, err error) {
 	_, err = g.client.Post("domains", Domain{FQDN: fqdn, ZoneUUID: uuid}, &response)
 	return
 }
