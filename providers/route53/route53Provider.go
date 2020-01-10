@@ -309,7 +309,7 @@ func (r *route53Provider) GetDomainCorrections(dc *models.DomainConfig) ([]*mode
 	}
 
 	for len(changes) > 0 {
-		batchSize := getBatchSize(len(changes), 100)
+		batchSize := getBatchSize(len(changes), 500)
 		batch := changes[:batchSize]
 		changes = changes[batchSize:]
 		changeDescBatch := changeDesc[:batchSize]
