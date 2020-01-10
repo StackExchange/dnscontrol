@@ -988,46 +988,34 @@
 			"revisionTime": "2016-04-27T18:05:39Z"
 		},
 		{
-			"checksumSHA1": "RS9S0aVa+w+Smsz1CEcxXeFXfuA=",
+			"checksumSHA1": "9GHl9fDCIm3aBBYiNmmIRUcXRH0=",
 			"path": "github.com/tiramiseb/go-gandi-livedns",
-			"revision": "7490b69753ba458ca3aafa4f88017735bc245030",
-			"revisionTime": "2020-01-09T22:14:38Z"
-		},
-		{
-			"checksumSHA1": "Qc2k6I2V8y7u0ZIlQVSVxXo15JI=",
-			"path": "github.com/tiramiseb/go-gandi-livedns/client",
-			"revision": "4fd2fc36ddf0cbdc4f23622f842df8f9c7645d5d",
-			"revisionTime": "2019-12-29T12:16:44Z"
+			"revision": "e7fcd703595ddff289c0d3e417ebe84deac1c372",
+			"revisionTime": "2020-01-09T16:17:08Z"
 		},
 		{
 			"checksumSHA1": "rSYLDnic/RnshWSmSK0pv7n9LLg=",
 			"path": "github.com/tiramiseb/go-gandi-livedns/gandi_config",
-			"revision": "7490b69753ba458ca3aafa4f88017735bc245030",
-			"revisionTime": "2020-01-09T22:14:38Z"
+			"revision": "e7fcd703595ddff289c0d3e417ebe84deac1c372",
+			"revisionTime": "2020-01-09T16:17:08Z"
 		},
 		{
 			"checksumSHA1": "AJ6p+m0iUjrl14qPnrbUUG83M3k=",
 			"path": "github.com/tiramiseb/go-gandi-livedns/gandi_domain",
-			"revision": "7490b69753ba458ca3aafa4f88017735bc245030",
-			"revisionTime": "2020-01-09T22:14:38Z"
+			"revision": "e7fcd703595ddff289c0d3e417ebe84deac1c372",
+			"revisionTime": "2020-01-09T16:17:08Z"
 		},
 		{
-			"checksumSHA1": "EaepIHrgYfrcHd+7rVPROK2Q608=",
+			"checksumSHA1": "9ODNe6HjkiGvsSsqWod+pL2tSak=",
 			"path": "github.com/tiramiseb/go-gandi-livedns/gandi_livedns",
-			"revision": "7490b69753ba458ca3aafa4f88017735bc245030",
-			"revisionTime": "2020-01-09T22:14:38Z"
+			"revision": "e7fcd703595ddff289c0d3e417ebe84deac1c372",
+			"revisionTime": "2020-01-09T16:17:08Z"
 		},
 		{
 			"checksumSHA1": "lnwHj5AEWvoy+22NPug2PQfndkk=",
 			"path": "github.com/tiramiseb/go-gandi-livedns/internal/client",
-			"revision": "7490b69753ba458ca3aafa4f88017735bc245030",
-			"revisionTime": "2020-01-09T22:14:38Z"
-		},
-		{
-			"checksumSHA1": "LGpMRxmBX+vQXfJreebTpEm+Wds=",
-			"path": "github.com/tiramiseb/go-gandi-livedns/livedns",
-			"revision": "4fd2fc36ddf0cbdc4f23622f842df8f9c7645d5d",
-			"revisionTime": "2019-12-29T12:16:44Z"
+			"revision": "e7fcd703595ddff289c0d3e417ebe84deac1c372",
+			"revisionTime": "2020-01-09T16:17:08Z"
 		},
 		{
 			"checksumSHA1": "H1Ne82yYzWRQ2DKBsmRd0Hwcl04=",

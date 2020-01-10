@@ -26,11 +26,6 @@ type SigningKey struct {
 	KeyHref       string `json:"key_href,omitempty"`
 }
 
-// Nameservers represents a list of nameservers
-type Nameservers struct {
-	Nameservers []string `json:"nameservers,omitempty"`
-}
-
 // ListDomains lists all domains
 func (g *LiveDNS) ListDomains() (domains []Domain, err error) {
 	_, err = g.client.Get("domains", nil, &domains)
@@ -90,11 +85,5 @@ func (g *LiveDNS) UpdateDomainKey(fqdn, uuid string, deleted bool) (err error) {
 // GetDomainNS returns the list of the nameservers for a domain
 func (g *LiveDNS) GetDomainNS(fqdn string) (ns []string, err error) {
 	_, err = g.client.Get("nameservers/"+fqdn, nil, &ns)
-	return
-}
-
-// UpdateDomainNS returns the list of the nameservers for a domain
-func (g *LiveDNS) UpdateDomainNS(fqdn string, ns []string) (err error) {
-	_, err = g.client.Put("domain/domains/"+fqdn+"/nameservers", Nameservers{ns}, nil)
 	return
 }

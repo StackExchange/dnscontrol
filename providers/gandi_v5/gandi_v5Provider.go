@@ -310,21 +310,16 @@ func (client *gandiApi) GetNameservers(domain string) ([]*models.Nameserver, err
 
 // GetRegistrarCorrections returns a list of corrections for this registrar.
 func (client *gandiApi) GetRegistrarCorrections(dc *models.DomainConfig) ([]*models.Correction, error) {
-	g := gandi.NewLiveDNSClient(client.apikey, gandi_config.Config{SharingID: client.sharingid, Debug: client.debug})
+	gd := gandi.NewDomainClient(client.apikey, gandi_config.Config{SharingID: client.sharingid, Debug: client.debug})
 
-	nss, err := client.GetNameservers(dc.Name)
+	existingNs, err := gd.GetNameServers(dc.Name)
 	if err != nil {
 		return nil, err
 	}
-	existingNs := models.NameserversToStrings(nss)
-
 	sort.Strings(existingNs)
 	existing := strings.Join(existingNs, ",")
 
-	desiredNs := []string{}
-	for _, d := range dc.Nameservers {
-		desiredNs = append(desiredNs, d.Name)
-	}
+	desiredNs := models.NameserversToStrings(dc.Nameservers)
 	sort.Strings(desiredNs)
 	desired := strings.Join(desiredNs, ",")
 
@@ -333,7 +328,7 @@ func (client *gandiApi) GetRegistrarCorrections(dc *models.DomainConfig) ([]*mod
 			{
 				Msg: fmt.Sprintf("Change Nameservers from '%s' to '%s'", existing, desired),
 				F: func() (err error) {
-					err = g.UpdateDomainNS(dc.Name, desiredNs)
+					err = gd.UpdateNameServers(dc.Name, desiredNs)
 					return
 				}},
 		}, nil
