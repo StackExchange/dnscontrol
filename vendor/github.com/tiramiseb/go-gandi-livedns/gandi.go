@@ -1,15 +1,20 @@
 package gandi
 
 import (
-	config "github.com/tiramiseb/go-gandi-livedns/gandi_config"
 	"github.com/tiramiseb/go-gandi-livedns/gandi_domain"
 	"github.com/tiramiseb/go-gandi-livedns/gandi_livedns"
 )
 
-func NewDomainClient(apikey string, config config.Config) *gandi_domain.Domain {
-	return gandi_domain.New(apikey, config)
+type Config struct {
+	SharingID string
+	Debug     bool
+	DryRun    bool
 }
 
-func NewLiveDNSClient(apikey string, config config.Config) *gandi_livedns.LiveDNS {
-	return gandi_livedns.New(apikey, config)
+func NewDomainClient(apikey string, config Config) *gandi_domain.Domain {
+	return gandi_domain.New(apikey, config.SharingID, config.Debug)
+}
+
+func NewLiveDNSClient(apikey string, config Config) *gandi_livedns.LiveDNS {
+	return gandi_livedns.New(apikey, config.SharingID, config.Debug)
 }
