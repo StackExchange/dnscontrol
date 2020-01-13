@@ -16,8 +16,9 @@ type Credentials struct {
 }
 
 type CloudnsApi struct {
-	domainIndex map[string]string
-	creds       Credentials
+	domainIndex      map[string]string
+	creds            Credentials
+	nameserversNames []string
 }
 
 type requestParams map[string]string
@@ -26,6 +27,13 @@ type errorResponse struct {
 	Status      string `json:"status"`
 	Description string `json:"statusDescription"`
 }
+
+type nameserverRecord struct {
+	Type string `json:"type"`
+	Name string `json:"name"`
+}
+
+type nameserverResponse []nameserverRecord
 
 type zoneRecord struct {
 	Name   string `json:"name"`
@@ -66,6 +74,26 @@ var allowedTTLValues = []uint32{
 	604800,  // 1 week
 	1209600, // 2 weeks
 	2419200, // 4 weeks
+}
+
+func (c *CloudnsApi) fetchAvailableNameservers() error {
+	c.nameserversNames = nil
+
+	var bodyString, err = c.get("/dns/available-name-servers.json", requestParams{})
+	if err != nil {
+		return errors.Errorf("Error fetching available nameservers list from ClouDNS: %s", err)
+	}
+
+	var nr nameserverResponse
+	json.Unmarshal(bodyString, &nr)
+
+	for _, nameserver := range nr {
+		if nameserver.Type == "premium" {
+			c.nameserversNames = append(c.nameserversNames, nameserver.Name)
+		}
+
+	}
+	return nil
 }
 
 func (c *CloudnsApi) fetchDomainList() error {

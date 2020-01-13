@@ -21,13 +21,6 @@ Info required in `creds.json`:
 
 */
 
-var defaultNameServerNames = []string{
-	"pns101.cloudns.net",
-	"pns102.cloudns.net",
-	"pns103.cloudns.net",
-	"pns104.cloudns.net",
-}
-
 // NewCloudns creates the provider.
 func NewCloudns(m map[string]string, metadata json.RawMessage) (providers.DNSServiceProvider, error) {
 	api := &CloudnsApi{}
@@ -64,7 +57,10 @@ func init() {
 
 // GetNameservers returns the nameservers for a domain.
 func (api *CloudnsApi) GetNameservers(domain string) ([]*models.Nameserver, error) {
-	return models.StringsToNameservers(defaultNameServerNames), nil
+	if len(api.nameserversNames) == 0 {
+		api.fetchAvailableNameservers()
+	}
+	return models.StringsToNameservers(api.nameserversNames), nil
 }
 
 // GetDomainCorrections returns the corrections for a domain.
@@ -91,7 +87,7 @@ func (api *CloudnsApi) GetDomainCorrections(dc *models.DomainConfig) ([]*models.
 		return nil, err
 	}
 
-	existingRecords := make([]*models.RecordConfig, len(records), len(records)+len(defaultNameServerNames))
+	existingRecords := make([]*models.RecordConfig, len(records), len(records)+len(api.nameserversNames))
 	for i := range records {
 		existingRecords[i] = toRc(dc, &records[i])
 	}
