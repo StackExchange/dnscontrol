@@ -16,9 +16,9 @@
     "domain": "example.com"
   },
   "CLOUDNS": {
-    "auth-id": "3650",
-    "auth-password": "123456",
-    "domain": "pragmaticgeek.net"
+    "auth-id": "$CLOUDNS_AUTH_ID",
+    "auth-password": "$CLOUDNS_AUTH_PASSWORD",
+    "domain": "$CLOUDNS_DOMAIN"
   },
 
   "CLOUDFLAREAPI_OLD": {
