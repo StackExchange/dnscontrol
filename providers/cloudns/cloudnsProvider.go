@@ -39,16 +39,15 @@ func NewCloudns(m map[string]string, metadata json.RawMessage) (providers.DNSSer
 }
 
 var features = providers.DocumentationNotes{
-	providers.DocDualHost:            providers.Cannot(),
+	providers.DocDualHost:            providers.Unimplemented(),
 	providers.DocOfficiallySupported: providers.Cannot(),
 	providers.DocCreateDomains:       providers.Can(),
 	providers.CanUseAlias:            providers.Can(),
 	providers.CanUseSRV:              providers.Can(),
-	// ClouDNS support all below, but not implemented yet
-	providers.CanUsePTR:   providers.Unimplemented(),
-	providers.CanUseSSHFP: providers.Unimplemented(),
-	providers.CanUseCAA:   providers.Can(),
-	providers.CanUseTLSA:  providers.Can(),
+	providers.CanUseSSHFP:            providers.Can(),
+	providers.CanUseCAA:              providers.Can(),
+	providers.CanUseTLSA:             providers.Can(),
+	providers.CanUsePTR:              providers.Unimplemented(),
 }
 
 func init() {
@@ -198,6 +197,12 @@ func toRc(dc *models.DomainConfig, r *domainRecord) *models.RecordConfig {
 		tlsaMatchingType, _ := strconv.ParseUint(r.TlsaMatchingType, 10, 32)
 		rc.TlsaMatchingType = uint8(tlsaMatchingType)
 		rc.SetTarget(r.Target)
+	case "SSHFP":
+		sshfpAlgorithm, _ := strconv.ParseUint(r.SshfpAlgorithm, 10, 32)
+		rc.SshfpAlgorithm = uint8(sshfpAlgorithm)
+		sshfpFingerprint, _ := strconv.ParseUint(r.SshfpFingerprint, 10, 32)
+		rc.SshfpFingerprint = uint8(sshfpFingerprint)
+		rc.SetTarget(r.Target)
 	default:
 		rc.SetTarget(r.Target)
 	}
@@ -235,6 +240,9 @@ func toReq(rc *models.RecordConfig) (requestParams, error) {
 		req["tlsa_usage"] = strconv.Itoa(int(rc.TlsaUsage))
 		req["tlsa_selector"] = strconv.Itoa(int(rc.TlsaSelector))
 		req["tlsa_matching_type"] = strconv.Itoa(int(rc.TlsaMatchingType))
+	case "SSHFP":
+		req["algorithm"] = strconv.Itoa(int(rc.SshfpAlgorithm))
+		req["fptype"] = strconv.Itoa(int(rc.SshfpFingerprint))
 	default:
 		msg := fmt.Sprintf("ClouDNS.toReq rtype %v unimplemented", rc.Type)
 		panic(msg)

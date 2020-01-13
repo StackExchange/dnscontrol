@@ -62,6 +62,8 @@ type domainRecord struct {
 	TlsaUsage        string `json:"tlsa_usage,omitempty"`
 	TlsaSelector     string `json:"tlsa_selector,omitempty"`
 	TlsaMatchingType string `json:"tlsa_matching_type,omitempty"`
+	SshfpAlgorithm   string `json:"algorithm,omitempty"`
+	SshfpFingerprint string `json:"fp_type,omitempty"`
 }
 
 type recordResponse map[string]domainRecord
