@@ -47,7 +47,7 @@ var features = providers.DocumentationNotes{
 	// ClouDNS support all below, but not implemented yet
 	providers.CanUsePTR:   providers.Unimplemented(),
 	providers.CanUseSSHFP: providers.Unimplemented(),
-	providers.CanUseCAA:   providers.Unimplemented(),
+	providers.CanUseCAA:   providers.Can(),
 	providers.CanUseTLSA:  providers.Unimplemented(),
 }
 
@@ -185,6 +185,11 @@ func toRc(dc *models.DomainConfig, r *domainRecord) *models.RecordConfig {
 		rc.SetTargetTXT(r.Target)
 	case "CNAME", "MX", "NS", "SRV", "ALIAS":
 		rc.SetTarget(dnsutil.AddOrigin(r.Target+".", dc.Name))
+	case "CAA":
+		caaFlag, _ := strconv.ParseUint(r.CaaFlag, 10, 32)
+		rc.CaaFlag = uint8(caaFlag)
+		rc.CaaTag = r.CaaTag
+		rc.SetTarget(r.CaaValue)
 	default:
 		rc.SetTarget(r.Target)
 	}
@@ -206,7 +211,7 @@ func toReq(rc *models.RecordConfig) (requestParams, error) {
 	}
 
 	switch rc.Type { // #rtype_variations
-	case "A", "AAAA", "NS", "PTR", "TXT", "SOA", "TLSA", "CAA", "ALIAS", "CNAME":
+	case "A", "AAAA", "NS", "PTR", "TXT", "SOA", "TLSA", "ALIAS", "CNAME":
 		// Nothing special.
 	case "MX":
 		req["priority"] = strconv.Itoa(int(rc.MxPreference))
@@ -214,6 +219,10 @@ func toReq(rc *models.RecordConfig) (requestParams, error) {
 		req["priority"] = strconv.Itoa(int(rc.SrvPriority))
 		req["weight"] = strconv.Itoa(int(rc.SrvWeight))
 		req["port"] = strconv.Itoa(int(rc.SrvPort))
+	case "CAA":
+		req["caa_flag"] = strconv.Itoa(int(rc.CaaFlag))
+		req["caa_type"] = rc.CaaTag
+		req["caa_value"] = rc.Target
 	default:
 		msg := fmt.Sprintf("ClouDNS.toReq rtype %v unimplemented", rc.Type)
 		panic(msg)

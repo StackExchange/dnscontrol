@@ -56,6 +56,9 @@ type domainRecord struct {
 	Protocol string `json:"protocol"`
 	TTL      string `json:"ttl"`
 	Status   int8   `json:"status"`
+	CaaFlag  string `json:"caa_flag,omitempty"`
+	CaaTag   string `json:"caa_type,omitempty"`
+	CaaValue string `json:"caa_value,omitempty"`
 }
 
 type recordResponse map[string]domainRecord
