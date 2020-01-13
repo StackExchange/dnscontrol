@@ -45,20 +45,23 @@ type zoneRecord struct {
 type zoneResponse []zoneRecord
 
 type domainRecord struct {
-	ID       string `json:"id"`
-	Type     string `json:"type"`
-	Host     string `json:"host"`
-	Target   string `json:"record"`
-	Priority string `json:"priority"`
-	Weight   string `json:"weight"`
-	Port     string `json:"port"`
-	Service  string `json:"service"`
-	Protocol string `json:"protocol"`
-	TTL      string `json:"ttl"`
-	Status   int8   `json:"status"`
-	CaaFlag  string `json:"caa_flag,omitempty"`
-	CaaTag   string `json:"caa_type,omitempty"`
-	CaaValue string `json:"caa_value,omitempty"`
+	ID               string `json:"id"`
+	Type             string `json:"type"`
+	Host             string `json:"host"`
+	Target           string `json:"record"`
+	Priority         string `json:"priority"`
+	Weight           string `json:"weight"`
+	Port             string `json:"port"`
+	Service          string `json:"service"`
+	Protocol         string `json:"protocol"`
+	TTL              string `json:"ttl"`
+	Status           int8   `json:"status"`
+	CaaFlag          string `json:"caa_flag,omitempty"`
+	CaaTag           string `json:"caa_type,omitempty"`
+	CaaValue         string `json:"caa_value,omitempty"`
+	TlsaUsage        string `json:"tlsa_usage,omitempty"`
+	TlsaSelector     string `json:"tlsa_selector,omitempty"`
+	TlsaMatchingType string `json:"tlsa_matching_type,omitempty"`
 }
 
 type recordResponse map[string]domainRecord

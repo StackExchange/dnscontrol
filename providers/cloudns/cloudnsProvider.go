@@ -48,7 +48,7 @@ var features = providers.DocumentationNotes{
 	providers.CanUsePTR:   providers.Unimplemented(),
 	providers.CanUseSSHFP: providers.Unimplemented(),
 	providers.CanUseCAA:   providers.Can(),
-	providers.CanUseTLSA:  providers.Unimplemented(),
+	providers.CanUseTLSA:  providers.Can(),
 }
 
 func init() {
@@ -190,6 +190,14 @@ func toRc(dc *models.DomainConfig, r *domainRecord) *models.RecordConfig {
 		rc.CaaFlag = uint8(caaFlag)
 		rc.CaaTag = r.CaaTag
 		rc.SetTarget(r.CaaValue)
+	case "TLSA":
+		tlsaUsage, _ := strconv.ParseUint(r.TlsaUsage, 10, 32)
+		rc.TlsaUsage = uint8(tlsaUsage)
+		tlsaSelector, _ := strconv.ParseUint(r.TlsaSelector, 10, 32)
+		rc.TlsaSelector = uint8(tlsaSelector)
+		tlsaMatchingType, _ := strconv.ParseUint(r.TlsaMatchingType, 10, 32)
+		rc.TlsaMatchingType = uint8(tlsaMatchingType)
+		rc.SetTarget(r.Target)
 	default:
 		rc.SetTarget(r.Target)
 	}
@@ -211,7 +219,7 @@ func toReq(rc *models.RecordConfig) (requestParams, error) {
 	}
 
 	switch rc.Type { // #rtype_variations
-	case "A", "AAAA", "NS", "PTR", "TXT", "SOA", "TLSA", "ALIAS", "CNAME":
+	case "A", "AAAA", "NS", "PTR", "TXT", "SOA", "ALIAS", "CNAME":
 		// Nothing special.
 	case "MX":
 		req["priority"] = strconv.Itoa(int(rc.MxPreference))
@@ -223,6 +231,10 @@ func toReq(rc *models.RecordConfig) (requestParams, error) {
 		req["caa_flag"] = strconv.Itoa(int(rc.CaaFlag))
 		req["caa_type"] = rc.CaaTag
 		req["caa_value"] = rc.Target
+	case "TLSA":
+		req["tlsa_usage"] = strconv.Itoa(int(rc.TlsaUsage))
+		req["tlsa_selector"] = strconv.Itoa(int(rc.TlsaSelector))
+		req["tlsa_matching_type"] = strconv.Itoa(int(rc.TlsaMatchingType))
 	default:
 		msg := fmt.Sprintf("ClouDNS.toReq rtype %v unimplemented", rc.Type)
 		panic(msg)
