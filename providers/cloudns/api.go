@@ -8,7 +8,7 @@ import (
 	"strconv"
 )
 
-// LinodeApi is the handle for this provider.
+// Api layer for CloDNS
 
 type Credentials struct {
 	id       string
@@ -18,6 +18,54 @@ type Credentials struct {
 type CloudnsApi struct {
 	domainIndex map[string]string
 	creds       Credentials
+}
+
+type requestParams map[string]string
+
+type errorResponse struct {
+	Status      string `json:"status"`
+	Description string `json:"statusDescription"`
+}
+
+type zoneRecord struct {
+	Name   string `json:"name"`
+	Type   string `json:"type"`
+	Status string `json:"status"`
+	Zone   string `json:"zone"`
+}
+
+type zoneResponse []zoneRecord
+
+type domainRecord struct {
+	ID       string `json:"id"`
+	Type     string `json:"type"`
+	Host     string `json:"host"`
+	Target   string `json:"record"`
+	Priority string `json:"priority"`
+	Weight   string `json:"weight"`
+	Port     string `json:"port"`
+	Service  string `json:"service"`
+	Protocol string `json:"protocol"`
+	TTL      string `json:"ttl"`
+	Status   int8   `json:"status"`
+}
+
+type recordResponse map[string]domainRecord
+
+var allowedTTLValues = []uint32{
+	60,      // 1 minute
+	300,     // 5 minutes
+	900,     // 15 minutes
+	1800,    // 30 minutes
+	3600,    // 1 hour
+	21600,   // 6 hours
+	43200,   // 12 hours
+	86400,   // 1 day
+	172800,  // 2 days
+	259200,  // 3 days
+	604800,  // 1 week
+	1209600, // 2 weeks
+	2419200, // 4 weeks
 }
 
 func (c *CloudnsApi) fetchDomainList() error {
@@ -136,54 +184,6 @@ func (c *CloudnsApi) get(endpoint string, params requestParams) ([]byte, error) 
 	}
 
 	return bodyString, nil
-}
-
-type requestParams map[string]string
-
-type errorResponse struct {
-	Status      string `json:"status"`
-	Description string `json:"statusDescription"`
-}
-
-type zoneRecord struct {
-	Name   string `json:"name"`
-	Type   string `json:"type"`
-	Status string `json:"status"`
-	Zone   string `json:"zone"`
-}
-
-type zoneResponse []zoneRecord
-
-type domainRecord struct {
-	ID       string `json:"id"`
-	Type     string `json:"type"`
-	Host     string `json:"host"`
-	Target   string `json:"record"`
-	Priority string `json:"priority"`
-	Weight   string `json:"weight"`
-	Port     string `json:"port"`
-	Service  string `json:"service"`
-	Protocol string `json:"protocol"`
-	TTL      string `json:"ttl"`
-	Status   int8   `json:"status"`
-}
-
-type recordResponse map[string]domainRecord
-
-var allowedTTLValues = []uint32{
-	60,      // 1 minute
-	300,     // 5 minutes
-	900,     // 15 minutes
-	1800,    // 30 minutes
-	3600,    // 1 hour
-	21600,   // 6 hours
-	43200,   // 12 hours
-	86400,   // 1 day
-	172800,  // 2 days
-	259200,  // 3 days
-	604800,  // 1 week
-	1209600, // 2 weeks
-	2419200, // 4 weeks
 }
 
 func fixTTL(ttl uint32) uint32 {
