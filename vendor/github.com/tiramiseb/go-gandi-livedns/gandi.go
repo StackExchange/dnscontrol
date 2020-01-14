@@ -8,7 +8,6 @@ import (
 type Config struct {
 	SharingID string
 	Debug     bool
-	DryRun    bool
 }
 
 func NewDomainClient(apikey string, config Config) *gandi_domain.Domain {
