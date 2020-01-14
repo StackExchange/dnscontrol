@@ -181,7 +181,7 @@ func TestDualProviders(t *testing.T) {
 	run()
 	// add bogus nameservers
 	dc.Records = []*models.RecordConfig{}
-	dc.Nameservers = append(dc.Nameservers, models.StringsToNameservers([]string{"ns1.otherdomain.tld", "ns2.otherdomain.tld"})...)
+	dc.Nameservers = append(dc.Nameservers, models.StringsToNameservers([]string{"ns1.example.com", "ns2.example.com"})...)
 	nameservers.AddNSRecords(dc)
 	t.Log("Adding nameservers from another provider")
 	run()
