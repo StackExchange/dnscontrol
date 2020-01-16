@@ -223,8 +223,8 @@ func (r *route53Provider) GetDomainCorrections(dc *models.DomainConfig) ([]*mode
 	// or changes where we upsert an entire record set.
 	dels := []*r53.Change{}
 	changes := []*r53.Change{}
-	changeDesc := ""
-	delDesc := ""
+	changeDesc := []string{}
+	delDesc := []string{}
 
 	for k, recs := range updates {
 		chg := &r53.Change{}
@@ -233,7 +233,7 @@ func (r *route53Provider) GetDomainCorrections(dc *models.DomainConfig) ([]*mode
 		if len(recs) == 0 {
 			dels = append(dels, chg)
 			chg.Action = sPtr("DELETE")
-			delDesc += strings.Join(namesToUpdate[k], "\n") + "\n"
+			delDesc = append(delDesc, strings.Join(namesToUpdate[k], "\n"))
 			// on delete just submit the original resource set we got from r53.
 			for _, r := range records {
 				if unescape(r.Name) == k.NameFQDN && (*r.Type == k.Type || k.Type == "R53_ALIAS_"+*r.Type) {
@@ -246,7 +246,7 @@ func (r *route53Provider) GetDomainCorrections(dc *models.DomainConfig) ([]*mode
 			}
 		} else {
 			changes = append(changes, chg)
-			changeDesc += strings.Join(namesToUpdate[k], "\n") + "\n"
+			changeDesc = append(changeDesc, strings.Join(namesToUpdate[k], "\n"))
 			// on change or create, just build a new record set from our desired state
 			chg.Action = sPtr("UPSERT")
 			rrset = &r53.ResourceRecordSet{
@@ -297,20 +297,29 @@ func (r *route53Provider) GetDomainCorrections(dc *models.DomainConfig) ([]*mode
 		batchSize := getBatchSize(len(dels), 1000)
 		batch := dels[:batchSize]
 		dels = dels[batchSize:]
+		delDescBatch := delDesc[:batchSize]
+		delDesc = delDesc[batchSize:]
+
+		delDescBatchStr := "\n" + strings.Join(delDescBatch, "\n") + "\n"
+
 		delReq := &r53.ChangeResourceRecordSetsInput{
 			ChangeBatch: &r53.ChangeBatch{Changes: batch},
 		}
-		addCorrection(delDesc, delReq)
+		addCorrection(delDescBatchStr, delReq)
 	}
 
 	for len(changes) > 0 {
 		batchSize := getBatchSize(len(changes), 500)
 		batch := changes[:batchSize]
 		changes = changes[batchSize:]
+		changeDescBatch := changeDesc[:batchSize]
+		changeDesc = changeDesc[batchSize:]
+		changeDescBatchStr := "\n" + strings.Join(changeDescBatch, "\n") + "\n"
+
 		changeReq := &r53.ChangeResourceRecordSetsInput{
 			ChangeBatch: &r53.ChangeBatch{Changes: batch},
 		}
-		addCorrection(changeDesc, changeReq)
+		addCorrection(changeDescBatchStr, changeReq)
 	}
 
 	return corrections, nil

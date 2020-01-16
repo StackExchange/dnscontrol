@@ -269,12 +269,12 @@ func NormalizeAndValidateConfig(config *models.DNSConfig) (errs []error) {
 		for _, provider := range domain.DNSProviderInstances {
 			pType := provider.ProviderType
 			// If NO_PURGE is in use, make sure this *isn't* a provider that *doesn't* support NO_PURGE.
-			if domain.KeepUnknown && providers.ProviderHasCabability(pType, providers.CantUseNOPURGE) {
+			if domain.KeepUnknown && providers.ProviderHasCapability(pType, providers.CantUseNOPURGE) {
 				errs = append(errs, errors.Errorf("%s uses NO_PURGE which is not supported by %s(%s)", domain.Name, provider.Name, pType))
 			}
 
 			// Record if any providers do not support TXTMulti:
-			if !providers.ProviderHasCabability(pType, providers.CanUseTXTMulti) {
+			if !providers.ProviderHasCapability(pType, providers.CanUseTXTMulti) {
 				txtMultiDissenters = append(txtMultiDissenters, provider.Name)
 			}
 		}
@@ -453,7 +453,7 @@ func checkProviderCapabilities(dc *models.DomainConfig) error {
 			continue
 		}
 		for _, provider := range dc.DNSProviderInstances {
-			if !providers.ProviderHasCabability(provider.ProviderType, ty.cap) {
+			if !providers.ProviderHasCapability(provider.ProviderType, ty.cap) {
 				return errors.Errorf("Domain %s uses %s records, but DNS provider type %s does not support them", dc.Name, ty.rType, provider.ProviderType)
 			}
 		}
