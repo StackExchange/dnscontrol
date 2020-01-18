@@ -4,12 +4,10 @@ package opensrs
 
 import (
 	"bytes"
-	"crypto/tls"
 	"fmt"
 	"io/ioutil"
 	"log"
 	"net/http"
-	"net/url"
 )
 
 const (
@@ -20,8 +18,8 @@ const (
 	Version = "0.0.1"
 
 	// defaultBaseURL to the OpenSRS production API.
-	//defaultBaseURL = "https://rr-n1-tor.opensrs.net:55443"
-	defaultBaseURL = "https://horizon.opensrs.net:55443"
+	defaultBaseURL = "https://rr-n1-tor.opensrs.net:55443"
+	//defaultBaseURL = "https://horizon.opensrs.net:55443"
 
 	// userAgent represents the default user agent used
 	// when no other user agent is set.
@@ -53,13 +51,7 @@ type Client struct {
 
 // NewClient returns a new OpenSRS API client using the given credentials.
 func NewClient(credentials Credentials) *Client {
-	proxyUrl, _ := url.Parse("http://127.0.0.1:8080")
-
-	tr := &http.Transport{
-		TLSClientConfig: &tls.Config{InsecureSkipVerify : true},
-		Proxy: http.ProxyURL(proxyUrl),
-	}
-	c := &Client{Credentials: credentials, HttpClient: &http.Client{Transport: tr}, BaseURL: defaultBaseURL}
+	c := &Client{Credentials: credentials, HttpClient: &http.Client{}, BaseURL: defaultBaseURL}
 	c.Domains = &DomainsService{client: c}
 	return c
 }

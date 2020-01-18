@@ -25,6 +25,8 @@ fails so that the full request can be attempted again. See the
 [godoc](http://godoc.org/github.com/hashicorp/go-retryablehttp) for more
 details.
 
+Version 0.6.0 and before are compatible with Go prior to 1.12. From 0.6.1 onward, Go 1.12+ is required.
+
 Example Use
 ===========
 

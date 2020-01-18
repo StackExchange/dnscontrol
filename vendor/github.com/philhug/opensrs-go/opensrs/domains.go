@@ -26,6 +26,7 @@ func (s *DomainsService) GetDomain(domainIdentifier string, domainType string, l
 }
 
 // UpdateDomainNameservers changes domain servers on a domain.
+
 //
 func (s *DomainsService) UpdateDomainNameservers(domainIdentifier string, newDs []string) (*OpsResponse, error) {
 	opsResponse := OpsResponse{}
@@ -39,18 +40,3 @@ func (s *DomainsService) UpdateDomainNameservers(domainIdentifier string, newDs 
 	_ = resp
 	return &opsResponse, nil
 }
-
-// GetDNSZone fetches zone info for a domain.
-//
-func (s *DomainsService) GetDNSZone(domainIdentifier string) (*OpsResponse, error) {
-	opsResponse := OpsResponse{}
-	opsRequestAttributes := OpsRequestAttributes{Domain: domainIdentifier}
-
-	resp, err := s.client.post("GET_DNS_ZONE", "DOMAIN", opsRequestAttributes, &opsResponse)
-	if err != nil {
-		return nil, err
-	}
-	_ = resp
-	return &opsResponse, nil
-}
-
