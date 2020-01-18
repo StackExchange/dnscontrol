@@ -994,6 +994,24 @@
 			"revisionTime": "2020-01-15T12:01:53Z"
 		},
 		{
+			"checksumSHA1": "1k54nFBj1HHAR8yEAa+X1N/tJTs=",
+			"path": "github.com/tiramiseb/go-gandi/gandi_domain",
+			"revision": "1f2ca9efa79b4bef45e948527449bf42bdf012fd",
+			"revisionTime": "2020-01-15T12:01:53Z"
+		},
+		{
+			"checksumSHA1": "3zUstMILpm6rJbfHh/4X4xJsL2k=",
+			"path": "github.com/tiramiseb/go-gandi/gandi_livedns",
+			"revision": "1f2ca9efa79b4bef45e948527449bf42bdf012fd",
+			"revisionTime": "2020-01-15T12:01:53Z"
+		},
+		{
+			"checksumSHA1": "0GmqD7suqMSoPFvo4HH7qywNTCw=",
+			"path": "github.com/tiramiseb/go-gandi/internal/client",
+			"revision": "1f2ca9efa79b4bef45e948527449bf42bdf012fd",
+			"revisionTime": "2020-01-15T12:01:53Z"
+		},
+		{
 			"checksumSHA1": "H1Ne82yYzWRQ2DKBsmRd0Hwcl04=",
 			"path": "github.com/urfave/cli",
 			"revision": "75104e932ac2ddb944a6ea19d9f9f26316ff1145",
