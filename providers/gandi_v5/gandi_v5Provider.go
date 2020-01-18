@@ -2,7 +2,7 @@ package gandi5
 
 /*
 
-Gandi API v5 LiveDNS provider:
+Gandi API V5 LiveDNS provider:
 
 Documentation: https://api.gandi.net/docs/
 Endpoint: https://api.gandi.net/
@@ -52,8 +52,8 @@ var features = providers.DocumentationNotes{
 
 // Section 2: Define the API client.
 
-// gandiAPI is the API handle used to store any client-related state.
-type gandiAPI struct {
+// api is the api handle used to store any client-related state.
+type api struct {
 	apikey    string
 	sharingid string
 	debug     bool
@@ -70,8 +70,8 @@ func newReg(conf map[string]string) (providers.Registrar, error) {
 }
 
 // newHelper generates a handle.
-func newHelper(m map[string]string, metadata json.RawMessage) (*gandiAPI, error) {
-	api := &gandiAPI{}
+func newHelper(m map[string]string, metadata json.RawMessage) (*api, error) {
+	api := &api{}
 	api.apikey = m["apikey"]
 	if api.apikey == "" {
 		return nil, errors.Errorf("missing Gandi apikey")
@@ -88,7 +88,8 @@ func newHelper(m map[string]string, metadata json.RawMessage) (*gandiAPI, error)
 // Section 3: Domain Service Provider (DSP) related functions
 
 // NB(tal): To future-proof your code, all new providers should
-// implement GetDomainCorrections exactly as you see here. In 3.0
+// implement GetDomainCorrections exactly as you see here
+// (byte-for-byte the same). In 3.0
 // we plan on using just the individual calls to GetZoneRecords,
 // PostProcessRecords, and so on.
 //
@@ -98,7 +99,7 @@ func newHelper(m map[string]string, metadata json.RawMessage) (*gandiAPI, error)
 
 // GetDomainCorrections get the current and existing records,
 // post-process them, and generate corrections.
-func (client *gandiAPI) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Correction, error) {
+func (client *api) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Correction, error) {
 	existing, err := client.GetZoneRecords(dc.Name)
 	if err != nil {
 		return nil, err
@@ -111,7 +112,7 @@ func (client *gandiAPI) GetDomainCorrections(dc *models.DomainConfig) ([]*models
 
 // GetZoneRecords gathers the DNS records and converts them to
 // dnscontrol's format.
-func (client *gandiAPI) GetZoneRecords(domain string) (models.Records, error) {
+func (client *api) GetZoneRecords(domain string) (models.Records, error) {
 	g := gandi.NewLiveDNSClient(client.apikey, gandi.Config{SharingID: client.sharingid, Debug: client.debug})
 
 	// Get all the existing records:
@@ -175,7 +176,7 @@ func PrepDesiredRecords(dc *models.DomainConfig) {
 // a list of functions to call to actually make the desired
 // correction, and a message to output to the user when the change is
 // made.
-func (client *gandiAPI) GenerateDomainCorrections(dc *models.DomainConfig, existing models.Records) ([]*models.Correction, error) {
+func (client *api) GenerateDomainCorrections(dc *models.DomainConfig, existing models.Records) ([]*models.Correction, error) {
 	if client.debug {
 		debugRecords("GenDC input", existing)
 	}
@@ -298,7 +299,7 @@ func gatherAffectedLabels(groups map[models.RecordKey][]string) (labels map[stri
 // Section 3: Registrar-related functions
 
 // GetNameservers returns a list of nameservers for domain.
-func (client *gandiAPI) GetNameservers(domain string) ([]*models.Nameserver, error) {
+func (client *api) GetNameservers(domain string) ([]*models.Nameserver, error) {
 	g := gandi.NewLiveDNSClient(client.apikey, gandi.Config{SharingID: client.sharingid, Debug: client.debug})
 	nameservers, err := g.GetDomainNS(domain)
 	if err != nil {
@@ -308,7 +309,7 @@ func (client *gandiAPI) GetNameservers(domain string) ([]*models.Nameserver, err
 }
 
 // GetRegistrarCorrections returns a list of corrections for this registrar.
-func (client *gandiAPI) GetRegistrarCorrections(dc *models.DomainConfig) ([]*models.Correction, error) {
+func (client *api) GetRegistrarCorrections(dc *models.DomainConfig) ([]*models.Correction, error) {
 	gd := gandi.NewDomainClient(client.apikey, gandi.Config{SharingID: client.sharingid, Debug: client.debug})
 
 	existingNs, err := gd.GetNameServers(dc.Name)
