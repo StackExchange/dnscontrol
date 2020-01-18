@@ -155,7 +155,7 @@ func FromXml(b []byte, v interface{}) error {
 	}
 	m := q.Body.DataBlock.decode()
 	jsonString, _ := json.Marshal(m)
-	log.Println(string(jsonString))
+
 	return json.Unmarshal(jsonString, &v)
 
 }
