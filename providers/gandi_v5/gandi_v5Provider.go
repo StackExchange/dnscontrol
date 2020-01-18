@@ -21,7 +21,7 @@ import (
 	"strconv"
 	"strings"
 
-	gandi "github.com/tiramiseb/go-gandi-livedns"
+	gandi "github.com/tiramiseb/go-gandi"
 
 	"github.com/miekg/dns/dnsutil"
 
