@@ -1,8 +1,8 @@
 package gandi
 
 import (
-	"github.com/tiramiseb/go-gandi-livedns/gandi_domain"
-	"github.com/tiramiseb/go-gandi-livedns/gandi_livedns"
+	"github.com/tiramiseb/go-gandi/gandi_domain"
+	"github.com/tiramiseb/go-gandi/gandi_livedns"
 )
 
 type Config struct {

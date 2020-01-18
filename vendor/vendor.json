@@ -988,34 +988,10 @@
 			"revisionTime": "2016-04-27T18:05:39Z"
 		},
 		{
-			"checksumSHA1": "dB9O/gtt8gkqhkaIRE4X5E/YhtU=",
-			"path": "github.com/tiramiseb/go-gandi-livedns",
-			"revision": "508e10bb7d9508c25775ebc1e6bc8a9ca1b6101e",
-			"revisionTime": "2020-01-14T10:33:34Z"
-		},
-		{
-			"checksumSHA1": "rSYLDnic/RnshWSmSK0pv7n9LLg=",
-			"path": "github.com/tiramiseb/go-gandi-livedns/gandi_config",
-			"revision": "e7fcd703595ddff289c0d3e417ebe84deac1c372",
-			"revisionTime": "2020-01-09T16:17:08Z"
-		},
-		{
-			"checksumSHA1": "gzCvCvaVMTD8aZ60JLflGsJljIA=",
-			"path": "github.com/tiramiseb/go-gandi-livedns/gandi_domain",
-			"revision": "508e10bb7d9508c25775ebc1e6bc8a9ca1b6101e",
-			"revisionTime": "2020-01-14T10:33:34Z"
-		},
-		{
-			"checksumSHA1": "Qw+QqOs1GkcCULGkIfSITv3zwSU=",
-			"path": "github.com/tiramiseb/go-gandi-livedns/gandi_livedns",
-			"revision": "508e10bb7d9508c25775ebc1e6bc8a9ca1b6101e",
-			"revisionTime": "2020-01-14T10:33:34Z"
-		},
-		{
-			"checksumSHA1": "DulGgPCCEwvhLkjhtouOtcsmEME=",
-			"path": "github.com/tiramiseb/go-gandi-livedns/internal/client",
-			"revision": "508e10bb7d9508c25775ebc1e6bc8a9ca1b6101e",
-			"revisionTime": "2020-01-14T10:33:34Z"
+			"checksumSHA1": "PSXroSsv76Hahq8MzkxqhVLa4X8=",
+			"path": "github.com/tiramiseb/go-gandi",
+			"revision": "1f2ca9efa79b4bef45e948527449bf42bdf012fd",
+			"revisionTime": "2020-01-15T12:01:53Z"
 		},
 		{
 			"checksumSHA1": "H1Ne82yYzWRQ2DKBsmRd0Hwcl04=",
