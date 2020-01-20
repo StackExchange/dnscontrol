@@ -217,7 +217,7 @@ github.com/softlayer/softlayer-go/filter
 github.com/softlayer/softlayer-go/services
 github.com/softlayer/softlayer-go/session
 github.com/softlayer/softlayer-go/sl
-# github.com/stretchr/testify v1.3.0
+# github.com/stretchr/testify v1.4.0
 github.com/stretchr/testify/assert
 # github.com/tdewolff/buffer v2.0.0+incompatible
 github.com/tdewolff/buffer
@@ -230,6 +230,11 @@ github.com/tdewolff/parse/buffer
 github.com/tdewolff/parse/json
 # github.com/tdewolff/strconv v1.0.0
 github.com/tdewolff/strconv
+# github.com/tiramiseb/go-gandi v0.0.0-20200119104052-d61de35bb043
+github.com/tiramiseb/go-gandi
+github.com/tiramiseb/go-gandi/domain
+github.com/tiramiseb/go-gandi/internal/client
+github.com/tiramiseb/go-gandi/livedns
 # github.com/urfave/cli v1.20.1-0.20180106191048-75104e932ac2
 github.com/urfave/cli
 # github.com/vultr/govultr v0.1.7

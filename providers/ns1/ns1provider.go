@@ -63,8 +63,8 @@ func (n *nsone) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Correct
 		}
 		found = append(found, zrs...)
 	}
-	foundGrouped := found.Grouped()
-	desiredGrouped := dc.Records.Grouped()
+	foundGrouped := found.GroupedByKey()
+	desiredGrouped := dc.Records.GroupedByKey()
 
 	//  Normalize
 	models.PostProcessRecords(found)

@@ -61,6 +61,10 @@
     "domain": "$GANDILIVE_DOMAIN",
     "knownFailures": "5"
   },
+  "GANDI_V5": {
+    "apikey": "$GANDI_V5_APIKEY",
+    "domain": "$GANDI_V5_DOMAIN"
+  },
   "GCLOUD": {
     "type": "$GCLOUD_TYPE",
     "client_email": "$GCLOUD_EMAIL",
