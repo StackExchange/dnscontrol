@@ -2,6 +2,7 @@
 providers/azuredns @vatsalyagoel
 providers/bind @tlimoncelli
 # providers/cloudflare
+providers/cloudns @pragmaton
 providers/digitalocean @Deraen
 providers/dnsimple @aeden
 providers/gandi @TomOnTime

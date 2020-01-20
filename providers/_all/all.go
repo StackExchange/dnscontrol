@@ -7,6 +7,7 @@ import (
 	_ "github.com/StackExchange/dnscontrol/providers/azuredns"
 	_ "github.com/StackExchange/dnscontrol/providers/bind"
 	_ "github.com/StackExchange/dnscontrol/providers/cloudflare"
+	_ "github.com/StackExchange/dnscontrol/providers/cloudns"
 	_ "github.com/StackExchange/dnscontrol/providers/digitalocean"
 	_ "github.com/StackExchange/dnscontrol/providers/dnsimple"
 	_ "github.com/StackExchange/dnscontrol/providers/exoscale"
