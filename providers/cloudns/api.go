@@ -9,16 +9,13 @@ import (
 )
 
 // Api layer for CloDNS
-
-type Credentials struct {
-	id       string
-	password string
-}
-
-type CloudnsApi struct {
+type api struct {
 	domainIndex      map[string]string
-	creds            Credentials
 	nameserversNames []string
+	creds            struct {
+		id       string
+		password string
+	}
 }
 
 type requestParams map[string]string
@@ -84,7 +81,7 @@ var allowedTTLValues = []uint32{
 	2419200, // 4 weeks
 }
 
-func (c *CloudnsApi) fetchAvailableNameservers() error {
+func (c *api) fetchAvailableNameservers() error {
 	c.nameserversNames = nil
 
 	var bodyString, err = c.get("/dns/available-name-servers.json", requestParams{})
@@ -104,7 +101,7 @@ func (c *CloudnsApi) fetchAvailableNameservers() error {
 	return nil
 }
 
-func (c *CloudnsApi) fetchDomainList() error {
+func (c *api) fetchDomainList() error {
 	c.domainIndex = map[string]string{}
 	rowsPerPage := 100
 	page := 1
@@ -132,7 +129,7 @@ func (c *CloudnsApi) fetchDomainList() error {
 	return nil
 }
 
-func (c *CloudnsApi) createDomain(domain string) error {
+func (c *api) createDomain(domain string) error {
 	params := requestParams{
 		"domain-name": domain,
 		"zone-type":   "master",
@@ -143,7 +140,7 @@ func (c *CloudnsApi) createDomain(domain string) error {
 	return nil
 }
 
-func (c *CloudnsApi) createRecord(domainID string, rec requestParams) error {
+func (c *api) createRecord(domainID string, rec requestParams) error {
 	rec["domain-name"] = domainID
 	if _, err := c.get("/dns/add-record.json", rec); err != nil {
 		return errors.Errorf("Error create record  ClouDNS: %s", err)
@@ -151,7 +148,7 @@ func (c *CloudnsApi) createRecord(domainID string, rec requestParams) error {
 	return nil
 }
 
-func (c *CloudnsApi) deleteRecord(domainID string, recordID string) error {
+func (c *api) deleteRecord(domainID string, recordID string) error {
 	params := requestParams{
 		"domain-name": domainID,
 		"record-id":   recordID,
@@ -162,7 +159,7 @@ func (c *CloudnsApi) deleteRecord(domainID string, recordID string) error {
 	return nil
 }
 
-func (c *CloudnsApi) modifyRecord(domainID string, recordID string, rec requestParams) error {
+func (c *api) modifyRecord(domainID string, recordID string, rec requestParams) error {
 	rec["domain-name"] = domainID
 	rec["record-id"] = recordID
 	if _, err := c.get("/dns/mod-record.json", rec); err != nil {
@@ -171,7 +168,7 @@ func (c *CloudnsApi) modifyRecord(domainID string, recordID string, rec requestP
 	return nil
 }
 
-func (c *CloudnsApi) getRecords(id string) ([]domainRecord, error) {
+func (c *api) getRecords(id string) ([]domainRecord, error) {
 	params := requestParams{"domain-name": id}
 
 	var bodyString, err = c.get("/dns/records.json", params)
@@ -189,7 +186,7 @@ func (c *CloudnsApi) getRecords(id string) ([]domainRecord, error) {
 	return records, nil
 }
 
-func (c *CloudnsApi) get(endpoint string, params requestParams) ([]byte, error) {
+func (c *api) get(endpoint string, params requestParams) ([]byte, error) {
 	client := &http.Client{}
 	req, _ := http.NewRequest("GET", "https://api.cloudns.net"+endpoint, nil)
 	q := req.URL.Query()

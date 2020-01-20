@@ -23,19 +23,19 @@ Info required in `creds.json`:
 
 // NewCloudns creates the provider.
 func NewCloudns(m map[string]string, metadata json.RawMessage) (providers.DNSServiceProvider, error) {
-	api := &CloudnsApi{}
+	c := &api{}
 
-	api.creds.id, api.creds.password = m["auth-id"], m["auth-password"]
-	if api.creds.id == "" || api.creds.password == "" {
+	c.creds.id, c.creds.password = m["auth-id"], m["auth-password"]
+	if c.creds.id == "" || c.creds.password == "" {
 		return nil, errors.Errorf("missing ClouDNS auth-id and auth-password")
 	}
 
 	// Get a domain to validate authentication
-	if err := api.fetchDomainList(); err != nil {
+	if err := c.fetchDomainList(); err != nil {
 		return nil, err
 	}
 
-	return api, nil
+	return c, nil
 }
 
 var features = providers.DocumentationNotes{
@@ -55,15 +55,15 @@ func init() {
 }
 
 // GetNameservers returns the nameservers for a domain.
-func (api *CloudnsApi) GetNameservers(domain string) ([]*models.Nameserver, error) {
-	if len(api.nameserversNames) == 0 {
-		api.fetchAvailableNameservers()
+func (c *api) GetNameservers(domain string) ([]*models.Nameserver, error) {
+	if len(c.nameserversNames) == 0 {
+		c.fetchAvailableNameservers()
 	}
-	return models.StringsToNameservers(api.nameserversNames), nil
+	return models.StringsToNameservers(c.nameserversNames), nil
 }
 
 // GetDomainCorrections returns the corrections for a domain.
-func (api *CloudnsApi) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Correction, error) {
+func (c *api) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Correction, error) {
 	dc, err := dc.Copy()
 	if err != nil {
 		return nil, err
@@ -71,22 +71,22 @@ func (api *CloudnsApi) GetDomainCorrections(dc *models.DomainConfig) ([]*models.
 
 	dc.Punycode()
 
-	if api.domainIndex == nil {
-		if err := api.fetchDomainList(); err != nil {
+	if c.domainIndex == nil {
+		if err := c.fetchDomainList(); err != nil {
 			return nil, err
 		}
 	}
-	domainID, ok := api.domainIndex[dc.Name]
+	domainID, ok := c.domainIndex[dc.Name]
 	if !ok {
 		return nil, errors.Errorf("%s not listed in domains for ClouDNS account", dc.Name)
 	}
 
-	records, err := api.getRecords(domainID)
+	records, err := c.getRecords(domainID)
 	if err != nil {
 		return nil, err
 	}
 
-	existingRecords := make([]*models.RecordConfig, len(records), len(records)+len(api.nameserversNames))
+	existingRecords := make([]*models.RecordConfig, len(records), len(records)+len(c.nameserversNames))
 	for i := range records {
 		existingRecords[i] = toRc(dc, &records[i])
 	}
@@ -110,7 +110,7 @@ func (api *CloudnsApi) GetDomainCorrections(dc *models.DomainConfig) ([]*models.
 		corr := &models.Correction{
 			Msg: fmt.Sprintf("%s, ClouDNS ID: %s", m.String(), id),
 			F: func() error {
-				return api.deleteRecord(domainID, id)
+				return c.deleteRecord(domainID, id)
 			},
 		}
 		corrections = append(corrections, corr)
@@ -125,7 +125,7 @@ func (api *CloudnsApi) GetDomainCorrections(dc *models.DomainConfig) ([]*models.
 		corr := &models.Correction{
 			Msg: m.String(),
 			F: func() error {
-				return api.createRecord(domainID, req)
+				return c.createRecord(domainID, req)
 			},
 		}
 		corrections = append(corrections, corr)
@@ -140,7 +140,7 @@ func (api *CloudnsApi) GetDomainCorrections(dc *models.DomainConfig) ([]*models.
 		corr := &models.Correction{
 			Msg: fmt.Sprintf("%s, ClouDNS ID: %s: ", m.String(), id),
 			F: func() error {
-				return api.modifyRecord(domainID, id, req)
+				return c.modifyRecord(domainID, id, req)
 			},
 		}
 		corrections = append(corrections, corr)
@@ -150,15 +150,15 @@ func (api *CloudnsApi) GetDomainCorrections(dc *models.DomainConfig) ([]*models.
 }
 
 // EnsureDomainExists returns an error if domain doesn't exist.
-func (api *CloudnsApi) EnsureDomainExists(domain string) error {
-	if err := api.fetchDomainList(); err != nil {
+func (c *api) EnsureDomainExists(domain string) error {
+	if err := c.fetchDomainList(); err != nil {
 		return err
 	}
 	// domain already exists
-	if _, ok := api.domainIndex[domain]; ok {
+	if _, ok := c.domainIndex[domain]; ok {
 		return nil
 	}
-	return api.createDomain(domain)
+	return c.createDomain(domain)
 }
 
 func toRc(dc *models.DomainConfig, r *domainRecord) *models.RecordConfig {
