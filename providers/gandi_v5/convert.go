@@ -6,16 +6,16 @@ import (
 	"github.com/StackExchange/dnscontrol/models"
 	"github.com/StackExchange/dnscontrol/pkg/printer"
 	"github.com/pkg/errors"
-	"github.com/tiramiseb/go-gandi/gandi_livedns"
+	"github.com/tiramiseb/go-gandi/livedns"
 )
 
 // nativeToRecord takes a DNS record from Gandi and returns a native RecordConfig struct.
-func nativeToRecords(n gandi_livedns.DomainRecord, origin string) (rcs []*models.RecordConfig) {
+func nativeToRecords(n livedns.DomainRecord, origin string) (rcs []*models.RecordConfig) {
 
 	// Gandi returns all the values for a given label/rtype pair in each
-	// gandi_livedns.DomainRecord.  In other words, if there are multiple A
+	// livedns.DomainRecord.  In other words, if there are multiple A
 	// records for a label, all the IP addresses are listed in
-	// n.RrsetValues rather than having many gandi_livedns.DomainRecord's.
+	// n.RrsetValues rather than having many livedns.DomainRecord's.
 	// We must split them out into individual records, one for each value.
 	for _, value := range n.RrsetValues {
 		rc := &models.RecordConfig{
@@ -35,13 +35,13 @@ func nativeToRecords(n gandi_livedns.DomainRecord, origin string) (rcs []*models
 	return rcs
 }
 
-func recordsToNative(rcs []*models.RecordConfig, origin string) []gandi_livedns.DomainRecord {
+func recordsToNative(rcs []*models.RecordConfig, origin string) []livedns.DomainRecord {
 	// Take a list of RecordConfig and return an equivalent list of ZoneRecords.
 	// Gandi requires one ZoneRecord for each label:key tuple, therefore we
 	// might collapse many RecordConfig into one ZoneRecord.
 
-	var keys = map[models.RecordKey]*gandi_livedns.DomainRecord{}
-	var zrs []gandi_livedns.DomainRecord
+	var keys = map[models.RecordKey]*livedns.DomainRecord{}
+	var zrs []livedns.DomainRecord
 
 	for _, r := range rcs {
 		label := r.GetLabel()
@@ -52,7 +52,7 @@ func recordsToNative(rcs []*models.RecordConfig, origin string) []gandi_livedns.
 
 		if zr, ok := keys[key]; !ok {
 			// Allocate a new ZoneRecord:
-			zr := gandi_livedns.DomainRecord{
+			zr := livedns.DomainRecord{
 				RrsetType:   r.Type,
 				RrsetTTL:    int(r.TTL),
 				RrsetName:   label,
