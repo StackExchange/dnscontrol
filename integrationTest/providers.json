@@ -15,6 +15,13 @@
   "BIND": {
     "domain": "example.com"
   },
+  "CLOUDNS": {
+    "auth-id": "$CLOUDNS_AUTH_ID",
+    "auth-password": "$CLOUDNS_AUTH_PASSWORD",
+    "domain": "$CLOUDNS_DOMAIN",
+    "knownFailures": "53"
+  },
+
   "CLOUDFLAREAPI_OLD": {
     "apikey": "$CF_KEY",
     "apiuser": "$CF_USER",

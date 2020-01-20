@@ -61,6 +61,7 @@ provided to help community members support their code independently.
 
 Maintainers of contributed providers:
 
+* ClouDNS @pragmaton
 * digital ocean @Deraen
 * dnsimple @aeden
 * gandi @TomOnTime
