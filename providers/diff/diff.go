@@ -221,6 +221,32 @@ func (d *differ) ChangedGroups(existing []*models.RecordConfig) map[models.Recor
 	return changedKeys
 }
 
+// DebugKeyMapMap debug prints the results from ChangedGroups.
+func DebugKeyMapMap(note string, m map[models.RecordKey][]string) {
+	// The output isn't pretty but it is useful.
+	fmt.Println("DEBUG:", note)
+
+	// Extract the keys
+	var keys []models.RecordKey
+	for k := range m {
+		keys = append(keys, k)
+	}
+	sort.SliceStable(keys, func(i, j int) bool {
+		if keys[i].NameFQDN == keys[j].NameFQDN {
+			return keys[i].Type < keys[j].Type
+		}
+		return keys[i].NameFQDN < keys[j].NameFQDN
+	})
+
+	// Pretty print the map:
+	for _, k := range keys {
+		fmt.Printf("   %v %v:\n", k.Type, k.NameFQDN)
+		for _, s := range m[k] {
+			fmt.Printf("      -- %q\n", s)
+		}
+	}
+}
+
 func (c Correlation) String() string {
 	if c.Existing == nil {
 		return fmt.Sprintf("CREATE %s %s %s", c.Desired.Type, c.Desired.GetLabelFQDN(), c.d.content(c.Desired))

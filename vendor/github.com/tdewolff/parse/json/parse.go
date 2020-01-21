@@ -2,32 +2,12 @@
 package json // import "github.com/tdewolff/parse/json"
 
 import (
-	"errors"
 	"io"
 	"strconv"
 
-	"github.com/tdewolff/buffer"
+	"github.com/tdewolff/parse"
+	"github.com/tdewolff/parse/buffer"
 )
-
-// ErrBadComma is returned when an unexpected comma is encountered.
-var ErrBadComma = errors.New("unexpected comma character outside an array or object")
-
-// ErrNoComma is returned when no comma is present between two values.
-var ErrNoComma = errors.New("expected comma character or an array or object ending")
-
-// ErrBadObjectKey is returned when the object key is not a quoted string.
-var ErrBadObjectKey = errors.New("expected object key to be a quoted string")
-
-// ErrBadObjectDeclaration is returned when the object key is not followed by a colon character.
-var ErrBadObjectDeclaration = errors.New("expected colon character after object key")
-
-// ErrBadObjectEnding is returned when an unexpected right brace is encountered.
-var ErrBadObjectEnding = errors.New("unexpected right brace character")
-
-// ErrBadArrayEnding is returned when an unexpected right bracket is encountered.
-var ErrBadArrayEnding = errors.New("unexpected right bracket character")
-
-////////////////////////////////////////////////////////////////
 
 // GrammarType determines the type of grammar
 type GrammarType uint32
@@ -118,24 +98,26 @@ func NewParser(r io.Reader) *Parser {
 }
 
 // Err returns the error encountered during tokenization, this is often io.EOF but also other errors can be returned.
-func (p Parser) Err() error {
-	err := p.r.Err()
-	if err != nil {
-		return err
+func (p *Parser) Err() error {
+	if p.err != nil {
+		return p.err
 	}
-	return p.err
+	return p.r.Err()
+}
+
+// Restore restores the NULL byte at the end of the buffer.
+func (p *Parser) Restore() {
+	p.r.Restore()
 }
 
 // Next returns the next Grammar. It returns ErrorGrammar when an error was encountered. Using Err() one can retrieve the error message.
 func (p *Parser) Next() (GrammarType, []byte) {
-	p.r.Free(p.r.ShiftLen())
-
 	p.moveWhitespace()
 	c := p.r.Peek(0)
 	state := p.state[len(p.state)-1]
 	if c == ',' {
 		if state != ArrayState && state != ObjectKeyState {
-			p.err = ErrBadComma
+			p.err = parse.NewErrorLexer("unexpected comma character outside an array or object", p.r)
 			return ErrorGrammar, nil
 		}
 		p.r.Move(1)
@@ -146,7 +128,7 @@ func (p *Parser) Next() (GrammarType, []byte) {
 	p.r.Skip()
 
 	if p.needComma && c != '}' && c != ']' && c != 0 {
-		p.err = ErrNoComma
+		p.err = parse.NewErrorLexer("expected comma character or an array or object ending", p.r)
 		return ErrorGrammar, nil
 	} else if c == '{' {
 		p.state = append(p.state, ObjectKeyState)
@@ -154,7 +136,7 @@ func (p *Parser) Next() (GrammarType, []byte) {
 		return StartObjectGrammar, p.r.Shift()
 	} else if c == '}' {
 		if state != ObjectKeyState {
-			p.err = ErrBadObjectEnding
+			p.err = parse.NewErrorLexer("unexpected right brace character", p.r)
 			return ErrorGrammar, nil
 		}
 		p.needComma = true
@@ -171,7 +153,7 @@ func (p *Parser) Next() (GrammarType, []byte) {
 	} else if c == ']' {
 		p.needComma = true
 		if state != ArrayState {
-			p.err = ErrBadArrayEnding
+			p.err = parse.NewErrorLexer("unexpected right bracket character", p.r)
 			return ErrorGrammar, nil
 		}
 		p.state = p.state[:len(p.state)-1]
@@ -182,13 +164,13 @@ func (p *Parser) Next() (GrammarType, []byte) {
 		return EndArrayGrammar, p.r.Shift()
 	} else if state == ObjectKeyState {
 		if c != '"' || !p.consumeStringToken() {
-			p.err = ErrBadObjectKey
+			p.err = parse.NewErrorLexer("expected object key to be a quoted string", p.r)
 			return ErrorGrammar, nil
 		}
 		n := p.r.Pos()
 		p.moveWhitespace()
 		if c := p.r.Peek(0); c != ':' {
-			p.err = ErrBadObjectDeclaration
+			p.err = parse.NewErrorLexer("expected colon character after object key", p.r)
 			return ErrorGrammar, nil
 		}
 		p.r.Move(1)
@@ -223,7 +205,7 @@ The following functions follow the specifications at http://json.org/
 
 func (p *Parser) moveWhitespace() {
 	for {
-		if c := p.r.Peek(0); c != ' ' && c != '\t' && c != '\r' && c != '\n' {
+		if c := p.r.Peek(0); c != ' ' && c != '\n' && c != '\r' && c != '\t' {
 			break
 		}
 		p.r.Move(1)
@@ -304,10 +286,18 @@ func (p *Parser) consumeStringToken() bool {
 	for {
 		c := p.r.Peek(0)
 		if c == '"' {
-			p.r.Move(1)
-			break
-		} else if c == '\\' && (p.r.Peek(1) != 0 || p.r.Err() == nil) {
-			p.r.Move(1)
+			escaped := false
+			for i := p.r.Pos() - 1; i >= 0; i-- {
+				if p.r.Lexeme()[i] == '\\' {
+					escaped = !escaped
+				} else {
+					break
+				}
+			}
+			if !escaped {
+				p.r.Move(1)
+				break
+			}
 		} else if c == 0 {
 			return false
 		}

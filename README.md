@@ -17,6 +17,7 @@ Currently supported DNS providers:
  - Azure DNS
  - BIND
  - Cloudflare
+ - ClouDNS
  - DigitalOcean
  - DNSimple
  - Exoscale

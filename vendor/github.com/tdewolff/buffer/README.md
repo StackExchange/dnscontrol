@@ -20,21 +20,19 @@ Writer is a buffer that implements the `io.Writer` interface. It is a much thinn
 
 The reset functionality allows for better memory reuse. After calling `Reset`, it will overwrite the current buffer and thus reduce allocations.
 
-## Shifter
-Shifter is a read buffer specifically for building lexers. It reads in chunks from an `io.Reader` and allows to keep track two positions: the start and end position. The start position is the beginning of the current token being parsed, the end position is being moved forward until a valid token is found. Calling `Shift` will collapse the positions to the end and return the parsed `[]byte`.
-
-Moving the end position can go through `Move(int)` which also accepts negative integers or `MoveTo(int)` where the integer will be the new length of the selected bytes. `MoveTo(int)` is useful when you saved a previous position through `Pos() int` and want to return to that position.
-
-`Peek(int) byte` will peek forward (relative to the end position, ie. the position set with Move/MoveTo) and return the byte at that location. `PeekRune(int) (rune, int)` returns UTF-8 runes and its length at the given **byte** position. Consecutive calls to Peek **may invalidate previously returned byte slices**. So if you need to use the content of a byte slice after the next call to `Peek(int) byte`, it needs to be copied in principal (see exception below).
-
-`Bytes() []byte` will return the currently selected bytes, `Skip()` will collapse the selection. `Shift() []byte` is a combination of `Bytes() []byte` and `Skip()`.
-
-When the internal `io.Reader` returned an error, `Err() error` will return that error (even if subsequent peeks  are still possible). If `Peek(int) byte` returns `0` when an error occurred. `IsEOF() bool` is a faster alternative than `Err() == io.EOF`, if it returns true it means the internal buffer will not be reallocated/overwritten. So returned byte slices need not be copied for use after subsequent `Peek(int) byte` calls. When the `io.Reader` provides the `Bytes() []byte` function (which `Reader` does in this package), it will use that buffer instead and thus `IsEOF()` returns always `true` (ie. copying returned slices is not needed).
-
 ## Lexer
-Lexer is an improvement over Shifter in that it does not need the returned byte slices to be copied. Instead you can call `ShiftLen() int`, which returns the number of bytes that have been shifted since the previous call to `ShiftLen`, and use that to specify how many bytes need to be freed up from the buffer. Calling `Free(n int)` frees up `n` bytes from the internal buffer(s). It holds an array of buffers to accommodate for keeping everything in-memory. If you don't need to keep returned byte slices around, call `Free(ShiftLen())` after every `Shift` call.
+Lexer is a read buffer specifically designed for building lexers. It keeps track of two positions: a start and end position. The start position is the beginning of the current token being parsed, the end position is being moved forward until a valid token is found. Calling `Shift` will collapse the positions to the end and return the parsed `[]byte`.
 
-The `MoveTo(int)` function has been renamed to `Rewind(int)` to fit its meaning better. Also `Bytes() []byte` has been renamed to `Lexeme() []byte` for the same reason.
+Moving the end position can go through `Move(int)` which also accepts negative integers. One can also use `Pos() int` to try and parse a token, and if it fails rewind with `Rewind(int)`, passing the previously saved position.
+
+`Peek(int) byte` will peek forward (relative to the end position) and return the byte at that location. `PeekRune(int) (rune, int)` returns UTF-8 runes and its length at the given **byte** position. Upon an error `Peek` will return `0`, the **user must peek at every character** and not skip any, otherwise it may skip a `0` and panic on out-of-bounds indexing.
+
+`Lexeme() []byte` will return the currently selected bytes, `Skip()` will collapse the selection. `Shift() []byte` is a combination of `Lexeme() []byte` and `Skip()`.
+
+When the passed `io.Reader` returned an error, `Err() error` will return that error even if not at the end of the buffer.
+
+## StreamLexer
+StreamLexer behaves like Lexer but uses a buffer pool to read in chunks from `io.Reader`, retaining old buffers in memory that are still in use, and re-using old buffers otherwise. Calling `Free(n int)` frees up `n` bytes from the internal buffer(s). It holds an array of buffers to accommodate for keeping everything in-memory. Calling `ShiftLen() int` returns the number of bytes that have been shifted since the previous call to `ShiftLen`, which can be used to specify how many bytes need to be freed up from the buffer. If you don't need to keep returned byte slices around, call `Free(ShiftLen())` after every `Shift` call.
 
 ## License
 Released under the [MIT license](LICENSE.md).

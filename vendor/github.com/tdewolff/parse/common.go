@@ -2,6 +2,7 @@
 package parse // import "github.com/tdewolff/parse"
 
 import (
+	"bytes"
 	"encoding/base64"
 	"errors"
 	"net/url"
@@ -145,7 +146,7 @@ func Mediatype(b []byte) ([]byte, map[string]string) {
 
 // DataURI parses the given data URI and returns the mediatype, data and ok.
 func DataURI(dataURI []byte) ([]byte, []byte, error) {
-	if len(dataURI) > 5 && Equal(dataURI[:5], []byte("data:")) {
+	if len(dataURI) > 5 && bytes.Equal(dataURI[:5], []byte("data:")) {
 		dataURI = dataURI[5:]
 		inBase64 := false
 		var mediatype []byte
@@ -153,7 +154,7 @@ func DataURI(dataURI []byte) ([]byte, []byte, error) {
 		for j := 0; j < len(dataURI); j++ {
 			c := dataURI[j]
 			if c == '=' || c == ';' || c == ',' {
-				if c != '=' && Equal(TrimWhitespace(dataURI[i:j]), []byte("base64")) {
+				if c != '=' && bytes.Equal(TrimWhitespace(dataURI[i:j]), []byte("base64")) {
 					if len(mediatype) > 0 {
 						mediatype = mediatype[:len(mediatype)-1]
 					}
