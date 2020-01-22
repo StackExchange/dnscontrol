@@ -67,6 +67,10 @@ var features = providers.DocumentationNotes{
 	providers.DocCreateDomains:       providers.Can(),
 	providers.DocOfficiallySupported: providers.Cannot(),
 	providers.CanUseSRV:              providers.Can(),
+	// Digitalocean support CAA records, except
+	// ";" value with issue/issuewild records:
+	// https://www.digitalocean.com/docs/networking/dns/how-to/create-caa-records/
+	providers.CanUseCAA: providers.Can(),
 }
 
 func init() {
@@ -215,6 +219,8 @@ func toRc(dc *models.DomainConfig, r *godo.DomainRecord) *models.RecordConfig {
 		SrvWeight:    uint16(r.Weight),
 		SrvPort:      uint16(r.Port),
 		Original:     r,
+		CaaTag:       r.Tag,
+		CaaFlag:      uint8(r.Flags),
 	}
 	t.SetLabelFromFQDN(name, dc.Name)
 	t.SetTarget(target)
@@ -240,6 +246,11 @@ func toReq(dc *models.DomainConfig, rc *models.RecordConfig) *godo.DomainRecordE
 	case "TXT":
 		// TXT records are the one place where DO combines many items into one field.
 		target = rc.GetTargetCombined()
+	case "CAA":
+		// DO API requires that value ends in dot
+		// But the value returned from API doesn't contain this,
+		// so no need to strip the dot when reading value from API.
+		target = target + "."
 	default:
 		// no action required
 	}
@@ -252,5 +263,7 @@ func toReq(dc *models.DomainConfig, rc *models.RecordConfig) *godo.DomainRecordE
 		Priority: priority,
 		Port:     int(rc.SrvPort),
 		Weight:   int(rc.SrvWeight),
+		Tag:      rc.CaaTag,
+		Flags:    int(rc.CaaFlag),
 	}
 }
