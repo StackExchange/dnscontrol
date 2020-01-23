@@ -7,6 +7,31 @@ title: How to build and ship a release
 
 Here are my notes from producing the v0.2.8 release.  Change the version number as appropriate.
 
+## Tip: How to keep modules updated
+
+List out-of-date modules and update any that 
+
+```
+go get -u github.com/psampaz/go-mod-outdated
+go list -u -m -json all | go-mod-outdated -update -direct 
+```
+
+To update a module, `get` it, then re-run the integration tests.
+
+```
+go get -u
+or
+go get -u module/path
+```
+
+
+## Step 0. Vendor the modules
+
+Vendor the modules. The vendored files are not used (unless you change
+the builds to use `-mod=vendor`). They are maintained simply to make
+sure that we have a backup in the unlikely event of a disaster.
+
+
 ## Step 1. Run the integration tests
 
 * If you are at StackOverflow, this is in TC as "DNS > Integration Tests".
