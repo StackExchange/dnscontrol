@@ -2,6 +2,7 @@ variables:
   GOBIN:  '$(GOPATH)/bin' # Go binaries path
   GOROOT: '/usr/local/go1.13' # Go installation path
   GOPATH: '$(system.defaultWorkingDirectory)/gopath' # Go workspace path
+  GO111MODULE: "on" # Always enable modules, even in GOPATH
   modulePath: '$(GOPATH)/src/github.com/$(build.repository.name)' # Path to the module's code
 
 trigger:
@@ -24,14 +25,14 @@ jobs:
         OS: linux
   steps:
   - template: build/azure-pipelines/go-env.yaml
-  - script: "go run build/build.go -os $(OS)"
+  - script: "go run -mod=readonly build/build.go -os $(OS)"
     workingDirectory: '$(modulePath)'
 
 - job: "unittests"
   displayName: "Run Unit Tests"
   steps:
   - template: build/azure-pipelines/go-env.yaml
-  - script: "go test ./..."
+  - script: "go test -mod=readonly ./..."
     workingDirectory: '$(modulePath)'
 
 - job: "GoFmt"

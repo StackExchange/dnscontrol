@@ -5,7 +5,7 @@ import (
 
 	"fmt"
 
-	"github.com/StackExchange/dnscontrol/models"
+	"github.com/StackExchange/dnscontrol/v2/models"
 )
 
 func TestCheckLabel(t *testing.T) {

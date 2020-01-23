@@ -8,8 +8,8 @@ import (
 	"github.com/namedotcom/go/namecom"
 	"github.com/pkg/errors"
 
-	"github.com/StackExchange/dnscontrol/models"
-	"github.com/StackExchange/dnscontrol/providers/diff"
+	"github.com/StackExchange/dnscontrol/v2/models"
+	"github.com/StackExchange/dnscontrol/v2/providers/diff"
 )
 
 var defaultNameservers = []*models.Nameserver{

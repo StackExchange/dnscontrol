@@ -44,7 +44,7 @@ type DNSProviderConfig struct {
 // FIXME(tal): In hindsight, the Nameserver struct is overkill. We
 // could have just used []string.  Now every provider calls StringsToNameservers
 // and ever user calls StringsToNameservers.  We should refactor this
-// some day.  https://github.com/StackExchange/dnscontrol/issues/577
+// some day.  https://github.com/StackExchange/dnscontrol/v2/issues/577
 
 // Nameserver describes a nameserver.
 type Nameserver struct {

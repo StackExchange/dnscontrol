@@ -3,7 +3,7 @@ package gandi
 import (
 	"testing"
 
-	"github.com/StackExchange/dnscontrol/models"
+	"github.com/StackExchange/dnscontrol/v2/models"
 	"github.com/prasmussen/gandi-api/live_dns/record"
 	"github.com/stretchr/testify/assert"
 )

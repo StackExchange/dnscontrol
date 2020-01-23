@@ -10,7 +10,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/StackExchange/dnscontrol/models"
+	"github.com/StackExchange/dnscontrol/v2/models"
 	"github.com/pkg/errors"
 )
 

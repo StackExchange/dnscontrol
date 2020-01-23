@@ -4,7 +4,7 @@ package namedotcom
 import (
 	"encoding/json"
 
-	"github.com/StackExchange/dnscontrol/providers"
+	"github.com/StackExchange/dnscontrol/v2/providers"
 	"github.com/namedotcom/go/namecom"
 	"github.com/pkg/errors"
 )

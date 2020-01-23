@@ -3,8 +3,8 @@ package gandi5
 // Convert the provider's native record description to models.RecordConfig.
 
 import (
-	"github.com/StackExchange/dnscontrol/models"
-	"github.com/StackExchange/dnscontrol/pkg/printer"
+	"github.com/StackExchange/dnscontrol/v2/models"
+	"github.com/StackExchange/dnscontrol/v2/pkg/printer"
 	"github.com/pkg/errors"
 	"github.com/tiramiseb/go-gandi/livedns"
 )

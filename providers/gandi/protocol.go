@@ -12,7 +12,7 @@ import (
 	gandiversion "github.com/prasmussen/gandi-api/domain/zone/version"
 	gandioperation "github.com/prasmussen/gandi-api/operation"
 
-	"github.com/StackExchange/dnscontrol/models"
+	"github.com/StackExchange/dnscontrol/v2/models"
 )
 
 // fetchDomainList gets list of domains for account. Cache ids for easy lookup.

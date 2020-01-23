@@ -2,7 +2,7 @@ FROM golang:1.13-alpine AS build-env
 WORKDIR /go/src/github.com/StackExchange/dnscontrol
 ADD . .
 RUN apk update && apk add git
-RUN go run build/build.go -os=linux
+RUN GO111MODULE=on go run build/build.go -os=linux
 RUN cp dnscontrol-Linux /go/bin/dnscontrol
 RUN dnscontrol version
 RUN go build -o cmd/convertzone/convertzone cmd/convertzone/main.go

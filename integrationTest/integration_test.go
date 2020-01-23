@@ -9,11 +9,11 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/StackExchange/dnscontrol/models"
-	"github.com/StackExchange/dnscontrol/pkg/nameservers"
-	"github.com/StackExchange/dnscontrol/providers"
-	_ "github.com/StackExchange/dnscontrol/providers/_all"
-	"github.com/StackExchange/dnscontrol/providers/config"
+	"github.com/StackExchange/dnscontrol/v2/models"
+	"github.com/StackExchange/dnscontrol/v2/pkg/nameservers"
+	"github.com/StackExchange/dnscontrol/v2/providers"
+	_ "github.com/StackExchange/dnscontrol/v2/providers/_all"
+	"github.com/StackExchange/dnscontrol/v2/providers/config"
 	"github.com/miekg/dns/dnsutil"
 	"github.com/pkg/errors"
 )

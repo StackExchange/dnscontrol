@@ -6,7 +6,7 @@ import (
 	"sort"
 	"strings"
 
-	"github.com/StackExchange/dnscontrol/models"
+	"github.com/StackExchange/dnscontrol/v2/models"
 	"github.com/miekg/dns/dnsutil"
 	"github.com/pkg/errors"
 	yaml "gopkg.in/yaml.v2"
