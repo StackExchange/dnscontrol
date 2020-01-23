@@ -117,7 +117,7 @@ title: DNSControl
 					<a href="{{site.github.url}}/caa-builder">CAA Builder</a>: Build CAA records the easy way
 				</li>
 				<li>
-					<a href="{{site.github.url}}/lets-encrypt">Let's Encrypt</a>: Renew your SSL/TLS certs
+					<a href="{{site.github.url}}/get-certs">Let's Encrypt</a>: Renew your SSL/TLS certs
 				</li>
 			</ul>
 		</div>
