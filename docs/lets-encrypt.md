@@ -7,7 +7,9 @@ title: Let's Encrypt Certificate generation
 
 DNSControl will generate/renew Let's Encrypt certificates using DNS
 validation.  It is not a complete certificate management system, but
-can perform the renewal steps for the system you create.
+can perform the renewal steps for the system you create.  If you
+are looking for a complete system, we recommend
+[certbot](https://certbot.eff.org/).
 
 The `dnscontrol get-certs` command will obtain or renew TLS
 certificates for your managed domains via
