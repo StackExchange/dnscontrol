@@ -152,9 +152,7 @@ func (c *certManager) IssueOrRenewCert(cfg *CertConfig, renewUnder int, verbose 
 	}
 	client.Challenge.Remove(challenge.HTTP01)
 	client.Challenge.Remove(challenge.TLSALPN01)
-	client.Challenge.SetDNS01Provider(c)
-
-	dns01.WrapPreCheck(c.preCheckDNS)
+	client.Challenge.SetDNS01Provider(c, dns01.WrapPreCheck(c.preCheckDNS))
 
 	certResource, err := action()
 	if err != nil {
