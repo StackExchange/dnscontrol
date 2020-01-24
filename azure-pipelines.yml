@@ -1,10 +1,3 @@
-variables:
-  GOBIN:  '$(GOPATH)/bin' # Go binaries path
-  GOROOT: '/usr/local/go1.13' # Go installation path
-  GOPATH: '$(system.defaultWorkingDirectory)/gopath' # Go workspace path
-  GO111MODULE: "on" # Always enable modules, even in GOPATH
-  modulePath: '$(GOPATH)/src/github.com/$(build.repository.name)' # Path to the module's code
-
 trigger:
   batch: "true"
   branches:
@@ -26,14 +19,12 @@ jobs:
   steps:
   - template: build/azure-pipelines/go-env.yaml
   - script: "go run -mod=readonly build/build.go -os $(OS)"
-    workingDirectory: '$(modulePath)'
 
 - job: "unittests"
   displayName: "Run Unit Tests"
   steps:
   - template: build/azure-pipelines/go-env.yaml
   - script: "go test -mod=readonly ./..."
-    workingDirectory: '$(modulePath)'
 
 - job: "modtidy"
   displayName: "Check Go Modules"
@@ -44,7 +35,6 @@ jobs:
       go mod tidy
       git status --porcelain
       [ ! -n "$(git status --porcelain go.mod go.sum)" ] || { echo "Error: go.mod/go.sum outdated, please run go mod tidy."; false; }
-    workingDirectory: '$(modulePath)'
 
 - job: "modvendor"
   displayName: "Check Go Vendor"
@@ -55,7 +45,6 @@ jobs:
       go mod vendor
       git status --porcelain
       [ ! -n "$(git status --porcelain vendor)" ] || { echo "Error: Vendor does not match go.mod/go.sum, please run go mod vendor."; false; }
-    workingDirectory: '$(modulePath)'
 
 - job: "GoFmt"
   displayName: "Check Go Formatting"
@@ -66,7 +55,6 @@ jobs:
       go fmt ./...
       git status --porcelain
       [ ! -n "$(git status --porcelain)" ] || { echo "Error: Go files not formatted, please run go fmt ./... ."; false; }
-    workingDirectory: '$(modulePath)'
 
 - job: "GoGen"
   displayName: "Check Go Generate"
@@ -77,4 +65,3 @@ jobs:
       go generate .
       git status --porcelain
       [ ! -n "$(git status --porcelain)" ] || { echo "Error: Generated files not up to date, please run go generate . ."; false; }
-    workingDirectory: '$(modulePath)'
