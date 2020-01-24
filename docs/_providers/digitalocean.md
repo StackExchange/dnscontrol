@@ -35,3 +35,8 @@ D("example.tld", REG_NONE, DnsProvider(DIGITALOCEAN),
 
 ## Activation
 [Create OAuth Token](https://cloud.digitalocean.com/settings/applications)
+
+## Limitations
+
+- Digialocean DNS doesn't support `;` value with CAA-records ([DigitalOcean documentation](https://www.digitalocean.com/docs/networking/dns/how-to/create-caa-records/))
+- No support for TXT records with multiple strings, as the API prevents espacing quotes.
