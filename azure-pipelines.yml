@@ -42,6 +42,7 @@ jobs:
   - script: |
       set -e
       go mod tidy
+      git status --porcelain
       [ ! -n "$(git status --porcelain go.mod go.sum)" ] || { echo "Error: go.mod/go.sum outdated, please run go mod tidy."; false; }
     workingDirectory: '$(modulePath)'
 
@@ -52,17 +53,19 @@ jobs:
   - script: |
       set -e
       go mod vendor
+      git status --porcelain
       [ ! -n "$(git status --porcelain vendor)" ] || { echo "Error: Vendor does not match go.mod/go.sum, please run go mod vendor."; false; }
     workingDirectory: '$(modulePath)'
 
 - job: "GoFmt"
+  displayName: "Check Go Formatting"
   steps:
   - template: build/azure-pipelines/go-env.yaml
   - script: |
       set -e
       go fmt ./...
-      git diff
-      git diff --exit-code
+      git status --porcelain
+      [ ! -n "$(git status --porcelain)" ] || { echo "Error: Go files not formatted, please run go fmt ./... ."; false; }
     workingDirectory: '$(modulePath)'
 
 - job: "GoGen"
@@ -72,6 +75,6 @@ jobs:
   - script: |
       set -e
       go generate .
-      git diff
-      git diff --exit-code
+      git status --porcelain
+      [ ! -n "$(git status --porcelain)" ] || { echo "Error: Generated files not up to date, please run go generate . ."; false; }
     workingDirectory: '$(modulePath)'
