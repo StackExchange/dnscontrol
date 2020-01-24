@@ -34,6 +34,7 @@ jobs:
       set -e
       go mod tidy
       git status --porcelain
+      git diff
       [ ! -n "$(git status --porcelain go.mod go.sum)" ] || { echo "Error: go.mod/go.sum outdated, please run go mod tidy."; false; }
 
 - job: "modvendor"
@@ -54,6 +55,7 @@ jobs:
       set -e
       go fmt ./...
       git status --porcelain
+      git diff
       [ ! -n "$(git status --porcelain)" ] || { echo "Error: Go files not formatted, please run go fmt ./... ."; false; }
 
 - job: "GoGen"
@@ -64,4 +66,5 @@ jobs:
       set -e
       go generate .
       git status --porcelain
+      git diff
       [ ! -n "$(git status --porcelain)" ] || { echo "Error: Generated files not up to date, please run go generate . ."; false; }
