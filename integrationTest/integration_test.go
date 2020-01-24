@@ -562,6 +562,13 @@ func makeTests(t *testing.T) []*TestCase {
 		tc("Create a 255-byte TXT", txt("foo", "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA")),
 	)
 
+	// TXT (empty)
+	if *providerToRun != "CLOUDFLAREAPI" {
+		tests = append(tests, tc("Empty"),
+			tc("TXT with empty str", txt("foo1", "")),
+		)
+	}
+
 	// TXTMulti
 	if !providers.ProviderHasCapability(*providerToRun, providers.CanUseTXTMulti) {
 		t.Log("Skipping TXTMulti Tests because provider does not support them")
