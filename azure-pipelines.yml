@@ -35,6 +35,18 @@ jobs:
   - script: "go test -mod=readonly ./..."
     workingDirectory: '$(modulePath)'
 
+- job: "modtidy"
+  steps:
+  - script: |
+      go mod tidy
+      [ ! -n "$(git status --porcelain go.mod go.sum)" ] || { echo "Error: go.mod/go.sum outdated, please run go mod tidy."; false; }
+
+- job: "modvendor"
+  steps:
+  - script: |
+      go mod vendor
+      [ ! -n "$(git status --porcelain vendor)" ] || { echo "Error: Vendor does not match go.mod/go.sum, please run go mod vendor."; false; }
+
 - job: "GoFmt"
   steps:
   - script: |
