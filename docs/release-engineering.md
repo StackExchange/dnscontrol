@@ -20,10 +20,15 @@ To update a module, `get` it, then re-run the integration tests.
 
 ```
 go get -u
-or
+    or
 go get -u module/path
 ```
 
+Once the updates are complete, tidy up:
+
+```
+go mod tidy
+```
 
 ## Step 0. Vendor the modules
 
@@ -31,6 +36,12 @@ Vendor the modules. The vendored files are not used (unless you change
 the builds to use `-mod=vendor`). They are maintained simply to make
 sure that we have a backup in the unlikely event of a disaster.
 
+```
+go mod vendor
+```
+
+TODO(Tom): build.go should verify that this was done, similar to
+how it tests that gofmt was run.
 
 ## Step 1. Run the integration tests
 
