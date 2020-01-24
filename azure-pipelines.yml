@@ -36,7 +36,9 @@ jobs:
     workingDirectory: '$(modulePath)'
 
 - job: "modtidy"
+  displayName: "Check Go Modules"
   steps:
+  - template: build/azure-pipelines/go-env.yaml
   - script: |
       set -e
       go mod tidy
@@ -44,7 +46,9 @@ jobs:
     workingDirectory: '$(modulePath)'
 
 - job: "modvendor"
+  displayName: "Check Go Vendor"
   steps:
+  - template: build/azure-pipelines/go-env.yaml
   - script: |
       set -e
       go mod vendor
@@ -53,6 +57,7 @@ jobs:
 
 - job: "GoFmt"
   steps:
+  - template: build/azure-pipelines/go-env.yaml
   - script: |
       set -e
       go fmt ./...
@@ -63,6 +68,7 @@ jobs:
 - job: "GoGen"
   displayName: "Check Go Generate"
   steps:
+  - template: build/azure-pipelines/go-env.yaml
   - script: |
       set -e
       go generate .
