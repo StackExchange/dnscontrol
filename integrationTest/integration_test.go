@@ -493,12 +493,19 @@ func makeTests(t *testing.T) []*TestCase {
 	if !providers.ProviderHasCapability(*providerToRun, providers.CanUseCAA) {
 		t.Log("Skipping CAA Tests because provider does not support them")
 	} else {
+		manyRecordsTc := tc("CAA many records", caa("@", "issue", 0, "letsencrypt.org"), caa("@", "issuewild", 0, ";"), caa("@", "iodef", 128, "mailto:test@example.com"))
+
+		// Digitalocean doesn't support ";" as value for CAA records
+		if *providerToRun == "DIGITALOCEAN" {
+			manyRecordsTc = tc("CAA many records", caa("@", "issue", 0, "letsencrypt.org"), caa("@", "issuewild", 0, "comodoca.com"), caa("@", "iodef", 128, "mailto:test@example.com"))
+		}
+
 		tests = append(tests, tc("Empty"),
 			tc("CAA record", caa("@", "issue", 0, "letsencrypt.org")),
 			tc("CAA change tag", caa("@", "issuewild", 0, "letsencrypt.org")),
 			tc("CAA change target", caa("@", "issuewild", 0, "example.com")),
 			tc("CAA change flag", caa("@", "issuewild", 128, "example.com")),
-			tc("CAA many records", caa("@", "issue", 0, "letsencrypt.org"), caa("@", "issuewild", 0, ";"), caa("@", "iodef", 128, "mailto:test@example.com")),
+			manyRecordsTc,
 			tc("CAA delete", caa("@", "issue", 0, "letsencrypt.org")),
 		)
 	}
