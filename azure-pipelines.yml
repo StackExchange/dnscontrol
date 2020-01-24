@@ -38,26 +38,34 @@ jobs:
 - job: "modtidy"
   steps:
   - script: |
+      set -e
       go mod tidy
       [ ! -n "$(git status --porcelain go.mod go.sum)" ] || { echo "Error: go.mod/go.sum outdated, please run go mod tidy."; false; }
+    workingDirectory: '$(modulePath)'
 
 - job: "modvendor"
   steps:
   - script: |
+      set -e
       go mod vendor
       [ ! -n "$(git status --porcelain vendor)" ] || { echo "Error: Vendor does not match go.mod/go.sum, please run go mod vendor."; false; }
+    workingDirectory: '$(modulePath)'
 
 - job: "GoFmt"
   steps:
   - script: |
+      set -e
       go fmt ./...
       git diff
       git diff --exit-code
+    workingDirectory: '$(modulePath)'
 
 - job: "GoGen"
   displayName: "Check Go Generate"
   steps:
   - script: |
+      set -e
       go generate .
       git diff
       git diff --exit-code
+    workingDirectory: '$(modulePath)'
