@@ -6,8 +6,7 @@ jsId: INTERNETBS
 ---
 # Internet.bs Provider
 
-Internet.bs has API to mange your DNS zones. But in current version of provider, it's not implemented. You can use Internet.bs only as registrar for now.
-
+DNSControl's Internet.bs provider supports being a Registrar. Support for being a DNS Provider is not included, but could be added in the future.
 
 ## Configuration
 In your credentials file, you must provide your API key and account password 
@@ -28,10 +27,10 @@ This provider does not recognize any special metadata fields unique to Internet.
 Example Javascript:
 
 {% highlight js %}
-var REG_INERNETBS = NewRegistrar('internetbs', 'INTERNETBS');
+var REG_INTERNETBS = NewRegistrar('internetbs', 'INTERNETBS');
 var GCLOUD = NewDnsProvider("gcloud", "GCLOUD"); // Any provider
 
-D("example.tld", REG_INERNETBS, DnsProvider(GCLOUD),
+D("example.tld", REG_INTERNETBS, DnsProvider(GCLOUD),
     A("test","1.2.3.4")
 );
 {% endhighlight %}

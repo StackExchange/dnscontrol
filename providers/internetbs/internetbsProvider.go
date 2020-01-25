@@ -26,8 +26,8 @@ func init() {
 func newInternetBs(m map[string]string) (providers.Registrar, error) {
 	api := &api{}
 
-	api.creds.key, api.creds.password = m["api-key"], m["password"]
-	if api.creds.key == "" || api.creds.password == "" {
+	api.key, api.password = m["api-key"], m["password"]
+	if api.key == "" || api.password == "" {
 		return nil, errors.Errorf("missing Internet.bs api-key and password")
 	}
 

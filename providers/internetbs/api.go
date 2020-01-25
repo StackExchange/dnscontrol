@@ -11,10 +11,8 @@ import (
 // Api layer for Internet.bs
 
 type api struct {
-	creds struct {
-		key      string
-		password string
-	}
+	key      string
+	password string
 }
 
 type requestParams map[string]string
@@ -60,8 +58,8 @@ func (c *api) get(endpoint string, params requestParams) ([]byte, error) {
 	q := req.URL.Query()
 
 	// Add auth params
-	q.Add("ApiKey", c.creds.key)
-	q.Add("Password", c.creds.password)
+	q.Add("ApiKey", c.key)
+	q.Add("Password", c.password)
 	q.Add("ResponseFormat", "JSON")
 
 	for pName, pValue := range params {
