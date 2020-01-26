@@ -16,7 +16,7 @@ go get -u github.com/psampaz/go-mod-outdated
 go list -u -m -json all | go-mod-outdated -update -direct 
 ```
 
-To update a module, `get` it, then re-run the integration tests.
+To update a module, `get` it, then re-run the unit and integration tests.
 
 ```
 go get -u
@@ -29,6 +29,8 @@ Once the updates are complete, tidy up:
 ```
 go mod tidy
 ```
+
+When done, vendor the modules (see Step 0 below).
 
 ## Step 0. Vendor the modules
 
