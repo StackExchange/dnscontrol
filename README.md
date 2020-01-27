@@ -24,6 +24,7 @@ Currently supported DNS providers:
  - Gandi
  - Google
  - HEXONET
+ - Internet.bs
  - Linode
  - Namecheap
  - Name.com

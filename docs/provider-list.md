@@ -66,6 +66,7 @@ Maintainers of contributed providers:
 * dnsimple @aeden
 * gandi @TomOnTime
 * HEXONET @papakai
+* Internet.bs @pragmaton
 * Linode @koesie10
 * namecheap @captncraig
 * ns1 @captncraig
