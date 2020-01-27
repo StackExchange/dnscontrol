@@ -8,6 +8,7 @@ providers/dnsimple @aeden
 providers/gandi @TomOnTime
 # providers/gcloud
 providers/hexonet @papakai
+providers/internetbs @pragmaton
 providers/linode @koesie10
 providers/namecheap @captncraig
 # providers/namedotcom

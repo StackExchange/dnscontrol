@@ -15,6 +15,7 @@ import (
 	_ "github.com/StackExchange/dnscontrol/providers/gandi_v5"
 	_ "github.com/StackExchange/dnscontrol/providers/gcloud"
 	_ "github.com/StackExchange/dnscontrol/providers/hexonet"
+	_ "github.com/StackExchange/dnscontrol/providers/internetbs"
 	_ "github.com/StackExchange/dnscontrol/providers/linode"
 	_ "github.com/StackExchange/dnscontrol/providers/namecheap"
 	_ "github.com/StackExchange/dnscontrol/providers/namedotcom"
