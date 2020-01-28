@@ -166,6 +166,9 @@ title: DNSControl
 				<li>
 					<a href="{{site.github.url}}/release-engineering">Release Engineering</a>: How to build and ship a release
 				</li>
+				<li>
+					<a href="{{site.github.url}}/bug-triage">Bug Triage</a>: How bugs are triaged
+				</li>
 			</ul>
 		</div>
 	</div>
