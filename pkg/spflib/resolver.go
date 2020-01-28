@@ -6,7 +6,8 @@ import (
 	"io/ioutil"
 	"net"
 	"os"
-	"strings")
+	"strings"
+)
 
 // Resolver looks up spf txt records associated with a FQDN.
 type Resolver interface {
