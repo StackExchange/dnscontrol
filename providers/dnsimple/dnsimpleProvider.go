@@ -90,7 +90,7 @@ func (c *DnsimpleApi) GetDomainCorrections(dc *models.DomainConfig) ([]*models.C
 			rec.SetTarget(r.Content)
 		case "MX":
 			if err := rec.SetTargetMX(uint16(r.Priority), r.Content); err != nil {
-				panic(errors.Wrap(err, "unparsable record received from dnsimple"))
+				panic(fmt.Errorf("unparsable record received from dnsimple: %w", err))
 			}
 		case "SRV":
 			parts := strings.Fields(r.Content)
@@ -98,11 +98,11 @@ func (c *DnsimpleApi) GetDomainCorrections(dc *models.DomainConfig) ([]*models.C
 				r.Content += "."
 			}
 			if err := rec.SetTargetSRVPriorityString(uint16(r.Priority), r.Content); err != nil {
-				panic(errors.Wrap(err, "unparsable record received from dnsimple"))
+				panic(fmt.Errorf("unparsable record received from dnsimple: %w", err))
 			}
 		default:
 			if err := rec.PopulateFromString(r.Type, r.Content, dc.Name); err != nil {
-				panic(errors.Wrap(err, "unparsable record received from dnsimple"))
+				panic(fmt.Errorf("unparsable record received from dnsimple: %w", err))
 			}
 		}
 		actual = append(actual, rec)

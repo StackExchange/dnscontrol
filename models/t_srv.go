@@ -1,6 +1,7 @@
 package models
 
 import (
+	"fmt"
 	"strconv"
 	"strings"
 
@@ -30,7 +31,7 @@ func (rc *RecordConfig) setTargetSRVIntAndStrings(priority uint16, weight, port,
 			return rc.SetTargetSRV(priority, uint16(i64weight), uint16(i64port), target)
 		}
 	}
-	return errors.Wrap(err, "SRV value too big for uint16")
+	return fmt.Errorf("SRV value too big for uint16: %w", err)
 }
 
 // SetTargetSRVStrings is like SetTargetSRV but accepts all parameters as strings.
@@ -39,7 +40,7 @@ func (rc *RecordConfig) SetTargetSRVStrings(priority, weight, port, target strin
 	if i64priority, err = strconv.ParseUint(priority, 10, 16); err == nil {
 		return rc.setTargetSRVIntAndStrings(uint16(i64priority), weight, port, target)
 	}
-	return errors.Wrap(err, "SRV value too big for uint16")
+	return fmt.Errorf("SRV value too big for uint16: %w", err)
 }
 
 // SetTargetSRVPriorityString is like SetTargetSRV but accepts priority as an

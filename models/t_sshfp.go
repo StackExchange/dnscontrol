@@ -1,6 +1,7 @@
 package models
 
 import (
+	"fmt"
 	"strconv"
 	"strings"
 
@@ -33,11 +34,11 @@ func (rc *RecordConfig) SetTargetSSHFP(algorithm uint8, fingerprint uint8, targe
 func (rc *RecordConfig) SetTargetSSHFPStrings(algorithm, fingerprint, target string) error {
 	i64algorithm, err := strconv.ParseUint(algorithm, 10, 8)
 	if err != nil {
-		return errors.Wrap(err, "SSHFP algorithm does not fit in 8 bits")
+		return fmt.Errorf("SSHFP algorithm does not fit in 8 bits: %w", err)
 	}
 	i64fingerprint, err := strconv.ParseUint(fingerprint, 10, 8)
 	if err != nil {
-		return errors.Wrap(err, "SSHFP fingerprint does not fit in 8 bits")
+		return fmt.Errorf("SSHFP fingerprint does not fit in 8 bits: %w", err)
 	}
 	return rc.SetTargetSSHFP(uint8(i64algorithm), uint8(i64fingerprint), target)
 }

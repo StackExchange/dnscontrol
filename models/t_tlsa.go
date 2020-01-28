@@ -1,6 +1,7 @@
 package models
 
 import (
+	"fmt"
 	"strconv"
 	"strings"
 
@@ -32,7 +33,7 @@ func (rc *RecordConfig) SetTargetTLSAStrings(usage, selector, matchingtype, targ
 			}
 		}
 	}
-	return errors.Wrap(err, "TLSA has value that won't fit in field")
+	return fmt.Errorf("TLSA has value that won't fit in field: %w", err)
 }
 
 // SetTargetTLSAString is like SetTargetTLSA but accepts one big string.

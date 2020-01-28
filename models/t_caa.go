@@ -1,6 +1,7 @@
 package models
 
 import (
+	"fmt"
 	"strconv"
 	"strings"
 
@@ -30,7 +31,7 @@ func (rc *RecordConfig) SetTargetCAA(flag uint8, tag string, target string) erro
 func (rc *RecordConfig) SetTargetCAAStrings(flag, tag, target string) error {
 	i64flag, err := strconv.ParseUint(flag, 10, 8)
 	if err != nil {
-		return errors.Wrap(err, "CAA flag does not fit in 8 bits")
+		return fmt.Errorf("CAA flag does not fit in 8 bits: %w", err)
 	}
 	return rc.SetTargetCAA(uint8(i64flag), tag, target)
 }

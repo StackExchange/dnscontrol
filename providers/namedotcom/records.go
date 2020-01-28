@@ -98,15 +98,15 @@ func toRecord(r *namecom.Record, origin string) *models.RecordConfig {
 		rc.SetTargetTXTs(decodeTxt(r.Answer))
 	case "MX":
 		if err := rc.SetTargetMX(uint16(r.Priority), r.Answer); err != nil {
-			panic(errors.Wrap(err, "unparsable MX record received from ndc"))
+			panic(fmt.Errorf("unparsable MX record received from ndc: %w", err))
 		}
 	case "SRV":
 		if err := rc.SetTargetSRVPriorityString(uint16(r.Priority), r.Answer+"."); err != nil {
-			panic(errors.Wrap(err, "unparsable SRV record received from ndc"))
+			panic(fmt.Errorf("unparsable SRV record received from ndc: %w", err))
 		}
 	default: // "A", "AAAA", "ANAME", "CNAME", "NS"
 		if err := rc.PopulateFromString(rtype, r.Answer, r.Fqdn); err != nil {
-			panic(errors.Wrap(err, "unparsable record received from ndc"))
+			panic(fmt.Errorf("unparsable record received from ndc: %w", err))
 		}
 	}
 	return rc

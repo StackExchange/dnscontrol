@@ -148,7 +148,7 @@ func convert(zr *dns.ZoneRecord, domain string) ([]*models.RecordConfig, error) 
 		switch rtype := zr.Type; rtype {
 		default:
 			if err := rec.PopulateFromString(rtype, ans, domain); err != nil {
-				panic(errors.Wrap(err, "unparsable record received from ns1"))
+				panic(fmt.Errorf("unparsable record received from ns1: %w", err))
 			}
 		}
 		found = append(found, rec)

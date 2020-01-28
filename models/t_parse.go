@@ -15,7 +15,7 @@ import (
 // misunderstood data. We do this panic() at the provider level.
 // Therefore the typical calling sequence is:
 //     if err := rc.PopulateFromString(rtype, value, origin); err != nil {
-//         panic(errors.Wrap(err, "unparsable record received from provider"))
+//         panic(fmt.Errorf("unparsable record received from provider: %w", err))
 //     }
 func (r *RecordConfig) PopulateFromString(rtype, contents, origin string) error {
 	if r.Type != "" && r.Type != rtype {

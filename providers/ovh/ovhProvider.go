@@ -164,7 +164,7 @@ func nativeToRecord(r *Record, origin string) *models.RecordConfig {
 
 	rec.SetLabel(r.SubDomain, origin)
 	if err := rec.PopulateFromString(rtype, r.Target, origin); err != nil {
-		panic(errors.Wrap(err, "unparsable record received from ovh"))
+		panic(fmt.Errorf("unparsable record received from ovh: %w", err))
 	}
 
 	// ovh default is 3600

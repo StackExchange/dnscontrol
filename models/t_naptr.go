@@ -1,6 +1,7 @@
 package models
 
 import (
+	"fmt"
 	"strconv"
 	"strings"
 
@@ -30,11 +31,11 @@ func (rc *RecordConfig) SetTargetNAPTR(order uint16, preference uint16, flags st
 func (rc *RecordConfig) SetTargetNAPTRStrings(order, preference, flags string, service string, regexp string, target string) error {
 	i64order, err := strconv.ParseUint(order, 10, 16)
 	if err != nil {
-		return errors.Wrap(err, "NAPTR order does not fit in 16 bits")
+		return fmt.Errorf("NAPTR order does not fit in 16 bits: %w", err)
 	}
 	i64preference, err := strconv.ParseUint(preference, 10, 16)
 	if err != nil {
-		return errors.Wrap(err, "NAPTR preference does not fit in 16 bits")
+		return fmt.Errorf("NAPTR preference does not fit in 16 bits: %w", err)
 	}
 	return rc.SetTargetNAPTR(uint16(i64order), uint16(i64preference), flags, service, regexp, target)
 }
