@@ -177,6 +177,7 @@ go test -v -verbose -provider ROUTE53
 
 * Edit [README.md](https://github.com/StackExchange/dnscontrol): Add the provider to the bullet list.
 * Edit [docs/provider-list.md](https://github.com/StackExchange/dnscontrol/blob/master/docs/provider-list.md): Add the provider to the provider list.
+* FYI: The list of "Requested Providers" is generated dynamically from Github issues tagged `provider-request`.  When you close the issue related to your provider, the list will update automatically.
 * Create `docs/_providers/PROVIDERNAME.md`: Use one of the other files in that directory as a base.
 * Edit [OWNERS](https://github.com/StackExchange/dnscontrol/blob/master/OWNERS): Add the directory name and your github id.
 
