@@ -11,8 +11,6 @@ import (
 	"strings"
 
 	"github.com/google/go-github/github"
-	"github.com/pkg/errors"
-
 	"golang.org/x/oauth2"
 )
 

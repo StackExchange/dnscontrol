@@ -43,11 +43,11 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/StackExchange/dnscontrol/v2/providers/bind"
-	"github.com/StackExchange/dnscontrol/v2/providers/octodns/octoyaml"
 	"github.com/miekg/dns"
 	"github.com/miekg/dns/dnsutil"
-	"github.com/pkg/errors"
+
+	"github.com/StackExchange/dnscontrol/v2/providers/bind"
+	"github.com/StackExchange/dnscontrol/v2/providers/octodns/octoyaml"
 )
 
 var flagInfmt = flag.String("in", "zone", "zone|octodns")

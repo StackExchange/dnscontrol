@@ -3,16 +3,17 @@ package vultr
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"strconv"
 	"strings"
 
+	"github.com/miekg/dns/dnsutil"
+	"github.com/vultr/govultr"
+
 	"github.com/StackExchange/dnscontrol/v2/models"
 	"github.com/StackExchange/dnscontrol/v2/providers"
 	"github.com/StackExchange/dnscontrol/v2/providers/diff"
-	"github.com/miekg/dns/dnsutil"
-	"github.com/pkg/errors"
-	"github.com/vultr/govultr"
 )
 
 /*

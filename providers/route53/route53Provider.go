@@ -2,20 +2,21 @@ package route53
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"sort"
 	"strings"
 	"time"
 
-	"github.com/StackExchange/dnscontrol/v2/models"
-	"github.com/StackExchange/dnscontrol/v2/providers"
-	"github.com/StackExchange/dnscontrol/v2/providers/diff"
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/credentials"
 	"github.com/aws/aws-sdk-go/aws/session"
 	r53 "github.com/aws/aws-sdk-go/service/route53"
 	r53d "github.com/aws/aws-sdk-go/service/route53domains"
-	"github.com/pkg/errors"
+
+	"github.com/StackExchange/dnscontrol/v2/models"
+	"github.com/StackExchange/dnscontrol/v2/providers"
+	"github.com/StackExchange/dnscontrol/v2/providers/diff"
 )
 
 type route53Provider struct {

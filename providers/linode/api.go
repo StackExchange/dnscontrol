@@ -3,11 +3,10 @@ package linode
 import (
 	"bytes"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"net/http"
 	"net/url"
-
-	"github.com/pkg/errors"
 )
 
 const (

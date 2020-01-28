@@ -1,12 +1,12 @@
 package namedotcom
 
 import (
+	"errors"
 	"fmt"
 	"regexp"
 	"strings"
 
 	"github.com/namedotcom/go/namecom"
-	"github.com/pkg/errors"
 
 	"github.com/StackExchange/dnscontrol/v2/models"
 	"github.com/StackExchange/dnscontrol/v2/providers/diff"

@@ -6,8 +6,6 @@ import (
 	"strconv"
 	"strings"
 	"sync"
-
-	"github.com/pkg/errors"
 )
 
 var checkPS sync.Once
