@@ -43,8 +43,8 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/StackExchange/dnscontrol/providers/bind"
-	"github.com/StackExchange/dnscontrol/providers/octodns/octoyaml"
+	"github.com/StackExchange/dnscontrol/v2/providers/bind"
+	"github.com/StackExchange/dnscontrol/v2/providers/octodns/octoyaml"
 	"github.com/miekg/dns"
 	"github.com/miekg/dns/dnsutil"
 	"github.com/pkg/errors"

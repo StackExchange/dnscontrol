@@ -5,9 +5,9 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/StackExchange/dnscontrol/models"
-	"github.com/StackExchange/dnscontrol/pkg/js"
-	"github.com/StackExchange/dnscontrol/pkg/normalize"
+	"github.com/StackExchange/dnscontrol/v2/models"
+	"github.com/StackExchange/dnscontrol/v2/pkg/js"
+	"github.com/StackExchange/dnscontrol/v2/pkg/normalize"
 	"github.com/pkg/errors"
 	"github.com/urfave/cli"
 )

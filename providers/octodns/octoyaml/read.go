@@ -15,7 +15,7 @@ import (
 	"reflect"
 	"strconv"
 
-	"github.com/StackExchange/dnscontrol/models"
+	"github.com/StackExchange/dnscontrol/v2/models"
 	"github.com/pkg/errors"
 	yaml "gopkg.in/yaml.v2"
 )

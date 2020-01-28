@@ -5,9 +5,9 @@ import (
 	"net"
 	"strings"
 
-	"github.com/StackExchange/dnscontrol/models"
-	"github.com/StackExchange/dnscontrol/pkg/transform"
-	"github.com/StackExchange/dnscontrol/providers"
+	"github.com/StackExchange/dnscontrol/v2/models"
+	"github.com/StackExchange/dnscontrol/v2/pkg/transform"
+	"github.com/StackExchange/dnscontrol/v2/providers"
 	"github.com/miekg/dns"
 	"github.com/miekg/dns/dnsutil"
 	"github.com/pkg/errors"

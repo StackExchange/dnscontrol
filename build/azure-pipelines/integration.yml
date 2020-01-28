@@ -1,9 +1,5 @@
 variables:
-  GOBIN:  '$(GOPATH)/bin' # Go binaries path
-  GOROOT: '/usr/local/go1.13' # Go installation path
-  GOPATH: '$(system.defaultWorkingDirectory)/gopath' # Go workspace path
-  modulePath: '$(GOPATH)/src/github.com/$(build.repository.name)' # Path to the module's code
-  wd: '$(modulePath)/integrationTest'
+  wd: '$(System.DefaultWorkingDirectory)/integrationTest'
 
 trigger:
   batch: "true"

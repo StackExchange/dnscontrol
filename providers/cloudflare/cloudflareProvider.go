@@ -8,11 +8,11 @@ import (
 	"strings"
 	"time"
 
-	"github.com/StackExchange/dnscontrol/models"
-	"github.com/StackExchange/dnscontrol/pkg/printer"
-	"github.com/StackExchange/dnscontrol/pkg/transform"
-	"github.com/StackExchange/dnscontrol/providers"
-	"github.com/StackExchange/dnscontrol/providers/diff"
+	"github.com/StackExchange/dnscontrol/v2/models"
+	"github.com/StackExchange/dnscontrol/v2/pkg/printer"
+	"github.com/StackExchange/dnscontrol/v2/pkg/transform"
+	"github.com/StackExchange/dnscontrol/v2/providers"
+	"github.com/StackExchange/dnscontrol/v2/providers/diff"
 	"github.com/miekg/dns/dnsutil"
 	"github.com/pkg/errors"
 )
@@ -513,7 +513,7 @@ func (c *cfRecord) nativeToRecord(domain string) *models.RecordConfig {
 	}
 	rc.SetLabelFromFQDN(c.Name, domain)
 
-	// workaround for https://github.com/StackExchange/dnscontrol/issues/446
+	// workaround for https://github.com/StackExchange/dnscontrol/v2/issues/446
 	if c.Type == "SPF" {
 		c.Type = "TXT"
 	}

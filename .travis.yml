@@ -6,8 +6,8 @@ go:
 install: pwd
 
 script: 
-  - go run build/validate/validate.go
-  - go test ./...
+  - go run -mod=readonly build/validate/validate.go
+  - go test -mod=readonly ./...
 
 notifications:
   email:

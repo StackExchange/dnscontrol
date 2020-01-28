@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/StackExchange/dnscontrol/models"
+	"github.com/StackExchange/dnscontrol/v2/models"
 )
 
 func makeRC(label, domain, target string, rc models.RecordConfig) *models.RecordConfig {

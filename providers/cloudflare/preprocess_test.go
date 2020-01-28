@@ -4,8 +4,8 @@ import (
 	"net"
 	"testing"
 
-	"github.com/StackExchange/dnscontrol/models"
-	"github.com/StackExchange/dnscontrol/pkg/transform"
+	"github.com/StackExchange/dnscontrol/v2/models"
+	"github.com/StackExchange/dnscontrol/v2/pkg/transform"
 )
 
 func newDomainConfig() *models.DomainConfig {
