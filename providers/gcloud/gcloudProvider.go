@@ -12,7 +12,6 @@ import (
 	"github.com/StackExchange/dnscontrol/v2/models"
 	"github.com/StackExchange/dnscontrol/v2/providers"
 	"github.com/StackExchange/dnscontrol/v2/providers/diff"
-	"github.com/pkg/errors"
 )
 
 var features = providers.DocumentationNotes{
@@ -204,7 +203,7 @@ func nativeToRecord(set *gdns.ResourceRecordSet, rec, origin string) *models.Rec
 	r.SetLabelFromFQDN(set.Name, origin)
 	r.TTL = uint32(set.Ttl)
 	if err := r.PopulateFromString(set.Type, rec, origin); err != nil {
-		panic(errors.Wrap(err, "unparsable record received from GCLOUD"))
+		panic(fmt.Errorf("unparsable record received from GCLOUD: %w", err))
 	}
 	return r
 }

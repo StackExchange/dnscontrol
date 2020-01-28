@@ -2,20 +2,16 @@ package ns1
 
 import (
 	"encoding/json"
-
 	"fmt"
+	"net/http"
+	"strings"
+
+	"gopkg.in/ns1/ns1-go.v2/rest"
+	"gopkg.in/ns1/ns1-go.v2/rest/model/dns"
 
 	"github.com/StackExchange/dnscontrol/v2/models"
 	"github.com/StackExchange/dnscontrol/v2/providers"
-	"github.com/pkg/errors"
-
-	"net/http"
-
-	"strings"
-
 	"github.com/StackExchange/dnscontrol/v2/providers/diff"
-	"gopkg.in/ns1/ns1-go.v2/rest"
-	"gopkg.in/ns1/ns1-go.v2/rest/model/dns"
 )
 
 var docNotes = providers.DocumentationNotes{
@@ -34,7 +30,7 @@ type nsone struct {
 
 func newProvider(creds map[string]string, meta json.RawMessage) (providers.DNSServiceProvider, error) {
 	if creds["api_token"] == "" {
-		return nil, errors.Errorf("api_token required for ns1")
+		return nil, fmt.Errorf("api_token required for ns1")
 	}
 	return &nsone{rest.NewClient(http.DefaultClient, rest.SetAPIKey(creds["api_token"]))}, nil
 }
@@ -148,7 +144,7 @@ func convert(zr *dns.ZoneRecord, domain string) ([]*models.RecordConfig, error) 
 		switch rtype := zr.Type; rtype {
 		default:
 			if err := rec.PopulateFromString(rtype, ans, domain); err != nil {
-				panic(errors.Wrap(err, "unparsable record received from ns1"))
+				panic(fmt.Errorf("unparsable record received from ns1: %w", err))
 			}
 		}
 		found = append(found, rec)

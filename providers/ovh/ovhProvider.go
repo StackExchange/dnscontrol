@@ -10,7 +10,6 @@ import (
 	"github.com/StackExchange/dnscontrol/v2/providers"
 	"github.com/StackExchange/dnscontrol/v2/providers/diff"
 	"github.com/ovh/go-ovh/ovh"
-	"github.com/pkg/errors"
 )
 
 type ovhProvider struct {
@@ -61,7 +60,7 @@ func init() {
 func (c *ovhProvider) GetNameservers(domain string) ([]*models.Nameserver, error) {
 	_, ok := c.zones[domain]
 	if !ok {
-		return nil, errors.Errorf("%s not listed in zones for ovh account", domain)
+		return nil, fmt.Errorf("%s not listed in zones for ovh account", domain)
 	}
 
 	ns, err := c.fetchRegistrarNS(domain)
@@ -164,7 +163,7 @@ func nativeToRecord(r *Record, origin string) *models.RecordConfig {
 
 	rec.SetLabel(r.SubDomain, origin)
 	if err := rec.PopulateFromString(rtype, r.Target, origin); err != nil {
-		panic(errors.Wrap(err, "unparsable record received from ovh"))
+		panic(fmt.Errorf("unparsable record received from ovh: %w", err))
 	}
 
 	// ovh default is 3600

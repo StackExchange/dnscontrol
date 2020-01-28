@@ -2,10 +2,10 @@ package providers
 
 import (
 	"encoding/json"
+	"fmt"
 	"log"
 
 	"github.com/StackExchange/dnscontrol/v2/models"
-	"github.com/pkg/errors"
 )
 
 // Registrar is an interface for a domain registrar. It can return a list of needed corrections to be applied in the future. Implement this only if the provider is a "registrar" (i.e. can update the NS records of the parent to a domain).
@@ -58,7 +58,7 @@ func RegisterDomainServiceProviderType(name string, init DspInitializer, pm ...P
 func CreateRegistrar(rType string, config map[string]string) (Registrar, error) {
 	initer, ok := RegistrarTypes[rType]
 	if !ok {
-		return nil, errors.Errorf("registrar type %s not declared", rType)
+		return nil, fmt.Errorf("registrar type %s not declared", rType)
 	}
 	return initer(config)
 }
@@ -67,7 +67,7 @@ func CreateRegistrar(rType string, config map[string]string) (Registrar, error) 
 func CreateDNSProvider(dType string, config map[string]string, meta json.RawMessage) (DNSServiceProvider, error) {
 	initer, ok := DNSProviderTypes[dType]
 	if !ok {
-		return nil, errors.Errorf("DSP type %s not declared", dType)
+		return nil, fmt.Errorf("DSP type %s not declared", dType)
 	}
 	return initer(config, meta)
 }

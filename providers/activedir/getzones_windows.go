@@ -6,8 +6,6 @@ import (
 	"strconv"
 	"strings"
 	"sync"
-
-	"github.com/pkg/errors"
 )
 
 var checkPS sync.Once
@@ -31,7 +29,7 @@ func (c *adProvider) getRecords(domainname string) ([]byte, error) {
 			}
 		})
 		if !psAvailible {
-			return nil, errors.Errorf("powershell module DnsServer not installed")
+			return nil, fmt.Errorf("powershell module DnsServer not installed")
 		}
 
 		_, err := c.powerShellExec(c.generatePowerShellZoneDump(domainname), true)

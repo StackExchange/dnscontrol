@@ -7,14 +7,13 @@ import (
 	"strings"
 	"time"
 
+	nc "github.com/billputer/go-namecheap"
 	"golang.org/x/net/publicsuffix"
 
 	"github.com/StackExchange/dnscontrol/v2/models"
 	"github.com/StackExchange/dnscontrol/v2/pkg/printer"
 	"github.com/StackExchange/dnscontrol/v2/providers"
 	"github.com/StackExchange/dnscontrol/v2/providers/diff"
-	nc "github.com/billputer/go-namecheap"
-	"github.com/pkg/errors"
 )
 
 // NamecheapDefaultNs lists the default nameservers for this provider.
@@ -59,7 +58,7 @@ func newProvider(m map[string]string, metadata json.RawMessage) (*Namecheap, err
 	api := &Namecheap{}
 	api.ApiUser, api.ApiKey = m["apiuser"], m["apikey"]
 	if api.ApiKey == "" || api.ApiUser == "" {
-		return nil, errors.Errorf("missing Namecheap apikey and apiuser")
+		return nil, fmt.Errorf("missing Namecheap apikey and apiuser")
 	}
 	api.client = nc.NewClient(api.ApiUser, api.ApiKey, api.ApiUser)
 	// if BaseURL is specified in creds, use that url

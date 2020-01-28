@@ -21,15 +21,13 @@ import (
 	"strconv"
 	"strings"
 
-	gandi "github.com/tiramiseb/go-gandi"
-
 	"github.com/miekg/dns/dnsutil"
+	gandi "github.com/tiramiseb/go-gandi"
 
 	"github.com/StackExchange/dnscontrol/v2/models"
 	"github.com/StackExchange/dnscontrol/v2/pkg/printer"
 	"github.com/StackExchange/dnscontrol/v2/providers"
 	"github.com/StackExchange/dnscontrol/v2/providers/diff"
-	"github.com/pkg/errors"
 )
 
 // Section 1: Register this provider in the system.
@@ -74,7 +72,7 @@ func newHelper(m map[string]string, metadata json.RawMessage) (*api, error) {
 	api := &api{}
 	api.apikey = m["apikey"]
 	if api.apikey == "" {
-		return nil, errors.Errorf("missing Gandi apikey")
+		return nil, fmt.Errorf("missing Gandi apikey")
 	}
 	api.sharingid = m["sharing_id"]
 	debug, err := strconv.ParseBool(os.Getenv("GANDI_V5_DEBUG"))
@@ -239,7 +237,7 @@ func (client *api) GenerateDomainCorrections(dc *models.DomainConfig, existing m
 						F: func() error {
 							res, err := g.ChangeDomainRecordsWithName(domain, shortname, ns)
 							if err != nil {
-								return errors.Wrapf(err, "%+v", res)
+								return fmt.Errorf("%+v: %w", res, err)
 							}
 							return nil
 						},
@@ -262,7 +260,7 @@ func (client *api) GenerateDomainCorrections(dc *models.DomainConfig, existing m
 							F: func() error {
 								res, err := g.CreateDomainRecord(domain, shortname, rtype, ttl, values)
 								if err != nil {
-									return errors.Wrapf(err, "%+v", res)
+									return fmt.Errorf("%+v: %w", res, err)
 								}
 								return nil
 							},
