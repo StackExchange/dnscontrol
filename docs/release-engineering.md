@@ -5,7 +5,7 @@ title: How to build and ship a release
 
 # How to build and ship a release
 
-Here are my notes from producing the v0.2.8 release.  Change the version number as appropriate.
+Here are my notes from producing the v2.8 release.  Change the version number as appropriate.
 
 ## Tip: How to keep modules updated
 
@@ -73,16 +73,16 @@ git push origin tag v"$VERSION"
 
 Fill in the `Tag version` @ `Target` with:
 
-  * Tag version: v0.$VERSION (this should be the first tag listed)
+  * Tag version: v$VERSION (this should be the first tag listed)
   * Target: master (this should be the default)
 
-Release title: Release v0.$VERSION
+Release title: Release v$VERSION
 
 Fill in the text box with something friendly like, "So many new features!" then make a bullet list of major new functionality.
 
 Review the git log using this command:
 
-    git log v0."$VERSION"...v0."$PREVVERSION"
+    git log v"$VERSION"...v"$PREVVERSION"
 
 (Don't click SAVE until the next step is complete!)
 
@@ -98,17 +98,17 @@ This is what it looks like when you did it right:
 
 ```
 $ ./dnscontrol-Darwin version
-dnscontrol 0.2.8 ("ee5208bd5f19b9e5dd0bdba8d0e13403c43a469a") built 19 Dec 18 11:16 EST
+dnscontrol 2.8 ("ee5208bd5f19b9e5dd0bdba8d0e13403c43a469a") built 19 Dec 18 11:16 EST
 ```
 
 This is what it looks like when there was a file that should have been checked in:
 
 ```
 $ ./dnscontrol-Darwin version
-dnscontrol 0.2.8 ("ee5208bd5f19b9e5dd0bdba8d0e13403c43a469a[dirty]") built 19 Dec 18 11:14 EST
-                                                            ^^^^^
-                                                            ^^^^^
-                                                            ^^^^^
+dnscontrol 2.8 ("ee5208bd5f19b9e5dd0bdba8d0e13403c43a469a[dirty]") built 19 Dec 18 11:14 EST
+                                                          ^^^^^
+                                                          ^^^^^
+                                                          ^^^^^
 ```
 
 ## Step 4. Attach the binaries and release.
@@ -131,9 +131,9 @@ Email the mailing list: (note the format of the Subject line and that the first 
 
 ```
 To: dnscontrol-discuss@googlegroups.com
-Subject: New release: dnscontrol v0.$VERSION
+Subject: New release: dnscontrol v$VERSION
 
-https://github.com/StackExchange/dnscontrol/releases/tag/v0.$VERSION
+https://github.com/StackExchange/dnscontrol/releases/tag/v$VERSION
 
 So many new providers and features! Plus, a new testing framework that makes it easier to add big features without fear of breaking old ones.
 
@@ -149,7 +149,7 @@ So many new providers and features! Plus, a new testing framework that makes it 
 Mention on [https://gitter.im/dnscontrol/Lobby](https://gitter.im/dnscontrol/Lobby) that the new release has shipped.
 
 ```
-dnscontrol $VERSION has been released! https://github.com/StackExchange/dnscontrol/releases/tag/v0.$VERSION
+dnscontrol $VERSION has been released! https://github.com/StackExchange/dnscontrol/releases/tag/v$VERSION
 ```
 
 
