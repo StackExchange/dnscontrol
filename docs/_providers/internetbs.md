@@ -28,10 +28,10 @@ Example Javascript:
 
 {% highlight js %}
 var REG_INTERNETBS = NewRegistrar('internetbs', 'INTERNETBS');
-var GCLOUD = NewDnsProvider("gcloud", "GCLOUD"); // Any provider
 
-D("example.tld", REG_INTERNETBS, DnsProvider(GCLOUD),
-    A("test","1.2.3.4")
+D("example.com", REG_INTERNETBS,
+  NNAMESERVER("ns1.example.com."),
+  NNAMESERVER("ns2.example.com."),
 );
 {% endhighlight %}
 
