@@ -58,7 +58,7 @@ func init() {
 // CloudflareApi is the handle for API calls.
 type CloudflareApi struct {
 	ApiKey          string `json:"apikey"`
-	ApiToken        string `json:apitoken`
+	ApiToken        string `json:"apitoken"`
 	ApiUser         string `json:"apiuser"`
 	AccountID       string `json:"accountid"`
 	AccountName     string `json:"accountname"`

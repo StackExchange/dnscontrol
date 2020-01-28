@@ -106,7 +106,6 @@ func withRetry(f func() error) {
 			return
 		}
 	}
-	return
 }
 
 func (r *route53Provider) getZones() error {
