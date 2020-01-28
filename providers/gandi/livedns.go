@@ -7,16 +7,16 @@ import (
 	"strings"
 	"time"
 
-	"github.com/StackExchange/dnscontrol/v2/models"
-	"github.com/StackExchange/dnscontrol/v2/pkg/printer"
-	"github.com/StackExchange/dnscontrol/v2/providers"
-	"github.com/StackExchange/dnscontrol/v2/providers/diff"
 	"github.com/google/uuid"
-	"github.com/pkg/errors"
 	gandiclient "github.com/prasmussen/gandi-api/client"
 	gandilivedomain "github.com/prasmussen/gandi-api/live_dns/domain"
 	gandiliverecord "github.com/prasmussen/gandi-api/live_dns/record"
 	gandilivezone "github.com/prasmussen/gandi-api/live_dns/zone"
+
+	"github.com/StackExchange/dnscontrol/v2/models"
+	"github.com/StackExchange/dnscontrol/v2/pkg/printer"
+	"github.com/StackExchange/dnscontrol/v2/providers"
+	"github.com/StackExchange/dnscontrol/v2/providers/diff"
 )
 
 var liveFeatures = providers.DocumentationNotes{
@@ -36,7 +36,7 @@ func init() {
 func newLiveDsp(m map[string]string, metadata json.RawMessage) (providers.DNSServiceProvider, error) {
 	APIKey := m["apikey"]
 	if APIKey == "" {
-		return nil, errors.Errorf("missing Gandi apikey")
+		return nil, fmt.Errorf("missing Gandi apikey")
 	}
 
 	return newLiveClient(APIKey), nil
@@ -74,7 +74,7 @@ func (c *liveClient) GetNameservers(domain string) ([]*models.Nameserver, error)
 	domains := []string{}
 	response, err := c.client.Get("/nameservers/"+domain, &domains)
 	if err != nil {
-		return nil, errors.Errorf("failed to get nameservers for domain %s", domain)
+		return nil, fmt.Errorf("failed to get nameservers for domain %s", domain)
 	}
 	defer response.Body.Close()
 
@@ -240,7 +240,7 @@ func (c *liveClient) recordsToInfo(records models.Records) (models.Records, []*g
 			rec.TTL = 300
 		}
 		if rec.TTL > 2592000 {
-			return nil, nil, errors.Errorf("ERROR: Gandi does not support TTLs > 30 days (TTL=%d)", rec.TTL)
+			return nil, nil, fmt.Errorf("ERROR: Gandi does not support TTLs > 30 days (TTL=%d)", rec.TTL)
 		}
 		if rec.Type == "NS" && rec.GetLabel() == "@" {
 			if !strings.HasSuffix(rec.GetTargetField(), ".gandi.net.") {

@@ -2,7 +2,7 @@ package cloudns
 
 import (
 	"encoding/json"
-	"github.com/pkg/errors"
+	"fmt"
 	"io/ioutil"
 	"net/http"
 	"strconv"
@@ -86,7 +86,7 @@ func (c *api) fetchAvailableNameservers() error {
 
 	var bodyString, err = c.get("/dns/available-name-servers.json", requestParams{})
 	if err != nil {
-		return errors.Errorf("Error fetching available nameservers list from ClouDNS: %s", err)
+		return fmt.Errorf("Error fetching available nameservers list from ClouDNS: %s", err)
 	}
 
 	var nr nameserverResponse
@@ -114,7 +114,7 @@ func (c *api) fetchDomainList() error {
 		endpoint := "/dns/list-zones.json"
 		var bodyString, err = c.get(endpoint, params)
 		if err != nil {
-			return errors.Errorf("Error fetching domain list from ClouDNS: %s", err)
+			return fmt.Errorf("Error fetching domain list from ClouDNS: %s", err)
 		}
 		json.Unmarshal(bodyString, &dr)
 
@@ -135,7 +135,7 @@ func (c *api) createDomain(domain string) error {
 		"zone-type":   "master",
 	}
 	if _, err := c.get("/dns/register.json", params); err != nil {
-		return errors.Errorf("Error create domain  ClouDNS: %s", err)
+		return fmt.Errorf("Error create domain  ClouDNS: %s", err)
 	}
 	return nil
 }
@@ -143,7 +143,7 @@ func (c *api) createDomain(domain string) error {
 func (c *api) createRecord(domainID string, rec requestParams) error {
 	rec["domain-name"] = domainID
 	if _, err := c.get("/dns/add-record.json", rec); err != nil {
-		return errors.Errorf("Error create record  ClouDNS: %s", err)
+		return fmt.Errorf("Error create record  ClouDNS: %s", err)
 	}
 	return nil
 }
@@ -154,7 +154,7 @@ func (c *api) deleteRecord(domainID string, recordID string) error {
 		"record-id":   recordID,
 	}
 	if _, err := c.get("/dns/delete-record.json", params); err != nil {
-		return errors.Errorf("Error delete record  ClouDNS: %s", err)
+		return fmt.Errorf("Error delete record  ClouDNS: %s", err)
 	}
 	return nil
 }
@@ -163,7 +163,7 @@ func (c *api) modifyRecord(domainID string, recordID string, rec requestParams) 
 	rec["domain-name"] = domainID
 	rec["record-id"] = recordID
 	if _, err := c.get("/dns/mod-record.json", rec); err != nil {
-		return errors.Errorf("Error create update ClouDNS: %s", err)
+		return fmt.Errorf("Error create update ClouDNS: %s", err)
 	}
 	return nil
 }
@@ -173,7 +173,7 @@ func (c *api) getRecords(id string) ([]domainRecord, error) {
 
 	var bodyString, err = c.get("/dns/records.json", params)
 	if err != nil {
-		return nil, errors.Errorf("Error fetching record list from ClouDNS: %s", err)
+		return nil, fmt.Errorf("Error fetching record list from ClouDNS: %s", err)
 	}
 
 	var dr recordResponse
@@ -213,7 +213,7 @@ func (c *api) get(endpoint string, params requestParams) ([]byte, error) {
 	var errResp errorResponse
 	err = json.Unmarshal(bodyString, &errResp)
 	if errResp.Status == "Failed" {
-		return bodyString, errors.Errorf("ClouDNS API error: %s URL:%s%s ", errResp.Description, req.Host, req.URL.RequestURI())
+		return bodyString, fmt.Errorf("ClouDNS API error: %s URL:%s%s ", errResp.Description, req.Host, req.URL.RequestURI())
 	}
 
 	return bodyString, nil

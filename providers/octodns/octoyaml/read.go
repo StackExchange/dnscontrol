@@ -16,9 +16,9 @@ import (
 	"reflect"
 	"strconv"
 
-	"github.com/StackExchange/dnscontrol/v2/models"
-	"github.com/pkg/errors"
 	yaml "gopkg.in/yaml.v2"
+
+	"github.com/StackExchange/dnscontrol/v2/models"
 )
 
 // ReadYaml parses a yaml input and returns a list of RecordConfigs
@@ -92,12 +92,12 @@ func ReadYaml(r io.Reader, origin string) (models.Records, error) {
 						return results, fmt.Errorf("leaf v3=%v: %w", v3, err)
 					}
 				default:
-					return nil, errors.Errorf("unknown type in list3: k=%s v.(type)=%T v=%v", k, v, v)
+					return nil, fmt.Errorf("unknown type in list3: k=%s v.(type)=%T v=%v", k, v, v)
 				}
 			}
 
 		default:
-			return nil, errors.Errorf("unknown type in list1: k=%s v.(type)=%T v=%v", k, v, v)
+			return nil, fmt.Errorf("unknown type in list1: k=%s v.(type)=%T v=%v", k, v, v)
 		}
 	}
 
@@ -127,7 +127,7 @@ func parseLeaf(results models.Records, k string, v interface{}, origin string) (
 				var err error
 				rTTL, err = decodeTTL(v2)
 				if err != nil {
-					return nil, errors.Errorf("parseLeaf: can not parse ttl (%v)", v2)
+					return nil, fmt.Errorf("parseLeaf: can not parse ttl (%v)", v2)
 				}
 			case "value":
 				rTarget = v2.(string)
@@ -136,7 +136,7 @@ func parseLeaf(results models.Records, k string, v interface{}, origin string) (
 				case string:
 					rTarget = v2.(string)
 				default:
-					return nil, errors.Errorf("parseLeaf: unknown type in values: rtpe=%s k=%s k2=%s v2.(type)=%T v2=%v", rType, k, k2, v2, v2)
+					return nil, fmt.Errorf("parseLeaf: unknown type in values: rtpe=%s k=%s k2=%s v2.(type)=%T v2=%v", rType, k, k2, v2, v2)
 				}
 			default:
 				panic("Should not happen")
@@ -185,11 +185,11 @@ func parseLeaf(results models.Records, k string, v interface{}, origin string) (
 					//fmt.Printf("parseLeaf: append %v\n", newRc)
 					someresults = append(someresults, newRc)
 				default:
-					return nil, errors.Errorf("parseLeaf: unknown type in map: rtype=%s k=%s v3.(type)=%T v3=%v", rType, k, v3, v3)
+					return nil, fmt.Errorf("parseLeaf: unknown type in map: rtype=%s k=%s v3.(type)=%T v3=%v", rType, k, v3, v3)
 				}
 			}
 		} else {
-			return nil, errors.Errorf("parseLeaf: unknown type in level 2: k=%s k2=%s v.2(type)=%T v2=%v", k, k2, v2, v2)
+			return nil, fmt.Errorf("parseLeaf: unknown type in level 2: k=%s k2=%s v.2(type)=%T v2=%v", k, k2, v2, v2)
 		}
 	}
 	// fmt.Printf("parseLeaf: Target=(%v)\n", rTarget)
@@ -264,7 +264,7 @@ func decodeTTL(ttl interface{}) (uint32, error) {
 	case int:
 		i := ttl.(int)
 		if i < 0 || i > math.MaxUint32 {
-			return 0, errors.Errorf("ttl won't fit in 32-bits (%d)", i)
+			return 0, fmt.Errorf("ttl won't fit in 32-bits (%d)", i)
 		}
 		return uint32(i), nil
 	}

@@ -55,7 +55,7 @@ var defaultNS = []string{
 func NewProvider(m map[string]string, metadata json.RawMessage) (providers.DNSServiceProvider, error) {
 	token := m["token"]
 	if token == "" {
-		return nil, errors.Errorf("Vultr API token is required")
+		return nil, fmt.Errorf("Vultr API token is required")
 	}
 
 	client := govultr.NewClient(nil, token)

@@ -60,7 +60,7 @@ func checkGoFmt() error {
 	if fList == "" {
 		return nil
 	}
-	return errors.Errorf("The following files need to have gofmt run on them:\n%s", fList)
+	return fmt.Errorf("The following files need to have gofmt run on them:\n%s", fList)
 }
 
 func checkGoGenerate() error {
@@ -76,7 +76,7 @@ func checkGoGenerate() error {
 		return err
 	}
 	if len(modified) != 0 {
-		return errors.Errorf("ERROR: The following files are modified after go generate:\n%s", strings.Join(modified, "\n"))
+		return fmt.Errorf("ERROR: The following files are modified after go generate:\n%s", strings.Join(modified, "\n"))
 	}
 	return nil
 }

@@ -7,14 +7,13 @@ import (
 	"strings"
 	"time"
 
+	adns "github.com/Azure/azure-sdk-for-go/services/dns/mgmt/2018-05-01/dns"
+	aauth "github.com/Azure/go-autorest/autorest/azure/auth"
 	"github.com/Azure/go-autorest/autorest/to"
+
 	"github.com/StackExchange/dnscontrol/v2/models"
 	"github.com/StackExchange/dnscontrol/v2/providers"
 	"github.com/StackExchange/dnscontrol/v2/providers/diff"
-	"github.com/pkg/errors"
-
-	adns "github.com/Azure/azure-sdk-for-go/services/dns/mgmt/2018-05-01/dns"
-	aauth "github.com/Azure/go-autorest/autorest/azure/auth"
 )
 
 type azureDnsProvider struct {
@@ -258,7 +257,7 @@ func nativeToRecordType(recordType *string) adns.RecordType {
 	case "SOA":
 		return adns.SOA
 	default:
-		panic(errors.Errorf("rc.String rtype %v unimplemented", *recordType))
+		panic(fmt.Errorf("rc.String rtype %v unimplemented", *recordType))
 	}
 }
 
@@ -337,7 +336,7 @@ func nativeToRecords(set *adns.RecordSet, origin string) []*models.RecordConfig 
 		}
 	case "Microsoft.Network/dnszones/SOA":
 	default:
-		panic(errors.Errorf("rc.String rtype %v unimplemented", *set.Type))
+		panic(fmt.Errorf("rc.String rtype %v unimplemented", *set.Type))
 	}
 	return results
 }
@@ -389,7 +388,7 @@ func recordToNative(recordKey models.RecordKey, recordConfig []*models.RecordCon
 			}
 			*recordSet.CaaRecords = append(*recordSet.CaaRecords, adns.CaaRecord{Value: to.StringPtr(rec.Target), Tag: to.StringPtr(rec.CaaTag), Flags: to.Int32Ptr(int32(rec.CaaFlag))})
 		default:
-			panic(errors.Errorf("rc.String rtype %v unimplemented", recordKey.Type))
+			panic(fmt.Errorf("rc.String rtype %v unimplemented", recordKey.Type))
 		}
 	}
 	return recordSet, nativeToRecordType(to.StringPtr(recordKey.Type))

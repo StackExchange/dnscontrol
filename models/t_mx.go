@@ -4,8 +4,6 @@ import (
 	"fmt"
 	"strconv"
 	"strings"
-
-	"github.com/pkg/errors"
 )
 
 // SetTargetMX sets the MX fields.
@@ -34,7 +32,7 @@ func (rc *RecordConfig) SetTargetMXStrings(pref, target string) error {
 func (rc *RecordConfig) SetTargetMXString(s string) error {
 	part := strings.Fields(s)
 	if len(part) != 2 {
-		return errors.Errorf("MX value does not contain 2 fields: (%#v)", s)
+		return fmt.Errorf("MX value does not contain 2 fields: (%#v)", s)
 	}
 	return rc.SetTargetMXStrings(part[0], part[1])
 }

@@ -10,7 +10,6 @@ import (
 	"github.com/StackExchange/dnscontrol/v2/providers"
 	"github.com/StackExchange/dnscontrol/v2/providers/diff"
 	"github.com/ovh/go-ovh/ovh"
-	"github.com/pkg/errors"
 )
 
 type ovhProvider struct {
@@ -61,7 +60,7 @@ func init() {
 func (c *ovhProvider) GetNameservers(domain string) ([]*models.Nameserver, error) {
 	_, ok := c.zones[domain]
 	if !ok {
-		return nil, errors.Errorf("%s not listed in zones for ovh account", domain)
+		return nil, fmt.Errorf("%s not listed in zones for ovh account", domain)
 	}
 
 	ns, err := c.fetchRegistrarNS(domain)

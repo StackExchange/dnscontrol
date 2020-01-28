@@ -104,7 +104,7 @@ func parseargs(args []string) (zonename string, filename string, r io.Reader, er
 	// Anything else returns an error.
 
 	if len(args) < 2 {
-		return "", "", nil, errors.Errorf("no command line parameters. Zone name required")
+		return "", "", nil, fmt.Errorf("no command line parameters. Zone name required")
 	}
 
 	zonename = args[0]
@@ -119,7 +119,7 @@ func parseargs(args []string) (zonename string, filename string, r io.Reader, er
 			return "", "", nil, fmt.Errorf("Could not open file: %s: %w", filename, err)
 		}
 	} else {
-		return "", "", nil, errors.Errorf("too many command line parameters")
+		return "", "", nil, fmt.Errorf("too many command line parameters")
 	}
 
 	return zonename, filename, r, nil

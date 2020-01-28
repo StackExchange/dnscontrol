@@ -1,9 +1,8 @@
 package models
 
 import (
+	"fmt"
 	"net"
-
-	"github.com/pkg/errors"
 )
 
 // PopulateFromString populates a RecordConfig given a type and string.
@@ -19,19 +18,19 @@ import (
 //     }
 func (r *RecordConfig) PopulateFromString(rtype, contents, origin string) error {
 	if r.Type != "" && r.Type != rtype {
-		panic(errors.Errorf("assertion failed: rtype already set (%s) (%s)", rtype, r.Type))
+		panic(fmt.Errorf("assertion failed: rtype already set (%s) (%s)", rtype, r.Type))
 	}
 	switch r.Type = rtype; rtype { // #rtype_variations
 	case "A":
 		ip := net.ParseIP(contents)
 		if ip == nil || ip.To4() == nil {
-			return errors.Errorf("A record with invalid IP: %s", contents)
+			return fmt.Errorf("A record with invalid IP: %s", contents)
 		}
 		return r.SetTargetIP(ip) // Reformat to canonical form.
 	case "AAAA":
 		ip := net.ParseIP(contents)
 		if ip == nil || ip.To16() == nil {
-			return errors.Errorf("AAAA record with invalid IP: %s", contents)
+			return fmt.Errorf("AAAA record with invalid IP: %s", contents)
 		}
 		return r.SetTargetIP(ip) // Reformat to canonical form.
 	case "ANAME", "CNAME", "NS", "PTR":
@@ -51,7 +50,7 @@ func (r *RecordConfig) PopulateFromString(rtype, contents, origin string) error 
 	case "TXT":
 		return r.SetTargetTXTString(contents)
 	default:
-		return errors.Errorf("Unknown rtype (%s) when parsing (%s) domain=(%s)",
+		return fmt.Errorf("Unknown rtype (%s) when parsing (%s) domain=(%s)",
 			rtype, contents, origin)
 	}
 }

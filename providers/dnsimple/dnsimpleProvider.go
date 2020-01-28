@@ -8,13 +8,12 @@ import (
 	"strconv"
 	"strings"
 
+	dnsimpleapi "github.com/dnsimple/dnsimple-go/dnsimple"
+	"golang.org/x/oauth2"
+
 	"github.com/StackExchange/dnscontrol/v2/models"
 	"github.com/StackExchange/dnscontrol/v2/providers"
 	"github.com/StackExchange/dnscontrol/v2/providers/diff"
-	"github.com/pkg/errors"
-	"golang.org/x/oauth2"
-
-	dnsimpleapi "github.com/dnsimple/dnsimple-go/dnsimple"
 )
 
 var features = providers.DocumentationNotes{
@@ -197,7 +196,7 @@ func (c *DnsimpleApi) getAccountID() (string, error) {
 			return "", err
 		}
 		if whoamiResponse.Data.User != nil && whoamiResponse.Data.Account == nil {
-			return "", errors.Errorf("DNSimple token appears to be a user token. Please supply an account token")
+			return "", fmt.Errorf("DNSimple token appears to be a user token. Please supply an account token")
 		}
 		c.accountID = strconv.FormatInt(whoamiResponse.Data.Account.ID, 10)
 	}
@@ -366,7 +365,7 @@ func newProvider(m map[string]string, metadata json.RawMessage) (*DnsimpleApi, e
 	api := &DnsimpleApi{}
 	api.AccountToken = m["token"]
 	if api.AccountToken == "" {
-		return nil, errors.Errorf("missing DNSimple token")
+		return nil, fmt.Errorf("missing DNSimple token")
 	}
 
 	if m["baseurl"] != "" {

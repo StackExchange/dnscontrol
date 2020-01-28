@@ -4,8 +4,6 @@ import (
 	"fmt"
 	"strconv"
 	"strings"
-
-	"github.com/pkg/errors"
 )
 
 // SetTargetCAA sets the CAA fields.
@@ -21,7 +19,7 @@ func (rc *RecordConfig) SetTargetCAA(flag uint8, tag string, target string) erro
 	}
 
 	if tag != "issue" && tag != "issuewild" && tag != "iodef" {
-		return errors.Errorf("CAA tag (%v) is not one of issue/issuewild/iodef", tag)
+		return fmt.Errorf("CAA tag (%v) is not one of issue/issuewild/iodef", tag)
 	}
 
 	return nil
@@ -41,7 +39,7 @@ func (rc *RecordConfig) SetTargetCAAStrings(flag, tag, target string) error {
 func (rc *RecordConfig) SetTargetCAAString(s string) error {
 	part := strings.Fields(s)
 	if len(part) != 3 {
-		return errors.Errorf("CAA value does not contain 3 fields: (%#v)", s)
+		return fmt.Errorf("CAA value does not contain 3 fields: (%#v)", s)
 	}
 	return rc.SetTargetCAAStrings(part[0], part[1], StripQuotes(part[2]))
 }

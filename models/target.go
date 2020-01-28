@@ -6,7 +6,6 @@ import (
 	"strings"
 
 	"github.com/miekg/dns"
-	"github.com/pkg/errors"
 )
 
 /* .Target is kind of a mess.
@@ -39,7 +38,7 @@ func (rc *RecordConfig) GetTargetField() string {
 // GetTargetIP returns the net.IP stored in Target.
 func (rc *RecordConfig) GetTargetIP() net.IP {
 	if rc.Type != "A" && rc.Type != "AAAA" {
-		panic(errors.Errorf("GetTargetIP called on an inappropriate rtype (%s)", rc.Type))
+		panic(fmt.Errorf("GetTargetIP called on an inappropriate rtype (%s)", rc.Type))
 	}
 	return net.ParseIP(rc.Target)
 }
@@ -101,7 +100,7 @@ func (rc *RecordConfig) GetTargetDebug() string {
 	case "R53_ALIAS":
 		content += fmt.Sprintf(" type=%s zone_id=%s", rc.R53Alias["type"], rc.R53Alias["zone_id"])
 	default:
-		panic(errors.Errorf("rc.String rtype %v unimplemented", rc.Type))
+		panic(fmt.Errorf("rc.String rtype %v unimplemented", rc.Type))
 		// We panic so that we quickly find any switch statements
 		// that have not been updated for a new RR type.
 	}

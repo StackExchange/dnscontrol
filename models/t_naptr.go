@@ -4,8 +4,6 @@ import (
 	"fmt"
 	"strconv"
 	"strings"
-
-	"github.com/pkg/errors"
 )
 
 // SetTargetNAPTR sets the NAPTR fields.
@@ -44,7 +42,7 @@ func (rc *RecordConfig) SetTargetNAPTRStrings(order, preference, flags string, s
 func (rc *RecordConfig) SetTargetNAPTRString(s string) error {
 	part := strings.Fields(s)
 	if len(part) != 6 {
-		return errors.Errorf("NAPTR value does not contain 6 fields: (%#v)", s)
+		return fmt.Errorf("NAPTR value does not contain 6 fields: (%#v)", s)
 	}
 	return rc.SetTargetNAPTRStrings(part[0], part[1], part[2], part[3], part[4], StripQuotes(part[5]))
 }

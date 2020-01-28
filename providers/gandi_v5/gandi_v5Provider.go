@@ -21,15 +21,13 @@ import (
 	"strconv"
 	"strings"
 
-	gandi "github.com/tiramiseb/go-gandi"
-
 	"github.com/miekg/dns/dnsutil"
+	gandi "github.com/tiramiseb/go-gandi"
 
 	"github.com/StackExchange/dnscontrol/v2/models"
 	"github.com/StackExchange/dnscontrol/v2/pkg/printer"
 	"github.com/StackExchange/dnscontrol/v2/providers"
 	"github.com/StackExchange/dnscontrol/v2/providers/diff"
-	"github.com/pkg/errors"
 )
 
 // Section 1: Register this provider in the system.
@@ -74,7 +72,7 @@ func newHelper(m map[string]string, metadata json.RawMessage) (*api, error) {
 	api := &api{}
 	api.apikey = m["apikey"]
 	if api.apikey == "" {
-		return nil, errors.Errorf("missing Gandi apikey")
+		return nil, fmt.Errorf("missing Gandi apikey")
 	}
 	api.sharingid = m["sharing_id"]
 	debug, err := strconv.ParseBool(os.Getenv("GANDI_V5_DEBUG"))

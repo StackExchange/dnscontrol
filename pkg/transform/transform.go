@@ -1,10 +1,9 @@
 package transform
 
 import (
+	"fmt"
 	"net"
 	"strings"
-
-	"github.com/pkg/errors"
 )
 
 // IpConversion describes an IP conversion.
@@ -17,7 +16,7 @@ type IpConversion struct {
 func ipToUint(i net.IP) (uint32, error) {
 	parts := i.To4()
 	if parts == nil || len(parts) != 4 {
-		return 0, errors.Errorf("%s is not an ipv4 address", parts.String())
+		return 0, fmt.Errorf("%s is not an ipv4 address", parts.String())
 	}
 	r := uint32(parts[0])<<24 | uint32(parts[1])<<16 | uint32(parts[2])<<8 | uint32(parts[3])
 	return r, nil
@@ -39,7 +38,7 @@ func DecodeTransformTable(transforms string) ([]IpConversion, error) {
 	for ri, row := range rows {
 		items := strings.Split(row, "~")
 		if len(items) != 4 {
-			return nil, errors.Errorf("transform_table rows should have 4 elements. (%v) found in row (%v) of %#v", len(items), ri, transforms)
+			return nil, fmt.Errorf("transform_table rows should have 4 elements. (%v) found in row (%v) of %#v", len(items), ri, transforms)
 		}
 		for i, item := range items {
 			items[i] = strings.TrimSpace(item)
@@ -58,7 +57,7 @@ func DecodeTransformTable(transforms string) ([]IpConversion, error) {
 				}
 				addr := net.ParseIP(ip)
 				if addr == nil {
-					return nil, errors.Errorf("%s is not a valid ip address", ip)
+					return nil, fmt.Errorf("%s is not a valid ip address", ip)
 				}
 				ips = append(ips, addr)
 			}
@@ -75,10 +74,10 @@ func DecodeTransformTable(transforms string) ([]IpConversion, error) {
 		low, _ := ipToUint(con.Low)
 		high, _ := ipToUint(con.High)
 		if low > high {
-			return nil, errors.Errorf("transform_table Low should be less than High. row (%v) %v>%v (%v)", ri, con.Low, con.High, transforms)
+			return nil, fmt.Errorf("transform_table Low should be less than High. row (%v) %v>%v (%v)", ri, con.Low, con.High, transforms)
 		}
 		if len(con.NewBases) > 0 && len(con.NewIPs) > 0 {
-			return nil, errors.Errorf("transform_table_rows should only specify one of NewBases or NewIPs, Not both")
+			return nil, fmt.Errorf("transform_table_rows should only specify one of NewBases or NewIPs, Not both")
 		}
 		result = append(result, con)
 	}
@@ -93,7 +92,7 @@ func TransformIP(address net.IP, transforms []IpConversion) (net.IP, error) {
 		return nil, err
 	}
 	if len(ips) != 1 {
-		return nil, errors.Errorf("Expect exactly one ip for TransformIP result. Got: %s", ips)
+		return nil, fmt.Errorf("Expect exactly one ip for TransformIP result. Got: %s", ips)
 	}
 	return ips[0], err
 }

@@ -2,11 +2,11 @@ package internetbs
 
 import (
 	"fmt"
-	"github.com/StackExchange/dnscontrol/v2/models"
-	"github.com/StackExchange/dnscontrol/v2/providers"
-	"github.com/pkg/errors"
 	"sort"
 	"strings"
+
+	"github.com/StackExchange/dnscontrol/v2/models"
+	"github.com/StackExchange/dnscontrol/v2/providers"
 )
 
 /*
@@ -28,7 +28,7 @@ func newInternetBs(m map[string]string) (providers.Registrar, error) {
 
 	api.key, api.password = m["api-key"], m["password"]
 	if api.key == "" || api.password == "" {
-		return nil, errors.Errorf("missing Internet.bs api-key and password")
+		return nil, fmt.Errorf("missing Internet.bs api-key and password")
 	}
 
 	return api, nil

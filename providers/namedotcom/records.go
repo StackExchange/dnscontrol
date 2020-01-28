@@ -89,7 +89,7 @@ func toRecord(r *namecom.Record, origin string) *models.RecordConfig {
 		Original: r,
 	}
 	if !strings.HasSuffix(r.Fqdn, ".") {
-		panic(errors.Errorf("namedotcom suddenly changed protocol. Bailing. (%v)", r.Fqdn))
+		panic(fmt.Errorf("namedotcom suddenly changed protocol. Bailing. (%v)", r.Fqdn))
 	}
 	fqdn := r.Fqdn[:len(r.Fqdn)-1]
 	rc.SetLabelFromFQDN(fqdn, origin)

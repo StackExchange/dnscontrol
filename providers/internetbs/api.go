@@ -2,7 +2,7 @@ package internetbs
 
 import (
 	"encoding/json"
-	"github.com/pkg/errors"
+	"fmt"
 	"io/ioutil"
 	"net/http"
 	"strings"
@@ -31,7 +31,7 @@ type domainRecord struct {
 func (c *api) getNameservers(domain string) ([]string, error) {
 	var bodyString, err = c.get("/Domain/Info", requestParams{"Domain": domain})
 	if err != nil {
-		return []string{}, errors.Errorf("Error fetching nameservers list from Internet.bs: %s", err)
+		return []string{}, fmt.Errorf("Error fetching nameservers list from Internet.bs: %s", err)
 	}
 	var dr domainRecord
 	json.Unmarshal(bodyString, &dr)
@@ -47,7 +47,7 @@ func (c *api) updateNameservers(ns []string, domain string) error {
 	rec["Domain"] = domain
 	rec["Ns_list"] = strings.Join(ns, ",")
 	if _, err := c.get("/Domain/Update", rec); err != nil {
-		return errors.Errorf("Internet.ns: Error update NS : %s", err)
+		return fmt.Errorf("Internet.ns: Error update NS : %s", err)
 	}
 	return nil
 }
@@ -79,7 +79,7 @@ func (c *api) get(endpoint string, params requestParams) ([]byte, error) {
 	var errResp errorResponse
 	err = json.Unmarshal(bodyString, &errResp)
 	if errResp.Status == "FAILURE" {
-		return bodyString, errors.Errorf("Internet.bs API error: %s code: %d transactid: %s  URL:%s%s ",
+		return bodyString, fmt.Errorf("Internet.bs API error: %s code: %d transactid: %s  URL:%s%s ",
 			errResp.Message, errResp.Code, errResp.TransactID,
 			req.Host, req.URL.RequestURI())
 	}

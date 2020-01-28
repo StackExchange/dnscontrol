@@ -10,7 +10,6 @@ import (
 	"github.com/StackExchange/dnscontrol/v2/providers"
 	"github.com/StackExchange/dnscontrol/v2/providers/diff"
 	"github.com/miekg/dns/dnsutil"
-	"github.com/pkg/errors"
 
 	"github.com/digitalocean/godo"
 	"golang.org/x/oauth2"
@@ -39,7 +38,7 @@ var defaultNameServerNames = []string{
 // NewDo creates a DO-specific DNS provider.
 func NewDo(m map[string]string, metadata json.RawMessage) (providers.DNSServiceProvider, error) {
 	if m["token"] == "" {
-		return nil, errors.Errorf("no DigitalOcean token provided")
+		return nil, fmt.Errorf("no DigitalOcean token provided")
 	}
 
 	ctx := context.Background()
@@ -57,7 +56,7 @@ func NewDo(m map[string]string, metadata json.RawMessage) (providers.DNSServiceP
 		return nil, err
 	}
 	if resp.StatusCode != http.StatusOK {
-		return nil, errors.Errorf("token for digitalocean is not valid")
+		return nil, fmt.Errorf("token for digitalocean is not valid")
 	}
 
 	return api, nil

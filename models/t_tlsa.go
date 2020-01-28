@@ -4,8 +4,6 @@ import (
 	"fmt"
 	"strconv"
 	"strings"
-
-	"github.com/pkg/errors"
 )
 
 // SetTargetTLSA sets the TLSA fields.
@@ -40,7 +38,7 @@ func (rc *RecordConfig) SetTargetTLSAStrings(usage, selector, matchingtype, targ
 func (rc *RecordConfig) SetTargetTLSAString(s string) error {
 	part := strings.Fields(s)
 	if len(part) != 4 {
-		return errors.Errorf("TLSA value does not contain 4 fields: (%#v)", s)
+		return fmt.Errorf("TLSA value does not contain 4 fields: (%#v)", s)
 	}
 	return rc.SetTargetTLSAStrings(part[0], part[1], part[2], part[3])
 }
