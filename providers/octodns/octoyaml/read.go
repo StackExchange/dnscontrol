@@ -9,6 +9,7 @@ data we output models.RecordConfig objects.
 */
 
 import (
+	"fmt"
 	"io"
 	"io/ioutil"
 	"math"
@@ -27,14 +28,14 @@ func ReadYaml(r io.Reader, origin string) (models.Records, error) {
 	// Slurp the YAML into a string.
 	ydata, err := ioutil.ReadAll(r)
 	if err != nil {
-		return nil, errors.Wrapf(err, "can not read yaml filehandle")
+		return nil, fmt.Errorf("can not read yaml filehandle: %w", err)
 	}
 
 	// Unmarshal the mystery data into a structure we can relect into.
 	var mysterydata map[string]interface{}
 	err = yaml.Unmarshal(ydata, &mysterydata)
 	if err != nil {
-		return nil, errors.Wrapf(err, "could not unmarshal yaml")
+		return nil, fmt.Errorf("could not unmarshal yaml: %w", err)
 	}
 	//fmt.Printf("ReadYaml: mysterydata == %v\n", mysterydata)
 
@@ -62,7 +63,7 @@ func ReadYaml(r io.Reader, origin string) (models.Records, error) {
 			//    value: foo.example.com.
 			results, err = parseLeaf(results, k, v, origin)
 			if err != nil {
-				return results, errors.Wrapf(err, "leaf (%v) error", v)
+				return results, fmt.Errorf("leaf (%v) error: %w", v, err)
 			}
 		case []interface{}:
 			// The value is a list. This means we have a label with
@@ -88,7 +89,7 @@ func ReadYaml(r io.Reader, origin string) (models.Records, error) {
 					//fmt.Printf("ReadYaml:   v3=%v\n", v3)
 					results, err = parseLeaf(results, k, v3, origin)
 					if err != nil {
-						return results, errors.Wrapf(err, "leaf v3=%v", v3)
+						return results, fmt.Errorf("leaf v3=%v: %w", v3, err)
 					}
 				default:
 					return nil, errors.Errorf("unknown type in list3: k=%s v.(type)=%T v=%v", k, v, v)
@@ -259,7 +260,7 @@ func decodeTTL(ttl interface{}) (uint32, error) {
 	case string:
 		s := ttl.(string)
 		t, err := strconv.ParseUint(s, 10, 32)
-		return uint32(t), errors.Wrapf(err, "decodeTTL failed to parse (%s)", s)
+		return uint32(t), fmt.Errorf("decodeTTL failed to parse (%s): %w", s, err)
 	case int:
 		i := ttl.(int)
 		if i < 0 || i > math.MaxUint32 {

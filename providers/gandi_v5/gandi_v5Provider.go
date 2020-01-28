@@ -239,7 +239,7 @@ func (client *api) GenerateDomainCorrections(dc *models.DomainConfig, existing m
 						F: func() error {
 							res, err := g.ChangeDomainRecordsWithName(domain, shortname, ns)
 							if err != nil {
-								return errors.Wrapf(err, "%+v", res)
+								return fmt.Errorf("%+v: %w", res, err)
 							}
 							return nil
 						},
@@ -262,7 +262,7 @@ func (client *api) GenerateDomainCorrections(dc *models.DomainConfig, existing m
 							F: func() error {
 								res, err := g.CreateDomainRecord(domain, shortname, rtype, ttl, values)
 								if err != nil {
-									return errors.Wrapf(err, "%+v", res)
+									return fmt.Errorf("%+v: %w", res, err)
 								}
 								return nil
 							},

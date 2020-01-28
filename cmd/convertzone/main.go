@@ -116,7 +116,7 @@ func parseargs(args []string) (zonename string, filename string, r io.Reader, er
 		filename = flag.Arg(1)
 		r, err = os.Open(filename)
 		if err != nil {
-			return "", "", nil, errors.Wrapf(err, "Could not open file: %s", filename)
+			return "", "", nil, fmt.Errorf("Could not open file: %s: %w", filename, err)
 		}
 	} else {
 		return "", "", nil, errors.Errorf("too many command line parameters")
@@ -142,7 +142,7 @@ func readOctodns(zonename string, r io.Reader, filename string) []dns.RR {
 
 	foundRecords, err := octoyaml.ReadYaml(r, zonename)
 	if err != nil {
-		log.Println(errors.Wrapf(err, "can not get corrections"))
+		log.Println(fmt.Errorf("can not get corrections: %w", err))
 	}
 
 	for _, x := range foundRecords {

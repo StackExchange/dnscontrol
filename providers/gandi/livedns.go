@@ -201,7 +201,7 @@ func (c *liveClient) recordConfigFromInfo(infos []*gandiliverecord.Info, origin 
 			}
 			err := rc.SetTargetTXTs(parsed)
 			if err != nil {
-				panic(errors.Wrapf(err, "recordConfigFromInfo=TXT failed"))
+				panic(fmt.Errorf("recordConfigFromInfo=TXT failed: %w", err))
 			}
 			rcs = append(rcs, rc)
 		} else {
@@ -218,7 +218,7 @@ func (c *liveClient) recordConfigFromInfo(infos []*gandiliverecord.Info, origin 
 				default:
 					err := rc.PopulateFromString(rtype, value, origin)
 					if err != nil {
-						panic(errors.Wrapf(err, "recordConfigFromInfo failed"))
+						panic(fmt.Errorf("recordConfigFromInfo failed: %w", err))
 					}
 				}
 				rcs = append(rcs, rc)
