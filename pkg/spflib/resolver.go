@@ -2,12 +2,11 @@ package spflib
 
 import (
 	"encoding/json"
+	"fmt"
 	"io/ioutil"
 	"net"
 	"os"
 	"strings"
-
-	"github.com/pkg/errors"
 )
 
 // Resolver looks up spf txt records associated with a FQDN.
@@ -28,13 +27,13 @@ func (l LiveResolver) GetSPF(name string) (string, error) {
 	for _, v := range vals {
 		if strings.HasPrefix(v, "v=spf1") {
 			if spf != "" {
-				return "", errors.Errorf("%s has multiple SPF records", name)
+				return "", fmt.Errorf("%s has multiple SPF records", name)
 			}
 			spf = v
 		}
 	}
 	if spf == "" {
-		return "", errors.Errorf("%s has no SPF record", name)
+		return "", fmt.Errorf("%s has no SPF record", name)
 	}
 	return spf, nil
 }

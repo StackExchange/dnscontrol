@@ -1,10 +1,9 @@
 package models
 
 import (
+	"fmt"
 	"strconv"
 	"strings"
-
-	"github.com/pkg/errors"
 )
 
 // SetTargetTLSA sets the TLSA fields.
@@ -32,14 +31,14 @@ func (rc *RecordConfig) SetTargetTLSAStrings(usage, selector, matchingtype, targ
 			}
 		}
 	}
-	return errors.Wrap(err, "TLSA has value that won't fit in field")
+	return fmt.Errorf("TLSA has value that won't fit in field: %w", err)
 }
 
 // SetTargetTLSAString is like SetTargetTLSA but accepts one big string.
 func (rc *RecordConfig) SetTargetTLSAString(s string) error {
 	part := strings.Fields(s)
 	if len(part) != 4 {
-		return errors.Errorf("TLSA value does not contain 4 fields: (%#v)", s)
+		return fmt.Errorf("TLSA value does not contain 4 fields: (%#v)", s)
 	}
 	return rc.SetTargetTLSAStrings(part[0], part[1], part[2], part[3])
 }

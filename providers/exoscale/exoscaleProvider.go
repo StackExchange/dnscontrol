@@ -6,7 +6,6 @@ import (
 	"strings"
 
 	"github.com/exoscale/egoscale"
-	"github.com/pkg/errors"
 
 	"github.com/StackExchange/dnscontrol/v2/models"
 	"github.com/StackExchange/dnscontrol/v2/providers"
@@ -92,11 +91,11 @@ func (c *exoscaleProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*mod
 			rec.SetTarget(r.Content)
 		case "MX":
 			if err := rec.SetTargetMX(uint16(r.Prio), r.Content); err != nil {
-				panic(errors.Wrap(err, "unparsable record received from dnsimple"))
+				panic(fmt.Errorf("unparsable record received from dnsimple: %w", err))
 			}
 		default:
 			if err := rec.PopulateFromString(r.RecordType, r.Content, dc.Name); err != nil {
-				panic(errors.Wrap(err, "unparsable record received from dnsimple"))
+				panic(fmt.Errorf("unparsable record received from dnsimple: %w", err))
 			}
 		}
 		existingRecords = append(existingRecords, rec)

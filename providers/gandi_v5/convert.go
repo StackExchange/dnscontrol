@@ -3,10 +3,12 @@ package gandi5
 // Convert the provider's native record description to models.RecordConfig.
 
 import (
+	"fmt"
+
+	"github.com/tiramiseb/go-gandi/livedns"
+
 	"github.com/StackExchange/dnscontrol/v2/models"
 	"github.com/StackExchange/dnscontrol/v2/pkg/printer"
-	"github.com/pkg/errors"
-	"github.com/tiramiseb/go-gandi/livedns"
 )
 
 // nativeToRecord takes a DNS record from Gandi and returns a native RecordConfig struct.
@@ -26,7 +28,7 @@ func nativeToRecords(n livedns.DomainRecord, origin string) (rcs []*models.Recor
 		switch rtype := n.RrsetType; rtype {
 		default: //  "A", "AAAA", "CAA", "NS", "CNAME", "MX", "PTR", "SRV", "TXT"
 			if err := rc.PopulateFromString(rtype, value, origin); err != nil {
-				panic(errors.Wrap(err, "unparsable record received from gandi"))
+				panic(fmt.Errorf("unparsable record received from gandi: %w", err))
 			}
 		}
 		rcs = append(rcs, rc)

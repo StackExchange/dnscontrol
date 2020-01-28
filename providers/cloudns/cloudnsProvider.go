@@ -3,12 +3,13 @@ package cloudns
 import (
 	"encoding/json"
 	"fmt"
+	"strconv"
+
+	"github.com/miekg/dns/dnsutil"
+
 	"github.com/StackExchange/dnscontrol/v2/models"
 	"github.com/StackExchange/dnscontrol/v2/providers"
 	"github.com/StackExchange/dnscontrol/v2/providers/diff"
-	"github.com/miekg/dns/dnsutil"
-	"github.com/pkg/errors"
-	"strconv"
 )
 
 /*
@@ -27,7 +28,7 @@ func NewCloudns(m map[string]string, metadata json.RawMessage) (providers.DNSSer
 
 	c.creds.id, c.creds.password = m["auth-id"], m["auth-password"]
 	if c.creds.id == "" || c.creds.password == "" {
-		return nil, errors.Errorf("missing ClouDNS auth-id and auth-password")
+		return nil, fmt.Errorf("missing ClouDNS auth-id and auth-password")
 	}
 
 	// Get a domain to validate authentication
@@ -78,7 +79,7 @@ func (c *api) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Correctio
 	}
 	domainID, ok := c.domainIndex[dc.Name]
 	if !ok {
-		return nil, errors.Errorf("%s not listed in domains for ClouDNS account", dc.Name)
+		return nil, fmt.Errorf("%s not listed in domains for ClouDNS account", dc.Name)
 	}
 
 	records, err := c.getRecords(domainID)

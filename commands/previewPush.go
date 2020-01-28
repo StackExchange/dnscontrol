@@ -5,6 +5,8 @@ import (
 	"log"
 	"os"
 
+	"github.com/urfave/cli"
+
 	"github.com/StackExchange/dnscontrol/v2/models"
 	"github.com/StackExchange/dnscontrol/v2/pkg/nameservers"
 	"github.com/StackExchange/dnscontrol/v2/pkg/normalize"
@@ -12,8 +14,6 @@ import (
 	"github.com/StackExchange/dnscontrol/v2/pkg/printer"
 	"github.com/StackExchange/dnscontrol/v2/providers"
 	"github.com/StackExchange/dnscontrol/v2/providers/config"
-	"github.com/pkg/errors"
-	"github.com/urfave/cli"
 )
 
 var _ = cmd(catMain, func() *cli.Command {
@@ -101,7 +101,7 @@ func run(args PreviewArgs, push bool, interactive bool, out printer.CLI) error {
 	}
 	errs := normalize.NormalizeAndValidateConfig(cfg)
 	if PrintValidationErrors(errs) {
-		return errors.Errorf("Exiting due to validation errors")
+		return fmt.Errorf("Exiting due to validation errors")
 	}
 	// TODO:
 	notifier, err := InitializeProviders(args.CredsFile, cfg, args.Notify)
@@ -169,10 +169,10 @@ DomainLoop:
 	notifier.Done()
 	out.Printf("Done. %d corrections.\n", totalCorrections)
 	if anyErrors {
-		return errors.Errorf("Completed with errors")
+		return fmt.Errorf("Completed with errors")
 	}
 	if totalCorrections != 0 && args.WarnChanges {
-		return errors.Errorf("There are pending changes")
+		return fmt.Errorf("There are pending changes")
 	}
 	return nil
 }

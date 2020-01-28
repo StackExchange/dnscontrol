@@ -3,16 +3,17 @@ package vultr
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"strconv"
 	"strings"
 
+	"github.com/miekg/dns/dnsutil"
+	"github.com/vultr/govultr"
+
 	"github.com/StackExchange/dnscontrol/v2/models"
 	"github.com/StackExchange/dnscontrol/v2/providers"
 	"github.com/StackExchange/dnscontrol/v2/providers/diff"
-	"github.com/miekg/dns/dnsutil"
-	"github.com/pkg/errors"
-	"github.com/vultr/govultr"
 )
 
 /*
@@ -55,7 +56,7 @@ var defaultNS = []string{
 func NewProvider(m map[string]string, metadata json.RawMessage) (providers.DNSServiceProvider, error) {
 	token := m["token"]
 	if token == "" {
-		return nil, errors.Errorf("Vultr API token is required")
+		return nil, fmt.Errorf("Vultr API token is required")
 	}
 
 	client := govultr.NewClient(nil, token)

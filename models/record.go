@@ -8,7 +8,6 @@ import (
 
 	"github.com/miekg/dns"
 	"github.com/miekg/dns/dnsutil"
-	"github.com/pkg/errors"
 )
 
 // RecordConfig stores a DNS record.
@@ -110,10 +109,10 @@ func (rc *RecordConfig) SetLabel(short, origin string) {
 
 	// Assertions that make sure the function is being used correctly:
 	if strings.HasSuffix(origin, ".") {
-		panic(errors.Errorf("origin (%s) is not supposed to end with a dot", origin))
+		panic(fmt.Errorf("origin (%s) is not supposed to end with a dot", origin))
 	}
 	if strings.HasSuffix(short, ".") {
-		panic(errors.Errorf("short (%s) is not supposed to end with a dot", origin))
+		panic(fmt.Errorf("short (%s) is not supposed to end with a dot", origin))
 	}
 
 	// TODO(tlim): We should add more validation here or in a separate validation
@@ -145,10 +144,10 @@ func (rc *RecordConfig) SetLabelFromFQDN(fqdn, origin string) {
 
 	// Assertions that make sure the function is being used correctly:
 	if strings.HasSuffix(origin, ".") {
-		panic(errors.Errorf("origin (%s) is not supposed to end with a dot", origin))
+		panic(fmt.Errorf("origin (%s) is not supposed to end with a dot", origin))
 	}
 	if strings.HasSuffix(fqdn, "..") {
-		panic(errors.Errorf("fqdn (%s) is not supposed to end with double dots", origin))
+		panic(fmt.Errorf("fqdn (%s) is not supposed to end with double dots", origin))
 	}
 
 	if strings.HasSuffix(fqdn, ".") {

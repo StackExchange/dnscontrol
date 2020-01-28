@@ -35,7 +35,7 @@ require (
 	github.com/namedotcom/go v0.0.0-20180403034216-08470befbe04
 	github.com/ovh/go-ovh v0.0.0-20181109152953-ba5adb4cf014
 	github.com/philhug/opensrs-go v0.0.0-20171126225031-9dfa7433020d
-	github.com/pkg/errors v0.8.1
+	github.com/pkg/errors v0.8.1 // indirect
 	github.com/prasmussen/gandi-api v0.0.0-20180224132202-58d3d4205661
 	github.com/renier/xmlrpc v0.0.0-20170708154548-ce4a1a486c03 // indirect
 	github.com/robertkrimen/otto v0.0.0-20180617131154-15f95af6e78d

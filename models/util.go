@@ -3,9 +3,8 @@ package models
 import (
 	"bytes"
 	"encoding/gob"
+	"fmt"
 	"strconv"
-
-	"github.com/pkg/errors"
 )
 
 func copyObj(input interface{}, output interface{}) error {
@@ -23,7 +22,7 @@ func copyObj(input interface{}, output interface{}) error {
 func atou32(s string) uint32 {
 	i64, err := strconv.ParseUint(s, 10, 32)
 	if err != nil {
-		panic(errors.Errorf("atou32 failed (%v) (err=%v", s, err))
+		panic(fmt.Errorf("atou32 failed (%v) (err=%v", s, err))
 	}
 	return uint32(i64)
 }

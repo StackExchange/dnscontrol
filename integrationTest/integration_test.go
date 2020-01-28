@@ -2,20 +2,18 @@ package main
 
 import (
 	"flag"
-	"testing"
-
 	"fmt"
-
 	"strconv"
 	"strings"
+	"testing"
+
+	"github.com/miekg/dns/dnsutil"
 
 	"github.com/StackExchange/dnscontrol/v2/models"
 	"github.com/StackExchange/dnscontrol/v2/pkg/nameservers"
 	"github.com/StackExchange/dnscontrol/v2/providers"
 	_ "github.com/StackExchange/dnscontrol/v2/providers/_all"
 	"github.com/StackExchange/dnscontrol/v2/providers/config"
-	"github.com/miekg/dns/dnsutil"
-	"github.com/pkg/errors"
 )
 
 var providerToRun = flag.String("provider", "", "Provider to run")
@@ -122,7 +120,7 @@ func runTests(t *testing.T, prv providers.DNSServiceProvider, domainName string,
 			// get corrections for first time
 			corrections, err := prv.GetDomainCorrections(dom)
 			if err != nil {
-				t.Fatal(errors.Wrap(err, "runTests"))
+				t.Fatal(fmt.Errorf("runTests: %w", err))
 			}
 			if !skipVal && i != *startIdx && len(corrections) == 0 {
 				if tst.Desc != "Empty" {

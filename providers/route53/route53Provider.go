@@ -2,20 +2,21 @@ package route53
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"sort"
 	"strings"
 	"time"
 
-	"github.com/StackExchange/dnscontrol/v2/models"
-	"github.com/StackExchange/dnscontrol/v2/providers"
-	"github.com/StackExchange/dnscontrol/v2/providers/diff"
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/credentials"
 	"github.com/aws/aws-sdk-go/aws/session"
 	r53 "github.com/aws/aws-sdk-go/service/route53"
 	r53d "github.com/aws/aws-sdk-go/service/route53domains"
-	"github.com/pkg/errors"
+
+	"github.com/StackExchange/dnscontrol/v2/models"
+	"github.com/StackExchange/dnscontrol/v2/providers"
+	"github.com/StackExchange/dnscontrol/v2/providers/diff"
 )
 
 type route53Provider struct {
@@ -351,7 +352,7 @@ func nativeToRecords(set *r53.ResourceRecordSet, origin string) []*models.Record
 				rc := &models.RecordConfig{TTL: uint32(*set.TTL)}
 				rc.SetLabelFromFQDN(unescape(set.Name), origin)
 				if err := rc.PopulateFromString(*set.Type, *rec.Value, origin); err != nil {
-					panic(errors.Wrap(err, "unparsable record received from R53"))
+					panic(fmt.Errorf("unparsable record received from R53: %w", err))
 				}
 				results = append(results, rc)
 			}
