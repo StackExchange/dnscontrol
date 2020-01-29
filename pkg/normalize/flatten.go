@@ -1,12 +1,11 @@
 package normalize
 
 import (
+	"fmt"
 	"strings"
 
-	"github.com/pkg/errors"
-
-	"github.com/StackExchange/dnscontrol/models"
-	"github.com/StackExchange/dnscontrol/pkg/spflib"
+	"github.com/StackExchange/dnscontrol/v2/models"
+	"github.com/StackExchange/dnscontrol/v2/pkg/spflib"
 )
 
 // hasSpfRecords returns true if this record requests SPF unrolling.
@@ -15,7 +14,7 @@ func flattenSPFs(cfg *models.DNSConfig) []error {
 	var errs []error
 	var err error
 	for _, domain := range cfg.Domains {
-		apexTXTs := domain.Records.Grouped()[models.RecordKey{Type: "TXT", NameFQDN: domain.Name}]
+		apexTXTs := domain.Records.GroupedByKey()[models.RecordKey{Type: "TXT", NameFQDN: domain.Name}]
 		// flatten all spf records that have the "flatten" metadata
 		for _, txt := range apexTXTs {
 			var rec *spflib.SPFRecord
@@ -43,7 +42,7 @@ func flattenSPFs(cfg *models.DNSConfig) []error {
 			// now split if needed
 			if split, ok := txt.Metadata["split"]; ok {
 				if !strings.Contains(split, "%d") {
-					errs = append(errs, Warning{errors.Errorf("Split format `%s` in `%s` is not proper format (should have %%d in it)", split, txt.GetLabelFQDN())})
+					errs = append(errs, Warning{fmt.Errorf("Split format `%s` in `%s` is not proper format (should have %%d in it)", split, txt.GetLabelFQDN())})
 					continue
 				}
 				recs := rec.TXTSplit(split + "." + domain.Name)
@@ -65,7 +64,7 @@ func flattenSPFs(cfg *models.DNSConfig) []error {
 	}
 	// check if cache is stale
 	for _, e := range cache.ResolveErrors() {
-		errs = append(errs, Warning{errors.Errorf("problem resolving SPF record: %s", e)})
+		errs = append(errs, Warning{fmt.Errorf("problem resolving SPF record: %s", e)})
 	}
 	if len(cache.ResolveErrors()) == 0 {
 		changed := cache.ChangedRecords()
@@ -73,7 +72,7 @@ func flattenSPFs(cfg *models.DNSConfig) []error {
 			if err := cache.Save("spfcache.updated.json"); err != nil {
 				errs = append(errs, err)
 			} else {
-				errs = append(errs, Warning{errors.Errorf("%d spf record lookups are out of date with cache (%s).\nWrote changes to spfcache.updated.json. Please rename and commit:\n    $ mv spfcache.updated.json spfcache.json\n    $ git commit -m'Update spfcache.json' spfcache.json", len(changed), strings.Join(changed, ","))})
+				errs = append(errs, Warning{fmt.Errorf("%d spf record lookups are out of date with cache (%s).\nWrote changes to spfcache.updated.json. Please rename and commit:\n    $ mv spfcache.updated.json spfcache.json\n    $ git commit -m'Update spfcache.json' spfcache.json", len(changed), strings.Join(changed, ","))})
 			}
 		}
 	}

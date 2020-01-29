@@ -8,7 +8,6 @@ import (
 
 	"github.com/miekg/dns"
 	"github.com/miekg/dns/dnsutil"
-	"github.com/pkg/errors"
 )
 
 // RecordConfig stores a DNS record.
@@ -110,10 +109,10 @@ func (rc *RecordConfig) SetLabel(short, origin string) {
 
 	// Assertions that make sure the function is being used correctly:
 	if strings.HasSuffix(origin, ".") {
-		panic(errors.Errorf("origin (%s) is not supposed to end with a dot", origin))
+		panic(fmt.Errorf("origin (%s) is not supposed to end with a dot", origin))
 	}
 	if strings.HasSuffix(short, ".") {
-		panic(errors.Errorf("short (%s) is not supposed to end with a dot", origin))
+		panic(fmt.Errorf("short (%s) is not supposed to end with a dot", origin))
 	}
 
 	// TODO(tlim): We should add more validation here or in a separate validation
@@ -145,10 +144,10 @@ func (rc *RecordConfig) SetLabelFromFQDN(fqdn, origin string) {
 
 	// Assertions that make sure the function is being used correctly:
 	if strings.HasSuffix(origin, ".") {
-		panic(errors.Errorf("origin (%s) is not supposed to end with a dot", origin))
+		panic(fmt.Errorf("origin (%s) is not supposed to end with a dot", origin))
 	}
 	if strings.HasSuffix(fqdn, "..") {
-		panic(errors.Errorf("fqdn (%s) is not supposed to end with double dots", origin))
+		panic(fmt.Errorf("fqdn (%s) is not supposed to end with double dots", origin))
 	}
 
 	if strings.HasSuffix(fqdn, ".") {
@@ -306,8 +305,18 @@ func (rc *RecordConfig) Key() RecordKey {
 // Records is a list of *RecordConfig.
 type Records []*RecordConfig
 
+// FQDNMap returns a map of all LabelFQDNs. Useful for making a
+// truthtable of labels that exist in Records.
+func (r Records) FQDNMap() (m map[string]bool) {
+	m = map[string]bool{}
+	for _, rec := range r {
+		m[rec.GetLabelFQDN()] = true
+	}
+	return m
+}
+
 // Grouped returns a map of keys to records.
-func (r Records) Grouped() map[RecordKey]Records {
+func (r Records) GroupedByKey() map[RecordKey]Records {
 	groups := map[RecordKey]Records{}
 	for _, rec := range r {
 		groups[rec.Key()] = append(groups[rec.Key()], rec)
@@ -324,6 +333,20 @@ func (r Records) GroupedByLabel() ([]string, map[string]Records) {
 			order = append(order, rec.Name)
 		}
 		groups[rec.Name] = append(groups[rec.Name], rec)
+	}
+	return order, groups
+}
+
+// GroupedByFQDN returns a map of keys to records, grouped by FQDN.
+func (r Records) GroupedByFQDN() ([]string, map[string]Records) {
+	order := []string{}
+	groups := map[string]Records{}
+	for _, rec := range r {
+		namefqdn := rec.GetLabelFQDN()
+		if _, found := groups[namefqdn]; !found {
+			order = append(order, namefqdn)
+		}
+		groups[namefqdn] = append(groups[namefqdn], rec)
 	}
 	return order, groups
 }

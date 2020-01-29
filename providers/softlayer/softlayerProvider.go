@@ -6,15 +6,14 @@ import (
 	"regexp"
 	"strings"
 
-	"github.com/StackExchange/dnscontrol/models"
-	"github.com/StackExchange/dnscontrol/providers"
-	"github.com/StackExchange/dnscontrol/providers/diff"
-	"github.com/pkg/errors"
-
 	"github.com/softlayer/softlayer-go/datatypes"
 	"github.com/softlayer/softlayer-go/filter"
 	"github.com/softlayer/softlayer-go/services"
 	"github.com/softlayer/softlayer-go/session"
+
+	"github.com/StackExchange/dnscontrol/v2/models"
+	"github.com/StackExchange/dnscontrol/v2/providers"
+	"github.com/StackExchange/dnscontrol/v2/providers/diff"
 )
 
 // SoftLayer is the protocol handle for this provider.
@@ -34,7 +33,7 @@ func newReg(conf map[string]string, _ json.RawMessage) (providers.DNSServiceProv
 	s := session.New(conf["username"], conf["api_key"], conf["endpoint_url"], conf["timeout"])
 
 	if len(s.UserName) == 0 || len(s.APIKey) == 0 {
-		return nil, errors.Errorf("SoftLayer UserName and APIKey must be provided")
+		return nil, fmt.Errorf("SoftLayer UserName and APIKey must be provided")
 	}
 
 	// s.Debug = true
@@ -108,9 +107,9 @@ func (s *SoftLayer) getDomain(name *string) (*datatypes.Dns_Domain, error) {
 	}
 
 	if len(domains) == 0 {
-		return nil, errors.Errorf("Didn't find a domain matching %s", *name)
+		return nil, fmt.Errorf("Didn't find a domain matching %s", *name)
 	} else if len(domains) > 1 {
-		return nil, errors.Errorf("Found %d domains matching %s", len(domains), *name)
+		return nil, fmt.Errorf("Found %d domains matching %s", len(domains), *name)
 	}
 
 	return &domains[0], nil
@@ -205,7 +204,7 @@ func (s *SoftLayer) createRecordFunc(desired *models.RecordConfig, domain *datat
 			result := srvRegexp.FindStringSubmatch(host)
 
 			if len(result) != 3 {
-				return errors.Errorf("SRV Record must match format \"_service._protocol\" not %s", host)
+				return fmt.Errorf("SRV Record must match format \"_service._protocol\" not %s", host)
 			}
 
 			var serviceName, protocol string = result[1], strings.ToLower(result[2])
@@ -277,7 +276,7 @@ func (s *SoftLayer) updateRecordFunc(existing *datatypes.Dns_Domain_ResourceReco
 			}
 
 			if !changes {
-				return errors.Errorf("didn't find changes when I expect some")
+				return fmt.Errorf("didn't find changes when I expect some")
 			}
 
 			_, err = service.Id(*existing.Id).EditObject(&updated)
@@ -322,7 +321,7 @@ func (s *SoftLayer) updateRecordFunc(existing *datatypes.Dns_Domain_ResourceReco
 			// delete and recreate?
 
 			if !changes {
-				return errors.Errorf("didn't find changes when I expect some")
+				return fmt.Errorf("didn't find changes when I expect some")
 			}
 
 			_, err = service.Id(*existing.Id).EditObject(&updated)
@@ -349,7 +348,7 @@ func (s *SoftLayer) updateRecordFunc(existing *datatypes.Dns_Domain_ResourceReco
 			}
 
 			if !changes {
-				return errors.Errorf("didn't find changes when I expect some")
+				return fmt.Errorf("didn't find changes when I expect some")
 			}
 
 			_, err = service.Id(*existing.Id).EditObject(&updated)

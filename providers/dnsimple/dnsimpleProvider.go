@@ -8,13 +8,12 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/StackExchange/dnscontrol/models"
-	"github.com/StackExchange/dnscontrol/providers"
-	"github.com/StackExchange/dnscontrol/providers/diff"
-	"github.com/pkg/errors"
+	dnsimpleapi "github.com/dnsimple/dnsimple-go/dnsimple"
 	"golang.org/x/oauth2"
 
-	dnsimpleapi "github.com/dnsimple/dnsimple-go/dnsimple"
+	"github.com/StackExchange/dnscontrol/v2/models"
+	"github.com/StackExchange/dnscontrol/v2/providers"
+	"github.com/StackExchange/dnscontrol/v2/providers/diff"
 )
 
 var features = providers.DocumentationNotes{
@@ -71,7 +70,7 @@ func (c *DnsimpleApi) GetDomainCorrections(dc *models.DomainConfig) ([]*models.C
 		if r.Name == "" {
 			r.Name = "@"
 		}
-		if r.Type == "CNAME" || r.Type == "MX" || r.Type == "ALIAS" || r.Type == "SRV" {
+		if r.Type == "CNAME" || r.Type == "MX" || r.Type == "ALIAS" {
 			r.Content += "."
 		}
 		// dnsimple adds these odd txt records that mirror the alias records.
@@ -90,15 +89,19 @@ func (c *DnsimpleApi) GetDomainCorrections(dc *models.DomainConfig) ([]*models.C
 			rec.SetTarget(r.Content)
 		case "MX":
 			if err := rec.SetTargetMX(uint16(r.Priority), r.Content); err != nil {
-				panic(errors.Wrap(err, "unparsable record received from dnsimple"))
+				panic(fmt.Errorf("unparsable record received from dnsimple: %w", err))
 			}
 		case "SRV":
+			parts := strings.Fields(r.Content)
+			if len(parts) == 3 {
+				r.Content += "."
+			}
 			if err := rec.SetTargetSRVPriorityString(uint16(r.Priority), r.Content); err != nil {
-				panic(errors.Wrap(err, "unparsable record received from dnsimple"))
+				panic(fmt.Errorf("unparsable record received from dnsimple: %w", err))
 			}
 		default:
 			if err := rec.PopulateFromString(r.Type, r.Content, dc.Name); err != nil {
-				panic(errors.Wrap(err, "unparsable record received from dnsimple"))
+				panic(fmt.Errorf("unparsable record received from dnsimple: %w", err))
 			}
 		}
 		actual = append(actual, rec)
@@ -193,7 +196,7 @@ func (c *DnsimpleApi) getAccountID() (string, error) {
 			return "", err
 		}
 		if whoamiResponse.Data.User != nil && whoamiResponse.Data.Account == nil {
-			return "", errors.Errorf("DNSimple token appears to be a user token. Please supply an account token")
+			return "", fmt.Errorf("DNSimple token appears to be a user token. Please supply an account token")
 		}
 		c.accountID = strconv.FormatInt(whoamiResponse.Data.Account.ID, 10)
 	}
@@ -362,7 +365,7 @@ func newProvider(m map[string]string, metadata json.RawMessage) (*DnsimpleApi, e
 	api := &DnsimpleApi{}
 	api.AccountToken = m["token"]
 	if api.AccountToken == "" {
-		return nil, errors.Errorf("missing DNSimple token")
+		return nil, fmt.Errorf("missing DNSimple token")
 	}
 
 	if m["baseurl"] != "" {

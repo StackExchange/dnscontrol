@@ -6,8 +6,8 @@ import (
 	"io/ioutil"
 	"sort"
 
-	"github.com/StackExchange/dnscontrol/providers"
-	_ "github.com/StackExchange/dnscontrol/providers/_all"
+	"github.com/StackExchange/dnscontrol/v2/providers"
+	_ "github.com/StackExchange/dnscontrol/v2/providers/_all"
 )
 
 func generateFeatureMatrix() error {
@@ -58,7 +58,7 @@ func generateFeatureMatrix() error {
 				fm[name] = notes[cap]
 				return
 			}
-			fm.SetSimple(name, true, func() bool { return providers.ProviderHasCabability(p, cap) })
+			fm.SetSimple(name, true, func() bool { return providers.ProviderHasCapability(p, cap) })
 		}
 		setDoc := func(name string, cap providers.Capability, defaultNo bool) {
 			if notes[cap] != nil {
@@ -89,7 +89,7 @@ func generateFeatureMatrix() error {
 		if notes[cap] != nil {
 			fm["no_purge"] = notes[cap]
 		} else {
-			fm.SetSimple("no_purge", false, func() bool { return !providers.ProviderHasCabability(p, cap) })
+			fm.SetSimple("no_purge", false, func() bool { return !providers.ProviderHasCapability(p, cap) })
 		}
 		matrix.Providers[p] = fm
 	}

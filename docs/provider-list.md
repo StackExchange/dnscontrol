@@ -61,15 +61,18 @@ provided to help community members support their code independently.
 
 Maintainers of contributed providers:
 
+* ClouDNS @pragmaton
 * digital ocean @Deraen
 * dnsimple @aeden
 * gandi @TomOnTime
 * HEXONET @papakai
+* Internet.bs @pragmaton
 * Linode @koesie10
 * namecheap @captncraig
 * ns1 @captncraig
 * OVH @masterzen
 * Vultr @geek1011
+* Azure DNS @vatsalyagoel
 
 ### Requested providers
 
@@ -82,14 +85,14 @@ code to support this provider, please re-open the issue. We'd be glad to help in
 
 ### In progress providers
 
-These requests have *open* issues, which indicates somebody is actively working on it. Feel free to follow the issue, or pitch in if you think you can help.
+These requests have an *open* issue, which indicates somebody is actively working on it. Feel free to follow the issue, or pitch in if you think you can help.
 
 <ul id='inprog'>
 </ul>
 
 ### Providers with open PRs
 
-These providers have an open pr with (potentially) working code. They may be ready to merge, or may have blockers. See issue and pr for details.
+These providers have an open PR with (potentially) working code. They may be ready to merge, or may have blockers. See issue and PR for details.
 
 <ul id='haspr'>
 </ul>

@@ -14,14 +14,17 @@ Windows). The provider model is extensible, so more providers can be added.
 
 Currently supported DNS providers:
  - Active Directory
+ - Azure DNS
  - BIND
  - Cloudflare
+ - ClouDNS
  - DigitalOcean
  - DNSimple
  - Exoscale
  - Gandi
  - Google
  - HEXONET
+ - Internet.bs
  - Linode
  - Namecheap
  - Name.com

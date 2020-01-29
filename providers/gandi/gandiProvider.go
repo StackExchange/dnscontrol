@@ -4,17 +4,15 @@ import (
 	"encoding/json"
 	"fmt"
 	"sort"
-
-	"github.com/StackExchange/dnscontrol/models"
-	"github.com/StackExchange/dnscontrol/pkg/printer"
-	"github.com/StackExchange/dnscontrol/providers"
-	"github.com/StackExchange/dnscontrol/providers/diff"
-	"github.com/pkg/errors"
-
 	"strings"
 
 	gandidomain "github.com/prasmussen/gandi-api/domain"
 	gandirecord "github.com/prasmussen/gandi-api/domain/zone/record"
+
+	"github.com/StackExchange/dnscontrol/v2/models"
+	"github.com/StackExchange/dnscontrol/v2/pkg/printer"
+	"github.com/StackExchange/dnscontrol/v2/providers"
+	"github.com/StackExchange/dnscontrol/v2/providers/diff"
 )
 
 /*
@@ -25,6 +23,8 @@ Info required in `creds.json`:
    - apikey
 
 */
+
+var deprecationWarned bool
 
 var features = providers.DocumentationNotes{
 	providers.CanUseCAA:              providers.Can(),
@@ -58,7 +58,7 @@ func (c *GandiApi) getDomainInfo(domain string) (*gandidomain.DomainInfo, error)
 	}
 	_, ok := c.domainIndex[domain]
 	if !ok {
-		return nil, errors.Errorf("%s not listed in zones for gandi account", domain)
+		return nil, fmt.Errorf("%s not listed in zones for gandi account", domain)
 	}
 	return c.fetchDomainInfo(domain)
 }
@@ -96,7 +96,7 @@ func (c *GandiApi) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Corr
 			rec.TTL = 300
 		}
 		if rec.TTL > 2592000 {
-			return nil, errors.Errorf("ERROR: Gandi does not support TTLs > 30 days (TTL=%d)", rec.TTL)
+			return nil, fmt.Errorf("ERROR: Gandi does not support TTLs > 30 days (TTL=%d)", rec.TTL)
 		}
 		if rec.Type == "TXT" {
 			rec.SetTarget("\"" + rec.GetTargetField() + "\"") // FIXME(tlim): Should do proper quoting.
@@ -165,10 +165,14 @@ func newReg(conf map[string]string) (providers.Registrar, error) {
 }
 
 func newGandi(m map[string]string, metadata json.RawMessage) (*GandiApi, error) {
+	if !deprecationWarned {
+		deprecationWarned = true
+		fmt.Printf("WARNING: GANDI is deprecated and will disappear in 3.0. Please migrate to GANDI_V5.\n")
+	}
 	api := &GandiApi{}
 	api.ApiKey = m["apikey"]
 	if api.ApiKey == "" {
-		return nil, errors.Errorf("missing Gandi apikey")
+		return nil, fmt.Errorf("missing Gandi apikey")
 	}
 
 	return api, nil

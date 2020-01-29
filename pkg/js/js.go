@@ -7,12 +7,12 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/StackExchange/dnscontrol/models"
-	"github.com/StackExchange/dnscontrol/pkg/printer"
-	"github.com/StackExchange/dnscontrol/pkg/transform"
-	"github.com/pkg/errors"
 	"github.com/robertkrimen/otto"              // load underscore js into vm by default
 	_ "github.com/robertkrimen/otto/underscore" // required by otto
+
+	"github.com/StackExchange/dnscontrol/v2/models"
+	"github.com/StackExchange/dnscontrol/v2/pkg/printer"
+	"github.com/StackExchange/dnscontrol/v2/pkg/transform"
 )
 
 // currentDirectory is the current directory as used by require().
@@ -27,7 +27,7 @@ var currentDirectory string
 func ExecuteJavascript(file string, devMode bool) (*models.DNSConfig, error) {
 	script, err := ioutil.ReadFile(file)
 	if err != nil {
-		return nil, errors.Errorf("Reading js file %s: %s", file, err)
+		return nil, fmt.Errorf("Reading js file %s: %s", file, err)
 	}
 
 	// Record the directory path leading up to this file.

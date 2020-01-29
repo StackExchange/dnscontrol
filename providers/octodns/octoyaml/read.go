@@ -9,15 +9,16 @@ data we output models.RecordConfig objects.
 */
 
 import (
+	"fmt"
 	"io"
 	"io/ioutil"
 	"math"
 	"reflect"
 	"strconv"
 
-	"github.com/StackExchange/dnscontrol/models"
-	"github.com/pkg/errors"
 	yaml "gopkg.in/yaml.v2"
+
+	"github.com/StackExchange/dnscontrol/v2/models"
 )
 
 // ReadYaml parses a yaml input and returns a list of RecordConfigs
@@ -27,14 +28,14 @@ func ReadYaml(r io.Reader, origin string) (models.Records, error) {
 	// Slurp the YAML into a string.
 	ydata, err := ioutil.ReadAll(r)
 	if err != nil {
-		return nil, errors.Wrapf(err, "can not read yaml filehandle")
+		return nil, fmt.Errorf("can not read yaml filehandle: %w", err)
 	}
 
 	// Unmarshal the mystery data into a structure we can relect into.
 	var mysterydata map[string]interface{}
 	err = yaml.Unmarshal(ydata, &mysterydata)
 	if err != nil {
-		return nil, errors.Wrapf(err, "could not unmarshal yaml")
+		return nil, fmt.Errorf("could not unmarshal yaml: %w", err)
 	}
 	//fmt.Printf("ReadYaml: mysterydata == %v\n", mysterydata)
 
@@ -62,7 +63,7 @@ func ReadYaml(r io.Reader, origin string) (models.Records, error) {
 			//    value: foo.example.com.
 			results, err = parseLeaf(results, k, v, origin)
 			if err != nil {
-				return results, errors.Wrapf(err, "leaf (%v) error", v)
+				return results, fmt.Errorf("leaf (%v) error: %w", v, err)
 			}
 		case []interface{}:
 			// The value is a list. This means we have a label with
@@ -88,15 +89,15 @@ func ReadYaml(r io.Reader, origin string) (models.Records, error) {
 					//fmt.Printf("ReadYaml:   v3=%v\n", v3)
 					results, err = parseLeaf(results, k, v3, origin)
 					if err != nil {
-						return results, errors.Wrapf(err, "leaf v3=%v", v3)
+						return results, fmt.Errorf("leaf v3=%v: %w", v3, err)
 					}
 				default:
-					return nil, errors.Errorf("unknown type in list3: k=%s v.(type)=%T v=%v", k, v, v)
+					return nil, fmt.Errorf("unknown type in list3: k=%s v.(type)=%T v=%v", k, v, v)
 				}
 			}
 
 		default:
-			return nil, errors.Errorf("unknown type in list1: k=%s v.(type)=%T v=%v", k, v, v)
+			return nil, fmt.Errorf("unknown type in list1: k=%s v.(type)=%T v=%v", k, v, v)
 		}
 	}
 
@@ -126,7 +127,7 @@ func parseLeaf(results models.Records, k string, v interface{}, origin string) (
 				var err error
 				rTTL, err = decodeTTL(v2)
 				if err != nil {
-					return nil, errors.Errorf("parseLeaf: can not parse ttl (%v)", v2)
+					return nil, fmt.Errorf("parseLeaf: can not parse ttl (%v)", v2)
 				}
 			case "value":
 				rTarget = v2.(string)
@@ -135,7 +136,7 @@ func parseLeaf(results models.Records, k string, v interface{}, origin string) (
 				case string:
 					rTarget = v2.(string)
 				default:
-					return nil, errors.Errorf("parseLeaf: unknown type in values: rtpe=%s k=%s k2=%s v2.(type)=%T v2=%v", rType, k, k2, v2, v2)
+					return nil, fmt.Errorf("parseLeaf: unknown type in values: rtpe=%s k=%s k2=%s v2.(type)=%T v2=%v", rType, k, k2, v2, v2)
 				}
 			default:
 				panic("Should not happen")
@@ -184,11 +185,11 @@ func parseLeaf(results models.Records, k string, v interface{}, origin string) (
 					//fmt.Printf("parseLeaf: append %v\n", newRc)
 					someresults = append(someresults, newRc)
 				default:
-					return nil, errors.Errorf("parseLeaf: unknown type in map: rtype=%s k=%s v3.(type)=%T v3=%v", rType, k, v3, v3)
+					return nil, fmt.Errorf("parseLeaf: unknown type in map: rtype=%s k=%s v3.(type)=%T v3=%v", rType, k, v3, v3)
 				}
 			}
 		} else {
-			return nil, errors.Errorf("parseLeaf: unknown type in level 2: k=%s k2=%s v.2(type)=%T v2=%v", k, k2, v2, v2)
+			return nil, fmt.Errorf("parseLeaf: unknown type in level 2: k=%s k2=%s v.2(type)=%T v2=%v", k, k2, v2, v2)
 		}
 	}
 	// fmt.Printf("parseLeaf: Target=(%v)\n", rTarget)
@@ -259,11 +260,11 @@ func decodeTTL(ttl interface{}) (uint32, error) {
 	case string:
 		s := ttl.(string)
 		t, err := strconv.ParseUint(s, 10, 32)
-		return uint32(t), errors.Wrapf(err, "decodeTTL failed to parse (%s)", s)
+		return uint32(t), fmt.Errorf("decodeTTL failed to parse (%s): %w", s, err)
 	case int:
 		i := ttl.(int)
 		if i < 0 || i > math.MaxUint32 {
-			return 0, errors.Errorf("ttl won't fit in 32-bits (%d)", i)
+			return 0, fmt.Errorf("ttl won't fit in 32-bits (%d)", i)
 		}
 		return uint32(i), nil
 	}

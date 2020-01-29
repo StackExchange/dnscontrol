@@ -5,19 +5,16 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
-
-	"github.com/StackExchange/dnscontrol/models"
-	"github.com/StackExchange/dnscontrol/providers"
-	"github.com/StackExchange/dnscontrol/providers/diff"
-	"github.com/miekg/dns/dnsutil"
-	"github.com/pkg/errors"
-
 	"net/url"
-
 	"regexp"
 	"strings"
 
+	"github.com/miekg/dns/dnsutil"
 	"golang.org/x/oauth2"
+
+	"github.com/StackExchange/dnscontrol/v2/models"
+	"github.com/StackExchange/dnscontrol/v2/providers"
+	"github.com/StackExchange/dnscontrol/v2/providers/diff"
 )
 
 /*
@@ -64,7 +61,7 @@ var defaultNameServerNames = []string{
 // NewLinode creates the provider.
 func NewLinode(m map[string]string, metadata json.RawMessage) (providers.DNSServiceProvider, error) {
 	if m["token"] == "" {
-		return nil, errors.Errorf("Missing Linode token")
+		return nil, fmt.Errorf("Missing Linode token")
 	}
 
 	ctx := context.Background()
@@ -75,7 +72,7 @@ func NewLinode(m map[string]string, metadata json.RawMessage) (providers.DNSServ
 
 	baseURL, err := url.Parse(defaultBaseURL)
 	if err != nil {
-		return nil, errors.Errorf("Linode base URL not valid")
+		return nil, fmt.Errorf("Linode base URL not valid")
 	}
 
 	api := &LinodeApi{client: client, baseURL: baseURL}
@@ -119,7 +116,7 @@ func (api *LinodeApi) GetDomainCorrections(dc *models.DomainConfig) ([]*models.C
 	}
 	domainID, ok := api.domainIndex[dc.Name]
 	if !ok {
-		return nil, errors.Errorf("%s not listed in domains for Linode account", dc.Name)
+		return nil, fmt.Errorf("%s not listed in domains for Linode account", dc.Name)
 	}
 
 	records, err := api.getRecords(domainID)
@@ -277,7 +274,7 @@ func toReq(dc *models.DomainConfig, rc *models.RecordConfig) (*recordEditRequest
 		result := srvRegexp.FindStringSubmatch(req.Name)
 
 		if len(result) != 3 {
-			return nil, errors.Errorf("SRV Record must match format \"_service._protocol\" not %s", req.Name)
+			return nil, fmt.Errorf("SRV Record must match format \"_service._protocol\" not %s", req.Name)
 		}
 
 		var serviceName, protocol string = result[1], strings.ToLower(result[2])

@@ -9,10 +9,9 @@ import (
 	gauth "golang.org/x/oauth2/google"
 	gdns "google.golang.org/api/dns/v1"
 
-	"github.com/StackExchange/dnscontrol/models"
-	"github.com/StackExchange/dnscontrol/providers"
-	"github.com/StackExchange/dnscontrol/providers/diff"
-	"github.com/pkg/errors"
+	"github.com/StackExchange/dnscontrol/v2/models"
+	"github.com/StackExchange/dnscontrol/v2/providers"
+	"github.com/StackExchange/dnscontrol/v2/providers/diff"
 )
 
 var features = providers.DocumentationNotes{
@@ -42,6 +41,12 @@ type gcloud struct {
 
 // New creates a new gcloud provider
 func New(cfg map[string]string, metadata json.RawMessage) (providers.DNSServiceProvider, error) {
+	// the key as downloaded is json encoded with literal "\n" instead of newlines.
+	// in some cases (round-tripping through env vars) this tends to get messed up.
+	// fix it if we find that.
+	if key, ok := cfg["private_key"]; ok {
+		cfg["private_key"] = strings.Replace(key, "\\n", "\n", -1)
+	}
 	raw, err := json.Marshal(cfg)
 	if err != nil {
 		return nil, err
@@ -198,7 +203,7 @@ func nativeToRecord(set *gdns.ResourceRecordSet, rec, origin string) *models.Rec
 	r.SetLabelFromFQDN(set.Name, origin)
 	r.TTL = uint32(set.Ttl)
 	if err := r.PopulateFromString(set.Type, rec, origin); err != nil {
-		panic(errors.Wrap(err, "unparsable record received from GCLOUD"))
+		panic(fmt.Errorf("unparsable record received from GCLOUD: %w", err))
 	}
 	return r
 }

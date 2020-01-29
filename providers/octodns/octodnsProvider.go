@@ -27,11 +27,10 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/StackExchange/dnscontrol/models"
-	"github.com/StackExchange/dnscontrol/providers"
-	"github.com/StackExchange/dnscontrol/providers/diff"
-	"github.com/StackExchange/dnscontrol/providers/octodns/octoyaml"
-	"github.com/pkg/errors"
+	"github.com/StackExchange/dnscontrol/v2/models"
+	"github.com/StackExchange/dnscontrol/v2/providers"
+	"github.com/StackExchange/dnscontrol/v2/providers/diff"
+	"github.com/StackExchange/dnscontrol/v2/providers/octodns/octoyaml"
 )
 
 var features = providers.DocumentationNotes{
@@ -104,12 +103,12 @@ func (c *Provider) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Corr
 		if os.IsNotExist(err) {
 			zoneFileFound = false
 		} else {
-			return nil, errors.Wrapf(err, "can't open %s:", zoneFileName)
+			return nil, fmt.Errorf("can't open %s:: %w", zoneFileName, err)
 		}
 	} else {
 		foundRecords, err = octoyaml.ReadYaml(foundFH, dc.Name)
 		if err != nil {
-			return nil, errors.Wrapf(err, "can not get corrections")
+			return nil, fmt.Errorf("can not get corrections: %w", err)
 		}
 	}
 

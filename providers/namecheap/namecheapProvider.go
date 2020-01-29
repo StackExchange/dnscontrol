@@ -7,14 +7,13 @@ import (
 	"strings"
 	"time"
 
+	nc "github.com/billputer/go-namecheap"
 	"golang.org/x/net/publicsuffix"
 
-	"github.com/StackExchange/dnscontrol/models"
-	"github.com/StackExchange/dnscontrol/pkg/printer"
-	"github.com/StackExchange/dnscontrol/providers"
-	"github.com/StackExchange/dnscontrol/providers/diff"
-	nc "github.com/billputer/go-namecheap"
-	"github.com/pkg/errors"
+	"github.com/StackExchange/dnscontrol/v2/models"
+	"github.com/StackExchange/dnscontrol/v2/pkg/printer"
+	"github.com/StackExchange/dnscontrol/v2/providers"
+	"github.com/StackExchange/dnscontrol/v2/providers/diff"
 )
 
 // NamecheapDefaultNs lists the default nameservers for this provider.
@@ -29,7 +28,7 @@ type Namecheap struct {
 
 var features = providers.DocumentationNotes{
 	providers.CanUseAlias:            providers.Cannot(),
-	providers.CanUseCAA:              providers.Cannot(),
+	providers.CanUseCAA:              providers.Can(),
 	providers.CanUsePTR:              providers.Cannot(),
 	providers.CanUseSRV:              providers.Cannot("The namecheap web console allows you to make SRV records, but their api does not let you read or set them"),
 	providers.CanUseTLSA:             providers.Cannot(),
@@ -59,7 +58,7 @@ func newProvider(m map[string]string, metadata json.RawMessage) (*Namecheap, err
 	api := &Namecheap{}
 	api.ApiUser, api.ApiKey = m["apiuser"], m["apikey"]
 	if api.ApiKey == "" || api.ApiUser == "" {
-		return nil, errors.Errorf("missing Namecheap apikey and apiuser")
+		return nil, fmt.Errorf("missing Namecheap apikey and apiuser")
 	}
 	api.client = nc.NewClient(api.ApiUser, api.ApiKey, api.ApiUser)
 	// if BaseURL is specified in creds, use that url
@@ -155,7 +154,14 @@ func (n *Namecheap) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Cor
 			Original:     r,
 		}
 		rec.SetLabel(r.Name, dc.Name)
-		rec.SetTarget(r.Address)
+		switch rtype := r.Type; rtype { // #rtype_variations
+		case "TXT":
+			rec.SetTargetTXT(r.Address)
+		case "CAA":
+			rec.SetTargetCAAString(r.Address)
+		default:
+			rec.SetTarget(r.Address)
+		}
 		actual = append(actual, rec)
 	}
 
@@ -203,11 +209,19 @@ func (n *Namecheap) generateRecords(dc *models.DomainConfig) error {
 
 	id := 1
 	for _, r := range dc.Records {
+		var value string
+		switch rtype := r.Type; rtype { // #rtype_variations
+		case "CAA":
+			value = r.GetTargetCombined()
+		default:
+			value = r.GetTargetField()
+		}
+
 		rec := nc.DomainDNSHost{
 			ID:      id,
 			Name:    r.GetLabel(),
 			Type:    r.Type,
-			Address: r.GetTargetField(),
+			Address: value,
 			MXPref:  int(r.MxPreference),
 			TTL:     int(r.TTL),
 		}

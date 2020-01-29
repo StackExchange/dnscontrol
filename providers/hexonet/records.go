@@ -8,10 +8,8 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/pkg/errors"
-
-	"github.com/StackExchange/dnscontrol/models"
-	"github.com/StackExchange/dnscontrol/providers/diff"
+	"github.com/StackExchange/dnscontrol/v2/models"
+	"github.com/StackExchange/dnscontrol/v2/providers/diff"
 )
 
 // HXRecord covers an individual DNS resource record.
@@ -121,15 +119,15 @@ func toRecord(r *HXRecord, origin string) *models.RecordConfig {
 		rc.SetTargetTXTs(decodeTxt(r.Answer))
 	case "MX":
 		if err := rc.SetTargetMX(uint16(r.Priority), r.Answer); err != nil {
-			panic(errors.Wrap(err, "unparsable MX record received from hexonet api"))
+			panic(fmt.Errorf("unparsable MX record received from hexonet api: %w", err))
 		}
 	case "SRV":
 		if err := rc.SetTargetSRVPriorityString(uint16(r.Priority), r.Answer); err != nil {
-			panic(errors.Wrap(err, "unparsable SRV record received from hexonet api"))
+			panic(fmt.Errorf("unparsable SRV record received from hexonet api: %w", err))
 		}
 	default: // "A", "AAAA", "ANAME", "CNAME", "NS"
 		if err := rc.PopulateFromString(rtype, r.Answer, r.Fqdn); err != nil {
-			panic(errors.Wrap(err, "unparsable record received from hexonet api"))
+			panic(fmt.Errorf("unparsable record received from hexonet api: %w", err))
 		}
 	}
 	return rc

@@ -1,27 +1,29 @@
 package gandi
 
 import (
+	"bytes"
 	"encoding/json"
 	"fmt"
 	"strings"
 	"time"
 
-	"github.com/StackExchange/dnscontrol/models"
-	"github.com/StackExchange/dnscontrol/pkg/printer"
-	"github.com/StackExchange/dnscontrol/providers"
-	"github.com/StackExchange/dnscontrol/providers/diff"
 	"github.com/google/uuid"
-	"github.com/pkg/errors"
 	gandiclient "github.com/prasmussen/gandi-api/client"
 	gandilivedomain "github.com/prasmussen/gandi-api/live_dns/domain"
 	gandiliverecord "github.com/prasmussen/gandi-api/live_dns/record"
 	gandilivezone "github.com/prasmussen/gandi-api/live_dns/zone"
+
+	"github.com/StackExchange/dnscontrol/v2/models"
+	"github.com/StackExchange/dnscontrol/v2/pkg/printer"
+	"github.com/StackExchange/dnscontrol/v2/providers"
+	"github.com/StackExchange/dnscontrol/v2/providers/diff"
 )
 
 var liveFeatures = providers.DocumentationNotes{
 	providers.CanUseCAA:              providers.Can(),
 	providers.CanUsePTR:              providers.Can(),
 	providers.CanUseSRV:              providers.Can(),
+	providers.CanUseTXTMulti:         providers.Can(),
 	providers.CantUseNOPURGE:         providers.Cannot(),
 	providers.DocCreateDomains:       providers.Cannot("Can only manage domains registered through their service"),
 	providers.DocOfficiallySupported: providers.Cannot(),
@@ -34,7 +36,7 @@ func init() {
 func newLiveDsp(m map[string]string, metadata json.RawMessage) (providers.DNSServiceProvider, error) {
 	APIKey := m["apikey"]
 	if APIKey == "" {
-		return nil, errors.Errorf("missing Gandi apikey")
+		return nil, fmt.Errorf("missing Gandi apikey")
 	}
 
 	return newLiveClient(APIKey), nil
@@ -72,7 +74,7 @@ func (c *liveClient) GetNameservers(domain string) ([]*models.Nameserver, error)
 	domains := []string{}
 	response, err := c.client.Get("/nameservers/"+domain, &domains)
 	if err != nil {
-		return nil, errors.Errorf("failed to get nameservers for domain %s", domain)
+		return nil, fmt.Errorf("failed to get nameservers for domain %s", domain)
 	}
 	defer response.Body.Close()
 
@@ -103,11 +105,26 @@ func (c *liveClient) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Co
 	differ := diff.New(dc)
 
 	_, create, del, mod := differ.IncrementalDiff(foundRecords)
-	if len(create)+len(del)+len(mod) > 0 {
+
+	buf := &bytes.Buffer{}
+	// Print a list of changes. Generate an actual change that is the zone
+	changes := false
+	for _, i := range create {
+		changes = true
+		fmt.Fprintln(buf, i)
+	}
+	for _, i := range del {
+		changes = true
+		fmt.Fprintln(buf, i)
+	}
+	for _, i := range mod {
+		changes = true
+		fmt.Fprintln(buf, i)
+	}
+
+	if changes {
 		message := fmt.Sprintf("Setting dns records for %s:", dc.Name)
-		for _, record := range dc.Records {
-			message += "\n" + record.GetTargetCombined()
-		}
+		message += "\n" + buf.String()
 		return []*models.Correction{
 			{
 				Msg: message,
@@ -184,7 +201,7 @@ func (c *liveClient) recordConfigFromInfo(infos []*gandiliverecord.Info, origin 
 			}
 			err := rc.SetTargetTXTs(parsed)
 			if err != nil {
-				panic(errors.Wrapf(err, "recordConfigFromInfo=TXT failed"))
+				panic(fmt.Errorf("recordConfigFromInfo=TXT failed: %w", err))
 			}
 			rcs = append(rcs, rc)
 		} else {
@@ -201,7 +218,7 @@ func (c *liveClient) recordConfigFromInfo(infos []*gandiliverecord.Info, origin 
 				default:
 					err := rc.PopulateFromString(rtype, value, origin)
 					if err != nil {
-						panic(errors.Wrapf(err, "recordConfigFromInfo failed"))
+						panic(fmt.Errorf("recordConfigFromInfo failed: %w", err))
 					}
 				}
 				rcs = append(rcs, rc)
@@ -223,7 +240,7 @@ func (c *liveClient) recordsToInfo(records models.Records) (models.Records, []*g
 			rec.TTL = 300
 		}
 		if rec.TTL > 2592000 {
-			return nil, nil, errors.Errorf("ERROR: Gandi does not support TTLs > 30 days (TTL=%d)", rec.TTL)
+			return nil, nil, fmt.Errorf("ERROR: Gandi does not support TTLs > 30 days (TTL=%d)", rec.TTL)
 		}
 		if rec.Type == "NS" && rec.GetLabel() == "@" {
 			if !strings.HasSuffix(rec.GetTargetField(), ".gandi.net.") {

@@ -7,49 +7,6 @@ type NameserverList []struct {
 	SortOrder string `json:"sortorder,omitempty"`
 }
 
-type ARecord struct {
-	IpAddress string `json:"ipaddress,omitempty"`
-	SubDomain string `json:"subdomain,omitempty"`
-}
-
-type AAAARecord struct {
-	Ipv6Address string `json:"ipv6_address,omitempty"`
-	SubDomain string `json:"subdomain,omitempty"`
-}
-
-type CNAMERecord struct {
-	HostName string `json:"hostname,omitempty"`
-	SubDomain string `json:"subdomain,omitempty"`
-}
-
-type MXRecord struct {
-	Priority string `json:"priority,omitempty"`
-	SubDomain string `json:"subdomain,omitempty"`
-	HostName string `json:"hostname,omitempty"`
-}
-
-type SRVRecord struct {
-	Priority string `json:"priority,omitempty"`
-	Weight string `json:"weight,omitempty"`
-	SubDomain string `json:"subdomain,omitempty"`
-	HostName string `json:"hostname,omitempty"`
-	Port string `json:"port,omitempty"`
-}
-
-type TXTRecord struct {
-	SubDomain string `json:"subdomain,omitempty"`
-	Text string `json:"text,omitempty"`
-}
-
-type DnsRecords struct {
-	A []ARecord `json:"A,omitempty"`
-	AAAA []AAAARecord `json:"AAAA,omitempty"`
-	CNAME []CNAMERecord `json:"CNAME,omitempty"`
-	MX []MXRecord `json:"MX,omitempty"`
-	SRV []SRVRecord `json:"SRV,omitempty"`
-	TXT []TXTRecord `json:"TXT,omitempty"`
-}
-
 func (n NameserverList) ToString() []string {
 	domains := make([]string, len(n))
 	for i, ns := range n {
@@ -80,7 +37,6 @@ type OpsResponse struct {
 		NameserverList NameserverList `json:"nameserver_list,omitempty"`
 		Type           string         `json:"type,omitempty"`
 		LockState      string         `json:"lock_state,omitempty"`
-		Records        DnsRecords     `json:"records,omitempty"`
 	} `json:"attributes"`
 }
 

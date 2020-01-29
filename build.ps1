@@ -10,10 +10,12 @@ if ($SHA -eq ""){
 
 $PKG = "github.com/StackExchange/dnscontrol"
 $DATE = [int][double]::Parse((Get-Date -UFormat %s))
-$FLAGS="-s -w -X main.SHA=$SHA -X main.BuildTime=$DATE"
+$FLAGS="-mod=readonly -s -w -X main.SHA=$SHA -X main.BuildTime=$DATE"
 Write-Host $FLAGS
 
 $OrigGOOS = $env:GOOS
+
+$env:GO111MODULE = "on"
 
 Write-Host 'Building Linux'
 $env:GOOS = "linux"

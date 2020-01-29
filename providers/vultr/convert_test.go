@@ -3,8 +3,8 @@ package vultr
 import (
 	"testing"
 
-	vultr "github.com/JamesClonk/vultr/lib"
-	"github.com/StackExchange/dnscontrol/models"
+	"github.com/StackExchange/dnscontrol/v2/models"
+	"github.com/vultr/govultr"
 )
 
 func TestConversion(t *testing.T) {
@@ -12,7 +12,7 @@ func TestConversion(t *testing.T) {
 		Name: "example.com",
 	}
 
-	records := []*vultr.DNSRecord{
+	records := []*govultr.DNSRecord{
 		{
 			Type: "A",
 			Name: "",
@@ -64,7 +64,7 @@ func TestConversion(t *testing.T) {
 			t.Error("Error converting Vultr record", record)
 		}
 
-		converted := toVultrRecord(dc, rc)
+		converted := toVultrRecord(dc, rc, 0)
 
 		if converted.Type != record.Type || converted.Name != record.Name || converted.Data != record.Data || converted.Priority != record.Priority || converted.TTL != record.TTL {
 			t.Error("Vultr record conversion mismatch", record, rc, converted)

@@ -7,10 +7,10 @@ import (
 	"regexp"
 	"strings"
 
-	"github.com/StackExchange/dnscontrol/models"
-	"github.com/StackExchange/dnscontrol/pkg/acme"
-	"github.com/StackExchange/dnscontrol/pkg/normalize"
-	"github.com/StackExchange/dnscontrol/pkg/printer"
+	"github.com/StackExchange/dnscontrol/v2/models"
+	"github.com/StackExchange/dnscontrol/v2/pkg/acme"
+	"github.com/StackExchange/dnscontrol/v2/pkg/normalize"
+	"github.com/StackExchange/dnscontrol/v2/pkg/printer"
 	"github.com/urfave/cli"
 )
 
@@ -39,6 +39,7 @@ type GetCertsArgs struct {
 	Verbose        bool
 	Vault          bool
 	VaultPath      string
+	Only           string
 
 	Notify bool
 
@@ -111,6 +112,11 @@ func (args *GetCertsArgs) flags() []cli.Flag {
 		Destination: &args.Notify,
 		Usage:       `set to true to send notifications to configured destinations`,
 	})
+	flags = append(flags, cli.StringFlag{
+		Name:        "only",
+		Destination: &args.Only,
+		Usage:       `Only check a single cert. Provide cert name.`,
+	})
 	return flags
 }
 
@@ -179,6 +185,9 @@ func GetCerts(args GetCertsArgs) error {
 		return err
 	}
 	for _, cert := range certList {
+		if args.Only != "" && cert.CertName != args.Only {
+			continue
+		}
 		v := args.Verbose || printer.DefaultPrinter.Verbose
 		issued, err := client.IssueOrRenewCert(cert, args.RenewUnderDays, v)
 		if issued || err != nil {
@@ -198,7 +207,7 @@ func validateCertificateList(certs []*acme.CertConfig, cfg *models.DNSConfig) er
 	for _, cert := range certs {
 		name := cert.CertName
 		if !validCertNamesRegex.MatchString(name) {
-			return fmt.Errorf("'%s' is not a valud certificate name. Only alphanumerics, - and _ allowed", name)
+			return fmt.Errorf("'%s' is not a valid certificate name. Only alphanumerics, - and _ allowed", name)
 		}
 		sans := cert.Names
 		if len(sans) > 100 {

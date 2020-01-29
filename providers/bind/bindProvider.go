@@ -23,11 +23,10 @@ import (
 	"strings"
 
 	"github.com/miekg/dns"
-	"github.com/pkg/errors"
 
-	"github.com/StackExchange/dnscontrol/models"
-	"github.com/StackExchange/dnscontrol/providers"
-	"github.com/StackExchange/dnscontrol/providers/diff"
+	"github.com/StackExchange/dnscontrol/v2/models"
+	"github.com/StackExchange/dnscontrol/v2/providers"
+	"github.com/StackExchange/dnscontrol/v2/providers/diff"
 )
 
 var features = providers.DocumentationNotes{
@@ -155,7 +154,7 @@ func rrToRecord(rr dns.RR, origin string, replaceSerial uint32) (models.RecordCo
 
 func panicInvalid(err error) {
 	if err != nil {
-		panic(errors.Wrap(err, "unparsable record received from BIND"))
+		panic(fmt.Errorf("unparsable record received from BIND: %w", err))
 	}
 }
 

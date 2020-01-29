@@ -3,7 +3,6 @@ package gandi
 import (
 	"fmt"
 
-	"github.com/pkg/errors"
 	gandiclient "github.com/prasmussen/gandi-api/client"
 	gandidomain "github.com/prasmussen/gandi-api/domain"
 	gandinameservers "github.com/prasmussen/gandi-api/domain/nameservers"
@@ -12,7 +11,7 @@ import (
 	gandiversion "github.com/prasmussen/gandi-api/domain/zone/version"
 	gandioperation "github.com/prasmussen/gandi-api/operation"
 
-	"github.com/StackExchange/dnscontrol/models"
+	"github.com/StackExchange/dnscontrol/v2/models"
 )
 
 // fetchDomainList gets list of domains for account. Cache ids for easy lookup.
@@ -78,7 +77,7 @@ func nativeToRecord(r *gandirecord.RecordInfo, origin string) *models.RecordConf
 	switch rtype := r.Type; rtype {
 	default: //  "A", "AAAA", "CAA", "NS", "CNAME", "MX", "PTR", "SRV", "TXT"
 		if err := rc.PopulateFromString(rtype, r.Value, origin); err != nil {
-			panic(errors.Wrap(err, "unparsable record received from gandi"))
+			panic(fmt.Errorf("unparsable record received from gandi: %w", err))
 		}
 	}
 	return rc
