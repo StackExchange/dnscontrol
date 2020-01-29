@@ -48,7 +48,7 @@ func AddNSRecords(dc *models.DomainConfig) {
 	if ttls, ok := dc.Metadata["ns_ttl"]; ok {
 		t, err := strconv.ParseUint(ttls, 10, 32)
 		if err != nil {
-			fmt.Printf("WARNING: ns_ttl fpr %s (%s) is not a valid int", dc.Name, ttls)
+			fmt.Printf("WARNING: ns_ttl for %s (%s) is not a valid int", dc.Name, ttls)
 		} else {
 			ttl = uint32(t)
 		}
