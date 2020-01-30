@@ -526,7 +526,6 @@ func makeTests(t *testing.T) []*TestCase {
 
 	// Case
 	tests = append(tests, tc("Empty"),
-		tc("Empty"),
 		tc("Create CAPS", mx("BAR", 5, "BAR.com.")),
 		tc("Downcase label", mx("bar", 5, "BAR.com."), a("decoy", "1.1.1.1")),
 		tc("Downcase target", mx("bar", 5, "bar.com."), a("decoy", "2.2.2.2")),
@@ -556,7 +555,6 @@ func makeTests(t *testing.T) []*TestCase {
 
 	// TXT (single)
 	tests = append(tests, tc("Empty"),
-		tc("Empty"),
 		tc("Create a TXT", txt("foo", "simple")),
 		tc("Change a TXT", txt("foo", "changed")),
 		tc("Empty"),
@@ -578,8 +576,7 @@ func makeTests(t *testing.T) []*TestCase {
 	if !providers.ProviderHasCapability(*providerToRun, providers.CanUseTXTMulti) {
 		t.Log("Skipping TXTMulti Tests because provider does not support them")
 	} else {
-		tests = append(tests,
-			tc("Empty"),
+		tests = append(tests, tc("Empty"),
 			tc("Create TXTMulti 1",
 				txtmulti("foo1", []string{"simple"}),
 			),
@@ -606,19 +603,16 @@ func makeTests(t *testing.T) []*TestCase {
 			tc("3x255-byte TXTMulti",
 				txtmulti("foo3", []string{"XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX", "YYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYY", "ZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZ"}),
 			),
-			tc("Empty"),
 		)
 	}
 
 	// ignored records
-	tests = append(tests,
-		tc("Empty"),
+	tests = append(tests, tc("Empty"),
 		tc("Create some records", txt("foo", "simple"), a("foo", "1.2.3.4")),
 		tc("Add a new record - ignoring foo", a("bar", "1.2.3.4"), ignore("foo")),
 	)
 
-	tests = append(tests,
-		tc("Empty"),
+	tests = append(tests, tc("Empty"),
 		tc("Create some records", txt("bar.foo", "simple"), a("bar.foo", "1.2.3.4")),
 		tc("Add a new record - ignoring *.foo", a("bar", "1.2.3.4"), ignore("*.foo")),
 	)
@@ -636,13 +630,12 @@ func makeTests(t *testing.T) []*TestCase {
 
 	// test r53 for very very large batch sizes
 	if *providerToRun == "ROUTE53" {
-		tests = append(tests,
+		tests = append(tests, tc("Empty"),
 			tc("600 records", manyA("rec%04d", "1.2.3.4", 600)...),
 			tc("Update 600 records", manyA("rec%04d", "1.2.3.5", 600)...),
 			tc("Empty"),
 			tc("1200 records", manyA("rec%04d", "1.2.3.4", 1200)...),
 			tc("Update 1200 records", manyA("rec%04d", "1.2.3.5", 1200)...),
-			tc("Empty"),
 		)
 	}
 
