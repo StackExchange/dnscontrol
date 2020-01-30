@@ -184,6 +184,7 @@ func GetCerts(args GetCertsArgs) error {
 	if err != nil {
 		return err
 	}
+	var manyerr error
 	for _, cert := range certList {
 		if args.Only != "" && cert.CertName != args.Only {
 			continue
@@ -194,11 +195,15 @@ func GetCerts(args GetCertsArgs) error {
 			notifier.Notify(cert.CertName, "certificate", "Issued new certificate", err, false)
 		}
 		if err != nil {
-			return err
+			if manyerr == nil {
+				manyerr = err
+			} else {
+				manyerr = fmt.Errorf("%w; %v", manyerr, err)
+			}
 		}
 	}
 	notifier.Done()
-	return nil
+	return manyerr
 }
 
 var validCertNamesRegex = regexp.MustCompile(`^[a-zA-Z][a-zA-Z0-9_\-]*$`)
