@@ -88,9 +88,9 @@ func GetZone(args GetZoneArgs) error {
 	}
 	fmt.Printf("FOO=%+v\n", provider)
 
-	//recs, err := provider.GetZoneRecords(args.ZoneName)
-	//fmt.Printf("RECS=%v\n", recs)
-	//fmt.Printf("err = %v\n", err)
+	recs, err := provider.GetZoneRecords(args.ZoneName)
+	fmt.Printf("RECS=%v\n", recs)
+	fmt.Printf("err = %v\n", err)
 
 	return err
 }

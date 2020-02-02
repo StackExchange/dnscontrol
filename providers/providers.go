@@ -85,6 +85,14 @@ func (n None) GetNameservers(string) ([]*models.Nameserver, error) {
 	return nil, nil
 }
 
+// GetZoneRecords gets the records of a zone and returns them in RecordConfig format.
+func (client None) GetZoneRecords(domain string) (models.Records, error) {
+	return nil, fmt.Errorf("not implemented")
+	// This enables the get-zones subcommand.
+	// Implement this by extracting the code from GetDomainCorrections into
+	// a single function.  For most providers this should be relatively easy.
+}
+
 // GetDomainCorrections returns corrections to update a domain.
 func (n None) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Correction, error) {
 	return nil, nil

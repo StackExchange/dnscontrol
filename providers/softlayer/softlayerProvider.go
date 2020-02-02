@@ -52,6 +52,14 @@ func (s *SoftLayer) GetNameservers(domain string) ([]*models.Nameserver, error) 
 	return models.StringsToNameservers(nservers), nil
 }
 
+// GetZoneRecords gets the records of a zone and returns them in RecordConfig format.
+func (client *SoftLayer) GetZoneRecords(domain string) (models.Records, error) {
+	return nil, fmt.Errorf("not implemented")
+	// This enables the get-zones subcommand.
+	// Implement this by extracting the code from GetDomainCorrections into
+	// a single function.  For most providers this should be relatively easy.
+}
+
 // GetDomainCorrections returns corrections to update a domain.
 func (s *SoftLayer) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Correction, error) {
 	corrections := []*models.Correction{}

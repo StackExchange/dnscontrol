@@ -95,6 +95,14 @@ func (api *DoApi) GetNameservers(domain string) ([]*models.Nameserver, error) {
 	return models.StringsToNameservers(defaultNameServerNames), nil
 }
 
+// GetZoneRecords gets the records of a zone and returns them in RecordConfig format.
+func (client *DoApi) GetZoneRecords(domain string) (models.Records, error) {
+	return nil, fmt.Errorf("not implemented")
+	// This enables the get-zones subcommand.
+	// Implement this by extracting the code from GetDomainCorrections into
+	// a single function.  For most providers this should be relatively easy.
+}
+
 // GetDomainCorrections returns a list of corretions for the  domain.
 func (api *DoApi) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Correction, error) {
 	ctx := context.Background()

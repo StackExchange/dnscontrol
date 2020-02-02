@@ -19,6 +19,14 @@ var defaultNameservers = []*models.Nameserver{
 	{Name: "ns4.name.com"},
 }
 
+// GetZoneRecords gets the records of a zone and returns them in RecordConfig format.
+func (client *NameCom) GetZoneRecords(domain string) (models.Records, error) {
+	return nil, fmt.Errorf("not implemented")
+	// This enables the get-zones subcommand.
+	// Implement this by extracting the code from GetDomainCorrections into
+	// a single function.  For most providers this should be relatively easy.
+}
+
 // GetDomainCorrections gathers correctios that would bring n to match dc.
 func (n *NameCom) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Correction, error) {
 	dc.Punycode()

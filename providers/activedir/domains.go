@@ -37,6 +37,14 @@ var supportedTypes = map[string]bool{
 	"NS":    true,
 }
 
+// GetZoneRecords gets the records of a zone and returns them in RecordConfig format.
+func (client *adProvider) GetZoneRecords(domain string) (models.Records, error) {
+	return nil, fmt.Errorf("not implemented")
+	// This enables the get-zones subcommand.
+	// Implement this by extracting the code from GetDomainCorrections into
+	// a single function.  For most providers this should be relatively easy.
+}
+
 // GetDomainCorrections gets existing records, diffs them against existing, and returns corrections.
 func (c *adProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Correction, error) {
 

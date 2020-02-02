@@ -100,6 +100,14 @@ func (api *LinodeApi) GetNameservers(domain string) ([]*models.Nameserver, error
 	return models.StringsToNameservers(defaultNameServerNames), nil
 }
 
+// GetZoneRecords gets the records of a zone and returns them in RecordConfig format.
+func (client *LinodeApi) GetZoneRecords(domain string) (models.Records, error) {
+	return nil, fmt.Errorf("not implemented")
+	// This enables the get-zones subcommand.
+	// Implement this by extracting the code from GetDomainCorrections into
+	// a single function.  For most providers this should be relatively easy.
+}
+
 // GetDomainCorrections returns the corrections for a domain.
 func (api *LinodeApi) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Correction, error) {
 	dc, err := dc.Copy()

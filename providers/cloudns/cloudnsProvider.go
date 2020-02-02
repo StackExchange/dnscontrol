@@ -150,6 +150,14 @@ func (c *api) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Correctio
 	return corrections, nil
 }
 
+// GetZoneRecords gets the records of a zone and returns them in RecordConfig format.
+func (client *api) GetZoneRecords(domain string) (models.Records, error) {
+	return nil, fmt.Errorf("not implemented")
+	// This enables the get-zones subcommand.
+	// Implement this by extracting the code from GetDomainCorrections into
+	// a single function.  For most providers this should be relatively easy.
+}
+
 // EnsureDomainExists returns an error if domain doesn't exist.
 func (c *api) EnsureDomainExists(domain string) error {
 	if err := c.fetchDomainList(); err != nil {

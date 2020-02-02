@@ -66,6 +66,14 @@ func NewProvider(m map[string]string, metadata json.RawMessage) (providers.DNSSe
 	return &Provider{client, token}, err
 }
 
+// GetZoneRecords gets the records of a zone and returns them in RecordConfig format.
+func (client *Provider) GetZoneRecords(domain string) (models.Records, error) {
+	return nil, fmt.Errorf("not implemented")
+	// This enables the get-zones subcommand.
+	// Implement this by extracting the code from GetDomainCorrections into
+	// a single function.  For most providers this should be relatively easy.
+}
+
 // GetDomainCorrections gets the corrections for a DomainConfig.
 func (api *Provider) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Correction, error) {
 	dc.Punycode()
