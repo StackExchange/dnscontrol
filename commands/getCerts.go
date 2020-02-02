@@ -26,6 +26,7 @@ var _ = cmd(catUtils, func() *cli.Command {
 	}
 }())
 
+// GetCertsArgs stores the flags and arguments common to cert commands
 type GetCertsArgs struct {
 	GetDNSConfigArgs
 	GetCredentialsArgs
@@ -120,6 +121,7 @@ func (args *GetCertsArgs) flags() []cli.Flag {
 	return flags
 }
 
+// GetCerts implements the get-certs command.
 func GetCerts(args GetCertsArgs) error {
 	fmt.Println(args.JSFile)
 	// check agree flag
