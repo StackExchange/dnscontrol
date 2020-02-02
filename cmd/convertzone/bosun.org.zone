@@ -1,0 +1,9 @@
+bosun.org.				      300 IN SOA	ns3.serverfault.com. sysadmin.stackoverflow.com. 2017100201 3600 600 604800 1440
+bosun.org.				      172800 IN	NS	bayan.ns.cloudflare.com.
+bosun.org.				      172800 IN	NS	lana.ns.cloudflare.com.
+bosun.org.				      300 IN A		192.30.252.153
+bosun.org.				      300 IN A		192.30.252.154
+bosun.org.				      300 IN TXT	"v=spf1 -all"
+www.bosun.org.				      300 IN CNAME	bosun.org.
+single IN TXT "one"
+many IN TXT "aaa" "bbb"

@@ -5,7 +5,7 @@ import (
 	"log"
 	"os"
 
-	"github.com/urfave/cli"
+	"github.com/urfave/cli/v2"
 
 	"github.com/StackExchange/dnscontrol/v2/models"
 	"github.com/StackExchange/dnscontrol/v2/pkg/nameservers"
@@ -41,12 +41,12 @@ func (args *PreviewArgs) flags() []cli.Flag {
 	flags := args.GetDNSConfigArgs.flags()
 	flags = append(flags, args.GetCredentialsArgs.flags()...)
 	flags = append(flags, args.FilterArgs.flags()...)
-	flags = append(flags, cli.BoolFlag{
+	flags = append(flags, &cli.BoolFlag{
 		Name:        "notify",
 		Destination: &args.Notify,
 		Usage:       `set to true to send notifications to configured destinations`,
 	})
-	flags = append(flags, cli.BoolFlag{
+	flags = append(flags, &cli.BoolFlag{
 		Name:        "expect-no-changes",
 		Destination: &args.WarnChanges,
 		Usage:       `set to true for non-zero return code if there are changes`,
@@ -74,7 +74,7 @@ type PushArgs struct {
 
 func (args *PushArgs) flags() []cli.Flag {
 	flags := args.PreviewArgs.flags()
-	flags = append(flags, cli.BoolFlag{
+	flags = append(flags, &cli.BoolFlag{
 		Name:        "i",
 		Destination: &args.Interactive,
 		Usage:       "Interactive. Confirm or Exclude each correction before they run",
