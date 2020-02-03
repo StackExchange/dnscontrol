@@ -63,6 +63,8 @@ github.com/aws/aws-sdk-go/service/sts
 github.com/billputer/go-namecheap
 # github.com/cenkalti/backoff v2.1.1+incompatible
 github.com/cenkalti/backoff
+# github.com/cpuguy83/go-md2man/v2 v2.0.0
+github.com/cpuguy83/go-md2man/v2/md2man
 # github.com/davecgh/go-spew v1.1.1
 github.com/davecgh/go-spew/spew
 # github.com/dgrijalva/jwt-go v3.2.1-0.20190620180102-5e25c22bd5d6+incompatible
@@ -170,7 +172,7 @@ github.com/miekg/dns/dnsutil
 github.com/mitchellh/go-homedir
 # github.com/mitchellh/mapstructure v1.1.2
 github.com/mitchellh/mapstructure
-# github.com/mjibson/esc v0.1.0
+# github.com/mjibson/esc v0.2.0
 github.com/mjibson/esc/embed
 # github.com/namedotcom/go v0.0.0-20180403034216-08470befbe04
 github.com/namedotcom/go/namecom
@@ -181,7 +183,7 @@ github.com/philhug/opensrs-go/opensrs
 # github.com/pierrec/lz4 v2.0.5+incompatible
 github.com/pierrec/lz4
 github.com/pierrec/lz4/internal/xxh32
-# github.com/pkg/errors v0.8.1
+# github.com/pkg/errors v0.9.1
 github.com/pkg/errors
 # github.com/pmezard/go-difflib v1.0.0
 github.com/pmezard/go-difflib/difflib
@@ -208,8 +210,12 @@ github.com/robertkrimen/otto/parser
 github.com/robertkrimen/otto/registry
 github.com/robertkrimen/otto/token
 github.com/robertkrimen/otto/underscore
+# github.com/russross/blackfriday/v2 v2.0.1
+github.com/russross/blackfriday/v2
 # github.com/ryanuber/go-glob v1.0.0
 github.com/ryanuber/go-glob
+# github.com/shurcooL/sanitized_anchor_name v1.0.0
+github.com/shurcooL/sanitized_anchor_name
 # github.com/softlayer/softlayer-go v0.0.0-20170804160555-5e1c8cccc730
 github.com/softlayer/softlayer-go/config
 github.com/softlayer/softlayer-go/datatypes
@@ -235,8 +241,8 @@ github.com/tiramiseb/go-gandi
 github.com/tiramiseb/go-gandi/domain
 github.com/tiramiseb/go-gandi/internal/client
 github.com/tiramiseb/go-gandi/livedns
-# github.com/urfave/cli v1.20.1-0.20180106191048-75104e932ac2
-github.com/urfave/cli
+# github.com/urfave/cli/v2 v2.1.1
+github.com/urfave/cli/v2
 # github.com/vultr/govultr v0.1.7
 github.com/vultr/govultr
 # go.opencensus.io v0.22.0
@@ -301,6 +307,14 @@ golang.org/x/text/unicode/bidi
 golang.org/x/text/unicode/norm
 # golang.org/x/time v0.0.0-20190308202827-9d24e82272b4
 golang.org/x/time/rate
+# golang.org/x/tools v0.0.0-20200129045341-207d3de1faaf
+golang.org/x/tools/go/ast/astutil
+golang.org/x/tools/imports
+golang.org/x/tools/internal/fastwalk
+golang.org/x/tools/internal/gopathwalk
+golang.org/x/tools/internal/imports
+golang.org/x/tools/internal/module
+golang.org/x/tools/internal/semver
 # google.golang.org/api v0.7.0
 google.golang.org/api/dns/v1
 google.golang.org/api/gensupport

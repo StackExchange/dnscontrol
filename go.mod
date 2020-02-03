@@ -13,6 +13,7 @@ require (
 	github.com/aws/aws-sdk-go v1.19.39
 	github.com/billputer/go-namecheap v0.0.0-20170915210158-0c7adb0710f8
 	github.com/cenkalti/backoff v2.1.1+incompatible // indirect
+	github.com/cpuguy83/go-md2man/v2 v2.0.0 // indirect
 	github.com/dgrijalva/jwt-go v3.2.1-0.20190620180102-5e25c22bd5d6+incompatible // indirect
 	github.com/digitalocean/godo v1.17.1-0.20190625192827-3ec0b9ce8cde
 	github.com/dnsimple/dnsimple-go v0.20.1-0.20181001130357-234ec949d37c
@@ -48,7 +49,7 @@ require (
 	github.com/tdewolff/strconv v1.0.0 // indirect
 	github.com/tdewolff/test v1.0.6 // indirect
 	github.com/tiramiseb/go-gandi v0.0.0-20200119104052-d61de35bb043
-	github.com/urfave/cli v1.20.1-0.20180106191048-75104e932ac2
+	github.com/urfave/cli/v2 v2.1.1
 	github.com/vultr/govultr v0.1.7
 	golang.org/x/net v0.0.0-20190628185345-da137c7871d7
 	golang.org/x/oauth2 v0.0.0-20190604053449-0f29369cfe45

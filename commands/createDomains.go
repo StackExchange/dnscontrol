@@ -4,7 +4,7 @@ import (
 	"fmt"
 
 	"github.com/StackExchange/dnscontrol/v2/providers"
-	"github.com/urfave/cli"
+	"github.com/urfave/cli/v2"
 )
 
 var _ = cmd(catUtils, func() *cli.Command {
