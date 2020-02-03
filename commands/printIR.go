@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/urfave/cli"
+	"github.com/urfave/cli/v2"
 
 	"github.com/StackExchange/dnscontrol/v2/models"
 	"github.com/StackExchange/dnscontrol/v2/pkg/js"

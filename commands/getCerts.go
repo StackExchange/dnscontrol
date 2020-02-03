@@ -11,7 +11,7 @@ import (
 	"github.com/StackExchange/dnscontrol/v2/pkg/acme"
 	"github.com/StackExchange/dnscontrol/v2/pkg/normalize"
 	"github.com/StackExchange/dnscontrol/v2/pkg/printer"
-	"github.com/urfave/cli"
+	"github.com/urfave/cli/v2"
 )
 
 var _ = cmd(catUtils, func() *cli.Command {
@@ -51,69 +51,69 @@ func (args *GetCertsArgs) flags() []cli.Flag {
 	flags := args.GetDNSConfigArgs.flags()
 	flags = append(flags, args.GetCredentialsArgs.flags()...)
 
-	flags = append(flags, cli.StringFlag{
+	flags = append(flags, &cli.StringFlag{
 		Name:        "acme",
 		Destination: &args.ACMEServer,
 		Value:       "live",
 		Usage:       `ACME server to issue against. Give full directory endpoint. Can also use 'staging' or 'live' for standard Let's Encrpyt endpoints.`,
 	})
-	flags = append(flags, cli.IntFlag{
+	flags = append(flags, &cli.IntFlag{
 		Name:        "renew",
 		Destination: &args.RenewUnderDays,
 		Value:       15,
 		Usage:       `Renew certs with less than this many days remaining`,
 	})
-	flags = append(flags, cli.StringFlag{
+	flags = append(flags, &cli.StringFlag{
 		Name:        "dir",
 		Destination: &args.CertDirectory,
 		Value:       ".",
 		Usage:       `Directory to store certificates and other data`,
 	})
-	flags = append(flags, cli.StringFlag{
+	flags = append(flags, &cli.StringFlag{
 		Name:        "certConfig",
 		Destination: &args.CertsFile,
 		Value:       "certs.json",
 		Usage:       `Json file containing list of certificates to issue`,
 	})
-	flags = append(flags, cli.StringFlag{
+	flags = append(flags, &cli.StringFlag{
 		Name:        "email",
 		Destination: &args.Email,
 		Value:       "",
 		Usage:       `Email to register with let's encrypt`,
 	})
-	flags = append(flags, cli.BoolFlag{
+	flags = append(flags, &cli.BoolFlag{
 		Name:        "agreeTOS",
 		Destination: &args.AgreeTOS,
 		Usage:       `Must provide this to agree to Let's Encrypt terms of service`,
 	})
-	flags = append(flags, cli.BoolFlag{
+	flags = append(flags, &cli.BoolFlag{
 		Name:        "vault",
 		Destination: &args.Vault,
 		Usage:       `Store certificates as secrets in hashicorp vault instead of on disk.`,
 	})
-	flags = append(flags, cli.StringFlag{
+	flags = append(flags, &cli.StringFlag{
 		Name:        "vaultPath",
 		Destination: &args.VaultPath,
 		Value:       "/secret/certs",
 		Usage:       `Path in vault to store certificates`,
 	})
-	flags = append(flags, cli.StringFlag{
+	flags = append(flags, &cli.StringFlag{
 		Name:        "skip",
 		Destination: &args.IgnoredProviders,
 		Value:       "",
 		Usage:       `Provider names to not use for challenges (comma separated)`,
 	})
-	flags = append(flags, cli.BoolFlag{
+	flags = append(flags, &cli.BoolFlag{
 		Name:        "verbose",
 		Destination: &args.Verbose,
 		Usage:       "Enable detailed logging (deprecated: use the global -v flag)",
 	})
-	flags = append(flags, cli.BoolFlag{
+	flags = append(flags, &cli.BoolFlag{
 		Name:        "notify",
 		Destination: &args.Notify,
 		Usage:       `set to true to send notifications to configured destinations`,
 	})
-	flags = append(flags, cli.StringFlag{
+	flags = append(flags, &cli.StringFlag{
 		Name:        "only",
 		Destination: &args.Only,
 		Usage:       `Only check a single cert. Provide cert name.`,
