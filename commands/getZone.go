@@ -5,7 +5,7 @@ import (
 
 	"github.com/StackExchange/dnscontrol/v2/providers"
 	"github.com/StackExchange/dnscontrol/v2/providers/config"
-	"github.com/urfave/cli"
+	"github.com/urfave/cli/v2"
 )
 
 var _ = cmd(catUtils, func() *cli.Command {
@@ -51,13 +51,13 @@ type GetZoneArgs struct {
 
 func (args *GetZoneArgs) flags() []cli.Flag {
 	flags := args.GetCredentialsArgs.flags()
-	flags = append(flags, cli.StringFlag{
+	flags = append(flags, &cli.StringFlag{
 		Name:        "format",
 		Destination: &args.OutputFormat,
 		Value:       "pretty",
 		Usage:       `Output format: dsl tsv pretty`,
 	})
-	flags = append(flags, cli.StringFlag{
+	flags = append(flags, &cli.StringFlag{
 		Name:        "out",
 		Destination: &args.OutputFile,
 		Usage:       `Instead of stdout, write to this file`,
