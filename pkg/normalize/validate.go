@@ -206,7 +206,7 @@ func importTransform(srcDomain, dstDomain *models.DomainConfig, transforms []tra
 	// 4. For As, change the target as described the transforms.
 
 	for _, rec := range srcDomain.Records {
-		if dstDomain.HasRecordTypeName(rec.Type, rec.GetLabelFQDN()) {
+		if dstDomain.Records.HasRecordTypeName(rec.Type, rec.GetLabelFQDN()) {
 			continue
 		}
 		newRec := func() *models.RecordConfig {
