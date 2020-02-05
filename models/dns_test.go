@@ -4,24 +4,6 @@ import (
 	"testing"
 )
 
-func TestHasRecordTypeName(t *testing.T) {
-	x := &RecordConfig{
-		Type: "A",
-		Name: "@",
-	}
-	dc := DomainConfig{}
-	if dc.HasRecordTypeName("A", "@") {
-		t.Errorf("%v: expected (%v) got (%v)\n", dc.Records, false, true)
-	}
-	dc.Records = append(dc.Records, x)
-	if !dc.HasRecordTypeName("A", "@") {
-		t.Errorf("%v: expected (%v) got (%v)\n", dc.Records, true, false)
-	}
-	if dc.HasRecordTypeName("AAAA", "@") {
-		t.Errorf("%v: expected (%v) got (%v)\n", dc.Records, false, true)
-	}
-}
-
 func TestRR(t *testing.T) {
 	experiment := RecordConfig{
 		Type:         "A",
@@ -75,10 +57,10 @@ func TestDowncase(t *testing.T) {
 		&RecordConfig{Type: "MX", Name: "UPPER", Target: "TARGETMX"},
 	}}
 	downcase(dc.Records)
-	if !dc.HasRecordTypeName("MX", "lower") {
+	if !dc.Records.HasRecordTypeName("MX", "lower") {
 		t.Errorf("%v: expected (%v) got (%v)\n", dc.Records, false, true)
 	}
-	if !dc.HasRecordTypeName("MX", "upper") {
+	if !dc.Records.HasRecordTypeName("MX", "upper") {
 		t.Errorf("%v: expected (%v) got (%v)\n", dc.Records, false, true)
 	}
 	if dc.Records[0].GetTargetField() != "targetmx" {

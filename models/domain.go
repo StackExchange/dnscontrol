@@ -47,16 +47,6 @@ func (dc *DomainConfig) Copy() (*DomainConfig, error) {
 	return newDc, err
 }
 
-// HasRecordTypeName returns True if there is a record with this rtype and name.
-func (dc *DomainConfig) HasRecordTypeName(rtype, name string) bool {
-	for _, r := range dc.Records {
-		if r.Type == rtype && r.GetLabel() == name {
-			return true
-		}
-	}
-	return false
-}
-
 // Filter removes all records that don't match the filter f.
 func (dc *DomainConfig) Filter(f func(r *RecordConfig) bool) {
 	recs := []*RecordConfig{}
