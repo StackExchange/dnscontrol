@@ -121,8 +121,9 @@ func (a *azureDnsProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*mod
 	if !ok {
 		return nil, errNoExist{dc.Name}
 	}
-
-	records, err := a.fetchRecordSets(zone.Name)
+	var zoneName string
+	zoneName = *zone.Name
+	records, err := a.fetchRecordSets(zoneName)
 	if err != nil {
 		return nil, err
 	}
@@ -168,7 +169,7 @@ func (a *azureDnsProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*mod
 						F: func() error {
 							ctx, cancel := context.WithTimeout(context.Background(), 6000*time.Second)
 							defer cancel()
-							_, err := a.recordsClient.Delete(ctx, *a.resourceGroup, *zone.Name, *rrset.Name, nativeToRecordType(rrset.Type), "")
+							_, err := a.recordsClient.Delete(ctx, *a.resourceGroup, zoneName, *rrset.Name, nativeToRecordType(rrset.Type), "")
 							// Artifically slow things down after a delete, as the API can take time to register it. The tests fail if we delete and then recheck too quickly.
 							time.Sleep(25 * time.Millisecond)
 							if err != nil {
@@ -200,7 +201,7 @@ func (a *azureDnsProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*mod
 								F: func() error {
 									ctx, cancel := context.WithTimeout(context.Background(), 6000*time.Second)
 									defer cancel()
-									_, err := a.recordsClient.Delete(ctx, *a.resourceGroup, *zone.Name, recordName, existingRecordType, "")
+									_, err := a.recordsClient.Delete(ctx, *a.resourceGroup, zoneName, recordName, existingRecordType, "")
 									// Artifically slow things down after a delete, as the API can take time to register it. The tests fail if we delete and then recheck too quickly.
 									time.Sleep(25 * time.Millisecond)
 									if err != nil {
@@ -219,7 +220,7 @@ func (a *azureDnsProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*mod
 					F: func() error {
 						ctx, cancel := context.WithTimeout(context.Background(), 6000*time.Second)
 						defer cancel()
-						_, err := a.recordsClient.CreateOrUpdate(ctx, *a.resourceGroup, *zone.Name, recordName, recordType, *rrset, "", "")
+						_, err := a.recordsClient.CreateOrUpdate(ctx, *a.resourceGroup, zoneName, recordName, recordType, *rrset, "", "")
 						// Artifically slow things down after a delete, as the API can take time to register it. The tests fail if we delete and then recheck too quickly.
 						time.Sleep(25 * time.Millisecond)
 						if err != nil {
@@ -394,14 +395,14 @@ func recordToNative(recordKey models.RecordKey, recordConfig []*models.RecordCon
 	return recordSet, nativeToRecordType(to.StringPtr(recordKey.Type))
 }
 
-func (a *azureDnsProvider) fetchRecordSets(zoneName *string) ([]*adns.RecordSet, error) {
-	if zoneName == nil || *zoneName == "" {
+func (a *azureDnsProvider) fetchRecordSets(zoneName string) ([]*adns.RecordSet, error) {
+	if zoneName == "" {
 		return nil, nil
 	}
 	var records []*adns.RecordSet
 	ctx, cancel := context.WithTimeout(context.Background(), 6000*time.Second)
 	defer cancel()
-	recordsIterator, recordsErr := a.recordsClient.ListAllByDNSZoneComplete(ctx, *a.resourceGroup, *zoneName, to.Int32Ptr(1000), "")
+	recordsIterator, recordsErr := a.recordsClient.ListAllByDNSZoneComplete(ctx, *a.resourceGroup, zoneName, to.Int32Ptr(1000), "")
 	if recordsErr != nil {
 		return nil, recordsErr
 	}
