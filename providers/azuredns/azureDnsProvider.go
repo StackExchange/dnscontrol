@@ -274,20 +274,24 @@ func nativeToRecords(set *adns.RecordSet, origin string) []*models.RecordConfig 
 	var results []*models.RecordConfig
 	switch rtype := *set.Type; rtype {
 	case "Microsoft.Network/dnszones/A":
-		for _, rec := range *set.ARecords {
-			rc := &models.RecordConfig{TTL: uint32(*set.TTL)}
-			rc.SetLabelFromFQDN(*set.Fqdn, origin)
-			rc.Type = "A"
-			_ = rc.SetTarget(*rec.Ipv4Address)
-			results = append(results, rc)
+		if *set.ARecords != nil {
+			for _, rec := range *set.ARecords {
+				rc := &models.RecordConfig{TTL: uint32(*set.TTL)}
+				rc.SetLabelFromFQDN(*set.Fqdn, origin)
+				rc.Type = "A"
+				_ = rc.SetTarget(*rec.Ipv4Address)
+				results = append(results, rc)
+			}
 		}
 	case "Microsoft.Network/dnszones/AAAA":
-		for _, rec := range *set.AaaaRecords {
-			rc := &models.RecordConfig{TTL: uint32(*set.TTL)}
-			rc.SetLabelFromFQDN(*set.Fqdn, origin)
-			rc.Type = "AAAA"
-			_ = rc.SetTarget(*rec.Ipv6Address)
-			results = append(results, rc)
+		if *set.AaaaRecords != nil {
+			for _, rec := range *set.AaaaRecords {
+				rc := &models.RecordConfig{TTL: uint32(*set.TTL)}
+				rc.SetLabelFromFQDN(*set.Fqdn, origin)
+				rc.Type = "AAAA"
+				_ = rc.SetTarget(*rec.Ipv6Address)
+				results = append(results, rc)
+			}
 		}
 	case "Microsoft.Network/dnszones/CNAME":
 		rc := &models.RecordConfig{TTL: uint32(*set.TTL)}
