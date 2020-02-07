@@ -92,6 +92,7 @@ var labelUnderscores = []string{
 	"_dmarc",
 	"_domainkey",
 	"_jabber",
+	"_mta-sts",
 	"_sip",
 	"_xmpp",
 }
