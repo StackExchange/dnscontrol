@@ -103,8 +103,9 @@ func rrToRecord(rr dns.RR, origin string, replaceSerial uint32) (models.RecordCo
 	var oldSerial, newSerial uint32
 	header := rr.Header()
 	rc := models.RecordConfig{
-		Type: dns.TypeToString[header.Rrtype],
-		TTL:  header.Ttl,
+		Type:     dns.TypeToString[header.Rrtype],
+		TTL:      header.Ttl,
+		Original: rr,
 	}
 	rc.SetLabelFromFQDN(strings.TrimSuffix(header.Name, "."), origin)
 	switch v := rr.(type) { // #rtype_variations
@@ -311,11 +312,7 @@ func (c *Bind) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Correcti
 					if err != nil {
 						log.Fatalf("Could not create zonefile: %v", err)
 					}
-					zonefilerecords := make([]dns.RR, 0, len(dc.Records))
-					for _, r := range dc.Records {
-						zonefilerecords = append(zonefilerecords, r.ToRR())
-					}
-					err = WriteZoneFile(zf, zonefilerecords, dc.Name)
+					err = WriteZoneFile(zf, RRtoRC(dc.Records), dc.Name)
 
 					if err != nil {
 						log.Fatalf("WriteZoneFile error: %v\n", err)
@@ -330,4 +327,13 @@ func (c *Bind) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Correcti
 	}
 
 	return corrections, nil
+}
+
+// RRtoRC converts []RecordConfigs to []dns.RR.
+func RRtoRC(rcs models.Records) []dns.RR {
+	rrs := make([]dns.RR, 0, len(rcs))
+	for _, r := range rcs {
+		rrs = append(rrs, r.ToRR())
+	}
+	return rrs
 }

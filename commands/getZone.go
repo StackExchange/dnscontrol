@@ -35,8 +35,8 @@ var _ = cmd(catUtils, func() *cli.Command {
 		Description: `Download a zone from a provider.  This is a stand-alone utility.
 
 ARGUMENTS:
-   credkey:  The name used in creds.json (first parameter to NewDnsProvider() in dnsconfig.js) 
-   provider: The name of the provider (second parameter to NewDnsProvider() in dnsconfig.js)	
+   credkey:  The name used in creds.json (first parameter to NewDnsProvider() in dnsconfig.js)
+   provider: The name of the provider (second parameter to NewDnsProvider() in dnsconfig.js)
    zone:     The name of the zone (domain) to download
 
 EXAMPLES:
@@ -53,7 +53,7 @@ type GetZoneArgs struct {
 	CredName           string // key in creds.json
 	ProviderName       string // provider name: BIND, GANDI_V5, etc or "-"
 	OutputFormat       string // Output format
-	OutputFile         string // File to send output (default stdout)
+	OutputFile         string // Filename to send output ("" means stdout)
 }
 
 func (args *GetZoneArgs) flags() []cli.Flag {
@@ -107,7 +107,7 @@ func GetZone(args GetZoneArgs) error {
 
 	// Write it out:
 
-	switch args.OutputFile {
+	switch args.OutputFormat {
 	case "pretty":
 		bind.WriteZoneFile(os.Stdout, recs, zonename)
 	case "dsl":
@@ -115,10 +115,10 @@ func GetZone(args GetZoneArgs) error {
 			args.CredName, args.ProviderName)
 		fmt.Printf(`D("%s", REG_CHANGEME,`+"\n", zonename)
 		fmt.Printf(`  DnsProvider(CHANGEME),` + "\n")
-		rrFormat(zonename, filename, recs, defTTL, true)
+		rrFormat(zonename, args.OutputFile, recs, defTTL, true)
 		fmt.Println("\n)")
 	case "tsv":
-		rrFormat(zonename, filename, recs, defTTL, false)
+		rrFormat(zonename, args.OutputFile, recs, defTTL, false)
 	default:
 		return fmt.Errorf("format %q unknown", args.OutputFile)
 	}
