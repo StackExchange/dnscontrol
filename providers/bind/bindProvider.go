@@ -92,87 +92,7 @@ type Bind struct {
 	zoneFileFound bool   // Did the zonefile exist?
 }
 
-// RRtoRC converts []dns.RR to []RecordConfigs.
-func RRtoRC(rrs []dns.RR, origin string, replaceSerial uint32) models.Records {
-
-	rcs := make(models.Records, 0, len(rrs))
-	var rc models.RecordConfig
-	for _, r := range rrs {
-		rc, replaceSerial = rrToRecord(r, origin, replaceSerial)
-		rcs = append(rcs, &rc)
-	}
-	return rcs
-}
-
-func rrToRecord(rr dns.RR, origin string, replaceSerial uint32) (models.RecordConfig, uint32) {
-	// Convert's dns.RR into our native data type (models.RecordConfig).
-	// Records are translated directly with no changes.
-	// If it is an SOA for the apex domain and
-	// replaceSerial != 0, change the serial to replaceSerial.
-	// WARNING(tlim): This assumes SOAs do not have serial=0.
-	// If one is found, we replace it with serial=1.
-	var oldSerial, newSerial uint32
-	header := rr.Header()
-	rc := models.RecordConfig{
-		Type:     dns.TypeToString[header.Rrtype],
-		TTL:      header.Ttl,
-		Original: rr,
-	}
-	rc.SetLabelFromFQDN(strings.TrimSuffix(header.Name, "."), origin)
-	switch v := rr.(type) { // #rtype_variations
-	case *dns.A:
-		panicInvalid(rc.SetTarget(v.A.String()))
-	case *dns.AAAA:
-		panicInvalid(rc.SetTarget(v.AAAA.String()))
-	case *dns.CAA:
-		panicInvalid(rc.SetTargetCAA(v.Flag, v.Tag, v.Value))
-	case *dns.CNAME:
-		panicInvalid(rc.SetTarget(v.Target))
-	case *dns.MX:
-		panicInvalid(rc.SetTargetMX(v.Preference, v.Mx))
-	case *dns.NS:
-		panicInvalid(rc.SetTarget(v.Ns))
-	case *dns.PTR:
-		panicInvalid(rc.SetTarget(v.Ptr))
-	case *dns.NAPTR:
-		panicInvalid(rc.SetTargetNAPTR(v.Order, v.Preference, v.Flags, v.Service, v.Regexp, v.Replacement))
-	case *dns.SOA:
-		oldSerial = v.Serial
-		if oldSerial == 0 {
-			// For SOA records, we never return a 0 serial number.
-			oldSerial = 1
-		}
-		newSerial = v.Serial
-		//if (dnsutil.TrimDomainName(rc.Name, origin+".") == "@") && replaceSerial != 0 {
-		if rc.GetLabel() == "@" && replaceSerial != 0 {
-			newSerial = replaceSerial
-		}
-		panicInvalid(rc.SetTarget(
-			fmt.Sprintf("%v %v %v %v %v %v %v",
-				v.Ns, v.Mbox, newSerial, v.Refresh, v.Retry, v.Expire, v.Minttl),
-		))
-		// FIXME(tlim): SOA should be handled by splitting out the fields.
-	case *dns.SRV:
-		panicInvalid(rc.SetTargetSRV(v.Priority, v.Weight, v.Port, v.Target))
-	case *dns.SSHFP:
-		panicInvalid(rc.SetTargetSSHFP(v.Algorithm, v.Type, v.FingerPrint))
-	case *dns.TLSA:
-		panicInvalid(rc.SetTargetTLSA(v.Usage, v.Selector, v.MatchingType, v.Certificate))
-	case *dns.TXT:
-		panicInvalid(rc.SetTargetTXTs(v.Txt))
-	default:
-		log.Fatalf("rrToRecord: Unimplemented zone record type=%s (%v)\n", rc.Type, rr)
-	}
-	return rc, oldSerial
-}
-
-func panicInvalid(err error) {
-	if err != nil {
-		panic(fmt.Errorf("unparsable record received from BIND: %w", err))
-	}
-}
-
-func makeDefaultSOA(info SoaInfo, origin string) *models.RecordConfig {
+func makeDefaultSOA(info SoaInfo, origin string) models.RecordConfig {
 	// Make a default SOA record in case one isn't found:
 	soaRec := models.RecordConfig{
 		Type: "SOA",
@@ -201,7 +121,7 @@ func makeDefaultSOA(info SoaInfo, origin string) *models.RecordConfig {
 	}
 	soaRec.SetTarget(info.String())
 
-	return &soaRec
+	return soaRec
 }
 
 // GetNameservers returns the nameservers for a domain.
@@ -234,7 +154,7 @@ func (c *Bind) GetZoneRecords(domain string) (models.Records, error) {
 			if x.Error != nil {
 				log.Println("Error in zonefile:", x.Error)
 			} else {
-				rec, serial := rrToRecord(x.RR, domain, oldSerial)
+				rec, serial := models.RRtoRC(x.RR, domain, oldSerial)
 				if serial != 0 && oldSerial != 0 {
 					log.Fatalf("Multiple SOA records in zonefile: %v\n", zonefile)
 				}
@@ -243,8 +163,8 @@ func (c *Bind) GetZoneRecords(domain string) (models.Records, error) {
 					oldSerial = serial
 					newSerial = generateSerial(oldSerial)
 					// Regenerate with new serial:
-					*soaRec, _ = rrToRecord(x.RR, domain, newSerial)
-					rec = *soaRec
+					soaRec, _ = models.RRtoRC(x.RR, domain, newSerial)
+					rec = soaRec
 				}
 				foundRecords = append(foundRecords, &rec)
 			}
@@ -253,7 +173,7 @@ func (c *Bind) GetZoneRecords(domain string) (models.Records, error) {
 
 	// Add SOA record to expected set:
 	if !foundRecords.HasRecordTypeName("SOA", "@") {
-		foundRecords = append(foundRecords, soaRec)
+		foundRecords = append(foundRecords, &soaRec)
 	}
 
 	return foundRecords, nil

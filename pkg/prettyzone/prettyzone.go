@@ -13,7 +13,6 @@ import (
 	"strings"
 
 	"github.com/StackExchange/dnscontrol/v2/models"
-	"github.com/StackExchange/dnscontrol/v2/providers/bind"
 	"github.com/miekg/dns"
 )
 
@@ -110,10 +109,17 @@ func (z *zoneGenData) Less(i, j int) bool {
 // a tie, the highest TTL is selected. This makes the results consistent.
 // NS records are not included in the analysis because Tom said so.
 func mostCommonTTL(records models.Records) uint32 {
+	//fmt.Printf("MOSTCOMMON\n")
+	//for i, j := range records {
+	//	fmt.Printf("  REC %v: %v %v %v\n", i, j.TTL, j.Type, j.GetTargetCombined())
+	//}
+
 	// Index the TTLs in use:
 	d := make(map[uint32]int)
 	for _, r := range records {
+		//fmt.Printf("CH: %v\n", r.Type)
 		if r.Type != "NS" {
+			//fmt.Printf("INCREMENT: %v\n", r.Type)
 			d[r.TTL]++
 		}
 	}
@@ -127,18 +133,21 @@ func mostCommonTTL(records models.Records) uint32 {
 	// Find the largest key with that count:
 	var mk uint32
 	for key, value := range d {
+		//fmt.Printf("DEBUG3: %v %v\n", key, value)
 		if value == mc {
 			if key > mk {
 				mk = key
+				//fmt.Printf("DEBUG4: %v %v\n", key, mk)
 			}
 		}
 	}
+	//fmt.Printf("DEBUG: mk=%v\n", mk)
 	return mk
 }
 
 // WriteZoneFileRR is a helper for when you have []dns.RR instead of models.Records
 func WriteZoneFileRR(w io.Writer, records []dns.RR, origin string, serial uint32) error {
-	return WriteZoneFileRC(w, bind.RRtoRC(records, origin, serial), origin)
+	return WriteZoneFileRC(w, models.RRstoRCs(records, origin, serial), origin)
 }
 
 // WriteZoneFileRC writes a beautifully formatted zone file.
@@ -297,25 +306,21 @@ func zoneLabelLess(a, b string) bool {
 func zoneRrtypeLess(a, b string) bool {
 	// Compare two RR types for the purpose of sorting the RRs in a Zone.
 
-	// If they are equal, we are done. All other code is simplified
-	// because we can assume a!=b.
 	if a == b {
 		return false
 	}
 
-	// List SOAs, then NSs, then all others.
-	// i.e. SOA is always less. NS is less than everything but SOA.
-	if a == "SOA" {
-		return true
-	}
-	if b == "SOA" {
-		return false
-	}
-	if a == "NS" {
-		return true
-	}
-	if b == "NS" {
-		return false
+	// List SOAs, NSs, etc. then all others alphabetically.
+
+	for _, t := range []string{"SOA", "NS", "CNAME",
+		"A", "AAAA", "MX", "SRV", "TXT",
+	} {
+		if a == t {
+			return true
+		}
+		if b == t {
+			return false
+		}
 	}
 	return a < b
 }

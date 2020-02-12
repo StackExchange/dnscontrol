@@ -7,8 +7,8 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/StackExchange/dnscontrol/pkg/prettyzone"
 	"github.com/StackExchange/dnscontrol/v2/models"
+	"github.com/StackExchange/dnscontrol/v2/pkg/prettyzone"
 	"github.com/StackExchange/dnscontrol/v2/providers"
 	"github.com/StackExchange/dnscontrol/v2/providers/config"
 	"github.com/miekg/dns"
@@ -123,10 +123,10 @@ func GetZone(args GetZoneArgs) error {
 			args.CredName, args.ProviderName)
 		fmt.Printf(`D("%s", REG_CHANGEME,`+"\n", zonename)
 		fmt.Printf(`  DnsProvider(CHANGEME),` + "\n")
-		rrFormat(zonename, args.OutputFile, recs, args.DefaultTTL, true)
+		rrFormat(zonename, args.OutputFile, recs, uint32(args.DefaultTTL), true)
 		fmt.Println("\n)")
 	case "tsv":
-		rrFormat(zonename, args.OutputFile, recs, args.DefaultTTL, false)
+		rrFormat(zonename, args.OutputFile, recs, uint32(args.DefaultTTL), false)
 	default:
 		return fmt.Errorf("format %q unknown", args.OutputFile)
 	}
@@ -187,10 +187,10 @@ func rrFormat(zonename string, filename string, recs models.Records, defaultTTL 
 			case dns.TypeSOA:
 				continue
 			case dns.TypeTXT:
-				if len(x.(*dns.TXT).Txt) == 1 {
-					target = `'` + x.(*dns.TXT).Txt[0] + `'`
+				if len(x.TxtStrings) == 1 {
+					target = `'` + x.TxtStrings[0] + `'`
 				} else {
-					target = `['` + strings.Join(x.(*dns.TXT).Txt, `', '`) + `']`
+					target = `['` + strings.Join(x.TxtStrings, `', '`) + `']`
 				}
 			default:
 				target = "'" + target + "'"
