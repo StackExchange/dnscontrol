@@ -151,11 +151,6 @@ func readOctodns(zonename string, r io.Reader, filename string) []dns.RR {
 	return l
 }
 
-//// pretty outputs the zonefile using the prettyprinter.
-//func writePretty(zonename string, recs []dns.RR, defaultTTL uint32) {
-//	prettyzone.WriteZoneFileRR(os.Stdout, recs, zonename)
-//}
-
 // rrFormat outputs the zonefile in either DSL or TSV format.
 func rrFormat(zonename string, filename string, recs []dns.RR, defaultTTL uint32, dsl bool) {
 	zonenamedot := zonename + "."

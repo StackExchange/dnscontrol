@@ -2,7 +2,6 @@ package commands
 
 import (
 	"fmt"
-	"io"
 	"os"
 	"strings"
 
@@ -101,14 +100,33 @@ func GetZone(args GetZoneArgs) error {
 	z := prettyzone.PrettySort(recs, args.ZoneName, 0)
 
 	// Write it out:
+	w := os.Stdout
+	if args.OutputFile != "" {
+		w, err = os.Create(args.OutputFile)
+	}
+	if err != nil {
+		return err
+	}
+	defer w.Close()
 
 	switch args.OutputFormat {
 	case "pretty":
-		prettyzone.WriteZoneFileRC(os.Stdout, z.Records, args.ZoneName)
+		prettyzone.WriteZoneFileRC(w, z.Records, args.ZoneName)
 	case "dsl":
-		writeDsl(os.Stdout, z.Records, args)
+		fmt.Fprintf(w, `var CHANGEME = NewDnsProvider("%s", "%s");`+"\n",
+			args.CredName, args.ProviderName)
+		fmt.Fprintf(w, `D("%s", REG_CHANGEME,`+"\n", args.ZoneName)
+		fmt.Fprintf(w, "\tDnsProvider(CHANGEME)")
+		for _, rec := range recs {
+			fmt.Fprint(w, formatDsl(args.ZoneName, rec, uint32(args.DefaultTTL)))
+		}
+		fmt.Fprint(w, "\n)\n")
 	case "tsv":
-		rrFormat(args.ZoneName, args.OutputFile, z.Records, uint32(args.DefaultTTL), false)
+		for _, rec := range recs {
+			fmt.Fprintf(
+				w,
+				fmt.Sprintf("%s\t%d\tIN\t%s\t%s\n", rec.Name, rec.TTL, rec.Type, rec.GetTargetCombined()))
+		}
 	default:
 		return fmt.Errorf("format %q unknown", args.OutputFile)
 	}
@@ -116,55 +134,35 @@ func GetZone(args GetZoneArgs) error {
 	return nil
 }
 
-func writeDsl(w io.Writer, recs models.Records, args GetZoneArgs) error {
-	fmt.Fprintf(w, `var CHANGEME = NewDnsProvider("%s", "%s");`+"\n",
-		args.CredName, args.ProviderName)
-	fmt.Fprintf(w, `D("%s", REG_CHANGEME,`+"\n", args.ZoneName)
-	fmt.Fprintf(w, `        DnsProvider(CHANGEME)`)
-	rrFormat(args.ZoneName, args.OutputFile, recs, uint32(args.DefaultTTL), true)
-	fmt.Fprintln(w, "\n)")
-	return nil
-}
+func formatDsl(zonename string, rec *models.RecordConfig, defaultTTL uint32) string {
 
-// rrFormat outputs the zonefile in either DSL or TSV format.
-func rrFormat(zonename string, filename string, recs models.Records, defaultTTL uint32, dsl bool) {
+	target := rec.GetTargetCombined()
 
-	for _, x := range recs {
-
-		target := x.GetTargetCombined()
-
-		var ttlop string
-		if x.TTL == defaultTTL {
-			ttlop = ""
-		} else {
-			ttlop = fmt.Sprintf(", TTL(%d)", x.TTL)
-		}
-
-		// NS records at the apex should be NAMESERVER() records.
-		if x.Type == "NS" && x.Name == "@" {
-			fmt.Printf(",\n\tNAMESERVER('%s'%s)", target, ttlop)
-			continue
-		}
-
-		if !dsl { // TSV format:
-			fmt.Printf("%s\t%d\tIN\t%s\t%s\n", x.Name, x.TTL, x.Type, target)
-		} else { // DSL format:
-			switch x.Type { // #rtype_variations
-			case "MX":
-				target = fmt.Sprintf("%d, '%s'", x.MxPreference, x.GetTargetField())
-			case "SOA":
-				continue
-			case "TXT":
-				if len(x.TxtStrings) == 1 {
-					target = `'` + x.TxtStrings[0] + `'`
-				} else {
-					target = `['` + strings.Join(x.TxtStrings, `', '`) + `']`
-				}
-			default:
-				target = "'" + target + "'"
-			}
-			fmt.Printf(",\n\t%s('%s', %s%s)", x.Type, x.Name, target, ttlop)
-		}
+	ttlop := ""
+	if rec.TTL != defaultTTL {
+		ttlop = fmt.Sprintf(", TTL(%d)", rec.TTL)
 	}
+
+	switch rec.Type { // #rtype_variations
+	case "MX":
+		target = fmt.Sprintf("%d, '%s'", rec.MxPreference, rec.GetTargetField())
+	case "SOA":
+	case "TXT":
+		if len(rec.TxtStrings) == 1 {
+			target = `'` + rec.TxtStrings[0] + `'`
+		} else {
+			target = `['` + strings.Join(rec.TxtStrings, `', '`) + `']`
+		}
+	case "NS":
+		// NS records at the apex should be NAMESERVER() records.
+		if rec.Name == "@" {
+			return fmt.Sprintf(",\n\tNAMESERVER('%s'%s)", target, ttlop)
+		} else {
+		}
+	default:
+		target = "'" + target + "'"
+	}
+
+	return fmt.Sprintf(",\n\t%s('%s', %s%s)", rec.Type, rec.Name, target, ttlop)
 
 }
