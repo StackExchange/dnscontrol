@@ -67,7 +67,6 @@ func WriteZoneFileRC(w io.Writer, records models.Records, origin string) error {
 }
 
 func PrettySort(records models.Records, origin string, defaultTTL uint32) *zoneGenData {
-
 	if defaultTTL == 0 {
 		defaultTTL = mostCommonTTL(records)
 	}

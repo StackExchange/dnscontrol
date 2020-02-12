@@ -157,7 +157,6 @@ func formatDsl(zonename string, rec *models.RecordConfig, defaultTTL uint32) str
 		// NS records at the apex should be NAMESERVER() records.
 		if rec.Name == "@" {
 			return fmt.Sprintf(",\n\tNAMESERVER('%s'%s)", target, ttlop)
-		} else {
 		}
 	default:
 		target = "'" + target + "'"
