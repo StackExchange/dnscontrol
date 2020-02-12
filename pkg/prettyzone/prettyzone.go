@@ -1,4 +1,4 @@
-package bind
+package prettyzone
 
 // Generate zonefiles.
 // This generates a zonefile that prioritizes beauty over efficiency.
@@ -12,83 +12,90 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/StackExchange/dnscontrol/v2/models"
+	"github.com/StackExchange/dnscontrol/v2/providers/bind"
 	"github.com/miekg/dns"
-	"github.com/miekg/dns/dnsutil"
 )
 
 type zoneGenData struct {
 	Origin     string
 	DefaultTTL uint32
-	Records    []dns.RR
+	Records    models.Records
 }
 
 func (z *zoneGenData) Len() int      { return len(z.Records) }
 func (z *zoneGenData) Swap(i, j int) { z.Records[i], z.Records[j] = z.Records[j], z.Records[i] }
 func (z *zoneGenData) Less(i, j int) bool {
 	a, b := z.Records[i], z.Records[j]
-	compA, compB := dnsutil.AddOrigin(a.Header().Name, z.Origin+"."), dnsutil.AddOrigin(b.Header().Name, z.Origin+".")
+
+	// Sort by name.
+	compA, compB := a.NameFQDN, b.NameFQDN
 	if compA != compB {
-		if compA == z.Origin+"." {
+		if a.Name == "@" {
 			compA = "@"
 		}
-		if compB == z.Origin+"." {
+		if b.Name == "@" {
 			compB = "@"
 		}
 		return zoneLabelLess(compA, compB)
 	}
-	rrtypeA, rrtypeB := a.Header().Rrtype, b.Header().Rrtype
-	if rrtypeA != rrtypeB {
-		return zoneRrtypeLess(rrtypeA, rrtypeB)
+
+	// sub-sort by type
+	if a.Type != b.Type {
+		return zoneRrtypeLess(a.Type, b.Type)
 	}
-	switch rrtypeA { // #rtype_variations
-	case dns.TypeA:
-		ta2, tb2 := a.(*dns.A), b.(*dns.A)
-		ipa, ipb := ta2.A.To4(), tb2.A.To4()
+
+	// sub-sort within type:
+	switch a.Type { // #rtype_variations
+	case "A":
+		ta2, tb2 := a.GetTargetIP(), b.GetTargetIP()
+		ipa, ipb := ta2.To4(), tb2.To4()
 		if ipa == nil || ipb == nil {
 			log.Fatalf("should not happen: IPs are not 4 bytes: %#v %#v", ta2, tb2)
 		}
 		return bytes.Compare(ipa, ipb) == -1
-	case dns.TypeAAAA:
-		ta2, tb2 := a.(*dns.AAAA), b.(*dns.AAAA)
-		ipa, ipb := ta2.AAAA.To16(), tb2.AAAA.To16()
+	case "AAAA":
+		ta2, tb2 := a.GetTargetIP(), b.GetTargetIP()
+		ipa, ipb := ta2.To16(), tb2.To16()
+		if ipa == nil || ipb == nil {
+			log.Fatalf("should not happen: IPs are not 16 bytes: %#v %#v", ta2, tb2)
+		}
 		return bytes.Compare(ipa, ipb) == -1
-	case dns.TypeMX:
-		ta2, tb2 := a.(*dns.MX), b.(*dns.MX)
-		pa, pb := ta2.Preference, tb2.Preference
+	case "MX":
 		// sort by priority. If they are equal, sort by Mx.
+		if a.MxPreference != b.MxPreference {
+			return a.MxPreference < b.MxPreference
+		}
+		return a.GetTargetField() < b.GetTargetField()
+	case "SRV":
+		//ta2, tb2 := a.(*dns.SRV), b.(*dns.SRV)
+		pa, pb := a.SrvPort, b.SrvPort
 		if pa != pb {
 			return pa < pb
 		}
-		return ta2.Mx < tb2.Mx
-	case dns.TypeSRV:
-		ta2, tb2 := a.(*dns.SRV), b.(*dns.SRV)
-		pa, pb := ta2.Port, tb2.Port
+		pa, pb = a.SrvPriority, b.SrvPriority
 		if pa != pb {
 			return pa < pb
 		}
-		pa, pb = ta2.Priority, tb2.Priority
+		pa, pb = a.SrvWeight, b.SrvWeight
 		if pa != pb {
 			return pa < pb
 		}
-		pa, pb = ta2.Weight, tb2.Weight
+	case "PTR":
+		//ta2, tb2 := a.(*dns.PTR), b.(*dns.PTR)
+		pa, pb := a.GetTargetField(), b.GetTargetField()
 		if pa != pb {
 			return pa < pb
 		}
-	case dns.TypePTR:
-		ta2, tb2 := a.(*dns.PTR), b.(*dns.PTR)
-		pa, pb := ta2.Ptr, tb2.Ptr
-		if pa != pb {
-			return pa < pb
-		}
-	case dns.TypeCAA:
-		ta2, tb2 := a.(*dns.CAA), b.(*dns.CAA)
+	case "CAA":
+		//ta2, tb2 := a.(*dns.CAA), b.(*dns.CAA)
 		// sort by tag
-		pa, pb := ta2.Tag, tb2.Tag
+		pa, pb := a.CaaTag, b.CaaTag
 		if pa != pb {
 			return pa < pb
 		}
 		// then flag
-		fa, fb := ta2.Flag, tb2.Flag
+		fa, fb := a.CaaFlag, b.CaaFlag
 		if fa != fb {
 			// flag set goes before ones without flag set
 			return fa > fb
@@ -102,12 +109,12 @@ func (z *zoneGenData) Less(i, j int) bool {
 // mostCommonTTL returns the most common TTL in a set of records. If there is
 // a tie, the highest TTL is selected. This makes the results consistent.
 // NS records are not included in the analysis because Tom said so.
-func mostCommonTTL(records []dns.RR) uint32 {
+func mostCommonTTL(records models.Records) uint32 {
 	// Index the TTLs in use:
 	d := make(map[uint32]int)
 	for _, r := range records {
-		if r.Header().Rrtype != dns.TypeNS {
-			d[r.Header().Ttl]++
+		if r.Type != "NS" {
+			d[r.TTL]++
 		}
 	}
 	// Find the largest count:
@@ -129,9 +136,14 @@ func mostCommonTTL(records []dns.RR) uint32 {
 	return mk
 }
 
-// WriteZoneFileRR writes a beautifully formatted zone file.
-func WriteZoneFileRR(w io.Writer, records []dns.RR, origin string) error {
-	// This function prioritizes beauty over efficiency.
+// WriteZoneFileRR is a helper for when you have []dns.RR instead of models.Records
+func WriteZoneFileRR(w io.Writer, records []dns.RR, origin string, serial uint32) error {
+	return WriteZoneFileRC(w, bind.RRtoRC(records, origin, serial), origin)
+}
+
+// WriteZoneFileRC writes a beautifully formatted zone file.
+func WriteZoneFileRC(w io.Writer, records models.Records, origin string) error {
+	// This function prioritizes beauty over output size.
 	// * The zone records are sorted by label, grouped by subzones to
 	//   be easy to read and pleasant to the eye.
 	// * Within a label, SOA and NS records are listed first.
@@ -145,7 +157,7 @@ func WriteZoneFileRR(w io.Writer, records []dns.RR, origin string) error {
 	defaultTTL := mostCommonTTL(records)
 
 	z := &zoneGenData{
-		Origin:     dnsutil.AddOrigin(origin, "."),
+		Origin:     origin + ".",
 		DefaultTTL: defaultTTL,
 	}
 	z.Records = nil
@@ -163,20 +175,9 @@ func (z *zoneGenData) generateZoneFileHelper(w io.Writer) error {
 	sort.Sort(z)
 	fmt.Fprintln(w, "$TTL", z.DefaultTTL)
 	for i, rr := range z.Records {
-		line := rr.String()
-		if line[0] == ';' {
-			continue
-		}
-		hdr := rr.Header()
 
-		items := strings.SplitN(line, "\t", 5)
-		if len(items) < 5 {
-			log.Fatalf("Too few items in: %v", line)
-		}
-
-		// items[0]: name
-		nameFqdn := hdr.Name
-		nameShort := dnsutil.TrimDomainName(nameFqdn, z.Origin)
+		// name
+		nameShort := rr.Name
 		name := nameShort
 		if i > 0 && nameShort == nameShortPrevious {
 			name = ""
@@ -185,22 +186,17 @@ func (z *zoneGenData) generateZoneFileHelper(w io.Writer) error {
 		}
 		nameShortPrevious = nameShort
 
-		// items[1]: ttl
+		// ttl
 		ttl := ""
-		if hdr.Ttl != z.DefaultTTL && hdr.Ttl != 0 {
-			ttl = items[1]
+		if rr.TTL != z.DefaultTTL && rr.TTL != 0 {
+			ttl = fmt.Sprint(rr.TTL)
 		}
 
-		// items[2]: class
-		if hdr.Class != dns.ClassINET {
-			log.Fatalf("generateZoneFileHelper: Unimplemented class=%v", items[2])
-		}
-
-		// items[3]: type
-		typeStr := dns.TypeToString[hdr.Rrtype]
+		// type
+		typeStr := rr.Type
 
 		// items[4]: the remaining line
-		target := items[4]
+		target := rr.GetTargetCombined()
 
 		fmt.Fprintln(w, formatLine([]int{10, 5, 2, 5, 0}, []string{name, ttl, "IN", typeStr, target}))
 	}
@@ -298,7 +294,7 @@ func zoneLabelLess(a, b string) bool {
 	return ia < ib
 }
 
-func zoneRrtypeLess(a, b uint16) bool {
+func zoneRrtypeLess(a, b string) bool {
 	// Compare two RR types for the purpose of sorting the RRs in a Zone.
 
 	// If they are equal, we are done. All other code is simplified
@@ -309,16 +305,16 @@ func zoneRrtypeLess(a, b uint16) bool {
 
 	// List SOAs, then NSs, then all others.
 	// i.e. SOA is always less. NS is less than everything but SOA.
-	if a == dns.TypeSOA {
+	if a == "SOA" {
 		return true
 	}
-	if b == dns.TypeSOA {
+	if b == "SOA" {
 		return false
 	}
-	if a == dns.TypeNS {
+	if a == "NS" {
 		return true
 	}
-	if b == dns.TypeNS {
+	if b == "NS" {
 		return false
 	}
 	return a < b

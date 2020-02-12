@@ -83,7 +83,7 @@ func main() {
 
 	switch *flagOutfmt {
 	case "pretty":
-		bind.WriteZoneFile(os.Stdout, recs, zonename)
+		bind.WriteZoneFileRR(os.Stdout, recs, zonename)
 	case "dsl":
 		fmt.Printf(`D("%s", %s, DnsProvider(%s)`, zonename, *flagRegText, *flagProviderText)
 		rrFormat(zonename, filename, recs, defTTL, true)
@@ -153,7 +153,7 @@ func readOctodns(zonename string, r io.Reader, filename string) []dns.RR {
 
 // pretty outputs the zonefile using the prettyprinter.
 func writePretty(zonename string, recs []dns.RR, defaultTTL uint32) {
-	bind.WriteZoneFile(os.Stdout, recs, zonename)
+	bind.WriteZoneFileRR(os.Stdout, recs, zonename)
 }
 
 // rrFormat outputs the zonefile in either DSL or TSV format.

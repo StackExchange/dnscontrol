@@ -25,6 +25,7 @@ import (
 	"github.com/miekg/dns"
 
 	"github.com/StackExchange/dnscontrol/v2/models"
+	"github.com/StackExchange/dnscontrol/v2/pkg/prettyzone"
 	"github.com/StackExchange/dnscontrol/v2/providers"
 	"github.com/StackExchange/dnscontrol/v2/providers/diff"
 )
@@ -91,7 +92,17 @@ type Bind struct {
 	zoneFileFound bool   // Did the zonefile exist?
 }
 
-// var bindSkeletin = flag.String("bind_skeletin", "skeletin/master/var/named/chroot/var/named/master", "")
+// RRtoRC converts []dns.RR to []RecordConfigs.
+func RRtoRC(rrs []dns.RR, origin string, replaceSerial uint32) models.Records {
+
+	rcs := make(models.Records, 0, len(rrs))
+	var rc models.RecordConfig
+	for _, r := range rrs {
+		rc, replaceSerial = rrToRecord(r, origin, replaceSerial)
+		rcs = append(rcs, &rc)
+	}
+	return rcs
+}
 
 func rrToRecord(rr dns.RR, origin string, replaceSerial uint32) (models.RecordConfig, uint32) {
 	// Convert's dns.RR into our native data type (models.RecordConfig).
@@ -312,7 +323,7 @@ func (c *Bind) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Correcti
 					if err != nil {
 						log.Fatalf("Could not create zonefile: %v", err)
 					}
-					err = WriteZoneFile(zf, RRtoRC(dc.Records), dc.Name)
+					err = prettyzone.WriteZoneFileRC(zf, dc.Records, dc.Name)
 
 					if err != nil {
 						log.Fatalf("WriteZoneFile error: %v\n", err)
@@ -327,13 +338,4 @@ func (c *Bind) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Correcti
 	}
 
 	return corrections, nil
-}
-
-// RRtoRC converts []RecordConfigs to []dns.RR.
-func RRtoRC(rcs models.Records) []dns.RR {
-	rrs := make([]dns.RR, 0, len(rcs))
-	for _, r := range rcs {
-		rrs = append(rrs, r.ToRR())
-	}
-	return rrs
 }

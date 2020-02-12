@@ -7,8 +7,9 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/StackExchange/dnscontrol/pkg/prettyzone"
+	"github.com/StackExchange/dnscontrol/v2/models"
 	"github.com/StackExchange/dnscontrol/v2/providers"
-	"github.com/StackExchange/dnscontrol/v2/providers/bind"
 	"github.com/StackExchange/dnscontrol/v2/providers/config"
 	"github.com/miekg/dns"
 	"github.com/miekg/dns/dnsutil"
@@ -54,6 +55,7 @@ type GetZoneArgs struct {
 	ProviderName       string // provider name: BIND, GANDI_V5, etc or "-"
 	OutputFormat       string // Output format
 	OutputFile         string // Filename to send output ("" means stdout)
+	DefaultTTL         int    // default TTL for providers where it is unknown
 }
 
 func (args *GetZoneArgs) flags() []cli.Flag {
@@ -68,6 +70,12 @@ func (args *GetZoneArgs) flags() []cli.Flag {
 		Name:        "out",
 		Destination: &args.OutputFile,
 		Usage:       `Instead of stdout, write to this file`,
+	})
+	flags = append(flags, &cli.IntFlag{
+		Name:        "ttl",
+		Destination: &args.DefaultTTL,
+		Usage:       `Default TTL`,
+		Value:       300,
 	})
 	return flags
 }
@@ -109,16 +117,16 @@ func GetZone(args GetZoneArgs) error {
 
 	switch args.OutputFormat {
 	case "pretty":
-		bind.WriteZoneFile(os.Stdout, recs, zonename)
+		prettyzone.WriteZoneFileRC(os.Stdout, recs, zonename)
 	case "dsl":
 		fmt.Printf(`var CHANGEME = NewDnsProvider("%s", "%s");`+"\n",
 			args.CredName, args.ProviderName)
 		fmt.Printf(`D("%s", REG_CHANGEME,`+"\n", zonename)
 		fmt.Printf(`  DnsProvider(CHANGEME),` + "\n")
-		rrFormat(zonename, args.OutputFile, recs, defTTL, true)
+		rrFormat(zonename, args.OutputFile, recs, args.DefaultTTL, true)
 		fmt.Println("\n)")
 	case "tsv":
-		rrFormat(zonename, args.OutputFile, recs, defTTL, false)
+		rrFormat(zonename, args.OutputFile, recs, args.DefaultTTL, false)
 	default:
 		return fmt.Errorf("format %q unknown", args.OutputFile)
 	}
@@ -127,7 +135,7 @@ func GetZone(args GetZoneArgs) error {
 }
 
 // rrFormat outputs the zonefile in either DSL or TSV format.
-func rrFormat(zonename string, filename string, recs []dns.RR, defaultTTL uint32, dsl bool) {
+func rrFormat(zonename string, filename string, recs models.Records, defaultTTL uint32, dsl bool) {
 	zonenamedot := zonename + "."
 
 	for _, x := range recs {
