@@ -9,7 +9,6 @@ require (
 	github.com/Azure/go-autorest/autorest/azure/auth v0.4.2
 	github.com/Azure/go-autorest/autorest/to v0.3.0
 	github.com/DisposaBoy/JsonConfigReader v0.0.0-20171218180944-5ea4d0ddac55
-	github.com/StackExchange/dnscontrol v0.2.8
 	github.com/TomOnTime/utfutil v0.0.0-20180511104225-09c41003ee1d
 	github.com/aws/aws-sdk-go v1.19.39
 	github.com/billputer/go-namecheap v0.0.0-20170915210158-0c7adb0710f8

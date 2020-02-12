@@ -21,8 +21,8 @@ Syntax:
    --format value  Output format: dsl tsv pretty (default: "pretty")
    --out value     Instead of stdout, write to this file
 
-   credkey:  The name used in creds.json (first parameter to NewDnsProvider() in dnsconfig.js) 
-   provider: The name of the provider (second parameter to NewDnsProvider() in dnsconfig.js)  
+   credkey:  The name used in creds.json (first parameter to NewDnsProvider() in dnsconfig.js)
+   provider: The name of the provider (second parameter to NewDnsProvider() in dnsconfig.js)
    zone:     The name of the zone (domain) to download
 
 EXAMPLES:
@@ -34,4 +34,4 @@ EXAMPLES:
 
 # Example commands
 
-dnscontrol get-zone 
+dnscontrol get-zone

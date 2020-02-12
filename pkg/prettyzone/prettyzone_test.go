@@ -125,17 +125,18 @@ www        300   IN CNAME bosun.org.
 }
 
 func TestWriteZoneFileMx(t *testing.T) {
-	// exhibits explicit ttls and long name
-	r1, _ := dns.NewRR(`bosun.org. 300 IN TXT "aaa"`)
-	r2, _ := dns.NewRR(`bosun.org. 300 IN TXT "bbb"`)
-	r2.(*dns.TXT).Txt[0] = `b"bb`
-	r3, _ := dns.NewRR("bosun.org. 300 IN MX 1 ASPMX.L.GOOGLE.COM.")
-	r4, _ := dns.NewRR("bosun.org. 300 IN MX 5 ALT1.ASPMX.L.GOOGLE.COM.")
-	r5, _ := dns.NewRR("bosun.org. 300 IN MX 10 ASPMX3.GOOGLEMAIL.COM.")
-	r6, _ := dns.NewRR("bosun.org. 300 IN A 198.252.206.16")
-	r7, _ := dns.NewRR("*.bosun.org. 600 IN A 198.252.206.16")
-	r8, _ := dns.NewRR(`_domainkey.bosun.org. 300 IN TXT "vvvv"`)
-	r9, _ := dns.NewRR(`google._domainkey.bosun.org. 300 IN TXT "\"foo\""`)
+	// sort by priority
+	r1, _ := dns.NewRR("aaa.bosun.org. IN MX 1 aaa.example.com.")
+	r2, _ := dns.NewRR("aaa.bosun.org. IN MX 5 aaa.example.com.")
+	r3, _ := dns.NewRR("aaa.bosun.org. IN MX 10 aaa.example.com.")
+	// same priority? sort by name
+	r4, _ := dns.NewRR("bbb.bosun.org. IN MX 10 ccc.example.com.")
+	r5, _ := dns.NewRR("bbb.bosun.org. IN MX 10 bbb.example.com.")
+	r6, _ := dns.NewRR("bbb.bosun.org. IN MX 10 aaa.example.com.")
+	// a mix
+	r7, _ := dns.NewRR("ccc.bosun.org. IN MX 40 zzz.example.com.")
+	r8, _ := dns.NewRR("ccc.bosun.org. IN MX 40 aaa.example.com.")
+	r9, _ := dns.NewRR("ccc.bosun.org. IN MX 1 ttt.example.com.")
 	buf := &bytes.Buffer{}
 	WriteZoneFileRR(buf, []dns.RR{r1, r2, r3, r4, r5, r6, r7, r8, r9}, "bosun.org", 99)
 	if buf.String() != testdataZFMX {
@@ -146,16 +147,16 @@ func TestWriteZoneFileMx(t *testing.T) {
 	parseAndRegen(t, buf, testdataZFMX)
 }
 
-var testdataZFMX = `$TTL 300
-@                IN A     198.252.206.16
-                 IN MX    1 ASPMX.L.GOOGLE.COM.
-                 IN MX    5 ALT1.ASPMX.L.GOOGLE.COM.
-                 IN MX    10 ASPMX3.GOOGLEMAIL.COM.
-                 IN TXT   "aaa"
-                 IN TXT   "b\"bb"
-*          600   IN A     198.252.206.16
-_domainkey       IN TXT   "vvvv"
-google._domainkey IN TXT  "\"foo\""
+var testdataZFMX = `$TTL 3600
+aaa              IN MX    1 aaa.example.com.
+                 IN MX    5 aaa.example.com.
+                 IN MX    10 aaa.example.com.
+bbb              IN MX    10 aaa.example.com.
+                 IN MX    10 bbb.example.com.
+                 IN MX    10 ccc.example.com.
+ccc              IN MX    1 ttt.example.com.
+                 IN MX    40 aaa.example.com.
+                 IN MX    40 zzz.example.com.
 `
 
 func TestWriteZoneFileSrv(t *testing.T) {
@@ -278,6 +279,37 @@ _443._tcp        IN TLSA  3 1 1 abcdef0
 sub              IN NS    bosun.org.
 x                IN CNAME bosun.org.
 `
+
+func TestWriteZoneFileSynth(t *testing.T) {
+	r1, _ := dns.NewRR("bosun.org. 300 IN A 192.30.252.153")
+	r2, _ := dns.NewRR("bosun.org. 300 IN A 192.30.252.154")
+	r3, _ := dns.NewRR("www.bosun.org. 300 IN CNAME bosun.org.")
+	rsynm := &models.RecordConfig{Type: "R53_ALIAS", TTL: 300}
+	rsynm.SetLabel("myalias", "bosun.org")
+	rsynz := &models.RecordConfig{Type: "R53_ALIAS", TTL: 300}
+	rsynz.SetLabel("zalias", "bosun.org")
+
+	recs := models.RRstoRCs([]dns.RR{r1, r2, r3}, "bosun.org", 99)
+	recs = append(recs, rsynm)
+	recs = append(recs, rsynm)
+	recs = append(recs, rsynz)
+
+	buf := &bytes.Buffer{}
+	WriteZoneFileRC(buf, recs, "bosun.org")
+	expected := `$TTL 300
+@                IN A     192.30.252.153
+                 IN A     192.30.252.154
+;myalias          IN R53_ALIAS  type= zone_id=
+;myalias          IN R53_ALIAS  type= zone_id=
+www              IN CNAME bosun.org.
+;zalias           IN R53_ALIAS  type= zone_id=
+`
+	if buf.String() != expected {
+		t.Log(buf.String())
+		t.Log(expected)
+		t.Fatalf("Zone file does not match.")
+	}
+}
 
 // Test sorting
 

@@ -2,17 +2,14 @@ package commands
 
 import (
 	"fmt"
-	"log"
+	"io"
 	"os"
-	"strconv"
 	"strings"
 
 	"github.com/StackExchange/dnscontrol/v2/models"
 	"github.com/StackExchange/dnscontrol/v2/pkg/prettyzone"
 	"github.com/StackExchange/dnscontrol/v2/providers"
 	"github.com/StackExchange/dnscontrol/v2/providers/config"
-	"github.com/miekg/dns"
-	"github.com/miekg/dns/dnsutil"
 	"github.com/urfave/cli/v2"
 )
 
@@ -86,47 +83,32 @@ func GetZone(args GetZoneArgs) error {
 	var err error
 
 	// Read it in:
-
 	providerConfigs, err = config.LoadProviderConfigs(args.CredsFile)
 	if err != nil {
 		return err
 	}
 
-	fmt.Printf("CONFIGS: %d loaded\n", len(providerConfigs))
-	//fmt.Printf("OUTPUTFORMAT = %q\n", args.OutputFormat)
-	//fmt.Printf("ARGS = %+v\n", args)
-	fmt.Printf("cred = %v\n", args.CredName)
-	fmt.Printf("prov = %v\n", args.ProviderName)
-	fmt.Printf("zone = %v\n", args.ZoneName)
-	zonename := args.ZoneName
-
 	provider, err := providers.CreateDNSProvider(args.ProviderName, providerConfigs[args.CredName], nil)
 	if err != nil {
 		return err
 	}
-	//fmt.Printf("FOO=%+v\n", provider)
 
-	recs, err := provider.GetZoneRecords(zonename)
-	//fmt.Printf("RECS=%v\n", recs)
-	//fmt.Printf("err = %v\n", err)
+	recs, err := provider.GetZoneRecords(args.ZoneName)
 	if err != nil {
 		return err
 	}
+
+	z := prettyzone.PrettySort(recs, args.ZoneName, 0)
 
 	// Write it out:
 
 	switch args.OutputFormat {
 	case "pretty":
-		prettyzone.WriteZoneFileRC(os.Stdout, recs, zonename)
+		prettyzone.WriteZoneFileRC(os.Stdout, z.Records, args.ZoneName)
 	case "dsl":
-		fmt.Printf(`var CHANGEME = NewDnsProvider("%s", "%s");`+"\n",
-			args.CredName, args.ProviderName)
-		fmt.Printf(`D("%s", REG_CHANGEME,`+"\n", zonename)
-		fmt.Printf(`  DnsProvider(CHANGEME),` + "\n")
-		rrFormat(zonename, args.OutputFile, recs, uint32(args.DefaultTTL), true)
-		fmt.Println("\n)")
+		writeDsl(os.Stdout, z.Records, args)
 	case "tsv":
-		rrFormat(zonename, args.OutputFile, recs, uint32(args.DefaultTTL), false)
+		rrFormat(args.ZoneName, args.OutputFile, z.Records, uint32(args.DefaultTTL), false)
 	default:
 		return fmt.Errorf("format %q unknown", args.OutputFile)
 	}
@@ -134,59 +116,45 @@ func GetZone(args GetZoneArgs) error {
 	return nil
 }
 
+func writeDsl(w io.Writer, recs models.Records, args GetZoneArgs) error {
+	fmt.Fprintf(w, `var CHANGEME = NewDnsProvider("%s", "%s");`+"\n",
+		args.CredName, args.ProviderName)
+	fmt.Fprintf(w, `D("%s", REG_CHANGEME,`+"\n", args.ZoneName)
+	fmt.Fprintf(w, `        DnsProvider(CHANGEME)`)
+	rrFormat(args.ZoneName, args.OutputFile, recs, uint32(args.DefaultTTL), true)
+	fmt.Fprintln(w, "\n)")
+	return nil
+}
+
 // rrFormat outputs the zonefile in either DSL or TSV format.
 func rrFormat(zonename string, filename string, recs models.Records, defaultTTL uint32, dsl bool) {
-	zonenamedot := zonename + "."
 
 	for _, x := range recs {
 
-		// Skip comments. Parse the formatted version.
-		line := x.String()
-		if line[0] == ';' {
-			continue
-		}
-		items := strings.SplitN(line, "\t", 5)
-		if len(items) < 5 {
-			log.Fatalf("Too few items in: %v", line)
-		}
-
-		target := items[4]
-
-		hdr := x.Header()
-		nameFqdn := hdr.Name
-		name := dnsutil.TrimDomainName(nameFqdn, zonenamedot)
-		ttl := strconv.FormatUint(uint64(hdr.Ttl), 10)
-		classStr := dns.ClassToString[hdr.Class]
-		typeStr := dns.TypeToString[hdr.Rrtype]
-
-		// MX records should split out the prio vs. target.
-		if hdr.Rrtype == dns.TypeMX {
-			target = strings.Replace(target, " ", "\t", 1)
-		}
+		target := x.GetTargetCombined()
 
 		var ttlop string
-		if hdr.Ttl == defaultTTL {
+		if x.TTL == defaultTTL {
 			ttlop = ""
 		} else {
-			ttlop = fmt.Sprintf(", TTL(%d)", hdr.Ttl)
+			ttlop = fmt.Sprintf(", TTL(%d)", x.TTL)
 		}
 
 		// NS records at the apex should be NAMESERVER() records.
-		if hdr.Rrtype == dns.TypeNS && name == "@" {
+		if x.Type == "NS" && x.Name == "@" {
 			fmt.Printf(",\n\tNAMESERVER('%s'%s)", target, ttlop)
 			continue
 		}
 
 		if !dsl { // TSV format:
-			fmt.Printf("%s\t%s\t%s\t%s\t%s\n", name, ttl, classStr, typeStr, target)
+			fmt.Printf("%s\t%d\tIN\t%s\t%s\n", x.Name, x.TTL, x.Type, target)
 		} else { // DSL format:
-			switch hdr.Rrtype { // #rtype_variations
-			case dns.TypeMX:
-				m := strings.SplitN(target, "\t", 2)
-				target = m[0] + ", '" + m[1] + "'"
-			case dns.TypeSOA:
+			switch x.Type { // #rtype_variations
+			case "MX":
+				target = fmt.Sprintf("%d, '%s'", x.MxPreference, x.GetTargetField())
+			case "SOA":
 				continue
-			case dns.TypeTXT:
+			case "TXT":
 				if len(x.TxtStrings) == 1 {
 					target = `'` + x.TxtStrings[0] + `'`
 				} else {
@@ -195,7 +163,7 @@ func rrFormat(zonename string, filename string, recs models.Records, defaultTTL 
 			default:
 				target = "'" + target + "'"
 			}
-			fmt.Printf(",\n\t%s('%s', %s%s)", typeStr, name, target, ttlop)
+			fmt.Printf(",\n\t%s('%s', %s%s)", x.Type, x.Name, target, ttlop)
 		}
 	}
 
