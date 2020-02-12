@@ -92,7 +92,7 @@ type Bind struct {
 	zoneFileFound bool   // Did the zonefile exist?
 }
 
-func makeDefaultSOA(info SoaInfo, origin string) models.RecordConfig {
+func makeDefaultSOA(info SoaInfo, origin string) *models.RecordConfig {
 	// Make a default SOA record in case one isn't found:
 	soaRec := models.RecordConfig{
 		Type: "SOA",
@@ -121,7 +121,7 @@ func makeDefaultSOA(info SoaInfo, origin string) models.RecordConfig {
 	}
 	soaRec.SetTarget(info.String())
 
-	return soaRec
+	return &soaRec
 }
 
 // GetNameservers returns the nameservers for a domain.
@@ -163,8 +163,8 @@ func (c *Bind) GetZoneRecords(domain string) (models.Records, error) {
 					oldSerial = serial
 					newSerial = generateSerial(oldSerial)
 					// Regenerate with new serial:
-					soaRec, _ = models.RRtoRC(x.RR, domain, newSerial)
-					rec = soaRec
+					*soaRec, _ = models.RRtoRC(x.RR, domain, newSerial)
+					rec = *soaRec
 				}
 				foundRecords = append(foundRecords, &rec)
 			}
@@ -173,7 +173,7 @@ func (c *Bind) GetZoneRecords(domain string) (models.Records, error) {
 
 	// Add SOA record to expected set:
 	if !foundRecords.HasRecordTypeName("SOA", "@") {
-		foundRecords = append(foundRecords, &soaRec)
+		//foundRecords = append(foundRecords, soaRec)
 	}
 
 	return foundRecords, nil

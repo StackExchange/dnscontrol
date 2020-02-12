@@ -109,17 +109,10 @@ func (z *zoneGenData) Less(i, j int) bool {
 // a tie, the highest TTL is selected. This makes the results consistent.
 // NS records are not included in the analysis because Tom said so.
 func mostCommonTTL(records models.Records) uint32 {
-	//fmt.Printf("MOSTCOMMON\n")
-	//for i, j := range records {
-	//	fmt.Printf("  REC %v: %v %v %v\n", i, j.TTL, j.Type, j.GetTargetCombined())
-	//}
-
 	// Index the TTLs in use:
 	d := make(map[uint32]int)
 	for _, r := range records {
-		//fmt.Printf("CH: %v\n", r.Type)
 		if r.Type != "NS" {
-			//fmt.Printf("INCREMENT: %v\n", r.Type)
 			d[r.TTL]++
 		}
 	}
@@ -133,15 +126,12 @@ func mostCommonTTL(records models.Records) uint32 {
 	// Find the largest key with that count:
 	var mk uint32
 	for key, value := range d {
-		//fmt.Printf("DEBUG3: %v %v\n", key, value)
 		if value == mc {
 			if key > mk {
 				mk = key
-				//fmt.Printf("DEBUG4: %v %v\n", key, mk)
 			}
 		}
 	}
-	//fmt.Printf("DEBUG: mk=%v\n", mk)
 	return mk
 }
 
@@ -208,6 +198,9 @@ func (z *zoneGenData) generateZoneFileHelper(w io.Writer) error {
 		target := rr.GetTargetCombined()
 
 		fmt.Fprintln(w, formatLine([]int{10, 5, 2, 5, 0}, []string{name, ttl, "IN", typeStr, target}))
+		//f := formatLine([]int{10, 5, 2, 5, 0}, []string{name, ttl, "IN", typeStr, target})
+		//fmt.Printf("LINE: %v", f)
+		//fmt.Fprintln(w, f)
 	}
 	return nil
 }

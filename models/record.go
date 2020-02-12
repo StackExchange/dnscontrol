@@ -308,7 +308,7 @@ type Records []*RecordConfig
 // HasRecordTypeName returns True if there is a record with this rtype and name.
 func (recs Records) HasRecordTypeName(rtype, name string) bool {
 	for _, r := range recs {
-		if r.Type == rtype && r.GetLabel() == name {
+		if r.Type == rtype && r.Name == name {
 			return true
 		}
 	}
