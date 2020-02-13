@@ -35,3 +35,40 @@ EXAMPLES:
 # Example commands
 
 dnscontrol get-zone
+
+# Developer Note
+
+This command is not implemented for all providers.
+
+To add this to a provider:
+
+1. Document the feature
+
+In the `*Provider.go` file, change the setting to implemented.
+
+* OLD: `  providers.CanGetZone:     providers.Unimplemented(),`
+* NEW: `  providers.CanGetZone:     providers.Can(),`
+
+2. Update the docs
+
+Run
+
+```
+go generate
+```
+
+3. Implement the `GetZoneRecords` function
+
+Find the `GetZoneRecords` function in the `*Provider.go` file.
+
+If currently returns `fmt.Errorf("not implemented")`.
+
+Instead, it should gather the records from the provider
+and return them as a list of RecordConfig structs.
+
+The code to do that already exists in `GetDomainCorrections`.
+You should extract it into its own function (`GetZoneRecords`), rather
+than having it be burried in the middle of `GetDomainCorrections`.
+`GetDomainCorrections` should call `GetZoneRecords`.
+
+Once that is done the `get-zone` subcommand should work.
