@@ -2,7 +2,7 @@ package livedns
 
 // Tsig contains tsig data (no kidding!)
 type Tsig struct {
-	KeyName       string      `json:"key_name, omitempty"`
+	KeyName       string      `json:"key_name,omitempty"`
 	Secret        string      `json:"secret,omitempty"`
 	UUID          string      `json:"uuid,omitempty"`
 	AxfrTsigURL   string      `json:"axfr_tsig_url,omitempty"`
