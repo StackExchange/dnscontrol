@@ -41,12 +41,12 @@ require (
 	github.com/prasmussen/gandi-api v0.0.0-20180224132202-58d3d4205661
 	github.com/psampaz/go-mod-outdated v0.5.0 // indirect
 	github.com/renier/xmlrpc v0.0.0-20170708154548-ce4a1a486c03 // indirect
-	github.com/robertkrimen/otto v0.0.0-20180617131154-15f95af6e78d
+	github.com/robertkrimen/otto v0.0.0-20191219234010-c382bd3c16ff
 	github.com/smartystreets/goconvey v0.0.0-20190330032615-68dc04aab96a // indirect
 	github.com/softlayer/softlayer-go v0.0.0-20170804160555-5e1c8cccc730
 	github.com/stretchr/testify v1.4.0
 	github.com/tdewolff/buffer v2.0.0+incompatible // indirect
-	github.com/tdewolff/minify v2.1.1-0.20170910185944-d515420d53ba+incompatible
+	github.com/tdewolff/minify v2.3.6+incompatible
 	github.com/tdewolff/parse v2.3.4+incompatible // indirect
 	github.com/tdewolff/strconv v1.0.0 // indirect
 	github.com/tdewolff/test v1.0.6 // indirect
@@ -65,6 +65,6 @@ require (
 	gopkg.in/check.v1 v1.0.0-20180628173108-788fd7840127 // indirect
 	gopkg.in/ini.v1 v1.42.0 // indirect
 	gopkg.in/ns1/ns1-go.v2 v2.0.0-20170502175150-c563826f4cbe
-	gopkg.in/sourcemap.v1 v1.0.2 // indirect
+	gopkg.in/sourcemap.v1 v1.0.5 // indirect
 	gopkg.in/yaml.v2 v2.2.8
 )
