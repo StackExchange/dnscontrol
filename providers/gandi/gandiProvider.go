@@ -33,6 +33,7 @@ var features = providers.DocumentationNotes{
 	providers.CantUseNOPURGE:         providers.Cannot(),
 	providers.DocCreateDomains:       providers.Cannot("Can only manage domains registered through their service"),
 	providers.DocOfficiallySupported: providers.Cannot(),
+	providers.CanGetZone:             providers.Unimplemented(),
 }
 
 func init() {

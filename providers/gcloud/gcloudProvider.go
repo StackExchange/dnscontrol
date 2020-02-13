@@ -22,6 +22,7 @@ var features = providers.DocumentationNotes{
 	providers.CanUseSRV:              providers.Can(),
 	providers.CanUseCAA:              providers.Can(),
 	providers.CanUseTXTMulti:         providers.Can(),
+	providers.CanGetZone:             providers.Unimplemented(),
 }
 
 func sPtr(s string) *string {
