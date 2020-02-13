@@ -119,7 +119,8 @@ func (z *zoneGenData) generateZoneFileHelper(w io.Writer) error {
 		// the remaining line
 		target := rr.GetTargetCombined()
 
-		fmt.Fprintf(w, "%s%s\n", prefix, formatLine([]int{10, 5, 2, 5, 0}, []string{name, ttl, "IN", typeStr, target}))
+		fmt.Fprintf(w, "%s%s\n",
+			prefix, formatLine([]int{10, 5, 2, 5, 0}, []string{name, ttl, "IN", typeStr, target}))
 	}
 	return nil
 }
@@ -139,8 +140,3 @@ func formatLine(lengths []int, fields []string) string {
 	}
 	return strings.TrimRight(result, " ")
 }
-
-//func isNumeric(s string) bool {
-//	_, err := strconv.ParseFloat(s, 64)
-//	return err == nil
-//}

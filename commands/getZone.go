@@ -86,7 +86,6 @@ func GetZone(args GetZoneArgs) error {
 	if err != nil {
 		return err
 	}
-
 	provider, err := providers.CreateDNSProvider(args.ProviderName, providerConfigs[args.CredName], nil)
 	if err != nil {
 		return err
@@ -97,9 +96,8 @@ func GetZone(args GetZoneArgs) error {
 		return err
 	}
 
-	z := prettyzone.PrettySort(recs, args.ZoneName, 0)
-
 	// Write it out:
+	z := prettyzone.PrettySort(recs, args.ZoneName, 0)
 	w := os.Stdout
 	if args.OutputFile != "" {
 		w, err = os.Create(args.OutputFile)
@@ -123,9 +121,9 @@ func GetZone(args GetZoneArgs) error {
 		fmt.Fprint(w, "\n)\n")
 	case "tsv":
 		for _, rec := range recs {
-			fmt.Fprintf(
-				w,
-				fmt.Sprintf("%s\t%d\tIN\t%s\t%s\n", rec.Name, rec.TTL, rec.Type, rec.GetTargetCombined()))
+			fmt.Fprintf(w,
+				fmt.Sprintf("%s\t%d\tIN\t%s\t%s\n",
+					rec.Name, rec.TTL, rec.Type, rec.GetTargetCombined()))
 		}
 	default:
 		return fmt.Errorf("format %q unknown", args.OutputFile)
@@ -163,5 +161,4 @@ func formatDsl(zonename string, rec *models.RecordConfig, defaultTTL uint32) str
 	}
 
 	return fmt.Sprintf(",\n\t%s('%s', %s%s)", rec.Type, rec.Name, target, ttlop)
-
 }

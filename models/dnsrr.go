@@ -10,40 +10,34 @@ import (
 	"github.com/miekg/dns"
 )
 
-// Header Header returns the header of an resource record.
-func (rc *RecordConfig) Header() *dns.RR_Header {
-	log.Fatal("Header not implemented")
-	return nil
-}
+//// Header Header returns the header of an resource record.
+//func (rc *RecordConfig) Header() *dns.RR_Header {
+//	log.Fatal("Header not implemented")
+//	return nil
+//}
 
 // String returns the text representation of the resource record.
 func (rc *RecordConfig) String() string {
-
-	//  rdtype, ok := dns.StringToType[rc.Type]
-	//  if !ok {
-	//    log.Fatalf("No such DNS type as (%#v)\n", rc.Type)
-	//  }
-
 	return rc.GetTargetCombined()
 }
 
-// copy returns a copy of the RR
-func (rc *RecordConfig) copy() dns.RR {
-	log.Fatal("Copy not implemented")
-	return dns.TypeToRR[dns.TypeA]()
-}
-
-// len returns the length (in octets) of the uncompressed RR in wire format.
-func (rc *RecordConfig) len() int {
-	log.Fatal("len not implemented")
-	return 0
-}
-
-// pack packs an RR into wire format.
-func (rc *RecordConfig) pack([]byte, int, map[string]int, bool) (int, error) {
-	log.Fatal("pack not implemented")
-	return 0, nil
-}
+//// copy returns a copy of the RR
+//func (rc *RecordConfig) copy() dns.RR {
+//	log.Fatal("Copy not implemented")
+//	return dns.TypeToRR[dns.TypeA]()
+//}
+//
+//// len returns the length (in octets) of the uncompressed RR in wire format.
+//func (rc *RecordConfig) len() int {
+//	log.Fatal("len not implemented")
+//	return 0
+//}
+//
+//// pack packs an RR into wire format.
+//func (rc *RecordConfig) pack([]byte, int, map[string]int, bool) (int, error) {
+//	log.Fatal("pack not implemented")
+//	return 0, nil
+//}
 
 // Conversions
 
@@ -72,11 +66,6 @@ func RRtoRC(rr dns.RR, origin string, replaceSerial uint32) (RecordConfig, uint3
 	var oldSerial, newSerial uint32
 	header := rr.Header()
 	rc := new(RecordConfig)
-	//	rc = &RecordConfig{
-	//		Type:     dns.TypeToString[header.Rrtype],
-	//		TTL:      header.Ttl,
-	//		Original: rr,
-	//	}
 	rc.Type = dns.TypeToString[header.Rrtype]
 	rc.TTL = header.Ttl
 	rc.Original = rr
@@ -105,7 +94,6 @@ func RRtoRC(rr dns.RR, origin string, replaceSerial uint32) (RecordConfig, uint3
 			oldSerial = 1
 		}
 		newSerial = v.Serial
-		//if (dnsutil.TrimDomainName(rc.Name, origin+".") == "@") && replaceSerial != 0 {
 		if rc.GetLabel() == "@" && replaceSerial != 0 {
 			newSerial = replaceSerial
 		}
