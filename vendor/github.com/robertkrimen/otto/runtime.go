@@ -2,6 +2,7 @@ package otto
 
 import (
 	"encoding"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"math"
@@ -264,6 +265,8 @@ func (self *_runtime) convertNumeric(v Value, t reflect.Type) reflect.Value {
 				panic(self.panicRangeError(fmt.Sprintf("converting %v to %v would overflow", val.Type(), t)))
 			}
 			return val.Convert(t)
+		case reflect.Float32, reflect.Float64:
+			return val.Convert(t)
 		}
 
 	case reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64:
@@ -279,13 +282,48 @@ func (self *_runtime) convertNumeric(v Value, t reflect.Type) reflect.Value {
 				panic(self.panicRangeError(fmt.Sprintf("converting %v to %v would overflow", val.Type(), t)))
 			}
 			return val.Convert(t)
+		case reflect.Float32, reflect.Float64:
+			return val.Convert(t)
 		}
 	}
 
-	panic(self.panicTypeError(fmt.Sprintf("unsupported type %v for numeric conversion", val.Type())))
+	panic(self.panicTypeError(fmt.Sprintf("unsupported type %v -> %v for numeric conversion", val.Type(), t)))
+}
+
+func fieldIndexByName(t reflect.Type, name string) []int {
+	for i := 0; i < t.NumField(); i++ {
+		f := t.Field(i)
+
+		if !validGoStructName(f.Name) {
+			continue
+		}
+
+		if f.Anonymous {
+			if a := fieldIndexByName(f.Type, name); a != nil {
+				return append([]int{i}, a...)
+			}
+		}
+
+		if a := strings.SplitN(f.Tag.Get("json"), ",", 2); a[0] != "" {
+			if a[0] == "-" {
+				continue
+			}
+
+			if a[0] == name {
+				return []int{i}
+			}
+		}
+
+		if f.Name == name {
+			return []int{i}
+		}
+	}
+
+	return nil
 }
 
 var typeOfValue = reflect.TypeOf(Value{})
+var typeOfJSONRawMessage = reflect.TypeOf(json.RawMessage{})
 
 // convertCallParameter converts request val to type t if possible.
 // If the conversion fails due to overflow or type miss-match then it panics.
@@ -293,6 +331,12 @@ var typeOfValue = reflect.TypeOf(Value{})
 func (self *_runtime) convertCallParameter(v Value, t reflect.Type) reflect.Value {
 	if t == typeOfValue {
 		return reflect.ValueOf(v)
+	}
+
+	if t == typeOfJSONRawMessage {
+		if d, err := json.Marshal(v.export()); err == nil {
+			return reflect.ValueOf(d)
+		}
 	}
 
 	if v.kind == valueObject {
@@ -467,41 +511,15 @@ func (self *_runtime) convertCallParameter(v Value, t reflect.Type) reflect.Valu
 			s := reflect.New(t)
 
 			for _, k := range o.propertyOrder {
-				var f *reflect.StructField
+				idx := fieldIndexByName(t, k)
 
-				for i := 0; i < t.NumField(); i++ {
-					ff := t.Field(i)
-
-					if j := ff.Tag.Get("json"); j != "" {
-						if j == "-" {
-							continue
-						}
-
-						a := strings.Split(j, ",")
-
-						if a[0] == k {
-							f = &ff
-							break
-						}
-					}
-
-					if ff.Name == k {
-						f = &ff
-						break
-					}
-
-					if strings.EqualFold(ff.Name, k) {
-						f = &ff
-					}
-				}
-
-				if f == nil {
+				if idx == nil {
 					panic(self.panicTypeError("can't convert object; field %q was supplied but does not exist on target %v", k, t))
 				}
 
 				ss := s
 
-				for _, i := range f.Index {
+				for _, i := range idx {
 					if ss.Kind() == reflect.Ptr {
 						if ss.IsNil() {
 							if !ss.CanSet() {
@@ -572,7 +590,7 @@ func (self *_runtime) convertCallParameter(v Value, t reflect.Type) reflect.Valu
 		s = v.Class()
 	}
 
-	panic(self.panicTypeError("can't convert from %q to %q", s, t.String()))
+	panic(self.panicTypeError("can't convert from %q to %q", s, t))
 }
 
 func (self *_runtime) toValue(value interface{}) Value {

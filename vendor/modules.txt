@@ -207,7 +207,7 @@ github.com/prasmussen/gandi-api/operation
 github.com/prasmussen/gandi-api/util
 # github.com/renier/xmlrpc v0.0.0-20170708154548-ce4a1a486c03
 github.com/renier/xmlrpc
-# github.com/robertkrimen/otto v0.0.0-20180617131154-15f95af6e78d
+# github.com/robertkrimen/otto v0.0.0-20191219234010-c382bd3c16ff
 github.com/robertkrimen/otto
 github.com/robertkrimen/otto/ast
 github.com/robertkrimen/otto/dbg
@@ -231,17 +231,14 @@ github.com/softlayer/softlayer-go/session
 github.com/softlayer/softlayer-go/sl
 # github.com/stretchr/testify v1.4.0
 github.com/stretchr/testify/assert
-# github.com/tdewolff/buffer v2.0.0+incompatible
-github.com/tdewolff/buffer
-# github.com/tdewolff/minify v2.1.1-0.20170910185944-d515420d53ba+incompatible
+# github.com/tdewolff/minify v2.3.6+incompatible
 github.com/tdewolff/minify
 github.com/tdewolff/minify/json
 # github.com/tdewolff/parse v2.3.4+incompatible
 github.com/tdewolff/parse
 github.com/tdewolff/parse/buffer
 github.com/tdewolff/parse/json
-# github.com/tdewolff/strconv v1.0.0
-github.com/tdewolff/strconv
+github.com/tdewolff/parse/strconv
 # github.com/tiramiseb/go-gandi v0.0.0-20200128175142-df8b8e9d23a1
 github.com/tiramiseb/go-gandi
 github.com/tiramiseb/go-gandi/domain
@@ -394,7 +391,7 @@ gopkg.in/ns1/ns1-go.v2/rest/model/data
 gopkg.in/ns1/ns1-go.v2/rest/model/dns
 gopkg.in/ns1/ns1-go.v2/rest/model/filter
 gopkg.in/ns1/ns1-go.v2/rest/model/monitor
-# gopkg.in/sourcemap.v1 v1.0.2
+# gopkg.in/sourcemap.v1 v1.0.5
 gopkg.in/sourcemap.v1
 gopkg.in/sourcemap.v1/base64vlq
 # gopkg.in/square/go-jose.v2 v2.3.1

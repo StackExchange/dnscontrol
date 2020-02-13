@@ -36,6 +36,10 @@ func _newGoStructObject(value reflect.Value) *_goStructObject {
 }
 
 func (self _goStructObject) getValue(name string) reflect.Value {
+	if idx := fieldIndexByName(reflect.Indirect(self.value).Type(), name); len(idx) > 0 {
+		return reflect.Indirect(self.value).FieldByIndex(idx)
+	}
+
 	if validGoStructName(name) {
 		// Do not reveal hidden or unexported fields
 		if field := reflect.Indirect(self.value).FieldByName(name); (field != reflect.Value{}) {
@@ -50,25 +54,21 @@ func (self _goStructObject) getValue(name string) reflect.Value {
 	return reflect.Value{}
 }
 
-func (self _goStructObject) field(name string) (reflect.StructField, bool) {
-	return reflect.Indirect(self.value).Type().FieldByName(name)
+func (self _goStructObject) fieldIndex(name string) []int {
+	return fieldIndexByName(reflect.Indirect(self.value).Type(), name)
 }
 
 func (self _goStructObject) method(name string) (reflect.Method, bool) {
 	return reflect.Indirect(self.value).Type().MethodByName(name)
 }
 
-func (self _goStructObject) setValue(name string, value Value) bool {
-	field, exists := self.field(name)
-	if !exists {
+func (self _goStructObject) setValue(rt *_runtime, name string, value Value) bool {
+	if idx := fieldIndexByName(reflect.Indirect(self.value).Type(), name); len(idx) == 0 {
 		return false
 	}
+
 	fieldValue := self.getValue(name)
-	reflectValue, err := value.toReflectValue(field.Type.Kind())
-	if err != nil {
-		panic(err)
-	}
-	fieldValue.Set(reflectValue)
+	fieldValue.Set(rt.convertCallParameter(value, fieldValue.Type()))
 
 	return true
 }
@@ -128,7 +128,7 @@ func goStructCanPut(self *_object, name string) bool {
 
 func goStructPut(self *_object, name string, value Value, throw bool) {
 	object := self.value.(*_goStructObject)
-	if object.setValue(name, value) {
+	if object.setValue(self.runtime, name, value) {
 		return
 	}
 

@@ -1,4 +1,4 @@
-# Source Maps consumer for Golang [![Build Status](https://travis-ci.org/go-sourcemap/sourcemap.svg)](https://travis-ci.org/go-sourcemap/sourcemap)
+# Source Maps consumer for Golang [![Build Status](https://travis-ci.org/go-sourcemap/sourcemap.svg?branch=v1)](https://travis-ci.org/go-sourcemap/sourcemap)
 
 ## Installation
 
