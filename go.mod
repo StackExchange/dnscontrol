@@ -10,7 +10,7 @@ require (
 	github.com/Azure/go-autorest/autorest/to v0.3.0
 	github.com/DisposaBoy/JsonConfigReader v0.0.0-20171218180944-5ea4d0ddac55
 	github.com/TomOnTime/utfutil v0.0.0-20180511104225-09c41003ee1d
-	github.com/aws/aws-sdk-go v1.19.39
+	github.com/aws/aws-sdk-go v1.29.1
 	github.com/billputer/go-namecheap v0.0.0-20170915210158-0c7adb0710f8
 	github.com/cenkalti/backoff v2.1.1+incompatible // indirect
 	github.com/cpuguy83/go-md2man/v2 v2.0.0 // indirect
@@ -20,7 +20,7 @@ require (
 	github.com/exoscale/egoscale v0.10.5
 	github.com/go-acme/lego v2.7.2-0.20190727050804-58d6d9f4767a+incompatible
 	github.com/gobwas/glob v0.2.4-0.20181002190808-e7a84e9525fe
-	github.com/golang/protobuf v1.3.2 // indirect
+	github.com/golang/protobuf v1.3.3 // indirect
 	github.com/google/go-github v17.0.0+incompatible
 	github.com/google/go-querystring v1.0.1-0.20190318165438-c8c88dbee036 // indirect
 	github.com/google/uuid v1.1.2-0.20190416172445-c2e93f3ae59f
@@ -31,13 +31,15 @@ require (
 	github.com/kolo/xmlrpc v0.0.0-20150413191830-0826b98aaa29 // indirect
 	github.com/kr/pretty v0.1.0 // indirect
 	github.com/malexdev/utfutil v0.0.0-20180510171754-00c8d4a8e7a8 // indirect
-	github.com/miekg/dns v1.0.14
+	github.com/mattn/go-runewidth v0.0.8 // indirect
+	github.com/miekg/dns v1.1.27
 	github.com/mjibson/esc v0.2.0
 	github.com/namedotcom/go v0.0.0-20180403034216-08470befbe04
+	github.com/olekukonko/tablewriter v0.0.4 // indirect
 	github.com/ovh/go-ovh v0.0.0-20181109152953-ba5adb4cf014
 	github.com/philhug/opensrs-go v0.0.0-20171126225031-9dfa7433020d
-	github.com/pkg/errors v0.9.1 // indirect
 	github.com/prasmussen/gandi-api v0.0.0-20180224132202-58d3d4205661
+	github.com/psampaz/go-mod-outdated v0.5.0 // indirect
 	github.com/renier/xmlrpc v0.0.0-20170708154548-ce4a1a486c03 // indirect
 	github.com/robertkrimen/otto v0.0.0-20180617131154-15f95af6e78d
 	github.com/smartystreets/goconvey v0.0.0-20190330032615-68dc04aab96a // indirect
@@ -48,17 +50,21 @@ require (
 	github.com/tdewolff/parse v2.3.4+incompatible // indirect
 	github.com/tdewolff/strconv v1.0.0 // indirect
 	github.com/tdewolff/test v1.0.6 // indirect
-	github.com/tiramiseb/go-gandi v0.0.0-20200119104052-d61de35bb043
+	github.com/tiramiseb/go-gandi v0.0.0-20200128175142-df8b8e9d23a1
 	github.com/urfave/cli/v2 v2.1.1
 	github.com/vultr/govultr v0.1.7
-	golang.org/x/net v0.0.0-20190628185345-da137c7871d7
-	golang.org/x/oauth2 v0.0.0-20190604053449-0f29369cfe45
-	golang.org/x/sys v0.0.0-20190626221950-04f50cda93cb // indirect
-	golang.org/x/tools v0.0.0-20200129045341-207d3de1faaf // indirect
-	google.golang.org/api v0.7.0
+	golang.org/x/crypto v0.0.0-20200210222208-86ce3cb69678 // indirect
+	golang.org/x/mod v0.2.0 // indirect
+	golang.org/x/net v0.0.0-20200202094626-16171245cfb2
+	golang.org/x/oauth2 v0.0.0-20200107190931-bf48bf16ab8d
+	golang.org/x/sys v0.0.0-20200212091648-12a6c2dcc1e4 // indirect
+	golang.org/x/tools v0.0.0-20200212213243-2ee7536ab1cc // indirect
+	golang.org/x/xerrors v0.0.0-20191204190536-9bdfabe68543 // indirect
+	google.golang.org/api v0.17.0
+	google.golang.org/appengine v1.6.5 // indirect
 	gopkg.in/check.v1 v1.0.0-20180628173108-788fd7840127 // indirect
 	gopkg.in/ini.v1 v1.42.0 // indirect
 	gopkg.in/ns1/ns1-go.v2 v2.0.0-20170502175150-c563826f4cbe
 	gopkg.in/sourcemap.v1 v1.0.2 // indirect
-	gopkg.in/yaml.v2 v2.2.2
+	gopkg.in/yaml.v2 v2.2.8
 )

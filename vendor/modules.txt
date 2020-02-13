@@ -171,7 +171,7 @@ github.com/hexonet/go-sdk/response/listresponse
 github.com/jmespath/go-jmespath
 # github.com/kolo/xmlrpc v0.0.0-20150413191830-0826b98aaa29
 github.com/kolo/xmlrpc
-# github.com/miekg/dns v1.0.14
+# github.com/miekg/dns v1.1.27
 github.com/miekg/dns
 github.com/miekg/dns/dnsutil
 # github.com/mitchellh/go-homedir v1.1.0
@@ -242,7 +242,7 @@ github.com/tdewolff/parse/buffer
 github.com/tdewolff/parse/json
 # github.com/tdewolff/strconv v1.0.0
 github.com/tdewolff/strconv
-# github.com/tiramiseb/go-gandi v0.0.0-20200119104052-d61de35bb043
+# github.com/tiramiseb/go-gandi v0.0.0-20200128175142-df8b8e9d23a1
 github.com/tiramiseb/go-gandi
 github.com/tiramiseb/go-gandi/domain
 github.com/tiramiseb/go-gandi/internal/client
@@ -268,7 +268,7 @@ go.opencensus.io/trace
 go.opencensus.io/trace/internal
 go.opencensus.io/trace/propagation
 go.opencensus.io/trace/tracestate
-# golang.org/x/crypto v0.0.0-20191206172530-e9b2fee46413
+# golang.org/x/crypto v0.0.0-20200210222208-86ce3cb69678
 golang.org/x/crypto/ed25519
 golang.org/x/crypto/ed25519/internal/edwards25519
 golang.org/x/crypto/ocsp
@@ -299,7 +299,7 @@ golang.org/x/oauth2/google
 golang.org/x/oauth2/internal
 golang.org/x/oauth2/jws
 golang.org/x/oauth2/jwt
-# golang.org/x/sys v0.0.0-20190626221950-04f50cda93cb
+# golang.org/x/sys v0.0.0-20200212091648-12a6c2dcc1e4
 golang.org/x/sys/unix
 golang.org/x/sys/windows
 # golang.org/x/text v0.3.2
