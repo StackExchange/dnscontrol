@@ -32,9 +32,10 @@ type zone struct {
 
 type createDomainRequest struct {
 	FQDN string `json:"fqdn"`
-	Zone zone `json:"zone,omitempty"`
+	Zone zone   `json:"zone,omitempty"`
 }
 
+// UpdateDomainRequest contains the params for the UpdateDomain method
 type UpdateDomainRequest struct {
 	AutomaticSnapshots *bool `json:"automatic_snapshots,omitempty"`
 }
@@ -57,7 +58,7 @@ func (g *LiveDNS) GetDomain(fqdn string) (domain Domain, err error) {
 	return
 }
 
-// ChangeAssociatedZone changes the zone associated to a domain
+// UpdateDomain changes the zone associated to a domain
 func (g *LiveDNS) UpdateDomain(fqdn string, details UpdateDomainRequest) (response client.StandardResponse, err error) {
 	_, err = g.client.Patch("domains/"+fqdn, details, &response)
 	return
