@@ -14,7 +14,7 @@ require (
 	github.com/billputer/go-namecheap v0.0.0-20170915210158-0c7adb0710f8
 	github.com/cenkalti/backoff v2.1.1+incompatible // indirect
 	github.com/dgrijalva/jwt-go v3.2.1-0.20190620180102-5e25c22bd5d6+incompatible // indirect
-	github.com/digitalocean/godo v1.17.1-0.20190625192827-3ec0b9ce8cde
+	github.com/digitalocean/godo v1.30.0
 	github.com/dnsimple/dnsimple-go v0.20.1-0.20181001130357-234ec949d37c
 	github.com/exoscale/egoscale v0.10.5
 	github.com/go-acme/lego v2.7.2-0.20190727050804-58d6d9f4767a+incompatible

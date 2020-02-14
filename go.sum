@@ -55,8 +55,8 @@ github.com/davecgh/go-spew v1.1.1/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSs
 github.com/dgrijalva/jwt-go v3.2.0+incompatible/go.mod h1:E3ru+11k8xSBh+hMPgOLZmtrrCbhqsmaPHjLKYnJCaQ=
 github.com/dgrijalva/jwt-go v3.2.1-0.20190620180102-5e25c22bd5d6+incompatible h1:4jGdduO4ceTJFKf0IhgaB8NJapGqKHwC2b4xQ/cXujM=
 github.com/dgrijalva/jwt-go v3.2.1-0.20190620180102-5e25c22bd5d6+incompatible/go.mod h1:E3ru+11k8xSBh+hMPgOLZmtrrCbhqsmaPHjLKYnJCaQ=
-github.com/digitalocean/godo v1.17.1-0.20190625192827-3ec0b9ce8cde h1:RH/BMr8Gop3JI8AKuk53pgXaoZz9k8eDe7c7p+YzN8k=
-github.com/digitalocean/godo v1.17.1-0.20190625192827-3ec0b9ce8cde/go.mod h1:AAPQ+tiM4st79QHlEBTg8LM7JQNre4SAQCbn56wEyKY=
+github.com/digitalocean/godo v1.30.0 h1:4Zb+xBlKMXKg772eyQk6px3sk9RhWj/CR75tQ375A/U=
+github.com/digitalocean/godo v1.30.0/go.mod h1:iJnN9rVu6K5LioLxLimlq0uRI+y/eAQjROUmeU/r0hY=
 github.com/dimchansky/utfbom v1.1.0 h1:FcM3g+nofKgUteL8dm/UpdRXNC9KmADgTpLKsu0TRo4=
 github.com/dimchansky/utfbom v1.1.0/go.mod h1:rO41eb7gLfo8SF1jd9F8HplJm1Fewwi4mQvIirEdv+8=
 github.com/dnsimple/dnsimple-go v0.20.1-0.20181001130357-234ec949d37c h1:Llo2tjvv1SspjFXiM8NJyxirMPTZvNPk3lLCPf61COo=
