@@ -81,7 +81,7 @@ github.com/dimchansky/utfbom
 github.com/dnsimple/dnsimple-go/dnsimple
 # github.com/exoscale/egoscale v0.10.5
 github.com/exoscale/egoscale
-# github.com/go-acme/lego v2.7.2-0.20190727050804-58d6d9f4767a+incompatible
+# github.com/go-acme/lego v2.7.2+incompatible
 github.com/go-acme/lego/acme
 github.com/go-acme/lego/acme/api
 github.com/go-acme/lego/acme/api/internal/nonces
