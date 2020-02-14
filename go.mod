@@ -18,7 +18,7 @@ require (
 	github.com/digitalocean/godo v1.30.0
 	github.com/dnsimple/dnsimple-go v0.20.1-0.20181001130357-234ec949d37c
 	github.com/exoscale/egoscale v0.10.5
-	github.com/go-acme/lego v2.7.2-0.20190727050804-58d6d9f4767a+incompatible
+	github.com/go-acme/lego v2.7.2+incompatible
 	github.com/gobwas/glob v0.2.4-0.20181002190808-e7a84e9525fe
 	github.com/golang/protobuf v1.3.3 // indirect
 	github.com/google/go-github v17.0.0+incompatible
