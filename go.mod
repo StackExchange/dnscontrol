@@ -31,24 +31,19 @@ require (
 	github.com/kolo/xmlrpc v0.0.0-20150413191830-0826b98aaa29 // indirect
 	github.com/kr/pretty v0.1.0 // indirect
 	github.com/malexdev/utfutil v0.0.0-20180510171754-00c8d4a8e7a8 // indirect
-	github.com/mattn/go-runewidth v0.0.8 // indirect
 	github.com/miekg/dns v1.1.27
 	github.com/mjibson/esc v0.2.0
 	github.com/namedotcom/go v0.0.0-20180403034216-08470befbe04
-	github.com/olekukonko/tablewriter v0.0.4 // indirect
 	github.com/ovh/go-ovh v0.0.0-20181109152953-ba5adb4cf014
 	github.com/philhug/opensrs-go v0.0.0-20171126225031-9dfa7433020d
 	github.com/prasmussen/gandi-api v0.0.0-20180224132202-58d3d4205661
-	github.com/psampaz/go-mod-outdated v0.5.0 // indirect
 	github.com/renier/xmlrpc v0.0.0-20170708154548-ce4a1a486c03 // indirect
 	github.com/robertkrimen/otto v0.0.0-20191219234010-c382bd3c16ff
 	github.com/smartystreets/goconvey v0.0.0-20190330032615-68dc04aab96a // indirect
 	github.com/softlayer/softlayer-go v0.0.0-20170804160555-5e1c8cccc730
 	github.com/stretchr/testify v1.4.0
-	github.com/tdewolff/buffer v2.0.0+incompatible // indirect
 	github.com/tdewolff/minify v2.3.6+incompatible
 	github.com/tdewolff/parse v2.3.4+incompatible // indirect
-	github.com/tdewolff/strconv v1.0.0 // indirect
 	github.com/tdewolff/test v1.0.6 // indirect
 	github.com/tiramiseb/go-gandi v0.0.0-20200128175142-df8b8e9d23a1
 	github.com/urfave/cli/v2 v2.1.1
