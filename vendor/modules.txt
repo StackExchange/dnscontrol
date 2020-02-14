@@ -73,7 +73,7 @@ github.com/cpuguy83/go-md2man/v2/md2man
 github.com/davecgh/go-spew/spew
 # github.com/dgrijalva/jwt-go v3.2.1-0.20190620180102-5e25c22bd5d6+incompatible
 github.com/dgrijalva/jwt-go
-# github.com/digitalocean/godo v1.17.1-0.20190625192827-3ec0b9ce8cde
+# github.com/digitalocean/godo v1.30.0
 github.com/digitalocean/godo
 # github.com/dimchansky/utfbom v1.1.0
 github.com/dimchansky/utfbom

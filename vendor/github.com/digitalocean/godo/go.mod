@@ -1,6 +1,6 @@
 module github.com/digitalocean/godo
 
-go 1.12
+go 1.13
 
 require (
 	github.com/google/go-querystring v1.0.0
