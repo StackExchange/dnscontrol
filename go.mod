@@ -47,7 +47,7 @@ require (
 	github.com/tdewolff/test v1.0.6 // indirect
 	github.com/tiramiseb/go-gandi v0.0.0-20200128175142-df8b8e9d23a1
 	github.com/urfave/cli/v2 v2.1.1
-	github.com/vultr/govultr v0.1.7
+	github.com/vultr/govultr v0.2.0
 	golang.org/x/crypto v0.0.0-20200210222208-86ce3cb69678 // indirect
 	golang.org/x/mod v0.2.0 // indirect
 	golang.org/x/net v0.0.0-20200202094626-16171245cfb2
