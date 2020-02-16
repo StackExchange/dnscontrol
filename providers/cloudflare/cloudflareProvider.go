@@ -104,6 +104,11 @@ func (c *CloudflareApi) GetZoneRecords(domain string) (models.Records, error) {
 	if err != nil {
 		return nil, err
 	}
+	for _, rec := range records {
+		if rec.TTL == 1 {
+			rec.TTL = 0
+		}
+	}
 	return records, nil
 }
 

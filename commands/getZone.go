@@ -137,7 +137,7 @@ func formatDsl(zonename string, rec *models.RecordConfig, defaultTTL uint32) str
 	target := rec.GetTargetCombined()
 
 	ttlop := ""
-	if rec.TTL != defaultTTL {
+	if rec.TTL != defaultTTL && rec.TTL != 0 {
 		ttlop = fmt.Sprintf(", TTL(%d)", rec.TTL)
 	}
 
