@@ -1,5 +1,78 @@
 # Change Log
 
+## [v1.30.0] - 2020-02-03
+
+- #295 registry: support the created_at field - @adamwg
+- #293 doks: node pool labels - @snormore
+
+## [v1.29.0] - 2019-12-13
+
+- #288 Add Balance Get method - @rbutler
+- #286,#289 Deserialize meta field - @timoreimann
+
+## [v1.28.0] - 2019-12-04
+
+- #282 Add valid Redis eviction policy constants - @bentranter
+- #281 Remove databases info from top-level godoc string - @bentranter
+- #280 Fix VolumeSnapshotResourceType value volumesnapshot -> volume_snapshot - @aqche
+
+## [v1.27.0] - 2019-11-18
+
+- #278 add mysql user auth settings for database users - @gregmankes
+
+## [v1.26.0] - 2019-11-13
+
+- #272 dbaas: get and set mysql sql mode - @mikejholly
+
+## [v1.25.0] - 2019-11-13
+
+- #275 registry/docker-credentials: add support for the read/write parameter - @kamaln7
+- #273 implement the registry/docker-credentials endpoint - @kamaln7
+- #271 Add registry resource - @snormore
+
+## [v1.24.1] - 2019-11-04
+
+- #264 Update isLast to check p.Next - @aqche
+
+## [v1.24.0] - 2019-10-30
+
+- #267 Return []DatabaseFirewallRule in addition to raw response. - @andrewsomething
+
+## [v1.23.1] - 2019-10-30
+
+- #265 add support for getting/setting firewall rules - @gregmankes
+- #262 remove ResolveReference call - @mdanzinger
+- #261 Update CONTRIBUTING.md - @mdanzinger
+
+## [v1.22.0] - 2019-09-24
+
+- #259 Add Kubernetes GetCredentials method - @snormore
+
+## [v1.21.1] - 2019-09-19
+
+- #257 Upgrade to Go 1.13 - @bentranter
+
+## [v1.21.0] - 2019-09-16
+
+- #255 Add DropletID to Kubernetes Node instance - @snormore
+- #254 Add tags to Database, DatabaseReplica - @Zyqsempai
+
+## [v1.20.0] - 2019-09-06
+
+- #252 Add Kubernetes autoscale config fields - @snormore
+- #251 Support unset fields on Kubernetes cluster and node pool updates - @snormore
+- #250 Add Kubernetes GetUser method - @snormore
+
+## [v1.19.0] - 2019-07-19
+
+- #244 dbaas: add private-network-uuid field to create request
+
+## [v1.18.0] - 2019-07-17
+
+- #241 Databases: support for custom VPC UUID on migrate @mikejholly
+- #240 Add the ability to get URN for a Database @stack72
+- #236 Fix omitempty typos in JSON struct tags @amccarthy1
+
 ## [v1.17.0] - 2019-06-21
 
 - #238 Add support for Redis eviction policy in Databases @mikejholly

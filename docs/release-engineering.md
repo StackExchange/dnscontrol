@@ -37,8 +37,8 @@ how it tests that gofmt was run.
 Edit the "Version" variable in `main.go` and commit.
 
 ```
-export PREVVERSION=2.8
-export VERSION=2.9
+export PREVVERSION=2.10.0       <<< Change to the previous version
+export VERSION=2.11.0           <<< Change to the new release version
 git checkout master
 vi main.go
 git commit -m'Release v'"$VERSION" main.go
