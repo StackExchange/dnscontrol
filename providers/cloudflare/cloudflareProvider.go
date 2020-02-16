@@ -94,6 +94,17 @@ func (c *CloudflareApi) GetNameservers(domain string) ([]*models.Nameserver, err
 	return models.StringsToNameservers(ns), nil
 }
 
+func (c *CloudflareApi) ListZones() ([]string, error) {
+	if err := c.fetchDomainList(); err != nil {
+		return nil, err
+	}
+	zones := make([]string, 0, len(c.domainIndex))
+	for d := range c.domainIndex {
+		zones = append(zones, d)
+	}
+	return zones, nil
+}
+
 // GetZoneRecords gets the records of a zone and returns them in RecordConfig format.
 func (c *CloudflareApi) GetZoneRecords(domain string) (models.Records, error) {
 	id, err := c.getDomainID(domain)

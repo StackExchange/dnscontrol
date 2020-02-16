@@ -91,21 +91,32 @@ func GetZone(args GetZoneArgs) error {
 		return err
 	}
 
+	// decide which zones we need to convert
+	zones := []string{args.ZoneName}
 	if args.ZoneName == "all" {
 		lister, ok := provider.(providers.ZoneLister)
 		if !ok {
 			return fmt.Errorf("provider type %s cannot list zones to use the 'all' feature", args.ProviderName)
 		}
-		fmt.Println(lister.ListDomains())
+		zones, err = lister.ListZones()
+		if err != nil {
+			return err
+		}
 	}
 
-	recs, err := provider.GetZoneRecords(args.ZoneName)
-	if err != nil {
-		return err
+	// actually fetch all of the records
+	zoneRecs := make([]models.Records, len(zones))
+	for i, zone := range zones {
+		recs, err := provider.GetZoneRecords(zone)
+		if err != nil {
+			return err
+		}
+		zoneRecs[i] = recs
 	}
 
 	// Write it out:
-	z := prettyzone.PrettySort(recs, args.ZoneName, 0)
+
+	// first open output stream and print initial header (if applicable)
 	w := os.Stdout
 	if args.OutputFile != "" {
 		w, err = os.Create(args.OutputFile)
@@ -114,29 +125,36 @@ func GetZone(args GetZoneArgs) error {
 		return err
 	}
 	defer w.Close()
-
-	switch args.OutputFormat {
-	case "pretty":
-		prettyzone.WriteZoneFileRC(w, z.Records, args.ZoneName)
-	case "dsl":
-		fmt.Fprintf(w, `var CHANGEME = NewDnsProvider("%s", "%s");`+"\n",
-			args.CredName, args.ProviderName)
-		fmt.Fprintf(w, `D("%s", REG_CHANGEME,`+"\n", args.ZoneName)
-		fmt.Fprintf(w, "\tDnsProvider(CHANGEME)")
-		for _, rec := range recs {
-			fmt.Fprint(w, formatDsl(args.ZoneName, rec, uint32(args.DefaultTTL)))
-		}
-		fmt.Fprint(w, "\n)\n")
-	case "tsv":
-		for _, rec := range recs {
-			fmt.Fprintf(w,
-				fmt.Sprintf("%s\t%d\tIN\t%s\t%s\n",
-					rec.Name, rec.TTL, rec.Type, rec.GetTargetCombined()))
-		}
-	default:
-		return fmt.Errorf("format %q unknown", args.OutputFile)
+	if args.OutputFormat == "dsl" {
+		fmt.Fprintf(w, `var %s = NewDnsProvider("%s", "%s");`+"\n",
+			args.CredName, args.CredName, args.ProviderName)
 	}
 
+	for i, recs := range zoneRecs {
+		zoneName := zones[i]
+		// now print all zones
+		z := prettyzone.PrettySort(recs, zoneName, 0)
+		switch args.OutputFormat {
+		case "pretty":
+			prettyzone.WriteZoneFileRC(w, z.Records, zoneName)
+		case "dsl":
+
+			fmt.Fprintf(w, `D("%s", REG_CHANGEME,`+"\n", zoneName)
+			fmt.Fprintf(w, "\tDnsProvider(%s)", args.CredName)
+			for _, rec := range recs {
+				fmt.Fprint(w, formatDsl(zoneName, rec, uint32(args.DefaultTTL)))
+			}
+			fmt.Fprint(w, "\n)\n")
+		case "tsv":
+			for _, rec := range recs {
+				fmt.Fprintf(w,
+					fmt.Sprintf("%s\t%d\tIN\t%s\t%s\n",
+						rec.Name, rec.TTL, rec.Type, rec.GetTargetCombined()))
+			}
+		default:
+			return fmt.Errorf("format %q unknown", args.OutputFile)
+		}
+	}
 	return nil
 }
 
