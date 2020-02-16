@@ -91,6 +91,14 @@ func GetZone(args GetZoneArgs) error {
 		return err
 	}
 
+	if args.ZoneName == "all" {
+		lister, ok := provider.(providers.ZoneLister)
+		if !ok {
+			return fmt.Errorf("provider type %s cannot list zones to use the 'all' feature", args.ProviderName)
+		}
+		fmt.Println(lister.ListDomains())
+	}
+
 	recs, err := provider.GetZoneRecords(args.ZoneName)
 	if err != nil {
 		return err
