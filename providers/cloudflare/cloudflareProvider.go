@@ -47,7 +47,7 @@ var features = providers.DocumentationNotes{
 	providers.DocCreateDomains:       providers.Can(),
 	providers.DocDualHost:            providers.Cannot("Cloudflare will not work well in situations where it is not the only DNS server"),
 	providers.DocOfficiallySupported: providers.Can(),
-	providers.CanGetZone:             providers.Unimplemented(),
+	providers.CanGetZone:             providers.Can(),
 }
 
 func init() {
@@ -95,31 +95,48 @@ func (c *CloudflareApi) GetNameservers(domain string) ([]*models.Nameserver, err
 }
 
 // GetZoneRecords gets the records of a zone and returns them in RecordConfig format.
-func (client *CloudflareApi) GetZoneRecords(domain string) (models.Records, error) {
-	return nil, fmt.Errorf("not implemented")
-	// This enables the get-zones subcommand.
-	// Implement this by extracting the code from GetDomainCorrections into
-	// a single function.  For most providers this should be relatively easy.
+func (c *CloudflareApi) GetZoneRecords(domain string) (models.Records, error) {
+	id, err := c.getDomainID(domain)
+	if err != nil {
+		return nil, err
+	}
+	records, err := c.getRecordsForDomain(id, domain)
+	if err != nil {
+		return nil, err
+	}
+	for _, rec := range records {
+		if rec.TTL == 1 {
+			rec.TTL = 0
+		}
+	}
+	return records, nil
+}
+
+func (c *CloudflareApi) getDomainID(name string) (string, error) {
+	if c.domainIndex == nil {
+		if err := c.fetchDomainList(); err != nil {
+			return "", err
+		}
+	}
+	id, ok := c.domainIndex[name]
+	if !ok {
+		return "", fmt.Errorf("%s not listed in zones for cloudflare account", name)
+	}
+	return id, nil
 }
 
 // GetDomainCorrections returns a list of corrections to update a domain.
 func (c *CloudflareApi) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Correction, error) {
-	if c.domainIndex == nil {
-		if err := c.fetchDomainList(); err != nil {
-			return nil, err
-		}
+	id, err := c.getDomainID(dc.Name)
+	if err != nil {
+		return nil, err
 	}
-	id, ok := c.domainIndex[dc.Name]
-	if !ok {
-		return nil, fmt.Errorf("%s not listed in zones for cloudflare account", dc.Name)
-	}
-
-	if err := c.preprocessConfig(dc); err != nil {
+	records, err := c.getRecordsForDomain(id, dc.Name)
+	if err != nil {
 		return nil, err
 	}
 
-	records, err := c.getRecordsForDomain(id, dc.Name)
-	if err != nil {
+	if err := c.preprocessConfig(dc); err != nil {
 		return nil, err
 	}
 	for i := len(records) - 1; i >= 0; i-- {
