@@ -24,6 +24,12 @@ type DomainCreator interface {
 	EnsureDomainExists(domain string) error
 }
 
+// DomainLister should be implemented by providers that have the ability to list the zones they manage. This facilitates using the "get-zone"
+// command for "all" zones.
+type ZoneLister interface {
+	ListZones() ([]string, error)
+}
+
 // RegistrarInitializer is a function to create a registrar. Function will be passed the unprocessed json payload from the configuration file for the given provider.
 type RegistrarInitializer func(map[string]string) (Registrar, error)
 
