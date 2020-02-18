@@ -566,7 +566,7 @@ func makeTests(t *testing.T) []*TestCase {
 	)
 
 	// TXT (empty)
-	if !(*providerToRun == "CLOUDFLAREAPI" || *providerToRun == "AZURE_DNS") {
+	if *providerToRun != "CLOUDFLAREAPI" {
 		tests = append(tests, tc("Empty"),
 			tc("TXT with empty str", txt("foo1", "")),
 		)

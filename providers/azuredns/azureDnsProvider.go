@@ -377,7 +377,10 @@ func recordToNative(recordKey models.RecordKey, recordConfig []*models.RecordCon
 			if recordSet.TxtRecords == nil {
 				recordSet.TxtRecords = &[]adns.TxtRecord{}
 			}
-			*recordSet.TxtRecords = append(*recordSet.TxtRecords, adns.TxtRecord{Value: &rec.TxtStrings})
+			// Empty TXT record needs to have no value set in it's properties
+			if rec.TxtStrings[0] != "" {
+				*recordSet.TxtRecords = append(*recordSet.TxtRecords, adns.TxtRecord{Value: &rec.TxtStrings})
+			}
 		case "MX":
 			if recordSet.MxRecords == nil {
 				recordSet.MxRecords = &[]adns.MxRecord{}
