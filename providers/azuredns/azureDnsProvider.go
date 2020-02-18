@@ -79,8 +79,9 @@ func (a *azureDnsProvider) getZones() error {
 	}
 	zonesResult := zonesIterator.Response()
 	for _, z := range *zonesResult.Value {
+		zone := z
 		domain := strings.TrimSuffix(*z.Name, ".")
-		a.zones[domain] = &z
+		a.zones[domain] = &zone
 	}
 
 	return nil
@@ -266,7 +267,7 @@ func nativeToRecords(set *adns.RecordSet, origin string) []*models.RecordConfig 
 	var results []*models.RecordConfig
 	switch rtype := *set.Type; rtype {
 	case "Microsoft.Network/dnszones/A":
-		if *set.ARecords != nil {
+		if set.ARecords != nil {
 			for _, rec := range *set.ARecords {
 				rc := &models.RecordConfig{TTL: uint32(*set.TTL)}
 				rc.SetLabelFromFQDN(*set.Fqdn, origin)
@@ -276,7 +277,7 @@ func nativeToRecords(set *adns.RecordSet, origin string) []*models.RecordConfig 
 			}
 		}
 	case "Microsoft.Network/dnszones/AAAA":
-		if *set.AaaaRecords != nil {
+		if set.AaaaRecords != nil {
 			for _, rec := range *set.AaaaRecords {
 				rc := &models.RecordConfig{TTL: uint32(*set.TTL)}
 				rc.SetLabelFromFQDN(*set.Fqdn, origin)
