@@ -565,12 +565,18 @@ func makeTests(t *testing.T) []*TestCase {
 		tc("Create a 255-byte TXT", txt("foo", "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA")),
 	)
 
-	// TXT (empty)
-	if *providerToRun != "CLOUDFLAREAPI" {
-		tests = append(tests, tc("Empty"),
-			tc("TXT with empty str", txt("foo1", "")),
-		)
-	}
+	// FUTURE(tal): https://github.com/StackExchange/dnscontrol/issues/598
+	// We decided that handling an empty TXT string is not a
+	// requirement. In the future we might make it a "capability" to
+	// indicate which vendors fully support RFC 1035, which requires
+	// that a TXT string can be empty.
+	//
+	//	// TXT (empty)
+	//	if (provider supports empty txt strings) {
+	//		tests = append(tests, tc("Empty"),
+	//			tc("TXT with empty str", txt("foo1", "")),
+	//		)
+	//	}
 
 	// TXTMulti
 	if !providers.ProviderHasCapability(*providerToRun, providers.CanUseTXTMulti) {
