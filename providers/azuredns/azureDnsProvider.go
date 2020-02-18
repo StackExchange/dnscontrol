@@ -62,23 +62,33 @@ var features = providers.DocumentationNotes{
 	providers.CanUseNAPTR:            providers.Cannot(),
 	providers.CanUseSSHFP:            providers.Cannot(),
 	providers.CanUseTLSA:             providers.Cannot(),
-	providers.CanGetZones:            providers.Unimplemented(),
+	providers.CanGetZones:            providers.Can(),
 }
 
 func init() {
 	providers.RegisterDomainServiceProviderType("AZURE_DNS", newAzureDnsDsp, features)
 }
 
-func (a *azureDnsProvider) getZones() error {
-	a.zones = make(map[string]*adns.Zone)
-
+func (a *azureDnsProvider) getExistingZones() (*adns.ZoneListResult, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), 6000*time.Second)
 	defer cancel()
 	zonesIterator, zonesErr := a.zonesClient.ListByResourceGroupComplete(ctx, *a.resourceGroup, to.Int32Ptr(100))
 	if zonesErr != nil {
-		return zonesErr
+		return nil, zonesErr
 	}
 	zonesResult := zonesIterator.Response()
+	return &zonesResult, nil
+}
+
+func (a *azureDnsProvider) getZones() error {
+	a.zones = make(map[string]*adns.Zone)
+
+	zonesResult, err := a.getExistingZones()
+
+	if err != nil {
+		return err
+	}
+
 	for _, z := range *zonesResult.Value {
 		zone := z
 		domain := strings.TrimSuffix(*z.Name, ".")
@@ -111,12 +121,51 @@ func (a *azureDnsProvider) GetNameservers(domain string) ([]*models.Nameserver, 
 	return ns, nil
 }
 
+func (a *azureDnsProvider) ListZones() ([]string, error) {
+	zonesResult, err := a.getExistingZones()
+
+	if err != nil {
+		return nil, err
+	}
+
+	var zones []string
+
+	for _, z := range *zonesResult.Value {
+		domain := strings.TrimSuffix(*z.Name, ".")
+		zones = append(zones, domain)
+	}
+
+	return zones, nil
+}
+
 // GetZoneRecords gets the records of a zone and returns them in RecordConfig format.
-func (client *azureDnsProvider) GetZoneRecords(domain string) (models.Records, error) {
-	return nil, fmt.Errorf("not implemented")
-	// This enables the get-zones subcommand.
-	// Implement this by extracting the code from GetDomainCorrections into
-	// a single function.  For most providers this should be relatively easy.
+func (a *azureDnsProvider) GetZoneRecords(domain string) (models.Records, error) {
+	existingRecords, _, _, err := a.GetExistingRecords(domain)
+	if err != nil {
+		return nil, err
+	}
+	return existingRecords, nil
+}
+
+func (a *azureDnsProvider) GetExistingRecords(domain string) (models.Records, []*adns.RecordSet, string, error) {
+	zone, ok := a.zones[domain]
+	if !ok {
+		return nil, nil, "", errNoExist{domain}
+	}
+	var zoneName string
+	zoneName = *zone.Name
+	records, err := a.fetchRecordSets(zoneName)
+	if err != nil {
+		return nil, nil, "", err
+	}
+
+	var existingRecords models.Records
+	for _, set := range records {
+		existingRecords = append(existingRecords, nativeToRecords(set, zoneName)...)
+	}
+
+	models.PostProcessRecords(existingRecords)
+	return existingRecords, records, zoneName, nil
 }
 
 func (a *azureDnsProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Correction, error) {
@@ -127,23 +176,11 @@ func (a *azureDnsProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*mod
 	}
 
 	var corrections []*models.Correction
-	zone, ok := a.zones[dc.Name]
-	if !ok {
-		return nil, errNoExist{dc.Name}
-	}
-	var zoneName string
-	zoneName = *zone.Name
-	records, err := a.fetchRecordSets(zoneName)
+
+	existingRecords, records, zoneName, err := a.GetExistingRecords(dc.Name)
 	if err != nil {
 		return nil, err
 	}
-
-	var existingRecords []*models.RecordConfig
-	for _, set := range records {
-		existingRecords = append(existingRecords, nativeToRecords(set, dc.Name)...)
-	}
-
-	models.PostProcessRecords(existingRecords)
 
 	differ := diff.New(dc)
 	namesToUpdate := differ.ChangedGroups(existingRecords)
