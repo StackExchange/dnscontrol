@@ -27,6 +27,7 @@ var features = providers.DocumentationNotes{
 	providers.DocCreateDomains:       providers.Cannot("New domains require registration"),
 	providers.DocDualHost:            providers.Can(),
 	providers.DocOfficiallySupported: providers.Cannot(),
+	providers.CanGetZones:            providers.Unimplemented(),
 }
 
 func newOVH(m map[string]string, metadata json.RawMessage) (*ovhProvider, error) {
@@ -60,7 +61,7 @@ func init() {
 func (c *ovhProvider) GetNameservers(domain string) ([]*models.Nameserver, error) {
 	_, ok := c.zones[domain]
 	if !ok {
-		return nil, fmt.Errorf("%s not listed in zones for ovh account", domain)
+		return nil, fmt.Errorf("'%s' not a zone in ovh account", domain)
 	}
 
 	ns, err := c.fetchRegistrarNS(domain)
@@ -77,6 +78,14 @@ type errNoExist struct {
 
 func (e errNoExist) Error() string {
 	return fmt.Sprintf("Domain %s not found in your ovh account", e.domain)
+}
+
+// GetZoneRecords gets the records of a zone and returns them in RecordConfig format.
+func (client *ovhProvider) GetZoneRecords(domain string) (models.Records, error) {
+	return nil, fmt.Errorf("not implemented")
+	// This enables the get-zones subcommand.
+	// Implement this by extracting the code from GetDomainCorrections into
+	// a single function.  For most providers this should be relatively easy.
 }
 
 func (c *ovhProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Correction, error) {

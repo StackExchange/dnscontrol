@@ -34,6 +34,7 @@ var features = providers.DocumentationNotes{
 	providers.CanUseSSHFP:            providers.Can(),
 	providers.DocCreateDomains:       providers.Can(),
 	providers.DocOfficiallySupported: providers.Cannot(),
+	providers.CanGetZones:            providers.Unimplemented(),
 }
 
 func init() {
@@ -64,6 +65,14 @@ func NewProvider(m map[string]string, metadata json.RawMessage) (providers.DNSSe
 
 	_, err := client.Account.GetInfo(context.Background())
 	return &Provider{client, token}, err
+}
+
+// GetZoneRecords gets the records of a zone and returns them in RecordConfig format.
+func (client *Provider) GetZoneRecords(domain string) (models.Records, error) {
+	return nil, fmt.Errorf("not implemented")
+	// This enables the get-zones subcommand.
+	// Implement this by extracting the code from GetDomainCorrections into
+	// a single function.  For most providers this should be relatively easy.
 }
 
 // GetDomainCorrections gets the corrections for a DomainConfig.

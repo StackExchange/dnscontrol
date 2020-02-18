@@ -33,6 +33,7 @@ var features = providers.DocumentationNotes{
 	providers.CantUseNOPURGE:         providers.Cannot(),
 	providers.DocCreateDomains:       providers.Cannot("Can only manage domains registered through their service"),
 	providers.DocOfficiallySupported: providers.Cannot(),
+	providers.CanGetZones:            providers.Unimplemented(),
 }
 
 func init() {
@@ -58,7 +59,7 @@ func (c *GandiApi) getDomainInfo(domain string) (*gandidomain.DomainInfo, error)
 	}
 	_, ok := c.domainIndex[domain]
 	if !ok {
-		return nil, fmt.Errorf("%s not listed in zones for gandi account", domain)
+		return nil, fmt.Errorf("'%s' not a zone in gandi account", domain)
 	}
 	return c.fetchDomainInfo(domain)
 }
@@ -74,6 +75,14 @@ func (c *GandiApi) GetNameservers(domain string) ([]*models.Nameserver, error) {
 		ns = append(ns, &models.Nameserver{Name: nsname})
 	}
 	return ns, nil
+}
+
+// GetZoneRecords gets the records of a zone and returns them in RecordConfig format.
+func (client *GandiApi) GetZoneRecords(domain string) (models.Records, error) {
+	return nil, fmt.Errorf("not implemented")
+	// This enables the get-zones subcommand.
+	// Implement this by extracting the code from GetDomainCorrections into
+	// a single function.  For most providers this should be relatively easy.
 }
 
 // GetDomainCorrections returns a list of corrections recommended for this domain.

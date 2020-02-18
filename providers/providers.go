@@ -24,6 +24,13 @@ type DomainCreator interface {
 	EnsureDomainExists(domain string) error
 }
 
+// DomainLister should be implemented by providers that have the
+// ability to list the zones they manage. This facilitates using the
+// "get-zones" command for "all" zones.
+type ZoneLister interface {
+	ListZones() ([]string, error)
+}
+
 // RegistrarInitializer is a function to create a registrar. Function will be passed the unprocessed json payload from the configuration file for the given provider.
 type RegistrarInitializer func(map[string]string) (Registrar, error)
 
@@ -83,6 +90,14 @@ func (n None) GetRegistrarCorrections(dc *models.DomainConfig) ([]*models.Correc
 // GetNameservers returns the current nameservers for a domain.
 func (n None) GetNameservers(string) ([]*models.Nameserver, error) {
 	return nil, nil
+}
+
+// GetZoneRecords gets the records of a zone and returns them in RecordConfig format.
+func (client None) GetZoneRecords(domain string) (models.Records, error) {
+	return nil, fmt.Errorf("not implemented")
+	// This enables the get-zones subcommand.
+	// Implement this by extracting the code from GetDomainCorrections into
+	// a single function.  For most providers this should be relatively easy.
 }
 
 // GetDomainCorrections returns corrections to update a domain.

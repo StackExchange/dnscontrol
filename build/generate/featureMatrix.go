@@ -42,6 +42,7 @@ func generateFeatureMatrix() error {
 			{"dual host", "This provider is recommended for use in 'dual hosting' scenarios. Usually this means the provider allows full control over the apex NS records"},
 			{"create-domains", "This means the provider can automatically create domains that do not currently exist on your account. The 'dnscontrol create-domains' command will initialize any missing domains"},
 			{"no_purge", "indicates you can use NO_PURGE macro to prevent deleting records not managed by dnscontrol. A few providers that generate the entire zone from scratch have a problem implementing this."},
+			{"get-zones", "indicates the dnscontrol get-zones subcommand is implemented."},
 		},
 	}
 	for _, p := range providerTypes {
@@ -81,6 +82,7 @@ func generateFeatureMatrix() error {
 		setCap("SSHFP", providers.CanUseSSHFP)
 		setCap("TLSA", providers.CanUseTLSA)
 		setCap("TXTMulti", providers.CanUseTXTMulti)
+		setCap("get-zones", providers.CanGetZones)
 		setDoc("dual host", providers.DocDualHost, false)
 		setDoc("create-domains", providers.DocCreateDomains, true)
 

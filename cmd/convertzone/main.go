@@ -46,7 +46,7 @@ import (
 	"github.com/miekg/dns"
 	"github.com/miekg/dns/dnsutil"
 
-	"github.com/StackExchange/dnscontrol/v2/providers/bind"
+	"github.com/StackExchange/dnscontrol/v2/pkg/prettyzone"
 	"github.com/StackExchange/dnscontrol/v2/providers/octodns/octoyaml"
 )
 
@@ -83,7 +83,7 @@ func main() {
 
 	switch *flagOutfmt {
 	case "pretty":
-		bind.WriteZoneFile(os.Stdout, recs, zonename)
+		prettyzone.WriteZoneFileRR(os.Stdout, recs, zonename, 0)
 	case "dsl":
 		fmt.Printf(`D("%s", %s, DnsProvider(%s)`, zonename, *flagRegText, *flagProviderText)
 		rrFormat(zonename, filename, recs, defTTL, true)
@@ -149,11 +149,6 @@ func readOctodns(zonename string, r io.Reader, filename string) []dns.RR {
 		l = append(l, x.ToRR())
 	}
 	return l
-}
-
-// pretty outputs the zonefile using the prettyprinter.
-func writePretty(zonename string, recs []dns.RR, defaultTTL uint32) {
-	bind.WriteZoneFile(os.Stdout, recs, zonename)
 }
 
 // rrFormat outputs the zonefile in either DSL or TSV format.

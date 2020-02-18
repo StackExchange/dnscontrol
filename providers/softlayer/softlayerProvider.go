@@ -22,7 +22,8 @@ type SoftLayer struct {
 }
 
 var features = providers.DocumentationNotes{
-	providers.CanUseSRV: providers.Can(),
+	providers.CanUseSRV:   providers.Can(),
+	providers.CanGetZones: providers.Unimplemented(),
 }
 
 func init() {
@@ -50,6 +51,14 @@ func (s *SoftLayer) GetNameservers(domain string) ([]*models.Nameserver, error) 
 	// Always use the same nameservers for softlayer
 	nservers := []string{"ns1.softlayer.com", "ns2.softlayer.com"}
 	return models.StringsToNameservers(nservers), nil
+}
+
+// GetZoneRecords gets the records of a zone and returns them in RecordConfig format.
+func (client *SoftLayer) GetZoneRecords(domain string) (models.Records, error) {
+	return nil, fmt.Errorf("not implemented")
+	// This enables the get-zones subcommand.
+	// Implement this by extracting the code from GetDomainCorrections into
+	// a single function.  For most providers this should be relatively easy.
 }
 
 // GetDomainCorrections returns corrections to update a domain.

@@ -88,6 +88,7 @@ func NewLinode(m map[string]string, metadata json.RawMessage) (providers.DNSServ
 var features = providers.DocumentationNotes{
 	providers.DocDualHost:            providers.Cannot(),
 	providers.DocOfficiallySupported: providers.Cannot(),
+	providers.CanGetZones:            providers.Unimplemented(),
 }
 
 func init() {
@@ -98,6 +99,14 @@ func init() {
 // GetNameservers returns the nameservers for a domain.
 func (api *LinodeApi) GetNameservers(domain string) ([]*models.Nameserver, error) {
 	return models.StringsToNameservers(defaultNameServerNames), nil
+}
+
+// GetZoneRecords gets the records of a zone and returns them in RecordConfig format.
+func (client *LinodeApi) GetZoneRecords(domain string) (models.Records, error) {
+	return nil, fmt.Errorf("not implemented")
+	// This enables the get-zones subcommand.
+	// Implement this by extracting the code from GetDomainCorrections into
+	// a single function.  For most providers this should be relatively easy.
 }
 
 // GetDomainCorrections returns the corrections for a domain.
@@ -116,7 +125,7 @@ func (api *LinodeApi) GetDomainCorrections(dc *models.DomainConfig) ([]*models.C
 	}
 	domainID, ok := api.domainIndex[dc.Name]
 	if !ok {
-		return nil, fmt.Errorf("%s not listed in domains for Linode account", dc.Name)
+		return nil, fmt.Errorf("'%s' not a zone in Linode account", dc.Name)
 	}
 
 	records, err := api.getRecords(domainID)
