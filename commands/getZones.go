@@ -15,7 +15,7 @@ import (
 var _ = cmd(catUtils, func() *cli.Command {
 	var args GetZoneArgs
 	return &cli.Command{
-		Name:  "get-zone",
+		Name:  "get-zones",
 		Usage: "gets a zone from a provider (stand-alone)",
 		Action: func(ctx *cli.Context) error {
 			if ctx.NArg() != 3 {
@@ -28,18 +28,20 @@ var _ = cmd(catUtils, func() *cli.Command {
 			return exit(GetZone(args))
 		},
 		Flags:     args.flags(),
-		UsageText: "main get-zone [command options] credkey provider zone",
+		UsageText: "dnscontrol get-zones [command options] credkey provider zone [...]",
 		Description: `Download a zone from a provider.  This is a stand-alone utility.
 
 ARGUMENTS:
    credkey:  The name used in creds.json (first parameter to NewDnsProvider() in dnsconfig.js)
    provider: The name of the provider (second parameter to NewDnsProvider() in dnsconfig.js)
-   zone:     The name of the zone (domain) to download
+   zone:     One or more zones (domains) to download; or "all".
 
 EXAMPLES:
-   dnscontrol get-zone myr53 ROUTE53 example.com
-   dnscontrol get-zone -format=tsv bind BIND example.com
-   dnscontrol get-zone -format=dsl -out=draft.js glcoud GCLOUD example.com`,
+   dnscontrol get-zones myr53 ROUTE53 example.com
+   dnscontrol get-zones gmain GANDI_V5 example.comn other.com
+   dnscontrol get-zones cfmain CLOUDFLAREAPI all
+   dnscontrol get-zones -format=tsv bind BIND example.com
+   dnscontrol get-zones -format=dsl -out=draft.js glcoud GCLOUD example.com`,
 	}
 }())
 
@@ -76,7 +78,7 @@ func (args *GetZoneArgs) flags() []cli.Flag {
 	return flags
 }
 
-// GetZone contains all data/flags needed to run get-zone, independently of CLI.
+// GetZone contains all data/flags needed to run get-zones, independently of CLI.
 func GetZone(args GetZoneArgs) error {
 	var providerConfigs map[string]map[string]string
 	var err error
