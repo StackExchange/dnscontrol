@@ -246,7 +246,7 @@ github.com/tiramiseb/go-gandi/internal/client
 github.com/tiramiseb/go-gandi/livedns
 # github.com/urfave/cli/v2 v2.1.1
 github.com/urfave/cli/v2
-# github.com/vultr/govultr v0.1.7
+# github.com/vultr/govultr v0.2.0
 github.com/vultr/govultr
 # go.opencensus.io v0.22.0
 go.opencensus.io

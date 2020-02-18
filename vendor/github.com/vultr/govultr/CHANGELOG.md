@@ -1,9 +1,12 @@
 # Change Log
 
+## [v0.2.0](https://github.com/vultr/govultr/compare/v0.1.7..v0.2.0) (2020-02-06)
+### Enhancement
+*  Added support for Object Storage [#39](https://github.com/vultr/govultr/pull/39)
+
 ## [v0.1.7](https://github.com/vultr/govultr/compare/v0.1.6..v0.1.7) (2019-11-11)
 ### Enhancement
 *  Version number was missing in v0.1.6 - Attempt was made to fix however it will not work. Cutting new release to remedy this.
-
 
 ## [v0.1.6](https://github.com/vultr/govultr/compare/v0.1.5..v0.1.6) (2019-11-07)
 ### Enhancement
