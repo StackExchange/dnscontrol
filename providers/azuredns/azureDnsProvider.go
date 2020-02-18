@@ -309,12 +309,20 @@ func nativeToRecords(set *adns.RecordSet, origin string) []*models.RecordConfig 
 			results = append(results, rc)
 		}
 	case "Microsoft.Network/dnszones/TXT":
-		for _, rec := range *set.TxtRecords {
+		if len(*set.TxtRecords) == 0 { // Empty String Record Parsing
 			rc := &models.RecordConfig{TTL: uint32(*set.TTL)}
 			rc.SetLabelFromFQDN(*set.Fqdn, origin)
 			rc.Type = "TXT"
-			_ = rc.SetTargetTXTs(*rec.Value)
+			_ = rc.SetTargetTXT("")
 			results = append(results, rc)
+		} else {
+			for _, rec := range *set.TxtRecords {
+				rc := &models.RecordConfig{TTL: uint32(*set.TTL)}
+				rc.SetLabelFromFQDN(*set.Fqdn, origin)
+				rc.Type = "TXT"
+				_ = rc.SetTargetTXTs(*rec.Value)
+				results = append(results, rc)
+			}
 		}
 	case "Microsoft.Network/dnszones/MX":
 		for _, rec := range *set.MxRecords {
@@ -378,7 +386,7 @@ func recordToNative(recordKey models.RecordKey, recordConfig []*models.RecordCon
 				recordSet.TxtRecords = &[]adns.TxtRecord{}
 			}
 			// Empty TXT record needs to have no value set in it's properties
-			if rec.TxtStrings[0] != "" {
+			if !(len(rec.TxtStrings) == 1 && rec.TxtStrings[0] == "") {
 				*recordSet.TxtRecords = append(*recordSet.TxtRecords, adns.TxtRecord{Value: &rec.TxtStrings})
 			}
 		case "MX":
