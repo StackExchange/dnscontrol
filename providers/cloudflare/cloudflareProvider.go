@@ -131,7 +131,7 @@ func (c *CloudflareApi) getDomainID(name string) (string, error) {
 	}
 	id, ok := c.domainIndex[name]
 	if !ok {
-		return "", fmt.Errorf("%s not listed in zones for cloudflare account", name)
+		return "", fmt.Errorf("'%s' not a zone in cloudflare account", name)
 	}
 	return id, nil
 }

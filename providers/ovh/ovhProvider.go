@@ -61,7 +61,7 @@ func init() {
 func (c *ovhProvider) GetNameservers(domain string) ([]*models.Nameserver, error) {
 	_, ok := c.zones[domain]
 	if !ok {
-		return nil, fmt.Errorf("%s not listed in zones for ovh account", domain)
+		return nil, fmt.Errorf("'%s' not a zone in ovh account", domain)
 	}
 
 	ns, err := c.fetchRegistrarNS(domain)

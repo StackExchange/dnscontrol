@@ -80,7 +80,7 @@ func (c *api) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Correctio
 	}
 	domainID, ok := c.domainIndex[dc.Name]
 	if !ok {
-		return nil, fmt.Errorf("%s not listed in domains for ClouDNS account", dc.Name)
+		return nil, fmt.Errorf("'%s' not a zone in ClouDNS account", dc.Name)
 	}
 
 	records, err := c.getRecords(domainID)

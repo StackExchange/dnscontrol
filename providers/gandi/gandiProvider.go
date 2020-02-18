@@ -59,7 +59,7 @@ func (c *GandiApi) getDomainInfo(domain string) (*gandidomain.DomainInfo, error)
 	}
 	_, ok := c.domainIndex[domain]
 	if !ok {
-		return nil, fmt.Errorf("%s not listed in zones for gandi account", domain)
+		return nil, fmt.Errorf("'%s' not a zone in gandi account", domain)
 	}
 	return c.fetchDomainInfo(domain)
 }

@@ -125,7 +125,7 @@ func (api *LinodeApi) GetDomainCorrections(dc *models.DomainConfig) ([]*models.C
 	}
 	domainID, ok := api.domainIndex[dc.Name]
 	if !ok {
-		return nil, fmt.Errorf("%s not listed in domains for Linode account", dc.Name)
+		return nil, fmt.Errorf("'%s' not a zone in Linode account", dc.Name)
 	}
 
 	records, err := api.getRecords(domainID)
