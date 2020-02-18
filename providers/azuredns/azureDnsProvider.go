@@ -140,14 +140,14 @@ func (a *azureDnsProvider) ListZones() ([]string, error) {
 
 // GetZoneRecords gets the records of a zone and returns them in RecordConfig format.
 func (a *azureDnsProvider) GetZoneRecords(domain string) (models.Records, error) {
-	existingRecords, _, _, err := a.GetExistingRecords(domain)
+	existingRecords, _, _, err := a.getExistingRecords(domain)
 	if err != nil {
 		return nil, err
 	}
 	return existingRecords, nil
 }
 
-func (a *azureDnsProvider) GetExistingRecords(domain string) (models.Records, []*adns.RecordSet, string, error) {
+func (a *azureDnsProvider) getExistingRecords(domain string) (models.Records, []*adns.RecordSet, string, error) {
 	zone, ok := a.zones[domain]
 	if !ok {
 		return nil, nil, "", errNoExist{domain}
@@ -177,7 +177,7 @@ func (a *azureDnsProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*mod
 
 	var corrections []*models.Correction
 
-	existingRecords, records, zoneName, err := a.GetExistingRecords(dc.Name)
+	existingRecords, records, zoneName, err := a.getExistingRecords(dc.Name)
 	if err != nil {
 		return nil, err
 	}
