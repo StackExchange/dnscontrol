@@ -3,8 +3,8 @@ cloud.google.com/go v0.34.0/go.mod h1:aQUYkXzVsufM+DwF1aE+0xfcU+56JwCaLick0ClmMT
 cloud.google.com/go v0.38.0/go.mod h1:990N+gfupTy94rShfmMCWGDn0LpTmnzTp2qbd1dvSRU=
 cloud.google.com/go v0.41.1-0.20190703172311-335e9e09b93e h1:E4NknbTPW+1SVNhlxaJolqh+W5FM4q7KsiR2zv8tVNg=
 cloud.google.com/go v0.41.1-0.20190703172311-335e9e09b93e/go.mod h1:05T3xsDVUIfRZP+EM2ftPky59P2i67FhEj6hjkpO5GE=
-github.com/Azure/azure-sdk-for-go v32.6.0+incompatible h1:PgaVceWF5idtJajyt1rzq1cep6eRPJ8+8hs4GnNzTo0=
-github.com/Azure/azure-sdk-for-go v32.6.0+incompatible/go.mod h1:9XXNKU+eRnpl9moKnB4QOLf1HestfXbmab5FXxiDBjc=
+github.com/Azure/azure-sdk-for-go v39.1.0+incompatible h1:ZwZgxG+8jLMJbY2NN1e8wiqE+/j4GiuHEc7U5wvPR94=
+github.com/Azure/azure-sdk-for-go v39.1.0+incompatible/go.mod h1:9XXNKU+eRnpl9moKnB4QOLf1HestfXbmab5FXxiDBjc=
 github.com/Azure/go-autorest/autorest v0.9.0/go.mod h1:xyHB1BMZT0cuDHU7I0+g046+BFDTQ8rEZB0s4Yfa6bI=
 github.com/Azure/go-autorest/autorest v0.9.3/go.mod h1:GsRuLYvwzLjjjRoWEIyMUaYq8GNUx2nRB378IPt/1p0=
 github.com/Azure/go-autorest/autorest v0.9.4 h1:1cM+NmKw91+8h5vfjgzK4ZGLuN72k87XVZBWyGwNjUM=

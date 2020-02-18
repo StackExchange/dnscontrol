@@ -4,7 +4,7 @@ go 1.13
 
 require (
 	cloud.google.com/go v0.41.1-0.20190703172311-335e9e09b93e // indirect
-	github.com/Azure/azure-sdk-for-go v32.6.0+incompatible
+	github.com/Azure/azure-sdk-for-go v39.1.0+incompatible
 	github.com/Azure/go-autorest/autorest v0.9.4 // indirect
 	github.com/Azure/go-autorest/autorest/azure/auth v0.4.2
 	github.com/Azure/go-autorest/autorest/to v0.3.0

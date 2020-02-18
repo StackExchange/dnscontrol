@@ -79,8 +79,9 @@ func (a *azureDnsProvider) getZones() error {
 	}
 	zonesResult := zonesIterator.Response()
 	for _, z := range *zonesResult.Value {
+		zone := z
 		domain := strings.TrimSuffix(*z.Name, ".")
-		a.zones[domain] = &z
+		a.zones[domain] = &zone
 	}
 
 	return nil
@@ -266,7 +267,7 @@ func nativeToRecords(set *adns.RecordSet, origin string) []*models.RecordConfig 
 	var results []*models.RecordConfig
 	switch rtype := *set.Type; rtype {
 	case "Microsoft.Network/dnszones/A":
-		if *set.ARecords != nil {
+		if set.ARecords != nil {
 			for _, rec := range *set.ARecords {
 				rc := &models.RecordConfig{TTL: uint32(*set.TTL)}
 				rc.SetLabelFromFQDN(*set.Fqdn, origin)
@@ -276,7 +277,7 @@ func nativeToRecords(set *adns.RecordSet, origin string) []*models.RecordConfig 
 			}
 		}
 	case "Microsoft.Network/dnszones/AAAA":
-		if *set.AaaaRecords != nil {
+		if set.AaaaRecords != nil {
 			for _, rec := range *set.AaaaRecords {
 				rc := &models.RecordConfig{TTL: uint32(*set.TTL)}
 				rc.SetLabelFromFQDN(*set.Fqdn, origin)
@@ -308,12 +309,20 @@ func nativeToRecords(set *adns.RecordSet, origin string) []*models.RecordConfig 
 			results = append(results, rc)
 		}
 	case "Microsoft.Network/dnszones/TXT":
-		for _, rec := range *set.TxtRecords {
+		if len(*set.TxtRecords) == 0 { // Empty String Record Parsing
 			rc := &models.RecordConfig{TTL: uint32(*set.TTL)}
 			rc.SetLabelFromFQDN(*set.Fqdn, origin)
 			rc.Type = "TXT"
-			_ = rc.SetTargetTXTs(*rec.Value)
+			_ = rc.SetTargetTXT("")
 			results = append(results, rc)
+		} else {
+			for _, rec := range *set.TxtRecords {
+				rc := &models.RecordConfig{TTL: uint32(*set.TTL)}
+				rc.SetLabelFromFQDN(*set.Fqdn, origin)
+				rc.Type = "TXT"
+				_ = rc.SetTargetTXTs(*rec.Value)
+				results = append(results, rc)
+			}
 		}
 	case "Microsoft.Network/dnszones/MX":
 		for _, rec := range *set.MxRecords {
@@ -376,7 +385,10 @@ func recordToNative(recordKey models.RecordKey, recordConfig []*models.RecordCon
 			if recordSet.TxtRecords == nil {
 				recordSet.TxtRecords = &[]adns.TxtRecord{}
 			}
-			*recordSet.TxtRecords = append(*recordSet.TxtRecords, adns.TxtRecord{Value: &rec.TxtStrings})
+			// Empty TXT record needs to have no value set in it's properties
+			if !(len(rec.TxtStrings) == 1 && rec.TxtStrings[0] == "") {
+				*recordSet.TxtRecords = append(*recordSet.TxtRecords, adns.TxtRecord{Value: &rec.TxtStrings})
+			}
 		case "MX":
 			if recordSet.MxRecords == nil {
 				recordSet.MxRecords = &[]adns.MxRecord{}
