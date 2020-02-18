@@ -28,6 +28,7 @@ var features = providers.DocumentationNotes{
 	providers.DocCreateDomains:       providers.Cannot("New domains require registration"),
 	providers.DocDualHost:            providers.Cannot("Apex NS records not editable"),
 	providers.DocOfficiallySupported: providers.Can(),
+	providers.CanGetZones:            providers.Unimplemented(),
 }
 
 func newReg(conf map[string]string) (providers.Registrar, error) {

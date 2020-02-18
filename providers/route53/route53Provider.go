@@ -20,10 +20,11 @@ import (
 )
 
 type route53Provider struct {
-	client        *r53.Route53
-	registrar     *r53d.Route53Domains
-	delegationSet *string
-	zones         map[string]*r53.HostedZone
+	client          *r53.Route53
+	registrar       *r53d.Route53Domains
+	delegationSet   *string
+	zones           map[string]*r53.HostedZone
+	originalRecords []*r53.ResourceRecordSet
 }
 
 func newRoute53Reg(conf map[string]string) (providers.Registrar, error) {
@@ -73,6 +74,7 @@ var features = providers.DocumentationNotes{
 	providers.CanUseTXTMulti:         providers.Can(),
 	providers.CanUseCAA:              providers.Can(),
 	providers.CanUseRoute53Alias:     providers.Can(),
+	providers.CanGetZones:            providers.Can(),
 }
 
 func init() {
@@ -169,25 +171,42 @@ func (r *route53Provider) GetNameservers(domain string) ([]*models.Nameserver, e
 	return ns, nil
 }
 
-func (r *route53Provider) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Correction, error) {
-	dc.Punycode()
+// GetZoneRecords gets the records of a zone and returns them in RecordConfig format.
+func (r *route53Provider) GetZoneRecords(domain string) (models.Records, error) {
 
-	var corrections = []*models.Correction{}
-	zone, ok := r.zones[dc.Name]
-	// add zone if it doesn't exist
+	zone, ok := r.zones[domain]
 	if !ok {
-		return nil, errNoExist{dc.Name}
+		return nil, errNoExist{domain}
 	}
 
 	records, err := r.fetchRecordSets(zone.Id)
 	if err != nil {
 		return nil, err
 	}
+	r.originalRecords = records
 
 	var existingRecords = []*models.RecordConfig{}
 	for _, set := range records {
-		existingRecords = append(existingRecords, nativeToRecords(set, dc.Name)...)
+		existingRecords = append(existingRecords, nativeToRecords(set, domain)...)
 	}
+	return existingRecords, nil
+}
+
+func (r *route53Provider) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Correction, error) {
+	dc.Punycode()
+
+	var corrections = []*models.Correction{}
+
+	existingRecords, err := r.GetZoneRecords(dc.Name)
+	if err != nil {
+		return nil, err
+	}
+
+	zone, ok := r.zones[dc.Name]
+	if !ok {
+		return nil, errNoExist{dc.Name}
+	}
+
 	for _, want := range dc.Records {
 		// update zone_id to current zone.id if not specified by the user
 		if want.Type == "R53_ALIAS" && want.R53Alias["zone_id"] == "" {
@@ -235,7 +254,7 @@ func (r *route53Provider) GetDomainCorrections(dc *models.DomainConfig) ([]*mode
 			chg.Action = sPtr("DELETE")
 			delDesc = append(delDesc, strings.Join(namesToUpdate[k], "\n"))
 			// on delete just submit the original resource set we got from r53.
-			for _, r := range records {
+			for _, r := range r.originalRecords {
 				if unescape(r.Name) == k.NameFQDN && (*r.Type == k.Type || k.Type == "R53_ALIAS_"+*r.Type) {
 					rrset = r
 					break

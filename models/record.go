@@ -305,6 +305,16 @@ func (rc *RecordConfig) Key() RecordKey {
 // Records is a list of *RecordConfig.
 type Records []*RecordConfig
 
+// HasRecordTypeName returns True if there is a record with this rtype and name.
+func (recs Records) HasRecordTypeName(rtype, name string) bool {
+	for _, r := range recs {
+		if r.Type == rtype && r.Name == name {
+			return true
+		}
+	}
+	return false
+}
+
 // FQDNMap returns a map of all LabelFQDNs. Useful for making a
 // truthtable of labels that exist in Records.
 func (r Records) FQDNMap() (m map[string]bool) {

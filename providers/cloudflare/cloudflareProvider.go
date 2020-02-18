@@ -47,6 +47,7 @@ var features = providers.DocumentationNotes{
 	providers.DocCreateDomains:       providers.Can(),
 	providers.DocDualHost:            providers.Cannot("Cloudflare will not work well in situations where it is not the only DNS server"),
 	providers.DocOfficiallySupported: providers.Can(),
+	providers.CanGetZones:            providers.Can(),
 }
 
 func init() {
@@ -93,24 +94,60 @@ func (c *CloudflareApi) GetNameservers(domain string) ([]*models.Nameserver, err
 	return models.StringsToNameservers(ns), nil
 }
 
-// GetDomainCorrections returns a list of corrections to update a domain.
-func (c *CloudflareApi) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Correction, error) {
-	if c.domainIndex == nil {
-		if err := c.fetchDomainList(); err != nil {
-			return nil, err
+func (c *CloudflareApi) ListZones() ([]string, error) {
+	if err := c.fetchDomainList(); err != nil {
+		return nil, err
+	}
+	zones := make([]string, 0, len(c.domainIndex))
+	for d := range c.domainIndex {
+		zones = append(zones, d)
+	}
+	return zones, nil
+}
+
+// GetZoneRecords gets the records of a zone and returns them in RecordConfig format.
+func (c *CloudflareApi) GetZoneRecords(domain string) (models.Records, error) {
+	id, err := c.getDomainID(domain)
+	if err != nil {
+		return nil, err
+	}
+	records, err := c.getRecordsForDomain(id, domain)
+	if err != nil {
+		return nil, err
+	}
+	for _, rec := range records {
+		if rec.TTL == 1 {
+			rec.TTL = 0
 		}
 	}
-	id, ok := c.domainIndex[dc.Name]
-	if !ok {
-		return nil, fmt.Errorf("%s not listed in zones for cloudflare account", dc.Name)
-	}
+	return records, nil
+}
 
-	if err := c.preprocessConfig(dc); err != nil {
+func (c *CloudflareApi) getDomainID(name string) (string, error) {
+	if c.domainIndex == nil {
+		if err := c.fetchDomainList(); err != nil {
+			return "", err
+		}
+	}
+	id, ok := c.domainIndex[name]
+	if !ok {
+		return "", fmt.Errorf("'%s' not a zone in cloudflare account", name)
+	}
+	return id, nil
+}
+
+// GetDomainCorrections returns a list of corrections to update a domain.
+func (c *CloudflareApi) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Correction, error) {
+	id, err := c.getDomainID(dc.Name)
+	if err != nil {
+		return nil, err
+	}
+	records, err := c.getRecordsForDomain(id, dc.Name)
+	if err != nil {
 		return nil, err
 	}
 
-	records, err := c.getRecordsForDomain(id, dc.Name)
-	if err != nil {
+	if err := c.preprocessConfig(dc); err != nil {
 		return nil, err
 	}
 	for i := len(records) - 1; i >= 0; i-- {

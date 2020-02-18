@@ -244,9 +244,10 @@ The [Migrating]({{site.github.url}}/migrating) doc has advice
 about converting from other systems.
 You can manually create the `D()` statements, or you can
 generate them automatically using the
-[convertzone](https://github.com/StackExchange/dnscontrol/blob/master/cmd/convertzone/README.md)
-utility that is included in the DNSControl repo (it converts
-BIND-style zone files and OctoDNS-style YAML files to DNSControl's language).
+[dnscontrol get-zones]({{site.github.url}}/get-zones)
+command to import the zone from (most) providers and output it as code
+that can be added to `dnsconfig.js` and used with very little
+modification.
 
 Now you can make change to the domain(s)  and run `dnscontrol preview`
 
