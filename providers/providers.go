@@ -24,8 +24,9 @@ type DomainCreator interface {
 	EnsureDomainExists(domain string) error
 }
 
-// DomainLister should be implemented by providers that have the ability to list the zones they manage. This facilitates using the "get-zone"
-// command for "all" zones.
+// DomainLister should be implemented by providers that have the
+// ability to list the zones they manage. This facilitates using the
+// "get-zones" command for "all" zones.
 type ZoneLister interface {
 	ListZones() ([]string, error)
 }

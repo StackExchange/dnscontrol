@@ -244,7 +244,7 @@ The [Migrating]({{site.github.url}}/migrating) doc has advice
 about converting from other systems.
 You can manually create the `D()` statements, or you can
 generate them automatically using the
-[dnscontrol get-zone]({{site.github.url}}/get-zone)
+[dnscontrol get-zones]({{site.github.url}}/get-zones)
 command to import the zone from (most) providers and output it as code
 that can be added to `dnsconfig.js` and used with very little
 modification.

@@ -36,7 +36,7 @@ var features = providers.DocumentationNotes{
 	providers.DocCreateDomains:       providers.Cannot("Requires domain registered through their service"),
 	providers.DocDualHost:            providers.Cannot("Doesn't allow control of apex NS records"),
 	providers.DocOfficiallySupported: providers.Cannot(),
-	providers.CanGetZone:             providers.Unimplemented(),
+	providers.CanGetZones:            providers.Unimplemented(),
 }
 
 func init() {

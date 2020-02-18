@@ -46,7 +46,7 @@ var features = providers.DocumentationNotes{
 	providers.CantUseNOPURGE:         providers.Cannot(),
 	providers.DocCreateDomains:       providers.Cannot("Can only manage domains registered through their service"),
 	providers.DocOfficiallySupported: providers.Cannot(),
-	providers.CanGetZone:             providers.Can(),
+	providers.CanGetZones:            providers.Can(),
 }
 
 // Section 2: Define the API client.

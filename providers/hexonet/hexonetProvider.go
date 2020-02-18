@@ -29,7 +29,7 @@ var features = providers.DocumentationNotes{
 	providers.DocCreateDomains:       providers.Can(),
 	providers.DocDualHost:            providers.Can(),
 	providers.DocOfficiallySupported: providers.Cannot("Actively maintained provider module."),
-	providers.CanGetZone:             providers.Unimplemented(),
+	providers.CanGetZones:            providers.Unimplemented(),
 }
 
 func newProvider(conf map[string]string) (*HXClient, error) {

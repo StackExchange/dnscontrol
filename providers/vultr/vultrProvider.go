@@ -34,7 +34,7 @@ var features = providers.DocumentationNotes{
 	providers.CanUseSSHFP:            providers.Can(),
 	providers.DocCreateDomains:       providers.Can(),
 	providers.DocOfficiallySupported: providers.Cannot(),
-	providers.CanGetZone:             providers.Unimplemented(),
+	providers.CanGetZones:            providers.Unimplemented(),
 }
 
 func init() {

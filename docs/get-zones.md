@@ -49,8 +49,8 @@ To add this to a provider:
 
 In the `*Provider.go` file, change the setting to implemented.
 
-* OLD: `  providers.CanGetZone:     providers.Unimplemented(),`
-* NEW: `  providers.CanGetZone:     providers.Can(),`
+* OLD: `  providers.CanGetZones:     providers.Unimplemented(),`
+* NEW: `  providers.CanGetZones:     providers.Can(),`
 
 2. Update the docs
 

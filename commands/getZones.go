@@ -15,16 +15,17 @@ import (
 var _ = cmd(catUtils, func() *cli.Command {
 	var args GetZoneArgs
 	return &cli.Command{
-		Name:  "get-zones",
-		Usage: "gets a zone from a provider (stand-alone)",
+		Name:    "get-zones",
+		Aliases: []string{"get-zone"},
+		Usage:   "gets a zone from a provider (stand-alone)",
 		Action: func(ctx *cli.Context) error {
-			if ctx.NArg() != 3 {
+			if ctx.NArg() < 3 {
 				return cli.NewExitError("Arguments should be: zonename credskey providername (Ex: example.com r53 ROUTE53)", 1)
 
 			}
 			args.CredName = ctx.Args().Get(0)
 			args.ProviderName = ctx.Args().Get(1)
-			args.ZoneName = ctx.Args().Get(2)
+			args.ZoneNames = ctx.Args().Slice()[2:]
 			return exit(GetZone(args))
 		},
 		Flags:     args.flags(),
@@ -35,6 +36,12 @@ ARGUMENTS:
    credkey:  The name used in creds.json (first parameter to NewDnsProvider() in dnsconfig.js)
    provider: The name of the provider (second parameter to NewDnsProvider() in dnsconfig.js)
    zone:     One or more zones (domains) to download; or "all".
+
+FORMATS:
+   --format=dsl      dnsconfig.js format (a decent first draft)
+	 --format=pretty   BIND Zonefile format
+	 --format=tsv      TAB separated value (useful for AWK)
+	 --format=tsvfqdn  tsv with FQDNs (useful for multiple zones)
 
 EXAMPLES:
    dnscontrol get-zones myr53 ROUTE53 example.com
@@ -47,13 +54,13 @@ EXAMPLES:
 
 // GetZoneArgs args required for the create-domain subcommand.
 type GetZoneArgs struct {
-	GetCredentialsArgs        // Args related to creds.json
-	ZoneName           string // The zone to get
-	CredName           string // key in creds.json
-	ProviderName       string // provider name: BIND, GANDI_V5, etc or "-"
-	OutputFormat       string // Output format
-	OutputFile         string // Filename to send output ("" means stdout)
-	DefaultTTL         int    // default TTL for providers where it is unknown
+	GetCredentialsArgs          // Args related to creds.json
+	CredName           string   // key in creds.json
+	ProviderName       string   // provider name: BIND, GANDI_V5, etc or "-"
+	ZoneNames          []string // The zones to get
+	OutputFormat       string   // Output format
+	OutputFile         string   // Filename to send output ("" means stdout)
+	DefaultTTL         int      // default TTL for providers where it is unknown
 }
 
 func (args *GetZoneArgs) flags() []cli.Flag {
@@ -62,7 +69,7 @@ func (args *GetZoneArgs) flags() []cli.Flag {
 		Name:        "format",
 		Destination: &args.OutputFormat,
 		Value:       "pretty",
-		Usage:       `Output format: dsl tsv pretty`,
+		Usage:       `Output format: dsl pretty tsv tsvfqdn`,
 	})
 	flags = append(flags, &cli.StringFlag{
 		Name:        "out",
@@ -94,8 +101,8 @@ func GetZone(args GetZoneArgs) error {
 	}
 
 	// decide which zones we need to convert
-	zones := []string{args.ZoneName}
-	if args.ZoneName == "all" {
+	zones := args.ZoneNames
+	if len(args.ZoneNames) == 1 && args.ZoneNames[0] == "all" {
 		lister, ok := provider.(providers.ZoneLister)
 		if !ok {
 			return fmt.Errorf("provider type %s cannot list zones to use the 'all' feature", args.ProviderName)
@@ -138,7 +145,9 @@ func GetZone(args GetZoneArgs) error {
 		z := prettyzone.PrettySort(recs, zoneName, 0)
 		switch args.OutputFormat {
 		case "pretty":
+			fmt.Fprintf(w, "$ORIGIN %s.\n", zoneName)
 			prettyzone.WriteZoneFileRC(w, z.Records, zoneName)
+			fmt.Fprintln(w)
 		case "dsl":
 
 			fmt.Fprintf(w, `D("%s", REG_CHANGEME,`+"\n", zoneName)
@@ -152,6 +161,12 @@ func GetZone(args GetZoneArgs) error {
 				fmt.Fprintf(w,
 					fmt.Sprintf("%s\t%d\tIN\t%s\t%s\n",
 						rec.Name, rec.TTL, rec.Type, rec.GetTargetCombined()))
+			}
+		case "tsvfqdn":
+			for _, rec := range recs {
+				fmt.Fprintf(w,
+					fmt.Sprintf("%s\t%d\tIN\t%s\t%s\n",
+						rec.NameFQDN, rec.TTL, rec.Type, rec.GetTargetCombined()))
 			}
 		default:
 			return fmt.Errorf("format %q unknown", args.OutputFile)

@@ -50,8 +50,8 @@ const (
 	// CanUseRoute53Alias indicates the provider support the specific R53_ALIAS records that only the Route53 provider supports
 	CanUseRoute53Alias
 
-	// CanGetZoe indicates the provider supports the get-zone subcommand.
-	CanGetZone
+	// CanGetZoe indicates the provider supports the get-zones subcommand.
+	CanGetZones
 )
 
 var providerCapabilities = map[string]map[Capability]bool{}

@@ -49,7 +49,7 @@ var features = providers.DocumentationNotes{
 	providers.CanUseCAA:              providers.Can(),
 	providers.CanUseTLSA:             providers.Can(),
 	providers.CanUsePTR:              providers.Unimplemented(),
-	providers.CanGetZone:             providers.Unimplemented(),
+	providers.CanGetZones:            providers.Unimplemented(),
 }
 
 func init() {

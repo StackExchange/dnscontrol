@@ -74,7 +74,7 @@ var features = providers.DocumentationNotes{
 	providers.CanUseTXTMulti:         providers.Can(),
 	providers.CanUseCAA:              providers.Can(),
 	providers.CanUseRoute53Alias:     providers.Can(),
-	providers.CanGetZone:             providers.Can(),
+	providers.CanGetZones:            providers.Can(),
 }
 
 func init() {

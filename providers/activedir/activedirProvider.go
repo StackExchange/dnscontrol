@@ -24,7 +24,7 @@ var features = providers.DocumentationNotes{
 	providers.DocCreateDomains:       providers.Cannot("AD depends on the zone already existing on the dns server"),
 	providers.DocDualHost:            providers.Cannot("This driver does not manage NS records, so should not be used for dual-host scenarios"),
 	providers.DocOfficiallySupported: providers.Can(),
-	providers.CanGetZone:             providers.Unimplemented(),
+	providers.CanGetZones:            providers.Unimplemented(),
 }
 
 // Register with the dnscontrol system.

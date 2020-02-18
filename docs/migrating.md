@@ -42,8 +42,8 @@ For a small domain you can probably create the `D()` statements by
 hand, possibly with your text editor's search and replace functions.
 However, where's the fun in that?
 
-The `dnscontrol get-zone` subcommand
-[documented here]({{site.github.url}}/get-zone)
+The `dnscontrol get-zones` subcommand
+[documented here]({{site.github.url}}/get-zones)
 can automate 90% of the conversion for you. It
 reads BIND-style zonefiles, or will use a providers API to gather the DNS records.  It will then output the records in a variety of formats, including
 the as a `D()` statement
@@ -56,8 +56,8 @@ Example 1: Read a BIND zonefile
 Most DNS Service Providers have an 'export to zonefile' feature.
 
 ```
-dnscontrol get-zone -format=dsl bind BIND example.com
-dnscontrol get-zone -format=dsl -out=draft.js bind BIND example.com
+dnscontrol get-zones -format=dsl bind BIND example.com
+dnscontrol get-zones -format=dsl -out=draft.js bind BIND example.com
 ```
 
 This will read the file `zones/example.com.zone`. The system is a bit
@@ -75,8 +75,8 @@ Suppose your `creds.json` file has the name `global_aws`
 for the provider `ROUTE53`.  Your command would look like this:
 
 ```
-dnscontrol get-zone -format=dsl global_aws ROUTE53 example.com
-dnscontrol get-zone -format=dsl -out=draft.js global_aws ROUTE53 example.com
+dnscontrol get-zones -format=dsl global_aws ROUTE53 example.com
+dnscontrol get-zones -format=dsl -out=draft.js global_aws ROUTE53 example.com
 ```
 
 Add the contents of `draft.js` to `dnsconfig.js` and edit it as needed.
@@ -86,7 +86,7 @@ Edit dnsconfig.js until `dnscontrol preview` shows no errors and
 no changes to be made. This means the conversion of your old DNS
 data is correct.
 
-`dnscontrol get-zone` makes a guess at what to do with NS records.
+`dnscontrol get-zones` makes a guess at what to do with NS records.
 An NS record at the apex is turned into a NAMESERVER() call, the
 rest are left as NS().  You probably want to check each of them for
 correctness.
@@ -98,7 +98,7 @@ Of course, once `dnscontrol preview` runs cleanly, you can do any
 kind of cleanups you want.  In fact, they should be easier to do
 now that you are using DNSControl!
 
-If `dnscontrol get-zone` could have done a better job, please
+If `dnscontrol get-zones` could have done a better job, please
 [let us know](https://github.com/StackExchange/dnscontrol/issues)!
 
 ## Example workflow
@@ -108,7 +108,7 @@ to convert a zone. Lines that start with `#` are comments.
 
     # Note this command uses ">>" to append to dnsconfig.js.  Do
     # not use ">" as that will erase the existing file.
-    dnscontrol get-zone -format=dsl -out=draft.js bind BIND foo.com
+    dnscontrol get-zones -format=dsl -out=draft.js bind BIND foo.com
     cat >>dnsconfig.js draft.js   # Append to dnsconfig.js
     #
     dnscontrol preview

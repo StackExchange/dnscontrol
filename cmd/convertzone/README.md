@@ -1,5 +1,5 @@
 
-!!! NOTE: This command has been replaced by the "dnscontrol get-zone"
+!!! NOTE: This command has been replaced by the "dnscontrol get-zones"
 !!! subcommand. It can do everything convertzone does and more, with
 !!! fewer bugs.  This command will be removed from the distribution soon.
 

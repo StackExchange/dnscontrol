@@ -69,8 +69,8 @@ var features = providers.DocumentationNotes{
 	// Digitalocean support CAA records, except
 	// ";" value with issue/issuewild records:
 	// https://www.digitalocean.com/docs/networking/dns/how-to/create-caa-records/
-	providers.CanUseCAA:  providers.Can(),
-	providers.CanGetZone: providers.Unimplemented(),
+	providers.CanUseCAA:   providers.Can(),
+	providers.CanGetZones: providers.Unimplemented(),
 }
 
 func init() {

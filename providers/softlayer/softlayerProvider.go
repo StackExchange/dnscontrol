@@ -22,8 +22,8 @@ type SoftLayer struct {
 }
 
 var features = providers.DocumentationNotes{
-	providers.CanUseSRV:  providers.Can(),
-	providers.CanGetZone: providers.Unimplemented(),
+	providers.CanUseSRV:   providers.Can(),
+	providers.CanGetZones: providers.Unimplemented(),
 }
 
 func init() {

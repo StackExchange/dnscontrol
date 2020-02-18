@@ -62,7 +62,7 @@ var features = providers.DocumentationNotes{
 	providers.CanUseNAPTR:            providers.Cannot(),
 	providers.CanUseSSHFP:            providers.Cannot(),
 	providers.CanUseTLSA:             providers.Cannot(),
-	providers.CanGetZone:             providers.Unimplemented(),
+	providers.CanGetZones:            providers.Unimplemented(),
 }
 
 func init() {

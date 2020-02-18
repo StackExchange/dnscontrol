@@ -27,7 +27,7 @@ var features = providers.DocumentationNotes{
 	providers.DocCreateDomains:       providers.Cannot("New domains require registration"),
 	providers.DocDualHost:            providers.Can(),
 	providers.DocOfficiallySupported: providers.Cannot(),
-	providers.CanGetZone:             providers.Unimplemented(),
+	providers.CanGetZones:            providers.Unimplemented(),
 }
 
 func newOVH(m map[string]string, metadata json.RawMessage) (*ovhProvider, error) {

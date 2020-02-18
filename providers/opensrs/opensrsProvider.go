@@ -17,7 +17,7 @@ var docNotes = providers.DocumentationNotes{
 	providers.DocCreateDomains:       providers.Cannot(),
 	providers.DocOfficiallySupported: providers.Cannot(),
 	providers.CanUseTLSA:             providers.Cannot(),
-	providers.CanGetZone:             providers.Unimplemented(),
+	providers.CanGetZones:            providers.Unimplemented(),
 }
 
 func init() {
