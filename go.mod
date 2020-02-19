@@ -16,7 +16,7 @@ require (
 	github.com/cpuguy83/go-md2man/v2 v2.0.0 // indirect
 	github.com/dgrijalva/jwt-go v3.2.1-0.20190620180102-5e25c22bd5d6+incompatible // indirect
 	github.com/digitalocean/godo v1.30.0
-	github.com/dnsimple/dnsimple-go v0.20.1-0.20181001130357-234ec949d37c
+	github.com/dnsimple/dnsimple-go v0.31.0
 	github.com/exoscale/egoscale v0.10.5
 	github.com/go-acme/lego v2.7.2+incompatible
 	github.com/gobwas/glob v0.2.4-0.20181002190808-e7a84e9525fe
