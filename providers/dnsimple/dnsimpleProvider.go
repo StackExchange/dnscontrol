@@ -25,7 +25,7 @@ var features = providers.DocumentationNotes{
 	providers.DocCreateDomains:       providers.Cannot(),
 	providers.DocDualHost:            providers.Cannot("DNSimple does not allow sufficient control over the apex NS records"),
 	providers.DocOfficiallySupported: providers.Cannot(),
-	providers.CanGetZones:            providers.Unimplemented(),
+	providers.CanGetZones:            providers.Can(),
 }
 
 func init() {
@@ -56,17 +56,7 @@ func (c *DnsimpleApi) GetNameservers(domainName string) ([]*models.Nameserver, e
 
 // GetZoneRecords gets the records of a zone and returns them in RecordConfig format.
 func (client *DnsimpleApi) GetZoneRecords(domain string) (models.Records, error) {
-	return nil, fmt.Errorf("not implemented")
-	// This enables the get-zones subcommand.
-	// Implement this by extracting the code from GetDomainCorrections into
-	// a single function.  For most providers this should be relatively easy.
-}
-
-// GetDomainCorrections returns corrections that update a domain.
-func (c *DnsimpleApi) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Correction, error) {
-	corrections := []*models.Correction{}
-	dc.Punycode()
-	records, err := c.getRecords(dc.Name)
+	records, err := client.getRecords(domain)
 	if err != nil {
 		return nil, err
 	}
@@ -91,7 +81,7 @@ func (c *DnsimpleApi) GetDomainCorrections(dc *models.DomainConfig) ([]*models.C
 			TTL:      uint32(r.TTL),
 			Original: r,
 		}
-		rec.SetLabel(r.Name, dc.Name)
+		rec.SetLabel(r.Name, domain)
 		switch rtype := r.Type; rtype {
 		case "ALIAS", "URL":
 			rec.Type = r.Type
@@ -109,11 +99,23 @@ func (c *DnsimpleApi) GetDomainCorrections(dc *models.DomainConfig) ([]*models.C
 				panic(fmt.Errorf("unparsable record received from dnsimple: %w", err))
 			}
 		default:
-			if err := rec.PopulateFromString(r.Type, r.Content, dc.Name); err != nil {
+			if err := rec.PopulateFromString(r.Type, r.Content, domain); err != nil {
 				panic(fmt.Errorf("unparsable record received from dnsimple: %w", err))
 			}
 		}
 		actual = append(actual, rec)
+	}
+
+	return actual, nil
+}
+
+// GetDomainCorrections returns corrections that update a domain.
+func (c *DnsimpleApi) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Correction, error) {
+	corrections := []*models.Correction{}
+	dc.Punycode()
+	actual, err := c.GetZoneRecords(dc.Name)
+	if err != nil {
+		return nil, err
 	}
 	removeOtherNS(dc)
 
