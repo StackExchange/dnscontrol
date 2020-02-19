@@ -72,8 +72,8 @@ func (client *DnsimpleApi) GetZoneRecords(domain string) (models.Records, error)
 		if r.Type == "CNAME" || r.Type == "MX" || r.Type == "ALIAS" {
 			r.Content += "."
 		}
-		// dnsimple adds these odd txt records that mirror the alias records.
-		// they seem to manage them on deletes and things, so we'll just pretend they don't exist
+		// DNSimple adds TXT records that mirror the alias records.
+		// They manage them on ALIAS updates, so pretend they don't exist
 		if r.Type == "TXT" && strings.HasPrefix(r.Content, "ALIAS for ") {
 			continue
 		}
