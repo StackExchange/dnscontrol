@@ -70,7 +70,7 @@ var features = providers.DocumentationNotes{
 	// ";" value with issue/issuewild records:
 	// https://www.digitalocean.com/docs/networking/dns/how-to/create-caa-records/
 	providers.CanUseCAA:   providers.Can(),
-	providers.CanGetZones: providers.Unimplemented(),
+	providers.CanGetZones: providers.Can(),
 }
 
 func init() {
@@ -97,11 +97,22 @@ func (api *DoApi) GetNameservers(domain string) ([]*models.Nameserver, error) {
 }
 
 // GetZoneRecords gets the records of a zone and returns them in RecordConfig format.
-func (client *DoApi) GetZoneRecords(domain string) (models.Records, error) {
-	return nil, fmt.Errorf("not implemented")
-	// This enables the get-zones subcommand.
-	// Implement this by extracting the code from GetDomainCorrections into
-	// a single function.  For most providers this should be relatively easy.
+func (api *DoApi) GetZoneRecords(domain string) (models.Records, error) {
+	records, err := getRecords(api, domain)
+	if err != nil {
+		return nil, err
+	}
+
+	var existingRecords []*models.RecordConfig
+	for i := range records {
+		r := toRc(domain, &records[i])
+		if r.Type == "SOA" {
+			continue
+		}
+		existingRecords = append(existingRecords, r)
+	}
+
+	return existingRecords, nil
 }
 
 // GetDomainCorrections returns a list of corretions for the  domain.
@@ -109,18 +120,9 @@ func (api *DoApi) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Corre
 	ctx := context.Background()
 	dc.Punycode()
 
-	records, err := getRecords(api, dc.Name)
+	existingRecords, err := api.GetZoneRecords(dc.Name)
 	if err != nil {
 		return nil, err
-	}
-
-	var existingRecords []*models.RecordConfig
-	for i := range records {
-		r := toRc(dc, &records[i])
-		if r.Type == "SOA" {
-			continue
-		}
-		existingRecords = append(existingRecords, r)
 	}
 
 	// Normalize
@@ -200,9 +202,9 @@ func getRecords(api *DoApi, name string) ([]godo.DomainRecord, error) {
 	return records, nil
 }
 
-func toRc(dc *models.DomainConfig, r *godo.DomainRecord) *models.RecordConfig {
+func toRc(domain string, r *godo.DomainRecord) *models.RecordConfig {
 	// This handles "@" etc.
-	name := dnsutil.AddOrigin(r.Name, dc.Name)
+	name := dnsutil.AddOrigin(r.Name, domain)
 
 	target := r.Data
 	// Make target FQDN (#rtype_variations)
@@ -210,11 +212,11 @@ func toRc(dc *models.DomainConfig, r *godo.DomainRecord) *models.RecordConfig {
 		// If target is the domainname, e.g. cname foo.example.com -> example.com,
 		// DO returns "@" on read even if fqdn was written.
 		if target == "@" {
-			target = dc.Name
+			target = domain
 		} else if target == "." {
 			target = "" // don't append another dot to null records
 		}
-		target = dnsutil.AddOrigin(target+".", dc.Name)
+		target = dnsutil.AddOrigin(target+".", domain)
 		// FIXME(tlim): The AddOrigin should be a no-op.
 		// Test whether or not it is actually needed.
 	}
@@ -230,7 +232,7 @@ func toRc(dc *models.DomainConfig, r *godo.DomainRecord) *models.RecordConfig {
 		CaaTag:       r.Tag,
 		CaaFlag:      uint8(r.Flags),
 	}
-	t.SetLabelFromFQDN(name, dc.Name)
+	t.SetLabelFromFQDN(name, domain)
 	t.SetTarget(target)
 	switch rtype := r.Type; rtype {
 	case "TXT":
