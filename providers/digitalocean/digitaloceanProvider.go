@@ -214,11 +214,9 @@ func toRc(domain string, r *godo.DomainRecord) *models.RecordConfig {
 		if target == "@" {
 			target = domain
 		} else if target == "." {
-			target = "" // don't append another dot to null records
+			target = ""
 		}
-		target = dnsutil.AddOrigin(target+".", domain)
-		// FIXME(tlim): The AddOrigin should be a no-op.
-		// Test whether or not it is actually needed.
+		target = target + "."
 	}
 
 	t := &models.RecordConfig{
