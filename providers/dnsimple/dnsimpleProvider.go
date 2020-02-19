@@ -61,7 +61,7 @@ func (client *DnsimpleApi) GetZoneRecords(domain string) (models.Records, error)
 		return nil, err
 	}
 
-	var actual []*models.RecordConfig
+	var cleanedRecords models.Records
 	for _, r := range records {
 		if r.Type == "SOA" || r.Type == "NS" {
 			continue
@@ -103,10 +103,10 @@ func (client *DnsimpleApi) GetZoneRecords(domain string) (models.Records, error)
 				panic(fmt.Errorf("unparsable record received from dnsimple: %w", err))
 			}
 		}
-		actual = append(actual, rec)
+		cleanedRecords = append(cleanedRecords, rec)
 	}
 
-	return actual, nil
+	return cleanedRecords, nil
 }
 
 // GetDomainCorrections returns corrections that update a domain.
