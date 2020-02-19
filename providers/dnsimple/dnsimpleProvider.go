@@ -63,7 +63,7 @@ func (client *DnsimpleApi) GetZoneRecords(domain string) (models.Records, error)
 
 	var cleanedRecords models.Records
 	for _, r := range records {
-		if r.Type == "SOA" || r.Type == "NS" {
+		if r.Type == "SOA" {
 			continue
 		}
 		if r.Name == "" {
@@ -113,10 +113,11 @@ func (client *DnsimpleApi) GetZoneRecords(domain string) (models.Records, error)
 func (c *DnsimpleApi) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Correction, error) {
 	corrections := []*models.Correction{}
 	dc.Punycode()
-	actual, err := c.GetZoneRecords(dc.Name)
+	records, err := c.GetZoneRecords(dc.Name)
 	if err != nil {
 		return nil, err
 	}
+	actual := removeNS(records)
 	removeOtherNS(dc)
 
 	// Normalize
@@ -151,6 +152,16 @@ func (c *DnsimpleApi) GetDomainCorrections(dc *models.DomainConfig) ([]*models.C
 	}
 
 	return corrections, nil
+}
+
+func removeNS(records models.Records) models.Records {
+	var noNameServers models.Records
+	for _, r := range records {
+		if r.Type != "NS" {
+			noNameServers = append(noNameServers, r)
+		}
+	}
+	return noNameServers
 }
 
 // GetRegistrarCorrections returns corrections that update a domain's registrar.
