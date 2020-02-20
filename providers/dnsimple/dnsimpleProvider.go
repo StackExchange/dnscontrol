@@ -25,7 +25,7 @@ var features = providers.DocumentationNotes{
 	providers.DocCreateDomains:       providers.Cannot(),
 	providers.DocDualHost:            providers.Cannot("DNSimple does not allow sufficient control over the apex NS records"),
 	providers.DocOfficiallySupported: providers.Cannot(),
-	providers.CanGetZones:            providers.Unimplemented(),
+	providers.CanGetZones:            providers.Can(),
 }
 
 func init() {
@@ -56,24 +56,14 @@ func (c *DnsimpleApi) GetNameservers(domainName string) ([]*models.Nameserver, e
 
 // GetZoneRecords gets the records of a zone and returns them in RecordConfig format.
 func (client *DnsimpleApi) GetZoneRecords(domain string) (models.Records, error) {
-	return nil, fmt.Errorf("not implemented")
-	// This enables the get-zones subcommand.
-	// Implement this by extracting the code from GetDomainCorrections into
-	// a single function.  For most providers this should be relatively easy.
-}
-
-// GetDomainCorrections returns corrections that update a domain.
-func (c *DnsimpleApi) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Correction, error) {
-	corrections := []*models.Correction{}
-	dc.Punycode()
-	records, err := c.getRecords(dc.Name)
+	records, err := client.getRecords(domain)
 	if err != nil {
 		return nil, err
 	}
 
-	var actual []*models.RecordConfig
+	var cleanedRecords models.Records
 	for _, r := range records {
-		if r.Type == "SOA" || r.Type == "NS" {
+		if r.Type == "SOA" {
 			continue
 		}
 		if r.Name == "" {
@@ -82,8 +72,8 @@ func (c *DnsimpleApi) GetDomainCorrections(dc *models.DomainConfig) ([]*models.C
 		if r.Type == "CNAME" || r.Type == "MX" || r.Type == "ALIAS" {
 			r.Content += "."
 		}
-		// dnsimple adds these odd txt records that mirror the alias records.
-		// they seem to manage them on deletes and things, so we'll just pretend they don't exist
+		// DNSimple adds TXT records that mirror the alias records.
+		// They manage them on ALIAS updates, so pretend they don't exist
 		if r.Type == "TXT" && strings.HasPrefix(r.Content, "ALIAS for ") {
 			continue
 		}
@@ -91,7 +81,7 @@ func (c *DnsimpleApi) GetDomainCorrections(dc *models.DomainConfig) ([]*models.C
 			TTL:      uint32(r.TTL),
 			Original: r,
 		}
-		rec.SetLabel(r.Name, dc.Name)
+		rec.SetLabel(r.Name, domain)
 		switch rtype := r.Type; rtype {
 		case "ALIAS", "URL":
 			rec.Type = r.Type
@@ -109,12 +99,29 @@ func (c *DnsimpleApi) GetDomainCorrections(dc *models.DomainConfig) ([]*models.C
 				panic(fmt.Errorf("unparsable record received from dnsimple: %w", err))
 			}
 		default:
-			if err := rec.PopulateFromString(r.Type, r.Content, dc.Name); err != nil {
+			if err := rec.PopulateFromString(r.Type, r.Content, domain); err != nil {
 				panic(fmt.Errorf("unparsable record received from dnsimple: %w", err))
 			}
 		}
-		actual = append(actual, rec)
+		cleanedRecords = append(cleanedRecords, rec)
 	}
+
+	return cleanedRecords, nil
+}
+
+// GetDomainCorrections returns corrections that update a domain.
+func (c *DnsimpleApi) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Correction, error) {
+	corrections := []*models.Correction{}
+	err := dc.Punycode()
+	if err != nil {
+		return nil, err
+	}
+
+	records, err := c.GetZoneRecords(dc.Name)
+	if err != nil {
+		return nil, err
+	}
+	actual := removeNS(records)
 	removeOtherNS(dc)
 
 	// Normalize
@@ -149,6 +156,16 @@ func (c *DnsimpleApi) GetDomainCorrections(dc *models.DomainConfig) ([]*models.C
 	}
 
 	return corrections, nil
+}
+
+func removeNS(records models.Records) models.Records {
+	var noNameServers models.Records
+	for _, r := range records {
+		if r.Type != "NS" {
+			noNameServers = append(noNameServers, r)
+		}
+	}
+	return noNameServers
 }
 
 // GetRegistrarCorrections returns corrections that update a domain's registrar.
@@ -358,6 +375,34 @@ func (c *DnsimpleApi) updateRecordFunc(old *dnsimpleapi.ZoneRecord, rc *models.R
 
 		return nil
 	}
+}
+
+// Returns all the zones in an account
+func (c *DnsimpleApi) ListZones() ([]string, error) {
+	client := c.getClient()
+	accountID, err := c.getAccountID()
+	if err != nil {
+		return nil, err
+	}
+
+	var zones []string
+	opts := &dnsimpleapi.ZoneListOptions{}
+	opts.Page = 1
+	for {
+		zonesResponse, err := client.Zones.ListZones(accountID, opts)
+		if err != nil {
+			return nil, err
+		}
+		for _, zone := range zonesResponse.Data {
+			zones = append(zones, zone.Name)
+		}
+		pg := zonesResponse.Pagination
+		if pg.CurrentPage == pg.TotalPages {
+			break
+		}
+		opts.Page++
+	}
+	return zones, nil
 }
 
 // constructors
