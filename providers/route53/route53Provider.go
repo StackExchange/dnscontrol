@@ -114,7 +114,7 @@ func withRetry(f func() error) {
 func (r *route53Provider) ListZones() ([]string, error) {
 	var zones []string
 	// Assumes r.zones was filled already by newRoute53().
-	for i, _ := range r.zones {
+	for i := range r.zones {
 		zones = append(zones, i)
 	}
 	return zones, nil

@@ -377,7 +377,7 @@ func (c *DnsimpleApi) updateRecordFunc(old *dnsimpleapi.ZoneRecord, rc *models.R
 	}
 }
 
-// Returns all the zones in an account
+// ListZones returns all the zones in an account
 func (c *DnsimpleApi) ListZones() ([]string, error) {
 	client := c.getClient()
 	accountID, err := c.getAccountID()
