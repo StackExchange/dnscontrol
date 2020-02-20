@@ -377,6 +377,38 @@ func (c *DnsimpleApi) updateRecordFunc(old *dnsimpleapi.ZoneRecord, rc *models.R
 	}
 }
 
+// Returns all the zones in an account
+func (c *DnsimpleApi) ListZones() ([]string, error) {
+	client := c.getClient()
+	accountID, err := c.getAccountID()
+	if err != nil {
+		return nil, err
+	}
+
+	opts := &dnsimpleapi.ZoneListOptions{}
+	zs := []dnsimpleapi.Zone{}
+	opts.Page = 1
+	for {
+		zonesResponse, err := client.Zones.ListZones(accountID, opts)
+		if err != nil {
+			return nil, err
+		}
+		zs = append(zs, zonesResponse.Data...)
+		pg := zonesResponse.Pagination
+		if pg.CurrentPage == pg.TotalPages {
+			break
+		}
+		opts.Page++
+	}
+
+	var zones []string
+
+	for _, z := range zs {
+		zones = append(zones, z.Name)
+	}
+	return zones, nil
+}
+
 // constructors
 
 func newReg(conf map[string]string) (providers.Registrar, error) {
