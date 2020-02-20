@@ -23,7 +23,7 @@ const (
 	// This is a pro-forma convention given that Go dependencies
 	// tends to be fetched directly from the repo.
 	// It is also used in the user-agent identify the client.
-	Version = "0.20.0"
+	Version = "0.31.0"
 
 	// defaultBaseURL to the DNSimple production API.
 	defaultBaseURL = "https://api.dnsimple.com"
@@ -146,7 +146,7 @@ func formatUserAgent(customUserAgent string) string {
 		return defaultUserAgent
 	}
 
-	return fmt.Sprintf("%s %s", defaultUserAgent, customUserAgent)
+	return fmt.Sprintf("%s %s", customUserAgent, defaultUserAgent)
 }
 
 func versioned(path string) string {
