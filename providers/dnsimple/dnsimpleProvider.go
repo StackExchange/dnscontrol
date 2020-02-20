@@ -385,26 +385,22 @@ func (c *DnsimpleApi) ListZones() ([]string, error) {
 		return nil, err
 	}
 
+	var zones []string
 	opts := &dnsimpleapi.ZoneListOptions{}
-	zs := []dnsimpleapi.Zone{}
 	opts.Page = 1
 	for {
 		zonesResponse, err := client.Zones.ListZones(accountID, opts)
 		if err != nil {
 			return nil, err
 		}
-		zs = append(zs, zonesResponse.Data...)
+		for _, zone := range zonesResponse.Data {
+			zones = append(zones, zone.Name)
+		}
 		pg := zonesResponse.Pagination
 		if pg.CurrentPage == pg.TotalPages {
 			break
 		}
 		opts.Page++
-	}
-
-	var zones []string
-
-	for _, z := range zs {
-		zones = append(zones, z.Name)
 	}
 	return zones, nil
 }
