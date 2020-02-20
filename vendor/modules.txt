@@ -77,7 +77,7 @@ github.com/dgrijalva/jwt-go
 github.com/digitalocean/godo
 # github.com/dimchansky/utfbom v1.1.0
 github.com/dimchansky/utfbom
-# github.com/dnsimple/dnsimple-go v0.20.1-0.20181001130357-234ec949d37c
+# github.com/dnsimple/dnsimple-go v0.31.0
 github.com/dnsimple/dnsimple-go/dnsimple
 # github.com/exoscale/egoscale v0.10.5
 github.com/exoscale/egoscale
