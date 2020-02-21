@@ -85,6 +85,8 @@ func (client *DnsimpleApi) GetZoneRecords(domain string) (models.Records, error)
 		}
 		rec.SetLabel(r.Name, domain)
 		switch rtype := r.Type; rtype {
+		case "DNSKEY", "CDNSKEY", "CDS":
+			continue
 		case "ALIAS", "URL":
 			rec.Type = r.Type
 			rec.SetTarget(r.Content)
@@ -118,6 +120,12 @@ func (c *DnsimpleApi) GetDomainCorrections(dc *models.DomainConfig) ([]*models.C
 	if err != nil {
 		return nil, err
 	}
+
+	dnssecFixes, err := c.getDNSSECCorrections(dc)
+	if err != nil {
+		return nil, err
+	}
+	corrections = append(corrections, dnssecFixes...)
 
 	records, err := c.GetZoneRecords(dc.Name)
 	if err != nil {
@@ -201,6 +209,34 @@ func (c *DnsimpleApi) GetRegistrarCorrections(dc *models.DomainConfig) ([]*model
 	return corrections, nil
 }
 
+// getDNSSECCorrections returns corrections that update a domain's DNSSEC state.
+func (c *DnsimpleApi) getDNSSECCorrections(dc *models.DomainConfig) ([]*models.Correction, error) {
+	enabled, err := c.getDnssec(dc.Name)
+	if err != nil {
+		return nil, err
+	}
+
+	if enabled && !dc.AutoDNSSEC {
+		return []*models.Correction{
+			{
+				Msg: "Disable DNSSEC",
+				F:   func() error { _, err := c.disableDnssec(dc.Name); return err },
+			},
+		}, nil
+	}
+
+	if !enabled && dc.AutoDNSSEC {
+		return []*models.Correction{
+			{
+				Msg: "Enable DNSSEC",
+				F:   func() error { _, err := c.enableDnssec(dc.Name); return err },
+			},
+		}, nil
+	}
+
+	return []*models.Correction{}, nil
+}
+
 // DNSimple calls
 
 func (c *DnsimpleApi) getClient() *dnsimpleapi.Client {
@@ -256,6 +292,69 @@ func (c *DnsimpleApi) getRecords(domainName string) ([]dnsimpleapi.ZoneRecord, e
 	}
 
 	return recs, nil
+}
+
+func (c *DnsimpleApi) getDnssec(domainName string) (bool, error) {
+	var (
+		client    *dnsimpleapi.Client
+		accountID string
+		err       error
+	)
+	client = c.getClient()
+	if accountID, err = c.getAccountID(); err != nil {
+		return false, err
+	}
+
+	dnssecResponse, err := client.Domains.GetDnssec(accountID, domainName)
+	if err != nil {
+		return false, err
+	}
+	if dnssecResponse.Data == nil {
+		return false, nil
+	}
+	return dnssecResponse.Data.Enabled, nil
+}
+
+func (c *DnsimpleApi) enableDnssec(domainName string) (bool, error) {
+	var (
+		client    *dnsimpleapi.Client
+		accountID string
+		err       error
+	)
+	client = c.getClient()
+	if accountID, err = c.getAccountID(); err != nil {
+		return false, err
+	}
+
+	dnssecResponse, err := client.Domains.EnableDnssec(accountID, domainName)
+	if err != nil {
+		return false, err
+	}
+	if dnssecResponse.Data == nil {
+		return false, nil
+	}
+	return dnssecResponse.Data.Enabled, nil
+}
+
+func (c *DnsimpleApi) disableDnssec(domainName string) (bool, error) {
+	var (
+		client    *dnsimpleapi.Client
+		accountID string
+		err       error
+	)
+	client = c.getClient()
+	if accountID, err = c.getAccountID(); err != nil {
+		return false, err
+	}
+
+	dnssecResponse, err := client.Domains.DisableDnssec(accountID, domainName)
+	if err != nil {
+		return false, err
+	}
+	if dnssecResponse.Data == nil {
+		return false, nil
+	}
+	return dnssecResponse.Data.Enabled, nil
 }
 
 // Returns the name server names that should be used. If the domain is registered

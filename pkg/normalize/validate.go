@@ -436,9 +436,11 @@ func checkProviderCapabilities(dc *models.DomainConfig) error {
 		cap   providers.Capability
 	}{
 		{"ALIAS", providers.CanUseAlias},
-		{"PTR", providers.CanUsePTR},
-		{"SRV", providers.CanUseSRV},
+		{"AUTODNSSEC", providers.CanAutoDNSSEC},
 		{"CAA", providers.CanUseCAA},
+		{"PTR", providers.CanUsePTR},
+		{"SSHFP", providers.CanUseSSHFP},
+		{"SRV", providers.CanUseSRV},
 		{"TLSA", providers.CanUseTLSA},
 	}
 	for _, ty := range types {
