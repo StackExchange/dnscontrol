@@ -22,7 +22,7 @@ var features = providers.DocumentationNotes{
 	providers.CanUseSRV:              providers.Can(),
 	providers.CanUseCAA:              providers.Can(),
 	providers.CanUseTXTMulti:         providers.Can(),
-	providers.CanGetZones:            providers.Unimplemented(),
+	providers.CanGetZones:            providers.Can(),
 }
 
 func sPtr(s string) *string {
@@ -38,6 +38,14 @@ type gcloud struct {
 	project       string
 	nameServerSet *string
 	zones         map[string]*gdns.ManagedZone
+}
+
+type errNoExist struct {
+	domain string
+}
+
+func (e errNoExist) Error() string {
+	return fmt.Sprintf("Domain '%s' not found in gcloud account", e.domain)
 }
 
 // New creates a new gcloud provider
@@ -67,41 +75,46 @@ func New(cfg map[string]string, metadata json.RawMessage) (providers.DNSServiceP
 		fmt.Printf("GCLOUD :name_server_set %s configured\n", val)
 		nss = sPtr(val)
 	}
-	return &gcloud{
+
+	g := &gcloud{
 		client:        dcli,
 		nameServerSet: nss,
 		project:       cfg["project_id"],
-	}, nil
+	}
+	return g, g.loadZoneInfo()
 }
 
-type errNoExist struct {
-	domain string
+func (g *gcloud) loadZoneInfo() error {
+	if g.zones != nil {
+		return nil
+	}
+	g.zones = map[string]*gdns.ManagedZone{}
+	pageToken := ""
+	for {
+		resp, err := g.client.ManagedZones.List(g.project).PageToken(pageToken).Do()
+		if err != nil {
+			return err
+		}
+		for _, z := range resp.ManagedZones {
+			g.zones[z.DnsName] = z
+		}
+		if pageToken = resp.NextPageToken; pageToken == "" {
+			break
+		}
+	}
+	return nil
 }
 
-func (e errNoExist) Error() string {
-	return fmt.Sprintf("Domain %s not found in gcloud account", e.domain)
+// ListZones returns the list of zones (domains) in this account.
+func (g *gcloud) ListZones() ([]string, error) {
+	var zones []string
+	for i, _ := range g.zones {
+		zones = append(zones, strings.TrimSuffix(i, "."))
+	}
+	return zones, nil
 }
 
 func (g *gcloud) getZone(domain string) (*gdns.ManagedZone, error) {
-	if g.zones == nil {
-		g.zones = map[string]*gdns.ManagedZone{}
-		pageToken := ""
-		for {
-			resp, err := g.client.ManagedZones.List(g.project).PageToken(pageToken).Do()
-			if err != nil {
-				return nil, err
-			}
-			for _, z := range resp.ManagedZones {
-				g.zones[z.DnsName] = z
-			}
-			if pageToken = resp.NextPageToken; pageToken == "" {
-				break
-			}
-		}
-	}
-	if g.zones[domain+"."] == nil {
-		return nil, errNoExist{domain}
-	}
 	return g.zones[domain+"."], nil
 }
 
@@ -126,20 +139,15 @@ func keyForRec(r *models.RecordConfig) key {
 }
 
 // GetZoneRecords gets the records of a zone and returns them in RecordConfig format.
-func (client *gcloud) GetZoneRecords(domain string) (models.Records, error) {
-	return nil, fmt.Errorf("not implemented")
-	// This enables the get-zones subcommand.
-	// Implement this by extracting the code from GetDomainCorrections into
-	// a single function.  For most providers this should be relatively easy.
+func (g *gcloud) GetZoneRecords(domain string) (models.Records, error) {
+	existingRecords, _, _, err := g.getZoneSets(domain)
+	return existingRecords, err
 }
 
-func (g *gcloud) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Correction, error) {
-	if err := dc.Punycode(); err != nil {
-		return nil, err
-	}
-	rrs, zoneName, err := g.getRecords(dc.Name)
+func (g *gcloud) getZoneSets(domain string) (models.Records, map[key]*gdns.ResourceRecordSet, string, error) {
+	rrs, zoneName, err := g.getRecords(domain)
 	if err != nil {
-		return nil, err
+		return nil, nil, "", err
 	}
 	// convert to dnscontrol RecordConfig format
 	existingRecords := []*models.RecordConfig{}
@@ -147,8 +155,19 @@ func (g *gcloud) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Correc
 	for _, set := range rrs {
 		oldRRs[keyFor(set)] = set
 		for _, rec := range set.Rrdatas {
-			existingRecords = append(existingRecords, nativeToRecord(set, rec, dc.Name))
+			existingRecords = append(existingRecords, nativeToRecord(set, rec, domain))
 		}
+	}
+	return existingRecords, oldRRs, zoneName, err
+}
+
+func (g *gcloud) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Correction, error) {
+	if err := dc.Punycode(); err != nil {
+		return nil, err
+	}
+	existingRecords, oldRRs, zoneName, err := g.getZoneSets(dc.Name)
+	if err != nil {
+		return nil, err
 	}
 
 	// Normalize
