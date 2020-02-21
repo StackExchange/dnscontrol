@@ -33,8 +33,8 @@ var _ = cmd(catDebug, &cli.Command{
 	Name:  "version",
 	Usage: "Print version information",
 	Action: func(c *cli.Context) error {
-    _, err := fmt.Println(version)
-    return err
+		_, err := fmt.Println(version)
+		return err
 	},
 })
 
