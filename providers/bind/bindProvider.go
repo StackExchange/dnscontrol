@@ -3,7 +3,7 @@ package bind
 /*
 
 bind -
-  Generate zonefiles suitiable for BIND.
+  Generate zonefiles suitable for BIND.
 
 	The zonefiles are read and written to the directory -bind_dir
 
@@ -21,6 +21,7 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
+	"time"
 
 	"github.com/miekg/dns"
 
@@ -38,6 +39,7 @@ var features = providers.DocumentationNotes{
 	providers.CanUseSSHFP:            providers.Can(),
 	providers.CanUseTLSA:             providers.Can(),
 	providers.CanUseTXTMulti:         providers.Can(),
+	providers.CanAutoDNSSEC:          providers.Can("Just writes out a comment indicating DNSSEC was requested"),
 	providers.CantUseNOPURGE:         providers.Cannot(),
 	providers.DocCreateDomains:       providers.Can("Driver just maintains list of zone files. It should automatically add missing ones."),
 	providers.DocDualHost:            providers.Can(),
@@ -214,9 +216,18 @@ func (c *Bind) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Correcti
 	// foundDiffRecords < foundRecords
 	// diff.Inc...(foundDiffRecords, expectedDiffRecords )
 
+	comments := make([]string, 0, 5)
+
+	comments = append(comments,
+		fmt.Sprintf("generated with dnscontrol %s", time.Now().Format(time.RFC3339)),
+	)
+
 	foundRecords, err := c.GetZoneRecords(dc.Name)
 	if err != nil {
 		return nil, err
+	}
+	if dc.AutoDNSSEC {
+		comments = append(comments, "Automatic DNSSEC signing requested")
 	}
 
 	// Normalize
@@ -262,7 +273,10 @@ func (c *Bind) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Correcti
 					if err != nil {
 						log.Fatalf("Could not create zonefile: %v", err)
 					}
-					err = prettyzone.WriteZoneFileRC(zf, dc.Records, dc.Name)
+					// Beware that if there are any fake types, then they will
+					// be commented out on write, but we don't reverse that when
+					// reading, so there will be a diff on every invocation.
+					err = prettyzone.WriteZoneFileRC(zf, dc.Records, dc.Name, comments)
 
 					if err != nil {
 						log.Fatalf("WriteZoneFile error: %v\n", err)
