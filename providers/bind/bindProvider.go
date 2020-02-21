@@ -133,7 +133,7 @@ func (c *Bind) GetNameservers(string) ([]*models.Nameserver, error) {
 // ListZones returns all the zones in an account
 func (c *Bind) ListZones() ([]string, error) {
 	if _, err := os.Stat(c.directory); os.IsNotExist(err) {
-		return nil, fmt.Errorf("BIND directory %q does not exist!\n", c.directory)
+		return nil, fmt.Errorf("directory %q does not exist", c.directory)
 	}
 
 	filenames, err := filepath.Glob(filepath.Join(c.directory, "*.zone"))

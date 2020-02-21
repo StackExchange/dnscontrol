@@ -44,3 +44,13 @@ var BIND = NewDnsProvider('bind', 'BIND', {
 {% endhighlight %}
 
 If you need to customize your SOA or NS records, you can do so with this setup.
+
+## Notes
+
+When used with "get-zones", specifying "all" scans the directory for
+any files named `*.zone` and assumes they are zone files.
+
+```
+dnscontrol get-zones --format=nameonly - BIND all
+```
+
