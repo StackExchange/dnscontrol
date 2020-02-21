@@ -17,7 +17,6 @@ func (c *NameCom) ListZones() ([]string, error) {
 		page = n.NextPage
 
 		for _, j := range n.Domains {
-			//fmt.Printf("NAME=%v %v\n", j.DomainName, j.Nameservers)
 			names = append(names, j.DomainName)
 		}
 
