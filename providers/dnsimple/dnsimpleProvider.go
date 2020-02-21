@@ -495,7 +495,7 @@ func getTargetRecordPriority(rc *models.RecordConfig) int {
 func quoteDNSString(unquoted string) string {
 	b, err := json.Marshal(unquoted)
 	if err != nil {
-		panic(fmt.Errorf("enable to marshal to JSON: %q", unquoted))
+		panic(fmt.Errorf("unable to marshal to JSON: %q", unquoted))
 	}
 	return string(b)
 }
