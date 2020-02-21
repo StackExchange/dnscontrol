@@ -38,10 +38,11 @@ var supportedTypes = map[string]bool{
 }
 
 // GetZoneRecords gets the records of a zone and returns them in RecordConfig format.
-func (c *adProvider) GetZoneRecords(domain string) (models.Records, error) {
-	foundRecords, err := c.getExistingRecords(domain)
+func (client *adProvider) GetZoneRecords(domain string) (models.Records, error) {
+	// Read foundRecords:
+	foundRecords, err := c.getExistingRecords(dc.Name)
 	if err != nil {
-		return nil, fmt.Errorf("c.getExistingRecords(%q) failed: %v", domain, err)
+		return nil, fmt.Errorf("c.getExistingRecords(%q) failed: %v", dc.Name, err)
 	}
 	return foundRecords, nil
 }
