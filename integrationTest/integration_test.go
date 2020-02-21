@@ -422,7 +422,7 @@ func makeTests(t *testing.T) []*TestCase {
 	// PTR
 	if !providers.ProviderHasCapability(*providerToRun, providers.CanUsePTR) {
 		tests = append(tests, tc("Empty"),
-			shouldFail("PTR should fail", ptr(4, "foo.com")),
+			shouldFail("PTR should fail", ptr("4", "foo.com")),
 		)
 	} else {
 		tests = append(tests, tc("Empty"),
