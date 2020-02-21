@@ -123,7 +123,7 @@ func runTests(t *testing.T, prv providers.DNSServiceProvider, domainName string,
 				t.Fatal(fmt.Errorf("runTests: %w", err))
 			}
 			if !skipVal && i != *startIdx && len(corrections) == 0 {
-				if tst.Desc != "Empty" {
+				if tst.Desc != "Empty" && !tst.ShouldFail {
 					// There are "no corrections" if the last test was programmatically
 					// skipped.  We detect this (possibly inaccurately) by checking to
 					// see if .Desc is "Empty".
@@ -136,7 +136,11 @@ func runTests(t *testing.T, prv providers.DNSServiceProvider, domainName string,
 				}
 				err = c.F()
 				if !skipVal && err != nil {
-					t.Fatal(err)
+					if !tst.ShouldFail {
+						t.Fatal(err)
+					}
+				} else if tst.ShouldFail {
+					t.Fatal(fmt.Errorf("runTests: expected failure but it succeeded"))
 				}
 			}
 			// run a second time and expect zero corrections
@@ -202,6 +206,7 @@ type TestCase struct {
 	Desc          string
 	Records       []*rec
 	IgnoredLabels []string
+	ShouldFail    bool
 }
 
 type rec models.RecordConfig
@@ -347,6 +352,15 @@ func tc(desc string, recs ...*rec) *TestCase {
 	}
 }
 
+func shouldFail(desc string, recs ...*rec) *TestCase {
+	var records []*rec
+	return &TestCase{
+		Desc:       desc,
+		Records:    records,
+		ShouldFail: true,
+	}
+}
+
 func manyA(namePattern, target string, n int) []*rec {
 	recs := []*rec{}
 	for i := 0; i < n; i++ {
@@ -407,7 +421,9 @@ func makeTests(t *testing.T) []*TestCase {
 
 	// PTR
 	if !providers.ProviderHasCapability(*providerToRun, providers.CanUsePTR) {
-		t.Log("Skipping PTR Tests because provider does not support them")
+		tests = append(tests, tc("Empty"),
+			shouldFail("PTR should fail", ptr(4, "foo.com")),
+		)
 	} else {
 		tests = append(tests, tc("Empty"),
 			tc("Create PTR record", ptr("4", "foo.com.")),
@@ -417,6 +433,8 @@ func makeTests(t *testing.T) []*TestCase {
 
 	// ALIAS
 	if !providers.ProviderHasCapability(*providerToRun, providers.CanUseAlias) {
+		// Not sure it's safe across providers to switch to the "test it fails"
+		// for non-real types, so punt for now.
 		t.Log("Skipping ALIAS Tests because provider does not support them")
 	} else {
 		tests = append(tests, tc("Empty"),
@@ -428,7 +446,9 @@ func makeTests(t *testing.T) []*TestCase {
 
 	// NAPTR
 	if !providers.ProviderHasCapability(*providerToRun, providers.CanUseNAPTR) {
-		t.Log("Skipping NAPTR Tests because provider does not support them")
+		tests = append(tests, tc("Empty"),
+			shouldFail("NAPTR should fail", naptr("test", 100, 10, "U", "E2U+sip", "!^.*$!sip:customer-service@example.com!", "example.foo.com.")),
+		)
 	} else {
 		tests = append(tests, tc("Empty"),
 			tc("NAPTR record", naptr("test", 100, 10, "U", "E2U+sip", "!^.*$!sip:customer-service@example.com!", "example.foo.com.")),
@@ -445,7 +465,9 @@ func makeTests(t *testing.T) []*TestCase {
 
 	// SRV
 	if !providers.ProviderHasCapability(*providerToRun, providers.CanUseSRV) {
-		t.Log("Skipping SRV Tests because provider does not support them")
+		tests = append(tests, tc("Empty"),
+			shouldFail("SRV should fail", srv("_sip._tcp", 5, 6, 7, "foo.com.")),
+		)
 	} else {
 		tests = append(tests, tc("Empty"),
 			tc("SRV record", srv("_sip._tcp", 5, 6, 7, "foo.com.")),
@@ -466,7 +488,9 @@ func makeTests(t *testing.T) []*TestCase {
 
 	// SSHFP
 	if !providers.ProviderHasCapability(*providerToRun, providers.CanUseSSHFP) {
-		t.Log("Skipping SSHFP Tests because provider does not support them")
+		tests = append(tests, tc("Empty"),
+			shouldFail("SSHFP should fail", sshfp("@", 1, 2, "745a635bc46a397a5c4f21d437483005bcc40d7511ff15fbfafe913a081559bc")),
+		)
 	} else {
 		tests = append(tests, tc("Empty"),
 			tc("SSHFP record",
@@ -489,7 +513,9 @@ func makeTests(t *testing.T) []*TestCase {
 
 	// CAA
 	if !providers.ProviderHasCapability(*providerToRun, providers.CanUseCAA) {
-		t.Log("Skipping CAA Tests because provider does not support them")
+		tests = append(tests, tc("Empty"),
+			shouldFail("CAA should fail", caa("@", "issue", 0, "letsencrypt.org")),
+		)
 	} else {
 		manyRecordsTc := tc("CAA many records", caa("@", "issue", 0, "letsencrypt.org"), caa("@", "issuewild", 0, ";"), caa("@", "iodef", 128, "mailto:test@example.com"))
 
@@ -510,7 +536,9 @@ func makeTests(t *testing.T) []*TestCase {
 
 	// TLSA
 	if !providers.ProviderHasCapability(*providerToRun, providers.CanUseTLSA) {
-		t.Log("Skipping TLSA Tests because provider does not support them")
+		tests = append(tests, tc("Empty"),
+			shouldFail("TLSA should fail", tlsa("_443._tcp", 3, 1, 1, strings.Repeat("0123456789abcdef", 4))),
+		)
 	} else {
 		sha256hash := strings.Repeat("0123456789abcdef", 4)
 		sha512hash := strings.Repeat("0123456789abcdef", 8)
