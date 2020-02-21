@@ -130,10 +130,28 @@ func (c *Bind) GetNameservers(string) ([]*models.Nameserver, error) {
 	return c.nameservers, nil
 }
 
+// ListZones returns all the zones in an account
+func (c *Bind) ListZones() ([]string, error) {
+	if _, err := os.Stat(c.directory); os.IsNotExist(err) {
+		return nil, fmt.Errorf("BIND directory %q does not exist!\n", c.directory)
+	}
+
+	filenames, err := filepath.Glob(filepath.Join(c.directory, "*.zone"))
+	if err != nil {
+		return nil, err
+	}
+	var zones []string
+	for _, n := range filenames {
+		_, file := filepath.Split(n)
+		zones = append(zones, strings.TrimSuffix(file, ".zone"))
+	}
+	return zones, nil
+}
+
 // GetZoneRecords gets the records of a zone and returns them in RecordConfig format.
 func (c *Bind) GetZoneRecords(domain string) (models.Records, error) {
-	// Default SOA record.  If we see one in the zone, this will be replaced.
 
+	// Default SOA record.  If we see one in the zone, this will be replaced.
 	soaRec := makeDefaultSOA(c.DefaultSoa, domain)
 	foundRecords := models.Records{}
 	var oldSerial, newSerial uint32
