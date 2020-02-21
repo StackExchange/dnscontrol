@@ -20,7 +20,9 @@ var features = providers.DocumentationNotes{
 	providers.CanUseAlias:            providers.Can(),
 	providers.CanUseCAA:              providers.Can(),
 	providers.CanUsePTR:              providers.Can(),
+	providers.CanUseSSHFP:            providers.Can(),
 	providers.CanUseSRV:              providers.Can(),
+	providers.CanUseTXTMulti:         providers.Can(),
 	providers.CanUseTLSA:             providers.Cannot(),
 	providers.DocCreateDomains:       providers.Cannot(),
 	providers.DocDualHost:            providers.Cannot("DNSimple does not allow sufficient control over the apex NS records"),
@@ -453,8 +455,16 @@ func getTargetRecordContent(rc *models.RecordConfig) string {
 	switch rtype := rc.Type; rtype {
 	case "CAA":
 		return rc.GetTargetCombined()
+	case "SSHFP":
+		return fmt.Sprintf("%d %d %s", rc.SshfpAlgorithm, rc.SshfpFingerprint, rc.GetTargetField())
 	case "SRV":
 		return fmt.Sprintf("%d %d %s", rc.SrvWeight, rc.SrvPort, rc.GetTargetField())
+	case "TXT":
+		quoted := make([]string, len(rc.TxtStrings))
+		for i := range rc.TxtStrings {
+			quoted[i] = quoteDNSString(rc.TxtStrings[i])
+		}
+		return strings.Join(quoted, " ")
 	default:
 		return rc.GetTargetField()
 	}
@@ -470,4 +480,22 @@ func getTargetRecordPriority(rc *models.RecordConfig) int {
 	default:
 		return 0
 	}
+}
+
+// Return a DNS string appropriately escaped for DNSimple.
+// Should include the surrounding quotes.
+//
+// Warning: the DNSimple API is severely underdocumented in this area.
+// I know that it takes multiple quoted strings just fine, and constructs the
+// DNS multiple quoted items.
+// I'm not 100% on the escaping, but since it's a JSON API, JSON escaping seems
+// reasonable.
+// I do know that DNSimple have their own checks, so anything too crazy will
+// get a "400 Validation failed" HTTP response.
+func quoteDNSString(unquoted string) string {
+	b, err := json.Marshal(unquoted)
+	if err != nil {
+		panic(fmt.Errorf("enable to marshal to JSON: %q", unquoted))
+	}
+	return string(b)
 }
