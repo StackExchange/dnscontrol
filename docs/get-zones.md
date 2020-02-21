@@ -19,13 +19,19 @@ Syntax:
    dnscontrol get-zones [command options] credkey provider zone [...]
 
    --creds value   Provider credentials JSON file (default: "creds.json")
-   --format value  Output format: dsl tsv pretty (default: "pretty")
+   --format value  Output format: pretty dsl tsv nameonly (default: "pretty")
    --out value     Instead of stdout, write to this file
 
 ARGUMENTS:
    credkey:  The name used in creds.json (first parameter to NewDnsProvider() in dnsconfig.js)
    provider: The name of the provider (second parameter to NewDnsProvider() in dnsconfig.js)
    zone:     One or more zones (domains) to download; or "all".
+
+FORMATS:
+   --format=dsl      dnsconfig.js format (not perfect, but a decent first draft)
+   --format=nameonly Just print the zone names
+   --format=pretty   BIND Zonefile format
+   --format=tsv      TAB separated value (useful for AWK)
 
 EXAMPLES:
    dnscontrol get-zones myr53 ROUTE53 example.com
@@ -76,9 +82,9 @@ Once that is done the `get-zone` subcommand should work.
 
 4. Optionally implemement the `ListZones` function
 
-If the `ListZones` function is implemented, the command will activate
-the ability to specify `all` as the zone, at which point all zones
-will be downloaded.
+If the `ListZones` function is implemented, the "all" special case
+will be activated.  In this case, listing a single zone named `all`
+will query the provider for the list of zones.
 
 (Technically what is happening is by implementing the `ListZones`
 function, you are completing the `ZoneLister` interface for that
