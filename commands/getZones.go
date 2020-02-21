@@ -38,10 +38,10 @@ ARGUMENTS:
    zone:     One or more zones (domains) to download; or "all".
 
 FORMATS:
-   --format=dsl      dnsconfig.js format (a decent first draft)
-	 --format=pretty   BIND Zonefile format
-	 --format=tsv      TAB separated value (useful for AWK)
-	 --format=tsvfqdn  tsv with FQDNs (useful for multiple zones)
+   --format=dsl      dnsconfig.js format (not perfect, but a decent first draft)
+   --format=nameonly Just print the zone names
+   --format=pretty   BIND Zonefile format
+   --format=tsv      TAB separated value (useful for AWK)
 
 EXAMPLES:
    dnscontrol get-zones myr53 ROUTE53 example.com
@@ -69,7 +69,7 @@ func (args *GetZoneArgs) flags() []cli.Flag {
 		Name:        "format",
 		Destination: &args.OutputFormat,
 		Value:       "pretty",
-		Usage:       `Output format: dsl pretty tsv tsvfqdn`,
+		Usage:       `Output format: dsl pretty tsv nameonly`,
 	})
 	flags = append(flags, &cli.StringFlag{
 		Name:        "out",
@@ -113,6 +113,23 @@ func GetZone(args GetZoneArgs) error {
 		}
 	}
 
+	// first open output stream and print initial header (if applicable)
+	w := os.Stdout
+	if args.OutputFile != "" {
+		w, err = os.Create(args.OutputFile)
+	}
+	if err != nil {
+		return err
+	}
+	defer w.Close()
+
+	if args.OutputFormat == "nameonly" {
+		for _, zone := range zones {
+			fmt.Fprintln(w, zone)
+		}
+		return nil
+	}
+
 	// actually fetch all of the records
 	zoneRecs := make([]models.Records, len(zones))
 	for i, zone := range zones {
@@ -125,23 +142,15 @@ func GetZone(args GetZoneArgs) error {
 
 	// Write it out:
 
-	// first open output stream and print initial header (if applicable)
-	w := os.Stdout
-	if args.OutputFile != "" {
-		w, err = os.Create(args.OutputFile)
-	}
-	if err != nil {
-		return err
-	}
-	defer w.Close()
 	if args.OutputFormat == "dsl" {
 		fmt.Fprintf(w, `var %s = NewDnsProvider("%s", "%s");`+"\n",
 			args.CredName, args.CredName, args.ProviderName)
 	}
 
+	// now print all zones
 	for i, recs := range zoneRecs {
 		zoneName := zones[i]
-		// now print all zones
+
 		z := prettyzone.PrettySort(recs, zoneName, 0)
 		switch args.OutputFormat {
 		case "pretty":
@@ -159,14 +168,8 @@ func GetZone(args GetZoneArgs) error {
 		case "tsv":
 			for _, rec := range recs {
 				fmt.Fprintf(w,
-					fmt.Sprintf("%s\t%d\tIN\t%s\t%s\n",
-						rec.Name, rec.TTL, rec.Type, rec.GetTargetCombined()))
-			}
-		case "tsvfqdn":
-			for _, rec := range recs {
-				fmt.Fprintf(w,
-					fmt.Sprintf("%s\t%d\tIN\t%s\t%s\n",
-						rec.NameFQDN, rec.TTL, rec.Type, rec.GetTargetCombined()))
+					fmt.Sprintf("%s\t%s\t%d\tIN\t%s\t%s\n",
+						rec.NameFQDN, rec.Name, rec.TTL, rec.Type, rec.GetTargetCombined()))
 			}
 		default:
 			return fmt.Errorf("format %q unknown", args.OutputFile)
