@@ -33,6 +33,13 @@ FORMATS:
    --format=pretty   BIND Zonefile format
    --format=tsv      TAB separated value (useful for AWK)
 
+When using `tsv`, the columns are:
+   FQDN (the label with the domain)
+   ShortName (just the label, "@" if it is the naked domain)
+   TTL
+   Record Type (A, AAAA, CNAME, etc.)
+   Target and arguments (quoted like in a zonefile)
+
 EXAMPLES:
    dnscontrol get-zones myr53 ROUTE53 example.com
    dnscontrol get-zones gmain GANDI_V5 example.comn other.com
