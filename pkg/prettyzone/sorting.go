@@ -16,6 +16,7 @@ type zoneGenData struct {
 	Origin     string
 	DefaultTTL uint32
 	Records    models.Records
+	Comments   []string
 }
 
 func (z *zoneGenData) Len() int      { return len(z.Records) }
