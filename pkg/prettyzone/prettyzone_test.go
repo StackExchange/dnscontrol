@@ -303,10 +303,10 @@ func TestWriteZoneFileSynth(t *testing.T) {
 ; c4
 @                IN A     192.30.252.153
                  IN A     192.30.252.154
-;myalias          IN R53_ALIAS  type= zone_id=
-;myalias          IN R53_ALIAS  type= zone_id=
+;myalias          IN R53_ALIAS  atype= zone_id=
+;myalias          IN R53_ALIAS  atype= zone_id=
 www              IN CNAME bosun.org.
-;zalias           IN R53_ALIAS  type= zone_id=
+;zalias           IN R53_ALIAS  atype= zone_id=
 `
 	if buf.String() != expected {
 		t.Log(buf.String())

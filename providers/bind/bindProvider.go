@@ -18,17 +18,17 @@ import (
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
-	"log"
 	"os"
 	"path/filepath"
 	"strings"
 	"time"
 
+	"github.com/miekg/dns"
+
 	"github.com/StackExchange/dnscontrol/v2/models"
 	"github.com/StackExchange/dnscontrol/v2/pkg/prettyzone"
 	"github.com/StackExchange/dnscontrol/v2/providers"
 	"github.com/StackExchange/dnscontrol/v2/providers/diff"
-	"github.com/miekg/dns"
 )
 
 var features = providers.DocumentationNotes{
@@ -97,32 +97,42 @@ type Bind struct {
 
 func makeDefaultSOA(info SoaInfo, origin string) *models.RecordConfig {
 	// Create a SOA record, using the metadata as defaults.
-	soaRec := models.RecordConfig{
-		Type: "SOA",
-	}
+	soaRec := models.RecordConfig{}
 	soaRec.SetLabel("@", origin)
-	if len(info.Ns) == 0 {
-		info.Ns = "DEFAULT_NOT_SET."
+
+	ns := info.Ns
+	if ns == "" {
+		ns = "DEFAULT_NOT_SET."
 	}
-	if len(info.Mbox) == 0 {
-		info.Mbox = "DEFAULT_NOT_SET."
+
+	mbox := info.Mbox
+	if mbox == "" {
+		mbox = "DEFAULT_NOT_SET."
 	}
-	if info.Serial == 0 {
-		info.Serial = 1
+
+	serial := info.Serial
+	if serial == 0 {
+		serial = 1
 	}
-	if info.Refresh == 0 {
-		info.Refresh = 3600
+
+	refresh := info.Refresh
+	if refresh == 0 {
+		refresh = 3600
 	}
-	if info.Retry == 0 {
-		info.Retry = 600
+
+	retry := info.Retry
+	if retry == 0 {
+		retry = 600
 	}
-	if info.Expire == 0 {
-		info.Expire = 604800
+	expire := info.Expire
+	if expire == 0 {
+		expire = 604800
 	}
-	if info.Minttl == 0 {
-		info.Minttl = 1440
+	minttl := info.Minttl
+	if minttl == 0 {
+		minttl = 1440
 	}
-	soaRec.SetTarget(info.String())
+	soaRec.SetTargetSOA(ns, mbox, serial, refresh, retry, expire, minttl)
 
 	return &soaRec
 }
@@ -165,12 +175,14 @@ func (c *Bind) GetZoneRecords(domain string) (models.Records, error) {
 	content, err := ioutil.ReadFile(c.zonefile)
 	if os.IsNotExist(err) {
 		// If the file doesn't exist, that's not an error. Just informational.
+		c.zoneFileFound = false
 		fmt.Fprintf(os.Stderr, "File not found: '%v'\n", c.zonefile)
 		return nil, nil
 	}
 	if err != nil {
 		return nil, fmt.Errorf("can't open %s: %w", c.zonefile, err)
 	}
+	c.zoneFileFound = true
 
 	zp := dns.NewZoneParser(strings.NewReader(string(content)), domain, c.zonefile)
 
@@ -212,7 +224,6 @@ func (c *Bind) GetZoneRecords(domain string) (models.Records, error) {
 
 // GetDomainCorrections returns a list of corrections to update a domain.
 func (c *Bind) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Correction, error) {
-	log.Printf("IN GetDomainCorrections\n")
 	dc.Punycode()
 	// Phase 1: Copy everything to []*models.RecordConfig:
 	//    expectedRecords < dc.Records[i]
@@ -233,7 +244,6 @@ func (c *Bind) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Correcti
 		fmt.Sprintf("generated with dnscontrol %s", time.Now().Format(time.RFC3339)),
 	)
 
-	log.Printf("ABOUT TO CALL\n")
 	foundRecords, err := c.GetZoneRecords(dc.Name)
 	if err != nil {
 		return nil, err
@@ -242,10 +252,9 @@ func (c *Bind) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Correcti
 		comments = append(comments, "Automatic DNSSEC signing requested")
 	}
 
-	// If there was no SOA, insert one.
 	if !dc.Records.HasRecordTypeName("SOA", "@") {
 		soaRec := makeDefaultSOA(c.DefaultSoa, dc.Name)
-		log.Printf("APPENDING: %v: %v\n", soaRec.Type, soaRec)
+		soaRec.TTL = 300
 		dc.Records = append(dc.Records, soaRec)
 	}
 
@@ -283,14 +292,22 @@ func (c *Bind) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Correcti
 	msg += buf.String()
 	corrections := []*models.Correction{}
 	if changes {
+
+		// If there were changes, increment the SOA number:
+		for _, r := range dc.Records {
+			if r.Type == "SOA" && r.Name == "@" {
+				r.SoaSerial = generateSerial(r.SoaSerial)
+			}
+		}
+
 		corrections = append(corrections,
 			&models.Correction{
 				Msg: msg,
 				F: func() error {
-					fmt.Printf("CREATING ZONEFILE: %v\n", c.zonefile)
+					fmt.Printf("WRITING ZONEFILE: %v\n", c.zonefile)
 					zf, err := os.Create(c.zonefile)
 					if err != nil {
-						log.Fatalf("Could not create zonefile: %v", err)
+						return fmt.Errorf("could not create zonefile: %w", err)
 					}
 					// Beware that if there are any fake types, then they will
 					// be commented out on write, but we don't reverse that when
@@ -298,11 +315,11 @@ func (c *Bind) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Correcti
 					err = prettyzone.WriteZoneFileRC(zf, dc.Records, dc.Name, comments)
 
 					if err != nil {
-						log.Fatalf("WriteZoneFile error: %v\n", err)
+						return fmt.Errorf("failed WriteZoneFile: %w\n", err)
 					}
 					err = zf.Close()
 					if err != nil {
-						log.Fatalf("Closing: %v", err)
+						return fmt.Errorf("closing: %w", err)
 					}
 					return nil
 				},

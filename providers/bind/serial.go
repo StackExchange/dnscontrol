@@ -61,11 +61,14 @@ func generateSerial(oldSerial uint32) uint32 {
 		// We never return 0 as the serial number.
 		newSerial = 1
 	}
+
+	// Assertions that should never happen.
 	if oldSerial == newSerial {
 		log.Fatalf("%v: old_serial == new_serial (%v == %v) draft=%v method=%v", original, oldSerial, newSerial, draft, method)
 	}
 	if oldSerial > newSerial {
 		log.Fatalf("%v: old_serial > new_serial (%v > %v) draft=%v method=%v", original, oldSerial, newSerial, draft, method)
 	}
+
 	return newSerial
 }

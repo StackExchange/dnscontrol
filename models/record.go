@@ -384,8 +384,12 @@ func downcase(recs []*RecordConfig) {
 			// These record types have a target that is case sensitive, or is an IP address. We leave them alone.
 			// Do nothing.
 		case "SOA":
-			r.Target = strings.ToLower(r.Target) // .Target stores the Ns
-			r.SoaMbox = strings.ToLower(r.SoaMbox)
+			if r.Target != "DEFAULT_NOT_SET." {
+				r.Target = strings.ToLower(r.Target) // .Target stores the Ns
+			}
+			if r.SoaMbox != "DEFAULT_NOT_SET." {
+				r.SoaMbox = strings.ToLower(r.SoaMbox)
+			}
 		default:
 			// TODO: we'd like to panic here, but custom record types complicate things.
 		}
