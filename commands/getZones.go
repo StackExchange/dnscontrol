@@ -151,11 +151,11 @@ func GetZone(args GetZoneArgs) error {
 	for i, recs := range zoneRecs {
 		zoneName := zones[i]
 
-		z := prettyzone.PrettySort(recs, zoneName, 0)
+		z := prettyzone.PrettySort(recs, zoneName, 0, nil)
 		switch args.OutputFormat {
 		case "pretty":
 			fmt.Fprintf(w, "$ORIGIN %s.\n", zoneName)
-			prettyzone.WriteZoneFileRC(w, z.Records, zoneName)
+			prettyzone.WriteZoneFileRC(w, z.Records, zoneName, nil)
 			fmt.Fprintln(w)
 		case "dsl":
 
