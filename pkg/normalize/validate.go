@@ -430,20 +430,32 @@ func checkDuplicates(records []*models.RecordConfig) (errs []error) {
 	return errs
 }
 
-func checkProviderCapabilities(dc *models.DomainConfig) error {
-	types := []struct {
-		rType string
-		cap   providers.Capability
-	}{
+// We pull this out of checkProviderCapabilities() so that it's visible within
+// the package elsewhere, so that our test suite can look at the list of
+// capabilities we're checking and make sure that it's up-to-date.
+var providerCapabilityChecks []pairTypeCapability
+
+type pairTypeCapability struct {
+	rType string
+	cap   providers.Capability
+}
+
+func init() {
+	providerCapabilityChecks = []pairTypeCapability{
 		{"ALIAS", providers.CanUseAlias},
 		{"AUTODNSSEC", providers.CanAutoDNSSEC},
 		{"CAA", providers.CanUseCAA},
+		{"NAPTR", providers.CanUseNAPTR},
 		{"PTR", providers.CanUsePTR},
+		{"R53_ALIAS", providers.CanUseRoute53Alias},
 		{"SSHFP", providers.CanUseSSHFP},
 		{"SRV", providers.CanUseSRV},
 		{"TLSA", providers.CanUseTLSA},
 	}
-	for _, ty := range types {
+}
+
+func checkProviderCapabilities(dc *models.DomainConfig) error {
+	for _, ty := range providerCapabilityChecks {
 		hasAny := false
 		switch ty.rType {
 		case "AUTODNSSEC":
