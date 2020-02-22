@@ -84,13 +84,12 @@ type RecordConfig struct {
 	NaptrRegexp      string            `json:"naptrregexp,omitempty"`
 	SshfpAlgorithm   uint8             `json:"sshfpalgorithm,omitempty"`
 	SshfpFingerprint uint8             `json:"sshfpfingerprint,omitempty"`
-	SoaNs            string            `json:"soans,omitempty"`
 	SoaMbox          string            `json:"soambox,omitempty"`
-	SoaSerial        string            `json:"soaserial,omitempty"`
-	SoaRefresh       string            `json:"soarefresh,omitempty"`
-	SoaRetry         string            `json:"soaretry,omitempty"`
-	SoaExpire        string            `json:"soaexpire,omitempty"`
-	SoaMinttl        string            `json:"soaminttl,omitempty"`
+	SoaSerial        uint32            `json:"soaserial,omitempty"`
+	SoaRefresh       uint32            `json:"soarefresh,omitempty"`
+	SoaRetry         uint32            `json:"soaretry,omitempty"`
+	SoaExpire        uint32            `json:"soaexpire,omitempty"`
+	SoaMinttl        uint32            `json:"soaminttl,omitempty"`
 	TlsaUsage        uint8             `json:"tlsausage,omitempty"`
 	TlsaSelector     uint8             `json:"tlsaselector,omitempty"`
 	TlsaMatchingType uint8             `json:"tlsamatchingtype,omitempty"`
@@ -253,15 +252,13 @@ func (rc *RecordConfig) ToRR() dns.RR {
 	case dns.TypeNS:
 		rr.(*dns.NS).Ns = rc.GetTargetField()
 	case dns.TypeSOA:
-		t := strings.Replace(rc.GetTargetField(), `\ `, ` `, -1)
-		parts := strings.Fields(t)
-		rr.(*dns.SOA).Ns = parts[0]
-		rr.(*dns.SOA).Mbox = parts[1]
-		rr.(*dns.SOA).Serial = atou32(parts[2])
-		rr.(*dns.SOA).Refresh = atou32(parts[3])
-		rr.(*dns.SOA).Retry = atou32(parts[4])
-		rr.(*dns.SOA).Expire = atou32(parts[5])
-		rr.(*dns.SOA).Minttl = atou32(parts[6])
+		rr.(*dns.SOA).Ns = rc.GetTargetField()
+		rr.(*dns.SOA).Mbox = rc.SoaMbox
+		rr.(*dns.SOA).Serial = rc.SoaSerial
+		rr.(*dns.SOA).Refresh = rc.SoaRefresh
+		rr.(*dns.SOA).Retry = rc.SoaRetry
+		rr.(*dns.SOA).Expire = rc.SoaExpire
+		rr.(*dns.SOA).Minttl = rc.SoaMinttl
 	case dns.TypeSRV:
 		rr.(*dns.SRV).Priority = rc.SrvPriority
 		rr.(*dns.SRV).Weight = rc.SrvWeight
@@ -325,28 +322,28 @@ func (recs Records) HasRecordTypeName(rtype, name string) bool {
 
 // FQDNMap returns a map of all LabelFQDNs. Useful for making a
 // truthtable of labels that exist in Records.
-func (r Records) FQDNMap() (m map[string]bool) {
+func (recs Records) FQDNMap() (m map[string]bool) {
 	m = map[string]bool{}
-	for _, rec := range r {
+	for _, rec := range recs {
 		m[rec.GetLabelFQDN()] = true
 	}
 	return m
 }
 
-// Grouped returns a map of keys to records.
-func (r Records) GroupedByKey() map[RecordKey]Records {
+// GroupedByKey returns a map of keys to records.
+func (recs Records) GroupedByKey() map[RecordKey]Records {
 	groups := map[RecordKey]Records{}
-	for _, rec := range r {
+	for _, rec := range recs {
 		groups[rec.Key()] = append(groups[rec.Key()], rec)
 	}
 	return groups
 }
 
 // GroupedByLabel returns a map of keys to records, and their original key order.
-func (r Records) GroupedByLabel() ([]string, map[string]Records) {
+func (recs Records) GroupedByLabel() ([]string, map[string]Records) {
 	order := []string{}
 	groups := map[string]Records{}
-	for _, rec := range r {
+	for _, rec := range recs {
 		if _, found := groups[rec.Name]; !found {
 			order = append(order, rec.Name)
 		}
@@ -356,10 +353,10 @@ func (r Records) GroupedByLabel() ([]string, map[string]Records) {
 }
 
 // GroupedByFQDN returns a map of keys to records, grouped by FQDN.
-func (r Records) GroupedByFQDN() ([]string, map[string]Records) {
+func (recs Records) GroupedByFQDN() ([]string, map[string]Records) {
 	order := []string{}
 	groups := map[string]Records{}
-	for _, rec := range r {
+	for _, rec := range recs {
 		namefqdn := rec.GetLabelFQDN()
 		if _, found := groups[namefqdn]; !found {
 			order = append(order, namefqdn)
@@ -383,9 +380,12 @@ func downcase(recs []*RecordConfig) {
 		case "ANAME", "CNAME", "MX", "NS", "PTR", "NAPTR", "SRV":
 			// These record types have a target that is case insensitive, so we downcase it.
 			r.Target = strings.ToLower(r.Target)
-		case "A", "AAAA", "ALIAS", "CAA", "IMPORT_TRANSFORM", "TLSA", "TXT", "SOA", "SSHFP", "CF_REDIRECT", "CF_TEMP_REDIRECT":
+		case "A", "AAAA", "ALIAS", "CAA", "IMPORT_TRANSFORM", "TLSA", "TXT", "SSHFP", "CF_REDIRECT", "CF_TEMP_REDIRECT":
 			// These record types have a target that is case sensitive, or is an IP address. We leave them alone.
 			// Do nothing.
+		case "SOA":
+			r.Target = strings.ToLower(r.Target) // .Target stores the Ns
+			r.SoaMbox = strings.ToLower(r.SoaMbox)
 		default:
 			// TODO: we'd like to panic here, but custom record types complicate things.
 		}

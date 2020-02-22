@@ -42,24 +42,20 @@ func (rc *RecordConfig) String() string {
 // Conversions
 
 // RRstoRCs converts []dns.RR to []RecordConfigs.
-func RRstoRCs(rrs []dns.RR, origin string, replaceSerial uint32) Records {
+func RRstoRCs(rrs []dns.RR, origin string) Records {
 	rcs := make(Records, 0, len(rrs))
-	var x uint32
 	for _, r := range rrs {
 		var rc RecordConfig
-		//fmt.Printf("CONVERT: %+v\n", r)
-		rc, x = RRtoRC(r, origin, replaceSerial)
-		replaceSerial = x
+		rc = RRtoRC(r, origin)
 		rcs = append(rcs, &rc)
 	}
 	return rcs
 }
 
 // RRtoRC converts dns.RR to RecordConfig
-func RRtoRC(rr dns.RR, origin string) (RecordConfig, uint32) {
+func RRtoRC(rr dns.RR, origin string) RecordConfig {
 	// Convert's dns.RR into our native data type (RecordConfig).
 	// Records are translated directly with no changes.
-	var oldSerial, newSerial uint32
 	header := rr.Header()
 	rc := new(RecordConfig)
 	rc.Type = dns.TypeToString[header.Rrtype]
@@ -84,7 +80,7 @@ func RRtoRC(rr dns.RR, origin string) (RecordConfig, uint32) {
 	case *dns.NAPTR:
 		panicInvalid(rc.SetTargetNAPTR(v.Order, v.Preference, v.Flags, v.Service, v.Regexp, v.Replacement))
 	case *dns.SOA:
-		panicInvalid(rc.SetTargetSOA(v.Ns, v.Mbox, newSerial, v.Refresh, v.Retry, v.Expire, v.Minttl))
+		panicInvalid(rc.SetTargetSOA(v.Ns, v.Mbox, v.Serial, v.Refresh, v.Retry, v.Expire, v.Minttl))
 	case *dns.SRV:
 		panicInvalid(rc.SetTargetSRV(v.Priority, v.Weight, v.Port, v.Target))
 	case *dns.SSHFP:
@@ -96,7 +92,7 @@ func RRtoRC(rr dns.RR, origin string) (RecordConfig, uint32) {
 	default:
 		log.Fatalf("rrToRecord: Unimplemented zone record type=%s (%v)\n", rc.Type, rr)
 	}
-	return *rc, oldSerial
+	return *rc
 }
 
 func panicInvalid(err error) {

@@ -28,6 +28,7 @@ import (
 	"github.com/StackExchange/dnscontrol/v2/pkg/prettyzone"
 	"github.com/StackExchange/dnscontrol/v2/providers"
 	"github.com/StackExchange/dnscontrol/v2/providers/diff"
+	"github.com/miekg/dns"
 )
 
 var features = providers.DocumentationNotes{
@@ -69,7 +70,7 @@ func init() {
 	providers.RegisterDomainServiceProviderType("BIND", initBind, features)
 }
 
-// SoaInfo contains the parts of a SOA rtype.
+// SoaInfo contains the parts of the default SOA settings.
 type SoaInfo struct {
 	Ns      string `json:"master"`
 	Mbox    string `json:"mbox"`
@@ -95,7 +96,7 @@ type Bind struct {
 }
 
 func makeDefaultSOA(info SoaInfo, origin string) *models.RecordConfig {
-	// Make a default SOA record in case one isn't found:
+	// Create a SOA record, using the metadata as defaults.
 	soaRec := models.RecordConfig{
 		Type: "SOA",
 	}
@@ -134,7 +135,7 @@ func (c *Bind) GetNameservers(string) ([]*models.Nameserver, error) {
 // ListZones returns all the zones in an account
 func (c *Bind) ListZones() ([]string, error) {
 	if _, err := os.Stat(c.directory); os.IsNotExist(err) {
-		return nil, fmt.Errorf("BIND directory %q does not exist!\n", c.directory)
+		return nil, fmt.Errorf("directory %q does not exist", c.directory)
 	}
 
 	filenames, err := filepath.Glob(filepath.Join(c.directory, "*.zone"))
@@ -151,10 +152,7 @@ func (c *Bind) ListZones() ([]string, error) {
 
 // GetZoneRecords gets the records of a zone and returns them in RecordConfig format.
 func (c *Bind) GetZoneRecords(domain string) (models.Records, error) {
-	fmt.Printf("GET ZONES\n")
-
 	foundRecords := models.Records{}
-	var oldSerial, newSerial uint32
 
 	if _, err := os.Stat(c.directory); os.IsNotExist(err) {
 		fmt.Printf("\nWARNING: BIND directory %q does not exist!\n", c.directory)
@@ -166,35 +164,26 @@ func (c *Bind) GetZoneRecords(domain string) (models.Records, error) {
 
 	content, err := ioutil.ReadFile(c.zonefile)
 	if os.IsNotExist(err) {
-		// If the file doesn't exist, that's not an error. Just a warning.
-		fmt.Fprintf(os.StdErr, "File not found: '%v'\n", c.zonefile)
+		// If the file doesn't exist, that's not an error. Just informational.
+		fmt.Fprintf(os.Stderr, "File not found: '%v'\n", c.zonefile)
 		return nil, nil
 	}
 	if err != nil {
 		return nil, fmt.Errorf("can't open %s: %w", c.zonefile, err)
 	}
 
-	zp := NewZoneParser(strings.NewReader(z), "", "")
+	zp := dns.NewZoneParser(strings.NewReader(string(content)), domain, c.zonefile)
 
 	for rr, ok := zp.Next(); ok; rr, ok = zp.Next() {
-		// Do something with rr
+		rec := models.RRtoRC(rr, domain)
+		foundRecords = append(foundRecords, &rec)
 	}
 
 	if err := zp.Err(); err != nil {
-		// log.Println(err)
+		return nil, fmt.Errorf("error while parsing '%v': %w", c.zonefile, err)
 	}
+	return foundRecords, nil
 
-	//	foundFH, err := os.Open(zonefile)
-	//	c.zoneFileFound = err == nil
-	//	var seenSoa bool = false
-	//	if err != nil && !os.IsNotExist(os.ErrNotExist) {
-	//		// Don't whine if the file doesn't exist. However all other
-	//		// errors will be reported.
-	//		fmt.Printf("Could not read zonefile: %v\n", err)
-	//	} else {
-	//		// TODO(tlim): ParseZone is deprecated. Change to dns.ZoneParser.
-	//		// FIXME(tlim): If the file doesn't exist, the system outputs a
-	//		// misleading message: "dns: invalid argument: "" at line: 0:0"
 	//		for x := range dns.ParseZone(foundFH, domain, zonefile) {
 	//			if x.Error != nil {
 	//				log.Println("Error in zonefile:", x.Error)
@@ -219,7 +208,6 @@ func (c *Bind) GetZoneRecords(domain string) (models.Records, error) {
 	//		}
 	//	}
 	//
-	return foundRecords, nil
 }
 
 // GetDomainCorrections returns a list of corrections to update a domain.
@@ -254,12 +242,9 @@ func (c *Bind) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Correcti
 		comments = append(comments, "Automatic DNSSEC signing requested")
 	}
 
-	// Add SOA record to expected set:
-	//log.Printf("FOUND SOA? %v\n", foundRecords.HasRecordTypeName("SOA", "@"))
-	//log.Printf(" SEEN SOA? %v\n", seenSoa)
-	// Default SOA record.  If we see one in the zone, this will be replaced.
-	soaRec := makeDefaultSOA(c.DefaultSoa, dc.Name)
+	// If there was no SOA, insert one.
 	if !dc.Records.HasRecordTypeName("SOA", "@") {
+		soaRec := makeDefaultSOA(c.DefaultSoa, dc.Name)
 		log.Printf("APPENDING: %v: %v\n", soaRec.Type, soaRec)
 		dc.Records = append(dc.Records, soaRec)
 	}

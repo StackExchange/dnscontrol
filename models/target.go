@@ -51,7 +51,9 @@ func (rc *RecordConfig) GetTargetCombined() string {
 		switch rc.Type { // #rtype_variations
 		case "R53_ALIAS":
 			// Differentiate between multiple R53_ALIASs on the same label.
-			return fmt.Sprintf("%s type=%s zone_id=%s", rc.Target, rc.R53Alias["type"], rc.R53Alias["zone_id"])
+			return fmt.Sprintf("%s atype=%s zone_id=%s", rc.Target, rc.R53Alias["type"], rc.R53Alias["zone_id"])
+		case "SOA":
+			return fmt.Sprintf("%s X %v %d %d %d %d %d XX", rc.Target, rc.SoaMbox, rc.SoaSerial, rc.SoaRefresh, rc.SoaRetry, rc.SoaExpire, rc.SoaMinttl)
 		default:
 			// Just return the target.
 			return rc.Target
@@ -88,7 +90,7 @@ func (rc *RecordConfig) GetTargetDebug() string {
 	case "MX":
 		content += fmt.Sprintf(" pref=%d", rc.MxPreference)
 	case "SOA":
-		content = fmt.Sprintf("%s %s %s %d", rc.Type, rc.Name, rc.Target, rc.TTL)
+		content = fmt.Sprintf("%s ns=%v mbox=%v serial=%v refresh=%v retry=%v expire=%v minttl=%v", rc.Type, rc.Target, rc.SoaMbox, rc.SoaSerial, rc.SoaRefresh, rc.SoaRetry, rc.SoaExpire, rc.SoaMinttl)
 	case "SRV":
 		content += fmt.Sprintf(" srvpriority=%d srvweight=%d srvport=%d", rc.SrvPriority, rc.SrvWeight, rc.SrvPort)
 	case "SSHFP":
