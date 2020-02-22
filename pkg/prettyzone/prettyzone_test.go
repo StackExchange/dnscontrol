@@ -295,8 +295,12 @@ func TestWriteZoneFileSynth(t *testing.T) {
 	recs = append(recs, rsynz)
 
 	buf := &bytes.Buffer{}
-	WriteZoneFileRC(buf, recs, "bosun.org")
+	WriteZoneFileRC(buf, recs, "bosun.org", []string{"c1", "c2", "c3\nc4"})
 	expected := `$TTL 300
+; c1
+; c2
+; c3
+; c4
 @                IN A     192.30.252.153
                  IN A     192.30.252.154
 ;myalias          IN R53_ALIAS  type= zone_id=
