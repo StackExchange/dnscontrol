@@ -56,13 +56,9 @@ func RRstoRCs(rrs []dns.RR, origin string, replaceSerial uint32) Records {
 }
 
 // RRtoRC converts dns.RR to RecordConfig
-func RRtoRC(rr dns.RR, origin string, replaceSerial uint32) (RecordConfig, uint32) {
+func RRtoRC(rr dns.RR, origin string) (RecordConfig, uint32) {
 	// Convert's dns.RR into our native data type (RecordConfig).
 	// Records are translated directly with no changes.
-	// If it is an SOA for the apex domain and
-	// replaceSerial != 0, change the serial to replaceSerial.
-	// WARNING(tlim): This assumes SOAs do not have serial=0.
-	// If one is found, we replace it with serial=1.
 	var oldSerial, newSerial uint32
 	header := rr.Header()
 	rc := new(RecordConfig)
@@ -88,20 +84,7 @@ func RRtoRC(rr dns.RR, origin string, replaceSerial uint32) (RecordConfig, uint3
 	case *dns.NAPTR:
 		panicInvalid(rc.SetTargetNAPTR(v.Order, v.Preference, v.Flags, v.Service, v.Regexp, v.Replacement))
 	case *dns.SOA:
-		oldSerial = v.Serial
-		if oldSerial == 0 {
-			// For SOA records, we never return a 0 serial number.
-			oldSerial = 1
-		}
-		newSerial = v.Serial
-		if rc.GetLabel() == "@" && replaceSerial != 0 {
-			newSerial = replaceSerial
-		}
-		panicInvalid(rc.SetTarget(
-			fmt.Sprintf("%v %v %v %v %v %v %v",
-				v.Ns, v.Mbox, newSerial, v.Refresh, v.Retry, v.Expire, v.Minttl),
-		))
-		// FIXME(tlim): SOA should be handled by splitting out the fields.
+		panicInvalid(rc.SetTargetSOA(v.Ns, v.Mbox, newSerial, v.Refresh, v.Retry, v.Expire, v.Minttl))
 	case *dns.SRV:
 		panicInvalid(rc.SetTargetSRV(v.Priority, v.Weight, v.Port, v.Target))
 	case *dns.SSHFP:

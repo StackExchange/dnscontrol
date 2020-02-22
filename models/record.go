@@ -84,6 +84,13 @@ type RecordConfig struct {
 	NaptrRegexp      string            `json:"naptrregexp,omitempty"`
 	SshfpAlgorithm   uint8             `json:"sshfpalgorithm,omitempty"`
 	SshfpFingerprint uint8             `json:"sshfpfingerprint,omitempty"`
+	SoaNs            string            `json:"soans,omitempty"`
+	SoaMbox          string            `json:"soambox,omitempty"`
+	SoaSerial        string            `json:"soaserial,omitempty"`
+	SoaRefresh       string            `json:"soarefresh,omitempty"`
+	SoaRetry         string            `json:"soaretry,omitempty"`
+	SoaExpire        string            `json:"soaexpire,omitempty"`
+	SoaMinttl        string            `json:"soaminttl,omitempty"`
 	TlsaUsage        uint8             `json:"tlsausage,omitempty"`
 	TlsaSelector     uint8             `json:"tlsaselector,omitempty"`
 	TlsaMatchingType uint8             `json:"tlsamatchingtype,omitempty"`
