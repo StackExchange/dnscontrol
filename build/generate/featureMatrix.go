@@ -30,6 +30,7 @@ func generateFeatureMatrix() error {
 			{"DNS Provider", "Can manage and serve DNS zones"},
 			{"Registrar", "The provider has registrar capabilities to set nameservers for zones"},
 			{"ALIAS", "Provider supports some kind of ALIAS, ANAME or flattened CNAME record type"},
+			{"AUTODNSSEC", "Provider can automatically manage DNSSEC"},
 			{"CAA", "Provider can manage CAA records"},
 			{"PTR", "Provider supports adding PTR records for reverse lookup zones"},
 			{"NAPTR", "Provider can manage NAPTR records"},
@@ -74,6 +75,7 @@ func generateFeatureMatrix() error {
 		fm.SetSimple("DNS Provider", false, func() bool { return providers.DNSProviderTypes[p] != nil })
 		fm.SetSimple("Registrar", false, func() bool { return providers.RegistrarTypes[p] != nil })
 		setCap("ALIAS", providers.CanUseAlias)
+		setCap("AUTODNSSEC", providers.CanAutoDNSSEC)
 		setCap("CAA", providers.CanUseCAA)
 		setCap("NAPTR", providers.CanUseNAPTR)
 		setCap("PTR", providers.CanUsePTR)

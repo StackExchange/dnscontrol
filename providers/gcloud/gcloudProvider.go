@@ -108,7 +108,7 @@ func (g *gcloud) loadZoneInfo() error {
 // ListZones returns the list of zones (domains) in this account.
 func (g *gcloud) ListZones() ([]string, error) {
 	var zones []string
-	for i, _ := range g.zones {
+	for i := range g.zones {
 		zones = append(zones, strings.TrimSuffix(i, "."))
 	}
 	return zones, nil

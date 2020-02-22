@@ -436,23 +436,34 @@ func checkProviderCapabilities(dc *models.DomainConfig) error {
 		cap   providers.Capability
 	}{
 		{"ALIAS", providers.CanUseAlias},
-		{"PTR", providers.CanUsePTR},
-		{"SRV", providers.CanUseSRV},
+		{"AUTODNSSEC", providers.CanAutoDNSSEC},
 		{"CAA", providers.CanUseCAA},
+		{"PTR", providers.CanUsePTR},
+		{"SSHFP", providers.CanUseSSHFP},
+		{"SRV", providers.CanUseSRV},
 		{"TLSA", providers.CanUseTLSA},
 	}
 	for _, ty := range types {
 		hasAny := false
-		for _, r := range dc.Records {
-			if r.Type == ty.rType {
+		switch ty.rType {
+		case "AUTODNSSEC":
+			if dc.AutoDNSSEC {
 				hasAny = true
-				break
 			}
+		default:
+			for _, r := range dc.Records {
+				if r.Type == ty.rType {
+					hasAny = true
+					break
+				}
+			}
+
 		}
 		if !hasAny {
 			continue
 		}
 		for _, provider := range dc.DNSProviderInstances {
+			// fmt.Printf("  (checking if %q can %q for domain %q)\n", provider.ProviderType, ty.rType, dc.Name)
 			if !providers.ProviderHasCapability(provider.ProviderType, ty.cap) {
 				return fmt.Errorf("Domain %s uses %s records, but DNS provider type %s does not support them", dc.Name, ty.rType, provider.ProviderType)
 			}

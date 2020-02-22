@@ -1,0 +1,13 @@
+{
+  "registrars": [],
+  "dns_providers": [],
+  "domains": [
+    {
+      "name": "foo.com",
+      "registrar": "none",
+      "dnsProviders": {},
+      "records":[],
+      "auto_dnssec": true
+    }
+  ]
+}
