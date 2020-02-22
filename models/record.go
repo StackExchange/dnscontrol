@@ -187,6 +187,10 @@ func (rc *RecordConfig) GetLabelFQDN() string {
 // extraMaps: a list of maps that should be included in the comparison.
 func (rc *RecordConfig) ToDiffable(extraMaps ...map[string]string) string {
 	content := fmt.Sprintf("%v ttl=%d", rc.GetTargetCombined(), rc.TTL)
+	if rc.Type == "SOA" {
+		content = fmt.Sprintf("%s %v %d %d %d %d ttl=%d", rc.Target, rc.SoaMbox, rc.SoaRefresh, rc.SoaRetry, rc.SoaExpire, rc.SoaMinttl, rc.TTL)
+		// SoaSerial is not used in comparison
+	}
 	for _, valueMap := range extraMaps {
 		// sort the extra values map keys to perform a deterministic
 		// comparison since Golang maps iteration order is not guaranteed

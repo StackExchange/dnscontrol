@@ -550,7 +550,7 @@ func (c *cfRecord) nativeToRecord(domain string) *models.RecordConfig {
 	}
 	rc.SetLabelFromFQDN(c.Name, domain)
 
-	// workaround for https://github.com/StackExchange/dnscontrol/v2/issues/446
+	// workaround for https://github.com/StackExchange/dnscontrol/issues/446
 	if c.Type == "SPF" {
 		c.Type = "TXT"
 	}

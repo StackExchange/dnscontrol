@@ -54,6 +54,9 @@ func (d *differ) content(r *models.RecordConfig) string {
 	// its output with r.GetTargetDiffable() to make sure the same
 	// results are generated.  Once we have confidence, this function will go away.
 	content := fmt.Sprintf("%v ttl=%d", r.GetTargetCombined(), r.TTL)
+	if r.Type == "SOA" {
+		content = fmt.Sprintf("%s %v %d %d %d %d ttl=%d", r.Target, r.SoaMbox, r.SoaRefresh, r.SoaRetry, r.SoaExpire, r.SoaMinttl, r.TTL) // SoaSerial is not used in comparison
+	}
 	var allMaps []map[string]string
 	for _, f := range d.extraValues {
 		// sort the extra values map keys to perform a deterministic
@@ -72,6 +75,7 @@ func (d *differ) content(r *models.RecordConfig) string {
 	}
 	control := r.ToDiffable(allMaps...)
 	if control != content {
+		fmt.Printf("CONTROL=%q CONTENT=%q\n", control, content)
 		panic("OOPS! control != content")
 	}
 	return content

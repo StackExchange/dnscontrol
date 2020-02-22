@@ -35,7 +35,7 @@ func DetermineNameservers(dc *models.DomainConfig) ([]*models.Nameserver, error)
 			// FIXME(tlim): Rather than correct broken providers, we should print
 			// a warning that the provider should be updated to store the FQDN
 			// with no trailing dot.  See also providers/namedotcom/nameservers.go
-			// Bug https://github.com/StackExchange/dnscontrol/v2/issues/491
+			// Bug https://github.com/StackExchange/dnscontrol/issues/491
 			ns = append(ns, nss[i])
 		}
 	}

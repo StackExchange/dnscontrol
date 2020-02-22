@@ -293,7 +293,7 @@ func (c *Bind) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Correcti
 	corrections := []*models.Correction{}
 	if changes {
 
-		// If there were changes, increment the SOA number:
+		// increment the SOA serial number:
 		for _, r := range dc.Records {
 			if r.Type == "SOA" && r.Name == "@" {
 				r.SoaSerial = generateSerial(r.SoaSerial)
