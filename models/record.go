@@ -28,6 +28,7 @@ import (
 //     TXT
 //   Pseudo-Types:
 //     ALIAS
+//     AUTODNSSEC
 //     CF_REDIRECT
 //     CF_TEMP_REDIRECT
 //     FRAME
