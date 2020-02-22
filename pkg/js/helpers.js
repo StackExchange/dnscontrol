@@ -413,6 +413,11 @@ function NO_PURGE(d) {
     d.KeepUnknown = true;
 }
 
+// AUTODNSSEC()
+function AUTODNSSEC(d) {
+    d.auto_dnssec = true;
+}
+
 /**
  * @deprecated
  */
