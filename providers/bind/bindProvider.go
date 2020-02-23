@@ -95,49 +95,6 @@ type Bind struct {
 	zoneFileFound bool   // Did the zonefile exist?
 }
 
-func makeDefaultSOA(info SoaInfo, origin string) *models.RecordConfig {
-	// Create a SOA record, using the metadata as defaults.
-	soaRec := models.RecordConfig{}
-	soaRec.SetLabel("@", origin)
-	soaRec.TTL = models.DefaultTTL
-
-	ns := info.Ns
-	if ns == "" {
-		ns = "DEFAULT_NOT_SET."
-	}
-
-	mbox := info.Mbox
-	if mbox == "" {
-		mbox = "DEFAULT_NOT_SET."
-	}
-
-	serial := info.Serial
-	if serial == 0 {
-		serial = 1
-	}
-
-	refresh := info.Refresh
-	if refresh == 0 {
-		refresh = 3600
-	}
-
-	retry := info.Retry
-	if retry == 0 {
-		retry = 600
-	}
-	expire := info.Expire
-	if expire == 0 {
-		expire = 604800
-	}
-	minttl := info.Minttl
-	if minttl == 0 {
-		minttl = 1440
-	}
-	soaRec.SetTargetSOA(ns, mbox, serial, refresh, retry, expire, minttl)
-
-	return &soaRec
-}
-
 // GetNameservers returns the nameservers for a domain.
 func (c *Bind) GetNameservers(string) ([]*models.Nameserver, error) {
 	return c.nameservers, nil
@@ -217,13 +174,72 @@ func (c *Bind) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Correcti
 		return nil, err
 	}
 
-	// Create the SOA in the desired records list.  It shouldn't exist
-	// already, but we call HasRecordTypeName just in case.
-	if dc.Records.HasRecordTypeName("SOA", "@") {
-		fmt.Printf("WARNING: Desired records includes an SOA already (should not happen).\n")
-	} else {
-		soaRec := makeDefaultSOA(c.DefaultSoa, dc.Name)
+	/*
+
+				try1:
+
+				Create a blank RC SOA: prototypeSoa
+				find the foundSoa: copy the fields into prototypeSoa.
+				find the desiredSoa: copy any non-blank fields into prototypeSoa.
+				if any prototypeSoa fields are blank, copy from c.DefaultSoa.
+				*desiredSoa = prototypeSoa
+
+				try2:
+				find the desiredSoa. If not found, create a blank and append to dc.Records.
+				find the foundSoa.  if any fields in desiredSoa are blank, copy from foundSoa.
+				if any fields in desiredSoa are still blank, copy from c.DefaultSoa.
+
+				try3:
+				find the desiredSoa. If not found, create a blank and append to dc.Records. desiredSoa=&
+				find the foundSoa.
+				*desiredSoa = makeNewSoa(foundSoa, desiredSoa, cc.DefaultSoa):
+							if any fields in desiredSoa are blank, copy from foundSoa.
+				      if any fields in desiredSoa are blank, copy from c.DefaultSoa.
+							return a new RC
+
+				try4:
+
+				find the existingSoa or nil.
+				find the desiredSoa or nil.
+				soa, nextSerial := makeSoa(c.DefaultSoa, existingSoa, desiredSoa)
+				if desiredSoa == nil {
+					append soa
+		  	else:
+					*desiredSoa = soa
+
+					func makeSoa(c.DefaultSoa, existingSoa, desiredSoa) {
+				      Create a blank RC SOA: prototypeSoa
+				      if any fields are blank, copy from desiredSoa
+				      if any fields are blank, copy from existingSoa
+				      if any fields are blank, copy from c.DefaultSoa
+				      if any fields are blank, set hardcoded default
+							newSerial = generateSerial(prototypeSoa.SoaSerial)
+							return prototypeSoa, newSerial
+					}
+
+	*/
+
+	// Find the SOA records, use them to make or update the desired SOA.
+	var foundSoa *models.RecordConfig
+	for _, r := range foundRecords {
+		if r.Type == "SOA" && r.Name == "@" {
+			foundSoa = r
+			break
+		}
+	}
+	var desiredSoa *models.RecordConfig
+	for _, r := range dc.Records {
+		if r.Type == "SOA" && r.Name == "@" {
+			desiredSoa = r
+			break
+		}
+	}
+	soaRec, nextSerial := makeSoa(dc.Name, &c.DefaultSoa, foundSoa, desiredSoa)
+	if desiredSoa == nil {
 		dc.Records = append(dc.Records, soaRec)
+		desiredSoa = dc.Records[len(dc.Records)-1]
+	} else {
+		*desiredSoa = *soaRec
 	}
 
 	// Normalize
@@ -264,22 +280,8 @@ func (c *Bind) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Correcti
 	corrections := []*models.Correction{}
 	if changes {
 
-		// Increment the SOA serial number:
-		// Take the serial from foundRecords and use it to generate the
-		// serial from the dc.Records.
-		oldSerial := uint32(1)
-		for _, r := range foundRecords {
-			if r.Type == "SOA" && r.Name == "@" {
-				oldSerial = r.SoaSerial
-				break
-			}
-		}
-		for _, r := range dc.Records {
-			if r.Type == "SOA" && r.Name == "@" {
-				r.SoaSerial = generateSerial(oldSerial)
-				break
-			}
-		}
+		// We only change the serial number if there is a change.
+		desiredSoa.SoaSerial = nextSerial
 
 		corrections = append(corrections,
 			&models.Correction{
