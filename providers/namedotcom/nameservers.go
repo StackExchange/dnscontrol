@@ -57,7 +57,7 @@ func (n *NameCom) GetRegistrarCorrections(dc *models.DomainConfig) ([]*models.Co
 		expected = append(expected, ns.Name)
 		// FIXME(tlim): This should store a FQDN with no trailing ".".
 		// See pkg/nameservers/nameservers.go for details.
-		// Bug https://github.com/StackExchange/dnscontrol/v2/issues/491
+		// Bug https://github.com/StackExchange/dnscontrol/issues/491
 	}
 	sort.Strings(expected)
 	expectedNameservers := strings.Join(expected, ",")

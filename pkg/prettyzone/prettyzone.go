@@ -44,8 +44,8 @@ func mostCommonTTL(records models.Records) uint32 {
 }
 
 // WriteZoneFileRR is a helper for when you have []dns.RR instead of models.Records
-func WriteZoneFileRR(w io.Writer, records []dns.RR, origin string, serial uint32) error {
-	return WriteZoneFileRC(w, models.RRstoRCs(records, origin, serial), origin, nil)
+func WriteZoneFileRR(w io.Writer, records []dns.RR, origin string) error {
+	return WriteZoneFileRC(w, models.RRstoRCs(records, origin), origin, nil)
 }
 
 // WriteZoneFileRC writes a beautifully formatted zone file.
