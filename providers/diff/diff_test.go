@@ -263,7 +263,7 @@ func TestInvalidGlobIgnoredRecord(t *testing.T) {
 	checkLengthsFull(t, existing, desired, 0, 1, 0, 0, false, []string{"www1", "www2", "[.www3"})
 }
 
-// from https://github.com/StackExchange/dnscontrol/v2/issues/552
+// from https://github.com/StackExchange/dnscontrol/issues/552
 func TestCaas(t *testing.T) {
 	existing := []*models.RecordConfig{
 		myRecord("test CAA 1 1.1.1.1"),

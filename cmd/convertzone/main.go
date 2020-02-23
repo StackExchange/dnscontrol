@@ -83,7 +83,7 @@ func main() {
 
 	switch *flagOutfmt {
 	case "pretty":
-		prettyzone.WriteZoneFileRR(os.Stdout, recs, zonename, 0)
+		prettyzone.WriteZoneFileRR(os.Stdout, recs, zonename)
 	case "dsl":
 		fmt.Printf(`D("%s", %s, DnsProvider(%s)`, zonename, *flagRegText, *flagProviderText)
 		rrFormat(zonename, filename, recs, defTTL, true)

@@ -43,6 +43,8 @@ func (r *RecordConfig) PopulateFromString(rtype, contents, origin string) error 
 		return r.SetTargetNAPTRString(contents)
 	case "SRV":
 		return r.SetTargetSRVString(contents)
+	case "SOA":
+		return r.SetTargetSOAString(contents)
 	case "SSHFP":
 		return r.SetTargetSSHFPString(contents)
 	case "TLSA":
