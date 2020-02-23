@@ -23,7 +23,7 @@ func Test_makeSoa(t *testing.T) {
 			&models.RecordConfig{Target: "", SoaMbox: "", SoaSerial: 0, SoaRefresh: 0, SoaRetry: 0, SoaExpire: 0, SoaMinttl: 0},
 			&models.RecordConfig{Target: "", SoaMbox: "", SoaSerial: 0, SoaRefresh: 0, SoaRetry: 0, SoaExpire: 0, SoaMinttl: 0},
 			&models.RecordConfig{Target: "DEFAULT_NOT_SET.", SoaMbox: "DEFAULT_NOT_SET.", SoaSerial: 1, SoaRefresh: 3600, SoaRetry: 600, SoaExpire: 604800, SoaMinttl: 1440},
-			2019022301,
+			2019022300,
 		},
 		{
 			// If everything is filled, leave the desired values in place.
@@ -31,7 +31,7 @@ func Test_makeSoa(t *testing.T) {
 			&models.RecordConfig{Target: "a", SoaMbox: "aa", SoaSerial: 10, SoaRefresh: 11, SoaRetry: 12, SoaExpire: 13, SoaMinttl: 14},
 			&models.RecordConfig{Target: "b", SoaMbox: "bb", SoaSerial: 15, SoaRefresh: 16, SoaRetry: 17, SoaExpire: 18, SoaMinttl: 19},
 			&models.RecordConfig{Target: "b", SoaMbox: "bb", SoaSerial: 15, SoaRefresh: 16, SoaRetry: 17, SoaExpire: 18, SoaMinttl: 19},
-			2019022301,
+			2019022300,
 		},
 		{
 			// Test incrementing serial.
@@ -55,7 +55,7 @@ func Test_makeSoa(t *testing.T) {
 			&models.RecordConfig{Target: "", SoaMbox: "aa", SoaSerial: 0, SoaRefresh: 11, SoaRetry: 0, SoaExpire: 13, SoaMinttl: 0},
 			&models.RecordConfig{Target: "b", SoaMbox: "", SoaSerial: 15, SoaRefresh: 0, SoaRetry: 17, SoaExpire: 0, SoaMinttl: 19},
 			&models.RecordConfig{Target: "b", SoaMbox: "aa", SoaSerial: 15, SoaRefresh: 11, SoaRetry: 17, SoaExpire: 13, SoaMinttl: 19},
-			2019022301,
+			2019022300,
 		},
 		{
 			// Gaps + existing==nil
@@ -63,7 +63,7 @@ func Test_makeSoa(t *testing.T) {
 			nil,
 			&models.RecordConfig{Target: "b", SoaMbox: "", SoaSerial: 15, SoaRefresh: 0, SoaRetry: 17, SoaExpire: 0, SoaMinttl: 19},
 			&models.RecordConfig{Target: "b", SoaMbox: "root.example.com", SoaSerial: 15, SoaRefresh: 2, SoaRetry: 17, SoaExpire: 4, SoaMinttl: 19},
-			2019022301,
+			2019022300,
 		},
 		{
 			// Gaps + desired==nil
@@ -72,7 +72,7 @@ func Test_makeSoa(t *testing.T) {
 			&models.RecordConfig{Target: "", SoaMbox: "aa", SoaSerial: 0, SoaRefresh: 11, SoaRetry: 0, SoaExpire: 13, SoaMinttl: 0},
 			nil,
 			&models.RecordConfig{Target: "ns.example.com", SoaMbox: "aa", SoaSerial: 1, SoaRefresh: 11, SoaRetry: 3, SoaExpire: 13, SoaMinttl: 5},
-			2019022301,
+			2019022300,
 		},
 	}
 
