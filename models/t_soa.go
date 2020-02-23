@@ -6,6 +6,17 @@ import (
 	"strings"
 )
 
+/*
+
+Most providers do not support SOA records. They generate them
+dynamically.  Providers like BIND, which is software, not SaaS,
+therefore must handle SOA records and emulate the dynamic work that
+providers do for them.
+
+Therefore providers are not expected to support this record.
+
+*/
+
 // SetTargetSOA sets the SOA fields.
 func (rc *RecordConfig) SetTargetSOA(ns, mbox string, serial, refresh, retry, expire, minttl uint32) error {
 	rc.SetTarget(ns) // The NS field is stored as the .Target
