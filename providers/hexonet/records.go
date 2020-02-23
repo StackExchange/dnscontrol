@@ -36,7 +36,7 @@ type HXRecord struct {
 }
 
 // GetZoneRecords gets the records of a zone and returns them in RecordConfig format.
-func (client *HXClient) GetZoneRecords(domain string) (models.Records, error) {
+func (n *HXClient) GetZoneRecords(domain string) (models.Records, error) {
 	return nil, fmt.Errorf("not implemented")
 	// This enables the get-zones subcommand.
 	// Implement this by extracting the code from GetDomainCorrections into
