@@ -117,16 +117,9 @@ As you debug, if there are places that haven't been marked
 `#rtype_variations` that should be, add such a comment.
 Every time you do this, an angel gets its wings.
 
-The tests also verify that for every "capability"
-If you see an error such as this, the "MISSING" means that
-providers.CanUseCAA is not listed in the `providerCapabilityChecks`
-array in `pkg/normalize/validate.go`.  This is a
-
-```
---- FAIL: TestCapabilitiesAreFiltered (0.00s)
-    capabilities_test.go:66: ok: providers.CanUseAlias (0) is checked for with "ALIAS"
-    capabilities_test.go:68: MISSING: providers.CanUseCAA (1) is not checked by checkProviderCapabilities
-```
+The tests also verify that for every "capability" there is a
+validation. This is explained in Step 2 (search for
+`TestCapabilitiesAreFiltered` or `MISSING`)
 
 ## Step 6: Add an `integrationTest` test case.
 
