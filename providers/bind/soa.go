@@ -1,6 +1,8 @@
 package bind
 
-import "github.com/StackExchange/dnscontrol/v2/models"
+import (
+	"github.com/StackExchange/dnscontrol/v2/models"
+)
 
 func makeSoa(origin string, defSoa *SoaInfo, existing, desired *models.RecordConfig) (*models.RecordConfig, uint32) {
 	// Create a SOA record.  Take data from desired, existing, default,

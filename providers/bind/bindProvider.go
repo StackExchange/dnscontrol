@@ -174,52 +174,7 @@ func (c *Bind) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Correcti
 		return nil, err
 	}
 
-	/*
-
-				try1:
-
-				Create a blank RC SOA: prototypeSoa
-				find the foundSoa: copy the fields into prototypeSoa.
-				find the desiredSoa: copy any non-blank fields into prototypeSoa.
-				if any prototypeSoa fields are blank, copy from c.DefaultSoa.
-				*desiredSoa = prototypeSoa
-
-				try2:
-				find the desiredSoa. If not found, create a blank and append to dc.Records.
-				find the foundSoa.  if any fields in desiredSoa are blank, copy from foundSoa.
-				if any fields in desiredSoa are still blank, copy from c.DefaultSoa.
-
-				try3:
-				find the desiredSoa. If not found, create a blank and append to dc.Records. desiredSoa=&
-				find the foundSoa.
-				*desiredSoa = makeNewSoa(foundSoa, desiredSoa, cc.DefaultSoa):
-							if any fields in desiredSoa are blank, copy from foundSoa.
-				      if any fields in desiredSoa are blank, copy from c.DefaultSoa.
-							return a new RC
-
-				try4:
-
-				find the existingSoa or nil.
-				find the desiredSoa or nil.
-				soa, nextSerial := makeSoa(c.DefaultSoa, existingSoa, desiredSoa)
-				if desiredSoa == nil {
-					append soa
-		  	else:
-					*desiredSoa = soa
-
-					func makeSoa(c.DefaultSoa, existingSoa, desiredSoa) {
-				      Create a blank RC SOA: prototypeSoa
-				      if any fields are blank, copy from desiredSoa
-				      if any fields are blank, copy from existingSoa
-				      if any fields are blank, copy from c.DefaultSoa
-				      if any fields are blank, set hardcoded default
-							newSerial = generateSerial(prototypeSoa.SoaSerial)
-							return prototypeSoa, newSerial
-					}
-
-	*/
-
-	// Find the SOA records, use them to make or update the desired SOA.
+	// Find the SOA records; use them to make or update the desired SOA.
 	var foundSoa *models.RecordConfig
 	for _, r := range foundRecords {
 		if r.Type == "SOA" && r.Name == "@" {
