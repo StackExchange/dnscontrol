@@ -53,7 +53,7 @@ func (rc *RecordConfig) GetTargetCombined() string {
 			// Differentiate between multiple R53_ALIASs on the same label.
 			return fmt.Sprintf("%s atype=%s zone_id=%s", rc.Target, rc.R53Alias["type"], rc.R53Alias["zone_id"])
 		case "SOA":
-			return fmt.Sprintf("%s X %v %d %d %d %d %d XX", rc.Target, rc.SoaMbox, rc.SoaSerial, rc.SoaRefresh, rc.SoaRetry, rc.SoaExpire, rc.SoaMinttl)
+			return fmt.Sprintf("%s %v %d %d %d %d %d", rc.Target, rc.SoaMbox, rc.SoaSerial, rc.SoaRefresh, rc.SoaRetry, rc.SoaExpire, rc.SoaMinttl)
 		default:
 			// Just return the target.
 			return rc.Target

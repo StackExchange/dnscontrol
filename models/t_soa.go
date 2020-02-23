@@ -8,12 +8,12 @@ import (
 
 /*
 
-Most providers do not support SOA records. They generate them
-dynamically.  Providers like BIND, which is software, not SaaS,
-therefore must handle SOA records and emulate the dynamic work that
-providers do for them.
+Providers are not expected to support this record.
 
-Therefore providers are not expected to support this record.
+Most providers do not support SOA records. They generate them
+dynamically behind the scenes.  Providers like BIND (which is
+software, not SaaS), must handle SOA records and emulate the dynamic
+work that providers do.
 
 */
 
