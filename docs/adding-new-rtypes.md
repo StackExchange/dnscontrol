@@ -49,7 +49,7 @@ type RecordConfig struct {
 You'll need to mark which providers support this record type.  The
 initial PR should implement this record for the `bind` provider at
 a minimum, unless this is a fake or pseudo-type that only a particular
-provider supoprts.
+provider supports.
 
 * Add the capability to the file `dnscontrol/providers/capabilities.go` (look for `CanUseAlias` and add
 it to the end of the list.)
@@ -68,7 +68,7 @@ provider that does not support the capability.
 
 If the capabilities testing is not configured correctly, `go test ./...`
 will report something like the `MISSING` message below. In this
-example we removed `providers.CanUseCAA` was not in the
+example we removed `providers.CanUseCAA` from the
 `providerCapabilityChecks` list.
 
 ```
@@ -81,7 +81,7 @@ example we removed `providers.CanUseCAA` was not in the
 ## Step 3: Add a helper function
 
 Add a function to `pkg/js/helpers.js` for the new record type.  This
-is the Javascript file that defines `dnsconfig.js`'s functions like
+is the JavaScript file that defines `dnsconfig.js`'s functions like
 `A()` and `MX()`.  Look at the definition of A, MX and CAA for good
 examples to use as a base.
 
