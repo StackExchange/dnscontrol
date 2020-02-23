@@ -115,7 +115,7 @@ func (a *azureDnsProvider) GetNameservers(domain string) ([]*models.Nameserver, 
 	var ns []*models.Nameserver
 	if zone.ZoneProperties != nil {
 		for _, azureNs := range *zone.ZoneProperties.NameServers {
-			ns = append(ns, &models.Nameserver{Name: azureNs})
+			ns = append(ns, &models.Nameserver{Name: azureNs[0 : len(azureNs)-1]})
 		}
 	}
 	return ns, nil

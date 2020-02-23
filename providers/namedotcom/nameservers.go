@@ -2,6 +2,7 @@ package namedotcom
 
 import (
 	"fmt"
+	"log"
 	"regexp"
 	"sort"
 	"strings"
@@ -54,10 +55,11 @@ func (n *NameCom) GetRegistrarCorrections(dc *models.DomainConfig) ([]*models.Co
 	foundNameservers := strings.Join(nss, ",")
 	expected := []string{}
 	for _, ns := range dc.Nameservers {
+		if strings.HasSuffix(ns.Name, ".") {
+			log.Fatalf("ns.Name should not end with a '.'\n")
+			// Bug https://github.com/StackExchange/dnscontrol/issues/491
+		}
 		expected = append(expected, ns.Name)
-		// FIXME(tlim): This should store a FQDN with no trailing ".".
-		// See pkg/nameservers/nameservers.go for details.
-		// Bug https://github.com/StackExchange/dnscontrol/issues/491
 	}
 	sort.Strings(expected)
 	expectedNameservers := strings.Join(expected, ",")

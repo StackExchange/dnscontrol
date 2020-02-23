@@ -31,7 +31,10 @@ func DetermineNameservers(dc *models.DomainConfig) ([]*models.Nameserver, error)
 			take = n
 		}
 		for i := 0; i < take; i++ {
-			nss[i].Name = strings.TrimRight(nss[i].Name, ".")
+			if strings.HasSuffix(nss[i].Name, ".") {
+				fmt.Printf("PLEASE-FIX: Nameserver.Name should not end in '.': %s\n", nss[i].Name)
+				nss[i].Name = strings.TrimSuffix(nss[i].Name, ".")
+			}
 			// FIXME(tlim): Rather than correct broken providers, we should print
 			// a warning that the provider should be updated to store the FQDN
 			// with no trailing dot.  See also providers/namedotcom/nameservers.go

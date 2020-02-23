@@ -62,7 +62,11 @@ func initBind(config map[string]string, providermeta json.RawMessage) (providers
 			return nil, err
 		}
 	}
-	api.nameservers = models.StringsToNameservers(api.DefaultNS)
+	var nss []string
+	for _, ns := range api.DefaultNS {
+		nss = append(nss, ns[0:len(ns)-1])
+	}
+	api.nameservers = models.StringsToNameservers(nss)
 	return api, nil
 }
 

@@ -283,8 +283,12 @@ func NormalizeAndValidateConfig(config *models.DNSConfig) (errs []error) {
 
 		// Normalize Nameservers.
 		for _, ns := range domain.Nameservers {
+			original := ns.Name
 			ns.Name = dnsutil.AddOrigin(ns.Name, domain.Name)
 			ns.Name = strings.TrimRight(ns.Name, ".")
+			if ns.Name != original {
+				fmt.Printf("PLEASE-FIX-PROVIDER: Correcting for provider that stores domain.Nameservers with trailing '.' domain=%s ('%s' vs '%s')\n", domain.Name, original, ns.Name)
+			}
 		}
 		// Normalize Records.
 		models.PostProcessRecords(domain.Records)
