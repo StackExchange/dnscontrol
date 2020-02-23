@@ -99,6 +99,7 @@ func makeDefaultSOA(info SoaInfo, origin string) *models.RecordConfig {
 	// Create a SOA record, using the metadata as defaults.
 	soaRec := models.RecordConfig{}
 	soaRec.SetLabel("@", origin)
+	soaRec.TTL = models.DefaultTTL
 
 	ns := info.Ns
 	if ns == "" {
@@ -188,6 +189,8 @@ func (c *Bind) GetZoneRecords(domain string) (models.Records, error) {
 
 	for rr, ok := zp.Next(); ok; rr, ok = zp.Next() {
 		rec := models.RRtoRC(rr, domain)
+		if rec.Type == "SOA" {
+		}
 		foundRecords = append(foundRecords, &rec)
 	}
 
@@ -195,66 +198,31 @@ func (c *Bind) GetZoneRecords(domain string) (models.Records, error) {
 		return nil, fmt.Errorf("error while parsing '%v': %w", c.zonefile, err)
 	}
 	return foundRecords, nil
-
-	//		for x := range dns.ParseZone(foundFH, domain, zonefile) {
-	//			if x.Error != nil {
-	//				log.Println("Error in zonefile:", x.Error)
-	//			} else {
-	//				rec, serial := models.RRtoRC(x.RR, domain, oldSerial)
-	//				if rec.Type == "SOA" {
-	//					seenSoa = true
-	//				}
-	//				if serial != 0 && oldSerial != 0 {
-	//					log.Fatalf("Multiple SOA records in zonefile: %v\n", zonefile)
-	//				}
-	//				if serial != 0 {
-	//					// This was an SOA record. Update the serial.
-	//					oldSerial = serial
-	//					newSerial = generateSerial(oldSerial)
-	//					// Regenerate with new serial:
-	//					*soaRec, _ = models.RRtoRC(x.RR, domain, newSerial)
-	//					rec = *soaRec
-	//				}
-	//				foundRecords = append(foundRecords, &rec)
-	//			}
-	//		}
-	//	}
-	//
 }
 
 // GetDomainCorrections returns a list of corrections to update a domain.
 func (c *Bind) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Correction, error) {
 	dc.Punycode()
-	// Phase 1: Copy everything to []*models.RecordConfig:
-	//    expectedRecords < dc.Records[i]
-	//    foundRecords < zonefile
-	//
-	// Phase 2: Do any manipulations:
-	// add NS
-	// manipulate SOA
-	//
-	// Phase 3: Convert to []diff.Records and compare:
-	// expectedDiffRecords < expectedRecords
-	// foundDiffRecords < foundRecords
-	// diff.Inc...(foundDiffRecords, expectedDiffRecords )
 
 	comments := make([]string, 0, 5)
-
 	comments = append(comments,
 		fmt.Sprintf("generated with dnscontrol %s", time.Now().Format(time.RFC3339)),
 	)
+	if dc.AutoDNSSEC {
+		comments = append(comments, "Automatic DNSSEC signing requested")
+	}
 
 	foundRecords, err := c.GetZoneRecords(dc.Name)
 	if err != nil {
 		return nil, err
 	}
-	if dc.AutoDNSSEC {
-		comments = append(comments, "Automatic DNSSEC signing requested")
-	}
 
-	if !dc.Records.HasRecordTypeName("SOA", "@") {
+	// Create the SOA in the desired records list.  It shouldn't exist
+	// already, but we call HasRecordTypeName just in case.
+	if dc.Records.HasRecordTypeName("SOA", "@") {
+		fmt.Printf("WARNING: Desired records includes an SOA already (should not happen).\n")
+	} else {
 		soaRec := makeDefaultSOA(c.DefaultSoa, dc.Name)
-		soaRec.TTL = 300
 		dc.Records = append(dc.Records, soaRec)
 	}
 
@@ -285,18 +253,31 @@ func (c *Bind) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Correcti
 			fmt.Fprintln(buf, i)
 		}
 	}
-	msg := fmt.Sprintf("GENERATE_ZONEFILE: %s\n", dc.Name)
-	if !c.zoneFileFound {
-		msg = msg + fmt.Sprintf(" (%d records)\n", len(create))
+
+	var msg string
+	if c.zoneFileFound {
+		msg = fmt.Sprintf("GENERATE_ZONEFILE: '%s'. Changes:\n%s", dc.Name, buf)
+	} else {
+		msg = fmt.Sprintf("GENERATE_ZONEFILE: '%s' (new file with %d records)\n", dc.Name, len(create))
 	}
-	msg += buf.String()
+
 	corrections := []*models.Correction{}
 	if changes {
 
-		// increment the SOA serial number:
+		// Increment the SOA serial number:
+		// Take the serial from foundRecords and use it to generate the
+		// serial from the dc.Records.
+		oldSerial := uint32(1)
+		for _, r := range foundRecords {
+			if r.Type == "SOA" && r.Name == "@" {
+				oldSerial = r.SoaSerial
+				break
+			}
+		}
 		for _, r := range dc.Records {
 			if r.Type == "SOA" && r.Name == "@" {
-				r.SoaSerial = generateSerial(r.SoaSerial)
+				r.SoaSerial = generateSerial(oldSerial)
+				break
 			}
 		}
 
@@ -315,7 +296,7 @@ func (c *Bind) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Correcti
 					err = prettyzone.WriteZoneFileRC(zf, dc.Records, dc.Name, comments)
 
 					if err != nil {
-						return fmt.Errorf("failed WriteZoneFile: %w\n", err)
+						return fmt.Errorf("failed WriteZoneFile: %w", err)
 					}
 					err = zf.Close()
 					if err != nil {
