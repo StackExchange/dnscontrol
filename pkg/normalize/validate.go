@@ -442,6 +442,8 @@ type pairTypeCapability struct {
 
 func init() {
 	providerCapabilityChecks = []pairTypeCapability{
+		// If a zone uses rType X, the provider must support capability Y.
+		//{"X", providers.Y},
 		{"ALIAS", providers.CanUseAlias},
 		{"AUTODNSSEC", providers.CanAutoDNSSEC},
 		{"CAA", providers.CanUseCAA},
@@ -455,6 +457,8 @@ func init() {
 }
 
 func checkProviderCapabilities(dc *models.DomainConfig) error {
+	// Check if the zone uses a capability that the provider doesn't
+	// support.
 	for _, ty := range providerCapabilityChecks {
 		hasAny := false
 		switch ty.rType {

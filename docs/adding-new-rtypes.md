@@ -48,12 +48,35 @@ type RecordConfig struct {
 
 You'll need to mark which providers support this record type.  The
 initial PR should implement this record for the `bind` provider at
-a minimum.
+a minimum, unless this is a fake or pseudo-type that only a particular
+provider supoprts.
 
 * Add the capability to the file `dnscontrol/providers/capabilities.go` (look for `CanUseAlias` and add
 it to the end of the list.)
 * Add this feature to the feature matrix in `dnscontrol/build/generate/featureMatrix.go` (Add it to the variable `matrix` then add it later in the file with a `setCap()` statement.
 * Mark the `bind` provider as supporting this record type by updating `dnscontrol/providers/bind/bindProvider.go` (look for `providers.CanUse` and you'll see what to do).
+
+DNSControl will warn/error if this new record is used with a
+provider that does not support the capability.
+
+* Add the capability to the validations in `pkg/normalize/validate.go`
+  by adding it to `providerCapabilityChecks`
+* Some capabilities can't be tested for, such as `CanUseTXTMulti`.  If
+  such testing can't be done, add it to the whitelist in function
+  `TestCapabilitiesAreFiltered` in
+  `pkg/normalize/capabilities_test.go`
+
+If the capabilities testing is not configured correctly, `go test ./...`
+will report something like the `MISSING` message below. In this
+example we removed `providers.CanUseCAA` was not in the
+`providerCapabilityChecks` list.
+
+```
+--- FAIL: TestCapabilitiesAreFiltered (0.00s)
+    capabilities_test.go:66: ok: providers.CanUseAlias (0) is checked for with "ALIAS"
+    capabilities_test.go:68: MISSING: providers.CanUseCAA (1) is not checked by checkProviderCapabilities
+    capabilities_test.go:66: ok: providers.CanUseNAPTR (3) is checked for with "NAPTR"
+```
 
 ## Step 3: Add a helper function
 
@@ -93,6 +116,17 @@ code is working correctly.
 As you debug, if there are places that haven't been marked
 `#rtype_variations` that should be, add such a comment.
 Every time you do this, an angel gets its wings.
+
+The tests also verify that for every "capability"
+If you see an error such as this, the "MISSING" means that
+providers.CanUseCAA is not listed in the `providerCapabilityChecks`
+array in `pkg/normalize/validate.go`.  This is a
+
+```
+--- FAIL: TestCapabilitiesAreFiltered (0.00s)
+    capabilities_test.go:66: ok: providers.CanUseAlias (0) is checked for with "ALIAS"
+    capabilities_test.go:68: MISSING: providers.CanUseCAA (1) is not checked by checkProviderCapabilities
+```
 
 ## Step 6: Add an `integrationTest` test case.
 
