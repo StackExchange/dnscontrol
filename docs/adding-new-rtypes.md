@@ -53,6 +53,11 @@ a minimum.
 * Add the capability to the file `dnscontrol/providers/capabilities.go` (look for `CanUseAlias` and add
 it to the end of the list.)
 * Add this feature to the feature matrix in `dnscontrol/build/generate/featureMatrix.go` (Add it to the variable `matrix` then add it later in the file with a `setCap()` statement.
+* Add the capability to the list of features that zones are validated
+  against (i.e. if you want dnscontrol to report an error if this
+  feature is used with a DNS provider that doesn't support it). That's
+  in the `checkProviderCapabilities` function in
+  `pkg/normalize/validate.go`.
 * Mark the `bind` provider as supporting this record type by updating `dnscontrol/providers/bind/bindProvider.go` (look for `providers.CanUse` and you'll see what to do).
 
 ## Step 3: Add a helper function

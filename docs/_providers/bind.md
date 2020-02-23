@@ -46,7 +46,16 @@ var BIND = NewDnsProvider('bind', 'BIND', {
 })
 {% endhighlight %}
 
-## SOA Records
+# FYI: get-zones
+
+When used with "get-zones", specifying "all" scans the directory for
+any files named `*.zone` and assumes they are zone files.
+
+```
+dnscontrol get-zones --format=nameonly - BIND all
+```
+
+# FYI: SOA Records
 
 DNSControl assumes that SOA records are managed by the provider.  Most
 providers simply generate the SOA record for you and do not permit you
