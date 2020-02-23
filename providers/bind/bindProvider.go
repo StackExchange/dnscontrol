@@ -250,7 +250,7 @@ func (c *Bind) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Correcti
 					// Beware that if there are any fake types, then they will
 					// be commented out on write, but we don't reverse that when
 					// reading, so there will be a diff on every invocation.
-					err = prettyzone.WriteZoneFileRC(zf, dc.Records, dc.Name, comments)
+					err = prettyzone.WriteZoneFileRC(zf, dc.Records, dc.Name, 0, comments)
 
 					if err != nil {
 						return fmt.Errorf("failed WriteZoneFile: %w", err)
