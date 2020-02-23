@@ -44,12 +44,12 @@ func mostCommonTTL(records models.Records) uint32 {
 }
 
 // WriteZoneFileRR is a helper for when you have []dns.RR instead of models.Records
-func WriteZoneFileRR(w io.Writer, records []dns.RR, origin string, serial uint32) error {
-	return WriteZoneFileRC(w, models.RRstoRCs(records, origin, serial), origin)
+func WriteZoneFileRR(w io.Writer, records []dns.RR, origin string) error {
+	return WriteZoneFileRC(w, models.RRstoRCs(records, origin), origin, nil)
 }
 
 // WriteZoneFileRC writes a beautifully formatted zone file.
-func WriteZoneFileRC(w io.Writer, records models.Records, origin string) error {
+func WriteZoneFileRC(w io.Writer, records models.Records, origin string, comments []string) error {
 	// This function prioritizes beauty over output size.
 	// * The zone records are sorted by label, grouped by subzones to
 	//   be easy to read and pleasant to the eye.
@@ -61,18 +61,19 @@ func WriteZoneFileRC(w io.Writer, records models.Records, origin string) error {
 	// * $TTL is used to eliminate clutter. The most common TTL value is used.
 	// * "@" is used instead of the apex domain name.
 
-	z := PrettySort(records, origin, mostCommonTTL(records))
+	z := PrettySort(records, origin, mostCommonTTL(records), comments)
 
 	return z.generateZoneFileHelper(w)
 }
 
-func PrettySort(records models.Records, origin string, defaultTTL uint32) *zoneGenData {
+func PrettySort(records models.Records, origin string, defaultTTL uint32, comments []string) *zoneGenData {
 	if defaultTTL == 0 {
 		defaultTTL = mostCommonTTL(records)
 	}
 	z := &zoneGenData{
 		Origin:     origin + ".",
 		DefaultTTL: defaultTTL,
+		Comments:   comments,
 	}
 	z.Records = nil
 	for _, r := range records {
@@ -88,6 +89,13 @@ func (z *zoneGenData) generateZoneFileHelper(w io.Writer) error {
 
 	sort.Sort(z)
 	fmt.Fprintln(w, "$TTL", z.DefaultTTL)
+	for _, comment := range z.Comments {
+		for _, line := range strings.Split(comment, "\n") {
+			if line != "" {
+				fmt.Fprintln(w, ";", line)
+			}
+		}
+	}
 	for i, rr := range z.Records {
 
 		// Fake types are commented out.

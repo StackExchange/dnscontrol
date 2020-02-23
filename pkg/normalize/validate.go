@@ -175,6 +175,8 @@ func checkTargets(rec *models.RecordConfig, domain string) (errs []error) {
 		check(checkTarget(target))
 	case "ALIAS":
 		check(checkTarget(target))
+	case "SOA":
+		check(checkTarget(target))
 	case "SRV":
 		check(checkTarget(target))
 	case "TXT", "IMPORT_TRANSFORM", "CAA", "SSHFP", "TLSA":
@@ -234,7 +236,7 @@ func importTransform(srcDomain, dstDomain *models.DomainConfig, transforms []tra
 			r := newRec()
 			r.SetTarget(transformCNAME(r.GetTargetField(), srcDomain.Name, dstDomain.Name))
 			dstDomain.Records = append(dstDomain.Records, r)
-		case "MX", "NAPTR", "NS", "SRV", "TXT", "CAA", "TLSA":
+		case "MX", "NAPTR", "NS", "SOA", "SRV", "TXT", "CAA", "TLSA":
 			// Not imported.
 			continue
 		default:
