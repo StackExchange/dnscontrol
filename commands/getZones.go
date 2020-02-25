@@ -79,8 +79,7 @@ func (args *GetZoneArgs) flags() []cli.Flag {
 	flags = append(flags, &cli.IntFlag{
 		Name:        "ttl",
 		Destination: &args.DefaultTTL,
-		Usage:       `Default TTL`,
-		Value:       300,
+		Usage:       `Default TTL (0 picks the zone's most common TTL)`,
 	})
 	return flags
 }
@@ -153,24 +152,34 @@ func GetZone(args GetZoneArgs) error {
 
 		z := prettyzone.PrettySort(recs, zoneName, 0, nil)
 		switch args.OutputFormat {
+
 		case "pretty":
 			fmt.Fprintf(w, "$ORIGIN %s.\n", zoneName)
-			prettyzone.WriteZoneFileRC(w, z.Records, zoneName, nil)
+			prettyzone.WriteZoneFileRC(w, z.Records, zoneName, uint32(args.DefaultTTL), nil)
 			fmt.Fprintln(w)
-		case "dsl":
 
-			fmt.Fprintf(w, `D("%s", REG_CHANGEME,`+"\n", zoneName)
-			fmt.Fprintf(w, "\tDnsProvider(%s)", args.CredName)
+		case "dsl":
+			fmt.Fprintf(w, `D("%s", REG_CHANGEME,`, zoneName)
+			fmt.Fprintf(w, "\n\tDnsProvider(%s)", args.CredName)
+			defaultTTL := uint32(args.DefaultTTL)
+			if defaultTTL == 0 {
+				defaultTTL = prettyzone.MostCommonTTL(recs)
+			}
+			if defaultTTL != models.DefaultTTL {
+				fmt.Fprintf(w, "\n\tDefaultTTL(%d)", defaultTTL)
+			}
 			for _, rec := range recs {
-				fmt.Fprint(w, formatDsl(zoneName, rec, uint32(args.DefaultTTL)))
+				fmt.Fprint(w, formatDsl(zoneName, rec, defaultTTL))
 			}
 			fmt.Fprint(w, "\n)\n")
+
 		case "tsv":
 			for _, rec := range recs {
 				fmt.Fprintf(w,
 					fmt.Sprintf("%s\t%s\t%d\tIN\t%s\t%s\n",
 						rec.NameFQDN, rec.Name, rec.TTL, rec.Type, rec.GetTargetCombined()))
 			}
+
 		default:
 			return fmt.Errorf("format %q unknown", args.OutputFile)
 		}

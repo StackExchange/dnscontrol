@@ -19,8 +19,9 @@ Syntax:
    dnscontrol get-zones [command options] credkey provider zone [...]
 
    --creds value   Provider credentials JSON file (default: "creds.json")
-   --format value  Output format: pretty dsl tsv nameonly (default: "pretty")
+   --format value  Output format: dsl pretty tsv nameonly (default: "pretty")
    --out value     Instead of stdout, write to this file
+   --ttl value     Default TTL (0 picks the zone's most common TTL) (default: 0)
 
 ARGUMENTS:
    credkey:  The name used in creds.json (first parameter to NewDnsProvider() in dnsconfig.js)
@@ -39,6 +40,8 @@ When using `tsv`, the columns are:
    TTL
    Record Type (A, AAAA, CNAME, etc.)
    Target and arguments (quoted like in a zonefile)
+
+The --ttl flag applies to pretty and dsl formats.
 
 EXAMPLES:
    dnscontrol get-zones myr53 ROUTE53 example.com
