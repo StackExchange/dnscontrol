@@ -79,6 +79,9 @@ func PrettySort(records models.Records, origin string, defaultTTL uint32, commen
 		DefaultTTL: defaultTTL,
 		Comments:   comments,
 	}
+	if z.DefaultTTL == 0 {
+		z.DefaultTTL = 300
+	}
 	z.Records = nil
 	for _, r := range records {
 		z.Records = append(z.Records, r)
@@ -92,6 +95,9 @@ func (z *zoneGenData) generateZoneFileHelper(w io.Writer) error {
 	nameShortPrevious := ""
 
 	sort.Sort(z)
+	if z.DefaultTTL == 0 {
+		z.DefaultTTL = 300
+	}
 	fmt.Fprintln(w, "$TTL", z.DefaultTTL)
 	for _, comment := range z.Comments {
 		for _, line := range strings.Split(comment, "\n") {
