@@ -6,7 +6,7 @@ import (
 	"fmt"
 
 	"github.com/StackExchange/dnscontrol/v2/providers"
-	hxcl "github.com/hexonet/go-sdk/client"
+	hxcl "github.com/hexonet/go-sdk/apiclient"
 )
 
 // HXClient describes a connection to the hexonet API.
@@ -14,7 +14,7 @@ type HXClient struct {
 	APILogin    string
 	APIPassword string
 	APIEntity   string
-	client      *hxcl.Client
+	client      *hxcl.APIClient
 }
 
 var features = providers.DocumentationNotes{
@@ -34,14 +34,14 @@ var features = providers.DocumentationNotes{
 
 func newProvider(conf map[string]string) (*HXClient, error) {
 	api := &HXClient{
-		client: hxcl.NewClient(),
+		client: hxcl.NewAPIClient(),
 	}
 	api.APILogin, api.APIPassword, api.APIEntity = conf["apilogin"], conf["apipassword"], conf["apientity"]
 	if conf["debugmode"] == "1" {
 		api.client.EnableDebugMode()
 	}
 	if len(conf["ipaddress"]) > 0 {
-		api.client.SetIPAddress(conf["ipaddress"])
+		api.client.SetRemoteIPAddress(conf["ipaddress"])
 	}
 	if api.APIEntity != "OTE" && api.APIEntity != "LIVE" {
 		return nil, fmt.Errorf("wrong api system entity used. use \"OTE\" for OT&E system or \"LIVE\" for Live system")
@@ -52,7 +52,7 @@ func newProvider(conf map[string]string) (*HXClient, error) {
 	if api.APILogin == "" || api.APIPassword == "" {
 		return nil, fmt.Errorf("missing login credentials apilogin or apipassword")
 	}
-	api.client.SetCredentials(api.APILogin, api.APIPassword, "")
+	api.client.SetCredentials(api.APILogin, api.APIPassword)
 	return api, nil
 }
 
