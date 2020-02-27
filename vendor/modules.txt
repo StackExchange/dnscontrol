@@ -162,11 +162,15 @@ github.com/hashicorp/vault/sdk/helper/hclutil
 github.com/hashicorp/vault/sdk/helper/jsonutil
 github.com/hashicorp/vault/sdk/helper/parseutil
 github.com/hashicorp/vault/sdk/helper/strutil
-# github.com/hexonet/go-sdk v1.2.1
-github.com/hexonet/go-sdk/client
-github.com/hexonet/go-sdk/client/socketcfg
-github.com/hexonet/go-sdk/response/hashresponse
-github.com/hexonet/go-sdk/response/listresponse
+# github.com/hexonet/go-sdk v2.2.3+incompatible
+github.com/hexonet/go-sdk/apiclient
+github.com/hexonet/go-sdk/column
+github.com/hexonet/go-sdk/record
+github.com/hexonet/go-sdk/response
+github.com/hexonet/go-sdk/responseparser
+github.com/hexonet/go-sdk/responsetemplate
+github.com/hexonet/go-sdk/responsetemplatemanager
+github.com/hexonet/go-sdk/socketconfig
 # github.com/jmespath/go-jmespath v0.0.0-20180206201540-c2b33e8439af
 github.com/jmespath/go-jmespath
 # github.com/kolo/xmlrpc v0.0.0-20150413191830-0826b98aaa29
