@@ -4,26 +4,11 @@ import "github.com/tiramiseb/go-gandi/internal/client"
 
 // Domain represents a DNS domain
 type Domain struct {
-	FQDN              string `json:"fqdn,omitempty"`
-	DomainHref        string `json:"domain_href,omitempty"`
-	DomainKeysHref    string `json:"domain_keys_href,omitempty"`
-	DomainRecordsHref string `json:"domain_records_href,omitempty"`
-	ZoneUUID          string `json:"zone_uuid,omitempty"`
-	ZoneHref          string `json:"zone_href,omitempty"`
-	ZoneRecordsHref   string `json:"zone_records_href,omitempty"`
-}
-
-// SigningKey holds data about a DNSSEC signing key
-type SigningKey struct {
-	Status        string `json:"status,omitempty"`
-	UUID          string `json:"uuid,omitempty"`
-	Algorithm     int    `json:"algorithm,omitempty"`
-	Deleted       *bool  `json:"deleted"`
-	AlgorithmName string `json:"algorithm_name,omitempty"`
-	FQDN          string `json:"fqdn,omitempty"`
-	Flags         int    `json:"flags,omitempty"`
-	DS            string `json:"ds,omitempty"`
-	KeyHref       string `json:"key_href,omitempty"`
+	FQDN               string `json:"fqdn,omitempty"`
+	DomainHref         string `json:"domain_href,omitempty"`
+	DomainKeysHref     string `json:"domain_keys_href,omitempty"`
+	DomainRecordsHref  string `json:"domain_records_href,omitempty"`
+	AutomaticSnapshots *bool  `json:"automatic_snapshots,omitempty"`
 }
 
 type zone struct {
@@ -64,39 +49,26 @@ func (g *LiveDNS) UpdateDomain(fqdn string, details UpdateDomainRequest) (respon
 	return
 }
 
-// DetachDomain detaches a domain from the zone it is attached to
-func (g *LiveDNS) DetachDomain(fqdn string) (err error) {
-	_, err = g.client.Delete("domains/"+fqdn, nil, nil)
+// GetDomainAXFRSecondaries returns the list of IPs that are permitted to do AXFR transfers of the domain
+func (g *LiveDNS) GetDomainAXFRSecondaries(fqdn string) (secondaries []string, err error) {
+	_, err = g.client.Get("domains/"+fqdn+"/axfr/slaves", nil, &secondaries)
 	return
 }
 
-// SignDomain creates a DNSKEY and asks Gandi servers to automatically sign the domain
-func (g *LiveDNS) SignDomain(fqdn string) (response client.StandardResponse, err error) {
-	f := SigningKey{Flags: 257}
-	_, err = g.client.Post("domains/"+fqdn+"/keys", f, &response)
+// CreateDomainAXFRSecondary adds an IP address to the list of IPs that are permitted to do AXFR transfers of the domain
+func (g *LiveDNS) CreateDomainAXFRSecondary(fqdn string, ip string) (err error) {
+	_, err = g.client.Put("domains/"+fqdn+"/axfr/slaves/"+ip, nil, nil)
 	return
 }
 
-// GetDomainKeys returns data about the signing keys created for a domain
-func (g *LiveDNS) GetDomainKeys(fqdn string) (keys []SigningKey, err error) {
-	_, err = g.client.Get("domains/"+fqdn+"/keys", nil, &keys)
-	return
-}
-
-// DeleteDomainKey deletes a signing key from a domain
-func (g *LiveDNS) DeleteDomainKey(fqdn, uuid string) (err error) {
-	_, err = g.client.Delete("domains/"+fqdn+"/keys/"+uuid, nil, nil)
-	return
-}
-
-// UpdateDomainKey updates a signing key for a domain (only the deleted status, actually...)
-func (g *LiveDNS) UpdateDomainKey(fqdn, uuid string, deleted bool) (err error) {
-	_, err = g.client.Put("domains/"+fqdn+"/keys/"+uuid, SigningKey{Deleted: &deleted}, nil)
+// DeleteDomainAXFRSecondary removes an IP address from the list of IPs that are permitted to do AXFR transfers of the domain
+func (g *LiveDNS) DeleteDomainAXFRSecondary(fqdn string, ip string) (response client.StandardResponse, err error) {
+	_, err = g.client.Delete("domains/"+fqdn+"/axfr/slaves/"+ip, nil, &response)
 	return
 }
 
 // GetDomainNS returns the list of the nameservers for a domain
 func (g *LiveDNS) GetDomainNS(fqdn string) (ns []string, err error) {
-	_, err = g.client.Get("nameservers/"+fqdn, nil, &ns)
+	_, err = g.client.Get("domains/"+fqdn+"/nameservers", nil, &ns)
 	return
 }
