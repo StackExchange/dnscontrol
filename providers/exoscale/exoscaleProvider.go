@@ -84,7 +84,7 @@ func (c *exoscaleProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*mod
 		if r.Name == "" {
 			r.Name = "@"
 		}
-		if r.RecordType == "CNAME" || r.RecordType == "MX" || r.RecordType == "ALIAS" {
+		if r.RecordType == "CNAME" || r.RecordType == "MX" || r.RecordType == "ALIAS" || r.RecordType == "SRV" {
 			r.Content += "."
 		}
 		// exoscale adds these odd txt records that mirror the alias records.
@@ -103,18 +103,6 @@ func (c *exoscaleProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*mod
 			rec.SetTarget(r.Content)
 		case "MX":
 			if err := rec.SetTargetMX(uint16(r.Prio), r.Content); err != nil {
-				panic(fmt.Errorf("unparsable record received from exoscale: %w", err))
-			}
-		case "SRV":
-			var err error
-			parts := strings.Fields(r.Content)
-			if len(parts) == 3 {
-				err = rec.SetTargetSRVPriorityString(uint16(r.Prio), r.Content)
-			} else {
-				r.Content += "."
-				err = rec.PopulateFromString(r.RecordType, r.Content, dc.Name)
-			}
-			if err != nil {
 				panic(fmt.Errorf("unparsable record received from exoscale: %w", err))
 			}
 		default:
