@@ -53,7 +53,7 @@ var features = providers.DocumentationNotes{
 	providers.CanUseAlias:            providers.Cannot("Only supported for Azure Resources. Not yet implemented"),
 	providers.DocCreateDomains:       providers.Can(),
 	providers.DocDualHost:            providers.Can("Azure does not permit modifying the existing NS records, only adding/removing additional records."),
-	providers.DocOfficiallySupported: providers.Cannot(),
+	providers.DocOfficiallySupported: providers.Can(),
 	providers.CanUsePTR:              providers.Can(),
 	providers.CanUseSRV:              providers.Can(),
 	providers.CanUseTXTMulti:         providers.Can(),

@@ -48,7 +48,8 @@ type RecordConfig struct {
 
 You'll need to mark which providers support this record type.  The
 initial PR should implement this record for the `bind` provider at
-a minimum.
+a minimum, unless this is a fake or pseudo-type that only a particular
+provider supports.
 
 * Add the capability to the file `dnscontrol/providers/capabilities.go` (look for `CanUseAlias` and add
 it to the end of the list.)
@@ -60,10 +61,32 @@ it to the end of the list.)
   `pkg/normalize/validate.go`.
 * Mark the `bind` provider as supporting this record type by updating `dnscontrol/providers/bind/bindProvider.go` (look for `providers.CanUse` and you'll see what to do).
 
+DNSControl will warn/error if this new record is used with a
+provider that does not support the capability.
+
+* Add the capability to the validations in `pkg/normalize/validate.go`
+  by adding it to `providerCapabilityChecks`
+* Some capabilities can't be tested for, such as `CanUseTXTMulti`.  If
+  such testing can't be done, add it to the whitelist in function
+  `TestCapabilitiesAreFiltered` in
+  `pkg/normalize/capabilities_test.go`
+
+If the capabilities testing is not configured correctly, `go test ./...`
+will report something like the `MISSING` message below. In this
+example we removed `providers.CanUseCAA` from the
+`providerCapabilityChecks` list.
+
+```
+--- FAIL: TestCapabilitiesAreFiltered (0.00s)
+    capabilities_test.go:66: ok: providers.CanUseAlias (0) is checked for with "ALIAS"
+    capabilities_test.go:68: MISSING: providers.CanUseCAA (1) is not checked by checkProviderCapabilities
+    capabilities_test.go:66: ok: providers.CanUseNAPTR (3) is checked for with "NAPTR"
+```
+
 ## Step 3: Add a helper function
 
 Add a function to `pkg/js/helpers.js` for the new record type.  This
-is the Javascript file that defines `dnsconfig.js`'s functions like
+is the JavaScript file that defines `dnsconfig.js`'s functions like
 `A()` and `MX()`.  Look at the definition of A, MX and CAA for good
 examples to use as a base.
 
@@ -98,6 +121,10 @@ code is working correctly.
 As you debug, if there are places that haven't been marked
 `#rtype_variations` that should be, add such a comment.
 Every time you do this, an angel gets its wings.
+
+The tests also verify that for every "capability" there is a
+validation. This is explained in Step 2 (search for
+`TestCapabilitiesAreFiltered` or `MISSING`)
 
 ## Step 6: Add an `integrationTest` test case.
 

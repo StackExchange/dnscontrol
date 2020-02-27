@@ -13,10 +13,10 @@ import (
 	"github.com/miekg/dns"
 )
 
-// mostCommonTTL returns the most common TTL in a set of records. If there is
+// MostCommonTTL returns the most common TTL in a set of records. If there is
 // a tie, the highest TTL is selected. This makes the results consistent.
 // NS records are not included in the analysis because Tom said so.
-func mostCommonTTL(records models.Records) uint32 {
+func MostCommonTTL(records models.Records) uint32 {
 	// Index the TTLs in use:
 	d := make(map[uint32]int)
 	for _, r := range records {
@@ -45,11 +45,11 @@ func mostCommonTTL(records models.Records) uint32 {
 
 // WriteZoneFileRR is a helper for when you have []dns.RR instead of models.Records
 func WriteZoneFileRR(w io.Writer, records []dns.RR, origin string) error {
-	return WriteZoneFileRC(w, models.RRstoRCs(records, origin), origin, nil)
+	return WriteZoneFileRC(w, models.RRstoRCs(records, origin), origin, 0, nil)
 }
 
 // WriteZoneFileRC writes a beautifully formatted zone file.
-func WriteZoneFileRC(w io.Writer, records models.Records, origin string, comments []string) error {
+func WriteZoneFileRC(w io.Writer, records models.Records, origin string, defaultTTL uint32, comments []string) error {
 	// This function prioritizes beauty over output size.
 	// * The zone records are sorted by label, grouped by subzones to
 	//   be easy to read and pleasant to the eye.
@@ -61,19 +61,26 @@ func WriteZoneFileRC(w io.Writer, records models.Records, origin string, comment
 	// * $TTL is used to eliminate clutter. The most common TTL value is used.
 	// * "@" is used instead of the apex domain name.
 
-	z := PrettySort(records, origin, mostCommonTTL(records), comments)
+	if defaultTTL == 0 {
+		defaultTTL = MostCommonTTL(records)
+	}
+
+	z := PrettySort(records, origin, defaultTTL, comments)
 
 	return z.generateZoneFileHelper(w)
 }
 
 func PrettySort(records models.Records, origin string, defaultTTL uint32, comments []string) *zoneGenData {
 	if defaultTTL == 0 {
-		defaultTTL = mostCommonTTL(records)
+		defaultTTL = MostCommonTTL(records)
 	}
 	z := &zoneGenData{
 		Origin:     origin + ".",
 		DefaultTTL: defaultTTL,
 		Comments:   comments,
+	}
+	if z.DefaultTTL == 0 {
+		z.DefaultTTL = 300
 	}
 	z.Records = nil
 	for _, r := range records {
@@ -88,6 +95,9 @@ func (z *zoneGenData) generateZoneFileHelper(w io.Writer) error {
 	nameShortPrevious := ""
 
 	sort.Sort(z)
+	if z.DefaultTTL == 0 {
+		z.DefaultTTL = 300
+	}
 	fmt.Fprintln(w, "$TTL", z.DefaultTTL)
 	for _, comment := range z.Comments {
 		for _, line := range strings.Split(comment, "\n") {
