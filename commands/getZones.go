@@ -165,7 +165,7 @@ func GetZone(args GetZoneArgs) error {
 			if defaultTTL == 0 {
 				defaultTTL = prettyzone.MostCommonTTL(recs)
 			}
-			if defaultTTL != models.DefaultTTL {
+			if defaultTTL != models.DefaultTTL && defaultTTL != 0 {
 				fmt.Fprintf(w, "\n\tDefaultTTL(%d)", defaultTTL)
 			}
 			for _, rec := range recs {
