@@ -4,27 +4,27 @@ import (
 	"net/url"
 )
 
-// Command represents a CloudStack request
+// Command represents a generic request
 type Command interface {
-	response() interface{}
+	Response() interface{}
 }
 
-// AsyncCommand represents a async CloudStack request
+// AsyncCommand represents a async request
 type AsyncCommand interface {
 	Command
-	// Response interface to Unmarshal the JSON into
-	asyncResponse() interface{}
+	AsyncResponse() interface{}
 }
 
-// ListCommand represents a CloudStack list request
+// ListCommand represents a listing request
 type ListCommand interface {
+	Listable
 	Command
 	// SetPage defines the current pages
 	SetPage(int)
 	// SetPageSize defines the size of the page
 	SetPageSize(int)
-	// each reads the data from the response and feeds channels, and returns true if we are on the last page
-	each(interface{}, IterateItemFunc)
+	// Each reads the data from the response and feeds channels, and returns true if we are on the last page
+	Each(interface{}, IterateItemFunc)
 }
 
 // onBeforeHook represents an action to be done on the params before sending them
@@ -57,13 +57,15 @@ const (
 
 // ErrorCode represents the CloudStack ApiErrorCode enum
 //
-// See: https://github.com/apache/cloudstack/blob/master/api/src/org/apache/cloudstack/api/ApiErrorCode.java
+// See: https://github.com/apache/cloudstack/blob/master/api/src/main/java/org/apache/cloudstack/api/ApiErrorCode.java
 type ErrorCode int
 
 //go:generate stringer -type ErrorCode
 const (
 	// Unauthorized represents ... (TODO)
 	Unauthorized ErrorCode = 401
+	// NotFound represents ... (TODO)
+	NotFound ErrorCode = 404
 	// MethodNotAllowed represents ... (TODO)
 	MethodNotAllowed ErrorCode = 405
 	// UnsupportedActionError represents ... (TODO)
@@ -162,7 +164,7 @@ const (
 	ServerAPIException CSErrorCode = 9999
 )
 
-// ErrorResponse represents the standard error response from CloudStack
+// ErrorResponse represents the standard error response
 type ErrorResponse struct {
 	CSErrorCode CSErrorCode `json:"cserrorcode"`
 	ErrorCode   ErrorCode   `json:"errorcode"`
@@ -177,8 +179,8 @@ type UUIDItem struct {
 	UUID             string `json:"uuid"`
 }
 
-// booleanResponse represents a boolean response (usually after a deletion)
-type booleanResponse struct {
+// BooleanResponse represents a boolean response (usually after a deletion)
+type BooleanResponse struct {
 	DisplayText string `json:"displaytext,omitempty"`
 	Success     bool   `json:"success"`
 }
