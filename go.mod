@@ -26,7 +26,7 @@ require (
 	github.com/google/uuid v1.1.2-0.20190416172445-c2e93f3ae59f
 	github.com/gopherjs/jquery v0.0.0-20191017083323-73f4c7416038
 	github.com/hashicorp/vault/api v1.0.4
-	github.com/hexonet/go-sdk v1.2.1
+	github.com/hexonet/go-sdk v2.2.3+incompatible
 	github.com/jarcoal/httpmock v1.0.4 // indirect
 	github.com/kolo/xmlrpc v0.0.0-20150413191830-0826b98aaa29 // indirect
 	github.com/kr/pretty v0.1.0 // indirect

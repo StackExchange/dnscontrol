@@ -80,7 +80,11 @@ func (n *HXClient) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Corr
 		changes = true
 		fmt.Fprintln(buf, cre)
 		rec := cre.Desired
-		params[fmt.Sprintf("ADDRR%d", addrridx)] = n.createRecordString(rec, dc.Name)
+		recordString, err := n.createRecordString(rec, dc.Name)
+		if err != nil {
+			return corrections, err
+		}
+		params[fmt.Sprintf("ADDRR%d", addrridx)] = recordString
 		addrridx++
 	}
 	for _, d := range del {
@@ -96,7 +100,11 @@ func (n *HXClient) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Corr
 		old := chng.Existing.Original.(*HXRecord)
 		new := chng.Desired
 		params[fmt.Sprintf("DELRR%d", delrridx)] = n.deleteRecordString(old, dc.Name)
-		params[fmt.Sprintf("ADDRR%d", addrridx)] = n.createRecordString(new, dc.Name)
+		newRecordString, err := n.createRecordString(new, dc.Name)
+		if err != nil {
+			return corrections, err
+		}
+		params[fmt.Sprintf("ADDRR%d", addrridx)] = newRecordString
 		addrridx++
 		delrridx++
 	}
@@ -178,12 +186,16 @@ func (n *HXClient) getRecords(domain string) ([]*HXRecord, error) {
 	}
 	r := n.client.Request(cmd)
 	if !r.IsSuccess() {
-		if r.Code() == 545 {
+		if r.GetCode() == 545 {
 			return nil, n.GetHXApiError("Use `dnscontrol create-domains` to create not-existing zone", domain, r)
 		}
 		return nil, n.GetHXApiError("Failed loading resource records for zone", domain, r)
 	}
-	rrs := r.GetColumn("RR")
+	rrColumn := r.GetColumn("RR")
+	if rrColumn == nil {
+		return nil, fmt.Errorf("Error getting RR column for domain: %s", domain)
+	}
+	rrs := rrColumn.GetData()
 	for _, rr := range rrs {
 		spl := strings.Split(rr, " ")
 		if spl[3] != "SOA" {
@@ -212,7 +224,7 @@ func (n *HXClient) getRecords(domain string) ([]*HXRecord, error) {
 	return records, nil
 }
 
-func (n *HXClient) createRecordString(rc *models.RecordConfig, domain string) string {
+func (n *HXClient) createRecordString(rc *models.RecordConfig, domain string) (string, error) {
 	record := &HXRecord{
 		DomainName: domain,
 		Host:       rc.GetLabel(),
@@ -231,10 +243,13 @@ func (n *HXClient) createRecordString(rc *models.RecordConfig, domain string) st
 	case "TXT":
 		record.Answer = encodeTxt(rc.TxtStrings)
 	case "SRV":
+		if rc.GetTargetField() == "." {
+			return "", fmt.Errorf("SRV records with empty targets are not supported (as of 2020-02-27, the API returns 'Invalid attribute value syntax')")
+		}
 		record.Answer = fmt.Sprintf("%d %d %v", rc.SrvWeight, rc.SrvPort, record.Answer)
 		record.Priority = uint32(rc.SrvPriority)
 	default:
-		panic(fmt.Sprintf("createRecord rtype %v unimplemented", rc.Type))
+		panic(fmt.Sprintf("createRecordString rtype %v unimplemented", rc.Type))
 		// We panic so that we quickly find any switch statements
 		// that have not been updated for a new RR type.
 	}
@@ -244,7 +259,7 @@ func (n *HXClient) createRecordString(rc *models.RecordConfig, domain string) st
 		str += fmt.Sprint(record.Priority) + " "
 	}
 	str += record.Answer
-	return str
+	return str, nil
 }
 
 func (n *HXClient) deleteRecordString(record *HXRecord, domain string) string {
