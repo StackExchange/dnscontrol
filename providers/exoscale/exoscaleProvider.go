@@ -28,7 +28,7 @@ var features = providers.DocumentationNotes{
 	providers.CanUseAlias:            providers.Can(),
 	providers.CanUseCAA:              providers.Can(),
 	providers.CanUsePTR:              providers.Can(),
-	providers.CanUseSRV:              providers.Can(),
+	providers.CanUseSRV:              providers.Can("SRV records with empty targets are not supported"),
 	providers.CanUseTLSA:             providers.Cannot(),
 	providers.DocCreateDomains:       providers.Cannot(),
 	providers.DocDualHost:            providers.Cannot("Exoscale does not allow sufficient control over the apex NS records"),
@@ -84,7 +84,7 @@ func (c *exoscaleProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*mod
 		if r.Name == "" {
 			r.Name = "@"
 		}
-		if r.RecordType == "CNAME" || r.RecordType == "MX" || r.RecordType == "ALIAS" || r.RecordType == "SRV" {
+		if r.RecordType == "CNAME" || r.RecordType == "MX" || r.RecordType == "ALIAS" {
 			r.Content += "."
 		}
 		// exoscale adds these odd txt records that mirror the alias records.
@@ -103,11 +103,23 @@ func (c *exoscaleProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*mod
 			rec.SetTarget(r.Content)
 		case "MX":
 			if err := rec.SetTargetMX(uint16(r.Prio), r.Content); err != nil {
-				panic(fmt.Errorf("unparsable record received from dnsimple: %w", err))
+				panic(fmt.Errorf("unparsable record received from exoscale: %w", err))
+			}
+		case "SRV":
+			var err error
+			parts := strings.Fields(r.Content)
+			if len(parts) == 3 {
+				err = rec.SetTargetSRVPriorityString(uint16(r.Prio), r.Content)
+			} else {
+				r.Content += "."
+				err = rec.PopulateFromString(r.RecordType, r.Content, dc.Name)
+			}
+			if err != nil {
+				panic(fmt.Errorf("unparsable record received from exoscale: %w", err))
 			}
 		default:
 			if err := rec.PopulateFromString(r.RecordType, r.Content, dc.Name); err != nil {
-				panic(fmt.Errorf("unparsable record received from dnsimple: %w", err))
+				panic(fmt.Errorf("unparsable record received from exoscale: %w", err))
 			}
 		}
 		existingRecords = append(existingRecords, rec)
