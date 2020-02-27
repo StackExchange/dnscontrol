@@ -151,6 +151,8 @@ github.com/hashicorp/yamux v0.0.0-20180604194846-3520598351bb/go.mod h1:+NfK9FKe
 github.com/hashicorp/yamux v0.0.0-20181012175058-2f1d1f20f75d/go.mod h1:+NfK9FKeTrX5uv1uIXGdwYDTeHna2qgaIlx54MXqjAM=
 github.com/hexonet/go-sdk v1.2.1 h1:UpoeqZQt2y2pypiQOW/+uBUk6DfyEnOzwJaW2LIerVQ=
 github.com/hexonet/go-sdk v1.2.1/go.mod h1:B0oC4YZT3P2o0DHTm5SH0WCItW3N+r16nCTOykJZF1c=
+github.com/hexonet/go-sdk v2.2.3+incompatible h1:V4FVWC11TXdUtxakyhnr6+ttf1e9ah9AQzZsP4u4R24=
+github.com/hexonet/go-sdk v2.2.3+incompatible/go.mod h1:B0oC4YZT3P2o0DHTm5SH0WCItW3N+r16nCTOykJZF1c=
 github.com/jarcoal/httpmock v1.0.4 h1:jp+dy/+nonJE4g4xbVtl9QdrUNbn6/3hDT5R4nDIZnA=
 github.com/jarcoal/httpmock v1.0.4/go.mod h1:ATjnClrvW/3tijVmpL/va5Z3aAyGvqU3gCT8nX0Txik=
 github.com/jmespath/go-jmespath v0.0.0-20180206201540-c2b33e8439af h1:pmfjZENx5imkbgOkpRUYLnmbU7UEFbjtDA2hxJ1ichM=
