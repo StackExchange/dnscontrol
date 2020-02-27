@@ -161,6 +161,9 @@ func (s *SoftLayer) getExistingRecords(domain *datatypes.Dns_Domain) ([]*models.
 				service = *record.Service
 			}
 			recConfig.SetLabel(fmt.Sprintf("%s.%s", service, strings.ToLower(protocol)), *domain.Name)
+		case "TXT":
+			recConfig.TxtStrings = append(recConfig.TxtStrings, *record.Data)
+			fallthrough
 		case "MX":
 			if record.MxPriority != nil {
 				recConfig.MxPreference = uint16(*record.MxPriority)
