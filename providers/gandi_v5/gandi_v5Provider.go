@@ -236,7 +236,7 @@ func (client *api) GenerateDomainCorrections(dc *models.DomainConfig, existing m
 					&models.Correction{
 						Msg: msg,
 						F: func() error {
-							res, err := g.ChangeDomainRecordsWithName(domain, shortname, ns)
+							res, err := g.UpdateDomainRecordsByName(domain, shortname, ns)
 							if err != nil {
 								return fmt.Errorf("%+v: %w", res, err)
 							}
