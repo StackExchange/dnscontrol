@@ -239,7 +239,7 @@ github.com/tdewolff/parse
 github.com/tdewolff/parse/buffer
 github.com/tdewolff/parse/json
 github.com/tdewolff/parse/strconv
-# github.com/tiramiseb/go-gandi v0.0.0-20200128175142-df8b8e9d23a1
+# github.com/tiramiseb/go-gandi v0.0.0-20200227122905-7601fc3acbaa
 github.com/tiramiseb/go-gandi
 github.com/tiramiseb/go-gandi/domain
 github.com/tiramiseb/go-gandi/internal/client

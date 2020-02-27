@@ -45,7 +45,7 @@ require (
 	github.com/tdewolff/minify v2.3.6+incompatible
 	github.com/tdewolff/parse v2.3.4+incompatible // indirect
 	github.com/tdewolff/test v1.0.6 // indirect
-	github.com/tiramiseb/go-gandi v0.0.0-20200128175142-df8b8e9d23a1
+	github.com/tiramiseb/go-gandi v0.0.0-20200227122905-7601fc3acbaa
 	github.com/urfave/cli/v2 v2.1.1
 	github.com/vultr/govultr v0.2.0
 	golang.org/x/crypto v0.0.0-20200221231518-2aa609cf4a9d // indirect

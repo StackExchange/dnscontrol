@@ -230,8 +230,8 @@ github.com/tdewolff/parse v2.3.4+incompatible h1:x05/cnGwIMf4ceLuDMBOdQ1qGniMoxp
 github.com/tdewolff/parse v2.3.4+incompatible/go.mod h1:8oBwCsVmUkgHO8M5iCzSIDtpzXOT0WXX9cWhz+bIzJQ=
 github.com/tdewolff/test v1.0.6 h1:76mzYJQ83Op284kMT+63iCNCI7NEERsIN8dLM+RiKr4=
 github.com/tdewolff/test v1.0.6/go.mod h1:6DAvZliBAAnD7rhVgwaM7DE5/d9NMOAJ09SqYqeK4QE=
-github.com/tiramiseb/go-gandi v0.0.0-20200128175142-df8b8e9d23a1 h1:FOkGM6K21IiXFnX1UQ47yPa+awSeszBevK63k70Zggo=
-github.com/tiramiseb/go-gandi v0.0.0-20200128175142-df8b8e9d23a1/go.mod h1:wevS0bE43PMSmEldbtya+tp+Ow180ftEPix8Onwh+E4=
+github.com/tiramiseb/go-gandi v0.0.0-20200227122905-7601fc3acbaa h1:V0cb7c74KYakwwROlFGVlqEz3V7AW2JnIpSP6zSMdPg=
+github.com/tiramiseb/go-gandi v0.0.0-20200227122905-7601fc3acbaa/go.mod h1:wevS0bE43PMSmEldbtya+tp+Ow180ftEPix8Onwh+E4=
 github.com/urfave/cli/v2 v2.1.1 h1:Qt8FeAtxE/vfdrLmR3rxR6JRE0RoVmbXu8+6kZtYU4k=
 github.com/urfave/cli/v2 v2.1.1/go.mod h1:SE9GqnLQmjVa0iPEY0f1w3ygNIYcIJ0OKPMoW2caLfQ=
 github.com/vultr/govultr v0.2.0 h1:CZSNNCk+PHz9hzmfH2PFGkDgc3qNetwZqtcaqL8shlg=

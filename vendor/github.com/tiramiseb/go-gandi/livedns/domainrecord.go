@@ -24,14 +24,14 @@ func (g *LiveDNS) ListDomainRecordsAsText(uuid string) ([]byte, error) {
 	return content, err
 }
 
-// ListDomainRecordsWithName lists all records with a specific name in a zone
-func (g *LiveDNS) ListDomainRecordsWithName(fqdn, name string) (records []DomainRecord, err error) {
+// ListDomainRecordsByName lists all records with a specific name in a zone
+func (g *LiveDNS) ListDomainRecordsByName(fqdn, name string) (records []DomainRecord, err error) {
 	_, err = g.client.Get("domains/"+fqdn+"/records/"+name, nil, &records)
 	return
 }
 
-// GetDomainRecordWithNameAndType gets the record with specific name and type in the zone attached to the domain
-func (g *LiveDNS) GetDomainRecordWithNameAndType(fqdn, name, recordtype string) (record DomainRecord, err error) {
+// GetDomainRecordByNameAndType gets the record with specific name and type in the zone attached to the domain
+func (g *LiveDNS) GetDomainRecordByNameAndType(fqdn, name, recordtype string) (record DomainRecord, err error) {
 	_, err = g.client.Get("domains/"+fqdn+"/records/"+name+"/"+recordtype, nil, &record)
 	return
 }
@@ -53,24 +53,25 @@ type itemsPrefixForZoneRecords struct {
 	Items []DomainRecord `json:"items"`
 }
 
-// ChangeDomainRecords changes all records in the zone attached to a domain
-func (g *LiveDNS) ChangeDomainRecords(fqdn string, records []DomainRecord) (response client.StandardResponse, err error) {
+// UpdateDomainRecords changes all records in the zone attached to a domain
+func (g *LiveDNS) UpdateDomainRecords(fqdn string, records []DomainRecord) (response client.StandardResponse, err error) {
 	prefixedRecords := itemsPrefixForZoneRecords{Items: records}
 	_, err = g.client.Put("domains/"+fqdn+"/records", prefixedRecords, &response)
 	return
 }
 
-// ChangeDomainRecordsWithName changes all records with the given name in the zone attached to the domain
-func (g *LiveDNS) ChangeDomainRecordsWithName(fqdn, name string, records []DomainRecord) (response client.StandardResponse, err error) {
+// UpdateDomainRecordsByName changes all records with the given name in the zone attached to the domain
+func (g *LiveDNS) UpdateDomainRecordsByName(fqdn, name string, records []DomainRecord) (response client.StandardResponse, err error) {
 	prefixedRecords := itemsPrefixForZoneRecords{Items: records}
 	_, err = g.client.Put("domains/"+fqdn+"/records/"+name, prefixedRecords, &response)
 	return
 }
 
-// ChangeDomainRecordWithNameAndType changes the record with the given name and the given type in the zone attached to a domain
-func (g *LiveDNS) ChangeDomainRecordWithNameAndType(fqdn, name, recordtype string, ttl int, values []string) (response client.StandardResponse, err error) {
+// UpdateDomainRecordByNameAndType changes the record with the given name and the given type in the zone attached to a domain
+func (g *LiveDNS) UpdateDomainRecordByNameAndType(fqdn, name, recordtype string, ttl int, values []string) (response client.StandardResponse, err error) {
 	_, err = g.client.Put("domains/"+fqdn+"/records/"+name+"/"+recordtype,
 		DomainRecord{
+			RrsetType:   recordtype,
 			RrsetTTL:    ttl,
 			RrsetValues: values,
 		},
