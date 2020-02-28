@@ -79,7 +79,7 @@ github.com/digitalocean/godo
 github.com/dimchansky/utfbom
 # github.com/dnsimple/dnsimple-go v0.31.0
 github.com/dnsimple/dnsimple-go/dnsimple
-# github.com/exoscale/egoscale v0.10.5
+# github.com/exoscale/egoscale v0.23.0
 github.com/exoscale/egoscale
 # github.com/go-acme/lego v2.7.2+incompatible
 github.com/go-acme/lego/acme
@@ -107,6 +107,8 @@ github.com/gobwas/glob/syntax/ast
 github.com/gobwas/glob/syntax/lexer
 github.com/gobwas/glob/util/runes
 github.com/gobwas/glob/util/strings
+# github.com/gofrs/uuid v3.2.0+incompatible
+github.com/gofrs/uuid
 # github.com/golang/protobuf v1.3.3
 github.com/golang/protobuf/proto
 github.com/golang/protobuf/ptypes

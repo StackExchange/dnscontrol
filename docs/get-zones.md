@@ -61,20 +61,20 @@ This command is not implemented for all providers.
 
 To add this to a provider:
 
-1. Document the feature
+**Step 1. Document the feature**
 
 In the `*Provider.go` file, change the setting to implemented.
 
 * OLD: `  providers.CanGetZones:     providers.Unimplemented(),`
 * NEW: `  providers.CanGetZones:     providers.Can(),`
 
-2. Update the docs
+**Step 2. Update the docs**
 
 ```
 go generate
 ```
 
-3. Implement the `GetZoneRecords` function
+**Step 3. Implement the `GetZoneRecords` function**
 
 Find the `GetZoneRecords` function in the `*Provider.go` file.
 
@@ -90,7 +90,7 @@ than having it be burried in the middle of `GetDomainCorrections`.
 
 Once that is done the `get-zone` subcommand should work.
 
-4. Optionally implemement the `ListZones` function
+**Step 4. Optionally implemement the `ListZones` function**
 
 If the `ListZones` function is implemented, the "all" special case
 will be activated.  In this case, listing a single zone named `all`
