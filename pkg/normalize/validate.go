@@ -127,7 +127,7 @@ func checkLabel(label string, rType string, target, domain string, meta map[stri
 	}
 	// Don't warn for CNAMEs if the target ends with acm-validations.aws
 	// See https://github.com/StackExchange/dnscontrol/issues/519
-	if strings.HasPrefix(label, "_") && rType == "CNAME" && strings.HasSuffix(target, ".acm-validations.aws") {
+	if strings.HasPrefix(label, "_") && rType == "CNAME" && strings.HasSuffix(target, ".acm-validations.aws.") {
 		return nil
 	}
 	// Don't warn for certain label substrings
