@@ -52,6 +52,42 @@ EXAMPLES:
 	}
 }())
 
+// check-creds foo bar
+// is the same as
+// get-zones --format=nameonly foo bar all
+var _ = cmd(catUtils, func() *cli.Command {
+	var args GetZoneArgs
+	return &cli.Command{
+		Name:  "check-creds",
+		Usage: "Do a small operation to verify credentials (stand-alone)",
+		Action: func(ctx *cli.Context) error {
+			if ctx.NArg() != 2 {
+				return cli.NewExitError("Arguments should be: credskey providername (Ex: r53 ROUTE53)", 1)
+
+			}
+			args.CredName = ctx.Args().Get(0)
+			args.ProviderName = ctx.Args().Get(1)
+			args.ZoneNames = []string{"all"}
+			args.OutputFormat = "nameonly"
+			return exit(GetZone(args))
+		},
+		Flags:     args.flags(),
+		UsageText: "dnscontrol check-creds [command options] credkey provider",
+		Description: `Do a trivia operation to verify credentials.  This is a stand-alone utility.
+
+If successful, a list of zones will be output. If not, hopefully you
+see verbose error messages.
+
+ARGUMENTS:
+   credkey:  The name used in creds.json (first parameter to NewDnsProvider() in dnsconfig.js)
+   provider: The name of the provider (second parameter to NewDnsProvider() in dnsconfig.js)
+
+EXAMPLES:
+   dnscontrol get-zones myr53 ROUTE53 
+   dnscontrol get-zones --out=/dev/null myr53 ROUTE53`,
+	}
+}())
+
 // GetZoneArgs args required for the create-domain subcommand.
 type GetZoneArgs struct {
 	GetCredentialsArgs          // Args related to creds.json
