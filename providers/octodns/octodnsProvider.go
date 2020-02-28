@@ -112,7 +112,7 @@ func (c *Provider) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Corr
 		if os.IsNotExist(err) {
 			zoneFileFound = false
 		} else {
-			return nil, fmt.Errorf("can't open %s:: %w", zoneFileName, err)
+			return nil, fmt.Errorf("can't open %s: %w", zoneFileName, err)
 		}
 	} else {
 		foundRecords, err = octoyaml.ReadYaml(foundFH, dc.Name)
