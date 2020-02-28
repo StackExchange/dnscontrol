@@ -27,7 +27,7 @@ var features = providers.DocumentationNotes{
 	providers.DocCreateDomains:       providers.Cannot("New domains require registration"),
 	providers.DocDualHost:            providers.Can(),
 	providers.DocOfficiallySupported: providers.Cannot(),
-	providers.CanGetZones:            providers.Unimplemented(),
+	providers.CanGetZones:            providers.Can(),
 }
 
 func newOVH(m map[string]string, metadata json.RawMessage) (*ovhProvider, error) {
@@ -81,32 +81,33 @@ func (e errNoExist) Error() string {
 }
 
 // GetZoneRecords gets the records of a zone and returns them in RecordConfig format.
-func (client *ovhProvider) GetZoneRecords(domain string) (models.Records, error) {
-	return nil, fmt.Errorf("not implemented")
-	// This enables the get-zones subcommand.
-	// Implement this by extracting the code from GetDomainCorrections into
-	// a single function.  For most providers this should be relatively easy.
+func (c *ovhProvider) GetZoneRecords(domain string) (models.Records, error) {
+	if !c.zones[domain] {
+		return nil, errNoExist{domain}
+	}
+
+	records, err := c.fetchRecords(domain)
+	if err != nil {
+		return nil, err
+	}
+
+	var actual models.Records
+	for _, r := range records {
+		rec := nativeToRecord(r, domain)
+		if rec != nil {
+			actual = append(actual, rec)
+		}
+	}
+	return actual, nil
 }
 
 func (c *ovhProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Correction, error) {
 	dc.Punycode()
 	//dc.CombineMXs()
 
-	if !c.zones[dc.Name] {
-		return nil, errNoExist{dc.Name}
-	}
-
-	records, err := c.fetchRecords(dc.Name)
+	actual, err := c.GetZoneRecords(dc.Name)
 	if err != nil {
 		return nil, err
-	}
-
-	var actual []*models.RecordConfig
-	for _, r := range records {
-		rec := nativeToRecord(r, dc.Name)
-		if rec != nil {
-			actual = append(actual, rec)
-		}
 	}
 
 	// Normalize
