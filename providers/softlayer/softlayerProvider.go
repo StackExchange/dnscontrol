@@ -183,7 +183,7 @@ func (s *SoftLayer) getExistingRecords(domain *datatypes.Dns_Domain) ([]*models.
 }
 
 func (s *SoftLayer) createRecordFunc(desired *models.RecordConfig, domain *datatypes.Dns_Domain) func() error {
-	var ttl, preference, domainID int = int(desired.TTL), int(desired.MxPreference), *domain.Id
+	var ttl, preference, domainID int = verifyMinTTL(int(desired.TTL)), int(desired.MxPreference), *domain.Id
 	var weight, priority, port int = int(desired.SrvWeight), int(desired.SrvPriority), int(desired.SrvPort)
 	var host, data, newType string = desired.GetLabel(), desired.GetTargetField(), desired.Type
 	var err error
@@ -253,7 +253,7 @@ func (s *SoftLayer) deleteRecordFunc(resID int) func() error {
 }
 
 func (s *SoftLayer) updateRecordFunc(existing *datatypes.Dns_Domain_ResourceRecord, desired *models.RecordConfig) func() error {
-	var ttl, preference int = int(desired.TTL), int(desired.MxPreference)
+	var ttl, preference int = verifyMinTTL(int(desired.TTL)), int(desired.MxPreference)
 	var priority, weight, port int = int(desired.SrvPriority), int(desired.SrvWeight), int(desired.SrvPort)
 
 	return func() error {
@@ -368,4 +368,13 @@ func (s *SoftLayer) updateRecordFunc(existing *datatypes.Dns_Domain_ResourceReco
 
 		return err
 	}
+}
+
+func verifyMinTTL(ttl int) int {
+	const minTTL = 60
+	if ttl < minTTL {
+		fmt.Printf("\nMODIFY TTL to Min supported TTL value: (ttl=%d) -> (ttl=%d)\n", ttl, minTTL)
+		return minTTL
+	}
+	return ttl
 }
