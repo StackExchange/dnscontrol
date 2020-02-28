@@ -100,7 +100,7 @@ var labelUnderscores = []string{
 // these record types may contain underscores
 var rTypeUnderscores = []string{"SRV", "TLSA", "TXT"}
 
-func checkLabel(label string, rType string, domain string, meta map[string]string) error {
+func checkLabel(label string, rType string, target, domain string, meta map[string]string) error {
 	if label == "@" {
 		return nil
 	}
@@ -124,6 +124,11 @@ func checkLabel(label string, rType string, domain string, meta map[string]strin
 		if rType == ex {
 			return nil
 		}
+	}
+	// Don't warn for CNAMEs if the target ends with acm-validations.aws
+	// See https://github.com/StackExchange/dnscontrol/issues/519
+	if strings.HasPrefix(label, "_") && rType == "CNAME" && strings.HasSuffix(target, ".acm-validations.aws.") {
+		return nil
 	}
 	// Don't warn for certain label substrings
 	for _, ex := range labelUnderscores {
@@ -300,7 +305,7 @@ func NormalizeAndValidateConfig(config *models.DNSConfig) (errs []error) {
 			if err := validateRecordTypes(rec, domain.Name, pTypes); err != nil {
 				errs = append(errs, err)
 			}
-			if err := checkLabel(rec.GetLabel(), rec.Type, domain.Name, rec.Metadata); err != nil {
+			if err := checkLabel(rec.GetLabel(), rec.Type, rec.GetTargetField(), domain.Name, rec.Metadata); err != nil {
 				errs = append(errs, err)
 			}
 			if errs2 := checkTargets(rec, domain.Name); errs2 != nil {
