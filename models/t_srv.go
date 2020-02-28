@@ -61,7 +61,7 @@ func (rc *RecordConfig) SetTargetSRVPriorityString(priority uint16, s string) er
 func (rc *RecordConfig) SetTargetSRVString(s string) error {
 	part := strings.Fields(s)
 	if len(part) != 4 {
-		return fmt.Errorf("SRC value does not contain 4 fields: (%#v)", s)
+		return fmt.Errorf("SRV value does not contain 4 fields: (%#v)", s)
 	}
 	return rc.SetTargetSRVStrings(part[0], part[1], part[2], part[3])
 }
