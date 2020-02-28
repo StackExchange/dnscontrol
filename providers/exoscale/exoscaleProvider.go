@@ -1,6 +1,7 @@
 package exoscale
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"strings"
@@ -27,7 +28,7 @@ var features = providers.DocumentationNotes{
 	providers.CanUseAlias:            providers.Can(),
 	providers.CanUseCAA:              providers.Can(),
 	providers.CanUsePTR:              providers.Can(),
-	providers.CanUseSRV:              providers.Can(),
+	providers.CanUseSRV:              providers.Can("SRV records with empty targets are not supported"),
 	providers.CanUseTLSA:             providers.Cannot(),
 	providers.DocCreateDomains:       providers.Cannot(),
 	providers.DocDualHost:            providers.Cannot("Exoscale does not allow sufficient control over the apex NS records"),
@@ -41,9 +42,10 @@ func init() {
 
 // EnsureDomainExists returns an error if domain doesn't exist.
 func (c *exoscaleProvider) EnsureDomainExists(domain string) error {
-	_, err := c.client.GetDomain(domain)
+	ctx := context.Background()
+	_, err := c.client.GetDomain(ctx, domain)
 	if err != nil {
-		_, err := c.client.CreateDomain(domain)
+		_, err := c.client.CreateDomain(ctx, domain)
 		if err != nil {
 			return err
 		}
@@ -57,7 +59,7 @@ func (c *exoscaleProvider) GetNameservers(domain string) ([]*models.Nameserver, 
 }
 
 // GetZoneRecords gets the records of a zone and returns them in RecordConfig format.
-func (client *exoscaleProvider) GetZoneRecords(domain string) (models.Records, error) {
+func (c *exoscaleProvider) GetZoneRecords(domain string) (models.Records, error) {
 	return nil, fmt.Errorf("not implemented")
 	// This enables the get-zones subcommand.
 	// Implement this by extracting the code from GetDomainCorrections into
@@ -68,7 +70,8 @@ func (client *exoscaleProvider) GetZoneRecords(domain string) (models.Records, e
 func (c *exoscaleProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Correction, error) {
 	dc.Punycode()
 
-	records, err := c.client.GetRecords(dc.Name)
+	ctx := context.Background()
+	records, err := c.client.GetRecords(ctx, dc.Name)
 	if err != nil {
 		return nil, err
 	}
@@ -100,11 +103,11 @@ func (c *exoscaleProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*mod
 			rec.SetTarget(r.Content)
 		case "MX":
 			if err := rec.SetTargetMX(uint16(r.Prio), r.Content); err != nil {
-				panic(fmt.Errorf("unparsable record received from dnsimple: %w", err))
+				panic(fmt.Errorf("unparsable record received from exoscale: %w", err))
 			}
 		default:
 			if err := rec.PopulateFromString(r.RecordType, r.Content, dc.Name); err != nil {
-				panic(fmt.Errorf("unparsable record received from dnsimple: %w", err))
+				panic(fmt.Errorf("unparsable record received from exoscale: %w", err))
 			}
 		}
 		existingRecords = append(existingRecords, rec)
@@ -170,7 +173,8 @@ func (c *exoscaleProvider) createRecordFunc(rc *models.RecordConfig, domainName 
 			TTL:        int(rc.TTL),
 			Prio:       int(rc.MxPreference),
 		}
-		_, err := client.CreateRecord(domainName, record)
+		ctx := context.Background()
+		_, err := client.CreateRecord(ctx, domainName, record)
 		if err != nil {
 			return err
 		}
@@ -184,7 +188,8 @@ func (c *exoscaleProvider) deleteRecordFunc(recordID int64, domainName string) f
 	return func() error {
 		client := c.client
 
-		if err := client.DeleteRecord(domainName, recordID); err != nil {
+		ctx := context.Background()
+		if err := client.DeleteRecord(ctx, domainName, recordID); err != nil {
 			return err
 		}
 
@@ -218,7 +223,8 @@ func (c *exoscaleProvider) updateRecordFunc(old *egoscale.DNSRecord, rc *models.
 			ID:         old.ID,
 		}
 
-		_, err := client.UpdateRecord(domainName, record)
+		ctx := context.Background()
+		_, err := client.UpdateRecord(ctx, domainName, record)
 		if err != nil {
 			return err
 		}

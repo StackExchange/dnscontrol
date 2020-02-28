@@ -457,7 +457,7 @@ func makeTests(t *testing.T) []*TestCase {
 			tc("Change Weight", srv("_sip._tcp", 52, 62, 7, "foo.com."), srv("_sip._tcp", 15, 65, 75, "foo4.com.")),
 			tc("Change Port", srv("_sip._tcp", 52, 62, 72, "foo.com."), srv("_sip._tcp", 15, 65, 75, "foo4.com.")),
 		)
-		if *providerToRun == "NAMEDOTCOM" || *providerToRun == "HEXONET" {
+		if *providerToRun == "NAMEDOTCOM" || *providerToRun == "HEXONET" || *providerToRun == "EXOSCALE" {
 			t.Log("Skipping SRV Null Target test because provider does not support them")
 		} else {
 			tests = append(tests, tc("Null Target", srv("_sip._tcp", 52, 62, 72, "foo.com."), srv("_sip._tcp", 15, 65, 75, ".")))
