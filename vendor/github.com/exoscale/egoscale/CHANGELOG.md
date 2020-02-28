@@ -1,7 +1,211 @@
 Changelog
 =========
 
-0.10.5 (unreleased)
+0.23.0
+------
+
+- change: Add `Resources` field to `APIKey` (#420)
+
+0.22.0
+------
+
+- change: Remove all references to Network Offerings (#418)
+
+0.21.0
+------
+
+- feature: add const `NotFound` 404 on type `ErrorCode` (#417)
+
+0.20.1
+------
+
+- fix: update the `ListAPIKeysResponse` field (#415)
+
+0.20.0
+------
+
+- feature: Add Instance pool implementation (#410)
+- feature: Add IAM implementation (#411)
+
+0.19.0
+------
+
+- feature: add field `Description` on type `IPAddress` (#413)
+- change: add Json tag `omitempty` on field  `TemplateFilter` in type `ListTemplates` (#412)
+
+0.18.1
+------
+
+- change: make the "User-Agent" HTTP request header more informative and exposed
+
+0.18.0
+------
+
+- feature: add method `DeepCopy` on type `AsyncJobResult` (#403)
+
+0.17.2
+------
+
+- remove: remove the `IsFeatured` parameter from call `RegisterCustomTemplate` (#402)
+
+0.17.1
+------
+
+- feature: add parameter `RescueProfile` to call `StartVirtualMachine` (#401)
+
+0.17.0
+------
+
+- feature: add new call `RegisterCustomTemplate` (#400)
+- feature: add new call `DeleteTemplate` (#399)
+
+0.16.0
+------
+
+- feature: Add `Healthcheck*` parameters to call `UpdateIPAddress`
+- change: Replace satori/go.uuid by gofrs/uuid
+
+0.15.0
+------
+
+- change: prefix the healthcheck-related params with `Healthcheck` on call `AssociateIPAddress`
+- EIP: the healthcheck should be a pointer
+- ip addresses: Add the Healthcheck parameters
+- readme: point to new lego org (#395)
+- dns: user_id is not sent back (#394)
+
+0.14.3
+------
+
+- fix: `AffinityGroup` lists virtual machines with `UUID` rather than string
+
+0.14.2
+------
+
+- fix: `ListVirtualMachines` by `IDs` to accept `UUID` rather than string
+
+0.14.1
+------
+
+- fix: `GetRunstatusPage` to always contain the subresources
+- fix: `ListRunstatus*` to fetch all the subresources
+- feature: `PaginateRunstatus*` used by list
+
+0.14.0
+------
+
+- change: all DNS calls require a context
+- fix: `CreateAffinityGroup` allows empty `name`
+
+0.13.3
+------
+
+- fix: runstatus unmarshalling errors
+- feature: `UUID` implements DeepCopy, DeepCopyInto
+- change: export `BooleanResponse`
+
+0.13.2
+------
+
+- feat: initial Runstatus API support
+- feat: `admin` namespace containing `ListVirtualMachines` for admin usage
+
+0.13.1
+------
+
+- feat: `Iso` support `ListIsos`, `AttachIso`, and `DetachIso`
+
+0.13.0
+------
+
+- change: `Paginate` to accept `Listable`
+- change: `ListCommand` is also `Listable`
+- change: `client.Get` doesn't modify the given resource, returns a new one
+- change: `Command` and `AsyncCommand` are fully public, thus extensible
+- remove: `Gettable`
+
+0.12.5
+------
+
+- fix: `AuthorizeSecurityGroupEgress` could return `authorizeSecurityGroupIngress` as name
+
+0.12.4
+------
+
+- feat: `Snapshot` is `Listable`
+
+0.12.3
+------
+
+- change: replace dep by Go modules
+- change: remove domainid,domain,regionid,listall,isrecursive,... fields
+- remove: `MigrateVirtualMachine`, `CreateUser`, `EnableAccount`, and other admin calls
+
+0.12.2
+------
+
+- fix: `ListNics` has no virtualmachineid limitations anymore
+- fix: `PCIDevice` ids are not UUIDs
+
+0.12.1
+------
+
+- fix: `UpdateVMNicIP` is async
+
+0.12.0
+------
+
+- feat: new VM state `Moving`
+- feat: `UpdateNetwork` with `startip`, `endip`, `netmask`
+- feat: `NetworkOffering` is `Listable`
+- feat: when it fails parsing the body, it shows it
+- fix: `Snapshot.State` is a string, rather than an scalar
+- change: signature are now using the v3 version with expires by default
+
+0.11.6
+------
+
+- fix: `Network.ListRequest` accepts a `Name` argument
+- change: `SecurityGroup` and the rules aren't `Taggable` anymore
+
+0.11.5
+------
+
+- feat: addition of `UpdateVMNicIP`
+- fix: `UpdateVMAffinityGroup` expected response
+
+0.11.4
+------
+
+*no changes in the core library*
+
+0.11.3
+------
+
+*no changes in the core library*
+
+0.11.2
+------
+
+- fix: empty list responses
+
+0.11.1
+------
+
+- fix: `client.Sign` handles correctly the brackets (kudos to @stffabi)
+- change: `client.Payload` returns a `url.Values`
+
+0.11.0
+------
+
+- feat: `listOSCategories` and `OSCategory` type
+- feat: `listApis` supports recursive response structures
+- feat: `GetRecordsWithFilters` to list records with name or record_type filters
+- fix: better `DNSErrorResponse`
+- fix: `ListResourceLimits` type
+- change: use UUID everywhere
+
+0.10.5
 ------
 
 - feat: `Client.Logger` to plug in any `*log.Logger`
