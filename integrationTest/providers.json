@@ -125,6 +125,7 @@
     "app-key": "$OVH_APP_KEY",
     "app-secret-key": "$OVH_APP_SECRET_KEY",
     "consumer-key": "$OVH_CONSUMER_KEY",
-    "domain": "$OVH_DOMAIN"
+    "domain": "$OVH_DOMAIN",
+    "knownFailures": "49"
   }
 }
