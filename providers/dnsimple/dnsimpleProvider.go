@@ -19,6 +19,7 @@ import (
 var features = providers.DocumentationNotes{
 	providers.CanUseAlias:            providers.Can(),
 	providers.CanUseCAA:              providers.Can(),
+	providers.CanUseNAPTR:            providers.Can(),
 	providers.CanUsePTR:              providers.Can(),
 	providers.CanUseSSHFP:            providers.Can(),
 	providers.CanUseSRV:              providers.Can(),
@@ -565,6 +566,12 @@ func getTargetRecordContent(rc *models.RecordConfig) string {
 			quoted[i] = quoteDNSString(rc.TxtStrings[i])
 		}
 		return strings.Join(quoted, " ")
+	case "NAPTR":
+		return fmt.Sprintf("%d %d %s %s %s %s",
+			rc.NaptrOrder, rc.NaptrPreference,
+			quoteDNSString(rc.NaptrFlags), quoteDNSString(rc.NaptrService),
+			quoteDNSString(rc.NaptrRegexp),
+			rc.GetTargetField())
 	default:
 		return rc.GetTargetField()
 	}
@@ -577,6 +584,9 @@ func getTargetRecordPriority(rc *models.RecordConfig) int {
 		return int(rc.MxPreference)
 	case "SRV":
 		return int(rc.SrvPriority)
+	case "NAPTR":
+		// Neither order nor preference
+		return 0
 	default:
 		return 0
 	}
