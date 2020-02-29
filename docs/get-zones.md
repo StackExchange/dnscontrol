@@ -78,7 +78,7 @@ go generate
 
 Find the `GetZoneRecords` function in the `*Provider.go` file.
 
-If currently returns `fmt.Errorf("not implemented")`.
+It currently returns `fmt.Errorf("not implemented")`.
 
 Instead, it should gather the records from the provider
 and return them as a list of RecordConfig structs.
@@ -99,3 +99,8 @@ will query the provider for the list of zones.
 (Technically what is happening is by implementing the `ListZones`
 function, you are completing the `ZoneLister` interface for that
 provider.)
+
+Implementing the `ListZones` function also activates the `check-creds`
+subcommand for that provider. Please add to the provider documentation
+a list of error messages that people might see if the credentials are
+invalid.  See `docs/_providers/gcloud.md` for examples.
