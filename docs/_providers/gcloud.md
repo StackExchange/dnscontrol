@@ -69,3 +69,14 @@ currently no facility for creating a name server set.  You need special permissi
 will enable it on your account, responding with a list of names to use in the `name_server_set` field above.
 
 > `name_server_set` only applies on `create-domains` at the moment. Additional work needs to be done to support it during `push`
+
+# Debugging credentials
+
+You can test your `creds.json` entry with the command: `dnscontrol check-creds foo GCLOUD` where `foo` is the name of key used in `creds.json`.  Error messages you might see:
+
+* `googleapi: Error 403: Permission denied on resource project REDACTED., forbidden`
+  * Hint: `project_id` may be invalid.
+* `private key should be a PEM or plain PKCS1 or PKCS8; parse error:`
+  * Hint: `private_key` may be invalid.
+* `Response: {"error":"invalid_grant","error_description":"Invalid grant: account not found"}`
+  * Hint: `client_email` may be invalid.
