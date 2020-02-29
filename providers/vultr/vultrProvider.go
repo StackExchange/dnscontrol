@@ -34,7 +34,7 @@ var features = providers.DocumentationNotes{
 	providers.CanUseSSHFP:            providers.Can(),
 	providers.DocCreateDomains:       providers.Can(),
 	providers.DocOfficiallySupported: providers.Cannot(),
-	providers.CanGetZones:            providers.Unimplemented(),
+	providers.CanGetZones:            providers.Can(),
 }
 
 func init() {
@@ -68,29 +68,31 @@ func NewProvider(m map[string]string, metadata json.RawMessage) (providers.DNSSe
 }
 
 // GetZoneRecords gets the records of a zone and returns them in RecordConfig format.
-func (client *Provider) GetZoneRecords(domain string) (models.Records, error) {
-	return nil, fmt.Errorf("not implemented")
-	// This enables the get-zones subcommand.
-	// Implement this by extracting the code from GetDomainCorrections into
-	// a single function.  For most providers this should be relatively easy.
+func (api *Provider) GetZoneRecords(domain string) (models.Records, error) {
+	records, err := api.client.DNSRecord.List(context.Background(), domain)
+	if err != nil {
+		return nil, err
+	}
+
+	curRecords := make(models.Records, len(records))
+	for i := range records {
+		r, err := toRecordConfig(domain, &records[i])
+		if err != nil {
+			return nil, err
+		}
+		curRecords[i] = r
+	}
+
+	return curRecords, nil
 }
 
 // GetDomainCorrections gets the corrections for a DomainConfig.
 func (api *Provider) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Correction, error) {
 	dc.Punycode()
 
-	records, err := api.client.DNSRecord.List(context.Background(), dc.Name)
+	curRecords, err := api.GetZoneRecords(dc.Name)
 	if err != nil {
 		return nil, err
-	}
-
-	curRecords := make([]*models.RecordConfig, len(records))
-	for i := range records {
-		r, err := toRecordConfig(dc, &records[i])
-		if err != nil {
-			return nil, err
-		}
-		curRecords[i] = r
 	}
 
 	models.PostProcessRecords(curRecords)
@@ -164,13 +166,13 @@ func (api *Provider) isDomainInAccount(domain string) (bool, error) {
 }
 
 // toRecordConfig converts a Vultr DNSRecord to a RecordConfig. #rtype_variations
-func toRecordConfig(dc *models.DomainConfig, r *govultr.DNSRecord) (*models.RecordConfig, error) {
-	origin, data := dc.Name, r.Data
+func toRecordConfig(domain string, r *govultr.DNSRecord) (*models.RecordConfig, error) {
+	origin, data := domain, r.Data
 	rc := &models.RecordConfig{
 		TTL:      uint32(r.TTL),
 		Original: r,
 	}
-	rc.SetLabel(r.Name, dc.Name)
+	rc.SetLabel(r.Name, domain)
 
 	switch rtype := r.Type; rtype {
 	case "CNAME", "NS":
