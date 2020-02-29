@@ -295,6 +295,7 @@ func NormalizeAndValidateConfig(config *models.DNSConfig) (errs []error) {
 				fmt.Printf("PLEASE-FIX-PROVIDER: Correcting for provider that stores domain.Nameservers with trailing '.' domain=%s ('%s' vs '%s')\n", domain.Name, original, ns.Name)
 			}
 		}
+
 		// Normalize Records.
 		models.PostProcessRecords(domain.Records)
 		for _, rec := range domain.Records {
