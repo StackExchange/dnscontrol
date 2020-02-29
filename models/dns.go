@@ -89,7 +89,7 @@ func ToNameserversStripTD(nss []string) ([]*Nameserver, error) {
 	nservers := []*Nameserver{}
 	for _, ns := range nss {
 		if !strings.HasSuffix(ns, ".") {
-			return nil, fmt.Errorf("provider code already removed nameserver trailing dot")
+			return nil, fmt.Errorf("provider code already removed nameserver trailing dot (%v)", ns)
 			// If you see this error, maybe the provider should call
 			// ToNameservers instead.
 		}
