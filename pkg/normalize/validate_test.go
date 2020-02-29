@@ -23,7 +23,7 @@ func TestCheckLabel(t *testing.T) {
 		{"_foo", "TLSA", "zap", false, false},
 		{"_foo", "TXT", "zap", false, false},
 		{"_y2", "CNAME", "foo", true, false},
-		{"_y3", "CNAME", "asfljds.acm-validations.aws", false, false},
+		{"_y3", "CNAME", "asfljds.acm-validations.aws.", false, false},
 		{"test.foo.tld", "A", "zap", true, false},
 		{"test.foo.tld", "A", "zap", false, true},
 	}
