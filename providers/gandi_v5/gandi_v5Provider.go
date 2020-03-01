@@ -40,14 +40,20 @@ func init() {
 
 // features declares which features and options are available.
 var features = providers.DocumentationNotes{
+	providers.CanUseAlias:            providers.Can(),
 	providers.CanUseCAA:              providers.Can(),
 	providers.CanUsePTR:              providers.Can(),
 	providers.CanUseSRV:              providers.Can(),
+	providers.CanUseSSHFP:            providers.Can(),
+	providers.CanUseTLSA:             providers.Can(),
 	providers.CantUseNOPURGE:         providers.Cannot(),
 	providers.DocCreateDomains:       providers.Cannot("Can only manage domains registered through their service"),
 	providers.DocOfficiallySupported: providers.Cannot(),
 	providers.CanGetZones:            providers.Can(),
 }
+
+// DNSSEC: platform supports it, but it doesn't fit our GetDomainCorrections
+// model, so deferring for now.
 
 // Section 2: Define the API client.
 
