@@ -20,9 +20,17 @@ jsId: GANDI
 In your credentials file you must provide your Gandi.net API key.
 The [sharing_id](https://api.gandi.net/docs/reference/) is optional.
 
+The `sharing_id` selects between different organizations which your account is
+a member of; to manage domains in multiple organizations, you can use multiple
+`creds.json` entries.  The first parameter to `NewDnsProvider` is the key to
+use in `creds.json`, and you can register multiple configured providers on the
+same backend `"GANDI_V5"` provider.
+(NB: in practice, this doesn't appear to be necessary and `sharing_id` is not
+enforced?)
+
 {% highlight json %}
 {
-  "gandi_v5": {
+  "gandi": {
     "apikey": "your-gandi-key",
     "sharing_id": "your-sharing_id"
   }
@@ -31,6 +39,13 @@ The [sharing_id](https://api.gandi.net/docs/reference/) is optional.
 
 ## Metadata
 This provider does not recognize any special metadata fields unique to Gandi.
+
+## Limitations
+This provider does not support using `ALIAS` in combination with DNSSEC,
+whether `AUTODNSSEC` or otherwise.
+
+This provider only supports `ALIAS` on the `"@"` zone apex, not on any other
+names.
 
 ## Usage
 Example Javascript:
@@ -44,10 +59,9 @@ D("example.tld", REG_GANDI, DnsProvider(GANDI),
 );
 {% endhighlight %}
 
-If you are converting from the old "GANDI" provider, simply
-change "gandi" to "gandi_v5" in `creds.json`, and change "GANDI"
-to "GANDI_V5" in `dnsconfig.js`.  Be sure to test with
-`dnscontrol preview` before running `dnscontrol push`
+If you are converting from the old "GANDI" provider,
+simply change "GANDI" to "GANDI_V5" in `dnsconfig.js`.
+Be sure to test with `dnscontrol preview` before running `dnscontrol push`.
 
 ## New domains
 If a domain does not exist in your Gandi account, DNSControl will *not* automatically add it with the `create-domains` command. You'll need to do that via the web UI manually.
