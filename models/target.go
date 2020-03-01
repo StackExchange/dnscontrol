@@ -52,6 +52,9 @@ func (rc *RecordConfig) GetTargetCombined() string {
 		case "R53_ALIAS":
 			// Differentiate between multiple R53_ALIASs on the same label.
 			return fmt.Sprintf("%s atype=%s zone_id=%s", rc.Target, rc.R53Alias["type"], rc.R53Alias["zone_id"])
+		case "AZURE_ALIAS":
+			// Differentiate between multiple AZURE_ALIASs on the same label.
+			return fmt.Sprintf("%s atype=%s", rc.Target, rc.AzureAlias["type"])
 		case "SOA":
 			return fmt.Sprintf("%s %v %d %d %d %d %d", rc.Target, rc.SoaMbox, rc.SoaSerial, rc.SoaRefresh, rc.SoaRetry, rc.SoaExpire, rc.SoaMinttl)
 		default:

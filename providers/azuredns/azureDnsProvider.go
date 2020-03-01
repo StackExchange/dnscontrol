@@ -17,10 +17,11 @@ import (
 )
 
 type azureDnsProvider struct {
-	zonesClient   *adns.ZonesClient
-	recordsClient *adns.RecordSetsClient
-	zones         map[string]*adns.Zone
-	resourceGroup *string
+	zonesClient    *adns.ZonesClient
+	recordsClient  *adns.RecordSetsClient
+	zones          map[string]*adns.Zone
+	resourceGroup  *string
+	subscriptionId *string
 }
 
 func newAzureDnsDsp(conf map[string]string, metadata json.RawMessage) (providers.DNSServiceProvider, error) {
@@ -41,7 +42,7 @@ func newAzureDns(m map[string]string, metadata json.RawMessage) (*azureDnsProvid
 
 	zonesClient.Authorizer = authorizer
 	recordsClient.Authorizer = authorizer
-	api := &azureDnsProvider{zonesClient: &zonesClient, recordsClient: &recordsClient, resourceGroup: to.StringPtr(rg)}
+	api := &azureDnsProvider{zonesClient: &zonesClient, recordsClient: &recordsClient, resourceGroup: to.StringPtr(rg), subscriptionId: to.StringPtr(subId)}
 	err := api.getZones()
 	if err != nil {
 		return nil, err
@@ -50,7 +51,7 @@ func newAzureDns(m map[string]string, metadata json.RawMessage) (*azureDnsProvid
 }
 
 var features = providers.DocumentationNotes{
-	providers.CanUseAlias:            providers.Cannot("Only supported for Azure Resources. Not yet implemented"),
+	providers.CanUseAlias:            providers.Cannot("Azure DNS does not provide a generic ALIAS functionality. Use AZURE_ALIAS instead."),
 	providers.DocCreateDomains:       providers.Can(),
 	providers.DocDualHost:            providers.Can("Azure does not permit modifying the existing NS records, only adding/removing additional records."),
 	providers.DocOfficiallySupported: providers.Can(),
@@ -58,15 +59,16 @@ var features = providers.DocumentationNotes{
 	providers.CanUseSRV:              providers.Can(),
 	providers.CanUseTXTMulti:         providers.Can(),
 	providers.CanUseCAA:              providers.Can(),
-	providers.CanUseRoute53Alias:     providers.Cannot(),
 	providers.CanUseNAPTR:            providers.Cannot(),
 	providers.CanUseSSHFP:            providers.Cannot(),
 	providers.CanUseTLSA:             providers.Cannot(),
 	providers.CanGetZones:            providers.Can(),
+	providers.CanUseAzureAlias:		  providers.Can(),
 }
 
 func init() {
 	providers.RegisterDomainServiceProviderType("AZURE_DNS", newAzureDnsDsp, features)
+	providers.RegisterCustomRecordType("AZURE_ALIAS", "AZURE_DNS", "")
 }
 
 func (a *azureDnsProvider) getExistingZones() (*adns.ZoneListResult, error) {
@@ -229,7 +231,7 @@ func (a *azureDnsProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*mod
 				return nil, fmt.Errorf("no record set found to delete. Name: '%s'. Type: '%s'", k.NameFQDN, k.Type)
 			}
 		} else {
-			rrset, recordType := recordToNative(k, recs)
+			rrset, recordType := a.recordToNative(k, recs)
 			var recordName string
 			for _, r := range recs {
 				i := int64(r.TTL)
@@ -284,13 +286,13 @@ func (a *azureDnsProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*mod
 func nativeToRecordType(recordType *string) adns.RecordType {
 	recordTypeStripped := strings.TrimPrefix(*recordType, "Microsoft.Network/dnszones/")
 	switch recordTypeStripped {
-	case "A":
+	case "A", "AZURE_ALIAS_A":
 		return adns.A
-	case "AAAA":
+	case "AAAA", "AZURE_ALIAS_AAAA":
 		return adns.AAAA
 	case "CAA":
 		return adns.CAA
-	case "CNAME":
+	case "CNAME", "AZURE_ALIAS_CNAME":
 		return adns.CNAME
 	case "MX":
 		return adns.MX
@@ -321,6 +323,17 @@ func nativeToRecords(set *adns.RecordSet, origin string) []*models.RecordConfig 
 				_ = rc.SetTarget(*rec.Ipv4Address)
 				results = append(results, rc)
 			}
+		} else {
+			rc := &models.RecordConfig{
+				Type: "AZURE_ALIAS",
+				TTL:  uint32(*set.TTL),
+				AzureAlias: map[string]string{
+					"type": "A",
+				},
+			}
+			rc.SetLabelFromFQDN(*set.Fqdn, origin)
+			_ = rc.SetTarget(*set.TargetResource.ID)
+			results = append(results, rc)
 		}
 	case "Microsoft.Network/dnszones/AAAA":
 		if set.AaaaRecords != nil {
@@ -331,13 +344,37 @@ func nativeToRecords(set *adns.RecordSet, origin string) []*models.RecordConfig 
 				_ = rc.SetTarget(*rec.Ipv6Address)
 				results = append(results, rc)
 			}
+		} else {
+			rc := &models.RecordConfig{
+				Type: "AZURE_ALIAS",
+				TTL:  uint32(*set.TTL),
+				AzureAlias: map[string]string{
+					"type": "AAAA",
+				},
+			}
+			rc.SetLabelFromFQDN(*set.Fqdn, origin)
+			_ = rc.SetTarget(*set.TargetResource.ID)
+			results = append(results, rc)
 		}
 	case "Microsoft.Network/dnszones/CNAME":
-		rc := &models.RecordConfig{TTL: uint32(*set.TTL)}
-		rc.SetLabelFromFQDN(*set.Fqdn, origin)
-		rc.Type = "CNAME"
-		_ = rc.SetTarget(*set.CnameRecord.Cname)
-		results = append(results, rc)
+		if set.CnameRecord != nil {
+			rc := &models.RecordConfig{TTL: uint32(*set.TTL)}
+			rc.SetLabelFromFQDN(*set.Fqdn, origin)
+			rc.Type = "CNAME"
+			_ = rc.SetTarget(*set.CnameRecord.Cname)
+			results = append(results, rc)
+		} else {
+			rc := &models.RecordConfig{
+				Type: "AZURE_ALIAS",
+				TTL:  uint32(*set.TTL),
+				AzureAlias: map[string]string{
+					"type": "CNAME",
+				},
+			}
+			rc.SetLabelFromFQDN(*set.Fqdn, origin)
+			_ = rc.SetTarget(*set.TargetResource.ID)
+			results = append(results, rc)
+		}
 	case "Microsoft.Network/dnszones/NS":
 		for _, rec := range *set.NsRecords {
 			rc := &models.RecordConfig{TTL: uint32(*set.TTL)}
@@ -401,7 +438,7 @@ func nativeToRecords(set *adns.RecordSet, origin string) []*models.RecordConfig 
 	return results
 }
 
-func recordToNative(recordKey models.RecordKey, recordConfig []*models.RecordConfig) (*adns.RecordSet, adns.RecordType) {
+func (a *azureDnsProvider) recordToNative(recordKey models.RecordKey, recordConfig []*models.RecordConfig) (*adns.RecordSet, adns.RecordType) {
 	recordSet := &adns.RecordSet{Type: to.StringPtr(recordKey.Type), RecordSetProperties: &adns.RecordSetProperties{}}
 	for _, rec := range recordConfig {
 		switch recordKey.Type {
@@ -450,11 +487,15 @@ func recordToNative(recordKey models.RecordKey, recordConfig []*models.RecordCon
 				recordSet.CaaRecords = &[]adns.CaaRecord{}
 			}
 			*recordSet.CaaRecords = append(*recordSet.CaaRecords, adns.CaaRecord{Value: to.StringPtr(rec.Target), Tag: to.StringPtr(rec.CaaTag), Flags: to.Int32Ptr(int32(rec.CaaFlag))})
+		case "AZURE_ALIAS_A", "AZURE_ALIAS_AAAA", "AZURE_ALIAS_CNAME":
+			*recordSet.Type = rec.AzureAlias["type"]
+			recordSet.TargetResource = &adns.SubResource{ID: to.StringPtr(rec.Target)}
 		default:
 			panic(fmt.Errorf("rc.String rtype %v unimplemented", recordKey.Type))
 		}
 	}
-	return recordSet, nativeToRecordType(to.StringPtr(recordKey.Type))
+
+	return recordSet, nativeToRecordType(to.StringPtr(*recordSet.Type))
 }
 
 func (a *azureDnsProvider) fetchRecordSets(zoneName string) ([]*adns.RecordSet, error) {
