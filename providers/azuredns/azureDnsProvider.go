@@ -112,13 +112,13 @@ func (a *azureDnsProvider) GetNameservers(domain string) ([]*models.Nameserver, 
 		return nil, errNoExist{domain}
 	}
 
-	var ns []*models.Nameserver
+	var nss []string
 	if zone.ZoneProperties != nil {
-		for _, azureNs := range *zone.ZoneProperties.NameServers {
-			ns = append(ns, &models.Nameserver{Name: azureNs})
+		for _, ns := range *zone.ZoneProperties.NameServers {
+			nss = append(nss, ns)
 		}
 	}
-	return ns, nil
+	return models.ToNameserversStripTD(nss)
 }
 
 func (a *azureDnsProvider) ListZones() ([]string, error) {

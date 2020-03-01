@@ -55,7 +55,7 @@ type DnsimpleApi struct {
 
 // GetNameservers returns the name servers for a domain.
 func (c *DnsimpleApi) GetNameservers(domainName string) ([]*models.Nameserver, error) {
-	return models.StringsToNameservers(defaultNameServerNames), nil
+	return models.ToNameservers(defaultNameServerNames)
 }
 
 // GetZoneRecords gets the records of a zone and returns them in RecordConfig format.

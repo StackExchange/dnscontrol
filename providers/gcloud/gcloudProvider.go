@@ -123,7 +123,7 @@ func (g *gcloud) GetNameservers(domain string) ([]*models.Nameserver, error) {
 	if err != nil {
 		return nil, err
 	}
-	return models.StringsToNameservers(zone.NameServers), nil
+	return models.ToNameserversStripTD(zone.NameServers)
 }
 
 type key struct {
