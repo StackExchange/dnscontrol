@@ -44,5 +44,5 @@ func (rc *RecordConfig) SetTargetNAPTRString(s string) error {
 	if len(part) != 6 {
 		return fmt.Errorf("NAPTR value does not contain 6 fields: (%#v)", s)
 	}
-	return rc.SetTargetNAPTRStrings(part[0], part[1], part[2], part[3], part[4], StripQuotes(part[5]))
+	return rc.SetTargetNAPTRStrings(part[0], part[1], StripQuotes(part[2]), StripQuotes(part[3]), StripQuotes(part[4]), StripQuotes(part[5]))
 }
