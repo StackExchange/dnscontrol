@@ -58,7 +58,8 @@ func (n *Nameserver) String() string {
 }
 
 // StringsToNameservers constructs a list of *Nameserver structs using a list of FQDNs.
-// Deprecated. Please use ToNameservers.
+// Deprecated. Please use ToNameservers, or maybe ToNameserversStripTD instead.
+// See https://github.com/StackExchange/dnscontrol/issues/491
 func StringsToNameservers(nss []string) []*Nameserver {
 	nservers := []*Nameserver{}
 	for _, ns := range nss {
@@ -68,8 +69,8 @@ func StringsToNameservers(nss []string) []*Nameserver {
 }
 
 // ToNameservers turns a list of strings into a list of Nameservers.
-// It is an error if there is a trailing dot. Either remove the
-// trailing dot before you call this, or use ToNameserversStripTD.
+// It is an error if any string has a trailing dot. Either remove the
+// trailing dot before you call this or (much preferred) use ToNameserversStripTD.
 func ToNameservers(nss []string) ([]*Nameserver, error) {
 	nservers := []*Nameserver{}
 	for _, ns := range nss {
@@ -90,8 +91,7 @@ func ToNameserversStripTD(nss []string) ([]*Nameserver, error) {
 	for _, ns := range nss {
 		if !strings.HasSuffix(ns, ".") {
 			return nil, fmt.Errorf("provider code already removed nameserver trailing dot (%v)", ns)
-			// If you see this error, maybe the provider should call
-			// ToNameservers instead.
+			// If you see this error, maybe the provider should call ToNameservers instead.
 		}
 		nservers = append(nservers, &Nameserver{Name: ns[0 : len(ns)-1]})
 	}

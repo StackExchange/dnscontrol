@@ -66,8 +66,9 @@ func initBind(config map[string]string, providermeta json.RawMessage) (providers
 	for _, ns := range api.DefaultNS {
 		nss = append(nss, ns[0:len(ns)-1])
 	}
-	api.nameservers = models.StringsToNameservers(nss)
-	return api, nil
+	var err error
+	api.nameservers, err = models.ToNameservers(nss)
+	return api, err
 }
 
 func init() {
