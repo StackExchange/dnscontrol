@@ -93,7 +93,7 @@ func (api *DoApi) EnsureDomainExists(domain string) error {
 
 // GetNameservers returns the nameservers for domain.
 func (api *DoApi) GetNameservers(domain string) ([]*models.Nameserver, error) {
-	return models.StringsToNameservers(defaultNameServerNames), nil
+	return models.ToNameservers(defaultNameServerNames)
 }
 
 // GetZoneRecords gets the records of a zone and returns them in RecordConfig format.

@@ -26,19 +26,20 @@ func DetermineNameservers(dc *models.DomainConfig) ([]*models.Nameserver, error)
 		if err != nil {
 			return nil, err
 		}
+		// Clean up the nameservers due to
+		// https://github.com/StackExchange/dnscontrol/issues/491
+		for i, _ := range nss {
+			if strings.HasSuffix(nss[i].Name, ".") {
+				models.WarnNameserverDot(dnsProvider.Name, fmt.Sprintf("DetermineNameservers (%s) (%s)", dc.Name, nss[i].Name))
+				nss[i].Name = strings.TrimSuffix(nss[i].Name, ".")
+			}
+		}
+
 		take := len(nss)
 		if n > 0 && n < take {
 			take = n
 		}
 		for i := 0; i < take; i++ {
-			if strings.HasSuffix(nss[i].Name, ".") {
-				fmt.Printf("PLEASE-FIX: Nameserver.Name should not end in '.': %s\n", nss[i].Name)
-				nss[i].Name = strings.TrimSuffix(nss[i].Name, ".")
-			}
-			// FIXME(tlim): Rather than correct broken providers, we should print
-			// a warning that the provider should be updated to store the FQDN
-			// with no trailing dot.  See also providers/namedotcom/nameservers.go
-			// Bug https://github.com/StackExchange/dnscontrol/issues/491
 			ns = append(ns, nss[i])
 		}
 	}

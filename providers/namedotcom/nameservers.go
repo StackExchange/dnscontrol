@@ -2,7 +2,6 @@ package namedotcom
 
 import (
 	"fmt"
-	"log"
 	"regexp"
 	"sort"
 	"strings"
@@ -29,7 +28,7 @@ func (n *NameCom) GetNameservers(domain string) ([]*models.Nameserver, error) {
 			toUse[idx] = matches[0]
 		}
 	}
-	return models.StringsToNameservers(toUse), nil
+	return models.ToNameservers(toUse)
 }
 
 func (n *NameCom) getNameserversRaw(domain string) ([]string, error) {
@@ -55,10 +54,6 @@ func (n *NameCom) GetRegistrarCorrections(dc *models.DomainConfig) ([]*models.Co
 	foundNameservers := strings.Join(nss, ",")
 	expected := []string{}
 	for _, ns := range dc.Nameservers {
-		if strings.HasSuffix(ns.Name, ".") {
-			log.Fatalf("ns.Name should not end with a '.'\n")
-			// Bug https://github.com/StackExchange/dnscontrol/issues/491
-		}
 		expected = append(expected, ns.Name)
 	}
 	sort.Strings(expected)
