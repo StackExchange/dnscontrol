@@ -310,7 +310,7 @@ func (client *api) GetNameservers(domain string) ([]*models.Nameserver, error) {
 	if err != nil {
 		return nil, err
 	}
-	return models.StringsToNameservers(nameservers), nil
+	return models.ToNameservers(nameservers)
 }
 
 // GetRegistrarCorrections returns a list of corrections for this registrar.

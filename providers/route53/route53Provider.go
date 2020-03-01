@@ -172,13 +172,14 @@ func (r *route53Provider) GetNameservers(domain string) ([]*models.Nameserver, e
 	if err != nil {
 		return nil, err
 	}
-	ns := []*models.Nameserver{}
+
+	var nss []string
 	if z.DelegationSet != nil {
 		for _, nsPtr := range z.DelegationSet.NameServers {
-			ns = append(ns, &models.Nameserver{Name: *nsPtr})
+			nss = append(nss, *nsPtr)
 		}
 	}
-	return ns, nil
+	return models.ToNameservers(nss)
 }
 
 // GetZoneRecords gets the records of a zone and returns them in RecordConfig format.

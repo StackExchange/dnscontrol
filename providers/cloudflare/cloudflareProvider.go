@@ -91,7 +91,7 @@ func (c *CloudflareApi) GetNameservers(domain string) ([]*models.Nameserver, err
 	if !ok {
 		return nil, fmt.Errorf("Nameservers for %s not found in cloudflare account", domain)
 	}
-	return models.StringsToNameservers(ns), nil
+	return models.ToNameservers(ns)
 }
 
 func (c *CloudflareApi) ListZones() ([]string, error) {

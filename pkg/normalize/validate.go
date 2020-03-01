@@ -288,9 +288,14 @@ func NormalizeAndValidateConfig(config *models.DNSConfig) (errs []error) {
 
 		// Normalize Nameservers.
 		for _, ns := range domain.Nameservers {
-			ns.Name = dnsutil.AddOrigin(ns.Name, domain.Name)
-			ns.Name = strings.TrimRight(ns.Name, ".")
+			// NB(tlim): Like any target, NAMESERVER() is input by the user
+			// as a shortname or a FQDN+dot.  It is stored as FQDN+dot.
+			// Normalize it like we do any target to assure it is FQDN+dot
+			ns.Name = dnsutil.AddOrigin(ns.Name, domain.Name+".")
+			ns.Name = strings.TrimSuffix(ns.Name, ".")
+			checkTarget(ns.Name)
 		}
+
 		// Normalize Records.
 		models.PostProcessRecords(domain.Records)
 		for _, rec := range domain.Records {
