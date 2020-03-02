@@ -165,6 +165,31 @@ var AAAA = recordBuilder('AAAA');
 // ALIAS(name,target, recordModifiers...)
 var ALIAS = recordBuilder('ALIAS');
 
+// AZURE_ALIAS(name, type, target, recordModifiers...)
+var AZURE_ALIAS = recordBuilder('AZURE_ALIAS', {
+    args: [
+        ['name', _.isString],
+        ['type', validateAzureAliasType],
+        ['target', _.isString],
+    ],
+    transform: function(record, args, modifier) {
+        record.name = args.name;
+        record.target = args.target;
+        if (_.isObject(record.azure_alias)) {
+            record.azure_alias['type'] = args.type;
+        } else {
+            record.azure_alias = { type: args.type };
+        }
+    },
+});
+
+function validateAzureAliasType(value) {
+    if (!_.isString(value)) {
+        return false;
+    }
+    return ['A', 'AAAA', 'CNAME'].indexOf(value) !== -1;
+}
+
 // R53_ALIAS(name, target, type, recordModifiers...)
 var R53_ALIAS = recordBuilder('R53_ALIAS', {
     args: [
@@ -213,38 +238,6 @@ function validateR53AliasType(value) {
         ].indexOf(value) !== -1
     );
 }
-
-var AZURE_ALIAS = recordBuilder("AZURE_ALIAS", {
-    args: [
-        ['name', _.isString],
-        ['type', validateAzureAliasType],
-        ['target', _.isString]
-    ],
-    transform: function (record, args, modifier) {
-        record.name = args.name;
-        record.target = args.target;
-        if (_.isObject(record.azure_alias)) {
-            record.azure_alias['type'] = args.type;
-        } else {
-            record.azure_alias = { type: args.type };
-        }
-
-    }
-});
-
-function validateAzureAliasType() {
-    if (!_.isString(value)) {
-        return false;
-    }
-    return (
-        [
-            'A',
-            'AAAA',
-            'CNAME'
-        ].indexOf(value) !== -1
-    );
-};
-
 
 // CAA(name,tag,value, recordModifiers...)
 var CAA = recordBuilder('CAA', {
@@ -773,7 +766,8 @@ function CAA_BUILDER(value) {
         (!value.issue && !value.issuewild) ||
         (value.issue &&
             value.issue.length == 0 &&
-            value.issuewild && value.issuewild.length == 0)
+            value.issuewild &&
+            value.issuewild.length == 0)
     ) {
         throw 'CAA_BUILDER requires at least one entry at issue or issuewild';
     }

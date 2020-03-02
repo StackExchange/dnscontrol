@@ -665,7 +665,7 @@ func makeTests(t *testing.T) []*TestCase {
 	}
 	// AZURE_ALIAS
 	if !providers.ProviderHasCapability(*providerToRun, providers.CanUseAzureAlias) {
-		t.Log("Skipping AZURE ALIAS Tests because provider does not support them")
+		t.Log("Skipping AZURE_ALIAS Tests because provider does not support them")
 	} else {
 		t.Log("SubscriptionID: ", )
 		tests = append(tests, tc("Empty"),
