@@ -39,6 +39,7 @@ func generateFeatureMatrix() error {
 			{"TLSA", "Provider can manage TLSA records"},
 			{"TXTMulti", "Provider can manage TXT records with multiple strings"},
 			{"R53_ALIAS", "Provider supports Route 53 limited ALIAS"},
+			{"AZURE_ALIAS", "Provider supports Azure DNS limited ALIAS"},
 
 			{"dual host", "This provider is recommended for use in 'dual hosting' scenarios. Usually this means the provider allows full control over the apex NS records"},
 			{"create-domains", "This means the provider can automatically create domains that do not currently exist on your account. The 'dnscontrol create-domains' command will initialize any missing domains"},
@@ -80,6 +81,7 @@ func generateFeatureMatrix() error {
 		setCap("NAPTR", providers.CanUseNAPTR)
 		setCap("PTR", providers.CanUsePTR)
 		setCap("R53_ALIAS", providers.CanUseRoute53Alias)
+		setCap("AZURE_ALIAS", providers.CanUseAzureAlias)
 		setCap("SRV", providers.CanUseSRV)
 		setCap("SSHFP", providers.CanUseSSHFP)
 		setCap("TLSA", providers.CanUseTLSA)

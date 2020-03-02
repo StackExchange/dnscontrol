@@ -79,7 +79,7 @@ func (dc *DomainConfig) Punycode() error {
 			if err != nil {
 				return err
 			}
-		case "A", "AAAA", "CAA", "NAPTR", "SOA", "SSHFP", "TXT", "TLSA":
+		case "A", "AAAA", "CAA", "NAPTR", "SOA", "SSHFP", "TXT", "TLSA", "AZURE_ALIAS":
 			// Nothing to do.
 		default:
 			msg := fmt.Sprintf("Punycode rtype %v unimplemented", rec.Type)

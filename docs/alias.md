@@ -24,4 +24,4 @@ func init() {
 3. CNAMEs at `@` are disallowed, but ALIAS is allowed.
 4. Cloudflare does not have a native ALIAS type, but CNAMEs behave similarly. The Cloudflare provider "rewrites" ALIAS records to CNAME as it sees them. Other providers may not need this step.
 5. Route 53 requires the use of R53_ALIAS instead of ALIAS.
-
+6. Azure DNS requires the use of AZURE_ALIAS instead of ALIAS.
