@@ -63,7 +63,7 @@ var features = providers.DocumentationNotes{
 	providers.CanUseSSHFP:            providers.Cannot(),
 	providers.CanUseTLSA:             providers.Cannot(),
 	providers.CanGetZones:            providers.Can(),
-	providers.CanUseAzureAlias:		  providers.Can(),
+	providers.CanUseAzureAlias:       providers.Can(),
 }
 
 func init() {

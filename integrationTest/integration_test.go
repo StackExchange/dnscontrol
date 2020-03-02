@@ -667,7 +667,7 @@ func makeTests(t *testing.T) []*TestCase {
 	if !providers.ProviderHasCapability(*providerToRun, providers.CanUseAzureAlias) {
 		t.Log("Skipping AZURE_ALIAS Tests because provider does not support them")
 	} else {
-		t.Log("SubscriptionID: ", )
+		t.Log("SubscriptionID: ")
 		tests = append(tests, tc("Empty"),
 			tc("create dependent A records", a("foo.a", "1.2.3.4"), a("quux.a", "2.3.4.5")),
 			tc("ALIAS to A record in same zone", a("foo.a", "1.2.3.4"), a("quux.a", "2.3.4.5"), azureAlias("bar.a", "A", "/subscriptions/**subscription-id**/resourceGroups/**resource-group**/providers/Microsoft.Network/dnszones/**current-domain-no-trailing**/A/foo.a")),
