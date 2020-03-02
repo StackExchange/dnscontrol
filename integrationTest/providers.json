@@ -2,7 +2,7 @@
   "ACTIVEDIRECTORY_PS": {
     "ADServer": "$AD_SERVER",
     "domain": "$AD_DOMAIN",
-    "knownFailures": "29,30,31,32,33,34,35,38,39,40,41,48,49,51,52,53"
+    "knownFailures": "29,30,31,32,33,34,35,38,39,40,41,48,50,51,52"
   },
   "AZURE_DNS": {
     "SubscriptionID": "$AZURE_SUBSCRIPTION_ID",
@@ -19,7 +19,7 @@
     "auth-id": "$CLOUDNS_AUTH_ID",
     "auth-password": "$CLOUDNS_AUTH_PASSWORD",
     "domain": "$CLOUDNS_DOMAIN",
-    "knownFailures": "53"
+    "knownFailures": "52"
   },
 
   "CLOUDFLAREAPI_OLD": {
@@ -125,7 +125,6 @@
     "app-key": "$OVH_APP_KEY",
     "app-secret-key": "$OVH_APP_SECRET_KEY",
     "consumer-key": "$OVH_CONSUMER_KEY",
-    "domain": "$OVH_DOMAIN",
-    "knownFailures": "49"
+    "domain": "$OVH_DOMAIN"
   }
 }
