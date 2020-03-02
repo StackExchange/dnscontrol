@@ -56,6 +56,9 @@ const (
 
 	// CanGetZoe indicates the provider supports the get-zones subcommand.
 	CanGetZones
+
+	// CanUseAzureAlias indicates the provider support the specific Azure_ALIAS records that only the Azure provider supports
+	CanUseAzureAlias
 )
 
 var providerCapabilities = map[string]map[Capability]bool{}

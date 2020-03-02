@@ -465,6 +465,7 @@ func init() {
 		{"SSHFP", providers.CanUseSSHFP},
 		{"SRV", providers.CanUseSRV},
 		{"TLSA", providers.CanUseTLSA},
+		{"AZURE_ALIAS", providers.CanUseAzureAlias},
 	}
 }
 

@@ -95,6 +95,7 @@ type RecordConfig struct {
 	TlsaMatchingType uint8             `json:"tlsamatchingtype,omitempty"`
 	TxtStrings       []string          `json:"txtstrings,omitempty"` // TxtStrings stores all strings (including the first). Target stores only the first one.
 	R53Alias         map[string]string `json:"r53_alias,omitempty"`
+	AzureAlias       map[string]string `json:"azure_alias,omitempty"`
 
 	Original interface{} `json:"-"` // Store pointer to provider-specific record object. Used in diffing.
 }
@@ -304,6 +305,12 @@ func (rc *RecordConfig) Key() RecordKey {
 	if rc.R53Alias != nil {
 		if v, ok := rc.R53Alias["type"]; ok {
 			// Route53 aliases append their alias type, so that records for the same
+			// label with different alias types are considered separate.
+			t = fmt.Sprintf("%s_%s", t, v)
+		}
+	} else if rc.AzureAlias != nil {
+		if v, ok := rc.AzureAlias["type"]; ok {
+			// Azure aliases append their alias type, so that records for the same
 			// label with different alias types are considered separate.
 			t = fmt.Sprintf("%s_%s", t, v)
 		}
