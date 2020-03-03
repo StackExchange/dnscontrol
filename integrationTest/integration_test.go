@@ -84,6 +84,29 @@ func getDomainConfigWithNameservers(t *testing.T, prv providers.DNSServiceProvid
 	return dc
 }
 
+func filterMatched(p *providers.DNSServiceProvider, f TestCase) bool {
+	// Is this a valid filter?
+	if len(f.only) != 0 && len(f.not) != 0 { // Can't have only and not.
+		panic(fmt.Sprintf("ERROR: invalid filter: %v", f))
+	}
+	// Is the filter empty (i.e. matches everything)
+	if len(f.required) == 0 && len(f.only) == 0 && len(f.not) == 0 {
+		return true
+	}
+	// If any "required" fail, we don't match.
+	for _, cap := range f.required {
+		providers.ProviderHasCapability(*p, cap)
+	}
+	//
+	// A filter is matched if:
+	// If len(required) != 0, all capacities must exist.
+	// If
+	//required []providers.Capability
+	//only     []string
+	//not      []string
+	return true
+}
+
 func runTests(t *testing.T, prv providers.DNSServiceProvider, domainName string, knownFailures map[int]bool) {
 	dc := getDomainConfigWithNameservers(t, prv, domainName)
 	// run tests one at a time
@@ -94,15 +117,19 @@ func runTests(t *testing.T, prv providers.DNSServiceProvider, domainName string,
 	}
 	for i := *startIdx; i <= end; i++ {
 		tst := tests[i]
-		if t.Failed() {
+		if t.Failed() { // Did the previous test fail? Stop.
 			break
 		}
 		t.Run(fmt.Sprintf("%d: %s", i, tst.Desc), func(t *testing.T) {
 			skipVal := false
-			if knownFailures[i] {
-				t.Log("SKIPPING VALIDATION FOR KNOWN FAILURE CASE")
+
+			if filterMatched(t, prv, curFilter) {
 				skipVal = true
 			}
+			//if knownFailures[i] {
+			//	t.Log("SKIPPING VALIDATION FOR KNOWN FAILURE CASE")
+			//	skipVal = true
+			//}
 			dom, _ := dc.Copy()
 			for _, r := range tst.Records {
 				rc := models.RecordConfig(*r)
@@ -205,7 +232,7 @@ type TestCase struct {
 	Records       []*rec
 	IgnoredLabels []string
 	// FILTER:
-	required providers.Capability
+	required []providers.Capability
 	only     []string
 	not      []string
 }
@@ -336,6 +363,14 @@ func (r *rec) ttl(t uint32) *rec {
 	return r
 }
 
+func manyA(namePattern, target string, n int) []*rec {
+	recs := []*rec{}
+	for i := 0; i < n; i++ {
+		recs = append(recs, makeRec(fmt.Sprintf(namePattern, i), target, "A"))
+	}
+	return recs
+}
+
 func tc(desc string, recs ...*rec) *TestCase {
 	var records []*rec
 	var ignored []string
@@ -353,13 +388,50 @@ func tc(desc string, recs ...*rec) *TestCase {
 	}
 }
 
-func manyA(namePattern, target string, n int) []*rec {
-	recs := []*rec{}
-	for i := 0; i < n; i++ {
-		recs = append(recs, makeRec(fmt.Sprintf(namePattern, i), target, "A"))
+func reset(items ...interface{}) *TestCase {
+	tc := &TestCase{Type: "FILTER"}
+	for _, item := range items {
+		switch v := item.(type) {
+		case requiresFilter:
+			tc.required = append(tc.required, v.cap)
+		case notFilter:
+			tc.not = append(tc.not, v.name)
+		case onlyFilter:
+			tc.only = append(tc.only, v.name)
+		//case providers.Capability:
+		//	fmt.Printf("listed capability %v without a requires()\n", v)
+		default:
+			fmt.Printf("I don't know about type %T (%v)\n", v, v)
+		}
 	}
-	return recs
+	return tc
 }
+
+type requiresFilter struct {
+	cap providers.Capability
+}
+
+func requires(c providers.Capability) requiresFilter {
+	return requiresFilter{cap: c}
+}
+
+type notFilter struct {
+	name string
+}
+
+func not(n string) notFilter {
+	return notFilter{name: n}
+}
+
+type onlyFilter struct {
+	name string
+}
+
+func only(n string) onlyFilter {
+	return onlyFilter{name: n}
+}
+
+//
 
 func makeTests(t *testing.T) []*TestCase {
 
@@ -379,15 +451,16 @@ func makeTests(t *testing.T) []*TestCase {
 	// Only apply to providers listed.
 	//     reset(only("ROUTE53"), only("GCLOUD")),
 	// Apply to all providers except ROUTE53
-	//     reset(skip("ROUTE53")),
+	//     reset(not("ROUTE53")),
 	// Apply to all providers except ROUTE53 and GCLOUD
-	//     reset(skip("ROUTE53"), skip("GCLOUD")),
+	//     reset(not("ROUTE53"), not("GCLOUD")),
 
 	// DETAILS:
-	// You can't mix skip() and only()
-	//     reset(skip("ROUTE53"), only("GCLOUD")),  // ERROR!
+	// You can't mix not() and only()
+	//     reset(not("ROUTE53"), only("GCLOUD")),  // ERROR!
 
 	tests := []*TestCase{
+
 		// A
 		reset(),
 		tc("Create an A record", a("@", "1.1.1.1")),
@@ -445,7 +518,7 @@ func makeTests(t *testing.T) []*TestCase {
 		tc("change it", alias("@", "foo2.com.")),
 		tc("ALIAS at subdomain", alias("test", "foo.com.")),
 
-		reset(providers.CanUseNAPTR),
+		reset(requires(providers.CanUseNAPTR)),
 		tc("NAPTR record", naptr("test", 100, 10, "U", "E2U+sip", "!^.*$!sip:customer-service@example.com!", "example.foo.com.")),
 		tc("NAPTR second record", naptr("test", 102, 10, "U", "E2U+email", "!^.*$!mailto:information@example.com!", "example.foo.com.")),
 		tc("NAPTR delete record", naptr("test", 100, 10, "U", "E2U+email", "!^.*$!mailto:information@example.com!", "example.foo.com.")),
@@ -466,7 +539,7 @@ func makeTests(t *testing.T) []*TestCase {
 		tc("Change Weight", srv("_sip._tcp", 52, 62, 7, "foo.com."), srv("_sip._tcp", 15, 65, 75, "foo4.com.")),
 		tc("Change Port", srv("_sip._tcp", 52, 62, 72, "foo.com."), srv("_sip._tcp", 15, 65, 75, "foo4.com.")),
 
-		reset(skip("NAMEDOTCOM"), skip("HEXONET"), skip("EXOSCALE")),
+		reset(not("NAMEDOTCOM"), not("HEXONET"), not("EXOSCALE")),
 		tc("Null Target", srv("_sip._tcp", 52, 62, 72, "foo.com."), srv("_sip._tcp", 15, 65, 75, ".")),
 
 		reset(requires(providers.CanUseSSHFP)),
@@ -494,7 +567,7 @@ func makeTests(t *testing.T) []*TestCase {
 		tc("CAA change flag", caa("@", "issuewild", 128, "example.com")),
 
 		// Digitalocean doesn't support ";" as value for CAA records
-		reset(requires(providers.CanUseCAA), skip("DIGITALOCEAN")),
+		reset(requires(providers.CanUseCAA), not("DIGITALOCEAN")),
 		tc("CAA many records", caa("@", "issue", 0, "letsencrypt.org"),
 			caa("@", "issuewild", 0, ";"), caa("@", "iodef", 128, "mailto:test@example.com")),
 		reset(requires(providers.CanUseCAA), only("DIGITALOCEAN")),
@@ -525,7 +598,7 @@ func makeTests(t *testing.T) []*TestCase {
 		// Known page sizes:
 		//  - gandi: 100
 		// ns1 free acct only allows 50 records
-		reset(skip("NS1")),
+		reset(not("NS1")),
 		tc("99 records", manyA("rec%04d", "1.2.3.4", 99)...),
 		tc("100 records", manyA("rec%04d", "1.2.3.4", 100)...),
 		tc("101 records", manyA("rec%04d", "1.2.3.4", 101)...),
@@ -548,11 +621,11 @@ func makeTests(t *testing.T) []*TestCase {
 		// that a TXT string can be empty.
 		//
 		// TXT (empty)
-		reset(requires(providers.CanTXTEmpty)),
+		reset(not("DNSIMPLE")),
 		tc("TXT with empty str", txt("foo1", "")),
 
 		// TXTMulti
-		reset(require(providers.CanUseTXTMulti)),
+		reset(requires(providers.CanUseTXTMulti)),
 		tc("Create TXTMulti 1",
 			txtmulti("foo1", []string{"simple"}),
 		),
@@ -575,7 +648,7 @@ func makeTests(t *testing.T) []*TestCase {
 			txtmulti("foo2", []string{"fun", "two"}),
 			txtmulti("foo3", []string{"eh", "bzz", "cee"}),
 		),
-		reset(require(providers.CanUseTXTMulti)),
+		reset(requires(providers.CanUseTXTMulti)),
 		tc("3x255-byte TXTMulti",
 			txtmulti("foo3", []string{"XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX", "YYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYY", "ZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZ"}),
 		),
@@ -589,7 +662,7 @@ func makeTests(t *testing.T) []*TestCase {
 		tc("Add a new record - ignoring *.foo", a("bar", "1.2.3.4"), ignore("*.foo")),
 
 		// R53_ALIAS
-		reset(require(providers.CanUseRoute53Alias)),
+		reset(requires(providers.CanUseRoute53Alias)),
 		tc("create dependent records", a("foo", "1.2.3.4"), a("quux", "2.3.4.5")),
 		tc("ALIAS to A record in same zone", a("foo", "1.2.3.4"), a("quux", "2.3.4.5"), r53alias("bar", "A", "foo.**current-domain**")),
 		tc("change it", a("foo", "1.2.3.4"), a("quux", "2.3.4.5"), r53alias("bar", "A", "quux.**current-domain**")),
