@@ -199,9 +199,15 @@ func TestDualProviders(t *testing.T) {
 }
 
 type TestCase struct {
+	Type string // "TEST", "FILTER"
+	// TEST:
 	Desc          string
 	Records       []*rec
 	IgnoredLabels []string
+	// FILTER:
+	required providers.Capability
+	only     []string
+	not      []string
 }
 
 type rec models.RecordConfig
@@ -356,10 +362,14 @@ func manyA(namePattern, target string, n int) []*rec {
 }
 
 func makeTests(t *testing.T) []*TestCase {
-	// ALWAYS ADD TO BOTTOM OF LIST. Order and indexes matter.
+
+	sha256hash := strings.Repeat("0123456789abcdef", 4)
+	sha512hash := strings.Repeat("0123456789abcdef", 8)
+	reversedSha512 := strings.Repeat("fedcba9876543210", 8)
+
 	tests := []*TestCase{
 		// A
-		tc("Empty"),
+		reset(),
 		tc("Create an A record", a("@", "1.1.1.1")),
 		tc("Change it", a("@", "1.2.3.4")),
 		tc("Add another", a("@", "1.2.3.4"), a("www", "1.2.3.4")),
@@ -374,7 +384,7 @@ func makeTests(t *testing.T) []*TestCase {
 		tc("Delete wildcard", a("www", "1.1.1.1")),
 
 		// CNAMES
-		tc("Empty"),
+		reset(),
 		tc("Create a CNAME", cname("foo", "google.com.")),
 		tc("Change it", cname("foo", "google2.com.")),
 		tc("Change to A record", a("foo", "1.2.3.4")),
@@ -382,20 +392,20 @@ func makeTests(t *testing.T) []*TestCase {
 		tc("Record pointing to @", cname("foo", "**current-domain**")),
 
 		// NS
-		tc("Empty"),
+		reset(),
 		tc("NS for subdomain", ns("xyz", "ns2.foo.com.")),
 		tc("Dual NS for subdomain", ns("xyz", "ns2.foo.com."), ns("xyz", "ns1.foo.com.")),
 		tc("NS Record pointing to @", ns("foo", "**current-domain**")),
 
 		// IDNAs
-		tc("Empty"),
+		reset(),
 		tc("Internationalized name", a("ööö", "1.2.3.4")),
 		tc("Change IDN", a("ööö", "2.2.2.2")),
 		tc("Internationalized CNAME Target", cname("a", "ööö.com.")),
 		tc("IDN CNAME AND Target", cname("öoö", "ööö.企业.")),
 
 		// MX
-		tc("Empty"),
+		reset(),
 		tc("MX record", mx("@", 5, "foo.com.")),
 		tc("Second MX record, same prio", mx("@", 5, "foo.com."), mx("@", 5, "foo2.com.")),
 		tc("3 MX", mx("@", 5, "foo.com."), mx("@", 5, "foo2.com."), mx("@", 15, "foo3.com.")),
@@ -403,249 +413,177 @@ func makeTests(t *testing.T) []*TestCase {
 		tc("Change to other name", mx("@", 5, "foo2.com."), mx("mail", 15, "foo3.com.")),
 		tc("Change Preference", mx("@", 7, "foo2.com."), mx("mail", 15, "foo3.com.")),
 		tc("Record pointing to @", mx("foo", 8, "**current-domain**")),
-	}
 
-	// PTR
-	if !providers.ProviderHasCapability(*providerToRun, providers.CanUsePTR) {
-		t.Log("Skipping PTR Tests because provider does not support them")
-	} else {
-		tests = append(tests, tc("Empty"),
-			tc("Create PTR record", ptr("4", "foo.com.")),
-			tc("Modify PTR record", ptr("4", "bar.com.")),
-		)
-	}
+		// PTR
+		reset(requires(providers.CanUsePTR)),
+		tc("Create PTR record", ptr("4", "foo.com.")),
+		tc("Modify PTR record", ptr("4", "bar.com.")),
 
-	// ALIAS
-	if !providers.ProviderHasCapability(*providerToRun, providers.CanUseAlias) {
-		t.Log("Skipping ALIAS Tests because provider does not support them")
-	} else {
-		tests = append(tests, tc("Empty"),
-			tc("ALIAS at root", alias("@", "foo.com.")),
-			tc("change it", alias("@", "foo2.com.")),
-			tc("ALIAS at subdomain", alias("test", "foo.com.")),
-		)
-	}
+		// ALIAS
+		reset(requires(providers.CanUseAlias)),
+		tc("ALIAS at root", alias("@", "foo.com.")),
+		tc("change it", alias("@", "foo2.com.")),
+		tc("ALIAS at subdomain", alias("test", "foo.com.")),
 
-	// NAPTR
-	if !providers.ProviderHasCapability(*providerToRun, providers.CanUseNAPTR) {
-		t.Log("Skipping NAPTR Tests because provider does not support them")
-	} else {
-		tests = append(tests, tc("Empty"),
-			tc("NAPTR record", naptr("test", 100, 10, "U", "E2U+sip", "!^.*$!sip:customer-service@example.com!", "example.foo.com.")),
-			tc("NAPTR second record", naptr("test", 102, 10, "U", "E2U+email", "!^.*$!mailto:information@example.com!", "example.foo.com.")),
-			tc("NAPTR delete record", naptr("test", 100, 10, "U", "E2U+email", "!^.*$!mailto:information@example.com!", "example.foo.com.")),
-			tc("NAPTR change target", naptr("test", 100, 10, "U", "E2U+email", "!^.*$!mailto:information@example.com!", "example2.foo.com.")),
-			tc("NAPTR change order", naptr("test", 103, 10, "U", "E2U+email", "!^.*$!mailto:information@example.com!", "example2.foo.com.")),
-			tc("NAPTR change preference", naptr("test", 103, 20, "U", "E2U+email", "!^.*$!mailto:information@example.com!", "example2.foo.com.")),
-			tc("NAPTR change flags", naptr("test", 103, 20, "A", "E2U+email", "!^.*$!mailto:information@example.com!", "example2.foo.com.")),
-			tc("NAPTR change service", naptr("test", 103, 20, "A", "E2U+sip", "!^.*$!mailto:information@example.com!", "example2.foo.com.")),
-			tc("NAPTR change regexp", naptr("test", 103, 20, "A", "E2U+sip", "!^.*$!sip:customer-service@example.com!", "example2.foo.com.")),
-		)
-	}
+		reset(providers.CanUseNAPTR),
+		tc("NAPTR record", naptr("test", 100, 10, "U", "E2U+sip", "!^.*$!sip:customer-service@example.com!", "example.foo.com.")),
+		tc("NAPTR second record", naptr("test", 102, 10, "U", "E2U+email", "!^.*$!mailto:information@example.com!", "example.foo.com.")),
+		tc("NAPTR delete record", naptr("test", 100, 10, "U", "E2U+email", "!^.*$!mailto:information@example.com!", "example.foo.com.")),
+		tc("NAPTR change target", naptr("test", 100, 10, "U", "E2U+email", "!^.*$!mailto:information@example.com!", "example2.foo.com.")),
+		tc("NAPTR change order", naptr("test", 103, 10, "U", "E2U+email", "!^.*$!mailto:information@example.com!", "example2.foo.com.")),
+		tc("NAPTR change preference", naptr("test", 103, 20, "U", "E2U+email", "!^.*$!mailto:information@example.com!", "example2.foo.com.")),
+		tc("NAPTR change flags", naptr("test", 103, 20, "A", "E2U+email", "!^.*$!mailto:information@example.com!", "example2.foo.com.")),
+		tc("NAPTR change service", naptr("test", 103, 20, "A", "E2U+sip", "!^.*$!mailto:information@example.com!", "example2.foo.com.")),
+		tc("NAPTR change regexp", naptr("test", 103, 20, "A", "E2U+sip", "!^.*$!sip:customer-service@example.com!", "example2.foo.com.")),
 
-	// SRV
-	if !providers.ProviderHasCapability(*providerToRun, providers.CanUseSRV) {
-		t.Log("Skipping SRV Tests because provider does not support them")
-	} else {
-		tests = append(tests, tc("Empty"),
-			tc("SRV record", srv("_sip._tcp", 5, 6, 7, "foo.com.")),
-			tc("Second SRV record, same prio", srv("_sip._tcp", 5, 6, 7, "foo.com."), srv("_sip._tcp", 5, 60, 70, "foo2.com.")),
-			tc("3 SRV", srv("_sip._tcp", 5, 6, 7, "foo.com."), srv("_sip._tcp", 5, 60, 70, "foo2.com."), srv("_sip._tcp", 15, 65, 75, "foo3.com.")),
-			tc("Delete one", srv("_sip._tcp", 5, 6, 7, "foo.com."), srv("_sip._tcp", 15, 65, 75, "foo3.com.")),
-			tc("Change Target", srv("_sip._tcp", 5, 6, 7, "foo.com."), srv("_sip._tcp", 15, 65, 75, "foo4.com.")),
-			tc("Change Priority", srv("_sip._tcp", 52, 6, 7, "foo.com."), srv("_sip._tcp", 15, 65, 75, "foo4.com.")),
-			tc("Change Weight", srv("_sip._tcp", 52, 62, 7, "foo.com."), srv("_sip._tcp", 15, 65, 75, "foo4.com.")),
-			tc("Change Port", srv("_sip._tcp", 52, 62, 72, "foo.com."), srv("_sip._tcp", 15, 65, 75, "foo4.com.")),
-		)
-		if *providerToRun == "NAMEDOTCOM" || *providerToRun == "HEXONET" || *providerToRun == "EXOSCALE" {
-			t.Log("Skipping SRV Null Target test because provider does not support them")
-		} else {
-			tests = append(tests, tc("Null Target", srv("_sip._tcp", 52, 62, 72, "foo.com."), srv("_sip._tcp", 15, 65, 75, ".")))
-		}
-	}
+		reset(requires(providers.CanUseSRV)),
+		tc("SRV record", srv("_sip._tcp", 5, 6, 7, "foo.com.")),
+		tc("Second SRV record, same prio", srv("_sip._tcp", 5, 6, 7, "foo.com."), srv("_sip._tcp", 5, 60, 70, "foo2.com.")),
+		tc("3 SRV", srv("_sip._tcp", 5, 6, 7, "foo.com."), srv("_sip._tcp", 5, 60, 70, "foo2.com."), srv("_sip._tcp", 15, 65, 75, "foo3.com.")),
+		tc("Delete one", srv("_sip._tcp", 5, 6, 7, "foo.com."), srv("_sip._tcp", 15, 65, 75, "foo3.com.")),
+		tc("Change Target", srv("_sip._tcp", 5, 6, 7, "foo.com."), srv("_sip._tcp", 15, 65, 75, "foo4.com.")),
+		tc("Change Priority", srv("_sip._tcp", 52, 6, 7, "foo.com."), srv("_sip._tcp", 15, 65, 75, "foo4.com.")),
+		tc("Change Weight", srv("_sip._tcp", 52, 62, 7, "foo.com."), srv("_sip._tcp", 15, 65, 75, "foo4.com.")),
+		tc("Change Port", srv("_sip._tcp", 52, 62, 72, "foo.com."), srv("_sip._tcp", 15, 65, 75, "foo4.com.")),
 
-	// SSHFP
-	if !providers.ProviderHasCapability(*providerToRun, providers.CanUseSSHFP) {
-		t.Log("Skipping SSHFP Tests because provider does not support them")
-	} else {
-		tests = append(tests, tc("Empty"),
-			tc("SSHFP record",
-				sshfp("@", 1, 1, "66c7d5540b7d75a1fb4c84febfa178ad99bdd67c")),
-			tc("SSHFP change algorithm",
-				sshfp("@", 2, 1, "66c7d5540b7d75a1fb4c84febfa178ad99bdd67c")),
-			tc("SSHFP change type",
-				sshfp("@", 2, 2, "66c7d5540b7d75a1fb4c84febfa178ad99bdd67c")),
-			tc("SSHFP change fingerprint",
-				sshfp("@", 2, 2, "745a635bc46a397a5c4f21d437483005bcc40d7511ff15fbfafe913a081559bc")),
-			tc("SSHFP Delete one"),
-			tc("SSHFP add many records",
-				sshfp("@", 1, 1, "66666666666d75a1fb4c84febfa178ad99bdd67c"),
-				sshfp("@", 1, 2, "777777777777797a5c4f21d437483005bcc40d7511ff15fbfafe913a081559bc"),
-				sshfp("@", 2, 1, "8888888888888888fb4c84febfa178ad99bdd67c")),
-			tc("SSHFP delete two",
-				sshfp("@", 1, 1, "66666666666d75a1fb4c84febfa178ad99bdd67c")),
-		)
-	}
+		reset(not("NAMEDOTCOM"), not("HEXONET"), not("EXOSCALE")),
+		tc("Null Target", srv("_sip._tcp", 52, 62, 72, "foo.com."), srv("_sip._tcp", 15, 65, 75, ".")),
 
-	// CAA
-	if !providers.ProviderHasCapability(*providerToRun, providers.CanUseCAA) {
-		t.Log("Skipping CAA Tests because provider does not support them")
-	} else {
-		manyRecordsTc := tc("CAA many records", caa("@", "issue", 0, "letsencrypt.org"), caa("@", "issuewild", 0, ";"), caa("@", "iodef", 128, "mailto:test@example.com"))
+		reset(requires(providers.CanUseSSHFP)),
+		tc("SSHFP record",
+			sshfp("@", 1, 1, "66c7d5540b7d75a1fb4c84febfa178ad99bdd67c")),
+		tc("SSHFP change algorithm",
+			sshfp("@", 2, 1, "66c7d5540b7d75a1fb4c84febfa178ad99bdd67c")),
+		tc("SSHFP change type",
+			sshfp("@", 2, 2, "66c7d5540b7d75a1fb4c84febfa178ad99bdd67c")),
+		tc("SSHFP change fingerprint",
+			sshfp("@", 2, 2, "745a635bc46a397a5c4f21d437483005bcc40d7511ff15fbfafe913a081559bc")),
+		tc("SSHFP Delete one"),
+		tc("SSHFP add many records",
+			sshfp("@", 1, 1, "66666666666d75a1fb4c84febfa178ad99bdd67c"),
+			sshfp("@", 1, 2, "777777777777797a5c4f21d437483005bcc40d7511ff15fbfafe913a081559bc"),
+			sshfp("@", 2, 1, "8888888888888888fb4c84febfa178ad99bdd67c")),
+		tc("SSHFP delete two",
+			sshfp("@", 1, 1, "66666666666d75a1fb4c84febfa178ad99bdd67c")),
+
+		// CAA
+		reset(requires(providers.CanUseCAA)),
+		tc("CAA record", caa("@", "issue", 0, "letsencrypt.org")),
+		tc("CAA change tag", caa("@", "issuewild", 0, "letsencrypt.org")),
+		tc("CAA change target", caa("@", "issuewild", 0, "example.com")),
+		tc("CAA change flag", caa("@", "issuewild", 128, "example.com")),
 
 		// Digitalocean doesn't support ";" as value for CAA records
-		if *providerToRun == "DIGITALOCEAN" {
-			manyRecordsTc = tc("CAA many records", caa("@", "issue", 0, "letsencrypt.org"), caa("@", "issuewild", 0, "comodoca.com"), caa("@", "iodef", 128, "mailto:test@example.com"))
-		}
+		reset(requires(providers.CanUseCAA), not("DIGITALOCEAN")),
+		tc("CAA many records", caa("@", "issue", 0, "letsencrypt.org"),
+			caa("@", "issuewild", 0, ";"), caa("@", "iodef", 128, "mailto:test@example.com")),
+		reset(requires(providers.CanUseCAA), only("DIGITALOCEAN")),
+		tc("CAA many records", caa("@", "issue", 0, "letsencrypt.org"),
+			caa("@", "issuewild", 0, "comodoca.com"), caa("@", "iodef", 128, "mailto:test@example.com")),
 
-		tests = append(tests, tc("Empty"),
-			tc("CAA record", caa("@", "issue", 0, "letsencrypt.org")),
-			tc("CAA change tag", caa("@", "issuewild", 0, "letsencrypt.org")),
-			tc("CAA change target", caa("@", "issuewild", 0, "example.com")),
-			tc("CAA change flag", caa("@", "issuewild", 128, "example.com")),
-			manyRecordsTc,
-			tc("CAA delete", caa("@", "issue", 0, "letsencrypt.org")),
-		)
-	}
+		reset(requires(providers.CanUseCAA)),
+		tc("CAA delete", caa("@", "issue", 0, "letsencrypt.org")),
 
-	// TLSA
-	if !providers.ProviderHasCapability(*providerToRun, providers.CanUseTLSA) {
-		t.Log("Skipping TLSA Tests because provider does not support them")
-	} else {
-		sha256hash := strings.Repeat("0123456789abcdef", 4)
-		sha512hash := strings.Repeat("0123456789abcdef", 8)
-		reversedSha512 := strings.Repeat("fedcba9876543210", 8)
-		tests = append(tests, tc("Empty"),
-			tc("TLSA record", tlsa("_443._tcp", 3, 1, 1, sha256hash)),
-			tc("TLSA change usage", tlsa("_443._tcp", 2, 1, 1, sha256hash)),
-			tc("TLSA change selector", tlsa("_443._tcp", 2, 0, 1, sha256hash)),
-			tc("TLSA change matchingtype", tlsa("_443._tcp", 2, 0, 2, sha512hash)),
-			tc("TLSA change certificate", tlsa("_443._tcp", 2, 0, 2, reversedSha512)),
-		)
-	}
+		// TLSA
+		reset(requires(providers.CanUseTLSA)),
+		tc("TLSA record", tlsa("_443._tcp", 3, 1, 1, sha256hash)),
+		tc("TLSA change usage", tlsa("_443._tcp", 2, 1, 1, sha256hash)),
+		tc("TLSA change selector", tlsa("_443._tcp", 2, 0, 1, sha256hash)),
+		tc("TLSA change matchingtype", tlsa("_443._tcp", 2, 0, 2, sha512hash)),
+		tc("TLSA change certificate", tlsa("_443._tcp", 2, 0, 2, reversedSha512)),
 
-	// Case
-	tests = append(tests, tc("Empty"),
+		// Case
+		reset(),
+		// The decoys are required so that there is at least one actual change in each tc.
 		tc("Create CAPS", mx("BAR", 5, "BAR.com.")),
 		tc("Downcase label", mx("bar", 5, "BAR.com."), a("decoy", "1.1.1.1")),
 		tc("Downcase target", mx("bar", 5, "bar.com."), a("decoy", "2.2.2.2")),
 		tc("Upcase both", mx("BAR", 5, "BAR.COM."), a("decoy", "3.3.3.3")),
-		// The decoys are required so that there is at least one actual change in each tc.
-	)
 
-	// Test large zonefiles.
-	// Mostly to test paging. Many providers page at 100
-	// Known page sizes:
-	//  - gandi: 100
-	skip := map[string]bool{
-		"NS1": true, // ns1 free acct only allows 50 records
-	}
-	if skip[*providerToRun] {
-		t.Log("Skipping Large record count Tests because provider does not support them")
-	} else {
-		tests = append(tests, tc("Empty"),
-			tc("99 records", manyA("rec%04d", "1.2.3.4", 99)...),
-			tc("100 records", manyA("rec%04d", "1.2.3.4", 100)...),
-			tc("101 records", manyA("rec%04d", "1.2.3.4", 101)...),
-		)
-	}
+		// Test large zonefiles.
+		// Mostly to test paging. Many providers page at 100
+		// Known page sizes:
+		//  - gandi: 100
+		// ns1 free acct only allows 50 records
+		reset(not("NS1")),
+		tc("99 records", manyA("rec%04d", "1.2.3.4", 99)...),
+		tc("100 records", manyA("rec%04d", "1.2.3.4", 100)...),
+		tc("101 records", manyA("rec%04d", "1.2.3.4", 101)...),
 
-	// NB(tlim): To temporarily skip most of the tests, insert a line like this:
-	//tests = nil
-
-	// TXT (single)
-	tests = append(tests, tc("Empty"),
+		// TXT (single)
+		reset(),
 		tc("Create a TXT", txt("foo", "simple")),
 		tc("Change a TXT", txt("foo", "changed")),
-		tc("Empty"),
+		reset(),
 		tc("Create a TXT with spaces", txt("foo", "with spaces")),
 		tc("Change a TXT with spaces", txt("foo", "with whitespace")),
 		tc("Create 1 TXT as array", txtmulti("foo", []string{"simple"})),
-		tc("Empty"),
+		reset(),
 		tc("Create a 255-byte TXT", txt("foo", "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA")),
-	)
 
-	// FUTURE(tal): https://github.com/StackExchange/dnscontrol/issues/598
-	// We decided that handling an empty TXT string is not a
-	// requirement. In the future we might make it a "capability" to
-	// indicate which vendors fully support RFC 1035, which requires
-	// that a TXT string can be empty.
-	//
-	//	// TXT (empty)
-	//	if (provider supports empty txt strings) {
-	//		tests = append(tests, tc("Empty"),
-	//			tc("TXT with empty str", txt("foo1", "")),
-	//		)
-	//	}
+		// FUTURE(tal): https://github.com/StackExchange/dnscontrol/issues/598
+		// We decided that handling an empty TXT string is not a
+		// requirement. In the future we might make it a "capability" to
+		// indicate which vendors fully support RFC 1035, which requires
+		// that a TXT string can be empty.
+		//
+		// TXT (empty)
+		reset(requires(providers.CanTXTEmpty)),
+		tc("TXT with empty str", txt("foo1", "")),
 
-	// TXTMulti
-	if !providers.ProviderHasCapability(*providerToRun, providers.CanUseTXTMulti) {
-		t.Log("Skipping TXTMulti Tests because provider does not support them")
-	} else {
-		tests = append(tests, tc("Empty"),
-			tc("Create TXTMulti 1",
-				txtmulti("foo1", []string{"simple"}),
-			),
-			tc("Create TXTMulti 2",
-				txtmulti("foo1", []string{"simple"}),
-				txtmulti("foo2", []string{"one", "two"}),
-			),
-			tc("Create TXTMulti 3",
-				txtmulti("foo1", []string{"simple"}),
-				txtmulti("foo2", []string{"one", "two"}),
-				txtmulti("foo3", []string{"eh", "bee", "cee"}),
-			),
-			tc("Create TXTMulti with quotes",
-				txtmulti("foo1", []string{"simple"}),
-				txtmulti("foo2", []string{"o\"ne", "tw\"o"}),
-				txtmulti("foo3", []string{"eh", "bee", "cee"}),
-			),
-			tc("Change TXTMulti",
-				txtmulti("foo1", []string{"dimple"}),
-				txtmulti("foo2", []string{"fun", "two"}),
-				txtmulti("foo3", []string{"eh", "bzz", "cee"}),
-			),
-			tc("Empty"),
-			tc("3x255-byte TXTMulti",
-				txtmulti("foo3", []string{"XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX", "YYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYY", "ZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZ"}),
-			),
-		)
-	}
+		// TXTMulti
+		reset(require(providers.CanUseTXTMulti)),
+		tc("Create TXTMulti 1",
+			txtmulti("foo1", []string{"simple"}),
+		),
+		tc("Create TXTMulti 2",
+			txtmulti("foo1", []string{"simple"}),
+			txtmulti("foo2", []string{"one", "two"}),
+		),
+		tc("Create TXTMulti 3",
+			txtmulti("foo1", []string{"simple"}),
+			txtmulti("foo2", []string{"one", "two"}),
+			txtmulti("foo3", []string{"eh", "bee", "cee"}),
+		),
+		tc("Create TXTMulti with quotes",
+			txtmulti("foo1", []string{"simple"}),
+			txtmulti("foo2", []string{"o\"ne", "tw\"o"}),
+			txtmulti("foo3", []string{"eh", "bee", "cee"}),
+		),
+		tc("Change TXTMulti",
+			txtmulti("foo1", []string{"dimple"}),
+			txtmulti("foo2", []string{"fun", "two"}),
+			txtmulti("foo3", []string{"eh", "bzz", "cee"}),
+		),
+		reset(require(providers.CanUseTXTMulti)),
+		tc("3x255-byte TXTMulti",
+			txtmulti("foo3", []string{"XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX", "YYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYY", "ZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZ"}),
+		),
 
-	// ignored records
-	tests = append(tests, tc("Empty"),
+		// ignored records
+		reset(),
 		tc("Create some records", txt("foo", "simple"), a("foo", "1.2.3.4")),
 		tc("Add a new record - ignoring foo", a("bar", "1.2.3.4"), ignore("foo")),
-	)
-
-	tests = append(tests, tc("Empty"),
+		reset(),
 		tc("Create some records", txt("bar.foo", "simple"), a("bar.foo", "1.2.3.4")),
 		tc("Add a new record - ignoring *.foo", a("bar", "1.2.3.4"), ignore("*.foo")),
-	)
 
-	// R53_ALIAS
-	if !providers.ProviderHasCapability(*providerToRun, providers.CanUseRoute53Alias) {
-		t.Log("Skipping Route53 ALIAS Tests because provider does not support them")
-	} else {
-		tests = append(tests, tc("Empty"),
-			tc("create dependent records", a("foo", "1.2.3.4"), a("quux", "2.3.4.5")),
-			tc("ALIAS to A record in same zone", a("foo", "1.2.3.4"), a("quux", "2.3.4.5"), r53alias("bar", "A", "foo.**current-domain**")),
-			tc("change it", a("foo", "1.2.3.4"), a("quux", "2.3.4.5"), r53alias("bar", "A", "quux.**current-domain**")),
-		)
-	}
+		// R53_ALIAS
+		reset(require(providers.CanUseRoute53Alias)),
+		tc("create dependent records", a("foo", "1.2.3.4"), a("quux", "2.3.4.5")),
+		tc("ALIAS to A record in same zone", a("foo", "1.2.3.4"), a("quux", "2.3.4.5"), r53alias("bar", "A", "foo.**current-domain**")),
+		tc("change it", a("foo", "1.2.3.4"), a("quux", "2.3.4.5"), r53alias("bar", "A", "quux.**current-domain**")),
 
-	// test r53 for very very large batch sizes
-	if *providerToRun == "ROUTE53" {
-		tests = append(tests, tc("Empty"),
-			tc("600 records", manyA("rec%04d", "1.2.3.4", 600)...),
-			tc("Update 600 records", manyA("rec%04d", "1.2.3.5", 600)...),
-			tc("Empty"),
-			tc("1200 records", manyA("rec%04d", "1.2.3.4", 1200)...),
-			tc("Update 1200 records", manyA("rec%04d", "1.2.3.5", 1200)...),
-		)
+		// test r53 for very very large batch sizes
+		reset(only("ROUTE53")),
+		tc("600 records", manyA("rec%04d", "1.2.3.4", 600)...),
+		tc("Update 600 records", manyA("rec%04d", "1.2.3.5", 600)...),
+		tc("Empty"),
+		tc("1200 records", manyA("rec%04d", "1.2.3.4", 1200)...),
+		tc("Update 1200 records", manyA("rec%04d", "1.2.3.5", 1200)...),
 	}
 
 	// Empty last
-	tests = append(tests, tc("Empty"))
+	tests = append(tests, reset())
 	return tests
 }
