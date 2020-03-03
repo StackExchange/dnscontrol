@@ -26,10 +26,10 @@ func init() {
 	flag.Parse()
 }
 
-func getProvider(t *testing.T) (providers.DNSServiceProvider, string, map[int]bool) {
+func getProvider(t *testing.T) (providers.DNSServiceProvider, string, map[int]bool, map[string]string) {
 	if *providerToRun == "" {
 		t.Log("No provider specified with -provider")
-		return nil, "", nil
+		return nil, "", nil, nil
 	}
 	jsons, err := config.LoadProviderConfigs("providers.json")
 	if err != nil {
@@ -53,19 +53,19 @@ func getProvider(t *testing.T) (providers.DNSServiceProvider, string, map[int]bo
 				fails[i] = true
 			}
 		}
-		return provider, cfg["domain"], fails
+		return provider, cfg["domain"], fails, cfg
 	}
 	t.Fatalf("Provider %s not found", *providerToRun)
-	return nil, "", nil
+	return nil, "", nil, nil
 }
 
 func TestDNSProviders(t *testing.T) {
-	provider, domain, fails := getProvider(t)
+	provider, domain, fails, cfg := getProvider(t)
 	if provider == nil {
 		return
 	}
 	t.Run(fmt.Sprintf("%s", domain), func(t *testing.T) {
-		runTests(t, provider, domain, fails)
+		runTests(t, provider, domain, fails, cfg)
 	})
 
 }
@@ -107,7 +107,7 @@ func filterMatched(p *providers.DNSServiceProvider, f TestCase) bool {
 	return true
 }
 
-func runTests(t *testing.T, prv providers.DNSServiceProvider, domainName string, knownFailures map[int]bool) {
+func runTests(t *testing.T, prv providers.DNSServiceProvider, domainName string, knownFailures map[int]bool, origConfig map[string]string) {
 	dc := getDomainConfigWithNameservers(t, prv, domainName)
 	// run tests one at a time
 	end := *endIdx
@@ -134,10 +134,21 @@ func runTests(t *testing.T, prv providers.DNSServiceProvider, domainName string,
 			for _, r := range tst.Records {
 				rc := models.RecordConfig(*r)
 				if strings.Contains(rc.GetTargetField(), "**current-domain**") {
-					rc.SetTarget(strings.Replace(rc.GetTargetField(), "**current-domain**", domainName, 1) + ".")
+					_ = rc.SetTarget(strings.Replace(rc.GetTargetField(), "**current-domain**", domainName, 1) + ".")
+				}
+				if strings.Contains(rc.GetTargetField(), "**current-domain-no-trailing**") {
+					_ = rc.SetTarget(strings.Replace(rc.GetTargetField(), "**current-domain-no-trailing**", domainName, 1))
 				}
 				if strings.Contains(rc.GetLabelFQDN(), "**current-domain**") {
 					rc.SetLabelFromFQDN(strings.Replace(rc.GetLabelFQDN(), "**current-domain**", domainName, 1), domainName)
+				}
+				if providers.ProviderHasCapability(*providerToRun, providers.CanUseAzureAlias) {
+					if strings.Contains(rc.GetTargetField(), "**subscription-id**") {
+						_ = rc.SetTarget(strings.Replace(rc.GetTargetField(), "**subscription-id**", origConfig["SubscriptionID"], 1))
+					}
+					if strings.Contains(rc.GetTargetField(), "**resource-group**") {
+						_ = rc.SetTarget(strings.Replace(rc.GetTargetField(), "**resource-group**", origConfig["ResourceGroup"], 1))
+					}
 				}
 				dom.Records = append(dom.Records, &rc)
 			}
@@ -183,7 +194,7 @@ func runTests(t *testing.T, prv providers.DNSServiceProvider, domainName string,
 }
 
 func TestDualProviders(t *testing.T) {
-	p, domain, _ := getProvider(t)
+	p, domain, _, _ := getProvider(t)
 	if p == nil {
 		return
 	}
@@ -267,6 +278,14 @@ func alias(name, target string) *rec {
 func r53alias(name, aliasType, target string) *rec {
 	r := makeRec(name, target, "R53_ALIAS")
 	r.R53Alias = map[string]string{
+		"type": aliasType,
+	}
+	return r
+}
+
+func azureAlias(name, aliasType, target string) *rec {
+	r := makeRec(name, target, "AZURE_ALIAS")
+	r.AzureAlias = map[string]string{
 		"type": aliasType,
 	}
 	return r
@@ -547,9 +566,7 @@ func makeTests(t *testing.T) []*TestCase {
 			sshfp("@", 1, 1, "66c7d5540b7d75a1fb4c84febfa178ad99bdd67c")),
 		tc("SSHFP change algorithm",
 			sshfp("@", 2, 1, "66c7d5540b7d75a1fb4c84febfa178ad99bdd67c")),
-		tc("SSHFP change type",
-			sshfp("@", 2, 2, "66c7d5540b7d75a1fb4c84febfa178ad99bdd67c")),
-		tc("SSHFP change fingerprint",
+		tc("SSHFP change fingerprint and type",
 			sshfp("@", 2, 2, "745a635bc46a397a5c4f21d437483005bcc40d7511ff15fbfafe913a081559bc")),
 		tc("SSHFP Delete one"),
 		tc("SSHFP add many records",
@@ -674,6 +691,20 @@ func makeTests(t *testing.T) []*TestCase {
 		tc("Empty"), // Delete them all
 		tc("1200 records", manyA("rec%04d", "1.2.3.4", 1200)...),
 		tc("Update 1200 records", manyA("rec%04d", "1.2.3.5", 1200)...),
+	}
+	// AZURE_ALIAS
+	if !providers.ProviderHasCapability(*providerToRun, providers.CanUseAzureAlias) {
+		t.Log("Skipping AZURE_ALIAS Tests because provider does not support them")
+	} else {
+		t.Log("SubscriptionID: ")
+		tests = append(tests, tc("Empty"),
+			tc("create dependent A records", a("foo.a", "1.2.3.4"), a("quux.a", "2.3.4.5")),
+			tc("ALIAS to A record in same zone", a("foo.a", "1.2.3.4"), a("quux.a", "2.3.4.5"), azureAlias("bar.a", "A", "/subscriptions/**subscription-id**/resourceGroups/**resource-group**/providers/Microsoft.Network/dnszones/**current-domain-no-trailing**/A/foo.a")),
+			tc("change it", a("foo.a", "1.2.3.4"), a("quux.a", "2.3.4.5"), azureAlias("bar.a", "A", "/subscriptions/**subscription-id**/resourceGroups/**resource-group**/providers/Microsoft.Network/dnszones/**current-domain-no-trailing**/A/quux.a")),
+			tc("create dependent CNAME records", cname("foo.cname", "google.com"), cname("quux.cname", "google2.com")),
+			tc("ALIAS to CNAME record in same zone", cname("foo.cname", "google.com"), cname("quux.cname", "google2.com"), azureAlias("bar", "CNAME", "/subscriptions/**subscription-id**/resourceGroups/**resource-group**/providers/Microsoft.Network/dnszones/**current-domain-no-trailing**/CNAME/foo.cname")),
+			tc("change it", cname("foo.cname", "google.com"), cname("quux.cname", "google2.com"), azureAlias("bar.cname", "CNAME", "/subscriptions/**subscription-id**/resourceGroups/**resource-group**/providers/Microsoft.Network/dnszones/**current-domain-no-trailing**/CNAME/quux.cname")),
+		)
 	}
 
 	// Empty last

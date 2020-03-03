@@ -1,6 +1,6 @@
 module github.com/StackExchange/dnscontrol/v2
 
-go 1.13
+go 1.14
 
 require (
 	cloud.google.com/go v0.41.1-0.20190703172311-335e9e09b93e // indirect
