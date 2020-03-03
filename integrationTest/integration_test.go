@@ -379,13 +379,13 @@ func makeTests(t *testing.T) []*TestCase {
 	// Only apply to providers listed.
 	//     reset(only("ROUTE53"), only("GCLOUD")),
 	// Apply to all providers except ROUTE53
-	//     reset(not("ROUTE53")),
+	//     reset(skip("ROUTE53")),
 	// Apply to all providers except ROUTE53 and GCLOUD
-	//     reset(not("ROUTE53"), not("GCLOUD")),
+	//     reset(skip("ROUTE53"), skip("GCLOUD")),
 
 	// DETAILS:
-	// You can't mix not() and only()
-	//     reset(not("ROUTE53"), only("GCLOUD")),  // ERROR!
+	// You can't mix skip() and only()
+	//     reset(skip("ROUTE53"), only("GCLOUD")),  // ERROR!
 
 	tests := []*TestCase{
 		// A
@@ -466,7 +466,7 @@ func makeTests(t *testing.T) []*TestCase {
 		tc("Change Weight", srv("_sip._tcp", 52, 62, 7, "foo.com."), srv("_sip._tcp", 15, 65, 75, "foo4.com.")),
 		tc("Change Port", srv("_sip._tcp", 52, 62, 72, "foo.com."), srv("_sip._tcp", 15, 65, 75, "foo4.com.")),
 
-		reset(not("NAMEDOTCOM"), not("HEXONET"), not("EXOSCALE")),
+		reset(skip("NAMEDOTCOM"), skip("HEXONET"), skip("EXOSCALE")),
 		tc("Null Target", srv("_sip._tcp", 52, 62, 72, "foo.com."), srv("_sip._tcp", 15, 65, 75, ".")),
 
 		reset(requires(providers.CanUseSSHFP)),
@@ -494,7 +494,7 @@ func makeTests(t *testing.T) []*TestCase {
 		tc("CAA change flag", caa("@", "issuewild", 128, "example.com")),
 
 		// Digitalocean doesn't support ";" as value for CAA records
-		reset(requires(providers.CanUseCAA), not("DIGITALOCEAN")),
+		reset(requires(providers.CanUseCAA), skip("DIGITALOCEAN")),
 		tc("CAA many records", caa("@", "issue", 0, "letsencrypt.org"),
 			caa("@", "issuewild", 0, ";"), caa("@", "iodef", 128, "mailto:test@example.com")),
 		reset(requires(providers.CanUseCAA), only("DIGITALOCEAN")),
@@ -525,7 +525,7 @@ func makeTests(t *testing.T) []*TestCase {
 		// Known page sizes:
 		//  - gandi: 100
 		// ns1 free acct only allows 50 records
-		reset(not("NS1")),
+		reset(skip("NS1")),
 		tc("99 records", manyA("rec%04d", "1.2.3.4", 99)...),
 		tc("100 records", manyA("rec%04d", "1.2.3.4", 100)...),
 		tc("101 records", manyA("rec%04d", "1.2.3.4", 101)...),
