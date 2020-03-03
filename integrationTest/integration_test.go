@@ -3,7 +3,6 @@ package main
 import (
 	"flag"
 	"fmt"
-	"strconv"
 	"strings"
 	"testing"
 
@@ -14,6 +13,8 @@ import (
 	"github.com/StackExchange/dnscontrol/v2/providers"
 	_ "github.com/StackExchange/dnscontrol/v2/providers/_all"
 	"github.com/StackExchange/dnscontrol/v2/providers/config"
+
+	_ "github.com/joho/godotenv/autoload"
 )
 
 var providerToRun = flag.String("provider", "", "Provider to run")
@@ -26,16 +27,15 @@ func init() {
 	flag.Parse()
 }
 
-func getProvider(t *testing.T) (providers.DNSServiceProvider, string, map[int]bool) {
+func getProvider(t *testing.T) (providers.DNSServiceProvider, string) {
 	if *providerToRun == "" {
 		t.Log("No provider specified with -provider")
-		return nil, "", nil
+		return nil, ""
 	}
 	jsons, err := config.LoadProviderConfigs("providers.json")
 	if err != nil {
 		t.Fatalf("Error loading provider configs: %s", err)
 	}
-	fails := map[int]bool{}
 	for name, cfg := range jsons {
 		if *providerToRun != name {
 			continue
@@ -44,30 +44,10 @@ func getProvider(t *testing.T) (providers.DNSServiceProvider, string, map[int]bo
 		if err != nil {
 			t.Fatal(err)
 		}
-		if f := cfg["knownFailures"]; f != "" {
-			for _, s := range strings.Split(f, ",") {
-				i, err := strconv.Atoi(s)
-				if err != nil {
-					t.Fatal(err)
-				}
-				fails[i] = true
-			}
-		}
-		return provider, cfg["domain"], fails
+		return provider, cfg["domain"]
 	}
 	t.Fatalf("Provider %s not found", *providerToRun)
-	return nil, "", nil
-}
-
-func TestDNSProviders(t *testing.T) {
-	provider, domain, fails := getProvider(t)
-	if provider == nil {
-		return
-	}
-	t.Run(fmt.Sprintf("%s", domain), func(t *testing.T) {
-		runTests(t, provider, domain, fails)
-	})
-
+	return nil, ""
 }
 
 func getDomainConfigWithNameservers(t *testing.T, prv providers.DNSServiceProvider, domainName string) *models.DomainConfig {
@@ -84,25 +64,24 @@ func getDomainConfigWithNameservers(t *testing.T, prv providers.DNSServiceProvid
 	return dc
 }
 
-func runTests(t *testing.T, prv providers.DNSServiceProvider, domainName string, knownFailures map[int]bool) {
-	dc := getDomainConfigWithNameservers(t, prv, domainName)
-	// run tests one at a time
-	end := *endIdx
-	tests := makeTests(t)
-	if end == 0 || end >= len(tests) {
-		end = len(tests) - 1
+// DnsProviderTestCase is the core test runner for all test cases.
+// It will empty the zone of all records then run each test case in sequence.
+// For each case, it will make sure there is at least one correction on the first pass,
+// and exactly zero corrections on the second pass
+func dnsProviderTestCase(t *testing.T, cases ...*TestCase) {
+	provider, domainName := getProvider(t)
+	if provider == nil {
+		return
 	}
-	for i := *startIdx; i <= end; i++ {
-		tst := tests[i]
+	dc := getDomainConfigWithNameservers(t, provider, domainName)
+	cases = append([]*TestCase{tc("Empty")}, cases...)
+	for i, tst := range cases {
 		if t.Failed() {
 			break
 		}
 		t.Run(fmt.Sprintf("%d: %s", i, tst.Desc), func(t *testing.T) {
-			skipVal := false
-			if knownFailures[i] {
-				t.Log("SKIPPING VALIDATION FOR KNOWN FAILURE CASE")
-				skipVal = true
-			}
+
+			// create copy of empty domain and add all test case records to it.
 			dom, _ := dc.Copy()
 			for _, r := range tst.Records {
 				rc := models.RecordConfig(*r)
@@ -116,87 +95,87 @@ func runTests(t *testing.T, prv providers.DNSServiceProvider, domainName string,
 			}
 			dom.IgnoredLabels = tst.IgnoredLabels
 			models.PostProcessRecords(dom.Records)
-			dom2, _ := dom.Copy()
+			dom2, _ := dom.Copy() // make second copy now to use for second pass
+
 			// get corrections for first time
-			corrections, err := prv.GetDomainCorrections(dom)
+			corrections, err := provider.GetDomainCorrections(dom)
 			if err != nil {
 				t.Fatal(fmt.Errorf("runTests: %w", err))
 			}
-			if !skipVal && i != *startIdx && len(corrections) == 0 {
-				if tst.Desc != "Empty" {
-					// There are "no corrections" if the last test was programmatically
-					// skipped.  We detect this (possibly inaccurately) by checking to
-					// see if .Desc is "Empty".
-					t.Fatalf("Expect changes for all tests, but got none")
-				}
+			if i != 0 && len(corrections) == 0 {
+				t.Fatalf("Expect changes for all tests, but got none")
 			}
+
+			// execute corrections
 			for _, c := range corrections {
 				if *verbose {
 					t.Log(c.Msg)
 				}
 				err = c.F()
-				if !skipVal && err != nil {
+				if err != nil {
 					t.Fatal(err)
 				}
 			}
+
 			// run a second time and expect zero corrections
-			corrections, err = prv.GetDomainCorrections(dom2)
+			corrections, err = provider.GetDomainCorrections(dom2)
 			if err != nil {
 				t.Fatal(err)
 			}
-			if !skipVal && len(corrections) != 0 {
+			if len(corrections) != 0 {
 				t.Logf("Expected 0 corrections on second run, but found %d.", len(corrections))
 				for i, c := range corrections {
 					t.Logf("#%d: %s", i, c.Msg)
 				}
 				t.FailNow()
 			}
+
 		})
 	}
 }
 
-func TestDualProviders(t *testing.T) {
-	p, domain, _ := getProvider(t)
-	if p == nil {
-		return
-	}
-	dc := getDomainConfigWithNameservers(t, p, domain)
-	// clear everything
-	run := func() {
-		dom, _ := dc.Copy()
-		cs, err := p.GetDomainCorrections(dom)
-		if err != nil {
-			t.Fatal(err)
-		}
-		for i, c := range cs {
-			t.Logf("#%d: %s", i+1, c.Msg)
-			if err = c.F(); err != nil {
-				t.Fatal(err)
-			}
-		}
-	}
-	t.Log("Clearing everything")
-	run()
-	// add bogus nameservers
-	dc.Records = []*models.RecordConfig{}
-	dc.Nameservers = append(dc.Nameservers, models.StringsToNameservers([]string{"ns1.example.com", "ns2.example.com"})...)
-	nameservers.AddNSRecords(dc)
-	t.Log("Adding nameservers from another provider")
-	run()
-	// run again to make sure no corrections
-	t.Log("Running again to ensure stability")
-	cs, err := p.GetDomainCorrections(dc)
-	if err != nil {
-		t.Fatal(err)
-	}
-	if len(cs) != 0 {
-		t.Logf("Expect no corrections on second run, but found %d.", len(cs))
-		for i, c := range cs {
-			t.Logf("#%d: %s", i, c.Msg)
-		}
-		t.FailNow()
-	}
-}
+// func TestDualProviders(t *testing.T) {
+// 	// p, domain, _ := getProvider(t)
+// 	// if p == nil {
+// 	// 	return
+// 	// }
+// 	// dc := getDomainConfigWithNameservers(t, p, domain)
+// 	// // clear everything
+// 	// run := func() {
+// 	// 	dom, _ := dc.Copy()
+// 	// 	cs, err := p.GetDomainCorrections(dom)
+// 	// 	if err != nil {
+// 	// 		t.Fatal(err)
+// 	// 	}
+// 	// 	for i, c := range cs {
+// 	// 		t.Logf("#%d: %s", i+1, c.Msg)
+// 	// 		if err = c.F(); err != nil {
+// 	// 			t.Fatal(err)
+// 	// 		}
+// 	// 	}
+// 	// }
+// 	// t.Log("Clearing everything")
+// 	// run()
+// 	// // add bogus nameservers
+// 	// dc.Records = []*models.RecordConfig{}
+// 	// dc.Nameservers = append(dc.Nameservers, models.StringsToNameservers([]string{"ns1.example.com", "ns2.example.com"})...)
+// 	// nameservers.AddNSRecords(dc)
+// 	// t.Log("Adding nameservers from another provider")
+// 	// run()
+// 	// // run again to make sure no corrections
+// 	// t.Log("Running again to ensure stability")
+// 	// cs, err := p.GetDomainCorrections(dc)
+// 	// if err != nil {
+// 	// 	t.Fatal(err)
+// 	// }
+// 	// if len(cs) != 0 {
+// 	// 	t.Logf("Expect no corrections on second run, but found %d.", len(cs))
+// 	// 	for i, c := range cs {
+// 	// 		t.Logf("#%d: %s", i, c.Msg)
+// 	// 	}
+// 	// 	t.FailNow()
+// 	// }
+// }
 
 type TestCase struct {
 	Desc          string
@@ -358,20 +337,6 @@ func manyA(namePattern, target string, n int) []*rec {
 func makeTests(t *testing.T) []*TestCase {
 	// ALWAYS ADD TO BOTTOM OF LIST. Order and indexes matter.
 	tests := []*TestCase{
-		// A
-		tc("Empty"),
-		tc("Create an A record", a("@", "1.1.1.1")),
-		tc("Change it", a("@", "1.2.3.4")),
-		tc("Add another", a("@", "1.2.3.4"), a("www", "1.2.3.4")),
-		tc("Add another(same name)", a("@", "1.2.3.4"), a("www", "1.2.3.4"), a("www", "5.6.7.8")),
-		tc("Change a ttl", a("@", "1.2.3.4").ttl(1000), a("www", "1.2.3.4"), a("www", "5.6.7.8")),
-		tc("Change single target from set", a("@", "1.2.3.4").ttl(1000), a("www", "2.2.2.2"), a("www", "5.6.7.8")),
-		tc("Change all ttls", a("@", "1.2.3.4").ttl(500), a("www", "2.2.2.2").ttl(400), a("www", "5.6.7.8").ttl(400)),
-		tc("Delete one", a("@", "1.2.3.4").ttl(500), a("www", "5.6.7.8").ttl(400)),
-		tc("Add back and change ttl", a("www", "5.6.7.8").ttl(700), a("www", "1.2.3.4").ttl(700)),
-		tc("Change targets and ttls", a("www", "1.1.1.1"), a("www", "2.2.2.2")),
-		tc("Create wildcard", a("*", "1.2.3.4"), a("www", "1.1.1.1")),
-		tc("Delete wildcard", a("www", "1.1.1.1")),
 
 		// CNAMES
 		tc("Empty"),

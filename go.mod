@@ -28,6 +28,7 @@ require (
 	github.com/hashicorp/vault/api v1.0.4
 	github.com/hexonet/go-sdk v1.2.1
 	github.com/jarcoal/httpmock v1.0.4 // indirect
+	github.com/joho/godotenv v1.3.0
 	github.com/kolo/xmlrpc v0.0.0-20150413191830-0826b98aaa29 // indirect
 	github.com/kr/pretty v0.1.0 // indirect
 	github.com/malexdev/utfutil v0.0.0-20180510171754-00c8d4a8e7a8 // indirect
