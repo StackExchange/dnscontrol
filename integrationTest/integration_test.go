@@ -84,27 +84,55 @@ func getDomainConfigWithNameservers(t *testing.T, prv providers.DNSServiceProvid
 	return dc
 }
 
-func filterMatched(p *providers.DNSServiceProvider, f TestCase) bool {
+func testPermitted(t *testing.T, p string, f TestCase) bool {
 	// Is this a valid filter?
 	if len(f.only) != 0 && len(f.not) != 0 { // Can't have only and not.
 		panic(fmt.Sprintf("ERROR: invalid filter: %v", f))
 	}
+
 	// Is the filter empty (i.e. matches everything)
 	if len(f.required) == 0 && len(f.only) == 0 && len(f.not) == 0 {
 		return true
 	}
+
 	// If any "required" fail, we don't match.
 	for _, cap := range f.required {
-		providers.ProviderHasCapability(*p, cap)
+		if !providers.ProviderHasCapability(*providerToRun, cap) {
+			t.Logf("Skipping %v Tests because provider does not support them", "TBD")
+			return false
+		}
 	}
-	//
-	// A filter is matched if:
-	// If len(required) != 0, all capacities must exist.
-	// If
-	//required []providers.Capability
-	//only     []string
-	//not      []string
+
+	// If there are any "only" items, you must be one of them.
+	if len(f.only) != 0 {
+		for _, provider := range f.only {
+			if p == provider {
+				return true
+			}
+		}
+		t.Logf("Skipping %v Tests because it is specific to a different provider ", "TBD")
+		return false
+	}
+
+	// If there are any "not" items, you must NOT be one of them.
+	if len(f.not) != 0 {
+		for _, provider := range f.only {
+			if p == provider {
+				t.Logf("Skipping %v Tests because provider is excluded", "TBD")
+				return false
+			}
+		}
+		return true
+	}
+
+	// This is unreachableThis is unreachable.
 	return true
+}
+
+func makeClearFilter() *TestCase {
+	tc := tc("Empty")
+	tc.ChangeFilter = true
+	return tc
 }
 
 func runTests(t *testing.T, prv providers.DNSServiceProvider, domainName string, knownFailures map[int]bool, origConfig map[string]string) {
@@ -115,21 +143,26 @@ func runTests(t *testing.T, prv providers.DNSServiceProvider, domainName string,
 	if end == 0 || end >= len(tests) {
 		end = len(tests) - 1
 	}
+
+	curFilter := makeClearFilter()
+
 	for i := *startIdx; i <= end; i++ {
 		tst := tests[i]
+
 		if t.Failed() { // Did the previous test fail? Stop.
 			break
 		}
-		t.Run(fmt.Sprintf("%d: %s", i, tst.Desc), func(t *testing.T) {
-			skipVal := false
 
-			if filterMatched(t, prv, curFilter) {
-				skipVal = true
-			}
-			//if knownFailures[i] {
-			//	t.Log("SKIPPING VALIDATION FOR KNOWN FAILURE CASE")
-			//	skipVal = true
-			//}
+		if tst.ChangeFilter {
+			curFilter = tst
+			// Reset the filter. Keep going, to execute the "Empty".
+		}
+
+		if !testPermitted(t, *providerToRun, *curFilter) {
+			continue
+		}
+
+		t.Run(fmt.Sprintf("%d: %s", i, tst.Desc), func(t *testing.T) {
 			dom, _ := dc.Copy()
 			for _, r := range tst.Records {
 				rc := models.RecordConfig(*r)
@@ -160,7 +193,7 @@ func runTests(t *testing.T, prv providers.DNSServiceProvider, domainName string,
 			if err != nil {
 				t.Fatal(fmt.Errorf("runTests: %w", err))
 			}
-			if !skipVal && i != *startIdx && len(corrections) == 0 {
+			if i != *startIdx && len(corrections) == 0 {
 				if tst.Desc != "Empty" {
 					// There are "no corrections" if the last test was programmatically
 					// skipped.  We detect this (possibly inaccurately) by checking to
@@ -173,7 +206,7 @@ func runTests(t *testing.T, prv providers.DNSServiceProvider, domainName string,
 					t.Log(c.Msg)
 				}
 				err = c.F()
-				if !skipVal && err != nil {
+				if err != nil {
 					t.Fatal(err)
 				}
 			}
@@ -182,7 +215,7 @@ func runTests(t *testing.T, prv providers.DNSServiceProvider, domainName string,
 			if err != nil {
 				t.Fatal(err)
 			}
-			if !skipVal && len(corrections) != 0 {
+			if len(corrections) != 0 {
 				t.Logf("Expected 0 corrections on second run, but found %d.", len(corrections))
 				for i, c := range corrections {
 					t.Logf("#%d: %s", i, c.Msg)
@@ -237,7 +270,7 @@ func TestDualProviders(t *testing.T) {
 }
 
 type TestCase struct {
-	Type string // "TEST", "FILTER"
+	ChangeFilter bool // If true, reset the filter before doing the test.
 	// TEST:
 	Desc          string
 	Records       []*rec
@@ -408,7 +441,7 @@ func tc(desc string, recs ...*rec) *TestCase {
 }
 
 func reset(items ...interface{}) *TestCase {
-	tc := &TestCase{Type: "FILTER"}
+	tc := makeClearFilter()
 	for _, item := range items {
 		switch v := item.(type) {
 		case requiresFilter:
@@ -417,8 +450,6 @@ func reset(items ...interface{}) *TestCase {
 			tc.not = append(tc.not, v.name)
 		case onlyFilter:
 			tc.only = append(tc.only, v.name)
-		//case providers.Capability:
-		//	fmt.Printf("listed capability %v without a requires()\n", v)
 		default:
 			fmt.Printf("I don't know about type %T (%v)\n", v, v)
 		}
@@ -691,23 +722,18 @@ func makeTests(t *testing.T) []*TestCase {
 		tc("Empty"), // Delete them all
 		tc("1200 records", manyA("rec%04d", "1.2.3.4", 1200)...),
 		tc("Update 1200 records", manyA("rec%04d", "1.2.3.5", 1200)...),
-	}
-	// AZURE_ALIAS
-	if !providers.ProviderHasCapability(*providerToRun, providers.CanUseAzureAlias) {
-		t.Log("Skipping AZURE_ALIAS Tests because provider does not support them")
-	} else {
-		t.Log("SubscriptionID: ")
-		tests = append(tests, tc("Empty"),
-			tc("create dependent A records", a("foo.a", "1.2.3.4"), a("quux.a", "2.3.4.5")),
-			tc("ALIAS to A record in same zone", a("foo.a", "1.2.3.4"), a("quux.a", "2.3.4.5"), azureAlias("bar.a", "A", "/subscriptions/**subscription-id**/resourceGroups/**resource-group**/providers/Microsoft.Network/dnszones/**current-domain-no-trailing**/A/foo.a")),
-			tc("change it", a("foo.a", "1.2.3.4"), a("quux.a", "2.3.4.5"), azureAlias("bar.a", "A", "/subscriptions/**subscription-id**/resourceGroups/**resource-group**/providers/Microsoft.Network/dnszones/**current-domain-no-trailing**/A/quux.a")),
-			tc("create dependent CNAME records", cname("foo.cname", "google.com"), cname("quux.cname", "google2.com")),
-			tc("ALIAS to CNAME record in same zone", cname("foo.cname", "google.com"), cname("quux.cname", "google2.com"), azureAlias("bar", "CNAME", "/subscriptions/**subscription-id**/resourceGroups/**resource-group**/providers/Microsoft.Network/dnszones/**current-domain-no-trailing**/CNAME/foo.cname")),
-			tc("change it", cname("foo.cname", "google.com"), cname("quux.cname", "google2.com"), azureAlias("bar.cname", "CNAME", "/subscriptions/**subscription-id**/resourceGroups/**resource-group**/providers/Microsoft.Network/dnszones/**current-domain-no-trailing**/CNAME/quux.cname")),
-		)
+
+		reset(requires(providers.CanUseAzureAlias)),
+		tc("create dependent A records", a("foo.a", "1.2.3.4"), a("quux.a", "2.3.4.5")),
+		tc("ALIAS to A record in same zone", a("foo.a", "1.2.3.4"), a("quux.a", "2.3.4.5"), azureAlias("bar.a", "A", "/subscriptions/**subscription-id**/resourceGroups/**resource-group**/providers/Microsoft.Network/dnszones/**current-domain-no-trailing**/A/foo.a")),
+		tc("change it", a("foo.a", "1.2.3.4"), a("quux.a", "2.3.4.5"), azureAlias("bar.a", "A", "/subscriptions/**subscription-id**/resourceGroups/**resource-group**/providers/Microsoft.Network/dnszones/**current-domain-no-trailing**/A/quux.a")),
+		tc("create dependent CNAME records", cname("foo.cname", "google.com"), cname("quux.cname", "google2.com")),
+		tc("ALIAS to CNAME record in same zone", cname("foo.cname", "google.com"), cname("quux.cname", "google2.com"), azureAlias("bar", "CNAME", "/subscriptions/**subscription-id**/resourceGroups/**resource-group**/providers/Microsoft.Network/dnszones/**current-domain-no-trailing**/CNAME/foo.cname")),
+		tc("change it", cname("foo.cname", "google.com"), cname("quux.cname", "google2.com"), azureAlias("bar.cname", "CNAME", "/subscriptions/**subscription-id**/resourceGroups/**resource-group**/providers/Microsoft.Network/dnszones/**current-domain-no-trailing**/CNAME/quux.cname")),
+
+		// Close out the previous test.
+		reset(),
 	}
 
-	// Empty last
-	tests = append(tests, reset())
 	return tests
 }
