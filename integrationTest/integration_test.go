@@ -367,6 +367,26 @@ func makeTests(t *testing.T) []*TestCase {
 	sha512hash := strings.Repeat("0123456789abcdef", 8)
 	reversedSha512 := strings.Repeat("fedcba9876543210", 8)
 
+	// Each group of tests begins with reset(). It empties out the zone
+	// (deletes all records) and resets the filter.
+
+	// Start a group of tests that apply to all providers:
+	//      reset()
+	// Only apply to	providers that CanUseAlias.
+	//      reset(requires(providers.CanUseAlias)),
+	// Only apply to providers listed.
+	//      reset(only("ROUTE53")),
+	// Only apply to providers listed.
+	//     reset(only("ROUTE53"), only("GCLOUD")),
+	// Apply to all providers except ROUTE53
+	//     reset(not("ROUTE53")),
+	// Apply to all providers except ROUTE53 and GCLOUD
+	//     reset(not("ROUTE53"), not("GCLOUD")),
+
+	// DETAILS:
+	// You can't mix not() and only()
+	//     reset(not("ROUTE53"), only("GCLOUD")),  // ERROR!
+
 	tests := []*TestCase{
 		// A
 		reset(),
@@ -578,7 +598,7 @@ func makeTests(t *testing.T) []*TestCase {
 		reset(only("ROUTE53")),
 		tc("600 records", manyA("rec%04d", "1.2.3.4", 600)...),
 		tc("Update 600 records", manyA("rec%04d", "1.2.3.5", 600)...),
-		tc("Empty"),
+		tc("Empty"), // Delete them all
 		tc("1200 records", manyA("rec%04d", "1.2.3.4", 1200)...),
 		tc("Update 1200 records", manyA("rec%04d", "1.2.3.5", 1200)...),
 	}
