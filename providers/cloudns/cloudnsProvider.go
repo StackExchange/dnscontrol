@@ -49,7 +49,7 @@ var features = providers.DocumentationNotes{
 	providers.CanUseCAA:              providers.Can(),
 	providers.CanUseTLSA:             providers.Can(),
 	providers.CanUsePTR:              providers.Unimplemented(),
-	providers.CanGetZones:            providers.Unimplemented(),
+	providers.CanGetZones:            providers.Can(),
 }
 
 func init() {
@@ -83,14 +83,9 @@ func (c *api) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Correctio
 		return nil, fmt.Errorf("'%s' not a zone in ClouDNS account", dc.Name)
 	}
 
-	records, err := c.getRecords(domainID)
+	existingRecords, err := c.GetZoneRecords(dc.Name)
 	if err != nil {
 		return nil, err
-	}
-
-	existingRecords := make([]*models.RecordConfig, len(records), len(records)+len(c.nameserversNames))
-	for i := range records {
-		existingRecords[i] = toRc(dc, &records[i])
 	}
 	// Normalize
 	models.PostProcessRecords(existingRecords)
@@ -152,11 +147,16 @@ func (c *api) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Correctio
 }
 
 // GetZoneRecords gets the records of a zone and returns them in RecordConfig format.
-func (client *api) GetZoneRecords(domain string) (models.Records, error) {
-	return nil, fmt.Errorf("not implemented")
-	// This enables the get-zones subcommand.
-	// Implement this by extracting the code from GetDomainCorrections into
-	// a single function.  For most providers this should be relatively easy.
+func (c *api) GetZoneRecords(domain string) (models.Records, error) {
+	records, err := c.getRecords(domain)
+	if err != nil {
+		return nil, err
+	}
+	existingRecords := make([]*models.RecordConfig, len(records))
+	for i := range records {
+		existingRecords[i] = toRc(domain, &records[i])
+	}
+	return existingRecords, nil
 }
 
 // EnsureDomainExists returns an error if domain doesn't exist.
@@ -171,7 +171,7 @@ func (c *api) EnsureDomainExists(domain string) error {
 	return c.createDomain(domain)
 }
 
-func toRc(dc *models.DomainConfig, r *domainRecord) *models.RecordConfig {
+func toRc(domain string, r *domainRecord) *models.RecordConfig {
 
 	ttl, _ := strconv.ParseUint(r.TTL, 10, 32)
 	priority, _ := strconv.ParseUint(r.Priority, 10, 32)
@@ -187,13 +187,13 @@ func toRc(dc *models.DomainConfig, r *domainRecord) *models.RecordConfig {
 		SrvPort:      uint16(port),
 		Original:     r,
 	}
-	rc.SetLabel(r.Host, dc.Name)
+	rc.SetLabel(r.Host, domain)
 
 	switch rtype := r.Type; rtype { // #rtype_variations
 	case "TXT":
 		rc.SetTargetTXT(r.Target)
 	case "CNAME", "MX", "NS", "SRV", "ALIAS":
-		rc.SetTarget(dnsutil.AddOrigin(r.Target+".", dc.Name))
+		rc.SetTarget(dnsutil.AddOrigin(r.Target+".", domain))
 	case "CAA":
 		caaFlag, _ := strconv.ParseUint(r.CaaFlag, 10, 32)
 		rc.CaaFlag = uint8(caaFlag)
