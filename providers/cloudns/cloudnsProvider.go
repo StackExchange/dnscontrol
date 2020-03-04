@@ -61,7 +61,7 @@ func (c *api) GetNameservers(domain string) ([]*models.Nameserver, error) {
 	if len(c.nameserversNames) == 0 {
 		c.fetchAvailableNameservers()
 	}
-	return models.StringsToNameservers(c.nameserversNames), nil
+	return models.ToNameservers(c.nameserversNames)
 }
 
 // GetDomainCorrections returns the corrections for a domain.
