@@ -69,7 +69,7 @@ func (c *ovhProvider) GetNameservers(domain string) ([]*models.Nameserver, error
 		return nil, err
 	}
 
-	return models.StringsToNameservers(ns), nil
+	return models.ToNameservers(ns)
 }
 
 type errNoExist struct {
