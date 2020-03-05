@@ -137,7 +137,7 @@ func runTests(t *testing.T, prv providers.DNSServiceProvider, domainName string,
 	dc := getDomainConfigWithNameservers(t, prv, domainName)
 	// run tests one at a time
 	end := *endIdx
-	tests := makeTests(t)
+	//tests := makeTests(t)
 	if end == 0 || end >= len(tests) {
 		end = len(tests) - 1
 	}
@@ -485,33 +485,36 @@ func only(n string) onlyFilter {
 
 //
 
-func makeTests(t *testing.T) []*TestCase {
+//func makeTests(t *testing.T) []*TestCase {
 
-	sha256hash := strings.Repeat("0123456789abcdef", 4)
-	sha512hash := strings.Repeat("0123456789abcdef", 8)
-	reversedSha512 := strings.Repeat("fedcba9876543210", 8)
+var sha256hash = strings.Repeat("0123456789abcdef", 4)
+var sha512hash = strings.Repeat("0123456789abcdef", 8)
+var reversedSha512 = strings.Repeat("fedcba9876543210", 8)
 
-	// Each group of tests begins with reset(). It empties out the zone
-	// (deletes all records) and resets the filter.
+// Each group of tests begins with reset(). It empties out the zone
+// (deletes all records) and resets the filter.
 
-	// Start a group of tests that apply to all providers:
-	//      reset()
-	// Only apply to	providers that CanUseAlias.
-	//      reset(requires(providers.CanUseAlias)),
-	// Only apply to providers listed.
-	//      reset(only("ROUTE53")),
-	// Only apply to providers listed.
-	//     reset(only("ROUTE53"), only("GCLOUD")),
-	// Apply to all providers except ROUTE53
-	//     reset(not("ROUTE53")),
-	// Apply to all providers except ROUTE53 and GCLOUD
-	//     reset(not("ROUTE53"), not("GCLOUD")),
+// Start a group of tests that apply to all providers:
+//      reset()
+// Only apply to	providers that CanUseAlias.
+//      reset(requires(providers.CanUseAlias)),
+// Only apply to providers listed.
+//      reset(only("ROUTE53")),
+// Only apply to providers listed.
+//     reset(only("ROUTE53"), only("GCLOUD")),
+// Apply to all providers except ROUTE53
+//     reset(not("ROUTE53")),
+// Apply to all providers except ROUTE53 and GCLOUD
+//     reset(not("ROUTE53"), not("GCLOUD")),
 
-	// DETAILS:
-	// You can't mix not() and only()
-	//     reset(not("ROUTE53"), only("GCLOUD")),  // ERROR!
+// DETAILS:
+// You can't mix not() and only()
+//     reset(not("ROUTE53"), only("GCLOUD")),  // ERROR!
 
-	tests := []*TestCase{
+var tests []*TestCase
+
+func init() {
+	tests = append(tests, []*TestCase{
 
 		// A
 		reset(),
@@ -740,7 +743,6 @@ func makeTests(t *testing.T) []*TestCase {
 
 		// Close out the previous test.
 		reset(),
-	}
-
-	return tests
+	},
+	)
 }
