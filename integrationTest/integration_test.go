@@ -535,20 +535,25 @@ func makeTests(t *testing.T) []*TestCase {
 		tc("Record pointing to @", cname("foo", "**current-domain**")),
 
 		// NS
-		reset(),
+		reset(not("DNSIMPLE"), not("EXOSCALE")),
+		// DNSIMPLE: Does not support NS records nor subdomains.
 		tc("NS for subdomain", ns("xyz", "ns2.foo.com.")),
 		tc("Dual NS for subdomain", ns("xyz", "ns2.foo.com."), ns("xyz", "ns1.foo.com.")),
 		tc("NS Record pointing to @", ns("foo", "**current-domain**")),
 
 		// IDNAs
-		reset(),
+		reset(not("SOFTLAYER")),
+		// SOFTLAYER: fails at direct internationalization, punycode works.
 		tc("Internationalized name", a("ööö", "1.2.3.4")),
 		tc("Change IDN", a("ööö", "2.2.2.2")),
 		tc("Internationalized CNAME Target", cname("a", "ööö.com.")),
+		// IDNAs in CNAME targets
+		reset(not("LINODE")),
+		// LINODE: hostname validation does not allow the target domain TLD
 		tc("IDN CNAME AND Target", cname("öoö", "ööö.企业.")),
 
 		// MX
-		reset(),
+		reset(not("ACTIVEDIRECTORY_PS")),
 		tc("MX record", mx("@", 5, "foo.com.")),
 		tc("Second MX record, same prio", mx("@", 5, "foo.com."), mx("@", 5, "foo2.com.")),
 		tc("3 MX", mx("@", 5, "foo.com."), mx("@", 5, "foo2.com."), mx("@", 15, "foo3.com.")),
@@ -558,7 +563,7 @@ func makeTests(t *testing.T) []*TestCase {
 		tc("Record pointing to @", mx("foo", 8, "**current-domain**")),
 
 		// PTR
-		reset(requires(providers.CanUsePTR)),
+		reset(requires(providers.CanUsePTR), not("ACTIVEDIRECTORY_PS")),
 		tc("Create PTR record", ptr("4", "foo.com.")),
 		tc("Modify PTR record", ptr("4", "bar.com.")),
 
@@ -579,7 +584,7 @@ func makeTests(t *testing.T) []*TestCase {
 		tc("NAPTR change service", naptr("test", 103, 20, "A", "E2U+sip", "!^.*$!mailto:information@example.com!", "example2.foo.com.")),
 		tc("NAPTR change regexp", naptr("test", 103, 20, "A", "E2U+sip", "!^.*$!sip:customer-service@example.com!", "example2.foo.com.")),
 
-		reset(requires(providers.CanUseSRV)),
+		reset(requires(providers.CanUseSRV), not("ACTIVEDIRECTORY_PS"), not("CLOUDNS")),
 		tc("SRV record", srv("_sip._tcp", 5, 6, 7, "foo.com.")),
 		tc("Second SRV record, same prio", srv("_sip._tcp", 5, 6, 7, "foo.com."), srv("_sip._tcp", 5, 60, 70, "foo2.com.")),
 		tc("3 SRV", srv("_sip._tcp", 5, 6, 7, "foo.com."), srv("_sip._tcp", 5, 60, 70, "foo2.com."), srv("_sip._tcp", 15, 65, 75, "foo3.com.")),
