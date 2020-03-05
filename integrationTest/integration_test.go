@@ -98,7 +98,7 @@ func testPermitted(t *testing.T, p string, f TestCase) bool {
 	// If any "required" fail, we don't match.
 	for _, cap := range f.required {
 		if !providers.ProviderHasCapability(*providerToRun, cap) {
-			t.Logf("Skipping %v Tests because provider does not support them", "TBD")
+			t.Logf("Skipping tests because provider does not support %s", cap)
 			return false
 		}
 	}
@@ -110,23 +110,23 @@ func testPermitted(t *testing.T, p string, f TestCase) bool {
 				return true
 			}
 		}
-		t.Logf("Skipping %v Tests because it is specific to a different provider ", "TBD")
+		t.Logf("Skipping test because %s is a known failure", provider)
 		return false
 	}
 
 	// If there are any "not" items, you must NOT be one of them.
 	if len(f.not) != 0 {
-		for _, provider := range f.only {
+		for _, provider := range f.not {
 			if p == provider {
-				t.Logf("Skipping %v Tests because provider is excluded", "TBD")
+				t.Logf("Skipping test because provider %s is excluded", provider)
 				return false
 			}
 		}
 		return true
 	}
 
-	// This is unreachableThis is unreachable.
-	return true
+	// This is unreachable.
+	return false
 }
 
 func makeClearFilter() *TestCase {
