@@ -84,22 +84,23 @@ func getDomainConfigWithNameservers(t *testing.T, prv providers.DNSServiceProvid
 	return dc
 }
 
-func testPermitted(t *testing.T, p string, f TestCase) bool {
-	// Is this a valid filter?
-	if len(f.only) != 0 && len(f.not) != 0 { // Can't have only and not.
-		panic(fmt.Sprintf("ERROR: invalid filter: %v", f))
-	}
+// testPermitted returns nil if the test is permitted, otherwise an
+// error explaining why it is not.
+func testPermitted(t *testing.T, p string, f TestCase) error {
 
-	// Is the filter empty (i.e. matches everything)
-	if len(f.required) == 0 && len(f.only) == 0 && len(f.not) == 0 {
-		return true
+	// not() and only() can't be mixed.
+	if len(f.only) != 0 && len(f.not) != 0 {
+		return fmt.Errorf("invalid filter: can't mix not() and only()")
 	}
+	// TODO(tlim): Have a separate validation pass so that such mistakes
+	// are more visible?
 
-	// If any "required" fail, we don't match.
-	for _, cap := range f.required {
-		if !providers.ProviderHasCapability(*providerToRun, cap) {
-			t.Logf("Skipping tests because provider does not support %s", cap)
-			return false
+	// If there are any required capabilities, make sure they all exist.
+	if len(f.required) != 0 {
+		for _, c := range f.required {
+			if !providers.ProviderHasCapability(*providerToRun, c) {
+				return fmt.Errorf("%s not supported", c)
+			}
 		}
 	}
 
@@ -107,26 +108,23 @@ func testPermitted(t *testing.T, p string, f TestCase) bool {
 	if len(f.only) != 0 {
 		for _, provider := range f.only {
 			if p == provider {
-				return true
+				return nil
 			}
 		}
-		t.Logf("Skipping test because %s is a known failure", provider)
-		return false
+		return fmt.Errorf("disabled by only()")
 	}
 
 	// If there are any "not" items, you must NOT be one of them.
 	if len(f.not) != 0 {
 		for _, provider := range f.not {
 			if p == provider {
-				t.Logf("Skipping test because provider %s is excluded", provider)
-				return false
+				return fmt.Errorf("excluded by not(\"%s\")", provider)
 			}
 		}
-		return true
+		return nil
 	}
 
-	// This is unreachable.
-	return false
+	return nil
 }
 
 func makeClearFilter() *TestCase {
@@ -158,7 +156,11 @@ func runTests(t *testing.T, prv providers.DNSServiceProvider, domainName string,
 			// Reset the filter. Keep going, to execute the "Empty".
 		}
 
-		if !testPermitted(t, *providerToRun, *curFilter) {
+		if err := testPermitted(t, *providerToRun, *curFilter); err != nil {
+			//t.Logf("%d: %s: **** SKIPPING: %v", i, tst.Desc, err)
+			t.Run(fmt.Sprintf("%d: %s", i, tst.Desc), func(t *testing.T) {
+				t.Skipf("**** SKIPPING ****: %v", err)
+			})
 			continue
 		}
 
@@ -527,7 +529,7 @@ func makeTests(t *testing.T) []*TestCase {
 		tc("Delete wildcard", a("www", "1.1.1.1")),
 
 		// CNAMES
-		reset(),
+		reset(not("AZURE_DNS")),
 		tc("Create a CNAME", cname("foo", "google.com.")),
 		tc("Change it", cname("foo", "google2.com.")),
 		tc("Change to A record", a("foo", "1.2.3.4")),
