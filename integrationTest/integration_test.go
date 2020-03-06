@@ -158,17 +158,17 @@ func runTests(t *testing.T, prv providers.DNSServiceProvider, domainName string,
 
 		skipVal := false // Skip validation
 
+		// Handle skipped tests:
 		if err := testPermitted(t, *providerToRun, *curFilter); err != nil {
-			t.Logf("%s%s",
-				strings.ReplaceAll(fmt.Sprintf("%d: %s:", i, tst.Desc), " ", "_"),
-				fmt.Sprintf(" **** SKIPPING: %v", err),
-			)
 			// We skip by removing the records. As a result, this test
 			// becomes the same as "Empty", which does not require certain
-			// validations (that the test MUST have at least one change,
+			// validations (i.e. the test MUST have at least one change,
 			// that the re-test MUST NOT have at least one change).
-			tst.Records = nil
+			if len(tst.Records) != 0 {
+				tst.Desc = fmt.Sprintf("%d: %s: ***SKIPPED(%v)***", i, tst.Desc, err)
+			}
 			skipVal = true
+			tst.Records = nil
 		}
 
 		t.Run(fmt.Sprintf("%d: %s", i, tst.Desc), func(t *testing.T) {
