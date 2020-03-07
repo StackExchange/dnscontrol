@@ -617,7 +617,8 @@ func makeTests(t *testing.T) []*TestCase {
 		// Tests the paging code of providers.  Many providers page at 100.
 		// Notes:
 		//  - gandi: page size is 100, therefore we test with 99, 100, and 101
-		//  - ns1: free acct only allows 50 records
+		//  - ns1: free acct only allows 50 records, therefore we skip
+		//  - digitalocean: fails due to rate limiting, not page limits.
 		reset(not("NS1")),
 		tc("99 records", manyA("rec%04d", "1.2.3.4", 99)...),
 		tc("100 records", manyA("rec%04d", "1.2.3.4", 100)...),
