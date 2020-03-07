@@ -86,7 +86,7 @@ func getDomainConfigWithNameservers(t *testing.T, prv providers.DNSServiceProvid
 
 // testPermitted returns nil if the test is permitted, otherwise an
 // error explaining why it is not.
-func testPermitted(t *testing.T, p string, f TestCase) error {
+func testPermitted(t *testing.T, p string, f TestGroup) error {
 
 	// not() and only() can't be mixed.
 	if len(f.only) != 0 && len(f.not) != 0 {
@@ -111,7 +111,7 @@ func testPermitted(t *testing.T, p string, f TestCase) error {
 				return nil
 			}
 		}
-		return fmt.Errorf("disabled by only()")
+		return fmt.Errorf("disabled by only")
 	}
 
 	// If there are any "not" items, you must NOT be one of them.
@@ -127,112 +127,125 @@ func testPermitted(t *testing.T, p string, f TestCase) error {
 	return nil
 }
 
-func makeClearFilter() *TestCase {
-	tc := tc("Empty")
-	tc.ChangeFilter = true
-	return tc
+//func makeClearFilter() *TestCase {
+//	tc := tc("Empty")
+//	tc.ChangeFilter = true
+//	return tc
+//}
+
+// desc := fmt.Sprintf("%d: %s", i, tst.Desc)
+// makeChanges runs one set of DNS record tests. Returns true on success.
+func makeChanges(t *testing.T, prv providers.DNSServiceProvider, dc *models.DomainConfig, tst *TestCase, desc string, expectChanges bool, origConfig map[string]string) bool {
+	domainName := dc.Name
+
+	return t.Run(desc, func(t *testing.T) {
+		dom, _ := dc.Copy()
+		for _, r := range tst.Records {
+			rc := models.RecordConfig(*r)
+			if strings.Contains(rc.GetTargetField(), "**current-domain**") {
+				_ = rc.SetTarget(strings.Replace(rc.GetTargetField(), "**current-domain**", domainName, 1) + ".")
+			}
+			if strings.Contains(rc.GetTargetField(), "**current-domain-no-trailing**") {
+				_ = rc.SetTarget(strings.Replace(rc.GetTargetField(), "**current-domain-no-trailing**", domainName, 1))
+			}
+			if strings.Contains(rc.GetLabelFQDN(), "**current-domain**") {
+				rc.SetLabelFromFQDN(strings.Replace(rc.GetLabelFQDN(), "**current-domain**", domainName, 1), domainName)
+			}
+			//if providers.ProviderHasCapability(*providerToRun, providers.CanUseAzureAlias) {
+			if strings.Contains(rc.GetTargetField(), "**subscription-id**") {
+				_ = rc.SetTarget(strings.Replace(rc.GetTargetField(), "**subscription-id**", origConfig["SubscriptionID"], 1))
+			}
+			if strings.Contains(rc.GetTargetField(), "**resource-group**") {
+				_ = rc.SetTarget(strings.Replace(rc.GetTargetField(), "**resource-group**", origConfig["ResourceGroup"], 1))
+			}
+			//}
+			dom.Records = append(dom.Records, &rc)
+		}
+		dom.IgnoredLabels = tst.IgnoredLabels
+		models.PostProcessRecords(dom.Records)
+		dom2, _ := dom.Copy()
+
+		// get and run corrections for first time
+		corrections, err := prv.GetDomainCorrections(dom)
+		if err != nil {
+			t.Fatal(fmt.Errorf("runTests: %w", err))
+		}
+		if len(corrections) == 0 && expectChanges {
+			t.Fatalf("Expected changes, but got none")
+		}
+		for _, c := range corrections {
+			if *verbose {
+				t.Log(c.Msg)
+			}
+			err = c.F()
+			if err != nil {
+				t.Fatal(err)
+			}
+		}
+
+		// If we just emptied out the zone, no need for a second pass.
+		if len(tst.Records) == 0 {
+			return
+		}
+
+		// run a second time and expect zero corrections
+		corrections, err = prv.GetDomainCorrections(dom2)
+		if err != nil {
+			t.Fatal(err)
+		}
+		if len(corrections) != 0 {
+			t.Logf("Expected 0 corrections on second run, but found %d.", len(corrections))
+			for i, c := range corrections {
+				t.Logf("#%d: %s", i, c.Msg)
+			}
+			t.FailNow()
+		}
+
+	})
 }
 
 func runTests(t *testing.T, prv providers.DNSServiceProvider, domainName string, knownFailures map[int]bool, origConfig map[string]string) {
 	dc := getDomainConfigWithNameservers(t, prv, domainName)
-	// run tests one at a time
-	end := *endIdx
-	tests := makeTests(t)
-	if end == 0 || end >= len(tests) {
-		end = len(tests) - 1
+	testGroups := makeTests(t)
+
+	firstGroup := *startIdx
+	lastGroup := *endIdx
+	if lastGroup == 0 {
+		lastGroup = len(testGroups)
 	}
 
-	curFilter := makeClearFilter()
+	// Start the zone with a clean slate.
+	makeChanges(t, prv, dc, tc("Empty"), "Clean Slate", false, nil)
 
-	for i := *startIdx; i <= end; i++ {
-		tst := tests[i]
+	curGroup := -1
+	for gIdx, group := range testGroups {
 
-		if t.Failed() { // Did the previous test fail? Stop.
-			break
+		// Abide by -start -end flags
+		curGroup += 1
+		if curGroup < firstGroup || curGroup > lastGroup {
+			continue
 		}
 
-		if tst.ChangeFilter {
-			curFilter = tst
-			// Reset the filter. Keep going, to execute the "Empty".
+		// Abide by filter
+		if err := testPermitted(t, *providerToRun, *group); err != nil {
+			//t.Logf("%s: ***SKIPPED(%v)***", group.Desc, err)
+			makeChanges(t, prv, dc, tc("Empty"), fmt.Sprintf("%02d:%s ***SKIPPED(%v)***", gIdx, group.Desc, err), false, origConfig)
+			continue
 		}
 
-		skipVal := false // Skip validation
-
-		// Handle skipped tests:
-		if err := testPermitted(t, *providerToRun, *curFilter); err != nil {
-			// We skip by removing the records. As a result, this test
-			// becomes the same as "Empty", which does not require certain
-			// validations (i.e. the test MUST have at least one change,
-			// that the re-test MUST NOT have at least one change).
-			if len(tst.Records) != 0 {
-				tst.Desc = fmt.Sprintf("%d: %s: ***SKIPPED(%v)***", i, tst.Desc, err)
+		// Run the tests.
+		for _, tst := range group.tests {
+			makeChanges(t, prv, dc, tst, fmt.Sprintf("%02d:%s", gIdx, group.Desc), true, origConfig)
+			if t.Failed() {
+				break
 			}
-			skipVal = true
-			tst.Records = nil
 		}
 
-		t.Run(fmt.Sprintf("%d: %s", i, tst.Desc), func(t *testing.T) {
-			dom, _ := dc.Copy()
-			for _, r := range tst.Records {
-				rc := models.RecordConfig(*r)
-				if strings.Contains(rc.GetTargetField(), "**current-domain**") {
-					_ = rc.SetTarget(strings.Replace(rc.GetTargetField(), "**current-domain**", domainName, 1) + ".")
-				}
-				if strings.Contains(rc.GetTargetField(), "**current-domain-no-trailing**") {
-					_ = rc.SetTarget(strings.Replace(rc.GetTargetField(), "**current-domain-no-trailing**", domainName, 1))
-				}
-				if strings.Contains(rc.GetLabelFQDN(), "**current-domain**") {
-					rc.SetLabelFromFQDN(strings.Replace(rc.GetLabelFQDN(), "**current-domain**", domainName, 1), domainName)
-				}
-				if providers.ProviderHasCapability(*providerToRun, providers.CanUseAzureAlias) {
-					if strings.Contains(rc.GetTargetField(), "**subscription-id**") {
-						_ = rc.SetTarget(strings.Replace(rc.GetTargetField(), "**subscription-id**", origConfig["SubscriptionID"], 1))
-					}
-					if strings.Contains(rc.GetTargetField(), "**resource-group**") {
-						_ = rc.SetTarget(strings.Replace(rc.GetTargetField(), "**resource-group**", origConfig["ResourceGroup"], 1))
-					}
-				}
-				dom.Records = append(dom.Records, &rc)
-			}
-			dom.IgnoredLabels = tst.IgnoredLabels
-			models.PostProcessRecords(dom.Records)
-			dom2, _ := dom.Copy()
-			// get corrections for first time
-			corrections, err := prv.GetDomainCorrections(dom)
-			if err != nil {
-				t.Fatal(fmt.Errorf("runTests: %w", err))
-			}
-			if !skipVal && (i != *startIdx && len(corrections) == 0) {
-				if tst.Desc != "Empty" {
-					// There are "no corrections" if the last test was programmatically
-					// skipped.  We detect this (possibly inaccurately) by checking to
-					// see if .Desc is "Empty".
-					t.Fatalf("Expect changes for all tests, but got none")
-				}
-			}
-			for _, c := range corrections {
-				if *verbose {
-					t.Log(c.Msg)
-				}
-				err = c.F()
-				if !skipVal && err != nil {
-					t.Fatal(err)
-				}
-			}
-			// run a second time and expect zero corrections
-			corrections, err = prv.GetDomainCorrections(dom2)
-			if err != nil {
-				t.Fatal(err)
-			}
-			if len(corrections) != 0 {
-				t.Logf("Expected 0 corrections on second run, but found %d.", len(corrections))
-				for i, c := range corrections {
-					t.Logf("#%d: %s", i, c.Msg)
-				}
-				t.FailNow()
-			}
-		})
+		// Remove all records so next group starts with a clean slate.
+		makeChanges(t, prv, dc, tc("Empty"), "Post cleanup", false, nil)
+
 	}
+
 }
 
 func TestDualProviders(t *testing.T) {
@@ -278,16 +291,18 @@ func TestDualProviders(t *testing.T) {
 	}
 }
 
-type TestCase struct {
-	ChangeFilter bool // If true, reset the filter before doing the test.
-	// TEST:
-	Desc          string
-	Records       []*rec
-	IgnoredLabels []string
-	// FILTER:
+type TestGroup struct {
+	Desc     string
 	required []providers.Capability
 	only     []string
 	not      []string
+	tests    []*TestCase
+}
+
+type TestCase struct {
+	Desc          string
+	Records       []*rec
+	IgnoredLabels []string
 }
 
 type rec models.RecordConfig
@@ -432,6 +447,25 @@ func manyA(namePattern, target string, n int) []*rec {
 	return recs
 }
 
+func testgroup(desc string, items ...interface{}) *TestGroup {
+	group := &TestGroup{Desc: desc}
+	for _, item := range items {
+		switch v := item.(type) {
+		case requiresFilter:
+			group.required = append(group.required, v.caps...)
+		case notFilter:
+			group.not = append(group.not, v.names...)
+		case onlyFilter:
+			group.only = append(group.only, v.names...)
+		case *TestCase:
+			group.tests = append(group.tests, v)
+		default:
+			fmt.Printf("I don't know about type %T (%v)\n", v, v)
+		}
+	}
+	return group
+}
+
 func tc(desc string, recs ...*rec) *TestCase {
 	var records []*rec
 	var ignored []string
@@ -449,321 +483,316 @@ func tc(desc string, recs ...*rec) *TestCase {
 	}
 }
 
-func reset(items ...interface{}) *TestCase {
-	tc := makeClearFilter()
-	for _, item := range items {
-		switch v := item.(type) {
-		case requiresFilter:
-			tc.required = append(tc.required, v.cap)
-		case notFilter:
-			tc.not = append(tc.not, v.name)
-		case onlyFilter:
-			tc.only = append(tc.only, v.name)
-		default:
-			fmt.Printf("I don't know about type %T (%v)\n", v, v)
-		}
-	}
-	return tc
+func clear(items ...interface{}) *TestCase {
+	return tc("Empty")
 }
 
 type requiresFilter struct {
-	cap providers.Capability
+	caps []providers.Capability
 }
 
-func requires(c providers.Capability) requiresFilter {
-	return requiresFilter{cap: c}
+func requires(c ...providers.Capability) requiresFilter {
+	return requiresFilter{caps: c}
 }
 
 type notFilter struct {
-	name string
+	names []string
 }
 
-func not(n string) notFilter {
-	return notFilter{name: n}
+func not(n ...string) notFilter {
+	return notFilter{names: n}
 }
 
 type onlyFilter struct {
-	name string
+	names []string
 }
 
-func only(n string) onlyFilter {
-	return onlyFilter{name: n}
+func only(n ...string) onlyFilter {
+	return onlyFilter{names: n}
 }
 
 //
 
-func makeTests(t *testing.T) []*TestCase {
+func makeTests(t *testing.T) []*TestGroup {
 
 	sha256hash := strings.Repeat("0123456789abcdef", 4)
 	sha512hash := strings.Repeat("0123456789abcdef", 8)
 	reversedSha512 := strings.Repeat("fedcba9876543210", 8)
 
-	// Each group of tests begins with reset(). It empties out the zone
-	// (deletes all records) and resets the filter.
-
-	// Start a group of tests that apply to all providers:
-	//      reset()
+	// Each group of tests begins with testgroup("Title").
+	// The system will remove any records so that the tests begin with a
+	// clean slate.
 	// Only apply to	providers that CanUseAlias.
-	//      reset(requires(providers.CanUseAlias)),
-	// Only apply to providers listed.
-	//      reset(only("ROUTE53")),
-	// Only apply to providers listed.
-	//     reset(only("ROUTE53"), only("GCLOUD")),
-	// Apply to all providers except ROUTE53
-	//     reset(not("ROUTE53")),
-	// Apply to all providers except ROUTE53 and GCLOUD
-	//     reset(not("ROUTE53"), not("GCLOUD")),
+	//      requires(providers.CanUseAlias),
+	// Only apply to ROUTE53 + GANDI_V5:
+	//      only("ROUTE53", "GANDI_V5")
+	// Only apply to all providers except ROUTE53 + GANDI_V5:
+	//     not("ROUTE53", "GANDI_V5"),
 
-	// DETAILS:
 	// You can't mix not() and only()
 	//     reset(not("ROUTE53"), only("GCLOUD")),  // ERROR!
 
-	tests := []*TestCase{
+	tests := []*TestGroup{
 
 		//
 		// Basic functionality (add/rename/delete)
 		//
 
-		// A
-		reset(),
-		tc("Create an A record", a("@", "1.1.1.1")),
-		tc("Change it", a("@", "1.2.3.4")),
-		tc("Add another", a("@", "1.2.3.4"), a("www", "1.2.3.4")),
-		tc("Add another(same name)", a("@", "1.2.3.4"), a("www", "1.2.3.4"), a("www", "5.6.7.8")),
-		tc("Change a ttl", a("@", "1.2.3.4").ttl(1000), a("www", "1.2.3.4"), a("www", "5.6.7.8")),
-		tc("Change single target from set", a("@", "1.2.3.4").ttl(1000), a("www", "2.2.2.2"), a("www", "5.6.7.8")),
-		tc("Change all ttls", a("@", "1.2.3.4").ttl(500), a("www", "2.2.2.2").ttl(400), a("www", "5.6.7.8").ttl(400)),
-		tc("Delete one", a("@", "1.2.3.4").ttl(500), a("www", "5.6.7.8").ttl(400)),
-		tc("Add back and change ttl", a("www", "5.6.7.8").ttl(700), a("www", "1.2.3.4").ttl(700)),
-		tc("Change targets and ttls", a("www", "1.1.1.1"), a("www", "2.2.2.2")),
-		tc("Create wildcard", a("*", "1.2.3.4"), a("www", "1.1.1.1")),
-		tc("Delete wildcard", a("www", "1.1.1.1")),
+		testgroup("A",
+			tc("Create an A record", a("@", "1.1.1.1")),
+			tc("Change it", a("@", "1.2.3.4")),
+			tc("Add another", a("@", "1.2.3.4"), a("www", "1.2.3.4")),
+			tc("Add another(same name)", a("@", "1.2.3.4"), a("www", "1.2.3.4"), a("www", "5.6.7.8")),
+			tc("Change a ttl", a("@", "1.2.3.4").ttl(1000), a("www", "1.2.3.4"), a("www", "5.6.7.8")),
+			tc("Change single target from set", a("@", "1.2.3.4").ttl(1000), a("www", "2.2.2.2"), a("www", "5.6.7.8")),
+			tc("Change all ttls", a("@", "1.2.3.4").ttl(500), a("www", "2.2.2.2").ttl(400), a("www", "5.6.7.8").ttl(400)),
+			tc("Delete one", a("@", "1.2.3.4").ttl(500), a("www", "5.6.7.8").ttl(400)),
+			tc("Add back and change ttl", a("www", "5.6.7.8").ttl(700), a("www", "1.2.3.4").ttl(700)),
+			tc("Change targets and ttls", a("www", "1.1.1.1"), a("www", "2.2.2.2")),
+			tc("Create wildcard", a("*", "1.2.3.4"), a("www", "1.1.1.1")),
+			tc("Delete wildcard", a("www", "1.1.1.1")),
+		),
 
-		// CNAMES
-		reset(),
-		tc("Create a CNAME", cname("foo", "google.com.")),
-		tc("Change it", cname("foo", "google2.com.")),
-		tc("Change to A record", a("foo", "1.2.3.4")),
-		tc("Change back to CNAME", cname("foo", "google.com.")),
-		tc("Record pointing to @", cname("foo", "**current-domain**")),
+		testgroup("CNAME",
+			tc("Create a CNAME", cname("foo", "google.com.")),
+			tc("Change it", cname("foo", "google2.com.")),
+			tc("Change to A record", a("foo", "1.2.3.4")),
+			tc("Change back to CNAME", cname("foo", "google.com.")),
+			tc("Record pointing to @", cname("foo", "**current-domain**")),
+		),
 
-		// MX
-		reset(not("ACTIVEDIRECTORY_PS")),
-		tc("MX record", mx("@", 5, "foo.com.")),
-		tc("Second MX record, same prio", mx("@", 5, "foo.com."), mx("@", 5, "foo2.com.")),
-		tc("3 MX", mx("@", 5, "foo.com."), mx("@", 5, "foo2.com."), mx("@", 15, "foo3.com.")),
-		tc("Delete one", mx("@", 5, "foo2.com."), mx("@", 15, "foo3.com.")),
-		tc("Change to other name", mx("@", 5, "foo2.com."), mx("mail", 15, "foo3.com.")),
-		tc("Change Preference", mx("@", 7, "foo2.com."), mx("mail", 15, "foo3.com.")),
-		tc("Record pointing to @", mx("foo", 8, "**current-domain**")),
+		testgroup("MX",
+			not("ACTIVEDIRECTORY_PS"), // Not implemented.
+			tc("MX record", mx("@", 5, "foo.com.")),
+			tc("Second MX record, same prio", mx("@", 5, "foo.com."), mx("@", 5, "foo2.com.")),
+			tc("3 MX", mx("@", 5, "foo.com."), mx("@", 5, "foo2.com."), mx("@", 15, "foo3.com.")),
+			tc("Delete one", mx("@", 5, "foo2.com."), mx("@", 15, "foo3.com.")),
+			tc("Change to other name", mx("@", 5, "foo2.com."), mx("mail", 15, "foo3.com.")),
+			tc("Change Preference", mx("@", 7, "foo2.com."), mx("mail", 15, "foo3.com.")),
+			tc("Record pointing to @", mx("foo", 8, "**current-domain**")),
+		),
 
-		// NS
-		reset(not("DNSIMPLE"), not("EXOSCALE")),
-		// DNSIMPLE: Does not support NS records nor subdomains.
-		tc("NS for subdomain", ns("xyz", "ns2.foo.com.")),
-		tc("Dual NS for subdomain", ns("xyz", "ns2.foo.com."), ns("xyz", "ns1.foo.com.")),
-		tc("NS Record pointing to @", ns("foo", "**current-domain**")),
-		// ignored records
-		reset(),
-		tc("Create some records", txt("foo", "simple"), a("foo", "1.2.3.4")),
-		tc("Add a new record - ignoring foo", a("bar", "1.2.3.4"), ignore("foo")),
-		reset(),
-		tc("Create some records", txt("bar.foo", "simple"), a("bar.foo", "1.2.3.4")),
-		tc("Add a new record - ignoring *.foo", a("bar", "1.2.3.4"), ignore("*.foo")),
+		testgroup("NS",
+			not("DNSIMPLE", "EXOSCALE"),
+			// DNSIMPLE: Does not support NS records nor subdomains.
+			// EXOSCALE: FILL IN
+			tc("NS for subdomain", ns("xyz", "ns2.foo.com.")),
+			tc("Dual NS for subdomain", ns("xyz", "ns2.foo.com."), ns("xyz", "ns1.foo.com.")),
+			tc("NS Record pointing to @", ns("foo", "**current-domain**")),
+		),
 
-		// TXT (single)
-		reset(),
-		tc("Create a TXT", txt("foo", "simple")),
-		tc("Change a TXT", txt("foo", "changed")),
-		reset(),
-		tc("Create a TXT with spaces", txt("foo", "with spaces")),
-		tc("Change a TXT with spaces", txt("foo", "with whitespace")),
-		tc("Create 1 TXT as array", txtmulti("foo", []string{"simple"})),
-		reset(),
-		tc("Create a 255-byte TXT", txt("foo", strings.Repeat("A", 255))),
+		testgroup("IGNORE function",
+			tc("Create some records", txt("foo", "simple"), a("foo", "1.2.3.4")),
+			tc("Add a new record - ignoring foo", a("bar", "1.2.3.4"), ignore("foo")),
+			clear(),
+			tc("Create some records", txt("bar.foo", "simple"), a("bar.foo", "1.2.3.4")),
+			tc("Add a new record - ignoring *.foo", a("bar", "1.2.3.4"), ignore("*.foo")),
+		),
 
-		// TXT (empty)
-		reset(not("DNSIMPLE"), not("CLOUDFLAREAPI")),
-		tc("TXT with empty str", txt("foo1", "")),
-		// https://github.com/StackExchange/dnscontrol/issues/598
-		// We decided that handling an empty TXT string is not a
-		// requirement. In the future we might make it a "capability" to
-		// indicate which vendors fully support RFC 1035, which requires
-		// that a TXT string can be empty.
+		testgroup("single TXT",
+			tc("Create a TXT", txt("foo", "simple")),
+			tc("Change a TXT", txt("foo", "changed")),
+			clear(),
+			tc("Create a TXT with spaces", txt("foo", "with spaces")),
+			tc("Change a TXT with spaces", txt("foo", "with whitespace  ")),
+			tc("Create 1 TXT as array", txtmulti("foo", []string{"simple"})),
+			clear(),
+			tc("Create a 255-byte TXT", txt("foo", strings.Repeat("A", 255))),
+		),
+
+		testgroup("empty TXT", not("DNSIMPLE", "CLOUDFLAREAPI"),
+			tc("TXT with empty str", txt("foo1", "")),
+			// https://github.com/StackExchange/dnscontrol/issues/598
+			// We decided that permitting the TXT target to be an empty
+			// string is not a requirement (even though RFC1035 permits it).
+			// In the future we might make it a "capability" to
+			// indicate which vendors support an empty TXT record.
+			// However at this time there is no pressing need for this
+			// feature.
+		),
 
 		//
 		// Tests that exercise the API protocol and/or code
 		//
 
-		// Case
-		// The decoys are required so that there is at least one actual change in each tc.
-		reset(),
-		tc("Create CAPS", mx("BAR", 5, "BAR.com.")),
-		tc("Downcase label", mx("bar", 5, "BAR.com."), a("decoy", "1.1.1.1")),
-		tc("Downcase target", mx("bar", 5, "bar.com."), a("decoy", "2.2.2.2")),
-		tc("Upcase both", mx("BAR", 5, "BAR.COM."), a("decoy", "3.3.3.3")),
+		testgroup("Case Sensitivity",
+			// The decoys are required so that there is at least one actual change in each tc.
+			tc("Create CAPS", mx("BAR", 5, "BAR.com.")),
+			tc("Downcase label", mx("bar", 5, "BAR.com."), a("decoy", "1.1.1.1")),
+			tc("Downcase target", mx("bar", 5, "bar.com."), a("decoy", "2.2.2.2")),
+			tc("Upcase both", mx("BAR", 5, "BAR.COM."), a("decoy", "3.3.3.3")),
+		),
 
-		// IDNAs
-		reset(not("SOFTLAYER")),
-		// SOFTLAYER: fails at direct internationalization, punycode works.
-		tc("Internationalized name", a("ööö", "1.2.3.4")),
-		tc("Change IDN", a("ööö", "2.2.2.2")),
-		tc("Internationalized CNAME Target", cname("a", "ööö.com.")),
-		// IDNAs in CNAME targets
-		reset(not("LINODE")),
-		// LINODE: hostname validation does not allow the target domain TLD
-		tc("IDN CNAME AND Target", cname("öoö", "ööö.企业.")),
+		testgroup("IDNA",
+			not("SOFTLAYER"),
+			// SOFTLAYER: fails at direct internationalization, punycode works.
+			tc("Internationalized name", a("ööö", "1.2.3.4")),
+			tc("Change IDN", a("ööö", "2.2.2.2")),
+			tc("Internationalized CNAME Target", cname("a", "ööö.com.")),
+		),
+		testgroup("IDNAs in CNAME targets",
+			not("LINODE"),
+			// LINODE: hostname validation does not allow the target domain TLD
+			tc("IDN CNAME AND Target", cname("öoö", "ööö.企业.")),
+		),
 
-		// Tests the paging code of providers.  Many providers page at 100.
-		// Notes:
-		//  - gandi: page size is 100, therefore we test with 99, 100, and 101
-		//  - ns1: free acct only allows 50 records, therefore we skip
-		//  - digitalocean: fails due to rate limiting, not page limits.
-		reset(not("NS1")),
-		tc("99 records", manyA("rec%04d", "1.2.3.4", 99)...),
-		tc("100 records", manyA("rec%04d", "1.2.3.4", 100)...),
-		tc("101 records", manyA("rec%04d", "1.2.3.4", 101)...),
+		testgroup("page size",
+			// Tests the paging code of providers.  Many providers page at 100.
+			// Notes:
+			//  - gandi: page size is 100, therefore we test with 99, 100, and 101
+			//  - ns1: free acct only allows 50 records, therefore we skip
+			//  - digitalocean: fails due to rate limiting, not page limits.
+			not("NS1"),
+			tc("99 records", manyA("rec%04d", "1.2.3.4", 99)...),
+			tc("100 records", manyA("rec%04d", "1.2.3.4", 100)...),
+			tc("101 records", manyA("rec%04d", "1.2.3.4", 101)...),
+		),
 
-		// Tests for bugs in handling VERY large updates
-		reset(only("ROUTE53")),
-		tc("600 records", manyA("rec%04d", "1.2.3.4", 600)...),
-		tc("Update 600 records", manyA("rec%04d", "1.2.3.5", 600)...),
-		tc("Empty"), // Delete them all
-		tc("1200 records", manyA("rec%04d", "1.2.3.4", 1200)...),
-		tc("Update 1200 records", manyA("rec%04d", "1.2.3.5", 1200)...),
+		testgroup("Large updates",
+			// Verify https://github.com/StackExchange/dnscontrol/issues/493
+			only("ROUTE53"),
+			tc("600 records", manyA("rec%04d", "1.2.3.4", 600)...),
+			tc("Update 600 records", manyA("rec%04d", "1.2.3.5", 600)...),
+			tc("Empty"), // Delete them all
+			tc("1200 records", manyA("rec%04d", "1.2.3.4", 1200)...),
+			tc("Update 1200 records", manyA("rec%04d", "1.2.3.5", 1200)...),
+		),
 
 		//
 		// CanUse* types:
 		//
 
-		// CAA
-		reset(requires(providers.CanUseCAA)),
-		tc("CAA record", caa("@", "issue", 0, "letsencrypt.org")),
-		tc("CAA change tag", caa("@", "issuewild", 0, "letsencrypt.org")),
-		tc("CAA change target", caa("@", "issuewild", 0, "example.com")),
-		tc("CAA change flag", caa("@", "issuewild", 128, "example.com")),
-		tc("CAA many records",
-			caa("@", "issue", 0, "letsencrypt.org"),
-			caa("@", "issuewild", 0, "comodoca.com"),
-			caa("@", "iodef", 128, "mailto:test@example.com")),
-		tc("CAA delete", caa("@", "issue", 0, "letsencrypt.org")),
-		// Test support of ";" as a value
-		reset(requires(providers.CanUseCAA), not("DIGITALOCEAN")),
-		tc("CAA many records", caa("@", "issuewild", 0, ";")),
-
-		// NAPTR
-		reset(requires(providers.CanUseNAPTR)),
-		tc("NAPTR record", naptr("test", 100, 10, "U", "E2U+sip", "!^.*$!sip:customer-service@example.com!", "example.foo.com.")),
-		tc("NAPTR second record", naptr("test", 102, 10, "U", "E2U+email", "!^.*$!mailto:information@example.com!", "example.foo.com.")),
-		tc("NAPTR delete record", naptr("test", 100, 10, "U", "E2U+email", "!^.*$!mailto:information@example.com!", "example.foo.com.")),
-		tc("NAPTR change target", naptr("test", 100, 10, "U", "E2U+email", "!^.*$!mailto:information@example.com!", "example2.foo.com.")),
-		tc("NAPTR change order", naptr("test", 103, 10, "U", "E2U+email", "!^.*$!mailto:information@example.com!", "example2.foo.com.")),
-		tc("NAPTR change preference", naptr("test", 103, 20, "U", "E2U+email", "!^.*$!mailto:information@example.com!", "example2.foo.com.")),
-		tc("NAPTR change flags", naptr("test", 103, 20, "A", "E2U+email", "!^.*$!mailto:information@example.com!", "example2.foo.com.")),
-		tc("NAPTR change service", naptr("test", 103, 20, "A", "E2U+sip", "!^.*$!mailto:information@example.com!", "example2.foo.com.")),
-		tc("NAPTR change regexp", naptr("test", 103, 20, "A", "E2U+sip", "!^.*$!sip:customer-service@example.com!", "example2.foo.com.")),
-
-		// PTR
-		reset(requires(providers.CanUsePTR), not("ACTIVEDIRECTORY_PS")),
-		tc("Create PTR record", ptr("4", "foo.com.")),
-		tc("Modify PTR record", ptr("4", "bar.com.")),
-
-		// SRV
-		reset(requires(providers.CanUseSRV), not("ACTIVEDIRECTORY_PS"), not("CLOUDNS")),
-		tc("SRV record", srv("_sip._tcp", 5, 6, 7, "foo.com.")),
-		tc("Second SRV record, same prio", srv("_sip._tcp", 5, 6, 7, "foo.com."), srv("_sip._tcp", 5, 60, 70, "foo2.com.")),
-		tc("3 SRV", srv("_sip._tcp", 5, 6, 7, "foo.com."), srv("_sip._tcp", 5, 60, 70, "foo2.com."), srv("_sip._tcp", 15, 65, 75, "foo3.com.")),
-		tc("Delete one", srv("_sip._tcp", 5, 6, 7, "foo.com."), srv("_sip._tcp", 15, 65, 75, "foo3.com.")),
-		tc("Change Target", srv("_sip._tcp", 5, 6, 7, "foo.com."), srv("_sip._tcp", 15, 65, 75, "foo4.com.")),
-		tc("Change Priority", srv("_sip._tcp", 52, 6, 7, "foo.com."), srv("_sip._tcp", 15, 65, 75, "foo4.com.")),
-		tc("Change Weight", srv("_sip._tcp", 52, 62, 7, "foo.com."), srv("_sip._tcp", 15, 65, 75, "foo4.com.")),
-		tc("Change Port", srv("_sip._tcp", 52, 62, 72, "foo.com."), srv("_sip._tcp", 15, 65, 75, "foo4.com.")),
-		// w/ null target
-		reset(not("NAMEDOTCOM"), not("HEXONET"), not("EXOSCALE")),
-		tc("Null Target", srv("_sip._tcp", 52, 62, 72, "foo.com."), srv("_sip._tcp", 15, 65, 75, ".")),
-
-		// SSHFP
-		reset(requires(providers.CanUseSSHFP)),
-		tc("SSHFP record",
-			sshfp("@", 1, 1, "66c7d5540b7d75a1fb4c84febfa178ad99bdd67c")),
-		tc("SSHFP change algorithm",
-			sshfp("@", 2, 1, "66c7d5540b7d75a1fb4c84febfa178ad99bdd67c")),
-		tc("SSHFP change fingerprint and type",
-			sshfp("@", 2, 2, "745a635bc46a397a5c4f21d437483005bcc40d7511ff15fbfafe913a081559bc")),
-		tc("SSHFP Delete one"),
-		tc("SSHFP add many records",
-			sshfp("@", 1, 1, "66666666666d75a1fb4c84febfa178ad99bdd67c"),
-			sshfp("@", 1, 2, "777777777777797a5c4f21d437483005bcc40d7511ff15fbfafe913a081559bc"),
-			sshfp("@", 2, 1, "8888888888888888fb4c84febfa178ad99bdd67c")),
-		tc("SSHFP delete two",
-			sshfp("@", 1, 1, "66666666666d75a1fb4c84febfa178ad99bdd67c")),
-
-		// TLSA
-		reset(requires(providers.CanUseTLSA)),
-		tc("TLSA record", tlsa("_443._tcp", 3, 1, 1, sha256hash)),
-		tc("TLSA change usage", tlsa("_443._tcp", 2, 1, 1, sha256hash)),
-		tc("TLSA change selector", tlsa("_443._tcp", 2, 0, 1, sha256hash)),
-		tc("TLSA change matchingtype", tlsa("_443._tcp", 2, 0, 2, sha512hash)),
-		tc("TLSA change certificate", tlsa("_443._tcp", 2, 0, 2, reversedSha512)),
-
-		// TXTMulti
-		reset(requires(providers.CanUseTXTMulti)),
-		tc("Create TXTMulti 1",
-			txtmulti("foo1", []string{"simple"}),
+		testgroup("CAA",
+			requires(providers.CanUseCAA),
+			tc("CAA record", caa("@", "issue", 0, "letsencrypt.org")),
+			tc("CAA change tag", caa("@", "issuewild", 0, "letsencrypt.org")),
+			tc("CAA change target", caa("@", "issuewild", 0, "example.com")),
+			tc("CAA change flag", caa("@", "issuewild", 128, "example.com")),
+			tc("CAA many records",
+				caa("@", "issue", 0, "letsencrypt.org"),
+				caa("@", "issuewild", 0, "comodoca.com"),
+				caa("@", "iodef", 128, "mailto:test@example.com")),
+			tc("CAA delete", caa("@", "issue", 0, "letsencrypt.org")),
 		),
-		tc("Create TXTMulti 2",
-			txtmulti("foo1", []string{"simple"}),
-			txtmulti("foo2", []string{"one", "two"}),
+		testgroup("CAA with ;",
+			requires(providers.CanUseCAA), not("DIGITALOCEAN"),
+			// Test support of ";" as a value
+			tc("CAA many records", caa("@", "issuewild", 0, ";")),
 		),
-		tc("Create TXTMulti 3",
-			txtmulti("foo1", []string{"simple"}),
-			txtmulti("foo2", []string{"one", "two"}),
-			txtmulti("foo3", []string{"eh", "bee", "cee"}),
+
+		testgroup("NAPTR",
+			requires(providers.CanUseNAPTR),
+			tc("NAPTR record", naptr("test", 100, 10, "U", "E2U+sip", "!^.*$!sip:customer-service@example.com!", "example.foo.com.")),
+			tc("NAPTR second record", naptr("test", 102, 10, "U", "E2U+email", "!^.*$!mailto:information@example.com!", "example.foo.com.")),
+			tc("NAPTR delete record", naptr("test", 100, 10, "U", "E2U+email", "!^.*$!mailto:information@example.com!", "example.foo.com.")),
+			tc("NAPTR change target", naptr("test", 100, 10, "U", "E2U+email", "!^.*$!mailto:information@example.com!", "example2.foo.com.")),
+			tc("NAPTR change order", naptr("test", 103, 10, "U", "E2U+email", "!^.*$!mailto:information@example.com!", "example2.foo.com.")),
+			tc("NAPTR change preference", naptr("test", 103, 20, "U", "E2U+email", "!^.*$!mailto:information@example.com!", "example2.foo.com.")),
+			tc("NAPTR change flags", naptr("test", 103, 20, "A", "E2U+email", "!^.*$!mailto:information@example.com!", "example2.foo.com.")),
+			tc("NAPTR change service", naptr("test", 103, 20, "A", "E2U+sip", "!^.*$!mailto:information@example.com!", "example2.foo.com.")),
+			tc("NAPTR change regexp", naptr("test", 103, 20, "A", "E2U+sip", "!^.*$!sip:customer-service@example.com!", "example2.foo.com.")),
 		),
-		tc("Create TXTMulti with quotes",
-			txtmulti("foo1", []string{"simple"}),
-			txtmulti("foo2", []string{"o\"ne", "tw\"o"}),
-			txtmulti("foo3", []string{"eh", "bee", "cee"}),
+
+		testgroup("PTR", requires(providers.CanUsePTR), not("ACTIVEDIRECTORY_PS"),
+			tc("Create PTR record", ptr("4", "foo.com.")),
+			tc("Modify PTR record", ptr("4", "bar.com.")),
 		),
-		tc("Change TXTMulti",
-			txtmulti("foo1", []string{"dimple"}),
-			txtmulti("foo2", []string{"fun", "two"}),
-			txtmulti("foo3", []string{"eh", "bzz", "cee"}),
+
+		testgroup("SRV", requires(providers.CanUseSRV), not("ACTIVEDIRECTORY_PS", "CLOUDNS"),
+			tc("SRV record", srv("_sip._tcp", 5, 6, 7, "foo.com.")),
+			tc("Second SRV record, same prio", srv("_sip._tcp", 5, 6, 7, "foo.com."), srv("_sip._tcp", 5, 60, 70, "foo2.com.")),
+			tc("3 SRV", srv("_sip._tcp", 5, 6, 7, "foo.com."), srv("_sip._tcp", 5, 60, 70, "foo2.com."), srv("_sip._tcp", 15, 65, 75, "foo3.com.")),
+			tc("Delete one", srv("_sip._tcp", 5, 6, 7, "foo.com."), srv("_sip._tcp", 15, 65, 75, "foo3.com.")),
+			tc("Change Target", srv("_sip._tcp", 5, 6, 7, "foo.com."), srv("_sip._tcp", 15, 65, 75, "foo4.com.")),
+			tc("Change Priority", srv("_sip._tcp", 52, 6, 7, "foo.com."), srv("_sip._tcp", 15, 65, 75, "foo4.com.")),
+			tc("Change Weight", srv("_sip._tcp", 52, 62, 7, "foo.com."), srv("_sip._tcp", 15, 65, 75, "foo4.com.")),
+			tc("Change Port", srv("_sip._tcp", 52, 62, 72, "foo.com."), srv("_sip._tcp", 15, 65, 75, "foo4.com.")),
 		),
-		tc("3x255-byte TXTMulti",
-			txtmulti("foo3", []string{strings.Repeat("X", 255), strings.Repeat("Y", 255), strings.Repeat("Z", 255)})),
+		testgroup("SRV w/ null target", not("NAMEDOTCOM", "HEXONET", "EXOSCALE"),
+			tc("Null Target", srv("_sip._tcp", 52, 62, 72, "foo.com."), srv("_sip._tcp", 15, 65, 75, ".")),
+		),
+
+		testgroup("SSHFP",
+			requires(providers.CanUseSSHFP),
+			tc("SSHFP record",
+				sshfp("@", 1, 1, "66c7d5540b7d75a1fb4c84febfa178ad99bdd67c")),
+			tc("SSHFP change algorithm",
+				sshfp("@", 2, 1, "66c7d5540b7d75a1fb4c84febfa178ad99bdd67c")),
+			tc("SSHFP change fingerprint and type",
+				sshfp("@", 2, 2, "745a635bc46a397a5c4f21d437483005bcc40d7511ff15fbfafe913a081559bc")),
+			tc("SSHFP Delete one"),
+			tc("SSHFP add many records",
+				sshfp("@", 1, 1, "66666666666d75a1fb4c84febfa178ad99bdd67c"),
+				sshfp("@", 1, 2, "777777777777797a5c4f21d437483005bcc40d7511ff15fbfafe913a081559bc"),
+				sshfp("@", 2, 1, "8888888888888888fb4c84febfa178ad99bdd67c")),
+			tc("SSHFP delete two",
+				sshfp("@", 1, 1, "66666666666d75a1fb4c84febfa178ad99bdd67c")),
+		),
+
+		testgroup("TLSA",
+			requires(providers.CanUseTLSA),
+			tc("TLSA record", tlsa("_443._tcp", 3, 1, 1, sha256hash)),
+			tc("TLSA change usage", tlsa("_443._tcp", 2, 1, 1, sha256hash)),
+			tc("TLSA change selector", tlsa("_443._tcp", 2, 0, 1, sha256hash)),
+			tc("TLSA change matchingtype", tlsa("_443._tcp", 2, 0, 2, sha512hash)),
+			tc("TLSA change certificate", tlsa("_443._tcp", 2, 0, 2, reversedSha512)),
+		),
+
+		testgroup("TXTMulti",
+			requires(providers.CanUseTXTMulti),
+			tc("Create TXTMulti 1",
+				txtmulti("foo1", []string{"simple"}),
+			),
+			tc("Create TXTMulti 2",
+				txtmulti("foo1", []string{"simple"}),
+				txtmulti("foo2", []string{"one", "two"}),
+			),
+			tc("Create TXTMulti 3",
+				txtmulti("foo1", []string{"simple"}),
+				txtmulti("foo2", []string{"one", "two"}),
+				txtmulti("foo3", []string{"eh", "bee", "cee"}),
+			),
+			tc("Create TXTMulti with quotes",
+				txtmulti("foo1", []string{"simple"}),
+				txtmulti("foo2", []string{"o\"ne", "tw\"o"}),
+				txtmulti("foo3", []string{"eh", "bee", "cee"}),
+			),
+			tc("Change TXTMulti",
+				txtmulti("foo1", []string{"dimple"}),
+				txtmulti("foo2", []string{"fun", "two"}),
+				txtmulti("foo3", []string{"eh", "bzz", "cee"}),
+			),
+			tc("3x255-byte TXTMulti",
+				txtmulti("foo3", []string{strings.Repeat("X", 255), strings.Repeat("Y", 255), strings.Repeat("Z", 255)})),
+		),
 
 		//
 		// Pseudo rtypes:
 		//
 
-		// ALIAS
-		reset(requires(providers.CanUseAlias)),
-		tc("ALIAS at root", alias("@", "foo.com.")),
-		tc("change it", alias("@", "foo2.com.")),
-		tc("ALIAS at subdomain", alias("test", "foo.com.")),
+		testgroup("ALIAS",
+			requires(providers.CanUseAlias),
+			tc("ALIAS at root", alias("@", "foo.com.")),
+			tc("change it", alias("@", "foo2.com.")),
+			tc("ALIAS at subdomain", alias("test", "foo.com.")),
+		),
 
-		// AZURE_ALIAS
-		reset(requires(providers.CanUseAzureAlias)),
-		tc("create dependent A records", a("foo.a", "1.2.3.4"), a("quux.a", "2.3.4.5")),
-		tc("ALIAS to A record in same zone", a("foo.a", "1.2.3.4"), a("quux.a", "2.3.4.5"), azureAlias("bar.a", "A", "/subscriptions/**subscription-id**/resourceGroups/**resource-group**/providers/Microsoft.Network/dnszones/**current-domain-no-trailing**/A/foo.a")),
-		tc("change it", a("foo.a", "1.2.3.4"), a("quux.a", "2.3.4.5"), azureAlias("bar.a", "A", "/subscriptions/**subscription-id**/resourceGroups/**resource-group**/providers/Microsoft.Network/dnszones/**current-domain-no-trailing**/A/quux.a")),
-		tc("create dependent CNAME records", cname("foo.cname", "google.com"), cname("quux.cname", "google2.com")),
-		tc("ALIAS to CNAME record in same zone", cname("foo.cname", "google.com"), cname("quux.cname", "google2.com"), azureAlias("bar", "CNAME", "/subscriptions/**subscription-id**/resourceGroups/**resource-group**/providers/Microsoft.Network/dnszones/**current-domain-no-trailing**/CNAME/foo.cname")),
-		tc("change it", cname("foo.cname", "google.com"), cname("quux.cname", "google2.com"), azureAlias("bar.cname", "CNAME", "/subscriptions/**subscription-id**/resourceGroups/**resource-group**/providers/Microsoft.Network/dnszones/**current-domain-no-trailing**/CNAME/quux.cname")),
+		testgroup("AZURE_ALIAS",
+			requires(providers.CanUseAzureAlias),
+			tc("create dependent A records", a("foo.a", "1.2.3.4"), a("quux.a", "2.3.4.5")),
+			tc("ALIAS to A record in same zone", a("foo.a", "1.2.3.4"), a("quux.a", "2.3.4.5"), azureAlias("bar.a", "A", "/subscriptions/**subscription-id**/resourceGroups/**resource-group**/providers/Microsoft.Network/dnszones/**current-domain-no-trailing**/A/foo.a")),
+			tc("change it", a("foo.a", "1.2.3.4"), a("quux.a", "2.3.4.5"), azureAlias("bar.a", "A", "/subscriptions/**subscription-id**/resourceGroups/**resource-group**/providers/Microsoft.Network/dnszones/**current-domain-no-trailing**/A/quux.a")),
+			tc("create dependent CNAME records", cname("foo.cname", "google.com"), cname("quux.cname", "google2.com")),
+			tc("ALIAS to CNAME record in same zone", cname("foo.cname", "google.com"), cname("quux.cname", "google2.com"), azureAlias("bar", "CNAME", "/subscriptions/**subscription-id**/resourceGroups/**resource-group**/providers/Microsoft.Network/dnszones/**current-domain-no-trailing**/CNAME/foo.cname")),
+			tc("change it", cname("foo.cname", "google.com"), cname("quux.cname", "google2.com"), azureAlias("bar.cname", "CNAME", "/subscriptions/**subscription-id**/resourceGroups/**resource-group**/providers/Microsoft.Network/dnszones/**current-domain-no-trailing**/CNAME/quux.cname")),
+		),
 
-		// R53_ALIAS
-		reset(requires(providers.CanUseRoute53Alias)),
-		tc("create dependent records", a("foo", "1.2.3.4"), a("quux", "2.3.4.5")),
-		tc("ALIAS to A record in same zone", a("foo", "1.2.3.4"), a("quux", "2.3.4.5"), r53alias("bar", "A", "foo.**current-domain**")),
-		tc("change it", a("foo", "1.2.3.4"), a("quux", "2.3.4.5"), r53alias("bar", "A", "quux.**current-domain**")),
-
-		//
-		// End
-		//
-
-		// Close out the previous test.
-		reset(),
+		testgroup("R53_ALIAS",
+			requires(providers.CanUseRoute53Alias),
+			tc("create dependent records", a("foo", "1.2.3.4"), a("quux", "2.3.4.5")),
+			tc("ALIAS to A record in same zone", a("foo", "1.2.3.4"), a("quux", "2.3.4.5"), r53alias("bar", "A", "foo.**current-domain**")),
+			tc("change it", a("foo", "1.2.3.4"), a("quux", "2.3.4.5"), r53alias("bar", "A", "quux.**current-domain**")),
+		),
 	}
 
 	return tests
