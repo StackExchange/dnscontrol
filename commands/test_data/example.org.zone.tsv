@@ -1,0 +1,349 @@
+example.org	@	43200	IN	SOA	ns1.example.org. hostmaster.example.org. 2020030700 7200 3600 864000 7200
+example.org	@	7200	IN	NS	ns1.example.org.
+example.org	@	7200	IN	NS	ns2.example.org.
+example.org	@	7200	IN	NS	ns-a.example.net.
+example.org	@	7200	IN	NS	friend-dns.example.com.
+example.org	@	7200	IN	MX	10 mx.example.org.
+example.org	@	7200	IN	TXT	"v=spf1 ip4:192.0.2.25 ip6:2001:db8::1:25 mx include:_spf.example.com ~all"
+_client._smtp.example.org	_client._smtp	7200	IN	SRV	1 1 1 example.org.
+_client._smtp.mx.example.org	_client._smtp.mx	7200	IN	SRV	1 2 1 mx.example.org.
+_client._smtp.foo.example.org	_client._smtp.foo	7200	IN	SRV	1 2 1 foo.example.org.
+_kerberos._tcp.example.org	_kerberos._tcp	7200	IN	SRV	10 1 88 kerb-service.example.org.
+_kerberos._udp.example.org	_kerberos._udp	7200	IN	SRV	10 1 88 kerb-service.example.org.
+_kpasswd._udp.example.org	_kpasswd._udp	7200	IN	SRV	10 1 464 kerb-service.example.org.
+_kerberos-adm._tcp.example.org	_kerberos-adm._tcp	7200	IN	SRV	10 1 749 kerb-service.example.org.
+_kerberos.example.org	_kerberos	7200	IN	TXT	"EXAMPLE.ORG"
+_ldap._tcp.example.org	_ldap._tcp	7200	IN	SRV	0 0 0 .
+_ldap._udp.example.org	_ldap._udp	7200	IN	SRV	0 0 0 .
+_jabber._tcp.example.org	_jabber._tcp	7200	IN	SRV	10 2 5269 xmpp-s2s.example.org.
+_xmpp-server._tcp.example.org	_xmpp-server._tcp	7200	IN	SRV	10 2 5269 xmpp-s2s.example.org.
+_xmpp-client._tcp.example.org	_xmpp-client._tcp	7200	IN	SRV	10 2 5222 xmpp.example.org.
+_im._sip.example.org	_im._sip	7200	IN	SRV	0 0 0 .
+_pres._sip.example.org	_pres._sip	7200	IN	SRV	0 0 0 .
+_sip+d2t._tcp.example.org	_sip+d2t._tcp	7200	IN	SRV	0 0 0 .
+_sips+d2t._tcp.example.org	_sips+d2t._tcp	7200	IN	SRV	0 0 0 .
+_sip+d2u._udp.example.org	_sip+d2u._udp	7200	IN	SRV	0 0 0 .
+_sip+d2s._sctp.example.org	_sip+d2s._sctp	7200	IN	SRV	0 0 0 .
+_sips+d2s._sctp.example.org	_sips+d2s._sctp	7200	IN	SRV	0 0 0 .
+_submission._tcp.example.org	_submission._tcp	7200	IN	SRV	10 10 587 smtp.example.org.
+_submissions._tcp.example.org	_submissions._tcp	7200	IN	SRV	10 10 465 smtp.example.org.
+_imap._tcp.example.org	_imap._tcp	7200	IN	SRV	10 10 143 imap.example.org.
+_imaps._tcp.example.org	_imaps._tcp	7200	IN	SRV	10 10 993 imap.example.org.
+_pop3._tcp.example.org	_pop3._tcp	7200	IN	SRV	0 0 0 .
+_pop3s._tcp.example.org	_pop3s._tcp	7200	IN	SRV	0 0 0 .
+_sieve._tcp.example.org	_sieve._tcp	7200	IN	SRV	10 10 4190 imap.example.org.
+dns-moreinfo.example.org	dns-moreinfo	7200	IN	TXT	"Fred Bloggs, TZ=America/New_York" "Chat-Service-X: @handle1" "Chat-Service-Y: federated-handle@example.org"
+_pgpkey-http._tcp.example.org	_pgpkey-http._tcp	7200	IN	SRV	0 0 0 .
+_pgpkey-https._tcp.example.org	_pgpkey-https._tcp	7200	IN	SRV	0 0 0 .
+_hkp._tcp.example.org	_hkp._tcp	7200	IN	SRV	0 0 0 .
+_openpgpkey._tcp.example.org	_openpgpkey._tcp	7200	IN	SRV	10 10 443 openpgpkey.example.org.
+_finger._tcp.example.org	_finger._tcp	7200	IN	SRV	10 10 79 barbican.example.org.
+_avatars-sec._tcp.example.org	_avatars-sec._tcp	7200	IN	SRV	10 10 443 avatars.example.org.
+example.org	@	7200	IN	A	192.0.2.1
+example.org	@	7200	IN	AAAA	2001:db8::1:1
+_adsp._domainkey.example.org	_adsp._domainkey	7200	IN	TXT	"dkim=all"
+_dmarc.example.org	_dmarc	7200	IN	TXT	"v=DMARC1; p=none; sp=none; rua=mailto:dmarc-notify@example.org; ruf=mailto:dmarc-notify@example.org; adkim=s"
+d201911._domainkey.example.org	d201911._domainkey	7200	IN	TXT	"v=DKIM1; k=rsa; p=MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEA4SmyE5Tz5/wPL8cb2AKuHnlFeLMOhAl1UX/NYaeDCKMWoBPTgZRT0jonKLmV2UscHdodXu5ZsLr/NAuLCp7HmPLReLz7kxKncP6ppveKxc1aq5SPTKeWe77p6BptlahHc35eiXsZRpTsEzrbEOainy1IWEd+w9p1gWbrSutwE22z0i4V88nQ9UBa1ks" "6cVGxXBZFovWC+i28aGs6Lc7cSfHG5+Mrg3ud5X4evYXTGFMPpunMcCsXrqmS5a+5gRSEMZhngha/cHjLwaJnWzKaywNWF5XOsCjL94QkS0joB7lnGOHMNSZBCcu542Y3Ht3SgHhlpkF9mIbIRfpzA9IoSQIDAQAB"
+d201911e2._domainkey.example.org	d201911e2._domainkey	7200	IN	TXT	"v=DKIM1; k=ed25519; p=GBt2k2L39KUb39fg5brOppXDHXvISy0+ECGgPld/bIo="
+d202003._domainkey.example.org	d202003._domainkey	7200	IN	TXT	"v=DKIM1; k=rsa; p=MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAv/1tQvOEs7xtKNm7PbPgY4hQjwHVvqqkDb0+TeqZHYRSczQ3c0LFJrIDFiPIdwQe/7AuKrxvATSh/uXKZ3EP4ouMgROPZnUxVXENeetJj+pc3nfGwTKUBTTTth+SO74gdIWsntjvAfduzosC4ZkxbDwZ9c253qXARGvGu+LB/iAeq0ngEbm5fU13+Jo" "pv0d4dR6oGe9GvMEnGGLZzNrxWl1BPe2x5JZ5/X/3fW8vJx3OgRB5N6fqbAJ6HZ9kcbikDH4lPPl9RIoprFk7mmwno/nXLQYGhPobmqq8wLkDiXEkWtYa5lzujz3XI3Zkk8ZIOGvdbVVfAttT0IVPnYkOhQIDAQAB"
+d202003e2._domainkey.example.org	d202003e2._domainkey	7200	IN	TXT	"v=DKIM1; k=ed25519; p=DQI5d9sNMrr0SLDoAi071IFOyKnlbR29hAQdqVQecQg="
+_report.example.org	_report	7200	IN	TXT	"r=abuse-reports@example.org; rf=ARF; re=postmaster@example.org;"
+_smtp._tls.example.org	_smtp._tls	7200	IN	TXT	"v=TLSRPTv1; rua=mailto:smtp-tls-reports@example.org"
+_smtp-tlsrpt.example.org	_smtp-tlsrpt	7200	IN	TXT	"v=TLSRPTv1; rua=mailto:smtp-tls-reports@example.org"
+example.net._report._dmarc.example.org	example.net._report._dmarc	7200	IN	TXT	"v=DMARC1"
+example.com._report._dmarc.example.org	example.com._report._dmarc	7200	IN	TXT	"v=DMARC1"
+xn--2j5b.xn--9t4b11yi5a._report._dmarc.example.org	xn--2j5b.xn--9t4b11yi5a._report._dmarc	7200	IN	TXT	"v=DMARC1"
+special.test._report._dmarc.example.org	special.test._report._dmarc	7200	IN	TXT	"v=DMARC1"
+xn--qck5b9a5eml3bze.xn--zckzah._report._dmarc.example.org	xn--qck5b9a5eml3bze.xn--zckzah._report._dmarc	7200	IN	TXT	"v=DMARC1"
+*._smimecert.example.org	*._smimecert	7200	IN	CNAME	_ourca-smimea.example.org.
+b._dns-sd._udp.example.org	b._dns-sd._udp	7200	IN	PTR	field.example.org.
+lb._dns-sd._udp.example.org	lb._dns-sd._udp	7200	IN	PTR	field.example.org.
+r._dns-sd._udp.example.org	r._dns-sd._udp	7200	IN	PTR	field.example.org.
+field.example.org	field	7200	IN	NS	ns1.example.org.
+field.example.org	field	7200	IN	NS	ns2.example.org.
+barbican.example.org	barbican	7200	IN	A	192.0.2.1
+barbican.example.org	barbican	7200	IN	AAAA	2001:db8::1:1
+barbican.ipv4.example.org	barbican.ipv4	7200	IN	A	192.0.2.1
+barbican.ipv6.example.org	barbican.ipv6	7200	IN	AAAA	2001:db8::1:1
+megalomaniac.example.org	megalomaniac	7200	IN	A	198.51.100.254
+megalomaniac.example.org	megalomaniac	7200	IN	AAAA	2001:db8:ffef::254
+megalomaniac.ipv4.example.org	megalomaniac.ipv4	7200	IN	A	198.51.100.254
+megalomaniac.ipv6.example.org	megalomaniac.ipv6	7200	IN	AAAA	2001:db8:ffef::254
+megalomaniac.example.org	megalomaniac	7200	IN	SSHFP	1 2 4E9CED94D3CAF2CE915F85A63CE7279D5118A79EA03DAC59CF4859B825D2F619
+megalomaniac.example.org	megalomaniac	7200	IN	SSHFP	3 2 D3556A3DB83AB9CCEC39DC6693DD2F3E28B178C9BBA61880924821C426CC61EB
+megalomaniac.example.org	megalomaniac	7200	IN	SSHFP	4 2 C60C9D9D4728668F5F46986FF0C5B416C5E913862C4970CBFE211A6F44A111B4
+megalomaniac.ipv4.example.org	megalomaniac.ipv4	7200	IN	SSHFP	1 2 4E9CED94D3CAF2CE915F85A63CE7279D5118A79EA03DAC59CF4859B825D2F619
+megalomaniac.ipv4.example.org	megalomaniac.ipv4	7200	IN	SSHFP	3 2 D3556A3DB83AB9CCEC39DC6693DD2F3E28B178C9BBA61880924821C426CC61EB
+megalomaniac.ipv4.example.org	megalomaniac.ipv4	7200	IN	SSHFP	4 2 C60C9D9D4728668F5F46986FF0C5B416C5E913862C4970CBFE211A6F44A111B4
+megalomaniac.ipv6.example.org	megalomaniac.ipv6	7200	IN	SSHFP	1 2 4E9CED94D3CAF2CE915F85A63CE7279D5118A79EA03DAC59CF4859B825D2F619
+megalomaniac.ipv6.example.org	megalomaniac.ipv6	7200	IN	SSHFP	3 2 D3556A3DB83AB9CCEC39DC6693DD2F3E28B178C9BBA61880924821C426CC61EB
+megalomaniac.ipv6.example.org	megalomaniac.ipv6	7200	IN	SSHFP	4 2 C60C9D9D4728668F5F46986FF0C5B416C5E913862C4970CBFE211A6F44A111B4
+tower.example.org	tower	7200	IN	A	192.0.2.42
+tower.example.org	tower	7200	IN	AAAA	2001:db8::1:42
+tower.ipv4.example.org	tower.ipv4	7200	IN	A	192.0.2.42
+tower.ipv6.example.org	tower.ipv6	7200	IN	AAAA	2001:db8::1:42
+tower.example.org	tower	7200	IN	SSHFP	1 2 0F211D236E94768911A294F38653C4AF6FA935A5B06C975D8162F59142571451
+tower.example.org	tower	7200	IN	SSHFP	3 2 88BF7B7401C11FA2E84871EFB06CD73D8FC409154605B354DB2DDA0B82FE1160
+tower.example.org	tower	7200	IN	SSHFP	4 2 6D30900BE0FAAAE73568FC007A87B4D076CF9A351ECACC1106AEF726C34AD61D
+tower.ipv4.example.org	tower.ipv4	7200	IN	SSHFP	1 2 0F211D236E94768911A294F38653C4AF6FA935A5B06C975D8162F59142571451
+tower.ipv4.example.org	tower.ipv4	7200	IN	SSHFP	3 2 88BF7B7401C11FA2E84871EFB06CD73D8FC409154605B354DB2DDA0B82FE1160
+tower.ipv4.example.org	tower.ipv4	7200	IN	SSHFP	4 2 6D30900BE0FAAAE73568FC007A87B4D076CF9A351ECACC1106AEF726C34AD61D
+tower.ipv6.example.org	tower.ipv6	7200	IN	SSHFP	1 2 0F211D236E94768911A294F38653C4AF6FA935A5B06C975D8162F59142571451
+tower.ipv6.example.org	tower.ipv6	7200	IN	SSHFP	3 2 88BF7B7401C11FA2E84871EFB06CD73D8FC409154605B354DB2DDA0B82FE1160
+tower.ipv6.example.org	tower.ipv6	7200	IN	SSHFP	4 2 6D30900BE0FAAAE73568FC007A87B4D076CF9A351ECACC1106AEF726C34AD61D
+vcs.example.org	vcs	7200	IN	A	192.0.2.228
+vcs.example.org	vcs	7200	IN	AAAA	2001:db8::48:4558:4456:4353
+vcs.ipv4.example.org	vcs.ipv4	7200	IN	A	192.0.2.228
+vcs.ipv6.example.org	vcs.ipv6	7200	IN	AAAA	2001:db8::48:4558:4456:4353
+git.example.org	git	7200	IN	CNAME	vcs.example.org.
+git.ipv4.example.org	git.ipv4	7200	IN	CNAME	vcs.ipv4.example.org.
+git.ipv6.example.org	git.ipv6	7200	IN	CNAME	vcs.ipv6.example.org.
+svn.example.org	svn	7200	IN	AAAA	2001:db8::48:4558:73:766e
+vcs.example.org	vcs	7200	IN	SSHFP	1 2 B518BE390BABDF43CB2D598AA6BEFA6CE6878546BF107B829D0CFC65253A97D4
+vcs.example.org	vcs	7200	IN	SSHFP	3 2 E92545DC0BF501F72333DDEB7A37AFC2C5B408CE39A3AD95FBC66236F0077323
+vcs.example.org	vcs	7200	IN	SSHFP	4 2 02289441124A487095A6CDA2E946C6A8ED9087FAF3592EC4135536C3E615521C
+vcs.ipv4.example.org	vcs.ipv4	7200	IN	SSHFP	1 2 B518BE390BABDF43CB2D598AA6BEFA6CE6878546BF107B829D0CFC65253A97D4
+vcs.ipv4.example.org	vcs.ipv4	7200	IN	SSHFP	3 2 E92545DC0BF501F72333DDEB7A37AFC2C5B408CE39A3AD95FBC66236F0077323
+vcs.ipv4.example.org	vcs.ipv4	7200	IN	SSHFP	4 2 02289441124A487095A6CDA2E946C6A8ED9087FAF3592EC4135536C3E615521C
+vcs.ipv6.example.org	vcs.ipv6	7200	IN	SSHFP	1 2 B518BE390BABDF43CB2D598AA6BEFA6CE6878546BF107B829D0CFC65253A97D4
+vcs.ipv6.example.org	vcs.ipv6	7200	IN	SSHFP	3 2 E92545DC0BF501F72333DDEB7A37AFC2C5B408CE39A3AD95FBC66236F0077323
+vcs.ipv6.example.org	vcs.ipv6	7200	IN	SSHFP	4 2 02289441124A487095A6CDA2E946C6A8ED9087FAF3592EC4135536C3E615521C
+nsauth.example.org	nsauth	7200	IN	A	192.0.2.53
+nsauth.example.org	nsauth	7200	IN	AAAA	2001:db8::53:1
+nsauth.ipv4.example.org	nsauth.ipv4	7200	IN	A	192.0.2.53
+nsauth.ipv6.example.org	nsauth.ipv6	7200	IN	AAAA	2001:db8::53:1
+nsauth.example.org	nsauth	7200	IN	SSHFP	1 2 895804AE022FFF643B2677563CB850607C5BB564D9919896C521098C8ABC40F2
+nsauth.example.org	nsauth	7200	IN	SSHFP	3 2 28A65470BADAE611375747E1A803211C41E3D71E97741FA92CCBDF7B01F34E42
+nsauth.example.org	nsauth	7200	IN	SSHFP	4 2 6E10445C0649C03FA83E18B1873E5B89B3A20893ECB48D01E7CEDB3DD563ECF0
+nsauth.ipv4.example.org	nsauth.ipv4	7200	IN	SSHFP	1 2 895804AE022FFF643B2677563CB850607C5BB564D9919896C521098C8ABC40F2
+nsauth.ipv4.example.org	nsauth.ipv4	7200	IN	SSHFP	3 2 28A65470BADAE611375747E1A803211C41E3D71E97741FA92CCBDF7B01F34E42
+nsauth.ipv4.example.org	nsauth.ipv4	7200	IN	SSHFP	4 2 6E10445C0649C03FA83E18B1873E5B89B3A20893ECB48D01E7CEDB3DD563ECF0
+nsauth.ipv6.example.org	nsauth.ipv6	7200	IN	SSHFP	1 2 895804AE022FFF643B2677563CB850607C5BB564D9919896C521098C8ABC40F2
+nsauth.ipv6.example.org	nsauth.ipv6	7200	IN	SSHFP	3 2 28A65470BADAE611375747E1A803211C41E3D71E97741FA92CCBDF7B01F34E42
+nsauth.ipv6.example.org	nsauth.ipv6	7200	IN	SSHFP	4 2 6E10445C0649C03FA83E18B1873E5B89B3A20893ECB48D01E7CEDB3DD563ECF0
+ns1.example.org	ns1	7200	IN	A	192.0.2.53
+ns1.example.org	ns1	7200	IN	AAAA	2001:db8::53:1
+ns2.example.org	ns2	7200	IN	A	203.0.113.53
+ns2.example.org	ns2	7200	IN	AAAA	2001:db8:113::53
+hermes.example.org	hermes	7200	IN	A	192.0.2.25
+hermes.example.org	hermes	7200	IN	AAAA	2001:db8::48:4558:736d:7470
+hermes.example.org	hermes	7200	IN	AAAA	2001:db8::48:4558:696d:6170
+hermes.ipv4.example.org	hermes.ipv4	7200	IN	A	192.0.2.25
+hermes.ipv6.example.org	hermes.ipv6	7200	IN	AAAA	2001:db8::48:4558:736d:7470
+hermes.ipv6.example.org	hermes.ipv6	7200	IN	AAAA	2001:db8::48:4558:696d:6170
+hermes.example.org	hermes	7200	IN	SSHFP	1 2 4472FF5BD0528CD49216AF4503BA6A1C48F121D0292A31D6AF193E5000AF4966
+hermes.example.org	hermes	7200	IN	SSHFP	3 2 EABA20C1565676A5229184CCFCF82D0EE408F91757A67D9FA51A0B6F3DB4A33B
+hermes.example.org	hermes	7200	IN	SSHFP	4 2 A9D89920E599D04363C8B35A4CE66C1ED257EA1D16981F060B6AED080BBB7A7C
+hermes.ipv4.example.org	hermes.ipv4	7200	IN	SSHFP	1 2 4472FF5BD0528CD49216AF4503BA6A1C48F121D0292A31D6AF193E5000AF4966
+hermes.ipv4.example.org	hermes.ipv4	7200	IN	SSHFP	3 2 EABA20C1565676A5229184CCFCF82D0EE408F91757A67D9FA51A0B6F3DB4A33B
+hermes.ipv4.example.org	hermes.ipv4	7200	IN	SSHFP	4 2 A9D89920E599D04363C8B35A4CE66C1ED257EA1D16981F060B6AED080BBB7A7C
+hermes.ipv6.example.org	hermes.ipv6	7200	IN	SSHFP	1 2 4472FF5BD0528CD49216AF4503BA6A1C48F121D0292A31D6AF193E5000AF4966
+hermes.ipv6.example.org	hermes.ipv6	7200	IN	SSHFP	3 2 EABA20C1565676A5229184CCFCF82D0EE408F91757A67D9FA51A0B6F3DB4A33B
+hermes.ipv6.example.org	hermes.ipv6	7200	IN	SSHFP	4 2 A9D89920E599D04363C8B35A4CE66C1ED257EA1D16981F060B6AED080BBB7A7C
+kerb-service.example.org	kerb-service	7200	IN	A	192.0.2.88
+kerb-service.example.org	kerb-service	7200	IN	AAAA	2001:db8::48:4558:6b65:7262
+security.example.org	security	7200	IN	A	192.0.2.92
+security.example.org	security	7200	IN	AAAA	2001:db8::48:4558:53:4543
+security.ipv4.example.org	security.ipv4	7200	IN	A	192.0.2.92
+security.ipv6.example.org	security.ipv6	7200	IN	AAAA	2001:db8::48:4558:53:4543
+services.example.org	services	7200	IN	A	192.0.2.93
+services.example.org	services	7200	IN	AAAA	2001:db8::48:4558:5345:5256
+services.ipv4.example.org	services.ipv4	7200	IN	A	192.0.2.93
+services.ipv6.example.org	services.ipv6	7200	IN	AAAA	2001:db8::48:4558:5345:5256
+openpgpkey.example.org	openpgpkey	7200	IN	A	192.0.2.92
+openpgpkey.example.org	openpgpkey	7200	IN	AAAA	2001:db8::48:4558:53:4543
+finger.example.org	finger	7200	IN	CNAME	barbican.example.org.
+finger.ipv4.example.org	finger.ipv4	7200	IN	CNAME	barbican.ipv4.example.org.
+finger.ipv6.example.org	finger.ipv6	7200	IN	CNAME	barbican.ipv6.example.org.
+avatars.example.org	avatars	7200	IN	A	192.0.2.93
+avatars.example.org	avatars	7200	IN	AAAA	2001:db8::48:4558:5345:5256
+dict.example.org	dict	7200	IN	CNAME	services.example.org.
+people.example.org	people	7200	IN	CNAME	services.example.org.
+people.ipv4.example.org	people.ipv4	7200	IN	CNAME	services.ipv4.example.org.
+people.ipv6.example.org	people.ipv6	7200	IN	CNAME	services.ipv6.example.org.
+wpad.example.org	wpad	7200	IN	CNAME	services.example.org.
+www.example.org	www	7200	IN	CNAME	services.example.org.
+www.ipv4.example.org	www.ipv4	7200	IN	CNAME	services.ipv4.example.org.
+www.ipv6.example.org	www.ipv6	7200	IN	CNAME	services.ipv6.example.org.
+example.org	@	7200	IN	CAA	0 issue "example.net"
+example.org	@	7200	IN	CAA	0 issue "letsencrypt.org; accounturi=https://acme-v01.api.letsencrypt.org/acme/reg/1234567"
+example.org	@	7200	IN	CAA	0 issue "letsencrypt.org; accounturi=https://acme-staging-v02.api.letsencrypt.org/acme/acct/23456789"
+example.org	@	7200	IN	CAA	0 issue "letsencrypt.org; accounturi=https://acme-v02.api.letsencrypt.org/acme/acct/76543210"
+example.org	@	7200	IN	CAA	0 issuewild ";"
+example.org	@	7200	IN	CAA	0 iodef "mailto:security@example.org"
+_ourcaca4-tlsa.example.org	_ourcaca4-tlsa	7200	IN	TLSA	2 0 1 ea99063a0a3bda9727032cf82da238698b90ba729300703d3956943635f96488
+_ourcaca5-tlsa.example.org	_ourcaca5-tlsa	7200	IN	TLSA	2 0 1 11f058f61f97b8adc66ef4801f918c71b10e5c1e3d39afde10408b3026647ef1
+_cacert-c3-tlsa.example.org	_cacert-c3-tlsa	7200	IN	TLSA	2 0 1 4edde9e55ca453b388887caa25d5c5c5bccf2891d73b87495808293d5fac83c8
+_letsencrypt-tlsa.example.org	_letsencrypt-tlsa	7200	IN	TLSA	2 1 1 60b87575447dcba2a36b7d11ac09fb24a9db406fee12d2cc90180517616e8a18
+_letsencrypt-tlsa.example.org	_letsencrypt-tlsa	7200	IN	TLSA	2 1 1 b111dd8a1c2091a89bd4fd60c57f0716cce50feeff8137cdbee0326e02cf362b
+_amazon-tlsa.example.org	_amazon-tlsa	7200	IN	TLSA	2 0 1 8ecde6884f3d87b1125ba31ac3fcb13d7016de7f57cc904fe1cb97c6ae98196e
+_amazon-tlsa.example.org	_amazon-tlsa	7200	IN	TLSA	2 0 1 1ba5b2aa8c65401a82960118f80bec4f62304d83cec4713a19c39c011ea46db4
+_amazon-tlsa.example.org	_amazon-tlsa	7200	IN	TLSA	2 0 1 18ce6cfe7bf14e60b2e347b8dfe868cb31d02ebb3ada271569f50343b46db3a4
+_amazon-tlsa.example.org	_amazon-tlsa	7200	IN	TLSA	2 0 1 e35d28419ed02025cfa69038cd623962458da5c695fbdea3c22b0bfb25897092
+_ourca-tlsa.example.org	_ourca-tlsa	7200	IN	TLSA	2 0 1 ea99063a0a3bda9727032cf82da238698b90ba729300703d3956943635f96488
+_ourca-tlsa.example.org	_ourca-tlsa	7200	IN	TLSA	2 0 1 11f058f61f97b8adc66ef4801f918c71b10e5c1e3d39afde10408b3026647ef1
+_ourca-cacert-tlsa.example.org	_ourca-cacert-tlsa	7200	IN	TLSA	2 0 1 ea99063a0a3bda9727032cf82da238698b90ba729300703d3956943635f96488
+_ourca-cacert-tlsa.example.org	_ourca-cacert-tlsa	7200	IN	TLSA	2 0 1 11f058f61f97b8adc66ef4801f918c71b10e5c1e3d39afde10408b3026647ef1
+_ourca-cacert-tlsa.example.org	_ourca-cacert-tlsa	7200	IN	TLSA	2 0 1 4edde9e55ca453b388887caa25d5c5c5bccf2891d73b87495808293d5fac83c8
+_ourca-le-tlsa.example.org	_ourca-le-tlsa	7200	IN	TLSA	2 0 1 ea99063a0a3bda9727032cf82da238698b90ba729300703d3956943635f96488
+_ourca-le-tlsa.example.org	_ourca-le-tlsa	7200	IN	TLSA	2 0 1 11f058f61f97b8adc66ef4801f918c71b10e5c1e3d39afde10408b3026647ef1
+_ourca-le-tlsa.example.org	_ourca-le-tlsa	7200	IN	TLSA	2 1 1 60b87575447dcba2a36b7d11ac09fb24a9db406fee12d2cc90180517616e8a18
+_ourca-le-tlsa.example.org	_ourca-le-tlsa	7200	IN	TLSA	2 1 1 b111dd8a1c2091a89bd4fd60c57f0716cce50feeff8137cdbee0326e02cf362b
+_ourca-cacert-le-tlsa.example.org	_ourca-cacert-le-tlsa	7200	IN	TLSA	2 0 1 ea99063a0a3bda9727032cf82da238698b90ba729300703d3956943635f96488
+_ourca-cacert-le-tlsa.example.org	_ourca-cacert-le-tlsa	7200	IN	TLSA	2 0 1 11f058f61f97b8adc66ef4801f918c71b10e5c1e3d39afde10408b3026647ef1
+_ourca-cacert-le-tlsa.example.org	_ourca-cacert-le-tlsa	7200	IN	TLSA	2 0 1 4edde9e55ca453b388887caa25d5c5c5bccf2891d73b87495808293d5fac83c8
+_ourca-cacert-le-tlsa.example.org	_ourca-cacert-le-tlsa	7200	IN	TLSA	2 1 1 60b87575447dcba2a36b7d11ac09fb24a9db406fee12d2cc90180517616e8a18
+_ourca-cacert-le-tlsa.example.org	_ourca-cacert-le-tlsa	7200	IN	TLSA	2 1 1 b111dd8a1c2091a89bd4fd60c57f0716cce50feeff8137cdbee0326e02cf362b
+_cacert-le-tlsa.example.org	_cacert-le-tlsa	7200	IN	TLSA	2 0 1 4edde9e55ca453b388887caa25d5c5c5bccf2891d73b87495808293d5fac83c8
+_cacert-le-tlsa.example.org	_cacert-le-tlsa	7200	IN	TLSA	2 1 1 60b87575447dcba2a36b7d11ac09fb24a9db406fee12d2cc90180517616e8a18
+_cacert-le-tlsa.example.org	_cacert-le-tlsa	7200	IN	TLSA	2 1 1 b111dd8a1c2091a89bd4fd60c57f0716cce50feeff8137cdbee0326e02cf362b
+_le-amazon-tlsa.example.org	_le-amazon-tlsa	7200	IN	TLSA	2 1 1 60b87575447dcba2a36b7d11ac09fb24a9db406fee12d2cc90180517616e8a18
+_le-amazon-tlsa.example.org	_le-amazon-tlsa	7200	IN	TLSA	2 1 1 b111dd8a1c2091a89bd4fd60c57f0716cce50feeff8137cdbee0326e02cf362b
+_le-amazon-tlsa.example.org	_le-amazon-tlsa	7200	IN	TLSA	2 0 1 8ecde6884f3d87b1125ba31ac3fcb13d7016de7f57cc904fe1cb97c6ae98196e
+_le-amazon-tlsa.example.org	_le-amazon-tlsa	7200	IN	TLSA	2 0 1 1ba5b2aa8c65401a82960118f80bec4f62304d83cec4713a19c39c011ea46db4
+_le-amazon-tlsa.example.org	_le-amazon-tlsa	7200	IN	TLSA	2 0 1 18ce6cfe7bf14e60b2e347b8dfe868cb31d02ebb3ada271569f50343b46db3a4
+_le-amazon-tlsa.example.org	_le-amazon-tlsa	7200	IN	TLSA	2 0 1 e35d28419ed02025cfa69038cd623962458da5c695fbdea3c22b0bfb25897092
+_ourca-le-amazon-tlsa.example.org	_ourca-le-amazon-tlsa	7200	IN	TLSA	2 0 1 ea99063a0a3bda9727032cf82da238698b90ba729300703d3956943635f96488
+_ourca-le-amazon-tlsa.example.org	_ourca-le-amazon-tlsa	7200	IN	TLSA	2 0 1 11f058f61f97b8adc66ef4801f918c71b10e5c1e3d39afde10408b3026647ef1
+_ourca-le-amazon-tlsa.example.org	_ourca-le-amazon-tlsa	7200	IN	TLSA	2 1 1 60b87575447dcba2a36b7d11ac09fb24a9db406fee12d2cc90180517616e8a18
+_ourca-le-amazon-tlsa.example.org	_ourca-le-amazon-tlsa	7200	IN	TLSA	2 1 1 b111dd8a1c2091a89bd4fd60c57f0716cce50feeff8137cdbee0326e02cf362b
+_ourca-le-amazon-tlsa.example.org	_ourca-le-amazon-tlsa	7200	IN	TLSA	2 0 1 8ecde6884f3d87b1125ba31ac3fcb13d7016de7f57cc904fe1cb97c6ae98196e
+_ourca-le-amazon-tlsa.example.org	_ourca-le-amazon-tlsa	7200	IN	TLSA	2 0 1 1ba5b2aa8c65401a82960118f80bec4f62304d83cec4713a19c39c011ea46db4
+_ourca-le-amazon-tlsa.example.org	_ourca-le-amazon-tlsa	7200	IN	TLSA	2 0 1 18ce6cfe7bf14e60b2e347b8dfe868cb31d02ebb3ada271569f50343b46db3a4
+_ourca-le-amazon-tlsa.example.org	_ourca-le-amazon-tlsa	7200	IN	TLSA	2 0 1 e35d28419ed02025cfa69038cd623962458da5c695fbdea3c22b0bfb25897092
+_443._tcp.www.example.org	_443._tcp.www	7200	IN	CNAME	_ourca-le-tlsa.example.org.
+_443._tcp.www.ipv4.example.org	_443._tcp.www.ipv4	7200	IN	CNAME	_ourca-le-tlsa.example.org.
+_443._tcp.www.ipv6.example.org	_443._tcp.www.ipv6	7200	IN	CNAME	_ourca-le-tlsa.example.org.
+_443._tcp.people.example.org	_443._tcp.people	7200	IN	CNAME	_ourca-le-tlsa.example.org.
+_443._tcp.people.ipv4.example.org	_443._tcp.people.ipv4	7200	IN	CNAME	_ourca-le-tlsa.example.org.
+_443._tcp.people.ipv6.example.org	_443._tcp.people.ipv6	7200	IN	CNAME	_ourca-le-tlsa.example.org.
+_443._tcp.git.example.org	_443._tcp.git	7200	IN	CNAME	_ourca-le-tlsa.example.org.
+_443._tcp.svn.example.org	_443._tcp.svn	7200	IN	CNAME	_ourca-le-tlsa.example.org.
+_5222._tcp.xmpp.example.org	_5222._tcp.xmpp	7200	IN	CNAME	_ourca-le-tlsa.example.org.
+_5223._tcp.xmpp.example.org	_5223._tcp.xmpp	7200	IN	CNAME	_ourca-le-tlsa.example.org.
+_5269._tcp.xmpp-s2s.example.org	_5269._tcp.xmpp-s2s	7200	IN	CNAME	_ourca-le-tlsa.example.org.
+_25._tcp.mx.example.org	_25._tcp.mx	7200	IN	CNAME	_ourca-le-tlsa.example.org.
+_26._tcp.mx.example.org	_26._tcp.mx	7200	IN	CNAME	_ourca-le-tlsa.example.org.
+_27._tcp.mx.example.org	_27._tcp.mx	7200	IN	CNAME	_ourca-le-tlsa.example.org.
+_465._tcp.smtp46.example.org	_465._tcp.smtp46	7200	IN	CNAME	_ourca-le-tlsa.example.org.
+_587._tcp.smtp46.example.org	_587._tcp.smtp46	7200	IN	CNAME	_ourca-le-tlsa.example.org.
+_1465._tcp.smtp46.example.org	_1465._tcp.smtp46	7200	IN	CNAME	_ourca-le-tlsa.example.org.
+_1587._tcp.smtp46.example.org	_1587._tcp.smtp46	7200	IN	CNAME	_ourca-le-tlsa.example.org.
+_465._tcp.smtp.example.org	_465._tcp.smtp	7200	IN	CNAME	_ourca-le-tlsa.example.org.
+_587._tcp.smtp.example.org	_587._tcp.smtp	7200	IN	CNAME	_ourca-le-tlsa.example.org.
+_1465._tcp.smtp.example.org	_1465._tcp.smtp	7200	IN	CNAME	_ourca-le-tlsa.example.org.
+_1587._tcp.smtp.example.org	_1587._tcp.smtp	7200	IN	CNAME	_ourca-le-tlsa.example.org.
+_143._tcp.imap46.example.org	_143._tcp.imap46	7200	IN	CNAME	_ourca-le-tlsa.example.org.
+_993._tcp.imap46.example.org	_993._tcp.imap46	7200	IN	CNAME	_ourca-le-tlsa.example.org.
+_143._tcp.imap.example.org	_143._tcp.imap	7200	IN	CNAME	_ourca-le-tlsa.example.org.
+_993._tcp.imap.example.org	_993._tcp.imap	7200	IN	CNAME	_ourca-le-tlsa.example.org.
+_4190._tcp.imap.example.org	_4190._tcp.imap	7200	IN	CNAME	_ourca-le-tlsa.example.org.
+www.security.example.org	www.security	7200	IN	CNAME	security.example.org.
+www.security.ipv4.example.org	www.security.ipv4	7200	IN	CNAME	security.ipv4.example.org.
+www.security.ipv6.example.org	www.security.ipv6	7200	IN	CNAME	security.ipv6.example.org.
+_443._tcp.www.security.example.org	_443._tcp.www.security	7200	IN	CNAME	_ourca-le-tlsa.example.org.
+_443._tcp.www.security.ipv4.example.org	_443._tcp.www.security.ipv4	7200	IN	CNAME	_ourca-le-tlsa.example.org.
+_443._tcp.www.security.ipv6.example.org	_443._tcp.www.security.ipv6	7200	IN	CNAME	_ourca-le-tlsa.example.org.
+_443._tcp.security.example.org	_443._tcp.security	7200	IN	CNAME	_ourca-le-tlsa.example.org.
+_443._tcp.security.ipv4.example.org	_443._tcp.security.ipv4	7200	IN	CNAME	_ourca-le-tlsa.example.org.
+_443._tcp.security.ipv6.example.org	_443._tcp.security.ipv6	7200	IN	CNAME	_ourca-le-tlsa.example.org.
+_acme-challenge.example.org	_acme-challenge	15	IN	CNAME	_acme-challenge.chat-acme.d.example.net.
+_acme-challenge.xmpp.example.org	_acme-challenge.xmpp	15	IN	CNAME	_acme-challenge.xmpp.chat-acme.d.example.net.
+_acme-challenge.chat.example.org	_acme-challenge.chat	15	IN	CNAME	_acme-challenge.chat.chat-acme.d.example.net.
+_acme-challenge.conference.example.org	_acme-challenge.conference	15	IN	CNAME	_acme-challenge.conference.chat-acme.d.example.net.
+_acme-challenge.proxy-chatfiles.example.org	_acme-challenge.proxy-chatfiles	15	IN	CNAME	_acme-challenge.proxy-chatfiles.chat-acme.d.example.net.
+_acme-challenge.pubsub.xmpp.example.org	_acme-challenge.pubsub.xmpp	15	IN	CNAME	_acme-challenge.pubsub.xmpp.chat-acme.d.example.net.
+imap.example.org	imap	7200	IN	AAAA	2001:db8::48:4558:696d:6170
+imap.example.org	imap	7200	IN	A	192.0.2.25
+smtp.example.org	smtp	7200	IN	AAAA	2001:db8::48:4558:736d:7470
+smtp.example.org	smtp	7200	IN	A	192.0.2.25
+smtp46.example.org	smtp46	7200	IN	A	192.0.2.25
+smtp46.example.org	smtp46	7200	IN	AAAA	2001:db8::48:4558:736d:7470
+imap46.example.org	imap46	7200	IN	A	192.0.2.25
+imap46.example.org	imap46	7200	IN	AAAA	2001:db8::48:4558:696d:6170
+mx.example.org	mx	7200	IN	A	192.0.2.25
+mx.example.org	mx	7200	IN	AAAA	2001:db8::48:4558:736d:7470
+mx.ipv4.example.org	mx.ipv4	7200	IN	A	192.0.2.25
+mx.ipv6.example.org	mx.ipv6	7200	IN	AAAA	2001:db8::48:4558:736d:7470
+mx.example.org	mx	7200	IN	TXT	"v=spf1 a include:_spflarge.example.net -all"
+_mta-sts.example.org	_mta-sts	7200	IN	TXT	"v=STSv1; id=20191231r1;"
+mta-sts.example.org	mta-sts	7200	IN	TXT	"v=STSv1; id=20191231r1;"
+mta-sts.example.org	mta-sts	7200	IN	A	192.0.2.93
+mta-sts.example.org	mta-sts	7200	IN	AAAA	2001:db8::48:4558:5345:5256
+xmpp.ipv6.example.org	xmpp.ipv6	7200	IN	AAAA	2001:db8::f0ab:cdef:1234:f00f
+xmpp-s2s.ipv6.example.org	xmpp-s2s.ipv6	7200	IN	AAAA	2001:db8::f0ab:cdef:1234:f00f
+xmpp.example.org	xmpp	7200	IN	A	203.0.113.175
+xmpp.example.org	xmpp	7200	IN	AAAA	2001:db8::f0ab:cdef:1234:f00f
+xmpp-s2s.example.org	xmpp-s2s	7200	IN	A	203.0.113.175
+xmpp-s2s.example.org	xmpp-s2s	7200	IN	AAAA	2001:db8::f0ab:cdef:1234:f00f
+proxy-chatfiles.example.org	proxy-chatfiles	7200	IN	CNAME	xmpp.example.org.
+fileproxy.xmpp.example.org	fileproxy.xmpp	7200	IN	CNAME	xmpp.example.org.
+conference.example.org	conference	7200	IN	CNAME	xmpp-s2s.example.org.
+_xmpp-server._tcp.conference.example.org	_xmpp-server._tcp.conference	7200	IN	SRV	10 2 5269 xmpp-s2s.example.org.
+pubsub.xmpp.example.org	pubsub.xmpp	7200	IN	CNAME	xmpp-s2s.example.org.
+chat.example.org	chat	7200	IN	A	203.0.113.175
+chat.example.org	chat	7200	IN	AAAA	2001:db8::f0ab:cdef:1234:f00f
+proxy-chatfiles.chat.example.org	proxy-chatfiles.chat	7200	IN	CNAME	chat.example.org.
+fileproxy.chat.example.org	fileproxy.chat	7200	IN	CNAME	chat.example.org.
+conference.chat.example.org	conference.chat	7200	IN	CNAME	chat.example.org.
+pubsub.chat.example.org	pubsub.chat	7200	IN	CNAME	chat.example.org.
+_xmpp-server._tcp.conference.example.org	_xmpp-server._tcp.conference	7200	IN	SRV	10 2 5269 chat.example.org.
+auth.example.org	auth	7200	IN	AAAA	2001:db8::48:4558:6175:7468
+kpeople.example.org	kpeople	7200	IN	AAAA	2001:db8::48:4558:6b70:706c
+ocsp.security.example.org	ocsp.security	7200	IN	AAAA	2001:db8::48:4558:6f63:7370
+webauth.example.org	webauth	7200	IN	AAAA	2001:db8::48:4558:7765:6261
+news-feed.example.org	news-feed	7200	IN	A	192.0.2.93
+news-feed.example.org	news-feed	7200	IN	AAAA	2001:db8::48:4558:6e6e:7470
+go.example.org	go	7200	IN	CNAME	abcdefghijklmn.cloudfront.net.
+foo.example.org	foo	7200	IN	A	192.0.2.200
+gladys.example.org	gladys	7200	IN	MX	10 mx.example.org.
+_adsp._domainkey.gladys.example.org	_adsp._domainkey.gladys	7200	IN	TXT	"dkim=all"
+_dmarc.gladys.example.org	_dmarc.gladys	7200	IN	TXT	"v=DMARC1; p=none; sp=none; rua=mailto:dmarc-notify@example.org; ruf=mailto:dmarc-notify@example.org; adkim=s"
+_report.gladys.example.org	_report.gladys	7200	IN	TXT	"r=abuse-reports@example.org; rf=ARF; re=postmaster@example.org;"
+_smtp._tls.gladys.example.org	_smtp._tls.gladys	7200	IN	TXT	"v=TLSRPTv1; rua=mailto:smtp-tls-reports@example.org"
+_smtp-tlsrpt.gladys.example.org	_smtp-tlsrpt.gladys	7200	IN	TXT	"v=TLSRPTv1; rua=mailto:smtp-tls-reports@example.org"
+fred.example.org	fred	7200	IN	MX	10 mx.example.org.
+fred.example.org	fred	7200	IN	A	192.0.2.93
+fred.example.org	fred	7200	IN	AAAA	2001:db8::48:4558:5345:5256
+fred.example.org	fred	7200	IN	TXT	"v=spf1 ip4:192.0.2.25 ip6:2001:db8::1:25 mx include:_spf.example.com ~all"
+d201911._domainkey.fred.example.org	d201911._domainkey.fred	7200	IN	TXT	"v=DKIM1; k=rsa; p=MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEA8/OMUa3PnWh9LqXFVwlAgYDdTtbq3zTtTOSBmJq5yWauzXYcUuSmhW7CsV0QQlacCsQgJlwg9Nl1vO1TosAj5EKUCLTeSqjlWrM7KXKPx8FT71Q9H9wXX4MHUyGrqHFo0OPzcmtHwqcd8AD6MIvJHSRoAfiPPBp8Euc0wGnJZdGS75Hk+wA3MQ2/Tlz" "P2eenyiFyqmUTAGOYsGC/tREsWPiegR/OVxNGlzTY6quHsuVK7UYtIyFnYx9PGWdl3b3p7VjQ5V0Rp+2CLtVrCuS6Zs+/3NhZdM7mdD0a9Jgxakwa1le5YmB5lHTGF7T8quy6TlKe9lMUIRNjqTHfSFz/MwIDAQAB"
+d201911e2._domainkey.fred.example.org	d201911e2._domainkey.fred	7200	IN	TXT	"v=DKIM1; k=ed25519; p=rQNsV9YcPJn/WYI1EDLjNbN/VuX1Hqq/oe4htbnhv+A="
+d202003._domainkey.fred.example.org	d202003._domainkey.fred	7200	IN	TXT	"v=DKIM1; k=rsa; p=MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAvpnx7tnRxAnE/poIRbVb2i+f1uQCXWnBHzHurgEyZX0CmGaiJuCbr8SWOW2PoXq9YX8gIv2TS3uzwGv/4yA2yX9Z9zar1LeWUfGgMWLdCol9xfmWrI+6MUzxuwhw/mXwzigbI4bHoakh3ez/i3J9KPS85GfrOODqA1emR13f2pG8EzAcje+rwW2PtYj" "c0h+FMDpeLuPYyYszFbNlrkVUneesxnoz+o4x/s6P14ZoRqz5CR7u6G02HwnNaHads5Eto6FYYErUUTtFmgWuYabHxgLVGRdRQs6B5OBYT/3L2q/lAgmEgdy/QL+c0Psfj99/XQmO8fcM0scBzw2ukQzcUwIDAQAB"
+d202003e2._domainkey.fred.example.org	d202003e2._domainkey.fred	7200	IN	TXT	"v=DKIM1; k=ed25519; p=0DAPp/IRLYFI/Z4YSgJRi4gr7xcu1/EfJ5mjVn10aAw="
+_adsp._domainkey.fred.example.org	_adsp._domainkey.fred	7200	IN	TXT	"dkim=all"
+_dmarc.fred.example.org	_dmarc.fred	7200	IN	TXT	"v=DMARC1; p=none; sp=none; rua=mailto:dmarc-notify@example.org; ruf=mailto:dmarc-notify@example.org; adkim=s"
+_report.fred.example.org	_report.fred	7200	IN	TXT	"r=abuse-reports@example.org; rf=ARF; re=postmaster@example.org;"
+_smtp._tls.fred.example.org	_smtp._tls.fred	7200	IN	TXT	"v=TLSRPTv1; rua=mailto:smtp-tls-reports@example.org"
+_smtp-tlsrpt.fred.example.org	_smtp-tlsrpt.fred	7200	IN	TXT	"v=TLSRPTv1; rua=mailto:smtp-tls-reports@example.org"
+mailtest.example.org	mailtest	7200	IN	MX	10 mx.example.org.
+d201911._domainkey.mailtest.example.org	d201911._domainkey.mailtest	7200	IN	TXT	"v=DKIM1; k=rsa; p=MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAo9xHnjHyhm1weA6FjOqM8LKVsklFt26HXWoe/0XCdmBG4i/UzQ7RiSgWO4kv7anPK6qf6rtL1xYsHufaRXG8yLsZxz+BbUP99eZvxZX78tMg4cGf+yU6uFxulCbOzsMy+8Cc3bbQTtIWYjyWBwnHdRRrCkQxjZ5KAd+x7ZB5qzqg2/eLJ7fCuNsr/xn" "0XTY6XYgug95e3h4CEW3Y+bkG81AMeJmT/hoVTcXvT/Gm6ZOUmx6faQWIHSW7qOR3VS6S75HOuclEUk0gt9r7OQHKl01sXh8g02SHRk8SUMEoNVayqplYZTFFF01Z192m7enmpp+St+HHUIT6jW/CAMCO3wIDAQAB"
+d201911e2._domainkey.mailtest.example.org	d201911e2._domainkey.mailtest	7200	IN	TXT	"v=DKIM1; k=ed25519; p=afulDDnhaTzdqKQN0jtWV04eOhAcyBk3NCyVheOf53Y="
+d202003._domainkey.mailtest.example.org	d202003._domainkey.mailtest	7200	IN	TXT	"v=DKIM1; k=rsa; p=MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAs2BTVZaVLvL3qZBPaF7tRR0SdOKe+hjcpQ5fqO48lEuYiyTb6lkn8DPjDK11gTN3au0Bm+y8KC7ITKSJosuJXytxt3wqc61Pwtmb/Cy7GzmOF1AuegydB3/88VbgHT5DZucHrh6+ValZk4Trkx+/1K26Uo+h2KL2n/Ldb1y91ATHujp8DqxAOhiZ7KN" "aS1okNRRB4/14jPufAbeiN8/iBPiY5Hl80KHmpjM+7vvjb5jiecZ1ZrVDj7eTES4pmVh2v1c106mZLieoqDPYaf/HVbCM4E4n1B6kjbboSOpANADIcqXxGJQ7Be7/Sk9f7KwRusrsMHXmBHgm4wPmwGVZ3QIDAQAB"
+d202003e2._domainkey.mailtest.example.org	d202003e2._domainkey.mailtest	7200	IN	TXT	"v=DKIM1; k=ed25519; p=iqwH/hhozFdeo1xnuldr8KUi7O7g+DzmC+f0SYMKVDc="
+_adsp._domainkey.mailtest.example.org	_adsp._domainkey.mailtest	7200	IN	TXT	"dkim=all"
+_dmarc.mailtest.example.org	_dmarc.mailtest	7200	IN	TXT	"v=DMARC1; p=none; sp=none; rua=mailto:dmarc-notify@example.org; ruf=mailto:dmarc-notify@example.org; adkim=s"
+_report.mailtest.example.org	_report.mailtest	7200	IN	TXT	"r=abuse-reports@example.org; rf=ARF; re=postmaster@example.org;"
+_smtp._tls.mailtest.example.org	_smtp._tls.mailtest	7200	IN	TXT	"v=TLSRPTv1; rua=mailto:smtp-tls-reports@example.org"
+_smtp-tlsrpt.mailtest.example.org	_smtp-tlsrpt.mailtest	7200	IN	TXT	"v=TLSRPTv1; rua=mailto:smtp-tls-reports@example.org"
+_pgpkey-http._tcp.sks.example.org	_pgpkey-http._tcp.sks	7200	IN	SRV	0 0 0 .
+_pgpkey-https._tcp.sks.example.org	_pgpkey-https._tcp.sks	7200	IN	SRV	0 0 0 .
+_hkp._tcp.sks.example.org	_hkp._tcp.sks	7200	IN	SRV	0 0 0 .
+_pgpkey-http._tcp.sks-peer.example.org	_pgpkey-http._tcp.sks-peer	7200	IN	SRV	0 0 0 .
+_pgpkey-https._tcp.sks-peer.example.org	_pgpkey-https._tcp.sks-peer	7200	IN	SRV	0 0 0 .
+_hkp._tcp.sks-peer.example.org	_hkp._tcp.sks-peer	7200	IN	SRV	0 0 0 .
+yoyo.example.org	yoyo	7200	IN	NS	ns5.he.net.
+yoyo.example.org	yoyo	7200	IN	NS	ns4.he.net.
+yoyo.example.org	yoyo	7200	IN	NS	ns3.he.net.
+yoyo.example.org	yoyo	7200	IN	NS	ns2.he.net.
+yoyo.example.org	yoyo	7200	IN	NS	ns1.he.net.
+khard.example.org	khard	7200	IN	NS	ns-cloud-d1.googledomains.com.
+khard.example.org	khard	7200	IN	NS	ns-cloud-d2.googledomains.com.
+khard.example.org	khard	7200	IN	NS	ns-cloud-d3.googledomains.com.
+khard.example.org	khard	7200	IN	NS	ns-cloud-d4.googledomains.com.
+realhost.example.org	realhost	7200	IN	MX	0 .
+realhost.example.org	realhost	7200	IN	TXT	"v=spf1 -all"
+_25._tcp.realhost.example.org	_25._tcp.realhost	7200	IN	TLSA	3 0 0 0000000000000000000000000000000000000000000000000000000000000000
+_fedcba9876543210fedcba9876543210.go.example.org	_fedcba9876543210fedcba9876543210.go	7200	IN	CNAME	_45678901234abcdef45678901234abcd.ggedgsdned.acm-validations.aws.
+opqrstuvwxyz.example.org	opqrstuvwxyz	7200	IN	CNAME	gv-abcdefghijklmn.dv.googlehosted.com.
+zyxwvutsrqpo.example.org	zyxwvutsrqpo	7200	IN	CNAME	gv-nmlkjihgfedcba.dv.googlehosted.com.
+0123456789abcdef0123456789abcdef.example.org	0123456789abcdef0123456789abcdef	7200	IN	CNAME	verify.bing.com.

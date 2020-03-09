@@ -115,6 +115,11 @@ func (z *zoneGenData) generateZoneFileHelper(w io.Writer) error {
 			prefix = ";"
 		}
 
+		if rr.Type == "SOA" {
+			fmt.Printf("XXXXXXX\n")
+			prefix = ";"
+		}
+
 		// name
 		nameShort := rr.Name
 		name := nameShort

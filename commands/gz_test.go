@@ -12,35 +12,42 @@ import (
 	_ "github.com/StackExchange/dnscontrol/v2/providers/_all"
 )
 
-/*
-
-This file does a number of tests:
-
-// Basic conversions:        OUTPUTFILE:        EXPECTED FILE:
-  example.org.zone -> tsv      $NAME.tsv          *.expected
-  example.org.zone -> jsd      $NAME.jsd          *.expected
-  example.org.zone -> zonefile $NAME.zon          *.expected
-
-// Loop test:
-  zonefile -> dsl              $NAME.zon.dsl      *.expected
-  dsl -> zonefile              $NAME.zon.dsl.zon  *.expected
-
-*/
-
 func TestFormatTypes(t *testing.T) {
-	for i, domainname := range []string{"simple.com", "example.org"} {
-		t.Run(fmt.Sprintf("%s/tsv", domain), func(t *testing.T) { testFormat(t, domainname, "tsv") })
-		t.Run(fmt.Sprintf("%s/zon", domain), func(t *testing.T) { testFormat(t, domainname, "zon") })
-		t.Run(fmt.Sprintf("%s/js", domain), func(t *testing.T) { testFormat(t, domainname, "js") })
+	/*
+	  Input:                  Converted to:  Should match contents of:
+	  test_data/$DOMAIN.zone  js             test_data/$DOMAIN.zone.js
+	  test_data/$DOMAIN.zone  tsv            test_data/$DOMAIN.zone.tsv
+	  test_data/$DOMAIN.zone  zone           test_data/$DOMAIN.zone.zone
+	*/
+
+	for _, domain := range []string{"simple.com", "example.org"} {
+		t.Run(domain+"%s/js", func(t *testing.T) { testFormat(t, domain, "js") })
+		t.Run(domain+"%s/tsv", func(t *testing.T) { testFormat(t, domain, "tsv") })
+		t.Run(domain+"%s/zone", func(t *testing.T) { testFormat(t, domain, "zone") })
 	}
 }
 
-func testFormat(t *testing.T, domainname, format string) {
+func TestFormatLoop(t *testing.T) {
+	/*
+		  Use the .js file that is generated to create a zonefile.
+			The records should be the same as the zonefile.
+	*/
+
+	//	for _, domain := range []string{"simple.com", "example.org"} {
+	//		// Go from the sample zonefile to .js:
+	//		testFormat(t, domain, "js")
+	//		// Go from .js to the zonefile.
+	//		jsToZone(t, domain)
+	//		// Compare results.
+	//	}
+}
+
+func testFormat(t *testing.T, domain, format string) {
 	t.Helper()
 
-	sourceFilename := fmt.Sprintf("test_data/%s.zone", domainname)
-	expectedFilename := fmt.Sprintf("test_data/%s.zone.%s", domainname, format)
-	outputFiletmpl := fmt.Sprintf("%s.zone.%s.*.txt", domainname, format)
+	//sourceFilename := fmt.Sprintf("test_data/%s.zone", domain)
+	expectedFilename := fmt.Sprintf("test_data/%s.zone.%s", domain, format)
+	outputFiletmpl := fmt.Sprintf("%s.zone.%s.*.txt", domain, format)
 
 	outfile, err := ioutil.TempFile("", outputFiletmpl)
 	if err != nil {
@@ -50,7 +57,7 @@ func testFormat(t *testing.T, domainname, format string) {
 
 	// Convert test data to the experiment output.
 	gzargs := GetZoneArgs{
-		ZoneNames:    []string{domainname}
+		ZoneNames:    []string{domain},
 		OutputFormat: format,
 		OutputFile:   outfile.Name(),
 		CredName:     "bind",
@@ -82,7 +89,7 @@ func testFormat(t *testing.T, domainname, format string) {
 		log.Fatal(err)
 	}
 
-	if diff := cmp.Diff(want, got); diff != "" {
+	if diff := cmp.Diff(string(want), string(got)); diff != "" {
 		t.Errorf("TestFormatTypes mismatch (-want +got):\n%s", diff)
 	}
 
