@@ -83,11 +83,11 @@ func testFormat(t *testing.T, domain, format string) {
 		log.Fatal(err)
 	}
 
-	// Copy got -> want
-	err = ioutil.WriteFile(expectedFilename, got, 0644)
-	if err != nil {
-		log.Fatal(err)
-	}
+	//	// Update got -> want
+	//	err = ioutil.WriteFile(expectedFilename, got, 0644)
+	//	if err != nil {
+	//		log.Fatal(err)
+	//	}
 
 	if diff := cmp.Diff(string(want), string(got)); diff != "" {
 		t.Errorf("TestFormatTypes mismatch (-want +got):\n%s", diff)

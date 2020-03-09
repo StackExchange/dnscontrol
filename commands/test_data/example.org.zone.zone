@@ -1,6 +1,6 @@
 $ORIGIN example.org.
 $TTL 7200
-;@          43200 IN SOA   ns1.example.org. hostmaster.example.org. 2020030700 7200 3600 864000 7200
+@          43200 IN SOA   ns1.example.org. hostmaster.example.org. 2020030700 7200 3600 864000 7200
                  IN NS    friend-dns.example.com.
                  IN NS    ns-a.example.net.
                  IN NS    ns1.example.org.
