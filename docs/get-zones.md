@@ -29,10 +29,10 @@ ARGUMENTS:
    zone:     One or more zones (domains) to download; or "all".
 
 FORMATS:
-   --format=dsl      dnsconfig.js format (not perfect, but a decent first draft)
-   --format=nameonly Just print the zone names
-   --format=pretty   BIND Zonefile format
-   --format=tsv      TAB separated value (useful for AWK)
+   --format=js        dnsconfig.js format (not perfect, but a decent first draft)
+   --format=zone      BIND Zonefile format
+   --format=tsv       TAB separated value (useful for AWK)
+   --format=nameonly  Just print the zone names
 
 When using `tsv`, the columns are:
    FQDN (the label with the domain)

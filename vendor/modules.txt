@@ -135,6 +135,13 @@ github.com/golang/protobuf/ptypes/duration
 github.com/golang/protobuf/ptypes/timestamp
 # github.com/golang/snappy v0.0.1
 github.com/golang/snappy
+# github.com/google/go-cmp v0.4.0
+## explicit
+github.com/google/go-cmp/cmp
+github.com/google/go-cmp/cmp/internal/diff
+github.com/google/go-cmp/cmp/internal/flags
+github.com/google/go-cmp/cmp/internal/function
+github.com/google/go-cmp/cmp/internal/value
 # github.com/google/go-github v17.0.0+incompatible
 ## explicit
 github.com/google/go-github/github
@@ -382,7 +389,6 @@ golang.org/x/tools/internal/fastwalk
 golang.org/x/tools/internal/gopathwalk
 golang.org/x/tools/internal/imports
 # golang.org/x/xerrors v0.0.0-20191204190536-9bdfabe68543
-## explicit
 golang.org/x/xerrors
 golang.org/x/xerrors/internal
 # google.golang.org/api v0.17.0
