@@ -180,6 +180,7 @@ func GetZone(args GetZoneArgs) error {
 	if args.OutputFormat == "js" {
 		fmt.Fprintf(w, `var %s = NewDnsProvider("%s", "%s");`+"\n",
 			args.CredName, args.CredName, args.ProviderName)
+		fmt.Fprintf(w, `var REG_CHANGEME = NewRegistrar("ThirdParty", "NONE");`+"\n")
 	}
 
 	// now print all zones
@@ -233,23 +234,47 @@ func formatDsl(zonename string, rec *models.RecordConfig, defaultTTL uint32) str
 	}
 
 	switch rec.Type { // #rtype_variations
+	case "CAA":
+		return makeCaa(rec, ttlop)
 	case "MX":
 		target = fmt.Sprintf("%d, '%s'", rec.MxPreference, rec.GetTargetField())
+	case "SSHFP":
+		target = fmt.Sprintf("%d, %d, '%s'", rec.SshfpAlgorithm, rec.SshfpFingerprint, rec.GetTargetField())
 	case "SOA":
+		rec.Type = "//SOA"
+		target = fmt.Sprintf("'%s', '%s', %d, %d, %d, %d, %d", rec.GetTargetField(), rec.SoaMbox, rec.SoaSerial, rec.SoaRefresh, rec.SoaRetry, rec.SoaExpire, rec.SoaMinttl)
+	case "SRV":
+		target = fmt.Sprintf("%d, %d, %d, '%s'", rec.SrvPriority, rec.SrvWeight, rec.SrvPort, rec.GetTargetField())
+	case "TLSA":
+		target = fmt.Sprintf("%d, %d, %d, '%s'", rec.TlsaUsage, rec.TlsaSelector, rec.TlsaMatchingType, rec.GetTargetField())
 	case "TXT":
 		if len(rec.TxtStrings) == 1 {
 			target = `'` + rec.TxtStrings[0] + `'`
 		} else {
 			target = `['` + strings.Join(rec.TxtStrings, `', '`) + `']`
 		}
+		// TODO(tlim): If this is an SPF record, generate a SPF_BUILDER().
 	case "NS":
 		// NS records at the apex should be NAMESERVER() records.
 		if rec.Name == "@" {
 			return fmt.Sprintf(",\n\tNAMESERVER('%s')", target)
 		}
+		target = "'" + target + "'"
 	default:
 		target = "'" + target + "'"
 	}
 
 	return fmt.Sprintf(",\n\t%s('%s', %s%s)", rec.Type, rec.Name, target, ttlop)
+}
+
+func makeCaa(rec *models.RecordConfig, ttlop string) string {
+	var target string
+	if rec.CaaFlag == 128 {
+		target = fmt.Sprintf("'%s', '%s', CAA_CRITICAL", rec.CaaTag, rec.GetTargetField())
+	} else {
+		target = fmt.Sprintf("'%s', '%s'", rec.CaaTag, rec.GetTargetField())
+	}
+	return fmt.Sprintf(",\n\t%s('%s', %s%s)", rec.Type, rec.Name, target, ttlop)
+
+	// TODO(tlim): Generate a CAA_BUILDER() instead?
 }
