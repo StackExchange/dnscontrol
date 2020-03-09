@@ -38,17 +38,17 @@ ARGUMENTS:
    zone:     One or more zones (domains) to download; or "all".
 
 FORMATS:
-   --format=dsl      dnsconfig.js format (not perfect, but a decent first draft)
-   --format=nameonly Just print the zone names
-   --format=pretty   BIND Zonefile format
-   --format=tsv      TAB separated value (useful for AWK)
+   --format=js        dnsconfig.js format (not perfect, but a decent first draft)
+   --format=zone      BIND Zonefile format
+   --format=tsv       TAB separated value (useful for AWK)
+   --format=nameonly  Just print the zone names
 
 EXAMPLES:
    dnscontrol get-zones myr53 ROUTE53 example.com
    dnscontrol get-zones gmain GANDI_V5 example.comn other.com
    dnscontrol get-zones cfmain CLOUDFLAREAPI all
    dnscontrol get-zones -format=tsv bind BIND example.com
-   dnscontrol get-zones -format=dsl -out=draft.js glcoud GCLOUD example.com`,
+   dnscontrol get-zones -format=js -out=draft.js glcoud GCLOUD example.com`,
 	}
 }())
 
@@ -104,8 +104,8 @@ func (args *GetZoneArgs) flags() []cli.Flag {
 	flags = append(flags, &cli.StringFlag{
 		Name:        "format",
 		Destination: &args.OutputFormat,
-		Value:       "pretty",
-		Usage:       `Output format: dsl pretty tsv nameonly`,
+		Value:       "zone",
+		Usage:       `Output format: js zone tsv nameonly`,
 	})
 	flags = append(flags, &cli.StringFlag{
 		Name:        "out",
@@ -177,7 +177,7 @@ func GetZone(args GetZoneArgs) error {
 
 	// Write it out:
 
-	if args.OutputFormat == "dsl" {
+	if args.OutputFormat == "js" {
 		fmt.Fprintf(w, `var %s = NewDnsProvider("%s", "%s");`+"\n",
 			args.CredName, args.CredName, args.ProviderName)
 	}
@@ -189,12 +189,12 @@ func GetZone(args GetZoneArgs) error {
 		z := prettyzone.PrettySort(recs, zoneName, 0, nil)
 		switch args.OutputFormat {
 
-		case "pretty":
+		case "zone":
 			fmt.Fprintf(w, "$ORIGIN %s.\n", zoneName)
 			prettyzone.WriteZoneFileRC(w, z.Records, zoneName, uint32(args.DefaultTTL), nil)
 			fmt.Fprintln(w)
 
-		case "dsl":
+		case "js":
 			fmt.Fprintf(w, `D("%s", REG_CHANGEME,`, zoneName)
 			fmt.Fprintf(w, "\n\tDnsProvider(%s)", args.CredName)
 			defaultTTL := uint32(args.DefaultTTL)
