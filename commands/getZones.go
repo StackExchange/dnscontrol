@@ -196,18 +196,23 @@ func GetZone(args GetZoneArgs) error {
 			fmt.Fprintln(w)
 
 		case "js":
-			fmt.Fprintf(w, `D("%s", REG_CHANGEME,`, zoneName)
-			fmt.Fprintf(w, "\n\tDnsProvider(%s)", args.CredName)
+			//sep := ",\n\t" // Commas at EOL
+			sep := "\n\t, " // Funky comma mode
+			fmt.Fprintf(w, `D("%s", REG_CHANGEME%s`, zoneName, sep)
+			var o []string
+			o = append(o, fmt.Sprintf("DnsProvider(%s)", args.CredName))
 			defaultTTL := uint32(args.DefaultTTL)
 			if defaultTTL == 0 {
 				defaultTTL = prettyzone.MostCommonTTL(recs)
 			}
 			if defaultTTL != models.DefaultTTL && defaultTTL != 0 {
-				fmt.Fprintf(w, "\n\tDefaultTTL(%d)", defaultTTL)
+				o = append(o, fmt.Sprintf("DefaultTTL(%d)", defaultTTL))
 			}
 			for _, rec := range recs {
-				fmt.Fprint(w, formatDsl(zoneName, rec, defaultTTL))
+				o = append(o, formatDsl(zoneName, rec, defaultTTL))
 			}
+			out := strings.Join(o, sep)
+			fmt.Fprint(w, strings.ReplaceAll(out, "\n\t, //", "\n\t//, "))
 			fmt.Fprint(w, "\n)\n")
 
 		case "tsv":
@@ -257,14 +262,14 @@ func formatDsl(zonename string, rec *models.RecordConfig, defaultTTL uint32) str
 	case "NS":
 		// NS records at the apex should be NAMESERVER() records.
 		if rec.Name == "@" {
-			return fmt.Sprintf(",\n\tNAMESERVER('%s')", target)
+			return fmt.Sprintf("NAMESERVER('%s')", target)
 		}
 		target = "'" + target + "'"
 	default:
 		target = "'" + target + "'"
 	}
 
-	return fmt.Sprintf(",\n\t%s('%s', %s%s)", rec.Type, rec.Name, target, ttlop)
+	return fmt.Sprintf("%s('%s', %s%s)", rec.Type, rec.Name, target, ttlop)
 }
 
 func makeCaa(rec *models.RecordConfig, ttlop string) string {
@@ -274,7 +279,7 @@ func makeCaa(rec *models.RecordConfig, ttlop string) string {
 	} else {
 		target = fmt.Sprintf("'%s', '%s'", rec.CaaTag, rec.GetTargetField())
 	}
-	return fmt.Sprintf(",\n\t%s('%s', %s%s)", rec.Type, rec.Name, target, ttlop)
+	return fmt.Sprintf("\t%s('%s', %s%s)", rec.Type, rec.Name, target, ttlop)
 
 	// TODO(tlim): Generate a CAA_BUILDER() instead?
 }
