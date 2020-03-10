@@ -14,10 +14,10 @@ import (
 
 func TestFormatTypes(t *testing.T) {
 	/*
-	  Input:                  Converted to:  Should match contents of:
-	  test_data/$DOMAIN.zone  js             test_data/$DOMAIN.zone.js
-	  test_data/$DOMAIN.zone  tsv            test_data/$DOMAIN.zone.tsv
-	  test_data/$DOMAIN.zone  zone           test_data/$DOMAIN.zone.zone
+	  Input:                   Converted to:   Should match contents of:
+	  test_data/$DOMAIN.zone   js              test_data/$DOMAIN.zone.js
+	  test_data/$DOMAIN.zone   tsv             test_data/$DOMAIN.zone.tsv
+	  test_data/$DOMAIN.zone   zone            test_data/$DOMAIN.zone.zone
 	*/
 
 	for _, domain := range []string{"simple.com", "example.org"} {
@@ -27,25 +27,9 @@ func TestFormatTypes(t *testing.T) {
 	}
 }
 
-func TestFormatLoop(t *testing.T) {
-	/*
-		  Use the .js file that is generated to create a zonefile.
-			The records should be the same as the zonefile.
-	*/
-
-	//	for _, domain := range []string{"simple.com", "example.org"} {
-	//		// Go from the sample zonefile to .js:
-	//		testFormat(t, domain, "js")
-	//		// Go from .js to the zonefile.
-	//		jsToZone(t, domain)
-	//		// Compare results.
-	//	}
-}
-
 func testFormat(t *testing.T, domain, format string) {
 	t.Helper()
 
-	//sourceFilename := fmt.Sprintf("test_data/%s.zone", domain)
 	expectedFilename := fmt.Sprintf("test_data/%s.zone.%s", domain, format)
 	outputFiletmpl := fmt.Sprintf("%s.zone.%s.*.txt", domain, format)
 

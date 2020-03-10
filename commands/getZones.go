@@ -39,6 +39,7 @@ ARGUMENTS:
 
 FORMATS:
    --format=js        dnsconfig.js format (not perfect, but a decent first draft)
+   --format=jsf       js but with funky commas
    --format=zone      BIND Zonefile format
    --format=tsv       TAB separated value (useful for AWK)
    --format=nameonly  Just print the zone names
@@ -48,7 +49,7 @@ EXAMPLES:
    dnscontrol get-zones gmain GANDI_V5 example.comn other.com
    dnscontrol get-zones cfmain CLOUDFLAREAPI all
    dnscontrol get-zones -format=tsv bind BIND example.com
-   dnscontrol get-zones -format=js -out=draft.js glcoud GCLOUD example.com`,
+   dnscontrol get-zones -format=jsf -out=draft.js glcoud GCLOUD example.com`,
 	}
 }())
 
@@ -105,7 +106,7 @@ func (args *GetZoneArgs) flags() []cli.Flag {
 		Name:        "format",
 		Destination: &args.OutputFormat,
 		Value:       "zone",
-		Usage:       `Output format: js zone tsv nameonly`,
+		Usage:       `Output format: js jsf zone tsv nameonly`,
 	})
 	flags = append(flags, &cli.StringFlag{
 		Name:        "out",
@@ -165,7 +166,7 @@ func GetZone(args GetZoneArgs) error {
 		return nil
 	}
 
-	// actually fetch all of the records
+	// fetch all of the records
 	zoneRecs := make([]models.Records, len(zones))
 	for i, zone := range zones {
 		recs, err := provider.GetZoneRecords(zone)
@@ -175,15 +176,15 @@ func GetZone(args GetZoneArgs) error {
 		zoneRecs[i] = recs
 	}
 
-	// Write it out:
+	// Write the heading:
 
-	if args.OutputFormat == "js" {
+	if args.OutputFormat == "js" || args.OutputFormat == "jsf" {
 		fmt.Fprintf(w, `var %s = NewDnsProvider("%s", "%s");`+"\n",
 			args.CredName, args.CredName, args.ProviderName)
 		fmt.Fprintf(w, `var REG_CHANGEME = NewRegistrar("ThirdParty", "NONE");`+"\n")
 	}
 
-	// now print all zones
+	// print each zone
 	for i, recs := range zoneRecs {
 		zoneName := zones[i]
 
@@ -195,9 +196,11 @@ func GetZone(args GetZoneArgs) error {
 			prettyzone.WriteZoneFileRC(w, z.Records, zoneName, uint32(args.DefaultTTL), nil)
 			fmt.Fprintln(w)
 
-		case "js":
-			//sep := ",\n\t" // Commas at EOL
-			sep := "\n\t, " // Funky comma mode
+		case "js", "jsf":
+			sep := ",\n\t" // Commas at EOL
+			if args.OutputFormat == "jsf" {
+				sep := "\n\t, " // Funky comma mode
+			}
 			fmt.Fprintf(w, `D("%s", REG_CHANGEME%s`, zoneName, sep)
 			var o []string
 			o = append(o, fmt.Sprintf("DnsProvider(%s)", args.CredName))
