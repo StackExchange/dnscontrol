@@ -51,10 +51,12 @@ EXAMPLES:
    dnscontrol get-zones -format=tsv bind BIND example.com
    dnscontrol get-zones -format=jsf -out=draft.js glcoud GCLOUD example.com`,
 
+Read a zonefile, generate a JS file, then use the JS file to see how
+different it is from the zonefile:
 
-# Example commands
+   dnscontrol get-zone --format=js -out=foo.jsf bind BIND example.org 
+   dnscontrol preview --config foo.js
 
-dnscontrol get-zone
 
 # Developer Note
 
