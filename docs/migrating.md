@@ -56,8 +56,8 @@ Example 1: Read a BIND zonefile
 Most DNS Service Providers have an 'export to zonefile' feature.
 
 ```
-dnscontrol get-zones -format=dsl bind BIND example.com
-dnscontrol get-zones -format=dsl -out=draft.js bind BIND example.com
+dnscontrol get-zones -format=js bind BIND example.com
+dnscontrol get-zones -format=js -out=draft.js bind BIND example.com
 ```
 
 This will read the file `zones/example.com.zone`. The system is a bit
@@ -75,8 +75,8 @@ Suppose your `creds.json` file has the name `global_aws`
 for the provider `ROUTE53`.  Your command would look like this:
 
 ```
-dnscontrol get-zones -format=dsl global_aws ROUTE53 example.com
-dnscontrol get-zones -format=dsl -out=draft.js global_aws ROUTE53 example.com
+dnscontrol get-zones -format=js global_aws ROUTE53 example.com
+dnscontrol get-zones -format=js -out=draft.js global_aws ROUTE53 example.com
 ```
 
 Add the contents of `draft.js` to `dnsconfig.js` and edit it as needed.
@@ -108,7 +108,7 @@ to convert a zone. Lines that start with `#` are comments.
 
     # Note this command uses ">>" to append to dnsconfig.js.  Do
     # not use ">" as that will erase the existing file.
-    dnscontrol get-zones -format=dsl -out=draft.js bind BIND foo.com
+    dnscontrol get-zones -format=js -out=draft.js bind BIND foo.com
     cat >>dnsconfig.js draft.js   # Append to dnsconfig.js
     #
     dnscontrol preview
