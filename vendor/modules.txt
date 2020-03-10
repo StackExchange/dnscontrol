@@ -34,7 +34,7 @@ github.com/TomOnTime/utfutil
 # github.com/andreyvit/diff v0.0.0-20170406064948-c7f18ee00883
 ## explicit
 github.com/andreyvit/diff
-# github.com/aws/aws-sdk-go v1.29.1
+# github.com/aws/aws-sdk-go v1.29.21
 ## explicit
 github.com/aws/aws-sdk-go/aws
 github.com/aws/aws-sdk-go/aws/awserr
@@ -54,6 +54,7 @@ github.com/aws/aws-sdk-go/aws/endpoints
 github.com/aws/aws-sdk-go/aws/request
 github.com/aws/aws-sdk-go/aws/session
 github.com/aws/aws-sdk-go/aws/signer/v4
+github.com/aws/aws-sdk-go/internal/context
 github.com/aws/aws-sdk-go/internal/ini
 github.com/aws/aws-sdk-go/internal/sdkio
 github.com/aws/aws-sdk-go/internal/sdkmath
@@ -204,7 +205,8 @@ github.com/hexonet/go-sdk/responsetemplatemanager
 github.com/hexonet/go-sdk/socketconfig
 # github.com/jarcoal/httpmock v1.0.4
 ## explicit
-# github.com/jmespath/go-jmespath v0.0.0-20180206201540-c2b33e8439af
+# github.com/jmespath/go-jmespath v0.0.0-20200310193758-2437e8417af5
+## explicit
 github.com/jmespath/go-jmespath
 # github.com/kolo/xmlrpc v0.0.0-20150413191830-0826b98aaa29
 ## explicit
@@ -283,7 +285,7 @@ github.com/softlayer/softlayer-go/filter
 github.com/softlayer/softlayer-go/services
 github.com/softlayer/softlayer-go/session
 github.com/softlayer/softlayer-go/sl
-# github.com/stretchr/testify v1.4.0
+# github.com/stretchr/testify v1.5.1
 ## explicit
 github.com/stretchr/testify/assert
 # github.com/tdewolff/minify v2.3.6+incompatible
