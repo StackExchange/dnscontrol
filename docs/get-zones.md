@@ -29,20 +29,20 @@ ARGUMENTS:
    zone:     One or more zones (domains) to download; or "all".
 
 FORMATS:
-   --format=js        dnsconfig.js format (not perfect, but a decent first draft)
-   --format=jsf       js but with funky commas
+   --format=js        dnsconfig.js format (not perfect, just a decent first draft)
+   --format=jsf       js with funky commas
    --format=zone      BIND Zonefile format
    --format=tsv       TAB separated value (useful for AWK)
    --format=nameonly  Just print the zone names
 
-When using `tsv`, the columns are:
+The columns in --format=tsv are:
    FQDN (the label with the domain)
    ShortName (just the label, "@" if it is the naked domain)
    TTL
    Record Type (A, AAAA, CNAME, etc.)
    Target and arguments (quoted like in a zonefile)
 
-The --ttl flag applies to pretty/js/jsf formats.
+The --ttl flag only applies to zone/js/jsf formats.
 
 EXAMPLES:
    dnscontrol get-zones myr53 ROUTE53 example.com
