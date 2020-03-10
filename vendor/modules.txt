@@ -300,7 +300,7 @@ github.com/tdewolff/parse/json
 github.com/tdewolff/parse/strconv
 # github.com/tdewolff/test v1.0.6
 ## explicit
-# github.com/tiramiseb/go-gandi v0.0.0-20200227122905-7601fc3acbaa
+# github.com/tiramiseb/go-gandi v0.0.0-20200309181223-e1cf2e430b3a
 ## explicit
 github.com/tiramiseb/go-gandi
 github.com/tiramiseb/go-gandi/domain

@@ -5,7 +5,7 @@ import "github.com/tiramiseb/go-gandi/internal/client"
 // SigningKey holds data about a DNSSEC signing key
 type SigningKey struct {
 	Status        string `json:"status,omitempty"`
-	UUID          string `json:"uuid,omitempty"`
+	UUID          string `json:"id,omitempty"`
 	Algorithm     int    `json:"algorithm,omitempty"`
 	Deleted       *bool  `json:"deleted"`
 	AlgorithmName string `json:"algorithm_name,omitempty"`
