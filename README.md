@@ -71,35 +71,35 @@ See [Getting Started](https://stackexchange.github.io/dnscontrol/getting-started
 
 # Benefits
 
-* Less error-prone than editing a BIND zone file.
-* More reproducible  than clicking buttons on a web portal.
-* Easily switch between DNS providers:  The DNSControl language is
+* *Less error-prone* than editing a BIND zone file.
+* *More reproducible*  than clicking buttons on a web portal.
+* *Easily switch between DNS providers:*  The DNSControl language is
   vendor-agnostic.  If you use it to maintain your DNS zone records,
   you can switch between DNS providers easily. In fact, DNSControl
   will upload your DNS records to multiple providers, which means you
   can test one while switching to another. We've switched providers 3
   times in three years and we've never lost a DNS record.
-* Adopt CI/CD principles to DNS!  At StackOverflow we maintain our
+* *Adopt CI/CD principles to DNS!*  At StackOverflow we maintain our
   DNSControl configurations in Git and use our CI system to roll out
   changes.  Keeping DNS information in a VCS means we have full
   history.  Using CI enables us to include unit-tests and
   system-tests.  Remember when you forgot to include a "." at the end
   of an MX record?  We haven't had that problem since we included a
   test to make sure Tom doesn't make that mistake... again.
-* Adopt PR-based updates.  Allow developers to send updates as PRs,
+* *Adopt PR-based updates.*  Allow developers to send updates as PRs,
   which you can review before you approve.
-* Variables save time!  Assign an IP address to a constant and use the
+* *Variables save time!*  Assign an IP address to a constant and use the
   variable name throughout the file. Need to change the IP address
   globally? Just change the variable and "recompile."
-* Macros!  Define your SPF records, MX records, or other repeated data
+* *Macros!*  Define your SPF records, MX records, or other repeated data
   once and re-use them for all domains.
-* Control Cloudflare from a single location.  Enable/disable
+* *Control Cloudflare from a single source of truth.*  Enable/disable
   Cloudflare proxying (the "orange cloud" button) directly from your
   DNSControl files.
-* Keep similar domains in sync with transforms and other features.  If
+* *Keep similar domains in sync* with transforms and other features.  If
   one domain is supposed to be a filtered version of another, this is
   easy to set up.
-* It is extendable!  All the DNS providers are written as plugins.
+* *It is extendable!*  All the DNS providers are written as plugins.
   Writing new plugins is very easy.
 
 # Installation
