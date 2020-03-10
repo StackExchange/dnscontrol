@@ -208,7 +208,7 @@ func GetZone(args GetZoneArgs) error {
 		case "js", "jsf":
 			sep := ",\n\t" // Commas at EOL
 			if args.OutputFormat == "jsf" {
-				sep := "\n\t, " // Funky comma mode
+				sep = "\n\t, " // Funky comma mode
 			}
 			fmt.Fprintf(w, `D("%s", REG_CHANGEME%s`, zoneName, sep)
 			var o []string
@@ -291,7 +291,7 @@ func makeCaa(rec *models.RecordConfig, ttlop string) string {
 	} else {
 		target = fmt.Sprintf("'%s', '%s'", rec.CaaTag, rec.GetTargetField())
 	}
-	return fmt.Sprintf("\t%s('%s', %s%s)", rec.Type, rec.Name, target, ttlop)
+	return fmt.Sprintf("%s('%s', %s%s)", rec.Type, rec.Name, target, ttlop)
 
 	// TODO(tlim): Generate a CAA_BUILDER() instead?
 }
