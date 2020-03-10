@@ -99,7 +99,7 @@ func run(args PreviewArgs, push bool, interactive bool, out printer.CLI) error {
 	if err != nil {
 		return err
 	}
-	errs := normalize.NormalizeAndValidateConfig(cfg)
+	errs := normalize.ValidateAndNormalizeConfig(cfg)
 	if PrintValidationErrors(errs) {
 		return fmt.Errorf("Exiting due to validation errors")
 	}

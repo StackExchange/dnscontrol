@@ -4,6 +4,7 @@ import "fmt"
 
 var dotwarned = map[string]bool{}
 
+// WarnNameserverDot prints a warning about issue 491 never more than once.
 func WarnNameserverDot(p, w string) {
 	if dotwarned[p] {
 		return

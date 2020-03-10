@@ -222,7 +222,7 @@ func runTests(t *testing.T, prv providers.DNSServiceProvider, domainName string,
 	for gIdx, group := range testGroups {
 
 		// Abide by -start -end flags
-		curGroup += 1
+		curGroup++
 		if curGroup < firstGroup || curGroup > lastGroup {
 			continue
 		}

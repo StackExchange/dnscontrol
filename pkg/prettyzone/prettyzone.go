@@ -70,11 +70,12 @@ func WriteZoneFileRC(w io.Writer, records models.Records, origin string, default
 	return z.generateZoneFileHelper(w)
 }
 
-func PrettySort(records models.Records, origin string, defaultTTL uint32, comments []string) *zoneGenData {
+// PrettySort sorts the records in a pretty order.
+func PrettySort(records models.Records, origin string, defaultTTL uint32, comments []string) *ZoneGenData {
 	if defaultTTL == 0 {
 		defaultTTL = MostCommonTTL(records)
 	}
-	z := &zoneGenData{
+	z := &ZoneGenData{
 		Origin:     origin + ".",
 		DefaultTTL: defaultTTL,
 		Comments:   comments,
@@ -90,7 +91,7 @@ func PrettySort(records models.Records, origin string, defaultTTL uint32, commen
 }
 
 // generateZoneFileHelper creates a pretty zonefile.
-func (z *zoneGenData) generateZoneFileHelper(w io.Writer) error {
+func (z *ZoneGenData) generateZoneFileHelper(w io.Writer) error {
 
 	nameShortPrevious := ""
 

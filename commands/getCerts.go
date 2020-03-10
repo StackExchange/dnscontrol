@@ -137,7 +137,7 @@ func GetCerts(args GetCertsArgs) error {
 	if err != nil {
 		return err
 	}
-	errs := normalize.NormalizeAndValidateConfig(cfg)
+	errs := normalize.ValidateAndNormalizeConfig(cfg)
 	if PrintValidationErrors(errs) {
 		return fmt.Errorf("Exiting due to validation errors")
 	}

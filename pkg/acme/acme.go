@@ -23,6 +23,7 @@ import (
 	acmelog "github.com/go-acme/lego/log"
 )
 
+// CertConfig describes a certificate's configuration.
 type CertConfig struct {
 	CertName   string   `json:"cert_name"`
 	Names      []string `json:"names"`
@@ -30,6 +31,7 @@ type CertConfig struct {
 	MustStaple bool     `json:"must_staple"`
 }
 
+// Client is an interface for systems that issue or renew certs.
 type Client interface {
 	IssueOrRenewCert(config *CertConfig, renewUnder int, verbose bool) (bool, error)
 }
@@ -51,10 +53,13 @@ type certManager struct {
 }
 
 const (
-	LetsEncryptLive  = "https://acme-v02.api.letsencrypt.org/directory"
+	// LetsEncryptLive is the endpoint for updates (production).
+	LetsEncryptLive = "https://acme-v02.api.letsencrypt.org/directory"
+	// LetsEncryptStage is the endpoint for the staging area.
 	LetsEncryptStage = "https://acme-staging-v02.api.letsencrypt.org/directory"
 )
 
+// New is a factory for acme clients.
 func New(cfg *models.DNSConfig, directory string, email string, server string, notify notifications.Notifier) (Client, error) {
 	return commonNew(cfg, directoryStorage(directory), email, server, notify)
 }
@@ -82,6 +87,7 @@ func commonNew(cfg *models.DNSConfig, storage Storage, email string, server stri
 	return c, nil
 }
 
+// NewVault is a factory for new vaunt clients.
 func NewVault(cfg *models.DNSConfig, vaultPath string, email string, server string, notify notifications.Notifier) (Client, error) {
 	storage, err := makeVaultStorage(vaultPath)
 	if err != nil {
