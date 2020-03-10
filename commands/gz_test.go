@@ -7,7 +7,7 @@ import (
 	"os"
 	"testing"
 
-	"github.com/google/go-cmp/cmp"
+	"github.com/andreyvit/diff"
 
 	_ "github.com/StackExchange/dnscontrol/v2/providers/_all"
 )
@@ -73,8 +73,8 @@ func testFormat(t *testing.T, domain, format string) {
 	//		log.Fatal(err)
 	//	}
 
-	if diff := cmp.Diff(string(want), string(got)); diff != "" {
-		t.Errorf("TestFormatTypes mismatch (-want +got):\n%s", diff)
+	if w, g := string(want), string(got); w != g {
+		t.Errorf("testFormat mismatch (-got +want):\n%s", diff.LineDiff(g, w))
 	}
 
 }
