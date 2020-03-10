@@ -4,7 +4,7 @@
 [![Gitter chat](https://badges.gitter.im/dnscontrol/Lobby.png)](https://gitter.im/dnscontrol/Lobby)
 [![Google Group chat](https://img.shields.io/badge/google%20group-chat-green.svg)](https://groups.google.com/forum/#!forum/dnscontrol-discuss)
 
-[DNSControl/](https://stackexchange.github.io/dnscontrol/) is a system
+[DNSControl](https://stackexchange.github.io/dnscontrol/) is a system
 for maintaining DNS zones.  It has two parts:
 a domain specific language (DSL) for describing DNS zones plus
 software that processes the DSL and pushes the resulting zones to
