@@ -1,3 +1,5 @@
+//go:generate stringer -type=Capability
+
 package providers
 
 import (

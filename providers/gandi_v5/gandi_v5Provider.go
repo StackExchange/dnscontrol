@@ -40,7 +40,7 @@ func init() {
 
 // features declares which features and options are available.
 var features = providers.DocumentationNotes{
-	providers.CanUseAlias:            providers.Can(),
+	providers.CanUseAlias:            providers.Can("Only on the bare domain. Otherwise CNAME will be substituted"),
 	providers.CanUseCAA:              providers.Can(),
 	providers.CanUsePTR:              providers.Can(),
 	providers.CanUseSRV:              providers.Can(),
@@ -155,6 +155,11 @@ func PrepDesiredRecords(dc *models.DomainConfig) {
 
 	recordsToKeep := make([]*models.RecordConfig, 0, len(dc.Records))
 	for _, rec := range dc.Records {
+		if rec.Type == "ALIAS" && rec.Name != "@" {
+			// GANDI only permits aliases on a naked domain.
+			// Therefore, we change this to a CNAME.
+			rec.Type = "CNAME"
+		}
 		if rec.TTL < 300 {
 			printer.Warnf("Gandi does not support ttls < 300. Setting %s from %d to 300\n", rec.GetLabelFQDN(), rec.TTL)
 			rec.TTL = 300
