@@ -1,0 +1,19 @@
+simple.com	@	300	IN	SOA	ns3.serverfault.com. sysadmin.stackoverflow.com. 2020022300 3600 600 604800 1440
+simple.com	@	172800	IN	NS	ns-1313.awsdns-36.org.
+simple.com	@	172800	IN	NS	ns-736.awsdns-28.net.
+simple.com	@	172800	IN	NS	ns-cloud-c1.googledomains.com.
+simple.com	@	172800	IN	NS	ns-cloud-c2.googledomains.com.
+simple.com	@	300	IN	MX	1 aspmx.l.google.com.
+simple.com	@	300	IN	MX	5 alt1.aspmx.l.google.com.
+simple.com	@	300	IN	MX	5 alt2.aspmx.l.google.com.
+simple.com	@	300	IN	MX	10 alt3.aspmx.l.google.com.
+simple.com	@	300	IN	MX	10 alt4.aspmx.l.google.com.
+simple.com	@	300	IN	TXT	"google-site-verification=O54a_pYHGr4EB8iLoGFgX8OTZ1DkP1KWnOLpx0YCazI"
+simple.com	@	300	IN	TXT	"v=spf1 mx include:mktomail.com ~all"
+m1._domainkey.simple.com	m1._domainkey	300	IN	TXT	"v=DKIM1;k=rsa;p=MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQCZfEV2C82eJ4OA3Mslz4C6msjYYalg1eUcHeJQ//QM1hOZSvn4qz+hSKGi7jwNDqsZNzM8vCt2+XzdDYL3JddwUEhoDsIsZsJW0qzIVVLLWCg6TLNS3FpVyjc171o94dpoHFekfswWDoEwFQ03Woq2jchYWBrbUf7MMcdEj/EQqwIDAQAB"
+dev.simple.com	dev	300	IN	CNAME	stackoverflowsandbox2.mktoweb.com.
+dev-email.simple.com	dev-email	300	IN	CNAME	mkto-sj310056.com.
+m1._domainkey.dev-email.simple.com	m1._domainkey.dev-email	300	IN	TXT	"v=DKIM1;k=rsa;p=MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQCIBezZ2Gc+/3PghWk+YOE6T9HdwgUTMTR0Fne2i51MNN9Qs7AqDitVdG/949iDbI2fPNZSnKtOcnlLYwvve9MhMAMI1nZ26ILhgaBJi2BMZQpGFlO4ucuo/Uj4DPZ5Ge/NZHCX0CRhAhR5sRmL2OffNcFXFrymzUuz4KzI/NyUiwIDAQAB"
+email.simple.com	email	300	IN	CNAME	mkto-sj280138.com.
+info.simple.com	info	300	IN	CNAME	stackoverflow.mktoweb.com.
+_sip._tcp.simple.com	_sip._tcp	300	IN	SRV	10 60 5060 bigbox.example.com.

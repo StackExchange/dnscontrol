@@ -31,6 +31,9 @@ github.com/DisposaBoy/JsonConfigReader
 # github.com/TomOnTime/utfutil v0.0.0-20180511104225-09c41003ee1d
 ## explicit
 github.com/TomOnTime/utfutil
+# github.com/andreyvit/diff v0.0.0-20170406064948-c7f18ee00883
+## explicit
+github.com/andreyvit/diff
 # github.com/aws/aws-sdk-go v1.29.1
 ## explicit
 github.com/aws/aws-sdk-go/aws
@@ -135,6 +138,8 @@ github.com/golang/protobuf/ptypes/duration
 github.com/golang/protobuf/ptypes/timestamp
 # github.com/golang/snappy v0.0.1
 github.com/golang/snappy
+# github.com/google/go-cmp v0.4.0
+## explicit
 # github.com/google/go-github v17.0.0+incompatible
 ## explicit
 github.com/google/go-github/github
@@ -204,8 +209,6 @@ github.com/jmespath/go-jmespath
 # github.com/kolo/xmlrpc v0.0.0-20150413191830-0826b98aaa29
 ## explicit
 github.com/kolo/xmlrpc
-# github.com/kr/pretty v0.1.0
-## explicit
 # github.com/malexdev/utfutil v0.0.0-20180510171754-00c8d4a8e7a8
 ## explicit
 # github.com/miekg/dns v1.1.27
@@ -265,6 +268,9 @@ github.com/robertkrimen/otto/underscore
 github.com/russross/blackfriday/v2
 # github.com/ryanuber/go-glob v1.0.0
 github.com/ryanuber/go-glob
+# github.com/sergi/go-diff v1.1.0
+## explicit
+github.com/sergi/go-diff/diffmatchpatch
 # github.com/shurcooL/sanitized_anchor_name v1.0.0
 github.com/shurcooL/sanitized_anchor_name
 # github.com/smartystreets/goconvey v0.0.0-20190330032615-68dc04aab96a
@@ -330,7 +336,6 @@ golang.org/x/crypto/pbkdf2
 golang.org/x/crypto/pkcs12
 golang.org/x/crypto/pkcs12/internal/rc2
 # golang.org/x/mod v0.2.0
-## explicit
 golang.org/x/mod/module
 golang.org/x/mod/semver
 # golang.org/x/net v0.0.0-20200226121028-0de0cce0169b
@@ -383,7 +388,6 @@ golang.org/x/tools/internal/gocommand
 golang.org/x/tools/internal/gopathwalk
 golang.org/x/tools/internal/imports
 # golang.org/x/xerrors v0.0.0-20191204190536-9bdfabe68543
-## explicit
 golang.org/x/xerrors
 golang.org/x/xerrors/internal
 # google.golang.org/api v0.17.0
@@ -448,8 +452,6 @@ google.golang.org/grpc/serviceconfig
 google.golang.org/grpc/stats
 google.golang.org/grpc/status
 google.golang.org/grpc/tap
-# gopkg.in/check.v1 v1.0.0-20180628173108-788fd7840127
-## explicit
 # gopkg.in/ini.v1 v1.42.0
 ## explicit
 gopkg.in/ini.v1
