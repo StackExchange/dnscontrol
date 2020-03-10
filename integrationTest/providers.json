@@ -4,34 +4,33 @@
     "domain": "$AD_DOMAIN"
   },
   "AZURE_DNS": {
-    "SubscriptionID": "$AZURE_SUBSCRIPTION_ID",
-    "ResourceGroup": "$AZURE_RESOURCE_GROUP",
-    "TenantID": "$AZURE_TENANT_ID",
     "ClientID": "$AZURE_CLIENT_ID",
     "ClientSecret": "$AZURE_CLIENT_SECRET",
+    "ResourceGroup": "$AZURE_RESOURCE_GROUP",
+    "SubscriptionID": "$AZURE_SUBSCRIPTION_ID",
+    "TenantID": "$AZURE_TENANT_ID",
     "domain": "$AZURE_DOMAIN"
   },
   "BIND": {
     "domain": "example.com"
+  },
+  "CLOUDFLAREAPI": {
+    "apitoken": "$CF_TOKEN",
+    "domain": "$CF_DOMAIN"
+  },
+  "CLOUDFLAREAPI_OLD": {
+    "apikey": "$CF_KEY",
+    "apiuser": "$CF_USER",
+    "domain": "$CF_DOMAIN"
   },
   "CLOUDNS": {
     "auth-id": "$CLOUDNS_AUTH_ID",
     "auth-password": "$CLOUDNS_AUTH_PASSWORD",
     "domain": "$CLOUDNS_DOMAIN"
   },
-
-  "CLOUDFLAREAPI_OLD": {
-    "apikey": "$CF_KEY",
-    "apiuser": "$CF_USER",
-    "domain": "$CF_DOMAIN"
-  },
-  "CLOUDFLAREAPI": {
-    "apitoken": "$CF_TOKEN",
-    "domain": "$CF_DOMAIN"
-  },
   "DIGITALOCEAN": {
-    "token": "$DO_TOKEN",
-    "domain": "$DO_DOMAIN"
+    "domain": "$DO_DOMAIN",
+    "token": "$DO_TOKEN"
   },
   "DNSIMPLE": {
     "COMMENT": "20-22: no ns records managable. Not even for subdomains.",
@@ -40,10 +39,10 @@
     "token": "$DNSIMPLE_TOKEN"
   },
   "EXOSCALE": {
-    "dns-endpoint": "https://api.exoscale.ch/dns",
     "apikey": "$EXOSCALE_API_KEY",
-    "secretkey": "$EXOSCALE_SECRET_KEY",
-    "domain": "$EXOSCALE_DOMAIN"
+    "dns-endpoint": "https://api.exoscale.ch/dns",
+    "domain": "$EXOSCALE_DOMAIN",
+    "secretkey": "$EXOSCALE_SECRET_KEY"
   },
   "GANDI": {
     "COMMENT": "5: gandi does not accept TTLs less than 300",
@@ -60,28 +59,29 @@
     "domain": "$GANDI_V5_DOMAIN"
   },
   "GCLOUD": {
-    "type": "$GCLOUD_TYPE",
     "client_email": "$GCLOUD_EMAIL",
     "domain": "$GCLOUD_DOMAIN",
     "private_key": "$GCLOUD_PRIVATEKEY",
-    "project_id": "$GCLOUD_PROJECT"
+    "project_id": "$GCLOUD_PROJECT",
+    "type": "$GCLOUD_TYPE"
   },
   "HEXONET": {
+    "apientity": "$HEXONET_ENTITY",
     "apilogin": "$HEXONET_UID",
     "apipassword": "$HEXONET_PW",
-    "apientity": "$HEXONET_ENTITY",
     "debugmode": "$HEXONET_DEBUGMODE",
-    "ipaddress": "$HEXONET_IP",
-    "domain": "dnscontrol.com"
+    "domain": "dnscontrol.com",
+    "ipaddress": "$HEXONET_IP"
   },
   "LINODE": {
     "COMMENT": "25: Linode's hostname validation does not allow the target domain TLD",
-    "token": "$LINODE_TOKEN",
-    "domain": "$LINODE_DOMAIN"
+    "domain": "$LINODE_DOMAIN",
+    "token": "$LINODE_TOKEN"
   },
-  "NS1": {
-    "domain": "$NS1_DOMAIN",
-    "api_token": "$NS1_TOKEN"
+  "NAMECHEAP": {
+    "apikey": "$NAMECHEAP_KEY",
+    "apiuser": "$NAMECHEAP_USER",
+    "domain": "$NAMECHEAP_DOMAIN"
   },
   "NAMEDOTCOM": {
     "apikey": "$NAMEDOTCOM_KEY",
@@ -89,14 +89,19 @@
     "apiuser": "$NAMEDOTCOM_USER",
     "domain": "$NAMEDOTCOM_DOMAIN"
   },
-  "NAMECHEAP": {
-    "apikey": "$NAMECHEAP_KEY",
-    "apiuser": "$NAMECHEAP_USER",
-    "domain": "$NAMECHEAP_DOMAIN"
+  "NS1": {
+    "api_token": "$NS1_TOKEN",
+    "domain": "$NS1_DOMAIN"
   },
   "OCTODNS": {
-    "domain": "example.com",
-    "directory": "config"
+    "directory": "config",
+    "domain": "example.com"
+  },
+  "OVH": {
+    "app-key": "$OVH_APP_KEY",
+    "app-secret-key": "$OVH_APP_SECRET_KEY",
+    "consumer-key": "$OVH_CONSUMER_KEY",
+    "domain": "$OVH_DOMAIN"
   },
   "ROUTE53": {
     "KeyId": "$R53_KEY_ID",
@@ -105,18 +110,12 @@
   },
   "SOFTLAYER": {
     "COMMENT": "22-25 softlayer fails at direct internationalization, puncode works though",
+    "api_key": "$SL_API_KEY",
     "domain": "$SL_DOMAIN",
-    "username": "$SL_USERNAME",
-    "api_key": "$SL_API_KEY"
+    "username": "$SL_USERNAME"
   },
   "VULTR": {
-    "token": "$VULTR_TOKEN",
-    "domain": "$VULTR_DOMAIN"
-  },
-  "OVH": {
-    "app-key": "$OVH_APP_KEY",
-    "app-secret-key": "$OVH_APP_SECRET_KEY",
-    "consumer-key": "$OVH_CONSUMER_KEY",
-    "domain": "$OVH_DOMAIN"
+    "domain": "$VULTR_DOMAIN",
+    "token": "$VULTR_TOKEN"
   }
 }
