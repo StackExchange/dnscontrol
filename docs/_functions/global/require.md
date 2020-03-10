@@ -87,7 +87,7 @@ for (var domain in domains) {
 {%endhighlight}
 {% include endExample.html %}
 
-# Notes
+# Future
 
 It might be better to rename the function to something like
 `include()` instead, (leaving `require` as a deprecated alias) because
