@@ -19,7 +19,7 @@ Syntax:
    dnscontrol get-zones [command options] credkey provider zone [...]
 
    --creds value   Provider credentials JSON file (default: "creds.json")
-   --format value  Output format: js zone tsv nameonly (default: "zone")
+   --format value  Output format: js djs zone tsv nameonly (default: "zone")
    --out value     Instead of stdout, write to this file
    --ttl value     Default TTL (0 picks the zone's most common TTL) (default: 0)
 
@@ -29,31 +29,34 @@ ARGUMENTS:
    zone:     One or more zones (domains) to download; or "all".
 
 FORMATS:
-   --format=js        dnsconfig.js format (not perfect, but a decent first draft)
+   --format=js        dnsconfig.js format (not perfect, just a decent first draft)
+   --format=djs       js with disco commas
    --format=zone      BIND Zonefile format
    --format=tsv       TAB separated value (useful for AWK)
    --format=nameonly  Just print the zone names
 
-When using `tsv`, the columns are:
+The columns in --format=tsv are:
    FQDN (the label with the domain)
    ShortName (just the label, "@" if it is the naked domain)
    TTL
    Record Type (A, AAAA, CNAME, etc.)
    Target and arguments (quoted like in a zonefile)
 
-The --ttl flag applies to zone and js formats.
+The --ttl flag only applies to zone/js/djs formats.
 
 EXAMPLES:
    dnscontrol get-zones myr53 ROUTE53 example.com
    dnscontrol get-zones gmain GANDI_V5 example.comn other.com
    dnscontrol get-zones cfmain CLOUDFLAREAPI all
    dnscontrol get-zones -format=tsv bind BIND example.com
-   dnscontrol get-zones -format=js -out=draft.js glcoud GCLOUD example.com`,
+   dnscontrol get-zones -format=djs -out=draft.js glcoud GCLOUD example.com`,
 
+Read a zonefile, generate a JS file, then use the JS file to see how
+different it is from the zonefile:
 
-# Example commands
+   dnscontrol get-zone --format=js -out=foo.djs bind BIND example.org 
+   dnscontrol preview --config foo.js
 
-dnscontrol get-zone
 
 # Developer Note
 

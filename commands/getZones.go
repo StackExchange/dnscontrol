@@ -38,17 +38,27 @@ ARGUMENTS:
    zone:     One or more zones (domains) to download; or "all".
 
 FORMATS:
-   --format=js        dnsconfig.js format (not perfect, but a decent first draft)
+   --format=js        dnsconfig.js format (not perfect, just a decent first draft)
+   --format=djs       js with disco commas
    --format=zone      BIND Zonefile format
    --format=tsv       TAB separated value (useful for AWK)
    --format=nameonly  Just print the zone names
+
+The columns in --format=tsv are:
+   FQDN (the label with the domain)
+   ShortName (just the label, "@" if it is the naked domain)
+   TTL
+   Record Type (A, AAAA, CNAME, etc.)
+   Target and arguments (quoted like in a zonefile)
+
+The --ttl flag only applies to zone/js/djs formats.
 
 EXAMPLES:
    dnscontrol get-zones myr53 ROUTE53 example.com
    dnscontrol get-zones gmain GANDI_V5 example.comn other.com
    dnscontrol get-zones cfmain CLOUDFLAREAPI all
    dnscontrol get-zones -format=tsv bind BIND example.com
-   dnscontrol get-zones -format=js -out=draft.js glcoud GCLOUD example.com`,
+   dnscontrol get-zones -format=djs -out=draft.js glcoud GCLOUD example.com`,
 	}
 }())
 
@@ -105,7 +115,7 @@ func (args *GetZoneArgs) flags() []cli.Flag {
 		Name:        "format",
 		Destination: &args.OutputFormat,
 		Value:       "zone",
-		Usage:       `Output format: js zone tsv nameonly`,
+		Usage:       `Output format: js djs zone tsv nameonly`,
 	})
 	flags = append(flags, &cli.StringFlag{
 		Name:        "out",
@@ -165,7 +175,7 @@ func GetZone(args GetZoneArgs) error {
 		return nil
 	}
 
-	// actually fetch all of the records
+	// fetch all of the records
 	zoneRecs := make([]models.Records, len(zones))
 	for i, zone := range zones {
 		recs, err := provider.GetZoneRecords(zone)
@@ -175,14 +185,15 @@ func GetZone(args GetZoneArgs) error {
 		zoneRecs[i] = recs
 	}
 
-	// Write it out:
+	// Write the heading:
 
-	if args.OutputFormat == "js" {
+	if args.OutputFormat == "js" || args.OutputFormat == "djs" {
 		fmt.Fprintf(w, `var %s = NewDnsProvider("%s", "%s");`+"\n",
 			args.CredName, args.CredName, args.ProviderName)
+		fmt.Fprintf(w, `var REG_CHANGEME = NewRegistrar("ThirdParty", "NONE");`+"\n")
 	}
 
-	// now print all zones
+	// print each zone
 	for i, recs := range zoneRecs {
 		zoneName := zones[i]
 
@@ -194,19 +205,26 @@ func GetZone(args GetZoneArgs) error {
 			prettyzone.WriteZoneFileRC(w, z.Records, zoneName, uint32(args.DefaultTTL), nil)
 			fmt.Fprintln(w)
 
-		case "js":
-			fmt.Fprintf(w, `D("%s", REG_CHANGEME,`, zoneName)
-			fmt.Fprintf(w, "\n\tDnsProvider(%s)", args.CredName)
+		case "js", "djs":
+			sep := ",\n\t" // Commas at EOL
+			if args.OutputFormat == "djs" {
+				sep = "\n\t, " // Funky comma mode
+			}
+			fmt.Fprintf(w, `D("%s", REG_CHANGEME%s`, zoneName, sep)
+			var o []string
+			o = append(o, fmt.Sprintf("DnsProvider(%s)", args.CredName))
 			defaultTTL := uint32(args.DefaultTTL)
 			if defaultTTL == 0 {
 				defaultTTL = prettyzone.MostCommonTTL(recs)
 			}
 			if defaultTTL != models.DefaultTTL && defaultTTL != 0 {
-				fmt.Fprintf(w, "\n\tDefaultTTL(%d)", defaultTTL)
+				o = append(o, fmt.Sprintf("DefaultTTL(%d)", defaultTTL))
 			}
 			for _, rec := range recs {
-				fmt.Fprint(w, formatDsl(zoneName, rec, defaultTTL))
+				o = append(o, formatDsl(zoneName, rec, defaultTTL))
 			}
+			out := strings.Join(o, sep)
+			fmt.Fprint(w, strings.ReplaceAll(out, "\n\t, //", "\n\t//, "))
 			fmt.Fprint(w, "\n)\n")
 
 		case "tsv":
@@ -233,23 +251,47 @@ func formatDsl(zonename string, rec *models.RecordConfig, defaultTTL uint32) str
 	}
 
 	switch rec.Type { // #rtype_variations
+	case "CAA":
+		return makeCaa(rec, ttlop)
 	case "MX":
 		target = fmt.Sprintf("%d, '%s'", rec.MxPreference, rec.GetTargetField())
+	case "SSHFP":
+		target = fmt.Sprintf("%d, %d, '%s'", rec.SshfpAlgorithm, rec.SshfpFingerprint, rec.GetTargetField())
 	case "SOA":
+		rec.Type = "//SOA"
+		target = fmt.Sprintf("'%s', '%s', %d, %d, %d, %d, %d", rec.GetTargetField(), rec.SoaMbox, rec.SoaSerial, rec.SoaRefresh, rec.SoaRetry, rec.SoaExpire, rec.SoaMinttl)
+	case "SRV":
+		target = fmt.Sprintf("%d, %d, %d, '%s'", rec.SrvPriority, rec.SrvWeight, rec.SrvPort, rec.GetTargetField())
+	case "TLSA":
+		target = fmt.Sprintf("%d, %d, %d, '%s'", rec.TlsaUsage, rec.TlsaSelector, rec.TlsaMatchingType, rec.GetTargetField())
 	case "TXT":
 		if len(rec.TxtStrings) == 1 {
 			target = `'` + rec.TxtStrings[0] + `'`
 		} else {
 			target = `['` + strings.Join(rec.TxtStrings, `', '`) + `']`
 		}
+		// TODO(tlim): If this is an SPF record, generate a SPF_BUILDER().
 	case "NS":
 		// NS records at the apex should be NAMESERVER() records.
 		if rec.Name == "@" {
-			return fmt.Sprintf(",\n\tNAMESERVER('%s')", target)
+			return fmt.Sprintf("NAMESERVER('%s')", target)
 		}
+		target = "'" + target + "'"
 	default:
 		target = "'" + target + "'"
 	}
 
-	return fmt.Sprintf(",\n\t%s('%s', %s%s)", rec.Type, rec.Name, target, ttlop)
+	return fmt.Sprintf("%s('%s', %s%s)", rec.Type, rec.Name, target, ttlop)
+}
+
+func makeCaa(rec *models.RecordConfig, ttlop string) string {
+	var target string
+	if rec.CaaFlag == 128 {
+		target = fmt.Sprintf("'%s', '%s', CAA_CRITICAL", rec.CaaTag, rec.GetTargetField())
+	} else {
+		target = fmt.Sprintf("'%s', '%s'", rec.CaaTag, rec.GetTargetField())
+	}
+	return fmt.Sprintf("%s('%s', %s%s)", rec.Type, rec.Name, target, ttlop)
+
+	// TODO(tlim): Generate a CAA_BUILDER() instead?
 }
