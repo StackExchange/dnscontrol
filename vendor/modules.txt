@@ -333,7 +333,7 @@ golang.org/x/crypto/pkcs12/internal/rc2
 ## explicit
 golang.org/x/mod/module
 golang.org/x/mod/semver
-# golang.org/x/net v0.0.0-20200222125558-5a598a2470a0
+# golang.org/x/net v0.0.0-20200226121028-0de0cce0169b
 ## explicit
 golang.org/x/net/bpf
 golang.org/x/net/context
@@ -374,11 +374,12 @@ golang.org/x/text/unicode/bidi
 golang.org/x/text/unicode/norm
 # golang.org/x/time v0.0.0-20190308202827-9d24e82272b4
 golang.org/x/time/rate
-# golang.org/x/tools v0.0.0-20200212213243-2ee7536ab1cc
+# golang.org/x/tools v0.0.0-20200303202040-658b03bcd3d8
 ## explicit
 golang.org/x/tools/go/ast/astutil
 golang.org/x/tools/imports
 golang.org/x/tools/internal/fastwalk
+golang.org/x/tools/internal/gocommand
 golang.org/x/tools/internal/gopathwalk
 golang.org/x/tools/internal/imports
 # golang.org/x/xerrors v0.0.0-20191204190536-9bdfabe68543
