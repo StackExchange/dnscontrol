@@ -11,7 +11,7 @@ require (
 	github.com/DisposaBoy/JsonConfigReader v0.0.0-20171218180944-5ea4d0ddac55
 	github.com/TomOnTime/utfutil v0.0.0-20180511104225-09c41003ee1d
 	github.com/andreyvit/diff v0.0.0-20170406064948-c7f18ee00883
-	github.com/aws/aws-sdk-go v1.29.1
+	github.com/aws/aws-sdk-go v1.29.21
 	github.com/billputer/go-namecheap v0.0.0-20170915210158-0c7adb0710f8
 	github.com/cenkalti/backoff v2.1.1+incompatible // indirect
 	github.com/cpuguy83/go-md2man/v2 v2.0.0 // indirect
@@ -30,6 +30,7 @@ require (
 	github.com/hashicorp/vault/api v1.0.4
 	github.com/hexonet/go-sdk v2.2.3+incompatible
 	github.com/jarcoal/httpmock v1.0.4 // indirect
+	github.com/jmespath/go-jmespath v0.0.0-20200310193758-2437e8417af5 // indirect
 	github.com/kolo/xmlrpc v0.0.0-20150413191830-0826b98aaa29 // indirect
 	github.com/malexdev/utfutil v0.0.0-20180510171754-00c8d4a8e7a8 // indirect
 	github.com/miekg/dns v1.1.27
@@ -43,19 +44,19 @@ require (
 	github.com/sergi/go-diff v1.1.0 // indirect
 	github.com/smartystreets/goconvey v0.0.0-20190330032615-68dc04aab96a // indirect
 	github.com/softlayer/softlayer-go v0.0.0-20170804160555-5e1c8cccc730
-	github.com/stretchr/testify v1.4.0
+	github.com/stretchr/testify v1.5.1
 	github.com/tdewolff/minify v2.3.6+incompatible
 	github.com/tdewolff/parse v2.3.4+incompatible // indirect
 	github.com/tdewolff/test v1.0.6 // indirect
-	github.com/tiramiseb/go-gandi v0.0.0-20200227122905-7601fc3acbaa
+	github.com/tiramiseb/go-gandi v0.0.0-20200309181223-e1cf2e430b3a
 	github.com/urfave/cli/v2 v2.1.1
 	github.com/vultr/govultr v0.2.0
 	golang.org/x/crypto v0.0.0-20200221231518-2aa609cf4a9d // indirect
 	golang.org/x/net v0.0.0-20200226121028-0de0cce0169b
 	golang.org/x/oauth2 v0.0.0-20200107190931-bf48bf16ab8d
 	golang.org/x/sys v0.0.0-20200219091948-cb0a6d8edb6c // indirect
-	golang.org/x/tools v0.0.0-20200303202040-658b03bcd3d8 // indirect
-	google.golang.org/api v0.17.0
+	golang.org/x/tools v0.0.0-20200309202150-20ab64c0d93f // indirect
+	google.golang.org/api v0.20.0
 	google.golang.org/appengine v1.6.5 // indirect
 	gopkg.in/ini.v1 v1.42.0 // indirect
 	gopkg.in/ns1/ns1-go.v2 v2.0.0-20170502175150-c563826f4cbe

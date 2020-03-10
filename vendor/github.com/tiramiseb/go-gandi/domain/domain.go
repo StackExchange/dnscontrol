@@ -173,7 +173,7 @@ func (g *Domain) GetDomain(domain string) (domainResponse Details, err error) {
 }
 
 // CreateDomain creates a single Domain
-func (g *Domain) CreateDomain(domain string, req CreateRequest) (err error) {
+func (g *Domain) CreateDomain(req CreateRequest) (err error) {
 	_, err = g.client.Post("domains", req, nil)
 	return
 }

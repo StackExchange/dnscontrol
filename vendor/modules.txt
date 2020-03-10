@@ -34,7 +34,7 @@ github.com/TomOnTime/utfutil
 # github.com/andreyvit/diff v0.0.0-20170406064948-c7f18ee00883
 ## explicit
 github.com/andreyvit/diff
-# github.com/aws/aws-sdk-go v1.29.1
+# github.com/aws/aws-sdk-go v1.29.21
 ## explicit
 github.com/aws/aws-sdk-go/aws
 github.com/aws/aws-sdk-go/aws/awserr
@@ -54,6 +54,7 @@ github.com/aws/aws-sdk-go/aws/endpoints
 github.com/aws/aws-sdk-go/aws/request
 github.com/aws/aws-sdk-go/aws/session
 github.com/aws/aws-sdk-go/aws/signer/v4
+github.com/aws/aws-sdk-go/internal/context
 github.com/aws/aws-sdk-go/internal/ini
 github.com/aws/aws-sdk-go/internal/sdkio
 github.com/aws/aws-sdk-go/internal/sdkmath
@@ -204,7 +205,8 @@ github.com/hexonet/go-sdk/responsetemplatemanager
 github.com/hexonet/go-sdk/socketconfig
 # github.com/jarcoal/httpmock v1.0.4
 ## explicit
-# github.com/jmespath/go-jmespath v0.0.0-20180206201540-c2b33e8439af
+# github.com/jmespath/go-jmespath v0.0.0-20200310193758-2437e8417af5
+## explicit
 github.com/jmespath/go-jmespath
 # github.com/kolo/xmlrpc v0.0.0-20150413191830-0826b98aaa29
 ## explicit
@@ -283,7 +285,7 @@ github.com/softlayer/softlayer-go/filter
 github.com/softlayer/softlayer-go/services
 github.com/softlayer/softlayer-go/session
 github.com/softlayer/softlayer-go/sl
-# github.com/stretchr/testify v1.4.0
+# github.com/stretchr/testify v1.5.1
 ## explicit
 github.com/stretchr/testify/assert
 # github.com/tdewolff/minify v2.3.6+incompatible
@@ -298,7 +300,7 @@ github.com/tdewolff/parse/json
 github.com/tdewolff/parse/strconv
 # github.com/tdewolff/test v1.0.6
 ## explicit
-# github.com/tiramiseb/go-gandi v0.0.0-20200227122905-7601fc3acbaa
+# github.com/tiramiseb/go-gandi v0.0.0-20200309181223-e1cf2e430b3a
 ## explicit
 github.com/tiramiseb/go-gandi
 github.com/tiramiseb/go-gandi/domain
@@ -379,7 +381,7 @@ golang.org/x/text/unicode/bidi
 golang.org/x/text/unicode/norm
 # golang.org/x/time v0.0.0-20190308202827-9d24e82272b4
 golang.org/x/time/rate
-# golang.org/x/tools v0.0.0-20200303202040-658b03bcd3d8
+# golang.org/x/tools v0.0.0-20200309202150-20ab64c0d93f
 ## explicit
 golang.org/x/tools/go/ast/astutil
 golang.org/x/tools/imports
@@ -390,7 +392,7 @@ golang.org/x/tools/internal/imports
 # golang.org/x/xerrors v0.0.0-20191204190536-9bdfabe68543
 golang.org/x/xerrors
 golang.org/x/xerrors/internal
-# google.golang.org/api v0.17.0
+# google.golang.org/api v0.20.0
 ## explicit
 google.golang.org/api/dns/v1
 google.golang.org/api/googleapi
@@ -399,6 +401,8 @@ google.golang.org/api/internal
 google.golang.org/api/internal/gensupport
 google.golang.org/api/internal/third_party/uritemplates
 google.golang.org/api/option
+google.golang.org/api/option/internaloption
+google.golang.org/api/transport/cert
 google.golang.org/api/transport/http
 google.golang.org/api/transport/http/internal/propagation
 # google.golang.org/appengine v1.6.5
