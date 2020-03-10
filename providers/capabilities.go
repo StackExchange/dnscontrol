@@ -56,7 +56,7 @@ const (
 	// CanUseRoute53Alias indicates the provider support the specific R53_ALIAS records that only the Route53 provider supports
 	CanUseRoute53Alias
 
-	// CanGetZoe indicates the provider supports the get-zones subcommand.
+	// CanGetZones indicates the provider supports the get-zones subcommand.
 	CanGetZones
 
 	// CanUseAzureAlias indicates the provider support the specific Azure_ALIAS records that only the Azure provider supports

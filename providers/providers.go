@@ -24,7 +24,7 @@ type DomainCreator interface {
 	EnsureDomainExists(domain string) error
 }
 
-// DomainLister should be implemented by providers that have the
+// ZoneLister should be implemented by providers that have the
 // ability to list the zones they manage. This facilitates using the
 // "get-zones" command for "all" zones.
 type ZoneLister interface {
@@ -93,7 +93,7 @@ func (n None) GetNameservers(string) ([]*models.Nameserver, error) {
 }
 
 // GetZoneRecords gets the records of a zone and returns them in RecordConfig format.
-func (client None) GetZoneRecords(domain string) (models.Records, error) {
+func (n None) GetZoneRecords(domain string) (models.Records, error) {
 	return nil, fmt.Errorf("not implemented")
 	// This enables the get-zones subcommand.
 	// Implement this by extracting the code from GetDomainCorrections into
