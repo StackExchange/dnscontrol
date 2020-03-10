@@ -3,6 +3,7 @@ package main
 import (
 	"flag"
 	"fmt"
+	"os"
 	"strconv"
 	"strings"
 	"testing"
@@ -452,10 +453,22 @@ func testgroup(desc string, items ...interface{}) *TestGroup {
 	for _, item := range items {
 		switch v := item.(type) {
 		case requiresFilter:
+			if len(group.tests) != 0 {
+				fmt.Printf("ERROR: requires() must be before all tc(): %v\n", desc)
+				os.Exit(1)
+			}
 			group.required = append(group.required, v.caps...)
 		case notFilter:
+			if len(group.tests) != 0 {
+				fmt.Printf("ERROR: not() must be before all tc(): %v\n", desc)
+				os.Exit(1)
+			}
 			group.not = append(group.not, v.names...)
 		case onlyFilter:
+			if len(group.tests) != 0 {
+				fmt.Printf("ERROR: only() must be before all tc(): %v\n", desc)
+				os.Exit(1)
+			}
 			group.only = append(group.only, v.names...)
 		case *TestCase:
 			group.tests = append(group.tests, v)
@@ -520,25 +533,48 @@ func makeTests(t *testing.T) []*TestGroup {
 	reversedSha512 := strings.Repeat("fedcba9876543210", 8)
 
 	// Each group of tests begins with testgroup("Title").
-	// The system will remove any records so that the tests begin with a
-	// clean slate.
-	// Only apply to	providers that CanUseAlias.
+	// The system will remove any records so that the tests
+	// begin with a clean slate (i.e. no records).
+
+	// Filters:
+
+	// Only apply to providers that CanUseAlias.
 	//      requires(providers.CanUseAlias),
 	// Only apply to ROUTE53 + GANDI_V5:
 	//      only("ROUTE53", "GANDI_V5")
 	// Only apply to all providers except ROUTE53 + GANDI_V5:
 	//     not("ROUTE53", "GANDI_V5"),
-
-	// You can't mix not() and only()
+	// NOTE: You can't mix not() and only()
 	//     reset(not("ROUTE53"), only("GCLOUD")),  // ERROR!
+	// NOTE: All requires()/not()/only() must appear before any tc().
+
+	// tc()
+	// Each tc() indicates a set of records.  The testgroup tries to
+	// migrate from one tc() to the next.  For example the first tc()
+	// creates some records. The next tc() might list the same records
+	// but adds 1 new record and omits 1.  Therefore migrating to this
+	// second tc() results in 1 record being created and 1 deleted; but
+	// for some providers it may be converting 1 record to another.
+	// Therefore some testgroups are testing the providers ability to
+	// transition between different states. Others are just testing
+	// whether or not a certain kind of record can be created and
+	// deleted.
+
+	// clear() is the same as tc("Empty").  It removes all records.  You
+	// can use this to verify a provider can delete all the records in
+	// the last tc(), or to provide a clean slate for the next tc().
+	// Each testgroup() begins and ends with clear(), so you don't have
+	// to list the clear() yourself.
 
 	tests := []*TestGroup{
 
 		//
-		// Basic functionality (add/rename/delete)
+		// Basic functionality (add/rename/change/delete).
 		//
 
 		testgroup("A",
+			// These tests aren't specific to "A" records. We're testing
+			// general ability to add/rename/change/delete any record.
 			tc("Create an A record", a("@", "1.1.1.1")),
 			tc("Change it", a("@", "1.2.3.4")),
 			tc("Add another", a("@", "1.2.3.4"), a("www", "1.2.3.4")),
@@ -555,9 +591,10 @@ func makeTests(t *testing.T) []*TestGroup {
 
 		testgroup("CNAME",
 			tc("Create a CNAME", cname("foo", "google.com.")),
-			tc("Change it", cname("foo", "google2.com.")),
+			tc("Change CNAME target", cname("foo", "google2.com.")),
 			tc("Change to A record", a("foo", "1.2.3.4")),
 			tc("Change back to CNAME", cname("foo", "google.com.")),
+			clear(),
 			tc("Record pointing to @", cname("foo", "**current-domain**")),
 		),
 
@@ -605,7 +642,7 @@ func makeTests(t *testing.T) []*TestGroup {
 			// https://github.com/StackExchange/dnscontrol/issues/598
 			// We decided that permitting the TXT target to be an empty
 			// string is not a requirement (even though RFC1035 permits it).
-			// In the future we might make it a "capability" to
+			// In the future we might make it "capability" to
 			// indicate which vendors support an empty TXT record.
 			// However at this time there is no pressing need for this
 			// feature.
@@ -625,7 +662,7 @@ func makeTests(t *testing.T) []*TestGroup {
 
 		testgroup("IDNA",
 			not("SOFTLAYER"),
-			// SOFTLAYER: fails at direct internationalization, punycode works.
+			// SOFTLAYER: fails at direct internationalization, punycode works, of course.
 			tc("Internationalized name", a("ööö", "1.2.3.4")),
 			tc("Change IDN", a("ööö", "2.2.2.2")),
 			tc("Internationalized CNAME Target", cname("a", "ööö.com.")),
