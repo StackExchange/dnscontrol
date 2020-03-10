@@ -70,7 +70,7 @@ func PrintIR(args PrintIRArgs) error {
 		return err
 	}
 	if !args.Raw {
-		errs := normalize.NormalizeAndValidateConfig(cfg)
+		errs := normalize.ValidateAndNormalizeConfig(cfg)
 		if PrintValidationErrors(errs) {
 			return fmt.Errorf("Exiting due to validation errors")
 		}

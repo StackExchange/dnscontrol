@@ -268,8 +268,8 @@ type Warning struct {
 	error
 }
 
-// NormalizeAndValidateConfig performs and normalization and/or validation of the IR.
-func NormalizeAndValidateConfig(config *models.DNSConfig) (errs []error) {
+// ValidateAndNormalizeConfig performs and normalization and/or validation of the IR.
+func ValidateAndNormalizeConfig(config *models.DNSConfig) (errs []error) {
 	for _, domain := range config.Domains {
 		pTypes := []string{}
 		txtMultiDissenters := []string{}

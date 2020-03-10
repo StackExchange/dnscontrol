@@ -12,16 +12,17 @@ import (
 	"github.com/StackExchange/dnscontrol/v2/models"
 )
 
-type zoneGenData struct {
+// ZoneGenData is the configuration description for the zone generator.
+type ZoneGenData struct {
 	Origin     string
 	DefaultTTL uint32
 	Records    models.Records
 	Comments   []string
 }
 
-func (z *zoneGenData) Len() int      { return len(z.Records) }
-func (z *zoneGenData) Swap(i, j int) { z.Records[i], z.Records[j] = z.Records[j], z.Records[i] }
-func (z *zoneGenData) Less(i, j int) bool {
+func (z *ZoneGenData) Len() int      { return len(z.Records) }
+func (z *ZoneGenData) Swap(i, j int) { z.Records[i], z.Records[j] = z.Records[j], z.Records[i] }
+func (z *ZoneGenData) Less(i, j int) bool {
 	a, b := z.Records[i], z.Records[j]
 
 	// Sort by name.

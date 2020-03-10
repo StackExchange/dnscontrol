@@ -210,7 +210,7 @@ func TestCAAValidation(t *testing.T) {
 			},
 		},
 	}
-	errs := NormalizeAndValidateConfig(config)
+	errs := ValidateAndNormalizeConfig(config)
 	if len(errs) != 1 {
 		t.Error("Expect error on invalid CAA but got none")
 	}
@@ -277,7 +277,7 @@ func TestTLSAValidation(t *testing.T) {
 			},
 		},
 	}
-	errs := NormalizeAndValidateConfig(config)
+	errs := ValidateAndNormalizeConfig(config)
 	if len(errs) != 1 {
 		t.Error("Expect error on invalid TLSA but got none")
 	}
