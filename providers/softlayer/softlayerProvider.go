@@ -12,8 +12,8 @@ import (
 	"github.com/softlayer/softlayer-go/session"
 
 	"github.com/StackExchange/dnscontrol/v2/models"
+	"github.com/StackExchange/dnscontrol/v2/pkg/diff"
 	"github.com/StackExchange/dnscontrol/v2/providers"
-	"github.com/StackExchange/dnscontrol/v2/providers/diff"
 )
 
 // SoftLayer is the protocol handle for this provider.

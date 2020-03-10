@@ -9,7 +9,7 @@ import (
 	"github.com/namedotcom/go/namecom"
 
 	"github.com/StackExchange/dnscontrol/v2/models"
-	"github.com/StackExchange/dnscontrol/v2/providers/diff"
+	"github.com/StackExchange/dnscontrol/v2/pkg/diff"
 )
 
 var defaultNameservers = []*models.Nameserver{

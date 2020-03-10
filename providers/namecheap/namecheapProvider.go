@@ -11,9 +11,9 @@ import (
 	"golang.org/x/net/publicsuffix"
 
 	"github.com/StackExchange/dnscontrol/v2/models"
+	"github.com/StackExchange/dnscontrol/v2/pkg/diff"
 	"github.com/StackExchange/dnscontrol/v2/pkg/printer"
 	"github.com/StackExchange/dnscontrol/v2/providers"
-	"github.com/StackExchange/dnscontrol/v2/providers/diff"
 )
 
 // NamecheapDefaultNs lists the default nameservers for this provider.

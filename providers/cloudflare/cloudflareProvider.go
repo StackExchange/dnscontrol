@@ -11,10 +11,10 @@ import (
 	"github.com/miekg/dns/dnsutil"
 
 	"github.com/StackExchange/dnscontrol/v2/models"
+	"github.com/StackExchange/dnscontrol/v2/pkg/diff"
 	"github.com/StackExchange/dnscontrol/v2/pkg/printer"
 	"github.com/StackExchange/dnscontrol/v2/pkg/transform"
 	"github.com/StackExchange/dnscontrol/v2/providers"
-	"github.com/StackExchange/dnscontrol/v2/providers/diff"
 )
 
 /*
