@@ -21,9 +21,9 @@ func TestFormatTypes(t *testing.T) {
 	*/
 
 	for _, domain := range []string{"simple.com", "example.org"} {
-		t.Run(domain+"%s/js", func(t *testing.T) { testFormat(t, domain, "js") })
-		t.Run(domain+"%s/tsv", func(t *testing.T) { testFormat(t, domain, "tsv") })
-		t.Run(domain+"%s/zone", func(t *testing.T) { testFormat(t, domain, "zone") })
+		t.Run(domain+"/js", func(t *testing.T) { testFormat(t, domain, "js") })
+		t.Run(domain+"/tsv", func(t *testing.T) { testFormat(t, domain, "tsv") })
+		t.Run(domain+"/zone", func(t *testing.T) { testFormat(t, domain, "zone") })
 	}
 }
 
