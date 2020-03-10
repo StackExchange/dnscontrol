@@ -14,9 +14,9 @@ import (
 	gandilivezone "github.com/prasmussen/gandi-api/live_dns/zone"
 
 	"github.com/StackExchange/dnscontrol/v2/models"
+	"github.com/StackExchange/dnscontrol/v2/pkg/diff"
 	"github.com/StackExchange/dnscontrol/v2/pkg/printer"
 	"github.com/StackExchange/dnscontrol/v2/providers"
-	"github.com/StackExchange/dnscontrol/v2/providers/diff"
 )
 
 var liveFeatures = providers.DocumentationNotes{

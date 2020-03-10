@@ -10,8 +10,8 @@ import (
 	"gopkg.in/ns1/ns1-go.v2/rest/model/dns"
 
 	"github.com/StackExchange/dnscontrol/v2/models"
+	"github.com/StackExchange/dnscontrol/v2/pkg/diff"
 	"github.com/StackExchange/dnscontrol/v2/providers"
-	"github.com/StackExchange/dnscontrol/v2/providers/diff"
 )
 
 var docNotes = providers.DocumentationNotes{
