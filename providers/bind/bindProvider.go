@@ -26,9 +26,9 @@ import (
 	"github.com/miekg/dns"
 
 	"github.com/StackExchange/dnscontrol/v2/models"
+	"github.com/StackExchange/dnscontrol/v2/pkg/diff"
 	"github.com/StackExchange/dnscontrol/v2/pkg/prettyzone"
 	"github.com/StackExchange/dnscontrol/v2/providers"
-	"github.com/StackExchange/dnscontrol/v2/providers/diff"
 )
 
 var features = providers.DocumentationNotes{
