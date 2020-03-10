@@ -55,8 +55,8 @@ require (
 	golang.org/x/net v0.0.0-20200226121028-0de0cce0169b
 	golang.org/x/oauth2 v0.0.0-20200107190931-bf48bf16ab8d
 	golang.org/x/sys v0.0.0-20200219091948-cb0a6d8edb6c // indirect
-	golang.org/x/tools v0.0.0-20200303202040-658b03bcd3d8 // indirect
-	google.golang.org/api v0.17.0
+	golang.org/x/tools v0.0.0-20200309202150-20ab64c0d93f // indirect
+	google.golang.org/api v0.20.0
 	google.golang.org/appengine v1.6.5 // indirect
 	gopkg.in/ini.v1 v1.42.0 // indirect
 	gopkg.in/ns1/ns1-go.v2 v2.0.0-20170502175150-c563826f4cbe

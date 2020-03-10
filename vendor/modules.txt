@@ -381,7 +381,7 @@ golang.org/x/text/unicode/bidi
 golang.org/x/text/unicode/norm
 # golang.org/x/time v0.0.0-20190308202827-9d24e82272b4
 golang.org/x/time/rate
-# golang.org/x/tools v0.0.0-20200303202040-658b03bcd3d8
+# golang.org/x/tools v0.0.0-20200309202150-20ab64c0d93f
 ## explicit
 golang.org/x/tools/go/ast/astutil
 golang.org/x/tools/imports
@@ -392,7 +392,7 @@ golang.org/x/tools/internal/imports
 # golang.org/x/xerrors v0.0.0-20191204190536-9bdfabe68543
 golang.org/x/xerrors
 golang.org/x/xerrors/internal
-# google.golang.org/api v0.17.0
+# google.golang.org/api v0.20.0
 ## explicit
 google.golang.org/api/dns/v1
 google.golang.org/api/googleapi
@@ -401,6 +401,8 @@ google.golang.org/api/internal
 google.golang.org/api/internal/gensupport
 google.golang.org/api/internal/third_party/uritemplates
 google.golang.org/api/option
+google.golang.org/api/option/internaloption
+google.golang.org/api/transport/cert
 google.golang.org/api/transport/http
 google.golang.org/api/transport/http/internal/propagation
 # google.golang.org/appengine v1.6.5
