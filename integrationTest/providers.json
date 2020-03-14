@@ -33,7 +33,6 @@
     "token": "$DO_TOKEN"
   },
   "DNSIMPLE": {
-    "COMMENT": "20-22: no ns records managable. Not even for subdomains.",
     "baseurl": "https://api.sandbox.dnsimple.com",
     "domain": "$DNSIMPLE_DOMAIN",
     "token": "$DNSIMPLE_TOKEN"
@@ -43,16 +42,6 @@
     "dns-endpoint": "https://api.exoscale.ch/dns",
     "domain": "$EXOSCALE_DOMAIN",
     "secretkey": "$EXOSCALE_SECRET_KEY"
-  },
-  "GANDI": {
-    "COMMENT": "5: gandi does not accept TTLs less than 300",
-    "apikey": "$GANDI_KEY",
-    "domain": "$GANDI_DOMAIN"
-  },
-  "GANDI-LIVEDNS": {
-    "COMMENT": "5: gandi does not accept TTLs less than 300",
-    "apikey": "$GANDILIVE_KEY",
-    "domain": "$GANDILIVE_DOMAIN"
   },
   "GANDI_V5": {
     "apikey": "$GANDI_V5_APIKEY",
@@ -74,7 +63,6 @@
     "ipaddress": "$HEXONET_IP"
   },
   "LINODE": {
-    "COMMENT": "25: Linode's hostname validation does not allow the target domain TLD",
     "domain": "$LINODE_DOMAIN",
     "token": "$LINODE_TOKEN"
   },
@@ -109,7 +97,6 @@
     "domain": "$R53_DOMAIN"
   },
   "SOFTLAYER": {
-    "COMMENT": "22-25 softlayer fails at direct internationalization, puncode works though",
     "api_key": "$SL_API_KEY",
     "domain": "$SL_DOMAIN",
     "username": "$SL_USERNAME"

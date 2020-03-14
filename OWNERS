@@ -5,7 +5,7 @@ providers/bind @tlimoncelli
 providers/cloudns @pragmaton
 providers/digitalocean @Deraen
 providers/dnsimple @aeden
-providers/gandi @TomOnTime
+providers/gandi_v5 @TomOnTime
 # providers/gcloud
 providers/hexonet @papakai
 providers/internetbs @pragmaton

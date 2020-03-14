@@ -147,9 +147,6 @@ github.com/google/go-github/github
 # github.com/google/go-querystring v1.0.1-0.20190318165438-c8c88dbee036
 ## explicit
 github.com/google/go-querystring/query
-# github.com/google/uuid v1.1.2-0.20190416172445-c2e93f3ae59f
-## explicit
-github.com/google/uuid
 # github.com/googleapis/gax-go/v2 v2.0.5
 github.com/googleapis/gax-go/v2
 # github.com/gopherjs/gopherjs v0.0.0-20181017120253-0766667cb4d1
@@ -208,9 +205,6 @@ github.com/hexonet/go-sdk/socketconfig
 # github.com/jmespath/go-jmespath v0.0.0-20200310193758-2437e8417af5
 ## explicit
 github.com/jmespath/go-jmespath
-# github.com/kolo/xmlrpc v0.0.0-20150413191830-0826b98aaa29
-## explicit
-github.com/kolo/xmlrpc
 # github.com/malexdev/utfutil v0.0.0-20180510171754-00c8d4a8e7a8
 ## explicit
 # github.com/miekg/dns v1.1.27
@@ -240,19 +234,6 @@ github.com/pierrec/lz4/internal/xxh32
 github.com/pkg/errors
 # github.com/pmezard/go-difflib v1.0.0
 github.com/pmezard/go-difflib/difflib
-# github.com/prasmussen/gandi-api v0.0.0-20180224132202-58d3d4205661
-## explicit
-github.com/prasmussen/gandi-api/client
-github.com/prasmussen/gandi-api/domain
-github.com/prasmussen/gandi-api/domain/nameservers
-github.com/prasmussen/gandi-api/domain/zone
-github.com/prasmussen/gandi-api/domain/zone/record
-github.com/prasmussen/gandi-api/domain/zone/version
-github.com/prasmussen/gandi-api/live_dns/domain
-github.com/prasmussen/gandi-api/live_dns/record
-github.com/prasmussen/gandi-api/live_dns/zone
-github.com/prasmussen/gandi-api/operation
-github.com/prasmussen/gandi-api/util
 # github.com/renier/xmlrpc v0.0.0-20170708154548-ce4a1a486c03
 ## explicit
 github.com/renier/xmlrpc
