@@ -637,9 +637,9 @@ func makeTests(t *testing.T) []*TestGroup {
 		),
 
 		testgroup("ws TXT",
-			not("CLOUDFLAREAPI"),
-			// CloudFlare removes whitespace at the end of a TXT record (via
-			// the API and the web portal).
+			not("CLOUDFLAREAPI", "NAMEDOTCOM"),
+			// These providers strip whitespace at the end of TXT records.
+			// TODO(tal): Add a check for this in normalize/validate.go
 			tc("Change a TXT with ws at end", txt("foo", "with space at end  ")),
 		),
 
