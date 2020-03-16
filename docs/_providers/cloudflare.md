@@ -21,7 +21,7 @@ In the credentials file you must provide a [Cloudflare API token](https://dash.c
 }
 {% endhighlight %}
 
-Make sure the token has at least the right read zones and edit DNS records (i.e. `Zone → Zone → Read` and `Zone → DNS → Edit`);
+Make sure the token has at least the right read zones and edit DNS records (i.e. `Zone → Zone → Read` and `Zone → DNS → Edit`; to modify Page Rules additionally requires `Zone → Page Rules → Edit`);
 checkout [Cloudflare's documentation](https://support.cloudflare.com/hc/en-us/articles/200167836-Managing-API-Tokens-and-Keys) for instructions on how to generate and configure permissions on API tokens.
 
 
@@ -142,7 +142,7 @@ will *not* automatically add it. You'll need to do that via the
 control panel manually or via the `dnscontrol create-domains` command.
 
 ## Redirects
-The Cloudflare provider can manage Page-Rule based redirects for your domains. Simply use the `CF_REDIRECT` and `CF_TEMP_REDIRECT` functions to make redirects:
+The Cloudflare provider can manage "Forwarding URL" Page Rules (redirects) for your domains. Simply use the `CF_REDIRECT` and `CF_TEMP_REDIRECT` functions to make redirects:
 
 {% highlight js %}
 
@@ -169,3 +169,4 @@ Notice a few details:
 1. We need an A record with cloudflare proxy on, or the page rule will never run.
 2. The IP address in those A records may be mostly irrelevant, as cloudflare should handle all requests (assuming some page rule matches).
 3. Ordering matters for priority. CF_REDIRECT records will be added in the order they appear in your js. So put catch-alls at the bottom.
+4. if _any_ `CF_REDIRECT` or `CF_TEMP_REDIRECT` functions are used then `dnscontrol` will manage _all_ "Forwarding URL" type Page Rules for the domain. Page Rule types other than "Forwarding URL” will be left alone.

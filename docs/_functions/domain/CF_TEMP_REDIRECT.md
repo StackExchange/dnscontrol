@@ -5,13 +5,18 @@ parameters:
   - modifiers...
 ---
 
-`CF_REDIRECT` uses Cloudflare-specific features ("page rules") to
-generate an HTTP 301 redirect.
+`CF_TEMP_REDIRECT` uses Cloudflare-specific features ("Forwarding URL" Page
+Rules) to generate a HTTP 302 temporary redirect.
 
-WARNING: If the domain has other pagerules in place, they may be
-deleted. At this time this feature is best used on bare domains
-that need to redirect to another domain, perhaps with wildcard
-substitutions.
+If _any_ `CF_REDIRECT` or `CF_TEMP_REDIRECT` functions are used then
+`dnscontrol` will manage _all_ "Forwarding URL" type Page Rules for the domain.
+Page Rule types other than "Forwarding URL” will be left alone.
+
+WARNING: Cloudflare does not currently fully document the Page Rules API and
+this interface is not extensively tested. Take precautions such as making
+backups and manually verifying `dnscontrol preview` output before running
+`dnscontrol push`. This is especially true when mixing Page Rules that are
+managed by DNSControl and those that aren't.
 
 {% include startExample.html %}
 {% highlight js %}
