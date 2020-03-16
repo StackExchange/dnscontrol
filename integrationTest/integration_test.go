@@ -631,7 +631,7 @@ func makeTests(t *testing.T) []*TestGroup {
 			tc("Change a TXT", txt("foo", "changed")),
 			clear(),
 			tc("Create a TXT with spaces", txt("foo", "with spaces")),
-			tc("Change a TXT with spaces", txt("foo", "with whitespace  ")),
+			tc("Change a TXT with ws at end", txt("foo", "with space at end  ")),
 			tc("Create 1 TXT as array", txtmulti("foo", []string{"simple"})),
 			clear(),
 			tc("Create a 255-byte TXT", txt("foo", strings.Repeat("A", 255))),
