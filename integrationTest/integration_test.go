@@ -139,7 +139,7 @@ func testPermitted(t *testing.T, p string, f TestGroup) error {
 func makeChanges(t *testing.T, prv providers.DNSServiceProvider, dc *models.DomainConfig, tst *TestCase, desc string, expectChanges bool, origConfig map[string]string) bool {
 	domainName := dc.Name
 
-	return t.Run(desc, func(t *testing.T) {
+	return t.Run(desc+":"+tst.Desc, func(t *testing.T) {
 		dom, _ := dc.Copy()
 		for _, r := range tst.Records {
 			rc := models.RecordConfig(*r)
