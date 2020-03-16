@@ -631,10 +631,16 @@ func makeTests(t *testing.T) []*TestGroup {
 			tc("Change a TXT", txt("foo", "changed")),
 			clear(),
 			tc("Create a TXT with spaces", txt("foo", "with spaces")),
-			tc("Change a TXT with ws at end", txt("foo", "with space at end  ")),
 			tc("Create 1 TXT as array", txtmulti("foo", []string{"simple"})),
 			clear(),
 			tc("Create a 255-byte TXT", txt("foo", strings.Repeat("A", 255))),
+		),
+
+		testgroup("ws TXT",
+			not("CLOUDFLAREAPI"),
+			// CloudFlare removes whitespace at the end of a TXT record (via
+			// the API and the web portal).
+			tc("Change a TXT with ws at end", txt("foo", "with space at end  ")),
 		),
 
 		testgroup("empty TXT", not("DNSIMPLE", "CLOUDFLAREAPI"),
@@ -745,7 +751,7 @@ func makeTests(t *testing.T) []*TestGroup {
 			tc("Change Weight", srv("_sip._tcp", 52, 62, 7, "foo.com."), srv("_sip._tcp", 15, 65, 75, "foo4.com.")),
 			tc("Change Port", srv("_sip._tcp", 52, 62, 72, "foo.com."), srv("_sip._tcp", 15, 65, 75, "foo4.com.")),
 		),
-		testgroup("SRV w/ null target", not("NAMEDOTCOM", "HEXONET", "EXOSCALE"),
+		testgroup("SRV w/ null target", not("EXOSCALE", "HEXONET", "NAMEDOTCOM"),
 			tc("Null Target", srv("_sip._tcp", 52, 62, 72, "foo.com."), srv("_sip._tcp", 15, 65, 75, ".")),
 		),
 
