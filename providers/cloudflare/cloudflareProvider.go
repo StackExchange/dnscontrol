@@ -541,7 +541,7 @@ type cfRecord struct {
 func (c *cfRecord) nativeToRecord(domain string) *models.RecordConfig {
 	// normalize cname,mx,ns records with dots to be consistent with our config format.
 	if c.Type == "CNAME" || c.Type == "MX" || c.Type == "NS" || c.Type == "SRV" {
-		c.Content = dnsutil.AddOrigin(c.Content+".", domain)
+		c.Content = dnsutil.AddOrigin(strings.TrimSuffix(c.Content, ".")+".", domain)
 	}
 
 	rc := &models.RecordConfig{
