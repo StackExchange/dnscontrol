@@ -541,7 +541,20 @@ type cfRecord struct {
 func (c *cfRecord) nativeToRecord(domain string) *models.RecordConfig {
 	// normalize cname,mx,ns records with dots to be consistent with our config format.
 	if c.Type == "CNAME" || c.Type == "MX" || c.Type == "NS" || c.Type == "SRV" {
-		c.Content = dnsutil.AddOrigin(c.Content+".", domain)
+
+		//		// ORIGINAL:
+		//		c.Content = dnsutil.AddOrigin(c.Content+".", domain)
+
+		// Proposed by pjeby in https://github.com/StackExchange/dnscontrol/pull/703/files
+		c.Content = dnsutil.AddOrigin(strings.TrimSuffix(c.Content, ".")+".", domain)
+
+		//		// Proposed by tlim: (keep it explicit, use modern conventions)
+		//		if c.Content == "" {
+		//			c.Content = "."
+		//		} else {
+		//			c.Content = c.Content + "."
+		//		}
+
 	}
 
 	rc := &models.RecordConfig{

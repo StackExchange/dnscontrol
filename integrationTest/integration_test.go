@@ -607,6 +607,8 @@ func makeTests(t *testing.T) []*TestGroup {
 			tc("Change to other name", mx("@", 5, "foo2.com."), mx("mail", 15, "foo3.com.")),
 			tc("Change Preference", mx("@", 7, "foo2.com."), mx("mail", 15, "foo3.com.")),
 			tc("Record pointing to @", mx("foo", 8, "**current-domain**")),
+			clear(),
+			tc("RFC 7505 null MX", mx("foo", 10, ".")),
 		),
 
 		testgroup("NS",
