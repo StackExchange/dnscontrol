@@ -1,6 +1,7 @@
 D("foo.com","none"
-  , TXT("@","simple")
-  , TXT("@",["one"])
-  , TXT("@",["bonie", "clyde"])
-  , TXT("@",["straw", "wood", "brick"])
+  , TXT("a","simple")
+  , TXT("b","ws at end ")
+  , TXT("c",["one"])
+  , TXT("d",["bonie", "clyde"])
+  , TXT("e",["straw", "wood", "brick"])
 );

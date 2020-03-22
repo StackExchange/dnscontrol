@@ -75,7 +75,6 @@ func (c *CloudflareApi) getRecordsForDomain(id string, domain string) ([]*models
 		}
 		page++
 	}
-	// fmt.Printf("DEBUG REORDS=%v\n", records)
 	return records, nil
 }
 

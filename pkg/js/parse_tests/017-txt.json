@@ -9,7 +9,7 @@
       "records": [
         {
           "type": "TXT",
-          "name": "@",
+          "name": "a",
           "target": "simple",
           "txtstrings": [
             "simple"
@@ -17,7 +17,15 @@
         },
         {
           "type": "TXT",
-          "name": "@",
+          "name": "b",
+          "target": "ws at end ",
+          "txtstrings": [
+            "ws at end "
+          ]
+        },
+        {
+          "type": "TXT",
+          "name": "c",
           "target": "one",
           "txtstrings": [
             "one"
@@ -25,7 +33,7 @@
         },
         {
           "type": "TXT",
-          "name": "@",
+          "name": "d",
           "target": "bonie",
           "txtstrings": [
             "bonie",
@@ -34,7 +42,7 @@
         },
         {
           "type": "TXT",
-          "name": "@",
+          "name": "e",
           "target": "straw",
           "txtstrings": [
             "straw",
