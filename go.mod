@@ -31,7 +31,7 @@ require (
 	github.com/jarcoal/httpmock v1.0.4 // indirect
 	github.com/jmespath/go-jmespath v0.3.0 // indirect
 	github.com/malexdev/utfutil v0.0.0-20180510171754-00c8d4a8e7a8 // indirect
-	github.com/miekg/dns v1.1.27
+	github.com/miekg/dns v1.1.29
 	github.com/mjibson/esc v0.2.0
 	github.com/namedotcom/go v0.0.0-20180403034216-08470befbe04
 	github.com/ovh/go-ovh v0.0.0-20181109152953-ba5adb4cf014
@@ -48,10 +48,10 @@ require (
 	github.com/tiramiseb/go-gandi v0.0.0-20200309181223-e1cf2e430b3a
 	github.com/urfave/cli/v2 v2.1.1
 	github.com/vultr/govultr v0.2.0
-	golang.org/x/crypto v0.0.0-20200221231518-2aa609cf4a9d // indirect
+	golang.org/x/crypto v0.0.0-20200320181102-891825fb96df // indirect
 	golang.org/x/net v0.0.0-20200320220750-118fecf932d8
 	golang.org/x/oauth2 v0.0.0-20200107190931-bf48bf16ab8d
-	golang.org/x/sys v0.0.0-20200219091948-cb0a6d8edb6c // indirect
+	golang.org/x/sys v0.0.0-20200321134203-328b4cd54aae // indirect
 	golang.org/x/tools v0.0.0-20200309202150-20ab64c0d93f // indirect
 	google.golang.org/api v0.20.0
 	google.golang.org/appengine v1.6.5 // indirect
