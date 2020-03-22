@@ -34,7 +34,7 @@ github.com/TomOnTime/utfutil
 # github.com/andreyvit/diff v0.0.0-20170406064948-c7f18ee00883
 ## explicit
 github.com/andreyvit/diff
-# github.com/aws/aws-sdk-go v1.29.21
+# github.com/aws/aws-sdk-go v1.29.29
 ## explicit
 github.com/aws/aws-sdk-go/aws
 github.com/aws/aws-sdk-go/aws/awserr
@@ -202,10 +202,12 @@ github.com/hexonet/go-sdk/responsetemplatemanager
 github.com/hexonet/go-sdk/socketconfig
 # github.com/jarcoal/httpmock v1.0.4
 ## explicit
-# github.com/jmespath/go-jmespath v0.0.0-20200310193758-2437e8417af5
+# github.com/jmespath/go-jmespath v0.3.0
 ## explicit
 github.com/jmespath/go-jmespath
 # github.com/malexdev/utfutil v0.0.0-20180510171754-00c8d4a8e7a8
+## explicit
+# github.com/mattn/go-runewidth v0.0.9
 ## explicit
 # github.com/miekg/dns v1.1.27
 ## explicit
@@ -221,6 +223,8 @@ github.com/mjibson/esc/embed
 # github.com/namedotcom/go v0.0.0-20180403034216-08470befbe04
 ## explicit
 github.com/namedotcom/go/namecom
+# github.com/olekukonko/tablewriter v0.0.4
+## explicit
 # github.com/ovh/go-ovh v0.0.0-20181109152953-ba5adb4cf014
 ## explicit
 github.com/ovh/go-ovh/ovh
@@ -234,6 +238,8 @@ github.com/pierrec/lz4/internal/xxh32
 github.com/pkg/errors
 # github.com/pmezard/go-difflib v1.0.0
 github.com/pmezard/go-difflib/difflib
+# github.com/psampaz/go-mod-outdated v0.5.0
+## explicit
 # github.com/renier/xmlrpc v0.0.0-20170708154548-ce4a1a486c03
 ## explicit
 github.com/renier/xmlrpc
