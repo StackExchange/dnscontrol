@@ -46,7 +46,7 @@ require (
 	github.com/tdewolff/parse v2.3.4+incompatible // indirect
 	github.com/tdewolff/test v1.0.6 // indirect
 	github.com/tiramiseb/go-gandi v0.0.0-20200309181223-e1cf2e430b3a
-	github.com/urfave/cli/v2 v2.1.1
+	github.com/urfave/cli/v2 v2.2.0
 	github.com/vultr/govultr v0.2.0
 	golang.org/x/crypto v0.0.0-20200320181102-891825fb96df // indirect
 	golang.org/x/net v0.0.0-20200320220750-118fecf932d8

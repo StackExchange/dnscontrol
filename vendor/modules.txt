@@ -287,7 +287,7 @@ github.com/tiramiseb/go-gandi
 github.com/tiramiseb/go-gandi/domain
 github.com/tiramiseb/go-gandi/internal/client
 github.com/tiramiseb/go-gandi/livedns
-# github.com/urfave/cli/v2 v2.1.1
+# github.com/urfave/cli/v2 v2.2.0
 ## explicit
 github.com/urfave/cli/v2
 # github.com/vultr/govultr v0.2.0
