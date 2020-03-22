@@ -202,7 +202,7 @@ List out-of-date modules and update any that
 
 ```
 go get -u github.com/psampaz/go-mod-outdated
-go list -u -m -json all | go-mod-outdated -update -direct 
+go list -mod=mod -u -m -json all | go-mod-outdated -update -direct 
 ```
 
 To update a module, `get` it, then re-run the unit and integration tests.
