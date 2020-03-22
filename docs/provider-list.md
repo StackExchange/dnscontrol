@@ -76,8 +76,6 @@ Maintainers of contributed providers:
 * `DNSIMPLE` @aeden
 * `EXOSCALE` @pierre-emmanuelJ
 * `GANDI_V5` @TomOnTime
-* `GANDI-LIVEDNS` (going away in 3.0)
-* `GANDI` (going away in 3.0)
 * `HEXONET` @papakai
 * `INTERNETBS` @pragmaton
 * `LINODE` @koesie10

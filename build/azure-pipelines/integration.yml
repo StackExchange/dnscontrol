@@ -62,14 +62,14 @@ jobs:
       DO_DOMAIN: $(DO_DOMAIN)
       DO_TOKEN: $(DO_TOKEN)
 
-- job: Gandi
+- job: GandiV5
   steps:
   - template: go-env.yaml
-  - script: go test -v -verbose -provider GANDI
+  - script: go test -v -verbose -provider GANDI_V5
     workingDirectory: $(wd)
     env:
-      GANDI_KEY: $(GANDI_KEY)
-      GANDI_DOMAIN: $(GANDI_DOMAIN)
+      GANDI_KEY: $(GANDI_V5_APIKEY)
+      GANDI_DOMAIN: $(GANDI_V5_DOMAIN)
 
 # - job: GandiLive
 #   steps:

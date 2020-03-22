@@ -139,7 +139,7 @@ func testPermitted(t *testing.T, p string, f TestGroup) error {
 func makeChanges(t *testing.T, prv providers.DNSServiceProvider, dc *models.DomainConfig, tst *TestCase, desc string, expectChanges bool, origConfig map[string]string) bool {
 	domainName := dc.Name
 
-	return t.Run(desc, func(t *testing.T) {
+	return t.Run(desc+":"+tst.Desc, func(t *testing.T) {
 		dom, _ := dc.Copy()
 		for _, r := range tst.Records {
 			rc := models.RecordConfig(*r)
@@ -631,10 +631,16 @@ func makeTests(t *testing.T) []*TestGroup {
 			tc("Change a TXT", txt("foo", "changed")),
 			clear(),
 			tc("Create a TXT with spaces", txt("foo", "with spaces")),
-			tc("Change a TXT with spaces", txt("foo", "with whitespace  ")),
 			tc("Create 1 TXT as array", txtmulti("foo", []string{"simple"})),
 			clear(),
 			tc("Create a 255-byte TXT", txt("foo", strings.Repeat("A", 255))),
+		),
+
+		testgroup("ws TXT",
+			not("CLOUDFLAREAPI", "NAMEDOTCOM"),
+			// These providers strip whitespace at the end of TXT records.
+			// TODO(tal): Add a check for this in normalize/validate.go
+			tc("Change a TXT with ws at end", txt("foo", "with space at end  ")),
 		),
 
 		testgroup("empty TXT", not("DNSIMPLE", "CLOUDFLAREAPI"),
@@ -676,10 +682,10 @@ func makeTests(t *testing.T) []*TestGroup {
 		testgroup("page size",
 			// Tests the paging code of providers.  Many providers page at 100.
 			// Notes:
-			//  - gandi: page size is 100, therefore we test with 99, 100, and 101
-			//  - ns1: free acct only allows 50 records, therefore we skip
-			//  - digitalocean: fails due to rate limiting, not page limits.
-			not("NS1"),
+			//  - Gandi: page size is 100, therefore we test with 99, 100, and 101
+			//  - NS1: free acct only allows 50 records, therefore we skip
+			//  - DigitalOcean: fails due to rate limiting, not page limits.
+			not("NS1", "DIGITALOCEAN"),
 			tc("99 records", manyA("rec%04d", "1.2.3.4", 99)...),
 			tc("100 records", manyA("rec%04d", "1.2.3.4", 100)...),
 			tc("101 records", manyA("rec%04d", "1.2.3.4", 101)...),
@@ -745,7 +751,7 @@ func makeTests(t *testing.T) []*TestGroup {
 			tc("Change Weight", srv("_sip._tcp", 52, 62, 7, "foo.com."), srv("_sip._tcp", 15, 65, 75, "foo4.com.")),
 			tc("Change Port", srv("_sip._tcp", 52, 62, 72, "foo.com."), srv("_sip._tcp", 15, 65, 75, "foo4.com.")),
 		),
-		testgroup("SRV w/ null target", not("NAMEDOTCOM", "HEXONET", "EXOSCALE"),
+		testgroup("SRV w/ null target", not("EXOSCALE", "HEXONET", "NAMEDOTCOM"),
 			tc("Null Target", srv("_sip._tcp", 52, 62, 72, "foo.com."), srv("_sip._tcp", 15, 65, 75, ".")),
 		),
 

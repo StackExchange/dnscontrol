@@ -11,7 +11,6 @@ import (
 	_ "github.com/StackExchange/dnscontrol/v2/providers/digitalocean"
 	_ "github.com/StackExchange/dnscontrol/v2/providers/dnsimple"
 	_ "github.com/StackExchange/dnscontrol/v2/providers/exoscale"
-	_ "github.com/StackExchange/dnscontrol/v2/providers/gandi"
 	_ "github.com/StackExchange/dnscontrol/v2/providers/gandi_v5"
 	_ "github.com/StackExchange/dnscontrol/v2/providers/gcloud"
 	_ "github.com/StackExchange/dnscontrol/v2/providers/hexonet"
