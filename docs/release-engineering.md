@@ -5,8 +5,18 @@ title: How to build and ship a release
 
 # How to build and ship a release
 
-Here are my notes from producing the v2.8 release.  Change the version number as appropriate.
+These are the instructions for producing a release.
+Please change the version number as appropriate.
 
+
+## Step 0. Tools check
+
+Make sure you are using the latest version of `go`
+(listed on [https://golang.org/dl/](https://golang.org/dl/))
+
+```
+go version
+```
 
 ## Step 1. Vendor the modules
 
@@ -17,7 +27,7 @@ sure that we have a backup in the unlikely event of a disaster.
 ```
 go mod vendor
 git add vendor
-git commit -m'vendor modules' vendor
+git commit -m'go mod vendor' vendor
 ```
 
 TODO(Tom): build.go should verify that this was done, similar to
@@ -28,8 +38,8 @@ how it tests that gofmt was run.
 
 * If you are at StackOverflow, this is in TC as "DNS > Integration Tests".
 * Otherwise:
-  * Run "go test" (documented in [Creating new DNS Resource Types](adding-new-rtypes))
-  * Run the integration tests (documented in [Writing new DNS providers](writing-providers)
+  * Run "go test ./..." (documented in [Creating new DNS Resource Types](adding-new-rtypes))
+  * Run the integration tests (documented in [Writing new DNS providers](writing-providers))
 
 
 ## Step 3. Bump the version number
@@ -99,13 +109,16 @@ Provider-specific changes:
 Fill in the `Tag version` @ `Target` with:
 
   * Tag version: v$VERSION (this should be the first tag listed)
-  * Target: master (this should be the default)
+  * Target: master (this should be the default; and disappears when
+    you enter the tag)
 
 Release title: Release v$VERSION
 
 Fill in the text box with the release notes written above.
 
-(Don't click SAVE until the next step is complete!)
+(DON'T click SAVE until the next step is complete!)
+
+(DO use the "preview" tab to proofread the text.)
 
 Create the binaries and attach them to the release:
 
@@ -119,17 +132,17 @@ This is what it looks like when you did it right:
 
 ```
 $ ./dnscontrol-Darwin version
-dnscontrol 2.8 ("ee5208bd5f19b9e5dd0bdba8d0e13403c43a469a") built 19 Dec 18 11:16 EST
+dnscontrol 3.0.0 ("a7c62e5d317e7e3da76dffd8e24d6a9d304d8159") built 22 Mar 20 15:16 EDT
 ```
 
 This is what it looks like when there was a file that wasn't checked in:
 
 ```
 $ ./dnscontrol-Darwin version
-dnscontrol 2.8 ("ee5208bd5f19b9e5dd0bdba8d0e13403c43a469a[dirty]") built 19 Dec 18 11:14 EST
-                                                          ^^^^^
-                                                          ^^^^^
-                                                          ^^^^^
+dnscontrol 3.0.0 ("ee5208bd5f19b9e5dd0bdba8d0e13403c43a469a[dirty]") built 22 Mar 20 15:16 EDT
+                                                            ^^^^^
+                                                            ^^^^^
+                                                            ^^^^^
 ```
 
 
@@ -169,7 +182,7 @@ it.  [Click here to join](https://groups.google.com/forum/#!forum/dnscontrol-dis
 Mention on [https://gitter.im/dnscontrol/Lobby](https://gitter.im/dnscontrol/Lobby) that the new release has shipped.
 
 ```
-dnscontrol $VERSION has been released! https://github.com/StackExchange/dnscontrol/releases/tag/v$VERSION
+ANNOUNCEMENT: dnscontrol $VERSION has been released! https://github.com/StackExchange/dnscontrol/releases/tag/v$VERSION
 ```
 
 
