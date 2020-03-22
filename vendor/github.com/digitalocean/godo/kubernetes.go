@@ -520,6 +520,7 @@ func (svc *KubernetesServiceOp) GetCredentials(ctx context.Context, clusterID st
 	if get.ExpirySeconds != nil {
 		q.Add("expiry_seconds", strconv.Itoa(*get.ExpirySeconds))
 	}
+	req.URL.RawQuery = q.Encode()
 	credentials := new(KubernetesClusterCredentials)
 	resp, err := svc.client.Do(ctx, req, credentials)
 	if err != nil {

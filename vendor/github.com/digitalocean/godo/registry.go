@@ -10,6 +10,8 @@ import (
 
 const (
 	registryPath = "/v2/registry"
+	// RegistryServer is the hostname of the DigitalOcean registry service
+	RegistryServer = "registry.digitalocean.com"
 )
 
 // RegistryService is an interface for interfacing with the Registry endpoints

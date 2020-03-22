@@ -1,5 +1,23 @@
 # Change Log
 
+## unreleased
+
+## [v1.33.0] - 2020-03-20
+
+- #310 Add BillingHistory service and List endpoint - @rbutler
+- #316 load balancers: add new enable_backend_keepalive field - @anitgandhi
+
+## [v1.32.0] - 2020-03-04
+
+- #311 Add reset database user auth method - @zbarahal-do
+
+## [v1.31.0] - 2020-02-28
+
+- #305 invoices: GetPDF and GetCSV methods - @rbutler
+- #304 Add NewFromToken convenience method to init client - @bentranter
+- #301 invoices: Get, Summary, and List methods - @rbutler
+- #299 Fix param expiry_seconds for kubernetes.GetCredentials request - @velp
+
 ## [v1.30.0] - 2020-02-03
 
 - #295 registry: support the created_at field - @adamwg

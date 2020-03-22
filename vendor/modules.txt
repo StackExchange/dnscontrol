@@ -89,7 +89,7 @@ github.com/davecgh/go-spew/spew
 # github.com/dgrijalva/jwt-go v3.2.1-0.20190620180102-5e25c22bd5d6+incompatible
 ## explicit
 github.com/dgrijalva/jwt-go
-# github.com/digitalocean/godo v1.30.0
+# github.com/digitalocean/godo v1.33.0
 ## explicit
 github.com/digitalocean/godo
 # github.com/dimchansky/utfbom v1.1.0
@@ -130,7 +130,7 @@ github.com/gobwas/glob/util/runes
 github.com/gobwas/glob/util/strings
 # github.com/gofrs/uuid v3.2.0+incompatible
 github.com/gofrs/uuid
-# github.com/golang/protobuf v1.3.3
+# github.com/golang/protobuf v1.3.5
 ## explicit
 github.com/golang/protobuf/proto
 github.com/golang/protobuf/ptypes
@@ -207,8 +207,6 @@ github.com/hexonet/go-sdk/socketconfig
 github.com/jmespath/go-jmespath
 # github.com/malexdev/utfutil v0.0.0-20180510171754-00c8d4a8e7a8
 ## explicit
-# github.com/mattn/go-runewidth v0.0.9
-## explicit
 # github.com/miekg/dns v1.1.27
 ## explicit
 github.com/miekg/dns
@@ -223,8 +221,6 @@ github.com/mjibson/esc/embed
 # github.com/namedotcom/go v0.0.0-20180403034216-08470befbe04
 ## explicit
 github.com/namedotcom/go/namecom
-# github.com/olekukonko/tablewriter v0.0.4
-## explicit
 # github.com/ovh/go-ovh v0.0.0-20181109152953-ba5adb4cf014
 ## explicit
 github.com/ovh/go-ovh/ovh
@@ -238,8 +234,6 @@ github.com/pierrec/lz4/internal/xxh32
 github.com/pkg/errors
 # github.com/pmezard/go-difflib v1.0.0
 github.com/pmezard/go-difflib/difflib
-# github.com/psampaz/go-mod-outdated v0.5.0
-## explicit
 # github.com/renier/xmlrpc v0.0.0-20170708154548-ce4a1a486c03
 ## explicit
 github.com/renier/xmlrpc
@@ -327,7 +321,7 @@ golang.org/x/crypto/pkcs12/internal/rc2
 # golang.org/x/mod v0.2.0
 golang.org/x/mod/module
 golang.org/x/mod/semver
-# golang.org/x/net v0.0.0-20200226121028-0de0cce0169b
+# golang.org/x/net v0.0.0-20200320220750-118fecf932d8
 ## explicit
 golang.org/x/net/bpf
 golang.org/x/net/context
