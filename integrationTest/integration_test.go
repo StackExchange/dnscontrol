@@ -610,7 +610,7 @@ func makeTests(t *testing.T) []*TestGroup {
 		),
 
 		testgroup("Null MX",
-			only("CLOUDFLAREAPI"), // Other providers might support this, CF definitely does
+			only("BIND", "CLOUDFLAREAPI", "GCLOUD", "ROUTE53"), // Not all providers support RFC 7505
 			tc("Null MX", mx("@", 0, ".")),
 		),
 
