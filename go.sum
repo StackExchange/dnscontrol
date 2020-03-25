@@ -3,8 +3,6 @@ cloud.google.com/go v0.34.0/go.mod h1:aQUYkXzVsufM+DwF1aE+0xfcU+56JwCaLick0ClmMT
 cloud.google.com/go v0.38.0/go.mod h1:990N+gfupTy94rShfmMCWGDn0LpTmnzTp2qbd1dvSRU=
 cloud.google.com/go v0.41.1-0.20190703172311-335e9e09b93e h1:E4NknbTPW+1SVNhlxaJolqh+W5FM4q7KsiR2zv8tVNg=
 cloud.google.com/go v0.41.1-0.20190703172311-335e9e09b93e/go.mod h1:05T3xsDVUIfRZP+EM2ftPky59P2i67FhEj6hjkpO5GE=
-github.com/Azure/azure-sdk-for-go v39.1.0+incompatible h1:ZwZgxG+8jLMJbY2NN1e8wiqE+/j4GiuHEc7U5wvPR94=
-github.com/Azure/azure-sdk-for-go v39.1.0+incompatible/go.mod h1:9XXNKU+eRnpl9moKnB4QOLf1HestfXbmab5FXxiDBjc=
 github.com/Azure/azure-sdk-for-go v40.5.0+incompatible h1:CVQNKuUepSFBo6BW6gM1J9slPHLRcjn6vaw+j+causw=
 github.com/Azure/azure-sdk-for-go v40.5.0+incompatible/go.mod h1:9XXNKU+eRnpl9moKnB4QOLf1HestfXbmab5FXxiDBjc=
 github.com/Azure/go-autorest/autorest v0.9.0/go.mod h1:xyHB1BMZT0cuDHU7I0+g046+BFDTQ8rEZB0s4Yfa6bI=
@@ -240,8 +238,6 @@ github.com/tdewolff/test v1.0.6 h1:76mzYJQ83Op284kMT+63iCNCI7NEERsIN8dLM+RiKr4=
 github.com/tdewolff/test v1.0.6/go.mod h1:6DAvZliBAAnD7rhVgwaM7DE5/d9NMOAJ09SqYqeK4QE=
 github.com/tiramiseb/go-gandi v0.0.0-20200309181223-e1cf2e430b3a h1:OktNmi+7LyUfkvkezbCZnKeU/DMZ59FI0F7YrsPTWqc=
 github.com/tiramiseb/go-gandi v0.0.0-20200309181223-e1cf2e430b3a/go.mod h1:wevS0bE43PMSmEldbtya+tp+Ow180ftEPix8Onwh+E4=
-github.com/urfave/cli/v2 v2.1.1 h1:Qt8FeAtxE/vfdrLmR3rxR6JRE0RoVmbXu8+6kZtYU4k=
-github.com/urfave/cli/v2 v2.1.1/go.mod h1:SE9GqnLQmjVa0iPEY0f1w3ygNIYcIJ0OKPMoW2caLfQ=
 github.com/urfave/cli/v2 v2.2.0 h1:JTTnM6wKzdA0Jqodd966MVj4vWbbquZykeX1sKbe2C4=
 github.com/urfave/cli/v2 v2.2.0/go.mod h1:SE9GqnLQmjVa0iPEY0f1w3ygNIYcIJ0OKPMoW2caLfQ=
 github.com/vultr/govultr v0.2.0 h1:CZSNNCk+PHz9hzmfH2PFGkDgc3qNetwZqtcaqL8shlg=
