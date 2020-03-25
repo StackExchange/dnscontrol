@@ -610,7 +610,7 @@ func makeTests(t *testing.T) []*TestGroup {
 		),
 
 		testgroup("Null MX",
-			only("BIND", "CLOUDFLAREAPI", "GCLOUD", "ROUTE53"), // Not all providers support RFC 7505
+			not("AZURE_DNS", "GANDI_V5", "NAMEDOTCOM", "DIGITALOCEAN"), // These providers don't support RFC 7505
 			tc("Null MX", mx("@", 0, ".")),
 		),
 
