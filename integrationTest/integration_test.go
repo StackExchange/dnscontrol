@@ -609,6 +609,11 @@ func makeTests(t *testing.T) []*TestGroup {
 			tc("Record pointing to @", mx("foo", 8, "**current-domain**")),
 		),
 
+		testgroup("Null MX",
+			not("AZURE_DNS", "GANDI_V5", "NAMEDOTCOM", "DIGITALOCEAN"), // These providers don't support RFC 7505
+			tc("Null MX", mx("@", 0, ".")),
+		),
+
 		testgroup("NS",
 			not("DNSIMPLE", "EXOSCALE"),
 			// DNSIMPLE: Does not support NS records nor subdomains.
