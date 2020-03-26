@@ -102,7 +102,12 @@ type Bind struct {
 
 // GetNameservers returns the nameservers for a domain.
 func (c *Bind) GetNameservers(string) ([]*models.Nameserver, error) {
-	return c.nameservers, nil
+	var r []string
+	for _, j := range c.nameservers {
+		r = append(r, j.Name)
+		fmt.Printf("DEBUG: %q\n", j.Name)
+	}
+	return models.ToNameservers(r)
 }
 
 // ListZones returns all the zones in an account
