@@ -98,7 +98,7 @@ func init() {
 
 // GetNameservers returns the nameservers for a domain.
 func (api *LinodeApi) GetNameservers(domain string) ([]*models.Nameserver, error) {
-	return models.StringsToNameservers(defaultNameServerNames), nil
+	return models.ToNameservers(defaultNameServerNames)
 }
 
 // GetZoneRecords gets the records of a zone and returns them in RecordConfig format.

@@ -249,9 +249,7 @@ func (n *Namecheap) generateRecords(dc *models.DomainConfig) error {
 // GetNameservers returns the nameservers for a domain.
 func (n *Namecheap) GetNameservers(domainName string) ([]*models.Nameserver, error) {
 	// return default namecheap nameservers
-	ns := NamecheapDefaultNs
-
-	return models.StringsToNameservers(ns), nil
+	return models.ToNameservers(NamecheapDefaultNs)
 }
 
 // GetRegistrarCorrections returns corrections to update nameservers.

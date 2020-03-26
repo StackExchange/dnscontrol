@@ -137,7 +137,7 @@ func (api *Provider) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Co
 
 // GetNameservers gets the Vultr nameservers for a domain
 func (api *Provider) GetNameservers(domain string) ([]*models.Nameserver, error) {
-	return models.StringsToNameservers(defaultNS), nil
+	return models.ToNameservers(defaultNS)
 }
 
 // EnsureDomainExists adds a domain to the Vutr DNS service if it does not exist
