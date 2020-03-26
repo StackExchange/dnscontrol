@@ -49,8 +49,7 @@ func newReg(conf map[string]string, _ json.RawMessage) (providers.DNSServiceProv
 // GetNameservers returns the nameservers for a domain.
 func (s *SoftLayer) GetNameservers(domain string) ([]*models.Nameserver, error) {
 	// Always use the same nameservers for softlayer
-	nservers := []string{"ns1.softlayer.com", "ns2.softlayer.com"}
-	return models.StringsToNameservers(nservers), nil
+	return models.ToNameservers([]string{"ns1.softlayer.com", "ns2.softlayer.com"})
 }
 
 // GetZoneRecords gets the records of a zone and returns them in RecordConfig format.
