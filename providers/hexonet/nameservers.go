@@ -37,7 +37,7 @@ func (n *HXClient) GetNameservers(domain string) ([]*models.Nameserver, error) {
 			toUse[idx] = matches[0]
 		}
 	}
-	return models.StringsToNameservers(toUse), nil
+	return models.ToNameservers(toUse)
 }
 
 func (n *HXClient) getNameserversRaw(domain string) ([]string, error) {

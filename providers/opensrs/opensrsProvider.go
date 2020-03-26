@@ -39,7 +39,7 @@ type OpenSRSApi struct {
 }
 
 func (c *OpenSRSApi) GetNameservers(domainName string) ([]*models.Nameserver, error) {
-	return models.StringsToNameservers(defaultNameServerNames), nil
+	return models.ToNameservers(defaultNameServerNames)
 }
 
 func (c *OpenSRSApi) GetRegistrarCorrections(dc *models.DomainConfig) ([]*models.Correction, error) {
