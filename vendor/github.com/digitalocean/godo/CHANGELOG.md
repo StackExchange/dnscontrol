@@ -2,6 +2,10 @@
 
 ## unreleased
 
+## [v1.33.1] - 2020-03-23
+
+- #318 upgrade github.com/stretchr/objx past 0.1.1 - @hilary
+
 ## [v1.33.0] - 2020-03-20
 
 - #310 Add BillingHistory service and List endpoint - @rbutler

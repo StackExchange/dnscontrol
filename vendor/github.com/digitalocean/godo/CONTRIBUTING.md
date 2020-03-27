@@ -26,7 +26,7 @@ git clone https://github.com/digitalocean/godo
 When working on code in this repository, tests can be run via:
 
 ```sh
-go test .
+go test -mod=vendor .
 ```
 
 ## Versioning
