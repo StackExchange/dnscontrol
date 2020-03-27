@@ -11,21 +11,21 @@ type DomainRecord struct {
 	RrsetValues []string `json:"rrset_values,omitempty"`
 }
 
-// ListDomainRecords lists all records in the zone associated with a domain
-func (g *LiveDNS) ListDomainRecords(fqdn string) (records []DomainRecord, err error) {
+// GetDomainRecords lists all records in the zone associated with a domain
+func (g *LiveDNS) GetDomainRecords(fqdn string) (records []DomainRecord, err error) {
 	_, err = g.client.Get("domains/"+fqdn+"/records", nil, &records)
 	return
 }
 
-// ListDomainRecordsAsText lists all records in a zone and returns them as a text file
+// GetDomainRecordsAsText lists all records in a zone and returns them as a text file
 // ... and by text, I mean a slice of bytes
-func (g *LiveDNS) ListDomainRecordsAsText(uuid string) ([]byte, error) {
+func (g *LiveDNS) GetDomainRecordsAsText(uuid string) ([]byte, error) {
 	_, content, err := g.client.GetBytes("domains/"+uuid+"/records", nil)
 	return content, err
 }
 
-// ListDomainRecordsByName lists all records with a specific name in a zone
-func (g *LiveDNS) ListDomainRecordsByName(fqdn, name string) (records []DomainRecord, err error) {
+// GetDomainRecordsByName lists all records with a specific name in a zone
+func (g *LiveDNS) GetDomainRecordsByName(fqdn, name string) (records []DomainRecord, err error) {
 	_, err = g.client.Get("domains/"+fqdn+"/records/"+name, nil, &records)
 	return
 }
@@ -85,8 +85,8 @@ func (g *LiveDNS) DeleteAllDomainRecords(fqdn string) (err error) {
 	return
 }
 
-// DeleteDomainRecords deletes all records with the given name in the zone attached to a domain
-func (g *LiveDNS) DeleteDomainRecords(fqdn, name string) (err error) {
+// DeleteDomainRecordsByName deletes all records with the given name in the zone attached to a domain
+func (g *LiveDNS) DeleteDomainRecordsByName(fqdn, name string) (err error) {
 	_, err = g.client.Delete("domains/"+fqdn+"/records/"+name, nil, nil)
 	return
 }

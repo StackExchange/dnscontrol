@@ -39,9 +39,7 @@ github.com/DisposaBoy/JsonConfigReader v0.0.0-20171218180944-5ea4d0ddac55 h1:jbG
 github.com/DisposaBoy/JsonConfigReader v0.0.0-20171218180944-5ea4d0ddac55/go.mod h1:GCzqZQHydohgVLSIqRKZeTt8IGb1Y4NaFfim3H40uUI=
 github.com/TomOnTime/utfutil v0.0.0-20180511104225-09c41003ee1d h1:WtAMR0fPCOfK7TPGZ8ZpLLY18HRvL7XJ3xcs0wnREgo=
 github.com/TomOnTime/utfutil v0.0.0-20180511104225-09c41003ee1d/go.mod h1:WML6KOYjeU8N6YyusMjj2qRvaPNUEvrQvaxuFcMRFJY=
-github.com/alecthomas/kingpin v2.2.6+incompatible/go.mod h1:59OFYbFVLKQKq+mqrL6Rw5bR0c3ACQaawgXx0QYndlE=
-github.com/alecthomas/template v0.0.0-20190718012654-fb15b899a751/go.mod h1:LOuyumcjzFXgccqObfd/Ljyb9UuFJ6TxHnclSeseNhc=
-github.com/alecthomas/units v0.0.0-20190924025748-f65c72e2690d/go.mod h1:rBZYJk541a8SKzHPHnH3zbiI+7dagKZ0cgpgrD7Fyho=
+github.com/alecthomas/kong v0.2.2/go.mod h1:kQOmtJgV+Lb4aj+I2LEn40cbtawdWJ9Y8QLq+lElKxE=
 github.com/andreyvit/diff v0.0.0-20170406064948-c7f18ee00883 h1:bvNMNQO63//z+xNgfBlViaCIJKLlCJ6/fmUseuG0wVQ=
 github.com/andreyvit/diff v0.0.0-20170406064948-c7f18ee00883/go.mod h1:rCTlJbsFo29Kk6CurOXKm700vrz8f0KW0JNfpkRJY/8=
 github.com/armon/go-metrics v0.0.0-20180917152333-f0300d1749da/go.mod h1:Q73ZrmVTwzkszR9V5SSuryQ31EELlFMUz1kKyl939pY=
@@ -199,6 +197,7 @@ github.com/philhug/opensrs-go v0.0.0-20171126225031-9dfa7433020d h1:nf4+lHs8TQeI
 github.com/philhug/opensrs-go v0.0.0-20171126225031-9dfa7433020d/go.mod h1:VDIGNBy0tHXMDAu4gxHFQJDq3NuwqUxw2Kok7wi+6ck=
 github.com/pierrec/lz4 v2.0.5+incompatible h1:2xWsjqPFWcplujydGg4WmhC/6fZqK42wMM8aXeqhl0I=
 github.com/pierrec/lz4 v2.0.5+incompatible/go.mod h1:pdkljMzZIN41W+lC3N2tnIh5sFi+IEE17M5jbnwPHcY=
+github.com/pkg/errors v0.8.1/go.mod h1:bwawxfHBFNV+L2hUp1rHADufV3IMtnDRdf1r5NINEl0=
 github.com/pkg/errors v0.9.1 h1:FEBLx1zS214owpjy7qsBeixbURkuhQAwrK5UwLGTwt4=
 github.com/pkg/errors v0.9.1/go.mod h1:bwawxfHBFNV+L2hUp1rHADufV3IMtnDRdf1r5NINEl0=
 github.com/pmezard/go-difflib v1.0.0 h1:4DBwDE0NGyQoBHbLQYPwSUPoCMWR5BEzIk/f1lZbAQM=
@@ -238,8 +237,8 @@ github.com/tdewolff/parse v2.3.4+incompatible h1:x05/cnGwIMf4ceLuDMBOdQ1qGniMoxp
 github.com/tdewolff/parse v2.3.4+incompatible/go.mod h1:8oBwCsVmUkgHO8M5iCzSIDtpzXOT0WXX9cWhz+bIzJQ=
 github.com/tdewolff/test v1.0.6 h1:76mzYJQ83Op284kMT+63iCNCI7NEERsIN8dLM+RiKr4=
 github.com/tdewolff/test v1.0.6/go.mod h1:6DAvZliBAAnD7rhVgwaM7DE5/d9NMOAJ09SqYqeK4QE=
-github.com/tiramiseb/go-gandi v0.0.0-20200309181223-e1cf2e430b3a h1:OktNmi+7LyUfkvkezbCZnKeU/DMZ59FI0F7YrsPTWqc=
-github.com/tiramiseb/go-gandi v0.0.0-20200309181223-e1cf2e430b3a/go.mod h1:wevS0bE43PMSmEldbtya+tp+Ow180ftEPix8Onwh+E4=
+github.com/tiramiseb/go-gandi v0.0.0-20200313161345-6b74caa58663 h1:rTwjlbRvLWPYjzF8lK8tb7p+3CbEHRN20KhLqn+GYwM=
+github.com/tiramiseb/go-gandi v0.0.0-20200313161345-6b74caa58663/go.mod h1:5ir8fVjXFOi0veARbG7mi3NzUZSUdiyAX7l+8QFQvd4=
 github.com/urfave/cli/v2 v2.2.0 h1:JTTnM6wKzdA0Jqodd966MVj4vWbbquZykeX1sKbe2C4=
 github.com/urfave/cli/v2 v2.2.0/go.mod h1:SE9GqnLQmjVa0iPEY0f1w3ygNIYcIJ0OKPMoW2caLfQ=
 github.com/vultr/govultr v0.2.0 h1:CZSNNCk+PHz9hzmfH2PFGkDgc3qNetwZqtcaqL8shlg=

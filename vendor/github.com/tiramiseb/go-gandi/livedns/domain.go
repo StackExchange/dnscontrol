@@ -49,24 +49,6 @@ func (g *LiveDNS) UpdateDomain(fqdn string, details UpdateDomainRequest) (respon
 	return
 }
 
-// GetDomainAXFRSecondaries returns the list of IPs that are permitted to do AXFR transfers of the domain
-func (g *LiveDNS) GetDomainAXFRSecondaries(fqdn string) (secondaries []string, err error) {
-	_, err = g.client.Get("domains/"+fqdn+"/axfr/slaves", nil, &secondaries)
-	return
-}
-
-// CreateDomainAXFRSecondary adds an IP address to the list of IPs that are permitted to do AXFR transfers of the domain
-func (g *LiveDNS) CreateDomainAXFRSecondary(fqdn string, ip string) (err error) {
-	_, err = g.client.Put("domains/"+fqdn+"/axfr/slaves/"+ip, nil, nil)
-	return
-}
-
-// DeleteDomainAXFRSecondary removes an IP address from the list of IPs that are permitted to do AXFR transfers of the domain
-func (g *LiveDNS) DeleteDomainAXFRSecondary(fqdn string, ip string) (response client.StandardResponse, err error) {
-	_, err = g.client.Delete("domains/"+fqdn+"/axfr/slaves/"+ip, nil, &response)
-	return
-}
-
 // GetDomainNS returns the list of the nameservers for a domain
 func (g *LiveDNS) GetDomainNS(fqdn string) (ns []string, err error) {
 	_, err = g.client.Get("domains/"+fqdn+"/nameservers", nil, &ns)
