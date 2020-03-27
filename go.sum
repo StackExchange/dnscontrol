@@ -3,8 +3,6 @@ cloud.google.com/go v0.34.0/go.mod h1:aQUYkXzVsufM+DwF1aE+0xfcU+56JwCaLick0ClmMT
 cloud.google.com/go v0.38.0/go.mod h1:990N+gfupTy94rShfmMCWGDn0LpTmnzTp2qbd1dvSRU=
 cloud.google.com/go v0.41.1-0.20190703172311-335e9e09b93e h1:E4NknbTPW+1SVNhlxaJolqh+W5FM4q7KsiR2zv8tVNg=
 cloud.google.com/go v0.41.1-0.20190703172311-335e9e09b93e/go.mod h1:05T3xsDVUIfRZP+EM2ftPky59P2i67FhEj6hjkpO5GE=
-github.com/Azure/azure-sdk-for-go v40.5.0+incompatible h1:CVQNKuUepSFBo6BW6gM1J9slPHLRcjn6vaw+j+causw=
-github.com/Azure/azure-sdk-for-go v40.5.0+incompatible/go.mod h1:9XXNKU+eRnpl9moKnB4QOLf1HestfXbmab5FXxiDBjc=
 github.com/Azure/azure-sdk-for-go v40.6.0+incompatible h1:ULjp/a/UsBfnZcl45jjywhcBKex/k/A1cG9s9NapLFw=
 github.com/Azure/azure-sdk-for-go v40.6.0+incompatible/go.mod h1:9XXNKU+eRnpl9moKnB4QOLf1HestfXbmab5FXxiDBjc=
 github.com/Azure/go-autorest/autorest v0.9.0/go.mod h1:xyHB1BMZT0cuDHU7I0+g046+BFDTQ8rEZB0s4Yfa6bI=
@@ -46,8 +44,8 @@ github.com/andreyvit/diff v0.0.0-20170406064948-c7f18ee00883 h1:bvNMNQO63//z+xNg
 github.com/andreyvit/diff v0.0.0-20170406064948-c7f18ee00883/go.mod h1:rCTlJbsFo29Kk6CurOXKm700vrz8f0KW0JNfpkRJY/8=
 github.com/armon/go-metrics v0.0.0-20180917152333-f0300d1749da/go.mod h1:Q73ZrmVTwzkszR9V5SSuryQ31EELlFMUz1kKyl939pY=
 github.com/armon/go-radix v0.0.0-20180808171621-7fddfc383310/go.mod h1:ufUuZ+zHj4x4TnLV4JWEpy2hxWSpsRywHrMgIH9cCH8=
-github.com/aws/aws-sdk-go v1.29.29 h1:4TdSYzXL8bHKu80tzPjO4c0ALw4Fd8qZGqf1aozUcBU=
-github.com/aws/aws-sdk-go v1.29.29/go.mod h1:1KvfttTE3SPKMpo8g2c6jL3ZKfXtFvKscTgahTma5Xg=
+github.com/aws/aws-sdk-go v1.29.33 h1:WP85+WHalTFQR2wYp5xR2sjiVAZXew2bBQXGU1QJBXI=
+github.com/aws/aws-sdk-go v1.29.33/go.mod h1:1KvfttTE3SPKMpo8g2c6jL3ZKfXtFvKscTgahTma5Xg=
 github.com/bgentry/speakeasy v0.1.0/go.mod h1:+zsyZBPWlz7T6j88CTgSN5bM796AkVf0kBD4zp0CCIs=
 github.com/billputer/go-namecheap v0.0.0-20170915210158-0c7adb0710f8 h1:sIv3xbwhhAG94a62Q/rrSBtrWcXiYgldNOeqifyKSgo=
 github.com/billputer/go-namecheap v0.0.0-20170915210158-0c7adb0710f8/go.mod h1:bqqNsI2akL+lLWyApkYY0cxquWPKwEBU0Wd3chi3TEg=
