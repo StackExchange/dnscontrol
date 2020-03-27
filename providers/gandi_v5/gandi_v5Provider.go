@@ -122,7 +122,7 @@ func (client *api) GetZoneRecords(domain string) (models.Records, error) {
 	g := gandi.NewLiveDNSClient(client.apikey, gandi.Config{SharingID: client.sharingid, Debug: client.debug})
 
 	// Get all the existing records:
-	records, err := g.ListDomainRecords(domain)
+	records, err := g.GetDomainRecords(domain)
 	if err != nil {
 		return nil, err
 	}
@@ -224,7 +224,7 @@ func (client *api) GenerateDomainCorrections(dc *models.DomainConfig, existing m
 				&models.Correction{
 					Msg: msgs,
 					F: func() error {
-						err := g.DeleteDomainRecords(domain, shortname)
+						err := g.DeleteDomainRecordsByName(domain, shortname)
 						if err != nil {
 							return err
 						}
