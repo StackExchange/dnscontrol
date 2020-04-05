@@ -18,6 +18,7 @@ import (
 	_ "github.com/StackExchange/dnscontrol/v2/providers/linode"
 	_ "github.com/StackExchange/dnscontrol/v2/providers/namecheap"
 	_ "github.com/StackExchange/dnscontrol/v2/providers/namedotcom"
+	_ "github.com/StackExchange/dnscontrol/v2/providers/netcup"
 	_ "github.com/StackExchange/dnscontrol/v2/providers/ns1"
 	_ "github.com/StackExchange/dnscontrol/v2/providers/octodns"
 	_ "github.com/StackExchange/dnscontrol/v2/providers/opensrs"

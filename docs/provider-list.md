@@ -80,6 +80,7 @@ Maintainers of contributed providers:
 * `INTERNETBS` @pragmaton
 * `LINODE` @koesie10
 * `NAMECHEAP` @captncraig
+* `NETCUP` @kordianbruck
 * `NS1` @captncraig
 * `OCTODNS` @TomOnTime
 * `OPENSRS` @pierre-emmanuelJ
