@@ -7,9 +7,9 @@ import (
 	"strings"
 	"time"
 
-	"github.com/StackExchange/dnscontrol/v2/models"
-	"github.com/StackExchange/dnscontrol/v2/pkg/diff"
-	"github.com/StackExchange/dnscontrol/v2/pkg/printer"
+	"github.com/StackExchange/dnscontrol/v3/models"
+	"github.com/StackExchange/dnscontrol/v3/pkg/diff"
+	"github.com/StackExchange/dnscontrol/v3/pkg/printer"
 	"github.com/TomOnTime/utfutil"
 )
 

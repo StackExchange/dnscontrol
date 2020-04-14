@@ -9,7 +9,7 @@ import (
 
 	"github.com/andreyvit/diff"
 
-	_ "github.com/StackExchange/dnscontrol/v2/providers/_all"
+	_ "github.com/StackExchange/dnscontrol/v3/providers/_all"
 )
 
 func TestFormatTypes(t *testing.T) {
