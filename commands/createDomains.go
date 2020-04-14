@@ -3,7 +3,7 @@ package commands
 import (
 	"fmt"
 
-	"github.com/StackExchange/dnscontrol/v2/providers"
+	"github.com/StackExchange/dnscontrol/v3/providers"
 	"github.com/urfave/cli/v2"
 )
 

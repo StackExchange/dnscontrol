@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"runtime"
 
-	"github.com/StackExchange/dnscontrol/v2/providers"
+	"github.com/StackExchange/dnscontrol/v3/providers"
 )
 
 // This is the struct that matches either (or both) of the Registrar and/or DNSProvider interfaces:

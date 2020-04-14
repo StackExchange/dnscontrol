@@ -3,7 +3,7 @@ package vultr
 import (
 	"testing"
 
-	"github.com/StackExchange/dnscontrol/v2/models"
+	"github.com/StackExchange/dnscontrol/v3/models"
 	"github.com/vultr/govultr"
 )
 

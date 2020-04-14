@@ -6,8 +6,8 @@ import (
 	"io/ioutil"
 	"sort"
 
-	"github.com/StackExchange/dnscontrol/v2/providers"
-	_ "github.com/StackExchange/dnscontrol/v2/providers/_all"
+	"github.com/StackExchange/dnscontrol/v3/providers"
+	_ "github.com/StackExchange/dnscontrol/v3/providers/_all"
 )
 
 func generateFeatureMatrix() error {

@@ -3,7 +3,7 @@ package gandi5
 import (
 	"testing"
 
-	"github.com/StackExchange/dnscontrol/v2/models"
+	"github.com/StackExchange/dnscontrol/v3/models"
 )
 
 func TestRecordsToNative_1(t *testing.T) {
