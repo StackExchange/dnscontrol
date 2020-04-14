@@ -7,7 +7,7 @@ import (
 
 	"github.com/namedotcom/go/namecom"
 
-	"github.com/StackExchange/dnscontrol/v2/providers"
+	"github.com/StackExchange/dnscontrol/v3/providers"
 )
 
 const defaultAPIBase = "api.name.com"

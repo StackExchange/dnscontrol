@@ -5,7 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 
-	"github.com/StackExchange/dnscontrol/v2/providers"
+	"github.com/StackExchange/dnscontrol/v3/providers"
 	hxcl "github.com/hexonet/go-sdk/apiclient"
 )
 

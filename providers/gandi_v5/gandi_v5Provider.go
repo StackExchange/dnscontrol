@@ -24,10 +24,10 @@ import (
 	"github.com/miekg/dns/dnsutil"
 	gandi "github.com/tiramiseb/go-gandi"
 
-	"github.com/StackExchange/dnscontrol/v2/models"
-	"github.com/StackExchange/dnscontrol/v2/pkg/diff"
-	"github.com/StackExchange/dnscontrol/v2/pkg/printer"
-	"github.com/StackExchange/dnscontrol/v2/providers"
+	"github.com/StackExchange/dnscontrol/v3/models"
+	"github.com/StackExchange/dnscontrol/v3/pkg/diff"
+	"github.com/StackExchange/dnscontrol/v3/pkg/printer"
+	"github.com/StackExchange/dnscontrol/v3/providers"
 )
 
 // Section 1: Register this provider in the system.

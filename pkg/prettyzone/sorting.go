@@ -9,7 +9,7 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/StackExchange/dnscontrol/v2/models"
+	"github.com/StackExchange/dnscontrol/v3/models"
 )
 
 // ZoneGenData is the configuration description for the zone generator.

@@ -7,7 +7,7 @@ import (
 
 	"strconv"
 
-	"github.com/StackExchange/dnscontrol/v2/models"
+	"github.com/StackExchange/dnscontrol/v3/models"
 )
 
 // DetermineNameservers will find all nameservers we should use for a domain. It follows the following rules:

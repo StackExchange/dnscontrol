@@ -5,7 +5,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/StackExchange/dnscontrol/v2/models"
+	"github.com/StackExchange/dnscontrol/v3/models"
 )
 
 func Test_makeSoa(t *testing.T) {

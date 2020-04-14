@@ -47,8 +47,8 @@ how it tests that gofmt was run.
 Edit the "Version" variable in `main.go` and commit.
 
 ```
-export PREVVERSION=2.10.0       <<< Change to the previous version
-export VERSION=2.11.0           <<< Change to the new release version
+export PREVVERSION=3.0.0       <<< Change to the previous version
+export VERSION=3.1.0           <<< Change to the new release version
 git checkout master
 vi main.go
 git commit -m'Release v'"$VERSION" main.go
@@ -56,6 +56,16 @@ git tag v"$VERSION"
 git push origin tag v"$VERSION"
 ```
 
+NOTE: If you bump the major version, you need to change all the source
+files.  The last time this was done (v2 -> v3) these two commands
+automated all that:
+
+```
+#  Make all the changes:
+sed -i.bak -e 's@github.com.StackExchange.dnscontrol.v2@github.com/StackExchange/dnscontrol/v3@g' go.* $(fgrep -lri --include '*.go' github.com/StackExchange/dnscontrol/v2 *)
+# Delete the backup files:
+find * -name \*.bak -delete
+```
 
 ## Step 4. Write the release notes.
 

@@ -1,7 +1,7 @@
 package bind
 
 import (
-	"github.com/StackExchange/dnscontrol/v2/models"
+	"github.com/StackExchange/dnscontrol/v3/models"
 )
 
 func makeSoa(origin string, defSoa *SoaInfo, existing, desired *models.RecordConfig) (*models.RecordConfig, uint32) {

@@ -7,13 +7,13 @@ import (
 
 	"github.com/urfave/cli/v2"
 
-	"github.com/StackExchange/dnscontrol/v2/models"
-	"github.com/StackExchange/dnscontrol/v2/pkg/nameservers"
-	"github.com/StackExchange/dnscontrol/v2/pkg/normalize"
-	"github.com/StackExchange/dnscontrol/v2/pkg/notifications"
-	"github.com/StackExchange/dnscontrol/v2/pkg/printer"
-	"github.com/StackExchange/dnscontrol/v2/providers"
-	"github.com/StackExchange/dnscontrol/v2/providers/config"
+	"github.com/StackExchange/dnscontrol/v3/models"
+	"github.com/StackExchange/dnscontrol/v3/pkg/nameservers"
+	"github.com/StackExchange/dnscontrol/v3/pkg/normalize"
+	"github.com/StackExchange/dnscontrol/v3/pkg/notifications"
+	"github.com/StackExchange/dnscontrol/v3/pkg/printer"
+	"github.com/StackExchange/dnscontrol/v3/providers"
+	"github.com/StackExchange/dnscontrol/v3/providers/config"
 )
 
 var _ = cmd(catMain, func() *cli.Command {
