@@ -12,6 +12,7 @@ providers/internetbs @pragmaton
 providers/linode @koesie10
 providers/namecheap @captncraig
 # providers/namedotcom
+providers/netcup @kordianbruck
 providers/ns1 @captncraig
 # providers/route53
 # providers/softlayer
