@@ -7,9 +7,9 @@ import (
 
 	"github.com/urfave/cli/v2"
 
-	"github.com/StackExchange/dnscontrol/v2/models"
-	"github.com/StackExchange/dnscontrol/v2/pkg/js"
-	"github.com/StackExchange/dnscontrol/v2/pkg/normalize"
+	"github.com/StackExchange/dnscontrol/v3/models"
+	"github.com/StackExchange/dnscontrol/v3/pkg/js"
+	"github.com/StackExchange/dnscontrol/v3/pkg/normalize"
 )
 
 var _ = cmd(catDebug, func() *cli.Command {

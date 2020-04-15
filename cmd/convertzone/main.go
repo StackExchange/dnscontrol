@@ -46,8 +46,8 @@ import (
 	"github.com/miekg/dns"
 	"github.com/miekg/dns/dnsutil"
 
-	"github.com/StackExchange/dnscontrol/v2/pkg/prettyzone"
-	"github.com/StackExchange/dnscontrol/v2/providers/octodns/octoyaml"
+	"github.com/StackExchange/dnscontrol/v3/pkg/prettyzone"
+	"github.com/StackExchange/dnscontrol/v3/providers/octodns/octoyaml"
 )
 
 var flagInfmt = flag.String("in", "zone", "zone|octodns")

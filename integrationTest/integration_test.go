@@ -10,11 +10,11 @@ import (
 
 	"github.com/miekg/dns/dnsutil"
 
-	"github.com/StackExchange/dnscontrol/v2/models"
-	"github.com/StackExchange/dnscontrol/v2/pkg/nameservers"
-	"github.com/StackExchange/dnscontrol/v2/providers"
-	_ "github.com/StackExchange/dnscontrol/v2/providers/_all"
-	"github.com/StackExchange/dnscontrol/v2/providers/config"
+	"github.com/StackExchange/dnscontrol/v3/models"
+	"github.com/StackExchange/dnscontrol/v3/pkg/nameservers"
+	"github.com/StackExchange/dnscontrol/v3/providers"
+	_ "github.com/StackExchange/dnscontrol/v3/providers/_all"
+	"github.com/StackExchange/dnscontrol/v3/providers/config"
 )
 
 var providerToRun = flag.String("provider", "", "Provider to run")

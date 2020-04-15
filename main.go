@@ -7,8 +7,8 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/StackExchange/dnscontrol/v2/commands"
-	_ "github.com/StackExchange/dnscontrol/v2/providers/_all"
+	"github.com/StackExchange/dnscontrol/v3/commands"
+	_ "github.com/StackExchange/dnscontrol/v3/providers/_all"
 )
 
 //go:generate go run build/generate/generate.go build/generate/featureMatrix.go

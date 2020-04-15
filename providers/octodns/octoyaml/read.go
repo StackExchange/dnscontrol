@@ -18,7 +18,7 @@ import (
 
 	yaml "gopkg.in/yaml.v2"
 
-	"github.com/StackExchange/dnscontrol/v2/models"
+	"github.com/StackExchange/dnscontrol/v3/models"
 )
 
 // ReadYaml parses a yaml input and returns a list of RecordConfigs
