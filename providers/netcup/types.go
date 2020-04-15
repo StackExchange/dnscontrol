@@ -3,7 +3,7 @@ package netcup
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/StackExchange/dnscontrol/v2/models"
+	"github.com/StackExchange/dnscontrol/v3/models"
 	"github.com/miekg/dns/dnsutil"
 	"strconv"
 	"strings"
@@ -70,22 +70,6 @@ type responseLogin struct {
 	SessionId string `json:"apisessionid"`
 }
 
-type nameserverRecord struct {
-	Type string `json:"type"`
-	Name string `json:"name"`
-}
-
-type nameserverResponse []nameserverRecord
-
-type zoneRecord struct {
-	Name   string `json:"name"`
-	Type   string `json:"type"`
-	Status string `json:"status"`
-	Zone   string `json:"zone"`
-}
-
-type zoneResponse []zoneRecord
-
 func toRecordConfig(domain string, r *record) *models.RecordConfig {
 	priority, _ := strconv.ParseUint(r.Priority, 10, 32)
 
@@ -102,17 +86,17 @@ func toRecordConfig(domain string, r *record) *models.RecordConfig {
 
 	switch rtype := r.Type; rtype { // #rtype_variations
 	case "TXT":
-		rc.SetTargetTXT(r.Destination)
+		_ = rc.SetTargetTXT(r.Destination)
 	case "NS", "SRV", "ALIAS", "CNAME", "MX":
-		rc.SetTarget(dnsutil.AddOrigin(r.Destination+".", domain))
+		_ = rc.SetTarget(dnsutil.AddOrigin(r.Destination+".", domain))
 	case "CAA":
 		parts := strings.Split(r.Destination, " ")
 		caaFlag, _ := strconv.ParseUint(parts[0], 10, 32)
 		rc.CaaFlag = uint8(caaFlag)
 		rc.CaaTag = parts[1]
-		rc.SetTarget(strings.Trim(parts[2], "\""))
+		_ = rc.SetTarget(strings.Trim(parts[2], "\""))
 	default:
-		rc.SetTarget(r.Destination)
+		_ = rc.SetTarget(r.Destination)
 	}
 
 	return rc
