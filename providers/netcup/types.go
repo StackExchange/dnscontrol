@@ -87,8 +87,17 @@ func toRecordConfig(domain string, r *record) *models.RecordConfig {
 	switch rtype := r.Type; rtype { // #rtype_variations
 	case "TXT":
 		_ = rc.SetTargetTXT(r.Destination)
-	case "NS", "SRV", "ALIAS", "CNAME", "MX":
+	case "NS", "ALIAS", "CNAME", "MX":
 		_ = rc.SetTarget(dnsutil.AddOrigin(r.Destination+".", domain))
+	case "SRV":
+		parts := strings.Split(r.Destination, " ")
+		priority, _ := strconv.ParseUint(parts[0], 10, 16)
+		weight, _ := strconv.ParseUint(parts[1], 10, 16)
+		port, _ := strconv.ParseUint(parts[2], 10, 16)
+		rc.SrvPriority = uint16(priority)
+		rc.SrvWeight = uint16(weight)
+		rc.SrvPort = uint16(port)
+		_ = rc.SetTarget(parts[3])
 	case "CAA":
 		parts := strings.Split(r.Destination, " ")
 		caaFlag, _ := strconv.ParseUint(parts[0], 10, 32)
@@ -122,7 +131,7 @@ func fromRecordConfig(in *models.RecordConfig) *record {
 		rc.Destination = strings.TrimSuffix(in.GetTargetField(), ".")
 		rc.Priority = strconv.Itoa(int(in.MxPreference))
 	case "SRV":
-		rc.Priority = strconv.Itoa(int(in.SrvPriority))
+		rc.Destination = strconv.Itoa(int(in.SrvPriority)) + " " + strconv.Itoa(int(in.SrvWeight)) + " " + strconv.Itoa(int(in.SrvPort)) + " " + in.Target
 	case "CAA":
 		rc.Destination = strconv.Itoa(int(in.CaaFlag)) + " " + in.CaaTag + " \"" + in.GetTargetField() + "\""
 	case "TLSA":

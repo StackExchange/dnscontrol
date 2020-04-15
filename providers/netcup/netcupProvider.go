@@ -12,7 +12,7 @@ var features = providers.DocumentationNotes{
 	providers.DocCreateDomains:       providers.Cannot(),
 	providers.DocDualHost:            providers.Cannot(),
 	providers.DocOfficiallySupported: providers.Cannot(),
-	providers.CanUsePTR:              providers.Can(),
+	providers.CanUsePTR:              providers.Cannot(),
 	providers.CanUseSRV:              providers.Can(),
 	providers.CanUseCAA:              providers.Can(),
 	providers.CanUseTXTMulti:         providers.Can(),
