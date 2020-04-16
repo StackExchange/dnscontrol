@@ -302,7 +302,7 @@ func makeR53alias(rec *models.RecordConfig, ttlop string) string {
 	items := []string{
 		"'" + rec.Name + "'",
 		"'" + rec.R53Alias["type"] + "'",
-		rec.GetTargetField(),
+		"'" + rec.GetTargetField() + "'",
 	}
 	if z, ok := rec.R53Alias["zone_id"]; ok {
 		items = append(items, "R53_ZONE('"+z+"')")
