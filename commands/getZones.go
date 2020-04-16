@@ -235,7 +235,7 @@ func GetZone(args GetZoneArgs) error {
 			}
 
 		default:
-			return fmt.Errorf("format %q unknown", args.OutputFile)
+			return fmt.Errorf("format %q unknown", args.OutputFormat)
 		}
 	}
 	return nil
@@ -277,6 +277,8 @@ func formatDsl(zonename string, rec *models.RecordConfig, defaultTTL uint32) str
 			return fmt.Sprintf("NAMESERVER('%s')", target)
 		}
 		target = "'" + target + "'"
+	case "R53_ALIAS":
+		return makeR53alias(rec, ttlop)
 	default:
 		target = "'" + target + "'"
 	}
@@ -294,4 +296,16 @@ func makeCaa(rec *models.RecordConfig, ttlop string) string {
 	return fmt.Sprintf("%s('%s', %s%s)", rec.Type, rec.Name, target, ttlop)
 
 	// TODO(tlim): Generate a CAA_BUILDER() instead?
+}
+
+func makeR53alias(rec *models.RecordConfig, ttlop string) string {
+	items := []string{
+		"'" + rec.Name + "'",
+		"'" + rec.R53Alias["type"] + "'",
+		rec.GetTargetField(),
+	}
+	if z, ok := rec.R53Alias["zone_id"]; ok {
+		items = append(items, "R53_ZONE('"+z+"')")
+	}
+	return rec.Type + "(" + strings.Join(items, ", ") + ")"
 }
