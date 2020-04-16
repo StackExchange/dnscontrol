@@ -610,14 +610,15 @@ func makeTests(t *testing.T) []*TestGroup {
 		),
 
 		testgroup("Null MX",
-			not("AZURE_DNS", "GANDI_V5", "NAMEDOTCOM", "DIGITALOCEAN"), // These providers don't support RFC 7505
+			not("AZURE_DNS", "GANDI_V5", "NAMEDOTCOM", "DIGITALOCEAN", "NETCUP"), // These providers don't support RFC 7505
 			tc("Null MX", mx("@", 0, ".")),
 		),
 
 		testgroup("NS",
-			not("DNSIMPLE", "EXOSCALE"),
+			not("DNSIMPLE", "EXOSCALE", "NETCUP"),
 			// DNSIMPLE: Does not support NS records nor subdomains.
 			// EXOSCALE: FILL IN
+			// Netcup: NS records not currently supported.
 			tc("NS for subdomain", ns("xyz", "ns2.foo.com.")),
 			tc("Dual NS for subdomain", ns("xyz", "ns2.foo.com."), ns("xyz", "ns1.foo.com.")),
 			tc("NS Record pointing to @", ns("foo", "**current-domain**")),
@@ -648,7 +649,8 @@ func makeTests(t *testing.T) []*TestGroup {
 			tc("Change a TXT with ws at end", txt("foo", "with space at end  ")),
 		),
 
-		testgroup("empty TXT", not("DNSIMPLE", "CLOUDFLAREAPI"),
+		testgroup("empty TXT",
+			not("DNSIMPLE", "CLOUDFLAREAPI", "NETCUP"),
 			tc("TXT with empty str", txt("foo1", "")),
 			// https://github.com/StackExchange/dnscontrol/issues/598
 			// We decided that permitting the TXT target to be an empty
