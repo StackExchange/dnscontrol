@@ -245,9 +245,11 @@ func formatDsl(zonename string, rec *models.RecordConfig, defaultTTL uint32) str
 
 	target := rec.GetTargetCombined()
 
+	ttl := uint32(0)
 	ttlop := ""
 	if rec.TTL != defaultTTL && rec.TTL != 0 {
-		ttlop = fmt.Sprintf(", TTL(%d)", rec.TTL)
+		ttl = rec.TTL
+		ttlop = fmt.Sprintf(", TTL(%d)", ttl)
 	}
 
 	switch rec.Type { // #rtype_variations
@@ -278,7 +280,7 @@ func formatDsl(zonename string, rec *models.RecordConfig, defaultTTL uint32) str
 		}
 		target = "'" + target + "'"
 	case "R53_ALIAS":
-		return makeR53alias(rec, ttlop)
+		return makeR53alias(rec, ttl)
 	default:
 		target = "'" + target + "'"
 	}
@@ -298,7 +300,7 @@ func makeCaa(rec *models.RecordConfig, ttlop string) string {
 	// TODO(tlim): Generate a CAA_BUILDER() instead?
 }
 
-func makeR53alias(rec *models.RecordConfig, ttlop string) string {
+func makeR53alias(rec *models.RecordConfig, ttl uint32) string {
 	items := []string{
 		"'" + rec.Name + "'",
 		"'" + rec.R53Alias["type"] + "'",
@@ -306,6 +308,9 @@ func makeR53alias(rec *models.RecordConfig, ttlop string) string {
 	}
 	if z, ok := rec.R53Alias["zone_id"]; ok {
 		items = append(items, "R53_ZONE('"+z+"')")
+	}
+	if ttl != 0 {
+		items = append(items, fmt.Sprintf("TTL(%d)", ttl))
 	}
 	return rec.Type + "(" + strings.Join(items, ", ") + ")"
 }
