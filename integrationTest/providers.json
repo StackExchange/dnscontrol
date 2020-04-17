@@ -77,6 +77,12 @@
     "apiuser": "$NAMEDOTCOM_USER",
     "domain": "$NAMEDOTCOM_DOMAIN"
   },
+  "NETCUP": {
+    "api-key": "$NETCUP_KEY",
+    "api-password": "$NETCUP_PASSWORD",
+    "customer-number": "$NETCUP_CUSTOMER_NUMBER",
+    "domain": "$NETCUP_DOMAIN"
+  },
   "NS1": {
     "api_token": "$NS1_TOKEN",
     "domain": "$NS1_DOMAIN"
