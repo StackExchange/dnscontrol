@@ -9,6 +9,7 @@ import (
 	"github.com/StackExchange/dnscontrol/v3/pkg/prettyzone"
 	"github.com/StackExchange/dnscontrol/v3/providers"
 	"github.com/StackExchange/dnscontrol/v3/providers/config"
+	"github.com/davecgh/go-spew/spew"
 	"github.com/urfave/cli/v2"
 )
 
@@ -179,6 +180,7 @@ func GetZone(args GetZoneArgs) error {
 	zoneRecs := make([]models.Records, len(zones))
 	for i, zone := range zones {
 		recs, err := provider.GetZoneRecords(zone)
+		spew.Dump(recs)
 		if err != nil {
 			return err
 		}
