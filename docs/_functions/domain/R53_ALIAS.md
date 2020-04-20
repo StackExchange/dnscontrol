@@ -35,12 +35,12 @@ The zone id can be found depending on the target type:
 {% include startExample.html %}
 {% highlight js %}
 
-D("example.com", REGISTRAR, DnsProvider("ROUTE53"),
-  R53_ALIAS("foo", "A", "bar"),                              // record in same zone
-  R53_ALIAS("foo", "A", "bar", R53_ZONE('Z35SXDOTRQ7X7K')),  // record in same zone, zone specified
-  R53_ALIAS("foo", "A", "blahblah.elasticloadbalancing.us-west-1.amazonaws.com", R53_ZONE('Z368ELLRRE2KJ0')),     // a classic ELB in us-west-1
-  R53_ALIAS("foo", "A", "blahblah.elasticbeanstalk.us-west-2.amazonaws.com", R53_ZONE('Z38NKT9BP95V3O')),     // an Elastic Beanstalk environment in us-west-2
-  R53_ALIAS("foo", "A", "blahblah-bucket.s3-website-us-west-1.amazonaws.com", R53_ZONE('Z2F56UZL2M1ACD')),     // a website S3 Bucket in us-west-1
+D('example.com', REGISTRAR, DnsProvider('ROUTE53'),
+  R53_ALIAS('foo', 'A', 'bar'),                              // record in same zone
+  R53_ALIAS('foo', 'A', 'bar', R53_ZONE('Z35SXDOTRQ7X7K')),  // record in same zone, zone specified
+  R53_ALIAS('foo', 'A', 'blahblah.elasticloadbalancing.us-west-1.amazonaws.com', R53_ZONE('Z368ELLRRE2KJ0')),     // a classic ELB in us-west-1
+  R53_ALIAS('foo', 'A', 'blahblah.elasticbeanstalk.us-west-2.amazonaws.com', R53_ZONE('Z38NKT9BP95V3O')),     // an Elastic Beanstalk environment in us-west-2
+  R53_ALIAS('foo', 'A', 'blahblah-bucket.s3-website-us-west-1.amazonaws.com', R53_ZONE('Z2F56UZL2M1ACD')),     // a website S3 Bucket in us-west-1
 );
 
 {%endhighlight%}
