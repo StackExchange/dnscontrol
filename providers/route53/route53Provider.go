@@ -13,6 +13,7 @@ import (
 	"github.com/aws/aws-sdk-go/aws/session"
 	r53 "github.com/aws/aws-sdk-go/service/route53"
 	r53d "github.com/aws/aws-sdk-go/service/route53domains"
+	"github.com/davecgh/go-spew/spew"
 
 	"github.com/StackExchange/dnscontrol/v3/models"
 	"github.com/StackExchange/dnscontrol/v3/pkg/diff"
@@ -194,6 +195,9 @@ func (r *route53Provider) GetZoneRecords(domain string) (models.Records, error) 
 	if err != nil {
 		return nil, err
 	}
+	fmt.Printf("SPEW1 START\n")
+	spew.Dump(records)
+	fmt.Printf("SPEW1 END\n")
 	r.originalRecords = records
 
 	var existingRecords = []*models.RecordConfig{}

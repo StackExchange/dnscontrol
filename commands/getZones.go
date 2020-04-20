@@ -180,7 +180,9 @@ func GetZone(args GetZoneArgs) error {
 	zoneRecs := make([]models.Records, len(zones))
 	for i, zone := range zones {
 		recs, err := provider.GetZoneRecords(zone)
+		fmt.Printf("SPEW2 START\n")
 		spew.Dump(recs)
+		fmt.Printf("SPEW2 START\n")
 		if err != nil {
 			return err
 		}
