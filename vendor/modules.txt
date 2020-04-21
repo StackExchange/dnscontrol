@@ -1,7 +1,7 @@
 # cloud.google.com/go v0.41.1-0.20190703172311-335e9e09b93e
 ## explicit
 cloud.google.com/go/compute/metadata
-# github.com/Azure/azure-sdk-for-go v40.6.0+incompatible
+# github.com/Azure/azure-sdk-for-go v41.3.0+incompatible
 ## explicit
 github.com/Azure/azure-sdk-for-go/services/dns/mgmt/2018-05-01/dns
 github.com/Azure/azure-sdk-for-go/version
@@ -234,6 +234,8 @@ github.com/pierrec/lz4/internal/xxh32
 github.com/pkg/errors
 # github.com/pmezard/go-difflib v1.0.0
 github.com/pmezard/go-difflib/difflib
+# github.com/psampaz/go-mod-outdated v0.6.0
+## explicit
 # github.com/renier/xmlrpc v0.0.0-20170708154548-ce4a1a486c03
 ## explicit
 github.com/renier/xmlrpc
