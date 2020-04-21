@@ -22,6 +22,10 @@ type RegistryService interface {
 	Get(context.Context) (*Registry, *Response, error)
 	Delete(context.Context) (*Response, error)
 	DockerCredentials(context.Context, *RegistryDockerCredentialsRequest) (*DockerCredentials, *Response, error)
+	ListRepositories(context.Context, string, *ListOptions) ([]*Repository, *Response, error)
+	ListRepositoryTags(context.Context, string, string, *ListOptions) ([]*RepositoryTag, *Response, error)
+	DeleteTag(context.Context, string, string, string) (*Response, error)
+	DeleteManifest(context.Context, string, string, string) (*Response, error)
 }
 
 var _ RegistryService = &RegistryServiceOp{}
@@ -48,8 +52,39 @@ type Registry struct {
 	CreatedAt time.Time `json:"created_at,omitempty"`
 }
 
+// Repository represents a repository
+type Repository struct {
+	RegistryName string         `json:"registry_name,omitempty"`
+	Name         string         `json:"name,omitempty"`
+	LatestTag    *RepositoryTag `json:"latest_tag,omitempty"`
+	TagCount     uint64         `json:"tag_count,omitempty"`
+}
+
+// RepositoryTag represents a repository tag
+type RepositoryTag struct {
+	RegistryName        string    `json:"registry_name,omitempty"`
+	Repository          string    `json:"repository,omitempty"`
+	Tag                 string    `json:"tag,omitempty"`
+	ManifestDigest      string    `json:"manifest_digest,omitempty"`
+	CompressedSizeBytes uint64    `json:"compressed_size_bytes,omitempty"`
+	SizeBytes           uint64    `json:"size_bytes,omitempty"`
+	UpdatedAt           time.Time `json:"updated_at,omitempty"`
+}
+
 type registryRoot struct {
 	Registry *Registry `json:"registry,omitempty"`
+}
+
+type repositoriesRoot struct {
+	Repositories []*Repository `json:"repositories,omitempty"`
+	Links        *Links        `json:"links,omitempty"`
+	Meta         *Meta         `json:"meta"`
+}
+
+type repositoryTagsRoot struct {
+	Tags  []*RepositoryTag `json:"tags,omitempty"`
+	Links *Links           `json:"links,omitempty"`
+	Meta  *Meta            `json:"meta"`
 }
 
 // Get retrieves the details of a Registry.
@@ -120,4 +155,90 @@ func (svc *RegistryServiceOp) DockerCredentials(ctx context.Context, request *Re
 		DockerConfigJSON: buf.Bytes(),
 	}
 	return dc, resp, nil
+}
+
+// ListRepositories returns a list of the Repositories visible with the registry's credentials.
+func (svc *RegistryServiceOp) ListRepositories(ctx context.Context, registry string, opts *ListOptions) ([]*Repository, *Response, error) {
+	path := fmt.Sprintf("%s/%s/repositories", registryPath, registry)
+	path, err := addOptions(path, opts)
+	if err != nil {
+		return nil, nil, err
+	}
+	req, err := svc.client.NewRequest(ctx, http.MethodGet, path, nil)
+	if err != nil {
+		return nil, nil, err
+	}
+	root := new(repositoriesRoot)
+
+	resp, err := svc.client.Do(ctx, req, root)
+	if err != nil {
+		return nil, resp, err
+	}
+
+	if l := root.Links; l != nil {
+		resp.Links = l
+	}
+	if m := root.Meta; m != nil {
+		resp.Meta = m
+	}
+
+	return root.Repositories, resp, nil
+}
+
+// ListRepositoryTags returns a list of the RepositoryTags available within the given repository.
+func (svc *RegistryServiceOp) ListRepositoryTags(ctx context.Context, registry, repository string, opts *ListOptions) ([]*RepositoryTag, *Response, error) {
+	path := fmt.Sprintf("%s/%s/repositories/%s/tags", registryPath, registry, repository)
+	path, err := addOptions(path, opts)
+	if err != nil {
+		return nil, nil, err
+	}
+	req, err := svc.client.NewRequest(ctx, http.MethodGet, path, nil)
+	if err != nil {
+		return nil, nil, err
+	}
+	root := new(repositoryTagsRoot)
+
+	resp, err := svc.client.Do(ctx, req, root)
+	if err != nil {
+		return nil, resp, err
+	}
+
+	if l := root.Links; l != nil {
+		resp.Links = l
+	}
+	if m := root.Meta; m != nil {
+		resp.Meta = m
+	}
+
+	return root.Tags, resp, nil
+}
+
+// DeleteTag deletes a tag within a given repository.
+func (svc *RegistryServiceOp) DeleteTag(ctx context.Context, registry, repository, tag string) (*Response, error) {
+	path := fmt.Sprintf("%s/%s/repositories/%s/tags/%s", registryPath, registry, repository, tag)
+	req, err := svc.client.NewRequest(ctx, http.MethodDelete, path, nil)
+	if err != nil {
+		return nil, err
+	}
+	resp, err := svc.client.Do(ctx, req, nil)
+	if err != nil {
+		return resp, err
+	}
+
+	return resp, nil
+}
+
+// DeleteManifest deletes a manifest by its digest within a given repository.
+func (svc *RegistryServiceOp) DeleteManifest(ctx context.Context, registry, repository, digest string) (*Response, error) {
+	path := fmt.Sprintf("%s/%s/repositories/%s/digests/%s", registryPath, registry, repository, digest)
+	req, err := svc.client.NewRequest(ctx, http.MethodDelete, path, nil)
+	if err != nil {
+		return nil, err
+	}
+	resp, err := svc.client.Do(ctx, req, nil)
+	if err != nil {
+		return resp, err
+	}
+
+	return resp, nil
 }
