@@ -48,6 +48,8 @@ github.com/armon/go-metrics v0.0.0-20180917152333-f0300d1749da/go.mod h1:Q73ZrmV
 github.com/armon/go-radix v0.0.0-20180808171621-7fddfc383310/go.mod h1:ufUuZ+zHj4x4TnLV4JWEpy2hxWSpsRywHrMgIH9cCH8=
 github.com/aws/aws-sdk-go v1.29.33 h1:WP85+WHalTFQR2wYp5xR2sjiVAZXew2bBQXGU1QJBXI=
 github.com/aws/aws-sdk-go v1.29.33/go.mod h1:1KvfttTE3SPKMpo8g2c6jL3ZKfXtFvKscTgahTma5Xg=
+github.com/aws/aws-sdk-go v1.30.11 h1:bJoa1QGyyAV4COx1SXpf+LElFVVnOreG6KM0jIxwZq0=
+github.com/aws/aws-sdk-go v1.30.11/go.mod h1:5zCpMtNQVjRREroY7sYe8lOMRSxkhG6MZveU8YkpAk0=
 github.com/bgentry/speakeasy v0.1.0/go.mod h1:+zsyZBPWlz7T6j88CTgSN5bM796AkVf0kBD4zp0CCIs=
 github.com/billputer/go-namecheap v0.0.0-20170915210158-0c7adb0710f8 h1:sIv3xbwhhAG94a62Q/rrSBtrWcXiYgldNOeqifyKSgo=
 github.com/billputer/go-namecheap v0.0.0-20170915210158-0c7adb0710f8/go.mod h1:bqqNsI2akL+lLWyApkYY0cxquWPKwEBU0Wd3chi3TEg=
