@@ -139,8 +139,6 @@ github.com/golang/protobuf/ptypes/duration
 github.com/golang/protobuf/ptypes/timestamp
 # github.com/golang/snappy v0.0.1
 github.com/golang/snappy
-# github.com/google/go-cmp v0.4.0
-## explicit
 # github.com/google/go-github v17.0.0+incompatible
 ## explicit
 github.com/google/go-github/github
@@ -203,7 +201,6 @@ github.com/hexonet/go-sdk/socketconfig
 # github.com/jarcoal/httpmock v1.0.4
 ## explicit
 # github.com/jmespath/go-jmespath v0.3.0
-## explicit
 github.com/jmespath/go-jmespath
 # github.com/malexdev/utfutil v0.0.0-20180510171754-00c8d4a8e7a8
 ## explicit
@@ -234,8 +231,6 @@ github.com/pierrec/lz4/internal/xxh32
 github.com/pkg/errors
 # github.com/pmezard/go-difflib v1.0.0
 github.com/pmezard/go-difflib/difflib
-# github.com/psampaz/go-mod-outdated v0.6.0
-## explicit
 # github.com/renier/xmlrpc v0.0.0-20170708154548-ce4a1a486c03
 ## explicit
 github.com/renier/xmlrpc
@@ -388,7 +383,6 @@ google.golang.org/api/transport/cert
 google.golang.org/api/transport/http
 google.golang.org/api/transport/http/internal/propagation
 # google.golang.org/appengine v1.6.5
-## explicit
 google.golang.org/appengine
 google.golang.org/appengine/internal
 google.golang.org/appengine/internal/app_identity
