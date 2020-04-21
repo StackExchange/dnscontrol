@@ -22,21 +22,18 @@ require (
 	github.com/go-acme/lego v2.7.2+incompatible
 	github.com/gobwas/glob v0.2.4-0.20181002190808-e7a84e9525fe
 	github.com/golang/protobuf v1.4.0 // indirect
-	github.com/google/go-cmp v0.4.0 // indirect
 	github.com/google/go-github v17.0.0+incompatible
 	github.com/google/go-querystring v1.0.1-0.20190318165438-c8c88dbee036 // indirect
 	github.com/gopherjs/jquery v0.0.0-20191017083323-73f4c7416038
 	github.com/hashicorp/vault/api v1.0.4
 	github.com/hexonet/go-sdk v2.2.3+incompatible
 	github.com/jarcoal/httpmock v1.0.4 // indirect
-	github.com/jmespath/go-jmespath v0.3.0 // indirect
 	github.com/malexdev/utfutil v0.0.0-20180510171754-00c8d4a8e7a8 // indirect
 	github.com/miekg/dns v1.1.29
 	github.com/mjibson/esc v0.2.0
 	github.com/namedotcom/go v0.0.0-20180403034216-08470befbe04
 	github.com/ovh/go-ovh v0.0.0-20181109152953-ba5adb4cf014
 	github.com/philhug/opensrs-go v0.0.0-20171126225031-9dfa7433020d
-	github.com/psampaz/go-mod-outdated v0.6.0 // indirect
 	github.com/renier/xmlrpc v0.0.0-20170708154548-ce4a1a486c03 // indirect
 	github.com/robertkrimen/otto v0.0.0-20191219234010-c382bd3c16ff
 	github.com/sergi/go-diff v1.1.0 // indirect
@@ -54,7 +51,6 @@ require (
 	golang.org/x/oauth2 v0.0.0-20200107190931-bf48bf16ab8d
 	golang.org/x/tools v0.0.0-20200309202150-20ab64c0d93f // indirect
 	google.golang.org/api v0.20.0
-	google.golang.org/appengine v1.6.5 // indirect
 	gopkg.in/ini.v1 v1.42.0 // indirect
 	gopkg.in/ns1/ns1-go.v2 v2.0.0-20170502175150-c563826f4cbe
 	gopkg.in/sourcemap.v1 v1.0.5 // indirect
