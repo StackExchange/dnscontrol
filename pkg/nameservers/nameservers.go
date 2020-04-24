@@ -7,7 +7,7 @@ import (
 
 	"strconv"
 
-	"github.com/StackExchange/dnscontrol/models"
+	"github.com/StackExchange/dnscontrol/v3/models"
 )
 
 // DetermineNameservers will find all nameservers we should use for a domain. It follows the following rules:
@@ -26,16 +26,21 @@ func DetermineNameservers(dc *models.DomainConfig) ([]*models.Nameserver, error)
 		if err != nil {
 			return nil, err
 		}
+		// Clean up the nameservers due to
+		// https://github.com/StackExchange/dnscontrol/issues/491
+		// In the far future, this warning will become a fatal error.
+		for i := range nss {
+			if strings.HasSuffix(nss[i].Name, ".") {
+				models.WarnNameserverDot(dnsProvider.Name, fmt.Sprintf("DetermineNameservers (%s) (%s)", dc.Name, nss[i].Name))
+				nss[i].Name = strings.TrimSuffix(nss[i].Name, ".")
+			}
+		}
+
 		take := len(nss)
 		if n > 0 && n < take {
 			take = n
 		}
 		for i := 0; i < take; i++ {
-			nss[i].Name = strings.TrimRight(nss[i].Name, ".")
-			// FIXME(tlim): Rather than correct broken providers, we should print
-			// a warning that the provider should be updated to store the FQDN
-			// with no trailing dot.  See also providers/namedotcom/nameservers.go
-			// Bug https://github.com/StackExchange/dnscontrol/issues/491
 			ns = append(ns, nss[i])
 		}
 	}
@@ -48,7 +53,7 @@ func AddNSRecords(dc *models.DomainConfig) {
 	if ttls, ok := dc.Metadata["ns_ttl"]; ok {
 		t, err := strconv.ParseUint(ttls, 10, 32)
 		if err != nil {
-			fmt.Printf("WARNING: ns_ttl fpr %s (%s) is not a valid int", dc.Name, ttls)
+			fmt.Printf("WARNING: ns_ttl for %s (%s) is not a valid int", dc.Name, ttls)
 		} else {
 			ttl = uint32(t)
 		}

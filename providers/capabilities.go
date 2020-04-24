@@ -1,3 +1,5 @@
+//go:generate stringer -type=Capability
+
 package providers
 
 import (
@@ -34,6 +36,10 @@ const (
 	// CanUseTXTMulti indicates the provider can handle TXT records with multiple strings
 	CanUseTXTMulti
 
+	// CanAutoDNSSEC indicates that the provider can automatically handle DNSSEC,
+	// so folks can ask for that.
+	CanAutoDNSSEC
+
 	// CantUseNOPURGE indicates NO_PURGE is broken for this provider. To make it
 	// work would require complex emulation of an incremental update mechanism,
 	// so it is easier to simply mark this feature as not working for this
@@ -49,12 +55,18 @@ const (
 
 	// CanUseRoute53Alias indicates the provider support the specific R53_ALIAS records that only the Route53 provider supports
 	CanUseRoute53Alias
+
+	// CanGetZones indicates the provider supports the get-zones subcommand.
+	CanGetZones
+
+	// CanUseAzureAlias indicates the provider support the specific Azure_ALIAS records that only the Azure provider supports
+	CanUseAzureAlias
 )
 
 var providerCapabilities = map[string]map[Capability]bool{}
 
-// ProviderHasCabability returns true if provider has capability.
-func ProviderHasCabability(pType string, cap Capability) bool {
+// ProviderHasCapability returns true if provider has capability.
+func ProviderHasCapability(pType string, cap Capability) bool {
 	if providerCapabilities[pType] == nil {
 		return false
 	}

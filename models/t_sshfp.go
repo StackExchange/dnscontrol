@@ -1,10 +1,9 @@
 package models
 
 import (
+	"fmt"
 	"strconv"
 	"strings"
-
-	"github.com/pkg/errors"
 )
 
 // SetTargetSSHFP sets the SSHFP fields.
@@ -20,10 +19,10 @@ func (rc *RecordConfig) SetTargetSSHFP(algorithm uint8, fingerprint uint8, targe
 	}
 
 	if algorithm < 1 && algorithm > 4 {
-		return errors.Errorf("SSHFP algorithm (%v) is not one of 1, 2, 3 or 4", algorithm)
+		return fmt.Errorf("SSHFP algorithm (%v) is not one of 1, 2, 3 or 4", algorithm)
 	}
 	if fingerprint < 1 && fingerprint > 2 {
-		return errors.Errorf("SSHFP fingerprint (%v) is not one of 1 or 2", fingerprint)
+		return fmt.Errorf("SSHFP fingerprint (%v) is not one of 1 or 2", fingerprint)
 	}
 
 	return nil
@@ -33,11 +32,11 @@ func (rc *RecordConfig) SetTargetSSHFP(algorithm uint8, fingerprint uint8, targe
 func (rc *RecordConfig) SetTargetSSHFPStrings(algorithm, fingerprint, target string) error {
 	i64algorithm, err := strconv.ParseUint(algorithm, 10, 8)
 	if err != nil {
-		return errors.Wrap(err, "SSHFP algorithm does not fit in 8 bits")
+		return fmt.Errorf("SSHFP algorithm does not fit in 8 bits: %w", err)
 	}
 	i64fingerprint, err := strconv.ParseUint(fingerprint, 10, 8)
 	if err != nil {
-		return errors.Wrap(err, "SSHFP fingerprint does not fit in 8 bits")
+		return fmt.Errorf("SSHFP fingerprint does not fit in 8 bits: %w", err)
 	}
 	return rc.SetTargetSSHFP(uint8(i64algorithm), uint8(i64fingerprint), target)
 }
@@ -46,7 +45,7 @@ func (rc *RecordConfig) SetTargetSSHFPStrings(algorithm, fingerprint, target str
 func (rc *RecordConfig) SetTargetSSHFPString(s string) error {
 	part := strings.Fields(s)
 	if len(part) != 3 {
-		return errors.Errorf("SSHFP value does not contain 3 fields: (%#v)", s)
+		return fmt.Errorf("SSHFP value does not contain 3 fields: (%#v)", s)
 	}
 	return rc.SetTargetSSHFPStrings(part[0], part[1], StripQuotes(part[2]))
 }

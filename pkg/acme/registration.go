@@ -54,8 +54,8 @@ func (c *certManager) createAccount(email string) (*Account, error) {
 
 type Account struct {
 	Email        string                 `json:"email"`
-	key          *ecdsa.PrivateKey      `json:"-"`
 	Registration *registration.Resource `json:"registration"`
+	key          *ecdsa.PrivateKey
 }
 
 func (a *Account) GetEmail() string {

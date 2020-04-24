@@ -6,7 +6,7 @@ import (
 	"sort"
 	"strings"
 
-	"github.com/StackExchange/dnscontrol/models"
+	"github.com/StackExchange/dnscontrol/v3/models"
 	"github.com/namedotcom/go/namecom"
 )
 
@@ -28,7 +28,7 @@ func (n *NameCom) GetNameservers(domain string) ([]*models.Nameserver, error) {
 			toUse[idx] = matches[0]
 		}
 	}
-	return models.StringsToNameservers(toUse), nil
+	return models.ToNameservers(toUse)
 }
 
 func (n *NameCom) getNameserversRaw(domain string) ([]string, error) {
@@ -55,9 +55,6 @@ func (n *NameCom) GetRegistrarCorrections(dc *models.DomainConfig) ([]*models.Co
 	expected := []string{}
 	for _, ns := range dc.Nameservers {
 		expected = append(expected, ns.Name)
-		// FIXME(tlim): This should store a FQDN with no trailing ".".
-		// See pkg/nameservers/nameservers.go for details.
-		// Bug https://github.com/StackExchange/dnscontrol/issues/491
 	}
 	sort.Strings(expected)
 	expectedNameservers := strings.Join(expected, ",")

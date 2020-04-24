@@ -1,0 +1,352 @@
+$ORIGIN example.org.
+$TTL 7200
+@          43200 IN SOA   ns1.example.org. hostmaster.example.org. 2020030700 7200 3600 864000 7200
+                 IN NS    friend-dns.example.com.
+                 IN NS    ns-a.example.net.
+                 IN NS    ns1.example.org.
+                 IN NS    ns2.example.org.
+                 IN A     192.0.2.1
+                 IN AAAA  2001:db8::1:1
+                 IN MX    10 mx.example.org.
+                 IN TXT   "v=spf1 ip4:192.0.2.25 ip6:2001:db8::1:25 mx include:_spf.example.com ~all"
+                 IN CAA   0 iodef "mailto:security@example.org"
+                 IN CAA   0 issue "example.net"
+                 IN CAA   0 issue "letsencrypt.org; accounturi=https://acme-staging-v02.api.letsencrypt.org/acme/acct/23456789"
+                 IN CAA   0 issue "letsencrypt.org; accounturi=https://acme-v01.api.letsencrypt.org/acme/reg/1234567"
+                 IN CAA   0 issue "letsencrypt.org; accounturi=https://acme-v02.api.letsencrypt.org/acme/acct/76543210"
+                 IN CAA   0 issuewild ";"
+0123456789abcdef0123456789abcdef IN CNAME verify.bing.com.
+_acme-challenge 15 IN CNAME _acme-challenge.chat-acme.d.example.net.
+_amazon-tlsa     IN TLSA  2 0 1 18ce6cfe7bf14e60b2e347b8dfe868cb31d02ebb3ada271569f50343b46db3a4
+                 IN TLSA  2 0 1 1ba5b2aa8c65401a82960118f80bec4f62304d83cec4713a19c39c011ea46db4
+                 IN TLSA  2 0 1 8ecde6884f3d87b1125ba31ac3fcb13d7016de7f57cc904fe1cb97c6ae98196e
+                 IN TLSA  2 0 1 e35d28419ed02025cfa69038cd623962458da5c695fbdea3c22b0bfb25897092
+_cacert-c3-tlsa  IN TLSA  2 0 1 4edde9e55ca453b388887caa25d5c5c5bccf2891d73b87495808293d5fac83c8
+_cacert-le-tlsa  IN TLSA  2 0 1 4edde9e55ca453b388887caa25d5c5c5bccf2891d73b87495808293d5fac83c8
+                 IN TLSA  2 1 1 60b87575447dcba2a36b7d11ac09fb24a9db406fee12d2cc90180517616e8a18
+                 IN TLSA  2 1 1 b111dd8a1c2091a89bd4fd60c57f0716cce50feeff8137cdbee0326e02cf362b
+_dmarc           IN TXT   "v=DMARC1; p=none; sp=none; rua=mailto:dmarc-notify@example.org; ruf=mailto:dmarc-notify@example.org; adkim=s"
+example.com._report._dmarc IN TXT "v=DMARC1"
+example.net._report._dmarc IN TXT "v=DMARC1"
+special.test._report._dmarc IN TXT "v=DMARC1"
+xn--2j5b.xn--9t4b11yi5a._report._dmarc IN TXT "v=DMARC1"
+xn--qck5b9a5eml3bze.xn--zckzah._report._dmarc IN TXT "v=DMARC1"
+_adsp._domainkey IN TXT   "dkim=all"
+d201911._domainkey IN TXT "v=DKIM1; k=rsa; p=MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEA4SmyE5Tz5/wPL8cb2AKuHnlFeLMOhAl1UX/NYaeDCKMWoBPTgZRT0jonKLmV2UscHdodXu5ZsLr/NAuLCp7HmPLReLz7kxKncP6ppveKxc1aq5SPTKeWe77p6BptlahHc35eiXsZRpTsEzrbEOainy1IWEd+w9p1gWbrSutwE22z0i4V88nQ9UBa1ks" "6cVGxXBZFovWC+i28aGs6Lc7cSfHG5+Mrg3ud5X4evYXTGFMPpunMcCsXrqmS5a+5gRSEMZhngha/cHjLwaJnWzKaywNWF5XOsCjL94QkS0joB7lnGOHMNSZBCcu542Y3Ht3SgHhlpkF9mIbIRfpzA9IoSQIDAQAB"
+d201911e2._domainkey IN TXT "v=DKIM1; k=ed25519; p=GBt2k2L39KUb39fg5brOppXDHXvISy0+ECGgPld/bIo="
+d202003._domainkey IN TXT "v=DKIM1; k=rsa; p=MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAv/1tQvOEs7xtKNm7PbPgY4hQjwHVvqqkDb0+TeqZHYRSczQ3c0LFJrIDFiPIdwQe/7AuKrxvATSh/uXKZ3EP4ouMgROPZnUxVXENeetJj+pc3nfGwTKUBTTTth+SO74gdIWsntjvAfduzosC4ZkxbDwZ9c253qXARGvGu+LB/iAeq0ngEbm5fU13+Jo" "pv0d4dR6oGe9GvMEnGGLZzNrxWl1BPe2x5JZ5/X/3fW8vJx3OgRB5N6fqbAJ6HZ9kcbikDH4lPPl9RIoprFk7mmwno/nXLQYGhPobmqq8wLkDiXEkWtYa5lzujz3XI3Zkk8ZIOGvdbVVfAttT0IVPnYkOhQIDAQAB"
+d202003e2._domainkey IN TXT "v=DKIM1; k=ed25519; p=DQI5d9sNMrr0SLDoAi071IFOyKnlbR29hAQdqVQecQg="
+_kerberos        IN TXT   "EXAMPLE.ORG"
+_le-amazon-tlsa  IN TLSA  2 0 1 18ce6cfe7bf14e60b2e347b8dfe868cb31d02ebb3ada271569f50343b46db3a4
+                 IN TLSA  2 0 1 1ba5b2aa8c65401a82960118f80bec4f62304d83cec4713a19c39c011ea46db4
+                 IN TLSA  2 0 1 8ecde6884f3d87b1125ba31ac3fcb13d7016de7f57cc904fe1cb97c6ae98196e
+                 IN TLSA  2 0 1 e35d28419ed02025cfa69038cd623962458da5c695fbdea3c22b0bfb25897092
+                 IN TLSA  2 1 1 60b87575447dcba2a36b7d11ac09fb24a9db406fee12d2cc90180517616e8a18
+                 IN TLSA  2 1 1 b111dd8a1c2091a89bd4fd60c57f0716cce50feeff8137cdbee0326e02cf362b
+_letsencrypt-tlsa IN TLSA 2 1 1 60b87575447dcba2a36b7d11ac09fb24a9db406fee12d2cc90180517616e8a18
+                 IN TLSA  2 1 1 b111dd8a1c2091a89bd4fd60c57f0716cce50feeff8137cdbee0326e02cf362b
+_mta-sts         IN TXT   "v=STSv1; id=20191231r1;"
+_ourca-cacert-le-tlsa IN TLSA 2 0 1 11f058f61f97b8adc66ef4801f918c71b10e5c1e3d39afde10408b3026647ef1
+                 IN TLSA  2 0 1 4edde9e55ca453b388887caa25d5c5c5bccf2891d73b87495808293d5fac83c8
+                 IN TLSA  2 0 1 ea99063a0a3bda9727032cf82da238698b90ba729300703d3956943635f96488
+                 IN TLSA  2 1 1 60b87575447dcba2a36b7d11ac09fb24a9db406fee12d2cc90180517616e8a18
+                 IN TLSA  2 1 1 b111dd8a1c2091a89bd4fd60c57f0716cce50feeff8137cdbee0326e02cf362b
+_ourca-cacert-tlsa IN TLSA 2 0 1 11f058f61f97b8adc66ef4801f918c71b10e5c1e3d39afde10408b3026647ef1
+                 IN TLSA  2 0 1 4edde9e55ca453b388887caa25d5c5c5bccf2891d73b87495808293d5fac83c8
+                 IN TLSA  2 0 1 ea99063a0a3bda9727032cf82da238698b90ba729300703d3956943635f96488
+_ourca-le-amazon-tlsa IN TLSA 2 0 1 11f058f61f97b8adc66ef4801f918c71b10e5c1e3d39afde10408b3026647ef1
+                 IN TLSA  2 0 1 18ce6cfe7bf14e60b2e347b8dfe868cb31d02ebb3ada271569f50343b46db3a4
+                 IN TLSA  2 0 1 1ba5b2aa8c65401a82960118f80bec4f62304d83cec4713a19c39c011ea46db4
+                 IN TLSA  2 0 1 8ecde6884f3d87b1125ba31ac3fcb13d7016de7f57cc904fe1cb97c6ae98196e
+                 IN TLSA  2 0 1 e35d28419ed02025cfa69038cd623962458da5c695fbdea3c22b0bfb25897092
+                 IN TLSA  2 0 1 ea99063a0a3bda9727032cf82da238698b90ba729300703d3956943635f96488
+                 IN TLSA  2 1 1 60b87575447dcba2a36b7d11ac09fb24a9db406fee12d2cc90180517616e8a18
+                 IN TLSA  2 1 1 b111dd8a1c2091a89bd4fd60c57f0716cce50feeff8137cdbee0326e02cf362b
+_ourca-le-tlsa   IN TLSA  2 0 1 11f058f61f97b8adc66ef4801f918c71b10e5c1e3d39afde10408b3026647ef1
+                 IN TLSA  2 0 1 ea99063a0a3bda9727032cf82da238698b90ba729300703d3956943635f96488
+                 IN TLSA  2 1 1 60b87575447dcba2a36b7d11ac09fb24a9db406fee12d2cc90180517616e8a18
+                 IN TLSA  2 1 1 b111dd8a1c2091a89bd4fd60c57f0716cce50feeff8137cdbee0326e02cf362b
+_ourca-tlsa      IN TLSA  2 0 1 11f058f61f97b8adc66ef4801f918c71b10e5c1e3d39afde10408b3026647ef1
+                 IN TLSA  2 0 1 ea99063a0a3bda9727032cf82da238698b90ba729300703d3956943635f96488
+_ourcaca4-tlsa   IN TLSA  2 0 1 ea99063a0a3bda9727032cf82da238698b90ba729300703d3956943635f96488
+_ourcaca5-tlsa   IN TLSA  2 0 1 11f058f61f97b8adc66ef4801f918c71b10e5c1e3d39afde10408b3026647ef1
+_report          IN TXT   "r=abuse-reports@example.org; rf=ARF; re=postmaster@example.org;"
+_sip+d2s._sctp   IN SRV   0 0 0 .
+_sips+d2s._sctp  IN SRV   0 0 0 .
+_im._sip         IN SRV   0 0 0 .
+_pres._sip       IN SRV   0 0 0 .
+*._smimecert     IN CNAME _ourca-smimea.example.org.
+_client._smtp    IN SRV   1 1 1 example.org.
+_smtp-tlsrpt     IN TXT   "v=TLSRPTv1; rua=mailto:smtp-tls-reports@example.org"
+_avatars-sec._tcp IN SRV  10 10 443 avatars.example.org.
+_finger._tcp     IN SRV   10 10 79 barbican.example.org.
+_hkp._tcp        IN SRV   0 0 0 .
+_imap._tcp       IN SRV   10 10 143 imap.example.org.
+_imaps._tcp      IN SRV   10 10 993 imap.example.org.
+_jabber._tcp     IN SRV   10 2 5269 xmpp-s2s.example.org.
+_kerberos._tcp   IN SRV   10 1 88 kerb-service.example.org.
+_kerberos-adm._tcp IN SRV 10 1 749 kerb-service.example.org.
+_ldap._tcp       IN SRV   0 0 0 .
+_openpgpkey._tcp IN SRV   10 10 443 openpgpkey.example.org.
+_pgpkey-http._tcp IN SRV  0 0 0 .
+_pgpkey-https._tcp IN SRV 0 0 0 .
+_pop3._tcp       IN SRV   0 0 0 .
+_pop3s._tcp      IN SRV   0 0 0 .
+_sieve._tcp      IN SRV   10 10 4190 imap.example.org.
+_sip+d2t._tcp    IN SRV   0 0 0 .
+_sips+d2t._tcp   IN SRV   0 0 0 .
+_submission._tcp IN SRV   10 10 587 smtp.example.org.
+_submissions._tcp IN SRV  10 10 465 smtp.example.org.
+_xmpp-client._tcp IN SRV  10 2 5222 xmpp.example.org.
+_xmpp-server._tcp IN SRV  10 2 5269 xmpp-s2s.example.org.
+_smtp._tls       IN TXT   "v=TLSRPTv1; rua=mailto:smtp-tls-reports@example.org"
+b._dns-sd._udp   IN PTR   field.example.org.
+lb._dns-sd._udp  IN PTR   field.example.org.
+r._dns-sd._udp   IN PTR   field.example.org.
+_kerberos._udp   IN SRV   10 1 88 kerb-service.example.org.
+_kpasswd._udp    IN SRV   10 1 464 kerb-service.example.org.
+_ldap._udp       IN SRV   0 0 0 .
+_sip+d2u._udp    IN SRV   0 0 0 .
+auth             IN AAAA  2001:db8::48:4558:6175:7468
+avatars          IN A     192.0.2.93
+                 IN AAAA  2001:db8::48:4558:5345:5256
+barbican         IN A     192.0.2.1
+                 IN AAAA  2001:db8::1:1
+chat             IN A     203.0.113.175
+                 IN AAAA  2001:db8::f0ab:cdef:1234:f00f
+_acme-challenge.chat 15 IN CNAME _acme-challenge.chat.chat-acme.d.example.net.
+conference.chat  IN CNAME chat.example.org.
+fileproxy.chat   IN CNAME chat.example.org.
+proxy-chatfiles.chat IN CNAME chat.example.org.
+pubsub.chat      IN CNAME chat.example.org.
+conference       IN CNAME xmpp-s2s.example.org.
+_acme-challenge.conference 15 IN CNAME _acme-challenge.conference.chat-acme.d.example.net.
+_xmpp-server._tcp.conference IN SRV 10 2 5269 chat.example.org.
+                 IN SRV   10 2 5269 xmpp-s2s.example.org.
+dict             IN CNAME services.example.org.
+dns-moreinfo     IN TXT   "Fred Bloggs, TZ=America/New_York" "Chat-Service-X: @handle1" "Chat-Service-Y: federated-handle@example.org"
+field            IN NS    ns1.example.org.
+                 IN NS    ns2.example.org.
+finger           IN CNAME barbican.example.org.
+foo              IN A     192.0.2.200
+_client._smtp.foo IN SRV  1 2 1 foo.example.org.
+fred             IN A     192.0.2.93
+                 IN AAAA  2001:db8::48:4558:5345:5256
+                 IN MX    10 mx.example.org.
+                 IN TXT   "v=spf1 ip4:192.0.2.25 ip6:2001:db8::1:25 mx include:_spf.example.com ~all"
+_dmarc.fred      IN TXT   "v=DMARC1; p=none; sp=none; rua=mailto:dmarc-notify@example.org; ruf=mailto:dmarc-notify@example.org; adkim=s"
+_adsp._domainkey.fred IN TXT "dkim=all"
+d201911._domainkey.fred IN TXT "v=DKIM1; k=rsa; p=MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEA8/OMUa3PnWh9LqXFVwlAgYDdTtbq3zTtTOSBmJq5yWauzXYcUuSmhW7CsV0QQlacCsQgJlwg9Nl1vO1TosAj5EKUCLTeSqjlWrM7KXKPx8FT71Q9H9wXX4MHUyGrqHFo0OPzcmtHwqcd8AD6MIvJHSRoAfiPPBp8Euc0wGnJZdGS75Hk+wA3MQ2/Tlz" "P2eenyiFyqmUTAGOYsGC/tREsWPiegR/OVxNGlzTY6quHsuVK7UYtIyFnYx9PGWdl3b3p7VjQ5V0Rp+2CLtVrCuS6Zs+/3NhZdM7mdD0a9Jgxakwa1le5YmB5lHTGF7T8quy6TlKe9lMUIRNjqTHfSFz/MwIDAQAB"
+d201911e2._domainkey.fred IN TXT "v=DKIM1; k=ed25519; p=rQNsV9YcPJn/WYI1EDLjNbN/VuX1Hqq/oe4htbnhv+A="
+d202003._domainkey.fred IN TXT "v=DKIM1; k=rsa; p=MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAvpnx7tnRxAnE/poIRbVb2i+f1uQCXWnBHzHurgEyZX0CmGaiJuCbr8SWOW2PoXq9YX8gIv2TS3uzwGv/4yA2yX9Z9zar1LeWUfGgMWLdCol9xfmWrI+6MUzxuwhw/mXwzigbI4bHoakh3ez/i3J9KPS85GfrOODqA1emR13f2pG8EzAcje+rwW2PtYj" "c0h+FMDpeLuPYyYszFbNlrkVUneesxnoz+o4x/s6P14ZoRqz5CR7u6G02HwnNaHads5Eto6FYYErUUTtFmgWuYabHxgLVGRdRQs6B5OBYT/3L2q/lAgmEgdy/QL+c0Psfj99/XQmO8fcM0scBzw2ukQzcUwIDAQAB"
+d202003e2._domainkey.fred IN TXT "v=DKIM1; k=ed25519; p=0DAPp/IRLYFI/Z4YSgJRi4gr7xcu1/EfJ5mjVn10aAw="
+_report.fred     IN TXT   "r=abuse-reports@example.org; rf=ARF; re=postmaster@example.org;"
+_smtp-tlsrpt.fred IN TXT  "v=TLSRPTv1; rua=mailto:smtp-tls-reports@example.org"
+_smtp._tls.fred  IN TXT   "v=TLSRPTv1; rua=mailto:smtp-tls-reports@example.org"
+git              IN CNAME vcs.example.org.
+_443._tcp.git    IN CNAME _ourca-le-tlsa.example.org.
+gladys           IN MX    10 mx.example.org.
+_dmarc.gladys    IN TXT   "v=DMARC1; p=none; sp=none; rua=mailto:dmarc-notify@example.org; ruf=mailto:dmarc-notify@example.org; adkim=s"
+_adsp._domainkey.gladys IN TXT "dkim=all"
+_report.gladys   IN TXT   "r=abuse-reports@example.org; rf=ARF; re=postmaster@example.org;"
+_smtp-tlsrpt.gladys IN TXT "v=TLSRPTv1; rua=mailto:smtp-tls-reports@example.org"
+_smtp._tls.gladys IN TXT  "v=TLSRPTv1; rua=mailto:smtp-tls-reports@example.org"
+go               IN CNAME abcdefghijklmn.cloudfront.net.
+_fedcba9876543210fedcba9876543210.go IN CNAME _45678901234abcdef45678901234abcd.ggedgsdned.acm-validations.aws.
+hermes           IN A     192.0.2.25
+                 IN AAAA  2001:db8::48:4558:696d:6170
+                 IN AAAA  2001:db8::48:4558:736d:7470
+                 IN SSHFP 1 2 4472FF5BD0528CD49216AF4503BA6A1C48F121D0292A31D6AF193E5000AF4966
+                 IN SSHFP 3 2 EABA20C1565676A5229184CCFCF82D0EE408F91757A67D9FA51A0B6F3DB4A33B
+                 IN SSHFP 4 2 A9D89920E599D04363C8B35A4CE66C1ED257EA1D16981F060B6AED080BBB7A7C
+imap             IN A     192.0.2.25
+                 IN AAAA  2001:db8::48:4558:696d:6170
+_143._tcp.imap   IN CNAME _ourca-le-tlsa.example.org.
+_4190._tcp.imap  IN CNAME _ourca-le-tlsa.example.org.
+_993._tcp.imap   IN CNAME _ourca-le-tlsa.example.org.
+imap46           IN A     192.0.2.25
+                 IN AAAA  2001:db8::48:4558:696d:6170
+_143._tcp.imap46 IN CNAME _ourca-le-tlsa.example.org.
+_993._tcp.imap46 IN CNAME _ourca-le-tlsa.example.org.
+barbican.ipv4    IN A     192.0.2.1
+finger.ipv4      IN CNAME barbican.ipv4.example.org.
+git.ipv4         IN CNAME vcs.ipv4.example.org.
+hermes.ipv4      IN A     192.0.2.25
+                 IN SSHFP 1 2 4472FF5BD0528CD49216AF4503BA6A1C48F121D0292A31D6AF193E5000AF4966
+                 IN SSHFP 3 2 EABA20C1565676A5229184CCFCF82D0EE408F91757A67D9FA51A0B6F3DB4A33B
+                 IN SSHFP 4 2 A9D89920E599D04363C8B35A4CE66C1ED257EA1D16981F060B6AED080BBB7A7C
+megalomaniac.ipv4 IN A    198.51.100.254
+                 IN SSHFP 1 2 4E9CED94D3CAF2CE915F85A63CE7279D5118A79EA03DAC59CF4859B825D2F619
+                 IN SSHFP 3 2 D3556A3DB83AB9CCEC39DC6693DD2F3E28B178C9BBA61880924821C426CC61EB
+                 IN SSHFP 4 2 C60C9D9D4728668F5F46986FF0C5B416C5E913862C4970CBFE211A6F44A111B4
+mx.ipv4          IN A     192.0.2.25
+nsauth.ipv4      IN A     192.0.2.53
+                 IN SSHFP 1 2 895804AE022FFF643B2677563CB850607C5BB564D9919896C521098C8ABC40F2
+                 IN SSHFP 3 2 28A65470BADAE611375747E1A803211C41E3D71E97741FA92CCBDF7B01F34E42
+                 IN SSHFP 4 2 6E10445C0649C03FA83E18B1873E5B89B3A20893ECB48D01E7CEDB3DD563ECF0
+people.ipv4      IN CNAME services.ipv4.example.org.
+_443._tcp.people.ipv4 IN CNAME _ourca-le-tlsa.example.org.
+security.ipv4    IN A     192.0.2.92
+_443._tcp.security.ipv4 IN CNAME _ourca-le-tlsa.example.org.
+www.security.ipv4 IN CNAME security.ipv4.example.org.
+_443._tcp.www.security.ipv4 IN CNAME _ourca-le-tlsa.example.org.
+services.ipv4    IN A     192.0.2.93
+tower.ipv4       IN A     192.0.2.42
+                 IN SSHFP 1 2 0F211D236E94768911A294F38653C4AF6FA935A5B06C975D8162F59142571451
+                 IN SSHFP 3 2 88BF7B7401C11FA2E84871EFB06CD73D8FC409154605B354DB2DDA0B82FE1160
+                 IN SSHFP 4 2 6D30900BE0FAAAE73568FC007A87B4D076CF9A351ECACC1106AEF726C34AD61D
+vcs.ipv4         IN A     192.0.2.228
+                 IN SSHFP 1 2 B518BE390BABDF43CB2D598AA6BEFA6CE6878546BF107B829D0CFC65253A97D4
+                 IN SSHFP 3 2 E92545DC0BF501F72333DDEB7A37AFC2C5B408CE39A3AD95FBC66236F0077323
+                 IN SSHFP 4 2 02289441124A487095A6CDA2E946C6A8ED9087FAF3592EC4135536C3E615521C
+www.ipv4         IN CNAME services.ipv4.example.org.
+_443._tcp.www.ipv4 IN CNAME _ourca-le-tlsa.example.org.
+barbican.ipv6    IN AAAA  2001:db8::1:1
+finger.ipv6      IN CNAME barbican.ipv6.example.org.
+git.ipv6         IN CNAME vcs.ipv6.example.org.
+hermes.ipv6      IN AAAA  2001:db8::48:4558:696d:6170
+                 IN AAAA  2001:db8::48:4558:736d:7470
+                 IN SSHFP 1 2 4472FF5BD0528CD49216AF4503BA6A1C48F121D0292A31D6AF193E5000AF4966
+                 IN SSHFP 3 2 EABA20C1565676A5229184CCFCF82D0EE408F91757A67D9FA51A0B6F3DB4A33B
+                 IN SSHFP 4 2 A9D89920E599D04363C8B35A4CE66C1ED257EA1D16981F060B6AED080BBB7A7C
+megalomaniac.ipv6 IN AAAA 2001:db8:ffef::254
+                 IN SSHFP 1 2 4E9CED94D3CAF2CE915F85A63CE7279D5118A79EA03DAC59CF4859B825D2F619
+                 IN SSHFP 3 2 D3556A3DB83AB9CCEC39DC6693DD2F3E28B178C9BBA61880924821C426CC61EB
+                 IN SSHFP 4 2 C60C9D9D4728668F5F46986FF0C5B416C5E913862C4970CBFE211A6F44A111B4
+mx.ipv6          IN AAAA  2001:db8::48:4558:736d:7470
+nsauth.ipv6      IN AAAA  2001:db8::53:1
+                 IN SSHFP 1 2 895804AE022FFF643B2677563CB850607C5BB564D9919896C521098C8ABC40F2
+                 IN SSHFP 3 2 28A65470BADAE611375747E1A803211C41E3D71E97741FA92CCBDF7B01F34E42
+                 IN SSHFP 4 2 6E10445C0649C03FA83E18B1873E5B89B3A20893ECB48D01E7CEDB3DD563ECF0
+people.ipv6      IN CNAME services.ipv6.example.org.
+_443._tcp.people.ipv6 IN CNAME _ourca-le-tlsa.example.org.
+security.ipv6    IN AAAA  2001:db8::48:4558:53:4543
+_443._tcp.security.ipv6 IN CNAME _ourca-le-tlsa.example.org.
+www.security.ipv6 IN CNAME security.ipv6.example.org.
+_443._tcp.www.security.ipv6 IN CNAME _ourca-le-tlsa.example.org.
+services.ipv6    IN AAAA  2001:db8::48:4558:5345:5256
+tower.ipv6       IN AAAA  2001:db8::1:42
+                 IN SSHFP 1 2 0F211D236E94768911A294F38653C4AF6FA935A5B06C975D8162F59142571451
+                 IN SSHFP 3 2 88BF7B7401C11FA2E84871EFB06CD73D8FC409154605B354DB2DDA0B82FE1160
+                 IN SSHFP 4 2 6D30900BE0FAAAE73568FC007A87B4D076CF9A351ECACC1106AEF726C34AD61D
+vcs.ipv6         IN AAAA  2001:db8::48:4558:4456:4353
+                 IN SSHFP 1 2 B518BE390BABDF43CB2D598AA6BEFA6CE6878546BF107B829D0CFC65253A97D4
+                 IN SSHFP 3 2 E92545DC0BF501F72333DDEB7A37AFC2C5B408CE39A3AD95FBC66236F0077323
+                 IN SSHFP 4 2 02289441124A487095A6CDA2E946C6A8ED9087FAF3592EC4135536C3E615521C
+www.ipv6         IN CNAME services.ipv6.example.org.
+_443._tcp.www.ipv6 IN CNAME _ourca-le-tlsa.example.org.
+xmpp.ipv6        IN AAAA  2001:db8::f0ab:cdef:1234:f00f
+xmpp-s2s.ipv6    IN AAAA  2001:db8::f0ab:cdef:1234:f00f
+kerb-service     IN A     192.0.2.88
+                 IN AAAA  2001:db8::48:4558:6b65:7262
+khard            IN NS    ns-cloud-d1.googledomains.com.
+                 IN NS    ns-cloud-d2.googledomains.com.
+                 IN NS    ns-cloud-d3.googledomains.com.
+                 IN NS    ns-cloud-d4.googledomains.com.
+kpeople          IN AAAA  2001:db8::48:4558:6b70:706c
+mailtest         IN MX    10 mx.example.org.
+_dmarc.mailtest  IN TXT   "v=DMARC1; p=none; sp=none; rua=mailto:dmarc-notify@example.org; ruf=mailto:dmarc-notify@example.org; adkim=s"
+_adsp._domainkey.mailtest IN TXT "dkim=all"
+d201911._domainkey.mailtest IN TXT "v=DKIM1; k=rsa; p=MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAo9xHnjHyhm1weA6FjOqM8LKVsklFt26HXWoe/0XCdmBG4i/UzQ7RiSgWO4kv7anPK6qf6rtL1xYsHufaRXG8yLsZxz+BbUP99eZvxZX78tMg4cGf+yU6uFxulCbOzsMy+8Cc3bbQTtIWYjyWBwnHdRRrCkQxjZ5KAd+x7ZB5qzqg2/eLJ7fCuNsr/xn" "0XTY6XYgug95e3h4CEW3Y+bkG81AMeJmT/hoVTcXvT/Gm6ZOUmx6faQWIHSW7qOR3VS6S75HOuclEUk0gt9r7OQHKl01sXh8g02SHRk8SUMEoNVayqplYZTFFF01Z192m7enmpp+St+HHUIT6jW/CAMCO3wIDAQAB"
+d201911e2._domainkey.mailtest IN TXT "v=DKIM1; k=ed25519; p=afulDDnhaTzdqKQN0jtWV04eOhAcyBk3NCyVheOf53Y="
+d202003._domainkey.mailtest IN TXT "v=DKIM1; k=rsa; p=MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAs2BTVZaVLvL3qZBPaF7tRR0SdOKe+hjcpQ5fqO48lEuYiyTb6lkn8DPjDK11gTN3au0Bm+y8KC7ITKSJosuJXytxt3wqc61Pwtmb/Cy7GzmOF1AuegydB3/88VbgHT5DZucHrh6+ValZk4Trkx+/1K26Uo+h2KL2n/Ldb1y91ATHujp8DqxAOhiZ7KN" "aS1okNRRB4/14jPufAbeiN8/iBPiY5Hl80KHmpjM+7vvjb5jiecZ1ZrVDj7eTES4pmVh2v1c106mZLieoqDPYaf/HVbCM4E4n1B6kjbboSOpANADIcqXxGJQ7Be7/Sk9f7KwRusrsMHXmBHgm4wPmwGVZ3QIDAQAB"
+d202003e2._domainkey.mailtest IN TXT "v=DKIM1; k=ed25519; p=iqwH/hhozFdeo1xnuldr8KUi7O7g+DzmC+f0SYMKVDc="
+_report.mailtest IN TXT   "r=abuse-reports@example.org; rf=ARF; re=postmaster@example.org;"
+_smtp-tlsrpt.mailtest IN TXT "v=TLSRPTv1; rua=mailto:smtp-tls-reports@example.org"
+_smtp._tls.mailtest IN TXT "v=TLSRPTv1; rua=mailto:smtp-tls-reports@example.org"
+megalomaniac     IN A     198.51.100.254
+                 IN AAAA  2001:db8:ffef::254
+                 IN SSHFP 1 2 4E9CED94D3CAF2CE915F85A63CE7279D5118A79EA03DAC59CF4859B825D2F619
+                 IN SSHFP 3 2 D3556A3DB83AB9CCEC39DC6693DD2F3E28B178C9BBA61880924821C426CC61EB
+                 IN SSHFP 4 2 C60C9D9D4728668F5F46986FF0C5B416C5E913862C4970CBFE211A6F44A111B4
+mta-sts          IN A     192.0.2.93
+                 IN AAAA  2001:db8::48:4558:5345:5256
+                 IN TXT   "v=STSv1; id=20191231r1;"
+mx               IN A     192.0.2.25
+                 IN AAAA  2001:db8::48:4558:736d:7470
+                 IN TXT   "v=spf1 a include:_spflarge.example.net -all"
+_client._smtp.mx IN SRV   1 2 1 mx.example.org.
+_25._tcp.mx      IN CNAME _ourca-le-tlsa.example.org.
+_26._tcp.mx      IN CNAME _ourca-le-tlsa.example.org.
+_27._tcp.mx      IN CNAME _ourca-le-tlsa.example.org.
+news-feed        IN A     192.0.2.93
+                 IN AAAA  2001:db8::48:4558:6e6e:7470
+ns1              IN A     192.0.2.53
+                 IN AAAA  2001:db8::53:1
+ns2              IN A     203.0.113.53
+                 IN AAAA  2001:db8:113::53
+nsauth           IN A     192.0.2.53
+                 IN AAAA  2001:db8::53:1
+                 IN SSHFP 1 2 895804AE022FFF643B2677563CB850607C5BB564D9919896C521098C8ABC40F2
+                 IN SSHFP 3 2 28A65470BADAE611375747E1A803211C41E3D71E97741FA92CCBDF7B01F34E42
+                 IN SSHFP 4 2 6E10445C0649C03FA83E18B1873E5B89B3A20893ECB48D01E7CEDB3DD563ECF0
+openpgpkey       IN A     192.0.2.92
+                 IN AAAA  2001:db8::48:4558:53:4543
+opqrstuvwxyz     IN CNAME gv-abcdefghijklmn.dv.googlehosted.com.
+people           IN CNAME services.example.org.
+_443._tcp.people IN CNAME _ourca-le-tlsa.example.org.
+proxy-chatfiles  IN CNAME xmpp.example.org.
+_acme-challenge.proxy-chatfiles 15 IN CNAME _acme-challenge.proxy-chatfiles.chat-acme.d.example.net.
+realhost         IN MX    0 .
+                 IN TXT   "v=spf1 -all"
+_25._tcp.realhost IN TLSA 3 0 0 0000000000000000000000000000000000000000000000000000000000000000
+security         IN A     192.0.2.92
+                 IN AAAA  2001:db8::48:4558:53:4543
+_443._tcp.security IN CNAME _ourca-le-tlsa.example.org.
+ocsp.security    IN AAAA  2001:db8::48:4558:6f63:7370
+www.security     IN CNAME security.example.org.
+_443._tcp.www.security IN CNAME _ourca-le-tlsa.example.org.
+services         IN A     192.0.2.93
+                 IN AAAA  2001:db8::48:4558:5345:5256
+_hkp._tcp.sks    IN SRV   0 0 0 .
+_pgpkey-http._tcp.sks IN SRV 0 0 0 .
+_pgpkey-https._tcp.sks IN SRV 0 0 0 .
+_hkp._tcp.sks-peer IN SRV 0 0 0 .
+_pgpkey-http._tcp.sks-peer IN SRV 0 0 0 .
+_pgpkey-https._tcp.sks-peer IN SRV 0 0 0 .
+smtp             IN A     192.0.2.25
+                 IN AAAA  2001:db8::48:4558:736d:7470
+_1465._tcp.smtp  IN CNAME _ourca-le-tlsa.example.org.
+_1587._tcp.smtp  IN CNAME _ourca-le-tlsa.example.org.
+_465._tcp.smtp   IN CNAME _ourca-le-tlsa.example.org.
+_587._tcp.smtp   IN CNAME _ourca-le-tlsa.example.org.
+smtp46           IN A     192.0.2.25
+                 IN AAAA  2001:db8::48:4558:736d:7470
+_1465._tcp.smtp46 IN CNAME _ourca-le-tlsa.example.org.
+_1587._tcp.smtp46 IN CNAME _ourca-le-tlsa.example.org.
+_465._tcp.smtp46 IN CNAME _ourca-le-tlsa.example.org.
+_587._tcp.smtp46 IN CNAME _ourca-le-tlsa.example.org.
+svn              IN AAAA  2001:db8::48:4558:73:766e
+_443._tcp.svn    IN CNAME _ourca-le-tlsa.example.org.
+tower            IN A     192.0.2.42
+                 IN AAAA  2001:db8::1:42
+                 IN SSHFP 1 2 0F211D236E94768911A294F38653C4AF6FA935A5B06C975D8162F59142571451
+                 IN SSHFP 3 2 88BF7B7401C11FA2E84871EFB06CD73D8FC409154605B354DB2DDA0B82FE1160
+                 IN SSHFP 4 2 6D30900BE0FAAAE73568FC007A87B4D076CF9A351ECACC1106AEF726C34AD61D
+vcs              IN A     192.0.2.228
+                 IN AAAA  2001:db8::48:4558:4456:4353
+                 IN SSHFP 1 2 B518BE390BABDF43CB2D598AA6BEFA6CE6878546BF107B829D0CFC65253A97D4
+                 IN SSHFP 3 2 E92545DC0BF501F72333DDEB7A37AFC2C5B408CE39A3AD95FBC66236F0077323
+                 IN SSHFP 4 2 02289441124A487095A6CDA2E946C6A8ED9087FAF3592EC4135536C3E615521C
+webauth          IN AAAA  2001:db8::48:4558:7765:6261
+wpad             IN CNAME services.example.org.
+www              IN CNAME services.example.org.
+_443._tcp.www    IN CNAME _ourca-le-tlsa.example.org.
+xmpp             IN A     203.0.113.175
+                 IN AAAA  2001:db8::f0ab:cdef:1234:f00f
+_acme-challenge.xmpp 15 IN CNAME _acme-challenge.xmpp.chat-acme.d.example.net.
+_5222._tcp.xmpp  IN CNAME _ourca-le-tlsa.example.org.
+_5223._tcp.xmpp  IN CNAME _ourca-le-tlsa.example.org.
+fileproxy.xmpp   IN CNAME xmpp.example.org.
+pubsub.xmpp      IN CNAME xmpp-s2s.example.org.
+_acme-challenge.pubsub.xmpp 15 IN CNAME _acme-challenge.pubsub.xmpp.chat-acme.d.example.net.
+xmpp-s2s         IN A     203.0.113.175
+                 IN AAAA  2001:db8::f0ab:cdef:1234:f00f
+_5269._tcp.xmpp-s2s IN CNAME _ourca-le-tlsa.example.org.
+yoyo             IN NS    ns1.he.net.
+                 IN NS    ns2.he.net.
+                 IN NS    ns3.he.net.
+                 IN NS    ns4.he.net.
+                 IN NS    ns5.he.net.
+zyxwvutsrqpo     IN CNAME gv-nmlkjihgfedcba.dv.googlehosted.com.
+

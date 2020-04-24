@@ -2,6 +2,24 @@ package models
 
 import "testing"
 
+func TestHasRecordTypeName(t *testing.T) {
+	x := &RecordConfig{
+		Type: "A",
+		Name: "@",
+	}
+	recs := Records{}
+	if recs.HasRecordTypeName("A", "@") {
+		t.Errorf("%v: expected (%v) got (%v)\n", recs, false, true)
+	}
+	recs = append(recs, x)
+	if !recs.HasRecordTypeName("A", "@") {
+		t.Errorf("%v: expected (%v) got (%v)\n", recs, true, false)
+	}
+	if recs.HasRecordTypeName("AAAA", "@") {
+		t.Errorf("%v: expected (%v) got (%v)\n", recs, false, true)
+	}
+}
+
 func TestKey(t *testing.T) {
 	var tests = []struct {
 		rc       RecordConfig

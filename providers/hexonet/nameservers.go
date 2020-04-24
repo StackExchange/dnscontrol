@@ -6,7 +6,7 @@ import (
 	"sort"
 	"strings"
 
-	"github.com/StackExchange/dnscontrol/models"
+	"github.com/StackExchange/dnscontrol/v3/models"
 )
 
 var defaultNameservers = []*models.Nameserver{
@@ -37,7 +37,7 @@ func (n *HXClient) GetNameservers(domain string) ([]*models.Nameserver, error) {
 			toUse[idx] = matches[0]
 		}
 	}
-	return models.StringsToNameservers(toUse), nil
+	return models.ToNameservers(toUse)
 }
 
 func (n *HXClient) getNameserversRaw(domain string) ([]string, error) {
@@ -45,11 +45,15 @@ func (n *HXClient) getNameserversRaw(domain string) ([]string, error) {
 		"COMMAND": "StatusDomain",
 		"DOMAIN":  domain,
 	})
-	code := r.Code()
+	code := r.GetCode()
 	if code != 200 {
 		return nil, n.GetHXApiError("Could not get status for domain", domain, r)
 	}
-	ns := r.GetColumn("NAMESERVER")
+	nsColumn := r.GetColumn("NAMESERVER")
+	if nsColumn == nil {
+		return nil, fmt.Errorf("Error getting NAMESERVER column for domain: %s", domain)
+	}
+	ns := nsColumn.GetData()
 	sort.Strings(ns)
 	return ns, nil
 }
@@ -91,9 +95,9 @@ func (n *HXClient) updateNameservers(ns []string, domain string) func() error {
 			cmd[fmt.Sprintf("NAMESERVER%d", idx)] = ns
 		}
 		response := n.client.Request(cmd)
-		code := response.Code()
+		code := response.GetCode()
 		if code != 200 {
-			return fmt.Errorf(fmt.Sprintf("%d %s", code, response.Description()))
+			return fmt.Errorf("%d %s", code, response.GetDescription())
 		}
 		return nil
 	}

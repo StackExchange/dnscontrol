@@ -3,7 +3,7 @@ package bind
 /*
 
 bind -
-  Generate zonefiles suitiable for BIND.
+  Generate zonefiles suitable for BIND.
 
 	The zonefiles are read and written to the directory -bind_dir
 
@@ -17,17 +17,18 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-	"log"
+	"io/ioutil"
 	"os"
 	"path/filepath"
 	"strings"
+	"time"
 
 	"github.com/miekg/dns"
-	"github.com/pkg/errors"
 
-	"github.com/StackExchange/dnscontrol/models"
-	"github.com/StackExchange/dnscontrol/providers"
-	"github.com/StackExchange/dnscontrol/providers/diff"
+	"github.com/StackExchange/dnscontrol/v3/models"
+	"github.com/StackExchange/dnscontrol/v3/pkg/diff"
+	"github.com/StackExchange/dnscontrol/v3/pkg/prettyzone"
+	"github.com/StackExchange/dnscontrol/v3/providers"
 )
 
 var features = providers.DocumentationNotes{
@@ -38,10 +39,12 @@ var features = providers.DocumentationNotes{
 	providers.CanUseSSHFP:            providers.Can(),
 	providers.CanUseTLSA:             providers.Can(),
 	providers.CanUseTXTMulti:         providers.Can(),
+	providers.CanAutoDNSSEC:          providers.Can("Just writes out a comment indicating DNSSEC was requested"),
 	providers.CantUseNOPURGE:         providers.Cannot(),
 	providers.DocCreateDomains:       providers.Can("Driver just maintains list of zone files. It should automatically add missing ones."),
 	providers.DocDualHost:            providers.Can(),
 	providers.DocOfficiallySupported: providers.Can(),
+	providers.CanGetZones:            providers.Can(),
 }
 
 func initBind(config map[string]string, providermeta json.RawMessage) (providers.DNSServiceProvider, error) {
@@ -59,15 +62,20 @@ func initBind(config map[string]string, providermeta json.RawMessage) (providers
 			return nil, err
 		}
 	}
-	api.nameservers = models.StringsToNameservers(api.DefaultNS)
-	return api, nil
+	var nss []string
+	for _, ns := range api.DefaultNS {
+		nss = append(nss, ns[0:len(ns)-1])
+	}
+	var err error
+	api.nameservers, err = models.ToNameservers(nss)
+	return api, err
 }
 
 func init() {
 	providers.RegisterDomainServiceProviderType("BIND", initBind, features)
 }
 
-// SoaInfo contains the parts of a SOA rtype.
+// SoaInfo contains the parts of the default SOA settings.
 type SoaInfo struct {
 	Ns      string `json:"master"`
 	Mbox    string `json:"mbox"`
@@ -84,177 +92,119 @@ func (s SoaInfo) String() string {
 
 // Bind is the provider handle for the Bind driver.
 type Bind struct {
-	DefaultNS   []string `json:"default_ns"`
-	DefaultSoa  SoaInfo  `json:"default_soa"`
-	nameservers []*models.Nameserver
-	directory   string
-}
-
-// var bindSkeletin = flag.String("bind_skeletin", "skeletin/master/var/named/chroot/var/named/master", "")
-
-func rrToRecord(rr dns.RR, origin string, replaceSerial uint32) (models.RecordConfig, uint32) {
-	// Convert's dns.RR into our native data type (models.RecordConfig).
-	// Records are translated directly with no changes.
-	// If it is an SOA for the apex domain and
-	// replaceSerial != 0, change the serial to replaceSerial.
-	// WARNING(tlim): This assumes SOAs do not have serial=0.
-	// If one is found, we replace it with serial=1.
-	var oldSerial, newSerial uint32
-	header := rr.Header()
-	rc := models.RecordConfig{
-		Type: dns.TypeToString[header.Rrtype],
-		TTL:  header.Ttl,
-	}
-	rc.SetLabelFromFQDN(strings.TrimSuffix(header.Name, "."), origin)
-	switch v := rr.(type) { // #rtype_variations
-	case *dns.A:
-		panicInvalid(rc.SetTarget(v.A.String()))
-	case *dns.AAAA:
-		panicInvalid(rc.SetTarget(v.AAAA.String()))
-	case *dns.CAA:
-		panicInvalid(rc.SetTargetCAA(v.Flag, v.Tag, v.Value))
-	case *dns.CNAME:
-		panicInvalid(rc.SetTarget(v.Target))
-	case *dns.MX:
-		panicInvalid(rc.SetTargetMX(v.Preference, v.Mx))
-	case *dns.NS:
-		panicInvalid(rc.SetTarget(v.Ns))
-	case *dns.PTR:
-		panicInvalid(rc.SetTarget(v.Ptr))
-	case *dns.NAPTR:
-		panicInvalid(rc.SetTargetNAPTR(v.Order, v.Preference, v.Flags, v.Service, v.Regexp, v.Replacement))
-	case *dns.SOA:
-		oldSerial = v.Serial
-		if oldSerial == 0 {
-			// For SOA records, we never return a 0 serial number.
-			oldSerial = 1
-		}
-		newSerial = v.Serial
-		//if (dnsutil.TrimDomainName(rc.Name, origin+".") == "@") && replaceSerial != 0 {
-		if rc.GetLabel() == "@" && replaceSerial != 0 {
-			newSerial = replaceSerial
-		}
-		panicInvalid(rc.SetTarget(
-			fmt.Sprintf("%v %v %v %v %v %v %v",
-				v.Ns, v.Mbox, newSerial, v.Refresh, v.Retry, v.Expire, v.Minttl),
-		))
-		// FIXME(tlim): SOA should be handled by splitting out the fields.
-	case *dns.SRV:
-		panicInvalid(rc.SetTargetSRV(v.Priority, v.Weight, v.Port, v.Target))
-	case *dns.SSHFP:
-		panicInvalid(rc.SetTargetSSHFP(v.Algorithm, v.Type, v.FingerPrint))
-	case *dns.TLSA:
-		panicInvalid(rc.SetTargetTLSA(v.Usage, v.Selector, v.MatchingType, v.Certificate))
-	case *dns.TXT:
-		panicInvalid(rc.SetTargetTXTs(v.Txt))
-	default:
-		log.Fatalf("rrToRecord: Unimplemented zone record type=%s (%v)\n", rc.Type, rr)
-	}
-	return rc, oldSerial
-}
-
-func panicInvalid(err error) {
-	if err != nil {
-		panic(errors.Wrap(err, "unparsable record received from BIND"))
-	}
-}
-
-func makeDefaultSOA(info SoaInfo, origin string) *models.RecordConfig {
-	// Make a default SOA record in case one isn't found:
-	soaRec := models.RecordConfig{
-		Type: "SOA",
-	}
-	soaRec.SetLabel("@", origin)
-	if len(info.Ns) == 0 {
-		info.Ns = "DEFAULT_NOT_SET."
-	}
-	if len(info.Mbox) == 0 {
-		info.Mbox = "DEFAULT_NOT_SET."
-	}
-	if info.Serial == 0 {
-		info.Serial = 1
-	}
-	if info.Refresh == 0 {
-		info.Refresh = 3600
-	}
-	if info.Retry == 0 {
-		info.Retry = 600
-	}
-	if info.Expire == 0 {
-		info.Expire = 604800
-	}
-	if info.Minttl == 0 {
-		info.Minttl = 1440
-	}
-	soaRec.SetTarget(info.String())
-
-	return &soaRec
+	DefaultNS     []string `json:"default_ns"`
+	DefaultSoa    SoaInfo  `json:"default_soa"`
+	nameservers   []*models.Nameserver
+	directory     string
+	zonefile      string // Where the zone data is expected
+	zoneFileFound bool   // Did the zonefile exist?
 }
 
 // GetNameservers returns the nameservers for a domain.
 func (c *Bind) GetNameservers(string) ([]*models.Nameserver, error) {
-	return c.nameservers, nil
+	var r []string
+	for _, j := range c.nameservers {
+		r = append(r, j.Name)
+		fmt.Printf("DEBUG: %q\n", j.Name)
+	}
+	return models.ToNameservers(r)
 }
 
-// GetDomainCorrections returns a list of corrections to update a domain.
-func (c *Bind) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Correction, error) {
-	dc.Punycode()
-	// Phase 1: Copy everything to []*models.RecordConfig:
-	//    expectedRecords < dc.Records[i]
-	//    foundRecords < zonefile
-	//
-	// Phase 2: Do any manipulations:
-	// add NS
-	// manipulate SOA
-	//
-	// Phase 3: Convert to []diff.Records and compare:
-	// expectedDiffRecords < expectedRecords
-	// foundDiffRecords < foundRecords
-	// diff.Inc...(foundDiffRecords, expectedDiffRecords )
+// ListZones returns all the zones in an account
+func (c *Bind) ListZones() ([]string, error) {
+	if _, err := os.Stat(c.directory); os.IsNotExist(err) {
+		return nil, fmt.Errorf("directory %q does not exist", c.directory)
+	}
 
-	// Default SOA record.  If we see one in the zone, this will be replaced.
-	soaRec := makeDefaultSOA(c.DefaultSoa, dc.Name)
+	filenames, err := filepath.Glob(filepath.Join(c.directory, "*.zone"))
+	if err != nil {
+		return nil, err
+	}
+	var zones []string
+	for _, n := range filenames {
+		_, file := filepath.Split(n)
+		zones = append(zones, strings.TrimSuffix(file, ".zone"))
+	}
+	return zones, nil
+}
 
-	// Read foundRecords:
-	foundRecords := make([]*models.RecordConfig, 0)
-	var oldSerial, newSerial uint32
+// GetZoneRecords gets the records of a zone and returns them in RecordConfig format.
+func (c *Bind) GetZoneRecords(domain string) (models.Records, error) {
+	foundRecords := models.Records{}
 
 	if _, err := os.Stat(c.directory); os.IsNotExist(err) {
 		fmt.Printf("\nWARNING: BIND directory %q does not exist!\n", c.directory)
 	}
 
-	zonefile := filepath.Join(c.directory, strings.Replace(strings.ToLower(dc.Name), "/", "_", -1)+".zone")
-	foundFH, err := os.Open(zonefile)
-	zoneFileFound := err == nil
-	if err != nil && !os.IsNotExist(os.ErrNotExist) {
-		// Don't whine if the file doesn't exist. However all other
-		// errors will be reported.
-		fmt.Printf("Could not read zonefile: %v\n", err)
-	} else {
-		for x := range dns.ParseZone(foundFH, dc.Name, zonefile) {
-			if x.Error != nil {
-				log.Println("Error in zonefile:", x.Error)
-			} else {
-				rec, serial := rrToRecord(x.RR, dc.Name, oldSerial)
-				if serial != 0 && oldSerial != 0 {
-					log.Fatalf("Multiple SOA records in zonefile: %v\n", zonefile)
-				}
-				if serial != 0 {
-					// This was an SOA record. Update the serial.
-					oldSerial = serial
-					newSerial = generateSerial(oldSerial)
-					// Regenerate with new serial:
-					*soaRec, _ = rrToRecord(x.RR, dc.Name, newSerial)
-					rec = *soaRec
-				}
-				foundRecords = append(foundRecords, &rec)
-			}
+	c.zonefile = filepath.Join(
+		c.directory,
+		strings.Replace(strings.ToLower(domain), "/", "_", -1)+".zone")
+
+	content, err := ioutil.ReadFile(c.zonefile)
+	if os.IsNotExist(err) {
+		// If the file doesn't exist, that's not an error. Just informational.
+		c.zoneFileFound = false
+		fmt.Fprintf(os.Stderr, "File not found: '%v'\n", c.zonefile)
+		return nil, nil
+	}
+	if err != nil {
+		return nil, fmt.Errorf("can't open %s: %w", c.zonefile, err)
+	}
+	c.zoneFileFound = true
+
+	zp := dns.NewZoneParser(strings.NewReader(string(content)), domain, c.zonefile)
+
+	for rr, ok := zp.Next(); ok; rr, ok = zp.Next() {
+		rec := models.RRtoRC(rr, domain)
+		if rec.Type == "SOA" {
 		}
+		foundRecords = append(foundRecords, &rec)
 	}
 
-	// Add SOA record to expected set:
-	if !dc.HasRecordTypeName("SOA", "@") {
+	if err := zp.Err(); err != nil {
+		return nil, fmt.Errorf("error while parsing '%v': %w", c.zonefile, err)
+	}
+	return foundRecords, nil
+}
+
+// GetDomainCorrections returns a list of corrections to update a domain.
+func (c *Bind) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Correction, error) {
+	dc.Punycode()
+
+	comments := make([]string, 0, 5)
+	comments = append(comments,
+		fmt.Sprintf("generated with dnscontrol %s", time.Now().Format(time.RFC3339)),
+	)
+	if dc.AutoDNSSEC {
+		comments = append(comments, "Automatic DNSSEC signing requested")
+	}
+
+	foundRecords, err := c.GetZoneRecords(dc.Name)
+	if err != nil {
+		return nil, err
+	}
+
+	// Find the SOA records; use them to make or update the desired SOA.
+	var foundSoa *models.RecordConfig
+	for _, r := range foundRecords {
+		if r.Type == "SOA" && r.Name == "@" {
+			foundSoa = r
+			break
+		}
+	}
+	var desiredSoa *models.RecordConfig
+	for _, r := range dc.Records {
+		if r.Type == "SOA" && r.Name == "@" {
+			desiredSoa = r
+			break
+		}
+	}
+	soaRec, nextSerial := makeSoa(dc.Name, &c.DefaultSoa, foundSoa, desiredSoa)
+	if desiredSoa == nil {
 		dc.Records = append(dc.Records, soaRec)
+		desiredSoa = dc.Records[len(dc.Records)-1]
+	} else {
+		*desiredSoa = *soaRec
 	}
 
 	// Normalize
@@ -268,50 +218,56 @@ func (c *Bind) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Correcti
 	changes := false
 	for _, i := range create {
 		changes = true
-		if zoneFileFound {
+		if c.zoneFileFound {
 			fmt.Fprintln(buf, i)
 		}
 	}
 	for _, i := range del {
 		changes = true
-		if zoneFileFound {
+		if c.zoneFileFound {
 			fmt.Fprintln(buf, i)
 		}
 	}
 	for _, i := range mod {
 		changes = true
-		if zoneFileFound {
+		if c.zoneFileFound {
 			fmt.Fprintln(buf, i)
 		}
 	}
-	msg := fmt.Sprintf("GENERATE_ZONEFILE: %s\n", dc.Name)
-	if !zoneFileFound {
-		msg = msg + fmt.Sprintf(" (%d records)\n", len(create))
+
+	var msg string
+	if c.zoneFileFound {
+		msg = fmt.Sprintf("GENERATE_ZONEFILE: '%s'. Changes:\n%s", dc.Name, buf)
+	} else {
+		msg = fmt.Sprintf("GENERATE_ZONEFILE: '%s' (new file with %d records)\n", dc.Name, len(create))
 	}
-	msg += buf.String()
+
 	corrections := []*models.Correction{}
 	if changes {
+
+		// We only change the serial number if there is a change.
+		desiredSoa.SoaSerial = nextSerial
+
 		corrections = append(corrections,
 			&models.Correction{
 				Msg: msg,
 				F: func() error {
-					fmt.Printf("CREATING ZONEFILE: %v\n", zonefile)
-					zf, err := os.Create(zonefile)
+					fmt.Printf("WRITING ZONEFILE: %v\n", c.zonefile)
+					zf, err := os.Create(c.zonefile)
 					if err != nil {
-						log.Fatalf("Could not create zonefile: %v", err)
+						return fmt.Errorf("could not create zonefile: %w", err)
 					}
-					zonefilerecords := make([]dns.RR, 0, len(dc.Records))
-					for _, r := range dc.Records {
-						zonefilerecords = append(zonefilerecords, r.ToRR())
-					}
-					err = WriteZoneFile(zf, zonefilerecords, dc.Name)
+					// Beware that if there are any fake types, then they will
+					// be commented out on write, but we don't reverse that when
+					// reading, so there will be a diff on every invocation.
+					err = prettyzone.WriteZoneFileRC(zf, dc.Records, dc.Name, 0, comments)
 
 					if err != nil {
-						log.Fatalf("WriteZoneFile error: %v\n", err)
+						return fmt.Errorf("failed WriteZoneFile: %w", err)
 					}
 					err = zf.Close()
 					if err != nil {
-						log.Fatalf("Closing: %v", err)
+						return fmt.Errorf("closing: %w", err)
 					}
 					return nil
 				},

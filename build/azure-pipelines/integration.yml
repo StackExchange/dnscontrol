@@ -1,9 +1,5 @@
 variables:
-  GOBIN:  '$(GOPATH)/bin' # Go binaries path
-  GOROOT: '/usr/local/go1.12' # Go installation path
-  GOPATH: '$(system.defaultWorkingDirectory)/gopath' # Go workspace path
-  modulePath: '$(GOPATH)/src/github.com/$(build.repository.name)' # Path to the module's code
-  wd: '$(modulePath)/integrationTest'
+  wd: '$(System.DefaultWorkingDirectory)/integrationTest'
 
 trigger:
   batch: "true"
@@ -55,9 +51,7 @@ jobs:
   - script: go test -v -verbose -provider CLOUDFLAREAPI
     workingDirectory: $(wd)
     env:
-      CF_USER: $(CF_USER)
-      CF_DOMAIN: $(CF_DOMAIN)
-      CF_KEY: $(CF_KEY)
+      CF_TOKEN: $(CF_TOKEN)
 
 - job: DigitalOcean
   steps:
@@ -68,14 +62,14 @@ jobs:
       DO_DOMAIN: $(DO_DOMAIN)
       DO_TOKEN: $(DO_TOKEN)
 
-- job: Gandi
+- job: GandiV5
   steps:
   - template: go-env.yaml
-  - script: go test -v -verbose -provider GANDI
+  - script: go test -v -verbose -provider GANDI_V5
     workingDirectory: $(wd)
     env:
-      GANDI_KEY: $(GANDI_KEY)
-      GANDI_DOMAIN: $(GANDI_DOMAIN)
+      GANDI_KEY: $(GANDI_V5_APIKEY)
+      GANDI_DOMAIN: $(GANDI_V5_DOMAIN)
 
 # - job: GandiLive
 #   steps:
@@ -113,3 +107,15 @@ jobs:
       VULTR_DOMAIN: $(VULTR_DOMAIN)
       VULTR_TOKEN: $(VULTR_TOKEN)
 
+- job: Azure
+  steps:
+    - template: go-env.yaml
+    - script: go test -v -verbose -provider AZURE_DNS
+      workingDirectory: $(wd)
+      env:
+        AZURE_CLIENT_ID: $(AZ_CLIENTID)
+        AZURE_CLIENT_SECRET: $(AZ_CLIENTSECRET)
+        AZURE_DOMAIN: $(AZ_DOMAIN)
+        AZURE_RESOURCE_GROUP: $(AZ_RSGNAME)
+        AZURE_SUBSCRIPTION_ID: $(AZ_SUBSCRIPTIONID)
+        AZURE_TENANT_ID: $(AZ_TENANTID)

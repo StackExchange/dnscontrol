@@ -1,10 +1,9 @@
 package models
 
 import (
+	"fmt"
 	"strconv"
 	"strings"
-
-	"github.com/pkg/errors"
 )
 
 // SetTargetNAPTR sets the NAPTR fields.
@@ -30,11 +29,11 @@ func (rc *RecordConfig) SetTargetNAPTR(order uint16, preference uint16, flags st
 func (rc *RecordConfig) SetTargetNAPTRStrings(order, preference, flags string, service string, regexp string, target string) error {
 	i64order, err := strconv.ParseUint(order, 10, 16)
 	if err != nil {
-		return errors.Wrap(err, "NAPTR order does not fit in 16 bits")
+		return fmt.Errorf("NAPTR order does not fit in 16 bits: %w", err)
 	}
 	i64preference, err := strconv.ParseUint(preference, 10, 16)
 	if err != nil {
-		return errors.Wrap(err, "NAPTR preference does not fit in 16 bits")
+		return fmt.Errorf("NAPTR preference does not fit in 16 bits: %w", err)
 	}
 	return rc.SetTargetNAPTR(uint16(i64order), uint16(i64preference), flags, service, regexp, target)
 }
@@ -43,7 +42,7 @@ func (rc *RecordConfig) SetTargetNAPTRStrings(order, preference, flags string, s
 func (rc *RecordConfig) SetTargetNAPTRString(s string) error {
 	part := strings.Fields(s)
 	if len(part) != 6 {
-		return errors.Errorf("NAPTR value does not contain 6 fields: (%#v)", s)
+		return fmt.Errorf("NAPTR value does not contain 6 fields: (%#v)", s)
 	}
-	return rc.SetTargetNAPTRStrings(part[0], part[1], part[2], part[3], part[4], StripQuotes(part[5]))
+	return rc.SetTargetNAPTRStrings(part[0], part[1], StripQuotes(part[2]), StripQuotes(part[3]), StripQuotes(part[4]), StripQuotes(part[5]))
 }

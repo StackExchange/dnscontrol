@@ -165,27 +165,56 @@ var AAAA = recordBuilder('AAAA');
 // ALIAS(name,target, recordModifiers...)
 var ALIAS = recordBuilder('ALIAS');
 
+// AZURE_ALIAS(name, type, target, recordModifiers...)
+var AZURE_ALIAS = recordBuilder('AZURE_ALIAS', {
+    args: [
+        ['name', _.isString],
+        ['type', validateAzureAliasType],
+        ['target', _.isString],
+    ],
+    transform: function(record, args, modifier) {
+        record.name = args.name;
+        record.target = args.target;
+        if (_.isObject(record.azure_alias)) {
+            record.azure_alias['type'] = args.type;
+        } else {
+            record.azure_alias = { type: args.type };
+        }
+    },
+});
+
+function validateAzureAliasType(value) {
+    if (!_.isString(value)) {
+        return false;
+    }
+    return ['A', 'AAAA', 'CNAME'].indexOf(value) !== -1;
+}
+
 // R53_ALIAS(name, target, type, recordModifiers...)
 var R53_ALIAS = recordBuilder('R53_ALIAS', {
-    args: [['name', _.isString], ['type', validateR53AliasType], ['target', _.isString]],
-    transform: function (record, args, modifiers) {
+    args: [
+        ['name', _.isString],
+        ['type', validateR53AliasType],
+        ['target', _.isString],
+    ],
+    transform: function(record, args, modifiers) {
         record.name = args.name;
         record.target = args.target;
         if (_.isObject(record.r53_alias)) {
             record.r53_alias['type'] = args.type;
         } else {
-            record.r53_alias = { 'type': args.type };
+            record.r53_alias = { type: args.type };
         }
     },
 });
 
 // R53_ZONE(zone_id)
 function R53_ZONE(zone_id) {
-    return function (r) {
+    return function(r) {
         if (_.isObject(r.r53_alias)) {
             r.r53_alias['zone_id'] = zone_id;
         } else {
-            r.r53_alias = { 'zone_id': zone_id }
+            r.r53_alias = { zone_id: zone_id };
         }
     };
 }
@@ -194,13 +223,30 @@ function validateR53AliasType(value) {
     if (!_.isString(value)) {
         return false;
     }
-    return ['A', 'AAAA', 'CNAME', 'CAA', 'MX', 'TXT', 'PTR', 'SPF', 'SRV', 'NAPTR'].indexOf(value) != -1;
+    return (
+        [
+            'A',
+            'AAAA',
+            'CNAME',
+            'CAA',
+            'MX',
+            'TXT',
+            'PTR',
+            'SPF',
+            'SRV',
+            'NAPTR',
+        ].indexOf(value) !== -1
+    );
 }
 
 // CAA(name,tag,value, recordModifiers...)
 var CAA = recordBuilder('CAA', {
     // TODO(tlim): It should be an error if value is not 0 or 128.
-    args: [['name', _.isString], ['tag', _.isString], ['value', _.isString]],
+    args: [
+        ['name', _.isString],
+        ['tag', _.isString],
+        ['value', _.isString],
+    ],
     transform: function(record, args, modifiers) {
         record.name = args.name;
         record.caatag = args.tag;
@@ -297,7 +343,10 @@ function isStringOrArray(x) {
 
 // TXT(name,target, recordModifiers...)
 var TXT = recordBuilder('TXT', {
-    args: [['name', _.isString], ['target', isStringOrArray]],
+    args: [
+        ['name', _.isString],
+        ['target', isStringOrArray],
+    ],
     transform: function(record, args, modifiers) {
         record.name = args.name;
         // Store the strings twice:
@@ -337,8 +386,8 @@ var NS = recordBuilder('NS');
 
 // NAMESERVER(name,target)
 function NAMESERVER(name) {
-    if (arguments.length != 1){
-        throw("NAMESERVER only accepts one argument for name.")
+    if (arguments.length != 1) {
+        throw 'NAMESERVER only accepts one argument for name.';
     }
     return function(d) {
         d.nameservers.push({ name: name });
@@ -350,7 +399,7 @@ function NAMESERVER_TTL(v) {
     if (_.isString(v)) {
         v = stringToDuration(v);
     }
-    return {ns_ttl: v.toString()};
+    return { ns_ttl: v.toString() };
 }
 
 function format_tt(transform_table) {
@@ -387,7 +436,7 @@ function format_tt(transform_table) {
 
 // IGNORE(name)
 function IGNORE(name) {
-    return function (d) {
+    return function(d) {
         d.ignored_labels.push(name);
     };
 }
@@ -411,6 +460,11 @@ function PURGE(d) {
 // NO_PURGE()
 function NO_PURGE(d) {
     d.KeepUnknown = true;
+}
+
+// AUTODNSSEC()
+function AUTODNSSEC(d) {
+    d.auto_dnssec = true;
 }
 
 /**
@@ -589,7 +643,7 @@ function num2dot(num) {
     var d = num % 256;
     for (var i = 3; i > 0; i--) {
         num = Math.floor(num / 256);
-        d = num % 256 + '.' + d;
+        d = (num % 256) + '.' + d;
     }
     return d;
 }
@@ -705,12 +759,16 @@ function CAA_BUILDER(value) {
         value.label = '@';
     }
 
-    if (value.issue && value.issue == 'none')
-        value.issue = [ ";" ];
-    if (value.issuewild && value.issuewild == 'none')
-        value.issuewild = [ ";" ];
+    if (value.issue && value.issue == 'none') value.issue = [';'];
+    if (value.issuewild && value.issuewild == 'none') value.issuewild = [';'];
 
-    if ( (!value.issue && !value.issuewild) || ((value.issue && value.issue.length == 0) && (value.issuewild && value.issuewild.length == 0)) ) {
+    if (
+        (!value.issue && !value.issuewild) ||
+        (value.issue &&
+            value.issue.length == 0 &&
+            value.issuewild &&
+            value.issuewild.length == 0)
+    ) {
         throw 'CAA_BUILDER requires at least one entry at issue or issuewild';
     }
 
@@ -718,19 +776,19 @@ function CAA_BUILDER(value) {
 
     if (value.iodef) {
         if (value.iodef_critical) {
-            r.push(CAA(value.label, "iodef", value.iodef, CAA_CRITICAL));
+            r.push(CAA(value.label, 'iodef', value.iodef, CAA_CRITICAL));
         } else {
-            r.push(CAA(value.label, "iodef", value.iodef));
+            r.push(CAA(value.label, 'iodef', value.iodef));
         }
     }
 
     if (value.issue)
         for (var i = 0, len = value.issue.length; i < len; i++)
-            r.push(CAA(value.label, "issue", value.issue[i]));
+            r.push(CAA(value.label, 'issue', value.issue[i]));
 
     if (value.issuewild)
         for (var i = 0, len = value.issuewild.length; i < len; i++)
-            r.push(CAA(value.label, "issuewild", value.issuewild[i]));
+            r.push(CAA(value.label, 'issuewild', value.issuewild[i]));
 
     return r;
 }

@@ -1,13 +1,13 @@
 language: go
 
 go:
-  - 1.10.x
+  - 1.14.x
 
 install: pwd
 
 script: 
-  - go run build/validate/validate.go
-  - go test ./...
+  - go run -mod=readonly build/validate/validate.go
+  - go test -mod=readonly ./...
 
 notifications:
   email:

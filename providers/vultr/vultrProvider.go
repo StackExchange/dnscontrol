@@ -3,16 +3,17 @@ package vultr
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"strconv"
 	"strings"
 
-	"github.com/StackExchange/dnscontrol/models"
-	"github.com/StackExchange/dnscontrol/providers"
-	"github.com/StackExchange/dnscontrol/providers/diff"
 	"github.com/miekg/dns/dnsutil"
-	"github.com/pkg/errors"
 	"github.com/vultr/govultr"
+
+	"github.com/StackExchange/dnscontrol/v3/models"
+	"github.com/StackExchange/dnscontrol/v3/pkg/diff"
+	"github.com/StackExchange/dnscontrol/v3/providers"
 )
 
 /*
@@ -33,6 +34,7 @@ var features = providers.DocumentationNotes{
 	providers.CanUseSSHFP:            providers.Can(),
 	providers.DocCreateDomains:       providers.Can(),
 	providers.DocOfficiallySupported: providers.Cannot(),
+	providers.CanGetZones:            providers.Can(),
 }
 
 func init() {
@@ -55,7 +57,7 @@ var defaultNS = []string{
 func NewProvider(m map[string]string, metadata json.RawMessage) (providers.DNSServiceProvider, error) {
 	token := m["token"]
 	if token == "" {
-		return nil, errors.Errorf("Vultr API token is required")
+		return nil, fmt.Errorf("Vultr API token is required")
 	}
 
 	client := govultr.NewClient(nil, token)
@@ -65,22 +67,32 @@ func NewProvider(m map[string]string, metadata json.RawMessage) (providers.DNSSe
 	return &Provider{client, token}, err
 }
 
-// GetDomainCorrections gets the corrections for a DomainConfig.
-func (api *Provider) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Correction, error) {
-	dc.Punycode()
-
-	records, err := api.client.DNSRecord.List(context.Background(), dc.Name)
+// GetZoneRecords gets the records of a zone and returns them in RecordConfig format.
+func (api *Provider) GetZoneRecords(domain string) (models.Records, error) {
+	records, err := api.client.DNSRecord.List(context.Background(), domain)
 	if err != nil {
 		return nil, err
 	}
 
-	curRecords := make([]*models.RecordConfig, len(records))
+	curRecords := make(models.Records, len(records))
 	for i := range records {
-		r, err := toRecordConfig(dc, &records[i])
+		r, err := toRecordConfig(domain, &records[i])
 		if err != nil {
 			return nil, err
 		}
 		curRecords[i] = r
+	}
+
+	return curRecords, nil
+}
+
+// GetDomainCorrections gets the corrections for a DomainConfig.
+func (api *Provider) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Correction, error) {
+	dc.Punycode()
+
+	curRecords, err := api.GetZoneRecords(dc.Name)
+	if err != nil {
+		return nil, err
 	}
 
 	models.PostProcessRecords(curRecords)
@@ -125,7 +137,7 @@ func (api *Provider) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Co
 
 // GetNameservers gets the Vultr nameservers for a domain
 func (api *Provider) GetNameservers(domain string) ([]*models.Nameserver, error) {
-	return models.StringsToNameservers(defaultNS), nil
+	return models.ToNameservers(defaultNS)
 }
 
 // EnsureDomainExists adds a domain to the Vutr DNS service if it does not exist
@@ -154,13 +166,13 @@ func (api *Provider) isDomainInAccount(domain string) (bool, error) {
 }
 
 // toRecordConfig converts a Vultr DNSRecord to a RecordConfig. #rtype_variations
-func toRecordConfig(dc *models.DomainConfig, r *govultr.DNSRecord) (*models.RecordConfig, error) {
-	origin, data := dc.Name, r.Data
+func toRecordConfig(domain string, r *govultr.DNSRecord) (*models.RecordConfig, error) {
+	origin, data := domain, r.Data
 	rc := &models.RecordConfig{
 		TTL:      uint32(r.TTL),
 		Original: r,
 	}
-	rc.SetLabel(r.Name, dc.Name)
+	rc.SetLabel(r.Name, domain)
 
 	switch rtype := r.Type; rtype {
 	case "CNAME", "NS":

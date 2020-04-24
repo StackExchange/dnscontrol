@@ -1,0 +1,23 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+
+<package xmlns="http://schemas.microsoft.com/packaging/2015/06/nuspec.xsd">
+  <metadata>
+    <id>dnscontrol</id>
+    <version>0.0.0</version>
+    <title>DnsControl</title>
+    <authors>Stack Overflow</authors>
+    <projectUrl>https://github.com/stackexchange/dnscontrol</projectUrl>
+    <copyright>2020</copyright>
+    <licenseUrl>https://github.com/StackExchange/dnscontrol/blob/master/LICENSE</licenseUrl>
+    <requireLicenseAcceptance>true</requireLicenseAcceptance>
+    <projectSourceUrl>https://github.com/stackexchange/dnscontrol</projectSourceUrl>
+    <docsUrl>https://stackexchange.github.io/dnscontrol/</docsUrl>
+    <tags>dns</tags>
+    <summary>Synchronize your DNS to multiple providers from a simple DSL</summary>
+    <description>This package simply installs the dnscontrol tool on your system</description>
+  </metadata>
+  <files>
+    <file src="dnscontrol.exe" target="tools" />
+    <!--Building from Linux? You may need this instead: <file src="tools/**" target="tools" />-->
+  </files>
+</package>

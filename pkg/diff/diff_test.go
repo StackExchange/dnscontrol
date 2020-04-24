@@ -6,7 +6,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/StackExchange/dnscontrol/models"
+	"github.com/StackExchange/dnscontrol/v3/models"
 )
 
 func myRecord(s string) *models.RecordConfig {
@@ -261,4 +261,35 @@ func TestInvalidGlobIgnoredRecord(t *testing.T) {
 	}()
 
 	checkLengthsFull(t, existing, desired, 0, 1, 0, 0, false, []string{"www1", "www2", "[.www3"})
+}
+
+// from https://github.com/StackExchange/dnscontrol/issues/552
+func TestCaas(t *testing.T) {
+	existing := []*models.RecordConfig{
+		myRecord("test CAA 1 1.1.1.1"),
+		myRecord("test CAA 1 1.1.1.1"),
+		myRecord("test CAA 1 1.1.1.1"),
+	}
+	desired := []*models.RecordConfig{
+		myRecord("test CAA 1 1.1.1.1"),
+		myRecord("test CAA 1 1.1.1.1"),
+		myRecord("test CAA 1 1.1.1.1"),
+	}
+	existing[0].SetTargetCAA(3, "issue", "letsencrypt.org.")
+	existing[1].SetTargetCAA(3, "issue", "amazon.com.")
+	existing[2].SetTargetCAA(3, "issuewild", "letsencrypt.org.")
+
+	// this will pass or fail depending on the ordering. Not ok.
+	desired[0].SetTargetCAA(3, "issue", "letsencrypt.org.")
+	desired[1].SetTargetCAA(3, "issue", "amazon.com.")
+	desired[2].SetTargetCAA(3, "issuewild", "letsencrypt.org.")
+
+	checkLengthsFull(t, existing, desired, 3, 0, 0, 0, false, nil)
+
+	// Make sure it passes with a different ordering. Not ok.
+	desired[2].SetTargetCAA(3, "issue", "letsencrypt.org.")
+	desired[1].SetTargetCAA(3, "issue", "amazon.com.")
+	desired[0].SetTargetCAA(3, "issuewild", "letsencrypt.org.")
+
+	checkLengthsFull(t, existing, desired, 3, 0, 0, 0, false, nil)
 }

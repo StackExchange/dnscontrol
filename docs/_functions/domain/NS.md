@@ -7,7 +7,10 @@ parameters:
 ---
 
 NS adds a NS record to the domain. The name should be the relative label for the domain.
-Use `@` for the domain apex, though if you are doing this consider using NAMESERVER() instead.
+
+The name may not be `@` (the bare domain), as that is controlled via `NAMESERVER()`.
+The difference between `NS()` and `NAMESERVER()` is explained in the `NAMESERVER()` description.
+
 
 Target should be a string representing the NS target. If it is a single label we will assume it is a relative name on the current domain. If it contains *any* dots, it should be a fully qualified domain name, ending with a `.`.
 

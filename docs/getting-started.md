@@ -66,8 +66,7 @@ If you are using other providers, you will likely need to make a `creds.json` fi
 {% highlight js %}
 {
   "cloudflare":{ // provider name to be used in dnsconfig.js
-    "apikey": "key", // API key
-    "apiuser": "username" // username for cloudflare
+    "apitoken": "token" // API token
   },
   "namecom":{ // provider name to be used in dnsconfig.js
     "apikey": "key", // API Key
@@ -126,9 +125,9 @@ jq:
 
     jq < creds.json
 
-FYI: `creds.json` fields can be an environment variable. The field must begin with a `$` followed by the variable name. No other text. For example:
+FYI: `creds.json` fields can be read from an environment variable. The field must begin with a `$` followed by the variable name. No other text. For example:
 
-    "apiuser": "$GANDI_APIUSER",
+    "apikey": "$GANDI_V5_APIKEY",
 
 ## 5. Test the sample files.
 
@@ -245,9 +244,10 @@ The [Migrating]({{site.github.url}}/migrating) doc has advice
 about converting from other systems.
 You can manually create the `D()` statements, or you can
 generate them automatically using the
-[convertzone](https://github.com/StackExchange/dnscontrol/blob/master/cmd/convertzone/README.md)
-utility that is included in the DNSControl repo (it converts
-BIND-style zone files and OctoDNS-style YAML files to DNSControl's language).
+[dnscontrol get-zones]({{site.github.url}}/get-zones)
+command to import the zone from (most) providers and output it as code
+that can be added to `dnsconfig.js` and used with very little
+modification.
 
 Now you can make change to the domain(s)  and run `dnscontrol preview`
 

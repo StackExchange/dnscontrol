@@ -7,7 +7,7 @@ import (
 	"os"
 	"strings"
 
-	"github.com/StackExchange/dnscontrol/models"
+	"github.com/StackExchange/dnscontrol/v3/models"
 )
 
 // CLI is an abstraction around the CLI.

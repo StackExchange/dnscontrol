@@ -1,0 +1,1150 @@
+; Copyright © 2006-2020 Phil Pennock
+; No warranty: if it breaks, you get to cut your hands picking up the shards.
+; Permission granted to duplicate in its entirety with authorship preserved,
+; or redact as needed for test frameworks, or copy fragments for use in your
+; own domains, or pretty much anything else except presenting it as your own
+; creation.
+
+$TTL 7200
+$ORIGIN example.org.
+
+; This is adapted from a real zonefile.
+; All IPs and DNS should be using address-spaces reserved for documentation or
+; otherwise available for this usage.
+; The original had a /28 routed to an onlink /32 in IPv4, and a /48 for IPv6.
+;
+; A couple of entries come from a different zone, to round out the examples.
+;
+; Some information has been redacted, eg Let's Encrypt account numbers.
+; Some public keys are the same as they were in the original zone-file, so if
+; you have tooling which parses ASN structure or whatever, they should still be
+; good.
+; If you have a DNS Observatory, you can probably identify the original zone
+; through some of these.  Good luck!
+;
+; Some of the IPv6 stuff shows a H:EX encoding scheme; that's real, not
+; invented for the example.org redaction.  I just changed the prefix.
+
+; {{{ SOA and NS records
+example.org.	43200 SOA	ns1.example.org. hostmaster.example.org. (
+			2020030700	; serial
+			7200		; refresh period
+			3600		; retry interval
+			10d		; expire time
+			7200		; default/negative TTL
+			)
+		NS	ns1.example.org.
+		NS	ns2.example.org.
+		NS	ns-a.example.net.
+		NS	friend-dns.example.com.
+; }}} SOA and NS records
+
+;;; ======================================================================
+; EMAIL FEDERATION {{{
+; These are not for clients within our domain.
+; These are for sending and receiving email, and telling other mail-systems
+; what can send email as us, or claim to be us in HELO, etc.
+;
+; For SPF: this affects "domains which aren't the domain in question"; we can
+; ignore it for our own domains from systems under our control, as the
+; mail-server we list here is the one which all mail is channeled through, so
+; is what the outside world sees, so is the one listed.
+
+
+		MX	10 mx
+		TXT	"v=spf1 ip4:192.0.2.25 ip6:2001:db8::1:25 mx include:_spf.example.com ~all"
+; CSA Priority/Weight/Port;
+;   Priority for CSA version, so 1
+;   Weight: 1 unauthorized, 2 authorized, 3 unknown  (bit-field)
+;   Port: assertions: 0 no assertion; 1 subdomains must use CSA
+;   Target: hostname for which sender IP must be in the RRsets of address records
+; Top-level assertion: we list _all_ hostnames which send email out, so EHLO/HELO claiming to be us must be covered here.
+; Because almost all mail routes through the mail-hub, we can make this claim; foo is exception
+_client._smtp		SRV	1 1 1 @
+_client._smtp.mx	SRV	1 2 1 mx
+_client._smtp.foo	SRV	1 2 1 foo
+
+; }}}
+
+;;; ======================================================================
+; Authentication and directory services {{{
+
+; _Service._Proto.Name TTL Class SRV Priority Weight Port Target
+_kerberos._tcp		SRV	10 1 88 kerb-service
+_kerberos._udp		SRV	10 1 88 kerb-service
+_kpasswd._udp		SRV	10 1 464 kerb-service
+_kerberos-adm._tcp	SRV	10 1 749 kerb-service
+_kerberos		TXT	"EXAMPLE.ORG"
+
+; No LDAP service, and tell people that.
+_ldap._tcp		SRV	0 0 0 .
+_ldap._udp		SRV	0 0 0 .
+
+; PGP Universal & GnuPG use keys.$domain to find PGP keys, via LDAP
+
+; }}}
+
+;;; ======================================================================
+; Chat services {{{
+
+; XMPP we divide up the hostnames for federation vs client access.
+; Federation on xmpp-s2s, client access on xmpp.
+; They are the same host, but we architect to be able to split.
+_jabber._tcp		SRV	10 2 5269 xmpp-s2s
+_xmpp-server._tcp	SRV	10 2 5269 xmpp-s2s
+_xmpp-client._tcp	SRV	10 2 5222 xmpp
+; I don't think we need _im._xmpp and _pres._xmpp for a real present server, so
+; skip them.  If setting up a domain without XMPP, publish `0 0 0 .` for these too.
+; _im._xmpp		SRV ...
+; _pres._xmpp		SRV ...
+
+; RFC 3832 "Remote Discovery in SLP via DNS SRV" {exp}: _slpda.{_tcp,_udp}
+; RFC 3861: _im.<proto> and _pres.<proto> for IM protocols;
+;   Instant Messaging SRV Protocol Label registry  http://www.iana.org/assignments/im-srv-labels
+;   Presence SRV Protocol Label registry           http://www.iana.org/assignments/pres-srv-labels/pres-srv-labels.xhtml
+;  So far, both only contain: _xmpp
+;  Thus _im._xmpp _pres._xmpp
+;  draft-loreto-simple-im-srv-label-02.txt adds _sip: _im._sip _pres._sip
+; RFC 3921: _im._xmpp _pres._xmpp _xmpp._tcp
+; SIP SRV: http://www.iana.org/assignments/sip-table
+;   _sip+d2t._tcp _sips+d2t._tcp _sip+d2u._udp _sip+d2s._sctp _sips+d2s._sctp
+; RFC 4386: http://www.iana.org/assignments/pkix-parameters/pkix-parameters.xhtml
+;   _pkixrep.<proto> -> _ldap _http _ocsp
+; Also possibly:  _sip _sips _sipfederation _msrps
+
+_im._sip		SRV	0 0 0 .
+_pres._sip		SRV	0 0 0 .
+_sip+d2t._tcp		SRV	0 0 0 .
+_sips+d2t._tcp		SRV	0 0 0 .
+_sip+d2u._udp		SRV	0 0 0 .
+_sip+d2s._sctp		SRV	0 0 0 .
+_sips+d2s._sctp		SRV	0 0 0 .
+
+; }}}
+
+;;; ======================================================================
+; Email service for use by clients within the domain. {{{
+; RFC 6186 (was: draft-daboo-srv-email-05.txt)
+; RFC 8314 updates for submissions
+; RFC 8314 updates for submissions (obsoletes all cleartext)
+; RFC 8552 sets up a registry for all the underscore services and 8553 backfills it
+
+_submission._tcp	SRV	10 10 587 smtp
+_submissions._tcp	SRV	10 10 465 smtp
+_imap._tcp		SRV	10 10 143 imap
+_imaps._tcp		SRV	10 10 993 imap
+_pop3._tcp		SRV	0 0 0 .
+_pop3s._tcp		SRV	0 0 0 .
+_sieve._tcp		SRV	10 10 4190 imap
+
+; }}}
+
+;;; ======================================================================
+; Other zone-top services {{{
+
+; Where can people send questions or get more information
+;;;@		RP	hostmaster.example.org. dns-moreinfo.example.org.
+
+dns-moreinfo		TXT (
+		"Fred Bloggs, TZ=America/New_York"
+		"Chat-Service-X: @handle1"
+		"Chat-Service-Y: federated-handle@example.org"
+		)
+
+; SKS withdrawn
+_pgpkey-http._tcp	SRV	0 0 0 .
+_pgpkey-https._tcp	SRV	0 0 0 .
+_hkp._tcp		SRV	0 0 0 .
+
+; WKD <https://datatracker.ietf.org/doc/draft-koch-openpgp-webkey-service/?include_text=1>
+; The SRV record should be disappearing because it was removed from the spec.
+; In the meantime, point it to the host while being cognizant that GnuPG will
+; use the hostname from the target of the SRV for the Host header.
+_openpgpkey._tcp	SRV	10 10 443 openpgpkey.example.org.
+
+; Not sure anything actually uses this, but ah well
+; Avoid pointing at a CNAME, just use barbican directly
+_finger._tcp		SRV	10 10 79 barbican
+
+; https://wiki.libravatar.org/api/
+_avatars-sec._tcp	SRV	10 10 443 avatars
+
+; For bare domain as a hostname, we try to avoid it as much as possible.
+; Sometimes, it's necessary, eg finger.
+; Once it exists in DNS though, HTTP requests will try to hit it when people
+; don't type `www.`
+; So we point the bare domain at a minimal jail with "not much" in it, and
+; use packet filters to redirect the traffic to the correct places.
+; For HTTP, we'll issue redirects to avoid this.  For finger, we just respond.
+@			A	192.0.2.1
+@			AAAA	2001:db8::1:1
+
+; }}}
+
+;;; ======================================================================
+; Email cryptographic authentication {{{
+
+; RFC5585 DomainKeys Identified Mail (DKIM) Service Overview
+_adsp._domainkey	TXT "dkim=all"  ; RFC5617 unknown | all | discardable
+; http://dmarc.org/draft-dmarc-base-00-01.html DMARC DKIM policy
+;
+; DMARC: beware that some validators require v/p with no intermediate values,
+; which one reading of RFC7489 can support.  So keep those together at the front.
+_dmarc			TXT "v=DMARC1; p=none; sp=none; rua=mailto:dmarc-notify@example.org; ruf=mailto:dmarc-notify@example.org; adkim=s"
+
+; [This is a good place to have a link to documentation on local processes for
+;  updating DKIM keys]
+;
+; These are the real current (March 2020) values for the domain which this
+; example was drawn from.
+; Note that the domain dual-signs email with both RSA and Ed25519 keys.
+; The domain also cycles DKIM keys every three months, but it's manual and the
+; calendar reminder was missed in February.  Oops.
+;
+d201911._domainkey TXT "v=DKIM1; k=rsa; p=MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEA4SmyE5Tz5/wPL8cb2AKuHnlFeLMOhAl1UX/NYaeDCKMWoBPTgZRT0jonKLmV2UscHdodXu5ZsLr/NAuLCp7HmPLReLz7kxKncP6ppveKxc1aq5SPTKeWe77p6BptlahHc35eiXsZRpTsEzrbEOainy1IWEd+w9p1gWbrSutwE22z0i4V88nQ9UBa1ks" "6cVGxXBZFovWC+i28aGs6Lc7cSfHG5+Mrg3ud5X4evYXTGFMPpunMcCsXrqmS5a+5gRSEMZhngha/cHjLwaJnWzKaywNWF5XOsCjL94QkS0joB7lnGOHMNSZBCcu542Y3Ht3SgHhlpkF9mIbIRfpzA9IoSQIDAQAB"
+d201911e2._domainkey TXT "v=DKIM1; k=ed25519; p=GBt2k2L39KUb39fg5brOppXDHXvISy0+ECGgPld/bIo="
+;
+d202003._domainkey TXT "v=DKIM1; k=rsa; p=MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAv/1tQvOEs7xtKNm7PbPgY4hQjwHVvqqkDb0+TeqZHYRSczQ3c0LFJrIDFiPIdwQe/7AuKrxvATSh/uXKZ3EP4ouMgROPZnUxVXENeetJj+pc3nfGwTKUBTTTth+SO74gdIWsntjvAfduzosC4ZkxbDwZ9c253qXARGvGu+LB/iAeq0ngEbm5fU13+Jo" "pv0d4dR6oGe9GvMEnGGLZzNrxWl1BPe2x5JZ5/X/3fW8vJx3OgRB5N6fqbAJ6HZ9kcbikDH4lPPl9RIoprFk7mmwno/nXLQYGhPobmqq8wLkDiXEkWtYa5lzujz3XI3Zkk8ZIOGvdbVVfAttT0IVPnYkOhQIDAQAB"
+d202003e2._domainkey TXT "v=DKIM1; k=ed25519; p=DQI5d9sNMrr0SLDoAi071IFOyKnlbR29hAQdqVQecQg="
+;
+
+; http://tools.ietf.org/html/draft-ietf-marf-reporting-discovery-01
+_report			TXT "r=abuse-reports@example.org; rf=ARF; re=postmaster@example.org;"
+; These are for RFC8460 and the sender needs to support MTA-STS or DANE; if
+; they only support one, we might get error complaints.
+; SMTP TLS Reporting used `_smtp-tlsrpt` in <https://tools.ietf.org/html/draft-ietf-uta-smtp-tlsrpt-17>
+; but `_smtp._tls` by the time RFC 8460 was published.
+_smtp._tls		TXT "v=TLSRPTv1; rua=mailto:smtp-tls-reports@example.org"
+_smtp-tlsrpt		TXT "v=TLSRPTv1; rua=mailto:smtp-tls-reports@example.org"
+
+; RFC 7489 § 7.1
+; Any domains which point their DMARC records to email in this domain need
+; to be authorized by having a record here, saying "yes, it's known, go ahead
+; and send their DMARC reports to us."
+;
+; This is not needed for our sub-domains, because they're the same
+; "organizational domain" as us (organizational domain is the thing which is
+; publicly registered, ie where the parent domain is in the public suffix
+; list).
+;
+$ORIGIN _report._dmarc.example.org.
+example.net			TXT	"v=DMARC1"
+example.com			TXT	"v=DMARC1"
+xn--2j5b.xn--9t4b11yi5a		TXT	"v=DMARC1"
+special.test			TXT	"v=DMARC1"
+xn--qck5b9a5eml3bze.xn--zckzah	TXT	"v=DMARC1"
+$ORIGIN example.org.
+
+; https://datatracker.ietf.org/doc/draft-ietf-dane-smime/?include_text=1
+; Using Secure DNS to Associate Certificates with Domain Names For S/MIME
+;  draft-ietf-dane-smime-15
+
+*._smimecert		CNAME	_ourca-smimea
+; Whatever the LHS, it all uses the one set of CAs, mine, which is ECC.
+
+; }}}
+
+;;; ======================================================================
+; Zeroconf Delegation {{{
+
+; Point clients at a sub-domain for Wide Area Bonjour
+; "b" = browse domain
+; "lb" = legacy browse domain (include domain in empty-string browses)
+; "r" = registration domain
+b._dns-sd._udp		PTR field
+lb._dns-sd._udp		PTR field
+r._dns-sd._udp		PTR field
+
+field		NS	ns1.example.org.
+		NS	ns2.example.org.
+;;;field		DS	50664 7 1 8AA19AF49BFBAE7103E3450FB19E7C4B88FA556A
+;;;field		DS	50664 7 2 D4EEDAE5EC46C3C1A3A6DC6BC4404F36BA00E4025562A9BC8F3261A9 D0F08F96
+
+; }}}
+
+;;; ======================================================================
+; Hosts and SSH Fingerprints {{{
+
+; SSH fingerprints
+; RFC4255 Using DNS to Securely Publish Secure Shell (SSH) Key Fingerprints
+; RFC6594 Use of the SHA-256 Algorithm with RSA, Digital Signature Algorithm (DSA), and Elliptic Curve DSA (ECDSA) in SSHFP Resource Records
+; http://www.iana.org/assignments/dns-sshfp-rr-parameters/dns-sshfp-rr-parameters.xml
+;
+; On a host with a suitably up-to-date ssh-keygen, using the .pub files:
+;   ssh-keygen -r $hostname -f /etc/ssh/ssh_host_$type_key.pub
+;
+; Records are:  SSHFP ${keytype_alg} ${hash_alg} ${hash_data}
+;  keytype_alg:  1/RSA 2/DSA 3/ECDSA 4/Ed25519 6/Ed448
+;  hash_alg:     1/SHA-1  2/SHA-256
+;
+;nb: SSH DSA currently constrained to 1024-bit, far too short, so dropping alg=2 from DNS
+;nb: SHA-1 is dead, let's stop publishing it.
+
+; barbican: perimeter defense {{{
+; barbican runs perimeter general services, such as recursive DNS
+; This is also the IP address used for NAT/RDR for private jails
+; This is also now @ for example.org too.
+; Deliberately no SSH here.
+barbican	A	192.0.2.1
+barbican	AAAA	2001:db8::1:1
+barbican.ipv4	A	192.0.2.1
+barbican.ipv6	AAAA	2001:db8::1:1
+; }}}
+
+; megalomaniac: Onlink-address for main Colo box {{{
+megalomaniac		A	198.51.100.254
+			AAAA	2001:db8:ffef::254
+megalomaniac.ipv4	A	198.51.100.254
+megalomaniac.ipv6	AAAA	2001:db8:ffef::254
+
+megalomaniac SSHFP 1 2 4e9ced94d3caf2ce915f85a63ce7279d5118a79ea03dac59cf4859b825d2f619
+megalomaniac SSHFP 3 2 d3556a3db83ab9ccec39dc6693dd2f3e28b178c9bba61880924821c426cc61eb
+megalomaniac SSHFP 4 2 c60c9d9d4728668f5f46986ff0c5b416c5e913862c4970cbfe211a6f44a111b4
+
+megalomaniac.ipv4 SSHFP 1 2 4e9ced94d3caf2ce915f85a63ce7279d5118a79ea03dac59cf4859b825d2f619
+megalomaniac.ipv4 SSHFP 3 2 d3556a3db83ab9ccec39dc6693dd2f3e28b178c9bba61880924821c426cc61eb
+megalomaniac.ipv4 SSHFP 4 2 c60c9d9d4728668f5f46986ff0c5b416c5e913862c4970cbfe211a6f44a111b4
+
+megalomaniac.ipv6 SSHFP 1 2 4e9ced94d3caf2ce915f85a63ce7279d5118a79ea03dac59cf4859b825d2f619
+megalomaniac.ipv6 SSHFP 3 2 d3556a3db83ab9ccec39dc6693dd2f3e28b178c9bba61880924821c426cc61eb
+megalomaniac.ipv6 SSHFP 4 2 c60c9d9d4728668f5f46986ff0c5b416c5e913862c4970cbfe211a6f44a111b4
+; }}}
+
+; tower is the main login jail {{{
+tower		A	192.0.2.42
+tower		AAAA	2001:db8::1:42
+tower.ipv4	A	192.0.2.42
+tower.ipv6	AAAA	2001:db8::1:42
+
+tower SSHFP 1 2 0f211d236e94768911a294f38653c4af6fa935a5b06c975d8162f59142571451
+tower SSHFP 3 2 88bf7b7401c11fa2e84871efb06cd73d8fc409154605b354db2dda0b82fe1160
+tower SSHFP 4 2 6d30900be0faaae73568fc007a87b4d076cf9a351ecacc1106aef726c34ad61d
+tower.ipv4 SSHFP 1 2 0f211d236e94768911a294f38653c4af6fa935a5b06c975d8162f59142571451
+tower.ipv4 SSHFP 3 2 88bf7b7401c11fa2e84871efb06cd73d8fc409154605b354db2dda0b82fe1160
+tower.ipv4 SSHFP 4 2 6d30900be0faaae73568fc007a87b4d076cf9a351ecacc1106aef726c34ad61d
+tower.ipv6 SSHFP 1 2 0f211d236e94768911a294f38653c4af6fa935a5b06c975d8162f59142571451
+tower.ipv6 SSHFP 3 2 88bf7b7401c11fa2e84871efb06cd73d8fc409154605b354db2dda0b82fe1160
+tower.ipv6 SSHFP 4 2 6d30900be0faaae73568fc007a87b4d076cf9a351ecacc1106aef726c34ad61d
+; }}}
+
+; vcs for svn and git {{{
+vcs		A	192.0.2.228
+vcs		AAAA	2001:db8::48:4558:4456:4353
+vcs.ipv4	A	192.0.2.228
+vcs.ipv6	AAAA	2001:db8::48:4558:4456:4353
+git		CNAME	vcs
+git.ipv4	CNAME	vcs.ipv4
+git.ipv6	CNAME	vcs.ipv6
+; svn is kerberized so has its own hostname and is only IPv6-accessible because
+; we don't have IPv4 to spare for this.
+svn		AAAA	2001:db8::48:4558:73:766e
+
+vcs SSHFP 1 2 b518be390babdf43cb2d598aa6befa6ce6878546bf107b829d0cfc65253a97d4
+vcs SSHFP 3 2 e92545dc0bf501f72333ddeb7a37afc2c5b408ce39a3ad95fbc66236f0077323
+vcs SSHFP 4 2 02289441124a487095a6cda2e946c6a8ed9087faf3592ec4135536c3e615521c
+vcs.ipv4 SSHFP 1 2 b518be390babdf43cb2d598aa6befa6ce6878546bf107b829d0cfc65253a97d4
+vcs.ipv4 SSHFP 3 2 e92545dc0bf501f72333ddeb7a37afc2c5b408ce39a3ad95fbc66236f0077323
+vcs.ipv4 SSHFP 4 2 02289441124a487095a6cda2e946c6a8ed9087faf3592ec4135536c3e615521c
+vcs.ipv6 SSHFP 1 2 b518be390babdf43cb2d598aa6befa6ce6878546bf107b829d0cfc65253a97d4
+vcs.ipv6 SSHFP 3 2 e92545dc0bf501f72333ddeb7a37afc2c5b408ce39a3ad95fbc66236f0077323
+vcs.ipv6 SSHFP 4 2 02289441124a487095a6cda2e946c6a8ed9087faf3592ec4135536c3e615521c
+; }}}
+
+; nsauth is the authoritative DNS server {{{
+nsauth		A	192.0.2.53
+nsauth		AAAA	2001:db8::53:1
+nsauth.ipv4	A	192.0.2.53
+nsauth.ipv6	AAAA	2001:db8::53:1
+
+nsauth SSHFP 1 2 895804ae022fff643b2677563cb850607c5bb564d9919896c521098c8abc40f2
+nsauth SSHFP 3 2 28a65470badae611375747e1a803211c41e3d71e97741fa92ccbdf7b01f34e42
+nsauth SSHFP 4 2 6e10445c0649c03fa83e18b1873e5b89b3a20893ecb48d01e7cedb3dd563ecf0
+nsauth.ipv4 SSHFP 1 2 895804ae022fff643b2677563cb850607c5bb564d9919896c521098c8abc40f2
+nsauth.ipv4 SSHFP 3 2 28a65470badae611375747e1a803211c41e3d71e97741fa92ccbdf7b01f34e42
+nsauth.ipv4 SSHFP 4 2 6e10445c0649c03fa83e18b1873e5b89b3a20893ecb48d01e7cedb3dd563ecf0
+nsauth.ipv6 SSHFP 1 2 895804ae022fff643b2677563cb850607c5bb564d9919896c521098c8abc40f2
+nsauth.ipv6 SSHFP 3 2 28a65470badae611375747e1a803211c41e3d71e97741fa92ccbdf7b01f34e42
+nsauth.ipv6 SSHFP 4 2 6e10445c0649c03fa83e18b1873e5b89b3a20893ecb48d01e7cedb3dd563ecf0
+
+; These are the entries which appear in glue
+ns1		A	192.0.2.53
+ns1		AAAA	2001:db8::53:1
+ns2		A	203.0.113.53
+ns2		AAAA	2001:db8:113::53
+
+; }}}
+
+; hermes for mail {{{
+; The raw IPv6 for this match the SMTP and IMAP _submission_ aliases
+; for various reasons, but not the MX IPv6 (which also goes there).
+hermes		A	192.0.2.25
+hermes		AAAA	2001:db8::48:4558:736d:7470
+hermes		AAAA	2001:db8::48:4558:696d:6170
+hermes.ipv4	A	192.0.2.25
+hermes.ipv6	AAAA	2001:db8::48:4558:736d:7470
+hermes.ipv6	AAAA	2001:db8::48:4558:696d:6170
+hermes SSHFP 1 2 4472ff5bd0528cd49216af4503ba6a1c48f121d0292a31d6af193e5000af4966
+hermes SSHFP 3 2 eaba20c1565676a5229184ccfcf82d0ee408f91757a67d9fa51a0b6f3db4a33b
+hermes SSHFP 4 2 a9d89920e599d04363c8b35a4ce66c1ed257ea1d16981f060b6aed080bbb7a7c
+hermes.ipv4 SSHFP 1 2 4472ff5bd0528cd49216af4503ba6a1c48f121d0292a31d6af193e5000af4966
+hermes.ipv4 SSHFP 3 2 eaba20c1565676a5229184ccfcf82d0ee408f91757a67d9fa51a0b6f3db4a33b
+hermes.ipv4 SSHFP 4 2 a9d89920e599d04363c8b35a4ce66c1ed257ea1d16981f060b6aed080bbb7a7c
+hermes.ipv6 SSHFP 1 2 4472ff5bd0528cd49216af4503ba6a1c48f121d0292a31d6af193e5000af4966
+hermes.ipv6 SSHFP 3 2 eaba20c1565676a5229184ccfcf82d0ee408f91757a67d9fa51a0b6f3db4a33b
+hermes.ipv6 SSHFP 4 2 a9d89920e599d04363c8b35a4ce66c1ed257ea1d16981f060b6aed080bbb7a7c
+; }}}
+
+; other top-level base service hostnames (no SSH) {{{
+; other IPv4 and IPv6 is routed to unredoubted and then configured up locally
+kerb-service	A	192.0.2.88
+kerb-service	AAAA	2001:db8::48:4558:6b65:7262
+security	A	192.0.2.92
+security	AAAA	2001:db8::48:4558:53:4543
+security.ipv4	A	192.0.2.92
+security.ipv6	AAAA	2001:db8::48:4558:53:4543
+services	A	192.0.2.93
+services	AAAA	2001:db8::48:4558:5345:5256
+services.ipv4	A	192.0.2.93
+services.ipv6	AAAA	2001:db8::48:4558:5345:5256
+; }}}
+
+; CNAMEs and things we wish were ALIAS or auto-made: {{{
+
+; https://www.ietf.org/id/draft-koch-openpgp-webkey-service-07.txt
+; (thru -06 it was SRV records); this is constructed from the email address,
+; so we don't need .ipvX variants.
+; I don't want CNAME as target of SRV; so grep-bait: CNAME	security
+openpgpkey	A	192.0.2.92
+openpgpkey	AAAA	2001:db8::48:4558:53:4543
+
+finger		CNAME	barbican
+finger.ipv4	CNAME	barbican.ipv4
+finger.ipv6	CNAME	barbican.ipv6
+
+; avatars can't be a CNAME and the target of an SRV.
+; greb-bait: CNAME	services
+avatars		A	192.0.2.93
+		AAAA	2001:db8::48:4558:5345:5256
+dict		CNAME	services
+people		CNAME	services
+people.ipv4	CNAME	services.ipv4
+people.ipv6	CNAME	services.ipv6
+wpad		CNAME	services
+www		CNAME	services
+www.ipv4	CNAME	services.ipv4
+www.ipv6	CNAME	services.ipv6
+
+; }}}
+
+; Hosts and SSH Fingerprints }}}
+
+;;; ======================================================================
+; Zone Identity Services {{{
+
+; CAA: originally:RFC 6844 ; currently: RFC 8659, with extensions in RFC 8657
+;
+; issue/issuewild tags use values which are "rest of data" (not Strings, no 255
+; limit) and which are a domain name, followed optionally by parameters, each
+; individual parameter preceded by a `;` semi-colon; parameters are defined
+; per-Issuer.  A missing domain-name is allowed, no parameters defined for that
+; case.
+;
+; Even though RFC 8659 says "The semantics of parameters to the issue Property
+; Tag are determined by the Issuer alone.", RFC 8657 proceeds to define
+; semantics for some parameters.  I think this is more "if folks do stick to
+; one common schema then it's easier for others to build tools, but still each
+; Issuer can set their own meanings and ignore this if they really want".
+; This is backed by 8657 IANA Considerations.
+; But then 8657 then imposes MUST requirements upon ACME-using systems.
+;
+; RFC 8657 adds: `accounturi`, `validationmethods`; can repeat the CAA record
+; with the same domain but a different accounturi each time.
+
+; https://docs.aws.amazon.com/acm/latest/userguide/setup-caa.html
+;   Any of:  "amazon.com" "amazontrust.com" "awstrust.com" "amazonaws.com"
+;   No info re RFC8657 as of 2019-12-31
+;
+; https://letsencrypt.org/docs/caa/
+;   "Let’s Encrypt’s identifying domain name for CAA is letsencrypt.org. This is officially documented in our Certification Practice Statement (CPS), section 4.2.1."
+;   https://letsencrypt.org/documents/isrg-cps-v2.0/
+;     ISRG checks for relevant CAA records prior to issuing certificates. The CA acts in accordance with CAA records if present. The CA’s CAA identifying domain is ‘letsencrypt.org’.
+;   2019-12-31: can find no docs re accounturi, but community forum posts
+;   showing that the account from the ACME client data works (after a bug was
+;   fixed re ACMEv2 URLs)
+;
+; https://www.digicert.com/dns-caa-rr-check.htm
+;   Equivalent: "digicert.com" "www.digicert.com" "digicert.ne.jp" "cybertrust.ne.jp" "symantec.com" "thawte.com" "geotrust.com" "rapidssl.com"
+;   2019-12-31: no accounturi docs
+;
+; https://ccadb-public.secure.force.com/ccadb/AllCAAIdentifiersReport
+;   HTML page, all CAA identifiers known to the Common CA Database; <https://www.ccadb.org/resources>
+
+; 2019-12-31: I am not using Amazon inside example.org domain; that's on the blog at bridge.example.com
+;  <https://crt.sh/?q=%25.example.org> only lists LE.
+; Beware that our LetsEncrypt automation tooling uses multiple email addresses
+; for different purposes, but all hostnames within example.org are using the
+; noc@example.org address, so that's the only one we need.
+
+; Let's Encrypt:
+;    Prod/1234567 == tower / noc@example.org
+;    Stag/23456789 = chat2 / noc+chat2@example.net
+;    Prod/76543210 = chat2 / noc+chat2@example.net
+
+@		CAA	0	issue "example.net"
+@		CAA	0	issue "letsencrypt.org\; accounturi=https://acme-v01.api.letsencrypt.org/acme/reg/1234567"
+@		CAA	0	issue "letsencrypt.org\; accounturi=https://acme-staging-v02.api.letsencrypt.org/acme/acct/23456789"
+@		CAA	0	issue "letsencrypt.org\; accounturi=https://acme-v02.api.letsencrypt.org/acme/acct/76543210"
+;@		CAA	0	issue "amazonaws.com"
+@		CAA	0	issuewild ";"
+@		CAA	0	iodef "mailto:security@example.org"
+
+; Zone Identity Services }}}
+
+;;; ======================================================================
+; TLSA Records {{{
+
+; TLSA: Usage Selector Matching-Type CAdata
+; Usage==2    : CA anchor, no PKIX requirement
+; Selector==0 : match entire cert
+; Selector==1 : match public key
+; MT: 0=exact match, 1=sha256, 2=sha512
+; RFCs: 6698 6394
+; Naming from RFC 7218 (draft-ietf-dane-registry-acronyms-03.txt):
+;   * Usages: PKIX-TA(0) PKIX-EE(1) DANE-TA(2) DANE-EE(3)  PrivCert(255)
+;   * Selectors: Cert(0) SPKI(1)  PrivSel(255)
+;   * Matching Types: Full(0) SHA2-256(1) SHA2-512(2)  PrivMatch(255)
+
+; We don't use -example-tlsa-full any more; that was our v3 CA, and in the meantime
+; the client tooling for TLSA has matured and we can use better matching.
+;
+; _example-tlsa-full	TLSA	( 2 0 0 30.... )	; OurCA3 PKIX-less trust anchor
+;
+; openssl x509 -inform pem -outform der -in OurCA3.pem| perl -pe 's/(.)/sprintf "%02x", ord $1/aesg';echo
+; openssl x509 -inform pem -outform der -in OurCA3.pem| perl -pe 's/(.)/sprintf "%02x", ord $1/aesg' | perl -pe 's/(.{72})/$1\n/g';echo
+
+; For our own CAs, we use Selector 0 to match the entire cert, because we
+; control the horizontal and the vertical.
+; For CAs we use, we use Selector 1, so that if they reissue their signing cert
+; then our DNS records remain valid: as long the as public key is unchanged,
+; the 2/1/1 will be unchanged too.
+;
+; We typically avoid 3/x/x for individual certs or public keys directly in DNS:
+; we don't want to have to update a static zonefile for cert re-issuance, and
+; even with a dynamic zonefile, any complicated pre-issuance schemes or timing
+; dances to deal with DNS TTLs fall down when there's an emergency revocation
+; or replacement.  Just pin the issuing CA with 2/x/x and be done with it.
+
+; OurCA {{{
+_ourcaca4-tlsa	TLSA	(	; OurCA4 PKIX-less trust anchor
+	02 00 01 ea99063a0a3bda9727032cf82da238698b90ba729300703d3956943635f96488
+	; TLSA DANE-TA CERT SHA2-256
+	)
+; danetool --tlsa-rr --host=foo --ca --x509 --load-certificate=OurCA4.pem
+
+_ourcaca5-tlsa	TLSA	(	; OurCA5 PKIX-less trust anchor
+	02 00 01 11f058f61f97b8adc66ef4801f918c71b10e5c1e3d39afde10408b3026647ef1
+	; TLSA DANE-TA CERT SHA2-256
+	)
+; danetool --tlsa-rr --host=foo --ca --x509 --load-certificate=OurCA5.pem
+
+; SMIMEA {{{
+
+; Note that the SMIME email signatures include the CA usually; mutt certainly does,
+; so folks getting signed email from me _have_ the CA.  So no need to use 2/0/0 here.
+;
+; That _was_:
+; openssl x509 -inform pem -outform der -in OurCA5.pem | perl -pe 's/(.)/sprintf "%02x", ord $1/aesg' | perl -pe 's/(.{72})/$1\n/g';echo
+;
+; but instead we can just use the signatures.
+; Since it's just an X.509 cert and almost the same as a TLSA record, use danetool.
+; Heck, copy the _ourcaca5-tlsa RRset and change the RRtypes.
+
+;;;_ourcaca5-smimea	SMIMEA	(	; OurCA5 PKIX-less trust anchor
+;;;	02 00 01 11f058f61f97b8adc66ef4801f918c71b10e5c1e3d39afde10408b3026647ef1
+;;;	; SMIMEA DANE-TA CERT SHA2-256
+;;;	)
+; danetool --tlsa-rr --host=foo --ca --x509 --load-certificate=OurCA5.pem
+
+; This one should be a _set_ of CAs, letting me add OurCA6 (Ed25519) when the time comes.
+;;;_ourca-smimea		SMIMEA	(	; OurCA5 PKIX-less trust anchor
+;;;	02 00 01 11f058f61f97b8adc66ef4801f918c71b10e5c1e3d39afde10408b3026647ef1
+;;;	; SMIMEA DANE-TA CERT SHA2-256
+;;;	)
+
+; OurCA }}}
+
+; SMIMEA }}}
+
+; Other CAs, standalone {{{
+_cacert-c3-tlsa	TLSA	(	; CACert Class 3 PKIX-less trust anchor
+	02 00 01 4edde9e55ca453b388887caa25d5c5c5bccf2891d73b87495808293d5fac83c8
+	; TLSA DANE-TA CERT SHA2-256
+	)
+; danetool --tlsa-rr --host=foo --ca --x509 --load-certificate=cacert-class3.pem
+
+; For Let's Encrypt, where they have multiple signing paths, we use public-key
+; hashing, not certificate hashing.
+; This avoids breakage given, eg, IdenTrust vs other authority paths
+;
+;_letsencrypt-tlsa TLSA ( 02 01 01 0b9fa5a59eed715c26c1020c711b4f6ec42d58b0015e14337a39dad301c5afc3 ) ; ISRG Root X1
+_letsencrypt-tlsa TLSA ( 02 01 01 60b87575447dcba2a36b7d11ac09fb24a9db406fee12d2cc90180517616e8a18 ) ; X1 & X3
+_letsencrypt-tlsa TLSA ( 02 01 01 b111dd8a1c2091a89bd4fd60c57f0716cce50feeff8137cdbee0326e02cf362b ) ; X2 & X4
+
+; danetool --tlsa-rr --host=foo --ca --load-certificate=letsencrypt_rsa_authority_x1.pem
+
+; edit results of: for F in AmazonRootCA*; danetool --tlsa-rr --host=$F --ca --x509 --load-certificate=$F
+_amazon-tlsa TLSA ( 02 00 01 8ecde6884f3d87b1125ba31ac3fcb13d7016de7f57cc904fe1cb97c6ae98196e ) ; AmazonRootCA1
+_amazon-tlsa TLSA ( 02 00 01 1ba5b2aa8c65401a82960118f80bec4f62304d83cec4713a19c39c011ea46db4 ) ; AmazonRootCA2
+_amazon-tlsa TLSA ( 02 00 01 18ce6cfe7bf14e60b2e347b8dfe868cb31d02ebb3ada271569f50343b46db3a4 ) ; AmazonRootCA3
+_amazon-tlsa TLSA ( 02 00 01 e35d28419ed02025cfa69038cd623962458da5c695fbdea3c22b0bfb25897092 ) ; AmazonRootCA4
+
+; Other CAs, standalone }}}
+
+; Combined CA TLSA records {{{
+; These let us migrate between CAs without any outage, or have contingency plans.
+
+; _ourca-tlsa is a pairing anchor, handling both CA4 and CA5.
+_ourca-tlsa	TLSA ( 02 00 01 ea99063a0a3bda9727032cf82da238698b90ba729300703d3956943635f96488 ) ; OurCA4
+_ourca-tlsa	TLSA ( 02 00 01 11f058f61f97b8adc66ef4801f918c71b10e5c1e3d39afde10408b3026647ef1 ) ; OurCA5
+
+; Used for migrations CACert -> OurCA4
+_ourca-cacert-tlsa TLSA 02 00 01 ea99063a0a3bda9727032cf82da238698b90ba729300703d3956943635f96488 ; OurCA4
+_ourca-cacert-tlsa TLSA 02 00 01 11f058f61f97b8adc66ef4801f918c71b10e5c1e3d39afde10408b3026647ef1 ; OurCA5
+_ourca-cacert-tlsa TLSA 02 00 01 4edde9e55ca453b388887caa25d5c5c5bccf2891d73b87495808293d5fac83c8 ; cacert-c3
+
+; This mostly means "stuff which used to be on our own CA but for which we now use Let's Encrypt because others might see it"
+_ourca-le-tlsa TLSA ( 02 00 01 ea99063a0a3bda9727032cf82da238698b90ba729300703d3956943635f96488 ) ; OurCA4
+_ourca-le-tlsa TLSA ( 02 00 01 11f058f61f97b8adc66ef4801f918c71b10e5c1e3d39afde10408b3026647ef1 ) ; OurCA5
+_ourca-le-tlsa TLSA ( 02 01 01 60b87575447dcba2a36b7d11ac09fb24a9db406fee12d2cc90180517616e8a18 ) ; letsencrypt X1 & X3
+_ourca-le-tlsa TLSA ( 02 01 01 b111dd8a1c2091a89bd4fd60c57f0716cce50feeff8137cdbee0326e02cf362b ) ; letsencrypt X2 & X4
+
+; Don't ask
+_ourca-cacert-le-tlsa TLSA ( 02 00 01 ea99063a0a3bda9727032cf82da238698b90ba729300703d3956943635f96488 ) ; OurCA4
+_ourca-cacert-le-tlsa TLSA ( 02 00 01 11f058f61f97b8adc66ef4801f918c71b10e5c1e3d39afde10408b3026647ef1 ) ; OurCA5
+_ourca-cacert-le-tlsa TLSA ( 02 00 01 4edde9e55ca453b388887caa25d5c5c5bccf2891d73b87495808293d5fac83c8 ) ; cacert-c3
+_ourca-cacert-le-tlsa TLSA ( 02 01 01 60b87575447dcba2a36b7d11ac09fb24a9db406fee12d2cc90180517616e8a18 ) ; letsencrypt X1 & X3
+_ourca-cacert-le-tlsa TLSA ( 02 01 01 b111dd8a1c2091a89bd4fd60c57f0716cce50feeff8137cdbee0326e02cf362b ) ; letsencrypt X2 & X4
+
+; Stuff we migrate from CACert to Let's Encrypt; was never private CA, we
+; always wanted others to be able to validate.
+_cacert-le-tlsa TLSA ( 02 00 01 4edde9e55ca453b388887caa25d5c5c5bccf2891d73b87495808293d5fac83c8 ) ; cacert-c3
+_cacert-le-tlsa TLSA ( 02 01 01 60b87575447dcba2a36b7d11ac09fb24a9db406fee12d2cc90180517616e8a18 ) ; letsencrypt X1 & X3
+_cacert-le-tlsa TLSA ( 02 01 01 b111dd8a1c2091a89bd4fd60c57f0716cce50feeff8137cdbee0326e02cf362b ) ; letsencrypt X2 & X4
+
+; Some stuff we move between LE and AWS CloudFront in front of an S3 bucket
+_le-amazon-tlsa TLSA ( 02 01 01 60b87575447dcba2a36b7d11ac09fb24a9db406fee12d2cc90180517616e8a18 ) ; letsencrypt X1 & X3
+_le-amazon-tlsa TLSA ( 02 01 01 b111dd8a1c2091a89bd4fd60c57f0716cce50feeff8137cdbee0326e02cf362b ) ; letsencrypt X2 & X4
+_le-amazon-tlsa TLSA ( 02 00 01 8ecde6884f3d87b1125ba31ac3fcb13d7016de7f57cc904fe1cb97c6ae98196e ) ; AmazonRootCA1
+_le-amazon-tlsa TLSA ( 02 00 01 1ba5b2aa8c65401a82960118f80bec4f62304d83cec4713a19c39c011ea46db4 ) ; AmazonRootCA2
+_le-amazon-tlsa TLSA ( 02 00 01 18ce6cfe7bf14e60b2e347b8dfe868cb31d02ebb3ada271569f50343b46db3a4 ) ; AmazonRootCA3
+_le-amazon-tlsa TLSA ( 02 00 01 e35d28419ed02025cfa69038cd623962458da5c695fbdea3c22b0bfb25897092 ) ; AmazonRootCA4
+
+; All The Current Bases
+_ourca-le-amazon-tlsa TLSA ( 02 00 01 ea99063a0a3bda9727032cf82da238698b90ba729300703d3956943635f96488 ) ; OurCA4
+_ourca-le-amazon-tlsa TLSA ( 02 00 01 11f058f61f97b8adc66ef4801f918c71b10e5c1e3d39afde10408b3026647ef1 ) ; OurCA5
+_ourca-le-amazon-tlsa TLSA ( 02 01 01 60b87575447dcba2a36b7d11ac09fb24a9db406fee12d2cc90180517616e8a18 ) ; letsencrypt X1 & X3
+_ourca-le-amazon-tlsa TLSA ( 02 01 01 b111dd8a1c2091a89bd4fd60c57f0716cce50feeff8137cdbee0326e02cf362b ) ; letsencrypt X2 & X4
+_ourca-le-amazon-tlsa TLSA ( 02 00 01 8ecde6884f3d87b1125ba31ac3fcb13d7016de7f57cc904fe1cb97c6ae98196e ) ; AmazonRootCA1
+_ourca-le-amazon-tlsa TLSA ( 02 00 01 1ba5b2aa8c65401a82960118f80bec4f62304d83cec4713a19c39c011ea46db4 ) ; AmazonRootCA2
+_ourca-le-amazon-tlsa TLSA ( 02 00 01 18ce6cfe7bf14e60b2e347b8dfe868cb31d02ebb3ada271569f50343b46db3a4 ) ; AmazonRootCA3
+_ourca-le-amazon-tlsa TLSA ( 02 00 01 e35d28419ed02025cfa69038cd623962458da5c695fbdea3c22b0bfb25897092 ) ; AmazonRootCA4
+
+; Combined CA TLSA records }}}
+
+; TLSA Records }}}
+
+;;; ======================================================================
+; TLSA Referencing {{{
+
+; full:
+; openssl x509 -inform pem -outform der -in OurCA3.pem| perl -pe 's/(.)/sprintf "%02x", ord $1/aesg' | perl -pe 's/(.{72})/$1\n/g';echo
+; short:
+; danetool --tlsa-rr --host=foo --ca --x509 --load-certificate=some-company.classN.server.shaN.ca.pem
+
+; Web and other HTTP Transport
+_443._tcp.www		CNAME	_ourca-le-tlsa
+_443._tcp.www.ipv4	CNAME	_ourca-le-tlsa
+_443._tcp.www.ipv6	CNAME	_ourca-le-tlsa
+_443._tcp.people	CNAME	_ourca-le-tlsa
+_443._tcp.people.ipv4	CNAME	_ourca-le-tlsa
+_443._tcp.people.ipv6	CNAME	_ourca-le-tlsa
+
+_443._tcp.git		CNAME	_ourca-le-tlsa
+_443._tcp.svn		CNAME	_ourca-le-tlsa
+
+; XMPP / Jabber
+_5222._tcp.xmpp		CNAME	_ourca-le-tlsa
+_5223._tcp.xmpp		CNAME	_ourca-le-tlsa
+_5269._tcp.xmpp-s2s	CNAME	_ourca-le-tlsa
+
+; Email
+_25._tcp.mx		CNAME	_ourca-le-tlsa
+_26._tcp.mx		CNAME	_ourca-le-tlsa
+_27._tcp.mx		CNAME	_ourca-le-tlsa
+; the ....46 are the SRV results, the non-46 may be manually configured
+; the 1xxx are for potential debugging
+; there's too much historical cruft here, from when I had one IPv4 address and
+; a bazillion IPv6 addresses.
+_465._tcp.smtp46	CNAME	_ourca-le-tlsa
+_587._tcp.smtp46	CNAME	_ourca-le-tlsa
+_1465._tcp.smtp46	CNAME	_ourca-le-tlsa
+_1587._tcp.smtp46	CNAME	_ourca-le-tlsa
+_465._tcp.smtp		CNAME	_ourca-le-tlsa
+_587._tcp.smtp		CNAME	_ourca-le-tlsa
+_1465._tcp.smtp		CNAME	_ourca-le-tlsa
+_1587._tcp.smtp		CNAME	_ourca-le-tlsa
+_143._tcp.imap46	CNAME	_ourca-le-tlsa
+_993._tcp.imap46	CNAME	_ourca-le-tlsa
+_143._tcp.imap		CNAME	_ourca-le-tlsa
+_993._tcp.imap		CNAME	_ourca-le-tlsa
+; except for sieve, where there's only IPv6
+_4190._tcp.imap		CNAME	_ourca-le-tlsa
+;
+
+www.security		CNAME	security
+www.security.ipv4	CNAME	security.ipv4
+www.security.ipv6	CNAME	security.ipv6
+_443._tcp.www.security		CNAME	_ourca-le-tlsa
+_443._tcp.www.security.ipv4	CNAME	_ourca-le-tlsa
+_443._tcp.www.security.ipv6	CNAME	_ourca-le-tlsa
+_443._tcp.security		CNAME	_ourca-le-tlsa
+_443._tcp.security.ipv4		CNAME	_ourca-le-tlsa
+_443._tcp.security.ipv6		CNAME	_ourca-le-tlsa
+
+; _acme-challenge.www.security.example.org. 120 TXT "..."
+; _acme-challenge.security.example.org. 120 TXT "..."
+; beware SAN : one each
+; rather low TTL because some things might be using this as their backoff determination, buggily.
+;
+; This does require that the ACME client correctly remap domains to update in
+; DNS before asking for a validation of the unmapped domain.  The tool I used
+; in 2020-02 claimed such support but it was buggy and I had to abandon this
+; approach.  Instead, we have the nginx vhost which handles a bare
+; "example.org" handle /.well-known/acme-challenge/ by trying local files
+; first, else HTTP proxying to the chat server.
+; I'd like to get rid of that proxying and switch back to DNS updating;
+; "d.example.net" is delegated to a commercial service which has an API with
+; near-instant live updates.
+
+_acme-challenge			15 CNAME                 _acme-challenge.chat-acme.d.example.net.
+_acme-challenge.xmpp		15 CNAME            _acme-challenge.xmpp.chat-acme.d.example.net.
+_acme-challenge.chat		15 CNAME            _acme-challenge.chat.chat-acme.d.example.net.
+_acme-challenge.conference	15 CNAME      _acme-challenge.conference.chat-acme.d.example.net.
+_acme-challenge.proxy-chatfiles	15 CNAME _acme-challenge.proxy-chatfiles.chat-acme.d.example.net.
+_acme-challenge.pubsub.xmpp	15 CNAME     _acme-challenge.pubsub.xmpp.chat-acme.d.example.net.
+
+; TLSA Referencing }}}
+
+;;; ======================================================================
+; Mail server hostnames {{{
+
+; Willing to sacrifice Kerberos portability and rely upon disabling reverse DNS
+; hostname canonicalization.  Sucking it up.  Still no reliable IPv6 at home.
+; :(
+; For /etc/krb5.conf: [libdefaults] dns_canonicalize_hostname = false
+;
+imap		AAAA	2001:db8::48:4558:696d:6170
+		A	192.0.2.25
+smtp		AAAA	2001:db8::48:4558:736d:7470
+		A	192.0.2.25
+;
+smtp46		A	192.0.2.25	; old alias pre-dating IPv4 in smtp
+		AAAA	2001:db8::48:4558:736d:7470
+imap46		A	192.0.2.25	; old alias pre-dating IPv4 in imap
+		AAAA	2001:db8::48:4558:696d:6170
+
+; If changing this, then also update the SPF record; it hard-codes these for
+; efficiency of remote systems, saving them some lookups.
+; Really, we should be constructing the SPF record via a macro of some kind.
+; I'm trying to avoid using M4 to make this zonefile, but sometimes with some
+; good whiskey, that looks mighty tempting.
+mx		A	192.0.2.25
+		AAAA	2001:db8::48:4558:736d:7470
+mx.ipv4		A	192.0.2.25
+mx.ipv6		AAAA	2001:db8::48:4558:736d:7470
+;
+; RFC 7208 section 10.1.3
+; HELO hostnames need to have SPF to allow processing for bounces
+; In short: there is no envelope sender for bounces, so the only thing which
+; can be checked in the HELO name.
+;
+; This needs to be tied to the exim.conf setup for outbound `helo_data` on
+; transports.  At this time, that's "mx.example.org"; this needs to also
+; match the `interface` IP address list.
+; We do not need to allow other email service providers to claim to be this
+; host, so we use "a" (for A/AAAA matching), a catchall for our IPs, and a
+; *hard* reject on any other IP.
+; Because we never send email from mx.example.org and it's only used by HELO
+; checks, we can be firm and not have to worry about forwarding or other
+; legitimate shenanigans.
+mx		TXT	"v=spf1 a include:_spflarge.example.net -all"
+
+; RFC 8461 SMTP MTA Strict Transport Security (MTA-STS)
+; Final: `_mta-sts` TXT record, `v=STSv1`, with host records on `mta-sts`:
+;   https://mta-sts.example.com/.well-known/mta-sts.txt
+;
+;; History:
+;;; https://tools.ietf.org/html/draft-ietf-uta-mta-sts-02
+;;; SMTP MTA Strict Transport Security (MTA-STS)
+;;; Draft -03 renames to "mta-sts", to match the hostname which has to resolve anyway,
+;;; which makes sense: NXDOMAIN can skip a second lookup.
+;;; https://tools.ietf.org/html/draft-ietf-uta-mta-sts-03
+;;; NB: draft -15 in now in last call, and by this point:
+;;;  + it's .txt, not .json
+;;;  + the allowed fields for the mode have changed (`report` -> `testing`)
+;;;  + DNS is back to _mta-sts
+;
+; IP addresses should match `services`; this is ALIAS record stuff, can't use
+; CNAME because need TXT record too, for the draft, but can switch back to CNAME
+; if ignoring the draft.
+;
+; If updating version, don't forget to check globnix.org DNS too!
+_mta-sts	TXT	"v=STSv1; id=20191231r1;"
+mta-sts		TXT	"v=STSv1; id=20191231r1;"
+mta-sts		A	192.0.2.93
+mta-sts		AAAA	2001:db8::48:4558:5345:5256
+
+; Mail server hostnames }}}
+
+;;; ======================================================================
+; Chat server hostnames {{{
+
+; $HostingProvider chat2.example.net
+; ipv4: 203.0.113.175
+; ipv6: 2001:db8::f0ab:cdef:1234:f00f
+;
+xmpp.ipv6	AAAA	2001:db8::f0ab:cdef:1234:f00f
+xmpp-s2s.ipv6	AAAA	2001:db8::f0ab:cdef:1234:f00f
+xmpp		A	203.0.113.175
+		AAAA	2001:db8::f0ab:cdef:1234:f00f
+xmpp-s2s	A	203.0.113.175
+		AAAA	2001:db8::f0ab:cdef:1234:f00f
+proxy-chatfiles			CNAME	xmpp
+fileproxy.xmpp			CNAME	xmpp
+; Federated services which are offered under their own hostnames (even if on
+; the same server instance and port) federate with the same mechanisms, so you
+; need an SRV or just an address record if on the default ports.
+; Which remote servers will actually use SRV is more open to question.
+conference			CNAME	xmpp-s2s
+_xmpp-server._tcp.conference	SRV	10 2 5269 xmpp-s2s
+; Services which are modules and need their own hostnames, but are not
+; federated within XMPP, don't need the SRV record
+pubsub.xmpp			CNAME	xmpp-s2s
+
+chat			A	203.0.113.175
+			AAAA	2001:db8::f0ab:cdef:1234:f00f
+proxy-chatfiles.chat	CNAME	chat
+fileproxy.chat		CNAME	chat
+conference.chat		CNAME	chat
+pubsub.chat		CNAME	chat
+_xmpp-server._tcp.conference	SRV 10 2 5269 chat
+
+; Chat server hostnames }}}
+
+;;; ======================================================================
+; Random other hostnames {{{
+
+auth		AAAA	2001:db8::48:4558:6175:7468
+kpeople		AAAA	2001:db8::48:4558:6b70:706c
+ocsp.security	AAAA	2001:db8::48:4558:6f63:7370
+webauth		AAAA	2001:db8::48:4558:7765:6261
+
+news-feed	A	192.0.2.93
+		AAAA	2001:db8::48:4558:6e6e:7470
+
+; This is for Go package downloads, keeping the canonical names of modules
+; in domains under our control, so that we're not locked into one code-hosting
+; provider.
+go		CNAME	abcdefghijklmn.cloudfront.net.
+; Do *not* deploy TLSA until cloudfront.net is signed
+; (or we use ALIAS-type records)
+;_443._tcp.go	CNAME	_amazon-tlsa
+
+foo		A	192.0.2.200
+
+; Random other hostnames }}}
+
+;;; ======================================================================
+; Per-person email sub-domains {{{
+; Household dedicated mail domains where *@person.example.org can receive email
+
+; Gladys receives email here but never sends from this address
+; (Gladys has probably forgotten this exists and will roll her eyes at it.)
+gladys		MX	10 mx
+$ORIGIN gladys.example.org.
+_adsp._domainkey	TXT "dkim=all"
+_dmarc			TXT "v=DMARC1; p=none; sp=none; rua=mailto:dmarc-notify@example.org; ruf=mailto:dmarc-notify@example.org; adkim=s"
+_report			TXT "r=abuse-reports@example.org; rf=ARF; re=postmaster@example.org;"
+_smtp._tls		TXT "v=TLSRPTv1; rua=mailto:smtp-tls-reports@example.org"
+_smtp-tlsrpt		TXT "v=TLSRPTv1; rua=mailto:smtp-tls-reports@example.org"
+$ORIGIN example.org.
+
+; Fred sends and receives email in this domain
+fred		MX	10 mx
+$ORIGIN fred.example.org.
+; Also have a web-server for some old OpenID stuff
+@		A	192.0.2.93 ; services
+@		AAAA	2001:db8::48:4558:5345:5256 ; services
+		TXT	"v=spf1 ip4:192.0.2.25 ip6:2001:db8::1:25 mx include:_spf.example.com ~all"
+;
+d201911._domainkey TXT "v=DKIM1; k=rsa; p=MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEA8/OMUa3PnWh9LqXFVwlAgYDdTtbq3zTtTOSBmJq5yWauzXYcUuSmhW7CsV0QQlacCsQgJlwg9Nl1vO1TosAj5EKUCLTeSqjlWrM7KXKPx8FT71Q9H9wXX4MHUyGrqHFo0OPzcmtHwqcd8AD6MIvJHSRoAfiPPBp8Euc0wGnJZdGS75Hk+wA3MQ2/Tlz" "P2eenyiFyqmUTAGOYsGC/tREsWPiegR/OVxNGlzTY6quHsuVK7UYtIyFnYx9PGWdl3b3p7VjQ5V0Rp+2CLtVrCuS6Zs+/3NhZdM7mdD0a9Jgxakwa1le5YmB5lHTGF7T8quy6TlKe9lMUIRNjqTHfSFz/MwIDAQAB"
+d201911e2._domainkey TXT "v=DKIM1; k=ed25519; p=rQNsV9YcPJn/WYI1EDLjNbN/VuX1Hqq/oe4htbnhv+A="
+;
+d202003._domainkey TXT "v=DKIM1; k=rsa; p=MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAvpnx7tnRxAnE/poIRbVb2i+f1uQCXWnBHzHurgEyZX0CmGaiJuCbr8SWOW2PoXq9YX8gIv2TS3uzwGv/4yA2yX9Z9zar1LeWUfGgMWLdCol9xfmWrI+6MUzxuwhw/mXwzigbI4bHoakh3ez/i3J9KPS85GfrOODqA1emR13f2pG8EzAcje+rwW2PtYj" "c0h+FMDpeLuPYyYszFbNlrkVUneesxnoz+o4x/s6P14ZoRqz5CR7u6G02HwnNaHads5Eto6FYYErUUTtFmgWuYabHxgLVGRdRQs6B5OBYT/3L2q/lAgmEgdy/QL+c0Psfj99/XQmO8fcM0scBzw2ukQzcUwIDAQAB"
+d202003e2._domainkey TXT "v=DKIM1; k=ed25519; p=0DAPp/IRLYFI/Z4YSgJRi4gr7xcu1/EfJ5mjVn10aAw="
+;
+_adsp._domainkey	TXT "dkim=all"
+_dmarc			TXT "v=DMARC1; p=none; sp=none; rua=mailto:dmarc-notify@example.org; ruf=mailto:dmarc-notify@example.org; adkim=s"
+_report			TXT "r=abuse-reports@example.org; rf=ARF; re=postmaster@example.org;"
+_smtp._tls		TXT "v=TLSRPTv1; rua=mailto:smtp-tls-reports@example.org"
+_smtp-tlsrpt		TXT "v=TLSRPTv1; rua=mailto:smtp-tls-reports@example.org"
+$ORIGIN example.org.
+
+; Per-person email sub-domains }}}
+
+;;; ======================================================================
+; {{{PGP-Keys-And-Fingerprints
+
+; RFC4398 Storing Certificates in the Domain Name System (DNS)
+; type tag algorithm <data>
+; type 3 = PGP
+; type 6 = IPGP
+;   IPGP fingerprint length, fingerprint, URL; either FP or URL may be empty
+; gnupg comes with tools/make-dns-cert.c
+;
+; There's a lack of clarity about what clients do given a dot in the email LHS,
+; so I solve it by publishing both with the dot escaped to be part of the label,
+; and the dot introducing DNS hierarchy.
+;
+;;;fred		CERT	6 0 0 FKy7QyQ5Ot41Fdot2k0ekA4UwcwEaHR0cHM6Ly93d3cuc2VjdXJpdHkuc3BvZGh1aXMub3JnL1BHUC9rZXlzLzB4NEQxRTkwMEUxNEMxQ0MwNC5hc2M=
+;;;fred.bloggs	CERT	6 0 0 FKy7QyQ5Ot41Fdot2k0ekA4UwcwEaHR0cHM6Ly93d3cuc2VjdXJpdHkuc3BvZGh1aXMub3JnL1BHUC9rZXlzLzB4NEQxRTkwMEUxNEMxQ0MwNC5hc2M=
+;;;fred\.bloggs	CERT	6 0 0 FKy7QyQ5Ot41Fdot2k0ekA4UwcwEaHR0cHM6Ly93d3cuc2VjdXJpdHkuc3BvZGh1aXMub3JnL1BHUC9rZXlzLzB4NEQxRTkwMEUxNEMxQ0MwNC5hc2M=
+
+;
+; I used:
+; perl -MMIME::Base64 -le '$_ = $ARGV[0]; s/\s+//g; s/(..)/chr(hex($1))/eg;
+;   $_=chr(length($_)) . $_ . $ARGV[1]; print encode_base64($_, "")' \
+;   "$(gpg --with-colons --fingerprint $gpg_key | perl -F: -lane 'print $F[9] if $F[0] eq "fpr"')" \
+;   https://www.security.example.org/PGP/keys/0x0123456789ABCDEF.asc
+;
+; Note that my first attempt omitted the length.  Oops.  The first octet of
+; the base64 data is the length; following octets, for that length, is the
+; fingerprint, in raw binary form; any remaining octets are the URL.
+; With the URL in, we might have with key 0x0123456789ABCDEF :
+;  FKy7QyQ5Ot41Fdot2k0ekA4UwcwEaHR0cHM6Ly93d3cuc2VjdXJpdHkuc3BvZGh1aXMub3JnL1BHUC9rZXlzLzB4NEQxRTkwMEUxNEMxQ0MwNC5hc2M=
+
+;; WKD is https://datatracker.ietf.org/doc/draft-koch-openpgp-webkey-service/?include_text=1
+;; and included above with SRV records
+
+;; https://datatracker.ietf.org/doc/draft-ietf-dane-openpgpkey/?include_text=1
+;; rev 00: so draft-ietf-dane-openpgpkey-00.txt
+;; NOW: RFC 7929 (experimental)
+
+; Generated by my gnupg-exportsof-mykey tooling; this is from output file
+; dns-examplecom-pgp.openpgpkey.db
+; This is the 2020 Ed25519 key.  It's smaller, so it's marginally less insane
+; to have it in DNS.
+;
+; For example.org redaction: leaving this intact, original PGP key, there
+; are email addresses buried in the key, and human names.  But changing
+; the DNS labels and comments for zone consistency.
+; You can get the original name just by looking up the fingerprint below
+; the ORIGIN:
+$ORIGIN _openpgpkey.example.org.
+; 4833892924C60A7AE666D32A1DA3E68F41CEECAC
+; Fred Bloggs <fred.bloggs@example.org>
+;;;6555f290b6e653629d9d582660dd2fe730320e43e252f8e2e5ee1bdd TYPE61 \# 1239 (
+;;;	9833045e2504f516092b06010401da470f0101074043c292df50b30dcaadd549
+;;;	cf48fd9cbc06e43c3a9ca1cb788da0bd3c00ffc750b4245068696c2050656e6e
+;;;	6f636b203c7068696c4070656e6e6f636b2d746563682e636f6d3e888e041316
+;;;	080036021b03030b090703150a080416030201021e0102178002190116210448
+;;;	33892924c60a7ae666d32a1da3e68f41ceecac05025e250723000a09101da3e6
+;;;	8f41ceecac2b46010081e1c09a255705b3fdda16a5485e6ec25edeabac78c92d
+;;;	aa5f6c1af2b71cc93800fe364bd0438dd5120585a034327e69757aa58ca0890a
+;;;	d7691cba343c55cf957806b41c5068696c2050656e6e6f636b203c7064704067
+;;;	6e7570672e6e65743e888b041316080033021b03030b090703150a0804160302
+;;;	01021e010217801621044833892924c60a7ae666d32a1da3e68f41ceecac0502
+;;;	5e250723000a09101da3e68f41ceecac4faf00ff4bc1c3a4389cb5bb9cb90026
+;;;	c416f2ad99be2a6e0fe2ceea0bfa8e175e02c0eb0100eb8a11ec88b21ffa08c3
+;;;	0a71afd04dc43d093fabcb9c5ae2de0b9c627e88670eb4285068696c2050656e
+;;;	6e6f636b203c7068696c2e70656e6e6f636b4073706f64687569732e6f72673e
+;;;	888b041316080033021b03030b090703150a080416030201021e010217801621
+;;;	044833892924c60a7ae666d32a1da3e68f41ceecac05025e250724000a09101d
+;;;	a3e68f41ceecacc40800ff6702abcf89ddfe3ed0670953ca6a0a33ff4d6d83bf
+;;;	8b4496cc299abedfb4947401008ab97f09df18813ad998de3fe3c55085b49f56
+;;;	ee1f68cac298be4be6d4f34906b41b5068696c2050656e6e6f636b203c706470
+;;;	406578696d2e6f72673e888b041316080033021b03030b090703150a08041603
+;;;	0201021e010217801621044833892924c60a7ae666d32a1da3e68f41ceecac05
+;;;	025e250724000a09101da3e68f41ceecac9dbf0100f3eac82b9ef48d4cabc522
+;;;	44cbd52ed9392a2ad4111d8f6b0aa33f8859e956c301008653862e15970d7601
+;;;	57764064209c2ca8a9a616b1441e0e670b96458fd1a90eb838045e2504f5120a
+;;;	2b0601040197550105010107401ea56299a543466023db5f4d4f1452450a393a
+;;;	fcb9039ada0c27e2dc7f59752f03010807887e04181608002616210448338929
+;;;	24c60a7ae666d32a1da3e68f41ceecac05025e2504f5021b0c05090966018000
+;;;	0a09101da3e68f41ceecac624d00fe30c7b6e6bbe930e899c270f4f17de5bdae
+;;;	55612f9d69cb7490f6a4a4d04f261600ff58e26ae9fc3324de9bd51a77ff65d4
+;;;	2af60294f55a03fe0f1ec316e4f5b8e70bb833045e25054016092b06010401da
+;;;	470f010107406df5a87cd9b51890f84f7e597ab17e549f1ba093844178ea61ce
+;;;	ac484b4a58e988ef0418160800201621044833892924c60a7ae666d32a1da3e6
+;;;	8f41ceecac05025e250540021b02008109101da3e68f41ceecac762004191608
+;;;	001d16210436bea421261c40a54fc9261c2e7665110f8a56ff05025e25054000
+;;;	0a09102e7665110f8a56ff0bb500ff4aee429d5659915336511a3b744c4c25fd
+;;;	d09fb8af2962c57e279b1906ad5e040100a8616e0d4def13d7910c30a595e7fc
+;;;	92308de87404b96fa17325b6ef6cd7e9029f260100c2fe3edf9bbfce3c42317c
+;;;	a93bdbc4e52dd98bd2f782eb708edca1fbd7c345e50100dc69c0cc5a2481dc79
+;;;	08162d7c6d185c8866498eb87d159e0eb3877d68de2b02
+;;;	)
+
+; {{{PGP-PKA-Records
+
+; Phil notes, since the actual records below are "as output by gpg" for easier maintenance.
+; TYPE37 == CERT
+; During early GnuPG 2.1.x, GnuPG switched from v1 PKA to v2; details at:
+;   <https://incenp.org/notes/2015/keys-in-dns.html>
+; => local-part is zooko's base32 of LHS (as seen from src), type is CERT/IPGP, no URL
+;    so _very_ similar to the records already above where I chose to use CERT/IPGP ages ago.
+;
+; pip install zbase32 ; python    # zbase32 is python2-only
+;   import hashlib, zbase32
+;   lhs = 'fob'   # fred o bloggs
+;   print(zbase32.zbase32.b2a(hashlib.sha1(lhs.lower()).digest()))
+; That gets us the left-hand-side.
+;
+; Skimming code, it looks as though the PKA lookup really does just re-use the older IPGP
+; code, which can return a URL; `gpg2.1.15 --auto-key-locate pka` got a fingerprint but then
+; errored on getting the key.  So instead, let's experiment by grabbing our own CERT from above,
+; shoving it into this namespace and changing the LHS to use the zb32 encoded variants
+; (which also handles `.` vs `\.` issues).
+;
+; Discovery from log.dirmngr : tries to access
+; <https://www.security.example.org:443/pks/lookup?op=get&options=mr&search=0x0123456789ABCDEF0123456789ABCDEF01234567>
+; Okay, so change the hostname to `sks.example.org` and we should be good, as the PGP keyserver will get it
+; % perl -MMIME::Base64 -le '$_ = $ARGV[0]; s/\s+//g; s/(..)/chr(hex($1))/eg;
+;     $_=chr(length($_)) . $_ . $ARGV[1]; print encode_base64($_, "")' \
+;     "$(gpg --with-colons --fingerprint $pgp_key_main | perl -F: -lane 'print $F[9] if $F[0] eq "fpr"')" \
+;     https://sks.example.org
+; FKy7QyQ5Ot41Fdot2k0ekA4UwcwEaHR0cHM6Ly9za3Muc3BvZGh1aXMub3Jn
+;
+; 2018-07-14 after turning down sks.example.org:
+; % perl -MMIME::Base64 -le '$_ = $ARGV[0]; s/\s+//g; s/(..)/chr(hex($1))/eg; $_=chr(length($_)) . $_ . $ARGV[1]; print encode_base64($_, "")' \
+;   "$(gpg --with-colons --fingerprint $pgp_key_main | perl -F: -lane 'if ($F[0] eq "fpr") {print $F[9]; exit}')" \
+;   http://ha.pool.sks-keyservers.net
+; FKy7QyQ5Ot41Fdot2k0ekA4UwcwEaHR0cDovL2hhLnBvb2wuc2tzLWtleXNlcnZlcnMubmV0
+; ...
+
+; But that's not working with GnuPG.  Just junk all of the above.
+; Use my pka.py script and drop the keyserver entirely.
+
+; gpg2.1 --export-options export-minimal,export-pka --export 0x0123456789ABCDEF
+$ORIGIN _pka.example.org.
+
+; Fingerprint: 0123456789ABCDEF0123456789ABCDEF01234567
+; <fred.bloggs@example.org>
+;;;kwj7zzgek39st5d5q81hq517e3iuzbr4   CERT  6 0 0 FKy7QyQ5Ot41Fdot2k0ekA4UwcwE
+
+; Fingerprint: 0123456789ABCDEF0123456789ABCDEF01234567
+; <fob@example.org>
+;;;ajh79yijhx3xmeadhc79zrje7ret3qzr   CERT  6 0 0 FKy7QyQ5Ot41Fdot2k0ekA4UwcwE
+
+$ORIGIN example.org.
+; }}}PGP-PKA-Records
+
+
+; }}}PGP-Keys-And-Fingerprints
+
+; Removed localhost entries: cookie stealing etc
+
+;;; ======================================================================
+; Sub-domains with email and other services {{{
+
+mailtest			MX	10 mx
+$ORIGIN mailtest.example.org.
+;
+d201911._domainkey TXT "v=DKIM1; k=rsa; p=MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAo9xHnjHyhm1weA6FjOqM8LKVsklFt26HXWoe/0XCdmBG4i/UzQ7RiSgWO4kv7anPK6qf6rtL1xYsHufaRXG8yLsZxz+BbUP99eZvxZX78tMg4cGf+yU6uFxulCbOzsMy+8Cc3bbQTtIWYjyWBwnHdRRrCkQxjZ5KAd+x7ZB5qzqg2/eLJ7fCuNsr/xn" "0XTY6XYgug95e3h4CEW3Y+bkG81AMeJmT/hoVTcXvT/Gm6ZOUmx6faQWIHSW7qOR3VS6S75HOuclEUk0gt9r7OQHKl01sXh8g02SHRk8SUMEoNVayqplYZTFFF01Z192m7enmpp+St+HHUIT6jW/CAMCO3wIDAQAB"
+d201911e2._domainkey TXT "v=DKIM1; k=ed25519; p=afulDDnhaTzdqKQN0jtWV04eOhAcyBk3NCyVheOf53Y="
+;
+d202003._domainkey TXT "v=DKIM1; k=rsa; p=MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAs2BTVZaVLvL3qZBPaF7tRR0SdOKe+hjcpQ5fqO48lEuYiyTb6lkn8DPjDK11gTN3au0Bm+y8KC7ITKSJosuJXytxt3wqc61Pwtmb/Cy7GzmOF1AuegydB3/88VbgHT5DZucHrh6+ValZk4Trkx+/1K26Uo+h2KL2n/Ldb1y91ATHujp8DqxAOhiZ7KN" "aS1okNRRB4/14jPufAbeiN8/iBPiY5Hl80KHmpjM+7vvjb5jiecZ1ZrVDj7eTES4pmVh2v1c106mZLieoqDPYaf/HVbCM4E4n1B6kjbboSOpANADIcqXxGJQ7Be7/Sk9f7KwRusrsMHXmBHgm4wPmwGVZ3QIDAQAB"
+d202003e2._domainkey TXT "v=DKIM1; k=ed25519; p=iqwH/hhozFdeo1xnuldr8KUi7O7g+DzmC+f0SYMKVDc="
+;
+_adsp._domainkey	TXT "dkim=all"
+_dmarc			TXT "v=DMARC1; p=none; sp=none; rua=mailto:dmarc-notify@example.org; ruf=mailto:dmarc-notify@example.org; adkim=s"
+_report			TXT "r=abuse-reports@example.org; rf=ARF; re=postmaster@example.org;"
+_smtp._tls		TXT "v=TLSRPTv1; rua=mailto:smtp-tls-reports@example.org"
+_smtp-tlsrpt		TXT "v=TLSRPTv1; rua=mailto:smtp-tls-reports@example.org"
+$ORIGIN example.org.
+
+; Stub to show that SKS has been withdrawn; we no longer have email in this
+; domain (it was used for PGP exchange with two non-SKS keyservers).
+$ORIGIN sks.example.org.
+_pgpkey-http._tcp	SRV	0 0 0 .
+_pgpkey-https._tcp	SRV	0 0 0 .
+_hkp._tcp		SRV	0 0 0 .
+
+$ORIGIN sks-peer.example.org.
+_pgpkey-http._tcp	SRV	0 0 0 .
+_pgpkey-https._tcp	SRV	0 0 0 .
+_hkp._tcp		SRV	0 0 0 .
+
+; This is used for a dynamic DNS entry for my home router; at one point the
+; router I was using supported various HTTP-based updates but not Dynamic DNS
+; updates, so I switched to HE and have never switched that one back.
+$ORIGIN yoyo.example.org.
+@	NS	ns5.he.net.
+@	NS	ns4.he.net.
+@	NS	ns3.he.net.
+@	NS	ns2.he.net.
+@	NS	ns1.he.net.
+
+$ORIGIN example.org.
+
+; khard: kubernetes the hard way, Google, `xyz-2` project
+; gcloud dns managed-zones create khard --description="Kubernetes The Hard Way HD2" --dns-name="khard.example.org."
+; gcloud dns managed-zones describe khard
+khard			IN	NS	ns-cloud-d1.googledomains.com.
+khard			IN	NS	ns-cloud-d2.googledomains.com.
+khard			IN	NS	ns-cloud-d3.googledomains.com.
+khard			IN	NS	ns-cloud-d4.googledomains.com.
+;;;khard			IN	DS	15247 8 2 C7CAF8A6EFF0E6E7E811D68CDD87AD2EC135CB501A959FACBA3BC13F93F59864
+
+; Sub-domains with email and other services }}}
+
+;;; ======================================================================
+; Stubs to reject email to some hosts {{{
+; Hosts which should not appear as senders but are abused by spammers because
+; of parsing message-id headers:
+realhost		MX	0 .
+realhost		TXT	"v=spf1 -all"
+_25._tcp.realhost	TLSA	03 00 00 0000000000000000000000000000000000000000000000000000000000000000
+; Stubs to reject email to some hosts }}}
+
+;;; ======================================================================
+; Domain verifications for some tools {{{
+
+; <https://help.github.com/en/articles/verifying-your-organizations-domain>
+; "Optionally, once the "Verified" badge is visible on your organization's
+; profile page, you can delete the TXT entry from the DNS record at your domain
+; hosting service."
+;_github-challenge-ExampleOrg  TXT     "" ; dropped value when commented out
+
+; <https://docs.aws.amazon.com/acm/latest/userguide/gs-acm-validate-dns.html>
+; "ACM automatically renews your certificate for as long as the certificate is
+; in use and the CNAME record that ACM created for you remains in place in your
+; DNS database. You can stop automatic renewal by removing the certificate from
+; the AWS service with which it is associated or by deleting the CNAME record."
+_fedcba9876543210fedcba9876543210.go.example.org.  CNAME _45678901234abcdef45678901234abcd.ggedgsdned.acm-validations.aws.
+; -- added 2019-10-09; leave in place, no scheduled removal.
+
+; Google Webmaster
+; added 2020-01-26 login fred@example.net
+; to allow usage in oauth consent screens.
+; Must be left in place.
+opqrstuvwxyz		CNAME	gv-abcdefghijklmn.dv.googlehosted.com.
+; postmaster.google.com (CNAME alternative to TXT on top-level domain):
+zyxwvutsrqpo		CNAME	gv-nmlkjihgfedcba.dv.googlehosted.com.
+
+; Bing (I didn't record the policy back when I added this)
+0123456789abcdef0123456789abcdef		CNAME	verify.bing.com.
+
+; Domain verifications for some tools }}}
+
+; vim: set filetype=bindzone foldmethod=marker :

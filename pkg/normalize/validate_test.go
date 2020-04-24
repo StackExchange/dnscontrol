@@ -5,24 +5,27 @@ import (
 
 	"fmt"
 
-	"github.com/StackExchange/dnscontrol/models"
+	"github.com/StackExchange/dnscontrol/v3/models"
 )
 
 func TestCheckLabel(t *testing.T) {
 	var tests = []struct {
 		label       string
 		rType       string
+		target      string
 		isError     bool
 		hasSkipMeta bool
 	}{
-		{"@", "A", false, false},
-		{"foo.bar", "A", false, false},
-		{"_foo", "A", true, false},
-		{"_foo", "SRV", false, false},
-		{"_foo", "TLSA", false, false},
-		{"_foo", "TXT", false, false},
-		{"test.foo.tld", "A", true, false},
-		{"test.foo.tld", "A", false, true},
+		{"@", "A", "zap", false, false},
+		{"foo.bar", "A", "zap", false, false},
+		{"_foo", "A", "zap", true, false},
+		{"_foo", "SRV", "zap", false, false},
+		{"_foo", "TLSA", "zap", false, false},
+		{"_foo", "TXT", "zap", false, false},
+		{"_y2", "CNAME", "foo", true, false},
+		{"_y3", "CNAME", "asfljds.acm-validations.aws.", false, false},
+		{"test.foo.tld", "A", "zap", true, false},
+		{"test.foo.tld", "A", "zap", false, true},
 	}
 
 	for _, test := range tests {
@@ -31,7 +34,7 @@ func TestCheckLabel(t *testing.T) {
 			if test.hasSkipMeta {
 				meta["skip_fqdn_check"] = "true"
 			}
-			err := checkLabel(test.label, test.rType, "foo.tld", meta)
+			err := checkLabel(test.label, test.rType, test.target, "foo.tld", meta)
 			if err != nil && !test.isError {
 				t.Errorf(" Expected no error but got %s", err)
 			}
@@ -207,7 +210,7 @@ func TestCAAValidation(t *testing.T) {
 			},
 		},
 	}
-	errs := NormalizeAndValidateConfig(config)
+	errs := ValidateAndNormalizeConfig(config)
 	if len(errs) != 1 {
 		t.Error("Expect error on invalid CAA but got none")
 	}
@@ -274,7 +277,7 @@ func TestTLSAValidation(t *testing.T) {
 			},
 		},
 	}
-	errs := NormalizeAndValidateConfig(config)
+	errs := ValidateAndNormalizeConfig(config)
 	if len(errs) != 1 {
 		t.Error("Expect error on invalid TLSA but got none")
 	}

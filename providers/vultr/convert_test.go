@@ -3,7 +3,7 @@ package vultr
 import (
 	"testing"
 
-	"github.com/StackExchange/dnscontrol/models"
+	"github.com/StackExchange/dnscontrol/v3/models"
 	"github.com/vultr/govultr"
 )
 
@@ -59,7 +59,7 @@ func TestConversion(t *testing.T) {
 	}
 
 	for _, record := range records {
-		rc, err := toRecordConfig(dc, record)
+		rc, err := toRecordConfig(dc.Name, record)
 		if err != nil {
 			t.Error("Error converting Vultr record", record)
 		}

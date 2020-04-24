@@ -3,8 +3,8 @@ package commands
 import (
 	"fmt"
 
-	"github.com/StackExchange/dnscontrol/providers"
-	"github.com/urfave/cli"
+	"github.com/StackExchange/dnscontrol/v3/providers"
+	"github.com/urfave/cli/v2"
 )
 
 var _ = cmd(catUtils, func() *cli.Command {

@@ -2,10 +2,10 @@ package providers
 
 import (
 	"encoding/json"
+	"fmt"
 	"log"
 
-	"github.com/StackExchange/dnscontrol/models"
-	"github.com/pkg/errors"
+	"github.com/StackExchange/dnscontrol/v3/models"
 )
 
 // Registrar is an interface for a domain registrar. It can return a list of needed corrections to be applied in the future. Implement this only if the provider is a "registrar" (i.e. can update the NS records of the parent to a domain).
@@ -22,6 +22,13 @@ type DNSServiceProvider interface {
 // can be run to ensure all domains are present before running preview/push.  Implement this only if the provider supoprts the `dnscontrol create-domain` command.
 type DomainCreator interface {
 	EnsureDomainExists(domain string) error
+}
+
+// ZoneLister should be implemented by providers that have the
+// ability to list the zones they manage. This facilitates using the
+// "get-zones" command for "all" zones.
+type ZoneLister interface {
+	ListZones() ([]string, error)
 }
 
 // RegistrarInitializer is a function to create a registrar. Function will be passed the unprocessed json payload from the configuration file for the given provider.
@@ -58,7 +65,7 @@ func RegisterDomainServiceProviderType(name string, init DspInitializer, pm ...P
 func CreateRegistrar(rType string, config map[string]string) (Registrar, error) {
 	initer, ok := RegistrarTypes[rType]
 	if !ok {
-		return nil, errors.Errorf("registrar type %s not declared", rType)
+		return nil, fmt.Errorf("registrar type %s not declared", rType)
 	}
 	return initer(config)
 }
@@ -67,7 +74,7 @@ func CreateRegistrar(rType string, config map[string]string) (Registrar, error) 
 func CreateDNSProvider(dType string, config map[string]string, meta json.RawMessage) (DNSServiceProvider, error) {
 	initer, ok := DNSProviderTypes[dType]
 	if !ok {
-		return nil, errors.Errorf("DSP type %s not declared", dType)
+		return nil, fmt.Errorf("DSP type %s not declared", dType)
 	}
 	return initer(config, meta)
 }
@@ -83,6 +90,14 @@ func (n None) GetRegistrarCorrections(dc *models.DomainConfig) ([]*models.Correc
 // GetNameservers returns the current nameservers for a domain.
 func (n None) GetNameservers(string) ([]*models.Nameserver, error) {
 	return nil, nil
+}
+
+// GetZoneRecords gets the records of a zone and returns them in RecordConfig format.
+func (n None) GetZoneRecords(domain string) (models.Records, error) {
+	return nil, fmt.Errorf("not implemented")
+	// This enables the get-zones subcommand.
+	// Implement this by extracting the code from GetDomainCorrections into
+	// a single function.  For most providers this should be relatively easy.
 }
 
 // GetDomainCorrections returns corrections to update a domain.

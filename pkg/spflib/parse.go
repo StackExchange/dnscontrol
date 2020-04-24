@@ -1,14 +1,10 @@
 package spflib
 
 import (
-	"fmt"
-	"strings"
-
 	"bytes"
-
+	"fmt"
 	"io"
-
-	"github.com/pkg/errors"
+	"strings"
 )
 
 // SPFRecord stores the parts of an SPF record.
@@ -48,7 +44,7 @@ var qualifiers = map[byte]bool{
 // Parse parses a raw SPF record.
 func Parse(text string, dnsres Resolver) (*SPFRecord, error) {
 	if !strings.HasPrefix(text, "v=spf1 ") {
-		return nil, errors.Errorf("Not an spf record")
+		return nil, fmt.Errorf("Not an spf record")
 	}
 	parts := strings.Split(text, " ")
 	rec := &SPFRecord{}
@@ -79,7 +75,7 @@ func Parse(text string, dnsres Resolver) (*SPFRecord, error) {
 				// pi + 2: because pi starts at 0 when it iterates starting on parts[1],
 				// and because len(parts) is one bigger than the highest index.
 				if (pi + 2) != len(parts) {
-					return nil, errors.Errorf("%s must be last item", part)
+					return nil, fmt.Errorf("%s must be last item", part)
 				}
 				p.IncludeDomain = strings.TrimPrefix(part, "redirect=")
 			} else {
@@ -93,13 +89,13 @@ func Parse(text string, dnsres Resolver) (*SPFRecord, error) {
 				}
 				p.IncludeRecord, err = Parse(subRecord, dnsres)
 				if err != nil {
-					return nil, errors.Errorf("In included spf: %s", err)
+					return nil, fmt.Errorf("In included spf: %s", err)
 				}
 			}
 		} else if strings.HasPrefix(part, "exists:") || strings.HasPrefix(part, "ptr:") {
 			p.IsLookup = true
 		} else {
-			return nil, errors.Errorf("Unsupported spf part %s", part)
+			return nil, fmt.Errorf("Unsupported spf part %s", part)
 		}
 
 	}

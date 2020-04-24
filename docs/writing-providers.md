@@ -91,18 +91,24 @@ yourself.)
 Pick a similar provider as your base.  Providers basically fall
 into three general categories:
 
-* **zone:** The API requires you to upload the entire zone every time. (BIND, GANDI).
-* **incremental-record:** The API lets you add/change/delete individual DNS records. (ACTIVEDIR, CLOUDFLARE, NAMEDOTCOM, GCLOUD, ROUTE53)
-* **incremental-label:** Similar to incremental, but the API requires you to update all the records related to a particular label each time. For example, if a label (www.example.com) has an A and MX record, any change requires replacing all the records for that label.
+* **zone:** The API requires you to upload the entire zone every time. (BIND).
+* **incremental-record:** The API lets you add/change/delete individual DNS records. (ACTIVEDIR, CLOUDFLARE, DNSIMPLE, NAMEDOTCOM, GCLOUD, ROUTE53)
+* **incremental-label:** Like incremental-record, but if there are
+  multiple records on a label (for example, example www.example.com
+has A and MX records), you have to replace all the records at that
+label. (GANDI_V5)
+* **incremental-label-type:** Like incremental-record, but updates to any records at a label have to be done by type.  For example, if a label (www.example.com) has many A and MX records, even the smallest change to one of the A records requires replacing all the A records. Any changes to the MX records requires replacing all the MX records.  If an A record is converted to a CNAME, one must remove all the A records in one call, and add the CNAME record with another call.  This is deceptively difficult to get right; if you have the voice between incremental-label-type and incremental-label, pick incremental-label.
 
-TODO: Categorize DNSIMPLE, NAMECHEAP
+TODO: Categorize NAMECHEAP
 
 All providers use the "diff" module to detect differences. It takes
 two zones and returns records that are unchanged, created, deleted,
-and modified. The incremental providers use the differences to
-update individual records or recordsets. The zone providers use the
+and modified.
+The zone providers use the
 information to print a human-readable list of what is being changed,
 but upload the entire new zone.
+The incremental providers use the differences to
+update individual records or recordsets.
 
 
 ## Step 3: Create the driver skeleton
@@ -162,7 +168,7 @@ This will run the tests on Amazon AWS Route53:
 
 ```
 export R53_DOMAIN=dnscontroltest-r53.com  # Use a test domain.
-export R53_KEY_ID=CHANGE_TO_THE_ID
+export R53_KEY_ID='CHANGE_TO_THE_ID'
 export R53_KEY='CHANGE_TO_THE_KEY'
 go test -v -verbose -provider ROUTE53
 ```
@@ -171,6 +177,7 @@ go test -v -verbose -provider ROUTE53
 
 * Edit [README.md](https://github.com/StackExchange/dnscontrol): Add the provider to the bullet list.
 * Edit [docs/provider-list.md](https://github.com/StackExchange/dnscontrol/blob/master/docs/provider-list.md): Add the provider to the provider list.
+* FYI: The list of "Requested Providers" is generated dynamically from Github issues tagged `provider-request`.  When you close the issue related to your provider, the list will update automatically.
 * Create `docs/_providers/PROVIDERNAME.md`: Use one of the other files in that directory as a base.
 * Edit [OWNERS](https://github.com/StackExchange/dnscontrol/blob/master/OWNERS): Add the directory name and your github id.
 

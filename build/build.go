@@ -17,12 +17,13 @@ var goos = flag.String("os", "", "OS to build (linux, windows, or darwin) Defaul
 func main() {
 	flag.Parse()
 	flags := fmt.Sprintf(`-s -w -X main.SHA="%s" -X main.BuildTime=%d`, getVersion(), time.Now().Unix())
-	pkg := "github.com/StackExchange/dnscontrol"
+	pkg := "github.com/StackExchange/dnscontrol/v3"
 
 	build := func(out, goos string) {
 		log.Printf("Building %s", out)
 		cmd := exec.Command("go", "build", "-o", out, "-ldflags", flags, pkg)
 		os.Setenv("GOOS", goos)
+		os.Setenv("GO111MODULE", "on")
 		cmd.Stderr = os.Stderr
 		cmd.Stdout = os.Stdout
 		err := cmd.Run()

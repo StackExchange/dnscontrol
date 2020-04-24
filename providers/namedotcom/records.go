@@ -1,15 +1,15 @@
 package namedotcom
 
 import (
+	"errors"
 	"fmt"
 	"regexp"
 	"strings"
 
 	"github.com/namedotcom/go/namecom"
-	"github.com/pkg/errors"
 
-	"github.com/StackExchange/dnscontrol/models"
-	"github.com/StackExchange/dnscontrol/providers/diff"
+	"github.com/StackExchange/dnscontrol/v3/models"
+	"github.com/StackExchange/dnscontrol/v3/pkg/diff"
 )
 
 var defaultNameservers = []*models.Nameserver{
@@ -19,16 +19,28 @@ var defaultNameservers = []*models.Nameserver{
 	{Name: "ns4.name.com"},
 }
 
-// GetDomainCorrections gathers correctios that would bring n to match dc.
-func (n *NameCom) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Correction, error) {
-	dc.Punycode()
-	records, err := n.getRecords(dc.Name)
+// GetZoneRecords gets the records of a zone and returns them in RecordConfig format.
+func (n *NameCom) GetZoneRecords(domain string) (models.Records, error) {
+	records, err := n.getRecords(domain)
 	if err != nil {
 		return nil, err
 	}
+
 	actual := make([]*models.RecordConfig, len(records))
 	for i, r := range records {
-		actual[i] = toRecord(r, dc.Name)
+		actual[i] = toRecord(r, domain)
+	}
+
+	return actual, nil
+}
+
+// GetDomainCorrections gathers correctios that would bring n to match dc.
+func (n *NameCom) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Correction, error) {
+	dc.Punycode()
+
+	actual, err := n.GetZoneRecords(dc.Name)
+	if err != nil {
+		return nil, err
 	}
 
 	for _, rec := range dc.Records {
@@ -89,7 +101,7 @@ func toRecord(r *namecom.Record, origin string) *models.RecordConfig {
 		Original: r,
 	}
 	if !strings.HasSuffix(r.Fqdn, ".") {
-		panic(errors.Errorf("namedotcom suddenly changed protocol. Bailing. (%v)", r.Fqdn))
+		panic(fmt.Errorf("namedotcom suddenly changed protocol. Bailing. (%v)", r.Fqdn))
 	}
 	fqdn := r.Fqdn[:len(r.Fqdn)-1]
 	rc.SetLabelFromFQDN(fqdn, origin)
@@ -98,15 +110,15 @@ func toRecord(r *namecom.Record, origin string) *models.RecordConfig {
 		rc.SetTargetTXTs(decodeTxt(r.Answer))
 	case "MX":
 		if err := rc.SetTargetMX(uint16(r.Priority), r.Answer); err != nil {
-			panic(errors.Wrap(err, "unparsable MX record received from ndc"))
+			panic(fmt.Errorf("unparsable MX record received from ndc: %w", err))
 		}
 	case "SRV":
 		if err := rc.SetTargetSRVPriorityString(uint16(r.Priority), r.Answer+"."); err != nil {
-			panic(errors.Wrap(err, "unparsable SRV record received from ndc"))
+			panic(fmt.Errorf("unparsable SRV record received from ndc: %w", err))
 		}
 	default: // "A", "AAAA", "ANAME", "CNAME", "NS"
 		if err := rc.PopulateFromString(rtype, r.Answer, r.Fqdn); err != nil {
-			panic(errors.Wrap(err, "unparsable record received from ndc"))
+			panic(fmt.Errorf("unparsable record received from ndc: %w", err))
 		}
 	}
 	return rc
@@ -157,6 +169,9 @@ func (n *NameCom) createRecord(rc *models.RecordConfig, domain string) error {
 	case "TXT":
 		record.Answer = encodeTxt(rc.TxtStrings)
 	case "SRV":
+		if rc.GetTargetField() == "." {
+			return errors.New("SRV records with empty targets are not supported (as of 2019-11-05, the API returns 'Parameter Value Error - Invalid Srv Format')")
+		}
 		record.Answer = fmt.Sprintf("%d %d %v", rc.SrvWeight, rc.SrvPort, rc.GetTargetField())
 		record.Priority = uint32(rc.SrvPriority)
 	default:

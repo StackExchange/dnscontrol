@@ -6,8 +6,8 @@ import (
 
 	"github.com/gobwas/glob"
 
-	"github.com/StackExchange/dnscontrol/models"
-	"github.com/StackExchange/dnscontrol/pkg/printer"
+	"github.com/StackExchange/dnscontrol/v3/models"
+	"github.com/StackExchange/dnscontrol/v3/pkg/printer"
 )
 
 // Correlation stores a difference between two domains.
@@ -54,6 +54,9 @@ func (d *differ) content(r *models.RecordConfig) string {
 	// its output with r.GetTargetDiffable() to make sure the same
 	// results are generated.  Once we have confidence, this function will go away.
 	content := fmt.Sprintf("%v ttl=%d", r.GetTargetCombined(), r.TTL)
+	if r.Type == "SOA" {
+		content = fmt.Sprintf("%s %v %d %d %d %d ttl=%d", r.Target, r.SoaMbox, r.SoaRefresh, r.SoaRetry, r.SoaExpire, r.SoaMinttl, r.TTL) // SoaSerial is not used in comparison
+	}
 	var allMaps []map[string]string
 	for _, f := range d.extraValues {
 		// sort the extra values map keys to perform a deterministic
@@ -72,6 +75,7 @@ func (d *differ) content(r *models.RecordConfig) string {
 	}
 	control := r.ToDiffable(allMaps...)
 	if control != content {
+		fmt.Printf("CONTROL=%q CONTENT=%q\n", control, content)
 		panic("OOPS! control != content")
 	}
 	return content
@@ -117,17 +121,28 @@ func (d *differ) IncrementalDiff(existing []*models.RecordConfig) (unchanged, cr
 	// Each iteration is only for a single type/name record set
 	for key, existingRecords := range existingByNameAndType {
 		desiredRecords := desiredByNameAndType[key]
-		// first look through records that are the same target on both sides. Those are either modifications or unchanged
+
+		// Very first, get rid of any identical records. Easy.
+		for i := len(existingRecords) - 1; i >= 0; i-- {
+			ex := existingRecords[i]
+			for j, de := range desiredRecords {
+				if d.content(de) != d.content(ex) {
+					continue
+				}
+				unchanged = append(unchanged, Correlation{d, ex, de})
+				existingRecords = existingRecords[:i+copy(existingRecords[i:], existingRecords[i+1:])]
+				desiredRecords = desiredRecords[:j+copy(desiredRecords[j:], desiredRecords[j+1:])]
+				break
+			}
+		}
+
+		// Next, match by target. This will give the most natural modifications.
 		for i := len(existingRecords) - 1; i >= 0; i-- {
 			ex := existingRecords[i]
 			for j, de := range desiredRecords {
 				if de.GetTargetField() == ex.GetTargetField() {
-					// they're either identical or should be a modification of each other (ttl or metadata changes)
-					if d.content(de) == d.content(ex) {
-						unchanged = append(unchanged, Correlation{d, ex, de})
-					} else {
-						modify = append(modify, Correlation{d, ex, de})
-					}
+					// two records share a target, but different content (ttl or metadata changes)
+					modify = append(modify, Correlation{d, ex, de})
 					// remove from both slices by index
 					existingRecords = existingRecords[:i+copy(existingRecords[i:], existingRecords[i+1:])]
 					desiredRecords = desiredRecords[:j+copy(desiredRecords[j:], desiredRecords[j+1:])]
@@ -208,6 +223,32 @@ func (d *differ) ChangedGroups(existing []*models.RecordConfig) map[models.Recor
 		changedKeys[m.Desired.Key()] = append(changedKeys[m.Desired.Key()], m.String())
 	}
 	return changedKeys
+}
+
+// DebugKeyMapMap debug prints the results from ChangedGroups.
+func DebugKeyMapMap(note string, m map[models.RecordKey][]string) {
+	// The output isn't pretty but it is useful.
+	fmt.Println("DEBUG:", note)
+
+	// Extract the keys
+	var keys []models.RecordKey
+	for k := range m {
+		keys = append(keys, k)
+	}
+	sort.SliceStable(keys, func(i, j int) bool {
+		if keys[i].NameFQDN == keys[j].NameFQDN {
+			return keys[i].Type < keys[j].Type
+		}
+		return keys[i].NameFQDN < keys[j].NameFQDN
+	})
+
+	// Pretty print the map:
+	for _, k := range keys {
+		fmt.Printf("   %v %v:\n", k.Type, k.NameFQDN)
+		for _, s := range m[k] {
+			fmt.Printf("      -- %q\n", s)
+		}
+	}
 }
 
 func (c Correlation) String() string {

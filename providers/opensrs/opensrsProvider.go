@@ -7,8 +7,8 @@ import (
 	"sort"
 	"strings"
 
-	"github.com/StackExchange/dnscontrol/models"
-	"github.com/StackExchange/dnscontrol/providers"
+	"github.com/StackExchange/dnscontrol/v3/models"
+	"github.com/StackExchange/dnscontrol/v3/providers"
 
 	opensrs "github.com/philhug/opensrs-go/opensrs"
 )
@@ -17,6 +17,7 @@ var docNotes = providers.DocumentationNotes{
 	providers.DocCreateDomains:       providers.Cannot(),
 	providers.DocOfficiallySupported: providers.Cannot(),
 	providers.CanUseTLSA:             providers.Cannot(),
+	providers.CanGetZones:            providers.Unimplemented(),
 }
 
 func init() {
@@ -38,7 +39,7 @@ type OpenSRSApi struct {
 }
 
 func (c *OpenSRSApi) GetNameservers(domainName string) ([]*models.Nameserver, error) {
-	return models.StringsToNameservers(defaultNameServerNames), nil
+	return models.ToNameservers(defaultNameServerNames)
 }
 
 func (c *OpenSRSApi) GetRegistrarCorrections(dc *models.DomainConfig) ([]*models.Correction, error) {

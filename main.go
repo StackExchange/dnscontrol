@@ -7,8 +7,8 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/StackExchange/dnscontrol/commands"
-	_ "github.com/StackExchange/dnscontrol/providers/_all"
+	"github.com/StackExchange/dnscontrol/v3/commands"
+	_ "github.com/StackExchange/dnscontrol/v3/providers/_all"
 )
 
 //go:generate go run build/generate/generate.go build/generate/featureMatrix.go
@@ -24,7 +24,7 @@ func main() {
 // Update the number here manually each release, so at least we have a range for go-get people.
 var (
 	SHA       = ""
-	Version   = "2.9"
+	Version   = "3.0.0"
 	BuildTime = ""
 )
 

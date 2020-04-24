@@ -6,11 +6,10 @@ import (
 	"sort"
 	"strings"
 
-	"github.com/StackExchange/dnscontrol/models"
-	"github.com/StackExchange/dnscontrol/providers"
-	"github.com/StackExchange/dnscontrol/providers/diff"
+	"github.com/StackExchange/dnscontrol/v3/models"
+	"github.com/StackExchange/dnscontrol/v3/pkg/diff"
+	"github.com/StackExchange/dnscontrol/v3/providers"
 	"github.com/ovh/go-ovh/ovh"
-	"github.com/pkg/errors"
 )
 
 type ovhProvider struct {
@@ -28,6 +27,7 @@ var features = providers.DocumentationNotes{
 	providers.DocCreateDomains:       providers.Cannot("New domains require registration"),
 	providers.DocDualHost:            providers.Can(),
 	providers.DocOfficiallySupported: providers.Cannot(),
+	providers.CanGetZones:            providers.Can(),
 }
 
 func newOVH(m map[string]string, metadata json.RawMessage) (*ovhProvider, error) {
@@ -61,7 +61,7 @@ func init() {
 func (c *ovhProvider) GetNameservers(domain string) ([]*models.Nameserver, error) {
 	_, ok := c.zones[domain]
 	if !ok {
-		return nil, errors.Errorf("%s not listed in zones for ovh account", domain)
+		return nil, fmt.Errorf("'%s' not a zone in ovh account", domain)
 	}
 
 	ns, err := c.fetchRegistrarNS(domain)
@@ -69,7 +69,7 @@ func (c *ovhProvider) GetNameservers(domain string) ([]*models.Nameserver, error
 		return nil, err
 	}
 
-	return models.StringsToNameservers(ns), nil
+	return models.ToNameservers(ns)
 }
 
 type errNoExist struct {
@@ -80,25 +80,34 @@ func (e errNoExist) Error() string {
 	return fmt.Sprintf("Domain %s not found in your ovh account", e.domain)
 }
 
-func (c *ovhProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Correction, error) {
-	dc.Punycode()
-	//dc.CombineMXs()
-
-	if !c.zones[dc.Name] {
-		return nil, errNoExist{dc.Name}
+// GetZoneRecords gets the records of a zone and returns them in RecordConfig format.
+func (c *ovhProvider) GetZoneRecords(domain string) (models.Records, error) {
+	if !c.zones[domain] {
+		return nil, errNoExist{domain}
 	}
 
-	records, err := c.fetchRecords(dc.Name)
+	records, err := c.fetchRecords(domain)
 	if err != nil {
 		return nil, err
 	}
 
-	var actual []*models.RecordConfig
+	var actual models.Records
 	for _, r := range records {
-		rec := nativeToRecord(r, dc.Name)
+		rec := nativeToRecord(r, domain)
 		if rec != nil {
 			actual = append(actual, rec)
 		}
+	}
+	return actual, nil
+}
+
+func (c *ovhProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Correction, error) {
+	dc.Punycode()
+	//dc.CombineMXs()
+
+	actual, err := c.GetZoneRecords(dc.Name)
+	if err != nil {
+		return nil, err
 	}
 
 	// Normalize
@@ -164,7 +173,7 @@ func nativeToRecord(r *Record, origin string) *models.RecordConfig {
 
 	rec.SetLabel(r.SubDomain, origin)
 	if err := rec.PopulateFromString(rtype, r.Target, origin); err != nil {
-		panic(errors.Wrap(err, "unparsable record received from ovh"))
+		panic(fmt.Errorf("unparsable record received from ovh: %w", err))
 	}
 
 	// ovh default is 3600

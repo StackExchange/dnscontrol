@@ -11,7 +11,21 @@ jsId: CLOUDFLAREAPI
 * When using `SPF()` or the `SPF_BUILDER()` the records are converted to RecordType `TXT` as Cloudflare API fails otherwise. See more [here](https://github.com/StackExchange/dnscontrol/issues/446).
 
 ## Configuration
-In the credentials file you must provide your Cloudflare API username and access token:
+In the credentials file you must provide a [Cloudflare API token](https://dash.cloudflare.com/profile/api-tokens):
+
+{% highlight json %}
+{
+  "cloudflare": {
+    "apitoken": "your-cloudflare-api-token"
+  }
+}
+{% endhighlight %}
+
+Make sure the token has at least the right read zones and edit DNS records (i.e. `Zone → Zone → Read` and `Zone → DNS → Edit`; to modify Page Rules additionally requires `Zone → Page Rules → Edit`);
+checkout [Cloudflare's documentation](https://support.cloudflare.com/hc/en-us/articles/200167836-Managing-API-Tokens-and-Keys) for instructions on how to generate and configure permissions on API tokens.
+
+
+Or you can provide your Cloudflare API username and access key instead (but it isn't recommended because those credentials give DNSControl access to the complete Cloudflare API):
 
 {% highlight json %}
 {
@@ -27,8 +41,7 @@ If your Cloudflare account has access to multiple Cloudflare accounts, you can s
 {% highlight json %}
 {
   "cloudflare": {
-    "apikey": "...",
-    "apiuser": "...",
+    "apitoken": "...",
     "accountid": "your-cloudflare-account-id",
     "accountname": "your-cloudflare-account-name"
   }
@@ -129,7 +142,7 @@ will *not* automatically add it. You'll need to do that via the
 control panel manually or via the `dnscontrol create-domains` command.
 
 ## Redirects
-The Cloudflare provider can manage Page-Rule based redirects for your domains. Simply use the `CF_REDIRECT` and `CF_TEMP_REDIRECT` functions to make redirects:
+The Cloudflare provider can manage "Forwarding URL" Page Rules (redirects) for your domains. Simply use the `CF_REDIRECT` and `CF_TEMP_REDIRECT` functions to make redirects:
 
 {% highlight js %}
 
@@ -156,3 +169,4 @@ Notice a few details:
 1. We need an A record with cloudflare proxy on, or the page rule will never run.
 2. The IP address in those A records may be mostly irrelevant, as cloudflare should handle all requests (assuming some page rule matches).
 3. Ordering matters for priority. CF_REDIRECT records will be added in the order they appear in your js. So put catch-alls at the bottom.
+4. if _any_ `CF_REDIRECT` or `CF_TEMP_REDIRECT` functions are used then `dnscontrol` will manage _all_ "Forwarding URL" type Page Rules for the domain. Page Rule types other than "Forwarding URL” will be left alone.

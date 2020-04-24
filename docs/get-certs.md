@@ -5,14 +5,27 @@ title: Let's Encrypt Certificate generation
 
 # *Let's Encrypt* Certificate generation
 
-The `dnscontrol get-certs` command will obtain or renew TLS certificates for your managed domains via [*Let's Encrypt*](https://letsencrypt.org). This can be extremely useful in situations where other acme clients are problematic. Specifically, this may be useful if:
+DNSControl will generate/renew Let's Encrypt certificates using DNS
+validation.  It is not a complete certificate management system, but
+can perform the renewal steps for the system you create.  If you
+are looking for a complete system, we recommend
+[certbot](https://certbot.eff.org/).
 
-- You are already managing dns records with DNSControl.
-- You have a large number of domains or dns providers in complicated configurations.
-- You want **wildcard** certificates, which *require* dns validation.
+The `dnscontrol get-certs` command will obtain or renew TLS
+certificates for your managed domains via
+[*Let's Encrypt*](https://letsencrypt.org). This can be extremely useful in
+situations where other acme clients are problematic. Specifically,
+this may be useful if:
 
-At stack overflow we have dual-hosted dns, with most domains having four nameservers from two different cloud DNS providers. DNSControl uses
-the exact same code as the core DNSControl commands to issue certificates. This means is will work the same regardless of your domain layout or what providers you use.
+- You are already managing DNS records with DNSControl.
+- You have a large number of domains or DNS providers in complicated configurations.
+- You want **wildcard** certificates, which *require* DNS validation.
+
+At Stack Overflow we have dual-hosted DNS i.e. zones having
+nameservers at two different DNS providers. Most Let's Encrypt systems
+do not support DNS validation in that case.  DNSControl's `get-certs`
+command leverages the core DNSControl commands when issueing
+certificates, therefore dual-hosted DNS is supported.
 
 ## General Process
 
@@ -29,7 +42,9 @@ The `get-certs` command does the following steps:
         1. Tell the acme server to validate the record.
     1. Receive a new certificate and save it to disk
 
-Because DNS propagation times vary from provider to provider, and validations are (currently) done serially, this process may take some time.
+Because DNS propagation times vary from provider to provider, and
+validations are (currently) done serially, this process may take some
+time.
 
 ## certs.json
 
@@ -60,7 +75,7 @@ The format of the file is a simple json array of objects:
 ]
 ```
 
-`get-certs` will attempt to issue any certificates referenced by this file, and will renew or re-issue if the certificate we already have is
+`dnscontrol get-certs` will attempt to issue any certificates referenced by this file, and will renew or re-issue if the certificate we already have is
 close to expiry or if the set of subject names changes for a cert.
 
 ## Working directory layout
@@ -126,3 +141,25 @@ This command is intended to be run as frequently as you desire. One workflow wou
 6. Take care to not leave any plain-text private keys on disk.
 
 The push to the certificate repo can trigger further automation to deploy certs to load balancers, cdns, applications and so forth.
+
+## Example script
+
+```
+
+#!/bin/bash
+
+set -e
+
+# get and decrypt the files
+[ insert your own code here ]
+
+dnscontrol get-certs \
+-email "CHANGE_THIS@example.com" \
+--acme live \
+--skip bind --renew 31 \
+--verbose \
+--agreeTOS --vault --notify
+
+# Encrypt and save the files
+[ insert your own code here ]
+```

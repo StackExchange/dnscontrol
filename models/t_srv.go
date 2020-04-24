@@ -1,10 +1,9 @@
 package models
 
 import (
+	"fmt"
 	"strconv"
 	"strings"
-
-	"github.com/pkg/errors"
 )
 
 // SetTargetSRV sets the SRV fields.
@@ -30,7 +29,7 @@ func (rc *RecordConfig) setTargetSRVIntAndStrings(priority uint16, weight, port,
 			return rc.SetTargetSRV(priority, uint16(i64weight), uint16(i64port), target)
 		}
 	}
-	return errors.Wrap(err, "SRV value too big for uint16")
+	return fmt.Errorf("SRV value too big for uint16: %w", err)
 }
 
 // SetTargetSRVStrings is like SetTargetSRV but accepts all parameters as strings.
@@ -39,7 +38,7 @@ func (rc *RecordConfig) SetTargetSRVStrings(priority, weight, port, target strin
 	if i64priority, err = strconv.ParseUint(priority, 10, 16); err == nil {
 		return rc.setTargetSRVIntAndStrings(uint16(i64priority), weight, port, target)
 	}
-	return errors.Wrap(err, "SRV value too big for uint16")
+	return fmt.Errorf("SRV value too big for uint16: %w", err)
 }
 
 // SetTargetSRVPriorityString is like SetTargetSRV but accepts priority as an
@@ -48,17 +47,21 @@ func (rc *RecordConfig) SetTargetSRVStrings(priority, weight, port, target strin
 // field as the SRV priority.
 func (rc *RecordConfig) SetTargetSRVPriorityString(priority uint16, s string) error {
 	part := strings.Fields(s)
-	if len(part) != 3 {
-		return errors.Errorf("SRV value does not contain 3 fields: (%#v)", s)
+	switch len(part) {
+	case 3:
+		return rc.setTargetSRVIntAndStrings(priority, part[0], part[1], part[2])
+	case 2:
+		return rc.setTargetSRVIntAndStrings(priority, part[0], part[1], ".")
+	default:
+		return fmt.Errorf("SRV value does not contain 3 fields: (%#v)", s)
 	}
-	return rc.setTargetSRVIntAndStrings(priority, part[0], part[1], part[2])
 }
 
 // SetTargetSRVString is like SetTargetSRV but accepts one big string to be parsed.
 func (rc *RecordConfig) SetTargetSRVString(s string) error {
 	part := strings.Fields(s)
 	if len(part) != 4 {
-		return errors.Errorf("SRC value does not contain 4 fields: (%#v)", s)
+		return fmt.Errorf("SRV value does not contain 4 fields: (%#v)", s)
 	}
 	return rc.SetTargetSRVStrings(part[0], part[1], part[2], part[3])
 }

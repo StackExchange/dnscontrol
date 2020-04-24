@@ -8,7 +8,7 @@ func (n *HXClient) EnsureDomainExists(domain string) error {
 		"COMMAND": "StatusDNSZone",
 		"DNSZONE": domain + ".",
 	})
-	code := r.Code()
+	code := r.GetCode()
 	if code == 545 {
 		r = n.client.Request(map[string]string{
 			"COMMAND": "CreateDNSZone",

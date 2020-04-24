@@ -1,12 +1,6 @@
 # shared step for setting up go env
 # see https://docs.microsoft.com/en-us/azure/devops/pipelines/languages/go?view=azure-devops#build-a-container-image
 steps:
-- script: |
-    mkdir -p '$(GOBIN)'
-    mkdir -p '$(GOPATH)/pkg'
-    mkdir -p '$(modulePath)'
-    shopt -s extglob
-    mv !(gopath) '$(modulePath)'
-    echo '##vso[task.prependpath]$(GOBIN)'
-    echo '##vso[task.prependpath]$(GOROOT)/bin'
-  displayName: 'Set up the Go workspace'
+- task: GoTool@0
+  inputs:
+    version: '1.14'

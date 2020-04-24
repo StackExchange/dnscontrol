@@ -7,8 +7,8 @@ import (
 	"net"
 	"sort"
 
-	"github.com/StackExchange/dnscontrol/models"
-	"github.com/StackExchange/dnscontrol/pkg/natsort"
+	"github.com/StackExchange/dnscontrol/v3/models"
+	"github.com/StackExchange/dnscontrol/v3/pkg/natsort"
 	"github.com/miekg/dns/dnsutil"
 )
 

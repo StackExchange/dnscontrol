@@ -1,3 +1,8 @@
+
+!!! NOTE: This command has been replaced by the "dnscontrol get-zones"
+!!! subcommand. It can do everything convertzone does and more, with
+!!! fewer bugs.  This command will be removed from the distribution soon.
+
 # convertzone -- Converts a standard DNS zonefile into tsv, pretty, or DSL
 
 This is a crude hack we put together to read a couple common zonefile

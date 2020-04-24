@@ -7,10 +7,10 @@ import (
 	"sort"
 	"strings"
 
-	"github.com/StackExchange/dnscontrol/models"
-	"github.com/StackExchange/dnscontrol/pkg/printer"
-	"github.com/pkg/errors"
-	"github.com/urfave/cli"
+	"github.com/urfave/cli/v2"
+
+	"github.com/StackExchange/dnscontrol/v3/models"
+	"github.com/StackExchange/dnscontrol/v3/pkg/printer"
 )
 
 // categories of commands
@@ -20,20 +20,21 @@ const (
 	catUtils = "utility"
 )
 
-var commands = []cli.Command{}
+var commands = []*cli.Command{}
 var version string
 
 func cmd(cat string, c *cli.Command) bool {
 	c.Category = cat
-	commands = append(commands, *c)
+	commands = append(commands, c)
 	return true
 }
 
 var _ = cmd(catDebug, &cli.Command{
 	Name:  "version",
 	Usage: "Print version information",
-	Action: func(c *cli.Context) {
-		fmt.Println(version)
+	Action: func(c *cli.Context) error {
+		_, err := fmt.Println(version)
+		return err
 	},
 })
 
@@ -46,7 +47,7 @@ func Run(v string) int {
 	app.HideVersion = true
 	app.Usage = "dnscontrol is a compiler and DSL for managing dns zones"
 	app.Flags = []cli.Flag{
-		cli.BoolFlag{
+		&cli.BoolFlag{
 			Name:        "v",
 			Usage:       "Enable detailed logging",
 			Destination: &printer.DefaultPrinter.Verbose,
@@ -72,12 +73,12 @@ type GetDNSConfigArgs struct {
 
 func (args *GetDNSConfigArgs) flags() []cli.Flag {
 	return append(args.ExecuteDSLArgs.flags(),
-		cli.StringFlag{
+		&cli.StringFlag{
 			Destination: &args.JSONFile,
 			Name:        "ir",
 			Usage:       "Read IR (json) directly from this file. Do not process DSL at all",
 		},
-		cli.StringFlag{
+		&cli.StringFlag{
 			Destination: &args.JSONFile,
 			Name:        "json",
 			Hidden:      true,
@@ -125,7 +126,7 @@ func preloadProviders(cfg *models.DNSConfig, err error) (*models.DNSConfig, erro
 	for _, d := range cfg.Domains {
 		reg, ok := cfg.RegistrarsByName[d.RegistrarName]
 		if !ok {
-			return nil, errors.Errorf("Registrar named %s expected for %s, but never registered", d.RegistrarName, d.Name)
+			return nil, fmt.Errorf("Registrar named %s expected for %s, but never registered", d.RegistrarName, d.Name)
 		}
 		d.RegistrarInstance = &models.RegistrarInstance{
 			ProviderBase: models.ProviderBase{
@@ -136,7 +137,7 @@ func preloadProviders(cfg *models.DNSConfig, err error) (*models.DNSConfig, erro
 		for pName, n := range d.DNSProviderNames {
 			prov, ok := cfg.DNSProvidersByName[pName]
 			if !ok {
-				return nil, errors.Errorf("DNS Provider named %s expected for %s, but never registered", pName, d.Name)
+				return nil, fmt.Errorf("DNS Provider named %s expected for %s, but never registered", pName, d.Name)
 			}
 			d.DNSProviderInstances = append(d.DNSProviderInstances, &models.DNSProviderInstance{
 				ProviderBase: models.ProviderBase{
@@ -163,20 +164,20 @@ type ExecuteDSLArgs struct {
 
 func (args *ExecuteDSLArgs) flags() []cli.Flag {
 	return []cli.Flag{
-		cli.StringFlag{
+		&cli.StringFlag{
 			Name:        "config",
 			Value:       "dnsconfig.js",
 			Destination: &args.JSFile,
 			Usage:       "File containing dns config in javascript DSL",
 		},
-		cli.StringFlag{
+		&cli.StringFlag{
 			Name:        "js",
 			Value:       "dnsconfig.js",
 			Hidden:      true,
 			Destination: &args.JSFile,
 			Usage:       "same as config. for back compatibility",
 		},
-		cli.BoolFlag{
+		&cli.BoolFlag{
 			Name:        "dev",
 			Destination: &args.DevMode,
 			Usage:       "Use helpers.js from disk instead of embedded copy",
@@ -192,12 +193,12 @@ type PrintJSONArgs struct {
 
 func (args *PrintJSONArgs) flags() []cli.Flag {
 	return []cli.Flag{
-		cli.BoolFlag{
+		&cli.BoolFlag{
 			Name:        "pretty",
 			Destination: &args.Pretty,
 			Usage:       "Pretty print IR JSON",
 		},
-		cli.StringFlag{
+		&cli.StringFlag{
 			Name:        "out",
 			Destination: &args.Output,
 			Usage:       "File to write IR JSON to (default stdout)",
@@ -212,7 +213,7 @@ type GetCredentialsArgs struct {
 
 func (args *GetCredentialsArgs) flags() []cli.Flag {
 	return []cli.Flag{
-		cli.StringFlag{
+		&cli.StringFlag{
 			Name:        "creds",
 			Destination: &args.CredsFile,
 			Usage:       "Provider credentials JSON file",
@@ -229,13 +230,13 @@ type FilterArgs struct {
 
 func (args *FilterArgs) flags() []cli.Flag {
 	return []cli.Flag{
-		cli.StringFlag{
+		&cli.StringFlag{
 			Name:        "providers",
 			Destination: &args.Providers,
 			Usage:       `Providers to enable (comma separated list); default is all. Can exclude individual providers from default by adding '"_exclude_from_defaults": "true"' to the credentials file for a provider`,
 			Value:       "",
 		},
-		cli.StringFlag{
+		&cli.StringFlag{
 			Name:        "domains",
 			Destination: &args.Domains,
 			Usage:       `Comma separated list of domain names to include`,

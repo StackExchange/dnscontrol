@@ -26,7 +26,7 @@ title: Service Providers
 </p>
 <p>
   An empty space may indicate the feature is not supported by a provider, or it may simply mean
-  the feature has not been investigated and implemented yet. If a feature you need is missing from 
+  the feature has not been investigated and implemented yet. If a feature you need is missing from
   a provider that supports it, we'd love your contribution to ensure it works correctly and add it to this matrix.
 </p>
 <p>If a feature is definitively not supported for whatever reason, we would also like a PR to clarify why it is not supported, and fill in this entire matrix.</p>
@@ -45,6 +45,16 @@ Official support means:
 * New features will work on these providers (unless the provider does not support it).
 * StackOverflow maintains test accounts with those providers for running integration tests.
 
+Current owners are:
+
+* `ACTIVEDIRECTORY_PS` @tlimoncelli
+* `AZURE_DNS` @vatsalyagoel
+* `BIND` @tlimoncelli
+* `CLOUDFLAREAPI` @tlimoncelli
+* `GCLOUD` @tlimoncelli
+* `NAMEDOTCOM` @tlimoncelli
+* `ROUTE53` @tlimoncelli
+
 ### Providers with "contributor support"
 
 The other providers are supported by community members, usually the
@@ -61,15 +71,22 @@ provided to help community members support their code independently.
 
 Maintainers of contributed providers:
 
-* digital ocean @Deraen
-* dnsimple @aeden
-* gandi @TomOnTime
-* HEXONET @papakai
-* Linode @koesie10
-* namecheap @captncraig
-* ns1 @captncraig
-* OVH @masterzen
-* Vultr @geek1011
+* `CLOUDNS` @pragmaton
+* `DIGITALOCEAN` @Deraen
+* `DNSIMPLE` @aeden
+* `EXOSCALE` @pierre-emmanuelJ
+* `GANDI_V5` @TomOnTime
+* `HEXONET` @papakai
+* `INTERNETBS` @pragmaton
+* `LINODE` @koesie10
+* `NAMECHEAP` @captncraig
+* `NETCUP` @kordianbruck
+* `NS1` @captncraig
+* `OCTODNS` @TomOnTime
+* `OPENSRS` @pierre-emmanuelJ
+* `OVH` @masterzen
+* `SOFTLAYER`@jamielennox
+* `VULTR` @geek1011
 
 ### Requested providers
 
@@ -82,14 +99,14 @@ code to support this provider, please re-open the issue. We'd be glad to help in
 
 ### In progress providers
 
-These requests have *open* issues, which indicates somebody is actively working on it. Feel free to follow the issue, or pitch in if you think you can help.
+These requests have an *open* issue, which indicates somebody is actively working on it. Feel free to follow the issue, or pitch in if you think you can help.
 
 <ul id='inprog'>
 </ul>
 
 ### Providers with open PRs
 
-These providers have an open pr with (potentially) working code. They may be ready to merge, or may have blockers. See issue and pr for details.
+These providers have an open PR with (potentially) working code. They may be ready to merge, or may have blockers. See issue and PR for details.
 
 <ul id='haspr'>
 </ul>

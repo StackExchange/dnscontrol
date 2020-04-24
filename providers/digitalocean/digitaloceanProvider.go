@@ -6,11 +6,10 @@ import (
 	"fmt"
 	"net/http"
 
-	"github.com/StackExchange/dnscontrol/models"
-	"github.com/StackExchange/dnscontrol/providers"
-	"github.com/StackExchange/dnscontrol/providers/diff"
+	"github.com/StackExchange/dnscontrol/v3/models"
+	"github.com/StackExchange/dnscontrol/v3/pkg/diff"
+	"github.com/StackExchange/dnscontrol/v3/providers"
 	"github.com/miekg/dns/dnsutil"
-	"github.com/pkg/errors"
 
 	"github.com/digitalocean/godo"
 	"golang.org/x/oauth2"
@@ -39,7 +38,7 @@ var defaultNameServerNames = []string{
 // NewDo creates a DO-specific DNS provider.
 func NewDo(m map[string]string, metadata json.RawMessage) (providers.DNSServiceProvider, error) {
 	if m["token"] == "" {
-		return nil, errors.Errorf("no DigitalOcean token provided")
+		return nil, fmt.Errorf("no DigitalOcean token provided")
 	}
 
 	ctx := context.Background()
@@ -57,7 +56,7 @@ func NewDo(m map[string]string, metadata json.RawMessage) (providers.DNSServiceP
 		return nil, err
 	}
 	if resp.StatusCode != http.StatusOK {
-		return nil, errors.Errorf("token for digitalocean is not valid")
+		return nil, fmt.Errorf("token for digitalocean is not valid")
 	}
 
 	return api, nil
@@ -67,6 +66,11 @@ var features = providers.DocumentationNotes{
 	providers.DocCreateDomains:       providers.Can(),
 	providers.DocOfficiallySupported: providers.Cannot(),
 	providers.CanUseSRV:              providers.Can(),
+	// Digitalocean support CAA records, except
+	// ";" value with issue/issuewild records:
+	// https://www.digitalocean.com/docs/networking/dns/how-to/create-caa-records/
+	providers.CanUseCAA:   providers.Can(),
+	providers.CanGetZones: providers.Can(),
 }
 
 func init() {
@@ -89,7 +93,26 @@ func (api *DoApi) EnsureDomainExists(domain string) error {
 
 // GetNameservers returns the nameservers for domain.
 func (api *DoApi) GetNameservers(domain string) ([]*models.Nameserver, error) {
-	return models.StringsToNameservers(defaultNameServerNames), nil
+	return models.ToNameservers(defaultNameServerNames)
+}
+
+// GetZoneRecords gets the records of a zone and returns them in RecordConfig format.
+func (api *DoApi) GetZoneRecords(domain string) (models.Records, error) {
+	records, err := getRecords(api, domain)
+	if err != nil {
+		return nil, err
+	}
+
+	var existingRecords []*models.RecordConfig
+	for i := range records {
+		r := toRc(domain, &records[i])
+		if r.Type == "SOA" {
+			continue
+		}
+		existingRecords = append(existingRecords, r)
+	}
+
+	return existingRecords, nil
 }
 
 // GetDomainCorrections returns a list of corretions for the  domain.
@@ -97,18 +120,9 @@ func (api *DoApi) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Corre
 	ctx := context.Background()
 	dc.Punycode()
 
-	records, err := getRecords(api, dc.Name)
+	existingRecords, err := api.GetZoneRecords(dc.Name)
 	if err != nil {
 		return nil, err
-	}
-
-	var existingRecords []*models.RecordConfig
-	for i := range records {
-		r := toRc(dc, &records[i])
-		if r.Type == "SOA" {
-			continue
-		}
-		existingRecords = append(existingRecords, r)
 	}
 
 	// Normalize
@@ -188,9 +202,9 @@ func getRecords(api *DoApi, name string) ([]godo.DomainRecord, error) {
 	return records, nil
 }
 
-func toRc(dc *models.DomainConfig, r *godo.DomainRecord) *models.RecordConfig {
+func toRc(domain string, r *godo.DomainRecord) *models.RecordConfig {
 	// This handles "@" etc.
-	name := dnsutil.AddOrigin(r.Name, dc.Name)
+	name := dnsutil.AddOrigin(r.Name, domain)
 
 	target := r.Data
 	// Make target FQDN (#rtype_variations)
@@ -198,11 +212,11 @@ func toRc(dc *models.DomainConfig, r *godo.DomainRecord) *models.RecordConfig {
 		// If target is the domainname, e.g. cname foo.example.com -> example.com,
 		// DO returns "@" on read even if fqdn was written.
 		if target == "@" {
-			target = dc.Name
+			target = domain
+		} else if target == "." {
+			target = ""
 		}
-		target = dnsutil.AddOrigin(target+".", dc.Name)
-		// FIXME(tlim): The AddOrigin should be a no-op.
-		// Test whether or not it is actually needed.
+		target = target + "."
 	}
 
 	t := &models.RecordConfig{
@@ -213,8 +227,10 @@ func toRc(dc *models.DomainConfig, r *godo.DomainRecord) *models.RecordConfig {
 		SrvWeight:    uint16(r.Weight),
 		SrvPort:      uint16(r.Port),
 		Original:     r,
+		CaaTag:       r.Tag,
+		CaaFlag:      uint8(r.Flags),
 	}
-	t.SetLabelFromFQDN(name, dc.Name)
+	t.SetLabelFromFQDN(name, domain)
 	t.SetTarget(target)
 	switch rtype := r.Type; rtype {
 	case "TXT":
@@ -238,6 +254,11 @@ func toReq(dc *models.DomainConfig, rc *models.RecordConfig) *godo.DomainRecordE
 	case "TXT":
 		// TXT records are the one place where DO combines many items into one field.
 		target = rc.GetTargetCombined()
+	case "CAA":
+		// DO API requires that value ends in dot
+		// But the value returned from API doesn't contain this,
+		// so no need to strip the dot when reading value from API.
+		target = target + "."
 	default:
 		// no action required
 	}
@@ -250,5 +271,7 @@ func toReq(dc *models.DomainConfig, rc *models.RecordConfig) *godo.DomainRecordE
 		Priority: priority,
 		Port:     int(rc.SrvPort),
 		Weight:   int(rc.SrvWeight),
+		Tag:      rc.CaaTag,
+		Flags:    int(rc.CaaFlag),
 	}
 }

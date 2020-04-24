@@ -8,10 +8,8 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/pkg/errors"
-
-	"github.com/StackExchange/dnscontrol/models"
-	"github.com/StackExchange/dnscontrol/providers/diff"
+	"github.com/StackExchange/dnscontrol/v3/models"
+	"github.com/StackExchange/dnscontrol/v3/pkg/diff"
 )
 
 // HXRecord covers an individual DNS resource record.
@@ -35,6 +33,14 @@ type HXRecord struct {
 	TTL uint32
 	// Priority is only required for MX and SRV records, it is ignored for all others.
 	Priority uint32
+}
+
+// GetZoneRecords gets the records of a zone and returns them in RecordConfig format.
+func (n *HXClient) GetZoneRecords(domain string) (models.Records, error) {
+	return nil, fmt.Errorf("not implemented")
+	// This enables the get-zones subcommand.
+	// Implement this by extracting the code from GetDomainCorrections into
+	// a single function.  For most providers this should be relatively easy.
 }
 
 // GetDomainCorrections gathers correctios that would bring n to match dc.
@@ -74,7 +80,11 @@ func (n *HXClient) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Corr
 		changes = true
 		fmt.Fprintln(buf, cre)
 		rec := cre.Desired
-		params[fmt.Sprintf("ADDRR%d", addrridx)] = n.createRecordString(rec, dc.Name)
+		recordString, err := n.createRecordString(rec, dc.Name)
+		if err != nil {
+			return corrections, err
+		}
+		params[fmt.Sprintf("ADDRR%d", addrridx)] = recordString
 		addrridx++
 	}
 	for _, d := range del {
@@ -90,7 +100,11 @@ func (n *HXClient) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Corr
 		old := chng.Existing.Original.(*HXRecord)
 		new := chng.Desired
 		params[fmt.Sprintf("DELRR%d", delrridx)] = n.deleteRecordString(old, dc.Name)
-		params[fmt.Sprintf("ADDRR%d", addrridx)] = n.createRecordString(new, dc.Name)
+		newRecordString, err := n.createRecordString(new, dc.Name)
+		if err != nil {
+			return corrections, err
+		}
+		params[fmt.Sprintf("ADDRR%d", addrridx)] = newRecordString
 		addrridx++
 		delrridx++
 	}
@@ -121,15 +135,15 @@ func toRecord(r *HXRecord, origin string) *models.RecordConfig {
 		rc.SetTargetTXTs(decodeTxt(r.Answer))
 	case "MX":
 		if err := rc.SetTargetMX(uint16(r.Priority), r.Answer); err != nil {
-			panic(errors.Wrap(err, "unparsable MX record received from hexonet api"))
+			panic(fmt.Errorf("unparsable MX record received from hexonet api: %w", err))
 		}
 	case "SRV":
 		if err := rc.SetTargetSRVPriorityString(uint16(r.Priority), r.Answer); err != nil {
-			panic(errors.Wrap(err, "unparsable SRV record received from hexonet api"))
+			panic(fmt.Errorf("unparsable SRV record received from hexonet api: %w", err))
 		}
 	default: // "A", "AAAA", "ANAME", "CNAME", "NS"
 		if err := rc.PopulateFromString(rtype, r.Answer, r.Fqdn); err != nil {
-			panic(errors.Wrap(err, "unparsable record received from hexonet api"))
+			panic(fmt.Errorf("unparsable record received from hexonet api: %w", err))
 		}
 	}
 	return rc
@@ -172,12 +186,16 @@ func (n *HXClient) getRecords(domain string) ([]*HXRecord, error) {
 	}
 	r := n.client.Request(cmd)
 	if !r.IsSuccess() {
-		if r.Code() == 545 {
+		if r.GetCode() == 545 {
 			return nil, n.GetHXApiError("Use `dnscontrol create-domains` to create not-existing zone", domain, r)
 		}
 		return nil, n.GetHXApiError("Failed loading resource records for zone", domain, r)
 	}
-	rrs := r.GetColumn("RR")
+	rrColumn := r.GetColumn("RR")
+	if rrColumn == nil {
+		return nil, fmt.Errorf("Error getting RR column for domain: %s", domain)
+	}
+	rrs := rrColumn.GetData()
 	for _, rr := range rrs {
 		spl := strings.Split(rr, " ")
 		if spl[3] != "SOA" {
@@ -206,7 +224,7 @@ func (n *HXClient) getRecords(domain string) ([]*HXRecord, error) {
 	return records, nil
 }
 
-func (n *HXClient) createRecordString(rc *models.RecordConfig, domain string) string {
+func (n *HXClient) createRecordString(rc *models.RecordConfig, domain string) (string, error) {
 	record := &HXRecord{
 		DomainName: domain,
 		Host:       rc.GetLabel(),
@@ -225,10 +243,13 @@ func (n *HXClient) createRecordString(rc *models.RecordConfig, domain string) st
 	case "TXT":
 		record.Answer = encodeTxt(rc.TxtStrings)
 	case "SRV":
+		if rc.GetTargetField() == "." {
+			return "", fmt.Errorf("SRV records with empty targets are not supported (as of 2020-02-27, the API returns 'Invalid attribute value syntax')")
+		}
 		record.Answer = fmt.Sprintf("%d %d %v", rc.SrvWeight, rc.SrvPort, record.Answer)
 		record.Priority = uint32(rc.SrvPriority)
 	default:
-		panic(fmt.Sprintf("createRecord rtype %v unimplemented", rc.Type))
+		panic(fmt.Sprintf("createRecordString rtype %v unimplemented", rc.Type))
 		// We panic so that we quickly find any switch statements
 		// that have not been updated for a new RR type.
 	}
@@ -238,7 +259,7 @@ func (n *HXClient) createRecordString(rc *models.RecordConfig, domain string) st
 		str += fmt.Sprint(record.Priority) + " "
 	}
 	str += record.Answer
-	return str
+	return str, nil
 }
 
 func (n *HXClient) deleteRecordString(record *HXRecord, domain string) string {
