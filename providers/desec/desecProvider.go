@@ -56,14 +56,6 @@ func init() {
 	providers.RegisterDomainServiceProviderType("DESEC", NewDeSec, features)
 }
 
-// Specific stuff below
-// Specific stuff below
-// Specific stuff below
-// Specific stuff below
-// Specific stuff below
-// Specific stuff below
-// Specific stuff below
-
 // GetNameservers returns the nameservers for a domain.
 func (c *api) GetNameservers(domain string) ([]*models.Nameserver, error) {
 	return models.ToNameservers(defaultNameServerNames)
@@ -123,7 +115,6 @@ func PrepDesiredRecords(dc *models.DomainConfig) {
 	// confusing.
 
 	dc.Punycode()
-
 	recordsToKeep := make([]*models.RecordConfig, 0, len(dc.Records))
 	for _, rec := range dc.Records {
 		if rec.Type == "ALIAS" {
@@ -132,11 +123,10 @@ func PrepDesiredRecords(dc *models.DomainConfig) {
 			continue
 		}
 		if rec.TTL < 3600 {
-			printer.Warnf("deSEC does not support ttls < 3600. Setting %s from %d to 3600\n", rec.GetLabelFQDN(), rec.TTL)
+			if rec.Type != "NS" {
+				printer.Warnf("deSEC does not support ttls < 3600. Setting ttl of %s type %s from %d to 3600\n", rec.GetLabelFQDN(), rec.Type, rec.TTL)
+			}
 			rec.TTL = 3600
-		}
-		if rec.Type == "TXT" {
-			rec.SetTarget("\"" + rec.GetTargetField() + "\"") // FIXME(tlim): Should do proper quoting.
 		}
 		recordsToKeep = append(recordsToKeep, rec)
 	}
@@ -179,9 +169,11 @@ func (client *api) GenerateDomainCorrections(dc *models.DomainConfig, existing m
 								if shortname == "@" {
 									shortname = ""
 								}
+								empty := make([]string, 0)
 								rc := resourceRecord{
 									Type:    label.Type,
 									Subname: shortname,
+									Records: empty,
 								}
 								err := client.deleteRR(rc, dc.Name)
 								if err != nil {
@@ -233,52 +225,6 @@ func (client *api) GenerateDomainCorrections(dc *models.DomainConfig, existing m
 				}
 			}
 		}
-		/*
-			// Replace all the records at a label with our new records.
-
-			// Generate the new data in deSEC's format.
-			ns := recordsToNative(desiredRecords[label], dc.Name)
-			if doesLabelExist[label] {
-				// Records exist for this label. Replace them with what we have.
-				//one rtype at a time.
-				for _, n := range ns {
-					msg := strings.Join(msgsForLabel[label], "\n")
-					domain := dc.Name
-					corrections = append(corrections,
-						&models.Correction{
-							Msg: msg,
-							F: func() error {
-								err := client.createRR(n, domain)
-								//	res, err := g.UpdateDomainRecordsByName(domain, shortname, ns)
-								if err != nil {
-									return err
-								}
-								return nil
-							},
-						})
-				}
-
-			} else {
-				// First time putting data on this label. Create it.
-
-				// We have to create the label one rtype at a time.
-				for _, n := range ns {
-					msg := strings.Join(msgsForLabel[label], "\n")
-					domain := dc.Name
-					corrections = append(corrections,
-						&models.Correction{
-							Msg: msg,
-							F: func() error {
-								err := client.createRR(n, domain)
-								if err != nil {
-									return err
-								}
-								return nil
-							},
-						})
-				}
-			}*/
-
 	}
 	return corrections, nil
 }
