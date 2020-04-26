@@ -161,21 +161,14 @@ func (client *api) GenerateDomainCorrections(dc *models.DomainConfig, existing m
 			for i, msg := range keysToUpdate[label] {
 				if i == 0 {
 					//only the first call will actually delete all records
+					domain := dc.Name
+					shortname := dnsutil.TrimDomainName(label.NameFQDN, dc.Name)
+					rrtype := label.Type
 					corrections = append(corrections,
 						&models.Correction{
 							Msg: msg,
 							F: func() error {
-								shortname := dnsutil.TrimDomainName(label.NameFQDN, dc.Name)
-								if shortname == "@" {
-									shortname = ""
-								}
-								empty := make([]string, 0)
-								rc := resourceRecord{
-									Type:    label.Type,
-									Subname: shortname,
-									Records: empty,
-								}
-								err := client.deleteRR(rc, dc.Name)
+								err := client.deleteRR(domain, shortname, rrtype)
 								if err != nil {
 									return err
 								}
