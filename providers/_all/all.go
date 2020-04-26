@@ -8,6 +8,7 @@ import (
 	_ "github.com/StackExchange/dnscontrol/v3/providers/bind"
 	_ "github.com/StackExchange/dnscontrol/v3/providers/cloudflare"
 	_ "github.com/StackExchange/dnscontrol/v3/providers/cloudns"
+	_ "github.com/StackExchange/dnscontrol/v3/providers/desec"
 	_ "github.com/StackExchange/dnscontrol/v3/providers/digitalocean"
 	_ "github.com/StackExchange/dnscontrol/v3/providers/dnsimple"
 	_ "github.com/StackExchange/dnscontrol/v3/providers/exoscale"
