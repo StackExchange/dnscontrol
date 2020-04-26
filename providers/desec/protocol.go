@@ -84,7 +84,7 @@ func (c *api) getRecords(domain string) ([]resourceRecord, error) {
 	}
 	// deSEC returns round robin records as array but dnsconfig expects single entries for each record
 	// we will create one object per record except of TXT records which are handled as array of string by dnscontrol aswell.
-	for i, _ := range rrs {
+	for i := range rrs {
 		tmp := resourceRecord{
 			TTL:     rrs[i].TTL,
 			Type:    rrs[i].Type,
@@ -130,6 +130,8 @@ func (c *api) deleteRR(rr resourceRecord, domain string) error {
 }
 
 func (c *api) get(endpoint string) ([]byte, error) {
+	retrycnt := 0
+retry:
 	client := &http.Client{}
 	req, _ := http.NewRequest("GET", "https://desec.io/api/v1"+endpoint, nil)
 	q := req.URL.Query()
@@ -146,6 +148,11 @@ func (c *api) get(endpoint string) ([]byte, error) {
 
 	// Got error from API ?
 	if resp.StatusCode > 299 {
+		if resp.StatusCode == 429 && retrycnt < 2 {
+			retrycnt++
+			time.Sleep(1 * time.Second)
+			goto retry
+		}
 		var errResp errorResponse
 		err = json.Unmarshal(bodyString, &errResp)
 		if err == nil {
@@ -157,6 +164,8 @@ func (c *api) get(endpoint string) ([]byte, error) {
 }
 
 func (c *api) post(endpoint, method string, payload []byte) ([]byte, error) {
+	retrycnt := 0
+retry:
 	client := &http.Client{}
 	req, err := http.NewRequest(method, "https://desec.io/api/v1"+endpoint, bytes.NewReader(payload))
 	if err != nil {
@@ -177,6 +186,11 @@ func (c *api) post(endpoint, method string, payload []byte) ([]byte, error) {
 
 	// Got error from API ?
 	if resp.StatusCode > 299 {
+		if resp.StatusCode == 429 && retrycnt < 2 {
+			retrycnt++
+			time.Sleep(1 * time.Second)
+			goto retry
+		}
 		var errResp errorResponse
 		err = json.Unmarshal(bodyString, &errResp)
 		if err == nil {
@@ -184,5 +198,6 @@ func (c *api) post(endpoint, method string, payload []byte) ([]byte, error) {
 		}
 		return bodyString, fmt.Errorf("http status %d %s, the api does not provide more information", resp.StatusCode, resp.Status)
 	}
+	time.Sleep(250 * time.Millisecond)
 	return bodyString, nil
 }
