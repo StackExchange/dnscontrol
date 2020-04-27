@@ -26,8 +26,8 @@ Example Javascript:
 var REG_NONE = NewRegistrar('none', 'NONE');    // No registrar.
 var deSEC = NewDnsProvider('desec', 'DESEC');  // deSEC
 
-D("example.tld", REG_NONE, DnsProvider(deSEC),
-    A("test","1.2.3.4")
+D('example.tld', REG_NONE, DnsProvider(deSEC),
+    A('test','1.2.3.4')
 );
 {% endhighlight %}
 
