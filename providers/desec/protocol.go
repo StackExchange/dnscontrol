@@ -128,7 +128,7 @@ func (c *api) createDomain(domain string) error {
 func (c *api) upsertRR(rr []resourceRecord, domain string) error {
 	endpoint := fmt.Sprintf("/domains/%s/rrsets/", domain)
 	byt, _ := json.Marshal(rr)
-	if _, err := c.post(endpoint, "PATCH", byt); err != nil {
+	if _, err := c.post(endpoint, "PUT", byt); err != nil {
 		return fmt.Errorf("Error create rrset deSEC: %v", err)
 	}
 	return nil

@@ -169,6 +169,7 @@ func (client *api) GenerateDomainCorrections(dc *models.DomainConfig, existing m
 					rc := resourceRecord{}
 					rc.Type = label.Type
 					rc.Records = make([]string, 0) // empty array of records should delete this rrset
+					rc.TTL = 3600
 					shortname := dnsutil.TrimDomainName(label.NameFQDN, dc.Name)
 					if shortname == "@" {
 						shortname = ""
