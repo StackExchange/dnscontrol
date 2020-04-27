@@ -15,14 +15,15 @@ import (
 )
 
 var features = providers.DocumentationNotes{
+	providers.CanGetZones:            providers.Can(),
+	providers.CanUseCAA:              providers.Can(),
+	providers.CanUsePTR:              providers.Can(),
+	providers.CanUseSRV:              providers.Can(),
+	providers.CanUseSSHFP:            providers.Can(),
+	providers.CanUseTXTMulti:         providers.Can(),
 	providers.DocCreateDomains:       providers.Can(),
 	providers.DocDualHost:            providers.Can(),
 	providers.DocOfficiallySupported: providers.Can(),
-	providers.CanUsePTR:              providers.Can(),
-	providers.CanUseSRV:              providers.Can(),
-	providers.CanUseCAA:              providers.Can(),
-	providers.CanUseTXTMulti:         providers.Can(),
-	providers.CanGetZones:            providers.Can(),
 }
 
 func sPtr(s string) *string {
