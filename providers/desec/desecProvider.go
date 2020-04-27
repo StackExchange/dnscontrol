@@ -133,7 +133,7 @@ func PrepDesiredRecords(dc *models.DomainConfig, min_ttl uint32) {
 			if rec.Type != "NS" {
 				printer.Warnf("Please contact support@desec.io if you need ttls < %d. Setting ttl of %s type %s from %d to %d\n", min_ttl, rec.GetLabelFQDN(), rec.Type, rec.TTL, min_ttl)
 			}
-			rec.TTL = 3600
+			rec.TTL = min_ttl
 		}
 		recordsToKeep = append(recordsToKeep, rec)
 	}
