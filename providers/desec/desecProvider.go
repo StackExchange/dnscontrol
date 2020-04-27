@@ -68,7 +68,13 @@ func (c *api) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Correctio
 	}
 	models.PostProcessRecords(existing)
 	clean := PrepFoundRecords(existing)
-	PrepDesiredRecords(dc)
+	var min_ttl uint32
+	if ttl, ok := c.domainIndex[dc.Name]; !ok {
+		min_ttl = 3600
+	} else {
+		min_ttl = ttl
+	}
+	PrepDesiredRecords(dc, min_ttl)
 	return c.GenerateDomainCorrections(dc, clean)
 }
 
@@ -108,7 +114,7 @@ func PrepFoundRecords(recs models.Records) models.Records {
 }
 
 // PrepDesiredRecords munges any records to best suit this provider.
-func PrepDesiredRecords(dc *models.DomainConfig) {
+func PrepDesiredRecords(dc *models.DomainConfig, min_ttl uint32) {
 	// Sort through the dc.Records, eliminate any that can't be
 	// supported; modify any that need adjustments to work with the
 	// provider.  We try to do minimal changes otherwise it gets
@@ -122,9 +128,9 @@ func PrepDesiredRecords(dc *models.DomainConfig) {
 			printer.Warnf("deSEC does not support alias records\n")
 			continue
 		}
-		if rec.TTL < 3600 {
+		if rec.TTL < min_ttl {
 			if rec.Type != "NS" {
-				printer.Warnf("deSEC does not support ttls < 3600. Setting ttl of %s type %s from %d to 3600\n", rec.GetLabelFQDN(), rec.Type, rec.TTL)
+				printer.Warnf("Please contact support@desec.io if you need ttls < %d. Setting ttl of %s type %s from %d to %d\n", min_ttl, rec.GetLabelFQDN(), rec.Type, rec.TTL, min_ttl)
 			}
 			rec.TTL = 3600
 		}

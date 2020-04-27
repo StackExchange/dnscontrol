@@ -7,11 +7,13 @@ import (
 	"io/ioutil"
 	"net/http"
 	"time"
+
+	"github.com/StackExchange/dnscontrol/v3/pkg/printer"
 )
 
 // Api layer for desec
 type api struct {
-	domainIndex      map[string]string
+	domainIndex      map[string]uint32
 	nameserversNames []string
 	creds            struct {
 		tokenid  string
@@ -24,7 +26,7 @@ type api struct {
 type domainObject struct {
 	Created    time.Time   `json:"created,omitempty"`
 	Keys       []dnssecKey `json:"keys,omitempty"`
-	MinimumTTL int         `json:"minimum_ttl,omitempty"`
+	MinimumTTL uint32      `json:"minimum_ttl,omitempty"`
 	Name       string      `json:"name,omitempty"`
 	Published  time.Time   `json:"published,omitempty"`
 }
@@ -56,7 +58,7 @@ type errorResponse struct {
 }
 
 func (c *api) fetchDomainList() error {
-	c.domainIndex = map[string]string{}
+	c.domainIndex = map[string]uint32{}
 	var dr []domainObject
 	endpoint := "/domains/"
 	var bodyString, err = c.get(endpoint, "GET")
@@ -68,7 +70,9 @@ func (c *api) fetchDomainList() error {
 		return err
 	}
 	for _, domain := range dr {
-		c.domainIndex[domain.Name] = domain.Name
+		//We store the min ttl in the domain index
+		//This will be used for validation and auto correction
+		c.domainIndex[domain.Name] = domain.MinimumTTL
 	}
 	return nil
 }
@@ -103,9 +107,18 @@ func (c *api) createDomain(domain string) error {
 	endpoint := "/domains/"
 	pl := domainObject{Name: domain}
 	byt, _ := json.Marshal(pl)
-	if _, err := c.post(endpoint, "POST", byt); err != nil {
+	var resp []byte
+	var err error
+	if resp, err = c.post(endpoint, "POST", byt); err != nil {
 		return fmt.Errorf("Error create domain deSEC: %v", err)
 	}
+	dm := domainObject{}
+	err = json.Unmarshal(resp, &dm)
+	if err != nil {
+		return err
+	}
+	printer.Printf("If you want to use DNSSec please add the DS record at your registrar using one of the keys:\n")
+	printer.Printf("%+q", dm.Keys)
 	return nil
 }
 
