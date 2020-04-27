@@ -1,6 +1,7 @@
 package desec
 
 import (
+	"bytes"
 	"encoding/json"
 	"fmt"
 
@@ -154,11 +155,10 @@ func (client *api) GenerateDomainCorrections(dc *models.DomainConfig, existing m
 	if len(keysToUpdate) == 0 {
 		return nil, nil
 	}
-	// Regroup data by FQDN.  ChangedGroups returns data grouped by label:RType tuples.
-	//affectedLabels, msgsForLabel := gatherAffectedLabels(keysToUpdate)
-	desiredRecords := dc.Records.GroupedByKey()
-	//doesLabelExist := existing.FQDNMap()
 
+	desiredRecords := dc.Records.GroupedByKey()
+	var rrs []resourceRecord
+	buf := &bytes.Buffer{}
 	// For any key with an update, delete or replace those records.
 	for label := range keysToUpdate {
 		if _, ok := desiredRecords[label]; !ok {
@@ -166,30 +166,19 @@ func (client *api) GenerateDomainCorrections(dc *models.DomainConfig, existing m
 			//this means it must be deleted
 			for i, msg := range keysToUpdate[label] {
 				if i == 0 {
-					//only the first call will actually delete all records
-					domain := dc.Name
+					rc := resourceRecord{}
+					rc.Type = label.Type
+					rc.Records = make([]string, 0) // empty array of records should delete this rrset
 					shortname := dnsutil.TrimDomainName(label.NameFQDN, dc.Name)
-					rrtype := label.Type
-					corrections = append(corrections,
-						&models.Correction{
-							Msg: msg,
-							F: func() error {
-								err := client.deleteRR(domain, shortname, rrtype)
-								if err != nil {
-									return err
-								}
-								return nil
-							},
-						})
+					if shortname == "@" {
+						shortname = ""
+					}
+					rc.Subname = shortname
+					fmt.Fprintln(buf, msg)
+					rrs = append(rrs, rc)
 				} else {
-					//noop just for printing the additional messages
-					corrections = append(corrections,
-						&models.Correction{
-							Msg: msg,
-							F: func() error {
-								return nil
-							},
-						})
+					//just add the message
+					fmt.Fprintln(buf, msg)
 				}
 			}
 		} else {
@@ -200,30 +189,29 @@ func (client *api) GenerateDomainCorrections(dc *models.DomainConfig, existing m
 			}
 			for i, msg := range keysToUpdate[label] {
 				if i == 0 {
-					corrections = append(corrections,
-						&models.Correction{
-							Msg: msg,
-							F: func() error {
-								rc := ns[0]
-								err := client.upsertRR(rc, dc.Name)
-								if err != nil {
-									return err
-								}
-								return nil
-							},
-						})
+					rrs = append(rrs, ns[0])
+					fmt.Fprintln(buf, msg)
 				} else {
 					//noop just for printing the additional messages
-					corrections = append(corrections,
-						&models.Correction{
-							Msg: msg,
-							F: func() error {
-								return nil
-							},
-						})
+					fmt.Fprintln(buf, msg)
 				}
 			}
 		}
 	}
+	var msg string
+	msg = fmt.Sprintf("Changes:\n%s", buf)
+	corrections = append(corrections,
+		&models.Correction{
+			Msg: msg,
+			F: func() error {
+				rc := rrs
+				err := client.upsertRR(rc, dc.Name)
+				if err != nil {
+					return err
+				}
+				return nil
+			},
+		})
+
 	return corrections, nil
 }

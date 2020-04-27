@@ -123,11 +123,9 @@ func (c *api) createDomain(domain string) error {
 }
 
 //upsertRR will create or override the RRSet with the provided resource record.
-func (c *api) upsertRR(rr resourceRecord, domain string) error {
+func (c *api) upsertRR(rr []resourceRecord, domain string) error {
 	endpoint := fmt.Sprintf("/domains/%s/rrsets/", domain)
-	var rrs []resourceRecord
-	rrs = append(rrs, rr)
-	byt, _ := json.Marshal(rrs)
+	byt, _ := json.Marshal(rr)
 	if _, err := c.post(endpoint, "PATCH", byt); err != nil {
 		return fmt.Errorf("Error create rrset deSEC: %v", err)
 	}
