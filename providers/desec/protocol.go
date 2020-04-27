@@ -11,6 +11,8 @@ import (
 	"github.com/StackExchange/dnscontrol/v3/pkg/printer"
 )
 
+const apiBase = "https://desec.io/api/v1"
+
 // Api layer for desec
 type api struct {
 	domainIndex      map[string]uint32
@@ -144,7 +146,7 @@ func (c *api) get(endpoint, method string) ([]byte, error) {
 	retrycnt := 0
 retry:
 	client := &http.Client{}
-	req, _ := http.NewRequest(method, "https://desec.io/api/v1"+endpoint, nil)
+	req, _ := http.NewRequest(method, apiBase+endpoint, nil)
 	q := req.URL.Query()
 	req.Header.Add("Authorization", fmt.Sprintf("Token %s", c.creds.token))
 
@@ -177,7 +179,7 @@ func (c *api) post(endpoint, method string, payload []byte) ([]byte, error) {
 	retrycnt := 0
 retry:
 	client := &http.Client{}
-	req, err := http.NewRequest(method, "https://desec.io/api/v1"+endpoint, bytes.NewReader(payload))
+	req, err := http.NewRequest(method, apiBase+endpoint, bytes.NewReader(payload))
 	if err != nil {
 		return []byte{}, err
 	}
