@@ -13,9 +13,9 @@ import (
 func nativeToRecords(n resourceRecord, origin string) (rcs []*models.RecordConfig) {
 
 	// deSEC returns all the values for a given label/rtype pair in each
-	// livedns.DomainRecord.  In other words, if there are multiple A
+	// resourceRecord.  In other words, if there are multiple A
 	// records for a label, all the IP addresses are listed in
-	// n.RrsetValues rather than having many livedns.DomainRecord's.
+	// n.Records rather than having many resourceRecord's.
 	// We must split them out into individual records, one for each value.
 	for _, value := range n.Records {
 		rc := &models.RecordConfig{
@@ -36,9 +36,9 @@ func nativeToRecords(n resourceRecord, origin string) (rcs []*models.RecordConfi
 }
 
 func recordsToNative(rcs []*models.RecordConfig, origin string) []resourceRecord {
-	// Take a list of RecordConfig and return an equivalent list of ZoneRecords.
-	// deSEC requires one ZoneRecord for each label:key tuple, therefore we
-	// might collapse many RecordConfig into one ZoneRecord.
+	// Take a list of RecordConfig and return an equivalent list of resourceRecord.
+	// deSEC requires one resourceRecord for each label:key tuple, therefore we
+	// might collapse many RecordConfig into one resourceRecord.
 
 	var keys = map[models.RecordKey]*resourceRecord{}
 	var zrs []resourceRecord
