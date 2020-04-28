@@ -20,6 +20,7 @@ Currently supported DNS providers:
  - BIND
  - ClouDNS
  - Cloudflare
+ - deSEC
  - DNSimple
  - DigitalOcean
  - Exoscale
