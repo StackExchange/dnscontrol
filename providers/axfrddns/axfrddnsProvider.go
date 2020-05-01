@@ -151,12 +151,13 @@ func (c *AxfrDdns) GetNameservers(domain string) ([]*models.Nameserver, error) {
 	return c.nameservers, nil
 }
 
-// GetZoneRecords gets the records of a zone and returns them in RecordConfig format.
-func (c *AxfrDdns) GetZoneRecords(domain string) (models.Records, error) {
+// FetchZoneRecords gets the records of a zone and returns them in dns.RR format.
+func (c *AxfrDdns) FetchZoneRecords(domain string) ([]dns.RR, error) {
 
 	transfer := new(dns.Transfer)
 	transfer.DialTimeout = dnsTimeout
 	transfer.ReadTimeout = dnsTimeout
+
 	request := new(dns.Msg)
 	request.SetAxfr(domain + ".")
 
@@ -181,6 +182,17 @@ func (c *AxfrDdns) GetZoneRecords(domain string) (models.Records, error) {
 			return nil, msg.Error
 		}
 		rawRecords = append(rawRecords, msg.RR...)
+	}
+	return rawRecords, nil
+
+}
+
+// GetZoneRecords gets the records of a zone and returns them in RecordConfig format.
+func (c *AxfrDdns) GetZoneRecords(domain string) (models.Records, error) {
+
+	rawRecords, err := c.FetchZoneRecords(domain)
+	if err != nil {
+		return nil, err
 	}
 
 	var foundDNSSecRecords *models.RecordConfig
@@ -223,6 +235,7 @@ func (c *AxfrDdns) GetZoneRecords(domain string) (models.Records, error) {
 	}
 
 	return foundRecords, nil
+
 }
 
 // GetDomainCorrections returns a list of corrections to update a domain.
