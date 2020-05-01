@@ -6,15 +6,21 @@ jsId: AXFRDDNS
 ---
 # AXFR+DDNS Provider
 
-This provider is able to work with any authoritative DNS server accepting AXFR requests (RFC5936) and Dynamic Update (RFC2136).
+This provider is able to work with any authoritative DNS server
+accepting AXFR requests (RFC5936) and Dynamic Update (RFC2136).
 
-It has been tested with [BIND](https://www.isc.org/bind/), [Knot](https://www.knot-dns.cz/), and [Yadifa](https://www.yadifa.eu/home).
+It has been tested with [BIND](https://www.isc.org/bind/),
+[Knot](https://www.knot-dns.cz/), and
+[Yadifa](https://www.yadifa.eu/home).
 
 ## Configuration
 
 ### Authentication
 
-The AXFR+DDNS provider might work without anything in `creds.json` if the primary master of the zone accepts transfers and updates without TSIG authentication. But for non widely-open server, the authentication keys should be provided in `creds.json`.
+The AXFR+DDNS provider might work without anything in `creds.json` if
+the primary master of the zone accepts transfers and updates without
+TSIG authentication. But for non widely-open server, the
+authentication keys should be provided in `creds.json`.
 
 {% highlight json %}
 {
@@ -25,9 +31,12 @@ The AXFR+DDNS provider might work without anything in `creds.json` if the primar
 }
 {% endhighlight %}
 
-The `transfer-key` will be used to authenticate AXFR request, and the `update-key` will be used to authenticate the Dynamic Updates. Both keys are optional, and you could provide only one them.
+The `transfer-key` will be used to authenticate AXFR request, and the
+`update-key` will be used to authenticate the Dynamic Updates. Both
+keys are optional, and you could provide only one them.
 
-If distinct zones requires distinct keys, you might instantiate the provider multiple times:
+If distinct zones requires distinct keys, you might instantiate the
+provider multiple times:
 
 {% highlight javascript %}
 var AXFRDDNS_A = NewDnsProvider('axfrddns-a', 'AXFRDDNS'}
@@ -51,9 +60,12 @@ And update `creds.json` accordingly:
 
 ### Default nameservers
 
-The AXFR+DDNS provider can be configured with a list of default nameservers. They will be added to all the zones handled by the provider.
+The AXFR+DDNS provider can be configured with a list of default
+nameservers. They will be added to all the zones handled by the
+provider.
 
-This list can be provided either as metadata or in `creds.json`. Only the later allows `get-zones` to work properly.
+This list can be provided either as metadata or in `creds.json`. Only
+the later allows `get-zones` to work properly.
 
 {% highlight javascript %}
 var AXFRDDNS = NewDnsProvider('axfrddns', 'AXFRDDNS',
@@ -74,7 +86,14 @@ var AXFRDDNS = NewDnsProvider('axfrddns', 'AXFRDDNS',
 
 ### Primary master
 
-By default, the AXFR+DDNS provider will send the AXFR requests and the updates to the first nameserver of the zone, usually known as the "primary master". Typically, this is the first of the default nameservers. Though, on some networks, the primary master is a private node, hidden behind slaves, and it does not appear in the `NS` records of the zone. In that case, the IP or the name of the primary server must be provided in `creds.json`. With this option, a non-standard port might be used.
+By default, the AXFR+DDNS provider will send the AXFR requests and the
+updates to the first nameserver of the zone, usually known as the
+"primary master". Typically, this is the first of the default
+nameservers. Though, on some networks, the primary master is a private
+node, hidden behind slaves, and it does not appear in the `NS` records
+of the zone. In that case, the IP or the name of the primary server
+must be provided in `creds.json`. With this option, a non-standard
+port might be used.
 
 {% highlight json %}
 {
@@ -82,13 +101,17 @@ By default, the AXFR+DDNS provider will send the AXFR requests and the updates t
 }
 {% endhighlight %}
 
-When no nameserver appears in the zone, and no default nameservers nor custom master are configured, the AXFR+DDNS provider will fail.
+When no nameserver appears in the zone, and no default nameservers nor
+custom master are configured, the AXFR+DDNS provider will fail.
 
 ## FYI: get-zones
 
-When using `get-zones`, a custom master or a list of default nameservers should be configured in `creds.json`.
+When using `get-zones`, a custom master or a list of default
+nameservers should be configured in `creds.json`.
 
-THe AXFR+DDNS provider does not display DNSSec Records. But, if any DNSSec records is found in the zone, it will replace all of them with a single placeholder record:
+THe AXFR+DDNS provider does not display DNSSec records. But, if any
+DNSSec records is found in the zone, it will replace all of them with
+a single placeholder record:
 
 {% highlight %}
 __dnssec         IN TXT   "Domain has DNSSec records, not displayed here."
