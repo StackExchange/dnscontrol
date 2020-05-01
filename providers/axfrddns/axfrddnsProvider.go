@@ -3,11 +3,11 @@ package axfrddns
 /*
 
 axfrddns -
-  Fetch the zone with AXFR request to a given primary master, and
-  push DynamicDNS updates to the same server.
+  Fetch the zone with an AXFR request (RFC5936) to a given primary master, and
+  push Dynamic DNS updates (RFC2136) to the same server.
 
-  Both the AXFR request and the updates might be authentified with a
-  TSIG.
+  Both the AXFR request and the updates might be authentificated with
+  a TSIG.
 
 */
 
@@ -225,8 +225,8 @@ func (c *AxfrDdns) GetZoneRecords(domain string) (models.Records, error) {
 	}
 
 	if len(foundRecords) >= 1 && foundRecords[len(foundRecords)-1].Type == "SOA" {
-		// When TSig is used, the SOA is sent two times: as the
-		// first and the last record
+		// The SOA is sent two times: as the first and the last record
+		// See section 2.2 of RFC5936
 		foundRecords = foundRecords[:len(foundRecords)-1]
 	}
 
@@ -301,9 +301,37 @@ func (c *AxfrDdns) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Corr
 				Msg: msg,
 				F: func() error {
 
+					// RFC2136-compliant server must silently ignore
+					// an update that inserts a non-CNAME RRset when a
+					// CNAME RR with the same name is present in the
+					// zone (and vice-versa). So in general, we prefer
+					// to first remove records and then insert new
+					// one.
+					//
+					// Compliant servers must also silently ignore an
+					// update that removes the last NS record of a
+					// zone, so we don't want to remove all NS record
+					// before to insert new one. So for the particular
+					// case of NS record, we prefer to insert new
+					// records before ot remove old ones.
+					//
+					// This remarks does not apply for "modified" NS
+					// records, as updates are processed one-by-one.
+					//
+					// This provider does not allow to modify the TTL
+					// of an NS record in a zone that defines only one
+					// NS... as it would require to remove the single
+					// NS record,before to add the new one. But who
+					// does that anyway ?
+
 					update := new(dns.Msg)
 					update.SetUpdate(dc.Name + ".")
 					update.Id = uint16(c.rand.Intn(math.MaxUint16))
+					for _, c := range create {
+						if c.Desired.Type == "NS" {
+							update.Insert([]dns.RR{c.Desired.ToRR()})
+						}
+					}
 					for _, c := range del {
 						update.Remove([]dns.RR{c.Existing.ToRR()})
 					}
@@ -312,7 +340,9 @@ func (c *AxfrDdns) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Corr
 						update.Insert([]dns.RR{c.Desired.ToRR()})
 					}
 					for _, c := range create {
-						update.Insert([]dns.RR{c.Desired.ToRR()})
+						if c.Desired.Type != "NS" {
+							update.Insert([]dns.RR{c.Desired.ToRR()})
+						}
 					}
 
 					client := new(dns.Client)
