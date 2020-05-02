@@ -7,7 +7,7 @@ jsId: AXFRDDNS
 # AXFR+DDNS Provider
 
 This provider is able to work with any authoritative DNS server
-accepting AXFR requests (RFC5936) and Dynamic Update (RFC2136).
+accepting AXFR requests (RFC5936) and Dynamic Updates (RFC2136).
 
 It has been tested with [BIND](https://www.isc.org/bind/),
 [Knot](https://www.knot-dns.cz/), and
@@ -35,7 +35,7 @@ The `transfer-key` will be used to authenticate AXFR request, and the
 `update-key` will be used to authenticate the Dynamic Updates. Both
 keys are optional, and you could provide only one them.
 
-If distinct zones requires distinct keys, you might instantiate the
+If distinct zones require distinct keys, you might instantiate the
 provider multiple times:
 
 {% highlight javascript %}
@@ -103,6 +103,60 @@ port might be used.
 
 When no nameserver appears in the zone, and no default nameservers nor
 custom master are configured, the AXFR+DDNS provider will fail.
+
+## Server configuration examples
+
+### Bind9
+
+Here is a sample `named.conf` example for an authauritative server on
+zone `example.tld`. It accepts AXFR requests from anyone on private
+network `172.17.0.0/16`. It only accepts updates which are both
+authenticated with key `update-key-id` and originated from the the same
+private network.
+
+{% highlight %}
+options {
+
+	listen-on { any; };
+	listen-on-v6 { any; };
+
+	allow-query { any; };
+	allow-notify { none; };
+	allow-recursion { none; };
+	allow-transfer { none; };
+	allow-update { none; };
+	allow-query-cache { none; };
+
+};
+
+zone "example.tld" {
+  type master;
+  file "/etc/bind/db.example.tld";
+  allow-transfer { example-transfer; };
+  allow-update { example-update; };
+};
+
+## Allow transfer to anyone on our private network
+
+acl example-transfer {
+    172.17.0.0/16;
+};
+
+## Allow update only from authenticated client on our private network
+
+acl example-update {
+  ! {
+   !172.17.0.0/16;
+   any;
+  };
+  key update-key-id;
+};
+
+key update-key-id {
+  algorithm HMAC-SHA256;
+  secret "AnotherSecret=";
+};
+{% endhighlight %}
 
 ## FYI: get-zones
 
