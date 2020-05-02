@@ -125,7 +125,7 @@ The API abstraction is usually in a separate file (often called
 ## Step 4: Activate the driver
 
 Edit
-[providers/_all/all.go](https://github.com/StackExchange/dnscontrol/blob/master/providers/_all/all.go).
+[providers/\_all/all.go](https://github.com/StackExchange/dnscontrol/blob/master/providers/_all/all.go).
 Add the provider list so DNSControl knows it exists.
 
 ## Step 5: Implement
@@ -224,11 +224,43 @@ FYI: If a provider's capabilities changes, run `go generate` to update
 the documentation.
 
 
-## Vendoring Dependencies
+## Step 11: Vendor Dependencies
 
-If your provider depends on other go packages, then you must vendor them. To do this, use [govendor](https://github.com/kardianos/govendor).  A command like this is usually sufficient:
+The build process for DNSControl uses the default Go Modules system,
+which ignores the `vendor` directory. However we store a backup copy
+of all dependencies by using the `go mod vendor` command.  It makes
+our repo larger, but makes Tom feel better because he's been burnt by
+modules disappearing on him.
+
+What this means:
+
+1. If you require a Go dependency, get it using `go get -u`.  For
+   example:
 
 ```
-go get github.com/kardianos/govendor
-govendor add +e
+go get -u github.com/aws/aws-sdk-go
 ```
+
+2. Before you send any PRs, please make sure the dependencies are
+   vendored.  Use these commands:
+
+```
+go mod vendor
+go mod tidy
+```
+
+See
+[docs/release-engineering.md](https://github.com/StackExchange/dnscontrol/blob/master/docs/release-engineering.md)
+for tips about managing modules and checking for outdated
+dependencies.
+
+
+## Step 12: Check your work.
+
+People submitting PRs often forget these steps, so I'll repeat them
+just in case:
+
+1. Run the integration test again just in case. (See Step 7)
+2. Make sure the documentation is accurate.  Verify you didn't miss
+   any items in Step 8.
+3. Check that dependencies are vendored (See Step 11)
