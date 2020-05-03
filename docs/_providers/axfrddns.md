@@ -6,21 +6,27 @@ jsId: AXFRDDNS
 ---
 # AXFR+DDNS Provider
 
-This provider is able to work with any authoritative DNS server
-accepting AXFR requests (RFC5936) and Dynamic Updates (RFC2136).
+This provider uses the native DNS protocols. It uses the Zone Transfer
+Protocol (AXFR) (RFC5936) to retrieve the existing records and Dynamic
+Update (RFC2136) to make corrections. It can use TSIG (RFC2845) or
+ACL-based (IP) authentication.
 
-It has been tested with [BIND](https://www.isc.org/bind/),
-[Knot](https://www.knot-dns.cz/), and
-[Yadifa](https://www.yadifa.eu/home).
+It is able to work with any properly configured, standards compliant,
+authoritative DNS server. It has been tested with
+[BIND](https://www.isc.org/bind/), [Knot](https://www.knot-dns.cz/),
+and [Yadifa](https://www.yadifa.eu/home).
 
 ## Configuration
 
 ### Authentication
 
-The AXFR+DDNS provider might work without anything in `creds.json` if
-the primary master of the zone accepts transfers and updates without
-TSIG authentication. But for non widely-open server, the
-authentication keys should be provided in `creds.json`.
+Authentication information is included in the `creds.json` entry for
+the provider:
+
+* `transfer-key`: If this exists, the value is used to authenticate AXFR transfers.
+* `update-key`: If this exists, the value is used to authenticate DDNS updates.
+
+For instance, your `creds.json` might looks like:
 
 {% highlight json %}
 {
@@ -31,9 +37,10 @@ authentication keys should be provided in `creds.json`.
 }
 {% endhighlight %}
 
-The `transfer-key` will be used to authenticate AXFR request, and the
-`update-key` will be used to authenticate the Dynamic Updates. Both
-keys are optional, and you could provide only one them.
+If either key is missing, DNSControl defaults to IP-based ACL
+authentication for that function. Including both key is the most
+secure option. Omitting both keys defaults to IP-based ACLs for all
+operations, which is the least secure option.
 
 If distinct zones require distinct keys, you might instantiate the
 provider multiple times:
@@ -87,7 +94,7 @@ var AXFRDDNS = NewDnsProvider('axfrddns', 'AXFRDDNS',
 ### Primary master
 
 By default, the AXFR+DDNS provider will send the AXFR requests and the
-updates to the first nameserver of the zone, usually known as the
+DDNS updates to the first nameserver of the zone, usually known as the
 "primary master". Typically, this is the first of the default
 nameservers. Though, on some networks, the primary master is a private
 node, hidden behind slaves, and it does not appear in the `NS` records
@@ -102,17 +109,22 @@ port might be used.
 {% endhighlight %}
 
 When no nameserver appears in the zone, and no default nameservers nor
-custom master are configured, the AXFR+DDNS provider will fail.
+custom master are configured, the AXFR+DDNS provider will fail with
+the following error message:
+
+{% highlight %}
+[Error] AXFRDDNS: the nameservers list cannot be empty.
+Please consider adding default `nameservers` or an explicit `master` in `creds.json`.
+{% endhighlight %}
+
 
 ## Server configuration examples
 
 ### Bind9
 
 Here is a sample `named.conf` example for an authauritative server on
-zone `example.tld`. It accepts AXFR requests from anyone on private
-network `172.17.0.0/16`. It only accepts updates which are both
-authenticated with key `update-key-id` and originated from the the same
-private network.
+zone `example.tld`. It uses a simple IP-based ACL for the AXFR
+transfer and a conjunction of TSIG and IP-based ACL for the updates.
 
 {% highlight %}
 options {
