@@ -72,6 +72,7 @@ provided to help community members support their code independently.
 Maintainers of contributed providers:
 
 * `CLOUDNS` @pragmaton
+* `DESEC` @D3luxee
 * `DIGITALOCEAN` @Deraen
 * `DNSIMPLE` @aeden
 * `EXOSCALE` @pierre-emmanuelJ
