@@ -97,7 +97,7 @@ into three general categories:
   multiple records on a label (for example, example www.example.com
 has A and MX records), you have to replace all the records at that
 label. (GANDI_V5)
-* **incremental-label-type:** Like incremental-record, but updates to any records at a label have to be done by type.  For example, if a label (www.example.com) has many A and MX records, even the smallest change to one of the A records requires replacing all the A records. Any changes to the MX records requires replacing all the MX records.  If an A record is converted to a CNAME, one must remove all the A records in one call, and add the CNAME record with another call.  This is deceptively difficult to get right; if you have the voice between incremental-label-type and incremental-label, pick incremental-label.
+* **incremental-label-type:** Like incremental-record, but updates to any records at a label have to be done by type.  For example, if a label (www.example.com) has many A and MX records, even the smallest change to one of the A records requires replacing all the A records. Any changes to the MX records requires replacing all the MX records.  If an A record is converted to a CNAME, one must remove all the A records in one call, and add the CNAME record with another call.  This is deceptively difficult to get right; if you have the voice between incremental-label-type and incremental-label, pick incremental-label. (DESEC)
 
 TODO: Categorize NAMECHEAP
 
