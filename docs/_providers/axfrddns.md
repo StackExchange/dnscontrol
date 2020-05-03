@@ -6,12 +6,12 @@ jsId: AXFRDDNS
 ---
 # AXFR+DDNS Provider
 
-This provider uses the native DNS protocols. It uses the Zone Transfer
-Protocol (AXFR) (RFC5936) to retrieve the existing records and Dynamic
-Update (RFC2136) to make corrections. It can use TSIG (RFC2845) or
-ACL-based (IP) authentication.
+This provider uses the native DNS protocols. It uses the AXFR (RFC5936,
+Zone Transfer Protocol) to retrieve the existing records and DDNS
+(RFC2136, Dynamic Update) to make corrections. It can use TSIG (RFC2845) or
+IP-based authentication (ACLs).
 
-It is able to work with any properly configured, standards compliant,
+It is able to work with any standards-compliant
 authoritative DNS server. It has been tested with
 [BIND](https://www.isc.org/bind/), [Knot](https://www.knot-dns.cz/),
 and [Yadifa](https://www.yadifa.eu/home).
@@ -42,8 +42,8 @@ authentication for that function. Including both key is the most
 secure option. Omitting both keys defaults to IP-based ACLs for all
 operations, which is the least secure option.
 
-If distinct zones require distinct keys, you might instantiate the
-provider multiple times:
+If distinct zones require distinct keys, you will need to instantiate the
+provider once for each key:
 
 {% highlight javascript %}
 var AXFRDDNS_A = NewDnsProvider('axfrddns-a', 'AXFRDDNS'}

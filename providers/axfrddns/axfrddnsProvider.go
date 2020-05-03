@@ -29,11 +29,9 @@ import (
 )
 
 const (
-	// Be very conservative..
-	// TODO add a configuration ??
-	dnsTimeout         time.Duration = 30 * time.Second
-	dnssec_dummy_label               = "__dnssec"
-	dnssec_dummy_txt                 = "Domain has DNSSec records, not displayed here."
+	dnsTimeout       = 30 * time.Second
+	dnssecDummyLabel = "__dnssec"
+	dnssecDummyTxt   = "Domain has DNSSec records, not displayed here."
 )
 
 var features = providers.DocumentationNotes{
@@ -52,9 +50,18 @@ var features = providers.DocumentationNotes{
 	providers.CanGetZones:            providers.Can(),
 }
 
+// AxfrDdns stores the client info for the provider.
+type AxfrDdns struct {
+	rand        *rand.Rand
+	master      string
+	nameservers []*models.Nameserver
+	transferKey *Key
+	updateKey   *Key
+}
+
 func initAxfrDdns(config map[string]string, providermeta json.RawMessage) (providers.DNSServiceProvider, error) {
 	// config -- the key/values from creds.json
-	// meta -- the json blob from NewReq('name', 'TYPE', meta)
+	// providermeta -- the json blob from NewReq('name', 'TYPE', providermeta)
 	var err error
 	api := &AxfrDdns{
 		rand: rand.New(rand.NewSource(int64(time.Now().Nanosecond()))),
@@ -85,7 +92,7 @@ func initAxfrDdns(config map[string]string, providermeta json.RawMessage) (provi
 	} else if len(api.nameservers) != 0 {
 		api.master = api.nameservers[0].Name + ":53"
 	} else {
-		return nil, fmt.Errorf("[Error] AXFRDDNS: the nameservers list cannot be empty.\nPlease consider adding default `nameservers` or an explicit `master` in `creds.json`.")
+		return nil, fmt.Errorf("nameservers list is empty: creds.json needs a default `nameservers` or an explicit `master`")
 	}
 	api.updateKey, err = readKey(config["update-key"], "update-key")
 	if err != nil {
@@ -95,7 +102,7 @@ func initAxfrDdns(config map[string]string, providermeta json.RawMessage) (provi
 	if err != nil {
 		return nil, err
 	}
-	for key, _ := range config {
+	for key := range config {
 		switch key {
 		case "master",
 			"nameservers",
@@ -113,13 +120,25 @@ func init() {
 	providers.RegisterDomainServiceProviderType("AXFRDDNS", initAxfrDdns, features)
 }
 
+// Param is used to decode extra parameters sent to provider.
+type Param struct {
+	DefaultNS []string `json:"default_ns"`
+}
+
+// Key stores the individual parts of a TSIG key.
+type Key struct {
+	algo   string
+	id     string
+	secret string
+}
+
 func readKey(raw string, kind string) (*Key, error) {
 	if raw == "" {
 		return nil, nil
 	}
 	arr := strings.Split(raw, ":")
 	if len(arr) != 3 {
-		return nil, fmt.Errorf("[Error] AXFRDDNS.TSIG: invalid key format (%s).", kind)
+		return nil, fmt.Errorf("invalid key format (%s) in AXFRDDNS.TSIG", kind)
 	}
 	var algo string
 	switch arr[0] {
@@ -132,31 +151,13 @@ func readKey(raw string, kind string) (*Key, error) {
 	case "hmac-sha512", "sha512":
 		algo = dns.HmacSHA512
 	default:
-		return nil, fmt.Errorf("[Error] AXFRDDNS.TSIG: unknown algorithm (%s).", kind)
+		return nil, fmt.Errorf("unknown algorithm (%s) in AXFRDDNS.TSIG", kind)
 	}
 	_, err := base64.StdEncoding.DecodeString(arr[2])
 	if err != nil {
-		return nil, fmt.Errorf("[Error] AXFRDDNS.TSIG: cannot decode Base64 secret (%s).", kind)
+		return nil, fmt.Errorf("cannot decode Base64 secret (%s) in AXFRDDNS.TSIG", kind)
 	}
 	return &Key{algo: algo, id: arr[1] + ".", secret: arr[2]}, nil
-}
-
-type Param struct {
-	DefaultNS []string `json:"default_ns"`
-}
-
-type Key struct {
-	algo   string
-	id     string
-	secret string
-}
-
-type AxfrDdns struct {
-	rand        *rand.Rand
-	master      string
-	nameservers []*models.Nameserver
-	transferKey *Key
-	updateKey   *Key
 }
 
 // GetNameservers returns the nameservers for a domain.
@@ -225,8 +226,8 @@ func (c *AxfrDdns) GetZoneRecords(domain string) (models.Records, error) {
 			if foundDNSSecRecords == nil {
 				foundDNSSecRecords = new(models.RecordConfig)
 				foundDNSSecRecords.Type = "TXT"
-				foundDNSSecRecords.SetLabel(dnssec_dummy_label, domain)
-				err = foundDNSSecRecords.SetTargetTXT(dnssec_dummy_txt)
+				foundDNSSecRecords.SetLabel(dnssecDummyLabel, domain)
+				err = foundDNSSecRecords.SetTargetTXT(dnssecDummyTxt)
 				if err != nil {
 					return nil, err
 				}
@@ -270,9 +271,9 @@ func (c *AxfrDdns) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Corr
 	if len(foundRecords) >= 1 {
 		last := foundRecords[len(foundRecords)-1]
 		if last.Type == "TXT" &&
-			last.Name == dnssec_dummy_label &&
+			last.Name == dnssecDummyLabel &&
 			len(last.TxtStrings) == 1 &&
-			last.TxtStrings[0] == dnssec_dummy_txt {
+			last.TxtStrings[0] == dnssecDummyTxt {
 			hasDnssecRecords = true
 			foundRecords = foundRecords[0:(len(foundRecords) - 1)]
 		}
@@ -315,28 +316,25 @@ func (c *AxfrDdns) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Corr
 				Msg: msg,
 				F: func() error {
 
-					// RFC2136-compliant server must silently ignore
-					// an update that inserts a non-CNAME RRset when a
-					// CNAME RR with the same name is present in the
-					// zone (and vice-versa). So in general, we prefer
-					// to first remove records and then insert new
-					// one.
+					// An RFC2136-compliant server must silently ignore an
+					// update that inserts a non-CNAME RRset when a CNAME RR
+					// with the same name is present in the zone (and
+					// vice-versa). Therefore we prefer to first remove records
+					// and then insert new ones.
 					//
-					// Compliant servers must also silently ignore an
-					// update that removes the last NS record of a
-					// zone, so we don't want to remove all NS record
-					// before to insert new one. So for the particular
-					// case of NS record, we prefer to insert new
-					// records before ot remove old ones.
+					// Compliant servers must also silently ignore an update
+					// that removes the last NS record of a zone. Therefore we
+					// don't want to remove all NS records before inserting a
+					// new one. For the particular case of NS record, we prefer
+					// to insert new records before ot remove old ones.
 					//
-					// This remarks does not apply for "modified" NS
-					// records, as updates are processed one-by-one.
+					// This remarks does not apply for "modified" NS records, as
+					// updates are processed one-by-one.
 					//
-					// This provider does not allow to modify the TTL
-					// of an NS record in a zone that defines only one
-					// NS... as it would require to remove the single
-					// NS record,before to add the new one. But who
-					// does that anyway ?
+					// This provider does not allow modifying the TTL of an NS
+					// record in a zone that defines only one NS. That would
+					// would require removing the single NS record, before
+					// adding the new one. But who does that anyway?
 
 					update := new(dns.Msg)
 					update.SetUpdate(dc.Name + ".")
