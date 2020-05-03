@@ -34,12 +34,12 @@ Here are some examples:
 ```
 type RecordConfig struct {
   ...
-  MxPreference     uint16            `json:"mxpreference,omitempty"`
-  SrvPriority      uint16            `json:"srvpriority,omitempty"`
-  SrvWeight        uint16            `json:"srvweight,omitempty"`
-  SrvPort          uint16            `json:"srvport,omitempty"`
-  CaaTag           string            `json:"caatag,omitempty"`
-  CaaFlag          uint8             `json:"caaflag,omitempty"`
+  MxPreference uint16            `json:"mxpreference,omitempty"`
+  SrvPriority  uint16            `json:"srvpriority,omitempty"`
+  SrvWeight    uint16            `json:"srvweight,omitempty"`
+  SrvPort      uint16            `json:"srvport,omitempty"`
+  CaaTag       string            `json:"caatag,omitempty"`
+  CaaFlag      uint8             `json:"caaflag,omitempty"`
   ...
 }
 ```
