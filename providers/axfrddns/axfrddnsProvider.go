@@ -13,6 +13,7 @@ axfrddns -
 
 import (
 	"bytes"
+	"encoding/base64"
 	"encoding/json"
 	"fmt"
 	"math"
@@ -84,18 +85,27 @@ func initAxfrDdns(config map[string]string, providermeta json.RawMessage) (provi
 	} else if len(api.nameservers) != 0 {
 		api.master = api.nameservers[0].Name + ":53"
 	} else {
-		return nil, fmt.Errorf("TODO: nameservers cannot be null")
+		return nil, fmt.Errorf("[Error] AXFRDDNS: the nameservers list cannot be empty.\nPlease consider adding default `nameservers` or an explicit `master` in `creds.json`.")
 	}
-	api.updateKey, err = readKey(config["update-key"])
+	api.updateKey, err = readKey(config["update-key"], "update-key")
 	if err != nil {
 		return nil, err
 	}
-	api.transferKey, err = readKey(config["transfer-key"])
+	api.transferKey, err = readKey(config["transfer-key"], "transfer-key")
 	if err != nil {
 		return nil, err
 	}
-	// TODO check for unexpected key in config
-
+	for key, _ := range config {
+		switch key {
+		case "master",
+			"nameservers",
+			"update-key",
+			"transfer-key":
+			continue
+		default:
+			fmt.Printf("[Warning] AXFRDDNS: unknown key in `creds.json` (%s)\n", key)
+		}
+	}
 	return api, err
 }
 
@@ -103,13 +113,13 @@ func init() {
 	providers.RegisterDomainServiceProviderType("AXFRDDNS", initAxfrDdns, features)
 }
 
-func readKey(raw string) (*Key, error) {
+func readKey(raw string, kind string) (*Key, error) {
 	if raw == "" {
 		return nil, nil
 	}
 	arr := strings.Split(raw, ":")
 	if len(arr) != 3 {
-		return nil, fmt.Errorf("TODO: invalid key format")
+		return nil, fmt.Errorf("[Error] AXFRDDNS.TSIG: invalid key format (%s).", kind)
 	}
 	var algo string
 	switch arr[0] {
@@ -122,9 +132,12 @@ func readKey(raw string) (*Key, error) {
 	case "hmac-sha512", "sha512":
 		algo = dns.HmacSHA512
 	default:
-		return nil, fmt.Errorf("TODO: unknown algo")
+		return nil, fmt.Errorf("[Error] AXFRDDNS.TSIG: unknown algorithm (%s).", kind)
 	}
-	// TODO ensure that secret is valid base64
+	_, err := base64.StdEncoding.DecodeString(arr[2])
+	if err != nil {
+		return nil, fmt.Errorf("[Error] AXFRDDNS.TSIG: cannot decode Base64 secret (%s).", kind)
+	}
 	return &Key{algo: algo, id: arr[1] + ".", secret: arr[2]}, nil
 }
 
@@ -176,10 +189,11 @@ func (c *AxfrDdns) FetchZoneRecords(domain string) ([]dns.RR, error) {
 	for msg := range envelope {
 		if msg.Error != nil {
 			// Fragile but more "user-friendly" error-handling
-			if msg.Error.Error() == "dns: bad xfr rcode: 9" {
-				return nil, fmt.Errorf("dns: NOT AUTH")
+			err := msg.Error.Error()
+			if err == "dns: bad xfr rcode: 9" {
+				err = "NOT AUTH (9)"
 			}
-			return nil, msg.Error
+			return nil, fmt.Errorf("[Error] AXFRDDNS: nameserver refused to transfer the zone: %s", msg)
 		}
 		rawRecords = append(rawRecords, msg.RR...)
 	}
@@ -358,7 +372,7 @@ func (c *AxfrDdns) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Corr
 						return err
 					}
 					if msg.MsgHdr.Rcode != 0 {
-						return fmt.Errorf("Update failed: %s (%d).",
+						return fmt.Errorf("[Error] AXFRDDNS: nameserver refused to update the zone: %s (%d)",
 							dns.RcodeToString[msg.MsgHdr.Rcode],
 							msg.MsgHdr.Rcode)
 					}
