@@ -6,8 +6,8 @@ title: Creating new DNS Resource Types (rtypes)
 # Creating new DNS Resource Types (rtypes)
 
 Everyone is familiar with A, AAAA, CNAME, NS and other Rtypes.
-However there are new record types being added all the time (possibly
-too many).  Each new record type requires special handling by
+However there are new record types being added all the time.
+Each new record type requires special handling by
 DNSControl.
 
 If a record simply has a single "target", then there is little to
@@ -34,12 +34,12 @@ Here are some examples:
 ```
 type RecordConfig struct {
   ...
-  MxPreference uint16            `json:"mxpreference,omitempty"` // FIXME(tlim): Rename to MxPreference
-  SrvPriority  uint16            `json:"srvpriority,omitempty"`
-  SrvWeight    uint16            `json:"srvweight,omitempty"`
-  SrvPort      uint16            `json:"srvport,omitempty"`
-  CaaTag       string            `json:"caatag,omitempty"`
-  CaaFlag      uint8             `json:"caaflag,omitempty"`
+  MxPreference     uint16            `json:"mxpreference,omitempty"`
+  SrvPriority      uint16            `json:"srvpriority,omitempty"`
+  SrvWeight        uint16            `json:"srvweight,omitempty"`
+  SrvPort          uint16            `json:"srvport,omitempty"`
+  CaaTag           string            `json:"caatag,omitempty"`
+  CaaFlag          uint8             `json:"caaflag,omitempty"`
   ...
 }
 ```
@@ -48,8 +48,7 @@ type RecordConfig struct {
 
 You'll need to mark which providers support this record type.  The
 initial PR should implement this record for the `bind` provider at
-a minimum, unless this is a fake or pseudo-type that only a particular
-provider supports.
+a minimum.
 
 * Add the capability to the file `dnscontrol/providers/capabilities.go` (look for `CanUseAlias` and add
 it to the end of the list.)
@@ -97,7 +96,15 @@ your code conforms to our coding standard:
     npm install prettier
     node_modules/.bin/prettier --write pkg/js/helpers.js
 
-FYI: If you change `pkg/js/helpers.js`, run `go generate` to update `pkg/js/static.go`.
+Any time you change `pkg/js/helpers.js`, run `go generate` to regenerate `pkg/js/static.go`.
+
+The dnscontrol `-dev` flag ignores `pkg/js/static.go` and reads
+`pkg/js/helpers.js` directly. This is useful when debugging since it
+is one less step.
+
+Likewise, if you are debugging helpers.js and you can't figure out why
+your changes aren't making a difference, it usually means you aren't
+running `go generate` after any change, or using the `-dev` flag.
 
 ## Step 4: Search for `#rtype_variations`
 
@@ -129,32 +136,37 @@ validation. This is explained in Step 2 (search for
 ## Step 6: Add an `integrationTest` test case.
 
 Add at least one test case to the `integrationTest/integration_test.go`
-file. Look for `var tests =` and add the test to the end of this
+file. Look for `func makeTests` and add the test to the end of this
 list.
 
-Each entry in the list is a new state.  For example:
+Each `testgroup()` is a named list of tests.
 
 ```
-  // MX
-  tc("Empty"),                                    <<< 1
+testgroup("MX",                                   <<< 1
   tc("MX record", mx("@", 5, "foo.com.")),        <<< 2
   tc("Change MX pref", mx("@", 10, "foo.com.")),  <<< 3
+  tc("MX record",                                 <<< 4
+      mx("@", 10, "foo.com."),
+      mx("@", 20, "bar.com."),
+  ), 
+  )
 ```
 
-Line 1: An `tc()` entry with no records (just a comment). The test
-system will delete all records from the domain to make the domain
-match this empty configuration. This creates a "clean slate"
-situation.
+Line 1: `testgroup()` gives a name to a group of tests.  It also tells
+the system to delete all records for this domain so that the tests
+begin with a blank slate.
 
-Line 2: A `tc()` entry with 1 record.  To get to this state, the
-provider will have to add the record. If this works, basic functionality
-for the MX record type has been achieved.
+Line 2: 
+Each `tc()` encodes all the records of a zone.  The test framework
+will try to do the smallest changes to bring the zone up to date.
+In this case, we know the zone is empty, so this will add one MX
+record.
 
-Line 3: A `tc()` entry with 1 record, with a different priority.
-To get to this state, the provider will have to either change the
-priority on an existing record, or delete the old record and insert
-a new one. Either way, this test case assures us that the diff'ing
-functionality is working properly.
+Line 3: In this example, we just change one field of an existing
+record.  To get to this configuration, the provider will have to
+either change the priority on an existing record, or delete the old
+record and insert a new one. Either way, this test case assures us
+that the diff'ing functionality is working properly.
 
 If you look at the tests for `CAA`, it inserts a few records then
 attempts to modify each field of a record one at a time.  This test
@@ -162,10 +174,16 @@ was useful because it turns out we hadn't written the code to
 properly see a change in priority. We fixed this bug before the
 code made it into production.
 
-Also notice that some tests include `.IfHasCapability()`. This
-limits the test to providers with certain capabilities.  You'll
-want to use this feature so that the tests only run on providers
-that support your new record type.
+Line 4: In this example, the next zone adds a second MX record.
+To get to this configuration, the provider will have add an
+additional MX record to the same label. New tests don't need to do
+this kind of test because we're pretty sure that part of the diffing
+engine work fine. It is here as an example.
+
+Also notice that some tests include `requires()`, `not()` and `only()`
+statements.  This is how we restrict tests to certain providers.
+These options must be listed first in a `testgroup`.  More details are
+in the source code.
 
 To run the integration test with the BIND provider:
 
@@ -173,14 +191,16 @@ To run the integration test with the BIND provider:
     go test -v -verbose -provider BIND
 
 Once the code works for BIND, consider submitting a PR at this point.
+(The earlier you submit a PR, the earlier we can provide feedback.)
 
-As you debug, if there are places that haven't been marked
-`#rtype_variations` that should be, add such a comment.
-If you fail to do this, God kills a cute little kitten.
+If you find places that haven't been marked
+`#rtype_variations` but should be, please add that comment.
+Every time you fail to do this, God kills a cute little kitten.
+Please do it for the kittens.
 
 ## Step 7: Support more providers
 
-Now add support other providers.  Add the `providers.CanUse...`
+Now add support in other providers.  Add the `providers.CanUse...`
 flag to the provider and re-run the integration tests:
 
 For example, this will run the tests on Amazon AWS Route53:
@@ -196,6 +216,7 @@ code and running the tests. When the tests all work, you are done.
 know that everything is working.)
 
 If you find bugs that aren't covered by the tests, please please
-please add a test that demonstrates the bug THEN fix the bug. This
+please add a test that demonstrates the bug (then fix the bug, of
+course). This
 will help all future contributors. If you need help with adding
 tests, please ask!
