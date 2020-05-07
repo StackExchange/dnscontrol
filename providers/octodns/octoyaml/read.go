@@ -12,7 +12,6 @@ import (
 	"fmt"
 	"io"
 	"io/ioutil"
-	"math"
 	"reflect"
 	"strconv"
 
@@ -263,8 +262,8 @@ func decodeTTL(ttl interface{}) (uint32, error) {
 		return uint32(t), fmt.Errorf("decodeTTL failed to parse (%s): %w", s, err)
 	case int:
 		i := ttl.(int)
-		if i < 0 || i > math.MaxUint32 {
-			return 0, fmt.Errorf("ttl won't fit in 32-bits (%d)", i)
+		if i < 0 {
+			return 0, fmt.Errorf("ttl cannot be negative (%d)", i)
 		}
 		return uint32(i), nil
 	}
