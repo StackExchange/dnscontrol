@@ -38,7 +38,7 @@ For instance, your `creds.json` might looks like:
 {% endhighlight %}
 
 If either key is missing, DNSControl defaults to IP-based ACL
-authentication for that function. Including both key is the most
+authentication for that function. Including both keys is the most
 secure option. Omitting both keys defaults to IP-based ACLs for all
 operations, which is the least secure option.
 
