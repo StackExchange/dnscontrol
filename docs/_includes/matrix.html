@@ -7,6 +7,7 @@
 	<tr>
 	<th></th>
 	<th class="rotate"><div><span>ACTIVEDIRECTORY_PS</span></div></th>
+	<th class="rotate"><div><span>AXFRDDNS</span></div></th>
 	<th class="rotate"><div><span>AZURE_DNS</span></div></th>
 	<th class="rotate"><div><span>BIND</span></div></th>
 	<th class="rotate"><div><span>CLOUDFLAREAPI</span></div></th>
@@ -37,6 +38,9 @@
 		<th class="row-header" style="text-decoration: underline;" data-toggle="tooltip" data-container="body" data-placement="top" title="This means the provider is actively used at Stack Exchange, bugs are more likely to be fixed, and failing integration tests will block a release. See below for details">Official Support</th>
 		<td class="success">
 			<i class="fa fa-check text-success" aria-hidden="true"></i>
+		</td>
+		<td class="danger">
+			<i class="fa fa-times text-danger" aria-hidden="true"></i>
 		</td>
 		<td class="success">
 			<i class="fa fa-check text-success" aria-hidden="true"></i>
@@ -146,6 +150,9 @@
 		<td class="success">
 			<i class="fa fa-check text-success" aria-hidden="true"></i>
 		</td>
+		<td class="success">
+			<i class="fa fa-check text-success" aria-hidden="true"></i>
+		</td>
 		<td class="danger">
 			<i class="fa fa-times text-danger" aria-hidden="true"></i>
 		</td>
@@ -185,6 +192,9 @@
 		</tr>
 	<tr>
 		<th class="row-header" style="text-decoration: underline;" data-toggle="tooltip" data-container="body" data-placement="top" title="The provider has registrar capabilities to set nameservers for zones">Registrar</th>
+		<td class="danger">
+			<i class="fa fa-times text-danger" aria-hidden="true"></i>
+		</td>
 		<td class="danger">
 			<i class="fa fa-times text-danger" aria-hidden="true"></i>
 		</td>
@@ -263,6 +273,7 @@
 		<td class="danger">
 			<i class="fa fa-times text-danger" aria-hidden="true"></i>
 		</td>
+		<td><i class="fa fa-minus dim"></i></td>
 		<td class="danger" data-toggle="tooltip" data-container="body" data-placement="top" title="Azure DNS does not provide a generic ALIAS functionality. Use AZURE_ALIAS instead.">
 			<i class="fa has-tooltip fa-times text-danger" aria-hidden="true"></i>
 		</td>
@@ -316,6 +327,9 @@
 	<tr>
 		<th class="row-header" style="text-decoration: underline;" data-toggle="tooltip" data-container="body" data-placement="top" title="Provider can automatically manage DNSSEC">AUTODNSSEC</th>
 		<td><i class="fa fa-minus dim"></i></td>
+		<td class="success" data-toggle="tooltip" data-container="body" data-placement="top" title="Just warn when DNSSEC is requested but no RRSIG is found in the AXFR or warn when DNSSEC is not requested but RRSIG are found in the AXFR.">
+			<i class="fa has-tooltip fa-check text-success" aria-hidden="true"></i>
+		</td>
 		<td><i class="fa fa-minus dim"></i></td>
 		<td class="success" data-toggle="tooltip" data-container="body" data-placement="top" title="Just writes out a comment indicating DNSSEC was requested">
 			<i class="fa has-tooltip fa-check text-success" aria-hidden="true"></i>
@@ -384,6 +398,9 @@
 		<td class="success">
 			<i class="fa fa-check text-success" aria-hidden="true"></i>
 		</td>
+		<td class="success">
+			<i class="fa fa-check text-success" aria-hidden="true"></i>
+		</td>
 		<td><i class="fa fa-minus dim"></i></td>
 		<td><i class="fa fa-minus dim"></i></td>
 		<td class="success">
@@ -411,6 +428,9 @@
 		<th class="row-header" style="text-decoration: underline;" data-toggle="tooltip" data-container="body" data-placement="top" title="Provider supports adding PTR records for reverse lookup zones">PTR</th>
 		<td class="danger">
 			<i class="fa fa-times text-danger" aria-hidden="true"></i>
+		</td>
+		<td class="success">
+			<i class="fa fa-check text-success" aria-hidden="true"></i>
 		</td>
 		<td class="success">
 			<i class="fa fa-check text-success" aria-hidden="true"></i>
@@ -473,6 +493,9 @@
 	<tr>
 		<th class="row-header" style="text-decoration: underline;" data-toggle="tooltip" data-container="body" data-placement="top" title="Provider can manage NAPTR records">NAPTR</th>
 		<td><i class="fa fa-minus dim"></i></td>
+		<td class="success">
+			<i class="fa fa-check text-success" aria-hidden="true"></i>
+		</td>
 		<td class="danger">
 			<i class="fa fa-times text-danger" aria-hidden="true"></i>
 		</td>
@@ -507,6 +530,9 @@
 		<th class="row-header" style="text-decoration: underline;" data-toggle="tooltip" data-container="body" data-placement="top" title="Driver has explicitly implemented SRV record management">SRV</th>
 		<td class="danger">
 			<i class="fa fa-times text-danger" aria-hidden="true"></i>
+		</td>
+		<td class="success">
+			<i class="fa fa-check text-success" aria-hidden="true"></i>
 		</td>
 		<td class="success">
 			<i class="fa fa-check text-success" aria-hidden="true"></i>
@@ -575,6 +601,9 @@
 	<tr>
 		<th class="row-header" style="text-decoration: underline;" data-toggle="tooltip" data-container="body" data-placement="top" title="Provider can manage SSHFP records">SSHFP</th>
 		<td><i class="fa fa-minus dim"></i></td>
+		<td class="success">
+			<i class="fa fa-check text-success" aria-hidden="true"></i>
+		</td>
 		<td class="danger">
 			<i class="fa fa-times text-danger" aria-hidden="true"></i>
 		</td>
@@ -622,6 +651,9 @@
 	<tr>
 		<th class="row-header" style="text-decoration: underline;" data-toggle="tooltip" data-container="body" data-placement="top" title="Provider can manage TLSA records">TLSA</th>
 		<td><i class="fa fa-minus dim"></i></td>
+		<td class="success">
+			<i class="fa fa-check text-success" aria-hidden="true"></i>
+		</td>
 		<td class="danger">
 			<i class="fa fa-times text-danger" aria-hidden="true"></i>
 		</td>
@@ -679,6 +711,9 @@
 		<td class="success">
 			<i class="fa fa-check text-success" aria-hidden="true"></i>
 		</td>
+		<td class="success">
+			<i class="fa fa-check text-success" aria-hidden="true"></i>
+		</td>
 		<td><i class="fa fa-minus dim"></i></td>
 		<td><i class="fa fa-minus dim"></i></td>
 		<td><i class="fa fa-minus dim"></i></td>
@@ -728,6 +763,7 @@
 		<td><i class="fa fa-minus dim"></i></td>
 		<td><i class="fa fa-minus dim"></i></td>
 		<td><i class="fa fa-minus dim"></i></td>
+		<td><i class="fa fa-minus dim"></i></td>
 		<td class="danger" data-toggle="tooltip" data-container="body" data-placement="top" title="Using ALIAS is possible through our extended DNS (X-DNS) service. Feel free to get in touch with us.">
 			<i class="fa has-tooltip fa-times text-danger" aria-hidden="true"></i>
 		</td>
@@ -748,6 +784,7 @@
 		</tr>
 	<tr>
 		<th class="row-header" style="text-decoration: underline;" data-toggle="tooltip" data-container="body" data-placement="top" title="Provider supports Azure DNS limited ALIAS">AZURE_ALIAS</th>
+		<td><i class="fa fa-minus dim"></i></td>
 		<td><i class="fa fa-minus dim"></i></td>
 		<td class="success">
 			<i class="fa fa-check text-success" aria-hidden="true"></i>
@@ -779,6 +816,9 @@
 		<th class="row-header" style="text-decoration: underline;" data-toggle="tooltip" data-container="body" data-placement="top" title="This provider is recommended for use in &#39;dual hosting&#39; scenarios. Usually this means the provider allows full control over the apex NS records">dual host</th>
 		<td class="danger" data-toggle="tooltip" data-container="body" data-placement="top" title="This driver does not manage NS records, so should not be used for dual-host scenarios">
 			<i class="fa has-tooltip fa-times text-danger" aria-hidden="true"></i>
+		</td>
+		<td class="danger">
+			<i class="fa fa-times text-danger" aria-hidden="true"></i>
 		</td>
 		<td class="success" data-toggle="tooltip" data-container="body" data-placement="top" title="Azure does not permit modifying the existing NS records, only adding/removing additional records.">
 			<i class="fa has-tooltip fa-check text-success" aria-hidden="true"></i>
@@ -842,6 +882,9 @@
 		<th class="row-header" style="text-decoration: underline;" data-toggle="tooltip" data-container="body" data-placement="top" title="This means the provider can automatically create domains that do not currently exist on your account. The &#39;dnscontrol create-domains&#39; command will initialize any missing domains">create-domains</th>
 		<td class="danger" data-toggle="tooltip" data-container="body" data-placement="top" title="AD depends on the zone already existing on the dns server">
 			<i class="fa has-tooltip fa-times text-danger" aria-hidden="true"></i>
+		</td>
+		<td class="danger">
+			<i class="fa fa-times text-danger" aria-hidden="true"></i>
 		</td>
 		<td class="success">
 			<i class="fa fa-check text-success" aria-hidden="true"></i>
@@ -918,6 +961,9 @@
 		<td class="success">
 			<i class="fa fa-check text-success" aria-hidden="true"></i>
 		</td>
+		<td class="danger">
+			<i class="fa fa-times text-danger" aria-hidden="true"></i>
+		</td>
 		<td class="success">
 			<i class="fa fa-check text-success" aria-hidden="true"></i>
 		</td>
@@ -992,6 +1038,9 @@
 		<th class="row-header" style="text-decoration: underline;" data-toggle="tooltip" data-container="body" data-placement="top" title="indicates the dnscontrol get-zones subcommand is implemented.">get-zones</th>
 		<td class="info">
 			<i class="fa fa-circle-o text-info" aria-hidden="true"></i>
+		</td>
+		<td class="success">
+			<i class="fa fa-check text-success" aria-hidden="true"></i>
 		</td>
 		<td class="success">
 			<i class="fa fa-check text-success" aria-hidden="true"></i>

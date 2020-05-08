@@ -16,6 +16,7 @@ Windows). The provider model is extensible, so more providers can be added.
 Currently supported DNS providers:
  - AWS Route 53
  - Active Directory
+ - AXFR+DDNS
  - Azure DNS
  - BIND
  - ClouDNS
