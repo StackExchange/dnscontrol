@@ -572,9 +572,11 @@ func makeTests(t *testing.T) []*TestGroup {
 		// Basic functionality (add/rename/change/delete).
 		//
 
-		testgroup("A",
-			// These tests aren't specific to "A" records. We're testing
-			// general ability to add/rename/change/delete any record.
+		testgroup("GeneralACD",
+			// Test general ability to add/change/delete records of one
+			// type. These tests aren't specific to "A" records, but we
+			// don't do tests specific to A records because this exercises
+			// them very well.
 			tc("Create an A record", a("@", "1.1.1.1")),
 			tc("Change it", a("@", "1.2.3.4")),
 			tc("Add another", a("@", "1.2.3.4"), a("www", "1.2.3.4")),
@@ -589,11 +591,13 @@ func makeTests(t *testing.T) []*TestGroup {
 			tc("Delete wildcard", a("www", "1.1.1.1")),
 		),
 
+		//
+		// Test the basic rtypes.
+		//
+
 		testgroup("CNAME",
 			tc("Create a CNAME", cname("foo", "google.com.")),
 			tc("Change CNAME target", cname("foo", "google2.com.")),
-			tc("Change to A record", a("foo", "1.2.3.4")),
-			tc("Change back to CNAME", cname("foo", "google.com.")),
 			clear(),
 			tc("Record pointing to @", cname("foo", "**current-domain**")),
 		),
@@ -662,8 +666,16 @@ func makeTests(t *testing.T) []*TestGroup {
 		),
 
 		//
-		// Tests that exercise the API protocol and/or code
+		// Tests that exercise the API protocol and/or code.
 		//
+
+		testgroup("TypeChange",
+			// Test whether the provider properly handles a label changing
+			// from one rtype to another.
+			tc("Create a CNAME", cname("foo", "google.com.")),
+			tc("Change to A record", a("foo", "1.2.3.4")),
+			tc("Change back to CNAME", cname("foo", "google2.com.")),
+		),
 
 		testgroup("Case Sensitivity",
 			// The decoys are required so that there is at least one actual change in each tc.

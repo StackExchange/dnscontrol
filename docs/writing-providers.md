@@ -224,7 +224,25 @@ FYI: If a provider's capabilities changes, run `go generate` to update
 the documentation.
 
 
-## Step 11: Vendor Dependencies
+## Step 11: Clean up
+
+Run "go vet" and "golint" and clean up any errors found.
+
+```
+go vet
+golint
+```
+
+Please use `go vet` from the [newest releaes of Go](https://golang.org/doc/devel/release.html#policy).
+
+If [golint](https://github.com/golang/lint) isn't installed on your machine:
+
+```
+go get -u golang.org/x/lint/golint
+```
+
+
+## Step 12: Vendor Dependencies
 
 The build process for DNSControl uses the default Go Modules system,
 which ignores the `vendor` directory. However we store a backup copy
@@ -255,12 +273,11 @@ for tips about managing modules and checking for outdated
 dependencies.
 
 
-## Step 12: Check your work.
+## Step 13: Check your work.
 
-People submitting PRs often forget these steps, so I'll repeat them
-just in case:
+Here are some last-minute things to check before you submit your PR.
 
-1. Run the integration test again just in case. (See Step 7)
-2. Make sure the documentation is accurate.  Verify you didn't miss
-   any items in Step 8.
-3. Check that dependencies are vendored (See Step 11)
+1. Run "go generate" to make sure all generated files are fresh.
+2. Make sure all appropriate documentation is current. (See Step 8)
+3. Check that dependencies are vendored (See Step 12)
+4. Re-run the integration test one last time (See Step 7)
