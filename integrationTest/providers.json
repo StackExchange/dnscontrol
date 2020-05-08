@@ -3,6 +3,13 @@
     "ADServer": "$AD_SERVER",
     "domain": "$AD_DOMAIN"
   },
+  "AXFRDDNS": {
+    "master": "$AXFRDDNS_MASTER",
+    "nameservers": "ns.example.com",
+    "transfer-key": "$AXFRDDNS_TRANSFER_KEY",
+    "update-key": "$AXFRDDNS_UPDATE_KEY",
+    "domain": "$AXFRDDNS_DOMAIN"
+  },
   "AZURE_DNS": {
     "ClientID": "$AZURE_CLIENT_ID",
     "ClientSecret": "$AZURE_CLIENT_SECRET",
