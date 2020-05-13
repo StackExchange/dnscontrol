@@ -249,6 +249,7 @@ func (c *DnsimpleApi) getClient() *dnsimpleapi.Client {
 
 	// new client
 	client := dnsimpleapi.NewClient(tc)
+	client.SetUserAgent("DNSControl")
 
 	if c.BaseURL != "" {
 		client.BaseURL = c.BaseURL
