@@ -1,6 +1,7 @@
 package dnsimple
 
 import (
+	"context"
 	"fmt"
 )
 
@@ -44,14 +45,14 @@ func servicePath(serviceIdentifier string) (path string) {
 	return
 }
 
-// serviceResponse represents a response from an API method that returns a Service struct.
-type serviceResponse struct {
+// ServiceResponse represents a response from an API method that returns a Service struct.
+type ServiceResponse struct {
 	Response
 	Data *Service `json:"data"`
 }
 
-// servicesResponse represents a response from an API method that returns a collection of Service struct.
-type servicesResponse struct {
+// ServicesResponse represents a response from an API method that returns a collection of Service struct.
+type ServicesResponse struct {
 	Response
 	Data []Service `json:"data"`
 }
@@ -59,36 +60,36 @@ type servicesResponse struct {
 // ListServices lists the one-click services available in DNSimple.
 //
 // See https://developer.dnsimple.com/v2/services/#list
-func (s *ServicesService) ListServices(options *ListOptions) (*servicesResponse, error) {
+func (s *ServicesService) ListServices(ctx context.Context, options *ListOptions) (*ServicesResponse, error) {
 	path := versioned(servicePath(""))
-	servicesResponse := &servicesResponse{}
+	servicesResponse := &ServicesResponse{}
 
 	path, err := addURLQueryOptions(path, options)
 	if err != nil {
 		return nil, err
 	}
 
-	resp, err := s.client.get(path, servicesResponse)
+	resp, err := s.client.get(ctx, path, servicesResponse)
 	if err != nil {
 		return servicesResponse, err
 	}
 
-	servicesResponse.HttpResponse = resp
+	servicesResponse.HTTPResponse = resp
 	return servicesResponse, nil
 }
 
 // GetService fetches a one-click service.
 //
 // See https://developer.dnsimple.com/v2/services/#get
-func (s *ServicesService) GetService(serviceIdentifier string) (*serviceResponse, error) {
+func (s *ServicesService) GetService(ctx context.Context, serviceIdentifier string) (*ServiceResponse, error) {
 	path := versioned(servicePath(serviceIdentifier))
-	serviceResponse := &serviceResponse{}
+	serviceResponse := &ServiceResponse{}
 
-	resp, err := s.client.get(path, serviceResponse)
+	resp, err := s.client.get(ctx, path, serviceResponse)
 	if err != nil {
 		return nil, err
 	}
 
-	serviceResponse.HttpResponse = resp
+	serviceResponse.HTTPResponse = resp
 	return serviceResponse, nil
 }

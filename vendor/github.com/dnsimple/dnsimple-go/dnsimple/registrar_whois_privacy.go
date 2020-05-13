@@ -1,6 +1,7 @@
 package dnsimple
 
 import (
+	"context"
 	"fmt"
 )
 
@@ -26,14 +27,14 @@ type WhoisPrivacyRenewal struct {
 	UpdatedAt      string `json:"updated_at,omitempty"`
 }
 
-// whoisPrivacyResponse represents a response from an API method that returns a WhoisPrivacy struct.
-type whoisPrivacyResponse struct {
+// WhoisPrivacyResponse represents a response from an API method that returns a WhoisPrivacy struct.
+type WhoisPrivacyResponse struct {
 	Response
 	Data *WhoisPrivacy `json:"data"`
 }
 
-// whoisPrivacyRenewalResponse represents a response from an API method that returns a WhoisPrivacyRenewal struct.
-type whoisPrivacyRenewalResponse struct {
+// WhoisPrivacyRenewalResponse represents a response from an API method that returns a WhoisPrivacyRenewal struct.
+type WhoisPrivacyRenewalResponse struct {
 	Response
 	Data *WhoisPrivacyRenewal `json:"data"`
 }
@@ -41,63 +42,63 @@ type whoisPrivacyRenewalResponse struct {
 // GetWhoisPrivacy gets the whois privacy for the domain.
 //
 // See https://developer.dnsimple.com/v2/registrar/whois-privacy/#get
-func (s *RegistrarService) GetWhoisPrivacy(accountID string, domainName string) (*whoisPrivacyResponse, error) {
+func (s *RegistrarService) GetWhoisPrivacy(ctx context.Context, accountID string, domainName string) (*WhoisPrivacyResponse, error) {
 	path := versioned(fmt.Sprintf("/%v/registrar/domains/%v/whois_privacy", accountID, domainName))
-	privacyResponse := &whoisPrivacyResponse{}
+	privacyResponse := &WhoisPrivacyResponse{}
 
-	resp, err := s.client.get(path, privacyResponse)
+	resp, err := s.client.get(ctx, path, privacyResponse)
 	if err != nil {
 		return nil, err
 	}
 
-	privacyResponse.HttpResponse = resp
+	privacyResponse.HTTPResponse = resp
 	return privacyResponse, nil
 }
 
 // EnableWhoisPrivacy enables the whois privacy for the domain.
 //
 // See https://developer.dnsimple.com/v2/registrar/whois-privacy/#enable
-func (s *RegistrarService) EnableWhoisPrivacy(accountID string, domainName string) (*whoisPrivacyResponse, error) {
+func (s *RegistrarService) EnableWhoisPrivacy(ctx context.Context, accountID string, domainName string) (*WhoisPrivacyResponse, error) {
 	path := versioned(fmt.Sprintf("/%v/registrar/domains/%v/whois_privacy", accountID, domainName))
-	privacyResponse := &whoisPrivacyResponse{}
+	privacyResponse := &WhoisPrivacyResponse{}
 
-	resp, err := s.client.put(path, nil, privacyResponse)
+	resp, err := s.client.put(ctx, path, nil, privacyResponse)
 	if err != nil {
 		return nil, err
 	}
 
-	privacyResponse.HttpResponse = resp
+	privacyResponse.HTTPResponse = resp
 	return privacyResponse, nil
 }
 
 // DisableWhoisPrivacy disables the whois privacy for the domain.
 //
 // See https://developer.dnsimple.com/v2/registrar/whois-privacy/#enable
-func (s *RegistrarService) DisableWhoisPrivacy(accountID string, domainName string) (*whoisPrivacyResponse, error) {
+func (s *RegistrarService) DisableWhoisPrivacy(ctx context.Context, accountID string, domainName string) (*WhoisPrivacyResponse, error) {
 	path := versioned(fmt.Sprintf("/%v/registrar/domains/%v/whois_privacy", accountID, domainName))
-	privacyResponse := &whoisPrivacyResponse{}
+	privacyResponse := &WhoisPrivacyResponse{}
 
-	resp, err := s.client.delete(path, nil, privacyResponse)
+	resp, err := s.client.delete(ctx, path, nil, privacyResponse)
 	if err != nil {
 		return nil, err
 	}
 
-	privacyResponse.HttpResponse = resp
+	privacyResponse.HTTPResponse = resp
 	return privacyResponse, nil
 }
 
 // RenewWhoisPrivacy renews the whois privacy for the domain.
 //
 // See https://developer.dnsimple.com/v2/registrar/whois-privacy/#renew
-func (s *RegistrarService) RenewWhoisPrivacy(accountID string, domainName string) (*whoisPrivacyRenewalResponse, error) {
+func (s *RegistrarService) RenewWhoisPrivacy(ctx context.Context, accountID string, domainName string) (*WhoisPrivacyRenewalResponse, error) {
 	path := versioned(fmt.Sprintf("/%v/registrar/domains/%v/whois_privacy/renewals", accountID, domainName))
-	privacyRenewalResponse := &whoisPrivacyRenewalResponse{}
+	privacyRenewalResponse := &WhoisPrivacyRenewalResponse{}
 
-	resp, err := s.client.post(path, nil, privacyRenewalResponse)
+	resp, err := s.client.post(ctx, path, nil, privacyRenewalResponse)
 	if err != nil {
 		return nil, err
 	}
 
-	privacyRenewalResponse.HttpResponse = resp
+	privacyRenewalResponse.HTTPResponse = resp
 	return privacyRenewalResponse, nil
 }
