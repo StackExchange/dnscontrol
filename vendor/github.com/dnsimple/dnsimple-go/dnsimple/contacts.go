@@ -1,6 +1,7 @@
 package dnsimple
 
 import (
+	"context"
 	"fmt"
 )
 
@@ -42,14 +43,14 @@ func contactPath(accountID string, contactID int64) (path string) {
 	return
 }
 
-// contactResponse represents a response from an API method that returns a Contact struct.
-type contactResponse struct {
+// ContactResponse represents a response from an API method that returns a Contact struct.
+type ContactResponse struct {
 	Response
 	Data *Contact `json:"data"`
 }
 
-// contactsResponse represents a response from an API method that returns a collection of Contact struct.
-type contactsResponse struct {
+// ContactsResponse represents a response from an API method that returns a collection of Contact struct.
+type ContactsResponse struct {
 	Response
 	Data []Contact `json:"data"`
 }
@@ -57,84 +58,84 @@ type contactsResponse struct {
 // ListContacts list the contacts for an account.
 //
 // See https://developer.dnsimple.com/v2/contacts/#list
-func (s *ContactsService) ListContacts(accountID string, options *ListOptions) (*contactsResponse, error) {
+func (s *ContactsService) ListContacts(ctx context.Context, accountID string, options *ListOptions) (*ContactsResponse, error) {
 	path := versioned(contactPath(accountID, 0))
-	contactsResponse := &contactsResponse{}
+	contactsResponse := &ContactsResponse{}
 
 	path, err := addURLQueryOptions(path, options)
 	if err != nil {
 		return nil, err
 	}
 
-	resp, err := s.client.get(path, contactsResponse)
+	resp, err := s.client.get(ctx, path, contactsResponse)
 	if err != nil {
 		return contactsResponse, err
 	}
 
-	contactsResponse.HttpResponse = resp
+	contactsResponse.HTTPResponse = resp
 	return contactsResponse, nil
 }
 
 // CreateContact creates a new contact.
 //
 // See https://developer.dnsimple.com/v2/contacts/#create
-func (s *ContactsService) CreateContact(accountID string, contactAttributes Contact) (*contactResponse, error) {
+func (s *ContactsService) CreateContact(ctx context.Context, accountID string, contactAttributes Contact) (*ContactResponse, error) {
 	path := versioned(contactPath(accountID, 0))
-	contactResponse := &contactResponse{}
+	contactResponse := &ContactResponse{}
 
-	resp, err := s.client.post(path, contactAttributes, contactResponse)
+	resp, err := s.client.post(ctx, path, contactAttributes, contactResponse)
 	if err != nil {
 		return nil, err
 	}
 
-	contactResponse.HttpResponse = resp
+	contactResponse.HTTPResponse = resp
 	return contactResponse, nil
 }
 
 // GetContact fetches a contact.
 //
 // See https://developer.dnsimple.com/v2/contacts/#get
-func (s *ContactsService) GetContact(accountID string, contactID int64) (*contactResponse, error) {
+func (s *ContactsService) GetContact(ctx context.Context, accountID string, contactID int64) (*ContactResponse, error) {
 	path := versioned(contactPath(accountID, contactID))
-	contactResponse := &contactResponse{}
+	contactResponse := &ContactResponse{}
 
-	resp, err := s.client.get(path, contactResponse)
+	resp, err := s.client.get(ctx, path, contactResponse)
 	if err != nil {
 		return nil, err
 	}
 
-	contactResponse.HttpResponse = resp
+	contactResponse.HTTPResponse = resp
 	return contactResponse, nil
 }
 
 // UpdateContact updates a contact.
 //
 // See https://developer.dnsimple.com/v2/contacts/#update
-func (s *ContactsService) UpdateContact(accountID string, contactID int64, contactAttributes Contact) (*contactResponse, error) {
+func (s *ContactsService) UpdateContact(ctx context.Context, accountID string, contactID int64, contactAttributes Contact) (*ContactResponse, error) {
 	path := versioned(contactPath(accountID, contactID))
-	contactResponse := &contactResponse{}
+	contactResponse := &ContactResponse{}
 
-	resp, err := s.client.patch(path, contactAttributes, contactResponse)
+	resp, err := s.client.patch(ctx, path, contactAttributes, contactResponse)
 	if err != nil {
 		return nil, err
 	}
 
-	contactResponse.HttpResponse = resp
+	contactResponse.HTTPResponse = resp
 	return contactResponse, nil
 }
 
 // DeleteContact PERMANENTLY deletes a contact from the account.
 //
 // See https://developer.dnsimple.com/v2/contacts/#delete
-func (s *ContactsService) DeleteContact(accountID string, contactID int64) (*contactResponse, error) {
+func (s *ContactsService) DeleteContact(ctx context.Context, accountID string, contactID int64) (*ContactResponse, error) {
 	path := versioned(contactPath(accountID, contactID))
-	contactResponse := &contactResponse{}
+	contactResponse := &ContactResponse{}
 
-	resp, err := s.client.delete(path, nil, nil)
+	resp, err := s.client.delete(ctx, path, nil, nil)
 	if err != nil {
 		return nil, err
 	}
 
-	contactResponse.HttpResponse = resp
+	contactResponse.HTTPResponse = resp
 	return contactResponse, nil
 }

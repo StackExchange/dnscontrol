@@ -1,6 +1,7 @@
 package dnsimple
 
 import (
+	"context"
 	"fmt"
 )
 
@@ -19,52 +20,52 @@ type DomainServiceSettings struct {
 // AppliedServices lists the applied one-click services for a domain.
 //
 // See https://developer.dnsimple.com/v2/services/domains/#applied
-func (s *ServicesService) AppliedServices(accountID string, domainIdentifier string, options *ListOptions) (*servicesResponse, error) {
+func (s *ServicesService) AppliedServices(ctx context.Context, accountID string, domainIdentifier string, options *ListOptions) (*ServicesResponse, error) {
 	path := versioned(domainServicesPath(accountID, domainIdentifier, ""))
-	servicesResponse := &servicesResponse{}
+	servicesResponse := &ServicesResponse{}
 
 	path, err := addURLQueryOptions(path, options)
 	if err != nil {
 		return nil, err
 	}
 
-	resp, err := s.client.get(path, servicesResponse)
+	resp, err := s.client.get(ctx, path, servicesResponse)
 	if err != nil {
 		return servicesResponse, err
 	}
 
-	servicesResponse.HttpResponse = resp
+	servicesResponse.HTTPResponse = resp
 	return servicesResponse, nil
 }
 
 // ApplyService applies a one-click services to a domain.
 //
 // See https://developer.dnsimple.com/v2/services/domains/#apply
-func (s *ServicesService) ApplyService(accountID string, serviceIdentifier string, domainIdentifier string, settings DomainServiceSettings) (*serviceResponse, error) {
+func (s *ServicesService) ApplyService(ctx context.Context, accountID string, serviceIdentifier string, domainIdentifier string, settings DomainServiceSettings) (*ServiceResponse, error) {
 	path := versioned(domainServicesPath(accountID, domainIdentifier, serviceIdentifier))
-	serviceResponse := &serviceResponse{}
+	serviceResponse := &ServiceResponse{}
 
-	resp, err := s.client.post(path, settings, nil)
+	resp, err := s.client.post(ctx, path, settings, nil)
 	if err != nil {
 		return nil, err
 	}
 
-	serviceResponse.HttpResponse = resp
+	serviceResponse.HTTPResponse = resp
 	return serviceResponse, nil
 }
 
 // UnapplyService unapplies a one-click services from a domain.
 //
 // See https://developer.dnsimple.com/v2/services/domains/#unapply
-func (s *ServicesService) UnapplyService(accountID string, serviceIdentifier string, domainIdentifier string) (*serviceResponse, error) {
+func (s *ServicesService) UnapplyService(ctx context.Context, accountID string, serviceIdentifier string, domainIdentifier string) (*ServiceResponse, error) {
 	path := versioned(domainServicesPath(accountID, domainIdentifier, serviceIdentifier))
-	serviceResponse := &serviceResponse{}
+	serviceResponse := &ServiceResponse{}
 
-	resp, err := s.client.delete(path, nil, nil)
+	resp, err := s.client.delete(ctx, path, nil, nil)
 	if err != nil {
 		return nil, err
 	}
 
-	serviceResponse.HttpResponse = resp
+	serviceResponse.HTTPResponse = resp
 	return serviceResponse, nil
 }
