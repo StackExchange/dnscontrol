@@ -614,7 +614,7 @@ func makeTests(t *testing.T) []*TestGroup {
 		),
 
 		testgroup("Null MX",
-			not("AZURE_DNS", "GANDI_V5", "NAMEDOTCOM", "DIGITALOCEAN", "NETCUP"), // These providers don't support RFC 7505
+			not("AZURE_DNS", "GANDI_V5", "NAMEDOTCOM", "DIGITALOCEAN", "NETCUP", "DNSIMPLE"), // These providers don't support RFC 7505
 			tc("Null MX", mx("@", 0, ".")),
 		),
 
@@ -654,7 +654,7 @@ func makeTests(t *testing.T) []*TestGroup {
 		),
 
 		testgroup("empty TXT",
-			not("DNSIMPLE", "CLOUDFLAREAPI", "NETCUP"),
+			not("CLOUDFLAREAPI", "NETCUP"),
 			tc("TXT with empty str", txt("foo1", "")),
 			// https://github.com/StackExchange/dnscontrol/issues/598
 			// We decided that permitting the TXT target to be an empty

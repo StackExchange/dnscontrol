@@ -91,7 +91,9 @@ func (client *DnsimpleApi) GetZoneRecords(domain string) (models.Records, error)
 			continue
 		case "ALIAS", "URL":
 			rec.Type = r.Type
-			rec.SetTarget(r.Content)
+			if err := rec.SetTarget(r.Content); err != nil {
+				panic(fmt.Errorf("unparsable record received from dnsimple: %w", err))
+			}
 		case "MX":
 			if err := rec.SetTargetMX(uint16(r.Priority), r.Content); err != nil {
 				panic(fmt.Errorf("unparsable record received from dnsimple: %w", err))
@@ -247,6 +249,7 @@ func (c *DnsimpleApi) getClient() *dnsimpleapi.Client {
 
 	// new client
 	client := dnsimpleapi.NewClient(tc)
+	client.SetUserAgent("DNSControl")
 
 	if c.BaseURL != "" {
 		client.BaseURL = c.BaseURL
@@ -257,7 +260,7 @@ func (c *DnsimpleApi) getClient() *dnsimpleapi.Client {
 func (c *DnsimpleApi) getAccountID() (string, error) {
 	if c.accountID == "" {
 		client := c.getClient()
-		whoamiResponse, err := client.Identity.Whoami()
+		whoamiResponse, err := client.Identity.Whoami(context.Background())
 		if err != nil {
 			return "", err
 		}
@@ -279,9 +282,10 @@ func (c *DnsimpleApi) getRecords(domainName string) ([]dnsimpleapi.ZoneRecord, e
 
 	opts := &dnsimpleapi.ZoneRecordListOptions{}
 	recs := []dnsimpleapi.ZoneRecord{}
-	opts.Page = 1
+	page := 1
 	for {
-		recordsResponse, err := client.Zones.ListRecords(accountID, domainName, opts)
+		opts.Page = &page
+		recordsResponse, err := client.Zones.ListRecords(context.Background(), accountID, domainName, opts)
 		if err != nil {
 			return nil, err
 		}
@@ -290,7 +294,7 @@ func (c *DnsimpleApi) getRecords(domainName string) ([]dnsimpleapi.ZoneRecord, e
 		if pg.CurrentPage == pg.TotalPages {
 			break
 		}
-		opts.Page++
+		page++
 	}
 
 	return recs, nil
@@ -307,7 +311,7 @@ func (c *DnsimpleApi) getDnssec(domainName string) (bool, error) {
 		return false, err
 	}
 
-	dnssecResponse, err := client.Domains.GetDnssec(accountID, domainName)
+	dnssecResponse, err := client.Domains.GetDnssec(context.Background(), accountID, domainName)
 	if err != nil {
 		return false, err
 	}
@@ -328,7 +332,7 @@ func (c *DnsimpleApi) enableDnssec(domainName string) (bool, error) {
 		return false, err
 	}
 
-	dnssecResponse, err := client.Domains.EnableDnssec(accountID, domainName)
+	dnssecResponse, err := client.Domains.EnableDnssec(context.Background(), accountID, domainName)
 	if err != nil {
 		return false, err
 	}
@@ -349,7 +353,7 @@ func (c *DnsimpleApi) disableDnssec(domainName string) (bool, error) {
 		return false, err
 	}
 
-	dnssecResponse, err := client.Domains.DisableDnssec(accountID, domainName)
+	dnssecResponse, err := client.Domains.DisableDnssec(context.Background(), accountID, domainName)
 	if err != nil {
 		return false, err
 	}
@@ -370,14 +374,14 @@ func (c *DnsimpleApi) getNameservers(domainName string) ([]string, error) {
 		return nil, err
 	}
 
-	domainResponse, err := client.Domains.GetDomain(accountID, domainName)
+	domainResponse, err := client.Domains.GetDomain(context.Background(), accountID, domainName)
 	if err != nil {
 		return nil, err
 	}
 
 	if domainResponse.Data.State == stateRegistered {
 
-		delegationResponse, err := client.Registrar.GetDomainDelegation(accountID, domainName)
+		delegationResponse, err := client.Registrar.GetDomainDelegation(context.Background(), accountID, domainName)
 		if err != nil {
 			return nil, err
 		}
@@ -399,7 +403,7 @@ func (c *DnsimpleApi) updateNameserversFunc(nameServerNames []string, domainName
 
 		nameServers := dnsimpleapi.Delegation(nameServerNames)
 
-		_, err = client.Registrar.ChangeDomainDelegation(accountID, domainName, &nameServers)
+		_, err = client.Registrar.ChangeDomainDelegation(context.Background(), accountID, domainName, &nameServers)
 		if err != nil {
 			return err
 		}
@@ -417,14 +421,14 @@ func (c *DnsimpleApi) createRecordFunc(rc *models.RecordConfig, domainName strin
 		if err != nil {
 			return err
 		}
-		record := dnsimpleapi.ZoneRecord{
-			Name:     rc.GetLabel(),
+		record := dnsimpleapi.ZoneRecordAttributes{
+			Name:     dnsimpleapi.String(rc.GetLabel()),
 			Type:     rc.Type,
 			Content:  getTargetRecordContent(rc),
 			TTL:      int(rc.TTL),
 			Priority: getTargetRecordPriority(rc),
 		}
-		_, err = client.Zones.CreateRecord(accountID, domainName, record)
+		_, err = client.Zones.CreateRecord(context.Background(), accountID, domainName, record)
 		if err != nil {
 			return err
 		}
@@ -443,7 +447,7 @@ func (c *DnsimpleApi) deleteRecordFunc(recordID int64, domainName string) func()
 			return err
 		}
 
-		_, err = client.Zones.DeleteRecord(accountID, domainName, recordID)
+		_, err = client.Zones.DeleteRecord(context.Background(), accountID, domainName, recordID)
 		if err != nil {
 			return err
 		}
@@ -463,15 +467,15 @@ func (c *DnsimpleApi) updateRecordFunc(old *dnsimpleapi.ZoneRecord, rc *models.R
 			return err
 		}
 
-		record := dnsimpleapi.ZoneRecord{
-			Name:     rc.GetLabel(),
+		record := dnsimpleapi.ZoneRecordAttributes{
+			Name:     dnsimpleapi.String(rc.GetLabel()),
 			Type:     rc.Type,
 			Content:  getTargetRecordContent(rc),
 			TTL:      int(rc.TTL),
 			Priority: getTargetRecordPriority(rc),
 		}
 
-		_, err = client.Zones.UpdateRecord(accountID, domainName, old.ID, record)
+		_, err = client.Zones.UpdateRecord(context.Background(), accountID, domainName, old.ID, record)
 		if err != nil {
 			return err
 		}
@@ -490,9 +494,10 @@ func (c *DnsimpleApi) ListZones() ([]string, error) {
 
 	var zones []string
 	opts := &dnsimpleapi.ZoneListOptions{}
-	opts.Page = 1
+	page := 1
 	for {
-		zonesResponse, err := client.Zones.ListZones(accountID, opts)
+		opts.Page = &page
+		zonesResponse, err := client.Zones.ListZones(context.Background(), accountID, opts)
 		if err != nil {
 			return nil, err
 		}
@@ -503,7 +508,7 @@ func (c *DnsimpleApi) ListZones() ([]string, error) {
 		if pg.CurrentPage == pg.TotalPages {
 			break
 		}
-		opts.Page++
+		page++
 	}
 	return zones, nil
 }
