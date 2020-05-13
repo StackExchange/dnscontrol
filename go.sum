@@ -67,8 +67,8 @@ github.com/digitalocean/godo v1.35.1 h1:3P5timR4LTqcCafzrCgV2j83ck4aWb937ybFC7YQ
 github.com/digitalocean/godo v1.35.1/go.mod h1:p7dOjjtSBqCTUksqtA5Fd3uaKs9kyTq2xcz76ulEJRU=
 github.com/dimchansky/utfbom v1.1.0 h1:FcM3g+nofKgUteL8dm/UpdRXNC9KmADgTpLKsu0TRo4=
 github.com/dimchansky/utfbom v1.1.0/go.mod h1:rO41eb7gLfo8SF1jd9F8HplJm1Fewwi4mQvIirEdv+8=
-github.com/dnsimple/dnsimple-go v0.61.0 h1:5BUN79+WLVM2gpGbK1/9SPVZfJPPcB83w7fBdshUXL4=
-github.com/dnsimple/dnsimple-go v0.61.0/go.mod h1:O5TJ0/U6r7AfT8niYNlmohpLbCSG+c71tQlGr9SeGrg=
+github.com/dnsimple/dnsimple-go v0.62.0 h1:Lr4U8F08FBL90rMEtQMR547RebifgwTPGCRC/+6ZW4g=
+github.com/dnsimple/dnsimple-go v0.62.0/go.mod h1:O5TJ0/U6r7AfT8niYNlmohpLbCSG+c71tQlGr9SeGrg=
 github.com/envoyproxy/go-control-plane v0.9.1-0.20191026205805-5f8ba28d4473/go.mod h1:YTl/9mNaCwkRvm6d1a2C3ymFceY/DCBVvsKhRF0iEA4=
 github.com/envoyproxy/protoc-gen-validate v0.1.0/go.mod h1:iSmxcyjqTsJpI2R4NaDN7+kN2VEUnK/pcBlmesArF7c=
 github.com/exoscale/egoscale v0.23.0 h1:hoUDzrO8yNoobNdnrRvlRFjfg3Ng0vQTrv6bXRJu6z0=

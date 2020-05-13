@@ -148,14 +148,15 @@ func (s *RegistrarService) RegisterDomain(ctx context.Context, accountID string,
 
 // DomainTransfer represents the result of a domain renewal call.
 type DomainTransfer struct {
-	ID           int    `json:"id"`
-	DomainID     int    `json:"domain_id"`
-	RegistrantID int    `json:"registrant_id"`
-	State        string `json:"state"`
-	AutoRenew    bool   `json:"auto_renew"`
-	WhoisPrivacy bool   `json:"whois_privacy"`
-	CreatedAt    string `json:"created_at,omitempty"`
-	UpdatedAt    string `json:"updated_at,omitempty"`
+	ID                int    `json:"id"`
+	DomainID          int    `json:"domain_id"`
+	RegistrantID      int    `json:"registrant_id"`
+	State             string `json:"state"`
+	AutoRenew         bool   `json:"auto_renew"`
+	WhoisPrivacy      bool   `json:"whois_privacy"`
+	StatusDescription string `json:"status_description"`
+	CreatedAt         string `json:"created_at,omitempty"`
+	UpdatedAt         string `json:"updated_at,omitempty"`
 }
 
 // DomainTransferResponse represents a response from an API method that results in a domain transfer.
@@ -194,6 +195,38 @@ func (s *RegistrarService) TransferDomain(ctx context.Context, accountID string,
 	// TODO: validate mandatory attributes RegistrantID
 
 	resp, err := s.client.post(ctx, path, input, transferResponse)
+	if err != nil {
+		return nil, err
+	}
+
+	transferResponse.HTTPResponse = resp
+	return transferResponse, nil
+}
+
+// GetDomainTransfer fetches a domain transfer.
+//
+// See https://developer.dnsimple.com/v2/registrar/#getDomainTransfer
+func (s *RegistrarService) GetDomainTransfer(ctx context.Context, accountID string, domainName string, domainTransferID int64) (*DomainTransferResponse, error) {
+	path := versioned(fmt.Sprintf("/%v/registrar/domains/%v/transfers/%v", accountID, domainName, domainTransferID))
+	transferResponse := &DomainTransferResponse{}
+
+	resp, err := s.client.get(ctx, path, transferResponse)
+	if err != nil {
+		return nil, err
+	}
+
+	transferResponse.HTTPResponse = resp
+	return transferResponse, nil
+}
+
+// CancelDomainTransfer cancels an in progress domain transfer.
+//
+// See https://developer.dnsimple.com/v2/registrar/#cancelDomainTransfer
+func (s *RegistrarService) CancelDomainTransfer(ctx context.Context, accountID string, domainName string, domainTransferID int64) (*DomainTransferResponse, error) {
+	path := versioned(fmt.Sprintf("/%v/registrar/domains/%v/transfers/%v", accountID, domainName, domainTransferID))
+	transferResponse := &DomainTransferResponse{}
+
+	resp, err := s.client.delete(ctx, path, nil, transferResponse)
 	if err != nil {
 		return nil, err
 	}
