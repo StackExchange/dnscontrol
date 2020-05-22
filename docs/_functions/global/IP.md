@@ -4,7 +4,9 @@ parameters:
   - ip
 ---
 
-Converts the IP address from string to an integer. This allows performing mathematical operations with the IP address.
+Converts an IPv4 address from string to an integer. This allows performing mathematical operations with the IP address.
+
+This does not accept IPv6 addresses. (PRs gladly accepted.)
 
 {% include startExample.html %}
 {% highlight js %}
