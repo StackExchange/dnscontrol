@@ -23,12 +23,10 @@ ARGUMENTS:
    provider: The name of the provider (second parameter to NewDnsProvider() in dnsconfig.js)
 
 EXAMPLES:
-   dnscontrol get-zones myr53 ROUTE53
+   dnscontrol check-creds myr53 ROUTE53
+
+This command is the same as:
    dnscontrol get-zones --out=/dev/null myr53 ROUTE53
-
-# Example commands
-
-dnscontrol get-zone
 
 # Developer Note
 
