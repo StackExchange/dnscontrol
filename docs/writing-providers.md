@@ -177,7 +177,6 @@ go test -v -verbose -provider ROUTE53
 
 * Edit [README.md](https://github.com/StackExchange/dnscontrol): Add the provider to the bullet list.
 * Edit [docs/provider-list.md](https://github.com/StackExchange/dnscontrol/blob/master/docs/provider-list.md): Add the provider to the provider list.
-* FYI: The list of "Requested Providers" is generated dynamically from Github issues tagged `provider-request`.  When you close the issue related to your provider, the list will update automatically.
 * Create `docs/_providers/PROVIDERNAME.md`: Use one of the other files in that directory as a base.
 * Edit [OWNERS](https://github.com/StackExchange/dnscontrol/blob/master/OWNERS): Add the directory name and your github id.
 
@@ -281,3 +280,8 @@ Here are some last-minute things to check before you submit your PR.
 2. Make sure all appropriate documentation is current. (See Step 8)
 3. Check that dependencies are vendored (See Step 12)
 4. Re-run the integration test one last time (See Step 7)
+
+## Step 14: After the PR is merged
+
+1. Remove the "provider-request" label from the PR.
+2. Verify that [docs/provider-list.md](https://github.com/StackExchange/dnscontrol/blob/master/docs/provider-list.md) no longer shows the provider as "requested"
