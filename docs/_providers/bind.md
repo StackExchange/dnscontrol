@@ -69,7 +69,7 @@ When DNSControl reads a BIND zonefile:
 * When generating a new zonefile, the SOA serial number is
   updated.
 
-DNSControl ties to maintain the serial number as yyyymmddvv. If the
+DNSControl tries to maintain the serial number as yyyymmddvv. If the
 existing serial number is significantly higher it will simply
 increment the value by 1.
 

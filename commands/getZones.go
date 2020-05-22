@@ -275,8 +275,10 @@ func formatDsl(zonename string, rec *models.RecordConfig, defaultTTL uint32) str
 		// TODO(tlim): If this is an SPF record, generate a SPF_BUILDER().
 	case "NS":
 		// NS records at the apex should be NAMESERVER() records.
+		// DnsControl uses the API to get this info. NAMESERVER() is just
+		// to override that when needed.
 		if rec.Name == "@" {
-			return fmt.Sprintf("NAMESERVER('%s')", target)
+			return fmt.Sprintf("//NAMESERVER('%s')", target)
 		}
 		target = "'" + target + "'"
 	case "R53_ALIAS":
