@@ -34,8 +34,7 @@ func (d directoryStorage) accountKeyFile(acmeHost string) string {
 	return filepath.Join(d.accountDirectory(acmeHost), "account.key")
 }
 
-// TODO: probably lock these down more
-const perms os.FileMode = 0644
+const perms os.FileMode = 0600
 const dirPerms os.FileMode = 0700
 
 func (d directoryStorage) GetCertificate(name string) (*certificate.Resource, error) {
