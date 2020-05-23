@@ -5,6 +5,7 @@ import (
 	"context"
 	"fmt"
 	"net/http"
+	"strconv"
 	"time"
 )
 
@@ -43,7 +44,8 @@ type RegistryCreateRequest struct {
 // RegistryDockerCredentialsRequest represents a request to retrieve docker
 // credentials for a registry.
 type RegistryDockerCredentialsRequest struct {
-	ReadWrite bool `json:"read_write"`
+	ReadWrite     bool `json:"read_write"`
+	ExpirySeconds *int `json:"expiry_seconds,omitempty"`
 }
 
 // Registry represents a registry.
@@ -138,12 +140,18 @@ type DockerCredentials struct {
 
 // DockerCredentials retrieves a Docker config file containing the registry's credentials.
 func (svc *RegistryServiceOp) DockerCredentials(ctx context.Context, request *RegistryDockerCredentialsRequest) (*DockerCredentials, *Response, error) {
-	path := fmt.Sprintf("%s/%s?read_write=%t", registryPath, "docker-credentials", request.ReadWrite)
-
+	path := fmt.Sprintf("%s/%s", registryPath, "docker-credentials")
 	req, err := svc.client.NewRequest(ctx, http.MethodGet, path, nil)
 	if err != nil {
 		return nil, nil, err
 	}
+
+	q := req.URL.Query()
+	q.Add("read_write", strconv.FormatBool(request.ReadWrite))
+	if request.ExpirySeconds != nil {
+		q.Add("expiry_seconds", strconv.Itoa(*request.ExpirySeconds))
+	}
+	req.URL.RawQuery = q.Encode()
 
 	var buf bytes.Buffer
 	resp, err := svc.client.Do(ctx, req, &buf)

@@ -1,6 +1,8 @@
 # Change Log
 
-## unreleased
+## [v1.36.0] - 2020-05-12
+
+- #331 Expose expiry_seconds for Registry.DockerCredentials. @andrewsomething
 
 ## [v1.35.1] - 2020-04-21
 
