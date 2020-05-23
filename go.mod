@@ -3,7 +3,6 @@ module github.com/StackExchange/dnscontrol/v3
 go 1.14
 
 require (
-	cloud.google.com/go v0.41.1-0.20190703172311-335e9e09b93e // indirect
 	github.com/Azure/azure-sdk-for-go v42.3.0+incompatible
 	github.com/Azure/go-autorest/autorest v0.10.0 // indirect
 	github.com/Azure/go-autorest/autorest/azure/auth v0.4.2
@@ -47,10 +46,11 @@ require (
 	github.com/urfave/cli/v2 v2.2.0
 	github.com/vultr/govultr v0.2.0
 	golang.org/x/crypto v0.0.0-20200320181102-891825fb96df // indirect
+	golang.org/x/mod v0.3.0 // indirect
 	golang.org/x/net v0.0.0-20200520182314-0ba52f642ac2
 	golang.org/x/oauth2 v0.0.0-20200107190931-bf48bf16ab8d
-	golang.org/x/tools v0.0.0-20200422022333-3d57cf2e726e // indirect
-	google.golang.org/api v0.22.0
+	golang.org/x/tools v0.0.0-20200522201501-cb1345f3a375 // indirect
+	google.golang.org/api v0.25.0
 	google.golang.org/appengine v1.6.6 // indirect
 	gopkg.in/ini.v1 v1.42.0 // indirect
 	gopkg.in/ns1/ns1-go.v2 v2.0.0-20170502175150-c563826f4cbe
