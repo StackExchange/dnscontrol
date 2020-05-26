@@ -53,6 +53,7 @@ func validateRecordTypes(rec *models.RecordConfig, domain string, pTypes []strin
 		"AAAA":             true,
 		"CNAME":            true,
 		"CAA":              true,
+		"DS":               true,
 		"TLSA":             true,
 		"IMPORT_TRANSFORM": false,
 		"MX":               true,
@@ -167,8 +168,6 @@ func checkTargets(rec *models.RecordConfig, domain string) (errs []error) {
 		if label == "@" {
 			check(fmt.Errorf("cannot create CNAME record for bare domain"))
 		}
-	case "DS":
-		check(checkTarget(target))
 	case "MX":
 		check(checkTarget(target))
 	case "NS":
@@ -186,7 +185,7 @@ func checkTargets(rec *models.RecordConfig, domain string) (errs []error) {
 		check(checkTarget(target))
 	case "SRV":
 		check(checkTarget(target))
-	case "TXT", "IMPORT_TRANSFORM", "CAA", "SSHFP", "TLSA":
+	case "TXT", "IMPORT_TRANSFORM", "CAA", "SSHFP", "TLSA", "DS":
 	default:
 		if rec.Metadata["orig_custom_type"] != "" {
 			// it is a valid custom type. We perform no validation on target
