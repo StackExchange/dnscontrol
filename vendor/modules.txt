@@ -211,6 +211,14 @@ github.com/miekg/dns/dnsutil
 github.com/mitchellh/go-homedir
 # github.com/mitchellh/mapstructure v1.1.2
 github.com/mitchellh/mapstructure
+# github.com/mittwald/go-powerdns v0.4.0
+## explicit
+github.com/mittwald/go-powerdns
+github.com/mittwald/go-powerdns/apis/cache
+github.com/mittwald/go-powerdns/apis/search
+github.com/mittwald/go-powerdns/apis/servers
+github.com/mittwald/go-powerdns/apis/zones
+github.com/mittwald/go-powerdns/pdnshttp
 # github.com/mjibson/esc v0.2.0
 ## explicit
 github.com/mjibson/esc/embed

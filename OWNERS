@@ -20,3 +20,4 @@ providers/ns1 @captncraig
 # providers/softlayer
 providers/vultr  @geek1011
 providers/ovh @masterzen
+providers/powerdns @jpbede
