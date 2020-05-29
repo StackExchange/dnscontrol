@@ -21,13 +21,20 @@ Notifications are set up in your credentials json file. They will use the `notif
         ...
   } ,
   "notifications":{
-      "bonfire_url": "https://chat.meta.stackexchange.com/feeds/rooms/123?key=xyz"
+      "slack_url": "https://hooks.slack.com/services/T00000000/B00000000/XXXXXXXXXXXXXXXXXXXXXXXX"
   }
 ```
 
 You also must run `dnscontrol preview` or `dnscontrol push` with the `-notify` flag to enable notification sending at all.
 
 ## Notification types
+
+### Slack/Mattermost
+
+If you want to use the Slack integration, you need to create a webhook in Slack.
+Please see the [Slack documentation](https://api.slack.com/messaging/webhooks) or the [Mattermost documentation](https://docs.mattermost.com/developer/webhooks-incoming.html)
+
+Configure `slack_url` to this webhook. Mattermost works as well, as they share the same api,
 
 ### Bonfire
 
@@ -41,7 +48,6 @@ Yes, this seems pretty limited right now in what it can do. We didn't want to ad
 be really simple to add more. We gladly welcome any PRs with new notification destinations. Some easy possibilities:
 
 - Email
-- Slack
 - Generic Webhooks
 
 Please update this documentation if you add anything.
