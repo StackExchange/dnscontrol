@@ -35,13 +35,19 @@ This is stack overflow's built in chat system. This is probably not useful for m
 
 Configure `bonfire_url` to be the full url including room and api key.
 
+### Slack/Mattermost
+
+If you want to use the Slack integration, you need to create a webhook in Slack.
+Please see the [Slack documentation](https://api.slack.com/messaging/webhooks) or the [Mattermost documentation](https://docs.mattermost.com/developer/webhooks-incoming.html)
+
+Configure `slack_url` to this webhook. Mattermost works as well, as they share the same api,
+
 ## Future work
 
 Yes, this seems pretty limited right now in what it can do. We didn't want to add a bunch of notification types if nobody was going to use them. The good news is, it should 
 be really simple to add more. We gladly welcome any PRs with new notification destinations. Some easy possibilities:
 
 - Email
-- Slack
 - Generic Webhooks
 
 Please update this documentation if you add anything.
