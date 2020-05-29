@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
-	"strings"
 )
 
 func init() {
@@ -27,26 +26,22 @@ type slackNotifier struct {
 }
 
 func (s *slackNotifier) Notify(domain, provider, msg string, err error, preview bool) {
-	var content string
-	if preview {
-		content = fmt.Sprintf(`**Preview: %s[%s] -** %s`, domain, provider, msg)
-	} else if err != nil {
-		content = fmt.Sprintf(`**ERROR running correction on %s[%s] -** (%s) Error: %s`, domain, provider, msg, err)
-	} else {
-		content = fmt.Sprintf(`Successfully ran correction for **%s[%s]** - %s`, domain, provider, msg)
-	}
-	s.messages = append(s.messages, content)
-}
-
-func (s *slackNotifier) Done() {
 	var payload struct {
 		Username string `json:"username"`
 		Text     string `json:"text"`
 	}
 	payload.Username = "DNSControl"
-	s.messages = append([]string{"New changes:"}, s.messages...)
-	payload.Text = strings.Join(s.messages, "\n")
+
+	if preview {
+		payload.Text = fmt.Sprintf(`**Preview: %s[%s] -** %s`, domain, provider, msg)
+	} else if err != nil {
+		payload.Text = fmt.Sprintf(`**ERROR running correction on %s[%s] -** (%s) Error: %s`, domain, provider, msg, err)
+	} else {
+		payload.Text = fmt.Sprintf(`Successfully ran correction for **%s[%s]** - %s`, domain, provider, msg)
+	}
 
 	json, _ := json.Marshal(payload)
 	http.Post(s.URL, "text/json", bytes.NewReader(json))
 }
+
+func (s *slackNotifier) Done() {}
