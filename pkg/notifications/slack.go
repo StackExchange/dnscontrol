@@ -21,8 +21,7 @@ func init() {
 
 // slackNotifier sends notifications to slack or mattermost
 type slackNotifier struct {
-	URL      string
-	messages []string
+	URL string
 }
 
 func (s *slackNotifier) Notify(domain, provider, msg string, err error, preview bool) {
