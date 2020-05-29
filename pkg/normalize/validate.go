@@ -90,6 +90,7 @@ var labelUnderscores = []string{
 	"_acme-challenge",
 	"_amazonses",
 	"_dmarc",
+	"_domainconnect",
 	"_domainkey",
 	"_jabber",
 	"_mta-sts",
