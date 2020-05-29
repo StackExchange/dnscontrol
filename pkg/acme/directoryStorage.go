@@ -70,6 +70,7 @@ func (d directoryStorage) StoreCertificate(name string, cert *certificate.Resour
 	cert.Certificate = nil
 	priv := cert.PrivateKey
 	cert.PrivateKey = nil
+	combined := []byte(string(pub) + "\n" + string(priv))
 	jDAt, err := json.MarshalIndent(cert, "", "  ")
 	if err != nil {
 		return err
@@ -78,6 +79,9 @@ func (d directoryStorage) StoreCertificate(name string, cert *certificate.Resour
 		return err
 	}
 	if err = ioutil.WriteFile(d.certFile(name, "crt"), pub, perms); err != nil {
+		return err
+	}
+	if err = ioutil.WriteFile(d.certFile(name, "pem"), combined, perms); err != nil {
 		return err
 	}
 	return ioutil.WriteFile(d.certFile(name, "key"), priv, perms)
