@@ -31,7 +31,7 @@ func init() {
 	providers.RegisterDomainServiceProviderType("POWERDNS", NewProvider, features)
 }
 
-// Provider represents the PowerDNS DNSServiceProvider.
+// PowerDNS represents the PowerDNS DNSServiceProvider.
 type PowerDNS struct {
 	client         pdns.Client
 	APIKey         string
@@ -155,13 +155,13 @@ func (api *PowerDNS) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Co
 
 	// create corrections by group
 	for label, msgs := range keysToUpdate {
-		labelName := ensureDotSuffix(label.NameFQDN)
+		labelName := label.NameFQDN + "."
 		labelType := label.Type
 
 		if _, ok := desiredRecords[label]; !ok {
 			// nothing found, must be a delete
 			corrections = append(corrections, &models.Correction{
-				Msg: concatMessage(msgs),
+				Msg: strings.Join(msgs, "\n   "),
 				F: func() error {
 					return api.client.Zones().RemoveRecordSetFromZone(context.Background(), api.ServerName, dc.Name, labelName, labelType)
 				},
@@ -175,7 +175,7 @@ func (api *PowerDNS) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Co
 				})
 			}
 			corrections = append(corrections, &models.Correction{
-				Msg: concatMessage(msgs),
+				Msg: strings.Join(msgs, "\n   "),
 				F: func() error {
 					return api.client.Zones().AddRecordSetToZone(context.Background(), api.ServerName, dc.Name, zones.ResourceRecordSet{
 						Name:    labelName,
@@ -212,12 +212,8 @@ func (api *PowerDNS) EnsureDomainExists(domain string) error {
 // toRecordConfig converts a PowerDNS DNSRecord to a RecordConfig. #rtype_variations
 func toRecordConfig(domain string, r zones.Record, ttl int, name string, rtype string) (*models.RecordConfig, error) {
 	// trimming trailing dot and domain from name
-	if strings.HasSuffix(name, domain+".") {
-		name = strings.TrimSuffix(name, domain+".")
-	}
-	if strings.HasSuffix(name, ".") {
-		name = strings.TrimSuffix(name, ".")
-	}
+	name = strings.TrimSuffix(name, domain+".")
+	name = strings.TrimSuffix(name, ".")
 
 	rc := &models.RecordConfig{
 		TTL:      uint32(ttl),
@@ -229,11 +225,11 @@ func toRecordConfig(domain string, r zones.Record, ttl int, name string, rtype s
 	content := r.Content
 	switch rtype {
 	case "CNAME", "NS":
-		return rc, rc.SetTarget(dnsutil.AddOrigin(ensureDotSuffix(content), domain))
+		return rc, rc.SetTarget(dnsutil.AddOrigin(content, domain))
 	case "CAA":
 		return rc, rc.SetTargetCAAString(content)
 	case "MX":
-		return rc, rc.SetTargetMXString(ensureDotSuffix(content))
+		return rc, rc.SetTargetMXString(content)
 	case "SRV":
 		return rc, rc.SetTargetSRVString(content)
 	case "TXT":
@@ -245,25 +241,4 @@ func toRecordConfig(domain string, r zones.Record, ttl int, name string, rtype s
 	default:
 		return rc, rc.PopulateFromString(rtype, content, domain)
 	}
-}
-
-// concatMessage creates a single string of messages of a slice of messages
-func concatMessage(messages []string) string {
-	var msg string
-	for i, singleMsg := range messages {
-		if len(messages) > 1 && i != len(messages)-1 {
-			msg += singleMsg + "\n    "
-		} else {
-			msg += singleMsg
-		}
-	}
-	return msg
-}
-
-// ensureDotSuffix ensures that the trailing dot is there
-func ensureDotSuffix(content string) string {
-	if !strings.HasSuffix(content, ".") {
-		return content + "."
-	}
-	return content
 }

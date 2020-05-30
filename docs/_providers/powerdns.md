@@ -26,13 +26,16 @@ Following metadata are available:
 
 {% highlight js %}
 {
-    'default_ns': [ // sets the nameserver which are used
+    'default_ns': [
         'a.example.com.',
         'b.example.com.'
     ],
-    'dnssec_on_create': false // should DNSSec be enabled when creating zones
+    'dnssec_on_create': false
 }
 {% endhighlight %}
+
+- `default_ns` sets the nameserver which are used
+- `dnssec_on_create` specifies if DNSSEC should be enabled when creating zones
 
 ## Usage
 Example Javascript:
@@ -47,7 +50,7 @@ D("example.tld", REG_NONE, DnsProvider(POWERDNS),
 {%endhighlight%}
 
 ## Activation
-See the [PowerDNS documentaiotn](https://doc.powerdns.com/authoritative/http-api/index.html) how the API can be enabled.
+See the [PowerDNS documentation](https://doc.powerdns.com/authoritative/http-api/index.html) how the API can be enabled.
 
 ## Caveats
 Currently it is only possible to enable DNSSec while creating a new zone.
