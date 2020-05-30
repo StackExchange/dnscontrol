@@ -1,0 +1,14 @@
+language: go
+go:
+  - 1.12
+  - 1.11
+
+install: []
+
+services:
+  - docker
+
+script:
+  - GO111MODULE=on go vet
+  - GO111MODULE=on go test ./...
+  - GO111MODULE=on go build

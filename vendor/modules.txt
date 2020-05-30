@@ -33,7 +33,7 @@ github.com/TomOnTime/utfutil
 # github.com/andreyvit/diff v0.0.0-20170406064948-c7f18ee00883
 ## explicit
 github.com/andreyvit/diff
-# github.com/aws/aws-sdk-go v1.31.4
+# github.com/aws/aws-sdk-go v1.31.7
 ## explicit
 github.com/aws/aws-sdk-go/aws
 github.com/aws/aws-sdk-go/aws/awserr
@@ -211,6 +211,14 @@ github.com/miekg/dns/dnsutil
 github.com/mitchellh/go-homedir
 # github.com/mitchellh/mapstructure v1.1.2
 github.com/mitchellh/mapstructure
+# github.com/mittwald/go-powerdns v0.4.0
+## explicit
+github.com/mittwald/go-powerdns
+github.com/mittwald/go-powerdns/apis/cache
+github.com/mittwald/go-powerdns/apis/search
+github.com/mittwald/go-powerdns/apis/servers
+github.com/mittwald/go-powerdns/apis/zones
+github.com/mittwald/go-powerdns/pdnshttp
 # github.com/mjibson/esc v0.2.0
 ## explicit
 github.com/mjibson/esc/embed
@@ -262,7 +270,7 @@ github.com/softlayer/softlayer-go/filter
 github.com/softlayer/softlayer-go/services
 github.com/softlayer/softlayer-go/session
 github.com/softlayer/softlayer-go/sl
-# github.com/stretchr/testify v1.5.1
+# github.com/stretchr/testify v1.6.0
 ## explicit
 github.com/stretchr/testify/assert
 # github.com/tdewolff/minify v2.3.6+incompatible
@@ -318,7 +326,7 @@ golang.org/x/crypto/pkcs12/internal/rc2
 ## explicit
 golang.org/x/mod/module
 golang.org/x/mod/semver
-# golang.org/x/net v0.0.0-20200520182314-0ba52f642ac2
+# golang.org/x/net v0.0.0-20200528225125-3c3fba18258b
 ## explicit
 golang.org/x/net/bpf
 golang.org/x/net/context
@@ -493,3 +501,6 @@ gopkg.in/square/go-jose.v2/jwt
 # gopkg.in/yaml.v2 v2.3.0
 ## explicit
 gopkg.in/yaml.v2
+# gopkg.in/yaml.v3 v3.0.0-20200506231410-2ff61e1afc86
+## explicit
+gopkg.in/yaml.v3

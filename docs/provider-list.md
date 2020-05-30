@@ -87,6 +87,7 @@ Maintainers of contributed providers:
 * `OCTODNS` @TomOnTime
 * `OPENSRS` @pierre-emmanuelJ
 * `OVH` @masterzen
+* `POWERDNS` @jpbede
 * `SOFTLAYER`@jamielennox
 * `VULTR` @geek1011
 
