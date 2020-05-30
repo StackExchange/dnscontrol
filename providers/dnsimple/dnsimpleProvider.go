@@ -20,6 +20,7 @@ var features = providers.DocumentationNotes{
 	providers.CanUseAlias:            providers.Can(),
 	providers.CanUseCAA:              providers.Can(),
 	providers.CanUseNAPTR:            providers.Can(),
+	providers.CanUseDS:               providers.Can(),
 	providers.CanUsePTR:              providers.Can(),
 	providers.CanUseSSHFP:            providers.Can(),
 	providers.CanUseSRV:              providers.Can(),
@@ -92,6 +93,10 @@ func (client *DnsimpleApi) GetZoneRecords(domain string) (models.Records, error)
 		case "ALIAS", "URL":
 			rec.Type = r.Type
 			if err := rec.SetTarget(r.Content); err != nil {
+				panic(fmt.Errorf("unparsable record received from dnsimple: %w", err))
+			}
+		case "DS":
+			if err := rec.SetTargetDSString(r.Content); err != nil {
 				panic(fmt.Errorf("unparsable record received from dnsimple: %w", err))
 			}
 		case "MX":
@@ -563,6 +568,8 @@ func getTargetRecordContent(rc *models.RecordConfig) string {
 		return rc.GetTargetCombined()
 	case "SSHFP":
 		return fmt.Sprintf("%d %d %s", rc.SshfpAlgorithm, rc.SshfpFingerprint, rc.GetTargetField())
+	case "DS":
+		return fmt.Sprintf("%d %d %d %s", rc.DsKeyTag, rc.DsAlgorithm, rc.DsDigestType, rc.DsDigest)
 	case "SRV":
 		return fmt.Sprintf("%d %d %s", rc.SrvWeight, rc.SrvPort, rc.GetTargetField())
 	case "TXT":

@@ -373,6 +373,15 @@ func naptr(name string, order uint16, preference uint16, flags string, service s
 	return r
 }
 
+func ds(name string, keyTag uint16, algorithm, digestType uint8, digest string) *rec {
+	r := makeRec(name, "", "DS")
+	r.DsKeyTag = keyTag
+	r.DsAlgorithm = algorithm
+	r.DsDigestType = digestType
+	r.DsDigest = digest
+	return r
+}
+
 func srv(name string, priority, weight, port uint16, target string) *rec {
 	r := makeRec(name, target, "SRV")
 	r.SrvPriority = priority
@@ -829,6 +838,27 @@ func makeTests(t *testing.T) []*TestGroup {
 				txtmulti("foo3", []string{strings.Repeat("X", 255), strings.Repeat("Y", 255), strings.Repeat("Z", 255)})),
 		),
 
+		testgroup("DS"
+			requires(providers.canUseDS),
+			tc("create a ds record", ds("@", 1, 13, 1, "ADIGEST")),
+			tc("create a ds record", ds("@", 65535, 13, 1, "ADIGEST")),
+			tc("create a ds record", ds("@", 65535, 13, 2, "ADIGEST")),
+			tc("create a ds record", ds("@", 65535, 13, 3, "ADIGEST")),
+			tc("create a ds record", ds("@", 65535, 13, 4, "ADIGEST")),
+			tc("create a ds record", ds("@", 65535, 1, 4, "ADIGEST")),
+			tc("create a ds record", ds("@", 65535, 3, 4, "ADIGEST")),
+			tc("create a ds record", ds("@", 65535, 5, 4, "ADIGEST")),
+			tc("create a ds record", ds("@", 65535, 7, 4, "ADIGEST")),
+			tc("create a ds record", ds("@", 65535, 8, 4, "ADIGEST")),
+			tc("create a ds record", ds("@", 65535, 10, 4, "ADIGEST")),
+			tc("create a ds record", ds("@", 65535, 12, 4, "ADIGEST")),
+			tc("create a ds record", ds("@", 65535, 14, 4, "ADIGEST")),
+			tc("create a ds record", ds("@", 65535, 253, 4, "ADIGEST")),
+			tc("create a ds record", ds("@", 65535, 254, 4, "ADIGEST")),
+			tc("create a ds record", ds("foo", 2, 13, 4, "ADIGEST")),
+			tc("create multiple ds records", ds("foo", 2, 13, 4, "ADIGEST"), ds("@", 65535, 5, 4, "ADIGEST"), ds("@", 65535, 253, 4, "ADIGEST")),
+		),
+
 		//
 		// Pseudo rtypes:
 		//
@@ -855,7 +885,7 @@ func makeTests(t *testing.T) []*TestGroup {
 			tc("create dependent records", a("foo", "1.2.3.4"), a("quux", "2.3.4.5")),
 			tc("ALIAS to A record in same zone", a("foo", "1.2.3.4"), a("quux", "2.3.4.5"), r53alias("bar", "A", "foo.**current-domain**")),
 			tc("change it", a("foo", "1.2.3.4"), a("quux", "2.3.4.5"), r53alias("bar", "A", "quux.**current-domain**")),
-		),
+		)
 	}
 
 	return tests

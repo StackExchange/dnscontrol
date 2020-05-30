@@ -88,6 +88,8 @@ func (rc *RecordConfig) GetTargetDebug() string {
 	switch rc.Type { // #rtype_variations
 	case "A", "AAAA", "CNAME", "NS", "PTR", "TXT":
 		// Nothing special.
+	case "DS":
+		content += fmt.Sprintf(" ds_algorithm=%d ds_keytag=%d ds_digesttype=%d ds_digest=%s", rc.DsAlgorithm, rc.DsKeyTag, rc.DsDigestType, rc.DsDigest)
 	case "NAPTR":
 		content += fmt.Sprintf(" naptrorder=%d naptrpreference=%d naptrflags=%s naptrservice=%s naptrregexp=%s", rc.NaptrOrder, rc.NaptrPreference, rc.NaptrFlags, rc.NaptrService, rc.NaptrRegexp)
 	case "MX":
