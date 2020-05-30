@@ -373,11 +373,11 @@ func naptr(name string, order uint16, preference uint16, flags string, service s
 	return r
 }
 
-func ds(name string, keyTag uint16, algorithm, digestType uint8, digest string) *rec {
+func ds(name string, keytag uint16, algorithm, digesttype uint8, digest string) *rec {
 	r := makeRec(name, "", "DS")
-	r.DsKeyTag = keyTag
+	r.DsKeyTag = keytag
 	r.DsAlgorithm = algorithm
-	r.DsDigestType = digestType
+	r.DsDigestType = digesttype
 	r.DsDigest = digest
 	return r
 }
