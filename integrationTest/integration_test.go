@@ -838,25 +838,16 @@ func makeTests(t *testing.T) []*TestGroup {
 				txtmulti("foo3", []string{strings.Repeat("X", 255), strings.Repeat("Y", 255), strings.Repeat("Z", 255)})),
 		),
 
-		testgroup("DS"
+		testgroup("DS",
 			requires(providers.canUseDS),
-			tc("create a ds record", ds("@", 1, 13, 1, "ADIGEST")),
-			tc("create a ds record", ds("@", 65535, 13, 1, "ADIGEST")),
-			tc("create a ds record", ds("@", 65535, 13, 2, "ADIGEST")),
-			tc("create a ds record", ds("@", 65535, 13, 3, "ADIGEST")),
-			tc("create a ds record", ds("@", 65535, 13, 4, "ADIGEST")),
-			tc("create a ds record", ds("@", 65535, 1, 4, "ADIGEST")),
-			tc("create a ds record", ds("@", 65535, 3, 4, "ADIGEST")),
-			tc("create a ds record", ds("@", 65535, 5, 4, "ADIGEST")),
-			tc("create a ds record", ds("@", 65535, 7, 4, "ADIGEST")),
-			tc("create a ds record", ds("@", 65535, 8, 4, "ADIGEST")),
-			tc("create a ds record", ds("@", 65535, 10, 4, "ADIGEST")),
-			tc("create a ds record", ds("@", 65535, 12, 4, "ADIGEST")),
-			tc("create a ds record", ds("@", 65535, 14, 4, "ADIGEST")),
-			tc("create a ds record", ds("@", 65535, 253, 4, "ADIGEST")),
-			tc("create a ds record", ds("@", 65535, 254, 4, "ADIGEST")),
-			tc("create a ds record", ds("foo", 2, 13, 4, "ADIGEST")),
-			tc("create multiple ds records", ds("foo", 2, 13, 4, "ADIGEST"), ds("@", 65535, 5, 4, "ADIGEST"), ds("@", 65535, 253, 4, "ADIGEST")),
+			tc("create DS", ds("@", 1, 13, 1, "ADIGEST")),
+			tc("modify field 1", ds("@", 65535, 13, 1, "ADIGEST")),
+			tc("modify field 3", ds("@", 65535, 13, 2, "ADIGEST")),
+			tc("modify field 2+3", ds("@", 65535, 1, 4, "ADIGEST")),
+			tc("modify field 2", ds("@", 65535, 3, 4, "ADIGEST")),
+			tc("modify field 2", ds("@", 65535, 254, 4, "ADIGEST")),
+			tc("delete 1, create 1", ds("foo", 2, 13, 4, "ADIGEST")),
+			tc("add 2 more DS", ds("foo", 2, 13, 4, "ADIGEST"), ds("@", 65535, 5, 4, "ADIGEST"), ds("@", 65535, 253, 4, "ADIGEST")),
 		),
 
 		//
@@ -885,7 +876,7 @@ func makeTests(t *testing.T) []*TestGroup {
 			tc("create dependent records", a("foo", "1.2.3.4"), a("quux", "2.3.4.5")),
 			tc("ALIAS to A record in same zone", a("foo", "1.2.3.4"), a("quux", "2.3.4.5"), r53alias("bar", "A", "foo.**current-domain**")),
 			tc("change it", a("foo", "1.2.3.4"), a("quux", "2.3.4.5"), r53alias("bar", "A", "quux.**current-domain**")),
-		)
+		),
 	}
 
 	return tests
