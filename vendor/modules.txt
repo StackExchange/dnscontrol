@@ -238,6 +238,8 @@ github.com/pierrec/lz4/internal/xxh32
 github.com/pkg/errors
 # github.com/pmezard/go-difflib v1.0.0
 github.com/pmezard/go-difflib/difflib
+# github.com/psampaz/go-mod-outdated v0.6.0
+## explicit
 # github.com/renier/xmlrpc v0.0.0-20170708154548-ce4a1a486c03
 ## explicit
 github.com/renier/xmlrpc
@@ -326,7 +328,7 @@ golang.org/x/crypto/pkcs12/internal/rc2
 ## explicit
 golang.org/x/mod/module
 golang.org/x/mod/semver
-# golang.org/x/net v0.0.0-20200520182314-0ba52f642ac2
+# golang.org/x/net v0.0.0-20200528225125-3c3fba18258b
 ## explicit
 golang.org/x/net/bpf
 golang.org/x/net/context
