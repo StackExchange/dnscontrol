@@ -33,7 +33,7 @@ github.com/TomOnTime/utfutil
 # github.com/andreyvit/diff v0.0.0-20170406064948-c7f18ee00883
 ## explicit
 github.com/andreyvit/diff
-# github.com/aws/aws-sdk-go v1.31.4
+# github.com/aws/aws-sdk-go v1.31.7
 ## explicit
 github.com/aws/aws-sdk-go/aws
 github.com/aws/aws-sdk-go/aws/awserr
