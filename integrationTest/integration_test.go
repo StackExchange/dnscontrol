@@ -839,7 +839,7 @@ func makeTests(t *testing.T) []*TestGroup {
 		),
 
 		testgroup("DS",
-			requires(providers.canUseDS),
+			requires(providers.CanUseDS),
 			tc("create DS", ds("@", 1, 13, 1, "ADIGEST")),
 			tc("modify field 1", ds("@", 65535, 13, 1, "ADIGEST")),
 			tc("modify field 3", ds("@", 65535, 13, 2, "ADIGEST")),

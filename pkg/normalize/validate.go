@@ -461,6 +461,7 @@ func init() {
 		{"ALIAS", providers.CanUseAlias},
 		{"AUTODNSSEC", providers.CanAutoDNSSEC},
 		{"CAA", providers.CanUseCAA},
+		{"DS", providers.CanUseDS},
 		{"NAPTR", providers.CanUseNAPTR},
 		{"PTR", providers.CanUsePTR},
 		{"R53_ALIAS", providers.CanUseRoute53Alias},
