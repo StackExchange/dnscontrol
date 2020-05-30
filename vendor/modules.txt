@@ -238,8 +238,6 @@ github.com/pierrec/lz4/internal/xxh32
 github.com/pkg/errors
 # github.com/pmezard/go-difflib v1.0.0
 github.com/pmezard/go-difflib/difflib
-# github.com/psampaz/go-mod-outdated v0.6.0
-## explicit
 # github.com/renier/xmlrpc v0.0.0-20170708154548-ce4a1a486c03
 ## explicit
 github.com/renier/xmlrpc
@@ -272,7 +270,7 @@ github.com/softlayer/softlayer-go/filter
 github.com/softlayer/softlayer-go/services
 github.com/softlayer/softlayer-go/session
 github.com/softlayer/softlayer-go/sl
-# github.com/stretchr/testify v1.5.1
+# github.com/stretchr/testify v1.6.0
 ## explicit
 github.com/stretchr/testify/assert
 # github.com/tdewolff/minify v2.3.6+incompatible
@@ -503,3 +501,6 @@ gopkg.in/square/go-jose.v2/jwt
 # gopkg.in/yaml.v2 v2.3.0
 ## explicit
 gopkg.in/yaml.v2
+# gopkg.in/yaml.v3 v3.0.0-20200506231410-2ff61e1afc86
+## explicit
+gopkg.in/yaml.v3
