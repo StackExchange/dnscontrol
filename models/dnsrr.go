@@ -71,6 +71,8 @@ func RRtoRC(rr dns.RR, origin string) RecordConfig {
 		panicInvalid(rc.SetTargetCAA(v.Flag, v.Tag, v.Value))
 	case *dns.CNAME:
 		panicInvalid(rc.SetTarget(v.Target))
+	case *dns.DS:
+		panicInvalid(rc.SetTargetDS(v.KeyTag, v.Algorithm, v.DigestType, v.Digest))
 	case *dns.MX:
 		panicInvalid(rc.SetTargetMX(v.Preference, v.Mx))
 	case *dns.NS:

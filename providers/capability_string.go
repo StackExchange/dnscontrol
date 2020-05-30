@@ -10,25 +10,26 @@ func _() {
 	var x [1]struct{}
 	_ = x[CanUseAlias-0]
 	_ = x[CanUseCAA-1]
-	_ = x[CanUsePTR-2]
-	_ = x[CanUseNAPTR-3]
-	_ = x[CanUseSRV-4]
-	_ = x[CanUseSSHFP-5]
-	_ = x[CanUseTLSA-6]
-	_ = x[CanUseTXTMulti-7]
-	_ = x[CanAutoDNSSEC-8]
-	_ = x[CantUseNOPURGE-9]
-	_ = x[DocOfficiallySupported-10]
-	_ = x[DocDualHost-11]
-	_ = x[DocCreateDomains-12]
-	_ = x[CanUseRoute53Alias-13]
-	_ = x[CanGetZones-14]
-	_ = x[CanUseAzureAlias-15]
+	_ = x[CanUseDS-2]
+	_ = x[CanUsePTR-3]
+	_ = x[CanUseNAPTR-4]
+	_ = x[CanUseSRV-5]
+	_ = x[CanUseSSHFP-6]
+	_ = x[CanUseTLSA-7]
+	_ = x[CanUseTXTMulti-8]
+	_ = x[CanAutoDNSSEC-9]
+	_ = x[CantUseNOPURGE-10]
+	_ = x[DocOfficiallySupported-11]
+	_ = x[DocDualHost-12]
+	_ = x[DocCreateDomains-13]
+	_ = x[CanUseRoute53Alias-14]
+	_ = x[CanGetZones-15]
+	_ = x[CanUseAzureAlias-16]
 }
 
-const _Capability_name = "CanUseAliasCanUseCAACanUsePTRCanUseNAPTRCanUseSRVCanUseSSHFPCanUseTLSACanUseTXTMultiCanAutoDNSSECCantUseNOPURGEDocOfficiallySupportedDocDualHostDocCreateDomainsCanUseRoute53AliasCanGetZonesCanUseAzureAlias"
+const _Capability_name = "CanUseAliasCanUseCAACanUseDSCanUsePTRCanUseNAPTRCanUseSRVCanUseSSHFPCanUseTLSACanUseTXTMultiCanAutoDNSSECCantUseNOPURGEDocOfficiallySupportedDocDualHostDocCreateDomainsCanUseRoute53AliasCanGetZonesCanUseAzureAlias"
 
-var _Capability_index = [...]uint8{0, 11, 20, 29, 40, 49, 60, 70, 84, 97, 111, 133, 144, 160, 178, 189, 205}
+var _Capability_index = [...]uint8{0, 11, 20, 28, 37, 48, 57, 68, 78, 92, 105, 119, 141, 152, 168, 186, 197, 213}
 
 func (i Capability) String() string {
 	if i >= Capability(len(_Capability_index)-1) {

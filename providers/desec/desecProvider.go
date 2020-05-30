@@ -40,6 +40,7 @@ var features = providers.DocumentationNotes{
 	providers.DocCreateDomains:       providers.Can(),
 	providers.CanUseAlias:            providers.Cannot(),
 	providers.CanUseSRV:              providers.Can(),
+	providers.CanUseDS:               providers.Can(),
 	providers.CanUseSSHFP:            providers.Can(),
 	providers.CanUseCAA:              providers.Can(),
 	providers.CanUseTLSA:             providers.Can(),

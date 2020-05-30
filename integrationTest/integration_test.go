@@ -373,6 +373,15 @@ func naptr(name string, order uint16, preference uint16, flags string, service s
 	return r
 }
 
+func ds(name string, keyTag uint16, algorithm, digestType uint8, digest string) *rec {
+	r := makeRec(name, "", "DS")
+	r.DsKeyTag = keyTag
+	r.DsAlgorithm = algorithm
+	r.DsDigestType = digestType
+	r.DsDigest = digest
+	return r
+}
+
 func srv(name string, priority, weight, port uint16, target string) *rec {
 	r := makeRec(name, target, "SRV")
 	r.SrvPriority = priority
@@ -827,6 +836,18 @@ func makeTests(t *testing.T) []*TestGroup {
 			),
 			tc("3x255-byte TXTMulti",
 				txtmulti("foo3", []string{strings.Repeat("X", 255), strings.Repeat("Y", 255), strings.Repeat("Z", 255)})),
+		),
+
+		testgroup("DS",
+			requires(providers.canUseDS),
+			tc("create DS", ds("@", 1, 13, 1, "ADIGEST")),
+			tc("modify field 1", ds("@", 65535, 13, 1, "ADIGEST")),
+			tc("modify field 3", ds("@", 65535, 13, 2, "ADIGEST")),
+			tc("modify field 2+3", ds("@", 65535, 1, 4, "ADIGEST")),
+			tc("modify field 2", ds("@", 65535, 3, 4, "ADIGEST")),
+			tc("modify field 2", ds("@", 65535, 254, 4, "ADIGEST")),
+			tc("delete 1, create 1", ds("foo", 2, 13, 4, "ADIGEST")),
+			tc("add 2 more DS", ds("foo", 2, 13, 4, "ADIGEST"), ds("@", 65535, 5, 4, "ADIGEST"), ds("@", 65535, 253, 4, "ADIGEST")),
 		),
 
 		//
