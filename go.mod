@@ -34,6 +34,7 @@ require (
 	github.com/namedotcom/go v0.0.0-20180403034216-08470befbe04
 	github.com/ovh/go-ovh v0.0.0-20181109152953-ba5adb4cf014
 	github.com/philhug/opensrs-go v0.0.0-20171126225031-9dfa7433020d
+	github.com/psampaz/go-mod-outdated v0.6.0 // indirect
 	github.com/renier/xmlrpc v0.0.0-20170708154548-ce4a1a486c03 // indirect
 	github.com/robertkrimen/otto v0.0.0-20191219234010-c382bd3c16ff
 	github.com/sergi/go-diff v1.1.0 // indirect
@@ -48,7 +49,7 @@ require (
 	github.com/vultr/govultr v0.2.0
 	golang.org/x/crypto v0.0.0-20200320181102-891825fb96df // indirect
 	golang.org/x/mod v0.3.0 // indirect
-	golang.org/x/net v0.0.0-20200520182314-0ba52f642ac2
+	golang.org/x/net v0.0.0-20200528225125-3c3fba18258b
 	golang.org/x/oauth2 v0.0.0-20200107190931-bf48bf16ab8d
 	golang.org/x/tools v0.0.0-20200522201501-cb1345f3a375 // indirect
 	google.golang.org/api v0.25.0
