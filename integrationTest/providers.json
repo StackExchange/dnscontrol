@@ -104,6 +104,11 @@
     "consumer-key": "$OVH_CONSUMER_KEY",
     "domain": "$OVH_DOMAIN"
   },
+  "POWERDNS": {
+    "apikey": "$POWERDNS_APIKEY",
+    "apiurl": "$POWERDNS_APIURL",
+    "servername": "$POWERDNS_SERVERNAME"
+  },
   "ROUTE53": {
     "KeyId": "$R53_KEY_ID",
     "SecretKey": "$R53_KEY",
