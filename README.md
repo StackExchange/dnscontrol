@@ -36,6 +36,7 @@ Currently supported DNS providers:
  - OVH
  - OctoDNS
  - OpenSRS
+ - PowerDNS
  - SoftLayer
  - Vultr
 

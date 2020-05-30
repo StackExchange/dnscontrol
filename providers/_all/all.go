@@ -25,6 +25,7 @@ import (
 	_ "github.com/StackExchange/dnscontrol/v3/providers/octodns"
 	_ "github.com/StackExchange/dnscontrol/v3/providers/opensrs"
 	_ "github.com/StackExchange/dnscontrol/v3/providers/ovh"
+	_ "github.com/StackExchange/dnscontrol/v3/providers/powerdns"
 	_ "github.com/StackExchange/dnscontrol/v3/providers/route53"
 	_ "github.com/StackExchange/dnscontrol/v3/providers/softlayer"
 	_ "github.com/StackExchange/dnscontrol/v3/providers/vultr"

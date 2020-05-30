@@ -29,6 +29,7 @@ require (
 	github.com/jarcoal/httpmock v1.0.4 // indirect
 	github.com/malexdev/utfutil v0.0.0-20180510171754-00c8d4a8e7a8 // indirect
 	github.com/miekg/dns v1.1.29
+	github.com/mittwald/go-powerdns v0.4.0
 	github.com/mjibson/esc v0.2.0
 	github.com/namedotcom/go v0.0.0-20180403034216-08470befbe04
 	github.com/ovh/go-ovh v0.0.0-20181109152953-ba5adb4cf014
