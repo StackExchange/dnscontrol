@@ -114,18 +114,18 @@ The working directory should generally contain:
 
 ### Required Flags
 
-- `-email test@example.com`: Email address to use for *Let's Encrypt* account registration.
+- `--email test@example.com`: Email address to use for *Let's Encrypt* account registration.
 - `--agreeTOS`: Indicates that you agree to the [*Let's Encrypt* Subscriber Agreement](https://letsencrypt.org/documents/LE-SA-v1.2-November-15-2017.pdf)
 
 ### Optional Flags
 
-- `-acme {url}`: URL of the acme server you wish to use. For *Let's Encrypt* you can use the presets `live` or `staging` for the standard services. If you are using a custom boulder instance or other acme server, you may specify the full **directory** url. Must be an acme **v2** server.
-- `-renew {n}`: `get-certs` will renew certs with less than this many **days** remaining. The default is 15, and certs will be renewed when they are within 15 days of expiration.
-- `-dir {d}`: Root directory holding all certificate and account data as described above. Default is current working directory.
-- `-certConfig {j}`: Location of certificate config json file as described above. Default is `./certs.json`
-- `-skip {p}`: DNS Provider names (comma separated) to skip using as challenge providers. We use this to avoid unnecessary changes to our backup or internal dns providers that wouldn't be a part of the validation flow.
+- `--acme {url}`: URL of the acme server you wish to use. For *Let's Encrypt* you can use the presets `live` or `staging` for the standard services. If you are using a custom boulder instance or other acme server, you may specify the full **directory** url. Must be an acme **v2** server.
+- `--renew {n}`: `get-certs` will renew certs with less than this many **days** remaining. The default is 15, and certs will be renewed when they are within 15 days of expiration.
+- `--dir {d}`: Root directory holding all certificate and account data as described above. Default is current working directory.
+- `--certConfig {j}`: Location of certificate config json file as described above. Default is `./certs.json`
+- `--skip {p}`: DNS Provider names (comma separated) to skip using as challenge providers. We use this to avoid unnecessary changes to our backup or internal dns providers that wouldn't be a part of the validation flow.
 - `--verbose`: enable some extra logging from the [acme library](https://github.com/xenolf/lego) that we use.
-- `-js {dnsconfig.js}`, `-creds {creds.json}` and other flags to find your dns configuration are the same as used for `dnscontrol preview` or `push`. `get-certs` needs to read the dns config so it knows which providers manage which domains, and so it can make sure it is not going to make any destructive changes to your domains. If the `get-certs` command needs to fill a challenge on a domain that has pending corrections, it will abort for safety. You can run `dnscontrol preview` and `dnscontrol push` at that point to verify and push the pending corrections, and then proceed with issuing certificates.
+- `--config {dnsconfig.js}`, `--creds {creds.json}` and other flags to find your dns configuration are the same as used for `dnscontrol preview` or `push`. `get-certs` needs to read the dns config so it knows which providers manage which domains, and so it can make sure it is not going to make any destructive changes to your domains. If the `get-certs` command needs to fill a challenge on a domain that has pending corrections, it will abort for safety. You can run `dnscontrol preview` and `dnscontrol push` at that point to verify and push the pending corrections, and then proceed with issuing certificates.
 
 ## Workflow
 
