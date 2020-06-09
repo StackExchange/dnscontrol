@@ -239,6 +239,8 @@ github.com/pierrec/lz4/internal/xxh32
 github.com/pkg/errors
 # github.com/pmezard/go-difflib v1.0.0
 github.com/pmezard/go-difflib/difflib
+# github.com/psampaz/go-mod-outdated v0.6.0
+## explicit
 # github.com/renier/xmlrpc v0.0.0-20170708154548-ce4a1a486c03
 ## explicit
 github.com/renier/xmlrpc
@@ -271,7 +273,9 @@ github.com/softlayer/softlayer-go/filter
 github.com/softlayer/softlayer-go/services
 github.com/softlayer/softlayer-go/session
 github.com/softlayer/softlayer-go/sl
-# github.com/stretchr/testify v1.6.0
+# github.com/stretchr/objx v0.2.0
+## explicit
+# github.com/stretchr/testify v1.6.1
 ## explicit
 github.com/stretchr/testify/assert
 # github.com/tdewolff/minify v2.3.6+incompatible
@@ -327,7 +331,7 @@ golang.org/x/crypto/pkcs12/internal/rc2
 ## explicit
 golang.org/x/mod/module
 golang.org/x/mod/semver
-# golang.org/x/net v0.0.0-20200528225125-3c3fba18258b
+# golang.org/x/net v0.0.0-20200602114024-627f9648deb9
 ## explicit
 golang.org/x/net/bpf
 golang.org/x/net/context
@@ -367,7 +371,7 @@ golang.org/x/text/unicode/bidi
 golang.org/x/text/unicode/norm
 # golang.org/x/time v0.0.0-20191024005414-555d28b269f0
 golang.org/x/time/rate
-# golang.org/x/tools v0.0.0-20200522201501-cb1345f3a375
+# golang.org/x/tools v0.0.0-20200609164405-eb789aa7ce50
 ## explicit
 golang.org/x/tools/go/ast/astutil
 golang.org/x/tools/imports
@@ -382,7 +386,7 @@ golang.org/x/tools/internal/imports
 # golang.org/x/xerrors v0.0.0-20191204190536-9bdfabe68543
 golang.org/x/xerrors
 golang.org/x/xerrors/internal
-# google.golang.org/api v0.25.0
+# google.golang.org/api v0.26.0
 ## explicit
 google.golang.org/api/dns/v1
 google.golang.org/api/googleapi
@@ -502,6 +506,8 @@ gopkg.in/square/go-jose.v2/jwt
 # gopkg.in/yaml.v2 v2.3.0
 ## explicit
 gopkg.in/yaml.v2
-# gopkg.in/yaml.v3 v3.0.0-20200506231410-2ff61e1afc86
+# gopkg.in/yaml.v3 v3.0.0-20200605160147-a5ece683394c
 ## explicit
 gopkg.in/yaml.v3
+# honnef.co/go/tools v0.0.1-2020.1.4
+## explicit
