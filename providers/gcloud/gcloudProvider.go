@@ -16,7 +16,7 @@ import (
 
 var features = providers.DocumentationNotes{
 	providers.CanGetZones:            providers.Can(),
-	providers.CanUseDS:               providers.Can(),
+	providers.CanUseDSForChildren:    providers.Can(),
 	providers.CanUseCAA:              providers.Can(),
 	providers.CanUsePTR:              providers.Can(),
 	providers.CanUseSRV:              providers.Can(),
