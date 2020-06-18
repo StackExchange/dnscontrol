@@ -70,13 +70,13 @@ func (c *api) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Correctio
 	}
 	models.PostProcessRecords(existing)
 	clean := PrepFoundRecords(existing)
-	var min_ttl uint32
+	var minTTL uint32
 	if ttl, ok := c.domainIndex[dc.Name]; !ok {
-		min_ttl = 3600
+		minTTL = 3600
 	} else {
-		min_ttl = ttl
+		minTTL = ttl
 	}
-	PrepDesiredRecords(dc, min_ttl)
+	PrepDesiredRecords(dc, minTTL)
 	return c.GenerateDomainCorrections(dc, clean)
 }
 
@@ -116,7 +116,7 @@ func PrepFoundRecords(recs models.Records) models.Records {
 }
 
 // PrepDesiredRecords munges any records to best suit this provider.
-func PrepDesiredRecords(dc *models.DomainConfig, min_ttl uint32) {
+func PrepDesiredRecords(dc *models.DomainConfig, minTTL uint32) {
 	// Sort through the dc.Records, eliminate any that can't be
 	// supported; modify any that need adjustments to work with the
 	// provider.  We try to do minimal changes otherwise it gets
@@ -130,11 +130,11 @@ func PrepDesiredRecords(dc *models.DomainConfig, min_ttl uint32) {
 			printer.Warnf("deSEC does not support alias records\n")
 			continue
 		}
-		if rec.TTL < min_ttl {
+		if rec.TTL < minTTL {
 			if rec.Type != "NS" {
-				printer.Warnf("Please contact support@desec.io if you need ttls < %d. Setting ttl of %s type %s from %d to %d\n", min_ttl, rec.GetLabelFQDN(), rec.Type, rec.TTL, min_ttl)
+				printer.Warnf("Please contact support@desec.io if you need ttls < %d. Setting ttl of %s type %s from %d to %d\n", minTTL, rec.GetLabelFQDN(), rec.Type, rec.TTL, minTTL)
 			}
-			rec.TTL = min_ttl
+			rec.TTL = minTTL
 		}
 		recordsToKeep = append(recordsToKeep, rec)
 	}
@@ -146,7 +146,7 @@ func PrepDesiredRecords(dc *models.DomainConfig, min_ttl uint32) {
 // a list of functions to call to actually make the desired
 // correction, and a message to output to the user when the change is
 // made.
-func (client *api) GenerateDomainCorrections(dc *models.DomainConfig, existing models.Records) ([]*models.Correction, error) {
+func (c *api) GenerateDomainCorrections(dc *models.DomainConfig, existing models.Records) ([]*models.Correction, error) {
 
 	var corrections = []*models.Correction{}
 
@@ -207,7 +207,7 @@ func (client *api) GenerateDomainCorrections(dc *models.DomainConfig, existing m
 			Msg: msg,
 			F: func() error {
 				rc := rrs
-				err := client.upsertRR(rc, dc.Name)
+				err := c.upsertRR(rc, dc.Name)
 				if err != nil {
 					return err
 				}

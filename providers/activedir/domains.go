@@ -15,8 +15,8 @@ import (
 
 const zoneDumpFilenamePrefix = "adzonedump"
 
-// RecordConfigJson RecordConfig, reconfigured for JSON input/output.
-type RecordConfigJson struct {
+// RecordConfigJSON RecordConfig, reconfigured for JSON input/output.
+type RecordConfigJSON struct {
 	Name string `json:"hostname"`
 	Type string `json:"recordtype"`
 	Data string `json:"recorddata"`
@@ -161,7 +161,7 @@ func (c *adProvider) getExistingRecords(domainname string) ([]*models.RecordConf
 		return nil, fmt.Errorf("getRecords failed on %#v: %v", domainname, err)
 	}
 
-	var recs []*RecordConfigJson
+	var recs []*RecordConfigJSON
 	jdata := string(data)
 	// when there is only a single record, AD powershell does not
 	// wrap it in an array as our types expect. This makes sure it is always an array.
@@ -192,7 +192,7 @@ func (c *adProvider) getExistingRecords(domainname string) ([]*models.RecordConf
 	return result, nil
 }
 
-func (r *RecordConfigJson) unpackRecord(origin string) (rc *models.RecordConfig, supported bool) {
+func (r *RecordConfigJSON) unpackRecord(origin string) (rc *models.RecordConfig, supported bool) {
 	rc = &models.RecordConfig{
 		Type: r.Type,
 		TTL:  r.TTL,

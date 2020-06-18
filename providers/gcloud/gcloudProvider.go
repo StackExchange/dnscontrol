@@ -125,6 +125,8 @@ func (g *gcloud) GetNameservers(domain string) ([]*models.Nameserver, error) {
 	if err != nil {
 		return nil, err
 	}
+	//fmt.Printf("zone = %q\n", zone)
+	//fmt.Printf("zone.NameServers = %q\n", zone.NameServers)
 	return models.ToNameserversStripTD(zone.NameServers)
 }
 
