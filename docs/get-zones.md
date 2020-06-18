@@ -17,10 +17,11 @@ bootstrapping a new system.
 
 If you are moving a DNS zone from a provider to DNSControl, this
 command will do most of the work for you by downloading the records
-and writing them out in `dnsconfig.js`-format. It is intended to be
+and writing them out in `dnsconfig.js` format. It is intended to be
 "a decent first draft", only requiring minimal editing.
 
-Use `--format=djs` or `--format=js` (djs is recommended).
+Use `--format=djs` or `--format=js` (djs is recommended; djs format is a
+comma-leading formatting style for lists, sometimes also called Haskell style).
 
 Minor editing is required. Not all record formats are supported.
 SOA records are commented out, since most providers do not support it.
@@ -32,7 +33,7 @@ API. Remove the comments only to override the DNS service provider.
 
 ## Use case 2: Generating BIND ZONE files
 
-The `--format=zone` generates BIND-style Zonefiles. Pseudo records not
+The `--format=zone` generates BIND-style zonefiles. Pseudo records not
 supported by BIND are generated as comments.
 
 This format is useful when moving zonedata between providers, since
@@ -69,8 +70,8 @@ ARGUMENTS:
 
 FORMATS:
    --format=js        dnsconfig.js format (not perfect, just a decent first draft)
-   --format=djs       js with disco commas
-   --format=zone      BIND Zonefile format
+   --format=djs       js with disco commas (leading commas)
+   --format=zone      BIND zonefile format
    --format=tsv       TAB separated value (useful for AWK)
    --format=nameonly  Just print the zone names
 
@@ -88,13 +89,13 @@ The --ttl flag only applies to zone/js/djs formats.
    dnscontrol get-zones myr53 ROUTE53 example.com
    dnscontrol get-zones gmain GANDI_V5 example.comn other.com
    dnscontrol get-zones cfmain CLOUDFLAREAPI all
-   dnscontrol get-zones -format=tsv bind BIND example.com
-   dnscontrol get-zones -format=djs -out=draft.js glcoud GCLOUD example.com`,
+   dnscontrol get-zones --format=tsv bind BIND example.com
+   dnscontrol get-zones --format=djs --out=draft.js glcoud GCLOUD example.com`,
 
 Read a zonefile, generate a JS file, then use the JS file to see how
 different it is from the zonefile:
 
-   dnscontrol get-zone --format=djs -out=foo.djs bind BIND example.org 
+   dnscontrol get-zone --format=djs -out=foo.djs bind BIND example.org
    dnscontrol preview --config foo.js
 
 # Developer Notes

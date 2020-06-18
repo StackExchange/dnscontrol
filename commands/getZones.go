@@ -39,8 +39,8 @@ ARGUMENTS:
 
 FORMATS:
    --format=js        dnsconfig.js format (not perfect, just a decent first draft)
-   --format=djs       js with disco commas
-   --format=zone      BIND Zonefile format
+   --format=djs       js with disco commas (leading commas)
+   --format=zone      BIND zonefile format
    --format=tsv       TAB separated value (useful for AWK)
    --format=nameonly  Just print the zone names
 
@@ -55,10 +55,10 @@ The --ttl flag only applies to zone/js/djs formats.
 
 EXAMPLES:
    dnscontrol get-zones myr53 ROUTE53 example.com
-   dnscontrol get-zones gmain GANDI_V5 example.comn other.com
+   dnscontrol get-zones gmain GANDI_V5 example.com other.com
    dnscontrol get-zones cfmain CLOUDFLAREAPI all
-   dnscontrol get-zones -format=tsv bind BIND example.com
-   dnscontrol get-zones -format=djs -out=draft.js glcoud GCLOUD example.com`,
+   dnscontrol get-zones --format=tsv bind BIND example.com
+   dnscontrol get-zones --format=djs --out=draft.js glcoud GCLOUD example.com`,
 	}
 }())
 
