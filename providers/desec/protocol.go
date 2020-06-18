@@ -82,14 +82,14 @@ func (c *api) fetchDomainList() error {
 func (c *api) getRecords(domain string) ([]resourceRecord, error) {
 	endpoint := "/domains/%s/rrsets/"
 	var rrs []rrResponse
-	var rrs_new []resourceRecord
+	var rrsNew []resourceRecord
 	var bodyString, err = c.get(fmt.Sprintf(endpoint, domain), "GET")
 	if err != nil {
-		return rrs_new, fmt.Errorf("Error fetching records from deSEC for domain %s: %s", domain, err)
+		return rrsNew, fmt.Errorf("Error fetching records from deSEC for domain %s: %s", domain, err)
 	}
 	err = json.Unmarshal(bodyString, &rrs)
 	if err != nil {
-		return rrs_new, err
+		return rrsNew, err
 	}
 	// deSEC returns round robin records as array but dnsconfig expects single entries for each record
 	// we will create one object per record except of TXT records which are handled as array of string by dnscontrol aswell.
@@ -100,9 +100,9 @@ func (c *api) getRecords(domain string) ([]resourceRecord, error) {
 			Subname: rrs[i].Subname,
 			Records: rrs[i].Records,
 		}
-		rrs_new = append(rrs_new, tmp)
+		rrsNew = append(rrsNew, tmp)
 	}
-	return rrs_new, nil
+	return rrsNew, nil
 }
 
 func (c *api) createDomain(domain string) error {

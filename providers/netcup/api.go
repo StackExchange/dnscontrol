@@ -18,7 +18,7 @@ type api struct {
 	credentials      struct {
 		apikey         string
 		customernumber string
-		sessionId      string
+		sessionID      string
 	}
 }
 
@@ -26,7 +26,7 @@ func (api *api) createRecord(domain string, rec *record) error {
 	rec.Delete = false
 	data := paramUpdateRecords{
 		Key:            api.credentials.apikey,
-		SessionId:      api.credentials.sessionId,
+		SessionID:      api.credentials.sessionID,
 		CustomerNumber: api.credentials.customernumber,
 		DomainName:     domain,
 		RecordSet: records{Records: []record{
@@ -44,7 +44,7 @@ func (api *api) deleteRecord(domain string, rec *record) error {
 	rec.Delete = true
 	data := paramUpdateRecords{
 		Key:            api.credentials.apikey,
-		SessionId:      api.credentials.sessionId,
+		SessionID:      api.credentials.sessionID,
 		CustomerNumber: api.credentials.customernumber,
 		DomainName:     domain,
 		RecordSet: records{Records: []record{
@@ -62,7 +62,7 @@ func (api *api) modifyRecord(domain string, rec *record) error {
 	rec.Delete = false
 	data := paramUpdateRecords{
 		Key:            api.credentials.apikey,
-		SessionId:      api.credentials.sessionId,
+		SessionID:      api.credentials.sessionID,
 		CustomerNumber: api.credentials.customernumber,
 		DomainName:     domain,
 		RecordSet: records{Records: []record{
@@ -79,17 +79,17 @@ func (api *api) modifyRecord(domain string, rec *record) error {
 func (api *api) getRecords(domain string) ([]record, error) {
 	data := paramGetRecords{
 		Key:            api.credentials.apikey,
-		SessionId:      api.credentials.sessionId,
+		SessionID:      api.credentials.sessionID,
 		CustomerNumber: api.credentials.customernumber,
 		DomainName:     domain,
 	}
-	rawJson, err := api.get("infoDnsRecords", data)
+	rawJSON, err := api.get("infoDnsRecords", data)
 	if err != nil {
 		return nil, fmt.Errorf("Error while trying to login to netcup: %s", err)
 	}
 
 	resp := &records{}
-	json.Unmarshal(rawJson, &resp)
+	json.Unmarshal(rawJSON, &resp)
 	return resp.Records, nil
 }
 
@@ -99,30 +99,30 @@ func (api *api) login(apikey, password, customernumber string) error {
 		Password:       password,
 		CustomerNumber: customernumber,
 	}
-	rawJson, err := api.get("login", data)
+	rawJSON, err := api.get("login", data)
 	if err != nil {
 		return fmt.Errorf("Error while trying to login to netcup: %s", err)
 	}
 
 	resp := &responseLogin{}
-	json.Unmarshal(rawJson, &resp)
+	json.Unmarshal(rawJSON, &resp)
 	api.credentials.apikey = apikey
 	api.credentials.customernumber = customernumber
-	api.credentials.sessionId = resp.SessionId
+	api.credentials.sessionID = resp.SessionID
 	return nil
 }
 
 func (api *api) logout() error {
 	data := paramLogout{
 		Key:            api.credentials.apikey,
-		SessionId:      api.credentials.sessionId,
+		SessionID:      api.credentials.sessionID,
 		CustomerNumber: api.credentials.customernumber,
 	}
 	_, err := api.get("logout", data)
 	if err != nil {
 		return fmt.Errorf("Error while trying to logout from netcup: %s", err)
 	}
-	api.credentials.apikey, api.credentials.sessionId, api.credentials.customernumber = "", "", ""
+	api.credentials.apikey, api.credentials.sessionID, api.credentials.customernumber = "", "", ""
 	return nil
 }
 
@@ -131,10 +131,10 @@ func (api *api) get(action string, params interface{}) (json.RawMessage, error) 
 		Action: action,
 		Param:  params,
 	}
-	reqJson, _ := json.Marshal(reqParam)
+	reqJSON, _ := json.Marshal(reqParam)
 
 	client := &http.Client{}
-	req, _ := http.NewRequest("POST", endpoint, bytes.NewBuffer(reqJson))
+	req, _ := http.NewRequest("POST", endpoint, bytes.NewBuffer(reqJSON))
 	resp, err := client.Do(req)
 	if err != nil {
 		return nil, err
@@ -153,7 +153,7 @@ func (api *api) get(action string, params interface{}) (json.RawMessage, error) 
 
 	// Check for any errors and log them
 	if respData.StatusCode != 2000 && (action == "") {
-		return nil, fmt.Errorf("Netcup API error: %v\n%v\n", reqParam, respData)
+		return nil, fmt.Errorf("netcup API error: %v\n%v", reqParam, respData)
 	}
 
 	return respData.Data, nil

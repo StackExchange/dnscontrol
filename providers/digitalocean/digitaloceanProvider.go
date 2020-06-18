@@ -24,8 +24,8 @@ Info required in `creds.json`:
 
 */
 
-// DoApi is the handle for operations.
-type DoApi struct {
+// DoAPI is the handle for operations.
+type DoAPI struct {
 	client *godo.Client
 }
 
@@ -48,7 +48,7 @@ func NewDo(m map[string]string, metadata json.RawMessage) (providers.DNSServiceP
 	)
 	client := godo.NewClient(oauthClient)
 
-	api := &DoApi{client: client}
+	api := &DoAPI{client: client}
 
 	// Get a domain to validate the token
 	_, resp, err := api.client.Domains.List(ctx, &godo.ListOptions{PerPage: 1})
@@ -78,7 +78,7 @@ func init() {
 }
 
 // EnsureDomainExists returns an error if domain doesn't exist.
-func (api *DoApi) EnsureDomainExists(domain string) error {
+func (api *DoAPI) EnsureDomainExists(domain string) error {
 	ctx := context.Background()
 	_, resp, err := api.client.Domains.Get(ctx, domain)
 	if resp.StatusCode == http.StatusNotFound {
@@ -92,12 +92,12 @@ func (api *DoApi) EnsureDomainExists(domain string) error {
 }
 
 // GetNameservers returns the nameservers for domain.
-func (api *DoApi) GetNameservers(domain string) ([]*models.Nameserver, error) {
+func (api *DoAPI) GetNameservers(domain string) ([]*models.Nameserver, error) {
 	return models.ToNameservers(defaultNameServerNames)
 }
 
 // GetZoneRecords gets the records of a zone and returns them in RecordConfig format.
-func (api *DoApi) GetZoneRecords(domain string) (models.Records, error) {
+func (api *DoAPI) GetZoneRecords(domain string) (models.Records, error) {
 	records, err := getRecords(api, domain)
 	if err != nil {
 		return nil, err
@@ -116,7 +116,7 @@ func (api *DoApi) GetZoneRecords(domain string) (models.Records, error) {
 }
 
 // GetDomainCorrections returns a list of corretions for the  domain.
-func (api *DoApi) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Correction, error) {
+func (api *DoAPI) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Correction, error) {
 	ctx := context.Background()
 	dc.Punycode()
 
@@ -172,7 +172,7 @@ func (api *DoApi) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Corre
 	return corrections, nil
 }
 
-func getRecords(api *DoApi, name string) ([]godo.DomainRecord, error) {
+func getRecords(api *DoAPI, name string) ([]godo.DomainRecord, error) {
 	ctx := context.Background()
 
 	records := []godo.DomainRecord{}

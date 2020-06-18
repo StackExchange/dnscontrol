@@ -52,18 +52,24 @@ func (c *certManager) createAccount(email string) (*Account, error) {
 	return acct, nil
 }
 
+// Account stores the data related to an ACME account.
 type Account struct {
 	Email        string                 `json:"email"`
 	Registration *registration.Resource `json:"registration"`
 	key          *ecdsa.PrivateKey
 }
 
+// GetEmail is a getter for the Email field.
 func (a *Account) GetEmail() string {
 	return a.Email
 }
+
+// GetPrivateKey is a getter for the PrivateKey field.
 func (a *Account) GetPrivateKey() crypto.PrivateKey {
 	return a.key
 }
+
+// GetRegistration is a getter for the registration field.
 func (a *Account) GetRegistration() *registration.Resource {
 	return a.Registration
 }

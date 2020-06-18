@@ -3,10 +3,11 @@ package netcup
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/StackExchange/dnscontrol/v3/models"
-	"github.com/miekg/dns/dnsutil"
 	"strconv"
 	"strings"
+
+	"github.com/StackExchange/dnscontrol/v3/models"
+	"github.com/miekg/dns/dnsutil"
 )
 
 type request struct {
@@ -22,20 +23,20 @@ type paramLogin struct {
 
 type paramLogout struct {
 	Key            string `json:"apikey"`
-	SessionId      string `json:"apisessionid"`
+	SessionID      string `json:"apisessionid"`
 	CustomerNumber string `json:"customernumber"`
 }
 
 type paramGetRecords struct {
 	Key            string `json:"apikey"`
-	SessionId      string `json:"apisessionid"`
+	SessionID      string `json:"apisessionid"`
 	CustomerNumber string `json:"customernumber"`
 	DomainName     string `json:"domainname"`
 }
 
 type paramUpdateRecords struct {
 	Key            string  `json:"apikey"`
-	SessionId      string  `json:"apisessionid"`
+	SessionID      string  `json:"apisessionid"`
 	CustomerNumber string  `json:"customernumber"`
 	DomainName     string  `json:"domainname"`
 	RecordSet      records `json:"dnsrecordset"`
@@ -46,7 +47,7 @@ type records struct {
 }
 
 type record struct {
-	Id          string `json:"id"`
+	ID          string `json:"id"`
 	Hostname    string `json:"hostname"`
 	Type        string `json:"type"`
 	Priority    string `json:"priority"`
@@ -56,8 +57,8 @@ type record struct {
 }
 
 type response struct {
-	ServerRequestId string          `json:"serverrequestid"`
-	ClientRequestId string          `json:"clientrequestid"`
+	ServerRequestID string          `json:"serverrequestid"`
+	ClientRequestID string          `json:"clientrequestid"`
 	Action          string          `json:"action"`
 	Status          string          `json:"status"`
 	StatusCode      int             `json:"statuscode"`
@@ -67,7 +68,7 @@ type response struct {
 }
 
 type responseLogin struct {
-	SessionId string `json:"apisessionid"`
+	SessionID string `json:"apisessionid"`
 }
 
 func toRecordConfig(domain string, r *record) *models.RecordConfig {

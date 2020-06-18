@@ -43,8 +43,8 @@ var allowedTTLValues = []uint32{
 
 var srvRegexp = regexp.MustCompile(`^_(?P<Service>\w+)\.\_(?P<Protocol>\w+)$`)
 
-// LinodeApi is the handle for this provider.
-type LinodeApi struct {
+// LinodeAPI is the handle for this provider.
+type LinodeAPI struct {
 	client      *http.Client
 	baseURL     *url.URL
 	domainIndex map[string]int
@@ -75,7 +75,7 @@ func NewLinode(m map[string]string, metadata json.RawMessage) (providers.DNSServ
 		return nil, fmt.Errorf("Linode base URL not valid")
 	}
 
-	api := &LinodeApi{client: client, baseURL: baseURL}
+	api := &LinodeAPI{client: client, baseURL: baseURL}
 
 	// Get a domain to validate the token
 	if err := api.fetchDomainList(); err != nil {
@@ -97,12 +97,12 @@ func init() {
 }
 
 // GetNameservers returns the nameservers for a domain.
-func (api *LinodeApi) GetNameservers(domain string) ([]*models.Nameserver, error) {
+func (api *LinodeAPI) GetNameservers(domain string) ([]*models.Nameserver, error) {
 	return models.ToNameservers(defaultNameServerNames)
 }
 
 // GetZoneRecords gets the records of a zone and returns them in RecordConfig format.
-func (client *LinodeApi) GetZoneRecords(domain string) (models.Records, error) {
+func (api *LinodeAPI) GetZoneRecords(domain string) (models.Records, error) {
 	return nil, fmt.Errorf("not implemented")
 	// This enables the get-zones subcommand.
 	// Implement this by extracting the code from GetDomainCorrections into
@@ -110,7 +110,7 @@ func (client *LinodeApi) GetZoneRecords(domain string) (models.Records, error) {
 }
 
 // GetDomainCorrections returns the corrections for a domain.
-func (api *LinodeApi) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Correction, error) {
+func (api *LinodeAPI) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Correction, error) {
 	dc, err := dc.Copy()
 	if err != nil {
 		return nil, err

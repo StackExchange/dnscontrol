@@ -3,6 +3,7 @@ package netcup
 import (
 	"encoding/json"
 	"fmt"
+
 	"github.com/StackExchange/dnscontrol/v3/models"
 	"github.com/StackExchange/dnscontrol/v3/pkg/diff"
 	"github.com/StackExchange/dnscontrol/v3/providers"
@@ -23,6 +24,7 @@ func init() {
 	providers.RegisterDomainServiceProviderType("NETCUP", New, features)
 }
 
+// New creates a new API handle.
 func New(settings map[string]string, _ json.RawMessage) (providers.DNSServiceProvider, error) {
 	if settings["api-key"] == "" || settings["api-password"] == "" || settings["customer-number"] == "" {
 		return nil, fmt.Errorf("missing netcup login parameters")
@@ -101,7 +103,7 @@ func (api *api) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Correct
 	for _, m := range del {
 		req := m.Existing.Original.(*record)
 		corr := &models.Correction{
-			Msg: fmt.Sprintf("%s, Netcup ID: %s", m.String(), req.Id),
+			Msg: fmt.Sprintf("%s, Netcup ID: %s", m.String(), req.ID),
 			F: func() error {
 				return api.deleteRecord(domain, req)
 			},
@@ -120,9 +122,9 @@ func (api *api) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Correct
 		corrections = append(corrections, corr)
 	}
 	for _, m := range modify {
-		id := m.Existing.Original.(*record).Id
+		id := m.Existing.Original.(*record).ID
 		req := fromRecordConfig(m.Desired)
-		req.Id = id
+		req.ID = id
 		corr := &models.Correction{
 			Msg: fmt.Sprintf("%s, Netcup ID: %s: ", m.String(), id),
 			F: func() error {

@@ -208,7 +208,7 @@ func transformCNAME(target, oldDomain, newDomain string) string {
 }
 
 // import_transform imports the records of one zone into another, modifying records along the way.
-func importTransform(srcDomain, dstDomain *models.DomainConfig, transforms []transform.IpConversion, ttl uint32) error {
+func importTransform(srcDomain, dstDomain *models.DomainConfig, transforms []transform.IPConversion, ttl uint32) error {
 	// Read srcDomain.Records, transform, and append to dstDomain.Records:
 	// 1. Skip any that aren't A or CNAMEs.
 	// 2. Append destDomainname to the end of the label.
@@ -230,7 +230,7 @@ func importTransform(srcDomain, dstDomain *models.DomainConfig, transforms []tra
 		}
 		switch rec.Type { // #rtype_variations
 		case "A":
-			trs, err := transform.TransformIPToList(net.ParseIP(rec.GetTargetField()), transforms)
+			trs, err := transform.IPToList(net.ParseIP(rec.GetTargetField()), transforms)
 			if err != nil {
 				return fmt.Errorf("import_transform: TransformIP(%v, %v) returned err=%s", rec.GetTargetField(), transforms, err)
 			}
@@ -518,7 +518,7 @@ func applyRecordTransforms(domain *models.DomainConfig) error {
 			return err
 		}
 		ip := net.ParseIP(rec.GetTargetField()) // ip already validated above
-		newIPs, err := transform.TransformIPToList(net.ParseIP(rec.GetTargetField()), table)
+		newIPs, err := transform.IPToList(net.ParseIP(rec.GetTargetField()), table)
 		if err != nil {
 			return err
 		}
