@@ -15,7 +15,7 @@ const (
 	domainsPath    = "domains"
 )
 
-func (c *LinodeApi) fetchDomainList() error {
+func (c *LinodeAPI) fetchDomainList() error {
 	c.domainIndex = map[string]int{}
 	page := 1
 	for {
@@ -35,7 +35,7 @@ func (c *LinodeApi) fetchDomainList() error {
 	return nil
 }
 
-func (c *LinodeApi) getRecords(id int) ([]domainRecord, error) {
+func (c *LinodeAPI) getRecords(id int) ([]domainRecord, error) {
 	records := []domainRecord{}
 	page := 1
 	for {
@@ -56,7 +56,7 @@ func (c *LinodeApi) getRecords(id int) ([]domainRecord, error) {
 	return records, nil
 }
 
-func (c *LinodeApi) createRecord(domainID int, rec *recordEditRequest) (*domainRecord, error) {
+func (c *LinodeAPI) createRecord(domainID int, rec *recordEditRequest) (*domainRecord, error) {
 	endpoint := fmt.Sprintf("%s/%d/records", domainsPath, domainID)
 
 	req, err := c.newRequest(http.MethodPost, endpoint, rec)
@@ -84,7 +84,7 @@ func (c *LinodeApi) createRecord(domainID int, rec *recordEditRequest) (*domainR
 	return record, nil
 }
 
-func (c *LinodeApi) modifyRecord(domainID, recordID int, rec *recordEditRequest) error {
+func (c *LinodeAPI) modifyRecord(domainID, recordID int, rec *recordEditRequest) error {
 	endpoint := fmt.Sprintf("%s/%d/records/%d", domainsPath, domainID, recordID)
 
 	req, err := c.newRequest(http.MethodPut, endpoint, rec)
@@ -104,7 +104,7 @@ func (c *LinodeApi) modifyRecord(domainID, recordID int, rec *recordEditRequest)
 	return nil
 }
 
-func (c *LinodeApi) deleteRecord(domainID, recordID int) error {
+func (c *LinodeAPI) deleteRecord(domainID, recordID int) error {
 	endpoint := fmt.Sprintf("%s/%d/records/%d", domainsPath, domainID, recordID)
 	req, err := c.newRequest(http.MethodDelete, endpoint, nil)
 	if err != nil {
@@ -123,7 +123,7 @@ func (c *LinodeApi) deleteRecord(domainID, recordID int) error {
 	return nil
 }
 
-func (c *LinodeApi) newRequest(method, endpoint string, body interface{}) (*http.Request, error) {
+func (c *LinodeAPI) newRequest(method, endpoint string, body interface{}) (*http.Request, error) {
 	rel, err := url.Parse(endpoint)
 	if err != nil {
 		return nil, err
@@ -149,7 +149,7 @@ func (c *LinodeApi) newRequest(method, endpoint string, body interface{}) (*http
 	return req, nil
 }
 
-func (c *LinodeApi) get(endpoint string, target interface{}) error {
+func (c *LinodeAPI) get(endpoint string, target interface{}) error {
 	req, err := c.newRequest(http.MethodGet, endpoint, nil)
 	if err != nil {
 		return err
@@ -166,7 +166,7 @@ func (c *LinodeApi) get(endpoint string, target interface{}) error {
 	return decoder.Decode(target)
 }
 
-func (c *LinodeApi) handleErrors(resp *http.Response) error {
+func (c *LinodeAPI) handleErrors(resp *http.Response) error {
 	defer resp.Body.Close()
 	decoder := json.NewDecoder(resp.Body)
 

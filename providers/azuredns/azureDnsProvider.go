@@ -16,23 +16,23 @@ import (
 	"github.com/StackExchange/dnscontrol/v3/providers"
 )
 
-type azureDnsProvider struct {
+type azureDNSProvider struct {
 	zonesClient    *adns.ZonesClient
 	recordsClient  *adns.RecordSetsClient
 	zones          map[string]*adns.Zone
 	resourceGroup  *string
-	subscriptionId *string
+	subscriptionID *string
 }
 
-func newAzureDnsDsp(conf map[string]string, metadata json.RawMessage) (providers.DNSServiceProvider, error) {
-	return newAzureDns(conf, metadata)
+func newAzureDNSDsp(conf map[string]string, metadata json.RawMessage) (providers.DNSServiceProvider, error) {
+	return newAzureDNS(conf, metadata)
 }
 
-func newAzureDns(m map[string]string, metadata json.RawMessage) (*azureDnsProvider, error) {
-	subId, rg := m["SubscriptionID"], m["ResourceGroup"]
+func newAzureDNS(m map[string]string, metadata json.RawMessage) (*azureDNSProvider, error) {
+	subID, rg := m["SubscriptionID"], m["ResourceGroup"]
 
-	zonesClient := adns.NewZonesClient(subId)
-	recordsClient := adns.NewRecordSetsClient(subId)
+	zonesClient := adns.NewZonesClient(subID)
+	recordsClient := adns.NewRecordSetsClient(subID)
 	clientCredentialAuthorizer := aauth.NewClientCredentialsConfig(m["ClientID"], m["ClientSecret"], m["TenantID"])
 	authorizer, authErr := clientCredentialAuthorizer.Authorizer()
 
@@ -42,7 +42,7 @@ func newAzureDns(m map[string]string, metadata json.RawMessage) (*azureDnsProvid
 
 	zonesClient.Authorizer = authorizer
 	recordsClient.Authorizer = authorizer
-	api := &azureDnsProvider{zonesClient: &zonesClient, recordsClient: &recordsClient, resourceGroup: to.StringPtr(rg), subscriptionId: to.StringPtr(subId)}
+	api := &azureDNSProvider{zonesClient: &zonesClient, recordsClient: &recordsClient, resourceGroup: to.StringPtr(rg), subscriptionID: to.StringPtr(subID)}
 	err := api.getZones()
 	if err != nil {
 		return nil, err
@@ -67,11 +67,11 @@ var features = providers.DocumentationNotes{
 }
 
 func init() {
-	providers.RegisterDomainServiceProviderType("AZURE_DNS", newAzureDnsDsp, features)
+	providers.RegisterDomainServiceProviderType("AZURE_DNS", newAzureDNSDsp, features)
 	providers.RegisterCustomRecordType("AZURE_ALIAS", "AZURE_DNS", "")
 }
 
-func (a *azureDnsProvider) getExistingZones() (*adns.ZoneListResult, error) {
+func (a *azureDNSProvider) getExistingZones() (*adns.ZoneListResult, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), 6000*time.Second)
 	defer cancel()
 	zonesIterator, zonesErr := a.zonesClient.ListByResourceGroupComplete(ctx, *a.resourceGroup, to.Int32Ptr(100))
@@ -82,7 +82,7 @@ func (a *azureDnsProvider) getExistingZones() (*adns.ZoneListResult, error) {
 	return &zonesResult, nil
 }
 
-func (a *azureDnsProvider) getZones() error {
+func (a *azureDNSProvider) getZones() error {
 	a.zones = make(map[string]*adns.Zone)
 
 	zonesResult, err := a.getExistingZones()
@@ -108,7 +108,7 @@ func (e errNoExist) Error() string {
 	return fmt.Sprintf("Domain %s not found in you Azure account", e.domain)
 }
 
-func (a *azureDnsProvider) GetNameservers(domain string) ([]*models.Nameserver, error) {
+func (a *azureDNSProvider) GetNameservers(domain string) ([]*models.Nameserver, error) {
 	zone, ok := a.zones[domain]
 	if !ok {
 		return nil, errNoExist{domain}
@@ -123,7 +123,7 @@ func (a *azureDnsProvider) GetNameservers(domain string) ([]*models.Nameserver, 
 	return models.ToNameserversStripTD(nss)
 }
 
-func (a *azureDnsProvider) ListZones() ([]string, error) {
+func (a *azureDNSProvider) ListZones() ([]string, error) {
 	zonesResult, err := a.getExistingZones()
 
 	if err != nil {
@@ -141,7 +141,7 @@ func (a *azureDnsProvider) ListZones() ([]string, error) {
 }
 
 // GetZoneRecords gets the records of a zone and returns them in RecordConfig format.
-func (a *azureDnsProvider) GetZoneRecords(domain string) (models.Records, error) {
+func (a *azureDNSProvider) GetZoneRecords(domain string) (models.Records, error) {
 	existingRecords, _, _, err := a.getExistingRecords(domain)
 	if err != nil {
 		return nil, err
@@ -149,7 +149,7 @@ func (a *azureDnsProvider) GetZoneRecords(domain string) (models.Records, error)
 	return existingRecords, nil
 }
 
-func (a *azureDnsProvider) getExistingRecords(domain string) (models.Records, []*adns.RecordSet, string, error) {
+func (a *azureDNSProvider) getExistingRecords(domain string) (models.Records, []*adns.RecordSet, string, error) {
 	zone, ok := a.zones[domain]
 	if !ok {
 		return nil, nil, "", errNoExist{domain}
@@ -170,7 +170,7 @@ func (a *azureDnsProvider) getExistingRecords(domain string) (models.Records, []
 	return existingRecords, records, zoneName, nil
 }
 
-func (a *azureDnsProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Correction, error) {
+func (a *azureDNSProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Correction, error) {
 	err := dc.Punycode()
 
 	if err != nil {
@@ -438,7 +438,7 @@ func nativeToRecords(set *adns.RecordSet, origin string) []*models.RecordConfig 
 	return results
 }
 
-func (a *azureDnsProvider) recordToNative(recordKey models.RecordKey, recordConfig []*models.RecordConfig) (*adns.RecordSet, adns.RecordType) {
+func (a *azureDNSProvider) recordToNative(recordKey models.RecordKey, recordConfig []*models.RecordConfig) (*adns.RecordSet, adns.RecordType) {
 	recordSet := &adns.RecordSet{Type: to.StringPtr(recordKey.Type), RecordSetProperties: &adns.RecordSetProperties{}}
 	for _, rec := range recordConfig {
 		switch recordKey.Type {
@@ -498,7 +498,7 @@ func (a *azureDnsProvider) recordToNative(recordKey models.RecordKey, recordConf
 	return recordSet, nativeToRecordType(to.StringPtr(*recordSet.Type))
 }
 
-func (a *azureDnsProvider) fetchRecordSets(zoneName string) ([]*adns.RecordSet, error) {
+func (a *azureDNSProvider) fetchRecordSets(zoneName string) ([]*adns.RecordSet, error) {
 	if zoneName == "" {
 		return nil, nil
 	}
@@ -519,7 +519,7 @@ func (a *azureDnsProvider) fetchRecordSets(zoneName string) ([]*adns.RecordSet, 
 	return records, nil
 }
 
-func (a *azureDnsProvider) EnsureDomainExists(domain string) error {
+func (a *azureDNSProvider) EnsureDomainExists(domain string) error {
 	if _, ok := a.zones[domain]; ok {
 		return nil
 	}

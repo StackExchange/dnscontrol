@@ -33,6 +33,8 @@ func makeVaultStorage(vaultPath string) (Storage, error) {
 }
 
 func (v *vaultStorage) GetCertificate(name string) (*certificate.Resource, error) {
+	var err error
+
 	path := v.certPath(name)
 	secret, err := v.client.Read(path)
 	if err != nil {
@@ -48,17 +50,16 @@ func (v *vaultStorage) GetCertificate(name string) (*certificate.Resource, error
 		return nil, err
 	}
 
-	if dat, err := v.getString("tls.cert", secret.Data, path); err != nil {
+	var dat []byte
+	if dat, err = v.getString("tls.cert", secret.Data, path); err != nil {
 		return nil, err
-	} else {
-		cert.Certificate = dat
 	}
+	cert.Certificate = dat
 
-	if dat, err := v.getString("tls.key", secret.Data, path); err != nil {
+	if dat, err = v.getString("tls.key", secret.Data, path); err != nil {
 		return nil, err
-	} else {
-		cert.PrivateKey = dat
 	}
+	cert.PrivateKey = dat
 
 	return cert, nil
 }

@@ -216,6 +216,7 @@ func (d *differ) IncrementalDiff(existing []*models.RecordConfig) (unchanged, cr
 	return
 }
 
+// ChangesetLess returns true if c[i] < c[j].
 func ChangesetLess(c Changeset, i, j int) bool {
 	var a, b string
 	// Which fields are we comparing?

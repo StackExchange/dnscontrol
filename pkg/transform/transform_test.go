@@ -103,9 +103,9 @@ func Test_DecodeTransformTable_Base_and_IP(t *testing.T) {
 	}
 }
 
-func Test_TransformIP(t *testing.T) {
+func Test_IP(t *testing.T) {
 
-	var transforms1 = []IpConversion{{
+	var transforms1 = []IPConversion{{
 		Low:      net.ParseIP("11.11.11.0"),
 		High:     net.ParseIP("11.11.11.20"),
 		NewBases: []net.IP{net.ParseIP("99.99.99.0")},
@@ -156,7 +156,7 @@ func Test_TransformIP(t *testing.T) {
 
 	for _, test := range tests {
 		experiment := net.ParseIP(test.experiment)
-		actual, err := TransformIPToList(experiment, transforms1)
+		actual, err := IPToList(experiment, transforms1)
 		if err != nil {
 			t.Errorf("%v: got an err: %v\n", experiment, err)
 		}
@@ -171,9 +171,9 @@ func Test_TransformIP(t *testing.T) {
 	}
 }
 
-func Test_TransformIP_NewIP(t *testing.T) {
+func Test_IP_NewIP(t *testing.T) {
 
-	var transforms1 = []IpConversion{{
+	var transforms1 = []IPConversion{{
 		Low:    net.ParseIP("11.11.11.0"),
 		High:   net.ParseIP("11.11.11.20"),
 		NewIPs: []net.IP{net.ParseIP("1.1.1.1")},
@@ -213,7 +213,7 @@ func Test_TransformIP_NewIP(t *testing.T) {
 	for _, test := range tests {
 		experiment := net.ParseIP(test.experiment)
 		expected := net.ParseIP(test.expected)
-		actual, err := TransformIP(experiment, transforms1)
+		actual, err := IP(experiment, transforms1)
 		if err != nil {
 			t.Errorf("%v: got an err: %v\n", experiment, err)
 		}
