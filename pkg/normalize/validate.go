@@ -447,29 +447,77 @@ func checkDuplicates(records []*models.RecordConfig) (errs []error) {
 // We pull this out of checkProviderCapabilities() so that it's visible within
 // the package elsewhere, so that our test suite can look at the list of
 // capabilities we're checking and make sure that it's up-to-date.
-var providerCapabilityChecks []pairTypeCapability
+var providerCapabilityChecks = []pairTypeCapability{
+	// If a zone uses rType X, the provider must support capability Y.
+	//{"X", providers.Y},
+	capabilityCheck("ALIAS", providers.CanUseAlias),
+	capabilityCheck("AUTODNSSEC", providers.CanAutoDNSSEC),
+	capabilityCheck("CAA", providers.CanUseCAA),
+	capabilityCheck("NAPTR", providers.CanUseNAPTR),
+	capabilityCheck("PTR", providers.CanUsePTR),
+	capabilityCheck("R53_ALIAS", providers.CanUseRoute53Alias),
+	capabilityCheck("SSHFP", providers.CanUseSSHFP),
+	capabilityCheck("SRV", providers.CanUseSRV),
+	capabilityCheck("TLSA", providers.CanUseTLSA),
+	capabilityCheck("AZURE_ALIAS", providers.CanUseAzureAlias),
+
+	// DS needs special record-level checks
+	{
+		rType:     "DS",
+		caps:      []providers.Capability{providers.CanUseDS, providers.CanUseDSForChildren},
+		checkFunc: checkProviderDS,
+	},
+}
 
 type pairTypeCapability struct {
 	rType string
-	cap   providers.Capability
+	// Capabilities the provider must implement if any records of type rType are found
+	// in the zonefile. This is a disjunction - implementing at least one of the listed
+	// capabilities is sufficient.
+	caps []providers.Capability
+	// checkFunc provides additional checks of each provider. This function should be
+	// called if records of type rType are found in the zonefile.
+	checkFunc func(pType string, _ models.Records) error
 }
 
-func init() {
-	providerCapabilityChecks = []pairTypeCapability{
-		// If a zone uses rType X, the provider must support capability Y.
-		//{"X", providers.Y},
-		{"ALIAS", providers.CanUseAlias},
-		{"AUTODNSSEC", providers.CanAutoDNSSEC},
-		{"CAA", providers.CanUseCAA},
-		{"DS", providers.CanUseDS},
-		{"NAPTR", providers.CanUseNAPTR},
-		{"PTR", providers.CanUsePTR},
-		{"R53_ALIAS", providers.CanUseRoute53Alias},
-		{"SSHFP", providers.CanUseSSHFP},
-		{"SRV", providers.CanUseSRV},
-		{"TLSA", providers.CanUseTLSA},
-		{"AZURE_ALIAS", providers.CanUseAzureAlias},
+func capabilityCheck(rType string, caps ...providers.Capability) pairTypeCapability {
+	return pairTypeCapability{
+		rType: rType,
+		caps:  caps,
 	}
+}
+
+func providerHasAtLeastOneCapability(pType string, caps ...providers.Capability) bool {
+	for _, cap := range caps {
+		if providers.ProviderHasCapability(pType, cap) {
+			return true
+		}
+	}
+
+	return false
+}
+
+func checkProviderDS(pType string, records models.Records) error {
+	switch {
+	case providers.ProviderHasCapability(pType, providers.CanUseDS):
+		// The provider can use DS records anywhere, including at the root
+		return nil
+	case !providers.ProviderHasCapability(pType, providers.CanUseDSForChildren):
+		// Provider has no support for DS records
+		return fmt.Errorf("provider %s uses DS records but does not support them", pType)
+	default:
+		// Provider supports DS records but not at the root
+		for _, record := range records {
+			if record.Type == "DS" && record.Name == "@" {
+				return fmt.Errorf(
+					"provider %s only supports child DS records, but zone had a record at the root (@)",
+					pType,
+				)
+			}
+		}
+	}
+
+	return nil
 }
 
 func checkProviderCapabilities(dc *models.DomainConfig) error {
@@ -496,8 +544,15 @@ func checkProviderCapabilities(dc *models.DomainConfig) error {
 		}
 		for _, provider := range dc.DNSProviderInstances {
 			// fmt.Printf("  (checking if %q can %q for domain %q)\n", provider.ProviderType, ty.rType, dc.Name)
-			if !providers.ProviderHasCapability(provider.ProviderType, ty.cap) {
+			if !providerHasAtLeastOneCapability(provider.ProviderType, ty.caps...) {
 				return fmt.Errorf("Domain %s uses %s records, but DNS provider type %s does not support them", dc.Name, ty.rType, provider.ProviderType)
+			}
+
+			if ty.checkFunc != nil {
+				checkErr := ty.checkFunc(provider.ProviderType, dc.Records)
+				if checkErr != nil {
+					return fmt.Errorf("while checking %s records in domain %s: %w", ty.rType, dc.Name, checkErr)
+				}
 			}
 		}
 	}

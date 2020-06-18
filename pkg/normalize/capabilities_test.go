@@ -55,7 +55,9 @@ func TestCapabilitiesAreFiltered(t *testing.T) {
 
 	capIntsToNames := make(map[int]string, len(providerCapabilityChecks))
 	for _, pair := range providerCapabilityChecks {
-		capIntsToNames[int(pair.cap)] = pair.rType
+		for _, cap := range pair.caps {
+			capIntsToNames[int(cap)] = pair.rType
+		}
 	}
 
 	for _, capName := range constantNames {

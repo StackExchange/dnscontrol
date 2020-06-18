@@ -18,8 +18,13 @@ const (
 	// CanUseCAA indicates the provider can handle CAA records
 	CanUseCAA
 
-	// CanUseDS indicates that the provider can handle DS record types
+	// CanUseDS indicates that the provider can handle DS record types. This
+	// implies CanUseDSForChildren without specifying the latter explicitly.
 	CanUseDS
+
+	// CanUseDSForChildren indicates the provider can handle DS record types, but
+	// only for children records, not at the root of the zone.
+	CanUseDSForChildren
 
 	// CanUsePTR indicates the provider can handle PTR records
 	CanUsePTR
