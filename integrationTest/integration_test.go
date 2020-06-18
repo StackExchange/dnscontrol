@@ -850,6 +850,25 @@ func makeTests(t *testing.T) []*TestGroup {
 			tc("add 2 more DS", ds("foo", 2, 13, 4, "ADIGEST"), ds("@", 65535, 5, 4, "ADIGEST"), ds("@", 65535, 253, 4, "ADIGEST")),
 		),
 
+		testgroup("DS (children only)",
+			requires(providers.CanUseDSForChildren),
+			// Use a valid digest value here, because GCLOUD (which implements this capability) verifies
+			// the value passed in is a valid digest. RFC 4034, s5.1.4 specifies SHA1 as the only digest
+			// algo at present, i.e. only hexadecimal values currently usable.
+			tc("create DS", ds("child", 1, 13, 1, "0123456789ABCDEF")),
+			tc("modify field 1", ds("child", 65535, 13, 1, "0123456789ABCDEF")),
+			tc("modify field 3", ds("child", 65535, 13, 2, "0123456789ABCDEF")),
+			tc("modify field 2+3", ds("child", 65535, 1, 4, "0123456789ABCDEF")),
+			tc("modify field 2", ds("child", 65535, 3, 4, "0123456789ABCDEF")),
+			tc("modify field 2", ds("child", 65535, 254, 4, "0123456789ABCDEF")),
+			tc("delete 1, create 1", ds("another-child", 2, 13, 4, "0123456789ABCDEF")),
+			tc("add 2 more DS",
+				ds("another-child", 2, 13, 4, "0123456789ABCDEF"),
+				ds("another-child", 65535, 5, 4, "0123456789ABCDEF"),
+				ds("another-child", 65535, 253, 4, "0123456789ABCDEF"),
+			),
+		),
+
 		//
 		// Pseudo rtypes:
 		//
