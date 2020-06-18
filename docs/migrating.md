@@ -44,9 +44,9 @@ However, where's the fun in that?
 
 The `dnscontrol get-zones` subcommand
 [documented here]({{site.github.url}}/get-zones)
-can automate 90% of the conversion for you. It
-reads BIND-style zonefiles, or will use a providers API to gather the DNS records.  It will then output the records in a variety of formats, including
-the as a `D()` statement
+can automate 90% of the conversion for you. It reads BIND-style zonefiles,
+or will use a providers API to gather the DNS records.  It will then output
+the records in a variety of formats, including as a `D()` statement
 that is usually fairly complete. You may need to touch it up a bit,
 especially if you use pseudo record types in one provider that are
 not supported by another.
@@ -56,13 +56,13 @@ Example 1: Read a BIND zonefile
 Most DNS Service Providers have an 'export to zonefile' feature.
 
 ```
-dnscontrol get-zones -format=js bind BIND example.com
-dnscontrol get-zones -format=js -out=draft.js bind BIND example.com
+dnscontrol get-zones --format=js bind BIND example.com
+dnscontrol get-zones --format=js --out=draft.js bind BIND example.com
 ```
 
 This will read the file `zones/example.com.zone`. The system is a bit
-inflexible and that must be the filename. You can copy the file to
-that name, or use a symlink.
+inflexible and that must be the filename. You can copy the zone file to
+that name or use a symlink.
 
 Add the contents of `draft.js` to `dnsconfig.js` and edit it as needed.
 
@@ -75,8 +75,8 @@ Suppose your `creds.json` file has the name `global_aws`
 for the provider `ROUTE53`.  Your command would look like this:
 
 ```
-dnscontrol get-zones -format=js global_aws ROUTE53 example.com
-dnscontrol get-zones -format=js -out=draft.js global_aws ROUTE53 example.com
+dnscontrol get-zones --format=js global_aws ROUTE53 example.com
+dnscontrol get-zones --format=js --out=draft.js global_aws ROUTE53 example.com
 ```
 
 Add the contents of `draft.js` to `dnsconfig.js` and edit it as needed.
@@ -108,7 +108,7 @@ to convert a zone. Lines that start with `#` are comments.
 
     # Note this command uses ">>" to append to dnsconfig.js.  Do
     # not use ">" as that will erase the existing file.
-    dnscontrol get-zones -format=js -out=draft.js bind BIND foo.com
+    dnscontrol get-zones --format=js --out=draft.js bind BIND foo.com
     cat >>dnsconfig.js draft.js   # Append to dnsconfig.js
     #
     dnscontrol preview
