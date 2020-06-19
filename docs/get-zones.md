@@ -56,47 +56,48 @@ zones at the provider.
 
 ## Syntax
 
-   dnscontrol get-zones [command options] credkey provider zone [...]
+    dnscontrol get-zones [command options] credkey provider zone [...]
 
-   --creds value   Provider credentials JSON file (default: "creds.json")
-   --format value  Output format: js djs zone tsv nameonly (default: "zone")
-   --out value     Instead of stdout, write to this file
-   --ttl value     Default TTL (0 picks the zone's most common TTL) (default: 0)
+    --creds value   Provider credentials JSON file (default: "creds.json")
+    --format value  Output format: js djs zone tsv nameonly (default: "zone")
+    --out value     Instead of stdout, write to this file
+    --ttl value     Default TTL (0 picks the zone's most common TTL) (default: 0)
 
-ARGUMENTS:
-   credkey:  The name used in creds.json (first parameter to NewDnsProvider() in dnsconfig.js)
-   provider: The name of the provider (second parameter to NewDnsProvider() in dnsconfig.js)
-   zone:     One or more zones (domains) to download; or "all".
+    ARGUMENTS:
+    credkey:  The name used in creds.json (first parameter to NewDnsProvider() in dnsconfig.js)
+    provider: The name of the provider (second parameter to NewDnsProvider() in dnsconfig.js)
+    zone:     One or more zones (domains) to download; or "all".
 
-FORMATS:
-   --format=js        dnsconfig.js format (not perfect, just a decent first draft)
-   --format=djs       js with disco commas (leading commas)
-   --format=zone      BIND zonefile format
-   --format=tsv       TAB separated value (useful for AWK)
-   --format=nameonly  Just print the zone names
+    FORMATS:
+    --format=js        dnsconfig.js format (not perfect, just a decent first draft)
+    --format=djs       js with disco commas (leading commas)
+    --format=zone      BIND zonefile format
+    --format=tsv       TAB separated value (useful for AWK)
+    --format=nameonly  Just print the zone names
 
-The columns in --format=tsv are:
-   FQDN (the label with the domain)
-   ShortName (just the label, "@" if it is the naked domain)
-   TTL
-   Record Type (A, AAAA, CNAME, etc.)
-   Target and arguments (quoted like in a zonefile)
+The columns in `--format=tsv` are:
 
-The --ttl flag only applies to zone/js/djs formats.
+    FQDN (the label with the domain)
+    ShortName (just the label, "@" if it is the naked domain)
+    TTL
+    Record Type (A, AAAA, CNAME, etc.)
+    Target and arguments (quoted like in a zonefile)
+
+The `--ttl` flag only applies to zone/js/djs formats.
 
 ## Examples
 
-   dnscontrol get-zones myr53 ROUTE53 example.com
-   dnscontrol get-zones gmain GANDI_V5 example.comn other.com
-   dnscontrol get-zones cfmain CLOUDFLAREAPI all
-   dnscontrol get-zones --format=tsv bind BIND example.com
-   dnscontrol get-zones --format=djs --out=draft.js glcoud GCLOUD example.com`,
+    dnscontrol get-zones myr53 ROUTE53 example.com
+    dnscontrol get-zones gmain GANDI_V5 example.comn other.com
+    dnscontrol get-zones cfmain CLOUDFLAREAPI all
+    dnscontrol get-zones --format=tsv bind BIND example.com
+    dnscontrol get-zones --format=djs --out=draft.js glcoud GCLOUD example.com`,
 
 Read a zonefile, generate a JS file, then use the JS file to see how
 different it is from the zonefile:
 
-   dnscontrol get-zone --format=djs -out=foo.djs bind BIND example.org
-   dnscontrol preview --config foo.js
+    dnscontrol get-zone --format=djs -out=foo.djs bind BIND example.org
+    dnscontrol preview --config foo.js
 
 # Developer Notes
 
