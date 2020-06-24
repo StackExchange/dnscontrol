@@ -708,7 +708,7 @@ func makeTests(t *testing.T) []*TestGroup {
 			tc("IDN CNAME AND Target", cname("öoö", "ööö.企业.")),
 		),
 
-		testgroup("page size",
+		testgroup("pager101",
 			// Tests the paging code of providers.  Many providers page at 100.
 			// Notes:
 			//  - Gandi: page size is 100, therefore we test with 99, 100, and 101
@@ -720,12 +720,17 @@ func makeTests(t *testing.T) []*TestGroup {
 			tc("101 records", manyA("rec%04d", "1.2.3.4", 101)...),
 		),
 
-		testgroup("Large updates",
-			// Verify https://github.com/StackExchange/dnscontrol/issues/493
+		testgroup("pager601",
+			// AWS:  https://github.com/StackExchange/dnscontrol/issues/493
 			only("ROUTE53"),
-			tc("600 records", manyA("rec%04d", "1.2.3.4", 600)...),
-			tc("Update 600 records", manyA("rec%04d", "1.2.3.5", 600)...),
-			tc("Empty"), // Delete them all
+			tc("601 records", manyA("rec%04d", "1.2.3.4", 600)...),
+			tc("Update 601 records", manyA("rec%04d", "1.2.3.5", 600)...),
+		),
+
+		testgroup("pager1201",
+			// AWS:  https://github.com/StackExchange/dnscontrol/issues/493
+			// Azure: https://github.com/StackExchange/dnscontrol/issues/770
+			only("ROUTE53", "AZURE_DNS"),
 			tc("1200 records", manyA("rec%04d", "1.2.3.4", 1200)...),
 			tc("Update 1200 records", manyA("rec%04d", "1.2.3.5", 1200)...),
 		),
