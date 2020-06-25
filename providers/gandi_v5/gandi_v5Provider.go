@@ -283,6 +283,8 @@ func (client *api) GenerateDomainCorrections(dc *models.DomainConfig, existing m
 		}
 	}
 
+	sort.Slice(corrections, func(i, j int) bool { return diff.CorrectionLess(corrections, i, j) })
+
 	return corrections, nil
 }
 

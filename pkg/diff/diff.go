@@ -247,6 +247,10 @@ func ChangesetLess(c Changeset, i, j int) bool {
 	// elements, and sort on the result.
 }
 
+func CorrectionLess(c []*models.Correction, i, j int) bool {
+	return c[i].Msg < c[j].Msg
+}
+
 func (d *differ) ChangedGroups(existing []*models.RecordConfig) map[models.RecordKey][]string {
 	changedKeys := map[models.RecordKey][]string{}
 	_, create, delete, modify := d.IncrementalDiff(existing)

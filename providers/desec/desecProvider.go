@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"sort"
 
 	"github.com/StackExchange/dnscontrol/v3/models"
 	"github.com/StackExchange/dnscontrol/v3/pkg/diff"
@@ -214,6 +215,8 @@ func (c *api) GenerateDomainCorrections(dc *models.DomainConfig, existing models
 				return nil
 			},
 		})
+
+	sort.Slice(corrections, func(i, j int) bool { return diff.CorrectionLess(corrections, i, j) })
 
 	return corrections, nil
 }
