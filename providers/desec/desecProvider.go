@@ -216,6 +216,12 @@ func (c *api) GenerateDomainCorrections(dc *models.DomainConfig, existing models
 			},
 		})
 
+	// NB(tlim): This sort is just to make updates look pretty. It is
+	// cosmetic.  The risk here is that there may be some updates that
+	// require a specific order (for example a delete before an add).
+	// However the code doesn't seem to have such situation.  All tests
+	// pass.  That said, if this breaks anything, the easiest fix might
+	// be to just remove the sort.
 	sort.Slice(corrections, func(i, j int) bool { return diff.CorrectionLess(corrections, i, j) })
 
 	return corrections, nil
