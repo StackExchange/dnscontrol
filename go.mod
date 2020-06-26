@@ -10,7 +10,7 @@ require (
 	github.com/DisposaBoy/JsonConfigReader v0.0.0-20171218180944-5ea4d0ddac55
 	github.com/TomOnTime/utfutil v0.0.0-20200626160131-0b0178852c8f
 	github.com/andreyvit/diff v0.0.0-20170406064948-c7f18ee00883
-	github.com/aws/aws-sdk-go v1.32.4
+	github.com/aws/aws-sdk-go v1.32.10
 	github.com/billputer/go-namecheap v0.0.0-20170915210158-0c7adb0710f8
 	github.com/cenkalti/backoff v2.1.1+incompatible // indirect
 	github.com/cpuguy83/go-md2man/v2 v2.0.0 // indirect
