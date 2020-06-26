@@ -48,9 +48,8 @@ require (
 	github.com/tiramiseb/go-gandi v0.0.0-20200313161345-6b74caa58663
 	github.com/urfave/cli/v2 v2.2.0
 	github.com/vultr/govultr v0.2.0
-	golang.org/x/crypto v0.0.0-20200320181102-891825fb96df // indirect
 	golang.org/x/mod v0.3.0 // indirect
-	golang.org/x/net v0.0.0-20200602114024-627f9648deb9
+	golang.org/x/net v0.0.0-20200625001655-4c5254603344
 	golang.org/x/oauth2 v0.0.0-20200107190931-bf48bf16ab8d
 	golang.org/x/tools v0.0.0-20200618120828-9b4b92067d4b // indirect
 	google.golang.org/api v0.27.0
