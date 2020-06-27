@@ -112,7 +112,7 @@ When no nameserver appears in the zone, and no default nameservers nor
 custom master are configured, the AXFR+DDNS provider will fail with
 the following error message:
 
-{% highlight %}
+{% highlight text %}
 [Error] AXFRDDNS: the nameservers list cannot be empty.
 Please consider adding default `nameservers` or an explicit `master` in `creds.json`.
 {% endhighlight %}
@@ -126,7 +126,7 @@ Here is a sample `named.conf` example for an authauritative server on
 zone `example.tld`. It uses a simple IP-based ACL for the AXFR
 transfer and a conjunction of TSIG and IP-based ACL for the updates.
 
-{% highlight %}
+{% highlight javascript %}
 options {
 
 	listen-on { any; };
@@ -179,8 +179,8 @@ THe AXFR+DDNS provider does not display DNSSec records. But, if any
 DNSSec records is found in the zone, it will replace all of them with
 a single placeholder record:
 
-{% highlight %}
-__dnssec         IN TXT   "Domain has DNSSec records, not displayed here."
+{% highlight text %}
+    __dnssec         IN TXT   "Domain has DNSSec records, not displayed here."
 {% endhighlight %}
 
 ## FYI: create-domain
