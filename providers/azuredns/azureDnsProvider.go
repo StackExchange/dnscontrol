@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"sort"
 	"strings"
 	"time"
 
@@ -220,7 +221,7 @@ func (a *azureDNSProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*mod
 							defer cancel()
 							_, err := a.recordsClient.Delete(ctx, *a.resourceGroup, zoneName, *rrset.Name, nativeToRecordType(rrset.Type), "")
 							// Artifically slow things down after a delete, as the API can take time to register it. The tests fail if we delete and then recheck too quickly.
-							time.Sleep(25 * time.Millisecond)
+							time.Sleep(10 * time.Millisecond)
 							if err != nil {
 								return err
 							}
@@ -252,7 +253,7 @@ func (a *azureDNSProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*mod
 									defer cancel()
 									_, err := a.recordsClient.Delete(ctx, *a.resourceGroup, zoneName, recordName, existingRecordType, "")
 									// Artifically slow things down after a delete, as the API can take time to register it. The tests fail if we delete and then recheck too quickly.
-									time.Sleep(25 * time.Millisecond)
+									time.Sleep(10 * time.Millisecond)
 									if err != nil {
 										return err
 									}
@@ -271,7 +272,7 @@ func (a *azureDNSProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*mod
 						defer cancel()
 						_, err := a.recordsClient.CreateOrUpdate(ctx, *a.resourceGroup, zoneName, recordName, recordType, *rrset, "", "")
 						// Artifically slow things down after a delete, as the API can take time to register it. The tests fail if we delete and then recheck too quickly.
-						time.Sleep(25 * time.Millisecond)
+						time.Sleep(10 * time.Millisecond)
 						if err != nil {
 							return err
 						}
@@ -280,6 +281,18 @@ func (a *azureDNSProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*mod
 				})
 		}
 	}
+
+	// Sort the records for cosmetic reasons: It just makes a long list
+	// of deletes or adds easier to read if they are in sorted order.
+	// That said, it may be risky to sort them (sort key is the text
+	// message "Msg") if there are deletes that must happen before adds.
+	// Reading the above code it isn't clear that any of the updates are
+	// order-dependent.  That said, all the tests pass.
+	// If in the future this causes a bug, we can either just remove
+	// this next line, or (even better) put any order-dependent
+	// operations in a single models.Correction{}.
+	sort.Slice(corrections, func(i, j int) bool { return diff.CorrectionLess(corrections, i, j) })
+
 	return corrections, nil
 }
 
