@@ -52,7 +52,7 @@ require (
 	google.golang.org/api v0.28.0
 	google.golang.org/appengine v1.6.6 // indirect
 	gopkg.in/ini.v1 v1.42.0 // indirect
-	gopkg.in/ns1/ns1-go.v2 v2.0.0-20170502175150-c563826f4cbe
+	gopkg.in/ns1/ns1-go.v2 v2.4.1
 	gopkg.in/sourcemap.v1 v1.0.5 // indirect
 	gopkg.in/yaml.v2 v2.3.0
 	gopkg.in/yaml.v3 v3.0.0-20200605160147-a5ece683394c // indirect
