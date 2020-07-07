@@ -191,7 +191,7 @@ func (c *api) get(endpoint string, params requestParams) ([]byte, error) {
 	req, _ := http.NewRequest("GET", "https://api.cloudns.net"+endpoint, nil)
 	q := req.URL.Query()
 
-	//TODO: Suport  sub-auth-id / sub-auth-user https://asia.cloudns.net/wiki/article/42/
+	//TODO: Support  sub-auth-id / sub-auth-user https://asia.cloudns.net/wiki/article/42/
 	// Add auth params
 	q.Add("auth-id", c.creds.id)
 	q.Add("auth-password", c.creds.password)
@@ -212,6 +212,10 @@ func (c *api) get(endpoint string, params requestParams) ([]byte, error) {
 	// Got error from API ?
 	var errResp errorResponse
 	err = json.Unmarshal(bodyString, &errResp)
+	if err != nil {
+		return []byte{}, err
+	}
+
 	if errResp.Status == "Failed" {
 		return bodyString, fmt.Errorf("ClouDNS API error: %s URL:%s%s ", errResp.Description, req.Host, req.URL.RequestURI())
 	}

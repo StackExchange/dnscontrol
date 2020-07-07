@@ -22,7 +22,7 @@ type DomainConfig struct {
 
 	// These fields contain instantiated provider instances once everything is linked up.
 	// This linking is in two phases:
-	// 1. Metadata (name/type) is availible just from the dnsconfig. Validation can use that.
+	// 1. Metadata (name/type) is available just from the dnsconfig. Validation can use that.
 	// 2. Final driver instances are loaded after we load credentials. Any actual provider interaction requires that.
 	RegistrarInstance    *RegistrarInstance     `json:"-"`
 	DNSProviderInstances []*DNSProviderInstance `json:"-"`

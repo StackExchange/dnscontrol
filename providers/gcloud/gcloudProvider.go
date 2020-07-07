@@ -72,7 +72,7 @@ func New(cfg map[string]string, metadata json.RawMessage) (providers.DNSServiceP
 	if err != nil {
 		return nil, err
 	}
-	var nss *string = nil
+	var nss *string
 	if val, ok := cfg["name_server_set"]; ok {
 		fmt.Printf("GCLOUD :name_server_set %s configured\n", val)
 		nss = sPtr(val)
