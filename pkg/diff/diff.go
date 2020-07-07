@@ -189,7 +189,7 @@ func (d *differ) IncrementalDiff(existing []*models.RecordConfig) (unchanged, cr
 			rec := desiredLookup[norm]
 			create = append(create, Correlation{d, nil, rec})
 		}
-		// if found , but not desired, delete it
+		// if found, but not desired, delete it
 		for _, norm := range existingStrings {
 			rec := existingLookup[norm]
 			toDelete = append(toDelete, Correlation{d, rec, nil})
@@ -247,6 +247,7 @@ func ChangesetLess(c Changeset, i, j int) bool {
 	// elements, and sort on the result.
 }
 
+// CorrectionLess returns true when comparing corrections.
 func CorrectionLess(c []*models.Correction, i, j int) bool {
 	return c[i].Msg < c[j].Msg
 }

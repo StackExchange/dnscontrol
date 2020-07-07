@@ -51,7 +51,7 @@ func newRoute53(m map[string]string, metadata json.RawMessage) (*route53Provider
 	}
 	sess := session.Must(session.NewSession(config))
 
-	var dls *string = nil
+	var dls *string
 	if val, ok := m["DelegationSet"]; ok {
 		fmt.Printf("ROUTE53 DelegationSet %s configured\n", val)
 		dls = sPtr(val)
@@ -91,7 +91,7 @@ func withRetry(f func() error) {
 	const maxRetries = 23
 	// TODO: exponential backoff
 	const sleepTime = 5 * time.Second
-	var currentRetry int = 0
+	var currentRetry int
 	for {
 		err := f()
 		if err == nil {

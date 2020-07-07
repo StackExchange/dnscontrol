@@ -30,14 +30,13 @@ func generateSerial(oldSerial uint32) uint32 {
 	}
 	draft := uint32(todayNum * 100)
 
-	method := "none" // Used only in debugging.
-	if oldSerial >= draft {
+	// First serial number to be requested today:
+	method := "default"
+	newSerial = draft
+	if oldSerial >= newSerial {
+		// If that would be going backwards, just increment the old one.
 		method = "o>=d"
 		newSerial = oldSerial + 1
-	} else {
-		// First serial number to be requested today:
-		method = "default"
-		newSerial = draft
 	}
 
 	if newSerial == 0 {

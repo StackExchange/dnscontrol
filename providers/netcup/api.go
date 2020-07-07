@@ -144,6 +144,9 @@ func (api *api) get(action string, params interface{}) (json.RawMessage, error) 
 
 	respData := &response{}
 	err = json.Unmarshal(bodyString, &respData)
+	if err != nil {
+		return nil, err
+	}
 
 	// Yeah, netcup implemented an empty recordset as an error - don't ask.
 	if action == "infoDnsRecords" && respData.StatusCode == 5029 {

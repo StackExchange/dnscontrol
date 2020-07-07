@@ -56,7 +56,7 @@ import (
 //      as they will always work.
 // Target:
 //   This is the host or IP address of the record, with
-//     the other related paramters (weight, priority, etc.) stored in individual
+//     the other related parameters (weight, priority, etc.) stored in individual
 //     fields.
 //   NOTE: Eventually we will unexport Target. Please start using the
 //     setters (SetTarget*) and getters (GetTarget*) as they will always work.

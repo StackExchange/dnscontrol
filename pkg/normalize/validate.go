@@ -39,7 +39,7 @@ func checkTarget(target string) error {
 	if strings.ContainsAny(target, `'" +,|!£$%&/()=?^*ç°§;:<>[]()@`) {
 		return fmt.Errorf("target (%v) includes invalid char", target)
 	}
-	// If it containts a ".", it must end in a ".".
+	// If it contains a ".", it must end in a ".".
 	if strings.ContainsRune(target, '.') && target[len(target)-1] != '.' {
 		return fmt.Errorf("target (%v) must end with a (.) [https://stackexchange.github.io/dnscontrol/why-the-dot]", target)
 	}

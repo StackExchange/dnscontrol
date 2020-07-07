@@ -92,7 +92,7 @@ type DocumentationNote struct {
 // DocumentationNotes is a full list of notes for a single provider
 type DocumentationNotes map[Capability]*DocumentationNote
 
-// ProviderMetadata is a common interface for DocumentationNotes and Capability to be used interchangably
+// ProviderMetadata is a common interface for DocumentationNotes and Capability to be used interchangeably
 type ProviderMetadata interface{}
 
 // Notes is a collection of all documentation notes, keyed by provider type

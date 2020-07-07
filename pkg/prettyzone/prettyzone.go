@@ -121,8 +121,6 @@ func (z *ZoneGenData) generateZoneFileHelper(w io.Writer) error {
 		name := nameShort
 		if (prefix == "") && (i > 0 && nameShort == nameShortPrevious) {
 			name = ""
-		} else {
-			name = nameShort
 		}
 		nameShortPrevious = nameShort
 

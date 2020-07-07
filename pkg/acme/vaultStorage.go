@@ -1,6 +1,7 @@
 package acme
 
 import (
+	"crypto/ecdsa"
 	"crypto/x509"
 	"encoding/json"
 	"encoding/pem"
@@ -117,16 +118,17 @@ func (v *vaultStorage) GetAccount(acmeHost string) (*Account, error) {
 		return nil, err
 	}
 
-	if dat, err := v.getString("tls.key", secret.Data, path); err != nil {
+	var key *ecdsa.PrivateKey
+	var dat []byte
+	var block *pem.Block
+	if dat, err = v.getString("tls.key", secret.Data, path); err != nil {
 		return nil, err
-	} else if block, _ := pem.Decode(dat); block == nil {
+	} else if block, _ = pem.Decode(dat); block == nil {
 		return nil, fmt.Errorf("Error decoding account private key")
-	} else if key, err := x509.ParseECPrivateKey(block.Bytes); err != nil {
+	} else if key, err = x509.ParseECPrivateKey(block.Bytes); err != nil {
 		return nil, err
-	} else {
-		acct.key = key
 	}
-
+	acct.key = key
 	return acct, nil
 }
 
