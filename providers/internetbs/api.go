@@ -78,6 +78,9 @@ func (c *api) get(endpoint string, params requestParams) ([]byte, error) {
 	// Got error from API ?
 	var errResp errorResponse
 	err = json.Unmarshal(bodyString, &errResp)
+	if err != nil {
+		return []byte{}, err
+	}
 	if errResp.Status == "FAILURE" {
 		return bodyString, fmt.Errorf("Internet.bs API error: %s code: %d transactid: %s  URL:%s%s ",
 			errResp.Message, errResp.Code, errResp.TransactID,

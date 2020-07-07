@@ -596,7 +596,7 @@ func getProxyMetadata(r *models.RecordConfig) map[string]string {
 	if r.Type != "A" && r.Type != "AAAA" && r.Type != "CNAME" {
 		return nil
 	}
-	proxied := false
+	var proxied bool
 	if r.Original != nil {
 		proxied = r.Original.(*cfRecord).Proxied
 	} else {

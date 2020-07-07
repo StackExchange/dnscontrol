@@ -55,7 +55,7 @@ func (args *GetCertsArgs) flags() []cli.Flag {
 		Name:        "acme",
 		Destination: &args.ACMEServer,
 		Value:       "live",
-		Usage:       `ACME server to issue against. Give full directory endpoint. Can also use 'staging' or 'live' for standard Let's Encrpyt endpoints.`,
+		Usage:       `ACME server to issue against. Give full directory endpoint. Can also use 'staging' or 'live' for standard Let's Encrypt endpoints.`,
 	})
 	flags = append(flags, &cli.IntFlag{
 		Name:        "renew",

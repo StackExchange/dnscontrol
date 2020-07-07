@@ -196,7 +196,7 @@ func encodeTxt(txts []string) string {
 	return ans
 }
 
-// finds a string surrounded by quotes that might contain an escaped quote charactor.
+// finds a string surrounded by quotes that might contain an escaped quote character.
 var quotedStringRegexp = regexp.MustCompile(`"((?:[^"\\]|\\.)*)"`)
 
 // decodeTxt decodes the TXT record as received from name.com and
