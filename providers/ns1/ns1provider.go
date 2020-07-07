@@ -15,6 +15,9 @@ import (
 )
 
 var docNotes = providers.DocumentationNotes{
+	providers.CanUseAlias:            providers.Can(),
+	providers.CanUsePTR:              providers.Can(),
+	providers.CanUseTXTMulti:         providers.Can(),
 	providers.DocCreateDomains:       providers.Cannot(),
 	providers.DocOfficiallySupported: providers.Cannot(),
 	providers.DocDualHost:            providers.Can(),
@@ -150,6 +153,11 @@ func convert(zr *dns.ZoneRecord, domain string) ([]*models.RecordConfig, error) 
 		}
 		rec.SetLabelFromFQDN(zr.Domain, domain)
 		switch rtype := zr.Type; rtype {
+		case "ALIAS":
+			rec.Type = rtype
+			if err := rec.SetTarget(ans); err != nil {
+				panic(fmt.Errorf("unparsable ALIAS record received from ns1: %w", err))
+			}
 		default:
 			if err := rec.PopulateFromString(rtype, ans, domain); err != nil {
 				panic(fmt.Errorf("unparsable record received from ns1: %w", err))
