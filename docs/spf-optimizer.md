@@ -129,7 +129,8 @@ debugger at [https://stackexchange.github.io/dnscontrol/flattener/index.html](ht
 
 When generating the chain of SPF
 records, each one is max length 255.  For the first item in
-the chain, the max is 255 - "overhead1".
+the chain, the max is 255 - "overhead1".  Setting this to 255 or
+higher has undefined behavior.
 
 Why is this useful?
 
