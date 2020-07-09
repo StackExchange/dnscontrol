@@ -2,6 +2,7 @@ package normalize
 
 import (
 	"fmt"
+	"strconv"
 	"strings"
 
 	"github.com/StackExchange/dnscontrol/v3/models"
@@ -41,11 +42,27 @@ func flattenSPFs(cfg *models.DNSConfig) []error {
 			}
 			// now split if needed
 			if split, ok := txt.Metadata["split"]; ok {
+
+				overhead1 := 0
+				// overhead1: The first segment of the SPF record
+				// needs to be shorter than the others due to the overhead of
+				// other (non-SPF) txt records.  If there are (for example) 50
+				// bytes of txt records also on this domain record, setting
+				// overhead1=50 reduces the maxLen by 50. It only affects the
+				// first part of the split.
+				if oh, ok := txt.Metadata["overhead1"]; ok {
+					i, err := strconv.Atoi(oh)
+					if err != nil {
+						errs = append(errs, Warning{fmt.Errorf("split overhead1 %q is not an int", oh)})
+					}
+					overhead1 = i
+				}
+
 				if !strings.Contains(split, "%d") {
 					errs = append(errs, Warning{fmt.Errorf("Split format `%s` in `%s` is not proper format (should have %%d in it)", split, txt.GetLabelFQDN())})
 					continue
 				}
-				recs := rec.TXTSplit(split + "." + domain.Name)
+				recs := rec.TXTSplit(split+"."+domain.Name, overhead1)
 				for k, v := range recs {
 					if k == "@" {
 						txt.SetTargetTXT(v)
