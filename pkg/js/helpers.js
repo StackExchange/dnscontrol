@@ -1,5 +1,12 @@
 'use strict';
 
+// If you edit this file, you must run `go generate` to embed this
+// file in the source code.
+// If you are heavily debugging this code, the "-dev" flag will
+// read this file directly instead of using the output of
+// `go generate`. You'll still need to run `go generate` before
+// you commit the changes.
+
 var conf = {
     registrars: [],
     dns_providers: [],
@@ -725,6 +732,7 @@ var FRAME = recordBuilder('FRAME');
 // ttl: The time for TTL, integer or string. (default: not defined, using DefaultTTL)
 // split: The template for additional records to be created (default: '_spf%d')
 // flatten: A list of domains to be flattened.
+// overhead1: Amout of "buffer room" to reserve on the first item in the spf chain.
 
 function SPF_BUILDER(value) {
     if (!value.parts || value.parts.length < 2) {
@@ -754,6 +762,10 @@ function SPF_BUILDER(value) {
     // If overflow is specified, enable splitting.
     if (value.overflow) {
         p.split = value.overflow;
+    }
+
+    if (value.overhead1) {
+        p.overhead1 = value.overhead1;
     }
 
     // Generate a TXT record with the metaparameters.
