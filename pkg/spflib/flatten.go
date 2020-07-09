@@ -14,7 +14,7 @@ func (s *SPFRecord) TXT() string {
 	return text
 }
 
-const maxLen = 255
+const maxLenDefault = 255
 
 // TXTSplit returns a set of txt records to use for SPF.
 // pattern given is used to name all chained spf records.
@@ -22,14 +22,20 @@ const maxLen = 255
 // should result in fqdn after replacement
 // returned map will have keys with fqdn of resulting records.
 // root record will be under key "@"
-func (s *SPFRecord) TXTSplit(pattern string) map[string]string {
+// overhead specifies that the first split part should assume an
+// overhead of that many bytes.  For example, if there are other txt
+// records and you wish to reduce the first SPF record size to prevent
+// DNS over TCP.
+func (s *SPFRecord) TXTSplit(pattern string, overhead int) map[string]string {
 	m := map[string]string{}
-	s.split("@", pattern, 1, m)
+	s.split("@", pattern, 1, m, overhead)
 	return m
 
 }
 
-func (s *SPFRecord) split(thisfqdn string, pattern string, nextIdx int, m map[string]string) {
+func (s *SPFRecord) split(thisfqdn string, pattern string, nextIdx int, m map[string]string, overhead int) {
+	maxLen := maxLenDefault - overhead
+
 	base := s.TXT()
 	// simple case. it fits
 	if len(base) <= maxLen {
@@ -66,7 +72,7 @@ func (s *SPFRecord) split(thisfqdn string, pattern string, nextIdx int, m map[st
 		}
 	}
 	m[thisfqdn] = thisText + tail
-	newRec.split(nextFQDN, pattern, nextIdx+1, m)
+	newRec.split(nextFQDN, pattern, nextIdx+1, m, 0)
 }
 
 // Flatten optimizes s.
