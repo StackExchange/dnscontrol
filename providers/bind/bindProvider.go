@@ -106,7 +106,6 @@ func (c *Bind) GetNameservers(string) ([]*models.Nameserver, error) {
 	var r []string
 	for _, j := range c.nameservers {
 		r = append(r, j.Name)
-		fmt.Printf("DEBUG: %q\n", j.Name)
 	}
 	return models.ToNameservers(r)
 }
