@@ -17,7 +17,7 @@ import (
 var docNotes = providers.DocumentationNotes{
 	providers.CanUseAlias:            providers.Can(),
 	providers.CanUsePTR:              providers.Can(),
-	providers.CanUseTXTMulti:         providers.Can(),
+	providers.CanUseTXTMulti:         providers.Cannot(),
 	providers.DocCreateDomains:       providers.Cannot(),
 	providers.DocOfficiallySupported: providers.Cannot(),
 	providers.DocDualHost:            providers.Can(),
