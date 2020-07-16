@@ -11,6 +11,8 @@ import (
 	"github.com/miekg/dns/dnsutil"
 	"github.com/mittwald/go-powerdns"
 	"github.com/mittwald/go-powerdns/apis/zones"
+	"github.com/mittwald/go-powerdns/pdnshttp"
+	"net/http"
 	"strings"
 )
 
@@ -196,12 +198,18 @@ func (api *PowerDNS) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Co
 
 // EnsureDomainExists adds a domain to the DNS service if it does not exist
 func (api *PowerDNS) EnsureDomainExists(domain string) error {
-	if zone, _ := api.client.Zones().GetZone(context.Background(), api.ServerName, domain); zone.ID != "" {
+	if _, err := api.client.Zones().GetZone(context.Background(), api.ServerName, domain+"."); err != nil {
+		if e, ok := err.(pdnshttp.ErrUnexpectedStatus); ok {
+			if e.StatusCode != http.StatusNotFound {
+				return err
+			}
+		}
+	} else { // domain seems to be there
 		return nil
 	}
 
 	_, err := api.client.Zones().CreateZone(context.Background(), api.ServerName, zones.Zone{
-		Name:        domain,
+		Name:        domain + ".",
 		Type:        zones.ZoneTypeZone,
 		DNSSec:      api.DNSSecOnCreate,
 		Nameservers: api.DefaultNS,
