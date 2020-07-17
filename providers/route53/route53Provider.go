@@ -377,10 +377,14 @@ func nativeToRecords(set *r53.ResourceRecordSet, origin string) []*models.Record
 			switch rtype := *set.Type; rtype {
 			case "SOA":
 				continue
+			case "SPF":
+				// route53 uses a custom record type for SPF
+				rtype = "TXT"
+				fallthrough
 			default:
 				rc := &models.RecordConfig{TTL: uint32(*set.TTL)}
 				rc.SetLabelFromFQDN(unescape(set.Name), origin)
-				if err := rc.PopulateFromString(*set.Type, *rec.Value, origin); err != nil {
+				if err := rc.PopulateFromString(rtype, *rec.Value, origin); err != nil {
 					panic(fmt.Errorf("unparsable record received from R53: %w", err))
 				}
 				results = append(results, rc)
