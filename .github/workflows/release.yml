@@ -1,0 +1,26 @@
+on:
+  push:
+    tags:
+      - 'v*'
+
+name: Create draft release
+
+jobs:
+  build:
+    name: Create draft release
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+      - name: Create Release
+        id: create_release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: ${{ github.ref }}
+          release_name: Release ${{ github.ref }}
+          body: Please add your release note here
+          draft: true
+          prerelease: false
+      # TODO attach binaries

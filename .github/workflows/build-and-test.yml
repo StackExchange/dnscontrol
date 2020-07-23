@@ -1,4 +1,4 @@
-name: build
+name: build-and-test
 
 on: [pull_request, push] # TODO remove "push". Added it temporarily for debugging.
 

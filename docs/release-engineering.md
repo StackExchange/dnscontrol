@@ -15,11 +15,11 @@ git checkout -b Release-Candidate-3.1.0
 ```
 
 Creating the PR will kick off a GitHub Actions workflow
-which does the following:
+(`build-and-test.yml`) which does the following:
 
 * Vendor the modules
+* Build the project 
 * Run the integration tests
-* Create a draft release
 
 Check the [Actions](https://github.com/StackExchange/dnscontrol/actions) tab
 and wait for the workflow to complete successfully.
@@ -48,6 +48,10 @@ sed -i.bak -e 's@github.com.StackExchange.dnscontrol.v2@github.com/StackExchange
 # Delete the backup files:
 find * -name \*.bak -delete
 ```
+
+Pushing the tag will trigger another GitHub Acions workflow (`release.yml`)
+which creates a draft release and attaches the binaries to it.
+
 
 ## Step 3. Write the release notes.
 
