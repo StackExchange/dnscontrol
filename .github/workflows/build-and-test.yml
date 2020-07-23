@@ -1,6 +1,6 @@
 name: build
 
-on: [push]
+on: [pull_request, push] # TODO remove "push". Added it temporarily for debugging.
 
 jobs:
   build:
