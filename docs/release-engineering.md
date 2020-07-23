@@ -8,48 +8,30 @@ title: How to build and ship a release
 These are the instructions for producing a release.
 Please change the version number as appropriate.
 
-
-## Step 0. Tools check
-
-Make sure you are using the latest version of `go`
-(listed on [https://golang.org/dl/](https://golang.org/dl/))
+## Step 1. Create branch and a Pull Request
 
 ```
-go version
+git checkout -b Release-Candidate-3.1.0
 ```
 
-## Step 1. Vendor the modules
+Creating the PR will kick off a GitHub Actions workflow
+which does the following:
 
-Vendor the modules. The vendored files are not used (unless you change
-the builds to use `-mod=vendor`). They are maintained simply to make
-sure that we have a backup in the unlikely event of a disaster.
+* Vendor the modules
+* Run the integration tests
+* Create a draft release
 
-```
-go mod vendor
-git add vendor
-git commit -m'go mod vendor' vendor
-```
-
-TODO(Tom): build.go should verify that this was done, similar to
-how it tests that gofmt was run.
+Check the [Actions](https://github.com/StackExchange/dnscontrol/actions) tab
+and wait for the workflow to complete successfully.
 
 
-## Step 2. Run the integration tests
-
-* If you are at StackOverflow, this is in TC as "DNS > Integration Tests".
-* Otherwise:
-  * Run "go test ./..." (documented in [Creating new DNS Resource Types](adding-new-rtypes))
-  * Run the integration tests (documented in [Writing new DNS providers](writing-providers))
-
-
-## Step 3. Bump the version number
+## Step 2. Bump the version number
 
 Edit the "Version" variable in `main.go` and commit.
 
 ```
 export PREVVERSION=3.0.0       <<< Change to the previous version
 export VERSION=3.1.0           <<< Change to the new release version
-git checkout master
 vi main.go
 git commit -m'Release v'"$VERSION" main.go
 git tag v"$VERSION"
@@ -67,7 +49,7 @@ sed -i.bak -e 's@github.com.StackExchange.dnscontrol.v2@github.com/StackExchange
 find * -name \*.bak -delete
 ```
 
-## Step 4. Write the release notes.
+## Step 3. Write the release notes.
 
 The release notes that you write will be used in a few places.
 
@@ -112,15 +94,19 @@ Provider-specific changes:
 * CLOUDFLARE: Fix CF trying to update non-changeable TTL (#issueid)
 ```
 
-## Step 5. Make the draft release.
+## Step 4. Edit the draft release.
+
+The GitHub Actions workflow triggered by Step 1 will have
+automatically created a draft release. Find it under
+
+https://github.com/StackExchange/dnscontrol/releases
 
 [On github.com, click on "Draft a new release"](https://github.com/StackExchange/dnscontrol/releases/new)
 
 Fill in the `Tag version` @ `Target` with:
 
   * Tag version: v$VERSION (this should be the first tag listed)
-  * Target: master (this should be the default; and disappears when
-    you enter the tag)
+  * Target: your branch
 
 Release title: Release v$VERSION
 
@@ -130,11 +116,7 @@ Fill in the text box with the release notes written above.
 
 (DO use the "preview" tab to proofread the text.)
 
-Create the binaries and attach them to the release:
-
-    go run build/build.go
-
-NOTE: This command creates binaries with the version number and git hash embedded. It also builds the releases for all supported platforms (i.e. creates a .exe for Windows even if you are running on Linux.  Isn't Go amazing?)
+Confirm that the binaries have been attached to the release.
 
 WARNING: if there are files that haven't been checked in, the version string will have "dirty" appended.
 
@@ -155,22 +137,12 @@ dnscontrol 3.0.0 ("ee5208bd5f19b9e5dd0bdba8d0e13403c43a469a[dirty]") built 22 Ma
                                                             ^^^^^
 ```
 
+## Step 5. Merge the Pull Request
 
-## Step 6. Attach the binaries and release.
-
-a. Drag and drop binaries into the web form.
-
-There is a box labeled "Attach binaries by dropping them here or
-selecting them".  Drag dnscontrol-Darwin, dnscontrol-Linux, and
-dnscontrol.exe onto that box (one at a time or all at once). This
-will upload the binaries.
-
-b. Submit the release.
-
-Make sure the "This is a pre-release" checkbox is UNchecked. Then click "Publish Release".
+Merge your PR to the `master` branch.
 
 
-## Step 7. Announce it via email
+## Step 6. Announce it via email
 
 Email the release notes to the mailing list: (note the format of the Subject line and that the first line of the email is the URL of the release)
 
@@ -187,7 +159,7 @@ NOTE: You won't be able to post to the mailing list unless you are on
 it.  [Click here to join](https://groups.google.com/forum/#!forum/dnscontrol-discuss).
 
 
-## Step 8. Announce it via chat
+## Step 7. Announce it via chat
 
 Mention on [https://gitter.im/dnscontrol/Lobby](https://gitter.im/dnscontrol/Lobby) that the new release has shipped.
 
@@ -196,7 +168,7 @@ ANNOUNCEMENT: dnscontrol $VERSION has been released! https://github.com/StackExc
 ```
 
 
-## Step 9. Get credit!
+## Step 8. Get credit!
 
 Mention the fact that you did this release in your weekly accomplishments.
 
