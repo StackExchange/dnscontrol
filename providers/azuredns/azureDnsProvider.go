@@ -518,15 +518,18 @@ func (a *azureDNSProvider) fetchRecordSets(zoneName string) ([]*adns.RecordSet, 
 	var records []*adns.RecordSet
 	ctx, cancel := context.WithTimeout(context.Background(), 6000*time.Second)
 	defer cancel()
-	recordsIterator, recordsErr := a.recordsClient.ListAllByDNSZoneComplete(ctx, *a.resourceGroup, zoneName, to.Int32Ptr(1000), "")
+	recordsIterator, recordsErr := a.recordsClient.ListAllByDNSZone(ctx, *a.resourceGroup, zoneName, to.Int32Ptr(1000), "")
 	if recordsErr != nil {
 		return nil, recordsErr
 	}
-	recordsResult := recordsIterator.Response()
 
-	for _, r := range *recordsResult.Value {
-		record := r
-		records = append(records, &record)
+	for recordsIterator.NotDone() {
+		recordsResult := recordsIterator.Response()
+		for _, r := range *recordsResult.Value {
+			record := r
+			records = append(records, &record)
+		}
+		recordsIterator.NextWithContext(ctx)
 	}
 
 	return records, nil
