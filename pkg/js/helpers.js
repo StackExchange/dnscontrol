@@ -741,7 +741,7 @@ function SPF_BUILDER(value) {
     if (!value.label) {
         value.label = '@';
     }
-    if (!value.raw) {
+    if (!value.raw && value.raw !== '') {
         value.raw = '_rawspf';
     }
 
@@ -752,10 +752,13 @@ function SPF_BUILDER(value) {
     // If flattening is requested, generate a TXT record with the raw SPF settings.
     if (value.flatten && value.flatten.length > 0) {
         p.flatten = value.flatten.join(',');
-        if (value.ttl) {
-            r.push(TXT(value.raw, rawspf, TTL(value.ttl)));
-        } else {
-            r.push(TXT(value.raw, rawspf));
+        // Only add the raw spf record if it isn't an empty string
+        if (value.raw !== '') {
+            if (value.ttl) {
+                r.push(TXT(value.raw, rawspf, TTL(value.ttl)));
+            } else {
+                r.push(TXT(value.raw, rawspf));
+            }
         }
     }
 
