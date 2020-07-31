@@ -103,7 +103,7 @@ The parameters are:
 * `label:` The label of the first TXT record. (Optional. Default: `"@"`)
 * `overflow:` If set, SPF strings longer than 255 chars will be split into multiple TXT records. The value of this setting determines the template for what the additional labels will be named. If not set, no splitting will occur and dnscontrol may generate TXT strings that are too long.
 * `overhead1:` "Overhead for the 1st TXT record".  When calculating the max length of each TXT record, reduce the maximum for the first TXT record in the chain by this amount.
-* `raw:` The label of the unaltered SPF settings. (Optional. Default: `"_rawspf"`)
+* `raw:` The label of the unaltered SPF settings. Setting to an empty string `''` will disable this. (Optional. Default: `"_rawspf"`)
 * `ttl:` This allows setting a specific TTL on this SPF record. (Optional. Default: using default record TTL)
 * `parts:` The individual parts of the SPF settings.
 * `flatten:` Which includes should be inlined. For safety purposes the flattening is done on an opt-in basis. If `"*"` is listed, all includes will be flattened... this might create more problems than is solves due to length limitations.
