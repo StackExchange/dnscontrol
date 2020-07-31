@@ -733,6 +733,7 @@ var FRAME = recordBuilder('FRAME');
 // split: The template for additional records to be created (default: '_spf%d')
 // flatten: A list of domains to be flattened.
 // overhead1: Amout of "buffer room" to reserve on the first item in the spf chain.
+// txtMaxSize: The maximum size for each TXT string. Values over 255 will result in multiple strings (default: '255')
 
 function SPF_BUILDER(value) {
     if (!value.parts || value.parts.length < 2) {
@@ -769,6 +770,10 @@ function SPF_BUILDER(value) {
 
     if (value.overhead1) {
         p.overhead1 = value.overhead1;
+    }
+
+    if (value.txtMaxSize) {
+        p.txtMaxSize = value.txtMaxSize;
     }
 
     // Generate a TXT record with the metaparameters.

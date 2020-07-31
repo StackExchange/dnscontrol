@@ -1,6 +1,7 @@
 package spflib
 
 import (
+	"reflect"
 	"strconv"
 	"strings"
 	"testing"
@@ -94,6 +95,7 @@ var splitTests = [][]string{
 func TestSplit(t *testing.T) {
 	for _, tst := range splitTests {
 		overhead := 0
+		txtMaxSize := 255
 
 		v := strings.Split(tst[0], "-")
 		if len(v) > 1 {
@@ -107,16 +109,90 @@ func TestSplit(t *testing.T) {
 			if err != nil {
 				t.Fatal(err)
 			}
-			res := rec.TXTSplit("_spf%d.stackex.com", overhead)
-			if res["@"] != tst[2] {
-				t.Fatalf("Root record wrong. \nExp %s\ngot %s", tst[2], res["@"])
+			res := rec.TXTSplit("_spf%d.stackex.com", overhead, txtMaxSize)
+			if res["@"][0] != tst[2] {
+				t.Fatalf("Root record wrong. \nExp %s\ngot %s", tst[2], res["@"][0])
 			}
 			for i := 3; i < len(tst); i += 2 {
 				fqdn := tst[i]
 				exp := tst[i+1]
-				if res[fqdn] != exp {
+				if res[fqdn][0] != exp {
 					t.Fatalf("Record %s.\nExp %s\ngot %s", fqdn, exp, res[fqdn])
 				}
+			}
+		})
+	}
+}
+
+func TestMultiStringSplit(t *testing.T) {
+	var tests = []struct {
+		description  string
+		unsplitInput string
+		txtMaxSize   int
+		want         map[string][]string
+	}{
+		{
+			description:  "basic multiple strings",
+			unsplitInput: "v=spf1 -all",
+			txtMaxSize:   255,
+			want: map[string][]string{
+				"@": {
+					"v=spf1 -all",
+				},
+			},
+		},
+		{
+			description:  "too long to split, not enough txtMaxSize for a multi string",
+			unsplitInput: "v=spf1 include:a0123456789012345678901234567890123456789012345sssss6789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789.com -all",
+			txtMaxSize:   255,
+			want: map[string][]string{
+				"@": {
+					"v=spf1 include:a0123456789012345678901234567890123456789012345sssss6789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789.com -all",
+				},
+			},
+		},
+		{
+			description:  "can actually be split with multiple txt strings",
+			unsplitInput: "v=spf1 include:a0123456789012345678901234567890123456789012345sssss6789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789.com -all",
+			txtMaxSize:   450,
+			want: map[string][]string{
+				"@": {
+					// First string
+					"v=spf1 include:a0123456789012345678901234567890123456789012345sssss6789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789.com",
+					// Second string
+					" -all",
+				},
+			},
+		},
+		{
+			description: "really big with multiple txt strings",
+			unsplitInput: "v=spf1 ip4:200.192.169.178 ip4:200.192.169.178 ip4:200.192.169.178 ip4:200.192.169.178 ip4:200.192.169.178 ip4:200.192.169.178 ip4:200.192.169.178 ip4:200.192.169.178 ip4:200.192.169.178 ip4:200.192.169.178 ip4:200.192.169.178 ip4:200.192.169.178 ip4:200.192.169.178" +
+				" ip4:200.192.169.178 ip4:200.192.169.178 ip4:200.192.169.178 ip4:200.192.169.178 ip4:200.192.169.178 ip4:200.192.169.178 ip4:200.192.169.178 ip4:200.192.169.178 ip4:200.192.169.178 ip4:200.192.169.178 ip4:200.192.169.178 ip4:200.192.169.178 ip4:200.192.169.178 ip4:200.192.169.178" +
+				" ip4:200.192.169.178 ip4:200.192.169.178 ip4:200.192.169.178 ip4:200.192.169.178 ip4:200.192.169.178 ip4:200.192.169.178 ip4:200.192.169.178 ip4:200.192.169.178 ip4:200.192.169.178 ip4:200.192.169.178 ip4:200.192.169.178 ip4:200.192.169.178 ip4:200.192.169.178 ip4:200.192.169.178 -all",
+			txtMaxSize: 450,
+			want: map[string][]string{
+				"@": {
+					"v=spf1 ip4:200.192.169.178 ip4:200.192.169.178 ip4:200.192.169.178 ip4:200.192.169.178 ip4:200.192.169.178 ip4:200.192.169.178 ip4:200.192.169.178 ip4:200.192.169.178 ip4:200.192.169.178 ip4:200.192.169.178 ip4:200.192.169.178 ip4:200.192.169.178 ip4:200.",
+					"192.169.178 ip4:200.192.169.178 ip4:200.192.169.178 ip4:200.192.169.178 ip4:200.192.169.178 ip4:200.192.169.178 ip4:200.192.169.178 ip4:200.192.169.178 include:_spf1.stackex.com -all",
+				},
+				"_spf1.stackex.com": {
+					"v=spf1 ip4:200.192.169.178 ip4:200.192.169.178 ip4:200.192.169.178 ip4:200.192.169.178 ip4:200.192.169.178 ip4:200.192.169.178 ip4:200.192.169.178 ip4:200.192.169.178 ip4:200.192.169.178 ip4:200.192.169.178 ip4:200.192.169.178 ip4:200.192.169.178 ip4:200.",
+					"192.169.178 ip4:200.192.169.178 ip4:200.192.169.178 ip4:200.192.169.178 ip4:200.192.169.178 ip4:200.192.169.178 ip4:200.192.169.178 ip4:200.192.169.178 ip4:200.192.169.178 -all",
+				},
+			},
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.description, func(t *testing.T) {
+			rec, err := Parse(test.unsplitInput, nil)
+			if err != nil {
+				t.Fatal(err)
+			}
+			got := rec.TXTSplit("_spf%d.stackex.com", 0, test.txtMaxSize)
+
+			if !reflect.DeepEqual(got, test.want) {
+				t.Errorf("got %v want %v", got, test.want)
 			}
 		})
 	}
