@@ -5,6 +5,9 @@ import (
 	"strings"
 )
 
+// Chunks splits strings into arrays of a certain chunk size. We
+// use this to split TXT records into 255 sized chunks for RFC 4408
+// https://tools.ietf.org/html/rfc4408#section-3.1.3
 // Borrowed from https://stackoverflow.com/a/61469854/11477663
 func Chunks(s string, chunkSize int) []string {
 	if chunkSize >= len(s) {
