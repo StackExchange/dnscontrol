@@ -58,17 +58,27 @@ func flattenSPFs(cfg *models.DNSConfig) []error {
 					overhead1 = i
 				}
 
+				// Default txtMaxSize will not result in multiple TXT strings
+				txtMaxSize := 255
+				if oh, ok := txt.Metadata["txtMaxSize"]; ok {
+					i, err := strconv.Atoi(oh)
+					if err != nil {
+						errs = append(errs, Warning{fmt.Errorf("split txtMaxSize %q is not an int", oh)})
+					}
+					txtMaxSize = i
+				}
+
 				if !strings.Contains(split, "%d") {
 					errs = append(errs, Warning{fmt.Errorf("Split format `%s` in `%s` is not proper format (should have %%d in it)", split, txt.GetLabelFQDN())})
 					continue
 				}
-				recs := rec.TXTSplit(split+"."+domain.Name, overhead1)
+				recs := rec.TXTSplit(split+"."+domain.Name, overhead1, txtMaxSize)
 				for k, v := range recs {
 					if k == "@" {
-						txt.SetTargetTXT(v)
+						txt.SetTargetTXTs(v)
 					} else {
 						cp, _ := txt.Copy()
-						cp.SetTargetTXT(v)
+						cp.SetTargetTXTs(v)
 						cp.SetLabelFromFQDN(k, domain.Name)
 						domain.Records = append(domain.Records, cp)
 					}
