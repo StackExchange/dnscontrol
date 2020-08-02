@@ -25,6 +25,12 @@ function initialize() {
     defaultArgs = [];
 }
 
+// Returns an array of domains which were registered so far during runtime
+// Own function for compatibility reasons or if some day special processing would be required.
+function getConfiguredDomains() {
+    return conf.domain_names;
+}
+
 function NewRegistrar(name, type, meta) {
     if (type) {
         type == 'MANUAL';
@@ -92,6 +98,32 @@ function D(name, registrar) {
     }
     conf.domains.push(domain);
     conf.domain_names.push(name);
+}
+
+// DU(name): Update an already added DNS Domain with D().
+function DU(name) {
+    var domain = _getDomainObject(name);
+    if (domain == null) {
+        throw name + ' was not declared yet and therefore cannot be updated. Use D() before.';
+    }
+    for (var i = 0; i < defaultArgs.length; i++) {
+        processDargs(defaultArgs[i], domain.obj);
+    }
+    for (var i = 1; i < arguments.length; i++) {
+        var m = arguments[i];
+        processDargs(m, domain.obj);
+    }
+    conf.domains[domain.id] = domain.obj; // let's overwrite the object.
+}
+
+// _getDomainObject(name): This is a small helper function to get the domain JS object returned.
+function _getDomainObject(name) {
+    for(var i = 0; i < conf.domains.length; i++) {
+        if (conf.domains[i]['name'] == name) {
+            return {'id': i, 'obj': conf.domains[i]};
+        }
+    }
+    return null;
 }
 
 // DEFAULTS provides a set of default arguments to apply to all future domains.
