@@ -101,7 +101,7 @@ function D(name, registrar) {
 }
 
 // DU(name): Update an already added DNS Domain with D().
-function DU(name) {
+function D_EXTEND(name) {
     var domain = _getDomainObject(name);
     if (domain == null) {
         throw name + ' was not declared yet and therefore cannot be updated. Use D() before.';

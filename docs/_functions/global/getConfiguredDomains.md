@@ -5,9 +5,10 @@ parameters:
   - modifiers...
 ---
 
-`getConfiguredDomains` is a simple helper function to return back configured domains until the point where the function
-was run. Therefore it is really important when the function is ran. To use this function to iteriate about all
-configured domains you might want to run the function at the end of your configuration file.
+`getConfiguredDomains` getConfiguredDomains is a helper function that returns the domain names
+configured at the time the function is called. Calling this function early or later in
+`dnsconfig.js` may return different results. Typical usage is to iterate over all
+domains at the end of your configuration file.
 
 Example for adding records to all configured domains:
 {% include startExample.html %}

@@ -1,12 +1,11 @@
 ---
-name: DU
+name: D_EXTEND
 parameters:
   - name
   - modifiers...
 ---
 
-`DU` allows updating existing domains added by `D`. It behaves the same way, however it is mandatory that the domain was already added. The first argument, the domain name,
-is required. Check out the documentation of `D` for further details.
+`D_EXTEND` adds records (and metadata) to a domain. The domain must have previously been defined by `D()`. `D_EXTEND()` behaves the same as `D()` in all other ways: The first argument is the domain name. See the documentation of `D` for further details.
 
 Example:
 {% include startExample.html %}
@@ -14,7 +13,7 @@ Example:
 D('domain.tld', REG, DnsProvider(DNS),
   A('@', "127.0.0.1")
 )
-DU('domain.tld',
+D_EXTEND('domain.tld',
   A('@', "127.0.0.2")
 )
 {%endhighlight%}
