@@ -45,7 +45,7 @@ var features = providers.DocumentationNotes{
 	providers.CanUseSSHFP:            providers.Can(),
 	providers.CanUseCAA:              providers.Can(),
 	providers.CanUseTLSA:             providers.Can(),
-	providers.CanUsePTR:              providers.Unimplemented(),
+	providers.CanUsePTR:              providers.Can(),
 	providers.CanGetZones:            providers.Can(),
 	providers.CanAutoDNSSEC:          providers.Cannot(),
 }
