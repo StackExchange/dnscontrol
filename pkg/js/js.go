@@ -32,7 +32,7 @@ func ExecuteJavascript(file string, devMode bool) (*models.DNSConfig, error) {
 	}
 
 	// Record the directory path leading up to this file.
-	currentDirectory = filepath.Clean(filepath.Dir(file))
+	currentDirectory = filepath.Dir(file)
 
 	vm := otto.New()
 
@@ -89,7 +89,7 @@ func require(call otto.FunctionCall) otto.Value {
 	// Record the old currentDirectory so that we can return there.
 	currentDirectoryOld := currentDirectory
 	// Record the directory path leading up to the file we're about to require.
-	currentDirectory = filepath.Clean(filepath.Dir(cleanFile))
+	currentDirectory = filepath.Dir(cleanFile)
 
 	printer.Debugf("requiring: %s (%s)\n", file, relFile)
 	// quick fix, by replacing to linux slashes, to make it work with windows paths too.
