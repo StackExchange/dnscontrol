@@ -3,12 +3,13 @@ package js
 import (
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
-	"path/filepath"
-	"strings"
-
 	"github.com/robertkrimen/otto"              // load underscore js into vm by default
 	_ "github.com/robertkrimen/otto/underscore" // required by otto
+	"io/ioutil"
+	"os"
+	"path/filepath"
+	"strconv"
+	"strings"
 
 	"github.com/StackExchange/dnscontrol/v3/models"
 	"github.com/StackExchange/dnscontrol/v3/pkg/printer"
@@ -37,6 +38,7 @@ func ExecuteJavascript(file string, devMode bool) (*models.DNSConfig, error) {
 
 	vm.Set("require", require)
 	vm.Set("REV", reverse)
+	vm.Set("globe", listFiles) // glob handled in helper.js for simplified return.
 
 	helperJs := GetHelpers(devMode)
 	// run helper script to prime vm and initialize variables
@@ -90,7 +92,8 @@ func require(call otto.FunctionCall) otto.Value {
 	currentDirectory = filepath.Clean(filepath.Dir(cleanFile))
 
 	printer.Debugf("requiring: %s (%s)\n", file, relFile)
-	data, err := ioutil.ReadFile(relFile)
+	// quick fix, by replacing to linux slashes, to make it work with windows paths too.
+	data, err := ioutil.ReadFile(filepath.ToSlash(relFile))
 
 	if err != nil {
 		throw(call.Otto, err.Error())
@@ -112,6 +115,98 @@ func require(call otto.FunctionCall) otto.Value {
 
 	// Pop back to the old directory.
 	currentDirectory = currentDirectoryOld
+
+	return value
+}
+
+func listFiles(call otto.FunctionCall) otto.Value {
+	// Check amount of arguments provided
+	if ! (len(call.ArgumentList) >= 1 && len(call.ArgumentList) <= 3) {
+		throw(call.Otto, "globe requires at least one argument: folder (string). " +
+			"Optional: recursive (bool) [true], fileExtension (string) [.js]")
+	}
+
+	// Check if provided parameters are valid
+	// First: Let's check dir.
+	if !(call.Argument(0).IsDefined() && call.Argument(0).IsString() &&
+		len(call.Argument(0).String()) > 0) {
+		throw(call.Otto, "globe: first argument needs to be a path, provided as string.")
+	}
+	dir := filepath.ToSlash(call.Argument(0).String()) // Path where to start listing
+	if _, err := os.Stat(dir); os.IsNotExist(err) {
+		throw(call.Otto, "globe: provided path does not exist.")
+	}
+
+	// Second: Recursive?
+	var recursive bool = true;
+	if call.Argument(1).IsDefined() && ! call.Argument(1).IsNull() {
+		if call.Argument(1).IsBoolean() {
+			recursive, _ = call.Argument(1).ToBoolean() // If it should be recursive
+		} else {
+			throw(call.Otto, "globe: second argument, if recursive, needs to be bool.")
+		}
+	}
+
+	// Third: File extension filter.
+	var fileExtension string = ".js";
+	if call.Argument(2).IsDefined() && ! call.Argument(2).IsNull() {
+		if call.Argument(2).IsString() {
+			fileExtension = call.Argument(2).String() // Which file extension to filter for.
+		} else {
+			throw(call.Otto, "globe: third argument, file extension, needs to be a string. * for no filter.")
+		}
+	}
+
+	// Now we're doing the actual work: Listing files.
+	// Folders are ending with a slash. Can be identified later on from the user with JavaScript.
+	// Additionally, when more smart logic required, user can use regex in JS.
+	type FileEntry struct {
+		FileName string
+		FilePath string
+		Size     int64
+		Mode     int
+		ModTime  string
+		IsDir    bool
+	}
+	files := make([]interface{}, 0) // init files list
+	err := filepath.Walk(dir, func(path string, fi os.FileInfo, err error) error {
+		// quick fix to get it working on windows, as it returns paths with double-backslash, what usually
+		// require() doesn't seem to handle well. For the sake of compatibility (and because slash looks nicer),
+		// we simply replace "\\" to "/".
+		path = filepath.ToSlash(filepath.Clean(filepath.Dir(path))) // convert to slashes for directories
+		if ! recursive && fi.IsDir() {
+			// If recursive is disabled, it is a dir what we're processing, and the path is different
+			// than specified, we're apparently in a different folder. Therefore: Skip it.
+			fmt.Println(path)
+			fmt.Println(dir)
+			if path != filepath.Clean(dir) {
+				return filepath.SkipDir
+			}
+		}
+		if ! (fileExtension == "*" || filepath.Ext(path) == fileExtension) {
+			// ONLY skip, when the file extension is NOT matching, or when filter is NOT disabled.
+			return nil
+		}
+		perm, _ := strconv.Atoi(fmt.Sprintf("%o", fi.Mode().Perm())) // convert from string to int octal
+		files = append(files, &FileEntry{
+			FileName: fi.Name(),   // filename
+			FilePath: path + "/",  // dir (adding slash to end as it's a folder)
+			Size:     fi.Size(),   // bytes
+			Mode:     perm,        // returned as int octal (the classic 755)
+			ModTime:  fi.ModTime().Format("2006-01-02T15:04:05-0700"), // ISO 8601 (RFC 3339)
+			IsDir:    fi.IsDir(),
+		})
+		return err
+	})
+	if err != nil {
+		throw(call.Otto, fmt.Sprintf("dirwalk failed: %v", err.Error()))
+	}
+
+	// let's pass the data back to the JS engine.
+	value, err := call.Otto.ToValue(files)
+	if err != nil {
+		throw(call.Otto, fmt.Sprintf("converting value failed: %v", err.Error()))
+	}
 
 	return value
 }

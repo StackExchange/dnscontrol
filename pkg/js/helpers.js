@@ -872,3 +872,13 @@ function DKIM(arr) {
         R.push(arr.slice(i, i + chunkSize));
     return R;
 }
+
+// Function wrapper for globe for simplified output (returns simple array with files)
+function glob() {
+    var filesFull = globe.apply(null, arguments);
+    var files = [];
+    for (i = 0; i < filesFull.length; i++) {
+        files.push(filesFull[i].FilePath + filesFull[i].FileName)
+    }
+    return files
+}
