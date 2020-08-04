@@ -15,7 +15,7 @@ Example for adding records to all configured domains:
 {% highlight js %}
 var domains = getConfiguredDomains();
 for(i = 0; i < domains.length; i++) {
-  DU(domains[i],
+  D_EXTEND(domains[i],
     TXT('_important', 'BLA') // I know, not really creative.
   )
 }
@@ -44,7 +44,7 @@ This example might be more useful, specially for configuring the DMARC report re
 {% highlight js %}
 var domains = getConfiguredDomains();
 for(i = 0; i < domains.length; i++) {
-	DU("domain1.tld",
+	D_EXTEND("domain1.tld",
 		TXT(domains[i] + '._report._dmarc', 'v=DMARC1')
 	);
 }
