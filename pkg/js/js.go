@@ -169,30 +169,30 @@ func listFiles(call otto.FunctionCall) otto.Value {
 		IsDir    bool
 	}
 	files := make([]interface{}, 0) // init files list
+	dirClean := filepath.Clean(dir)
 	err := filepath.Walk(dir, func(path string, fi os.FileInfo, err error) error {
 		// quick fix to get it working on windows, as it returns paths with double-backslash, what usually
 		// require() doesn't seem to handle well. For the sake of compatibility (and because slash looks nicer),
 		// we simply replace "\\" to "/".
-		path = filepath.ToSlash(filepath.Clean(filepath.Dir(path))) // convert to slashes for directories
+		path = filepath.ToSlash(filepath.Clean(path)) // convert to slashes for directories
 		if ! recursive && fi.IsDir() {
 			// If recursive is disabled, it is a dir what we're processing, and the path is different
 			// than specified, we're apparently in a different folder. Therefore: Skip it.
-			fmt.Println(path)
-			fmt.Println(dir)
-			if path != filepath.Clean(dir) {
+			if path != dirClean {
 				return filepath.SkipDir
 			}
 		}
-		if ! (fileExtension == "*" || filepath.Ext(path) == fileExtension) {
+		if fileExtension != "*" && fileExtension != filepath.Ext(path) {
 			// ONLY skip, when the file extension is NOT matching, or when filter is NOT disabled.
 			return nil
 		}
+		filePath := filepath.ToSlash(filepath.Dir(path)) + "/"
 		perm, _ := strconv.Atoi(fmt.Sprintf("%o", fi.Mode().Perm())) // convert from string to int octal
 		files = append(files, &FileEntry{
-			FileName: fi.Name(),   // filename
-			FilePath: path + "/",  // dir (adding slash to end as it's a folder)
-			Size:     fi.Size(),   // bytes
-			Mode:     perm,        // returned as int octal (the classic 755)
+			FileName: fi.Name(), // filename
+			FilePath: filePath,  // dir (adding slash to end as it's a folder)
+			Size:     fi.Size(), // bytes
+			Mode:     perm,      // returned as int octal (the classic 755)
 			ModTime:  fi.ModTime().Format("2006-01-02T15:04:05-0700"), // ISO 8601 (RFC 3339)
 			IsDir:    fi.IsDir(),
 		})
