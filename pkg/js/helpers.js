@@ -873,7 +873,7 @@ function DKIM(arr) {
     return R;
 }
 
-// Function wrapper for globe for simplified output (returns simple array with files)
+// Function wrapper for eglob for simplified output (returns one-dimensional array with file names)
 // As the main function (eglob() in Go) is in our control anyway, all the values here should
 // be already sanity-checked, valid and safe to use.
 function glob() {
