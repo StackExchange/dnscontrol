@@ -874,6 +874,8 @@ function DKIM(arr) {
 }
 
 // Function wrapper for globe for simplified output (returns simple array with files)
+// As the main function (eglob() in Go) is in our control anyway, all the values here should
+// be already sanity-checked, valid and safe to use.
 function glob() {
     var filesFull = eglob.apply(null, arguments);
     var files = [];
