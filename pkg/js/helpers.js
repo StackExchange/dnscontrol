@@ -875,10 +875,10 @@ function DKIM(arr) {
 
 // Function wrapper for globe for simplified output (returns simple array with files)
 function glob() {
-    var filesFull = globe.apply(null, arguments);
+    var filesFull = eglob.apply(null, arguments);
     var files = [];
     for (i = 0; i < filesFull.length; i++) {
-        files.push(filesFull[i].FilePath + filesFull[i].FileName)
+        files.push(filesFull[i].DirPath + filesFull[i].FileName)
     }
     return files
 }
