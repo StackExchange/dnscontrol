@@ -786,7 +786,7 @@ func makeTests(t *testing.T) []*TestGroup {
 			tc("Change Weight", srv("_sip._tcp", 52, 62, 7, "foo.com."), srv("_sip._tcp", 15, 65, 75, "foo4.com.")),
 			tc("Change Port", srv("_sip._tcp", 52, 62, 72, "foo.com."), srv("_sip._tcp", 15, 65, 75, "foo4.com.")),
 		),
-		testgroup("SRV w/ null target", not("EXOSCALE", "HEXONET", "NAMEDOTCOM"),
+		testgroup("SRV w/ null target", requires(providers.CanUseSRV), not("EXOSCALE", "HEXONET", "NAMEDOTCOM"),
 			tc("Null Target", srv("_sip._tcp", 52, 62, 72, "foo.com."), srv("_sip._tcp", 15, 65, 75, ".")),
 		),
 
