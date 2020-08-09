@@ -64,7 +64,8 @@ func newInwx(m map[string]string) (*InwxApi, error) {
 		case "username",
 			"password",
 			"totp",
-			"sandbox":
+			"sandbox",
+			"domain":
 			continue
 		default:
 			return nil, fmt.Errorf("INWX: unknown key in `creds.json` (%s)\n", key)
