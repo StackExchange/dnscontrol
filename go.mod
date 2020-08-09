@@ -23,6 +23,7 @@ require (
 	github.com/google/go-github v17.0.0+incompatible
 	github.com/google/go-querystring v1.0.1-0.20190318165438-c8c88dbee036 // indirect
 	github.com/gopherjs/jquery v0.0.0-20191017083323-73f4c7416038
+	github.com/hashicorp/logutils v1.0.0 // indirect
 	github.com/hashicorp/vault/api v1.0.4
 	github.com/hexonet/go-sdk v2.2.3+incompatible
 	github.com/jarcoal/httpmock v1.0.4 // indirect
@@ -39,6 +40,7 @@ require (
 	github.com/smartystreets/goconvey v0.0.0-20190330032615-68dc04aab96a // indirect
 	github.com/softlayer/softlayer-go v0.0.0-20170804160555-5e1c8cccc730
 	github.com/stretchr/testify v1.6.1
+	github.com/svenpeter42/goinwx v0.3.3-0.20200809092244-8e1e01e4feaa
 	github.com/tdewolff/minify v2.3.6+incompatible
 	github.com/tdewolff/parse v2.3.4+incompatible // indirect
 	github.com/tdewolff/test v1.0.6 // indirect

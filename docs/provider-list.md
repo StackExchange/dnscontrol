@@ -80,6 +80,7 @@ Maintainers of contributed providers:
 * `GANDI_V5` @TomOnTime
 * `HEXONET` @papakai
 * `INTERNETBS` @pragmaton
+* `INWX` @svenpeter42
 * `LINODE` @koesie10
 * `NAMECHEAP` @captncraig
 * `NETCUP` @kordianbruck
