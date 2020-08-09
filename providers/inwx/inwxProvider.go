@@ -37,17 +37,21 @@ var InwxSandboxDefaultNs = []string{"ns.ote.inwx.de","ns2.ote.inwx.de"}
 var features = providers.DocumentationNotes{
 	providers.CanUseAlias:            providers.Cannot("INWX does not support the ALIAS or ANAME record type."),
 	providers.CanUseCAA:              providers.Can(),
+	providers.CanUseDS:               providers.Unimplemented("DS records require a different API call that hasn't been implemented yet."),
 	providers.CanUsePTR:              providers.Can(),
 	providers.CanUseNAPTR:            providers.Can(),
 	providers.CanUseSRV:              providers.Can("SRV records with empty targets are not supported."),
 	providers.CanUseSSHFP:            providers.Can(),
 	providers.CanUseTLSA:             providers.Can(),
+	providers.CanUseTXTMulti:         providers.Cannot("INWX only supports a single entry for TXT records"),
 	providers.CanAutoDNSSEC:          providers.Unimplemented("Supported by INWX but not implemented yet."),
 	providers.DocOfficiallySupported: providers.Cannot(),
 	providers.DocDualHost:            providers.Can(),
 	providers.DocCreateDomains:       providers.Unimplemented("Supported by INWX but not implemented yet."),
 	providers.CanGetZones:            providers.Can(),
+	providers.CanUseAzureAlias:       providers.Cannot(),
 }
+
 
 func init() {
 	providers.RegisterRegistrarType("INWX", newInwxReg)
