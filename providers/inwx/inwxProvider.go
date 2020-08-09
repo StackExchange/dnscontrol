@@ -3,12 +3,12 @@ package inwx
 import (
 	"encoding/json"
 	"fmt"
-	"strings"
 	"sort"
+	"strings"
 
+	"github.com/StackExchange/dnscontrol/v3/models"
 	"github.com/StackExchange/dnscontrol/v3/pkg/diff"
 	"github.com/StackExchange/dnscontrol/v3/providers"
-	"github.com/StackExchange/dnscontrol/v3/models"
 
 	"github.com/svenpeter42/goinwx"
 )
@@ -27,12 +27,12 @@ Additional settings available in `creds.json`:
 */
 
 type InwxApi struct {
-	client *goinwx.Client
+	client  *goinwx.Client
 	sandbox bool
 }
 
-var InwxDefaultNs = []string{"ns.inwx.de","ns2.inwx.de","ns3.inwx.eu","ns4.inwx.com","ns5.inwx.net"}
-var InwxSandboxDefaultNs = []string{"ns.ote.inwx.de","ns2.ote.inwx.de"}
+var InwxDefaultNs = []string{"ns.inwx.de", "ns2.inwx.de", "ns3.inwx.eu", "ns4.inwx.com", "ns5.inwx.net"}
+var InwxSandboxDefaultNs = []string{"ns.ote.inwx.de", "ns2.ote.inwx.de"}
 
 var features = providers.DocumentationNotes{
 	providers.CanUseAlias:            providers.Cannot("INWX does not support the ALIAS or ANAME record type."),
@@ -51,7 +51,6 @@ var features = providers.DocumentationNotes{
 	providers.CanGetZones:            providers.Can(),
 	providers.CanUseAzureAlias:       providers.Cannot(),
 }
-
 
 func init() {
 	providers.RegisterRegistrarType("INWX", newInwxReg)
@@ -114,13 +113,13 @@ func newInwxDsp(m map[string]string, metadata json.RawMessage) (providers.DNSSer
 	return newInwx(m)
 }
 
-func makeNameserverRecordRequest(domain string, rec *models.RecordConfig) (*goinwx.NameserverRecordRequest) {
+func makeNameserverRecordRequest(domain string, rec *models.RecordConfig) *goinwx.NameserverRecordRequest {
 	req := &goinwx.NameserverRecordRequest{
-		Domain: domain,
-		Type: rec.Type,
+		Domain:  domain,
+		Type:    rec.Type,
 		Content: rec.GetTargetField(),
-		Name: rec.GetLabel(),
-		Ttl: int(rec.TTL),
+		Name:    rec.GetLabel(),
+		Ttl:     int(rec.TTL),
 	}
 	targetWithoutDot := strings.TrimRight(rec.GetTargetField(), ".")
 
@@ -128,7 +127,7 @@ func makeNameserverRecordRequest(domain string, rec *models.RecordConfig) (*goin
 	/* INWX is a little bit special for CNAME,NS,MX and SRV records:
 	   The API will not accept any target with a final dot but will
 	   instead always add this final dot internally.
-	 */
+	*/
 	case "CNAME", "NS":
 		req.Content = targetWithoutDot
 	case "MX":
@@ -141,23 +140,22 @@ func makeNameserverRecordRequest(domain string, rec *models.RecordConfig) (*goin
 		req.Content = rec.GetTargetCombined()
 	}
 
-
 	return req
 }
 
-func (api *InwxApi) createRecord(domain string, rec *models.RecordConfig) (error) {
+func (api *InwxApi) createRecord(domain string, rec *models.RecordConfig) error {
 	req := makeNameserverRecordRequest(domain, rec)
 	_, err := api.client.Nameservers.CreateRecord(req)
 	return err
 }
 
-func (api *InwxApi) updateRecord(RoId int, rec *models.RecordConfig) (error) {
+func (api *InwxApi) updateRecord(RoId int, rec *models.RecordConfig) error {
 	req := makeNameserverRecordRequest("", rec)
 	err := api.client.Nameservers.UpdateRecord(RoId, req)
 	return err
 }
 
-func (api *InwxApi) deleteRecord(RoId int) (error) {
+func (api *InwxApi) deleteRecord(RoId int) error {
 	return api.client.Nameservers.DeleteRecord(RoId)
 }
 
@@ -238,7 +236,7 @@ func (api *InwxApi) GetZoneRecords(domain string) (models.Records, error) {
 
 		switch rType := record.Type; rType {
 		case "MX":
-			err = rc.SetTargetMX(uint16(record.Prio), record.Content);
+			err = rc.SetTargetMX(uint16(record.Prio), record.Content)
 		case "SRV":
 			err = rc.SetTargetSRVPriorityString(uint16(record.Prio), record.Content)
 		default:
@@ -258,7 +256,7 @@ func (api *InwxApi) GetZoneRecords(domain string) (models.Records, error) {
 func (api *InwxApi) updateNameservers(ns []string, domain string) func() error {
 	return func() error {
 		request := &goinwx.DomainUpdateRequest{
-			Domain: domain,
+			Domain:      domain,
 			Nameservers: ns,
 		}
 
