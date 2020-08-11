@@ -78,12 +78,7 @@ func newInwx(m map[string]string) (*InwxApi, error) {
 		return nil, fmt.Errorf("INWX: password must be provided.")
 	}
 
-	var sandbox bool
-	if m["sandbox"] == "1" {
-		sandbox = true
-	} else {
-		sandbox = false
-	}
+	sandbox := m["sandbox"] == "1"
 
 	opts := &goinwx.ClientOptions{Sandbox: sandbox}
 	client := goinwx.NewClient(m["username"], m["password"], opts)
