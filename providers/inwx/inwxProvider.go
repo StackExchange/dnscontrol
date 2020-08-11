@@ -64,7 +64,7 @@ func newInwx(m map[string]string) (*InwxApi, error) {
 			"password",
 			"totp",
 			"sandbox",
-			"domain":
+			"domain": // domain is used in integration tests
 			continue
 		default:
 			fmt.Printf("INWX: WARNING: unknown key in `creds.json` (%s)\n", key)
