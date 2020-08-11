@@ -67,7 +67,7 @@ func newInwx(m map[string]string) (*InwxApi, error) {
 			"domain":
 			continue
 		default:
-			return nil, fmt.Errorf("INWX: unknown key in `creds.json` (%s)\n", key)
+			fmt.Printf("INWX: WARNING: unknown key in `creds.json` (%s)\n", key)
 		}
 	}
 
