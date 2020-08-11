@@ -162,6 +162,8 @@ func (api *InwxApi) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Cor
 		return nil, err
 	}
 
+	models.PostProcessRecords(foundRecords)
+
 	differ := diff.New(dc)
 	_, create, del, mod := differ.IncrementalDiff(foundRecords)
 	corrections := []*models.Correction{}
