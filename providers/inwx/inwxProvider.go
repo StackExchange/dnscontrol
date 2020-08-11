@@ -109,28 +109,31 @@ func newInwxDsp(m map[string]string, metadata json.RawMessage) (providers.DNSSer
 }
 
 func makeNameserverRecordRequest(domain string, rec *models.RecordConfig) *goinwx.NameserverRecordRequest {
+	content := rec.GetTargetField()
+
 	req := &goinwx.NameserverRecordRequest{
 		Domain:  domain,
 		Type:    rec.Type,
-		Content: rec.GetTargetField(),
+		Content: content,
 		Name:    rec.GetLabel(),
 		TTL:     int(rec.TTL),
 	}
-	targetWithoutDot := strings.TrimRight(rec.GetTargetField(), ".")
 
 	switch rType := rec.Type; rType {
 	/* INWX is a little bit special for CNAME,NS,MX and SRV records:
 	   The API will not accept any target with a final dot but will
 	   instead always add this final dot internally.
+	   Records with empty targets (i.e. records with target ".")
+	   are not allowed.
 	*/
 	case "CNAME", "NS":
-		req.Content = targetWithoutDot
+		req.Content = content[:len(content)-1]
 	case "MX":
 		req.Priority = int(rec.MxPreference)
-		req.Content = targetWithoutDot
+		req.Content = content[:len(content)-1]
 	case "SRV":
 		req.Priority = int(rec.SrvPriority)
-		req.Content = fmt.Sprintf("%d %d %v", rec.SrvWeight, rec.SrvPort, targetWithoutDot)
+		req.Content = fmt.Sprintf("%d %d %v", rec.SrvWeight, rec.SrvPort, content[:len(content)-1])
 	default:
 		req.Content = rec.GetTargetCombined()
 	}
@@ -218,11 +221,11 @@ func (api *InwxApi) GetZoneRecords(domain string) (models.Records, error) {
 		/* INWX is a little bit special for CNAME,NS,MX and SRV records:
 		   The API will not accept any target with a final dot but will
 		   instead always add this final dot internally.
+		   Records with empty targets (i.e. records with target ".")
+		   are not allowed.
 		*/
 		if record.Type == "CNAME" || record.Type == "MX" || record.Type == "NS" || record.Type == "SRV" {
-			if record.Content != "." {
-				record.Content = record.Content + "."
-			}
+			record.Content = record.Content + "."
 		}
 
 		rc := &models.RecordConfig{
