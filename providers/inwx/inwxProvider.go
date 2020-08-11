@@ -58,19 +58,6 @@ func init() {
 }
 
 func newInwx(m map[string]string) (*InwxApi, error) {
-	for key := range m {
-		switch key {
-		case "username",
-			"password",
-			"totp",
-			"sandbox",
-			"domain": // domain is used in integration tests
-			continue
-		default:
-			fmt.Printf("INWX: WARNING: unknown key in `creds.json` (%s)\n", key)
-		}
-	}
-
 	if m["username"] == "" {
 		return nil, fmt.Errorf("INWX: username must be provided.")
 	}
