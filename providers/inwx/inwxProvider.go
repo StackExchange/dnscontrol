@@ -10,7 +10,7 @@ import (
 	"github.com/StackExchange/dnscontrol/v3/pkg/diff"
 	"github.com/StackExchange/dnscontrol/v3/providers"
 
-	"github.com/svenpeter42/goinwx"
+	"github.com/nrdcg/goinwx"
 )
 
 /*
@@ -72,10 +72,10 @@ func newInwx(m map[string]string) (*InwxApi, error) {
 	}
 
 	if m["username"] == "" {
-		return nil, fmt.Errorf("INWX Username must be provided.")
+		return nil, fmt.Errorf("INWX: username must be provided.")
 	}
 	if m["password"] == "" {
-		return nil, fmt.Errorf("INWX Password must be provided.")
+		return nil, fmt.Errorf("INWX: password must be provided.")
 	}
 
 	var sandbox bool
@@ -88,7 +88,7 @@ func newInwx(m map[string]string) (*InwxApi, error) {
 	opts := &goinwx.ClientOptions{Sandbox: sandbox}
 	client := goinwx.NewClient(m["username"], m["password"], opts)
 
-	err := client.Account.Login()
+	_, err := client.Account.Login()
 	if err != nil {
 		return nil, fmt.Errorf("Unable to login to INWX")
 	}
@@ -119,7 +119,7 @@ func makeNameserverRecordRequest(domain string, rec *models.RecordConfig) *goinw
 		Type:    rec.Type,
 		Content: rec.GetTargetField(),
 		Name:    rec.GetLabel(),
-		Ttl:     int(rec.TTL),
+		TTL:     int(rec.TTL),
 	}
 	targetWithoutDot := strings.TrimRight(rec.GetTargetField(), ".")
 
@@ -179,7 +179,7 @@ func (api *InwxApi) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Cor
 		})
 	}
 	for _, d := range del {
-		existingId := d.Existing.Original.(goinwx.NameserverRecord).Id
+		existingId := d.Existing.Original.(goinwx.NameserverRecord).ID
 		corrections = append(corrections, &models.Correction{
 			Msg: d.String(),
 			F:   func() error { return api.deleteRecord(existingId) },
@@ -187,7 +187,7 @@ func (api *InwxApi) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Cor
 	}
 	for _, d := range mod {
 		rec := d.Desired
-		existingId := d.Existing.Original.(goinwx.NameserverRecord).Id
+		existingId := d.Existing.Original.(goinwx.NameserverRecord).ID
 		corrections = append(corrections, &models.Correction{
 			Msg: d.String(),
 			F:   func() error { return api.updateRecord(existingId, rec) },
@@ -206,7 +206,7 @@ func (api *InwxApi) GetNameservers(domain string) ([]*models.Nameserver, error) 
 }
 
 func (api *InwxApi) GetZoneRecords(domain string) (models.Records, error) {
-	info, err := api.client.Nameservers.Info(domain, 0)
+	info, err := api.client.Nameservers.Info(&goinwx.NameserverInfoRequest{Domain: domain})
 	if err != nil {
 		return nil, err
 	}
@@ -229,16 +229,16 @@ func (api *InwxApi) GetZoneRecords(domain string) (models.Records, error) {
 		}
 
 		rc := &models.RecordConfig{
-			TTL:      uint32(record.Ttl),
+			TTL:      uint32(record.TTL),
 			Original: record,
 		}
 		rc.SetLabelFromFQDN(record.Name, domain)
 
 		switch rType := record.Type; rType {
 		case "MX":
-			err = rc.SetTargetMX(uint16(record.Prio), record.Content)
+			err = rc.SetTargetMX(uint16(record.Priority), record.Content)
 		case "SRV":
-			err = rc.SetTargetSRVPriorityString(uint16(record.Prio), record.Content)
+			err = rc.SetTargetSRVPriorityString(uint16(record.Priority), record.Content)
 		default:
 			err = rc.PopulateFromString(rType, record.Content, domain)
 		}
@@ -260,7 +260,7 @@ func (api *InwxApi) updateNameservers(ns []string, domain string) func() error {
 			Nameservers: ns,
 		}
 
-		err := api.client.Domains.Update(request)
+		_, err := api.client.Domains.Update(request)
 		return err
 	}
 }
