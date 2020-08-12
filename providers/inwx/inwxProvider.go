@@ -5,12 +5,14 @@ import (
 	"fmt"
 	"sort"
 	"strings"
+	"time"
 
 	"github.com/StackExchange/dnscontrol/v3/models"
 	"github.com/StackExchange/dnscontrol/v3/pkg/diff"
 	"github.com/StackExchange/dnscontrol/v3/providers"
 
 	"github.com/nrdcg/goinwx"
+	"github.com/pquerna/otp/totp"
 )
 
 /*
@@ -19,7 +21,10 @@ INWX Registrar and DNS provider
 Info required in `creds.json`:
 	- username
 	- password
-	- totp (TOPT code if 2FA is enabled)
+
+Either of the following settings is required when two factor authentication is enabled:
+	- totp (TOTP code if 2FA is enabled, probably best specified as an env variable)
+	- totp-key (shared TOTP secret used to generate a valid TOTP code)
 
 Additional settings available in `creds.json`:
 	- sandbox (set to 1 to use the sandbox API from INWX)
@@ -57,32 +62,74 @@ func init() {
 	providers.RegisterDomainServiceProviderType("INWX", newInwxDsp, features)
 }
 
-func newInwx(m map[string]string) (*InwxApi, error) {
-	if m["username"] == "" {
-		return nil, fmt.Errorf("INWX: username must be provided.")
+// getOTP either returns the TOTPValue or uses TOTPKey and the current time to generate a valid TOTPValue.
+func getOTP(TOTPValue string, TOTPKey string) (string, error) {
+	if TOTPValue != "" {
+		return TOTPValue, nil
+	} else if TOTPKey != "" {
+		tan, err := totp.GenerateCode(TOTPKey, time.Now())
+		if err != nil {
+			return "", fmt.Errorf("INWX: Unable to generate TOTP from totp-key: %v", err)
+		}
+		return tan, nil
+	} else {
+		return "", fmt.Errorf("INWX: two factor authentication required but no TOTP configured.")
 	}
-	if m["password"] == "" {
-		return nil, fmt.Errorf("INWX: password must be provided.")
+}
+
+// loginHelper tries to login and then unlocks the account using two factor authentication if required.
+func (api *InwxApi) loginHelper(TOTPValue string, TOTPKey string) error {
+	resp, err := api.client.Account.Login()
+	if err != nil {
+		return fmt.Errorf("INWX: Unable to login")
 	}
 
+	switch TFA := resp.TFA; TFA {
+	case "0":
+		if TOTPKey != "" || TOTPValue != "" {
+			fmt.Printf("INWX: Warning: no TOTP requested by INWX but totp/totp-key is present in `creds.json`")
+		}
+	case "GOOGLE-AUTH":
+		tan, err := getOTP(TOTPValue, TOTPKey)
+		if err != nil {
+			return err
+		}
+
+		err = api.client.Account.Unlock(tan)
+		if err != nil {
+			return fmt.Errorf("INWX: Could not unlock account - TOTP is probably invalid.")
+		}
+	default:
+		return fmt.Errorf("INWX: Unknown two factor authentication mode `%s` has been requested.", resp.TFA)
+	}
+
+	return nil
+}
+
+// newInwx initializes InwxApi and create a session.
+func newInwx(m map[string]string) (*InwxApi, error) {
+	username, password := m["username"], m["password"]
+	TOTPValue, TOTPKey := m["totp"], m["totp-key"]
 	sandbox := m["sandbox"] == "1"
 
+	if username == "" {
+		return nil, fmt.Errorf("INWX: username must be provided.")
+	}
+	if password == "" {
+		return nil, fmt.Errorf("INWX: password must be provided.")
+	}
+	if TOTPValue != "" && TOTPKey != "" {
+		return nil, fmt.Errorf("INWX: totp and totp-key must not be specified at the same time.")
+	}
+
 	opts := &goinwx.ClientOptions{Sandbox: sandbox}
-	client := goinwx.NewClient(m["username"], m["password"], opts)
-
-	_, err := client.Account.Login()
-	if err != nil {
-		return nil, fmt.Errorf("Unable to login to INWX")
-	}
-
-	if m["totp"] != "" {
-		err := client.Account.Unlock(m["totp"])
-		if err != nil {
-			return nil, fmt.Errorf("Could not unlock INWX account - TOTP is probably invalid.")
-		}
-	}
-
+	client := goinwx.NewClient(username, password, opts)
 	api := &InwxApi{client: client, sandbox: sandbox}
+
+	err := api.loginHelper(TOTPValue, TOTPKey)
+	if err != nil {
+		return nil, err
+	}
 
 	return api, nil
 }
