@@ -31,19 +31,24 @@ Additional settings available in `creds.json`:
 
 */
 
+// InwxApi is a thin wrapper around goinwx.Client.
 type InwxApi struct {
 	client  *goinwx.Client
 	sandbox bool
 }
 
+// InwxDefaultNs contains the default INWX nameservers.
 var InwxDefaultNs = []string{"ns.inwx.de", "ns2.inwx.de", "ns3.inwx.eu", "ns4.inwx.com", "ns5.inwx.net"}
+
+// InwxSandboxDefaultNs contains the default INWX nameservers in the sandbox / OTE.
 var InwxSandboxDefaultNs = []string{"ns.ote.inwx.de", "ns2.ote.inwx.de"}
 
+// features is used to let dnscontrol know which features are supported by INWX.
 var features = providers.DocumentationNotes{
 	providers.CanUseAlias:            providers.Cannot("INWX does not support the ALIAS or ANAME record type."),
 	providers.CanUseCAA:              providers.Can(),
-	providers.CanUseDS:               providers.Unimplemented("DS records require a different API call that hasn't been implemented yet."),
-	providers.CanUsePTR:              providers.Can(),
+	providers.CanUseDS:               providers.Unimplemented("DS records are only supported at the apex and require a different API call that hasn't been implemented yet."),
+	providers.CanUsePTR:              providers.Can("PTR records with empty targets are not supported"),
 	providers.CanUseNAPTR:            providers.Can(),
 	providers.CanUseSRV:              providers.Can("SRV records with empty targets are not supported."),
 	providers.CanUseSSHFP:            providers.Can(),
@@ -57,6 +62,7 @@ var features = providers.DocumentationNotes{
 	providers.CanUseAzureAlias:       providers.Cannot(),
 }
 
+// init registers the registrar and the domain service provider with dnscontrol.
 func init() {
 	providers.RegisterRegistrarType("INWX", newInwxReg)
 	providers.RegisterDomainServiceProviderType("INWX", newInwxDsp, features)
@@ -134,14 +140,17 @@ func newInwx(m map[string]string) (*InwxApi, error) {
 	return api, nil
 }
 
+// newInwxReg is called to initialize the INWX registrar provider.
 func newInwxReg(m map[string]string) (providers.Registrar, error) {
 	return newInwx(m)
 }
 
+// new InwxDsp is called to initialize the INWX domain service provider.
 func newInwxDsp(m map[string]string, metadata json.RawMessage) (providers.DNSServiceProvider, error) {
 	return newInwx(m)
 }
 
+// makeNameserverRecordRequest is a helper function used to convert a RecordConfig to an INWX NS Record Request.
 func makeNameserverRecordRequest(domain string, rec *models.RecordConfig) *goinwx.NameserverRecordRequest {
 	content := rec.GetTargetField()
 
@@ -175,22 +184,26 @@ func makeNameserverRecordRequest(domain string, rec *models.RecordConfig) *goinw
 	return req
 }
 
+// createRecord is used by GetDomainCorrections to create a new record.
 func (api *InwxApi) createRecord(domain string, rec *models.RecordConfig) error {
 	req := makeNameserverRecordRequest(domain, rec)
 	_, err := api.client.Nameservers.CreateRecord(req)
 	return err
 }
 
-func (api *InwxApi) updateRecord(RoId int, rec *models.RecordConfig) error {
+// updateRecord is used by GetDomainCorrections to update an existing record.
+func (api *InwxApi) updateRecord(RecordID int, rec *models.RecordConfig) error {
 	req := makeNameserverRecordRequest("", rec)
-	err := api.client.Nameservers.UpdateRecord(RoId, req)
+	err := api.client.Nameservers.UpdateRecord(RecordID, req)
 	return err
 }
 
-func (api *InwxApi) deleteRecord(RoId int) error {
-	return api.client.Nameservers.DeleteRecord(RoId)
+// deleteRecord is used by GetDomainCorrections to delete a record.
+func (api *InwxApi) deleteRecord(RecordID int) error {
+	return api.client.Nameservers.DeleteRecord(RecordID)
 }
 
+// GetDomainCorrections finds the currently existing records and returns the corrections required to update them.
 func (api *InwxApi) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Correction, error) {
 	dc.Punycode()
 
@@ -213,24 +226,25 @@ func (api *InwxApi) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Cor
 		})
 	}
 	for _, d := range del {
-		existingId := d.Existing.Original.(goinwx.NameserverRecord).ID
+		existingID := d.Existing.Original.(goinwx.NameserverRecord).ID
 		corrections = append(corrections, &models.Correction{
 			Msg: d.String(),
-			F:   func() error { return api.deleteRecord(existingId) },
+			F:   func() error { return api.deleteRecord(existingID) },
 		})
 	}
 	for _, d := range mod {
 		rec := d.Desired
-		existingId := d.Existing.Original.(goinwx.NameserverRecord).ID
+		existingID := d.Existing.Original.(goinwx.NameserverRecord).ID
 		corrections = append(corrections, &models.Correction{
 			Msg: d.String(),
-			F:   func() error { return api.updateRecord(existingId, rec) },
+			F:   func() error { return api.updateRecord(existingID, rec) },
 		})
 	}
 
 	return corrections, nil
 }
 
+// GetNameservers returns the default nameservers for INWX.
 func (api *InwxApi) GetNameservers(domain string) ([]*models.Nameserver, error) {
 	if api.sandbox {
 		return models.ToNameservers(InwxSandboxDefaultNs)
@@ -239,6 +253,7 @@ func (api *InwxApi) GetNameservers(domain string) ([]*models.Nameserver, error) 
 	}
 }
 
+// GetZoneRecords receives the current records from Inwx and converts them to models.RecordConfig.
 func (api *InwxApi) GetZoneRecords(domain string) (models.Records, error) {
 	info, err := api.client.Nameservers.Info(&goinwx.NameserverInfoRequest{Domain: domain})
 	if err != nil {
@@ -287,6 +302,7 @@ func (api *InwxApi) GetZoneRecords(domain string) (models.Records, error) {
 	return records, nil
 }
 
+// updateNameservers is used by GetRegistrarCorrections to update the domain's nameservers.
 func (api *InwxApi) updateNameservers(ns []string, domain string) func() error {
 	return func() error {
 		request := &goinwx.DomainUpdateRequest{
@@ -299,6 +315,7 @@ func (api *InwxApi) updateNameservers(ns []string, domain string) func() error {
 	}
 }
 
+// GetRegistrarCorrections is part of the registrar provider and determines if the nameservers have to be updated.
 func (api *InwxApi) GetRegistrarCorrections(dc *models.DomainConfig) ([]*models.Correction, error) {
 	info, err := api.client.Domains.Info(dc.Name, 0)
 	if err != nil {
