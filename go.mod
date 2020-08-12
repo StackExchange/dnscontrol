@@ -30,7 +30,7 @@ require (
 	github.com/mittwald/go-powerdns v0.4.0
 	github.com/mjibson/esc v0.2.0
 	github.com/namedotcom/go v0.0.0-20180403034216-08470befbe04
-	github.com/nrdcg/goinwx v0.8.0
+	github.com/nrdcg/goinwx v0.8.1
 	github.com/ovh/go-ovh v0.0.0-20181109152953-ba5adb4cf014
 	github.com/philhug/opensrs-go v0.0.0-20171126225031-9dfa7433020d
 	github.com/pkg/errors v0.9.1

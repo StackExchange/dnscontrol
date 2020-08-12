@@ -244,8 +244,8 @@ github.com/namedotcom/go v0.0.0-20180403034216-08470befbe04 h1:o6uBwrhM5C8Ll3MAA
 github.com/namedotcom/go v0.0.0-20180403034216-08470befbe04/go.mod h1:5sN+Lt1CaY4wsPvgQH/jsuJi4XO2ssZbdsIizr4CVC8=
 github.com/nbio/st v0.0.0-20140626010706-e9e8d9816f32 h1:W6apQkHrMkS0Muv8G/TipAy/FJl/rCYT0+EuS8+Z0z4=
 github.com/nbio/st v0.0.0-20140626010706-e9e8d9816f32/go.mod h1:9wM+0iRr9ahx58uYLpLIr5fm8diHn0JbqRycJi6w0Ms=
-github.com/nrdcg/goinwx v0.8.0 h1:YwnkED62xJlWLJvR/5RlpVmHKZoy3EH+hs9706pAAuI=
-github.com/nrdcg/goinwx v0.8.0/go.mod h1:YWJ9kKCRIlcM9T1IQM58fjjbMviAk9UTCesuVYek+mQ=
+github.com/nrdcg/goinwx v0.8.1 h1:20EQ/JaGFnSKwiDH2JzjIpicffl3cPk6imJBDqVBVtU=
+github.com/nrdcg/goinwx v0.8.1/go.mod h1:tILVc10gieBp/5PMvbcYeXM6pVQ+c9jxDZnpaR1UW7c=
 github.com/oklog/run v1.0.0/go.mod h1:dlhp/R75TPv97u0XWUtDeV/lRKWPKSdTuV0TZvrmrQA=
 github.com/ovh/go-ovh v0.0.0-20181109152953-ba5adb4cf014 h1:37VE5TYj2m/FLA9SNr4z0+A0JefvTmR60Zwf8XSEV7c=
 github.com/ovh/go-ovh v0.0.0-20181109152953-ba5adb4cf014/go.mod h1:joRatxRJaZBsY3JAOEMcoOp05CnZzsx4scTxi95DHyQ=
