@@ -93,7 +93,7 @@ func (api *InwxApi) loginHelper(TOTPValue string, TOTPKey string) error {
 	switch TFA := resp.TFA; TFA {
 	case "0":
 		if TOTPKey != "" || TOTPValue != "" {
-			fmt.Printf("INWX: Warning: no TOTP requested by INWX but totp/totp-key is present in `creds.json`")
+			fmt.Printf("INWX: Warning: no TOTP requested by INWX but totp/totp-key is present in `creds.json`\n")
 		}
 	case "GOOGLE-AUTH":
 		tan, err := getOTP(TOTPValue, TOTPKey)
@@ -103,7 +103,7 @@ func (api *InwxApi) loginHelper(TOTPValue string, TOTPKey string) error {
 
 		err = api.client.Account.Unlock(tan)
 		if err != nil {
-			return fmt.Errorf("INWX: Could not unlock account - TOTP is probably invalid.")
+			return fmt.Errorf("INWX: Could not unlock account: %w.", err)
 		}
 	default:
 		return fmt.Errorf("INWX: Unknown two factor authentication mode `%s` has been requested.", resp.TFA)
