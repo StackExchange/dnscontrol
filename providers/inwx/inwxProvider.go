@@ -23,8 +23,10 @@ Info required in `creds.json`:
 	- password
 
 Either of the following settings is required when two factor authentication is enabled:
-	- totp (TOTP code if 2FA is enabled, probably best specified as an env variable)
-	- totp-key (shared TOTP secret used to generate a valid TOTP code)
+	- totp (TOTP code if 2FA is enabled; best specified as an env variable)
+	- totp-key (shared TOTP secret used to generate a valid TOTP code; not recommended since
+	            this effectively defeats the purpose of two factor authentication by storing
+	            both factors at the same place)
 
 Additional settings available in `creds.json`:
 	- sandbox (set to 1 to use the sandbox API from INWX)
