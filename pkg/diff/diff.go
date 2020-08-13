@@ -35,8 +35,11 @@ func New(dc *models.DomainConfig, extraValues ...func(*models.RecordConfig) map[
 		dc:          dc,
 		extraValues: extraValues,
 
-		// compile IGNORE glob patterns
-		compiledIgnoredLabels: compileIgnoredLabels(dc.IgnoredLabels),
+		// compile IGNORE_NAME glob patterns
+		compiledIgnoredNames: compileIgnoredNames(dc.IgnoredNames),
+
+		// compile IGNORE_TARGET glob patterns
+		compiledIgnoredTargets: compileIgnoredTargets(dc.IgnoredTargets),
 	}
 }
 
@@ -44,7 +47,8 @@ type differ struct {
 	dc          *models.DomainConfig
 	extraValues []func(*models.RecordConfig) map[string]string
 
-	compiledIgnoredLabels []glob.Glob
+	compiledIgnoredNames []glob.Glob
+	compiledIgnoredTargets []glob.Glob
 }
 
 // get normalized content for record. target, ttl, mxprio, and specified metadata
@@ -93,16 +97,20 @@ func (d *differ) IncrementalDiff(existing []*models.RecordConfig) (unchanged, cr
 	existingByNameAndType := map[models.RecordKey][]*models.RecordConfig{}
 	desiredByNameAndType := map[models.RecordKey][]*models.RecordConfig{}
 	for _, e := range existing {
-		if d.matchIgnored(e.GetLabel()) {
-			printer.Debugf("Ignoring record %s %s due to IGNORE\n", e.GetLabel(), e.Type)
+		if d.matchIgnoredName(e.GetLabel()) {
+			printer.Debugf("Ignoring record %s %s due to IGNORE_NAME\n", e.GetLabel(), e.Type)
+		} else if d.matchIgnoredTarget(e.GetTargetField(), e.Type) {
+			printer.Debugf("Ignoring record %s %s due to IGNORE_TARGET\n", e.GetLabel(), e.Type)
 		} else {
 			k := e.Key()
 			existingByNameAndType[k] = append(existingByNameAndType[k], e)
 		}
 	}
 	for _, dr := range desired {
-		if d.matchIgnored(dr.GetLabel()) {
-			panic(fmt.Sprintf("Trying to update/add IGNOREd record: %s %s", dr.GetLabel(), dr.Type))
+		if d.matchIgnoredName(dr.GetLabel()) {
+			panic(fmt.Sprintf("Trying to update/add IGNORE_NAMEd record: %s %s", dr.GetLabel(), dr.Type))
+		} else if d.matchIgnoredTarget(dr.GetTargetField(), dr.Type) {
+			panic(fmt.Sprintf("Trying to update/add IGNORE_TARGETd record: %s %s", dr.GetLabel(), dr.Type))
 		} else {
 			k := dr.Key()
 			desiredByNameAndType[k] = append(desiredByNameAndType[k], dr)
@@ -312,13 +320,13 @@ func sortedKeys(m map[string]*models.RecordConfig) []string {
 	return s
 }
 
-func compileIgnoredLabels(ignoredLabels []string) []glob.Glob {
-	result := make([]glob.Glob, 0, len(ignoredLabels))
+func compileIgnoredNames(ignoredNames []string) []glob.Glob {
+	result := make([]glob.Glob, 0, len(ignoredNames))
 
-	for _, tst := range ignoredLabels {
+	for _, tst := range ignoredNames {
 		g, err := glob.Compile(tst, '.')
 		if err != nil {
-			panic(fmt.Sprintf("Failed to compile IGNORE pattern %q: %v", tst, err))
+			panic(fmt.Sprintf("Failed to compile IGNORE_NAME pattern %q: %v", tst, err))
 		}
 
 		result = append(result, g)
@@ -327,11 +335,46 @@ func compileIgnoredLabels(ignoredLabels []string) []glob.Glob {
 	return result
 }
 
-func (d *differ) matchIgnored(name string) bool {
-	for _, tst := range d.compiledIgnoredLabels {
+func compileIgnoredTargets(ignoredTargets []*models.IgnoreTarget) []glob.Glob {
+	result := make([]glob.Glob, 0, len(ignoredTargets))
+
+	for _, tst := range ignoredTargets {
+		fmt.Sprintf("rType for IGNORE_TARGET %v", tst.Type)
+
+		if tst.Type != "CNAME" {
+			panic(fmt.Sprintf("Invalid rType for IGNORE_TARGET %v", tst.Type))
+		}
+
+		g, err := glob.Compile(tst.Pattern, '.')
+		if err != nil {
+			panic(fmt.Sprintf("Failed to compile IGNORE_TARGET pattern %q: %v", tst, err))
+		}
+
+		result = append(result, g)
+	}
+
+	return result
+}
+
+func (d *differ) matchIgnoredName(name string) bool {
+	for _, tst := range d.compiledIgnoredNames {
 		if tst.Match(name) {
 			return true
 		}
 	}
+	return false
+}
+
+func (d *differ) matchIgnoredTarget(target string, rType string) bool {
+	if rType != "CNAME" {
+		return false
+	}
+
+	for _, tst := range d.compiledIgnoredTargets {
+		if tst.Match(target) {
+			return true
+		}
+	}
+
 	return false
 }
