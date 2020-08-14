@@ -8,7 +8,6 @@ import (
 	"io/ioutil"
 	"os"
 	"path/filepath"
-	"strconv"
 	"strings"
 
 	"github.com/StackExchange/dnscontrol/v3/models"
@@ -38,7 +37,7 @@ func ExecuteJavascript(file string, devMode bool) (*models.DNSConfig, error) {
 
 	vm.Set("require", require)
 	vm.Set("REV", reverse)
-	vm.Set("eglob", listFiles) // glob handled in helper.js for simplified return.
+	vm.Set("glob", listFiles) // used for require_glob()
 
 	helperJs := GetHelpers(devMode)
 	// run helper script to prime vm and initialize variables
@@ -122,7 +121,7 @@ func require(call otto.FunctionCall) otto.Value {
 func listFiles(call otto.FunctionCall) otto.Value {
 	// Check amount of arguments provided
 	if ! (len(call.ArgumentList) >= 1 && len(call.ArgumentList) <= 3) {
-		throw(call.Otto, "eglob requires at least one argument: folder (string). " +
+		throw(call.Otto, "glob requires at least one argument: folder (string). " +
 			"Optional: recursive (bool) [true], fileExtension (string) [.js]")
 	}
 
@@ -130,17 +129,17 @@ func listFiles(call otto.FunctionCall) otto.Value {
 	// First: Let's check dir.
 	if !(call.Argument(0).IsDefined() && call.Argument(0).IsString() &&
 		len(call.Argument(0).String()) > 0) {
-		throw(call.Otto, "eglob: first argument needs to be a path, provided as string.")
+		throw(call.Otto, "glob: first argument needs to be a path, provided as string.")
 	}
 	dir := call.Argument(0).String() // Path where to start listing
 	printer.Debugf("listFiles: cd: %s, user: %s \n", currentDirectory, dir)
 	// now we always prepend the current directory we're working in, which is being set within
 	// the func ExecuteJavascript() above. So when require("domains/load_all.js") is being used,
-	// where eglob("customer1/") is being used, we basically search for files in domains/customer1/.
+	// where glob("customer1/") is being used, we basically search for files in domains/customer1/.
 	dir = filepath.ToSlash(filepath.Join(currentDirectory, dir))
 
 	if _, err := os.Stat(dir); os.IsNotExist(err) {
-		throw(call.Otto, "eglob: provided path does not exist.")
+		throw(call.Otto, "glob: provided path does not exist.")
 	}
 
 	// Second: Recursive?
@@ -149,7 +148,7 @@ func listFiles(call otto.FunctionCall) otto.Value {
 		if call.Argument(1).IsBoolean() {
 			recursive, _ = call.Argument(1).ToBoolean() // If it should be recursive
 		} else {
-			throw(call.Otto, "eglob: second argument, if recursive, needs to be bool.")
+			throw(call.Otto, "glob: second argument, if recursive, needs to be bool.")
 		}
 	}
 
@@ -163,22 +162,14 @@ func listFiles(call otto.FunctionCall) otto.Value {
 				fileExtension = "." + fileExtension
 			}
 		} else {
-			throw(call.Otto, "eglob: third argument, file extension, needs to be a string. * for no filter.")
+			throw(call.Otto, "glob: third argument, file extension, needs to be a string. * for no filter.")
 		}
 	}
 
 	// Now we're doing the actual work: Listing files.
 	// Folders are ending with a slash. Can be identified later on from the user with JavaScript.
 	// Additionally, when more smart logic required, user can use regex in JS.
-	type FileEntry struct {
-		FileName string
-		DirPath  string
-		Size     int64
-		Mode     int
-		ModTime  string
-		IsDir    bool
-	}
-	files := make([]interface{}, 0) // init files list
+	files := make([]string, 0) // init files list
 	dirClean := filepath.Clean(dir) // let's clean it here once, instead of over-and-over again within loop
 	err := filepath.Walk(dir, func(path string, fi os.FileInfo, err error) error {
 		// quick fix to get it working on windows, as it returns paths with double-backslash, what usually
@@ -198,16 +189,8 @@ func listFiles(call otto.FunctionCall) otto.Value {
 			// ONLY skip, when the file extension is NOT matching, or when filter is NOT disabled.
 			return nil
 		}
-		dirPath := filepath.ToSlash(filepath.Dir(path)) + "/"
-		unixPerm, _ := strconv.Atoi(fmt.Sprintf("%o", fi.Mode().Perm())) // convert from string to int octal
-		files = append(files, &FileEntry{
-			FileName: fi.Name(), // filename
-			DirPath:  dirPath,   // dir (adding slash to end as it's a folder)
-			Size:     fi.Size(), // bytes
-			Mode:     unixPerm,  // returned as int octal (the classic 755)
-			ModTime:  fi.ModTime().Format("2006-01-02T15:04:05-0700"), // ISO 8601 (RFC 3339)
-			IsDir:    fi.IsDir(),
-		})
+		//dirPath := filepath.ToSlash(filepath.Dir(path)) + "/"
+		files = append(files, path)
 		return err
 	})
 	if err != nil {

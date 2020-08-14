@@ -873,14 +873,14 @@ function DKIM(arr) {
     return R;
 }
 
-// Function wrapper for eglob for simplified output (returns one-dimensional array with file names)
-// As the main function (eglob() in Go) is in our control anyway, all the values here should
-// be already sanity-checked, valid and safe to use.
-function glob() {
-    var filesFull = eglob.apply(null, arguments);
-    var files = [];
-    for (i = 0; i < filesFull.length; i++) {
-        files.push(filesFull[i].DirPath + filesFull[i].FileName)
+// Function wrapper for glob() for recursively loading files.
+// As the main function (in Go) is in our control anyway, all the values here are already sanity-checked.
+// Note: glob() is only an internal undocumented helper function. So use it on your own risk.
+function require_glob() {
+    arguments[2] = "js"; // force to only include .js files.
+    var files = glob.apply(null, arguments);
+    for (i = 0; i < files.length; i++) {
+        require(files[i]);
     }
     return files
 }
