@@ -123,5 +123,11 @@
   "VULTR": {
     "domain": "$VULTR_DOMAIN",
     "token": "$VULTR_TOKEN"
+  },
+  "INWX": {
+    "username":  "$INWX_USER",
+    "password": "$INWX_PASSWORD",
+    "domain": "$INWX_DOMAIN",
+    "sandbox": "1",
   }
 }
