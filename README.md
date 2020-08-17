@@ -29,6 +29,7 @@ Currently supported DNS providers:
  - Google DNS
  - HEXONET
  - Internet.bs
+ - INWX
  - Linode
  - NS1
  - Name.com
