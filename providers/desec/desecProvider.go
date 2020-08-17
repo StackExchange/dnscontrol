@@ -153,7 +153,10 @@ func (c *api) GenerateDomainCorrections(dc *models.DomainConfig, existing models
 
 	// diff existing vs. current.
 	differ := diff.New(dc)
-	keysToUpdate := differ.ChangedGroups(existing)
+	keysToUpdate, err := differ.ChangedGroups(existing)
+	if err != nil {
+		return nil, err
+	}
 	if len(keysToUpdate) == 0 {
 		return nil, nil
 	}

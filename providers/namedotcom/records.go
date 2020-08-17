@@ -55,7 +55,11 @@ func (n *NameCom) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Corre
 	models.PostProcessRecords(actual)
 
 	differ := diff.New(dc)
-	_, create, del, mod := differ.IncrementalDiff(actual)
+	_, create, del, mod, err := differ.IncrementalDiff(actual)
+	if err != nil {
+		return nil, err
+	}
+
 	corrections := []*models.Correction{}
 
 	for _, d := range del {

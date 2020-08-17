@@ -114,7 +114,10 @@ func (c *ovhProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*models.C
 	models.PostProcessRecords(actual)
 
 	differ := diff.New(dc)
-	_, create, delete, modify := differ.IncrementalDiff(actual)
+	_, create, delete, modify, err := differ.IncrementalDiff(actual)
+	if err != nil {
+		return nil, err
+	}
 
 	corrections := []*models.Correction{}
 

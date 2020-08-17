@@ -76,7 +76,10 @@ func (s *SoftLayer) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Cor
 		return nil, err
 	}
 
-	_, create, delete, modify := diff.New(dc).IncrementalDiff(actual)
+	_, create, delete, modify, err := diff.New(dc).IncrementalDiff(actual)
+	if err != nil {
+		return nil, err
+	}
 
 	for _, del := range delete {
 		existing := del.Existing.Original.(datatypes.Dns_Domain_ResourceRecord)

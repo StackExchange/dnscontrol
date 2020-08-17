@@ -190,7 +190,11 @@ func (c *CloudflareAPI) GetDomainCorrections(dc *models.DomainConfig) ([]*models
 	models.PostProcessRecords(records)
 
 	differ := diff.New(dc, getProxyMetadata)
-	_, create, del, mod := differ.IncrementalDiff(records)
+	_, create, del, mod, err := differ.IncrementalDiff(records)
+	if err != nil {
+		return nil, err
+	}
+
 	corrections := []*models.Correction{}
 
 	for _, d := range del {

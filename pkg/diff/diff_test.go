@@ -170,7 +170,10 @@ func checkLengthsFull(t *testing.T, existing, desired []*models.RecordConfig, un
 		IgnoredTargets: ignoredTargets,
 	}
 	d := New(dc, valFuncs...)
-	un, cre, del, mod = d.IncrementalDiff(existing)
+	un, cre, del, mod, err := d.IncrementalDiff(existing)
+	if err != nil {
+		panic(err)
+	}
 	if len(un) != unCount {
 		t.Errorf("Got %d unchanged records, but expected %d", len(un), unCount)
 	}

@@ -211,7 +211,10 @@ func (c *Bind) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Correcti
 	models.PostProcessRecords(foundRecords)
 
 	differ := diff.New(dc)
-	_, create, del, mod := differ.IncrementalDiff(foundRecords)
+	_, create, del, mod, err := differ.IncrementalDiff(foundRecords)
+	if err != nil {
+		return nil, err
+	}
 
 	buf := &bytes.Buffer{}
 	// Print a list of changes. Generate an actual change that is the zone
