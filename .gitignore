@@ -20,3 +20,4 @@ adzonedump.*
 stack.sh
 .idea/
 *.nupkg
+.DS_Store
