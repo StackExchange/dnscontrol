@@ -158,15 +158,16 @@ func checkLengths(t *testing.T, existing, desired []*models.RecordConfig, unCoun
 }
 
 func checkLengthsWithKeepUnknown(t *testing.T, existing, desired []*models.RecordConfig, unCount, createCount, delCount, modCount int, keepUnknown bool, valFuncs ...func(*models.RecordConfig) map[string]string) (un, cre, del, mod Changeset) {
-	return checkLengthsFull(t, existing, desired, unCount, createCount, delCount, modCount, keepUnknown, []string{}, valFuncs...)
+	return checkLengthsFull(t, existing, desired, unCount, createCount, delCount, modCount, keepUnknown, []string{}, nil, valFuncs...)
 }
 
-func checkLengthsFull(t *testing.T, existing, desired []*models.RecordConfig, unCount, createCount, delCount, modCount int, keepUnknown bool, ignoredRecords []string, valFuncs ...func(*models.RecordConfig) map[string]string) (un, cre, del, mod Changeset) {
+func checkLengthsFull(t *testing.T, existing, desired []*models.RecordConfig, unCount, createCount, delCount, modCount int, keepUnknown bool, ignoredRecords []string, ignoredTargets []*models.IgnoreTarget, valFuncs ...func(*models.RecordConfig) map[string]string) (un, cre, del, mod Changeset) {
 	dc := &models.DomainConfig{
-		Name:          "example.com",
-		Records:       desired,
-		KeepUnknown:   keepUnknown,
-		IgnoredLabels: ignoredRecords,
+		Name:           "example.com",
+		Records:        desired,
+		KeepUnknown:    keepUnknown,
+		IgnoredNames:   ignoredRecords,
+		IgnoredTargets: ignoredTargets,
 	}
 	d := New(dc, valFuncs...)
 	un, cre, del, mod = d.IncrementalDiff(existing)
@@ -209,7 +210,7 @@ func TestIgnoredRecords(t *testing.T) {
 	desired := []*models.RecordConfig{
 		myRecord("www3 MX 1 2.2.2.2"),
 	}
-	checkLengthsFull(t, existing, desired, 0, 0, 0, 1, false, []string{"www1", "www2"})
+	checkLengthsFull(t, existing, desired, 0, 0, 0, 1, false, []string{"www1", "www2"}, nil)
 }
 
 func TestModifyingIgnoredRecords(t *testing.T) {
@@ -228,10 +229,10 @@ func TestModifyingIgnoredRecords(t *testing.T) {
 		}
 	}()
 
-	checkLengthsFull(t, existing, desired, 0, 0, 0, 1, false, []string{"www1", "www2"})
+	checkLengthsFull(t, existing, desired, 0, 0, 0, 1, false, []string{"www1", "www2"}, nil)
 }
 
-func TestGlobIgnoredRecords(t *testing.T) {
+func TestGlobIgnoredName(t *testing.T) {
 	existing := []*models.RecordConfig{
 		myRecord("www1 MX 1 1.1.1.1"),
 		myRecord("foo.www2 MX 1 1.1.1.1"),
@@ -241,10 +242,10 @@ func TestGlobIgnoredRecords(t *testing.T) {
 	desired := []*models.RecordConfig{
 		myRecord("www4 MX 1 2.2.2.2"),
 	}
-	checkLengthsFull(t, existing, desired, 0, 0, 0, 1, false, []string{"www1", "*.www2", "**.www3"})
+	checkLengthsFull(t, existing, desired, 0, 0, 0, 1, false, []string{"www1", "*.www2", "**.www3"}, nil)
 }
 
-func TestInvalidGlobIgnoredRecord(t *testing.T) {
+func TestInvalidGlobIgnoredName(t *testing.T) {
 	existing := []*models.RecordConfig{
 		myRecord("www1 MX 1 1.1.1.1"),
 		myRecord("www2 MX 1 1.1.1.1"),
@@ -256,11 +257,64 @@ func TestInvalidGlobIgnoredRecord(t *testing.T) {
 
 	defer func() {
 		if r := recover(); r == nil {
-			t.Errorf("should panic: invalid glob pattern for IGNORE")
+			t.Errorf("should panic: invalid glob pattern for IGNORE_NAME")
 		}
 	}()
 
-	checkLengthsFull(t, existing, desired, 0, 1, 0, 0, false, []string{"www1", "www2", "[.www3"})
+	checkLengthsFull(t, existing, desired, 0, 1, 0, 0, false, []string{"www1", "www2", "[.www3"}, nil)
+}
+
+func TestGlobIgnoredTarget(t *testing.T) {
+	existing := []*models.RecordConfig{
+		myRecord("www1 CNAME 1 ignoreme.com"),
+		myRecord("foo.www2 MX 1 1.1.1.2"),
+		myRecord("foo.bar.www3 MX 1 1.1.1.1"),
+		myRecord("www4 MX 1 1.1.1.1"),
+	}
+	desired := []*models.RecordConfig{
+		myRecord("foo.www2 MX 1 1.1.1.2"),
+		myRecord("foo.bar.www3 MX 1 1.1.1.1"),
+		myRecord("www4 MX 1 2.2.2.2"),
+	}
+	checkLengthsFull(t, existing, desired, 2, 0, 0, 1, false, nil, []*models.IgnoreTarget{{Pattern: "ignoreme.com", Type: "CNAME"}})
+}
+
+func TestInvalidGlobIgnoredTarget(t *testing.T) {
+	existing := []*models.RecordConfig{
+		myRecord("www1 MX 1 1.1.1.1"),
+		myRecord("www2 MX 1 1.1.1.1"),
+		myRecord("www3 MX 1 1.1.1.1"),
+	}
+	desired := []*models.RecordConfig{
+		myRecord("www4 MX 1 2.2.2.2"),
+	}
+
+	defer func() {
+		if r := recover(); r == nil {
+			t.Errorf("should panic: invalid glob pattern for IGNORE_TARGET")
+		}
+	}()
+
+	checkLengthsFull(t, existing, desired, 0, 1, 0, 0, false, nil, []*models.IgnoreTarget{{Pattern: "[.www3", Type: "CNAME"}} )
+}
+
+func TestInvalidTypeIgnoredTarget(t *testing.T) {
+	existing := []*models.RecordConfig{
+		myRecord("www1 MX 1 1.1.1.1"),
+		myRecord("www2 MX 1 1.1.1.1"),
+		myRecord("www3 MX 1 1.1.1.1"),
+	}
+	desired := []*models.RecordConfig{
+		myRecord("www4 MX 1 2.2.2.2"),
+	}
+
+	defer func() {
+		if r := recover(); r == nil {
+			t.Errorf("should panic: Invalid rType for IGNORE_TARGET A")
+		}
+	}()
+
+	checkLengthsFull(t, existing, desired, 0, 1, 0, 0, false, nil, []*models.IgnoreTarget{{Pattern: "1.1.1.1", Type: "A"}} )
 }
 
 // from https://github.com/StackExchange/dnscontrol/issues/552
@@ -284,12 +338,12 @@ func TestCaas(t *testing.T) {
 	desired[1].SetTargetCAA(3, "issue", "amazon.com.")
 	desired[2].SetTargetCAA(3, "issuewild", "letsencrypt.org.")
 
-	checkLengthsFull(t, existing, desired, 3, 0, 0, 0, false, nil)
+	checkLengthsFull(t, existing, desired, 3, 0, 0, 0, false, nil, nil)
 
 	// Make sure it passes with a different ordering. Not ok.
 	desired[2].SetTargetCAA(3, "issue", "letsencrypt.org.")
 	desired[1].SetTargetCAA(3, "issue", "amazon.com.")
 	desired[0].SetTargetCAA(3, "issuewild", "letsencrypt.org.")
 
-	checkLengthsFull(t, existing, desired, 3, 0, 0, 0, false, nil)
+	checkLengthsFull(t, existing, desired, 3, 0, 0, 0, false, nil, nil)
 }

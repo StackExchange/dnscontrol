@@ -1,3 +1,5 @@
 D("foo.com", "none"
-  , IGNORE("testignore")
+  , IGNORE_NAME("testignore")
+  , IGNORE_TARGET("testtarget", "CNAME")
+  , IGNORE("legacyignore")
 );
