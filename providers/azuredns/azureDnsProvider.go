@@ -73,6 +73,10 @@ func init() {
 }
 
 func (a *azureDNSProvider) getExistingZones() (*adns.ZoneListResult, error) {
+    // Please note — this function doesn't work with > 100 zones
+    // https://github.com/StackExchange/dnscontrol/issues/792
+    // Copied this code to getZones and ListZones and modified it for using a paging
+    // As a result getExistingZones is not used anymore
 	ctx, cancel := context.WithTimeout(context.Background(), 6000*time.Second)
 	defer cancel()
 	zonesIterator, zonesErr := a.zonesClient.ListByResourceGroupComplete(ctx, *a.resourceGroup, to.Int32Ptr(100))
@@ -86,16 +90,23 @@ func (a *azureDNSProvider) getExistingZones() (*adns.ZoneListResult, error) {
 func (a *azureDNSProvider) getZones() error {
 	a.zones = make(map[string]*adns.Zone)
 
-	zonesResult, err := a.getExistingZones()
-
-	if err != nil {
-		return err
+	ctx, cancel := context.WithTimeout(context.Background(), 6000*time.Second)
+	defer cancel()
+	zonesIterator, zonesErr := a.zonesClient.ListByResourceGroup(ctx, *a.resourceGroup, to.Int32Ptr(100))
+	if zonesErr != nil {
+		fmt.Errorf("getZones: zonesErr %v", zonesErr.Error())
+		return zonesErr
 	}
 
-	for _, z := range *zonesResult.Value {
-		zone := z
-		domain := strings.TrimSuffix(*z.Name, ".")
-		a.zones[domain] = &zone
+    // Check getExistingZones and https://github.com/StackExchange/dnscontrol/issues/792 for the details
+	for zonesIterator.NotDone() {
+		zonesResult := zonesIterator.Response()
+		for _, z := range *zonesResult.Value {
+			zone := z
+			domain := strings.TrimSuffix(*z.Name, ".")
+			a.zones[domain] = &zone
+		}
+		zonesIterator.NextWithContext(ctx)
 	}
 
 	return nil
@@ -125,17 +136,24 @@ func (a *azureDNSProvider) GetNameservers(domain string) ([]*models.Nameserver, 
 }
 
 func (a *azureDNSProvider) ListZones() ([]string, error) {
-	zonesResult, err := a.getExistingZones()
-
-	if err != nil {
-		return nil, err
-	}
-
 	var zones []string
 
-	for _, z := range *zonesResult.Value {
-		domain := strings.TrimSuffix(*z.Name, ".")
-		zones = append(zones, domain)
+	ctx, cancel := context.WithTimeout(context.Background(), 6000*time.Second)
+	defer cancel()
+	zonesIterator, zonesErr := a.zonesClient.ListByResourceGroup(ctx, *a.resourceGroup, to.Int32Ptr(100))
+	if zonesErr != nil {
+		fmt.Errorf("ListZones: zonesErr %v", zonesErr.Error())
+		return nil, zonesErr
+	}
+
+    // Check getExistingZones and https://github.com/StackExchange/dnscontrol/issues/792 for the details
+	for zonesIterator.NotDone() {
+		zonesResult := zonesIterator.Response()
+		for _, z := range *zonesResult.Value {
+			domain := strings.TrimSuffix(*z.Name, ".")
+			zones = append(zones, domain)
+		}
+		zonesIterator.NextWithContext(ctx)
 	}
 
 	return zones, nil
