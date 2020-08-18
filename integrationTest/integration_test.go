@@ -664,11 +664,11 @@ func makeTests(t *testing.T) []*TestGroup {
 		),
 
 		testgroup("IGNORE_TARGET function",
-			tc("Create some records", cname("foo", "test.foo.com."), cname("bar", "test.foo.com.")),
-			tc("Add a new record - ignoring foo", cname("bar", "bar.foo.com."), ignoreTarget("test.foo.com.", "CNAME")),
+			tc("Create some records", cname("foo", "test.foo.com."), cname("bar", "test.bar.com.")),
+			tc("Add a new record - ignoring test.foo.com.", cname("bar", "bar.foo.com."), ignoreTarget("test.foo.com.", "CNAME")),
 			clear(),
-			tc("Create some records", cname("bar.foo", "a.b.foo.com."), a("bar.foo", "1.2.3.4")),
-			tc("Add a new record - ignoring **.foo.com targets", a("bar", "1.2.3.4"), ignoreTarget("**.foo.com.", "CNAME")),
+			tc("Create some records", cname("bar.foo", "a.b.foo.com."), a("test.foo", "1.2.3.4")),
+			tc("Add a new record - ignoring **.foo.com. targets", a("bar", "1.2.3.4"), ignoreTarget("**.foo.com.", "CNAME")),
 		),
 
 		testgroup("single TXT",
