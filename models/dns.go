@@ -126,3 +126,13 @@ func (config *DNSConfig) DomainContainingFQDN(fqdn string) *DomainConfig {
 	}
 	return d
 }
+
+// IgnoreTarget describes an IGNORE_TARGET rule.
+type IgnoreTarget struct {
+	Pattern string `json:"pattern"` // Glob pattern
+	Type    string `json:"type"`    // All caps rtype name.
+}
+
+func (i *IgnoreTarget) String() string {
+	return i.Pattern
+}

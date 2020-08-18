@@ -58,7 +58,8 @@ function newDomain(name, registrar) {
         dnsProviders: {},
         defaultTTL: 0,
         nameservers: [],
-        ignored_labels: [],
+        ignored_names: [],
+        ignored_targets: [],
     };
 }
 
@@ -494,10 +495,24 @@ function format_tt(transform_table) {
 
 // IGNORE(name)
 function IGNORE(name) {
+    // deprecated, use IGNORE_NAME
+    return IGNORE_NAME(name);
+}
+
+// IGNORE_NAME(name)
+function IGNORE_NAME(name) {
     return function(d) {
-        d.ignored_labels.push(name);
+        d.ignored_names.push(name);
     };
 }
+
+// IGNORE_TARGET(target)
+function IGNORE_TARGET(target, rType) {
+    return function(d) {
+        d.ignored_targets.push({pattern: target, type: rType});
+    };
+}
+
 
 // IMPORT_TRANSFORM(translation_table, domain)
 var IMPORT_TRANSFORM = recordBuilder('IMPORT_TRANSFORM', {

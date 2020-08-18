@@ -162,7 +162,8 @@ func makeChanges(t *testing.T, prv providers.DNSServiceProvider, dc *models.Doma
 			//}
 			dom.Records = append(dom.Records, &rc)
 		}
-		dom.IgnoredLabels = tst.IgnoredLabels
+		dom.IgnoredNames = tst.IgnoredNames
+		dom.IgnoredTargets = tst.IgnoredTargets
 		models.PostProcessRecords(dom.Records)
 		dom2, _ := dom.Copy()
 
@@ -301,9 +302,10 @@ type TestGroup struct {
 }
 
 type TestCase struct {
-	Desc          string
-	Records       []*rec
-	IgnoredLabels []string
+	Desc           string
+	Records        []*rec
+	IgnoredNames   []string
+	IgnoredTargets []*models.IgnoreTarget
 }
 
 type rec models.RecordConfig
@@ -426,9 +428,18 @@ func tlsa(name string, usage, selector, matchingtype uint8, target string) *rec 
 	return r
 }
 
-func ignore(name string) *rec {
+func ignoreName(name string) *rec {
 	r := &rec{
-		Type: "IGNORE",
+		Type: "IGNORE_NAME",
+	}
+	r.SetLabel(name, "**current-domain**")
+	return r
+}
+
+func ignoreTarget(name string, typ string) *rec {
+	r := &rec{
+		Type: "IGNORE_TARGET",
+		Target: typ,
 	}
 	r.SetLabel(name, "**current-domain**")
 	return r
@@ -490,10 +501,16 @@ func testgroup(desc string, items ...interface{}) *TestGroup {
 
 func tc(desc string, recs ...*rec) *TestCase {
 	var records []*rec
-	var ignored []string
+	var ignoredNames []string
+	var ignoredTargets []*models.IgnoreTarget
 	for _, r := range recs {
-		if r.Type == "IGNORE" {
-			ignored = append(ignored, r.GetLabel())
+		if r.Type == "IGNORE_NAME" {
+			ignoredNames = append(ignoredNames, r.GetLabel())
+		} else if r.Type == "IGNORE_TARGET" {
+			ignoredTargets = append(ignoredTargets, &models.IgnoreTarget{
+				Pattern: r.GetLabel(),
+				Type: r.Target,
+			})
 		} else {
 			records = append(records, r)
 		}
@@ -501,7 +518,8 @@ func tc(desc string, recs ...*rec) *TestCase {
 	return &TestCase{
 		Desc:          desc,
 		Records:       records,
-		IgnoredLabels: ignored,
+		IgnoredNames: ignoredNames,
+		IgnoredTargets: ignoredTargets,
 	}
 }
 
@@ -623,7 +641,7 @@ func makeTests(t *testing.T) []*TestGroup {
 		),
 
 		testgroup("Null MX",
-			not("AZURE_DNS", "GANDI_V5", "NAMEDOTCOM", "DIGITALOCEAN", "NETCUP", "DNSIMPLE"), // These providers don't support RFC 7505
+			not("AZURE_DNS", "GANDI_V5", "INWX", "NAMEDOTCOM", "DIGITALOCEAN", "NETCUP", "DNSIMPLE"), // These providers don't support RFC 7505
 			tc("Null MX", mx("@", 0, ".")),
 		),
 
@@ -637,12 +655,20 @@ func makeTests(t *testing.T) []*TestGroup {
 			tc("NS Record pointing to @", ns("foo", "**current-domain**")),
 		),
 
-		testgroup("IGNORE function",
+		testgroup("IGNORE_NAME function",
 			tc("Create some records", txt("foo", "simple"), a("foo", "1.2.3.4")),
-			tc("Add a new record - ignoring foo", a("bar", "1.2.3.4"), ignore("foo")),
+			tc("Add a new record - ignoring foo", a("bar", "1.2.3.4"), ignoreName("foo")),
 			clear(),
 			tc("Create some records", txt("bar.foo", "simple"), a("bar.foo", "1.2.3.4")),
-			tc("Add a new record - ignoring *.foo", a("bar", "1.2.3.4"), ignore("*.foo")),
+			tc("Add a new record - ignoring *.foo", a("bar", "1.2.3.4"), ignoreName("*.foo")),
+		),
+
+		testgroup("IGNORE_TARGET function",
+			tc("Create some records", cname("foo", "test.foo.com."), cname("bar", "test.foo.com.")),
+			tc("Add a new record - ignoring foo", cname("bar", "bar.foo.com."), ignoreTarget("test.foo.com.", "CNAME")),
+			clear(),
+			tc("Create some records", cname("bar.foo", "a.b.foo.com."), a("bar.foo", "1.2.3.4")),
+			tc("Add a new record - ignoring **.foo.com targets", a("bar", "1.2.3.4"), ignoreTarget("**.foo.com.", "CNAME")),
 		),
 
 		testgroup("single TXT",
@@ -656,14 +682,14 @@ func makeTests(t *testing.T) []*TestGroup {
 		),
 
 		testgroup("ws TXT",
-			not("CLOUDFLAREAPI", "NAMEDOTCOM"),
+			not("CLOUDFLAREAPI", "INWX", "NAMEDOTCOM"),
 			// These providers strip whitespace at the end of TXT records.
 			// TODO(tal): Add a check for this in normalize/validate.go
 			tc("Change a TXT with ws at end", txt("foo", "with space at end  ")),
 		),
 
 		testgroup("empty TXT",
-			not("CLOUDFLAREAPI", "NETCUP"),
+			not("CLOUDFLAREAPI", "INWX", "NETCUP"),
 			tc("TXT with empty str", txt("foo1", "")),
 			// https://github.com/StackExchange/dnscontrol/issues/598
 			// We decided that permitting the TXT target to be an empty
@@ -786,7 +812,7 @@ func makeTests(t *testing.T) []*TestGroup {
 			tc("Change Weight", srv("_sip._tcp", 52, 62, 7, "foo.com."), srv("_sip._tcp", 15, 65, 75, "foo4.com.")),
 			tc("Change Port", srv("_sip._tcp", 52, 62, 72, "foo.com."), srv("_sip._tcp", 15, 65, 75, "foo4.com.")),
 		),
-		testgroup("SRV w/ null target", not("EXOSCALE", "HEXONET", "NAMEDOTCOM"),
+		testgroup("SRV w/ null target", requires(providers.CanUseSRV), not("EXOSCALE", "HEXONET", "INWX", "NAMEDOTCOM"),
 			tc("Null Target", srv("_sip._tcp", 52, 62, 72, "foo.com."), srv("_sip._tcp", 15, 65, 75, ".")),
 		),
 
