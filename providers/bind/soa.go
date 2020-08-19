@@ -9,7 +9,6 @@ func makeSoa(origin string, defSoa *SoaInfo, existing, desired *models.RecordCon
 	// or hardcoded defaults.
 	soaRec := models.RecordConfig{}
 	soaRec.SetLabel("@", origin)
-	soaRec.TTL = models.DefaultTTL
 
 	if defSoa == nil {
 		defSoa = &SoaInfo{}
@@ -22,6 +21,7 @@ func makeSoa(origin string, defSoa *SoaInfo, existing, desired *models.RecordCon
 		desired = &models.RecordConfig{}
 	}
 
+	soaRec.TTL = firstNonZero(desired.TTL, defSoa.TTL, existing.TTL, models.DefaultTTL)
 	soaRec.SetTargetSOA(
 		firstNonNull(desired.GetTargetField(), existing.GetTargetField(), defSoa.Ns, "DEFAULT_NOT_SET."),
 		firstNonNull(desired.SoaMbox, existing.SoaMbox, defSoa.Mbox, "DEFAULT_NOT_SET."),
