@@ -19,7 +19,7 @@ func Test_makeSoa(t *testing.T) {
 	}{
 		{
 			// If everything is blank, the hard-coded defaults should kick in.
-			&SoaInfo{"", "", 0, 0, 0, 0, 0},
+			&SoaInfo{"", "", 0, 0, 0, 0, 0, models.DefaultTTL},
 			&models.RecordConfig{Target: "", SoaMbox: "", SoaSerial: 0, SoaRefresh: 0, SoaRetry: 0, SoaExpire: 0, SoaMinttl: 0},
 			&models.RecordConfig{Target: "", SoaMbox: "", SoaSerial: 0, SoaRefresh: 0, SoaRetry: 0, SoaExpire: 0, SoaMinttl: 0},
 			&models.RecordConfig{Target: "DEFAULT_NOT_SET.", SoaMbox: "DEFAULT_NOT_SET.", SoaSerial: 1, SoaRefresh: 3600, SoaRetry: 600, SoaExpire: 604800, SoaMinttl: 1440},
@@ -27,7 +27,7 @@ func Test_makeSoa(t *testing.T) {
 		},
 		{
 			// If everything is filled, leave the desired values in place.
-			&SoaInfo{"ns.example.com", "root.example.com", 1, 2, 3, 4, 5},
+			&SoaInfo{"ns.example.com", "root.example.com", 1, 2, 3, 4, 5, models.DefaultTTL},
 			&models.RecordConfig{Target: "a", SoaMbox: "aa", SoaSerial: 10, SoaRefresh: 11, SoaRetry: 12, SoaExpire: 13, SoaMinttl: 14},
 			&models.RecordConfig{Target: "b", SoaMbox: "bb", SoaSerial: 15, SoaRefresh: 16, SoaRetry: 17, SoaExpire: 18, SoaMinttl: 19},
 			&models.RecordConfig{Target: "b", SoaMbox: "bb", SoaSerial: 15, SoaRefresh: 16, SoaRetry: 17, SoaExpire: 18, SoaMinttl: 19},
@@ -35,7 +35,7 @@ func Test_makeSoa(t *testing.T) {
 		},
 		{
 			// Test incrementing serial.
-			&SoaInfo{"ns.example.com", "root.example.com", 1, 2, 3, 4, 5},
+			&SoaInfo{"ns.example.com", "root.example.com", 1, 2, 3, 4, 5, models.DefaultTTL},
 			&models.RecordConfig{Target: "a", SoaMbox: "aa", SoaSerial: 2019022301, SoaRefresh: 11, SoaRetry: 12, SoaExpire: 13, SoaMinttl: 14},
 			&models.RecordConfig{Target: "b", SoaMbox: "bb", SoaSerial: 0, SoaRefresh: 16, SoaRetry: 17, SoaExpire: 18, SoaMinttl: 19},
 			&models.RecordConfig{Target: "b", SoaMbox: "bb", SoaSerial: 2019022301, SoaRefresh: 16, SoaRetry: 17, SoaExpire: 18, SoaMinttl: 19},
@@ -43,7 +43,7 @@ func Test_makeSoa(t *testing.T) {
 		},
 		{
 			// Test incrementing serial_2.
-			&SoaInfo{"ns.example.com", "root.example.com", 1, 2, 3, 4, 5},
+			&SoaInfo{"ns.example.com", "root.example.com", 1, 2, 3, 4, 5, models.DefaultTTL},
 			&models.RecordConfig{Target: "a", SoaMbox: "aa", SoaSerial: 0, SoaRefresh: 11, SoaRetry: 12, SoaExpire: 13, SoaMinttl: 14},
 			&models.RecordConfig{Target: "b", SoaMbox: "bb", SoaSerial: 2019022304, SoaRefresh: 16, SoaRetry: 17, SoaExpire: 18, SoaMinttl: 19},
 			&models.RecordConfig{Target: "b", SoaMbox: "bb", SoaSerial: 2019022304, SoaRefresh: 16, SoaRetry: 17, SoaExpire: 18, SoaMinttl: 19},
@@ -51,7 +51,7 @@ func Test_makeSoa(t *testing.T) {
 		},
 		{
 			// If there are gaps in existing or desired, fill in as appropriate.
-			&SoaInfo{"ns.example.com", "root.example.com", 1, 2, 3, 4, 5},
+			&SoaInfo{"ns.example.com", "root.example.com", 1, 2, 3, 4, 5, models.DefaultTTL},
 			&models.RecordConfig{Target: "", SoaMbox: "aa", SoaSerial: 0, SoaRefresh: 11, SoaRetry: 0, SoaExpire: 13, SoaMinttl: 0},
 			&models.RecordConfig{Target: "b", SoaMbox: "", SoaSerial: 15, SoaRefresh: 0, SoaRetry: 17, SoaExpire: 0, SoaMinttl: 19},
 			&models.RecordConfig{Target: "b", SoaMbox: "aa", SoaSerial: 15, SoaRefresh: 11, SoaRetry: 17, SoaExpire: 13, SoaMinttl: 19},
@@ -59,7 +59,7 @@ func Test_makeSoa(t *testing.T) {
 		},
 		{
 			// Gaps + existing==nil
-			&SoaInfo{"ns.example.com", "root.example.com", 1, 2, 3, 4, 5},
+			&SoaInfo{"ns.example.com", "root.example.com", 1, 2, 3, 4, 5, models.DefaultTTL},
 			nil,
 			&models.RecordConfig{Target: "b", SoaMbox: "", SoaSerial: 15, SoaRefresh: 0, SoaRetry: 17, SoaExpire: 0, SoaMinttl: 19},
 			&models.RecordConfig{Target: "b", SoaMbox: "root.example.com", SoaSerial: 15, SoaRefresh: 2, SoaRetry: 17, SoaExpire: 4, SoaMinttl: 19},
@@ -68,7 +68,7 @@ func Test_makeSoa(t *testing.T) {
 		{
 			// Gaps + desired==nil
 			// NB(tom): In the code as of 2020-02-23, desired will never be nil.
-			&SoaInfo{"ns.example.com", "root.example.com", 1, 2, 3, 4, 5},
+			&SoaInfo{"ns.example.com", "root.example.com", 1, 2, 3, 4, 5, models.DefaultTTL},
 			&models.RecordConfig{Target: "", SoaMbox: "aa", SoaSerial: 0, SoaRefresh: 11, SoaRetry: 0, SoaExpire: 13, SoaMinttl: 0},
 			nil,
 			&models.RecordConfig{Target: "ns.example.com", SoaMbox: "aa", SoaSerial: 1, SoaRefresh: 11, SoaRetry: 3, SoaExpire: 13, SoaMinttl: 5},

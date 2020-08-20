@@ -85,10 +85,11 @@ type SoaInfo struct {
 	Retry   uint32 `json:"retry"`
 	Expire  uint32 `json:"expire"`
 	Minttl  uint32 `json:"minttl"`
+	TTL     uint32 `json:"ttl,omitempty"`
 }
 
 func (s SoaInfo) String() string {
-	return fmt.Sprintf("%s %s %d %d %d %d %d", s.Ns, s.Mbox, s.Serial, s.Refresh, s.Retry, s.Expire, s.Minttl)
+	return fmt.Sprintf("%s %s %d %d %d %d %d %d", s.Ns, s.Mbox, s.Serial, s.Refresh, s.Retry, s.Expire, s.Minttl, s.TTL)
 }
 
 // Bind is the provider handle for the Bind driver.
