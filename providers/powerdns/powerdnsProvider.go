@@ -152,7 +152,10 @@ func (api *PowerDNS) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Co
 	models.PostProcessRecords(curRecords)
 
 	// create record diff by group
-	keysToUpdate := (diff.New(dc)).ChangedGroups(curRecords)
+	keysToUpdate, err := (diff.New(dc)).ChangedGroups(curRecords)
+	if err != nil {
+		return nil, err
+	}
 	desiredRecords := dc.Records.GroupedByKey()
 
 	// create corrections by group

@@ -204,7 +204,10 @@ func (a *azureDNSProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*mod
 	}
 
 	differ := diff.New(dc)
-	namesToUpdate := differ.ChangedGroups(existingRecords)
+	namesToUpdate, err := differ.ChangedGroups(existingRecords)
+	if err != nil {
+		return nil, err
+	}
 
 	if len(namesToUpdate) == 0 {
 		return nil, nil

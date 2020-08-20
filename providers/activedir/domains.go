@@ -70,7 +70,10 @@ func (c *adProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Co
 	models.PostProcessRecords(foundRecords)
 
 	differ := diff.New(dc)
-	_, creates, dels, modifications := differ.IncrementalDiff(foundRecords)
+	_, creates, dels, modifications, err := differ.IncrementalDiff(foundRecords)
+	if err != nil {
+		return nil, err
+	}
 	// NOTE(tlim): This provider does not delete records.  If
 	// you need to delete a record, either delete it manually
 	// or see providers/activedir/doc.md for implementation tips.

@@ -179,7 +179,11 @@ func (g *gcloud) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Correc
 
 	// first collect keys that have changed
 	differ := diff.New(dc)
-	_, create, delete, modify := differ.IncrementalDiff(existingRecords)
+	_, create, delete, modify, err := differ.IncrementalDiff(existingRecords)
+	if err != nil {
+		return nil, err
+	}
+
 	changedKeys := map[key]bool{}
 	desc := ""
 	for _, c := range create {

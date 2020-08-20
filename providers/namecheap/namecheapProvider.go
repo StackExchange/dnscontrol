@@ -178,7 +178,10 @@ func (n *Namecheap) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Cor
 	models.PostProcessRecords(actual)
 
 	differ := diff.New(dc)
-	_, create, delete, modify := differ.IncrementalDiff(actual)
+	_, create, delete, modify, err := differ.IncrementalDiff(actual)
+	if err != nil {
+		return nil, err
+	}
 
 	// // because namecheap doesn't have selective create, delete, modify,
 	// // we bundle them all up to send at once.  We *do* want to see the
