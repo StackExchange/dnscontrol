@@ -118,7 +118,7 @@ dnscontrol will be installed in $GOPATH/bin
 
 ---
 
-(2020-08-19) WARNING: There is a known issue with "go get" on some systems.
+(2020-08-19) WARNING: There is a known issue when installing.
 
 The error you'll see:
 
@@ -141,8 +141,7 @@ $ unset GO15VENDOREXPERIMENT GOPATH
 $ go install
 ```
 
-If you would like to help us fix this problem with `go modules` please
-join us on [#805](https://github.com/StackExchange/dnscontrol/issues/805).
+More info here on [#805](https://github.com/StackExchange/dnscontrol/issues/805)
 
 ---
 
