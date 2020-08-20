@@ -77,7 +77,10 @@ func (n *nsone) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Correct
 	models.PostProcessRecords(found)
 
 	differ := diff.New(dc)
-	changedGroups := differ.ChangedGroups(found)
+	changedGroups, err := differ.ChangedGroups(found)
+	if err != nil {
+		return nil, err
+	}
 	corrections := []*models.Correction{}
 	// each name/type is given to the api as a unit.
 	for k, descs := range changedGroups {

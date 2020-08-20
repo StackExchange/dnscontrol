@@ -196,7 +196,10 @@ func (client *api) GenerateDomainCorrections(dc *models.DomainConfig, existing m
 
 	// diff existing vs. current.
 	differ := diff.New(dc)
-	keysToUpdate := differ.ChangedGroups(existing)
+	keysToUpdate, err := differ.ChangedGroups(existing)
+	if err != nil {
+		return nil, err
+	}
 	if client.debug {
 		diff.DebugKeyMapMap("GenDC diff", keysToUpdate)
 	}

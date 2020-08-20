@@ -23,10 +23,10 @@ type Changeset []Correlation
 // Differ is an interface for computing the difference between two zones.
 type Differ interface {
 	// IncrementalDiff performs a diff on a record-by-record basis, and returns a sets for which records need to be created, deleted, or modified.
-	IncrementalDiff(existing []*models.RecordConfig) (unchanged, create, toDelete, modify Changeset)
+	IncrementalDiff(existing []*models.RecordConfig) (unchanged, create, toDelete, modify Changeset, err error)
 	// ChangedGroups performs a diff more appropriate for providers with a "RecordSet" model, where all records with the same name and type are grouped.
 	// Individual record changes are often not useful in such scenarios. Instead we return a map of record keys to a list of change descriptions within that group.
-	ChangedGroups(existing []*models.RecordConfig) map[models.RecordKey][]string
+	ChangedGroups(existing []*models.RecordConfig) (map[models.RecordKey][]string, error)
 }
 
 // New is a constructor for a Differ.
@@ -85,7 +85,7 @@ func (d *differ) content(r *models.RecordConfig) string {
 	return content
 }
 
-func (d *differ) IncrementalDiff(existing []*models.RecordConfig) (unchanged, create, toDelete, modify Changeset) {
+func (d *differ) IncrementalDiff(existing []*models.RecordConfig) (unchanged, create, toDelete, modify Changeset, err error) {
 	unchanged = Changeset{}
 	create = Changeset{}
 	toDelete = Changeset{}
@@ -108,9 +108,9 @@ func (d *differ) IncrementalDiff(existing []*models.RecordConfig) (unchanged, cr
 	}
 	for _, dr := range desired {
 		if d.matchIgnoredName(dr.GetLabel()) {
-			panic(fmt.Sprintf("Trying to update/add IGNORE_NAMEd record: %s %s", dr.GetLabel(), dr.Type))
+			return nil, nil, nil, nil, fmt.Errorf("Trying to update/add IGNORE_NAMEd record: %s %s", dr.GetLabel(), dr.Type)
 		} else if d.matchIgnoredTarget(dr.GetTargetField(), dr.Type) {
-			panic(fmt.Sprintf("Trying to update/add IGNORE_TARGETd record: %s %s", dr.GetLabel(), dr.Type))
+			return nil, nil, nil, nil, fmt.Errorf("Trying to update/add IGNORE_TARGETd record: %s %s", dr.GetLabel(), dr.Type)
 		} else {
 			k := dr.Key()
 			desiredByNameAndType[k] = append(desiredByNameAndType[k], dr)
@@ -165,14 +165,14 @@ func (d *differ) IncrementalDiff(existing []*models.RecordConfig) (unchanged, cr
 		for _, ex := range existingRecords {
 			normalized := d.content(ex)
 			if existingLookup[normalized] != nil {
-				panic(fmt.Sprintf("DUPLICATE E_RECORD FOUND: %s %s", key, normalized))
+				return nil, nil, nil, nil, fmt.Errorf("DUPLICATE E_RECORD FOUND: %s %s", key, normalized)
 			}
 			existingLookup[normalized] = ex
 		}
 		for _, de := range desiredRecords {
 			normalized := d.content(de)
 			if desiredLookup[normalized] != nil {
-				panic(fmt.Sprintf("DUPLICATE D_RECORD FOUND: %s %s", key, normalized))
+				return nil, nil, nil, nil, fmt.Errorf("DUPLICATE D_RECORD FOUND: %s %s", key, normalized)
 			}
 			desiredLookup[normalized] = de
 		}
@@ -260,9 +260,12 @@ func CorrectionLess(c []*models.Correction, i, j int) bool {
 	return c[i].Msg < c[j].Msg
 }
 
-func (d *differ) ChangedGroups(existing []*models.RecordConfig) map[models.RecordKey][]string {
+func (d *differ) ChangedGroups(existing []*models.RecordConfig) (map[models.RecordKey][]string, error) {
 	changedKeys := map[models.RecordKey][]string{}
-	_, create, delete, modify := d.IncrementalDiff(existing)
+	_, create, delete, modify, err := d.IncrementalDiff(existing)
+	if err != nil {
+		return nil, err
+	}
 	for _, c := range create {
 		changedKeys[c.Desired.Key()] = append(changedKeys[c.Desired.Key()], c.String())
 	}
@@ -272,7 +275,7 @@ func (d *differ) ChangedGroups(existing []*models.RecordConfig) map[models.Recor
 	for _, m := range modify {
 		changedKeys[m.Desired.Key()] = append(changedKeys[m.Desired.Key()], m.String())
 	}
-	return changedKeys
+	return changedKeys, nil
 }
 
 // DebugKeyMapMap debug prints the results from ChangedGroups.

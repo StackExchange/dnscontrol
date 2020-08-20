@@ -67,7 +67,11 @@ func (n *HXClient) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Corr
 	models.PostProcessRecords(actual)
 
 	differ := diff.New(dc)
-	_, create, del, mod := differ.IncrementalDiff(actual)
+	_, create, del, mod, err := differ.IncrementalDiff(actual)
+	if err != nil {
+		return nil, err
+	}
+
 	corrections := []*models.Correction{}
 
 	buf := &bytes.Buffer{}
