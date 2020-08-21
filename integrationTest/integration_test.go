@@ -614,6 +614,10 @@ func makeTests(t *testing.T) []*TestGroup {
 			tc("Delete one", a("@", "1.2.3.4").ttl(500), a("www", "5.6.7.8").ttl(400)),
 			tc("Add back and change ttl", a("www", "5.6.7.8").ttl(700), a("www", "1.2.3.4").ttl(700)),
 			tc("Change targets and ttls", a("www", "1.1.1.1"), a("www", "2.2.2.2")),
+		),
+
+		testgroup("WildcardACD",
+			not("HEDNS"), // Not supported by dns.he.net due to abuse
 			tc("Create wildcard", a("*", "1.2.3.4"), a("www", "1.1.1.1")),
 			tc("Delete wildcard", a("www", "1.1.1.1")),
 		),
@@ -641,7 +645,7 @@ func makeTests(t *testing.T) []*TestGroup {
 		),
 
 		testgroup("Null MX",
-			not("AZURE_DNS", "GANDI_V5", "INWX", "NAMEDOTCOM", "DIGITALOCEAN", "NETCUP", "DNSIMPLE"), // These providers don't support RFC 7505
+			not("AZURE_DNS", "GANDI_V5", "INWX", "NAMEDOTCOM", "DIGITALOCEAN", "NETCUP", "DNSIMPLE", "HEDNS"), // These providers don't support RFC 7505
 			tc("Null MX", mx("@", 0, ".")),
 		),
 

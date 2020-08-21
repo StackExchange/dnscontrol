@@ -1,0 +1,616 @@
+package hedns
+
+import (
+	"encoding/json"
+	"fmt"
+	"net/http"
+	"net/http/cookiejar"
+	"net/url"
+	"strconv"
+	"strings"
+	"time"
+
+	"github.com/PuerkitoBio/goquery"
+	"github.com/StackExchange/dnscontrol/v3/models"
+	"github.com/StackExchange/dnscontrol/v3/pkg/diff"
+	"github.com/StackExchange/dnscontrol/v3/providers"
+	"github.com/pquerna/otp/totp"
+)
+
+/*
+Hurricane Electric DNS provider (dns.he.net)
+
+Info required in `creds.json`:
+	- username
+	- password
+
+Either of the following settings is required when two factor authentication is enabled:
+	- totp     (TOTP code if 2FA is enabled; best specified as an env variable)
+	- totp-key (shared TOTP secret used to generate a valid TOTP code; not recommended since
+	            this effectively defeats the purpose of two factor authentication by storing
+	            both factors at the same place)
+*/
+
+const ApiUrl = "https://dns.he.net/"
+
+var features = providers.DocumentationNotes{
+	providers.CanUseAlias:            providers.Can(),
+	providers.CanUseCAA:              providers.Can(),
+	providers.CanUseNAPTR:            providers.Can(),
+	providers.CanUseDS:               providers.Cannot(),
+	providers.CanUseDSForChildren:    providers.Cannot(),
+	providers.CanUsePTR:              providers.Can(),
+	providers.CanUseSSHFP:            providers.Can(),
+	providers.CanUseSRV:              providers.Can(),
+	providers.CanUseTLSA:             providers.Cannot(),
+	providers.CanUseTXTMulti:         providers.Can(),
+	providers.CanAutoDNSSEC:          providers.Cannot(),
+	providers.DocCreateDomains:       providers.Can(),
+	providers.DocDualHost:            providers.Can(),
+	providers.DocOfficiallySupported: providers.Cannot(),
+	providers.CanGetZones:            providers.Can(),
+}
+
+func init() {
+	providers.RegisterDomainServiceProviderType("HEDNS", NewProvider, features)
+}
+
+var defaultNameservers = []string{
+	"ns1.he.net",
+	"ns2.he.net",
+	"ns3.he.net",
+	"ns4.he.net",
+	"ns5.he.net",
+}
+
+type ApiClient struct {
+	Username string
+	Password string
+
+	TfaSecret string
+	TfaValue  string
+
+	httpClient http.Client
+}
+
+type Record struct {
+	RecordName string
+	RecordId   uint64
+	ZoneName   string
+	ZoneId     uint64
+}
+
+func NewProvider(cfg map[string]string, _ json.RawMessage) (providers.DNSServiceProvider, error) {
+	username, password := cfg["username"], cfg["password"]
+	totpSecret, totpValue := cfg["totp-key"], cfg["totp"]
+
+	if username == "" {
+		return nil, fmt.Errorf("username must be provided")
+	}
+	if password == "" {
+		return nil, fmt.Errorf("password must be provided")
+	}
+	if totpSecret != "" && totpValue != "" {
+		return nil, fmt.Errorf("totp and totp-key must not be specified at the same time")
+	}
+
+	// Perform the initial login
+	client := NewApiClient(username, password, totpSecret)
+	err := client.authenticate()
+	return client, err
+}
+
+func NewApiClient(username, password, tfaSecret string) *ApiClient {
+	client := ApiClient{
+		Username:  username,
+		Password:  password,
+		TfaSecret: tfaSecret,
+	}
+
+	// Create storage for the cookies
+	cookieJar, _ := cookiejar.New(nil)
+	client.httpClient = http.Client{Jar: cookieJar}
+
+	return &client
+}
+
+func (c *ApiClient) ListZones() ([]string, error) {
+	domainsMap, err := c.listDomains()
+	if err != nil {
+		return nil, err
+	}
+
+	// Get the list of the domains
+	domains := make([]string, 0, len(domainsMap))
+	for _, key := range domains {
+		domains = append(domains, key)
+	}
+
+	return domains, err
+}
+
+func (c *ApiClient) EnsureDomainExists(domain string) error {
+	domains, err := c.ListZones()
+	if err != nil {
+		return err
+	}
+
+	for _, d := range domains {
+		if d == domain {
+			return nil
+		}
+	}
+
+	return c.createDomain(domain)
+}
+
+func (c *ApiClient) GetNameservers(_ string) ([]*models.Nameserver, error) {
+	return models.ToNameservers(defaultNameservers)
+}
+
+func (c *ApiClient) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Correction, error) {
+	var corrections []*models.Correction
+
+	err := dc.Punycode()
+	if err != nil {
+		return nil, err
+	}
+
+	records, err := c.GetZoneRecords(dc.Name)
+	if err != nil {
+		return nil, err
+	}
+
+	// Get the SOA record to get the ZoneId, then remove it from the list.
+	zoneId := uint64(0)
+	var prunedRecords models.Records
+	for _, r := range records {
+		if r.Type == "SOA" {
+			zoneId = r.Original.(Record).ZoneId
+		} else {
+			prunedRecords = append(prunedRecords, r)
+		}
+	}
+
+	// Normalize
+	models.PostProcessRecords(prunedRecords)
+
+	differ := diff.New(dc)
+	_, toCreate, toDelete, toModify := differ.IncrementalDiff(prunedRecords)
+
+	for _, del := range toDelete {
+		record := del.Existing
+		corrections = append(corrections, &models.Correction{
+			Msg: del.String(),
+			F:   func() error { return c.deleteZoneRecord(record) },
+		})
+	}
+
+	for _, cre := range toCreate {
+		record := cre.Desired
+		record.Original = Record{
+			ZoneName:   dc.Name,
+			ZoneId:     zoneId,
+			RecordName: cre.Desired.Name,
+		}
+		corrections = append(corrections, &models.Correction{
+			Msg: cre.String(),
+			F:   func() error { return c.editZoneRecord(record, true) },
+		})
+	}
+
+	for _, mod := range toModify {
+		record := mod.Desired
+		record.Original = Record{
+			ZoneName:   dc.Name,
+			ZoneId:     zoneId,
+			RecordId:   mod.Existing.Original.(Record).RecordId,
+			RecordName: mod.Desired.Name,
+		}
+		corrections = append(corrections, &models.Correction{
+			Msg: mod.String(),
+			F:   func() error { return c.editZoneRecord(record, false) },
+		})
+	}
+
+	return corrections, err
+}
+
+func (c *ApiClient) GetZoneRecords(domain string) (models.Records, error) {
+	var zoneRecords []*models.RecordConfig
+
+	// Get Domain ID
+	domains, err := c.listDomains()
+	if err != nil {
+		return nil, err
+	}
+
+	domainId, domainExists := domains[domain]
+	if !domainExists {
+		return nil, fmt.Errorf("domain %s does not exist", domain)
+	}
+
+	queryUrl, _ := url.Parse(ApiUrl)
+	q := queryUrl.Query()
+	q.Add("hosted_dns_zoneid", strconv.FormatUint(domainId, 10))
+	q.Add("menu", "edit_zone")
+	q.Add("hosted_dns_editzone", "")
+	queryUrl.RawQuery = q.Encode()
+
+	response, err := c.httpClient.Get(queryUrl.String())
+	if err != nil {
+		return nil, err
+	}
+	defer response.Body.Close()
+
+	document, err := goquery.NewDocumentFromReader(response.Body)
+	if err != nil {
+		return nil, err
+	}
+
+	// Load all the domain records
+	recordSelector := "tr.dns_tr, tr.dns_tr_dynamic, tr.dns_tr_locked"
+	document.Find(recordSelector).EachWithBreak(func(index int, element *goquery.Selection) bool {
+		parser := ElementParser{}
+
+		recordId := parser.parseIntAttr(element, "id")
+		recordName := parser.parseStringElement(element.Find(".dns_view"))
+		recordType := parser.parseStringAttr(element.Find("td > .rrlabel"), "data")
+		recordData := parser.parseStringAttr(element.Find("td:nth-child(7)"), "data")
+		recordPriority := parser.parseIntElement(element.Find("td:nth-child(6)"))
+		recordTtl := parser.parseIntElement(element.Find("td:nth-child(5)"))
+
+		if parser.err != nil {
+			err = parser.err
+			return false
+		}
+
+		// Ignore record types that dnscontrol does not support
+		if recordType == "HINFO" || recordType == "AFSDB" || recordType == "RP" || recordType == "LOC" {
+			return true
+		}
+
+		rc := &models.RecordConfig{
+			Type: recordType,
+			TTL:  uint32(recordTtl),
+			Original: Record{
+				ZoneName:   domain,
+				ZoneId:     domainId,
+				RecordName: recordName,
+				RecordId:   recordId,
+			},
+		}
+		rc.SetLabelFromFQDN(recordName, domain)
+
+		// dns.he.net omits the trailing "." on the hostnames for certain record types
+		if rc.Type == "CNAME" || rc.Type == "MX" || rc.Type == "NS" || rc.Type == "PTR" {
+			recordData += "."
+		}
+
+		switch rc.Type {
+		case "ALIAS":
+			err = rc.SetTarget(recordData)
+		case "MX":
+			err = rc.SetTargetMX(uint16(recordPriority), recordData)
+		case "SRV":
+			err = rc.SetTargetSRVPriorityString(uint16(recordPriority), recordData)
+		case "SPF":
+			// Convert to TXT record as SPF is deprecated
+			rc.Type = "TXT"
+			fallthrough
+		default:
+			err = rc.PopulateFromString(rc.Type, recordData, domain)
+		}
+
+		if err != nil {
+			return false
+		}
+
+		zoneRecords = append(zoneRecords, rc)
+		return true
+	})
+
+	return zoneRecords, err
+}
+
+func (c *ApiClient) checkResponseForErrors(response *http.Response) error {
+	document, err := goquery.NewDocumentFromReader(response.Body)
+	if err != nil {
+		return err
+	}
+
+	var ignoredErrorMessages = [...]string{
+		"This zone does not appear to be properly delegated to our nameservers.",
+	}
+
+	// Check for any errors ignoring irrelevant errors
+	document.Find("div#dns_err").EachWithBreak(func(index int, element *goquery.Selection) bool {
+		errorMessage := element.Text()
+		for _, ignoredMessage := range ignoredErrorMessages {
+			if strings.Contains(errorMessage, ignoredMessage) {
+				return true
+			}
+		}
+		err = fmt.Errorf(element.Text())
+		return false
+	})
+
+	return err
+}
+
+func (c *ApiClient) authGetCookie() error {
+	response, err := c.httpClient.Get(ApiUrl)
+	if err != nil {
+		return err
+	}
+	defer response.Body.Close()
+
+	return err
+}
+
+func (c *ApiClient) authUsernameAndPassword() (requiresTfa bool, err error) {
+	// Login with username and password
+	response, err := c.httpClient.PostForm(ApiUrl, url.Values{
+		"email":  {c.Username},
+		"pass":   {c.Password},
+		"submit": {"Login!"},
+	})
+	if err != nil {
+		return false, err
+	}
+	defer response.Body.Close()
+
+	if err = c.checkResponseForErrors(response); err != nil {
+		return false, err
+	}
+
+	// Check to see if a 2FA code is required.
+	document, err := goquery.NewDocumentFromReader(response.Body)
+	if err != nil {
+		return false, err
+	}
+
+	if document.Find("input#tfacode").Size() > 0 {
+		return true, nil
+	}
+
+	// Completed and 2FA is not required
+	return false, err
+}
+
+func (c *ApiClient) auth2FA() error {
+	if c.TfaValue == "" && c.TfaSecret != "" {
+		var err error
+		c.TfaValue, err = totp.GenerateCode(c.TfaSecret, time.Now())
+		if err != nil {
+			return err
+		}
+	}
+
+	response, err := c.httpClient.PostForm(ApiUrl, url.Values{
+		"tfacode": {c.TfaValue},
+		"submit":  {"Submit"},
+	})
+	if err != nil {
+		return err
+	}
+	defer response.Body.Close()
+
+	err = c.checkResponseForErrors(response)
+	return err
+}
+
+func (c *ApiClient) authenticate() error {
+	if err := c.authGetCookie(); err != nil {
+		return err
+	}
+
+	requiresTfa, err := c.authUsernameAndPassword()
+	if err != nil {
+		return err
+	}
+
+	if requiresTfa {
+		err = c.auth2FA()
+		if err != nil {
+			return err
+		}
+	}
+
+	return err
+}
+
+func (c *ApiClient) listDomains() (map[string]uint64, error) {
+	response, err := c.httpClient.Get(ApiUrl)
+	if err != nil {
+		return nil, err
+	}
+	defer response.Body.Close()
+
+	document, err := goquery.NewDocumentFromReader(response.Body)
+	if err != nil {
+		return nil, err
+	}
+
+	domains := make(map[string]uint64)
+
+	recordsSelector := strings.Join([]string{
+		"#domains_table > tbody > tr > td:last-child > img",                // Forward records
+		"#tabs-advanced .generic_table > tbody > tr > td:last-child > img", // Reverse records
+	}, ", ")
+
+	// Find all the forward & reverse domains
+	document.Find(recordsSelector).EachWithBreak(func(index int, element *goquery.Selection) bool {
+		domainId, idExists := element.Attr("value")
+		domainName, nameExists := element.Attr("name")
+		if idExists && nameExists {
+			domains[domainName], err = strconv.ParseUint(domainId, 10, 64)
+			return err == nil
+		}
+		return true
+	})
+
+	return domains, err
+}
+
+func (c *ApiClient) createDomain(domain string) error {
+	values := url.Values{
+		"action":     {"add_zone"},
+		"retmain":    {"0"},
+		"add_domain": {domain},
+		"submit":     {"Add Domain!"},
+	}
+
+	response, err := c.httpClient.PostForm(ApiUrl, values)
+	if err != nil {
+		return err
+	}
+	defer response.Body.Close()
+
+	err = c.checkResponseForErrors(response)
+	return err
+}
+
+func (c *ApiClient) editZoneRecord(rc *models.RecordConfig, create bool) error {
+	values := url.Values{
+		"account":             {},
+		"menu":                {"edit_zone"},
+		"hosted_dns_zoneid":   {strconv.FormatUint(rc.Original.(Record).ZoneId, 10)},
+		"hosted_dns_editzone": {"1"},
+		"TTL":                 {strconv.FormatUint(uint64(rc.TTL), 10)},
+		"Name":                {rc.Name},
+	}
+
+	// Select the correct mode and deal with the quirks
+	if create {
+		values.Set("Type", rc.Type)
+		values.Set("hosted_dns_editrecord", "Submit")
+		values.Set("hosted_dns_recordid", "")
+	} else {
+		values.Set("Type", strings.ToLower(rc.Type)) // Lowercase on update
+		values.Set("hosted_dns_editrecord", "Update")
+		values.Set("hosted_dns_recordid", strconv.FormatUint(rc.Original.(Record).RecordId, 10))
+	}
+
+	// Handle priorities
+	if create {
+		values.Set("Priority", "")
+	} else {
+		values.Set("Priority", "-")
+	}
+
+	// Work out the content
+	switch rc.Type {
+	case "MX":
+		values.Set("Priority", strconv.FormatUint(uint64(rc.MxPreference), 10))
+		values.Set("Content", rc.Target)
+	case "SRV":
+		values.Del("Content")
+		values.Set("Target", rc.Target)
+		values.Set("Priority", strconv.FormatUint(uint64(rc.SrvPriority), 10))
+		values.Set("Weight", strconv.FormatUint(uint64(rc.SrvWeight), 10))
+		values.Set("Port", strconv.FormatUint(uint64(rc.SrvPort), 10))
+	default:
+		values.Set("Content", rc.GetTargetCombined())
+	}
+
+	response, err := c.httpClient.PostForm(ApiUrl, values)
+	if err != nil {
+		return err
+	}
+	defer response.Body.Close()
+
+	err = c.checkResponseForErrors(response)
+	return err
+}
+
+func (c *ApiClient) deleteZoneRecord(rc *models.RecordConfig) error {
+	values := url.Values{
+		"menu":                  {"edit_zone"},
+		"hosted_dns_zoneid":     {strconv.FormatUint(rc.Original.(Record).ZoneId, 10)},
+		"hosted_dns_recordid":   {strconv.FormatUint(rc.Original.(Record).RecordId, 10)},
+		"hosted_dns_editzone":   {"1"},
+		"hosted_dns_delrecord":  {"1"},
+		"hosted_dns_delconfirm": {"delete"},
+	}
+
+	response, err := c.httpClient.PostForm(ApiUrl, values)
+	if err != nil {
+		return err
+	}
+	defer response.Body.Close()
+
+	err = c.checkResponseForErrors(response)
+	return err
+}
+
+func (c *ApiClient) setZoneDynamicKey(rc *models.RecordConfig, key string) error {
+	values := url.Values{
+		"account":             {},
+		"menu":                {"edit_zone"},
+		"hosted_dns_zoneid":   {strconv.FormatUint(rc.Original.(Record).ZoneId, 10)},
+		"hosted_dns_recordid": {},
+		"hosted_dns_editzone": {"1"},
+		"Name":                {rc.Original.(Record).RecordName},
+		"Key":                 {key},
+		"Key2":                {key},
+		"generate_key":        {"Submit"},
+	}
+
+	response, err := c.httpClient.PostForm(ApiUrl, values)
+	if err != nil {
+		return err
+	}
+	defer response.Body.Close()
+
+	err = c.checkResponseForErrors(response)
+	return err
+}
+
+type ElementParser struct {
+	err error
+}
+
+func (p *ElementParser) parseStringAttr(element *goquery.Selection, attr string) (result string) {
+	if p.err != nil {
+		return
+	}
+	result, exists := element.Attr(attr)
+	if !exists {
+		p.err = fmt.Errorf("could not locate attribute %s", attr)
+	}
+	return result
+}
+
+func (p *ElementParser) parseIntAttr(element *goquery.Selection, attr string) (result uint64) {
+	if p.err != nil {
+		return
+	}
+	if value, exists := element.Attr(attr); exists {
+		result, p.err = strconv.ParseUint(value, 10, 64)
+	} else {
+		p.err = fmt.Errorf("could not locate attribute %s", attr)
+	}
+	return result
+}
+
+func (p *ElementParser) parseStringElement(element *goquery.Selection) (result string) {
+	if p.err != nil {
+		return
+	}
+	return element.Text()
+}
+
+func (p *ElementParser) parseIntElement(element *goquery.Selection) (result uint64) {
+	if p.err != nil {
+		return
+	}
+
+	// Special case to deal with Priority
+	if element.Text() == "-" {
+		return 0
+	}
+
+	result, p.err = strconv.ParseUint(element.Text(), 10, 64)
+	return result
+}
