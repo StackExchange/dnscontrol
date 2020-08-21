@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"net/http/cookiejar"
 	"net/url"
+	"sort"
 	"strconv"
 	"strings"
 	"time"
@@ -120,11 +121,13 @@ func (c *ApiClient) ListZones() ([]string, error) {
 		return nil, err
 	}
 
-	// Get the list of the domains
 	domains := make([]string, 0, len(domainsMap))
-	for _, key := range domains {
-		domains = append(domains, key)
+	for domain := range domainsMap {
+		domains = append(domains, domain)
 	}
+
+	// Ensure the order is deterministic
+	sort.Strings(domains)
 
 	return domains, err
 }
