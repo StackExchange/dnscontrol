@@ -176,7 +176,10 @@ func (c *ApiClient) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Cor
 	models.PostProcessRecords(prunedRecords)
 
 	differ := diff.New(dc)
-	_, toCreate, toDelete, toModify := differ.IncrementalDiff(prunedRecords)
+	_, toCreate, toDelete, toModify, err := differ.IncrementalDiff(prunedRecords)
+	if err != nil {
+		return nil, err
+	}
 
 	for _, del := range toDelete {
 		record := del.Existing
