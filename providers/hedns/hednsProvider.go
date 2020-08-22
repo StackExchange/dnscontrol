@@ -30,10 +30,15 @@ Info required in `creds.json`:
 	- password
 
 Either of the following settings is required when two factor authentication is enabled:
-	- totp     (TOTP code if 2FA is enabled; best specified as an env variable)
-	- totp-key (shared TOTP secret used to generate a valid TOTP code; not recommended since
-	            this effectively defeats the purpose of two factor authentication by storing
-	            both factors at the same place)
+	- totp      (TOTP code if 2FA is enabled; best specified as an env variable)
+	- totp-key  (shared TOTP secret used to generate a valid TOTP code; not recommended since
+	             this effectively defeats the purpose of two factor authentication by storing
+	             both factors at the same place)
+
+Additionally
+	- session-file-path  (Path where a '.hedns-session' file will be created to allow a
+                         session to persist between executions)
+
 */
 
 const ApiUrl = "https://dns.he.net/"
