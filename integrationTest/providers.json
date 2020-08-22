@@ -65,7 +65,7 @@
   "HEDNS": {
     "username": "$HEDNS_USERNAME",
     "password": "$HEDNS_PASSWORD",
-    "totp-secret": "$HEDNS_TOTP_SECRET",
+    "totp-key": "$HEDNS_TOTP_SECRET",
     "domain": "$HEDNS_DOMAIN"
   },
   "HEXONET": {

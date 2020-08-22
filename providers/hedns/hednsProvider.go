@@ -267,53 +267,49 @@ func (c *ApiClient) GetZoneRecords(domain string) (models.Records, error) {
 	document.Find(recordSelector).EachWithBreak(func(index int, element *goquery.Selection) bool {
 		parser := ElementParser{}
 
-		recordId := parser.parseIntAttr(element, "id")
-		recordName := parser.parseStringElement(element.Find(".dns_view"))
-		recordType := parser.parseStringAttr(element.Find("td > .rrlabel"), "data")
-		recordData := parser.parseStringAttr(element.Find("td:nth-child(7)"), "data")
-		recordPriority := parser.parseIntElement(element.Find("td:nth-child(6)"))
-		recordTtl := parser.parseIntElement(element.Find("td:nth-child(5)"))
+		rc := &models.RecordConfig{
+			Type: parser.parseStringAttr(element.Find("td > .rrlabel"), "data"),
+			TTL:  uint32(parser.parseIntElement(element.Find("td:nth-child(5)"))),
+			Original: Record{
+				ZoneName:   domain,
+				ZoneId:     domainId,
+				RecordName: parser.parseStringElement(element.Find(".dns_view")),
+				RecordId:   parser.parseIntAttr(element, "id"),
+			},
+			Target: parser.parseStringAttr(element.Find("td:nth-child(7)"), "data"),
+		}
 
+		priority := parser.parseIntElement(element.Find("td:nth-child(6)"))
 		if parser.err != nil {
 			err = parser.err
 			return false
 		}
 
 		// Ignore record types that dnscontrol does not support
-		if recordType == "HINFO" || recordType == "AFSDB" || recordType == "RP" || recordType == "LOC" {
+		if rc.Type == "HINFO" || rc.Type == "AFSDB" || rc.Type == "RP" || rc.Type == "LOC" {
 			return true
 		}
 
-		rc := &models.RecordConfig{
-			Type: recordType,
-			TTL:  uint32(recordTtl),
-			Original: Record{
-				ZoneName:   domain,
-				ZoneId:     domainId,
-				RecordName: recordName,
-				RecordId:   recordId,
-			},
-		}
-		rc.SetLabelFromFQDN(recordName, domain)
+		rc.SetLabelFromFQDN(rc.Original.(Record).RecordName, domain)
 
 		// dns.he.net omits the trailing "." on the hostnames for certain record types
 		if rc.Type == "CNAME" || rc.Type == "MX" || rc.Type == "NS" || rc.Type == "PTR" {
-			recordData += "."
+			rc.Target += "."
 		}
 
 		switch rc.Type {
 		case "ALIAS":
-			err = rc.SetTarget(recordData)
+			err = rc.SetTarget(rc.Target)
 		case "MX":
-			err = rc.SetTargetMX(uint16(recordPriority), recordData)
+			err = rc.SetTargetMX(uint16(priority), rc.Target)
 		case "SRV":
-			err = rc.SetTargetSRVPriorityString(uint16(recordPriority), recordData)
+			err = rc.SetTargetSRVPriorityString(uint16(priority), rc.Target)
 		case "SPF":
 			// Convert to TXT record as SPF is deprecated
 			rc.Type = "TXT"
 			fallthrough
 		default:
-			err = rc.PopulateFromString(rc.Type, recordData, domain)
+			err = rc.PopulateFromString(rc.Type, rc.Target, domain)
 		}
 
 		if err != nil {
@@ -325,31 +321,6 @@ func (c *ApiClient) GetZoneRecords(domain string) (models.Records, error) {
 	})
 
 	return zoneRecords, err
-}
-
-func (c *ApiClient) parseResponseForDocumentAndErrors(response *http.Response) (document *goquery.Document, err error) {
-	var ignoredErrorMessages = [...]string{
-		ErrorImproperDelegation,
-	}
-
-	document, err = goquery.NewDocumentFromReader(response.Body)
-	if err != nil {
-		return nil, err
-	}
-
-	// Check for any errors ignoring irrelevant errors
-	document.Find("div#dns_err").EachWithBreak(func(index int, element *goquery.Selection) bool {
-		errorMessage := element.Text()
-		for _, ignoredMessage := range ignoredErrorMessages {
-			if strings.Contains(errorMessage, ignoredMessage) {
-				return true
-			}
-		}
-		err = fmt.Errorf(element.Text())
-		return false
-	})
-
-	return document, err
 }
 
 func (c *ApiClient) authResumeSession() (authenticated bool, requiresTfa bool, err error) {
@@ -391,6 +362,9 @@ func (c *ApiClient) authUsernameAndPassword() (authenticated bool, requiresTfa b
 	if err != nil {
 		if err.Error() == ErrorInvalidCredentials {
 			err = fmt.Errorf("authentication failed with incorrect username or password")
+		}
+		if err.Error() == ErrorTotpTokenRequired {
+			return false, true, nil
 		}
 		return false, false, err
 	}
@@ -611,6 +585,31 @@ func (c *ApiClient) setZoneDynamicKey(rc *models.RecordConfig, key string) error
 
 	_, err = c.parseResponseForDocumentAndErrors(response)
 	return err
+}
+
+func (c *ApiClient) parseResponseForDocumentAndErrors(response *http.Response) (document *goquery.Document, err error) {
+	var ignoredErrorMessages = [...]string{
+		ErrorImproperDelegation,
+	}
+
+	document, err = goquery.NewDocumentFromReader(response.Body)
+	if err != nil {
+		return nil, err
+	}
+
+	// Check for any errors ignoring irrelevant errors
+	document.Find("div#dns_err").EachWithBreak(func(index int, element *goquery.Selection) bool {
+		errorMessage := element.Text()
+		for _, ignoredMessage := range ignoredErrorMessages {
+			if strings.Contains(errorMessage, ignoredMessage) {
+				return true
+			}
+		}
+		err = fmt.Errorf(element.Text())
+		return false
+	})
+
+	return document, err
 }
 
 type ElementParser struct {
