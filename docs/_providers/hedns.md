@@ -6,10 +6,7 @@ jsId: HEDNS
 ---
 # Hurricane Electric DNS Provider
 ## Configuration
-In your `creds.json` file you must provide your `dns.he.net` account username and password, along wit
-
-In your `creds.json` file you must provide your INWX
-username and password:
+In your `creds.json` file you must provide your `dns.he.net` account username and password:
 
 {% highlight json %}
 {
@@ -59,6 +56,35 @@ only available when first enabling two-factor authentication.
   }
 }
 {% endhighlight %}
+
+### Persistent Sessions
+
+Normally this provider will refresh authentication with each run of dnscontrol. This can lead to issues when using
+two-factor authentication if two runs occur within the time period of a single TOTP token (30 seconds), as reusing the
+same token is explicitly disallowed by RFC 6238 (TOTP).
+
+To work around this limitation, if multiple requests need to be made. the option `"session-file-path"` can be set in
+`creds.json`, which is the location where a `.hedns-session` file will be created. This can be used to allow reuse of an
+existing session, between runs, without full authentication.
+
+When this key is not present, this option is disabled by default.
+
+**Important Notes**:
+* Anyone with access to this `.hedns-session` file will be able to use the existing session (until it expires) and have
+  *full* access to your Hurrican Electric account and will be able to modify and delete your DNS entries.
+* It should be stored in a location only your user can access.
+
+{% highlight json %}
+{
+  "hedns":{
+    "username": "yourUsername",
+    "password": "yourPassword",
+    "totp-key": "yourTOTPSharedSecret"
+    "session-file-path": "."
+  }
+}
+{% endhighlight %}
+
 
 ## Metadata
 This provider does not recognize any special metadata fields unique to Hurricane Electric DNS.
