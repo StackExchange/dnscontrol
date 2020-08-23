@@ -438,7 +438,7 @@ func ignoreName(name string) *rec {
 
 func ignoreTarget(name string, typ string) *rec {
 	r := &rec{
-		Type: "IGNORE_TARGET",
+		Type:   "IGNORE_TARGET",
 		Target: typ,
 	}
 	r.SetLabel(name, "**current-domain**")
@@ -509,16 +509,16 @@ func tc(desc string, recs ...*rec) *TestCase {
 		} else if r.Type == "IGNORE_TARGET" {
 			ignoredTargets = append(ignoredTargets, &models.IgnoreTarget{
 				Pattern: r.GetLabel(),
-				Type: r.Target,
+				Type:    r.Target,
 			})
 		} else {
 			records = append(records, r)
 		}
 	}
 	return &TestCase{
-		Desc:          desc,
-		Records:       records,
-		IgnoredNames: ignoredNames,
+		Desc:           desc,
+		Records:        records,
+		IgnoredNames:   ignoredNames,
 		IgnoredTargets: ignoredTargets,
 	}
 }
@@ -872,6 +872,12 @@ func makeTests(t *testing.T) []*TestGroup {
 			),
 			tc("3x255-byte TXTMulti",
 				txtmulti("foo3", []string{strings.Repeat("X", 255), strings.Repeat("Y", 255), strings.Repeat("Z", 255)})),
+		),
+
+		testgroup("TXTLong",
+			requires(providers.CanUseTXTMulti),
+			only("HEDNS"),
+			tc("TXT longer than 255 bytes", txt("foo1", strings.Repeat("X", 256))),
 		),
 
 		testgroup("DS",
