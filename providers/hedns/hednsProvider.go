@@ -115,14 +115,6 @@ func NewProvider(cfg map[string]string, _ json.RawMessage) (providers.DNSService
 		return nil, fmt.Errorf("totp and totp-key must not be specified at the same time")
 	}
 
-	if totpValue == "" && totpSecret != "" {
-		var err error
-		totpValue, err = totp.GenerateCode(totpSecret, time.Now())
-		if err != nil {
-			return nil, err
-		}
-	}
-
 	// Perform the initial login
 	client := NewApiClient(username, password, totpSecret, totpValue, sessionFilePath)
 	err := client.authenticate()
@@ -284,6 +276,11 @@ func (c *ApiClient) GetZoneRecords(domain string) (models.Records, error) {
 		return nil, err
 	}
 
+	// Check we can find the zone records
+	if document.Find("#dns_main_content").Size() == 0 {
+		return nil, fmt.Errorf("zone records listing failed")
+	}
+
 	// Load all the domain records
 	recordSelector := "tr.dns_tr, tr.dns_tr_dynamic, tr.dns_tr_locked"
 	document.Find(recordSelector).EachWithBreak(func(index int, element *goquery.Selection) bool {
@@ -399,6 +396,19 @@ func (c *ApiClient) authUsernameAndPassword() (authenticated bool, requiresTfa b
 }
 
 func (c *ApiClient) auth2FA() (authenticated bool, err error) {
+
+	if c.TfaValue == "" && c.TfaSecret == "" {
+		return false, fmt.Errorf("account requires two-factor authentication but neither totp or totp-key were provided")
+	}
+
+	if c.TfaValue == "" && c.TfaSecret != "" {
+		var err error
+		c.TfaValue, err = totp.GenerateCode(c.TfaSecret, time.Now())
+		if err != nil {
+			return false, err
+		}
+	}
+
 	response, err := c.httpClient.PostForm(ApiUrl, url.Values{
 		"tfacode": {c.TfaValue},
 		"submit":  {"Submit"},
@@ -475,14 +485,18 @@ func (c *ApiClient) listDomains() (map[string]uint64, error) {
 		return nil, err
 	}
 
-	domains := make(map[string]uint64)
+	// Check we can list domains
+	if document.Find("#domains_table").Size() == 0 {
+		return nil, fmt.Errorf("domain listing failed")
+	}
 
+	// Find all the forward & reverse domains
+	domains := make(map[string]uint64)
 	recordsSelector := strings.Join([]string{
 		"#domains_table > tbody > tr > td:last-child > img",                // Forward records
 		"#tabs-advanced .generic_table > tbody > tr > td:last-child > img", // Reverse records
 	}, ", ")
 
-	// Find all the forward & reverse domains
 	document.Find(recordsSelector).EachWithBreak(func(index int, element *goquery.Selection) bool {
 		domainId, idExists := element.Attr("value")
 		domainName, nameExists := element.Attr("name")
@@ -587,34 +601,10 @@ func (c *ApiClient) deleteZoneRecord(rc *models.RecordConfig) error {
 	return err
 }
 
-func (c *ApiClient) setZoneDynamicKey(rc *models.RecordConfig, key string) error {
-	values := url.Values{
-		"account":             {},
-		"menu":                {"edit_zone"},
-		"hosted_dns_zoneid":   {strconv.FormatUint(rc.Original.(Record).ZoneId, 10)},
-		"hosted_dns_recordid": {},
-		"hosted_dns_editzone": {"1"},
-		"Name":                {rc.Original.(Record).RecordName},
-		"Key":                 {key},
-		"Key2":                {key},
-		"generate_key":        {"Submit"},
-	}
-
-	response, err := c.httpClient.PostForm(ApiUrl, values)
-	if err != nil {
-		return err
-	}
-	defer response.Body.Close()
-
-	_, err = c.parseResponseForDocumentAndErrors(response)
-	return err
-}
-
 func (c *ApiClient) generateCredentialHash() string {
 	hash := sha1.New()
 	hash.Write([]byte(c.Username))
 	hash.Write([]byte(c.Password))
-	//hash.Write([]byte(c.TfaValue))
 	hash.Write([]byte(c.TfaSecret))
 	return fmt.Sprintf("%x", hash.Sum(nil))
 }
