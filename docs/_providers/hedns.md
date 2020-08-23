@@ -63,16 +63,16 @@ Normally this provider will refresh authentication with each run of dnscontrol. 
 two-factor authentication if two runs occur within the time period of a single TOTP token (30 seconds), as reusing the
 same token is explicitly disallowed by RFC 6238 (TOTP).
 
-To work around this limitation, if multiple requests need to be made. the option `"session-file-path"` can be set in
+To work around this limitation, if multiple requests need to be made, the option `"session-file-path"` can be set in
 `creds.json`, which is the location where a `.hedns-session` file will be created. This can be used to allow reuse of an
-existing session, between runs, without full authentication.
+existing session between runs, without full authentication.
 
-When this key is not present, this option is disabled by default.
+This option is disabled by default when this key is not present, 
 
 **Important Notes**:
 * Anyone with access to this `.hedns-session` file will be able to use the existing session (until it expires) and have
   *full* access to your Hurrican Electric account and will be able to modify and delete your DNS entries.
-* It should be stored in a location only your user can access.
+* It should be stored in a location only trusted users can access.
 
 {% highlight json %}
 {

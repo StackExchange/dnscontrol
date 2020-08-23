@@ -271,6 +271,7 @@ func (c *ApiClient) GetZoneRecords(domain string) (models.Records, error) {
 	}
 	defer response.Body.Close()
 
+	// Parse the HTML response
 	document, err := goquery.NewDocumentFromReader(response.Body)
 	if err != nil {
 		return nil, err
