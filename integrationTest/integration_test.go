@@ -874,12 +874,6 @@ func makeTests(t *testing.T) []*TestGroup {
 				txtmulti("foo3", []string{strings.Repeat("X", 255), strings.Repeat("Y", 255), strings.Repeat("Z", 255)})),
 		),
 
-		testgroup("TXTLong",
-			requires(providers.CanUseTXTMulti),
-			only("HEDNS"),
-			tc("TXT longer than 255 bytes", txt("foo1", strings.Repeat("X", 256))),
-		),
-
 		testgroup("DS",
 			requires(providers.CanUseDS),
 			tc("create DS", ds("@", 1, 13, 1, "ADIGEST")),
