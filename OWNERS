@@ -19,6 +19,6 @@ providers/netcup @kordianbruck
 providers/ns1 @captncraig
 # providers/route53
 # providers/softlayer
-providers/vultr  @geek1011
+providers/vultr @pgaskin
 providers/ovh @masterzen
 providers/powerdns @jpbede
