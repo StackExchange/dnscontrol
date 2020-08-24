@@ -90,7 +90,7 @@ Maintainers of contributed providers:
 * `OVH` @masterzen
 * `POWERDNS` @jpbede
 * `SOFTLAYER`@jamielennox
-* `VULTR` @geek1011
+* `VULTR` @pgaskin
 
 ### Requested providers
 
