@@ -5,8 +5,15 @@ layout: default
 jsId: HEDNS
 ---
 # Hurricane Electric DNS Provider
+
+## Important Note
+Hurricane Electric does not currently expose an official JSON or XML API, and as such, this provider interacts directly
+with the web interface. Because there is no officially supported API, this provider may cease to function if Hurricane
+Electric changes their interface, and you should be willing to accept this possibility before relying on this provider.
+
 ## Configuration
-In your `creds.json` file you must provide your `dns.he.net` account username and password:
+In your `creds.json` file you must provide your `dns.he.net` account username and password. These are the same username
+and password used to login to the [web interface]([https://dns.he.net]).
 
 {% highlight json %}
 {
