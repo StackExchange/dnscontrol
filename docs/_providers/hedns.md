@@ -48,8 +48,8 @@ $ HEDNS_TOTP=12345 dnscontrol preview
 It is also possible to directly provide the shared TOTP secret using the key "totp-key" in `creds.json`. This secret is
 only available when first enabling two-factor authentication.
 
-**Important Notes**:
-* Anyone with access to this `creds.json` file will have *full* access to your Hurrican Electric account and will be 
+**Security Warning**:
+* Anyone with access to this `creds.json` file will have *full* access to your Hurricane Electric account and will be 
   able to modify and delete your DNS entries
 * Storing the shared secret together with the password weakens two factor authentication because both factors are stored
   in a single place.
@@ -71,12 +71,12 @@ two-factor authentication if two runs occur within the time period of a single T
 same token is explicitly disallowed by RFC 6238 (TOTP).
 
 To work around this limitation, if multiple requests need to be made, the option `"session-file-path"` can be set in
-`creds.json`, which is the location where a `.hedns-session` file will be created. This can be used to allow reuse of an
-existing session between runs, without full authentication.
+`creds.json`, which is the directory where a `.hedns-session` file will be created. This can be used to allow reuse of an
+existing session between runs, without the need to re-authenticate.
 
 This option is disabled by default when this key is not present, 
 
-**Important Notes**:
+**Security Warning**:
 * Anyone with access to this `.hedns-session` file will be able to use the existing session (until it expires) and have
   *full* access to your Hurrican Electric account and will be able to modify and delete your DNS entries.
 * It should be stored in a location only trusted users can access.
