@@ -33,8 +33,8 @@ Additional settings available in `creds.json`:
 
 */
 
-// InwxApi is a thin wrapper around goinwx.Client.
-type InwxApi struct {
+// inwxAPI is a thin wrapper around goinwx.Client.
+type inwxAPI struct {
 	client  *goinwx.Client
 	sandbox bool
 }
@@ -81,12 +81,12 @@ func getOTP(TOTPValue string, TOTPKey string) (string, error) {
 		}
 		return tan, nil
 	} else {
-		return "", fmt.Errorf("INWX: two factor authentication required but no TOTP configured.")
+		return "", fmt.Errorf("INWX: two factor authentication required but no TOTP configured")
 	}
 }
 
 // loginHelper tries to login and then unlocks the account using two factor authentication if required.
-func (api *InwxApi) loginHelper(TOTPValue string, TOTPKey string) error {
+func (api *inwxAPI) loginHelper(TOTPValue string, TOTPKey string) error {
 	resp, err := api.client.Account.Login()
 	if err != nil {
 		return fmt.Errorf("INWX: Unable to login")
@@ -105,34 +105,34 @@ func (api *InwxApi) loginHelper(TOTPValue string, TOTPKey string) error {
 
 		err = api.client.Account.Unlock(tan)
 		if err != nil {
-			return fmt.Errorf("INWX: Could not unlock account: %w.", err)
+			return fmt.Errorf("INWX: Could not unlock account: %w", err)
 		}
 	default:
-		return fmt.Errorf("INWX: Unknown two factor authentication mode `%s` has been requested.", resp.TFA)
+		return fmt.Errorf("INWX: Unknown two factor authentication mode `%s` has been requested", resp.TFA)
 	}
 
 	return nil
 }
 
-// newInwx initializes InwxApi and create a session.
-func newInwx(m map[string]string) (*InwxApi, error) {
+// newInwx initializes inwxAPI and create a session.
+func newInwx(m map[string]string) (*inwxAPI, error) {
 	username, password := m["username"], m["password"]
 	TOTPValue, TOTPKey := m["totp"], m["totp-key"]
 	sandbox := m["sandbox"] == "1"
 
 	if username == "" {
-		return nil, fmt.Errorf("INWX: username must be provided.")
+		return nil, fmt.Errorf("INWX: username must be provided")
 	}
 	if password == "" {
-		return nil, fmt.Errorf("INWX: password must be provided.")
+		return nil, fmt.Errorf("INWX: password must be provided")
 	}
 	if TOTPValue != "" && TOTPKey != "" {
-		return nil, fmt.Errorf("INWX: totp and totp-key must not be specified at the same time.")
+		return nil, fmt.Errorf("INWX: totp and totp-key must not be specified at the same time")
 	}
 
 	opts := &goinwx.ClientOptions{Sandbox: sandbox}
 	client := goinwx.NewClient(username, password, opts)
-	api := &InwxApi{client: client, sandbox: sandbox}
+	api := &inwxAPI{client: client, sandbox: sandbox}
 
 	err := api.loginHelper(TOTPValue, TOTPKey)
 	if err != nil {
@@ -187,26 +187,26 @@ func makeNameserverRecordRequest(domain string, rec *models.RecordConfig) *goinw
 }
 
 // createRecord is used by GetDomainCorrections to create a new record.
-func (api *InwxApi) createRecord(domain string, rec *models.RecordConfig) error {
+func (api *inwxAPI) createRecord(domain string, rec *models.RecordConfig) error {
 	req := makeNameserverRecordRequest(domain, rec)
 	_, err := api.client.Nameservers.CreateRecord(req)
 	return err
 }
 
 // updateRecord is used by GetDomainCorrections to update an existing record.
-func (api *InwxApi) updateRecord(RecordID int, rec *models.RecordConfig) error {
+func (api *inwxAPI) updateRecord(RecordID int, rec *models.RecordConfig) error {
 	req := makeNameserverRecordRequest("", rec)
 	err := api.client.Nameservers.UpdateRecord(RecordID, req)
 	return err
 }
 
 // deleteRecord is used by GetDomainCorrections to delete a record.
-func (api *InwxApi) deleteRecord(RecordID int) error {
+func (api *inwxAPI) deleteRecord(RecordID int) error {
 	return api.client.Nameservers.DeleteRecord(RecordID)
 }
 
 // GetDomainCorrections finds the currently existing records and returns the corrections required to update them.
-func (api *InwxApi) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Correction, error) {
+func (api *inwxAPI) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Correction, error) {
 	dc.Punycode()
 
 	foundRecords, err := api.GetZoneRecords(dc.Name)
@@ -218,9 +218,9 @@ func (api *InwxApi) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Cor
 
 	differ := diff.New(dc)
 	_, create, del, mod, err := differ.IncrementalDiff(foundRecords)
-    if err != nil {
-        return nil, err
-    }
+	if err != nil {
+		return nil, err
+	}
 
 	corrections := []*models.Correction{}
 
@@ -251,16 +251,16 @@ func (api *InwxApi) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Cor
 }
 
 // GetNameservers returns the default nameservers for INWX.
-func (api *InwxApi) GetNameservers(domain string) ([]*models.Nameserver, error) {
+func (api *inwxAPI) GetNameservers(domain string) ([]*models.Nameserver, error) {
 	if api.sandbox {
 		return models.ToNameservers(InwxSandboxDefaultNs)
-	} else {
-		return models.ToNameservers(InwxDefaultNs)
 	}
+
+	return models.ToNameservers(InwxDefaultNs)
 }
 
 // GetZoneRecords receives the current records from Inwx and converts them to models.RecordConfig.
-func (api *InwxApi) GetZoneRecords(domain string) (models.Records, error) {
+func (api *inwxAPI) GetZoneRecords(domain string) (models.Records, error) {
 	info, err := api.client.Nameservers.Info(&goinwx.NameserverInfoRequest{Domain: domain})
 	if err != nil {
 		return nil, err
@@ -309,7 +309,7 @@ func (api *InwxApi) GetZoneRecords(domain string) (models.Records, error) {
 }
 
 // updateNameservers is used by GetRegistrarCorrections to update the domain's nameservers.
-func (api *InwxApi) updateNameservers(ns []string, domain string) func() error {
+func (api *inwxAPI) updateNameservers(ns []string, domain string) func() error {
 	return func() error {
 		request := &goinwx.DomainUpdateRequest{
 			Domain:      domain,
@@ -322,7 +322,7 @@ func (api *InwxApi) updateNameservers(ns []string, domain string) func() error {
 }
 
 // GetRegistrarCorrections is part of the registrar provider and determines if the nameservers have to be updated.
-func (api *InwxApi) GetRegistrarCorrections(dc *models.DomainConfig) ([]*models.Correction, error) {
+func (api *inwxAPI) GetRegistrarCorrections(dc *models.DomainConfig) ([]*models.Correction, error) {
 	info, err := api.client.Domains.Info(dc.Name, 0)
 	if err != nil {
 		return nil, err
