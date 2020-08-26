@@ -27,6 +27,7 @@ Currently supported DNS providers:
  - Exoscale
  - Gandi
  - Google DNS
+ - Hurricane Electric DNS
  - HEXONET
  - Internet.bs
  - INWX

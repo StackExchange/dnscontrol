@@ -7,8 +7,10 @@ require (
 	github.com/Azure/go-autorest/autorest/azure/auth v0.5.0
 	github.com/Azure/go-autorest/autorest/to v0.4.0
 	github.com/DisposaBoy/JsonConfigReader v0.0.0-20171218180944-5ea4d0ddac55
+	github.com/PuerkitoBio/goquery v1.5.1
 	github.com/TomOnTime/utfutil v0.0.0-20200626160131-0b0178852c8f
 	github.com/andreyvit/diff v0.0.0-20170406064948-c7f18ee00883
+	github.com/andybalholm/cascadia v1.2.0 // indirect
 	github.com/aws/aws-sdk-go v1.32.10
 	github.com/billputer/go-namecheap v0.0.0-20170915210158-0c7adb0710f8
 	github.com/cenkalti/backoff v2.1.1+incompatible // indirect
@@ -47,8 +49,7 @@ require (
 	github.com/tiramiseb/go-gandi v0.0.0-20200313161345-6b74caa58663
 	github.com/urfave/cli/v2 v2.2.0
 	github.com/vultr/govultr v0.2.0
-	golang.org/x/mod v0.3.0 // indirect
-	golang.org/x/net v0.0.0-20200625001655-4c5254603344
+	golang.org/x/net v0.0.0-20200813134508-3edf25e44fcc
 	golang.org/x/oauth2 v0.0.0-20200107190931-bf48bf16ab8d
 	golang.org/x/tools v0.0.0-20200811215021-48a8ffc5b207 // indirect
 	google.golang.org/api v0.28.0

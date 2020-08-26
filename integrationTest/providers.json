@@ -62,6 +62,13 @@
     "project_id": "$GCLOUD_PROJECT",
     "type": "$GCLOUD_TYPE"
   },
+  "HEDNS": {
+    "username": "$HEDNS_USERNAME",
+    "password": "$HEDNS_PASSWORD",
+    "totp-key": "$HEDNS_TOTP_SECRET",
+    "session-file-path": ".",
+    "domain": "$HEDNS_DOMAIN"
+  },
   "HEXONET": {
     "apientity": "$HEXONET_ENTITY",
     "apilogin": "$HEXONET_UID",
