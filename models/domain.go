@@ -8,9 +8,9 @@ import (
 
 // DomainConfig describes a DNS domain (tecnically a  DNS zone).
 type DomainConfig struct {
-	Name             string          `json:"name"` // NO trailing "."
-	RegistrarName    string          `json:"registrar"`
-	DNSProviderNames map[string]int  `json:"dnsProviders"`
+	Name             string         `json:"name"` // NO trailing "."
+	RegistrarName    string         `json:"registrar"`
+	DNSProviderNames map[string]int `json:"dnsProviders"`
 
 	Metadata       map[string]string `json:"meta,omitempty"`
 	Records        Records           `json:"records"`

@@ -47,7 +47,7 @@ type differ struct {
 	dc          *models.DomainConfig
 	extraValues []func(*models.RecordConfig) map[string]string
 
-	compiledIgnoredNames []glob.Glob
+	compiledIgnoredNames   []glob.Glob
 	compiledIgnoredTargets []glob.Glob
 }
 
