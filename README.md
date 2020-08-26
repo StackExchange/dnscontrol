@@ -111,38 +111,17 @@ See [Getting Started](https://stackexchange.github.io/dnscontrol/getting-started
 
 ## From source
 
-DNSControl can be built with Go version 1.14 or higher. To install, simply run
+DNSControl can be built with Go version 1.14 or higher.
 
-`go get github.com/StackExchange/dnscontrol`
+To install, simply run
 
-dnscontrol will be installed in $GOPATH/bin
+    GO111MODULE=on go get github.com/StackExchange/dnscontrol/v3
 
----
+To download the source
 
-(2020-08-19) WARNING: There is a known issue when installing.
+    go get -d github.com/StackExchange/dnscontrol
 
-The error you'll see:
-
-```
-$ go get github.com/StackExchange/dnscontrol
-../go/pkg/mod/github.com/!stack!exchange/dnscontrol@v0.2.8/providers/hexonet/hexonetProvider.go:9:2: module github.com/hexonet/go-sdk@latest found (v3.5.0+incompatible), but does not contain package github.com/hexonet/go-sdk/client
-../go/pkg/mod/github.com/!stack!exchange/dnscontrol@v0.2.8/providers/hexonet/error.go:4:2: module github.com/hexonet/go-sdk@latest found (v3.5.0+incompatible), but does not contain package github.com/hexonet/go-sdk/response/listresponse
-```
-
-(or something similar, mentioning hexonet and/or vultr)
-
-Workaround:
-
-```
-$ mkdir -p src/github.com/StackExchange
-$ cd src/github.com/StackExchange
-$ git clone http://github.com/StackExchange/dnscontrol
-$ cd dnscontrol
-$ unset GO15VENDOREXPERIMENT GOPATH
-$ go install
-```
-
-More info here on [#805](https://github.com/StackExchange/dnscontrol/issues/805)
+If these don't work, more info is in [#805](https://github.com/StackExchange/dnscontrol/issues/805).
 
 ---
 
