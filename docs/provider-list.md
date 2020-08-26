@@ -78,6 +78,7 @@ Maintainers of contributed providers:
 * `DNSIMPLE` @aeden
 * `EXOSCALE` @pierre-emmanuelJ
 * `GANDI_V5` @TomOnTime
+* `HEDNS` @rblenkinsopp
 * `HEXONET` @papakai
 * `INTERNETBS` @pragmaton
 * `INWX` @svenpeter42
