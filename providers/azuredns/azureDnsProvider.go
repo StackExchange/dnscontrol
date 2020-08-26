@@ -73,10 +73,10 @@ func init() {
 }
 
 func (a *azureDNSProvider) getExistingZones() (*adns.ZoneListResult, error) {
-    // Please note — this function doesn't work with > 100 zones
-    // https://github.com/StackExchange/dnscontrol/issues/792
-    // Copied this code to getZones and ListZones and modified it for using a paging
-    // As a result getExistingZones is not used anymore
+	// Please note — this function doesn't work with > 100 zones
+	// https://github.com/StackExchange/dnscontrol/issues/792
+	// Copied this code to getZones and ListZones and modified it for using a paging
+	// As a result getExistingZones is not used anymore
 	ctx, cancel := context.WithTimeout(context.Background(), 6000*time.Second)
 	defer cancel()
 	zonesIterator, zonesErr := a.zonesClient.ListByResourceGroupComplete(ctx, *a.resourceGroup, to.Int32Ptr(100))
@@ -98,7 +98,7 @@ func (a *azureDNSProvider) getZones() error {
 		return zonesErr
 	}
 
-    // Check getExistingZones and https://github.com/StackExchange/dnscontrol/issues/792 for the details
+	// Check getExistingZones and https://github.com/StackExchange/dnscontrol/issues/792 for the details
 	for zonesIterator.NotDone() {
 		zonesResult := zonesIterator.Response()
 		for _, z := range *zonesResult.Value {
@@ -146,7 +146,7 @@ func (a *azureDNSProvider) ListZones() ([]string, error) {
 		return nil, zonesErr
 	}
 
-    // Check getExistingZones and https://github.com/StackExchange/dnscontrol/issues/792 for the details
+	// Check getExistingZones and https://github.com/StackExchange/dnscontrol/issues/792 for the details
 	for zonesIterator.NotDone() {
 		zonesResult := zonesIterator.Response()
 		for _, z := range *zonesResult.Value {

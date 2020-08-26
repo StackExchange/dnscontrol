@@ -298,7 +298,7 @@ func TestInvalidGlobIgnoredTarget(t *testing.T) {
 		}
 	}()
 
-	checkLengthsFull(t, existing, desired, 0, 1, 0, 0, false, nil, []*models.IgnoreTarget{{Pattern: "[.www3", Type: "CNAME"}} )
+	checkLengthsFull(t, existing, desired, 0, 1, 0, 0, false, nil, []*models.IgnoreTarget{{Pattern: "[.www3", Type: "CNAME"}})
 }
 
 func TestInvalidTypeIgnoredTarget(t *testing.T) {
@@ -317,7 +317,7 @@ func TestInvalidTypeIgnoredTarget(t *testing.T) {
 		}
 	}()
 
-	checkLengthsFull(t, existing, desired, 0, 1, 0, 0, false, nil, []*models.IgnoreTarget{{Pattern: "1.1.1.1", Type: "A"}} )
+	checkLengthsFull(t, existing, desired, 0, 1, 0, 0, false, nil, []*models.IgnoreTarget{{Pattern: "1.1.1.1", Type: "A"}})
 }
 
 // from https://github.com/StackExchange/dnscontrol/issues/552
