@@ -73,6 +73,7 @@ Maintainers of contributed providers:
 
 * `AXFRDDNS` @hnrgrgr
 * `CLOUDNS` @pragmaton
+* `CSCGLOBAL` @Air-New-Zealand
 * `DESEC` @D3luxee
 * `DIGITALOCEAN` @Deraen
 * `DNSIMPLE` @aeden
