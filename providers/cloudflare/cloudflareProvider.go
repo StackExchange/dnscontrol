@@ -384,6 +384,7 @@ func (c *CloudflareAPI) preprocessConfig(dc *models.DomainConfig) error {
 			}
 			rec.SetTarget(fmt.Sprintf("%s,%d,%d", rec.GetTargetField(), currentPrPrio, code))
 			currentPrPrio++
+			rec.TTL = 1
 			rec.Type = "PAGE_RULE"
 		}
 	}
