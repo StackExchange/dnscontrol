@@ -85,20 +85,6 @@ func validateRecordTypes(rec *models.RecordConfig, domain string, pTypes []strin
 	return nil
 }
 
-// underscores in names are often used erroneously. They are valid for dns records, but invalid for urls.
-// here we list common records expected to have underscores. Anything else containing an underscore will print a warning.
-var labelUnderscores = []string{
-	"_acme-challenge",
-	"_amazonses",
-	"_dmarc",
-	"_domainconnect",
-	"_domainkey",
-	"_jabber",
-	"_mta-sts",
-	"_sip",
-	"_xmpp",
-}
-
 // these record types may contain underscores
 var rTypeUnderscores = []string{"SRV", "TLSA", "TXT"}
 
@@ -127,17 +113,12 @@ func checkLabel(label string, rType string, target, domain string, meta map[stri
 			return nil
 		}
 	}
-	// Don't warn for CNAMEs if the target ends with acm-validations.aws
-	// See https://github.com/StackExchange/dnscontrol/issues/519
-	if strings.HasPrefix(label, "_") && rType == "CNAME" && strings.HasSuffix(target, ".acm-validations.aws.") {
+	// Don't warn for records that start with _
+	// See https://github.com/StackExchange/dnscontrol/issues/829
+	if strings.HasPrefix(label, "_") {
 		return nil
 	}
-	// Don't warn for certain label substrings
-	for _, ex := range labelUnderscores {
-		if strings.Contains(label, ex) {
-			return nil
-		}
-	}
+
 	// Otherwise, warn.
 	if strings.ContainsRune(label, '_') {
 		return Warning{fmt.Errorf("label %s.%s contains an underscore", label, domain)}
