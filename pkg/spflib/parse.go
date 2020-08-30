@@ -44,7 +44,7 @@ var qualifiers = map[byte]bool{
 // Parse parses a raw SPF record.
 func Parse(text string, dnsres Resolver) (*SPFRecord, error) {
 	if !strings.HasPrefix(text, "v=spf1 ") {
-		return nil, fmt.Errorf("Not an spf record")
+		return nil, fmt.Errorf("not an SPF record")
 	}
 	parts := strings.Split(text, " ")
 	rec := &SPFRecord{}
@@ -89,13 +89,13 @@ func Parse(text string, dnsres Resolver) (*SPFRecord, error) {
 				}
 				p.IncludeRecord, err = Parse(subRecord, dnsres)
 				if err != nil {
-					return nil, fmt.Errorf("In included spf: %s", err)
+					return nil, fmt.Errorf("in included SPF: %s", err)
 				}
 			}
 		} else if strings.HasPrefix(part, "exists:") || strings.HasPrefix(part, "ptr:") {
 			p.IsLookup = true
 		} else {
-			return nil, fmt.Errorf("Unsupported spf part %s", part)
+			return nil, fmt.Errorf("unsupported SPF part %s", part)
 		}
 
 	}

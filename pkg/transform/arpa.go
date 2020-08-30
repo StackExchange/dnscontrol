@@ -24,7 +24,7 @@ func ReverseDomainName(cidr string) (string, error) {
 	bits, total := c.Mask.Size()
 	var toTrim int
 	if bits == 0 {
-		return "", fmt.Errorf("Cannot use /0 in reverse cidr")
+		return "", fmt.Errorf("cannot use /0 in reverse CIDR")
 	}
 
 	// Handle IPv4 "Classless in-addr.arpa delegation" RFC2317:
@@ -48,7 +48,7 @@ func ReverseDomainName(cidr string) (string, error) {
 		}
 		toTrim = (total - bits) / 4
 	} else {
-		return "", fmt.Errorf("Address is not IPv4 or IPv6: %v", cidr)
+		return "", fmt.Errorf("invalid address (not IPv4 or IPv6): %v", cidr)
 	}
 
 	parts := strings.SplitN(base, ".", toTrim+1)

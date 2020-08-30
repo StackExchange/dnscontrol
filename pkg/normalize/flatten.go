@@ -69,7 +69,7 @@ func flattenSPFs(cfg *models.DNSConfig) []error {
 				}
 
 				if !strings.Contains(split, "%d") {
-					errs = append(errs, Warning{fmt.Errorf("Split format `%s` in `%s` is not proper format (should have %%d in it)", split, txt.GetLabelFQDN())})
+					errs = append(errs, Warning{fmt.Errorf("split format `%s` in `%s` is not proper format (missing %%d)", split, txt.GetLabelFQDN())})
 					continue
 				}
 				recs := rec.TXTSplit(split+"."+domain.Name, overhead1, txtMaxSize)

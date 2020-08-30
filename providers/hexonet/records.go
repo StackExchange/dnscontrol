@@ -57,7 +57,7 @@ func (n *HXClient) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Corr
 
 	for _, rec := range dc.Records {
 		if rec.Type == "ALIAS" {
-			return nil, fmt.Errorf("We support realtime ALIAS RR over our X-DNS service, please get in touch with us")
+			return nil, fmt.Errorf("we support realtime ALIAS RR over our X-DNS service, please get in touch with us")
 		}
 	}
 
@@ -197,7 +197,7 @@ func (n *HXClient) getRecords(domain string) ([]*HXRecord, error) {
 	}
 	rrColumn := r.GetColumn("RR")
 	if rrColumn == nil {
-		return nil, fmt.Errorf("Error getting RR column for domain: %s", domain)
+		return nil, fmt.Errorf("failed getting RR column for domain: %s", domain)
 	}
 	rrs := rrColumn.GetData()
 	for _, rr := range rrs {

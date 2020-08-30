@@ -51,7 +51,7 @@ require (
 	github.com/vultr/govultr v0.2.0
 	golang.org/x/net v0.0.0-20200813134508-3edf25e44fcc
 	golang.org/x/oauth2 v0.0.0-20200107190931-bf48bf16ab8d
-	golang.org/x/tools v0.0.0-20200811215021-48a8ffc5b207 // indirect
+	golang.org/x/tools v0.0.0-20200828161849-5deb26317202 // indirect
 	google.golang.org/api v0.28.0
 	google.golang.org/appengine v1.6.6 // indirect
 	gopkg.in/ini.v1 v1.42.0 // indirect

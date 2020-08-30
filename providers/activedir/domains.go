@@ -136,10 +136,10 @@ func (c *adProvider) logHelper(s string) error {
 	}
 	_, err = fmt.Fprintln(logfile, s)
 	if err != nil {
-		return fmt.Errorf("Append to %#v failed: %v", c.psLog, err)
+		return fmt.Errorf("append to %#v failed: %v", c.psLog, err)
 	}
 	if logfile.Close() != nil {
-		return fmt.Errorf("Closing %#v failed: %v", c.psLog, err)
+		return fmt.Errorf("closing %#v failed: %v", c.psLog, err)
 	}
 	return nil
 }

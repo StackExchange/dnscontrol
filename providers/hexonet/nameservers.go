@@ -51,7 +51,7 @@ func (n *HXClient) getNameserversRaw(domain string) ([]string, error) {
 	}
 	nsColumn := r.GetColumn("NAMESERVER")
 	if nsColumn == nil {
-		return nil, fmt.Errorf("Error getting NAMESERVER column for domain: %s", domain)
+		return nil, fmt.Errorf("error getting NAMESERVER column for domain: %s", domain)
 	}
 	ns := nsColumn.GetData()
 	sort.Strings(ns)

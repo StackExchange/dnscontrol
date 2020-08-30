@@ -116,7 +116,7 @@ func parseargs(args []string) (zonename string, filename string, r io.Reader, er
 		filename = flag.Arg(1)
 		r, err = os.Open(filename)
 		if err != nil {
-			return "", "", nil, fmt.Errorf("Could not open file: %s: %w", filename, err)
+			return "", "", nil, fmt.Errorf("could not open file: %s: %w", filename, err)
 		}
 	} else {
 		return "", "", nil, fmt.Errorf("too many command line parameters")
