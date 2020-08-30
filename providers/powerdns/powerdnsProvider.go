@@ -5,15 +5,16 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"net/http"
+	"strings"
+
 	"github.com/StackExchange/dnscontrol/v3/models"
 	"github.com/StackExchange/dnscontrol/v3/pkg/diff"
 	"github.com/StackExchange/dnscontrol/v3/providers"
 	"github.com/miekg/dns/dnsutil"
-	"github.com/mittwald/go-powerdns"
+	pdns "github.com/mittwald/go-powerdns"
 	"github.com/mittwald/go-powerdns/apis/zones"
 	"github.com/mittwald/go-powerdns/pdnshttp"
-	"net/http"
-	"strings"
 )
 
 var features = providers.DocumentationNotes{
@@ -246,7 +247,7 @@ func toRecordConfig(domain string, r zones.Record, ttl int, name string, rtype s
 	case "TXT":
 		// Remove quotes if it is a TXT record.
 		if !strings.HasPrefix(content, `"`) || !strings.HasSuffix(content, `"`) {
-			return nil, errors.New("Unexpected lack of quotes in TXT record from PowerDNS")
+			return nil, errors.New("unexpected lack of quotes in TXT record from PowerDNS")
 		}
 		return rc, rc.SetTargetTXT(content[1 : len(content)-1])
 	default:

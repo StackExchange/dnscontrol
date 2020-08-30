@@ -126,7 +126,7 @@ func preloadProviders(cfg *models.DNSConfig, err error) (*models.DNSConfig, erro
 	for _, d := range cfg.Domains {
 		reg, ok := cfg.RegistrarsByName[d.RegistrarName]
 		if !ok {
-			return nil, fmt.Errorf("Registrar named %s expected for %s, but never registered", d.RegistrarName, d.Name)
+			return nil, fmt.Errorf("registrar named %s expected for %s, but never registered", d.RegistrarName, d.Name)
 		}
 		d.RegistrarInstance = &models.RegistrarInstance{
 			ProviderBase: models.ProviderBase{

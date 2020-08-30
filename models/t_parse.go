@@ -24,13 +24,13 @@ func (r *RecordConfig) PopulateFromString(rtype, contents, origin string) error 
 	case "A":
 		ip := net.ParseIP(contents)
 		if ip == nil || ip.To4() == nil {
-			return fmt.Errorf("A record with invalid IP: %s", contents)
+			return fmt.Errorf("invalid IP in A record: %s", contents)
 		}
 		return r.SetTargetIP(ip) // Reformat to canonical form.
 	case "AAAA":
 		ip := net.ParseIP(contents)
 		if ip == nil || ip.To16() == nil {
-			return fmt.Errorf("AAAA record with invalid IP: %s", contents)
+			return fmt.Errorf("invalid IP in AAAA record: %s", contents)
 		}
 		return r.SetTargetIP(ip) // Reformat to canonical form.
 	case "ANAME", "CNAME", "NS", "PTR":
@@ -54,7 +54,7 @@ func (r *RecordConfig) PopulateFromString(rtype, contents, origin string) error 
 	case "TXT":
 		return r.SetTargetTXTString(contents)
 	default:
-		return fmt.Errorf("Unknown rtype (%s) when parsing (%s) domain=(%s)",
+		return fmt.Errorf("unknown rtype (%s) when parsing (%s) domain=(%s)",
 			rtype, contents, origin)
 	}
 }

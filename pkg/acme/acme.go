@@ -175,7 +175,7 @@ func (c *certManager) IssueOrRenewCert(cfg *CertConfig, renewUnder int, verbose 
 func getCertInfo(pemBytes []byte) (names []string, remaining float64, err error) {
 	block, _ := pem.Decode(pemBytes)
 	if block == nil {
-		return nil, 0, fmt.Errorf("Invalid certificate pem data")
+		return nil, 0, fmt.Errorf("invalid certificate PEM data")
 	}
 	cert, err := x509.ParseCertificate(block.Bytes)
 	if err != nil {
@@ -252,7 +252,7 @@ func (c *certManager) ensureNoPendingCorrections(d *models.DomainConfig) error {
 		for _, c := range corrections {
 			fmt.Println(c.Msg)
 		}
-		return fmt.Errorf("Found %d pending corrections for %s. Not going to proceed issuing certificates", len(corrections), d.Name)
+		return fmt.Errorf("found %d pending corrections for %s. Not going to proceed issuing certificates", len(corrections), d.Name)
 	}
 	return nil
 }

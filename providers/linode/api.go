@@ -22,7 +22,7 @@ func (c *LinodeAPI) fetchDomainList() error {
 		dr := &domainResponse{}
 		endpoint := fmt.Sprintf("%s?page=%d", domainsPath, page)
 		if err := c.get(endpoint, dr); err != nil {
-			return fmt.Errorf("Error fetching domain list from Linode: %s", err)
+			return fmt.Errorf("failed fetching domain list (Linode): %s", err)
 		}
 		for _, domain := range dr.Data {
 			c.domainIndex[domain.Domain] = domain.ID
@@ -42,7 +42,7 @@ func (c *LinodeAPI) getRecords(id int) ([]domainRecord, error) {
 		dr := &recordResponse{}
 		endpoint := fmt.Sprintf("%s/%d/records?page=%d", domainsPath, id, page)
 		if err := c.get(endpoint, dr); err != nil {
-			return nil, fmt.Errorf("Error fetching record list from Linode: %s", err)
+			return nil, fmt.Errorf("failed fetching record list (Linode): %s", err)
 		}
 
 		records = append(records, dr.Data...)

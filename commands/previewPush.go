@@ -101,7 +101,7 @@ func run(args PreviewArgs, push bool, interactive bool, out printer.CLI) error {
 	}
 	errs := normalize.ValidateAndNormalizeConfig(cfg)
 	if PrintValidationErrors(errs) {
-		return fmt.Errorf("Exiting due to validation errors")
+		return fmt.Errorf("exiting due to validation errors")
 	}
 	// TODO:
 	notifier, err := InitializeProviders(args.CredsFile, cfg, args.Notify)
@@ -169,10 +169,10 @@ DomainLoop:
 	notifier.Done()
 	out.Printf("Done. %d corrections.\n", totalCorrections)
 	if anyErrors {
-		return fmt.Errorf("Completed with errors")
+		return fmt.Errorf("completed with errors")
 	}
 	if totalCorrections != 0 && args.WarnChanges {
-		return fmt.Errorf("There are pending changes")
+		return fmt.Errorf("there are pending changes")
 	}
 	return nil
 }

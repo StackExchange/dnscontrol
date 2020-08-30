@@ -58,7 +58,7 @@ func checkGoFmt() error {
 	if fList == "" {
 		return nil
 	}
-	return fmt.Errorf("The following files need to have gofmt run on them:\n%s", fList)
+	return fmt.Errorf("the following files need to have gofmt run on them:\n%s", fList)
 }
 
 func checkGoGenerate() error {

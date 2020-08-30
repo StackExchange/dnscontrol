@@ -3,12 +3,13 @@ package js
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/robertkrimen/otto"              // load underscore js into vm by default
-	_ "github.com/robertkrimen/otto/underscore" // required by otto
 	"io/ioutil"
 	"os"
 	"path/filepath"
 	"strings"
+
+	"github.com/robertkrimen/otto"              // load underscore js into vm by default
+	_ "github.com/robertkrimen/otto/underscore" // required by otto
 
 	"github.com/StackExchange/dnscontrol/v3/models"
 	"github.com/StackExchange/dnscontrol/v3/pkg/printer"
@@ -27,7 +28,7 @@ var currentDirectory string
 func ExecuteJavascript(file string, devMode bool) (*models.DNSConfig, error) {
 	script, err := ioutil.ReadFile(file)
 	if err != nil {
-		return nil, fmt.Errorf("Reading js file %s: %s", file, err)
+		return nil, fmt.Errorf("reading js file %s: %s", file, err)
 	}
 
 	// Record the directory path leading up to this file.

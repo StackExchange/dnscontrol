@@ -72,7 +72,7 @@ func PrintIR(args PrintIRArgs) error {
 	if !args.Raw {
 		errs := normalize.ValidateAndNormalizeConfig(cfg)
 		if PrintValidationErrors(errs) {
-			return fmt.Errorf("Exiting due to validation errors")
+			return fmt.Errorf("exiting due to validation errors")
 		}
 	}
 	return PrintJSON(args.PrintJSONArgs, cfg)
@@ -98,12 +98,12 @@ func PrintValidationErrors(errs []error) (fatal bool) {
 // ExecuteDSL executes the dnsconfig.js contents.
 func ExecuteDSL(args ExecuteDSLArgs) (*models.DNSConfig, error) {
 	if args.JSFile == "" {
-		return nil, fmt.Errorf("No config specified")
+		return nil, fmt.Errorf("no config specified")
 	}
 
 	dnsConfig, err := js.ExecuteJavascript(args.JSFile, args.DevMode)
 	if err != nil {
-		return nil, fmt.Errorf("Executing javascript in %s: %s", args.JSFile, err)
+		return nil, fmt.Errorf("executing javascript in %s: %s", args.JSFile, err)
 	}
 	return dnsConfig, nil
 }

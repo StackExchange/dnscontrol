@@ -65,7 +65,7 @@ func (c *api) fetchDomainList() error {
 	endpoint := "/domains/"
 	var bodyString, err = c.get(endpoint, "GET")
 	if err != nil {
-		return fmt.Errorf("Error fetching domain list from deSEC: %s", err)
+		return fmt.Errorf("failed fetching domain list (deSEC): %s", err)
 	}
 	err = json.Unmarshal(bodyString, &dr)
 	if err != nil {
@@ -85,7 +85,7 @@ func (c *api) getRecords(domain string) ([]resourceRecord, error) {
 	var rrsNew []resourceRecord
 	var bodyString, err = c.get(fmt.Sprintf(endpoint, domain), "GET")
 	if err != nil {
-		return rrsNew, fmt.Errorf("Error fetching records from deSEC for domain %s: %s", domain, err)
+		return rrsNew, fmt.Errorf("failed fetching records for domain %s (deSEC): %s", domain, err)
 	}
 	err = json.Unmarshal(bodyString, &rrs)
 	if err != nil {
@@ -112,7 +112,7 @@ func (c *api) createDomain(domain string) error {
 	var resp []byte
 	var err error
 	if resp, err = c.post(endpoint, "POST", byt); err != nil {
-		return fmt.Errorf("Error create domain deSEC: %v", err)
+		return fmt.Errorf("failed domain create (deSEC): %v", err)
 	}
 	dm := domainObject{}
 	err = json.Unmarshal(resp, &dm)
@@ -129,7 +129,7 @@ func (c *api) upsertRR(rr []resourceRecord, domain string) error {
 	endpoint := fmt.Sprintf("/domains/%s/rrsets/", domain)
 	byt, _ := json.Marshal(rr)
 	if _, err := c.post(endpoint, "PUT", byt); err != nil {
-		return fmt.Errorf("Error create rrset deSEC: %v", err)
+		return fmt.Errorf("failed create rrset (deSEC): %v", err)
 	}
 	return nil
 }
@@ -137,7 +137,7 @@ func (c *api) upsertRR(rr []resourceRecord, domain string) error {
 func (c *api) deleteRR(domain, shortname, t string) error {
 	endpoint := fmt.Sprintf("/domains/%s/rrsets/%s/%s/", domain, shortname, t)
 	if _, err := c.get(endpoint, "DELETE"); err != nil {
-		return fmt.Errorf("Error delete rrset deSEC: %v", err)
+		return fmt.Errorf("failed delete rrset (deSEC): %v", err)
 	}
 	return nil
 }

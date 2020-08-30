@@ -69,11 +69,11 @@ func validateRecordTypes(rec *models.RecordConfig, domain string, pTypes []strin
 	if !ok {
 		cType := providers.GetCustomRecordType(rec.Type)
 		if cType == nil {
-			return fmt.Errorf("Unsupported record type (%v) domain=%v name=%v", rec.Type, domain, rec.GetLabel())
+			return fmt.Errorf("unsupported record type (%v) domain=%v name=%v", rec.Type, domain, rec.GetLabel())
 		}
 		for _, providerType := range pTypes {
 			if providerType != cType.Provider {
-				return fmt.Errorf("Custom record type %s is not compatible with provider type %s", rec.Type, providerType)
+				return fmt.Errorf("custom record type %s is not compatible with provider type %s", rec.Type, providerType)
 			}
 		}
 		// it is ok. Lets replace the type with real type and add metadata to say we checked it
@@ -152,7 +152,7 @@ func checkTargets(rec *models.RecordConfig, domain string) (errs []error) {
 	target := rec.GetTargetField()
 	check := func(e error) {
 		if e != nil {
-			err := fmt.Errorf("In %s %s.%s: %s", rec.Type, rec.GetLabel(), domain, e.Error())
+			err := fmt.Errorf("in %s %s.%s: %s", rec.Type, rec.GetLabel(), domain, e.Error())
 			if _, ok := e.(Warning); ok {
 				err = Warning{err}
 			}
@@ -406,7 +406,7 @@ func ValidateAndNormalizeConfig(config *models.DNSConfig) (errs []error) {
 		// Validate FQDN consistency
 		for _, r := range d.Records {
 			if r.NameFQDN == "" || !strings.HasSuffix(r.NameFQDN, d.Name) {
-				errs = append(errs, fmt.Errorf("Record named '%s' does not have correct FQDN in domain '%s'. FQDN: %s", r.Name, d.Name, r.NameFQDN))
+				errs = append(errs, fmt.Errorf("record named '%s' does not have correct FQDN for domain '%s'. FQDN: %s", r.Name, d.Name, r.NameFQDN))
 			}
 		}
 	}
@@ -419,14 +419,14 @@ func checkCNAMEs(dc *models.DomainConfig) (errs []error) {
 	for _, r := range dc.Records {
 		if r.Type == "CNAME" {
 			if cnames[r.GetLabel()] {
-				errs = append(errs, fmt.Errorf("Cannot have multiple CNAMEs with same name: %s", r.GetLabelFQDN()))
+				errs = append(errs, fmt.Errorf("cannot have multiple CNAMEs with same name: %s", r.GetLabelFQDN()))
 			}
 			cnames[r.GetLabel()] = true
 		}
 	}
 	for _, r := range dc.Records {
 		if cnames[r.GetLabel()] && r.Type != "CNAME" {
-			errs = append(errs, fmt.Errorf("Cannot have CNAME and %s record with same name: %s", r.Type, r.GetLabelFQDN()))
+			errs = append(errs, fmt.Errorf("cannot have CNAME and %s record with same name: %s", r.Type, r.GetLabelFQDN()))
 		}
 	}
 	return
@@ -437,7 +437,7 @@ func checkDuplicates(records []*models.RecordConfig) (errs []error) {
 	for _, r := range records {
 		diffable := fmt.Sprintf("%s %s %s", r.GetLabelFQDN(), r.Type, r.ToDiffable())
 		if seen[diffable] != nil {
-			errs = append(errs, fmt.Errorf("Exact duplicate record found: %s", diffable))
+			errs = append(errs, fmt.Errorf("exact duplicate record found: %s", diffable))
 		}
 		seen[diffable] = r
 	}
@@ -545,7 +545,7 @@ func checkProviderCapabilities(dc *models.DomainConfig) error {
 		for _, provider := range dc.DNSProviderInstances {
 			// fmt.Printf("  (checking if %q can %q for domain %q)\n", provider.ProviderType, ty.rType, dc.Name)
 			if !providerHasAtLeastOneCapability(provider.ProviderType, ty.caps...) {
-				return fmt.Errorf("Domain %s uses %s records, but DNS provider type %s does not support them", dc.Name, ty.rType, provider.ProviderType)
+				return fmt.Errorf("domain %s uses %s records, but DNS provider type %s does not support them", dc.Name, ty.rType, provider.ProviderType)
 			}
 
 			if ty.checkFunc != nil {
