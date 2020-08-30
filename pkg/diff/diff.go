@@ -108,9 +108,9 @@ func (d *differ) IncrementalDiff(existing []*models.RecordConfig) (unchanged, cr
 	}
 	for _, dr := range desired {
 		if d.matchIgnoredName(dr.GetLabel()) {
-			return nil, nil, nil, nil, fmt.Errorf("Trying to update/add IGNORE_NAMEd record: %s %s", dr.GetLabel(), dr.Type)
+			return nil, nil, nil, nil, fmt.Errorf("trying to update/add IGNORE_NAMEd record: %s %s", dr.GetLabel(), dr.Type)
 		} else if d.matchIgnoredTarget(dr.GetTargetField(), dr.Type) {
-			return nil, nil, nil, nil, fmt.Errorf("Trying to update/add IGNORE_TARGETd record: %s %s", dr.GetLabel(), dr.Type)
+			return nil, nil, nil, nil, fmt.Errorf("trying to update/add IGNORE_TARGETd record: %s %s", dr.GetLabel(), dr.Type)
 		} else {
 			k := dr.Key()
 			desiredByNameAndType[k] = append(desiredByNameAndType[k], dr)

@@ -68,11 +68,11 @@ func (v *vaultStorage) GetCertificate(name string) (*certificate.Resource, error
 func (v *vaultStorage) getString(key string, data map[string]interface{}, path string) ([]byte, error) {
 	dat, ok := data[key]
 	if !ok {
-		return nil, fmt.Errorf("Secret at %s does not have key %s", path, key)
+		return nil, fmt.Errorf("secret at %s does not have key %s", path, key)
 	}
 	str, ok := dat.(string)
 	if !ok {
-		return nil, fmt.Errorf("Secret at %s is not string", path)
+		return nil, fmt.Errorf("secret at %s is not string", path)
 	}
 	return []byte(str), nil
 }
@@ -124,7 +124,7 @@ func (v *vaultStorage) GetAccount(acmeHost string) (*Account, error) {
 	if dat, err = v.getString("tls.key", secret.Data, path); err != nil {
 		return nil, err
 	} else if block, _ = pem.Decode(dat); block == nil {
-		return nil, fmt.Errorf("Error decoding account private key")
+		return nil, fmt.Errorf("error decoding account private key")
 	} else if key, err = x509.ParseECPrivateKey(block.Bytes); err != nil {
 		return nil, err
 	}

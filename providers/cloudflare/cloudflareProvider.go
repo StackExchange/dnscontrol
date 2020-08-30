@@ -90,7 +90,7 @@ func (c *CloudflareAPI) GetNameservers(domain string) ([]*models.Nameserver, err
 	}
 	ns, ok := c.nameservers[domain]
 	if !ok {
-		return nil, fmt.Errorf("Nameservers for %s not found in cloudflare account", domain)
+		return nil, fmt.Errorf("nameservers for %s not found in cloudflare account", domain)
 	}
 	return models.ToNameservers(ns)
 }
@@ -304,7 +304,7 @@ const (
 func checkProxyVal(v string) (string, error) {
 	v = strings.ToLower(v)
 	if v != "on" && v != "off" && v != "full" {
-		return "", fmt.Errorf("Bad metadata value for cloudflare_proxy: '%s'. Use on/off/full", v)
+		return "", fmt.Errorf("bad metadata value for cloudflare_proxy: '%s'. Use on/off/full", v)
 	}
 	return v, nil
 }
@@ -376,7 +376,7 @@ func (c *CloudflareAPI) preprocessConfig(dc *models.DomainConfig) error {
 			}
 			parts := strings.Split(rec.GetTargetField(), ",")
 			if len(parts) != 2 {
-				return fmt.Errorf("Invalid data specified for cloudflare redirect record")
+				return fmt.Errorf("invalid data specified for cloudflare redirect record")
 			}
 			code := 301
 			if rec.Type == "CF_TEMP_REDIRECT" {

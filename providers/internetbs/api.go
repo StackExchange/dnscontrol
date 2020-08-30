@@ -31,7 +31,7 @@ type domainRecord struct {
 func (c *api) getNameservers(domain string) ([]string, error) {
 	var bodyString, err = c.get("/Domain/Info", requestParams{"Domain": domain})
 	if err != nil {
-		return []string{}, fmt.Errorf("Error fetching nameservers list from Internet.bs: %s", err)
+		return []string{}, fmt.Errorf("failed fetching nameservers list (Internet.bs): %s", err)
 	}
 	var dr domainRecord
 	json.Unmarshal(bodyString, &dr)
@@ -47,7 +47,7 @@ func (c *api) updateNameservers(ns []string, domain string) error {
 	rec["Domain"] = domain
 	rec["Ns_list"] = strings.Join(ns, ",")
 	if _, err := c.get("/Domain/Update", rec); err != nil {
-		return fmt.Errorf("Internet.ns: Error update NS : %s", err)
+		return fmt.Errorf("failed NS update (Internet.bs): %s", err)
 	}
 	return nil
 }
@@ -82,7 +82,7 @@ func (c *api) get(endpoint string, params requestParams) ([]byte, error) {
 		return []byte{}, err
 	}
 	if errResp.Status == "FAILURE" {
-		return bodyString, fmt.Errorf("Internet.bs API error: %s code: %d transactid: %s  URL:%s%s ",
+		return bodyString, fmt.Errorf("failed API (Internet.bs): %s code: %d transactid: %s  URL:%s%s ",
 			errResp.Message, errResp.Code, errResp.TransactID,
 			req.Host, req.URL.RequestURI())
 	}
