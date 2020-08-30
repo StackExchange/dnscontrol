@@ -115,7 +115,7 @@ func checkLabel(label string, rType string, target, domain string, meta map[stri
 	}
 	// Don't warn for records that start with _
 	// See https://github.com/StackExchange/dnscontrol/issues/829
-	if strings.HasPrefix(label, "_") {
+	if strings.HasPrefix(label, "_") || strings.Contains(label, "._") {
 		return nil
 	}
 
