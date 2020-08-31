@@ -12,6 +12,7 @@ import (
 	_ "github.com/StackExchange/dnscontrol/v3/providers/desec"
 	_ "github.com/StackExchange/dnscontrol/v3/providers/digitalocean"
 	_ "github.com/StackExchange/dnscontrol/v3/providers/dnsimple"
+	_ "github.com/StackExchange/dnscontrol/v3/providers/doh"
 	_ "github.com/StackExchange/dnscontrol/v3/providers/exoscale"
 	_ "github.com/StackExchange/dnscontrol/v3/providers/gandi_v5"
 	_ "github.com/StackExchange/dnscontrol/v3/providers/gcloud"
