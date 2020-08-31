@@ -173,8 +173,7 @@ func (a *azureDNSProvider) getExistingRecords(domain string) (models.Records, []
 	if !ok {
 		return nil, nil, "", errNoExist{domain}
 	}
-	var zoneName string
-	zoneName = *zone.Name
+	zoneName := *zone.Name
 	records, err := a.fetchRecordSets(zoneName)
 	if err != nil {
 		return nil, nil, "", err

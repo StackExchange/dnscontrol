@@ -311,7 +311,7 @@ func (c *adProvider) generatePowerShellModify(domainname, recName, recType, oldC
 	text += "Set-DnsServerResourceRecord"
 	text += fmt.Sprintf(` -ComputerName "%s"`, c.adServer)
 	text += fmt.Sprintf(` -ZoneName "%s"`, domainname)
-	text += fmt.Sprintf(` -NewInputObject $NewObj -OldInputObject $OldObj`)
+	text += ` -NewInputObject $NewObj -OldInputObject $OldObj`
 	text += "\r\n"
 
 	return text

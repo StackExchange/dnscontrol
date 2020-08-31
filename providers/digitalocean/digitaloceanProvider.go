@@ -186,9 +186,7 @@ func getRecords(api *DoAPI, name string) ([]godo.DomainRecord, error) {
 			return nil, err
 		}
 
-		for _, d := range result {
-			records = append(records, d)
-		}
+		records = append(records, result...)
 
 		if resp.Links == nil || resp.Links.IsLastPage() {
 			break

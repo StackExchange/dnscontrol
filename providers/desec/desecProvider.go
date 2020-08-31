@@ -204,8 +204,7 @@ func (c *api) GenerateDomainCorrections(dc *models.DomainConfig, existing models
 			}
 		}
 	}
-	var msg string
-	msg = fmt.Sprintf("Changes:\n%s", buf)
+	msg := fmt.Sprintf("Changes:\n%s", buf)
 	corrections = append(corrections,
 		&models.Correction{
 			Msg: msg,

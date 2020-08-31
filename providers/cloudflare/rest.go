@@ -38,9 +38,7 @@ func (c *CloudflareAPI) fetchDomainList() error {
 		}
 		for _, zone := range zr.Result {
 			c.domainIndex[zone.Name] = zone.ID
-			for _, ns := range zone.Nameservers {
-				c.nameservers[zone.Name] = append(c.nameservers[zone.Name], ns)
-			}
+			c.nameservers[zone.Name] = append(c.nameservers[zone.Name], zone.Nameservers...)
 		}
 		ri := zr.ResultInfo
 		if len(zr.Result) == 0 || ri.Page*ri.PerPage >= ri.TotalCount {
