@@ -48,8 +48,12 @@ func (c *api) GetRegistrarCorrections(dc *models.DomainConfig) ([]*models.Correc
 
 	expected := []string{}
 	for _, ns := range dc.Nameservers {
-		name := strings.TrimRight(ns.Name, ".")
-		expected = append(expected, name)
+		if ns.Name[len(ns.Name)-1] == '.' {
+			// When this code was written ns.Name never included a single trailing dot.
+			// If that changes, the code should change too.
+			return nil, fmt.Errorf("Name server includes a trailing dot, has the API changed?")
+		}
+		expected = append(expected, ns.Name)
 	}
 	sort.Strings(expected)
 	expectedNameservers := strings.Join(expected, ",")

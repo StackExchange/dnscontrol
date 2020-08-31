@@ -9,7 +9,7 @@ jsId: CSCGLOBAL
 DNSControl's CSC Global provider supports being a Registrar. Support for being a DNS Provider is not included, although CSC Global's API does provide for this so it could be implemented in the future.
 
 ## Configuration
-In your `creds.json` file, you must provide your API key and user/client token. You can optionally provide an comma seperated list of email addresses to have CSC Global send updates to.
+In your `creds.json` file, you must provide your API key and user/client token. You can optionally provide an comma separated list of email addresses to have CSC Global send updates to.
 
 {% highlight json %}
 {

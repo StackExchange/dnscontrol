@@ -58,7 +58,7 @@ type domainRecord struct {
 func (c *api) getNameservers(domain string) ([]string, error) {
 	var bodyString, err = c.get("/domains/" + domain)
 	if err != nil {
-		return []string{}, err
+		return nil, err
 	}
 
 	var dr domainRecord
@@ -72,16 +72,15 @@ func (c *api) getNameservers(domain string) ([]string, error) {
 }
 
 func (c *api) updateNameservers(ns []string, domain string) error {
-	req := nsModRequest{}
-	req.Domain = domain
-	req.NameServers = ns
-	req.DNSType = "OTHER_DNS"
-	req.ShowPrice = false
+	req := nsModRequest{
+		Domain:      domain,
+		NameServers: ns,
+		DNSType:     "OTHER_DNS",
+		ShowPrice:   false,
+	}
 	if c.notifyEmails != nil {
 		req.Notifications.Enabled = true
 		req.Notifications.Emails = c.notifyEmails
-	} else {
-		req.Notifications.Enabled = false
 	}
 	req.CustomFields = []string{}
 
@@ -92,7 +91,7 @@ func (c *api) updateNameservers(ns []string, domain string) error {
 
 	bodyString, err := c.put("/domains/nsmodification", requestBody)
 	if err != nil {
-		return fmt.Errorf("CSC Global: Error update NS : %s", err)
+		return fmt.Errorf("CSC Global: Error update NS : %w", err)
 	}
 
 	var res nsModRequestResult
@@ -116,7 +115,7 @@ func (c *api) put(endpoint string, requestBody []byte) ([]byte, error) {
 
 	resp, err := client.Do(req)
 	if err != nil {
-		return []byte{}, err
+		return nil, err
 	}
 
 	bodyString, _ := ioutil.ReadAll(resp.Body)
@@ -124,20 +123,16 @@ func (c *api) put(endpoint string, requestBody []byte) ([]byte, error) {
 		return bodyString, nil
 	}
 
-	if resp.StatusCode == 400 {
-		// 400, error message is in the body as plain text
-		return []byte{}, fmt.Errorf("CSC Global API error: %s URL: %s%s",
-			bodyString,
-			req.Host, req.URL.RequestURI())
-	}
-
-	// Got a json error response from API
+	// Got a error response from API, see if it's json format
 	var errResp errorResponse
 	err = json.Unmarshal(bodyString, &errResp)
 	if err != nil {
-		return []byte{}, err
+		// Some error messages are plain text
+		return nil, fmt.Errorf("CSC Global API error: %s URL: %s%s",
+			bodyString,
+			req.Host, req.URL.RequestURI())
 	}
-	return bodyString, fmt.Errorf("CSC Global API error code: %s description: %s URL: %s%s",
+	return nil, fmt.Errorf("CSC Global API error code: %s description: %s URL: %s%s",
 		errResp.Code, errResp.Description,
 		req.Host, req.URL.RequestURI())
 }
@@ -153,7 +148,7 @@ func (c *api) get(endpoint string) ([]byte, error) {
 
 	resp, err := client.Do(req)
 	if err != nil {
-		return []byte{}, err
+		return nil, err
 	}
 
 	bodyString, _ := ioutil.ReadAll(resp.Body)
@@ -163,7 +158,7 @@ func (c *api) get(endpoint string) ([]byte, error) {
 
 	if resp.StatusCode == 400 {
 		// 400, error message is in the body as plain text
-		return []byte{}, fmt.Errorf("CSC Global API error: %s URL: %s%s",
+		return nil, fmt.Errorf("CSC Global API error: %w URL: %s%s",
 			bodyString,
 			req.Host, req.URL.RequestURI())
 	}
@@ -172,7 +167,7 @@ func (c *api) get(endpoint string) ([]byte, error) {
 	var errResp errorResponse
 	err = json.Unmarshal(bodyString, &errResp)
 	if err != nil {
-		return []byte{}, err
+		return nil, err
 	}
 	return bodyString, fmt.Errorf("CSC Global API error code: %s description: %s URL: %s%s",
 		errResp.Code, errResp.Description,
