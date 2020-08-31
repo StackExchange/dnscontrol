@@ -342,8 +342,6 @@ func compileIgnoredTargets(ignoredTargets []*models.IgnoreTarget) []glob.Glob {
 	result := make([]glob.Glob, 0, len(ignoredTargets))
 
 	for _, tst := range ignoredTargets {
-		fmt.Sprintf("rType for IGNORE_TARGET %v", tst.Type)
-
 		if tst.Type != "CNAME" {
 			panic(fmt.Sprintf("Invalid rType for IGNORE_TARGET %v", tst.Type))
 		}
