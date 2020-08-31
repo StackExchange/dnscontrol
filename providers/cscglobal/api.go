@@ -169,7 +169,7 @@ func (c *api) get(endpoint string) ([]byte, error) {
 	if err != nil {
 		return nil, err
 	}
-	return bodyString, fmt.Errorf("CSC Global API error code: %s description: %s URL: %s%s",
+	return nil, fmt.Errorf("CSC Global API error code: %s description: %s URL: %s%s",
 		errResp.Code, errResp.Description,
 		req.Host, req.URL.RequestURI())
 }
