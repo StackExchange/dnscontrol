@@ -3,15 +3,16 @@ module github.com/StackExchange/dnscontrol/v3
 go 1.14
 
 require (
-	github.com/Azure/azure-sdk-for-go v43.3.0+incompatible
-	github.com/Azure/go-autorest/autorest/azure/auth v0.5.0
+	github.com/Azure/azure-sdk-for-go v46.0.0+incompatible
+	github.com/Azure/go-autorest/autorest v0.11.4 // indirect
+	github.com/Azure/go-autorest/autorest/azure/auth v0.5.1
 	github.com/Azure/go-autorest/autorest/to v0.4.0
 	github.com/DisposaBoy/JsonConfigReader v0.0.0-20171218180944-5ea4d0ddac55
 	github.com/PuerkitoBio/goquery v1.5.1
 	github.com/TomOnTime/utfutil v0.0.0-20200626160131-0b0178852c8f
 	github.com/andreyvit/diff v0.0.0-20170406064948-c7f18ee00883
 	github.com/andybalholm/cascadia v1.2.0 // indirect
-	github.com/aws/aws-sdk-go v1.32.10
+	github.com/aws/aws-sdk-go v1.34.13
 	github.com/billputer/go-namecheap v0.0.0-20170915210158-0c7adb0710f8
 	github.com/cenkalti/backoff v2.1.1+incompatible // indirect
 	github.com/cpuguy83/go-md2man/v2 v2.0.0 // indirect
@@ -21,7 +22,6 @@ require (
 	github.com/exoscale/egoscale v0.23.0
 	github.com/go-acme/lego v2.7.2+incompatible
 	github.com/gobwas/glob v0.2.4-0.20181002190808-e7a84e9525fe
-	github.com/golang/protobuf v1.4.2 // indirect
 	github.com/google/go-github v17.0.0+incompatible
 	github.com/google/go-querystring v1.0.1-0.20190318165438-c8c88dbee036 // indirect
 	github.com/gopherjs/jquery v0.0.0-20191017083323-73f4c7416038
@@ -49,11 +49,12 @@ require (
 	github.com/tiramiseb/go-gandi v0.0.0-20200313161345-6b74caa58663
 	github.com/urfave/cli/v2 v2.2.0
 	github.com/vultr/govultr v0.2.0
-	golang.org/x/net v0.0.0-20200813134508-3edf25e44fcc
+	golang.org/x/crypto v0.0.0-20200820211705-5c72a883971a // indirect
+	golang.org/x/net v0.0.0-20200822124328-c89045814202
 	golang.org/x/oauth2 v0.0.0-20200107190931-bf48bf16ab8d
 	golang.org/x/tools v0.0.0-20200828161849-5deb26317202 // indirect
-	google.golang.org/api v0.28.0
-	google.golang.org/appengine v1.6.6 // indirect
+	golang.org/x/xerrors v0.0.0-20200804184101-5ec99f83aff1 // indirect
+	google.golang.org/api v0.30.0
 	gopkg.in/ini.v1 v1.42.0 // indirect
 	gopkg.in/ns1/ns1-go.v2 v2.0.0-20170502175150-c563826f4cbe
 	gopkg.in/sourcemap.v1 v1.0.5 // indirect
