@@ -9,7 +9,7 @@ func (c *NameCom) ListZones() ([]string, error) {
 	var names []string
 	var page int32
 
-	for true {
+	for {
 		n, err := c.client.ListDomains(&namecom.ListDomainsRequest{Page: page})
 		if err != nil {
 			return nil, err

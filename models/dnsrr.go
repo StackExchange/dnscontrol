@@ -45,8 +45,7 @@ func (rc *RecordConfig) String() string {
 func RRstoRCs(rrs []dns.RR, origin string) Records {
 	rcs := make(Records, 0, len(rrs))
 	for _, r := range rrs {
-		var rc RecordConfig
-		rc = RRtoRC(r, origin)
+		rc := RRtoRC(r, origin)
 		rcs = append(rcs, &rc)
 	}
 	return rcs

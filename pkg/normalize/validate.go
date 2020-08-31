@@ -317,15 +317,15 @@ func ValidateAndNormalizeConfig(config *models.DNSConfig) (errs []error) {
 					errs = append(errs, fmt.Errorf("CAA tag %s is invalid", rec.CaaTag))
 				}
 			} else if rec.Type == "TLSA" {
-				if rec.TlsaUsage < 0 || rec.TlsaUsage > 3 {
+				if rec.TlsaUsage > 3 {
 					errs = append(errs, fmt.Errorf("TLSA Usage %d is invalid in record %s (domain %s)",
 						rec.TlsaUsage, rec.GetLabel(), domain.Name))
 				}
-				if rec.TlsaSelector < 0 || rec.TlsaSelector > 1 {
+				if rec.TlsaSelector > 1 {
 					errs = append(errs, fmt.Errorf("TLSA Selector %d is invalid in record %s (domain %s)",
 						rec.TlsaSelector, rec.GetLabel(), domain.Name))
 				}
-				if rec.TlsaMatchingType < 0 || rec.TlsaMatchingType > 2 {
+				if rec.TlsaMatchingType > 2 {
 					errs = append(errs, fmt.Errorf("TLSA MatchingType %d is invalid in record %s (domain %s)",
 						rec.TlsaMatchingType, rec.GetLabel(), domain.Name))
 				}

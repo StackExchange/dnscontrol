@@ -414,5 +414,4 @@ func downcase(recs []*RecordConfig) {
 			// TODO: we'd like to panic here, but custom record types complicate things.
 		}
 	}
-	return
 }

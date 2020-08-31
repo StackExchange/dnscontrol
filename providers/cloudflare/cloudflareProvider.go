@@ -447,9 +447,7 @@ func newCloudflare(m map[string]string, metadata json.RawMessage) (providers.DNS
 		}
 		api.manageRedirects = parsedMeta.ManageRedirects
 		// ignored_labels:
-		for _, l := range parsedMeta.IgnoredLabels {
-			api.ignoredLabels = append(api.ignoredLabels, l)
-		}
+		api.ignoredLabels = append(api.ignoredLabels, parsedMeta.IgnoredLabels...)
 		if len(api.ignoredLabels) > 0 {
 			printer.Warnf("Cloudflare 'ignored_labels' configuration is deprecated and might be removed. Please use the IGNORE domain directive to achieve the same effect.\n")
 		}
