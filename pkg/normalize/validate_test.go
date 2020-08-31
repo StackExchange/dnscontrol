@@ -19,17 +19,18 @@ func TestCheckLabel(t *testing.T) {
 	}{
 		{"@", "A", "zap", false, false},
 		{"foo.bar", "A", "zap", false, false},
-		{"_foo", "A", "zap", true, false},
+		{"_foo", "A", "zap", false, false},
 		{"_foo", "SRV", "zap", false, false},
 		{"_foo", "TLSA", "zap", false, false},
 		{"_foo", "TXT", "zap", false, false},
-		{"_y2", "CNAME", "foo", true, false},
+		{"_y2", "CNAME", "foo", false, false},
+		{"s1._domainkey", "CNAME", "foo", false, false},
 		{"_y3", "CNAME", "asfljds.acm-validations.aws.", false, false},
 		{"test.foo.tld", "A", "zap", true, false},
 		{"test.foo.tld", "A", "zap", false, true},
 	}
 
-	for _, test := range tests {
+	for i, test := range tests {
 		t.Run(fmt.Sprintf("%s %s", test.label, test.rType), func(t *testing.T) {
 			meta := map[string]string{}
 			if test.hasSkipMeta {
@@ -37,10 +38,10 @@ func TestCheckLabel(t *testing.T) {
 			}
 			err := checkLabel(test.label, test.rType, test.target, "foo.tld", meta)
 			if err != nil && !test.isError {
-				t.Errorf(" Expected no error but got %s", err)
+				t.Errorf("%02d: Expected no error but got %s", i, err)
 			}
 			if err == nil && test.isError {
-				t.Errorf(" Expected error but got none")
+				t.Errorf("%02d: Expected error but got none", i)
 			}
 		})
 
