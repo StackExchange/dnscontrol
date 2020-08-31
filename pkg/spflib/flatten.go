@@ -118,9 +118,7 @@ func (s *SPFRecord) Flatten(spec string) *SPFRecord {
 			// flatten child recursively
 			flattenedChild := p.IncludeRecord.Flatten(spec)
 			// include their parts (skipping final all term)
-			for _, childPart := range flattenedChild.Parts[:len(flattenedChild.Parts)-1] {
-				newRec.Parts = append(newRec.Parts, childPart)
-			}
+			newRec.Parts = append(newRec.Parts, flattenedChild.Parts[:len(flattenedChild.Parts)-1]...)
 		}
 	}
 	return newRec

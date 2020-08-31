@@ -23,9 +23,7 @@ func WriteYaml(w io.Writer, records models.Records, origin string) error {
 
 	// Make a copy of the records, since we want to sort and muck with them.
 	recsCopy := models.Records{}
-	for _, r := range records {
-		recsCopy = append(recsCopy, r)
-	}
+	recsCopy = append(recsCopy, records...)
 	for _, r := range recsCopy {
 		if r.GetLabel() == "@" {
 			//r.Name = ""

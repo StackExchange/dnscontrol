@@ -157,6 +157,7 @@ func (c *Bind) GetZoneRecords(domain string) (models.Records, error) {
 
 	for rr, ok := zp.Next(); ok; rr, ok = zp.Next() {
 		rec := models.RRtoRC(rr, domain)
+		// FIXME(tlim): Empty branch?  Is the intention to skip SOAs?
 		if rec.Type == "SOA" {
 		}
 		foundRecords = append(foundRecords, &rec)

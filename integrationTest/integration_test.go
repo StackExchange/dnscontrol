@@ -65,7 +65,7 @@ func TestDNSProviders(t *testing.T) {
 	if provider == nil {
 		return
 	}
-	t.Run(fmt.Sprintf("%s", domain), func(t *testing.T) {
+	t.Run(domain, func(t *testing.T) {
 		runTests(t, provider, domain, fails, cfg)
 	})
 

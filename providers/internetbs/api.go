@@ -36,9 +36,7 @@ func (c *api) getNameservers(domain string) ([]string, error) {
 	var dr domainRecord
 	json.Unmarshal(bodyString, &dr)
 	ns := []string{}
-	for _, nameserver := range dr.Nameserver {
-		ns = append(ns, nameserver)
-	}
+	ns = append(ns, dr.Nameserver...)
 	return ns, nil
 }
 
