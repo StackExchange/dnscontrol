@@ -3,6 +3,7 @@ package commands
 import (
 	"encoding/json"
 	"fmt"
+	"log"
 	"os"
 
 	"github.com/urfave/cli/v2"
@@ -83,13 +84,13 @@ func PrintValidationErrors(errs []error) (fatal bool) {
 	if len(errs) == 0 {
 		return false
 	}
-	fmt.Printf("%d Validation errors:\n", len(errs))
+	log.Printf("%d Validation errors:\n", len(errs))
 	for _, err := range errs {
 		if _, ok := err.(normalize.Warning); ok {
-			fmt.Printf("WARNING: %s\n", err)
+			log.Printf("WARNING: %s\n", err)
 		} else {
 			fatal = true
-			fmt.Printf("ERROR: %s\n", err)
+			log.Printf("ERROR: %s\n", err)
 		}
 	}
 	return
