@@ -94,8 +94,7 @@ func (a *azureDNSProvider) getZones() error {
 	defer cancel()
 	zonesIterator, zonesErr := a.zonesClient.ListByResourceGroup(ctx, *a.resourceGroup, to.Int32Ptr(100))
 	if zonesErr != nil {
-		fmt.Errorf("getZones: zonesErr %v", zonesErr.Error())
-		return zonesErr
+		return fmt.Errorf("getZones: zonesErr: %w", zonesErr)
 	}
 
 	// Check getExistingZones and https://github.com/StackExchange/dnscontrol/issues/792 for the details
@@ -142,8 +141,7 @@ func (a *azureDNSProvider) ListZones() ([]string, error) {
 	defer cancel()
 	zonesIterator, zonesErr := a.zonesClient.ListByResourceGroup(ctx, *a.resourceGroup, to.Int32Ptr(100))
 	if zonesErr != nil {
-		fmt.Errorf("ListZones: zonesErr %v", zonesErr.Error())
-		return nil, zonesErr
+		return nil, fmt.Errorf("ListZones: zonesErr: %w", zonesErr)
 	}
 
 	// Check getExistingZones and https://github.com/StackExchange/dnscontrol/issues/792 for the details
