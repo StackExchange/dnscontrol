@@ -15,22 +15,22 @@ Windows). The provider model is extensible, so more providers can be added.
 
 Currently supported DNS providers:
  - AWS Route 53
- - Active Directory
  - AXFR+DDNS
+ - Active Directory
  - Azure DNS
  - BIND
  - ClouDNS
  - Cloudflare
- - deSEC
+ - DNSOVERHTTPS
  - DNSimple
  - DigitalOcean
  - Exoscale
  - Gandi
  - Google DNS
- - Hurricane Electric DNS
  - HEXONET
- - Internet.bs
+ - Hurricane Electric DNS
  - INWX
+ - Internet.bs
  - Linode
  - NS1
  - Name.com
@@ -41,6 +41,7 @@ Currently supported DNS providers:
  - PowerDNS
  - SoftLayer
  - Vultr
+ - deSEC
 
 At Stack Overflow, we use this system to manage hundreds of domains
 and subdomains across multiple registrars and DNS providers.
