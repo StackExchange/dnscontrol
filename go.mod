@@ -12,13 +12,13 @@ require (
 	github.com/TomOnTime/utfutil v0.0.0-20200626160131-0b0178852c8f
 	github.com/andreyvit/diff v0.0.0-20170406064948-c7f18ee00883
 	github.com/andybalholm/cascadia v1.2.0 // indirect
-	github.com/aws/aws-sdk-go v1.34.13
+	github.com/aws/aws-sdk-go v1.34.18
 	github.com/babolivier/go-doh-client v0.0.0-20200723140836-2f86c709ac4a
 	github.com/billputer/go-namecheap v0.0.0-20170915210158-0c7adb0710f8
 	github.com/cenkalti/backoff v2.1.1+incompatible // indirect
 	github.com/cpuguy83/go-md2man/v2 v2.0.0 // indirect
 	github.com/dgrijalva/jwt-go v3.2.1-0.20190620180102-5e25c22bd5d6+incompatible // indirect
-	github.com/digitalocean/godo v1.36.0
+	github.com/digitalocean/godo v1.42.1
 	github.com/dnsimple/dnsimple-go v0.62.0
 	github.com/exoscale/egoscale v0.23.0
 	github.com/go-acme/lego v2.7.2+incompatible
@@ -47,7 +47,7 @@ require (
 	github.com/tdewolff/minify v2.3.6+incompatible
 	github.com/tdewolff/parse v2.3.4+incompatible // indirect
 	github.com/tdewolff/test v1.0.6 // indirect
-	github.com/tiramiseb/go-gandi v0.0.0-20200313161345-6b74caa58663
+	github.com/tiramiseb/go-gandi v0.0.0-20200902083645-30c32e50575d
 	github.com/urfave/cli/v2 v2.2.0
 	github.com/vultr/govultr v0.2.0
 	golang.org/x/crypto v0.0.0-20200820211705-5c72a883971a // indirect
