@@ -10,12 +10,12 @@ import (
 
 func init() {
 	initers = append(initers, func(cfg map[string]string) Notifier {
-		url, ok := cfg["slack_url"]
+		url, ok := cfg["teams_url"]
 		if !ok {
 			return nil
 		}
 
-		notifier := &slackNotifier{
+		notifier := &teamsNotifier{
 			URL: url,
 		}
 		return notifier
