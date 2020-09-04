@@ -75,6 +75,7 @@ Maintainers of contributed providers:
 * `CLOUDNS` @pragmaton
 * `DESEC` @D3luxee
 * `DIGITALOCEAN` @Deraen
+* `DNSOVERHTTPS` @mikenz
 * `DNSIMPLE` @aeden
 * `EXOSCALE` @pierre-emmanuelJ
 * `GANDI_V5` @TomOnTime
