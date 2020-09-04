@@ -29,7 +29,7 @@ require (
 	github.com/hashicorp/vault/api v1.0.4
 	github.com/hexonet/go-sdk v2.2.3+incompatible
 	github.com/jarcoal/httpmock v1.0.4 // indirect
-	github.com/miekg/dns v1.1.29
+	github.com/miekg/dns v1.1.31
 	github.com/mittwald/go-powerdns v0.4.0
 	github.com/mjibson/esc v0.2.0
 	github.com/namedotcom/go v0.0.0-20180403034216-08470befbe04
@@ -51,11 +51,11 @@ require (
 	github.com/urfave/cli/v2 v2.2.0
 	github.com/vultr/govultr v0.2.0
 	golang.org/x/crypto v0.0.0-20200820211705-5c72a883971a // indirect
-	golang.org/x/net v0.0.0-20200822124328-c89045814202
-	golang.org/x/oauth2 v0.0.0-20200107190931-bf48bf16ab8d
-	golang.org/x/tools v0.0.0-20200828161849-5deb26317202 // indirect
-	golang.org/x/xerrors v0.0.0-20200804184101-5ec99f83aff1 // indirect
-	google.golang.org/api v0.30.0
+	golang.org/x/net v0.0.0-20200904194848-62affa334b73
+	golang.org/x/oauth2 v0.0.0-20200902213428-5d25da1a8d43
+	golang.org/x/sys v0.0.0-20200831180312-196b9ba8737a // indirect
+	golang.org/x/tools v0.0.0-20200904185747-39188db58858 // indirect
+	google.golang.org/api v0.31.0
 	gopkg.in/ini.v1 v1.42.0 // indirect
 	gopkg.in/ns1/ns1-go.v2 v2.0.0-20170502175150-c563826f4cbe
 	gopkg.in/sourcemap.v1 v1.0.5 // indirect

@@ -126,15 +126,17 @@ func parseargs(args []string) (zonename string, filename string, r io.Reader, er
 }
 
 func readZone(zonename string, r io.Reader, filename string) []dns.RR {
-	var l []dns.RR
-	for x := range dns.ParseZone(r, zonename, filename) {
-		if x.Error != nil {
-			log.Println(x.Error)
-		} else {
-			l = append(l, x.RR)
-		}
+
+	zp := dns.NewZoneParser(r, zonename, filename)
+
+	var parsed []dns.RR
+	for rr, ok := zp.Next(); ok; rr, ok = zp.Next() {
+		parsed = append(parsed, rr)
 	}
-	return l
+	if err := zp.Err(); err != nil {
+		log.Fatalf("Error in zonefile: %v", err)
+	}
+	return parsed
 }
 
 func readOctodns(zonename string, r io.Reader, filename string) []dns.RR {
