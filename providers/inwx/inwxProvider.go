@@ -33,14 +33,8 @@ Additional settings available in `creds.json`:
 
 */
 
-// inwxAPI is a thin wrapper around goinwx.Client.
-type inwxAPI struct {
-	client  *goinwx.Client
-	sandbox bool
-}
-
 // InwxDefaultNs contains the default INWX nameservers.
-var InwxDefaultNs = []string{"ns.inwx.de", "ns2.inwx.de", "ns3.inwx.eu"}
+var InwxProductionDefaultNs = []string{"ns.inwx.de", "ns2.inwx.de", "ns3.inwx.eu"}
 
 // InwxSandboxDefaultNs contains the default INWX nameservers in the sandbox / OTE.
 var InwxSandboxDefaultNs = []string{"ns.ote.inwx.de", "ns2.ote.inwx.de"}
@@ -65,6 +59,12 @@ var features = providers.DocumentationNotes{
 	providers.DocCreateDomains:       providers.Can("Does only create domain in nameserver and does not order domain."),
 	providers.CanGetZones:            providers.Can(),
 	providers.CanUseAzureAlias:       providers.Cannot(),
+}
+
+// inwxAPI is a thin wrapper around goinwx.Client.
+type inwxAPI struct {
+	client  *goinwx.Client
+	sandbox bool
 }
 
 // init registers the registrar and the domain service provider with dnscontrol.
@@ -254,13 +254,18 @@ func (api *inwxAPI) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Cor
 	return corrections, nil
 }
 
+// getDefaultNameservers returns back string map with default nameservers  based on e.g. sandbox mode.
+func (api *inwxAPI) getDefaultNameservers() []string {
+	if api.sandbox {
+		return InwxSandboxDefaultNs
+	} else {
+		return InwxProductionDefaultNs
+	}
+}
+
 // GetNameservers returns the default nameservers for INWX.
 func (api *inwxAPI) GetNameservers(domain string) ([]*models.Nameserver, error) {
-	if api.sandbox {
-		return models.ToNameservers(InwxSandboxDefaultNs)
-	}
-
-	return models.ToNameservers(InwxDefaultNs)
+	return models.ToNameservers(api.getDefaultNameservers())
 }
 
 // GetZoneRecords receives the current records from Inwx and converts them to models.RecordConfig.
@@ -384,7 +389,7 @@ func (api *inwxAPI) EnsureDomainExists(domain string) error {
 	request := &goinwx.NameserverCreateRequest{
 		Domain:      domain,
 		Type:        "MASTER",
-		Nameservers: InwxDefaultNs,
+		Nameservers: api.getDefaultNameservers(),
 	}
 	var id int
 	id, err := api.client.Nameservers.Create(request)
