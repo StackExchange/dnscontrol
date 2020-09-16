@@ -279,6 +279,8 @@ github.com/mitchellh/mapstructure v1.3.3/go.mod h1:bFUtVrKA4DC2yAKiSyO/QUcy7e+RR
 github.com/mitchellh/reflectwalk v1.0.0/go.mod h1:mSTlrgnPZtwu0c4WaC2kGObEpuNDbx0jmZXqmk4esnw=
 github.com/mittwald/go-powerdns v0.4.0 h1:vEl2+4JINusy5NF8weObVRCuvHv8wqNBVMPZSQWq9zo=
 github.com/mittwald/go-powerdns v0.4.0/go.mod h1:bI/sZBAWyTViDknOTp19VfDxVEnh1U7rWPx2aRKtlzg=
+github.com/mittwald/go-powerdns v0.5.2 h1:kfqr9ZNIuxOjjBaoJcOFiy/19VmKEUgfJPmObDglPJU=
+github.com/mittwald/go-powerdns v0.5.2/go.mod h1:bI/sZBAWyTViDknOTp19VfDxVEnh1U7rWPx2aRKtlzg=
 github.com/mjibson/esc v0.2.0 h1:k96hdaR9Z+nMcnDwNrOvhdBqtjyMrbVyxLpsRCdP2mA=
 github.com/mjibson/esc v0.2.0/go.mod h1:9Hw9gxxfHulMF5OJKCyhYD7PzlSdhzXyaGEBRPH1OPs=
 github.com/namedotcom/go v0.0.0-20180403034216-08470befbe04 h1:o6uBwrhM5C8Ll3MAAxrQxRHEu7FkapwTuI2WmL1rw4g=

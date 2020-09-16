@@ -24,7 +24,7 @@ var features = providers.DocumentationNotes{
 	providers.CanUseSRV:              providers.Can(),
 	providers.CanUseTLSA:             providers.Can(),
 	providers.CanUseSSHFP:            providers.Can(),
-	providers.CanAutoDNSSEC:          providers.Unimplemented("Need support in library first"),
+	providers.CanAutoDNSSEC:          providers.Can(),
 	providers.DocCreateDomains:       providers.Can(),
 	providers.DocOfficiallySupported: providers.Cannot(),
 	providers.CanGetZones:            providers.Can(),
@@ -195,7 +195,11 @@ func (api *PowerDNS) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Co
 	}
 
 	// DNSSec corrections
-	// TODO: Implementing of on-demand DNSSec creation in library
+	dnssecCorrections, err := api.getDNSSECCorrections(dc)
+	if err != nil {
+		return nil, err
+	}
+	corrections = append(corrections, dnssecCorrections...)
 
 	return corrections, nil
 }
