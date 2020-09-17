@@ -15,7 +15,7 @@ func (api *PowerDNS) getDNSSECCorrections(dc *models.DomainConfig) ([]*models.Co
 
 	// check if any of the avail. key is active and published
 	hasEnabledKey := false
-	keyID := 0
+	var keyID int
 
 	if len(cryptokeys) > 0 {
 		for _, cryptoKey := range cryptokeys {
