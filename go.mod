@@ -30,7 +30,7 @@ require (
 	github.com/hexonet/go-sdk v2.2.3+incompatible
 	github.com/jarcoal/httpmock v1.0.4 // indirect
 	github.com/miekg/dns v1.1.31
-	github.com/mittwald/go-powerdns v0.4.0
+	github.com/mittwald/go-powerdns v0.5.2
 	github.com/mjibson/esc v0.2.0
 	github.com/namedotcom/go v0.0.0-20180403034216-08470befbe04
 	github.com/nrdcg/goinwx v0.8.1
