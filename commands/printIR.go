@@ -104,7 +104,7 @@ func ExecuteDSL(args ExecuteDSLArgs) (*models.DNSConfig, error) {
 
 	dnsConfig, err := js.ExecuteJavascript(args.JSFile, args.DevMode)
 	if err != nil {
-		return nil, fmt.Errorf("executing javascript in %s: %s", args.JSFile, err)
+		return nil, fmt.Errorf("executing %s: %w", args.JSFile, err)
 	}
 	return dnsConfig, nil
 }
