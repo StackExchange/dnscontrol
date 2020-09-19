@@ -106,7 +106,7 @@ func require(call otto.FunctionCall) otto.Value {
 		cmd := fmt.Sprintf(`JSON.parse(JSON.stringify(%s))`, string(data))
 		value, err = call.Otto.Run(cmd)
 	} else {
-		_, err = call.Otto.Run(string(data))
+		_, err = call.Otto.Compile(filepath.Base(relFile), string(data))
 	}
 
 	if err != nil {
