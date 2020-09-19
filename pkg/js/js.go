@@ -110,7 +110,7 @@ func require(call otto.FunctionCall) otto.Value {
 	}
 
 	if err != nil {
-		throw(call.Otto, err.Error())
+		throw(call.Otto, fmt.Sprintf("File %s: %s", filepath.Base(relFile), err.Error()))
 	}
 
 	// Pop back to the old directory.
