@@ -28,7 +28,7 @@ var currentDirectory string
 func ExecuteJavascript(file string, devMode bool) (*models.DNSConfig, error) {
 	script, err := ioutil.ReadFile(file)
 	if err != nil {
-		return nil, fmt.Errorf("reading js file %s: %s", file, err)
+		return nil, err
 	}
 
 	// Record the directory path leading up to this file.
