@@ -178,7 +178,7 @@ func (c *Bind) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Correcti
 		fmt.Sprintf("generated with dnscontrol %s", time.Now().Format(time.RFC3339)),
 	)
 	if dc.AutoDNSSEC == "on" {
-		// This does nothing but reminds the user to add the correct 
+		// This does nothing but reminds the user to add the correct
 		// auto-dnssecc zone statement to named.conf.
 		// While it is a no-op, it is useful for situations where a zone
 		// has multiple providers.

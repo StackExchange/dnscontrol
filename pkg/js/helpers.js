@@ -2,6 +2,7 @@
 
 // If you edit this file, you must run `go generate` to embed this
 // file in the source code.
+
 // If you are heavily debugging this code, the "-dev" flag will
 // read this file directly instead of using the output of
 // `go generate`. You'll still need to run `go generate` before
@@ -541,10 +542,10 @@ function NO_PURGE(d) {
 // "on"   Enable AUTODNSSEC for this domain
 // "off"  Disable AUTODNSSEC for this domain
 function AUTODNSSEC_ON(d) {
-    d.auto_dnssec = "on";
+  d.auto_dnssec = "on";
 }
 function AUTODNSSEC_OFF(d) {
-    d.auto_dnssec = "off";
+  d.auto_dnssec = "off";
 }
 
 /**
