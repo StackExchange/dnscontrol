@@ -39,9 +39,6 @@ var InwxProductionDefaultNs = []string{"ns.inwx.de", "ns2.inwx.de", "ns3.inwx.eu
 // InwxSandboxDefaultNs contains the default INWX nameservers in the sandbox / OTE.
 var InwxSandboxDefaultNs = []string{"ns.ote.inwx.de", "ns2.ote.inwx.de"}
 
-// InwxDomainIndex contains all domains saved in the INWX nameserver
-var InwxDomainIndex map[string]int
-
 // features is used to let dnscontrol know which features are supported by INWX.
 var features = providers.DocumentationNotes{
 	providers.CanUseAlias:            providers.Cannot("INWX does not support the ALIAS or ANAME record type."),
@@ -63,8 +60,9 @@ var features = providers.DocumentationNotes{
 
 // inwxAPI is a thin wrapper around goinwx.Client.
 type inwxAPI struct {
-	client  *goinwx.Client
-	sandbox bool
+	client      *goinwx.Client
+	sandbox     bool
+	domainIndex map[string]int // cache of domains existent in the INWX nameserver
 }
 
 // init registers the registrar and the domain service provider with dnscontrol.
@@ -282,7 +280,8 @@ func (api *inwxAPI) GetZoneRecords(domain string) (models.Records, error) {
 			continue
 		}
 
-		/* INWX is a little bit special for CNAME,NS,MX and SRV records:
+		/*
+		   INWX is a little bit special for CNAME,NS,MX and SRV records:
 		   The API will not accept any target with a final dot but will
 		   instead always add this final dot internally.
 		   Records with empty targets (i.e. records with target ".")
@@ -365,9 +364,9 @@ func (api *inwxAPI) fetchNameserverDomains() error {
 		return err
 	}
 
-	InwxDomainIndex = map[string]int{}
+	api.domainIndex = map[string]int{}
 	for _, domain := range info.Domains {
-		InwxDomainIndex[domain.Domain] = domain.RoID
+		api.domainIndex[domain.Domain] = domain.RoID
 	}
 
 	return nil
@@ -375,13 +374,13 @@ func (api *inwxAPI) fetchNameserverDomains() error {
 
 // EnsureDomainExists returns an error if domain does not exist.
 func (api *inwxAPI) EnsureDomainExists(domain string) error {
-	if InwxDomainIndex == nil { // only pull the data once.
+	if api.domainIndex == nil { // only pull the data once.
 		if err := api.fetchNameserverDomains(); err != nil {
 			return err
 		}
 	}
 
-	if _, ok := InwxDomainIndex[domain]; ok {
+	if _, ok := api.domainIndex[domain]; ok {
 		return nil // domain exists.
 	}
 
