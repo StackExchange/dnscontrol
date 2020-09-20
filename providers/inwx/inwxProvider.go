@@ -256,9 +256,8 @@ func (api *inwxAPI) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Cor
 func (api *inwxAPI) getDefaultNameservers() []string {
 	if api.sandbox {
 		return InwxSandboxDefaultNs
-	} else {
-		return InwxProductionDefaultNs
 	}
+	return InwxProductionDefaultNs
 }
 
 // GetNameservers returns the default nameservers for INWX.
