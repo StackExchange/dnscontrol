@@ -228,7 +228,7 @@ func (c *DnsimpleAPI) getDNSSECCorrections(dc *models.DomainConfig) ([]*models.C
 		return nil, err
 	}
 
-	if enabled && !dc.AutoDNSSEC {
+	if enabled && dc.AutoDNSSEC == "off" {
 		return []*models.Correction{
 			{
 				Msg: "Disable DNSSEC",
@@ -237,7 +237,7 @@ func (c *DnsimpleAPI) getDNSSECCorrections(dc *models.DomainConfig) ([]*models.C
 		}, nil
 	}
 
-	if !enabled && dc.AutoDNSSEC {
+	if !enabled && dc.AutoDNSSEC == "on" {
 		return []*models.Correction{
 			{
 				Msg: "Enable DNSSEC",

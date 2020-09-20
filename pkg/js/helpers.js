@@ -535,9 +535,16 @@ function NO_PURGE(d) {
     d.KeepUnknown = true;
 }
 
-// AUTODNSSEC()
-function AUTODNSSEC(d) {
-    d.auto_dnssec = true;
+// AUTODNSSEC
+// Permitted values are:
+// ""  Do not modify the setting (the default)
+// "on"   Enable AUTODNSSEC for this domain
+// "off"  Disable AUTODNSSEC for this domain
+function AUTODNSSEC_ON(d) {
+    d.auto_dnssec = "on";
+}
+function AUTODNSSEC_OFF(d) {
+    d.auto_dnssec = "off";
 }
 
 /**

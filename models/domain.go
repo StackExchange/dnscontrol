@@ -18,7 +18,7 @@ type DomainConfig struct {
 	KeepUnknown    bool              `json:"keepunknown,omitempty"`
 	IgnoredNames   []string          `json:"ignored_names,omitempty"`
 	IgnoredTargets []*IgnoreTarget   `json:"ignored_targets,omitempty"`
-	AutoDNSSEC     bool              `json:"auto_dnssec,omitempty"`
+	AutoDNSSEC     string            `json:"auto_dnssec,omitempty"` // "", "on", "off"
 	//DNSSEC        bool              `json:"dnssec,omitempty"`
 
 	// These fields contain instantiated provider instances once everything is linked up.

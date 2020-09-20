@@ -191,6 +191,8 @@ The AXFR+DDNS provider is not able to create domain.
 
 The AXFR+DDNS provider is not able to ask the DNS server to sign the zone. But, it is able to check whether the server seems to do so or not.
 
-When AutoDNSSEC is set, the AXFR+DDNS provider will emit a warning when no RRSIG, DNSKEY or NSEC records are found in the zone.
+When AutoDNSSEC is enabled, the AXFR+DDNS provider will emit a warning when no RRSIG, DNSKEY or NSEC records are found in the zone.
 
-When AutoDNSSEC is not set, the AXFR+DDNS provider will emit a warning when RRSIG, DNSKEY or NSEC records are found in the zone.
+When AutoDNSSEC is disabled, the AXFR+DDNS provider will emit a warning when RRSIG, DNSKEY or NSEC records are found in the zone.
+
+When AutoDNSSEC is not enabled or disabled, no checking is done.

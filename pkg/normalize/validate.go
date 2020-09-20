@@ -508,7 +508,7 @@ func checkProviderCapabilities(dc *models.DomainConfig) error {
 		hasAny := false
 		switch ty.rType {
 		case "AUTODNSSEC":
-			if dc.AutoDNSSEC {
+			if dc.AutoDNSSEC != "" {
 				hasAny = true
 			}
 		default:
