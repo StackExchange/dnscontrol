@@ -33,14 +33,8 @@ Additional settings available in `creds.json`:
 
 */
 
-// inwxAPI is a thin wrapper around goinwx.Client.
-type inwxAPI struct {
-	client  *goinwx.Client
-	sandbox bool
-}
-
-// InwxDefaultNs contains the default INWX nameservers.
-var InwxDefaultNs = []string{"ns.inwx.de", "ns2.inwx.de", "ns3.inwx.eu"}
+// InwxProductionDefaultNs contains the default INWX nameservers.
+var InwxProductionDefaultNs = []string{"ns.inwx.de", "ns2.inwx.de", "ns3.inwx.eu"}
 
 // InwxSandboxDefaultNs contains the default INWX nameservers in the sandbox / OTE.
 var InwxSandboxDefaultNs = []string{"ns.ote.inwx.de", "ns2.ote.inwx.de"}
@@ -59,9 +53,16 @@ var features = providers.DocumentationNotes{
 	providers.CanAutoDNSSEC:          providers.Unimplemented("Supported by INWX but not implemented yet."),
 	providers.DocOfficiallySupported: providers.Cannot(),
 	providers.DocDualHost:            providers.Can(),
-	providers.DocCreateDomains:       providers.Unimplemented("Supported by INWX but not implemented yet."),
+	providers.DocCreateDomains:       providers.Can(),
 	providers.CanGetZones:            providers.Can(),
 	providers.CanUseAzureAlias:       providers.Cannot(),
+}
+
+// inwxAPI is a thin wrapper around goinwx.Client.
+type inwxAPI struct {
+	client      *goinwx.Client
+	sandbox     bool
+	domainIndex map[string]int // cache of domains existent in the INWX nameserver
 }
 
 // init registers the registrar and the domain service provider with dnscontrol.
@@ -165,7 +166,8 @@ func makeNameserverRecordRequest(domain string, rec *models.RecordConfig) *goinw
 	}
 
 	switch rType := rec.Type; rType {
-	/* INWX is a little bit special for CNAME,NS,MX and SRV records:
+	/*
+	   INWX is a little bit special for CNAME,NS,MX and SRV records:
 	   The API will not accept any target with a final dot but will
 	   instead always add this final dot internally.
 	   Records with empty targets (i.e. records with target ".")
@@ -250,13 +252,17 @@ func (api *inwxAPI) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Cor
 	return corrections, nil
 }
 
+// getDefaultNameservers returns string map with default nameservers based on e.g. sandbox mode.
+func (api *inwxAPI) getDefaultNameservers() []string {
+	if api.sandbox {
+		return InwxSandboxDefaultNs
+	}
+	return InwxProductionDefaultNs
+}
+
 // GetNameservers returns the default nameservers for INWX.
 func (api *inwxAPI) GetNameservers(domain string) ([]*models.Nameserver, error) {
-	if api.sandbox {
-		return models.ToNameservers(InwxSandboxDefaultNs)
-	}
-
-	return models.ToNameservers(InwxDefaultNs)
+	return models.ToNameservers(api.getDefaultNameservers())
 }
 
 // GetZoneRecords receives the current records from Inwx and converts them to models.RecordConfig.
@@ -273,7 +279,8 @@ func (api *inwxAPI) GetZoneRecords(domain string) (models.Records, error) {
 			continue
 		}
 
-		/* INWX is a little bit special for CNAME,NS,MX and SRV records:
+		/*
+		   INWX is a little bit special for CNAME,NS,MX and SRV records:
 		   The API will not accept any target with a final dot but will
 		   instead always add this final dot internally.
 		   Records with empty targets (i.e. records with target ".")
@@ -346,4 +353,47 @@ func (api *inwxAPI) GetRegistrarCorrections(dc *models.DomainConfig) ([]*models.
 		}, nil
 	}
 	return nil, nil
+}
+
+// fetchNameserverDomains returns the domains configured in INWX nameservers
+func (api *inwxAPI) fetchNameserverDomains() error {
+	request := &goinwx.DomainListRequest{}
+	info, err := api.client.Domains.List(request)
+	if err != nil {
+		return err
+	}
+
+	api.domainIndex = map[string]int{}
+	for _, domain := range info.Domains {
+		api.domainIndex[domain.Domain] = domain.RoID
+	}
+
+	return nil
+}
+
+// EnsureDomainExists returns an error if domain does not exist.
+func (api *inwxAPI) EnsureDomainExists(domain string) error {
+	if api.domainIndex == nil { // only pull the data once.
+		if err := api.fetchNameserverDomains(); err != nil {
+			return err
+		}
+	}
+
+	if _, ok := api.domainIndex[domain]; ok {
+		return nil // domain exists.
+	}
+
+	// creating the domain.
+	request := &goinwx.NameserverCreateRequest{
+		Domain:      domain,
+		Type:        "MASTER",
+		Nameservers: api.getDefaultNameservers(),
+	}
+	var id int
+	id, err := api.client.Nameservers.Create(request)
+	if err != nil {
+		return err
+	}
+	fmt.Printf("Added zone for %s to INWX account with id %d\n", domain, id)
+	return nil
 }
