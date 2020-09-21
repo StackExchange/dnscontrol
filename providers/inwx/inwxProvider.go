@@ -33,7 +33,7 @@ Additional settings available in `creds.json`:
 
 */
 
-// InwxDefaultNs contains the default INWX nameservers.
+// InwxProductionDefaultNs contains the default INWX nameservers.
 var InwxProductionDefaultNs = []string{"ns.inwx.de", "ns2.inwx.de", "ns3.inwx.eu"}
 
 // InwxSandboxDefaultNs contains the default INWX nameservers in the sandbox / OTE.
@@ -53,7 +53,7 @@ var features = providers.DocumentationNotes{
 	providers.CanAutoDNSSEC:          providers.Unimplemented("Supported by INWX but not implemented yet."),
 	providers.DocOfficiallySupported: providers.Cannot(),
 	providers.DocDualHost:            providers.Can(),
-	providers.DocCreateDomains:       providers.Can("Does only create domain in nameserver and does not order domain."),
+	providers.DocCreateDomains:       providers.Can(),
 	providers.CanGetZones:            providers.Can(),
 	providers.CanUseAzureAlias:       providers.Cannot(),
 }
@@ -252,7 +252,7 @@ func (api *inwxAPI) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Cor
 	return corrections, nil
 }
 
-// getDefaultNameservers returns back string map with default nameservers  based on e.g. sandbox mode.
+// getDefaultNameservers returns string map with default nameservers based on e.g. sandbox mode.
 func (api *inwxAPI) getDefaultNameservers() []string {
 	if api.sandbox {
 		return InwxSandboxDefaultNs
