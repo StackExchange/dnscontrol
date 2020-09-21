@@ -547,6 +547,11 @@ function AUTODNSSEC_ON(d) {
 function AUTODNSSEC_OFF(d) {
   d.auto_dnssec = "off";
 }
+function AUTODNSSEC(d) {
+  console.log(
+    "WARNING: AUTODNSSEC is deprecated. It is now a no-op.  Please use AUTODNSSEC_ON or AUTODNSSEC_OFF. The default is to make no modifications. This message will disappear in a future release."
+  );
+}
 
 /**
  * @deprecated
