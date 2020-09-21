@@ -33,7 +33,7 @@ func checkTarget(target string) error {
 	if target == "@" {
 		return nil
 	}
-	if len(target) < 1 {
+	if target == "" {
 		return fmt.Errorf("empty target")
 	}
 	if strings.ContainsAny(target, `'" +,|!£$%&/()=?^*ç°§;:<>[]()@`) {
@@ -92,7 +92,7 @@ func checkLabel(label string, rType string, target, domain string, meta map[stri
 	if label == "@" {
 		return nil
 	}
-	if len(label) < 1 {
+	if label == "" {
 		return fmt.Errorf("empty %s label in %s", rType, domain)
 	}
 	if label[len(label)-1] == '.' {
@@ -272,11 +272,13 @@ func ValidateAndNormalizeConfig(config *models.DNSConfig) (errs []error) {
 		// Normalize Nameservers.
 		for _, ns := range domain.Nameservers {
 			// NB(tlim): Like any target, NAMESERVER() is input by the user
-			// as a shortname or a FQDN+dot.  It is stored as FQDN+dot.
-			// Normalize it like we do any target to assure it is FQDN+dot
-			ns.Name = dnsutil.AddOrigin(ns.Name, domain.Name+".")
-			ns.Name = strings.TrimSuffix(ns.Name, ".")
-			checkTarget(ns.Name)
+			// as a shortname or a FQDN+dot.
+			if err := checkTarget(ns.Name); err != nil {
+				errs = append(errs, err)
+			}
+			// Unlike any other FQDN in this system, it is stored as a FQDN without the trailing dot.
+			n := dnsutil.AddOrigin(ns.Name, domain.Name+".")
+			ns.Name = strings.TrimSuffix(n, ".")
 		}
 
 		// Normalize Records.
