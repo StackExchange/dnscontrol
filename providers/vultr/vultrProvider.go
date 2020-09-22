@@ -57,7 +57,7 @@ var defaultNS = []string{
 func NewProvider(m map[string]string, metadata json.RawMessage) (providers.DNSServiceProvider, error) {
 	token := m["token"]
 	if token == "" {
-		return nil, fmt.Errorf("Vultr API token is required")
+		return nil, fmt.Errorf("missing Vultr API token")
 	}
 
 	client := govultr.NewClient(nil, token)
@@ -98,7 +98,10 @@ func (api *Provider) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Co
 	models.PostProcessRecords(curRecords)
 
 	differ := diff.New(dc)
-	_, create, delete, modify := differ.IncrementalDiff(curRecords)
+	_, create, delete, modify, err := differ.IncrementalDiff(curRecords)
+	if err != nil {
+		return nil, err
+	}
 
 	var corrections []*models.Correction
 
@@ -197,7 +200,7 @@ func toRecordConfig(domain string, r *govultr.DNSRecord) (*models.RecordConfig, 
 	case "TXT":
 		// Remove quotes if it is a TXT record.
 		if !strings.HasPrefix(data, `"`) || !strings.HasSuffix(data, `"`) {
-			return nil, errors.New("Unexpected lack of quotes in TXT record from Vultr")
+			return nil, errors.New("unexpected lack of quotes in TXT record from Vultr")
 		}
 		return rc, rc.SetTargetTXT(data[1 : len(data)-1])
 	default:

@@ -138,6 +138,9 @@ title: DNSControl
 				<li>
 					<a href="{{site.github.url}}/notifications">Notifications</a>: Be alerted when your domains are changed
 				</li>
+				<li>
+					<a href="{{site.github.url}}/code-tricks">Code Tricks</a>: Safely use macros and loops.
+				</li>
 
 			</ul>
 		</div>

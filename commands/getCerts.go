@@ -55,7 +55,7 @@ func (args *GetCertsArgs) flags() []cli.Flag {
 		Name:        "acme",
 		Destination: &args.ACMEServer,
 		Value:       "live",
-		Usage:       `ACME server to issue against. Give full directory endpoint. Can also use 'staging' or 'live' for standard Let's Encrpyt endpoints.`,
+		Usage:       `ACME server to issue against. Give full directory endpoint. Can also use 'staging' or 'live' for standard Let's Encrypt endpoints.`,
 	})
 	flags = append(flags, &cli.IntFlag{
 		Name:        "renew",
@@ -126,10 +126,10 @@ func GetCerts(args GetCertsArgs) error {
 	fmt.Println(args.JSFile)
 	// check agree flag
 	if !args.AgreeTOS {
-		return fmt.Errorf("You must agree to the Let's Encrypt Terms of Service by using -agreeTOS")
+		return fmt.Errorf("you must agree to the Let's Encrypt Terms of Service by using -agreeTOS")
 	}
 	if args.Email == "" {
-		return fmt.Errorf("Must provide email to use for Let's Encrypt registration")
+		return fmt.Errorf("must provide email to use for Let's Encrypt registration")
 	}
 
 	// load dns config
@@ -139,7 +139,7 @@ func GetCerts(args GetCertsArgs) error {
 	}
 	errs := normalize.ValidateAndNormalizeConfig(cfg)
 	if PrintValidationErrors(errs) {
-		return fmt.Errorf("Exiting due to validation errors")
+		return fmt.Errorf("exiting due to validation errors")
 	}
 	notifier, err := InitializeProviders(args.CredsFile, cfg, args.Notify)
 	if err != nil {
@@ -163,7 +163,7 @@ func GetCerts(args GetCertsArgs) error {
 		return err
 	}
 	if len(certList) == 0 {
-		return fmt.Errorf("Must provide at least one certificate to issue in cert configuration")
+		return fmt.Errorf("must provide at least one certificate to issue in cert configuration")
 	}
 	if err = validateCertificateList(certList, cfg); err != nil {
 		return err

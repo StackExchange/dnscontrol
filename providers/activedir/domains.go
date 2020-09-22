@@ -70,7 +70,10 @@ func (c *adProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Co
 	models.PostProcessRecords(foundRecords)
 
 	differ := diff.New(dc)
-	_, creates, dels, modifications := differ.IncrementalDiff(foundRecords)
+	_, creates, dels, modifications, err := differ.IncrementalDiff(foundRecords)
+	if err != nil {
+		return nil, err
+	}
 	// NOTE(tlim): This provider does not delete records.  If
 	// you need to delete a record, either delete it manually
 	// or see providers/activedir/doc.md for implementation tips.
@@ -133,10 +136,10 @@ func (c *adProvider) logHelper(s string) error {
 	}
 	_, err = fmt.Fprintln(logfile, s)
 	if err != nil {
-		return fmt.Errorf("Append to %#v failed: %v", c.psLog, err)
+		return fmt.Errorf("append to %#v failed: %v", c.psLog, err)
 	}
 	if logfile.Close() != nil {
-		return fmt.Errorf("Closing %#v failed: %v", c.psLog, err)
+		return fmt.Errorf("closing %#v failed: %v", c.psLog, err)
 	}
 	return nil
 }
@@ -308,7 +311,7 @@ func (c *adProvider) generatePowerShellModify(domainname, recName, recType, oldC
 	text += "Set-DnsServerResourceRecord"
 	text += fmt.Sprintf(` -ComputerName "%s"`, c.adServer)
 	text += fmt.Sprintf(` -ZoneName "%s"`, domainname)
-	text += fmt.Sprintf(` -NewInputObject $NewObj -OldInputObject $OldObj`)
+	text += ` -NewInputObject $NewObj -OldInputObject $OldObj`
 	text += "\r\n"
 
 	return text

@@ -12,14 +12,18 @@
 	<th class="rotate"><div><span>BIND</span></div></th>
 	<th class="rotate"><div><span>CLOUDFLAREAPI</span></div></th>
 	<th class="rotate"><div><span>CLOUDNS</span></div></th>
+	<th class="rotate"><div><span>CSCGLOBAL</span></div></th>
 	<th class="rotate"><div><span>DESEC</span></div></th>
 	<th class="rotate"><div><span>DIGITALOCEAN</span></div></th>
 	<th class="rotate"><div><span>DNSIMPLE</span></div></th>
+	<th class="rotate"><div><span>DNSOVERHTTPS</span></div></th>
 	<th class="rotate"><div><span>EXOSCALE</span></div></th>
 	<th class="rotate"><div><span>GANDI_V5</span></div></th>
 	<th class="rotate"><div><span>GCLOUD</span></div></th>
+	<th class="rotate"><div><span>HEDNS</span></div></th>
 	<th class="rotate"><div><span>HEXONET</span></div></th>
 	<th class="rotate"><div><span>INTERNETBS</span></div></th>
+	<th class="rotate"><div><span>INWX</span></div></th>
 	<th class="rotate"><div><span>LINODE</span></div></th>
 	<th class="rotate"><div><span>NAMECHEAP</span></div></th>
 	<th class="rotate"><div><span>NAMEDOTCOM</span></div></th>
@@ -70,11 +74,23 @@
 		<td class="danger">
 			<i class="fa fa-times text-danger" aria-hidden="true"></i>
 		</td>
+		<td class="danger">
+			<i class="fa fa-times text-danger" aria-hidden="true"></i>
+		</td>
+		<td class="danger">
+			<i class="fa fa-times text-danger" aria-hidden="true"></i>
+		</td>
 		<td class="success">
 			<i class="fa fa-check text-success" aria-hidden="true"></i>
 		</td>
+		<td class="danger">
+			<i class="fa fa-times text-danger" aria-hidden="true"></i>
+		</td>
 		<td class="danger" data-toggle="tooltip" data-container="body" data-placement="top" title="Actively maintained provider module.">
 			<i class="fa has-tooltip fa-times text-danger" aria-hidden="true"></i>
+		</td>
+		<td class="danger">
+			<i class="fa fa-times text-danger" aria-hidden="true"></i>
 		</td>
 		<td class="danger">
 			<i class="fa fa-times text-danger" aria-hidden="true"></i>
@@ -136,11 +152,20 @@
 		<td class="success">
 			<i class="fa fa-check text-success" aria-hidden="true"></i>
 		</td>
+		<td class="danger">
+			<i class="fa fa-times text-danger" aria-hidden="true"></i>
+		</td>
 		<td class="success">
 			<i class="fa fa-check text-success" aria-hidden="true"></i>
 		</td>
 		<td class="success">
 			<i class="fa fa-check text-success" aria-hidden="true"></i>
+		</td>
+		<td class="success">
+			<i class="fa fa-check text-success" aria-hidden="true"></i>
+		</td>
+		<td class="danger">
+			<i class="fa fa-times text-danger" aria-hidden="true"></i>
 		</td>
 		<td class="success">
 			<i class="fa fa-check text-success" aria-hidden="true"></i>
@@ -159,6 +184,9 @@
 		</td>
 		<td class="danger">
 			<i class="fa fa-times text-danger" aria-hidden="true"></i>
+		</td>
+		<td class="success">
+			<i class="fa fa-check text-success" aria-hidden="true"></i>
 		</td>
 		<td class="success">
 			<i class="fa fa-check text-success" aria-hidden="true"></i>
@@ -217,11 +245,17 @@
 		<td class="danger">
 			<i class="fa fa-times text-danger" aria-hidden="true"></i>
 		</td>
+		<td class="success">
+			<i class="fa fa-check text-success" aria-hidden="true"></i>
+		</td>
 		<td class="danger">
 			<i class="fa fa-times text-danger" aria-hidden="true"></i>
 		</td>
 		<td class="danger">
 			<i class="fa fa-times text-danger" aria-hidden="true"></i>
+		</td>
+		<td class="success">
+			<i class="fa fa-check text-success" aria-hidden="true"></i>
 		</td>
 		<td class="success">
 			<i class="fa fa-check text-success" aria-hidden="true"></i>
@@ -234,6 +268,12 @@
 		</td>
 		<td class="danger">
 			<i class="fa fa-times text-danger" aria-hidden="true"></i>
+		</td>
+		<td class="danger">
+			<i class="fa fa-times text-danger" aria-hidden="true"></i>
+		</td>
+		<td class="success">
+			<i class="fa fa-check text-success" aria-hidden="true"></i>
 		</td>
 		<td class="success">
 			<i class="fa fa-check text-success" aria-hidden="true"></i>
@@ -294,6 +334,7 @@
 		<td class="success">
 			<i class="fa fa-check text-success" aria-hidden="true"></i>
 		</td>
+		<td><i class="fa fa-minus dim"></i></td>
 		<td class="danger">
 			<i class="fa fa-times text-danger" aria-hidden="true"></i>
 		</td>
@@ -301,6 +342,7 @@
 		<td class="success">
 			<i class="fa fa-check text-success" aria-hidden="true"></i>
 		</td>
+		<td><i class="fa fa-minus dim"></i></td>
 		<td class="success">
 			<i class="fa fa-check text-success" aria-hidden="true"></i>
 		</td>
@@ -308,10 +350,16 @@
 			<i class="fa has-tooltip fa-check text-success" aria-hidden="true"></i>
 		</td>
 		<td><i class="fa fa-minus dim"></i></td>
+		<td class="success">
+			<i class="fa fa-check text-success" aria-hidden="true"></i>
+		</td>
 		<td class="danger" data-toggle="tooltip" data-container="body" data-placement="top" title="Using ALIAS is possible through our extended DNS (X-DNS) service. Feel free to get in touch with us.">
 			<i class="fa has-tooltip fa-times text-danger" aria-hidden="true"></i>
 		</td>
 		<td><i class="fa fa-minus dim"></i></td>
+		<td class="danger" data-toggle="tooltip" data-container="body" data-placement="top" title="INWX does not support the ALIAS or ANAME record type.">
+			<i class="fa has-tooltip fa-times text-danger" aria-hidden="true"></i>
+		</td>
 		<td><i class="fa fa-minus dim"></i></td>
 		<td class="danger">
 			<i class="fa fa-times text-danger" aria-hidden="true"></i>
@@ -320,7 +368,9 @@
 			<i class="fa fa-check text-success" aria-hidden="true"></i>
 		</td>
 		<td><i class="fa fa-minus dim"></i></td>
-		<td><i class="fa fa-minus dim"></i></td>
+		<td class="success">
+			<i class="fa fa-check text-success" aria-hidden="true"></i>
+		</td>
 		<td><i class="fa fa-minus dim"></i></td>
 		<td><i class="fa fa-minus dim"></i></td>
 		<td class="danger">
@@ -349,6 +399,7 @@
 		</td>
 		<td><i class="fa fa-minus dim"></i></td>
 		<td><i class="fa fa-minus dim"></i></td>
+		<td><i class="fa fa-minus dim"></i></td>
 		<td class="danger">
 			<i class="fa fa-times text-danger" aria-hidden="true"></i>
 		</td>
@@ -360,17 +411,24 @@
 		<td><i class="fa fa-minus dim"></i></td>
 		<td><i class="fa fa-minus dim"></i></td>
 		<td><i class="fa fa-minus dim"></i></td>
+		<td class="danger">
+			<i class="fa fa-times text-danger" aria-hidden="true"></i>
+		</td>
 		<td><i class="fa fa-minus dim"></i></td>
 		<td><i class="fa fa-minus dim"></i></td>
-		<td><i class="fa fa-minus dim"></i></td>
-		<td><i class="fa fa-minus dim"></i></td>
-		<td><i class="fa fa-minus dim"></i></td>
-		<td><i class="fa fa-minus dim"></i></td>
-		<td><i class="fa fa-minus dim"></i></td>
-		<td><i class="fa fa-minus dim"></i></td>
-		<td><i class="fa fa-minus dim"></i></td>
-		<td class="info" data-toggle="tooltip" data-container="body" data-placement="top" title="Need support in library first">
+		<td class="info" data-toggle="tooltip" data-container="body" data-placement="top" title="Supported by INWX but not implemented yet.">
 			<i class="fa fa-circle-o text-info" aria-hidden="true"></i>
+		</td>
+		<td><i class="fa fa-minus dim"></i></td>
+		<td><i class="fa fa-minus dim"></i></td>
+		<td><i class="fa fa-minus dim"></i></td>
+		<td><i class="fa fa-minus dim"></i></td>
+		<td><i class="fa fa-minus dim"></i></td>
+		<td><i class="fa fa-minus dim"></i></td>
+		<td><i class="fa fa-minus dim"></i></td>
+		<td><i class="fa fa-minus dim"></i></td>
+		<td class="success">
+			<i class="fa fa-check text-success" aria-hidden="true"></i>
 		</td>
 		<td><i class="fa fa-minus dim"></i></td>
 		<td><i class="fa fa-minus dim"></i></td>
@@ -396,12 +454,17 @@
 		<td class="success">
 			<i class="fa fa-check text-success" aria-hidden="true"></i>
 		</td>
+		<td><i class="fa fa-minus dim"></i></td>
 		<td class="success">
 			<i class="fa fa-check text-success" aria-hidden="true"></i>
 		</td>
 		<td class="success">
 			<i class="fa fa-check text-success" aria-hidden="true"></i>
 		</td>
+		<td class="success">
+			<i class="fa fa-check text-success" aria-hidden="true"></i>
+		</td>
+		<td><i class="fa fa-minus dim"></i></td>
 		<td class="success">
 			<i class="fa fa-check text-success" aria-hidden="true"></i>
 		</td>
@@ -418,6 +481,9 @@
 			<i class="fa fa-check text-success" aria-hidden="true"></i>
 		</td>
 		<td><i class="fa fa-minus dim"></i></td>
+		<td class="success">
+			<i class="fa fa-check text-success" aria-hidden="true"></i>
+		</td>
 		<td><i class="fa fa-minus dim"></i></td>
 		<td class="success">
 			<i class="fa fa-check text-success" aria-hidden="true"></i>
@@ -463,8 +529,13 @@
 		<td class="info">
 			<i class="fa fa-circle-o text-info" aria-hidden="true"></i>
 		</td>
-		<td class="info">
-			<i class="fa fa-circle-o text-info" aria-hidden="true"></i>
+		<td><i class="fa fa-minus dim"></i></td>
+		<td class="success">
+			<i class="fa fa-check text-success" aria-hidden="true"></i>
+		</td>
+		<td><i class="fa fa-minus dim"></i></td>
+		<td class="success">
+			<i class="fa fa-check text-success" aria-hidden="true"></i>
 		</td>
 		<td><i class="fa fa-minus dim"></i></td>
 		<td class="success">
@@ -483,6 +554,9 @@
 			<i class="fa fa-check text-success" aria-hidden="true"></i>
 		</td>
 		<td><i class="fa fa-minus dim"></i></td>
+		<td class="success" data-toggle="tooltip" data-container="body" data-placement="top" title="PTR records with empty targets are not supported">
+			<i class="fa has-tooltip fa-check text-success" aria-hidden="true"></i>
+		</td>
 		<td><i class="fa fa-minus dim"></i></td>
 		<td class="danger">
 			<i class="fa fa-times text-danger" aria-hidden="true"></i>
@@ -493,7 +567,9 @@
 		<td class="danger">
 			<i class="fa fa-times text-danger" aria-hidden="true"></i>
 		</td>
-		<td><i class="fa fa-minus dim"></i></td>
+		<td class="success">
+			<i class="fa fa-check text-success" aria-hidden="true"></i>
+		</td>
 		<td class="success">
 			<i class="fa fa-check text-success" aria-hidden="true"></i>
 		</td>
@@ -528,6 +604,7 @@
 		<td><i class="fa fa-minus dim"></i></td>
 		<td><i class="fa fa-minus dim"></i></td>
 		<td><i class="fa fa-minus dim"></i></td>
+		<td><i class="fa fa-minus dim"></i></td>
 		<td class="success">
 			<i class="fa fa-check text-success" aria-hidden="true"></i>
 		</td>
@@ -535,7 +612,14 @@
 		<td><i class="fa fa-minus dim"></i></td>
 		<td><i class="fa fa-minus dim"></i></td>
 		<td><i class="fa fa-minus dim"></i></td>
+		<td class="success">
+			<i class="fa fa-check text-success" aria-hidden="true"></i>
+		</td>
 		<td><i class="fa fa-minus dim"></i></td>
+		<td><i class="fa fa-minus dim"></i></td>
+		<td class="success">
+			<i class="fa fa-check text-success" aria-hidden="true"></i>
+		</td>
 		<td><i class="fa fa-minus dim"></i></td>
 		<td><i class="fa fa-minus dim"></i></td>
 		<td><i class="fa fa-minus dim"></i></td>
@@ -569,6 +653,7 @@
 		<td class="success">
 			<i class="fa fa-check text-success" aria-hidden="true"></i>
 		</td>
+		<td><i class="fa fa-minus dim"></i></td>
 		<td class="success">
 			<i class="fa fa-check text-success" aria-hidden="true"></i>
 		</td>
@@ -578,8 +663,12 @@
 		<td class="success">
 			<i class="fa fa-check text-success" aria-hidden="true"></i>
 		</td>
+		<td><i class="fa fa-minus dim"></i></td>
 		<td class="success" data-toggle="tooltip" data-container="body" data-placement="top" title="SRV records with empty targets are not supported">
 			<i class="fa has-tooltip fa-check text-success" aria-hidden="true"></i>
+		</td>
+		<td class="success">
+			<i class="fa fa-check text-success" aria-hidden="true"></i>
 		</td>
 		<td class="success">
 			<i class="fa fa-check text-success" aria-hidden="true"></i>
@@ -591,6 +680,9 @@
 			<i class="fa has-tooltip fa-check text-success" aria-hidden="true"></i>
 		</td>
 		<td><i class="fa fa-minus dim"></i></td>
+		<td class="success" data-toggle="tooltip" data-container="body" data-placement="top" title="SRV records with empty targets are not supported.">
+			<i class="fa has-tooltip fa-check text-success" aria-hidden="true"></i>
+		</td>
 		<td><i class="fa fa-minus dim"></i></td>
 		<td class="danger" data-toggle="tooltip" data-container="body" data-placement="top" title="The namecheap web console allows you to make SRV records, but their api does not let you read or set them">
 			<i class="fa has-tooltip fa-times text-danger" aria-hidden="true"></i>
@@ -642,9 +734,6 @@
 		<td class="success">
 			<i class="fa fa-check text-success" aria-hidden="true"></i>
 		</td>
-		<td class="success">
-			<i class="fa fa-check text-success" aria-hidden="true"></i>
-		</td>
 		<td><i class="fa fa-minus dim"></i></td>
 		<td class="success">
 			<i class="fa fa-check text-success" aria-hidden="true"></i>
@@ -653,11 +742,22 @@
 		<td class="success">
 			<i class="fa fa-check text-success" aria-hidden="true"></i>
 		</td>
+		<td><i class="fa fa-minus dim"></i></td>
+		<td><i class="fa fa-minus dim"></i></td>
+		<td class="success">
+			<i class="fa fa-check text-success" aria-hidden="true"></i>
+		</td>
+		<td class="success">
+			<i class="fa fa-check text-success" aria-hidden="true"></i>
+		</td>
 		<td class="success">
 			<i class="fa fa-check text-success" aria-hidden="true"></i>
 		</td>
 		<td><i class="fa fa-minus dim"></i></td>
 		<td><i class="fa fa-minus dim"></i></td>
+		<td class="success">
+			<i class="fa fa-check text-success" aria-hidden="true"></i>
+		</td>
 		<td><i class="fa fa-minus dim"></i></td>
 		<td><i class="fa fa-minus dim"></i></td>
 		<td><i class="fa fa-minus dim"></i></td>
@@ -695,6 +795,7 @@
 		<td class="success">
 			<i class="fa fa-check text-success" aria-hidden="true"></i>
 		</td>
+		<td><i class="fa fa-minus dim"></i></td>
 		<td class="success">
 			<i class="fa fa-check text-success" aria-hidden="true"></i>
 		</td>
@@ -702,6 +803,14 @@
 		<td class="danger">
 			<i class="fa fa-times text-danger" aria-hidden="true"></i>
 		</td>
+		<td><i class="fa fa-minus dim"></i></td>
+		<td class="danger">
+			<i class="fa fa-times text-danger" aria-hidden="true"></i>
+		</td>
+		<td class="success">
+			<i class="fa fa-check text-success" aria-hidden="true"></i>
+		</td>
+		<td><i class="fa fa-minus dim"></i></td>
 		<td class="danger">
 			<i class="fa fa-times text-danger" aria-hidden="true"></i>
 		</td>
@@ -712,7 +821,6 @@
 		<td class="success">
 			<i class="fa fa-check text-success" aria-hidden="true"></i>
 		</td>
-		<td><i class="fa fa-minus dim"></i></td>
 		<td><i class="fa fa-minus dim"></i></td>
 		<td class="danger">
 			<i class="fa fa-times text-danger" aria-hidden="true"></i>
@@ -750,9 +858,11 @@
 		<td><i class="fa fa-minus dim"></i></td>
 		<td><i class="fa fa-minus dim"></i></td>
 		<td><i class="fa fa-minus dim"></i></td>
+		<td><i class="fa fa-minus dim"></i></td>
 		<td class="success">
 			<i class="fa fa-check text-success" aria-hidden="true"></i>
 		</td>
+		<td><i class="fa fa-minus dim"></i></td>
 		<td><i class="fa fa-minus dim"></i></td>
 		<td class="success">
 			<i class="fa fa-check text-success" aria-hidden="true"></i>
@@ -763,7 +873,13 @@
 		<td class="success">
 			<i class="fa fa-check text-success" aria-hidden="true"></i>
 		</td>
+		<td class="success">
+			<i class="fa fa-check text-success" aria-hidden="true"></i>
+		</td>
 		<td><i class="fa fa-minus dim"></i></td>
+		<td class="danger" data-toggle="tooltip" data-container="body" data-placement="top" title="INWX only supports a single entry for TXT records">
+			<i class="fa has-tooltip fa-times text-danger" aria-hidden="true"></i>
+		</td>
 		<td><i class="fa fa-minus dim"></i></td>
 		<td><i class="fa fa-minus dim"></i></td>
 		<td class="danger">
@@ -772,7 +888,9 @@
 		<td class="success">
 			<i class="fa fa-check text-success" aria-hidden="true"></i>
 		</td>
-		<td><i class="fa fa-minus dim"></i></td>
+		<td class="danger">
+			<i class="fa fa-times text-danger" aria-hidden="true"></i>
+		</td>
 		<td><i class="fa fa-minus dim"></i></td>
 		<td><i class="fa fa-minus dim"></i></td>
 		<td><i class="fa fa-minus dim"></i></td>
@@ -797,9 +915,13 @@
 		<td><i class="fa fa-minus dim"></i></td>
 		<td><i class="fa fa-minus dim"></i></td>
 		<td><i class="fa fa-minus dim"></i></td>
+		<td><i class="fa fa-minus dim"></i></td>
+		<td><i class="fa fa-minus dim"></i></td>
+		<td><i class="fa fa-minus dim"></i></td>
 		<td class="danger" data-toggle="tooltip" data-container="body" data-placement="top" title="Using ALIAS is possible through our extended DNS (X-DNS) service. Feel free to get in touch with us.">
 			<i class="fa has-tooltip fa-times text-danger" aria-hidden="true"></i>
 		</td>
+		<td><i class="fa fa-minus dim"></i></td>
 		<td><i class="fa fa-minus dim"></i></td>
 		<td><i class="fa fa-minus dim"></i></td>
 		<td><i class="fa fa-minus dim"></i></td>
@@ -837,6 +959,12 @@
 		<td><i class="fa fa-minus dim"></i></td>
 		<td><i class="fa fa-minus dim"></i></td>
 		<td><i class="fa fa-minus dim"></i></td>
+		<td class="danger">
+			<i class="fa fa-times text-danger" aria-hidden="true"></i>
+		</td>
+		<td><i class="fa fa-minus dim"></i></td>
+		<td><i class="fa fa-minus dim"></i></td>
+		<td><i class="fa fa-minus dim"></i></td>
 		<td><i class="fa fa-minus dim"></i></td>
 		<td><i class="fa fa-minus dim"></i></td>
 		<td><i class="fa fa-minus dim"></i></td>
@@ -859,18 +987,26 @@
 			<i class="fa fa-check text-success" aria-hidden="true"></i>
 		</td>
 		<td><i class="fa fa-minus dim"></i></td>
-		<td class="success">
-			<i class="fa fa-check text-success" aria-hidden="true"></i>
-		</td>
 		<td><i class="fa fa-minus dim"></i></td>
 		<td class="success">
 			<i class="fa fa-check text-success" aria-hidden="true"></i>
 		</td>
 		<td><i class="fa fa-minus dim"></i></td>
+		<td class="success">
+			<i class="fa fa-check text-success" aria-hidden="true"></i>
+		</td>
 		<td><i class="fa fa-minus dim"></i></td>
 		<td><i class="fa fa-minus dim"></i></td>
 		<td><i class="fa fa-minus dim"></i></td>
 		<td><i class="fa fa-minus dim"></i></td>
+		<td class="danger">
+			<i class="fa fa-times text-danger" aria-hidden="true"></i>
+		</td>
+		<td><i class="fa fa-minus dim"></i></td>
+		<td><i class="fa fa-minus dim"></i></td>
+		<td class="info" data-toggle="tooltip" data-container="body" data-placement="top" title="DS records are only supported at the apex and require a different API call that hasn&#39;t been implemented yet.">
+			<i class="fa fa-circle-o text-info" aria-hidden="true"></i>
+		</td>
 		<td><i class="fa fa-minus dim"></i></td>
 		<td><i class="fa fa-minus dim"></i></td>
 		<td><i class="fa fa-minus dim"></i></td>
@@ -904,6 +1040,7 @@
 		<td class="info">
 			<i class="fa fa-circle-o text-info" aria-hidden="true"></i>
 		</td>
+		<td><i class="fa fa-minus dim"></i></td>
 		<td class="info">
 			<i class="fa fa-circle-o text-info" aria-hidden="true"></i>
 		</td>
@@ -911,6 +1048,7 @@
 		<td class="danger" data-toggle="tooltip" data-container="body" data-placement="top" title="DNSimple does not allow sufficient control over the apex NS records">
 			<i class="fa has-tooltip fa-times text-danger" aria-hidden="true"></i>
 		</td>
+		<td><i class="fa fa-minus dim"></i></td>
 		<td class="danger" data-toggle="tooltip" data-container="body" data-placement="top" title="Exoscale does not allow sufficient control over the apex NS records">
 			<i class="fa has-tooltip fa-times text-danger" aria-hidden="true"></i>
 		</td>
@@ -921,7 +1059,13 @@
 		<td class="success">
 			<i class="fa fa-check text-success" aria-hidden="true"></i>
 		</td>
+		<td class="success">
+			<i class="fa fa-check text-success" aria-hidden="true"></i>
+		</td>
 		<td><i class="fa fa-minus dim"></i></td>
+		<td class="success">
+			<i class="fa fa-check text-success" aria-hidden="true"></i>
+		</td>
 		<td class="danger">
 			<i class="fa fa-times text-danger" aria-hidden="true"></i>
 		</td>
@@ -971,11 +1115,17 @@
 		<td class="success">
 			<i class="fa fa-check text-success" aria-hidden="true"></i>
 		</td>
+		<td class="danger">
+			<i class="fa fa-times text-danger" aria-hidden="true"></i>
+		</td>
 		<td class="success">
 			<i class="fa fa-check text-success" aria-hidden="true"></i>
 		</td>
 		<td class="success">
 			<i class="fa fa-check text-success" aria-hidden="true"></i>
+		</td>
+		<td class="danger">
+			<i class="fa fa-times text-danger" aria-hidden="true"></i>
 		</td>
 		<td class="danger">
 			<i class="fa fa-times text-danger" aria-hidden="true"></i>
@@ -992,8 +1142,14 @@
 		<td class="success">
 			<i class="fa fa-check text-success" aria-hidden="true"></i>
 		</td>
+		<td class="success">
+			<i class="fa fa-check text-success" aria-hidden="true"></i>
+		</td>
 		<td class="danger">
 			<i class="fa fa-times text-danger" aria-hidden="true"></i>
+		</td>
+		<td class="success">
+			<i class="fa fa-check text-success" aria-hidden="true"></i>
 		</td>
 		<td class="danger">
 			<i class="fa fa-times text-danger" aria-hidden="true"></i>
@@ -1064,8 +1220,20 @@
 		<td class="success">
 			<i class="fa fa-check text-success" aria-hidden="true"></i>
 		</td>
+		<td class="success">
+			<i class="fa fa-check text-success" aria-hidden="true"></i>
+		</td>
+		<td class="success">
+			<i class="fa fa-check text-success" aria-hidden="true"></i>
+		</td>
 		<td class="danger">
 			<i class="fa fa-times text-danger" aria-hidden="true"></i>
+		</td>
+		<td class="success">
+			<i class="fa fa-check text-success" aria-hidden="true"></i>
+		</td>
+		<td class="success">
+			<i class="fa fa-check text-success" aria-hidden="true"></i>
 		</td>
 		<td class="success">
 			<i class="fa fa-check text-success" aria-hidden="true"></i>
@@ -1133,6 +1301,7 @@
 		<td class="success">
 			<i class="fa fa-check text-success" aria-hidden="true"></i>
 		</td>
+		<td><i class="fa fa-minus dim"></i></td>
 		<td class="success">
 			<i class="fa fa-check text-success" aria-hidden="true"></i>
 		</td>
@@ -1142,8 +1311,12 @@
 		<td class="success">
 			<i class="fa fa-check text-success" aria-hidden="true"></i>
 		</td>
+		<td><i class="fa fa-minus dim"></i></td>
 		<td class="info">
 			<i class="fa fa-circle-o text-info" aria-hidden="true"></i>
+		</td>
+		<td class="success">
+			<i class="fa fa-check text-success" aria-hidden="true"></i>
 		</td>
 		<td class="success">
 			<i class="fa fa-check text-success" aria-hidden="true"></i>
@@ -1155,6 +1328,9 @@
 			<i class="fa fa-circle-o text-info" aria-hidden="true"></i>
 		</td>
 		<td><i class="fa fa-minus dim"></i></td>
+		<td class="success">
+			<i class="fa fa-check text-success" aria-hidden="true"></i>
+		</td>
 		<td class="info">
 			<i class="fa fa-circle-o text-info" aria-hidden="true"></i>
 		</td>

@@ -5,12 +5,15 @@ providers/bind @tlimoncelli
 # providers/cloudflare
 providers/cloudns @pragmaton
 providers/desec @D3luxee
+providers/doh @mikenz
 providers/digitalocean @Deraen
 providers/dnsimple @aeden
 providers/gandi_v5 @TomOnTime
 # providers/gcloud
+providers/hedns @rblenkinsopp
 providers/hexonet @papakai
 providers/internetbs @pragmaton
+providers/inwx @svenpeter42
 providers/linode @koesie10
 providers/namecheap @captncraig
 # providers/namedotcom
@@ -18,6 +21,6 @@ providers/netcup @kordianbruck
 providers/ns1 @captncraig
 # providers/route53
 # providers/softlayer
-providers/vultr  @geek1011
+providers/vultr @pgaskin
 providers/ovh @masterzen
 providers/powerdns @jpbede

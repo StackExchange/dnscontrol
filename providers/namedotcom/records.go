@@ -55,7 +55,11 @@ func (n *NameCom) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Corre
 	models.PostProcessRecords(actual)
 
 	differ := diff.New(dc)
-	_, create, del, mod := differ.IncrementalDiff(actual)
+	_, create, del, mod, err := differ.IncrementalDiff(actual)
+	if err != nil {
+		return nil, err
+	}
+
 	corrections := []*models.Correction{}
 
 	for _, d := range del {
@@ -196,7 +200,7 @@ func encodeTxt(txts []string) string {
 	return ans
 }
 
-// finds a string surrounded by quotes that might contain an escaped quote charactor.
+// finds a string surrounded by quotes that might contain an escaped quote character.
 var quotedStringRegexp = regexp.MustCompile(`"((?:[^"\\]|\\.)*)"`)
 
 // decodeTxt decodes the TXT record as received from name.com and

@@ -147,7 +147,10 @@ func (c *DnsimpleAPI) GetDomainCorrections(dc *models.DomainConfig) ([]*models.C
 	models.PostProcessRecords(actual)
 
 	differ := diff.New(dc)
-	_, create, del, modify := differ.IncrementalDiff(actual)
+	_, create, del, modify, err := differ.IncrementalDiff(actual)
+	if err != nil {
+		return nil, err
+	}
 
 	for _, del := range del {
 		rec := del.Existing.Original.(dnsimpleapi.ZoneRecord)

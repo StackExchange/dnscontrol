@@ -85,7 +85,7 @@ func (api *api) getRecords(domain string) ([]record, error) {
 	}
 	rawJSON, err := api.get("infoDnsRecords", data)
 	if err != nil {
-		return nil, fmt.Errorf("Error while trying to login to netcup: %s", err)
+		return nil, fmt.Errorf("failed while trying to login (netcup): %s", err)
 	}
 
 	resp := &records{}
@@ -101,7 +101,7 @@ func (api *api) login(apikey, password, customernumber string) error {
 	}
 	rawJSON, err := api.get("login", data)
 	if err != nil {
-		return fmt.Errorf("Error while trying to login to netcup: %s", err)
+		return fmt.Errorf("failed while trying to login to (netcup): %s", err)
 	}
 
 	resp := &responseLogin{}
@@ -120,7 +120,7 @@ func (api *api) logout() error {
 	}
 	_, err := api.get("logout", data)
 	if err != nil {
-		return fmt.Errorf("Error while trying to logout from netcup: %s", err)
+		return fmt.Errorf("failed to logout from netcup: %s", err)
 	}
 	api.credentials.apikey, api.credentials.sessionID, api.credentials.customernumber = "", "", ""
 	return nil
@@ -144,6 +144,9 @@ func (api *api) get(action string, params interface{}) (json.RawMessage, error) 
 
 	respData := &response{}
 	err = json.Unmarshal(bodyString, &respData)
+	if err != nil {
+		return nil, err
+	}
 
 	// Yeah, netcup implemented an empty recordset as an error - don't ask.
 	if action == "infoDnsRecords" && respData.StatusCode == 5029 {

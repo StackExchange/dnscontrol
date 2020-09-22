@@ -84,9 +84,7 @@ func PrettySort(records models.Records, origin string, defaultTTL uint32, commen
 		z.DefaultTTL = 300
 	}
 	z.Records = nil
-	for _, r := range records {
-		z.Records = append(z.Records, r)
-	}
+	z.Records = append(z.Records, records...)
 	return z
 }
 
@@ -121,8 +119,6 @@ func (z *ZoneGenData) generateZoneFileHelper(w io.Writer) error {
 		name := nameShort
 		if (prefix == "") && (i > 0 && nameShort == nameShortPrevious) {
 			name = ""
-		} else {
-			name = nameShort
 		}
 		nameShortPrevious = nameShort
 

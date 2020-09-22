@@ -99,7 +99,7 @@ func (c *OpenSRSApi) getNameservers(domainName string) ([]string, error) {
 		}
 		return dom.Attributes.NameserverList.ToString(), nil
 	}
-	return nil, errors.New("Domain is locked")
+	return nil, errors.New("domain is locked")
 }
 
 // Returns a function that can be invoked to change the delegation of the domain to the given name server names.

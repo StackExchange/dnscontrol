@@ -17,15 +17,15 @@ func parseAndRegen(t *testing.T, buf *bytes.Buffer, expected string) {
 	// get back the same string.
 	// This is used after any WriteZoneFile test as an extra verification step.
 
-	// Parse the output:
+	zp := dns.NewZoneParser(buf, "bosun.org", "bozun.org.zone")
 	var parsed []dns.RR
-	for x := range dns.ParseZone(buf, "bosun.org", "bosun.org.zone") {
-		if x.Error != nil {
-			log.Fatalf("Error in zonefile: %v", x.Error)
-		} else {
-			parsed = append(parsed, x.RR)
-		}
+	for rr, ok := zp.Next(); ok; rr, ok = zp.Next() {
+		parsed = append(parsed, rr)
 	}
+	if err := zp.Err(); err != nil {
+		log.Fatalf("Error in zonefile: %v", err)
+	}
+
 	// Generate it back:
 	buf2 := &bytes.Buffer{}
 	WriteZoneFileRR(buf2, parsed, "bosun.org")

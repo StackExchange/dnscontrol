@@ -5,6 +5,31 @@ import (
 	"strings"
 )
 
+// Chunks splits strings into arrays of a certain chunk size. We
+// use this to split TXT records into 255 sized chunks for RFC 4408
+// https://tools.ietf.org/html/rfc4408#section-3.1.3
+// Borrowed from https://stackoverflow.com/a/61469854/11477663
+func Chunks(s string, chunkSize int) []string {
+	if chunkSize >= len(s) {
+		return []string{s}
+	}
+	var chunks []string
+	chunk := make([]rune, chunkSize)
+	len := 0
+	for _, r := range s {
+		chunk[len] = r
+		len++
+		if len == chunkSize {
+			chunks = append(chunks, string(chunk))
+			len = 0
+		}
+	}
+	if len > 0 {
+		chunks = append(chunks, string(chunk[:len]))
+	}
+	return chunks
+}
+
 // TXT outputs s as a TXT record.
 func (s *SPFRecord) TXT() string {
 	text := "v=spf1"
@@ -14,7 +39,10 @@ func (s *SPFRecord) TXT() string {
 	return text
 }
 
-const maxLen = 255
+// Maximum length of a single TXT string. Anything
+// bigger than this will be split into multiple strings
+// if the user has set a txtMaxSize length greater than 255
+const txtStringLength = 255
 
 // TXTSplit returns a set of txt records to use for SPF.
 // pattern given is used to name all chained spf records.
@@ -22,18 +50,24 @@ const maxLen = 255
 // should result in fqdn after replacement
 // returned map will have keys with fqdn of resulting records.
 // root record will be under key "@"
-func (s *SPFRecord) TXTSplit(pattern string) map[string]string {
-	m := map[string]string{}
-	s.split("@", pattern, 1, m)
+// overhead specifies that the first split part should assume an
+// overhead of that many bytes.  For example, if there are other txt
+// records and you wish to reduce the first SPF record size to prevent
+// DNS over TCP.
+func (s *SPFRecord) TXTSplit(pattern string, overhead int, txtMaxSize int) map[string][]string {
+	m := map[string][]string{}
+	s.split("@", pattern, 1, m, overhead, txtMaxSize)
 	return m
 
 }
 
-func (s *SPFRecord) split(thisfqdn string, pattern string, nextIdx int, m map[string]string) {
+func (s *SPFRecord) split(thisfqdn string, pattern string, nextIdx int, m map[string][]string, overhead int, txtMaxSize int) {
+	maxLen := txtMaxSize - overhead
+
 	base := s.TXT()
 	// simple case. it fits
 	if len(base) <= maxLen {
-		m[thisfqdn] = base
+		m[thisfqdn] = Chunks(base, txtStringLength)
 		return
 	}
 
@@ -56,7 +90,7 @@ func (s *SPFRecord) split(thisfqdn string, pattern string, nextIdx int, m map[st
 				over = true
 				if addedCount == 0 {
 					// the first part is too big to include. We kinda have to give up here.
-					m[thisfqdn] = base
+					m[thisfqdn] = []string{base}
 					return
 				}
 			}
@@ -65,8 +99,9 @@ func (s *SPFRecord) split(thisfqdn string, pattern string, nextIdx int, m map[st
 			newRec.Parts = append(newRec.Parts, part)
 		}
 	}
-	m[thisfqdn] = thisText + tail
-	newRec.split(nextFQDN, pattern, nextIdx+1, m)
+
+	m[thisfqdn] = Chunks(thisText+tail, txtStringLength)
+	newRec.split(nextFQDN, pattern, nextIdx+1, m, 0, txtMaxSize)
 }
 
 // Flatten optimizes s.
@@ -83,9 +118,7 @@ func (s *SPFRecord) Flatten(spec string) *SPFRecord {
 			// flatten child recursively
 			flattenedChild := p.IncludeRecord.Flatten(spec)
 			// include their parts (skipping final all term)
-			for _, childPart := range flattenedChild.Parts[:len(flattenedChild.Parts)-1] {
-				newRec.Parts = append(newRec.Parts, childPart)
-			}
+			newRec.Parts = append(newRec.Parts, flattenedChild.Parts[:len(flattenedChild.Parts)-1]...)
 		}
 	}
 	return newRec

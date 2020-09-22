@@ -97,7 +97,10 @@ func (c *api) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Correctio
 	}
 
 	differ := diff.New(dc)
-	_, create, del, modify := differ.IncrementalDiff(existingRecords)
+	_, create, del, modify, err := differ.IncrementalDiff(existingRecords)
+	if err != nil {
+		return nil, err
+	}
 
 	var corrections []*models.Correction
 

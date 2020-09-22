@@ -76,7 +76,10 @@ func (s *SoftLayer) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Cor
 		return nil, err
 	}
 
-	_, create, delete, modify := diff.New(dc).IncrementalDiff(actual)
+	_, create, delete, modify, err := diff.New(dc).IncrementalDiff(actual)
+	if err != nil {
+		return nil, err
+	}
 
 	for _, del := range delete {
 		existing := del.Existing.Original.(datatypes.Dns_Domain_ResourceRecord)
@@ -115,9 +118,9 @@ func (s *SoftLayer) getDomain(name *string) (*datatypes.Dns_Domain, error) {
 	}
 
 	if len(domains) == 0 {
-		return nil, fmt.Errorf("Didn't find a domain matching %s", *name)
+		return nil, fmt.Errorf("didn't find a domain matching %s", *name)
 	} else if len(domains) > 1 {
-		return nil, fmt.Errorf("Found %d domains matching %s", len(domains), *name)
+		return nil, fmt.Errorf("found %d domains matching %s", len(domains), *name)
 	}
 
 	return &domains[0], nil

@@ -31,16 +31,14 @@ func (c *CloudflareAPI) fetchDomainList() error {
 		zr := &zoneResponse{}
 		url := fmt.Sprintf("%s?page=%d&per_page=50", zonesURL, page)
 		if err := c.get(url, zr); err != nil {
-			return fmt.Errorf("Error fetching domain list from cloudflare: %s", err)
+			return fmt.Errorf("failed fetching domain list from cloudflare: %s", err)
 		}
 		if !zr.Success {
-			return fmt.Errorf("Error fetching domain list from cloudflare: %s", stringifyErrors(zr.Errors))
+			return fmt.Errorf("failed fetching domain list from cloudflare: %s", stringifyErrors(zr.Errors))
 		}
 		for _, zone := range zr.Result {
 			c.domainIndex[zone.Name] = zone.ID
-			for _, ns := range zone.Nameservers {
-				c.nameservers[zone.Name] = append(c.nameservers[zone.Name], ns)
-			}
+			c.nameservers[zone.Name] = append(c.nameservers[zone.Name], zone.Nameservers...)
 		}
 		ri := zr.ResultInfo
 		if len(zr.Result) == 0 || ri.Page*ri.PerPage >= ri.TotalCount {
@@ -60,10 +58,10 @@ func (c *CloudflareAPI) getRecordsForDomain(id string, domain string) ([]*models
 		reqURL := fmt.Sprintf("%s?page=%d&per_page=100", url, page)
 		var data recordsResponse
 		if err := c.get(reqURL, &data); err != nil {
-			return nil, fmt.Errorf("Error fetching record list from cloudflare: %s", err)
+			return nil, fmt.Errorf("failed fetching record list from cloudflare: %s", err)
 		}
 		if !data.Success {
-			return nil, fmt.Errorf("Error fetching record list cloudflare: %s", stringifyErrors(data.Errors))
+			return nil, fmt.Errorf("failed fetching record list cloudflare: %s", stringifyErrors(data.Errors))
 		}
 		for _, rec := range data.Result {
 			// fmt.Printf("REC: %+v\n", rec)
@@ -362,7 +360,7 @@ func handleActionResponse(resp *http.Response, err error) (id string, e error) {
 	result := &basicResponse{}
 	decoder := json.NewDecoder(resp.Body)
 	if err = decoder.Decode(result); err != nil {
-		return "", fmt.Errorf("Unknown error. Status code: %d", resp.StatusCode)
+		return "", fmt.Errorf("unknown error. Status code: %d", resp.StatusCode)
 	}
 	if resp.StatusCode != 200 {
 		return "", fmt.Errorf(stringifyErrors(result.Errors))
@@ -404,10 +402,10 @@ func (c *CloudflareAPI) getPageRules(id string, domain string) ([]*models.Record
 	url := fmt.Sprintf(pageRulesURL, id)
 	data := pageRuleResponse{}
 	if err := c.get(url, &data); err != nil {
-		return nil, fmt.Errorf("Error fetching page rule list from cloudflare: %s", err)
+		return nil, fmt.Errorf("failed fetching page rule list from cloudflare: %s", err)
 	}
 	if !data.Success {
-		return nil, fmt.Errorf("Error fetching page rule list cloudflare: %s", stringifyErrors(data.Errors))
+		return nil, fmt.Errorf("failed fetching page rule list cloudflare: %s", stringifyErrors(data.Errors))
 	}
 	recs := []*models.RecordConfig{}
 	for _, pr := range data.Result {

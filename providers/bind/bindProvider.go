@@ -85,10 +85,11 @@ type SoaInfo struct {
 	Retry   uint32 `json:"retry"`
 	Expire  uint32 `json:"expire"`
 	Minttl  uint32 `json:"minttl"`
+	TTL     uint32 `json:"ttl,omitempty"`
 }
 
 func (s SoaInfo) String() string {
-	return fmt.Sprintf("%s %s %d %d %d %d %d", s.Ns, s.Mbox, s.Serial, s.Refresh, s.Retry, s.Expire, s.Minttl)
+	return fmt.Sprintf("%s %s %d %d %d %d %d %d", s.Ns, s.Mbox, s.Serial, s.Refresh, s.Retry, s.Expire, s.Minttl, s.TTL)
 }
 
 // Bind is the provider handle for the Bind driver.
@@ -106,7 +107,6 @@ func (c *Bind) GetNameservers(string) ([]*models.Nameserver, error) {
 	var r []string
 	for _, j := range c.nameservers {
 		r = append(r, j.Name)
-		fmt.Printf("DEBUG: %q\n", j.Name)
 	}
 	return models.ToNameservers(r)
 }
@@ -157,6 +157,7 @@ func (c *Bind) GetZoneRecords(domain string) (models.Records, error) {
 
 	for rr, ok := zp.Next(); ok; rr, ok = zp.Next() {
 		rec := models.RRtoRC(rr, domain)
+		// FIXME(tlim): Empty branch?  Is the intention to skip SOAs?
 		if rec.Type == "SOA" {
 		}
 		foundRecords = append(foundRecords, &rec)
@@ -212,7 +213,10 @@ func (c *Bind) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Correcti
 	models.PostProcessRecords(foundRecords)
 
 	differ := diff.New(dc)
-	_, create, del, mod := differ.IncrementalDiff(foundRecords)
+	_, create, del, mod, err := differ.IncrementalDiff(foundRecords)
+	if err != nil {
+		return nil, err
+	}
 
 	buf := &bytes.Buffer{}
 	// Print a list of changes. Generate an actual change that is the zone

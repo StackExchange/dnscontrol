@@ -23,10 +23,10 @@ type Changeset []Correlation
 // Differ is an interface for computing the difference between two zones.
 type Differ interface {
 	// IncrementalDiff performs a diff on a record-by-record basis, and returns a sets for which records need to be created, deleted, or modified.
-	IncrementalDiff(existing []*models.RecordConfig) (unchanged, create, toDelete, modify Changeset)
+	IncrementalDiff(existing []*models.RecordConfig) (unchanged, create, toDelete, modify Changeset, err error)
 	// ChangedGroups performs a diff more appropriate for providers with a "RecordSet" model, where all records with the same name and type are grouped.
 	// Individual record changes are often not useful in such scenarios. Instead we return a map of record keys to a list of change descriptions within that group.
-	ChangedGroups(existing []*models.RecordConfig) map[models.RecordKey][]string
+	ChangedGroups(existing []*models.RecordConfig) (map[models.RecordKey][]string, error)
 }
 
 // New is a constructor for a Differ.
@@ -35,8 +35,11 @@ func New(dc *models.DomainConfig, extraValues ...func(*models.RecordConfig) map[
 		dc:          dc,
 		extraValues: extraValues,
 
-		// compile IGNORE glob patterns
-		compiledIgnoredLabels: compileIgnoredLabels(dc.IgnoredLabels),
+		// compile IGNORE_NAME glob patterns
+		compiledIgnoredNames: compileIgnoredNames(dc.IgnoredNames),
+
+		// compile IGNORE_TARGET glob patterns
+		compiledIgnoredTargets: compileIgnoredTargets(dc.IgnoredTargets),
 	}
 }
 
@@ -44,7 +47,8 @@ type differ struct {
 	dc          *models.DomainConfig
 	extraValues []func(*models.RecordConfig) map[string]string
 
-	compiledIgnoredLabels []glob.Glob
+	compiledIgnoredNames   []glob.Glob
+	compiledIgnoredTargets []glob.Glob
 }
 
 // get normalized content for record. target, ttl, mxprio, and specified metadata
@@ -81,7 +85,7 @@ func (d *differ) content(r *models.RecordConfig) string {
 	return content
 }
 
-func (d *differ) IncrementalDiff(existing []*models.RecordConfig) (unchanged, create, toDelete, modify Changeset) {
+func (d *differ) IncrementalDiff(existing []*models.RecordConfig) (unchanged, create, toDelete, modify Changeset, err error) {
 	unchanged = Changeset{}
 	create = Changeset{}
 	toDelete = Changeset{}
@@ -93,16 +97,20 @@ func (d *differ) IncrementalDiff(existing []*models.RecordConfig) (unchanged, cr
 	existingByNameAndType := map[models.RecordKey][]*models.RecordConfig{}
 	desiredByNameAndType := map[models.RecordKey][]*models.RecordConfig{}
 	for _, e := range existing {
-		if d.matchIgnored(e.GetLabel()) {
-			printer.Debugf("Ignoring record %s %s due to IGNORE\n", e.GetLabel(), e.Type)
+		if d.matchIgnoredName(e.GetLabel()) {
+			printer.Debugf("Ignoring record %s %s due to IGNORE_NAME\n", e.GetLabel(), e.Type)
+		} else if d.matchIgnoredTarget(e.GetTargetField(), e.Type) {
+			printer.Debugf("Ignoring record %s %s due to IGNORE_TARGET\n", e.GetLabel(), e.Type)
 		} else {
 			k := e.Key()
 			existingByNameAndType[k] = append(existingByNameAndType[k], e)
 		}
 	}
 	for _, dr := range desired {
-		if d.matchIgnored(dr.GetLabel()) {
-			panic(fmt.Sprintf("Trying to update/add IGNOREd record: %s %s", dr.GetLabel(), dr.Type))
+		if d.matchIgnoredName(dr.GetLabel()) {
+			return nil, nil, nil, nil, fmt.Errorf("trying to update/add IGNORE_NAMEd record: %s %s", dr.GetLabel(), dr.Type)
+		} else if d.matchIgnoredTarget(dr.GetTargetField(), dr.Type) {
+			return nil, nil, nil, nil, fmt.Errorf("trying to update/add IGNORE_TARGETd record: %s %s", dr.GetLabel(), dr.Type)
 		} else {
 			k := dr.Key()
 			desiredByNameAndType[k] = append(desiredByNameAndType[k], dr)
@@ -157,14 +165,14 @@ func (d *differ) IncrementalDiff(existing []*models.RecordConfig) (unchanged, cr
 		for _, ex := range existingRecords {
 			normalized := d.content(ex)
 			if existingLookup[normalized] != nil {
-				panic(fmt.Sprintf("DUPLICATE E_RECORD FOUND: %s %s", key, normalized))
+				return nil, nil, nil, nil, fmt.Errorf("DUPLICATE E_RECORD FOUND: %s %s", key, normalized)
 			}
 			existingLookup[normalized] = ex
 		}
 		for _, de := range desiredRecords {
 			normalized := d.content(de)
 			if desiredLookup[normalized] != nil {
-				panic(fmt.Sprintf("DUPLICATE D_RECORD FOUND: %s %s", key, normalized))
+				return nil, nil, nil, nil, fmt.Errorf("DUPLICATE D_RECORD FOUND: %s %s", key, normalized)
 			}
 			desiredLookup[normalized] = de
 		}
@@ -189,7 +197,7 @@ func (d *differ) IncrementalDiff(existing []*models.RecordConfig) (unchanged, cr
 			rec := desiredLookup[norm]
 			create = append(create, Correlation{d, nil, rec})
 		}
-		// if found , but not desired, delete it
+		// if found, but not desired, delete it
 		for _, norm := range existingStrings {
 			rec := existingLookup[norm]
 			toDelete = append(toDelete, Correlation{d, rec, nil})
@@ -247,9 +255,17 @@ func ChangesetLess(c Changeset, i, j int) bool {
 	// elements, and sort on the result.
 }
 
-func (d *differ) ChangedGroups(existing []*models.RecordConfig) map[models.RecordKey][]string {
+// CorrectionLess returns true when comparing corrections.
+func CorrectionLess(c []*models.Correction, i, j int) bool {
+	return c[i].Msg < c[j].Msg
+}
+
+func (d *differ) ChangedGroups(existing []*models.RecordConfig) (map[models.RecordKey][]string, error) {
 	changedKeys := map[models.RecordKey][]string{}
-	_, create, delete, modify := d.IncrementalDiff(existing)
+	_, create, delete, modify, err := d.IncrementalDiff(existing)
+	if err != nil {
+		return nil, err
+	}
 	for _, c := range create {
 		changedKeys[c.Desired.Key()] = append(changedKeys[c.Desired.Key()], c.String())
 	}
@@ -259,7 +275,7 @@ func (d *differ) ChangedGroups(existing []*models.RecordConfig) map[models.Recor
 	for _, m := range modify {
 		changedKeys[m.Desired.Key()] = append(changedKeys[m.Desired.Key()], m.String())
 	}
-	return changedKeys
+	return changedKeys, nil
 }
 
 // DebugKeyMapMap debug prints the results from ChangedGroups.
@@ -307,13 +323,13 @@ func sortedKeys(m map[string]*models.RecordConfig) []string {
 	return s
 }
 
-func compileIgnoredLabels(ignoredLabels []string) []glob.Glob {
-	result := make([]glob.Glob, 0, len(ignoredLabels))
+func compileIgnoredNames(ignoredNames []string) []glob.Glob {
+	result := make([]glob.Glob, 0, len(ignoredNames))
 
-	for _, tst := range ignoredLabels {
+	for _, tst := range ignoredNames {
 		g, err := glob.Compile(tst, '.')
 		if err != nil {
-			panic(fmt.Sprintf("Failed to compile IGNORE pattern %q: %v", tst, err))
+			panic(fmt.Sprintf("Failed to compile IGNORE_NAME pattern %q: %v", tst, err))
 		}
 
 		result = append(result, g)
@@ -322,11 +338,44 @@ func compileIgnoredLabels(ignoredLabels []string) []glob.Glob {
 	return result
 }
 
-func (d *differ) matchIgnored(name string) bool {
-	for _, tst := range d.compiledIgnoredLabels {
+func compileIgnoredTargets(ignoredTargets []*models.IgnoreTarget) []glob.Glob {
+	result := make([]glob.Glob, 0, len(ignoredTargets))
+
+	for _, tst := range ignoredTargets {
+		if tst.Type != "CNAME" {
+			panic(fmt.Sprintf("Invalid rType for IGNORE_TARGET %v", tst.Type))
+		}
+
+		g, err := glob.Compile(tst.Pattern, '.')
+		if err != nil {
+			panic(fmt.Sprintf("Failed to compile IGNORE_TARGET pattern %q: %v", tst, err))
+		}
+
+		result = append(result, g)
+	}
+
+	return result
+}
+
+func (d *differ) matchIgnoredName(name string) bool {
+	for _, tst := range d.compiledIgnoredNames {
 		if tst.Match(name) {
 			return true
 		}
 	}
+	return false
+}
+
+func (d *differ) matchIgnoredTarget(target string, rType string) bool {
+	if rType != "CNAME" {
+		return false
+	}
+
+	for _, tst := range d.compiledIgnoredTargets {
+		if tst.Match(target) {
+			return true
+		}
+	}
+
 	return false
 }

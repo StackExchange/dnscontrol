@@ -73,13 +73,17 @@ Maintainers of contributed providers:
 
 * `AXFRDDNS` @hnrgrgr
 * `CLOUDNS` @pragmaton
+* `CSCGLOBAL` @Air-New-Zealand
 * `DESEC` @D3luxee
 * `DIGITALOCEAN` @Deraen
+* `DNSOVERHTTPS` @mikenz
 * `DNSIMPLE` @aeden
 * `EXOSCALE` @pierre-emmanuelJ
 * `GANDI_V5` @TomOnTime
+* `HEDNS` @rblenkinsopp
 * `HEXONET` @papakai
 * `INTERNETBS` @pragmaton
+* `INWX` @svenpeter42
 * `LINODE` @koesie10
 * `NAMECHEAP` @captncraig
 * `NETCUP` @kordianbruck
@@ -89,7 +93,7 @@ Maintainers of contributed providers:
 * `OVH` @masterzen
 * `POWERDNS` @jpbede
 * `SOFTLAYER`@jamielennox
-* `VULTR` @geek1011
+* `VULTR` @pgaskin
 
 ### Requested providers
 

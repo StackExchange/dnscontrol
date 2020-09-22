@@ -82,6 +82,7 @@ D("example.tld", REG, DSP, ...
   SPF_BUILDER({
     label: "@",
     overflow: "_spf%d",  // Delete this line if you don't want big strings split.
+    overhead1: "20",  // There are 20 bytes of other TXT records on this domain.  Compensate for this.
     raw: "_rawspf",  // Delete this line if the default is sufficient.
     parts: [
       "v=spf1",
@@ -101,10 +102,15 @@ The parameters are:
 
 * `label:` The label of the first TXT record. (Optional. Default: `"@"`)
 * `overflow:` If set, SPF strings longer than 255 chars will be split into multiple TXT records. The value of this setting determines the template for what the additional labels will be named. If not set, no splitting will occur and dnscontrol may generate TXT strings that are too long.
-* `raw:` The label of the unaltered SPF settings. (Optional. Default: `"_rawspf"`)
+* `overhead1:` "Overhead for the 1st TXT record".  When calculating the max length of each TXT record, reduce the maximum for the first TXT record in the chain by this amount.
+* `raw:` The label of the unaltered SPF settings. Setting to an empty string `''` will disable this. (Optional. Default: `"_rawspf"`)
 * `ttl:` This allows setting a specific TTL on this SPF record. (Optional. Default: using default record TTL)
+* `txtMaxSize` The maximum size for each TXT record. Values over 255 will result in [multiple strings][multi-string]. General recommendation is to [not go higher than 450][record-size] so that DNS responses will still fit in a UDP packet. (Optional. Default: `"255"`)
 * `parts:` The individual parts of the SPF settings.
 * `flatten:` Which includes should be inlined. For safety purposes the flattening is done on an opt-in basis. If `"*"` is listed, all includes will be flattened... this might create more problems than is solves due to length limitations.
+
+[multi-string]: https://tools.ietf.org/html/rfc4408#section-3.1.3
+[record-size]: https://tools.ietf.org/html/rfc4408#section-3.1.4
 
 `SPR_BUILDER()` returns multiple `TXT()` records:
 
@@ -123,8 +129,50 @@ flattening required to reduce the number of lookups to 10 or less.
 To count the number of lookups, you can use our interactive SPF
 debugger at [https://stackexchange.github.io/dnscontrol/flattener/index.html](https://stackexchange.github.io/dnscontrol/flattener/index.html)
 
+# The first in a chain is special
 
-## Notes about the DNS Cache
+When generating the chain of SPF
+records, each one is max length 255.  For the first item in
+the chain, the max is 255 - "overhead1".  Setting this to 255 or
+higher has undefined behavior.
+
+Why is this useful?
+
+Some sites desire having all DNS queries fit in a single packet so
+that UDP, not TCP, can be used to satisfy all requests. That means all
+responses have to be relatively small.
+
+When an SPF system does a "TXT" lookup, it gets SPF and non-SPF
+records.  This makes the first link in the chain extra large.
+
+The bottom line is that if you want the TXT records to fit in a UDP
+packet, keep increasing the value of `overhead1` until the packet
+is no longer truncated.
+
+Example:
+
+```
+$ dig +short whatexit.org txt | wc -c
+   118
+```
+
+Setting `overhead1` to 118 should be sufficient.
+
+```
+$ dig +short stackoverflow.com txt | wc -c
+     582
+```
+
+Since 582 is bigger than 255, it might not be possible to achieve the
+goal.  Any value larger than 255 will disable all flattening.  Try
+170, then 180, 190 until you get the desired results.
+
+A validator such as
+[https://www.kitterman.com/spf/validate.html](https://www.kitterman.com/spf/validate.html)
+will tell you if the queries are being truncated and TCP was required
+to get the entire record. (Sadly it caches heavily.)
+
+## Notes about the `spfcache.json`
 
 dnscontrol keeps a cache of the DNS lookups performed during
 optimization.  The cache is maintained so that the optimizer does

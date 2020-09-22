@@ -15,19 +15,21 @@ Windows). The provider model is extensible, so more providers can be added.
 
 Currently supported DNS providers:
  - AWS Route 53
- - Active Directory
  - AXFR+DDNS
+ - Active Directory
  - Azure DNS
  - BIND
  - ClouDNS
  - Cloudflare
- - deSEC
+ - DNSOVERHTTPS
  - DNSimple
  - DigitalOcean
  - Exoscale
  - Gandi
  - Google DNS
  - HEXONET
+ - Hurricane Electric DNS
+ - INWX
  - Internet.bs
  - Linode
  - NS1
@@ -39,6 +41,7 @@ Currently supported DNS providers:
  - PowerDNS
  - SoftLayer
  - Vultr
+ - deSEC
 
 At Stack Overflow, we use this system to manage hundreds of domains
 and subdomains across multiple registrars and DNS providers.
@@ -109,11 +112,20 @@ See [Getting Started](https://stackexchange.github.io/dnscontrol/getting-started
 
 ## From source
 
-DNSControl can be built with Go version 1.14 or higher. To install, simply run
+DNSControl can be built with Go version 1.14 or higher.
 
-`go get github.com/StackExchange/dnscontrol`
+To install, simply run
 
-dnscontrol will be installed in $GOPATH/bin
+    GO111MODULE=on go get github.com/StackExchange/dnscontrol/v3
+
+To download the source
+
+    go get -d github.com/StackExchange/dnscontrol
+
+If these don't work, more info is in [#805](https://github.com/StackExchange/dnscontrol/issues/805).
+
+---
+
 
 ## Via packages
 

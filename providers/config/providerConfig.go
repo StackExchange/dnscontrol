@@ -24,13 +24,13 @@ func LoadProviderConfigs(fname string) (map[string]map[string]string, error) {
 			fmt.Printf("INFO: Config file %q does not exist. Skipping.\n", fname)
 			return results, nil
 		}
-		return nil, fmt.Errorf("While reading provider credentials file %v: %v", fname, err)
+		return nil, fmt.Errorf("failed reading provider credentials file %v: %v", fname, err)
 	}
 	s := string(dat)
 	r := JsonConfigReader.New(strings.NewReader(s))
 	err = json.NewDecoder(r).Decode(&results)
 	if err != nil {
-		return nil, fmt.Errorf("While parsing provider credentials file %v: %v", fname, err)
+		return nil, fmt.Errorf("failed parsing provider credentials file %v: %v", fname, err)
 	}
 	if err = replaceEnvVars(results); err != nil {
 		return nil, err

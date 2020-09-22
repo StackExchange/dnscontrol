@@ -65,7 +65,7 @@ func TestDNSProviders(t *testing.T) {
 	if provider == nil {
 		return
 	}
-	t.Run(fmt.Sprintf("%s", domain), func(t *testing.T) {
+	t.Run(domain, func(t *testing.T) {
 		runTests(t, provider, domain, fails, cfg)
 	})
 
@@ -162,7 +162,8 @@ func makeChanges(t *testing.T, prv providers.DNSServiceProvider, dc *models.Doma
 			//}
 			dom.Records = append(dom.Records, &rc)
 		}
-		dom.IgnoredLabels = tst.IgnoredLabels
+		dom.IgnoredNames = tst.IgnoredNames
+		dom.IgnoredTargets = tst.IgnoredTargets
 		models.PostProcessRecords(dom.Records)
 		dom2, _ := dom.Copy()
 
@@ -301,9 +302,10 @@ type TestGroup struct {
 }
 
 type TestCase struct {
-	Desc          string
-	Records       []*rec
-	IgnoredLabels []string
+	Desc           string
+	Records        []*rec
+	IgnoredNames   []string
+	IgnoredTargets []*models.IgnoreTarget
 }
 
 type rec models.RecordConfig
@@ -426,9 +428,18 @@ func tlsa(name string, usage, selector, matchingtype uint8, target string) *rec 
 	return r
 }
 
-func ignore(name string) *rec {
+func ignoreName(name string) *rec {
 	r := &rec{
-		Type: "IGNORE",
+		Type: "IGNORE_NAME",
+	}
+	r.SetLabel(name, "**current-domain**")
+	return r
+}
+
+func ignoreTarget(name string, typ string) *rec {
+	r := &rec{
+		Type:   "IGNORE_TARGET",
+		Target: typ,
 	}
 	r.SetLabel(name, "**current-domain**")
 	return r
@@ -490,18 +501,25 @@ func testgroup(desc string, items ...interface{}) *TestGroup {
 
 func tc(desc string, recs ...*rec) *TestCase {
 	var records []*rec
-	var ignored []string
+	var ignoredNames []string
+	var ignoredTargets []*models.IgnoreTarget
 	for _, r := range recs {
-		if r.Type == "IGNORE" {
-			ignored = append(ignored, r.GetLabel())
+		if r.Type == "IGNORE_NAME" {
+			ignoredNames = append(ignoredNames, r.GetLabel())
+		} else if r.Type == "IGNORE_TARGET" {
+			ignoredTargets = append(ignoredTargets, &models.IgnoreTarget{
+				Pattern: r.GetLabel(),
+				Type:    r.Target,
+			})
 		} else {
 			records = append(records, r)
 		}
 	}
 	return &TestCase{
-		Desc:          desc,
-		Records:       records,
-		IgnoredLabels: ignored,
+		Desc:           desc,
+		Records:        records,
+		IgnoredNames:   ignoredNames,
+		IgnoredTargets: ignoredTargets,
 	}
 }
 
@@ -596,6 +614,10 @@ func makeTests(t *testing.T) []*TestGroup {
 			tc("Delete one", a("@", "1.2.3.4").ttl(500), a("www", "5.6.7.8").ttl(400)),
 			tc("Add back and change ttl", a("www", "5.6.7.8").ttl(700), a("www", "1.2.3.4").ttl(700)),
 			tc("Change targets and ttls", a("www", "1.1.1.1"), a("www", "2.2.2.2")),
+		),
+
+		testgroup("WildcardACD",
+			not("HEDNS"), // Not supported by dns.he.net due to abuse
 			tc("Create wildcard", a("*", "1.2.3.4"), a("www", "1.1.1.1")),
 			tc("Delete wildcard", a("www", "1.1.1.1")),
 		),
@@ -623,7 +645,7 @@ func makeTests(t *testing.T) []*TestGroup {
 		),
 
 		testgroup("Null MX",
-			not("AZURE_DNS", "GANDI_V5", "NAMEDOTCOM", "DIGITALOCEAN", "NETCUP", "DNSIMPLE"), // These providers don't support RFC 7505
+			not("AZURE_DNS", "GANDI_V5", "INWX", "NAMEDOTCOM", "DIGITALOCEAN", "NETCUP", "DNSIMPLE", "HEDNS"), // These providers don't support RFC 7505
 			tc("Null MX", mx("@", 0, ".")),
 		),
 
@@ -637,12 +659,20 @@ func makeTests(t *testing.T) []*TestGroup {
 			tc("NS Record pointing to @", ns("foo", "**current-domain**")),
 		),
 
-		testgroup("IGNORE function",
+		testgroup("IGNORE_NAME function",
 			tc("Create some records", txt("foo", "simple"), a("foo", "1.2.3.4")),
-			tc("Add a new record - ignoring foo", a("bar", "1.2.3.4"), ignore("foo")),
+			tc("Add a new record - ignoring foo", a("bar", "1.2.3.4"), ignoreName("foo")),
 			clear(),
 			tc("Create some records", txt("bar.foo", "simple"), a("bar.foo", "1.2.3.4")),
-			tc("Add a new record - ignoring *.foo", a("bar", "1.2.3.4"), ignore("*.foo")),
+			tc("Add a new record - ignoring *.foo", a("bar", "1.2.3.4"), ignoreName("*.foo")),
+		),
+
+		testgroup("IGNORE_TARGET function",
+			tc("Create some records", cname("foo", "test.foo.com."), cname("bar", "test.bar.com.")),
+			tc("Add a new record - ignoring test.foo.com.", cname("bar", "bar.foo.com."), ignoreTarget("test.foo.com.", "CNAME")),
+			clear(),
+			tc("Create some records", cname("bar.foo", "a.b.foo.com."), a("test.foo", "1.2.3.4")),
+			tc("Add a new record - ignoring **.foo.com. targets", a("bar", "1.2.3.4"), ignoreTarget("**.foo.com.", "CNAME")),
 		),
 
 		testgroup("single TXT",
@@ -656,14 +686,14 @@ func makeTests(t *testing.T) []*TestGroup {
 		),
 
 		testgroup("ws TXT",
-			not("CLOUDFLAREAPI", "NAMEDOTCOM"),
+			not("CLOUDFLAREAPI", "INWX", "NAMEDOTCOM"),
 			// These providers strip whitespace at the end of TXT records.
 			// TODO(tal): Add a check for this in normalize/validate.go
 			tc("Change a TXT with ws at end", txt("foo", "with space at end  ")),
 		),
 
 		testgroup("empty TXT",
-			not("CLOUDFLAREAPI", "NETCUP"),
+			not("CLOUDFLAREAPI", "INWX", "NETCUP"),
 			tc("TXT with empty str", txt("foo1", "")),
 			// https://github.com/StackExchange/dnscontrol/issues/598
 			// We decided that permitting the TXT target to be an empty
@@ -708,7 +738,7 @@ func makeTests(t *testing.T) []*TestGroup {
 			tc("IDN CNAME AND Target", cname("öoö", "ööö.企业.")),
 		),
 
-		testgroup("page size",
+		testgroup("pager101",
 			// Tests the paging code of providers.  Many providers page at 100.
 			// Notes:
 			//  - Gandi: page size is 100, therefore we test with 99, 100, and 101
@@ -720,12 +750,18 @@ func makeTests(t *testing.T) []*TestGroup {
 			tc("101 records", manyA("rec%04d", "1.2.3.4", 101)...),
 		),
 
-		testgroup("Large updates",
-			// Verify https://github.com/StackExchange/dnscontrol/issues/493
+		testgroup("pager601",
+			// AWS:  https://github.com/StackExchange/dnscontrol/issues/493
 			only("ROUTE53"),
-			tc("600 records", manyA("rec%04d", "1.2.3.4", 600)...),
-			tc("Update 600 records", manyA("rec%04d", "1.2.3.5", 600)...),
-			tc("Empty"), // Delete them all
+			tc("601 records", manyA("rec%04d", "1.2.3.4", 600)...),
+			tc("Update 601 records", manyA("rec%04d", "1.2.3.5", 600)...),
+		),
+
+		testgroup("pager1201",
+			// AWS:  https://github.com/StackExchange/dnscontrol/issues/493
+			// Azure: https://github.com/StackExchange/dnscontrol/issues/770
+			//only("ROUTE53", "AZURE_DNS"),
+			only("ROUTE53"), // Azure is failing ATM.
 			tc("1200 records", manyA("rec%04d", "1.2.3.4", 1200)...),
 			tc("Update 1200 records", manyA("rec%04d", "1.2.3.5", 1200)...),
 		),
@@ -780,7 +816,7 @@ func makeTests(t *testing.T) []*TestGroup {
 			tc("Change Weight", srv("_sip._tcp", 52, 62, 7, "foo.com."), srv("_sip._tcp", 15, 65, 75, "foo4.com.")),
 			tc("Change Port", srv("_sip._tcp", 52, 62, 72, "foo.com."), srv("_sip._tcp", 15, 65, 75, "foo4.com.")),
 		),
-		testgroup("SRV w/ null target", not("EXOSCALE", "HEXONET", "NAMEDOTCOM"),
+		testgroup("SRV w/ null target", requires(providers.CanUseSRV), not("EXOSCALE", "HEXONET", "INWX", "NAMEDOTCOM"),
 			tc("Null Target", srv("_sip._tcp", 52, 62, 72, "foo.com."), srv("_sip._tcp", 15, 65, 75, ".")),
 		),
 

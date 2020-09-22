@@ -51,7 +51,7 @@ func newRoute53(m map[string]string, metadata json.RawMessage) (*route53Provider
 	}
 	sess := session.Must(session.NewSession(config))
 
-	var dls *string = nil
+	var dls *string
 	if val, ok := m["DelegationSet"]; ok {
 		fmt.Printf("ROUTE53 DelegationSet %s configured\n", val)
 		dls = sPtr(val)
@@ -91,7 +91,7 @@ func withRetry(f func() error) {
 	const maxRetries = 23
 	// TODO: exponential backoff
 	const sleepTime = 5 * time.Second
-	var currentRetry int = 0
+	var currentRetry int
 	for {
 		err := f()
 		if err == nil {
@@ -132,7 +132,7 @@ func (r *route53Provider) getZones() error {
 			return err
 		})
 		if err != nil && strings.Contains(err.Error(), "is not authorized") {
-			return errors.New("Check your credentials, your not authorized to perform actions on Route 53 AWS Service")
+			return errors.New("check your credentials, you're not authorized to perform actions on Route 53 AWS Service")
 		} else if err != nil {
 			return err
 		}
@@ -230,7 +230,10 @@ func (r *route53Provider) GetDomainCorrections(dc *models.DomainConfig) ([]*mode
 
 	// diff
 	differ := diff.New(dc, getAliasMap)
-	namesToUpdate := differ.ChangedGroups(existingRecords)
+	namesToUpdate, err := differ.ChangedGroups(existingRecords)
+	if err != nil {
+		return nil, err
+	}
 
 	if len(namesToUpdate) == 0 {
 		return nil, nil
@@ -272,7 +275,7 @@ func (r *route53Provider) GetDomainCorrections(dc *models.DomainConfig) ([]*mode
 				}
 			}
 			if rrset == nil {
-				return nil, fmt.Errorf("No record set found to delete. Name: '%s'. Type: '%s'", k.NameFQDN, k.Type)
+				return nil, fmt.Errorf("no record set found to delete. Name: '%s'. Type: '%s'", k.NameFQDN, k.Type)
 			}
 		} else {
 			changes = append(changes, chg)
@@ -377,10 +380,14 @@ func nativeToRecords(set *r53.ResourceRecordSet, origin string) []*models.Record
 			switch rtype := *set.Type; rtype {
 			case "SOA":
 				continue
+			case "SPF":
+				// route53 uses a custom record type for SPF
+				rtype = "TXT"
+				fallthrough
 			default:
 				rc := &models.RecordConfig{TTL: uint32(*set.TTL)}
 				rc.SetLabelFromFQDN(unescape(set.Name), origin)
-				if err := rc.PopulateFromString(*set.Type, *rec.Value, origin); err != nil {
+				if err := rc.PopulateFromString(rtype, *rec.Value, origin); err != nil {
 					panic(fmt.Errorf("unparsable record received from R53: %w", err))
 				}
 				results = append(results, rc)

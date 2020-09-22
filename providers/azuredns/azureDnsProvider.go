@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"sort"
 	"strings"
 	"time"
 
@@ -72,6 +73,10 @@ func init() {
 }
 
 func (a *azureDNSProvider) getExistingZones() (*adns.ZoneListResult, error) {
+	// Please note — this function doesn't work with > 100 zones
+	// https://github.com/StackExchange/dnscontrol/issues/792
+	// Copied this code to getZones and ListZones and modified it for using a paging
+	// As a result getExistingZones is not used anymore
 	ctx, cancel := context.WithTimeout(context.Background(), 6000*time.Second)
 	defer cancel()
 	zonesIterator, zonesErr := a.zonesClient.ListByResourceGroupComplete(ctx, *a.resourceGroup, to.Int32Ptr(100))
@@ -85,16 +90,22 @@ func (a *azureDNSProvider) getExistingZones() (*adns.ZoneListResult, error) {
 func (a *azureDNSProvider) getZones() error {
 	a.zones = make(map[string]*adns.Zone)
 
-	zonesResult, err := a.getExistingZones()
-
-	if err != nil {
-		return err
+	ctx, cancel := context.WithTimeout(context.Background(), 6000*time.Second)
+	defer cancel()
+	zonesIterator, zonesErr := a.zonesClient.ListByResourceGroup(ctx, *a.resourceGroup, to.Int32Ptr(100))
+	if zonesErr != nil {
+		return fmt.Errorf("getZones: zonesErr: %w", zonesErr)
 	}
 
-	for _, z := range *zonesResult.Value {
-		zone := z
-		domain := strings.TrimSuffix(*z.Name, ".")
-		a.zones[domain] = &zone
+	// Check getExistingZones and https://github.com/StackExchange/dnscontrol/issues/792 for the details
+	for zonesIterator.NotDone() {
+		zonesResult := zonesIterator.Response()
+		for _, z := range *zonesResult.Value {
+			zone := z
+			domain := strings.TrimSuffix(*z.Name, ".")
+			a.zones[domain] = &zone
+		}
+		zonesIterator.NextWithContext(ctx)
 	}
 
 	return nil
@@ -124,17 +135,23 @@ func (a *azureDNSProvider) GetNameservers(domain string) ([]*models.Nameserver, 
 }
 
 func (a *azureDNSProvider) ListZones() ([]string, error) {
-	zonesResult, err := a.getExistingZones()
-
-	if err != nil {
-		return nil, err
-	}
-
 	var zones []string
 
-	for _, z := range *zonesResult.Value {
-		domain := strings.TrimSuffix(*z.Name, ".")
-		zones = append(zones, domain)
+	ctx, cancel := context.WithTimeout(context.Background(), 6000*time.Second)
+	defer cancel()
+	zonesIterator, zonesErr := a.zonesClient.ListByResourceGroup(ctx, *a.resourceGroup, to.Int32Ptr(100))
+	if zonesErr != nil {
+		return nil, fmt.Errorf("ListZones: zonesErr: %w", zonesErr)
+	}
+
+	// Check getExistingZones and https://github.com/StackExchange/dnscontrol/issues/792 for the details
+	for zonesIterator.NotDone() {
+		zonesResult := zonesIterator.Response()
+		for _, z := range *zonesResult.Value {
+			domain := strings.TrimSuffix(*z.Name, ".")
+			zones = append(zones, domain)
+		}
+		zonesIterator.NextWithContext(ctx)
 	}
 
 	return zones, nil
@@ -154,8 +171,7 @@ func (a *azureDNSProvider) getExistingRecords(domain string) (models.Records, []
 	if !ok {
 		return nil, nil, "", errNoExist{domain}
 	}
-	var zoneName string
-	zoneName = *zone.Name
+	zoneName := *zone.Name
 	records, err := a.fetchRecordSets(zoneName)
 	if err != nil {
 		return nil, nil, "", err
@@ -185,7 +201,10 @@ func (a *azureDNSProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*mod
 	}
 
 	differ := diff.New(dc)
-	namesToUpdate := differ.ChangedGroups(existingRecords)
+	namesToUpdate, err := differ.ChangedGroups(existingRecords)
+	if err != nil {
+		return nil, err
+	}
 
 	if len(namesToUpdate) == 0 {
 		return nil, nil
@@ -219,8 +238,8 @@ func (a *azureDNSProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*mod
 							ctx, cancel := context.WithTimeout(context.Background(), 6000*time.Second)
 							defer cancel()
 							_, err := a.recordsClient.Delete(ctx, *a.resourceGroup, zoneName, *rrset.Name, nativeToRecordType(rrset.Type), "")
-							// Artifically slow things down after a delete, as the API can take time to register it. The tests fail if we delete and then recheck too quickly.
-							time.Sleep(25 * time.Millisecond)
+							// Artificially slow things down after a delete, as the API can take time to register it. The tests fail if we delete and then recheck too quickly.
+							time.Sleep(10 * time.Millisecond)
 							if err != nil {
 								return err
 							}
@@ -251,8 +270,8 @@ func (a *azureDNSProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*mod
 									ctx, cancel := context.WithTimeout(context.Background(), 6000*time.Second)
 									defer cancel()
 									_, err := a.recordsClient.Delete(ctx, *a.resourceGroup, zoneName, recordName, existingRecordType, "")
-									// Artifically slow things down after a delete, as the API can take time to register it. The tests fail if we delete and then recheck too quickly.
-									time.Sleep(25 * time.Millisecond)
+									// Artificially slow things down after a delete, as the API can take time to register it. The tests fail if we delete and then recheck too quickly.
+									time.Sleep(10 * time.Millisecond)
 									if err != nil {
 										return err
 									}
@@ -270,8 +289,8 @@ func (a *azureDNSProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*mod
 						ctx, cancel := context.WithTimeout(context.Background(), 6000*time.Second)
 						defer cancel()
 						_, err := a.recordsClient.CreateOrUpdate(ctx, *a.resourceGroup, zoneName, recordName, recordType, *rrset, "", "")
-						// Artifically slow things down after a delete, as the API can take time to register it. The tests fail if we delete and then recheck too quickly.
-						time.Sleep(25 * time.Millisecond)
+						// Artificially slow things down after a delete, as the API can take time to register it. The tests fail if we delete and then recheck too quickly.
+						time.Sleep(10 * time.Millisecond)
 						if err != nil {
 							return err
 						}
@@ -280,6 +299,18 @@ func (a *azureDNSProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*mod
 				})
 		}
 	}
+
+	// Sort the records for cosmetic reasons: It just makes a long list
+	// of deletes or adds easier to read if they are in sorted order.
+	// That said, it may be risky to sort them (sort key is the text
+	// message "Msg") if there are deletes that must happen before adds.
+	// Reading the above code it isn't clear that any of the updates are
+	// order-dependent.  That said, all the tests pass.
+	// If in the future this causes a bug, we can either just remove
+	// this next line, or (even better) put any order-dependent
+	// operations in a single models.Correction{}.
+	sort.Slice(corrections, func(i, j int) bool { return diff.CorrectionLess(corrections, i, j) })
+
 	return corrections, nil
 }
 
@@ -505,15 +536,18 @@ func (a *azureDNSProvider) fetchRecordSets(zoneName string) ([]*adns.RecordSet, 
 	var records []*adns.RecordSet
 	ctx, cancel := context.WithTimeout(context.Background(), 6000*time.Second)
 	defer cancel()
-	recordsIterator, recordsErr := a.recordsClient.ListAllByDNSZoneComplete(ctx, *a.resourceGroup, zoneName, to.Int32Ptr(1000), "")
+	recordsIterator, recordsErr := a.recordsClient.ListAllByDNSZone(ctx, *a.resourceGroup, zoneName, to.Int32Ptr(1000), "")
 	if recordsErr != nil {
 		return nil, recordsErr
 	}
-	recordsResult := recordsIterator.Response()
 
-	for _, r := range *recordsResult.Value {
-		record := r
-		records = append(records, &record)
+	for recordsIterator.NotDone() {
+		recordsResult := recordsIterator.Response()
+		for _, r := range *recordsResult.Value {
+			record := r
+			records = append(records, &record)
+		}
+		recordsIterator.NextWithContext(ctx)
 	}
 
 	return records, nil

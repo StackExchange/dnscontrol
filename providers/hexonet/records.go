@@ -20,7 +20,7 @@ type HXRecord struct {
 	DomainName string
 	// Host is the hostname relative to the zone: e.g. for a record for blog.example.org, domain would be "example.org" and host would be "blog".
 	// An apex record would be specified by either an empty host "" or "@".
-	// A SRV record would be specified by "_{service}._{protocal}.{host}": e.g. "_sip._tcp.phone" for _sip._tcp.phone.example.org.
+	// A SRV record would be specified by "_{service}._{protocol}.{host}": e.g. "_sip._tcp.phone" for _sip._tcp.phone.example.org.
 	Host string
 	// FQDN is the Fully Qualified Domain Name. It is the combination of the host and the domain name. It always ends in a ".". FQDN is ignored in CreateRecord, specify via the Host field instead.
 	Fqdn string
@@ -57,7 +57,7 @@ func (n *HXClient) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Corr
 
 	for _, rec := range dc.Records {
 		if rec.Type == "ALIAS" {
-			return nil, fmt.Errorf("We support realtime ALIAS RR over our X-DNS service, please get in touch with us")
+			return nil, fmt.Errorf("we support realtime ALIAS RR over our X-DNS service, please get in touch with us")
 		}
 	}
 
@@ -67,7 +67,11 @@ func (n *HXClient) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Corr
 	models.PostProcessRecords(actual)
 
 	differ := diff.New(dc)
-	_, create, del, mod := differ.IncrementalDiff(actual)
+	_, create, del, mod, err := differ.IncrementalDiff(actual)
+	if err != nil {
+		return nil, err
+	}
+
 	corrections := []*models.Correction{}
 
 	buf := &bytes.Buffer{}
@@ -193,7 +197,7 @@ func (n *HXClient) getRecords(domain string) ([]*HXRecord, error) {
 	}
 	rrColumn := r.GetColumn("RR")
 	if rrColumn == nil {
-		return nil, fmt.Errorf("Error getting RR column for domain: %s", domain)
+		return nil, fmt.Errorf("failed getting RR column for domain: %s", domain)
 	}
 	rrs := rrColumn.GetData()
 	for _, rr := range rrs {

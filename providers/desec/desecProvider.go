@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"sort"
 
 	"github.com/StackExchange/dnscontrol/v3/models"
 	"github.com/StackExchange/dnscontrol/v3/pkg/diff"
@@ -44,7 +45,7 @@ var features = providers.DocumentationNotes{
 	providers.CanUseSSHFP:            providers.Can(),
 	providers.CanUseCAA:              providers.Can(),
 	providers.CanUseTLSA:             providers.Can(),
-	providers.CanUsePTR:              providers.Unimplemented(),
+	providers.CanUsePTR:              providers.Can(),
 	providers.CanGetZones:            providers.Can(),
 	providers.CanAutoDNSSEC:          providers.Cannot(),
 }
@@ -152,7 +153,10 @@ func (c *api) GenerateDomainCorrections(dc *models.DomainConfig, existing models
 
 	// diff existing vs. current.
 	differ := diff.New(dc)
-	keysToUpdate := differ.ChangedGroups(existing)
+	keysToUpdate, err := differ.ChangedGroups(existing)
+	if err != nil {
+		return nil, err
+	}
 	if len(keysToUpdate) == 0 {
 		return nil, nil
 	}
@@ -200,8 +204,7 @@ func (c *api) GenerateDomainCorrections(dc *models.DomainConfig, existing models
 			}
 		}
 	}
-	var msg string
-	msg = fmt.Sprintf("Changes:\n%s", buf)
+	msg := fmt.Sprintf("Changes:\n%s", buf)
 	corrections = append(corrections,
 		&models.Correction{
 			Msg: msg,
@@ -214,6 +217,14 @@ func (c *api) GenerateDomainCorrections(dc *models.DomainConfig, existing models
 				return nil
 			},
 		})
+
+	// NB(tlim): This sort is just to make updates look pretty. It is
+	// cosmetic.  The risk here is that there may be some updates that
+	// require a specific order (for example a delete before an add).
+	// However the code doesn't seem to have such situation.  All tests
+	// pass.  That said, if this breaks anything, the easiest fix might
+	// be to just remove the sort.
+	sort.Slice(corrections, func(i, j int) bool { return diff.CorrectionLess(corrections, i, j) })
 
 	return corrections, nil
 }

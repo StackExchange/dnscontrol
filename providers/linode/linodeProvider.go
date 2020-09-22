@@ -61,7 +61,7 @@ var defaultNameServerNames = []string{
 // NewLinode creates the provider.
 func NewLinode(m map[string]string, metadata json.RawMessage) (providers.DNSServiceProvider, error) {
 	if m["token"] == "" {
-		return nil, fmt.Errorf("Missing Linode token")
+		return nil, fmt.Errorf("missing Linode token")
 	}
 
 	ctx := context.Background()
@@ -72,7 +72,7 @@ func NewLinode(m map[string]string, metadata json.RawMessage) (providers.DNSServ
 
 	baseURL, err := url.Parse(defaultBaseURL)
 	if err != nil {
-		return nil, fmt.Errorf("Linode base URL not valid")
+		return nil, fmt.Errorf("invalid base URL for Linode")
 	}
 
 	api := &LinodeAPI{client: client, baseURL: baseURL}
@@ -163,7 +163,10 @@ func (api *LinodeAPI) GetDomainCorrections(dc *models.DomainConfig) ([]*models.C
 	}
 
 	differ := diff.New(dc)
-	_, create, del, modify := differ.IncrementalDiff(existingRecords)
+	_, create, del, modify, err := differ.IncrementalDiff(existingRecords)
+	if err != nil {
+		return nil, err
+	}
 
 	var corrections []*models.Correction
 

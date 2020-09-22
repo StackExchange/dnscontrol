@@ -129,7 +129,10 @@ func (api *DoAPI) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Corre
 	models.PostProcessRecords(existingRecords)
 
 	differ := diff.New(dc)
-	_, create, delete, modify := differ.IncrementalDiff(existingRecords)
+	_, create, delete, modify, err := differ.IncrementalDiff(existingRecords)
+	if err != nil {
+		return nil, err
+	}
 
 	var corrections = []*models.Correction{}
 
@@ -183,9 +186,7 @@ func getRecords(api *DoAPI, name string) ([]godo.DomainRecord, error) {
 			return nil, err
 		}
 
-		for _, d := range result {
-			records = append(records, d)
-		}
+		records = append(records, result...)
 
 		if resp.Links == nil || resp.Links.IsLastPage() {
 			break

@@ -1,5 +1,12 @@
 'use strict';
 
+// If you edit this file, you must run `go generate` to embed this
+// file in the source code.
+// If you are heavily debugging this code, the "-dev" flag will
+// read this file directly instead of using the output of
+// `go generate`. You'll still need to run `go generate` before
+// you commit the changes.
+
 var conf = {
     registrars: [],
     dns_providers: [],
@@ -16,6 +23,12 @@ function initialize() {
         domains: [],
     };
     defaultArgs = [];
+}
+
+// Returns an array of domains which were registered so far during runtime
+// Own function for compatibility reasons or if some day special processing would be required.
+function getConfiguredDomains() {
+    return conf.domain_names;
 }
 
 function NewRegistrar(name, type, meta) {
@@ -45,7 +58,8 @@ function newDomain(name, registrar) {
         dnsProviders: {},
         defaultTTL: 0,
         nameservers: [],
-        ignored_labels: [],
+        ignored_names: [],
+        ignored_targets: [],
     };
 }
 
@@ -85,6 +99,32 @@ function D(name, registrar) {
     }
     conf.domains.push(domain);
     conf.domain_names.push(name);
+}
+
+// DU(name): Update an already added DNS Domain with D().
+function D_EXTEND(name) {
+    var domain = _getDomainObject(name);
+    if (domain == null) {
+        throw name + ' was not declared yet and therefore cannot be updated. Use D() before.';
+    }
+    for (var i = 0; i < defaultArgs.length; i++) {
+        processDargs(defaultArgs[i], domain.obj);
+    }
+    for (var i = 1; i < arguments.length; i++) {
+        var m = arguments[i];
+        processDargs(m, domain.obj);
+    }
+    conf.domains[domain.id] = domain.obj; // let's overwrite the object.
+}
+
+// _getDomainObject(name): This is a small helper function to get the domain JS object returned.
+function _getDomainObject(name) {
+    for(var i = 0; i < conf.domains.length; i++) {
+        if (conf.domains[i]['name'] == name) {
+            return {'id': i, 'obj': conf.domains[i]};
+        }
+    }
+    return null;
 }
 
 // DEFAULTS provides a set of default arguments to apply to all future domains.
@@ -455,10 +495,24 @@ function format_tt(transform_table) {
 
 // IGNORE(name)
 function IGNORE(name) {
+    // deprecated, use IGNORE_NAME
+    return IGNORE_NAME(name);
+}
+
+// IGNORE_NAME(name)
+function IGNORE_NAME(name) {
     return function(d) {
-        d.ignored_labels.push(name);
+        d.ignored_names.push(name);
     };
 }
+
+// IGNORE_TARGET(target)
+function IGNORE_TARGET(target, rType) {
+    return function(d) {
+        d.ignored_targets.push({pattern: target, type: rType});
+    };
+}
+
 
 // IMPORT_TRANSFORM(translation_table, domain)
 var IMPORT_TRANSFORM = recordBuilder('IMPORT_TRANSFORM', {
@@ -725,6 +779,8 @@ var FRAME = recordBuilder('FRAME');
 // ttl: The time for TTL, integer or string. (default: not defined, using DefaultTTL)
 // split: The template for additional records to be created (default: '_spf%d')
 // flatten: A list of domains to be flattened.
+// overhead1: Amout of "buffer room" to reserve on the first item in the spf chain.
+// txtMaxSize: The maximum size for each TXT string. Values over 255 will result in multiple strings (default: '255')
 
 function SPF_BUILDER(value) {
     if (!value.parts || value.parts.length < 2) {
@@ -733,7 +789,7 @@ function SPF_BUILDER(value) {
     if (!value.label) {
         value.label = '@';
     }
-    if (!value.raw) {
+    if (!value.raw && value.raw !== '') {
         value.raw = '_rawspf';
     }
 
@@ -744,16 +800,27 @@ function SPF_BUILDER(value) {
     // If flattening is requested, generate a TXT record with the raw SPF settings.
     if (value.flatten && value.flatten.length > 0) {
         p.flatten = value.flatten.join(',');
-        if (value.ttl) {
-            r.push(TXT(value.raw, rawspf, TTL(value.ttl)));
-        } else {
-            r.push(TXT(value.raw, rawspf));
+        // Only add the raw spf record if it isn't an empty string
+        if (value.raw !== '') {
+            if (value.ttl) {
+                r.push(TXT(value.raw, rawspf, TTL(value.ttl)));
+            } else {
+                r.push(TXT(value.raw, rawspf));
+            }
         }
     }
 
     // If overflow is specified, enable splitting.
     if (value.overflow) {
         p.split = value.overflow;
+    }
+
+    if (value.overhead1) {
+        p.overhead1 = value.overhead1;
+    }
+
+    if (value.txtMaxSize) {
+        p.txtMaxSize = value.txtMaxSize;
     }
 
     // Generate a TXT record with the metaparameters.
@@ -819,4 +886,16 @@ function DKIM(arr) {
     for (var i = 0, len = arr.length; i < len; i += chunkSize)
         R.push(arr.slice(i, i + chunkSize));
     return R;
+}
+
+// Function wrapper for glob() for recursively loading files.
+// As the main function (in Go) is in our control anyway, all the values here are already sanity-checked.
+// Note: glob() is only an internal undocumented helper function. So use it on your own risk.
+function require_glob() {
+    arguments[2] = "js"; // force to only include .js files.
+    var files = glob.apply(null, arguments);
+    for (i = 0; i < files.length; i++) {
+        require(files[i]);
+    }
+    return files
 }

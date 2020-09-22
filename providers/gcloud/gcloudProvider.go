@@ -72,7 +72,7 @@ func New(cfg map[string]string, metadata json.RawMessage) (providers.DNSServiceP
 	if err != nil {
 		return nil, err
 	}
-	var nss *string = nil
+	var nss *string
 	if val, ok := cfg["name_server_set"]; ok {
 		fmt.Printf("GCLOUD :name_server_set %s configured\n", val)
 		nss = sPtr(val)
@@ -179,7 +179,11 @@ func (g *gcloud) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Correc
 
 	// first collect keys that have changed
 	differ := diff.New(dc)
-	_, create, delete, modify := differ.IncrementalDiff(existingRecords)
+	_, create, delete, modify, err := differ.IncrementalDiff(existingRecords)
+	if err != nil {
+		return nil, err
+	}
+
 	changedKeys := map[key]bool{}
 	desc := ""
 	for _, c := range create {

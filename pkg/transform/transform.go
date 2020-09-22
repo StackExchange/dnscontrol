@@ -92,7 +92,7 @@ func IP(address net.IP, transforms []IPConversion) (net.IP, error) {
 		return nil, err
 	}
 	if len(ips) != 1 {
-		return nil, fmt.Errorf("Expect exactly one ip for IP result. Got: %s", ips)
+		return nil, fmt.Errorf("exactly one IP expected. Got: %s", ips)
 	}
 	return ips[0], err
 }
