@@ -656,8 +656,10 @@ function recordBuilder(type, opts) {
                 } else {
                     record.name += '.' + d.subdomain;
                 }
-                if (record.target.match(/\w[^.]/) == null) {
-                    record.target += '.' + d.subdomain + '.' + d.name + '.';
+                if (isNaN(IP(record.target))) {
+                    if (record.target.match(/\.$/) == null) {
+                        record.target += '.' + d.subdomain + '.' + d.name + '.';
+                    }
                 }
             }
 
