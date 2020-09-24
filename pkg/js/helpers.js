@@ -656,6 +656,9 @@ function recordBuilder(type, opts) {
                 } else {
                     record.name += '.' + d.subdomain;
                 }
+                if (record.target.match(/\w[^.]/) == null) {
+                    record.target += '.' + d.subdomain + '.' + d.name + '.';
+                }
             }
 
             d.records.push(record);
