@@ -1,0 +1,73 @@
+{
+  "registrars":
+  [
+    { "name": "Third-Party", "type":"NONE" }
+  ],
+  "dns_providers":
+  [
+    { "name":"Cloudflare", "type":"CLOUDFLAREAPI" }
+  ],
+  "domains":
+  [
+    {
+      "name":"foo.net",
+      "registrar":"Third-Party",
+      "dnsProviders": { "Cloudflare":-1 },
+      "records":
+      [
+        { "type":"A", "name":"@", "target":"10.1.1.1" },
+        { "type":"A", "name":"www", "target":"10.2.2.2" },
+        { "type":"A", "name":"bar", "target":"10.3.3.3" },
+        { "type":"A", "name":"www.bar", "target":"10.4.4.4" }
+      ]
+    },
+    {
+      "name":"foo.tld",
+      "registrar":"Third-Party",
+      "dnsProviders": { "Cloudflare": -1},
+      "records":
+      [
+        { "type":"A", "name":"@", "target":"20.5.5.5" },
+        { "type":"A", "name":"www", "target":"20.6.6.6"},
+        { "type":"A", "name":"@", "target": "20.11.11.11"},
+        { "type":"A", "name":"www", "target":"20.11.11.11"}
+      ]
+    },
+    {
+      "name":"bar.foo.tld",
+      "registrar":"Third-Party",
+      "dnsProviders":{"Cloudflare":-1},
+      "records":
+      [
+        { "type":"A", "name":"@", "target":"30.7.7.7"},
+        { "type":"A","name":"www","target":"30.8.8.8"},
+        { "type":"A", "name":"bar", "target":"30.9.9.9"},
+        { "type":"A", "name":"www.bar", "target":"30.10.10.10"}
+      ]
+    },
+    {
+      "name":"foo.help",
+      "registrar":"Third-Party",
+      "dnsProviders":{"Cloudflare":-1},
+      "records":
+      [
+        { "type":"A","name":"@","target":"40.12.12.12"},
+        { "type":"A","name":"www","target":"40.12.12.12"},
+        { "type":"A","name":"morty","target":"40.17.17.17"},
+        { "type":"A","name":"www.morty","target":"40.18.18.18"}
+      ]
+    },
+    {
+      "name":"bar.foo.help",
+      "registrar":"Third-Party",
+      "dnsProviders":{"Cloudflare":-1},
+      "records":
+      [
+        { "type":"A","name":"@","target":"50.13.13.13"},
+        { "type":"A","name":"www","target":"50.14.14.14"},
+        { "type":"A","name":"zip","target":"50.15.15.15"},
+        { "type":"A","name":"www.zipr","target":"50.16.16.16"}
+      ]
+    }
+  ]
+}
