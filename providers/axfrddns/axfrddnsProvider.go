@@ -279,10 +279,12 @@ func (c *AxfrDdns) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Corr
 		}
 	}
 
-	if dc.AutoDNSSEC && !hasDnssecRecords {
-		fmt.Printf("Warning: AUTODNSSEC is set, but no DNSKEY or RRSIG record was found in the AXFR answer!\n")
-	} else if !dc.AutoDNSSEC && hasDnssecRecords {
-		fmt.Printf("Warning: AUTODNSSEC is not set, but DNSKEY or RRSIG records were found in the AXFR answer!\n")
+	// TODO(tlim): This check should be done on all providers. Move to the global validation code.
+	if dc.AutoDNSSEC == "on" && !hasDnssecRecords {
+		fmt.Printf("Warning: AUTODNSSEC is enabled, but no DNSKEY or RRSIG record was found in the AXFR answer!\n")
+	}
+	if dc.AutoDNSSEC == "off" && hasDnssecRecords {
+		fmt.Printf("Warning: AUTODNSSEC is disabled, but DNSKEY or RRSIG records were found in the AXFR answer!\n")
 	}
 
 	// Normalize
