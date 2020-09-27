@@ -392,9 +392,18 @@ func ValidateAndNormalizeConfig(config *models.DNSConfig) (errs []error) {
 				errs = append(errs, fmt.Errorf("record named '%s' does not have correct FQDN for domain '%s'. FQDN: %s", r.Name, d.Name, r.NameFQDN))
 			}
 		}
+		// Verify AutoDNSSEC is valid.
+		errs = append(errs, checkAutoDNSSEC(d)...)
 	}
 
 	return errs
+}
+
+func checkAutoDNSSEC(dc *models.DomainConfig) (errs []error) {
+	if dc.AutoDNSSEC != "" && dc.AutoDNSSEC != "on" && dc.AutoDNSSEC != "off" {
+		errs = append(errs, fmt.Errorf("Domain %q AutoDNSSEC=%q is invalid (expecting \"\", \"off\", or \"on\")", dc.Name, dc.AutoDNSSEC))
+	}
+	return
 }
 
 func checkCNAMEs(dc *models.DomainConfig) (errs []error) {
@@ -510,7 +519,7 @@ func checkProviderCapabilities(dc *models.DomainConfig) error {
 		hasAny := false
 		switch ty.rType {
 		case "AUTODNSSEC":
-			if dc.AutoDNSSEC {
+			if dc.AutoDNSSEC != "" {
 				hasAny = true
 			}
 		default:
