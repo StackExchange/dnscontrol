@@ -55,12 +55,12 @@ D_EXTEND("bar.foo.here",
   A("www", "60.22.22.22")
 );
 D_EXTEND("baz.bar.foo.here",
-  A("@", "60.33.33.33"),
-  A("www", "60.44.44.44")
+  A("@", "60.23.23.23"),
+  A("www", "60.24.24.24")
 );
 
 // Zone extended by a sub-subdomain.
 D_EXTEND("a.long.path.of.sub.domains.foo.net",
-  A("@", "60.33.33.33"),
-  A("www", "60.44.44.44")
+  A("@", "10.25.25.25"),
+  A("www", "10.26.26.26")
 );

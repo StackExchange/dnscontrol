@@ -19,8 +19,8 @@
         { "type":"A", "name":"www", "target":"10.2.2.2" },
         { "type":"A", "name":"bar", "target":"10.3.3.3" },
         { "type":"A", "name":"www.bar", "target":"10.4.4.4" },
-        { "type":"A","name":"a.long.path.of.sub.domains","target":"60.33.33.33"},
-        { "type":"A","name":"www.a.long.path.of.sub.domains","target":"60.44.44.44"}
+        { "type":"A","name":"a.long.path.of.sub.domains","target":"10.25.25.25"},
+        { "type":"A","name":"www.a.long.path.of.sub.domains","target":"10.26.26.26"}
       ]
     },
     {
@@ -79,8 +79,8 @@
         { "type":"A","name":"www","target":"60.20.20.20"},
         { "type":"A","name":"bar","target":"60.21.21.21"},
         { "type":"A","name":"www.bar","target":"60.22.22.22"},
-        { "type":"A","name":"baz.bar","target":"60.33.33.33"},
-        { "type":"A","name":"www.baz.bar","target":"60.44.44.44"}
+        { "type":"A","name":"baz.bar","target":"60.23.23.23"},
+        { "type":"A","name":"www.baz.bar","target":"60.24.24.24"}
       ]
     }
   ]
