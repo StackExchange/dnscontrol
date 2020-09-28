@@ -21,12 +21,10 @@ D("bar.foo.tld", REG, DnsProvider(CF),
   A("www", "30.8.8.8")
 );
 D_EXTEND("bar.foo.tld",
-  A("@", "30.9.9.9"),
-  A("www", "30.10.10.10")
+  A("a", "30.9.9.9")
 );
 D_EXTEND("foo.tld",
-  A("@", "20.11.11.11"),
-  A("www", "20.11.11.11")
+  A("a", "20.10.10.10")
 );
 
 // Zone and subdomain zone, each get extended by a subdomain.
@@ -47,3 +45,22 @@ D_EXTEND("morty.foo.help",
   A("www", "40.18.18.18")
 );
 
+// Zone extended by a subdomain and sub-subdomain.
+D("foo.here", REG, DnsProvider(CF),
+  A("@", "60.19.19.19"),
+  A("www", "60.20.20.20")
+);
+D_EXTEND("bar.foo.here",
+  A("@", "60.21.21.21"),
+  A("www", "60.22.22.22")
+);
+D_EXTEND("baz.bar.foo.here",
+  A("@", "60.33.33.33"),
+  A("www", "60.44.44.44")
+);
+
+// Zone extended by a sub-subdomain.
+D_EXTEND("a.long.path.of.sub.domains.foo.net",
+  A("@", "60.33.33.33"),
+  A("www", "60.44.44.44")
+);

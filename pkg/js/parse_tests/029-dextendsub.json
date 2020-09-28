@@ -18,7 +18,9 @@
         { "type":"A", "name":"@", "target":"10.1.1.1" },
         { "type":"A", "name":"www", "target":"10.2.2.2" },
         { "type":"A", "name":"bar", "target":"10.3.3.3" },
-        { "type":"A", "name":"www.bar", "target":"10.4.4.4" }
+        { "type":"A", "name":"www.bar", "target":"10.4.4.4" },
+        { "type":"A","name":"a.long.path.of.sub.domains","target":"60.33.33.33"},
+        { "type":"A","name":"www.a.long.path.of.sub.domains","target":"60.44.44.44"}
       ]
     },
     {
@@ -29,8 +31,7 @@
       [
         { "type":"A", "name":"@", "target":"20.5.5.5" },
         { "type":"A", "name":"www", "target":"20.6.6.6"},
-        { "type":"A", "name":"@", "target": "20.11.11.11"},
-        { "type":"A", "name":"www", "target":"20.11.11.11"}
+        { "type":"A", "name":"a", "target": "20.10.10.10"}
       ]
     },
     {
@@ -41,8 +42,7 @@
       [
         { "type":"A", "name":"@", "target":"30.7.7.7"},
         { "type":"A","name":"www","target":"30.8.8.8"},
-        { "type":"A", "name":"bar", "target":"30.9.9.9"},
-        { "type":"A", "name":"www.bar", "target":"30.10.10.10"}
+        { "type":"A", "name":"a", "target":"30.9.9.9"}
       ]
     },
     {
@@ -66,7 +66,21 @@
         { "type":"A","name":"@","target":"50.13.13.13"},
         { "type":"A","name":"www","target":"50.14.14.14"},
         { "type":"A","name":"zip","target":"50.15.15.15"},
-        { "type":"A","name":"www.zipr","target":"50.16.16.16"}
+        { "type":"A","name":"www.zip","target":"50.16.16.16"}
+      ]
+    },
+    {
+      "name":"foo.here",
+      "registrar":"Third-Party",
+      "dnsProviders":{"Cloudflare":-1},
+      "records":
+      [
+        { "type":"A","name":"@","target":"60.19.19.19"},
+        { "type":"A","name":"www","target":"60.20.20.20"},
+        { "type":"A","name":"bar","target":"60.21.21.21"},
+        { "type":"A","name":"www.bar","target":"60.22.22.22"},
+        { "type":"A","name":"baz.bar","target":"60.33.33.33"},
+        { "type":"A","name":"www.baz.bar","target":"60.44.44.44"}
       ]
     }
   ]
