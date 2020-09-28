@@ -663,6 +663,7 @@ function recordBuilder(type, opts) {
             opts.applyModifier(record, modifiers);
             opts.transform(record, parsedArgs, modifiers);
 
+            // Handle D_EXTEND() with subdomains.
             if (d.subdomain) {
                 if (record.name == '@') {
                     record.name = d.subdomain;
