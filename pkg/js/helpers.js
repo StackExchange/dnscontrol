@@ -123,12 +123,17 @@ function D_EXTEND(name) {
 // _getDomainObject(name): This is a small helper function to get the domain JS object returned.
 // returns the domain object defined for the given name or subdomain thereof
 function _getDomainObject(name) {
+    domain = null;
+    domain_len = 0;
     for(var i = 0; i < conf.domains.length; i++) {
         if (name.substr(-conf.domains[i]['name'].length) == conf.domains[i]['name']) {
-            return {'id': i, 'obj': conf.domains[i]};
+            if (conf.domains[i]['name'].length > domain_len) {
+                domain_len = conf.domains[i]['name'].length;
+                domain = {'id': i, 'obj': conf.domains[i]};
+            }
         }
     }
-    return null;
+    return domain;
 }
 
 // DEFAULTS provides a set of default arguments to apply to all future domains.
