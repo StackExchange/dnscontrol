@@ -254,6 +254,27 @@
           "target": "otherdomain.tld."
         }
       ]
+    },
+    {
+      "name": "foo.com",
+      "registrar": "Third-Party",
+      "dnsProviders": {
+        "Cloudflare": -1
+      },
+      "records": [
+        {
+          "type": "CF_REDIRECT",
+          "name": "@",
+          "subdomain": "",
+          "target": "test.foo.com,https://goo.com/$1"
+        },
+        {
+          "type": "CF_TEMP_REDIRECT",
+          "name": "@",
+          "subdomain": "",
+          "target": "test.foo.com,https://goo.com/$1"
+        }
+      ]
     }
   ]
 }

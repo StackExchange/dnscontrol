@@ -76,3 +76,9 @@ D_EXTEND("sub.example.tld",
     // Also test for MX, NS, ANAME, SRV.
     // Not sure if PTR needs any special treatment. Haven't thought about it much.
 );
+
+D("foo.com", REG, DnsProvider(CF));
+D_EXTEND("sub.foo.com",
+    CF_REDIRECT("test.foo.com","https://goo.com/$1"),
+    CF_TEMP_REDIRECT("test.foo.com","https://goo.com/$1")
+);
