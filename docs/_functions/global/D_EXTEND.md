@@ -5,23 +5,8 @@ parameters:
   - modifiers...
 ---
 
-`D_EXTEND` adds records (and metadata) to a domain previously defined
-by `D()`, optionally adding sudomain records.
-
-The first argument is a domain name. If it exactly matches a
-previously defined domain, `D_EXTEND()` behaves the same as `D()`,
-simply adding records as if they had been specified in the original
-`D()`.
-
-If the domain name does not match an existing domain, but could be a
-(non-delegated) subdomain of one, the new records (and metadata) are
-added with the subdomain part appended to all record names. See the
-examples below.
-
-Matching the domain name to previously-defined domains is done using a
-`longest match` algorithm.  If `domain.tld` and sub.domain.tld are
-defined, `D_EXTEND('sub.sub.domain.tld', ...)` would match
-`sub.domain.tld`, not `domain.tld`.
+`D_EXTEND` adds records (and metadata) to a domain. The parent domain must have previously been defined by `D()`. As with `D()`, the first argument to `D_EXTEND()` is the domain name. The domain name provided to `D_EXTEND()` may also include non-delegated subdomain parts. If a subdomain is provided the subdomain part will be appended to all record names, with the exception of `CF_REDIRECT` and `CF_TEMP_REDIRECT`
+which are always on the apex domain. See the documentation of `D` for further details.
 
 Example:
 
@@ -43,7 +28,7 @@ D_EXTEND('sub.sub.domain.tld',
 )
 {%endhighlight%}
 
-This will end up in following modifications:
+This will end up in the following modifications:
 ```
 ******************** Domain: domain.tld
 ----- Getting nameservers from: registrar
