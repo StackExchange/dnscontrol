@@ -62,7 +62,7 @@ import (
 //     setters (SetTarget*) and getters (GetTarget*) as they will always work.
 // SubDomain:
 //    This is the subdomain path, if any, imported from the configuration. If
-//        present at the time of canonicalisation it is inserted between the
+//        present at the time of canonicalization it is inserted between the
 //        Name and origin when constructing a canonical (FQDN) target.
 //
 // Idioms:
