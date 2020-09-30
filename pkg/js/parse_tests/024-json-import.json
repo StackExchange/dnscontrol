@@ -10,6 +10,7 @@
         {
           "type": "A",
           "name": "@",
+          "subdomain": "",
           "target": "1.1.1.1"
         }
       ]

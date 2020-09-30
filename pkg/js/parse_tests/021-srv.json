@@ -10,6 +10,7 @@
         {
           "type": "SRV",
           "name": "_ntp._udp",
+          "subdomain": "",
           "target": "one.foo.com.",
           "srvpriority": 1,
           "srvweight": 100,
@@ -18,6 +19,7 @@
         {
           "type": "SRV",
           "name": "_ntp._udp",
+          "subdomain": "",
           "target": "two",
           "srvpriority": 2,
           "srvweight": 100,
@@ -26,6 +28,7 @@
         {
           "type": "SRV",
           "name": "_ntp._udp",
+          "subdomain": "",
           "target": "localhost",
           "srvpriority": 3,
           "srvweight": 100,
@@ -34,6 +37,7 @@
         {
           "type": "SRV",
           "name": "_ntp._udp",
+          "subdomain": "",
           "target": "three.example.com.",
           "srvpriority": 4,
           "srvweight": 100,
@@ -42,6 +46,7 @@
         {
           "type": "SRV",
           "name": "_ntp._udp",
+          "subdomain": "",
           "target": "zeros",
           "srvport": 1
         }

@@ -64,3 +64,15 @@ D_EXTEND("a.long.path.of.sub.domains.foo.net",
   A("@", "10.25.25.25"),
   A("www", "10.26.26.26")
 );
+
+// Zone extended by a subdomain, with absolute and relative CNAME targets
+D("example.tld", REG, DnsProvider(CF));
+D_EXTEND("sub.example.tld",
+    CNAME("a", "b"), // a.sub.example.tld -> b.sub.example.tld
+    CNAME("b", "@"), // a.sub.example.tld -> sub.example.tld
+    CNAME("c", "sub.example.tld."), // a.sub.example.tld -> sub.example.tld
+    //CNAME("d", "x.y"), // Error. Contains dot but doesn't end with dot.
+    CNAME("e", "otherdomain.tld.") // a.sub.example.tld -> otherdomain.tld
+    // Also test for MX, NS, ANAME, SRV.
+    // Not sure if PTR needs any special treatment. Haven't thought about it much.
+);

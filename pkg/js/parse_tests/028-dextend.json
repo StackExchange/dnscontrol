@@ -22,11 +22,13 @@
           {
             "type": "A",
             "name": "@",
+            "subdomain": "",
             "target": "10.1.1.1"
           },
           {
             "type": "A",
             "name": "www",
+            "subdomain": "",
             "target": "10.2.2.2"
           }
         ]
@@ -41,11 +43,13 @@
           {
             "type": "A",
             "name": "@",
+            "subdomain": "",
             "target": "10.3.3.3"
           },
           {
             "type": "A",
             "name": "www",
+            "subdomain": "",
             "target": "10.4.4.4"
           }
         ]
@@ -60,21 +64,25 @@
           {
             "type": "A",
             "name": "@",
+            "subdomain": "",
             "target": "10.5.5.5"
           },
           {
             "type": "A",
             "name": "www",
+            "subdomain": "",
             "target": "10.6.6.6"
           },
           {
             "type": "A",
             "name": "more1",
+            "subdomain": "",
             "target": "10.7.7.7"
           },
           {
             "type": "A",
             "name": "more2",
+            "subdomain": "",
             "target": "10.8.8.8"
           }
         ]

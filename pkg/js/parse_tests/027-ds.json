@@ -10,6 +10,7 @@
         {
           "type": "DS",
           "name": "@",
+          "subdomain": "",
           "target": "",
           "dskeytag": 1000,
           "dsalgorithm": 13,
@@ -19,6 +20,7 @@
         {
           "type": "DS",
           "name": "@",
+          "subdomain": "",
           "target": "",
           "dskeytag": 1,
           "dsalgorithm": 1,

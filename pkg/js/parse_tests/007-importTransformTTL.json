@@ -10,6 +10,7 @@
         {
           "type": "IMPORT_TRANSFORM",
           "name": "@",
+          "subdomain": "",
           "target": "foo2.com",
           "ttl": 60,
           "meta": {

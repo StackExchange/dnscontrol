@@ -10,6 +10,7 @@
         {
           "type": "ALIAS",
           "name": "@",
+          "subdomain": "",
           "target": "foo.com."
         }
       ]
