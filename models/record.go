@@ -50,7 +50,7 @@ import (
 //        the intended FQDN is "foo.com.foo.com." (which may look odd)
 // NameFQDN:
 //    This is the FQDN version of Name.
-//    It should never have a trailiing ".".
+//    It should never have a trailing ".".
 //    NOTE: Eventually we will unexport Name/NameFQDN. Please start using
 //      the setters (SetLabel/SetLabelFromFQDN) and getters (GetLabel/GetLabelFQDN).
 //      as they will always work.
@@ -60,13 +60,18 @@ import (
 //     fields.
 //   NOTE: Eventually we will unexport Target. Please start using the
 //     setters (SetTarget*) and getters (GetTarget*) as they will always work.
+// SubDomain:
+//    This is the subdomain path, if any, imported from the configuration. If
+//        present at the time of canonicalisation it is inserted between the
+//        Name and origin when constructing a canonical (FQDN) target.
 //
 // Idioms:
 //  rec.Label() == "@"   // Is this record at the apex?
 //
 type RecordConfig struct {
-	Type             string            `json:"type"`   // All caps rtype name.
-	Name             string            `json:"name"`   // The short name. See above.
+	Type             string            `json:"type"` // All caps rtype name.
+	Name             string            `json:"name"` // The short name. See above.
+	SubDomain        string            `json:"subdomain"`
 	NameFQDN         string            `json:"-"`      // Must end with ".$origin". See above.
 	Target           string            `json:"target"` // If a name, must end with "."
 	TTL              uint32            `json:"ttl,omitempty"`

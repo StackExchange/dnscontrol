@@ -304,7 +304,11 @@ func ValidateAndNormalizeConfig(config *models.DNSConfig) (errs []error) {
 				// These record types have a target that is a hostname.
 				// We normalize them to a FQDN so there is less variation to handle.  If a
 				// provider API requires a shortname, the provider must do the shortening.
-				rec.SetTarget(dnsutil.AddOrigin(rec.GetTargetField(), domain.Name+"."))
+				origin := domain.Name + "."
+				if len(rec.SubDomain) > 0 {
+					origin = rec.SubDomain + "." + origin
+				}
+				rec.SetTarget(dnsutil.AddOrigin(rec.GetTargetField(), origin))
 			} else if rec.Type == "A" || rec.Type == "AAAA" {
 				rec.SetTarget(net.ParseIP(rec.GetTargetField()).String())
 			} else if rec.Type == "PTR" {

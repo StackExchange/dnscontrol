@@ -52,8 +52,8 @@ function NewDnsProvider(name, type, meta) {
 function newDomain(name, registrar) {
     return {
         name: name,
-        registrar: registrar,
         subdomain: '',
+        registrar: registrar,
         meta: {},
         records: [],
         dnsProviders: {},
@@ -661,11 +661,7 @@ function recordBuilder(type, opts) {
                 } else {
                     record.name += '.' + d.subdomain;
                 }
-                if (isNaN(IP(record.target))) {
-                    if (record.target.match(/\.$/) == null) {
-                        record.target += '.' + d.subdomain + '.' + d.name + '.';
-                    }
-                }
+                record.subdomain = d.subdomain;
             }
 
             d.records.push(record);
@@ -784,6 +780,7 @@ var CF_TEMP_REDIRECT = recordBuilder('CF_TEMP_REDIRECT', {
         ['destination', _validateCloudflareRedirect],
     ],
     transform: function(record, args, modifiers) {
+        console.log("CF_TEMP_REDIRECT:fn", JSON.stringify(record), JSON.stringify(args), JSON.stringify(modifiers));
         record.name = '@';
         record.target = args.source + ',' + args.destination;
     },

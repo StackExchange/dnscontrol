@@ -10,6 +10,7 @@
         {
           "type": "AZURE_ALIAS",
           "name": "atest",
+          "subdomain": "",
           "target": "foo.com.",
           "azure_alias": {
             "type": "A"
@@ -18,6 +19,7 @@
         {
           "type": "AZURE_ALIAS",
           "name": "aaaatest",
+          "subdomain": "",
           "target": "foo.com.",
           "azure_alias": {
             "type": "AAAA"
@@ -26,6 +28,7 @@
         {
           "type": "AZURE_ALIAS",
           "name": "cnametest",
+          "subdomain": "",
           "target": "foo.com.",
           "azure_alias": {
             "type": "CNAME"

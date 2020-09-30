@@ -10,6 +10,7 @@
         {
           "type": "TXT",
           "name": "a",
+          "subdomain": "",
           "target": "simple",
           "txtstrings": [
             "simple"
@@ -18,6 +19,7 @@
         {
           "type": "TXT",
           "name": "b",
+          "subdomain": "",
           "target": "ws at end ",
           "txtstrings": [
             "ws at end "
@@ -26,6 +28,7 @@
         {
           "type": "TXT",
           "name": "c",
+          "subdomain": "",
           "target": "one",
           "txtstrings": [
             "one"
@@ -34,6 +37,7 @@
         {
           "type": "TXT",
           "name": "d",
+          "subdomain": "",
           "target": "bonie",
           "txtstrings": [
             "bonie",
@@ -43,6 +47,7 @@
         {
           "type": "TXT",
           "name": "e",
+          "subdomain": "",
           "target": "straw",
           "txtstrings": [
             "straw",
