@@ -5,8 +5,7 @@ parameters:
   - modifiers...
 ---
 
-`D_EXTEND` adds records (and metadata) to a domain. The parent domain must have previously been defined by `D()`. As with `D()`, the first argument to `D_EXTEND()` is the domain name. The domain name provided to `D_EXTEND()` may also include non-delegated subdomain parts. If a subdomain is provided the subdomain part will be appended to all record names, with the exception of `CF_REDIRECT` and `CF_TEMP_REDIRECT`
-which are always on the apex domain. See the documentation of `D` for further details.
+`D_EXTEND` adds records (and metadata) to a domain. The parent domain must have previously been defined by `D()`. As with `D()`, the first argument to `D_EXTEND()` is the domain name. The domain name provided to `D_EXTEND()` may also include non-delegated subdomain parts. If a subdomain is provided the subdomain part will be appended to all record names, with the exception of `CF_REDIRECT` and `CF_TEMP_REDIRECT` which are always on the apex domain. See the documentation of `D` for further details.
 
 Example:
 {% include startExample.html %}
