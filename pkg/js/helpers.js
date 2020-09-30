@@ -668,14 +668,14 @@ function recordBuilder(type, opts) {
             opts.applyModifier(record, modifiers);
             opts.transform(record, parsedArgs, modifiers);
 
-            // Handle D_EXTEND() with subdomains.
-            if (d.subdomain) {
+            if (d.subdomain && record.type != 'CF_REDIRECT' &&
+                    record.type != 'CF_TEMP_REDIRECT') {
+                record.subdomain = d.subdomain;
                 if (record.name == '@') {
                     record.name = d.subdomain;
                 } else {
                     record.name += '.' + d.subdomain;
                 }
-                record.subdomain = d.subdomain;
             }
 
             d.records.push(record);
