@@ -5,7 +5,7 @@ package gandi5
 import (
 	"fmt"
 
-	"github.com/tiramiseb/go-gandi/livedns"
+	"github.com/go-gandi/go-gandi/livedns"
 
 	"github.com/StackExchange/dnscontrol/v3/models"
 	"github.com/StackExchange/dnscontrol/v3/pkg/printer"

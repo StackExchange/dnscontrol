@@ -22,6 +22,7 @@ require (
 	github.com/dnsimple/dnsimple-go v0.62.0
 	github.com/exoscale/egoscale v0.23.0
 	github.com/go-acme/lego v2.7.2+incompatible
+	github.com/go-gandi/go-gandi v0.0.0-20200921091836-0d8a64b9cc09
 	github.com/gobwas/glob v0.2.4-0.20181002190808-e7a84e9525fe
 	github.com/google/go-github v17.0.0+incompatible
 	github.com/google/go-querystring v1.0.1-0.20190318165438-c8c88dbee036 // indirect
@@ -47,7 +48,6 @@ require (
 	github.com/tdewolff/minify v2.3.6+incompatible
 	github.com/tdewolff/parse v2.3.4+incompatible // indirect
 	github.com/tdewolff/test v1.0.6 // indirect
-	github.com/tiramiseb/go-gandi v0.0.0-20200902083645-30c32e50575d
 	github.com/urfave/cli/v2 v2.2.0
 	github.com/vultr/govultr v0.2.0
 	golang.org/x/crypto v0.0.0-20200820211705-5c72a883971a // indirect
