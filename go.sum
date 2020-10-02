@@ -80,8 +80,6 @@ github.com/andybalholm/cascadia v1.2.0 h1:vuRCkM5Ozh/BfmsaTm26kbjm0mIOM3yS5Ek/F5
 github.com/andybalholm/cascadia v1.2.0/go.mod h1:YCyR8vOZT9aZ1CHEd8ap0gMVm2aFgxBp0T0eFw1RUQY=
 github.com/armon/go-metrics v0.0.0-20180917152333-f0300d1749da/go.mod h1:Q73ZrmVTwzkszR9V5SSuryQ31EELlFMUz1kKyl939pY=
 github.com/armon/go-radix v0.0.0-20180808171621-7fddfc383310/go.mod h1:ufUuZ+zHj4x4TnLV4JWEpy2hxWSpsRywHrMgIH9cCH8=
-github.com/aws/aws-sdk-go v1.34.13 h1:wwNWSUh4FGJxXVOVVNj2lWI8wTe5hK8sGWlK7ziEcgg=
-github.com/aws/aws-sdk-go v1.34.13/go.mod h1:5zCpMtNQVjRREroY7sYe8lOMRSxkhG6MZveU8YkpAk0=
 github.com/aws/aws-sdk-go v1.34.18 h1:Mo/Clq3u1dQFzpg8YQqBii8m+Vl3fWIfHi6kXs5wpuM=
 github.com/aws/aws-sdk-go v1.34.18/go.mod h1:5zCpMtNQVjRREroY7sYe8lOMRSxkhG6MZveU8YkpAk0=
 github.com/babolivier/go-doh-client v0.0.0-20200723140836-2f86c709ac4a h1:ecIUxgsssZnvVeNNsreMlWe6Y7RCfcoayiO7xI0+bC0=
@@ -109,8 +107,6 @@ github.com/davecgh/go-spew v1.1.1/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSs
 github.com/dgrijalva/jwt-go v3.2.0+incompatible/go.mod h1:E3ru+11k8xSBh+hMPgOLZmtrrCbhqsmaPHjLKYnJCaQ=
 github.com/dgrijalva/jwt-go v3.2.1-0.20190620180102-5e25c22bd5d6+incompatible h1:4jGdduO4ceTJFKf0IhgaB8NJapGqKHwC2b4xQ/cXujM=
 github.com/dgrijalva/jwt-go v3.2.1-0.20190620180102-5e25c22bd5d6+incompatible/go.mod h1:E3ru+11k8xSBh+hMPgOLZmtrrCbhqsmaPHjLKYnJCaQ=
-github.com/digitalocean/godo v1.36.0 h1:eRF8wNzHZyU7/wI3De/MQgiVSWdseDaf27bXj2gnOO0=
-github.com/digitalocean/godo v1.36.0/go.mod h1:p7dOjjtSBqCTUksqtA5Fd3uaKs9kyTq2xcz76ulEJRU=
 github.com/digitalocean/godo v1.42.1 h1:SJ/XMVsp5CZmyQal8gLlOl9jSl1i3FaN20LlgtK5ZMs=
 github.com/digitalocean/godo v1.42.1/go.mod h1:p7dOjjtSBqCTUksqtA5Fd3uaKs9kyTq2xcz76ulEJRU=
 github.com/dimchansky/utfbom v1.1.0 h1:FcM3g+nofKgUteL8dm/UpdRXNC9KmADgTpLKsu0TRo4=
@@ -128,6 +124,8 @@ github.com/fatih/structs v1.1.0 h1:Q7juDM0QtcnhCpeyLGQKyg4TOIghuNXrkL32pHAUMxo=
 github.com/fatih/structs v1.1.0/go.mod h1:9NiDSp5zOcgEDl+j00MP/WkGVPOlPRLejGD8Ga6PJ7M=
 github.com/go-acme/lego v2.7.2+incompatible h1:ThhpPBgf6oa9X/vRd0kEmWOsX7+vmYdckmGZSb+FEp0=
 github.com/go-acme/lego v2.7.2+incompatible/go.mod h1:yzMNe9CasVUhkquNvti5nAtPmG94USbYxYrZfTkIn0M=
+github.com/go-gandi/go-gandi v0.0.0-20200921091836-0d8a64b9cc09 h1:w+iZczt5J4LJa13RX5uguKI866vIEMOESgXr4XcwrwA=
+github.com/go-gandi/go-gandi v0.0.0-20200921091836-0d8a64b9cc09/go.mod h1:Vv36tv/GTi8FNAFIQ88+9GPHm4CAihAuJu7rfqRJ9aY=
 github.com/go-gl/glfw v0.0.0-20190409004039-e6da0acd62b1/go.mod h1:vR7hzQXu2zJy9AVAgeJqvqgH9Q5CA+iKCZ2gyEVpxRU=
 github.com/go-gl/glfw/v3.3/glfw v0.0.0-20191125211704-12ad95a8df72/go.mod h1:tQ2UAYgL5IevRw8kRxooKSPJfGvJ9fJQFa0TUsXzTg8=
 github.com/go-gl/glfw/v3.3/glfw v0.0.0-20200222043503-6f7a984d4dc4/go.mod h1:tQ2UAYgL5IevRw8kRxooKSPJfGvJ9fJQFa0TUsXzTg8=
@@ -277,8 +275,6 @@ github.com/mitchellh/mapstructure v1.1.2/go.mod h1:FVVH3fgwuzCH5S8UJGiWEs2h04kUh
 github.com/mitchellh/mapstructure v1.3.3 h1:SzB1nHZ2Xi+17FP0zVQBHIZqvwRN9408fJO8h+eeNA8=
 github.com/mitchellh/mapstructure v1.3.3/go.mod h1:bFUtVrKA4DC2yAKiSyO/QUcy7e+RRV2QTWOzhPopBRo=
 github.com/mitchellh/reflectwalk v1.0.0/go.mod h1:mSTlrgnPZtwu0c4WaC2kGObEpuNDbx0jmZXqmk4esnw=
-github.com/mittwald/go-powerdns v0.4.0 h1:vEl2+4JINusy5NF8weObVRCuvHv8wqNBVMPZSQWq9zo=
-github.com/mittwald/go-powerdns v0.4.0/go.mod h1:bI/sZBAWyTViDknOTp19VfDxVEnh1U7rWPx2aRKtlzg=
 github.com/mittwald/go-powerdns v0.5.2 h1:kfqr9ZNIuxOjjBaoJcOFiy/19VmKEUgfJPmObDglPJU=
 github.com/mittwald/go-powerdns v0.5.2/go.mod h1:bI/sZBAWyTViDknOTp19VfDxVEnh1U7rWPx2aRKtlzg=
 github.com/mjibson/esc v0.2.0 h1:k96hdaR9Z+nMcnDwNrOvhdBqtjyMrbVyxLpsRCdP2mA=
@@ -343,10 +339,6 @@ github.com/tdewolff/parse v2.3.4+incompatible h1:x05/cnGwIMf4ceLuDMBOdQ1qGniMoxp
 github.com/tdewolff/parse v2.3.4+incompatible/go.mod h1:8oBwCsVmUkgHO8M5iCzSIDtpzXOT0WXX9cWhz+bIzJQ=
 github.com/tdewolff/test v1.0.6 h1:76mzYJQ83Op284kMT+63iCNCI7NEERsIN8dLM+RiKr4=
 github.com/tdewolff/test v1.0.6/go.mod h1:6DAvZliBAAnD7rhVgwaM7DE5/d9NMOAJ09SqYqeK4QE=
-github.com/tiramiseb/go-gandi v0.0.0-20200313161345-6b74caa58663 h1:rTwjlbRvLWPYjzF8lK8tb7p+3CbEHRN20KhLqn+GYwM=
-github.com/tiramiseb/go-gandi v0.0.0-20200313161345-6b74caa58663/go.mod h1:5ir8fVjXFOi0veARbG7mi3NzUZSUdiyAX7l+8QFQvd4=
-github.com/tiramiseb/go-gandi v0.0.0-20200902083645-30c32e50575d h1:ths1cZ72QwQ64xxoTi2o3w+TD7Gvt8xpOtRR4F1t8OY=
-github.com/tiramiseb/go-gandi v0.0.0-20200902083645-30c32e50575d/go.mod h1:5ir8fVjXFOi0veARbG7mi3NzUZSUdiyAX7l+8QFQvd4=
 github.com/urfave/cli/v2 v2.2.0 h1:JTTnM6wKzdA0Jqodd966MVj4vWbbquZykeX1sKbe2C4=
 github.com/urfave/cli/v2 v2.2.0/go.mod h1:SE9GqnLQmjVa0iPEY0f1w3ygNIYcIJ0OKPMoW2caLfQ=
 github.com/vultr/govultr v0.2.0 h1:CZSNNCk+PHz9hzmfH2PFGkDgc3qNetwZqtcaqL8shlg=
