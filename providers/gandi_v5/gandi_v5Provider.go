@@ -21,8 +21,8 @@ import (
 	"strconv"
 	"strings"
 
+	gandi "github.com/go-gandi/go-gandi"
 	"github.com/miekg/dns/dnsutil"
-	gandi "github.com/tiramiseb/go-gandi"
 
 	"github.com/StackExchange/dnscontrol/v3/models"
 	"github.com/StackExchange/dnscontrol/v3/pkg/diff"
