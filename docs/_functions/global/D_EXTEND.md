@@ -5,40 +5,63 @@ parameters:
   - modifiers...
 ---
 
-`D_EXTEND` adds records (and metadata) to a domain. The parent domain must have previously been defined by `D()`. As with `D()`, the first argument to `D_EXTEND()` is the domain name. The domain name provided to `D_EXTEND()` may also include non-delegated subdomain parts. If a subdomain is provided the subdomain part will be appended to all record names, with the exception of `CF_REDIRECT` and `CF_TEMP_REDIRECT` which are always on the apex domain. See the documentation of `D` for further details.
+`D_EXTEND` adds records (and metadata) to a domain previously defined
+by `D()`, optionally adding subdomain records.
+
+The first argument is a domain name. If it exactly matches a
+previously defined domain, `D_EXTEND()` behaves the same as `D()`,
+simply adding records as if they had been specified in the original
+`D()`.
+
+If the domain name does not match an existing domain, but could be a
+(non-delegated) subdomain of an existing domain, the new records (and
+metadata) are added with the subdomain part appended to all record
+names. See the examples below.
+
+Matching the domain name to previously-defined domains is done using a
+`longest match` algorithm.  If `domain.tld` and `sub.domain.tld` are
+defined as separate domains via separate `D()` statements, then
+`D_EXTEND('sub.sub.domain.tld', ...)` would match `sub.domain.tld`,
+not `domain.tld`.
+
+`CF_REDIRECT` and `CF_TEMP_REDIRECT` are always on the apex domain, not
+any subdomain.
 
 Example:
 
 {% include startExample.html %}
 {% highlight js %}
 D('domain.tld', REG, DnsProvider(DNS),
-  A('@', "127.0.0.1")         // domain.tld
+  A('@', "127.0.0.1"),        // domain.tld
   A('www', "127.0.0.2")       // www.domain.tld
-)
+);
 D_EXTEND('domain.tld',
   A('aaa', "127.0.0.3")       // aaa.domain.tld
-)
+);
 D_EXTEND('sub.domain.tld',
   A('bbb', "127.0.0.4"),      // bbb.sub.domain.tld
   A('ccc', "127.0.0.5")       // ccc.sub.domain.tld
-)
+);
 D_EXTEND('sub.sub.domain.tld',
   A('ddd', "127.0.0.6")       // ddd.sub.sub.domain.tld
-)
+);
+D_EXTEND('sub.domain.tld',
+  A('@', "127.0.0.7")         // sub.domain.tld
+);
 {%endhighlight%}
 
 This will end up in the following modifications:
 ```
 ******************** Domain: domain.tld
------ Getting nameservers from: registrar
------ DNS Provider: registrar...3 corrections
-#1: CREATE A domain.tld 127.0.0.1 ttl=43200
-#2: CREATE A www.domain.tld 127.0.0.2 ttl=43200
-#3: CREATE A aaa.domain.tld 127.0.0.3 ttl=43200
-#4: CREATE A bbb.sub.domain.tld 127.0.0.4 ttl=43200
-#5: CREATE A ccc.sub.domain.tld 127.0.0.5 ttl=43200
-#5: CREATE A ddd.sub.sub.domain.tld 127.0.0.6 ttl=43200
-#6: REFRESH zone domain.tld
+----- Getting nameservers from: cloudflare
+----- DNS Provider: cloudflare...7 corrections
+#1: CREATE record: aaa A 1 127.0.0.3
+#2: CREATE record: bbb.sub A 1 127.0.0.4
+#3: CREATE record: ccc.sub A 1 127.0.0.5
+#4: CREATE record: ddd.sub.sub A 1 127.0.0.6
+#5: CREATE record: @ A 1 127.0.0.1
+#6: CREATE record: sub A 1 127.0.0.7
+#7: CREATE record: www A 1 127.0.0.2
 ```
 {% include endExample.html %}
 
