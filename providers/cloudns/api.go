@@ -212,12 +212,10 @@ func (c *api) get(endpoint string, params requestParams) ([]byte, error) {
 	// Got error from API ?
 	var errResp errorResponse
 	err = json.Unmarshal(bodyString, &errResp)
-	if err != nil {
-		return []byte{}, err
-	}
-
-	if errResp.Status == "Failed" {
-		return bodyString, fmt.Errorf("ClouDNS API error: %s URL:%s%s ", errResp.Description, req.Host, req.URL.RequestURI())
+	if err == nil {
+		if errResp.Status == "Failed" {
+			return bodyString, fmt.Errorf("ClouDNS API error: %s URL:%s%s ", errResp.Description, req.Host, req.URL.RequestURI())
+		}
 	}
 
 	return bodyString, nil

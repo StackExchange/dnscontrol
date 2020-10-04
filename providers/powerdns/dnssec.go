@@ -2,6 +2,7 @@ package powerdns
 
 import (
 	"context"
+
 	"github.com/StackExchange/dnscontrol/v3/models"
 	"github.com/mittwald/go-powerdns/apis/cryptokeys"
 )
@@ -28,7 +29,7 @@ func (api *PowerDNS) getDNSSECCorrections(dc *models.DomainConfig) ([]*models.Co
 	}
 
 	// dnssec is enabled, we want it to be disabled
-	if hasEnabledKey && !dc.AutoDNSSEC {
+	if hasEnabledKey && dc.AutoDNSSEC == "off" {
 		return []*models.Correction{
 			{
 				Msg: "Disable DNSSEC",
@@ -38,7 +39,7 @@ func (api *PowerDNS) getDNSSECCorrections(dc *models.DomainConfig) ([]*models.Co
 	}
 
 	// dnssec is disabled, we want it to be enabled
-	if !hasEnabledKey && dc.AutoDNSSEC {
+	if !hasEnabledKey && dc.AutoDNSSEC == "on" {
 		return []*models.Correction{
 			{
 				Msg: "Enable DNSSEC",

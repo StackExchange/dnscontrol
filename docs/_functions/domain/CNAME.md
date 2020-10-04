@@ -17,7 +17,7 @@ Target should be a string representing the CNAME target. If it is a single label
 D("example.com", REGISTRAR, DnsProvider("R53"),
   CNAME("foo", "google.com."), // foo.example.com -> google.com
   CNAME("abc", "@"), // abc.example.com -> example.com
-  CNAME("def", "test.subdomain"), // def.example.com -> test.subdomain.example.com
+  CNAME("def", "test"), // def.example.com -> test.example.com
 );
 
 {%endhighlight%}
