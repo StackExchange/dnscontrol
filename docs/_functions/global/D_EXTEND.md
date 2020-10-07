@@ -78,10 +78,6 @@ This will end up in the following modifications:
 ```
 {% include endExample.html %}
 
-BUG: There is currently a bug with domain matching. If domain
-`do.tld` and `sub.do.tld` exist, then `D_EXTEND("ub.do.tld", ...` will
-extend `sub.do.tld`.  This will be fixed before the next release.
-
 ProTips: `D_EXTEND()` permits you to create very complex and
 sophisticated configurations, but you shouldn't. Be nice to the next
 person that edits the file, who may not be as expert as yourself.
