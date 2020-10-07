@@ -158,7 +158,7 @@ func (c *api) get(endpoint string) ([]byte, error) {
 
 	if resp.StatusCode == 400 {
 		// 400, error message is in the body as plain text
-		return nil, fmt.Errorf("CSC Global API error: %w URL: %s%s",
+		return nil, fmt.Errorf("CSC Global API error: %s URL: %s%s",
 			bodyString,
 			req.Host, req.URL.RequestURI())
 	}
