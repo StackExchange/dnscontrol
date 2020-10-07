@@ -22,19 +22,16 @@
         {
           "type": "A",
           "name": "@",
-          "subdomain": "",
           "target": "1.2.3.4"
         },
         {
           "type": "A",
           "name": "p1",
-          "subdomain": "",
           "target": "1.2.3.5"
         },
         {
           "type": "A",
           "name": "p255",
-          "subdomain": "",
           "target": "1.2.4.3"
         }
       ]

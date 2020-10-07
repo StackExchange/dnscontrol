@@ -15,7 +15,6 @@
         {
           "type": "A",
           "name": "@",
-          "subdomain": "",
           "target": "1.2.3.4",
           "meta": {
             "cloudflare_proxy": "ON"

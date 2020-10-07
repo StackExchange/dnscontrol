@@ -22,13 +22,11 @@
         {
           "type": "A",
           "name": "@",
-          "subdomain": "",
           "target": "10.1.1.1"
         },
         {
           "type": "A",
           "name": "www",
-          "subdomain": "",
           "target": "10.2.2.2"
         },
         {
@@ -67,19 +65,16 @@
         {
           "type": "A",
           "name": "@",
-          "subdomain": "",
           "target": "20.5.5.5"
         },
         {
           "type": "A",
           "name": "www",
-          "subdomain": "",
           "target": "20.6.6.6"
         },
         {
           "type": "A",
           "name": "a",
-          "subdomain": "",
           "target": "20.10.10.10"
         }
       ]
@@ -94,19 +89,16 @@
         {
           "type": "A",
           "name": "@",
-          "subdomain": "",
           "target": "30.7.7.7"
         },
         {
           "type": "A",
           "name": "www",
-          "subdomain": "",
           "target": "30.8.8.8"
         },
         {
           "type": "A",
           "name": "a",
-          "subdomain": "",
           "target": "30.9.9.9"
         }
       ]
@@ -121,13 +113,11 @@
         {
           "type": "A",
           "name": "@",
-          "subdomain": "",
           "target": "40.12.12.12"
         },
         {
           "type": "A",
           "name": "www",
-          "subdomain": "",
           "target": "40.12.12.12"
         },
         {
@@ -154,13 +144,11 @@
         {
           "type": "A",
           "name": "@",
-          "subdomain": "",
           "target": "50.13.13.13"
         },
         {
           "type": "A",
           "name": "www",
-          "subdomain": "",
           "target": "50.14.14.14"
         },
         {
@@ -187,13 +175,11 @@
         {
           "type": "A",
           "name": "@",
-          "subdomain": "",
           "target": "60.19.19.19"
         },
         {
           "type": "A",
           "name": "www",
-          "subdomain": "",
           "target": "60.20.20.20"
         },
         {
@@ -265,13 +251,11 @@
         {
           "type": "CF_REDIRECT",
           "name": "@",
-          "subdomain": "",
           "target": "test.foo.com,https://goo.com/$1"
         },
         {
           "type": "CF_TEMP_REDIRECT",
           "name": "@",
-          "subdomain": "",
           "target": "test.foo.com,https://goo.com/$1"
         }
       ]

@@ -10,7 +10,6 @@
         {
           "type": "R53_ALIAS",
           "name": "mxtest",
-          "subdomain": "",
           "target": "foo.com.",
           "r53_alias": {
             "type": "MX"
@@ -19,7 +18,6 @@
         {
           "type": "R53_ALIAS",
           "name": "atest",
-          "subdomain": "",
           "target": "foo.com.",
           "r53_alias": {
             "type": "A"
@@ -28,7 +26,6 @@
         {
           "type": "R53_ALIAS",
           "name": "atest",
-          "subdomain": "",
           "target": "foo.com.",
           "r53_alias": {
             "type": "A",
@@ -38,7 +35,6 @@
         {
           "type": "R53_ALIAS",
           "name": "aaaatest",
-          "subdomain": "",
           "target": "foo.com.",
           "r53_alias": {
             "type": "AAAA"
@@ -47,7 +43,6 @@
         {
           "type": "R53_ALIAS",
           "name": "aaaatest",
-          "subdomain": "",
           "target": "foo.com.",
           "r53_alias": {
             "type": "AAAA",
@@ -57,7 +52,6 @@
         {
           "type": "R53_ALIAS",
           "name": "cnametest",
-          "subdomain": "",
           "target": "foo.com.",
           "r53_alias": {
             "type": "CNAME"
@@ -66,7 +60,6 @@
         {
           "type": "R53_ALIAS",
           "name": "ptrtest",
-          "subdomain": "",
           "target": "foo.com.",
           "r53_alias": {
             "type": "PTR"
@@ -75,7 +68,6 @@
         {
           "type": "R53_ALIAS",
           "name": "txttest",
-          "subdomain": "",
           "target": "foo.com.",
           "r53_alias": {
             "type": "TXT"
@@ -84,7 +76,6 @@
         {
           "type": "R53_ALIAS",
           "name": "srvtest",
-          "subdomain": "",
           "target": "foo.com.",
           "r53_alias": {
             "type": "SRV"
@@ -93,7 +84,6 @@
         {
           "type": "R53_ALIAS",
           "name": "spftest",
-          "subdomain": "",
           "target": "foo.com.",
           "r53_alias": {
             "type": "SPF"
@@ -102,7 +92,6 @@
         {
           "type": "R53_ALIAS",
           "name": "caatest",
-          "subdomain": "",
           "target": "foo.com.",
           "r53_alias": {
             "type": "CAA"
@@ -111,7 +100,6 @@
         {
           "type": "R53_ALIAS",
           "name": "naptrtest",
-          "subdomain": "",
           "target": "foo.com.",
           "r53_alias": {
             "type": "NAPTR"

@@ -10,31 +10,26 @@
         {
           "type": "A",
           "name": "@",
-          "subdomain": "",
           "target": "1.2.3.4"
         },
         {
           "type": "CNAME",
           "name": "A",
-          "subdomain": "",
           "target": "foo.com."
         },
         {
           "type": "CNAME",
           "name": "C",
-          "subdomain": "",
           "target": "foo.com."
         },
         {
           "type": "CNAME",
           "name": "D",
-          "subdomain": "",
           "target": "foo.com."
         },
         {
           "type": "CNAME",
           "name": "B",
-          "subdomain": "",
           "target": "foo.com."
         }
       ]

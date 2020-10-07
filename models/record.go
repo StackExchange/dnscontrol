@@ -70,7 +70,7 @@ import (
 type RecordConfig struct {
 	Type             string            `json:"type"` // All caps rtype name.
 	Name             string            `json:"name"` // The short name. See above.
-	SubDomain        string            `json:"subdomain"`
+	SubDomain        string            `json:"subdomain,omitempty"`
 	NameFQDN         string            `json:"-"`      // Must end with ".$origin". See above.
 	Target           string            `json:"target"` // If a name, must end with "."
 	TTL              uint32            `json:"ttl,omitempty"`

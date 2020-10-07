@@ -10,7 +10,6 @@
         {
           "type": "NAPTR",
           "name": "@",
-          "subdomain": "",
           "target": "example",
           "naptrorder": 100,
           "naptrpreference": 10,
@@ -21,7 +20,6 @@
         {
           "type": "NAPTR",
           "name": "@",
-          "subdomain": "",
           "target": "example",
           "naptrorder": 102,
           "naptrpreference": 10,

@@ -10,7 +10,6 @@
         {
           "type": "TXT",
           "name": "_dmarc",
-          "subdomain": "",
           "target": "v=DMARC1\\; p=reject\\; sp=reject\\; pct=100\\; rua=mailto:xx...@yyyy.com\\; ruf=mailto:xx...@yyyy.com\\; fo=1",
           "ttl": 300,
           "txtstrings": [
