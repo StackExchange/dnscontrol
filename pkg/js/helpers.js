@@ -120,20 +120,27 @@ function D_EXTEND(name) {
     conf.domains[domain.id] = domain.obj; // let's overwrite the object.
 }
 
-// _getDomainObject(name): This is a small helper function to get the domain JS object returned.
-// returns the domain object defined for the given name or subdomain thereof
+// _getDomainObject(name): This implements the domain matching
+// algorithm used by D_EXTEND(). Candidate matches are an exact match
+// of the domain's name, or if name is a proper subdomain of the
+// domain's name. The longest match is returned. 
 function _getDomainObject(name) {
-    domain = null;
-    domain_len = 0;
-    for(var i = 0; i < conf.domains.length; i++) {
-        if (name.substr(-conf.domains[i]['name'].length) == conf.domains[i]['name']) {
-            if (conf.domains[i]['name'].length > domain_len) {
-                domain_len = conf.domains[i]['name'].length;
-                domain = {'id': i, 'obj': conf.domains[i]};
-            }
-        }
+  domain = null;
+  domain_len = 0;
+  for (var i = 0; i < conf.domains.length; i++) {
+    thisname = conf.domains[i]["name"];
+    desiredsuffix = "." + thisname;
+    foundsuffix = name.substr(-desiredsuffix.length);
+    // If this is an exact match or the suffix matches...
+    if (name == thisname || foundsuffix == desiredsuffix) {
+      // If this match is a longer match than our current best match...
+      if (thisname.length > domain_len) {
+        domain_len = thisname.length;
+        domain = { id: i, obj: conf.domains[i] };
+      }
     }
-    return domain;
+  }
+  return domain;
 }
 
 // DEFAULTS provides a set of default arguments to apply to all future domains.
