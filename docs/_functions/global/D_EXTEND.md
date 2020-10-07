@@ -58,6 +58,7 @@ D_EXTEND("sub.domain.tld",
 {%endhighlight%}
 
 This will end up in the following modifications:
+
 ```
 ******************** Domain: domain.tld
 ----- Getting nameservers from: cloudflare
@@ -76,6 +77,10 @@ This will end up in the following modifications:
 #12: CREATE CNAME i.sub.domain.tld j.sub.domain.tld.
 ```
 {% include endExample.html %}
+
+BUG: There is currently a bug with domain matching. If domain
+`do.tld` and `sub.do.tld` exist, then `D_EXTEND("ub.do.tld", ...` will
+extend `sub.do.tld`.  This will be fixed before the next release.
 
 ProTips: `D_EXTEND()` permits you to create very complex and
 sophisticated configurations, but you shouldn't. Be nice to the next
