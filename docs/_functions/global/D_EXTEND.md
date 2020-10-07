@@ -58,6 +58,7 @@ D_EXTEND("sub.domain.tld",
 {%endhighlight%}
 
 This will end up in the following modifications:
+
 ```
 ******************** Domain: domain.tld
 ----- Getting nameservers from: cloudflare
