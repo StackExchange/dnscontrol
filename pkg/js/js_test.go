@@ -8,6 +8,7 @@ import (
 	"testing"
 	"unicode"
 
+	testifyrequire "github.com/stretchr/testify/require"
 	"github.com/tdewolff/minify"
 	minjson "github.com/tdewolff/minify/json"
 )
@@ -46,23 +47,32 @@ func TestParsedFiles(t *testing.T) {
 			if err != nil {
 				t.Fatal(err)
 			}
+			//			expectedFile := filepath.Join(testDir, f.Name()[:len(f.Name())-3]+".json")
+			//			expectedData, err := ioutil.ReadFile(expectedFile)
+			//			if err != nil {
+			//				t.Fatal(err)
+			//			}
+			//
+			//			expectedJSON, err := m.String("json", string(expectedData))
+			//			if err != nil {
+			//				t.Fatal(err)
+			//			}
+			//			es := string(expectedJSON)
+			//			as := string(actualJSON)
+			//			if es != as {
+			//				t.Errorf("Expected and actual json don't match: %s", f.Name())
+			//				t.Logf("Expected(%v): %s", len(es), es)
+			//				t.Logf("Actual  (%v): %s", len(as), as)
+			//			}
 			expectedFile := filepath.Join(testDir, f.Name()[:len(f.Name())-3]+".json")
-			expectedData, err := ioutil.ReadFile(expectedFile)
+			expectedJSON, err := ioutil.ReadFile(expectedFile)
 			if err != nil {
 				t.Fatal(err)
 			}
 
-			expectedJSON, err := m.String("json", string(expectedData))
-			if err != nil {
-				t.Fatal(err)
-			}
 			es := string(expectedJSON)
 			as := string(actualJSON)
-			if es != as {
-				t.Errorf("Expected and actual json don't match: %s", f.Name())
-				t.Logf("Expected(%v): %s", len(es), es)
-				t.Logf("Actual  (%v): %s", len(as), as)
-			}
+			testifyrequire.JSONEqf(t, es, as, "EXPECTING %s", as)
 		})
 	}
 }
