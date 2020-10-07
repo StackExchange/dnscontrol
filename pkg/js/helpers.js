@@ -53,6 +53,7 @@ function NewDnsProvider(name, type, meta) {
 function newDomain(name, registrar) {
     return {
         name: name,
+        subdomain: '',
         registrar: registrar,
         meta: {},
         records: [],
@@ -102,12 +103,13 @@ function D(name, registrar) {
     conf.domain_names.push(name);
 }
 
-// DU(name): Update an already added DNS Domain with D().
+// D_EXTEND(name): Update a DNS Domain already added with D(), or subdomain thereof
 function D_EXTEND(name) {
     var domain = _getDomainObject(name);
     if (domain == null) {
         throw name + ' was not declared yet and therefore cannot be updated. Use D() before.';
     }
+    domain.obj.subdomain = name.substr(0, name.length-domain.obj.name.length - 1);
     for (var i = 0; i < defaultArgs.length; i++) {
         processDargs(defaultArgs[i], domain.obj);
     }
@@ -119,13 +121,19 @@ function D_EXTEND(name) {
 }
 
 // _getDomainObject(name): This is a small helper function to get the domain JS object returned.
+// returns the domain object defined for the given name or subdomain thereof
 function _getDomainObject(name) {
+    domain = null;
+    domain_len = 0;
     for(var i = 0; i < conf.domains.length; i++) {
-        if (conf.domains[i]['name'] == name) {
-            return {'id': i, 'obj': conf.domains[i]};
+        if (name.substr(-conf.domains[i]['name'].length) == conf.domains[i]['name']) {
+            if (conf.domains[i]['name'].length > domain_len) {
+                domain_len = conf.domains[i]['name'].length;
+                domain = {'id': i, 'obj': conf.domains[i]};
+            }
         }
     }
-    return null;
+    return domain;
 }
 
 // DEFAULTS provides a set of default arguments to apply to all future domains.
@@ -659,6 +667,17 @@ function recordBuilder(type, opts) {
 
             opts.applyModifier(record, modifiers);
             opts.transform(record, parsedArgs, modifiers);
+
+            // Handle D_EXTEND() with subdomains.
+            if (d.subdomain && record.type != 'CF_REDIRECT' &&
+                    record.type != 'CF_TEMP_REDIRECT') {
+                record.subdomain = d.subdomain;
+                if (record.name == '@') {
+                    record.name = d.subdomain;
+                } else {
+                    record.name += '.' + d.subdomain;
+                }
+            }
 
             d.records.push(record);
             return record;
