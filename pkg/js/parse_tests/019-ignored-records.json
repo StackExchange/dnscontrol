@@ -13,7 +13,7 @@
       ],
       "ignored_targets": [
         {"pattern":"testtarget","type":"CNAME"}
-      ],
+      ]
     }
   ]
 }
