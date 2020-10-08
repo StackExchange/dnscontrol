@@ -29,14 +29,15 @@ func TestConversion(t *testing.T) {
 			Type:     "SRV",
 			Name:     "_ssh_.tcp",
 			Data:     "5 22 ssh.example.com",
-			Priority: 5,
+			Priority: intPtr(5),
 			TTL:      300,
 		},
 		{
-			Type: "MX",
-			Name: "",
-			Data: "mail.example.com",
-			TTL:  300,
+			Type:     "MX",
+			Name:     "",
+			Data:     "mail.example.com",
+			Priority: intPtr(0),
+			TTL:      300,
 		},
 		{
 			Type: "NS",
@@ -66,8 +67,12 @@ func TestConversion(t *testing.T) {
 
 		converted := toVultrRecord(dc, rc, 0)
 
-		if converted.Type != record.Type || converted.Name != record.Name || converted.Data != record.Data || converted.Priority != record.Priority || converted.TTL != record.TTL {
+		if converted.Type != record.Type || converted.Name != record.Name || converted.Data != record.Data || ((converted.Priority == nil) != (record.Priority == nil) || (converted.Priority != nil && *converted.Priority != *record.Priority)) || converted.TTL != record.TTL {
 			t.Error("Vultr record conversion mismatch", record, rc, converted)
 		}
 	}
+}
+
+func intPtr(v int) *int {
+	return &v
 }
