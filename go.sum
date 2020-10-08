@@ -63,8 +63,8 @@ github.com/BurntSushi/toml v0.3.1/go.mod h1:xHWCNGjB5oqiDr8zfno3MHue2Ht5sIBksp03
 github.com/BurntSushi/xgb v0.0.0-20160522181843-27f122750802/go.mod h1:IVnqGOEym/WlBOVXweHU+Q+/VP0lqqI8lqeDx9IjBqo=
 github.com/DisposaBoy/JsonConfigReader v0.0.0-20171218180944-5ea4d0ddac55 h1:jbGlDKdzAZ92NzK65hUP98ri0/r50vVVvmZsFP/nIqo=
 github.com/DisposaBoy/JsonConfigReader v0.0.0-20171218180944-5ea4d0ddac55/go.mod h1:GCzqZQHydohgVLSIqRKZeTt8IGb1Y4NaFfim3H40uUI=
-github.com/PuerkitoBio/goquery v1.5.1 h1:PSPBGne8NIUWw+/7vFBV+kG2J/5MOjbzc7154OaKCSE=
-github.com/PuerkitoBio/goquery v1.5.1/go.mod h1:GsLWisAFVj4WgDibEWF4pvYnkVQBpKBKeU+7zCJoLcc=
+github.com/PuerkitoBio/goquery v1.6.0 h1:j7taAbelrdcsOlGeMenZxc2AWXD5fieT1/znArdnx94=
+github.com/PuerkitoBio/goquery v1.6.0/go.mod h1:GsLWisAFVj4WgDibEWF4pvYnkVQBpKBKeU+7zCJoLcc=
 github.com/TomOnTime/utfutil v0.0.0-20200626160131-0b0178852c8f h1:MXp+2PP1RxWWoE3qmOecVblerzKCryXkFXq9er+EDr8=
 github.com/TomOnTime/utfutil v0.0.0-20200626160131-0b0178852c8f/go.mod h1:FiuynIwe98RFhWI8nZ0dnsldPVsBy9rHH1hn2WYwme4=
 github.com/alecthomas/kong v0.2.2/go.mod h1:kQOmtJgV+Lb4aj+I2LEn40cbtawdWJ9Y8QLq+lElKxE=
@@ -76,8 +76,8 @@ github.com/andybalholm/cascadia v1.2.0 h1:vuRCkM5Ozh/BfmsaTm26kbjm0mIOM3yS5Ek/F5
 github.com/andybalholm/cascadia v1.2.0/go.mod h1:YCyR8vOZT9aZ1CHEd8ap0gMVm2aFgxBp0T0eFw1RUQY=
 github.com/armon/go-metrics v0.0.0-20180917152333-f0300d1749da/go.mod h1:Q73ZrmVTwzkszR9V5SSuryQ31EELlFMUz1kKyl939pY=
 github.com/armon/go-radix v0.0.0-20180808171621-7fddfc383310/go.mod h1:ufUuZ+zHj4x4TnLV4JWEpy2hxWSpsRywHrMgIH9cCH8=
-github.com/aws/aws-sdk-go v1.35.5 h1:doSEOxC0UkirPcle20Rc+1kAhJ4Ip+GSEeZ3nKl7Qlk=
-github.com/aws/aws-sdk-go v1.35.5/go.mod h1:tlPOdRjfxPBpNIwqDj61rmsnA85v9jc0Ps9+muhnW+k=
+github.com/aws/aws-sdk-go v1.35.6 h1:yt7L4aU4lYSNGiIWAsaCFCh1fdVsdscVYOtKcpD3TpQ=
+github.com/aws/aws-sdk-go v1.35.6/go.mod h1:tlPOdRjfxPBpNIwqDj61rmsnA85v9jc0Ps9+muhnW+k=
 github.com/babolivier/go-doh-client v0.0.0-20200723140836-2f86c709ac4a h1:ecIUxgsssZnvVeNNsreMlWe6Y7RCfcoayiO7xI0+bC0=
 github.com/babolivier/go-doh-client v0.0.0-20200723140836-2f86c709ac4a/go.mod h1:WorCk0sF6w5RjJorPxPL80q35XcMAPew90L8WSZxobY=
 github.com/bgentry/speakeasy v0.1.0/go.mod h1:+zsyZBPWlz7T6j88CTgSN5bM796AkVf0kBD4zp0CCIs=
