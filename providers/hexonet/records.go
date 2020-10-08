@@ -77,7 +77,7 @@ func (n *HXClient) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Corr
 	buf := &bytes.Buffer{}
 	// Print a list of changes. Generate an actual change that is the zone
 	changes := false
-	params := map[string]string{}
+	params := map[string]interface{}{}
 	delrridx := 0
 	addrridx := 0
 	for _, cre := range create {
@@ -161,9 +161,9 @@ func (n *HXClient) showCommand(cmd map[string]string) {
 	fmt.Print(string(b))
 }
 
-func (n *HXClient) updateZoneBy(params map[string]string, domain string) error {
+func (n *HXClient) updateZoneBy(params map[string]interface{}, domain string) error {
 	zone := domain + "."
-	cmd := map[string]string{
+	cmd := map[string]interface{}{
 		"COMMAND":   "UpdateDNSZone",
 		"DNSZONE":   zone,
 		"INCSERIAL": "1",
@@ -182,7 +182,7 @@ func (n *HXClient) updateZoneBy(params map[string]string, domain string) error {
 func (n *HXClient) getRecords(domain string) ([]*HXRecord, error) {
 	var records []*HXRecord
 	zone := domain + "."
-	cmd := map[string]string{
+	cmd := map[string]interface{}{
 		"COMMAND":  "QueryDNSZoneRRList",
 		"DNSZONE":  zone,
 		"SHORT":    "1",
