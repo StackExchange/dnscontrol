@@ -8,7 +8,6 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/miekg/dns/dnsutil"
 	"github.com/vultr/govultr"
 
 	"github.com/StackExchange/dnscontrol/v3/models"
@@ -184,8 +183,7 @@ func toRecordConfig(domain string, r *govultr.DNSRecord) (*models.RecordConfig, 
 		if !strings.HasSuffix(data, ".") {
 			data = data + "."
 		}
-		// FIXME(tlim): the AddOrigin() might be unneeded. Please test.
-		return rc, rc.SetTarget(dnsutil.AddOrigin(data, origin))
+		return rc, rc.SetTarget(data)
 	case "CAA":
 		// Vultr returns CAA records in the format "[flag] [tag] [value]".
 		return rc, rc.SetTargetCAAString(data)
