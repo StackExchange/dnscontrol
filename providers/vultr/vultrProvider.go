@@ -120,7 +120,7 @@ func (api *Provider) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Co
 		corrections = append(corrections, &models.Correction{
 			Msg: mod.String(),
 			F: func() error {
-				return api.client.DNSRecord.Create(context.Background(), dc.Name, r.Type, r.Name, r.Data, r.TTL, r.Priority)
+				return api.client.DNSRecord.Create(context.Background(), dc.Name, r.Type, r.Name, r.Data, r.TTL, vultrPriority(r))
 			},
 		})
 	}
@@ -193,10 +193,10 @@ func toRecordConfig(domain string, r *govultr.DNSRecord) (*models.RecordConfig, 
 		if !strings.HasSuffix(data, ".") {
 			data = data + "."
 		}
-		return rc, rc.SetTargetMX(uint16(r.Priority), data)
+		return rc, rc.SetTargetMX(uint16(vultrPriority(r)), data)
 	case "SRV":
 		// Vultr returns SRV records in the format "[weight] [port] [target]".
-		return rc, rc.SetTargetSRVPriorityString(uint16(r.Priority), data)
+		return rc, rc.SetTargetSRVPriorityString(uint16(vultrPriority(r)), data)
 	case "TXT":
 		// Remove quotes if it is a TXT record.
 		if !strings.HasPrefix(data, `"`) || !strings.HasSuffix(data, `"`) {
@@ -227,13 +227,15 @@ func toVultrRecord(dc *models.DomainConfig, rc *models.RecordConfig, vultrID int
 		data = fmt.Sprintf(`"%s"`, data)
 	}
 
-	priority := 0
+	var priority *int
 
 	if rc.Type == "MX" {
-		priority = int(rc.MxPreference)
+		tmp := int(rc.MxPreference)
+		priority = &tmp
 	}
 	if rc.Type == "SRV" {
-		priority = int(rc.SrvPriority)
+		tmp := int(rc.SrvPriority)
+		priority = &tmp
 	}
 
 	r := &govultr.DNSRecord{
@@ -255,4 +257,11 @@ func toVultrRecord(dc *models.DomainConfig, rc *models.RecordConfig, vultrID int
 	}
 
 	return r
+}
+
+func vultrPriority(r *govultr.DNSRecord) int {
+	if r.Priority == nil {
+		return 0
+	}
+	return *r.Priority
 }
