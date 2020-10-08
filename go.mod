@@ -48,7 +48,7 @@ require (
 	github.com/tdewolff/parse v2.3.4+incompatible // indirect
 	github.com/tdewolff/test v1.0.6 // indirect
 	github.com/urfave/cli/v2 v2.2.0
-	github.com/vultr/govultr v0.2.0
+	github.com/vultr/govultr v1.0.0
 	golang.org/x/net v0.0.0-20201006153459-a7d1128ccaa0
 	golang.org/x/oauth2 v0.0.0-20200902213428-5d25da1a8d43
 	golang.org/x/tools v0.0.0-20201007032633-0806396f153e // indirect
