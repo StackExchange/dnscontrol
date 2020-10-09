@@ -686,14 +686,14 @@ func makeTests(t *testing.T) []*TestGroup {
 		),
 
 		testgroup("ws TXT",
-			not("CLOUDFLAREAPI", "INWX", "NAMEDOTCOM"),
+			not("CLOUDFLAREAPI", "HEXONET", "INWX", "NAMEDOTCOM"),
 			// These providers strip whitespace at the end of TXT records.
 			// TODO(tal): Add a check for this in normalize/validate.go
 			tc("Change a TXT with ws at end", txt("foo", "with space at end  ")),
 		),
 
 		testgroup("empty TXT",
-			not("CLOUDFLAREAPI", "INWX", "NETCUP"),
+			not("CLOUDFLAREAPI", "HEXONET", "INWX", "NETCUP"),
 			tc("TXT with empty str", txt("foo1", "")),
 			// https://github.com/StackExchange/dnscontrol/issues/598
 			// We decided that permitting the TXT target to be an empty

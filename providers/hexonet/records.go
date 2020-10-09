@@ -37,28 +37,32 @@ type HXRecord struct {
 
 // GetZoneRecords gets the records of a zone and returns them in RecordConfig format.
 func (n *HXClient) GetZoneRecords(domain string) (models.Records, error) {
-	return nil, fmt.Errorf("not implemented")
-	// This enables the get-zones subcommand.
-	// Implement this by extracting the code from GetDomainCorrections into
-	// a single function.  For most providers this should be relatively easy.
-}
-
-// GetDomainCorrections gathers correctios that would bring n to match dc.
-func (n *HXClient) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Correction, error) {
-	dc.Punycode()
-	records, err := n.getRecords(dc.Name)
+	records, err := n.getRecords(domain)
 	if err != nil {
 		return nil, err
 	}
 	actual := make([]*models.RecordConfig, len(records))
 	for i, r := range records {
-		actual[i] = toRecord(r, dc.Name)
+		actual[i] = toRecord(r, domain)
 	}
 
-	for _, rec := range dc.Records {
+	for _, rec := range actual {
 		if rec.Type == "ALIAS" {
 			return nil, fmt.Errorf("we support realtime ALIAS RR over our X-DNS service, please get in touch with us")
 		}
+	}
+
+	return actual, nil
+
+}
+
+// GetDomainCorrections gathers correctios that would bring n to match dc.
+func (n *HXClient) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Correction, error) {
+	dc.Punycode()
+
+	actual, err := n.GetZoneRecords(dc.Name)
+	if err != nil {
+		return nil, err
 	}
 
 	//checkNSModifications(dc)
