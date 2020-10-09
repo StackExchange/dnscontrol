@@ -135,6 +135,6 @@
     "username":  "$INWX_USER",
     "password": "$INWX_PASSWORD",
     "domain": "$INWX_DOMAIN",
-    "sandbox": "1",
+    "sandbox": "1"
   }
 }
