@@ -120,7 +120,7 @@ To install, simply run
 
 To download the source
 
-    go get -d github.com/StackExchange/dnscontrol
+    git clone github.com/StackExchange/dnscontrol
 
 If these don't work, more info is in [#805](https://github.com/StackExchange/dnscontrol/issues/805).
 
