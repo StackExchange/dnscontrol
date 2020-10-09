@@ -74,7 +74,7 @@
     "apilogin": "$HEXONET_UID",
     "apipassword": "$HEXONET_PW",
     "debugmode": "$HEXONET_DEBUGMODE",
-    "domain": "dnscontrol.com",
+    "domain": "$HEXONET_DOMAIN",
     "ipaddress": "$HEXONET_IP"
   },
   "LINODE": {
