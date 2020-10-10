@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"runtime/debug"
 	"strconv"
 	"time"
 
@@ -15,6 +16,9 @@ import (
 
 func main() {
 	log.SetFlags(log.LstdFlags | log.Lshortfile)
+	if info, ok := debug.ReadBuildInfo(); !ok && info == nil {
+		fmt.Fprint(os.Stderr, "Warning: dnscontrol was built without Go modules. See https://github.com/StackExchange/dnscontrol#from-source for more information on how to build dnscontrol correctly.\n\n")
+	}
 	os.Exit(commands.Run(versionString()))
 }
 
@@ -35,6 +39,9 @@ func versionString() string {
 		version = fmt.Sprintf("%s (%s)", Version, SHA)
 	} else {
 		version = fmt.Sprintf("%s-dev", Version) // no SHA. '0.x.y-dev' indicates it is run from source without build script.
+	}
+	if info, ok := debug.ReadBuildInfo(); !ok && info == nil {
+		version += " (non-modules)"
 	}
 	if BuildTime != "" {
 		i, err := strconv.ParseInt(BuildTime, 10, 64)
