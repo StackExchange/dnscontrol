@@ -29,36 +29,41 @@ func (n *HXClient) EnsureDomainExists(domain string) error {
 
 // ListZones lists all the
 func (n *HXClient) ListZones() ([]string, error) {
+	var zones []string
 
 	// Basic
 
-	r := n.client.Request(map[string]interface{}{
+	rs := n.client.RequestAllResponsePages(map[string]string{
 		"COMMAND": "QueryDNSZoneList",
 	})
-	if r.IsError() {
-		return nil, n.GetHXApiError("Error while QueryDNSZoneList", "Basic", r)
+	for _, r := range rs {
+		if r.IsError() {
+			return nil, n.GetHXApiError("Error while QueryDNSZoneList", "Basic", &r)
+		}
+		zoneColumn := r.GetColumn("DNSZONE")
+		if zoneColumn == nil {
+			return nil, fmt.Errorf("failed getting DNSZONE BASIC column")
+		}
+		zones = append(zones, zoneColumn.GetData()...)
 	}
-	basicColumn := r.GetColumn("DNSZONE")
-	if basicColumn == nil {
-		return nil, fmt.Errorf("failed getting DNSZONE BASIC column")
-	}
-	basic := basicColumn.GetData()
 
 	// Premium
 
-	r = n.client.Request(map[string]interface{}{
+	rs = n.client.RequestAllResponsePages(map[string]string{
 		"COMMAND":         "QueryDNSZoneList",
 		"PROPERTIES":      "PREMIUMDNS",
 		"PREMIUMDNSCLASS": "*",
 	})
-	if r.IsError() {
-		return nil, n.GetHXApiError("Error while QueryDNSZoneList", "Basic", r)
+	for _, r := range rs {
+		if r.IsError() {
+			return nil, n.GetHXApiError("Error while QueryDNSZoneList", "Basic", &r)
+		}
+		zoneColumn := r.GetColumn("DNSZONE")
+		if zoneColumn == nil {
+			return nil, fmt.Errorf("failed getting DNSZONE PREMIUM column")
+		}
+		zones = append(zones, zoneColumn.GetData()...)
 	}
-	premiumColumn := r.GetColumn("DNSZONE")
-	if premiumColumn == nil {
-		return nil, fmt.Errorf("failed getting DNSZONE PREMIUM column")
-	}
-	premium := premiumColumn.GetData()
 
-	return append(basic, premium...), nil
+	return zones, nil
 }

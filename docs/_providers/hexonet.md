@@ -110,4 +110,4 @@ In general this is thought for our purpose to have an easy way to dive into issu
 
 ## IP Filter
 
-In case you have ip filter settings made for you HEXONET account, please provide your outgoing ip address as shown in the configuration examples above.
+In case you have ip filter settings made for your HEXONET account, please provide your outgoing ip address as shown in the configuration examples above.

@@ -752,7 +752,7 @@ func makeTests(t *testing.T) []*TestGroup {
 
 		testgroup("pager601",
 			// AWS:  https://github.com/StackExchange/dnscontrol/issues/493
-			only("ROUTE53"),
+			only("AZURE_DNS", "HEXONET", "ROUTE53"),
 			tc("601 records", manyA("rec%04d", "1.2.3.4", 600)...),
 			tc("Update 601 records", manyA("rec%04d", "1.2.3.5", 600)...),
 		),
@@ -760,8 +760,7 @@ func makeTests(t *testing.T) []*TestGroup {
 		testgroup("pager1201",
 			// AWS:  https://github.com/StackExchange/dnscontrol/issues/493
 			// Azure: https://github.com/StackExchange/dnscontrol/issues/770
-			//only("ROUTE53", "AZURE_DNS"),
-			only("ROUTE53"), // Azure is failing ATM.
+			only("AZURE_DNS", "HEXONET", "ROUTE53"),
 			tc("1200 records", manyA("rec%04d", "1.2.3.4", 1200)...),
 			tc("Update 1200 records", manyA("rec%04d", "1.2.3.5", 1200)...),
 		),
