@@ -44,7 +44,7 @@ how it tests that gofmt was run.
 
 ## Step 3. Bump the version number
 
-Edit the "Version" variable in `main.go` and commit.
+Edit the "Version" variable in `pkg/version/version.go` and commit.
 
 ```
 export PREVVERSION=3.0.0       <<< Change to the previous version

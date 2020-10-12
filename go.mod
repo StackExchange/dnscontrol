@@ -27,7 +27,7 @@ require (
 	github.com/google/go-querystring v1.0.1-0.20190318165438-c8c88dbee036 // indirect
 	github.com/gopherjs/jquery v0.0.0-20191017083323-73f4c7416038
 	github.com/hashicorp/vault/api v1.0.4
-	github.com/hexonet/go-sdk v2.2.3+incompatible
+	github.com/hexonet/go-sdk v3.5.0+incompatible
 	github.com/jarcoal/httpmock v1.0.4 // indirect
 	github.com/miekg/dns v1.1.31
 	github.com/mittwald/go-powerdns v0.5.2
