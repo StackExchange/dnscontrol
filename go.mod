@@ -12,7 +12,7 @@ require (
 	github.com/TomOnTime/utfutil v0.0.0-20200626160131-0b0178852c8f
 	github.com/andreyvit/diff v0.0.0-20170406064948-c7f18ee00883
 	github.com/andybalholm/cascadia v1.2.0 // indirect
-	github.com/aws/aws-sdk-go v1.35.6
+	github.com/aws/aws-sdk-go v1.35.7
 	github.com/babolivier/go-doh-client v0.0.0-20200723140836-2f86c709ac4a
 	github.com/billputer/go-namecheap v0.0.0-20170915210158-0c7adb0710f8
 	github.com/cenkalti/backoff v2.1.1+incompatible // indirect
@@ -29,7 +29,7 @@ require (
 	github.com/hashicorp/vault/api v1.0.4
 	github.com/hexonet/go-sdk v3.5.0+incompatible
 	github.com/jarcoal/httpmock v1.0.4 // indirect
-	github.com/miekg/dns v1.1.31
+	github.com/miekg/dns v1.1.32
 	github.com/mittwald/go-powerdns v0.5.2
 	github.com/mjibson/esc v0.2.0
 	github.com/namedotcom/go v0.0.0-20180403034216-08470befbe04
@@ -49,8 +49,9 @@ require (
 	github.com/tdewolff/test v1.0.6 // indirect
 	github.com/urfave/cli/v2 v2.2.0
 	github.com/vultr/govultr v1.0.0
-	golang.org/x/net v0.0.0-20201006153459-a7d1128ccaa0
+	golang.org/x/net v0.0.0-20201010224723-4f7140c49acb
 	golang.org/x/oauth2 v0.0.0-20200902213428-5d25da1a8d43
+	golang.org/x/sys v0.0.0-20201009025420-dfb3f7c4e634 // indirect
 	golang.org/x/tools v0.0.0-20201007032633-0806396f153e // indirect
 	google.golang.org/api v0.32.0
 	gopkg.in/ini.v1 v1.42.0 // indirect
