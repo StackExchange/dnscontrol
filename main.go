@@ -13,7 +13,21 @@ import (
 
 //go:generate go run build/generate/generate.go build/generate/featureMatrix.go
 
+// Version management. Goals:
+// 1. Someone who just does "go get" has at least some information.
+// 2. If built with build/build.go, more specific build information gets put in.
+// Update the number here manually each release, so at least we have a range for go-get people.
+var (
+	SHA       = ""
+	Version   = "3.4.1"
+	BuildTime = ""
+)
+
 func main() {
+	version.SHA = SHA
+	version.Version = Version
+	version.BuildTime = BuildTime
+
 	log.SetFlags(log.LstdFlags | log.Lshortfile)
 	if info, ok := debug.ReadBuildInfo(); !ok && info == nil {
 		fmt.Fprint(os.Stderr, "Warning: dnscontrol was built without Go modules. See https://github.com/StackExchange/dnscontrol#from-source for more information on how to build dnscontrol correctly.\n\n")
