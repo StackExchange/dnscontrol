@@ -17,8 +17,14 @@ var (
 	BuildTime = ""
 )
 
+var versionCache string
+
 // VersionString returns the version banner.
 func VersionString() string {
+	if versionCache != "" {
+		return versionCache
+	}
+
 	var version string
 	if SHA != "" {
 		version = fmt.Sprintf("%s (%s)", Version, SHA)
@@ -35,5 +41,7 @@ func VersionString() string {
 			version += fmt.Sprintf(" built %s", tm.Format(time.RFC822))
 		}
 	}
+
+	versionCache = version
 	return version
 }
