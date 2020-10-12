@@ -41,7 +41,7 @@ func (n *HXClient) GetNameservers(domain string) ([]*models.Nameserver, error) {
 }
 
 func (n *HXClient) getNameserversRaw(domain string) ([]string, error) {
-	r := n.client.Request(map[string]string{
+	r := n.client.Request(map[string]interface{}{
 		"COMMAND": "StatusDomain",
 		"DOMAIN":  domain,
 	})
@@ -87,7 +87,7 @@ func (n *HXClient) GetRegistrarCorrections(dc *models.DomainConfig) ([]*models.C
 
 func (n *HXClient) updateNameservers(ns []string, domain string) func() error {
 	return func() error {
-		cmd := map[string]string{
+		cmd := map[string]interface{}{
 			"COMMAND": "ModifyDomain",
 			"DOMAIN":  domain,
 		}

@@ -686,14 +686,14 @@ func makeTests(t *testing.T) []*TestGroup {
 		),
 
 		testgroup("ws TXT",
-			not("CLOUDFLAREAPI", "INWX", "NAMEDOTCOM"),
+			not("CLOUDFLAREAPI", "HEXONET", "INWX", "NAMEDOTCOM"),
 			// These providers strip whitespace at the end of TXT records.
 			// TODO(tal): Add a check for this in normalize/validate.go
 			tc("Change a TXT with ws at end", txt("foo", "with space at end  ")),
 		),
 
 		testgroup("empty TXT",
-			not("CLOUDFLAREAPI", "INWX", "NETCUP"),
+			not("CLOUDFLAREAPI", "HEXONET", "INWX", "NETCUP"),
 			tc("TXT with empty str", txt("foo1", "")),
 			// https://github.com/StackExchange/dnscontrol/issues/598
 			// We decided that permitting the TXT target to be an empty
@@ -752,7 +752,8 @@ func makeTests(t *testing.T) []*TestGroup {
 
 		testgroup("pager601",
 			// AWS:  https://github.com/StackExchange/dnscontrol/issues/493
-			only("ROUTE53"),
+			//only("AZURE_DNS", "HEXONET", "ROUTE53"),
+			only("HEXONET", "ROUTE53"), // AZURE_DNS is failing.
 			tc("601 records", manyA("rec%04d", "1.2.3.4", 600)...),
 			tc("Update 601 records", manyA("rec%04d", "1.2.3.5", 600)...),
 		),
@@ -760,8 +761,8 @@ func makeTests(t *testing.T) []*TestGroup {
 		testgroup("pager1201",
 			// AWS:  https://github.com/StackExchange/dnscontrol/issues/493
 			// Azure: https://github.com/StackExchange/dnscontrol/issues/770
-			//only("ROUTE53", "AZURE_DNS"),
-			only("ROUTE53"), // Azure is failing ATM.
+			//only("AZURE_DNS", "HEXONET", "ROUTE53"),
+			only("HEXONET", "ROUTE53"), // AZURE_DNS is failing.
 			tc("1200 records", manyA("rec%04d", "1.2.3.4", 1200)...),
 			tc("Update 1200 records", manyA("rec%04d", "1.2.3.5", 1200)...),
 		),
