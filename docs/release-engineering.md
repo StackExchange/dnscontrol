@@ -9,7 +9,7 @@ These are the instructions for producing a release.
 Please change the version number as appropriate.
 
 
-## Step 0. Tools check
+## Step 1. Tools check
 
 Make sure you are using the latest version of `go`
 (listed on [https://golang.org/dl/](https://golang.org/dl/))
@@ -17,21 +17,6 @@ Make sure you are using the latest version of `go`
 ```
 go version
 ```
-
-## Step 1. Vendor the modules
-
-Vendor the modules. The vendored files are not used (unless you change
-the builds to use `-mod=vendor`). They are maintained simply to make
-sure that we have a backup in the unlikely event of a disaster.
-
-```
-go mod vendor
-git add vendor
-git commit -m'go mod vendor' vendor
-```
-
-TODO(Tom): build.go should verify that this was done, similar to
-how it tests that gofmt was run.
 
 
 ## Step 2. Run the integration tests
@@ -47,10 +32,10 @@ how it tests that gofmt was run.
 Edit the "Version" variable in `pkg/version/version.go` and commit.
 
 ```
-export PREVVERSION=3.0.0       <<< Change to the previous version
-export VERSION=3.1.0           <<< Change to the new release version
+export PREVVERSION=3.3.0       <<< Change to the previous version
+export VERSION=3.4.0           <<< Change to the new release version
 git checkout master
-vi main.go
+vi pkg/version/version.go      <<< Change "Version" to new release version
 git commit -m'Release v'"$VERSION" main.go
 git tag v"$VERSION"
 git push origin tag v"$VERSION"
