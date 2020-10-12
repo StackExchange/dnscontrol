@@ -36,7 +36,7 @@ export PREVVERSION=3.3.0       <<< Change to the previous version
 export VERSION=3.4.0           <<< Change to the new release version
 git checkout master
 vi pkg/version/version.go      <<< Change "Version" to new release version
-git commit -m'Release v'"$VERSION" main.go
+git commit -m'Release v'"$VERSION" pkg/version/version.go
 git tag v"$VERSION"
 git push origin tag v"$VERSION"
 ```
