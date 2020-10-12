@@ -7,13 +7,10 @@ import (
 	"time"
 )
 
-// Version management. Goals:
-// 1. Someone who just does "go get" has at least some information.
-// 2. If built with build/build.go, more specific build information gets put in.
-// Update the number here manually each release, so at least we have a range for go-get people.
+// NOTE: main() updates these.
 var (
 	SHA       = ""
-	Version   = "3.4.0"
+	Version   = ""
 	BuildTime = ""
 )
 
