@@ -1,0 +1,174 @@
+package hetzner
+
+import (
+	"bytes"
+	"encoding/json"
+	"fmt"
+	"io"
+	"io/ioutil"
+	"net/http"
+)
+
+const (
+	baseUrl = "https://dns.hetzner.com/api/v1"
+)
+
+type api struct {
+	apiKey string
+	zones  map[string]Zone
+}
+
+func checkIsLockedSystemRecord(record Record) error {
+	if record.Type == "SOA" {
+		// The upload of a BIND zone file can change the SOA record.
+		// Implementing this edge case this is too complex for now.
+		return fmt.Errorf("SOA records are locked in HETZNER zones. They are hence not available for updating")
+	}
+	return nil
+}
+
+func (api *api) createRecord(record Record) error {
+	if err := checkIsLockedSystemRecord(record); err != nil {
+		return err
+	}
+
+	request := createRecordRequest{
+		Name:   record.Name,
+		TTL:    *record.TTL,
+		Type:   record.Type,
+		Value:  record.Value,
+		ZoneId: record.ZoneId,
+	}
+	return api.request("/records", "POST", request, nil)
+}
+
+func (api *api) createZone(name string) error {
+	request := createZoneRequest{
+		Name: name,
+	}
+	return api.request("/zones", "POST", request, nil)
+}
+
+func (api *api) deleteRecord(record Record) error {
+	if err := checkIsLockedSystemRecord(record); err != nil {
+		return err
+	}
+
+	url := fmt.Sprintf("/records/%s", record.Id)
+	return api.request(url, "DELETE", nil, nil)
+}
+
+func (api *api) getAllRecords(domain string) ([]Record, error) {
+	zone, err := api.getZone(domain)
+	if err != nil {
+		return nil, err
+	}
+	page := 1
+	records := make([]Record, 0)
+	for {
+		response := &getAllRecordsResponse{}
+		url := fmt.Sprintf("/records?zone_id=%s&per_page=100&page=%d", zone.Id, page)
+		if err := api.request(url, "GET", nil, response); err != nil {
+			return nil, fmt.Errorf("failed fetching zone records from HETZNER: %s", err)
+		}
+		for _, record := range response.Records {
+			if record.TTL == nil {
+				record.TTL = &zone.TTL
+			}
+
+			if checkIsLockedSystemRecord(record) != nil {
+				// Some records are not available for updating, hide them.
+				continue
+			}
+
+			records = append(records, record)
+		}
+		// meta.pagination may not be present. In that case LastPage is 0 and below the current page number.
+		if page >= response.Meta.Pagination.LastPage {
+			break
+		}
+		page++
+	}
+	return records, nil
+}
+
+func (api *api) getAllZones() error {
+	if api.zones != nil {
+		return nil
+	}
+	zones := map[string]Zone{}
+	page := 1
+	for {
+		response := &getAllZonesResponse{}
+		url := fmt.Sprintf("/zones?per_page=100&page=%d", page)
+		if err := api.request(url, "GET", nil, response); err != nil {
+			return fmt.Errorf("failed fetching zones from HETZNER: %s", err)
+		}
+		for _, zone := range response.Zones {
+			zones[zone.Name] = zone
+		}
+		// meta.pagination may not be present. In that case LastPage is 0 and below the current page number.
+		if page >= response.Meta.Pagination.LastPage {
+			break
+		}
+		page++
+	}
+	api.zones = zones
+	return nil
+}
+
+func (api *api) getZone(name string) (Zone, error) {
+	if err := api.getAllZones(); err != nil {
+		return Zone{}, err
+	}
+	zone, ok := api.zones[name]
+	if !ok {
+		return Zone{}, fmt.Errorf("'%s' is not a zone in this HETZNER account", name)
+	}
+	return zone, nil
+}
+
+func (api *api) request(endpoint string, method string, request interface{}, target interface{}) error {
+	var requestBody io.Reader
+	if request != nil {
+		requestBodySerialised, err := json.Marshal(request)
+		if err != nil {
+			return err
+		}
+		requestBody = bytes.NewBuffer(requestBodySerialised)
+	}
+	req, err := http.NewRequest(method, baseUrl+endpoint, requestBody)
+	if err != nil {
+		return err
+	}
+	req.Header.Add("Auth-API-Token", api.apiKey)
+	resp, err := http.DefaultClient.Do(req)
+	if err != nil {
+		return err
+	}
+	defer func() {
+		err := resp.Body.Close()
+		if err != nil {
+			fmt.Println(fmt.Sprintf("failed closing response body: %s", err))
+		}
+	}()
+	if resp.StatusCode != 200 {
+		data, _ := ioutil.ReadAll(resp.Body)
+		fmt.Println(string(data))
+		return fmt.Errorf("bad status code from HETZNER: %d not 200", resp.StatusCode)
+	}
+	if target == nil {
+		return nil
+	}
+	decoder := json.NewDecoder(resp.Body)
+	return decoder.Decode(target)
+}
+
+func (api *api) updateRecord(record Record) error {
+	if err := checkIsLockedSystemRecord(record); err != nil {
+		return err
+	}
+
+	url := fmt.Sprintf("/records/%s", record.Id)
+	return api.request(url, "PUT", record, nil)
+}

@@ -81,6 +81,7 @@ Maintainers of contributed providers:
 * `EXOSCALE` @pierre-emmanuelJ
 * `GANDI_V5` @TomOnTime
 * `HEDNS` @rblenkinsopp
+* `HETZNER` @das7pad
 * `HEXONET` @papakai
 * `INTERNETBS` @pragmaton
 * `INWX` @svenpeter42

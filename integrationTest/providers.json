@@ -69,6 +69,10 @@
     "totp-key": "$HEDNS_TOTP_SECRET",
     "username": "$HEDNS_USERNAME"
   },
+  "HETZNER": {
+    "api_key": "$HETZNER_API_KEY",
+    "domain": "$HETZNER_DOMAIN"
+  },
   "HEXONET": {
     "apientity": "$HEXONET_ENTITY",
     "apilogin": "$HEXONET_UID",
