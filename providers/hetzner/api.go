@@ -69,7 +69,7 @@ func (api *api) getAllRecords(domain string) ([]Record, error) {
 		response := &getAllRecordsResponse{}
 		url := fmt.Sprintf("/records?zone_id=%s&per_page=100&page=%d", zone.Id, page)
 		if err := api.request(url, "GET", nil, response); err != nil {
-			return nil, fmt.Errorf("failed fetching zone records from HETZNER: %s", err)
+			return nil, fmt.Errorf("failed fetching zone records for %q: %w", domain, err)
 		}
 		for _, record := range response.Records {
 			if record.TTL == nil {
@@ -102,7 +102,7 @@ func (api *api) getAllZones() error {
 		response := &getAllZonesResponse{}
 		url := fmt.Sprintf("/zones?per_page=100&page=%d", page)
 		if err := api.request(url, "GET", nil, response); err != nil {
-			return fmt.Errorf("failed fetching zones from HETZNER: %s", err)
+			return fmt.Errorf("failed fetching zones: %w", err)
 		}
 		for _, zone := range response.Zones {
 			zones[zone.Name] = zone
@@ -117,15 +117,15 @@ func (api *api) getAllZones() error {
 	return nil
 }
 
-func (api *api) getZone(name string) (Zone, error) {
+func (api *api) getZone(name string) (*Zone, error) {
 	if err := api.getAllZones(); err != nil {
-		return Zone{}, err
+		return nil, err
 	}
 	zone, ok := api.zones[name]
 	if !ok {
-		return Zone{}, fmt.Errorf("'%s' is not a zone in this HETZNER account", name)
+		return nil, fmt.Errorf("%q is not a zone in this HETZNER account", name)
 	}
-	return zone, nil
+	return &zone, nil
 }
 
 func (api *api) request(endpoint string, method string, request interface{}, target interface{}) error {
@@ -149,7 +149,7 @@ func (api *api) request(endpoint string, method string, request interface{}, tar
 	defer func() {
 		err := resp.Body.Close()
 		if err != nil {
-			fmt.Println(fmt.Sprintf("failed closing response body: %s", err))
+			fmt.Println(fmt.Sprintf("failed closing response body: %q", err))
 		}
 	}()
 	if resp.StatusCode != 200 {

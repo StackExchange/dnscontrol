@@ -50,7 +50,7 @@ type Zone struct {
 	TTL         int      `json:"ttl"`
 }
 
-func fromRecordConfig(in *models.RecordConfig, zone Zone) *Record {
+func fromRecordConfig(in *models.RecordConfig, zone *Zone) *Record {
 	ttl := int(in.TTL)
 	record := &Record{
 		Name:   in.GetLabel(),

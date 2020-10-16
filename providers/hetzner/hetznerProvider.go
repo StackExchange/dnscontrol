@@ -3,9 +3,9 @@ package hetzner
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/StackExchange/dnscontrol/v3/pkg/diff"
 
 	"github.com/StackExchange/dnscontrol/v3/models"
+	"github.com/StackExchange/dnscontrol/v3/pkg/diff"
 	"github.com/StackExchange/dnscontrol/v3/providers"
 )
 
@@ -31,7 +31,7 @@ func init() {
 // New creates a new API handle.
 func New(settings map[string]string, _ json.RawMessage) (providers.DNSServiceProvider, error) {
 	if settings["api_key"] == "" {
-		return nil, fmt.Errorf("missing HETZNER API Key")
+		return nil, fmt.Errorf("missing HETZNER api_key")
 	}
 
 	api := &api{}
@@ -78,6 +78,7 @@ func (api *api) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Correct
 
 	// Normalize
 	models.PostProcessRecords(existingRecords)
+
 	differ := diff.New(dc)
 	_, create, del, modify, err := differ.IncrementalDiff(existingRecords)
 	if err != nil {
@@ -94,7 +95,7 @@ func (api *api) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Correct
 	for _, m := range del {
 		record := m.Existing.Original.(*Record)
 		corr := &models.Correction{
-			Msg: fmt.Sprintf("%s, HETZNER ID: %s", m.String(), record.Id),
+			Msg: m.String(),
 			F: func() error {
 				return api.deleteRecord(*record)
 			},
@@ -118,7 +119,7 @@ func (api *api) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Correct
 		record := fromRecordConfig(m.Desired, zone)
 		record.Id = id
 		corr := &models.Correction{
-			Msg: fmt.Sprintf("%s, HETZNER ID: %s", m.String(), id),
+			Msg: m.String(),
 			F: func() error {
 				return api.updateRecord(*record)
 			},
