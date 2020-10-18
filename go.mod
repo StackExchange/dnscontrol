@@ -3,6 +3,7 @@ module github.com/StackExchange/dnscontrol/v3
 go 1.14
 
 require (
+	cloud.google.com/go v0.69.1 // indirect
 	github.com/Azure/azure-sdk-for-go v47.0.0+incompatible
 	github.com/Azure/go-autorest/autorest v0.11.10 // indirect
 	github.com/Azure/go-autorest/autorest/azure/auth v0.5.3
@@ -23,16 +24,19 @@ require (
 	github.com/go-acme/lego v2.7.2+incompatible
 	github.com/go-gandi/go-gandi v0.0.0-20200921091836-0d8a64b9cc09
 	github.com/gobwas/glob v0.2.4-0.20181002190808-e7a84e9525fe
+	github.com/golang/protobuf v1.4.3 // indirect
 	github.com/google/go-github v17.0.0+incompatible
 	github.com/google/go-querystring v1.0.1-0.20190318165438-c8c88dbee036 // indirect
 	github.com/gopherjs/jquery v0.0.0-20191017083323-73f4c7416038
 	github.com/hashicorp/vault/api v1.0.4
 	github.com/hexonet/go-sdk v3.5.0+incompatible
 	github.com/jarcoal/httpmock v1.0.4 // indirect
+	github.com/kr/text v0.2.0 // indirect
 	github.com/miekg/dns v1.1.34
 	github.com/mittwald/go-powerdns v0.5.2
 	github.com/mjibson/esc v0.2.0
 	github.com/namedotcom/go v0.0.0-20180403034216-08470befbe04
+	github.com/niemeyer/pretty v0.0.0-20200227124842-a10e7caefd8e // indirect
 	github.com/nrdcg/goinwx v0.8.1
 	github.com/ovh/go-ovh v0.0.0-20181109152953-ba5adb4cf014
 	github.com/philhug/opensrs-go v0.0.0-20171126225031-9dfa7433020d
@@ -52,9 +56,12 @@ require (
 	golang.org/x/crypto v0.0.0-20201016220609-9e8e0b390897 // indirect
 	golang.org/x/net v0.0.0-20201016165138-7b1cca2348c0
 	golang.org/x/oauth2 v0.0.0-20200902213428-5d25da1a8d43
+	golang.org/x/sync v0.0.0-20201008141435-b3e1573b7520 // indirect
 	golang.org/x/sys v0.0.0-20201018121011-98379d014ca7 // indirect
 	golang.org/x/tools v0.0.0-20201017001424-6003fad69a88 // indirect
 	google.golang.org/api v0.33.0
+	google.golang.org/genproto v0.0.0-20201015140912-32ed001d685c // indirect
+	gopkg.in/check.v1 v1.0.0-20200227125254-8fa46927fb4f // indirect
 	gopkg.in/ini.v1 v1.42.0 // indirect
 	gopkg.in/ns1/ns1-go.v2 v2.0.0-20170502175150-c563826f4cbe
 	gopkg.in/sourcemap.v1 v1.0.5 // indirect
