@@ -373,7 +373,7 @@ func (c *api) setHeaders(req *http.Request) {
 		req.Header.Set("Authorization", "Bearer "+c.APIToken)
 	} else {
 		req.Header.Set("X-Auth-Key", c.APIKey)
-		req.Header.Set("X-Auth-Email", c.ApiUser)
+		req.Header.Set("X-Auth-Email", c.APIUser)
 	}
 }
 
