@@ -11,16 +11,16 @@ import (
 )
 
 const (
-	baseUrl = "https://dns.hetzner.com/api/v1"
+	baseURL = "https://dns.hetzner.com/api/v1"
 )
 
 type api struct {
 	apiKey             string
-	zones              map[string]Zone
-	requestRateLimiter RequestRateLimiter
+	zones              map[string]zone
+	requestRateLimiter requestRateLimiter
 }
 
-func checkIsLockedSystemRecord(record Record) error {
+func checkIsLockedSystemRecord(record record) error {
 	if record.Type == "SOA" {
 		// The upload of a BIND zone file can change the SOA record.
 		// Implementing this edge case this is too complex for now.
@@ -29,7 +29,7 @@ func checkIsLockedSystemRecord(record Record) error {
 	return nil
 }
 
-func (api *api) createRecord(record Record) error {
+func (api *api) createRecord(record record) error {
 	if err := checkIsLockedSystemRecord(record); err != nil {
 		return err
 	}
@@ -39,7 +39,7 @@ func (api *api) createRecord(record Record) error {
 		TTL:    *record.TTL,
 		Type:   record.Type,
 		Value:  record.Value,
-		ZoneId: record.ZoneId,
+		ZoneID: record.ZoneID,
 	}
 	return api.request("/records", "POST", request, nil)
 }
@@ -51,25 +51,25 @@ func (api *api) createZone(name string) error {
 	return api.request("/zones", "POST", request, nil)
 }
 
-func (api *api) deleteRecord(record Record) error {
+func (api *api) deleteRecord(record record) error {
 	if err := checkIsLockedSystemRecord(record); err != nil {
 		return err
 	}
 
-	url := fmt.Sprintf("/records/%s", record.Id)
+	url := fmt.Sprintf("/records/%s", record.ID)
 	return api.request(url, "DELETE", nil, nil)
 }
 
-func (api *api) getAllRecords(domain string) ([]Record, error) {
+func (api *api) getAllRecords(domain string) ([]record, error) {
 	zone, err := api.getZone(domain)
 	if err != nil {
 		return nil, err
 	}
 	page := 1
-	records := make([]Record, 0)
+	records := make([]record, 0)
 	for {
 		response := &getAllRecordsResponse{}
-		url := fmt.Sprintf("/records?zone_id=%s&per_page=100&page=%d", zone.Id, page)
+		url := fmt.Sprintf("/records?zone_id=%s&per_page=100&page=%d", zone.ID, page)
 		if err := api.request(url, "GET", nil, response); err != nil {
 			return nil, fmt.Errorf("failed fetching zone records for %q: %w", domain, err)
 		}
@@ -98,7 +98,7 @@ func (api *api) getAllZones() error {
 	if api.zones != nil {
 		return nil
 	}
-	zones := map[string]Zone{}
+	zones := map[string]zone{}
 	page := 1
 	for {
 		response := &getAllZonesResponse{}
@@ -119,7 +119,7 @@ func (api *api) getAllZones() error {
 	return nil
 }
 
-func (api *api) getZone(name string) (*Zone, error) {
+func (api *api) getZone(name string) (*zone, error) {
 	if err := api.getAllZones(); err != nil {
 		return nil, err
 	}
@@ -139,7 +139,7 @@ func (api *api) request(endpoint string, method string, request interface{}, tar
 		}
 		requestBody = bytes.NewBuffer(requestBodySerialised)
 	}
-	req, err := http.NewRequest(method, baseUrl+endpoint, requestBody)
+	req, err := http.NewRequest(method, baseURL+endpoint, requestBody)
 	if err != nil {
 		return err
 	}
@@ -179,46 +179,48 @@ func (api *api) request(endpoint string, method string, request interface{}, tar
 	}
 }
 
-func (api *api) updateRecord(record Record) error {
+func (api *api) updateRecord(record record) error {
 	if err := checkIsLockedSystemRecord(record); err != nil {
 		return err
 	}
 
-	url := fmt.Sprintf("/records/%s", record.Id)
+	url := fmt.Sprintf("/records/%s", record.ID)
 	return api.request(url, "PUT", record, nil)
 }
 
-type RequestRateLimiter struct {
+type requestRateLimiter struct {
 	delay       time.Duration
 	lastRequest time.Time
 }
 
-func (rateLimiter *RequestRateLimiter) afterRequest() {
+func (rateLimiter *requestRateLimiter) afterRequest() {
 	rateLimiter.lastRequest = time.Now()
 }
 
-func (rateLimiter *RequestRateLimiter) beforeRequest() {
+func (rateLimiter *requestRateLimiter) beforeRequest() {
 	if rateLimiter.delay == 0 {
 		return
 	}
 	time.Sleep(time.Until(rateLimiter.lastRequest.Add(rateLimiter.delay)))
 }
 
-func (rateLimiter *RequestRateLimiter) bumpDelay() string {
+func (rateLimiter *requestRateLimiter) bumpDelay() string {
+	var backoffType string
 	if rateLimiter.delay == 0 {
 		// At the time this provider was implemented (2020-10-18),
 		//  one request per second could go though when rate-limited.
 		rateLimiter.delay = time.Second
-		return "constant"
+		backoffType = "constant"
 	} else {
 		// The initial assumption of 1 req/s may no hold true forever.
 		// Future proof this provider, use exponential back-off.
 		rateLimiter.delay = rateLimiter.delay * 2
-		return "exponential"
+		backoffType = "exponential"
 	}
+	return backoffType
 }
 
-func (rateLimiter *RequestRateLimiter) handleRateLimitedRequest() {
+func (rateLimiter *requestRateLimiter) handleRateLimitedRequest() {
 	backoffType := rateLimiter.bumpDelay()
 	fmt.Println(fmt.Sprintf("WARNING: request rate-limited, %s back-off is now at %s.", backoffType, rateLimiter.delay))
 }

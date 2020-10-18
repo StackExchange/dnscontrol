@@ -9,7 +9,7 @@ type createRecordRequest struct {
 	TTL    int    `json:"ttl"`
 	Type   string `json:"type"`
 	Value  string `json:"value"`
-	ZoneId string `json:"zone_id"`
+	ZoneID string `json:"zone_id"`
 }
 
 type createZoneRequest struct {
@@ -17,7 +17,7 @@ type createZoneRequest struct {
 }
 
 type getAllRecordsResponse struct {
-	Records []Record `json:"records"`
+	Records []record `json:"records"`
 	Meta    struct {
 		Pagination struct {
 			LastPage int `json:"last_page"`
@@ -26,7 +26,7 @@ type getAllRecordsResponse struct {
 }
 
 type getAllZonesResponse struct {
-	Zones []Zone `json:"zones"`
+	Zones []zone `json:"zones"`
 	Meta  struct {
 		Pagination struct {
 			LastPage int `json:"last_page"`
@@ -34,30 +34,30 @@ type getAllZonesResponse struct {
 	} `json:"meta"`
 }
 
-type Record struct {
-	Id     string `json:"id"`
+type record struct {
+	ID     string `json:"id"`
 	Name   string `json:"name"`
 	TTL    *int   `json:"ttl"`
 	Type   string `json:"type"`
 	Value  string `json:"value"`
-	ZoneId string `json:"zone_id"`
+	ZoneID string `json:"zone_id"`
 }
 
-type Zone struct {
-	Id          string   `json:"id"`
+type zone struct {
+	ID          string   `json:"id"`
 	Name        string   `json:"name"`
 	NameServers []string `json:"ns"`
 	TTL         int      `json:"ttl"`
 }
 
-func fromRecordConfig(in *models.RecordConfig, zone *Zone) *Record {
+func fromRecordConfig(in *models.RecordConfig, zone *zone) *record {
 	ttl := int(in.TTL)
-	record := &Record{
+	record := &record{
 		Name:   in.GetLabel(),
 		Type:   in.Type,
 		Value:  in.GetTargetField(),
 		TTL:    &ttl,
-		ZoneId: zone.Id,
+		ZoneID: zone.ID,
 	}
 
 	switch record.Type {
@@ -74,7 +74,7 @@ func fromRecordConfig(in *models.RecordConfig, zone *Zone) *Record {
 	return record
 }
 
-func toRecordConfig(domain string, record *Record) *models.RecordConfig {
+func toRecordConfig(domain string, record *record) *models.RecordConfig {
 	rc := &models.RecordConfig{
 		Type:     record.Type,
 		TTL:      uint32(*record.TTL),

@@ -97,7 +97,7 @@ func (api *api) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Correct
 	}
 
 	for _, m := range del {
-		record := m.Existing.Original.(*Record)
+		record := m.Existing.Original.(*record)
 		corr := &models.Correction{
 			Msg: m.String(),
 			F: func() error {
@@ -119,9 +119,9 @@ func (api *api) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Correct
 	}
 
 	for _, m := range modify {
-		id := m.Existing.Original.(*Record).Id
+		id := m.Existing.Original.(*record).ID
 		record := fromRecordConfig(m.Desired, zone)
-		record.Id = id
+		record.ID = id
 		corr := &models.Correction{
 			Msg: m.String(),
 			F: func() error {
