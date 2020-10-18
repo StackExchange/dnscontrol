@@ -37,7 +37,7 @@ func newProvider(conf map[string]string) (*HXClient, error) {
 	api := &HXClient{
 		client: hxcl.NewAPIClient(),
 	}
-	api.client.SetUserAgent("DNSControl", version.VersionString())
+	api.client.SetUserAgent("DNSControl", version.Banner())
 	api.APILogin, api.APIPassword, api.APIEntity = conf["apilogin"], conf["apipassword"], conf["apientity"]
 	if conf["debugmode"] == "1" {
 		api.client.EnableDebugMode()

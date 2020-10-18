@@ -25,12 +25,12 @@ var (
 
 func main() {
 	version.SHA = SHA
-	version.Version = Version
+	version.Semver = Version
 	version.BuildTime = BuildTime
 
 	log.SetFlags(log.LstdFlags | log.Lshortfile)
 	if info, ok := debug.ReadBuildInfo(); !ok && info == nil {
 		fmt.Fprint(os.Stderr, "Warning: dnscontrol was built without Go modules. See https://github.com/StackExchange/dnscontrol#from-source for more information on how to build dnscontrol correctly.\n\n")
 	}
-	os.Exit(commands.Run("dnscontrol " + version.VersionString()))
+	os.Exit(commands.Run("dnscontrol " + version.Banner()))
 }
