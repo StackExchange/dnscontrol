@@ -27,7 +27,7 @@ func makeRCmeta(meta map[string]string) *models.RecordConfig {
 }
 
 func TestPreprocess_BoolValidation(t *testing.T) {
-	cf := &CloudflareAPI{}
+	cf := &api{}
 
 	domain := newDomainConfig()
 	domain.Records = append(domain.Records, makeRCmeta(map[string]string{metaProxy: "on"}))
@@ -49,7 +49,7 @@ func TestPreprocess_BoolValidation(t *testing.T) {
 }
 
 func TestPreprocess_BoolValidation_Fails(t *testing.T) {
-	cf := &CloudflareAPI{}
+	cf := &api{}
 	domain := newDomainConfig()
 	domain.Records = append(domain.Records, &models.RecordConfig{Metadata: map[string]string{metaProxy: "true"}})
 	err := cf.preprocessConfig(domain)
@@ -59,7 +59,7 @@ func TestPreprocess_BoolValidation_Fails(t *testing.T) {
 }
 
 func TestPreprocess_DefaultProxy(t *testing.T) {
-	cf := &CloudflareAPI{}
+	cf := &api{}
 	domain := newDomainConfig()
 	domain.Metadata[metaProxyDefault] = "full"
 	domain.Records = append(domain.Records, makeRCmeta(map[string]string{metaProxy: "on"}))
@@ -78,7 +78,7 @@ func TestPreprocess_DefaultProxy(t *testing.T) {
 }
 
 func TestPreprocess_DefaultProxy_Validation(t *testing.T) {
-	cf := &CloudflareAPI{}
+	cf := &api{}
 	domain := newDomainConfig()
 	domain.Metadata[metaProxyDefault] = "true"
 	err := cf.preprocessConfig(domain)
@@ -100,7 +100,7 @@ func TestIpRewriting(t *testing.T) {
 		// inside range and proxied
 		{"1.2.3.4", "255.255.255.4", "full"},
 	}
-	cf := &CloudflareAPI{}
+	cf := &api{}
 	domain := newDomainConfig()
 	cf.ipConversions = []transform.IPConversion{{
 		Low:      net.ParseIP("1.2.3.0"),

@@ -10,23 +10,23 @@ import (
 // NOTE: main() updates these.
 var (
 	SHA       = ""
-	Version   = ""
+	Semver    = ""
 	BuildTime = ""
 )
 
 var versionCache string
 
-// VersionString returns the version banner.
-func VersionString() string {
+// Banner returns the version banner.
+func Banner() string {
 	if versionCache != "" {
 		return versionCache
 	}
 
 	var version string
 	if SHA != "" {
-		version = fmt.Sprintf("%s (%s)", Version, SHA)
+		version = fmt.Sprintf("%s (%s)", Semver, SHA)
 	} else {
-		version = fmt.Sprintf("%s-dev", Version) // no SHA. '0.x.y-dev' indicates it is run from source without build script.
+		version = fmt.Sprintf("%s-dev", Semver) // no SHA. '0.x.y-dev' indicates it is run from source without build script.
 	}
 	if info, ok := debug.ReadBuildInfo(); !ok && info == nil {
 		version += " (non-modules)"
