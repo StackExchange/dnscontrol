@@ -179,6 +179,12 @@ func (api *api) request(endpoint string, method string, request interface{}, tar
 	}
 }
 
+func (api *api) startRateLimited() {
+	// Simulate a request that is getting a 429 response.
+	api.requestRateLimiter.afterRequest()
+	api.requestRateLimiter.bumpDelay()
+}
+
 func (api *api) updateRecord(record record) error {
 	if err := checkIsLockedSystemRecord(record); err != nil {
 		return err
