@@ -3,7 +3,7 @@ module github.com/StackExchange/dnscontrol/v3
 go 1.14
 
 require (
-	github.com/Azure/azure-sdk-for-go v46.4.0+incompatible
+	github.com/Azure/azure-sdk-for-go v47.0.0+incompatible
 	github.com/Azure/go-autorest/autorest v0.11.10 // indirect
 	github.com/Azure/go-autorest/autorest/azure/auth v0.5.3
 	github.com/Azure/go-autorest/autorest/to v0.4.0
@@ -12,7 +12,7 @@ require (
 	github.com/TomOnTime/utfutil v0.0.0-20200626160131-0b0178852c8f
 	github.com/andreyvit/diff v0.0.0-20170406064948-c7f18ee00883
 	github.com/andybalholm/cascadia v1.2.0 // indirect
-	github.com/aws/aws-sdk-go v1.35.7
+	github.com/aws/aws-sdk-go v1.35.9
 	github.com/babolivier/go-doh-client v0.0.0-20200723140836-2f86c709ac4a
 	github.com/billputer/go-namecheap v0.0.0-20170915210158-0c7adb0710f8
 	github.com/cenkalti/backoff v2.1.1+incompatible // indirect
@@ -29,7 +29,7 @@ require (
 	github.com/hashicorp/vault/api v1.0.4
 	github.com/hexonet/go-sdk v3.5.0+incompatible
 	github.com/jarcoal/httpmock v1.0.4 // indirect
-	github.com/miekg/dns v1.1.32
+	github.com/miekg/dns v1.1.34
 	github.com/mittwald/go-powerdns v0.5.2
 	github.com/mjibson/esc v0.2.0
 	github.com/namedotcom/go v0.0.0-20180403034216-08470befbe04
@@ -49,11 +49,12 @@ require (
 	github.com/tdewolff/test v1.0.6 // indirect
 	github.com/urfave/cli/v2 v2.2.0
 	github.com/vultr/govultr v1.0.0
-	golang.org/x/net v0.0.0-20201010224723-4f7140c49acb
+	golang.org/x/crypto v0.0.0-20201016220609-9e8e0b390897 // indirect
+	golang.org/x/net v0.0.0-20201016165138-7b1cca2348c0
 	golang.org/x/oauth2 v0.0.0-20200902213428-5d25da1a8d43
-	golang.org/x/sys v0.0.0-20201009025420-dfb3f7c4e634 // indirect
-	golang.org/x/tools v0.0.0-20201007032633-0806396f153e // indirect
-	google.golang.org/api v0.32.0
+	golang.org/x/sys v0.0.0-20201018121011-98379d014ca7 // indirect
+	golang.org/x/tools v0.0.0-20201017001424-6003fad69a88 // indirect
+	google.golang.org/api v0.33.0
 	gopkg.in/ini.v1 v1.42.0 // indirect
 	gopkg.in/ns1/ns1-go.v2 v2.0.0-20170502175150-c563826f4cbe
 	gopkg.in/sourcemap.v1 v1.0.5 // indirect

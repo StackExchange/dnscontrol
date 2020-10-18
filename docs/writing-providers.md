@@ -241,15 +241,12 @@ go get -u golang.org/x/lint/golint
 ```
 
 
-## Step 12: Vendor Dependencies
+## Step 12: Update Dependencies
 
-The build process for DNSControl uses the default Go Modules system,
-which ignores the `vendor` directory. However we store a backup copy
-of all dependencies by using the `go mod vendor` command.  It makes
-our repo larger, but makes Tom feel better because he's been burnt by
-modules disappearing on him.
+The build process for DNSControl uses the default Go Modules system.
 
-What this means:
+The version of each dependency is stored in `go.mod`, which
+is updated by the `go get` command.
 
 1. If you require a Go dependency, get it using `go get -u`.  For
    example:
@@ -258,18 +255,8 @@ What this means:
 go get -u github.com/aws/aws-sdk-go
 ```
 
-2. Before you send any PRs, please make sure the dependencies are
-   vendored.  Use these commands:
-
-```
-go mod vendor
-go mod tidy
-```
-
-See
-[docs/release-engineering.md](https://github.com/StackExchange/dnscontrol/blob/master/docs/release-engineering.md)
-for tips about managing modules and checking for outdated
-dependencies.
+You can check for out of date dependencies using
+the instructions in [docs/release-engineering.md](https://github.com/StackExchange/dnscontrol/blob/master/docs/release-engineering.md) ("Tip: How to update modules")
 
 
 ## Step 13: Check your work.
