@@ -199,34 +199,34 @@ type requestRateLimiter struct {
 	lastRequest time.Time
 }
 
-func (rateLimiter *requestRateLimiter) afterRequest() {
-	rateLimiter.lastRequest = time.Now()
+func (requestRateLimiter *requestRateLimiter) afterRequest() {
+	requestRateLimiter.lastRequest = time.Now()
 }
 
-func (rateLimiter *requestRateLimiter) beforeRequest() {
-	if rateLimiter.delay == 0 {
+func (requestRateLimiter *requestRateLimiter) beforeRequest() {
+	if requestRateLimiter.delay == 0 {
 		return
 	}
-	time.Sleep(time.Until(rateLimiter.lastRequest.Add(rateLimiter.delay)))
+	time.Sleep(time.Until(requestRateLimiter.lastRequest.Add(requestRateLimiter.delay)))
 }
 
-func (rateLimiter *requestRateLimiter) bumpDelay() string {
+func (requestRateLimiter *requestRateLimiter) bumpDelay() string {
 	var backoffType string
-	if rateLimiter.delay == 0 {
+	if requestRateLimiter.delay == 0 {
 		// At the time this provider was implemented (2020-10-18),
 		//  one request per second could go though when rate-limited.
-		rateLimiter.delay = time.Second
+		requestRateLimiter.delay = time.Second
 		backoffType = "constant"
 	} else {
 		// The initial assumption of 1 req/s may no hold true forever.
 		// Future proof this provider, use exponential back-off.
-		rateLimiter.delay = rateLimiter.delay * 2
+		requestRateLimiter.delay = requestRateLimiter.delay * 2
 		backoffType = "exponential"
 	}
 	return backoffType
 }
 
-func (rateLimiter *requestRateLimiter) handleRateLimitedRequest() {
-	backoffType := rateLimiter.bumpDelay()
-	fmt.Println(fmt.Sprintf("WARNING: request rate-limited, %s back-off is now at %s.", backoffType, rateLimiter.delay))
+func (requestRateLimiter *requestRateLimiter) handleRateLimitedRequest() {
+	backoffType := requestRateLimiter.bumpDelay()
+	fmt.Println(fmt.Sprintf("WARNING: request rate-limited, %s back-off is now at %s.", backoffType, requestRateLimiter.delay))
 }
