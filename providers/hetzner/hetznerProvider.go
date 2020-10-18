@@ -38,6 +38,10 @@ func New(settings map[string]string, _ json.RawMessage) (providers.DNSServicePro
 
 	api.apiKey = settings["api_key"]
 
+	if settings["rate_limited"] == "true" {
+		api.requestRateLimiter.bumpDelay()
+	}
+
 	return api, nil
 }
 

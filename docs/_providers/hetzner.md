@@ -45,7 +45,29 @@ Create a new API Key in the
 
 ## Caveats
 
+### SOA
+
 Hetzner DNS Console does not allow changing the SOA record via their API.
 There is an alternative method using an import of a full BIND file, but this
  approach does not play nice with incremental changes or ignored records.
 At this time you cannot update SOA records via DNSControl.
+
+### Rate Limiting
+
+In case you are frequently seeing messages about being rate-limited:
+
+{% highlight txt %}
+WARNING: request rate-limited, constant back-off is now at 1s.
+{% endhighlight %}
+
+You may want to enable the `rate_limited` mode by default.
+
+In your `creds.json` for all `HETZNER` provider entries:
+{% highlight json %}
+{
+  "hetzner": {
+    "rate_limited": "true",
+    "api_key": "your-api-key"
+  }
+}
+{% endhighlight %}

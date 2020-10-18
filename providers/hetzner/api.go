@@ -7,6 +7,7 @@ import (
 	"io"
 	"io/ioutil"
 	"net/http"
+	"time"
 )
 
 const (
@@ -14,8 +15,9 @@ const (
 )
 
 type api struct {
-	apiKey string
-	zones  map[string]Zone
+	apiKey             string
+	zones              map[string]Zone
+	requestRateLimiter RequestRateLimiter
 }
 
 func checkIsLockedSystemRecord(record Record) error {
@@ -142,26 +144,39 @@ func (api *api) request(endpoint string, method string, request interface{}, tar
 		return err
 	}
 	req.Header.Add("Auth-API-Token", api.apiKey)
-	resp, err := http.DefaultClient.Do(req)
-	if err != nil {
-		return err
-	}
-	defer func() {
-		err := resp.Body.Close()
+
+	for {
+		api.requestRateLimiter.beforeRequest()
+		resp, err := http.DefaultClient.Do(req)
+		api.requestRateLimiter.afterRequest()
 		if err != nil {
-			fmt.Println(fmt.Sprintf("failed closing response body: %q", err))
+			return err
 		}
-	}()
-	if resp.StatusCode != 200 {
-		data, _ := ioutil.ReadAll(resp.Body)
-		fmt.Println(string(data))
-		return fmt.Errorf("bad status code from HETZNER: %d not 200", resp.StatusCode)
+		cleanupResponseBody := func() {
+			err := resp.Body.Close()
+			if err != nil {
+				fmt.Println(fmt.Sprintf("failed closing response body: %q", err))
+			}
+		}
+
+		if resp.StatusCode == 429 {
+			api.requestRateLimiter.handleRateLimitedRequest()
+			cleanupResponseBody()
+			continue
+		}
+
+		defer cleanupResponseBody()
+		if resp.StatusCode != 200 {
+			data, _ := ioutil.ReadAll(resp.Body)
+			fmt.Println(string(data))
+			return fmt.Errorf("bad status code from HETZNER: %d not 200", resp.StatusCode)
+		}
+		if target == nil {
+			return nil
+		}
+		decoder := json.NewDecoder(resp.Body)
+		return decoder.Decode(target)
 	}
-	if target == nil {
-		return nil
-	}
-	decoder := json.NewDecoder(resp.Body)
-	return decoder.Decode(target)
 }
 
 func (api *api) updateRecord(record Record) error {
@@ -171,4 +186,39 @@ func (api *api) updateRecord(record Record) error {
 
 	url := fmt.Sprintf("/records/%s", record.Id)
 	return api.request(url, "PUT", record, nil)
+}
+
+type RequestRateLimiter struct {
+	delay       time.Duration
+	lastRequest time.Time
+}
+
+func (rateLimiter *RequestRateLimiter) afterRequest() {
+	rateLimiter.lastRequest = time.Now()
+}
+
+func (rateLimiter *RequestRateLimiter) beforeRequest() {
+	if rateLimiter.delay == 0 {
+		return
+	}
+	time.Sleep(time.Until(rateLimiter.lastRequest.Add(rateLimiter.delay)))
+}
+
+func (rateLimiter *RequestRateLimiter) bumpDelay() string {
+	if rateLimiter.delay == 0 {
+		// At the time this provider was implemented (2020-10-18),
+		//  one request per second could go though when rate-limited.
+		rateLimiter.delay = time.Second
+		return "constant"
+	} else {
+		// The initial assumption of 1 req/s may no hold true forever.
+		// Future proof this provider, use exponential back-off.
+		rateLimiter.delay = rateLimiter.delay * 2
+		return "exponential"
+	}
+}
+
+func (rateLimiter *RequestRateLimiter) handleRateLimitedRequest() {
+	backoffType := rateLimiter.bumpDelay()
+	fmt.Println(fmt.Sprintf("WARNING: request rate-limited, %s back-off is now at %s.", backoffType, rateLimiter.delay))
 }

@@ -71,7 +71,8 @@
   },
   "HETZNER": {
     "api_key": "$HETZNER_API_KEY",
-    "domain": "$HETZNER_DOMAIN"
+    "domain": "$HETZNER_DOMAIN",
+    "rate_limited": "true"
   },
   "HEXONET": {
     "apientity": "$HEXONET_ENTITY",
