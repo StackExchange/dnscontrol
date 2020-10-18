@@ -241,12 +241,15 @@ go get -u golang.org/x/lint/golint
 ```
 
 
-## Step 12: Update Dependencies
+## Step 12: Vendor Dependencies
 
-The build process for DNSControl uses the default Go Modules system.
+The build process for DNSControl uses the default Go Modules system,
+which ignores the `vendor` directory. However we store a backup copy
+of all dependencies by using the `go mod vendor` command.  It makes
+our repo larger, but makes Tom feel better because he's been burnt by
+modules disappearing on him.
 
-The version of each dependency is stored in `go.mod`, which
-is updated by the `go get` command.
+What this means:
 
 1. If you require a Go dependency, get it using `go get -u`.  For
    example:
@@ -255,8 +258,18 @@ is updated by the `go get` command.
 go get -u github.com/aws/aws-sdk-go
 ```
 
-You can check for out of date dependencies using
-the instructions in [docs/release-engineering.md](https://github.com/StackExchange/dnscontrol/blob/master/docs/release-engineering.md) ("Tip: How to update modules")
+2. Before you send any PRs, please make sure the dependencies are
+   vendored.  Use these commands:
+
+```
+go mod vendor
+go mod tidy
+```
+
+See
+[docs/release-engineering.md](https://github.com/StackExchange/dnscontrol/blob/master/docs/release-engineering.md)
+for tips about managing modules and checking for outdated
+dependencies.
 
 
 ## Step 13: Check your work.
@@ -265,7 +278,7 @@ Here are some last-minute things to check before you submit your PR.
 
 1. Run "go generate" to make sure all generated files are fresh.
 2. Make sure all appropriate documentation is current. (See Step 8)
-3. Check that dependencies are vendored (See Step 12)
+3. Check that dependencies are current (See Step 12)
 4. Re-run the integration test one last time (See Step 7)
 
 ## Step 14: After the PR is merged
