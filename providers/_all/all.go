@@ -18,6 +18,7 @@ import (
 	_ "github.com/StackExchange/dnscontrol/v3/providers/gandi_v5"
 	_ "github.com/StackExchange/dnscontrol/v3/providers/gcloud"
 	_ "github.com/StackExchange/dnscontrol/v3/providers/hedns"
+	_ "github.com/StackExchange/dnscontrol/v3/providers/hetzner"
 	_ "github.com/StackExchange/dnscontrol/v3/providers/hexonet"
 	_ "github.com/StackExchange/dnscontrol/v3/providers/internetbs"
 	_ "github.com/StackExchange/dnscontrol/v3/providers/inwx"
