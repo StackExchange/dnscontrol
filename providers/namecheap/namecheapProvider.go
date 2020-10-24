@@ -19,10 +19,10 @@ import (
 // NamecheapDefaultNs lists the default nameservers for this provider.
 var NamecheapDefaultNs = []string{"dns1.registrar-servers.com", "dns2.registrar-servers.com"}
 
-// Namecheap is the handle for this provider.
-type Namecheap struct {
-	ApiKey  string
-	ApiUser string
+// namecheapAPI is the handle for this provider.
+type namecheapAPI struct {
+	APIKEY  string
+	APIUser string
 	client  *nc.Client
 }
 
@@ -55,13 +55,13 @@ func newReg(conf map[string]string) (providers.Registrar, error) {
 	return newProvider(conf, nil)
 }
 
-func newProvider(m map[string]string, metadata json.RawMessage) (*Namecheap, error) {
-	api := &Namecheap{}
-	api.ApiUser, api.ApiKey = m["apiuser"], m["apikey"]
-	if api.ApiKey == "" || api.ApiUser == "" {
+func newProvider(m map[string]string, metadata json.RawMessage) (*namecheapAPI, error) {
+	api := &namecheapAPI{}
+	api.APIUser, api.APIKEY = m["apiuser"], m["apikey"]
+	if api.APIKEY == "" || api.APIUser == "" {
 		return nil, fmt.Errorf("missing Namecheap apikey and apiuser")
 	}
-	api.client = nc.NewClient(api.ApiUser, api.ApiKey, api.ApiUser)
+	api.client = nc.NewClient(api.APIUser, api.APIKEY, api.APIUser)
 	// if BaseURL is specified in creds, use that url
 	BaseURL, ok := m["BaseURL"]
 	if ok {
@@ -107,7 +107,7 @@ func doWithRetry(f func() error) {
 }
 
 // GetZoneRecords gets the records of a zone and returns them in RecordConfig format.
-func (n *Namecheap) GetZoneRecords(domain string) (models.Records, error) {
+func (n *namecheapAPI) GetZoneRecords(domain string) (models.Records, error) {
 	return nil, fmt.Errorf("not implemented")
 	// This enables the get-zones subcommand.
 	// Implement this by extracting the code from GetDomainCorrections into
@@ -115,7 +115,7 @@ func (n *Namecheap) GetZoneRecords(domain string) (models.Records, error) {
 }
 
 // GetDomainCorrections returns the corrections for the domain.
-func (n *Namecheap) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Correction, error) {
+func (n *namecheapAPI) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Correction, error) {
 	dc.Punycode()
 	sld, tld := splitDomain(dc.Name)
 	var records *nc.DomainDNSGetHostsResult
@@ -215,7 +215,7 @@ func (n *Namecheap) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Cor
 	return corrections, nil
 }
 
-func (n *Namecheap) generateRecords(dc *models.DomainConfig) error {
+func (n *namecheapAPI) generateRecords(dc *models.DomainConfig) error {
 
 	var recs []nc.DomainDNSHost
 
@@ -250,13 +250,13 @@ func (n *Namecheap) generateRecords(dc *models.DomainConfig) error {
 }
 
 // GetNameservers returns the nameservers for a domain.
-func (n *Namecheap) GetNameservers(domainName string) ([]*models.Nameserver, error) {
+func (n *namecheapAPI) GetNameservers(domainName string) ([]*models.Nameserver, error) {
 	// return default namecheap nameservers
 	return models.ToNameservers(NamecheapDefaultNs)
 }
 
 // GetRegistrarCorrections returns corrections to update nameservers.
-func (n *Namecheap) GetRegistrarCorrections(dc *models.DomainConfig) ([]*models.Correction, error) {
+func (n *namecheapAPI) GetRegistrarCorrections(dc *models.DomainConfig) ([]*models.Correction, error) {
 	var info *nc.DomainInfo
 	var err error
 	doWithRetry(func() error {

@@ -15,7 +15,7 @@ func makeRC(label, domain, target string, rc models.RecordConfig) *models.Record
 
 func TestGetExistingRecords(t *testing.T) {
 
-	cf := &adProvider{}
+	cf := &activedirAPI{}
 
 	cf.fake = true
 	actual, err := cf.getExistingRecords("test2")
