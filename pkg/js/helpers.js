@@ -125,22 +125,22 @@ function D_EXTEND(name) {
 // of the domain's name, or if name is a proper subdomain of the
 // domain's name. The longest match is returned. 
 function _getDomainObject(name) {
-  domain = null;
-  domain_len = 0;
-  for (var i = 0; i < conf.domains.length; i++) {
-    thisname = conf.domains[i]["name"];
-    desiredsuffix = "." + thisname;
-    foundsuffix = name.substr(-desiredsuffix.length);
-    // If this is an exact match or the suffix matches...
-    if (name == thisname || foundsuffix == desiredsuffix) {
-      // If this match is a longer match than our current best match...
-      if (thisname.length > domain_len) {
-        domain_len = thisname.length;
-        domain = { id: i, obj: conf.domains[i] };
-      }
+    var domain = null;
+    var domainLen = 0;
+    for (var i = 0; i < conf.domains.length; i++) {
+        var thisName = conf.domains[i]["name"];
+        var desiredSuffix = "." + thisName;
+        var foundSuffix = name.substr(-desiredSuffix.length);
+        // If this is an exact match or the suffix matches...
+        if (name === thisName || foundSuffix === desiredSuffix) {
+            // If this match is a longer match than our current best match...
+            if (thisName.length > domainLen) {
+                domainLen = thisName.length;
+                domain = { id: i, obj: conf.domains[i] };
+            }
+        }
     }
-  }
-  return domain;
+    return domain;
 }
 
 // DEFAULTS provides a set of default arguments to apply to all future domains.
