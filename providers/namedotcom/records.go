@@ -20,7 +20,7 @@ var defaultNameservers = []*models.Nameserver{
 }
 
 // GetZoneRecords gets the records of a zone and returns them in RecordConfig format.
-func (n *NameCom) GetZoneRecords(domain string) (models.Records, error) {
+func (n *namedotcomAPI) GetZoneRecords(domain string) (models.Records, error) {
 	records, err := n.getRecords(domain)
 	if err != nil {
 		return nil, err
@@ -35,7 +35,7 @@ func (n *NameCom) GetZoneRecords(domain string) (models.Records, error) {
 }
 
 // GetDomainCorrections gathers correctios that would bring n to match dc.
-func (n *NameCom) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Correction, error) {
+func (n *namedotcomAPI) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Correction, error) {
 	dc.Punycode()
 
 	actual, err := n.GetZoneRecords(dc.Name)
@@ -128,7 +128,7 @@ func toRecord(r *namecom.Record, origin string) *models.RecordConfig {
 	return rc
 }
 
-func (n *NameCom) getRecords(domain string) ([]*namecom.Record, error) {
+func (n *namedotcomAPI) getRecords(domain string) ([]*namecom.Record, error) {
 	var (
 		err      error
 		records  []*namecom.Record
@@ -158,7 +158,7 @@ func (n *NameCom) getRecords(domain string) ([]*namecom.Record, error) {
 	return records, nil
 }
 
-func (n *NameCom) createRecord(rc *models.RecordConfig, domain string) error {
+func (n *namedotcomAPI) createRecord(rc *models.RecordConfig, domain string) error {
 	record := &namecom.Record{
 		DomainName: domain,
 		Host:       rc.GetLabel(),
@@ -218,7 +218,7 @@ func decodeTxt(s string) []string {
 	return []string{s}
 }
 
-func (n *NameCom) deleteRecord(id int32, domain string) error {
+func (n *namedotcomAPI) deleteRecord(id int32, domain string) error {
 	request := &namecom.DeleteRecordRequest{
 		DomainName: domain,
 		ID:         id,
