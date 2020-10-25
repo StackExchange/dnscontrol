@@ -23,7 +23,7 @@ type RecordConfigJSON struct {
 	TTL  uint32 `json:"timetolive"`
 }
 
-func (c *adProvider) GetNameservers(string) ([]*models.Nameserver, error) {
+func (c *activedirAPI) GetNameservers(string) ([]*models.Nameserver, error) {
 	// TODO: If using AD for publicly hosted zones, probably pull these from config.
 	return nil, nil
 }
@@ -38,7 +38,7 @@ var supportedTypes = map[string]bool{
 }
 
 // GetZoneRecords gets the records of a zone and returns them in RecordConfig format.
-func (c *adProvider) GetZoneRecords(domain string) (models.Records, error) {
+func (c *activedirAPI) GetZoneRecords(domain string) (models.Records, error) {
 	foundRecords, err := c.getExistingRecords(domain)
 	if err != nil {
 		return nil, fmt.Errorf("c.getExistingRecords(%q) failed: %v", domain, err)
@@ -47,7 +47,7 @@ func (c *adProvider) GetZoneRecords(domain string) (models.Records, error) {
 }
 
 // GetDomainCorrections gets existing records, diffs them against existing, and returns corrections.
-func (c *adProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Correction, error) {
+func (c *activedirAPI) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Correction, error) {
 
 	dc.Filter(func(r *models.RecordConfig) bool {
 		if r.Type == "NS" && r.Name == "@" {
@@ -100,7 +100,7 @@ func zoneDumpFilename(domainname string) string {
 }
 
 // readZoneDump reads a pre-existing zone dump from adzonedump.*.json.
-func (c *adProvider) readZoneDump(domainname string) ([]byte, error) {
+func (c *activedirAPI) readZoneDump(domainname string) ([]byte, error) {
 	// File not found is considered an error.
 	dat, err := utfutil.ReadFile(zoneDumpFilename(domainname), utfutil.WINDOWS)
 	if err != nil {
@@ -111,17 +111,17 @@ func (c *adProvider) readZoneDump(domainname string) ([]byte, error) {
 }
 
 // powerShellLogCommand logs to flagPsLog that a PowerShell command is going to be run.
-func (c *adProvider) logCommand(command string) error {
+func (c *activedirAPI) logCommand(command string) error {
 	return c.logHelper(fmt.Sprintf("# %s\r\n%s\r\n", time.Now().UTC(), strings.TrimSpace(command)))
 }
 
 // powerShellLogOutput logs to flagPsLog that a PowerShell command is going to be run.
-func (c *adProvider) logOutput(s string) error {
+func (c *activedirAPI) logOutput(s string) error {
 	return c.logHelper(fmt.Sprintf("OUTPUT: START\r\n%s\r\nOUTPUT: END\r\n", s))
 }
 
 // powerShellLogErr logs that a PowerShell command had an error.
-func (c *adProvider) logErr(e error) error {
+func (c *activedirAPI) logErr(e error) error {
 	err := c.logHelper(fmt.Sprintf("ERROR: %v\r\r", e)) // Log error to powershell.log
 	if err != nil {
 		return err // Bubble up error created in logHelper
@@ -129,7 +129,7 @@ func (c *adProvider) logErr(e error) error {
 	return e // Bubble up original error
 }
 
-func (c *adProvider) logHelper(s string) error {
+func (c *activedirAPI) logHelper(s string) error {
 	logfile, err := os.OpenFile(c.psLog, os.O_APPEND|os.O_RDWR|os.O_CREATE, 0660)
 	if err != nil {
 		return fmt.Errorf("error: Can not create/append to %#v: %v", c.psLog, err)
@@ -145,7 +145,7 @@ func (c *adProvider) logHelper(s string) error {
 }
 
 // powerShellRecord records that a PowerShell command should be executed later.
-func (c *adProvider) powerShellRecord(command string) error {
+func (c *activedirAPI) powerShellRecord(command string) error {
 	recordfile, err := os.OpenFile(c.psOut, os.O_APPEND|os.O_RDWR|os.O_CREATE, 0660)
 	if err != nil {
 		return fmt.Errorf("can not create/append to %#v: %v", c.psOut, err)
@@ -157,7 +157,7 @@ func (c *adProvider) powerShellRecord(command string) error {
 	return recordfile.Close()
 }
 
-func (c *adProvider) getExistingRecords(domainname string) ([]*models.RecordConfig, error) {
+func (c *activedirAPI) getExistingRecords(domainname string) ([]*models.RecordConfig, error) {
 	// Get the JSON either from adzonedump or by running a PowerShell script.
 	data, err := c.getRecords(domainname)
 	if err != nil {
@@ -221,7 +221,7 @@ func (r *RecordConfigJSON) unpackRecord(origin string) (rc *models.RecordConfig,
 }
 
 // powerShellDump runs a PowerShell command to get a dump of all records in a DNS zone.
-func (c *adProvider) generatePowerShellZoneDump(domainname string) string {
+func (c *activedirAPI) generatePowerShellZoneDump(domainname string) string {
 	cmdTxt := `@("REPLACE_WITH_ZONE") | %{
 Get-DnsServerResourceRecord -ComputerName REPLACE_WITH_COMPUTER_NAME -ZoneName $_ | select hostname,recordtype,@{n="timestamp";e={$_.timestamp.tostring()}},@{n="timetolive";e={$_.timetolive.totalseconds}},@{n="recorddata";e={($_.recorddata.ipv4address,$_.recorddata.ipv6address,$_.recorddata.HostNameAlias,$_.recorddata.NameServer,"unsupported_record_type" -ne $null)[0]-as [string]}} | ConvertTo-Json > REPLACE_WITH_FILENAMEPREFIX.REPLACE_WITH_ZONE.json
 }`
@@ -232,7 +232,7 @@ Get-DnsServerResourceRecord -ComputerName REPLACE_WITH_COMPUTER_NAME -ZoneName $
 }
 
 // generatePowerShellCreate generates PowerShell commands to ADD a record.
-func (c *adProvider) generatePowerShellCreate(domainname string, rec *models.RecordConfig) string {
+func (c *activedirAPI) generatePowerShellCreate(domainname string, rec *models.RecordConfig) string {
 	content := rec.GetTargetField()
 	text := "\r\n" // Skip a line.
 	funcSuffix := rec.Type
@@ -263,7 +263,7 @@ func (c *adProvider) generatePowerShellCreate(domainname string, rec *models.Rec
 }
 
 // generatePowerShellModify generates PowerShell commands to MODIFY a record.
-func (c *adProvider) generatePowerShellModify(domainname, recName, recType, oldContent, newContent string, oldTTL, newTTL uint32) string {
+func (c *activedirAPI) generatePowerShellModify(domainname, recName, recType, oldContent, newContent string, oldTTL, newTTL uint32) string {
 
 	var queryField, queryContent string
 	queryContent = `"` + oldContent + `"`
@@ -317,7 +317,7 @@ func (c *adProvider) generatePowerShellModify(domainname, recName, recType, oldC
 	return text
 }
 
-func (c *adProvider) generatePowerShellDelete(domainname, recName, recType, content string) string {
+func (c *activedirAPI) generatePowerShellDelete(domainname, recName, recType, content string) string {
 	text := fmt.Sprintf(`echo "DELETE %s %s %s"`, recType, recName, content)
 	text += "\r\n"
 	text += `Remove-DnsServerResourceRecord -Force -ComputerName "%s" -ZoneName "%s" -Name "%s" -RRType "%s" -RecordData "%s"`
@@ -325,7 +325,7 @@ func (c *adProvider) generatePowerShellDelete(domainname, recName, recType, cont
 	return fmt.Sprintf(text, c.adServer, domainname, recName, recType, content)
 }
 
-func (c *adProvider) createRec(domainname string, cre diff.Correlation) []*models.Correction {
+func (c *activedirAPI) createRec(domainname string, cre diff.Correlation) []*models.Correction {
 	rec := cre.Desired
 	arr := []*models.Correction{
 		{
@@ -337,7 +337,7 @@ func (c *adProvider) createRec(domainname string, cre diff.Correlation) []*model
 	return arr
 }
 
-func (c *adProvider) modifyRec(domainname string, m diff.Correlation) *models.Correction {
+func (c *activedirAPI) modifyRec(domainname string, m diff.Correlation) *models.Correction {
 	old, rec := m.Existing, m.Desired
 	return &models.Correction{
 		Msg: m.String(),
@@ -347,7 +347,7 @@ func (c *adProvider) modifyRec(domainname string, m diff.Correlation) *models.Co
 	}
 }
 
-func (c *adProvider) deleteRec(domainname string, cor diff.Correlation) *models.Correction {
+func (c *activedirAPI) deleteRec(domainname string, cor diff.Correlation) *models.Correction {
 	rec := cor.Existing
 	return &models.Correction{
 		Msg: cor.String(),
