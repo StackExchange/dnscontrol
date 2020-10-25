@@ -145,7 +145,7 @@ func exit(err error) error {
 func stringSliceToMap(stringSlice cli.StringSlice) map[string]string {
 	mapString := make(map[string]string, len(stringSlice.Value()))
 	for _, values := range stringSlice.Value() {
-		parts := strings.Split(values, "=")
+		parts := strings.SplitN(values, "=", 2)
 		if len(parts) == 2 {
 			mapString[parts[0]] = parts[1]
 		}
