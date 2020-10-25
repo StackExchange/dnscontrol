@@ -160,6 +160,7 @@ type ExecuteDSLArgs struct {
 	JSFile   string
 	JSONFile string
 	DevMode  bool
+	Variable cli.StringSlice
 }
 
 func (args *ExecuteDSLArgs) flags() []cli.Flag {
@@ -181,6 +182,12 @@ func (args *ExecuteDSLArgs) flags() []cli.Flag {
 			Name:        "dev",
 			Destination: &args.DevMode,
 			Usage:       "Use helpers.js from disk instead of embedded copy",
+		},
+		&cli.StringSliceFlag{
+			Name:        "variable",
+			Aliases:     []string{"v"},
+			Destination: &args.Variable,
+			Usage:       "Add variable that is passed to JS",
 		},
 	}
 }
