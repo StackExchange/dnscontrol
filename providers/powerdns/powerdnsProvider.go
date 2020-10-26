@@ -34,8 +34,8 @@ func init() {
 	providers.RegisterDomainServiceProviderType("POWERDNS", NewProvider, features)
 }
 
-// PowerDNS represents the PowerDNS DNSServiceProvider.
-type PowerDNS struct {
+// powerdnsProvider represents the powerdnsProvider DNSServiceProvider.
+type powerdnsProvider struct {
 	client         pdns.Client
 	APIKey         string
 	APIUrl         string
@@ -48,7 +48,7 @@ type PowerDNS struct {
 
 // NewProvider initializes a PowerDNS DNSServiceProvider.
 func NewProvider(m map[string]string, metadata json.RawMessage) (providers.DNSServiceProvider, error) {
-	api := &PowerDNS{}
+	api := &powerdnsProvider{}
 
 	api.APIKey = m["apiKey"]
 	if api.APIKey == "" {
@@ -91,7 +91,7 @@ func NewProvider(m map[string]string, metadata json.RawMessage) (providers.DNSSe
 }
 
 // GetNameservers returns the nameservers for a domain.
-func (api *PowerDNS) GetNameservers(string) ([]*models.Nameserver, error) {
+func (api *powerdnsProvider) GetNameservers(string) ([]*models.Nameserver, error) {
 	var r []string
 	for _, j := range api.nameservers {
 		r = append(r, j.Name)
@@ -100,7 +100,7 @@ func (api *PowerDNS) GetNameservers(string) ([]*models.Nameserver, error) {
 }
 
 // ListZones returns all the zones in an account
-func (api *PowerDNS) ListZones() ([]string, error) {
+func (api *powerdnsProvider) ListZones() ([]string, error) {
 	var result []string
 	zones, err := api.client.Zones().ListZones(context.Background(), api.ServerName)
 	if err != nil {
@@ -113,7 +113,7 @@ func (api *PowerDNS) ListZones() ([]string, error) {
 }
 
 // GetZoneRecords gets the records of a zone and returns them in RecordConfig format.
-func (api *PowerDNS) GetZoneRecords(domain string) (models.Records, error) {
+func (api *powerdnsProvider) GetZoneRecords(domain string) (models.Records, error) {
 	zone, err := api.client.Zones().GetZone(context.Background(), api.ServerName, domain)
 	if err != nil {
 		return nil, err
@@ -139,7 +139,7 @@ func (api *PowerDNS) GetZoneRecords(domain string) (models.Records, error) {
 }
 
 // GetDomainCorrections returns a list of corrections to update a domain.
-func (api *PowerDNS) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Correction, error) {
+func (api *powerdnsProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Correction, error) {
 	var corrections []*models.Correction
 
 	// record corrections
@@ -205,7 +205,7 @@ func (api *PowerDNS) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Co
 }
 
 // EnsureDomainExists adds a domain to the DNS service if it does not exist
-func (api *PowerDNS) EnsureDomainExists(domain string) error {
+func (api *powerdnsProvider) EnsureDomainExists(domain string) error {
 	if _, err := api.client.Zones().GetZone(context.Background(), api.ServerName, domain+"."); err != nil {
 		if e, ok := err.(pdnshttp.ErrUnexpectedStatus); ok {
 			if e.StatusCode != http.StatusNotFound {

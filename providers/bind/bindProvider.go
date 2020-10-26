@@ -51,7 +51,7 @@ var features = providers.DocumentationNotes{
 func initBind(config map[string]string, providermeta json.RawMessage) (providers.DNSServiceProvider, error) {
 	// config -- the key/values from creds.json
 	// meta -- the json blob from NewReq('name', 'TYPE', meta)
-	api := &Bind{
+	api := &bindProvider{
 		directory: config["directory"],
 	}
 	if api.directory == "" {
@@ -92,8 +92,8 @@ func (s SoaInfo) String() string {
 	return fmt.Sprintf("%s %s %d %d %d %d %d %d", s.Ns, s.Mbox, s.Serial, s.Refresh, s.Retry, s.Expire, s.Minttl, s.TTL)
 }
 
-// Bind is the provider handle for the Bind driver.
-type Bind struct {
+// bindProvider is the provider handle for the bindProvider driver.
+type bindProvider struct {
 	DefaultNS     []string `json:"default_ns"`
 	DefaultSoa    SoaInfo  `json:"default_soa"`
 	nameservers   []*models.Nameserver
@@ -103,7 +103,7 @@ type Bind struct {
 }
 
 // GetNameservers returns the nameservers for a domain.
-func (c *Bind) GetNameservers(string) ([]*models.Nameserver, error) {
+func (c *bindProvider) GetNameservers(string) ([]*models.Nameserver, error) {
 	var r []string
 	for _, j := range c.nameservers {
 		r = append(r, j.Name)
@@ -112,7 +112,7 @@ func (c *Bind) GetNameservers(string) ([]*models.Nameserver, error) {
 }
 
 // ListZones returns all the zones in an account
-func (c *Bind) ListZones() ([]string, error) {
+func (c *bindProvider) ListZones() ([]string, error) {
 	if _, err := os.Stat(c.directory); os.IsNotExist(err) {
 		return nil, fmt.Errorf("directory %q does not exist", c.directory)
 	}
@@ -130,7 +130,7 @@ func (c *Bind) ListZones() ([]string, error) {
 }
 
 // GetZoneRecords gets the records of a zone and returns them in RecordConfig format.
-func (c *Bind) GetZoneRecords(domain string) (models.Records, error) {
+func (c *bindProvider) GetZoneRecords(domain string) (models.Records, error) {
 	foundRecords := models.Records{}
 
 	if _, err := os.Stat(c.directory); os.IsNotExist(err) {
@@ -170,7 +170,7 @@ func (c *Bind) GetZoneRecords(domain string) (models.Records, error) {
 }
 
 // GetDomainCorrections returns a list of corrections to update a domain.
-func (c *Bind) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Correction, error) {
+func (c *bindProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Correction, error) {
 	dc.Punycode()
 
 	comments := make([]string, 0, 5)

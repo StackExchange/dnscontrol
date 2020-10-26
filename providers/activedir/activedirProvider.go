@@ -9,7 +9,7 @@ import (
 )
 
 // This is the struct that matches either (or both) of the Registrar and/or DNSProvider interfaces:
-type activedirAPI struct {
+type activedirProvider struct {
 	adServer string
 	fake     bool
 	psOut    string
@@ -50,7 +50,7 @@ func newDNS(config map[string]string, metadata json.RawMessage) (providers.DNSSe
 		psLog = "powershell.log"
 	}
 
-	p := &activedirAPI{psLog: psLog, psOut: psOut, fake: fake}
+	p := &activedirProvider{psLog: psLog, psOut: psOut, fake: fake}
 	if fake {
 		return p, nil
 	}

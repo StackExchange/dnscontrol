@@ -22,7 +22,7 @@ func init() {
 }
 
 func newDNSOverHTTPS(m map[string]string) (providers.Registrar, error) {
-	api := &api{
+	api := &dohProvider{
 		host: m["host"],
 	}
 	if api.host == "" {
@@ -32,7 +32,7 @@ func newDNSOverHTTPS(m map[string]string) (providers.Registrar, error) {
 }
 
 // GetRegistrarCorrections gathers corrections that would being n to match dc.
-func (c *api) GetRegistrarCorrections(dc *models.DomainConfig) ([]*models.Correction, error) {
+func (c *dohProvider) GetRegistrarCorrections(dc *models.DomainConfig) ([]*models.Correction, error) {
 	nss, err := c.getNameservers(dc.Name)
 	if err != nil {
 		return nil, err

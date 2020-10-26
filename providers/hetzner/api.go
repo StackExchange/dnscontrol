@@ -14,7 +14,7 @@ const (
 	baseURL = "https://dns.hetzner.com/api/v1"
 )
 
-type api struct {
+type hetznerProvider struct {
 	apiKey             string
 	zones              map[string]zone
 	requestRateLimiter requestRateLimiter
@@ -29,7 +29,7 @@ func checkIsLockedSystemRecord(record record) error {
 	return nil
 }
 
-func (api *api) createRecord(record record) error {
+func (api *hetznerProvider) createRecord(record record) error {
 	if err := checkIsLockedSystemRecord(record); err != nil {
 		return err
 	}
@@ -44,14 +44,14 @@ func (api *api) createRecord(record record) error {
 	return api.request("/records", "POST", request, nil)
 }
 
-func (api *api) createZone(name string) error {
+func (api *hetznerProvider) createZone(name string) error {
 	request := createZoneRequest{
 		Name: name,
 	}
 	return api.request("/zones", "POST", request, nil)
 }
 
-func (api *api) deleteRecord(record record) error {
+func (api *hetznerProvider) deleteRecord(record record) error {
 	if err := checkIsLockedSystemRecord(record); err != nil {
 		return err
 	}
@@ -60,7 +60,7 @@ func (api *api) deleteRecord(record record) error {
 	return api.request(url, "DELETE", nil, nil)
 }
 
-func (api *api) getAllRecords(domain string) ([]record, error) {
+func (api *hetznerProvider) getAllRecords(domain string) ([]record, error) {
 	zone, err := api.getZone(domain)
 	if err != nil {
 		return nil, err
@@ -94,7 +94,7 @@ func (api *api) getAllRecords(domain string) ([]record, error) {
 	return records, nil
 }
 
-func (api *api) getAllZones() error {
+func (api *hetznerProvider) getAllZones() error {
 	if api.zones != nil {
 		return nil
 	}
@@ -119,7 +119,7 @@ func (api *api) getAllZones() error {
 	return nil
 }
 
-func (api *api) getZone(name string) (*zone, error) {
+func (api *hetznerProvider) getZone(name string) (*zone, error) {
 	if err := api.getAllZones(); err != nil {
 		return nil, err
 	}
@@ -130,7 +130,7 @@ func (api *api) getZone(name string) (*zone, error) {
 	return &zone, nil
 }
 
-func (api *api) request(endpoint string, method string, request interface{}, target interface{}) error {
+func (api *hetznerProvider) request(endpoint string, method string, request interface{}, target interface{}) error {
 	var requestBody io.Reader
 	if request != nil {
 		requestBodySerialised, err := json.Marshal(request)
@@ -179,13 +179,13 @@ func (api *api) request(endpoint string, method string, request interface{}, tar
 	}
 }
 
-func (api *api) startRateLimited() {
+func (api *hetznerProvider) startRateLimited() {
 	// Simulate a request that is getting a 429 response.
 	api.requestRateLimiter.afterRequest()
 	api.requestRateLimiter.bumpDelay()
 }
 
-func (api *api) updateRecord(record record) error {
+func (api *hetznerProvider) updateRecord(record record) error {
 	if err := checkIsLockedSystemRecord(record); err != nil {
 		return err
 	}
