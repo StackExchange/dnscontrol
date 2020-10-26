@@ -19,7 +19,7 @@ import (
 	"github.com/StackExchange/dnscontrol/v3/providers"
 )
 
-type route53API struct {
+type route53Provider struct {
 	client          *r53.Route53
 	registrar       *r53d.Route53Domains
 	delegationSet   *string
@@ -35,7 +35,7 @@ func newRoute53Dsp(conf map[string]string, metadata json.RawMessage) (providers.
 	return newRoute53(conf, metadata)
 }
 
-func newRoute53(m map[string]string, metadata json.RawMessage) (*route53API, error) {
+func newRoute53(m map[string]string, metadata json.RawMessage) (*route53Provider, error) {
 	keyID, secretKey, tokenID := m["KeyId"], m["SecretKey"], m["Token"]
 
 	// Route53 uses a global endpoint and route53domains
@@ -56,7 +56,7 @@ func newRoute53(m map[string]string, metadata json.RawMessage) (*route53API, err
 		fmt.Printf("ROUTE53 DelegationSet %s configured\n", val)
 		dls = sPtr(val)
 	}
-	api := &route53API{client: r53.New(sess), registrar: r53d.New(sess), delegationSet: dls}
+	api := &route53Provider{client: r53.New(sess), registrar: r53d.New(sess), delegationSet: dls}
 	err := api.getZones()
 	if err != nil {
 		return nil, err
@@ -111,7 +111,7 @@ func withRetry(f func() error) {
 }
 
 // ListZones lists the zones on this account.
-func (r *route53API) ListZones() ([]string, error) {
+func (r *route53Provider) ListZones() ([]string, error) {
 	var zones []string
 	// Assumes r.zones was filled already by newRoute53().
 	for i := range r.zones {
@@ -120,7 +120,7 @@ func (r *route53API) ListZones() ([]string, error) {
 	return zones, nil
 }
 
-func (r *route53API) getZones() error {
+func (r *route53Provider) getZones() error {
 	var nextMarker *string
 	r.zones = make(map[string]*r53.HostedZone)
 	for {
@@ -157,7 +157,7 @@ func (e errNoExist) Error() string {
 	return fmt.Sprintf("Domain %s not found in your route 53 account", e.domain)
 }
 
-func (r *route53API) GetNameservers(domain string) ([]*models.Nameserver, error) {
+func (r *route53Provider) GetNameservers(domain string) ([]*models.Nameserver, error) {
 
 	zone, ok := r.zones[domain]
 	if !ok {
@@ -183,7 +183,7 @@ func (r *route53API) GetNameservers(domain string) ([]*models.Nameserver, error)
 }
 
 // GetZoneRecords gets the records of a zone and returns them in RecordConfig format.
-func (r *route53API) GetZoneRecords(domain string) (models.Records, error) {
+func (r *route53Provider) GetZoneRecords(domain string) (models.Records, error) {
 
 	zone, ok := r.zones[domain]
 	if !ok {
@@ -203,7 +203,7 @@ func (r *route53API) GetZoneRecords(domain string) (models.Records, error) {
 	return existingRecords, nil
 }
 
-func (r *route53API) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Correction, error) {
+func (r *route53Provider) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Correction, error) {
 	dc.Punycode()
 
 	var corrections = []*models.Correction{}
@@ -431,7 +431,7 @@ func getZoneID(zone *r53.HostedZone, r *models.RecordConfig) string {
 	return zoneID
 }
 
-func (r *route53API) GetRegistrarCorrections(dc *models.DomainConfig) ([]*models.Correction, error) {
+func (r *route53Provider) GetRegistrarCorrections(dc *models.DomainConfig) ([]*models.Correction, error) {
 	corrections := []*models.Correction{}
 	actualSet, err := r.getRegistrarNameservers(&dc.Name)
 	if err != nil {
@@ -462,7 +462,7 @@ func (r *route53API) GetRegistrarCorrections(dc *models.DomainConfig) ([]*models
 	return corrections, nil
 }
 
-func (r *route53API) getRegistrarNameservers(domainName *string) ([]string, error) {
+func (r *route53Provider) getRegistrarNameservers(domainName *string) ([]string, error) {
 	var domainDetail *r53d.GetDomainDetailOutput
 	var err error
 	withRetry(func() error {
@@ -481,7 +481,7 @@ func (r *route53API) getRegistrarNameservers(domainName *string) ([]string, erro
 	return nameservers, nil
 }
 
-func (r *route53API) updateRegistrarNameservers(domainName string, nameservers []string) (*string, error) {
+func (r *route53Provider) updateRegistrarNameservers(domainName string, nameservers []string) (*string, error) {
 	servers := []*r53d.Nameserver{}
 	for i := range nameservers {
 		servers = append(servers, &r53d.Nameserver{Name: &nameservers[i]})
@@ -500,7 +500,7 @@ func (r *route53API) updateRegistrarNameservers(domainName string, nameservers [
 	return domainUpdate.OperationId, nil
 }
 
-func (r *route53API) fetchRecordSets(zoneID *string) ([]*r53.ResourceRecordSet, error) {
+func (r *route53Provider) fetchRecordSets(zoneID *string) ([]*r53.ResourceRecordSet, error) {
 	if zoneID == nil || *zoneID == "" {
 		return nil, nil
 	}
@@ -545,7 +545,7 @@ func unescape(s *string) string {
 	return name
 }
 
-func (r *route53API) EnsureDomainExists(domain string) error {
+func (r *route53Provider) EnsureDomainExists(domain string) error {
 	if _, ok := r.zones[domain]; ok {
 		return nil
 	}

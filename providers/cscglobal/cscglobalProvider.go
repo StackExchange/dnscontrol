@@ -24,7 +24,7 @@ func init() {
 }
 
 func newCscGlobal(m map[string]string) (providers.Registrar, error) {
-	api := &api{}
+	api := &cscglobalProvider{}
 
 	api.key, api.token = m["api-key"], m["user-token"]
 	if api.key == "" || api.token == "" {
@@ -39,7 +39,7 @@ func newCscGlobal(m map[string]string) (providers.Registrar, error) {
 }
 
 // GetRegistrarCorrections gathers corrections that would being n to match dc.
-func (c *api) GetRegistrarCorrections(dc *models.DomainConfig) ([]*models.Correction, error) {
+func (c *cscglobalProvider) GetRegistrarCorrections(dc *models.DomainConfig) ([]*models.Correction, error) {
 	nss, err := c.getNameservers(dc.Name)
 	if err != nil {
 		return nil, err

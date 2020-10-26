@@ -47,20 +47,20 @@ var defaultNameServerNames = []string{
 	"ns4.dnsimple.com",
 }
 
-// dnsimpleAPI is the handle for this provider.
-type dnsimpleAPI struct {
+// dnsimpleProvider is the handle for this provider.
+type dnsimpleProvider struct {
 	AccountToken string // The account access token
 	BaseURL      string // An alternate base URI
 	accountID    string // Account id cache
 }
 
 // GetNameservers returns the name servers for a domain.
-func (c *dnsimpleAPI) GetNameservers(domainName string) ([]*models.Nameserver, error) {
+func (c *dnsimpleProvider) GetNameservers(domainName string) ([]*models.Nameserver, error) {
 	return models.ToNameservers(defaultNameServerNames)
 }
 
 // GetZoneRecords gets the records of a zone and returns them in RecordConfig format.
-func (c *dnsimpleAPI) GetZoneRecords(domain string) (models.Records, error) {
+func (c *dnsimpleProvider) GetZoneRecords(domain string) (models.Records, error) {
 	records, err := c.getRecords(domain)
 	if err != nil {
 		return nil, err
@@ -123,7 +123,7 @@ func (c *dnsimpleAPI) GetZoneRecords(domain string) (models.Records, error) {
 }
 
 // GetDomainCorrections returns corrections that update a domain.
-func (c *dnsimpleAPI) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Correction, error) {
+func (c *dnsimpleProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Correction, error) {
 	corrections := []*models.Correction{}
 	err := dc.Punycode()
 	if err != nil {
@@ -191,7 +191,7 @@ func removeNS(records models.Records) models.Records {
 }
 
 // GetRegistrarCorrections returns corrections that update a domain's registrar.
-func (c *dnsimpleAPI) GetRegistrarCorrections(dc *models.DomainConfig) ([]*models.Correction, error) {
+func (c *dnsimpleProvider) GetRegistrarCorrections(dc *models.DomainConfig) ([]*models.Correction, error) {
 	corrections := []*models.Correction{}
 
 	nameServers, err := c.getNameservers(dc.Name)
@@ -222,7 +222,7 @@ func (c *dnsimpleAPI) GetRegistrarCorrections(dc *models.DomainConfig) ([]*model
 }
 
 // getDNSSECCorrections returns corrections that update a domain's DNSSEC state.
-func (c *dnsimpleAPI) getDNSSECCorrections(dc *models.DomainConfig) ([]*models.Correction, error) {
+func (c *dnsimpleProvider) getDNSSECCorrections(dc *models.DomainConfig) ([]*models.Correction, error) {
 	enabled, err := c.getDnssec(dc.Name)
 	if err != nil {
 		return nil, err
@@ -251,7 +251,7 @@ func (c *dnsimpleAPI) getDNSSECCorrections(dc *models.DomainConfig) ([]*models.C
 
 // DNSimple calls
 
-func (c *dnsimpleAPI) getClient() *dnsimpleapi.Client {
+func (c *dnsimpleProvider) getClient() *dnsimpleapi.Client {
 	ts := oauth2.StaticTokenSource(&oauth2.Token{AccessToken: c.AccountToken})
 	tc := oauth2.NewClient(context.Background(), ts)
 
@@ -265,7 +265,7 @@ func (c *dnsimpleAPI) getClient() *dnsimpleapi.Client {
 	return client
 }
 
-func (c *dnsimpleAPI) getAccountID() (string, error) {
+func (c *dnsimpleProvider) getAccountID() (string, error) {
 	if c.accountID == "" {
 		client := c.getClient()
 		whoamiResponse, err := client.Identity.Whoami(context.Background())
@@ -280,7 +280,7 @@ func (c *dnsimpleAPI) getAccountID() (string, error) {
 	return c.accountID, nil
 }
 
-func (c *dnsimpleAPI) getRecords(domainName string) ([]dnsimpleapi.ZoneRecord, error) {
+func (c *dnsimpleProvider) getRecords(domainName string) ([]dnsimpleapi.ZoneRecord, error) {
 	client := c.getClient()
 
 	accountID, err := c.getAccountID()
@@ -308,7 +308,7 @@ func (c *dnsimpleAPI) getRecords(domainName string) ([]dnsimpleapi.ZoneRecord, e
 	return recs, nil
 }
 
-func (c *dnsimpleAPI) getDnssec(domainName string) (bool, error) {
+func (c *dnsimpleProvider) getDnssec(domainName string) (bool, error) {
 	var (
 		client    *dnsimpleapi.Client
 		accountID string
@@ -329,7 +329,7 @@ func (c *dnsimpleAPI) getDnssec(domainName string) (bool, error) {
 	return dnssecResponse.Data.Enabled, nil
 }
 
-func (c *dnsimpleAPI) enableDnssec(domainName string) (bool, error) {
+func (c *dnsimpleProvider) enableDnssec(domainName string) (bool, error) {
 	var (
 		client    *dnsimpleapi.Client
 		accountID string
@@ -350,7 +350,7 @@ func (c *dnsimpleAPI) enableDnssec(domainName string) (bool, error) {
 	return dnssecResponse.Data.Enabled, nil
 }
 
-func (c *dnsimpleAPI) disableDnssec(domainName string) (bool, error) {
+func (c *dnsimpleProvider) disableDnssec(domainName string) (bool, error) {
 	var (
 		client    *dnsimpleapi.Client
 		accountID string
@@ -374,7 +374,7 @@ func (c *dnsimpleAPI) disableDnssec(domainName string) (bool, error) {
 // Returns the name server names that should be used. If the domain is registered
 // then this method will return the delegation name servers. If this domain
 // is hosted only, then it will return the default DNSimple name servers.
-func (c *dnsimpleAPI) getNameservers(domainName string) ([]string, error) {
+func (c *dnsimpleProvider) getNameservers(domainName string) ([]string, error) {
 	client := c.getClient()
 
 	accountID, err := c.getAccountID()
@@ -400,7 +400,7 @@ func (c *dnsimpleAPI) getNameservers(domainName string) ([]string, error) {
 }
 
 // Returns a function that can be invoked to change the delegation of the domain to the given name server names.
-func (c *dnsimpleAPI) updateNameserversFunc(nameServerNames []string, domainName string) func() error {
+func (c *dnsimpleProvider) updateNameserversFunc(nameServerNames []string, domainName string) func() error {
 	return func() error {
 		client := c.getClient()
 
@@ -421,7 +421,7 @@ func (c *dnsimpleAPI) updateNameserversFunc(nameServerNames []string, domainName
 }
 
 // Returns a function that can be invoked to create a record in a zone.
-func (c *dnsimpleAPI) createRecordFunc(rc *models.RecordConfig, domainName string) func() error {
+func (c *dnsimpleProvider) createRecordFunc(rc *models.RecordConfig, domainName string) func() error {
 	return func() error {
 		client := c.getClient()
 
@@ -446,7 +446,7 @@ func (c *dnsimpleAPI) createRecordFunc(rc *models.RecordConfig, domainName strin
 }
 
 // Returns a function that can be invoked to delete a record in a zone.
-func (c *dnsimpleAPI) deleteRecordFunc(recordID int64, domainName string) func() error {
+func (c *dnsimpleProvider) deleteRecordFunc(recordID int64, domainName string) func() error {
 	return func() error {
 		client := c.getClient()
 
@@ -466,7 +466,7 @@ func (c *dnsimpleAPI) deleteRecordFunc(recordID int64, domainName string) func()
 }
 
 // Returns a function that can be invoked to update a record in a zone.
-func (c *dnsimpleAPI) updateRecordFunc(old *dnsimpleapi.ZoneRecord, rc *models.RecordConfig, domainName string) func() error {
+func (c *dnsimpleProvider) updateRecordFunc(old *dnsimpleapi.ZoneRecord, rc *models.RecordConfig, domainName string) func() error {
 	return func() error {
 		client := c.getClient()
 
@@ -493,7 +493,7 @@ func (c *dnsimpleAPI) updateRecordFunc(old *dnsimpleapi.ZoneRecord, rc *models.R
 }
 
 // ListZones returns all the zones in an account
-func (c *dnsimpleAPI) ListZones() ([]string, error) {
+func (c *dnsimpleProvider) ListZones() ([]string, error) {
 	client := c.getClient()
 	accountID, err := c.getAccountID()
 	if err != nil {
@@ -531,8 +531,8 @@ func newDsp(conf map[string]string, metadata json.RawMessage) (providers.DNSServ
 	return newProvider(conf, metadata)
 }
 
-func newProvider(m map[string]string, metadata json.RawMessage) (*dnsimpleAPI, error) {
-	api := &dnsimpleAPI{}
+func newProvider(m map[string]string, metadata json.RawMessage) (*dnsimpleProvider, error) {
+	api := &dnsimpleProvider{}
 	api.AccountToken = m["token"]
 	if api.AccountToken == "" {
 		return nil, fmt.Errorf("missing DNSimple token")

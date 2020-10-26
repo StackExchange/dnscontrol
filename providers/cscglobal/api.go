@@ -13,7 +13,7 @@ const apiBase = "https://apis.cscglobal.com/dbs/api/v2"
 
 // Api layer for CSC Global
 
-type api struct {
+type cscglobalProvider struct {
 	key          string
 	token        string
 	notifyEmails []string
@@ -55,7 +55,7 @@ type domainRecord struct {
 	Nameserver []string `json:"nameservers"`
 }
 
-func (c *api) getNameservers(domain string) ([]string, error) {
+func (c *cscglobalProvider) getNameservers(domain string) ([]string, error) {
 	var bodyString, err = c.get("/domains/" + domain)
 	if err != nil {
 		return nil, err
@@ -71,7 +71,7 @@ func (c *api) getNameservers(domain string) ([]string, error) {
 	return ns, nil
 }
 
-func (c *api) updateNameservers(ns []string, domain string) error {
+func (c *cscglobalProvider) updateNameservers(ns []string, domain string) error {
 	req := nsModRequest{
 		Domain:      domain,
 		NameServers: ns,
@@ -103,7 +103,7 @@ func (c *api) updateNameservers(ns []string, domain string) error {
 	return nil
 }
 
-func (c *api) put(endpoint string, requestBody []byte) ([]byte, error) {
+func (c *cscglobalProvider) put(endpoint string, requestBody []byte) ([]byte, error) {
 	client := &http.Client{}
 	req, _ := http.NewRequest("PUT", apiBase+endpoint, bytes.NewReader(requestBody))
 
@@ -137,7 +137,7 @@ func (c *api) put(endpoint string, requestBody []byte) ([]byte, error) {
 		req.Host, req.URL.RequestURI())
 }
 
-func (c *api) get(endpoint string) ([]byte, error) {
+func (c *cscglobalProvider) get(endpoint string) ([]byte, error) {
 	client := &http.Client{}
 	req, _ := http.NewRequest("GET", apiBase+endpoint, nil)
 

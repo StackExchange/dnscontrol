@@ -30,8 +30,8 @@ var defaultNameServerNames = []string{
 	"ns3.systemdns.com",
 }
 
-// opensrsAPI is the api handle.
-type opensrsAPI struct {
+// opensrsProvider is the api handle.
+type opensrsProvider struct {
 	UserName string // reseller user name
 	APIKey   string // API Key
 
@@ -40,12 +40,12 @@ type opensrsAPI struct {
 }
 
 // GetNameservers returns a list of nameservers.
-func (c *opensrsAPI) GetNameservers(domainName string) ([]*models.Nameserver, error) {
+func (c *opensrsProvider) GetNameservers(domainName string) ([]*models.Nameserver, error) {
 	return models.ToNameservers(defaultNameServerNames)
 }
 
 // GetRegistrarCorrections returns a list of corrections for a registrar.
-func (c *opensrsAPI) GetRegistrarCorrections(dc *models.DomainConfig) ([]*models.Correction, error) {
+func (c *opensrsProvider) GetRegistrarCorrections(dc *models.DomainConfig) ([]*models.Correction, error) {
 	corrections := []*models.Correction{}
 
 	nameServers, err := c.getNameservers(dc.Name)
@@ -77,14 +77,14 @@ func (c *opensrsAPI) GetRegistrarCorrections(dc *models.DomainConfig) ([]*models
 
 // OpenSRS calls
 
-func (c *opensrsAPI) getClient() *opensrs.Client {
+func (c *opensrsProvider) getClient() *opensrs.Client {
 	return c.client
 }
 
 // Returns the name server names that should be used. If the domain is registered
 // then this method will return the delegation name servers. If this domain
 // is hosted only, then it will return the default OpenSRS name servers.
-func (c *opensrsAPI) getNameservers(domainName string) ([]string, error) {
+func (c *opensrsProvider) getNameservers(domainName string) ([]string, error) {
 	client := c.getClient()
 
 	status, err := client.Domains.GetDomain(domainName, "status", 1)
@@ -103,7 +103,7 @@ func (c *opensrsAPI) getNameservers(domainName string) ([]string, error) {
 }
 
 // Returns a function that can be invoked to change the delegation of the domain to the given name server names.
-func (c *opensrsAPI) updateNameserversFunc(nameServerNames []string, domainName string) func() error {
+func (c *opensrsProvider) updateNameserversFunc(nameServerNames []string, domainName string) func() error {
 	return func() error {
 		client := c.getClient()
 
@@ -121,8 +121,8 @@ func newReg(conf map[string]string) (providers.Registrar, error) {
 	return newProvider(conf, nil)
 }
 
-func newProvider(m map[string]string, metadata json.RawMessage) (*opensrsAPI, error) {
-	api := &opensrsAPI{}
+func newProvider(m map[string]string, metadata json.RawMessage) (*opensrsProvider, error) {
+	api := &opensrsProvider{}
 	api.APIKey = m["apikey"]
 
 	if api.APIKey == "" {
