@@ -42,13 +42,7 @@ func ExecuteJavascript(file string, devMode bool, variables map[string]string) (
 
 	// add cli variables to otto
 	for key, value := range variables {
-		// try to parse it as json
-		value = strings.TrimRight(strings.TrimLeft(value, "\""), "\"")
-		if val, err := vm.Run("JSON.parse('" + value + "')"); err == nil && val.IsDefined() {
-			vm.Set(key, val)
-		} else {
-			vm.Set(key, value)
-		}
+		vm.Set(key, value)
 	}
 
 	helperJs := GetHelpers(devMode)
