@@ -7,11 +7,11 @@ import (
 	"github.com/babolivier/go-doh-client"
 )
 
-type api struct {
+type dohProvider struct {
 	host string
 }
 
-func (c *api) getNameservers(domain string) ([]string, error) {
+func (c *dohProvider) getNameservers(domain string) ([]string, error) {
 	resolver := doh.Resolver{
 		Host:  c.host,
 		Class: doh.IN,
@@ -31,6 +31,6 @@ func (c *api) getNameservers(domain string) ([]string, error) {
 	return ns, nil
 }
 
-func (c *api) updateNameservers(ns []string, domain string) error {
+func (c *dohProvider) updateNameservers(ns []string, domain string) error {
 	return fmt.Errorf("DNS-over-HTTPS 'Registrar' is read only, changes must be applied to %s manually", domain)
 }

@@ -34,7 +34,7 @@ func New(settings map[string]string, _ json.RawMessage) (providers.DNSServicePro
 		return nil, fmt.Errorf("missing HETZNER api_key")
 	}
 
-	api := &api{}
+	api := &hetznerProvider{}
 
 	api.apiKey = settings["api_key"]
 
@@ -46,7 +46,7 @@ func New(settings map[string]string, _ json.RawMessage) (providers.DNSServicePro
 }
 
 // EnsureDomainExists creates the domain if it does not exist.
-func (api *api) EnsureDomainExists(domain string) error {
+func (api *hetznerProvider) EnsureDomainExists(domain string) error {
 	domains, err := api.ListZones()
 	if err != nil {
 		return err
@@ -62,7 +62,7 @@ func (api *api) EnsureDomainExists(domain string) error {
 }
 
 // GetDomainCorrections returns the corrections for a domain.
-func (api *api) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Correction, error) {
+func (api *hetznerProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Correction, error) {
 	dc, err := dc.Copy()
 	if err != nil {
 		return nil, err
@@ -135,7 +135,7 @@ func (api *api) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Correct
 }
 
 // GetNameservers returns the nameservers for a domain.
-func (api *api) GetNameservers(domain string) ([]*models.Nameserver, error) {
+func (api *hetznerProvider) GetNameservers(domain string) ([]*models.Nameserver, error) {
 	zone, err := api.getZone(domain)
 	if err != nil {
 		return nil, err
@@ -148,7 +148,7 @@ func (api *api) GetNameservers(domain string) ([]*models.Nameserver, error) {
 }
 
 // GetZoneRecords gets the records of a zone and returns them in RecordConfig format.
-func (api *api) GetZoneRecords(domain string) (models.Records, error) {
+func (api *hetznerProvider) GetZoneRecords(domain string) (models.Records, error) {
 	records, err := api.getAllRecords(domain)
 	if err != nil {
 		return nil, err
@@ -161,7 +161,7 @@ func (api *api) GetZoneRecords(domain string) (models.Records, error) {
 }
 
 // ListZones lists the zones on this account.
-func (api *api) ListZones() ([]string, error) {
+func (api *hetznerProvider) ListZones() ([]string, error) {
 	if err := api.getAllZones(); err != nil {
 		return nil, err
 	}
