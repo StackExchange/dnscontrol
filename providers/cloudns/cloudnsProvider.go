@@ -24,7 +24,7 @@ Info required in `creds.json`:
 
 // NewCloudns creates the provider.
 func NewCloudns(m map[string]string, metadata json.RawMessage) (providers.DNSServiceProvider, error) {
-	c := &api{}
+	c := &cloudnsProvider{}
 
 	c.creds.id, c.creds.password = m["auth-id"], m["auth-password"]
 	if c.creds.id == "" || c.creds.password == "" {
@@ -57,7 +57,7 @@ func init() {
 }
 
 // GetNameservers returns the nameservers for a domain.
-func (c *api) GetNameservers(domain string) ([]*models.Nameserver, error) {
+func (c *cloudnsProvider) GetNameservers(domain string) ([]*models.Nameserver, error) {
 	if len(c.nameserversNames) == 0 {
 		c.fetchAvailableNameservers()
 	}
@@ -65,7 +65,7 @@ func (c *api) GetNameservers(domain string) ([]*models.Nameserver, error) {
 }
 
 // GetDomainCorrections returns the corrections for a domain.
-func (c *api) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Correction, error) {
+func (c *cloudnsProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Correction, error) {
 	dc, err := dc.Copy()
 	if err != nil {
 		return nil, err
@@ -150,7 +150,7 @@ func (c *api) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Correctio
 }
 
 // GetZoneRecords gets the records of a zone and returns them in RecordConfig format.
-func (c *api) GetZoneRecords(domain string) (models.Records, error) {
+func (c *cloudnsProvider) GetZoneRecords(domain string) (models.Records, error) {
 	records, err := c.getRecords(domain)
 	if err != nil {
 		return nil, err
@@ -163,7 +163,7 @@ func (c *api) GetZoneRecords(domain string) (models.Records, error) {
 }
 
 // EnsureDomainExists returns an error if domain doesn't exist.
-func (c *api) EnsureDomainExists(domain string) error {
+func (c *cloudnsProvider) EnsureDomainExists(domain string) error {
 	if err := c.fetchDomainList(); err != nil {
 		return err
 	}

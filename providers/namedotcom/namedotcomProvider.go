@@ -12,8 +12,8 @@ import (
 
 const defaultAPIBase = "api.name.com"
 
-// NameCom describes a connection to the NDC API.
-type NameCom struct {
+// namedotcomProvider describes a connection to the NDC API.
+type namedotcomProvider struct {
 	APIUrl  string `json:"apiurl"`
 	APIUser string `json:"apiuser"`
 	APIKey  string `json:"apikey"`
@@ -39,8 +39,8 @@ func newDsp(conf map[string]string, meta json.RawMessage) (providers.DNSServiceP
 	return newProvider(conf)
 }
 
-func newProvider(conf map[string]string) (*NameCom, error) {
-	api := &NameCom{
+func newProvider(conf map[string]string) (*namedotcomProvider, error) {
+	api := &namedotcomProvider{
 		client: namecom.New(conf["apiuser"], conf["apikey"]),
 	}
 	api.client.Server = conf["apiurl"]

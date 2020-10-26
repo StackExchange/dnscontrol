@@ -35,7 +35,7 @@ func init() {
 	providers.RegisterDomainServiceProviderType("GCLOUD", New, features)
 }
 
-type gcloud struct {
+type gcloudProvider struct {
 	client        *gdns.Service
 	project       string
 	nameServerSet *string
@@ -78,7 +78,7 @@ func New(cfg map[string]string, metadata json.RawMessage) (providers.DNSServiceP
 		nss = sPtr(val)
 	}
 
-	g := &gcloud{
+	g := &gcloudProvider{
 		client:        dcli,
 		nameServerSet: nss,
 		project:       cfg["project_id"],
@@ -86,7 +86,7 @@ func New(cfg map[string]string, metadata json.RawMessage) (providers.DNSServiceP
 	return g, g.loadZoneInfo()
 }
 
-func (g *gcloud) loadZoneInfo() error {
+func (g *gcloudProvider) loadZoneInfo() error {
 	if g.zones != nil {
 		return nil
 	}
@@ -108,7 +108,7 @@ func (g *gcloud) loadZoneInfo() error {
 }
 
 // ListZones returns the list of zones (domains) in this account.
-func (g *gcloud) ListZones() ([]string, error) {
+func (g *gcloudProvider) ListZones() ([]string, error) {
 	var zones []string
 	for i := range g.zones {
 		zones = append(zones, strings.TrimSuffix(i, "."))
@@ -116,11 +116,11 @@ func (g *gcloud) ListZones() ([]string, error) {
 	return zones, nil
 }
 
-func (g *gcloud) getZone(domain string) (*gdns.ManagedZone, error) {
+func (g *gcloudProvider) getZone(domain string) (*gdns.ManagedZone, error) {
 	return g.zones[domain+"."], nil
 }
 
-func (g *gcloud) GetNameservers(domain string) ([]*models.Nameserver, error) {
+func (g *gcloudProvider) GetNameservers(domain string) ([]*models.Nameserver, error) {
 	zone, err := g.getZone(domain)
 	if err != nil {
 		return nil, err
@@ -143,12 +143,12 @@ func keyForRec(r *models.RecordConfig) key {
 }
 
 // GetZoneRecords gets the records of a zone and returns them in RecordConfig format.
-func (g *gcloud) GetZoneRecords(domain string) (models.Records, error) {
+func (g *gcloudProvider) GetZoneRecords(domain string) (models.Records, error) {
 	existingRecords, _, _, err := g.getZoneSets(domain)
 	return existingRecords, err
 }
 
-func (g *gcloud) getZoneSets(domain string) (models.Records, map[key]*gdns.ResourceRecordSet, string, error) {
+func (g *gcloudProvider) getZoneSets(domain string) (models.Records, map[key]*gdns.ResourceRecordSet, string, error) {
 	rrs, zoneName, err := g.getRecords(domain)
 	if err != nil {
 		return nil, nil, "", err
@@ -165,7 +165,7 @@ func (g *gcloud) getZoneSets(domain string) (models.Records, map[key]*gdns.Resou
 	return existingRecords, oldRRs, zoneName, err
 }
 
-func (g *gcloud) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Correction, error) {
+func (g *gcloudProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Correction, error) {
 	if err := dc.Punycode(); err != nil {
 		return nil, err
 	}
@@ -244,7 +244,7 @@ func nativeToRecord(set *gdns.ResourceRecordSet, rec, origin string) *models.Rec
 	return r
 }
 
-func (g *gcloud) getRecords(domain string) ([]*gdns.ResourceRecordSet, string, error) {
+func (g *gcloudProvider) getRecords(domain string) ([]*gdns.ResourceRecordSet, string, error) {
 	zone, err := g.getZone(domain)
 	if err != nil {
 		return nil, "", err
@@ -273,7 +273,7 @@ func (g *gcloud) getRecords(domain string) ([]*gdns.ResourceRecordSet, string, e
 	return sets, zone.Name, nil
 }
 
-func (g *gcloud) EnsureDomainExists(domain string) error {
+func (g *gcloudProvider) EnsureDomainExists(domain string) error {
 	z, err := g.getZone(domain)
 	if err != nil {
 		if _, ok := err.(errNoExist); !ok {

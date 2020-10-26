@@ -11,6 +11,7 @@ providers/dnsimple @aeden
 providers/gandi_v5 @TomOnTime
 # providers/gcloud
 providers/hedns @rblenkinsopp
+providers/hetzner @das7pad
 providers/hexonet @papakai
 providers/internetbs @pragmaton
 providers/inwx @svenpeter42
