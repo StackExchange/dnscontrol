@@ -36,6 +36,7 @@ Currently supported DNS providers:
  - NS1
  - Name.com
  - Namecheap
+ - Netcup
  - OVH
  - OctoDNS
  - OpenSRS
