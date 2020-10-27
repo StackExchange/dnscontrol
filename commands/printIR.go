@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"strings"
 
 	"github.com/urfave/cli/v2"
 
@@ -102,7 +103,7 @@ func ExecuteDSL(args ExecuteDSLArgs) (*models.DNSConfig, error) {
 		return nil, fmt.Errorf("no config specified")
 	}
 
-	dnsConfig, err := js.ExecuteJavascript(args.JSFile, args.DevMode)
+	dnsConfig, err := js.ExecuteJavascript(args.JSFile, args.DevMode, stringSliceToMap(args.Variable))
 	if err != nil {
 		return nil, fmt.Errorf("executing %s: %w", args.JSFile, err)
 	}
@@ -138,4 +139,16 @@ func exit(err error) error {
 		return nil
 	}
 	return cli.NewExitError(err, 1)
+}
+
+// stringSliceToMap converts cli.StringSlice to map[string]string for further processing
+func stringSliceToMap(stringSlice cli.StringSlice) map[string]string {
+	mapString := make(map[string]string, len(stringSlice.Value()))
+	for _, values := range stringSlice.Value() {
+		parts := strings.SplitN(values, "=", 2)
+		if len(parts) == 2 {
+			mapString[parts[0]] = parts[1]
+		}
+	}
+	return mapString
 }
