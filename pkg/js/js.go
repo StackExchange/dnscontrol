@@ -25,7 +25,7 @@ import (
 var currentDirectory string
 
 // ExecuteJavascript accepts a javascript string and runs it, returning the resulting dnsConfig.
-func ExecuteJavascript(file string, devMode bool) (*models.DNSConfig, error) {
+func ExecuteJavascript(file string, devMode bool, variables map[string]string) (*models.DNSConfig, error) {
 	script, err := ioutil.ReadFile(file)
 	if err != nil {
 		return nil, err
@@ -39,6 +39,11 @@ func ExecuteJavascript(file string, devMode bool) (*models.DNSConfig, error) {
 	vm.Set("require", require)
 	vm.Set("REV", reverse)
 	vm.Set("glob", listFiles) // used for require_glob()
+
+	// add cli variables to otto
+	for key, value := range variables {
+		vm.Set(key, value)
+	}
 
 	helperJs := GetHelpers(devMode)
 	// run helper script to prime vm and initialize variables

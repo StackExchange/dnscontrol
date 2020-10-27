@@ -938,3 +938,12 @@ function require_glob() {
     }
     return files
 }
+
+// Set default values for CLI variables
+function CLI_DEFAULTS(defaults) {
+    for (var key in defaults) {
+        if (typeof this[key] === "undefined") {
+            this[key] = defaults[key]
+        }
+    }
+}
