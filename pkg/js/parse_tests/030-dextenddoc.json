@@ -1,0 +1,25 @@
+{
+  "dns_providers": [ { "name": "Cloudflare", "type": "CLOUDFLAREAPI" } ],
+  "domains": [
+    {
+      "name": "domain.tld",
+      "dnsProviders": { "Cloudflare": -1 },
+      "records": [
+        { "name": "@", "target": "127.0.0.1", "type": "A" },
+        { "name": "www", "target": "127.0.0.2", "type": "A" },
+        { "name": "a", "target": "b", "type": "CNAME" },
+        { "name": "aaa", "target": "127.0.0.3", "type": "A" },
+        { "name": "c", "target": "d", "type": "CNAME" },
+        { "name": "bbb.sub", "subdomain": "sub", "target": "127.0.0.4", "type": "A" },
+        { "name": "ccc.sub", "subdomain": "sub", "target": "127.0.0.5", "type": "A" },
+        { "name": "e.sub", "subdomain": "sub", "target": "f", "type": "CNAME" },
+        { "name": "ddd.sub.sub", "subdomain": "sub.sub", "target": "127.0.0.6", "type": "A" },
+        { "name": "g.sub.sub", "subdomain": "sub.sub", "target": "h", "type": "CNAME" },
+        { "name": "sub", "subdomain": "sub", "target": "127.0.0.7", "type": "A" },
+        { "name": "i.sub", "subdomain": "sub", "target": "j", "type": "CNAME" }
+      ],
+      "registrar": "Third-Party"
+    }
+  ],
+  "registrars": [ { "name": "Third-Party", "type": "NONE" } ]
+}

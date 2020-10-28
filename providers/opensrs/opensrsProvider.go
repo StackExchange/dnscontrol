@@ -30,22 +30,22 @@ var defaultNameServerNames = []string{
 	"ns3.systemdns.com",
 }
 
-// OpenSRSApi is the api handle.
-type OpenSRSApi struct {
+// opensrsProvider is the api handle.
+type opensrsProvider struct {
 	UserName string // reseller user name
-	ApiKey   string // API Key
+	APIKey   string // API Key
 
 	BaseURL string          // An alternate base URI
 	client  *opensrs.Client // Client
 }
 
 // GetNameservers returns a list of nameservers.
-func (c *OpenSRSApi) GetNameservers(domainName string) ([]*models.Nameserver, error) {
+func (c *opensrsProvider) GetNameservers(domainName string) ([]*models.Nameserver, error) {
 	return models.ToNameservers(defaultNameServerNames)
 }
 
 // GetRegistrarCorrections returns a list of corrections for a registrar.
-func (c *OpenSRSApi) GetRegistrarCorrections(dc *models.DomainConfig) ([]*models.Correction, error) {
+func (c *opensrsProvider) GetRegistrarCorrections(dc *models.DomainConfig) ([]*models.Correction, error) {
 	corrections := []*models.Correction{}
 
 	nameServers, err := c.getNameservers(dc.Name)
@@ -77,14 +77,14 @@ func (c *OpenSRSApi) GetRegistrarCorrections(dc *models.DomainConfig) ([]*models
 
 // OpenSRS calls
 
-func (c *OpenSRSApi) getClient() *opensrs.Client {
+func (c *opensrsProvider) getClient() *opensrs.Client {
 	return c.client
 }
 
 // Returns the name server names that should be used. If the domain is registered
 // then this method will return the delegation name servers. If this domain
 // is hosted only, then it will return the default OpenSRS name servers.
-func (c *OpenSRSApi) getNameservers(domainName string) ([]string, error) {
+func (c *opensrsProvider) getNameservers(domainName string) ([]string, error) {
 	client := c.getClient()
 
 	status, err := client.Domains.GetDomain(domainName, "status", 1)
@@ -99,11 +99,11 @@ func (c *OpenSRSApi) getNameservers(domainName string) ([]string, error) {
 		}
 		return dom.Attributes.NameserverList.ToString(), nil
 	}
-	return nil, errors.New("Domain is locked")
+	return nil, errors.New("domain is locked")
 }
 
 // Returns a function that can be invoked to change the delegation of the domain to the given name server names.
-func (c *OpenSRSApi) updateNameserversFunc(nameServerNames []string, domainName string) func() error {
+func (c *opensrsProvider) updateNameserversFunc(nameServerNames []string, domainName string) func() error {
 	return func() error {
 		client := c.getClient()
 
@@ -121,11 +121,11 @@ func newReg(conf map[string]string) (providers.Registrar, error) {
 	return newProvider(conf, nil)
 }
 
-func newProvider(m map[string]string, metadata json.RawMessage) (*OpenSRSApi, error) {
-	api := &OpenSRSApi{}
-	api.ApiKey = m["apikey"]
+func newProvider(m map[string]string, metadata json.RawMessage) (*opensrsProvider, error) {
+	api := &opensrsProvider{}
+	api.APIKey = m["apikey"]
 
-	if api.ApiKey == "" {
+	if api.APIKey == "" {
 		return nil, fmt.Errorf("openSRS apikey must be provided")
 	}
 
@@ -138,7 +138,7 @@ func newProvider(m map[string]string, metadata json.RawMessage) (*OpenSRSApi, er
 		api.BaseURL = m["baseurl"]
 	}
 
-	api.client = opensrs.NewClient(opensrs.NewApiKeyMD5Credentials(api.UserName, api.ApiKey))
+	api.client = opensrs.NewClient(opensrs.NewApiKeyMD5Credentials(api.UserName, api.APIKey))
 	if api.BaseURL != "" {
 		api.client.BaseURL = api.BaseURL
 	}

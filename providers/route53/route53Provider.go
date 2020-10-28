@@ -132,7 +132,7 @@ func (r *route53Provider) getZones() error {
 			return err
 		})
 		if err != nil && strings.Contains(err.Error(), "is not authorized") {
-			return errors.New("Check your credentials, your not authorized to perform actions on Route 53 AWS Service")
+			return errors.New("check your credentials, you're not authorized to perform actions on Route 53 AWS Service")
 		} else if err != nil {
 			return err
 		}
@@ -230,7 +230,10 @@ func (r *route53Provider) GetDomainCorrections(dc *models.DomainConfig) ([]*mode
 
 	// diff
 	differ := diff.New(dc, getAliasMap)
-	namesToUpdate := differ.ChangedGroups(existingRecords)
+	namesToUpdate, err := differ.ChangedGroups(existingRecords)
+	if err != nil {
+		return nil, err
+	}
 
 	if len(namesToUpdate) == 0 {
 		return nil, nil
@@ -272,7 +275,7 @@ func (r *route53Provider) GetDomainCorrections(dc *models.DomainConfig) ([]*mode
 				}
 			}
 			if rrset == nil {
-				return nil, fmt.Errorf("No record set found to delete. Name: '%s'. Type: '%s'", k.NameFQDN, k.Type)
+				return nil, fmt.Errorf("no record set found to delete. Name: '%s'. Type: '%s'", k.NameFQDN, k.Type)
 			}
 		} else {
 			changes = append(changes, chg)

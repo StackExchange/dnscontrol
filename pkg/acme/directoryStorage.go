@@ -107,7 +107,7 @@ func (d directoryStorage) GetAccount(acmeHost string) (*Account, error) {
 	}
 	keyBlock, _ := pem.Decode(keyBytes)
 	if keyBlock == nil {
-		return nil, fmt.Errorf("Error decoding account private key")
+		return nil, fmt.Errorf("error decoding account private key")
 	}
 	acct.key, err = x509.ParseECPrivateKey(keyBlock.Bytes)
 	if err != nil {

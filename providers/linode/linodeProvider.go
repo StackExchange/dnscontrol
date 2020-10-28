@@ -43,8 +43,8 @@ var allowedTTLValues = []uint32{
 
 var srvRegexp = regexp.MustCompile(`^_(?P<Service>\w+)\.\_(?P<Protocol>\w+)$`)
 
-// LinodeAPI is the handle for this provider.
-type LinodeAPI struct {
+// linodeProvider is the handle for this provider.
+type linodeProvider struct {
 	client      *http.Client
 	baseURL     *url.URL
 	domainIndex map[string]int
@@ -61,7 +61,7 @@ var defaultNameServerNames = []string{
 // NewLinode creates the provider.
 func NewLinode(m map[string]string, metadata json.RawMessage) (providers.DNSServiceProvider, error) {
 	if m["token"] == "" {
-		return nil, fmt.Errorf("Missing Linode token")
+		return nil, fmt.Errorf("missing Linode token")
 	}
 
 	ctx := context.Background()
@@ -72,10 +72,10 @@ func NewLinode(m map[string]string, metadata json.RawMessage) (providers.DNSServ
 
 	baseURL, err := url.Parse(defaultBaseURL)
 	if err != nil {
-		return nil, fmt.Errorf("Linode base URL not valid")
+		return nil, fmt.Errorf("invalid base URL for Linode")
 	}
 
-	api := &LinodeAPI{client: client, baseURL: baseURL}
+	api := &linodeProvider{client: client, baseURL: baseURL}
 
 	// Get a domain to validate the token
 	if err := api.fetchDomainList(); err != nil {
@@ -97,12 +97,12 @@ func init() {
 }
 
 // GetNameservers returns the nameservers for a domain.
-func (api *LinodeAPI) GetNameservers(domain string) ([]*models.Nameserver, error) {
+func (api *linodeProvider) GetNameservers(domain string) ([]*models.Nameserver, error) {
 	return models.ToNameservers(defaultNameServerNames)
 }
 
 // GetZoneRecords gets the records of a zone and returns them in RecordConfig format.
-func (api *LinodeAPI) GetZoneRecords(domain string) (models.Records, error) {
+func (api *linodeProvider) GetZoneRecords(domain string) (models.Records, error) {
 	return nil, fmt.Errorf("not implemented")
 	// This enables the get-zones subcommand.
 	// Implement this by extracting the code from GetDomainCorrections into
@@ -110,7 +110,7 @@ func (api *LinodeAPI) GetZoneRecords(domain string) (models.Records, error) {
 }
 
 // GetDomainCorrections returns the corrections for a domain.
-func (api *LinodeAPI) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Correction, error) {
+func (api *linodeProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Correction, error) {
 	dc, err := dc.Copy()
 	if err != nil {
 		return nil, err
@@ -163,7 +163,10 @@ func (api *LinodeAPI) GetDomainCorrections(dc *models.DomainConfig) ([]*models.C
 	}
 
 	differ := diff.New(dc)
-	_, create, del, modify := differ.IncrementalDiff(existingRecords)
+	_, create, del, modify, err := differ.IncrementalDiff(existingRecords)
+	if err != nil {
+		return nil, err
+	}
 
 	var corrections []*models.Correction
 

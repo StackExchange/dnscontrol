@@ -10,7 +10,7 @@ import (
 
 // Api layer for Internet.bs
 
-type api struct {
+type internetbsProvider struct {
 	key      string
 	password string
 }
@@ -28,31 +28,29 @@ type domainRecord struct {
 	Nameserver []string `json:"nameserver"`
 }
 
-func (c *api) getNameservers(domain string) ([]string, error) {
+func (c *internetbsProvider) getNameservers(domain string) ([]string, error) {
 	var bodyString, err = c.get("/Domain/Info", requestParams{"Domain": domain})
 	if err != nil {
-		return []string{}, fmt.Errorf("Error fetching nameservers list from Internet.bs: %s", err)
+		return []string{}, fmt.Errorf("failed fetching nameservers list (Internet.bs): %s", err)
 	}
 	var dr domainRecord
 	json.Unmarshal(bodyString, &dr)
 	ns := []string{}
-	for _, nameserver := range dr.Nameserver {
-		ns = append(ns, nameserver)
-	}
+	ns = append(ns, dr.Nameserver...)
 	return ns, nil
 }
 
-func (c *api) updateNameservers(ns []string, domain string) error {
+func (c *internetbsProvider) updateNameservers(ns []string, domain string) error {
 	rec := requestParams{}
 	rec["Domain"] = domain
 	rec["Ns_list"] = strings.Join(ns, ",")
 	if _, err := c.get("/Domain/Update", rec); err != nil {
-		return fmt.Errorf("Internet.ns: Error update NS : %s", err)
+		return fmt.Errorf("failed NS update (Internet.bs): %s", err)
 	}
 	return nil
 }
 
-func (c *api) get(endpoint string, params requestParams) ([]byte, error) {
+func (c *internetbsProvider) get(endpoint string, params requestParams) ([]byte, error) {
 	client := &http.Client{}
 	req, _ := http.NewRequest("GET", "https://api.internet.bs/"+endpoint, nil)
 	q := req.URL.Query()
@@ -82,7 +80,7 @@ func (c *api) get(endpoint string, params requestParams) ([]byte, error) {
 		return []byte{}, err
 	}
 	if errResp.Status == "FAILURE" {
-		return bodyString, fmt.Errorf("Internet.bs API error: %s code: %d transactid: %s  URL:%s%s ",
+		return bodyString, fmt.Errorf("failed API (Internet.bs): %s code: %d transactid: %s  URL:%s%s ",
 			errResp.Message, errResp.Code, errResp.TransactID,
 			req.Host, req.URL.RequestURI())
 	}

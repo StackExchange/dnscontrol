@@ -16,8 +16,8 @@ import (
 	"github.com/StackExchange/dnscontrol/v3/providers"
 )
 
-// SoftLayer is the protocol handle for this provider.
-type SoftLayer struct {
+// softlayerProvider is the protocol handle for this provider.
+type softlayerProvider struct {
 	Session *session.Session
 }
 
@@ -39,7 +39,7 @@ func newReg(conf map[string]string, _ json.RawMessage) (providers.DNSServiceProv
 
 	// s.Debug = true
 
-	api := &SoftLayer{
+	api := &softlayerProvider{
 		Session: s,
 	}
 
@@ -47,13 +47,13 @@ func newReg(conf map[string]string, _ json.RawMessage) (providers.DNSServiceProv
 }
 
 // GetNameservers returns the nameservers for a domain.
-func (s *SoftLayer) GetNameservers(domain string) ([]*models.Nameserver, error) {
+func (s *softlayerProvider) GetNameservers(domain string) ([]*models.Nameserver, error) {
 	// Always use the same nameservers for softlayer
 	return models.ToNameservers([]string{"ns1.softlayer.com", "ns2.softlayer.com"})
 }
 
 // GetZoneRecords gets the records of a zone and returns them in RecordConfig format.
-func (s *SoftLayer) GetZoneRecords(domain string) (models.Records, error) {
+func (s *softlayerProvider) GetZoneRecords(domain string) (models.Records, error) {
 	return nil, fmt.Errorf("not implemented")
 	// This enables the get-zones subcommand.
 	// Implement this by extracting the code from GetDomainCorrections into
@@ -61,7 +61,7 @@ func (s *SoftLayer) GetZoneRecords(domain string) (models.Records, error) {
 }
 
 // GetDomainCorrections returns corrections to update a domain.
-func (s *SoftLayer) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Correction, error) {
+func (s *softlayerProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Correction, error) {
 	corrections := []*models.Correction{}
 
 	domain, err := s.getDomain(&dc.Name)
@@ -76,7 +76,10 @@ func (s *SoftLayer) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Cor
 		return nil, err
 	}
 
-	_, create, delete, modify := diff.New(dc).IncrementalDiff(actual)
+	_, create, delete, modify, err := diff.New(dc).IncrementalDiff(actual)
+	if err != nil {
+		return nil, err
+	}
 
 	for _, del := range delete {
 		existing := del.Existing.Original.(datatypes.Dns_Domain_ResourceRecord)
@@ -104,7 +107,7 @@ func (s *SoftLayer) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Cor
 	return corrections, nil
 }
 
-func (s *SoftLayer) getDomain(name *string) (*datatypes.Dns_Domain, error) {
+func (s *softlayerProvider) getDomain(name *string) (*datatypes.Dns_Domain, error) {
 	domains, err := services.GetAccountService(s.Session).
 		Filter(filter.Path("domains.name").Eq(name).Build()).
 		Mask("resourceRecords").
@@ -115,15 +118,15 @@ func (s *SoftLayer) getDomain(name *string) (*datatypes.Dns_Domain, error) {
 	}
 
 	if len(domains) == 0 {
-		return nil, fmt.Errorf("Didn't find a domain matching %s", *name)
+		return nil, fmt.Errorf("didn't find a domain matching %s", *name)
 	} else if len(domains) > 1 {
-		return nil, fmt.Errorf("Found %d domains matching %s", len(domains), *name)
+		return nil, fmt.Errorf("found %d domains matching %s", len(domains), *name)
 	}
 
 	return &domains[0], nil
 }
 
-func (s *SoftLayer) getExistingRecords(domain *datatypes.Dns_Domain) ([]*models.RecordConfig, error) {
+func (s *softlayerProvider) getExistingRecords(domain *datatypes.Dns_Domain) ([]*models.RecordConfig, error) {
 	actual := []*models.RecordConfig{}
 
 	for _, record := range domain.ResourceRecords {
@@ -181,7 +184,7 @@ func (s *SoftLayer) getExistingRecords(domain *datatypes.Dns_Domain) ([]*models.
 	return actual, nil
 }
 
-func (s *SoftLayer) createRecordFunc(desired *models.RecordConfig, domain *datatypes.Dns_Domain) func() error {
+func (s *softlayerProvider) createRecordFunc(desired *models.RecordConfig, domain *datatypes.Dns_Domain) func() error {
 	var ttl, preference, domainID int = verifyMinTTL(int(desired.TTL)), int(desired.MxPreference), *domain.Id
 	var weight, priority, port int = int(desired.SrvWeight), int(desired.SrvPriority), int(desired.SrvPort)
 	var host, data, newType string = desired.GetLabel(), desired.GetTargetField(), desired.Type
@@ -240,7 +243,7 @@ func (s *SoftLayer) createRecordFunc(desired *models.RecordConfig, domain *datat
 	}
 }
 
-func (s *SoftLayer) deleteRecordFunc(resID int) func() error {
+func (s *softlayerProvider) deleteRecordFunc(resID int) func() error {
 	// seems to be no problem deleting MX and SRV records via common interface
 	return func() error {
 		_, err := services.GetDnsDomainResourceRecordService(s.Session).
@@ -251,7 +254,7 @@ func (s *SoftLayer) deleteRecordFunc(resID int) func() error {
 	}
 }
 
-func (s *SoftLayer) updateRecordFunc(existing *datatypes.Dns_Domain_ResourceRecord, desired *models.RecordConfig) func() error {
+func (s *softlayerProvider) updateRecordFunc(existing *datatypes.Dns_Domain_ResourceRecord, desired *models.RecordConfig) func() error {
 	var ttl, preference int = verifyMinTTL(int(desired.TTL)), int(desired.MxPreference)
 	var priority, weight, port int = int(desired.SrvPriority), int(desired.SrvWeight), int(desired.SrvPort)
 

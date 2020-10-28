@@ -7,7 +7,7 @@
       "registrar": "none",
       "dnsProviders": {},
       "records": [],
-      "ignored_labels": [
+      "ignored_names": [
         "\\*.testignore"
       ]
     }

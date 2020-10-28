@@ -12,7 +12,7 @@ const (
 	endpoint = "https://ccp.netcup.net/run/webservice/servers/endpoint.php?JSON"
 )
 
-type api struct {
+type netcupProvider struct {
 	domainIndex      map[string]string
 	nameserversNames []string
 	credentials      struct {
@@ -22,7 +22,7 @@ type api struct {
 	}
 }
 
-func (api *api) createRecord(domain string, rec *record) error {
+func (api *netcupProvider) createRecord(domain string, rec *record) error {
 	rec.Delete = false
 	data := paramUpdateRecords{
 		Key:            api.credentials.apikey,
@@ -40,7 +40,7 @@ func (api *api) createRecord(domain string, rec *record) error {
 	return nil
 }
 
-func (api *api) deleteRecord(domain string, rec *record) error {
+func (api *netcupProvider) deleteRecord(domain string, rec *record) error {
 	rec.Delete = true
 	data := paramUpdateRecords{
 		Key:            api.credentials.apikey,
@@ -58,7 +58,7 @@ func (api *api) deleteRecord(domain string, rec *record) error {
 	return nil
 }
 
-func (api *api) modifyRecord(domain string, rec *record) error {
+func (api *netcupProvider) modifyRecord(domain string, rec *record) error {
 	rec.Delete = false
 	data := paramUpdateRecords{
 		Key:            api.credentials.apikey,
@@ -76,7 +76,7 @@ func (api *api) modifyRecord(domain string, rec *record) error {
 	return nil
 }
 
-func (api *api) getRecords(domain string) ([]record, error) {
+func (api *netcupProvider) getRecords(domain string) ([]record, error) {
 	data := paramGetRecords{
 		Key:            api.credentials.apikey,
 		SessionID:      api.credentials.sessionID,
@@ -85,7 +85,7 @@ func (api *api) getRecords(domain string) ([]record, error) {
 	}
 	rawJSON, err := api.get("infoDnsRecords", data)
 	if err != nil {
-		return nil, fmt.Errorf("Error while trying to login to netcup: %s", err)
+		return nil, fmt.Errorf("failed while trying to login (netcup): %s", err)
 	}
 
 	resp := &records{}
@@ -93,7 +93,7 @@ func (api *api) getRecords(domain string) ([]record, error) {
 	return resp.Records, nil
 }
 
-func (api *api) login(apikey, password, customernumber string) error {
+func (api *netcupProvider) login(apikey, password, customernumber string) error {
 	data := paramLogin{
 		Key:            apikey,
 		Password:       password,
@@ -101,7 +101,7 @@ func (api *api) login(apikey, password, customernumber string) error {
 	}
 	rawJSON, err := api.get("login", data)
 	if err != nil {
-		return fmt.Errorf("Error while trying to login to netcup: %s", err)
+		return fmt.Errorf("failed while trying to login to (netcup): %s", err)
 	}
 
 	resp := &responseLogin{}
@@ -112,7 +112,7 @@ func (api *api) login(apikey, password, customernumber string) error {
 	return nil
 }
 
-func (api *api) logout() error {
+func (api *netcupProvider) logout() error {
 	data := paramLogout{
 		Key:            api.credentials.apikey,
 		SessionID:      api.credentials.sessionID,
@@ -120,13 +120,13 @@ func (api *api) logout() error {
 	}
 	_, err := api.get("logout", data)
 	if err != nil {
-		return fmt.Errorf("Error while trying to logout from netcup: %s", err)
+		return fmt.Errorf("failed to logout from netcup: %s", err)
 	}
 	api.credentials.apikey, api.credentials.sessionID, api.credentials.customernumber = "", "", ""
 	return nil
 }
 
-func (api *api) get(action string, params interface{}) (json.RawMessage, error) {
+func (api *netcupProvider) get(action string, params interface{}) (json.RawMessage, error) {
 	reqParam := request{
 		Action: action,
 		Param:  params,

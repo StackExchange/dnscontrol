@@ -7,8 +7,12 @@
       "registrar": "none",
       "dnsProviders": {},
       "records": [],
-      "ignored_labels": [
-        "testignore"
+      "ignored_names": [
+        "testignore",
+        "legacyignore"
+      ],
+      "ignored_targets": [
+        {"pattern":"testtarget","type":"CNAME"}
       ]
     }
   ]

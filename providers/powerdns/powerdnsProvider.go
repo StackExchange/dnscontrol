@@ -5,13 +5,16 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"net/http"
+	"strings"
+
 	"github.com/StackExchange/dnscontrol/v3/models"
 	"github.com/StackExchange/dnscontrol/v3/pkg/diff"
 	"github.com/StackExchange/dnscontrol/v3/providers"
 	"github.com/miekg/dns/dnsutil"
-	"github.com/mittwald/go-powerdns"
+	pdns "github.com/mittwald/go-powerdns"
 	"github.com/mittwald/go-powerdns/apis/zones"
-	"strings"
+	"github.com/mittwald/go-powerdns/pdnshttp"
 )
 
 var features = providers.DocumentationNotes{
@@ -21,7 +24,7 @@ var features = providers.DocumentationNotes{
 	providers.CanUseSRV:              providers.Can(),
 	providers.CanUseTLSA:             providers.Can(),
 	providers.CanUseSSHFP:            providers.Can(),
-	providers.CanAutoDNSSEC:          providers.Unimplemented("Need support in library first"),
+	providers.CanAutoDNSSEC:          providers.Can(),
 	providers.DocCreateDomains:       providers.Can(),
 	providers.DocOfficiallySupported: providers.Cannot(),
 	providers.CanGetZones:            providers.Can(),
@@ -31,8 +34,8 @@ func init() {
 	providers.RegisterDomainServiceProviderType("POWERDNS", NewProvider, features)
 }
 
-// PowerDNS represents the PowerDNS DNSServiceProvider.
-type PowerDNS struct {
+// powerdnsProvider represents the powerdnsProvider DNSServiceProvider.
+type powerdnsProvider struct {
 	client         pdns.Client
 	APIKey         string
 	APIUrl         string
@@ -45,7 +48,7 @@ type PowerDNS struct {
 
 // NewProvider initializes a PowerDNS DNSServiceProvider.
 func NewProvider(m map[string]string, metadata json.RawMessage) (providers.DNSServiceProvider, error) {
-	api := &PowerDNS{}
+	api := &powerdnsProvider{}
 
 	api.APIKey = m["apiKey"]
 	if api.APIKey == "" {
@@ -88,7 +91,7 @@ func NewProvider(m map[string]string, metadata json.RawMessage) (providers.DNSSe
 }
 
 // GetNameservers returns the nameservers for a domain.
-func (api *PowerDNS) GetNameservers(string) ([]*models.Nameserver, error) {
+func (api *powerdnsProvider) GetNameservers(string) ([]*models.Nameserver, error) {
 	var r []string
 	for _, j := range api.nameservers {
 		r = append(r, j.Name)
@@ -97,7 +100,7 @@ func (api *PowerDNS) GetNameservers(string) ([]*models.Nameserver, error) {
 }
 
 // ListZones returns all the zones in an account
-func (api *PowerDNS) ListZones() ([]string, error) {
+func (api *powerdnsProvider) ListZones() ([]string, error) {
 	var result []string
 	zones, err := api.client.Zones().ListZones(context.Background(), api.ServerName)
 	if err != nil {
@@ -110,7 +113,7 @@ func (api *PowerDNS) ListZones() ([]string, error) {
 }
 
 // GetZoneRecords gets the records of a zone and returns them in RecordConfig format.
-func (api *PowerDNS) GetZoneRecords(domain string) (models.Records, error) {
+func (api *powerdnsProvider) GetZoneRecords(domain string) (models.Records, error) {
 	zone, err := api.client.Zones().GetZone(context.Background(), api.ServerName, domain)
 	if err != nil {
 		return nil, err
@@ -136,7 +139,7 @@ func (api *PowerDNS) GetZoneRecords(domain string) (models.Records, error) {
 }
 
 // GetDomainCorrections returns a list of corrections to update a domain.
-func (api *PowerDNS) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Correction, error) {
+func (api *powerdnsProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Correction, error) {
 	var corrections []*models.Correction
 
 	// record corrections
@@ -150,7 +153,10 @@ func (api *PowerDNS) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Co
 	models.PostProcessRecords(curRecords)
 
 	// create record diff by group
-	keysToUpdate := (diff.New(dc)).ChangedGroups(curRecords)
+	keysToUpdate, err := (diff.New(dc)).ChangedGroups(curRecords)
+	if err != nil {
+		return nil, err
+	}
 	desiredRecords := dc.Records.GroupedByKey()
 
 	// create corrections by group
@@ -189,19 +195,29 @@ func (api *PowerDNS) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Co
 	}
 
 	// DNSSec corrections
-	// TODO: Implementing of on-demand DNSSec creation in library
+	dnssecCorrections, err := api.getDNSSECCorrections(dc)
+	if err != nil {
+		return nil, err
+	}
+	corrections = append(corrections, dnssecCorrections...)
 
 	return corrections, nil
 }
 
 // EnsureDomainExists adds a domain to the DNS service if it does not exist
-func (api *PowerDNS) EnsureDomainExists(domain string) error {
-	if zone, _ := api.client.Zones().GetZone(context.Background(), api.ServerName, domain); zone.ID != "" {
+func (api *powerdnsProvider) EnsureDomainExists(domain string) error {
+	if _, err := api.client.Zones().GetZone(context.Background(), api.ServerName, domain+"."); err != nil {
+		if e, ok := err.(pdnshttp.ErrUnexpectedStatus); ok {
+			if e.StatusCode != http.StatusNotFound {
+				return err
+			}
+		}
+	} else { // domain seems to be there
 		return nil
 	}
 
 	_, err := api.client.Zones().CreateZone(context.Background(), api.ServerName, zones.Zone{
-		Name:        domain,
+		Name:        domain + ".",
 		Type:        zones.ZoneTypeZone,
 		DNSSec:      api.DNSSecOnCreate,
 		Nameservers: api.DefaultNS,
@@ -235,7 +251,7 @@ func toRecordConfig(domain string, r zones.Record, ttl int, name string, rtype s
 	case "TXT":
 		// Remove quotes if it is a TXT record.
 		if !strings.HasPrefix(content, `"`) || !strings.HasSuffix(content, `"`) {
-			return nil, errors.New("Unexpected lack of quotes in TXT record from PowerDNS")
+			return nil, errors.New("unexpected lack of quotes in TXT record from PowerDNS")
 		}
 		return rc, rc.SetTargetTXT(content[1 : len(content)-1])
 	default:

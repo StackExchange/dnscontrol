@@ -21,7 +21,7 @@ Info required in `creds.json`:
 
 // NewDeSec creates the provider.
 func NewDeSec(m map[string]string, metadata json.RawMessage) (providers.DNSServiceProvider, error) {
-	c := &api{}
+	c := &desecProvider{}
 	c.creds.token = m["auth-token"]
 	if c.creds.token == "" {
 		return nil, fmt.Errorf("missing deSEC auth-token")
@@ -45,7 +45,7 @@ var features = providers.DocumentationNotes{
 	providers.CanUseSSHFP:            providers.Can(),
 	providers.CanUseCAA:              providers.Can(),
 	providers.CanUseTLSA:             providers.Can(),
-	providers.CanUsePTR:              providers.Unimplemented(),
+	providers.CanUsePTR:              providers.Can(),
 	providers.CanGetZones:            providers.Can(),
 	providers.CanAutoDNSSEC:          providers.Cannot(),
 }
@@ -60,11 +60,11 @@ func init() {
 }
 
 // GetNameservers returns the nameservers for a domain.
-func (c *api) GetNameservers(domain string) ([]*models.Nameserver, error) {
+func (c *desecProvider) GetNameservers(domain string) ([]*models.Nameserver, error) {
 	return models.ToNameservers(defaultNameServerNames)
 }
 
-func (c *api) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Correction, error) {
+func (c *desecProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Correction, error) {
 	existing, err := c.GetZoneRecords(dc.Name)
 	if err != nil {
 		return nil, err
@@ -82,7 +82,7 @@ func (c *api) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Correctio
 }
 
 // GetZoneRecords gets the records of a zone and returns them in RecordConfig format.
-func (c *api) GetZoneRecords(domain string) (models.Records, error) {
+func (c *desecProvider) GetZoneRecords(domain string) (models.Records, error) {
 	records, err := c.getRecords(domain)
 	if err != nil {
 		return nil, err
@@ -97,7 +97,7 @@ func (c *api) GetZoneRecords(domain string) (models.Records, error) {
 }
 
 // EnsureDomainExists returns an error if domain doesn't exist.
-func (c *api) EnsureDomainExists(domain string) error {
+func (c *desecProvider) EnsureDomainExists(domain string) error {
 	if err := c.fetchDomainList(); err != nil {
 		return err
 	}
@@ -147,13 +147,16 @@ func PrepDesiredRecords(dc *models.DomainConfig, minTTL uint32) {
 // a list of functions to call to actually make the desired
 // correction, and a message to output to the user when the change is
 // made.
-func (c *api) GenerateDomainCorrections(dc *models.DomainConfig, existing models.Records) ([]*models.Correction, error) {
+func (c *desecProvider) GenerateDomainCorrections(dc *models.DomainConfig, existing models.Records) ([]*models.Correction, error) {
 
 	var corrections = []*models.Correction{}
 
 	// diff existing vs. current.
 	differ := diff.New(dc)
-	keysToUpdate := differ.ChangedGroups(existing)
+	keysToUpdate, err := differ.ChangedGroups(existing)
+	if err != nil {
+		return nil, err
+	}
 	if len(keysToUpdate) == 0 {
 		return nil, nil
 	}
@@ -201,8 +204,7 @@ func (c *api) GenerateDomainCorrections(dc *models.DomainConfig, existing models
 			}
 		}
 	}
-	var msg string
-	msg = fmt.Sprintf("Changes:\n%s", buf)
+	msg := fmt.Sprintf("Changes:\n%s", buf)
 	corrections = append(corrections,
 		&models.Correction{
 			Msg: msg,

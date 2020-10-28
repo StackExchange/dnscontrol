@@ -50,8 +50,8 @@ var features = providers.DocumentationNotes{
 	providers.CanGetZones:            providers.Can(),
 }
 
-// AxfrDdns stores the client info for the provider.
-type AxfrDdns struct {
+// axfrddnsProvider stores the client info for the provider.
+type axfrddnsProvider struct {
 	rand        *rand.Rand
 	master      string
 	nameservers []*models.Nameserver
@@ -63,7 +63,7 @@ func initAxfrDdns(config map[string]string, providermeta json.RawMessage) (provi
 	// config -- the key/values from creds.json
 	// providermeta -- the json blob from NewReq('name', 'TYPE', providermeta)
 	var err error
-	api := &AxfrDdns{
+	api := &axfrddnsProvider{
 		rand: rand.New(rand.NewSource(int64(time.Now().Nanosecond()))),
 	}
 	param := &Param{}
@@ -161,12 +161,12 @@ func readKey(raw string, kind string) (*Key, error) {
 }
 
 // GetNameservers returns the nameservers for a domain.
-func (c *AxfrDdns) GetNameservers(domain string) ([]*models.Nameserver, error) {
+func (c *axfrddnsProvider) GetNameservers(domain string) ([]*models.Nameserver, error) {
 	return c.nameservers, nil
 }
 
 // FetchZoneRecords gets the records of a zone and returns them in dns.RR format.
-func (c *AxfrDdns) FetchZoneRecords(domain string) ([]dns.RR, error) {
+func (c *axfrddnsProvider) FetchZoneRecords(domain string) ([]dns.RR, error) {
 
 	transfer := new(dns.Transfer)
 	transfer.DialTimeout = dnsTimeout
@@ -194,7 +194,7 @@ func (c *AxfrDdns) FetchZoneRecords(domain string) ([]dns.RR, error) {
 			if err == "dns: bad xfr rcode: 9" {
 				err = "NOT AUTH (9)"
 			}
-			return nil, fmt.Errorf("[Error] AXFRDDNS: nameserver refused to transfer the zone: %s", msg)
+			return nil, fmt.Errorf("[Error] AXFRDDNS: nameserver refused to transfer the zone: %s", err)
 		}
 		rawRecords = append(rawRecords, msg.RR...)
 	}
@@ -203,7 +203,7 @@ func (c *AxfrDdns) FetchZoneRecords(domain string) ([]dns.RR, error) {
 }
 
 // GetZoneRecords gets the records of a zone and returns them in RecordConfig format.
-func (c *AxfrDdns) GetZoneRecords(domain string) (models.Records, error) {
+func (c *axfrddnsProvider) GetZoneRecords(domain string) (models.Records, error) {
 
 	rawRecords, err := c.FetchZoneRecords(domain)
 	if err != nil {
@@ -254,7 +254,7 @@ func (c *AxfrDdns) GetZoneRecords(domain string) (models.Records, error) {
 }
 
 // GetDomainCorrections returns a list of corrections to update a domain.
-func (c *AxfrDdns) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Correction, error) {
+func (c *axfrddnsProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Correction, error) {
 	dc.Punycode()
 
 	foundRecords, err := c.GetZoneRecords(dc.Name)
@@ -279,17 +279,22 @@ func (c *AxfrDdns) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Corr
 		}
 	}
 
-	if dc.AutoDNSSEC && !hasDnssecRecords {
-		fmt.Printf("Warning: AUTODNSSEC is set, but no DNSKEY or RRSIG record was found in the AXFR answer!\n")
-	} else if !dc.AutoDNSSEC && hasDnssecRecords {
-		fmt.Printf("Warning: AUTODNSSEC is not set, but DNSKEY or RRSIG records were found in the AXFR answer!\n")
+	// TODO(tlim): This check should be done on all providers. Move to the global validation code.
+	if dc.AutoDNSSEC == "on" && !hasDnssecRecords {
+		fmt.Printf("Warning: AUTODNSSEC is enabled, but no DNSKEY or RRSIG record was found in the AXFR answer!\n")
+	}
+	if dc.AutoDNSSEC == "off" && hasDnssecRecords {
+		fmt.Printf("Warning: AUTODNSSEC is disabled, but DNSKEY or RRSIG records were found in the AXFR answer!\n")
 	}
 
 	// Normalize
 	models.PostProcessRecords(foundRecords)
 
 	differ := diff.New(dc)
-	_, create, del, mod := differ.IncrementalDiff(foundRecords)
+	_, create, del, mod, err := differ.IncrementalDiff(foundRecords)
+	if err != nil {
+		return nil, err
+	}
 
 	buf := &bytes.Buffer{}
 	// Print a list of changes. Generate an actual change that is the zone

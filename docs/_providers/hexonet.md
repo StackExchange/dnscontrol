@@ -13,6 +13,8 @@ up-time, and most importantly for DNS expertise. DNSControl with HEXONET's DNS
 marries DNS automation with an industry-leading DNS platform that supports DNSSEC,
 PremiumDNS via Anycast Network, and nearly all of DNSControl's listed provider features.
 
+This is based on API documents found at [https://wiki.hexonet.net/wiki/DNS_API](https://wiki.hexonet.net/wiki/DNS_API)
+
 ## Configuration
 
 Please provide your HEXONET login data in your credentials file `creds.json` as follows:
@@ -41,6 +43,20 @@ Here a working example for our OT&E System:
   }
 }
 {% endhighlight %}
+
+NOTE: The above credentials are known to the public.
+
+With the above hexonet entry in `creds.json`, you can run the
+integration tests as follows:
+
+    dnscontrol get-zones --format=nameonly hexonet HEXONET  all
+    # Review the output.  Pick one domain and set HEXONET_DOMAIN.
+    cd $GIT/dnscontrol/integrationTest
+    export HEXONET_DOMAIN=a-b-c-movies.com       # Pick a domain name.
+    export HEXONET_ENTITY=OTE
+    export HEXONET_UID=test.user
+    export HEXONET_PW=test.passw0rd
+    go test -v -verbose -provider HEXONET
 
 ## Usage
 
@@ -77,6 +93,11 @@ D('abhoster.com', REG_HX, DnsProvider(DNS_HX),
 
 This provider does not recognize any special metadata fields unique to HEXONET.
 
+## get-zones
+
+`dnscontrol get-zones` is implemented for this provider. The list
+includes both basic and premier zones.
+
 ## New domains
 
 If a dnszone does not exist in your HEXONET account, DNSControl will *not* automatically add it with the `dnscontrol push` or `dnscontrol preview` command. You'll need to do that via the control panel manually or using the command `dnscontrol create-domains`.
@@ -89,4 +110,4 @@ In general this is thought for our purpose to have an easy way to dive into issu
 
 ## IP Filter
 
-In case you have ip filter settings made for you HEXONET account, please provide your outgoing ip address as shown in the configuration examples above.
+In case you have ip filter settings made for your HEXONET account, please provide your outgoing ip address as shown in the configuration examples above.

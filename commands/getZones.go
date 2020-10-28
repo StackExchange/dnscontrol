@@ -229,9 +229,8 @@ func GetZone(args GetZoneArgs) error {
 
 		case "tsv":
 			for _, rec := range recs {
-				fmt.Fprintf(w,
-					fmt.Sprintf("%s\t%s\t%d\tIN\t%s\t%s\n",
-						rec.NameFQDN, rec.Name, rec.TTL, rec.Type, rec.GetTargetCombined()))
+				fmt.Fprintf(w, "%s\t%s\t%d\tIN\t%s\t%s\n",
+					rec.NameFQDN, rec.Name, rec.TTL, rec.Type, rec.GetTargetCombined())
 			}
 
 		default:

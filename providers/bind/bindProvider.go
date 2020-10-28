@@ -51,7 +51,7 @@ var features = providers.DocumentationNotes{
 func initBind(config map[string]string, providermeta json.RawMessage) (providers.DNSServiceProvider, error) {
 	// config -- the key/values from creds.json
 	// meta -- the json blob from NewReq('name', 'TYPE', meta)
-	api := &Bind{
+	api := &bindProvider{
 		directory: config["directory"],
 	}
 	if api.directory == "" {
@@ -85,14 +85,15 @@ type SoaInfo struct {
 	Retry   uint32 `json:"retry"`
 	Expire  uint32 `json:"expire"`
 	Minttl  uint32 `json:"minttl"`
+	TTL     uint32 `json:"ttl,omitempty"`
 }
 
 func (s SoaInfo) String() string {
-	return fmt.Sprintf("%s %s %d %d %d %d %d", s.Ns, s.Mbox, s.Serial, s.Refresh, s.Retry, s.Expire, s.Minttl)
+	return fmt.Sprintf("%s %s %d %d %d %d %d %d", s.Ns, s.Mbox, s.Serial, s.Refresh, s.Retry, s.Expire, s.Minttl, s.TTL)
 }
 
-// Bind is the provider handle for the Bind driver.
-type Bind struct {
+// bindProvider is the provider handle for the bindProvider driver.
+type bindProvider struct {
 	DefaultNS     []string `json:"default_ns"`
 	DefaultSoa    SoaInfo  `json:"default_soa"`
 	nameservers   []*models.Nameserver
@@ -102,7 +103,7 @@ type Bind struct {
 }
 
 // GetNameservers returns the nameservers for a domain.
-func (c *Bind) GetNameservers(string) ([]*models.Nameserver, error) {
+func (c *bindProvider) GetNameservers(string) ([]*models.Nameserver, error) {
 	var r []string
 	for _, j := range c.nameservers {
 		r = append(r, j.Name)
@@ -111,7 +112,7 @@ func (c *Bind) GetNameservers(string) ([]*models.Nameserver, error) {
 }
 
 // ListZones returns all the zones in an account
-func (c *Bind) ListZones() ([]string, error) {
+func (c *bindProvider) ListZones() ([]string, error) {
 	if _, err := os.Stat(c.directory); os.IsNotExist(err) {
 		return nil, fmt.Errorf("directory %q does not exist", c.directory)
 	}
@@ -129,7 +130,7 @@ func (c *Bind) ListZones() ([]string, error) {
 }
 
 // GetZoneRecords gets the records of a zone and returns them in RecordConfig format.
-func (c *Bind) GetZoneRecords(domain string) (models.Records, error) {
+func (c *bindProvider) GetZoneRecords(domain string) (models.Records, error) {
 	foundRecords := models.Records{}
 
 	if _, err := os.Stat(c.directory); os.IsNotExist(err) {
@@ -156,6 +157,7 @@ func (c *Bind) GetZoneRecords(domain string) (models.Records, error) {
 
 	for rr, ok := zp.Next(); ok; rr, ok = zp.Next() {
 		rec := models.RRtoRC(rr, domain)
+		// FIXME(tlim): Empty branch?  Is the intention to skip SOAs?
 		if rec.Type == "SOA" {
 		}
 		foundRecords = append(foundRecords, &rec)
@@ -168,14 +170,18 @@ func (c *Bind) GetZoneRecords(domain string) (models.Records, error) {
 }
 
 // GetDomainCorrections returns a list of corrections to update a domain.
-func (c *Bind) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Correction, error) {
+func (c *bindProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Correction, error) {
 	dc.Punycode()
 
 	comments := make([]string, 0, 5)
 	comments = append(comments,
 		fmt.Sprintf("generated with dnscontrol %s", time.Now().Format(time.RFC3339)),
 	)
-	if dc.AutoDNSSEC {
+	if dc.AutoDNSSEC == "on" {
+		// This does nothing but reminds the user to add the correct
+		// auto-dnssecc zone statement to named.conf.
+		// While it is a no-op, it is useful for situations where a zone
+		// has multiple providers.
 		comments = append(comments, "Automatic DNSSEC signing requested")
 	}
 
@@ -211,7 +217,10 @@ func (c *Bind) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Correcti
 	models.PostProcessRecords(foundRecords)
 
 	differ := diff.New(dc)
-	_, create, del, mod := differ.IncrementalDiff(foundRecords)
+	_, create, del, mod, err := differ.IncrementalDiff(foundRecords)
+	if err != nil {
+		return nil, err
+	}
 
 	buf := &bytes.Buffer{}
 	// Print a list of changes. Generate an actual change that is the zone

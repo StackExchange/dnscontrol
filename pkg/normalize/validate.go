@@ -33,7 +33,7 @@ func checkTarget(target string) error {
 	if target == "@" {
 		return nil
 	}
-	if len(target) < 1 {
+	if target == "" {
 		return fmt.Errorf("empty target")
 	}
 	if strings.ContainsAny(target, `'" +,|!£$%&/()=?^*ç°§;:<>[]()@`) {
@@ -69,11 +69,11 @@ func validateRecordTypes(rec *models.RecordConfig, domain string, pTypes []strin
 	if !ok {
 		cType := providers.GetCustomRecordType(rec.Type)
 		if cType == nil {
-			return fmt.Errorf("Unsupported record type (%v) domain=%v name=%v", rec.Type, domain, rec.GetLabel())
+			return fmt.Errorf("unsupported record type (%v) domain=%v name=%v", rec.Type, domain, rec.GetLabel())
 		}
 		for _, providerType := range pTypes {
 			if providerType != cType.Provider {
-				return fmt.Errorf("Custom record type %s is not compatible with provider type %s", rec.Type, providerType)
+				return fmt.Errorf("custom record type %s is not compatible with provider type %s", rec.Type, providerType)
 			}
 		}
 		// it is ok. Lets replace the type with real type and add metadata to say we checked it
@@ -85,20 +85,6 @@ func validateRecordTypes(rec *models.RecordConfig, domain string, pTypes []strin
 	return nil
 }
 
-// underscores in names are often used erroneously. They are valid for dns records, but invalid for urls.
-// here we list common records expected to have underscores. Anything else containing an underscore will print a warning.
-var labelUnderscores = []string{
-	"_acme-challenge",
-	"_amazonses",
-	"_dmarc",
-	"_domainconnect",
-	"_domainkey",
-	"_jabber",
-	"_mta-sts",
-	"_sip",
-	"_xmpp",
-}
-
 // these record types may contain underscores
 var rTypeUnderscores = []string{"SRV", "TLSA", "TXT"}
 
@@ -106,7 +92,7 @@ func checkLabel(label string, rType string, target, domain string, meta map[stri
 	if label == "@" {
 		return nil
 	}
-	if len(label) < 1 {
+	if label == "" {
 		return fmt.Errorf("empty %s label in %s", rType, domain)
 	}
 	if label[len(label)-1] == '.' {
@@ -127,17 +113,12 @@ func checkLabel(label string, rType string, target, domain string, meta map[stri
 			return nil
 		}
 	}
-	// Don't warn for CNAMEs if the target ends with acm-validations.aws
-	// See https://github.com/StackExchange/dnscontrol/issues/519
-	if strings.HasPrefix(label, "_") && rType == "CNAME" && strings.HasSuffix(target, ".acm-validations.aws.") {
+	// Don't warn for records that start with _
+	// See https://github.com/StackExchange/dnscontrol/issues/829
+	if strings.HasPrefix(label, "_") || strings.Contains(label, "._") {
 		return nil
 	}
-	// Don't warn for certain label substrings
-	for _, ex := range labelUnderscores {
-		if strings.Contains(label, ex) {
-			return nil
-		}
-	}
+
 	// Otherwise, warn.
 	if strings.ContainsRune(label, '_') {
 		return Warning{fmt.Errorf("label %s.%s contains an underscore", label, domain)}
@@ -152,7 +133,7 @@ func checkTargets(rec *models.RecordConfig, domain string) (errs []error) {
 	target := rec.GetTargetField()
 	check := func(e error) {
 		if e != nil {
-			err := fmt.Errorf("In %s %s.%s: %s", rec.Type, rec.GetLabel(), domain, e.Error())
+			err := fmt.Errorf("in %s %s.%s: %s", rec.Type, rec.GetLabel(), domain, e.Error())
 			if _, ok := e.(Warning); ok {
 				err = Warning{err}
 			}
@@ -291,11 +272,13 @@ func ValidateAndNormalizeConfig(config *models.DNSConfig) (errs []error) {
 		// Normalize Nameservers.
 		for _, ns := range domain.Nameservers {
 			// NB(tlim): Like any target, NAMESERVER() is input by the user
-			// as a shortname or a FQDN+dot.  It is stored as FQDN+dot.
-			// Normalize it like we do any target to assure it is FQDN+dot
-			ns.Name = dnsutil.AddOrigin(ns.Name, domain.Name+".")
-			ns.Name = strings.TrimSuffix(ns.Name, ".")
-			checkTarget(ns.Name)
+			// as a shortname or a FQDN+dot.
+			if err := checkTarget(ns.Name); err != nil {
+				errs = append(errs, err)
+			}
+			// Unlike any other FQDN in this system, it is stored as a FQDN without the trailing dot.
+			n := dnsutil.AddOrigin(ns.Name, domain.Name+".")
+			ns.Name = strings.TrimSuffix(n, ".")
 		}
 
 		// Normalize Records.
@@ -321,7 +304,11 @@ func ValidateAndNormalizeConfig(config *models.DNSConfig) (errs []error) {
 				// These record types have a target that is a hostname.
 				// We normalize them to a FQDN so there is less variation to handle.  If a
 				// provider API requires a shortname, the provider must do the shortening.
-				rec.SetTarget(dnsutil.AddOrigin(rec.GetTargetField(), domain.Name+"."))
+				origin := domain.Name + "."
+				if len(rec.SubDomain) > 0 {
+					origin = rec.SubDomain + "." + origin
+				}
+				rec.SetTarget(dnsutil.AddOrigin(rec.GetTargetField(), origin))
 			} else if rec.Type == "A" || rec.Type == "AAAA" {
 				rec.SetTarget(net.ParseIP(rec.GetTargetField()).String())
 			} else if rec.Type == "PTR" {
@@ -336,15 +323,15 @@ func ValidateAndNormalizeConfig(config *models.DNSConfig) (errs []error) {
 					errs = append(errs, fmt.Errorf("CAA tag %s is invalid", rec.CaaTag))
 				}
 			} else if rec.Type == "TLSA" {
-				if rec.TlsaUsage < 0 || rec.TlsaUsage > 3 {
+				if rec.TlsaUsage > 3 {
 					errs = append(errs, fmt.Errorf("TLSA Usage %d is invalid in record %s (domain %s)",
 						rec.TlsaUsage, rec.GetLabel(), domain.Name))
 				}
-				if rec.TlsaSelector < 0 || rec.TlsaSelector > 1 {
+				if rec.TlsaSelector > 1 {
 					errs = append(errs, fmt.Errorf("TLSA Selector %d is invalid in record %s (domain %s)",
 						rec.TlsaSelector, rec.GetLabel(), domain.Name))
 				}
-				if rec.TlsaMatchingType < 0 || rec.TlsaMatchingType > 2 {
+				if rec.TlsaMatchingType > 2 {
 					errs = append(errs, fmt.Errorf("TLSA MatchingType %d is invalid in record %s (domain %s)",
 						rec.TlsaMatchingType, rec.GetLabel(), domain.Name))
 				}
@@ -406,12 +393,21 @@ func ValidateAndNormalizeConfig(config *models.DNSConfig) (errs []error) {
 		// Validate FQDN consistency
 		for _, r := range d.Records {
 			if r.NameFQDN == "" || !strings.HasSuffix(r.NameFQDN, d.Name) {
-				errs = append(errs, fmt.Errorf("Record named '%s' does not have correct FQDN in domain '%s'. FQDN: %s", r.Name, d.Name, r.NameFQDN))
+				errs = append(errs, fmt.Errorf("record named '%s' does not have correct FQDN for domain '%s'. FQDN: %s", r.Name, d.Name, r.NameFQDN))
 			}
 		}
+		// Verify AutoDNSSEC is valid.
+		errs = append(errs, checkAutoDNSSEC(d)...)
 	}
 
 	return errs
+}
+
+func checkAutoDNSSEC(dc *models.DomainConfig) (errs []error) {
+	if dc.AutoDNSSEC != "" && dc.AutoDNSSEC != "on" && dc.AutoDNSSEC != "off" {
+		errs = append(errs, fmt.Errorf("Domain %q AutoDNSSEC=%q is invalid (expecting \"\", \"off\", or \"on\")", dc.Name, dc.AutoDNSSEC))
+	}
+	return
 }
 
 func checkCNAMEs(dc *models.DomainConfig) (errs []error) {
@@ -419,14 +415,14 @@ func checkCNAMEs(dc *models.DomainConfig) (errs []error) {
 	for _, r := range dc.Records {
 		if r.Type == "CNAME" {
 			if cnames[r.GetLabel()] {
-				errs = append(errs, fmt.Errorf("Cannot have multiple CNAMEs with same name: %s", r.GetLabelFQDN()))
+				errs = append(errs, fmt.Errorf("cannot have multiple CNAMEs with same name: %s", r.GetLabelFQDN()))
 			}
 			cnames[r.GetLabel()] = true
 		}
 	}
 	for _, r := range dc.Records {
 		if cnames[r.GetLabel()] && r.Type != "CNAME" {
-			errs = append(errs, fmt.Errorf("Cannot have CNAME and %s record with same name: %s", r.Type, r.GetLabelFQDN()))
+			errs = append(errs, fmt.Errorf("cannot have CNAME and %s record with same name: %s", r.Type, r.GetLabelFQDN()))
 		}
 	}
 	return
@@ -437,7 +433,7 @@ func checkDuplicates(records []*models.RecordConfig) (errs []error) {
 	for _, r := range records {
 		diffable := fmt.Sprintf("%s %s %s", r.GetLabelFQDN(), r.Type, r.ToDiffable())
 		if seen[diffable] != nil {
-			errs = append(errs, fmt.Errorf("Exact duplicate record found: %s", diffable))
+			errs = append(errs, fmt.Errorf("exact duplicate record found: %s", diffable))
 		}
 		seen[diffable] = r
 	}
@@ -527,7 +523,7 @@ func checkProviderCapabilities(dc *models.DomainConfig) error {
 		hasAny := false
 		switch ty.rType {
 		case "AUTODNSSEC":
-			if dc.AutoDNSSEC {
+			if dc.AutoDNSSEC != "" {
 				hasAny = true
 			}
 		default:
@@ -545,7 +541,7 @@ func checkProviderCapabilities(dc *models.DomainConfig) error {
 		for _, provider := range dc.DNSProviderInstances {
 			// fmt.Printf("  (checking if %q can %q for domain %q)\n", provider.ProviderType, ty.rType, dc.Name)
 			if !providerHasAtLeastOneCapability(provider.ProviderType, ty.caps...) {
-				return fmt.Errorf("Domain %s uses %s records, but DNS provider type %s does not support them", dc.Name, ty.rType, provider.ProviderType)
+				return fmt.Errorf("domain %s uses %s records, but DNS provider type %s does not support them", dc.Name, ty.rType, provider.ProviderType)
 			}
 
 			if ty.checkFunc != nil {

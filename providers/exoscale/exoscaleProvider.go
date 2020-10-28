@@ -118,7 +118,10 @@ func (c *exoscaleProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*mod
 	models.PostProcessRecords(existingRecords)
 
 	differ := diff.New(dc)
-	_, create, delete, modify := differ.IncrementalDiff(existingRecords)
+	_, create, delete, modify, err := differ.IncrementalDiff(existingRecords)
+	if err != nil {
+		return nil, err
+	}
 
 	var corrections = []*models.Correction{}
 

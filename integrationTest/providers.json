@@ -4,11 +4,11 @@
     "domain": "$AD_DOMAIN"
   },
   "AXFRDDNS": {
+    "domain": "$AXFRDDNS_DOMAIN",
     "master": "$AXFRDDNS_MASTER",
     "nameservers": "ns.example.com",
     "transfer-key": "$AXFRDDNS_TRANSFER_KEY",
-    "update-key": "$AXFRDDNS_UPDATE_KEY",
-    "domain": "$AXFRDDNS_DOMAIN"
+    "update-key": "$AXFRDDNS_UPDATE_KEY"
   },
   "AZURE_DNS": {
     "ClientID": "$AZURE_CLIENT_ID",
@@ -62,13 +62,31 @@
     "project_id": "$GCLOUD_PROJECT",
     "type": "$GCLOUD_TYPE"
   },
+  "HEDNS": {
+    "domain": "$HEDNS_DOMAIN",
+    "password": "$HEDNS_PASSWORD",
+    "session-file-path": ".",
+    "totp-key": "$HEDNS_TOTP_SECRET",
+    "username": "$HEDNS_USERNAME"
+  },
+  "HETZNER": {
+    "api_key": "$HETZNER_API_KEY",
+    "domain": "$HETZNER_DOMAIN",
+    "rate_limited": "true"
+  },
   "HEXONET": {
     "apientity": "$HEXONET_ENTITY",
     "apilogin": "$HEXONET_UID",
     "apipassword": "$HEXONET_PW",
     "debugmode": "$HEXONET_DEBUGMODE",
-    "domain": "dnscontrol.com",
+    "domain": "$HEXONET_DOMAIN",
     "ipaddress": "$HEXONET_IP"
+  },
+  "INWX": {
+    "domain": "$INWX_DOMAIN",
+    "password": "$INWX_PASSWORD",
+    "sandbox": "1",
+    "username": "$INWX_USER"
   },
   "LINODE": {
     "domain": "$LINODE_DOMAIN",

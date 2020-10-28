@@ -2,6 +2,7 @@
 
 // If you edit this file, you must run `go generate` to embed this
 // file in the source code.
+
 // If you are heavily debugging this code, the "-dev" flag will
 // read this file directly instead of using the output of
 // `go generate`. You'll still need to run `go generate` before
@@ -25,6 +26,12 @@ function initialize() {
     defaultArgs = [];
 }
 
+// Returns an array of domains which were registered so far during runtime
+// Own function for compatibility reasons or if some day special processing would be required.
+function getConfiguredDomains() {
+    return conf.domain_names;
+}
+
 function NewRegistrar(name, type, meta) {
     if (type) {
         type == 'MANUAL';
@@ -46,13 +53,15 @@ function NewDnsProvider(name, type, meta) {
 function newDomain(name, registrar) {
     return {
         name: name,
+        subdomain: '',
         registrar: registrar,
         meta: {},
         records: [],
         dnsProviders: {},
         defaultTTL: 0,
         nameservers: [],
-        ignored_labels: [],
+        ignored_names: [],
+        ignored_targets: [],
     };
 }
 
@@ -92,6 +101,46 @@ function D(name, registrar) {
     }
     conf.domains.push(domain);
     conf.domain_names.push(name);
+}
+
+// D_EXTEND(name): Update a DNS Domain already added with D(), or subdomain thereof
+function D_EXTEND(name) {
+    var domain = _getDomainObject(name);
+    if (domain == null) {
+        throw name + ' was not declared yet and therefore cannot be updated. Use D() before.';
+    }
+    domain.obj.subdomain = name.substr(0, name.length-domain.obj.name.length - 1);
+    for (var i = 0; i < defaultArgs.length; i++) {
+        processDargs(defaultArgs[i], domain.obj);
+    }
+    for (var i = 1; i < arguments.length; i++) {
+        var m = arguments[i];
+        processDargs(m, domain.obj);
+    }
+    conf.domains[domain.id] = domain.obj; // let's overwrite the object.
+}
+
+// _getDomainObject(name): This implements the domain matching
+// algorithm used by D_EXTEND(). Candidate matches are an exact match
+// of the domain's name, or if name is a proper subdomain of the
+// domain's name. The longest match is returned. 
+function _getDomainObject(name) {
+    var domain = null;
+    var domainLen = 0;
+    for (var i = 0; i < conf.domains.length; i++) {
+        var thisName = conf.domains[i]["name"];
+        var desiredSuffix = "." + thisName;
+        var foundSuffix = name.substr(-desiredSuffix.length);
+        // If this is an exact match or the suffix matches...
+        if (name === thisName || foundSuffix === desiredSuffix) {
+            // If this match is a longer match than our current best match...
+            if (thisName.length > domainLen) {
+                domainLen = thisName.length;
+                domain = { id: i, obj: conf.domains[i] };
+            }
+        }
+    }
+    return domain;
 }
 
 // DEFAULTS provides a set of default arguments to apply to all future domains.
@@ -462,10 +511,24 @@ function format_tt(transform_table) {
 
 // IGNORE(name)
 function IGNORE(name) {
+    // deprecated, use IGNORE_NAME
+    return IGNORE_NAME(name);
+}
+
+// IGNORE_NAME(name)
+function IGNORE_NAME(name) {
     return function(d) {
-        d.ignored_labels.push(name);
+        d.ignored_names.push(name);
     };
 }
+
+// IGNORE_TARGET(target)
+function IGNORE_TARGET(target, rType) {
+    return function(d) {
+        d.ignored_targets.push({pattern: target, type: rType});
+    };
+}
+
 
 // IMPORT_TRANSFORM(translation_table, domain)
 var IMPORT_TRANSFORM = recordBuilder('IMPORT_TRANSFORM', {
@@ -488,9 +551,21 @@ function NO_PURGE(d) {
     d.KeepUnknown = true;
 }
 
-// AUTODNSSEC()
+// AUTODNSSEC
+// Permitted values are:
+// ""  Do not modify the setting (the default)
+// "on"   Enable AUTODNSSEC for this domain
+// "off"  Disable AUTODNSSEC for this domain
+function AUTODNSSEC_ON(d) {
+  d.auto_dnssec = "on";
+}
+function AUTODNSSEC_OFF(d) {
+  d.auto_dnssec = "off";
+}
 function AUTODNSSEC(d) {
-    d.auto_dnssec = true;
+  console.log(
+    "WARNING: AUTODNSSEC is deprecated. It is now a no-op.  Please use AUTODNSSEC_ON or AUTODNSSEC_OFF. The default is to make no modifications. This message will disappear in a future release."
+  );
 }
 
 /**
@@ -599,6 +674,17 @@ function recordBuilder(type, opts) {
 
             opts.applyModifier(record, modifiers);
             opts.transform(record, parsedArgs, modifiers);
+
+            // Handle D_EXTEND() with subdomains.
+            if (d.subdomain && record.type != 'CF_REDIRECT' &&
+                    record.type != 'CF_TEMP_REDIRECT') {
+                record.subdomain = d.subdomain;
+                if (record.name == '@') {
+                    record.name = d.subdomain;
+                } else {
+                    record.name += '.' + d.subdomain;
+                }
+            }
 
             d.records.push(record);
             return record;
@@ -733,6 +819,7 @@ var FRAME = recordBuilder('FRAME');
 // split: The template for additional records to be created (default: '_spf%d')
 // flatten: A list of domains to be flattened.
 // overhead1: Amout of "buffer room" to reserve on the first item in the spf chain.
+// txtMaxSize: The maximum size for each TXT string. Values over 255 will result in multiple strings (default: '255')
 
 function SPF_BUILDER(value) {
     if (!value.parts || value.parts.length < 2) {
@@ -741,7 +828,7 @@ function SPF_BUILDER(value) {
     if (!value.label) {
         value.label = '@';
     }
-    if (!value.raw) {
+    if (!value.raw && value.raw !== '') {
         value.raw = '_rawspf';
     }
 
@@ -752,10 +839,13 @@ function SPF_BUILDER(value) {
     // If flattening is requested, generate a TXT record with the raw SPF settings.
     if (value.flatten && value.flatten.length > 0) {
         p.flatten = value.flatten.join(',');
-        if (value.ttl) {
-            r.push(TXT(value.raw, rawspf, TTL(value.ttl)));
-        } else {
-            r.push(TXT(value.raw, rawspf));
+        // Only add the raw spf record if it isn't an empty string
+        if (value.raw !== '') {
+            if (value.ttl) {
+                r.push(TXT(value.raw, rawspf, TTL(value.ttl)));
+            } else {
+                r.push(TXT(value.raw, rawspf));
+            }
         }
     }
 
@@ -766,6 +856,10 @@ function SPF_BUILDER(value) {
 
     if (value.overhead1) {
         p.overhead1 = value.overhead1;
+    }
+
+    if (value.txtMaxSize) {
+        p.txtMaxSize = value.txtMaxSize;
     }
 
     // Generate a TXT record with the metaparameters.
@@ -831,4 +925,25 @@ function DKIM(arr) {
     for (var i = 0, len = arr.length; i < len; i += chunkSize)
         R.push(arr.slice(i, i + chunkSize));
     return R;
+}
+
+// Function wrapper for glob() for recursively loading files.
+// As the main function (in Go) is in our control anyway, all the values here are already sanity-checked.
+// Note: glob() is only an internal undocumented helper function. So use it on your own risk.
+function require_glob() {
+    arguments[2] = "js"; // force to only include .js files.
+    var files = glob.apply(null, arguments);
+    for (i = 0; i < files.length; i++) {
+        require(files[i]);
+    }
+    return files
+}
+
+// Set default values for CLI variables
+function CLI_DEFAULTS(defaults) {
+    for (var key in defaults) {
+        if (typeof this[key] === "undefined") {
+            this[key] = defaults[key]
+        }
+    }
 }

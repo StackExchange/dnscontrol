@@ -3,7 +3,9 @@ package commands
 import (
 	"encoding/json"
 	"fmt"
+	"log"
 	"os"
+	"strings"
 
 	"github.com/urfave/cli/v2"
 
@@ -72,7 +74,7 @@ func PrintIR(args PrintIRArgs) error {
 	if !args.Raw {
 		errs := normalize.ValidateAndNormalizeConfig(cfg)
 		if PrintValidationErrors(errs) {
-			return fmt.Errorf("Exiting due to validation errors")
+			return fmt.Errorf("exiting due to validation errors")
 		}
 	}
 	return PrintJSON(args.PrintJSONArgs, cfg)
@@ -83,13 +85,13 @@ func PrintValidationErrors(errs []error) (fatal bool) {
 	if len(errs) == 0 {
 		return false
 	}
-	fmt.Printf("%d Validation errors:\n", len(errs))
+	log.Printf("%d Validation errors:\n", len(errs))
 	for _, err := range errs {
 		if _, ok := err.(normalize.Warning); ok {
-			fmt.Printf("WARNING: %s\n", err)
+			log.Printf("WARNING: %s\n", err)
 		} else {
 			fatal = true
-			fmt.Printf("ERROR: %s\n", err)
+			log.Printf("ERROR: %s\n", err)
 		}
 	}
 	return
@@ -98,12 +100,12 @@ func PrintValidationErrors(errs []error) (fatal bool) {
 // ExecuteDSL executes the dnsconfig.js contents.
 func ExecuteDSL(args ExecuteDSLArgs) (*models.DNSConfig, error) {
 	if args.JSFile == "" {
-		return nil, fmt.Errorf("No config specified")
+		return nil, fmt.Errorf("no config specified")
 	}
 
-	dnsConfig, err := js.ExecuteJavascript(args.JSFile, args.DevMode)
+	dnsConfig, err := js.ExecuteJavascript(args.JSFile, args.DevMode, stringSliceToMap(args.Variable))
 	if err != nil {
-		return nil, fmt.Errorf("Executing javascript in %s: %s", args.JSFile, err)
+		return nil, fmt.Errorf("executing %s: %w", args.JSFile, err)
 	}
 	return dnsConfig, nil
 }
@@ -137,4 +139,16 @@ func exit(err error) error {
 		return nil
 	}
 	return cli.NewExitError(err, 1)
+}
+
+// stringSliceToMap converts cli.StringSlice to map[string]string for further processing
+func stringSliceToMap(stringSlice cli.StringSlice) map[string]string {
+	mapString := make(map[string]string, len(stringSlice.Value()))
+	for _, values := range stringSlice.Value() {
+		parts := strings.SplitN(values, "=", 2)
+		if len(parts) == 2 {
+			mapString[parts[0]] = parts[1]
+		}
+	}
+	return mapString
 }
