@@ -1,26 +1,35 @@
 on:
   push:
-    tags:
-      - 'v*'
+    branches: [ builds-experimental ]  # for development; change to master before merging
+    tags: [ 'v*']
 
-name: Create draft release
+name: release
 
 jobs:
-  build:
-    name: Create draft release
+  release:
+    name: release
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v2
 
-      - name: Build project (dummy)
-        run: zip my-artifact README.md  # TODO - actually create all the binaries, artifacts etc
+    - name: Checkout repo
+      uses: actions/checkout@v2
+      with:
+        fetch-depth: 0
 
-      - name: Create Release
-        id: create_release
-        uses: actions/create-release@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    - name: Set up Go
+      uses: actions/setup-go@v2
+      with:
+        go-version: ^1.15.3
+
+    - name: Build binaries
+      id: build
+      run: go run build/build.go
+
+    - name: Create Release
+      id: create_release
+      uses: actions/create-release@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           tag_name: ${{ github.ref }}
           release_name: Release ${{ github.ref }}
@@ -28,13 +37,13 @@ jobs:
           draft: true
           prerelease: false
 
-      - name: Upload binaries
-        id: upload_binaries 
-        uses: actions/upload-release-asset@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          upload_url: ${{ steps.create_release.outputs.upload_url }} 
-          asset_path: ./my-artifact.zip
-          asset_name: my-artifact.zip
-          asset_content_type: application/zip
+    - name: Upload binaries
+      id: upload_binaries 
+      uses: actions/upload-release-asset@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        upload_url: ${{ steps.build.outputs.upload_url }} 
+        asset_path: ./dnscontrol.exe
+        asset_name: dnscontrol.exe
+#        asset_content_type: application/zip
