@@ -16,6 +16,9 @@ jobs:
       with:
         fetch-depth: 0
 
+    - name: Zip source code
+      run: zip -r dnscontrol.zip  .  # TODO version number
+
     - name: Set up Go
       uses: actions/setup-go@v2
       with:
@@ -66,3 +69,12 @@ jobs:
         asset_name: dnscontrol.exe
         asset_content_type: application/octet-stream
 
+    - name: Upload source
+      uses: actions/upload-release-asset@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        upload_url: ${{ steps.create_release.outputs.upload_url }} 
+        asset_path: ./dnscontrol.zip
+        asset_name: dnscontrol.zip
+        asset_content_type: application/zip
