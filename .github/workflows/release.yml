@@ -36,8 +36,27 @@ jobs:
         draft: true
         prerelease: false
 
-    - name: Upload binaries
-      id: upload_binaries 
+    - name: Upload dnscontrol-Darwin
+      uses: actions/upload-release-asset@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        upload_url: ${{ steps.create_release.outputs.upload_url }} 
+        asset_path: ./dnscontrol-Darwin
+        asset_name: dnscontrol-Darwin
+        asset_content_type: application/octet-stream
+
+    - name: Upload dnscontrol-Linux
+      uses: actions/upload-release-asset@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        upload_url: ${{ steps.create_release.outputs.upload_url }} 
+        asset_path: ./dnscontrol-Linux
+        asset_name: dnscontrol-Linux
+        asset_content_type: application/octet-stream
+
+    - name: Upload dnscontrol.exe
       uses: actions/upload-release-asset@v1
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -46,3 +65,4 @@ jobs:
         asset_path: ./dnscontrol.exe
         asset_name: dnscontrol.exe
         asset_content_type: application/octet-stream
+
