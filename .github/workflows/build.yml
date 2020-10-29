@@ -1,17 +1,20 @@
-name: Build
+name: build
 
-on: [push]
+on: 
+  pull_request:
+    branches: [ master ]
 
 jobs:
   build:
     runs-on: ubuntu-latest
     steps:
+
     - name: Checkout repo
       uses: actions/checkout@v2
       with:
         fetch-depth: 0
 
-    - name: Set up Go 1.15.3
+    - name: Set up Go
       uses: actions/setup-go@v2
       with:
         go-version: ^1.15.3
