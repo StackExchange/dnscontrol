@@ -11,7 +11,7 @@ import (
 var checkPS sync.Once
 var psAvailible = false
 
-func (c *adProvider) getRecords(domainname string) ([]byte, error) {
+func (c *activedirProvider) getRecords(domainname string) ([]byte, error) {
 
 	// If we are using PowerShell, make sure it is enabled
 	// and then run the PS1 command to generate the adzonedump file.
@@ -41,7 +41,7 @@ func (c *adProvider) getRecords(domainname string) ([]byte, error) {
 	return c.readZoneDump(domainname)
 }
 
-func (c *adProvider) isPowerShellReady() bool {
+func (c *activedirProvider) isPowerShellReady() bool {
 	query, _ := c.powerShellExec(`(Get-Module -ListAvailable DnsServer) -ne $null`, true)
 	q, err := strconv.ParseBool(strings.TrimSpace(string(query)))
 	if err != nil {
@@ -50,7 +50,7 @@ func (c *adProvider) isPowerShellReady() bool {
 	return q
 }
 
-func (c *adProvider) powerShellDoCommand(command string, shouldLog bool) error {
+func (c *activedirProvider) powerShellDoCommand(command string, shouldLog bool) error {
 	if c.fake {
 		// If fake, just record the command.
 		return c.powerShellRecord(command)
@@ -59,7 +59,7 @@ func (c *adProvider) powerShellDoCommand(command string, shouldLog bool) error {
 	return err
 }
 
-func (c *adProvider) powerShellExec(command string, shouldLog bool) ([]byte, error) {
+func (c *activedirProvider) powerShellExec(command string, shouldLog bool) ([]byte, error) {
 	// log it.
 	err := c.logCommand(command)
 	if err != nil {
