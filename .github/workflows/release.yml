@@ -29,7 +29,8 @@ jobs:
         go-version: ^1.15.3
 
     - name: Build binaries
-      run: go run dnscontrol/build/build.go
+      run: go run build/build.go
+      working-directory: dnscontrol
 
     - name: Create Release
       id: create_release
