@@ -16,8 +16,11 @@ jobs:
       with:
         fetch-depth: 0
 
-    - name: Zip source code
+    - name: zip
       run: zip -r dnscontrol.zip  .  # TODO version number
+
+    - name: tarball
+      run: tar -czvf dnscontrol.tar.gz .  # TODO version number
 
     - name: Set up Go
       uses: actions/setup-go@v2
@@ -69,7 +72,7 @@ jobs:
         asset_name: dnscontrol.exe
         asset_content_type: application/octet-stream
 
-    - name: Upload source
+    - name: Upload zip
       uses: actions/upload-release-asset@v1
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -78,3 +81,14 @@ jobs:
         asset_path: ./dnscontrol.zip
         asset_name: Source code (zip)
         asset_content_type: application/zip
+
+    - name: Upload tarball
+      uses: actions/upload-release-asset@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        upload_url: ${{ steps.create_release.outputs.upload_url }} 
+        asset_path: ./dnscontrol.tar.gz
+        asset_name: Source code (.tar.gz)
+        asset_content_type: application/gzip
+
