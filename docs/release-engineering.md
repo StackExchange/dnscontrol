@@ -115,44 +115,18 @@ Fill in the text box with the release notes written above.
 
 (DO use the "preview" tab to proofread the text.)
 
-Create the binaries and attach them to the release:
 
-    go run build/build.go
+## Step 6. Publish the release
 
-NOTE: This command creates binaries with the version number and git hash embedded. It also builds the releases for all supported platforms (i.e. creates a .exe for Windows even if you are running on Linux.  Isn't Go amazing?)
-
-WARNING: if there are files that haven't been checked in, the version string will have "dirty" appended.
-
-This is what it looks like when you did it right:
-
-```
-$ ./dnscontrol-Darwin version
-dnscontrol 3.0.0 ("a7c62e5d317e7e3da76dffd8e24d6a9d304d8159") built 22 Mar 20 15:16 EDT
-```
-
-This is what it looks like when there was a file that wasn't checked in:
-
-```
-$ ./dnscontrol-Darwin version
-dnscontrol 3.0.0 ("ee5208bd5f19b9e5dd0bdba8d0e13403c43a469a[dirty]") built 22 Mar 20 15:16 EDT
-                                                            ^^^^^
-                                                            ^^^^^
-                                                            ^^^^^
-```
-
-
-## Step 6. Attach the binaries and release.
-
-a. Drag and drop binaries into the web form.
-
-There is a box labeled "Attach binaries by dropping them here or
-selecting them".  Drag dnscontrol-Darwin, dnscontrol-Linux, and
-dnscontrol.exe onto that box (one at a time or all at once). This
-will upload the binaries.
-
-b. Submit the release.
+a. Publish the release.
 
 Make sure the "This is a pre-release" checkbox is UNchecked. Then click "Publish Release".
+
+b. Wait for attach binaries workflow to complete 
+
+There's a GitHub Actions workflow which will automatically build and attach
+all 3 binaries to the release. Refresh the page after a few minutes and you'll
+see dnscontrol-Darwin, dnscontrol-Linux, and dnscontrol.exe attached as assets.
 
 
 ## Step 7. Announce it via email
