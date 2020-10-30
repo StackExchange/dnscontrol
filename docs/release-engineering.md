@@ -122,9 +122,9 @@ a. Publish the release.
 
 Make sure the "This is a pre-release" checkbox is UNchecked. Then click "Publish Release".
 
-b. Wait for attach binaries workflow to complete 
+b. Wait for workflow to complete 
 
-There's a GitHub Actions workflow which will automatically build and attach
+There's a GitHub Actions [workflow](https://github.com/StackExchange/dnscontrol/actions?query=workflow%3Arelease) which automatically builds and attaches
 all 3 binaries to the release. Refresh the page after a few minutes and you'll
 see dnscontrol-Darwin, dnscontrol-Linux, and dnscontrol.exe attached as assets.
 
