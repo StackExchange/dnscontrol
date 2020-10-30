@@ -1,15 +1,8 @@
 on:
-  push:
-    branches: [ builds-experimental ]  # for development; change to master before merging
-    tags: ["v*"]
-
-# # alternatively, we could run this when a release is *created*
-# on:
-#   release:
-#     types: [created]
+  release:
+    types: [created]
 
 name: release
-
 jobs:
   release:
     name: release
