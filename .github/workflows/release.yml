@@ -9,6 +9,12 @@ jobs:
     runs-on: ubuntu-latest
     steps:
 
+    - name: Get release
+      id: get_release
+      uses: bruceadams/get-release@v1.2.2
+      env:
+        GITHUB_TOKEN: ${{ github.token }}
+
     - name: Checkout repo
       uses: actions/checkout@v2
       with:
@@ -29,18 +35,6 @@ jobs:
     - name: Build binaries
       run: go run build/build.go
       working-directory: dnscontrol
-
-    - name: Create Release
-      id: create_release
-      uses: actions/create-release@v1
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      with:
-        tag_name: ${{ github.ref }}
-        release_name: Release ${{ github.ref }}
-        body: Please add your release note here
-        draft: true
-        prerelease: false
 
     - name: Upload dnscontrol-Darwin
       uses: actions/upload-release-asset@v1
@@ -88,7 +82,7 @@ jobs:
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
-        upload_url: ${{ steps.create_release.outputs.upload_url }} 
+        upload_url: ${{ steps.get_release.outputs.upload_url }} 
         asset_path: ./dnscontrol.tar.gz
         asset_name: dnscontrol.tar.gz
         asset_label: Source code (.tar.gz)
