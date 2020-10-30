@@ -1,7 +1,7 @@
 on:
   push:
     branches: [ builds-experimental ]  # for development; change to master before merging
-    tags: [ 'v*']
+    tags: ["v*"]
 
 name: release
 
