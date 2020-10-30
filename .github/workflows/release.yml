@@ -81,7 +81,8 @@ jobs:
       with:
         upload_url: ${{ steps.create_release.outputs.upload_url }} 
         asset_path: ./dnscontrol.zip
-        asset_name: Source code (zip)
+        asset_name: dnscontrol.zip
+        asset_label: Source code (zip)
         asset_content_type: application/zip
 
     - name: Upload tarball
@@ -91,6 +92,6 @@ jobs:
       with:
         upload_url: ${{ steps.create_release.outputs.upload_url }} 
         asset_path: ./dnscontrol.tar.gz
-        asset_name: Source code (.tar.gz)
+        asset_name: dnscontrol.tar.gz
+        asset_label: Source code (.tar.gz)
         asset_content_type: application/gzip
-
