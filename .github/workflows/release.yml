@@ -50,7 +50,7 @@ jobs:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
         upload_url: ${{ steps.create_release.outputs.upload_url }} 
-        asset_path: ./dnscontrol-Darwin
+        asset_path: ./dnscontrol/dnscontrol-Darwin
         asset_name: dnscontrol-Darwin
         asset_content_type: application/octet-stream
 
@@ -60,7 +60,7 @@ jobs:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
         upload_url: ${{ steps.create_release.outputs.upload_url }} 
-        asset_path: ./dnscontrol-Linux
+        asset_path: ./dnscontrol/dnscontrol-Linux
         asset_name: dnscontrol-Linux
         asset_content_type: application/octet-stream
 
@@ -70,7 +70,7 @@ jobs:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
         upload_url: ${{ steps.create_release.outputs.upload_url }} 
-        asset_path: ./dnscontrol.exe
+        asset_path: ./dnscontrol/dnscontrol.exe
         asset_name: dnscontrol.exe
         asset_content_type: application/octet-stream
 
