@@ -7,6 +7,8 @@ import (
 	"io"
 	"io/ioutil"
 	"net/http"
+	"strconv"
+	"strings"
 	"time"
 )
 
@@ -27,6 +29,43 @@ func checkIsLockedSystemRecord(record record) error {
 		return fmt.Errorf("SOA records are locked in HETZNER zones. They are hence not available for updating")
 	}
 	return nil
+}
+
+func getHomogenousDelay(headers http.Header, quotaName string) (time.Duration, error) {
+	quota, err := parseHeaderAsInt(headers, "X-Ratelimit-Limit-"+quotaName)
+	if err != nil {
+		return 0, err
+	}
+
+	var unit time.Duration
+	switch quotaName {
+	case "Hour":
+		unit = time.Hour
+	case "Minute":
+		unit = time.Minute
+	case "Second":
+		unit = time.Second
+	}
+
+	delay := time.Duration(int64(unit) / quota)
+	return delay, nil
+}
+
+func getRetryAfterDelay(header http.Header) (time.Duration, error) {
+	retryAfter, err := parseHeaderAsInt(header, "Retry-After")
+	if err != nil {
+		return 0, err
+	}
+	delay := time.Duration(retryAfter * int64(time.Second))
+	return delay, nil
+}
+
+func parseHeaderAsInt(headers http.Header, headerName string) (int64, error) {
+	value, ok := headers[headerName]
+	if !ok {
+		return 0, fmt.Errorf("header %q is missing", headerName)
+	}
+	return strconv.ParseInt(value[0], 10, 0)
 }
 
 func (api *hetznerProvider) bulkCreateRecords(records []record) error {
@@ -185,6 +224,8 @@ func (api *hetznerProvider) request(endpoint string, method string, request inte
 			}
 		}
 
+		api.requestRateLimiter.handleResponse(*resp)
+		// retry the request when rate-limited
 		if resp.StatusCode == 429 {
 			api.requestRateLimiter.handleRateLimitedRequest()
 			cleanupResponseBody()
@@ -206,9 +247,12 @@ func (api *hetznerProvider) request(endpoint string, method string, request inte
 }
 
 func (api *hetznerProvider) startRateLimited() {
-	// Simulate a request that is getting a 429 response.
-	api.requestRateLimiter.afterRequest()
-	api.requestRateLimiter.bumpDelay()
+	// _Now_ is the best reference we can get for the last request.
+	// Head-On-Head invocations of DNSControl benefit from fewer initial
+	//  rate-limited requests.
+	api.requestRateLimiter.lastRequest = time.Now()
+	// use the default delay until we have had a chance to parse limits.
+	api.requestRateLimiter.setDefaultDelay()
 }
 
 func (api *hetznerProvider) updateRecord(record record) error {
@@ -221,8 +265,9 @@ func (api *hetznerProvider) updateRecord(record record) error {
 }
 
 type requestRateLimiter struct {
-	delay       time.Duration
-	lastRequest time.Time
+	delay                     time.Duration
+	lastRequest               time.Time
+	optimizeForRateLimitQuota string
 }
 
 func (requestRateLimiter *requestRateLimiter) afterRequest() {
@@ -236,23 +281,55 @@ func (requestRateLimiter *requestRateLimiter) beforeRequest() {
 	time.Sleep(time.Until(requestRateLimiter.lastRequest.Add(requestRateLimiter.delay)))
 }
 
-func (requestRateLimiter *requestRateLimiter) bumpDelay() string {
-	var backoffType string
-	if requestRateLimiter.delay == 0 {
-		// At the time this provider was implemented (2020-10-18),
-		//  one request per second could go though when rate-limited.
-		requestRateLimiter.delay = time.Second
-		backoffType = "constant"
-	} else {
-		// The initial assumption of 1 req/s may no hold true forever.
-		// Future proof this provider, use exponential back-off.
-		requestRateLimiter.delay = requestRateLimiter.delay * 2
-		backoffType = "exponential"
+func (requestRateLimiter *requestRateLimiter) setDefaultDelay() {
+	// default to a rate-limit of 1 req/s -- the next response should update it.
+	requestRateLimiter.delay = time.Second
+}
+
+func (requestRateLimiter *requestRateLimiter) setOptimizeForRateLimitQuota(quota string) error {
+	quotaNormalized := strings.ToLower(quota)
+	switch quotaNormalized {
+	case "hour":
+		requestRateLimiter.optimizeForRateLimitQuota = "Hour"
+		break
+	case "minute":
+		requestRateLimiter.optimizeForRateLimitQuota = "Minute"
+		break
+	case "second", "":
+		requestRateLimiter.optimizeForRateLimitQuota = "Second"
+		break
+	default:
+		return fmt.Errorf("%q is not a valid quota, expected 'Hour', 'Minute', 'Second' or unset", quota)
 	}
-	return backoffType
+	return nil
 }
 
 func (requestRateLimiter *requestRateLimiter) handleRateLimitedRequest() {
-	backoffType := requestRateLimiter.bumpDelay()
-	fmt.Println(fmt.Sprintf("WARNING: request rate-limited, %s back-off is now at %s.", backoffType, requestRateLimiter.delay))
+	message := "Rate-Limited, consider bumping the setting 'optimize_for_rate_limit_quota': %q -> %q"
+	switch requestRateLimiter.optimizeForRateLimitQuota {
+	case "Hour":
+		message = "Rate-Limited, you are already using the slowest request rate. Consider contacting the Hetzner Support for raising your quota."
+	case "Minute":
+		message = fmt.Sprintf(message, "Minute", "Hour")
+	case "Second":
+		message = fmt.Sprintf(message, "Second", "Minute")
+	}
+	fmt.Println(message)
+}
+
+func (requestRateLimiter *requestRateLimiter) handleResponse(resp http.Response) {
+	homogenousDelay, err := getHomogenousDelay(resp.Header, requestRateLimiter.optimizeForRateLimitQuota)
+	if err != nil {
+		requestRateLimiter.setDefaultDelay()
+		return
+	}
+
+	delay := homogenousDelay
+	if resp.StatusCode == 429 {
+		retryAfterDelay, err := getRetryAfterDelay(resp.Header)
+		if err == nil {
+			delay = retryAfterDelay
+		}
+	}
+	requestRateLimiter.delay = delay
 }
