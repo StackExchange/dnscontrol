@@ -22,7 +22,7 @@ jobs:
     - name: Run unit tests
       run: go test ./...
 
-    - name: Run integration test for BIND provider
+    - name: Run integration tests for BIND provider
       run: go test -v -verbose -provider BIND
 
     - name: Build binaries
