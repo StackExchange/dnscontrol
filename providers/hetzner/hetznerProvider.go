@@ -3,6 +3,7 @@ package hetzner
 import (
 	"encoding/json"
 	"fmt"
+	"strings"
 
 	"github.com/StackExchange/dnscontrol/v3/models"
 	"github.com/StackExchange/dnscontrol/v3/pkg/diff"
@@ -107,25 +108,37 @@ func (api *hetznerProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*mo
 		corrections = append(corrections, corr)
 	}
 
+	var createRecords []record
+	createDescription := []string{"Batch creation of records:"}
 	for _, m := range create {
 		record := fromRecordConfig(m.Desired, zone)
+		createRecords = append(createRecords, *record)
+		createDescription = append(createDescription, m.String())
+	}
+	if len(createRecords) > 0 {
 		corr := &models.Correction{
-			Msg: m.String(),
+			Msg: strings.Join(createDescription, "\n\t"),
 			F: func() error {
-				return api.createRecord(*record)
+				return api.bulkCreateRecords(createRecords)
 			},
 		}
 		corrections = append(corrections, corr)
 	}
 
+	var modifyRecords []record
+	modifyDescription := []string{"Batch modification of records:"}
 	for _, m := range modify {
 		id := m.Existing.Original.(*record).ID
 		record := fromRecordConfig(m.Desired, zone)
 		record.ID = id
+		modifyRecords = append(modifyRecords, *record)
+		modifyDescription = append(modifyDescription, m.String())
+	}
+	if len(modifyRecords) > 0 {
 		corr := &models.Correction{
-			Msg: m.String(),
+			Msg: strings.Join(modifyDescription, "\n\t"),
 			F: func() error {
-				return api.updateRecord(*record)
+				return api.bulkUpdateRecords(modifyRecords)
 			},
 		}
 		corrections = append(corrections, corr)
