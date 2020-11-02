@@ -157,21 +157,21 @@ func (api *hetznerProvider) getZone(name string) (*zone, error) {
 }
 
 func (api *hetznerProvider) request(endpoint string, method string, request interface{}, target interface{}) error {
-	var requestBody io.Reader
-	if request != nil {
-		requestBodySerialised, err := json.Marshal(request)
+	for {
+		var requestBody io.Reader
+		if request != nil {
+			requestBodySerialised, err := json.Marshal(request)
+			if err != nil {
+				return err
+			}
+			requestBody = bytes.NewBuffer(requestBodySerialised)
+		}
+		req, err := http.NewRequest(method, baseURL+endpoint, requestBody)
 		if err != nil {
 			return err
 		}
-		requestBody = bytes.NewBuffer(requestBodySerialised)
-	}
-	req, err := http.NewRequest(method, baseURL+endpoint, requestBody)
-	if err != nil {
-		return err
-	}
-	req.Header.Add("Auth-API-Token", api.apiKey)
+		req.Header.Add("Auth-API-Token", api.apiKey)
 
-	for {
 		api.requestRateLimiter.beforeRequest()
 		resp, err := http.DefaultClient.Do(req)
 		api.requestRateLimiter.afterRequest()
