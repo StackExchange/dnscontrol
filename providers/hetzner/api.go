@@ -29,6 +29,32 @@ func checkIsLockedSystemRecord(record record) error {
 	return nil
 }
 
+func (api *hetznerProvider) bulkCreateRecords(records []record) error {
+	for _, record := range records {
+		if err := checkIsLockedSystemRecord(record); err != nil {
+			return err
+		}
+	}
+
+	request := bulkCreateRecordsRequest{
+		Records: records,
+	}
+	return api.request("/records/bulk", "POST", request, nil)
+}
+
+func (api *hetznerProvider) bulkUpdateRecords(records []record) error {
+	for _, record := range records {
+		if err := checkIsLockedSystemRecord(record); err != nil {
+			return err
+		}
+	}
+
+	request := bulkUpdateRecordsRequest{
+		Records: records,
+	}
+	return api.request("/records/bulk", "PUT", request, nil)
+}
+
 func (api *hetznerProvider) createRecord(record record) error {
 	if err := checkIsLockedSystemRecord(record); err != nil {
 		return err
