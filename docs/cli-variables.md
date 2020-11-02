@@ -15,7 +15,7 @@ Example: `dnscontrol push -v testKey=testValue`
 This would pass the variable with the name `testKey` and the value of `testValue` to `dnsconfig.js`
 
 ## 2. Define defaults
-If you want to define some default values, that are used when no variable is passed from CLI, 
+If you want to define some default values, that are used when no variable is passed from CLI,
 you can do this with the following function:
 
 ```js
@@ -24,30 +24,41 @@ CLI_DEFAULTS({
 });
 ```
 
-You need to define this defaults just once in your `dnsconfig.js`. 
+You need to define this defaults just once in your `dnsconfig.js`.
 Define the defaults **before** using it.
 
 _Please keep in mind, if there is no default value and you do not pass a variable, but you are using it in your `dnsconfig.js` it will fail!_
 
-## 3. Examples
-See how to use CLI variables 
+## 3. Use cases
+See some use cases for CLI variables.
 
-#### Switch statement
+#### Different IPs for internal/external DNS
 ```js
 CLI_DEFAULTS({
-  'cliServer': 'dns'
+  'cliServer': 'external'
 });
-var ip = "";
-
-switch (this.cliServer) {
-  case "webserver":
-    ip = "1.2.3.4";
-    break;
-  case "dns":
-    ip = "9.9.9.9";
-    break;
+if (this.view == "internal") {
+    var host01 = "192.168.0.16";
+    var host02 = "192.168.0.17";
+} else {
+    var host01 = "10.0.0.16";
+    var host02 = "10.0.0.17";
 }
-```
-Running `dnscontrol push -v cliServer=webserver` would set the `ip` to `1.2.3.4`.
 
-Just running `dnscontrol push` would set the `ip` to `9.9.9.9` as it is using the default value.
+D("example.org", registrar, DnsProvider(public), DnsProvider(bind),
+  A('sitea', host01, TTL(1800)),
+  A('siteb', host01, TTL(1800)),
+  A('sitec', host02, TTL(1800)),
+  A('sited', host02, TTL(1800))
+);
+```
+Running `dnscontrol push -v view=internal` would generate the zone for your internal dns.
+
+Just running `dnscontrol push` would generate the zone for your external dns.
+
+So you can use the same zone for external and internal resolution and there is no need to duplicate it.
+
+#### ProTip
+The cli variables functionality permits you to create very complex and
+sophisticated configurations, but you shouldn't. Be nice to the next
+person that edits the file, who may not be as expert as yourself.
