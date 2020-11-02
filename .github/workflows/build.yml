@@ -25,5 +25,12 @@ jobs:
     - name: Run integration tests for BIND provider
       run: go test -v -verbose -provider BIND
 
+    - name: Run integration test for ROUTE53 provider
+      run: go test -v -verbose -provider ROUTE53
+      env:
+        R53_DOMAIN: dnscontroltest-r53.com
+        R53_KEY_ID: ${{ secrets.R53_KEY_ID }}
+        R53_KEY: ${{ secrets.R53_KEY }}
+
     - name: Build binaries
       run: go run build/build.go
