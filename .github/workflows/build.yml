@@ -22,5 +22,8 @@ jobs:
     - name: Run unit tests
       run: go test ./...
 
+    - name: Run integration test for BIND provider
+      run: go test -v -verbose -provider BIND
+
     - name: Build binaries
       run: go run build/build.go
