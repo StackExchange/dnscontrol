@@ -4,6 +4,14 @@ import (
 	"github.com/StackExchange/dnscontrol/v3/models"
 )
 
+type bulkCreateRecordsRequest struct {
+	Records []record `json:"records"`
+}
+
+type bulkUpdateRecordsRequest struct {
+	Records []record `json:"records"`
+}
+
 type createRecordRequest struct {
 	Name   string `json:"name"`
 	TTL    int    `json:"ttl"`
