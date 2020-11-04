@@ -23,6 +23,7 @@ jobs:
       run: go test ./...
 
   integration-tests:
+    runs-on: ubuntu-latest
     strategy:
       matrix:
         provider: [BIND, AZURE_DNS, NAMEDOTCOM, ROUTE53, GCLOUD, CLOUDFLAREAPI]
