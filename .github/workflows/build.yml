@@ -24,6 +24,7 @@ jobs:
 
   integration-tests:
     runs-on: ubuntu-latest
+    needs: build
     strategy:
       matrix:
         provider: [BIND, AZURE_DNS, NAMEDOTCOM, ROUTE53, GCLOUD, CLOUDFLAREAPI]
