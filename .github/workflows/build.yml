@@ -45,5 +45,14 @@ jobs:
         AZURE_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
         AZURE_CLIENT_SECRET: ${{ secrets.AZURE_CLIENT_SECRET }}
 
+    - name: Run integration test for NAMEDOTCOM provider
+      working-directory: integrationTest
+      run: go test -v -verbose -provider NAMEDOTCOM
+      env:
+        NAMEDOTCOM_DOMAIN: dnscontrol-ndc.com
+        NAMEDOTCOM_URL: api.name.com
+        NAMEDOTCOM_USER: dnscontroltest
+        NAMEDOTCOM_KEY: ${{ secrets.NAMEDOTCOM_KEY }}
+
     - name: Build binaries
       run: go run build/build.go
