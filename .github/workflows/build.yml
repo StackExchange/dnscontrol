@@ -66,3 +66,10 @@ jobs:
         GCLOUD_EMAIL: dnscontrol@dnscontrol-dev.iam.gserviceaccount.com
         GCLOUD_PROJECT: dnscontrol-dev
         GCLOUD_PRIVATEKEY: ${{ secrets.GCLOUD_PRIVATEKEY }}
+
+    - name: Run integration test for CLOUDFLAREAPI provider
+      working-directory: integrationTest
+      run: go test -v -verbose -provider CLOUDFLAREAPI
+      env:
+        CF_DOMAIN: dnscontroltest-cf.com
+        CF_TOKEN: ${{ secrets.CF_TOKEN }}
