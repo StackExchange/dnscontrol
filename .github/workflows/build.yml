@@ -27,7 +27,7 @@ jobs:
     needs: build
     strategy:
       matrix:
-        provider: [BIND, AZURE_DNS, NAMEDOTCOM, ROUTE53, GCLOUD, CLOUDFLAREAPI]
+        provider: [AZURE_DNS, BIND, CLOUDFLAREAPI, GCLOUD, NAMEDOTCOM, ROUTE53]
     steps:
     - name: Checkout repo
       uses: actions/checkout@v2
@@ -47,6 +47,13 @@ jobs:
         AZURE_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
         AZURE_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
         AZURE_CLIENT_SECRET: ${{ secrets.AZURE_CLIENT_SECRET }}
+        CF_DOMAIN: dnscontroltest-cf.com
+        CF_TOKEN: ${{ secrets.CF_TOKEN }}
+        GCLOUD_DOMAIN: dnscontroltest-gcloud.com
+        GCLOUD_TYPE: service_account
+        GCLOUD_EMAIL: dnscontrol@dnscontrol-dev.iam.gserviceaccount.com
+        GCLOUD_PROJECT: dnscontrol-dev
+        GCLOUD_PRIVATEKEY: ${{ secrets.GCLOUD_PRIVATEKEY }}
         NAMEDOTCOM_DOMAIN: dnscontrol-ndc.com
         NAMEDOTCOM_URL: api.name.com
         NAMEDOTCOM_USER: dnscontroltest
@@ -54,10 +61,3 @@ jobs:
         R53_DOMAIN: dnscontroltest-r53.com
         R53_KEY_ID: ${{ secrets.R53_KEY_ID }}
         R53_KEY: ${{ secrets.R53_KEY }}
-        GCLOUD_DOMAIN: dnscontroltest-gcloud.com
-        GCLOUD_TYPE: service_account
-        GCLOUD_EMAIL: dnscontrol@dnscontrol-dev.iam.gserviceaccount.com
-        GCLOUD_PROJECT: dnscontrol-dev
-        GCLOUD_PRIVATEKEY: ${{ secrets.GCLOUD_PRIVATEKEY }}
-        CF_DOMAIN: dnscontroltest-cf.com
-        CF_TOKEN: ${{ secrets.CF_TOKEN }}
