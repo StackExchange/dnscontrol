@@ -1,6 +1,6 @@
 # DNSControl
 
-![Build Status](https://github.com/StackExchange/dnscontrol/workflows/.github/workflows/build.yml/badge.svg)
+![Build Status](https://github.com/StackExchange/dnscontrol/workflows/build/badge.svg)
 [![Gitter chat](https://badges.gitter.im/dnscontrol/Lobby.png)](https://gitter.im/dnscontrol/Lobby)
 [![Google Group chat](https://img.shields.io/badge/google%20group-chat-green.svg)](https://groups.google.com/forum/#!forum/dnscontrol-discuss)
 
