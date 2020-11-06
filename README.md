@@ -1,6 +1,6 @@
 # DNSControl
 
-[![Build Status](https://dev.azure.com/dnscontrol/DnsControl/_apis/build/status/StackExchange.dnscontrol?branchName=master)](https://dev.azure.com/dnscontrol/DnsControl/_build/latest?definitionId=1&branchName=master)
+![Build Status](https://github.com/StackExchange/dnscontrol/workflows/.github/workflows/build.yml/badge.svg)
 [![Gitter chat](https://badges.gitter.im/dnscontrol/Lobby.png)](https://gitter.im/dnscontrol/Lobby)
 [![Google Group chat](https://img.shields.io/badge/google%20group-chat-green.svg)](https://groups.google.com/forum/#!forum/dnscontrol-discuss)
 
