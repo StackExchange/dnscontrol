@@ -52,8 +52,8 @@ jobs:
         CF_TOKEN: ${{ secrets.CF_TOKEN }}
         DO_DOMAIN : dnscontrol-do.com
         DO_TOKEN : ${{ secrets.DO_TOKEN }}
-        GANDI_DOMAIN : dnscontroltest-gandi.com
-        GANDI_KEY : ${{ secrets.GANDI_KEY }}
+        GANDI_V5_DOMAIN : dnscontroltest-gandilivedns.com
+        GANDI_V5_APIKEY : ${{ secrets.GANDI_V5_APIKEY }}
         GCLOUD_DOMAIN: dnscontroltest-gcloud.com
         GCLOUD_TYPE: service_account
         GCLOUD_EMAIL: dnscontrol@dnscontrol-dev.iam.gserviceaccount.com
