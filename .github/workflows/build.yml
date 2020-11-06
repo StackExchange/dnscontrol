@@ -28,7 +28,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        provider: [AZURE_DNS, BIND, CLOUDFLAREAPI, DIGITALOCEAN, GANDI_V5, GCLOUD, HEXONET, NAMEDOTCOM, ROUTE53]
+        provider: [AZURE_DNS, BIND, CLOUDFLAREAPI, DIGITALOCEAN, GANDI, GCLOUD, HEXONET, NAMEDOTCOM, ROUTE53]
     steps:
     - name: Checkout repo
       uses: actions/checkout@v2
@@ -50,6 +50,10 @@ jobs:
         AZURE_CLIENT_SECRET: ${{ secrets.AZURE_CLIENT_SECRET }}
         CF_DOMAIN: dnscontroltest-cf.com
         CF_TOKEN: ${{ secrets.CF_TOKEN }}
+        DO_DOMAIN : dnscontrol-do.com
+        DO_TOKEN : ${{ secrets.DO_TOKEN }}
+        GANDI_DOMAIN : dnscontroltest-gandi.com
+        GANDI_KEY : ${{ secrets.GANDI_KEY }}
         GCLOUD_DOMAIN: dnscontroltest-gcloud.com
         GCLOUD_TYPE: service_account
         GCLOUD_EMAIL: dnscontrol@dnscontrol-dev.iam.gserviceaccount.com
