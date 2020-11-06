@@ -27,7 +27,7 @@ jobs:
     needs: build
     strategy:
       matrix:
-        provider: [AZURE_DNS, BIND, CLOUDFLAREAPI, GCLOUD, NAMEDOTCOM, ROUTE53]
+        provider: [AZURE_DNS, BIND, CLOUDFLAREAPI, DIGITALOCEAN, GANDI_V5, GCLOUD, HEXONET, NAMEDOTCOM, ROUTE53]
     steps:
     - name: Checkout repo
       uses: actions/checkout@v2
