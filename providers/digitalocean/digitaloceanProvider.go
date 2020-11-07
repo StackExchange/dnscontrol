@@ -4,7 +4,10 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"log"
 	"net/http"
+	"strconv"
+	"time"
 
 	"github.com/StackExchange/dnscontrol/v3/models"
 	"github.com/StackExchange/dnscontrol/v3/pkg/diff"
@@ -51,8 +54,12 @@ func NewDo(m map[string]string, metadata json.RawMessage) (providers.DNSServiceP
 	api := &digitaloceanProvider{client: client}
 
 	// Get a domain to validate the token
+retry:
 	_, resp, err := api.client.Domains.List(ctx, &godo.ListOptions{PerPage: 1})
 	if err != nil {
+		if pauseAndRetry(resp) {
+			goto retry
+		}
 		return nil, err
 	}
 	if resp.StatusCode != http.StatusOK {
@@ -79,8 +86,15 @@ func init() {
 
 // EnsureDomainExists returns an error if domain doesn't exist.
 func (api *digitaloceanProvider) EnsureDomainExists(domain string) error {
+retry:
 	ctx := context.Background()
 	_, resp, err := api.client.Domains.Get(ctx, domain)
+	if err != nil {
+		if pauseAndRetry(resp) {
+			goto retry
+		}
+		//return err
+	}
 	if resp.StatusCode == http.StatusNotFound {
 		_, _, err := api.client.Domains.Create(ctx, &godo.DomainCreateRequest{
 			Name:      domain,
@@ -142,7 +156,13 @@ func (api *digitaloceanProvider) GetDomainCorrections(dc *models.DomainConfig) (
 		corr := &models.Correction{
 			Msg: fmt.Sprintf("%s, DO ID: %d", m.String(), id),
 			F: func() error {
-				_, err := api.client.Domains.DeleteRecord(ctx, dc.Name, id)
+			retry:
+				resp, err := api.client.Domains.DeleteRecord(ctx, dc.Name, id)
+				if err != nil {
+					if pauseAndRetry(resp) {
+						goto retry
+					}
+				}
 				return err
 			},
 		}
@@ -153,7 +173,13 @@ func (api *digitaloceanProvider) GetDomainCorrections(dc *models.DomainConfig) (
 		corr := &models.Correction{
 			Msg: m.String(),
 			F: func() error {
-				_, _, err := api.client.Domains.CreateRecord(ctx, dc.Name, req)
+			retry:
+				_, resp, err := api.client.Domains.CreateRecord(ctx, dc.Name, req)
+				if err != nil {
+					if pauseAndRetry(resp) {
+						goto retry
+					}
+				}
 				return err
 			},
 		}
@@ -165,7 +191,13 @@ func (api *digitaloceanProvider) GetDomainCorrections(dc *models.DomainConfig) (
 		corr := &models.Correction{
 			Msg: fmt.Sprintf("%s, DO ID: %d", m.String(), id),
 			F: func() error {
-				_, _, err := api.client.Domains.EditRecord(ctx, dc.Name, id, req)
+			retry:
+				_, resp, err := api.client.Domains.EditRecord(ctx, dc.Name, id, req)
+				if err != nil {
+					if pauseAndRetry(resp) {
+						goto retry
+					}
+				}
 				return err
 			},
 		}
@@ -178,11 +210,16 @@ func (api *digitaloceanProvider) GetDomainCorrections(dc *models.DomainConfig) (
 func getRecords(api *digitaloceanProvider, name string) ([]godo.DomainRecord, error) {
 	ctx := context.Background()
 
+retry:
+
 	records := []godo.DomainRecord{}
 	opt := &godo.ListOptions{}
 	for {
 		result, resp, err := api.client.Domains.Records(ctx, name, opt)
 		if err != nil {
+			if pauseAndRetry(resp) {
+				goto retry
+			}
 			return nil, err
 		}
 
@@ -275,4 +312,54 @@ func toReq(dc *models.DomainConfig, rc *models.RecordConfig) *godo.DomainRecordE
 		Tag:      rc.CaaTag,
 		Flags:    int(rc.CaaFlag),
 	}
+}
+
+// backoff is the amount of time to sleep if a 429 or 504 is received.
+// It is doubled after each use.
+var backoff = time.Second * 5
+
+/*
+This is what a resp looks like when a retry is required:
+
+&{Status:429 Too Many Requests StatusCode:429 Proto:HTTP/2.0 ProtoMajor:2 ProtoMinor:0 Header:map[Cf-Cache-Status:[DYNAMIC] Cf-Ray:[5ee9cb277bf2c5fc-EWR] Cf-Request-Id:[0645fd4caa0000c5fcdb3ca000000001] Content-Length:[60] Content-Type:[application/json] Date:[Sat, 07 Nov 2020 20:27:11 GMT] Expect-Ct:[max-age=604800, report-uri="https://report-uri.cloudflare.com/cdn-cgi/beacon/expect-ct"] Ratelimit-Limit:[5000] Ratelimit-Remaining:[0] Ratelimit-Reset:[1604779129] Server:[cloudflare] Set-Cookie:[__cfduid=dcf76c52eb750b2e64c8e0e7f738289e11604780831; expires=Mon, 07-Dec-20 20:27:11 GMT; path=/; domain=.digitalocean.com; HttpOnly; SameSite=Lax] X-Gateway:[Edge-Gateway] X-Request-Id:[b331028a-9388-4198-9608-2c931ba66827] X-Response-From:[Edge-Gateway]] Body:{cs:0xc0009c3b80} ContentLength:60 TransferEncoding:[] Close:false Uncompressed:false Trailer:map[] Request:0xc0008fa900 TLS:0xc0004a0160}
+*/
+
+func pauseAndRetry(resp *godo.Response) bool {
+	statusCode := resp.Response.StatusCode
+	if statusCode != 429 && statusCode != 504 {
+		return false
+	}
+
+	// Did the API return a specific time to try again?
+	var rateLimitReset int64
+	rr := resp.Header["Ratelimit-Reset"]
+	if len(rr) == 1 {
+		var err error
+		rateLimitReset, err = strconv.ParseInt(rr[0], 10, 64)
+		if err != nil {
+			rateLimitReset = 0
+		}
+	}
+	if rateLimitReset != 0 {
+		log.Printf("Rate limit exceeded. Waiting until %v\n", rateLimitReset)
+		//n := time.Now()
+		f := time.Unix(rateLimitReset, 0).UTC()
+		//log.Printf("TIME now: %v\n", n)
+		//log.Printf("TIME fut: %v\n", f)
+		//log.Printf("TIME dur: %v\n", n.Sub(f))
+		//d := f.Sub(n)
+
+		d := time.Until(f.Add(time.Hour))
+		log.Printf("TIME dur: %v\n", d)
+		if d < time.Second {
+			d = time.Second
+		}
+		time.Sleep(d)
+		return true
+	}
+
+	// Just use a simple exponential back-off.
+	time.Sleep(time.Second * backoff)
+	backoff = backoff * 2
+	return true
 }
