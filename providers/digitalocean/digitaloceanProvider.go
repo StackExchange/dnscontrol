@@ -354,8 +354,9 @@ func pauseAndRetry(resp *godo.Response) bool {
 	// Just use a simple exponential back-off with a 2-minute max.
 	log.Printf("Using exponential backoff instead: %v seconds\n", backoff)
 	time.Sleep(backoff)
-	if backoff < (time.Second * 120) {
-		backoff = backoff * 2
+	backoff = backoff * 2
+	if backoff > (time.Second * 120) {
+		backoff = time.Second * 120
 	}
 	return true
 }
