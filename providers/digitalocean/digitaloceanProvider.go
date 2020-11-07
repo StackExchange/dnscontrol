@@ -341,25 +341,21 @@ func pauseAndRetry(resp *godo.Response) bool {
 		}
 	}
 	if rateLimitReset != 0 {
-		log.Printf("Rate limit exceeded. Waiting until %v\n", rateLimitReset)
-		//n := time.Now()
 		f := time.Unix(rateLimitReset, 0).UTC()
-		//log.Printf("TIME now: %v\n", n)
-		//log.Printf("TIME fut: %v\n", f)
-		//log.Printf("TIME dur: %v\n", n.Sub(f))
-		//d := f.Sub(n)
-
-		d := time.Until(f.Add(time.Hour))
+		log.Printf("Rate limit exceeded. Ratelimit-Reset is %v %v\n", rateLimitReset, f)
+		d := time.Until(f)
 		log.Printf("TIME dur: %v\n", d)
-		if d < time.Second {
-			d = time.Second
+		if d > time.Second {
+			time.Sleep(d)
+			return true
 		}
-		time.Sleep(d)
-		return true
 	}
 
-	// Just use a simple exponential back-off.
-	time.Sleep(time.Second * backoff)
-	backoff = backoff * 2
+	// Just use a simple exponential back-off with a 2-minute max.
+	log.Printf("Using exponential backoff instead: %v seconds\n", backoff)
+	time.Sleep(backoff)
+	if backoff < (time.Second * 120) {
+		backoff = backoff * 2
+	}
 	return true
 }
