@@ -743,6 +743,7 @@ func makeTests(t *testing.T) []*TestGroup {
 			// Notes:
 			//  - Gandi: page size is 100, therefore we test with 99, 100, and 101
 			//  - NS1: free acct only allows 50 records, therefore we skip
+			//  - DIGITALOCEAN: page size is 20
 			not("NS1"),
 			tc("99 records", manyA("rec%04d", "1.2.3.4", 99)...),
 			tc("100 records", manyA("rec%04d", "1.2.3.4", 100)...),
@@ -752,7 +753,7 @@ func makeTests(t *testing.T) []*TestGroup {
 		testgroup("pager601",
 			// AWS:  https://github.com/StackExchange/dnscontrol/issues/493
 			//only("AZURE_DNS", "HEXONET", "ROUTE53"),
-			only("HEXONET", "ROUTE53", "DIGITALOCEAN"), // AZURE_DNS is failing.
+			only("HEXONET", "ROUTE53"), // AZURE_DNS is failing.
 			tc("601 records", manyA("rec%04d", "1.2.3.4", 600)...),
 			tc("Update 601 records", manyA("rec%04d", "1.2.3.5", 600)...),
 		),

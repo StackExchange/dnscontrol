@@ -344,7 +344,9 @@ func pauseAndRetry(resp *godo.Response) bool {
 		f := time.Unix(rateLimitReset, 0).UTC()
 		log.Printf("Rate limit exceeded. Ratelimit-Reset is %v %v\n", rateLimitReset, f)
 		d := time.Until(f)
-		log.Printf("TIME dur: %v\n", d)
+		log.Printf("TIME now:   %v\n", time.Now().UTC())
+		log.Printf("TIME reset: %v\n", f)
+		log.Printf("TIME dur:   %v\n", d)
 		if d > time.Second {
 			time.Sleep(d)
 			return true
