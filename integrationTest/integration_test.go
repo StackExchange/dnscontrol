@@ -933,6 +933,27 @@ func makeTests(t *testing.T) []*TestGroup {
 			tc("ALIAS to A record in same zone", a("foo", "1.2.3.4"), a("quux", "2.3.4.5"), r53alias("bar", "A", "foo.**current-domain**")),
 			tc("change it", a("foo", "1.2.3.4"), a("quux", "2.3.4.5"), r53alias("bar", "A", "quux.**current-domain**")),
 		),
+
+		testgroup("R53_ALIAS_ORDER",
+			requires(providers.CanUseRoute53Alias),
+			tc("create cname",
+				cname("dev-system18", "ec2-54-91-33-155.compute-1.amazonaws.com."),
+			),
+			tc("add an alias to it",
+				cname("dev-system18", "ec2-54-91-33-155.compute-1.amazonaws.com."),
+				r53alias("dev-system", "CNAME", "dev-system18.**current-domain**"),
+			),
+			clear(),
+			tc("create cname and alias in one step",
+				cname("dev-system18", "ec2-54-91-33-155.compute-1.amazonaws.com."),
+				r53alias("dev-system", "CNAME", "dev-system18.**current-domain**"),
+			),
+			clear(),
+			tc("create alias and cname in one step",
+				r53alias("dev-system", "CNAME", "dev-system18.**current-domain**"),
+				cname("dev-system18", "ec2-54-91-33-155.compute-1.amazonaws.com."),
+			),
+		),
 	}
 
 	return tests
