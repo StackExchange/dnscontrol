@@ -319,26 +319,29 @@ func (r *route53Provider) GetDomainCorrections(dc *models.DomainConfig) ([]*mode
 			// either case, we build a new record set from the desired state and
 			// UPSERT it.
 
-			// Create a rrset with just the resources that should appear at
-			// this label:
-			rrset := &r53.ResourceRecordSet{
-				Name: sPtr(k.NameFQDN),
-				Type: sPtr(k.Type),
-			}
-			hasChg := false
-			var aliasChg *r53.Change
-			for _, r := range recs {
-				if r.Type == "R53_ALIAS" {
+			if strings.HasPrefix(k.Type, "R53_ALIAS_") {
+				// Each R53_ALIAS_* requires an individual change.
+				if len(recs) != 1 {
+					log.Fatal("Only one R53_ALIAS_ permitted on a label")
+				}
+				for _, r := range recs {
 					rrset := aliasToRRSet(zone, r)
 					rrset.Name = sPtr(k.NameFQDN)
-					if aliasChg != nil {
-						log.Fatal("two aliases on a label is not permitted")
-					}
-					aliasChg = &r53.Change{
+					// Assemble the change and add it to the list:
+					chg := &r53.Change{
 						Action:            sPtr("UPSERT"),
 						ResourceRecordSet: rrset,
 					}
-				} else {
+					changes = append(changes, chg)
+					changeDesc = append(changeDesc, strings.Join(namesToUpdate[k], "\n"))
+				}
+			} else {
+				// All other keys combine their updates into one rrset:
+				rrset := &r53.ResourceRecordSet{
+					Name: sPtr(k.NameFQDN),
+					Type: sPtr(k.Type),
+				}
+				for _, r := range recs {
 					val := r.GetTargetCombined()
 					rr := &r53.ResourceRecord{
 						Value: &val,
@@ -346,22 +349,16 @@ func (r *route53Provider) GetDomainCorrections(dc *models.DomainConfig) ([]*mode
 					rrset.ResourceRecords = append(rrset.ResourceRecords, rr)
 					i := int64(r.TTL)
 					rrset.TTL = &i // TODO: make sure that ttls are consistent within a set
-					hasChg = true
 				}
-			}
-			// Assemble the change and add it to the list:
-			chg := &r53.Change{
-				Action:            sPtr("UPSERT"),
-				ResourceRecordSet: rrset,
-			}
-			if hasChg {
+				// Assemble the change and add it to the list:
+				chg := &r53.Change{
+					Action:            sPtr("UPSERT"),
+					ResourceRecordSet: rrset,
+				}
 				changes = append(changes, chg)
 				changeDesc = append(changeDesc, strings.Join(namesToUpdate[k], "\n"))
 			}
-			if aliasChg != nil {
-				changes = append(changes, aliasChg)
-				changeDesc = append(changeDesc, strings.Join(namesToUpdate[k], "\n"))
-			}
+
 		}
 	}
 
