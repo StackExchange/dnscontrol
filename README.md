@@ -2,7 +2,8 @@
 
 [![Build Status](https://github.com/StackExchange/dnscontrol/workflows/build/badge.svg)](https://github.com/StackExchange/dnscontrol/actions?query=workflow%3Abuild+branch%3Amaster)
 [![Gitter chat](https://badges.gitter.im/dnscontrol/Lobby.png)](https://gitter.im/dnscontrol/Lobby)
-[![Google Group chat](https://img.shields.io/badge/google%20group-chat-green.svg)](https://groups.google.com/forum/#!forum/dnscontrol-discuss)
+[![Google Group](https://img.shields.io/badge/google%20group-chat-green.svg)](https://groups.google.com/forum/#!forum/dnscontrol-discuss)
+[![PkgGoDev](https://pkg.go.dev/badge/github.com/StackExchange/dnscontrol)](https://pkg.go.dev/github.com/StackExchange/dnscontrol)
 
 [DNSControl](https://stackexchange.github.io/dnscontrol/) is a system
 for maintaining DNS zones.  It has two parts:
