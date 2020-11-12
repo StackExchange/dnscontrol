@@ -291,11 +291,12 @@ func (r *route53Provider) GetDomainCorrections(dc *models.DomainConfig) ([]*mode
 
 	for _, k := range updateOrder {
 		recs := updates[k]
-		// if there are no records in our desired state for a key, then we just delete it from r53
+		// If there are no records in our desired state for a key, this
+		// indicates we should delete all records at that key.
 		if len(recs) == 0 {
 			// To delete, we submit the original resource set we got from r53.
-			// Find the original resource set:
 			var rrset *r53.ResourceRecordSet
+			// Find the original resource set:
 			for _, r := range r.originalRecords {
 				if unescape(r.Name) == k.NameFQDN && (*r.Type == k.Type || k.Type == "R53_ALIAS_"+*r.Type) {
 					rrset = r
@@ -314,8 +315,10 @@ func (r *route53Provider) GetDomainCorrections(dc *models.DomainConfig) ([]*mode
 			dels = append(dels, chg)
 			delDesc = append(delDesc, strings.Join(namesToUpdate[k], "\n"))
 		} else {
-			// On change or create, just build a new record set from our
-			// desired state.
+			// If it isn't a delete, it must be either a change or create. In
+			// either case, we build a new record set from the desired state and
+			// UPSERT it.
+
 			// Create a rrset with just the resources that should appear at
 			// this label:
 			rrset := &r53.ResourceRecordSet{
@@ -325,7 +328,6 @@ func (r *route53Provider) GetDomainCorrections(dc *models.DomainConfig) ([]*mode
 			hasChg := false
 			var aliasChg *r53.Change
 			for _, r := range recs {
-				val := r.GetTargetCombined()
 				if r.Type == "R53_ALIAS" {
 					rrset := aliasToRRSet(zone, r)
 					rrset.Name = sPtr(k.NameFQDN)
@@ -337,6 +339,7 @@ func (r *route53Provider) GetDomainCorrections(dc *models.DomainConfig) ([]*mode
 						ResourceRecordSet: rrset,
 					}
 				} else {
+					val := r.GetTargetCombined()
 					rr := &r53.ResourceRecord{
 						Value: &val,
 					}
