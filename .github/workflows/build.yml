@@ -3,6 +3,8 @@ name: build
 on: 
   pull_request:
     branches: [ master ]
+  push:
+    branches: [ master ]
 
 jobs:
 
@@ -26,8 +28,11 @@ jobs:
     runs-on: ubuntu-latest
     needs: build
     strategy:
+      fail-fast: false
       matrix:
-        provider: [AZURE_DNS, BIND, CLOUDFLAREAPI, GCLOUD, NAMEDOTCOM, ROUTE53]
+        provider: [AZURE_DNS, BIND, CLOUDFLAREAPI, DIGITALOCEAN, GANDI_V5, GCLOUD, NAMEDOTCOM, ROUTE53]
+        exclude:
+        - provider: DIGITALOCEAN  # remove when #636 is fixed
     steps:
     - name: Checkout repo
       uses: actions/checkout@v2
@@ -49,6 +54,10 @@ jobs:
         AZURE_CLIENT_SECRET: ${{ secrets.AZURE_CLIENT_SECRET }}
         CF_DOMAIN: dnscontroltest-cf.com
         CF_TOKEN: ${{ secrets.CF_TOKEN }}
+        DO_DOMAIN : dnscontrol-do.com
+        DO_TOKEN : ${{ secrets.DO_TOKEN }}
+        GANDI_V5_DOMAIN : dnscontroltest-gandilivedns.com
+        GANDI_V5_APIKEY : ${{ secrets.GANDI_V5_APIKEY }}
         GCLOUD_DOMAIN: dnscontroltest-gcloud.com
         GCLOUD_TYPE: service_account
         GCLOUD_EMAIL: dnscontrol@dnscontrol-dev.iam.gserviceaccount.com
