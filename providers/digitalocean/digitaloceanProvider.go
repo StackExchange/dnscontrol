@@ -4,7 +4,9 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"log"
 	"net/http"
+	"time"
 
 	"github.com/StackExchange/dnscontrol/v3/models"
 	"github.com/StackExchange/dnscontrol/v3/pkg/diff"
@@ -35,6 +37,8 @@ var defaultNameServerNames = []string{
 	"ns3.digitalocean.com",
 }
 
+const perPageSize = 100
+
 // NewDo creates a DO-specific DNS provider.
 func NewDo(m map[string]string, metadata json.RawMessage) (providers.DNSServiceProvider, error) {
 	if m["token"] == "" {
@@ -51,8 +55,12 @@ func NewDo(m map[string]string, metadata json.RawMessage) (providers.DNSServiceP
 	api := &digitaloceanProvider{client: client}
 
 	// Get a domain to validate the token
+retry:
 	_, resp, err := api.client.Domains.List(ctx, &godo.ListOptions{PerPage: 1})
 	if err != nil {
+		if pauseAndRetry(resp) {
+			goto retry
+		}
 		return nil, err
 	}
 	if resp.StatusCode != http.StatusOK {
@@ -79,8 +87,15 @@ func init() {
 
 // EnsureDomainExists returns an error if domain doesn't exist.
 func (api *digitaloceanProvider) EnsureDomainExists(domain string) error {
+retry:
 	ctx := context.Background()
 	_, resp, err := api.client.Domains.Get(ctx, domain)
+	if err != nil {
+		if pauseAndRetry(resp) {
+			goto retry
+		}
+		//return err
+	}
 	if resp.StatusCode == http.StatusNotFound {
 		_, _, err := api.client.Domains.Create(ctx, &godo.DomainCreateRequest{
 			Name:      domain,
@@ -142,7 +157,13 @@ func (api *digitaloceanProvider) GetDomainCorrections(dc *models.DomainConfig) (
 		corr := &models.Correction{
 			Msg: fmt.Sprintf("%s, DO ID: %d", m.String(), id),
 			F: func() error {
-				_, err := api.client.Domains.DeleteRecord(ctx, dc.Name, id)
+			retry:
+				resp, err := api.client.Domains.DeleteRecord(ctx, dc.Name, id)
+				if err != nil {
+					if pauseAndRetry(resp) {
+						goto retry
+					}
+				}
 				return err
 			},
 		}
@@ -153,7 +174,13 @@ func (api *digitaloceanProvider) GetDomainCorrections(dc *models.DomainConfig) (
 		corr := &models.Correction{
 			Msg: m.String(),
 			F: func() error {
-				_, _, err := api.client.Domains.CreateRecord(ctx, dc.Name, req)
+			retry:
+				_, resp, err := api.client.Domains.CreateRecord(ctx, dc.Name, req)
+				if err != nil {
+					if pauseAndRetry(resp) {
+						goto retry
+					}
+				}
 				return err
 			},
 		}
@@ -165,7 +192,13 @@ func (api *digitaloceanProvider) GetDomainCorrections(dc *models.DomainConfig) (
 		corr := &models.Correction{
 			Msg: fmt.Sprintf("%s, DO ID: %d", m.String(), id),
 			F: func() error {
-				_, _, err := api.client.Domains.EditRecord(ctx, dc.Name, id, req)
+			retry:
+				_, resp, err := api.client.Domains.EditRecord(ctx, dc.Name, id, req)
+				if err != nil {
+					if pauseAndRetry(resp) {
+						goto retry
+					}
+				}
 				return err
 			},
 		}
@@ -178,11 +211,16 @@ func (api *digitaloceanProvider) GetDomainCorrections(dc *models.DomainConfig) (
 func getRecords(api *digitaloceanProvider, name string) ([]godo.DomainRecord, error) {
 	ctx := context.Background()
 
+retry:
+
 	records := []godo.DomainRecord{}
-	opt := &godo.ListOptions{}
+	opt := &godo.ListOptions{PerPage: perPageSize}
 	for {
 		result, resp, err := api.client.Domains.Records(ctx, name, opt)
 		if err != nil {
+			if pauseAndRetry(resp) {
+				goto retry
+			}
 			return nil, err
 		}
 
@@ -275,4 +313,27 @@ func toReq(dc *models.DomainConfig, rc *models.RecordConfig) *godo.DomainRecordE
 		Tag:      rc.CaaTag,
 		Flags:    int(rc.CaaFlag),
 	}
+}
+
+// backoff is the amount of time to sleep if a 429 or 504 is received.
+// It is doubled after each use.
+var backoff = time.Second * 5
+
+const maxBackoff = time.Minute * 3
+
+func pauseAndRetry(resp *godo.Response) bool {
+	statusCode := resp.Response.StatusCode
+	if statusCode != 429 && statusCode != 504 {
+		backoff = time.Second * 5
+		return false
+	}
+
+	// a simple exponential back-off with a 3-minute max.
+	log.Printf("Pausing due to ratelimit: %v seconds\n", backoff)
+	time.Sleep(backoff)
+	backoff = backoff + (backoff / 2)
+	if backoff > maxBackoff {
+		backoff = maxBackoff
+	}
+	return true
 }
