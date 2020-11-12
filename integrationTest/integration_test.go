@@ -743,8 +743,8 @@ func makeTests(t *testing.T) []*TestGroup {
 			// Notes:
 			//  - Gandi: page size is 100, therefore we test with 99, 100, and 101
 			//  - NS1: free acct only allows 50 records, therefore we skip
-			//  - DigitalOcean: fails due to rate limiting, not page limits.
-			not("NS1", "DIGITALOCEAN"),
+			//  - DIGITALOCEAN: page size is 100 (default: 20)
+			not("NS1"),
 			tc("99 records", manyA("rec%04d", "1.2.3.4", 99)...),
 			tc("100 records", manyA("rec%04d", "1.2.3.4", 100)...),
 			tc("101 records", manyA("rec%04d", "1.2.3.4", 101)...),
