@@ -257,9 +257,7 @@ func toReq(rc *models.RecordConfig) (requestParams, error) {
 		req["algorithm"] = strconv.Itoa(int(rc.SshfpAlgorithm))
 		req["fptype"] = strconv.Itoa(int(rc.SshfpFingerprint))
 	default:
-		msg := fmt.Sprintf("ClouDNS.toReq rtype %v unimplemented", rc.Type)
-		panic(msg)
-		// We panic so that we quickly find any switch statements
+		return nil, fmt.Errorf("ClouDNS.toReq rtype %q unimplemented", rc.Type)
 	}
 
 	return req, nil
