@@ -238,8 +238,6 @@ func (a *azurednsProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*mod
 							ctx, cancel := context.WithTimeout(context.Background(), 6000*time.Second)
 							defer cancel()
 							_, err := a.recordsClient.Delete(ctx, *a.resourceGroup, zoneName, *rrset.Name, nativeToRecordType(rrset.Type), "")
-							// Artificially slow things down after a delete, as the API can take time to register it. The tests fail if we delete and then recheck too quickly.
-							time.Sleep(10 * time.Millisecond)
 							if err != nil {
 								return err
 							}
@@ -270,8 +268,6 @@ func (a *azurednsProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*mod
 									ctx, cancel := context.WithTimeout(context.Background(), 6000*time.Second)
 									defer cancel()
 									_, err := a.recordsClient.Delete(ctx, *a.resourceGroup, zoneName, recordName, existingRecordType, "")
-									// Artificially slow things down after a delete, as the API can take time to register it. The tests fail if we delete and then recheck too quickly.
-									time.Sleep(10 * time.Millisecond)
 									if err != nil {
 										return err
 									}
@@ -289,8 +285,6 @@ func (a *azurednsProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*mod
 						ctx, cancel := context.WithTimeout(context.Background(), 6000*time.Second)
 						defer cancel()
 						_, err := a.recordsClient.CreateOrUpdate(ctx, *a.resourceGroup, zoneName, recordName, recordType, *rrset, "", "")
-						// Artificially slow things down after a delete, as the API can take time to register it. The tests fail if we delete and then recheck too quickly.
-						time.Sleep(10 * time.Millisecond)
 						if err != nil {
 							return err
 						}
