@@ -304,9 +304,8 @@ func (api *inwxAPI) GetZoneRecords(domain string) (models.Records, error) {
 		default:
 			err = rc.PopulateFromString(rType, record.Content, domain)
 		}
-
 		if err != nil {
-			panic(fmt.Errorf("INWX: unparsable record received: %w", err))
+			return nil, fmt.Errorf("INWX: unparsable record received: %w", err)
 		}
 
 		records = append(records, rc)

@@ -199,7 +199,11 @@ func (r *route53Provider) GetZoneRecords(domain string) (models.Records, error) 
 
 	var existingRecords = []*models.RecordConfig{}
 	for _, set := range records {
-		existingRecords = append(existingRecords, nativeToRecords(set, domain)...)
+		rts, err := nativeToRecords(set, domain)
+		if err != nil {
+			return nil, err
+		}
+		existingRecords = append(existingRecords, rts...)
 	}
 	return existingRecords, nil
 }
@@ -259,7 +263,7 @@ func (r *route53Provider) GetDomainCorrections(dc *models.DomainConfig) ([]*mode
 	// that already exist).
 	var updateOrder []models.RecordKey
 	// Collect the keys
-	for k, _ := range updates {
+	for k := range updates {
 		updateOrder = append(updateOrder, k)
 	}
 	// Sort themm
@@ -418,7 +422,7 @@ func (r *route53Provider) GetDomainCorrections(dc *models.DomainConfig) ([]*mode
 
 }
 
-func nativeToRecords(set *r53.ResourceRecordSet, origin string) []*models.RecordConfig {
+func nativeToRecords(set *r53.ResourceRecordSet, origin string) ([]*models.RecordConfig, error) {
 	results := []*models.RecordConfig{}
 	if set.AliasTarget != nil {
 		rc := &models.RecordConfig{
@@ -447,13 +451,13 @@ func nativeToRecords(set *r53.ResourceRecordSet, origin string) []*models.Record
 				rc := &models.RecordConfig{TTL: uint32(*set.TTL)}
 				rc.SetLabelFromFQDN(unescape(set.Name), origin)
 				if err := rc.PopulateFromString(rtype, *rec.Value, origin); err != nil {
-					panic(fmt.Errorf("unparsable record received from R53: %w", err))
+					return nil, fmt.Errorf("unparsable record received from R53: %w", err)
 				}
 				results = append(results, rc)
 			}
 		}
 	}
-	return results
+	return results, nil
 }
 
 func getAliasMap(r *models.RecordConfig) map[string]string {
