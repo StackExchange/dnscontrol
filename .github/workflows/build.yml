@@ -1,6 +1,6 @@
 name: build
 
-on: 
+on:
   pull_request:
     branches: [ master ]
   push:
@@ -30,7 +30,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        provider: [AZURE_DNS, BIND, CLOUDFLAREAPI, DIGITALOCEAN, GANDI_V5, GCLOUD, NAMEDOTCOM, ROUTE53]
+        provider: [AZURE_DNS, BIND, CLOUDFLAREAPI, DIGITALOCEAN, GANDI_V5, GCLOUD, HEXONET, NAMEDOTCOM, ROUTE53]
         exclude:
         - provider: DIGITALOCEAN  # remove when #636 is fixed
     steps:
@@ -63,6 +63,10 @@ jobs:
         GCLOUD_EMAIL: dnscontrol@dnscontrol-dev.iam.gserviceaccount.com
         GCLOUD_PROJECT: dnscontrol-dev
         GCLOUD_PRIVATEKEY: ${{ secrets.GCLOUD_PRIVATEKEY }}
+        HEXONET_DOMAIN : a-b-c-movies.com
+        HEXONET_ENTITY : OTE
+        HEXONET_PW : test.passw0rd
+        HEXONET_UID : test.user
         NAMEDOTCOM_DOMAIN: dnscontrol-ndc.com
         NAMEDOTCOM_URL: api.name.com
         NAMEDOTCOM_USER: dnscontroltest
