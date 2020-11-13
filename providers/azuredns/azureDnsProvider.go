@@ -225,9 +225,19 @@ func (a *azurednsProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*mod
 		if len(recs) == 0 {
 			var rrset *adns.RecordSet
 			for _, r := range records {
-				if strings.TrimSuffix(*r.RecordSetProperties.Fqdn, ".") == k.NameFQDN && nativeToRecordType(r.Type) == nativeToRecordType(to.StringPtr(k.Type)) {
-					rrset = r
-					break
+				if strings.TrimSuffix(*r.RecordSetProperties.Fqdn, ".") == k.NameFQDN {
+					n1, err := nativeToRecordType(r.Type)
+					if err != nil {
+						return nil, err
+					}
+					n2, err := nativeToRecordType(to.StringPtr(k.Type))
+					if err != nil {
+						return nil, err
+					}
+					if n1 == n2 {
+						rrset = r
+						break
+					}
 				}
 			}
 			if rrset != nil {
@@ -237,9 +247,11 @@ func (a *azurednsProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*mod
 						F: func() error {
 							ctx, cancel := context.WithTimeout(context.Background(), 6000*time.Second)
 							defer cancel()
-							_, err := a.recordsClient.Delete(ctx, *a.resourceGroup, zoneName, *rrset.Name, nativeToRecordType(rrset.Type), "")
-							// Artificially slow things down after a delete, as the API can take time to register it. The tests fail if we delete and then recheck too quickly.
-							time.Sleep(10 * time.Millisecond)
+							rt, err := nativeToRecordType(rrset.Type)
+							if err != nil {
+								return err
+							}
+							_, err = a.recordsClient.Delete(ctx, *a.resourceGroup, zoneName, *rrset.Name, rt, "")
 							if err != nil {
 								return err
 							}
@@ -250,7 +262,10 @@ func (a *azurednsProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*mod
 				return nil, fmt.Errorf("no record set found to delete. Name: '%s'. Type: '%s'", k.NameFQDN, k.Type)
 			}
 		} else {
-			rrset, recordType := a.recordToNative(k, recs)
+			rrset, recordType, err := a.recordToNative(k, recs)
+			if err != nil {
+				return nil, err
+			}
 			var recordName string
 			for _, r := range recs {
 				i := int64(r.TTL)
@@ -259,8 +274,14 @@ func (a *azurednsProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*mod
 			}
 
 			for _, r := range records {
-				existingRecordType := nativeToRecordType(r.Type)
-				changedRecordType := nativeToRecordType(to.StringPtr(k.Type))
+				existingRecordType, err := nativeToRecordType(r.Type)
+				if err != nil {
+					return nil, err
+				}
+				changedRecordType, err := nativeToRecordType(to.StringPtr(k.Type))
+				if err != nil {
+					return nil, err
+				}
 				if strings.TrimSuffix(*r.RecordSetProperties.Fqdn, ".") == k.NameFQDN && (changedRecordType == adns.CNAME || existingRecordType == adns.CNAME) {
 					if existingRecordType == adns.A || existingRecordType == adns.AAAA || changedRecordType == adns.A || changedRecordType == adns.AAAA { //CNAME cannot coexist with an A or AA
 						corrections = append(corrections,
@@ -270,8 +291,6 @@ func (a *azurednsProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*mod
 									ctx, cancel := context.WithTimeout(context.Background(), 6000*time.Second)
 									defer cancel()
 									_, err := a.recordsClient.Delete(ctx, *a.resourceGroup, zoneName, recordName, existingRecordType, "")
-									// Artificially slow things down after a delete, as the API can take time to register it. The tests fail if we delete and then recheck too quickly.
-									time.Sleep(10 * time.Millisecond)
 									if err != nil {
 										return err
 									}
@@ -289,8 +308,6 @@ func (a *azurednsProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*mod
 						ctx, cancel := context.WithTimeout(context.Background(), 6000*time.Second)
 						defer cancel()
 						_, err := a.recordsClient.CreateOrUpdate(ctx, *a.resourceGroup, zoneName, recordName, recordType, *rrset, "", "")
-						// Artificially slow things down after a delete, as the API can take time to register it. The tests fail if we delete and then recheck too quickly.
-						time.Sleep(10 * time.Millisecond)
 						if err != nil {
 							return err
 						}
@@ -314,31 +331,32 @@ func (a *azurednsProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*mod
 	return corrections, nil
 }
 
-func nativeToRecordType(recordType *string) adns.RecordType {
+func nativeToRecordType(recordType *string) (adns.RecordType, error) {
 	recordTypeStripped := strings.TrimPrefix(*recordType, "Microsoft.Network/dnszones/")
 	switch recordTypeStripped {
 	case "A", "AZURE_ALIAS_A":
-		return adns.A
+		return adns.A, nil
 	case "AAAA", "AZURE_ALIAS_AAAA":
-		return adns.AAAA
+		return adns.AAAA, nil
 	case "CAA":
-		return adns.CAA
+		return adns.CAA, nil
 	case "CNAME", "AZURE_ALIAS_CNAME":
-		return adns.CNAME
+		return adns.CNAME, nil
 	case "MX":
-		return adns.MX
+		return adns.MX, nil
 	case "NS":
-		return adns.NS
+		return adns.NS, nil
 	case "PTR":
-		return adns.PTR
+		return adns.PTR, nil
 	case "SRV":
-		return adns.SRV
+		return adns.SRV, nil
 	case "TXT":
-		return adns.TXT
+		return adns.TXT, nil
 	case "SOA":
-		return adns.SOA
+		return adns.SOA, nil
 	default:
-		panic(fmt.Errorf("rc.String rtype %v unimplemented", *recordType))
+		// Unimplemented type. Return adns.A as a decoy, but send an error.
+		return adns.A, fmt.Errorf("rc.String rtype %v unimplemented", *recordType)
 	}
 }
 
@@ -469,7 +487,7 @@ func nativeToRecords(set *adns.RecordSet, origin string) []*models.RecordConfig 
 	return results
 }
 
-func (a *azurednsProvider) recordToNative(recordKey models.RecordKey, recordConfig []*models.RecordConfig) (*adns.RecordSet, adns.RecordType) {
+func (a *azurednsProvider) recordToNative(recordKey models.RecordKey, recordConfig []*models.RecordConfig) (*adns.RecordSet, adns.RecordType, error) {
 	recordSet := &adns.RecordSet{Type: to.StringPtr(recordKey.Type), RecordSetProperties: &adns.RecordSetProperties{}}
 	for _, rec := range recordConfig {
 		switch recordKey.Type {
@@ -522,11 +540,15 @@ func (a *azurednsProvider) recordToNative(recordKey models.RecordKey, recordConf
 			*recordSet.Type = rec.AzureAlias["type"]
 			recordSet.TargetResource = &adns.SubResource{ID: to.StringPtr(rec.Target)}
 		default:
-			panic(fmt.Errorf("rc.String rtype %v unimplemented", recordKey.Type))
+			return nil, adns.A, fmt.Errorf("rc.String rtype %v unimplemented", recordKey.Type) // ands.A is a placeholder
 		}
 	}
 
-	return recordSet, nativeToRecordType(to.StringPtr(*recordSet.Type))
+	rt, err := nativeToRecordType(to.StringPtr(*recordSet.Type))
+	if err != nil {
+		return nil, adns.A, err // adns.A is a placeholder
+	}
+	return recordSet, rt, nil
 }
 
 func (a *azurednsProvider) fetchRecordSets(zoneName string) ([]*adns.RecordSet, error) {

@@ -159,7 +159,12 @@ func (g *gcloudProvider) getZoneSets(domain string) (models.Records, map[key]*gd
 	for _, set := range rrs {
 		oldRRs[keyFor(set)] = set
 		for _, rec := range set.Rrdatas {
-			existingRecords = append(existingRecords, nativeToRecord(set, rec, domain))
+			rt, err := nativeToRecord(set, rec, domain)
+			if err != nil {
+				return nil, nil, "", err
+			}
+
+			existingRecords = append(existingRecords, rt)
 		}
 	}
 	return existingRecords, oldRRs, zoneName, err
@@ -234,14 +239,14 @@ func (g *gcloudProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*model
 	}}, nil
 }
 
-func nativeToRecord(set *gdns.ResourceRecordSet, rec, origin string) *models.RecordConfig {
+func nativeToRecord(set *gdns.ResourceRecordSet, rec, origin string) (*models.RecordConfig, error) {
 	r := &models.RecordConfig{}
 	r.SetLabelFromFQDN(set.Name, origin)
 	r.TTL = uint32(set.Ttl)
 	if err := r.PopulateFromString(set.Type, rec, origin); err != nil {
-		panic(fmt.Errorf("unparsable record received from GCLOUD: %w", err))
+		return nil, fmt.Errorf("unparsable record received from GCLOUD: %w", err)
 	}
-	return r
+	return r, nil
 }
 
 func (g *gcloudProvider) getRecords(domain string) ([]*gdns.ResourceRecordSet, string, error) {

@@ -93,7 +93,10 @@ func (c *ovhProvider) GetZoneRecords(domain string) (models.Records, error) {
 
 	var actual models.Records
 	for _, r := range records {
-		rec := nativeToRecord(r, domain)
+		rec, err := nativeToRecord(r, domain)
+		if err != nil {
+			return nil, err
+		}
 		if rec != nil {
 			actual = append(actual, rec)
 		}
@@ -158,9 +161,9 @@ func (c *ovhProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*models.C
 	return corrections, nil
 }
 
-func nativeToRecord(r *Record, origin string) *models.RecordConfig {
+func nativeToRecord(r *Record, origin string) (*models.RecordConfig, error) {
 	if r.FieldType == "SOA" {
-		return nil
+		return nil, nil
 	}
 	rec := &models.RecordConfig{
 		TTL:      uint32(r.TTL),
@@ -176,7 +179,7 @@ func nativeToRecord(r *Record, origin string) *models.RecordConfig {
 
 	rec.SetLabel(r.SubDomain, origin)
 	if err := rec.PopulateFromString(rtype, r.Target, origin); err != nil {
-		panic(fmt.Errorf("unparsable record received from ovh: %w", err))
+		return nil, fmt.Errorf("unparsable record received from ovh: %w", err)
 	}
 
 	// ovh default is 3600
@@ -184,7 +187,7 @@ func nativeToRecord(r *Record, origin string) *models.RecordConfig {
 		rec.TTL = 3600
 	}
 
-	return rec
+	return rec, nil
 }
 
 func (c *ovhProvider) GetRegistrarCorrections(dc *models.DomainConfig) ([]*models.Correction, error) {

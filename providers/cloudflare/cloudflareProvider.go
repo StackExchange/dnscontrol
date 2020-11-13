@@ -571,9 +571,8 @@ func (c *cfRecord) nativeToRecord(domain string) (*models.RecordConfig, error) {
 		if c.Priority == "" {
 			priority = 0
 		} else {
-			var err error
-			var p int64
-			if p, err = c.Priority.Int64(); err != nil {
+			p, err := c.Priority.Int64()
+			if err != nil {
 				return nil, fmt.Errorf("error decoding priority from cloudflare record: %w", err)
 			}
 			priority = uint16(p)

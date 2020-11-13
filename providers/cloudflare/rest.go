@@ -64,9 +64,11 @@ func (c *cloudflareProvider) getRecordsForDomain(id string, domain string) ([]*m
 			return nil, fmt.Errorf("failed fetching record list cloudflare: %s", stringifyErrors(data.Errors))
 		}
 		for _, rec := range data.Result {
-			rc, err := rec.nativeToRecord(domain)
-			if err != nil { return nil, err }
-			records = append(records, rc)
+			rt, err := rec.nativeToRecord(domain)
+			if err != nil {
+				return nil, err
+			}
+			records = append(records, rt)
 		}
 		ri := data.ResultInfo
 		if len(data.Result) == 0 || ri.Page*ri.PerPage >= ri.TotalCount {
