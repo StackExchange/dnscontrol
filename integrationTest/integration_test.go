@@ -744,7 +744,8 @@ func makeTests(t *testing.T) []*TestGroup {
 			//  - Gandi: page size is 100, therefore we test with 99, 100, and 101
 			//  - NS1: free acct only allows 50 records, therefore we skip
 			//  - DIGITALOCEAN: page size is 100 (default: 20)
-			not("NS1"),
+			//  - CLOUDFLAREAPI: Infinite pagesize but due to slow speed, skipping.
+			not("NS1", "CLOUDFLAREAPI"),
 			tc("99 records", manyA("rec%04d", "1.2.3.4", 99)...),
 			tc("100 records", manyA("rec%04d", "1.2.3.4", 100)...),
 			tc("101 records", manyA("rec%04d", "1.2.3.4", 101)...),
