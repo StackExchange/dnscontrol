@@ -4,6 +4,8 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"log"
+	"os"
 	"strings"
 
 	gauth "golang.org/x/oauth2/google"
@@ -230,14 +232,40 @@ func (g *gcloudProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*model
 		}
 	}
 
+	// FIXME(tlim): Google will return an error if too many changes are
+	// specified in a single request. We should split up very large
+	// batches.  This can be reliably reproduced with the 1201
+	// integration test.  The error you get is:
+	// googleapi: Error 403: The change would exceed quota for additions per change., quotaExceeded
+
 	runChange := func() error {
-		_, err := g.client.Changes.Create(g.project, zoneName, chg).Do()
+	retry:
+		resp, err := g.client.Changes.Create(g.project, zoneName, chg).Do()
+		if err != nil {
+			log.Printf("PAUSE STT = %+v %v\n", err, resp)
+			log.Printf("PAUSE ERR = %+v %v\n", err, resp)
+			if pauseAndRetry(resp) {
+				goto retry
+			}
+		}
 		return err
 	}
 	return []*models.Correction{{
 		Msg: desc,
 		F:   runChange,
 	}}, nil
+}
+
+func pauseAndRetry(resp *gdns.Change) bool {
+	if resp.HTTPStatusCode != 200 {
+		log.Printf("RUNCHANGE RESP = %+v\n", resp)
+		if resp != nil {
+			log.Printf("RUNCHANGE STAT = %+v\n", resp.HTTPStatusCode)
+			log.Printf("RUNCHANGE HEAD = %+v\n", resp.Header)
+		}
+		os.Exit(1)
+	}
+	return false
 }
 
 func nativeToRecord(set *gdns.ResourceRecordSet, rec, origin string) (*models.RecordConfig, error) {
