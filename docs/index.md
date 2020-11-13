@@ -93,6 +93,9 @@ title: DNSControl
 				<li>
 					<a href="{{site.github.url}}/migrating">Migrating</a>: Migrating zones to DNSControl
 				</li>
+				<li>
+				    <a href="{{site.github.url}}/cli-variables">CLI variables</a>: Passing variables from CLI to JS
+				</li>
 			</ul>
 		</div>
 		<div class="col-md-4">
