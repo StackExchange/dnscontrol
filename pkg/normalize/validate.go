@@ -335,12 +335,14 @@ func ValidateAndNormalizeConfig(config *models.DNSConfig) (errs []error) {
 					errs = append(errs, fmt.Errorf("TLSA MatchingType %d is invalid in record %s (domain %s)",
 						rec.TlsaMatchingType, rec.GetLabel(), domain.Name))
 				}
-			} else if rec.Type == "TXT" && len(txtMultiDissenters) != 0 && len(rec.TxtStrings) > 1 {
-				// There are providers that  don't support TXTMulti yet there is
-				// a TXT record with multiple strings:
-				errs = append(errs,
-					fmt.Errorf("TXT records with multiple strings (label %v domain: %v) not supported by %s",
-						rec.GetLabel(), domain.Name, strings.Join(txtMultiDissenters, ",")))
+			} else if rec.Type == "TXT" {
+				if len(txtMultiDissenters) != 0 && len(rec.TxtStrings) > 1 {
+					// There are providers that  don't support TXTMulti yet there is
+					// a TXT record with multiple strings:
+					errs = append(errs,
+						fmt.Errorf("TXT records with multiple strings (label %v domain: %v) not supported by %s",
+							rec.GetLabel(), domain.Name, strings.Join(txtMultiDissenters, ",")))
+				}
 			}
 
 			// Populate FQDN:
@@ -352,6 +354,19 @@ func ValidateAndNormalizeConfig(config *models.DNSConfig) (errs []error) {
 	if ers := flattenSPFs(config); len(ers) > 0 {
 		errs = append(errs, ers...)
 	}
+
+	// Process AUTOSPLIT of TXT records
+	for _, domain := range config.Domains {
+		for _, rec := range domain.Records {
+			if rec.Type == "TXT" {
+				if txtAlgo, ok := rec.Metadata["txtSplitAlgorithm"]; ok {
+					rec.TxtNormalize(txtAlgo)
+				}
+			}
+		}
+	}
+
+	//models.ValidateTXT(rec)
 
 	// Process IMPORT_TRANSFORM
 	for _, domain := range config.Domains {
