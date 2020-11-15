@@ -255,17 +255,11 @@ type Warning struct {
 func ValidateAndNormalizeConfig(config *models.DNSConfig) (errs []error) {
 	for _, domain := range config.Domains {
 		pTypes := []string{}
-		txtMultiDissenters := []string{}
 		for _, provider := range domain.DNSProviderInstances {
 			pType := provider.ProviderType
 			// If NO_PURGE is in use, make sure this *isn't* a provider that *doesn't* support NO_PURGE.
 			if domain.KeepUnknown && providers.ProviderHasCapability(pType, providers.CantUseNOPURGE) {
 				errs = append(errs, fmt.Errorf("%s uses NO_PURGE which is not supported by %s(%s)", domain.Name, provider.Name, pType))
-			}
-
-			// Record if any providers do not support TXTMulti:
-			if !providers.ProviderHasCapability(pType, providers.CanUseTXTMulti) {
-				txtMultiDissenters = append(txtMultiDissenters, provider.Name)
 			}
 		}
 
@@ -335,14 +329,6 @@ func ValidateAndNormalizeConfig(config *models.DNSConfig) (errs []error) {
 					errs = append(errs, fmt.Errorf("TLSA MatchingType %d is invalid in record %s (domain %s)",
 						rec.TlsaMatchingType, rec.GetLabel(), domain.Name))
 				}
-			} else if rec.Type == "TXT" {
-				if len(txtMultiDissenters) != 0 && len(rec.TxtStrings) > 1 {
-					// There are providers that  don't support TXTMulti yet there is
-					// a TXT record with multiple strings:
-					errs = append(errs,
-						fmt.Errorf("TXT records with multiple strings (label %v domain: %v) not supported by %s",
-							rec.GetLabel(), domain.Name, strings.Join(txtMultiDissenters, ",")))
-				}
 			}
 
 			// Populate FQDN:
@@ -355,7 +341,7 @@ func ValidateAndNormalizeConfig(config *models.DNSConfig) (errs []error) {
 		errs = append(errs, ers...)
 	}
 
-	// Process AUTOSPLIT of TXT records
+	// Split TXT targets that are >255 bytes (if permitted)
 	for _, domain := range config.Domains {
 		for _, rec := range domain.Records {
 			if rec.Type == "TXT" {
@@ -366,7 +352,32 @@ func ValidateAndNormalizeConfig(config *models.DNSConfig) (errs []error) {
 		}
 	}
 
-	//models.ValidateTXT(rec)
+	// Validate TXT records.
+	for _, domain := range config.Domains {
+		// Collect the names of providers that don't support TXTMulti:
+		txtMultiDissenters := []string{}
+		for _, provider := range domain.DNSProviderInstances {
+			pType := provider.ProviderType
+			if !providers.ProviderHasCapability(pType, providers.CanUseTXTMulti) {
+				txtMultiDissenters = append(txtMultiDissenters, provider.Name)
+			}
+		}
+		// Validate TXT records.
+		for _, rec := range domain.Records {
+			if rec.Type == "TXT" {
+				// If TXTMulti is required, all providers must support that feature.
+				if len(rec.TxtStrings) > 1 && len(txtMultiDissenters) > 0 {
+					errs = append(errs,
+						fmt.Errorf("TXT records with multiple strings (label %v domain: %v) not supported by %s",
+							rec.GetLabel(), domain.Name, strings.Join(txtMultiDissenters, ",")))
+				}
+				// Validate the record:
+				if err := models.ValidateTXT(rec); err != nil {
+					errs = append(errs, err)
+				}
+			}
+		}
+	}
 
 	// Process IMPORT_TRANSFORM
 	for _, domain := range config.Domains {
