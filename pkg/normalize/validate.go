@@ -368,8 +368,8 @@ func ValidateAndNormalizeConfig(config *models.DNSConfig) (errs []error) {
 				// If TXTMulti is required, all providers must support that feature.
 				if len(rec.TxtStrings) > 1 && len(txtMultiDissenters) > 0 {
 					errs = append(errs,
-						fmt.Errorf("TXT records with multiple strings (label %v domain: %v) not supported by %s",
-							rec.GetLabel(), domain.Name, strings.Join(txtMultiDissenters, ",")))
+						fmt.Errorf("TXT records with multiple strings not supported by %s (label=%q domain=%v)",
+							strings.Join(txtMultiDissenters, ","), rec.GetLabel(), domain.Name))
 				}
 				// Validate the record:
 				if err := models.ValidateTXT(rec); err != nil {

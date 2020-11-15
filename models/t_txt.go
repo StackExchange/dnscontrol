@@ -74,7 +74,7 @@ func ValidateTXT(rc *RecordConfig) error {
 	for i := range rc.TxtStrings {
 		l := len(rc.TxtStrings[i])
 		if l > 255 {
-			return fmt.Errorf("txt segment TxtString[%d] too long (label=%q) (%d bytes > 255) string=%q", i, rc.GetLabel(), l, rc.TxtStrings[i][:10]+"...")
+			return fmt.Errorf("txt target >255 bytes and AUTOSPLIT not set: label=%q index=%d len=%d string[:50]=%q", rc.GetLabel(), i, l, rc.TxtStrings[i][:50]+"...")
 		}
 	}
 	return nil

@@ -838,7 +838,6 @@ function SPF_BUILDER(value) {
         value.raw = '_rawspf';
     }
 
-
     r = []; // The list of records to return.
     p = {}; // The metaparameters to set on the main TXT record.
     rawspf = value.parts.join(' '); // The unaltered SPF settings.
