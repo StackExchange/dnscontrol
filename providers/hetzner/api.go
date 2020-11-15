@@ -32,18 +32,18 @@ func checkIsLockedSystemRecord(record record) error {
 }
 
 func getHomogenousDelay(headers http.Header, quotaName string) (time.Duration, error) {
-	quota, err := parseHeaderAsInt(headers, "X-Ratelimit-Limit-"+quotaName)
+	quota, err := parseHeaderAsInt(headers, "X-Ratelimit-Limit-"+strings.Title(quotaName))
 	if err != nil {
 		return 0, err
 	}
 
 	var unit time.Duration
 	switch quotaName {
-	case "Hour":
+	case "hour":
 		unit = time.Hour
-	case "Minute":
+	case "minute":
 		unit = time.Minute
-	case "Second":
+	case "second":
 		unit = time.Second
 	}
 
@@ -289,15 +289,10 @@ func (requestRateLimiter *requestRateLimiter) setDefaultDelay() {
 func (requestRateLimiter *requestRateLimiter) setOptimizeForRateLimitQuota(quota string) error {
 	quotaNormalized := strings.ToLower(quota)
 	switch quotaNormalized {
-	case "hour":
-		requestRateLimiter.optimizeForRateLimitQuota = "Hour"
-		break
-	case "minute":
-		requestRateLimiter.optimizeForRateLimitQuota = "Minute"
-		break
-	case "second", "":
-		requestRateLimiter.optimizeForRateLimitQuota = "Second"
-		break
+	case "hour", "minute", "second":
+		requestRateLimiter.optimizeForRateLimitQuota = quotaNormalized
+	case "":
+		requestRateLimiter.optimizeForRateLimitQuota = "second"
 	default:
 		return fmt.Errorf("%q is not a valid quota, expected 'Hour', 'Minute', 'Second' or unset", quota)
 	}
@@ -307,11 +302,11 @@ func (requestRateLimiter *requestRateLimiter) setOptimizeForRateLimitQuota(quota
 func (requestRateLimiter *requestRateLimiter) handleRateLimitedRequest() {
 	message := "Rate-Limited, consider bumping the setting 'optimize_for_rate_limit_quota': %q -> %q"
 	switch requestRateLimiter.optimizeForRateLimitQuota {
-	case "Hour":
+	case "hour":
 		message = "Rate-Limited, you are already using the slowest request rate. Consider contacting the Hetzner Support for raising your quota."
-	case "Minute":
+	case "minute":
 		message = fmt.Sprintf(message, "Minute", "Hour")
-	case "Second":
+	case "second":
 		message = fmt.Sprintf(message, "Second", "Minute")
 	}
 	fmt.Println(message)
