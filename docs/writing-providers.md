@@ -226,11 +226,11 @@ the documentation.
 Run "go vet" and "golint" and clean up any errors found.
 
 ```
-go vet
-golint
+go vet ./...
+golint ./...
 ```
 
-Please use `go vet` from the [newest releaes of Go](https://golang.org/doc/devel/release.html#policy).
+Please use `go vet` from the [newest release of Go](https://golang.org/doc/devel/release.html#policy).
 
 If [golint](https://github.com/golang/lint) isn't installed on your machine:
 
@@ -239,30 +239,7 @@ go get -u golang.org/x/lint/golint
 ```
 
 
-## Step 12: Vendor Dependencies
-
-The build process for DNSControl uses the default Go Modules system,
-which ignores the `vendor` directory. However we store a backup copy
-of all dependencies by using the `go mod vendor` command.  It makes
-our repo larger, but makes Tom feel better because he's been burnt by
-modules disappearing on him.
-
-What this means:
-
-1. If you require a Go dependency, get it using `go get -u`.  For
-   example:
-
-```
-go get -u github.com/aws/aws-sdk-go
-```
-
-2. Before you send any PRs, please make sure the dependencies are
-   vendored.  Use these commands:
-
-```
-go mod vendor
-go mod tidy
-```
+## Step 12: Dependencies
 
 See
 [docs/release-engineering.md](https://github.com/StackExchange/dnscontrol/blob/master/docs/release-engineering.md)

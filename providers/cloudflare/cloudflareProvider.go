@@ -546,7 +546,7 @@ type cfRecord struct {
 	Priority   json.Number `json:"priority"`
 }
 
-func (c *cfRecord) nativeToRecord(domain string) *models.RecordConfig {
+func (c *cfRecord) nativeToRecord(domain string) (*models.RecordConfig, error) {
 	// normalize cname,mx,ns records with dots to be consistent with our config format.
 	if c.Type == "CNAME" || c.Type == "MX" || c.Type == "NS" || c.Type == "SRV" {
 		if c.Content != "." {
@@ -571,28 +571,28 @@ func (c *cfRecord) nativeToRecord(domain string) *models.RecordConfig {
 		if c.Priority == "" {
 			priority = 0
 		} else {
-			if p, err := c.Priority.Int64(); err != nil {
-				panic(fmt.Errorf("error decoding priority from cloudflare record: %w", err))
-			} else {
-				priority = uint16(p)
+			p, err := c.Priority.Int64()
+			if err != nil {
+				return nil, fmt.Errorf("error decoding priority from cloudflare record: %w", err)
 			}
+			priority = uint16(p)
 		}
 		if err := rc.SetTargetMX(priority, c.Content); err != nil {
-			panic(fmt.Errorf("unparsable MX record received from cloudflare: %w", err))
+			return nil, fmt.Errorf("unparsable MX record received from cloudflare: %w", err)
 		}
 	case "SRV":
 		data := *c.Data
 		if err := rc.SetTargetSRV(data.Priority, data.Weight, data.Port,
 			dnsutil.AddOrigin(data.Target.FQDN(), domain)); err != nil {
-			panic(fmt.Errorf("unparsable SRV record received from cloudflare: %w", err))
+			return nil, fmt.Errorf("unparsable SRV record received from cloudflare: %w", err)
 		}
 	default: // "A", "AAAA", "ANAME", "CAA", "CNAME", "NS", "PTR", "TXT"
 		if err := rc.PopulateFromString(rType, c.Content, domain); err != nil {
-			panic(fmt.Errorf("unparsable record received from cloudflare: %w", err))
+			return nil, fmt.Errorf("unparsable record received from cloudflare: %w", err)
 		}
 	}
 
-	return rc
+	return rc, nil
 }
 
 func getProxyMetadata(r *models.RecordConfig) map[string]string {

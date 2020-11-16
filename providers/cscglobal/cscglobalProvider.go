@@ -16,7 +16,7 @@ CSC Global Registrar:
 Info required in `creds.json`:
    - api-key             Api Key
    - user-token          User Token
-   - notification_emails (optional) Comma seperated list of email addresses to send notifications to
+   - notification_emails (optional) Comma separated list of email addresses to send notifications to
 */
 
 func init() {

@@ -297,10 +297,7 @@ func toReq(dc *models.DomainConfig, rc *models.RecordConfig) (*recordEditRequest
 	case "CNAME":
 		req.Target = fixTarget(req.Target, dc.Name)
 	default:
-		msg := fmt.Sprintf("linode.toReq rtype %v unimplemented", rc.Type)
-		panic(msg)
-		// We panic so that we quickly find any switch statements
-		// that have not been updated for a new RR type.
+		return nil, fmt.Errorf("linode.toReq rtype %q unimplemented", rc.Type)
 	}
 
 	return req, nil
@@ -328,3 +325,5 @@ func fixTTL(ttl uint32) uint32 {
 
 	return allowedTTLValues[0]
 }
+
+// that have not been updated for a new RR type.

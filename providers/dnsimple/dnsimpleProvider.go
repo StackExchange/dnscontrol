@@ -93,15 +93,15 @@ func (c *dnsimpleProvider) GetZoneRecords(domain string) (models.Records, error)
 		case "ALIAS", "URL":
 			rec.Type = r.Type
 			if err := rec.SetTarget(r.Content); err != nil {
-				panic(fmt.Errorf("unparsable record received from dnsimple: %w", err))
+				return nil, fmt.Errorf("unparsable record received from dnsimple: %w", err)
 			}
 		case "DS":
 			if err := rec.SetTargetDSString(r.Content); err != nil {
-				panic(fmt.Errorf("unparsable record received from dnsimple: %w", err))
+				return nil, fmt.Errorf("unparsable record received from dnsimple: %w", err)
 			}
 		case "MX":
 			if err := rec.SetTargetMX(uint16(r.Priority), r.Content); err != nil {
-				panic(fmt.Errorf("unparsable record received from dnsimple: %w", err))
+				return nil, fmt.Errorf("unparsable record received from dnsimple: %w", err)
 			}
 		case "SRV":
 			parts := strings.Fields(r.Content)
@@ -109,11 +109,11 @@ func (c *dnsimpleProvider) GetZoneRecords(domain string) (models.Records, error)
 				r.Content += "."
 			}
 			if err := rec.SetTargetSRVPriorityString(uint16(r.Priority), r.Content); err != nil {
-				panic(fmt.Errorf("unparsable record received from dnsimple: %w", err))
+				return nil, fmt.Errorf("unparsable record received from dnsimple: %w", err)
 			}
 		default:
 			if err := rec.PopulateFromString(r.Type, r.Content, domain); err != nil {
-				panic(fmt.Errorf("unparsable record received from dnsimple: %w", err))
+				return nil, fmt.Errorf("unparsable record received from dnsimple: %w", err)
 			}
 		}
 		cleanedRecords = append(cleanedRecords, rec)
