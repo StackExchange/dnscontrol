@@ -54,19 +54,60 @@ At this time you cannot update SOA records via DNSControl.
 
 ### Rate Limiting
 
-In case you are frequently seeing messages about being rate-limited:
+Hetzner is rate limiting requests in multiple tiers: per Hour, per Minute and
+ per Second.
 
-{% highlight txt %}
-WARNING: request rate-limited, constant back-off is now at 1s.
-{% endhighlight %}
+Depending on how many requests you are planning to perform, you can adjust the
+ delay between requests in order to stay within your quota.
 
-You may want to enable the `rate_limited` mode by default.
+The setting `optimize_for_rate_limit_quota` controls this behavior and accepts
+ a case-insensitive value of
+- `Hour`
+- `Minute`
+- `Second`
+
+The default for `optimize_for_rate_limit_quota` is `Second`.
+
+Example: Your per minute quota is 60 requests and in your settings you
+ specified `Minute`. DNSControl will perform at most one request per second.
+ DNSControl will emit a warning in case it breaches the next quota.
 
 In your `creds.json` for all `HETZNER` provider entries:
 {% highlight json %}
 {
   "hetzner": {
-    "rate_limited": "true",
+    "optimize_for_rate_limit_quota": "Minute",
+    "api_key": "your-api-key"
+  }
+}
+{% endhighlight %}
+
+Every response from the Hetzner DNS Console API includes your limits:
+
+{% highlight txt %}
+$ curl --silent --include \
+    --header 'Auth-API-Token: ...' \
+    https://dns.hetzner.com/api/v1/zones \
+  | grep x-ratelimit-limit
+x-ratelimit-limit-second: 3
+x-ratelimit-limit-minute: 42
+x-ratelimit-limit-hour: 1337
+{% endhighlight %}
+
+Every DNSControl invocation starts from scratch in regard to rate-limiting.
+In case you are frequently invoking DNSControl, you will likely hit a limit for
+ any first request.
+You can either use an out-of-bound delay (e.g. `$ sleep 1`), or specify
+ `start_with_default_rate_limit` in the settings of the provider.
+With `start_with_default_rate_limit` DNSControl uses a quota equivalent to
+ `x-ratelimit-limit-second: 1` until it could parse the actual quota from an
+ API response.
+
+In your `creds.json` for all `HETZNER` provider entries:
+{% highlight json %}
+{
+  "hetzner": {
+    "start_with_default_rate_limit": "true",
     "api_key": "your-api-key"
   }
 }
