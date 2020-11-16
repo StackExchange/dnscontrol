@@ -5,15 +5,17 @@ import (
 	"encoding/json"
 	"fmt"
 	"log"
-	"os"
 	"strings"
+	"time"
+
+	"google.golang.org/api/googleapi"
 
 	gauth "golang.org/x/oauth2/google"
-	gdns "google.golang.org/api/dns/v1"
 
 	"github.com/StackExchange/dnscontrol/v3/models"
 	"github.com/StackExchange/dnscontrol/v3/pkg/diff"
 	"github.com/StackExchange/dnscontrol/v3/providers"
+	gdns "google.golang.org/api/dns/v1"
 )
 
 var features = providers.DocumentationNotes{
@@ -175,11 +177,11 @@ func (g *gcloudProvider) getZoneSets(domain string) (models.Records, map[key]*gd
 
 func (g *gcloudProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Correction, error) {
 	if err := dc.Punycode(); err != nil {
-		return nil, err
+		return nil, fmt.Errorf("punycode error: %w", err)
 	}
 	existingRecords, oldRRs, zoneName, err := g.getZoneSets(dc.Name)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("getzonesets error: %w", err)
 	}
 
 	// Normalize
@@ -189,7 +191,7 @@ func (g *gcloudProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*model
 	differ := diff.New(dc)
 	_, create, delete, modify, err := differ.IncrementalDiff(existingRecords)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("incdiff error: %w", err)
 	}
 
 	changedKeys := map[key]bool{}
@@ -237,35 +239,71 @@ func (g *gcloudProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*model
 	// batches.  This can be reliably reproduced with the 1201
 	// integration test.  The error you get is:
 	// googleapi: Error 403: The change would exceed quota for additions per change., quotaExceeded
+	//log.Printf("PAUSE STT = %+v %v\n", err, resp)
+	//log.Printf("PAUSE ERR = %+v %v\n", err, resp)
 
 	runChange := func() error {
 	retry:
 		resp, err := g.client.Changes.Create(g.project, zoneName, chg).Do()
-		if err != nil {
-			log.Printf("PAUSE STT = %+v %v\n", err, resp)
-			log.Printf("PAUSE ERR = %+v %v\n", err, resp)
-			if pauseAndRetry(resp) {
-				goto retry
-			}
+		if retryNeeded(resp, err) {
+			goto retry
 		}
-		return err
+		if err != nil {
+			return fmt.Errorf("runChange error: %w", err)
+		}
+		return nil
 	}
+
 	return []*models.Correction{{
 		Msg: desc,
 		F:   runChange,
 	}}, nil
 }
 
-func pauseAndRetry(resp *gdns.Change) bool {
-	if resp.HTTPStatusCode != 200 {
-		log.Printf("RUNCHANGE RESP = %+v\n", resp)
-		if resp != nil {
-			log.Printf("RUNCHANGE STAT = %+v\n", resp.HTTPStatusCode)
-			log.Printf("RUNCHANGE HEAD = %+v\n", resp.Header)
-		}
-		os.Exit(1)
+// backoff is the amount of time to sleep if a 429 or 504 is received.
+// It is doubled after each use.
+var backoff = time.Second * 5
+
+const maxBackoff = time.Minute * 3
+
+func retryNeeded(resp *gdns.Change, err error) bool {
+	if err != nil {
+		return false // Not an error.
 	}
-	return false
+	//log.Printf("RUNCHANGE RESP = %+v\n", resp)
+	//log.Printf("RUNCHANGE ERR = %v\n", err)
+	//log.Printf("RUNCHANGE ERR+ = %+v\n", err)
+	serr, ok := err.(*googleapi.Error)
+	if !ok {
+		return false // Not a google error.
+	}
+	if serr.Code == 200 {
+		return false // Success! No need to pause.
+		// TODO(tlim): Consider resetting backoff here?
+	}
+	if serr.Code != 404 && serr.Code != 429 && serr.Code != 503 {
+		return false // Not an error we care about.
+	}
+
+	// TODO(tlim): In theory, resp.Header has a header that says how
+	// long to wait but I haven't been able to capture that header in
+	// the wild. If you get these "RUNCHANGE HEAD" messages, please
+	// file a bug with the contents!
+
+	if resp != nil {
+		log.Printf("RUNCHANGE CODE = %+v\n", resp.HTTPStatusCode)
+		log.Printf("RUNCHANGE HEAD = %+v\n", resp.Header)
+	}
+
+	// a simple exponential back-off with a 3-minute max.
+	log.Printf("Pausing due to ratelimit: %v seconds\n", backoff)
+	time.Sleep(backoff)
+	backoff = backoff + (backoff / 2)
+	if backoff > maxBackoff {
+		backoff = maxBackoff
+	}
+
+	return true
 }
 
 func nativeToRecord(set *gdns.ResourceRecordSet, rec, origin string) (*models.RecordConfig, error) {
