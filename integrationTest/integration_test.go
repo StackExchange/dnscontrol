@@ -756,7 +756,7 @@ func makeTests(t *testing.T) []*TestGroup {
 		testgroup("pager601",
 			// AWS:  https://github.com/StackExchange/dnscontrol/issues/493
 			//only("AZURE_DNS", "HEXONET", "ROUTE53"),
-			only("HEXONET", "ROUTE53"), // AZURE_DNS is failing.
+			only("HEXONET", "ROUTE53", "GCLOUD"), // AZURE_DNS is failing.
 			tc("601 records", manyA("rec%04d", "1.2.3.4", 600)...),
 			tc("Update 601 records", manyA("rec%04d", "1.2.3.5", 600)...),
 		),
