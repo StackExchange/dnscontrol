@@ -31,8 +31,6 @@ jobs:
       fail-fast: false
       matrix:
         provider: [AZURE_DNS, BIND, CLOUDFLAREAPI, DIGITALOCEAN, GANDI_V5, GCLOUD, HEXONET, NAMEDOTCOM, ROUTE53]
-        exclude:
-        - provider: DIGITALOCEAN  # remove when #636 is fixed
     steps:
     - name: Checkout repo
       uses: actions/checkout@v2

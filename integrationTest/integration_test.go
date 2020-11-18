@@ -680,9 +680,11 @@ func makeTests(t *testing.T) []*TestGroup {
 			tc("Change a TXT", txt("foo", "changed")),
 			clear(),
 			tc("Create a TXT with spaces", txt("foo", "with spaces")),
-			tc("Create 1 TXT as array", txtmulti("foo", []string{"simple"})),
+			tc("Create 1 TXT as array", txtmulti("foo", []string{"simple"})), // Same as non-TXTMulti
 			clear(),
 			tc("Create a 255-byte TXT", txt("foo", strings.Repeat("A", 255))),
+			clear(),
+			tc("Create TXT with single-quote", txt("foo", "blah`blah")),
 		),
 
 		testgroup("ws TXT",
@@ -862,6 +864,42 @@ func makeTests(t *testing.T) []*TestGroup {
 				txtmulti("foo2", []string{"one", "two"}),
 				txtmulti("foo3", []string{"eh", "bee", "cee"}),
 			),
+			tc("Change TXTMulti",
+				txtmulti("foo1", []string{"dimple"}),
+				txtmulti("foo2", []string{"fun", "two"}),
+				txtmulti("foo3", []string{"eh", "bzz", "cee"}),
+			),
+			tc("Long TXTMulti",
+				// This isn't the longest a TXT record can be, but it is the
+				// longest DIGITALOCEAN permits.
+				txtmulti("foo4", []string{strings.Repeat("X", 255), strings.Repeat("Y", 252)}),
+			),
+		),
+
+		testgroup("TXTMulti tests that break DO",
+			// DO's implementation of TXTMulti is broken, thus we separate out
+			// tests that fail for it. Users are warned about these limits
+			// in docs/_providers/digitalocean.md
+			requires(providers.CanUseTXTMulti),
+			not("DIGITALOCEAN"),
+			// Digital Ocean's TXT record implementation checks size limits wrong.
+			// RFC 1035 Section 3.3.14 states that each substring can be 255
+			// octets, and there is no limit on the number of such
+			// substrings, aside from the usual packet length limits.  DO's
+			// implementation restricts the total length to be 512 octets,
+			// including any backlashes used for escapes, quotes, and other
+			// metachars.  In other words, they're doing the checking on the
+			// API protocol encoded data instead of on on the resulting TXT
+			// record.
+			// Proper TXT implementations can handle TXT records like this:
+			tc("3x255-byte TXTMulti",
+				txtmulti("foo3", []string{strings.Repeat("X", 255), strings.Repeat("Y", 255), strings.Repeat("Z", 255)})),
+			clear(),
+			// Digital Ocean's TXT record implementation handles quotes wrong.
+			// It craps out if your TXT record includes double-quotes.
+			// Someone doesn't understand how zonefile-style quoting is
+			// supposed to work.
+			// Proper TXT implementations can handle TXT records like these:
 			tc("Create TXTMulti with quotes",
 				txtmulti("foo1", []string{"simple"}),
 				txtmulti("foo2", []string{"o\"ne", "tw\"o"}),
@@ -869,11 +907,9 @@ func makeTests(t *testing.T) []*TestGroup {
 			),
 			tc("Change TXTMulti",
 				txtmulti("foo1", []string{"dimple"}),
-				txtmulti("foo2", []string{"fun", "two"}),
+				txtmulti("foo2", []string{"fun", "t\"wo"}),
 				txtmulti("foo3", []string{"eh", "bzz", "cee"}),
 			),
-			tc("3x255-byte TXTMulti",
-				txtmulti("foo3", []string{strings.Repeat("X", 255), strings.Repeat("Y", 255), strings.Repeat("Z", 255)})),
 		),
 
 		testgroup("DS",
