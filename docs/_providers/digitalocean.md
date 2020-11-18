@@ -38,5 +38,8 @@ D("example.tld", REG_NONE, DnsProvider(DIGITALOCEAN),
 
 ## Limitations
 
-- Digialocean DNS doesn't support `;` value with CAA-records ([DigitalOcean documentation](https://www.digitalocean.com/docs/networking/dns/how-to/create-caa-records/))
-- No support for TXT records with multiple strings, as the API prevents espacing quotes.
+- Digitalocean DNS doesn't support `;` value with CAA-records ([DigitalOcean documentation](https://www.digitalocean.com/docs/networking/dns/how-to/create-caa-records/))
+- While Digitalocean DNS supports TXT records with multiple strings,
+  their implementation is lacking. It does not support strings that
+  include double-quotes nor many long strings. The length limits may
+  restrict your ability to use very long DKIM or SPF records.
