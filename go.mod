@@ -18,7 +18,7 @@ require (
 	github.com/billputer/go-namecheap v0.0.0-20170915210158-0c7adb0710f8
 	github.com/cenkalti/backoff v2.1.1+incompatible // indirect
 	github.com/cpuguy83/go-md2man/v2 v2.0.0 // indirect
-	github.com/digitalocean/godo v1.46.0
+	github.com/digitalocean/godo v1.52.0
 	github.com/dnsimple/dnsimple-go v0.62.0
 	github.com/exoscale/egoscale v0.23.0
 	github.com/go-acme/lego v2.7.2+incompatible
@@ -54,12 +54,13 @@ require (
 	github.com/urfave/cli/v2 v2.2.0
 	github.com/vultr/govultr v1.0.0
 	golang.org/x/crypto v0.0.0-20201016220609-9e8e0b390897 // indirect
-	golang.org/x/net v0.0.0-20201016165138-7b1cca2348c0
-	golang.org/x/oauth2 v0.0.0-20200902213428-5d25da1a8d43
+	golang.org/x/net v0.0.0-20201110031124-69a78807bb2b
+	golang.org/x/oauth2 v0.0.0-20201109201403-9fd604954f58
 	golang.org/x/sync v0.0.0-20201008141435-b3e1573b7520 // indirect
 	golang.org/x/sys v0.0.0-20201018121011-98379d014ca7 // indirect
 	golang.org/x/tools v0.0.0-20201017001424-6003fad69a88 // indirect
 	google.golang.org/api v0.33.0
+	google.golang.org/appengine v1.6.7 // indirect
 	google.golang.org/genproto v0.0.0-20201015140912-32ed001d685c // indirect
 	gopkg.in/check.v1 v1.0.0-20200227125254-8fa46927fb4f // indirect
 	gopkg.in/ini.v1 v1.42.0 // indirect
