@@ -19,6 +19,7 @@ func flattenSPFs(cfg *models.DNSConfig) []error {
 		// flatten all spf records that have the "flatten" metadata
 		for _, txt := range apexTXTs {
 			var rec *spflib.SPFRecord
+			txtTarget := strings.Join(txt.TxtStrings, "")
 			if txt.Metadata["flatten"] != "" || txt.Metadata["split"] != "" {
 				if cache == nil {
 					cache, err = spflib.NewCache("spfcache.json")
@@ -26,13 +27,13 @@ func flattenSPFs(cfg *models.DNSConfig) []error {
 						return []error{err}
 					}
 				}
-				rec, err = spflib.Parse(txt.GetTargetField(), cache)
+				rec, err = spflib.Parse(txtTarget, cache)
 				if err != nil {
 					errs = append(errs, err)
 					continue
 				}
 			}
-			if flatten, ok := txt.Metadata["flatten"]; ok && strings.HasPrefix(txt.GetTargetField(), "v=spf1") {
+			if flatten, ok := txt.Metadata["flatten"]; ok && strings.HasPrefix(txtTarget, "v=spf1") {
 				rec = rec.Flatten(flatten)
 				err = txt.SetTargetTXT(rec.TXT())
 				if err != nil {
