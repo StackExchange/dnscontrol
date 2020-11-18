@@ -213,7 +213,7 @@ var _escData = map[string]*_escFile{
 		name:    "helpers.js",
 		local:   "pkg/js/helpers.js",
 		size:    27948,
-		modtime: 1603735487,
+		modtime: 0,
 		compressed: `
 H4sIAAAAAAAC/+x9aXcbN7Lod/2Kis67adJuU4tjzz3UcN5wtGR0Rtsh6VzP1dPjhdggCbuJ7gHQoplY
 +e3vYG2gF0rWmSRfnj8kbKBQKBQKtQAFKCo4Bi4YmYnoaGdnbw/O57DJCsAJESCWhMOcpDhWZauCC2AF
