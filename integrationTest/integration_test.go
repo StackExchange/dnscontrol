@@ -684,7 +684,7 @@ func makeTests(t *testing.T) []*TestGroup {
 			clear(),
 			tc("Create a 255-byte TXT", txt("foo", strings.Repeat("A", 255))),
 			clear(),
-			tc("Create TXT with single quote", txt("foo", "blah`blah")),
+			tc("Create TXT with single-quote", txt("foo", "blah`blah")),
 		),
 
 		testgroup("ws TXT",
