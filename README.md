@@ -117,6 +117,9 @@ See [Getting Started](https://stackexchange.github.io/dnscontrol/getting-started
 
 DNSControl can be built with Go version 1.14 or higher.
 
+The `go get` command will will download the source, compile it, and
+install `dnscontrol` in your `$GOBIN` directory.
+
 To install, simply run
 
     GO111MODULE=on go get github.com/StackExchange/dnscontrol/v3
@@ -146,4 +149,6 @@ docker run --rm -it -v $(pwd)/dnsconfig.js:/dns/dnsconfig.js -v $(pwd)/creds.jso
 
 ## More info at our web site
 
-[https://stackexchange.github.io/dnscontrol/](https://stackexchange.github.io/dnscontrol/)
+The website: [https://stackexchange.github.io/dnscontrol/](https://stackexchange.github.io/dnscontrol/)
+
+The getting started guide: [https://stackexchange.github.io/dnscontrol/getting-started](https://stackexchange.github.io/dnscontrol/getting-started)
