@@ -19,12 +19,9 @@ go version
 ```
 
 
-## Step 2. Run the integration tests
+## Step 2. Check unit and integration tests
 
-* If you are at StackOverflow, this is in TC as "DNS > Integration Tests".
-* Otherwise:
-  * Run "go test ./..." (documented in [Creating new DNS Resource Types](adding-new-rtypes))
-  * Run the integration tests (documented in [Writing new DNS providers](writing-providers))
+There's a GitHub Actions [workflow](https://github.com/StackExchange/dnscontrol/actions?query=workflow%3Abuild) which builds the code and runs a set of unit and integration tests. Make sure all tests are passing, including the integration tests for all DNS providers.
 
 
 ## Step 3. Bump the version number
