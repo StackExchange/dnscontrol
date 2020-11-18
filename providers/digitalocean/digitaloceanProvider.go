@@ -74,11 +74,9 @@ var features = providers.DocumentationNotes{
 	providers.DocCreateDomains:       providers.Can(),
 	providers.DocOfficiallySupported: providers.Cannot(),
 	providers.CanUseSRV:              providers.Can(),
-	// Digitalocean support CAA records, except
-	// ";" value with issue/issuewild records:
-	// https://www.digitalocean.com/docs/networking/dns/how-to/create-caa-records/
-	providers.CanUseCAA:   providers.Can(),
-	providers.CanGetZones: providers.Can(),
+	providers.CanUseCAA:              providers.Can("Semicolons not supported in issue/issuewild fields.", "https://www.digitalocean.com/docs/networking/dns/how-to/create-caa-records"),
+	providers.CanGetZones:            providers.Can(),
+	providers.CanUseTXTMulti:         providers.Can("A broken parser prevents TXTMulti strings from including double-quotes; The total length of all strings can't be longer than 512; and in reality must be shorter due to sloppy validation checks.", "https://github.com/StackExchange/dnscontrol/issues/370"),
 }
 
 func init() {
@@ -329,7 +327,7 @@ func pauseAndRetry(resp *godo.Response) bool {
 	}
 
 	// a simple exponential back-off with a 3-minute max.
-	log.Printf("Pausing due to ratelimit: %v seconds\n", backoff)
+	log.Printf("Delaying %v due to ratelimit\n", backoff)
 	time.Sleep(backoff)
 	backoff = backoff + (backoff / 2)
 	if backoff > maxBackoff {
