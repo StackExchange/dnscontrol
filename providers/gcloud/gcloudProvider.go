@@ -4,14 +4,18 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"log"
 	"strings"
+	"time"
+
+	"google.golang.org/api/googleapi"
 
 	gauth "golang.org/x/oauth2/google"
-	gdns "google.golang.org/api/dns/v1"
 
 	"github.com/StackExchange/dnscontrol/v3/models"
 	"github.com/StackExchange/dnscontrol/v3/pkg/diff"
 	"github.com/StackExchange/dnscontrol/v3/providers"
+	gdns "google.golang.org/api/dns/v1"
 )
 
 var features = providers.DocumentationNotes{
@@ -173,11 +177,11 @@ func (g *gcloudProvider) getZoneSets(domain string) (models.Records, map[key]*gd
 
 func (g *gcloudProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Correction, error) {
 	if err := dc.Punycode(); err != nil {
-		return nil, err
+		return nil, fmt.Errorf("punycode error: %w", err)
 	}
 	existingRecords, oldRRs, zoneName, err := g.getZoneSets(dc.Name)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("getzonesets error: %w", err)
 	}
 
 	// Normalize
@@ -187,7 +191,7 @@ func (g *gcloudProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*model
 	differ := diff.New(dc)
 	_, create, delete, modify, err := differ.IncrementalDiff(existingRecords)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("incdiff error: %w", err)
 	}
 
 	changedKeys := map[key]bool{}
@@ -230,10 +234,26 @@ func (g *gcloudProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*model
 		}
 	}
 
+	// FIXME(tlim): Google will return an error if too many changes are
+	// specified in a single request. We should split up very large
+	// batches.  This can be reliably reproduced with the 1201
+	// integration test.  The error you get is:
+	// googleapi: Error 403: The change would exceed quota for additions per change., quotaExceeded
+	//log.Printf("PAUSE STT = %+v %v\n", err, resp)
+	//log.Printf("PAUSE ERR = %+v %v\n", err, resp)
+
 	runChange := func() error {
-		_, err := g.client.Changes.Create(g.project, zoneName, chg).Do()
-		return err
+	retry:
+		resp, err := g.client.Changes.Create(g.project, zoneName, chg).Do()
+		if retryNeeded(resp, err) {
+			goto retry
+		}
+		if err != nil {
+			return fmt.Errorf("runChange error: %w", err)
+		}
+		return nil
 	}
+
 	return []*models.Correction{{
 		Msg: desc,
 		F:   runChange,
@@ -309,4 +329,67 @@ func (g *gcloudProvider) EnsureDomainExists(domain string) error {
 	g.zones = nil // reset cache
 	_, err = g.client.ManagedZones.Create(g.project, mz).Do()
 	return err
+}
+
+const initialBackoff = time.Second * 10 // First delay duration
+const maxBackoff = time.Minute * 3      // Maximum backoff delay
+
+// backoff is the amount of time to sleep if a 429 or 504 is received.
+// It is doubled after each use.
+var backoff = initialBackoff
+var backoff404 = false // Set if the last call requested a retry of a 404
+
+func retryNeeded(resp *gdns.Change, err error) bool {
+	if err != nil {
+		return false // Not an error.
+	}
+	serr, ok := err.(*googleapi.Error)
+	if !ok {
+		return false // Not a google error.
+	}
+	if serr.Code == 200 {
+		backoff = initialBackoff // Reset
+		return false             // Success! No need to retry.
+	}
+
+	if serr.Code == 404 {
+		// serr.Code == 404 happens occasionally when GCLOUD hasn't
+		// finished updating the database yet.  We pause and retry
+		// exactly once. There should be a better way to do this, such as
+		// a callback that would tell us a transaction is complete.
+		if backoff404 {
+			backoff404 = false
+			return false // Give up. We've done this already.
+		}
+		log.Printf("Special 404 pause-and-retry for GCLOUD: Pausing %s\n", backoff)
+		time.Sleep(backoff)
+		backoff404 = true
+		return true // Request a retry.
+	}
+	backoff404 = false
+
+	if serr.Code != 429 && serr.Code != 503 {
+		return false // Not an error that permits retrying.
+	}
+
+	// TODO(tlim): In theory, resp.Header has a header that says how
+	// long to wait but I haven't been able to capture that header in
+	// the wild. If you get these "RUNCHANGE HEAD" messages, please
+	// file a bug with the contents!
+
+	if resp != nil {
+		log.Printf("NOTE: If you see this message, please file a bug with the output below:\n")
+		log.Printf("RUNCHANGE CODE = %+v\n", resp.HTTPStatusCode)
+		log.Printf("RUNCHANGE HEAD = %+v\n", resp.Header)
+	}
+
+	// a simple exponential back-off
+	log.Printf("Pausing due to ratelimit: %v seconds\n", backoff)
+	time.Sleep(backoff)
+	backoff = backoff + (backoff / 2)
+	if backoff > maxBackoff {
+		backoff = maxBackoff
+	}
+
+	return true // Request the API call be re-tried.
 }
