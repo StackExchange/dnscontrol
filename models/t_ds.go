@@ -1,7 +1,6 @@
 package models
 
 import (
-	"fmt"
 	"strconv"
 	"strings"
 
@@ -49,6 +48,5 @@ func (rc *RecordConfig) SetTargetDSString(s string) error {
 	if len(part) != 4 {
 		return errors.Errorf("DS value does not contain 5 fields: (%#v)", s)
 	}
-	fmt.Println(part)
 	return rc.SetTargetDSStrings(part[0], part[1], part[2], part[3])
 }

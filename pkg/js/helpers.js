@@ -123,7 +123,7 @@ function D_EXTEND(name) {
 // _getDomainObject(name): This implements the domain matching
 // algorithm used by D_EXTEND(). Candidate matches are an exact match
 // of the domain's name, or if name is a proper subdomain of the
-// domain's name. The longest match is returned. 
+// domain's name. The longest match is returned.
 function _getDomainObject(name) {
     var domain = null;
     var domainLen = 0;
@@ -415,6 +415,12 @@ var TLSA = recordBuilder('TLSA', {
 function isStringOrArray(x) {
     return _.isString(x) || _.isArray(x);
 }
+
+
+// AUTOSPLIT is a modifier that instructs the Go-level code to
+// split this TXT record's target into chunks of 255.
+var AUTOSPLIT = { txtSplitAlgorithm: 'multistring' }; // Create 255-byte chunks
+//var TXTMULTISPACE = { txtSplitAlgorithm: 'space' }; // Split on space [not implemented]
 
 // TXT(name,target, recordModifiers...)
 var TXT = recordBuilder('TXT', {
@@ -841,10 +847,12 @@ function SPF_BUILDER(value) {
         p.flatten = value.flatten.join(',');
         // Only add the raw spf record if it isn't an empty string
         if (value.raw !== '') {
+            rp = {};
+            rp.txtSplitAlgorithm = 'multistring'; // Split the target if needed.
             if (value.ttl) {
-                r.push(TXT(value.raw, rawspf, TTL(value.ttl)));
+                r.push(TXT(value.raw, rawspf, rp, TTL(value.ttl)));
             } else {
-                r.push(TXT(value.raw, rawspf));
+                r.push(TXT(value.raw, rawspf, rp));
             }
         }
     }
@@ -861,6 +869,8 @@ function SPF_BUILDER(value) {
     if (value.txtMaxSize) {
         p.txtMaxSize = value.txtMaxSize;
     }
+
+    p.txtSplitAlgorithm = 'multistring'; // Split the target if needed.
 
     // Generate a TXT record with the metaparameters.
     if (value.ttl) {
