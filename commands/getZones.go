@@ -50,7 +50,7 @@ The columns in --format=tsv are:
    TTL
    Record Type (A, AAAA, CNAME, etc.)
    Target and arguments (quoted like in a zonefile)
-   Either empty or a comma-separated list of properties like "CF_PROXY_ON=true"
+   Either empty or a comma-separated list of properties like "cloudflare_proxy=true"
 
 The --ttl flag only applies to zone/js/djs formats.
 
@@ -234,7 +234,7 @@ func GetZone(args GetZoneArgs) error {
 				cfproxy := ""
 				if cp, ok := rec.Metadata["cloudflare_proxy"]; ok {
 					if cp == "true" {
-						cfproxy = "\tCF_PROXY_ON=true"
+						cfproxy = "\tcloudflare_proxy=true"
 					}
 				}
 
