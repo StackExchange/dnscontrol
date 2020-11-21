@@ -1,6 +1,7 @@
 package normalize
 
 import (
+	"strings"
 	"testing"
 
 	"fmt"
@@ -215,6 +216,40 @@ func TestCAAValidation(t *testing.T) {
 	errs := ValidateAndNormalizeConfig(config)
 	if len(errs) != 1 {
 		t.Error("Expect error on invalid CAA but got none")
+	}
+}
+
+func TestTXTValidation(t *testing.T) {
+	tests := []struct {
+		name   string
+		record string
+		fail   bool
+	}{
+		{"emoji", "👍🏼", true},
+		{"latin1", "\u00ff", false},                    // anything <= u00FF should be supported
+		{"long", strings.Repeat("\u00ff", 255), false}, // ensure 255 characters for <= u00FF
+	}
+	for _, tst := range tests {
+		t.Run(fmt.Sprintf("%s", tst.name), func(t *testing.T) {
+			config := &models.DNSConfig{
+				Domains: []*models.DomainConfig{
+					{
+						Name:          "example.com",
+						RegistrarName: "BIND",
+						Records: []*models.RecordConfig{
+							makeRC(tst.name, "example.com", "example.com", models.RecordConfig{Type: "TXT", TxtStrings: []string{tst.record}}),
+						},
+					},
+				},
+			}
+			errs := ValidateAndNormalizeConfig(config)
+			if errs != nil && !tst.fail {
+				t.Error(errs)
+			}
+			if errs == nil && tst.fail {
+				t.Errorf("Expected error but got none")
+			}
+		})
 	}
 }
 

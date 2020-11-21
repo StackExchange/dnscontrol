@@ -10,6 +10,7 @@ import (
 	"github.com/StackExchange/dnscontrol/v3/providers"
 	"github.com/miekg/dns"
 	"github.com/miekg/dns/dnsutil"
+	"golang.org/x/text/encoding/charmap"
 )
 
 // Returns false if target does not validate.
@@ -328,6 +329,16 @@ func ValidateAndNormalizeConfig(config *models.DNSConfig) (errs []error) {
 				if rec.TlsaMatchingType > 2 {
 					errs = append(errs, fmt.Errorf("TLSA MatchingType %d is invalid in record %s (domain %s)",
 						rec.TlsaMatchingType, rec.GetLabel(), domain.Name))
+				}
+			} else if rec.Type == "TXT" {
+				for i := range rec.TxtStrings {
+					encoded, err := charmap.ISO8859_1.NewEncoder().String(rec.TxtStrings[i])
+					if err != nil {
+						errs = append(errs, fmt.Errorf("TXT record %s contains characters > 0xFF (domain %s)",
+							rec.GetLabel(), domain.Name), err)
+					} else {
+						rec.TxtStrings[i] = encoded
+					}
 				}
 			}
 
