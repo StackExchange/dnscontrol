@@ -226,8 +226,13 @@ func TestTXTValidation(t *testing.T) {
 		fail   bool
 	}{
 		{"emoji", "👍🏼", true},
-		{"latin1", "\u00ff", false},                    // anything <= u00FF should be supported
-		{"long", strings.Repeat("\u00ff", 255), false}, // ensure 255 characters for <= u00FF
+		{"latin1", "\u00ff", false},                        // anything <= u00FF should be supported
+		{"ext-long", strings.Repeat("\u00ff", 255), false}, // ensure 255 characters for <= u00FF
+		{"ext-toolong", strings.Repeat("\u00ff", 256), true},
+		{"long", strings.Repeat("a", 255), false},
+		{"toolong", strings.Repeat("a", 256), true},
+		{"mixedlong", strings.Repeat("a\u00ff", 127) + "a", false},
+		{"mixedtoolong", strings.Repeat("a\u00ff", 128), true},
 	}
 	for _, tst := range tests {
 		t.Run(fmt.Sprintf("%s", tst.name), func(t *testing.T) {

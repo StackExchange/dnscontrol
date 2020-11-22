@@ -711,15 +711,18 @@ func makeTests(t *testing.T) []*TestGroup {
 			// The RFCs permit TXT strings with any value 1..255. While
 			// possibly not a good thing, let's track which providers
 			// support it.
-			only("GCLOUD"),
+			only("GCLOUD", "BIND"),
 			// These providers do not support this:
 			//not("BIND", "ROUTE53", "NAMEDOTCOM", "CLOUDFLAREAPI", "DIGITALOCEAN", "GANDI_V5"),
 			tc("txt with 1..255 values",
-				txt("long1", makeRange(1, 127)),
-				txt("long2", makeRange(128, 255)),
+				txt("long1", makeRange(0, 128)),
+				// miekg/dns sees these as 4 byte characters when it reads them in as it doesn't convert them from their escaped sequence, handles them fine on output
+				txt("long2", makeRange(129, 170)),
+				txt("long3", makeRange(171, 212)),
+				txt("long4", makeRange(213, 255)),
 			),
 			tc("txtmulti with 1..255 values",
-				txtmulti("long1", []string{makeRange(1, 127), makeRange(128, 255)}),
+				txtmulti("long1", []string{makeRange(1, 128), makeRange(129, 170), makeRange(171, 212), makeRange(213, 255)}),
 			),
 		),
 
