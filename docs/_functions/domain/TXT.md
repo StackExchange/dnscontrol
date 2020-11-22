@@ -29,7 +29,7 @@ Modifiers can be any number of [record modifiers](#record-modifiers) or json obj
       TXT('listserve', 'google-site-verification=12345'),
       TXT('multiple', ['one', 'two', 'three']),  // Multiple strings
       TXT('quoted', 'any "quotes" and escapes? ugh; no worries!'),
-      TXT('_domainkey', 't=y; o=-;') // Escapes are done for you automatically.
+      TXT('_domainkey', 't=y; o=-;'), // Escapes are done for you automatically.
       TXT('long', '#'.repeat(10), AUTOSPLIT) // Escapes are done for you automatically.
     );
 {%endhighlight%}
@@ -72,5 +72,4 @@ need to add AUTOSPLIT to explicitly split the string manually.
 An example error might look like this:
 
     2020/11/21 00:03:21 printIR.go:94: ERROR: txt target >255 bytes and AUTOSPLIT not set: label="20201._domainkey" index=0 len=424 string[:50]="v=DKIM1; k=rsa; t=s; s=email; p=MIIBIjANBgkqhkiG9w..."
-
 
