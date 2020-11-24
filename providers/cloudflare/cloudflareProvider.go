@@ -121,6 +121,14 @@ func (c *cloudflareProvider) GetZoneRecords(domain string) (models.Records, erro
 		if rec.TTL == 1 {
 			rec.TTL = 0
 		}
+		// Store the proxy status ("orange cloud") for use by get-zones:
+		m := getProxyMetadata(rec)
+		if p, ok := m["proxy"]; ok {
+			if rec.Metadata == nil {
+				rec.Metadata = map[string]string{}
+			}
+			rec.Metadata["cloudflare_proxy"] = p
+		}
 	}
 	return records, nil
 }
