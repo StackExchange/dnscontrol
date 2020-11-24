@@ -50,6 +50,7 @@ The columns in --format=tsv are:
    TTL
    Record Type (A, AAAA, CNAME, etc.)
    Target and arguments (quoted like in a zonefile)
+   Either empty or a comma-separated list of properties like "cloudflare_proxy=true"
 
 The --ttl flag only applies to zone/js/djs formats.
 
@@ -93,7 +94,7 @@ ARGUMENTS:
    provider: The name of the provider (second parameter to NewDnsProvider() in dnsconfig.js)
 
 EXAMPLES:
-   dnscontrol get-zones myr53 ROUTE53 
+   dnscontrol get-zones myr53 ROUTE53
    dnscontrol get-zones --out=/dev/null myr53 ROUTE53`,
 	}
 }())
@@ -229,8 +230,16 @@ func GetZone(args GetZoneArgs) error {
 
 		case "tsv":
 			for _, rec := range recs {
-				fmt.Fprintf(w, "%s\t%s\t%d\tIN\t%s\t%s\n",
-					rec.NameFQDN, rec.Name, rec.TTL, rec.Type, rec.GetTargetCombined())
+
+				cfproxy := ""
+				if cp, ok := rec.Metadata["cloudflare_proxy"]; ok {
+					if cp == "true" {
+						cfproxy = "\tcloudflare_proxy=true"
+					}
+				}
+
+				fmt.Fprintf(w, "%s\t%s\t%d\tIN\t%s\t%s%s\n",
+					rec.NameFQDN, rec.Name, rec.TTL, rec.Type, rec.GetTargetCombined(), cfproxy)
 			}
 
 		default:
@@ -249,6 +258,13 @@ func formatDsl(zonename string, rec *models.RecordConfig, defaultTTL uint32) str
 	if rec.TTL != defaultTTL && rec.TTL != 0 {
 		ttl = rec.TTL
 		ttlop = fmt.Sprintf(", TTL(%d)", ttl)
+	}
+
+	cfproxy := ""
+	if cp, ok := rec.Metadata["cloudflare_proxy"]; ok {
+		if cp == "true" {
+			cfproxy = ", CF_PROXY_ON"
+		}
 	}
 
 	switch rec.Type { // #rtype_variations
@@ -286,7 +302,7 @@ func formatDsl(zonename string, rec *models.RecordConfig, defaultTTL uint32) str
 		target = "'" + target + "'"
 	}
 
-	return fmt.Sprintf("%s('%s', %s%s)", rec.Type, rec.Name, target, ttlop)
+	return fmt.Sprintf("%s('%s', %s%s%s)", rec.Type, rec.Name, target, cfproxy, ttlop)
 }
 
 func makeCaa(rec *models.RecordConfig, ttlop string) string {

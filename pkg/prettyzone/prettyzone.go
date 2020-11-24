@@ -134,8 +134,16 @@ func (z *ZoneGenData) generateZoneFileHelper(w io.Writer) error {
 		// the remaining line
 		target := rr.GetTargetCombined()
 
-		fmt.Fprintf(w, "%s%s\n",
-			prefix, formatLine([]int{10, 5, 2, 5, 0}, []string{name, ttl, "IN", typeStr, target}))
+		// comment
+		comment := ""
+		if cp, ok := rr.Metadata["cloudflare_proxy"]; ok {
+			if cp == "true" {
+				comment = " ; CF_PROXY_ON"
+			}
+		}
+
+		fmt.Fprintf(w, "%s%s%s\n",
+			prefix, formatLine([]int{10, 5, 2, 5, 0}, []string{name, ttl, "IN", typeStr, target}), comment)
 	}
 	return nil
 }
