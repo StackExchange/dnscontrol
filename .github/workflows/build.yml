@@ -76,22 +76,22 @@ jobs:
 
     - name: Run boolean E simple
       shell: bash
-      run: echo Hello E ${{ secret['AZURE__CAN_SECRET'] }}
+      run: echo Hello E ${{ secrets['AZURE__CAN_SECRET'] }}
       env:
         AZURE__CAN_SECRET: ${{ secrets['AZURE__CAN_SECRET'] }}
     - name: Run boolean F replace in run
       shell: bash
-      run: echo Hello F ${{ secret['${{ matrix.provider }}__CAN_SECRET'] }}
+      run: echo Hello F ${{ secrets['${{ matrix.provider }}__CAN_SECRET'] }}
       env:
         AZURE__CAN_SECRET: ${{ secrets['AZURE__CAN_SECRET'] }}
     - name: Run boolean G replace in env
       shell: bash
-      run: echo Hello G ${{ secret['AZURE__CAN_SECRET'] }}
+      run: echo Hello G ${{ secrets['AZURE__CAN_SECRET'] }}
       env:
         AZURE__CAN_SECRET: ${{ secrets['${{ matrix.provider }}__CAN_SECRET'] }}
     - name: Run boolean H replace in both
       shell: bash
-      run: echo Hello H ${{ secret['${{ matrix.provider }}__CAN_SECRET'] }}
+      run: echo Hello H ${{ secrets['${{ matrix.provider }}__CAN_SECRET'] }}
       env:
         AZURE__CAN_SECRET: ${{ secrets['${{ matrix.provider }}__CAN_SECRET'] }}
 
