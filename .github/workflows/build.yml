@@ -52,11 +52,53 @@ jobs:
       uses: actions/setup-go@v2
       with:
         go-version: ^1.15
+
+    - name: Run boolean A simple
+      shell: bash
+      run: echo Hello A ${{ env['AZURE__CAN_SECRET'] }}
+      env:
+        AZURE__CAN_SECRET: ${{ secrets['AZURE__CAN_SECRET'] }}
+    - name: Run boolean B replace in run
+      shell: bash
+      run: echo Hello B ${{ env['${{ matrix.provider }}__CAN_SECRET'] }}
+      env:
+        AZURE__CAN_SECRET: ${{ secrets['AZURE__CAN_SECRET'] }}
+    - name: Run boolean C replace in env
+      shell: bash
+      run: echo Hello C ${{ env['AZURE__CAN_SECRET'] }}
+      env:
+        AZURE__CAN_SECRET: ${{ secrets['${{ matrix.provider }}__CAN_SECRET'] }}
+    - name: Run boolean D replace in both
+      shell: bash
+      run: echo Hello D ${{ env['${{ matrix.provider }}__CAN_SECRET'] }}
+      env:
+        AZURE__CAN_SECRET: ${{ secrets['${{ matrix.provider }}__CAN_SECRET'] }}
+
+    - name: Run boolean E simple
+      shell: bash
+      run: echo Hello E ${{ secret['AZURE__CAN_SECRET'] }}
+      env:
+        AZURE__CAN_SECRET: ${{ secrets['AZURE__CAN_SECRET'] }}
+    - name: Run boolean F replace in run
+      shell: bash
+      run: echo Hello F ${{ secret['${{ matrix.provider }}__CAN_SECRET'] }}
+      env:
+        AZURE__CAN_SECRET: ${{ secrets['AZURE__CAN_SECRET'] }}
+    - name: Run boolean G replace in env
+      shell: bash
+      run: echo Hello G ${{ secret['AZURE__CAN_SECRET'] }}
+      env:
+        AZURE__CAN_SECRET: ${{ secrets['${{ matrix.provider }}__CAN_SECRET'] }}
+    - name: Run boolean H replace in both
+      shell: bash
+      run: echo Hello H ${{ secret['${{ matrix.provider }}__CAN_SECRET'] }}
+      env:
+        AZURE__CAN_SECRET: ${{ secrets['${{ matrix.provider }}__CAN_SECRET'] }}
+
     - name: Run integration tests for ${{ matrix.provider }} provider
       working-directory: integrationTest
       run: go test -v -verbose -provider ${{ matrix.provider }}
       if: ${{ env['${{ matrix.provider }}__CAN_SECRET'] == 'true' }}
-      env:
 # Keep these sorted lexically: (i.e. ascii sorted)
         AZURE_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
         AZURE_CLIENT_SECRET: ${{ secrets.AZURE_CLIENT_SECRET }}
@@ -65,7 +107,7 @@ jobs:
         AZURE_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
         AZURE_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
         AZURE__CAN_SECRET: ${{ secrets['${{ matrix.provider }}__CAN_SECRET'] }}
-        BIND__CAN_SECRET: ${{ secrets['${{ matrix.provider }}__CAN_SECRET'] }}
+        BIND__CAN_SECRET: true
         CF_DOMAIN: dnscontroltest-cf.com
         CF_TOKEN: ${{ secrets.CF_TOKEN }}
         CF__CAN_SECRET: ${{ secrets['${{ matrix.provider }}__CAN_SECRET'] }}
@@ -85,7 +127,7 @@ jobs:
         HEXONET_ENTITY : OTE
         HEXONET_PW : test.passw0rd
         HEXONET_UID : test.user
-        HEXONET__CAN_SECRET: ${{ secrets['${{ matrix.provider }}__CAN_SECRET'] }}
+        HEXONET__CAN_SECRET: true
         NAMEDOTCOM_DOMAIN: dnscontrol-ndc.com
         NAMEDOTCOM_KEY: ${{ secrets.NAMEDOTCOM_KEY }}
         NAMEDOTCOM_URL: api.name.com
