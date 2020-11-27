@@ -55,9 +55,8 @@ jobs:
     - name: Run integration tests for ${{ matrix.provider }} provider
       working-directory: integrationTest
       run: go test -v -verbose -provider ${{ matrix.provider }}
-      if: ${{ env['RUN_${{ matrix.provider }}'] == 'true' }}
+      if: ${{ env['${{ matrix.provider }}__CAN_SECRET'] == 'true' }}
       env:
-        I_CAN_SEE_SECRETS: ${{ secrets.I_CAN_SEE_SECRETS }}
 # Keep these sorted lexically: (i.e. ascii sorted)
         AZURE_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
         AZURE_CLIENT_SECRET: ${{ secrets.AZURE_CLIENT_SECRET }}
@@ -65,25 +64,34 @@ jobs:
         AZURE_RESOURCE_GROUP: DNSControl
         AZURE_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
         AZURE_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
+        AZURE__CAN_SECRET: ${{ secrets['${{ matrix.provider }}__CAN_SECRET'] }}
+        BIND__CAN_SECRET: ${{ secrets['${{ matrix.provider }}__CAN_SECRET'] }}
         CF_DOMAIN: dnscontroltest-cf.com
         CF_TOKEN: ${{ secrets.CF_TOKEN }}
+        CF__CAN_SECRET: ${{ secrets['${{ matrix.provider }}__CAN_SECRET'] }}
         DO_DOMAIN : dnscontrol-do.com
         DO_TOKEN : ${{ secrets.DO_TOKEN }}
+        DO__CAN_SECRET: ${{ secrets['${{ matrix.provider }}__CAN_SECRET'] }}
         GANDI_V5_APIKEY : ${{ secrets.GANDI_V5_APIKEY }}
         GANDI_V5_DOMAIN : dnscontroltest-gandilivedns.com
+        GANDI__CAN_SECRET: ${{ secrets['${{ matrix.provider }}__CAN_SECRET'] }}
         GCLOUD_DOMAIN: dnscontroltest-gcloud.com
         GCLOUD_EMAIL: dnscontrol@dnscontrol-dev.iam.gserviceaccount.com
         GCLOUD_PRIVATEKEY: ${{ secrets.GCLOUD_PRIVATEKEY }}
         GCLOUD_PROJECT: dnscontrol-dev
         GCLOUD_TYPE: service_account
+        GCLOUD__CAN_SECRET: ${{ secrets['${{ matrix.provider }}__CAN_SECRET'] }}
         HEXONET_DOMAIN : a-b-c-movies.com
         HEXONET_ENTITY : OTE
         HEXONET_PW : test.passw0rd
         HEXONET_UID : test.user
+        HEXONET__CAN_SECRET: ${{ secrets['${{ matrix.provider }}__CAN_SECRET'] }}
         NAMEDOTCOM_DOMAIN: dnscontrol-ndc.com
         NAMEDOTCOM_KEY: ${{ secrets.NAMEDOTCOM_KEY }}
         NAMEDOTCOM_URL: api.name.com
         NAMEDOTCOM_USER: dnscontroltest
+        NAMEDOTCOM__CAN_SECRET: ${{ secrets['${{ matrix.provider }}__CAN_SECRET'] }}
         R53_DOMAIN: dnscontroltest-r53.com
         R53_KEY: ${{ secrets.R53_KEY }}
         R53_KEY_ID: ${{ secrets.R53_KEY_ID }}
+        R53__CAN_SECRET: ${{ secrets['${{ matrix.provider }}__CAN_SECRET'] }}
