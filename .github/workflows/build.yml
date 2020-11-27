@@ -58,48 +58,59 @@ jobs:
       run: echo Hello A ${{ env['AZURE__CAN_SECRET'] }}
       env:
         AZURE__CAN_SECRET: ${{ secrets['AZURE__CAN_SECRET'] }}
-    - name: Run boolean B replace in run
+    - name: Run boolean A1 simple
       shell: bash
-      run: echo Hello B ${{ env['${{ matrix.provider }}__CAN_SECRET'] }}
+      run: echo Hello A ${{ env['CAN_SECRET'] }}
       env:
-        AZURE__CAN_SECRET: ${{ secrets['AZURE__CAN_SECRET'] }}
+        CAN_SECRET: ${{ secrets['${{ matrix.provider }}__CAN_SECRET'] }}
+    - name: Run boolean A2 simple
+      shell: bash
+      run: echo Hello A ${{ env['${{ matrix.provider }}__CAN_SECRET'] }}  XXX '${{ matrix.provider }}__CAN_SECRET'
+      env:
+        CAN_SECRET: ${{ secrets['${{ matrix.provider }}__CAN_SECRET'] }}
+#    - name: Run boolean B replace in run
+#      shell: bash
+#      run: echo Hello B ${{ env['${{ matrix.provider }}__CAN_SECRET'] }}
+#      env:
+#        AZURE__CAN_SECRET: ${{ secrets['AZURE__CAN_SECRET'] }}
     - name: Run boolean C replace in env
       shell: bash
-      run: echo Hello C ${{ env['AZURE__CAN_SECRET'] }}
+      run: echo Hello C ${{ env['AZURE__CAN_SECRET'] }} XXX '${{ matrix.provider }}__CAN_SECRET'
       env:
         AZURE__CAN_SECRET: ${{ secrets['${{ matrix.provider }}__CAN_SECRET'] }}
-    - name: Run boolean D replace in both
-      shell: bash
-      run: echo Hello D ${{ env['${{ matrix.provider }}__CAN_SECRET'] }}
-      env:
-        AZURE__CAN_SECRET: ${{ secrets['${{ matrix.provider }}__CAN_SECRET'] }}
+#    - name: Run boolean D replace in both
+#      shell: bash
+#      run: echo Hello D ${{ env['${{ matrix.provider }}__CAN_SECRET'] }}
+#      env:
+#        AZURE__CAN_SECRET: ${{ secrets['${{ matrix.provider }}__CAN_SECRET'] }}
 
     - name: Run boolean E simple
       shell: bash
       run: echo Hello E ${{ secrets['AZURE__CAN_SECRET'] }}
       env:
         AZURE__CAN_SECRET: ${{ secrets['AZURE__CAN_SECRET'] }}
-    - name: Run boolean F replace in run
-      shell: bash
-      run: echo Hello F ${{ secrets['${{ matrix.provider }}__CAN_SECRET'] }}
-      env:
-        AZURE__CAN_SECRET: ${{ secrets['AZURE__CAN_SECRET'] }}
+#    - name: Run boolean F replace in run
+#      shell: bash
+#      run: echo Hello F ${{ secrets['${{ matrix.provider }}__CAN_SECRET'] }}
+#      env:
+#        AZURE__CAN_SECRET: ${{ secrets['AZURE__CAN_SECRET'] }}
     - name: Run boolean G replace in env
       shell: bash
       run: echo Hello G ${{ secrets['AZURE__CAN_SECRET'] }}
       env:
         AZURE__CAN_SECRET: ${{ secrets['${{ matrix.provider }}__CAN_SECRET'] }}
-    - name: Run boolean H replace in both
-      shell: bash
-      run: echo Hello H ${{ secrets['${{ matrix.provider }}__CAN_SECRET'] }}
-      env:
-        AZURE__CAN_SECRET: ${{ secrets['${{ matrix.provider }}__CAN_SECRET'] }}
+#    - name: Run boolean H replace in both
+#      shell: bash
+#      run: echo Hello H ${{ secrets['${{ matrix.provider }}__CAN_SECRET'] }}
+#      env:
+#        AZURE__CAN_SECRET: ${{ secrets['${{ matrix.provider }}__CAN_SECRET'] }}
 
     - name: Run integration tests for ${{ matrix.provider }} provider
       working-directory: integrationTest
       run: go test -v -verbose -provider ${{ matrix.provider }}
-      if: ${{ env['${{ matrix.provider }}__CAN_SECRET'] == 'true' }}
+#      if: ${{ env['CAN_SECRET'] == 'true' }}
       env:
+        CAN_SECRET: ${{ secrets['${{ matrix.provider }}__CAN_SECRET'] }}
 # Keep these sorted lexically: (i.e. ascii sorted)
         AZURE_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
         AZURE_CLIENT_SECRET: ${{ secrets.AZURE_CLIENT_SECRET }}
