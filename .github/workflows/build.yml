@@ -108,7 +108,7 @@ jobs:
     - name: Run integration tests for ${{ matrix.provider }} provider
       working-directory: integrationTest
       run: go test -v -verbose -provider ${{ matrix.provider }}
-#      if: ${{ env['CAN_SECRET'] == 'true' }}
+      if: ${{ env[ '${{ matrix.provider }}__CAN_SECRET' ] == 'true' }}
       env:
         CAN_SECRET: ${{ secrets['${{ matrix.provider }}__CAN_SECRET'] }}
 # Keep these sorted lexically: (i.e. ascii sorted)
@@ -118,7 +118,7 @@ jobs:
         AZURE_RESOURCE_GROUP: DNSControl
         AZURE_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
         AZURE_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
-        AZURE__CAN_SECRET: ${{ secrets['${{ matrix.provider }}__CAN_SECRET'] }}
+        AZURE_DNS__CAN_SECRET: ${{ secrets['${{ matrix.provider }}__CAN_SECRET'] }}
         BIND__CAN_SECRET: true
         CF_DOMAIN: dnscontroltest-cf.com
         CF_TOKEN: ${{ secrets.CF_TOKEN }}
