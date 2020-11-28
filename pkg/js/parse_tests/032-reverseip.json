@@ -31,17 +31,22 @@
           "type": "PTR"
         },
         {
-          "name": "4",
+          "name": "4.3.2.1.in-addr.arpa",
+          "target": "blam.example.com.",
+          "type": "PTR"
+        },
+        {
+          "name": "5",
           "target": "silly.example.com.",
           "type": "PTR"
         },
         {
-          "name": "1.2.3.5",
+          "name": "1.2.3.6",
           "target": "willy.example.com.",
           "type": "PTR"
         },
         {
-          "name": "6.3.2.1.in-addr.arpa",
+          "name": "7.3.2.1.in-addr.arpa",
           "target": "billy.example.com.",
           "type": "PTR"
         }

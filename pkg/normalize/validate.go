@@ -98,7 +98,7 @@ func checkLabel(label string, rType string, target, domain string, meta map[stri
 	if label[len(label)-1] == '.' {
 		return fmt.Errorf("label %s.%s ends with a (.)", label, domain)
 	}
-	if strings.HasSuffix(label, "."+domain) {
+	if label == domain || strings.HasSuffix(label, "."+domain) {
 		if m := meta["skip_fqdn_check"]; m != "true" {
 			return fmt.Errorf(`label %q ends with domain name %q. Record names should not be fully qualified. Add {skip_fqdn_check:"true"} to this record if you really want to make %s.%s`, label, domain, label, domain)
 		}
