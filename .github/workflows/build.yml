@@ -81,7 +81,7 @@ jobs:
         GANDI_V5__CAN_SECRET: ${{ secrets['GANDI_V5__CAN_SECRET'] }}
         GCLOUD__CAN_SECRET: ${{ secrets['GCLOUD__CAN_SECRET'] }}
         HETZNER__CAN_SECRET: ${{ secrets['HETZNER__CAN_SECRET'] }}
-        HEXONET__CAN_SECRET: ${{ secrets['HEXONET__CAN_SECRET'] }}
+        HEXONET__CAN_SECRET: "true"
         NAMEDOTCOM__CAN_SECRET: ${{ secrets['NAMEDOTCOM__CAN_SECRET'] }}
         ROUTE53__CAN_SECRET: ${{ secrets['ROUTE53__CAN_SECRET'] }}
 
