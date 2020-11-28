@@ -56,23 +56,22 @@ jobs:
     - name: Tests
       working-directory: integrationTest
       run: |
-        echo DEBUG0: CAN_SECRET=${{ env['CAN_SECRET'] }}
-        echo DEBUG1: matrix.provider=${{ matrix.provider }}
-        echo DEBUG2: key=${{ matrix.provider }}__CAN_SECRET
-        echo DEBUG3: lookup=${{ env[ ${{ matrix.provider }}__CAN_SECRET ] }}
-        echo DEBUG: A "${{ env['AZURE_DNS__CAN_SECRET'] }}"
-        echo DEBUG: B "${{ env['BIND__CAN_SECRET'] }}"
-        echo DEBUG: C "${{ env['CLOUDFLAREAPI__CAN_SECRET'] }}"
-        echo DEBUG: D "${{ env['DIGITALOCEAN__CAN_SECRET'] }}"
-        echo DEBUG: G "${{ env['GANDI_V5__CAN_SECRET'] }}"
-        echo DEBUG: G "${{ env['GCLOUD__CAN_SECRET'] }}"
-        echo DEBUG: H "${{ env['HETZNER__CAN_SECRET'] }}"
-        echo DEBUG: H "${{ env['HEXONET__CAN_SECRET'] }}"
-        echo DEBUG: N "${{ env['NAMEDOTCOM__CAN_SECRET'] }}"
-        echo DEBUG: R "${{ env['ROUTE53__CAN_SECRET'] }}"
+        echo DEBUG0: CAN_SECRET="$CAN_SECRET"
+        echo DEBUG0: PROVIDER="$PROVIDER"
+        echo DEBUG: A="$AZURE_DNS__CAN_SECRET"
+        echo DEBUG: B="$BIND__CAN_SECRET"
+        echo DEBUG: C="$CLOUDFLAREAPI__CAN_SECRET"
+        echo DEBUG: D="$DIGITALOCEAN__CAN_SECRET"
+        echo DEBUG: G="$GANDI_V5__CAN_SECRET"
+        echo DEBUG: G="$GCLOUD__CAN_SECRET"
+        echo DEBUG: H="$HETZNER__CAN_SECRET"
+        echo DEBUG: H="$HEXONET__CAN_SECRET"
+        echo DEBUG: N="$NAMEDOTCOM__CAN_SECRET"
+        echo DEBUG: R="$ROUTE53__CAN_SECRET"
 #      if: ${{ env[ '${{ matrix.provider }}__CAN_SECRET' ] == 'true' }}
       env:
         CAN_SECRET: ${{ secrets['${{ matrix.provider }}__CAN_SECRET'] }}
+        PROVIDER: ${{ matrix.provider }}
 # ---------
         AZURE_DNS__CAN_SECRET: ${{ secrets['AZURE_DNS__CAN_SECRET'] }}
         BIND__CAN_SECRET: ${{ secrets['BIND__CAN_SECRET'] }}
