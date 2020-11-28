@@ -55,7 +55,7 @@ jobs:
     - name: Run integration tests for ${{ matrix.provider }} provider
       working-directory: integrationTest
       run: echo KEY="${{ matrix.provider }}__CAN_SECRET" VALUE="${${{ matrix.provider }}__CAN_SECRET}" ; go test -v -verbose -provider ${{ matrix.provider }}
-      if: env[ '${{ matrix.provider }}__CAN_SECRET' ] == 'true'
+      if: env.${{ matrix.provider }}__CAN_SECRET == 'true'
       env:
 # Keep these sorted lexically: (i.e. ascii sorted)
         BIND__CAN_SECRET: ${{ secrets.BIND__CAN_SECRET }}
