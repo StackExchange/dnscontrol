@@ -336,17 +336,7 @@ var DS = recordBuilder("DS", {
 });
 
 // PTR(name,target, recordModifiers...)
-var PTR = recordBuilder('PTR', {
-    args: [
-        ['name', _.isString],
-        ['target', _.isString],
-    ],
-    transform: function(record, args, modifiers) {
-      // PTR magic happens here?
-      record.name = args.name;
-      record.target = args.target;
-    },
-});
+var PTR = recordBuilder('PTR');
 
 // NAPTR(name,order,preference,flags,service,regexp,target, recordModifiers...)
 var NAPTR = recordBuilder('NAPTR', {
