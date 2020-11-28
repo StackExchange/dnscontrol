@@ -69,7 +69,7 @@ jobs:
         GANDI_V5__CAN_SECRET: ${{ secrets.GANDI_V5__CAN_SECRET }}
         GCLOUD__CAN_SECRET: ${{ secrets.GCLOUD__CAN_SECRET }}
         HEXONET__CAN_SECRET: true
-        INWX__CAN_SECRET: ${{ secrets.ROUTE53__CAN_SECRET }}
+        INWX__CAN_SECRET: ${{ secrets.INWX__CAN_SECRET }}
         NAMEDOTCOM__CAN_SECRET: ${{ secrets.NAMEDOTCOM__CAN_SECRET }}
         ROUTE53__CAN_SECRET: ${{ secrets.ROUTE53__CAN_SECRET }}
     - name: Run integration tests for ${{ matrix.provider }} provider
