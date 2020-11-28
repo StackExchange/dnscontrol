@@ -56,41 +56,43 @@ jobs:
       working-directory: integrationTest
       run: if [ "$${{ matrix.provider }}__CAN_SECRET" = "true" ] ; then  go test -v -verbose -provider ${{ matrix.provider }} ; else echo SKIPPING ; fi
       env:
-# Keep these sorted lexically: (i.e. ascii sorted)
-        BIND__CAN_SECRET: ${{ secrets.BIND__CAN_SECRET }}
-        HEXONET__CAN_SECRET: "true"
-        AZURE_DNS__CAN_SECRET: "false"
+# These are used to determine if secrets are available to the runner.
+# "true" means no secrets are required for these tests.
+        AZURE_DNS__CAN_SECRET: ${{ secrets.AZURE_DNS__CAN_SECRET }}
+        BIND__CAN_SECRET: true
         CLOUDFLAREAPI__CAN_SECRET: ${{ secrets.CLOUDFLAREAPI__CAN_SECRET }}
-        GCLOUD__CAN_SECRET: ${{ secrets.GCLOUD__CAN_SECRET }}
-        NAMEDOTCOM__CAN_SECRET: ${{ secrets.NAMEDOTCOM__CAN_SECRET }}
-        ROUTE53__CAN_SECRET: ${{ secrets.ROUTE53__CAN_SECRET }}
         DIGITALOCEAN__CAN_SECRET: ${{ secrets.DIGITALOCEAN__CAN_SECRET }}
         GANDI_V5__CAN_SECRET: ${{ secrets.GANDI_V5__CAN_SECRET }}
-        AZURE_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
-        AZURE_CLIENT_SECRET: ${{ secrets.AZURE_CLIENT_SECRET }}
-        AZURE_DOMAIN: dnscontrol-azure.com
+        GCLOUD__CAN_SECRET: ${{ secrets.GCLOUD__CAN_SECRET }}
+        HEXONET__CAN_SECRET: true
+        NAMEDOTCOM__CAN_SECRET: ${{ secrets.NAMEDOTCOM__CAN_SECRET }}
+        ROUTE53__CAN_SECRET: ${{ secrets.ROUTE53__CAN_SECRET }}
+# These extract the secrets that are used by the tests. (alphabetical)
         AZURE_RESOURCE_GROUP: DNSControl
+        AZURE_DOMAIN: dnscontrol-azure.com
         AZURE_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
         AZURE_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
+        AZURE_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
+        AZURE_CLIENT_SECRET: ${{ secrets.AZURE_CLIENT_SECRET }}
         CF_DOMAIN: dnscontroltest-cf.com
         CF_TOKEN: ${{ secrets.CF_TOKEN }}
         DO_DOMAIN : dnscontrol-do.com
         DO_TOKEN : ${{ secrets.DO_TOKEN }}
-        GANDI_V5_APIKEY : ${{ secrets.GANDI_V5_APIKEY }}
         GANDI_V5_DOMAIN : dnscontroltest-gandilivedns.com
+        GANDI_V5_APIKEY : ${{ secrets.GANDI_V5_APIKEY }}
         GCLOUD_DOMAIN: dnscontroltest-gcloud.com
-        GCLOUD_EMAIL: dnscontrol@dnscontrol-dev.iam.gserviceaccount.com
-        GCLOUD_PRIVATEKEY: ${{ secrets.GCLOUD_PRIVATEKEY }}
-        GCLOUD_PROJECT: dnscontrol-dev
         GCLOUD_TYPE: service_account
+        GCLOUD_EMAIL: dnscontrol@dnscontrol-dev.iam.gserviceaccount.com
+        GCLOUD_PROJECT: dnscontrol-dev
+        GCLOUD_PRIVATEKEY: ${{ secrets.GCLOUD_PRIVATEKEY }}
         HEXONET_DOMAIN : a-b-c-movies.com
         HEXONET_ENTITY : OTE
         HEXONET_PW : test.passw0rd
         HEXONET_UID : test.user
         NAMEDOTCOM_DOMAIN: dnscontrol-ndc.com
-        NAMEDOTCOM_KEY: ${{ secrets.NAMEDOTCOM_KEY }}
         NAMEDOTCOM_URL: api.name.com
         NAMEDOTCOM_USER: dnscontroltest
+        NAMEDOTCOM_KEY: ${{ secrets.NAMEDOTCOM_KEY }}
         R53_DOMAIN: dnscontroltest-r53.com
-        R53_KEY: ${{ secrets.R53_KEY }}
         R53_KEY_ID: ${{ secrets.R53_KEY_ID }}
+        R53_KEY: ${{ secrets.R53_KEY }}
