@@ -74,8 +74,10 @@ jobs:
         AZURE_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
         AZURE_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
         AZURE_CLIENT_SECRET: ${{ secrets.AZURE_CLIENT_SECRET }}
-        CF_DOMAIN: dnscontroltest-cf.com
+        CF_DOMAIN: ${{ secrets.CF_DOMAIN }}
         CF_TOKEN: ${{ secrets.CF_TOKEN }}
+        CF_USER: ${{ secrets.CF_USER }}
+        CF_KEY: ${{ secrets.CF_KEY }}
         DO_DOMAIN : dnscontrol-do.com
         DO_TOKEN : ${{ secrets.DO_TOKEN }}
         GANDI_V5_DOMAIN : dnscontroltest-gandilivedns.com
