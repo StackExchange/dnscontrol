@@ -58,7 +58,7 @@ jobs:
 #      if: ${{ env.I_SEE_SECRETS == 'true' }}
       env:
 # Keep these sorted lexically: (i.e. ascii sorted)
-        I_SEE_SECRETS: secrets.${{ matrix.provider }}__CAN_SECRET
+        I_SEE_SECRETS: ${{ secrets[ '${{ matrix.provider }}__CAN_SECRET' ] }}
         BIND__CAN_SECRET: ${{ secrets.BIND__CAN_SECRET }}
         HEXONET__CAN_SECRET: "true"
         AZURE_DNS__CAN_SECRET: "false"
