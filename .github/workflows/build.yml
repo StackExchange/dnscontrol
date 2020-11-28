@@ -43,6 +43,7 @@ jobs:
 # All others: (alphabetical)
         - DIGITALOCEAN
         - GANDI_V5
+        - INWX
     steps:
     - name: Checkout repo
       uses: actions/checkout@v2
@@ -68,6 +69,7 @@ jobs:
         GANDI_V5__CAN_SECRET: ${{ secrets.GANDI_V5__CAN_SECRET }}
         GCLOUD__CAN_SECRET: ${{ secrets.GCLOUD__CAN_SECRET }}
         HEXONET__CAN_SECRET: true
+        INWX__CAN_SECRET: ${{ secrets.ROUTE53__CAN_SECRET }}
         NAMEDOTCOM__CAN_SECRET: ${{ secrets.NAMEDOTCOM__CAN_SECRET }}
         ROUTE53__CAN_SECRET: ${{ secrets.ROUTE53__CAN_SECRET }}
     - name: Run integration tests for ${{ matrix.provider }} provider
@@ -76,33 +78,36 @@ jobs:
       if: ${{ env.CAN_CONTINUE == 'yes' }}
 # Extract the secrets that are used by the tests. (Please keep this list sorted)
       env:
-        AZURE_RESOURCE_GROUP: DNSControl
-        AZURE_DOMAIN: dnscontrol-azure.com
-        AZURE_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
-        AZURE_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
         AZURE_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
         AZURE_CLIENT_SECRET: ${{ secrets.AZURE_CLIENT_SECRET }}
+        AZURE_DOMAIN: dnscontrol-azure.com
+        AZURE_RESOURCE_GROUP: DNSControl
+        AZURE_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+        AZURE_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
         CF_DOMAIN: ${{ secrets.CF_DOMAIN }}
+        CF_KEY: ${{ secrets.CF_KEY }}
         CF_TOKEN: ${{ secrets.CF_TOKEN }}
         CF_USER: ${{ secrets.CF_USER }}
-        CF_KEY: ${{ secrets.CF_KEY }}
-        DO_DOMAIN : dnscontrol-do.com
-        DO_TOKEN : ${{ secrets.DO_TOKEN }}
-        GANDI_V5_DOMAIN : dnscontroltest-gandilivedns.com
-        GANDI_V5_APIKEY : ${{ secrets.GANDI_V5_APIKEY }}
+        DO_DOMAIN: dnscontrol-do.com
+        DO_TOKEN: ${{ secrets.DO_TOKEN }}
+        GANDI_V5_APIKEY: ${{ secrets.GANDI_V5_APIKEY }}
+        GANDI_V5_DOMAIN: dnscontroltest-gandilivedns.com
         GCLOUD_DOMAIN: dnscontroltest-gcloud.com
-        GCLOUD_TYPE: service_account
         GCLOUD_EMAIL: dnscontrol@dnscontrol-dev.iam.gserviceaccount.com
-        GCLOUD_PROJECT: dnscontrol-dev
         GCLOUD_PRIVATEKEY: ${{ secrets.GCLOUD_PRIVATEKEY }}
-        HEXONET_DOMAIN : a-b-c-movies.com
-        HEXONET_ENTITY : OTE
-        HEXONET_PW : test.passw0rd
-        HEXONET_UID : test.user
+        GCLOUD_PROJECT: dnscontrol-dev
+        GCLOUD_TYPE: service_account
+        HEXONET_DOMAIN: a-b-c-movies.com
+        HEXONET_ENTITY: OTE
+        HEXONET_PW: test.passw0rd
+        HEXONET_UID: test.user
+        INWX_DOMAIN: ${{ secrets.INWX_DOMAIN }}
+        INWX_PASSWORD: ${{ secrets.INWX_PASSWORD }}
+        INWX_USER: ${{ secrets.INWX_USER }}
         NAMEDOTCOM_DOMAIN: dnscontrol-ndc.com
+        NAMEDOTCOM_KEY: ${{ secrets.NAMEDOTCOM_KEY }}
         NAMEDOTCOM_URL: api.name.com
         NAMEDOTCOM_USER: dnscontroltest
-        NAMEDOTCOM_KEY: ${{ secrets.NAMEDOTCOM_KEY }}
         R53_DOMAIN: dnscontroltest-r53.com
-        R53_KEY_ID: ${{ secrets.R53_KEY_ID }}
         R53_KEY: ${{ secrets.R53_KEY }}
+        R53_KEY_ID: ${{ secrets.R53_KEY_ID }}
