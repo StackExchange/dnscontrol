@@ -194,6 +194,11 @@ func (c *cloudflareProvider) createRec(rec *models.RecordConfig, domainID string
 	if rec.Type == "MX" {
 		prio = fmt.Sprintf(" %d ", rec.MxPreference)
 	}
+	if rec.Type == "TXT" {
+		if len(rec.TxtStrings) > 1 {
+			content = `"` + strings.Join(rec.TxtStrings, `" "`) + `"`
+		}
+	}
 	if rec.Type == "DS" {
 		content = fmt.Sprintf("%d %d %d %s", rec.DsKeyTag, rec.DsAlgorithm, rec.DsDigestType, rec.DsDigest)
 	}
@@ -271,6 +276,11 @@ func (c *cloudflareProvider) modifyRecord(domainID, recID string, proxied bool, 
 		Priority: rec.MxPreference,
 		TTL:      rec.TTL,
 		Data:     nil,
+	}
+	if rec.Type == "TXT" {
+		if len(rec.TxtStrings) > 1 {
+			r.Content = `"` + strings.Join(rec.TxtStrings, `" "`) + `"`
+		}
 	}
 	if rec.Type == "SRV" {
 		r.Data = cfSrvData(rec)
