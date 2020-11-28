@@ -98,9 +98,9 @@ func checkLabel(label string, rType string, target, domain string, meta map[stri
 	if label[len(label)-1] == '.' {
 		return fmt.Errorf("label %s.%s ends with a (.)", label, domain)
 	}
-	if strings.HasSuffix(label, domain) {
+	if strings.HasSuffix(label, "."+domain) {
 		if m := meta["skip_fqdn_check"]; m != "true" {
-			return fmt.Errorf(`label %s ends with domain name %s. Record names should not be fully qualified. Add {skip_fqdn_check:"true"} to this record if you really want to make %s.%s`, label, domain, label, domain)
+			return fmt.Errorf(`label %q ends with domain name %q. Record names should not be fully qualified. Add {skip_fqdn_check:"true"} to this record if you really want to make %s.%s`, label, domain, label, domain)
 		}
 	}
 
@@ -281,6 +281,13 @@ func ValidateAndNormalizeConfig(config *models.DNSConfig) (errs []error) {
 			if rec.TTL == 0 {
 				rec.TTL = models.DefaultTTL
 			}
+			// PTR magic
+			if rec.Type == "PTR" {
+				label := rec.GetLabel()
+				if strings.HasSuffix(label, "."+domain.Name) {
+					rec.SetLabel(label[0:(len(label)-len("."+domain.Name))], domain.Name)
+				}
+			}
 			// Validate the unmodified inputs:
 			if err := validateRecordTypes(rec, domain.Name, pTypes); err != nil {
 				errs = append(errs, err)
@@ -299,7 +306,7 @@ func ValidateAndNormalizeConfig(config *models.DNSConfig) (errs []error) {
 				// We normalize them to a FQDN so there is less variation to handle.  If a
 				// provider API requires a shortname, the provider must do the shortening.
 				origin := domain.Name + "."
-				if len(rec.SubDomain) > 0 {
+				if rec.SubDomain != "" {
 					origin = rec.SubDomain + "." + origin
 				}
 				rec.SetTarget(dnsutil.AddOrigin(rec.GetTargetField(), origin))

@@ -18,7 +18,7 @@
           "type": "PTR"
         },
         {
-          "name": "2",
+          "name": "1.2.3.2",
           "target": "bar.example.com.",
           "type": "PTR"
         },
@@ -26,24 +26,24 @@
           "meta": {
             "skip_fqdn_check": "true"
           },
-          "name": "3",
+          "name": "3.3.2.1.in-addr.arpa",
           "target": "baz.example.com.",
           "type": "PTR"
         },
         {
-          "name": "@",
+          "name": "4.4",
           "subdomain": "4",
           "target": "silly.example.com.",
           "type": "PTR"
         },
         {
-          "name": "@",
+          "name": "1.2.3.5.5",
           "subdomain": "5",
           "target": "willy.example.com.",
           "type": "PTR"
         },
         {
-          "name": "6",
+          "name": "6.3.2.1.in-addr.arpa.6",
           "subdomain": "6",
           "target": "billy.example.com.",
           "type": "PTR"

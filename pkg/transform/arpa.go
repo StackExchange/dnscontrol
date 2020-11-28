@@ -2,6 +2,7 @@ package transform
 
 import (
 	"fmt"
+	"log"
 	"net"
 	"strings"
 )
@@ -62,6 +63,7 @@ func ReverseDomainName(cidr string) (string, error) {
 		return "", fmt.Errorf("invalid address (not IPv4 or IPv6): %v", cidr)
 	}
 
+	log.Printf("base=%q toTrim=%q, parts=%q\n", base, toTrim, strings.SplitN(base, ".", toTrim+1))
 	parts := strings.SplitN(base, ".", toTrim+1)
 	return parts[len(parts)-1], nil
 }
