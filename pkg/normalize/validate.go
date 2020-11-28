@@ -287,6 +287,9 @@ func ValidateAndNormalizeConfig(config *models.DNSConfig) (errs []error) {
 				if strings.HasSuffix(label, "."+domain.Name) {
 					rec.SetLabel(label[0:(len(label)-len("."+domain.Name))], domain.Name)
 				}
+				if rec.SubDomain != "" {
+					// PTR magic here?
+				}
 			}
 			// Validate the unmodified inputs:
 			if err := validateRecordTypes(rec, domain.Name, pTypes); err != nil {
