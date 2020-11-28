@@ -52,13 +52,13 @@ jobs:
       uses: actions/setup-go@v2
       with:
         go-version: ^1.15
-    - name: Run integration tests for ${{ matrix.provider }} provider
-      working-directory: integrationTest
-      run: if [ "$${{ matrix.provider }}__CAN_SECRET" = "true" ] ; then  go test -v -verbose -provider ${{ matrix.provider }} ; else echo SKIPPING ; fi
+    - name: Examining creds for ${{ matrix.provider }} provider
+      run: if [ "$${{ matrix.provider }}__CAN_SECRET" = "true" ] ; then echo "CAN_CONTINUE=true" >> $GITHUB_ENV ; fi
       env:
 # These are used to determine if secrets are available to the runner.
 # "true" means no secrets are required for these tests.
-        AZURE_DNS__CAN_SECRET: ${{ secrets.AZURE_DNS__CAN_SECRET }}
+#        AZURE_DNS__CAN_SECRET: ${{ secrets.AZURE_DNS__CAN_SECRET }}
+        AZURE_DNS__CAN_SECRET: false
         BIND__CAN_SECRET: true
         CLOUDFLAREAPI__CAN_SECRET: ${{ secrets.CLOUDFLAREAPI__CAN_SECRET }}
         DIGITALOCEAN__CAN_SECRET: ${{ secrets.DIGITALOCEAN__CAN_SECRET }}
@@ -67,6 +67,11 @@ jobs:
         HEXONET__CAN_SECRET: true
         NAMEDOTCOM__CAN_SECRET: ${{ secrets.NAMEDOTCOM__CAN_SECRET }}
         ROUTE53__CAN_SECRET: ${{ secrets.ROUTE53__CAN_SECRET }}
+    - name: Run integration tests for ${{ matrix.provider }} provider
+      working-directory: integrationTest
+      run: go test -v -verbose -provider ${{ matrix.provider }}
+      if: ${{ env.CAN_CONTINUE == 'true' }}
+      env:
 # These extract the secrets that are used by the tests. (alphabetical)
         AZURE_RESOURCE_GROUP: DNSControl
         AZURE_DOMAIN: dnscontrol-azure.com
