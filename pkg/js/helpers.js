@@ -692,7 +692,8 @@ function recordBuilder(type, opts) {
             opts.transform(record, parsedArgs, modifiers);
 
             // Handle D_EXTEND() with subdomains.
-            if (d.subdomain && record.type != 'CF_REDIRECT' &&
+            if (d.subdomain &&
+              record.type != 'CF_REDIRECT' &&
               record.type != 'CF_TEMP_REDIRECT' &&
               record.type != "PTR") {
                 record.subdomain = d.subdomain;

@@ -284,11 +284,8 @@ func ValidateAndNormalizeConfig(config *models.DNSConfig) (errs []error) {
 			// PTR magic
 			if rec.Type == "PTR" {
 				label := rec.GetLabel()
-				if strings.HasSuffix(label, "."+domain.Name) {
+				if label == domain.Name || strings.HasSuffix(label, "."+domain.Name) {
 					rec.SetLabel(label[0:(len(label)-len("."+domain.Name))], domain.Name)
-				}
-				if rec.SubDomain != "" {
-					// PTR magic here?
 				}
 			}
 			// Validate the unmodified inputs:
