@@ -56,10 +56,11 @@ jobs:
     - name: Tests
       working-directory: integrationTest
       run: |
-        echo DEBUG0: CAN_SECRET_PART1="$CAN_SECRET_PART1"
-        echo DEBUG0: CAN_SECRET_PART1="$CAN_SECRET_PART2"
-        echo DEBUG0: CAN_SECRET="$CAN_SECRET"
-        echo DEBUG0: PROVIDER="$PROVIDER"
+        echo DEBUG1: CAN_SECRET_PART1="$CAN_SECRET_PART1"
+        echo DEBUG2: CAN_SECRET_PART1="$CAN_SECRET_PART2"
+        echo DEBUG3: CAN_SECRET_PART1="$CAN_SECRET_PART3"
+        echo DEBUG4: CAN_SECRET="$CAN_SECRET"
+        echo DEBUG6: PROVIDER="$PROVIDER"
         echo DEBUG: A="$AZURE_DNS__CAN_SECRET"
         echo DEBUG: B="$BIND__CAN_SECRET"
         echo DEBUG: C="$CLOUDFLAREAPI__CAN_SECRET"
@@ -72,8 +73,9 @@ jobs:
         echo DEBUG: R="$ROUTE53__CAN_SECRET"
       if: env[ '${{ matrix.provider }}__CAN_SECRET' ] == 'true'
       env:
-        CAN_SECRET_PART1: secrets['${{ matrix.provider }}__CAN_SECRET']
-        CAN_SECRET_PART2: '${{ matrix.provider }}__CAN_SECRET'
+        CAN_SECRET_PART1: '${{ matrix.provider }}__CAN_SECRET'
+        CAN_SECRET_PART2: secrets['${{ matrix.provider }}__CAN_SECRET']
+        CAN_SECRET_PART3: ${{ secrets['${{ matrix.provider }}__CAN_SECRET'] }}
         CAN_SECRET: ${{ secrets['${{ matrix.provider }}__CAN_SECRET'] }}
         PROVIDER: ${{ matrix.provider }}
 # ---------
