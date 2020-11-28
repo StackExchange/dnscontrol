@@ -53,99 +53,88 @@ jobs:
       with:
         go-version: ^1.15
 
-    - name: Run boolean A simple
-      shell: bash
-      run: echo Hello A ${{ env['AZURE__CAN_SECRET'] }}
-      env:
-        AZURE__CAN_SECRET: ${{ secrets['AZURE__CAN_SECRET'] }}
-    - name: Run boolean A1 simple
-      shell: bash
-      run: echo Hello A ${{ env['CAN_SECRET'] }}
+    - name: Tests
+      working-directory: integrationTest
+      run: |
+        echo DEBUG0: CAN_SECRET=${{ env['CAN_SECRET'] }}
+        echo DEBUG1: matrix.provider=${{ matrix.provider }}
+        echo DEBUG2: key=${{ matrix.provider }}__CAN_SECRET
+        echo DEBUG3: lookup=${{ env[ ${{ matrix.provider }}__CAN_SECRET ] }}
+        echo DEBUG: A "${{ env['AZURE_DNS__CAN_SECRET'] }}"
+        echo DEBUG: B "${{ env['BIND__CAN_SECRET'] }}"
+        echo DEBUG: C "${{ env['CLOUDFLAREAPI__CAN_SECRET'] }}"
+        echo DEBUG: D "${{ env['DIGITALOCEAN__CAN_SECRET'] }}"
+        echo DEBUG: G "${{ env['GANDI_V5__CAN_SECRET'] }}"
+        echo DEBUG: G "${{ env['GCLOUD__CAN_SECRET'] }}"
+        echo DEBUG: H "${{ env['HETZNER__CAN_SECRET'] }}"
+        echo DEBUG: H "${{ env['HEXONET__CAN_SECRET'] }}"
+        echo DEBUG: N "${{ env['NAMEDOTCOM__CAN_SECRET'] }}"
+        echo DEBUG: R "${{ env['ROUTE53__CAN_SECRET'] }}"
+#      if: ${{ env[ '${{ matrix.provider }}__CAN_SECRET' ] == 'true' }}
       env:
         CAN_SECRET: ${{ secrets['${{ matrix.provider }}__CAN_SECRET'] }}
-    - name: Run boolean A2 simple
-      shell: bash
-      run: echo Hello A ${{ env['${{ matrix.provider }}__CAN_SECRET'] }}  XXX '${{ matrix.provider }}__CAN_SECRET'
-      env:
-        CAN_SECRET: ${{ secrets['${{ matrix.provider }}__CAN_SECRET'] }}
+# ---------
+        AZURE_DNS__CAN_SECRET: ${{ secrets['AZURE_DNS__CAN_SECRET'] }}
+        BIND__CAN_SECRET: ${{ secrets['BIND__CAN_SECRET'] }}
+        CLOUDFLAREAPI__CAN_SECRET: ${{ secrets['CLOUDFLAREAPI__CAN_SECRET'] }}
+        DIGITALOCEAN__CAN_SECRET: ${{ secrets['DIGITALOCEAN__CAN_SECRET'] }}
+        GANDI_V5__CAN_SECRET: ${{ secrets['GANDI_V5__CAN_SECRET'] }}
+        GCLOUD__CAN_SECRET: ${{ secrets['GCLOUD__CAN_SECRET'] }}
+        HETZNER__CAN_SECRET: ${{ secrets['HETZNER__CAN_SECRET'] }}
+        HEXONET__CAN_SECRET: ${{ secrets['HEXONET__CAN_SECRET'] }}
+        NAMEDOTCOM__CAN_SECRET: ${{ secrets['NAMEDOTCOM__CAN_SECRET'] }}
+        ROUTE53__CAN_SECRET: ${{ secrets['ROUTE53__CAN_SECRET'] }}
+
+
+
+#    - name: Run boolean A simple
+#      shell: bash
+#      run: echo Hello A ${{ env['AZURE__CAN_SECRET'] }}
+#      env:
+#        AZURE__CAN_SECRET: ${{ secrets['AZURE__CAN_SECRET'] }}
+#    - name: Run boolean A1 simple
+#      shell: bash
+#      run: echo Hello A ${{ env['CAN_SECRET'] }}
+#      env:
+#        CAN_SECRET: ${{ secrets['${{ matrix.provider }}__CAN_SECRET'] }}
+#    - name: Run boolean A2 simple
+#      shell: bash
+#      run: echo Hello A ${{ env['${{ matrix.provider }}__CAN_SECRET'] }}  XXX '${{ matrix.provider }}__CAN_SECRET'
+#      env:
+#        CAN_SECRET: ${{ secrets['${{ matrix.provider }}__CAN_SECRET'] }}
 #    - name: Run boolean B replace in run
 #      shell: bash
 #      run: echo Hello B ${{ env['${{ matrix.provider }}__CAN_SECRET'] }}
 #      env:
 #        AZURE__CAN_SECRET: ${{ secrets['AZURE__CAN_SECRET'] }}
-    - name: Run boolean C replace in env
-      shell: bash
-      run: echo Hello C ${{ env['AZURE__CAN_SECRET'] }} XXX '${{ matrix.provider }}__CAN_SECRET'
-      env:
-        AZURE__CAN_SECRET: ${{ secrets['${{ matrix.provider }}__CAN_SECRET'] }}
+#    - name: Run boolean C replace in env
+#      shell: bash
+#      run: echo Hello C ${{ env['AZURE__CAN_SECRET'] }} XXX '${{ matrix.provider }}__CAN_SECRET'
+#      env:
+#        AZURE__CAN_SECRET: ${{ secrets['${{ matrix.provider }}__CAN_SECRET'] }}
 #    - name: Run boolean D replace in both
 #      shell: bash
 #      run: echo Hello D ${{ env['${{ matrix.provider }}__CAN_SECRET'] }}
 #      env:
 #        AZURE__CAN_SECRET: ${{ secrets['${{ matrix.provider }}__CAN_SECRET'] }}
-
-    - name: Run boolean E simple
-      shell: bash
-      run: echo Hello E ${{ secrets['AZURE__CAN_SECRET'] }}
-      env:
-        AZURE__CAN_SECRET: ${{ secrets['AZURE__CAN_SECRET'] }}
+#
+#    - name: Run boolean E simple
+#      shell: bash
+#      run: echo Hello E ${{ secrets['AZURE__CAN_SECRET'] }}
+#      env:
+#        AZURE__CAN_SECRET: ${{ secrets['AZURE__CAN_SECRET'] }}
 #    - name: Run boolean F replace in run
 #      shell: bash
 #      run: echo Hello F ${{ secrets['${{ matrix.provider }}__CAN_SECRET'] }}
 #      env:
 #        AZURE__CAN_SECRET: ${{ secrets['AZURE__CAN_SECRET'] }}
-    - name: Run boolean G replace in env
-      shell: bash
-      run: echo Hello G ${{ secrets['AZURE__CAN_SECRET'] }}
-      env:
-        AZURE__CAN_SECRET: ${{ secrets['${{ matrix.provider }}__CAN_SECRET'] }}
+#    - name: Run boolean G replace in env
+#      shell: bash
+#      run: echo Hello G ${{ secrets['AZURE__CAN_SECRET'] }}
+#      env:
+#        AZURE__CAN_SECRET: ${{ secrets['${{ matrix.provider }}__CAN_SECRET'] }}
 #    - name: Run boolean H replace in both
 #      shell: bash
 #      run: echo Hello H ${{ secrets['${{ matrix.provider }}__CAN_SECRET'] }}
 #      env:
 #        AZURE__CAN_SECRET: ${{ secrets['${{ matrix.provider }}__CAN_SECRET'] }}
-
-    - name: Run integration tests for ${{ matrix.provider }} provider
-      working-directory: integrationTest
-      run: go test -v -verbose -provider ${{ matrix.provider }}
-      if: ${{ env[ '${{ matrix.provider }}__CAN_SECRET' ] == 'true' }}
-      env:
-        CAN_SECRET: ${{ secrets['${{ matrix.provider }}__CAN_SECRET'] }}
-# Keep these sorted lexically: (i.e. ascii sorted)
-        AZURE_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
-        AZURE_CLIENT_SECRET: ${{ secrets.AZURE_CLIENT_SECRET }}
-        AZURE_DOMAIN: dnscontrol-azure.com
-        AZURE_RESOURCE_GROUP: DNSControl
-        AZURE_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
-        AZURE_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
-        AZURE_DNS__CAN_SECRET: ${{ secrets['${{ matrix.provider }}__CAN_SECRET'] }}
-        BIND__CAN_SECRET: true
-        CF_DOMAIN: dnscontroltest-cf.com
-        CF_TOKEN: ${{ secrets.CF_TOKEN }}
-        CF__CAN_SECRET: ${{ secrets['${{ matrix.provider }}__CAN_SECRET'] }}
-        DO_DOMAIN : dnscontrol-do.com
-        DO_TOKEN : ${{ secrets.DO_TOKEN }}
-        DO__CAN_SECRET: ${{ secrets['${{ matrix.provider }}__CAN_SECRET'] }}
-        GANDI_V5_APIKEY : ${{ secrets.GANDI_V5_APIKEY }}
-        GANDI_V5_DOMAIN : dnscontroltest-gandilivedns.com
-        GANDI__CAN_SECRET: ${{ secrets['${{ matrix.provider }}__CAN_SECRET'] }}
-        GCLOUD_DOMAIN: dnscontroltest-gcloud.com
-        GCLOUD_EMAIL: dnscontrol@dnscontrol-dev.iam.gserviceaccount.com
-        GCLOUD_PRIVATEKEY: ${{ secrets.GCLOUD_PRIVATEKEY }}
-        GCLOUD_PROJECT: dnscontrol-dev
-        GCLOUD_TYPE: service_account
-        GCLOUD__CAN_SECRET: ${{ secrets['${{ matrix.provider }}__CAN_SECRET'] }}
-        HEXONET_DOMAIN : a-b-c-movies.com
-        HEXONET_ENTITY : OTE
-        HEXONET_PW : test.passw0rd
-        HEXONET_UID : test.user
-        HEXONET__CAN_SECRET: true
-        NAMEDOTCOM_DOMAIN: dnscontrol-ndc.com
-        NAMEDOTCOM_KEY: ${{ secrets.NAMEDOTCOM_KEY }}
-        NAMEDOTCOM_URL: api.name.com
-        NAMEDOTCOM_USER: dnscontroltest
-        NAMEDOTCOM__CAN_SECRET: ${{ secrets['${{ matrix.provider }}__CAN_SECRET'] }}
-        R53_DOMAIN: dnscontroltest-r53.com
-        R53_KEY: ${{ secrets.R53_KEY }}
-        R53_KEY_ID: ${{ secrets.R53_KEY_ID }}
-        R53__CAN_SECRET: ${{ secrets['${{ matrix.provider }}__CAN_SECRET'] }}
