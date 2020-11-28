@@ -31,20 +31,17 @@
           "type": "PTR"
         },
         {
-          "name": "4.4",
-          "subdomain": "4",
+          "name": "4",
           "target": "silly.example.com.",
           "type": "PTR"
         },
         {
-          "name": "1.2.3.5.5",
-          "subdomain": "5",
+          "name": "1.2.3.5",
           "target": "willy.example.com.",
           "type": "PTR"
         },
         {
-          "name": "6.3.2.1.in-addr.arpa.6",
-          "subdomain": "6",
+          "name": "6.3.2.1.in-addr.arpa",
           "target": "billy.example.com.",
           "type": "PTR"
         }
