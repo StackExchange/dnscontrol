@@ -53,8 +53,8 @@ jobs:
       uses: actions/setup-go@v2
       with:
         go-version: ^1.15
-    - name: Examining creds for ${{ matrix.provider }} provider
-      run: echo "${{ matrix.provider }}__CAN_SECRET" ; echo "$${{ matrix.provider }}__CAN_SECRET" | wc -c ; if [ "$${{ matrix.provider }}__CAN_SECRET" = "true" ] ; then echo "CAN_CONTINUE=yes" >> $GITHUB_ENV ; echo "CAN_CONTINUE=yes" ; else echo '***SKIPPING***' ; fi
+    - name: Determining test viability for ${{ matrix.provider }} provider
+      run: if [ "$${{ matrix.provider }}__CAN_SECRET" = "true" ] ; then echo "CAN_CONTINUE=yes" >> $GITHUB_ENV ; echo "Decision: CONTINUE" ; else echo 'Decision: SKIP' ; fi
 # Does the provider's tests require secrets?
 # Yes?  Set a secret called ${PROVIDER}__CAN_SECRET with value "true" (no quotes).
 # No?   Set it to "true" like you see for BIND__CAN_SECRET.
