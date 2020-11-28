@@ -54,7 +54,7 @@ jobs:
         go-version: ^1.15
     - name: Run integration tests for ${{ matrix.provider }} provider
       working-directory: integrationTest
-      run: if [ x"${{ matrix.provider }}__CAN_SECRET" == x"true" ] ; then  go test -v -verbose -provider ${{ matrix.provider }} ; else echo 'SKIPPING: ${{ matrix.provider }} (Secrets not available to Actions)' ; fi
+      run: if [ "x$${{ matrix.provider }}__CAN_SECRET" = "xtrue" ] ; then  go test -v -verbose -provider ${{ matrix.provider }} ; else echo SKIPPING ; fi
       env:
 # Keep these sorted lexically: (i.e. ascii sorted)
         AZURE_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
