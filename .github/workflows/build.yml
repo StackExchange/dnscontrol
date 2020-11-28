@@ -55,7 +55,7 @@ jobs:
     - name: Run integration tests for ${{ matrix.provider }} provider
       working-directory: integrationTest
       run: echo I_SEE_SECRETS="$I_SEE_SECRETS" KEY="${{ matrix.provider }}__CAN_SECRET" VALUE="${${{ matrix.provider }}__CAN_SECRET}" ; go test -v -verbose -provider ${{ matrix.provider }}
-      if: ${{ env.I_SEE_SECRETS == 'true' }}
+#      if: ${{ env.I_SEE_SECRETS == 'true' }}
       env:
 # Keep these sorted lexically: (i.e. ascii sorted)
         I_SEE_SECRETS: secrets.${{ matrix.provider }}__CAN_SECRET
