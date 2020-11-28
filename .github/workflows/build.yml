@@ -54,10 +54,11 @@ jobs:
         go-version: ^1.15
     - name: Run integration tests for ${{ matrix.provider }} provider
       working-directory: integrationTest
-      run: echo KEY="${{ matrix.provider }}__CAN_SECRET" VALUE="${${{ matrix.provider }}__CAN_SECRET}" ; go test -v -verbose -provider ${{ matrix.provider }}
-      if: ${{ env.${{ matrix.provider }}__CAN_SECRET == 'true' }}
+      run: echo I_SEE_SECRETS="$I_SEE_SECRETS" KEY="${{ matrix.provider }}__CAN_SECRET" VALUE="${${{ matrix.provider }}__CAN_SECRET}" ; go test -v -verbose -provider ${{ matrix.provider }}
+      if: ${{ env.I_SEE_SECRETS == 'true' }}
       env:
 # Keep these sorted lexically: (i.e. ascii sorted)
+        I_SEE_SECRETS: secrets.${{ matrix.provider }}__CAN_SECRET
         BIND__CAN_SECRET: ${{ secrets.BIND__CAN_SECRET }}
         HEXONET__CAN_SECRET: "true"
         AZURE_DNS__CAN_SECRET: "false"
