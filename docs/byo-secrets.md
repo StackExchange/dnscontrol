@@ -15,7 +15,8 @@ secrets.
     providers have automated tests, plus a few others too.
 * PR from an external person
   * Automated tests run for a short list of providers. Any test that
-    requires secrets are skipped.
+    requires secrets are skipped in the fork. They will run after the fact though
+    once the PR has been merged to into the `master` branch of StackExchange/dnscontrol.
 * PR from an external person that wants automated tests for their
   provider.
   * They can set up secrets in their own GitHub account for any tests
