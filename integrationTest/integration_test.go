@@ -683,7 +683,10 @@ func makeTests(t *testing.T) []*TestGroup {
 			tc("Create 1 TXT as array", txtmulti("foo", []string{"simple"})), // Same as non-TXTMulti
 			clear(),
 			tc("Create a 255-byte TXT", txt("foo", strings.Repeat("A", 255))),
-			clear(),
+		),
+
+		testgroup("single TXT with single-quote",
+			not("INWX"),
 			tc("Create TXT with single-quote", txt("foo", "blah`blah")),
 		),
 

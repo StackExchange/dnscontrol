@@ -207,6 +207,18 @@ func (api *inwxAPI) deleteRecord(RecordID int) error {
 	return api.client.Nameservers.DeleteRecord(RecordID)
 }
 
+// checkRecords ensures that there is no single-quote inside TXT records which would be ignored by INWX.
+func checkRecords(records models.Records) error {
+	for _, r := range records {
+		if r.Type == "TXT" {
+			if strings.ContainsAny(r.Target, "`") {
+				return fmt.Errorf("INWX TXT records do not support single-quotes in their target")
+			}
+		}
+	}
+	return nil
+}
+
 // GetDomainCorrections finds the currently existing records and returns the corrections required to update them.
 func (api *inwxAPI) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Correction, error) {
 	dc.Punycode()
@@ -217,6 +229,11 @@ func (api *inwxAPI) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Cor
 	}
 
 	models.PostProcessRecords(foundRecords)
+
+	err = checkRecords(dc.Records)
+	if err != nil {
+		return nil, err
+	}
 
 	differ := diff.New(dc)
 	_, create, del, mod, err := differ.IncrementalDiff(foundRecords)
