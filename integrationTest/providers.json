@@ -22,7 +22,9 @@
     "domain": "example.com"
   },
   "CLOUDFLAREAPI": {
+    "apikey": "$CF_KEY",
     "apitoken": "$CF_TOKEN",
+    "apiuser": "$CF_USER",
     "domain": "$CF_DOMAIN"
   },
   "CLOUDFLAREAPI_OLD": {
