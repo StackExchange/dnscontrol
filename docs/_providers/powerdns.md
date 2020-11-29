@@ -14,9 +14,9 @@ In most cases the Server id is `localhost`
 {% highlight json %}
 {
   "powerdns": {
-    "apiurl": "http://localhost",
-    "apikey": "your-key",
-    "servername": "localhost"
+    "apiUrl": "http://localhost",
+    "apiKey": "your-key",
+    "serverName": "localhost"
   }
 }
 {% endhighlight %}
@@ -51,7 +51,3 @@ D("example.tld", REG_NONE, DnsProvider(POWERDNS),
 
 ## Activation
 See the [PowerDNS documentation](https://doc.powerdns.com/authoritative/http-api/index.html) how the API can be enabled.
-
-## Caveats
-Currently it is only possible to enable DNSSec while creating a new zone.
-On-demand activation/deactivation of DNSSec will be added later.
