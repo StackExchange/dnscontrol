@@ -698,7 +698,7 @@ func makeTests(t *testing.T) []*TestGroup {
 		),
 
 		testgroup("empty TXT",
-			not("CLOUDFLAREAPI", "HETZNER", "HEXONET", "INWX", "NETCUP"),
+			not("HETZNER", "HEXONET", "INWX", "NETCUP"),
 			tc("TXT with empty str", txt("foo1", "")),
 			// https://github.com/StackExchange/dnscontrol/issues/598
 			// We decided that permitting the TXT target to be an empty
