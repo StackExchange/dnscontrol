@@ -44,6 +44,57 @@ jobs:
         - DIGITALOCEAN
         - GANDI_V5
         - INWX
+# Does the provider's tests require secrets?
+# Yes?  Set a secret called ${PROVIDER}__CAN_SECRET with value "true" (no quotes).
+# No?   Set it to "true" like you see for BIND__CAN_SECRET.
+# This way tests only run if the secrets are available to the runner.
+# A fork can "bring your own secrets" for locally-defined tests.
+# Please keep the list sorted.
+    env:
+      AZURE_DNS__CAN_SECRET: ${{ secrets.AZURE_DNS__CAN_SECRET }}
+      BIND__CAN_SECRET: true
+      CLOUDFLAREAPI__CAN_SECRET: ${{ secrets.CLOUDFLAREAPI__CAN_SECRET }}
+      DIGITALOCEAN__CAN_SECRET: ${{ secrets.DIGITALOCEAN__CAN_SECRET }}
+      GANDI_V5__CAN_SECRET: ${{ secrets.GANDI_V5__CAN_SECRET }}
+      GCLOUD__CAN_SECRET: ${{ secrets.GCLOUD__CAN_SECRET }}
+      HEXONET__CAN_SECRET: true
+      INWX__CAN_SECRET: ${{ secrets.INWX__CAN_SECRET }}
+      NAMEDOTCOM__CAN_SECRET: ${{ secrets.NAMEDOTCOM__CAN_SECRET }}
+      ROUTE53__CAN_SECRET: ${{ secrets.ROUTE53__CAN_SECRET }}
+# Extract the secrets that are used by the tests. (Please keep this list sorted)
+      AZURE_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
+      AZURE_CLIENT_SECRET: ${{ secrets.AZURE_CLIENT_SECRET }}
+      AZURE_DOMAIN: dnscontrol-azure.com
+      AZURE_RESOURCE_GROUP: DNSControl
+      AZURE_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+      AZURE_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
+      CF_DOMAIN: ${{ secrets.CF_DOMAIN }}
+      CF_KEY: ${{ secrets.CF_KEY }}
+      CF_TOKEN: ${{ secrets.CF_TOKEN }}
+      CF_USER: ${{ secrets.CF_USER }}
+      DO_DOMAIN: dnscontrol-do.com
+      DO_TOKEN: ${{ secrets.DO_TOKEN }}
+      GANDI_V5_APIKEY: ${{ secrets.GANDI_V5_APIKEY }}
+      GANDI_V5_DOMAIN: dnscontroltest-gandilivedns.com
+      GCLOUD_DOMAIN: dnscontroltest-gcloud.com
+      GCLOUD_EMAIL: dnscontrol@dnscontrol-dev.iam.gserviceaccount.com
+      GCLOUD_PRIVATEKEY: ${{ secrets.GCLOUD_PRIVATEKEY }}
+      GCLOUD_PROJECT: dnscontrol-dev
+      GCLOUD_TYPE: service_account
+      HEXONET_DOMAIN: a-b-c-movies.com
+      HEXONET_ENTITY: OTE
+      HEXONET_PW: test.passw0rd
+      HEXONET_UID: test.user
+      INWX_DOMAIN: ${{ secrets.INWX_DOMAIN }}
+      INWX_PASSWORD: ${{ secrets.INWX_PASSWORD }}
+      INWX_USER: ${{ secrets.INWX_USER }}
+      NAMEDOTCOM_DOMAIN: dnscontrol-ndc.com
+      NAMEDOTCOM_KEY: ${{ secrets.NAMEDOTCOM_KEY }}
+      NAMEDOTCOM_URL: api.name.com
+      NAMEDOTCOM_USER: dnscontroltest
+      R53_DOMAIN: dnscontroltest-r53.com
+      R53_KEY: ${{ secrets.R53_KEY }}
+      R53_KEY_ID: ${{ secrets.R53_KEY_ID }}
     steps:
     - name: Checkout repo
       uses: actions/checkout@v2
@@ -55,59 +106,7 @@ jobs:
         go-version: ^1.15
     - name: Determining test viability for ${{ matrix.provider }} provider
       run: if [ "$${{ matrix.provider }}__CAN_SECRET" = "true" ] ; then echo "CAN_CONTINUE=yes" >> "$GITHUB_ENV" ; fi
-# Does the provider's tests require secrets?
-# Yes?  Set a secret called ${PROVIDER}__CAN_SECRET with value "true" (no quotes).
-# No?   Set it to "true" like you see for BIND__CAN_SECRET.
-# This way tests only run if the secrets are available to the runner.
-# A fork can "bring your own secrets" for locally-defined tests.
-# Please keep the list sorted.
-      env:
-        AZURE_DNS__CAN_SECRET: ${{ secrets.AZURE_DNS__CAN_SECRET }}
-        BIND__CAN_SECRET: true
-        CLOUDFLAREAPI__CAN_SECRET: ${{ secrets.CLOUDFLAREAPI__CAN_SECRET }}
-        DIGITALOCEAN__CAN_SECRET: ${{ secrets.DIGITALOCEAN__CAN_SECRET }}
-        GANDI_V5__CAN_SECRET: ${{ secrets.GANDI_V5__CAN_SECRET }}
-        GCLOUD__CAN_SECRET: ${{ secrets.GCLOUD__CAN_SECRET }}
-        HEXONET__CAN_SECRET: true
-        INWX__CAN_SECRET: ${{ secrets.INWX__CAN_SECRET }}
-        NAMEDOTCOM__CAN_SECRET: ${{ secrets.NAMEDOTCOM__CAN_SECRET }}
-        ROUTE53__CAN_SECRET: ${{ secrets.ROUTE53__CAN_SECRET }}
     - name: Run integration tests for ${{ matrix.provider }} provider
       working-directory: integrationTest
       run: go test -v -verbose -provider ${{ matrix.provider }}
       if: ${{ env.CAN_CONTINUE == 'yes' }}
-# Extract the secrets that are used by the tests. (Please keep this list sorted)
-      env:
-        AZURE_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
-        AZURE_CLIENT_SECRET: ${{ secrets.AZURE_CLIENT_SECRET }}
-        AZURE_DOMAIN: dnscontrol-azure.com
-        AZURE_RESOURCE_GROUP: DNSControl
-        AZURE_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
-        AZURE_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
-        CF_DOMAIN: ${{ secrets.CF_DOMAIN }}
-        CF_KEY: ${{ secrets.CF_KEY }}
-        CF_TOKEN: ${{ secrets.CF_TOKEN }}
-        CF_USER: ${{ secrets.CF_USER }}
-        DO_DOMAIN: dnscontrol-do.com
-        DO_TOKEN: ${{ secrets.DO_TOKEN }}
-        GANDI_V5_APIKEY: ${{ secrets.GANDI_V5_APIKEY }}
-        GANDI_V5_DOMAIN: dnscontroltest-gandilivedns.com
-        GCLOUD_DOMAIN: dnscontroltest-gcloud.com
-        GCLOUD_EMAIL: dnscontrol@dnscontrol-dev.iam.gserviceaccount.com
-        GCLOUD_PRIVATEKEY: ${{ secrets.GCLOUD_PRIVATEKEY }}
-        GCLOUD_PROJECT: dnscontrol-dev
-        GCLOUD_TYPE: service_account
-        HEXONET_DOMAIN: a-b-c-movies.com
-        HEXONET_ENTITY: OTE
-        HEXONET_PW: test.passw0rd
-        HEXONET_UID: test.user
-        INWX_DOMAIN: ${{ secrets.INWX_DOMAIN }}
-        INWX_PASSWORD: ${{ secrets.INWX_PASSWORD }}
-        INWX_USER: ${{ secrets.INWX_USER }}
-        NAMEDOTCOM_DOMAIN: dnscontrol-ndc.com
-        NAMEDOTCOM_KEY: ${{ secrets.NAMEDOTCOM_KEY }}
-        NAMEDOTCOM_URL: api.name.com
-        NAMEDOTCOM_USER: dnscontroltest
-        R53_DOMAIN: dnscontroltest-r53.com
-        R53_KEY: ${{ secrets.R53_KEY }}
-        R53_KEY_ID: ${{ secrets.R53_KEY_ID }}
