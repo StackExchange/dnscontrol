@@ -49,7 +49,7 @@ var features = providers.DocumentationNotes{
 	providers.CanUseSRV:              providers.Can("SRV records with empty targets are not supported."),
 	providers.CanUseSSHFP:            providers.Can(),
 	providers.CanUseTLSA:             providers.Can(),
-	providers.CanUseTXTMulti:         providers.Cannot("INWX only supports a single entry for TXT records"),
+	providers.CanUseTXTMulti:         providers.Can(),
 	providers.CanAutoDNSSEC:          providers.Unimplemented("Supported by INWX but not implemented yet."),
 	providers.DocOfficiallySupported: providers.Cannot(),
 	providers.DocDualHost:            providers.Can(),
@@ -211,8 +211,10 @@ func (api *inwxAPI) deleteRecord(RecordID int) error {
 func checkRecords(records models.Records) error {
 	for _, r := range records {
 		if r.Type == "TXT" {
-			if strings.ContainsAny(r.Target, "`") {
-				return fmt.Errorf("INWX TXT records do not support single-quotes in their target")
+			for _, target := range r.TxtStrings {
+				if strings.ContainsAny(target, "`") {
+					return fmt.Errorf("INWX TXT records do not support single-quotes in their target")
+				}
 			}
 		}
 	}
