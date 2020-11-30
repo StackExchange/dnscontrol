@@ -281,8 +281,8 @@ func ValidateAndNormalizeConfig(config *models.DNSConfig) (errs []error) {
 			if rec.TTL == 0 {
 				rec.TTL = models.DefaultTTL
 			}
-			// PTR magic
-			if rec.Type == "PTR" {
+			// in-addr.arpa magic
+			if strings.HasSuffix(domain.Name, ".in-addr.arpa") || strings.HasSuffix(domain.Name, ".ip6.arpa") {
 				label := rec.GetLabel()
 				if label == domain.Name || strings.HasSuffix(label, "."+domain.Name) {
 					rec.SetLabel(label[0:(len(label)-len("."+domain.Name))], domain.Name)

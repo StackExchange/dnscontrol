@@ -31,23 +31,39 @@
           "type": "PTR"
         },
         {
-          "name": "4.3.2.1.in-addr.arpa",
-          "target": "blam.example.com.",
-          "type": "PTR"
-        },
-        {
-          "name": "5",
+          "name": "4",
+          "subdomain": "4",
           "target": "silly.example.com.",
           "type": "PTR"
         },
         {
-          "name": "1.2.3.6",
+          "name": "1.2.3.5",
+          "subdomain": "5",
           "target": "willy.example.com.",
           "type": "PTR"
         },
         {
-          "name": "7.3.2.1.in-addr.arpa",
+          "name": "6.3.2.1.in-addr.arpa",
+          "subdomain": "6",
           "target": "billy.example.com.",
+          "type": "PTR"
+        },
+        {
+          "name": "7",
+          "target": "my.example.com.",
+          "type": "PTR"
+        },
+        {
+          "name": "1.2.3.8",
+          "target": "fair.example.com.",
+          "type": "PTR"
+        },
+        {
+          "meta": {
+            "skip_fqdn_check": "true"
+          },
+          "name": "9.3.2.1.in-addr.arpa",
+          "target": "lady.example.com.",
           "type": "PTR"
         }
       ],
