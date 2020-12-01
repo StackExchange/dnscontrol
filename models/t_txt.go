@@ -60,7 +60,7 @@ func splitChunks(buf string, lim int) []string {
 		chunks = append(chunks, chunk)
 	}
 	if len(buf) > 0 {
-		chunks = append(chunks, buf[:len(buf)])
+		chunks = append(chunks, buf[:])
 	}
 	return chunks
 }
