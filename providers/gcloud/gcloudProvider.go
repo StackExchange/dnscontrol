@@ -368,7 +368,7 @@ func retryNeeded(resp *gdns.Change, err error) bool {
 	}
 	backoff404 = false
 
-	if serr.Code != 429 && serr.Code != 503 {
+	if serr.Code != 429 && serr.Code != 502 && serr.Code != 503 {
 		return false // Not an error that permits retrying.
 	}
 
