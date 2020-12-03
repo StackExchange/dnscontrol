@@ -79,15 +79,6 @@
         { "name": "e.sub", "subdomain": "sub", "target": "otherdomain.tld.", "type": "CNAME" }
       ],
       "registrar": "Third-Party"
-    },
-    {
-      "name": "foo.com",
-      "dnsProviders": { "Cloudflare": -1 },
-      "records": [
-        { "name": "@", "target": "test.foo.com,https://goo.com/$1", "type": "CF_REDIRECT" },
-        { "name": "@", "target": "test.foo.com,https://goo.com/$1", "type": "CF_TEMP_REDIRECT" }
-      ],
-      "registrar": "Third-Party"
     }
   ],
   "registrars": [ { "name": "Third-Party", "type": "NONE" } ]
