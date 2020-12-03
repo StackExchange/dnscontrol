@@ -3,6 +3,7 @@ package js
 import (
 	"bytes"
 	"encoding/json"
+	"fmt"
 	"io/ioutil"
 	"os"
 	"path/filepath"
@@ -78,29 +79,28 @@ func TestParsedFiles(t *testing.T) {
 			_, _ = es, as
 			testifyrequire.JSONEqf(t, es, as, "EXPECTING %q = \n```\n%s\n```", expectedFile, as)
 
-			cf_provider, err := providers.CreateDNSProvider("CLOUDFLAREAPI", nil, nil)
-			_ = cf_provider
-
-			// For each domain, if there is a zone file, test it:
-
-			// TODO(tlim) If there are any zones, report if any domains
-			// don't have a zone file. This will help find missing
-			// zonefiles.
+			// For each domain, if there is a zone file, test against it:
 
 			errs := normalize.ValidateAndNormalizeConfig(conf)
 			if len(errs) != 0 {
 				t.Fatal(errs[0])
 			}
+
+			var dCount int
 			for _, dc := range conf.Domains {
 				zoneFile := filepath.Join(testDir, testName, dc.Name+".zone")
 				expectedZone, err := ioutil.ReadFile(zoneFile)
 				if err != nil {
 					continue
 				}
+				dCount++
 
 				// Generate the zonefile
 				var buf bytes.Buffer
 				err = prettyzone.WriteZoneFileRC(&buf, dc.Records, dc.Name, 300, nil)
+				if err != nil {
+					t.Fatal(err)
+				}
 				actualZone := buf.String()
 
 				es := string(expectedZone)
@@ -110,6 +110,9 @@ func TestParsedFiles(t *testing.T) {
 					ioutil.WriteFile(zoneFile+".ACTUAL", []byte(actualZone), 0644)
 				}
 				testifyrequire.Equal(t, es, as, "EXPECTING %q =\n```\n%s```", zoneFile, as)
+			}
+			if dCount > 0 && (len(conf.Domains) != dCount) {
+				t.Fatal(fmt.Errorf("only %d of %d domains in %q have zonefiles", dCount, len(conf.Domains), name))
 			}
 
 		})
