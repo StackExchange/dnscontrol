@@ -1,0 +1,3 @@
+$TTL 300
+1                IN NS    ns1.example.com.
+2                IN NS    ns2.example.org.

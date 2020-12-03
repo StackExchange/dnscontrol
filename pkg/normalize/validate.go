@@ -196,7 +196,13 @@ func importTransform(srcDomain, dstDomain *models.DomainConfig, transforms []tra
 	// 3. For CNAMEs, append destDomainname to the end of the target.
 	// 4. For As, change the target as described the transforms.
 
+	//
+	//if srcDomain == nil {
+	//return nil
+	//}
+
 	for _, rec := range srcDomain.Records {
+		fmt.Printf("DEBUG1\n")
 		if dstDomain.Records.HasRecordTypeName(rec.Type, rec.GetLabelFQDN()) {
 			continue
 		}
@@ -395,7 +401,12 @@ func ValidateAndNormalizeConfig(config *models.DNSConfig) (errs []error) {
 					errs = append(errs, err)
 					continue
 				}
-				err = importTransform(config.FindDomain(rec.GetTargetField()), domain, table, rec.TTL)
+				c := config.FindDomain(rec.GetTargetField())
+				if c == nil {
+					err = fmt.Errorf("IMPORT_TRANSFORM mentions non-existant domain %q", rec.GetTargetField())
+					errs = append(errs, err)
+				}
+				err = importTransform(c, domain, table, rec.TTL)
 				if err != nil {
 					errs = append(errs, err)
 				}

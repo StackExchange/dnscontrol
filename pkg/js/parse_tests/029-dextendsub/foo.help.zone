@@ -1,0 +1,5 @@
+$TTL 300
+@                IN A     40.12.12.12
+morty            IN A     40.17.17.17
+www.morty        IN A     40.18.18.18
+www              IN A     40.12.12.12
