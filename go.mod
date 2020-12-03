@@ -3,9 +3,9 @@ module github.com/StackExchange/dnscontrol/v3
 go 1.14
 
 require (
-	cloud.google.com/go v0.72.0 // indirect
+	cloud.google.com/go v0.69.1 // indirect
 	github.com/Azure/azure-sdk-for-go v49.0.0+incompatible
-	github.com/Azure/go-autorest/autorest v0.11.12 // indirect
+	github.com/Azure/go-autorest/autorest v0.11.10 // indirect
 	github.com/Azure/go-autorest/autorest/azure/auth v0.5.3
 	github.com/Azure/go-autorest/autorest/to v0.4.0
 	github.com/DisposaBoy/JsonConfigReader v0.0.0-20201129172854-99cf318d67e7
@@ -19,7 +19,6 @@ require (
 	github.com/cenkalti/backoff v2.2.1+incompatible // indirect
 	github.com/cpuguy83/go-md2man/v2 v2.0.0 // indirect
 	github.com/digitalocean/godo v1.54.0
-	github.com/dimchansky/utfbom v1.1.1 // indirect
 	github.com/dnsimple/dnsimple-go v0.62.0
 	github.com/exoscale/egoscale v0.23.0
 	github.com/frankban/quicktest v1.11.2 // indirect
@@ -41,7 +40,6 @@ require (
 	github.com/kolo/xmlrpc v0.0.0-20201022064351-38db28db192b // indirect
 	github.com/kr/text v0.2.0 // indirect
 	github.com/miekg/dns v1.1.35
-	github.com/mitchellh/mapstructure v1.4.0 // indirect
 	github.com/mittwald/go-powerdns v0.5.2
 	github.com/mjibson/esc v0.2.0
 	github.com/namedotcom/go v0.0.0-20180403034216-08470befbe04
@@ -69,7 +67,6 @@ require (
 	golang.org/x/net v0.0.0-20201202161906-c7110b5ffcbb
 	golang.org/x/oauth2 v0.0.0-20201203001011-0b49973bad19
 	golang.org/x/sys v0.0.0-20201202213521-69691e467435 // indirect
-	golang.org/x/time v0.0.0-20200630173020-3af7569d3a1e // indirect
 	golang.org/x/tools v0.0.0-20201202200335-bef1c476418a // indirect
 	google.golang.org/api v0.35.0
 	google.golang.org/appengine v1.6.7 // indirect
@@ -79,7 +76,6 @@ require (
 	gopkg.in/ini.v1 v1.62.0 // indirect
 	gopkg.in/ns1/ns1-go.v2 v2.0.0-20170502175150-c563826f4cbe
 	gopkg.in/sourcemap.v1 v1.0.5 // indirect
-	gopkg.in/square/go-jose.v2 v2.5.1 // indirect
 	gopkg.in/yaml.v2 v2.4.0
-	gopkg.in/yaml.v3 v3.0.0-20200615113413-eeeca48fe776 // indirect
+	gopkg.in/yaml.v3 v3.0.0-20200605160147-a5ece683394c // indirect
 )
