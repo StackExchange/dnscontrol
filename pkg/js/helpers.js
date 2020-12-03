@@ -682,12 +682,17 @@ function recordBuilder(type, opts) {
             opts.transform(record, parsedArgs, modifiers);
 
             // Handle D_EXTEND() with subdomains.
-            if (d.subdomain && record.type != 'CF_REDIRECT' &&
-                    record.type != 'CF_TEMP_REDIRECT') {
+            if (d.subdomain &&
+                record.type != 'CF_REDIRECT' &&
+                record.type != 'CF_TEMP_REDIRECT') {
+                fqdn = [d.subdomain, d.name].join(".")
+
                 record.subdomain = d.subdomain;
                 if (record.name == '@') {
+                    record.subdomain = d.subdomain;
                     record.name = d.subdomain;
-                } else {
+                } else if (fqdn != record.name && record.type != 'PTR') {
+                    record.subdomain = d.subdomain;
                     record.name += '.' + d.subdomain;
                 }
             }
