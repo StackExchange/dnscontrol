@@ -15,6 +15,7 @@ type cloudnsProvider struct {
 	creds            struct {
 		id       string
 		password string
+		subid    string
 	}
 }
 
@@ -195,6 +196,7 @@ func (c *cloudnsProvider) get(endpoint string, params requestParams) ([]byte, er
 	// Add auth params
 	q.Add("auth-id", c.creds.id)
 	q.Add("auth-password", c.creds.password)
+	q.Add("sub-auth-id", c.creds.subid)
 
 	for pName, pValue := range params {
 		q.Add(pName, pValue)
@@ -233,5 +235,4 @@ func fixTTL(ttl uint32) uint32 {
 		}
 	}
 
-	return allowedTTLValues[0]
-}
+	return allowedTTLValues[0]}
