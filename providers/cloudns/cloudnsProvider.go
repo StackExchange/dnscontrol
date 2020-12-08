@@ -13,21 +13,19 @@ import (
 )
 
 /*
-
 CloDNS API DNS provider:
-
 Info required in `creds.json`:
    - auth-id
    - auth-password
-
 */
 
 // NewCloudns creates the provider.
 func NewCloudns(m map[string]string, metadata json.RawMessage) (providers.DNSServiceProvider, error) {
 	c := &cloudnsProvider{}
 
-	c.creds.id, c.creds.password = m["auth-id"], m["auth-password"]
-	if c.creds.id == "" || c.creds.password == "" {
+	c.creds.id, c.creds.password, c.creds.subid = m["auth-id"], m["auth-password"], m["sub-auth-id"]
+
+	if (c.creds.id == "" && c.creds.subid == "") || c.creds.password == "" {
 		return nil, fmt.Errorf("missing ClouDNS auth-id and auth-password")
 	}
 
