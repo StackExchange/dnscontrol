@@ -23,14 +23,12 @@ Info required in `creds.json`:
 func NewCloudns(m map[string]string, metadata json.RawMessage) (providers.DNSServiceProvider, error) {
 	c := &cloudnsProvider{}
 
-	c.creds.id, c.creds.password, c.creds.subid = m["auth-id"], m["auth-password"],m["sub-auth-id"]
-	
-	if ((c.creds.id == "" && c.creds.subid == "") || c.creds.password == "" ) {
+	c.creds.id, c.creds.password, c.creds.subid = m["auth-id"], m["auth-password"], m["sub-auth-id"]
+
+	if (c.creds.id == "" && c.creds.subid == "") || c.creds.password == "" {
 		return nil, fmt.Errorf("missing ClouDNS auth-id and auth-password")
 	}
 
-	
-	
 	// Get a domain to validate authentication
 	if err := c.fetchDomainList(); err != nil {
 		return nil, err

@@ -235,4 +235,5 @@ func fixTTL(ttl uint32) uint32 {
 		}
 	}
 
-	return allowedTTLValues[0]}
+	return allowedTTLValues[0]
+}
