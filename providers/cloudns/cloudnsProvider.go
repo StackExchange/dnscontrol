@@ -46,7 +46,7 @@ var features = providers.DocumentationNotes{
 	providers.CanUseSSHFP:            providers.Can(),
 	providers.CanUseCAA:              providers.Can(),
 	providers.CanUseTLSA:             providers.Can(),
-	providers.CanUsePTR:              providers.Unimplemented(),
+	providers.CanUsePTR:              providers.Can(),
 	providers.CanGetZones:            providers.Can(),
 }
 
@@ -193,7 +193,7 @@ func toRc(domain string, r *domainRecord) *models.RecordConfig {
 	switch rtype := r.Type; rtype { // #rtype_variations
 	case "TXT":
 		rc.SetTargetTXT(r.Target)
-	case "CNAME", "MX", "NS", "SRV", "ALIAS":
+	case "CNAME", "MX", "NS", "SRV", "ALIAS", "PTR":
 		rc.SetTarget(dnsutil.AddOrigin(r.Target+".", domain))
 	case "CAA":
 		caaFlag, _ := strconv.ParseUint(r.CaaFlag, 10, 32)
