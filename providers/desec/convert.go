@@ -4,6 +4,7 @@ package desec
 
 import (
 	"fmt"
+	"strings"
 
 	"github.com/StackExchange/dnscontrol/v3/models"
 	"github.com/StackExchange/dnscontrol/v3/pkg/printer"
@@ -62,10 +63,7 @@ func recordsToNative(rcs []*models.RecordConfig, origin string) []resourceRecord
 				Records: []string{r.GetTargetCombined()},
 			}
 			if r.Type == "TXT" {
-				// Try this first:
-				zr.Records = r.TxtStrings
-				// If that doesn't work, try:
-				//zr.Records = []string{strings.Join(r.TxtStrings, "")}
+				zr.Records = []string{strings.Join(r.TxtStrings, "")}
 			}
 			zrs = append(zrs, zr)
 			//keys[key] = &zr   // This didn't work.
