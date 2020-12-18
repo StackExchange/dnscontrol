@@ -65,6 +65,10 @@ func TestDNSProviders(t *testing.T) {
 	if provider == nil {
 		return
 	}
+	if domain == "" {
+		t.Fatal("NO DOMAIN SET!  Exiting!")
+	}
+
 	t.Run(domain, func(t *testing.T) {
 		runTests(t, provider, domain, fails, cfg)
 	})
@@ -254,6 +258,9 @@ func TestDualProviders(t *testing.T) {
 	p, domain, _, _ := getProvider(t)
 	if p == nil {
 		return
+	}
+	if domain == "" {
+		t.Fatal("NO DOMAIN SET!  Exiting!")
 	}
 	dc := getDomainConfigWithNameservers(t, p, domain)
 	// clear everything
