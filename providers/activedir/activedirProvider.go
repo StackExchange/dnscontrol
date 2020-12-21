@@ -14,17 +14,19 @@ type activedirProvider struct {
 	fake     bool
 	psOut    string
 	psLog    string
+	// new fields here:
+	shell DNSAccessor
 }
 
 var features = providers.DocumentationNotes{
 	providers.CanUseAlias:            providers.Cannot(),
 	providers.CanUseCAA:              providers.Cannot(),
-	providers.CanUsePTR:              providers.Cannot(),
+	providers.CanUsePTR:              providers.Can(),
 	providers.CanUseSRV:              providers.Cannot(),
 	providers.DocCreateDomains:       providers.Cannot("AD depends on the zone already existing on the dns server"),
 	providers.DocDualHost:            providers.Cannot("This driver does not manage NS records, so should not be used for dual-host scenarios"),
 	providers.DocOfficiallySupported: providers.Can(),
-	providers.CanGetZones:            providers.Unimplemented(),
+	providers.CanGetZones:            providers.Can(),
 }
 
 // Register with the dnscontrol system.
@@ -51,6 +53,12 @@ func newDNS(config map[string]string, metadata json.RawMessage) (providers.DNSSe
 	}
 
 	p := &activedirProvider{psLog: psLog, psOut: psOut, fake: fake}
+	var err error
+	p.shell, err = newPowerShell()
+	if err != nil {
+		return nil, err
+	}
+
 	if fake {
 		return p, nil
 	}
