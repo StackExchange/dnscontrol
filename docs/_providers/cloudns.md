@@ -9,16 +9,21 @@ jsId: CLOUDNS
 ## Configuration
 In your credentials file, you must provide your [Api user ID and password](https://asia.cloudns.net/wiki/article/42/). 
 
-Current version of provider doesn't support `sub-auth-id` or  `sub-auth-user`. 
+Current version of provider doesn't support `sub-auth-user`. 
 
 {% highlight json %}
 {
   "cloudns": {
     "auth-id": "12345",
+    "sub-auth-id": "12345",
     "auth-password": "your-password"
   }
 }
 {% endhighlight %}
+
+## Records
+
+ClouDNS does not supprt DS Record. 
 
 ## Metadata
 This provider does not recognize any special metadata fields unique to ClouDNS.
