@@ -23,7 +23,7 @@ require (
 	github.com/dimchansky/utfbom v1.1.1 // indirect
 	github.com/dnsimple/dnsimple-go v0.62.0
 	github.com/exoscale/egoscale v0.23.0
-	github.com/frankban/quicktest v1.11.2 // indirect
+	github.com/frankban/quicktest v1.11.3 // indirect
 	github.com/go-acme/lego v2.7.2+incompatible
 	github.com/go-gandi/go-gandi v0.0.0-20200921091836-0d8a64b9cc09
 	github.com/gobwas/glob v0.2.4-0.20181002190808-e7a84e9525fe
