@@ -1,0 +1,13 @@
+* text=auto
+
+# dnscontrol files are unix line-endings:
+*.js text eol=lf
+*.json text eol=lf
+
+# shell scripts are unix line-endings:
+*.sh text eol=lf
+
+# Go code are unix line-endings:
+*.go text eol=lf
+go.mod text eol=lf
+go.sum text eol=lf
