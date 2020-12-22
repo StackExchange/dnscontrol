@@ -192,7 +192,7 @@ func (c *cloudnsProvider) get(endpoint string, params requestParams) ([]byte, er
 	req, _ := http.NewRequest("GET", "https://api.cloudns.net"+endpoint, nil)
 	q := req.URL.Query()
 
-	//TODO: Support  sub-auth-id / sub-auth-user https://asia.cloudns.net/wiki/article/42/
+	//TODO: Support  sub-auth-user https://asia.cloudns.net/wiki/article/42/
 	// Add auth params
 	q.Add("auth-id", c.creds.id)
 	q.Add("auth-password", c.creds.password)

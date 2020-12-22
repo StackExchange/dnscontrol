@@ -21,3 +21,4 @@ stack.sh
 .idea/
 *.nupkg
 .DS_Store
+.vscode/launch.json
