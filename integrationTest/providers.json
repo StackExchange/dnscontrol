@@ -35,6 +35,7 @@
   },
   "CLOUDNS": {
     "auth-id": "$CLOUDNS_AUTH_ID",
+    "sub-auth-id": "$CLOUDNS_SUB_AUTH_ID",
     "auth-password": "$CLOUDNS_AUTH_PASSWORD",
     "domain": "$CLOUDNS_DOMAIN"
   },
