@@ -1,5 +1,9 @@
 * text=auto
 
+# Git itself
+.gitattributes eol=lf
+.gitigore eol=lf
+
 # dnscontrol files are unix line-endings:
 *.js text eol=lf
 *.json text eol=lf
