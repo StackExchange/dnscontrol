@@ -7,6 +7,7 @@ import (
 	"io/ioutil"
 	"os"
 	"path/filepath"
+	"strings"
 	"testing"
 	"unicode"
 
@@ -103,7 +104,7 @@ func TestParsedFiles(t *testing.T) {
 				}
 				actualZone := buf.String()
 
-				es := string(expectedZone)
+				es := strings.Replace(string(expectedZone), "\r", "", -1)
 				as := actualZone
 				if es != as {
 					// On failure, leave behind the .ACTUAL file.
