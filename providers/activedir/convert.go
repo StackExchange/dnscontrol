@@ -85,6 +85,8 @@ func nativeToRecords(nr nativeRecord, origin string) (*models.RecordConfig, erro
 		rc.SetTargetMX(uint16(uprops["Preference"]), sprops["MailExchange"])
 	case "NS":
 		rc.SetTarget(sprops["NameServer"])
+	case "PTR":
+		rc.SetTarget(sprops["PtrDomainName"])
 	case "SOA":
 		rc.SetTargetSOA(
 			sprops["PrimaryServer"],
@@ -95,9 +97,11 @@ func nativeToRecords(nr nativeRecord, origin string) (*models.RecordConfig, erro
 			uprops["ExpireLimit"],
 			uprops["MinimumTimeToLive"])
 		return nil, nil
+	case "TXT":
+		rc.SetTargetTXTString(sprops["DescriptiveText"])
 	default:
 		return nil, fmt.Errorf(
-			"activedir DNS rtype=%q unknown to me: props=%+v and %+v",
+			"activedir/convert.go:nativeToRecord rtype=%q unknown: props=%+v and %+v",
 			rtype, sprops, uprops)
 	}
 

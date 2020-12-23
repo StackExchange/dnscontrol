@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"os"
 
 	"github.com/StackExchange/dnscontrol/v3/models"
 	ps "github.com/bhendo/go-powershell"
@@ -103,6 +104,7 @@ func generatePSDelete(domain string, rec *models.RecordConfig) string {
 	} else {
 		fmt.Fprintf(&b, ` -RecordData "%s"`, rec.GetTargetField())
 	}
+	//fmt.Printf("DEBUG DCMD: %s\n", b.String())
 	return b.String()
 }
 
@@ -121,34 +123,58 @@ func (psh *psHandle) RecordCreate(domain string, rec *models.RecordConfig) error
 func generatePSCreate(domain string, rec *models.RecordConfig) string {
 	content := rec.GetTargetField()
 
-	cmdSuffix := rec.Type
-	if rec.Type == "NS" {
-		cmdSuffix = ""
-	}
-
 	var b bytes.Buffer
 	fmt.Fprintf(&b, `echo CREATE "%s" "%s" "%s"`, rec.Type, rec.Name, rec.GetTargetCombined())
 	fmt.Fprintf(&b, " ; ")
-	fmt.Fprintf(&b, `Add-DnsServerResourceRecord%s`, cmdSuffix)
-	fmt.Fprintf(&b, ` -ZoneName "%s"`, domain)
-	fmt.Fprintf(&b, ` -Name "%s"`, rec.GetLabel())
+
+	fmt.Fprintf(&b, `Add-DnsServerResourceRecord -ZoneName "%s" -Name "%s"`, domain, rec.GetLabel())
 	fmt.Fprintf(&b, ` -TimeToLive $(New-TimeSpan -Seconds %d)`, rec.TTL)
-	switch rec.Type { // #rtype_variations
+	switch rec.Type {
 	case "A":
-		fmt.Fprintf(&b, ` -IPv4Address "%s"`, content)
+		fmt.Fprintf(&b, ` -A -IPv4Address "%s"`, rec.GetTargetIP())
+	case "AAAA":
+		fmt.Fprintf(&b, ` -AAAA -IPv6Address "%s"`, rec.GetTargetIP())
+	//case "ATMA":
+	//	fmt.Fprintf(&b, ` -Atma -Address <String> -AddressType {E164 | AESA}`, rec.GetTargetField())
+	//case "AFSDB":
+	//	fmt.Fprintf(&b, ` -Afsdb -ServerName <String> -SubType <UInt16>`, rec.GetTargetField())
+	case "SRV":
+		fmt.Fprintf(&b, ` -Srv -DomainName "%s" -Port %d -Priority %d -Weight %d`, rec.GetTargetField(), rec.SrvPort, rec.SrvPriority, rec.SrvWeight)
 	case "CNAME":
-		fmt.Fprintf(&b, ` -HostNameAlias "%s"`, content)
-	case "MX":
-		fmt.Fprintf(&b, ` -Preference %d -MailExchange "%s"`, rec.MxPreference, rec.GetTargetField())
+		fmt.Fprintf(&b, ` -CName -HostNameAlias "%s"`, rec.GetTargetField())
+	//case "X25":
+	//	fmt.Fprintf(&b, ` -X25 -PsdnAddress <String>`, rec.GetTargetField())
+	//case "WKS":
+	//	fmt.Fprintf(&b, ` -Wks -InternetAddress <IPAddress> -InternetProtocol {UDP | TCP} -Service <String[]>`, rec.GetTargetField())
+	case "TXT":
+		fmt.Fprintf(&b, ` -Txt -DescriptiveText "%s"`, rec.GetTargetField())
+	//case "RT":
+	//	fmt.Fprintf(&b, ` -RT -IntermediateHost <String> -Preference <UInt16>`, rec.GetTargetField())
+	//case "RP":
+	//	fmt.Fprintf(&b, ` -RP -Description <String> -ResponsiblePerson <String>`, rec.GetTargetField())
+	case "PTR":
+		fmt.Fprintf(&b, ` -Ptr -PtrDomainName "%s"`, rec.GetTargetField())
 	case "NS":
-		fmt.Fprintf(&b, ` -NameServer "%s"`, content)
+		fmt.Fprintf(&b, ` -NS -NameServer "%s"`, rec.GetTargetField())
+	case "MX":
+		fmt.Fprintf(&b, ` -MX -MailExchange "%s" -Preference %d`, rec.GetTargetField(), rec.MxPreference)
+	//case "ISDN":
+	//	fmt.Fprintf(&b, ` -Isdn -IsdnNumber <String> -IsdnSubAddress <String>`, rec.GetTargetField())
+	//case "HINFO":
+	//	fmt.Fprintf(&b, ` -HInfo -Cpu <String> -OperatingSystem <String>`, rec.GetTargetField())
+	//case "DNAME":
+	//	fmt.Fprintf(&b, ` -DName -DomainNameAlias <String>`, rec.GetTargetField())
+	//case "DHCID":
+	//	fmt.Fprintf(&b, ` -DhcId -DhcpIdentifier <String>`, rec.GetTargetField())
+	//case "TLSA":
+	//	fmt.Fprintf(&b, ` -TLSA -CertificateAssociationData <System.String> -CertificateUsage {CAConstraint | ServiceCertificateConstraint | TrustAnchorAssertion | DomainIssuedCertificate} -MatchingType {ExactMatch | Sha256Hash | Sha512Hash} -Selector {FullCertificate | SubjectPublicKeyInfo}`, rec.GetTargetField())
 	default:
 		panic(fmt.Errorf("generatePSCreate() has not implemented recType=%s recName=%#v content=%#v)",
 			rec.Type, rec.GetLabel(), content))
 		// We panic so that we quickly find any switch statements
 		// that have not been updated for a new RR type.
 	}
-
+	//fmt.Printf("DEBUG CCMD: %s\n", b.String())
 	return b.String()
 }
 
@@ -166,6 +192,13 @@ func (psh *psHandle) RecordDelete(domain string, rec *models.RecordConfig) error
 
 func generatePSModify(domain string, old, rec *models.RecordConfig) string {
 
+	if true {
+
+		dcmd := generatePSDelete(domain, old)
+		ccmd := generatePSCreate(domain, rec)
+		return dcmd + ` ; ` + ccmd
+
+	}
 	recName := rec.Name
 	recType := rec.Type
 	oldContent := old.GetTargetField()
@@ -182,6 +215,7 @@ func generatePSModify(domain string, old, rec *models.RecordConfig) string {
 	case "CNAME":
 		queryField = "HostNameAlias"
 	case "MX":
+		queryField = ""
 	case "NS":
 		queryField = "NameServer"
 	default:
@@ -200,20 +234,35 @@ func generatePSModify(domain string, old, rec *models.RecordConfig) string {
 	fmt.Fprintf(&b, ` -Name "%s"`, recName)
 	fmt.Fprintf(&b, ` -RRType "%s"`, recType)
 	fmt.Fprintf(&b, " | ")
-	fmt.Fprintf(&b, "Where-Object {$_.RecordData.%s -eq %s -and $_.HostName -eq \"%s\"}", queryField, queryContent, recName)
+	if recType == "MX" {
+		fmt.Fprintf(&b, `Where-Object {$_.RecordData.Preference -eq %d -and  $_.RecordData.MailExchange -eq "%s" -and $_.HostName -eq "%s"}`, old.MxPreference, old.GetTargetField(), recName)
+	} else {
+		fmt.Fprintf(&b, `Where-Object {$_.RecordData.%s -eq %s -and $_.HostName -eq "%s"}`, queryField, queryContent, recName)
+	}
 	fmt.Fprintf(&b, " ; ")
-	fmt.Fprintf(&b, `if($OldObj.Length -ne $null){ throw "Error, multiple results for Get-DnsServerResourceRecord" }`)
+	fmt.Fprintf(&b, `if($OldObj.Length -ne 1){ throw "Error, multiple results for Get-DnsServerResourceRecord" }`)
 	fmt.Fprintf(&b, " ; ")
 	fmt.Fprintf(&b, "$NewObj = $OldObj.Clone()")
 
 	if old.Type == "MX" {
+		if old.MxPreference != rec.MxPreference {
+			fmt.Fprintf(&b, " ; ")
+			fmt.Fprintf(&b, `$NewObj.RecordData.Preference = %d`, rec.MxPreference)
+		}
+		if old.GetTargetField() != rec.GetTargetField() {
+			fmt.Fprintf(&b, " ; ")
+			fmt.Fprintf(&b, `$NewObj.RecordData.MailExchange = "%s"`, rec.GetTargetField())
+		}
+	} else if oldContent != newContent {
+		fmt.Fprintf(&b, " ; ")
+		fmt.Fprintf(&b, `$NewObj.RecordData.%s = "%s"`, queryField, newContent)
+	}
+
+	if rec.Type == "MX" && old.MxPreference != rec.MxPreference {
 		fmt.Fprintf(&b, " ; ")
 		fmt.Fprintf(&b, `$NewObj.RecordData.Preference = %d`, rec.MxPreference)
 		fmt.Fprintf(&b, " ; ")
 		fmt.Fprintf(&b, `$NewObj.RecordData.MailExchange = "%s"`, rec.GetTargetField())
-	} else if oldContent != newContent {
-		fmt.Fprintf(&b, " ; ")
-		fmt.Fprintf(&b, `$NewObj.RecordData.%s = "%s"`, queryField, newContent)
 	}
 
 	if oldTTL != newTTL {
@@ -226,6 +275,10 @@ func generatePSModify(domain string, old, rec *models.RecordConfig) string {
 	fmt.Fprintf(&b, ` -ZoneName "%s"`, domain)
 	fmt.Fprintf(&b, ` -NewInputObject $NewObj -OldInputObject $OldObj`)
 
+	fmt.Printf("MODIFY: %s", b.String())
+	if old.Type == "MX" {
+		os.Exit(1)
+	}
 	return b.String()
 }
 

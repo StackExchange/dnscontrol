@@ -681,6 +681,11 @@ func makeTests(t *testing.T) []*TestGroup {
 			tc("Create a TXT with spaces", txt("foo", "with spaces")),
 			tc("Create 1 TXT as array", txtmulti("foo", []string{"simple"})), // Same as non-TXTMulti
 			clear(),
+			tc("Create a 254-byte TXT", txt("foo", strings.Repeat("A", 254))),
+		),
+
+		testgroup("255-byte TXT",
+			not("ACTIVEDIRECTORY_PS"),
 			tc("Create a 255-byte TXT", txt("foo", strings.Repeat("A", 255))),
 		),
 
@@ -697,7 +702,7 @@ func makeTests(t *testing.T) []*TestGroup {
 		),
 
 		testgroup("empty TXT",
-			not("HETZNER", "HEXONET", "INWX", "NETCUP"),
+			not("ACTIVEDIRECTORY_PS", "HETZNER", "HEXONET", "INWX", "NETCUP"),
 			tc("TXT with empty str", txt("foo1", "")),
 			// https://github.com/StackExchange/dnscontrol/issues/598
 			// We decided that permitting the TXT target to be an empty
@@ -749,7 +754,8 @@ func makeTests(t *testing.T) []*TestGroup {
 			//  - NS1: free acct only allows 50 records, therefore we skip
 			//  - DIGITALOCEAN: page size is 100 (default: 20)
 			//  - CLOUDFLAREAPI: Infinite pagesize but due to slow speed, skipping.
-			not("NS1", "CLOUDFLAREAPI"),
+			//  - ACTIVEDIRECTORY_PS: No need. Its a slow test that proves nothing.
+			not("NS1", "CLOUDFLAREAPI", "ACTIVEDIRECTORY_PS"),
 			tc("99 records", manyA("rec%04d", "1.2.3.4", 99)...),
 			tc("100 records", manyA("rec%04d", "1.2.3.4", 100)...),
 			tc("101 records", manyA("rec%04d", "1.2.3.4", 101)...),
