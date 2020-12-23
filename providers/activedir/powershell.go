@@ -143,7 +143,7 @@ func generatePSCreate(domain string, rec *models.RecordConfig) string {
 	case "NS":
 		fmt.Fprintf(&b, ` -NameServer "%s"`, content)
 	default:
-		panic(fmt.Errorf("generatePSCreate() does not yet handle recType=%s recName=%#v content=%#v)",
+		panic(fmt.Errorf("generatePSCreate() has not implemented recType=%s recName=%#v content=%#v)",
 			rec.Type, rec.GetLabel(), content))
 		// We panic so that we quickly find any switch statements
 		// that have not been updated for a new RR type.
@@ -181,6 +181,7 @@ func generatePSModify(domain string, old, rec *models.RecordConfig) string {
 		queryField = "IPv4address"
 	case "CNAME":
 		queryField = "HostNameAlias"
+	case "MX":
 	case "NS":
 		queryField = "NameServer"
 	default:
@@ -205,7 +206,12 @@ func generatePSModify(domain string, old, rec *models.RecordConfig) string {
 	fmt.Fprintf(&b, " ; ")
 	fmt.Fprintf(&b, "$NewObj = $OldObj.Clone()")
 
-	if oldContent != newContent {
+	if old.Type == "MX" {
+		fmt.Fprintf(&b, " ; ")
+		fmt.Fprintf(&b, `$NewObj.RecordData.Preference = %d`, rec.MxPreference)
+		fmt.Fprintf(&b, " ; ")
+		fmt.Fprintf(&b, `$NewObj.RecordData.MailExchange = "%s"`, rec.GetTargetField())
+	} else if oldContent != newContent {
 		fmt.Fprintf(&b, " ; ")
 		fmt.Fprintf(&b, `$NewObj.RecordData.%s = "%s"`, queryField, newContent)
 	}
