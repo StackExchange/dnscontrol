@@ -98,7 +98,11 @@ func generatePSDelete(domain string, rec *models.RecordConfig) string {
 	fmt.Fprintf(&b, ` -ZoneName "%s"`, domain)
 	fmt.Fprintf(&b, ` -Name "%s"`, rec.Name)
 	fmt.Fprintf(&b, ` -RRType "%s"`, rec.Type)
-	fmt.Fprintf(&b, ` -RecordData "%s"`, rec.GetTargetField())
+	if rec.Type == "MX" {
+		fmt.Fprintf(&b, ` -RecordData %d,"%s"`, rec.MxPreference, rec.GetTargetField())
+	} else {
+		fmt.Fprintf(&b, ` -RecordData "%s"`, rec.GetTargetField())
+	}
 	return b.String()
 }
 
@@ -117,20 +121,27 @@ func (psh *psHandle) RecordCreate(domain string, rec *models.RecordConfig) error
 func generatePSCreate(domain string, rec *models.RecordConfig) string {
 	content := rec.GetTargetField()
 
+	cmdSuffix := rec.Type
+	if rec.Type == "NS" {
+		cmdSuffix = ""
+	}
+
 	var b bytes.Buffer
 	fmt.Fprintf(&b, `echo CREATE "%s" "%s" "%s"`, rec.Type, rec.Name, rec.GetTargetCombined())
 	fmt.Fprintf(&b, " ; ")
-	fmt.Fprintf(&b, `Add-DnsServerResourceRecord%s`, rec.Type)
+	fmt.Fprintf(&b, `Add-DnsServerResourceRecord%s`, cmdSuffix)
 	fmt.Fprintf(&b, ` -ZoneName "%s"`, domain)
 	fmt.Fprintf(&b, ` -Name "%s"`, rec.GetLabel())
 	fmt.Fprintf(&b, ` -TimeToLive $(New-TimeSpan -Seconds %d)`, rec.TTL)
 	switch rec.Type { // #rtype_variations
-	case "CNAME":
-		fmt.Fprintf(&b, ` -HostNameAlias "%s"`, content)
 	case "A":
 		fmt.Fprintf(&b, ` -IPv4Address "%s"`, content)
+	case "CNAME":
+		fmt.Fprintf(&b, ` -HostNameAlias "%s"`, content)
+	case "MX":
+		fmt.Fprintf(&b, ` -Preference %d -MailExchange "%s"`, rec.MxPreference, rec.GetTargetField())
 	case "NS":
-		fmt.Fprintf(&b, ` -NS -NameServer "%s"`, content)
+		fmt.Fprintf(&b, ` -NameServer "%s"`, content)
 	default:
 		panic(fmt.Errorf("generatePSCreate() does not yet handle recType=%s recName=%#v content=%#v)",
 			rec.Type, rec.GetLabel(), content))

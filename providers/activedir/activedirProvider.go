@@ -116,7 +116,9 @@ func (client *activedirProvider) GetZoneRecords(domain string) (models.Records, 
 		if err != nil {
 			return nil, err
 		}
-		existingRecords = append(existingRecords, rc)
+		if rc != nil {
+			existingRecords = append(existingRecords, rc)
+		}
 	}
 
 	return existingRecords, nil

@@ -79,6 +79,10 @@ func nativeToRecords(nr nativeRecord, origin string) (*models.RecordConfig, erro
 			return nil, fmt.Errorf("invalid IP in A record: %s", contents)
 		}
 		rc.SetTargetIP(ip)
+	case "CNAME":
+		rc.SetTarget(sprops["HostNameAlias"])
+	case "MX":
+		rc.SetTargetMX(uint16(uprops["Preference"]), sprops["MailExchange"])
 	case "NS":
 		rc.SetTarget(sprops["NameServer"])
 	case "SOA":
@@ -90,6 +94,7 @@ func nativeToRecords(nr nativeRecord, origin string) (*models.RecordConfig, erro
 			uprops["RetryDelay"],
 			uprops["ExpireLimit"],
 			uprops["MinimumTimeToLive"])
+		return nil, nil
 	default:
 		return nil, fmt.Errorf(
 			"activedir DNS rtype=%q unknown to me: props=%+v and %+v",
