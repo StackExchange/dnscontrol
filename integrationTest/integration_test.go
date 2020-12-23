@@ -690,7 +690,7 @@ func makeTests(t *testing.T) []*TestGroup {
 		),
 
 		testgroup("single TXT with single-quote",
-			not("INWX"),
+			not("INWX", "ACTIVEDIRECTORY_PS"),
 			tc("Create TXT with single-quote", txt("foo", "blah`blah")),
 		),
 
