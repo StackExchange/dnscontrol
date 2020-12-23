@@ -7,61 +7,8 @@ import (
 	"github.com/StackExchange/dnscontrol/v3/pkg/diff"
 )
 
-//
-// import (
-// 	"encoding/json"
-// 	"fmt"
-// 	"os"
-// 	"strings"
-// 	"time"
-//
-// 	"github.com/StackExchange/dnscontrol/v3/models"
-// 	"github.com/StackExchange/dnscontrol/v3/pkg/diff"
-// 	"github.com/StackExchange/dnscontrol/v3/pkg/printer"
-// 	"github.com/TomOnTime/utfutil"
-// )
-//
-// const zoneDumpFilenamePrefix = "adzonedump"
-//
-// // RecordConfigJSON RecordConfig, reconfigured for JSON input/output.
-// type RecordConfigJSON struct {
-// 	Name string `json:"hostname"`
-// 	Type string `json:"recordtype"`
-// 	Data string `json:"recorddata"`
-// 	TTL  uint32 `json:"timetolive"`
-// }
-
-// // list of types this provider supports.
-// // until it is up to speed with all the built-in types.
-// var supportedTypes = map[string]bool{
-// 	"A":     true,
-// 	"AAAA":  true,
-// 	"CNAME": true,
-// 	"NS":    true,
-// }
-//
-// // GetZoneRecords gets the records of a zone and returns them in RecordConfig format.
-// func (c *activedirProvider) GetZoneRecords(domain string) (models.Records, error) {
-// 	foundRecords, err := c.getExistingRecords(domain)
-// 	if err != nil {
-// 		return nil, fmt.Errorf("c.getExistingRecords(%q) failed: %v", domain, err)
-// 	}
-// 	return foundRecords, nil
-// }
-
 // GetDomainCorrections gets existing records, diffs them against existing, and returns corrections.
 func (c *activedirProvider) GenerateDomainCorrections(dc *models.DomainConfig, existing models.Records) ([]*models.Correction, error) {
-
-	// 	dc.Filter(func(r *models.RecordConfig) bool {
-	// 		if r.Type == "NS" && r.Name == "@" {
-	// 			return false
-	// 		}
-	// 		if !supportedTypes[r.Type] {
-	// 			printer.Warnf("Active Directory only manages certain record types. Won't consider %s %s\n", r.Type, r.GetLabelFQDN())
-	// 			return false
-	// 		}
-	// 		return true
-	// 	})
 
 	// Read foundRecords:
 	foundRecords, err := c.GetZoneRecords(dc.Name)

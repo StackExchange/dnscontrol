@@ -11,19 +11,19 @@ import (
 
 // This is the struct that matches either (or both) of the Registrar and/or DNSProvider interfaces:
 type activedirProvider struct {
-	adServer string
-	fake     bool
-	psOut    string
-	psLog    string
+	//adServer string
+	//fake     bool
+	//psOut    string
+	//psLog    string
 	// new fields here:
 	shell DNSAccessor
 }
 
 var features = providers.DocumentationNotes{
-	providers.CanUseAlias:            providers.Cannot(),
-	providers.CanUseCAA:              providers.Cannot(),
-	providers.CanUsePTR:              providers.Can(),
-	providers.CanUseSRV:              providers.Cannot(),
+	providers.CanUseAlias: providers.Cannot(),
+	providers.CanUseCAA:   providers.Cannot(),
+	providers.CanUsePTR:   providers.Can(),
+	//providers.CanUseSRV:              providers.Cannot(),
 	providers.DocCreateDomains:       providers.Cannot("AD depends on the zone already existing on the dns server"),
 	providers.DocDualHost:            providers.Cannot("This driver does not manage NS records, so should not be used for dual-host scenarios"),
 	providers.DocOfficiallySupported: providers.Can(),
@@ -38,40 +38,41 @@ func init() {
 
 func newDNS(config map[string]string, metadata json.RawMessage) (providers.DNSServiceProvider, error) {
 
-	fake := false
-	if fVal := config["fakeps"]; fVal == "true" {
-		fake = true
-	} else if fVal != "" && fVal != "false" {
-		return nil, fmt.Errorf("fakeps value must be 'true' or 'false'")
-	}
+	//	fake := false
+	//	if fVal := config["fakeps"]; fVal == "true" {
+	//		fake = true
+	//	} else if fVal != "" && fVal != "false" {
+	//		return nil, fmt.Errorf("fakeps value must be 'true' or 'false'")
+	//	}
 
-	psOut, psLog := config["psout"], config["pslog"]
-	if psOut == "" {
-		psOut = "dns_update_commands.ps1"
-	}
-	if psLog == "" {
-		psLog = "powershell.log"
-	}
+	//	psOut, psLog := config["psout"], config["pslog"]
+	//	if psOut == "" {
+	//		psOut = "dns_update_commands.ps1"
+	//	}
+	//	if psLog == "" {
+	//		psLog = "powershell.log"
+	//	}
 
-	p := &activedirProvider{psLog: psLog, psOut: psOut, fake: fake}
+	//	p := &activedirProvider{psLog: psLog, psOut: psOut, fake: fake}
+	p := &activedirProvider{}
 	var err error
 	p.shell, err = newPowerShell()
 	if err != nil {
 		return nil, err
 	}
 
-	if fake {
-		return p, nil
-	}
+	//	if fake {
+	//		return p, nil
+	//	}
 	if runtime.GOOS == "windows" {
-		srv := config["ADServer"]
-		if srv == "" {
-			return nil, fmt.Errorf("ADServer required for Active Directory provider")
-		}
-		p.adServer = srv
+		//		srv := config["ADServer"]
+		//		if srv == "" {
+		//			return nil, fmt.Errorf("ADServer required for Active Directory provider")
+		//		}
+		//		p.adServer = srv
 		return p, nil
 	}
-	fmt.Printf("WARNING: PowerShell not available. Active Directory will not be updated.\n")
+	fmt.Println("INFO: PowerShell not available. Disabling Active Directory provider.")
 	return providers.None{}, nil
 }
 
@@ -140,32 +141,4 @@ func PrepDesiredRecords(dc *models.DomainConfig) {
 	// confusing.
 
 	dc.Punycode()
-
-	// 	recordsToKeep := make([]*models.RecordConfig, 0, len(dc.Records))
-	// 	for _, rec := range dc.Records {
-	// 		if rec.Type == "ALIAS" && rec.Name != "@" {
-	// 			// GANDI only permits aliases on a naked domain.
-	// 			// Therefore, we change this to a CNAME.
-	// 			rec.Type = "CNAME"
-	// 		}
-	// 		if rec.TTL < 300 {
-	// 			printer.Warnf("Gandi does not support ttls < 300. Setting %s from %d to 300\n", rec.GetLabelFQDN(), rec.TTL)
-	// 			rec.TTL = 300
-	// 		}
-	// 		if rec.TTL > 2592000 {
-	// 			printer.Warnf("Gandi does not support ttls > 30 days. Setting %s from %d to 2592000\n", rec.GetLabelFQDN(), rec.TTL)
-	// 			rec.TTL = 2592000
-	// 		}
-	// 		if rec.Type == "TXT" {
-	// 			rec.SetTarget("\"" + rec.GetTargetField() + "\"") // FIXME(tlim): Should do proper quoting.
-	// 		}
-	// 		if rec.Type == "NS" && rec.GetLabel() == "@" {
-	// 			if !strings.HasSuffix(rec.GetTargetField(), ".gandi.net.") {
-	// 				printer.Warnf("Gandi does not support changing apex NS records. Ignoring %s\n", rec.GetTargetField())
-	// 			}
-	// 			continue
-	// 		}
-	// 		recordsToKeep = append(recordsToKeep, rec)
-	// 	}
-	// 	dc.Records = recordsToKeep
 }

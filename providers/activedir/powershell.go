@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-	"os"
 
 	"github.com/StackExchange/dnscontrol/v3/models"
 	ps "github.com/bhendo/go-powershell"
@@ -69,11 +68,9 @@ func (psh *psHandle) GetDNSZoneRecords(domain string) ([]nativeRecord, error) {
 		fmt.Printf("STDERROR = %q\n", stderr)
 		return nil, fmt.Errorf("unexpected stderr from PSZoneDump: %q", stderr)
 	}
-	//fmt.Printf("OUT = \n%v\n", string(stdout))
 
 	var records []nativeRecord
 	json.Unmarshal([]byte(stdout), &records)
-	//fmt.Printf("RECORDS = \n%v\n", records)
 
 	return records, nil
 }
@@ -82,8 +79,6 @@ func (psh *psHandle) GetDNSZoneRecords(domain string) ([]nativeRecord, error) {
 func generatePSZoneDump(domainname string) string {
 	var b bytes.Buffer
 	fmt.Fprintf(&b, `Get-DnsServerResourceRecord -ZoneName "%v"`, domainname)
-	//fmt.Fprintf(&b, ` | `)
-	//fmt.Fprintf(&b, `select hostname,recordtype,@{n="timestamp";e={$_.timestamp.tostring()}},@{n="timetolive";e={$_.timetolive.totalseconds}},@{n="recorddata";e={($_.recorddata.ipv4address,$_.recorddata.ipv6address,$_.recorddata.HostNameAlias,$_.recorddata.NameServer,"unsupported_record_type" -ne $null)[0]-as [string]}}`)
 	fmt.Fprintf(&b, ` | `)
 	fmt.Fprintf(&b, `ConvertTo-Json -depth 10`)
 	return b.String()
@@ -192,94 +187,156 @@ func (psh *psHandle) RecordDelete(domain string, rec *models.RecordConfig) error
 
 func generatePSModify(domain string, old, rec *models.RecordConfig) string {
 
-	if true {
+	// The simple way is to just remove the old record and insert the new record.
+	dcmd := generatePSDelete(domain, old)
+	ccmd := generatePSCreate(domain, rec)
+	return dcmd + ` ; ` + ccmd
 
-		dcmd := generatePSDelete(domain, old)
-		ccmd := generatePSCreate(domain, rec)
-		return dcmd + ` ; ` + ccmd
+	// The old method is to generate PowerShell code that extracts the resource
+	// record, clones it, makes modifications to the clone, and replaces the old
+	// object with the modified clone. In theory this is cleaner.
+	//
+	// Sadly that technique is considerably slower (PowerShell seems to take a
+	// long time doing it) and it is more brittle (each new rType seems to be a
+	// new adventure).
+	//
+	// The other benefit of the Delete/Create method is that it more heavily
+	// exercises existing code that is known to work.
+	//
+	// Sadly I can't bring myself to erase the code yet. I still hope this can
+	// be fixed.  Deep down I know we should just accept that Del/Create is better.
 
-	}
-	recName := rec.Name
-	recType := rec.Type
-	oldContent := old.GetTargetField()
-	newContent := rec.GetTargetField()
-	oldTTL := old.TTL
-	newTTL := rec.TTL
-
-	var queryField, queryContent string
-	queryContent = `"` + oldContent + `"`
-
-	switch recType { // #rtype_variations
-	case "A":
-		queryField = "IPv4address"
-	case "CNAME":
-		queryField = "HostNameAlias"
-	case "MX":
-		queryField = ""
-	case "NS":
-		queryField = "NameServer"
-	default:
-		panic(fmt.Errorf("generatePowerShellModify() does not yet handle recType=%s recName=%#v content=(%#v, %#v)", recType, recName, oldContent, newContent))
-		// We panic so that we quickly find any switch statements
-		// that have not been updated for a new RR type.
-	}
-
-	var b bytes.Buffer
-
-	fmt.Fprintf(&b, `echo "MODIFY %s %s %s old=%s new=%s"`, recName, domain, recType, oldContent, newContent)
-	fmt.Fprintf(&b, " ; ")
-	fmt.Fprintf(&b, "$OldObj = Get-DnsServerResourceRecord")
-	//fmt.Fprintf(&b, ` -ComputerName "%s"`, c.adServer)
-	fmt.Fprintf(&b, ` -ZoneName "%s"`, domain)
-	fmt.Fprintf(&b, ` -Name "%s"`, recName)
-	fmt.Fprintf(&b, ` -RRType "%s"`, recType)
-	fmt.Fprintf(&b, " | ")
-	if recType == "MX" {
-		fmt.Fprintf(&b, `Where-Object {$_.RecordData.Preference -eq %d -and  $_.RecordData.MailExchange -eq "%s" -and $_.HostName -eq "%s"}`, old.MxPreference, old.GetTargetField(), recName)
-	} else {
-		fmt.Fprintf(&b, `Where-Object {$_.RecordData.%s -eq %s -and $_.HostName -eq "%s"}`, queryField, queryContent, recName)
-	}
-	fmt.Fprintf(&b, " ; ")
-	fmt.Fprintf(&b, `if($OldObj.Length -ne 1){ throw "Error, multiple results for Get-DnsServerResourceRecord" }`)
-	fmt.Fprintf(&b, " ; ")
-	fmt.Fprintf(&b, "$NewObj = $OldObj.Clone()")
-
-	if old.Type == "MX" {
-		if old.MxPreference != rec.MxPreference {
-			fmt.Fprintf(&b, " ; ")
-			fmt.Fprintf(&b, `$NewObj.RecordData.Preference = %d`, rec.MxPreference)
-		}
-		if old.GetTargetField() != rec.GetTargetField() {
-			fmt.Fprintf(&b, " ; ")
-			fmt.Fprintf(&b, `$NewObj.RecordData.MailExchange = "%s"`, rec.GetTargetField())
-		}
-	} else if oldContent != newContent {
-		fmt.Fprintf(&b, " ; ")
-		fmt.Fprintf(&b, `$NewObj.RecordData.%s = "%s"`, queryField, newContent)
-	}
-
-	if rec.Type == "MX" && old.MxPreference != rec.MxPreference {
-		fmt.Fprintf(&b, " ; ")
-		fmt.Fprintf(&b, `$NewObj.RecordData.Preference = %d`, rec.MxPreference)
-		fmt.Fprintf(&b, " ; ")
-		fmt.Fprintf(&b, `$NewObj.RecordData.MailExchange = "%s"`, rec.GetTargetField())
-	}
-
-	if oldTTL != newTTL {
-		fmt.Fprintf(&b, " ; ")
-		fmt.Fprintf(&b, `$NewObj.TimeToLive = New-TimeSpan -Seconds %d`, newTTL)
-	}
-
-	fmt.Fprintf(&b, " ; ")
-	fmt.Fprintf(&b, "Set-DnsServerResourceRecord")
-	fmt.Fprintf(&b, ` -ZoneName "%s"`, domain)
-	fmt.Fprintf(&b, ` -NewInputObject $NewObj -OldInputObject $OldObj`)
-
-	fmt.Printf("MODIFY: %s", b.String())
-	if old.Type == "MX" {
-		os.Exit(1)
-	}
-	return b.String()
+	// 	if old.GetLabel() != rec.GetLabel() {
+	// 		panic(fmt.Sprintf("generatePSModify assertion failed: %q != %q", old.GetLabel(), rec.GetLabel()))
+	// 	}
+	//
+	// 	var b bytes.Buffer
+	// 	fmt.Fprintf(&b, `echo "MODIFY %s %s %s old=(%s) new=(%s):"`, rec.GetLabel(), domain, rec.Type, old.GetTargetCombined(), rec.GetTargetCombined())
+	// 	fmt.Fprintf(&b, " ; ")
+	// 	fmt.Fprintf(&b, "$OldObj = Get-DnsServerResourceRecord")
+	// 	fmt.Fprintf(&b, ` -ZoneName "%s"`, domain)
+	// 	fmt.Fprintf(&b, ` -Name "%s"`, old.GetLabel())
+	// 	fmt.Fprintf(&b, ` -RRType "%s"`, old.Type)
+	// 	fmt.Fprintf(&b, ` | Where-Object {$_.HostName eq "%s" -and -RRType -eq "%s" -and `, old.GetLabel(), rec.Type)
+	// 	switch old.Type {
+	// 	case "A":
+	// 		fmt.Fprintf(&b, `$_.RecordData.IPv4Address -eq "%s"`, old.GetTargetIP())
+	// 	case "AAAA":
+	// 		fmt.Fprintf(&b, `$_.RecordData.IPv6Address -eq "%s"`, old.GetTargetIP())
+	// 	//case "ATMA":
+	// 	//	fmt.Fprintf(&b, ` -Atma -Address <String> -AddressType {E164 | AESA}`, old.GetTargetField())
+	// 	//case "AFSDB":
+	// 	//	fmt.Fprintf(&b, ` -Afsdb -ServerName <String> -SubType <UInt16>`, old.GetTargetField())
+	// 	case "SRV":
+	// 		fmt.Fprintf(&b, `$_.RecordData.DomainName -eq "%s" -and $_.RecordData.Port -eq %d -and $_.RecordData.Priority -eq %d -and $_.RecordData.Weight -eq %d`, old.GetTargetField(), old.SrvPort, old.SrvPriority, old.SrvWeight)
+	// 	case "CNAME":
+	// 		fmt.Fprintf(&b, `$_.RecordData.HostNameAlias -eq "%s"`, old.GetTargetField())
+	// 	//case "X25":
+	// 	//	fmt.Fprintf(&b, ` -X25 -PsdnAddress <String>`, old.GetTargetField())
+	// 	//case "WKS":
+	// 	//	fmt.Fprintf(&b, ` -Wks -InternetAddress <IPAddress> -InternetProtocol {UDP | TCP} -Service <String[]>`, old.GetTargetField())
+	// 	case "TXT":
+	// 		fmt.Fprintf(&b, `$_.RecordData.DescriptiveText -eq "%s"`, old.GetTargetField())
+	// 	//case "RT":
+	// 	//	fmt.Fprintf(&b, ` -RT -IntermediateHost <String> -Preference <UInt16>`, old.GetTargetField())
+	// 	//case "RP":
+	// 	//	fmt.Fprintf(&b, ` -RP -Description <String> -ResponsiblePerson <String>`, old.GetTargetField())
+	// 	case "PTR":
+	// 		fmt.Fprintf(&b, `$_.RecordData.PtrDomainName -eq "%s"`, old.GetTargetField())
+	// 	case "NS":
+	// 		fmt.Fprintf(&b, `$_.RecordData.NameServer -eq "%s"`, old.GetTargetField())
+	// 	case "MX":
+	// 		fmt.Fprintf(&b, `$_.RecordData.MailExchange -eq "%s" -and $_.RecordData.Preference -eq %d`, old.GetTargetField(), old.MxPreference)
+	// 	//case "ISDN":
+	// 	//	fmt.Fprintf(&b, ` -Isdn -IsdnNumber <String> -IsdnSubAddress <String>`, old.GetTargetField())
+	// 	//case "HINFO":
+	// 	//	fmt.Fprintf(&b, ` -HInfo -Cpu <String> -OperatingSystem <String>`, old.GetTargetField())
+	// 	//case "DNAME":
+	// 	//	fmt.Fprintf(&b, ` -DName -DomainNameAlias <String>`, old.GetTargetField())
+	// 	//case "DHCID":
+	// 	//	fmt.Fprintf(&b, ` -DhcId -DhcpIdentifier <String>`, old.GetTargetField())
+	// 	//case "TLSA":
+	// 	//	fmt.Fprintf(&b, ` -TLSA -CertificateAssociationData <System.String> -CertificateUsage {CAConstraint | ServiceCertificateConstraint | TrustAnchorAssertion | DomainIssuedCertificate} -MatchingType {ExactMatch | Sha256Hash | Sha512Hash} -Selector {FullCertificate | SubjectPublicKeyInfo}`, rec.GetTargetField())
+	// 	default:
+	// 		panic(fmt.Errorf("generatePSModify() has not implemented recType=%q recName=%q content=(%s))",
+	// 			rec.Type, rec.GetLabel(), rec.GetTargetCombined()))
+	// 		// We panic so that we quickly find any switch statements
+	// 		// that have not been updated for a new RR type.
+	// 	}
+	// 	fmt.Fprintf(&b, "}")
+	// 	fmt.Fprintf(&b, " ; ")
+	// 	fmt.Fprintf(&b, `if($OldObj.Length -ne 1){ throw "Error, multiple results for Get-DnsServerResourceRecord" }`)
+	// 	fmt.Fprintf(&b, " ; ")
+	// 	fmt.Fprintf(&b, "$NewObj = $OldObj.Clone()")
+	// 	fmt.Fprintf(&b, " ; ")
+	//
+	// 	if old.TTL != rec.TTL {
+	// 		fmt.Fprintf(&b, `$NewObj.TimeToLive = New-TimeSpan -Seconds %d`, rec.TTL)
+	// 		fmt.Fprintf(&b, " ; ")
+	// 	}
+	// 	switch rec.Type {
+	// 	case "A":
+	// 		fmt.Fprintf(&b, `$NewObj.RecordData.IPv4Address = "%s"`, rec.GetTargetIP())
+	// 	case "AAAA":
+	// 		fmt.Fprintf(&b, `$NewObj.RecordData.IPv6Address = "%s"`, rec.GetTargetIP())
+	// 	//case "ATMA":
+	// 	//	fmt.Fprintf(&b, ` -Atma -Address <String> -AddressType {E164 | AESA}`, rec.GetTargetField())
+	// 	//case "AFSDB":
+	// 	//	fmt.Fprintf(&b, ` -Afsdb -ServerName <String> -SubType <UInt16>`, rec.GetTargetField())
+	// 	case "SRV":
+	// 		fmt.Fprintf(&b, ` -Srv -DomainName "%s" -Port %d -Priority %d -Weight %d`, rec.GetTargetField(), rec.SrvPort, rec.SrvPriority, rec.SrvWeight)
+	// 		fmt.Fprintf(&b, `$NewObj.RecordData.DomainName = "%s"`, rec.GetTargetField())
+	// 		fmt.Fprintf(&b, " ; ")
+	// 		fmt.Fprintf(&b, `$NewObj.RecordData.Port = %d`, rec.SrvPort)
+	// 		fmt.Fprintf(&b, " ; ")
+	// 		fmt.Fprintf(&b, `$NewObj.RecordData.Priority = %d`, rec.SrvPriority)
+	// 		fmt.Fprintf(&b, " ; ")
+	// 		fmt.Fprintf(&b, `$NewObj.RecordData.Weight = "%d"`, rec.SrvWeight)
+	// 	case "CNAME":
+	// 		fmt.Fprintf(&b, `$NewObj.RecordData.HostNameAlias = "%s"`, rec.GetTargetField())
+	// 	//case "X25":
+	// 	//	fmt.Fprintf(&b, ` -X25 -PsdnAddress <String>`, rec.GetTargetField())
+	// 	//case "WKS":
+	// 	//	fmt.Fprintf(&b, ` -Wks -InternetAddress <IPAddress> -InternetProtocol {UDP | TCP} -Service <String[]>`, rec.GetTargetField())
+	// 	case "TXT":
+	// 		fmt.Fprintf(&b, `$NewObj.RecordData.DescriptiveText = "%s"`, rec.GetTargetField())
+	// 	//case "RT":
+	// 	//	fmt.Fprintf(&b, ` -RT -IntermediateHost <String> -Preference <UInt16>`, rec.GetTargetField())
+	// 	//case "RP":
+	// 	//	fmt.Fprintf(&b, ` -RP -Description <String> -ResponsiblePerson <String>`, rec.GetTargetField())
+	// 	case "PTR":
+	// 		fmt.Fprintf(&b, `$NewObj.RecordData.PtrDomainName = "%s"`, rec.GetTargetField())
+	// 	case "NS":
+	// 		fmt.Fprintf(&b, `$NewObj.RecordData.NameServer = "%s"`, rec.GetTargetField())
+	// 	case "MX":
+	// 		fmt.Fprintf(&b, `$NewObj.RecordData.MailExchange = "%s"`, rec.GetTargetField())
+	// 		fmt.Fprintf(&b, " ; ")
+	// 		fmt.Fprintf(&b, `$NewObj.RecordData.Preference = "%d"`, rec.MxPreference)
+	// 	//case "ISDN":
+	// 	//	fmt.Fprintf(&b, ` -Isdn -IsdnNumber <String> -IsdnSubAddress <String>`, rec.GetTargetField())
+	// 	//case "HINFO":
+	// 	//	fmt.Fprintf(&b, ` -HInfo -Cpu <String> -OperatingSystem <String>`, rec.GetTargetField())
+	// 	//case "DNAME":
+	// 	//	fmt.Fprintf(&b, ` -DName -DomainNameAlias <String>`, rec.GetTargetField())
+	// 	//case "DHCID":
+	// 	//	fmt.Fprintf(&b, ` -DhcId -DhcpIdentifier <String>`, rec.GetTargetField())
+	// 	//case "TLSA":
+	// 	//	fmt.Fprintf(&b, ` -TLSA -CertificateAssociationData <System.String> -CertificateUsage {CAConstraint | ServiceCertificateConstraint | TrustAnchorAssertion | DomainIssuedCertificate} -MatchingType {ExactMatch | Sha256Hash | Sha512Hash} -Selector {FullCertificate | SubjectPublicKeyInfo}`, rec.GetTargetField())
+	// 	default:
+	// 		panic(fmt.Errorf("generatePSModify() update has not implemented recType=%q recName=%q content=(%s))",
+	// 			rec.Type, rec.GetLabel(), rec.GetTargetCombined()))
+	// 		// We panic so that we quickly find any switch statements
+	// 		// that have not been updated for a new RR type.
+	// 	}
+	// 	fmt.Fprintf(&b, " ; ")
+	// 	//fmt.Printf("DEBUG CCMD: %s\n", b.String())
+	//
+	// 	fmt.Fprintf(&b, "Set-DnsServerResourceRecord")
+	// 	fmt.Fprintf(&b, ` -ZoneName "%s"`, domain)
+	// 	fmt.Fprintf(&b, ` -NewInputObject $NewObj -OldInputObject $OldObj`)
+	//
+	//  fmt.Printf("DEBUG MCMD: %s", b.String())
+	// 	return b.String()
 }
 
 func (psh *psHandle) RecordModify(domain string, old, rec *models.RecordConfig) error {

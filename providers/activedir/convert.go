@@ -10,24 +10,24 @@ import (
 	"github.com/StackExchange/dnscontrol/v3/models"
 )
 
+// extractProps and collects Name/Value pairs into maps for easier access.
 func extractProps(cip []ciProperty) (map[string]string, map[string]uint32, error) {
 
-	// Sadly this structure is dynamic JSON. That is, depending on .Name,
-	// the .Value could be an int, string, or a map.
-	// We peek at the first byte to guess at the contents.
+	// Sadly this structure is dynamic JSON i.e. .Value could be an int, string,
+	// or a map. We peek at the first byte to guess at the contents.
 
-	// We store strings in sprops, ints in uprops. Maps are special: Currently
+	// We store strings in sprops, numbers in uprops. Maps are special: Currently
 	// the only map we decode is a map with the same duration in many units. We
-	// simply pick the units we want.
+	// simply pick the Seconds unit and store it as a number.
 
 	sprops := map[string]string{}
 	uprops := map[string]uint32{}
 	for _, p := range cip {
 		name := p.Name
 		if len(p.Value) == 0 {
-			sprops[name] = ""
-			uprops[name] = 0
+			// Empty string? Skip it.
 		} else if p.Value[0] == '"' {
+			// First byte is a quote. Must be a string.
 			var svalue string
 			err := json.Unmarshal(p.Value, &svalue)
 			if err != nil {
@@ -35,6 +35,7 @@ func extractProps(cip []ciProperty) (map[string]string, map[string]uint32, error
 			}
 			sprops[name] = svalue
 		} else if p.Value[0] == '{' {
+			// First byte is {.  Must be a map.
 			var dvalue ciValueDuration
 			err := json.Unmarshal(p.Value, &dvalue)
 			if err != nil {
@@ -42,29 +43,26 @@ func extractProps(cip []ciProperty) (map[string]string, map[string]uint32, error
 			}
 			uprops[name] = uint32(dvalue.TotalSeconds)
 		} else {
+			// Assume it is a number.
 			var uvalue uint32
 			err := json.Unmarshal(p.Value, &uvalue)
 			if err != nil {
 				return nil, nil, fmt.Errorf("could not unmarshal uint value=%q: %w", p.Value, err)
 			}
 			uprops[name] = uvalue
-
 		}
-		//fmt.Printf("NAME=%q value=%q\n", name, p.Value)
 	}
 	return sprops, uprops, nil
 }
 
 // nativeToRecord takes a DNS record from DNS and returns a native RecordConfig struct.
 func nativeToRecords(nr nativeRecord, origin string) (*models.RecordConfig, error) {
-
 	rc := &models.RecordConfig{
 		Type:     nr.RecordType,
 		Original: nr,
 	}
 	rc.SetLabel(nr.HostName, origin)
 	rc.TTL = uint32(nr.TimeToLive.TotalSeconds)
-	//fmt.Printf("TTL = %v\n", rc.TTL)
 
 	sprops, uprops, err := extractProps(nr.RecordData.CimInstanceProperties)
 	if err != nil {
@@ -76,7 +74,14 @@ func nativeToRecords(nr nativeRecord, origin string) (*models.RecordConfig, erro
 		contents := sprops["IPv4Address"]
 		ip := net.ParseIP(contents)
 		if ip == nil || ip.To4() == nil {
-			return nil, fmt.Errorf("invalid IP in A record: %s", contents)
+			return nil, fmt.Errorf("invalid IP in A record: %q", contents)
+		}
+		rc.SetTargetIP(ip)
+	case "AAAA":
+		contents := sprops["IPv6Address"]
+		ip := net.ParseIP(contents)
+		if ip == nil || ip.To16() == nil {
+			return nil, fmt.Errorf("invalid IPv6 in AAAA record: %q", contents)
 		}
 		rc.SetTargetIP(ip)
 	case "CNAME":
@@ -87,6 +92,13 @@ func nativeToRecords(nr nativeRecord, origin string) (*models.RecordConfig, erro
 		rc.SetTarget(sprops["NameServer"])
 	case "PTR":
 		rc.SetTarget(sprops["PtrDomainName"])
+		//	case "SRV":
+		//		rc.SetTargetSRV(
+		//			uint16(uprops["Priority"]),
+		//			uint16(uprops["Weight"]),
+		//			uint16(uprops["Port"]),
+		//			sprops["DomainName"],
+		//		)
 	case "SOA":
 		rc.SetTargetSOA(
 			sprops["PrimaryServer"],
@@ -96,6 +108,11 @@ func nativeToRecords(nr nativeRecord, origin string) (*models.RecordConfig, erro
 			uprops["RetryDelay"],
 			uprops["ExpireLimit"],
 			uprops["MinimumTimeToLive"])
+		// We discard SOA records for now. Windows DNS doesn't let us delete
+		// them and they get in the way of integration tests. In the future,
+		// we should support SOA records by (1) ignoring them in the
+		// integration tests. (2) generatePSModify will have to special-case
+		// updates.
 		return nil, nil
 	case "TXT":
 		rc.SetTargetTXTString(sprops["DescriptiveText"])
@@ -105,15 +122,5 @@ func nativeToRecords(nr nativeRecord, origin string) (*models.RecordConfig, erro
 			rtype, sprops, uprops)
 	}
 
-	//fmt.Printf("RECORD=%+v\n", rc)
-
 	return rc, nil
 }
-
-//// recordsToNative takes RecordConfig and returns provider's native format.
-//func recordsToNative(rcs []*models.RecordConfig, origin string) []livedns.DomainRecord {
-//	// Take a list of RecordConfig and return an equivalent list of ZoneRecords.
-//
-//	return zrs
-//}
-//
