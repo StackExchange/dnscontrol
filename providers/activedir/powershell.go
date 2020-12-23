@@ -80,7 +80,7 @@ func generatePSZoneDump(domainname string) string {
 	var b bytes.Buffer
 	fmt.Fprintf(&b, `Get-DnsServerResourceRecord -ZoneName "%v"`, domainname)
 	fmt.Fprintf(&b, ` | `)
-	fmt.Fprintf(&b, `ConvertTo-Json -depth 10`)
+	fmt.Fprintf(&b, `ConvertTo-Json -depth 4`) // Tested with 3 (causes errors).  4 and larger work.
 	return b.String()
 }
 
