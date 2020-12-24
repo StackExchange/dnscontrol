@@ -7,7 +7,9 @@
 # dnscontrol files are unix line-endings:
 *.js text eol=lf
 *.json text eol=lf
+*.yaml text eol=lf
 *.zone text eol=lf
+*.tsv text eol=lf
 
 # shell scripts are unix line-endings:
 *.sh text eol=lf

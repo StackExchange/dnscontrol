@@ -19,7 +19,7 @@ func Test_generatePSZoneDump(t *testing.T) {
 		{
 			name: "basic",
 			args: args{domainname: "example.com"},
-			want: `Get-DnsServerResourceRecord -ZoneName "example.com" | ConvertTo-Json -depth 10`,
+			want: `Get-DnsServerResourceRecord -ZoneName "example.com" | ConvertTo-Json -depth 4`,
 		},
 	}
 	for _, tt := range tests {
