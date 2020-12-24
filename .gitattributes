@@ -5,6 +5,7 @@
 .gitigore eol=lf
 
 # dnscontrol files are unix line-endings:
+*.md text eol=lf
 *.js text eol=lf
 *.json text eol=lf
 *.yaml text eol=lf
@@ -14,7 +15,16 @@
 # shell scripts are unix line-endings:
 *.sh text eol=lf
 
+# powershell scripts are DOS line-endings:
+*.ps1    text  eol=crlf
+*.nuspec text  eol=crlf
+
 # Go code are unix line-endings:
 *.go text eol=lf
 go.mod text eol=lf
 go.sum text eol=lf
+
+# Graphics are binary:
+*.jpg binary
+*.png
+
