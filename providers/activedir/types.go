@@ -42,9 +42,9 @@ type ciValueDuration struct {
 // DNSAccessor describes a system that can access Microsoft DNS.
 type DNSAccessor interface {
 	Exit()
-	GetDNSServerZoneAll() ([]string, error)
-	GetDNSZoneRecords(domain string) ([]nativeRecord, error)
-	RecordCreate(domain string, rec *models.RecordConfig) error
-	RecordDelete(domain string, rec *models.RecordConfig) error
-	RecordModify(domain string, old, rec *models.RecordConfig) error
+	GetDNSServerZoneAll(dnsserver string) ([]string, error)
+	GetDNSZoneRecords(dnsserver, domain string) ([]nativeRecord, error)
+	RecordCreate(dnsserver, domain string, rec *models.RecordConfig) error
+	RecordDelete(dnsserver, domain string, rec *models.RecordConfig) error
+	RecordModify(dnsserver, domain string, old, rec *models.RecordConfig) error
 }

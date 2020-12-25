@@ -28,46 +28,46 @@ func (c *activedirProvider) GenerateDomainCorrections(dc *models.DomainConfig, e
 	// Generate changes.
 	corrections := []*models.Correction{}
 	for _, del := range dels {
-		corrections = append(corrections, c.deleteRec(dc.Name, del))
+		corrections = append(corrections, c.deleteRec(c.dnsserver, dc.Name, del))
 	}
 	for _, cre := range creates {
-		corrections = append(corrections, c.createRec(dc.Name, cre)...)
+		corrections = append(corrections, c.createRec(c.dnsserver, dc.Name, cre)...)
 	}
 	for _, m := range modifications {
-		corrections = append(corrections, c.modifyRec(dc.Name, m))
+		corrections = append(corrections, c.modifyRec(c.dnsserver, dc.Name, m))
 	}
 	return corrections, nil
 
 }
 
-func (c *activedirProvider) deleteRec(domainname string, cor diff.Correlation) *models.Correction {
+func (c *activedirProvider) deleteRec(dnsserver, domainname string, cor diff.Correlation) *models.Correction {
 	rec := cor.Existing
 	return &models.Correction{
 		Msg: cor.String(),
 		F: func() error {
-			return c.shell.RecordDelete(domainname, rec)
+			return c.shell.RecordDelete(dnsserver, domainname, rec)
 		},
 	}
 }
 
-func (c *activedirProvider) createRec(domainname string, cre diff.Correlation) []*models.Correction {
+func (c *activedirProvider) createRec(dnsserver, domainname string, cre diff.Correlation) []*models.Correction {
 	rec := cre.Desired
 	arr := []*models.Correction{
 		{
 			Msg: cre.String(),
 			F: func() error {
-				return c.shell.RecordCreate(domainname, rec)
+				return c.shell.RecordCreate(dnsserver, domainname, rec)
 			}},
 	}
 	return arr
 }
 
-func (c *activedirProvider) modifyRec(domainname string, m diff.Correlation) *models.Correction {
+func (c *activedirProvider) modifyRec(dnsserver, domainname string, m diff.Correlation) *models.Correction {
 	old, rec := m.Existing, m.Desired
 	return &models.Correction{
 		Msg: m.String(),
 		F: func() error {
-			return c.shell.RecordModify(domainname, old, rec)
+			return c.shell.RecordModify(dnsserver, domainname, old, rec)
 		},
 	}
 }

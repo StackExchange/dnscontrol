@@ -1,7 +1,8 @@
 {
   "ACTIVEDIRECTORY_PS": {
-    "ADServer": "$AD_SERVER",
-    "domain": "$AD_DOMAIN"
+    "pssession": "$ACTIVEDIRECTORY_PS_PSSESSION",
+    "dnsserver": "$ACTIVEDIRECTORY_PS_DNSSERVER",
+    "domain": "$ACTIVEDIRECTORY_PS_DOMAIN"
   },
   "AXFRDDNS": {
     "domain": "$AXFRDDNS_DOMAIN",

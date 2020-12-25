@@ -1,7 +1,7 @@
 package activedir
 
 func (c *activedirProvider) ListZones() ([]string, error) {
-	zones, err := c.shell.GetDNSServerZoneAll()
+	zones, err := c.shell.GetDNSServerZoneAll(c.dnsserver)
 	if err != nil {
 		return nil, err
 	}

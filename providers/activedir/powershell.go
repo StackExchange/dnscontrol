@@ -8,13 +8,14 @@ import (
 	"github.com/StackExchange/dnscontrol/v3/models"
 	ps "github.com/bhendo/go-powershell"
 	"github.com/bhendo/go-powershell/backend"
+	"github.com/bhendo/go-powershell/middleware"
 )
 
 type psHandle struct {
 	shell ps.Shell
 }
 
-func newPowerShell() (*psHandle, error) {
+func newPowerShell(config map[string]string) (*psHandle, error) {
 
 	back := &backend.Local{}
 
@@ -24,8 +25,25 @@ func newPowerShell() (*psHandle, error) {
 	}
 	//defer sh.Exit()
 
+	shell := sh
+
+	pssession := config["pssession"]
+
+	if pssession != "" {
+		fmt.Printf("INFO: PowerShell commands will run on %q\n", pssession)
+		// create a remote shell by wrapping the existing one in the session middleware
+		mconfig := middleware.NewSessionConfig()
+		mconfig.ComputerName = pssession
+
+		session, err := middleware.NewSession(sh, mconfig)
+		if err != nil {
+			panic(err)
+		}
+		shell = session
+	}
+
 	psh := &psHandle{
-		shell: sh,
+		shell: shell,
 	}
 	return psh, nil
 
@@ -37,8 +55,8 @@ func (psh *psHandle) Exit() {
 
 type dnsZone map[string]interface{}
 
-func (psh *psHandle) GetDNSServerZoneAll() ([]string, error) {
-	stdout, stderr, err := psh.shell.Execute(`Get-DnsServerZone | ConvertTo-Json`)
+func (psh *psHandle) GetDNSServerZoneAll(dnsserver string) ([]string, error) {
+	stdout, stderr, err := psh.shell.Execute(generatePSZoneAll(dnsserver))
 	if err != nil {
 		return nil, err
 	}
@@ -59,8 +77,20 @@ func (psh *psHandle) GetDNSServerZoneAll() ([]string, error) {
 	return result, nil
 }
 
-func (psh *psHandle) GetDNSZoneRecords(domain string) ([]nativeRecord, error) {
-	stdout, stderr, err := psh.shell.Execute(generatePSZoneDump(domain))
+// powerShellDump runs a PowerShell command to get a dump of all records in a DNS zone.
+func generatePSZoneAll(dnsserver string) string {
+	var b bytes.Buffer
+	fmt.Fprintf(&b, `Get-DnsServerZone`)
+	if dnsserver != "" {
+		fmt.Fprintf(&b, ` -ComputerName "%v"`, dnsserver)
+	}
+	fmt.Fprintf(&b, ` | `)
+	fmt.Fprintf(&b, `ConvertTo-Json`)
+	return b.String()
+}
+
+func (psh *psHandle) GetDNSZoneRecords(dnsserver, domain string) ([]nativeRecord, error) {
+	stdout, stderr, err := psh.shell.Execute(generatePSZoneDump(dnsserver, domain))
 	if err != nil {
 		return nil, err
 	}
@@ -76,9 +106,13 @@ func (psh *psHandle) GetDNSZoneRecords(domain string) ([]nativeRecord, error) {
 }
 
 // powerShellDump runs a PowerShell command to get a dump of all records in a DNS zone.
-func generatePSZoneDump(domainname string) string {
+func generatePSZoneDump(dnsserver, domainname string) string {
 	var b bytes.Buffer
-	fmt.Fprintf(&b, `Get-DnsServerResourceRecord -ZoneName "%v"`, domainname)
+	fmt.Fprintf(&b, `Get-DnsServerResourceRecord`)
+	if dnsserver != "" {
+		fmt.Fprintf(&b, ` -ComputerName "%v"`, dnsserver)
+	}
+	fmt.Fprintf(&b, ` -ZoneName "%v"`, domainname)
 	fmt.Fprintf(&b, ` | `)
 	fmt.Fprintf(&b, `ConvertTo-Json -depth 4`) // Tested with 3 (causes errors).  4 and larger work.
 	return b.String()
@@ -86,11 +120,15 @@ func generatePSZoneDump(domainname string) string {
 
 //
 
-func generatePSDelete(domain string, rec *models.RecordConfig) string {
+func generatePSDelete(dnsserver, domain string, rec *models.RecordConfig) string {
 	var b bytes.Buffer
 	fmt.Fprintf(&b, `echo DELETE "%s" "%s" "%s"`, rec.Type, rec.Name, rec.GetTargetCombined())
 	fmt.Fprintf(&b, " ; ")
-	fmt.Fprintf(&b, `Remove-DnsServerResourceRecord -Force`)
+	fmt.Fprintf(&b, `Remove-DnsServerResourceRecord`)
+	if dnsserver != "" {
+		fmt.Fprintf(&b, ` -ComputerName "%s"`, dnsserver)
+	}
+	fmt.Fprintf(&b, ` -Force`)
 	fmt.Fprintf(&b, ` -ZoneName "%s"`, domain)
 	fmt.Fprintf(&b, ` -Name "%s"`, rec.Name)
 	fmt.Fprintf(&b, ` -RRType "%s"`, rec.Type)
@@ -103,8 +141,8 @@ func generatePSDelete(domain string, rec *models.RecordConfig) string {
 	return b.String()
 }
 
-func (psh *psHandle) RecordCreate(domain string, rec *models.RecordConfig) error {
-	_, stderr, err := psh.shell.Execute(generatePSCreate(domain, rec))
+func (psh *psHandle) RecordCreate(dnsserver, domain string, rec *models.RecordConfig) error {
+	_, stderr, err := psh.shell.Execute(generatePSCreate(dnsserver, domain, rec))
 	if err != nil {
 		return err
 	}
@@ -115,14 +153,19 @@ func (psh *psHandle) RecordCreate(domain string, rec *models.RecordConfig) error
 	return nil
 }
 
-func generatePSCreate(domain string, rec *models.RecordConfig) string {
+func generatePSCreate(dnsserver, domain string, rec *models.RecordConfig) string {
 	content := rec.GetTargetField()
 
 	var b bytes.Buffer
 	fmt.Fprintf(&b, `echo CREATE "%s" "%s" "%s"`, rec.Type, rec.Name, rec.GetTargetCombined())
 	fmt.Fprintf(&b, " ; ")
 
-	fmt.Fprintf(&b, `Add-DnsServerResourceRecord -ZoneName "%s" -Name "%s"`, domain, rec.GetLabel())
+	fmt.Fprint(&b, `Add-DnsServerResourceRecord`)
+	if dnsserver != "" {
+		fmt.Fprintf(&b, ` -ComputerName "%s"`, dnsserver)
+	}
+	fmt.Fprintf(&b, ` -ZoneName "%s"`, domain)
+	fmt.Fprintf(&b, ` -Name "%s"`, rec.GetLabel())
 	fmt.Fprintf(&b, ` -TimeToLive $(New-TimeSpan -Seconds %d)`, rec.TTL)
 	switch rec.Type {
 	case "A":
@@ -173,8 +216,8 @@ func generatePSCreate(domain string, rec *models.RecordConfig) string {
 	return b.String()
 }
 
-func (psh *psHandle) RecordDelete(domain string, rec *models.RecordConfig) error {
-	_, stderr, err := psh.shell.Execute(generatePSDelete(domain, rec))
+func (psh *psHandle) RecordDelete(dnsserver, domain string, rec *models.RecordConfig) error {
+	_, stderr, err := psh.shell.Execute(generatePSDelete(dnsserver, domain, rec))
 	if err != nil {
 		return err
 	}
@@ -185,11 +228,11 @@ func (psh *psHandle) RecordDelete(domain string, rec *models.RecordConfig) error
 	return nil
 }
 
-func generatePSModify(domain string, old, rec *models.RecordConfig) string {
+func generatePSModify(dnsserver, domain string, old, rec *models.RecordConfig) string {
 
 	// The simple way is to just remove the old record and insert the new record.
-	dcmd := generatePSDelete(domain, old)
-	ccmd := generatePSCreate(domain, rec)
+	dcmd := generatePSDelete(dnsserver, domain, old)
+	ccmd := generatePSCreate(dnsserver, domain, rec)
 	return dcmd + ` ; ` + ccmd
 
 	// The old method is to generate PowerShell code that extracts the resource
@@ -339,8 +382,8 @@ func generatePSModify(domain string, old, rec *models.RecordConfig) string {
 	// 	return b.String()
 }
 
-func (psh *psHandle) RecordModify(domain string, old, rec *models.RecordConfig) error {
-	_, stderr, err := psh.shell.Execute(generatePSModify(domain, old, rec))
+func (psh *psHandle) RecordModify(dnsserver, domain string, old, rec *models.RecordConfig) error {
+	_, stderr, err := psh.shell.Execute(generatePSModify(dnsserver, domain, old, rec))
 	if err != nil {
 		return err
 	}

@@ -11,12 +11,9 @@ import (
 
 // This is the struct that matches either (or both) of the Registrar and/or DNSProvider interfaces:
 type activedirProvider struct {
-	//adServer string
-	//fake     bool
-	//psOut    string
-	//psLog    string
-	// new fields here:
-	shell DNSAccessor
+	dnsserver string // Which DNS Server to update
+	pssession string // Remote machine to PSSession to
+	shell     DNSAccessor
 }
 
 var features = providers.DocumentationNotes{
@@ -37,43 +34,22 @@ func init() {
 }
 
 func newDNS(config map[string]string, metadata json.RawMessage) (providers.DNSServiceProvider, error) {
-
-	//	fake := false
-	//	if fVal := config["fakeps"]; fVal == "true" {
-	//		fake = true
-	//	} else if fVal != "" && fVal != "false" {
-	//		return nil, fmt.Errorf("fakeps value must be 'true' or 'false'")
-	//	}
-
-	//	psOut, psLog := config["psout"], config["pslog"]
-	//	if psOut == "" {
-	//		psOut = "dns_update_commands.ps1"
-	//	}
-	//	if psLog == "" {
-	//		psLog = "powershell.log"
-	//	}
-
-	//	p := &activedirProvider{psLog: psLog, psOut: psOut, fake: fake}
-	p := &activedirProvider{}
 	var err error
-	p.shell, err = newPowerShell()
+
+	p := &activedirProvider{
+		dnsserver: config["dnsserver"],
+	}
+	p.shell, err = newPowerShell(config)
 	if err != nil {
 		return nil, err
 	}
 
-	//	if fake {
-	//		return p, nil
-	//	}
-	if runtime.GOOS == "windows" {
-		//		srv := config["ADServer"]
-		//		if srv == "" {
-		//			return nil, fmt.Errorf("ADServer required for Active Directory provider")
-		//		}
-		//		p.adServer = srv
-		return p, nil
+	if runtime.GOOS != "windows" {
+		fmt.Println("INFO: PowerShell not available. Disabling Active Directory provider.")
+		return providers.None{}, nil
 	}
-	fmt.Println("INFO: PowerShell not available. Disabling Active Directory provider.")
-	return providers.None{}, nil
+
+	return p, nil
 }
 
 // Section 3: Domain Service Provider (DSP) related functions
@@ -106,7 +82,7 @@ func (client *activedirProvider) GetDomainCorrections(dc *models.DomainConfig) (
 func (client *activedirProvider) GetZoneRecords(domain string) (models.Records, error) {
 
 	// Get the existing DNS records in native format.
-	nativeExistingRecords, err := client.shell.GetDNSZoneRecords(domain)
+	nativeExistingRecords, err := client.shell.GetDNSZoneRecords(client.dnsserver, domain)
 	if err != nil {
 		return nil, err
 	}
