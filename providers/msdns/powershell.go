@@ -4,6 +4,10 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"io/ioutil"
+	"log"
+	"os"
+	"time"
 
 	"github.com/StackExchange/dnscontrol/v3/models"
 	ps "github.com/bhendo/go-powershell"
@@ -90,23 +94,46 @@ func generatePSZoneAll(dnsserver string) string {
 }
 
 func (psh *psHandle) GetDNSZoneRecords(dnsserver, domain string) ([]nativeRecord, error) {
-	stdout, stderr, err := psh.shell.Execute(generatePSZoneDump(dnsserver, domain))
+	start := time.Now()
+
+	tmpfile, err := ioutil.TempFile("", "zonerecords.json")
+	if err != nil {
+		log.Fatal(err)
+	}
+	tmpfile.Close()
+
+	stdout, stderr, err := psh.shell.Execute(generatePSZoneDump(dnsserver, domain, tmpfile.Name()))
 	if err != nil {
 		return nil, err
+	}
+	if stdout != "" {
+		fmt.Printf("STDOUT = %q\n", stderr)
 	}
 	if stderr != "" {
 		fmt.Printf("STDERROR = %q\n", stderr)
 		return nil, fmt.Errorf("unexpected stderr from PSZoneDump: %q", stderr)
 	}
 
+	contents, err := ioutil.ReadFile(tmpfile.Name())
+	if err != nil {
+		return nil, err
+	}
+	os.Remove(tmpfile.Name())
+
+	fmt.Printf("DURATION 1 = %v\n", time.Since(start))
+
+	start = time.Now()
+
 	var records []nativeRecord
-	json.Unmarshal([]byte(stdout), &records)
+	json.Unmarshal([]byte(contents), &records)
+
+	fmt.Printf("DURATION 2 = %v\n", time.Since(start))
 
 	return records, nil
 }
 
 // powerShellDump runs a PowerShell command to get a dump of all records in a DNS zone.
-func generatePSZoneDump(dnsserver, domainname string) string {
+func generatePSZoneDump(dnsserver, domainname string, filename string) string {
 	var b bytes.Buffer
 	fmt.Fprintf(&b, `Get-DnsServerResourceRecord`)
 	if dnsserver != "" {
@@ -115,6 +142,8 @@ func generatePSZoneDump(dnsserver, domainname string) string {
 	fmt.Fprintf(&b, ` -ZoneName "%v"`, domainname)
 	fmt.Fprintf(&b, ` | `)
 	fmt.Fprintf(&b, `ConvertTo-Json -depth 4`) // Tested with 3 (causes errors).  4 and larger work.
+	fmt.Fprintf(&b, ` > %s`, filename)
+	//fmt.Printf("DEBUG PSZoneDump CMD = (\n%s\n)\n", b.String())
 	return b.String()
 }
 
