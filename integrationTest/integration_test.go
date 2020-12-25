@@ -775,7 +775,7 @@ func makeTests(t *testing.T) []*TestGroup {
 			not(
 				"NS1",           // Free acct only allows 50 records, therefore we skip
 				"CLOUDFLAREAPI", // Infinite pagesize but due to slow speed, skipping.
-				"MSDNS",         //  No paging done. No need to test.
+				//"MSDNS",         //  No paging done. No need to test.
 			),
 			tc("99 records", manyA("rec%04d", "1.2.3.4", 99)...),
 			tc("100 records", manyA("rec%04d", "1.2.3.4", 100)...),
@@ -784,7 +784,7 @@ func makeTests(t *testing.T) []*TestGroup {
 
 		testgroup("pager601",
 			only(
-				"MSDNS",
+				//"MSDNS",     //  No paging done. No need to test.
 				//"AZURE_DNS", // Currently failing.
 				"HEXONET",
 				"GCLOUD",
@@ -796,7 +796,7 @@ func makeTests(t *testing.T) []*TestGroup {
 
 		testgroup("pager1201",
 			only(
-				"MSDNS",
+				//"MSDNS",     //  No paging done. No need to test.
 				//"AZURE_DNS", // Currently failing. See https://github.com/StackExchange/dnscontrol/issues/770
 				"HEXONET",
 				"ROUTE53", // https://github.com/StackExchange/dnscontrol/issues/493
