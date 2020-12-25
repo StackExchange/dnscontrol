@@ -96,6 +96,11 @@
     "domain": "$LINODE_DOMAIN",
     "token": "$LINODE_TOKEN"
   },
+  "MSDNS": {
+    "domain": "$MSDNS_DOMAIN",
+    "dnsserver": "$MSDNS_DNSSERVER",
+    "pssession": "$MSDNS_PSSESSION"
+  },
   "NAMECHEAP": {
     "apikey": "$NAMECHEAP_KEY",
     "apiuser": "$NAMECHEAP_USER",
