@@ -1,4 +1,4 @@
-package activedir
+package msdns
 
 import (
 	"encoding/json"
@@ -10,7 +10,7 @@ import (
 )
 
 // This is the struct that matches either (or both) of the Registrar and/or DNSProvider interfaces:
-type activedirProvider struct {
+type msdnsProvider struct {
 	dnsserver string // Which DNS Server to update
 	pssession string // Remote machine to PSSession to
 	shell     DNSAccessor
@@ -36,7 +36,7 @@ func init() {
 func newDNS(config map[string]string, metadata json.RawMessage) (providers.DNSServiceProvider, error) {
 	var err error
 
-	p := &activedirProvider{
+	p := &msdnsProvider{
 		dnsserver: config["dnsserver"],
 	}
 	p.shell, err = newPowerShell(config)
@@ -66,7 +66,7 @@ func newDNS(config map[string]string, metadata json.RawMessage) (providers.DNSSe
 
 // GetDomainCorrections get the current and existing records,
 // post-process them, and generate corrections.
-func (client *activedirProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Correction, error) {
+func (client *msdnsProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Correction, error) {
 	existing, err := client.GetZoneRecords(dc.Name)
 	if err != nil {
 		return nil, err
@@ -79,7 +79,7 @@ func (client *activedirProvider) GetDomainCorrections(dc *models.DomainConfig) (
 
 // GetZoneRecords gathers the DNS records and converts them to
 // dnscontrol's format.
-func (client *activedirProvider) GetZoneRecords(domain string) (models.Records, error) {
+func (client *msdnsProvider) GetZoneRecords(domain string) (models.Records, error) {
 
 	// Get the existing DNS records in native format.
 	nativeExistingRecords, err := client.shell.GetDNSZoneRecords(client.dnsserver, domain)

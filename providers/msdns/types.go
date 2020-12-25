@@ -1,4 +1,4 @@
-package activedir
+package msdns
 
 import (
 	"encoding/json"

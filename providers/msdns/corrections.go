@@ -1,4 +1,4 @@
-package activedir
+package msdns
 
 import (
 	"fmt"
@@ -8,7 +8,7 @@ import (
 )
 
 // GetDomainCorrections gets existing records, diffs them against existing, and returns corrections.
-func (c *activedirProvider) GenerateDomainCorrections(dc *models.DomainConfig, existing models.Records) ([]*models.Correction, error) {
+func (c *msdnsProvider) GenerateDomainCorrections(dc *models.DomainConfig, existing models.Records) ([]*models.Correction, error) {
 
 	// Read foundRecords:
 	foundRecords, err := c.GetZoneRecords(dc.Name)
@@ -40,7 +40,7 @@ func (c *activedirProvider) GenerateDomainCorrections(dc *models.DomainConfig, e
 
 }
 
-func (c *activedirProvider) deleteRec(dnsserver, domainname string, cor diff.Correlation) *models.Correction {
+func (c *msdnsProvider) deleteRec(dnsserver, domainname string, cor diff.Correlation) *models.Correction {
 	rec := cor.Existing
 	return &models.Correction{
 		Msg: cor.String(),
@@ -50,7 +50,7 @@ func (c *activedirProvider) deleteRec(dnsserver, domainname string, cor diff.Cor
 	}
 }
 
-func (c *activedirProvider) createRec(dnsserver, domainname string, cre diff.Correlation) []*models.Correction {
+func (c *msdnsProvider) createRec(dnsserver, domainname string, cre diff.Correlation) []*models.Correction {
 	rec := cre.Desired
 	arr := []*models.Correction{
 		{
@@ -62,7 +62,7 @@ func (c *activedirProvider) createRec(dnsserver, domainname string, cre diff.Cor
 	return arr
 }
 
-func (c *activedirProvider) modifyRec(dnsserver, domainname string, m diff.Correlation) *models.Correction {
+func (c *msdnsProvider) modifyRec(dnsserver, domainname string, m diff.Correlation) *models.Correction {
 	old, rec := m.Existing, m.Desired
 	return &models.Correction{
 		Msg: m.String(),

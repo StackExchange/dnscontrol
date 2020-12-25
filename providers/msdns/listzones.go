@@ -1,6 +1,6 @@
-package activedir
+package msdns
 
-func (c *activedirProvider) ListZones() ([]string, error) {
+func (c *msdnsProvider) ListZones() ([]string, error) {
 	zones, err := c.shell.GetDNSServerZoneAll(c.dnsserver)
 	if err != nil {
 		return nil, err

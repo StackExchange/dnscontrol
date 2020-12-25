@@ -1,4 +1,4 @@
-package activedir
+package msdns
 
 // Convert the provider's native record description to models.RecordConfig.
 
@@ -118,7 +118,7 @@ func nativeToRecords(nr nativeRecord, origin string) (*models.RecordConfig, erro
 		rc.SetTargetTXTString(sprops["DescriptiveText"])
 	default:
 		return nil, fmt.Errorf(
-			"activedir/convert.go:nativeToRecord rtype=%q unknown: props=%+v and %+v",
+			"msdns/convert.go:nativeToRecord rtype=%q unknown: props=%+v and %+v",
 			rtype, sprops, uprops)
 	}
 

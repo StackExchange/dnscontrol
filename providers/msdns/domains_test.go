@@ -1,4 +1,4 @@
-package activedir
+package msdns
 
 // import (
 // 	"fmt"
@@ -15,7 +15,7 @@ package activedir
 //
 // func TestGetExistingRecords(t *testing.T) {
 //
-// 	cf := &activedirProvider{}
+// 	cf := &msdnsProvider{}
 //
 // 	cf.fake = true
 // 	actual, err := cf.getExistingRecords("test2")
