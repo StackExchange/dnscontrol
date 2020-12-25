@@ -16,8 +16,8 @@
 *.sh text eol=lf
 
 # powershell scripts are DOS line-endings:
-*.ps1    text  eol=crlf
-*.nuspec text  eol=crlf
+*.ps1 text eol=crlf
+*.nuspec text eol=crlf
 
 # Go code are unix line-endings:
 *.go text eol=lf
@@ -27,4 +27,4 @@ go.sum text eol=lf
 # Graphics are binary:
 *.jpg binary
 *.png
-
+*.svg
