@@ -15,6 +15,7 @@ require (
 	github.com/andybalholm/cascadia v1.2.0 // indirect
 	github.com/aws/aws-sdk-go v1.36.0
 	github.com/babolivier/go-doh-client v0.0.0-20201028162107-a76cff4cb8b6
+	github.com/bhendo/go-powershell v0.0.0-20190719160123-219e7fb4e41e
 	github.com/billputer/go-namecheap v0.0.0-20170915210158-0c7adb0710f8
 	github.com/cenkalti/backoff v2.2.1+incompatible // indirect
 	github.com/cpuguy83/go-md2man/v2 v2.0.0 // indirect
@@ -38,6 +39,7 @@ require (
 	github.com/hashicorp/vault/api v1.0.4
 	github.com/hexonet/go-sdk v3.5.0+incompatible
 	github.com/jarcoal/httpmock v1.0.4 // indirect
+	github.com/juju/errors v0.0.0-20200330140219-3fe23663418f // indirect
 	github.com/kolo/xmlrpc v0.0.0-20201022064351-38db28db192b // indirect
 	github.com/kr/text v0.2.0 // indirect
 	github.com/miekg/dns v1.1.35
