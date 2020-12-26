@@ -775,7 +775,7 @@ func makeTests(t *testing.T) []*TestGroup {
 			not(
 				"NS1",           // Free acct only allows 50 records, therefore we skip
 				"CLOUDFLAREAPI", // Infinite pagesize but due to slow speed, skipping.
-				//"MSDNS",         //  No paging done. No need to test.
+				"MSDNS",         //  No paging done. No need to test.
 			),
 			tc("99 records", manyA("rec%04d", "1.2.3.4", 99)...),
 			tc("100 records", manyA("rec%04d", "1.2.3.4", 100)...),
@@ -855,7 +855,14 @@ func makeTests(t *testing.T) []*TestGroup {
 			tc("Change Weight", srv("_sip._tcp", 52, 62, 7, "foo.com."), srv("_sip._tcp", 15, 65, 75, "foo4.com.")),
 			tc("Change Port", srv("_sip._tcp", 52, 62, 72, "foo.com."), srv("_sip._tcp", 15, 65, 75, "foo4.com.")),
 		),
-		testgroup("SRV w/ null target", requires(providers.CanUseSRV), not("EXOSCALE", "HEXONET", "INWX", "NAMEDOTCOM"),
+		testgroup("SRV w/ null target", requires(providers.CanUseSRV),
+			not(
+				"EXOSCALE",   // Not supported.
+				"HEXONET",    // Not supported.
+				"INWX",       // Not supported.
+				"MSDNS",      // Not supported.
+				"NAMEDOTCOM", // Not supported.
+			),
 			tc("Null Target", srv("_sip._tcp", 52, 62, 72, "foo.com."), srv("_sip._tcp", 15, 65, 75, ".")),
 		),
 

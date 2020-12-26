@@ -17,14 +17,17 @@ type msdnsProvider struct {
 }
 
 var features = providers.DocumentationNotes{
-	providers.CanUseAlias: providers.Cannot(),
-	providers.CanUseCAA:   providers.Cannot(),
-	providers.CanUsePTR:   providers.Can(),
-	//providers.CanUseSRV:              providers.Cannot(),
+	providers.CanGetZones:            providers.Can(),
+	providers.CanUseAlias:            providers.Cannot(),
+	providers.CanUseCAA:              providers.Cannot(),
+	providers.CanUseDS:               providers.Unimplemented(),
+	providers.CanUsePTR:              providers.Can(),
+	providers.CanUseSRV:              providers.Can(),
+	providers.CanUseTLSA:             providers.Unimplemented(),
+	providers.CanUseTXTMulti:         providers.Unimplemented(),
 	providers.DocCreateDomains:       providers.Cannot("AD depends on the zone already existing on the dns server"),
 	providers.DocDualHost:            providers.Cannot("This driver does not manage NS records, so should not be used for dual-host scenarios"),
 	providers.DocOfficiallySupported: providers.Can(),
-	providers.CanGetZones:            providers.Can(),
 }
 
 // Register with the dnscontrol system.

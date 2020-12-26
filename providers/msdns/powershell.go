@@ -175,6 +175,9 @@ func generatePSDelete(dnsserver, domain string, rec *models.RecordConfig) string
 	fmt.Fprintf(&b, ` -RRType "%s"`, rec.Type)
 	if rec.Type == "MX" {
 		fmt.Fprintf(&b, ` -RecordData %d,"%s"`, rec.MxPreference, rec.GetTargetField())
+	} else if rec.Type == "SRV" {
+		// https://www.gitmemory.com/issue/MicrosoftDocs/windows-powershell-docs/1149/511916884
+		fmt.Fprintf(&b, ` -RecordData %d,%d,%d,"%s"`, rec.SrvPriority, rec.SrvWeight, rec.SrvPort, rec.GetTargetField())
 	} else {
 		fmt.Fprintf(&b, ` -RecordData "%s"`, rec.GetTargetField())
 	}

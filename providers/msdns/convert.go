@@ -92,13 +92,13 @@ func nativeToRecords(nr nativeRecord, origin string) (*models.RecordConfig, erro
 		rc.SetTarget(sprops["NameServer"])
 	case "PTR":
 		rc.SetTarget(sprops["PtrDomainName"])
-		//	case "SRV":
-		//		rc.SetTargetSRV(
-		//			uint16(uprops["Priority"]),
-		//			uint16(uprops["Weight"]),
-		//			uint16(uprops["Port"]),
-		//			sprops["DomainName"],
-		//		)
+			case "SRV":
+				rc.SetTargetSRV(
+					uint16(uprops["Priority"]),
+					uint16(uprops["Weight"]),
+					uint16(uprops["Port"]),
+					sprops["DomainName"],
+				)
 	case "SOA":
 		rc.SetTargetSOA(
 			sprops["PrimaryServer"],
