@@ -60,3 +60,16 @@ D('example.tld', REG_NONE, DnsProvider(MSDNS),
       A("test","1.2.3.4")
 )
 {% endhighlight %}
+
+
+# Converting from ACTIVEDIRECTORY_PS
+
+If you were using the `ACTIVEDIRECTORY_PS` provider and are switching to `MSDNS`, make the following changes:
+
+1. In `dnsconfig.js`, change `ACTIVEDIRECTORY_PS` to `MSDNS` in any `NewDnsProvider()` calls.
+
+2. In `creds.json`, delete `fakeps`, `pslog` and `psout` if they are used (they probably aren't).
+
+2. In `creds.json`, rename "ADServer" to "dnsserver".
+
+3. If the PowerShell commands need to be run on a different host using a `PSSession`, add `pssession: "remoteserver",` where "remoteserver" is the name of the server where the PowerShell commands should run.
