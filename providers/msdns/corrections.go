@@ -52,13 +52,12 @@ func (c *msdnsProvider) deleteRec(dnsserver, domainname string, cor diff.Correla
 
 func (c *msdnsProvider) createRec(dnsserver, domainname string, cre diff.Correlation) []*models.Correction {
 	rec := cre.Desired
-	arr := []*models.Correction{
-		{
-			Msg: cre.String(),
-			F: func() error {
-				return c.shell.RecordCreate(dnsserver, domainname, rec)
-			}},
-	}
+	arr := []*models.Correction{{
+		Msg: cre.String(),
+		F: func() error {
+			return c.shell.RecordCreate(dnsserver, domainname, rec)
+		},
+	}}
 	return arr
 }
 

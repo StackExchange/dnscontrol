@@ -11,9 +11,9 @@ import (
 
 // This is the struct that matches either (or both) of the Registrar and/or DNSProvider interfaces:
 type msdnsProvider struct {
-	dnsserver string // Which DNS Server to update
-	pssession string // Remote machine to PSSession to
-	shell     DNSAccessor
+	dnsserver string      // Which DNS Server to update
+	pssession string      // Remote machine to PSSession to
+	shell     DNSAccessor // Handle for
 }
 
 var features = providers.DocumentationNotes{
@@ -25,7 +25,7 @@ var features = providers.DocumentationNotes{
 	providers.CanUseSRV:              providers.Can(),
 	providers.CanUseTLSA:             providers.Unimplemented(),
 	providers.CanUseTXTMulti:         providers.Unimplemented(),
-	providers.DocCreateDomains:       providers.Cannot("AD depends on the zone already existing on the dns server"),
+	providers.DocCreateDomains:       providers.Cannot("This provider assumes the zone already existing on the dns server"),
 	providers.DocDualHost:            providers.Cannot("This driver does not manage NS records, so should not be used for dual-host scenarios"),
 	providers.DocOfficiallySupported: providers.Can(),
 }
@@ -37,6 +37,12 @@ func init() {
 }
 
 func newDNS(config map[string]string, metadata json.RawMessage) (providers.DNSServiceProvider, error) {
+
+	if runtime.GOOS != "windows" {
+		fmt.Println("INFO: PowerShell not available. Disabling Active Directory provider.")
+		return providers.None{}, nil
+	}
+
 	var err error
 
 	p := &msdnsProvider{
@@ -45,11 +51,6 @@ func newDNS(config map[string]string, metadata json.RawMessage) (providers.DNSSe
 	p.shell, err = newPowerShell(config)
 	if err != nil {
 		return nil, err
-	}
-
-	if runtime.GOOS != "windows" {
-		fmt.Println("INFO: PowerShell not available. Disabling Active Directory provider.")
-		return providers.None{}, nil
 	}
 
 	return p, nil
@@ -121,3 +122,8 @@ func PrepDesiredRecords(dc *models.DomainConfig) {
 
 	dc.Punycode()
 }
+
+// NB(tlim): If we want to implement a registrar, refer to
+// http://go.microsoft.com/fwlink/?LinkId=288158
+// (Get-DnsServerZoneDelegation) for hints about which PowerShell
+// commands to use.

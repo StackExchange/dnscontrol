@@ -22,17 +22,13 @@ type psHandle struct {
 func newPowerShell(config map[string]string) (*psHandle, error) {
 
 	back := &backend.Local{}
-
 	sh, err := ps.New(back)
 	if err != nil {
 		return nil, err
 	}
-	//defer sh.Exit()
-
 	shell := sh
 
 	pssession := config["pssession"]
-
 	if pssession != "" {
 		fmt.Printf("INFO: PowerShell commands will run on %q\n", pssession)
 		// create a remote shell by wrapping the existing one in the session middleware
@@ -50,7 +46,6 @@ func newPowerShell(config map[string]string) (*psHandle, error) {
 		shell: shell,
 	}
 	return psh, nil
-
 }
 
 func (psh *psHandle) Exit() {
@@ -94,8 +89,6 @@ func generatePSZoneAll(dnsserver string) string {
 }
 
 func (psh *psHandle) GetDNSZoneRecords(dnsserver, domain string) ([]nativeRecord, error) {
-	//start := time.Now()
-
 	tmpfile, err := ioutil.TempFile("", "zonerecords.*.json")
 	if err != nil {
 		log.Fatal(err)
@@ -120,14 +113,8 @@ func (psh *psHandle) GetDNSZoneRecords(dnsserver, domain string) ([]nativeRecord
 	}
 	os.Remove(tmpfile.Name())
 
-	//fmt.Printf("DURATION 1 = %v\n", time.Since(start))
-
-	//start = time.Now()
-
 	var records []nativeRecord
 	json.Unmarshal([]byte(contents), &records)
-
-	//fmt.Printf("DURATION 2 = %v\n", time.Since(start))
 
 	return records, nil
 }
@@ -198,8 +185,6 @@ func (psh *psHandle) RecordCreate(dnsserver, domain string, rec *models.RecordCo
 }
 
 func generatePSCreate(dnsserver, domain string, rec *models.RecordConfig) string {
-	content := rec.GetTargetField()
-
 	var b bytes.Buffer
 	fmt.Fprintf(&b, `echo CREATE "%s" "%s" "%s"`, rec.Type, rec.Name, rec.GetTargetCombined())
 	fmt.Fprintf(&b, " ; ")
@@ -252,7 +237,7 @@ func generatePSCreate(dnsserver, domain string, rec *models.RecordConfig) string
 	//	fmt.Fprintf(&b, ` -TLSA -CertificateAssociationData <System.String> -CertificateUsage {CAConstraint | ServiceCertificateConstraint | TrustAnchorAssertion | DomainIssuedCertificate} -MatchingType {ExactMatch | Sha256Hash | Sha512Hash} -Selector {FullCertificate | SubjectPublicKeyInfo}`, rec.GetTargetField())
 	default:
 		panic(fmt.Errorf("generatePSCreate() has not implemented recType=%s recName=%#v content=%#v)",
-			rec.Type, rec.GetLabel(), content))
+			rec.Type, rec.GetLabel(), rec.GetTargetField()))
 		// We panic so that we quickly find any switch statements
 		// that have not been updated for a new RR type.
 	}
@@ -273,11 +258,11 @@ func (psh *psHandle) RecordModify(dnsserver, domain string, old, rec *models.Rec
 }
 
 func generatePSModify(dnsserver, domain string, old, rec *models.RecordConfig) string {
-
 	// The simple way is to just remove the old record and insert the new record.
-	dcmd := generatePSDelete(dnsserver, domain, old)
-	ccmd := generatePSCreate(dnsserver, domain, rec)
-	return dcmd + ` ; ` + ccmd
+	return generatePSDelete(dnsserver, domain, old) + ` ; ` + generatePSCreate(dnsserver, domain, rec)
+	// NB: SOA records can't be deleted. When we implement them, we'll
+	// need to special case them and generate an in-place modification
+	// command.
 }
 
 // Note about the old generatePSModify:

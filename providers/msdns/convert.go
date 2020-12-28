@@ -92,28 +92,24 @@ func nativeToRecords(nr nativeRecord, origin string) (*models.RecordConfig, erro
 		rc.SetTarget(sprops["NameServer"])
 	case "PTR":
 		rc.SetTarget(sprops["PtrDomainName"])
-			case "SRV":
-				rc.SetTargetSRV(
-					uint16(uprops["Priority"]),
-					uint16(uprops["Weight"]),
-					uint16(uprops["Port"]),
-					sprops["DomainName"],
-				)
+	case "SRV":
+		rc.SetTargetSRV(
+			uint16(uprops["Priority"]),
+			uint16(uprops["Weight"]),
+			uint16(uprops["Port"]),
+			sprops["DomainName"],
+		)
 	case "SOA":
-		rc.SetTargetSOA(
-			sprops["PrimaryServer"],
-			sprops["ResponsiblePerson"],
-			uprops["SerialNumber"],
-			uprops["RefreshInterval"],
-			uprops["RetryDelay"],
-			uprops["ExpireLimit"],
-			uprops["MinimumTimeToLive"])
 		// We discard SOA records for now. Windows DNS doesn't let us delete
 		// them and they get in the way of integration tests. In the future,
 		// we should support SOA records by (1) ignoring them in the
 		// integration tests. (2) generatePSModify will have to special-case
 		// updates.
 		return nil, nil
+		// If we weren't ignoring them, the code would look like this:
+		//rc.SetTargetSOA(sprops["PrimaryServer"], sprops["ResponsiblePerson"],
+		//	uprops["SerialNumber"], uprops["RefreshInterval"], uprops["RetryDelay"],
+		//	uprops["ExpireLimit"], uprops["MinimumTimeToLive"])
 	case "TXT":
 		rc.SetTargetTXTString(sprops["DescriptiveText"])
 	default:

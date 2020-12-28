@@ -6,7 +6,18 @@ import (
 	"github.com/StackExchange/dnscontrol/v3/models"
 )
 
-// nativeRecord the JSON received from PowerShell
+// DNSAccessor describes a system that can access Microsoft DNS.
+type DNSAccessor interface {
+	Exit()
+	GetDNSServerZoneAll(dnsserver string) ([]string, error)
+	GetDNSZoneRecords(dnsserver, domain string) ([]nativeRecord, error)
+	RecordCreate(dnsserver, domain string, rec *models.RecordConfig) error
+	RecordDelete(dnsserver, domain string, rec *models.RecordConfig) error
+	RecordModify(dnsserver, domain string, old, rec *models.RecordConfig) error
+}
+
+// nativeRecord the JSON received from PowerShell when listing all DNS
+// records in a zone.
 type nativeRecord struct {
 	//CimClass              interface{} `json:"CimClass"`
 	//CimInstanceProperties interface{} `json:"CimInstanceProperties"`
@@ -28,23 +39,10 @@ type ciProperty struct {
 	Value json.RawMessage `json:"Value,omitempty"`
 }
 
-//type ciValueString string `json:"Value"`
-//type ciValueInt int `json:"Value"`
 type ciValueDuration struct {
-	//Name         string  `json:"Name"`
 	TotalSeconds float64 `json:"TotalSeconds"`
 }
 
-// NOTE: When creating that struct, it was helpful to view:
+// NB(tlim): The above structs were created using the help of:
 // Get-DnsServerResourceRecord -ZoneName example.com | where { $_.RecordType -eq "SOA" } | select $_.RecordData | ConvertTo-Json -depth 10
 // and pass it to https://mholt.github.io/json-to-go/
-
-// DNSAccessor describes a system that can access Microsoft DNS.
-type DNSAccessor interface {
-	Exit()
-	GetDNSServerZoneAll(dnsserver string) ([]string, error)
-	GetDNSZoneRecords(dnsserver, domain string) ([]nativeRecord, error)
-	RecordCreate(dnsserver, domain string, rec *models.RecordConfig) error
-	RecordDelete(dnsserver, domain string, rec *models.RecordConfig) error
-	RecordModify(dnsserver, domain string, old, rec *models.RecordConfig) error
-}
