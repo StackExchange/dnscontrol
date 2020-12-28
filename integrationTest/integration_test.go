@@ -652,7 +652,20 @@ func makeTests(t *testing.T) []*TestGroup {
 		),
 
 		testgroup("Null MX",
-			not("AZURE_DNS", "GANDI_V5", "INWX", "NAMEDOTCOM", "DIGITALOCEAN", "NETCUP", "DNSIMPLE", "HEDNS", "VULTR", "OVH"), // These providers don't support RFC 7505
+			// These providers don't support RFC 7505
+			not(
+				"AZURE_DNS",
+				"DIGITALOCEAN",
+				"DNSIMPLE",
+				"GANDI_V5",
+				"HEDNS",
+				"INWX",
+				"MSDNS",
+				"NAMEDOTCOM",
+				"NETCUP",
+				"OVH",
+				"VULTR",
+			),
 			tc("Null MX", mx("@", 0, ".")),
 		),
 
@@ -689,11 +702,22 @@ func makeTests(t *testing.T) []*TestGroup {
 			tc("Create a TXT with spaces", txt("foo", "with spaces")),
 			tc("Create 1 TXT as array", txtmulti("foo", []string{"simple"})), // Same as non-TXTMulti
 			clear(),
+			tc("Create a 254-byte TXT", txt("foo", strings.Repeat("A", 254))),
+		),
+
+		testgroup("max-sized TXT",
+			not(
+				"INWX",  // INWX does not support
+				"MSDNS", // Supports 254-byte strings, not 255.  Seems like a bug.
+			),
 			tc("Create a 255-byte TXT", txt("foo", strings.Repeat("A", 255))),
 		),
 
 		testgroup("single TXT with single-quote",
-			not("INWX"),
+			not(
+				"INWX",  // Bug in the API prevents this.
+				"MSDNS", // TODO(tlim): Should be easy to implement.
+			),
 			tc("Create TXT with single-quote", txt("foo", "blah`blah")),
 		),
 
@@ -705,7 +729,13 @@ func makeTests(t *testing.T) []*TestGroup {
 		),
 
 		testgroup("empty TXT",
-			not("HETZNER", "HEXONET", "INWX", "NETCUP"),
+			not(
+				"HETZNER", // Not supported.
+				"HEXONET", // Not supported.
+				"INWX",    // Not supported.
+				"MSDNS",   // Not supported.
+				"NETCUP",  // Not supported.
+			),
 			tc("TXT with empty str", txt("foo1", "")),
 			// https://github.com/StackExchange/dnscontrol/issues/598
 			// We decided that permitting the TXT target to be an empty
@@ -754,28 +784,36 @@ func makeTests(t *testing.T) []*TestGroup {
 			// Tests the paging code of providers.  Many providers page at 100.
 			// Notes:
 			//  - Gandi: page size is 100, therefore we test with 99, 100, and 101
-			//  - NS1: free acct only allows 50 records, therefore we skip
 			//  - DIGITALOCEAN: page size is 100 (default: 20)
-			//  - CLOUDFLAREAPI: Infinite pagesize but due to slow speed, skipping.
-			not("NS1", "CLOUDFLAREAPI"),
+			not(
+				"NS1",           // Free acct only allows 50 records, therefore we skip
+				"CLOUDFLAREAPI", // Infinite pagesize but due to slow speed, skipping.
+				"MSDNS",         //  No paging done. No need to test.
+			),
 			tc("99 records", manyA("rec%04d", "1.2.3.4", 99)...),
 			tc("100 records", manyA("rec%04d", "1.2.3.4", 100)...),
 			tc("101 records", manyA("rec%04d", "1.2.3.4", 101)...),
 		),
 
 		testgroup("pager601",
-			// AWS:  https://github.com/StackExchange/dnscontrol/issues/493
-			//only("AZURE_DNS", "HEXONET", "ROUTE53"),
-			only("HEXONET", "ROUTE53", "GCLOUD"), // AZURE_DNS is failing.
+			only(
+				//"MSDNS",     //  No paging done. No need to test.
+				//"AZURE_DNS", // Currently failing.
+				"HEXONET",
+				"GCLOUD",
+				"ROUTE53", // See https://github.com/StackExchange/dnscontrol/issues/493
+			),
 			tc("601 records", manyA("rec%04d", "1.2.3.4", 600)...),
 			tc("Update 601 records", manyA("rec%04d", "1.2.3.5", 600)...),
 		),
 
 		testgroup("pager1201",
-			// AWS:  https://github.com/StackExchange/dnscontrol/issues/493
-			// Azure: https://github.com/StackExchange/dnscontrol/issues/770
-			//only("AZURE_DNS", "HEXONET", "ROUTE53"),
-			only("HEXONET", "ROUTE53"), // AZURE_DNS is failing.
+			only(
+				//"MSDNS",     //  No paging done. No need to test.
+				//"AZURE_DNS", // Currently failing. See https://github.com/StackExchange/dnscontrol/issues/770
+				"HEXONET",
+				"ROUTE53", // https://github.com/StackExchange/dnscontrol/issues/493
+			),
 			tc("1200 records", manyA("rec%04d", "1.2.3.4", 1200)...),
 			tc("Update 1200 records", manyA("rec%04d", "1.2.3.5", 1200)...),
 		),
@@ -830,7 +868,14 @@ func makeTests(t *testing.T) []*TestGroup {
 			tc("Change Weight", srv("_sip._tcp", 52, 62, 7, "foo.com."), srv("_sip._tcp", 15, 65, 75, "foo4.com.")),
 			tc("Change Port", srv("_sip._tcp", 52, 62, 72, "foo.com."), srv("_sip._tcp", 15, 65, 75, "foo4.com.")),
 		),
-		testgroup("SRV w/ null target", requires(providers.CanUseSRV), not("EXOSCALE", "HEXONET", "INWX", "NAMEDOTCOM"),
+		testgroup("SRV w/ null target", requires(providers.CanUseSRV),
+			not(
+				"EXOSCALE",   // Not supported.
+				"HEXONET",    // Not supported.
+				"INWX",       // Not supported.
+				"MSDNS",      // Not supported.
+				"NAMEDOTCOM", // Not supported.
+			),
 			tc("Null Target", srv("_sip._tcp", 52, 62, 72, "foo.com."), srv("_sip._tcp", 15, 65, 75, ".")),
 		),
 

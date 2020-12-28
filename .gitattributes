@@ -3,6 +3,7 @@
 # Git itself
 .gitattributes eol=lf
 .gitigore eol=lf
+OWNERS eol=lf
 
 # dnscontrol files are unix line-endings:
 *.md text eol=lf
