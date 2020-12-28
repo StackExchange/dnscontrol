@@ -43,7 +43,7 @@ Otherwise
 
 {% highlight javascript %}
 {
-  "activedir": {
+  "msdns": {
     "dnsserver": "ny-dc01",
     "pssession": "mywindowshost"
   }
@@ -54,7 +54,7 @@ An example DNS configuration:
 
 {% highlight javascript %}
 var REG_NONE = NewRegistrar('none', 'NONE')
-var MSDNS = NewDnsProvider("activedir", "MSDNS");
+var MSDNS = NewDnsProvider("msdns", "MSDNS");
 
 D('example.tld', REG_NONE, DnsProvider(MSDNS),
       A("test","1.2.3.4")
@@ -62,14 +62,35 @@ D('example.tld', REG_NONE, DnsProvider(MSDNS),
 {% endhighlight %}
 
 
-# Converting from ACTIVEDIRECTORY_PS
+# Converting from `ACTIVEDIRECTORY_PS`
 
 If you were using the `ACTIVEDIRECTORY_PS` provider and are switching to `MSDNS`, make the following changes:
 
 1. In `dnsconfig.js`, change `ACTIVEDIRECTORY_PS` to `MSDNS` in any `NewDnsProvider()` calls.
 
-2. In `creds.json`, delete `fakeps`, `pslog` and `psout` if they are used (they probably aren't).
+2. In `creds.json`: Since unused fields are quietly ignored, it is
+   safe to list both the old and new options:
+  a. Add a field "dnsserver" with the DNS server's name.  (OPTIONAL if dnscontrol is run on the DNS server.)
+  b. If the PowerShell commands need to be run on a different host using a `PSSession`, add `pssession: "remoteserver",` where `remoteserver` is the name of the server where the PowerShell commands should run.
+  c. The MSDNS provider will quietly ignore `fakeps`, `pslog` and `psout`. Feel free to leave them in `creds.json` until you are sure you aren't going back to the old provider.
 
-2. In `creds.json`, rename "ADServer" to "dnsserver".
+During the transition your `creds.json` file might look like:
 
-3. If the PowerShell commands need to be run on a different host using a `PSSession`, add `pssession: "remoteserver",` where "remoteserver" is the name of the server where the PowerShell commands should run.
+{% highlight javascript %}
+{
+  "msdns": {
+    "ADServer": "ny-dc01",         << Delete these after you have
+    "fakeps": "true",              << verified that MSDNS works
+    "pslog": "log.txt",            << properly.
+    "psout": "out.txt",
+    "dnsserver": "ny-dc01",
+    "pssession": "mywindowshost"
+  }
+}
+{% endhighlight %}
+
+3. Run `dnscontrol preview` to make sure the provider works as expected.
+
+4. If for any reason you need to revert, simply change `dnsconfig.js` to refer to `ACTIVEDIRECTORY_PS` again (or use `git` commands).  If you are reverting because you found a bug, please [file an issue](https://github.com/StackExchange/dnscontrol/issues/new).
+
+5. Once you are confident in the new provider, remove `ADServer`, `fakeps`, `pslog`, `psout` from `creds.json`.
