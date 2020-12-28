@@ -28,7 +28,7 @@ func nativeToRecords(n resourceRecord, origin string) (rcs []*models.RecordConfi
 		case "TXT":
 			rc.SetTargetTXT(value)
 			rc.TxtNormalize("multistring")
-		default: //  "A", "AAAA", "CAA", "NS", "CNAME", "MX", "PTR", "SRV", "TXT"
+		default: //  "A", "AAAA", "CAA", "NS", "CNAME", "MX", "PTR", "SRV"
 			if err := rc.PopulateFromString(rtype, value, origin); err != nil {
 				panic(fmt.Errorf("unparsable record received from deSEC: %w", err))
 			}
