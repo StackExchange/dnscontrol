@@ -652,7 +652,20 @@ func makeTests(t *testing.T) []*TestGroup {
 		),
 
 		testgroup("Null MX",
-			not("AZURE_DNS", "GANDI_V5", "INWX", "NAMEDOTCOM", "DIGITALOCEAN", "MSDNS", "NETCUP", "DNSIMPLE", "HEDNS", "VULTR"), // These providers don't support RFC 7505
+			// These providers don't support RFC 7505
+			not(
+				"AZURE_DNS",
+				"DIGITALOCEAN",
+				"DNSIMPLE",
+				"GANDI_V5",
+				"HEDNS",
+				"INWX",
+				"MSDNS",
+				"NAMEDOTCOM",
+				"NETCUP",
+				"OVH",
+				"VULTR",
+			),
 			tc("Null MX", mx("@", 0, ".")),
 		),
 
