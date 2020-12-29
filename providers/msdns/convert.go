@@ -88,6 +88,8 @@ func nativeToRecords(nr nativeRecord, origin string) (*models.RecordConfig, erro
 		rc.SetTarget(sprops["HostNameAlias"])
 	case "MX":
 		rc.SetTargetMX(uint16(uprops["Preference"]), sprops["MailExchange"])
+	case "NAPTR":
+		populateFromHex(rc, sprops["Data"])
 	case "NS":
 		rc.SetTarget(sprops["NameServer"])
 	case "PTR":

@@ -160,15 +160,18 @@ func generatePSDelete(dnsserver, domain string, rec *models.RecordConfig) string
 	fmt.Fprintf(&b, ` -ZoneName "%s"`, domain)
 	fmt.Fprintf(&b, ` -Name "%s"`, rec.Name)
 	fmt.Fprintf(&b, ` -RRType "%s"`, rec.Type)
-	if rec.Type == "MX" {
+	switch rec.Type {
+	case "MX":
 		fmt.Fprintf(&b, ` -RecordData %d,"%s"`, rec.MxPreference, rec.GetTargetField())
-	} else if rec.Type == "SRV" {
+	case "NAPTR":
+		fmt.Fprintf(&b, ` -RecordData "%s"`, naptrToHex(rec))
+	case "SRV":
 		// https://www.gitmemory.com/issue/MicrosoftDocs/windows-powershell-docs/1149/511916884
 		fmt.Fprintf(&b, ` -RecordData %d,%d,%d,"%s"`, rec.SrvPriority, rec.SrvWeight, rec.SrvPort, rec.GetTargetField())
-	} else {
+	default:
 		fmt.Fprintf(&b, ` -RecordData "%s"`, rec.GetTargetField())
 	}
-	//fmt.Printf("DEBUG PSDelete CMD = (\n%s\n)\n", b.String())
+	fmt.Printf("DEBUG PSDelete CMD = (\n%s\n)\n", b.String())
 	return b.String()
 }
 
