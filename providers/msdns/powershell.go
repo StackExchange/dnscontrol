@@ -100,7 +100,7 @@ func (psh *psHandle) GetDNSZoneRecords(dnsserver, domain string) ([]nativeRecord
 		return nil, err
 	}
 	if stdout != "" {
-		fmt.Printf("STDOUT = %q\n", stderr)
+		fmt.Printf("STDOUT = %q\n", stdout)
 	}
 	if stderr != "" {
 		fmt.Printf("STDERROR = %q\n", stderr)
