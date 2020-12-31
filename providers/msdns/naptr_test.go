@@ -112,3 +112,6 @@ func Test_populateFromHex(t *testing.T) {
 		})
 	}
 }
+
+// TODO(tlim): Regexp and Target can't both be set (exactly one should be set).
+// Add tests that verify errors are triggered if both or neither are set.

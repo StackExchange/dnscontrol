@@ -152,24 +152,53 @@ func generatePSDelete(dnsserver, domain string, rec *models.RecordConfig) string
 	var b bytes.Buffer
 	fmt.Fprintf(&b, `echo DELETE "%s" "%s" "%s"`, rec.Type, rec.Name, rec.GetTargetCombined())
 	fmt.Fprintf(&b, " ; ")
-	fmt.Fprintf(&b, `Remove-DnsServerResourceRecord`)
-	if dnsserver != "" {
-		fmt.Fprintf(&b, ` -ComputerName "%s"`, dnsserver)
-	}
-	fmt.Fprintf(&b, ` -Force`)
-	fmt.Fprintf(&b, ` -ZoneName "%s"`, domain)
-	fmt.Fprintf(&b, ` -Name "%s"`, rec.Name)
-	fmt.Fprintf(&b, ` -RRType "%s"`, rec.Type)
-	switch rec.Type {
-	case "MX":
-		fmt.Fprintf(&b, ` -RecordData %d,"%s"`, rec.MxPreference, rec.GetTargetField())
-	case "NAPTR":
-		fmt.Fprintf(&b, ` -RecordData "%s"`, naptrToHex(rec))
-	case "SRV":
-		// https://www.gitmemory.com/issue/MicrosoftDocs/windows-powershell-docs/1149/511916884
-		fmt.Fprintf(&b, ` -RecordData %d,%d,%d,"%s"`, rec.SrvPriority, rec.SrvWeight, rec.SrvPort, rec.GetTargetField())
-	default:
-		fmt.Fprintf(&b, ` -RecordData "%s"`, rec.GetTargetField())
+	if rec.Type == "NAPTR" {
+		_ = `
+		$OldObj = Get-DnsServerResourceRecord -ZoneName "example.com" -Name "testdata" -RRType naptr | Where-Object {$_.HostName -eq "testdata" -and $_.RecordData.Data -eq "020003000155074532552B7369701D215E282E2A2924217369703A5C5C314031302E3131302E322E3130216000"} ; if($OldObj.Length -ne 1){ throw "Error, matched 0 or > 1 records" }
+
+		This works for A records:
+		Get-DnsServerResourceRecord -ZoneName "example.com"
+		$OldObj = Get-DnsServerResourceRecord -ZoneName "example.com" -Name "mya" -RRType A | Where-Object {$_.HostName -eq "mya" -and $_.RecordData.IPv4Address -eq "1.2.3.4"} ; if($OldObj.Length -ne 1){ throw "Error, matched 0 or > 1 records" }
+        Remove-DnsServerResourceRecord  -InputObject $OldObj  -ZoneName "example.com" -Confirm -Force
+		Get-DnsServerResourceRecord -ZoneName "example.com"
+
+		But it doesn't work for NAPTR records?
+		$OldObj = Get-DnsServerResourceRecord -ZoneName "example.com" -Name "testdata" -RRType "NAPTR" | Where-Object {$_.HostName -eq "testdata" -and $_.RecordData.Data -eq "1.2.3.4"} ; if($OldObj.Length -ne 1){ throw "Error, matched 0 or > 1 records" }
+        Remove-DnsServerResourceRecord  -InputObject $OldObj  -ZoneName "example.com" -Confirm -Force
+		Get-DnsServerResourceRecord -ZoneName "example.com"
+
+		`
+
+		fmt.Fprintf(&b, `$OldObj = Get-DnsServerResourceRecord`)
+		if dnsserver != "" {
+			fmt.Fprintf(&b, ` -ComputerName "%s"`, dnsserver)
+		}
+		fmt.Fprintf(&b, ` -ZoneName "%s"`, domain)
+		fmt.Fprintf(&b, ` -Name "%s"`, rec.Name)
+		fmt.Fprintf(&b, ` -RRType "%s"`, rec.Type)
+		fmt.Fprintf(&b, ` | Where-Object {$_.HostName -eq "%s" -and $_.RecordData.Data -eq "%s"}`, rec.Name, naptrToHex(rec))
+		fmt.Fprintf(&b, ` ; `)
+		fmt.Fprintf(&b, `if($OldObj.Length -ne 1){ throw "Error, matched 0 or > 1 records" }`)
+		fmt.Fprintf(&b, ` ; `)
+
+	} else {
+		fmt.Fprintf(&b, `Remove-DnsServerResourceRecord`)
+		if dnsserver != "" {
+			fmt.Fprintf(&b, ` -ComputerName "%s"`, dnsserver)
+		}
+		fmt.Fprintf(&b, ` -Force`)
+		fmt.Fprintf(&b, ` -ZoneName "%s"`, domain)
+		fmt.Fprintf(&b, ` -Name "%s"`, rec.Name)
+		fmt.Fprintf(&b, ` -RRType "%s"`, rec.Type)
+		switch rec.Type {
+		case "MX":
+			fmt.Fprintf(&b, ` -RecordData %d,"%s"`, rec.MxPreference, rec.GetTargetField())
+		case "SRV":
+			// https://www.gitmemory.com/issue/MicrosoftDocs/windows-powershell-docs/1149/511916884
+			fmt.Fprintf(&b, ` -RecordData %d,%d,%d,"%s"`, rec.SrvPriority, rec.SrvWeight, rec.SrvPort, rec.GetTargetField())
+		default:
+			fmt.Fprintf(&b, ` -RecordData "%s"`, rec.GetTargetField())
+		}
 	}
 	fmt.Printf("DEBUG PSDelete CMD = (\n%s\n)\n", b.String())
 	return b.String()

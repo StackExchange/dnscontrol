@@ -78,6 +78,10 @@ func populateFromHex(rc *models.RecordConfig, s string) error {
 	}
 	rc.SetTarget(t)
 
+	if rc.NaptrRegexp != "" && t != "" {
+		return fmt.Errorf("invalid naptr: Regexp and Target are exclusive")
+	}
+
 	return nil
 }
 
