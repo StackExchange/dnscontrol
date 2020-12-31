@@ -89,6 +89,10 @@ func nativeToRecords(nr nativeRecord, origin string) (*models.RecordConfig, erro
 	case "MX":
 		rc.SetTargetMX(uint16(uprops["Preference"]), sprops["MailExchange"])
 	case "NAPTR":
+		fmt.Printf(
+			"msdns/convert.go:nativeToRecord rtype=%q props=%+v and %+v",
+			rtype, sprops, uprops)
+		fmt.Printf("DEBUG NAPTR DATA=%q\n", sprops["Data"])
 		populateFromHex(rc, sprops["Data"])
 	case "NS":
 		rc.SetTarget(sprops["NameServer"])

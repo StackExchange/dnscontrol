@@ -52,14 +52,16 @@ func (rc *RecordConfig) GetTargetCombined() string {
 	// Pseudo records:
 	if _, ok := dns.StringToType[rc.Type]; !ok {
 		switch rc.Type { // #rtype_variations
-		case "R53_ALIAS":
-			// Differentiate between multiple R53_ALIASs on the same label.
-			return fmt.Sprintf("%s atype=%s zone_id=%s", rc.Target, rc.R53Alias["type"], rc.R53Alias["zone_id"])
 		case "AZURE_ALIAS":
 			// Differentiate between multiple AZURE_ALIASs on the same label.
 			return fmt.Sprintf("%s atype=%s", rc.Target, rc.AzureAlias["type"])
-		case "SOA":
-			return fmt.Sprintf("%s %v %d %d %d %d %d", rc.Target, rc.SoaMbox, rc.SoaSerial, rc.SoaRefresh, rc.SoaRetry, rc.SoaExpire, rc.SoaMinttl)
+		case "R53_ALIAS":
+			// Differentiate between multiple R53_ALIASs on the same label.
+			return fmt.Sprintf("%s atype=%s zone_id=%s", rc.Target, rc.R53Alias["type"], rc.R53Alias["zone_id"])
+//		case "SOA":
+//			return fmt.Sprintf("%s %v %d %d %d %d %d", rc.Target, rc.SoaMbox, rc.SoaSerial, rc.SoaRefresh, rc.SoaRetry, rc.SoaExpire, rc.SoaMinttl)
+//		case "NAPTR":
+//			return fmt.Sprintf("o=%d p=%d f='%s' s='%s' r='%s' t='%s'", rc.NaptrOrder, rc.NaptrPreference, rc.NaptrFlags, rc.NaptrService, rc.NaptrRegexp, rc.Target)
 		default:
 			// Just return the target.
 			return rc.Target

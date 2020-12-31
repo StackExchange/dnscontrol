@@ -169,18 +169,40 @@ func generatePSDelete(dnsserver, domain string, rec *models.RecordConfig) string
 
 		`
 
-		fmt.Fprintf(&b, `$OldObj = Get-DnsServerResourceRecord`)
+		// Removing this pre-check.  For some reason the powershell
+		// fails with this pre-check. Before we ship, we should figure
+		// out how to verify that only 1 record was found.
+
+		// Get the object:
+		//		fmt.Fprintf(&b, `$OldObj = Get-DnsServerResourceRecord`)
+		//		if dnsserver != "" {
+		//			fmt.Fprintf(&b, ` -ComputerName "%s"`, dnsserver)
+		//		}
+		//		fmt.Fprintf(&b, ` -ZoneName "%s"`, domain)
+		//		fmt.Fprintf(&b, ` -Name "%s"`, rec.Name)
+		//		fmt.Fprintf(&b, ` -RRType "%s"`, rec.Type)
+		//		// Validate that you only got exactly one (not zero, not 2 or more)
+		//		fmt.Fprintf(&b, ` | `)
+		//		fmt.Fprintf(&b, `Where-Object {$_.HostName -eq "%s" -and $_.RecordData.Data -eq "%s"}`, rec.Name, naptrToHex(rec))
+		//		fmt.Fprintf(&b, ` ; `)
+		//		fmt.Fprintf(&b, `if($OldObj.Length -ne 1){ throw "Error, matched 0 or > 1 records" }`)
+		//		fmt.Fprintf(&b, ` ; `)
+		//		// Re-get, but this time delete it:
+		fmt.Fprintf(&b, `Get-DnsServerResourceRecord`)
 		if dnsserver != "" {
 			fmt.Fprintf(&b, ` -ComputerName "%s"`, dnsserver)
 		}
 		fmt.Fprintf(&b, ` -ZoneName "%s"`, domain)
 		fmt.Fprintf(&b, ` -Name "%s"`, rec.Name)
 		fmt.Fprintf(&b, ` -RRType "%s"`, rec.Type)
-		fmt.Fprintf(&b, ` | Where-Object {$_.HostName -eq "%s" -and $_.RecordData.Data -eq "%s"}`, rec.Name, naptrToHex(rec))
-		fmt.Fprintf(&b, ` ; `)
-		fmt.Fprintf(&b, `if($OldObj.Length -ne 1){ throw "Error, matched 0 or > 1 records" }`)
-		fmt.Fprintf(&b, ` ; `)
-
+		fmt.Fprintf(&b, ` | `)
+		fmt.Fprintf(&b, ` Where-Object {$_.HostName -eq "%s" -and $_.RecordData.Data -eq "%s"}`, rec.Name, naptrToHex(rec))
+		fmt.Fprintf(&b, ` | `)
+		fmt.Fprintf(&b, `Remove-DnsServerResourceRecord`)
+		fmt.Fprintf(&b, ` -Confirm:$false`)
+		fmt.Fprintf(&b, ` -Force`)
+		fmt.Fprintf(&b, ` -ZoneName "%s"`, domain)
+		fmt.Fprintf(&b, ` -Name "%s"`, rec.Name)
 	} else {
 		fmt.Fprintf(&b, `Remove-DnsServerResourceRecord`)
 		if dnsserver != "" {
