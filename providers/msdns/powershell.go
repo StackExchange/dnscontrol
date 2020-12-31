@@ -81,7 +81,7 @@ func generatePSZoneAll(dnsserver string) string {
 	var b bytes.Buffer
 	fmt.Fprintf(&b, `Get-DnsServerZone`)
 	if dnsserver != "" {
-		fmt.Fprintf(&b, ` -ComputerName "%v"`, dnsserver)
+		fmt.Fprintf(&b, ` -ComputerName "%s"`, dnsserver)
 	}
 	fmt.Fprintf(&b, ` | `)
 	fmt.Fprintf(&b, `ConvertTo-Json`)
@@ -124,9 +124,9 @@ func generatePSZoneDump(dnsserver, domainname string, filename string) string {
 	var b bytes.Buffer
 	fmt.Fprintf(&b, `Get-DnsServerResourceRecord`)
 	if dnsserver != "" {
-		fmt.Fprintf(&b, ` -ComputerName "%v"`, dnsserver)
+		fmt.Fprintf(&b, ` -ComputerName "%s"`, dnsserver)
 	}
-	fmt.Fprintf(&b, ` -ZoneName "%v"`, domainname)
+	fmt.Fprintf(&b, ` -ZoneName "%s"`, domainname)
 	fmt.Fprintf(&b, ` | `)
 	fmt.Fprintf(&b, `ConvertTo-Json -depth 4`) // Tested with 3 (causes errors).  4 and larger work.
 	fmt.Fprintf(&b, ` > %s`, filename)
