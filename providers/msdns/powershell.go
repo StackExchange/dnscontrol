@@ -216,6 +216,8 @@ func generatePSCreate(dnsserver, domain string, rec *models.RecordConfig) string
 	//	fmt.Fprintf(&b, ` -X25 -PsdnAddress <String>`, rec.GetTargetField())
 	//case "WKS":
 	//	fmt.Fprintf(&b, ` -Wks -InternetAddress <IPAddress> -InternetProtocol {UDP | TCP} -Service <String[]>`, rec.GetTargetField())
+	case "NAPTR":
+		fmt.Fprintf(&b, ` -Naptr -RecordData "%s"`, naptrToHex(rec))
 	case "TXT":
 		fmt.Fprintf(&b, ` -Txt -DescriptiveText "%s"`, rec.GetTargetField())
 	//case "RT":
