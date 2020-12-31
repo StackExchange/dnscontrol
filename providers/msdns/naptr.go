@@ -27,7 +27,7 @@ func naptrToHex(rc *models.RecordConfig) string {
 	b.writeString(rc.NaptrFlags)
 	b.writeString(rc.NaptrService)
 	b.writeString(rc.NaptrRegexp)
-	b.WriteByte(0)
+	b.writeString(rc.GetTargetField())
 	return strings.ToUpper(hex.EncodeToString(b.Bytes()))
 }
 
@@ -71,7 +71,12 @@ func populateFromHex(rc *models.RecordConfig, s string) error {
 	if err != nil {
 		return err
 	}
-	// should find a 0-byte
+	var t string
+	t, off, err = unpackString(msg, off)
+	if err != nil {
+		return err
+	}
+	rc.SetTarget(t)
 
 	return nil
 }
