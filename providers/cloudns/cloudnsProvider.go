@@ -48,6 +48,8 @@ var features = providers.DocumentationNotes{
 	providers.CanUseTLSA:             providers.Can(),
 	providers.CanUsePTR:              providers.Can(),
 	providers.CanGetZones:            providers.Can(),
+	//providers.CanUseDS:               providers.Can(),
+	providers.CanUseDSForChildren: providers.Can(),
 }
 
 func init() {
@@ -96,6 +98,7 @@ func (c *cloudnsProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*mode
 
 	differ := diff.New(dc)
 	_, create, del, modify, err := differ.IncrementalDiff(existingRecords)
+
 	if err != nil {
 		return nil, err
 	}
@@ -103,10 +106,11 @@ func (c *cloudnsProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*mode
 	var corrections []*models.Correction
 
 	// Deletes first so changing type works etc.
+
 	for _, m := range del {
 		id := m.Existing.Original.(*domainRecord).ID
 		corr := &models.Correction{
-			Msg: fmt.Sprintf("%s, ClouDNS ID: %s", m.String(), id),
+			Msg: fmt.Sprintf("%s, ClouDNS ID: %s", m.String(), id), // for exp :"DELETE NS mydom.com ns1.example.com. ttl=300, ClouDNS ID: 222848..."
 			F: func() error {
 				return c.deleteRecord(domainID, id)
 			},
@@ -172,6 +176,7 @@ func (c *cloudnsProvider) EnsureDomainExists(domain string) error {
 	return c.createDomain(domain)
 }
 
+//parses the ClouDNS format into our standard RecordConfig
 func toRc(domain string, r *domainRecord) *models.RecordConfig {
 
 	ttl, _ := strconv.ParseUint(r.TTL, 10, 32)
@@ -214,6 +219,16 @@ func toRc(domain string, r *domainRecord) *models.RecordConfig {
 		sshfpFingerprint, _ := strconv.ParseUint(r.SshfpFingerprint, 10, 32)
 		rc.SshfpFingerprint = uint8(sshfpFingerprint)
 		rc.SetTarget(r.Target)
+	case "DS":
+		dsKeyTag, _ := strconv.ParseUint(r.DsKeyTag, 10, 32)
+		rc.DsKeyTag = uint16(dsKeyTag)
+		dsAlgorithm, _ := strconv.ParseUint(r.DsAlgorithm, 10, 32)
+		rc.DsAlgorithm = uint8(dsAlgorithm)
+		dsDigestType, _ := strconv.ParseUint(r.DsDigestType, 10, 32)
+		rc.DsDigestType = uint8(dsDigestType)
+		rc.DsDigest = r.DsDigest
+		rc.SetTarget(r.Target)
+
 	default:
 		rc.SetTarget(r.Target)
 	}
@@ -221,6 +236,7 @@ func toRc(domain string, r *domainRecord) *models.RecordConfig {
 	return rc
 }
 
+//generates the update requests sent to the API (it takes a RecordConfig and turns it into the request).
 func toReq(rc *models.RecordConfig) (requestParams, error) {
 	req := requestParams{
 		"record-type": rc.Type,
@@ -254,6 +270,12 @@ func toReq(rc *models.RecordConfig) (requestParams, error) {
 	case "SSHFP":
 		req["algorithm"] = strconv.Itoa(int(rc.SshfpAlgorithm))
 		req["fptype"] = strconv.Itoa(int(rc.SshfpFingerprint))
+	case "DS":
+		req["ds_keytag"] = strconv.Itoa(int(rc.DsKeyTag))
+		req["ds_algorithm"] = strconv.Itoa(int(rc.DsAlgorithm))
+		req["ds_digesttype"] = strconv.Itoa(int(rc.DsDigestType))
+		req["ds_digest"] = rc.DsDigest
+
 	default:
 		return nil, fmt.Errorf("ClouDNS.toReq rtype %q unimplemented", rc.Type)
 	}

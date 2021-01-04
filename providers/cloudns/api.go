@@ -62,6 +62,10 @@ type domainRecord struct {
 	TlsaMatchingType string `json:"tlsa_matching_type,omitempty"`
 	SshfpAlgorithm   string `json:"algorithm,omitempty"`
 	SshfpFingerprint string `json:"fp_type,omitempty"`
+	DsKeyTag         string `json:"dskeytag,omitempty"`
+	DsAlgorithm      string `json:"dsalgorithm,omitempty"`
+	DsDigestType     string `json:"dsdigesttype,omitempty"`
+	DsDigest         string `json:"dsdigest,omitempty"`
 }
 
 type recordResponse map[string]domainRecord
@@ -177,12 +181,12 @@ func (c *cloudnsProvider) getRecords(id string) ([]domainRecord, error) {
 		return nil, fmt.Errorf("failed fetching record list from ClouDNS: %s", err)
 	}
 
-	var dr recordResponse
+	var dr recordResponse // existant records at provider
 	json.Unmarshal(bodyString, &dr)
 
 	var records []domainRecord
 	for _, rec := range dr {
-		records = append(records, rec)
+		records = append(records, rec) // apend request to records
 	}
 	return records, nil
 }
