@@ -29,6 +29,7 @@ var features = providers.DocumentationNotes{
 	providers.DocCreateDomains:       providers.Can(),
 	providers.DocDualHost:            providers.Can(),
 	providers.DocOfficiallySupported: providers.Can(),
+	providers.CanUseTLSA:		  providers.Can(),
 }
 
 func sPtr(s string) *string {
