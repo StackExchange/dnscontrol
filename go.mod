@@ -64,6 +64,7 @@ require (
 	github.com/tdewolff/test v1.0.6 // indirect
 	github.com/urfave/cli/v2 v2.3.0
 	github.com/vultr/govultr v1.0.0
+	github.com/xddxdd/ottoext v0.0.0-20210101073831-439879ee6281
 	golang.org/x/crypto v0.0.0-20201124201722-c8d3bf9c5392 // indirect
 	golang.org/x/mod v0.4.0 // indirect
 	golang.org/x/net v0.0.0-20201224014010-6772e930b67b
@@ -77,7 +78,6 @@ require (
 	google.golang.org/grpc v1.34.0 // indirect
 	gopkg.in/ini.v1 v1.62.0 // indirect
 	gopkg.in/ns1/ns1-go.v2 v2.0.0-20170502175150-c563826f4cbe
-	gopkg.in/sourcemap.v1 v1.0.5 // indirect
 	gopkg.in/square/go-jose.v2 v2.5.1 // indirect
 	gopkg.in/yaml.v2 v2.4.0
 	gopkg.in/yaml.v3 v3.0.0-20200615113413-eeeca48fe776 // indirect
