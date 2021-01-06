@@ -31,7 +31,7 @@ Example Javascript:
 var REG_MONITOR = NewRegistrar('DNS-over-HTTPS', 'DNSOVERHTTPS');
 
 D("example.com", REG_MONITOR,
-  NNAMESERVER("ns1.example.com."),
-  NNAMESERVER("ns2.example.com."),
+  NAMESERVER("ns1.example.com."),
+  NAMESERVER("ns2.example.com."),
 );
 {% endhighlight %}
