@@ -10,6 +10,7 @@ import (
 	"github.com/urfave/cli/v2"
 
 	"github.com/StackExchange/dnscontrol/v3/models"
+	"github.com/StackExchange/dnscontrol/v3/pkg/js"
 	"github.com/StackExchange/dnscontrol/v3/pkg/printer"
 )
 
@@ -51,6 +52,11 @@ func Run(v string) int {
 			Name:        "v",
 			Usage:       "Enable detailed logging",
 			Destination: &printer.DefaultPrinter.Verbose,
+		},
+		&cli.BoolFlag{
+			Name:        "allow-fetch",
+			Usage:       "Enable JS fetch(), dangerous on untrusted code!",
+			Destination: &js.EnableFetch,
 		},
 	}
 	sort.Sort(cli.CommandsByName(commands))

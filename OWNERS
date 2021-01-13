@@ -15,6 +15,7 @@ providers/hetzner @das7pad
 providers/hexonet @papakai
 providers/internetbs @pragmaton
 providers/inwx @svenpeter42
+providers/msdns @tlimoncelli
 providers/linode @koesie10
 providers/namecheap @captncraig
 # providers/namedotcom

@@ -9,7 +9,7 @@ jsId: INTERNETBS
 DNSControl's Internet.bs provider supports being a Registrar. Support for being a DNS Provider is not included, but could be added in the future.
 
 ## Configuration
-In your credentials file, you must provide your API key and account password 
+In your credentials file, you must provide your API key and account password
 
 {% highlight json %}
 {
@@ -30,11 +30,11 @@ Example Javascript:
 var REG_INTERNETBS = NewRegistrar('internetbs', 'INTERNETBS');
 
 D("example.com", REG_INTERNETBS,
-  NNAMESERVER("ns1.example.com."),
-  NNAMESERVER("ns2.example.com."),
+  NAMESERVER("ns1.example.com."),
+  NAMESERVER("ns2.example.com."),
 );
 {% endhighlight %}
 
 ## Activation
 
-Pay attention, you need to define white list of IP for API. But you always can change it on `My Profile > Reseller Settings`   
+Pay attention, you need to define white list of IP for API. But you always can change it on `My Profile > Reseller Settings`
