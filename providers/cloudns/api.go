@@ -62,9 +62,9 @@ type domainRecord struct {
 	TlsaMatchingType string `json:"tlsa_matching_type,omitempty"`
 	SshfpAlgorithm   string `json:"algorithm,omitempty"`
 	SshfpFingerprint string `json:"fp_type,omitempty"`
-	DsKeyTag         string `json:"dskeytag,omitempty"`
+	DsKeyTag         string `json:"key_tag,omitempty"`
 	DsAlgorithm      string `json:"dsalgorithm,omitempty"`
-	DsDigestType     string `json:"dsdigesttype,omitempty"`
+	DsDigestType     string `json:"digest_type,omitempty"`
 	DsDigest         string `json:"dsdigest,omitempty"`
 }
 
@@ -147,7 +147,7 @@ func (c *cloudnsProvider) createDomain(domain string) error {
 
 func (c *cloudnsProvider) createRecord(domainID string, rec requestParams) error {
 	rec["domain-name"] = domainID
-	if _, err := c.get("/dns/add-record.json", rec); err != nil {
+	if _, err := c.get("/dns/add-record.json", rec); err != nil { // here we add record
 		return fmt.Errorf("failed create record (ClouDNS): %s", err)
 	}
 	return nil

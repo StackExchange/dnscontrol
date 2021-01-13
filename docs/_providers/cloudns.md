@@ -23,7 +23,11 @@ Current version of provider doesn't support `sub-auth-user`.
 
 ## Records
 
-ClouDNS does not supprt DS Record. 
+ClouDNS does supprt DS Record ( DS record can be add just for subdomain nor for root domain).
+
+- Question: Can I add a DS record for a subdomain, if there are already other records for the same hostname, such as A, MX, TXT, etc.?
+
+==> Answer: No, you can't. First and foremost, in order for you to be able to add a DS record for your subdomain, the delegation part of your subdomain must be in action. In simple words, the relevant NS records for your subdomain, the "delegators" so to say, must be added first. And to add the NS records, there must be no other records for that particular hostname.
 
 ## Metadata
 This provider does not recognize any special metadata fields unique to ClouDNS.

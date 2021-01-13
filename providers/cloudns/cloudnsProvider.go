@@ -106,11 +106,10 @@ func (c *cloudnsProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*mode
 	var corrections []*models.Correction
 
 	// Deletes first so changing type works etc.
-
 	for _, m := range del {
 		id := m.Existing.Original.(*domainRecord).ID
 		corr := &models.Correction{
-			Msg: fmt.Sprintf("%s, ClouDNS ID: %s", m.String(), id), // for exp :"DELETE NS mydom.com ns1.example.com. ttl=300, ClouDNS ID: 222848..."
+			Msg: fmt.Sprintf("%s, ClouDNS ID: %s", m.String(), id),
 			F: func() error {
 				return c.deleteRecord(domainID, id)
 			},
@@ -183,6 +182,7 @@ func toRc(domain string, r *domainRecord) *models.RecordConfig {
 	priority, _ := strconv.ParseUint(r.Priority, 10, 32)
 	weight, _ := strconv.ParseUint(r.Weight, 10, 32)
 	port, _ := strconv.ParseUint(r.Port, 10, 32)
+	//
 
 	rc := &models.RecordConfig{
 		Type:         r.Type,
@@ -222,11 +222,11 @@ func toRc(domain string, r *domainRecord) *models.RecordConfig {
 	case "DS":
 		dsKeyTag, _ := strconv.ParseUint(r.DsKeyTag, 10, 32)
 		rc.DsKeyTag = uint16(dsKeyTag)
-		dsAlgorithm, _ := strconv.ParseUint(r.DsAlgorithm, 10, 32)
+		dsAlgorithm, _ := strconv.ParseUint(r.SshfpAlgorithm, 10, 32)
 		rc.DsAlgorithm = uint8(dsAlgorithm)
 		dsDigestType, _ := strconv.ParseUint(r.DsDigestType, 10, 32)
 		rc.DsDigestType = uint8(dsDigestType)
-		rc.DsDigest = r.DsDigest
+		rc.DsDigest = r.Target
 		rc.SetTarget(r.Target)
 
 	default:
@@ -271,11 +271,10 @@ func toReq(rc *models.RecordConfig) (requestParams, error) {
 		req["algorithm"] = strconv.Itoa(int(rc.SshfpAlgorithm))
 		req["fptype"] = strconv.Itoa(int(rc.SshfpFingerprint))
 	case "DS":
-		req["ds_keytag"] = strconv.Itoa(int(rc.DsKeyTag))
-		req["ds_algorithm"] = strconv.Itoa(int(rc.DsAlgorithm))
-		req["ds_digesttype"] = strconv.Itoa(int(rc.DsDigestType))
-		req["ds_digest"] = rc.DsDigest
-
+		req["key-tag"] = strconv.Itoa(int(rc.DsKeyTag))
+		req["algorithm"] = strconv.Itoa(int(rc.DsAlgorithm))
+		req["digest-type"] = strconv.Itoa(int(rc.DsDigestType))
+		req["record"] = rc.DsDigest
 	default:
 		return nil, fmt.Errorf("ClouDNS.toReq rtype %q unimplemented", rc.Type)
 	}
