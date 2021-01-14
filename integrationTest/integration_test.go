@@ -767,9 +767,8 @@ func makeTests(t *testing.T) []*TestGroup {
 		),
 
 		testgroup("IDNA",
-			not("SOFTLAYER", "CLOUDFLAREAPI"),
+			not("SOFTLAYER"),
 			// SOFTLAYER: fails at direct internationalization, punycode works, of course.
-			// CLOUDFLAREAPI: fails. Needs to be debugged.
 			tc("Internationalized name", a("ööö", "1.2.3.4")),
 			tc("Change IDN", a("ööö", "2.2.2.2")),
 			tc("Internationalized CNAME Target", cname("a", "ööö.com.")),
