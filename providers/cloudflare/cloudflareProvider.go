@@ -149,6 +149,11 @@ func (c *cloudflareProvider) getDomainID(name string) (string, error) {
 
 // GetDomainCorrections returns a list of corrections to update a domain.
 func (c *cloudflareProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Correction, error) {
+	err := dc.Punycode()
+	if err != nil {
+		return nil, err
+	}
+
 	id, err := c.getDomainID(dc.Name)
 	if err != nil {
 		return nil, err
