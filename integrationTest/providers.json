@@ -126,6 +126,15 @@
     "directory": "config",
     "domain": "example.com"
   },
+  "ORACLE": {
+    "user_ocid": "$ORACLE_USER_OCID",
+    "tenancy_ocid": "$ORACLE_TENANCY_OCID",
+    "fingerprint": "$ORACLE_FINGERPRINT",
+    "region": "$ORACLE_REGION",
+    "private_key": "$ORACLE_PRIVATE_KEY",
+    "compartment": "$ORACLE_COMPARTMENT",
+    "domain": "$ORACLE_DOMAIN"
+  },
   "OVH": {
     "app-key": "$OVH_APP_KEY",
     "app-secret-key": "$OVH_APP_SECRET_KEY",
