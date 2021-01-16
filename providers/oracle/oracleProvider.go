@@ -25,7 +25,7 @@ var features = providers.DocumentationNotes{
 	providers.CanGetZones:    providers.Can(),
 	providers.CanUseAlias:    providers.Can(),
 	providers.CanUseCAA:      providers.Can(),
-	providers.CanUseDS:       providers.Cannot(),
+	providers.CanUseDS:       providers.Cannot(), // should be supported, but getting 500s in tests
 	providers.CanUseNAPTR:    providers.Can(),
 	providers.CanUsePTR:      providers.Can(),
 	providers.CanUseSRV:      providers.Can(),
@@ -175,7 +175,18 @@ func (o *oracleProvider) GetZoneRecords(domain string) (models.Records, error) {
 				Original: record,
 			}
 			rc.SetLabelFromFQDN(*record.Domain, domain)
-			rc.PopulateFromString(*record.Rtype, *record.Rdata, domain)
+
+			switch rc.Type {
+			case "ALIAS":
+				err = rc.SetTarget(*record.Rdata)
+			default:
+				err = rc.PopulateFromString(*record.Rtype, *record.Rdata, domain)
+			}
+
+			if err != nil {
+				return nil, err
+			}
+
 			records = append(records, rc)
 		}
 

@@ -676,7 +676,7 @@ func makeTests(t *testing.T) []*TestGroup {
 			// Netcup: NS records not currently supported.
 			tc("NS for subdomain", ns("xyz", "ns2.foo.com.")),
 			tc("Dual NS for subdomain", ns("xyz", "ns2.foo.com."), ns("xyz", "ns1.foo.com.")),
-			tc("NS Record pointing to @", ns("foo", "**current-domain**")),
+			tc("NS Record pointing to @", a("@", "1.2.3.4"), ns("foo", "**current-domain**")),
 		),
 
 		testgroup("IGNORE_NAME function",
