@@ -5,6 +5,18 @@ import (
 	"strings"
 )
 
+// HasFormatIdenticalToTXT returns if a RecordConfig has a format which is
+// identical to TXT, such as SPF. For more details, read
+// https://tools.ietf.org/html/rfc4408#section-3.1.1
+func (rc *RecordConfig) HasFormatIdenticalToTXT() bool {
+	switch rc.Type {
+	case "SPF", "TXT":
+		return true
+	default:
+		return false
+	}
+}
+
 // SetTargetTXT sets the TXT fields when there is 1 string.
 func (rc *RecordConfig) SetTargetTXT(s string) error {
 	rc.SetTarget(s)
@@ -12,8 +24,8 @@ func (rc *RecordConfig) SetTargetTXT(s string) error {
 	if rc.Type == "" {
 		rc.Type = "TXT"
 	}
-	if rc.Type != "TXT" {
-		panic("assertion failed: SetTargetTXT called when .Type is not TXT")
+	if !rc.HasFormatIdenticalToTXT() {
+		panic("assertion failed: SetTargetTXT called when .Type is not identical to TXT")
 	}
 	return nil
 }
@@ -25,8 +37,8 @@ func (rc *RecordConfig) SetTargetTXTs(s []string) error {
 	if rc.Type == "" {
 		rc.Type = "TXT"
 	}
-	if rc.Type != "TXT" {
-		panic("assertion failed: SetTargetTXT called when .Type is not TXT")
+	if !rc.HasFormatIdenticalToTXT() {
+		panic("assertion failed: SetTargetTXT called when .Type is not identical to TXT")
 	}
 	return nil
 }
@@ -68,8 +80,8 @@ func splitChunks(buf string, lim int) []string {
 // ValidateTXT returns an error if the txt record is invalid.
 // Verifies the Target and TxtStrings are less than 255 bytes each.
 func ValidateTXT(rc *RecordConfig) error {
-	if rc.Type != "TXT" {
-		return fmt.Errorf("rc.Type=%q, expecting TXT", rc.Type)
+	if !rc.HasFormatIdenticalToTXT() {
+		return fmt.Errorf("rc.Type=%q, expecting something identical to TXT", rc.Type)
 	}
 	for i := range rc.TxtStrings {
 		l := len(rc.TxtStrings[i])
