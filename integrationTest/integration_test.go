@@ -1,6 +1,7 @@
 package main
 
 import (
+	"encoding/json"
 	"flag"
 	"fmt"
 	"os"
@@ -13,7 +14,10 @@ import (
 	"github.com/StackExchange/dnscontrol/v3/models"
 	"github.com/StackExchange/dnscontrol/v3/pkg/nameservers"
 	"github.com/StackExchange/dnscontrol/v3/providers"
+
 	_ "github.com/StackExchange/dnscontrol/v3/providers/_all"
+	//	"github.com/StackExchange/dnscontrol/v3/providers/cloudflare"
+
 	"github.com/StackExchange/dnscontrol/v3/providers/config"
 )
 
@@ -41,7 +45,18 @@ func getProvider(t *testing.T) (providers.DNSServiceProvider, string, map[int]bo
 		if *providerToRun != name {
 			continue
 		}
-		provider, err := providers.CreateDNSProvider(name, cfg, nil)
+
+		var metadata json.RawMessage
+		// CLOUDFLAREAPI tests related to CF_REDIRECT/CF_TEMP_REDIRECT
+		// requires metadata to enable this feature.
+		// In hindsight, I have no idea why this is required to use
+		// this feature. Maybe because we didn't have the capabilities
+		// feature at the time?
+		if name == "CLOUDFLAREAPI" {
+			metadata = []byte(`{ "manage_redirects": true }`)
+		}
+
+		provider, err := providers.CreateDNSProvider(name, cfg, metadata)
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -54,8 +69,10 @@ func getProvider(t *testing.T) (providers.DNSServiceProvider, string, map[int]bo
 				fails[i] = true
 			}
 		}
+
 		return provider, cfg["domain"], fails, cfg
 	}
+
 	t.Fatalf("Provider %s not found", *providerToRun)
 	return nil, "", nil, nil
 }
@@ -355,6 +372,15 @@ func azureAlias(name, aliasType, target string) *rec {
 	r.AzureAlias = map[string]string{
 		"type": aliasType,
 	}
+	return r
+}
+
+func cfRedir(priority int, pattern, target string) *rec {
+	r := makeRec("@", "", "CF_REDIRECT")
+	t := fmt.Sprintf("%s,%s,%d,%d", pattern, target, priority, 301)
+	r.SetTarget(t)
+	fmt.Printf("DEBUG: cfRedir target=%q\n", t)
+
 	return r
 }
 
@@ -1097,6 +1123,11 @@ func makeTests(t *testing.T) []*TestGroup {
 				r53alias("dev-system", "CNAME", "dev-system18.**current-domain**"),
 				cname("dev-system18", "ec2-54-91-33-155.compute-1.amazonaws.com."),
 			),
+		),
+
+		testgroup("CF_REDIRECT",
+			only("CLOUDFLAREAPI"),
+			tc("redir", cfRedir(0, "cnn.**current-domain-no-trailing**/*", "https://www.cnn.com/$1")),
 		),
 	}
 
