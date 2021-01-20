@@ -220,7 +220,7 @@ func toRc(domain string, r *domainRecord) *models.RecordConfig {
 	case "DS":
 		dsKeyTag, _ := strconv.ParseUint(r.DsKeyTag, 10, 32)
 		rc.DsKeyTag = uint16(dsKeyTag)
-		dsAlgorithm, _ := strconv.ParseUint(r.SshfpAlgorithm, 10, 32)
+		dsAlgorithm, _ := strconv.ParseUint(r.SshfpAlgorithm, 10, 32) // SshFpAlgorithm and DsAlgorithm both use json field "algorithm"
 		rc.DsAlgorithm = uint8(dsAlgorithm)
 		dsDigestType, _ := strconv.ParseUint(r.DsDigestType, 10, 32)
 		rc.DsDigestType = uint8(dsDigestType)
