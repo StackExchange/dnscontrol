@@ -962,3 +962,7 @@ function CLI_DEFAULTS(defaults) {
         }
     }
 }
+
+function FETCH() {
+    return fetch.apply(null, arguments).catch(PANIC);
+}
