@@ -48,8 +48,8 @@ var features = providers.DocumentationNotes{
 	providers.CanUseTLSA:             providers.Can(),
 	providers.CanUsePTR:              providers.Can(),
 	providers.CanGetZones:            providers.Can(),
+	providers.CanUseDSForChildren:    providers.Can(),
 	//providers.CanUseDS:               providers.Can(),
-	providers.CanUseDSForChildren: providers.Can(),
 }
 
 func init() {
@@ -98,7 +98,6 @@ func (c *cloudnsProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*mode
 
 	differ := diff.New(dc)
 	_, create, del, modify, err := differ.IncrementalDiff(existingRecords)
-
 	if err != nil {
 		return nil, err
 	}
@@ -182,7 +181,6 @@ func toRc(domain string, r *domainRecord) *models.RecordConfig {
 	priority, _ := strconv.ParseUint(r.Priority, 10, 32)
 	weight, _ := strconv.ParseUint(r.Weight, 10, 32)
 	port, _ := strconv.ParseUint(r.Port, 10, 32)
-	//
 
 	rc := &models.RecordConfig{
 		Type:         r.Type,
@@ -228,7 +226,6 @@ func toRc(domain string, r *domainRecord) *models.RecordConfig {
 		rc.DsDigestType = uint8(dsDigestType)
 		rc.DsDigest = r.Target
 		rc.SetTarget(r.Target)
-
 	default:
 		rc.SetTarget(r.Target)
 	}
@@ -236,7 +233,7 @@ func toRc(domain string, r *domainRecord) *models.RecordConfig {
 	return rc
 }
 
-//generates the update requests sent to the API (it takes a RecordConfig and turns it into the request).
+//toReq takes a RecordConfig and turns it into the native format used by the API.
 func toReq(rc *models.RecordConfig) (requestParams, error) {
 	req := requestParams{
 		"record-type": rc.Type,

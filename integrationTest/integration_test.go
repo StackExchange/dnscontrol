@@ -179,7 +179,7 @@ func makeChanges(t *testing.T, prv providers.DNSServiceProvider, dc *models.Doma
 		if len(corrections) == 0 && expectChanges {
 			t.Fatalf("Expected changes, but got none")
 		}
-		for _, c := range corrections { // corre =cloudns.(*cloudnsProvider).GetDomainCor
+		for _, c := range corrections {
 			if *verbose {
 				t.Log(c.Msg)
 			}
@@ -195,7 +195,7 @@ func makeChanges(t *testing.T, prv providers.DNSServiceProvider, dc *models.Doma
 		}
 
 		// run a second time and expect zero corrections
-		corrections, err = prv.GetDomainCorrections(dom2) // corre ==> invalid length
+		corrections, err = prv.GetDomainCorrections(dom2)
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -204,8 +204,8 @@ func makeChanges(t *testing.T, prv providers.DNSServiceProvider, dc *models.Doma
 			for i, c := range corrections {
 				t.Logf("#%d: %s", i, c.Msg)
 			}
-			t.FailNow() //FailNow marks the function as having failed and stops its execution by calling runtime.Goexit (which then runs all deferred calls in the current goroutine)
-		} //
+			t.FailNow()
+		}
 
 	})
 }

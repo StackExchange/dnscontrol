@@ -181,12 +181,12 @@ func (c *cloudnsProvider) getRecords(id string) ([]domainRecord, error) {
 		return nil, fmt.Errorf("failed fetching record list from ClouDNS: %s", err)
 	}
 
-	var dr recordResponse // existant records at provider
+	var dr recordResponse
 	json.Unmarshal(bodyString, &dr)
 
 	var records []domainRecord
 	for _, rec := range dr {
-		records = append(records, rec) // apend request to records
+		records = append(records, rec)
 	}
 	return records, nil
 }

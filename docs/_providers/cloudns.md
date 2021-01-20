@@ -23,11 +23,11 @@ Current version of provider doesn't support `sub-auth-user`.
 
 ## Records
 
-ClouDNS does supprt DS Record ( DS record can be add just for subdomain nor for root domain).
+ClouDNS does support DS Record on subdomains (not the apex domain itself).
 
-- Question: Can I add a DS record for a subdomain, if there are already other records for the same hostname, such as A, MX, TXT, etc.?
-
-==> Answer: No, you can't. First and foremost, in order for you to be able to add a DS record for your subdomain, the delegation part of your subdomain must be in action. In simple words, the relevant NS records for your subdomain, the "delegators" so to say, must be added first. And to add the NS records, there must be no other records for that particular hostname.
+ClouDNS requires NS records exist for any DS records. No other records for
+the same label may exist (A, MX, TXT, etc.). If DNSControl is adding NS and
+DS records in the same update, the NS records will be inserted first.
 
 ## Metadata
 This provider does not recognize any special metadata fields unique to ClouDNS.
