@@ -91,11 +91,9 @@ func (o *oracleProvider) EnsureDomainExists(domain string) error {
 		ZoneNameOrId:  &domain,
 		CompartmentId: &o.compartment,
 	})
-
 	if err == nil {
 		return nil
 	}
-
 	if err != nil && getResp.RawResponse.StatusCode != 404 {
 		return err
 	}
@@ -107,7 +105,6 @@ func (o *oracleProvider) EnsureDomainExists(domain string) error {
 			ZoneType:      dns.CreateZoneDetailsZoneTypePrimary,
 		},
 	})
-
 	if err != nil {
 		return err
 	}
