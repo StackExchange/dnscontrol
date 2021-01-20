@@ -94,36 +94,38 @@ func (o *oracleProvider) EnsureDomainExists(domain string) error {
 
 	if err == nil {
 		return nil
-	} else if err != nil && getResp.RawResponse.StatusCode != 404 {
-		return err
-	} else {
-		_, err := o.client.CreateZone(ctx, dns.CreateZoneRequest{
-			CreateZoneDetails: dns.CreateZoneDetails{
-				CompartmentId: &o.compartment,
-				Name:          &domain,
-				ZoneType:      dns.CreateZoneDetailsZoneTypePrimary,
-			},
-		})
+	}
 
-		if err != nil {
-			return err
-		}
-
-		// poll until the zone is ready
-		pollUntilAvailable := func(r common.OCIOperationResponse) bool {
-			if converted, ok := r.Response.(dns.GetZoneResponse); ok {
-				return converted.LifecycleState != dns.ZoneLifecycleStateActive
-			}
-			return true
-		}
-		_, err = o.client.GetZone(ctx, dns.GetZoneRequest{
-			ZoneNameOrId:    &domain,
-			CompartmentId:   &o.compartment,
-			RequestMetadata: helpers.GetRequestMetadataWithCustomizedRetryPolicy(pollUntilAvailable),
-		})
-
+	if err != nil && getResp.RawResponse.StatusCode != 404 {
 		return err
 	}
+
+	_, err := o.client.CreateZone(ctx, dns.CreateZoneRequest{
+		CreateZoneDetails: dns.CreateZoneDetails{
+			CompartmentId: &o.compartment,
+			Name:          &domain,
+			ZoneType:      dns.CreateZoneDetailsZoneTypePrimary,
+		},
+	})
+
+	if err != nil {
+		return err
+	}
+
+	// poll until the zone is ready
+	pollUntilAvailable := func(r common.OCIOperationResponse) bool {
+		if converted, ok := r.Response.(dns.GetZoneResponse); ok {
+			return converted.LifecycleState != dns.ZoneLifecycleStateActive
+		}
+		return true
+	}
+	_, err = o.client.GetZone(ctx, dns.GetZoneRequest{
+		ZoneNameOrId:    &domain,
+		CompartmentId:   &o.compartment,
+		RequestMetadata: helpers.GetRequestMetadataWithCustomizedRetryPolicy(pollUntilAvailable),
+	})
+
+	return err
 }
 
 func (o *oracleProvider) GetNameservers(domain string) ([]*models.Nameserver, error) {
