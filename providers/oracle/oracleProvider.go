@@ -100,7 +100,7 @@ func (o *oracleProvider) EnsureDomainExists(domain string) error {
 		return err
 	}
 
-	_, err := o.client.CreateZone(ctx, dns.CreateZoneRequest{
+	_, err = o.client.CreateZone(ctx, dns.CreateZoneRequest{
 		CreateZoneDetails: dns.CreateZoneDetails{
 			CompartmentId: &o.compartment,
 			Name:          &domain,
