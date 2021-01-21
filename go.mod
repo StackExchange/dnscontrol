@@ -37,7 +37,7 @@ require (
 	github.com/hashicorp/go-retryablehttp v0.6.8 // indirect
 	github.com/hashicorp/go-rootcerts v1.0.2 // indirect
 	github.com/hashicorp/vault/api v1.0.4
-	github.com/hexonet/go-sdk v3.5.0+incompatible
+	github.com/hexonet/go-sdk v3.5.1+incompatible
 	github.com/jarcoal/httpmock v1.0.4 // indirect
 	github.com/juju/testing v0.0.0-20201216035041-2be42bba85f3 // indirect
 	github.com/kolo/xmlrpc v0.0.0-20201022064351-38db28db192b // indirect
