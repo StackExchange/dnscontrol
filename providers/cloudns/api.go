@@ -6,6 +6,7 @@ import (
 	"io/ioutil"
 	"net/http"
 	"strconv"
+	"time"
 )
 
 // Api layer for CloDNS
@@ -208,6 +209,9 @@ func (c *cloudnsProvider) get(endpoint string, params requestParams) ([]byte, er
 
 	req.URL.RawQuery = q.Encode()
 
+	// ClouDNS has a rate limit (not documented) of 10 request/second
+	// so we do a very primitive rate-limiting here - delay every request for 100ms - so max. 10 requests/second ...
+	time.Sleep(100 * time.Milliseconds)
 	resp, err := client.Do(req)
 	if err != nil {
 		return []byte{}, err

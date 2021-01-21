@@ -113,9 +113,17 @@ func (c *cloudnsProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*mode
 				return c.deleteRecord(domainID, id)
 			},
 		}
-		corrections = append(corrections, corr)
+		// at ClouDNS, we MUST have a NS for a DS
+		// So, when deleting, we must delete the DS first, otherwise deleting the NS throws an error
+		if m.Existing.Type == "DS" {
+			// type DS is prepended - so executed first
+			corrections = append([]corr, corrections...)
+		} else {
+			corrections = append(corrections, corr)
+		}
 	}
 
+	var createCorrections []*models.Correction
 	for _, m := range create {
 		req, err := toReq(m.Desired)
 		if err != nil {
@@ -128,8 +136,17 @@ func (c *cloudnsProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*mode
 				return c.createRecord(domainID, req)
 			},
 		}
-		corrections = append(corrections, corr)
+		// at ClouDNS, we MUST have a NS for a DS
+		// So, when creating, we must create the NS first, otherwise creating the DS throws an error
+		if m.Existing.Type == "NS" {
+			// type NS is prepended - so executed first
+			createCorrections = append([]corr, corrections...)
+		} else {
+			createCorrections = append(corrections, corr)
+		}
 	}
+	corrections = append(corrections, createCorrections...)
+
 	for _, m := range modify {
 		id := m.Existing.Original.(*domainRecord).ID
 		req, err := toReq(m.Desired)
