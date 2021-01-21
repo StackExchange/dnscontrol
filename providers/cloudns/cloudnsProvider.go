@@ -117,7 +117,7 @@ func (c *cloudnsProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*mode
 		// So, when deleting, we must delete the DS first, otherwise deleting the NS throws an error
 		if m.Existing.Type == "DS" {
 			// type DS is prepended - so executed first
-			corrections = append([]corr, corrections...)
+			corrections = append([]*models.Correction{corr}, corrections...)
 		} else {
 			corrections = append(corrections, corr)
 		}
@@ -138,11 +138,11 @@ func (c *cloudnsProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*mode
 		}
 		// at ClouDNS, we MUST have a NS for a DS
 		// So, when creating, we must create the NS first, otherwise creating the DS throws an error
-		if m.Existing.Type == "NS" {
+		if m.Desired.Type == "NS" {
 			// type NS is prepended - so executed first
-			createCorrections = append([]corr, corrections...)
+			createCorrections = append([]*models.Correction{corr}, createCorrections...)
 		} else {
-			createCorrections = append(corrections, corr)
+			createCorrections = append(createCorrections, corr)
 		}
 	}
 	corrections = append(corrections, createCorrections...)
