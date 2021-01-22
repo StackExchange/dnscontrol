@@ -32,19 +32,22 @@ jobs:
       run: echo ::set-output name=RELEASE_VERSION::$(echo ${GITHUB_REF:11})
       id: versioner
 
+    - name: Create target directory
+      run: mkdir -p usr/bin
+
     - name: Copy Linux version to dnscontrol
-      run: cp dnscontrol-Linux dnscontrol
+      run: cp dnscontrol-Linux usr/bin/dnscontrol
 
     - name: Bundle RPM
       uses: bpicode/github-action-fpm@master
       with:
-        fpm_args: 'dnscontrol'
+        fpm_args: 'usr/'
         fpm_opts: '-n dnscontrol -t rpm -s dir -v ${{ steps.versioner.outputs.RELEASE_VERSION }}'
 
     - name: Bundle DEB
       uses: bpicode/github-action-fpm@master
       with:
-        fpm_args: 'dnscontrol'
+        fpm_args: 'usr/'
         fpm_opts: '-n dnscontrol -t deb -s dir -v ${{ steps.versioner.outputs.RELEASE_VERSION }}'
 
     - name: Upload dnscontrol-Darwin
