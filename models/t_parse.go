@@ -47,7 +47,7 @@ func (r *RecordConfig) PopulateFromString(rtype, contents, origin string) error 
 		return r.SetTargetSSHFPString(contents)
 	case "TLSA":
 		return r.SetTargetTLSAString(contents)
-	case "TXT":
+	case "SPF", "TXT":
 		return r.SetTargetTXTString(contents)
 	default:
 		return fmt.Errorf("unknown rtype (%s) when parsing (%s) domain=(%s)",
