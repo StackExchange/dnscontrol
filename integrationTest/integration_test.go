@@ -1007,7 +1007,7 @@ func makeTests(t *testing.T) []*TestGroup {
 
 		testgroup("DS (children only)",
 			requires(providers.CanUseDSForChildren),
-			not("CLOUDNS"),
+			not("CLOUDNS", "CLOUDFLAREAPI"),
 			// Use a valid digest value here, because GCLOUD (which implements this capability) verifies
 			// the value passed in is a valid digest. RFC 4034, s5.1.4 specifies SHA1 as the only digest
 			// algo at present, i.e. only hexadecimal values currently usable.
@@ -1027,7 +1027,7 @@ func makeTests(t *testing.T) []*TestGroup {
 
 		testgroup("DS (children only) CLOUDNS",
 			requires(providers.CanUseDSForChildren),
-			only("CLOUDNS"),
+			only("CLOUDNS", "CLOUDFLAREAPI"),
 			// Use a valid digest value here, because GCLOUD (which implements this capability) verifies
 			// the value passed in is a valid digest. RFC 4034, s5.1.4 specifies SHA1 as the only digest
 			// algo at present, i.e. only hexadecimal values currently usable.
