@@ -257,6 +257,7 @@ func runTests(t *testing.T, prv providers.DNSServiceProvider, domainName string,
 		}
 
 		// Run the tests.
+
 		for _, tst := range group.tests {
 			makeChanges(t, prv, dc, tst, fmt.Sprintf("%02d:%s", gIdx, group.Desc), true, origConfig)
 			if t.Failed() {
@@ -1006,6 +1007,7 @@ func makeTests(t *testing.T) []*TestGroup {
 
 		testgroup("DS (children only)",
 			requires(providers.CanUseDSForChildren),
+			not("CLOUDNS"),
 			// Use a valid digest value here, because GCLOUD (which implements this capability) verifies
 			// the value passed in is a valid digest. RFC 4034, s5.1.4 specifies SHA1 as the only digest
 			// algo at present, i.e. only hexadecimal values currently usable.
@@ -1021,6 +1023,52 @@ func makeTests(t *testing.T) []*TestGroup {
 				ds("another-child", 65535, 5, 4, "0123456789ABCDEF"),
 				ds("another-child", 65535, 253, 4, "0123456789ABCDEF"),
 			),
+		),
+
+		testgroup("DS (children only) CLOUDNS",
+			requires(providers.CanUseDSForChildren),
+			only("CLOUDNS"),
+			// Use a valid digest value here, because GCLOUD (which implements this capability) verifies
+			// the value passed in is a valid digest. RFC 4034, s5.1.4 specifies SHA1 as the only digest
+			// algo at present, i.e. only hexadecimal values currently usable.
+			// Cloudns requires NS  Record before creating DS Record.
+			tc("create DS",
+				// we test that provider correctly handles creating NS first by reversing the entries here
+				ds("child", 35632, 13, 1, "1E07663FF507A40874B8605463DD41DE482079D6"),
+				ns("child", "ns101.cloudns.net."),
+			),
+			tc("modify field 1",
+				ds("child", 2075, 13, 1, "2706D12E256C8FDD9BFB45EFB25FE537E21A82F6"),
+				ns("child", "ns101.cloudns.net."),
+			),
+			tc("modify field 3",
+				ds("child", 2075, 13, 2, "3F7A1EAC8C813A0BEBD0C3B8AAB387E31945EA0CD5E1D84A2E8E27674566C156"),
+				ns("child", "ns101.cloudns.net."),
+			),
+			tc("modify field 2+3",
+				ds("child", 2159, 1, 4, "F50BEFEA333EE2901D72D31A08E1A3CD3F7E943FF4B38CF7C8AD92807F5302F76FB0B419182C0F47FFC71CBCB6EF4BD4"),
+				ns("child", "ns101.cloudns.net."),
+			),
+			tc("modify field 2",
+				ds("child", 63909, 3, 4, "EEC7FA02E6788DA889B2CE41D43D92F948AB126EDCF83B7037E73CE9531C8E7E45653ABBAA76C2D6E42F98316EDE599B"),
+				ns("child", "ns101.cloudns.net."),
+			),
+			//tc("modify field 2", ds("child", 65535, 254, 4, "0123456789ABCDEF")),
+			tc("delete 1, create 1",
+				ds("another-child", 35632, 13, 4, "F5F32ABCA6B01AA7A9963012F90B7C8523A1D946185A3AD70B67F3C9F18E7312FA9DD6AB2F7D8382F789213DB173D429"),
+				ns("another-child", "ns101.cloudns.net."),
+			),
+			tc("add 2 more DS",
+				ds("another-child", 35632, 13, 4, "F5F32ABCA6B01AA7A9963012F90B7C8523A1D946185A3AD70B67F3C9F18E7312FA9DD6AB2F7D8382F789213DB173D429"),
+				ds("another-child", 2159, 1, 4, "F50BEFEA333EE2901D72D31A08E1A3CD3F7E943FF4B38CF7C8AD92807F5302F76FB0B419182C0F47FFC71CBCB6EF4BD4"),
+				ds("another-child", 63909, 3, 4, "EEC7FA02E6788DA889B2CE41D43D92F948AB126EDCF83B7037E73CE9531C8E7E45653ABBAA76C2D6E42F98316EDE599B"),
+				ns("another-child", "ns101.cloudns.net."),
+			),
+			// in CLouDNS  we must delete DS Record before deleting NS record
+			// should no longer be necessary, provider should handle order correctly
+			//tc("delete all DS",
+			//	ns("another-child", "ns101.cloudns.net."),
+			//),
 		),
 
 		//
