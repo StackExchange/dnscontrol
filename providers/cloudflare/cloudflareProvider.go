@@ -44,7 +44,7 @@ var features = providers.DocumentationNotes{
 	providers.CanUseSRV:              providers.Can(),
 	providers.CanUseTLSA:             providers.Can(),
 	providers.CanUseSSHFP:            providers.Can(),
-	providers.CanUseDS:               providers.Can(),
+	providers.CanUseDSForChildren:    providers.Can(),
 	providers.CanUseTXTMulti:         providers.Can(),
 	providers.DocCreateDomains:       providers.Can(),
 	providers.DocDualHost:            providers.Cannot("Cloudflare will not work well in situations where it is not the only DNS server"),
@@ -177,6 +177,10 @@ func (c *cloudflareProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*m
 
 	if c.manageRedirects {
 		prs, err := c.getPageRules(id, dc.Name)
+		//fmt.Printf("GET PAGE RULES:\n")
+		//for i, p := range prs {
+		//	fmt.Printf("%03d: %q\n", i, p.GetTargetField())
+		//}
 		if err != nil {
 			return nil, err
 		}
@@ -218,9 +222,15 @@ func (c *cloudflareProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*m
 				Msg: d.String(),
 				F:   func() error { return c.deletePageRule(ex.Original.(*pageRule).ID, id) },
 			})
-
 		} else {
-			corrections = append(corrections, c.deleteRec(ex.Original.(*cfRecord), id))
+			corr := c.deleteRec(ex.Original.(*cfRecord), id)
+			// DS records must always have a corresponding NS record.
+			// Therefore, we remove DS records before any NS records.
+			if d.Existing.Type == "DS" {
+				corrections = append([]*models.Correction{corr}, corrections...)
+			} else {
+				corrections = append(corrections, corr)
+			}
 		}
 	}
 	for _, d := range create {
@@ -231,7 +241,14 @@ func (c *cloudflareProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*m
 				F:   func() error { return c.createPageRule(id, des.GetTargetField()) },
 			})
 		} else {
-			corrections = append(corrections, c.createRec(des, id)...)
+			corr := c.createRec(des, id)
+			// DS records must always have a corresponding NS record.
+			// Therefore, we create NS records before any DS records.
+			if d.Desired.Type == "NS" {
+				corrections = append(corr, corrections...)
+			} else {
+				corrections = append(corrections, corr...)
+			}
 		}
 	}
 
