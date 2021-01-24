@@ -14,10 +14,7 @@ import (
 	"github.com/StackExchange/dnscontrol/v3/models"
 	"github.com/StackExchange/dnscontrol/v3/pkg/nameservers"
 	"github.com/StackExchange/dnscontrol/v3/providers"
-
 	_ "github.com/StackExchange/dnscontrol/v3/providers/_all"
-	//	"github.com/StackExchange/dnscontrol/v3/providers/cloudflare"
-
 	"github.com/StackExchange/dnscontrol/v3/providers/config"
 )
 
@@ -49,8 +46,8 @@ func getProvider(t *testing.T) (providers.DNSServiceProvider, string, map[int]bo
 		var metadata json.RawMessage
 		// CLOUDFLAREAPI tests related to CF_REDIRECT/CF_TEMP_REDIRECT
 		// requires metadata to enable this feature.
-		// In hindsight, I have no idea why this is required to use
-		// this feature. Maybe because we didn't have the capabilities
+		// In hindsight, I have no idea why this metadata flag is required to
+		// use this feature. Maybe because we didn't have the capabilities
 		// feature at the time?
 		if name == "CLOUDFLAREAPI" {
 			metadata = []byte(`{ "manage_redirects": true }`)
@@ -376,12 +373,15 @@ func azureAlias(name, aliasType, target string) *rec {
 	return r
 }
 
-func cfRedir(priority int, pattern, target string) *rec {
-	r := makeRec("@", "", "CF_REDIRECT")
-	t := fmt.Sprintf("%s,%s,%d,%d", pattern, target, priority, 301)
-	r.SetTarget(t)
-	fmt.Printf("DEBUG: cfRedir target=%q\n", t)
+func cfRedir(pattern, target string) *rec {
+	t := fmt.Sprintf("%s,%s", pattern, target)
+	r := makeRec("@", t, "CF_REDIRECT")
+	return r
+}
 
+func cfRedirTemp(pattern, target string) *rec {
+	t := fmt.Sprintf("%s,%s", pattern, target)
+	r := makeRec("@", t, "CF_TEMP_REDIRECT")
 	return r
 }
 
@@ -1175,7 +1175,65 @@ func makeTests(t *testing.T) []*TestGroup {
 
 		testgroup("CF_REDIRECT",
 			only("CLOUDFLAREAPI"),
-			tc("redir", cfRedir(0, "cnn.**current-domain-no-trailing**/*", "https://www.cnn.com/$1")),
+			tc("redir", cfRedir("cnn.**current-domain-no-trailing**/*", "https://www.cnn.com/$1")),
+			tc("change", cfRedir("cnn.**current-domain-no-trailing**/*", "https://change.cnn.com/$1")),
+			tc("changelabel", cfRedir("cable.**current-domain-no-trailing**/*", "https://change.cnn.com/$1")),
+			clear(),
+			tc("multipleA",
+				cfRedir("cnn.**current-domain-no-trailing**/*", "https://www.cnn.com/$1"),
+				cfRedir("msnbc.**current-domain-no-trailing**/*", "https://msnbc.cnn.com/$1"),
+			),
+			clear(),
+			tc("multipleB",
+				cfRedir("msnbc.**current-domain-no-trailing**/*", "https://msnbc.cnn.com/$1"),
+				cfRedir("cnn.**current-domain-no-trailing**/*", "https://www.cnn.com/$1"),
+			),
+			tc("change1",
+				cfRedir("msnbc.**current-domain-no-trailing**/*", "https://msnbc.cnn.com/$1"),
+				cfRedir("cnn.**current-domain-no-trailing**/*", "https://change.cnn.com/$1"),
+			),
+			tc("change1",
+				cfRedir("msnbc.**current-domain-no-trailing**/*", "https://msnbc.cnn.com/$1"),
+				cfRedir("cablenews.**current-domain-no-trailing**/*", "https://change.cnn.com/$1"),
+			),
+			// TODO(tlim): Fix this test case:
+			//clear(),
+			//tc("multiple3",
+			//	cfRedir("msnbc.**current-domain-no-trailing**/*", "https://msnbc.cnn.com/$1"),
+			//	cfRedir("cnn.**current-domain-no-trailing**/*", "https://www.cnn.com/$1"),
+			//	cfRedir("nytimes.**current-domain-no-trailing**/*", "https://www.nytimes.com/$1"),
+			//),
+
+			// Repeat the above using CF_TEMP_REDIR instead
+			clear(),
+			tc("tempredir", cfRedirTemp("cnn.**current-domain-no-trailing**/*", "https://www.cnn.com/$1")),
+			tc("tempchange", cfRedirTemp("cnn.**current-domain-no-trailing**/*", "https://change.cnn.com/$1")),
+			tc("tempchangelabel", cfRedirTemp("cable.**current-domain-no-trailing**/*", "https://change.cnn.com/$1")),
+			clear(),
+			tc("tempmultipleA",
+				cfRedirTemp("cnn.**current-domain-no-trailing**/*", "https://www.cnn.com/$1"),
+				cfRedirTemp("msnbc.**current-domain-no-trailing**/*", "https://msnbc.cnn.com/$1"),
+			),
+			clear(),
+			tc("tempmultipleB",
+				cfRedirTemp("msnbc.**current-domain-no-trailing**/*", "https://msnbc.cnn.com/$1"),
+				cfRedirTemp("cnn.**current-domain-no-trailing**/*", "https://www.cnn.com/$1"),
+			),
+			tc("tempchange1",
+				cfRedirTemp("msnbc.**current-domain-no-trailing**/*", "https://msnbc.cnn.com/$1"),
+				cfRedirTemp("cnn.**current-domain-no-trailing**/*", "https://change.cnn.com/$1"),
+			),
+			tc("tempchange1",
+				cfRedirTemp("msnbc.**current-domain-no-trailing**/*", "https://msnbc.cnn.com/$1"),
+				cfRedirTemp("cablenews.**current-domain-no-trailing**/*", "https://change.cnn.com/$1"),
+			),
+			// TODO(tlim): Fix this test case:
+			//clear(),
+			//tc("tempmultiple3",
+			//	cfRedirTemp("msnbc.**current-domain-no-trailing**/*", "https://msnbc.cnn.com/$1"),
+			//	cfRedirTemp("cnn.**current-domain-no-trailing**/*", "https://www.cnn.com/$1"),
+			//	cfRedirTemp("nytimes.**current-domain-no-trailing**/*", "https://www.nytimes.com/$1"),
+			//),
 		),
 	}
 

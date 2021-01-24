@@ -177,6 +177,10 @@ func (c *cloudflareProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*m
 
 	if c.manageRedirects {
 		prs, err := c.getPageRules(id, dc.Name)
+		//fmt.Printf("GET PAGE RULES:\n")
+		//for i, p := range prs {
+		//	fmt.Printf("%03d: %q\n", i, p.GetTargetField())
+		//}
 		if err != nil {
 			return nil, err
 		}
