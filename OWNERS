@@ -21,6 +21,7 @@ providers/namecheap @captncraig
 # providers/namedotcom
 providers/netcup @kordianbruck
 providers/ns1 @captncraig
+providers/oracle @kallsyms
 # providers/route53
 # providers/softlayer
 providers/vultr @pgaskin
