@@ -236,7 +236,7 @@ func newRecordConfig(rname, rtype, target string, ttl uint32, origin string) *mo
 	}
 	rc.SetLabel(rname, origin)
 	switch rtype {
-	case "TXT":
+	case "SPF", "TXT":
 		rc.SetTargetTXT(target)
 	default:
 		rc.SetTarget(target)

@@ -351,7 +351,7 @@ func ValidateAndNormalizeConfig(config *models.DNSConfig) (errs []error) {
 	// Split TXT targets that are >255 bytes (if permitted)
 	for _, domain := range config.Domains {
 		for _, rec := range domain.Records {
-			if rec.Type == "TXT" {
+			if rec.HasFormatIdenticalToTXT() {
 				if txtAlgo, ok := rec.Metadata["txtSplitAlgorithm"]; ok {
 					rec.TxtNormalize(txtAlgo)
 				}
@@ -371,12 +371,12 @@ func ValidateAndNormalizeConfig(config *models.DNSConfig) (errs []error) {
 		}
 		// Validate TXT records.
 		for _, rec := range domain.Records {
-			if rec.Type == "TXT" {
+			if rec.HasFormatIdenticalToTXT() {
 				// If TXTMulti is required, all providers must support that feature.
 				if len(rec.TxtStrings) > 1 && len(txtMultiDissenters) > 0 {
 					errs = append(errs,
-						fmt.Errorf("TXT records with multiple strings not supported by %s (label=%q domain=%v)",
-							strings.Join(txtMultiDissenters, ","), rec.GetLabel(), domain.Name))
+						fmt.Errorf("%s records with multiple strings not supported by %s (label=%q domain=%v)",
+							rec.Type, strings.Join(txtMultiDissenters, ","), rec.GetLabel(), domain.Name))
 				}
 				// Validate the record:
 				if err := models.ValidateTXT(rec); err != nil {
