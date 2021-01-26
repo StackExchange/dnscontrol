@@ -1,6 +1,7 @@
 package main
 
 import (
+	"encoding/json"
 	"flag"
 	"fmt"
 	"os"
@@ -41,7 +42,18 @@ func getProvider(t *testing.T) (providers.DNSServiceProvider, string, map[int]bo
 		if *providerToRun != name {
 			continue
 		}
-		provider, err := providers.CreateDNSProvider(name, cfg, nil)
+
+		var metadata json.RawMessage
+		// CLOUDFLAREAPI tests related to CF_REDIRECT/CF_TEMP_REDIRECT
+		// requires metadata to enable this feature.
+		// In hindsight, I have no idea why this metadata flag is required to
+		// use this feature. Maybe because we didn't have the capabilities
+		// feature at the time?
+		if name == "CLOUDFLAREAPI" {
+			metadata = []byte(`{ "manage_redirects": true }`)
+		}
+
+		provider, err := providers.CreateDNSProvider(name, cfg, metadata)
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -54,8 +66,10 @@ func getProvider(t *testing.T) (providers.DNSServiceProvider, string, map[int]bo
 				fails[i] = true
 			}
 		}
+
 		return provider, cfg["domain"], fails, cfg
 	}
+
 	t.Fatalf("Provider %s not found", *providerToRun)
 	return nil, "", nil, nil
 }
@@ -356,6 +370,18 @@ func azureAlias(name, aliasType, target string) *rec {
 	r.AzureAlias = map[string]string{
 		"type": aliasType,
 	}
+	return r
+}
+
+func cfRedir(pattern, target string) *rec {
+	t := fmt.Sprintf("%s,%s", pattern, target)
+	r := makeRec("@", t, "CF_REDIRECT")
+	return r
+}
+
+func cfRedirTemp(pattern, target string) *rec {
+	t := fmt.Sprintf("%s,%s", pattern, target)
+	r := makeRec("@", t, "CF_TEMP_REDIRECT")
 	return r
 }
 
@@ -677,7 +703,7 @@ func makeTests(t *testing.T) []*TestGroup {
 			// Netcup: NS records not currently supported.
 			tc("NS for subdomain", ns("xyz", "ns2.foo.com.")),
 			tc("Dual NS for subdomain", ns("xyz", "ns2.foo.com."), ns("xyz", "ns1.foo.com.")),
-			tc("NS Record pointing to @", ns("foo", "**current-domain**")),
+			tc("NS Record pointing to @", a("@", "1.2.3.4"), ns("foo", "**current-domain**")),
 		),
 
 		testgroup("IGNORE_NAME function",
@@ -981,7 +1007,7 @@ func makeTests(t *testing.T) []*TestGroup {
 
 		testgroup("DS (children only)",
 			requires(providers.CanUseDSForChildren),
-			not("CLOUDNS"),
+			not("CLOUDNS", "CLOUDFLAREAPI"),
 			// Use a valid digest value here, because GCLOUD (which implements this capability) verifies
 			// the value passed in is a valid digest. RFC 4034, s5.1.4 specifies SHA1 as the only digest
 			// algo at present, i.e. only hexadecimal values currently usable.
@@ -1001,7 +1027,7 @@ func makeTests(t *testing.T) []*TestGroup {
 
 		testgroup("DS (children only) CLOUDNS",
 			requires(providers.CanUseDSForChildren),
-			only("CLOUDNS"),
+			only("CLOUDNS", "CLOUDFLAREAPI"),
 			// Use a valid digest value here, because GCLOUD (which implements this capability) verifies
 			// the value passed in is a valid digest. RFC 4034, s5.1.4 specifies SHA1 as the only digest
 			// algo at present, i.e. only hexadecimal values currently usable.
@@ -1145,6 +1171,69 @@ func makeTests(t *testing.T) []*TestGroup {
 				r53alias("dev-system", "CNAME", "dev-system18.**current-domain**"),
 				cname("dev-system18", "ec2-54-91-33-155.compute-1.amazonaws.com."),
 			),
+		),
+
+		testgroup("CF_REDIRECT",
+			only("CLOUDFLAREAPI"),
+			tc("redir", cfRedir("cnn.**current-domain-no-trailing**/*", "https://www.cnn.com/$1")),
+			tc("change", cfRedir("cnn.**current-domain-no-trailing**/*", "https://change.cnn.com/$1")),
+			tc("changelabel", cfRedir("cable.**current-domain-no-trailing**/*", "https://change.cnn.com/$1")),
+			clear(),
+			tc("multipleA",
+				cfRedir("cnn.**current-domain-no-trailing**/*", "https://www.cnn.com/$1"),
+				cfRedir("msnbc.**current-domain-no-trailing**/*", "https://msnbc.cnn.com/$1"),
+			),
+			clear(),
+			tc("multipleB",
+				cfRedir("msnbc.**current-domain-no-trailing**/*", "https://msnbc.cnn.com/$1"),
+				cfRedir("cnn.**current-domain-no-trailing**/*", "https://www.cnn.com/$1"),
+			),
+			tc("change1",
+				cfRedir("msnbc.**current-domain-no-trailing**/*", "https://msnbc.cnn.com/$1"),
+				cfRedir("cnn.**current-domain-no-trailing**/*", "https://change.cnn.com/$1"),
+			),
+			tc("change1",
+				cfRedir("msnbc.**current-domain-no-trailing**/*", "https://msnbc.cnn.com/$1"),
+				cfRedir("cablenews.**current-domain-no-trailing**/*", "https://change.cnn.com/$1"),
+			),
+			// TODO(tlim): Fix this test case:
+			//clear(),
+			//tc("multiple3",
+			//	cfRedir("msnbc.**current-domain-no-trailing**/*", "https://msnbc.cnn.com/$1"),
+			//	cfRedir("cnn.**current-domain-no-trailing**/*", "https://www.cnn.com/$1"),
+			//	cfRedir("nytimes.**current-domain-no-trailing**/*", "https://www.nytimes.com/$1"),
+			//),
+
+			// Repeat the above using CF_TEMP_REDIR instead
+			clear(),
+			tc("tempredir", cfRedirTemp("cnn.**current-domain-no-trailing**/*", "https://www.cnn.com/$1")),
+			tc("tempchange", cfRedirTemp("cnn.**current-domain-no-trailing**/*", "https://change.cnn.com/$1")),
+			tc("tempchangelabel", cfRedirTemp("cable.**current-domain-no-trailing**/*", "https://change.cnn.com/$1")),
+			clear(),
+			tc("tempmultipleA",
+				cfRedirTemp("cnn.**current-domain-no-trailing**/*", "https://www.cnn.com/$1"),
+				cfRedirTemp("msnbc.**current-domain-no-trailing**/*", "https://msnbc.cnn.com/$1"),
+			),
+			clear(),
+			tc("tempmultipleB",
+				cfRedirTemp("msnbc.**current-domain-no-trailing**/*", "https://msnbc.cnn.com/$1"),
+				cfRedirTemp("cnn.**current-domain-no-trailing**/*", "https://www.cnn.com/$1"),
+			),
+			tc("tempchange1",
+				cfRedirTemp("msnbc.**current-domain-no-trailing**/*", "https://msnbc.cnn.com/$1"),
+				cfRedirTemp("cnn.**current-domain-no-trailing**/*", "https://change.cnn.com/$1"),
+			),
+			tc("tempchange1",
+				cfRedirTemp("msnbc.**current-domain-no-trailing**/*", "https://msnbc.cnn.com/$1"),
+				cfRedirTemp("cablenews.**current-domain-no-trailing**/*", "https://change.cnn.com/$1"),
+			),
+			// TODO(tlim): Fix this test case:
+			//clear(),
+			//tc("tempmultiple3",
+			//	cfRedirTemp("msnbc.**current-domain-no-trailing**/*", "https://msnbc.cnn.com/$1"),
+			//	cfRedirTemp("cnn.**current-domain-no-trailing**/*", "https://www.cnn.com/$1"),
+			//	cfRedirTemp("nytimes.**current-domain-no-trailing**/*", "https://www.nytimes.com/$1"),
+			//),
 		),
 	}
 

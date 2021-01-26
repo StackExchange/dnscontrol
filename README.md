@@ -42,6 +42,7 @@ Currently supported DNS providers:
  - OVH
  - OctoDNS
  - OpenSRS
+ - Oracle Cloud
  - PowerDNS
  - SoftLayer
  - Vultr

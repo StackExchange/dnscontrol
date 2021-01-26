@@ -47,6 +47,7 @@ require (
 	github.com/mjibson/esc v0.2.0
 	github.com/namedotcom/go v0.0.0-20180403034216-08470befbe04
 	github.com/nrdcg/goinwx v0.8.1
+	github.com/oracle/oci-go-sdk/v32 v32.0.0
 	github.com/ovh/go-ovh v0.0.0-20181109152953-ba5adb4cf014
 	github.com/philhug/opensrs-go v0.0.0-20171126225031-9dfa7433020d
 	github.com/pierrec/lz4 v2.6.0+incompatible // indirect
