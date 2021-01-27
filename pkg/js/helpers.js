@@ -103,8 +103,6 @@ function D(name, registrar) {
         processDargs(m, domain);
     }
     var dup = conf.domain_names.indexOf(name);
-    var dupdomsplit = "";
-    var domsplit = "";
     if (dup !== -1) {
         // Loop through conf.domains.
         // If any have .meta['split_horizon'] that is the same
