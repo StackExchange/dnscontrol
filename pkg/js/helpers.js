@@ -94,28 +94,28 @@ function processDargs(m, domain) {
 
 // D(name,registrar): Create a DNS Domain. Use the parameters as records and mods.
 function D(name, registrar) {
-  var domain = newDomain(name, registrar);
-  for (var i = 0; i < defaultArgs.length; i++) {
-    processDargs(defaultArgs[i], domain);
-  }
-  for (var i = 2; i < arguments.length; i++) {
-    var m = arguments[i];
-    processDargs(m, domain);
-  }
-  var dup = conf.domain_names.indexOf(name);
-  var dupdomsplit = "";
-  var domsplit = "";
-  if (dup !== -1) {
-    // Loop through conf.domains.
-    // If any have .meta['split_horizon'] that is the same
-    // as domain.meta['split_horizon'], throw an error.
-    // Consider no 'split_horizon' to be the same as an empty string
-    // for purpose of comparison.
-    // If there are duplicate split_horizon values, throw this:
-    // throw name + ' is declared more than once';
-  }
-  conf.domains.push(domain);
-  conf.domain_names.push(name);
+    var domain = newDomain(name, registrar);
+    for (var i = 0; i < defaultArgs.length; i++) {
+        processDargs(defaultArgs[i], domain);
+    }
+    for (var i = 2; i < arguments.length; i++) {
+        var m = arguments[i];
+        processDargs(m, domain);
+    }
+    var dup = conf.domain_names.indexOf(name);
+    var dupdomsplit = "";
+    var domsplit = "";
+    if (dup !== -1) {
+        // Loop through conf.domains.
+        // If any have .meta['split_horizon'] that is the same
+        // as domain.meta['split_horizon'], throw an error.
+        // Consider no 'split_horizon' to be the same as an empty string
+        // for purpose of comparison.
+        // If there are duplicate split_horizon values, throw this:
+        // throw name + ' is declared more than once';
+    }
+    conf.domains.push(domain);
+    conf.domain_names.push(name);
 }
 
 // D_EXTEND(name): Update a DNS Domain already added with D(), or subdomain thereof
