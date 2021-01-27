@@ -17,6 +17,11 @@ Modifier arguments are processed according to type as follows:
 - An array argument will have all of it's members evaluated recursively. This allows you to combine multiple common records or modifiers into a variable that can
    be used like a macro in multiple domains.
 
+Duplicate domains are not allowed by default.  However
+adding the `SPLIT_HORIZON_TAG()` function permits split horizon DNS
+to be achieved by assigning a unique "tag" to each domain.A
+More details are provided in [SPLIT_HORIZON_TAG](SPLIT_HORIZON_TAG).
+
 {% include startExample.html %}
 {% highlight js %}
 var REGISTRAR = NewRegistrar("name.com", "NAMEDOTCOM");
@@ -42,20 +47,5 @@ D("example.com", REGISTRAR, DnsProvider(r53),
   CNAME("test", "foo.example2.com."),
   GOOGLE_APPS_DOMAIN_MX
 );
-
-// Split horizon example.  Here we permit
-// duplicate domains, each sending data to different providers.
-var DNS_BIND_INTERNAL = NewDnsProvider("bind_internal","BIND");
-var DNS_BIND_EXTERNAL = NewDnsProvider("bind_external","BIND");
-D("splitexample.com", REGISTRAR,
-  DnsProvider(DNS_BIND_INTERNAL),
-  A("@","10.2.3.4"),
-);
-D("splitexample.com", REGISTRAR,
-  SPLIT_HORIZON_TAG("external"),  // Differentiate from the other splitexample.com
-  DnsProvider(DNS_BIND_EXTERNAL),
-  A("@","99.99.99.99"),
-);
-
 {%endhighlight%}
 {% include endExample.html %}
