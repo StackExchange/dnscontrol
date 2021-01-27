@@ -282,6 +282,7 @@ func (args *FilterArgs) shouldRunDomain(d string) bool {
 	if args.Domains == "" {
 		return true
 	}
+	// This is where we should handle "example.com!tag" notation.
 	for _, dom := range strings.Split(args.Domains, ",") {
 		if dom == d {
 			return true

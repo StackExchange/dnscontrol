@@ -65,6 +65,12 @@ function newDomain(name, registrar) {
     };
 }
 
+function SPLIT_HORIZON_TAG(tag) {
+    return {
+        split_horizon_tag: tag,
+    };
+}
+
 function processDargs(m, domain) {
     // for each modifier, if it is a...
     // function: call it with domain
