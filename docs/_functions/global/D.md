@@ -42,6 +42,54 @@ D("example.com", REGISTRAR, DnsProvider(r53),
   CNAME("test", "foo.example2.com."),
   GOOGLE_APPS_DOMAIN_MX
 );
-
 {%endhighlight%}
 {% include endExample.html %}
+
+
+# Split Horizon DNS
+
+DNSControl supports Split Horizon DNS. Simply
+define the domain two or more times, each with
+their own unique parameters.
+
+To differentiate the different domains, specify the domains as
+1domain.tld!tag`, such as `example.com!inside` and
+`example.com!outside`.
+
+{% include startExample.html %}
+{% highlight js %}
+var REG = NewRegistrar("Third-Party", "NONE");
+var DNS_INSIDE = NewDnsProvider("Cloudflare", "CLOUDFLAREAPI");
+var DNS_OUTSIDE = NewDnsProvider("bind", "BIND");
+
+D("example.com!inside", REG, DnsProvider(DNS_INSIDE),
+  A("main", "1.1.1.1")
+);
+
+D("example.com!outside", REG, DnsProvider(DNS_OUTSIDE),
+  A("main", "8.8.8.8")
+);
+
+D_EXTEND("example.com!inside",
+  A("main", "11.11.11.11")
+);
+{%endhighlight%}
+{% include endExample.html %}
+
+A domain name without a `!` defaults to has a tag that is the empty
+string. For example, `example.com` and `example.com!` are equivalent.
+However, we strongly recommend that all horizons have tags to prevent
+human mistakes. In other words, if you have `domain.tld` and
+`domain.tld!external` you now require humans to remember that
+`domain.tld` is the external one.  I mean... the internal one.  You
+may have noticed this mistake, but will you in 6 months?  Will your
+corworkers You
+get the idea.
+
+DNSControl command line flag `--domains` is an exact match. That is,
+if you define domains `example.com!one` and `example.com!two`, the
+flag `--domains=example.com` will match zero domains.
+`--domains='example.com!two` will match the last one.  The quotes are
+required if your shell treats `!` as a special character, which is
+probably does.  If you see an error that mentions `event not found`
+you probably forgot the quotes.
