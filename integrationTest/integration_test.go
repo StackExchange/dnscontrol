@@ -745,14 +745,15 @@ func makeTests(t *testing.T) []*TestGroup {
 
 		testgroup("single TXT with single-quote",
 			not(
-				"INWX",  // Bug in the API prevents this.
-				"MSDNS", // TODO(tlim): Should be easy to implement.
+				"INWX",    // Bug in the API prevents this.
+				"MSDNS",   // TODO(tlim): Should be easy to implement.
+				"CLOUDNS", // support txt("foo", "blah'blah") but does not support txt("foo","blah`blah")
 			),
 			tc("Create TXT with single-quote", txt("foo", "blah`blah")),
 		),
 
 		testgroup("ws TXT",
-			not("CLOUDFLAREAPI", "HEXONET", "INWX", "NAMEDOTCOM"),
+			not("CLOUDFLAREAPI", "HEXONET", "INWX", "NAMEDOTCOM", "CLOUDNS"),
 			// These providers strip whitespace at the end of TXT records.
 			// TODO(tal): Add a check for this in normalize/validate.go
 			tc("Change a TXT with ws at end", txt("foo", "with space at end  ")),
@@ -765,6 +766,7 @@ func makeTests(t *testing.T) []*TestGroup {
 				"INWX",    // Not supported.
 				"MSDNS",   // Not supported.
 				"NETCUP",  // Not supported.
+				"CLOUDNS", // Not supported.
 			),
 			tc("TXT with empty str", txt("foo1", "")),
 			// https://github.com/StackExchange/dnscontrol/issues/598
@@ -935,6 +937,7 @@ func makeTests(t *testing.T) []*TestGroup {
 		),
 
 		testgroup("TXTMulti",
+			not("CLOUDNS"), //TODO: not implemented. same Issue as #996
 			requires(providers.CanUseTXTMulti),
 			tc("Create TXTMulti 1",
 				txtmulti("foo1", []string{"simple"}),
