@@ -47,6 +47,9 @@ func TestParsedFiles(t *testing.T) {
 			if err != nil {
 				t.Fatal(err)
 			}
+			// for _, dc := range conf.Domains {
+			// 	normalize.UpdateNameSplitHorizon(dc)
+			// }
 
 			// Initialize any DNS providers mentioned.
 			for _, dProv := range conf.DNSProviders {
@@ -77,6 +80,8 @@ func TestParsedFiles(t *testing.T) {
 			es := string(expectedJSON)
 			as := string(actualJSON)
 			_, _ = es, as
+			// When debugging, leave behind the actual result:
+			//ioutil.WriteFile(expectedFile+".ACTUAL", []byte(es), 0644)
 			testifyrequire.JSONEqf(t, es, as, "EXPECTING %q = \n```\n%s\n```", expectedFile, as)
 
 			// For each domain, if there is a zone file, test against it:
