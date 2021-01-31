@@ -152,7 +152,7 @@ func (c *bindProvider) GetZoneRecords(domain string) (models.Records, error) {
 	if os.IsNotExist(err) {
 		// If the file doesn't exist, that's not an error. Just informational.
 		c.zoneFileFound = false
-		fmt.Fprintf(os.Stderr, "gzr failed ReadFile(%q): %v\n", c.zonefile, err)
+		fmt.Fprintf(os.Stderr, "File does not yet exist: %q\n", c.zonefile)
 		return nil, nil
 	}
 	if err != nil {
@@ -175,16 +175,6 @@ func (c *bindProvider) GetZoneRecords(domain string) (models.Records, error) {
 	}
 	return foundRecords, nil
 }
-
-// makeFileName returns the zone's filename.
-func makeFileName(format, uniquename, domain, tag string) string {
-	return strings.Replace(strings.ToLower(uniquename), "/", "_", -1) + ".zone"
-}
-
-//// makeFileRegex returns a regex that extracts the domain name from a filename.
-//func makeFileRegex(formatstring ) *Regexp {
-//	return MustCompile(`(.*).zone`)
-//}
 
 // GetDomainCorrections returns a list of corrections to update a domain.
 func (c *bindProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Correction, error) {
