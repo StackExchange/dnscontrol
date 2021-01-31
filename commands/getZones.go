@@ -139,11 +139,11 @@ func GetZone(args GetZoneArgs) error {
 	// Read it in:
 	providerConfigs, err = config.LoadProviderConfigs(args.CredsFile)
 	if err != nil {
-		return err
+		return fmt.Errorf("failed GetZone lpc(%q): %w", args.CredsFile, err)
 	}
 	provider, err := providers.CreateDNSProvider(args.ProviderName, providerConfigs[args.CredName], nil)
 	if err != nil {
-		return err
+		return fmt.Errorf("failed GetZone cdp: %w", err)
 	}
 
 	// decide which zones we need to convert
@@ -155,7 +155,7 @@ func GetZone(args GetZoneArgs) error {
 		}
 		zones, err = lister.ListZones()
 		if err != nil {
-			return err
+			return fmt.Errorf("failed GetZone LZ: %w", err)
 		}
 	}
 
@@ -165,7 +165,7 @@ func GetZone(args GetZoneArgs) error {
 		w, err = os.Create(args.OutputFile)
 	}
 	if err != nil {
-		return err
+		return fmt.Errorf("failed GetZone Create(%q): %w", args.OutputFile, err)
 	}
 	defer w.Close()
 
@@ -181,10 +181,11 @@ func GetZone(args GetZoneArgs) error {
 	for i, zone := range zones {
 		recs, err := provider.GetZoneRecords(zone)
 		if err != nil {
-			return err
+			return fmt.Errorf("failed GetZone gzr: %w", err)
 		}
 		zoneRecs[i] = recs
 	}
+
 
 	// Write the heading:
 
