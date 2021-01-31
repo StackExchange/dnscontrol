@@ -18,10 +18,12 @@ you can specify a `directory` where the provider will look for and create zone f
 {% highlight json %}
 {
   "bind": {
-    "directory": "myzones"
+    "directory": "myzones",
+    "filenameformat": "%T%U%D.zone"      << The default
   }
 }
 {% endhighlight %}
+
 
 The BIND accepts some optional metadata via your DNS config when you create the provider:
 
@@ -46,10 +48,37 @@ var BIND = NewDnsProvider('bind', 'BIND', {
 })
 {% endhighlight %}
 
+# filenameformat
+
+The `filenameformat` parameter specifies the file name to be used when
+writing the zone file. The default is acceptable in most cases.
+The `dnscontrol get-zones` command only scans for filenames in the
+default format.
+
+The filenameformat is a string with a few printf-like `%` directives:
+
+  * `%U`  the domain name as specified in dnsconfig.js
+  * `%D`  the domain name, stripped of any tags
+  * `%T`  the split horizon tag, see `D()` for info
+  * `%*x`  returns `x` if tag is non-null, otherwise nothing. `x` can be any printable.
+  * `%%`  `%`
+  * ordinary characters (not `%`), are copied unchanged to the output stream.
+  * `%` may not be the last char in a string
+
+Typical values:
+
+  * "%T%*U%D.zone"  (the default) Ex: `tag_example.com.zone` or `example.com.zone`
+  * "db_%D"  Ex: `db_example.com` (assumes no tags)
+  * "db_%T%U%D"  Ex: `db_inside_example.com` or `db_example.com`
+
 # FYI: get-zones
 
-When used with "get-zones", specifying "all" scans the directory for
+The dnscontrol `get-zones all` subcommand scans the directory for
 any files named `*.zone` and assumes they are zone files.
+
+If `filenameformat` is defined, the code makes a simple guess
+at filenames. It isn't a reliable algorithm, but feel free to
+file an issue if your format string doesn't work.
 
 ```
 dnscontrol get-zones --format=nameonly - BIND all

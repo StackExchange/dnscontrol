@@ -446,17 +446,25 @@ func ValidateAndNormalizeConfig(config *models.DNSConfig) (errs []error) {
 	return errs
 }
 
+// UpdateNameSplitHorizon fills in the split horizon fields.
+func UpdateNameSplitHorizon(dc *models.DomainConfig) {
+	if dc.UniqueName == "" {
+		dc.UniqueName = dc.Name
+	}
+	if dc.Tag == "" {
+		l := strings.SplitN(dc.Name, "!", 2)
+		if len(l) == 2 {
+			dc.Name = l[0]
+			dc.Tag = l[1]
+		}
+	}
+}
+
 // processSplitHorizonDomains finds "domain.tld!tag" domains and pre-processes them.
 func processSplitHorizonDomains(config *models.DNSConfig) error {
-
 	// Parse out names and tags.
 	for _, d := range config.Domains {
-		d.UniqueName = d.Name
-		l := strings.SplitN(d.Name, "!", 2)
-		if len(l) == 2 {
-			d.Name = l[0]
-			d.Tag = l[1]
-		}
+		UpdateNameSplitHorizon(d)
 	}
 
 	// Verify uniquenames are unique

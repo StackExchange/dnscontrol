@@ -137,10 +137,6 @@ func (c *bindProvider) GetZoneRecords(domain string) (models.Records, error) {
 		fmt.Printf("\nWARNING: BIND directory %q does not exist!\n", c.directory)
 	}
 
-	c.zonefile = filepath.Join(
-		c.directory,
-		strings.Replace(strings.ToLower(domain), "/", "_", -1)+".zone")
-
 	content, err := ioutil.ReadFile(c.zonefile)
 	if os.IsNotExist(err) {
 		// If the file doesn't exist, that's not an error. Just informational.
@@ -169,6 +165,16 @@ func (c *bindProvider) GetZoneRecords(domain string) (models.Records, error) {
 	return foundRecords, nil
 }
 
+// makeFileName returns the zone's filename.
+func makeFileName(uniquename, domain, tag string) string {
+	return strings.Replace(strings.ToLower(uniquename), "/", "_", -1) + ".zone"
+}
+
+//// makeFileRegex returns a regex that extracts the domain name from a filename.
+//func makeFileRegex(formatstring ) *Regexp {
+//	return MustCompile(`(.*).zone`)
+//}
+
 // GetDomainCorrections returns a list of corrections to update a domain.
 func (c *bindProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Correction, error) {
 	dc.Punycode()
@@ -184,6 +190,8 @@ func (c *bindProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*models.
 		// has multiple providers.
 		comments = append(comments, "Automatic DNSSEC signing requested")
 	}
+
+	c.zonefile = filepath.Join(c.directory, makeFileName(dc.UniqueName, dc.Name, dc.Tag))
 
 	foundRecords, err := c.GetZoneRecords(dc.Name)
 	if err != nil {
