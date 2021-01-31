@@ -76,13 +76,14 @@ Typical values:
 The dnscontrol `get-zones all` subcommand scans the directory for
 any files named `*.zone` and assumes they are zone files.
 
-If `filenameformat` is defined, the code makes a simple guess
-at filenames. It isn't a reliable algorithm, but feel free to
-file an issue if your format string doesn't work.
-
 ```
 dnscontrol get-zones --format=nameonly - BIND all
 ```
+
+If `filenameformat` is defined, the code makes a simple guess at
+filenames but doesn't try to hard to get it right, which is
+mathematically impossible in all cases.  Feel free to file an issue if
+your format string doesn't work.
 
 # FYI: SOA Records
 
