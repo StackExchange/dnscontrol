@@ -53,9 +53,13 @@ func initBind(config map[string]string, providermeta json.RawMessage) (providers
 	// meta -- the json blob from NewReq('name', 'TYPE', meta)
 	api := &bindProvider{
 		directory: config["directory"],
+		filenameformat: config["filenameformat"],
 	}
 	if api.directory == "" {
 		api.directory = "zones"
+	}
+	if api.filenameformat == "" {
+		api.filenameformat = "%U.zone"
 	}
 	if len(providermeta) != 0 {
 		err := json.Unmarshal(providermeta, api)
@@ -98,6 +102,7 @@ type bindProvider struct {
 	DefaultSoa    SoaInfo  `json:"default_soa"`
 	nameservers   []*models.Nameserver
 	directory     string
+	filenameformat     string
 	zonefile      string // Where the zone data is expected
 	zoneFileFound bool   // Did the zonefile exist?
 }
@@ -166,7 +171,7 @@ func (c *bindProvider) GetZoneRecords(domain string) (models.Records, error) {
 }
 
 // makeFileName returns the zone's filename.
-func makeFileName(uniquename, domain, tag string) string {
+func makeFileName(format, uniquename, domain, tag string) string {
 	return strings.Replace(strings.ToLower(uniquename), "/", "_", -1) + ".zone"
 }
 
@@ -191,7 +196,8 @@ func (c *bindProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*models.
 		comments = append(comments, "Automatic DNSSEC signing requested")
 	}
 
-	c.zonefile = filepath.Join(c.directory, makeFileName(dc.UniqueName, dc.Name, dc.Tag))
+	c.zonefile = filepath.Join(c.directory,
+		makeFileName(c.filenameformat, dc.UniqueName, dc.Name, dc.Tag))
 
 	foundRecords, err := c.GetZoneRecords(dc.Name)
 	if err != nil {
