@@ -52,7 +52,7 @@ func initBind(config map[string]string, providermeta json.RawMessage) (providers
 	// config -- the key/values from creds.json
 	// meta -- the json blob from NewReq('name', 'TYPE', meta)
 	api := &bindProvider{
-		directory: config["directory"],
+		directory:      config["directory"],
 		filenameformat: config["filenameformat"],
 	}
 	if api.directory == "" {
@@ -98,13 +98,13 @@ func (s SoaInfo) String() string {
 
 // bindProvider is the provider handle for the bindProvider driver.
 type bindProvider struct {
-	DefaultNS     []string `json:"default_ns"`
-	DefaultSoa    SoaInfo  `json:"default_soa"`
-	nameservers   []*models.Nameserver
-	directory     string
-	filenameformat     string
-	zonefile      string // Where the zone data is expected
-	zoneFileFound bool   // Did the zonefile exist?
+	DefaultNS      []string `json:"default_ns"`
+	DefaultSoa     SoaInfo  `json:"default_soa"`
+	nameservers    []*models.Nameserver
+	directory      string
+	filenameformat string
+	zonefile       string // Where the zone data is expected
+	zoneFileFound  bool   // Did the zonefile exist?
 }
 
 // GetNameservers returns the nameservers for a domain.
@@ -142,11 +142,17 @@ func (c *bindProvider) GetZoneRecords(domain string) (models.Records, error) {
 		fmt.Printf("\nWARNING: BIND directory %q does not exist!\n", c.directory)
 	}
 
+	if c.zonefile == "" {
+		// This layering violation is needed for tests only.
+		// Otherwise, this is set already.
+		c.zonefile = filepath.Join(c.directory,
+			makeFileName(c.filenameformat, domain, domain, ""))
+	}
 	content, err := ioutil.ReadFile(c.zonefile)
 	if os.IsNotExist(err) {
 		// If the file doesn't exist, that's not an error. Just informational.
 		c.zoneFileFound = false
-		fmt.Fprintf(os.Stderr, "File not found: '%v'\n", c.zonefile)
+		fmt.Fprintf(os.Stderr, "gzr failed ReadFile(%q): %v\n", c.zonefile, err)
 		return nil, nil
 	}
 	if err != nil {
