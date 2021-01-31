@@ -49,7 +49,8 @@ var features = providers.DocumentationNotes{
 	providers.CanUsePTR:              providers.Can(),
 	providers.CanGetZones:            providers.Can(),
 	providers.CanUseDSForChildren:    providers.Can(),
-	//providers.CanUseDS:               providers.Can(),
+	providers.CanUseTXTMulti:         providers.Can(),
+	//providers.CanUseDS:               providers.Can(),  // in ClouDNS we can add  DS record just for a subdomain(child)
 }
 
 func init() {
