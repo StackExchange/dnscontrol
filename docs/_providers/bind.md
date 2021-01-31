@@ -19,7 +19,7 @@ you can specify a `directory` where the provider will look for and create zone f
 {
   "bind": {
     "directory": "myzones",
-    "filenameformat": "%T%U%D.zone"      << The default
+    "filenameformat": "%U.zone"      << The default
   }
 }
 {% endhighlight %}
