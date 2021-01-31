@@ -122,16 +122,19 @@ func (c *bindProvider) ListZones() ([]string, error) {
 		return nil, fmt.Errorf("directory %q does not exist", c.directory)
 	}
 
-	filenames, err := filepath.Glob(filepath.Join(c.directory, "*.zone"))
+	var files []string
+	f, err := os.Open(c.directory)
 	if err != nil {
-		return nil, err
+		return files, fmt.Errorf("bind ListZones open dir %q: %w",
+			c.directory, err)
 	}
-	var zones []string
-	for _, n := range filenames {
-		_, file := filepath.Split(n)
-		zones = append(zones, strings.TrimSuffix(file, ".zone"))
+	filenames, err := f.Readdirnames(-1)
+	if err != nil {
+		return files, fmt.Errorf("bind ListZones readdir %q: %w",
+			c.directory, err)
 	}
-	return zones, nil
+
+	return extractZonesFromFilenames(c.filenameformat, filenames), nil
 }
 
 // GetZoneRecords gets the records of a zone and returns them in RecordConfig format.

@@ -51,25 +51,37 @@ var BIND = NewDnsProvider('bind', 'BIND', {
 # filenameformat
 
 The `filenameformat` parameter specifies the file name to be used when
-writing the zone file. The default is acceptable in most cases.
-The `dnscontrol get-zones` command only scans for filenames in the
-default format.
+writing the zone file. The default is acceptable in most cases: the
+name as specified in the `D()` function, plus ".zone".
 
-The filenameformat is a string with a few printf-like `%` directives:
+The filenameformat is a string with a few printf-like `%` verbs:
 
-  * `%U`  the domain name as specified in dnsconfig.js
-  * `%D`  the domain name, stripped of any tags
-  * `%T`  the split horizon tag, see `D()` for info
-  * `%*x`  returns `x` if tag is non-null, otherwise nothing. `x` can be any printable.
+  * `%U`  the domain name as specified in `D()`
+  * `%D`  the domain name without any split horizon tag
+  * `%T`  the split horizon tag, or "", see `D()`
+  * `%?x` this returns `x` if the split horizon tag is non-null, otherwise nothing. `x` can be any printable.
   * `%%`  `%`
-  * ordinary characters (not `%`), are copied unchanged to the output stream.
-  * `%` may not be the last char in a string
+  * ordinary characters (not `%`) are copied unchanged to the output stream
+  * FYI: format strings must not end with an incomplete `%` or `%?`
+  * FYI: `/` or other filesystem separators result in undefined behavior
 
 Typical values:
 
-  * "%T%*U%D.zone"  (the default) Ex: `tag_example.com.zone` or `example.com.zone`
-  * "db_%D"  Ex: `db_example.com` (assumes no tags)
-  * "db_%T%U%D"  Ex: `db_inside_example.com` or `db_example.com`
+  * `%U.zone` (The default)
+    * `example.com.zone` or `example.com!tag.zone`
+  * `%T%*U%D.zone`  (optional tag and `_` + domain + `.zone`)
+    * `tag_example.com.zone` or `example.com.zone`
+  * `db_%T%?_%D`
+    * `db_inside_example.com` or `db_example.com`
+  * `db_%D`
+    * `db_example.com`
+
+The last example will generate the same name for both
+`D("example.tld!inside")` and `D("example.tld!outside")`.  This
+assumes two BIND providers are configured in `creds.json`, eacch with
+a different `directory` setting. Otherwise `dnscontrol` will write
+both domains to the same file, flapping between the two back and
+forth.
 
 # FYI: get-zones
 
@@ -80,10 +92,10 @@ any files named `*.zone` and assumes they are zone files.
 dnscontrol get-zones --format=nameonly - BIND all
 ```
 
-If `filenameformat` is defined, the code makes a simple guess at
-filenames but doesn't try to hard to get it right, which is
+If `filenameformat` is defined, `dnscontrol` makes an guess at which
+filenames are zones but doesn't try to hard to get it right, which is
 mathematically impossible in all cases.  Feel free to file an issue if
-your format string doesn't work.
+your format string doesn't work. I love a challenge!
 
 # FYI: SOA Records
 
