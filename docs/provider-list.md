@@ -82,6 +82,7 @@ Maintainers of contributed providers:
 * `GANDI_V5` @TomOnTime
 * `HEDNS` @rblenkinsopp
 * `HEXONET` @papakai
+* `HTTPNET` @juliusrickert
 * `INTERNETBS` @pragmaton
 * `INWX` @svenpeter42
 * `LINODE` @koesie10

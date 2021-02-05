@@ -12,6 +12,7 @@ providers/gandi_v5 @TomOnTime
 # providers/gcloud
 providers/hedns @rblenkinsopp
 providers/hexonet @papakai
+providers/httpnet @juliusrickert
 providers/internetbs @pragmaton
 providers/inwx @svenpeter42
 providers/linode @koesie10

@@ -19,6 +19,7 @@ import (
 	_ "github.com/StackExchange/dnscontrol/v3/providers/gcloud"
 	_ "github.com/StackExchange/dnscontrol/v3/providers/hedns"
 	_ "github.com/StackExchange/dnscontrol/v3/providers/hexonet"
+	_ "github.com/StackExchange/dnscontrol/v3/providers/httpnet"
 	_ "github.com/StackExchange/dnscontrol/v3/providers/internetbs"
 	_ "github.com/StackExchange/dnscontrol/v3/providers/inwx"
 	_ "github.com/StackExchange/dnscontrol/v3/providers/linode"

@@ -1,0 +1,260 @@
+package httpnet
+
+import (
+	"bytes"
+	"encoding/json"
+	"fmt"
+	"io/ioutil"
+	"net/http"
+
+	"github.com/StackExchange/dnscontrol/v3/pkg/diff"
+	"golang.org/x/net/idna"
+)
+
+const endpoint = "https://partner.routing.net/api/%s/v1/json/%s"
+
+type api struct {
+	authToken      string
+	ownerAccountID string
+}
+
+func (api *api) getDomainConfig(domain string) (*domainConfig, error) {
+	zc, err := api.getZoneConfig(domain)
+	if err != nil {
+		return nil, fmt.Errorf("error getting zone config: %v", err)
+	}
+
+	params := request{
+		Filter: filter{
+			Field: "domainName",
+			Value: zc.Name,
+		},
+	}
+
+	resp, err := api.get("domain", "domainsFind", params)
+	if err != nil {
+		return nil, fmt.Errorf("error getting domain info: %v", err)
+	}
+
+	domainConf := []*domainConfig{}
+	if err := json.Unmarshal(resp.Data, &domainConf); err != nil {
+		return nil, fmt.Errorf("error parsing response: %v", err)
+	}
+
+	if len(domainConf) == 0 {
+		return nil, fmt.Errorf("could not get domain config: %s", domain)
+	}
+
+	return domainConf[0], nil
+}
+
+func (api *api) createZone(domain string) error {
+	t, err := idna.ToASCII(domain)
+	if err != nil {
+		return err
+	}
+
+	records := []*record{}
+	for _, ns := range defaultNameservers {
+		records = append(records, &record{
+			Name:    domain,
+			Type:    "NS",
+			Content: ns,
+			TTL:     86400,
+		})
+	}
+
+	params := request{
+		ZoneConfig: &zoneConfig{
+			Name: t,
+			Type: "NATIVE",
+		},
+		Records: records,
+	}
+
+	_, err = api.get("dns", "zoneCreate", params)
+	if err != nil {
+		return fmt.Errorf("error creating zone: %v", err)
+	}
+	return nil
+}
+
+func (api *api) getNameservers(domain string) ([]string, error) {
+	t, err := idna.ToASCII(domain)
+	if err != nil {
+		return nil, err
+	}
+
+	domainConf, err := api.getDomainConfig(t)
+	if err != nil {
+		return nil, fmt.Errorf("error getting domain config: %v", err)
+	}
+
+	nss := []string{}
+	for _, ns := range domainConf.Nameservers {
+		// Currently does not support glued IP addresses
+		if len(ns.IPs) > 0 {
+			return nil, fmt.Errorf("domain %s has glued IP addresses which are not supported", domain)
+		}
+
+		nss = append(nss, ns.Name)
+	}
+
+	return nss, nil
+}
+
+func (api *api) updateNameservers(nss []string, domain string) func() error {
+	return func() error {
+		domainConf, err := api.getDomainConfig(domain)
+		if err != nil {
+			return err
+		}
+
+		nameservers := []nameserver{}
+		for _, ns := range nss {
+			nameservers = append(nameservers, nameserver{Name: ns})
+		}
+
+		domainConf.Nameservers = nameservers
+
+		params := request{
+			Domain: domainConf,
+		}
+
+		if _, err := api.get("domain", "domainUpdate", params); err != nil {
+			return err
+		}
+		return nil
+	}
+}
+
+func (api *api) getRecords(domain string) ([]*record, error) {
+	zc, err := api.getZoneConfig(domain)
+	if err != nil {
+		return nil, err
+	}
+
+	params := request{
+		Filter: filter{
+			Field: "ZoneConfigId",
+			Value: zc.ID,
+		},
+		Limit: 1000,
+	}
+
+	// TODO: Support more than 1000 records
+	resp, err := api.get("dns", "recordsFind", params)
+	if err != nil {
+		return nil, err
+	}
+
+	records := []*record{}
+	if err := json.Unmarshal(resp.Data, &records); err != nil {
+		return nil, err
+	}
+	return records, nil
+}
+
+func (api *api) updateRecords(domain string, create, del, mod diff.Changeset) error {
+	zc, err := api.getZoneConfig(domain)
+	if err != nil {
+		return err
+	}
+
+	toAdd := []*record{}
+	for _, c := range create {
+		r := recordToNative(c.Desired)
+		toAdd = append(toAdd, r)
+	}
+
+	toDelete := []*record{}
+	for _, d := range del {
+		r := recordToNative(d.Existing)
+		r.ID = d.Existing.Original.(*record).ID
+		toDelete = append(toDelete, r)
+	}
+
+	toModify := []*record{}
+	for _, m := range mod {
+		r := recordToNative(m.Desired)
+		r.ID = m.Existing.Original.(*record).ID
+		toModify = append(toModify, r)
+	}
+
+	params := request{
+		ZoneConfig:      zc,
+		RecordsToAdd:    toAdd,
+		RecordsToDelete: toDelete,
+		RecordsToModify: toModify,
+	}
+
+	_, err = api.get("dns", "zoneUpdate", params)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func (api *api) getZoneConfig(domain string) (*zoneConfig, error) {
+	t, err := idna.ToASCII(domain)
+	if err != nil {
+		return nil, err
+	}
+
+	params := request{
+		Filter: filter{
+			Field: "ZoneName",
+			Value: t,
+		},
+	}
+
+	resp, err := api.get("dns", "zoneConfigsFind", params)
+	if err != nil {
+		return nil, fmt.Errorf("could not get zone config: %v", err)
+	}
+
+	zc := []*zoneConfig{}
+	if err := json.Unmarshal(resp.Data, &zc); err != nil {
+		return nil, fmt.Errorf("could not parse response: %v", err)
+	}
+
+	if len(zc) == 0 {
+		return nil, errZoneNotFound
+	}
+
+	return zc[0], nil
+}
+
+func (api *api) get(service, method string, params request) (*responseData, error) {
+	params.AuthToken = api.authToken
+	params.OwnerAccountID = api.ownerAccountID
+	reqBody, err := json.Marshal(params)
+	if err != nil {
+		return nil, fmt.Errorf("could not marshal request body: %w", err)
+	}
+
+	resp, err := http.Post(fmt.Sprintf(endpoint, service, method), "application/json", bytes.NewBuffer(reqBody))
+	if err != nil {
+		return nil, fmt.Errorf("could not carry out request: %w", err)
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode >= 400 {
+		return nil, fmt.Errorf("error occurred: %s", resp.Status)
+	}
+
+	bodyBytes, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return nil, fmt.Errorf("could not read response body: %w", err)
+	}
+
+	respData := &response{}
+	if err := json.Unmarshal(bodyBytes, &respData); err != nil {
+		return nil, fmt.Errorf("could not unmarshal response body: %w", err)
+	}
+	if len(respData.Errors) > 0 && respData.Status == "error" {
+		return nil, fmt.Errorf("%+v", respData.Errors)
+	}
+
+	return respData.Response, nil
+}
