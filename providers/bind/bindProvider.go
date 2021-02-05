@@ -52,10 +52,14 @@ func initBind(config map[string]string, providermeta json.RawMessage) (providers
 	// config -- the key/values from creds.json
 	// meta -- the json blob from NewReq('name', 'TYPE', meta)
 	api := &bindProvider{
-		directory: config["directory"],
+		directory:      config["directory"],
+		filenameformat: config["filenameformat"],
 	}
 	if api.directory == "" {
 		api.directory = "zones"
+	}
+	if api.filenameformat == "" {
+		api.filenameformat = "%U.zone"
 	}
 	if len(providermeta) != 0 {
 		err := json.Unmarshal(providermeta, api)
@@ -94,12 +98,13 @@ func (s SoaInfo) String() string {
 
 // bindProvider is the provider handle for the bindProvider driver.
 type bindProvider struct {
-	DefaultNS     []string `json:"default_ns"`
-	DefaultSoa    SoaInfo  `json:"default_soa"`
-	nameservers   []*models.Nameserver
-	directory     string
-	zonefile      string // Where the zone data is expected
-	zoneFileFound bool   // Did the zonefile exist?
+	DefaultNS      []string `json:"default_ns"`
+	DefaultSoa     SoaInfo  `json:"default_soa"`
+	nameservers    []*models.Nameserver
+	directory      string
+	filenameformat string
+	zonefile       string // Where the zone data is expected
+	zoneFileFound  bool   // Did the zonefile exist?
 }
 
 // GetNameservers returns the nameservers for a domain.
@@ -117,16 +122,19 @@ func (c *bindProvider) ListZones() ([]string, error) {
 		return nil, fmt.Errorf("directory %q does not exist", c.directory)
 	}
 
-	filenames, err := filepath.Glob(filepath.Join(c.directory, "*.zone"))
+	var files []string
+	f, err := os.Open(c.directory)
 	if err != nil {
-		return nil, err
+		return files, fmt.Errorf("bind ListZones open dir %q: %w",
+			c.directory, err)
 	}
-	var zones []string
-	for _, n := range filenames {
-		_, file := filepath.Split(n)
-		zones = append(zones, strings.TrimSuffix(file, ".zone"))
+	filenames, err := f.Readdirnames(-1)
+	if err != nil {
+		return files, fmt.Errorf("bind ListZones readdir %q: %w",
+			c.directory, err)
 	}
-	return zones, nil
+
+	return extractZonesFromFilenames(c.filenameformat, filenames), nil
 }
 
 // GetZoneRecords gets the records of a zone and returns them in RecordConfig format.
@@ -137,15 +145,17 @@ func (c *bindProvider) GetZoneRecords(domain string) (models.Records, error) {
 		fmt.Printf("\nWARNING: BIND directory %q does not exist!\n", c.directory)
 	}
 
-	c.zonefile = filepath.Join(
-		c.directory,
-		strings.Replace(strings.ToLower(domain), "/", "_", -1)+".zone")
-
+	if c.zonefile == "" {
+		// This layering violation is needed for tests only.
+		// Otherwise, this is set already.
+		c.zonefile = filepath.Join(c.directory,
+			makeFileName(c.filenameformat, domain, domain, ""))
+	}
 	content, err := ioutil.ReadFile(c.zonefile)
 	if os.IsNotExist(err) {
 		// If the file doesn't exist, that's not an error. Just informational.
 		c.zoneFileFound = false
-		fmt.Fprintf(os.Stderr, "File not found: '%v'\n", c.zonefile)
+		fmt.Fprintf(os.Stderr, "File does not yet exist: %q\n", c.zonefile)
 		return nil, nil
 	}
 	if err != nil {
@@ -184,6 +194,9 @@ func (c *bindProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*models.
 		// has multiple providers.
 		comments = append(comments, "Automatic DNSSEC signing requested")
 	}
+
+	c.zonefile = filepath.Join(c.directory,
+		makeFileName(c.filenameformat, dc.UniqueName, dc.Name, dc.Tag))
 
 	foundRecords, err := c.GetZoneRecords(dc.Name)
 	if err != nil {

@@ -9,6 +9,8 @@ import (
 // DomainConfig describes a DNS domain (tecnically a  DNS zone).
 type DomainConfig struct {
 	Name             string         `json:"name"` // NO trailing "."
+	Tag              string         `json:"-"`    // split horizon tag
+	UniqueName       string         `json:"-"`    // .Name + "!" + .Tag
 	RegistrarName    string         `json:"registrar"`
 	DNSProviderNames map[string]int `json:"dnsProviders"`
 

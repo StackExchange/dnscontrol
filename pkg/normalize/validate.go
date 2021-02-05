@@ -253,6 +253,11 @@ type Warning struct {
 
 // ValidateAndNormalizeConfig performs and normalization and/or validation of the IR.
 func ValidateAndNormalizeConfig(config *models.DNSConfig) (errs []error) {
+	err := processSplitHorizonDomains(config)
+	if err != nil {
+		return []error{err}
+	}
+
 	for _, domain := range config.Domains {
 		pTypes := []string{}
 		for _, provider := range domain.DNSProviderInstances {
@@ -455,6 +460,48 @@ func ValidateAndNormalizeConfig(config *models.DNSConfig) (errs []error) {
 	}
 
 	return errs
+}
+
+// UpdateNameSplitHorizon fills in the split horizon fields.
+func UpdateNameSplitHorizon(dc *models.DomainConfig) {
+	if dc.UniqueName == "" {
+		dc.UniqueName = dc.Name
+	}
+	if dc.Tag == "" {
+		l := strings.SplitN(dc.Name, "!", 2)
+		if len(l) == 2 {
+			dc.Name = l[0]
+			dc.Tag = l[1]
+		}
+	}
+}
+
+// processSplitHorizonDomains finds "domain.tld!tag" domains and pre-processes them.
+func processSplitHorizonDomains(config *models.DNSConfig) error {
+	// Parse out names and tags.
+	for _, d := range config.Domains {
+		UpdateNameSplitHorizon(d)
+	}
+
+	// Verify uniquenames are unique
+	seen := map[string]bool{}
+	for _, d := range config.Domains {
+		if seen[d.UniqueName] {
+			return fmt.Errorf("duplicate domain name: %q", d.UniqueName)
+		}
+		seen[d.UniqueName] = true
+	}
+
+	return nil
+}
+
+// parseDomainSpec parses "domain.tld!tag" into its component parts.
+func parseDomainSpec(s string) (domain, tag string) {
+	l := strings.SplitN(s, "!", 2)
+	if len(l) == 2 {
+		return l[0], l[1]
+	}
+	return l[0], ""
 }
 
 func checkAutoDNSSEC(dc *models.DomainConfig) (errs []error) {
