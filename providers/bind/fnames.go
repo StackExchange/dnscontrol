@@ -78,10 +78,12 @@ func extractZonesFromFilenames(format string, names []string) []string {
 		_, file := filepath.Split(n)
 		l := re.FindStringSubmatch(file)
 		// l[1:] is a list of matches and null strings.  Pick the first non-null string.
-		for _, s := range l[1:] {
-			if s != "" {
-				zones = append(zones, s)
-				break
+		if len(l) > 1 {
+			for _, s := range l[1:] {
+				if s != "" {
+					zones = append(zones, s)
+					break
+				}
 			}
 		}
 	}
@@ -102,6 +104,15 @@ func makeExtractor(format string) (string, error) {
 	// If no tag-related verbs are used, A is sufficient.
 	// If a tag-related verb is used, we append | and generate B, which does
 	// Each % verb is turned into an appropriate subexpression based on pass.
+
+	// NB: This is some rather fancy CS stuff just to make the
+	// "get-zones all" command work for BIND.  That's a lot of work for
+	// a feature that isn't going to be used very often, if at all.
+	// Therefore if this ever becomes a maintenance bother, we can just
+	// replace this with something more simple. For example, the
+	// creds.json file could specify the regex and humans can specify
+	// the Extractor themselves. Or, just remove this feature from the
+	// BIND driver.
 
 	var b bytes.Buffer
 
@@ -142,7 +153,12 @@ func makeExtractor(format string) (string, error) {
 					b.WriteString(`.*`)
 				}
 			case "U":
-				b.WriteString(`(.*)!?`)
+				if pass == 0 {
+					b.WriteString(`(.*)!.+`)
+				} else {
+					b.WriteString(`(.*)`)
+				}
+				generateB = true
 			case "?":
 				if pos == lastpos {
 					return ``, fmt.Errorf("format may not end in %%?: %q", format)
