@@ -35,7 +35,7 @@ func testFormat(t *testing.T, domain, format string) {
 
 	outfile, err := ioutil.TempFile("", outputFiletmpl)
 	if err != nil {
-		log.Fatal(err)
+		log.Fatal(fmt.Errorf("gz can't TempFile %q: %w", outputFiletmpl, err))
 	}
 	defer os.Remove(outfile.Name())
 
@@ -52,19 +52,19 @@ func testFormat(t *testing.T, domain, format string) {
 	// Read the zonefile and convert
 	err = GetZone(gzargs)
 	if err != nil {
-		log.Fatal(err)
+		log.Fatal(fmt.Errorf("can't GetZone: %w", err))
 	}
 
 	// Read the actual result:
 	got, err := ioutil.ReadFile(outfile.Name())
 	if err != nil {
-		log.Fatal(err)
+		log.Fatal(fmt.Errorf("can't read actuals %q: %w", outfile.Name(), err))
 	}
 
 	// Read the expected result
 	want, err := ioutil.ReadFile(expectedFilename)
 	if err != nil {
-		log.Fatal(err)
+		log.Fatal(fmt.Errorf("can't read expected %q: %w", outfile.Name(), err))
 	}
 
 	//	// Update got -> want
@@ -76,5 +76,4 @@ func testFormat(t *testing.T, domain, format string) {
 	if w, g := string(want), string(got); w != g {
 		t.Errorf("testFormat mismatch (-got +want):\n%s", diff.LineDiff(g, w))
 	}
-
 }

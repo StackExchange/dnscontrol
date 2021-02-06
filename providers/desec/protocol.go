@@ -14,7 +14,7 @@ import (
 const apiBase = "https://desec.io/api/v1"
 
 // Api layer for desec
-type api struct {
+type desecProvider struct {
 	domainIndex      map[string]uint32
 	nameserversNames []string
 	creds            struct {
@@ -59,7 +59,7 @@ type errorResponse struct {
 	Detail string `json:"detail"`
 }
 
-func (c *api) fetchDomainList() error {
+func (c *desecProvider) fetchDomainList() error {
 	c.domainIndex = map[string]uint32{}
 	var dr []domainObject
 	endpoint := "/domains/"
@@ -79,7 +79,7 @@ func (c *api) fetchDomainList() error {
 	return nil
 }
 
-func (c *api) getRecords(domain string) ([]resourceRecord, error) {
+func (c *desecProvider) getRecords(domain string) ([]resourceRecord, error) {
 	endpoint := "/domains/%s/rrsets/"
 	var rrs []rrResponse
 	var rrsNew []resourceRecord
@@ -105,7 +105,7 @@ func (c *api) getRecords(domain string) ([]resourceRecord, error) {
 	return rrsNew, nil
 }
 
-func (c *api) createDomain(domain string) error {
+func (c *desecProvider) createDomain(domain string) error {
 	endpoint := "/domains/"
 	pl := domainObject{Name: domain}
 	byt, _ := json.Marshal(pl)
@@ -125,7 +125,7 @@ func (c *api) createDomain(domain string) error {
 }
 
 //upsertRR will create or override the RRSet with the provided resource record.
-func (c *api) upsertRR(rr []resourceRecord, domain string) error {
+func (c *desecProvider) upsertRR(rr []resourceRecord, domain string) error {
 	endpoint := fmt.Sprintf("/domains/%s/rrsets/", domain)
 	byt, _ := json.Marshal(rr)
 	if _, err := c.post(endpoint, "PUT", byt); err != nil {
@@ -134,7 +134,7 @@ func (c *api) upsertRR(rr []resourceRecord, domain string) error {
 	return nil
 }
 
-func (c *api) deleteRR(domain, shortname, t string) error {
+func (c *desecProvider) deleteRR(domain, shortname, t string) error {
 	endpoint := fmt.Sprintf("/domains/%s/rrsets/%s/%s/", domain, shortname, t)
 	if _, err := c.get(endpoint, "DELETE"); err != nil {
 		return fmt.Errorf("failed delete rrset (deSEC): %v", err)
@@ -142,7 +142,7 @@ func (c *api) deleteRR(domain, shortname, t string) error {
 	return nil
 }
 
-func (c *api) get(endpoint, method string) ([]byte, error) {
+func (c *desecProvider) get(endpoint, method string) ([]byte, error) {
 	retrycnt := 0
 retry:
 	client := &http.Client{}
@@ -175,7 +175,7 @@ retry:
 	return bodyString, nil
 }
 
-func (c *api) post(endpoint, method string, payload []byte) ([]byte, error) {
+func (c *desecProvider) post(endpoint, method string, payload []byte) ([]byte, error) {
 	retrycnt := 0
 retry:
 	client := &http.Client{}

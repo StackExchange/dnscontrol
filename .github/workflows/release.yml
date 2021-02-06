@@ -1,0 +1,102 @@
+on:
+  release:
+    types: [published]
+
+name: release
+jobs:
+  release:
+    name: release
+    runs-on: ubuntu-latest
+    steps:
+
+    - name: Get release
+      id: get_release
+      uses: bruceadams/get-release@v1.2.2
+      env:
+        GITHUB_TOKEN: ${{ github.token }}
+
+    - name: Checkout repo
+      uses: actions/checkout@v2
+      with:
+        fetch-depth: 0
+
+    - name: Set up Go
+      uses: actions/setup-go@v2
+      with:
+        go-version: ^1.15
+
+    - name: Build binaries
+      run: go run build/build.go
+
+    - name: Get release from tag
+      run: echo ::set-output name=RELEASE_VERSION::$(echo ${GITHUB_REF:11})
+      id: versioner
+
+    - name: Create target directory
+      run: mkdir -p usr/bin
+
+    - name: Copy Linux version to dnscontrol
+      run: cp dnscontrol-Linux usr/bin/dnscontrol
+
+    - name: Bundle RPM
+      uses: bpicode/github-action-fpm@master
+      with:
+        fpm_args: 'usr/'
+        fpm_opts: '-n dnscontrol -t rpm -s dir -v ${{ steps.versioner.outputs.RELEASE_VERSION }}'
+
+    - name: Bundle DEB
+      uses: bpicode/github-action-fpm@master
+      with:
+        fpm_args: 'usr/'
+        fpm_opts: '-n dnscontrol -t deb -s dir -v ${{ steps.versioner.outputs.RELEASE_VERSION }}'
+
+    - name: Upload dnscontrol-Darwin
+      uses: actions/upload-release-asset@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        upload_url: ${{ steps.get_release.outputs.upload_url }} 
+        asset_path: ./dnscontrol-Darwin
+        asset_name: dnscontrol-Darwin
+        asset_content_type: application/octet-stream
+
+    - name: Upload dnscontrol-Linux
+      uses: actions/upload-release-asset@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        upload_url: ${{ steps.get_release.outputs.upload_url }} 
+        asset_path: ./dnscontrol-Linux
+        asset_name: dnscontrol-Linux
+        asset_content_type: application/octet-stream
+
+    - name: Upload dnscontrol.exe
+      uses: actions/upload-release-asset@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        upload_url: ${{ steps.get_release.outputs.upload_url }} 
+        asset_path: ./dnscontrol.exe
+        asset_name: dnscontrol.exe
+        asset_content_type: application/octet-stream
+
+    - name: Upload RPM
+      uses: actions/upload-release-asset@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        upload_url: ${{ steps.get_release.outputs.upload_url }} 
+        asset_path: dnscontrol-${{ steps.versioner.outputs.RELEASE_VERSION }}-1.x86_64.rpm
+        asset_name: dnscontrol-${{ steps.versioner.outputs.RELEASE_VERSION }}-1.x86_64.rpm
+        asset_content_type: application/x-rpm
+
+    - name: Upload DEB
+      uses: actions/upload-release-asset@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        upload_url: ${{ steps.get_release.outputs.upload_url }} 
+        asset_path: dnscontrol_${{ steps.versioner.outputs.RELEASE_VERSION }}_amd64.deb
+        asset_name: dnscontrol_${{ steps.versioner.outputs.RELEASE_VERSION }}_amd64.deb
+        asset_content_type: application/vnd.debian.binary-package
+

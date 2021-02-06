@@ -81,6 +81,7 @@ Maintainers of contributed providers:
 * `EXOSCALE` @pierre-emmanuelJ
 * `GANDI_V5` @TomOnTime
 * `HEDNS` @rblenkinsopp
+* `HETZNER` @das7pad
 * `HEXONET` @papakai
 * `HTTPNET` @juliusrickert
 * `INTERNETBS` @pragmaton
@@ -91,6 +92,7 @@ Maintainers of contributed providers:
 * `NS1` @captncraig
 * `OCTODNS` @TomOnTime
 * `OPENSRS` @pierre-emmanuelJ
+* `ORACLE` @kallsyms
 * `OVH` @masterzen
 * `POWERDNS` @jpbede
 * `SOFTLAYER`@jamielennox

@@ -1,0 +1,47 @@
+{
+  "dns_providers": [
+    {
+      "name": "Cloudflare",
+      "type": "CLOUDFLAREAPI"
+    }
+  ],
+  "domains": [
+    {
+      "dnsProviders": {
+        "Cloudflare": -1
+      },
+      "name": "foo.com",
+      "records": [
+        {
+          "name": "test1.foo.com.sub",
+          "subdomain": "sub",
+          "target": "10.2.3.1",
+          "type": "A"
+        },
+        {
+          "name": "test2.foo.com.sub",
+          "subdomain": "sub",
+          "target": "10.2.3.2",
+          "type": "A"
+        },
+        {
+          "name": "@",
+          "target": "test1.foo.com,https://goo.com/$1",
+          "type": "CF_REDIRECT"
+        },
+        {
+          "name": "@",
+          "target": "test2.foo.com,https://goo.com/$1",
+          "type": "CF_TEMP_REDIRECT"
+        }
+      ],
+      "registrar": "Third-Party"
+    }
+  ],
+  "registrars": [
+    {
+      "name": "Third-Party",
+      "type": "NONE"
+    }
+  ]
+}

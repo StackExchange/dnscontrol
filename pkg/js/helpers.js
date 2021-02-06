@@ -53,6 +53,7 @@ function NewDnsProvider(name, type, meta) {
 function newDomain(name, registrar) {
     return {
         name: name,
+        subdomain: '',
         registrar: registrar,
         meta: {},
         records: [],
@@ -102,12 +103,13 @@ function D(name, registrar) {
     conf.domain_names.push(name);
 }
 
-// DU(name): Update an already added DNS Domain with D().
+// D_EXTEND(name): Update a DNS Domain already added with D(), or subdomain thereof
 function D_EXTEND(name) {
     var domain = _getDomainObject(name);
     if (domain == null) {
         throw name + ' was not declared yet and therefore cannot be updated. Use D() before.';
     }
+    domain.obj.subdomain = name.substr(0, name.length-domain.obj.name.length - 1);
     for (var i = 0; i < defaultArgs.length; i++) {
         processDargs(defaultArgs[i], domain.obj);
     }
@@ -118,14 +120,27 @@ function D_EXTEND(name) {
     conf.domains[domain.id] = domain.obj; // let's overwrite the object.
 }
 
-// _getDomainObject(name): This is a small helper function to get the domain JS object returned.
+// _getDomainObject(name): This implements the domain matching
+// algorithm used by D_EXTEND(). Candidate matches are an exact match
+// of the domain's name, or if name is a proper subdomain of the
+// domain's name. The longest match is returned.
 function _getDomainObject(name) {
-    for(var i = 0; i < conf.domains.length; i++) {
-        if (conf.domains[i]['name'] == name) {
-            return {'id': i, 'obj': conf.domains[i]};
+    var domain = null;
+    var domainLen = 0;
+    for (var i = 0; i < conf.domains.length; i++) {
+        var thisName = conf.domains[i]["name"];
+        var desiredSuffix = "." + thisName;
+        var foundSuffix = name.substr(-desiredSuffix.length);
+        // If this is an exact match or the suffix matches...
+        if (name === thisName || foundSuffix === desiredSuffix) {
+            // If this match is a longer match than our current best match...
+            if (thisName.length > domainLen) {
+                domainLen = thisName.length;
+                domain = { id: i, obj: conf.domains[i] };
+            }
         }
     }
-    return null;
+    return domain;
 }
 
 // DEFAULTS provides a set of default arguments to apply to all future domains.
@@ -401,6 +416,12 @@ function isStringOrArray(x) {
     return _.isString(x) || _.isArray(x);
 }
 
+
+// AUTOSPLIT is a modifier that instructs the Go-level code to
+// split this TXT record's target into chunks of 255.
+var AUTOSPLIT = { txtSplitAlgorithm: 'multistring' }; // Create 255-byte chunks
+//var TXTMULTISPACE = { txtSplitAlgorithm: 'space' }; // Split on space [not implemented]
+
 // TXT(name,target, recordModifiers...)
 var TXT = recordBuilder('TXT', {
     args: [
@@ -660,6 +681,22 @@ function recordBuilder(type, opts) {
             opts.applyModifier(record, modifiers);
             opts.transform(record, parsedArgs, modifiers);
 
+            // Handle D_EXTEND() with subdomains.
+            if (d.subdomain &&
+                record.type != 'CF_REDIRECT' &&
+                record.type != 'CF_TEMP_REDIRECT') {
+                fqdn = [d.subdomain, d.name].join(".")
+
+                record.subdomain = d.subdomain;
+                if (record.name == '@') {
+                    record.subdomain = d.subdomain;
+                    record.name = d.subdomain;
+                } else if (fqdn != record.name && record.type != 'PTR') {
+                    record.subdomain = d.subdomain;
+                    record.name += '.' + d.subdomain;
+                }
+            }
+
             d.records.push(record);
             return record;
         };
@@ -815,10 +852,12 @@ function SPF_BUILDER(value) {
         p.flatten = value.flatten.join(',');
         // Only add the raw spf record if it isn't an empty string
         if (value.raw !== '') {
+            rp = {};
+            rp.txtSplitAlgorithm = 'multistring'; // Split the target if needed.
             if (value.ttl) {
-                r.push(TXT(value.raw, rawspf, TTL(value.ttl)));
+                r.push(TXT(value.raw, rawspf, rp, TTL(value.ttl)));
             } else {
-                r.push(TXT(value.raw, rawspf));
+                r.push(TXT(value.raw, rawspf, rp));
             }
         }
     }
@@ -835,6 +874,8 @@ function SPF_BUILDER(value) {
     if (value.txtMaxSize) {
         p.txtMaxSize = value.txtMaxSize;
     }
+
+    p.txtSplitAlgorithm = 'multistring'; // Split the target if needed.
 
     // Generate a TXT record with the metaparameters.
     if (value.ttl) {
@@ -911,4 +952,17 @@ function require_glob() {
         require(files[i]);
     }
     return files
+}
+
+// Set default values for CLI variables
+function CLI_DEFAULTS(defaults) {
+    for (var key in defaults) {
+        if (typeof this[key] === "undefined") {
+            this[key] = defaults[key]
+        }
+    }
+}
+
+function FETCH() {
+    return fetch.apply(null, arguments).catch(PANIC);
 }

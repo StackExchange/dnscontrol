@@ -9,7 +9,7 @@ import (
 )
 
 // This is the struct that matches either (or both) of the Registrar and/or DNSProvider interfaces:
-type adProvider struct {
+type activedirProvider struct {
 	adServer string
 	fake     bool
 	psOut    string
@@ -34,6 +34,7 @@ func init() {
 }
 
 func newDNS(config map[string]string, metadata json.RawMessage) (providers.DNSServiceProvider, error) {
+	fmt.Printf("WARNING: ACTIVEDIRECTORY_PS provider is being replaced by MSDNS. Please convert.  Details in https://stackexchange.github.io/dnscontrol/providers/msdns\n")
 
 	fake := false
 	if fVal := config["fakeps"]; fVal == "true" {
@@ -50,7 +51,7 @@ func newDNS(config map[string]string, metadata json.RawMessage) (providers.DNSSe
 		psLog = "powershell.log"
 	}
 
-	p := &adProvider{psLog: psLog, psOut: psOut, fake: fake}
+	p := &activedirProvider{psLog: psLog, psOut: psOut, fake: fake}
 	if fake {
 		return p, nil
 	}

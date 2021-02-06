@@ -9,16 +9,25 @@ jsId: CLOUDNS
 ## Configuration
 In your credentials file, you must provide your [Api user ID and password](https://asia.cloudns.net/wiki/article/42/). 
 
-Current version of provider doesn't support `sub-auth-id` or  `sub-auth-user`. 
+Current version of provider doesn't support `sub-auth-user`. 
 
 {% highlight json %}
 {
   "cloudns": {
     "auth-id": "12345",
+    "sub-auth-id": "12345",
     "auth-password": "your-password"
   }
 }
 {% endhighlight %}
+
+## Records
+
+ClouDNS does support DS Record on subdomains (not the apex domain itself).
+
+ClouDNS requires NS records exist for any DS records. No other records for
+the same label may exist (A, MX, TXT, etc.). If DNSControl is adding NS and
+DS records in the same update, the NS records will be inserted first.
 
 ## Metadata
 This provider does not recognize any special metadata fields unique to ClouDNS.

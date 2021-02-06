@@ -2,7 +2,7 @@
 name: Netcup
 title: Netcup Provider
 layout: default
-jsId: Netcup
+jsId: NETCUP
 ---
 # Netcup Provider
 

@@ -4,6 +4,14 @@ layout: default
 jsId: ACTIVEDIRECTORY_PS
 title: ActiveDirectory_PS Provider
 ---
+
+# WARNING:
+
+WARNING: This provider is deprecated and will eventually be removed.
+Please switch to MSDNS. It is more modern and reliable.  The
+`creds.json` fields changed names; otherwise it should be an
+uneventful upgrade.
+
 # ActiveDirectory_PS Provider
 This provider updates an Microsoft Active Directory server DNS server. It interacts with AD via PowerShell commands that are generated and executed on the local machine. This means that DNSControl must be run on a Windows host. This driver automatically deactivates itself when run on non-Windows systems.
 
@@ -17,7 +25,7 @@ To activate this mode, set `"fakeps":"true"` inside your credentials file for th
 
 ## Configuration
 
-The `ActiveDirectory_PS` provider reads an `ADServer` setting from `creds.json` to know the name of the ActiveDirectory DNS Server to update.  
+The `ActiveDirectory_PS` provider reads an `ADServer` setting from `creds.json` to know the name of the ActiveDirectory DNS Server to update.
 
 {% highlight javascript %}
 {

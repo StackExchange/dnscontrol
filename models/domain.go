@@ -9,6 +9,8 @@ import (
 // DomainConfig describes a DNS domain (tecnically a  DNS zone).
 type DomainConfig struct {
 	Name             string         `json:"name"` // NO trailing "."
+	Tag              string         `json:"-"`    // split horizon tag
+	UniqueName       string         `json:"-"`    // .Name + "!" + .Tag
 	RegistrarName    string         `json:"registrar"`
 	DNSProviderNames map[string]int `json:"dnsProviders"`
 
@@ -67,26 +69,28 @@ func (dc *DomainConfig) Filter(f func(r *RecordConfig) bool) {
 // - Target (CNAME and MX only)
 func (dc *DomainConfig) Punycode() error {
 	for _, rec := range dc.Records {
+		// Update the label:
 		t, err := idna.ToASCII(rec.GetLabelFQDN())
 		if err != nil {
 			return err
 		}
 		rec.SetLabelFromFQDN(t, dc.Name)
+
+		// Set the target:
 		switch rec.Type { // #rtype_variations
 		case "ALIAS", "MX", "NS", "CNAME", "PTR", "SRV", "URL", "URL301", "FRAME", "R53_ALIAS":
 			// These rtypes are hostnames, therefore need to be converted (unlike, for example, an AAAA record)
 			t, err := idna.ToASCII(rec.GetTargetField())
-			rec.SetTarget(t)
 			if err != nil {
 				return err
 			}
+			rec.SetTarget(t)
+		case "CF_REDIRECT", "CF_TEMP_REDIRECT":
+			rec.SetTarget(rec.GetTargetField())
 		case "A", "AAAA", "CAA", "DS", "NAPTR", "SOA", "SSHFP", "TXT", "TLSA", "AZURE_ALIAS":
 			// Nothing to do.
 		default:
-			msg := fmt.Sprintf("Punycode rtype %v unimplemented", rec.Type)
-			panic(msg)
-			// We panic so that we quickly find any switch statements
-			// that have not been updated for a new RR type.
+			return fmt.Errorf("Punycode rtype %v unimplemented", rec.Type)
 		}
 	}
 	return nil

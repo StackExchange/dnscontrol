@@ -13,7 +13,7 @@ import (
 var nsRegex = regexp.MustCompile(`ns([1-4])[a-z]{3}\.name\.com`)
 
 // GetNameservers gets the nameservers set on a domain.
-func (n *NameCom) GetNameservers(domain string) ([]*models.Nameserver, error) {
+func (n *namedotcomProvider) GetNameservers(domain string) ([]*models.Nameserver, error) {
 	// This is an interesting edge case. Name.com expects you to SET the nameservers to ns[1-4].name.com,
 	// but it will internally set it to ns1xyz.name.com, where xyz is a uniqueish 3 letters.
 	// In order to avoid endless loops, we will use the unique nameservers if present, or else the generic ones if not.
@@ -31,7 +31,7 @@ func (n *NameCom) GetNameservers(domain string) ([]*models.Nameserver, error) {
 	return models.ToNameservers(toUse)
 }
 
-func (n *NameCom) getNameserversRaw(domain string) ([]string, error) {
+func (n *namedotcomProvider) getNameserversRaw(domain string) ([]string, error) {
 	request := &namecom.GetDomainRequest{
 		DomainName: domain,
 	}
@@ -46,7 +46,7 @@ func (n *NameCom) getNameserversRaw(domain string) ([]string, error) {
 }
 
 // GetRegistrarCorrections gathers corrections that would being n to match dc.
-func (n *NameCom) GetRegistrarCorrections(dc *models.DomainConfig) ([]*models.Correction, error) {
+func (n *namedotcomProvider) GetRegistrarCorrections(dc *models.DomainConfig) ([]*models.Correction, error) {
 	nss, err := n.getNameserversRaw(dc.Name)
 	if err != nil {
 		return nil, err
@@ -70,7 +70,7 @@ func (n *NameCom) GetRegistrarCorrections(dc *models.DomainConfig) ([]*models.Co
 	return nil, nil
 }
 
-func (n *NameCom) updateNameservers(ns []string, domain string) func() error {
+func (n *namedotcomProvider) updateNameservers(ns []string, domain string) func() error {
 	return func() error {
 		request := &namecom.SetNameserversRequest{
 			DomainName:  domain,

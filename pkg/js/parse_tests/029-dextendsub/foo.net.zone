@@ -1,0 +1,7 @@
+$TTL 300
+@                IN A     10.1.1.1
+bar              IN A     10.3.3.3
+www.bar          IN A     10.4.4.4
+a.long.path.of.sub.domains IN A 10.25.25.25
+www.a.long.path.of.sub.domains IN A 10.26.26.26
+www              IN A     10.2.2.2

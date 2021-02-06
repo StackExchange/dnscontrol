@@ -1,0 +1,76 @@
+{
+  "dns_providers": [
+    {
+      "name": "otherconfig",
+      "type": "CLOUDFLAREAPI"
+    },
+    {
+      "name": "Cloudflare",
+      "type": "CLOUDFLAREAPI"
+    },
+    {
+      "name": "bind",
+      "type": "BIND"
+    }
+  ],
+  "domains": [
+    {
+      "dnsProviders": {
+        "otherconfig": -1
+      },
+      "name": "example.com",
+      "records": [
+        {
+          "name": "main",
+          "target": "3.3.3.3",
+          "type": "A"
+        },
+        {
+          "name": "www",
+          "target": "33.33.33.33",
+          "type": "A"
+        }
+      ],
+      "registrar": "Third-Party"
+    },
+    {
+      "dnsProviders": {
+        "Cloudflare": -1
+      },
+      "name": "example.com!inside",
+      "records": [
+        {
+          "name": "main",
+          "target": "1.1.1.1",
+          "type": "A"
+        },
+        {
+          "name": "main",
+          "target": "11.11.11.11",
+          "type": "A"
+        }
+      ],
+      "registrar": "Third-Party"
+    },
+    {
+      "dnsProviders": {
+        "bind": -1
+      },
+      "name": "example.com!outside",
+      "records": [
+        {
+          "name": "main",
+          "target": "8.8.8.8",
+          "type": "A"
+        }
+      ],
+      "registrar": "Third-Party"
+    }
+  ],
+  "registrars": [
+    {
+      "name": "Third-Party",
+      "type": "NONE"
+    }
+  ]
+}
