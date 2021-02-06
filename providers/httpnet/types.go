@@ -20,6 +20,7 @@ type request struct {
 	OwnerAccountID string `json:"ownerAccountId,omitempty"`
 	Filter         filter `json:"filter,omitempty"`
 	Limit          uint   `json:"limit,omitempty"`
+	Page           uint   `json:"page,omitempty"`
 
 	// Update Zone
 	ZoneConfig      *zoneConfig `json:"zoneConfig"`
@@ -96,6 +97,10 @@ type apiError struct {
 type responseData struct {
 	Data json.RawMessage `json:"data"`
 	Type string          `json:"type"`
+
+	Limit      uint `json:"limit"`
+	Page       uint `json:"page"`
+	TotalPages uint `json:"totalPages"`
 }
 
 func (r *record) nativeToRecord(domain string) *models.RecordConfig {

@@ -77,6 +77,10 @@
     "domain": "dnscontrol.com",
     "ipaddress": "$HEXONET_IP"
   },
+  "HTTPNET": {
+    "authToken": "$HTTPNET_AUTHTOKEN",
+    "domain": "$HTTPNET_DOMAIN"
+  },
   "LINODE": {
     "domain": "$LINODE_DOMAIN",
     "token": "$LINODE_TOKEN"

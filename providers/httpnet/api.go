@@ -134,23 +134,34 @@ func (hp *httpnetProvider) getRecords(domain string) ([]*record, error) {
 		return nil, err
 	}
 
-	params := request{
-		Filter: filter{
-			Field: "ZoneConfigId",
-			Value: zc.ID,
-		},
-		Limit: 1000,
-	}
-
-	// TODO: Support more than 1000 records
-	resp, err := hp.get("dns", "recordsFind", params)
-	if err != nil {
-		return nil, err
-	}
-
 	records := []*record{}
-	if err := json.Unmarshal(resp.Data, &records); err != nil {
-		return nil, err
+	page := uint(1)
+	for {
+		params := request{
+			Filter: filter{
+				Field: "ZoneConfigId",
+				Value: zc.ID,
+			},
+			Limit: 1000,
+			Page:  page,
+		}
+
+		resp, err := hp.get("dns", "recordsFind", params)
+		if err != nil {
+			return nil, err
+		}
+
+		newRecords := []*record{}
+		if err := json.Unmarshal(resp.Data, &newRecords); err != nil {
+			return nil, err
+		}
+
+		records = append(records, newRecords...)
+
+		if page >= resp.TotalPages {
+			break
+		}
+		page++
 	}
 	return records, nil
 }
