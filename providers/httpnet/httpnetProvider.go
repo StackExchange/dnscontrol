@@ -14,21 +14,22 @@ import (
 var defaultNameservers = []string{"ns1.routing.net", "ns2.routing.net", "ns3.routing.net"}
 
 var features = providers.DocumentationNotes{
+	providers.CanAutoDNSSEC:          providers.Unimplemented("Supported by http.net but not implemented yet."),
+	providers.CanGetZones:            providers.Can(),
 	providers.CanUseAlias:            providers.Can(),
+	providers.CanUseAzureAlias:       providers.Cannot(),
 	providers.CanUseCAA:              providers.Can(),
 	providers.CanUseDS:               providers.Can(),
-	providers.CanUsePTR:              providers.Can(),
 	providers.CanUseNAPTR:            providers.Cannot(),
+	providers.CanUsePTR:              providers.Can(),
+	providers.CanUseRoute53Alias:     providers.Cannot(),
 	providers.CanUseSRV:              providers.Can(),
 	providers.CanUseSSHFP:            providers.Can(),
 	providers.CanUseTLSA:             providers.Can(),
 	providers.CanUseTXTMulti:         providers.Can(),
-	providers.CanAutoDNSSEC:          providers.Unimplemented("Supported by http.net but not implemented yet."),
-	providers.DocOfficiallySupported: providers.Cannot(),
-	providers.DocDualHost:            providers.Can(),
 	providers.DocCreateDomains:       providers.Can(),
-	providers.CanGetZones:            providers.Can(),
-	providers.CanUseAzureAlias:       providers.Cannot(),
+	providers.DocDualHost:            providers.Can(),
+	providers.DocOfficiallySupported: providers.Cannot(),
 }
 
 func init() {
