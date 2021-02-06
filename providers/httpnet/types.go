@@ -148,7 +148,7 @@ func recordToNative(rc *models.RecordConfig) *record {
 	}
 
 	switch rc.Type { // #rtype_variations
-	case "A", "AAAA", "ALIAS", "CAA", "CNAME", "DNSKEY", "DS", "NS", "NSEC", "NSEC3", "NSEC3PARAM", "PTR", "RRSIG", "TSLA", "TXT":
+	case "A", "AAAA", "ALIAS", "CAA", "CNAME", "DNSKEY", "DS", "NS", "NSEC", "NSEC3", "NSEC3PARAM", "PTR", "RRSIG", "SSHFP", "TSLA", "TXT":
 		// Nothing special.
 	case "MX":
 		record.Priority = rc.MxPreference
