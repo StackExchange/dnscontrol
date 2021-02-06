@@ -36,19 +36,19 @@ func init() {
 	providers.RegisterDomainServiceProviderType("HTTPNET", newHttpnetDsp, features)
 }
 
-func newHttpnet(m map[string]string) (*api, error) {
+func newHttpnet(m map[string]string) (*httpnetProvider, error) {
 	authToken, ownerAccountID := m["authToken"], m["ownerAccountID"]
 
 	if authToken == "" {
 		return nil, fmt.Errorf("http.net: authtoken must be provided")
 	}
 
-	api := &api{
+	hp := &httpnetProvider{
 		authToken:      authToken,
 		ownerAccountID: ownerAccountID,
 	}
 
-	return api, nil
+	return hp, nil
 }
 
 func newHttpnetDsp(m map[string]string, raw json.RawMessage) (providers.DNSServiceProvider, error) {
@@ -59,12 +59,12 @@ func newHttpnetReg(m map[string]string) (providers.Registrar, error) {
 	return newHttpnet(m)
 }
 
-func (api *api) GetNameservers(domain string) ([]*models.Nameserver, error) {
+func (hp *httpnetProvider) GetNameservers(domain string) ([]*models.Nameserver, error) {
 	return models.ToNameservers(defaultNameservers)
 }
 
-func (api *api) GetZoneRecords(domain string) (models.Records, error) {
-	src, err := api.getRecords(domain)
+func (hp *httpnetProvider) GetZoneRecords(domain string) (models.Records, error) {
+	src, err := hp.getRecords(domain)
 	if err != nil {
 		return nil, err
 	}
@@ -80,7 +80,7 @@ func (api *api) GetZoneRecords(domain string) (models.Records, error) {
 	return records, nil
 }
 
-func (api *api) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Correction, error) {
+func (hp *httpnetProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Correction, error) {
 	err := dc.Punycode()
 	if err != nil {
 		return nil, err
@@ -96,7 +96,7 @@ func (api *api) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Correct
 		}
 	}
 
-	records, err := api.GetZoneRecords(dc.Name)
+	records, err := hp.GetZoneRecords(dc.Name)
 	if err != nil {
 		return nil, err
 	}
@@ -125,7 +125,7 @@ func (api *api) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Correct
 		{
 			Msg: fmt.Sprintf("\n%s", strings.Join(msg, "\n")),
 			F: func() error {
-				return api.updateRecords(dc.Name, create, del, mod)
+				return hp.updateRecords(dc.Name, create, del, mod)
 			},
 		},
 	}
@@ -133,13 +133,13 @@ func (api *api) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Correct
 	return corrections, nil
 }
 
-func (api *api) GetRegistrarCorrections(dc *models.DomainConfig) ([]*models.Correction, error) {
+func (hp *httpnetProvider) GetRegistrarCorrections(dc *models.DomainConfig) ([]*models.Correction, error) {
 	err := dc.Punycode()
 	if err != nil {
 		return nil, err
 	}
 
-	found, err := api.getNameservers(dc.Name)
+	found, err := hp.getNameservers(dc.Name)
 	if err != nil {
 		return nil, fmt.Errorf("error getting nameservers: %v", err)
 	}
@@ -158,7 +158,7 @@ func (api *api) GetRegistrarCorrections(dc *models.DomainConfig) ([]*models.Corr
 		return []*models.Correction{
 			{
 				Msg: fmt.Sprintf("Update nameservers %s -> %s", foundNameservers, expectedNameservers),
-				F:   api.updateNameservers(expected, dc.Name),
+				F:   hp.updateNameservers(expected, dc.Name),
 			},
 		}, nil
 	}
@@ -168,10 +168,10 @@ func (api *api) GetRegistrarCorrections(dc *models.DomainConfig) ([]*models.Corr
 	// TODO: Handle AutoDNSSEC
 }
 
-func (api *api) EnsureDomainExists(domain string) error {
-	_, err := api.getZoneConfig(domain)
+func (hp *httpnetProvider) EnsureDomainExists(domain string) error {
+	_, err := hp.getZoneConfig(domain)
 	if err == errZoneNotFound {
-		if err := api.createZone(domain); err != nil {
+		if err := hp.createZone(domain); err != nil {
 			return err
 		}
 	}

@@ -13,13 +13,13 @@ import (
 
 const endpoint = "https://partner.routing.net/api/%s/v1/json/%s"
 
-type api struct {
+type httpnetProvider struct {
 	authToken      string
 	ownerAccountID string
 }
 
-func (api *api) getDomainConfig(domain string) (*domainConfig, error) {
-	zc, err := api.getZoneConfig(domain)
+func (hp *httpnetProvider) getDomainConfig(domain string) (*domainConfig, error) {
+	zc, err := hp.getZoneConfig(domain)
 	if err != nil {
 		return nil, fmt.Errorf("error getting zone config: %v", err)
 	}
@@ -31,7 +31,7 @@ func (api *api) getDomainConfig(domain string) (*domainConfig, error) {
 		},
 	}
 
-	resp, err := api.get("domain", "domainsFind", params)
+	resp, err := hp.get("domain", "domainsFind", params)
 	if err != nil {
 		return nil, fmt.Errorf("error getting domain info: %v", err)
 	}
@@ -48,7 +48,7 @@ func (api *api) getDomainConfig(domain string) (*domainConfig, error) {
 	return domainConf[0], nil
 }
 
-func (api *api) createZone(domain string) error {
+func (hp *httpnetProvider) createZone(domain string) error {
 	t, err := idna.ToASCII(domain)
 	if err != nil {
 		return err
@@ -72,20 +72,20 @@ func (api *api) createZone(domain string) error {
 		Records: records,
 	}
 
-	_, err = api.get("dns", "zoneCreate", params)
+	_, err = hp.get("dns", "zoneCreate", params)
 	if err != nil {
 		return fmt.Errorf("error creating zone: %v", err)
 	}
 	return nil
 }
 
-func (api *api) getNameservers(domain string) ([]string, error) {
+func (hp *httpnetProvider) getNameservers(domain string) ([]string, error) {
 	t, err := idna.ToASCII(domain)
 	if err != nil {
 		return nil, err
 	}
 
-	domainConf, err := api.getDomainConfig(t)
+	domainConf, err := hp.getDomainConfig(t)
 	if err != nil {
 		return nil, fmt.Errorf("error getting domain config: %v", err)
 	}
@@ -103,9 +103,9 @@ func (api *api) getNameservers(domain string) ([]string, error) {
 	return nss, nil
 }
 
-func (api *api) updateNameservers(nss []string, domain string) func() error {
+func (hp *httpnetProvider) updateNameservers(nss []string, domain string) func() error {
 	return func() error {
-		domainConf, err := api.getDomainConfig(domain)
+		domainConf, err := hp.getDomainConfig(domain)
 		if err != nil {
 			return err
 		}
@@ -121,15 +121,15 @@ func (api *api) updateNameservers(nss []string, domain string) func() error {
 			Domain: domainConf,
 		}
 
-		if _, err := api.get("domain", "domainUpdate", params); err != nil {
+		if _, err := hp.get("domain", "domainUpdate", params); err != nil {
 			return err
 		}
 		return nil
 	}
 }
 
-func (api *api) getRecords(domain string) ([]*record, error) {
-	zc, err := api.getZoneConfig(domain)
+func (hp *httpnetProvider) getRecords(domain string) ([]*record, error) {
+	zc, err := hp.getZoneConfig(domain)
 	if err != nil {
 		return nil, err
 	}
@@ -143,7 +143,7 @@ func (api *api) getRecords(domain string) ([]*record, error) {
 	}
 
 	// TODO: Support more than 1000 records
-	resp, err := api.get("dns", "recordsFind", params)
+	resp, err := hp.get("dns", "recordsFind", params)
 	if err != nil {
 		return nil, err
 	}
@@ -155,8 +155,8 @@ func (api *api) getRecords(domain string) ([]*record, error) {
 	return records, nil
 }
 
-func (api *api) updateRecords(domain string, create, del, mod diff.Changeset) error {
-	zc, err := api.getZoneConfig(domain)
+func (hp *httpnetProvider) updateRecords(domain string, create, del, mod diff.Changeset) error {
+	zc, err := hp.getZoneConfig(domain)
 	if err != nil {
 		return err
 	}
@@ -188,14 +188,14 @@ func (api *api) updateRecords(domain string, create, del, mod diff.Changeset) er
 		RecordsToModify: toModify,
 	}
 
-	_, err = api.get("dns", "zoneUpdate", params)
+	_, err = hp.get("dns", "zoneUpdate", params)
 	if err != nil {
 		return err
 	}
 	return nil
 }
 
-func (api *api) getZoneConfig(domain string) (*zoneConfig, error) {
+func (hp *httpnetProvider) getZoneConfig(domain string) (*zoneConfig, error) {
 	t, err := idna.ToASCII(domain)
 	if err != nil {
 		return nil, err
@@ -208,7 +208,7 @@ func (api *api) getZoneConfig(domain string) (*zoneConfig, error) {
 		},
 	}
 
-	resp, err := api.get("dns", "zoneConfigsFind", params)
+	resp, err := hp.get("dns", "zoneConfigsFind", params)
 	if err != nil {
 		return nil, fmt.Errorf("could not get zone config: %v", err)
 	}
@@ -225,9 +225,9 @@ func (api *api) getZoneConfig(domain string) (*zoneConfig, error) {
 	return zc[0], nil
 }
 
-func (api *api) get(service, method string, params request) (*responseData, error) {
-	params.AuthToken = api.authToken
-	params.OwnerAccountID = api.ownerAccountID
+func (hp *httpnetProvider) get(service, method string, params request) (*responseData, error) {
+	params.AuthToken = hp.authToken
+	params.OwnerAccountID = hp.ownerAccountID
 	reqBody, err := json.Marshal(params)
 	if err != nil {
 		return nil, fmt.Errorf("could not marshal request body: %w", err)
