@@ -873,6 +873,7 @@ func makeTests(t *testing.T) []*TestGroup {
 
 		testgroup("NAPTR",
 			requires(providers.CanUseNAPTR),
+			not("MSDNS"),
 			tc("NAPTR record", naptr("test", 100, 10, "U", "E2U+sip", "!^.*$!sip:customer-service@example.com!", "example.foo.com.")),
 			tc("NAPTR second record", naptr("test", 102, 10, "U", "E2U+email", "!^.*$!mailto:information@example.com!", "example.foo.com.")),
 			tc("NAPTR delete record", naptr("test", 100, 10, "U", "E2U+email", "!^.*$!mailto:information@example.com!", "example.foo.com.")),
