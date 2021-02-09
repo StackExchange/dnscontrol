@@ -8,6 +8,11 @@ if ($SHA -eq ""){
 }
 
 
+<<<<<<< HEAD
+=======
+
+
+>>>>>>> 7ddb9e6 (CRLF)
 $PKG = "github.com/StackExchange/dnscontrol"
 $DATE = [int][double]::Parse((Get-Date -UFormat %s))
 $FLAGS="-mod=readonly -s -w -X main.SHA=$SHA -X main.BuildTime=$DATE"
