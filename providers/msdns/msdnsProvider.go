@@ -87,6 +87,7 @@ func (client *msdnsProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*m
 func (client *msdnsProvider) GetZoneRecords(domain string) (models.Records, error) {
 
 	// Get the existing DNS records in native format.
+	fmt.Printf("DEBUG: DNSSERVER = %q\n", client.dnsserver)
 	nativeExistingRecords, err := client.shell.GetDNSZoneRecords(client.dnsserver, domain)
 	if err != nil {
 		return nil, err
