@@ -21,7 +21,7 @@ go version
 
 ## Step 2. Create a new release branch
 
-From the "master" branch, run `bin/bin/make-release.sh v1.2.3` where
+From the "master" branch, run `bin/make-release.sh v1.2.3` where
 "v1.2.3" should be the release version.
 
 This will do a few things.
@@ -45,9 +45,10 @@ find * -name \*.bak -delete
 
 ## Step 3. Write the release notes.
 
-The release notes that you write will be used in a few places.
-
 draft-notes.txt is just a draft and needs considerable editing.
+
+Once complete, the contents of this file will be used in multiple
+places (release notes, email announcements, etc.)
 
 Entries in the bullet list should be phrased in the positive: "Feature
 FOO now does BAR".  This is often the opposite of the related issue,
@@ -58,11 +59,8 @@ If there was no issue, create one and close it.
 
 Sort the list most important/exciting changes earlier in the list.
 
-Put the "[BREAKING CHANGE]" on any breaking change.
-
 Items related to a specific provier should begin with the all-caps
 name of the provider, such as "ROUTE53: Added support for sandwiches (#100)"
-
 
 See [https://github.com/StackExchange/dnscontrol/releases for examples](https://github.com/StackExchange/dnscontrol/releases) for recent release notes and copy that style.
 
@@ -106,13 +104,23 @@ Fill in the text box with the release notes written above.
 
 ## Step 5. Merge the release.
 
+Verify that the automated tests passed. If not, fix the problems
+before you continue.
+
+This is also an opportunity to update any dependencies (go modules).
+See the last section for commands that make that possible. Only
+update modules related to the providers in the automated testing
+system.  When those tests pass, wait for the Github Actions to
+complete and verify the tests all passed.
+
 Merge the PR into Master.
 
 ## Step 6. Publish the release
 
 a. Publish the release.
 
-Make sure the "This is a pre-release" checkbox is UNchecked. Then click "Publish Release".
+* Make sure the "This is a pre-release" checkbox is UNchecked. 
+* Click "Publish Release".
 
 b. Wait for workflow to complete
 
@@ -143,7 +151,7 @@ it.  [Click here to join](https://groups.google.com/forum/#!forum/dnscontrol-dis
 Mention on [https://gitter.im/dnscontrol/Lobby](https://gitter.im/dnscontrol/Lobby) that the new release has shipped.
 
 ```
-ANNOUNCEMENT: dnscontrol $VERSION has been released! https://github.com/StackExchange/dnscontrol/releases/tag/v$VERSION
+ANNOUNCEMENT: dnscontrol v$VERSION has been released! https://github.com/StackExchange/dnscontrol/releases/tag/v$VERSION
 ```
 
 

@@ -1,6 +1,7 @@
 package main
 
 import (
+	"encoding/json"
 	"flag"
 	"fmt"
 	"os"
@@ -12,6 +13,7 @@ import (
 
 	"github.com/StackExchange/dnscontrol/v3/models"
 	"github.com/StackExchange/dnscontrol/v3/pkg/nameservers"
+	"github.com/StackExchange/dnscontrol/v3/pkg/normalize"
 	"github.com/StackExchange/dnscontrol/v3/providers"
 	_ "github.com/StackExchange/dnscontrol/v3/providers/_all"
 	"github.com/StackExchange/dnscontrol/v3/providers/config"
@@ -41,7 +43,18 @@ func getProvider(t *testing.T) (providers.DNSServiceProvider, string, map[int]bo
 		if *providerToRun != name {
 			continue
 		}
-		provider, err := providers.CreateDNSProvider(name, cfg, nil)
+
+		var metadata json.RawMessage
+		// CLOUDFLAREAPI tests related to CF_REDIRECT/CF_TEMP_REDIRECT
+		// requires metadata to enable this feature.
+		// In hindsight, I have no idea why this metadata flag is required to
+		// use this feature. Maybe because we didn't have the capabilities
+		// feature at the time?
+		if name == "CLOUDFLAREAPI" {
+			metadata = []byte(`{ "manage_redirects": true }`)
+		}
+
+		provider, err := providers.CreateDNSProvider(name, cfg, metadata)
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -54,8 +67,10 @@ func getProvider(t *testing.T) (providers.DNSServiceProvider, string, map[int]bo
 				fails[i] = true
 			}
 		}
+
 		return provider, cfg["domain"], fails, cfg
 	}
+
 	t.Fatalf("Provider %s not found", *providerToRun)
 	return nil, "", nil, nil
 }
@@ -79,6 +94,8 @@ func getDomainConfigWithNameservers(t *testing.T, prv providers.DNSServiceProvid
 	dc := &models.DomainConfig{
 		Name: domainName,
 	}
+	normalize.UpdateNameSplitHorizon(dc)
+
 	// fix up nameservers
 	ns, err := prv.GetNameservers(domainName)
 	if err != nil {
@@ -240,6 +257,7 @@ func runTests(t *testing.T, prv providers.DNSServiceProvider, domainName string,
 		}
 
 		// Run the tests.
+
 		for _, tst := range group.tests {
 			makeChanges(t, prv, dc, tst, fmt.Sprintf("%02d:%s", gIdx, group.Desc), true, origConfig)
 			if t.Failed() {
@@ -355,6 +373,18 @@ func azureAlias(name, aliasType, target string) *rec {
 	r.AzureAlias = map[string]string{
 		"type": aliasType,
 	}
+	return r
+}
+
+func cfRedir(pattern, target string) *rec {
+	t := fmt.Sprintf("%s,%s", pattern, target)
+	r := makeRec("@", t, "CF_REDIRECT")
+	return r
+}
+
+func cfRedirTemp(pattern, target string) *rec {
+	t := fmt.Sprintf("%s,%s", pattern, target)
+	r := makeRec("@", t, "CF_TEMP_REDIRECT")
 	return r
 }
 
@@ -676,7 +706,7 @@ func makeTests(t *testing.T) []*TestGroup {
 			// Netcup: NS records not currently supported.
 			tc("NS for subdomain", ns("xyz", "ns2.foo.com.")),
 			tc("Dual NS for subdomain", ns("xyz", "ns2.foo.com."), ns("xyz", "ns1.foo.com.")),
-			tc("NS Record pointing to @", ns("foo", "**current-domain**")),
+			tc("NS Record pointing to @", a("@", "1.2.3.4"), ns("foo", "**current-domain**")),
 		),
 
 		testgroup("IGNORE_NAME function",
@@ -715,14 +745,15 @@ func makeTests(t *testing.T) []*TestGroup {
 
 		testgroup("single TXT with single-quote",
 			not(
-				"INWX",  // Bug in the API prevents this.
-				"MSDNS", // TODO(tlim): Should be easy to implement.
+				"INWX",    // Bug in the API prevents this.
+				"MSDNS",   // TODO(tlim): Should be easy to implement.
+				"CLOUDNS", // support txt("foo", "blah'blah") but does not support txt("foo","blah`blah")
 			),
 			tc("Create TXT with single-quote", txt("foo", "blah`blah")),
 		),
 
 		testgroup("ws TXT",
-			not("CLOUDFLAREAPI", "HEXONET", "INWX", "NAMEDOTCOM"),
+			not("CLOUDFLAREAPI", "HEXONET", "INWX", "NAMEDOTCOM", "CLOUDNS"),
 			// These providers strip whitespace at the end of TXT records.
 			// TODO(tal): Add a check for this in normalize/validate.go
 			tc("Change a TXT with ws at end", txt("foo", "with space at end  ")),
@@ -735,6 +766,7 @@ func makeTests(t *testing.T) []*TestGroup {
 				"INWX",    // Not supported.
 				"MSDNS",   // Not supported.
 				"NETCUP",  // Not supported.
+				"CLOUDNS", // Not supported.
 			),
 			tc("TXT with empty str", txt("foo1", "")),
 			// https://github.com/StackExchange/dnscontrol/issues/598
@@ -767,9 +799,8 @@ func makeTests(t *testing.T) []*TestGroup {
 		),
 
 		testgroup("IDNA",
-			not("SOFTLAYER", "CLOUDFLAREAPI"),
+			not("SOFTLAYER"),
 			// SOFTLAYER: fails at direct internationalization, punycode works, of course.
-			// CLOUDFLAREAPI: fails. Needs to be debugged.
 			tc("Internationalized name", a("ööö", "1.2.3.4")),
 			tc("Change IDN", a("ööö", "2.2.2.2")),
 			tc("Internationalized CNAME Target", cname("a", "ööö.com.")),
@@ -906,6 +937,7 @@ func makeTests(t *testing.T) []*TestGroup {
 		),
 
 		testgroup("TXTMulti",
+			not("CLOUDNS"), //TODO: not implemented. same Issue as #996
 			requires(providers.CanUseTXTMulti),
 			tc("Create TXTMulti 1",
 				txtmulti("foo1", []string{"simple"}),
@@ -981,6 +1013,7 @@ func makeTests(t *testing.T) []*TestGroup {
 
 		testgroup("DS (children only)",
 			requires(providers.CanUseDSForChildren),
+			not("CLOUDNS", "CLOUDFLAREAPI"),
 			// Use a valid digest value here, because GCLOUD (which implements this capability) verifies
 			// the value passed in is a valid digest. RFC 4034, s5.1.4 specifies SHA1 as the only digest
 			// algo at present, i.e. only hexadecimal values currently usable.
@@ -996,6 +1029,52 @@ func makeTests(t *testing.T) []*TestGroup {
 				ds("another-child", 65535, 5, 4, "0123456789ABCDEF"),
 				ds("another-child", 65535, 253, 4, "0123456789ABCDEF"),
 			),
+		),
+
+		testgroup("DS (children only) CLOUDNS",
+			requires(providers.CanUseDSForChildren),
+			only("CLOUDNS", "CLOUDFLAREAPI"),
+			// Use a valid digest value here, because GCLOUD (which implements this capability) verifies
+			// the value passed in is a valid digest. RFC 4034, s5.1.4 specifies SHA1 as the only digest
+			// algo at present, i.e. only hexadecimal values currently usable.
+			// Cloudns requires NS  Record before creating DS Record.
+			tc("create DS",
+				// we test that provider correctly handles creating NS first by reversing the entries here
+				ds("child", 35632, 13, 1, "1E07663FF507A40874B8605463DD41DE482079D6"),
+				ns("child", "ns101.cloudns.net."),
+			),
+			tc("modify field 1",
+				ds("child", 2075, 13, 1, "2706D12E256C8FDD9BFB45EFB25FE537E21A82F6"),
+				ns("child", "ns101.cloudns.net."),
+			),
+			tc("modify field 3",
+				ds("child", 2075, 13, 2, "3F7A1EAC8C813A0BEBD0C3B8AAB387E31945EA0CD5E1D84A2E8E27674566C156"),
+				ns("child", "ns101.cloudns.net."),
+			),
+			tc("modify field 2+3",
+				ds("child", 2159, 1, 4, "F50BEFEA333EE2901D72D31A08E1A3CD3F7E943FF4B38CF7C8AD92807F5302F76FB0B419182C0F47FFC71CBCB6EF4BD4"),
+				ns("child", "ns101.cloudns.net."),
+			),
+			tc("modify field 2",
+				ds("child", 63909, 3, 4, "EEC7FA02E6788DA889B2CE41D43D92F948AB126EDCF83B7037E73CE9531C8E7E45653ABBAA76C2D6E42F98316EDE599B"),
+				ns("child", "ns101.cloudns.net."),
+			),
+			//tc("modify field 2", ds("child", 65535, 254, 4, "0123456789ABCDEF")),
+			tc("delete 1, create 1",
+				ds("another-child", 35632, 13, 4, "F5F32ABCA6B01AA7A9963012F90B7C8523A1D946185A3AD70B67F3C9F18E7312FA9DD6AB2F7D8382F789213DB173D429"),
+				ns("another-child", "ns101.cloudns.net."),
+			),
+			tc("add 2 more DS",
+				ds("another-child", 35632, 13, 4, "F5F32ABCA6B01AA7A9963012F90B7C8523A1D946185A3AD70B67F3C9F18E7312FA9DD6AB2F7D8382F789213DB173D429"),
+				ds("another-child", 2159, 1, 4, "F50BEFEA333EE2901D72D31A08E1A3CD3F7E943FF4B38CF7C8AD92807F5302F76FB0B419182C0F47FFC71CBCB6EF4BD4"),
+				ds("another-child", 63909, 3, 4, "EEC7FA02E6788DA889B2CE41D43D92F948AB126EDCF83B7037E73CE9531C8E7E45653ABBAA76C2D6E42F98316EDE599B"),
+				ns("another-child", "ns101.cloudns.net."),
+			),
+			// in CLouDNS  we must delete DS Record before deleting NS record
+			// should no longer be necessary, provider should handle order correctly
+			//tc("delete all DS",
+			//	ns("another-child", "ns101.cloudns.net."),
+			//),
 		),
 
 		//
@@ -1098,6 +1177,69 @@ func makeTests(t *testing.T) []*TestGroup {
 				r53alias("dev-system", "CNAME", "dev-system18.**current-domain**"),
 				cname("dev-system18", "ec2-54-91-33-155.compute-1.amazonaws.com."),
 			),
+		),
+
+		testgroup("CF_REDIRECT",
+			only("CLOUDFLAREAPI"),
+			tc("redir", cfRedir("cnn.**current-domain-no-trailing**/*", "https://www.cnn.com/$1")),
+			tc("change", cfRedir("cnn.**current-domain-no-trailing**/*", "https://change.cnn.com/$1")),
+			tc("changelabel", cfRedir("cable.**current-domain-no-trailing**/*", "https://change.cnn.com/$1")),
+			clear(),
+			tc("multipleA",
+				cfRedir("cnn.**current-domain-no-trailing**/*", "https://www.cnn.com/$1"),
+				cfRedir("msnbc.**current-domain-no-trailing**/*", "https://msnbc.cnn.com/$1"),
+			),
+			clear(),
+			tc("multipleB",
+				cfRedir("msnbc.**current-domain-no-trailing**/*", "https://msnbc.cnn.com/$1"),
+				cfRedir("cnn.**current-domain-no-trailing**/*", "https://www.cnn.com/$1"),
+			),
+			tc("change1",
+				cfRedir("msnbc.**current-domain-no-trailing**/*", "https://msnbc.cnn.com/$1"),
+				cfRedir("cnn.**current-domain-no-trailing**/*", "https://change.cnn.com/$1"),
+			),
+			tc("change1",
+				cfRedir("msnbc.**current-domain-no-trailing**/*", "https://msnbc.cnn.com/$1"),
+				cfRedir("cablenews.**current-domain-no-trailing**/*", "https://change.cnn.com/$1"),
+			),
+			// TODO(tlim): Fix this test case:
+			//clear(),
+			//tc("multiple3",
+			//	cfRedir("msnbc.**current-domain-no-trailing**/*", "https://msnbc.cnn.com/$1"),
+			//	cfRedir("cnn.**current-domain-no-trailing**/*", "https://www.cnn.com/$1"),
+			//	cfRedir("nytimes.**current-domain-no-trailing**/*", "https://www.nytimes.com/$1"),
+			//),
+
+			// Repeat the above using CF_TEMP_REDIR instead
+			clear(),
+			tc("tempredir", cfRedirTemp("cnn.**current-domain-no-trailing**/*", "https://www.cnn.com/$1")),
+			tc("tempchange", cfRedirTemp("cnn.**current-domain-no-trailing**/*", "https://change.cnn.com/$1")),
+			tc("tempchangelabel", cfRedirTemp("cable.**current-domain-no-trailing**/*", "https://change.cnn.com/$1")),
+			clear(),
+			tc("tempmultipleA",
+				cfRedirTemp("cnn.**current-domain-no-trailing**/*", "https://www.cnn.com/$1"),
+				cfRedirTemp("msnbc.**current-domain-no-trailing**/*", "https://msnbc.cnn.com/$1"),
+			),
+			clear(),
+			tc("tempmultipleB",
+				cfRedirTemp("msnbc.**current-domain-no-trailing**/*", "https://msnbc.cnn.com/$1"),
+				cfRedirTemp("cnn.**current-domain-no-trailing**/*", "https://www.cnn.com/$1"),
+			),
+			tc("tempchange1",
+				cfRedirTemp("msnbc.**current-domain-no-trailing**/*", "https://msnbc.cnn.com/$1"),
+				cfRedirTemp("cnn.**current-domain-no-trailing**/*", "https://change.cnn.com/$1"),
+			),
+			tc("tempchange1",
+				cfRedirTemp("msnbc.**current-domain-no-trailing**/*", "https://msnbc.cnn.com/$1"),
+				cfRedirTemp("cablenews.**current-domain-no-trailing**/*", "https://change.cnn.com/$1"),
+			),
+			// TODO(tlim): Fix this test case:
+			//clear(),
+			//tc("tempmultiple3",
+			//	cfRedirTemp("msnbc.**current-domain-no-trailing**/*", "https://msnbc.cnn.com/$1"),
+			//	cfRedirTemp("cnn.**current-domain-no-trailing**/*", "https://www.cnn.com/$1"),
+			//	cfRedirTemp("nytimes.**current-domain-no-trailing**/*", "https://www.nytimes.com/$1"),
+			//),
 		),
 	}
 

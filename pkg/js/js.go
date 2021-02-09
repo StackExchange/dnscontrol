@@ -11,6 +11,11 @@ import (
 	"github.com/robertkrimen/otto"              // load underscore js into vm by default
 	_ "github.com/robertkrimen/otto/underscore" // required by otto
 
+	"github.com/xddxdd/ottoext/fetch"
+	"github.com/xddxdd/ottoext/loop"
+	"github.com/xddxdd/ottoext/promise"
+	"github.com/xddxdd/ottoext/timers"
+
 	"github.com/StackExchange/dnscontrol/v3/models"
 	"github.com/StackExchange/dnscontrol/v3/pkg/printer"
 	"github.com/StackExchange/dnscontrol/v3/pkg/transform"
@@ -24,6 +29,9 @@ import (
 // far as require() is concerned, not the actual os.Getwd().
 var currentDirectory string
 
+// EnableFetch sets whether to enable fetch() in JS execution environment
+var EnableFetch bool = false
+
 // ExecuteJavascript accepts a javascript string and runs it, returning the resulting dnsConfig.
 func ExecuteJavascript(file string, devMode bool, variables map[string]string) (*models.DNSConfig, error) {
 	script, err := ioutil.ReadFile(file)
@@ -35,10 +43,26 @@ func ExecuteJavascript(file string, devMode bool, variables map[string]string) (
 	currentDirectory = filepath.Dir(file)
 
 	vm := otto.New()
+	l := loop.New(vm)
+
+	if err := timers.Define(vm, l); err != nil {
+		return nil, err
+	}
+	if err := promise.Define(vm, l); err != nil {
+		return nil, err
+	}
+
+	// only define fetch() when explicitly enabled
+	if EnableFetch {
+		if err := fetch.Define(vm, l); err != nil {
+			return nil, err
+		}
+	}
 
 	vm.Set("require", require)
 	vm.Set("REV", reverse)
 	vm.Set("glob", listFiles) // used for require_glob()
+	vm.Set("PANIC", jsPanic)
 
 	// add cli variables to otto
 	for key, value := range variables {
@@ -47,12 +71,17 @@ func ExecuteJavascript(file string, devMode bool, variables map[string]string) (
 
 	helperJs := GetHelpers(devMode)
 	// run helper script to prime vm and initialize variables
-	if _, err := vm.Run(helperJs); err != nil {
+	if err := l.Eval(helperJs); err != nil {
 		return nil, err
 	}
 
 	// run user script
-	if _, err := vm.Run(script); err != nil {
+	if err := l.Eval(script); err != nil {
+		return nil, err
+	}
+
+	// wait for event loop to finish
+	if err := l.Run(); err != nil {
 		return nil, err
 	}
 
@@ -210,6 +239,20 @@ func listFiles(call otto.FunctionCall) otto.Value {
 	}
 
 	return value
+}
+
+func jsPanic(call otto.FunctionCall) otto.Value {
+	if len(call.ArgumentList) != 1 {
+		throw(call.Otto, "PANIC takes exactly one argument")
+	}
+
+	message := call.Argument(0).String() // The filename as given by the user
+	fmt.Fprintln(os.Stderr, message)
+	os.Exit(1)
+
+	// Won't be actually executed
+	v, _ := otto.ToValue(0)
+	return v
 }
 
 func throw(vm *otto.Otto, str string) {
