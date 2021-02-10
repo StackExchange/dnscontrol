@@ -145,7 +145,6 @@ func buildRecord(recs models.Records, domain string, id string) *dns.Record {
 			rec.AddAnswer(&dns.Answer{Rdata: r.TxtStrings})
 		} else if r.Type == "SRV" {
 			rec.AddAnswer(&dns.Answer{Rdata: strings.Split(fmt.Sprintf("%d %d %d %v", r.SrvPriority, r.SrvWeight, r.SrvPort, r.GetTargetField()), " ")})
-			//		} else if r.Type == "URLFWD" {
 		} else {
 			rec.AddAnswer(&dns.Answer{Rdata: strings.Split(r.GetTargetField(), " ")})
 		}
