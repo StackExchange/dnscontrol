@@ -821,6 +821,7 @@ var CF_TEMP_REDIRECT = recordBuilder('CF_TEMP_REDIRECT', {
 var URL = recordBuilder('URL');
 var URL301 = recordBuilder('URL301');
 var FRAME = recordBuilder('FRAME');
+var NS1_URLFWD = recordBuilder('NS1_URLFWD');
 
 // SPF_BUILDER takes an object:
 // parts: The parts of the SPF record (to be joined with ' ').

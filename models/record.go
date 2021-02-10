@@ -34,6 +34,7 @@ import (
 //     IMPORT_TRANSFORM
 //     NAMESERVER
 //     NO_PURGE
+//     NS1_URLFWD
 //     PAGE_RULE
 //     PURGE
 //     URL
