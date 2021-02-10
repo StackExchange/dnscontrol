@@ -137,6 +137,9 @@ func generatePSZoneDump(dnsserver, domainname string, filename string) string {
 // Functions for record manipulation
 
 func (psh *psHandle) RecordDelete(dnsserver, domain string, rec *models.RecordConfig) error {
+	if rec.Type == "NAPTR" {
+		return fmt.Errorf("deletion of NAPTR records not implemented: Delete the record manually using dnsmgmt.msc then re-run dnscontrol. For more info see https://github.com/StackExchange/dnscontrol/issues/1044")
+	}
 	_, stderr, err := psh.shell.Execute(generatePSDelete(dnsserver, domain, rec))
 	if err != nil {
 		return err
@@ -227,6 +230,9 @@ func generatePSDelete(dnsserver, domain string, rec *models.RecordConfig) string
 }
 
 func (psh *psHandle) RecordCreate(dnsserver, domain string, rec *models.RecordConfig) error {
+	if rec.Type == "NAPTR" {
+		return fmt.Errorf("creation of NAPTR records not implemented: Create the record manually using dnsmgmt.msc then re-run dnscontrol. For more info see https://github.com/StackExchange/dnscontrol/issues/1044")
+	}
 	_, stderr, err := psh.shell.Execute(generatePSCreate(dnsserver, domain, rec))
 	if err != nil {
 		return err
@@ -302,6 +308,9 @@ func generatePSCreate(dnsserver, domain string, rec *models.RecordConfig) string
 }
 
 func (psh *psHandle) RecordModify(dnsserver, domain string, old, rec *models.RecordConfig) error {
+	if rec.Type == "NAPTR" {
+		return fmt.Errorf("modification of NAPTR records not implemented: Modify the record manually using dnsmgmt.msc then re-run dnscontrol. For more info see https://github.com/StackExchange/dnscontrol/issues/1044")
+	}
 	_, stderr, err := psh.shell.Execute(generatePSModify(dnsserver, domain, old, rec))
 	if err != nil {
 		return err
