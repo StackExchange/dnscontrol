@@ -8,6 +8,7 @@ import (
 
 	"gopkg.in/ns1/ns1-go.v2/rest"
 	"gopkg.in/ns1/ns1-go.v2/rest/model/dns"
+	"gopkg.in/ns1/ns1-go.v2/rest/model/filter"
 
 	"github.com/StackExchange/dnscontrol/v3/models"
 	"github.com/StackExchange/dnscontrol/v3/pkg/diff"
@@ -25,6 +26,7 @@ var docNotes = providers.DocumentationNotes{
 
 func init() {
 	providers.RegisterDomainServiceProviderType("NS1", newProvider, providers.CanUseSRV, docNotes)
+	providers.RegisterCustomRecordType("NS1_URLFWD", "NS1", "URLFWD")
 }
 
 type nsone struct {
@@ -129,11 +131,12 @@ func (n *nsone) modify(recs models.Records, domain string) error {
 func buildRecord(recs models.Records, domain string, id string) *dns.Record {
 	r := recs[0]
 	rec := &dns.Record{
-		Domain: r.GetLabelFQDN(),
-		Type:   r.Type,
-		ID:     id,
-		TTL:    int(r.TTL),
-		Zone:   domain,
+		Domain:  r.GetLabelFQDN(),
+		Type:    r.Type,
+		ID:      id,
+		TTL:     int(r.TTL),
+		Zone:    domain,
+		Filters: []*filter.Filter{}, // Work through a bug in the NS1 API library that causes 400 Input validation failed (Value None for field '<obj>.filters' is not of type array)
 	}
 	for _, r := range recs {
 		if r.Type == "MX" {
@@ -142,6 +145,7 @@ func buildRecord(recs models.Records, domain string, id string) *dns.Record {
 			rec.AddAnswer(&dns.Answer{Rdata: r.TxtStrings})
 		} else if r.Type == "SRV" {
 			rec.AddAnswer(&dns.Answer{Rdata: strings.Split(fmt.Sprintf("%d %d %d %v", r.SrvPriority, r.SrvWeight, r.SrvPort, r.GetTargetField()), " ")})
+			//		} else if r.Type == "URLFWD" {
 		} else {
 			rec.AddAnswer(&dns.Answer{Rdata: strings.Split(r.GetTargetField(), " ")})
 		}
@@ -159,9 +163,10 @@ func convert(zr *dns.ZoneRecord, domain string) ([]*models.RecordConfig, error) 
 		rec.SetLabelFromFQDN(zr.Domain, domain)
 		switch rtype := zr.Type; rtype {
 		case "ALIAS":
+		case "URLFWD":
 			rec.Type = rtype
 			if err := rec.SetTarget(ans); err != nil {
-				panic(fmt.Errorf("unparsable ALIAS record received from ns1: %w", err))
+				panic(fmt.Errorf("unparsable %s record received from ns1: %w", rtype, err))
 			}
 		default:
 			if err := rec.PopulateFromString(rtype, ans, domain); err != nil {

@@ -38,6 +38,7 @@ import (
 //     PURGE
 //     URL
 //     URL301
+//     NS1_URLFWD
 //
 // Notes about the fields:
 //
