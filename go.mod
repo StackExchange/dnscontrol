@@ -3,21 +3,21 @@ module github.com/StackExchange/dnscontrol/v3
 go 1.14
 
 require (
-	github.com/Azure/azure-sdk-for-go v51.0.0+incompatible
-	github.com/Azure/go-autorest/autorest/azure/auth v0.5.6
+	github.com/Azure/azure-sdk-for-go v51.3.0+incompatible
+	github.com/Azure/go-autorest/autorest/azure/auth v0.5.7
 	github.com/Azure/go-autorest/autorest/to v0.4.0
 	github.com/DisposaBoy/JsonConfigReader v0.0.0-20201129172854-99cf318d67e7
 	github.com/PuerkitoBio/goquery v1.6.1
 	github.com/TomOnTime/utfutil v0.0.0-20200626160131-0b0178852c8f
 	github.com/andreyvit/diff v0.0.0-20170406064948-c7f18ee00883
 	github.com/andybalholm/cascadia v1.2.0 // indirect
-	github.com/aws/aws-sdk-go v1.37.1
+	github.com/aws/aws-sdk-go v1.37.15
 	github.com/babolivier/go-doh-client v0.0.0-20201028162107-a76cff4cb8b6
 	github.com/bhendo/go-powershell v0.0.0-20190719160123-219e7fb4e41e
 	github.com/billputer/go-namecheap v0.0.0-20170915210158-0c7adb0710f8
 	github.com/cenkalti/backoff v2.2.1+incompatible // indirect
 	github.com/cpuguy83/go-md2man/v2 v2.0.0 // indirect
-	github.com/digitalocean/godo v1.57.0
+	github.com/digitalocean/godo v1.58.0
 	github.com/dnsimple/dnsimple-go v0.62.0
 	github.com/exoscale/egoscale v0.23.0
 	github.com/frankban/quicktest v1.11.2 // indirect
@@ -70,7 +70,7 @@ require (
 	golang.org/x/sys v0.0.0-20210124154548-22da62e12c0c // indirect
 	golang.org/x/time v0.0.0-20200630173020-3af7569d3a1e // indirect
 	golang.org/x/tools v0.1.0 // indirect
-	google.golang.org/api v0.38.0
+	google.golang.org/api v0.40.0
 	gopkg.in/ini.v1 v1.62.0 // indirect
 	gopkg.in/ns1/ns1-go.v2 v2.4.3
 	gopkg.in/square/go-jose.v2 v2.5.1 // indirect
