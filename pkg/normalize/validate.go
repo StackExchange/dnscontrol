@@ -369,43 +369,56 @@ func ValidateAndNormalizeConfig(config *models.DNSConfig) (errs []error) {
 		errs = append(errs, ers...)
 	}
 
-	// Split TXT targets that are >255 bytes (if permitted)
-	for _, domain := range config.Domains {
-		for _, rec := range domain.Records {
-			if rec.HasFormatIdenticalToTXT() {
-				if txtAlgo, ok := rec.Metadata["txtSplitAlgorithm"]; ok {
-					rec.TxtNormalize(txtAlgo)
-				}
-			}
-		}
-	}
+	//	// Split TXT targets that are >255 bytes (if permitted)
+	//	for _, domain := range config.Domains {
+	//		for _, rec := range domain.Records {
+	//			if rec.HasFormatIdenticalToTXT() {
+	//				if txtAlgo, ok := rec.Metadata["txtSplitAlgorithm"]; ok {
+	//					rec.TxtNormalize(txtAlgo)
+	//				}
+	//			}
+	//		}
+	//	}
 
-	// Validate TXT records.
-	for _, domain := range config.Domains {
-		// Collect the names of providers that don't support TXTMulti:
-		txtMultiDissenters := []string{}
-		for _, provider := range domain.DNSProviderInstances {
-			pType := provider.ProviderType
-			if !providers.ProviderHasCapability(pType, providers.CanUseTXTMulti) {
-				txtMultiDissenters = append(txtMultiDissenters, provider.Name)
-			}
-		}
-		// Validate TXT records.
-		for _, rec := range domain.Records {
-			if rec.HasFormatIdenticalToTXT() {
-				// If TXTMulti is required, all providers must support that feature.
-				if len(rec.TxtStrings) > 1 && len(txtMultiDissenters) > 0 {
-					errs = append(errs,
-						fmt.Errorf("%s records with multiple strings not supported by %s (label=%q domain=%v)",
-							rec.Type, strings.Join(txtMultiDissenters, ","), rec.GetLabel(), domain.Name))
-				}
-				// Validate the record:
-				if err := models.ValidateTXT(rec); err != nil {
-					errs = append(errs, err)
-				}
-			}
-		}
-	}
+	// 	// Validate TXT records.
+	// 	for _, domain := range config.Domains {
+	// 		// Collect the names of providers that don't support TXTMulti:
+	// 		txtMultiDissenters := []string{}
+	// 		for _, provider := range domain.DNSProviderInstances {
+	// 			pType := provider.ProviderType
+	// 			if !providers.ProviderHasCapability(pType, providers.CanUseTXTMulti) {
+	// 				txtMultiDissenters = append(txtMultiDissenters, provider.Name)
+	// 			}
+	// 		}
+	// 		// Validate TXT records.
+	// 		for _, rec := range domain.Records {
+	// 			if rec.HasFormatIdenticalToTXT() {
+	// 				// If TXTMulti is required, all providers must support that feature.
+	// 				if len(rec.TxtStrings) > 1 && len(txtMultiDissenters) > 0 {
+	// 					errs = append(errs,
+	// 						fmt.Errorf("%s records with multiple strings not supported by %s (label=%q domain=%v)",
+	// 							rec.Type, strings.Join(txtMultiDissenters, ","), rec.GetLabel(), domain.Name))
+	// 				}
+	// 				// Validate the record:
+	// 				if err := models.ValidateTXT(rec); err != nil {
+	// 					errs = append(errs, err)
+	// 				}
+	// 			}
+	// 		}
+	// 	}
+
+	// TODO(tlim):
+	// For each domain...
+	//     For each provider...
+	//         For each TXT/SPF record...
+	//             Call the txt Validators for that provider
+	// TODO(tlim): Add to each provider a ValidateTxt() function:
+	//         Normal: .Target is 255-octets or shorter.
+	//         TxtMulti: .TxtStrings are each less than 256 octets.
+	//         Warning: String length > 255 octets: Will be split along 255-octet boundaries.
+	//         Warning: Provider will join these strings and re-split along 255-octet bounaries.
+	//         Error: Provider does not support TXT strings longer than 255 octets
+	//         Error: Provider does not support TXT strings longer than 255 octets
 
 	// Process IMPORT_TRANSFORM
 	for _, domain := range config.Domains {

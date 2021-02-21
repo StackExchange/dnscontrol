@@ -41,7 +41,12 @@ const (
 	// CanUseTLSA indicates the provider can handle TLSA records
 	CanUseTLSA
 
-	// CanUseTXTMulti indicates the provider can handle TXT records with multiple strings
+	// CanUseTXTMulti indicates the provider can handle TXT records more
+	// interesting than a single string of 255-octets or less. In other
+	// words the provider supports one or more of these situations:
+	// (1) a string longer than 255-octets, which will be split into 255-octet chunks
+	// (2) multiple strings, each 255-octets or shorter.
+	// (3) multiple strings which will be joined and re-split at 255-octet boundaries.
 	CanUseTXTMulti
 
 	// CanAutoDNSSEC indicates that the provider can automatically handle DNSSEC,
