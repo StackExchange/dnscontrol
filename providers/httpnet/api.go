@@ -11,11 +11,12 @@ import (
 	"golang.org/x/net/idna"
 )
 
-const endpoint = "https://partner.routing.net/api/%s/v1/json/%s"
+const endpoint = "%s/api/%s/v1/json/%s"
 
 type httpnetProvider struct {
 	authToken      string
 	ownerAccountID string
+	baseURL        string
 }
 
 func (hp *httpnetProvider) getDomainConfig(domain string) (*domainConfig, error) {
@@ -244,7 +245,8 @@ func (hp *httpnetProvider) get(service, method string, params request) (*respons
 		return nil, fmt.Errorf("could not marshal request body: %w", err)
 	}
 
-	resp, err := http.Post(fmt.Sprintf(endpoint, service, method), "application/json", bytes.NewBuffer(reqBody))
+	url := fmt.Sprintf(endpoint, hp.baseURL, service, method)
+	resp, err := http.Post(url, "application/json", bytes.NewBuffer(reqBody))
 	if err != nil {
 		return nil, fmt.Errorf("could not carry out request: %w", err)
 	}

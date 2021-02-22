@@ -38,15 +38,21 @@ func init() {
 }
 
 func newHttpnet(m map[string]string) (*httpnetProvider, error) {
-	authToken, ownerAccountID := m["authToken"], m["ownerAccountID"]
+	authToken, ownerAccountID, baseURL := m["authToken"], m["ownerAccountID"], m["baseURL"]
 
 	if authToken == "" {
 		return nil, fmt.Errorf("http.net: authtoken must be provided")
 	}
 
+	if baseURL == "" {
+		baseURL = "https://partner.routing.net"
+	}
+	baseURL = strings.TrimSuffix(baseURL, "/")
+
 	hp := &httpnetProvider{
 		authToken:      authToken,
 		ownerAccountID: ownerAccountID,
+		baseURL:        baseURL,
 	}
 
 	return hp, nil
