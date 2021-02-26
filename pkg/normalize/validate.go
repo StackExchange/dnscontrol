@@ -2,9 +2,7 @@ package normalize
 
 import (
 	"fmt"
-	"log"
 	"net"
-	"runtime"
 	"strings"
 
 	"github.com/StackExchange/dnscontrol/v3/models"
@@ -87,9 +85,6 @@ func validateRecordTypes(rec *models.RecordConfig, domain string, pTypes []strin
 	return nil
 }
 
-// these record types may contain underscores
-var rTypeUnderscores = []string{"SRV", "TLSA", "TXT"}
-
 func checkLabel(label string, rType string, target, domain string, meta map[string]string) error {
 	if label == "@" {
 		return nil
@@ -110,7 +105,7 @@ func checkLabel(label string, rType string, target, domain string, meta map[stri
 	// are used in a way we consider typical.  Yes, we're opinionated here.
 
 	// Don't warn for certain rtypes:
-	for _, ex := range rTypeUnderscores {
+	for _, ex := range []string{"SRV", "TLSA", "TXT"} {
 		if rType == ex {
 			return nil
 		}
@@ -279,6 +274,17 @@ func ValidateAndNormalizeConfig(config *models.DNSConfig) (errs []error) {
 			if domain.KeepUnknown && providers.ProviderHasCapability(pType, providers.CantUseNOPURGE) {
 				errs = append(errs, fmt.Errorf("%s uses NO_PURGE which is not supported by %s(%s)", domain.Name, provider.Name, pType))
 			}
+
+			// If !CanUseTXTMulti, make sure all TXT records aren't multi:
+			if !providers.ProviderHasCapability(pType, providers.CanUseTXTMulti) {
+				for _, rc := range domain.Records {
+					if rc.HasFormatIdenticalToTXT() {
+						if len(rc.TxtStrings) > 1 {
+							errs = append(errs, fmt.Errorf("provider %s does not support TXTMulti, used on label %q", pType, rc.NameFQDN))
+						}
+					}
+				}
+			}
 		}
 
 		// Normalize Nameservers.
@@ -439,23 +445,30 @@ func ValidateAndNormalizeConfig(config *models.DNSConfig) (errs []error) {
 		errs = append(errs, checkAutoDNSSEC(d)...)
 	}
 
-	// At this point we've munged anything that needs to be munged, and
-	// validated anything that we can globally validate.  Let's ask
-	// the provider if there are any records they can't handle.
+	// If !CanUseTXTMulti, make sure all TXT records aren't multi:
+	for _, domain := range config.Domains {
+		for _, provider := range domain.DNSProviderInstances {
+			pType := provider.ProviderType
+			if !providers.ProviderHasCapability(pType, providers.CanUseTXTMulti) {
+				for _, rc := range domain.Records {
+					if rc.HasFormatIdenticalToTXT() {
+						if len(rc.TxtStrings) > 1 {
+							errs = append(errs, fmt.Errorf("provider %s does not support TXTMulti, used on label %q", pType, rc.NameFQDN))
+						}
+					}
+				}
+			}
+		}
+	}
 
+	// At this point we've munged anything that needs to be munged, and
+	// validated anything that can be globally validated.
+	// Let's ask // the provider if there are any records they can't handle.
 	for _, domain := range config.Domains { // For each domain..
 		for _, provider := range domain.DNSProviderInstances { // For each provider...
-			_ = provider
-			//runtime.Breakpoint()
-			provider, err := providers.CreateDNSProvider("gandi_v5_tal", nil, nil)
-			fmt.Println("ONE:", provider, err)
-			provider, err = providers.CreateDNSProvider("GANDI_V5", nil, nil)
-			fmt.Println("TWO:", provider, err)
-			runtime.Breakpoint()
-			if err != nil {
-				log.Fatal(err)
+			if err := providers.RecordSupportAudit(provider.ProviderBase.ProviderType, domain.Records); err != nil {
+				errs = append(errs, err)
 			}
-
 		}
 	}
 

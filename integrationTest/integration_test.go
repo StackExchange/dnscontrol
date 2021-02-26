@@ -188,6 +188,12 @@ func makeChanges(t *testing.T, prv providers.DNSServiceProvider, dc *models.Doma
 		models.PostProcessRecords(dom.Records)
 		dom2, _ := dom.Copy()
 
+		if err := providers.RecordSupportAudit(*providerToRun, dom.Records); err != nil {
+			t.Skip(fmt.Sprintf("***SKIPPED(PROVIDER DOES NOT SUPPORT '%s')", err))
+			fmt.Printf("XXXXXXXXXXXXXXX\n")
+			return
+		}
+
 		// get and run corrections for first time
 		corrections, err := prv.GetDomainCorrections(dom)
 		if err != nil {
@@ -736,46 +742,26 @@ func makeTests(t *testing.T) []*TestGroup {
 		),
 
 		testgroup("max-sized TXT",
-			not(
-				"INWX",  // INWX does not support
-				"MSDNS", // Supports 254-byte strings, not 255.  Seems like a bug.
-			),
 			tc("Create a 255-byte TXT", txt("foo", strings.Repeat("A", 255))),
 		),
 
 		testgroup("single TXT with single-quote",
-			not(
-				"INWX",    // Bug in the API prevents this.
-				"MSDNS",   // TODO(tlim): Should be easy to implement.
-				"CLOUDNS", // support txt("foo", "blah'blah") but does not support txt("foo","blah`blah")
-			),
-			tc("Create TXT with single-quote", txt("foo", "blah`blah")),
+			tc("Create TXT with single-quote", txt("foo", "quo'te")),
+		),
+
+		testgroup("single TXT with backtick",
+			tc("Create TXT with backtick", txt("foo", "blah`blah")),
 		),
 
 		testgroup("ws TXT",
-			not("CLOUDFLAREAPI", "HEXONET", "INWX", "NAMEDOTCOM", "CLOUDNS"),
-			// These providers strip whitespace at the end of TXT records.
-			// TODO(tal): Add a check for this in normalize/validate.go
 			tc("Change a TXT with ws at end", txt("foo", "with space at end  ")),
 		),
 
 		testgroup("empty TXT",
-			not(
-				"HETZNER", // Not supported.
-				"HEXONET", // Not supported.
-				"INWX",    // Not supported.
-				"MSDNS",   // Not supported.
-				"NETCUP",  // Not supported.
-				"CLOUDNS", // Not supported.
-			),
 			tc("TXT with empty str", txt("foo1", "")),
 			// https://github.com/StackExchange/dnscontrol/issues/598
 			// We decided that permitting the TXT target to be an empty
 			// string is not a requirement (even though RFC1035 permits it).
-			// In the future we might make it "capability" to
-			// indicate which vendors support an empty TXT record.
-			// However at this time there is no pressing need for this
-			// feature.
 		),
 
 		//

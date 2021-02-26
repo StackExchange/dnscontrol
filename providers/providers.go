@@ -90,6 +90,17 @@ func CreateDNSProvider(dType string, config map[string]string, meta json.RawMess
 	return p.Initializer(config, meta)
 }
 
+func RecordSupportAudit(dType string, rcs models.Records) error {
+	p, ok := DNSProviderTypes[dType]
+	if !ok {
+		return fmt.Errorf("DSP type %s not declared", dType)
+	}
+	if p.RecordSupportAuditor == nil {
+		return fmt.Errorf("DSP type %s has no RecordSupportAuditor", dType)
+	}
+	return p.RecordSupportAuditor(rcs)
+}
+
 // None is a basic provider type that does absolutely nothing. Can be useful as a placeholder for third parties or unimplemented providers.
 type None struct{}
 
