@@ -37,7 +37,11 @@ func sPtr(s string) *string {
 }
 
 func init() {
-	providers.RegisterDomainServiceProviderType("GCLOUD", New, features)
+	fns := providers.DspFuncs{
+		Initializer:          New,
+		RecordSupportAuditor: RecordSupportAudit,
+	}
+	providers.RegisterDomainServiceProviderType("GCLOUD", fns, features)
 }
 
 type gcloudProvider struct {

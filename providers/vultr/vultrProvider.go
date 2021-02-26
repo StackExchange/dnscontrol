@@ -37,7 +37,11 @@ var features = providers.DocumentationNotes{
 }
 
 func init() {
-	providers.RegisterDomainServiceProviderType("VULTR", NewProvider, features)
+	fns := providers.DspFuncs{
+		Initializer:          NewProvider,
+		RecordSupportAuditor: RecordSupportAudit,
+	}
+	providers.RegisterDomainServiceProviderType("VULTR", fns, features)
 }
 
 // vultrProvider represents the Vultr DNSServiceProvider.

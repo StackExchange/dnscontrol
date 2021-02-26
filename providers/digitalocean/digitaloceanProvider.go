@@ -80,7 +80,11 @@ var features = providers.DocumentationNotes{
 }
 
 func init() {
-	providers.RegisterDomainServiceProviderType("DIGITALOCEAN", NewDo, features)
+	fns := providers.DspFuncs{
+		Initializer:          NewDo,
+		RecordSupportAuditor: RecordSupportAudit,
+	}
+	providers.RegisterDomainServiceProviderType("DIGITALOCEAN", fns, features)
 }
 
 // EnsureDomainExists returns an error if domain doesn't exist.

@@ -55,8 +55,12 @@ func newReg(conf map[string]string) (providers.Registrar, error) {
 }
 
 func init() {
+	fns := providers.DspFuncs{
+		Initializer:          newDsp,
+		RecordSupportAuditor: RecordSupportAudit,
+	}
 	providers.RegisterRegistrarType("OVH", newReg)
-	providers.RegisterDomainServiceProviderType("OVH", newDsp, features)
+	providers.RegisterDomainServiceProviderType("OVH", fns, features)
 }
 
 func (c *ovhProvider) GetNameservers(domain string) ([]*models.Nameserver, error) {

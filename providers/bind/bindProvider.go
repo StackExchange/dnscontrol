@@ -77,7 +77,11 @@ func initBind(config map[string]string, providermeta json.RawMessage) (providers
 }
 
 func init() {
-	providers.RegisterDomainServiceProviderType("BIND", initBind, features)
+	fns := providers.DspFuncs{
+		Initializer:          initBind,
+		RecordSupportAuditor: RecordSupportAudit,
+	}
+	providers.RegisterDomainServiceProviderType("BIND", fns, features)
 }
 
 // SoaInfo contains the parts of the default SOA settings.

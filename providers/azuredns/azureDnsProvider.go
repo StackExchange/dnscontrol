@@ -68,7 +68,11 @@ var features = providers.DocumentationNotes{
 }
 
 func init() {
-	providers.RegisterDomainServiceProviderType("AZURE_DNS", newAzureDNSDsp, features)
+	fns := providers.DspFuncs{
+		Initializer:          newAzureDNSDsp,
+		RecordSupportAuditor: RecordSupportAudit,
+	}
+	providers.RegisterDomainServiceProviderType("AZURE_DNS", fns, features)
 	providers.RegisterCustomRecordType("AZURE_ALIAS", "AZURE_DNS", "")
 }
 

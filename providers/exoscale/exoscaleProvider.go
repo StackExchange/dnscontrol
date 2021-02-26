@@ -37,7 +37,11 @@ var features = providers.DocumentationNotes{
 }
 
 func init() {
-	providers.RegisterDomainServiceProviderType("EXOSCALE", NewExoscale, features)
+	fns := providers.DspFuncs{
+		Initializer:          NewExoscale,
+		RecordSupportAuditor: RecordSupportAudit,
+	}
+	providers.RegisterDomainServiceProviderType("EXOSCALE", fns, features)
 }
 
 // EnsureDomainExists returns an error if domain doesn't exist.

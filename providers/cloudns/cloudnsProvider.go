@@ -54,7 +54,11 @@ var features = providers.DocumentationNotes{
 }
 
 func init() {
-	providers.RegisterDomainServiceProviderType("CLOUDNS", NewCloudns, features)
+	fns := providers.DspFuncs{
+		Initializer:          NewCloudns,
+		RecordSupportAuditor: RecordSupportAudit,
+	}
+	providers.RegisterDomainServiceProviderType("CLOUDNS", fns, features)
 }
 
 // GetNameservers returns the nameservers for a domain.

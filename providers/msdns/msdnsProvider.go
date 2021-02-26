@@ -33,7 +33,11 @@ var features = providers.DocumentationNotes{
 // Register with the dnscontrol system.
 //   This establishes the name (all caps), and the function to call to initialize it.
 func init() {
-	providers.RegisterDomainServiceProviderType("MSDNS", newDNS, features)
+	fns := providers.DspFuncs{
+		Initializer:          newDNS,
+		RecordSupportAuditor: RecordSupportAudit,
+	}
+	providers.RegisterDomainServiceProviderType("MSDNS", fns, features)
 }
 
 func newDNS(config map[string]string, metadata json.RawMessage) (providers.DNSServiceProvider, error) {

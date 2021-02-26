@@ -5,7 +5,6 @@ type DNSProvider interface {
 	GetNameservers(domain string) ([]*Nameserver, error)
 	GetDomainCorrections(dc *DomainConfig) ([]*Correction, error)
 	GetZoneRecords(domain string) (Records, error)
-	IsValidTXT(rc *RecordConfig) (bool, []error)
 }
 
 // Registrar is an interface for Registrar plug-ins.

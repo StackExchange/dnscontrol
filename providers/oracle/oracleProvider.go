@@ -35,7 +35,11 @@ var features = providers.DocumentationNotes{
 }
 
 func init() {
-	providers.RegisterDomainServiceProviderType("ORACLE", New, features)
+	fns := providers.DspFuncs{
+		Initializer:          New,
+		RecordSupportAuditor: RecordSupportAudit,
+	}
+	providers.RegisterDomainServiceProviderType("ORACLE", fns, features)
 }
 
 type oracleProvider struct {

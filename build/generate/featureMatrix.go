@@ -74,7 +74,7 @@ func generateFeatureMatrix() error {
 			}
 		}
 		setDoc("Official Support", providers.DocOfficiallySupported, true)
-		fm.SetSimple("DNS Provider", false, func() bool { return providers.DNSProviderTypes[p] != nil })
+		fm.SetSimple("DNS Provider", false, func() bool { return providers.DNSProviderTypes[p].Initializer != nil })
 		fm.SetSimple("Registrar", false, func() bool { return providers.RegistrarTypes[p] != nil })
 		setCap("ALIAS", providers.CanUseAlias)
 		setCap("AUTODNSSEC", providers.CanAutoDNSSEC)

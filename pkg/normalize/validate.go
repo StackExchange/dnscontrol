@@ -2,7 +2,9 @@ package normalize
 
 import (
 	"fmt"
+	"log"
 	"net"
+	"runtime"
 	"strings"
 
 	"github.com/StackExchange/dnscontrol/v3/models"
@@ -179,6 +181,17 @@ func checkTargets(rec *models.RecordConfig, domain string) (errs []error) {
 	return
 }
 
+// TODO: Write a test.
+func checkTxtStrings(rc *models.RecordConfig) error {
+	for i := range rc.TxtStrings {
+		l := len([]byte(rc.TxtStrings[i]))
+		if l > 255 {
+			return fmt.Errorf("length of TxtStrings[%d] is %d, which is >255", i, l)
+		}
+	}
+	return nil
+}
+
 func transformCNAME(target, oldDomain, newDomain string) string {
 	// Canonicalize. If it isn't a FQDN, add the newDomain.
 	result := dnsutil.AddOrigin(target, oldDomain)
@@ -319,6 +332,11 @@ func ValidateAndNormalizeConfig(config *models.DNSConfig) (errs []error) {
 			if errs2 := checkTargets(rec, domain.Name); errs2 != nil {
 				errs = append(errs, errs2...)
 			}
+			if rec.HasFormatIdenticalToTXT() { // i.e. if it is a TXT or SPF record.
+				if err := checkTxtStrings(rec); err != nil {
+					errs = append(errs, err)
+				}
+			}
 
 			// Canonicalize Targets.
 			if rec.Type == "CNAME" || rec.Type == "MX" || rec.Type == "NAPTR" || rec.Type == "NS" || rec.Type == "SRV" {
@@ -368,57 +386,6 @@ func ValidateAndNormalizeConfig(config *models.DNSConfig) (errs []error) {
 	if ers := flattenSPFs(config); len(ers) > 0 {
 		errs = append(errs, ers...)
 	}
-
-	//	// Split TXT targets that are >255 bytes (if permitted)
-	//	for _, domain := range config.Domains {
-	//		for _, rec := range domain.Records {
-	//			if rec.HasFormatIdenticalToTXT() {
-	//				if txtAlgo, ok := rec.Metadata["txtSplitAlgorithm"]; ok {
-	//					rec.TxtNormalize(txtAlgo)
-	//				}
-	//			}
-	//		}
-	//	}
-
-	// 	// Validate TXT records.
-	// 	for _, domain := range config.Domains {
-	// 		// Collect the names of providers that don't support TXTMulti:
-	// 		txtMultiDissenters := []string{}
-	// 		for _, provider := range domain.DNSProviderInstances {
-	// 			pType := provider.ProviderType
-	// 			if !providers.ProviderHasCapability(pType, providers.CanUseTXTMulti) {
-	// 				txtMultiDissenters = append(txtMultiDissenters, provider.Name)
-	// 			}
-	// 		}
-	// 		// Validate TXT records.
-	// 		for _, rec := range domain.Records {
-	// 			if rec.HasFormatIdenticalToTXT() {
-	// 				// If TXTMulti is required, all providers must support that feature.
-	// 				if len(rec.TxtStrings) > 1 && len(txtMultiDissenters) > 0 {
-	// 					errs = append(errs,
-	// 						fmt.Errorf("%s records with multiple strings not supported by %s (label=%q domain=%v)",
-	// 							rec.Type, strings.Join(txtMultiDissenters, ","), rec.GetLabel(), domain.Name))
-	// 				}
-	// 				// Validate the record:
-	// 				if err := models.ValidateTXT(rec); err != nil {
-	// 					errs = append(errs, err)
-	// 				}
-	// 			}
-	// 		}
-	// 	}
-
-	// TODO(tlim):
-	// For each domain...
-	//     For each provider...
-	//         For each TXT/SPF record...
-	//             Call the txt Validators for that provider
-	// TODO(tlim): Add to each provider a ValidateTxt() function:
-	//         Normal: .Target is 255-octets or shorter.
-	//         TxtMulti: .TxtStrings are each less than 256 octets.
-	//         Warning: String length > 255 octets: Will be split along 255-octet boundaries.
-	//         Warning: Provider will join these strings and re-split along 255-octet bounaries.
-	//         Error: Provider does not support TXT strings longer than 255 octets
-	//         Error: Provider does not support TXT strings longer than 255 octets
 
 	// Process IMPORT_TRANSFORM
 	for _, domain := range config.Domains {
@@ -470,6 +437,26 @@ func ValidateAndNormalizeConfig(config *models.DNSConfig) (errs []error) {
 		}
 		// Verify AutoDNSSEC is valid.
 		errs = append(errs, checkAutoDNSSEC(d)...)
+	}
+
+	// At this point we've munged anything that needs to be munged, and
+	// validated anything that we can globally validate.  Let's ask
+	// the provider if there are any records they can't handle.
+
+	for _, domain := range config.Domains { // For each domain..
+		for _, provider := range domain.DNSProviderInstances { // For each provider...
+			_ = provider
+			//runtime.Breakpoint()
+			provider, err := providers.CreateDNSProvider("gandi_v5_tal", nil, nil)
+			fmt.Println("ONE:", provider, err)
+			provider, err = providers.CreateDNSProvider("GANDI_V5", nil, nil)
+			fmt.Println("TWO:", provider, err)
+			runtime.Breakpoint()
+			if err != nil {
+				log.Fatal(err)
+			}
+
+		}
 	}
 
 	return errs

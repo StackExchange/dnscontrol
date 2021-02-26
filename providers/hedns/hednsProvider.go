@@ -60,7 +60,11 @@ var features = providers.DocumentationNotes{
 }
 
 func init() {
-	providers.RegisterDomainServiceProviderType("HEDNS", newHDNSProvider, features)
+	fns := providers.DspFuncs{
+		Initializer:          newHDNSProvider,
+		RecordSupportAuditor: RecordSupportAudit,
+	}
+	providers.RegisterDomainServiceProviderType("HEDNS", fns, features)
 }
 
 var defaultNameservers = []string{

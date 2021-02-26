@@ -31,7 +31,11 @@ var features = providers.DocumentationNotes{
 }
 
 func init() {
-	providers.RegisterDomainServiceProviderType("POWERDNS", NewProvider, features)
+	fns := providers.DspFuncs{
+		Initializer:          NewProvider,
+		RecordSupportAuditor: RecordSupportAudit,
+	}
+	providers.RegisterDomainServiceProviderType("POWERDNS", fns, features)
 }
 
 // powerdnsProvider represents the powerdnsProvider DNSServiceProvider.

@@ -63,7 +63,11 @@ func initProvider(config map[string]string, providermeta json.RawMessage) (provi
 }
 
 func init() {
-	providers.RegisterDomainServiceProviderType("OCTODNS", initProvider, features)
+	fns := providers.DspFuncs{
+		Initializer:          initProvider,
+		RecordSupportAuditor: RecordSupportAudit,
+	}
+	providers.RegisterDomainServiceProviderType("OCTODNS", fns, features)
 }
 
 // octodnsProvider is the provider handle for the OctoDNS driver.
