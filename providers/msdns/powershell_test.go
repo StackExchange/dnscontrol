@@ -112,28 +112,28 @@ func Test_generatePSZoneDump(t *testing.T) {
 func Test_generatePSModify(t *testing.T) {
 
 	recA1 := &models.RecordConfig{
-		Type:   "A",
-		Name:   "@",
-		Target: "1.2.3.4",
+		Type: "A",
+		Name: "@",
 	}
+	recA1.SetTarget("1.2.3.4")
 	recA2 := &models.RecordConfig{
-		Type:   "A",
-		Name:   "@",
-		Target: "10.20.30.40",
+		Type: "A",
+		Name: "@",
 	}
+	recA2.SetTarget("10.20.30.40")
 
 	recMX1 := &models.RecordConfig{
 		Type:         "MX",
 		Name:         "@",
-		Target:       "foo.com.",
 		MxPreference: 5,
 	}
+	recMX1.SetTarget("foo.com.")
 	recMX2 := &models.RecordConfig{
 		Type:         "MX",
 		Name:         "@",
-		Target:       "foo2.com.",
 		MxPreference: 50,
 	}
+	recMX2.SetTarget("foo2.com.")
 
 	type args struct {
 		domain    string

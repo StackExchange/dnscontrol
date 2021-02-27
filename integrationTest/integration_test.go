@@ -345,7 +345,11 @@ func (r *rec) SetLabel(label, domain string) {
 }
 
 func (r *rec) SetTarget(target string) {
-	r.Target = target
+	r.SetTarget(target)
+}
+
+func (r *rec) GetTargetField() string {
+	return r.GetTargetField()
 }
 
 func a(name, target string) *rec {
@@ -475,9 +479,9 @@ func ignoreName(name string) *rec {
 
 func ignoreTarget(name string, typ string) *rec {
 	r := &rec{
-		Type:   "IGNORE_TARGET",
-		Target: typ,
+		Type: "IGNORE_TARGET",
 	}
+	r.SetTarget(typ)
 	r.SetLabel(name, "**current-domain**")
 	return r
 }
@@ -544,10 +548,11 @@ func tc(desc string, recs ...*rec) *TestCase {
 		if r.Type == "IGNORE_NAME" {
 			ignoredNames = append(ignoredNames, r.GetLabel())
 		} else if r.Type == "IGNORE_TARGET" {
-			ignoredTargets = append(ignoredTargets, &models.IgnoreTarget{
+			rec := &models.IgnoreTarget{
 				Pattern: r.GetLabel(),
-				Type:    r.Target,
-			})
+				Type:    r.GetTargetField(),
+			}
+			ignoredTargets = append(ignoredTargets, rec)
 		} else {
 			records = append(records, r)
 		}
