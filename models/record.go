@@ -7,8 +7,6 @@ import (
 	"sort"
 	"strings"
 
-	yaml "gopkg.in/yaml.v2"
-
 	"github.com/jinzhu/copier"
 	"github.com/miekg/dns"
 	"github.com/miekg/dns/dnsutil"
@@ -114,7 +112,6 @@ type RecordConfig struct {
 }
 
 // MarshalJSON marshals RecordConfig.
-// Needed by pkg/js
 func (rc *RecordConfig) MarshalJSON() ([]byte, error) {
 	recj := &struct {
 		RecordConfig
@@ -130,22 +127,23 @@ func (rc *RecordConfig) MarshalJSON() ([]byte, error) {
 	return j, nil
 }
 
-// MarshalYAML impliments a YAML unmarshal for RecordConfigs.
-func (rc *RecordConfig) MarshalYAML() ([]byte, error) {
-	fmt.Println("XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX")
-	recj := &struct {
-		RecordConfig
-		Target string `yaml:"target"`
-	}{
-		RecordConfig: *rc,
-		Target:       rc.GetTargetField(),
-	}
-	j, err := yaml.Marshal(*recj)
-	if err != nil {
-		return nil, err
-	}
-	return j, nil
-}
+// // MarshalYAML impliments a YAML unmarshal for RecordConfigs.
+//	import yaml "gopkg.in/yaml.v2"
+// func (rc *RecordConfig) MarshalYAML() ([]byte, error) {
+// 	fmt.Println("XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX")
+// 	recj := &struct {
+// 		RecordConfig
+// 		Target string `yaml:"target"`
+// 	}{
+// 		RecordConfig: *rc,
+// 		Target:       rc.GetTargetField(),
+// 	}
+// 	j, err := yaml.Marshal(*recj)
+// 	if err != nil {
+// 		return nil, err
+// 	}
+// 	return j, nil
+// }
 
 // UnmarshalJSON unmarshals RecordConfig.
 func (rc *RecordConfig) UnmarshalJSON(b []byte) error {
@@ -214,63 +212,6 @@ func (rc *RecordConfig) UnmarshalJSON(b []byte) error {
 	return nil
 }
 
-// // UnmarshalYAML unmarshals RecordConfig.
-// func (rc *RecordConfig) UnmarshalYAML(b []byte) error {
-// 	recj := &struct {
-// 		//RecordConfig
-// 		Target string `yaml:"target"`
-
-// 		Type             string            `json:"type"` // All caps rtype name.
-// 		Name             string            `json:"name"` // The short name. See above.
-// 		SubDomain        string            `json:"subdomain,omitempty"`
-// 		NameFQDN         string            `json:"-"` // Must end with ".$origin". See above.
-// 		target           string            // If a name, must end with "."
-// 		TTL              uint32            `json:"ttl,omitempty"`
-// 		Metadata         map[string]string `json:"meta,omitempty"`
-// 		MxPreference     uint16            `json:"mxpreference,omitempty"`
-// 		SrvPriority      uint16            `json:"srvpriority,omitempty"`
-// 		SrvWeight        uint16            `json:"srvweight,omitempty"`
-// 		SrvPort          uint16            `json:"srvport,omitempty"`
-// 		CaaTag           string            `json:"caatag,omitempty"`
-// 		CaaFlag          uint8             `json:"caaflag,omitempty"`
-// 		DsKeyTag         uint16            `json:"dskeytag,omitempty"`
-// 		DsAlgorithm      uint8             `json:"dsalgorithm,omitempty"`
-// 		DsDigestType     uint8             `json:"dsdigesttype,omitempty"`
-// 		DsDigest         string            `json:"dsdigest,omitempty"`
-// 		NaptrOrder       uint16            `json:"naptrorder,omitempty"`
-// 		NaptrPreference  uint16            `json:"naptrpreference,omitempty"`
-// 		NaptrFlags       string            `json:"naptrflags,omitempty"`
-// 		NaptrService     string            `json:"naptrservice,omitempty"`
-// 		NaptrRegexp      string            `json:"naptrregexp,omitempty"`
-// 		SshfpAlgorithm   uint8             `json:"sshfpalgorithm,omitempty"`
-// 		SshfpFingerprint uint8             `json:"sshfpfingerprint,omitempty"`
-// 		SoaMbox          string            `json:"soambox,omitempty"`
-// 		SoaSerial        uint32            `json:"soaserial,omitempty"`
-// 		SoaRefresh       uint32            `json:"soarefresh,omitempty"`
-// 		SoaRetry         uint32            `json:"soaretry,omitempty"`
-// 		SoaExpire        uint32            `json:"soaexpire,omitempty"`
-// 		SoaMinttl        uint32            `json:"soaminttl,omitempty"`
-// 		TlsaUsage        uint8             `json:"tlsausage,omitempty"`
-// 		TlsaSelector     uint8             `json:"tlsaselector,omitempty"`
-// 		TlsaMatchingType uint8             `json:"tlsamatchingtype,omitempty"`
-// 		TxtStrings       []string          `json:"txtstrings,omitempty"` // TxtStrings stores all strings (including the first). Target stores only the first one.
-// 		R53Alias         map[string]string `json:"r53_alias,omitempty"`
-// 		AzureAlias       map[string]string `json:"azure_alias,omitempty"`
-
-// 		Original interface{} `json:"-"` // Store pointer to provider-specific record object. Used in diffing.
-// 	}{}
-// 	if err := yaml.Unmarshal(b, &recj); err != nil {
-// 		return err
-// 	}
-
-// 	// Copy the exported fields.
-// 	copier.Copy(&recj, &rc)
-// 	// Set each unexported field.
-// 	rc.SetTarget(recj.Target)
-
-// 	return nil
-// }
-
 // Copy returns a deep copy of a RecordConfig.
 func (rc *RecordConfig) Copy() (*RecordConfig, error) {
 	newR := &RecordConfig{}
@@ -291,7 +232,9 @@ func (rc *RecordConfig) SetLabel(short, origin string) {
 		panic(fmt.Errorf("origin (%s) is not supposed to end with a dot", origin))
 	}
 	if strings.HasSuffix(short, ".") {
-		panic(fmt.Errorf("short (%s) is not supposed to end with a dot", origin))
+		if short != "**current-domain**" {
+			panic(fmt.Errorf("short (%s) is not supposed to end with a dot", origin))
+		}
 	}
 
 	// TODO(tlim): We should add more validation here or in a separate validation
