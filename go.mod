@@ -36,6 +36,7 @@ require (
 	github.com/hashicorp/vault/api v1.0.4
 	github.com/hexonet/go-sdk v3.5.1+incompatible
 	github.com/jarcoal/httpmock v1.0.4 // indirect
+	github.com/jinzhu/copier v0.2.5
 	github.com/juju/testing v0.0.0-20201216035041-2be42bba85f3 // indirect
 	github.com/kolo/xmlrpc v0.0.0-20201022064351-38db28db192b // indirect
 	github.com/miekg/dns v1.1.35
@@ -50,6 +51,7 @@ require (
 	github.com/pierrec/lz4 v2.6.0+incompatible // indirect
 	github.com/pkg/errors v0.9.1
 	github.com/pquerna/otp v1.3.0
+	github.com/qdm12/reprint v0.0.0-20200326205758-722754a53494
 	github.com/renier/xmlrpc v0.0.0-20191022213033-ce560eccbd00 // indirect
 	github.com/robertkrimen/otto v0.0.0-20200922221731-ef014fd054ac
 	github.com/russross/blackfriday/v2 v2.1.0 // indirect

@@ -132,7 +132,7 @@ func fromRecordConfig(in *models.RecordConfig) *record {
 		rc.Destination = strings.TrimSuffix(in.GetTargetField(), ".")
 		rc.Priority = strconv.Itoa(int(in.MxPreference))
 	case "SRV":
-		rc.Destination = strconv.Itoa(int(in.SrvPriority)) + " " + strconv.Itoa(int(in.SrvWeight)) + " " + strconv.Itoa(int(in.SrvPort)) + " " + in.Target
+		rc.Destination = strconv.Itoa(int(in.SrvPriority)) + " " + strconv.Itoa(int(in.SrvWeight)) + " " + strconv.Itoa(int(in.SrvPort)) + " " + in.GetTargetField()
 	case "CAA":
 		rc.Destination = strconv.Itoa(int(in.CaaFlag)) + " " + in.CaaTag + " \"" + in.GetTargetField() + "\""
 	case "TLSA":

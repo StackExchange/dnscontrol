@@ -8,7 +8,7 @@ import (
 	"github.com/miekg/dns"
 )
 
-/* .Target is kind of a mess.
+/* .target is kind of a mess.
 For simple rtypes it is the record's value. (i.e. for an A record
 	it is the IP address).
 For complex rtypes (like an MX record has a preference and a value)
@@ -26,7 +26,7 @@ func (rc *RecordConfig) GetTargetField() string {
 	if rc.HasFormatIdenticalToTXT() {
 		return strings.Join(rc.TxtStrings, "")
 	}
-	return rc.Target
+	return rc.target
 }
 
 // // GetTargetSingle returns the target for types that have a single value target
@@ -35,15 +35,15 @@ func (rc *RecordConfig) GetTargetField() string {
 // 	if rc.Type == "MX" || rc.Type == "SRV" || rc.Type == "CAA" || rc.Type == "TLSA" || rc.Type == "TXT" {
 // 		panic("TargetSingle called on a type with a multi-parameter rtype.")
 // 	}
-// 	return rc.Target
+// 	return rc.target
 // }
 
-// GetTargetIP returns the net.IP stored in Target.
+// GetTargetIP returns the net.IP stored in .target.
 func (rc *RecordConfig) GetTargetIP() net.IP {
 	if rc.Type != "A" && rc.Type != "AAAA" {
 		panic(fmt.Errorf("GetTargetIP called on an inappropriate rtype (%s)", rc.Type))
 	}
-	return net.ParseIP(rc.Target)
+	return net.ParseIP(rc.target)
 }
 
 // GetTargetCombined returns a string with the various fields combined.
@@ -54,15 +54,15 @@ func (rc *RecordConfig) GetTargetCombined() string {
 		switch rc.Type { // #rtype_variations
 		case "R53_ALIAS":
 			// Differentiate between multiple R53_ALIASs on the same label.
-			return fmt.Sprintf("%s atype=%s zone_id=%s", rc.Target, rc.R53Alias["type"], rc.R53Alias["zone_id"])
+			return fmt.Sprintf("%s atype=%s zone_id=%s", rc.target, rc.R53Alias["type"], rc.R53Alias["zone_id"])
 		case "AZURE_ALIAS":
 			// Differentiate between multiple AZURE_ALIASs on the same label.
-			return fmt.Sprintf("%s atype=%s", rc.Target, rc.AzureAlias["type"])
+			return fmt.Sprintf("%s atype=%s", rc.target, rc.AzureAlias["type"])
 		case "SOA":
-			return fmt.Sprintf("%s %v %d %d %d %d %d", rc.Target, rc.SoaMbox, rc.SoaSerial, rc.SoaRefresh, rc.SoaRetry, rc.SoaExpire, rc.SoaMinttl)
+			return fmt.Sprintf("%s %v %d %d %d %d %d", rc.target, rc.SoaMbox, rc.SoaSerial, rc.SoaRefresh, rc.SoaRetry, rc.SoaExpire, rc.SoaMinttl)
 		default:
 			// Just return the target.
-			return rc.Target
+			return rc.target
 		}
 	}
 
@@ -92,7 +92,7 @@ func (rc *RecordConfig) GetTargetSortable() string {
 
 // GetTargetDebug returns a string with the various fields spelled out.
 func (rc *RecordConfig) GetTargetDebug() string {
-	content := fmt.Sprintf("%s %s %s %d", rc.Type, rc.NameFQDN, rc.Target, rc.TTL)
+	content := fmt.Sprintf("%s %s %s %d", rc.Type, rc.NameFQDN, rc.target, rc.TTL)
 	switch rc.Type { // #rtype_variations
 	case "A", "AAAA", "CNAME", "NS", "PTR", "TXT":
 		// Nothing special.
@@ -103,7 +103,7 @@ func (rc *RecordConfig) GetTargetDebug() string {
 	case "MX":
 		content += fmt.Sprintf(" pref=%d", rc.MxPreference)
 	case "SOA":
-		content = fmt.Sprintf("%s ns=%v mbox=%v serial=%v refresh=%v retry=%v expire=%v minttl=%v", rc.Type, rc.Target, rc.SoaMbox, rc.SoaSerial, rc.SoaRefresh, rc.SoaRetry, rc.SoaExpire, rc.SoaMinttl)
+		content = fmt.Sprintf("%s ns=%v mbox=%v serial=%v refresh=%v retry=%v expire=%v minttl=%v", rc.Type, rc.target, rc.SoaMbox, rc.SoaSerial, rc.SoaRefresh, rc.SoaRetry, rc.SoaExpire, rc.SoaMinttl)
 	case "SRV":
 		content += fmt.Sprintf(" srvpriority=%d srvweight=%d srvport=%d", rc.SrvPriority, rc.SrvWeight, rc.SrvPort)
 	case "SSHFP":
@@ -129,7 +129,7 @@ func (rc *RecordConfig) GetTargetDebug() string {
 
 // SetTarget sets the target, assuming that the rtype is appropriate.
 func (rc *RecordConfig) SetTarget(target string) error {
-	rc.Target = target
+	rc.target = target
 	return nil
 }
 

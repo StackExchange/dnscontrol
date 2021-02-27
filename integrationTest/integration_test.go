@@ -9,14 +9,13 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/miekg/dns/dnsutil"
-
 	"github.com/StackExchange/dnscontrol/v3/models"
 	"github.com/StackExchange/dnscontrol/v3/pkg/nameservers"
 	"github.com/StackExchange/dnscontrol/v3/pkg/normalize"
 	"github.com/StackExchange/dnscontrol/v3/providers"
 	_ "github.com/StackExchange/dnscontrol/v3/providers/_all"
 	"github.com/StackExchange/dnscontrol/v3/providers/config"
+	"github.com/miekg/dns/dnsutil"
 )
 
 var providerToRun = flag.String("provider", "", "Provider to run")
@@ -149,13 +148,6 @@ func testPermitted(t *testing.T, p string, f TestGroup) error {
 	return nil
 }
 
-//func makeClearFilter() *TestCase {
-//	tc := tc("Empty")
-//	tc.ChangeFilter = true
-//	return tc
-//}
-
-// desc := fmt.Sprintf("%d: %s", i, tst.Desc)
 // makeChanges runs one set of DNS record tests. Returns true on success.
 func makeChanges(t *testing.T, prv providers.DNSServiceProvider, dc *models.DomainConfig, tst *TestCase, desc string, expectChanges bool, origConfig map[string]string) bool {
 	domainName := dc.Name
@@ -333,39 +325,29 @@ type TestGroup struct {
 
 type TestCase struct {
 	Desc           string
-	Records        []*rec
+	Records        []*models.RecordConfig
 	IgnoredNames   []string
 	IgnoredTargets []*models.IgnoreTarget
 }
 
-type rec models.RecordConfig
-
-func (r *rec) GetLabel() string {
-	return r.Name
-}
-
-func (r *rec) SetLabel(label, domain string) {
+func SetLabel(r *models.RecordConfig, label, domain string) {
 	r.Name = label
 	r.NameFQDN = dnsutil.AddOrigin(label, "**current-domain**")
 }
 
-func (r *rec) SetTarget(target string) {
-	r.Target = target
-}
-
-func a(name, target string) *rec {
+func a(name, target string) *models.RecordConfig {
 	return makeRec(name, target, "A")
 }
 
-func cname(name, target string) *rec {
+func cname(name, target string) *models.RecordConfig {
 	return makeRec(name, target, "CNAME")
 }
 
-func alias(name, target string) *rec {
+func alias(name, target string) *models.RecordConfig {
 	return makeRec(name, target, "ALIAS")
 }
 
-func r53alias(name, aliasType, target string) *rec {
+func r53alias(name, aliasType, target string) *models.RecordConfig {
 	r := makeRec(name, target, "R53_ALIAS")
 	r.R53Alias = map[string]string{
 		"type": aliasType,
@@ -373,7 +355,7 @@ func r53alias(name, aliasType, target string) *rec {
 	return r
 }
 
-func azureAlias(name, aliasType, target string) *rec {
+func azureAlias(name, aliasType, target string) *models.RecordConfig {
 	r := makeRec(name, target, "AZURE_ALIAS")
 	r.AzureAlias = map[string]string{
 		"type": aliasType,
@@ -381,33 +363,33 @@ func azureAlias(name, aliasType, target string) *rec {
 	return r
 }
 
-func cfRedir(pattern, target string) *rec {
+func cfRedir(pattern, target string) *models.RecordConfig {
 	t := fmt.Sprintf("%s,%s", pattern, target)
 	r := makeRec("@", t, "CF_REDIRECT")
 	return r
 }
 
-func cfRedirTemp(pattern, target string) *rec {
+func cfRedirTemp(pattern, target string) *models.RecordConfig {
 	t := fmt.Sprintf("%s,%s", pattern, target)
 	r := makeRec("@", t, "CF_TEMP_REDIRECT")
 	return r
 }
 
-func ns(name, target string) *rec {
+func ns(name, target string) *models.RecordConfig {
 	return makeRec(name, target, "NS")
 }
 
-func mx(name string, prio uint16, target string) *rec {
+func mx(name string, prio uint16, target string) *models.RecordConfig {
 	r := makeRec(name, target, "MX")
 	r.MxPreference = prio
 	return r
 }
 
-func ptr(name, target string) *rec {
+func ptr(name, target string) *models.RecordConfig {
 	return makeRec(name, target, "PTR")
 }
 
-func naptr(name string, order uint16, preference uint16, flags string, service string, regexp string, target string) *rec {
+func naptr(name string, order uint16, preference uint16, flags string, service string, regexp string, target string) *models.RecordConfig {
 	r := makeRec(name, target, "NAPTR")
 	r.NaptrOrder = order
 	r.NaptrPreference = preference
@@ -417,7 +399,7 @@ func naptr(name string, order uint16, preference uint16, flags string, service s
 	return r
 }
 
-func ds(name string, keyTag uint16, algorithm, digestType uint8, digest string) *rec {
+func ds(name string, keyTag uint16, algorithm, digestType uint8, digest string) *models.RecordConfig {
 	r := makeRec(name, "", "DS")
 	r.DsKeyTag = keyTag
 	r.DsAlgorithm = algorithm
@@ -426,7 +408,7 @@ func ds(name string, keyTag uint16, algorithm, digestType uint8, digest string) 
 	return r
 }
 
-func srv(name string, priority, weight, port uint16, target string) *rec {
+func srv(name string, priority, weight, port uint16, target string) *models.RecordConfig {
 	r := makeRec(name, target, "SRV")
 	r.SrvPriority = priority
 	r.SrvWeight = weight
@@ -434,35 +416,35 @@ func srv(name string, priority, weight, port uint16, target string) *rec {
 	return r
 }
 
-func sshfp(name string, algorithm uint8, fingerprint uint8, target string) *rec {
+func sshfp(name string, algorithm uint8, fingerprint uint8, target string) *models.RecordConfig {
 	r := makeRec(name, target, "SSHFP")
 	r.SshfpAlgorithm = algorithm
 	r.SshfpFingerprint = fingerprint
 	return r
 }
 
-func txt(name, target string) *rec {
+func txt(name, target string) *models.RecordConfig {
 	// FYI: This must match the algorithm in pkg/js/helpers.js TXT.
 	r := makeRec(name, target, "TXT")
 	r.TxtStrings = []string{target}
 	return r
 }
 
-func txtmulti(name string, target []string) *rec {
+func txtmulti(name string, target []string) *models.RecordConfig {
 	// FYI: This must match the algorithm in pkg/js/helpers.js TXT.
 	r := makeRec(name, target[0], "TXT")
 	r.TxtStrings = target
 	return r
 }
 
-func caa(name string, tag string, flag uint8, target string) *rec {
+func caa(name string, tag string, flag uint8, target string) *models.RecordConfig {
 	r := makeRec(name, target, "CAA")
 	r.CaaFlag = flag
 	r.CaaTag = tag
 	return r
 }
 
-func tlsa(name string, usage, selector, matchingtype uint8, target string) *rec {
+func tlsa(name string, usage, selector, matchingtype uint8, target string) *models.RecordConfig {
 	r := makeRec(name, target, "TLSA")
 	r.TlsaUsage = usage
 	r.TlsaSelector = selector
@@ -470,40 +452,41 @@ func tlsa(name string, usage, selector, matchingtype uint8, target string) *rec 
 	return r
 }
 
-func ignoreName(name string) *rec {
-	r := &rec{
+func ignoreName(name string) *models.RecordConfig {
+	r := &models.RecordConfig{
 		Type: "IGNORE_NAME",
 	}
-	r.SetLabel(name, "**current-domain**")
+	SetLabel(r, name, "**current-domain**")
 	return r
 }
 
-func ignoreTarget(name string, typ string) *rec {
-	r := &rec{
-		Type:   "IGNORE_TARGET",
-		Target: typ,
+func ignoreTarget(name string, typ string) *models.RecordConfig {
+	r := &models.RecordConfig{
+		Type: "IGNORE_TARGET",
 	}
-	r.SetLabel(name, "**current-domain**")
+	r.SetTarget(typ)
+	SetLabel(r, name, "**current-domain**")
 	return r
 }
 
-func makeRec(name, target, typ string) *rec {
-	r := &rec{
+func makeRec(name, target, typ string) *models.RecordConfig {
+	r := &models.RecordConfig{
 		Type: typ,
 		TTL:  300,
 	}
-	r.SetLabel(name, "**current-domain**")
+	SetLabel(r, name, "**current-domain**")
 	r.SetTarget(target)
 	return r
 }
 
-func (r *rec) ttl(t uint32) *rec {
+//func (r *models.RecordConfig) ttl(t uint32) *models.RecordConfig {
+func ttl(r *models.RecordConfig, t uint32) *models.RecordConfig {
 	r.TTL = t
 	return r
 }
 
-func manyA(namePattern, target string, n int) []*rec {
-	recs := []*rec{}
+func manyA(namePattern, target string, n int) []*models.RecordConfig {
+	recs := []*models.RecordConfig{}
 	for i := 0; i < n; i++ {
 		recs = append(recs, makeRec(fmt.Sprintf(namePattern, i), target, "A"))
 	}
@@ -541,18 +524,19 @@ func testgroup(desc string, items ...interface{}) *TestGroup {
 	return group
 }
 
-func tc(desc string, recs ...*rec) *TestCase {
-	var records []*rec
+func tc(desc string, recs ...*models.RecordConfig) *TestCase {
+	var records []*models.RecordConfig
 	var ignoredNames []string
 	var ignoredTargets []*models.IgnoreTarget
 	for _, r := range recs {
 		if r.Type == "IGNORE_NAME" {
 			ignoredNames = append(ignoredNames, r.GetLabel())
 		} else if r.Type == "IGNORE_TARGET" {
-			ignoredTargets = append(ignoredTargets, &models.IgnoreTarget{
+			rec := &models.IgnoreTarget{
 				Pattern: r.GetLabel(),
-				Type:    r.Target,
-			})
+				Type:    r.GetTargetField(),
+			}
+			ignoredTargets = append(ignoredTargets, rec)
 		} else {
 			records = append(records, r)
 		}
@@ -650,11 +634,11 @@ func makeTests(t *testing.T) []*TestGroup {
 			tc("Change it", a("@", "1.2.3.4")),
 			tc("Add another", a("@", "1.2.3.4"), a("www", "1.2.3.4")),
 			tc("Add another(same name)", a("@", "1.2.3.4"), a("www", "1.2.3.4"), a("www", "5.6.7.8")),
-			tc("Change a ttl", a("@", "1.2.3.4").ttl(1000), a("www", "1.2.3.4"), a("www", "5.6.7.8")),
-			tc("Change single target from set", a("@", "1.2.3.4").ttl(1000), a("www", "2.2.2.2"), a("www", "5.6.7.8")),
-			tc("Change all ttls", a("@", "1.2.3.4").ttl(500), a("www", "2.2.2.2").ttl(400), a("www", "5.6.7.8").ttl(400)),
-			tc("Delete one", a("@", "1.2.3.4").ttl(500), a("www", "5.6.7.8").ttl(400)),
-			tc("Add back and change ttl", a("www", "5.6.7.8").ttl(700), a("www", "1.2.3.4").ttl(700)),
+			tc("Change a ttl", ttl(a("@", "1.2.3.4"), 1000), a("www", "1.2.3.4"), a("www", "5.6.7.8")),
+			tc("Change single target from set", ttl(a("@", "1.2.3.4"), 1000), a("www", "2.2.2.2"), a("www", "5.6.7.8")),
+			tc("Change all ttls", ttl(a("@", "1.2.3.4"), 500), ttl(a("www", "2.2.2.2"), 400), ttl(a("www", "5.6.7.8"), 400)),
+			tc("Delete one", ttl(a("@", "1.2.3.4"), 500), ttl(a("www", "5.6.7.8"), 400)),
+			tc("Add back and change ttl", ttl(a("www", "5.6.7.8"), 700), ttl(a("www", "1.2.3.4"), 700)),
 			tc("Change targets and ttls", a("www", "1.1.1.1"), a("www", "2.2.2.2")),
 		),
 

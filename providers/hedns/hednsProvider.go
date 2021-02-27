@@ -301,8 +301,8 @@ func (c *hednsProvider) GetZoneRecords(domain string) (models.Records, error) {
 				RecordName: parser.parseStringElement(element.Find(".dns_view")),
 				RecordID:   parser.parseIntAttr(element, "id"),
 			},
-			Target: parser.parseStringAttr(element.Find("td:nth-child(7)"), "data"),
 		}
+		rc.SetTarget(parser.parseStringAttr(element.Find("td:nth-child(7)"), "data"))
 
 		priority := parser.parseIntElement(element.Find("td:nth-child(6)"))
 		if parser.err != nil {
@@ -319,22 +319,22 @@ func (c *hednsProvider) GetZoneRecords(domain string) (models.Records, error) {
 
 		// dns.he.net omits the trailing "." on the hostnames for certain record types
 		if rc.Type == "CNAME" || rc.Type == "MX" || rc.Type == "NS" || rc.Type == "PTR" {
-			rc.Target += "."
+			rc.SetTarget(rc.GetTargetField() + ".")
 		}
 
 		switch rc.Type {
 		case "ALIAS":
-			err = rc.SetTarget(rc.Target)
+			err = rc.SetTarget(rc.GetTargetField())
 		case "MX":
-			err = rc.SetTargetMX(uint16(priority), rc.Target)
+			err = rc.SetTargetMX(uint16(priority), rc.GetTargetField())
 		case "SRV":
-			err = rc.SetTargetSRVPriorityString(uint16(priority), rc.Target)
+			err = rc.SetTargetSRVPriorityString(uint16(priority), rc.GetTargetField())
 		case "SPF":
 			// Convert to TXT record as SPF is deprecated
 			rc.Type = "TXT"
 			fallthrough
 		default:
-			err = rc.PopulateFromString(rc.Type, rc.Target, domain)
+			err = rc.PopulateFromString(rc.Type, rc.GetTargetField(), domain)
 		}
 
 		if err != nil {
@@ -566,10 +566,10 @@ func (c *hednsProvider) editZoneRecord(rc *models.RecordConfig, create bool) err
 	switch rc.Type {
 	case "MX":
 		values.Set("Priority", strconv.FormatUint(uint64(rc.MxPreference), 10))
-		values.Set("Content", rc.Target)
+		values.Set("Content", rc.GetTargetField())
 	case "SRV":
 		values.Del("Content")
-		values.Set("Target", rc.Target)
+		values.Set("Target", rc.GetTargetField())
 		values.Set("Priority", strconv.FormatUint(uint64(rc.SrvPriority), 10))
 		values.Set("Weight", strconv.FormatUint(uint64(rc.SrvWeight), 10))
 		values.Set("Port", strconv.FormatUint(uint64(rc.SrvPort), 10))
