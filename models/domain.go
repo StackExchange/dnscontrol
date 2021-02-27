@@ -3,6 +3,7 @@ package models
 import (
 	"fmt"
 
+	"github.com/qdm12/reprint"
 	"golang.org/x/net/idna"
 )
 
@@ -43,7 +44,8 @@ func (dc *DomainConfig) Copy() (*DomainConfig, error) {
 	dnsps := dc.DNSProviderInstances
 	dc.RegistrarInstance = nil
 	dc.DNSProviderInstances = nil
-	err := copyObj(dc, newDc)
+	reprint.FromTo(dc, newDc) // Deep copy
+	var err error
 	dc.RegistrarInstance = reg
 	newDc.RegistrarInstance = reg
 	dc.DNSProviderInstances = dnsps

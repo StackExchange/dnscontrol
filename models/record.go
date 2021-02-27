@@ -10,6 +10,7 @@ import (
 	"github.com/jinzhu/copier"
 	"github.com/miekg/dns"
 	"github.com/miekg/dns/dnsutil"
+	"github.com/qdm12/reprint"
 )
 
 // RecordConfig stores a DNS record.
@@ -215,8 +216,12 @@ func (rc *RecordConfig) UnmarshalJSON(b []byte) error {
 // Copy returns a deep copy of a RecordConfig.
 func (rc *RecordConfig) Copy() (*RecordConfig, error) {
 	newR := &RecordConfig{}
-	err := copyObj(rc, newR)
-	return newR, err
+	//err := copyObj(rc, newR)
+	//// Copy non-exported items
+	//newR.target = rc.target
+	//return newR, err
+	reprint.FromTo(rc, newR) // Deep copy
+	return newR, nil
 }
 
 // SetLabel sets the .Name/.NameFQDN fields given a short name and origin.

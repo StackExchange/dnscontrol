@@ -133,6 +133,9 @@ func (z *ZoneGenData) generateZoneFileHelper(w io.Writer) error {
 
 		// the remaining line
 		target := rr.GetTargetCombined()
+		if target == "" {
+			panic("empty target")
+		}
 
 		// comment
 		comment := ""
