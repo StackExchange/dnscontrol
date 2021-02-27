@@ -1,15 +1,11 @@
 package models
 
-import (
-	"strings"
-)
-
 /*
 Sadly many providers handle TXT records in strange and non-compliant ways.
 
 The variations we've seen:
 
-* a TXT record is a list of strings, each less than 256-octets.
+* a TXT record is a list of strings, each 255-octets or fewer.
 * a TXT record is a list of strings, all but the last will be 255 octets in length.
 * a TXT record is a string less than 256 octets.
 * a TXT record is any length, but we'll split it into 255-octet chunks behind the scenes.
@@ -22,16 +18,15 @@ opportunties to work with the data:
 the provider to return an error if it won't be able to handle the
 contents. For example, it might detect that the string contains a char
 the provider doesn't support (for example, a backtick). This auditing
-is done without any communication to the provider's API, which permits
+is done without any communication to the provider's API. This allows
 such errors to be detected at the "dnscontrol check" stage.  2. When
-performing corrections (GetDomainCorrections(), the provider can slice
+performing corrections (GetDomainCorrections()), the provider can slice
 and dice the user's input however they want.
 
-If the user input is a list of strings:
-* The strings are stored in RecordConfig.TxtStrings
-
-If the user input is a single string:
-* The strings are stored in RecordConfig.TxtStrings[0]
+* If the user input is a list of strings:
+  * The strings are stored in RecordConfig.TxtStrings
+* If the user input is a single string:
+  * The strings are stored in RecordConfig.TxtStrings[0]
 
 In both cases, the .Target stores a string that can be used in error
 messages and other UI messages. This string should not be used by the
@@ -51,28 +46,28 @@ func (rc *RecordConfig) HasFormatIdenticalToTXT() bool {
 // The string is stored in .Target, and split into 255-octet chunks
 // for .TxtStrings.
 func (rc *RecordConfig) SetTargetTXT(s string) error {
-	rc.SetTarget(s)
-	rc.TxtStrings = splitChunks(s, 255)
 	if rc.Type == "" {
 		rc.Type = "TXT"
-	}
-	if !rc.HasFormatIdenticalToTXT() {
+	} else if !rc.HasFormatIdenticalToTXT() {
 		panic("assertion failed: SetTargetTXT called when .Type is not TXT or compatible type")
 	}
+
+	rc.TxtStrings = []string{s}
+	rc.SetTarget(rc.zoneFileQuoted())
 	return nil
 }
 
 // SetTargetTXTs sets the TXT fields when there are many strings.
 // The individual strings are stored in .TxtStrings, and joined to make .Target.
 func (rc *RecordConfig) SetTargetTXTs(s []string) error {
-	rc.SetTarget(strings.Join(s, ""))
-	rc.TxtStrings = s
 	if rc.Type == "" {
 		rc.Type = "TXT"
-	}
-	if !rc.HasFormatIdenticalToTXT() {
+	} else if !rc.HasFormatIdenticalToTXT() {
 		panic("assertion failed: SetTargetTXTs called when .Type is not TXT or compatible type")
 	}
+
+	rc.TxtStrings = s
+	rc.SetTarget(rc.zoneFileQuoted())
 	return nil
 }
 
