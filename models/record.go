@@ -8,9 +8,9 @@ import (
 	"strings"
 
 	"github.com/jinzhu/copier"
+	"github.com/qdm12/reprint"
 	"github.com/miekg/dns"
 	"github.com/miekg/dns/dnsutil"
-	"github.com/qdm12/reprint"
 )
 
 // RecordConfig stores a DNS record.
@@ -128,24 +128,6 @@ func (rc *RecordConfig) MarshalJSON() ([]byte, error) {
 	return j, nil
 }
 
-// // MarshalYAML impliments a YAML unmarshal for RecordConfigs.
-//	import yaml "gopkg.in/yaml.v2"
-// func (rc *RecordConfig) MarshalYAML() ([]byte, error) {
-// 	fmt.Println("XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX")
-// 	recj := &struct {
-// 		RecordConfig
-// 		Target string `yaml:"target"`
-// 	}{
-// 		RecordConfig: *rc,
-// 		Target:       rc.GetTargetField(),
-// 	}
-// 	j, err := yaml.Marshal(*recj)
-// 	if err != nil {
-// 		return nil, err
-// 	}
-// 	return j, nil
-// }
-
 // UnmarshalJSON unmarshals RecordConfig.
 func (rc *RecordConfig) UnmarshalJSON(b []byte) error {
 	recj := &struct {
@@ -196,8 +178,11 @@ func (rc *RecordConfig) UnmarshalJSON(b []byte) error {
 	}
 
 	// Copy the exported fields.
-	//copier.Copy(&recj, &rc)
-	copier.Copy(&rc, &recj)
+	copier.Copy(&rc, &recj) // Copy and skip mismatched fields
+	// Set each unexported field.
+	rc.SetTarget(recj.Target)
+
+	// Some sanity checks:
 	if recj.Type != rc.Type {
 		panic("DEBUG: TYPE NOT COPIED\n")
 	}
@@ -207,8 +192,6 @@ func (rc *RecordConfig) UnmarshalJSON(b []byte) error {
 	if recj.Name != rc.Name {
 		panic("DEBUG: NAME NOT COPIED\n")
 	}
-	// Set each unexported field.
-	rc.SetTarget(recj.Target)
 
 	return nil
 }
@@ -216,7 +199,10 @@ func (rc *RecordConfig) UnmarshalJSON(b []byte) error {
 // Copy returns a deep copy of a RecordConfig.
 func (rc *RecordConfig) Copy() (*RecordConfig, error) {
 	newR := &RecordConfig{}
+	// Copy the exported fields.
 	err := reprint.FromTo(rc, newR) // Deep copy
+	// Set each unexported field.
+	newR.target = rc.target
 	return newR, err
 }
 

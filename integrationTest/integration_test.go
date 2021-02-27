@@ -148,13 +148,6 @@ func testPermitted(t *testing.T, p string, f TestGroup) error {
 	return nil
 }
 
-//func makeClearFilter() *TestCase {
-//	tc := tc("Empty")
-//	tc.ChangeFilter = true
-//	return tc
-//}
-
-// desc := fmt.Sprintf("%d: %s", i, tst.Desc)
 // makeChanges runs one set of DNS record tests. Returns true on success.
 func makeChanges(t *testing.T, prv providers.DNSServiceProvider, dc *models.DomainConfig, tst *TestCase, desc string, expectChanges bool, origConfig map[string]string) bool {
 	domainName := dc.Name
@@ -332,34 +325,7 @@ type TestCase struct {
 	IgnoredTargets []*models.IgnoreTarget
 }
 
-////type rec models.RecordConfig
-//type rec struct {
-//	models.RecordConfig
-//}
-//
-//func (r *rec) GetLabel() string {
-//	return r.Name
-//}
-//
-//func (r *rec) SetLabel(label, domain string) {
-//	r.Name = label
-//	r.NameFQDN = dnsutil.AddOrigin(label, "**current-domain**")
-//}
-//
-//func (r *rec) SetTarget_(target string) {
-//	t, ok := (*r).(models.RecordConfig)
-//	if ok {
-//		t.SetTarget(target)
-//	}
-//	//rc := (*r).(models.RecordConfig)
-//	//_ = rc
-//}
-//
-//func (r *rec) GetTargetField() string {
-//	return r.GetTargetField()
-//}
-
-func SetLabel_(r *models.RecordConfig, label, domain string) {
+func SetLabel(r *models.RecordConfig, label, domain string) {
 	r.Name = label
 	r.NameFQDN = dnsutil.AddOrigin(label, "**current-domain**")
 }
@@ -485,7 +451,7 @@ func ignoreName(name string) *models.RecordConfig {
 	r := &models.RecordConfig{
 		Type: "IGNORE_NAME",
 	}
-	SetLabel_(r, name, "**current-domain**")
+	SetLabel(r, name, "**current-domain**")
 	return r
 }
 
@@ -494,7 +460,7 @@ func ignoreTarget(name string, typ string) *models.RecordConfig {
 		Type: "IGNORE_TARGET",
 	}
 	r.SetTarget(typ)
-	SetLabel_(r, name, "**current-domain**")
+	SetLabel(r, name, "**current-domain**")
 	return r
 }
 
@@ -503,7 +469,7 @@ func makeRec(name, target, typ string) *models.RecordConfig {
 		Type: typ,
 		TTL:  300,
 	}
-	SetLabel_(r, name, "**current-domain**")
+	SetLabel(r, name, "**current-domain**")
 	r.SetTarget(target)
 	return r
 }

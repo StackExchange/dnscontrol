@@ -182,12 +182,6 @@ func TestYamlRead(t *testing.T) {
 
 			es, as := string(expectedJSON), string(actualJSON)
 			testifyrequire.JSONEqf(t, es, as, "EXPECTING %q = \n```\n%s\n```", expectedFile, as)
-
-			//			if strings.TrimSpace(string(expectedJSON)) != strings.TrimSpace(string(actualJSON)) {
-			//				t.Error("Expected and actual json don't match")
-			//				t.Log("Expected:", string(expectedJSON))
-			//				t.Log("Actual  :", string(actualJSON))
-			//			}
 		})
 	}
 }

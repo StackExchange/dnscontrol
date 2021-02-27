@@ -47,7 +47,6 @@ func TestParsedFiles(t *testing.T) {
 			if err != nil {
 				t.Fatal(err)
 			}
-			// TODO: WTF?
 			// for _, dc := range conf.Domains {
 			// 	normalize.UpdateNameSplitHorizon(dc)
 			// }
