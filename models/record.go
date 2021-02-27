@@ -8,9 +8,9 @@ import (
 	"strings"
 
 	"github.com/jinzhu/copier"
-	"github.com/qdm12/reprint"
 	"github.com/miekg/dns"
 	"github.com/miekg/dns/dnsutil"
+	"github.com/qdm12/reprint"
 )
 
 // RecordConfig stores a DNS record.
@@ -72,13 +72,16 @@ import (
 //  rec.Label() == "@"   // Is this record at the apex?
 //
 type RecordConfig struct {
-	Type             string            `json:"type"` // All caps rtype name.
-	Name             string            `json:"name"` // The short name. See above.
-	SubDomain        string            `json:"subdomain,omitempty"`
-	NameFQDN         string            `json:"-"` // Must end with ".$origin". See above.
-	target           string            // If a name, must end with "."
-	TTL              uint32            `json:"ttl,omitempty"`
-	Metadata         map[string]string `json:"meta,omitempty"`
+	Type      string            `json:"type"` // All caps rtype name.
+	Name      string            `json:"name"` // The short name. See above.
+	SubDomain string            `json:"subdomain,omitempty"`
+	NameFQDN  string            `json:"-"` // Must end with ".$origin". See above.
+	target    string            // If a name, must end with "."
+	TTL       uint32            `json:"ttl,omitempty"`
+	Metadata  map[string]string `json:"meta,omitempty"`
+	Original  interface{}       `json:"-"` // Store pointer to provider-specific record object. Used in diffing.
+
+	// If you add a field to this struct, also add it to the list on MarshalJSON.
 	MxPreference     uint16            `json:"mxpreference,omitempty"`
 	SrvPriority      uint16            `json:"srvpriority,omitempty"`
 	SrvWeight        uint16            `json:"srvweight,omitempty"`
@@ -108,8 +111,6 @@ type RecordConfig struct {
 	TxtStrings       []string          `json:"txtstrings,omitempty"` // TxtStrings stores all strings (including the first). Target stores only the first one.
 	R53Alias         map[string]string `json:"r53_alias,omitempty"`
 	AzureAlias       map[string]string `json:"azure_alias,omitempty"`
-
-	Original interface{} `json:"-"` // Store pointer to provider-specific record object. Used in diffing.
 }
 
 // MarshalJSON marshals RecordConfig.
@@ -134,13 +135,15 @@ func (rc *RecordConfig) UnmarshalJSON(b []byte) error {
 		//RecordConfig
 		Target string `json:"target"`
 
-		Type             string            `json:"type"` // All caps rtype name.
-		Name             string            `json:"name"` // The short name. See above.
-		SubDomain        string            `json:"subdomain,omitempty"`
-		NameFQDN         string            `json:"-"` // Must end with ".$origin". See above.
-		target           string            // If a name, must end with "."
-		TTL              uint32            `json:"ttl,omitempty"`
-		Metadata         map[string]string `json:"meta,omitempty"`
+		Type      string            `json:"type"` // All caps rtype name.
+		Name      string            `json:"name"` // The short name. See above.
+		SubDomain string            `json:"subdomain,omitempty"`
+		NameFQDN  string            `json:"-"` // Must end with ".$origin". See above.
+		target    string            // If a name, must end with "."
+		TTL       uint32            `json:"ttl,omitempty"`
+		Metadata  map[string]string `json:"meta,omitempty"`
+		Original  interface{}       `json:"-"` // Store pointer to provider-specific record object. Used in diffing.
+
 		MxPreference     uint16            `json:"mxpreference,omitempty"`
 		SrvPriority      uint16            `json:"srvpriority,omitempty"`
 		SrvWeight        uint16            `json:"srvweight,omitempty"`
@@ -170,8 +173,6 @@ func (rc *RecordConfig) UnmarshalJSON(b []byte) error {
 		TxtStrings       []string          `json:"txtstrings,omitempty"` // TxtStrings stores all strings (including the first). Target stores only the first one.
 		R53Alias         map[string]string `json:"r53_alias,omitempty"`
 		AzureAlias       map[string]string `json:"azure_alias,omitempty"`
-
-		Original interface{} `json:"-"` // Store pointer to provider-specific record object. Used in diffing.
 	}{}
 	if err := json.Unmarshal(b, &recj); err != nil {
 		return err
