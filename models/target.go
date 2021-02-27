@@ -66,6 +66,11 @@ func (rc *RecordConfig) GetTargetCombined() string {
 		}
 	}
 
+	return rc.zoneFileQuoted()
+}
+
+// zoneFileQuoted returns the rData as would be quoted in a zonefile.
+func (rc *RecordConfig) zoneFileQuoted() string {
 	// We cheat by converting to a dns.RR and use the String() function.
 	// This combines all the data for us, and even does proper quoting.
 	// Sadly String() always includes a header, which we must strip out.

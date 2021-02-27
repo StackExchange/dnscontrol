@@ -190,7 +190,6 @@ func makeChanges(t *testing.T, prv providers.DNSServiceProvider, dc *models.Doma
 
 		if err := providers.RecordSupportAudit(*providerToRun, dom.Records); err != nil {
 			t.Skip(fmt.Sprintf("***SKIPPED(PROVIDER DOES NOT SUPPORT '%s')", err))
-			fmt.Printf("XXXXXXXXXXXXXXX\n")
 			return
 		}
 

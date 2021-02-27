@@ -4,6 +4,42 @@ import (
 	"strings"
 )
 
+/*
+Sadly many providers handle TXT records in strange and non-compliant ways.
+
+The variations we've seen:
+
+* a TXT record is a list of strings, each less than 256-octets.
+* a TXT record is a list of strings, all but the last will be 255 octets in length.
+* a TXT record is a string less than 256 octets.
+* a TXT record is any length, but we'll split it into 255-octet chunks behind the scenes.
+
+DNSControl stores the string as the user specified, then lets the
+provider work out how to handle the given input. There are two
+opportunties to work with the data:
+
+1. The provider's RecordSupportAudit() function is called to permit
+the provider to return an error if it won't be able to handle the
+contents. For example, it might detect that the string contains a char
+the provider doesn't support (for example, a backtick). This auditing
+is done without any communication to the provider's API, which permits
+such errors to be detected at the "dnscontrol check" stage.  2. When
+performing corrections (GetDomainCorrections(), the provider can slice
+and dice the user's input however they want.
+
+If the user input is a list of strings:
+* The strings are stored in RecordConfig.TxtStrings
+
+If the user input is a single string:
+* The strings are stored in RecordConfig.TxtStrings[0]
+
+In both cases, the .Target stores a string that can be used in error
+messages and other UI messages. This string should not be used by the
+provider in any other way because it has been modified from the user's
+original input.
+
+*/
+
 // HasFormatIdenticalToTXT returns if a RecordConfig has a format which is
 // identical to TXT, such as SPF. For more details, read
 // https://tools.ietf.org/html/rfc4408#section-3.1.1
@@ -49,18 +85,6 @@ func (rc *RecordConfig) SetTargetTXTString(s string) error {
 	return rc.SetTargetTXTs(ParseQuotedTxt(s))
 }
 
-// // TxtNormalize splits long txt targets if required based on the algo.
-// func (rc *RecordConfig) TxtNormalize(algo string) {
-// 	switch algo {
-// 	case "multistring":
-// 		rc.SetTargetTXTs(splitChunks(strings.Join(rc.TxtStrings, ""), 255))
-// 	case "space":
-// 		panic("not implemented")
-// 	default:
-// 		panic("TxtNormalize called with invalid algorithm")
-// 	}
-// }
-
 func splitChunks(buf string, lim int) []string {
 	var chunk string
 	chunks := make([]string, 0, len(buf)/lim+1)
@@ -73,18 +97,3 @@ func splitChunks(buf string, lim int) []string {
 	}
 	return chunks
 }
-
-// // ValidateTXT returns an error if the txt record is invalid.
-// // Verifies the Target and TxtStrings are less than 255 bytes each.
-// func ValidateTXT(rc *RecordConfig) error {
-// 	if !rc.HasFormatIdenticalToTXT() {
-// 		return fmt.Errorf("rc.Type=%q, expecting something identical to TXT", rc.Type)
-// 	}
-// 	for i := range rc.TxtStrings {
-// 		l := len(rc.TxtStrings[i])
-// 		if l > 255 {
-// 			return fmt.Errorf("txt target >255 bytes and AUTOSPLIT not set: label=%q index=%d len=%d string[:50]=%q", rc.GetLabel(), i, l, rc.TxtStrings[i][:50]+"...")
-// 		}
-// 	}
-// 	return nil
-// }
