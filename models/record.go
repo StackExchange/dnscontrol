@@ -216,12 +216,8 @@ func (rc *RecordConfig) UnmarshalJSON(b []byte) error {
 // Copy returns a deep copy of a RecordConfig.
 func (rc *RecordConfig) Copy() (*RecordConfig, error) {
 	newR := &RecordConfig{}
-	//err := copyObj(rc, newR)
-	//// Copy non-exported items
-	//newR.target = rc.target
-	//return newR, err
-	reprint.FromTo(rc, newR) // Deep copy
-	return newR, nil
+	err := reprint.FromTo(rc, newR) // Deep copy
+	return newR, err
 }
 
 // SetLabel sets the .Name/.NameFQDN fields given a short name and origin.
