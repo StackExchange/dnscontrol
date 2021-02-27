@@ -359,7 +359,7 @@ type TestCase struct {
 //	return r.GetTargetField()
 //}
 
-func SetLabel(r *models.RecordConfig, label, domain string) {
+func SetLabel_(r *models.RecordConfig, label, domain string) {
 	r.Name = label
 	r.NameFQDN = dnsutil.AddOrigin(label, "**current-domain**")
 }
@@ -485,7 +485,7 @@ func ignoreName(name string) *models.RecordConfig {
 	r := &models.RecordConfig{
 		Type: "IGNORE_NAME",
 	}
-	r.SetLabel(name, "**current-domain**")
+	SetLabel_(r, name, "**current-domain**")
 	return r
 }
 
@@ -494,7 +494,7 @@ func ignoreTarget(name string, typ string) *models.RecordConfig {
 		Type: "IGNORE_TARGET",
 	}
 	r.SetTarget(typ)
-	r.SetLabel(name, "**current-domain**")
+	SetLabel_(r, name, "**current-domain**")
 	return r
 }
 
@@ -503,7 +503,7 @@ func makeRec(name, target, typ string) *models.RecordConfig {
 		Type: typ,
 		TTL:  300,
 	}
-	r.SetLabel(name, "**current-domain**")
+	SetLabel_(r, name, "**current-domain**")
 	r.SetTarget(target)
 	return r
 }
