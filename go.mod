@@ -36,7 +36,7 @@ require (
 	github.com/hashicorp/vault/api v1.0.4
 	github.com/hexonet/go-sdk v3.5.1+incompatible
 	github.com/jarcoal/httpmock v1.0.4 // indirect
-	github.com/jinzhu/copier v0.2.5 // indirect
+	github.com/jinzhu/copier v0.2.5
 	github.com/juju/testing v0.0.0-20201216035041-2be42bba85f3 // indirect
 	github.com/kolo/xmlrpc v0.0.0-20201022064351-38db28db192b // indirect
 	github.com/miekg/dns v1.1.35
