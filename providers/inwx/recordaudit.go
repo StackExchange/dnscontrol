@@ -5,9 +5,9 @@ import (
 	"github.com/StackExchange/dnscontrol/v3/pkg/recordaudit"
 )
 
-// RecordSupportAudit returns an error if any records are not
+// AuditRecordSupport returns an error if any records are not
 // supportable by this provider.
-func RecordSupportAudit(records []*models.RecordConfig) error {
+func AuditRecordSupport(records []*models.RecordConfig) error {
 	var err error
 
 	// Bug in the API prevents these from working.

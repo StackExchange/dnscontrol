@@ -37,7 +37,7 @@ func init() {
 	providers.RegisterRegistrarType("DNSIMPLE", newReg)
 	fns := providers.DspFuncs{
 		Initializer:          newDsp,
-		RecordSupportAuditor: RecordSupportAudit,
+		AuditRecordSupportor: AuditRecordSupport,
 	}
 	providers.RegisterDomainServiceProviderType("DNSIMPLE", fns, features)
 }

@@ -14,7 +14,7 @@ DNSControl stores the string as the user specified, then lets the
 provider work out how to handle the given input. There are two
 opportunties to work with the data:
 
-1. The provider's RecordSupportAudit() function is called to permit
+1. The provider's AuditRecordSupport() function is called to permit
 the provider to return an error if it won't be able to handle the
 contents. For example, it might detect that the string contains a char
 the provider doesn't support (for example, a backtick). This auditing

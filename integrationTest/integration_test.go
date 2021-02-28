@@ -180,7 +180,7 @@ func makeChanges(t *testing.T, prv providers.DNSServiceProvider, dc *models.Doma
 		models.PostProcessRecords(dom.Records)
 		dom2, _ := dom.Copy()
 
-		if err := providers.RecordSupportAudit(*providerToRun, dom.Records); err != nil {
+		if err := providers.AuditRecordSupport(*providerToRun, dom.Records); err != nil {
 			t.Skip(fmt.Sprintf("***SKIPPED(PROVIDER DOES NOT SUPPORT '%s')", err))
 			return
 		}
@@ -749,18 +749,18 @@ func makeTests(t *testing.T) []*TestGroup {
 		// records. Compliance with the RFCs varies greatly with each provider.
 		// Rather than creating a "Capability" for each possible different
 		// failing or malcompliance (there would be many!), each provider
-		// supplies a function RecordSupportAudit() which returns an error if
+		// supplies a function AuditRecordSupport() which returns an error if
 		// the provider can not support a record.
 		// The integration tests use this feedback to skip tests that we know would fail.
-		// (Elsewhere the result of RecordSupportAudit() is used in the
+		// (Elsewhere the result of AuditRecordSupport() is used in the
 		// "dnscontrol check" phase.)
 
 		testgroup("complex TXT",
 			// Do not use only()/not()/requires() in this section.
 			// If your provider needs to skip one of these tests, update
-			// "provider/*/recordaudit.RecordSupportAudit()" to reject that kind
+			// "provider/*/recordaudit.AuditRecordSupport()" to reject that kind
 			// of record. When the provider fixes the bug or changes behavior,
-			// update the RecordSupportAudit().
+			// update the AuditRecordSupport().
 			tc("TXT with 0-octel string", txt("foo1", "")),
 			// https://github.com/StackExchange/dnscontrol/issues/598
 			// RFC1035 permits this, but rarely do provider support it.

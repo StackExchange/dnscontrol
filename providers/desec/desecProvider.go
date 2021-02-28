@@ -58,7 +58,7 @@ var defaultNameServerNames = []string{
 func init() {
 	fns := providers.DspFuncs{
 		Initializer:          NewDeSec,
-		RecordSupportAuditor: RecordSupportAudit,
+		AuditRecordSupportor: AuditRecordSupport,
 	}
 	providers.RegisterDomainServiceProviderType("DESEC", fns, features)
 }

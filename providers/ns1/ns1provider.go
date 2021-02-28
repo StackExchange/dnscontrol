@@ -27,7 +27,7 @@ var docNotes = providers.DocumentationNotes{
 func init() {
 	fns := providers.DspFuncs{
 		Initializer:          newProvider,
-		RecordSupportAuditor: RecordSupportAudit,
+		AuditRecordSupportor: AuditRecordSupport,
 	}
 	providers.RegisterDomainServiceProviderType("NS1", fns, providers.CanUseSRV, docNotes)
 	providers.RegisterCustomRecordType("NS1_URLFWD", "NS1", "URLFWD")

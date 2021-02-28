@@ -57,7 +57,7 @@ func newReg(conf map[string]string) (providers.Registrar, error) {
 func init() {
 	fns := providers.DspFuncs{
 		Initializer:          newDsp,
-		RecordSupportAuditor: RecordSupportAudit,
+		AuditRecordSupportor: AuditRecordSupport,
 	}
 	providers.RegisterRegistrarType("OVH", newReg)
 	providers.RegisterDomainServiceProviderType("OVH", fns, features)

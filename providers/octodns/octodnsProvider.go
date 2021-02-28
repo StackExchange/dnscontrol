@@ -65,7 +65,7 @@ func initProvider(config map[string]string, providermeta json.RawMessage) (provi
 func init() {
 	fns := providers.DspFuncs{
 		Initializer:          initProvider,
-		RecordSupportAuditor: RecordSupportAudit,
+		AuditRecordSupportor: AuditRecordSupport,
 	}
 	providers.RegisterDomainServiceProviderType("OCTODNS", fns, features)
 }
