@@ -69,7 +69,7 @@ func newDsp(conf map[string]string, meta json.RawMessage) (providers.DNSServiceP
 func init() {
 	fns := providers.DspFuncs{
 		Initializer:          newDsp,
-		AuditRecordSupportor: AuditRecordSupport,
+		AuditRecordsor: AuditRecords,
 	}
 	providers.RegisterRegistrarType("HEXONET", newReg)
 	providers.RegisterDomainServiceProviderType("HEXONET", fns, features)

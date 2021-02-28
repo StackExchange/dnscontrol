@@ -62,7 +62,7 @@ var features = providers.DocumentationNotes{
 func init() {
 	fns := providers.DspFuncs{
 		Initializer:          newHDNSProvider,
-		AuditRecordSupportor: AuditRecordSupport,
+		AuditRecordsor: AuditRecords,
 	}
 	providers.RegisterDomainServiceProviderType("HEDNS", fns, features)
 }

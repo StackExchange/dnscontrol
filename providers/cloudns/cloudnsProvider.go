@@ -56,7 +56,7 @@ var features = providers.DocumentationNotes{
 func init() {
 	fns := providers.DspFuncs{
 		Initializer:          NewCloudns,
-		AuditRecordSupportor: AuditRecordSupport,
+		AuditRecordsor: AuditRecords,
 	}
 	providers.RegisterDomainServiceProviderType("CLOUDNS", fns, features)
 }

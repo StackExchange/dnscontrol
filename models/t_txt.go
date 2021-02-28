@@ -14,7 +14,7 @@ DNSControl stores the string as the user specified, then lets the
 provider work out how to handle the given input. There are two
 opportunties to work with the data:
 
-1. The provider's AuditRecordSupport() function is called to permit
+1. The provider's AuditRecords() function is called to permit
 the provider to return an error if it won't be able to handle the
 contents. For example, it might detect that the string contains a char
 the provider doesn't support (for example, a backtick). This auditing
@@ -78,17 +78,4 @@ func (rc *RecordConfig) SetTargetTXTs(s []string) error {
 //     "foo" "bar"     << 2 strings
 func (rc *RecordConfig) SetTargetTXTString(s string) error {
 	return rc.SetTargetTXTs(ParseQuotedTxt(s))
-}
-
-func splitChunks(buf string, lim int) []string {
-	var chunk string
-	chunks := make([]string, 0, len(buf)/lim+1)
-	for len(buf) >= lim {
-		chunk, buf = buf[:lim], buf[lim:]
-		chunks = append(chunks, chunk)
-	}
-	if len(buf) > 0 {
-		chunks = append(chunks, buf[:])
-	}
-	return chunks
 }

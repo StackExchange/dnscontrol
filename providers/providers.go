@@ -40,15 +40,15 @@ var RegistrarTypes = map[string]RegistrarInitializer{}
 // DspInitializer is a function to create a DNS service provider. Function will be passed the unprocessed json payload from the configuration file for the given provider.
 type DspInitializer func(map[string]string, json.RawMessage) (DNSServiceProvider, error)
 
-// AuditRecordSupportor is a function that verifies that all the records
+// AuditRecordsor is a function that verifies that all the records
 // are supportable by this provider. It returns an error related to
 // the first record that this provider can not support.
-type AuditRecordSupportor func([]*models.RecordConfig) error
+type AuditRecordsor func([]*models.RecordConfig) error
 
 // DspFuncs lists functions registered with a provider.
 type DspFuncs struct {
 	Initializer          DspInitializer
-	AuditRecordSupportor AuditRecordSupportor
+	AuditRecordsor AuditRecordsor
 }
 
 // DNSProviderTypes stores initializer for each DSP.
@@ -90,15 +90,15 @@ func CreateDNSProvider(dType string, config map[string]string, meta json.RawMess
 	return p.Initializer(config, meta)
 }
 
-func AuditRecordSupport(dType string, rcs models.Records) error {
+func AuditRecords(dType string, rcs models.Records) error {
 	p, ok := DNSProviderTypes[dType]
 	if !ok {
 		return fmt.Errorf("DSP type %s not declared", dType)
 	}
-	if p.AuditRecordSupportor == nil {
-		return fmt.Errorf("DSP type %s has no AuditRecordSupportor", dType)
+	if p.AuditRecordsor == nil {
+		return fmt.Errorf("DSP type %s has no AuditRecordsor", dType)
 	}
-	return p.AuditRecordSupportor(rcs)
+	return p.AuditRecordsor(rcs)
 }
 
 // None is a basic provider type that does absolutely nothing. Can be useful as a placeholder for third parties or unimplemented providers.

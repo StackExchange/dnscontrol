@@ -36,7 +36,7 @@ import (
 func init() {
 	fns := providers.DspFuncs{
 		Initializer:          newDsp,
-		AuditRecordSupportor: AuditRecordSupport,
+		AuditRecordsor: AuditRecords,
 	}
 	providers.RegisterDomainServiceProviderType("GANDI_V5", fns, features)
 	providers.RegisterRegistrarType("GANDI_V5", newReg)

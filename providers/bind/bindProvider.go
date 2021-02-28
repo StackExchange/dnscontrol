@@ -28,6 +28,7 @@ import (
 	"github.com/StackExchange/dnscontrol/v3/models"
 	"github.com/StackExchange/dnscontrol/v3/pkg/diff"
 	"github.com/StackExchange/dnscontrol/v3/pkg/prettyzone"
+	"github.com/StackExchange/dnscontrol/v3/pkg/txtutil"
 	"github.com/StackExchange/dnscontrol/v3/providers"
 )
 
@@ -78,8 +79,8 @@ func initBind(config map[string]string, providermeta json.RawMessage) (providers
 
 func init() {
 	fns := providers.DspFuncs{
-		Initializer:          initBind,
-		AuditRecordSupportor: AuditRecordSupport,
+		Initializer:    initBind,
+		AuditRecordsor: AuditRecords,
 	}
 	providers.RegisterDomainServiceProviderType("BIND", fns, features)
 }
@@ -232,6 +233,7 @@ func (c *bindProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*models.
 
 	// Normalize
 	models.PostProcessRecords(foundRecords)
+	txtutil.SplitSingleLongTxt(dc.Records)
 
 	differ := diff.New(dc)
 	_, create, del, mod, err := differ.IncrementalDiff(foundRecords)

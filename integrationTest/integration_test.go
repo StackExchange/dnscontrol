@@ -180,7 +180,7 @@ func makeChanges(t *testing.T, prv providers.DNSServiceProvider, dc *models.Doma
 		models.PostProcessRecords(dom.Records)
 		dom2, _ := dom.Copy()
 
-		if err := providers.AuditRecordSupport(*providerToRun, dom.Records); err != nil {
+		if err := providers.AuditRecords(*providerToRun, dom.Records); err != nil {
 			t.Skip(fmt.Sprintf("***SKIPPED(PROVIDER DOES NOT SUPPORT '%s')", err))
 			return
 		}
@@ -424,7 +424,7 @@ func sshfp(name string, algorithm uint8, fingerprint uint8, target string) *mode
 }
 
 func txt(name, target string) *models.RecordConfig {
-	r := makeRec(name, target, "TXT")
+	r := makeRec(name, "", "TXT")
 	r.TxtStrings = []string{target}
 	return r
 }
@@ -749,18 +749,18 @@ func makeTests(t *testing.T) []*TestGroup {
 		// records. Compliance with the RFCs varies greatly with each provider.
 		// Rather than creating a "Capability" for each possible different
 		// failing or malcompliance (there would be many!), each provider
-		// supplies a function AuditRecordSupport() which returns an error if
+		// supplies a function AuditRecords() which returns an error if
 		// the provider can not support a record.
 		// The integration tests use this feedback to skip tests that we know would fail.
-		// (Elsewhere the result of AuditRecordSupport() is used in the
+		// (Elsewhere the result of AuditRecords() is used in the
 		// "dnscontrol check" phase.)
 
 		testgroup("complex TXT",
 			// Do not use only()/not()/requires() in this section.
 			// If your provider needs to skip one of these tests, update
-			// "provider/*/recordaudit.AuditRecordSupport()" to reject that kind
+			// "provider/*/recordaudit.AuditRecords()" to reject that kind
 			// of record. When the provider fixes the bug or changes behavior,
-			// update the AuditRecordSupport().
+			// update the AuditRecords().
 			tc("TXT with 0-octel string", txt("foo1", "")),
 			// https://github.com/StackExchange/dnscontrol/issues/598
 			// RFC1035 permits this, but rarely do provider support it.
@@ -780,7 +780,6 @@ func makeTests(t *testing.T) []*TestGroup {
 			tc("Create TXT with backtick", txt("foobt", "blah`blah")),
 			clear(),
 			tc("Create TXT with ws at end", txt("foows1", "with space at end ")),
-			clear(), gentxt(""),
 			clear(), gentxt("0"),
 			clear(), gentxt("1"),
 			clear(), gentxt("10"),

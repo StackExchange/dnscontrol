@@ -25,6 +25,7 @@ import (
 
 	"github.com/StackExchange/dnscontrol/v3/models"
 	"github.com/StackExchange/dnscontrol/v3/pkg/diff"
+	"github.com/StackExchange/dnscontrol/v3/pkg/txtutil"
 	"github.com/StackExchange/dnscontrol/v3/providers"
 )
 
@@ -118,8 +119,8 @@ func initAxfrDdns(config map[string]string, providermeta json.RawMessage) (provi
 
 func init() {
 	fns := providers.DspFuncs{
-		Initializer:          initAxfrDdns,
-		AuditRecordSupportor: AuditRecordSupport,
+		Initializer:    initAxfrDdns,
+		AuditRecordsor: AuditRecords,
 	}
 	providers.RegisterDomainServiceProviderType("AXFRDDNS", fns, features)
 }
@@ -293,6 +294,7 @@ func (c *axfrddnsProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*mod
 
 	// Normalize
 	models.PostProcessRecords(foundRecords)
+	txtutil.SplitSingleLongTxt(dc.Records) // Split long TXT into TxtStrings
 
 	differ := diff.New(dc)
 	_, create, del, mod, err := differ.IncrementalDiff(foundRecords)
