@@ -1,6 +1,8 @@
 package txtutil
 
-import "github.com/StackExchange/dnscontrol/v3/models"
+import (
+	"github.com/StackExchange/dnscontrol/v3/models"
+)
 
 // SplitSingleLongTxt finds TXT records with a single long string and splits it
 // into 255-octet chunks. This is used by providers that, when a user specifies
@@ -9,10 +11,9 @@ import "github.com/StackExchange/dnscontrol/v3/models"
 func SplitSingleLongTxt(records []*models.RecordConfig) {
 	for _, rc := range records {
 		if rc.HasFormatIdenticalToTXT() {
-			if len(rc.TxtStrings) == 1 {
-				if len(rc.TxtStrings[0]) > 255 {
-					rc.SetTargetTXTs(splitChunks(rc.TxtStrings[0], 255))
-				}
+			s := rc.TxtStrings[0]
+			if len(rc.TxtStrings) == 1 && len(s) > 255 {
+				rc.SetTargetTXTs(splitChunks(s, 255))
 			}
 		}
 	}

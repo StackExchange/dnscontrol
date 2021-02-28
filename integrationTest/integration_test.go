@@ -390,62 +390,49 @@ func ptr(name, target string) *models.RecordConfig {
 
 func naptr(name string, order uint16, preference uint16, flags string, service string, regexp string, target string) *models.RecordConfig {
 	r := makeRec(name, target, "NAPTR")
-	r.NaptrOrder = order
-	r.NaptrPreference = preference
-	r.NaptrFlags = flags
-	r.NaptrService = service
-	r.NaptrRegexp = regexp
+	r.SetTargetNAPTR(order, preference, flags, service, regexp, target)
 	return r
 }
 
 func ds(name string, keyTag uint16, algorithm, digestType uint8, digest string) *models.RecordConfig {
 	r := makeRec(name, "", "DS")
-	r.DsKeyTag = keyTag
-	r.DsAlgorithm = algorithm
-	r.DsDigestType = digestType
-	r.DsDigest = digest
+	r.SetTargetDS(keyTag, algorithm, digestType, digest)
 	return r
 }
 
 func srv(name string, priority, weight, port uint16, target string) *models.RecordConfig {
 	r := makeRec(name, target, "SRV")
-	r.SrvPriority = priority
-	r.SrvWeight = weight
-	r.SrvPort = port
+	r.SetTargetSRV(priority, weight, port, target)
 	return r
 }
 
 func sshfp(name string, algorithm uint8, fingerprint uint8, target string) *models.RecordConfig {
 	r := makeRec(name, target, "SSHFP")
-	r.SshfpAlgorithm = algorithm
-	r.SshfpFingerprint = fingerprint
+	r.SetTargetSSHFP(algorithm, fingerprint, target)
 	return r
 }
 
 func txt(name, target string) *models.RecordConfig {
 	r := makeRec(name, "", "TXT")
-	r.TxtStrings = []string{target}
+	r.SetTargetTXT(target)
 	return r
 }
 
 func txtmulti(name string, target []string) *models.RecordConfig {
 	r := makeRec(name, target[0], "TXT")
-	r.TxtStrings = target
+	r.SetTargetTXTs(target)
 	return r
 }
 
 func caa(name string, tag string, flag uint8, target string) *models.RecordConfig {
 	r := makeRec(name, target, "CAA")
-	r.CaaFlag = flag
-	r.CaaTag = tag
+	r.SetTargetCAA(flag, tag, target)
 	return r
 }
 
 func tlsa(name string, usage, selector, matchingtype uint8, target string) *models.RecordConfig {
 	r := makeRec(name, target, "TLSA")
-	r.TlsaUsage = usage
-	r.TlsaSelector = selector
-	r.TlsaMatchingType = matchingtype
+	r.SetTargetTLSA(usage, selector, matchingtype, target)
 	return r
 }
 
@@ -483,20 +470,23 @@ func ttl(r *models.RecordConfig, t uint32) *models.RecordConfig {
 }
 
 func gentxt(s string) *TestCase {
-	// tc("Create TXTMulti 3 short short 255", txtmulti("foo3ssl", []string{"", "deux", s255)),
-	title := fmt.Sprintf("Create TXT %d", len(s))
+	title := fmt.Sprintf("Create TXT %s", s)
 	label := fmt.Sprintf("foo%d", len(s))
 	l := []string{}
 	for _, j := range s {
 		switch j {
 		case '0', 's':
-			title += " short"
+			//title += " short"
 			label += "s"
 			l = append(l, "short")
+		case 'h':
+			//title += " 128"
+			label += "h"
+			l = append(l, strings.Repeat("H", 128))
 		case '1', 'l':
-			title += " 255"
+			//title += " 255"
 			label += "l"
-			l = append(l, "255")
+			l = append(l, strings.Repeat("Z", 255))
 		}
 	}
 	return tc(title, txtmulti(label, l))
@@ -789,6 +779,23 @@ func makeTests(t *testing.T) []*TestGroup {
 			clear(), gentxt("101"),
 			clear(), gentxt("110"),
 			clear(), gentxt("111"),
+			clear(), gentxt("1hh"),
+			clear(), gentxt("1hh0"),
+		),
+
+		testgroup("long TXT",
+			tc("Create a 505 TXT", txt("foo257", strings.Repeat("E", 505))),
+			tc("Create a 506 TXT", txt("foo257", strings.Repeat("E", 506))),
+			tc("Create a 507 TXT", txt("foo257", strings.Repeat("E", 507))),
+			tc("Create a 508 TXT", txt("foo257", strings.Repeat("E", 508))),
+			tc("Create a 509 TXT", txt("foo257", strings.Repeat("E", 509))),
+			tc("Create a 510 TXT", txt("foo257", strings.Repeat("E", 510))),
+			tc("Create a 511 TXT", txt("foo257", strings.Repeat("E", 511))),
+			tc("Create a 512 TXT", txt("foo257", strings.Repeat("E", 512))),
+			tc("Create a 513 TXT", txt("foo257", strings.Repeat("E", 513))),
+			tc("Create a 514 TXT", txt("foo257", strings.Repeat("E", 514))),
+			tc("Create a 515 TXT", txt("foo257", strings.Repeat("E", 515))),
+			tc("Create a 516 TXT", txt("foo257", strings.Repeat("E", 516))),
 		),
 
 		// Test the ability to change TXT records on the DIFFERENT labels accurately.

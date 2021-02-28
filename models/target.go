@@ -23,9 +23,6 @@ so that it is easy to do things the right way in preparation.
 // GetTargetField returns the target. There may be other fields (for example
 // an MX record also has a .MxPreference field.
 func (rc *RecordConfig) GetTargetField() string {
-	if rc.HasFormatIdenticalToTXT() {
-		return strings.Join(rc.TxtStrings, "")
-	}
 	return rc.target
 }
 

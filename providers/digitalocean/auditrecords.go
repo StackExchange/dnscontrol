@@ -1,6 +1,8 @@
 package digitalocean
 
 import (
+	"fmt"
+
 	"github.com/StackExchange/dnscontrol/v3/models"
 	"github.com/StackExchange/dnscontrol/v3/pkg/recordaudit"
 )
@@ -30,6 +32,10 @@ func AuditRecords(records []*models.RecordConfig) error {
 	// record.
 	// Proper TXT implementations can handle TXT records like this:
 
+	if err := MaxLengthDO(records); err != nil {
+		return err
+	}
+
 	if err := recordaudit.TxtNoDoubleQuotes(records); err != nil {
 		return err
 	}
@@ -38,5 +44,21 @@ func AuditRecords(records []*models.RecordConfig) error {
 		return err
 	}
 
+	return nil
+}
+
+// MaxLengthDO returns and error if the sum of the strings
+// are longer than permitted by DigitalOcean. Sadly their
+// length limit is undocumented. This seems to work.
+func MaxLengthDO(records []*models.RecordConfig) error {
+	for _, rc := range records {
+
+		if rc.HasFormatIdenticalToTXT() { // TXT and similar:
+			if len(rc.GetTargetField()) > 509 {
+				return fmt.Errorf("encoded txt too long")
+			}
+		}
+
+	}
 	return nil
 }
