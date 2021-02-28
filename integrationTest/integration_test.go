@@ -181,8 +181,7 @@ func makeChanges(t *testing.T, prv providers.DNSServiceProvider, dc *models.Doma
 		dom2, _ := dom.Copy()
 
 		if err := providers.AuditRecords(*providerToRun, dom.Records); err != nil {
-			t.Skip(fmt.Sprintf("***SKIPPED(PROVIDER DOES NOT SUPPORT '%s')", err))
-			return
+			t.Skip(fmt.Sprintf("***SKIPPED(PROVIDER DOES NOT SUPPORT '%s' ::%q)", err, desc))
 		}
 
 		// get and run corrections for first time
@@ -190,7 +189,7 @@ func makeChanges(t *testing.T, prv providers.DNSServiceProvider, dc *models.Doma
 		if err != nil {
 			t.Fatal(fmt.Errorf("runTests: %w", err))
 		}
-		if len(corrections) == 0 && expectChanges {
+		if (len(corrections) == 0 && expectChanges) && (tst.Desc != "Empty") {
 			t.Fatalf("Expected changes, but got none")
 		}
 		for _, c := range corrections {
@@ -851,41 +850,6 @@ func makeTests(t *testing.T) []*TestGroup {
 				txtmulti("foo", []string{"dimple"}),
 				txtmulti("foo", []string{"moja", "mbili"}),
 				txtmulti("foo", []string{"eh", "bzz", "cee"}),
-			),
-		),
-
-		testgroup("TXTMulti tests that break DO",
-			// DO's implementation of TXTMulti is broken, thus we separate out
-			// tests that fail for it. Users are warned about these limits
-			// in docs/_providers/digitalocean.md
-			not("DIGITALOCEAN"),
-			// Digital Ocean's TXT record implementation checks size limits wrong.
-			// RFC 1035 Section 3.3.14 states that each substring can be 255
-			// octets, and there is no limit on the number of such
-			// substrings, aside from the usual packet length limits.  DO's
-			// implementation restricts the total length to be 512 octets,
-			// including any backlashes used for escapes, quotes, and other
-			// metachars.  In other words, they're doing the checking on the
-			// API protocol encoded data instead of on on the resulting TXT
-			// record.
-			// Proper TXT implementations can handle TXT records like this:
-			tc("3x255-byte TXTMulti",
-				txtmulti("foo3", []string{strings.Repeat("X", 255), strings.Repeat("Y", 255), strings.Repeat("Z", 255)})),
-			clear(),
-			// Digital Ocean's TXT record implementation handles quotes wrong.
-			// It craps out if your TXT record includes double-quotes.
-			// Someone doesn't understand how zonefile-style quoting is
-			// supposed to work.
-			// Proper TXT implementations can handle TXT records like these:
-			tc("Create TXTMulti with quotes",
-				txtmulti("foo1", []string{"simple"}),
-				txtmulti("foo2", []string{"o\"ne", "tw\"o"}),
-				txtmulti("foo3", []string{"eh", "bee", "cee"}),
-			),
-			tc("Change TXTMulti",
-				txtmulti("foo1", []string{"dimple"}),
-				txtmulti("foo2", []string{"fun", "t\"wo"}),
-				txtmulti("foo3", []string{"eh", "bzz", "cee"}),
 			),
 		),
 
