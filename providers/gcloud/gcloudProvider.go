@@ -14,6 +14,7 @@ import (
 
 	"github.com/StackExchange/dnscontrol/v3/models"
 	"github.com/StackExchange/dnscontrol/v3/pkg/diff"
+	"github.com/StackExchange/dnscontrol/v3/pkg/txtutil"
 	"github.com/StackExchange/dnscontrol/v3/providers"
 	gdns "google.golang.org/api/dns/v1"
 )
@@ -26,7 +27,6 @@ var features = providers.DocumentationNotes{
 	providers.CanUseSRV:              providers.Can(),
 	providers.CanUseSSHFP:            providers.Can(),
 	providers.CanUseTLSA:             providers.Can(),
-	providers.CanUseTXTMulti:         providers.Can(),
 	providers.DocCreateDomains:       providers.Can(),
 	providers.DocDualHost:            providers.Can(),
 	providers.DocOfficiallySupported: providers.Can(),
@@ -38,7 +38,7 @@ func sPtr(s string) *string {
 
 func init() {
 	fns := providers.DspFuncs{
-		Initializer:          New,
+		Initializer:    New,
 		AuditRecordsor: AuditRecords,
 	}
 	providers.RegisterDomainServiceProviderType("GCLOUD", fns, features)
@@ -191,6 +191,7 @@ func (g *gcloudProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*model
 
 	// Normalize
 	models.PostProcessRecords(existingRecords)
+	txtutil.SplitSingleLongTxt(dc.Records) // Autosplit long TXT records
 
 	// first collect keys that have changed
 	differ := diff.New(dc)

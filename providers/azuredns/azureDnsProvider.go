@@ -14,6 +14,7 @@ import (
 
 	"github.com/StackExchange/dnscontrol/v3/models"
 	"github.com/StackExchange/dnscontrol/v3/pkg/diff"
+	"github.com/StackExchange/dnscontrol/v3/pkg/txtutil"
 	"github.com/StackExchange/dnscontrol/v3/providers"
 )
 
@@ -58,7 +59,6 @@ var features = providers.DocumentationNotes{
 	providers.DocOfficiallySupported: providers.Can(),
 	providers.CanUsePTR:              providers.Can(),
 	providers.CanUseSRV:              providers.Can(),
-	providers.CanUseTXTMulti:         providers.Can(),
 	providers.CanUseCAA:              providers.Can(),
 	providers.CanUseNAPTR:            providers.Cannot(),
 	providers.CanUseSSHFP:            providers.Cannot(),
@@ -69,7 +69,7 @@ var features = providers.DocumentationNotes{
 
 func init() {
 	fns := providers.DspFuncs{
-		Initializer:          newAzureDNSDsp,
+		Initializer:    newAzureDNSDsp,
 		AuditRecordsor: AuditRecords,
 	}
 	providers.RegisterDomainServiceProviderType("AZURE_DNS", fns, features)
@@ -186,7 +186,10 @@ func (a *azurednsProvider) getExistingRecords(domain string) (models.Records, []
 		existingRecords = append(existingRecords, nativeToRecords(set, zoneName)...)
 	}
 
+	// FIXME(tlim): PostProcessRecords is usually called in GetDomainCorrections.
 	models.PostProcessRecords(existingRecords)
+
+	// FIXME(tlim): The "records" return value is usually stored in RecordConfig.Original.
 	return existingRecords, records, zoneName, nil
 }
 
@@ -203,6 +206,8 @@ func (a *azurednsProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*mod
 	if err != nil {
 		return nil, err
 	}
+
+	txtutil.SplitSingleLongTxt(dc.Records) // Autosplit long TXT records
 
 	differ := diff.New(dc)
 	namesToUpdate, err := differ.ChangedGroups(existingRecords)

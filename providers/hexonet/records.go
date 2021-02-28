@@ -70,7 +70,7 @@ func (n *HXClient) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Corr
 
 	// Normalize
 	models.PostProcessRecords(actual)
-	txtutil.SplitSingleLongTxt(dc.Records)
+	txtutil.SplitSingleLongTxt(dc.Records) // Autosplit long TXT records
 
 	differ := diff.New(dc)
 	_, create, del, mod, err := differ.IncrementalDiff(actual)

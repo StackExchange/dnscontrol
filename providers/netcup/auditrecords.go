@@ -8,5 +8,5 @@ import (
 // AuditRecords returns an error if any records are not
 // supportable by this provider.
 func AuditRecords(records []*models.RecordConfig) error {
-	return recordaudit.TxtEmpty(records)
+	return recordaudit.TxtNotEmpty(records)
 }

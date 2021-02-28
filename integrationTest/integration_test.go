@@ -779,6 +779,8 @@ func makeTests(t *testing.T) []*TestGroup {
 			clear(),
 			tc("Create TXT with backtick", txt("foobt", "blah`blah")),
 			clear(),
+			tc("Create TXT with double-quote", txt("foodq", `quo"te`)),
+			clear(),
 			tc("Create TXT with ws at end", txt("foows1", "with space at end ")),
 			clear(), gentxt("0"),
 			clear(), gentxt("1"),

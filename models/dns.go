@@ -16,7 +16,7 @@ type DNSConfig struct {
 	Domains            []*DomainConfig               `json:"domains"`
 	RegistrarsByName   map[string]*RegistrarConfig   `json:"-"`
 	DNSProvidersByName map[string]*DNSProviderConfig `json:"-"`
-	SkipRecordAudit    bool                          `json:"skiprecordaudit"`
+	SkipRecordAudit    bool                          `json:"skiprecordaudit,omitempty"`
 }
 
 // FindDomain returns the *DomainConfig for domain query in config.

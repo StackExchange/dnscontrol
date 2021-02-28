@@ -10,6 +10,7 @@ import (
 
 	"github.com/StackExchange/dnscontrol/v3/models"
 	"github.com/StackExchange/dnscontrol/v3/pkg/diff"
+	"github.com/StackExchange/dnscontrol/v3/pkg/txtutil"
 	"github.com/StackExchange/dnscontrol/v3/providers"
 	"github.com/miekg/dns/dnsutil"
 
@@ -76,12 +77,11 @@ var features = providers.DocumentationNotes{
 	providers.CanUseSRV:              providers.Can(),
 	providers.CanUseCAA:              providers.Can("Semicolons not supported in issue/issuewild fields.", "https://www.digitalocean.com/docs/networking/dns/how-to/create-caa-records"),
 	providers.CanGetZones:            providers.Can(),
-	providers.CanUseTXTMulti:         providers.Can("A broken parser prevents TXTMulti strings from including double-quotes; The total length of all strings can't be longer than 512; and in reality must be shorter due to sloppy validation checks.", "https://github.com/StackExchange/dnscontrol/issues/370"),
 }
 
 func init() {
 	fns := providers.DspFuncs{
-		Initializer:          NewDo,
+		Initializer:    NewDo,
 		AuditRecordsor: AuditRecords,
 	}
 	providers.RegisterDomainServiceProviderType("DIGITALOCEAN", fns, features)
@@ -144,6 +144,7 @@ func (api *digitaloceanProvider) GetDomainCorrections(dc *models.DomainConfig) (
 
 	// Normalize
 	models.PostProcessRecords(existingRecords)
+	txtutil.SplitSingleLongTxt(dc.Records) // Autosplit long TXT records
 
 	differ := diff.New(dc)
 	_, create, delete, modify, err := differ.IncrementalDiff(existingRecords)

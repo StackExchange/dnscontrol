@@ -8,20 +8,16 @@ import (
 // AuditRecords returns an error if any records are not
 // supportable by this provider.
 func AuditRecords(records []*models.RecordConfig) error {
-	var err error
 
-	err = recordaudit.TxtBackticks(records)
-	if err != nil {
+	if err := recordaudit.TxtNoBackticks(records); err != nil {
 		return err
 	}
 
-	err = recordaudit.TxtEmpty(records)
-	if err != nil {
+	if err := recordaudit.TxtNotEmpty(records); err != nil {
 		return err
 	}
 
-	err = recordaudit.TxtTrailingSpace(records)
-	if err != nil {
+	if err := recordaudit.TxtNoTrailingSpace(records); err != nil {
 		return err
 	}
 

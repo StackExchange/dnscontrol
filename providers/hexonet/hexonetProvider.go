@@ -25,7 +25,6 @@ var features = providers.DocumentationNotes{
 	providers.CanUseRoute53Alias:     providers.Cannot("Using ALIAS is possible through our extended DNS (X-DNS) service. Feel free to get in touch with us."),
 	providers.CanUseSRV:              providers.Can("SRV records with empty targets are not supported"),
 	providers.CanUseTLSA:             providers.Can(),
-	providers.CanUseTXTMulti:         providers.Can(),
 	providers.CantUseNOPURGE:         providers.Can(),
 	providers.DocCreateDomains:       providers.Can(),
 	providers.DocDualHost:            providers.Can(),
@@ -68,7 +67,7 @@ func newDsp(conf map[string]string, meta json.RawMessage) (providers.DNSServiceP
 
 func init() {
 	fns := providers.DspFuncs{
-		Initializer:          newDsp,
+		Initializer:    newDsp,
 		AuditRecordsor: AuditRecords,
 	}
 	providers.RegisterRegistrarType("HEXONET", newReg)

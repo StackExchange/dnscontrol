@@ -24,7 +24,6 @@ var features = providers.DocumentationNotes{
 	providers.CanUsePTR:              providers.Can(),
 	providers.CanUseSRV:              providers.Can(),
 	providers.CanUseTLSA:             providers.Unimplemented(),
-	providers.CanUseTXTMulti:         providers.Unimplemented(),
 	providers.DocCreateDomains:       providers.Cannot("This provider assumes the zone already existing on the dns server"),
 	providers.DocDualHost:            providers.Cannot("This driver does not manage NS records, so should not be used for dual-host scenarios"),
 	providers.DocOfficiallySupported: providers.Can(),

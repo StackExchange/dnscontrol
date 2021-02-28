@@ -18,7 +18,6 @@ import (
 var docNotes = providers.DocumentationNotes{
 	providers.CanUseAlias:            providers.Can(),
 	providers.CanUsePTR:              providers.Can(),
-	providers.CanUseTXTMulti:         providers.Cannot(),
 	providers.DocCreateDomains:       providers.Cannot(),
 	providers.DocOfficiallySupported: providers.Cannot(),
 	providers.DocDualHost:            providers.Can(),
@@ -26,7 +25,7 @@ var docNotes = providers.DocumentationNotes{
 
 func init() {
 	fns := providers.DspFuncs{
-		Initializer:          newProvider,
+		Initializer:    newProvider,
 		AuditRecordsor: AuditRecords,
 	}
 	providers.RegisterDomainServiceProviderType("NS1", fns, providers.CanUseSRV, docNotes)

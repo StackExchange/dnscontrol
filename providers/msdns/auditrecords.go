@@ -8,21 +8,21 @@ import (
 // AuditRecords returns an error if any records are not
 // supportable by this provider.
 func AuditRecords(records []*models.RecordConfig) error {
-	var err error
+
+	if err := recordaudit.TxtNoMultipleStrings(records); err != nil {
+		return err
+	}
 
 	// TODO(tlim): Should be easy to implement support for this.
-	err = recordaudit.TxtBackticks(records)
-	if err != nil {
+	if err := recordaudit.TxtNoBackticks(records); err != nil {
 		return err
 	}
 
-	err = recordaudit.TxtEmpty(records)
-	if err != nil {
+	if err := recordaudit.TxtNotEmpty(records); err != nil {
 		return err
 	}
 
-	err = recordaudit.TxtLen255(records)
-	if err != nil {
+	if err := recordaudit.TxtNoLen255(records); err != nil {
 		return err
 	}
 

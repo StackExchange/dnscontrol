@@ -8,6 +8,7 @@ import (
 
 	"github.com/StackExchange/dnscontrol/v3/models"
 	"github.com/StackExchange/dnscontrol/v3/pkg/diff"
+	"github.com/StackExchange/dnscontrol/v3/pkg/txtutil"
 	"github.com/StackExchange/dnscontrol/v3/providers"
 	"github.com/ovh/go-ovh/ovh"
 )
@@ -28,7 +29,6 @@ var features = providers.DocumentationNotes{
 	providers.DocDualHost:            providers.Can(),
 	providers.DocOfficiallySupported: providers.Cannot(),
 	providers.CanGetZones:            providers.Can(),
-	providers.CanUseTXTMulti:         providers.Can(),
 }
 
 func newOVH(m map[string]string, metadata json.RawMessage) (*ovhProvider, error) {
@@ -56,7 +56,7 @@ func newReg(conf map[string]string) (providers.Registrar, error) {
 
 func init() {
 	fns := providers.DspFuncs{
-		Initializer:          newDsp,
+		Initializer:    newDsp,
 		AuditRecordsor: AuditRecords,
 	}
 	providers.RegisterRegistrarType("OVH", newReg)
@@ -120,6 +120,7 @@ func (c *ovhProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*models.C
 
 	// Normalize
 	models.PostProcessRecords(actual)
+	txtutil.SplitSingleLongTxt(dc.Records) // Autosplit long TXT records
 
 	differ := diff.New(dc)
 	_, create, delete, modify, err := differ.IncrementalDiff(actual)

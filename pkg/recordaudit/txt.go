@@ -9,8 +9,8 @@ import (
 
 // Keep these in alphabetical order.
 
-// TxtBackticks audits TXT records for strings that contain backticks.
-func TxtBackticks(records []*models.RecordConfig) error {
+// TxtNoBackticks audits TXT records for strings that contain backticks.
+func TxtNoBackticks(records []*models.RecordConfig) error {
 	for _, rc := range records {
 
 		if rc.HasFormatIdenticalToTXT() {
@@ -25,29 +25,8 @@ func TxtBackticks(records []*models.RecordConfig) error {
 	return nil
 }
 
-// TxtEmpty audits TXT records for empty strings.
-func TxtEmpty(records []*models.RecordConfig) error {
-	for _, rc := range records {
-
-		if rc.HasFormatIdenticalToTXT() { // TXT and similar:
-			// There must be strings.
-			if len(rc.TxtStrings) == 0 {
-				return fmt.Errorf("txt with no strings")
-			}
-			// Each string must be non-empty.
-			for _, txt := range rc.TxtStrings {
-				if len(txt) == 0 {
-					return fmt.Errorf("txtstring is empty")
-				}
-			}
-		}
-
-	}
-	return nil
-}
-
-// TxtLen255 audits TXT records for strings exactly 255 octets long.
-func TxtLen255(records []*models.RecordConfig) error {
+// TxtNoLen255 audits TXT records for strings exactly 255 octets long.
+func TxtNoLen255(records []*models.RecordConfig) error {
 	for _, rc := range records {
 
 		if rc.HasFormatIdenticalToTXT() { // TXT and similar:
@@ -62,14 +41,49 @@ func TxtLen255(records []*models.RecordConfig) error {
 	return nil
 }
 
-// TxtTrailingSpace audits TXT records for strings that end with space.
-func TxtTrailingSpace(records []*models.RecordConfig) error {
+// TxtNoMultipleStrings audits TXT records for multiple strings
+func TxtNoMultipleStrings(records []*models.RecordConfig) error {
+	for _, rc := range records {
+
+		if rc.HasFormatIdenticalToTXT() { // TXT and similar:
+			if len(rc.TxtStrings) > 1 {
+				return fmt.Errorf("multiple strings in one txt")
+			}
+		}
+
+	}
+	return nil
+}
+
+// TxtNoTrailingSpace audits TXT records for strings that end with space.
+func TxtNoTrailingSpace(records []*models.RecordConfig) error {
 	for _, rc := range records {
 
 		if rc.HasFormatIdenticalToTXT() { // TXT and similar:
 			for _, txt := range rc.TxtStrings {
 				if txt != "" && txt[ultimate(txt)] == ' ' {
 					return fmt.Errorf("txtstring ends with space")
+				}
+			}
+		}
+
+	}
+	return nil
+}
+
+// TxtNotEmpty audits TXT records for empty strings.
+func TxtNotEmpty(records []*models.RecordConfig) error {
+	for _, rc := range records {
+
+		if rc.HasFormatIdenticalToTXT() { // TXT and similar:
+			// There must be strings.
+			if len(rc.TxtStrings) == 0 {
+				return fmt.Errorf("txt with no strings")
+			}
+			// Each string must be non-empty.
+			for _, txt := range rc.TxtStrings {
+				if len(txt) == 0 {
+					return fmt.Errorf("txtstring is empty")
 				}
 			}
 		}

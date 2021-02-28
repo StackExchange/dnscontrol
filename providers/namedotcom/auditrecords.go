@@ -8,5 +8,14 @@ import (
 // AuditRecords returns an error if any records are not
 // supportable by this provider.
 func AuditRecords(records []*models.RecordConfig) error {
-	return recordaudit.TxtTrailingSpace(records)
+
+	if err := recordaudit.TxtNoMultipleStrings(records); err != nil {
+		return err
+	}
+
+	if err := recordaudit.TxtNoTrailingSpace(records); err != nil {
+		return err
+	}
+
+	return nil
 }
