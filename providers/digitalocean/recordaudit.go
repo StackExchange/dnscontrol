@@ -1,4 +1,4 @@
-package digitalocean
+package digitaloceanudit
 
 import (
 	"github.com/StackExchange/dnscontrol/v3/models"
