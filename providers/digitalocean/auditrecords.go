@@ -3,7 +3,6 @@ package digitalocean
 import (
 	"github.com/StackExchange/dnscontrol/v3/models"
 	"github.com/StackExchange/dnscontrol/v3/pkg/recordaudit"
-
 )
 
 // AuditRecords returns an error if any records are not
@@ -30,6 +29,10 @@ func AuditRecords(records []*models.RecordConfig) error {
 	// API protocol encoded data instead of on on the resulting TXT
 	// record.
 	// Proper TXT implementations can handle TXT records like this:
+
+	if err := recordaudit.TxtNoDoubleQuotes(records); err != nil {
+		return err
+	}
 
 	if err := recordaudit.TxtNoBackticks(records); err != nil {
 		return err
