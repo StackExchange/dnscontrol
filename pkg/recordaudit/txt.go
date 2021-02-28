@@ -25,6 +25,22 @@ func TxtNoBackticks(records []*models.RecordConfig) error {
 	return nil
 }
 
+// TxtNoDoubleQuotes audits TXT records for strings that contain doublequotes.
+func TxtNoDoubleQuotes(records []*models.RecordConfig) error {
+	for _, rc := range records {
+
+		if rc.HasFormatIdenticalToTXT() {
+			for _, txt := range rc.TxtStrings {
+				if strings.Index(txt, `"`) != -1 {
+					return fmt.Errorf("txtstring contains doublequotes")
+				}
+			}
+		}
+
+	}
+	return nil
+}
+
 // TxtNoLen255 audits TXT records for strings exactly 255 octets long.
 func TxtNoLen255(records []*models.RecordConfig) error {
 	for _, rc := range records {
