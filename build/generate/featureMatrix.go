@@ -86,7 +86,6 @@ func generateFeatureMatrix() error {
 		setCap("SRV", providers.CanUseSRV)
 		setCap("SSHFP", providers.CanUseSSHFP)
 		setCap("TLSA", providers.CanUseTLSA)
-		setCap("TXTMulti", providers.CanUseTXTMulti)
 		setCap("get-zones", providers.CanGetZones)
 		setCap("DS", providers.CanUseDS)
 		setDoc("dual host", providers.DocDualHost, false)

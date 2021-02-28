@@ -10,7 +10,6 @@ import (
 
 	"github.com/StackExchange/dnscontrol/v3/models"
 	"github.com/StackExchange/dnscontrol/v3/pkg/diff"
-	"github.com/StackExchange/dnscontrol/v3/pkg/txtutil"
 )
 
 var defaultNameservers = []*models.Nameserver{

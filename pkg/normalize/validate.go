@@ -274,17 +274,6 @@ func ValidateAndNormalizeConfig(config *models.DNSConfig) (errs []error) {
 			if domain.KeepUnknown && providers.ProviderHasCapability(pType, providers.CantUseNOPURGE) {
 				errs = append(errs, fmt.Errorf("%s uses NO_PURGE which is not supported by %s(%s)", domain.Name, provider.Name, pType))
 			}
-
-			// If !CanUseTXTMulti, make sure all TXT records aren't multi:
-			if !providers.ProviderHasCapability(pType, providers.CanUseTXTMulti) {
-				for _, rc := range domain.Records {
-					if rc.HasFormatIdenticalToTXT() {
-						if len(rc.TxtStrings) > 1 {
-							errs = append(errs, fmt.Errorf("provider %s does not support TXTMulti, used on label %q", pType, rc.NameFQDN))
-						}
-					}
-				}
-			}
 		}
 
 		// Normalize Nameservers.
@@ -443,22 +432,6 @@ func ValidateAndNormalizeConfig(config *models.DNSConfig) (errs []error) {
 		}
 		// Verify AutoDNSSEC is valid.
 		errs = append(errs, checkAutoDNSSEC(d)...)
-	}
-
-	// If !CanUseTXTMulti, make sure all TXT records aren't multi:
-	for _, domain := range config.Domains {
-		for _, provider := range domain.DNSProviderInstances {
-			pType := provider.ProviderType
-			if !providers.ProviderHasCapability(pType, providers.CanUseTXTMulti) {
-				for _, rc := range domain.Records {
-					if rc.HasFormatIdenticalToTXT() {
-						if len(rc.TxtStrings) > 1 {
-							errs = append(errs, fmt.Errorf("provider %s does not support TXTMulti, used on label %q", pType, rc.NameFQDN))
-						}
-					}
-				}
-			}
-		}
 	}
 
 	// At this point we've munged anything that needs to be munged, and

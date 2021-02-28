@@ -858,7 +858,6 @@ func makeTests(t *testing.T) []*TestGroup {
 			// DO's implementation of TXTMulti is broken, thus we separate out
 			// tests that fail for it. Users are warned about these limits
 			// in docs/_providers/digitalocean.md
-			requires(providers.CanUseTXTMulti),
 			not("DIGITALOCEAN"),
 			// Digital Ocean's TXT record implementation checks size limits wrong.
 			// RFC 1035 Section 3.3.14 states that each substring can be 255
