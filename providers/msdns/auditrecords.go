@@ -1,6 +1,8 @@
 package msdns
 
 import (
+	"fmt"
+
 	"github.com/StackExchange/dnscontrol/v3/models"
 	"github.com/StackExchange/dnscontrol/v3/pkg/recordaudit"
 )
@@ -9,6 +11,10 @@ import (
 // supportable by this provider.
 func AuditRecords(records []*models.RecordConfig) error {
 
+	for i, rc := range records {
+		fmt.Printf("DEBUG %02d len(txts) = %d\n", i, len(rc.TxtStrings))
+
+	}
 	if err := recordaudit.TxtNoMultipleStrings(records); err != nil {
 		return err
 	}
@@ -22,7 +28,11 @@ func AuditRecords(records []*models.RecordConfig) error {
 		return err
 	}
 
-	if err := recordaudit.TxtNotEmpty(records); err != nil {
+	if err := recordaudit.TxtNoDoubleQuotes(records); err != nil {
+		return err
+	}
+
+	if err := recordaudit.TxtNoSingleQuotes(records); err != nil {
 		return err
 	}
 
