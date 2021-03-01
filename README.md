@@ -30,8 +30,8 @@ Currently supported DNS providers:
  - Google DNS
  - Hetzner
  - HEXONET
+ - hosting.de
  - Hurricane Electric DNS
- - http.net
  - INWX
  - Internet.bs
  - Linode

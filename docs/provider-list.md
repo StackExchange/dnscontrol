@@ -83,7 +83,7 @@ Maintainers of contributed providers:
 * `HEDNS` @rblenkinsopp
 * `HETZNER` @das7pad
 * `HEXONET` @papakai
-* `HTTPNET` @juliusrickert
+* `HOSTINGDE` @membero
 * `INTERNETBS` @pragmaton
 * `INWX` @svenpeter42
 * `LINODE` @koesie10
