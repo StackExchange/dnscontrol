@@ -15,7 +15,7 @@ func TestParse(t *testing.T) {
 		"ip4:192.111.0.0/24",
 		"include:_spf.google.com",
 		"include:mailgun.org",
-		"include:spf-basic.fogcreek.com",
+		//"include:spf-basic.fogcreek.com",
 		"include:mail.zendesk.com",
 		"include:servers.mcsv.net",
 		"include:sendgrid.net",
