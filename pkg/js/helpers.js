@@ -110,9 +110,6 @@ function D_EXTEND(name) {
         throw name + ' was not declared yet and therefore cannot be updated. Use D() before.';
     }
     domain.obj.subdomain = name.substr(0, name.length-domain.obj.name.length - 1);
-    for (var i = 0; i < defaultArgs.length; i++) {
-        processDargs(defaultArgs[i], domain.obj);
-    }
     for (var i = 1; i < arguments.length; i++) {
         var m = arguments[i];
         processDargs(m, domain.obj);
