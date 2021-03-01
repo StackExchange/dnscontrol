@@ -16,6 +16,10 @@ func AuditRecords(records []*models.RecordConfig) error {
 		return err
 	}
 
+	if err := recordaudit.TxtNotEmpty(records); err != nil {
+		return err
+	}
+
 	if err := recordaudit.TxtNoMultipleStrings(records); err != nil {
 		return err
 	}
