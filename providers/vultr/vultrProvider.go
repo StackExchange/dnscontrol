@@ -38,7 +38,7 @@ var features = providers.DocumentationNotes{
 
 func init() {
 	fns := providers.DspFuncs{
-		Initializer:          NewProvider,
+		Initializer:    NewProvider,
 		AuditRecordsor: AuditRecords,
 	}
 	providers.RegisterDomainServiceProviderType("VULTR", fns, features)
@@ -223,10 +223,6 @@ func toVultrRecord(dc *models.DomainConfig, rc *models.RecordConfig, vultrID int
 	// Vultr does not use a period suffix for CNAME, NS, or MX.
 	if strings.HasSuffix(data, ".") {
 		data = data[:len(data)-1]
-	}
-	// Vultr needs TXT record in quotes.
-	if rc.Type == "TXT" {
-		data = fmt.Sprintf(`"%s"`, data)
 	}
 
 	var priority *int

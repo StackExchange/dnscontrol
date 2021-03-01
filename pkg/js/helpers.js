@@ -428,13 +428,13 @@ var TXT = recordBuilder('TXT', {
     ],
     transform: function(record, args, modifiers) {
         record.name = args.name;
-        //   .target is left empty:
-        record.target = "";
         // Store the strings from the user verbatim.
         if (_.isString(args.target)) {
             record.txtstrings = [args.target];
+            record.target = args.target; // Overwritten by the Go code
         } else {
             record.txtstrings = args.target;
+            record.target = args.target.join(""); // Overwritten by the Go code
         }
     },
 });

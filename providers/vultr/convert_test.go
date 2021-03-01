@@ -1,6 +1,7 @@
 package vultr
 
 import (
+	"fmt"
 	"testing"
 
 	"github.com/StackExchange/dnscontrol/v3/models"
