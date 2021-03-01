@@ -6,6 +6,7 @@ import (
 	"runtime"
 
 	"github.com/StackExchange/dnscontrol/v3/models"
+	"github.com/StackExchange/dnscontrol/v3/pkg/txtutil"
 	"github.com/StackExchange/dnscontrol/v3/providers"
 )
 
@@ -33,7 +34,7 @@ var features = providers.DocumentationNotes{
 //   This establishes the name (all caps), and the function to call to initialize it.
 func init() {
 	fns := providers.DspFuncs{
-		Initializer:          newDNS,
+		Initializer:    newDNS,
 		AuditRecordsor: AuditRecords,
 	}
 	providers.RegisterDomainServiceProviderType("MSDNS", fns, features)
@@ -79,6 +80,8 @@ func (client *msdnsProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*m
 		return nil, err
 	}
 	models.PostProcessRecords(existing)
+	txtutil.SplitSingleLongTxt(dc.Records) // Autosplit long TXT records
+
 	clean := PrepFoundRecords(existing)
 	PrepDesiredRecords(dc)
 	return client.GenerateDomainCorrections(dc, clean)

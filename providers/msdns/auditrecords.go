@@ -13,6 +13,10 @@ func AuditRecords(records []*models.RecordConfig) error {
 		return err
 	}
 
+	if err := recordaudit.TxtNotEmpty(records); err != nil {
+		return err
+	}
+
 	// TODO(tlim): Should be easy to implement support for this.
 	if err := recordaudit.TxtNoBackticks(records); err != nil {
 		return err
