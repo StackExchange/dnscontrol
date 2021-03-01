@@ -45,6 +45,7 @@ jobs:
         - DIGITALOCEAN
         - GANDI_V5
         - INWX
+        - POWERDNS
 # Bring-Your-Own-Secrets:
 # To reduce the risk of secrets being logged by third-parties, secrets
 # come from the account of the fork.  For example, the PR submitted by
@@ -108,6 +109,11 @@ jobs:
       INWX_DOMAIN: ${{ secrets.INWX_DOMAIN }}
       INWX_PASSWORD: ${{ secrets.INWX_PASSWORD }}
       INWX_USER: ${{ secrets.INWX_USER }}
+#
+      POWERDNS_DOMAIN: ${{ secrets.POWERDNS_DOMAIN }}
+      POWERDNS_APIURL: ${{ secrets.POWERDNS_APIURL }}
+      POWERDNS_APIKEY: ${{ secrets.POWERDNS_APIKEY }}
+      POWERDNS_SERVERNAME: ${{ secrets.POWERDNS_SERVERNAME }}
     steps:
     - name: Checkout repo
       uses: actions/checkout@v2
