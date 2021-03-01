@@ -1,4 +1,4 @@
-package httpnet
+package hostingde
 
 import (
 	"encoding/json"
@@ -11,10 +11,10 @@ import (
 	"github.com/StackExchange/dnscontrol/v3/providers"
 )
 
-var defaultNameservers = []string{"ns1.routing.net", "ns2.routing.net", "ns3.routing.net"}
+var defaultNameservers = []string{"ns1.hosting.de", "ns2.hosting.de", "ns3.hosting.de"}
 
 var features = providers.DocumentationNotes{
-	providers.CanAutoDNSSEC:          providers.Unimplemented("Supported by http.net but not implemented yet."),
+	providers.CanAutoDNSSEC:          providers.Unimplemented("Supported but not implemented yet."),
 	providers.CanGetZones:            providers.Can(),
 	providers.CanUseAlias:            providers.Can(),
 	providers.CanUseAzureAlias:       providers.Cannot(),
@@ -33,23 +33,23 @@ var features = providers.DocumentationNotes{
 }
 
 func init() {
-	providers.RegisterRegistrarType("HTTPNET", newHttpnetReg)
-	providers.RegisterDomainServiceProviderType("HTTPNET", newHttpnetDsp, features)
+	providers.RegisterRegistrarType("HOSTINGDE", newHostingdeReg)
+	providers.RegisterDomainServiceProviderType("HOSTINGDE", newHostingdeDsp, features)
 }
 
-func newHttpnet(m map[string]string) (*httpnetProvider, error) {
-	authToken, ownerAccountID, baseURL := m["authToken"], m["ownerAccountID"], m["baseURL"]
+func newHostingde(m map[string]string) (*hostingdeProvider, error) {
+	authToken, ownerAccountID, baseURL := m["authToken"], m["ownerAccountId"], m["baseURL"]
 
 	if authToken == "" {
-		return nil, fmt.Errorf("http.net: authtoken must be provided")
+		return nil, fmt.Errorf("hosting.de: authtoken must be provided")
 	}
 
 	if baseURL == "" {
-		baseURL = "https://partner.routing.net"
+		baseURL = "https://secure.hosting.de"
 	}
 	baseURL = strings.TrimSuffix(baseURL, "/")
 
-	hp := &httpnetProvider{
+	hp := &hostingdeProvider{
 		authToken:      authToken,
 		ownerAccountID: ownerAccountID,
 		baseURL:        baseURL,
@@ -58,19 +58,31 @@ func newHttpnet(m map[string]string) (*httpnetProvider, error) {
 	return hp, nil
 }
 
-func newHttpnetDsp(m map[string]string, raw json.RawMessage) (providers.DNSServiceProvider, error) {
-	return newHttpnet(m)
+func newHostingdeDsp(m map[string]string, raw json.RawMessage) (providers.DNSServiceProvider, error) {
+	return newHostingde(m)
 }
 
-func newHttpnetReg(m map[string]string) (providers.Registrar, error) {
-	return newHttpnet(m)
+func newHostingdeReg(m map[string]string) (providers.Registrar, error) {
+	return newHostingde(m)
 }
 
-func (hp *httpnetProvider) GetNameservers(domain string) ([]*models.Nameserver, error) {
-	return models.ToNameservers(defaultNameservers)
+func (hp *hostingdeProvider) GetNameservers(domain string) ([]*models.Nameserver, error) {
+	src, err := hp.getRecords(domain)
+	if err != nil {
+		return nil, err
+	}
+
+	var nameservers []string
+	for _, record := range src {
+		if record.Type == "NS" {
+			nameservers = append(nameservers, record.Content)
+		}
+	}
+
+	return models.ToNameservers(nameservers)
 }
 
-func (hp *httpnetProvider) GetZoneRecords(domain string) (models.Records, error) {
+func (hp *hostingdeProvider) GetZoneRecords(domain string) (models.Records, error) {
 	src, err := hp.getRecords(domain)
 	if err != nil {
 		return nil, err
@@ -87,7 +99,7 @@ func (hp *httpnetProvider) GetZoneRecords(domain string) (models.Records, error)
 	return records, nil
 }
 
-func (hp *httpnetProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Correction, error) {
+func (hp *hostingdeProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Correction, error) {
 	err := dc.Punycode()
 	if err != nil {
 		return nil, err
@@ -140,7 +152,7 @@ func (hp *httpnetProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*mod
 	return corrections, nil
 }
 
-func (hp *httpnetProvider) GetRegistrarCorrections(dc *models.DomainConfig) ([]*models.Correction, error) {
+func (hp *hostingdeProvider) GetRegistrarCorrections(dc *models.DomainConfig) ([]*models.Correction, error) {
 	err := dc.Punycode()
 	if err != nil {
 		return nil, err
@@ -175,12 +187,12 @@ func (hp *httpnetProvider) GetRegistrarCorrections(dc *models.DomainConfig) ([]*
 	// TODO: Handle AutoDNSSEC
 }
 
-func (hp *httpnetProvider) EnsureDomainExists(domain string) error {
+func (hp *hostingdeProvider) EnsureDomainExists(domain string) error {
 	_, err := hp.getZoneConfig(domain)
 	if err == errZoneNotFound {
 		if err := hp.createZone(domain); err != nil {
 			return err
 		}
 	}
-	return err
+	return nil
 }

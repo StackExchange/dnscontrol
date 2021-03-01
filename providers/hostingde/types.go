@@ -1,4 +1,4 @@
-package httpnet
+package hostingde
 
 import (
 	"encoding/json"
@@ -166,7 +166,7 @@ func recordToNative(rc *models.RecordConfig) *record {
 		record.Priority = rc.SrvPriority
 		record.Content = fmt.Sprintf("%d %d %s", rc.SrvWeight, rc.SrvPort, rc.Target)
 	default:
-		log.Printf("http.net rtype %v unimplemented", rc.Type)
+		log.Printf("hosting.de rtype %v unimplemented", rc.Type)
 	}
 
 	return record

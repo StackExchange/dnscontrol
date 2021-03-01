@@ -1,4 +1,4 @@
-package httpnet
+package hostingde
 
 import (
 	"bytes"
@@ -13,13 +13,13 @@ import (
 
 const endpoint = "%s/api/%s/v1/json/%s"
 
-type httpnetProvider struct {
+type hostingdeProvider struct {
 	authToken      string
 	ownerAccountID string
 	baseURL        string
 }
 
-func (hp *httpnetProvider) getDomainConfig(domain string) (*domainConfig, error) {
+func (hp *hostingdeProvider) getDomainConfig(domain string) (*domainConfig, error) {
 	zc, err := hp.getZoneConfig(domain)
 	if err != nil {
 		return nil, fmt.Errorf("error getting zone config: %v", err)
@@ -49,7 +49,7 @@ func (hp *httpnetProvider) getDomainConfig(domain string) (*domainConfig, error)
 	return domainConf[0], nil
 }
 
-func (hp *httpnetProvider) createZone(domain string) error {
+func (hp *hostingdeProvider) createZone(domain string) error {
 	t, err := idna.ToASCII(domain)
 	if err != nil {
 		return err
@@ -80,7 +80,7 @@ func (hp *httpnetProvider) createZone(domain string) error {
 	return nil
 }
 
-func (hp *httpnetProvider) getNameservers(domain string) ([]string, error) {
+func (hp *hostingdeProvider) getNameservers(domain string) ([]string, error) {
 	t, err := idna.ToASCII(domain)
 	if err != nil {
 		return nil, err
@@ -104,7 +104,7 @@ func (hp *httpnetProvider) getNameservers(domain string) ([]string, error) {
 	return nss, nil
 }
 
-func (hp *httpnetProvider) updateNameservers(nss []string, domain string) func() error {
+func (hp *hostingdeProvider) updateNameservers(nss []string, domain string) func() error {
 	return func() error {
 		domainConf, err := hp.getDomainConfig(domain)
 		if err != nil {
@@ -129,7 +129,7 @@ func (hp *httpnetProvider) updateNameservers(nss []string, domain string) func()
 	}
 }
 
-func (hp *httpnetProvider) getRecords(domain string) ([]*record, error) {
+func (hp *hostingdeProvider) getRecords(domain string) ([]*record, error) {
 	zc, err := hp.getZoneConfig(domain)
 	if err != nil {
 		return nil, err
@@ -167,7 +167,7 @@ func (hp *httpnetProvider) getRecords(domain string) ([]*record, error) {
 	return records, nil
 }
 
-func (hp *httpnetProvider) updateRecords(domain string, create, del, mod diff.Changeset) error {
+func (hp *hostingdeProvider) updateRecords(domain string, create, del, mod diff.Changeset) error {
 	zc, err := hp.getZoneConfig(domain)
 	if err != nil {
 		return err
@@ -207,7 +207,7 @@ func (hp *httpnetProvider) updateRecords(domain string, create, del, mod diff.Ch
 	return nil
 }
 
-func (hp *httpnetProvider) getZoneConfig(domain string) (*zoneConfig, error) {
+func (hp *hostingdeProvider) getZoneConfig(domain string) (*zoneConfig, error) {
 	t, err := idna.ToASCII(domain)
 	if err != nil {
 		return nil, err
@@ -237,7 +237,7 @@ func (hp *httpnetProvider) getZoneConfig(domain string) (*zoneConfig, error) {
 	return zc[0], nil
 }
 
-func (hp *httpnetProvider) get(service, method string, params request) (*responseData, error) {
+func (hp *hostingdeProvider) get(service, method string, params request) (*responseData, error) {
 	params.AuthToken = hp.authToken
 	params.OwnerAccountID = hp.ownerAccountID
 	reqBody, err := json.Marshal(params)

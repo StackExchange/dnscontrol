@@ -86,9 +86,9 @@
     "domain": "$HEXONET_DOMAIN",
     "ipaddress": "$HEXONET_IP"
   },
-  "HTTPNET": {
-    "authToken": "$HTTPNET_AUTHTOKEN",
-    "domain": "$HTTPNET_DOMAIN"
+  "HOSTINGDE": {
+    "authToken": "$HOSTINGDE_AUTHTOKEN",
+    "domain": "$HOSTINGDE_DOMAIN"
   },
   "INWX": {
     "domain": "$INWX_DOMAIN",
