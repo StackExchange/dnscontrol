@@ -44,6 +44,7 @@ jobs:
 # All others: (alphabetical)
         - DIGITALOCEAN
         - GANDI_V5
+        - HEDNS
         - INWX
         - POWERDNS
 # Bring-Your-Own-Secrets:
@@ -105,6 +106,11 @@ jobs:
 #
       GANDI_V5_DOMAIN: ${{ secrets.GANDI_V5_DOMAIN }}
       GANDI_V5_APIKEY: ${{ secrets.GANDI_V5_APIKEY }}
+#
+      HEDNS_DOMAIN: ${{ secrets.HEDNS_DOMAIN }}
+      HEDNS_USERNAME: ${{ secrets.HEDNS_USERNAME }}
+      HEDNS_PASSWORD: ${{ secrets.HEDNS_PASSWORD }}
+      HEDNS_TOTP_SECRET: ${{ secrets.HEDNS_TOTP_SECRET }}
 #
       INWX_DOMAIN: ${{ secrets.INWX_DOMAIN }}
       INWX_PASSWORD: ${{ secrets.INWX_PASSWORD }}
