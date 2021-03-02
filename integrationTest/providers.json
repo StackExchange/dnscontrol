@@ -142,9 +142,10 @@
     "domain": "$OVH_DOMAIN"
   },
   "POWERDNS": {
-    "apikey": "$POWERDNS_APIKEY",
-    "apiurl": "$POWERDNS_APIURL",
-    "servername": "$POWERDNS_SERVERNAME"
+    "apiKey": "$POWERDNS_APIKEY",
+    "apiUrl": "$POWERDNS_APIURL",
+    "serverName": "$POWERDNS_SERVERNAME",
+    "domain": "$POWERDNS_DOMAIN"
   },
   "ROUTE53": {
     "KeyId": "$ROUTE53_KEY_ID",
