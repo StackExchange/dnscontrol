@@ -57,7 +57,7 @@ func FmtFile(args FmtArgs) error {
 	}
 
 	if args.OutputFile != "" {
-		if err := ioutil.WriteFile(args.OutputFile, []byte(beautified), 0755); err != nil {
+		if err := ioutil.WriteFile(args.OutputFile, []byte(beautified), 0744); err != nil {
 			return err
 		} else {
 			fmt.Printf("File %s successfully written\n", args.OutputFile)
