@@ -2,9 +2,11 @@ package commands
 
 import (
 	"fmt"
+	"io/ioutil"
+	"os"
+
 	"github.com/ditashi/jsbeautifier-go/jsbeautifier"
 	"github.com/urfave/cli/v2"
-	"io/ioutil"
 )
 
 var _ = cmd(catUtils, func() *cli.Command {
@@ -56,11 +58,15 @@ func FmtFile(args FmtArgs) error {
 		return beautifyErr
 	}
 
+	if len(beautified) != 0 && beautified[len(beautified)-1] != '\n' {
+		beautified = beautified + "\n"
+	}
+
 	if args.OutputFile != "" {
 		if err := ioutil.WriteFile(args.OutputFile, []byte(beautified), 0744); err != nil {
 			return err
 		} else {
-			fmt.Printf("File %s successfully written\n", args.OutputFile)
+			fmt.Fprintf(os.Stderr, "File %s successfully written\n", args.OutputFile)
 		}
 	} else {
 		fmt.Print(beautified)
