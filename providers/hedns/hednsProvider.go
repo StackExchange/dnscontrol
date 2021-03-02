@@ -60,7 +60,7 @@ var features = providers.DocumentationNotes{
 }
 
 func init() {
-	providers.RegisterDomainServiceProviderType("HEDNS", newHDNSProvider, features)
+	providers.RegisterDomainServiceProviderType("HEDNS", newHEDNSProvider, features)
 }
 
 var defaultNameservers = []string{
@@ -101,7 +101,7 @@ type Record struct {
 	ZoneID     uint64
 }
 
-func newHDNSProvider(cfg map[string]string, _ json.RawMessage) (providers.DNSServiceProvider, error) {
+func newHEDNSProvider(cfg map[string]string, _ json.RawMessage) (providers.DNSServiceProvider, error) {
 	username, password := cfg["username"], cfg["password"]
 	totpSecret, totpValue := cfg["totp-key"], cfg["totp"]
 	sessionFilePath := cfg["session-file-path"]
