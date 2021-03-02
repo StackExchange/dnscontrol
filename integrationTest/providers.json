@@ -96,6 +96,11 @@
     "domain": "$LINODE_DOMAIN",
     "token": "$LINODE_TOKEN"
   },
+  "MSDNS": {
+    "domain": "$MSDNS_DOMAIN",
+    "dnsserver": "$MSDNS_DNSSERVER",
+    "pssession": "$MSDNS_PSSESSION"
+  },
   "NAMECHEAP": {
     "apikey": "$NAMECHEAP_KEY",
     "apiuser": "$NAMECHEAP_USER",
@@ -121,6 +126,15 @@
     "directory": "config",
     "domain": "example.com"
   },
+  "ORACLE": {
+    "user_ocid": "$ORACLE_USER_OCID",
+    "tenancy_ocid": "$ORACLE_TENANCY_OCID",
+    "fingerprint": "$ORACLE_FINGERPRINT",
+    "region": "$ORACLE_REGION",
+    "private_key": "$ORACLE_PRIVATE_KEY",
+    "compartment": "$ORACLE_COMPARTMENT",
+    "domain": "$ORACLE_DOMAIN"
+  },
   "OVH": {
     "app-key": "$OVH_APP_KEY",
     "app-secret-key": "$OVH_APP_SECRET_KEY",
@@ -128,9 +142,10 @@
     "domain": "$OVH_DOMAIN"
   },
   "POWERDNS": {
-    "apikey": "$POWERDNS_APIKEY",
-    "apiurl": "$POWERDNS_APIURL",
-    "servername": "$POWERDNS_SERVERNAME"
+    "apiKey": "$POWERDNS_APIKEY",
+    "apiUrl": "$POWERDNS_APIURL",
+    "serverName": "$POWERDNS_SERVERNAME",
+    "domain": "$POWERDNS_DOMAIN"
   },
   "ROUTE53": {
     "KeyId": "$ROUTE53_KEY_ID",

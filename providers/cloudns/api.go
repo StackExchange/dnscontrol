@@ -6,6 +6,7 @@ import (
 	"io/ioutil"
 	"net/http"
 	"strconv"
+	"time"
 )
 
 // Api layer for CloDNS
@@ -62,6 +63,10 @@ type domainRecord struct {
 	TlsaMatchingType string `json:"tlsa_matching_type,omitempty"`
 	SshfpAlgorithm   string `json:"algorithm,omitempty"`
 	SshfpFingerprint string `json:"fp_type,omitempty"`
+	DsKeyTag         string `json:"key_tag,omitempty"`
+	DsAlgorithm      string `json:"dsalgorithm,omitempty"`
+	DsDigestType     string `json:"digest_type,omitempty"`
+	DsDigest         string `json:"dsdigest,omitempty"`
 }
 
 type recordResponse map[string]domainRecord
@@ -143,7 +148,7 @@ func (c *cloudnsProvider) createDomain(domain string) error {
 
 func (c *cloudnsProvider) createRecord(domainID string, rec requestParams) error {
 	rec["domain-name"] = domainID
-	if _, err := c.get("/dns/add-record.json", rec); err != nil {
+	if _, err := c.get("/dns/add-record.json", rec); err != nil { // here we add record
 		return fmt.Errorf("failed create record (ClouDNS): %s", err)
 	}
 	return nil
@@ -204,6 +209,9 @@ func (c *cloudnsProvider) get(endpoint string, params requestParams) ([]byte, er
 
 	req.URL.RawQuery = q.Encode()
 
+	// ClouDNS has a rate limit (not documented) of 10 request/second
+	// so we do a very primitive rate-limiting here - delay every request for 100ms - so max. 10 requests/second ...
+	time.Sleep(100 * time.Millisecond)
 	resp, err := client.Do(req)
 	if err != nil {
 		return []byte{}, err

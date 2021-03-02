@@ -110,9 +110,6 @@ function D_EXTEND(name) {
         throw name + ' was not declared yet and therefore cannot be updated. Use D() before.';
     }
     domain.obj.subdomain = name.substr(0, name.length-domain.obj.name.length - 1);
-    for (var i = 0; i < defaultArgs.length; i++) {
-        processDargs(defaultArgs[i], domain.obj);
-    }
     for (var i = 1; i < arguments.length; i++) {
         var m = arguments[i];
         processDargs(m, domain.obj);
@@ -821,6 +818,7 @@ var CF_TEMP_REDIRECT = recordBuilder('CF_TEMP_REDIRECT', {
 var URL = recordBuilder('URL');
 var URL301 = recordBuilder('URL301');
 var FRAME = recordBuilder('FRAME');
+var NS1_URLFWD = recordBuilder('NS1_URLFWD');
 
 // SPF_BUILDER takes an object:
 // parts: The parts of the SPF record (to be joined with ' ').
@@ -961,4 +959,8 @@ function CLI_DEFAULTS(defaults) {
             this[key] = defaults[key]
         }
     }
+}
+
+function FETCH() {
+    return fetch.apply(null, arguments).catch(PANIC);
 }

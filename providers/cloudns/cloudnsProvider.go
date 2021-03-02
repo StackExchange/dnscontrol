@@ -48,6 +48,9 @@ var features = providers.DocumentationNotes{
 	providers.CanUseTLSA:             providers.Can(),
 	providers.CanUsePTR:              providers.Can(),
 	providers.CanGetZones:            providers.Can(),
+	providers.CanUseDSForChildren:    providers.Can(),
+	providers.CanUseTXTMulti:         providers.Can(),
+	//providers.CanUseDS:               providers.Can(),  // in ClouDNS we can add  DS record just for a subdomain(child)
 }
 
 func init() {
@@ -111,9 +114,17 @@ func (c *cloudnsProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*mode
 				return c.deleteRecord(domainID, id)
 			},
 		}
-		corrections = append(corrections, corr)
+		// at ClouDNS, we MUST have a NS for a DS
+		// So, when deleting, we must delete the DS first, otherwise deleting the NS throws an error
+		if m.Existing.Type == "DS" {
+			// type DS is prepended - so executed first
+			corrections = append([]*models.Correction{corr}, corrections...)
+		} else {
+			corrections = append(corrections, corr)
+		}
 	}
 
+	var createCorrections []*models.Correction
 	for _, m := range create {
 		req, err := toReq(m.Desired)
 		if err != nil {
@@ -126,8 +137,17 @@ func (c *cloudnsProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*mode
 				return c.createRecord(domainID, req)
 			},
 		}
-		corrections = append(corrections, corr)
+		// at ClouDNS, we MUST have a NS for a DS
+		// So, when creating, we must create the NS first, otherwise creating the DS throws an error
+		if m.Desired.Type == "NS" {
+			// type NS is prepended - so executed first
+			createCorrections = append([]*models.Correction{corr}, createCorrections...)
+		} else {
+			createCorrections = append(createCorrections, corr)
+		}
 	}
+	corrections = append(corrections, createCorrections...)
+
 	for _, m := range modify {
 		id := m.Existing.Original.(*domainRecord).ID
 		req, err := toReq(m.Desired)
@@ -172,6 +192,7 @@ func (c *cloudnsProvider) EnsureDomainExists(domain string) error {
 	return c.createDomain(domain)
 }
 
+//parses the ClouDNS format into our standard RecordConfig
 func toRc(domain string, r *domainRecord) *models.RecordConfig {
 
 	ttl, _ := strconv.ParseUint(r.TTL, 10, 32)
@@ -214,6 +235,15 @@ func toRc(domain string, r *domainRecord) *models.RecordConfig {
 		sshfpFingerprint, _ := strconv.ParseUint(r.SshfpFingerprint, 10, 32)
 		rc.SshfpFingerprint = uint8(sshfpFingerprint)
 		rc.SetTarget(r.Target)
+	case "DS":
+		dsKeyTag, _ := strconv.ParseUint(r.DsKeyTag, 10, 32)
+		rc.DsKeyTag = uint16(dsKeyTag)
+		dsAlgorithm, _ := strconv.ParseUint(r.SshfpAlgorithm, 10, 32) // SshFpAlgorithm and DsAlgorithm both use json field "algorithm"
+		rc.DsAlgorithm = uint8(dsAlgorithm)
+		dsDigestType, _ := strconv.ParseUint(r.DsDigestType, 10, 32)
+		rc.DsDigestType = uint8(dsDigestType)
+		rc.DsDigest = r.Target
+		rc.SetTarget(r.Target)
 	default:
 		rc.SetTarget(r.Target)
 	}
@@ -221,6 +251,7 @@ func toRc(domain string, r *domainRecord) *models.RecordConfig {
 	return rc
 }
 
+//toReq takes a RecordConfig and turns it into the native format used by the API.
 func toReq(rc *models.RecordConfig) (requestParams, error) {
 	req := requestParams{
 		"record-type": rc.Type,
@@ -254,6 +285,11 @@ func toReq(rc *models.RecordConfig) (requestParams, error) {
 	case "SSHFP":
 		req["algorithm"] = strconv.Itoa(int(rc.SshfpAlgorithm))
 		req["fptype"] = strconv.Itoa(int(rc.SshfpFingerprint))
+	case "DS":
+		req["key-tag"] = strconv.Itoa(int(rc.DsKeyTag))
+		req["algorithm"] = strconv.Itoa(int(rc.DsAlgorithm))
+		req["digest-type"] = strconv.Itoa(int(rc.DsDigestType))
+		req["record"] = rc.DsDigest
 	default:
 		return nil, fmt.Errorf("ClouDNS.toReq rtype %q unimplemented", rc.Type)
 	}

@@ -313,8 +313,8 @@ func (c *hednsProvider) GetZoneRecords(domain string) (models.Records, error) {
 
 		rc.SetLabelFromFQDN(rc.Original.(Record).RecordName, domain)
 
-		// dns.he.net omits the trailing "." on the hostnames for certain record types
-		if rc.Type == "CNAME" || rc.Type == "MX" || rc.Type == "NS" || rc.Type == "PTR" {
+		// dns.he.net omits the trailing "." on the hostnames for certain MX records
+		if rc.Type == "MX" {
 			rc.Target += "."
 		}
 

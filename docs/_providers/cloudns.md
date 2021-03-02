@@ -23,7 +23,11 @@ Current version of provider doesn't support `sub-auth-user`.
 
 ## Records
 
-ClouDNS does not supprt DS Record. 
+ClouDNS does support DS Record on subdomains (not the apex domain itself).
+
+ClouDNS requires NS records exist for any DS records. No other records for
+the same label may exist (A, MX, TXT, etc.). If DNSControl is adding NS and
+DS records in the same update, the NS records will be inserted first.
 
 ## Metadata
 This provider does not recognize any special metadata fields unique to ClouDNS.

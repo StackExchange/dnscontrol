@@ -12,6 +12,7 @@ integrationTest/env.sh
 integrationTest/.env
 /integrationTest/zones/*.zone
 /integrationTest/config/*.yaml
+/pkg/js/parse_tests/*.ACTUAL
 env.sh
 certs/
 spfcache*

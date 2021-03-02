@@ -112,10 +112,10 @@ func run(args PreviewArgs, push bool, interactive bool, out printer.CLI) error {
 	totalCorrections := 0
 DomainLoop:
 	for _, domain := range cfg.Domains {
-		if !args.shouldRunDomain(domain.Name) {
+		if !args.shouldRunDomain(domain.UniqueName) {
 			continue
 		}
-		out.StartDomain(domain.Name)
+		out.StartDomain(domain.UniqueName)
 		nsList, err := nameservers.DetermineNameservers(domain)
 		if err != nil {
 			return err
