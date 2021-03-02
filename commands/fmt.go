@@ -30,13 +30,13 @@ func (args *FmtArgs) flags() []cli.Flag {
 		Name:        "input",
 		Aliases:     []string{"i"},
 		Value:       "dnsconfig.js",
-		Usage:       "File to format",
+		Usage:       "Input file",
 		Destination: &args.InputFile,
 	})
 	flags = append(flags, &cli.StringFlag{
 		Name:        "output",
 		Aliases:     []string{"o"},
-		Usage:       "File which the formatted output should be safed",
+		Usage:       "Output file",
 		Destination: &args.OutputFile,
 	})
 	return flags
@@ -60,7 +60,7 @@ func FmtFile(args FmtArgs) error {
 		if err := ioutil.WriteFile(args.OutputFile, []byte(beautified), 0755); err != nil {
 			return err
 		} else {
-			fmt.Printf("File %s successfully written", args.OutputFile)
+			fmt.Printf("File %s successfully written\n", args.OutputFile)
 		}
 	} else {
 		fmt.Print(beautified)
