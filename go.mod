@@ -3,7 +3,9 @@ module github.com/StackExchange/dnscontrol/v3
 go 1.14
 
 require (
-	github.com/Azure/azure-sdk-for-go v51.0.0+incompatible
+	cloud.google.com/go v0.78.0 // indirect
+	github.com/Azure/azure-sdk-for-go v52.1.0+incompatible
+	github.com/Azure/go-autorest/autorest v0.11.18 // indirect
 	github.com/Azure/go-autorest/autorest/azure/auth v0.5.6
 	github.com/Azure/go-autorest/autorest/to v0.4.0
 	github.com/DisposaBoy/JsonConfigReader v0.0.0-20201129172854-99cf318d67e7
@@ -11,13 +13,13 @@ require (
 	github.com/TomOnTime/utfutil v0.0.0-20200626160131-0b0178852c8f
 	github.com/andreyvit/diff v0.0.0-20170406064948-c7f18ee00883
 	github.com/andybalholm/cascadia v1.2.0 // indirect
-	github.com/aws/aws-sdk-go v1.37.1
+	github.com/aws/aws-sdk-go v1.37.21
 	github.com/babolivier/go-doh-client v0.0.0-20201028162107-a76cff4cb8b6
 	github.com/bhendo/go-powershell v0.0.0-20190719160123-219e7fb4e41e
 	github.com/billputer/go-namecheap v0.0.0-20170915210158-0c7adb0710f8
 	github.com/cenkalti/backoff v2.2.1+incompatible // indirect
 	github.com/cpuguy83/go-md2man/v2 v2.0.0 // indirect
-	github.com/digitalocean/godo v1.57.0
+	github.com/digitalocean/godo v1.58.0
 	github.com/dnsimple/dnsimple-go v0.62.0
 	github.com/exoscale/egoscale v0.23.0
 	github.com/frankban/quicktest v1.11.2 // indirect
@@ -36,7 +38,6 @@ require (
 	github.com/hashicorp/vault/api v1.0.4
 	github.com/hexonet/go-sdk v3.5.1+incompatible
 	github.com/jarcoal/httpmock v1.0.4 // indirect
-	github.com/juju/testing v0.0.0-20201216035041-2be42bba85f3 // indirect
 	github.com/kolo/xmlrpc v0.0.0-20201022064351-38db28db192b // indirect
 	github.com/miekg/dns v1.1.35
 	github.com/mitchellh/mapstructure v1.4.0 // indirect
@@ -64,16 +65,19 @@ require (
 	github.com/urfave/cli/v2 v2.3.0
 	github.com/vultr/govultr v1.0.0
 	github.com/xddxdd/ottoext v0.0.0-20210101073831-439879ee6281
+	golang.org/x/crypto v0.0.0-20210220033148-5ea612d1eb83 // indirect
 	golang.org/x/mod v0.4.1 // indirect
-	golang.org/x/net v0.0.0-20210119194325-5f4716e94777
-	golang.org/x/oauth2 v0.0.0-20210126194326-f9ce19ea3013
-	golang.org/x/sys v0.0.0-20210124154548-22da62e12c0c // indirect
+	golang.org/x/net v0.0.0-20210226172049-e18ecbb05110
+	golang.org/x/oauth2 v0.0.0-20210220000619-9bb904979d93
+	golang.org/x/sys v0.0.0-20210301091718-77cc2087c03b // indirect
 	golang.org/x/time v0.0.0-20200630173020-3af7569d3a1e // indirect
 	golang.org/x/tools v0.1.0 // indirect
-	google.golang.org/api v0.38.0
+	google.golang.org/api v0.40.0
 	gopkg.in/ini.v1 v1.62.0 // indirect
 	gopkg.in/ns1/ns1-go.v2 v2.4.3
 	gopkg.in/square/go-jose.v2 v2.5.1 // indirect
 	gopkg.in/yaml.v2 v2.4.0
 	gopkg.in/yaml.v3 v3.0.0-20210107192922-496545a6307b // indirect
+	honnef.co/go/tools v0.1.2 // indirect
+	rsc.io/sampler v1.99.99 // indirect
 )
