@@ -1,8 +1,6 @@
 package msdns
 
 import (
-	"fmt"
-
 	"github.com/StackExchange/dnscontrol/v3/models"
 	"github.com/StackExchange/dnscontrol/v3/pkg/recordaudit"
 )
@@ -11,34 +9,35 @@ import (
 // supportable by this provider.
 func AuditRecords(records []*models.RecordConfig) error {
 
-	for i, rc := range records {
-		fmt.Printf("DEBUG %02d len(txts) = %d\n", i, len(rc.TxtStrings))
-
-	}
 	if err := recordaudit.TxtNoMultipleStrings(records); err != nil {
 		return err
 	}
+	// Still needed as of 2021-03-01
 
 	if err := recordaudit.TxtNotEmpty(records); err != nil {
 		return err
 	}
+	// Still needed as of 2021-03-01
 
-	// TODO(tlim): Should be easy to implement support for this.
 	if err := recordaudit.TxtNoBackticks(records); err != nil {
 		return err
 	}
+	// Still needed as of 2021-03-01
 
 	if err := recordaudit.TxtNoDoubleQuotes(records); err != nil {
 		return err
 	}
+	// Still needed as of 2021-03-01
 
 	if err := recordaudit.TxtNoSingleQuotes(records); err != nil {
 		return err
 	}
+	// Still needed as of 2021-03-01
 
 	if err := recordaudit.TxtNoLen255(records); err != nil {
 		return err
 	}
+	// Still needed as of 2021-03-01
 
 	return nil
 }

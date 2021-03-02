@@ -295,11 +295,11 @@ func toReq(dc *models.DomainConfig, rc *models.RecordConfig) *godo.DomainRecordE
 		priority = int(rc.SrvPriority)
 	case "TXT":
 		// TXT records are the one place where DO combines many items into one field.
-		target = rc.GetTargetCombined()
+		target = rc.GetTargetField()
 	case "CAA":
-		// DO API requires that value ends in dot
-		// But the value returned from API doesn't contain this,
-		// so no need to strip the dot when reading value from API.
+		// DO API requires that a CAA target ends in dot.
+		// Interestingly enough, the value returned from API doesn't
+		// contain a trailing dot.
 		target = target + "."
 	default:
 		// no action required

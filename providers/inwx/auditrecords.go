@@ -9,22 +9,25 @@ import (
 // supportable by this provider.
 func AuditRecords(records []*models.RecordConfig) error {
 
-	// Bug in the API prevents these from working.
 	if err := recordaudit.TxtNoBackticks(records); err != nil {
 		return err
 	}
-
-	if err := recordaudit.TxtNotEmpty(records); err != nil {
-		return err
-	}
+	// Still needed as of 2021-03-01
 
 	if err := recordaudit.TxtNoLen255(records); err != nil {
 		return err
 	}
+	// Still needed as of 2021-03-01
 
 	if err := recordaudit.TxtNoTrailingSpace(records); err != nil {
 		return err
 	}
+	// Still needed as of 2021-03-01
+
+	if err := recordaudit.TxtNotEmpty(records); err != nil {
+		return err
+	}
+	// Still needed as of 2021-03-01
 
 	return nil
 }

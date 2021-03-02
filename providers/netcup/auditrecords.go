@@ -9,4 +9,5 @@ import (
 // supportable by this provider.
 func AuditRecords(records []*models.RecordConfig) error {
 	return recordaudit.TxtNotEmpty(records)
+	// Still needed as of 2021-03-01
 }

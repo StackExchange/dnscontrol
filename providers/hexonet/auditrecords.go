@@ -12,10 +12,12 @@ func AuditRecords(records []*models.RecordConfig) error {
 	if err := recordaudit.TxtNotEmpty(records); err != nil {
 		return err
 	}
+	// Still needed as of 2021-03-01
 
 	if err := recordaudit.TxtNoTrailingSpace(records); err != nil {
 		return err
 	}
+	// Still needed as of 2021-03-01
 
 	return nil
 }

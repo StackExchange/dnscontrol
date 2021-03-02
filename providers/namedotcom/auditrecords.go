@@ -11,28 +11,18 @@ import (
 // supportable by this provider.
 func AuditRecords(records []*models.RecordConfig) error {
 
-
 	if err := MaxLengthNDC(records); err != nil {
 		return err
 	}
+	// Still needed as of 2021-03-01
 
 	if err := recordaudit.TxtNotEmpty(records); err != nil {
 		return err
 	}
-
-	if err := recordaudit.TxtNoMultipleStrings(records); err != nil {
-		return err
-	}
-
-	if err := recordaudit.TxtNoTrailingSpace(records); err != nil {
-		return err
-	}
+	// Still needed as of 2021-03-01
 
 	return nil
 }
-
-
-
 
 // MaxLengthNDC returns and error if the sum of the strings
 // are longer than permitted by DigitalOcean. Sadly their
@@ -41,7 +31,7 @@ func MaxLengthNDC(records []*models.RecordConfig) error {
 	for _, rc := range records {
 
 		if rc.HasFormatIdenticalToTXT() { // TXT and similar:
-			if len(rc.GetTargetField()) > 509 {
+			if len(rc.GetTargetField()) > 512 {
 				return fmt.Errorf("encoded txt too long")
 			}
 		}
@@ -49,6 +39,3 @@ func MaxLengthNDC(records []*models.RecordConfig) error {
 	}
 	return nil
 }
-
-
-

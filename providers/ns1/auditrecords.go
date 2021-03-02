@@ -12,6 +12,7 @@ func AuditRecords(records []*models.RecordConfig) error {
 	if err := recordaudit.TxtNoMultipleStrings(records); err != nil {
 		return err
 	}
+	// Still needed as of 2021-03-01
 
 	return nil
 }
