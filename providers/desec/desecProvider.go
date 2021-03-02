@@ -48,6 +48,7 @@ var features = providers.DocumentationNotes{
 	providers.CanUsePTR:              providers.Can(),
 	providers.CanGetZones:            providers.Can(),
 	providers.CanAutoDNSSEC:          providers.Cannot(),
+	providers.CanUseTXTMulti:         providers.Can(),
 }
 
 var defaultNameServerNames = []string{
