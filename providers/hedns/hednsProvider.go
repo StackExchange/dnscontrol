@@ -93,7 +93,7 @@ type hednsProvider struct {
 	httpClient http.Client
 }
 
-// Record stores the HDNS specific zone and record IDs
+// Record stores the HEDNS specific zone and record IDs
 type Record struct {
 	RecordName string
 	RecordID   uint64
@@ -167,7 +167,7 @@ func (c *hednsProvider) EnsureDomainExists(domain string) error {
 	return c.createDomain(domain)
 }
 
-// GetNameservers returns the default HDNS nameservers.
+// GetNameservers returns the default HEDNS nameservers.
 func (c *hednsProvider) GetNameservers(_ string) ([]*models.Nameserver, error) {
 	return models.ToNameservers(defaultNameservers)
 }
