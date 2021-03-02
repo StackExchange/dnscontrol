@@ -1,3 +1,4 @@
+---
 name: build
 
 on:
@@ -43,7 +44,82 @@ jobs:
 # All others: (alphabetical)
         - DIGITALOCEAN
         - GANDI_V5
+        - HEDNS
         - INWX
+        - POWERDNS
+# Bring-Your-Own-Secrets:
+# To reduce the risk of secrets being logged by third-parties, secrets
+# come from the account of the fork.  For example, the PR submitted by
+# a member of the project has access to the secrets in
+# github.com/StackExchange/dnscontrol. However a PR submitted by a
+# third-party receives secrets from the account of their fork.
+#
+# If a test requires no secrets: List any parameters here in
+# plaintext. (see BIND and HEXONET as examples).
+# However secrets are needed for most tests. In that case, create a secret called
+# ${PROVIDER}_DOMAIN and other env variables listed in
+# integrationTest/providers.json for that provider.  the test will only run on systems
+# with access to those secrets (specifically, the ${PROVIDER}_DOMAIN secret).
+# This way the main project can maintain its tests and secrets
+# securely, plus forks can run their own tests.
+#
+# See https://stackexchange.github.io/dnscontrol/byo-secrets
+#
+# (Sort order: groups in the same order as the matrix; _DOMAIN first; sort the others alphabetically.)
+    env:
+      BIND_DOMAIN: example.com
+#
+      HEXONET_DOMAIN: a-b-c-movies.com
+      HEXONET_ENTITY: OTE
+      HEXONET_PW: test.passw0rd
+      HEXONET_UID: test.user
+#
+      AZURE_DNS_DOMAIN: ${{ secrets.AZURE_DNS_DOMAIN }}
+      AZURE_DNS_CLIENT_ID: ${{ secrets.AZURE_DNS_CLIENT_ID }}
+      AZURE_DNS_CLIENT_SECRET: ${{ secrets.AZURE_DNS_CLIENT_SECRET }}
+      AZURE_DNS_RESOURCE_GROUP: DNSControl
+      AZURE_DNS_SUBSCRIPTION_ID: ${{ secrets.AZURE_DNS_SUBSCRIPTION_ID }}
+      AZURE_DNS_TENANT_ID: ${{ secrets.AZURE_DNS_TENANT_ID }}
+#
+      CLOUDFLAREAPI_DOMAIN: ${{ secrets.CLOUDFLAREAPI_DOMAIN }}
+      CLOUDFLAREAPI_KEY: ${{ secrets.CLOUDFLAREAPI_KEY }}
+      CLOUDFLAREAPI_TOKEN: ${{ secrets.CLOUDFLAREAPI_TOKEN }}
+      CLOUDFLAREAPI_USER: ${{ secrets.CLOUDFLAREAPI_USER }}
+#
+      GCLOUD_DOMAIN: ${{ secrets.GCLOUD_DOMAIN }}
+      GCLOUD_EMAIL: dnscontrol@dnscontrol-dev.iam.gserviceaccount.com
+      GCLOUD_PRIVATEKEY: ${{ secrets.GCLOUD_PRIVATEKEY }}
+      GCLOUD_PROJECT: dnscontrol-dev
+      GCLOUD_TYPE: service_account
+#
+      NAMEDOTCOM_DOMAIN: ${{ secrets.NAMEDOTCOM_DOMAIN }}
+      NAMEDOTCOM_KEY: ${{ secrets.NAMEDOTCOM_KEY }}
+      NAMEDOTCOM_URL: api.name.com
+      NAMEDOTCOM_USER: dnscontroltest
+#
+      ROUTE53_DOMAIN: ${{ secrets.ROUTE53_DOMAIN }}
+      ROUTE53_KEY: ${{ secrets.ROUTE53_KEY }}
+      ROUTE53_KEY_ID: ${{ secrets.ROUTE53_KEY_ID }}
+#
+      DIGITALOCEAN_DOMAIN: ${{ secrets.DIGITALOCEAN_DOMAIN }}
+      DIGITALOCEAN_TOKEN: ${{ secrets.DIGITALOCEAN_TOKEN }}
+#
+      GANDI_V5_DOMAIN: ${{ secrets.GANDI_V5_DOMAIN }}
+      GANDI_V5_APIKEY: ${{ secrets.GANDI_V5_APIKEY }}
+#
+      HEDNS_DOMAIN: ${{ secrets.HEDNS_DOMAIN }}
+      HEDNS_USERNAME: ${{ secrets.HEDNS_USERNAME }}
+      HEDNS_PASSWORD: ${{ secrets.HEDNS_PASSWORD }}
+      HEDNS_TOTP_SECRET: ${{ secrets.HEDNS_TOTP_SECRET }}
+#
+      INWX_DOMAIN: ${{ secrets.INWX_DOMAIN }}
+      INWX_PASSWORD: ${{ secrets.INWX_PASSWORD }}
+      INWX_USER: ${{ secrets.INWX_USER }}
+#
+      POWERDNS_DOMAIN: ${{ secrets.POWERDNS_DOMAIN }}
+      POWERDNS_APIURL: ${{ secrets.POWERDNS_APIURL }}
+      POWERDNS_APIKEY: ${{ secrets.POWERDNS_APIKEY }}
+      POWERDNS_SERVERNAME: ${{ secrets.POWERDNS_SERVERNAME }}
     steps:
     - name: Checkout repo
       uses: actions/checkout@v2
@@ -54,60 +130,9 @@ jobs:
       with:
         go-version: ^1.15
     - name: Determining test viability for ${{ matrix.provider }} provider
-      run: if [ "$${{ matrix.provider }}__CAN_SECRET" = "true" ] ; then echo "CAN_CONTINUE=yes" >> "$GITHUB_ENV" ; fi
-# Does the provider's tests require secrets?
-# Yes?  Set a secret called ${PROVIDER}__CAN_SECRET with value "true" (no quotes).
-# No?   Set it to "true" like you see for BIND__CAN_SECRET.
-# This way tests only run if the secrets are available to the runner.
-# A fork can "bring your own secrets" for locally-defined tests.
-# Please keep the list sorted.
-      env:
-        AZURE_DNS__CAN_SECRET: ${{ secrets.AZURE_DNS__CAN_SECRET }}
-        BIND__CAN_SECRET: true
-        CLOUDFLAREAPI__CAN_SECRET: ${{ secrets.CLOUDFLAREAPI__CAN_SECRET }}
-        DIGITALOCEAN__CAN_SECRET: ${{ secrets.DIGITALOCEAN__CAN_SECRET }}
-        GANDI_V5__CAN_SECRET: ${{ secrets.GANDI_V5__CAN_SECRET }}
-        GCLOUD__CAN_SECRET: ${{ secrets.GCLOUD__CAN_SECRET }}
-        HEXONET__CAN_SECRET: true
-        INWX__CAN_SECRET: ${{ secrets.INWX__CAN_SECRET }}
-        NAMEDOTCOM__CAN_SECRET: ${{ secrets.NAMEDOTCOM__CAN_SECRET }}
-        ROUTE53__CAN_SECRET: ${{ secrets.ROUTE53__CAN_SECRET }}
+      run: if [ -n "$${{ matrix.provider }}_DOMAIN" ] ; then echo "CAN_CONTINUE=yes" >> "$GITHUB_ENV" ; fi
     - name: Run integration tests for ${{ matrix.provider }} provider
+      if: env.CAN_CONTINUE == 'yes'
       working-directory: integrationTest
       run: go test -v -verbose -provider ${{ matrix.provider }}
-      if: ${{ env.CAN_CONTINUE == 'yes' }}
-# Extract the secrets that are used by the tests. (Please keep this list sorted)
-      env:
-        AZURE_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
-        AZURE_CLIENT_SECRET: ${{ secrets.AZURE_CLIENT_SECRET }}
-        AZURE_DOMAIN: dnscontrol-azure.com
-        AZURE_RESOURCE_GROUP: DNSControl
-        AZURE_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
-        AZURE_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
-        CF_DOMAIN: ${{ secrets.CF_DOMAIN }}
-        CF_KEY: ${{ secrets.CF_KEY }}
-        CF_TOKEN: ${{ secrets.CF_TOKEN }}
-        CF_USER: ${{ secrets.CF_USER }}
-        DO_DOMAIN: dnscontrol-do.com
-        DO_TOKEN: ${{ secrets.DO_TOKEN }}
-        GANDI_V5_APIKEY: ${{ secrets.GANDI_V5_APIKEY }}
-        GANDI_V5_DOMAIN: dnscontroltest-gandilivedns.com
-        GCLOUD_DOMAIN: dnscontroltest-gcloud.com
-        GCLOUD_EMAIL: dnscontrol@dnscontrol-dev.iam.gserviceaccount.com
-        GCLOUD_PRIVATEKEY: ${{ secrets.GCLOUD_PRIVATEKEY }}
-        GCLOUD_PROJECT: dnscontrol-dev
-        GCLOUD_TYPE: service_account
-        HEXONET_DOMAIN: a-b-c-movies.com
-        HEXONET_ENTITY: OTE
-        HEXONET_PW: test.passw0rd
-        HEXONET_UID: test.user
-        INWX_DOMAIN: ${{ secrets.INWX_DOMAIN }}
-        INWX_PASSWORD: ${{ secrets.INWX_PASSWORD }}
-        INWX_USER: ${{ secrets.INWX_USER }}
-        NAMEDOTCOM_DOMAIN: dnscontrol-ndc.com
-        NAMEDOTCOM_KEY: ${{ secrets.NAMEDOTCOM_KEY }}
-        NAMEDOTCOM_URL: api.name.com
-        NAMEDOTCOM_USER: dnscontroltest
-        R53_DOMAIN: dnscontroltest-r53.com
-        R53_KEY: ${{ secrets.R53_KEY }}
-        R53_KEY_ID: ${{ secrets.R53_KEY_ID }}
+...

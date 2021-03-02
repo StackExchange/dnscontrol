@@ -17,7 +17,7 @@ Windows). The provider model is extensible, so more providers can be added.
 Currently supported DNS providers:
  - AWS Route 53
  - AXFR+DDNS
- - Active Directory
+ - Active Directory (Deprecated, see Microsoft DNS)
  - Azure DNS
  - BIND
  - ClouDNS
@@ -34,6 +34,7 @@ Currently supported DNS providers:
  - INWX
  - Internet.bs
  - Linode
+ - Microsoft Windows Server DNS Server
  - NS1
  - Name.com
  - Namecheap
@@ -41,6 +42,7 @@ Currently supported DNS providers:
  - OVH
  - OctoDNS
  - OpenSRS
+ - Oracle Cloud
  - PowerDNS
  - SoftLayer
  - Vultr

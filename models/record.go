@@ -34,6 +34,7 @@ import (
 //     IMPORT_TRANSFORM
 //     NAMESERVER
 //     NO_PURGE
+//     NS1_URLFWD
 //     PAGE_RULE
 //     PURGE
 //     URL
@@ -295,6 +296,8 @@ func (rc *RecordConfig) ToRR() dns.RR {
 		rr.(*dns.TLSA).MatchingType = rc.TlsaMatchingType
 		rr.(*dns.TLSA).Selector = rc.TlsaSelector
 		rr.(*dns.TLSA).Certificate = rc.GetTargetField()
+	case dns.TypeSPF:
+		rr.(*dns.SPF).Txt = rc.TxtStrings
 	case dns.TypeTXT:
 		rr.(*dns.TXT).Txt = rc.TxtStrings
 	default:

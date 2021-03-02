@@ -1,0 +1,5 @@
+$TTL 300
+@                IN A     10.5.5.5
+more1            IN A     10.7.7.7
+more2            IN A     10.8.8.8
+www              IN A     10.6.6.6

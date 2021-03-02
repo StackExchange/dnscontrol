@@ -19,24 +19,18 @@ go version
 ```
 
 
-## Step 2. Check unit and integration tests
+## Step 2. Create a new release branch
 
-There's a GitHub Actions [workflow](https://github.com/StackExchange/dnscontrol/actions?query=workflow%3Abuild) which builds the code and runs a set of unit and integration tests. Make sure all tests are passing, including the integration tests for all DNS providers.
+From the "master" branch, run `bin/make-release.sh v1.2.3` where
+"v1.2.3" should be the release version.
 
+This will do a few things.
 
-## Step 3. Bump the version number
-
-Edit the "Version" variable in `pkg/version/version.go` and commit.
-
-```
-export PREVVERSION=3.3.0     <<< Change to the previous version
-export VERSION=3.4.0         <<< Change to the new release version
-git checkout master
-vi main.go                   <<< Change "Version" to new release version
-git commit -m'Release v'"$VERSION" main.go
-git tag v"$VERSION"
-git push origin tag v"$VERSION"
-```
+1. Tag the current branch locally and remotely.
+2. Update main.go with the new version string.
+3. Create a file called draft-notes.txt which you will edit into the
+   release notes.
+4. Print instructions on how to create the release PR.
 
 NOTE: If you bump the major version, you need to change all the source
 files.  The last time this was done (v2 -> v3) these two commands
@@ -49,13 +43,12 @@ sed -i.bak -e 's@github.com.StackExchange.dnscontrol.v2@github.com/StackExchange
 find * -name \*.bak -delete
 ```
 
-## Step 4. Write the release notes.
+## Step 3. Write the release notes.
 
-The release notes that you write will be used in a few places.
+draft-notes.txt is just a draft and needs considerable editing.
 
-To find items to write about, review the git log using this command:
-
-    git log v"$VERSION"...v"$PREVVERSION"
+Once complete, the contents of this file will be used in multiple
+places (release notes, email announcements, etc.)
 
 Entries in the bullet list should be phrased in the positive: "Feature
 FOO now does BAR".  This is often the opposite of the related issue,
@@ -66,11 +59,8 @@ If there was no issue, create one and close it.
 
 Sort the list most important/exciting changes earlier in the list.
 
-Put the "[BREAKING CHANGE]" on any breaking change.
-
 Items related to a specific provier should begin with the all-caps
 name of the provider, such as "ROUTE53: Added support for sandwiches (#100)"
-
 
 See [https://github.com/StackExchange/dnscontrol/releases for examples](https://github.com/StackExchange/dnscontrol/releases) for recent release notes and copy that style.
 
@@ -94,7 +84,7 @@ Provider-specific changes:
 * CLOUDFLARE: Fix CF trying to update non-changeable TTL (#issueid)
 ```
 
-## Step 5. Make the draft release.
+## Step 4. Make the draft release.
 
 [On github.com, click on "Draft a new release"](https://github.com/StackExchange/dnscontrol/releases/new)
 
@@ -112,14 +102,27 @@ Fill in the text box with the release notes written above.
 
 (DO use the "preview" tab to proofread the text.)
 
+## Step 5. Merge the release.
+
+Verify that the automated tests passed. If not, fix the problems
+before you continue.
+
+This is also an opportunity to update any dependencies (go modules).
+See the last section for commands that make that possible. Only
+update modules related to the providers in the automated testing
+system.  When those tests pass, wait for the Github Actions to
+complete and verify the tests all passed.
+
+Merge the PR into Master.
 
 ## Step 6. Publish the release
 
 a. Publish the release.
 
-Make sure the "This is a pre-release" checkbox is UNchecked. Then click "Publish Release".
+* Make sure the "This is a pre-release" checkbox is UNchecked. 
+* Click "Publish Release".
 
-b. Wait for workflow to complete 
+b. Wait for workflow to complete
 
 There's a GitHub Actions [workflow](https://github.com/StackExchange/dnscontrol/actions?query=workflow%3Arelease) which automatically builds and attaches
 all 3 binaries to the release. Refresh the page after a few minutes and you'll
@@ -148,7 +151,7 @@ it.  [Click here to join](https://groups.google.com/forum/#!forum/dnscontrol-dis
 Mention on [https://gitter.im/dnscontrol/Lobby](https://gitter.im/dnscontrol/Lobby) that the new release has shipped.
 
 ```
-ANNOUNCEMENT: dnscontrol $VERSION has been released! https://github.com/StackExchange/dnscontrol/releases/tag/v$VERSION
+ANNOUNCEMENT: dnscontrol v$VERSION has been released! https://github.com/StackExchange/dnscontrol/releases/tag/v$VERSION
 ```
 
 
@@ -164,11 +167,11 @@ If you are at Stack Overflow:
 
 # Tip: How to update modules
 
-List out-of-date modules and update any that 
+List out-of-date modules and update any that
 
 ```
 go get -u github.com/psampaz/go-mod-outdated
-go list -mod=mod -u -m -json all | go-mod-outdated -update -direct 
+go list -mod=mod -u -m -json all | go-mod-outdated -update -direct
 ```
 
 To update a module, `get` it, then re-run the unit and integration tests.

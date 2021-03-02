@@ -11,21 +11,21 @@
     "update-key": "$AXFRDDNS_UPDATE_KEY"
   },
   "AZURE_DNS": {
-    "ClientID": "$AZURE_CLIENT_ID",
-    "ClientSecret": "$AZURE_CLIENT_SECRET",
-    "ResourceGroup": "$AZURE_RESOURCE_GROUP",
-    "SubscriptionID": "$AZURE_SUBSCRIPTION_ID",
-    "TenantID": "$AZURE_TENANT_ID",
-    "domain": "$AZURE_DOMAIN"
+    "ClientID": "$AZURE_DNS_CLIENT_ID",
+    "ClientSecret": "$AZURE_DNS_CLIENT_SECRET",
+    "ResourceGroup": "$AZURE_DNS_RESOURCE_GROUP",
+    "SubscriptionID": "$AZURE_DNS_SUBSCRIPTION_ID",
+    "TenantID": "$AZURE_DNS_TENANT_ID",
+    "domain": "$AZURE_DNS_DOMAIN"
   },
   "BIND": {
-    "domain": "example.com"
+    "domain": "$BIND_DOMAIN"
   },
   "CLOUDFLAREAPI": {
-    "apikey": "$CF_KEY",
-    "apitoken": "$CF_TOKEN",
-    "apiuser": "$CF_USER",
-    "domain": "$CF_DOMAIN"
+    "apikey": "$CLOUDFLAREAPI_KEY",
+    "apitoken": "$CLOUDFLAREAPI_TOKEN",
+    "apiuser": "$CLOUDFLAREAPI_USER",
+    "domain": "$CLOUDFLAREAPI_DOMAIN"
   },
   "CLOUDFLAREAPI_OLD": {
     "apikey": "$CF_KEY",
@@ -35,12 +35,13 @@
   },
   "CLOUDNS": {
     "auth-id": "$CLOUDNS_AUTH_ID",
+    "sub-auth-id": "$CLOUDNS_SUB_AUTH_ID",
     "auth-password": "$CLOUDNS_AUTH_PASSWORD",
     "domain": "$CLOUDNS_DOMAIN"
   },
   "DIGITALOCEAN": {
-    "domain": "$DO_DOMAIN",
-    "token": "$DO_TOKEN"
+    "domain": "$DIGITALOCEAN_DOMAIN",
+    "token": "$DIGITALOCEAN_TOKEN"
   },
   "DNSIMPLE": {
     "baseurl": "https://api.sandbox.dnsimple.com",
@@ -74,8 +75,8 @@
   "HETZNER": {
     "api_key": "$HETZNER_API_KEY",
     "domain": "$HETZNER_DOMAIN",
-    "start_with_default_rate_limit": "true",
-    "optimize_for_rate_limit_quota": "Hour"
+    "optimize_for_rate_limit_quota": "Hour",
+    "start_with_default_rate_limit": "true"
   },
   "HEXONET": {
     "apientity": "$HEXONET_ENTITY",
@@ -94,6 +95,11 @@
   "LINODE": {
     "domain": "$LINODE_DOMAIN",
     "token": "$LINODE_TOKEN"
+  },
+  "MSDNS": {
+    "domain": "$MSDNS_DOMAIN",
+    "dnsserver": "$MSDNS_DNSSERVER",
+    "pssession": "$MSDNS_PSSESSION"
   },
   "NAMECHEAP": {
     "apikey": "$NAMECHEAP_KEY",
@@ -120,6 +126,15 @@
     "directory": "config",
     "domain": "example.com"
   },
+  "ORACLE": {
+    "user_ocid": "$ORACLE_USER_OCID",
+    "tenancy_ocid": "$ORACLE_TENANCY_OCID",
+    "fingerprint": "$ORACLE_FINGERPRINT",
+    "region": "$ORACLE_REGION",
+    "private_key": "$ORACLE_PRIVATE_KEY",
+    "compartment": "$ORACLE_COMPARTMENT",
+    "domain": "$ORACLE_DOMAIN"
+  },
   "OVH": {
     "app-key": "$OVH_APP_KEY",
     "app-secret-key": "$OVH_APP_SECRET_KEY",
@@ -127,14 +142,15 @@
     "domain": "$OVH_DOMAIN"
   },
   "POWERDNS": {
-    "apikey": "$POWERDNS_APIKEY",
-    "apiurl": "$POWERDNS_APIURL",
-    "servername": "$POWERDNS_SERVERNAME"
+    "apiKey": "$POWERDNS_APIKEY",
+    "apiUrl": "$POWERDNS_APIURL",
+    "serverName": "$POWERDNS_SERVERNAME",
+    "domain": "$POWERDNS_DOMAIN"
   },
   "ROUTE53": {
-    "KeyId": "$R53_KEY_ID",
-    "SecretKey": "$R53_KEY",
-    "domain": "$R53_DOMAIN"
+    "KeyId": "$ROUTE53_KEY_ID",
+    "SecretKey": "$ROUTE53_KEY",
+    "domain": "$ROUTE53_DOMAIN"
   },
   "SOFTLAYER": {
     "api_key": "$SL_API_KEY",

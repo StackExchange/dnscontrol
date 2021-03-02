@@ -34,6 +34,7 @@ func init() {
 }
 
 func newDNS(config map[string]string, metadata json.RawMessage) (providers.DNSServiceProvider, error) {
+	fmt.Printf("WARNING: ACTIVEDIRECTORY_PS provider is being replaced by MSDNS. Please convert.  Details in https://stackexchange.github.io/dnscontrol/providers/msdns\n")
 
 	fake := false
 	if fVal := config["fakeps"]; fVal == "true" {

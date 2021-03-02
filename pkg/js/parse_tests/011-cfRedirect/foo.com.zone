@@ -1,0 +1,3 @@
+$TTL 300
+;@                IN CF_REDIRECT test.foo.com,https://goo.com/$1
+;@                IN CF_TEMP_REDIRECT test.foo.com,https://goo.com/$1
