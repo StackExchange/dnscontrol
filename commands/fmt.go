@@ -58,7 +58,9 @@ func FmtFile(args FmtArgs) error {
 		return beautifyErr
 	}
 
-	beautified = beautified + "\n"
+	if len(beautified) != 0 && beautified[len(beautified)-1] != '\n' {
+		beautified = beautified + "\n"
+	}
 
 	if args.OutputFile != "" {
 		if err := ioutil.WriteFile(args.OutputFile, []byte(beautified), 0744); err != nil {
