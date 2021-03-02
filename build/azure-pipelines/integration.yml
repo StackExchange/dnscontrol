@@ -22,7 +22,7 @@ jobs:
       R53_DOMAIN: $(R53_DOMAIN)
       R53_KEY_ID: $(R53_KEY_ID)
       R53_KEY: $(R53_KEY)
-      
+
 - job: GCloud
   steps:
   - template: go-env.yaml
@@ -48,7 +48,7 @@ jobs:
 - job: Cloudflare
   steps:
   - template: go-env.yaml
-  - script: go test -v -verbose -provider CLOUDFLAREAPI
+  - script: go test -v -timeout 30m -verbose -provider CLOUDFLAREAPI
     workingDirectory: $(wd)
     env:
       CF_TOKEN: $(CF_TOKEN)
@@ -97,7 +97,7 @@ jobs:
     env:
       DNSIMPLE_TOKEN: $(DNSIMPLE_TOKEN)
       DNSIMPLE_DOMAIN: $(DNSIMPLE_DOMAIN)
-      
+
 - job: Vultr
   steps:
   - template: go-env.yaml
