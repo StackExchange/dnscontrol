@@ -487,13 +487,13 @@ func (c *hednsProvider) listDomains() (map[string]uint64, error) {
 		return nil, err
 	}
 
-	// Check we can list domains
+	// Check there are any domains in this account
+	domains := make(map[string]uint64)
 	if document.Find("#domains_table").Size() == 0 {
-		return nil, fmt.Errorf("domain listing failed")
+		return domains, nil
 	}
 
 	// Find all the forward & reverse domains
-	domains := make(map[string]uint64)
 	recordsSelector := strings.Join([]string{
 		"#domains_table > tbody > tr > td:last-child > img",                // Forward records
 		"#tabs-advanced .generic_table > tbody > tr > td:last-child > img", // Reverse records
