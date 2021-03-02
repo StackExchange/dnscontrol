@@ -20,7 +20,7 @@ var _ = cmd(catUtils, func() *cli.Command {
 }())
 
 type FmtArgs struct {
-	InputFile string
+	InputFile  string
 	OutputFile string
 }
 
@@ -36,7 +36,6 @@ func (args *FmtArgs) flags() []cli.Flag {
 	flags = append(flags, &cli.StringFlag{
 		Name:        "output",
 		Aliases:     []string{"o"},
-		Value:       "dnsconfig-formatted.js",
 		Usage:       "File which the formatted output should be safed",
 		Destination: &args.OutputFile,
 	})
