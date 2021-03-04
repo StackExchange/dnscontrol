@@ -495,24 +495,24 @@ func (a *azurednsProvider) recordToNative(recordKey models.RecordKey, recordConf
 			if recordSet.ARecords == nil {
 				recordSet.ARecords = &[]adns.ARecord{}
 			}
-			*recordSet.ARecords = append(*recordSet.ARecords, adns.ARecord{Ipv4Address: to.StringPtr(rec.Target)})
+			*recordSet.ARecords = append(*recordSet.ARecords, adns.ARecord{Ipv4Address: to.StringPtr(rec.GetTargetField())})
 		case "AAAA":
 			if recordSet.AaaaRecords == nil {
 				recordSet.AaaaRecords = &[]adns.AaaaRecord{}
 			}
-			*recordSet.AaaaRecords = append(*recordSet.AaaaRecords, adns.AaaaRecord{Ipv6Address: to.StringPtr(rec.Target)})
+			*recordSet.AaaaRecords = append(*recordSet.AaaaRecords, adns.AaaaRecord{Ipv6Address: to.StringPtr(rec.GetTargetField())})
 		case "CNAME":
-			recordSet.CnameRecord = &adns.CnameRecord{Cname: to.StringPtr(rec.Target)}
+			recordSet.CnameRecord = &adns.CnameRecord{Cname: to.StringPtr(rec.GetTargetField())}
 		case "NS":
 			if recordSet.NsRecords == nil {
 				recordSet.NsRecords = &[]adns.NsRecord{}
 			}
-			*recordSet.NsRecords = append(*recordSet.NsRecords, adns.NsRecord{Nsdname: to.StringPtr(rec.Target)})
+			*recordSet.NsRecords = append(*recordSet.NsRecords, adns.NsRecord{Nsdname: to.StringPtr(rec.GetTargetField())})
 		case "PTR":
 			if recordSet.PtrRecords == nil {
 				recordSet.PtrRecords = &[]adns.PtrRecord{}
 			}
-			*recordSet.PtrRecords = append(*recordSet.PtrRecords, adns.PtrRecord{Ptrdname: to.StringPtr(rec.Target)})
+			*recordSet.PtrRecords = append(*recordSet.PtrRecords, adns.PtrRecord{Ptrdname: to.StringPtr(rec.GetTargetField())})
 		case "TXT":
 			if recordSet.TxtRecords == nil {
 				recordSet.TxtRecords = &[]adns.TxtRecord{}
@@ -525,20 +525,20 @@ func (a *azurednsProvider) recordToNative(recordKey models.RecordKey, recordConf
 			if recordSet.MxRecords == nil {
 				recordSet.MxRecords = &[]adns.MxRecord{}
 			}
-			*recordSet.MxRecords = append(*recordSet.MxRecords, adns.MxRecord{Exchange: to.StringPtr(rec.Target), Preference: to.Int32Ptr(int32(rec.MxPreference))})
+			*recordSet.MxRecords = append(*recordSet.MxRecords, adns.MxRecord{Exchange: to.StringPtr(rec.GetTargetField()), Preference: to.Int32Ptr(int32(rec.MxPreference))})
 		case "SRV":
 			if recordSet.SrvRecords == nil {
 				recordSet.SrvRecords = &[]adns.SrvRecord{}
 			}
-			*recordSet.SrvRecords = append(*recordSet.SrvRecords, adns.SrvRecord{Target: to.StringPtr(rec.Target), Port: to.Int32Ptr(int32(rec.SrvPort)), Weight: to.Int32Ptr(int32(rec.SrvWeight)), Priority: to.Int32Ptr(int32(rec.SrvPriority))})
+			*recordSet.SrvRecords = append(*recordSet.SrvRecords, adns.SrvRecord{Target: to.StringPtr(rec.GetTargetField()), Port: to.Int32Ptr(int32(rec.SrvPort)), Weight: to.Int32Ptr(int32(rec.SrvWeight)), Priority: to.Int32Ptr(int32(rec.SrvPriority))})
 		case "CAA":
 			if recordSet.CaaRecords == nil {
 				recordSet.CaaRecords = &[]adns.CaaRecord{}
 			}
-			*recordSet.CaaRecords = append(*recordSet.CaaRecords, adns.CaaRecord{Value: to.StringPtr(rec.Target), Tag: to.StringPtr(rec.CaaTag), Flags: to.Int32Ptr(int32(rec.CaaFlag))})
+			*recordSet.CaaRecords = append(*recordSet.CaaRecords, adns.CaaRecord{Value: to.StringPtr(rec.GetTargetField()), Tag: to.StringPtr(rec.CaaTag), Flags: to.Int32Ptr(int32(rec.CaaFlag))})
 		case "AZURE_ALIAS_A", "AZURE_ALIAS_AAAA", "AZURE_ALIAS_CNAME":
 			*recordSet.Type = rec.AzureAlias["type"]
-			recordSet.TargetResource = &adns.SubResource{ID: to.StringPtr(rec.Target)}
+			recordSet.TargetResource = &adns.SubResource{ID: to.StringPtr(rec.GetTargetField())}
 		default:
 			return nil, adns.A, fmt.Errorf("rc.String rtype %v unimplemented", recordKey.Type) // ands.A is a placeholder
 		}

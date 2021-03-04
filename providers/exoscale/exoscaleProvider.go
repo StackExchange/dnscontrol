@@ -162,7 +162,7 @@ func (c *exoscaleProvider) createRecordFunc(rc *models.RecordConfig, domainName 
 		name := rc.GetLabel()
 
 		if rc.Type == "MX" {
-			target = rc.Target
+			target = rc.GetTargetField()
 		}
 
 		if rc.Type == "NS" && (name == "@" || name == "") {
@@ -210,7 +210,7 @@ func (c *exoscaleProvider) updateRecordFunc(old *egoscale.DNSRecord, rc *models.
 		name := rc.GetLabel()
 
 		if rc.Type == "MX" {
-			target = rc.Target
+			target = rc.GetTargetField()
 		}
 
 		if rc.Type == "NS" && (name == "@" || name == "") {
