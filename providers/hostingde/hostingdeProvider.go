@@ -160,7 +160,7 @@ func (hp *hostingdeProvider) GetRegistrarCorrections(dc *models.DomainConfig) ([
 
 	found, err := hp.getNameservers(dc.Name)
 	if err != nil {
-		return nil, fmt.Errorf("error getting nameservers: %v", err)
+		return nil, fmt.Errorf("error getting nameservers: %w", err)
 	}
 	sort.Strings(found)
 	foundNameservers := strings.Join(found, ",")

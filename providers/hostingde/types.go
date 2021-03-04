@@ -153,18 +153,28 @@ func recordToNative(rc *models.RecordConfig) *record {
 	}
 
 	switch rc.Type { // #rtype_variations
-	case "A", "AAAA", "ALIAS", "CAA", "CNAME", "DNSKEY", "DS", "NS", "NSEC", "NSEC3", "NSEC3PARAM", "PTR", "RRSIG", "SSHFP", "TSLA", "TXT":
+	case "A", "AAAA", "ALIAS", "CAA", "CNAME", "DNSKEY", "DS", "NS", "NSEC", "NSEC3", "NSEC3PARAM", "PTR", "RRSIG", "SSHFP", "TSLA":
 		// Nothing special.
+	case "TXT":
+		if cap(rc.TxtStrings) == 1 {
+			record.Content = "\"" + rc.TxtStrings[0] + "\""
+		} else if cap(rc.TxtStrings) > 1 {
+			record.Content = ""
+			for _, str := range rc.TxtStrings {
+				record.Content = record.Content + " \"" + str + "\""
+			}
+			record.Content = record.Content[1:len(record.Content)]
+		}
 	case "MX":
 		record.Priority = rc.MxPreference
-		record.Content = rc.Target
+		record.Content = rc.GetTargetField()
 		if record.Content == "" {
 			record.Type = "NULLMX"
 			record.Priority = 10
 		}
 	case "SRV":
 		record.Priority = rc.SrvPriority
-		record.Content = fmt.Sprintf("%d %d %s", rc.SrvWeight, rc.SrvPort, rc.Target)
+		record.Content = fmt.Sprintf("%d %d %s", rc.SrvWeight, rc.SrvPort, rc.GetTargetField())
 	default:
 		log.Printf("hosting.de rtype %v unimplemented", rc.Type)
 	}

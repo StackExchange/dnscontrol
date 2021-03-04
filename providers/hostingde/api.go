@@ -22,7 +22,7 @@ type hostingdeProvider struct {
 func (hp *hostingdeProvider) getDomainConfig(domain string) (*domainConfig, error) {
 	zc, err := hp.getZoneConfig(domain)
 	if err != nil {
-		return nil, fmt.Errorf("error getting zone config: %v", err)
+		return nil, fmt.Errorf("error getting zone config: %w", err)
 	}
 
 	params := request{
@@ -34,12 +34,12 @@ func (hp *hostingdeProvider) getDomainConfig(domain string) (*domainConfig, erro
 
 	resp, err := hp.get("domain", "domainsFind", params)
 	if err != nil {
-		return nil, fmt.Errorf("error getting domain info: %v", err)
+		return nil, fmt.Errorf("error getting domain info: %w", err)
 	}
 
 	domainConf := []*domainConfig{}
 	if err := json.Unmarshal(resp.Data, &domainConf); err != nil {
-		return nil, fmt.Errorf("error parsing response: %v", err)
+		return nil, fmt.Errorf("error parsing response: %w", err)
 	}
 
 	if len(domainConf) == 0 {
@@ -75,7 +75,7 @@ func (hp *hostingdeProvider) createZone(domain string) error {
 
 	_, err = hp.get("dns", "zoneCreate", params)
 	if err != nil {
-		return fmt.Errorf("error creating zone: %v", err)
+		return fmt.Errorf("error creating zone: %w", err)
 	}
 	return nil
 }
@@ -88,7 +88,7 @@ func (hp *hostingdeProvider) getNameservers(domain string) ([]string, error) {
 
 	domainConf, err := hp.getDomainConfig(t)
 	if err != nil {
-		return nil, fmt.Errorf("error getting domain config: %v", err)
+		return nil, fmt.Errorf("error getting domain config: %w", err)
 	}
 
 	nss := []string{}
@@ -222,12 +222,12 @@ func (hp *hostingdeProvider) getZoneConfig(domain string) (*zoneConfig, error) {
 
 	resp, err := hp.get("dns", "zoneConfigsFind", params)
 	if err != nil {
-		return nil, fmt.Errorf("could not get zone config: %v", err)
+		return nil, fmt.Errorf("could not get zone config: %w", err)
 	}
 
 	zc := []*zoneConfig{}
 	if err := json.Unmarshal(resp.Data, &zc); err != nil {
-		return nil, fmt.Errorf("could not parse response: %v", err)
+		return nil, fmt.Errorf("could not parse response: %w", err)
 	}
 
 	if len(zc) == 0 {

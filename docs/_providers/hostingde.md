@@ -11,6 +11,7 @@ In your credentials file, you must provide your [`authToken` and optionally an `
 
 **If you want to use this provider with http.net or a demo system you need to provide a custom `baseURL`.**
 
+* hosting.de (default): `https://secure.hosting.de`
 * http.net: `https://partner.http.net`
 * Demo: `https://demo.routing.net`
 
