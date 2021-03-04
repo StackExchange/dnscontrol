@@ -61,7 +61,7 @@ var features = providers.DocumentationNotes{
 
 func init() {
 	fns := providers.DspFuncs{
-		Initializer:    newHDNSProvider,
+		Initializer:    newHEDNSProvider,
 		AuditRecordsor: AuditRecords,
 	}
 	providers.RegisterDomainServiceProviderType("HEDNS", fns, features)
@@ -97,7 +97,7 @@ type hednsProvider struct {
 	httpClient http.Client
 }
 
-// Record stores the HDNS specific zone and record IDs
+// Record stores the HEDNS specific zone and record IDs
 type Record struct {
 	RecordName string
 	RecordID   uint64
@@ -105,7 +105,7 @@ type Record struct {
 	ZoneID     uint64
 }
 
-func newHDNSProvider(cfg map[string]string, _ json.RawMessage) (providers.DNSServiceProvider, error) {
+func newHEDNSProvider(cfg map[string]string, _ json.RawMessage) (providers.DNSServiceProvider, error) {
 	username, password := cfg["username"], cfg["password"]
 	totpSecret, totpValue := cfg["totp-key"], cfg["totp"]
 	sessionFilePath := cfg["session-file-path"]
@@ -171,7 +171,7 @@ func (c *hednsProvider) EnsureDomainExists(domain string) error {
 	return c.createDomain(domain)
 }
 
-// GetNameservers returns the default HDNS nameservers.
+// GetNameservers returns the default HEDNS nameservers.
 func (c *hednsProvider) GetNameservers(_ string) ([]*models.Nameserver, error) {
 	return models.ToNameservers(defaultNameservers)
 }
@@ -491,13 +491,13 @@ func (c *hednsProvider) listDomains() (map[string]uint64, error) {
 		return nil, err
 	}
 
-	// Check we can list domains
+	// Check there are any domains in this account
+	domains := make(map[string]uint64)
 	if document.Find("#domains_table").Size() == 0 {
-		return nil, fmt.Errorf("domain listing failed")
+		return domains, nil
 	}
 
 	// Find all the forward & reverse domains
-	domains := make(map[string]uint64)
 	recordsSelector := strings.Join([]string{
 		"#domains_table > tbody > tr > td:last-child > img",                // Forward records
 		"#tabs-advanced .generic_table > tbody > tr > td:last-child > img", // Reverse records
