@@ -245,7 +245,7 @@ func (n *HXClient) createRecordString(rc *models.RecordConfig, domain string) (s
 	case "A", "AAAA", "ANAME", "CNAME", "MX", "NS", "PTR":
 		// nothing
 	case "TLSA":
-		record.Answer = fmt.Sprintf(`%v %v %v %s`, rc.TlsaUsage, rc.TlsaSelector, rc.TlsaMatchingType, rc.Target)
+		record.Answer = fmt.Sprintf(`%v %v %v %s`, rc.TlsaUsage, rc.TlsaSelector, rc.TlsaMatchingType, rc.GetTargetField())
 	case "CAA":
 		record.Answer = fmt.Sprintf(`%v %s "%s"`, rc.CaaFlag, rc.CaaTag, record.Answer)
 	case "TXT":

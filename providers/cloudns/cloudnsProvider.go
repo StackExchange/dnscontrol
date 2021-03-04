@@ -277,7 +277,7 @@ func toReq(rc *models.RecordConfig) (requestParams, error) {
 	case "CAA":
 		req["caa_flag"] = strconv.Itoa(int(rc.CaaFlag))
 		req["caa_type"] = rc.CaaTag
-		req["caa_value"] = rc.Target
+		req["caa_value"] = rc.GetTargetField()
 	case "TLSA":
 		req["tlsa_usage"] = strconv.Itoa(int(rc.TlsaUsage))
 		req["tlsa_selector"] = strconv.Itoa(int(rc.TlsaSelector))

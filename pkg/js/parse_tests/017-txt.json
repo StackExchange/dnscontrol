@@ -34,7 +34,7 @@
         {
           "type": "TXT",
           "name": "d",
-          "target": "bonie",
+          "target": "bonieclyde",
           "txtstrings": [
             "bonie",
             "clyde"
@@ -43,7 +43,7 @@
         {
           "type": "TXT",
           "name": "e",
-          "target": "straw",
+          "target": "strawwoodbrick",
           "txtstrings": [
             "straw",
             "wood",
