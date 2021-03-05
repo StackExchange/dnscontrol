@@ -31,6 +31,7 @@ func init() {
 }
 
 func newReg(conf map[string]string, _ json.RawMessage) (providers.DNSServiceProvider, error) {
+	fmt.Println("WARNING: THe SOFTLAYER provider is unmaintained. https://github.com/StackExchange/dnscontrol/issues/1079")
 	s := session.New(conf["username"], conf["api_key"], conf["endpoint_url"], conf["timeout"])
 
 	if len(s.UserName) == 0 || len(s.APIKey) == 0 {
