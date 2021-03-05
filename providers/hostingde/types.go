@@ -124,7 +124,7 @@ func (r *record) nativeToRecord(domain string) *models.RecordConfig {
 	switch r.Type {
 	case "ALIAS":
 		rc.Type = r.Type
-		rc.Target = r.Content
+		rc.SetTarget(r.Content)
 	case "NULLMX":
 		err = rc.PopulateFromString("MX", "0 .", domain)
 	case "MX":
@@ -144,11 +144,10 @@ func (r *record) nativeToRecord(domain string) *models.RecordConfig {
 }
 
 func recordToNative(rc *models.RecordConfig) *record {
-	rc.Target = strings.TrimSuffix(rc.Target, ".")
 	record := &record{
 		Name:    rc.NameFQDN,
 		Type:    rc.Type,
-		Content: rc.GetTargetCombined(),
+		Content: strings.TrimSuffix(rc.GetTargetCombined(), "."),
 		TTL:     rc.TTL,
 	}
 
@@ -167,14 +166,14 @@ func recordToNative(rc *models.RecordConfig) *record {
 		}
 	case "MX":
 		record.Priority = rc.MxPreference
-		record.Content = rc.GetTargetField()
+		record.Content = strings.TrimSuffix(rc.GetTargetField(), ".")
 		if record.Content == "" {
 			record.Type = "NULLMX"
 			record.Priority = 10
 		}
 	case "SRV":
 		record.Priority = rc.SrvPriority
-		record.Content = fmt.Sprintf("%d %d %s", rc.SrvWeight, rc.SrvPort, rc.GetTargetField())
+		record.Content = fmt.Sprintf("%d %d %s", rc.SrvWeight, rc.SrvPort, strings.TrimSuffix(rc.GetTargetField(), "."))
 	default:
 		log.Printf("hosting.de rtype %v unimplemented", rc.Type)
 	}
