@@ -61,7 +61,7 @@ func (d *differ) content(r *models.RecordConfig) string {
 	// results are generated.  Once we have confidence, this function will go away.
 	content := fmt.Sprintf("%v ttl=%d", r.GetTargetCombined(), r.TTL)
 	if r.Type == "SOA" {
-		content = fmt.Sprintf("%s %v %d %d %d %d ttl=%d", r.Target, r.SoaMbox, r.SoaRefresh, r.SoaRetry, r.SoaExpire, r.SoaMinttl, r.TTL) // SoaSerial is not used in comparison
+		content = fmt.Sprintf("%s %v %d %d %d %d ttl=%d", r.GetTargetField(), r.SoaMbox, r.SoaRefresh, r.SoaRetry, r.SoaExpire, r.SoaMinttl, r.TTL) // SoaSerial is not used in comparison
 	}
 	var allMaps []map[string]string
 	for _, f := range d.extraValues {
