@@ -419,7 +419,7 @@ func txt(name, target string) *models.RecordConfig {
 }
 
 func txtmulti(name string, target []string) *models.RecordConfig {
-	r := makeRec(name, target[0], "TXT")
+	r := makeRec(name, "", "TXT")
 	r.SetTargetTXTs(target)
 	return r
 }
