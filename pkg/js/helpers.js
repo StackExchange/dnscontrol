@@ -842,7 +842,6 @@ function SPF_BUILDER(value) {
         // Only add the raw spf record if it isn't an empty string
         if (value.raw !== '') {
             rp = {};
-            rp.txtSplitAlgorithm = 'multistring'; // Split the target if needed.
             if (value.ttl) {
                 r.push(TXT(value.raw, rawspf, rp, TTL(value.ttl)));
             } else {
@@ -863,8 +862,6 @@ function SPF_BUILDER(value) {
     if (value.txtMaxSize) {
         p.txtMaxSize = value.txtMaxSize;
     }
-
-    p.txtSplitAlgorithm = 'multistring'; // Split the target if needed.
 
     // Generate a TXT record with the metaparameters.
     if (value.ttl) {
