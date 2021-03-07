@@ -182,6 +182,7 @@ func makeChanges(t *testing.T, prv providers.DNSServiceProvider, dc *models.Doma
 
 		if err := providers.AuditRecords(*providerToRun, dom.Records); err != nil {
 			t.Skip(fmt.Sprintf("***SKIPPED(PROVIDER DOES NOT SUPPORT '%s' ::%q)", err, desc))
+			return
 		}
 
 		// get and run corrections for first time
@@ -754,7 +755,7 @@ func makeTests(t *testing.T) []*TestGroup {
 			// https://github.com/StackExchange/dnscontrol/issues/598
 			// RFC1035 permits this, but rarely do provider support it.
 			clear(),
-			tc("Create a 253-byte TXT", txt("foo253", strings.Repeat("A", 254))),
+			tc("Create a 253-byte TXT", txt("foo253", strings.Repeat("A", 253))),
 			clear(),
 			tc("Create a 254-byte TXT", txt("foo254", strings.Repeat("B", 254))),
 			clear(),

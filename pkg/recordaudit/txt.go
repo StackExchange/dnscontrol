@@ -73,6 +73,23 @@ func TxtNoLen255(records []*models.RecordConfig) error {
 	return nil
 }
 
+// TxtNoLongStrings audits TXT records for strings that are >255 octets.
+func TxtNoLongStrings(records []*models.RecordConfig) error {
+	for _, rc := range records {
+
+		if rc.HasFormatIdenticalToTXT() { // TXT and similar:
+			for _, txt := range rc.TxtStrings {
+				if len(txt) > 255 {
+					return fmt.Errorf("txtstring length > 255")
+				}
+			}
+		}
+
+	}
+
+	return nil
+}
+
 // TxtNoMultipleStrings audits TXT records for multiple strings
 func TxtNoMultipleStrings(records []*models.RecordConfig) error {
 	for _, rc := range records {
