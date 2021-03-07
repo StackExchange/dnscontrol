@@ -1,4 +1,4 @@
-package gandi5
+package gandi_v5
 
 import (
 	"testing"
