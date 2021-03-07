@@ -18,14 +18,17 @@ import (
 var docNotes = providers.DocumentationNotes{
 	providers.CanUseAlias:            providers.Can(),
 	providers.CanUsePTR:              providers.Can(),
-	providers.CanUseTXTMulti:         providers.Cannot(),
 	providers.DocCreateDomains:       providers.Cannot(),
 	providers.DocOfficiallySupported: providers.Cannot(),
 	providers.DocDualHost:            providers.Can(),
 }
 
 func init() {
-	providers.RegisterDomainServiceProviderType("NS1", newProvider, providers.CanUseSRV, docNotes)
+	fns := providers.DspFuncs{
+		Initializer:    newProvider,
+		AuditRecordsor: AuditRecords,
+	}
+	providers.RegisterDomainServiceProviderType("NS1", fns, providers.CanUseSRV, docNotes)
 	providers.RegisterCustomRecordType("NS1_URLFWD", "NS1", "URLFWD")
 }
 

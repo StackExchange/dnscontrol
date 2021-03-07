@@ -414,10 +414,8 @@ function isStringOrArray(x) {
 }
 
 
-// AUTOSPLIT is a modifier that instructs the Go-level code to
-// split this TXT record's target into chunks of 255.
-var AUTOSPLIT = { txtSplitAlgorithm: 'multistring' }; // Create 255-byte chunks
-//var TXTMULTISPACE = { txtSplitAlgorithm: 'space' }; // Split on space [not implemented]
+// AUTOSPLIT is deprecated. It is now a no-op.
+var AUTOSPLIT = { };
 
 // TXT(name,target, recordModifiers...)
 var TXT = recordBuilder('TXT', {
@@ -427,20 +425,13 @@ var TXT = recordBuilder('TXT', {
     ],
     transform: function(record, args, modifiers) {
         record.name = args.name;
-        // Store the strings twice:
-        //   .target is the first string
-        //   .txtstrings is the individual strings.
-        //   NOTE: If there are more than 1 string, providers should only access
-        //   .txtstrings, thus it doesn't matter what we store in .target.
-        //   However, by storing the first string there, it improves backwards
-        //   compatibility when the len(array) == 1 and (intentionally) breaks
-        //   broken providers early in the integration tests.
+        // Store the strings from the user verbatim.
         if (_.isString(args.target)) {
-            record.target = args.target;
             record.txtstrings = [args.target];
+            record.target = args.target; // Overwritten by the Go code
         } else {
-            record.target = args.target[0];
             record.txtstrings = args.target;
+            record.target = args.target.join(""); // Overwritten by the Go code
         }
     },
 });

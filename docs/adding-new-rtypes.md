@@ -65,7 +65,7 @@ provider that does not support the capability.
 
 * Add the capability to the validations in `pkg/normalize/validate.go`
   by adding it to `providerCapabilityChecks`
-* Some capabilities can't be tested for, such as `CanUseTXTMulti`.  If
+* Some capabilities can't be tested for.  If
   such testing can't be done, add it to the whitelist in function
   `TestCapabilitiesAreFiltered` in
   `pkg/normalize/capabilities_test.go`
@@ -148,7 +148,7 @@ testgroup("MX",                                   <<< 1
   tc("MX record",                                 <<< 4
       mx("@", 10, "foo.com."),
       mx("@", 20, "bar.com."),
-  ), 
+  ),
   )
 ```
 
@@ -156,7 +156,7 @@ Line 1: `testgroup()` gives a name to a group of tests.  It also tells
 the system to delete all records for this domain so that the tests
 begin with a blank slate.
 
-Line 2: 
+Line 2:
 Each `tc()` encodes all the records of a zone.  The test framework
 will try to do the smallest changes to bring the zone up to date.
 In this case, we know the zone is empty, so this will add one MX

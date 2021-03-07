@@ -195,9 +195,7 @@ func (c *cloudflareProvider) createRec(rec *models.RecordConfig, domainID string
 		prio = fmt.Sprintf(" %d ", rec.MxPreference)
 	}
 	if rec.Type == "TXT" {
-		if len(rec.TxtStrings) > 1 {
-			content = `"` + strings.Join(rec.TxtStrings, `" "`) + `"`
-		}
+		content = rec.GetTargetField()
 	}
 	if rec.Type == "DS" {
 		content = fmt.Sprintf("%d %d %d %s", rec.DsKeyTag, rec.DsAlgorithm, rec.DsDigestType, rec.DsDigest)
