@@ -1,4 +1,4 @@
-package gandi5
+package gandi_v5
 
 // Convert the provider's native record description to models.RecordConfig.
 

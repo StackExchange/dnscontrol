@@ -1,4 +1,4 @@
-package google
+package gcloud
 
 import (
 	"github.com/StackExchange/dnscontrol/v3/models"
