@@ -66,6 +66,8 @@ require (
 	github.com/softlayer/softlayer-go v0.0.0-20170804160555-5e1c8cccc730
 	github.com/stretchr/objx v0.3.0 // indirect
 	github.com/stretchr/testify v1.7.0
+	github.com/tdewolff/minify v2.3.6+incompatible // indirect
+	github.com/tdewolff/parse v2.3.4+incompatible // indirect
 	github.com/urfave/cli/v2 v2.3.0
 	github.com/vultr/govultr v1.0.0
 	github.com/xddxdd/ottoext v0.0.0-20210101073831-439879ee6281
@@ -82,5 +84,6 @@ require (
 	gopkg.in/ini.v1 v1.62.0 // indirect
 	gopkg.in/ns1/ns1-go.v2 v2.4.3
 	gopkg.in/square/go-jose.v2 v2.5.1 // indirect
+	gopkg.in/yaml.v2 v2.4.0 // indirect
 	gopkg.in/yaml.v3 v3.0.0-20210107192922-496545a6307b // indirect
 )
