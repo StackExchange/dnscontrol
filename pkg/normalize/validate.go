@@ -176,17 +176,6 @@ func checkTargets(rec *models.RecordConfig, domain string) (errs []error) {
 	return
 }
 
-// TODO: Write a test.
-func checkTxtStrings(rc *models.RecordConfig) error {
-	for i := range rc.TxtStrings {
-		l := len([]byte(rc.TxtStrings[i]))
-		if l > 255 {
-			return fmt.Errorf("length of TxtStrings[%d] is %d, which is >255", i, l)
-		}
-	}
-	return nil
-}
-
 func transformCNAME(target, oldDomain, newDomain string) string {
 	// Canonicalize. If it isn't a FQDN, add the newDomain.
 	result := dnsutil.AddOrigin(target, oldDomain)
@@ -326,11 +315,6 @@ func ValidateAndNormalizeConfig(config *models.DNSConfig) (errs []error) {
 			}
 			if errs2 := checkTargets(rec, domain.Name); errs2 != nil {
 				errs = append(errs, errs2...)
-			}
-			if rec.HasFormatIdenticalToTXT() { // i.e. if it is a TXT or SPF record.
-				if err := checkTxtStrings(rec); err != nil {
-					errs = append(errs, err)
-				}
 			}
 
 			// Canonicalize Targets.
