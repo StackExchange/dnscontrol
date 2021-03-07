@@ -6,6 +6,7 @@ import (
 
 	"github.com/StackExchange/dnscontrol/v3/models"
 	"github.com/StackExchange/dnscontrol/v3/pkg/diff"
+	"github.com/StackExchange/dnscontrol/v3/pkg/txtutil"
 	"github.com/StackExchange/dnscontrol/v3/providers"
 )
 
@@ -16,12 +17,15 @@ var features = providers.DocumentationNotes{
 	providers.CanUsePTR:              providers.Cannot(),
 	providers.CanUseSRV:              providers.Can(),
 	providers.CanUseCAA:              providers.Can(),
-	providers.CanUseTXTMulti:         providers.Can(),
 	providers.CanGetZones:            providers.Cannot(),
 }
 
 func init() {
-	providers.RegisterDomainServiceProviderType("NETCUP", New, features)
+	fns := providers.DspFuncs{
+		Initializer:    New,
+		AuditRecordsor: AuditRecords,
+	}
+	providers.RegisterDomainServiceProviderType("NETCUP", fns, features)
 }
 
 // New creates a new API handle.
@@ -94,6 +98,8 @@ func (api *netcupProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*mod
 
 	// Normalize
 	models.PostProcessRecords(existingRecords)
+	txtutil.SplitSingleLongTxt(dc.Records) // Autosplit long TXT records
+
 	differ := diff.New(dc)
 	_, create, del, modify, err := differ.IncrementalDiff(existingRecords)
 	if err != nil {

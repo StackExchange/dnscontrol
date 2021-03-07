@@ -41,9 +41,6 @@ const (
 	// CanUseTLSA indicates the provider can handle TLSA records
 	CanUseTLSA
 
-	// CanUseTXTMulti indicates the provider can handle TXT records with multiple strings
-	CanUseTXTMulti
-
 	// CanAutoDNSSEC indicates that the provider can automatically handle DNSSEC,
 	// so folks can ask for that.
 	CanAutoDNSSEC
