@@ -34,14 +34,14 @@ Modifiers can be any number of [record modifiers](#record-modifiers) or json obj
 NOTE: In the past, long strings had to be annotated with the keyword
 `AUTOSPLIT`. This is no longer required. The keyword is now a no-op.
 
-# Long strings
+### Long strings
 
 Strings that are longer than 255 octets (bytes) will be quietly
 split into 255-octets chunks or the provider may report an error
 if it does not handle multiple strings.
 
 
-# TXT record edge cases.
+### TXT record edge cases.
 
 Most providers do not support the full possibilities of what a TXT
 record can store.  DNSControl can not handle all the edge cases
@@ -77,9 +77,9 @@ you can't be sure what will be permitted until you actually try it.
 Regardless of the quantity and length of strings, some providers ban
 double quotes, back-ticks, or other chars.
 
-# Testing the support of a provider
+### Testing the support of a provider
 
-## How can you tell if a provider will support a particular `TXT()` record?
+#### How can you tell if a provider will support a particular `TXT()` record?
 
 Include the `TXT()` record in a `D()` as usual, along
 with the `DnsProvider()` for that provider.  Run `dnscontrol check` to
@@ -87,7 +87,7 @@ see if any errors are produced.  The check command does not talk to
 the provider's API, thus permitting you to do this without having an
 account at that provider.
 
-## What if the provider rejects a string that is supported?
+#### What if the provider rejects a string that is supported?
 
 Suppose I can create the TXT record using the DSP's web portal but
 DNSControl rejects the string?
