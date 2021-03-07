@@ -41,7 +41,11 @@ var features = providers.DocumentationNotes{
 
 func init() {
 	providers.RegisterRegistrarType("NAMECHEAP", newReg)
-	providers.RegisterDomainServiceProviderType("NAMECHEAP", newDsp, features)
+	fns := providers.DspFuncs{
+		Initializer:          newDsp,
+		AuditRecordsor: AuditRecords,
+	}
+	providers.RegisterDomainServiceProviderType("NAMECHEAP", fns, features)
 	providers.RegisterCustomRecordType("URL", "NAMECHEAP", "")
 	providers.RegisterCustomRecordType("URL301", "NAMECHEAP", "")
 	providers.RegisterCustomRecordType("FRAME", "NAMECHEAP", "")

@@ -415,8 +415,8 @@
 		<td class="danger">
 			<i class="fa fa-times text-danger" aria-hidden="true"></i>
 		</td>
-		<td class="success">
-			<i class="fa fa-check text-success" aria-hidden="true"></i>
+		<td class="success" data-toggle="tooltip" data-container="body" data-placement="top" title="Needs to be enabled in PowerDNS first">
+			<a href="https://doc.powerdns.com/authoritative/guides/alias.html"><i class="fa has-tooltip fa-check text-success" aria-hidden="true"></i></a>
 		</td>
 		<td class="danger" data-toggle="tooltip" data-container="body" data-placement="top" title="R53 does not provide a generic ALIAS functionality. Use R53_ALIAS instead.">
 			<i class="fa has-tooltip fa-times text-danger" aria-hidden="true"></i>
@@ -693,7 +693,9 @@
 			<i class="fa fa-check text-success" aria-hidden="true"></i>
 		</td>
 		<td><i class="fa fa-minus dim"></i></td>
-		<td><i class="fa fa-minus dim"></i></td>
+		<td class="success">
+			<i class="fa fa-check text-success" aria-hidden="true"></i>
+		</td>
 		<td><i class="fa fa-minus dim"></i></td>
 		<td><i class="fa fa-minus dim"></i></td>
 		<td><i class="fa fa-minus dim"></i></td>
@@ -937,74 +939,36 @@
 	<tr>
 		<th class="row-header" style="text-decoration: underline;" data-toggle="tooltip" data-container="body" data-placement="top" title="Provider can manage TXT records with multiple strings">TXTMulti</th>
 		<td><i class="fa fa-minus dim"></i></td>
-		<td class="success">
-			<i class="fa fa-check text-success" aria-hidden="true"></i>
-		</td>
-		<td class="success">
-			<i class="fa fa-check text-success" aria-hidden="true"></i>
-		</td>
-		<td class="success">
-			<i class="fa fa-check text-success" aria-hidden="true"></i>
-		</td>
-		<td class="success">
-			<i class="fa fa-check text-success" aria-hidden="true"></i>
-		</td>
 		<td><i class="fa fa-minus dim"></i></td>
 		<td><i class="fa fa-minus dim"></i></td>
 		<td><i class="fa fa-minus dim"></i></td>
-		<td class="success" data-toggle="tooltip" data-container="body" data-placement="top" title="A broken parser prevents TXTMulti strings from including double-quotes; The total length of all strings can&#39;t be longer than 512; and in reality must be shorter due to sloppy validation checks.">
-			<a href="https://github.com/StackExchange/dnscontrol/issues/370"><i class="fa has-tooltip fa-check text-success" aria-hidden="true"></i></a>
-		</td>
-		<td class="success">
-			<i class="fa fa-check text-success" aria-hidden="true"></i>
-		</td>
 		<td><i class="fa fa-minus dim"></i></td>
 		<td><i class="fa fa-minus dim"></i></td>
-		<td class="success">
-			<i class="fa fa-check text-success" aria-hidden="true"></i>
-		</td>
-		<td class="success">
-			<i class="fa fa-check text-success" aria-hidden="true"></i>
-		</td>
-		<td class="success">
-			<i class="fa fa-check text-success" aria-hidden="true"></i>
-		</td>
-		<td class="success">
-			<i class="fa fa-check text-success" aria-hidden="true"></i>
-		</td>
-		<td class="success">
-			<i class="fa fa-check text-success" aria-hidden="true"></i>
-		</td>
-		<td><i class="fa fa-minus dim"></i></td>
-		<td class="success">
-			<i class="fa fa-check text-success" aria-hidden="true"></i>
-		</td>
-		<td><i class="fa fa-minus dim"></i></td>
-		<td class="info">
-			<i class="fa fa-circle-o text-info" aria-hidden="true"></i>
-		</td>
-		<td><i class="fa fa-minus dim"></i></td>
-		<td class="danger">
-			<i class="fa fa-times text-danger" aria-hidden="true"></i>
-		</td>
-		<td class="success">
-			<i class="fa fa-check text-success" aria-hidden="true"></i>
-		</td>
-		<td class="danger">
-			<i class="fa fa-times text-danger" aria-hidden="true"></i>
-		</td>
 		<td><i class="fa fa-minus dim"></i></td>
 		<td><i class="fa fa-minus dim"></i></td>
-		<td class="success">
-			<i class="fa fa-check text-success" aria-hidden="true"></i>
-		</td>
-		<td class="success">
-			<i class="fa fa-check text-success" aria-hidden="true"></i>
-		</td>
 		<td><i class="fa fa-minus dim"></i></td>
-		<td class="success">
-			<i class="fa fa-check text-success" aria-hidden="true"></i>
-		</td>
+		<td><i class="fa fa-minus dim"></i></td>
+		<td><i class="fa fa-minus dim"></i></td>
+		<td><i class="fa fa-minus dim"></i></td>
+		<td><i class="fa fa-minus dim"></i></td>
+		<td><i class="fa fa-minus dim"></i></td>
+		<td><i class="fa fa-minus dim"></i></td>
+		<td><i class="fa fa-minus dim"></i></td>
+		<td><i class="fa fa-minus dim"></i></td>
+		<td><i class="fa fa-minus dim"></i></td>
+		<td><i class="fa fa-minus dim"></i></td>
+		<td><i class="fa fa-minus dim"></i></td>
+		<td><i class="fa fa-minus dim"></i></td>
+		<td><i class="fa fa-minus dim"></i></td>
+		<td><i class="fa fa-minus dim"></i></td>
+		<td><i class="fa fa-minus dim"></i></td>
+		<td><i class="fa fa-minus dim"></i></td>
+		<td><i class="fa fa-minus dim"></i></td>
+		<td><i class="fa fa-minus dim"></i></td>
+		<td><i class="fa fa-minus dim"></i></td>
+		<td><i class="fa fa-minus dim"></i></td>
+		<td><i class="fa fa-minus dim"></i></td>
+		<td><i class="fa fa-minus dim"></i></td>
 		<td><i class="fa fa-minus dim"></i></td>
 		<td><i class="fa fa-minus dim"></i></td>
 		</tr>
@@ -1217,7 +1181,9 @@
 		<td class="success">
 			<i class="fa fa-check text-success" aria-hidden="true"></i>
 		</td>
-		<td><i class="fa fa-minus dim"></i></td>
+		<td class="success">
+			<i class="fa fa-check text-success" aria-hidden="true"></i>
+		</td>
 		<td class="success">
 			<i class="fa fa-check text-success" aria-hidden="true"></i>
 		</td>

@@ -276,7 +276,9 @@ func generatePSCreate(dnsserver, domain string, rec *models.RecordConfig) string
 	case "NAPTR":
 		fmt.Fprintf(&b, ` -Naptr -RecordData "%s"`, naptrToHex(rec))
 	case "TXT":
-		fmt.Fprintf(&b, ` -Txt -DescriptiveText "%s"`, rec.GetTargetField())
+		fmt.Printf("DEBUG TXT len = %v\n", rec.TxtStrings)
+		fmt.Printf("DEBUG TXT target = %q\n", rec.GetTargetField())
+		fmt.Fprintf(&b, ` -Txt -DescriptiveText %s`, rec.GetTargetField())
 	//case "RT":
 	//	fmt.Fprintf(&b, ` -RT -IntermediateHost <String> -Preference <UInt16>`, rec.GetTargetField())
 	//case "RP":

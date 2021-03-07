@@ -9,6 +9,7 @@ import (
 
 	"github.com/StackExchange/dnscontrol/v3/models"
 	"github.com/StackExchange/dnscontrol/v3/pkg/diff"
+	"github.com/StackExchange/dnscontrol/v3/pkg/txtutil"
 	"github.com/StackExchange/dnscontrol/v3/providers"
 )
 
@@ -49,12 +50,15 @@ var features = providers.DocumentationNotes{
 	providers.CanUsePTR:              providers.Can(),
 	providers.CanGetZones:            providers.Can(),
 	providers.CanUseDSForChildren:    providers.Can(),
-	providers.CanUseTXTMulti:         providers.Can(),
 	//providers.CanUseDS:               providers.Can(),  // in ClouDNS we can add  DS record just for a subdomain(child)
 }
 
 func init() {
-	providers.RegisterDomainServiceProviderType("CLOUDNS", NewCloudns, features)
+	fns := providers.DspFuncs{
+		Initializer:    NewCloudns,
+		AuditRecordsor: AuditRecords,
+	}
+	providers.RegisterDomainServiceProviderType("CLOUDNS", fns, features)
 }
 
 // GetNameservers returns the nameservers for a domain.
@@ -90,6 +94,7 @@ func (c *cloudnsProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*mode
 	}
 	// Normalize
 	models.PostProcessRecords(existingRecords)
+	txtutil.SplitSingleLongTxt(dc.Records) // Autosplit long TXT records
 
 	// ClouDNS doesn't allow selecting an arbitrary TTL, only a set of predefined values https://asia.cloudns.net/wiki/article/188/
 	// We need to make sure we don't change it every time if it is as close as it's going to get
@@ -277,7 +282,7 @@ func toReq(rc *models.RecordConfig) (requestParams, error) {
 	case "CAA":
 		req["caa_flag"] = strconv.Itoa(int(rc.CaaFlag))
 		req["caa_type"] = rc.CaaTag
-		req["caa_value"] = rc.Target
+		req["caa_value"] = rc.GetTargetField()
 	case "TLSA":
 		req["tlsa_usage"] = strconv.Itoa(int(rc.TlsaUsage))
 		req["tlsa_selector"] = strconv.Itoa(int(rc.TlsaSelector))

@@ -6,6 +6,7 @@ import (
 	"runtime"
 
 	"github.com/StackExchange/dnscontrol/v3/models"
+	"github.com/StackExchange/dnscontrol/v3/pkg/txtutil"
 	"github.com/StackExchange/dnscontrol/v3/providers"
 )
 
@@ -25,7 +26,6 @@ var features = providers.DocumentationNotes{
 	providers.CanUsePTR:              providers.Can(),
 	providers.CanUseSRV:              providers.Can(),
 	providers.CanUseTLSA:             providers.Unimplemented(),
-	providers.CanUseTXTMulti:         providers.Unimplemented(),
 	providers.DocCreateDomains:       providers.Cannot("This provider assumes the zone already existing on the dns server"),
 	providers.DocDualHost:            providers.Cannot("This driver does not manage NS records, so should not be used for dual-host scenarios"),
 	providers.DocOfficiallySupported: providers.Can(),
@@ -34,7 +34,11 @@ var features = providers.DocumentationNotes{
 // Register with the dnscontrol system.
 //   This establishes the name (all caps), and the function to call to initialize it.
 func init() {
-	providers.RegisterDomainServiceProviderType("MSDNS", newDNS, features)
+	fns := providers.DspFuncs{
+		Initializer:    newDNS,
+		AuditRecordsor: AuditRecords,
+	}
+	providers.RegisterDomainServiceProviderType("MSDNS", fns, features)
 }
 
 func newDNS(config map[string]string, metadata json.RawMessage) (providers.DNSServiceProvider, error) {
@@ -77,6 +81,8 @@ func (client *msdnsProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*m
 		return nil, err
 	}
 	models.PostProcessRecords(existing)
+	txtutil.SplitSingleLongTxt(dc.Records) // Autosplit long TXT records
+
 	clean := PrepFoundRecords(existing)
 	PrepDesiredRecords(dc)
 	return client.GenerateDomainCorrections(dc, clean)

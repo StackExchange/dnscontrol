@@ -170,8 +170,8 @@ func (n *namedotcomProvider) createRecord(rc *models.RecordConfig, domain string
 	switch rc.Type { // #rtype_variations
 	case "A", "AAAA", "ANAME", "CNAME", "MX", "NS":
 		// nothing
-	case "TXT":
-		record.Answer = encodeTxt(rc.TxtStrings)
+	 case "TXT":
+	// 	record.Answer = encodeTxt(rc.TxtStrings)
 	case "SRV":
 		if rc.GetTargetField() == "." {
 			return errors.New("SRV records with empty targets are not supported (as of 2019-11-05, the API returns 'Parameter Value Error - Invalid Srv Format')")
@@ -187,18 +187,18 @@ func (n *namedotcomProvider) createRecord(rc *models.RecordConfig, domain string
 	return err
 }
 
-// makeTxt encodes TxtStrings for sending in the CREATE/MODIFY API:
-func encodeTxt(txts []string) string {
-	ans := txts[0]
+// // makeTxt encodes TxtStrings for sending in the CREATE/MODIFY API:
+// func encodeTxt(txts []string) string {
+// 	ans := txts[0]
 
-	if len(txts) > 1 {
-		ans = ""
-		for _, t := range txts {
-			ans += `"` + strings.Replace(t, `"`, `\"`, -1) + `"`
-		}
-	}
-	return ans
-}
+// 	if len(txts) > 1 {
+// 		ans = ""
+// 		for _, t := range txts {
+// 			ans += `"` + strings.Replace(t, `"`, `\"`, -1) + `"`
+// 		}
+// 	}
+// 	return ans
+// }
 
 // finds a string surrounded by quotes that might contain an escaped quote character.
 var quotedStringRegexp = regexp.MustCompile(`"((?:[^"\\]|\\.)*)"`)

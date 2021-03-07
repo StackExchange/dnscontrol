@@ -3,6 +3,7 @@ package models
 import (
 	"fmt"
 
+	"github.com/qdm12/reprint"
 	"golang.org/x/net/idna"
 )
 
@@ -34,21 +35,19 @@ type DomainConfig struct {
 // Copy returns a deep copy of the DomainConfig.
 func (dc *DomainConfig) Copy() (*DomainConfig, error) {
 	newDc := &DomainConfig{}
-	// provider instances are interfaces that gob hates if you don't register them.
-	// and the specific types are not gob encodable since nothing is exported.
-	// should find a better solution for this now.
-	//
-	// current strategy: remove everything, gob copy it. Then set both to stored copy.
-	reg := dc.RegistrarInstance
-	dnsps := dc.DNSProviderInstances
-	dc.RegistrarInstance = nil
-	dc.DNSProviderInstances = nil
-	err := copyObj(dc, newDc)
-	dc.RegistrarInstance = reg
-	newDc.RegistrarInstance = reg
-	dc.DNSProviderInstances = dnsps
-	newDc.DNSProviderInstances = dnsps
+	err := reprint.FromTo(dc, newDc) // Deep copy
 	return newDc, err
+
+	// NB(tlim): The old version of this copied the structure by gob-encoding
+	// and decoding it. gob doesn't like the dc.RegisterInstance or
+	// dc.DNSProviderInstances fields, so we saved a temporary copy of those,
+	// nil'ed out the original, did the gob copy, and then manually copied those
+	// fields using the temp variables we saved. It looked like:
+	//reg, dnsps := dc.RegistrarInstance, dc.DNSProviderInstances
+	//dc.RegistrarInstance, dc.DNSProviderInstances = nil, nil
+	// (perform the copy)
+	//dc.RegistrarInstance, dc.DNSProviderInstances = reg, dnsps
+	//newDc.RegistrarInstance, newDc.DNSProviderInstances = reg, dnsps
 }
 
 // Filter removes all records that don't match the filter f.
@@ -78,7 +77,7 @@ func (dc *DomainConfig) Punycode() error {
 
 		// Set the target:
 		switch rec.Type { // #rtype_variations
-		case "ALIAS", "MX", "NS", "CNAME", "PTR", "SRV", "URL", "URL301", "FRAME", "R53_ALIAS":
+		case "ALIAS", "MX", "NS", "CNAME", "PTR", "SRV", "URL", "URL301", "FRAME", "R53_ALIAS", "NS1_URLFWD":
 			// These rtypes are hostnames, therefore need to be converted (unlike, for example, an AAAA record)
 			t, err := idna.ToASCII(rec.GetTargetField())
 			if err != nil {

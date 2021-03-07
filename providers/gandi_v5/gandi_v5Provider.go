@@ -27,6 +27,7 @@ import (
 	"github.com/StackExchange/dnscontrol/v3/models"
 	"github.com/StackExchange/dnscontrol/v3/pkg/diff"
 	"github.com/StackExchange/dnscontrol/v3/pkg/printer"
+	"github.com/StackExchange/dnscontrol/v3/pkg/txtutil"
 	"github.com/StackExchange/dnscontrol/v3/providers"
 )
 
@@ -34,7 +35,11 @@ import (
 
 // init registers the provider to dnscontrol.
 func init() {
-	providers.RegisterDomainServiceProviderType("GANDI_V5", newDsp, features)
+	fns := providers.DspFuncs{
+		Initializer:    newDsp,
+		AuditRecordsor: AuditRecords,
+	}
+	providers.RegisterDomainServiceProviderType("GANDI_V5", fns, features)
 	providers.RegisterRegistrarType("GANDI_V5", newReg)
 }
 
@@ -46,7 +51,6 @@ var features = providers.DocumentationNotes{
 	providers.CanUseSRV:              providers.Can(),
 	providers.CanUseSSHFP:            providers.Can(),
 	providers.CanUseTLSA:             providers.Can(),
-	providers.CanUseTXTMulti:         providers.Can(),
 	providers.CantUseNOPURGE:         providers.Cannot(),
 	providers.DocCreateDomains:       providers.Cannot("Can only manage domains registered through their service"),
 	providers.DocOfficiallySupported: providers.Cannot(),
@@ -193,6 +197,8 @@ func (client *gandiv5Provider) GenerateDomainCorrections(dc *models.DomainConfig
 	}
 
 	var corrections = []*models.Correction{}
+
+	txtutil.SplitSingleLongTxt(dc.Records) // Autosplit long TXT records
 
 	// diff existing vs. current.
 	differ := diff.New(dc)

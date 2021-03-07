@@ -27,6 +27,8 @@ type Differ interface {
 	// ChangedGroups performs a diff more appropriate for providers with a "RecordSet" model, where all records with the same name and type are grouped.
 	// Individual record changes are often not useful in such scenarios. Instead we return a map of record keys to a list of change descriptions within that group.
 	ChangedGroups(existing []*models.RecordConfig) (map[models.RecordKey][]string, error)
+	// ChangedGroupsDeleteFirst is the same as ChangedGroups but it sorts the deletions to the first postion
+	ChangedGroupsDeleteFirst(existing []*models.RecordConfig) (map[models.RecordKey][]string, error)
 }
 
 // New is a constructor for a Differ.
@@ -59,7 +61,7 @@ func (d *differ) content(r *models.RecordConfig) string {
 	// results are generated.  Once we have confidence, this function will go away.
 	content := fmt.Sprintf("%v ttl=%d", r.GetTargetCombined(), r.TTL)
 	if r.Type == "SOA" {
-		content = fmt.Sprintf("%s %v %d %d %d %d ttl=%d", r.Target, r.SoaMbox, r.SoaRefresh, r.SoaRetry, r.SoaExpire, r.SoaMinttl, r.TTL) // SoaSerial is not used in comparison
+		content = fmt.Sprintf("%s %v %d %d %d %d ttl=%d", r.GetTargetField(), r.SoaMbox, r.SoaRefresh, r.SoaRetry, r.SoaExpire, r.SoaMinttl, r.TTL) // SoaSerial is not used in comparison
 	}
 	var allMaps []map[string]string
 	for _, f := range d.extraValues {
@@ -262,15 +264,33 @@ func CorrectionLess(c []*models.Correction, i, j int) bool {
 
 func (d *differ) ChangedGroups(existing []*models.RecordConfig) (map[models.RecordKey][]string, error) {
 	changedKeys := map[models.RecordKey][]string{}
-	_, create, delete, modify, err := d.IncrementalDiff(existing)
+	_, create, toDelete, modify, err := d.IncrementalDiff(existing)
 	if err != nil {
 		return nil, err
 	}
 	for _, c := range create {
 		changedKeys[c.Desired.Key()] = append(changedKeys[c.Desired.Key()], c.String())
 	}
-	for _, d := range delete {
+	for _, d := range toDelete {
 		changedKeys[d.Existing.Key()] = append(changedKeys[d.Existing.Key()], d.String())
+	}
+	for _, m := range modify {
+		changedKeys[m.Desired.Key()] = append(changedKeys[m.Desired.Key()], m.String())
+	}
+	return changedKeys, nil
+}
+
+func (d *differ) ChangedGroupsDeleteFirst(existing []*models.RecordConfig) (map[models.RecordKey][]string, error) {
+	changedKeys := map[models.RecordKey][]string{}
+	_, create, toDelete, modify, err := d.IncrementalDiff(existing)
+	if err != nil {
+		return nil, err
+	}
+	for _, d := range toDelete {
+		changedKeys[d.Existing.Key()] = append(changedKeys[d.Existing.Key()], d.String())
+	}
+	for _, c := range create {
+		changedKeys[c.Desired.Key()] = append(changedKeys[c.Desired.Key()], c.String())
 	}
 	for _, m := range modify {
 		changedKeys[m.Desired.Key()] = append(changedKeys[m.Desired.Key()], m.String())

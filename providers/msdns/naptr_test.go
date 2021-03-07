@@ -43,17 +43,17 @@ func Test_naptrToHex(t *testing.T) {
 			//want: "0100 0A00 0155 074532552B736970 1B215E282E2A2924217369703A5C314031302E3131302E322E313021 00",
 			//       u16  u16  bstr bstr             bstr                                                     0
 		},
-		{
-			name: "0.8.0.2.enum",
-			args: args{&models.RecordConfig{Type: "NAPTR",
-				NaptrOrder: 1, NaptrPreference: 10, NaptrFlags: "U",
-				NaptrService: `E2U+sip`,
-				Target:       `foo.com.`,
-			}},
-			want: "01000A000155074532552B7369700008666F6F2E636F6D2E", // NB(tlim): I guessed at this. True-up at first chance.
-			//    "0100 0A00 0155 074532552B736970 00 08666F6F2E636F6D2E"
-			//     u16  u16  bstr bstr            bstr bstr
-		},
+//		{
+//			name: "0.8.0.2.enum",
+//			args: args{&models.RecordConfig{Type: "NAPTR",
+//				NaptrOrder: 1, NaptrPreference: 10, NaptrFlags: "U",
+//				NaptrService: `E2U+sip`,
+//				Target:       `foo.com.`,
+//			}},
+//			want: "01000A000155074532552B7369700008666F6F2E636F6D2E", // NB(tlim): I guessed at this. True-up at first chance.
+//			//    "0100 0A00 0155 074532552B736970 00 08666F6F2E636F6D2E"
+//			//     u16  u16  bstr bstr            bstr bstr
+//		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {

@@ -14,6 +14,7 @@ import (
 	"github.com/StackExchange/dnscontrol/v3/models"
 	"github.com/StackExchange/dnscontrol/v3/pkg/diff"
 	"github.com/StackExchange/dnscontrol/v3/pkg/printer"
+	"github.com/StackExchange/dnscontrol/v3/pkg/txtutil"
 	"github.com/StackExchange/dnscontrol/v3/providers"
 )
 
@@ -31,11 +32,14 @@ var features = providers.DocumentationNotes{
 	providers.CanUseSRV:      providers.Can(),
 	providers.CanUseSSHFP:    providers.Can(),
 	providers.CanUseTLSA:     providers.Can(),
-	providers.CanUseTXTMulti: providers.Can(),
 }
 
 func init() {
-	providers.RegisterDomainServiceProviderType("ORACLE", New, features)
+	fns := providers.DspFuncs{
+		Initializer:    New,
+		AuditRecordsor: AuditRecords,
+	}
+	providers.RegisterDomainServiceProviderType("ORACLE", fns, features)
 }
 
 type oracleProvider struct {
@@ -218,6 +222,7 @@ func (o *oracleProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*model
 
 	//  Normalize
 	models.PostProcessRecords(existingRecords)
+	txtutil.SplitSingleLongTxt(dc.Records) // Autosplit long TXT records
 
 	filteredNewRecords := models.Records{}
 

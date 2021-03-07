@@ -110,9 +110,6 @@ function D_EXTEND(name) {
         throw name + ' was not declared yet and therefore cannot be updated. Use D() before.';
     }
     domain.obj.subdomain = name.substr(0, name.length-domain.obj.name.length - 1);
-    for (var i = 0; i < defaultArgs.length; i++) {
-        processDargs(defaultArgs[i], domain.obj);
-    }
     for (var i = 1; i < arguments.length; i++) {
         var m = arguments[i];
         processDargs(m, domain.obj);
@@ -417,10 +414,8 @@ function isStringOrArray(x) {
 }
 
 
-// AUTOSPLIT is a modifier that instructs the Go-level code to
-// split this TXT record's target into chunks of 255.
-var AUTOSPLIT = { txtSplitAlgorithm: 'multistring' }; // Create 255-byte chunks
-//var TXTMULTISPACE = { txtSplitAlgorithm: 'space' }; // Split on space [not implemented]
+// AUTOSPLIT is deprecated. It is now a no-op.
+var AUTOSPLIT = { };
 
 // TXT(name,target, recordModifiers...)
 var TXT = recordBuilder('TXT', {
@@ -430,20 +425,13 @@ var TXT = recordBuilder('TXT', {
     ],
     transform: function(record, args, modifiers) {
         record.name = args.name;
-        // Store the strings twice:
-        //   .target is the first string
-        //   .txtstrings is the individual strings.
-        //   NOTE: If there are more than 1 string, providers should only access
-        //   .txtstrings, thus it doesn't matter what we store in .target.
-        //   However, by storing the first string there, it improves backwards
-        //   compatibility when the len(array) == 1 and (intentionally) breaks
-        //   broken providers early in the integration tests.
+        // Store the strings from the user verbatim.
         if (_.isString(args.target)) {
-            record.target = args.target;
             record.txtstrings = [args.target];
+            record.target = args.target; // Overwritten by the Go code
         } else {
-            record.target = args.target[0];
             record.txtstrings = args.target;
+            record.target = args.target.join(""); // Overwritten by the Go code
         }
     },
 });
@@ -821,6 +809,7 @@ var CF_TEMP_REDIRECT = recordBuilder('CF_TEMP_REDIRECT', {
 var URL = recordBuilder('URL');
 var URL301 = recordBuilder('URL301');
 var FRAME = recordBuilder('FRAME');
+var NS1_URLFWD = recordBuilder('NS1_URLFWD');
 
 // SPF_BUILDER takes an object:
 // parts: The parts of the SPF record (to be joined with ' ').
