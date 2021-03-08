@@ -919,6 +919,144 @@ function CAA_BUILDER(value) {
     return r;
 }
 
+// DMARC_BUILDER takes an object:
+// label: The DNS label for the DMARC record (_dmarc prefix is added; default: '@')
+// policy: The DMARC policy (p=), must be one of 'none', 'quarantine', 'reject'
+// subdomainPolicy: The DMARC policy for subdomains (sp=), must be one of 'none', 'quarantine', 'reject' (optional)
+// alignmentSPF: 'strict'/'s' or 'relaxed'/'r' alignment for SPF (aspf=, default: 'r')
+// alignmentDKIM: 'strict'/'s' or 'relaxed'/'r' alignment for DKIM (adkim=, default: 'r')
+// percent: Number between 0 and 100, percentage for which policies are applied (pct=, default: 100)
+// rua: Array of aggregate report targets (optional)
+// ruf: Array of failure report targets (optional)
+// failureOptions: Object or string; Object containing booleans SPF and DKIM, string is passed raw (fo=, default: '0')
+// failureFormat: Format in which failure reports are requested (rf=, default: 'afrf')
+// reportInterval: Interval in which reports are requested (ri=)
+// ttl: Input for TTL method
+function DMARC_BUILDER(value) {
+    if (!value) {
+        value = {};
+    }
+    if (!value.label) {
+        value.label = '@';
+    }
+
+    var label = '_dmarc';
+    if (value.label !== '@') {
+        label += '.' + value.label;
+    }
+
+    if (!value.policy) {
+        value.policy = 'none';
+    }
+
+    if (!value.policy === 'none' || !value.policy === 'quarantine' || !value.policy === 'reject') {
+        throw 'Invalid DMARC policy';
+    }
+
+    var record = ['v=DMARC1'];
+    record.push('p=' + value.policy);
+
+    // Subdomain policy
+    if (!value.subdomainPolicy === 'none' || !value.subdomainPolicy === 'quarantine' || !value.subdomainPolicy === 'reject') {
+        throw 'Invalid DMARC subdomain policy';
+    }
+    if (value.subdomainPolicy) {
+        record.push('sp=' + value.subdomainPolicy);
+    }
+
+    // Alignment DKIM
+    if (value.alignmentDKIM) {
+        switch (value.alignmentDKIM) {
+            case 'relaxed':
+                value.alignmentDKIM = 'r';
+                break;
+            case 'strict':
+                value.alignmentDKIM = 's';
+                break;
+            case 'r':
+            case 's':
+                break;
+            default:
+                throw 'Invalid DMARC DKIM alignment policy';
+        }
+        record.push('adkim=' + value.alignmentDKIM);
+    }
+
+    // Alignment SPF
+    if (value.alignmentSPF) {
+        switch (value.alignmentSPF) {
+            case 'relaxed':
+                value.alignmentSPF = 'r';
+                break;
+            case 'strict':
+                value.alignmentSPF = 's';
+                break;
+            case 'r':
+            case 's':
+                break;
+            default:
+                throw 'Invalid DMARC DKIM alignment policy';
+        }
+        record.push('aspf=' + value.alignmentSPF);
+    }
+
+    // Percentage
+    if (value.percent && value.percent != 100) {
+        record.push('pct=' + value.percent);
+    }
+
+    // Aggregate reports
+    if (value.rua && value.rua.length > 0) {
+        record.push('rua=' + value.rua.join(','));
+    }
+
+    // Failure reports
+    if (value.ruf && value.ruf.length > 0) {
+        record.push('ruf=' + value.ruf.join(','));
+    }
+
+    // Failure reporting options
+    if (value.ruf && value.failureOptions) {
+        var fo = '0';
+        if (_.isObject(value.failureOptions)) {
+            if (value.failureOptions.DKIM) {
+                fo = 'd';
+            }
+            if (value.failureOptions.SPF) {
+                fo = 's';
+            }
+            if (value.failureOptions.DKIM && value.failureOptions.SPF) {
+                fo = '1';
+            }
+        } else {
+            fo = value.failureOptions;
+        }
+
+        if (fo !== '0') {
+            record.push('fo=' + fo);
+        }
+    }
+
+    // Failure report format
+    if (value.ruf && value.failureFormat && value.failureFormat !== 'afrf') {
+        record.push('rf=' + value.failureFormat);
+    }
+
+    // Report interval
+    if (value.reportInterval) {
+        if (_.isString(value.reportInterval)) {
+            value.reportInterval = stringToDuration(value.reportInterval);
+        }
+
+        record.push('ri=' + value.reportInterval);
+    }
+
+    if (value.ttl) {
+        return TXT(label, record.join('; '), TTL(value.ttl));
+    }
+    return TXT(label, record.join('; '));
+}
+
 // This is a no-op.  Long TXT records are handled natively now.
 function DKIM(arr) {
     return arr;
