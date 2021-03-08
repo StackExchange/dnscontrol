@@ -3,7 +3,6 @@ package powerdns
 import (
 	"context"
 	"encoding/json"
-	"errors"
 	"fmt"
 	"net/http"
 	"strings"
@@ -18,7 +17,7 @@ import (
 )
 
 var features = providers.DocumentationNotes{
-	providers.CanUseAlias:            providers.Can(),
+	providers.CanUseAlias:            providers.Can("Needs to be enabled in PowerDNS first", "https://doc.powerdns.com/authoritative/guides/alias.html"),
 	providers.CanUseCAA:              providers.Can(),
 	providers.CanUsePTR:              providers.Can(),
 	providers.CanUseSRV:              providers.Can(),
@@ -28,10 +27,16 @@ var features = providers.DocumentationNotes{
 	providers.DocCreateDomains:       providers.Can(),
 	providers.DocOfficiallySupported: providers.Cannot(),
 	providers.CanGetZones:            providers.Can(),
+	providers.DocDualHost:            providers.Can(),
+	providers.CanUseNAPTR:            providers.Can(),
 }
 
 func init() {
-	providers.RegisterDomainServiceProviderType("POWERDNS", NewProvider, features)
+	fns := providers.DspFuncs{
+		Initializer:    NewProvider,
+		AuditRecordsor: AuditRecords,
+	}
+	providers.RegisterDomainServiceProviderType("POWERDNS", fns, features)
 }
 
 // powerdnsProvider represents the powerdnsProvider DNSServiceProvider.
@@ -153,7 +158,7 @@ func (api *powerdnsProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*m
 	models.PostProcessRecords(curRecords)
 
 	// create record diff by group
-	keysToUpdate, err := (diff.New(dc)).ChangedGroups(curRecords)
+	keysToUpdate, err := (diff.New(dc)).ChangedGroupsDeleteFirst(curRecords)
 	if err != nil {
 		return nil, err
 	}
@@ -173,6 +178,7 @@ func (api *powerdnsProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*m
 				},
 			})
 		} else {
+			// needs to be a create or update
 			ttl := desiredRecords[label][0].TTL
 			records := []zones.Record{}
 			for _, recordContent := range desiredRecords[label] {
@@ -240,6 +246,8 @@ func toRecordConfig(domain string, r zones.Record, ttl int, name string, rtype s
 
 	content := r.Content
 	switch rtype {
+	case "ALIAS":
+		return rc, rc.SetTarget(r.Content)
 	case "CNAME", "NS":
 		return rc, rc.SetTarget(dnsutil.AddOrigin(content, domain))
 	case "CAA":
@@ -248,12 +256,8 @@ func toRecordConfig(domain string, r zones.Record, ttl int, name string, rtype s
 		return rc, rc.SetTargetMXString(content)
 	case "SRV":
 		return rc, rc.SetTargetSRVString(content)
-	case "TXT":
-		// Remove quotes if it is a TXT record.
-		if !strings.HasPrefix(content, `"`) || !strings.HasSuffix(content, `"`) {
-			return nil, errors.New("unexpected lack of quotes in TXT record from PowerDNS")
-		}
-		return rc, rc.SetTargetTXT(content[1 : len(content)-1])
+	case "NAPTR":
+		return rc, rc.SetTargetNAPTRString(content)
 	default:
 		return rc, rc.PopulateFromString(rtype, content, domain)
 	}

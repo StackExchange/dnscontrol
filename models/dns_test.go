@@ -9,7 +9,7 @@ func TestRR(t *testing.T) {
 		Type:         "A",
 		Name:         "foo",
 		NameFQDN:     "foo.example.com",
-		Target:       "1.2.3.4",
+		target:       "1.2.3.4",
 		TTL:          0,
 		MxPreference: 0,
 	}
@@ -23,7 +23,7 @@ func TestRR(t *testing.T) {
 		Type:     "CAA",
 		Name:     "@",
 		NameFQDN: "example.com",
-		Target:   "mailto:test@example.com",
+		target:   "mailto:test@example.com",
 		TTL:      300,
 		CaaTag:   "iodef",
 		CaaFlag:  1,
@@ -38,7 +38,7 @@ func TestRR(t *testing.T) {
 		Type:             "TLSA",
 		Name:             "@",
 		NameFQDN:         "_443._tcp.example.com",
-		Target:           "abcdef0123456789",
+		target:           "abcdef0123456789",
 		TTL:              300,
 		TlsaUsage:        0,
 		TlsaSelector:     0,
@@ -53,8 +53,8 @@ func TestRR(t *testing.T) {
 
 func TestDowncase(t *testing.T) {
 	dc := DomainConfig{Records: Records{
-		&RecordConfig{Type: "MX", Name: "lower", Target: "targetmx"},
-		&RecordConfig{Type: "MX", Name: "UPPER", Target: "TARGETMX"},
+		&RecordConfig{Type: "MX", Name: "lower", target: "targetmx"},
+		&RecordConfig{Type: "MX", Name: "UPPER", target: "TARGETMX"},
 	}}
 	downcase(dc.Records)
 	if !dc.Records.HasRecordTypeName("MX", "lower") {

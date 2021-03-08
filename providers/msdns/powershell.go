@@ -162,6 +162,8 @@ func generatePSDelete(dnsserver, domain string, rec *models.RecordConfig) string
 	fmt.Fprintf(&b, ` -RRType "%s"`, rec.Type)
 	if rec.Type == "MX" {
 		fmt.Fprintf(&b, ` -RecordData %d,"%s"`, rec.MxPreference, rec.GetTargetField())
+	} else if rec.Type == "TXT" {
+		fmt.Fprintf(&b, ` -RecordData %s`, rec.GetTargetField())
 	} else if rec.Type == "SRV" {
 		// https://www.gitmemory.com/issue/MicrosoftDocs/windows-powershell-docs/1149/511916884
 		fmt.Fprintf(&b, ` -RecordData %d,%d,%d,"%s"`, rec.SrvPriority, rec.SrvWeight, rec.SrvPort, rec.GetTargetField())
@@ -214,7 +216,9 @@ func generatePSCreate(dnsserver, domain string, rec *models.RecordConfig) string
 	//case "WKS":
 	//	fmt.Fprintf(&b, ` -Wks -InternetAddress <IPAddress> -InternetProtocol {UDP | TCP} -Service <String[]>`, rec.GetTargetField())
 	case "TXT":
-		fmt.Fprintf(&b, ` -Txt -DescriptiveText "%s"`, rec.GetTargetField())
+		fmt.Printf("DEBUG TXT len = %v\n", rec.TxtStrings)
+		fmt.Printf("DEBUG TXT target = %q\n", rec.GetTargetField())
+		fmt.Fprintf(&b, ` -Txt -DescriptiveText %s`, rec.GetTargetField())
 	//case "RT":
 	//	fmt.Fprintf(&b, ` -RT -IntermediateHost <String> -Preference <UInt16>`, rec.GetTargetField())
 	//case "RP":

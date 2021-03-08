@@ -110,9 +110,6 @@ function D_EXTEND(name) {
         throw name + ' was not declared yet and therefore cannot be updated. Use D() before.';
     }
     domain.obj.subdomain = name.substr(0, name.length-domain.obj.name.length - 1);
-    for (var i = 0; i < defaultArgs.length; i++) {
-        processDargs(defaultArgs[i], domain.obj);
-    }
     for (var i = 1; i < arguments.length; i++) {
         var m = arguments[i];
         processDargs(m, domain.obj);
@@ -417,10 +414,8 @@ function isStringOrArray(x) {
 }
 
 
-// AUTOSPLIT is a modifier that instructs the Go-level code to
-// split this TXT record's target into chunks of 255.
-var AUTOSPLIT = { txtSplitAlgorithm: 'multistring' }; // Create 255-byte chunks
-//var TXTMULTISPACE = { txtSplitAlgorithm: 'space' }; // Split on space [not implemented]
+// AUTOSPLIT is deprecated. It is now a no-op.
+var AUTOSPLIT = { };
 
 // TXT(name,target, recordModifiers...)
 var TXT = recordBuilder('TXT', {
@@ -430,20 +425,13 @@ var TXT = recordBuilder('TXT', {
     ],
     transform: function(record, args, modifiers) {
         record.name = args.name;
-        // Store the strings twice:
-        //   .target is the first string
-        //   .txtstrings is the individual strings.
-        //   NOTE: If there are more than 1 string, providers should only access
-        //   .txtstrings, thus it doesn't matter what we store in .target.
-        //   However, by storing the first string there, it improves backwards
-        //   compatibility when the len(array) == 1 and (intentionally) breaks
-        //   broken providers early in the integration tests.
+        // Store the strings from the user verbatim.
         if (_.isString(args.target)) {
-            record.target = args.target;
             record.txtstrings = [args.target];
+            record.target = args.target; // Overwritten by the Go code
         } else {
-            record.target = args.target[0];
             record.txtstrings = args.target;
+            record.target = args.target.join(""); // Overwritten by the Go code
         }
     },
 });
@@ -854,7 +842,6 @@ function SPF_BUILDER(value) {
         // Only add the raw spf record if it isn't an empty string
         if (value.raw !== '') {
             rp = {};
-            rp.txtSplitAlgorithm = 'multistring'; // Split the target if needed.
             if (value.ttl) {
                 r.push(TXT(value.raw, rawspf, rp, TTL(value.ttl)));
             } else {
@@ -875,8 +862,6 @@ function SPF_BUILDER(value) {
     if (value.txtMaxSize) {
         p.txtMaxSize = value.txtMaxSize;
     }
-
-    p.txtSplitAlgorithm = 'multistring'; // Split the target if needed.
 
     // Generate a TXT record with the metaparameters.
     if (value.ttl) {
@@ -1067,18 +1052,14 @@ function DMARC_BUILDER(value) {
     }
 
     if (value.ttl) {
-        return TXT(label, record.join('; '), AUTOSPLIT, TTL(value.ttl));
+        return TXT(label, record.join('; '), TTL(value.ttl));
     }
-    return TXT(label, record.join('; '), AUTOSPLIT);
+    return TXT(label, record.join('; '));
 }
 
-// Split a DKIM string if it is >254 bytes.
+// This is a no-op.  Long TXT records are handled natively now.
 function DKIM(arr) {
-    chunkSize = 255;
-    var R = [];
-    for (var i = 0, len = arr.length; i < len; i += chunkSize)
-        R.push(arr.slice(i, i + chunkSize));
-    return R;
+    return arr;
 }
 
 // Function wrapper for glob() for recursively loading files.

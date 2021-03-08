@@ -18,6 +18,7 @@ import (
 	"github.com/PuerkitoBio/goquery"
 	"github.com/StackExchange/dnscontrol/v3/models"
 	"github.com/StackExchange/dnscontrol/v3/pkg/diff"
+	"github.com/StackExchange/dnscontrol/v3/pkg/txtutil"
 	"github.com/StackExchange/dnscontrol/v3/providers"
 	"github.com/pquerna/otp/totp"
 )
@@ -51,7 +52,6 @@ var features = providers.DocumentationNotes{
 	providers.CanUseSSHFP:            providers.Can(),
 	providers.CanUseSRV:              providers.Can(),
 	providers.CanUseTLSA:             providers.Cannot(),
-	providers.CanUseTXTMulti:         providers.Can(),
 	providers.CanAutoDNSSEC:          providers.Cannot(),
 	providers.DocCreateDomains:       providers.Can(),
 	providers.DocDualHost:            providers.Can(),
@@ -60,7 +60,11 @@ var features = providers.DocumentationNotes{
 }
 
 func init() {
-	providers.RegisterDomainServiceProviderType("HEDNS", newHDNSProvider, features)
+	fns := providers.DspFuncs{
+		Initializer:    newHEDNSProvider,
+		AuditRecordsor: AuditRecords,
+	}
+	providers.RegisterDomainServiceProviderType("HEDNS", fns, features)
 }
 
 var defaultNameservers = []string{
@@ -93,7 +97,7 @@ type hednsProvider struct {
 	httpClient http.Client
 }
 
-// Record stores the HDNS specific zone and record IDs
+// Record stores the HEDNS specific zone and record IDs
 type Record struct {
 	RecordName string
 	RecordID   uint64
@@ -101,7 +105,7 @@ type Record struct {
 	ZoneID     uint64
 }
 
-func newHDNSProvider(cfg map[string]string, _ json.RawMessage) (providers.DNSServiceProvider, error) {
+func newHEDNSProvider(cfg map[string]string, _ json.RawMessage) (providers.DNSServiceProvider, error) {
 	username, password := cfg["username"], cfg["password"]
 	totpSecret, totpValue := cfg["totp-key"], cfg["totp"]
 	sessionFilePath := cfg["session-file-path"]
@@ -167,7 +171,7 @@ func (c *hednsProvider) EnsureDomainExists(domain string) error {
 	return c.createDomain(domain)
 }
 
-// GetNameservers returns the default HDNS nameservers.
+// GetNameservers returns the default HEDNS nameservers.
 func (c *hednsProvider) GetNameservers(_ string) ([]*models.Nameserver, error) {
 	return models.ToNameservers(defaultNameservers)
 }
@@ -199,6 +203,7 @@ func (c *hednsProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*models
 
 	// Normalize
 	models.PostProcessRecords(prunedRecords)
+	txtutil.SplitSingleLongTxt(dc.Records) // Autosplit long TXT records
 
 	differ := diff.New(dc)
 	_, toCreate, toDelete, toModify, err := differ.IncrementalDiff(prunedRecords)
@@ -297,7 +302,10 @@ func (c *hednsProvider) GetZoneRecords(domain string) (models.Records, error) {
 				RecordName: parser.parseStringElement(element.Find(".dns_view")),
 				RecordID:   parser.parseIntAttr(element, "id"),
 			},
-			Target: parser.parseStringAttr(element.Find("td:nth-child(7)"), "data"),
+		}
+		data := parser.parseStringAttr(element.Find("td:nth-child(7)"), "data")
+		if err != nil {
+			return false
 		}
 
 		priority := parser.parseIntElement(element.Find("td:nth-child(6)"))
@@ -313,24 +321,20 @@ func (c *hednsProvider) GetZoneRecords(domain string) (models.Records, error) {
 
 		rc.SetLabelFromFQDN(rc.Original.(Record).RecordName, domain)
 
-		// dns.he.net omits the trailing "." on the hostnames for certain record types
-		if rc.Type == "CNAME" || rc.Type == "MX" || rc.Type == "NS" || rc.Type == "PTR" {
-			rc.Target += "."
-		}
-
 		switch rc.Type {
 		case "ALIAS":
-			err = rc.SetTarget(rc.Target)
+			err = rc.SetTarget(data)
 		case "MX":
-			err = rc.SetTargetMX(uint16(priority), rc.Target)
+			// dns.he.net omits the trailing "." on the hostnames for MX records
+			err = rc.SetTargetMX(uint16(priority), data + ".")
 		case "SRV":
-			err = rc.SetTargetSRVPriorityString(uint16(priority), rc.Target)
+			err = rc.SetTargetSRVPriorityString(uint16(priority), data)
 		case "SPF":
 			// Convert to TXT record as SPF is deprecated
 			rc.Type = "TXT"
 			fallthrough
 		default:
-			err = rc.PopulateFromString(rc.Type, rc.Target, domain)
+			err = rc.PopulateFromString(rc.Type, data, domain)
 		}
 
 		if err != nil {
@@ -487,13 +491,13 @@ func (c *hednsProvider) listDomains() (map[string]uint64, error) {
 		return nil, err
 	}
 
-	// Check we can list domains
+	// Check there are any domains in this account
+	domains := make(map[string]uint64)
 	if document.Find("#domains_table").Size() == 0 {
-		return nil, fmt.Errorf("domain listing failed")
+		return domains, nil
 	}
 
 	// Find all the forward & reverse domains
-	domains := make(map[string]uint64)
 	recordsSelector := strings.Join([]string{
 		"#domains_table > tbody > tr > td:last-child > img",                // Forward records
 		"#tabs-advanced .generic_table > tbody > tr > td:last-child > img", // Reverse records
@@ -562,10 +566,10 @@ func (c *hednsProvider) editZoneRecord(rc *models.RecordConfig, create bool) err
 	switch rc.Type {
 	case "MX":
 		values.Set("Priority", strconv.FormatUint(uint64(rc.MxPreference), 10))
-		values.Set("Content", rc.Target)
+		values.Set("Content", rc.GetTargetField())
 	case "SRV":
 		values.Del("Content")
-		values.Set("Target", rc.Target)
+		values.Set("Target", rc.GetTargetField())
 		values.Set("Priority", strconv.FormatUint(uint64(rc.SrvPriority), 10))
 		values.Set("Weight", strconv.FormatUint(uint64(rc.SrvWeight), 10))
 		values.Set("Port", strconv.FormatUint(uint64(rc.SrvPort), 10))
