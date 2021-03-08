@@ -9,6 +9,7 @@ import (
 
 	"github.com/StackExchange/dnscontrol/v3/models"
 	"github.com/StackExchange/dnscontrol/v3/pkg/diff"
+	"github.com/StackExchange/dnscontrol/v3/pkg/txtutil"
 	"github.com/StackExchange/dnscontrol/v3/providers"
 
 	"github.com/nrdcg/goinwx"
@@ -49,7 +50,6 @@ var features = providers.DocumentationNotes{
 	providers.CanUseSRV:              providers.Can("SRV records with empty targets are not supported."),
 	providers.CanUseSSHFP:            providers.Can(),
 	providers.CanUseTLSA:             providers.Can(),
-	providers.CanUseTXTMulti:         providers.Can(),
 	providers.CanAutoDNSSEC:          providers.Unimplemented("Supported by INWX but not implemented yet."),
 	providers.DocOfficiallySupported: providers.Cannot(),
 	providers.DocDualHost:            providers.Can(),
@@ -68,7 +68,11 @@ type inwxAPI struct {
 // init registers the registrar and the domain service provider with dnscontrol.
 func init() {
 	providers.RegisterRegistrarType("INWX", newInwxReg)
-	providers.RegisterDomainServiceProviderType("INWX", newInwxDsp, features)
+	fns := providers.DspFuncs{
+		Initializer:    newInwxDsp,
+		AuditRecordsor: AuditRecords,
+	}
+	providers.RegisterDomainServiceProviderType("INWX", fns, features)
 }
 
 // getOTP either returns the TOTPValue or uses TOTPKey and the current time to generate a valid TOTPValue.
@@ -231,6 +235,7 @@ func (api *inwxAPI) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Cor
 	}
 
 	models.PostProcessRecords(foundRecords)
+	txtutil.SplitSingleLongTxt(dc.Records) // Autosplit long TXT records
 
 	err = checkRecords(dc.Records)
 	if err != nil {

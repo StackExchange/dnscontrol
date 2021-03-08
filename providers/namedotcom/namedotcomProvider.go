@@ -24,7 +24,6 @@ var features = providers.DocumentationNotes{
 	providers.CanUseAlias:            providers.Can(),
 	providers.CanUsePTR:              providers.Cannot("PTR records are not supported (See Link)", "https://www.name.com/support/articles/205188508-Reverse-DNS-records"),
 	providers.CanUseSRV:              providers.Can("SRV records with empty targets are not supported"),
-	providers.CanUseTXTMulti:         providers.Cannot(),
 	providers.DocCreateDomains:       providers.Cannot("New domains require registration"),
 	providers.DocDualHost:            providers.Cannot("Apex NS records not editable"),
 	providers.DocOfficiallySupported: providers.Can(),
@@ -56,5 +55,9 @@ func newProvider(conf map[string]string) (*namedotcomProvider, error) {
 
 func init() {
 	providers.RegisterRegistrarType("NAMEDOTCOM", newReg)
-	providers.RegisterDomainServiceProviderType("NAMEDOTCOM", newDsp, features)
+	fns := providers.DspFuncs{
+		Initializer:          newDsp,
+		AuditRecordsor: AuditRecords,
+	}
+	providers.RegisterDomainServiceProviderType("NAMEDOTCOM", fns, features)
 }

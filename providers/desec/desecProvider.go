@@ -48,7 +48,6 @@ var features = providers.DocumentationNotes{
 	providers.CanUsePTR:              providers.Can(),
 	providers.CanGetZones:            providers.Can(),
 	providers.CanAutoDNSSEC:          providers.Cannot(),
-	providers.CanUseTXTMulti:         providers.Can(),
 }
 
 var defaultNameServerNames = []string{
@@ -57,7 +56,11 @@ var defaultNameServerNames = []string{
 }
 
 func init() {
-	providers.RegisterDomainServiceProviderType("DESEC", NewDeSec, features)
+	fns := providers.DspFuncs{
+		Initializer:          NewDeSec,
+		AuditRecordsor: AuditRecords,
+	}
+	providers.RegisterDomainServiceProviderType("DESEC", fns, features)
 }
 
 // GetNameservers returns the nameservers for a domain.

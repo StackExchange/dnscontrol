@@ -5,6 +5,7 @@ import (
 
 	"github.com/StackExchange/dnscontrol/v3/models"
 	"github.com/StackExchange/dnscontrol/v3/pkg/diff"
+	"github.com/StackExchange/dnscontrol/v3/pkg/txtutil"
 )
 
 // GetDomainCorrections gets existing records, diffs them against existing, and returns corrections.
@@ -18,6 +19,7 @@ func (c *msdnsProvider) GenerateDomainCorrections(dc *models.DomainConfig, exist
 
 	// Normalize
 	models.PostProcessRecords(foundRecords)
+	txtutil.SplitSingleLongTxt(dc.Records) // Autosplit long TXT records
 
 	differ := diff.New(dc)
 	_, creates, dels, modifications, err := differ.IncrementalDiff(foundRecords)

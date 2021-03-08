@@ -4,7 +4,7 @@ go 1.14
 
 require (
 	cloud.google.com/go v0.78.0 // indirect
-	github.com/Azure/azure-sdk-for-go v52.1.0+incompatible
+	github.com/Azure/azure-sdk-for-go v52.3.1+incompatible
 	github.com/Azure/go-autorest/autorest v0.11.18 // indirect
 	github.com/Azure/go-autorest/autorest/azure/auth v0.5.7
 	github.com/Azure/go-autorest/autorest/to v0.4.0
@@ -13,7 +13,7 @@ require (
 	github.com/TomOnTime/utfutil v0.0.0-20200626160131-0b0178852c8f
 	github.com/andreyvit/diff v0.0.0-20170406064948-c7f18ee00883
 	github.com/andybalholm/cascadia v1.2.0 // indirect
-	github.com/aws/aws-sdk-go v1.37.21
+	github.com/aws/aws-sdk-go v1.37.25
 	github.com/babolivier/go-doh-client v0.0.0-20201028162107-a76cff4cb8b6
 	github.com/bhendo/go-powershell v0.0.0-20190719160123-219e7fb4e41e
 	github.com/billputer/go-namecheap v0.0.0-20170915210158-0c7adb0710f8
@@ -43,7 +43,7 @@ require (
 	github.com/hexonet/go-sdk v3.5.1+incompatible
 	github.com/jarcoal/httpmock v1.0.8 // indirect
 	github.com/jinzhu/copier v0.2.5
-	github.com/juju/testing v0.0.0-20201216035041-2be42bba85f3 // indirect
+	github.com/juju/errors v0.0.0-20200330140219-3fe23663418f // indirect
 	github.com/kolo/xmlrpc v0.0.0-20201022064351-38db28db192b // indirect
 	github.com/miekg/dns v1.1.35
 	github.com/mitchellh/mapstructure v1.4.1 // indirect
@@ -66,9 +66,8 @@ require (
 	github.com/softlayer/softlayer-go v0.0.0-20170804160555-5e1c8cccc730
 	github.com/stretchr/objx v0.3.0 // indirect
 	github.com/stretchr/testify v1.7.0
-	github.com/tdewolff/minify v2.3.6+incompatible
+	github.com/tdewolff/minify v2.3.6+incompatible // indirect
 	github.com/tdewolff/parse v2.3.4+incompatible // indirect
-	github.com/tdewolff/test v1.0.6 // indirect
 	github.com/urfave/cli/v2 v2.3.0
 	github.com/vultr/govultr v1.0.0
 	github.com/xddxdd/ottoext v0.0.0-20210101073831-439879ee6281
@@ -83,8 +82,8 @@ require (
 	google.golang.org/genproto v0.0.0-20210226172003-ab064af71705 // indirect
 	google.golang.org/grpc v1.36.0 // indirect
 	gopkg.in/ini.v1 v1.62.0 // indirect
-	gopkg.in/ns1/ns1-go.v2 v2.4.3
+	gopkg.in/ns1/ns1-go.v2 v2.4.4
 	gopkg.in/square/go-jose.v2 v2.5.1 // indirect
-	gopkg.in/yaml.v2 v2.4.0
+	gopkg.in/yaml.v2 v2.4.0 // indirect
 	gopkg.in/yaml.v3 v3.0.0-20210107192922-496545a6307b // indirect
 )

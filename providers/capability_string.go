@@ -17,20 +17,19 @@ func _() {
 	_ = x[CanUseSRV-6]
 	_ = x[CanUseSSHFP-7]
 	_ = x[CanUseTLSA-8]
-	_ = x[CanUseTXTMulti-9]
-	_ = x[CanAutoDNSSEC-10]
-	_ = x[CantUseNOPURGE-11]
-	_ = x[DocOfficiallySupported-12]
-	_ = x[DocDualHost-13]
-	_ = x[DocCreateDomains-14]
-	_ = x[CanUseRoute53Alias-15]
-	_ = x[CanGetZones-16]
-	_ = x[CanUseAzureAlias-17]
+	_ = x[CanAutoDNSSEC-9]
+	_ = x[CantUseNOPURGE-10]
+	_ = x[DocOfficiallySupported-11]
+	_ = x[DocDualHost-12]
+	_ = x[DocCreateDomains-13]
+	_ = x[CanUseRoute53Alias-14]
+	_ = x[CanGetZones-15]
+	_ = x[CanUseAzureAlias-16]
 }
 
-const _Capability_name = "CanUseAliasCanUseCAACanUseDSCanUseDSForChildrenCanUsePTRCanUseNAPTRCanUseSRVCanUseSSHFPCanUseTLSACanUseTXTMultiCanAutoDNSSECCantUseNOPURGEDocOfficiallySupportedDocDualHostDocCreateDomainsCanUseRoute53AliasCanGetZonesCanUseAzureAlias"
+const _Capability_name = "CanUseAliasCanUseCAACanUseDSCanUseDSForChildrenCanUsePTRCanUseNAPTRCanUseSRVCanUseSSHFPCanUseTLSACanAutoDNSSECCantUseNOPURGEDocOfficiallySupportedDocDualHostDocCreateDomainsCanUseRoute53AliasCanGetZonesCanUseAzureAlias"
 
-var _Capability_index = [...]uint8{0, 11, 20, 28, 47, 56, 67, 76, 87, 97, 111, 124, 138, 160, 171, 187, 205, 216, 232}
+var _Capability_index = [...]uint8{0, 11, 20, 28, 47, 56, 67, 76, 87, 97, 110, 124, 146, 157, 173, 191, 202, 218}
 
 func (i Capability) String() string {
 	if i >= Capability(len(_Capability_index)-1) {

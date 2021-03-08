@@ -180,12 +180,17 @@ func makeChanges(t *testing.T, prv providers.DNSServiceProvider, dc *models.Doma
 		models.PostProcessRecords(dom.Records)
 		dom2, _ := dom.Copy()
 
+		if err := providers.AuditRecords(*providerToRun, dom.Records); err != nil {
+			t.Skip(fmt.Sprintf("***SKIPPED(PROVIDER DOES NOT SUPPORT '%s' ::%q)", err, desc))
+			return
+		}
+
 		// get and run corrections for first time
 		corrections, err := prv.GetDomainCorrections(dom)
 		if err != nil {
 			t.Fatal(fmt.Errorf("runTests: %w", err))
 		}
-		if len(corrections) == 0 && expectChanges {
+		if (len(corrections) == 0 && expectChanges) && (tst.Desc != "Empty") {
 			t.Fatalf("Expected changes, but got none")
 		}
 		for _, c := range corrections {
@@ -386,64 +391,49 @@ func ptr(name, target string) *models.RecordConfig {
 
 func naptr(name string, order uint16, preference uint16, flags string, service string, regexp string, target string) *models.RecordConfig {
 	r := makeRec(name, target, "NAPTR")
-	r.NaptrOrder = order
-	r.NaptrPreference = preference
-	r.NaptrFlags = flags
-	r.NaptrService = service
-	r.NaptrRegexp = regexp
+	r.SetTargetNAPTR(order, preference, flags, service, regexp, target)
 	return r
 }
 
 func ds(name string, keyTag uint16, algorithm, digestType uint8, digest string) *models.RecordConfig {
 	r := makeRec(name, "", "DS")
-	r.DsKeyTag = keyTag
-	r.DsAlgorithm = algorithm
-	r.DsDigestType = digestType
-	r.DsDigest = digest
+	r.SetTargetDS(keyTag, algorithm, digestType, digest)
 	return r
 }
 
 func srv(name string, priority, weight, port uint16, target string) *models.RecordConfig {
 	r := makeRec(name, target, "SRV")
-	r.SrvPriority = priority
-	r.SrvWeight = weight
-	r.SrvPort = port
+	r.SetTargetSRV(priority, weight, port, target)
 	return r
 }
 
 func sshfp(name string, algorithm uint8, fingerprint uint8, target string) *models.RecordConfig {
 	r := makeRec(name, target, "SSHFP")
-	r.SshfpAlgorithm = algorithm
-	r.SshfpFingerprint = fingerprint
+	r.SetTargetSSHFP(algorithm, fingerprint, target)
 	return r
 }
 
 func txt(name, target string) *models.RecordConfig {
-	// FYI: This must match the algorithm in pkg/js/helpers.js TXT.
-	r := makeRec(name, target, "TXT")
-	r.TxtStrings = []string{target}
+	r := makeRec(name, "", "TXT")
+	r.SetTargetTXT(target)
 	return r
 }
 
 func txtmulti(name string, target []string) *models.RecordConfig {
-	// FYI: This must match the algorithm in pkg/js/helpers.js TXT.
-	r := makeRec(name, target[0], "TXT")
-	r.TxtStrings = target
+	r := makeRec(name, "", "TXT")
+	r.SetTargetTXTs(target)
 	return r
 }
 
 func caa(name string, tag string, flag uint8, target string) *models.RecordConfig {
 	r := makeRec(name, target, "CAA")
-	r.CaaFlag = flag
-	r.CaaTag = tag
+	r.SetTargetCAA(flag, tag, target)
 	return r
 }
 
 func tlsa(name string, usage, selector, matchingtype uint8, target string) *models.RecordConfig {
 	r := makeRec(name, target, "TLSA")
-	r.TlsaUsage = usage
-	r.TlsaSelector = selector
-	r.TlsaMatchingType = matchingtype
+	r.SetTargetTLSA(usage, selector, matchingtype, target)
 	return r
 }
 
@@ -478,6 +468,29 @@ func makeRec(name, target, typ string) *models.RecordConfig {
 func ttl(r *models.RecordConfig, t uint32) *models.RecordConfig {
 	r.TTL = t
 	return r
+}
+
+func gentxt(s string) *TestCase {
+	title := fmt.Sprintf("Create TXT %s", s)
+	label := fmt.Sprintf("foo%d", len(s))
+	l := []string{}
+	for _, j := range s {
+		switch j {
+		case '0', 's':
+			//title += " short"
+			label += "s"
+			l = append(l, "short")
+		case 'h':
+			//title += " 128"
+			label += "h"
+			l = append(l, strings.Repeat("H", 128))
+		case '1', 'l':
+			//title += " 255"
+			label += "l"
+			l = append(l, strings.Repeat("Z", 255))
+		}
+	}
+	return tc(title, txtmulti(label, l))
 }
 
 func manyA(namePattern, target string, n int) []*models.RecordConfig {
@@ -684,10 +697,11 @@ func makeTests(t *testing.T) []*TestGroup {
 		),
 
 		testgroup("NS",
-			not("DNSIMPLE", "EXOSCALE", "NETCUP"),
-			// DNSIMPLE: Does not support NS records nor subdomains.
-			// EXOSCALE: FILL IN
-			// Netcup: NS records not currently supported.
+			not(
+				"DNSIMPLE", // Does not support NS records nor subdomains.
+				"EXOSCALE", // Not supported.
+				"NETCUP",   // NS records not currently supported.
+			),
 			tc("NS for subdomain", ns("xyz", "ns2.foo.com.")),
 			tc("Dual NS for subdomain", ns("xyz", "ns2.foo.com."), ns("xyz", "ns1.foo.com.")),
 			tc("NS Record pointing to @", a("@", "1.2.3.4"), ns("foo", "**current-domain**")),
@@ -709,57 +723,142 @@ func makeTests(t *testing.T) []*TestGroup {
 			tc("Add a new record - ignoring **.foo.com. targets", a("bar", "1.2.3.4"), ignoreTarget("**.foo.com.", "CNAME")),
 		),
 
-		testgroup("single TXT",
+		testgroup("simple TXT",
 			tc("Create a TXT", txt("foo", "simple")),
 			tc("Change a TXT", txt("foo", "changed")),
-			clear(),
 			tc("Create a TXT with spaces", txt("foo", "with spaces")),
-			tc("Create 1 TXT as array", txtmulti("foo", []string{"simple"})), // Same as non-TXTMulti
-			clear(),
-			tc("Create a 254-byte TXT", txt("foo", strings.Repeat("A", 254))),
 		),
 
-		testgroup("max-sized TXT",
-			not(
-				"INWX",  // INWX does not support
-				"MSDNS", // Supports 254-byte strings, not 255.  Seems like a bug.
-			),
-			tc("Create a 255-byte TXT", txt("foo", strings.Repeat("A", 255))),
+		testgroup("long TXT",
+			tc("Create long TXT", txt("foo", strings.Repeat("A", 300))),
+			tc("Change long TXT", txt("foo", strings.Repeat("B", 310))),
+			tc("Create long TXT with spaces", txt("foo", strings.Repeat("X", 200)+" "+strings.Repeat("Y", 200))),
 		),
 
-		testgroup("single TXT with single-quote",
-			not(
-				"INWX",    // Bug in the API prevents this.
-				"MSDNS",   // TODO(tlim): Should be easy to implement.
-				"CLOUDNS", // support txt("foo", "blah'blah") but does not support txt("foo","blah`blah")
-			),
-			tc("Create TXT with single-quote", txt("foo", "blah`blah")),
-		),
+		// In this next section we test all the edge cases related to TXT
+		// records. Compliance with the RFCs varies greatly with each provider.
+		// Rather than creating a "Capability" for each possible different
+		// failing or malcompliance (there would be many!), each provider
+		// supplies a function AuditRecords() which returns an error if
+		// the provider can not support a record.
+		// The integration tests use this feedback to skip tests that we know would fail.
+		// (Elsewhere the result of AuditRecords() is used in the
+		// "dnscontrol check" phase.)
 
-		testgroup("ws TXT",
-			not("CLOUDFLAREAPI", "HEXONET", "INWX", "NAMEDOTCOM", "CLOUDNS"),
-			// These providers strip whitespace at the end of TXT records.
-			// TODO(tal): Add a check for this in normalize/validate.go
-			tc("Change a TXT with ws at end", txt("foo", "with space at end  ")),
-		),
-
-		testgroup("empty TXT",
-			not(
-				"HETZNER", // Not supported.
-				"HEXONET", // Not supported.
-				"INWX",    // Not supported.
-				"MSDNS",   // Not supported.
-				"NETCUP",  // Not supported.
-				"CLOUDNS", // Not supported.
-			),
-			tc("TXT with empty str", txt("foo1", "")),
+		testgroup("complex TXT",
+			// Do not use only()/not()/requires() in this section.
+			// If your provider needs to skip one of these tests, update
+			// "provider/*/recordaudit.AuditRecords()" to reject that kind
+			// of record. When the provider fixes the bug or changes behavior,
+			// update the AuditRecords().
+			tc("TXT with 0-octel string", txt("foo1", "")),
 			// https://github.com/StackExchange/dnscontrol/issues/598
-			// We decided that permitting the TXT target to be an empty
-			// string is not a requirement (even though RFC1035 permits it).
-			// In the future we might make it "capability" to
-			// indicate which vendors support an empty TXT record.
-			// However at this time there is no pressing need for this
-			// feature.
+			// RFC1035 permits this, but rarely do provider support it.
+			clear(),
+			tc("Create a 253-byte TXT", txt("foo253", strings.Repeat("A", 253))),
+			clear(),
+			tc("Create a 254-byte TXT", txt("foo254", strings.Repeat("B", 254))),
+			clear(),
+			tc("Create a 255-byte TXT", txt("foo255", strings.Repeat("C", 255))),
+			clear(),
+			tc("Create a 256-byte TXT", txt("foo256", strings.Repeat("D", 256))),
+			clear(),
+			tc("Create a 257-byte TXT", txt("foo257", strings.Repeat("E", 257))),
+			clear(),
+			tc("Create TXT with single-quote", txt("foosq", "quo'te")),
+			clear(),
+			tc("Create TXT with backtick", txt("foobt", "blah`blah")),
+			clear(),
+			tc("Create TXT with double-quote", txt("foodq", `quo"te`)),
+			clear(),
+			tc("Create TXT with ws at end", txt("foows1", "with space at end ")),
+			clear(), gentxt("0"),
+			clear(), gentxt("1"),
+			clear(), gentxt("10"),
+			clear(), gentxt("11"),
+			clear(), gentxt("100"),
+			clear(), gentxt("101"),
+			clear(), gentxt("110"),
+			clear(), gentxt("111"),
+			clear(), gentxt("1hh"),
+			clear(), gentxt("1hh0"),
+		),
+
+		testgroup("long TXT",
+			tc("Create a 505 TXT", txt("foo257", strings.Repeat("E", 505))),
+			tc("Create a 506 TXT", txt("foo257", strings.Repeat("E", 506))),
+			tc("Create a 507 TXT", txt("foo257", strings.Repeat("E", 507))),
+			tc("Create a 508 TXT", txt("foo257", strings.Repeat("E", 508))),
+			tc("Create a 509 TXT", txt("foo257", strings.Repeat("E", 509))),
+			tc("Create a 510 TXT", txt("foo257", strings.Repeat("E", 510))),
+			tc("Create a 511 TXT", txt("foo257", strings.Repeat("E", 511))),
+			tc("Create a 512 TXT", txt("foo257", strings.Repeat("E", 512))),
+			tc("Create a 513 TXT", txt("foo257", strings.Repeat("E", 513))),
+			tc("Create a 514 TXT", txt("foo257", strings.Repeat("E", 514))),
+			tc("Create a 515 TXT", txt("foo257", strings.Repeat("E", 515))),
+			tc("Create a 516 TXT", txt("foo257", strings.Repeat("E", 516))),
+		),
+
+		// Test the ability to change TXT records on the DIFFERENT labels accurately.
+		testgroup("TXTMulti",
+			tc("Create TXTMulti 1",
+				txtmulti("foo1", []string{"simple"}),
+			),
+			tc("Add TXTMulti 2",
+				txtmulti("foo1", []string{"simple"}),
+				txtmulti("foo2", []string{"one", "two"}),
+			),
+			tc("Add TXTMulti 3",
+				txtmulti("foo1", []string{"simple"}),
+				txtmulti("foo2", []string{"one", "two"}),
+				txtmulti("foo3", []string{"eh", "bee", "cee"}),
+			),
+			tc("Change TXTMultii-0",
+				txtmulti("foo1", []string{"dimple"}),
+				txtmulti("foo2", []string{"fun", "two"}),
+				txtmulti("foo3", []string{"eh", "bzz", "cee"}),
+			),
+			tc("Change TXTMulti-1[0]",
+				txtmulti("foo1", []string{"dimple"}),
+				txtmulti("foo2", []string{"moja", "two"}),
+				txtmulti("foo3", []string{"eh", "bzz", "cee"}),
+			),
+			tc("Change TXTMulti-1[1]",
+				txtmulti("foo1", []string{"dimple"}),
+				txtmulti("foo2", []string{"moja", "mbili"}),
+				txtmulti("foo3", []string{"eh", "bzz", "cee"}),
+			),
+		),
+
+		// Test the ability to change TXT records on the SAME labels accurately.
+		testgroup("TXTMulti",
+			tc("Create TXTMulti 1",
+				txtmulti("foo", []string{"simple"}),
+			),
+			tc("Add TXTMulti 2",
+				txtmulti("foo", []string{"simple"}),
+				txtmulti("foo", []string{"one", "two"}),
+			),
+			tc("Add TXTMulti 3",
+				txtmulti("foo", []string{"simple"}),
+				txtmulti("foo", []string{"one", "two"}),
+				txtmulti("foo", []string{"eh", "bee", "cee"}),
+			),
+			tc("Change TXTMultii-0",
+				txtmulti("foo", []string{"dimple"}),
+				txtmulti("foo", []string{"fun", "two"}),
+				txtmulti("foo", []string{"eh", "bzz", "cee"}),
+			),
+			tc("Change TXTMulti-1[0]",
+				txtmulti("foo", []string{"dimple"}),
+				txtmulti("foo", []string{"moja", "two"}),
+				txtmulti("foo", []string{"eh", "bzz", "cee"}),
+			),
+			tc("Change TXTMulti-1[1]",
+				txtmulti("foo", []string{"dimple"}),
+				txtmulti("foo", []string{"moja", "mbili"}),
+				txtmulti("foo", []string{"eh", "bzz", "cee"}),
+			),
 		),
 
 		//
@@ -816,7 +915,7 @@ func makeTests(t *testing.T) []*TestGroup {
 				//"AZURE_DNS", // Currently failing.
 				"HEXONET",
 				"GCLOUD",
-				"ROUTE53", // See https://github.com/StackExchange/dnscontrol/issues/493
+				//"ROUTE53", // Currently failing. See https://github.com/StackExchange/dnscontrol/issues/908
 			),
 			tc("601 records", manyA("rec%04d", "1.2.3.4", 600)...),
 			tc("Update 601 records", manyA("rec%04d", "1.2.3.5", 600)...),
@@ -828,7 +927,7 @@ func makeTests(t *testing.T) []*TestGroup {
 				//"AZURE_DNS", // Currently failing. See https://github.com/StackExchange/dnscontrol/issues/770
 				"HEXONET",
 				"HOSTINGDE",
-				"ROUTE53", // https://github.com/StackExchange/dnscontrol/issues/493
+				//"ROUTE53", // Currently failing. See https://github.com/StackExchange/dnscontrol/issues/908
 			),
 			tc("1200 records", manyA("rec%04d", "1.2.3.4", 1200)...),
 			tc("Update 1200 records", manyA("rec%04d", "1.2.3.5", 1200)...),
@@ -919,69 +1018,6 @@ func makeTests(t *testing.T) []*TestGroup {
 			tc("TLSA change selector", tlsa("_443._tcp", 2, 0, 1, sha256hash)),
 			tc("TLSA change matchingtype", tlsa("_443._tcp", 2, 0, 2, sha512hash)),
 			tc("TLSA change certificate", tlsa("_443._tcp", 2, 0, 2, reversedSha512)),
-		),
-
-		testgroup("TXTMulti",
-			not("CLOUDNS"), //TODO: not implemented. same Issue as #996
-			requires(providers.CanUseTXTMulti),
-			tc("Create TXTMulti 1",
-				txtmulti("foo1", []string{"simple"}),
-			),
-			tc("Create TXTMulti 2",
-				txtmulti("foo1", []string{"simple"}),
-				txtmulti("foo2", []string{"one", "two"}),
-			),
-			tc("Create TXTMulti 3",
-				txtmulti("foo1", []string{"simple"}),
-				txtmulti("foo2", []string{"one", "two"}),
-				txtmulti("foo3", []string{"eh", "bee", "cee"}),
-			),
-			tc("Change TXTMulti",
-				txtmulti("foo1", []string{"dimple"}),
-				txtmulti("foo2", []string{"fun", "two"}),
-				txtmulti("foo3", []string{"eh", "bzz", "cee"}),
-			),
-			tc("Long TXTMulti",
-				// This isn't the longest a TXT record can be, but it is the
-				// longest DIGITALOCEAN permits.
-				txtmulti("foo4", []string{strings.Repeat("X", 255), strings.Repeat("Y", 252)}),
-			),
-		),
-
-		testgroup("TXTMulti tests that break DO",
-			// DO's implementation of TXTMulti is broken, thus we separate out
-			// tests that fail for it. Users are warned about these limits
-			// in docs/_providers/digitalocean.md
-			requires(providers.CanUseTXTMulti),
-			not("DIGITALOCEAN"),
-			// Digital Ocean's TXT record implementation checks size limits wrong.
-			// RFC 1035 Section 3.3.14 states that each substring can be 255
-			// octets, and there is no limit on the number of such
-			// substrings, aside from the usual packet length limits.  DO's
-			// implementation restricts the total length to be 512 octets,
-			// including any backlashes used for escapes, quotes, and other
-			// metachars.  In other words, they're doing the checking on the
-			// API protocol encoded data instead of on on the resulting TXT
-			// record.
-			// Proper TXT implementations can handle TXT records like this:
-			tc("3x255-byte TXTMulti",
-				txtmulti("foo3", []string{strings.Repeat("X", 255), strings.Repeat("Y", 255), strings.Repeat("Z", 255)})),
-			clear(),
-			// Digital Ocean's TXT record implementation handles quotes wrong.
-			// It craps out if your TXT record includes double-quotes.
-			// Someone doesn't understand how zonefile-style quoting is
-			// supposed to work.
-			// Proper TXT implementations can handle TXT records like these:
-			tc("Create TXTMulti with quotes",
-				txtmulti("foo1", []string{"simple"}),
-				txtmulti("foo2", []string{"o\"ne", "tw\"o"}),
-				txtmulti("foo3", []string{"eh", "bee", "cee"}),
-			),
-			tc("Change TXTMulti",
-				txtmulti("foo1", []string{"dimple"}),
-				txtmulti("foo2", []string{"fun", "t\"wo"}),
-				txtmulti("foo3", []string{"eh", "bzz", "cee"}),
-			),
 		),
 
 		testgroup("DS",

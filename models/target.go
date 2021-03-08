@@ -23,9 +23,6 @@ so that it is easy to do things the right way in preparation.
 // GetTargetField returns the target. There may be other fields (for example
 // an MX record also has a .MxPreference field.
 func (rc *RecordConfig) GetTargetField() string {
-	if rc.HasFormatIdenticalToTXT() {
-		return strings.Join(rc.TxtStrings, "")
-	}
 	return rc.target
 }
 
@@ -66,6 +63,11 @@ func (rc *RecordConfig) GetTargetCombined() string {
 		}
 	}
 
+	return rc.zoneFileQuoted()
+}
+
+// zoneFileQuoted returns the rData as would be quoted in a zonefile.
+func (rc *RecordConfig) zoneFileQuoted() string {
 	// We cheat by converting to a dns.RR and use the String() function.
 	// This combines all the data for us, and even does proper quoting.
 	// Sadly String() always includes a header, which we must strip out.

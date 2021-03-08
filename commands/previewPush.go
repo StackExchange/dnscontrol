@@ -132,6 +132,9 @@ DomainLoop:
 			if !shouldrun {
 				continue
 			}
+
+			/// This is where we should audit?
+
 			corrections, err := provider.Driver.GetDomainCorrections(dc)
 			out.EndProvider(len(corrections), err)
 			if err != nil {
