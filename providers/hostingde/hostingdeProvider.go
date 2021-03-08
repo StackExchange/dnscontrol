@@ -26,7 +26,6 @@ var features = providers.DocumentationNotes{
 	providers.CanUseSRV:              providers.Can(),
 	providers.CanUseSSHFP:            providers.Can(),
 	providers.CanUseTLSA:             providers.Can(),
-	providers.CanUseTXTMulti:         providers.Can(),
 	providers.DocCreateDomains:       providers.Can(),
 	providers.DocDualHost:            providers.Can(),
 	providers.DocOfficiallySupported: providers.Cannot(),
@@ -34,7 +33,11 @@ var features = providers.DocumentationNotes{
 
 func init() {
 	providers.RegisterRegistrarType("HOSTINGDE", newHostingdeReg)
-	providers.RegisterDomainServiceProviderType("HOSTINGDE", newHostingdeDsp, features)
+	fns := providers.DspFuncs{
+		Initializer:    newHostingdeDsp,
+		AuditRecordsor: AuditRecords,
+	}
+	providers.RegisterDomainServiceProviderType("HOSTINGDE", fns, features)
 }
 
 func newHostingde(m map[string]string) (*hostingdeProvider, error) {
