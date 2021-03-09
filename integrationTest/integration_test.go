@@ -889,13 +889,8 @@ func makeTests(t *testing.T) []*TestGroup {
 			// These providers do not support this:
 			//not("ROUTE53", "NAMEDOTCOM", "CLOUDFLAREAPI", "DIGITALOCEAN", "GANDI_V5"),
 			tc("txt with abc0def", txt("abc0def", "abc"+makeRange(0, 0)+"def")),
-			clear(), gentxtRange(0, 63),
-			clear(), gentxtRange(64, 96),
-			clear(), gentxtRange(97, 126),
-			clear(), gentxtRange(127, 127),
-			clear(), gentxtRange(128, 170),
-			clear(), gentxtRange(171, 212),
-			clear(), gentxtRange(213, 255),
+			clear(), gentxtRange(0, 127),
+			clear(), gentxtRange(128, 255),
 		),
 
 		//
