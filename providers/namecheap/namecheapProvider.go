@@ -43,7 +43,7 @@ func init() {
 	providers.RegisterRegistrarType("NAMECHEAP", newReg)
 	fns := providers.DspFuncs{
 		Initializer:          newDsp,
-		AuditRecordsor: AuditRecords,
+		RecordAuditor: AuditRecords,
 	}
 	providers.RegisterDomainServiceProviderType("NAMECHEAP", fns, features)
 	providers.RegisterCustomRecordType("URL", "NAMECHEAP", "")
