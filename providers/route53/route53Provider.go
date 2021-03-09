@@ -81,7 +81,7 @@ var features = providers.DocumentationNotes{
 func init() {
 	fns := providers.DspFuncs{
 		Initializer:    newRoute53Dsp,
-		AuditRecordsor: AuditRecords,
+		RecordAuditor: AuditRecords,
 	}
 	providers.RegisterDomainServiceProviderType("ROUTE53", fns, features)
 	providers.RegisterRegistrarType("ROUTE53", newRoute53Reg)

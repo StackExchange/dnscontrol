@@ -95,7 +95,7 @@ func init() {
 	// SRV support is in this provider, but Linode doesn't seem to support it properly
 	fns := providers.DspFuncs{
 		Initializer:          NewLinode,
-		AuditRecordsor: AuditRecords,
+		RecordAuditor: AuditRecords,
 	}
 	providers.RegisterDomainServiceProviderType("LINODE", fns, features)
 }

@@ -35,7 +35,7 @@ var features = providers.DocumentationNotes{
 func init() {
 	fns := providers.DspFuncs{
 		Initializer:    newDNS,
-		AuditRecordsor: AuditRecords,
+		RecordAuditor: AuditRecords,
 	}
 	providers.RegisterDomainServiceProviderType("MSDNS", fns, features)
 }

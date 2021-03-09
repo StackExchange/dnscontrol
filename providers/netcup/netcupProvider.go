@@ -23,7 +23,7 @@ var features = providers.DocumentationNotes{
 func init() {
 	fns := providers.DspFuncs{
 		Initializer:    New,
-		AuditRecordsor: AuditRecords,
+		RecordAuditor: AuditRecords,
 	}
 	providers.RegisterDomainServiceProviderType("NETCUP", fns, features)
 }

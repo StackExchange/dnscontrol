@@ -15,7 +15,7 @@ import (
 	_ "github.com/StackExchange/dnscontrol/v3/providers/dnsimple"
 	_ "github.com/StackExchange/dnscontrol/v3/providers/doh"
 	_ "github.com/StackExchange/dnscontrol/v3/providers/exoscale"
-	_ "github.com/StackExchange/dnscontrol/v3/providers/gandi_v5"
+	_ "github.com/StackExchange/dnscontrol/v3/providers/gandiv5"
 	_ "github.com/StackExchange/dnscontrol/v3/providers/gcloud"
 	_ "github.com/StackExchange/dnscontrol/v3/providers/hedns"
 	_ "github.com/StackExchange/dnscontrol/v3/providers/hetzner"

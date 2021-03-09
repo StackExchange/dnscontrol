@@ -1,4 +1,4 @@
-package gandi_v5
+package gandiv5
 
 /*
 
@@ -36,8 +36,8 @@ import (
 // init registers the provider to dnscontrol.
 func init() {
 	fns := providers.DspFuncs{
-		Initializer:    newDsp,
-		AuditRecordsor: AuditRecords,
+		Initializer:   newDsp,
+		RecordAuditor: AuditRecords,
 	}
 	providers.RegisterDomainServiceProviderType("GANDI_V5", fns, features)
 	providers.RegisterRegistrarType("GANDI_V5", newReg)
