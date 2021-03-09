@@ -493,6 +493,26 @@ func gentxt(s string) *TestCase {
 	return tc(title, txtmulti(label, l))
 }
 
+// makeRange returns a string made up of chars from ascii code a to b.
+func makeRange(a, b uint8) string {
+	buf := make([]byte, b-a+1)
+	n := 0
+	amt := int(b) - int(a) + 1
+	for ; amt > 0; amt-- {
+		buf[n] = byte(a)
+		n++
+		a++
+	}
+	return string(buf)
+}
+
+func gentxtRange(a, b uint8) *TestCase {
+	title := fmt.Sprintf("Txt %d..%d", a, b)
+	label := fmt.Sprintf("foo%d-%d", a, b)
+	l := []string{makeRange(a, b)}
+	return tc(title, txtmulti(label, l))
+}
+
 func manyA(namePattern, target string, n int) []*models.RecordConfig {
 	recs := []*models.RecordConfig{}
 	for i := 0; i < n; i++ {
@@ -859,6 +879,23 @@ func makeTests(t *testing.T) []*TestGroup {
 				txtmulti("foo", []string{"moja", "mbili"}),
 				txtmulti("foo", []string{"eh", "bzz", "cee"}),
 			),
+		),
+
+		testgroup("full byte range TXT",
+			// The RFCs permit TXT strings with any value 1..255. While
+			// possibly not a good thing, let's track which providers
+			// support it.
+			//only("GCLOUD", "BIND", "NAMEDOTCOM"),
+			// These providers do not support this:
+			//not("ROUTE53", "NAMEDOTCOM", "CLOUDFLAREAPI", "DIGITALOCEAN", "GANDI_V5"),
+			tc("txt with abc0def", txt("abc0def", "abc"+makeRange(0, 0)+"def")),
+			clear(), gentxtRange(0, 63),
+			clear(), gentxtRange(64, 96),
+			clear(), gentxtRange(97, 126),
+			clear(), gentxtRange(127, 127),
+			clear(), gentxtRange(128, 170),
+			clear(), gentxtRange(171, 212),
+			clear(), gentxtRange(213, 255),
 		),
 
 		//
