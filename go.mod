@@ -45,20 +45,24 @@ require (
 	github.com/jinzhu/copier v0.2.5
 	github.com/juju/errors v0.0.0-20200330140219-3fe23663418f // indirect
 	github.com/kolo/xmlrpc v0.0.0-20201022064351-38db28db192b // indirect
-	github.com/miekg/dns v1.1.35
+	github.com/mattn/go-runewidth v0.0.10 // indirect
+	github.com/miekg/dns v1.1.40
 	github.com/mitchellh/mapstructure v1.4.1 // indirect
 	github.com/mittwald/go-powerdns v0.5.2
 	github.com/mjibson/esc v0.2.0
 	github.com/namedotcom/go v0.0.0-20180403034216-08470befbe04
 	github.com/nrdcg/goinwx v0.8.1
+	github.com/olekukonko/tablewriter v0.0.5 // indirect
 	github.com/oracle/oci-go-sdk/v32 v32.0.0
 	github.com/ovh/go-ovh v0.0.0-20181109152953-ba5adb4cf014
 	github.com/philhug/opensrs-go v0.0.0-20171126225031-9dfa7433020d
 	github.com/pierrec/lz4 v2.6.0+incompatible // indirect
 	github.com/pkg/errors v0.9.1
 	github.com/pquerna/otp v1.3.0
+	github.com/psampaz/go-mod-outdated v0.7.0 // indirect
 	github.com/qdm12/reprint v0.0.0-20200326205758-722754a53494
 	github.com/renier/xmlrpc v0.0.0-20191022213033-ce560eccbd00 // indirect
+	github.com/rivo/uniseg v0.2.0 // indirect
 	github.com/robertkrimen/otto v0.0.0-20200922221731-ef014fd054ac
 	github.com/russross/blackfriday/v2 v2.1.0 // indirect
 	github.com/sergi/go-diff v1.1.0 // indirect
@@ -76,7 +80,7 @@ require (
 	golang.org/x/net v0.0.0-20210226172049-e18ecbb05110
 	golang.org/x/oauth2 v0.0.0-20210220000619-9bb904979d93
 	golang.org/x/sync v0.0.0-20210220032951-036812b2e83c // indirect
-	golang.org/x/sys v0.0.0-20210301091718-77cc2087c03b // indirect
+	golang.org/x/sys v0.0.0-20210308170721-88b6017d0656 // indirect
 	golang.org/x/time v0.0.0-20210220033141-f8bda1e9f3ba // indirect
 	google.golang.org/api v0.40.0
 	google.golang.org/genproto v0.0.0-20210226172003-ab064af71705 // indirect
