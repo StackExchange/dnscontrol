@@ -21,6 +21,7 @@ var _ = cmd(catUtils, func() *cli.Command {
 	}
 }())
 
+// FmtArgs stores arguments related to the fmt subcommand.
 type FmtArgs struct {
 	InputFile  string
 	OutputFile string
@@ -44,6 +45,7 @@ func (args *FmtArgs) flags() []cli.Flag {
 	return flags
 }
 
+// FmtFile reads and formats a file.
 func FmtFile(args FmtArgs) error {
 	fileBytes, readErr := ioutil.ReadFile(args.InputFile)
 	if readErr != nil {
@@ -62,14 +64,13 @@ func FmtFile(args FmtArgs) error {
 		beautified = beautified + "\n"
 	}
 
-	if args.OutputFile != "" {
+	if args.OutputFile == "" {
+		fmt.Print(beautified)
+	} else {
 		if err := ioutil.WriteFile(args.OutputFile, []byte(beautified), 0744); err != nil {
 			return err
-		} else {
-			fmt.Fprintf(os.Stderr, "File %s successfully written\n", args.OutputFile)
 		}
-	} else {
-		fmt.Print(beautified)
+		fmt.Fprintf(os.Stderr, "File %s successfully written\n", args.OutputFile)
 	}
 	return nil
 }

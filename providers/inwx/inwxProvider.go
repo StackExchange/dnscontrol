@@ -70,7 +70,7 @@ func init() {
 	providers.RegisterRegistrarType("INWX", newInwxReg)
 	fns := providers.DspFuncs{
 		Initializer:    newInwxDsp,
-		AuditRecordsor: AuditRecords,
+		RecordAuditor: AuditRecords,
 	}
 	providers.RegisterDomainServiceProviderType("INWX", fns, features)
 }
