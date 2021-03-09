@@ -20,6 +20,7 @@ import (
 	_ "github.com/StackExchange/dnscontrol/v3/providers/hedns"
 	_ "github.com/StackExchange/dnscontrol/v3/providers/hetzner"
 	_ "github.com/StackExchange/dnscontrol/v3/providers/hexonet"
+	_ "github.com/StackExchange/dnscontrol/v3/providers/hostingde"
 	_ "github.com/StackExchange/dnscontrol/v3/providers/internetbs"
 	_ "github.com/StackExchange/dnscontrol/v3/providers/inwx"
 	_ "github.com/StackExchange/dnscontrol/v3/providers/linode"

@@ -86,6 +86,10 @@
     "domain": "$HEXONET_DOMAIN",
     "ipaddress": "$HEXONET_IP"
   },
+  "HOSTINGDE": {
+    "authToken": "$HOSTINGDE_AUTHTOKEN",
+    "domain": "$HOSTINGDE_DOMAIN"
+  },
   "INWX": {
     "domain": "$INWX_DOMAIN",
     "password": "$INWX_PASSWORD",

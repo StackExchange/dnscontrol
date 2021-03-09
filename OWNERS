@@ -13,6 +13,7 @@ providers/gandi_v5 @TomOnTime
 providers/hedns @rblenkinsopp
 providers/hetzner @das7pad
 providers/hexonet @papakai
+providers/hostingde @juliusrickert
 providers/internetbs @pragmaton
 providers/inwx @svenpeter42
 providers/msdns @tlimoncelli
