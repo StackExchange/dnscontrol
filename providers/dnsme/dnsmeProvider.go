@@ -122,20 +122,18 @@ func (api *dnsmeProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*mode
 	var deleteRecordIds []int
 	deleteDescription := []string{"Batch deletion of records:"}
 	for _, m := range del {
-		originalRecordId := m.Existing.Original.(*recordResponseDataEntry).Id
-		deleteRecordIds = append(deleteRecordIds, originalRecordId)
+		originalRecordID := m.Existing.Original.(*recordResponseDataEntry).ID
+		deleteRecordIds = append(deleteRecordIds, originalRecordID)
 		deleteDescription = append(deleteDescription, m.String())
-
 	}
 
 	if len(deleteRecordIds) > 0 {
 		corr := &models.Correction{
 			Msg: strings.Join(deleteDescription, "\n\t"),
 			F: func() error {
-				return api.deleteRecords(domain.Id, deleteRecordIds)
+				return api.deleteRecords(domain.ID, deleteRecordIds)
 			},
 		}
-
 		corrections = append(corrections, corr)
 	}
 
@@ -151,7 +149,7 @@ func (api *dnsmeProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*mode
 		corr := &models.Correction{
 			Msg: strings.Join(createDescription, "\n\t"),
 			F: func() error {
-				return api.createRecords(domain.Id, createRecords)
+				return api.createRecords(domain.ID, createRecords)
 			},
 		}
 		corrections = append(corrections, corr)
@@ -163,7 +161,7 @@ func (api *dnsmeProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*mode
 		originalRecord := m.Existing.Original.(*recordResponseDataEntry)
 
 		record := fromRecordConfig(m.Desired)
-		record.Id = originalRecord.Id
+		record.ID = originalRecord.ID
 		record.GtdLocation = originalRecord.GtdLocation
 
 		modifyRecords = append(modifyRecords, *record)
@@ -174,7 +172,7 @@ func (api *dnsmeProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*mode
 		corr := &models.Correction{
 			Msg: strings.Join(modifyDescription, "\n\t"),
 			F: func() error {
-				return api.updateRecords(domain.Id, modifyRecords)
+				return api.updateRecords(domain.ID, modifyRecords)
 			},
 		}
 		corrections = append(corrections, corr)
@@ -221,7 +219,6 @@ func (api *dnsmeProvider) GetZoneRecords(domain string) (models.Records, error) 
 		if records[i].Type == "HTTPRED" || records[i].Type == "SPF" {
 			continue
 		}
-
 		existingRecords = append(existingRecords, toRecordConfig(domain, &records[i]))
 	}
 

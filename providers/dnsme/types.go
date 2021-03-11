@@ -7,13 +7,13 @@ import (
 )
 
 type singleDomainResponse struct {
-	Id                  int                              `json:"id"`
+	ID                  int                              `json:"id"`
 	Name                string                           `json:"name"`
 	DelegateNameServers []string                         `json:"delegateNameServers"`
 	NameServers         []singleDomainResponseNameServer `json:"nameServers"`
 	ProcessMulti        bool                             `json:"processMulti"`
 	ActiveThirdParties  []interface{}                    `json:"activeThirdParties"`
-	PendingActionId     int                              `json:"pendingActionId"`
+	PendingActionID     int                              `json:"pendingActionId"`
 	GtdEnabled          bool                             `json:"gtdEnabled"`
 	Created             int64                            `json:"created"`
 	Updated             int64                            `json:"updated"`
@@ -37,14 +37,14 @@ type multiDomainResponse struct {
 }
 
 type multiDomainResponseDataEntry struct {
-	Id                 int           `json:"id"`
+	ID                 int           `json:"id"`
 	Name               string        `json:"name"`
-	FolderId           int           `json:"folderId"`
+	FolderID           int           `json:"folderId"`
 	GtdEnabled         bool          `json:"gtdEnabled"`
 	ProcessMulti       bool          `json:"processMulti"`
 	ActiveThirdParties []interface{} `json:"activeThirdParties"`
-	PendingActionId    int           `json:"pendingActionId"`
-	VanityId           int           `json:"vanityId,omitempty"`
+	PendingActionID    int           `json:"pendingActionId"`
+	VanityID           int           `json:"vanityId,omitempty"`
 	Created            int64         `json:"created"`
 	Updated            int64         `json:"updated"`
 }
@@ -57,16 +57,16 @@ type recordResponse struct {
 }
 
 type recordResponseDataEntry struct {
-	Id    int    `json:"id"`
+	ID    int    `json:"id"`
 	Name  string `json:"name"`
 	Type  string `json:"type"`
 	Value string `json:"value"`
 	TTL   int    `json:"ttl"`
 
 	Source   int `json:"source"`
-	SourceId int `json:"sourceId"`
+	SourceID int `json:"sourceId"`
 
-	DynamicDns bool   `json:"dynamicDns"`
+	DynamicDNS bool   `json:"dynamicDns"`
 	Password   string `json:"password"`
 
 	// A records
@@ -98,7 +98,7 @@ type recordResponseDataEntry struct {
 }
 
 type recordRequestData struct {
-	Id    int    `json:"id"`
+	ID    int    `json:"id"`
 	Name  string `json:"name"`
 	Type  string `json:"type"`
 	Value string `json:"value"`
@@ -139,7 +139,6 @@ func toRecordConfig(domain string, record *recordResponseDataEntry) *models.Reco
 		if err != nil {
 			panic(err)
 		}
-
 		err = rc.SetTargetCAA(uint8(record.IssuerCritical), record.CaaType, value)
 	} else {
 		err = rc.PopulateFromString(record.Type, record.Value, domain)

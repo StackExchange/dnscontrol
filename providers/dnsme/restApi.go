@@ -14,22 +14,22 @@ import (
 )
 
 const (
-	baseUrlV2_0             = "https://api.dnsmadeeasy.com/V2.0/"
-	sandboxBaseUrlV2_0      = "https://api.sandbox.dnsmadeeasy.com/V2.0/"
+	baseURLV2_0             = "https://api.dnsmadeeasy.com/V2.0/"
+	sandboxBaseURLV2_0      = "https://api.sandbox.dnsmadeeasy.com/V2.0/"
 	requestDateHeaderLayout = "Mon, 2 Jan 2006 15:04:05 MST"
 	initialBackoff          = time.Second * 10 // First backoff delay duration
 	maxBackoff              = time.Minute * 3  // Maximum backoff delay
 )
 
-type dnsmeRestApi struct {
-	baseUrl    string
+type dnsmeRestAPI struct {
+	baseURL    string
 	httpClient *http.Client
 
 	apiKey    string
 	secretKey string
 
-	dumpHttpRequest  bool
-	dumpHttpResponse bool
+	dumpHTTPRequest  bool
+	dumpHTTPResponse bool
 }
 
 type apiErrorResponse struct {
@@ -45,10 +45,10 @@ type apiRequest struct {
 	data     []byte
 }
 
-func (restApi *dnsmeRestApi) singleDomainGet(domainId int) (*singleDomainResponse, error) {
+func (restApi *dnsmeRestAPI) singleDomainGet(domainID int) (*singleDomainResponse, error) {
 	req := &apiRequest{
 		method:   "GET",
-		endpoint: fmt.Sprintf("dns/managed/%d", domainId),
+		endpoint: fmt.Sprintf("dns/managed/%d", domainID),
 	}
 
 	res := &singleDomainResponse{}
@@ -60,7 +60,7 @@ func (restApi *dnsmeRestApi) singleDomainGet(domainId int) (*singleDomainRespons
 	return res, nil
 }
 
-func (restApi *dnsmeRestApi) multiDomainGet() (*multiDomainResponse, error) {
+func (restApi *dnsmeRestAPI) multiDomainGet() (*multiDomainResponse, error) {
 	req := &apiRequest{
 		method:   "GET",
 		endpoint: "dns/managed/",
@@ -75,10 +75,10 @@ func (restApi *dnsmeRestApi) multiDomainGet() (*multiDomainResponse, error) {
 	return res, nil
 }
 
-func (restApi *dnsmeRestApi) recordGet(domainId int) (*recordResponse, error) {
+func (restApi *dnsmeRestAPI) recordGet(domainID int) (*recordResponse, error) {
 	req := &apiRequest{
 		method:   "GET",
-		endpoint: fmt.Sprintf("dns/managed/%d/records", domainId),
+		endpoint: fmt.Sprintf("dns/managed/%d/records", domainID),
 	}
 
 	res := &recordResponse{}
@@ -90,7 +90,7 @@ func (restApi *dnsmeRestApi) recordGet(domainId int) (*recordResponse, error) {
 	return res, nil
 }
 
-func (restApi *dnsmeRestApi) singleDomainCreate(data singleDomainRequestData) (*singleDomainResponse, error) {
+func (restApi *dnsmeRestAPI) singleDomainCreate(data singleDomainRequestData) (*singleDomainResponse, error) {
 	jsonData, err := json.Marshal(data)
 	if err != nil {
 		return nil, err
@@ -111,10 +111,10 @@ func (restApi *dnsmeRestApi) singleDomainCreate(data singleDomainRequestData) (*
 	return res, nil
 }
 
-func (restApi *dnsmeRestApi) recordDelete(domainId int, recordId int) error {
+func (restApi *dnsmeRestAPI) recordDelete(domainID int, recordID int) error {
 	req := &apiRequest{
 		method:   "DELETE",
-		endpoint: fmt.Sprintf("dns/managed/%d/records/%d", domainId, recordId),
+		endpoint: fmt.Sprintf("dns/managed/%d/records/%d", domainID, recordID),
 	}
 
 	_, err := restApi.sendRequest(req, nil)
@@ -125,7 +125,7 @@ func (restApi *dnsmeRestApi) recordDelete(domainId int, recordId int) error {
 	return nil
 }
 
-func (restApi *dnsmeRestApi) multiRecordCreate(domainId int, data []recordRequestData) (*[]recordResponseDataEntry, error) {
+func (restApi *dnsmeRestAPI) multiRecordCreate(domainID int, data []recordRequestData) (*[]recordResponseDataEntry, error) {
 	jsonData, err := json.Marshal(data)
 	if err != nil {
 		return nil, err
@@ -133,7 +133,7 @@ func (restApi *dnsmeRestApi) multiRecordCreate(domainId int, data []recordReques
 
 	req := &apiRequest{
 		method:   "POST",
-		endpoint: fmt.Sprintf("dns/managed/%d/records/createMulti", domainId),
+		endpoint: fmt.Sprintf("dns/managed/%d/records/createMulti", domainID),
 		data:     jsonData,
 	}
 
@@ -146,7 +146,7 @@ func (restApi *dnsmeRestApi) multiRecordCreate(domainId int, data []recordReques
 	return res, nil
 }
 
-func (restApi *dnsmeRestApi) multiRecordUpdate(domainId int, data []recordRequestData) error {
+func (restApi *dnsmeRestAPI) multiRecordUpdate(domainID int, data []recordRequestData) error {
 	jsonData, err := json.Marshal(data)
 	if err != nil {
 		return err
@@ -154,7 +154,7 @@ func (restApi *dnsmeRestApi) multiRecordUpdate(domainId int, data []recordReques
 
 	req := &apiRequest{
 		method:   "PUT",
-		endpoint: fmt.Sprintf("dns/managed/%d/records/updateMulti", domainId),
+		endpoint: fmt.Sprintf("dns/managed/%d/records/updateMulti", domainID),
 		data:     jsonData,
 	}
 
@@ -166,15 +166,15 @@ func (restApi *dnsmeRestApi) multiRecordUpdate(domainId int, data []recordReques
 	return nil
 }
 
-func (restApi *dnsmeRestApi) multiRecordDelete(domainId int, recordIds []int) error {
+func (restApi *dnsmeRestAPI) multiRecordDelete(domainID int, recordIDs []int) error {
 	params := []string{}
-	for i := range recordIds {
-		params = append(params, fmt.Sprintf("ids=%d", recordIds[i]))
+	for i := range recordIDs {
+		params = append(params, fmt.Sprintf("ids=%d", recordIDs[i]))
 	}
 
 	req := &apiRequest{
 		method:   "DELETE",
-		endpoint: fmt.Sprintf("dns/managed/%d/records?%s", domainId, strings.Join(params, "&")),
+		endpoint: fmt.Sprintf("dns/managed/%d/records?%s", domainID, strings.Join(params, "&")),
 	}
 
 	_, err := restApi.sendRequest(req, nil)
@@ -185,7 +185,7 @@ func (restApi *dnsmeRestApi) multiRecordDelete(domainId int, recordIds []int) er
 	return nil
 }
 
-func (restApi *dnsmeRestApi) createRequestAuthHeaders() (string, string) {
+func (restApi *dnsmeRestAPI) createRequestAuthHeaders() (string, string) {
 	t := time.Now()
 	requestDate := t.UTC().Format(requestDateHeaderLayout)
 
@@ -196,8 +196,8 @@ func (restApi *dnsmeRestApi) createRequestAuthHeaders() (string, string) {
 	return requestDate, macStr
 }
 
-func (restApi *dnsmeRestApi) createRequest(request *apiRequest) (*http.Request, error) {
-	url := restApi.baseUrl + request.endpoint
+func (restApi *dnsmeRestAPI) createRequest(request *apiRequest) (*http.Request, error) {
+	url := restApi.baseURL + request.endpoint
 	var req *http.Request
 	var err error
 
@@ -229,14 +229,14 @@ func (restApi *dnsmeRestApi) createRequest(request *apiRequest) (*http.Request, 
 // It is reset after successful request
 var backoff = initialBackoff
 
-func (restApi *dnsmeRestApi) sendRequest(request *apiRequest, response interface{}) (int, error) {
+func (restApi *dnsmeRestAPI) sendRequest(request *apiRequest, response interface{}) (int, error) {
 retry:
 	req, err := restApi.createRequest(request)
 	if err != nil {
 		return 0, err
 	}
 
-	if restApi.dumpHttpRequest {
+	if restApi.dumpHTTPRequest {
 		dump, _ := httputil.DumpRequest(req, true)
 		fmt.Println(string(dump))
 	}
@@ -248,7 +248,7 @@ retry:
 
 	defer res.Body.Close()
 
-	if restApi.dumpHttpResponse {
+	if restApi.dumpHTTPResponse {
 		dump, _ := httputil.DumpResponse(res, true)
 		fmt.Println(string(dump))
 	}

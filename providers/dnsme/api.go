@@ -7,28 +7,28 @@ import (
 )
 
 type dnsmeProvider struct {
-	restApi *dnsmeRestApi
+	restAPI *dnsmeRestAPI
 	domains map[string]multiDomainResponseDataEntry
 }
 
 func newDnsmeProvider(apiKey string, secretKey string, sandbox bool, debug bool) *dnsmeProvider {
 	fmt.Println("creating DNSME provider for sandbox")
 
-	baseUrl := baseUrlV2_0
+	baseURL := baseURLV2_0
 	if sandbox {
-		baseUrl = sandboxBaseUrlV2_0
+		baseURL = sandboxBaseURLV2_0
 	}
 
 	return &dnsmeProvider{
-		restApi: &dnsmeRestApi{
+		restAPI: &dnsmeRestAPI{
 			apiKey:    apiKey,
 			secretKey: secretKey,
-			baseUrl:   baseUrl,
+			baseURL:   baseURL,
 			httpClient: &http.Client{
 				Timeout: time.Minute,
 			},
-			dumpHttpRequest:  debug,
-			dumpHttpResponse: debug,
+			dumpHTTPRequest:  debug,
+			dumpHTTPResponse: debug,
 		},
 	}
 }
@@ -40,7 +40,7 @@ func (api *dnsmeProvider) loadDomains() error {
 
 	domains := map[string]multiDomainResponseDataEntry{}
 
-	res, err := api.restApi.multiDomainGet()
+	res, err := api.restAPI.multiDomainGet()
 	if err != nil {
 		return fmt.Errorf("fetching domains from DNSME failed: %w", err)
 	}
@@ -87,7 +87,7 @@ func (api *dnsmeProvider) fetchDomainRecords(domainName string) ([]recordRespons
 		return nil, err
 	}
 
-	res, err := api.restApi.recordGet(domain.Id)
+	res, err := api.restAPI.recordGet(domain.ID)
 	if err != nil {
 		return nil, fmt.Errorf("fetching records failed: %w", err)
 	}
@@ -110,7 +110,7 @@ func (api *dnsmeProvider) fetchDomainNameServers(domainName string) ([]string, e
 		return nil, err
 	}
 
-	res, err := api.restApi.singleDomainGet(domain.Id)
+	res, err := api.restAPI.singleDomainGet(domain.ID)
 	if err != nil {
 		return nil, fmt.Errorf("fetching domain from DNSME failed: %w", err)
 	}
@@ -124,7 +124,7 @@ func (api *dnsmeProvider) fetchDomainNameServers(domainName string) ([]string, e
 }
 
 func (api *dnsmeProvider) createDomain(domain string) error {
-	_, err := api.restApi.singleDomainCreate(singleDomainRequestData{Name: domain})
+	_, err := api.restAPI.singleDomainCreate(singleDomainRequestData{Name: domain})
 
 	if err != nil {
 		return err
@@ -136,26 +136,26 @@ func (api *dnsmeProvider) createDomain(domain string) error {
 	return nil
 }
 
-func (api *dnsmeProvider) deleteRecord(domainId int, record recordResponseDataEntry) error {
-	err := api.restApi.recordDelete(domainId, record.Id)
+func (api *dnsmeProvider) deleteRecord(domainID int, record recordResponseDataEntry) error {
+	err := api.restAPI.recordDelete(domainID, record.ID)
 
 	return err
 }
 
-func (api *dnsmeProvider) deleteRecords(domainId int, recordIds []int) error {
-	err := api.restApi.multiRecordDelete(domainId, recordIds)
+func (api *dnsmeProvider) deleteRecords(domainID int, recordIds []int) error {
+	err := api.restAPI.multiRecordDelete(domainID, recordIds)
 
 	return err
 }
 
-func (api *dnsmeProvider) updateRecords(domainId int, records []recordRequestData) error {
-	err := api.restApi.multiRecordUpdate(domainId, records)
+func (api *dnsmeProvider) updateRecords(domainID int, records []recordRequestData) error {
+	err := api.restAPI.multiRecordUpdate(domainID, records)
 
 	return err
 }
 
-func (api *dnsmeProvider) createRecords(domainId int, records []recordRequestData) error {
-	_, err := api.restApi.multiRecordCreate(domainId, records)
+func (api *dnsmeProvider) createRecords(domainID int, records []recordRequestData) error {
+	_, err := api.restAPI.multiRecordCreate(domainID, records)
 
 	return err
 }
