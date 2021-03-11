@@ -20,8 +20,6 @@ In your credentials file, you must provide your `api_key` and `secret_key`. More
 
 ## Records
 
-Changing apex NS records is not supported.
-
 ALIAS/ANAME records are supported.
 
 This provider does not support HTTPRED records.

@@ -22,7 +22,7 @@ var features = providers.DocumentationNotes{
 	providers.CanUseDS:               providers.Cannot(),
 	providers.CanUseDSForChildren:    providers.Cannot(),
 	providers.DocCreateDomains:       providers.Can(),
-	providers.DocDualHost:            providers.Cannot(),
+	providers.DocDualHost:            providers.Can("System NS records cannot be edited. Custom apex NS records can be added/changed/deleted."),
 	providers.DocOfficiallySupported: providers.Cannot(),
 	providers.CanGetZones:            providers.Can(),
 }
@@ -72,20 +72,6 @@ func (api *dnsmeProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*mode
 	if err != nil {
 		return nil, err
 	}
-
-	dc.Filter(func(r *models.RecordConfig) bool {
-		// Filter out apex NS records, DNS Made Easy doesn't support changing them
-		if r.Type == "NS" && r.GetLabel() == "@" {
-			return false
-		}
-
-		// Filter out custom HTTPRED records, changing them is not supported
-		if r.Type == "HTTPRED" {
-			return false
-		}
-
-		return true
-	})
 
 	// ALIAS is called ANAME on DNS Made Easy
 	for _, rec := range dc.Records {
@@ -213,6 +199,11 @@ func (api *dnsmeProvider) GetZoneRecords(domain string) (models.Records, error) 
 		return nil, err
 	}
 
+	nameServers, err := api.fetchDomainNameServers(domain)
+	if err != nil {
+		return nil, err
+	}
+
 	existingRecords := make([]*models.RecordConfig, 0, len(records))
 	for i := range records {
 		// Ignore HTTPRED and SPF records
@@ -220,6 +211,10 @@ func (api *dnsmeProvider) GetZoneRecords(domain string) (models.Records, error) 
 			continue
 		}
 		existingRecords = append(existingRecords, toRecordConfig(domain, &records[i]))
+	}
+
+	for i := range nameServers {
+		existingRecords = append(existingRecords, systemNameServerToRecordConfig(domain, nameServers[i]))
 	}
 
 	return existingRecords, nil

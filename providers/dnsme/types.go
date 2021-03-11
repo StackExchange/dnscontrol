@@ -186,3 +186,8 @@ func fromRecordConfig(rc *models.RecordConfig) *recordRequestData {
 
 	return record
 }
+
+func systemNameServerToRecordConfig(domain string, nameServer string) *models.RecordConfig {
+	target := nameServer + "."
+	return toRecordConfig(domain, &recordResponseDataEntry{Type: "NS", Value: target, TTL: int(models.DefaultTTL)})
+}
