@@ -1,8 +1,8 @@
 ---
-name: DNSME
+name: DNSMADEEASY
 title: DNS Made Simple Provider
 layout: default
-jsId: DNSME
+jsId: DNSMADEEASY
 ---
 # DNS Made Simple Provider
 
@@ -11,7 +11,7 @@ In your credentials file, you must provide your `api_key` and `secret_key`. More
 
 {% highlight json %}
 {
-  "dnsme": {
+  "dnsmadeeasy": {
     "api_key": "1c1a3c91-4770-4ce7-96f4-54c0eb0e457a",
     "secret_key": "e2268cde-2ccd-4668-a518-8aa8757a65a0"
   }
@@ -34,9 +34,9 @@ Example Javascript:
 
 {% highlight js %}
 var REG_NONE = NewRegistrar('none', 'NONE')
-var DNSME = NewDnsProvider("dnsme", "DNSME");
+var DNSMADEEASY = NewDnsProvider("dnsmadeeasy", "DNSMADEEASY");
 
-D("example.tld", REG_NONE, DnsProvider(DNSME),
+D("example.tld", REG_NONE, DnsProvider(DNSMADEEASY),
     A("test","1.2.3.4")
 );
 {%endhighlight%}
@@ -54,7 +54,7 @@ Global Traffic Director feature is not supported.
 ## Development
 
 ### Debugging
-Set `DNSME_DEBUG` environment variable to dump all API calls made by this provider.
+Set `DNSMADEEASY_DEBUG_HTTP` environment variable to dump all API calls made by this provider.
 
 ### Testing
 Set `sandbox` key to any non-empty value in credentials JSON alongside `api_key` and `secret_key` to make all API calls against DNS Made Easy sandbox environment.

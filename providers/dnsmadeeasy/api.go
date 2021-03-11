@@ -1,4 +1,4 @@
-package dnsme
+package dnsmadeeasy
 
 import (
 	"fmt"
@@ -6,21 +6,21 @@ import (
 	"time"
 )
 
-type dnsmeProvider struct {
-	restAPI *dnsmeRestAPI
+type dnsMadeEasyProvider struct {
+	restAPI *dnsMadeEasyRestAPI
 	domains map[string]multiDomainResponseDataEntry
 }
 
-func newDnsmeProvider(apiKey string, secretKey string, sandbox bool, debug bool) *dnsmeProvider {
-	fmt.Println("creating DNSME provider for sandbox")
+func newProvider(apiKey string, secretKey string, sandbox bool, debug bool) *dnsMadeEasyProvider {
+	fmt.Println("creating DNSMADEEASY provider for sandbox")
 
 	baseURL := baseURLV2_0
 	if sandbox {
 		baseURL = sandboxBaseURLV2_0
 	}
 
-	return &dnsmeProvider{
-		restAPI: &dnsmeRestAPI{
+	return &dnsMadeEasyProvider{
+		restAPI: &dnsMadeEasyRestAPI{
 			apiKey:    apiKey,
 			secretKey: secretKey,
 			baseURL:   baseURL,
@@ -33,7 +33,7 @@ func newDnsmeProvider(apiKey string, secretKey string, sandbox bool, debug bool)
 	}
 }
 
-func (api *dnsmeProvider) loadDomains() error {
+func (api *dnsMadeEasyProvider) loadDomains() error {
 	if api.domains != nil {
 		return nil
 	}
@@ -42,12 +42,12 @@ func (api *dnsmeProvider) loadDomains() error {
 
 	res, err := api.restAPI.multiDomainGet()
 	if err != nil {
-		return fmt.Errorf("fetching domains from DNSME failed: %w", err)
+		return fmt.Errorf("fetching domains from DNSMADEEASY failed: %w", err)
 	}
 
 	for _, domain := range res.Data {
 		if domain.GtdEnabled {
-			return fmt.Errorf("fetching domains from DNSME failed: domains with GTD enabled are not supported")
+			return fmt.Errorf("fetching domains from DNSMADEEASY failed: domains with GTD enabled are not supported")
 		}
 
 		domains[domain.Name] = domain
@@ -58,7 +58,7 @@ func (api *dnsmeProvider) loadDomains() error {
 	return nil
 }
 
-func (api *dnsmeProvider) domainExists(name string) (bool, error) {
+func (api *dnsMadeEasyProvider) domainExists(name string) (bool, error) {
 	if err := api.loadDomains(); err != nil {
 		return false, err
 	}
@@ -68,20 +68,20 @@ func (api *dnsmeProvider) domainExists(name string) (bool, error) {
 	return ok, nil
 }
 
-func (api *dnsmeProvider) findDomain(name string) (*multiDomainResponseDataEntry, error) {
+func (api *dnsMadeEasyProvider) findDomain(name string) (*multiDomainResponseDataEntry, error) {
 	if err := api.loadDomains(); err != nil {
 		return nil, err
 	}
 
 	domain, ok := api.domains[name]
 	if !ok {
-		return nil, fmt.Errorf("domain not found on this DNSME account: %q", name)
+		return nil, fmt.Errorf("domain not found on this DNSMADEEASY account: %q", name)
 	}
 
 	return &domain, nil
 }
 
-func (api *dnsmeProvider) fetchDomainRecords(domainName string) ([]recordResponseDataEntry, error) {
+func (api *dnsMadeEasyProvider) fetchDomainRecords(domainName string) ([]recordResponseDataEntry, error) {
 	domain, err := api.findDomain(domainName)
 	if err != nil {
 		return nil, err
@@ -95,7 +95,7 @@ func (api *dnsmeProvider) fetchDomainRecords(domainName string) ([]recordRespons
 	records := make([]recordResponseDataEntry, 0)
 	for _, record := range res.Data {
 		if record.GtdLocation != "DEFAULT" {
-			return nil, fmt.Errorf("fetching records from DNSME failed: only records with DEFAULT GTD location are supported")
+			return nil, fmt.Errorf("fetching records from DNSMADEEASY failed: only records with DEFAULT GTD location are supported")
 		}
 
 		records = append(records, record)
@@ -104,7 +104,7 @@ func (api *dnsmeProvider) fetchDomainRecords(domainName string) ([]recordRespons
 	return records, nil
 }
 
-func (api *dnsmeProvider) fetchDomainNameServers(domainName string) ([]string, error) {
+func (api *dnsMadeEasyProvider) fetchDomainNameServers(domainName string) ([]string, error) {
 	domain, err := api.findDomain(domainName)
 	if err != nil {
 		return nil, err
@@ -112,7 +112,7 @@ func (api *dnsmeProvider) fetchDomainNameServers(domainName string) ([]string, e
 
 	res, err := api.restAPI.singleDomainGet(domain.ID)
 	if err != nil {
-		return nil, fmt.Errorf("fetching domain from DNSME failed: %w", err)
+		return nil, fmt.Errorf("fetching domain from DNSMADEEASY failed: %w", err)
 	}
 
 	var nameServers []string
@@ -123,7 +123,7 @@ func (api *dnsmeProvider) fetchDomainNameServers(domainName string) ([]string, e
 	return nameServers, nil
 }
 
-func (api *dnsmeProvider) createDomain(domain string) error {
+func (api *dnsMadeEasyProvider) createDomain(domain string) error {
 	_, err := api.restAPI.singleDomainCreate(singleDomainRequestData{Name: domain})
 
 	if err != nil {
@@ -136,19 +136,19 @@ func (api *dnsmeProvider) createDomain(domain string) error {
 	return nil
 }
 
-func (api *dnsmeProvider) deleteRecords(domainID int, recordIds []int) error {
+func (api *dnsMadeEasyProvider) deleteRecords(domainID int, recordIds []int) error {
 	err := api.restAPI.multiRecordDelete(domainID, recordIds)
 
 	return err
 }
 
-func (api *dnsmeProvider) updateRecords(domainID int, records []recordRequestData) error {
+func (api *dnsMadeEasyProvider) updateRecords(domainID int, records []recordRequestData) error {
 	err := api.restAPI.multiRecordUpdate(domainID, records)
 
 	return err
 }
 
-func (api *dnsmeProvider) createRecords(domainID int, records []recordRequestData) error {
+func (api *dnsMadeEasyProvider) createRecords(domainID int, records []recordRequestData) error {
 	_, err := api.restAPI.multiRecordCreate(domainID, records)
 
 	return err

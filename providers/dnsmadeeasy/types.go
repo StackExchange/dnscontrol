@@ -1,4 +1,4 @@
-package dnsme
+package dnsmadeeasy
 
 import (
 	"strconv"

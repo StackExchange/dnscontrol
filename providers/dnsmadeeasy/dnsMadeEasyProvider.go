@@ -1,4 +1,4 @@
-package dnsme
+package dnsmadeeasy
 
 import (
 	"encoding/json"
@@ -33,17 +33,17 @@ func init() {
 		RecordAuditor: AuditRecords,
 	}
 
-	providers.RegisterDomainServiceProviderType("DNSME", fns, features)
+	providers.RegisterDomainServiceProviderType("DNSMADEEASY", fns, features)
 }
 
 // New creates a new API handle.
 func New(settings map[string]string, _ json.RawMessage) (providers.DNSServiceProvider, error) {
 	if settings["api_key"] == "" {
-		return nil, fmt.Errorf("missing DNSME api_key")
+		return nil, fmt.Errorf("missing DNSMADEEASY api_key")
 	}
 
 	if settings["secret_key"] == "" {
-		return nil, fmt.Errorf("missing DNSME secret_key")
+		return nil, fmt.Errorf("missing DNSMADEEASY secret_key")
 	}
 
 	sandbox := false
@@ -52,17 +52,17 @@ func New(settings map[string]string, _ json.RawMessage) (providers.DNSServicePro
 	}
 
 	debug := false
-	if os.Getenv("DNSME_DEBUG") == "1" {
+	if os.Getenv("DNSMADEEASY_DEBUG_HTTP") == "1" {
 		debug = true
 	}
 
-	api := newDnsmeProvider(settings["api_key"], settings["secret_key"], sandbox, debug)
+	api := newProvider(settings["api_key"], settings["secret_key"], sandbox, debug)
 
 	return api, nil
 }
 
 // GetDomainCorrections returns the corrections for a domain.
-func (api *dnsmeProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Correction, error) {
+func (api *dnsMadeEasyProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Correction, error) {
 	dc, err := dc.Copy()
 	if err != nil {
 		return nil, err
@@ -168,7 +168,7 @@ func (api *dnsmeProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*mode
 }
 
 // EnsureDomainExists returns an error if domain doesn't exist.
-func (api *dnsmeProvider) EnsureDomainExists(domainName string) error {
+func (api *dnsMadeEasyProvider) EnsureDomainExists(domainName string) error {
 	exists, err := api.domainExists(domainName)
 	if err != nil {
 		return err
@@ -183,7 +183,7 @@ func (api *dnsmeProvider) EnsureDomainExists(domainName string) error {
 }
 
 // GetNameservers returns the nameservers for a domain.
-func (api *dnsmeProvider) GetNameservers(domain string) ([]*models.Nameserver, error) {
+func (api *dnsMadeEasyProvider) GetNameservers(domain string) ([]*models.Nameserver, error) {
 	nameServers, err := api.fetchDomainNameServers(domain)
 	if err != nil {
 		return nil, err
@@ -193,7 +193,7 @@ func (api *dnsmeProvider) GetNameservers(domain string) ([]*models.Nameserver, e
 }
 
 // GetZoneRecords gets the records of a zone and returns them in RecordConfig format.
-func (api *dnsmeProvider) GetZoneRecords(domain string) (models.Records, error) {
+func (api *dnsMadeEasyProvider) GetZoneRecords(domain string) (models.Records, error) {
 	records, err := api.fetchDomainRecords(domain)
 	if err != nil {
 		return nil, err
@@ -221,7 +221,7 @@ func (api *dnsmeProvider) GetZoneRecords(domain string) (models.Records, error) 
 }
 
 // ListZones lists the zones on this account.
-func (api *dnsmeProvider) ListZones() ([]string, error) {
+func (api *dnsMadeEasyProvider) ListZones() ([]string, error) {
 	if err := api.loadDomains(); err != nil {
 		return nil, err
 	}

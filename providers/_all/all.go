@@ -13,7 +13,7 @@ import (
 	_ "github.com/StackExchange/dnscontrol/v3/providers/desec"
 	_ "github.com/StackExchange/dnscontrol/v3/providers/digitalocean"
 	_ "github.com/StackExchange/dnscontrol/v3/providers/dnsimple"
-	_ "github.com/StackExchange/dnscontrol/v3/providers/dnsme"
+	_ "github.com/StackExchange/dnscontrol/v3/providers/dnsmadeeasy"
 	_ "github.com/StackExchange/dnscontrol/v3/providers/doh"
 	_ "github.com/StackExchange/dnscontrol/v3/providers/exoscale"
 	_ "github.com/StackExchange/dnscontrol/v3/providers/gandiv5"

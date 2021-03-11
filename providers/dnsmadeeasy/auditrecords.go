@@ -1,4 +1,4 @@
-package dnsme
+package dnsmadeeasy
 
 import (
 	"github.com/StackExchange/dnscontrol/v3/models"
