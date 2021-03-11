@@ -111,20 +111,6 @@ func (restApi *dnsmeRestAPI) singleDomainCreate(data singleDomainRequestData) (*
 	return res, nil
 }
 
-func (restApi *dnsmeRestAPI) recordDelete(domainID int, recordID int) error {
-	req := &apiRequest{
-		method:   "DELETE",
-		endpoint: fmt.Sprintf("dns/managed/%d/records/%d", domainID, recordID),
-	}
-
-	_, err := restApi.sendRequest(req, nil)
-	if err != nil {
-		return err
-	}
-
-	return nil
-}
-
 func (restApi *dnsmeRestAPI) multiRecordCreate(domainID int, data []recordRequestData) (*[]recordResponseDataEntry, error) {
 	jsonData, err := json.Marshal(data)
 	if err != nil {

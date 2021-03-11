@@ -136,12 +136,6 @@ func (api *dnsmeProvider) createDomain(domain string) error {
 	return nil
 }
 
-func (api *dnsmeProvider) deleteRecord(domainID int, record recordResponseDataEntry) error {
-	err := api.restAPI.recordDelete(domainID, record.ID)
-
-	return err
-}
-
 func (api *dnsmeProvider) deleteRecords(domainID int, recordIds []int) error {
 	err := api.restAPI.multiRecordDelete(domainID, recordIds)
 
