@@ -7,6 +7,7 @@ providers/cloudns @pragmaton
 providers/desec @D3luxee
 providers/doh @mikenz
 providers/digitalocean @Deraen
+providers/dnsme @vojtad
 providers/dnsimple @aeden
 providers/gandi_v5 @TomOnTime
 # providers/gcloud

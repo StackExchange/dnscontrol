@@ -77,6 +77,7 @@ Maintainers of contributed providers:
 * `DESEC` @D3luxee
 * `DIGITALOCEAN` @Deraen
 * `DNSOVERHTTPS` @mikenz
+* `DNSME` @vojtad
 * `DNSIMPLE` @aeden
 * `EXOSCALE` @pierre-emmanuelJ
 * `GANDI_V5` @TomOnTime

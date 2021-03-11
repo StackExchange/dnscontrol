@@ -43,6 +43,12 @@
     "domain": "$DIGITALOCEAN_DOMAIN",
     "token": "$DIGITALOCEAN_TOKEN"
   },
+  "DNSME": {
+    "domain": "$DNSME_DOMAIN",
+    "sandbox": "true",
+    "api_key": "$DNSME_API_KEY",
+    "secret_key": "$DNSME_SECRET_KEY",
+  },
   "DNSIMPLE": {
     "baseurl": "https://api.sandbox.dnsimple.com",
     "domain": "$DNSIMPLE_DOMAIN",
