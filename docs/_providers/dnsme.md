@@ -44,7 +44,7 @@ D("example.tld", REG_NONE, DnsProvider(DNSME),
 {%endhighlight%}
 
 ## Activation
-You can generate you `api_key` and `secret_key` in [Control Panel](https://cp.dnsmadeeasy.com/) in Account Information in Config menu.
+You can generate your `api_key` and `secret_key` in [Control Panel](https://cp.dnsmadeeasy.com/) in Account Information in Config menu.
 
 API is only available for Business plan and higher plans.
 
@@ -59,4 +59,4 @@ Global Traffic Director feature is not supported.
 Set `DNSME_DEBUG` environment variable to dump all API calls made by this provider.
 
 ### Testing
-Set `sandbox` key to `"true"` (this must be string, not a boolean) in credentials JSON alongside `api_key` and `secret_key` to make all API calls against DNS Made Easy sandbox environment.
+Set `sandbox` key to any non-empty value in credentials JSON alongside `api_key` and `secret_key` to make all API calls against DNS Made Easy sandbox environment.
