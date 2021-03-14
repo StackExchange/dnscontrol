@@ -9,7 +9,7 @@ import (
 	"time"
 )
 
-// Api layer for CloDNS
+// Api layer for ClouDNS
 type cloudnsProvider struct {
 	domainIndex      map[string]string
 	nameserversNames []string
