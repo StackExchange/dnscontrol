@@ -170,7 +170,10 @@ retry:
 		if err == nil {
 			return bodyString, fmt.Errorf("%s", errResp.Detail)
 		}
-		return bodyString, fmt.Errorf("http status %d %s, the api does not provide more information", resp.StatusCode, resp.Status)
+		return bodyString, fmt.Errorf("http status %d %s", resp.StatusCode, resp.Status)
+		// TODO(tlim) response body had details about what exactly went
+		// wrong. It would be nice to include that in the message.
+
 	}
 	return bodyString, nil
 }
