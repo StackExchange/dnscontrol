@@ -4,6 +4,7 @@ package desec
 
 import (
 	"fmt"
+	"regexp"
 	"strings"
 
 	"github.com/StackExchange/dnscontrol/v3/models"
@@ -26,7 +27,7 @@ func nativeToRecords(n resourceRecord, origin string) (rcs []*models.RecordConfi
 		rc.SetLabel(n.Subname, origin)
 		switch rtype := n.Type; rtype {
 		case "TXT":
-			rc.SetTargetTXT(value)
+			rc.SetTargetTXTs(decodeTxt(value))
 		default: //  "A", "AAAA", "CAA", "NS", "CNAME", "MX", "PTR", "SRV"
 			if err := rc.PopulateFromString(rtype, value, origin); err != nil {
 				panic(fmt.Errorf("unparsable record received from deSEC: %w", err))
@@ -62,7 +63,7 @@ func recordsToNative(rcs []*models.RecordConfig, origin string) []resourceRecord
 				Records: []string{r.GetTargetCombined()},
 			}
 			if r.Type == "TXT" {
-				zr.Records = []string{strings.Join(r.TxtStrings, "")}
+				zr.Records = []string{r.GetTargetField()}
 			}
 			zrs = append(zrs, zr)
 			//keys[key] = &zr   // This didn't work.
@@ -82,4 +83,37 @@ func recordsToNative(rcs []*models.RecordConfig, origin string) []resourceRecord
 	}
 
 	return zrs
+}
+
+// // encodeTxt encodes TxtStrings for sending to the API:
+// func encodeTxt(txts []string) string {
+// 	ans := txts[0]
+
+// 	if len(txts) > 1 {
+// 		ans = ""
+// 		for _, t := range txts {
+// 			ans += `"` + strings.Replace(t, `"`, `\"`, -1) + `"`
+// 		}
+// 	}
+// 	return ans
+// }
+
+// finds a string surrounded by quotes that might contain an escaped quote character.
+var quotedStringRegexp = regexp.MustCompile(`"((?:[^"\\]|\\.)*)"`)
+
+// decodeTxt decodes the TXT record as received from the API and
+// returns the list of strings.
+func decodeTxt(s string) []string {
+
+	// Not encoded:
+	if len(s) < 2 || !(s[0] == '"' && s[len(s)-1] == '"') {
+		return []string{s}
+	}
+
+	txtStrings := []string{}
+	for _, t := range quotedStringRegexp.FindAllStringSubmatch(s, -1) {
+		txtString := strings.Replace(t[1], `\"`, `"`, -1)
+		txtStrings = append(txtStrings, txtString)
+	}
+	return txtStrings
 }
