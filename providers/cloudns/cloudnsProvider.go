@@ -14,7 +14,7 @@ import (
 )
 
 /*
-CloDNS API DNS provider:
+ClouDNS API DNS provider:
 Info required in `creds.json`:
    - auth-id or sub-auth-id
    - auth-password
