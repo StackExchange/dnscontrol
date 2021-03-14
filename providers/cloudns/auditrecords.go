@@ -24,5 +24,10 @@ func AuditRecords(records []*models.RecordConfig) error {
 	}
 	// Still needed as of 2021-03-01
 
+	if err := recordaudit.TxtNoDoubleQuotes(records); err != nil {
+		return err
+	}
+	// Still needed as of 2021-03-11
+
 	return nil
 }
