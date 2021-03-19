@@ -143,7 +143,6 @@ jobs:
         key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
         restore-keys: |
           ${{ runner.os }}-go-
-    - name: Build binaries
     - name: Determining test viability for ${{ matrix.provider }} provider
       run: if [ -n "$${{ matrix.provider }}_DOMAIN" ] ; then echo "CAN_CONTINUE=yes" >> "$GITHUB_ENV" ; fi
     - name: Run integration tests for ${{ matrix.provider }} provider
