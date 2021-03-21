@@ -23,6 +23,7 @@ Currently supported DNS providers:
  - ClouDNS
  - Cloudflare
  - DNSOVERHTTPS
+ - DNS Made Easy
  - DNSimple
  - DigitalOcean
  - Exoscale

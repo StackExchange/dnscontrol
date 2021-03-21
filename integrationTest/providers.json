@@ -48,6 +48,12 @@
     "domain": "$DNSIMPLE_DOMAIN",
     "token": "$DNSIMPLE_TOKEN"
   },
+  "DNSMADEEASY": {
+    "domain": "$DNSMADEEASY_DOMAIN",
+    "sandbox": "true",
+    "api_key": "$DNSMADEEASY_API_KEY",
+    "secret_key": "$DNSMADEEASY_SECRET_KEY"
+  },
   "EXOSCALE": {
     "apikey": "$EXOSCALE_API_KEY",
     "dns-endpoint": "https://api.exoscale.ch/dns",
