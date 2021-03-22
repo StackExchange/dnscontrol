@@ -96,6 +96,7 @@ func (c *cloudnsProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*mode
 
 	// ClouDNS doesn't allow selecting an arbitrary TTL, only a set of predefined values https://asia.cloudns.net/wiki/article/188/
 	// We need to make sure we don't change it every time if it is as close as it's going to get
+	c.fetchAvailableTTLValues(dc.Name)
 	for _, record := range dc.Records {
 		record.TTL = fixTTL(record.TTL)
 	}
