@@ -87,10 +87,10 @@ jobs:
       CLOUDFLAREAPI_TOKEN: ${{ secrets.CLOUDFLAREAPI_TOKEN }}
       CLOUDFLAREAPI_USER: ${{ secrets.CLOUDFLAREAPI_USER }}
 #
+      CLOUDNS_DOMAIN: ${{ secrets.CLOUDNS_DOMAIN }}
       CLOUDNS_AUTH_ID: ${{ secrets.CLOUDNS_AUTH_ID }}
       CLOUDNS_AUTH_PASSWORD: ${{ secrets.CLOUDNS_AUTH_PASSWORD }}
       CLOUDNS_SUB_AUTH_ID: ${{ secrets.CLOUDNS_SUB_AUTH_ID }}
-      CLOUDNS_DOMAIN: ${{ secrets.CLOUDNS_DOMAIN }}
 #
       GCLOUD_DOMAIN: ${{ secrets.GCLOUD_DOMAIN }}
       GCLOUD_EMAIL: dnscontrol@dnscontrol-dev.iam.gserviceaccount.com
