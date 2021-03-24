@@ -51,6 +51,7 @@ func newDNS(config map[string]string, metadata json.RawMessage) (providers.DNSSe
 
 	p := &msdnsProvider{
 		dnsserver: config["dnsserver"],
+		pssession: config["pssession"],
 	}
 	p.shell, err = newPowerShell(config)
 	if err != nil {
