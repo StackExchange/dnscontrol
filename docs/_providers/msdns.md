@@ -44,8 +44,11 @@ Otherwise
 {% highlight javascript %}
 {
   "msdns": {
+    "dnsserver": "ny-dc01"
+    {% comment %}
     "dnsserver": "ny-dc01",
     "pssession": "mywindowshost"
+    {% endcomment %}
   }
 }
 {% endhighlight %}
@@ -71,20 +74,24 @@ If you were using the `ACTIVEDIRECTORY_PS` provider and are switching to `MSDNS`
 2. In `creds.json`: Since unused fields are quietly ignored, it is
    safe to list both the old and new options:
   a. Add a field "dnsserver" with the DNS server's name.  (OPTIONAL if dnscontrol is run on the DNS server.)
+{% comment %}
   b. If the PowerShell commands need to be run on a different host using a `PSSession`, add `pssession: "remoteserver",` where `remoteserver` is the name of the server where the PowerShell commands should run.
-  c. The MSDNS provider will quietly ignore `fakeps`, `pslog` and `psout`. Feel free to leave them in `creds.json` until you are sure you aren't going back to the old provider.
+{% endcomment %}
+  b. The MSDNS provider will quietly ignore `fakeps`, `pslog` and `psout` options. Feel free to leave them in `creds.json` until you are sure you aren't going back to the old provider.
 
 During the transition your `creds.json` file might look like:
 
 {% highlight javascript %}
 {
   "msdns": {
-    "ADServer": "ny-dc01",         << Delete these after you have
-    "fakeps": "true",              << verified that MSDNS works
-    "pslog": "log.txt",            << properly.
     "psout": "out.txt",
     "dnsserver": "ny-dc01",
-    "pssession": "mywindowshost"
+{% comment -%}
+    "pssession": "mywindowshost",
+{%- endcomment %}
+    "ADServer": "ny-dc01",         << Delete these after you have
+    "fakeps": "true",              << verified that MSDNS works
+    "pslog": "log.txt"             << properly.
   }
 }
 {% endhighlight %}
