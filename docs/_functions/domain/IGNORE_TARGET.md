@@ -5,6 +5,10 @@ parameters:
   - rType
 ---
 
+WARNING: The `IGNORE_*` family  of functions is risky to use. The code
+is brittle and has subtle bugs. Use at your own risk. Do not use these
+commands with `D_EXTEND()` or use it at the domain apex.
+
 IGNORE_TARGET can be used to ignore some records present in zone based on the record's target and type. IGNORE_TARGET currently only supports CNAME record types.
 
 IGNORE_TARGET is like NO_PURGE except it acts only on some specific records instead of the whole zone.
