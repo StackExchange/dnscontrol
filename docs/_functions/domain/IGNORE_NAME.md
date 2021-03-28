@@ -1,6 +1,12 @@
 ---
 name: IGNORE_NAME
+parameters:
+  - pattern
 ---
+
+WARNING: The `IGNORE_*` family  of functions is risky to use. The code
+is brittle and has subtle bugs. Use at your own risk. Do not use these
+commands with `D_EXTEND()` or use it at the domain apex.
 
 IGNORE_NAME can be used to ignore some records present in zone.
 All records (independently of their type) of that name will be completely ignored.
