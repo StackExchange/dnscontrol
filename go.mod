@@ -4,7 +4,7 @@ go 1.14
 
 require (
 	cloud.google.com/go v0.78.0 // indirect
-	github.com/Azure/azure-sdk-for-go v52.5.0+incompatible
+	github.com/Azure/azure-sdk-for-go v52.6.0+incompatible
 	github.com/Azure/go-autorest/autorest v0.11.18 // indirect
 	github.com/Azure/go-autorest/autorest/azure/auth v0.5.7
 	github.com/Azure/go-autorest/autorest/to v0.4.0
@@ -13,7 +13,7 @@ require (
 	github.com/TomOnTime/utfutil v0.0.0-20200626160131-0b0178852c8f
 	github.com/andreyvit/diff v0.0.0-20170406064948-c7f18ee00883
 	github.com/andybalholm/cascadia v1.2.0 // indirect
-	github.com/aws/aws-sdk-go v1.38.1
+	github.com/aws/aws-sdk-go v1.38.7
 	github.com/babolivier/go-doh-client v0.0.0-20201028162107-a76cff4cb8b6
 	github.com/bhendo/go-powershell v0.0.0-20190719160123-219e7fb4e41e
 	github.com/billputer/go-namecheap v0.0.0-20170915210158-0c7adb0710f8
