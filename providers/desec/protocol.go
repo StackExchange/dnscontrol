@@ -205,12 +205,7 @@ retry:
 			time.Sleep(500 * time.Millisecond)
 			goto retry
 		}
-		var errResp errorResponse
-		err = json.Unmarshal(bodyString, &errResp)
-		if err == nil {
-			return bodyString, fmt.Errorf("http status %d %s details: %s", resp.StatusCode, resp.Status, errResp.Detail)
-		}
-		return bodyString, fmt.Errorf("http status %d %s, the api does not provide more information", resp.StatusCode, resp.Status)
+		return bodyString, fmt.Errorf("http status: (%d) %s\nDetails: %s", resp.StatusCode, resp.Status, bodyString)
 	}
 	//time.Sleep(334 * time.Millisecond)
 	return bodyString, nil

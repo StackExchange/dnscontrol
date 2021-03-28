@@ -62,7 +62,8 @@ func recordsToNative(rcs []*models.RecordConfig, origin string) []resourceRecord
 				Records: []string{r.GetTargetCombined()},
 			}
 			if r.Type == "TXT" {
-				zr.Records = []string{strings.Join(r.TxtStrings, "")}
+				// TODO(tlim) Escape double-quotes?
+				zr.Records = []string{`"` + r.GetTargetField() + `"`}
 			}
 			zrs = append(zrs, zr)
 			//keys[key] = &zr   // This didn't work.
