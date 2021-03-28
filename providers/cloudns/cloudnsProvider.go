@@ -9,7 +9,6 @@ import (
 
 	"github.com/StackExchange/dnscontrol/v3/models"
 	"github.com/StackExchange/dnscontrol/v3/pkg/diff"
-	"github.com/StackExchange/dnscontrol/v3/pkg/txtutil"
 	"github.com/StackExchange/dnscontrol/v3/providers"
 )
 
@@ -55,7 +54,7 @@ var features = providers.DocumentationNotes{
 
 func init() {
 	fns := providers.DspFuncs{
-		Initializer:    NewCloudns,
+		Initializer:   NewCloudns,
 		RecordAuditor: AuditRecords,
 	}
 	providers.RegisterDomainServiceProviderType("CLOUDNS", fns, features)
@@ -94,10 +93,11 @@ func (c *cloudnsProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*mode
 	}
 	// Normalize
 	models.PostProcessRecords(existingRecords)
-	txtutil.SplitSingleLongTxt(dc.Records) // Autosplit long TXT records
 
-	// ClouDNS doesn't allow selecting an arbitrary TTL, only a set of predefined values https://asia.cloudns.net/wiki/article/188/
-	// We need to make sure we don't change it every time if it is as close as it's going to get
+	// Get a list of available TTL values.
+	// The TTL list needs to be obtained for each domain, so get it first here.
+	c.fetchAvailableTTLValues(dc.Name)
+	// ClouDNS can only be specified from a specific TTL list, so change the TTL in advance.
 	for _, record := range dc.Records {
 		record.TTL = fixTTL(record.TTL)
 	}
