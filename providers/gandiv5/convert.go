@@ -29,7 +29,7 @@ func nativeToRecords(n livedns.DomainRecord, origin string) (rcs []*models.Recor
 		case "ALIAS":
 			rc.Type = "ALIAS"
 			rc.SetTarget(value)
-		default: //  "A", "AAAA", "CAA", "NS", "CNAME", "MX", "PTR", "SRV", "TXT"
+		default: //  "A", "AAAA", "CAA", "DS", "NS", "CNAME", "MX", "PTR", "SRV", "TXT"
 			if err := rc.PopulateFromString(rtype, value, origin); err != nil {
 				panic(fmt.Errorf("unparsable record received from gandi: %w", err))
 			}
