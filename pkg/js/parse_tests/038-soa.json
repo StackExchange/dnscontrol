@@ -1,0 +1,24 @@
+{
+  "registrars": [],
+  "dns_providers": [],
+  "domains": [
+    {
+      "name": "foo.com",
+      "registrar": "none",
+      "dnsProviders": {},
+      "records": [
+        {
+          "type": "SOA",
+          "name": "@",
+          "target": "ns1.foo.com.",
+          "soambox": "admin.foo.com",
+          "soaserial": 1,
+          "soarefresh": 3600,
+          "soaexpire": 604800,
+          "soaretry": 900,
+          "soaminttl": 86400
+        }
+      ]
+    }
+  ]
+}

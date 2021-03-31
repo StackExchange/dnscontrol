@@ -361,13 +361,13 @@ var NAPTR = recordBuilder('NAPTR', {
 var SOA = recordBuilder('SOA', {
   args: [
     ['name',    _.isString],
-    ['target',     _.isString],
+    ['target',  _.isString],
     ['mbox',    _.isString],
     ['serial',  _.isNumber],
     ['refresh', _.isNumber],
     ['retry',   _.isNumber],
     ['expire',  _.isNumber],
-    ['minttl', _.isNumber],
+    ['minttl',  _.isNumber],
   ],
   transform: function(record, args, modifiers) {
     record.name = args.name;

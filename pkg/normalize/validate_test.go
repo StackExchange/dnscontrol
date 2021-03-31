@@ -20,24 +20,24 @@ func TestCheckSoa(t *testing.T) {
 		mbox string
 	}{
 		// Expire
-		{ false, 123, 123, 123, 123, 123, "foo.bar.com" },
-		{ true, 0, 123, 123, 123, 123, "foo.bar.com" },
+		{ false, 123, 123, 123, 123, 123, "foo.bar.com." },
+		{ true, 0, 123, 123, 123, 123, "foo.bar.com." },
 		// MinTTL
-		{ false, 123, 123, 123, 123, 123, "foo.bar.com" },
-		{ true, 123, 0, 123, 123, 123, "foo.bar.com" },
+		{ false, 123, 123, 123, 123, 123, "foo.bar.com." },
+		{ true, 123, 0, 123, 123, 123, "foo.bar.com." },
 		// Refresh
-		{ false, 123, 123, 123, 123, 123, "foo.bar.com" },
-		{ true, 123, 123, 0, 123, 123, "foo.bar.com" },
+		{ false, 123, 123, 123, 123, 123, "foo.bar.com." },
+		{ true, 123, 123, 0, 123, 123, "foo.bar.com." },
 		// Retry
-		{ false, 123, 123, 123, 123, 123, "foo.bar.com" },
-		{ true, 123, 123, 123, 0, 123, "foo.bar.com" },
+		{ false, 123, 123, 123, 123, 123, "foo.bar.com." },
+		{ true, 123, 123, 123, 0, 123, "foo.bar.com." },
 		// Serial
-		{ false, 123, 123, 123, 123, 123, "foo.bar.com" },
-		{ true, 123, 123, 123, 123, 0, "foo.bar.com" },
+		{ false, 123, 123, 123, 123, 123, "foo.bar.com." },
+		{ true, 123, 123, 123, 123, 0, "foo.bar.com." },
 		// MBox
 		{ true, 123, 123, 123, 123, 123, "" },
-		{ true, 123, 123, 123, 123, 123, "foo@bar.com" },
-		{ false, 123, 123, 123, 123, 123, "foo.bar.com" },
+		{ true, 123, 123, 123, 123, 123, "foo@bar.com." },
+		{ false, 123, 123, 123, 123, 123, "foo.bar.com." },
 	}
 
 	for i, test := range tests {
