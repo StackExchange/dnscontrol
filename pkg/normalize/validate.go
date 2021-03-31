@@ -550,6 +550,7 @@ var providerCapabilityChecks = []pairTypeCapability{
 	capabilityCheck("PTR", providers.CanUsePTR),
 	capabilityCheck("R53_ALIAS", providers.CanUseRoute53Alias),
 	capabilityCheck("SSHFP", providers.CanUseSSHFP),
+	capabilityCheck("SOA", providers.CanUseSOA),
 	capabilityCheck("SRV", providers.CanUseSRV),
 	capabilityCheck("TLSA", providers.CanUseTLSA),
 	capabilityCheck("AZURE_ALIAS", providers.CanUseAzureAlias),
