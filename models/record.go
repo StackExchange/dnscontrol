@@ -26,6 +26,7 @@ import (
 //     NS
 //     PTR
 //     SRV
+//     SOA
 //     SSHFP
 //     TLSA
 //     TXT

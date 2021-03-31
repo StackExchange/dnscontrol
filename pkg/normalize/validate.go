@@ -188,6 +188,10 @@ func checkTargets(rec *models.RecordConfig, domain string) (errs []error) {
 		check(checkTarget(target))
 	case "SOA":
 		check(checkSoa(rec.SoaExpire, rec.SoaMinttl, rec.SoaRefresh, rec.SoaRetry, rec.SoaSerial, rec.SoaMbox))
+		check(checkTarget(target))
+		if label != "@" {
+			check(fmt.Errorf("SOA record is only valid for bare domain."))
+		}
 	case "SRV":
 		check(checkTarget(target))
 	case "TXT", "IMPORT_TRANSFORM", "CAA", "SSHFP", "TLSA", "DS":

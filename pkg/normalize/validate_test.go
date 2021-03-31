@@ -9,6 +9,32 @@ import (
 	"github.com/StackExchange/dnscontrol/v3/providers"
 )
 
+func TestSoaLabelAndTarget(t *testing.T) {
+	var tests = []struct {
+		isError bool
+		label string
+		target string
+	}{
+		{false, "@", 		"ns1.foo.com."},
+		// Invalid target
+		{true,  "@", 		"ns1.foo.com"},
+		// Invalid label, only '@' is allowed for SOA records
+		{true,  "foo.com", "ns1.foo.com."},
+	}
+	for _, test := range tests {
+		experiment := fmt.Sprintf("%s %s", test.label, test.target)
+		rc := makeRC(test.label, "foo.com", test.target, models.RecordConfig{ Type: "SOA",
+						SoaExpire: 1, SoaMinttl: 1, SoaRefresh: 1, SoaRetry: 1, SoaSerial: 1, SoaMbox: "bar.foo.com"})
+		err := checkTargets(rc, "foo.com")
+		if err != nil && !test.isError {
+			t.Errorf("%v: Error (%v)\n", experiment, err)
+		}
+		if err == nil && test.isError {
+			t.Errorf("%v: Expected error but got none \n", experiment)
+		}
+	}
+}
+
 func TestCheckSoa(t *testing.T) {
 	var tests = []struct {
 		isError bool
@@ -40,16 +66,12 @@ func TestCheckSoa(t *testing.T) {
 		{ false, 123, 123, 123, 123, 123, "foo.bar.com." },
 	}
 
-	for i, test := range tests {
-		t.Run(fmt.Sprintf("%d %d %d %d %d %s", test.expire, test.minttl, test.refresh,
-			test.retry, test.serial, test.mbox), func(t *testing.T) {
+	for _, test := range tests {
+		experiment := fmt.Sprintf("%d %d %d %d %d %s", test.expire, test.minttl, test.refresh,
+			test.retry, test.serial, test.mbox)
+		t.Run(experiment, func(t *testing.T) {
 			err := checkSoa(test.expire, test.minttl, test.refresh, test.retry, test.serial, test.mbox)
-			if err != nil && !test.isError {
-				t.Errorf("%02d: Expected no error but got %s", i, err)
-			}
-			if err == nil && test.isError {
-				t.Errorf("%02d: Expected error but got none", i)
-			}
+			checkError(t, err, test.isError, experiment)
 		})
 	}
 }
