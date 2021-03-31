@@ -9,6 +9,51 @@ import (
 	"github.com/StackExchange/dnscontrol/v3/providers"
 )
 
+func TestCheckSoa(t *testing.T) {
+	var tests = []struct {
+		isError bool
+		expire uint32
+		minttl uint32
+		refresh uint32
+		retry uint32
+		serial uint32
+		mbox string
+	}{
+		// Expire
+		{ false, 123, 123, 123, 123, 123, "foo.bar.com" },
+		{ true, 0, 123, 123, 123, 123, "foo.bar.com" },
+		// MinTTL
+		{ false, 123, 123, 123, 123, 123, "foo.bar.com" },
+		{ true, 123, 0, 123, 123, 123, "foo.bar.com" },
+		// Refresh
+		{ false, 123, 123, 123, 123, 123, "foo.bar.com" },
+		{ true, 123, 123, 0, 123, 123, "foo.bar.com" },
+		// Retry
+		{ false, 123, 123, 123, 123, 123, "foo.bar.com" },
+		{ true, 123, 123, 123, 0, 123, "foo.bar.com" },
+		// Serial
+		{ false, 123, 123, 123, 123, 123, "foo.bar.com" },
+		{ true, 123, 123, 123, 123, 0, "foo.bar.com" },
+		// MBox
+		{ true, 123, 123, 123, 123, 123, "" },
+		{ true, 123, 123, 123, 123, 123, "foo@bar.com" },
+		{ false, 123, 123, 123, 123, 123, "foo.bar.com" },
+	}
+
+	for i, test := range tests {
+		t.Run(fmt.Sprintf("%d %d %d %d %d %s", test.expire, test.minttl, test.refresh,
+			test.retry, test.serial, test.mbox), func(t *testing.T) {
+			err := checkSoa(test.expire, test.minttl, test.refresh, test.retry, test.serial, test.mbox)
+			if err != nil && !test.isError {
+				t.Errorf("%02d: Expected no error but got %s", i, err)
+			}
+			if err == nil && test.isError {
+				t.Errorf("%02d: Expected error but got none", i)
+			}
+		})
+	}
+}
+
 func TestCheckLabel(t *testing.T) {
 	var tests = []struct {
 		label       string
