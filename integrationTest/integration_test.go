@@ -723,6 +723,18 @@ func makeTests(t *testing.T) []*TestGroup {
 			tc("Add a new record - ignoring **.foo.com. targets", a("bar", "1.2.3.4"), ignoreTarget("**.foo.com.", "CNAME")),
 		),
 
+		testgroup("IGNORE_NAME apex",
+			tc("Create some records",
+				txt("foo", "simple"),
+				a("foo", "1.2.3.4"),
+				txt("@", "simple"),
+				a("@", "1.2.3.4"),
+			),
+			tc("Add a new record - ignoring foo", a("bar", "1.2.3.4"), ignoreName("@")),
+		),
+
+		// TODO(tlim) Test IGNORE_TARGET at the apex.
+
 		testgroup("simple TXT",
 			tc("Create a TXT", txt("foo", "simple")),
 			tc("Change a TXT", txt("foo", "changed")),
