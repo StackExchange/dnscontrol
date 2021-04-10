@@ -138,9 +138,6 @@ func checkSoa(expire uint32, minttl uint32, refresh uint32, retry uint32, serial
 	if retry <= 0 {
 		return fmt.Errorf("SOA Retry must be > 0")
 	}
-	if serial <= 0 {
-		return fmt.Errorf("SOA Expire must be > 0")
-	}
 	if mbox == "" {
 		return fmt.Errorf("SOA MBox must be specified")
 	}

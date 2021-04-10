@@ -12,7 +12,6 @@
           "name": "@",
           "target": "ns1.foo.com.",
           "soambox": "admin.foo.com",
-          "soaserial": 1,
           "soarefresh": 3600,
           "soaexpire": 604800,
           "soaretry": 900,

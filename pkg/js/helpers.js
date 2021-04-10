@@ -363,7 +363,6 @@ var SOA = recordBuilder('SOA', {
     ['name',    _.isString],
     ['target',  _.isString],
     ['mbox',    _.isString],
-    ['serial',  _.isNumber],
     ['refresh', _.isNumber],
     ['retry',   _.isNumber],
     ['expire',  _.isNumber],
@@ -373,7 +372,6 @@ var SOA = recordBuilder('SOA', {
     record.name = args.name;
     record.target = args.target;
     record.soambox = args.mbox;
-    record.soaserial = args.serial;
     record.soarefresh = args.refresh;
     record.soaretry   = args.retry;
     record.soaexpire  = args.expire;

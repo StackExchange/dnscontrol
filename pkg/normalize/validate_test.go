@@ -59,7 +59,7 @@ func TestCheckSoa(t *testing.T) {
 		{ true, 123, 123, 123, 0, 123, "foo.bar.com." },
 		// Serial
 		{ false, 123, 123, 123, 123, 123, "foo.bar.com." },
-		{ true, 123, 123, 123, 123, 0, "foo.bar.com." },
+		{ false, 123, 123, 123, 123, 0, "foo.bar.com." },
 		// MBox
 		{ true, 123, 123, 123, 123, 123, "" },
 		{ true, 123, 123, 123, 123, 123, "foo@bar.com." },
