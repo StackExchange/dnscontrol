@@ -98,6 +98,22 @@ func newHelper(m map[string]string, metadata json.RawMessage) (*gandiv5Provider,
 
 // Section 3: Domain Service Provider (DSP) related functions
 
+// ListZones lists the zones on this account.
+func (client *gandiv5Provider) ListZones() ([]string, error) {
+	g := gandi.NewLiveDNSClient(client.apikey, gandi.Config{SharingID: client.sharingid, Debug: client.debug})
+
+	listResp, err := g.ListDomains()
+	if err != nil {
+		return nil, err
+	}
+
+	zones := make([]string, len(listResp))
+	for i, zone := range listResp {
+		zones[i] = zone.FQDN
+	}
+	return zones, nil
+}
+
 // NB(tal): To future-proof your code, all new providers should
 // implement GetDomainCorrections exactly as you see here
 // (byte-for-byte the same). In 3.0
