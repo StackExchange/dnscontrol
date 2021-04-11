@@ -87,6 +87,12 @@ func (d *differ) content(r *models.RecordConfig) string {
 	return content
 }
 
+func apexException(rec *models.RecordConfig) bool {
+	// Providers often add NS records at the apex. These
+	// should not be included in certain checks.
+	return rec.Type == "NS" && rec.GetLabel() == "@"
+}
+
 func (d *differ) IncrementalDiff(existing []*models.RecordConfig) (unchanged, create, toDelete, modify Changeset, err error) {
 	unchanged = Changeset{}
 	create = Changeset{}
@@ -98,6 +104,8 @@ func (d *differ) IncrementalDiff(existing []*models.RecordConfig) (unchanged, cr
 
 	existingByNameAndType := map[models.RecordKey][]*models.RecordConfig{}
 	desiredByNameAndType := map[models.RecordKey][]*models.RecordConfig{}
+
+	// Gather the existing records. Skip over any that should be ignored.
 	for _, e := range existing {
 		if d.matchIgnoredName(e.GetLabel()) {
 			printer.Debugf("Ignoring record %s %s due to IGNORE_NAME\n", e.GetLabel(), e.Type)
@@ -108,9 +116,13 @@ func (d *differ) IncrementalDiff(existing []*models.RecordConfig) (unchanged, cr
 			existingByNameAndType[k] = append(existingByNameAndType[k], e)
 		}
 	}
+	// Review the desired records. If we're modifying one that should be
+	// ignored, that's an error.
 	for _, dr := range desired {
 		if d.matchIgnoredName(dr.GetLabel()) {
-			return nil, nil, nil, nil, fmt.Errorf("trying to update/add IGNORE_NAMEd record: %s %s", dr.GetLabel(), dr.Type)
+			if !apexException(dr) {
+				return nil, nil, nil, nil, fmt.Errorf("trying to update/add IGNORE_NAMEd record: %s %s", dr.GetLabel(), dr.Type)
+			}
 		} else if d.matchIgnoredTarget(dr.GetTargetField(), dr.Type) {
 			return nil, nil, nil, nil, fmt.Errorf("trying to update/add IGNORE_TARGETd record: %s %s", dr.GetLabel(), dr.Type)
 		} else {
