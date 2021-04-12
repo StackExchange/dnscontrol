@@ -22,14 +22,15 @@ func LoadProviderConfigs(fname string) (map[string]map[string]string, error) {
 	var dat []byte
 	var err error
 
-	filename := strings.TrimPrefix(fname, "!")
-	if stat, statErr := os.Stat(filename); statErr != nil {
-		return nil, statErr
-	} else if mode := stat.Mode(); mode&0111 == 0111 || strings.Contains(fname, "!") {
-		// found executable bit or was marked as executable by user
-		dat, err = executeCredsFile(filename)
+	if strings.HasPrefix(fname, "!") {
+		dat, err = executeCredsFile(strings.TrimPrefix(fname, "!"))
 		if err != nil {
-			return nil, fmt.Errorf("failed running provider credentials file %v: %v", filename, err)
+			return nil, err
+		}
+	} else if isExecutable(fname) {
+		dat, err = executeCredsFile(fname)
+		if err != nil {
+			return nil, err
 		}
 	} else {
 		// no executable bit found nor marked as executable so read it in
@@ -56,13 +57,23 @@ func LoadProviderConfigs(fname string) (map[string]map[string]string, error) {
 	return results, nil
 }
 
-func executeCredsFile(filename string) ([]byte, error) {
-	pwd, err := os.Getwd()
-	if err != nil {
-		return nil, err
+func isExecutable(filename string) bool {
+	if stat, statErr := os.Stat(filename); statErr == nil {
+		if mode := stat.Mode(); mode&0111 == 0111 {
+			return true
+		}
 	}
-	cmd, err := exec.Command(pwd + "/" + filename).Output()
-	return cmd, err
+	return false
+}
+
+func executeCredsFile(filename string) ([]byte, error) {
+	cmd := filename
+	if !strings.HasPrefix(filename, "/") {
+		// if the path doesn't start with `/` make sure we aren't relying on $PATH.
+		cmd = "./" + filename
+	}
+	out, err := exec.Command(cmd).Output()
+	return out, err
 }
 
 func replaceEnvVars(m map[string]map[string]string) error {
