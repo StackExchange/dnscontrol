@@ -279,6 +279,8 @@ github.com/hashicorp/yamux v0.0.0-20180604194846-3520598351bb/go.mod h1:+NfK9FKe
 github.com/hashicorp/yamux v0.0.0-20181012175058-2f1d1f20f75d/go.mod h1:+NfK9FKeTrX5uv1uIXGdwYDTeHna2qgaIlx54MXqjAM=
 github.com/hexonet/go-sdk v3.5.1+incompatible h1:XYN7KIZUSt/IeSVSMQCZClp3RiVGkr+smvrJ2U3KWlI=
 github.com/hexonet/go-sdk v3.5.1+incompatible/go.mod h1:B0oC4YZT3P2o0DHTm5SH0WCItW3N+r16nCTOykJZF1c=
+github.com/hexonet/go-sdk/v3 v3.5.2 h1:zNY5NjlKdamBHy9NKmX4WSAL9wvKJ+KoWLrrQAbmCoo=
+github.com/hexonet/go-sdk/v3 v3.5.2/go.mod h1:X/TQ5RQ7MMNsTajP4/lr3/eBkOoz8qUiha2lydNBGZE=
 github.com/ianlancetaylor/demangle v0.0.0-20181102032728-5e5cf60278f6/go.mod h1:aSSvb/t6k1mPoxDqO4vJh6VOCGPwU4O0C2/Eqndh1Sc=
 github.com/ianlancetaylor/demangle v0.0.0-20200824232613-28f6c0f3b639/go.mod h1:aSSvb/t6k1mPoxDqO4vJh6VOCGPwU4O0C2/Eqndh1Sc=
 github.com/jarcoal/httpmock v1.0.8 h1:8kI16SoO6LQKgPE7PvQuV+YuD/inwHd7fOOe2zMbo4k=

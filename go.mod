@@ -42,6 +42,7 @@ require (
 	github.com/hashicorp/go-rootcerts v1.0.2 // indirect
 	github.com/hashicorp/vault/api v1.0.4
 	github.com/hexonet/go-sdk v3.5.1+incompatible
+	github.com/hexonet/go-sdk/v3 v3.5.2 // indirect
 	github.com/jarcoal/httpmock v1.0.8 // indirect
 	github.com/jinzhu/copier v0.2.8
 	github.com/juju/errors v0.0.0-20200330140219-3fe23663418f // indirect
