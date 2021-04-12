@@ -8,24 +8,42 @@ import (
 	"encoding/json"
 	"fmt"
 	"os"
+	"os/exec"
 	"strings"
 
 	"github.com/DisposaBoy/JsonConfigReader"
 	"github.com/TomOnTime/utfutil"
 )
 
-// LoadProviderConfigs will open the specified file name, and parse its contents. It will replace environment variables it finds if any value matches $[A-Za-z_-0-9]+
+// LoadProviderConfigs will open or execute the specified file name, and parse its contents. It will replace environment variables it finds if any value matches $[A-Za-z_-0-9]+
 func LoadProviderConfigs(fname string) (map[string]map[string]string, error) {
 	var results = map[string]map[string]string{}
-	dat, err := utfutil.ReadFile(fname, utfutil.POSIX)
-	if err != nil {
-		// no creds file is ok. Bind requires nothing for example. Individual providers will error if things not found.
-		if os.IsNotExist(err) {
-			fmt.Printf("INFO: Config file %q does not exist. Skipping.\n", fname)
-			return results, nil
+
+	var dat []byte
+	var err error
+
+	filename := strings.TrimPrefix(fname, "!")
+	if stat, statErr := os.Stat(filename); statErr != nil {
+		return nil, statErr
+	} else if mode := stat.Mode(); mode&0111 == 0111 || strings.Contains(fname, "!") {
+		// found executable bit or was marked as executable by user
+		dat, err = executeCredsFile(filename)
+		if err != nil {
+			return nil, fmt.Errorf("failed running provider credentials file %v: %v", filename, err)
 		}
-		return nil, fmt.Errorf("failed reading provider credentials file %v: %v", fname, err)
+	} else {
+		// no executable bit found nor marked as executable so read it in
+		dat, err = utfutil.ReadFile(fname, utfutil.POSIX)
+		if err != nil {
+			// no creds file is ok. Bind requires nothing for example. Individual providers will error if things not found.
+			if os.IsNotExist(err) {
+				fmt.Printf("INFO: Config file %q does not exist. Skipping.\n", fname)
+				return results, nil
+			}
+			return nil, fmt.Errorf("failed reading provider credentials file %v: %v", fname, err)
+		}
 	}
+
 	s := string(dat)
 	r := JsonConfigReader.New(strings.NewReader(s))
 	err = json.NewDecoder(r).Decode(&results)
@@ -36,6 +54,15 @@ func LoadProviderConfigs(fname string) (map[string]map[string]string, error) {
 		return nil, err
 	}
 	return results, nil
+}
+
+func executeCredsFile(filename string) ([]byte, error) {
+	pwd, err := os.Getwd()
+	if err != nil {
+		return nil, err
+	}
+	cmd, err := exec.Command(pwd + "/" + filename).Output()
+	return cmd, err
 }
 
 func replaceEnvVars(m map[string]map[string]string) error {
