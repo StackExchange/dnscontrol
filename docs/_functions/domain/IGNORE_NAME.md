@@ -69,3 +69,13 @@ modifying that label.
 The `foo CNAME` at the end of the message indicates the label name
 (`foo`) and the type of record (`CNAME`) that your dnsconfig.js file
 is trying to insert.
+
+You can override this error by adding the
+`IGNORE_NAME_DISABLE_SAFETY_CHECK` flag to the record.
+
+    TXT('vpn', "this thing", IGNORE_NAME_DISABLE_SAFETY_CHECK)
+
+Disabling this safety check creates two risks:
+
+1. Two owners (DNSControl and some other entity) toggling a record between two settings.
+2. The other owner wiping all records at this label, which won't be noticed until the next time dnscontrol is run.

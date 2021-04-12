@@ -93,6 +93,17 @@ func apexException(rec *models.RecordConfig) bool {
 	return (rec.Type == "NS" || rec.Type == "SOA") && rec.GetLabel() == "@"
 }
 
+func ignoreNameException(rec *models.RecordConfig) bool {
+	// People wanted it to be possible to disable this safety check.
+	// Ok, here it is.  You now have two risks:
+	// 1. Two owners (DNSControl and some other entity) toggling a record between two settings.
+	// 2. The other owner wiping all records at this label, which won't be noticed until the next time dnscontrol is run.
+	//fmt.Printf("********** DEBUG IGNORE %v %v %q\n", rec.GetLabel(), rec.Type, rec.Metadata["ignore_name_disable_safety_check"])
+	// See https://github.com/StackExchange/dnscontrol/issues/1106
+	_, ok := rec.Metadata["ignore_name_disable_safety_check"]
+	return ok
+}
+
 func (d *differ) IncrementalDiff(existing []*models.RecordConfig) (unchanged, create, toDelete, modify Changeset, err error) {
 	unchanged = Changeset{}
 	create = Changeset{}
@@ -129,7 +140,8 @@ func (d *differ) IncrementalDiff(existing []*models.RecordConfig) (unchanged, cr
 	for _, dr := range desired {
 		//fmt.Printf("********** DEBUG: desired %v %v %v -- %v %v\n", dr.GetLabel(), dr.Type, dr.GetTargetCombined(), apexException(dr), d.matchIgnoredName(dr.GetLabel()))
 		if d.matchIgnoredName(dr.GetLabel()) {
-			if !apexException(dr) {
+			//if !apexException(dr) || !ignoreNameException(dr) {
+			if (!ignoreNameException(dr)) && (!apexException(dr)) {
 				return nil, nil, nil, nil, fmt.Errorf("trying to update/add IGNORE_NAMEd record: %s %s", dr.GetLabel(), dr.Type)
 			} else {
 				//fmt.Printf("********** DEBUG: desired EXCEPTION\n")
@@ -402,7 +414,7 @@ func compileIgnoredTargets(ignoredTargets []*models.IgnoreTarget) []glob.Glob {
 
 func (d *differ) matchIgnoredName(name string) bool {
 	for _, tst := range d.compiledIgnoredNames {
-		fmt.Printf("********** DEBUG: matchIgnoredName %q %q %v\n", name, tst, tst.Match(name))
+		//fmt.Printf("********** DEBUG: matchIgnoredName %q %q %v\n", name, tst, tst.Match(name))
 		if tst.Match(name) {
 			return true
 		}
