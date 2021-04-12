@@ -34,15 +34,7 @@ func LoadProviderConfigs(fname string) (map[string]map[string]string, error) {
 		}
 	} else {
 		// no executable bit found nor marked as executable so read it in
-		dat, err = utfutil.ReadFile(fname, utfutil.POSIX)
-		if err != nil {
-			// no creds file is ok. Bind requires nothing for example. Individual providers will error if things not found.
-			if os.IsNotExist(err) {
-				fmt.Printf("INFO: Config file %q does not exist. Skipping.\n", fname)
-				return results, nil
-			}
-			return nil, fmt.Errorf("failed reading provider credentials file %v: %v", fname, err)
-		}
+		dat, err = readCredsFile(fname)
 	}
 
 	s := string(dat)
@@ -64,6 +56,19 @@ func isExecutable(filename string) bool {
 		}
 	}
 	return false
+}
+
+func readCredsFile(filename string) ([]byte, error) {
+	dat, err := utfutil.ReadFile(filename, utfutil.POSIX)
+	if err != nil {
+		// no creds file is ok. Bind requires nothing for example. Individual providers will error if things not found.
+		if os.IsNotExist(err) {
+			fmt.Printf("INFO: Config file %q does not exist. Skipping.\n", filename)
+			return []byte{}, nil
+		}
+		return nil, fmt.Errorf("failed reading provider credentials file %v: %v", filename, err)
+	}
+	return dat, nil
 }
 
 func executeCredsFile(filename string) ([]byte, error) {
