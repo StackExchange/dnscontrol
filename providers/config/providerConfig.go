@@ -9,6 +9,7 @@ import (
 	"fmt"
 	"os"
 	"os/exec"
+	"path/filepath"
 	"strings"
 
 	"github.com/DisposaBoy/JsonConfigReader"
@@ -75,7 +76,7 @@ func executeCredsFile(filename string) ([]byte, error) {
 	cmd := filename
 	if !strings.HasPrefix(filename, "/") {
 		// if the path doesn't start with `/` make sure we aren't relying on $PATH.
-		cmd = "./" + filename
+		cmd = strings.Join([]string{".", filename}, string(filepath.Separator))
 	}
 	out, err := exec.Command(cmd).Output()
 	return out, err
