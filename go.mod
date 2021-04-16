@@ -41,6 +41,7 @@ require (
 	github.com/hexonet/go-sdk/v3 v3.5.2
 	github.com/jarcoal/httpmock v1.0.8 // indirect
 	github.com/jinzhu/copier v0.2.9
+	github.com/juju/errors v0.0.0-20200330140219-3fe23663418f // indirect
 	github.com/kolo/xmlrpc v0.0.0-20201022064351-38db28db192b // indirect
 	github.com/miekg/dns v1.1.41
 	github.com/mitchellh/mapstructure v1.4.1 // indirect
