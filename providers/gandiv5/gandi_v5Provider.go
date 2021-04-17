@@ -47,7 +47,8 @@ func init() {
 var features = providers.DocumentationNotes{
 	providers.CanUseAlias:            providers.Can("Only on the bare domain. Otherwise CNAME will be substituted"),
 	providers.CanUseCAA:              providers.Can(),
-	providers.CanUseDS:               providers.Can(),
+	providers.CanUseDS:               providers.Cannot("Only supports DS records at the apex"),
+	providers.CanUseDSForChildren:    providers.Can(),
 	providers.CanUsePTR:              providers.Can(),
 	providers.CanUseSRV:              providers.Can(),
 	providers.CanUseSSHFP:            providers.Can(),
