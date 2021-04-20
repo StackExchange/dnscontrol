@@ -1,0 +1,5 @@
+$TTL 300
+;@                IN CF_REDIRECT test1.foo.com,https://goo.com/$1
+;@                IN CF_TEMP_REDIRECT test2.foo.com,https://goo.com/$1
+test1.foo.com.sub IN A    10.2.3.1
+test2.foo.com.sub IN A    10.2.3.2

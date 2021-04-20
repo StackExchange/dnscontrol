@@ -10,12 +10,8 @@ import (
 // string (all the parameters of an MX, SRV, CAA, etc). Rather than have
 // each provider rewrite this code many times, here's a helper function to use.
 //
-// At this time, the idiom is to panic rather than continue with potentially
-// misunderstood data. We do this panic() at the provider level.
-// Therefore the typical calling sequence is:
-//     if err := rc.PopulateFromString(rtype, value, origin); err != nil {
-//         panic(fmt.Errorf("unparsable record received from provider: %w", err))
-//     }
+// If this doesn't work for all rtypes, process the special cases then
+// call this for the remainder.
 func (r *RecordConfig) PopulateFromString(rtype, contents, origin string) error {
 	if r.Type != "" && r.Type != rtype {
 		panic(fmt.Errorf("assertion failed: rtype already set (%s) (%s)", rtype, r.Type))
@@ -33,7 +29,7 @@ func (r *RecordConfig) PopulateFromString(rtype, contents, origin string) error 
 			return fmt.Errorf("invalid IP in AAAA record: %s", contents)
 		}
 		return r.SetTargetIP(ip) // Reformat to canonical form.
-	case "ANAME", "CNAME", "NS", "PTR":
+	case "ALIAS", "ANAME", "CNAME", "NS", "PTR":
 		return r.SetTarget(contents)
 	case "CAA":
 		return r.SetTargetCAAString(contents)
@@ -51,7 +47,7 @@ func (r *RecordConfig) PopulateFromString(rtype, contents, origin string) error 
 		return r.SetTargetSSHFPString(contents)
 	case "TLSA":
 		return r.SetTargetTLSAString(contents)
-	case "TXT":
+	case "SPF", "TXT":
 		return r.SetTargetTXTString(contents)
 	default:
 		return fmt.Errorf("unknown rtype (%s) when parsing (%s) domain=(%s)",

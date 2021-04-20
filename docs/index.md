@@ -43,7 +43,7 @@ title: DNSControl
          We make it easy to contribute by using
          <strong><a href="https://github.com/StackExchange/dnscontrol">GitHub</a></strong>,
          you can make code changes with confidence thanks to extensive integration tests.
-         The project is 
+         The project is
          <strong><a href="https://everythingsysadmin.com/2017/08/go-get-up-to-speed.html">newbie-friendly</a></strong>
          so jump right in!
     </p>
@@ -92,6 +92,9 @@ title: DNSControl
 				</li>
 				<li>
 					<a href="{{site.github.url}}/migrating">Migrating</a>: Migrating zones to DNSControl
+				</li>
+				<li>
+				    <a href="{{site.github.url}}/cli-variables">CLI variables</a>: Passing variables from CLI to JS
 				</li>
 			</ul>
 		</div>
@@ -161,16 +164,19 @@ title: DNSControl
 					Mailing list: <a href="https://groups.google.com/forum/#!forum/dnscontrol-discuss">dnscontrol-discuss</a>: The friendly best place to ask questions and propose new features
 				</li>
 				<li>
-					<a href="{{site.github.url}}/writing-providers">Step-by-Step Guide: Writing Providers</a>: How to write a DNS or Registrar Provider
-				</li>
-				<li>
-					<a href="{{site.github.url}}/adding-new-rtypes">Step-by-Step Guide: Adding new DNS rtypes</a>: How to add a new DNS record type
+					<a href="{{site.github.url}}/bug-triage">Bug Triage</a>: How bugs are triaged
 				</li>
 				<li>
 					<a href="{{site.github.url}}/release-engineering">Release Engineering</a>: How to build and ship a release
 				</li>
 				<li>
-					<a href="{{site.github.url}}/bug-triage">Bug Triage</a>: How bugs are triaged
+					<a href="{{site.github.url}}/byo-secrets">Bring-Your-Own-Secrets</a>: Automate tests
+				</li>
+				<li>
+					<a href="{{site.github.url}}/writing-providers">Step-by-Step Guide: Writing Providers</a>: How to write a DNS or Registrar Provider
+				</li>
+				<li>
+					<a href="{{site.github.url}}/adding-new-rtypes">Step-by-Step Guide: Adding new DNS rtypes</a>: How to add a new DNS record type
 				</li>
 			</ul>
 		</div>

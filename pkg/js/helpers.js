@@ -53,6 +53,7 @@ function NewDnsProvider(name, type, meta) {
 function newDomain(name, registrar) {
     return {
         name: name,
+        subdomain: '',
         registrar: registrar,
         meta: {},
         records: [],
@@ -102,15 +103,13 @@ function D(name, registrar) {
     conf.domain_names.push(name);
 }
 
-// DU(name): Update an already added DNS Domain with D().
+// D_EXTEND(name): Update a DNS Domain already added with D(), or subdomain thereof
 function D_EXTEND(name) {
     var domain = _getDomainObject(name);
     if (domain == null) {
         throw name + ' was not declared yet and therefore cannot be updated. Use D() before.';
     }
-    for (var i = 0; i < defaultArgs.length; i++) {
-        processDargs(defaultArgs[i], domain.obj);
-    }
+    domain.obj.subdomain = name.substr(0, name.length-domain.obj.name.length - 1);
     for (var i = 1; i < arguments.length; i++) {
         var m = arguments[i];
         processDargs(m, domain.obj);
@@ -118,14 +117,27 @@ function D_EXTEND(name) {
     conf.domains[domain.id] = domain.obj; // let's overwrite the object.
 }
 
-// _getDomainObject(name): This is a small helper function to get the domain JS object returned.
+// _getDomainObject(name): This implements the domain matching
+// algorithm used by D_EXTEND(). Candidate matches are an exact match
+// of the domain's name, or if name is a proper subdomain of the
+// domain's name. The longest match is returned.
 function _getDomainObject(name) {
-    for(var i = 0; i < conf.domains.length; i++) {
-        if (conf.domains[i]['name'] == name) {
-            return {'id': i, 'obj': conf.domains[i]};
+    var domain = null;
+    var domainLen = 0;
+    for (var i = 0; i < conf.domains.length; i++) {
+        var thisName = conf.domains[i]["name"];
+        var desiredSuffix = "." + thisName;
+        var foundSuffix = name.substr(-desiredSuffix.length);
+        // If this is an exact match or the suffix matches...
+        if (name === thisName || foundSuffix === desiredSuffix) {
+            // If this match is a longer match than our current best match...
+            if (thisName.length > domainLen) {
+                domainLen = thisName.length;
+                domain = { id: i, obj: conf.domains[i] };
+            }
         }
     }
-    return null;
+    return domain;
 }
 
 // DEFAULTS provides a set of default arguments to apply to all future domains.
@@ -401,6 +413,10 @@ function isStringOrArray(x) {
     return _.isString(x) || _.isArray(x);
 }
 
+
+// AUTOSPLIT is deprecated. It is now a no-op.
+var AUTOSPLIT = { };
+
 // TXT(name,target, recordModifiers...)
 var TXT = recordBuilder('TXT', {
     args: [
@@ -409,20 +425,13 @@ var TXT = recordBuilder('TXT', {
     ],
     transform: function(record, args, modifiers) {
         record.name = args.name;
-        // Store the strings twice:
-        //   .target is the first string
-        //   .txtstrings is the individual strings.
-        //   NOTE: If there are more than 1 string, providers should only access
-        //   .txtstrings, thus it doesn't matter what we store in .target.
-        //   However, by storing the first string there, it improves backwards
-        //   compatibility when the len(array) == 1 and (intentionally) breaks
-        //   broken providers early in the integration tests.
+        // Store the strings from the user verbatim.
         if (_.isString(args.target)) {
-            record.target = args.target;
             record.txtstrings = [args.target];
+            record.target = args.target; // Overwritten by the Go code
         } else {
-            record.target = args.target[0];
             record.txtstrings = args.target;
+            record.target = args.target.join(""); // Overwritten by the Go code
         }
     },
 });
@@ -506,6 +515,15 @@ function IGNORE_NAME(name) {
         d.ignored_names.push(name);
     };
 }
+
+var IGNORE_NAME_DISABLE_SAFETY_CHECK = {
+  ignore_name_disable_safety_check: "true"
+  // This disables a safety check intended to prevent:
+  // 1. Two owners toggling a record between two settings.
+  // 2. The other owner wiping all records at this label, which won't
+  // be noticed until the next time dnscontrol is run.
+  // See https://github.com/StackExchange/dnscontrol/issues/1106
+};
 
 // IGNORE_TARGET(target)
 function IGNORE_TARGET(target, rType) {
@@ -660,6 +678,22 @@ function recordBuilder(type, opts) {
             opts.applyModifier(record, modifiers);
             opts.transform(record, parsedArgs, modifiers);
 
+            // Handle D_EXTEND() with subdomains.
+            if (d.subdomain &&
+                record.type != 'CF_REDIRECT' &&
+                record.type != 'CF_TEMP_REDIRECT') {
+                fqdn = [d.subdomain, d.name].join(".")
+
+                record.subdomain = d.subdomain;
+                if (record.name == '@') {
+                    record.subdomain = d.subdomain;
+                    record.name = d.subdomain;
+                } else if (fqdn != record.name && record.type != 'PTR') {
+                    record.subdomain = d.subdomain;
+                    record.name += '.' + d.subdomain;
+                }
+            }
+
             d.records.push(record);
             return record;
         };
@@ -784,6 +818,7 @@ var CF_TEMP_REDIRECT = recordBuilder('CF_TEMP_REDIRECT', {
 var URL = recordBuilder('URL');
 var URL301 = recordBuilder('URL301');
 var FRAME = recordBuilder('FRAME');
+var NS1_URLFWD = recordBuilder('NS1_URLFWD');
 
 // SPF_BUILDER takes an object:
 // parts: The parts of the SPF record (to be joined with ' ').
@@ -815,10 +850,11 @@ function SPF_BUILDER(value) {
         p.flatten = value.flatten.join(',');
         // Only add the raw spf record if it isn't an empty string
         if (value.raw !== '') {
+            rp = {};
             if (value.ttl) {
-                r.push(TXT(value.raw, rawspf, TTL(value.ttl)));
+                r.push(TXT(value.raw, rawspf, rp, TTL(value.ttl)));
             } else {
-                r.push(TXT(value.raw, rawspf));
+                r.push(TXT(value.raw, rawspf, rp));
             }
         }
     }
@@ -892,13 +928,147 @@ function CAA_BUILDER(value) {
     return r;
 }
 
-// Split a DKIM string if it is >254 bytes.
+// DMARC_BUILDER takes an object:
+// label: The DNS label for the DMARC record (_dmarc prefix is added; default: '@')
+// policy: The DMARC policy (p=), must be one of 'none', 'quarantine', 'reject'
+// subdomainPolicy: The DMARC policy for subdomains (sp=), must be one of 'none', 'quarantine', 'reject' (optional)
+// alignmentSPF: 'strict'/'s' or 'relaxed'/'r' alignment for SPF (aspf=, default: 'r')
+// alignmentDKIM: 'strict'/'s' or 'relaxed'/'r' alignment for DKIM (adkim=, default: 'r')
+// percent: Number between 0 and 100, percentage for which policies are applied (pct=, default: 100)
+// rua: Array of aggregate report targets (optional)
+// ruf: Array of failure report targets (optional)
+// failureOptions: Object or string; Object containing booleans SPF and DKIM, string is passed raw (fo=, default: '0')
+// failureFormat: Format in which failure reports are requested (rf=, default: 'afrf')
+// reportInterval: Interval in which reports are requested (ri=)
+// ttl: Input for TTL method
+function DMARC_BUILDER(value) {
+    if (!value) {
+        value = {};
+    }
+    if (!value.label) {
+        value.label = '@';
+    }
+
+    var label = '_dmarc';
+    if (value.label !== '@') {
+        label += '.' + value.label;
+    }
+
+    if (!value.policy) {
+        value.policy = 'none';
+    }
+
+    if (!value.policy === 'none' || !value.policy === 'quarantine' || !value.policy === 'reject') {
+        throw 'Invalid DMARC policy';
+    }
+
+    var record = ['v=DMARC1'];
+    record.push('p=' + value.policy);
+
+    // Subdomain policy
+    if (!value.subdomainPolicy === 'none' || !value.subdomainPolicy === 'quarantine' || !value.subdomainPolicy === 'reject') {
+        throw 'Invalid DMARC subdomain policy';
+    }
+    if (value.subdomainPolicy) {
+        record.push('sp=' + value.subdomainPolicy);
+    }
+
+    // Alignment DKIM
+    if (value.alignmentDKIM) {
+        switch (value.alignmentDKIM) {
+            case 'relaxed':
+                value.alignmentDKIM = 'r';
+                break;
+            case 'strict':
+                value.alignmentDKIM = 's';
+                break;
+            case 'r':
+            case 's':
+                break;
+            default:
+                throw 'Invalid DMARC DKIM alignment policy';
+        }
+        record.push('adkim=' + value.alignmentDKIM);
+    }
+
+    // Alignment SPF
+    if (value.alignmentSPF) {
+        switch (value.alignmentSPF) {
+            case 'relaxed':
+                value.alignmentSPF = 'r';
+                break;
+            case 'strict':
+                value.alignmentSPF = 's';
+                break;
+            case 'r':
+            case 's':
+                break;
+            default:
+                throw 'Invalid DMARC DKIM alignment policy';
+        }
+        record.push('aspf=' + value.alignmentSPF);
+    }
+
+    // Percentage
+    if (value.percent && value.percent != 100) {
+        record.push('pct=' + value.percent);
+    }
+
+    // Aggregate reports
+    if (value.rua && value.rua.length > 0) {
+        record.push('rua=' + value.rua.join(','));
+    }
+
+    // Failure reports
+    if (value.ruf && value.ruf.length > 0) {
+        record.push('ruf=' + value.ruf.join(','));
+    }
+
+    // Failure reporting options
+    if (value.ruf && value.failureOptions) {
+        var fo = '0';
+        if (_.isObject(value.failureOptions)) {
+            if (value.failureOptions.DKIM) {
+                fo = 'd';
+            }
+            if (value.failureOptions.SPF) {
+                fo = 's';
+            }
+            if (value.failureOptions.DKIM && value.failureOptions.SPF) {
+                fo = '1';
+            }
+        } else {
+            fo = value.failureOptions;
+        }
+
+        if (fo !== '0') {
+            record.push('fo=' + fo);
+        }
+    }
+
+    // Failure report format
+    if (value.ruf && value.failureFormat && value.failureFormat !== 'afrf') {
+        record.push('rf=' + value.failureFormat);
+    }
+
+    // Report interval
+    if (value.reportInterval) {
+        if (_.isString(value.reportInterval)) {
+            value.reportInterval = stringToDuration(value.reportInterval);
+        }
+
+        record.push('ri=' + value.reportInterval);
+    }
+
+    if (value.ttl) {
+        return TXT(label, record.join('; '), TTL(value.ttl));
+    }
+    return TXT(label, record.join('; '));
+}
+
+// This is a no-op.  Long TXT records are handled natively now.
 function DKIM(arr) {
-    chunkSize = 255;
-    var R = [];
-    for (var i = 0, len = arr.length; i < len; i += chunkSize)
-        R.push(arr.slice(i, i + chunkSize));
-    return R;
+    return arr;
 }
 
 // Function wrapper for glob() for recursively loading files.
@@ -911,4 +1081,17 @@ function require_glob() {
         require(files[i]);
     }
     return files
+}
+
+// Set default values for CLI variables
+function CLI_DEFAULTS(defaults) {
+    for (var key in defaults) {
+        if (typeof this[key] === "undefined") {
+            this[key] = defaults[key]
+        }
+    }
+}
+
+function FETCH() {
+    return fetch.apply(null, arguments).catch(PANIC);
 }

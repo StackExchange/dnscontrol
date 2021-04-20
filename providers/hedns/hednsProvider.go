@@ -18,6 +18,7 @@ import (
 	"github.com/PuerkitoBio/goquery"
 	"github.com/StackExchange/dnscontrol/v3/models"
 	"github.com/StackExchange/dnscontrol/v3/pkg/diff"
+	"github.com/StackExchange/dnscontrol/v3/pkg/txtutil"
 	"github.com/StackExchange/dnscontrol/v3/providers"
 	"github.com/pquerna/otp/totp"
 )
@@ -51,7 +52,6 @@ var features = providers.DocumentationNotes{
 	providers.CanUseSSHFP:            providers.Can(),
 	providers.CanUseSRV:              providers.Can(),
 	providers.CanUseTLSA:             providers.Cannot(),
-	providers.CanUseTXTMulti:         providers.Can(),
 	providers.CanAutoDNSSEC:          providers.Cannot(),
 	providers.DocCreateDomains:       providers.Can(),
 	providers.DocDualHost:            providers.Can(),
@@ -60,7 +60,11 @@ var features = providers.DocumentationNotes{
 }
 
 func init() {
-	providers.RegisterDomainServiceProviderType("HEDNS", newHDNSProvider, features)
+	fns := providers.DspFuncs{
+		Initializer:    newHEDNSProvider,
+		RecordAuditor: AuditRecords,
+	}
+	providers.RegisterDomainServiceProviderType("HEDNS", fns, features)
 }
 
 var defaultNameservers = []string{
@@ -82,8 +86,8 @@ const (
 	errorImproperDelegation = "This zone does not appear to be properly delegated to our nameservers."
 )
 
-// HDNSProvider stores login credentials and represents and API connection
-type HDNSProvider struct {
+// hednsProvider stores login credentials and represents and API connection
+type hednsProvider struct {
 	Username        string
 	Password        string
 	TfaSecret       string
@@ -93,7 +97,7 @@ type HDNSProvider struct {
 	httpClient http.Client
 }
 
-// Record stores the HDNS specific zone and record IDs
+// Record stores the HEDNS specific zone and record IDs
 type Record struct {
 	RecordName string
 	RecordID   uint64
@@ -101,7 +105,7 @@ type Record struct {
 	ZoneID     uint64
 }
 
-func newHDNSProvider(cfg map[string]string, _ json.RawMessage) (providers.DNSServiceProvider, error) {
+func newHEDNSProvider(cfg map[string]string, _ json.RawMessage) (providers.DNSServiceProvider, error) {
 	username, password := cfg["username"], cfg["password"]
 	totpSecret, totpValue := cfg["totp-key"], cfg["totp"]
 	sessionFilePath := cfg["session-file-path"]
@@ -117,7 +121,7 @@ func newHDNSProvider(cfg map[string]string, _ json.RawMessage) (providers.DNSSer
 	}
 
 	// Perform the initial login
-	client := &HDNSProvider{
+	client := &hednsProvider{
 		Username:        username,
 		Password:        password,
 		TfaSecret:       totpSecret,
@@ -134,7 +138,7 @@ func newHDNSProvider(cfg map[string]string, _ json.RawMessage) (providers.DNSSer
 }
 
 // ListZones list all zones on this provider.
-func (c *HDNSProvider) ListZones() ([]string, error) {
+func (c *hednsProvider) ListZones() ([]string, error) {
 	domainsMap, err := c.listDomains()
 	if err != nil {
 		return nil, err
@@ -152,7 +156,7 @@ func (c *HDNSProvider) ListZones() ([]string, error) {
 }
 
 // EnsureDomainExists creates the domain if it does not exist.
-func (c *HDNSProvider) EnsureDomainExists(domain string) error {
+func (c *hednsProvider) EnsureDomainExists(domain string) error {
 	domains, err := c.ListZones()
 	if err != nil {
 		return err
@@ -167,13 +171,13 @@ func (c *HDNSProvider) EnsureDomainExists(domain string) error {
 	return c.createDomain(domain)
 }
 
-// GetNameservers returns the default HDNS nameservers.
-func (c *HDNSProvider) GetNameservers(_ string) ([]*models.Nameserver, error) {
+// GetNameservers returns the default HEDNS nameservers.
+func (c *hednsProvider) GetNameservers(_ string) ([]*models.Nameserver, error) {
 	return models.ToNameservers(defaultNameservers)
 }
 
 // GetDomainCorrections returns a list of corrections for the  domain.
-func (c *HDNSProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Correction, error) {
+func (c *hednsProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Correction, error) {
 	var corrections []*models.Correction
 
 	err := dc.Punycode()
@@ -199,6 +203,7 @@ func (c *HDNSProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*models.
 
 	// Normalize
 	models.PostProcessRecords(prunedRecords)
+	txtutil.SplitSingleLongTxt(dc.Records) // Autosplit long TXT records
 
 	differ := diff.New(dc)
 	_, toCreate, toDelete, toModify, err := differ.IncrementalDiff(prunedRecords)
@@ -245,7 +250,7 @@ func (c *HDNSProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*models.
 }
 
 // GetZoneRecords returns all the records for the given domain
-func (c *HDNSProvider) GetZoneRecords(domain string) (models.Records, error) {
+func (c *hednsProvider) GetZoneRecords(domain string) (models.Records, error) {
 	var zoneRecords []*models.RecordConfig
 
 	// Get Domain ID
@@ -297,7 +302,10 @@ func (c *HDNSProvider) GetZoneRecords(domain string) (models.Records, error) {
 				RecordName: parser.parseStringElement(element.Find(".dns_view")),
 				RecordID:   parser.parseIntAttr(element, "id"),
 			},
-			Target: parser.parseStringAttr(element.Find("td:nth-child(7)"), "data"),
+		}
+		data := parser.parseStringAttr(element.Find("td:nth-child(7)"), "data")
+		if err != nil {
+			return false
 		}
 
 		priority := parser.parseIntElement(element.Find("td:nth-child(6)"))
@@ -313,24 +321,20 @@ func (c *HDNSProvider) GetZoneRecords(domain string) (models.Records, error) {
 
 		rc.SetLabelFromFQDN(rc.Original.(Record).RecordName, domain)
 
-		// dns.he.net omits the trailing "." on the hostnames for certain record types
-		if rc.Type == "CNAME" || rc.Type == "MX" || rc.Type == "NS" || rc.Type == "PTR" {
-			rc.Target += "."
-		}
-
 		switch rc.Type {
 		case "ALIAS":
-			err = rc.SetTarget(rc.Target)
+			err = rc.SetTarget(data)
 		case "MX":
-			err = rc.SetTargetMX(uint16(priority), rc.Target)
+			// dns.he.net omits the trailing "." on the hostnames for MX records
+			err = rc.SetTargetMX(uint16(priority), data + ".")
 		case "SRV":
-			err = rc.SetTargetSRVPriorityString(uint16(priority), rc.Target)
+			err = rc.SetTargetSRVPriorityString(uint16(priority), data)
 		case "SPF":
 			// Convert to TXT record as SPF is deprecated
 			rc.Type = "TXT"
 			fallthrough
 		default:
-			err = rc.PopulateFromString(rc.Type, rc.Target, domain)
+			err = rc.PopulateFromString(rc.Type, data, domain)
 		}
 
 		if err != nil {
@@ -344,7 +348,7 @@ func (c *HDNSProvider) GetZoneRecords(domain string) (models.Records, error) {
 	return zoneRecords, err
 }
 
-func (c *HDNSProvider) authResumeSession() (authenticated bool, requiresTfa bool, err error) {
+func (c *hednsProvider) authResumeSession() (authenticated bool, requiresTfa bool, err error) {
 	response, err := c.httpClient.Get(apiEndpoint)
 	if err != nil {
 		return false, false, err
@@ -367,7 +371,7 @@ func (c *HDNSProvider) authResumeSession() (authenticated bool, requiresTfa bool
 	return authenticated, requiresTfa, err
 }
 
-func (c *HDNSProvider) authUsernameAndPassword() (authenticated bool, requiresTfa bool, err error) {
+func (c *hednsProvider) authUsernameAndPassword() (authenticated bool, requiresTfa bool, err error) {
 	// Login with username and password
 	response, err := c.httpClient.PostForm(apiEndpoint, url.Values{
 		"email":  {c.Username},
@@ -397,7 +401,7 @@ func (c *HDNSProvider) authUsernameAndPassword() (authenticated bool, requiresTf
 	return authenticated, requiresTfa, err
 }
 
-func (c *HDNSProvider) auth2FA() (authenticated bool, err error) {
+func (c *hednsProvider) auth2FA() (authenticated bool, err error) {
 
 	if c.TfaValue == "" && c.TfaSecret == "" {
 		return false, fmt.Errorf("account requires two-factor authentication but neither totp or totp-key were provided")
@@ -435,7 +439,7 @@ func (c *HDNSProvider) auth2FA() (authenticated bool, err error) {
 	return authenticated, err
 }
 
-func (c *HDNSProvider) authenticate() error {
+func (c *hednsProvider) authenticate() error {
 
 	if c.SessionFilePath != "" {
 		_ = c.loadSessionFile()
@@ -475,7 +479,7 @@ func (c *HDNSProvider) authenticate() error {
 	return err
 }
 
-func (c *HDNSProvider) listDomains() (map[string]uint64, error) {
+func (c *hednsProvider) listDomains() (map[string]uint64, error) {
 	response, err := c.httpClient.Get(apiEndpoint)
 	if err != nil {
 		return nil, err
@@ -487,13 +491,13 @@ func (c *HDNSProvider) listDomains() (map[string]uint64, error) {
 		return nil, err
 	}
 
-	// Check we can list domains
+	// Check there are any domains in this account
+	domains := make(map[string]uint64)
 	if document.Find("#domains_table").Size() == 0 {
-		return nil, fmt.Errorf("domain listing failed")
+		return domains, nil
 	}
 
 	// Find all the forward & reverse domains
-	domains := make(map[string]uint64)
 	recordsSelector := strings.Join([]string{
 		"#domains_table > tbody > tr > td:last-child > img",                // Forward records
 		"#tabs-advanced .generic_table > tbody > tr > td:last-child > img", // Reverse records
@@ -512,7 +516,7 @@ func (c *HDNSProvider) listDomains() (map[string]uint64, error) {
 	return domains, err
 }
 
-func (c *HDNSProvider) createDomain(domain string) error {
+func (c *hednsProvider) createDomain(domain string) error {
 	values := url.Values{
 		"action":     {"add_zone"},
 		"retmain":    {"0"},
@@ -530,7 +534,7 @@ func (c *HDNSProvider) createDomain(domain string) error {
 	return err
 }
 
-func (c *HDNSProvider) editZoneRecord(rc *models.RecordConfig, create bool) error {
+func (c *hednsProvider) editZoneRecord(rc *models.RecordConfig, create bool) error {
 	values := url.Values{
 		"account":             {},
 		"menu":                {"edit_zone"},
@@ -562,10 +566,10 @@ func (c *HDNSProvider) editZoneRecord(rc *models.RecordConfig, create bool) erro
 	switch rc.Type {
 	case "MX":
 		values.Set("Priority", strconv.FormatUint(uint64(rc.MxPreference), 10))
-		values.Set("Content", rc.Target)
+		values.Set("Content", rc.GetTargetField())
 	case "SRV":
 		values.Del("Content")
-		values.Set("Target", rc.Target)
+		values.Set("Target", rc.GetTargetField())
 		values.Set("Priority", strconv.FormatUint(uint64(rc.SrvPriority), 10))
 		values.Set("Weight", strconv.FormatUint(uint64(rc.SrvWeight), 10))
 		values.Set("Port", strconv.FormatUint(uint64(rc.SrvPort), 10))
@@ -583,7 +587,7 @@ func (c *HDNSProvider) editZoneRecord(rc *models.RecordConfig, create bool) erro
 	return err
 }
 
-func (c *HDNSProvider) deleteZoneRecord(rc *models.RecordConfig) error {
+func (c *hednsProvider) deleteZoneRecord(rc *models.RecordConfig) error {
 	values := url.Values{
 		"menu":                  {"edit_zone"},
 		"hosted_dns_zoneid":     {strconv.FormatUint(rc.Original.(Record).ZoneID, 10)},
@@ -603,7 +607,7 @@ func (c *HDNSProvider) deleteZoneRecord(rc *models.RecordConfig) error {
 	return err
 }
 
-func (c *HDNSProvider) generateCredentialHash() string {
+func (c *hednsProvider) generateCredentialHash() string {
 	hash := sha1.New()
 	hash.Write([]byte(c.Username))
 	hash.Write([]byte(c.Password))
@@ -611,7 +615,7 @@ func (c *HDNSProvider) generateCredentialHash() string {
 	return fmt.Sprintf("%x", hash.Sum(nil))
 }
 
-func (c *HDNSProvider) saveSessionFile() error {
+func (c *hednsProvider) saveSessionFile() error {
 	cookieDomain, err := url.Parse(apiEndpoint)
 	if err != nil {
 		return err
@@ -631,7 +635,7 @@ func (c *HDNSProvider) saveSessionFile() error {
 	return err
 }
 
-func (c *HDNSProvider) loadSessionFile() error {
+func (c *hednsProvider) loadSessionFile() error {
 	cookieDomain, err := url.Parse(apiEndpoint)
 	if err != nil {
 		return err
@@ -668,7 +672,7 @@ func (c *HDNSProvider) loadSessionFile() error {
 	return err
 }
 
-func (c *HDNSProvider) parseResponseForDocumentAndErrors(response *http.Response) (document *goquery.Document, err error) {
+func (c *hednsProvider) parseResponseForDocumentAndErrors(response *http.Response) (document *goquery.Document, err error) {
 	var ignoredErrorMessages = [...]string{
 		errorImproperDelegation,
 	}

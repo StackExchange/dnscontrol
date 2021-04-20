@@ -1,0 +1,6 @@
+$TTL 300
+a                IN TXT   "simple"
+b                IN TXT   "ws at end "
+c                IN TXT   "one"
+d                IN TXT   "bonie" "clyde"
+e                IN TXT   "straw" "wood" "brick"

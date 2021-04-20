@@ -43,8 +43,8 @@ var allowedTTLValues = []uint32{
 
 var srvRegexp = regexp.MustCompile(`^_(?P<Service>\w+)\.\_(?P<Protocol>\w+)$`)
 
-// LinodeAPI is the handle for this provider.
-type LinodeAPI struct {
+// linodeProvider is the handle for this provider.
+type linodeProvider struct {
 	client      *http.Client
 	baseURL     *url.URL
 	domainIndex map[string]int
@@ -75,7 +75,7 @@ func NewLinode(m map[string]string, metadata json.RawMessage) (providers.DNSServ
 		return nil, fmt.Errorf("invalid base URL for Linode")
 	}
 
-	api := &LinodeAPI{client: client, baseURL: baseURL}
+	api := &linodeProvider{client: client, baseURL: baseURL}
 
 	// Get a domain to validate the token
 	if err := api.fetchDomainList(); err != nil {
@@ -93,16 +93,20 @@ var features = providers.DocumentationNotes{
 
 func init() {
 	// SRV support is in this provider, but Linode doesn't seem to support it properly
-	providers.RegisterDomainServiceProviderType("LINODE", NewLinode, features)
+	fns := providers.DspFuncs{
+		Initializer:          NewLinode,
+		RecordAuditor: AuditRecords,
+	}
+	providers.RegisterDomainServiceProviderType("LINODE", fns, features)
 }
 
 // GetNameservers returns the nameservers for a domain.
-func (api *LinodeAPI) GetNameservers(domain string) ([]*models.Nameserver, error) {
+func (api *linodeProvider) GetNameservers(domain string) ([]*models.Nameserver, error) {
 	return models.ToNameservers(defaultNameServerNames)
 }
 
 // GetZoneRecords gets the records of a zone and returns them in RecordConfig format.
-func (api *LinodeAPI) GetZoneRecords(domain string) (models.Records, error) {
+func (api *linodeProvider) GetZoneRecords(domain string) (models.Records, error) {
 	return nil, fmt.Errorf("not implemented")
 	// This enables the get-zones subcommand.
 	// Implement this by extracting the code from GetDomainCorrections into
@@ -110,7 +114,7 @@ func (api *LinodeAPI) GetZoneRecords(domain string) (models.Records, error) {
 }
 
 // GetDomainCorrections returns the corrections for a domain.
-func (api *LinodeAPI) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Correction, error) {
+func (api *linodeProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Correction, error) {
 	dc, err := dc.Copy()
 	if err != nil {
 		return nil, err
@@ -297,10 +301,7 @@ func toReq(dc *models.DomainConfig, rc *models.RecordConfig) (*recordEditRequest
 	case "CNAME":
 		req.Target = fixTarget(req.Target, dc.Name)
 	default:
-		msg := fmt.Sprintf("linode.toReq rtype %v unimplemented", rc.Type)
-		panic(msg)
-		// We panic so that we quickly find any switch statements
-		// that have not been updated for a new RR type.
+		return nil, fmt.Errorf("linode.toReq rtype %q unimplemented", rc.Type)
 	}
 
 	return req, nil
@@ -328,3 +329,5 @@ func fixTTL(ttl uint32) uint32 {
 
 	return allowedTTLValues[0]
 }
+
+// that have not been updated for a new RR type.

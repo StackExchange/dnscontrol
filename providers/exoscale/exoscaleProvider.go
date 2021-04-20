@@ -37,7 +37,11 @@ var features = providers.DocumentationNotes{
 }
 
 func init() {
-	providers.RegisterDomainServiceProviderType("EXOSCALE", NewExoscale, features)
+	fns := providers.DspFuncs{
+		Initializer:          NewExoscale,
+		RecordAuditor: AuditRecords,
+	}
+	providers.RegisterDomainServiceProviderType("EXOSCALE", fns, features)
 }
 
 // EnsureDomainExists returns an error if domain doesn't exist.
@@ -103,11 +107,11 @@ func (c *exoscaleProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*mod
 			rec.SetTarget(r.Content)
 		case "MX":
 			if err := rec.SetTargetMX(uint16(r.Prio), r.Content); err != nil {
-				panic(fmt.Errorf("unparsable record received from exoscale: %w", err))
+				return nil, fmt.Errorf("unparsable record received from exoscale: %w", err)
 			}
 		default:
 			if err := rec.PopulateFromString(r.RecordType, r.Content, dc.Name); err != nil {
-				panic(fmt.Errorf("unparsable record received from exoscale: %w", err))
+				return nil, fmt.Errorf("unparsable record received from exoscale: %w", err)
 			}
 		}
 		existingRecords = append(existingRecords, rec)
@@ -162,7 +166,7 @@ func (c *exoscaleProvider) createRecordFunc(rc *models.RecordConfig, domainName 
 		name := rc.GetLabel()
 
 		if rc.Type == "MX" {
-			target = rc.Target
+			target = rc.GetTargetField()
 		}
 
 		if rc.Type == "NS" && (name == "@" || name == "") {
@@ -210,7 +214,7 @@ func (c *exoscaleProvider) updateRecordFunc(old *egoscale.DNSRecord, rc *models.
 		name := rc.GetLabel()
 
 		if rc.Type == "MX" {
-			target = rc.Target
+			target = rc.GetTargetField()
 		}
 
 		if rc.Type == "NS" && (name == "@" || name == "") {

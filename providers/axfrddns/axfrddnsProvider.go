@@ -25,6 +25,7 @@ import (
 
 	"github.com/StackExchange/dnscontrol/v3/models"
 	"github.com/StackExchange/dnscontrol/v3/pkg/diff"
+	"github.com/StackExchange/dnscontrol/v3/pkg/txtutil"
 	"github.com/StackExchange/dnscontrol/v3/providers"
 )
 
@@ -41,7 +42,6 @@ var features = providers.DocumentationNotes{
 	providers.CanUseSRV:              providers.Can(),
 	providers.CanUseSSHFP:            providers.Can(),
 	providers.CanUseTLSA:             providers.Can(),
-	providers.CanUseTXTMulti:         providers.Can(),
 	providers.CanAutoDNSSEC:          providers.Can("Just warn when DNSSEC is requested but no RRSIG is found in the AXFR or warn when DNSSEC is not requested but RRSIG are found in the AXFR."),
 	providers.CantUseNOPURGE:         providers.Cannot(),
 	providers.DocCreateDomains:       providers.Cannot(),
@@ -50,8 +50,8 @@ var features = providers.DocumentationNotes{
 	providers.CanGetZones:            providers.Can(),
 }
 
-// AxfrDdns stores the client info for the provider.
-type AxfrDdns struct {
+// axfrddnsProvider stores the client info for the provider.
+type axfrddnsProvider struct {
 	rand        *rand.Rand
 	master      string
 	nameservers []*models.Nameserver
@@ -63,7 +63,7 @@ func initAxfrDdns(config map[string]string, providermeta json.RawMessage) (provi
 	// config -- the key/values from creds.json
 	// providermeta -- the json blob from NewReq('name', 'TYPE', providermeta)
 	var err error
-	api := &AxfrDdns{
+	api := &axfrddnsProvider{
 		rand: rand.New(rand.NewSource(int64(time.Now().Nanosecond()))),
 	}
 	param := &Param{}
@@ -117,7 +117,11 @@ func initAxfrDdns(config map[string]string, providermeta json.RawMessage) (provi
 }
 
 func init() {
-	providers.RegisterDomainServiceProviderType("AXFRDDNS", initAxfrDdns, features)
+	fns := providers.DspFuncs{
+		Initializer:    initAxfrDdns,
+		RecordAuditor: AuditRecords,
+	}
+	providers.RegisterDomainServiceProviderType("AXFRDDNS", fns, features)
 }
 
 // Param is used to decode extra parameters sent to provider.
@@ -161,12 +165,12 @@ func readKey(raw string, kind string) (*Key, error) {
 }
 
 // GetNameservers returns the nameservers for a domain.
-func (c *AxfrDdns) GetNameservers(domain string) ([]*models.Nameserver, error) {
+func (c *axfrddnsProvider) GetNameservers(domain string) ([]*models.Nameserver, error) {
 	return c.nameservers, nil
 }
 
 // FetchZoneRecords gets the records of a zone and returns them in dns.RR format.
-func (c *AxfrDdns) FetchZoneRecords(domain string) ([]dns.RR, error) {
+func (c *axfrddnsProvider) FetchZoneRecords(domain string) ([]dns.RR, error) {
 
 	transfer := new(dns.Transfer)
 	transfer.DialTimeout = dnsTimeout
@@ -203,7 +207,7 @@ func (c *AxfrDdns) FetchZoneRecords(domain string) ([]dns.RR, error) {
 }
 
 // GetZoneRecords gets the records of a zone and returns them in RecordConfig format.
-func (c *AxfrDdns) GetZoneRecords(domain string) (models.Records, error) {
+func (c *axfrddnsProvider) GetZoneRecords(domain string) (models.Records, error) {
 
 	rawRecords, err := c.FetchZoneRecords(domain)
 	if err != nil {
@@ -254,7 +258,7 @@ func (c *AxfrDdns) GetZoneRecords(domain string) (models.Records, error) {
 }
 
 // GetDomainCorrections returns a list of corrections to update a domain.
-func (c *AxfrDdns) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Correction, error) {
+func (c *axfrddnsProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Correction, error) {
 	dc.Punycode()
 
 	foundRecords, err := c.GetZoneRecords(dc.Name)
@@ -289,6 +293,7 @@ func (c *AxfrDdns) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Corr
 
 	// Normalize
 	models.PostProcessRecords(foundRecords)
+	txtutil.SplitSingleLongTxt(dc.Records) // Autosplit long TXT records
 
 	differ := diff.New(dc)
 	_, create, del, mod, err := differ.IncrementalDiff(foundRecords)

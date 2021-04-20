@@ -4,19 +4,14 @@ import (
 	"fmt"
 	"log"
 	"os"
-	"strconv"
-	"time"
+	"runtime/debug"
 
 	"github.com/StackExchange/dnscontrol/v3/commands"
+	"github.com/StackExchange/dnscontrol/v3/pkg/version"
 	_ "github.com/StackExchange/dnscontrol/v3/providers/_all"
 )
 
 //go:generate go run build/generate/generate.go build/generate/featureMatrix.go
-
-func main() {
-	log.SetFlags(log.LstdFlags | log.Lshortfile)
-	os.Exit(commands.Run(versionString()))
-}
 
 // Version management. Goals:
 // 1. Someone who just does "go get" has at least some information.
@@ -24,24 +19,18 @@ func main() {
 // Update the number here manually each release, so at least we have a range for go-get people.
 var (
 	SHA       = ""
-	Version   = "3.3.0"
+	Version   = "v3.8.0"
 	BuildTime = ""
 )
 
-// printVersion prints the version banner.
-func versionString() string {
-	var version string
-	if SHA != "" {
-		version = fmt.Sprintf("%s (%s)", Version, SHA)
-	} else {
-		version = fmt.Sprintf("%s-dev", Version) // no SHA. '0.x.y-dev' indicates it is run from source without build script.
+func main() {
+	version.SHA = SHA
+	version.Semver = Version
+	version.BuildTime = BuildTime
+
+	log.SetFlags(log.LstdFlags | log.Lshortfile)
+	if info, ok := debug.ReadBuildInfo(); !ok && info == nil {
+		fmt.Fprint(os.Stderr, "Warning: dnscontrol was built without Go modules. See https://github.com/StackExchange/dnscontrol#from-source for more information on how to build dnscontrol correctly.\n\n")
 	}
-	if BuildTime != "" {
-		i, err := strconv.ParseInt(BuildTime, 10, 64)
-		if err == nil {
-			tm := time.Unix(i, 0)
-			version += fmt.Sprintf(" built %s", tm.Format(time.RFC822))
-		}
-	}
-	return fmt.Sprintf("dnscontrol %s", version)
+	os.Exit(commands.Run("dnscontrol " + version.Banner()))
 }

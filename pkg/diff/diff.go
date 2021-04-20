@@ -27,6 +27,8 @@ type Differ interface {
 	// ChangedGroups performs a diff more appropriate for providers with a "RecordSet" model, where all records with the same name and type are grouped.
 	// Individual record changes are often not useful in such scenarios. Instead we return a map of record keys to a list of change descriptions within that group.
 	ChangedGroups(existing []*models.RecordConfig) (map[models.RecordKey][]string, error)
+	// ChangedGroupsDeleteFirst is the same as ChangedGroups but it sorts the deletions to the first postion
+	ChangedGroupsDeleteFirst(existing []*models.RecordConfig) (map[models.RecordKey][]string, error)
 }
 
 // New is a constructor for a Differ.
@@ -59,7 +61,7 @@ func (d *differ) content(r *models.RecordConfig) string {
 	// results are generated.  Once we have confidence, this function will go away.
 	content := fmt.Sprintf("%v ttl=%d", r.GetTargetCombined(), r.TTL)
 	if r.Type == "SOA" {
-		content = fmt.Sprintf("%s %v %d %d %d %d ttl=%d", r.Target, r.SoaMbox, r.SoaRefresh, r.SoaRetry, r.SoaExpire, r.SoaMinttl, r.TTL) // SoaSerial is not used in comparison
+		content = fmt.Sprintf("%s %v %d %d %d %d ttl=%d", r.GetTargetField(), r.SoaMbox, r.SoaRefresh, r.SoaRetry, r.SoaExpire, r.SoaMinttl, r.TTL) // SoaSerial is not used in comparison
 	}
 	var allMaps []map[string]string
 	for _, f := range d.extraValues {
@@ -85,6 +87,23 @@ func (d *differ) content(r *models.RecordConfig) string {
 	return content
 }
 
+func apexException(rec *models.RecordConfig) bool {
+	// Providers often add NS and SOA records at the apex. These
+	// should not be included in certain checks.
+	return (rec.Type == "NS" || rec.Type == "SOA") && rec.GetLabel() == "@"
+}
+
+func ignoreNameException(rec *models.RecordConfig) bool {
+	// People wanted it to be possible to disable this safety check.
+	// Ok, here it is.  You now have two risks:
+	// 1. Two owners (DNSControl and some other entity) toggling a record between two settings.
+	// 2. The other owner wiping all records at this label, which won't be noticed until the next time dnscontrol is run.
+	//fmt.Printf("********** DEBUG IGNORE %v %v %q\n", rec.GetLabel(), rec.Type, rec.Metadata["ignore_name_disable_safety_check"])
+	// See https://github.com/StackExchange/dnscontrol/issues/1106
+	_, ok := rec.Metadata["ignore_name_disable_safety_check"]
+	return ok
+}
+
 func (d *differ) IncrementalDiff(existing []*models.RecordConfig) (unchanged, create, toDelete, modify Changeset, err error) {
 	unchanged = Changeset{}
 	create = Changeset{}
@@ -92,23 +111,41 @@ func (d *differ) IncrementalDiff(existing []*models.RecordConfig) (unchanged, cr
 	modify = Changeset{}
 	desired := d.dc.Records
 
+	//fmt.Printf("********** DEBUG: STARTING IncrementalDiff\n")
+
 	// sort existing and desired by name
 
 	existingByNameAndType := map[models.RecordKey][]*models.RecordConfig{}
 	desiredByNameAndType := map[models.RecordKey][]*models.RecordConfig{}
+
+	//fmt.Printf("********** DEBUG: existing list %+v\n", existing)
+
+	// Gather the existing records. Skip over any that should be ignored.
 	for _, e := range existing {
+		//fmt.Printf("********** DEBUG: existing %v %v %v\n", e.GetLabel(), e.Type, e.GetTargetCombined())
 		if d.matchIgnoredName(e.GetLabel()) {
+			//fmt.Printf("Ignoring record %s %s due to IGNORE_NAME\n", e.GetLabel(), e.Type)
 			printer.Debugf("Ignoring record %s %s due to IGNORE_NAME\n", e.GetLabel(), e.Type)
 		} else if d.matchIgnoredTarget(e.GetTargetField(), e.Type) {
+			//fmt.Printf("Ignoring record %s %s due to IGNORE_TARGET\n", e.GetLabel(), e.Type)
 			printer.Debugf("Ignoring record %s %s due to IGNORE_TARGET\n", e.GetLabel(), e.Type)
 		} else {
 			k := e.Key()
 			existingByNameAndType[k] = append(existingByNameAndType[k], e)
 		}
 	}
+
+	// Review the desired records. If we're modifying one that should be ignored, that's an error.
+	//fmt.Printf("********** DEBUG: desired list %+v\n", desired)
 	for _, dr := range desired {
+		//fmt.Printf("********** DEBUG: desired %v %v %v -- %v %v\n", dr.GetLabel(), dr.Type, dr.GetTargetCombined(), apexException(dr), d.matchIgnoredName(dr.GetLabel()))
 		if d.matchIgnoredName(dr.GetLabel()) {
-			return nil, nil, nil, nil, fmt.Errorf("trying to update/add IGNORE_NAMEd record: %s %s", dr.GetLabel(), dr.Type)
+			//if !apexException(dr) || !ignoreNameException(dr) {
+			if (!ignoreNameException(dr)) && (!apexException(dr)) {
+				return nil, nil, nil, nil, fmt.Errorf("trying to update/add IGNORE_NAMEd record: %s %s", dr.GetLabel(), dr.Type)
+			} else {
+				//fmt.Printf("********** DEBUG: desired EXCEPTION\n")
+			}
 		} else if d.matchIgnoredTarget(dr.GetTargetField(), dr.Type) {
 			return nil, nil, nil, nil, fmt.Errorf("trying to update/add IGNORE_TARGETd record: %s %s", dr.GetLabel(), dr.Type)
 		} else {
@@ -262,15 +299,33 @@ func CorrectionLess(c []*models.Correction, i, j int) bool {
 
 func (d *differ) ChangedGroups(existing []*models.RecordConfig) (map[models.RecordKey][]string, error) {
 	changedKeys := map[models.RecordKey][]string{}
-	_, create, delete, modify, err := d.IncrementalDiff(existing)
+	_, create, toDelete, modify, err := d.IncrementalDiff(existing)
 	if err != nil {
 		return nil, err
 	}
 	for _, c := range create {
 		changedKeys[c.Desired.Key()] = append(changedKeys[c.Desired.Key()], c.String())
 	}
-	for _, d := range delete {
+	for _, d := range toDelete {
 		changedKeys[d.Existing.Key()] = append(changedKeys[d.Existing.Key()], d.String())
+	}
+	for _, m := range modify {
+		changedKeys[m.Desired.Key()] = append(changedKeys[m.Desired.Key()], m.String())
+	}
+	return changedKeys, nil
+}
+
+func (d *differ) ChangedGroupsDeleteFirst(existing []*models.RecordConfig) (map[models.RecordKey][]string, error) {
+	changedKeys := map[models.RecordKey][]string{}
+	_, create, toDelete, modify, err := d.IncrementalDiff(existing)
+	if err != nil {
+		return nil, err
+	}
+	for _, d := range toDelete {
+		changedKeys[d.Existing.Key()] = append(changedKeys[d.Existing.Key()], d.String())
+	}
+	for _, c := range create {
+		changedKeys[c.Desired.Key()] = append(changedKeys[c.Desired.Key()], c.String())
 	}
 	for _, m := range modify {
 		changedKeys[m.Desired.Key()] = append(changedKeys[m.Desired.Key()], m.String())
@@ -359,6 +414,7 @@ func compileIgnoredTargets(ignoredTargets []*models.IgnoreTarget) []glob.Glob {
 
 func (d *differ) matchIgnoredName(name string) bool {
 	for _, tst := range d.compiledIgnoredNames {
+		//fmt.Printf("********** DEBUG: matchIgnoredName %q %q %v\n", name, tst, tst.Match(name))
 		if tst.Match(name) {
 			return true
 		}

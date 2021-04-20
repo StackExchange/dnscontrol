@@ -14,6 +14,7 @@ import (
 	"github.com/StackExchange/dnscontrol/v3/pkg/diff"
 	"github.com/StackExchange/dnscontrol/v3/pkg/printer"
 	"github.com/StackExchange/dnscontrol/v3/pkg/transform"
+	"github.com/StackExchange/dnscontrol/v3/pkg/txtutil"
 	"github.com/StackExchange/dnscontrol/v3/providers"
 )
 
@@ -44,7 +45,7 @@ var features = providers.DocumentationNotes{
 	providers.CanUseSRV:              providers.Can(),
 	providers.CanUseTLSA:             providers.Can(),
 	providers.CanUseSSHFP:            providers.Can(),
-	providers.CanUseDS:               providers.Can(),
+	providers.CanUseDSForChildren:    providers.Can(),
 	providers.DocCreateDomains:       providers.Can(),
 	providers.DocDualHost:            providers.Cannot("Cloudflare will not work well in situations where it is not the only DNS server"),
 	providers.DocOfficiallySupported: providers.Can(),
@@ -52,16 +53,20 @@ var features = providers.DocumentationNotes{
 }
 
 func init() {
-	providers.RegisterDomainServiceProviderType("CLOUDFLAREAPI", newCloudflare, features)
+	fns := providers.DspFuncs{
+		Initializer:    newCloudflare,
+		RecordAuditor: AuditRecords,
+	}
+	providers.RegisterDomainServiceProviderType("CLOUDFLAREAPI", fns, features)
 	providers.RegisterCustomRecordType("CF_REDIRECT", "CLOUDFLAREAPI", "")
 	providers.RegisterCustomRecordType("CF_TEMP_REDIRECT", "CLOUDFLAREAPI", "")
 }
 
-// CloudflareAPI is the handle for API calls.
-type CloudflareAPI struct {
-	ApiKey          string `json:"apikey"`
-	ApiToken        string `json:"apitoken"`
-	ApiUser         string `json:"apiuser"`
+// cloudflareProvider is the handle for API calls.
+type cloudflareProvider struct {
+	APIKey          string `json:"apikey"`
+	APIToken        string `json:"apitoken"`
+	APIUser         string `json:"apiuser"`
 	AccountID       string `json:"accountid"`
 	AccountName     string `json:"accountname"`
 	domainIndex     map[string]string
@@ -82,7 +87,7 @@ func labelMatches(label string, matches []string) bool {
 }
 
 // GetNameservers returns the nameservers for a domain.
-func (c *CloudflareAPI) GetNameservers(domain string) ([]*models.Nameserver, error) {
+func (c *cloudflareProvider) GetNameservers(domain string) ([]*models.Nameserver, error) {
 	if c.domainIndex == nil {
 		if err := c.fetchDomainList(); err != nil {
 			return nil, err
@@ -96,7 +101,7 @@ func (c *CloudflareAPI) GetNameservers(domain string) ([]*models.Nameserver, err
 }
 
 // ListZones returns a list of the DNS zones.
-func (c *CloudflareAPI) ListZones() ([]string, error) {
+func (c *cloudflareProvider) ListZones() ([]string, error) {
 	if err := c.fetchDomainList(); err != nil {
 		return nil, err
 	}
@@ -108,7 +113,7 @@ func (c *CloudflareAPI) ListZones() ([]string, error) {
 }
 
 // GetZoneRecords gets the records of a zone and returns them in RecordConfig format.
-func (c *CloudflareAPI) GetZoneRecords(domain string) (models.Records, error) {
+func (c *cloudflareProvider) GetZoneRecords(domain string) (models.Records, error) {
 	id, err := c.getDomainID(domain)
 	if err != nil {
 		return nil, err
@@ -121,11 +126,19 @@ func (c *CloudflareAPI) GetZoneRecords(domain string) (models.Records, error) {
 		if rec.TTL == 1 {
 			rec.TTL = 0
 		}
+		// Store the proxy status ("orange cloud") for use by get-zones:
+		m := getProxyMetadata(rec)
+		if p, ok := m["proxy"]; ok {
+			if rec.Metadata == nil {
+				rec.Metadata = map[string]string{}
+			}
+			rec.Metadata["cloudflare_proxy"] = p
+		}
 	}
 	return records, nil
 }
 
-func (c *CloudflareAPI) getDomainID(name string) (string, error) {
+func (c *cloudflareProvider) getDomainID(name string) (string, error) {
 	if c.domainIndex == nil {
 		if err := c.fetchDomainList(); err != nil {
 			return "", err
@@ -139,7 +152,12 @@ func (c *CloudflareAPI) getDomainID(name string) (string, error) {
 }
 
 // GetDomainCorrections returns a list of corrections to update a domain.
-func (c *CloudflareAPI) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Correction, error) {
+func (c *cloudflareProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Correction, error) {
+	err := dc.Punycode()
+	if err != nil {
+		return nil, err
+	}
+
 	id, err := c.getDomainID(dc.Name)
 	if err != nil {
 		return nil, err
@@ -163,6 +181,10 @@ func (c *CloudflareAPI) GetDomainCorrections(dc *models.DomainConfig) ([]*models
 
 	if c.manageRedirects {
 		prs, err := c.getPageRules(id, dc.Name)
+		//fmt.Printf("GET PAGE RULES:\n")
+		//for i, p := range prs {
+		//	fmt.Printf("%03d: %q\n", i, p.GetTargetField())
+		//}
 		if err != nil {
 			return nil, err
 		}
@@ -188,6 +210,7 @@ func (c *CloudflareAPI) GetDomainCorrections(dc *models.DomainConfig) ([]*models
 
 	// Normalize
 	models.PostProcessRecords(records)
+	txtutil.SplitSingleLongTxt(dc.Records) // Autosplit long TXT records
 
 	differ := diff.New(dc, getProxyMetadata)
 	_, create, del, mod, err := differ.IncrementalDiff(records)
@@ -204,9 +227,15 @@ func (c *CloudflareAPI) GetDomainCorrections(dc *models.DomainConfig) ([]*models
 				Msg: d.String(),
 				F:   func() error { return c.deletePageRule(ex.Original.(*pageRule).ID, id) },
 			})
-
 		} else {
-			corrections = append(corrections, c.deleteRec(ex.Original.(*cfRecord), id))
+			corr := c.deleteRec(ex.Original.(*cfRecord), id)
+			// DS records must always have a corresponding NS record.
+			// Therefore, we remove DS records before any NS records.
+			if d.Existing.Type == "DS" {
+				corrections = append([]*models.Correction{corr}, corrections...)
+			} else {
+				corrections = append(corrections, corr)
+			}
 		}
 	}
 	for _, d := range create {
@@ -217,7 +246,14 @@ func (c *CloudflareAPI) GetDomainCorrections(dc *models.DomainConfig) ([]*models
 				F:   func() error { return c.createPageRule(id, des.GetTargetField()) },
 			})
 		} else {
-			corrections = append(corrections, c.createRec(des, id)...)
+			corr := c.createRec(des, id)
+			// DS records must always have a corresponding NS record.
+			// Therefore, we create NS records before any DS records.
+			if d.Desired.Type == "NS" {
+				corrections = append(corr, corrections...)
+			} else {
+				corrections = append(corrections, corr...)
+			}
 		}
 	}
 
@@ -270,7 +306,7 @@ func checkNSModifications(dc *models.DomainConfig) {
 	dc.Records = newList
 }
 
-func (c *CloudflareAPI) checkUniversalSSL(dc *models.DomainConfig, id string) (changed bool, newState bool, err error) {
+func (c *cloudflareProvider) checkUniversalSSL(dc *models.DomainConfig, id string) (changed bool, newState bool, err error) {
 	expectedStr := dc.Metadata[metaUniversalSSL]
 	if expectedStr == "" {
 		return false, false, fmt.Errorf("metadata not set")
@@ -309,7 +345,7 @@ func checkProxyVal(v string) (string, error) {
 	return v, nil
 }
 
-func (c *CloudflareAPI) preprocessConfig(dc *models.DomainConfig) error {
+func (c *cloudflareProvider) preprocessConfig(dc *models.DomainConfig) error {
 
 	// Determine the default proxy setting.
 	var defProxy string
@@ -414,13 +450,13 @@ func (c *CloudflareAPI) preprocessConfig(dc *models.DomainConfig) error {
 }
 
 func newCloudflare(m map[string]string, metadata json.RawMessage) (providers.DNSServiceProvider, error) {
-	api := &CloudflareAPI{}
-	api.ApiUser, api.ApiKey, api.ApiToken = m["apiuser"], m["apikey"], m["apitoken"]
+	api := &cloudflareProvider{}
+	api.APIUser, api.APIKey, api.APIToken = m["apiuser"], m["apikey"], m["apitoken"]
 	// check api keys from creds json file
-	if api.ApiToken == "" && (api.ApiKey == "" || api.ApiUser == "") {
+	if api.APIToken == "" && (api.APIKey == "" || api.APIUser == "") {
 		return nil, fmt.Errorf("if cloudflare apitoken is not set, apikey and apiuser must be provided")
 	}
-	if api.ApiToken != "" && (api.ApiKey != "" || api.ApiUser != "") {
+	if api.APIToken != "" && (api.APIKey != "" || api.APIUser != "") {
 		return nil, fmt.Errorf("if cloudflare apitoken is set, apikey and apiuser should not be provided")
 	}
 
@@ -428,11 +464,6 @@ func newCloudflare(m map[string]string, metadata json.RawMessage) (providers.DNS
 	api.AccountID, api.AccountName = m["accountid"], m["accountname"]
 	if (api.AccountID != "" && api.AccountName == "") || (api.AccountID == "" && api.AccountName != "") {
 		return nil, fmt.Errorf("either both cloudflare accountid and accountname must be provided or neither")
-	}
-
-	err := api.fetchDomainList()
-	if err != nil {
-		return nil, err
 	}
 
 	if len(metadata) > 0 {
@@ -546,7 +577,7 @@ type cfRecord struct {
 	Priority   json.Number `json:"priority"`
 }
 
-func (c *cfRecord) nativeToRecord(domain string) *models.RecordConfig {
+func (c *cfRecord) nativeToRecord(domain string) (*models.RecordConfig, error) {
 	// normalize cname,mx,ns records with dots to be consistent with our config format.
 	if c.Type == "CNAME" || c.Type == "MX" || c.Type == "NS" || c.Type == "SRV" {
 		if c.Content != "." {
@@ -571,28 +602,28 @@ func (c *cfRecord) nativeToRecord(domain string) *models.RecordConfig {
 		if c.Priority == "" {
 			priority = 0
 		} else {
-			if p, err := c.Priority.Int64(); err != nil {
-				panic(fmt.Errorf("error decoding priority from cloudflare record: %w", err))
-			} else {
-				priority = uint16(p)
+			p, err := c.Priority.Int64()
+			if err != nil {
+				return nil, fmt.Errorf("error decoding priority from cloudflare record: %w", err)
 			}
+			priority = uint16(p)
 		}
 		if err := rc.SetTargetMX(priority, c.Content); err != nil {
-			panic(fmt.Errorf("unparsable MX record received from cloudflare: %w", err))
+			return nil, fmt.Errorf("unparsable MX record received from cloudflare: %w", err)
 		}
 	case "SRV":
 		data := *c.Data
 		if err := rc.SetTargetSRV(data.Priority, data.Weight, data.Port,
 			dnsutil.AddOrigin(data.Target.FQDN(), domain)); err != nil {
-			panic(fmt.Errorf("unparsable SRV record received from cloudflare: %w", err))
+			return nil, fmt.Errorf("unparsable SRV record received from cloudflare: %w", err)
 		}
 	default: // "A", "AAAA", "ANAME", "CAA", "CNAME", "NS", "PTR", "TXT"
 		if err := rc.PopulateFromString(rType, c.Content, domain); err != nil {
-			panic(fmt.Errorf("unparsable record received from cloudflare: %w", err))
+			return nil, fmt.Errorf("unparsable record received from cloudflare: %w", err)
 		}
 	}
 
-	return rc
+	return rc, nil
 }
 
 func getProxyMetadata(r *models.RecordConfig) map[string]string {
@@ -611,7 +642,7 @@ func getProxyMetadata(r *models.RecordConfig) map[string]string {
 }
 
 // EnsureDomainExists returns an error of domain does not exist.
-func (c *CloudflareAPI) EnsureDomainExists(domain string) error {
+func (c *cloudflareProvider) EnsureDomainExists(domain string) error {
 	if _, ok := c.domainIndex[domain]; ok {
 		return nil
 	}

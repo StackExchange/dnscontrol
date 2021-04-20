@@ -6,6 +6,7 @@ import (
 
 	"github.com/StackExchange/dnscontrol/v3/models"
 	"github.com/StackExchange/dnscontrol/v3/pkg/diff"
+	"github.com/StackExchange/dnscontrol/v3/pkg/txtutil"
 	"github.com/StackExchange/dnscontrol/v3/providers"
 )
 
@@ -16,12 +17,15 @@ var features = providers.DocumentationNotes{
 	providers.CanUsePTR:              providers.Cannot(),
 	providers.CanUseSRV:              providers.Can(),
 	providers.CanUseCAA:              providers.Can(),
-	providers.CanUseTXTMulti:         providers.Can(),
 	providers.CanGetZones:            providers.Cannot(),
 }
 
 func init() {
-	providers.RegisterDomainServiceProviderType("NETCUP", New, features)
+	fns := providers.DspFuncs{
+		Initializer:    New,
+		RecordAuditor: AuditRecords,
+	}
+	providers.RegisterDomainServiceProviderType("NETCUP", fns, features)
 }
 
 // New creates a new API handle.
@@ -30,7 +34,7 @@ func New(settings map[string]string, _ json.RawMessage) (providers.DNSServicePro
 		return nil, fmt.Errorf("missing netcup login parameters")
 	}
 
-	api := &api{}
+	api := &netcupProvider{}
 	err := api.login(settings["api-key"], settings["api-password"], settings["customer-number"])
 	if err != nil {
 		return nil, fmt.Errorf("login to netcup DNS failed, please check your credentials: %v", err)
@@ -39,7 +43,7 @@ func New(settings map[string]string, _ json.RawMessage) (providers.DNSServicePro
 }
 
 // GetZoneRecords gets the records of a zone and returns them in RecordConfig format.
-func (api *api) GetZoneRecords(domain string) (models.Records, error) {
+func (api *netcupProvider) GetZoneRecords(domain string) (models.Records, error) {
 	records, err := api.getRecords(domain)
 	if err != nil {
 		return nil, err
@@ -54,7 +58,7 @@ func (api *api) GetZoneRecords(domain string) (models.Records, error) {
 // GetNameservers returns the nameservers for a domain.
 // As netcup doesn't support setting nameservers over this API, these are static.
 // Domains not managed by netcup DNS will return an error
-func (api *api) GetNameservers(domain string) ([]*models.Nameserver, error) {
+func (api *netcupProvider) GetNameservers(domain string) ([]*models.Nameserver, error) {
 	return models.ToNameservers([]string{
 		"root-dns.netcup.net",
 		"second-dns.netcup.net",
@@ -63,7 +67,7 @@ func (api *api) GetNameservers(domain string) ([]*models.Nameserver, error) {
 }
 
 // GetDomainCorrections returns the corrections for a domain.
-func (api *api) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Correction, error) {
+func (api *netcupProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Correction, error) {
 	dc, err := dc.Copy()
 	if err != nil {
 		return nil, err
@@ -94,6 +98,8 @@ func (api *api) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Correct
 
 	// Normalize
 	models.PostProcessRecords(existingRecords)
+	txtutil.SplitSingleLongTxt(dc.Records) // Autosplit long TXT records
+
 	differ := diff.New(dc)
 	_, create, del, modify, err := differ.IncrementalDiff(existingRecords)
 	if err != nil {

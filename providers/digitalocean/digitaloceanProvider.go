@@ -4,10 +4,13 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"log"
 	"net/http"
+	"time"
 
 	"github.com/StackExchange/dnscontrol/v3/models"
 	"github.com/StackExchange/dnscontrol/v3/pkg/diff"
+	"github.com/StackExchange/dnscontrol/v3/pkg/txtutil"
 	"github.com/StackExchange/dnscontrol/v3/providers"
 	"github.com/miekg/dns/dnsutil"
 
@@ -24,8 +27,8 @@ Info required in `creds.json`:
 
 */
 
-// DoAPI is the handle for operations.
-type DoAPI struct {
+// digitaloceanProvider is the handle for operations.
+type digitaloceanProvider struct {
 	client *godo.Client
 }
 
@@ -34,6 +37,8 @@ var defaultNameServerNames = []string{
 	"ns2.digitalocean.com",
 	"ns3.digitalocean.com",
 }
+
+const perPageSize = 100
 
 // NewDo creates a DO-specific DNS provider.
 func NewDo(m map[string]string, metadata json.RawMessage) (providers.DNSServiceProvider, error) {
@@ -48,11 +53,15 @@ func NewDo(m map[string]string, metadata json.RawMessage) (providers.DNSServiceP
 	)
 	client := godo.NewClient(oauthClient)
 
-	api := &DoAPI{client: client}
+	api := &digitaloceanProvider{client: client}
 
 	// Get a domain to validate the token
+retry:
 	_, resp, err := api.client.Domains.List(ctx, &godo.ListOptions{PerPage: 1})
 	if err != nil {
+		if pauseAndRetry(resp) {
+			goto retry
+		}
 		return nil, err
 	}
 	if resp.StatusCode != http.StatusOK {
@@ -66,21 +75,29 @@ var features = providers.DocumentationNotes{
 	providers.DocCreateDomains:       providers.Can(),
 	providers.DocOfficiallySupported: providers.Cannot(),
 	providers.CanUseSRV:              providers.Can(),
-	// Digitalocean support CAA records, except
-	// ";" value with issue/issuewild records:
-	// https://www.digitalocean.com/docs/networking/dns/how-to/create-caa-records/
-	providers.CanUseCAA:   providers.Can(),
-	providers.CanGetZones: providers.Can(),
+	providers.CanUseCAA:              providers.Can("Semicolons not supported in issue/issuewild fields.", "https://www.digitalocean.com/docs/networking/dns/how-to/create-caa-records"),
+	providers.CanGetZones:            providers.Can(),
 }
 
 func init() {
-	providers.RegisterDomainServiceProviderType("DIGITALOCEAN", NewDo, features)
+	fns := providers.DspFuncs{
+		Initializer:    NewDo,
+		RecordAuditor: AuditRecords,
+	}
+	providers.RegisterDomainServiceProviderType("DIGITALOCEAN", fns, features)
 }
 
 // EnsureDomainExists returns an error if domain doesn't exist.
-func (api *DoAPI) EnsureDomainExists(domain string) error {
+func (api *digitaloceanProvider) EnsureDomainExists(domain string) error {
+retry:
 	ctx := context.Background()
 	_, resp, err := api.client.Domains.Get(ctx, domain)
+	if err != nil {
+		if pauseAndRetry(resp) {
+			goto retry
+		}
+		//return err
+	}
 	if resp.StatusCode == http.StatusNotFound {
 		_, _, err := api.client.Domains.Create(ctx, &godo.DomainCreateRequest{
 			Name:      domain,
@@ -92,12 +109,12 @@ func (api *DoAPI) EnsureDomainExists(domain string) error {
 }
 
 // GetNameservers returns the nameservers for domain.
-func (api *DoAPI) GetNameservers(domain string) ([]*models.Nameserver, error) {
+func (api *digitaloceanProvider) GetNameservers(domain string) ([]*models.Nameserver, error) {
 	return models.ToNameservers(defaultNameServerNames)
 }
 
 // GetZoneRecords gets the records of a zone and returns them in RecordConfig format.
-func (api *DoAPI) GetZoneRecords(domain string) (models.Records, error) {
+func (api *digitaloceanProvider) GetZoneRecords(domain string) (models.Records, error) {
 	records, err := getRecords(api, domain)
 	if err != nil {
 		return nil, err
@@ -116,7 +133,7 @@ func (api *DoAPI) GetZoneRecords(domain string) (models.Records, error) {
 }
 
 // GetDomainCorrections returns a list of corretions for the  domain.
-func (api *DoAPI) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Correction, error) {
+func (api *digitaloceanProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Correction, error) {
 	ctx := context.Background()
 	dc.Punycode()
 
@@ -127,6 +144,7 @@ func (api *DoAPI) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Corre
 
 	// Normalize
 	models.PostProcessRecords(existingRecords)
+	txtutil.SplitSingleLongTxt(dc.Records) // Autosplit long TXT records
 
 	differ := diff.New(dc)
 	_, create, delete, modify, err := differ.IncrementalDiff(existingRecords)
@@ -142,7 +160,13 @@ func (api *DoAPI) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Corre
 		corr := &models.Correction{
 			Msg: fmt.Sprintf("%s, DO ID: %d", m.String(), id),
 			F: func() error {
-				_, err := api.client.Domains.DeleteRecord(ctx, dc.Name, id)
+			retry:
+				resp, err := api.client.Domains.DeleteRecord(ctx, dc.Name, id)
+				if err != nil {
+					if pauseAndRetry(resp) {
+						goto retry
+					}
+				}
 				return err
 			},
 		}
@@ -153,7 +177,13 @@ func (api *DoAPI) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Corre
 		corr := &models.Correction{
 			Msg: m.String(),
 			F: func() error {
-				_, _, err := api.client.Domains.CreateRecord(ctx, dc.Name, req)
+			retry:
+				_, resp, err := api.client.Domains.CreateRecord(ctx, dc.Name, req)
+				if err != nil {
+					if pauseAndRetry(resp) {
+						goto retry
+					}
+				}
 				return err
 			},
 		}
@@ -165,7 +195,13 @@ func (api *DoAPI) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Corre
 		corr := &models.Correction{
 			Msg: fmt.Sprintf("%s, DO ID: %d", m.String(), id),
 			F: func() error {
-				_, _, err := api.client.Domains.EditRecord(ctx, dc.Name, id, req)
+			retry:
+				_, resp, err := api.client.Domains.EditRecord(ctx, dc.Name, id, req)
+				if err != nil {
+					if pauseAndRetry(resp) {
+						goto retry
+					}
+				}
 				return err
 			},
 		}
@@ -175,14 +211,19 @@ func (api *DoAPI) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Corre
 	return corrections, nil
 }
 
-func getRecords(api *DoAPI, name string) ([]godo.DomainRecord, error) {
+func getRecords(api *digitaloceanProvider, name string) ([]godo.DomainRecord, error) {
 	ctx := context.Background()
 
+retry:
+
 	records := []godo.DomainRecord{}
-	opt := &godo.ListOptions{}
+	opt := &godo.ListOptions{PerPage: perPageSize}
 	for {
 		result, resp, err := api.client.Domains.Records(ctx, name, opt)
 		if err != nil {
+			if pauseAndRetry(resp) {
+				goto retry
+			}
 			return nil, err
 		}
 
@@ -254,11 +295,11 @@ func toReq(dc *models.DomainConfig, rc *models.RecordConfig) *godo.DomainRecordE
 		priority = int(rc.SrvPriority)
 	case "TXT":
 		// TXT records are the one place where DO combines many items into one field.
-		target = rc.GetTargetCombined()
+		target = rc.GetTargetField()
 	case "CAA":
-		// DO API requires that value ends in dot
-		// But the value returned from API doesn't contain this,
-		// so no need to strip the dot when reading value from API.
+		// DO API requires that a CAA target ends in dot.
+		// Interestingly enough, the value returned from API doesn't
+		// contain a trailing dot.
 		target = target + "."
 	default:
 		// no action required
@@ -275,4 +316,27 @@ func toReq(dc *models.DomainConfig, rc *models.RecordConfig) *godo.DomainRecordE
 		Tag:      rc.CaaTag,
 		Flags:    int(rc.CaaFlag),
 	}
+}
+
+// backoff is the amount of time to sleep if a 429 or 504 is received.
+// It is doubled after each use.
+var backoff = time.Second * 5
+
+const maxBackoff = time.Minute * 3
+
+func pauseAndRetry(resp *godo.Response) bool {
+	statusCode := resp.Response.StatusCode
+	if statusCode != 429 && statusCode != 504 {
+		backoff = time.Second * 5
+		return false
+	}
+
+	// a simple exponential back-off with a 3-minute max.
+	log.Printf("Delaying %v due to ratelimit\n", backoff)
+	time.Sleep(backoff)
+	backoff = backoff + (backoff / 2)
+	if backoff > maxBackoff {
+		backoff = maxBackoff
+	}
+	return true
 }

@@ -7,6 +7,10 @@ jsId: SOFTLAYER
 
 # SoftLayer DNS Provider
 
+NOTE: This provider is currently has no maintainer. We are looking for
+a volunteer. If this provider breaks it may be disabled or removed if
+it can not be easily fixed.
+
 ## Configuration
 To authenticate with SoftLayer requires at least a `username` and `api_key` for authentication. It can also optionally take a `timeout` and `endpoint_url` parameter however these are optional and will use standard defaults if not provided.
 

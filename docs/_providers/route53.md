@@ -116,6 +116,9 @@ delegation set.  Note that you you only want the portion of the `Id` after the `
 > Delegation sets only apply during `create-domains` at the moment. Further work needs to be done to have them apply during `push`.
 
 ## Caveats
+
+### Route53 errors if it is not the DnsProvider
+
 This code may not function properly if a domain has R53 as a Registrar
 but not as a DnsProvider.  The situation is described in
 [PR#155](https://github.com/StackExchange/dnscontrol/pull/155).
@@ -130,6 +133,36 @@ Done. 1 corrections.
 ```
 
 If this happens to you, we'd appreciate it if you could help us fix the code. In the meanwhile, you can give the account additional IAM permissions so that it can do DNS-related actions, or simply use `NewRegistrar(..., 'NONE')` for now.
+
+### Bug when converting new zones
+
+You will see some weirdness if:
+
+1.  A CNAME was created using the web UI
+2.  The CNAME's target does NOT end with a dot.
+
+What you will see: When dnscontrol tries to update such records, R53
+only updates the first one.  For example if DNSControl is updating 3
+such records, you will need to run `dnscontrol push` three times for
+all three records to update.  Each time DNSControl is sending three
+modify requests but only the first is executed.  After all such
+records are modified by DNSControl, everything works as expected.
+
+We believe this is a bug with R53.
+
+This is only a problem for users converting old zones to DNSControl.
+
+NOTE: When converting zones that include such records, the `get-zones`
+command will generate `CNAME()` records without the trailing dot. You
+should manually add the dot.  Run `dnscontrol preview` as normal to
+check your work. However when you run `dnscontrol push` you'll find
+you have to run it multiple times, each time one of those corrections
+executes and the others do not.  Once all such records are replaced
+this problem disappears.
+
+More info is available in
+[https://github.com/StackExchange/dnscontrol/issues/891](#891).
+
 
 ## Error messages
 

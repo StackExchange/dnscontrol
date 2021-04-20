@@ -1,8 +1,9 @@
 # DNSControl
 
-[![Build Status](https://dev.azure.com/dnscontrol/DnsControl/_apis/build/status/StackExchange.dnscontrol?branchName=master)](https://dev.azure.com/dnscontrol/DnsControl/_build/latest?definitionId=1&branchName=master)
+[![Build Status](https://github.com/StackExchange/dnscontrol/workflows/build/badge.svg)](https://github.com/StackExchange/dnscontrol/actions?query=workflow%3Abuild+branch%3Amaster)
 [![Gitter chat](https://badges.gitter.im/dnscontrol/Lobby.png)](https://gitter.im/dnscontrol/Lobby)
-[![Google Group chat](https://img.shields.io/badge/google%20group-chat-green.svg)](https://groups.google.com/forum/#!forum/dnscontrol-discuss)
+[![Google Group](https://img.shields.io/badge/google%20group-chat-green.svg)](https://groups.google.com/forum/#!forum/dnscontrol-discuss)
+[![PkgGoDev](https://pkg.go.dev/badge/github.com/StackExchange/dnscontrol)](https://pkg.go.dev/github.com/StackExchange/dnscontrol)
 
 [DNSControl](https://stackexchange.github.io/dnscontrol/) is a system
 for maintaining DNS zones.  It has two parts:
@@ -16,28 +17,34 @@ Windows). The provider model is extensible, so more providers can be added.
 Currently supported DNS providers:
  - AWS Route 53
  - AXFR+DDNS
- - Active Directory
+ - Active Directory (Deprecated, see Microsoft DNS)
  - Azure DNS
  - BIND
  - ClouDNS
  - Cloudflare
  - DNSOVERHTTPS
+ - DNS Made Easy
  - DNSimple
  - DigitalOcean
  - Exoscale
  - Gandi
  - Google DNS
+ - Hetzner
  - HEXONET
+ - hosting.de
  - Hurricane Electric DNS
  - INWX
  - Internet.bs
  - Linode
+ - Microsoft Windows Server DNS Server
  - NS1
  - Name.com
  - Namecheap
+ - Netcup
  - OVH
  - OctoDNS
  - OpenSRS
+ - Oracle Cloud
  - PowerDNS
  - SoftLayer
  - Vultr
@@ -114,13 +121,16 @@ See [Getting Started](https://stackexchange.github.io/dnscontrol/getting-started
 
 DNSControl can be built with Go version 1.14 or higher.
 
+The `go get` command will will download the source, compile it, and
+install `dnscontrol` in your `$GOBIN` directory.
+
 To install, simply run
 
     GO111MODULE=on go get github.com/StackExchange/dnscontrol/v3
 
 To download the source
 
-    go get -d github.com/StackExchange/dnscontrol
+    git clone github.com/StackExchange/dnscontrol
 
 If these don't work, more info is in [#805](https://github.com/StackExchange/dnscontrol/issues/805).
 
@@ -143,4 +153,6 @@ docker run --rm -it -v $(pwd)/dnsconfig.js:/dns/dnsconfig.js -v $(pwd)/creds.jso
 
 ## More info at our web site
 
-[https://stackexchange.github.io/dnscontrol/](https://stackexchange.github.io/dnscontrol/)
+The website: [https://stackexchange.github.io/dnscontrol/](https://stackexchange.github.io/dnscontrol/)
+
+The getting started guide: [https://stackexchange.github.io/dnscontrol/getting-started](https://stackexchange.github.io/dnscontrol/getting-started)

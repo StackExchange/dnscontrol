@@ -5,7 +5,7 @@ import (
 )
 
 // ListZones returns all the zones in an account
-func (c *NameCom) ListZones() ([]string, error) {
+func (c *namedotcomProvider) ListZones() ([]string, error) {
 	var names []string
 	var page int32
 

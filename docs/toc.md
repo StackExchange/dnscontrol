@@ -8,6 +8,7 @@ title: TOC
 - [Providers]({{site.github.url}}/provider-list): Which DNS providers are supported.
 - [Examples]({{site.github.url}}/examples): The DNSControl language by example.
 - [Migrating]({{site.github.url}}/migrating): Migrating zones to DNSControl.
+- [CLI Variables]({{site.github.url}}/cli-variales): Passing variables from CLI to JS
 
 ## Reference
 - [Language Reference]({{site.github.url}}/js): Description of the DNSControl language (DSL).

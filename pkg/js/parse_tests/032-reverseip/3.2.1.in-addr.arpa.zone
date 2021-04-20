@@ -1,0 +1,10 @@
+$TTL 300
+1                IN PTR   foo.example.com.
+2                IN PTR   bar.example.com.
+3                IN PTR   baz.example.com.
+4                IN PTR   silly.example.com.
+5                IN PTR   willy.example.com.
+6                IN PTR   billy.example.com.
+7                IN PTR   my.example.com.
+8                IN PTR   fair.example.com.
+9                IN PTR   lady.example.com.

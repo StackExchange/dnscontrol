@@ -12,8 +12,8 @@ import (
 
 const defaultAPIBase = "api.name.com"
 
-// NameCom describes a connection to the NDC API.
-type NameCom struct {
+// namedotcomProvider describes a connection to the NDC API.
+type namedotcomProvider struct {
 	APIUrl  string `json:"apiurl"`
 	APIUser string `json:"apiuser"`
 	APIKey  string `json:"apikey"`
@@ -24,7 +24,6 @@ var features = providers.DocumentationNotes{
 	providers.CanUseAlias:            providers.Can(),
 	providers.CanUsePTR:              providers.Cannot("PTR records are not supported (See Link)", "https://www.name.com/support/articles/205188508-Reverse-DNS-records"),
 	providers.CanUseSRV:              providers.Can("SRV records with empty targets are not supported"),
-	providers.CanUseTXTMulti:         providers.Cannot(),
 	providers.DocCreateDomains:       providers.Cannot("New domains require registration"),
 	providers.DocDualHost:            providers.Cannot("Apex NS records not editable"),
 	providers.DocOfficiallySupported: providers.Can(),
@@ -39,8 +38,8 @@ func newDsp(conf map[string]string, meta json.RawMessage) (providers.DNSServiceP
 	return newProvider(conf)
 }
 
-func newProvider(conf map[string]string) (*NameCom, error) {
-	api := &NameCom{
+func newProvider(conf map[string]string) (*namedotcomProvider, error) {
+	api := &namedotcomProvider{
 		client: namecom.New(conf["apiuser"], conf["apikey"]),
 	}
 	api.client.Server = conf["apiurl"]
@@ -56,5 +55,9 @@ func newProvider(conf map[string]string) (*NameCom, error) {
 
 func init() {
 	providers.RegisterRegistrarType("NAMEDOTCOM", newReg)
-	providers.RegisterDomainServiceProviderType("NAMEDOTCOM", newDsp, features)
+	fns := providers.DspFuncs{
+		Initializer:          newDsp,
+		RecordAuditor: AuditRecords,
+	}
+	providers.RegisterDomainServiceProviderType("NAMEDOTCOM", fns, features)
 }

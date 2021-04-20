@@ -18,10 +18,10 @@ import (
 	"io/ioutil"
 	"os"
 	"path/filepath"
-	"strings"
 	"testing"
 	"unicode"
 
+	testifyrequire "github.com/stretchr/testify/require"
 	"github.com/tdewolff/minify"
 	minjson "github.com/tdewolff/minify/json"
 )
@@ -180,11 +180,8 @@ func TestYamlRead(t *testing.T) {
 			//fmt.Printf("DEBUG: EXPECTED=%s\n", string(expectedJSON))
 			//fmt.Printf("DEBUG: ACTUAL  =%s\n", string(actualJSON))
 
-			if strings.TrimSpace(string(expectedJSON)) != strings.TrimSpace(string(actualJSON)) {
-				t.Error("Expected and actual json don't match")
-				t.Log("Expected:", string(expectedJSON))
-				t.Log("Actual  :", string(actualJSON))
-			}
+			es, as := string(expectedJSON), string(actualJSON)
+			testifyrequire.JSONEqf(t, es, as, "EXPECTING %q = \n```\n%s\n```", expectedFile, as)
 		})
 	}
 }

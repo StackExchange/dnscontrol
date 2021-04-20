@@ -78,10 +78,13 @@ Maintainers of contributed providers:
 * `DIGITALOCEAN` @Deraen
 * `DNSOVERHTTPS` @mikenz
 * `DNSIMPLE` @aeden
+* `DNSMADEEASY` @vojtad
 * `EXOSCALE` @pierre-emmanuelJ
 * `GANDI_V5` @TomOnTime
 * `HEDNS` @rblenkinsopp
+* `HETZNER` @das7pad
 * `HEXONET` @papakai
+* `HOSTINGDE` @membero
 * `INTERNETBS` @pragmaton
 * `INWX` @svenpeter42
 * `LINODE` @koesie10
@@ -90,6 +93,7 @@ Maintainers of contributed providers:
 * `NS1` @captncraig
 * `OCTODNS` @TomOnTime
 * `OPENSRS` @pierre-emmanuelJ
+* `ORACLE` @kallsyms
 * `OVH` @masterzen
 * `POWERDNS` @jpbede
 * `SOFTLAYER`@jamielennox

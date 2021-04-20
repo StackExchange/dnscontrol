@@ -29,6 +29,7 @@ import (
 
 	"github.com/StackExchange/dnscontrol/v3/models"
 	"github.com/StackExchange/dnscontrol/v3/pkg/diff"
+	"github.com/StackExchange/dnscontrol/v3/pkg/txtutil"
 	"github.com/StackExchange/dnscontrol/v3/providers"
 	"github.com/StackExchange/dnscontrol/v3/providers/octodns/octoyaml"
 )
@@ -37,7 +38,6 @@ var features = providers.DocumentationNotes{
 	//providers.CanUseCAA: providers.Can(),
 	providers.CanUsePTR: providers.Can(),
 	providers.CanUseSRV: providers.Can(),
-	//providers.CanUseTXTMulti:   providers.Can(),
 	providers.DocCreateDomains: providers.Cannot("Driver just maintains list of OctoDNS config files. You must manually create the master config files that refer these."),
 	providers.DocDualHost:      providers.Cannot("Research is needed."),
 	providers.CanGetZones:      providers.Unimplemented(),
@@ -46,7 +46,7 @@ var features = providers.DocumentationNotes{
 func initProvider(config map[string]string, providermeta json.RawMessage) (providers.DNSServiceProvider, error) {
 	// config -- the key/values from creds.json
 	// meta -- the json blob from NewReq('name', 'TYPE', meta)
-	api := &Provider{
+	api := &octodnsProvider{
 		directory: config["directory"],
 	}
 	if api.directory == "" {
@@ -63,11 +63,15 @@ func initProvider(config map[string]string, providermeta json.RawMessage) (provi
 }
 
 func init() {
-	providers.RegisterDomainServiceProviderType("OCTODNS", initProvider, features)
+	fns := providers.DspFuncs{
+		Initializer:          initProvider,
+		RecordAuditor: AuditRecords,
+	}
+	providers.RegisterDomainServiceProviderType("OCTODNS", fns, features)
 }
 
-// Provider is the provider handle for the OctoDNS driver.
-type Provider struct {
+// octodnsProvider is the provider handle for the OctoDNS driver.
+type octodnsProvider struct {
 	//DefaultNS   []string `json:"default_ns"`
 	//DefaultSoa  SoaInfo  `json:"default_soa"`
 	//nameservers []*models.Nameserver
@@ -75,12 +79,12 @@ type Provider struct {
 }
 
 // GetNameservers returns the nameservers for a domain.
-func (c *Provider) GetNameservers(string) ([]*models.Nameserver, error) {
+func (c *octodnsProvider) GetNameservers(string) ([]*models.Nameserver, error) {
 	return nil, nil
 }
 
 // GetZoneRecords gets the records of a zone and returns them in RecordConfig format.
-func (c *Provider) GetZoneRecords(domain string) (models.Records, error) {
+func (c *octodnsProvider) GetZoneRecords(domain string) (models.Records, error) {
 	return nil, fmt.Errorf("not implemented")
 	// This enables the get-zones subcommand.
 	// Implement this by extracting the code from GetDomainCorrections into
@@ -88,7 +92,7 @@ func (c *Provider) GetZoneRecords(domain string) (models.Records, error) {
 }
 
 // GetDomainCorrections returns a list of corrections to update a domain.
-func (c *Provider) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Correction, error) {
+func (c *octodnsProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Correction, error) {
 	dc.Punycode()
 	// Phase 1: Copy everything to []*models.RecordConfig:
 	//    expectedRecords < dc.Records[i]
@@ -123,6 +127,7 @@ func (c *Provider) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Corr
 
 	// Normalize
 	models.PostProcessRecords(foundRecords)
+	txtutil.SplitSingleLongTxt(dc.Records) // Autosplit long TXT records
 
 	differ := diff.New(dc)
 	_, create, del, mod, err := differ.IncrementalDiff(foundRecords)

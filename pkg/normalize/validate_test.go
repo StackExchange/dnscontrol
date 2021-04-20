@@ -293,14 +293,14 @@ const (
 )
 
 func init() {
-	providers.RegisterDomainServiceProviderType(ProviderNoDS, nil, providers.DocumentationNotes{})
-	providers.RegisterDomainServiceProviderType(ProviderFullDS, nil, providers.DocumentationNotes{
+	providers.RegisterDomainServiceProviderType(ProviderNoDS, providers.DspFuncs{}, providers.DocumentationNotes{})
+	providers.RegisterDomainServiceProviderType(ProviderFullDS, providers.DspFuncs{}, providers.DocumentationNotes{
 		providers.CanUseDS: providers.Can(),
 	})
-	providers.RegisterDomainServiceProviderType(ProviderChildDSOnly, nil, providers.DocumentationNotes{
+	providers.RegisterDomainServiceProviderType(ProviderChildDSOnly, providers.DspFuncs{}, providers.DocumentationNotes{
 		providers.CanUseDSForChildren: providers.Can(),
 	})
-	providers.RegisterDomainServiceProviderType(ProviderBothDSCaps, nil, providers.DocumentationNotes{
+	providers.RegisterDomainServiceProviderType(ProviderBothDSCaps, providers.DspFuncs{}, providers.DocumentationNotes{
 		providers.CanUseDS:            providers.Can(),
 		providers.CanUseDSForChildren: providers.Can(),
 	})

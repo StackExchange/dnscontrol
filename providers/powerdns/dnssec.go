@@ -8,7 +8,7 @@ import (
 )
 
 // getDNSSECCorrections returns corrections that update a domain's DNSSEC state.
-func (api *PowerDNS) getDNSSECCorrections(dc *models.DomainConfig) ([]*models.Correction, error) {
+func (api *powerdnsProvider) getDNSSECCorrections(dc *models.DomainConfig) ([]*models.Correction, error) {
 	cryptokeys, getErr := api.client.Cryptokeys().ListCryptokeys(context.Background(), api.ServerName, dc.Name)
 	if getErr != nil {
 		return nil, getErr
@@ -52,7 +52,7 @@ func (api *PowerDNS) getDNSSECCorrections(dc *models.DomainConfig) ([]*models.Co
 }
 
 // enableDnssec creates a active and published cryptokey on this domain
-func (api *PowerDNS) enableDnssec(domain string) (bool, error) {
+func (api *powerdnsProvider) enableDnssec(domain string) (bool, error) {
 	// if there is now key, create one and enable it
 	_, err := api.client.Cryptokeys().CreateCryptokey(context.Background(), api.ServerName, domain, cryptokeys.Cryptokey{
 		KeyType:   "csk",
@@ -66,7 +66,7 @@ func (api *PowerDNS) enableDnssec(domain string) (bool, error) {
 }
 
 // removeDnssec removes the cryptokey from this zone
-func (api *PowerDNS) removeDnssec(domain string, keyID int) (bool, error) {
+func (api *powerdnsProvider) removeDnssec(domain string, keyID int) (bool, error) {
 	err := api.client.Cryptokeys().DeleteCryptokey(context.Background(), api.ServerName, domain, keyID)
 	if err != nil {
 		return false, err

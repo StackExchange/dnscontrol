@@ -4,26 +4,28 @@
     "domain": "$AD_DOMAIN"
   },
   "AXFRDDNS": {
+    "domain": "$AXFRDDNS_DOMAIN",
     "master": "$AXFRDDNS_MASTER",
     "nameservers": "ns.example.com",
     "transfer-key": "$AXFRDDNS_TRANSFER_KEY",
-    "update-key": "$AXFRDDNS_UPDATE_KEY",
-    "domain": "$AXFRDDNS_DOMAIN"
+    "update-key": "$AXFRDDNS_UPDATE_KEY"
   },
   "AZURE_DNS": {
-    "ClientID": "$AZURE_CLIENT_ID",
-    "ClientSecret": "$AZURE_CLIENT_SECRET",
-    "ResourceGroup": "$AZURE_RESOURCE_GROUP",
-    "SubscriptionID": "$AZURE_SUBSCRIPTION_ID",
-    "TenantID": "$AZURE_TENANT_ID",
-    "domain": "$AZURE_DOMAIN"
+    "ClientID": "$AZURE_DNS_CLIENT_ID",
+    "ClientSecret": "$AZURE_DNS_CLIENT_SECRET",
+    "ResourceGroup": "$AZURE_DNS_RESOURCE_GROUP",
+    "SubscriptionID": "$AZURE_DNS_SUBSCRIPTION_ID",
+    "TenantID": "$AZURE_DNS_TENANT_ID",
+    "domain": "$AZURE_DNS_DOMAIN"
   },
   "BIND": {
-    "domain": "example.com"
+    "domain": "$BIND_DOMAIN"
   },
   "CLOUDFLAREAPI": {
-    "apitoken": "$CF_TOKEN",
-    "domain": "$CF_DOMAIN"
+    "apikey": "$CLOUDFLAREAPI_KEY",
+    "apitoken": "$CLOUDFLAREAPI_TOKEN",
+    "apiuser": "$CLOUDFLAREAPI_USER",
+    "domain": "$CLOUDFLAREAPI_DOMAIN"
   },
   "CLOUDFLAREAPI_OLD": {
     "apikey": "$CF_KEY",
@@ -33,17 +35,24 @@
   },
   "CLOUDNS": {
     "auth-id": "$CLOUDNS_AUTH_ID",
+    "sub-auth-id": "$CLOUDNS_SUB_AUTH_ID",
     "auth-password": "$CLOUDNS_AUTH_PASSWORD",
     "domain": "$CLOUDNS_DOMAIN"
   },
   "DIGITALOCEAN": {
-    "domain": "$DO_DOMAIN",
-    "token": "$DO_TOKEN"
+    "domain": "$DIGITALOCEAN_DOMAIN",
+    "token": "$DIGITALOCEAN_TOKEN"
   },
   "DNSIMPLE": {
     "baseurl": "https://api.sandbox.dnsimple.com",
     "domain": "$DNSIMPLE_DOMAIN",
     "token": "$DNSIMPLE_TOKEN"
+  },
+  "DNSMADEEASY": {
+    "domain": "$DNSMADEEASY_DOMAIN",
+    "sandbox": "true",
+    "api_key": "$DNSMADEEASY_API_KEY",
+    "secret_key": "$DNSMADEEASY_SECRET_KEY"
   },
   "EXOSCALE": {
     "apikey": "$EXOSCALE_API_KEY",
@@ -63,23 +72,44 @@
     "type": "$GCLOUD_TYPE"
   },
   "HEDNS": {
-    "username": "$HEDNS_USERNAME",
+    "domain": "$HEDNS_DOMAIN",
     "password": "$HEDNS_PASSWORD",
-    "totp-key": "$HEDNS_TOTP_SECRET",
     "session-file-path": ".",
-    "domain": "$HEDNS_DOMAIN"
+    "totp-key": "$HEDNS_TOTP_SECRET",
+    "username": "$HEDNS_USERNAME"
+  },
+  "HETZNER": {
+    "api_key": "$HETZNER_API_KEY",
+    "domain": "$HETZNER_DOMAIN",
+    "optimize_for_rate_limit_quota": "Hour",
+    "start_with_default_rate_limit": "true"
   },
   "HEXONET": {
     "apientity": "$HEXONET_ENTITY",
     "apilogin": "$HEXONET_UID",
     "apipassword": "$HEXONET_PW",
     "debugmode": "$HEXONET_DEBUGMODE",
-    "domain": "dnscontrol.com",
+    "domain": "$HEXONET_DOMAIN",
     "ipaddress": "$HEXONET_IP"
+  },
+  "HOSTINGDE": {
+    "authToken": "$HOSTINGDE_AUTHTOKEN",
+    "domain": "$HOSTINGDE_DOMAIN"
+  },
+  "INWX": {
+    "domain": "$INWX_DOMAIN",
+    "password": "$INWX_PASSWORD",
+    "sandbox": "1",
+    "username": "$INWX_USER"
   },
   "LINODE": {
     "domain": "$LINODE_DOMAIN",
     "token": "$LINODE_TOKEN"
+  },
+  "MSDNS": {
+    "domain": "$MSDNS_DOMAIN",
+    "dnsserver": "$MSDNS_DNSSERVER",
+    "pssession": "$MSDNS_PSSESSION"
   },
   "NAMECHEAP": {
     "apikey": "$NAMECHEAP_KEY",
@@ -106,6 +136,15 @@
     "directory": "config",
     "domain": "example.com"
   },
+  "ORACLE": {
+    "user_ocid": "$ORACLE_USER_OCID",
+    "tenancy_ocid": "$ORACLE_TENANCY_OCID",
+    "fingerprint": "$ORACLE_FINGERPRINT",
+    "region": "$ORACLE_REGION",
+    "private_key": "$ORACLE_PRIVATE_KEY",
+    "compartment": "$ORACLE_COMPARTMENT",
+    "domain": "$ORACLE_DOMAIN"
+  },
   "OVH": {
     "app-key": "$OVH_APP_KEY",
     "app-secret-key": "$OVH_APP_SECRET_KEY",
@@ -113,14 +152,15 @@
     "domain": "$OVH_DOMAIN"
   },
   "POWERDNS": {
-    "apikey": "$POWERDNS_APIKEY",
-    "apiurl": "$POWERDNS_APIURL",
-    "servername": "$POWERDNS_SERVERNAME"
+    "apiKey": "$POWERDNS_APIKEY",
+    "apiUrl": "$POWERDNS_APIURL",
+    "serverName": "$POWERDNS_SERVERNAME",
+    "domain": "$POWERDNS_DOMAIN"
   },
   "ROUTE53": {
-    "KeyId": "$R53_KEY_ID",
-    "SecretKey": "$R53_KEY",
-    "domain": "$R53_DOMAIN"
+    "KeyId": "$ROUTE53_KEY_ID",
+    "SecretKey": "$ROUTE53_KEY",
+    "domain": "$ROUTE53_DOMAIN"
   },
   "SOFTLAYER": {
     "api_key": "$SL_API_KEY",
@@ -130,11 +170,5 @@
   "VULTR": {
     "domain": "$VULTR_DOMAIN",
     "token": "$VULTR_TOKEN"
-  },
-  "INWX": {
-    "username":  "$INWX_USER",
-    "password": "$INWX_PASSWORD",
-    "domain": "$INWX_DOMAIN",
-    "sandbox": "1",
   }
 }

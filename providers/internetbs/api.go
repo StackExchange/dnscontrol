@@ -10,7 +10,7 @@ import (
 
 // Api layer for Internet.bs
 
-type api struct {
+type internetbsProvider struct {
 	key      string
 	password string
 }
@@ -28,7 +28,7 @@ type domainRecord struct {
 	Nameserver []string `json:"nameserver"`
 }
 
-func (c *api) getNameservers(domain string) ([]string, error) {
+func (c *internetbsProvider) getNameservers(domain string) ([]string, error) {
 	var bodyString, err = c.get("/Domain/Info", requestParams{"Domain": domain})
 	if err != nil {
 		return []string{}, fmt.Errorf("failed fetching nameservers list (Internet.bs): %s", err)
@@ -40,7 +40,7 @@ func (c *api) getNameservers(domain string) ([]string, error) {
 	return ns, nil
 }
 
-func (c *api) updateNameservers(ns []string, domain string) error {
+func (c *internetbsProvider) updateNameservers(ns []string, domain string) error {
 	rec := requestParams{}
 	rec["Domain"] = domain
 	rec["Ns_list"] = strings.Join(ns, ",")
@@ -50,7 +50,7 @@ func (c *api) updateNameservers(ns []string, domain string) error {
 	return nil
 }
 
-func (c *api) get(endpoint string, params requestParams) ([]byte, error) {
+func (c *internetbsProvider) get(endpoint string, params requestParams) ([]byte, error) {
 	client := &http.Client{}
 	req, _ := http.NewRequest("GET", "https://api.internet.bs/"+endpoint, nil)
 	q := req.URL.Query()

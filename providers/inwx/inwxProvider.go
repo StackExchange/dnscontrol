@@ -9,6 +9,7 @@ import (
 
 	"github.com/StackExchange/dnscontrol/v3/models"
 	"github.com/StackExchange/dnscontrol/v3/pkg/diff"
+	"github.com/StackExchange/dnscontrol/v3/pkg/txtutil"
 	"github.com/StackExchange/dnscontrol/v3/providers"
 
 	"github.com/nrdcg/goinwx"
@@ -49,7 +50,6 @@ var features = providers.DocumentationNotes{
 	providers.CanUseSRV:              providers.Can("SRV records with empty targets are not supported."),
 	providers.CanUseSSHFP:            providers.Can(),
 	providers.CanUseTLSA:             providers.Can(),
-	providers.CanUseTXTMulti:         providers.Cannot("INWX only supports a single entry for TXT records"),
 	providers.CanAutoDNSSEC:          providers.Unimplemented("Supported by INWX but not implemented yet."),
 	providers.DocOfficiallySupported: providers.Cannot(),
 	providers.DocDualHost:            providers.Can(),
@@ -68,7 +68,11 @@ type inwxAPI struct {
 // init registers the registrar and the domain service provider with dnscontrol.
 func init() {
 	providers.RegisterRegistrarType("INWX", newInwxReg)
-	providers.RegisterDomainServiceProviderType("INWX", newInwxDsp, features)
+	fns := providers.DspFuncs{
+		Initializer:    newInwxDsp,
+		RecordAuditor: AuditRecords,
+	}
+	providers.RegisterDomainServiceProviderType("INWX", fns, features)
 }
 
 // getOTP either returns the TOTPValue or uses TOTPKey and the current time to generate a valid TOTPValue.
@@ -207,6 +211,20 @@ func (api *inwxAPI) deleteRecord(RecordID int) error {
 	return api.client.Nameservers.DeleteRecord(RecordID)
 }
 
+// checkRecords ensures that there is no single-quote inside TXT records which would be ignored by INWX.
+func checkRecords(records models.Records) error {
+	for _, r := range records {
+		if r.Type == "TXT" {
+			for _, target := range r.TxtStrings {
+				if strings.ContainsAny(target, "`") {
+					return fmt.Errorf("INWX TXT records do not support single-quotes in their target")
+				}
+			}
+		}
+	}
+	return nil
+}
+
 // GetDomainCorrections finds the currently existing records and returns the corrections required to update them.
 func (api *inwxAPI) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Correction, error) {
 	dc.Punycode()
@@ -217,6 +235,12 @@ func (api *inwxAPI) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Cor
 	}
 
 	models.PostProcessRecords(foundRecords)
+	txtutil.SplitSingleLongTxt(dc.Records) // Autosplit long TXT records
+
+	err = checkRecords(dc.Records)
+	if err != nil {
+		return nil, err
+	}
 
 	differ := diff.New(dc)
 	_, create, del, mod, err := differ.IncrementalDiff(foundRecords)
@@ -304,9 +328,8 @@ func (api *inwxAPI) GetZoneRecords(domain string) (models.Records, error) {
 		default:
 			err = rc.PopulateFromString(rType, record.Content, domain)
 		}
-
 		if err != nil {
-			panic(fmt.Errorf("INWX: unparsable record received: %w", err))
+			return nil, fmt.Errorf("INWX: unparsable record received: %w", err)
 		}
 
 		records = append(records, rc)
