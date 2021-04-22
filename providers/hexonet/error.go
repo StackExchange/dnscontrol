@@ -3,7 +3,7 @@ package hexonet
 import (
 	"fmt"
 
-	"github.com/hexonet/go-sdk/response"
+	"github.com/hexonet/go-sdk/v3/response"
 )
 
 // GetHXApiError returns an error including API error code and error description.

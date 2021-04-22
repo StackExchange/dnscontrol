@@ -85,6 +85,14 @@ func (e errNoExist) Error() string {
 	return fmt.Sprintf("Domain %s not found in your ovh account", e.domain)
 }
 
+// ListZones lists the zones on this account.
+func (c *ovhProvider) ListZones() (zones []string, err error) {
+	for zone := range c.zones {
+		zones = append(zones, zone)
+	}
+	return
+}
+
 // GetZoneRecords gets the records of a zone and returns them in RecordConfig format.
 func (c *ovhProvider) GetZoneRecords(domain string) (models.Records, error) {
 	if !c.zones[domain] {
