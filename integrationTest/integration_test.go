@@ -1067,8 +1067,9 @@ func makeTests(t *testing.T) []*TestGroup {
 
 		testgroup("DS",
 			requires(providers.CanUseDS),
-			// Use a valid digest value here.  Some providers verify that a valid digest is in use.
-			// RFC 4034 s5.1.4 specifies SHA1 as the only digest algo at present, i.e. only hexadecimal values currently usable.
+			// Use a valid digest value here.  Some providers verify that a valid digest is in use.  See RFC 4034 and
+			// https://www.iana.org/assignments/dns-sec-alg-numbers/dns-sec-alg-numbers.xhtml
+			// https://www.iana.org/assignments/ds-rr-types/ds-rr-types.xhtml
 			tc("DS create", ds("@", 1, 13, 1, "da39a3ee5e6b4b0d3255bfef95601890afd80709")),
 			tc("DS change", ds("@", 8857, 8, 2, "4b9b6b073edd97feb5bc12dc4e1b32d2c6af7ae23a293936ceb87bb10494ec44")),
 			tc("DS change f1", ds("@", 3, 8, 2, "4b9b6b073edd97feb5bc12dc4e1b32d2c6af7ae23a293936ceb87bb10494ec44")),
@@ -1093,8 +1094,9 @@ func makeTests(t *testing.T) []*TestGroup {
 		testgroup("DS (children only)",
 			requires(providers.CanUseDSForChildren),
 			not("CLOUDNS", "CLOUDFLAREAPI"),
-			// Use a valid digest value here.  Some providers verify that a valid digest is in use.
-			// RFC 4034 s5.1.4 specifies SHA1 as the only digest algo at present, i.e. only hexadecimal values currently usable.
+			// Use a valid digest value here.  Some providers verify that a valid digest is in use.  See RFC 4034 and
+			// https://www.iana.org/assignments/dns-sec-alg-numbers/dns-sec-alg-numbers.xhtml
+			// https://www.iana.org/assignments/ds-rr-types/ds-rr-types.xhtml
 			tc("DSchild create", ds("child", 1, 13, 1, "da39a3ee5e6b4b0d3255bfef95601890afd80709")),
 			tc("DSchild change", ds("child", 8857, 8, 2, "4b9b6b073edd97feb5bc12dc4e1b32d2c6af7ae23a293936ceb87bb10494ec44")),
 			tc("DSchild change f1", ds("child", 3, 8, 2, "4b9b6b073edd97feb5bc12dc4e1b32d2c6af7ae23a293936ceb87bb10494ec44")),
