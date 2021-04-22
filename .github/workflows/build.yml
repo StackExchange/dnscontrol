@@ -20,6 +20,13 @@ jobs:
       uses: actions/setup-go@v2
       with:
         go-version: ^1.15
+    - name: Cache
+      uses: actions/cache@v2
+      with:
+        path: ~/go/pkg/mod
+        key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
+        restore-keys: |
+          ${{ runner.os }}-go-
     - name: Build binaries
       run: go run build/build.go
     - name: Run unit tests
@@ -42,6 +49,7 @@ jobs:
         - NAMEDOTCOM
         - ROUTE53
 # All others: (alphabetical)
+        - CLOUDNS
         - DIGITALOCEAN
         - GANDI_V5
         - HEDNS
@@ -86,6 +94,11 @@ jobs:
       CLOUDFLAREAPI_TOKEN: ${{ secrets.CLOUDFLAREAPI_TOKEN }}
       CLOUDFLAREAPI_USER: ${{ secrets.CLOUDFLAREAPI_USER }}
 #
+      CLOUDNS_DOMAIN: ${{ secrets.CLOUDNS_DOMAIN }}
+      CLOUDNS_AUTH_ID: ${{ secrets.CLOUDNS_AUTH_ID }}
+      CLOUDNS_AUTH_PASSWORD: ${{ secrets.CLOUDNS_AUTH_PASSWORD }}
+      CLOUDNS_SUB_AUTH_ID: ${{ secrets.CLOUDNS_SUB_AUTH_ID }}
+#
       GCLOUD_DOMAIN: ${{ secrets.GCLOUD_DOMAIN }}
       GCLOUD_EMAIL: dnscontrol@dnscontrol-dev.iam.gserviceaccount.com
       GCLOUD_PRIVATEKEY: ${{ secrets.GCLOUD_PRIVATEKEY }}
@@ -129,10 +142,17 @@ jobs:
       uses: actions/setup-go@v2
       with:
         go-version: ^1.15
+    - name: Cache
+      uses: actions/cache@v2
+      with:
+        path: ~/go/pkg/mod
+        key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
+        restore-keys: |
+          ${{ runner.os }}-go-
     - name: Determining test viability for ${{ matrix.provider }} provider
       run: if [ -n "$${{ matrix.provider }}_DOMAIN" ] ; then echo "CAN_CONTINUE=yes" >> "$GITHUB_ENV" ; fi
     - name: Run integration tests for ${{ matrix.provider }} provider
       if: env.CAN_CONTINUE == 'yes'
       working-directory: integrationTest
-      run: go test -v -verbose -provider ${{ matrix.provider }}
+      run: go test -timeout 20m -v -verbose -provider ${{ matrix.provider }}
 ...

@@ -9,7 +9,7 @@ import (
 	"time"
 )
 
-// Api layer for CloDNS
+// Api layer for ClouDNS
 type cloudnsProvider struct {
 	domainIndex      map[string]string
 	nameserversNames []string
@@ -71,21 +71,7 @@ type domainRecord struct {
 
 type recordResponse map[string]domainRecord
 
-var allowedTTLValues = []uint32{
-	60,      // 1 minute
-	300,     // 5 minutes
-	900,     // 15 minutes
-	1800,    // 30 minutes
-	3600,    // 1 hour
-	21600,   // 6 hours
-	43200,   // 12 hours
-	86400,   // 1 day
-	172800,  // 2 days
-	259200,  // 3 days
-	604800,  // 1 week
-	1209600, // 2 weeks
-	2419200, // 4 weeks
-}
+var allowedTTLValues = []uint32{}
 
 func (c *cloudnsProvider) fetchAvailableNameservers() error {
 	c.nameserversNames = nil
@@ -104,6 +90,21 @@ func (c *cloudnsProvider) fetchAvailableNameservers() error {
 		}
 
 	}
+	return nil
+}
+
+func (c *cloudnsProvider) fetchAvailableTTLValues(domain string) error {
+	allowedTTLValues = nil
+	params := requestParams{
+		"domain-name": domain,
+	}
+
+	var bodyString, err = c.get("/dns/get-available-ttl.json", params)
+	if err != nil {
+		return fmt.Errorf("failed fetching available TTL values list from ClouDNS: %s", err)
+	}
+
+	json.Unmarshal(bodyString, &allowedTTLValues)
 	return nil
 }
 
