@@ -48,6 +48,29 @@ var BIND = NewDnsProvider('bind', 'BIND', {
 })
 {% endhighlight %}
 
+# FYI: SOA Records
+
+SOA records are a bit weird in DNSControl.   Most providers auto-generate SOA records and do not permit any modifications. BIND is unique in that it requires users to manage the SOA records themselves.
+
+Because BIND is unique, BIND's SOA support is kind of a hack.  It leaves the SOA record alone, with 2 exceptions:
+
+1. The serial number: If something in the zone changes, the serial number is incremented (see below).
+2. Missing SOAs: If there is no SOA record in a zone (or the zone is being created for the first time), the SOA is created.  The initial values are taken from the `default_soa` settings.
+
+The `default_soa` values are only used when creating an SOA for the first time. The values are not used to update an SOA.  *Therefore, the only way to change an existing SOA is to edit the zone file.*
+
+There is an effort to make SOA records handled like A, CNAME, and other records.  See https://github.com/StackExchange/dnscontrol/issues/1131
+
+
+# FYI: SOA serial numbers
+
+DNSControl tries to maintain the serial number as yyyymmddvv. The algorithm for increasing the serial number is to select the max of (current serial + 1) and (yyyymmdd00). If you use a number larger than today's date (say, 2099000099) DNSControl will simply increment it forever.
+
+The good news is that DNSControl is smart enough to only increment a zone's serial number if something in the zone changed. It does not increment the serial number just because DNSControl ran.
+
+DNSControl does not handle special serial number math such as "looping through zero" nor does it pay attention to the rules around the maximum delta permitted. Those are simply avoided because yyyymmdd99 fits in the first quadrant of the 32-bit serial number space. If you don't understand this paragraph consider yourself lucky; with DNSControl you don't need to.
+
+
 # filenameformat
 
 The `filenameformat` parameter specifies the file name to be used when
@@ -97,24 +120,3 @@ filenames are zones but doesn't try to hard to get it right, which is
 mathematically impossible in all cases.  Feel free to file an issue if
 your format string doesn't work. I love a challenge!
 
-# FYI: SOA Records
-
-DNSControl assumes that SOA records are managed by the provider.  Most
-providers simply generate the SOA record for you and do not permit you
-to control it at all.  The BIND provider is unique in that it must emulate
-what most DNS-as-a-service providers do.
-
-When DNSControl reads a BIND zonefile:
-
-* If there was no SOA record, one is created using the `default_soa`
-  settings listed above.
-* When generating a new zonefile, the SOA serial number is
-  updated.
-
-DNSControl tries to maintain the serial number as yyyymmddvv. If the
-existing serial number is significantly higher it will simply
-increment the value by 1.
-
-If you need to edit the SOA fields, the best way is to edit the
-zonefile directly, then run `dnscontrol preview` and `dnscontrol push`
-as normal.
