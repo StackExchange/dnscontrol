@@ -46,7 +46,7 @@ func (rc *RecordConfig) SetTargetDSStrings(keytag, algorithm, digesttype, digest
 func (rc *RecordConfig) SetTargetDSString(s string) error {
 	part := strings.Fields(s)
 	if len(part) != 4 {
-		return errors.Errorf("DS value does not contain 5 fields: (%#v)", s)
+		return errors.Errorf("DS value does not contain 4 fields: (%#v)", s)
 	}
 	return rc.SetTargetDSStrings(part[0], part[1], part[2], part[3])
 }

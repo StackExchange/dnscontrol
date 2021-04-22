@@ -119,7 +119,7 @@ Merge the PR into Master.
 
 a. Publish the release.
 
-* Make sure the "This is a pre-release" checkbox is UNchecked. 
+* Make sure the "This is a pre-release" checkbox is UNchecked.
 * Click "Publish Release".
 
 b. Wait for workflow to complete
@@ -167,25 +167,27 @@ If you are at Stack Overflow:
 
 # Tip: How to update modules
 
-List out-of-date modules and update any that
+List out-of-date modules and update any that seem worth updating:
+
+```
+go get github.com/oligot/go-mod-upgrade
+go-mod-upgrade
+go mod tidy
+```
+
+OLD WAY:
 
 ```
 go get -u github.com/psampaz/go-mod-outdated
 go list -mod=mod -u -m -json all | go-mod-outdated -update -direct
-```
 
-To update a module, `get` it, then re-run the unit and integration tests.
+# If any are out of date, update via:
 
-```
 go get -u
     or
 go get -u module/path
-```
 
-Once the updates are complete, tidy up:
+# Once the updates are complete, tidy up:
 
-```
 go mod tidy
 ```
-
-When done, vendor the modules (see Step 1 above).
