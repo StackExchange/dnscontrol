@@ -8,6 +8,7 @@ import (
 	"strconv"
 	"strings"
 	"testing"
+	"time"
 
 	"github.com/StackExchange/dnscontrol/v3/models"
 	"github.com/StackExchange/dnscontrol/v3/pkg/nameservers"
@@ -22,6 +23,7 @@ var providerToRun = flag.String("provider", "", "Provider to run")
 var startIdx = flag.Int("start", 0, "Test number to begin with")
 var endIdx = flag.Int("end", 0, "Test index to stop after")
 var verbose = flag.Bool("verbose", false, "Print corrections as you run them")
+var printElapsed = flag.Bool("elapsed", false, "Print elapsed time for each testgroup")
 
 func init() {
 	testing.Init()
@@ -239,6 +241,7 @@ func runTests(t *testing.T, prv providers.DNSServiceProvider, domainName string,
 
 	curGroup := -1
 	for gIdx, group := range testGroups {
+		start := time.Now()
 
 		// Abide by -start -end flags
 		curGroup++
@@ -256,7 +259,9 @@ func runTests(t *testing.T, prv providers.DNSServiceProvider, domainName string,
 		// Run the tests.
 
 		for _, tst := range group.tests {
+
 			makeChanges(t, prv, dc, tst, fmt.Sprintf("%02d:%s", gIdx, group.Desc), true, origConfig)
+
 			if t.Failed() {
 				break
 			}
@@ -264,6 +269,11 @@ func runTests(t *testing.T, prv providers.DNSServiceProvider, domainName string,
 
 		// Remove all records so next group starts with a clean slate.
 		makeChanges(t, prv, dc, tc("Empty"), "Post cleanup", false, nil)
+
+		elapsed := time.Since(start)
+		if *printElapsed {
+			fmt.Printf("ELAPSED %02d %7.2f %q\n", gIdx, elapsed.Seconds(), group.Desc)
+		}
 
 	}
 
@@ -798,8 +808,8 @@ func makeTests(t *testing.T) []*TestGroup {
 			tc("TXT with 0-octel string", txt("foo1", "")),
 			// https://github.com/StackExchange/dnscontrol/issues/598
 			// RFC1035 permits this, but rarely do provider support it.
-			clear(),
-			tc("Create a 253-byte TXT", txt("foo253", strings.Repeat("A", 253))),
+			//clear(),
+			//tc("Create a 253-byte TXT", txt("foo253", strings.Repeat("A", 253))),
 			clear(),
 			tc("Create a 254-byte TXT", txt("foo254", strings.Repeat("B", 254))),
 			clear(),
@@ -807,8 +817,8 @@ func makeTests(t *testing.T) []*TestGroup {
 			clear(),
 			tc("Create a 256-byte TXT", txt("foo256", strings.Repeat("D", 256))),
 			clear(),
-			tc("Create a 257-byte TXT", txt("foo257", strings.Repeat("E", 257))),
-			clear(),
+			//tc("Create a 257-byte TXT", txt("foo257", strings.Repeat("E", 257))),
+			//clear(),
 			tc("Create TXT with single-quote", txt("foosq", "quo'te")),
 			clear(),
 			tc("Create TXT with backtick", txt("foobt", "blah`blah")),
@@ -816,16 +826,17 @@ func makeTests(t *testing.T) []*TestGroup {
 			tc("Create TXT with double-quote", txt("foodq", `quo"te`)),
 			clear(),
 			tc("Create TXT with ws at end", txt("foows1", "with space at end ")),
-			clear(), gentxt("0"),
-			clear(), gentxt("1"),
-			clear(), gentxt("10"),
-			clear(), gentxt("11"),
-			clear(), gentxt("100"),
-			clear(), gentxt("101"),
-			clear(), gentxt("110"),
-			clear(), gentxt("111"),
-			clear(), gentxt("1hh"),
-			clear(), gentxt("1hh0"),
+			clear(),
+			gentxt("0"),
+			gentxt("1"),
+			gentxt("10"),
+			gentxt("11"),
+			gentxt("100"),
+			gentxt("101"),
+			gentxt("110"),
+			gentxt("111"),
+			gentxt("1hh"),
+			gentxt("1hh0"),
 		),
 
 		testgroup("long TXT",
@@ -875,7 +886,7 @@ func makeTests(t *testing.T) []*TestGroup {
 		),
 
 		// Test the ability to change TXT records on the SAME labels accurately.
-		testgroup("TXTMulti",
+		testgroup("TXTMulti-same",
 			tc("Create TXTMulti 1",
 				txtmulti("foo", []string{"simple"}),
 			),
@@ -947,6 +958,8 @@ func makeTests(t *testing.T) []*TestGroup {
 				"NS1",           // Free acct only allows 50 records, therefore we skip
 				"CLOUDFLAREAPI", // Infinite pagesize but due to slow speed, skipping.
 				"MSDNS",         //  No paging done. No need to test.
+				"NAMEDOTCOM",    // Their API is so damn slow. We'll add it back as needed.
+				"GANDI_V5",      // Their API is so damn slow. We'll add it back as needed.
 			),
 			tc("99 records", manyA("rec%04d", "1.2.3.4", 99)...),
 			tc("100 records", manyA("rec%04d", "1.2.3.4", 100)...),
