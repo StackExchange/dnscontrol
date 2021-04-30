@@ -39,7 +39,7 @@ func newPowerShell(config map[string]string) (*psHandle, error) {
 			Username: config["psusername"],
 			Password: config["pspassword"],
 		}
-		if cred.Password != "" || cred.Username != "" {
+		if cred.Password != "" && cred.Username != "" {
 			mconfig.Credential = cred
 		}
 
