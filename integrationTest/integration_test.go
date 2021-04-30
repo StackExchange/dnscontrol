@@ -708,20 +708,64 @@ func makeTests(t *testing.T) []*TestGroup {
 		),
 
 		testgroup("IGNORE_NAME function",
-			tc("Create some records", txt("foo", "simple"), a("foo", "1.2.3.4")),
-			tc("Add a new record - ignoring foo", a("bar", "1.2.3.4"), ignoreName("foo")),
+			tc("Create some records",
+				txt("foo", "simple"),
+				a("foo", "1.2.3.4"),
+			),
+			tc("Add a new record - ignoring foo",
+				a("bar", "1.2.3.4"),
+				ignoreName("foo"),
+			),
 			clear(),
-			tc("Create some records", txt("bar.foo", "simple"), a("bar.foo", "1.2.3.4")),
-			tc("Add a new record - ignoring *.foo", a("bar", "1.2.3.4"), ignoreName("*.foo")),
+			tc("Create some records",
+				txt("bar.foo", "simple"),
+				a("bar.foo", "1.2.3.4"),
+			),
+			tc("Add a new record - ignoring *.foo",
+				a("bar", "1.2.3.4"),
+				ignoreName("*.foo"),
+			),
+		),
+
+		testgroup("IGNORE_NAME apex",
+			tc("Create some records",
+				txt("@", "simple"),
+				a("@", "1.2.3.4"),
+				txt("bar", "stringbar"),
+				a("bar", "2.4.6.8"),
+			),
+			tc("Add a new record - ignoring apex",
+				txt("bar", "stringbar"),
+				a("bar", "2.4.6.8"),
+				a("added", "4.6.8.9"),
+				ignoreName("@"),
+			),
 		),
 
 		testgroup("IGNORE_TARGET function",
-			tc("Create some records", cname("foo", "test.foo.com."), cname("bar", "test.bar.com.")),
-			tc("Add a new record - ignoring test.foo.com.", cname("bar", "bar.foo.com."), ignoreTarget("test.foo.com.", "CNAME")),
+			tc("Create some records",
+				cname("foo", "test.foo.com."),
+				cname("bar", "test.bar.com."),
+			),
+			tc("Add a new record - ignoring test.foo.com.",
+				cname("bar", "bar.foo.com."),
+				ignoreTarget("test.foo.com.", "CNAME"),
+			),
 			clear(),
-			tc("Create some records", cname("bar.foo", "a.b.foo.com."), a("test.foo", "1.2.3.4")),
-			tc("Add a new record - ignoring **.foo.com. targets", a("bar", "1.2.3.4"), ignoreTarget("**.foo.com.", "CNAME")),
+			tc("Create some records",
+				cname("bar.foo", "a.b.foo.com."),
+				a("test.foo", "1.2.3.4"),
+			),
+			tc("Add a new record - ignoring **.foo.com. targets",
+				a("bar", "1.2.3.4"),
+				ignoreTarget("**.foo.com.", "CNAME"),
+			),
 		),
+
+		// NB(tlim): We don't have a test for IGNORE_TARGET at the apex
+		// because IGNORE_TARGET only works on CNAMEs and you can't have a
+		// CNAME at the apex.  If we extend IGNORE_TARGET to support other
+		// types of records, we should add a test at the apex.
 
 		testgroup("simple TXT",
 			tc("Create a TXT", txt("foo", "simple")),
@@ -1023,43 +1067,56 @@ func makeTests(t *testing.T) []*TestGroup {
 
 		testgroup("DS",
 			requires(providers.CanUseDS),
-			tc("create DS", ds("@", 1, 13, 1, "ADIGEST")),
-			tc("modify field 1", ds("@", 65535, 13, 1, "ADIGEST")),
-			tc("modify field 3", ds("@", 65535, 13, 2, "ADIGEST")),
-			tc("modify field 2+3", ds("@", 65535, 1, 4, "ADIGEST")),
-			tc("modify field 2", ds("@", 65535, 3, 4, "ADIGEST")),
-			tc("modify field 2", ds("@", 65535, 254, 4, "ADIGEST")),
-			tc("delete 1, create 1", ds("foo", 2, 13, 4, "ADIGEST")),
-			tc("add 2 more DS", ds("foo", 2, 13, 4, "ADIGEST"), ds("@", 65535, 5, 4, "ADIGEST"), ds("@", 65535, 253, 4, "ADIGEST")),
+			// Use a valid digest value here.  Some providers verify that a valid digest is in use.  See RFC 4034 and
+			// https://www.iana.org/assignments/dns-sec-alg-numbers/dns-sec-alg-numbers.xhtml
+			// https://www.iana.org/assignments/ds-rr-types/ds-rr-types.xhtml
+			tc("DS create", ds("@", 1, 13, 1, "da39a3ee5e6b4b0d3255bfef95601890afd80709")),
+			tc("DS change", ds("@", 8857, 8, 2, "4b9b6b073edd97feb5bc12dc4e1b32d2c6af7ae23a293936ceb87bb10494ec44")),
+			tc("DS change f1", ds("@", 3, 8, 2, "4b9b6b073edd97feb5bc12dc4e1b32d2c6af7ae23a293936ceb87bb10494ec44")),
+			tc("DS change f2", ds("@", 3, 13, 2, "4b9b6b073edd97feb5bc12dc4e1b32d2c6af7ae23a293936ceb87bb10494ec44")),
+			tc("DS change f3+4", ds("@", 3, 13, 1, "da39a3ee5e6b4b0d3255bfef95601890afd80709")),
+			tc("DS delete 1, create child", ds("another-child", 44, 13, 2, "4b9b6b073edd97feb5bc12dc4e1b32d2c6af7ae23a293936ceb87bb10494ec44")),
+			tc("add 2 more DS",
+				ds("another-child", 44, 13, 2, "4b9b6b073edd97feb5bc12dc4e1b32d2c6af7ae23a293936ceb87bb10494ec44"),
+				ds("another-child", 1501, 13, 1, "ee02c885b5b4ed64899f2d43eb2b8e6619bdb50c"),
+				ds("another-child", 1502, 8, 2, "2fa14f53e6b15cac9ac77846c7be87862c2a7e9ec0c6cea319db939317f126ed"),
+				ds("another-child", 65535, 13, 2, "2fa14f53e6b15cac9ac77846c7be87862c2a7e9ec0c6cea319db939317f126ed"),
+			),
+			// These are the same as below.
+			tc("DSchild create", ds("child", 1, 13, 1, "da39a3ee5e6b4b0d3255bfef95601890afd80709")),
+			tc("DSchild change", ds("child", 8857, 8, 2, "4b9b6b073edd97feb5bc12dc4e1b32d2c6af7ae23a293936ceb87bb10494ec44")),
+			tc("DSchild change f1", ds("child", 3, 8, 2, "4b9b6b073edd97feb5bc12dc4e1b32d2c6af7ae23a293936ceb87bb10494ec44")),
+			tc("DSchild change f2", ds("child", 3, 13, 2, "4b9b6b073edd97feb5bc12dc4e1b32d2c6af7ae23a293936ceb87bb10494ec44")),
+			tc("DSchild change f3+4", ds("child", 3, 13, 1, "da39a3ee5e6b4b0d3255bfef95601890afd80709")),
+			tc("DSchild delete 1, create child", ds("another-child", 44, 13, 2, "4b9b6b073edd97feb5bc12dc4e1b32d2c6af7ae23a293936ceb87bb10494ec44")),
 		),
 
 		testgroup("DS (children only)",
 			requires(providers.CanUseDSForChildren),
 			not("CLOUDNS", "CLOUDFLAREAPI"),
-			// Use a valid digest value here, because GCLOUD (which implements this capability) verifies
-			// the value passed in is a valid digest. RFC 4034, s5.1.4 specifies SHA1 as the only digest
-			// algo at present, i.e. only hexadecimal values currently usable.
-			tc("create DS", ds("child", 1, 13, 1, "0123456789ABCDEF")),
-			tc("modify field 1", ds("child", 65535, 13, 1, "0123456789ABCDEF")),
-			tc("modify field 3", ds("child", 65535, 13, 2, "0123456789ABCDEF")),
-			tc("modify field 2+3", ds("child", 65535, 1, 4, "0123456789ABCDEF")),
-			tc("modify field 2", ds("child", 65535, 3, 4, "0123456789ABCDEF")),
-			tc("modify field 2", ds("child", 65535, 254, 4, "0123456789ABCDEF")),
-			tc("delete 1, create 1", ds("another-child", 2, 13, 4, "0123456789ABCDEF")),
-			tc("add 2 more DS",
-				ds("another-child", 2, 13, 4, "0123456789ABCDEF"),
-				ds("another-child", 65535, 5, 4, "0123456789ABCDEF"),
-				ds("another-child", 65535, 253, 4, "0123456789ABCDEF"),
+			// Use a valid digest value here.  Some providers verify that a valid digest is in use.  See RFC 4034 and
+			// https://www.iana.org/assignments/dns-sec-alg-numbers/dns-sec-alg-numbers.xhtml
+			// https://www.iana.org/assignments/ds-rr-types/ds-rr-types.xhtml
+			tc("DSchild create", ds("child", 1, 13, 1, "da39a3ee5e6b4b0d3255bfef95601890afd80709")),
+			tc("DSchild change", ds("child", 8857, 8, 2, "4b9b6b073edd97feb5bc12dc4e1b32d2c6af7ae23a293936ceb87bb10494ec44")),
+			tc("DSchild change f1", ds("child", 3, 8, 2, "4b9b6b073edd97feb5bc12dc4e1b32d2c6af7ae23a293936ceb87bb10494ec44")),
+			tc("DSchild change f2", ds("child", 3, 13, 2, "4b9b6b073edd97feb5bc12dc4e1b32d2c6af7ae23a293936ceb87bb10494ec44")),
+			tc("DSchild change f3+4", ds("child", 3, 13, 1, "da39a3ee5e6b4b0d3255bfef95601890afd80709")),
+			tc("DSchild delete 1, create child", ds("another-child", 44, 13, 2, "4b9b6b073edd97feb5bc12dc4e1b32d2c6af7ae23a293936ceb87bb10494ec44")),
+			tc("add 2 more DSchild",
+				ds("another-child", 44, 13, 2, "4b9b6b073edd97feb5bc12dc4e1b32d2c6af7ae23a293936ceb87bb10494ec44"),
+				ds("another-child", 1501, 13, 1, "ee02c885b5b4ed64899f2d43eb2b8e6619bdb50c"),
+				ds("another-child", 1502, 8, 2, "2fa14f53e6b15cac9ac77846c7be87862c2a7e9ec0c6cea319db939317f126ed"),
+				ds("another-child", 65535, 13, 2, "2fa14f53e6b15cac9ac77846c7be87862c2a7e9ec0c6cea319db939317f126ed"),
 			),
 		),
 
 		testgroup("DS (children only) CLOUDNS",
 			requires(providers.CanUseDSForChildren),
 			only("CLOUDNS", "CLOUDFLAREAPI"),
-			// Use a valid digest value here, because GCLOUD (which implements this capability) verifies
-			// the value passed in is a valid digest. RFC 4034, s5.1.4 specifies SHA1 as the only digest
-			// algo at present, i.e. only hexadecimal values currently usable.
-			// Cloudns requires NS  Record before creating DS Record.
+			// Cloudns requires NS records before creating DS Record. Verify
+			// they are done in the right order, even if they are listed in
+			// the wrong order in dnsconfig.js.
 			tc("create DS",
 				// we test that provider correctly handles creating NS first by reversing the entries here
 				ds("child", 35632, 13, 1, "1E07663FF507A40874B8605463DD41DE482079D6"),

@@ -1,19 +1,27 @@
 {
-  "registrars": [],
   "dns_providers": [],
   "domains": [
     {
-      "name": "foo.com",
-      "registrar": "none",
       "dnsProviders": {},
-      "records": [],
       "ignored_names": [
         "testignore",
-        "legacyignore"
+        "legacyignore",
+        "@"
       ],
       "ignored_targets": [
-        {"pattern":"testtarget","type":"CNAME"}
-      ]
+        {
+          "pattern": "testtarget",
+          "type": "CNAME"
+        },
+        {
+          "pattern": "@",
+          "type": "CNAME"
+        }
+      ],
+      "name": "foo.com",
+      "records": [],
+      "registrar": "none"
     }
-  ]
+  ],
+  "registrars": []
 }
