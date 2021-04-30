@@ -35,6 +35,14 @@ func newPowerShell(config map[string]string) (*psHandle, error) {
 		mconfig := middleware.NewSessionConfig()
 		mconfig.ComputerName = pssession
 
+		cred := &middleware.UserPasswordCredential{
+			Username: config["psusername"],
+			Password: config["pspassword"],
+		}
+		if cred != nil {
+			mconfig.Credential = cred
+		}
+
 		session, err := middleware.NewSession(sh, mconfig)
 		if err != nil {
 			panic(err)
@@ -100,7 +108,11 @@ func (psh *psHandle) GetDNSZoneRecords(dnsserver, domain string) ([]nativeRecord
 		return nil, err
 	}
 	if stdout != "" {
-		fmt.Printf("STDOUT = %q\n", stderr)
+		if dnsserver != "" {
+			fmt.Printf("STDOUT = %q\n", stdout)
+		} else {
+			ioutil.WriteFile(tmpfile.Name(), []byte(stdout), 0)
+		}
 	}
 	if stderr != "" {
 		fmt.Printf("STDERROR = %q\n", stderr)
@@ -129,7 +141,9 @@ func generatePSZoneDump(dnsserver, domainname string, filename string) string {
 	fmt.Fprintf(&b, ` -ZoneName "%v"`, domainname)
 	fmt.Fprintf(&b, ` | `)
 	fmt.Fprintf(&b, `ConvertTo-Json -depth 4`) // Tested with 3 (causes errors).  4 and larger work.
-	fmt.Fprintf(&b, ` > %s`, filename)
+	if dnsserver != "" {
+		fmt.Fprintf(&b, ` > %s`, filename)
+	}
 	//fmt.Printf("DEBUG PSZoneDump CMD = (\n%s\n)\n", b.String())
 	return b.String()
 }
