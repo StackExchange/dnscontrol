@@ -103,23 +103,20 @@ func (psh *psHandle) GetDNSZoneRecords(dnsserver, domain string) ([]nativeRecord
 	}
 	tmpfile.Close()
 
-	stdout, stderr, err := psh.shell.Execute(generatePSZoneDump(dnsserver, domain, tmpfile.Name()))
+	stdout, stderr, err := psh.shell.Execute(generatePSZoneDump(dnsserver, domain))
 	if err != nil {
 		return nil, err
 	}
 	if stdout != "" {
-		if dnsserver != "" {
-			fmt.Printf("STDOUT = %q\n", stdout)
-		} else {
-			ioutil.WriteFile(tmpfile.Name(), []byte(stdout), 0)
-		}
+		//writing all stdout from powershell to file
+		ioutil.WriteFile(tmpfile.Name(), []byte(stdout), 0)
 	}
 	if stderr != "" {
 		fmt.Printf("STDERROR = %q\n", stderr)
 		return nil, fmt.Errorf("unexpected stderr from PSZoneDump: %q", stderr)
 	}
 
-	contents, err := utfutil.ReadFile(tmpfile.Name(), utfutil.WINDOWS)
+	contents, err := utfutil.ReadFile(tmpfile.Name(), utfutil.UTF8)
 	if err != nil {
 		return nil, err
 	}
@@ -132,7 +129,7 @@ func (psh *psHandle) GetDNSZoneRecords(dnsserver, domain string) ([]nativeRecord
 }
 
 // powerShellDump runs a PowerShell command to get a dump of all records in a DNS zone.
-func generatePSZoneDump(dnsserver, domainname string, filename string) string {
+func generatePSZoneDump(dnsserver, domainname string) string {
 	var b bytes.Buffer
 	fmt.Fprintf(&b, `Get-DnsServerResourceRecord`)
 	if dnsserver != "" {
@@ -141,9 +138,8 @@ func generatePSZoneDump(dnsserver, domainname string, filename string) string {
 	fmt.Fprintf(&b, ` -ZoneName "%v"`, domainname)
 	fmt.Fprintf(&b, ` | `)
 	fmt.Fprintf(&b, `ConvertTo-Json -depth 4`) // Tested with 3 (causes errors).  4 and larger work.
-	if dnsserver != "" {
-		fmt.Fprintf(&b, ` > %s`, filename)
-	}
+	// All file writing via dnsserver or pssession should be handled outside this function
+	//fmt.Fprintf(&b, ` > %s`, filename)
 	//fmt.Printf("DEBUG PSZoneDump CMD = (\n%s\n)\n", b.String())
 	return b.String()
 }
