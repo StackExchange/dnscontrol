@@ -22,8 +22,8 @@ import (
 	"unicode"
 
 	testifyrequire "github.com/stretchr/testify/require"
-	"github.com/tdewolff/minify"
-	minjson "github.com/tdewolff/minify/json"
+	"github.com/tdewolff/minify/v2"
+	minjson "github.com/tdewolff/minify/v2/json"
 )
 
 const (
