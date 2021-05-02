@@ -12,9 +12,11 @@ import (
 
 // This is the struct that matches either (or both) of the Registrar and/or DNSProvider interfaces:
 type msdnsProvider struct {
-	dnsserver string      // Which DNS Server to update
-	pssession string      // Remote machine to PSSession to
-	shell     DNSAccessor // Handle for
+	dnsserver  string      // Which DNS Server to update
+	pssession  string      // Remote machine to PSSession to
+	psusername string      // Remote username for PSSession
+	pspassword string      // Remote password for PSSession
+	shell      DNSAccessor // Handle for
 }
 
 var features = providers.DocumentationNotes{
@@ -34,7 +36,7 @@ var features = providers.DocumentationNotes{
 //   This establishes the name (all caps), and the function to call to initialize it.
 func init() {
 	fns := providers.DspFuncs{
-		Initializer:    newDNS,
+		Initializer:   newDNS,
 		RecordAuditor: AuditRecords,
 	}
 	providers.RegisterDomainServiceProviderType("MSDNS", fns, features)
@@ -50,7 +52,10 @@ func newDNS(config map[string]string, metadata json.RawMessage) (providers.DNSSe
 	var err error
 
 	p := &msdnsProvider{
-		dnsserver: config["dnsserver"],
+		dnsserver:  config["dnsserver"],
+		pssession:  config["pssession"],
+		psusername: config["psusername"],
+		pspassword: config["pspassword"],
 	}
 	p.shell, err = newPowerShell(config)
 	if err != nil {
