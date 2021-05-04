@@ -18,6 +18,17 @@ and [Yadifa](https://www.yadifa.eu/home).
 
 ## Configuration
 
+### Connection modes
+
+Zone transfers default to TCP, DDNS updates default to UDP when
+using this provider.
+
+The following two parameters in `creds.json` allow switching
+to TCP or TCP over TLS.
+
+* `update-mode`: May contain `udp` (the default), `tcp`, or `tcp-tls`.
+* `transfer-mode`: May contain `tcp` (the default), or `tcp-tls`.
+
 ### Authentication
 
 Authentication information is included in the `creds.json` entry for
