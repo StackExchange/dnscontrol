@@ -12,19 +12,19 @@ import (
 func TestSoaLabelAndTarget(t *testing.T) {
 	var tests = []struct {
 		isError bool
-		label string
-		target string
+		label   string
+		target  string
 	}{
-		{false, "@", 		"ns1.foo.com."},
+		{false, "@", "ns1.foo.com."},
 		// Invalid target
-		{true,  "@", 		"ns1.foo.com"},
+		{true, "@", "ns1.foo.com"},
 		// Invalid label, only '@' is allowed for SOA records
-		{true,  "foo.com", "ns1.foo.com."},
+		{true, "foo.com", "ns1.foo.com."},
 	}
 	for _, test := range tests {
 		experiment := fmt.Sprintf("%s %s", test.label, test.target)
-		rc := makeRC(test.label, "foo.com", test.target, models.RecordConfig{ Type: "SOA",
-						SoaExpire: 1, SoaMinttl: 1, SoaRefresh: 1, SoaRetry: 1, SoaSerial: 1, SoaMbox: "bar.foo.com"})
+		rc := makeRC(test.label, "foo.com", test.target, models.RecordConfig{Type: "SOA",
+			SoaExpire: 1, SoaMinttl: 1, SoaRefresh: 1, SoaRetry: 1, SoaSerial: 1, SoaMbox: "bar.foo.com"})
 		err := checkTargets(rc, "foo.com")
 		if err != nil && !test.isError {
 			t.Errorf("%v: Error (%v)\n", experiment, err)
@@ -38,32 +38,32 @@ func TestSoaLabelAndTarget(t *testing.T) {
 func TestCheckSoa(t *testing.T) {
 	var tests = []struct {
 		isError bool
-		expire uint32
-		minttl uint32
+		expire  uint32
+		minttl  uint32
 		refresh uint32
-		retry uint32
-		serial uint32
-		mbox string
+		retry   uint32
+		serial  uint32
+		mbox    string
 	}{
 		// Expire
-		{ false, 123, 123, 123, 123, 123, "foo.bar.com." },
-		{ true, 0, 123, 123, 123, 123, "foo.bar.com." },
+		{false, 123, 123, 123, 123, 123, "foo.bar.com."},
+		{true, 0, 123, 123, 123, 123, "foo.bar.com."},
 		// MinTTL
-		{ false, 123, 123, 123, 123, 123, "foo.bar.com." },
-		{ true, 123, 0, 123, 123, 123, "foo.bar.com." },
+		{false, 123, 123, 123, 123, 123, "foo.bar.com."},
+		{true, 123, 0, 123, 123, 123, "foo.bar.com."},
 		// Refresh
-		{ false, 123, 123, 123, 123, 123, "foo.bar.com." },
-		{ true, 123, 123, 0, 123, 123, "foo.bar.com." },
+		{false, 123, 123, 123, 123, 123, "foo.bar.com."},
+		{true, 123, 123, 0, 123, 123, "foo.bar.com."},
 		// Retry
-		{ false, 123, 123, 123, 123, 123, "foo.bar.com." },
-		{ true, 123, 123, 123, 0, 123, "foo.bar.com." },
+		{false, 123, 123, 123, 123, 123, "foo.bar.com."},
+		{true, 123, 123, 123, 0, 123, "foo.bar.com."},
 		// Serial
-		{ false, 123, 123, 123, 123, 123, "foo.bar.com." },
-		{ false, 123, 123, 123, 123, 0, "foo.bar.com." },
+		{false, 123, 123, 123, 123, 123, "foo.bar.com."},
+		{false, 123, 123, 123, 123, 0, "foo.bar.com."},
 		// MBox
-		{ true, 123, 123, 123, 123, 123, "" },
-		{ true, 123, 123, 123, 123, 123, "foo@bar.com." },
-		{ false, 123, 123, 123, 123, 123, "foo.bar.com." },
+		{true, 123, 123, 123, 123, 123, ""},
+		{true, 123, 123, 123, 123, 123, "foo@bar.com."},
+		{false, 123, 123, 123, 123, 123, "foo.bar.com."},
 	}
 
 	for _, test := range tests {
