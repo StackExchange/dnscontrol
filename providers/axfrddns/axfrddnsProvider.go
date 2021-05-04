@@ -136,7 +136,7 @@ func initAxfrDdns(config map[string]string, providermeta json.RawMessage) (provi
 			"nameservers",
 			"update-key",
 			"transfer-key",
-			"update-mode":
+			"update-mode",
 			"transfer-mode":
 			continue
 		default:
