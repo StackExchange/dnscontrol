@@ -186,7 +186,6 @@ func GetZone(args GetZoneArgs) error {
 		zoneRecs[i] = recs
 	}
 
-
 	// Write the heading:
 
 	if args.OutputFormat == "js" || args.OutputFormat == "djs" {

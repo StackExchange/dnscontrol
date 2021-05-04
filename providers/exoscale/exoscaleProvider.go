@@ -38,7 +38,7 @@ var features = providers.DocumentationNotes{
 
 func init() {
 	fns := providers.DspFuncs{
-		Initializer:          NewExoscale,
+		Initializer:   NewExoscale,
 		RecordAuditor: AuditRecords,
 	}
 	providers.RegisterDomainServiceProviderType("EXOSCALE", fns, features)

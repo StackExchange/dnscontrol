@@ -42,7 +42,7 @@ var features = providers.DocumentationNotes{
 func init() {
 	providers.RegisterRegistrarType("NAMECHEAP", newReg)
 	fns := providers.DspFuncs{
-		Initializer:          newDsp,
+		Initializer:   newDsp,
 		RecordAuditor: AuditRecords,
 	}
 	providers.RegisterDomainServiceProviderType("NAMECHEAP", fns, features)

@@ -118,7 +118,7 @@ func initAxfrDdns(config map[string]string, providermeta json.RawMessage) (provi
 
 func init() {
 	fns := providers.DspFuncs{
-		Initializer:    initAxfrDdns,
+		Initializer:   initAxfrDdns,
 		RecordAuditor: AuditRecords,
 	}
 	providers.RegisterDomainServiceProviderType("AXFRDDNS", fns, features)

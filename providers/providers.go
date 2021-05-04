@@ -47,7 +47,7 @@ type RecordAuditor func([]*models.RecordConfig) error
 
 // DspFuncs lists functions registered with a provider.
 type DspFuncs struct {
-	Initializer          DspInitializer
+	Initializer   DspInitializer
 	RecordAuditor RecordAuditor
 }
 
