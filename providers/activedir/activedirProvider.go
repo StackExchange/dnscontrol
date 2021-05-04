@@ -31,7 +31,7 @@ var features = providers.DocumentationNotes{
 //   This establishes the name (all caps), and the function to call to initialize it.
 func init() {
 	fns := providers.DspFuncs{
-		Initializer:          newDNS,
+		Initializer:   newDNS,
 		RecordAuditor: AuditRecords,
 	}
 	providers.RegisterDomainServiceProviderType("ACTIVEDIRECTORY_PS", fns, features)
