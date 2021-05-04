@@ -23,20 +23,20 @@ var features = providers.DocumentationNotes{
 	providers.DocDualHost:            providers.Can(),
 	providers.DocOfficiallySupported: providers.Cannot(),
 
-	providers.CanGetZones:    providers.Can(),
-	providers.CanUseAlias:    providers.Can(),
-	providers.CanUseCAA:      providers.Can(),
-	providers.CanUseDS:       providers.Cannot(), // should be supported, but getting 500s in tests
-	providers.CanUseNAPTR:    providers.Can(),
-	providers.CanUsePTR:      providers.Can(),
-	providers.CanUseSRV:      providers.Can(),
-	providers.CanUseSSHFP:    providers.Can(),
-	providers.CanUseTLSA:     providers.Can(),
+	providers.CanGetZones: providers.Can(),
+	providers.CanUseAlias: providers.Can(),
+	providers.CanUseCAA:   providers.Can(),
+	providers.CanUseDS:    providers.Cannot(), // should be supported, but getting 500s in tests
+	providers.CanUseNAPTR: providers.Can(),
+	providers.CanUsePTR:   providers.Can(),
+	providers.CanUseSRV:   providers.Can(),
+	providers.CanUseSSHFP: providers.Can(),
+	providers.CanUseTLSA:  providers.Can(),
 }
 
 func init() {
 	fns := providers.DspFuncs{
-		Initializer:    New,
+		Initializer:   New,
 		RecordAuditor: AuditRecords,
 	}
 	providers.RegisterDomainServiceProviderType("ORACLE", fns, features)

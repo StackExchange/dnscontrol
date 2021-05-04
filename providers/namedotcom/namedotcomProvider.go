@@ -56,7 +56,7 @@ func newProvider(conf map[string]string) (*namedotcomProvider, error) {
 func init() {
 	providers.RegisterRegistrarType("NAMEDOTCOM", newReg)
 	fns := providers.DspFuncs{
-		Initializer:          newDsp,
+		Initializer:   newDsp,
 		RecordAuditor: AuditRecords,
 	}
 	providers.RegisterDomainServiceProviderType("NAMEDOTCOM", fns, features)

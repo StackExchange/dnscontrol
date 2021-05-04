@@ -36,8 +36,8 @@ import (
 
 var features = providers.DocumentationNotes{
 	//providers.CanUseCAA: providers.Can(),
-	providers.CanUsePTR: providers.Can(),
-	providers.CanUseSRV: providers.Can(),
+	providers.CanUsePTR:        providers.Can(),
+	providers.CanUseSRV:        providers.Can(),
 	providers.DocCreateDomains: providers.Cannot("Driver just maintains list of OctoDNS config files. You must manually create the master config files that refer these."),
 	providers.DocDualHost:      providers.Cannot("Research is needed."),
 	providers.CanGetZones:      providers.Unimplemented(),
@@ -64,7 +64,7 @@ func initProvider(config map[string]string, providermeta json.RawMessage) (provi
 
 func init() {
 	fns := providers.DspFuncs{
-		Initializer:          initProvider,
+		Initializer:   initProvider,
 		RecordAuditor: AuditRecords,
 	}
 	providers.RegisterDomainServiceProviderType("OCTODNS", fns, features)
