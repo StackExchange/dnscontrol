@@ -13,15 +13,15 @@ axfrddns -
 
 import (
 	"bytes"
+	"crypto/tls"
 	"encoding/base64"
 	"encoding/json"
 	"fmt"
 	"math"
 	"math/rand"
+	"net"
 	"strings"
 	"time"
-	"net"
-	"crypto/tls"
 
 	"github.com/miekg/dns"
 
@@ -54,13 +54,13 @@ var features = providers.DocumentationNotes{
 
 // axfrddnsProvider stores the client info for the provider.
 type axfrddnsProvider struct {
-	rand          *rand.Rand
-	master        string
-	updateMode    string
-	transferMode  string
-	nameservers   []*models.Nameserver
-	transferKey   *Key
-	updateKey     *Key
+	rand         *rand.Rand
+	master       string
+	updateMode   string
+	transferMode string
+	nameservers  []*models.Nameserver
+	transferKey  *Key
+	updateKey    *Key
 }
 
 func initAxfrDdns(config map[string]string, providermeta json.RawMessage) (providers.DNSServiceProvider, error) {
@@ -210,7 +210,7 @@ func (c *axfrddnsProvider) getAxfrConnection() (*dns.Transfer, error) {
 	if err != nil {
 		return nil, err
 	}
-	dnscon := &dns.Conn{Conn:con}
+	dnscon := &dns.Conn{Conn: con}
 	transfer := &dns.Transfer{Conn: dnscon}
 	return transfer, nil
 }
