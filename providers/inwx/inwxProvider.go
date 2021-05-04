@@ -69,7 +69,7 @@ type inwxAPI struct {
 func init() {
 	providers.RegisterRegistrarType("INWX", newInwxReg)
 	fns := providers.DspFuncs{
-		Initializer:    newInwxDsp,
+		Initializer:   newInwxDsp,
 		RecordAuditor: AuditRecords,
 	}
 	providers.RegisterDomainServiceProviderType("INWX", fns, features)

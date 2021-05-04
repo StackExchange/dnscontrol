@@ -78,7 +78,7 @@ func initBind(config map[string]string, providermeta json.RawMessage) (providers
 
 func init() {
 	fns := providers.DspFuncs{
-		Initializer:    initBind,
+		Initializer:   initBind,
 		RecordAuditor: AuditRecords,
 	}
 	providers.RegisterDomainServiceProviderType("BIND", fns, features)
