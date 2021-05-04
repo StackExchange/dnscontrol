@@ -57,6 +57,7 @@ func validateRecordTypes(rec *models.RecordConfig, domain string, pTypes []strin
 		"TLSA":             true,
 		"IMPORT_TRANSFORM": false,
 		"MX":               true,
+		"SOA":              true,
 		"SRV":              true,
 		"SSHFP":            true,
 		"TXT":              true,
@@ -124,6 +125,28 @@ func checkLabel(label string, rType string, target, domain string, meta map[stri
 	return nil
 }
 
+func checkSoa(expire uint32, minttl uint32, refresh uint32, retry uint32, serial uint32, mbox string) error {
+	if expire <= 0 {
+		return fmt.Errorf("SOA Expire must be > 0")
+	}
+	if minttl <= 0 {
+		return fmt.Errorf("SOA Minimum TTL must be > 0")
+	}
+	if refresh <= 0 {
+		return fmt.Errorf("SOA Refresh must be > 0")
+	}
+	if retry <= 0 {
+		return fmt.Errorf("SOA Retry must be > 0")
+	}
+	if mbox == "" {
+		return fmt.Errorf("SOA MBox must be specified")
+	}
+	if strings.ContainsRune(mbox, '@') {
+		return fmt.Errorf("SOA MBox must have '.' instead of '@'")
+	}
+	return nil
+}
+
 // checkTargets returns true if rec.Target is valid for the rec.Type.
 func checkTargets(rec *models.RecordConfig, domain string) (errs []error) {
 	label := rec.GetLabel()
@@ -161,7 +184,11 @@ func checkTargets(rec *models.RecordConfig, domain string) (errs []error) {
 	case "ALIAS":
 		check(checkTarget(target))
 	case "SOA":
+		check(checkSoa(rec.SoaExpire, rec.SoaMinttl, rec.SoaRefresh, rec.SoaRetry, rec.SoaSerial, rec.SoaMbox))
 		check(checkTarget(target))
+		if label != "@" {
+			check(fmt.Errorf("SOA record is only valid for bare domain."))
+		}
 	case "SRV":
 		check(checkTarget(target))
 	case "TXT", "IMPORT_TRANSFORM", "CAA", "SSHFP", "TLSA", "DS":
@@ -524,6 +551,7 @@ var providerCapabilityChecks = []pairTypeCapability{
 	capabilityCheck("PTR", providers.CanUsePTR),
 	capabilityCheck("R53_ALIAS", providers.CanUseRoute53Alias),
 	capabilityCheck("SSHFP", providers.CanUseSSHFP),
+	capabilityCheck("SOA", providers.CanUseSOA),
 	capabilityCheck("SRV", providers.CanUseSRV),
 	capabilityCheck("TLSA", providers.CanUseTLSA),
 	capabilityCheck("AZURE_ALIAS", providers.CanUseAzureAlias),

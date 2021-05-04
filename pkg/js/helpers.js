@@ -357,6 +357,28 @@ var NAPTR = recordBuilder('NAPTR', {
     },
 });
 
+// SOA(name,ns,mbox,serial,refresh,retry,expire,minimum, recordModifiers...)
+var SOA = recordBuilder('SOA', {
+  args: [
+    ['name',    _.isString],
+    ['target',  _.isString],
+    ['mbox',    _.isString],
+    ['refresh', _.isNumber],
+    ['retry',   _.isNumber],
+    ['expire',  _.isNumber],
+    ['minttl',  _.isNumber],
+  ],
+  transform: function(record, args, modifiers) {
+    record.name = args.name;
+    record.target = args.target;
+    record.soambox = args.mbox;
+    record.soarefresh = args.refresh;
+    record.soaretry   = args.retry;
+    record.soaexpire  = args.expire;
+    record.soaminttl = args.minttl;
+  },
+});
+
 // SRV(name,priority,weight,port,target, recordModifiers...)
 var SRV = recordBuilder('SRV', {
     args: [
