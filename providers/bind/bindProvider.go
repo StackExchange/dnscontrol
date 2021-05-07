@@ -85,8 +85,8 @@ func init() {
 	providers.RegisterDomainServiceProviderType("BIND", fns, features)
 }
 
-// SoaInfo contains the parts of the default SOA settings.
-type SoaInfo struct {
+// SoaDefaults contains the parts of the default SOA settings.
+type SoaDefaults struct {
 	Ns      string `json:"master"`
 	Mbox    string `json:"mbox"`
 	Serial  uint32 `json:"serial"`
@@ -97,14 +97,14 @@ type SoaInfo struct {
 	TTL     uint32 `json:"ttl,omitempty"`
 }
 
-func (s SoaInfo) String() string {
+func (s SoaDefaults) String() string {
 	return fmt.Sprintf("%s %s %d %d %d %d %d %d", s.Ns, s.Mbox, s.Serial, s.Refresh, s.Retry, s.Expire, s.Minttl, s.TTL)
 }
 
 // bindProvider is the provider handle for the bindProvider driver.
 type bindProvider struct {
-	DefaultNS      []string `json:"default_ns"`
-	DefaultSoa     SoaInfo  `json:"default_soa"`
+	DefaultNS      []string    `json:"default_ns"`
+	DefaultSoa     SoaDefaults `json:"default_soa"`
 	nameservers    []*models.Nameserver
 	directory      string
 	filenameformat string
