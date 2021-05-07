@@ -411,6 +411,12 @@ func ds(name string, keyTag uint16, algorithm, digestType uint8, digest string) 
 	return r
 }
 
+func soa(name string, ns, mbox string, serial, refresh, retry, expire, minttl uint32) *models.RecordConfig {
+	r := makeRec(name, "", "SOA")
+	r.SetTargetSOA(ns, mbox, serial, refresh, retry, expire, minttl)
+	return r
+}
+
 func srv(name string, priority, weight, port uint16, target string) *models.RecordConfig {
 	r := makeRec(name, target, "SRV")
 	r.SetTargetSRV(priority, weight, port, target)
@@ -1029,6 +1035,19 @@ func makeTests(t *testing.T) []*TestGroup {
 		testgroup("PTR", requires(providers.CanUsePTR), not("ACTIVEDIRECTORY_PS", "CLOUDNS"),
 			tc("Create PTR record", ptr("4", "foo.com.")),
 			tc("Modify PTR record", ptr("4", "bar.com.")),
+		),
+
+		// SOA
+		testgroup("SOA", requires(providers.CanUseSOA),
+			tc("Create SOA record", soa("@", "kim.ns.cloudflare.com.", "dns.cloudflare.com.", 2037190000, 10000, 2400, 604800, 3600)),
+			tc("Modify SOA ns    ", soa("@", "mmm.ns.cloudflare.com.", "dns.cloudflare.com.", 2037190000, 10000, 2400, 604800, 3600)),
+			tc("Modify SOA mbox  ", soa("@", "mmm.ns.cloudflare.com.", "eee.cloudflare.com.", 2037190000, 10000, 2400, 604800, 3600)),
+			tc("Modify SOA refres", soa("@", "mmm.ns.cloudflare.com.", "eee.cloudflare.com.", 2037190000, 10001, 2400, 604800, 3600)),
+			tc("Modify SOA retry ", soa("@", "mmm.ns.cloudflare.com.", "eee.cloudflare.com.", 2037190000, 10001, 2401, 604800, 3600)),
+			tc("Modify SOA expire", soa("@", "mmm.ns.cloudflare.com.", "eee.cloudflare.com.", 2037190000, 10001, 2401, 604801, 3600)),
+			tc("Modify SOA minttl", soa("@", "mmm.ns.cloudflare.com.", "eee.cloudflare.com.", 2037190000, 10001, 2401, 604801, 3601)),
+			clear(),
+			tc("Create SOA record", soa("@", "kim.ns.cloudflare.com.", "dns.cloudflare.com.", 2037190000, 10000, 2400, 604800, 3600)),
 		),
 
 		testgroup("SRV", requires(providers.CanUseSRV), not("ACTIVEDIRECTORY_PS"),

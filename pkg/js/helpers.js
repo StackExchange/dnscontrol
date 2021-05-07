@@ -357,7 +357,7 @@ var NAPTR = recordBuilder('NAPTR', {
     },
 });
 
-// SOA(name,ns,mbox,serial,refresh,retry,expire,minimum, recordModifiers...)
+// SOA(name,ns,mbox,refresh,retry,expire,minimum, recordModifiers...)
 var SOA = recordBuilder('SOA', {
   args: [
     ['name',    _.isString],

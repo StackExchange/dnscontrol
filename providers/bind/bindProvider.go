@@ -33,19 +33,20 @@ import (
 )
 
 var features = providers.DocumentationNotes{
+	providers.CanAutoDNSSEC:          providers.Can("Just writes out a comment indicating DNSSEC was requested"),
+	providers.CanGetZones:            providers.Can(),
 	providers.CanUseCAA:              providers.Can(),
 	providers.CanUseDS:               providers.Can(),
-	providers.CanUsePTR:              providers.Can(),
 	providers.CanUseNAPTR:            providers.Can(),
+	providers.CanUsePTR:              providers.Can(),
+	providers.CanUseSOA:              providers.Can(),
 	providers.CanUseSRV:              providers.Can(),
 	providers.CanUseSSHFP:            providers.Can(),
 	providers.CanUseTLSA:             providers.Can(),
-	providers.CanAutoDNSSEC:          providers.Can("Just writes out a comment indicating DNSSEC was requested"),
 	providers.CantUseNOPURGE:         providers.Cannot(),
 	providers.DocCreateDomains:       providers.Can("Driver just maintains list of zone files. It should automatically add missing ones."),
 	providers.DocDualHost:            providers.Can(),
 	providers.DocOfficiallySupported: providers.Can(),
-	providers.CanGetZones:            providers.Can(),
 }
 
 func initBind(config map[string]string, providermeta json.RawMessage) (providers.DNSServiceProvider, error) {
@@ -84,8 +85,8 @@ func init() {
 	providers.RegisterDomainServiceProviderType("BIND", fns, features)
 }
 
-// SoaInfo contains the parts of the default SOA settings.
-type SoaInfo struct {
+// SoaDefaults contains the parts of the default SOA settings.
+type SoaDefaults struct {
 	Ns      string `json:"master"`
 	Mbox    string `json:"mbox"`
 	Serial  uint32 `json:"serial"`
@@ -96,14 +97,14 @@ type SoaInfo struct {
 	TTL     uint32 `json:"ttl,omitempty"`
 }
 
-func (s SoaInfo) String() string {
+func (s SoaDefaults) String() string {
 	return fmt.Sprintf("%s %s %d %d %d %d %d %d", s.Ns, s.Mbox, s.Serial, s.Refresh, s.Retry, s.Expire, s.Minttl, s.TTL)
 }
 
 // bindProvider is the provider handle for the bindProvider driver.
 type bindProvider struct {
-	DefaultNS      []string `json:"default_ns"`
-	DefaultSoa     SoaInfo  `json:"default_soa"`
+	DefaultNS      []string    `json:"default_ns"`
+	DefaultSoa     SoaDefaults `json:"default_soa"`
 	nameservers    []*models.Nameserver
 	directory      string
 	filenameformat string
