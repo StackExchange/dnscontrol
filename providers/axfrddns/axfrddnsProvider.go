@@ -13,11 +13,13 @@ axfrddns -
 
 import (
 	"bytes"
+	"crypto/tls"
 	"encoding/base64"
 	"encoding/json"
 	"fmt"
 	"math"
 	"math/rand"
+	"net"
 	"strings"
 	"time"
 
@@ -52,11 +54,13 @@ var features = providers.DocumentationNotes{
 
 // axfrddnsProvider stores the client info for the provider.
 type axfrddnsProvider struct {
-	rand        *rand.Rand
-	master      string
-	nameservers []*models.Nameserver
-	transferKey *Key
-	updateKey   *Key
+	rand         *rand.Rand
+	master       string
+	updateMode   string
+	transferMode string
+	nameservers  []*models.Nameserver
+	transferKey  *Key
+	updateKey    *Key
 }
 
 func initAxfrDdns(config map[string]string, providermeta json.RawMessage) (providers.DNSServiceProvider, error) {
@@ -84,6 +88,30 @@ func initAxfrDdns(config map[string]string, providermeta json.RawMessage) (provi
 	if err != nil {
 		return nil, err
 	}
+	if config["update-mode"] != "" {
+		switch config["update-mode"] {
+		case "tcp",
+			"tcp-tls":
+			api.updateMode = config["update-mode"]
+		case "udp":
+			api.updateMode = ""
+		default:
+			fmt.Printf("[Warning] AXFRDDNS: Unknown update-mode in `creds.json` (%s)\n", config["update-mode"])
+		}
+	} else {
+		api.updateMode = ""
+	}
+	if config["transfer-mode"] != "" {
+		switch config["transfer-mode"] {
+		case "tcp",
+			"tcp-tls":
+			api.transferMode = config["transfer-mode"]
+		default:
+			fmt.Printf("[Warning] AXFRDDNS: Unknown transfer-mode in `creds.json` (%s)\n", config["transfer-mode"])
+		}
+	} else {
+		api.transferMode = "tcp"
+	}
 	if config["master"] != "" {
 		api.master = config["master"]
 		if !strings.Contains(api.master, ":") {
@@ -107,7 +135,9 @@ func initAxfrDdns(config map[string]string, providermeta json.RawMessage) (provi
 		case "master",
 			"nameservers",
 			"update-key",
-			"transfer-key":
+			"transfer-key",
+			"update-mode",
+			"transfer-mode":
 			continue
 		default:
 			fmt.Printf("[Warning] AXFRDDNS: unknown key in `creds.json` (%s)\n", key)
@@ -169,10 +199,28 @@ func (c *axfrddnsProvider) GetNameservers(domain string) ([]*models.Nameserver, 
 	return c.nameservers, nil
 }
 
+func (c *axfrddnsProvider) getAxfrConnection() (*dns.Transfer, error) {
+	var con net.Conn = nil
+	var err error = nil
+	if c.transferMode == "tcp-tls" {
+		con, err = tls.Dial("tcp", c.master, &tls.Config{})
+	} else {
+		con, err = net.Dial("tcp", c.master)
+	}
+	if err != nil {
+		return nil, err
+	}
+	dnscon := &dns.Conn{Conn: con}
+	transfer := &dns.Transfer{Conn: dnscon}
+	return transfer, nil
+}
+
 // FetchZoneRecords gets the records of a zone and returns them in dns.RR format.
 func (c *axfrddnsProvider) FetchZoneRecords(domain string) ([]dns.RR, error) {
-
-	transfer := new(dns.Transfer)
+	transfer, err := c.getAxfrConnection()
+	if err != nil {
+		return nil, err
+	}
 	transfer.DialTimeout = dnsTimeout
 	transfer.ReadTimeout = dnsTimeout
 
@@ -368,6 +416,7 @@ func (c *axfrddnsProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*mod
 					}
 
 					client := new(dns.Client)
+					client.Net = c.updateMode
 					client.Timeout = dnsTimeout
 					if c.updateKey != nil {
 						client.TsigSecret =
