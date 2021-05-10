@@ -4,9 +4,6 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"net/http"
-	"strings"
-
 	"github.com/StackExchange/dnscontrol/v3/models"
 	"github.com/StackExchange/dnscontrol/v3/pkg/diff"
 	"github.com/StackExchange/dnscontrol/v3/providers"
@@ -14,6 +11,8 @@ import (
 	pdns "github.com/mittwald/go-powerdns"
 	"github.com/mittwald/go-powerdns/apis/zones"
 	"github.com/mittwald/go-powerdns/pdnshttp"
+	"net/http"
+	"strings"
 )
 
 var features = providers.DocumentationNotes{
@@ -107,11 +106,11 @@ func (api *powerdnsProvider) GetNameservers(string) ([]*models.Nameserver, error
 // ListZones returns all the zones in an account
 func (api *powerdnsProvider) ListZones() ([]string, error) {
 	var result []string
-	zones, err := api.client.Zones().ListZones(context.Background(), api.ServerName)
+	myZones, err := api.client.Zones().ListZones(context.Background(), api.ServerName)
 	if err != nil {
 		return result, err
 	}
-	for _, zone := range zones {
+	for _, zone := range myZones {
 		result = append(result, zone.Name)
 	}
 	return result, nil
@@ -147,58 +146,70 @@ func (api *powerdnsProvider) GetZoneRecords(domain string) (models.Records, erro
 func (api *powerdnsProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Correction, error) {
 	var corrections []*models.Correction
 
-	// record corrections
+	// get current zone records
 	curRecords, err := api.GetZoneRecords(dc.Name)
 	if err != nil {
 		return nil, err
 	}
 
 	// post-process records
-	dc.Punycode()
+	if err := dc.Punycode(); err != nil {
+		return nil, err
+	}
 	models.PostProcessRecords(curRecords)
 
 	// create record diff by group
-	keysToUpdate, err := (diff.New(dc)).ChangedGroupsDeleteFirst(curRecords)
+	keysToUpdate, err := (diff.New(dc)).ChangedGroups(curRecords)
 	if err != nil {
 		return nil, err
 	}
 	desiredRecords := dc.Records.GroupedByKey()
 
-	// create corrections by group
+	var cuCorrections []*models.Correction
+	var dCorrections []*models.Correction
+
+	// add create/update and delete corrections separately
 	for label, msgs := range keysToUpdate {
 		labelName := label.NameFQDN + "."
 		labelType := label.Type
+		msgJoined := strings.Join(msgs, "\n   ")
 
 		if _, ok := desiredRecords[label]; !ok {
-			// nothing found, must be a delete
-			corrections = append(corrections, &models.Correction{
-				Msg: strings.Join(msgs, "\n   "),
+			// no record found so delete it
+			dCorrections = append(dCorrections, &models.Correction{
+				Msg: msgJoined,
 				F: func() error {
 					return api.client.Zones().RemoveRecordSetFromZone(context.Background(), api.ServerName, dc.Name, labelName, labelType)
 				},
 			})
 		} else {
-			// needs to be a create or update
+			// record found so create or update it
 			ttl := desiredRecords[label][0].TTL
-			records := []zones.Record{}
+			var records []zones.Record
 			for _, recordContent := range desiredRecords[label] {
 				records = append(records, zones.Record{
 					Content: recordContent.GetTargetCombined(),
 				})
 			}
-			corrections = append(corrections, &models.Correction{
-				Msg: strings.Join(msgs, "\n   "),
+			cuCorrections = append(cuCorrections, &models.Correction{
+				Msg: msgJoined,
 				F: func() error {
 					return api.client.Zones().AddRecordSetToZone(context.Background(), api.ServerName, dc.Name, zones.ResourceRecordSet{
-						Name:    labelName,
-						Type:    labelType,
-						TTL:     int(ttl),
-						Records: records,
+						Name:       labelName,
+						Type:       labelType,
+						TTL:        int(ttl),
+						Records:    records,
+						ChangeType: zones.ChangeTypeReplace,
 					})
 				},
 			})
 		}
 	}
+
+	// append corrections in the right order
+	// delete corrections must be run first to avoid correlations with existing RR
+	corrections = append(corrections, dCorrections...)
+	corrections = append(corrections, cuCorrections...)
 
 	// DNSSec corrections
 	dnssecCorrections, err := api.getDNSSECCorrections(dc)
