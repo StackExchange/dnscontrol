@@ -17,11 +17,11 @@ import (
 
 var docNotes = providers.DocumentationNotes{
 	providers.CanUseAlias:            providers.Can(),
-	providers.CanUsePTR:              providers.Can(),
 	providers.CanUseCAA:              providers.Can(),
+	providers.CanUsePTR:              providers.Can(),
 	providers.DocCreateDomains:       providers.Cannot(),
-	providers.DocOfficiallySupported: providers.Cannot(),
 	providers.DocDualHost:            providers.Can(),
+	providers.DocOfficiallySupported: providers.Cannot(),
 }
 
 func init() {
