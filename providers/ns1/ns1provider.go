@@ -90,6 +90,7 @@ func (n *nsone) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Correct
 	// each name/type is given to the api as a unit.
 	for k, descs := range changedGroups {
 		key := k
+
 		desc := strings.Join(descs, "\n")
 		_, current := foundGrouped[k]
 		recs, wanted := desiredGrouped[k]
@@ -165,6 +166,10 @@ func convert(zr *dns.ZoneRecord, domain string) ([]*models.RecordConfig, error) 
 		rec.SetLabelFromFQDN(zr.Domain, domain)
 		switch rtype := zr.Type; rtype {
 		case "ALIAS":
+			rec.Type = rtype
+			if err := rec.SetTarget(ans); err != nil {
+				panic(fmt.Errorf("unparsable %s record received from ns1: %w", rtype, err))
+			}
 		case "URLFWD":
 			rec.Type = rtype
 			if err := rec.SetTarget(ans); err != nil {
