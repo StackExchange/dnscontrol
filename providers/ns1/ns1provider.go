@@ -17,10 +17,11 @@ import (
 
 var docNotes = providers.DocumentationNotes{
 	providers.CanUseAlias:            providers.Can(),
+	providers.CanUseCAA:              providers.Can(),
 	providers.CanUsePTR:              providers.Can(),
 	providers.DocCreateDomains:       providers.Cannot(),
-	providers.DocOfficiallySupported: providers.Cannot(),
 	providers.DocDualHost:            providers.Can(),
+	providers.DocOfficiallySupported: providers.Cannot(),
 }
 
 func init() {
@@ -147,6 +148,8 @@ func buildRecord(recs models.Records, domain string, id string) *dns.Record {
 			rec.AddAnswer(&dns.Answer{Rdata: strings.Split(fmt.Sprintf("%d %v", r.MxPreference, r.GetTargetField()), " ")})
 		} else if r.Type == "TXT" {
 			rec.AddAnswer(&dns.Answer{Rdata: r.TxtStrings})
+		} else if r.Type == "CAA" {
+			rec.AddAnswer(&dns.Answer{Rdata: strings.Split(fmt.Sprintf("%v %s %s", r.CaaFlag, r.CaaTag, r.GetTargetField()), " ")})
 		} else if r.Type == "SRV" {
 			rec.AddAnswer(&dns.Answer{Rdata: strings.Split(fmt.Sprintf("%d %d %d %v", r.SrvPriority, r.SrvWeight, r.SrvPort, r.GetTargetField()), " ")})
 		} else {
