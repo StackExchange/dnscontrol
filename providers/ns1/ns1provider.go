@@ -19,7 +19,7 @@ var docNotes = providers.DocumentationNotes{
 	providers.CanUseAlias:            providers.Can(),
 	providers.CanUseCAA:              providers.Can(),
 	providers.CanUsePTR:              providers.Can(),
-	providers.DocCreateDomains:       providers.Cannot(),
+	providers.DocCreateDomains:       providers.Can(),
 	providers.DocDualHost:            providers.Can(),
 	providers.DocOfficiallySupported: providers.Cannot(),
 }
@@ -42,6 +42,20 @@ func newProvider(creds map[string]string, meta json.RawMessage) (providers.DNSSe
 		return nil, fmt.Errorf("api_token required for ns1")
 	}
 	return &nsone{rest.NewClient(http.DefaultClient, rest.SetAPIKey(creds["api_token"]))}, nil
+}
+
+func (n *nsone) EnsureDomainExists(domain string) error {
+	// This enables the create-domains subcommand
+
+	zone := dns.NewZone(domain)
+	_, err := n.Zones.Create(zone)
+
+	if err == rest.ErrZoneExists {
+		// if domain exists already, just return nil, nothing to do here.
+		return nil
+	}
+
+	return err
 }
 
 func (n *nsone) GetNameservers(domain string) ([]*models.Nameserver, error) {
