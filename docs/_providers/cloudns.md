@@ -7,7 +7,7 @@ jsId: CLOUDNS
 # ClouDNS Provider
 
 ## Configuration
-In your credentials file, you must provide your [Api user ID and password](https://asia.cloudns.net/wiki/article/42/). 
+In your credentials file, you must provide your [Api user ID and password](https://www.cloudns.net/wiki/article/42/). 
 
 Current version of provider doesn't support `sub-auth-user`. 
 
@@ -45,10 +45,10 @@ D("example.tld", REG_NONE, DnsProvider(CLOUDNS),
 {%endhighlight%}
 
 ## Activation
-[Create Auth ID](https://asia.cloudns.net/api-settings/).  Only paid account can use API
+[Create Auth ID](https://www.cloudns.net/api-settings/).  Only paid account can use API
 
 ## Caveats
-ClouDNS does not allow all TTLs, but only a specific subset of TTLs. The following [TTLs are supported](https://asia.cloudns.net/wiki/article/188/):
+ClouDNS does not allow all TTLs, only a specific subset of TTLs. By default, the following [TTLs are supported](https://www.cloudns.net/wiki/article/188/):
 - 60  (1 minute)
 - 300 (5 minutes)
 - 900 (15 minutes)
