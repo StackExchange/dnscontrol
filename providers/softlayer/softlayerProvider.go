@@ -28,7 +28,7 @@ var features = providers.DocumentationNotes{
 
 func init() {
 	fns := providers.DspFuncs{
-		Initializer:          newReg,
+		Initializer:   newReg,
 		RecordAuditor: AuditRecords,
 	}
 	providers.RegisterDomainServiceProviderType("SOFTLAYER", fns, features)

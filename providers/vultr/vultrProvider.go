@@ -38,7 +38,7 @@ var features = providers.DocumentationNotes{
 
 func init() {
 	fns := providers.DspFuncs{
-		Initializer:    NewProvider,
+		Initializer:   NewProvider,
 		RecordAuditor: AuditRecords,
 	}
 	providers.RegisterDomainServiceProviderType("VULTR", fns, features)

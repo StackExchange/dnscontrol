@@ -27,7 +27,7 @@ type namecheapProvider struct {
 }
 
 var features = providers.DocumentationNotes{
-	providers.CanUseAlias:            providers.Cannot(),
+	providers.CanUseAlias:            providers.Can(),
 	providers.CanUseCAA:              providers.Can(),
 	providers.CanUsePTR:              providers.Cannot(),
 	providers.CanUseSRV:              providers.Cannot("The namecheap web console allows you to make SRV records, but their api does not let you read or set them"),
@@ -42,7 +42,7 @@ var features = providers.DocumentationNotes{
 func init() {
 	providers.RegisterRegistrarType("NAMECHEAP", newReg)
 	fns := providers.DspFuncs{
-		Initializer:          newDsp,
+		Initializer:   newDsp,
 		RecordAuditor: AuditRecords,
 	}
 	providers.RegisterDomainServiceProviderType("NAMECHEAP", fns, features)

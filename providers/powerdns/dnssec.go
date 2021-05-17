@@ -9,7 +9,7 @@ import (
 
 // getDNSSECCorrections returns corrections that update a domain's DNSSEC state.
 func (api *powerdnsProvider) getDNSSECCorrections(dc *models.DomainConfig) ([]*models.Correction, error) {
-	cryptokeys, getErr := api.client.Cryptokeys().ListCryptokeys(context.Background(), api.ServerName, dc.Name)
+	zoneCryptokeys, getErr := api.client.Cryptokeys().ListCryptokeys(context.Background(), api.ServerName, dc.Name)
 	if getErr != nil {
 		return nil, getErr
 	}
@@ -18,8 +18,8 @@ func (api *powerdnsProvider) getDNSSECCorrections(dc *models.DomainConfig) ([]*m
 	hasEnabledKey := false
 	var keyID int
 
-	if len(cryptokeys) > 0 {
-		for _, cryptoKey := range cryptokeys {
+	if len(zoneCryptokeys) > 0 {
+		for _, cryptoKey := range zoneCryptokeys {
 			if cryptoKey.Active && cryptoKey.Published {
 				hasEnabledKey = true
 				keyID = cryptoKey.ID
