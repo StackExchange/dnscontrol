@@ -47,7 +47,7 @@ var features = providers.DocumentationNotes{
 	providers.CanUseTLSA:             providers.Can(),
 	providers.CanUsePTR:              providers.Can(),
 	providers.CanGetZones:            providers.Can(),
-	providers.CanAutoDNSSEC:          providers.Cannot(),
+	providers.CanAutoDNSSEC:          providers.Can("deSEC always signs all records. When trying to disable, a notice is printed."),
 }
 
 var defaultNameServerNames = []string{
@@ -69,6 +69,10 @@ func (c *desecProvider) GetNameservers(domain string) ([]*models.Nameserver, err
 }
 
 func (c *desecProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Correction, error) {
+	if dc.AutoDNSSEC == "off" {
+		fmt.Printf("Notice: DNSSEC signing was not requested, but cannot be turned off. (deSEC always signs all records.)\n")
+	}
+
 	existing, err := c.GetZoneRecords(dc.Name)
 	if err != nil {
 		return nil, err
