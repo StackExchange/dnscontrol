@@ -46,6 +46,7 @@ var features = providers.DocumentationNotes{
 	providers.CanUseCAA:              providers.Can(),
 	providers.CanUseTLSA:             providers.Can(),
 	providers.CanUsePTR:              providers.Can(),
+	providers.CanUseNAPTR:            providers.Can(),
 	providers.CanGetZones:            providers.Can(),
 	providers.CanAutoDNSSEC:          providers.Can("deSEC always signs all records. When trying to disable, a notice is printed."),
 }
