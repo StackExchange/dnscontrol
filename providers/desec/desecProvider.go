@@ -39,7 +39,7 @@ var features = providers.DocumentationNotes{
 	providers.DocDualHost:            providers.Unimplemented(),
 	providers.DocOfficiallySupported: providers.Cannot(),
 	providers.DocCreateDomains:       providers.Can(),
-	providers.CanUseAlias:            providers.Cannot(),
+	providers.CanUseAlias:            providers.Unimplemented("Apex aliasing is supported via new SVCB and HTTPS record types. For details, check the deSEC docs."),
 	providers.CanUseSRV:              providers.Can(),
 	providers.CanUseDS:               providers.Can(),
 	providers.CanUseSSHFP:            providers.Can(),
@@ -141,7 +141,7 @@ func PrepDesiredRecords(dc *models.DomainConfig, minTTL uint32) {
 		}
 		if rec.TTL < minTTL {
 			if rec.Type != "NS" {
-				printer.Warnf("Please contact support@desec.io if you need ttls < %d. Setting ttl of %s type %s from %d to %d\n", minTTL, rec.GetLabelFQDN(), rec.Type, rec.TTL, minTTL)
+				printer.Warnf("Please contact support@desec.io if you need TTLs < %d. Setting TTL of %s type %s from %d to %d\n", minTTL, rec.GetLabelFQDN(), rec.Type, rec.TTL, minTTL)
 			}
 			rec.TTL = minTTL
 		}
