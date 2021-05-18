@@ -39,6 +39,10 @@
     "auth-password": "$CLOUDNS_AUTH_PASSWORD",
     "domain": "$CLOUDNS_DOMAIN"
   },
+  "DESEC": {
+    "auth-token": "$DESEC_TOKEN",
+    "domain": "$DESEC_DOMAIN"
+  },
   "DIGITALOCEAN": {
     "domain": "$DIGITALOCEAN_DOMAIN",
     "token": "$DIGITALOCEAN_TOKEN"
