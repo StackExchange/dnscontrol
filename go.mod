@@ -1,6 +1,6 @@
 module github.com/StackExchange/dnscontrol/v3
 
-go 1.14
+go 1.16
 
 require (
 	github.com/Azure/azure-sdk-for-go v53.4.0+incompatible
@@ -46,7 +46,6 @@ require (
 	github.com/miekg/dns v1.1.41
 	github.com/mitchellh/mapstructure v1.4.1 // indirect
 	github.com/mittwald/go-powerdns v0.5.2
-	github.com/mjibson/esc v0.2.0
 	github.com/namedotcom/go v0.0.0-20180403034216-08470befbe04
 	github.com/nrdcg/goinwx v0.8.1
 	github.com/oracle/oci-go-sdk/v32 v32.0.0
@@ -70,7 +69,6 @@ require (
 	github.com/vultr/govultr v1.0.0
 	github.com/xddxdd/ottoext v0.0.0-20210101073831-439879ee6281
 	golang.org/x/crypto v0.0.0-20210421170649-83a5a9bb288b // indirect
-	golang.org/x/mod v0.4.2 // indirect
 	golang.org/x/net v0.0.0-20210428140749-89ef3d95e781
 	golang.org/x/oauth2 v0.0.0-20210427180440-81ed05c6b58c
 	golang.org/x/sys v0.0.0-20210426230700-d19ff857e887 // indirect
