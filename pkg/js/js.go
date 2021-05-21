@@ -109,14 +109,17 @@ func ExecuteJavascript(file string, devMode bool, variables map[string]string) (
 
 // GetHelpers returns the contents of helpers.js, or the embedded version.
 func GetHelpers(devMode bool) string {
-	if !devMode {
-		return helpersJsStatic
+	if devMode {
+		// Load the file:
+		b, err := ioutil.ReadFile(helpersJsFileName)
+		if err != nil {
+			log.Fatal(err)
+		}
+		return string(b)
 	}
-	b, err := ioutil.ReadFile(helpersJsFileName)
-	if err != nil {
-		log.Fatal(err)
-	}
-	return string(b)
+
+	// Return the embedded bytes:
+	return helpersJsStatic
 }
 
 func require(call otto.FunctionCall) otto.Value {
