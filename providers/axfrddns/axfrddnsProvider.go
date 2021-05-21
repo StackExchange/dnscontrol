@@ -49,7 +49,7 @@ var features = providers.DocumentationNotes{
 	providers.DocCreateDomains:       providers.Cannot(),
 	providers.DocDualHost:            providers.Cannot(),
 	providers.DocOfficiallySupported: providers.Cannot(),
-	providers.CanGetZones:            providers.Can(),
+	providers.CanGetZones:            providers.Cannot(),
 }
 
 // axfrddnsProvider stores the client info for the provider.
