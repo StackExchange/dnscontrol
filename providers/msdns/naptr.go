@@ -13,8 +13,9 @@ import (
 	"github.com/StackExchange/dnscontrol/v3/models"
 )
 
-func generatePSCCreateNaptr(domain string, rec *models.RecordConfig) string {
+func generatePSCreateNaptr(dnsServerName, domain string, rec *models.RecordConfig) string {
 	var b bytes.Buffer
+	fmt.Fprintf(&b, `$dnsserver = "%s"\n`, dnsServerName)
 	fmt.Fprintf(&b, `$zoneName = "%s"\n`, domain)
 	fmt.Fprintf(&b, `$rrName = "%s"\n`, rec.Name)
 	fmt.Fprintf(&b, `$Order       = %d\n`, rec.NaptrOrder)
@@ -26,6 +27,23 @@ func generatePSCCreateNaptr(domain string, rec *models.RecordConfig) string {
 	fmt.Fprintf(&b, `dnscmd /recordadd $zoneName $rrName naptr $Order $Preference $Flags $Service $Regex $Replacement\n`)
 	return b.String()
 }
+
+func generatePSDeleteNaptr(dnsServerName, domain string, rec *models.RecordConfig) string {
+	var b bytes.Buffer
+	fmt.Fprintf(&b, `$dnsserver = "%s"\n`, dnsServerName)
+	fmt.Fprintf(&b, `$zoneName = "%s"\n`, domain)
+	fmt.Fprintf(&b, `$rrName = "%s"\n`, rec.Name)
+	fmt.Fprintf(&b, `$Order       = %d\n`, rec.NaptrOrder)
+	fmt.Fprintf(&b, `$Preference  = %d\n`, rec.NaptrPreference)
+	fmt.Fprintf(&b, `$Flags       = "%s"\n`, rec.NaptrFlags)
+	fmt.Fprintf(&b, `$Service     = "%s"\n`, rec.NaptrService)
+	fmt.Fprintf(&b, `$Regex       = "%s"\n`, rec.NaptrRegexp)
+	fmt.Fprintf(&b, `$Replacement = '%s'\n`, rec.GetTargetField())
+	fmt.Fprintf(&b, `dnscmd /recorddelete $zoneName $rrName naptr $Order $Preference $Flags $Service $Regex $Replacement /f\n`)
+	return b.String()
+}
+
+// decoding
 
 func decodeRecordDataNaptr(s string) models.RecordConfig {
 	// C8AFB0B30153075349502B4432540474657374165F7369702E5F7463702E6578616D706C652E6F72672E
@@ -65,9 +83,9 @@ func eatString(s string) (string, string) {
 		log.Fatal(err)
 	}
 
-	fmt.Printf("Decoding: %s\n", s)
-	fmt.Printf("      sl: %d\n", sl)
-	fmt.Printf("    last: %d\n", last)
-	fmt.Printf("     ret: %q\n", ret)
+	//fmt.Printf("Decoding: %s\n", s)
+	//fmt.Printf("      sl: %d\n", sl)
+	//fmt.Printf("    last: %d\n", last)
+	//fmt.Printf("     ret: %q\n", ret)
 	return s[last:], string(ret)
 }
