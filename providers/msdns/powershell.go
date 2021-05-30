@@ -165,7 +165,9 @@ func generatePSDelete(dnsserver, domain string, rec *models.RecordConfig) string
 	fmt.Fprintf(&b, " ; ")
 
 	if rec.Type == "NAPTR" {
-		return b.String() + generatePSDeleteNaptr(dnsserver, domain, rec)
+		x := b.String() + generatePSDeleteNaptr(dnsserver, domain, rec)
+		fmt.Printf("NAPTR DELETE: %s\n\n", x)
+		return x
 	}
 
 	fmt.Fprintf(&b, `Remove-DnsServerResourceRecord`)
