@@ -201,6 +201,13 @@ func generatePSCreate(dnsserver, domain string, rec *models.RecordConfig) string
 	fmt.Fprintf(&b, `echo CREATE "%s" "%s" "%s"`, rec.Type, rec.Name, rec.GetTargetCombined())
 	fmt.Fprintf(&b, " ; ")
 
+	if rec.Type == "NAPTR" {
+		if dnsserver != "" {
+			log.Fatal("NAPTR create procedure incompatible with PSS")
+		}
+		return b.String() + generatePSCCreateNaptr(domain, rec)
+	}
+
 	fmt.Fprint(&b, `Add-DnsServerResourceRecord`)
 	if dnsserver != "" {
 		fmt.Fprintf(&b, ` -ComputerName "%s"`, dnsserver)
@@ -226,8 +233,8 @@ func generatePSCreate(dnsserver, domain string, rec *models.RecordConfig) string
 	//case "WKS":
 	//	fmt.Fprintf(&b, ` -Wks -InternetAddress <IPAddress> -InternetProtocol {UDP | TCP} -Service <String[]>`, rec.GetTargetField())
 	case "TXT":
-		fmt.Printf("DEBUG TXT len = %v\n", rec.TxtStrings)
-		fmt.Printf("DEBUG TXT target = %q\n", rec.GetTargetField())
+		//fmt.Printf("DEBUG TXT len = %v\n", rec.TxtStrings)
+		//fmt.Printf("DEBUG TXT target = %q\n", rec.GetTargetField())
 		fmt.Fprintf(&b, ` -Txt -DescriptiveText %s`, rec.GetTargetField())
 	//case "RT":
 	//	fmt.Fprintf(&b, ` -RT -IntermediateHost <String> -Preference <UInt16>`, rec.GetTargetField())
