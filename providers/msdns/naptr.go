@@ -15,16 +15,16 @@ import (
 
 func generatePSCreateNaptr(dnsServerName, domain string, rec *models.RecordConfig) string {
 	var b bytes.Buffer
-	fmt.Fprintf(&b, `$dnsserver = "%s"\n`, dnsServerName)
-	fmt.Fprintf(&b, `$zoneName = "%s"\n`, domain)
-	fmt.Fprintf(&b, `$rrName = "%s"\n`, rec.Name)
-	fmt.Fprintf(&b, `$Order       = %d\n`, rec.NaptrOrder)
-	fmt.Fprintf(&b, `$Preference  = %d\n`, rec.NaptrPreference)
-	fmt.Fprintf(&b, `$Flags       = "%s"\n`, rec.NaptrFlags)
-	fmt.Fprintf(&b, `$Service     = "%s"\n`, rec.NaptrService)
-	fmt.Fprintf(&b, `$Regex       = "%s"\n`, rec.NaptrRegexp)
-	fmt.Fprintf(&b, `$Replacement = '%s'\n`, rec.GetTargetField())
-	fmt.Fprintf(&b, `dnscmd /recordadd $zoneName $rrName naptr $Order $Preference $Flags $Service $Regex $Replacement\n`)
+	fmt.Fprintf(&b, `$dnsserver = "%s" ; `, dnsServerName)
+	fmt.Fprintf(&b, `$zoneName = "%s" ; `, domain)
+	fmt.Fprintf(&b, `$rrName = "%s" ; `, rec.Name)
+	fmt.Fprintf(&b, `$Order       = %d ; `, rec.NaptrOrder)
+	fmt.Fprintf(&b, `$Preference  = %d ; `, rec.NaptrPreference)
+	fmt.Fprintf(&b, `$Flags       = "%s" ; `, rec.NaptrFlags)
+	fmt.Fprintf(&b, `$Service     = "%s" ; `, rec.NaptrService)
+	fmt.Fprintf(&b, `$Regex       = "%s" ; `, rec.NaptrRegexp)
+	fmt.Fprintf(&b, `$Replacement = '%s' ; `, rec.GetTargetField())
+	fmt.Fprintf(&b, `dnscmd /recordadd $zoneName $rrName naptr $Order $Preference $Flags $Service $Regex $Replacement ; `)
 	return b.String()
 }
 
@@ -39,7 +39,7 @@ func generatePSDeleteNaptr(dnsServerName, domain string, rec *models.RecordConfi
 	fmt.Fprintf(&b, `$Service     = "%s" ; `, rec.NaptrService)
 	fmt.Fprintf(&b, `$Regex       = "%s" ; `, rec.NaptrRegexp)
 	fmt.Fprintf(&b, `$Replacement = '%s' ; `, rec.GetTargetField())
-	fmt.Fprintf(&b, `dnscmd /recorddelete $zoneName $rrName naptr $Order $Preference $Flags $Service $Regex $Replacement /f\n`)
+	fmt.Fprintf(&b, `dnscmd /recorddelete $zoneName $rrName naptr $Order $Preference $Flags $Service $Regex $Replacement /f ; `)
 	return b.String()
 }
 
