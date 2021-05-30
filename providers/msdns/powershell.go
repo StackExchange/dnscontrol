@@ -159,9 +159,15 @@ func (psh *psHandle) RecordDelete(dnsserver, domain string, rec *models.RecordCo
 }
 
 func generatePSDelete(dnsserver, domain string, rec *models.RecordConfig) string {
+
 	var b bytes.Buffer
 	fmt.Fprintf(&b, `echo DELETE "%s" "%s" "%s"`, rec.Type, rec.Name, rec.GetTargetCombined())
 	fmt.Fprintf(&b, " ; ")
+
+	if rec.Type == "NAPTR" {
+		return b.String() + generatePSDeleteNaptr(dnsserver, domain, rec)
+	}
+
 	fmt.Fprintf(&b, `Remove-DnsServerResourceRecord`)
 	if dnsserver != "" {
 		fmt.Fprintf(&b, ` -ComputerName "%s"`, dnsserver)
@@ -202,10 +208,7 @@ func generatePSCreate(dnsserver, domain string, rec *models.RecordConfig) string
 	fmt.Fprintf(&b, " ; ")
 
 	if rec.Type == "NAPTR" {
-		if dnsserver != "" {
-			log.Fatal("NAPTR create procedure incompatible with PSS")
-		}
-		return b.String() + generatePSCCreateNaptr(domain, rec)
+		return b.String() + generatePSCreateNaptr(dnsserver, domain, rec)
 	}
 
 	fmt.Fprint(&b, `Add-DnsServerResourceRecord`)
