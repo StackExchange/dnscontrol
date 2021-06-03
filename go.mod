@@ -66,12 +66,10 @@ require (
 	github.com/stretchr/objx v0.3.0 // indirect
 	github.com/stretchr/testify v1.7.0
 	github.com/tdewolff/minify/v2 v2.9.17
-	github.com/tdewolff/parse/v2 v2.5.14 // indirect
 	github.com/urfave/cli/v2 v2.3.0
 	github.com/vultr/govultr v1.0.0
 	github.com/xddxdd/ottoext v0.0.0-20210101073831-439879ee6281
 	golang.org/x/crypto v0.0.0-20210421170649-83a5a9bb288b // indirect
-	golang.org/x/mod v0.4.2 // indirect
 	golang.org/x/net v0.0.0-20210525063256-abc453219eb5
 	golang.org/x/oauth2 v0.0.0-20210514164344-f6687ab2804c
 	golang.org/x/time v0.0.0-20210220033141-f8bda1e9f3ba // indirect
