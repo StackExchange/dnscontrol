@@ -1,6 +1,6 @@
 module github.com/StackExchange/dnscontrol/v3
 
-go 1.14
+go 1.16
 
 require (
 	github.com/Azure/azure-sdk-for-go v55.1.0+incompatible
@@ -46,7 +46,6 @@ require (
 	github.com/miekg/dns v1.1.42
 	github.com/mitchellh/mapstructure v1.4.1 // indirect
 	github.com/mittwald/go-powerdns v0.5.2
-	github.com/mjibson/esc v0.2.0
 	github.com/namedotcom/go v0.0.0-20180403034216-08470befbe04
 	github.com/nrdcg/goinwx v0.8.1
 	github.com/oracle/oci-go-sdk/v32 v32.0.0
