@@ -12,13 +12,13 @@ type dnsMadeEasyProvider struct {
 }
 
 func newProvider(apiKey string, secretKey string, sandbox bool, debug bool) *dnsMadeEasyProvider {
-	fmt.Println("creating DNSMADEEASY provider for sandbox")
-
 	baseURL := baseURLV2_0
 	if sandbox {
 		baseURL = sandboxBaseURLV2_0
 	}
 
+	fmt.Printf("Creating DNSMADEEASY provider for %q\n", baseURL)
+	
 	return &dnsMadeEasyProvider{
 		restAPI: &dnsMadeEasyRestAPI{
 			apiKey:    apiKey,
