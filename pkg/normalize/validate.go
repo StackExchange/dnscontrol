@@ -248,7 +248,7 @@ func importTransform(srcDomain, dstDomain *models.DomainConfig, transforms []tra
 			r := newRec()
 			r.SetTarget(transformCNAME(r.GetTargetField(), srcDomain.Name, dstDomain.Name))
 			dstDomain.Records = append(dstDomain.Records, r)
-		case "MX", "NAPTR", "NS", "SOA", "SRV", "TXT", "CAA", "TLSA":
+		case "AKAMAICDN", "MX", "NAPTR", "NS", "SOA", "SRV", "TXT", "CAA", "TLSA":
 			// Not imported.
 			continue
 		default:
@@ -555,6 +555,7 @@ var providerCapabilityChecks = []pairTypeCapability{
 	capabilityCheck("SRV", providers.CanUseSRV),
 	capabilityCheck("TLSA", providers.CanUseTLSA),
 	capabilityCheck("AZURE_ALIAS", providers.CanUseAzureAlias),
+	capabilityCheck("AKAMAICDN", providers.CanUseAKAMAICDN),
 
 	// DS needs special record-level checks
 	{

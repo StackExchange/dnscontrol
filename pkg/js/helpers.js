@@ -215,6 +215,9 @@ var A = recordBuilder('A');
 // AAAA(name,ip, recordModifiers...)
 var AAAA = recordBuilder('AAAA');
 
+// AKAMAICDN(name, target, recordModifiers...)
+var AKAMAICDN = recordBuilder('AKAMAICDN');
+
 // ALIAS(name,target, recordModifiers...)
 var ALIAS = recordBuilder('ALIAS');
 

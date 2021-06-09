@@ -10,6 +10,7 @@ require (
 	github.com/DisposaBoy/JsonConfigReader v0.0.0-20201129172854-99cf318d67e7
 	github.com/PuerkitoBio/goquery v1.6.1
 	github.com/TomOnTime/utfutil v0.0.0-20200626160131-0b0178852c8f
+	github.com/akamai/AkamaiOPEN-edgegrid-golang v1.1.1
 	github.com/andreyvit/diff v0.0.0-20170406064948-c7f18ee00883
 	github.com/andybalholm/cascadia v1.2.0 // indirect
 	github.com/aws/aws-sdk-go v1.38.53

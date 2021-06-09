@@ -987,6 +987,7 @@ func makeTests(t *testing.T) []*TestGroup {
 		testgroup("pager1201",
 			only(
 				//"MSDNS",     //  No paging done. No need to test.
+				//"AKAMAI",    //  No paging done. No need to test.
 				//"AZURE_DNS", // Currently failing. See https://github.com/StackExchange/dnscontrol/issues/770
 				"HEXONET",
 				"HOSTINGDE",

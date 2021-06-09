@@ -3,6 +3,15 @@
     "ADServer": "$AD_SERVER",
     "domain": "$AD_DOMAIN"
   },
+  "AKAMAI": {
+    "client_secret": "$AK_CLIENT_SECRET",
+    "host": "$AK_HOST",
+    "access_token": "$AK_ACCESS_TOKEN",
+    "client_token": "$AK_CLIENT_TOKEN",
+    "contract_id": "$AK_CONTRACT_ID",
+    "group_id": "$AK_GROUP_ID",
+    "domain": "$AK_DOMAIN"
+  },
   "AXFRDDNS": {
     "domain": "$AXFRDDNS_DOMAIN",
     "master": "$AXFRDDNS_MASTER",
