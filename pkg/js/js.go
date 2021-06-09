@@ -1,9 +1,11 @@
 package js
 
 import (
+	_ "embed"
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
+	"log"
 	"os"
 	"path/filepath"
 	"strings"
@@ -20,6 +22,10 @@ import (
 	"github.com/StackExchange/dnscontrol/v3/pkg/printer"
 	"github.com/StackExchange/dnscontrol/v3/pkg/transform"
 )
+
+//go:embed helpers.js
+var helpersJsStatic string
+var helpersJsFileName = "pkg/js/helpers.js"
 
 // currentDirectory is the current directory as used by require().
 // This is used to emulate nodejs-style require() directory handling.
@@ -101,9 +107,19 @@ func ExecuteJavascript(file string, devMode bool, variables map[string]string) (
 	return conf, nil
 }
 
-// GetHelpers returns the filename of helpers.js, or the esc'ed version.
+// GetHelpers returns the contents of helpers.js, or the embedded version.
 func GetHelpers(devMode bool) string {
-	return _escFSMustString(devMode, "/helpers.js")
+	if devMode {
+		// Load the file:
+		b, err := ioutil.ReadFile(helpersJsFileName)
+		if err != nil {
+			log.Fatal(err)
+		}
+		return string(b)
+	}
+
+	// Return the embedded bytes:
+	return helpersJsStatic
 }
 
 func require(call otto.FunctionCall) otto.Value {
