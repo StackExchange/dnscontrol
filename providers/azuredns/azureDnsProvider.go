@@ -69,7 +69,7 @@ var features = providers.DocumentationNotes{
 
 func init() {
 	fns := providers.DspFuncs{
-		Initializer:    newAzureDNSDsp,
+		Initializer:   newAzureDNSDsp,
 		RecordAuditor: AuditRecords,
 	}
 	providers.RegisterDomainServiceProviderType("AZURE_DNS", fns, features)

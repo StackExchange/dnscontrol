@@ -61,7 +61,7 @@ var features = providers.DocumentationNotes{
 
 func init() {
 	fns := providers.DspFuncs{
-		Initializer:    newHEDNSProvider,
+		Initializer:   newHEDNSProvider,
 		RecordAuditor: AuditRecords,
 	}
 	providers.RegisterDomainServiceProviderType("HEDNS", fns, features)
@@ -326,7 +326,7 @@ func (c *hednsProvider) GetZoneRecords(domain string) (models.Records, error) {
 			err = rc.SetTarget(data)
 		case "MX":
 			// dns.he.net omits the trailing "." on the hostnames for MX records
-			err = rc.SetTargetMX(uint16(priority), data + ".")
+			err = rc.SetTargetMX(uint16(priority), data+".")
 		case "SRV":
 			err = rc.SetTargetSRVPriorityString(uint16(priority), data)
 		case "SPF":

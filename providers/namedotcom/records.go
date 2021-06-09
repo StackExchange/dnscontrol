@@ -169,8 +169,8 @@ func (n *namedotcomProvider) createRecord(rc *models.RecordConfig, domain string
 	}
 	switch rc.Type { // #rtype_variations
 	case "A", "AAAA", "ANAME", "CNAME", "MX", "NS":
-		// nothing
-	 case "TXT":
+	// nothing
+	case "TXT":
 	// 	record.Answer = encodeTxt(rc.TxtStrings)
 	case "SRV":
 		if rc.GetTargetField() == "." {

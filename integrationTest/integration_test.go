@@ -8,6 +8,7 @@ import (
 	"strconv"
 	"strings"
 	"testing"
+	"time"
 
 	"github.com/StackExchange/dnscontrol/v3/models"
 	"github.com/StackExchange/dnscontrol/v3/pkg/nameservers"
@@ -22,6 +23,7 @@ var providerToRun = flag.String("provider", "", "Provider to run")
 var startIdx = flag.Int("start", 0, "Test number to begin with")
 var endIdx = flag.Int("end", 0, "Test index to stop after")
 var verbose = flag.Bool("verbose", false, "Print corrections as you run them")
+var printElapsed = flag.Bool("elapsed", false, "Print elapsed time for each testgroup")
 
 func init() {
 	testing.Init()
@@ -239,6 +241,7 @@ func runTests(t *testing.T, prv providers.DNSServiceProvider, domainName string,
 
 	curGroup := -1
 	for gIdx, group := range testGroups {
+		start := time.Now()
 
 		// Abide by -start -end flags
 		curGroup++
@@ -256,7 +259,9 @@ func runTests(t *testing.T, prv providers.DNSServiceProvider, domainName string,
 		// Run the tests.
 
 		for _, tst := range group.tests {
+
 			makeChanges(t, prv, dc, tst, fmt.Sprintf("%02d:%s", gIdx, group.Desc), true, origConfig)
+
 			if t.Failed() {
 				break
 			}
@@ -264,6 +269,11 @@ func runTests(t *testing.T, prv providers.DNSServiceProvider, domainName string,
 
 		// Remove all records so next group starts with a clean slate.
 		makeChanges(t, prv, dc, tc("Empty"), "Post cleanup", false, nil)
+
+		elapsed := time.Since(start)
+		if *printElapsed {
+			fmt.Printf("ELAPSED %02d %7.2f %q\n", gIdx, elapsed.Seconds(), group.Desc)
+		}
 
 	}
 
@@ -398,6 +408,12 @@ func naptr(name string, order uint16, preference uint16, flags string, service s
 func ds(name string, keyTag uint16, algorithm, digestType uint8, digest string) *models.RecordConfig {
 	r := makeRec(name, "", "DS")
 	r.SetTargetDS(keyTag, algorithm, digestType, digest)
+	return r
+}
+
+func soa(name string, ns, mbox string, serial, refresh, retry, expire, minttl uint32) *models.RecordConfig {
+	r := makeRec(name, "", "SOA")
+	r.SetTargetSOA(ns, mbox, serial, refresh, retry, expire, minttl)
 	return r
 }
 
@@ -798,8 +814,8 @@ func makeTests(t *testing.T) []*TestGroup {
 			tc("TXT with 0-octel string", txt("foo1", "")),
 			// https://github.com/StackExchange/dnscontrol/issues/598
 			// RFC1035 permits this, but rarely do provider support it.
-			clear(),
-			tc("Create a 253-byte TXT", txt("foo253", strings.Repeat("A", 253))),
+			//clear(),
+			//tc("Create a 253-byte TXT", txt("foo253", strings.Repeat("A", 253))),
 			clear(),
 			tc("Create a 254-byte TXT", txt("foo254", strings.Repeat("B", 254))),
 			clear(),
@@ -807,8 +823,8 @@ func makeTests(t *testing.T) []*TestGroup {
 			clear(),
 			tc("Create a 256-byte TXT", txt("foo256", strings.Repeat("D", 256))),
 			clear(),
-			tc("Create a 257-byte TXT", txt("foo257", strings.Repeat("E", 257))),
-			clear(),
+			//tc("Create a 257-byte TXT", txt("foo257", strings.Repeat("E", 257))),
+			//clear(),
 			tc("Create TXT with single-quote", txt("foosq", "quo'te")),
 			clear(),
 			tc("Create TXT with backtick", txt("foobt", "blah`blah")),
@@ -816,16 +832,17 @@ func makeTests(t *testing.T) []*TestGroup {
 			tc("Create TXT with double-quote", txt("foodq", `quo"te`)),
 			clear(),
 			tc("Create TXT with ws at end", txt("foows1", "with space at end ")),
-			clear(), gentxt("0"),
-			clear(), gentxt("1"),
-			clear(), gentxt("10"),
-			clear(), gentxt("11"),
-			clear(), gentxt("100"),
-			clear(), gentxt("101"),
-			clear(), gentxt("110"),
-			clear(), gentxt("111"),
-			clear(), gentxt("1hh"),
-			clear(), gentxt("1hh0"),
+			clear(),
+			gentxt("0"),
+			gentxt("1"),
+			gentxt("10"),
+			gentxt("11"),
+			gentxt("100"),
+			gentxt("101"),
+			gentxt("110"),
+			gentxt("111"),
+			gentxt("1hh"),
+			gentxt("1hh0"),
 		),
 
 		testgroup("long TXT",
@@ -875,7 +892,7 @@ func makeTests(t *testing.T) []*TestGroup {
 		),
 
 		// Test the ability to change TXT records on the SAME labels accurately.
-		testgroup("TXTMulti",
+		testgroup("TXTMulti-same",
 			tc("Create TXTMulti 1",
 				txtmulti("foo", []string{"simple"}),
 			),
@@ -947,6 +964,8 @@ func makeTests(t *testing.T) []*TestGroup {
 				"NS1",           // Free acct only allows 50 records, therefore we skip
 				"CLOUDFLAREAPI", // Infinite pagesize but due to slow speed, skipping.
 				"MSDNS",         //  No paging done. No need to test.
+				"NAMEDOTCOM",    // Their API is so damn slow. We'll add it back as needed.
+				"GANDI_V5",      // Their API is so damn slow. We'll add it back as needed.
 			),
 			tc("99 records", manyA("rec%04d", "1.2.3.4", 99)...),
 			tc("100 records", manyA("rec%04d", "1.2.3.4", 100)...),
@@ -1018,6 +1037,19 @@ func makeTests(t *testing.T) []*TestGroup {
 			tc("Modify PTR record", ptr("4", "bar.com.")),
 		),
 
+		// SOA
+		testgroup("SOA", requires(providers.CanUseSOA),
+			tc("Create SOA record", soa("@", "kim.ns.cloudflare.com.", "dns.cloudflare.com.", 2037190000, 10000, 2400, 604800, 3600)),
+			tc("Modify SOA ns    ", soa("@", "mmm.ns.cloudflare.com.", "dns.cloudflare.com.", 2037190000, 10000, 2400, 604800, 3600)),
+			tc("Modify SOA mbox  ", soa("@", "mmm.ns.cloudflare.com.", "eee.cloudflare.com.", 2037190000, 10000, 2400, 604800, 3600)),
+			tc("Modify SOA refres", soa("@", "mmm.ns.cloudflare.com.", "eee.cloudflare.com.", 2037190000, 10001, 2400, 604800, 3600)),
+			tc("Modify SOA retry ", soa("@", "mmm.ns.cloudflare.com.", "eee.cloudflare.com.", 2037190000, 10001, 2401, 604800, 3600)),
+			tc("Modify SOA expire", soa("@", "mmm.ns.cloudflare.com.", "eee.cloudflare.com.", 2037190000, 10001, 2401, 604801, 3600)),
+			tc("Modify SOA minttl", soa("@", "mmm.ns.cloudflare.com.", "eee.cloudflare.com.", 2037190000, 10001, 2401, 604801, 3601)),
+			clear(),
+			tc("Create SOA record", soa("@", "kim.ns.cloudflare.com.", "dns.cloudflare.com.", 2037190000, 10000, 2400, 604800, 3600)),
+		),
+
 		testgroup("SRV", requires(providers.CanUseSRV), not("ACTIVEDIRECTORY_PS"),
 			tc("SRV record", srv("_sip._tcp", 5, 6, 7, "foo.com.")),
 			tc("Second SRV record, same prio", srv("_sip._tcp", 5, 6, 7, "foo.com."), srv("_sip._tcp", 5, 60, 70, "foo2.com.")),
@@ -1067,8 +1099,9 @@ func makeTests(t *testing.T) []*TestGroup {
 
 		testgroup("DS",
 			requires(providers.CanUseDS),
-			// Use a valid digest value here.  Some providers verify that a valid digest is in use.
-			// RFC 4034 s5.1.4 specifies SHA1 as the only digest algo at present, i.e. only hexadecimal values currently usable.
+			// Use a valid digest value here.  Some providers verify that a valid digest is in use.  See RFC 4034 and
+			// https://www.iana.org/assignments/dns-sec-alg-numbers/dns-sec-alg-numbers.xhtml
+			// https://www.iana.org/assignments/ds-rr-types/ds-rr-types.xhtml
 			tc("DS create", ds("@", 1, 13, 1, "da39a3ee5e6b4b0d3255bfef95601890afd80709")),
 			tc("DS change", ds("@", 8857, 8, 2, "4b9b6b073edd97feb5bc12dc4e1b32d2c6af7ae23a293936ceb87bb10494ec44")),
 			tc("DS change f1", ds("@", 3, 8, 2, "4b9b6b073edd97feb5bc12dc4e1b32d2c6af7ae23a293936ceb87bb10494ec44")),
@@ -1093,8 +1126,9 @@ func makeTests(t *testing.T) []*TestGroup {
 		testgroup("DS (children only)",
 			requires(providers.CanUseDSForChildren),
 			not("CLOUDNS", "CLOUDFLAREAPI"),
-			// Use a valid digest value here.  Some providers verify that a valid digest is in use.
-			// RFC 4034 s5.1.4 specifies SHA1 as the only digest algo at present, i.e. only hexadecimal values currently usable.
+			// Use a valid digest value here.  Some providers verify that a valid digest is in use.  See RFC 4034 and
+			// https://www.iana.org/assignments/dns-sec-alg-numbers/dns-sec-alg-numbers.xhtml
+			// https://www.iana.org/assignments/ds-rr-types/ds-rr-types.xhtml
 			tc("DSchild create", ds("child", 1, 13, 1, "da39a3ee5e6b4b0d3255bfef95601890afd80709")),
 			tc("DSchild change", ds("child", 8857, 8, 2, "4b9b6b073edd97feb5bc12dc4e1b32d2c6af7ae23a293936ceb87bb10494ec44")),
 			tc("DSchild change f1", ds("child", 3, 8, 2, "4b9b6b073edd97feb5bc12dc4e1b32d2c6af7ae23a293936ceb87bb10494ec44")),

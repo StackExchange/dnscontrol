@@ -81,7 +81,7 @@ var features = providers.DocumentationNotes{
 
 func init() {
 	fns := providers.DspFuncs{
-		Initializer:    NewDo,
+		Initializer:   NewDo,
 		RecordAuditor: AuditRecords,
 	}
 	providers.RegisterDomainServiceProviderType("DIGITALOCEAN", fns, features)

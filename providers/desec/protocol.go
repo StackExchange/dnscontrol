@@ -65,7 +65,7 @@ func (c *desecProvider) fetchDomainList() error {
 	endpoint := "/domains/"
 	var bodyString, err = c.get(endpoint, "GET")
 	if err != nil {
-		return fmt.Errorf("failed fetching domain list (deSEC): %s", err)
+		return fmt.Errorf("Failed fetching domain list (deSEC): %s", err)
 	}
 	err = json.Unmarshal(bodyString, &dr)
 	if err != nil {
@@ -85,7 +85,7 @@ func (c *desecProvider) getRecords(domain string) ([]resourceRecord, error) {
 	var rrsNew []resourceRecord
 	var bodyString, err = c.get(fmt.Sprintf(endpoint, domain), "GET")
 	if err != nil {
-		return rrsNew, fmt.Errorf("failed fetching records for domain %s (deSEC): %s", domain, err)
+		return rrsNew, fmt.Errorf("Failed fetching records for domain %s (deSEC): %s", domain, err)
 	}
 	err = json.Unmarshal(bodyString, &rrs)
 	if err != nil {
@@ -112,14 +112,14 @@ func (c *desecProvider) createDomain(domain string) error {
 	var resp []byte
 	var err error
 	if resp, err = c.post(endpoint, "POST", byt); err != nil {
-		return fmt.Errorf("failed domain create (deSEC): %v", err)
+		return fmt.Errorf("Failed domain create (deSEC): %v", err)
 	}
 	dm := domainObject{}
 	err = json.Unmarshal(resp, &dm)
 	if err != nil {
 		return err
 	}
-	printer.Printf("If you want to use DNSSec please add the DS record at your registrar using one of the keys:\n")
+	printer.Printf("To enable DNSSEC validation for your domain, make sure to convey the DS record(s) to your registrar:\n")
 	printer.Printf("%+q", dm.Keys)
 	return nil
 }
@@ -129,7 +129,7 @@ func (c *desecProvider) upsertRR(rr []resourceRecord, domain string) error {
 	endpoint := fmt.Sprintf("/domains/%s/rrsets/", domain)
 	byt, _ := json.Marshal(rr)
 	if _, err := c.post(endpoint, "PUT", byt); err != nil {
-		return fmt.Errorf("failed create rrset (deSEC): %v", err)
+		return fmt.Errorf("Failed create RRset (deSEC): %v", err)
 	}
 	return nil
 }
@@ -137,7 +137,7 @@ func (c *desecProvider) upsertRR(rr []resourceRecord, domain string) error {
 func (c *desecProvider) deleteRR(domain, shortname, t string) error {
 	endpoint := fmt.Sprintf("/domains/%s/rrsets/%s/%s/", domain, shortname, t)
 	if _, err := c.get(endpoint, "DELETE"); err != nil {
-		return fmt.Errorf("failed delete rrset (deSEC): %v", err)
+		return fmt.Errorf("Failed delete RRset (deSEC): %v", err)
 	}
 	return nil
 }
@@ -170,7 +170,7 @@ retry:
 		if err == nil {
 			return bodyString, fmt.Errorf("%s", errResp.Detail)
 		}
-		return bodyString, fmt.Errorf("http status %d %s, the api does not provide more information", resp.StatusCode, resp.Status)
+		return bodyString, fmt.Errorf("HTTP status %d %s, the API does not provide more information", resp.StatusCode, resp.Status)
 	}
 	return bodyString, nil
 }
@@ -208,9 +208,9 @@ retry:
 		var errResp errorResponse
 		err = json.Unmarshal(bodyString, &errResp)
 		if err == nil {
-			return bodyString, fmt.Errorf("http status %d %s details: %s", resp.StatusCode, resp.Status, errResp.Detail)
+			return bodyString, fmt.Errorf("HTTP status %d %s details: %s", resp.StatusCode, resp.Status, errResp.Detail)
 		}
-		return bodyString, fmt.Errorf("http status %d %s, the api does not provide more information", resp.StatusCode, resp.Status)
+		return bodyString, fmt.Errorf("HTTP status %d %s, the API does not provide more information", resp.StatusCode, resp.Status)
 	}
 	//time.Sleep(334 * time.Millisecond)
 	return bodyString, nil

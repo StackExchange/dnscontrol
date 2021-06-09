@@ -10,7 +10,6 @@ import (
 func Test_generatePSZoneAll(t *testing.T) {
 	type args struct {
 		dnsserver string
-		domain    string
 	}
 	tests := []struct {
 		name string
@@ -50,17 +49,17 @@ func Test_generatePSZoneDump(t *testing.T) {
 		{
 			name: "local",
 			args: args{domainname: "example.com"},
-			want: `Get-DnsServerResourceRecord -ZoneName "example.com" | ConvertTo-Json -depth 4 > mytemp.json`,
+			want: `Get-DnsServerResourceRecord -ZoneName "example.com" | ConvertTo-Json -depth 4`,
 		},
 		{
 			name: "remote",
 			args: args{domainname: "example.com", dnsserver: "mydnsserver"},
-			want: `Get-DnsServerResourceRecord -ComputerName "mydnsserver" -ZoneName "example.com" | ConvertTo-Json -depth 4 > mytemp.json`,
+			want: `Get-DnsServerResourceRecord -ComputerName "mydnsserver" -ZoneName "example.com" | ConvertTo-Json -depth 4`,
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := generatePSZoneDump(tt.args.dnsserver, tt.args.domainname, "mytemp.json"); got != tt.want {
+			if got := generatePSZoneDump(tt.args.dnsserver, tt.args.domainname); got != tt.want {
 				t.Errorf("generatePSZoneDump() = got=(\n%s\n) want=(\n%s\n)", got, tt.want)
 			}
 		})

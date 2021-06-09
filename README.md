@@ -119,9 +119,9 @@ See [Getting Started](https://stackexchange.github.io/dnscontrol/getting-started
 
 ## From source
 
-DNSControl can be built with Go version 1.14 or higher.
+DNSControl can be built with Go version 1.16 or higher.
 
-The `go get` command will will download the source, compile it, and
+The `go get` command will download the source, compile it, and
 install `dnscontrol` in your `$GOBIN` directory.
 
 To install, simply run
@@ -150,6 +150,13 @@ Alternatively, on Mac you can install it using homebrew:
 ```
 docker run --rm -it -v $(pwd)/dnsconfig.js:/dns/dnsconfig.js -v $(pwd)/creds.json:/dns/creds.json stackexchange/dnscontrol dnscontrol preview
 ```
+
+The documentation can be viewed via Docker:
+
+```
+docker run --rm -it --volume="$PWD:/srv/jekyll" --volume="$PWD/vendor/bundle:/usr/local/bundle" --env JEKYLL_ENV=production jekyll/jekyll:3.8 jekyll build -V
+```
+
 
 ## More info at our web site
 
