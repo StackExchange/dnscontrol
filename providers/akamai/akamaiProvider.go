@@ -1,7 +1,12 @@
 package akamai
 
 /*
-  ###TBD### Some comment about this wonderful provider
+Akamai Edge DNS provider
+
+For information about Edge DNS, see:
+https://www.akamai.com/us/en/products/security/edge-dns.jsp
+https://learn.akamai.com/en-us/products/cloud_security/edge_dns.html
+https://www.akamai.com/us/en/multimedia/documents/product-brief/edge-dns-product-brief.pdf
 */
 
 import (
@@ -30,7 +35,7 @@ var features = providers.DocumentationNotes{
 	providers.CanAutoDNSSEC:          providers.Can(),
 	providers.CantUseNOPURGE:         providers.Cannot(),
 	providers.DocOfficiallySupported: providers.Cannot(),
-	providers.DocDualHost:            providers.Cannot(), // ###TBD### "split horizon"
+	providers.DocDualHost:            providers.Cannot(),
 	providers.CanUseSOA:              providers.Cannot(),
 	providers.DocCreateDomains:       providers.Can(),
 	providers.CanGetZones:            providers.Can(),
@@ -38,8 +43,8 @@ var features = providers.DocumentationNotes{
 }
 
 type akamaiProvider struct {
-	contractId string
-	groupId    string
+	contractID string
+	groupID    string
 }
 
 func init() {
@@ -57,8 +62,8 @@ func newAkamaiDSP(config map[string]string, metadata json.RawMessage) (providers
 	host := config["host"]
 	accessToken := config["access_token"]
 	clientToken := config["client_token"]
-	contractId_ := config["contract_id"]
-	groupId_ := config["group_id"]
+	contractID := config["contract_id"]
+	groupID := config["group_id"]
 
 	if clientSecret == "" {
 		return nil, fmt.Errorf("creds.json: client_secret must not be empty")
@@ -72,18 +77,18 @@ func newAkamaiDSP(config map[string]string, metadata json.RawMessage) (providers
 	if clientToken == "" {
 		return nil, fmt.Errorf("creds.json: clientToken must not be empty")
 	}
-	if contractId_ == "" {
-		return nil, fmt.Errorf("creds.json: contractId must not be empty")
+	if contractID == "" {
+		return nil, fmt.Errorf("creds.json: contractID must not be empty")
 	}
-	if groupId_ == "" {
-		return nil, fmt.Errorf("creds.json: groupId must not be empty")
+	if groupID == "" {
+		return nil, fmt.Errorf("creds.json: groupID must not be empty")
 	}
 
 	AkaInitialize(clientSecret, host, accessToken, clientToken)
 
 	api := &akamaiProvider{
-		contractId: contractId_,
-		groupId:    groupId_,
+		contractID: contractID,
+		groupID:    groupID,
 	}
 	return api, nil
 }
@@ -99,7 +104,7 @@ func (a *akamaiProvider) EnsureDomainExists(domain string) error {
 		printer.Debugf("Zone %s already exists\n", domain)
 		return nil
 	}
-	return AkaCreateZone(domain, a.contractId, a.groupId)
+	return AkaCreateZone(domain, a.contractID, a.groupID)
 }
 
 // GetDomainCorrections return a list of corrections. Each correction is a text string describing the change
@@ -189,31 +194,31 @@ func (a *akamaiProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*model
 	corrections = append(corrections, lastCorrections...)
 
 	// AutoDnsSec correction
-	existingAutoDnsSecEnabled, err := AkaIsAutoDnsSecEnabled(dc.Name)
+	existingAutoDNSSecEnabled, err := AkaIsAutoDNSSecEnabled(dc.Name)
 	if err != nil {
 		return nil, err
 	}
 
-	desiredAutoDnsSecEnabled := dc.AutoDNSSEC == "on"
+	desiredAutoDNSSecEnabled := dc.AutoDNSSEC == "on"
 
-	if !existingAutoDnsSecEnabled && desiredAutoDnsSecEnabled {
+	if !existingAutoDNSSecEnabled && desiredAutoDNSSecEnabled {
 		// Existing false (disabled), Desired true (enabled)
 		corrections = append(corrections, &models.Correction{
 			Msg: "Enable AutoDnsSec\n",
 			F: func() error {
-				return AkaAutoDnsSecEnable(true, dc.Name)
+				return AkaAutoDNSSecEnable(true, dc.Name)
 			},
 		})
-		printer.Debugf("AkaAutoDnsSecEnable: Enable AutoDnsSec for zone %s\n", dc.Name)
-	} else if existingAutoDnsSecEnabled && !desiredAutoDnsSecEnabled {
+		printer.Debugf("AkaAutoDNSSecEnable: Enable AutoDnsSec for zone %s\n", dc.Name)
+	} else if existingAutoDNSSecEnabled && !desiredAutoDNSSecEnabled {
 		// Existing true (enabled), Desired false (disabled)
 		corrections = append(corrections, &models.Correction{
 			Msg: "Disable AutoDnsSec\n",
 			F: func() error {
-				return AkaAutoDnsSecEnable(false, dc.Name)
+				return AkaAutoDNSSecEnable(false, dc.Name)
 			},
 		})
-		printer.Debugf("AkaAutoDnsSecEnable: Disable AutoDnsSec for zone %s\n", dc.Name)
+		printer.Debugf("AkaAutoDNSSecEnable: Disable AutoDnsSec for zone %s\n", dc.Name)
 	}
 
 	return corrections, nil
@@ -221,7 +226,7 @@ func (a *akamaiProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*model
 
 // GetNameservers returns the nameservers for a domain.
 func (a *akamaiProvider) GetNameservers(domain string) ([]*models.Nameserver, error) {
-	authorities, err := AkaGetAuthorities(a.contractId)
+	authorities, err := AkaGetAuthorities(a.contractID)
 	if err != nil {
 		return nil, err
 	}
@@ -239,7 +244,7 @@ func (a *akamaiProvider) GetZoneRecords(domain string) (models.Records, error) {
 
 // ListZones returns all DNS zones managed by this provider.
 func (a *akamaiProvider) ListZones() ([]string, error) {
-	zones, err := AkaListZones(a.contractId)
+	zones, err := AkaListZones(a.contractID)
 	if err != nil {
 		return nil, err
 	}
