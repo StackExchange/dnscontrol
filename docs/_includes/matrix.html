@@ -7,6 +7,7 @@
 	<tr>
 	<th></th>
 	<th class="rotate"><div><span>ACTIVEDIRECTORY_PS</span></div></th>
+	<th class="rotate"><div><span>AKAMAIEDGEDNS</span></div></th>
 	<th class="rotate"><div><span>AXFRDDNS</span></div></th>
 	<th class="rotate"><div><span>AZURE_DNS</span></div></th>
 	<th class="rotate"><div><span>BIND</span></div></th>
@@ -18,7 +19,6 @@
 	<th class="rotate"><div><span>DNSIMPLE</span></div></th>
 	<th class="rotate"><div><span>DNSMADEEASY</span></div></th>
 	<th class="rotate"><div><span>DNSOVERHTTPS</span></div></th>
-	<th class="rotate"><div><span>EDGEDNS</span></div></th>
 	<th class="rotate"><div><span>EXOSCALE</span></div></th>
 	<th class="rotate"><div><span>GANDI_V5</span></div></th>
 	<th class="rotate"><div><span>GCLOUD</span></div></th>
@@ -53,17 +53,17 @@
 		<td class="danger">
 			<i class="fa fa-times text-danger" aria-hidden="true"></i>
 		</td>
-		<td class="success">
-			<i class="fa fa-check text-success" aria-hidden="true"></i>
-		</td>
-		<td class="success">
-			<i class="fa fa-check text-success" aria-hidden="true"></i>
-		</td>
-		<td class="success">
-			<i class="fa fa-check text-success" aria-hidden="true"></i>
-		</td>
 		<td class="danger">
 			<i class="fa fa-times text-danger" aria-hidden="true"></i>
+		</td>
+		<td class="success">
+			<i class="fa fa-check text-success" aria-hidden="true"></i>
+		</td>
+		<td class="success">
+			<i class="fa fa-check text-success" aria-hidden="true"></i>
+		</td>
+		<td class="success">
+			<i class="fa fa-check text-success" aria-hidden="true"></i>
 		</td>
 		<td class="danger">
 			<i class="fa fa-times text-danger" aria-hidden="true"></i>
@@ -176,18 +176,6 @@
 		<td class="success">
 			<i class="fa fa-check text-success" aria-hidden="true"></i>
 		</td>
-		<td class="danger">
-			<i class="fa fa-times text-danger" aria-hidden="true"></i>
-		</td>
-		<td class="success">
-			<i class="fa fa-check text-success" aria-hidden="true"></i>
-		</td>
-		<td class="success">
-			<i class="fa fa-check text-success" aria-hidden="true"></i>
-		</td>
-		<td class="success">
-			<i class="fa fa-check text-success" aria-hidden="true"></i>
-		</td>
 		<td class="success">
 			<i class="fa fa-check text-success" aria-hidden="true"></i>
 		</td>
@@ -196,6 +184,18 @@
 		</td>
 		<td class="success">
 			<i class="fa fa-check text-success" aria-hidden="true"></i>
+		</td>
+		<td class="success">
+			<i class="fa fa-check text-success" aria-hidden="true"></i>
+		</td>
+		<td class="success">
+			<i class="fa fa-check text-success" aria-hidden="true"></i>
+		</td>
+		<td class="success">
+			<i class="fa fa-check text-success" aria-hidden="true"></i>
+		</td>
+		<td class="danger">
+			<i class="fa fa-times text-danger" aria-hidden="true"></i>
 		</td>
 		<td class="success">
 			<i class="fa fa-check text-success" aria-hidden="true"></i>
@@ -287,12 +287,6 @@
 		<td class="danger">
 			<i class="fa fa-times text-danger" aria-hidden="true"></i>
 		</td>
-		<td class="success">
-			<i class="fa fa-check text-success" aria-hidden="true"></i>
-		</td>
-		<td class="danger">
-			<i class="fa fa-times text-danger" aria-hidden="true"></i>
-		</td>
 		<td class="danger">
 			<i class="fa fa-times text-danger" aria-hidden="true"></i>
 		</td>
@@ -302,11 +296,17 @@
 		<td class="danger">
 			<i class="fa fa-times text-danger" aria-hidden="true"></i>
 		</td>
+		<td class="danger">
+			<i class="fa fa-times text-danger" aria-hidden="true"></i>
+		</td>
 		<td class="success">
 			<i class="fa fa-check text-success" aria-hidden="true"></i>
 		</td>
 		<td class="danger">
 			<i class="fa fa-times text-danger" aria-hidden="true"></i>
+		</td>
+		<td class="success">
+			<i class="fa fa-check text-success" aria-hidden="true"></i>
 		</td>
 		<td class="danger">
 			<i class="fa fa-times text-danger" aria-hidden="true"></i>
@@ -383,6 +383,9 @@
 		<td class="danger">
 			<i class="fa fa-times text-danger" aria-hidden="true"></i>
 		</td>
+		<td class="danger">
+			<i class="fa fa-times text-danger" aria-hidden="true"></i>
+		</td>
 		<td><i class="fa fa-minus dim"></i></td>
 		<td class="danger" data-toggle="tooltip" data-container="body" data-placement="top" title="Azure DNS does not provide a generic ALIAS functionality. Use AZURE_ALIAS instead.">
 			<i class="fa has-tooltip fa-times text-danger" aria-hidden="true"></i>
@@ -406,9 +409,6 @@
 			<i class="fa fa-check text-success" aria-hidden="true"></i>
 		</td>
 		<td><i class="fa fa-minus dim"></i></td>
-		<td class="danger">
-			<i class="fa fa-times text-danger" aria-hidden="true"></i>
-		</td>
 		<td class="success">
 			<i class="fa fa-check text-success" aria-hidden="true"></i>
 		</td>
@@ -468,6 +468,9 @@
 	<tr>
 		<th class="row-header" style="text-decoration: underline;" data-toggle="tooltip" data-container="body" data-placement="top" title="Provider can automatically manage DNSSEC">AUTODNSSEC</th>
 		<td><i class="fa fa-minus dim"></i></td>
+		<td class="success">
+			<i class="fa fa-check text-success" aria-hidden="true"></i>
+		</td>
 		<td class="success" data-toggle="tooltip" data-container="body" data-placement="top" title="Just warn when DNSSEC is requested but no RRSIG is found in the AXFR or warn when DNSSEC is not requested but RRSIG are found in the AXFR.">
 			<i class="fa has-tooltip fa-check text-success" aria-hidden="true"></i>
 		</td>
@@ -487,9 +490,6 @@
 		</td>
 		<td><i class="fa fa-minus dim"></i></td>
 		<td><i class="fa fa-minus dim"></i></td>
-		<td class="success">
-			<i class="fa fa-check text-success" aria-hidden="true"></i>
-		</td>
 		<td><i class="fa fa-minus dim"></i></td>
 		<td><i class="fa fa-minus dim"></i></td>
 		<td><i class="fa fa-minus dim"></i></td>
@@ -542,6 +542,9 @@
 		<td class="success">
 			<i class="fa fa-check text-success" aria-hidden="true"></i>
 		</td>
+		<td class="success">
+			<i class="fa fa-check text-success" aria-hidden="true"></i>
+		</td>
 		<td><i class="fa fa-minus dim"></i></td>
 		<td class="success">
 			<i class="fa fa-check text-success" aria-hidden="true"></i>
@@ -556,9 +559,6 @@
 			<i class="fa fa-check text-success" aria-hidden="true"></i>
 		</td>
 		<td><i class="fa fa-minus dim"></i></td>
-		<td class="success">
-			<i class="fa fa-check text-success" aria-hidden="true"></i>
-		</td>
 		<td class="success">
 			<i class="fa fa-check text-success" aria-hidden="true"></i>
 		</td>
@@ -631,6 +631,9 @@
 		<td class="success">
 			<i class="fa fa-check text-success" aria-hidden="true"></i>
 		</td>
+		<td class="success">
+			<i class="fa fa-check text-success" aria-hidden="true"></i>
+		</td>
 		<td class="danger">
 			<i class="fa fa-times text-danger" aria-hidden="true"></i>
 		</td>
@@ -649,9 +652,6 @@
 			<i class="fa fa-check text-success" aria-hidden="true"></i>
 		</td>
 		<td><i class="fa fa-minus dim"></i></td>
-		<td class="success">
-			<i class="fa fa-check text-success" aria-hidden="true"></i>
-		</td>
 		<td class="success">
 			<i class="fa fa-check text-success" aria-hidden="true"></i>
 		</td>
@@ -720,6 +720,9 @@
 		<td class="success">
 			<i class="fa fa-check text-success" aria-hidden="true"></i>
 		</td>
+		<td class="success">
+			<i class="fa fa-check text-success" aria-hidden="true"></i>
+		</td>
 		<td class="danger">
 			<i class="fa fa-times text-danger" aria-hidden="true"></i>
 		</td>
@@ -738,9 +741,6 @@
 		</td>
 		<td><i class="fa fa-minus dim"></i></td>
 		<td><i class="fa fa-minus dim"></i></td>
-		<td class="success">
-			<i class="fa fa-check text-success" aria-hidden="true"></i>
-		</td>
 		<td><i class="fa fa-minus dim"></i></td>
 		<td><i class="fa fa-minus dim"></i></td>
 		<td><i class="fa fa-minus dim"></i></td>
@@ -778,6 +778,9 @@
 	<tr>
 		<th class="row-header" style="text-decoration: underline;" data-toggle="tooltip" data-container="body" data-placement="top" title="Provider can manage SOA records">SOA</th>
 		<td><i class="fa fa-minus dim"></i></td>
+		<td class="danger">
+			<i class="fa fa-times text-danger" aria-hidden="true"></i>
+		</td>
 		<td><i class="fa fa-minus dim"></i></td>
 		<td><i class="fa fa-minus dim"></i></td>
 		<td class="success">
@@ -791,9 +794,6 @@
 		<td><i class="fa fa-minus dim"></i></td>
 		<td><i class="fa fa-minus dim"></i></td>
 		<td><i class="fa fa-minus dim"></i></td>
-		<td class="danger">
-			<i class="fa fa-times text-danger" aria-hidden="true"></i>
-		</td>
 		<td><i class="fa fa-minus dim"></i></td>
 		<td><i class="fa fa-minus dim"></i></td>
 		<td><i class="fa fa-minus dim"></i></td>
@@ -838,16 +838,6 @@
 		<td class="success">
 			<i class="fa fa-check text-success" aria-hidden="true"></i>
 		</td>
-		<td><i class="fa fa-minus dim"></i></td>
-		<td class="success">
-			<i class="fa fa-check text-success" aria-hidden="true"></i>
-		</td>
-		<td class="success">
-			<i class="fa fa-check text-success" aria-hidden="true"></i>
-		</td>
-		<td class="success">
-			<i class="fa fa-check text-success" aria-hidden="true"></i>
-		</td>
 		<td class="success">
 			<i class="fa fa-check text-success" aria-hidden="true"></i>
 		</td>
@@ -855,6 +845,16 @@
 		<td class="success">
 			<i class="fa fa-check text-success" aria-hidden="true"></i>
 		</td>
+		<td class="success">
+			<i class="fa fa-check text-success" aria-hidden="true"></i>
+		</td>
+		<td class="success">
+			<i class="fa fa-check text-success" aria-hidden="true"></i>
+		</td>
+		<td class="success">
+			<i class="fa fa-check text-success" aria-hidden="true"></i>
+		</td>
+		<td><i class="fa fa-minus dim"></i></td>
 		<td class="success" data-toggle="tooltip" data-container="body" data-placement="top" title="SRV records with empty targets are not supported">
 			<i class="fa has-tooltip fa-check text-success" aria-hidden="true"></i>
 		</td>
@@ -925,33 +925,33 @@
 		<td class="success">
 			<i class="fa fa-check text-success" aria-hidden="true"></i>
 		</td>
-		<td class="danger">
-			<i class="fa fa-times text-danger" aria-hidden="true"></i>
-		</td>
-		<td class="success">
-			<i class="fa fa-check text-success" aria-hidden="true"></i>
-		</td>
-		<td class="success">
-			<i class="fa fa-check text-success" aria-hidden="true"></i>
-		</td>
-		<td class="success">
-			<i class="fa fa-check text-success" aria-hidden="true"></i>
-		</td>
-		<td><i class="fa fa-minus dim"></i></td>
-		<td class="success">
-			<i class="fa fa-check text-success" aria-hidden="true"></i>
-		</td>
-		<td><i class="fa fa-minus dim"></i></td>
 		<td class="success">
 			<i class="fa fa-check text-success" aria-hidden="true"></i>
 		</td>
 		<td class="danger">
 			<i class="fa fa-times text-danger" aria-hidden="true"></i>
 		</td>
+		<td class="success">
+			<i class="fa fa-check text-success" aria-hidden="true"></i>
+		</td>
+		<td class="success">
+			<i class="fa fa-check text-success" aria-hidden="true"></i>
+		</td>
+		<td class="success">
+			<i class="fa fa-check text-success" aria-hidden="true"></i>
+		</td>
 		<td><i class="fa fa-minus dim"></i></td>
 		<td class="success">
 			<i class="fa fa-check text-success" aria-hidden="true"></i>
 		</td>
+		<td><i class="fa fa-minus dim"></i></td>
+		<td class="success">
+			<i class="fa fa-check text-success" aria-hidden="true"></i>
+		</td>
+		<td class="danger">
+			<i class="fa fa-times text-danger" aria-hidden="true"></i>
+		</td>
+		<td><i class="fa fa-minus dim"></i></td>
 		<td><i class="fa fa-minus dim"></i></td>
 		<td class="success">
 			<i class="fa fa-check text-success" aria-hidden="true"></i>
@@ -1002,6 +1002,9 @@
 		<td class="success">
 			<i class="fa fa-check text-success" aria-hidden="true"></i>
 		</td>
+		<td class="success">
+			<i class="fa fa-check text-success" aria-hidden="true"></i>
+		</td>
 		<td class="danger">
 			<i class="fa fa-times text-danger" aria-hidden="true"></i>
 		</td>
@@ -1026,9 +1029,6 @@
 			<i class="fa fa-times text-danger" aria-hidden="true"></i>
 		</td>
 		<td><i class="fa fa-minus dim"></i></td>
-		<td class="success">
-			<i class="fa fa-check text-success" aria-hidden="true"></i>
-		</td>
 		<td class="danger">
 			<i class="fa fa-times text-danger" aria-hidden="true"></i>
 		</td>
@@ -1169,10 +1169,10 @@
 		<th class="row-header" style="text-decoration: underline;" data-toggle="tooltip" data-container="body" data-placement="top" title="Provider supports Azure DNS limited ALIAS">AZURE_ALIAS</th>
 		<td><i class="fa fa-minus dim"></i></td>
 		<td><i class="fa fa-minus dim"></i></td>
+		<td><i class="fa fa-minus dim"></i></td>
 		<td class="success">
 			<i class="fa fa-check text-success" aria-hidden="true"></i>
 		</td>
-		<td><i class="fa fa-minus dim"></i></td>
 		<td><i class="fa fa-minus dim"></i></td>
 		<td><i class="fa fa-minus dim"></i></td>
 		<td><i class="fa fa-minus dim"></i></td>
@@ -1213,6 +1213,9 @@
 	<tr>
 		<th class="row-header" style="text-decoration: underline;" data-toggle="tooltip" data-container="body" data-placement="top" title="Provider supports adding DS records">DS</th>
 		<td><i class="fa fa-minus dim"></i></td>
+		<td class="danger">
+			<i class="fa fa-times text-danger" aria-hidden="true"></i>
+		</td>
 		<td><i class="fa fa-minus dim"></i></td>
 		<td><i class="fa fa-minus dim"></i></td>
 		<td class="success">
@@ -1232,9 +1235,6 @@
 			<i class="fa fa-times text-danger" aria-hidden="true"></i>
 		</td>
 		<td><i class="fa fa-minus dim"></i></td>
-		<td class="danger">
-			<i class="fa fa-times text-danger" aria-hidden="true"></i>
-		</td>
 		<td><i class="fa fa-minus dim"></i></td>
 		<td class="danger" data-toggle="tooltip" data-container="body" data-placement="top" title="Only supports DS records at the apex">
 			<i class="fa has-tooltip fa-times text-danger" aria-hidden="true"></i>
@@ -1276,20 +1276,20 @@
 	<tr>
 		<th class="row-header" style="text-decoration: underline;" data-toggle="tooltip" data-container="body" data-placement="top" title="Provider supports adding AKAMAICDN records">AKAMAICDN</th>
 		<td><i class="fa fa-minus dim"></i></td>
-		<td><i class="fa fa-minus dim"></i></td>
-		<td><i class="fa fa-minus dim"></i></td>
-		<td><i class="fa fa-minus dim"></i></td>
-		<td><i class="fa fa-minus dim"></i></td>
-		<td><i class="fa fa-minus dim"></i></td>
-		<td><i class="fa fa-minus dim"></i></td>
-		<td><i class="fa fa-minus dim"></i></td>
-		<td><i class="fa fa-minus dim"></i></td>
-		<td><i class="fa fa-minus dim"></i></td>
-		<td><i class="fa fa-minus dim"></i></td>
-		<td><i class="fa fa-minus dim"></i></td>
 		<td class="success">
 			<i class="fa fa-check text-success" aria-hidden="true"></i>
 		</td>
+		<td><i class="fa fa-minus dim"></i></td>
+		<td><i class="fa fa-minus dim"></i></td>
+		<td><i class="fa fa-minus dim"></i></td>
+		<td><i class="fa fa-minus dim"></i></td>
+		<td><i class="fa fa-minus dim"></i></td>
+		<td><i class="fa fa-minus dim"></i></td>
+		<td><i class="fa fa-minus dim"></i></td>
+		<td><i class="fa fa-minus dim"></i></td>
+		<td><i class="fa fa-minus dim"></i></td>
+		<td><i class="fa fa-minus dim"></i></td>
+		<td><i class="fa fa-minus dim"></i></td>
 		<td><i class="fa fa-minus dim"></i></td>
 		<td><i class="fa fa-minus dim"></i></td>
 		<td><i class="fa fa-minus dim"></i></td>
@@ -1319,6 +1319,9 @@
 		<td class="danger" data-toggle="tooltip" data-container="body" data-placement="top" title="This driver does not manage NS records, so should not be used for dual-host scenarios">
 			<i class="fa has-tooltip fa-times text-danger" aria-hidden="true"></i>
 		</td>
+		<td class="success">
+			<i class="fa fa-check text-success" aria-hidden="true"></i>
+		</td>
 		<td class="danger">
 			<i class="fa fa-times text-danger" aria-hidden="true"></i>
 		</td>
@@ -1346,9 +1349,6 @@
 			<i class="fa has-tooltip fa-check text-success" aria-hidden="true"></i>
 		</td>
 		<td><i class="fa fa-minus dim"></i></td>
-		<td class="success">
-			<i class="fa fa-check text-success" aria-hidden="true"></i>
-		</td>
 		<td class="danger" data-toggle="tooltip" data-container="body" data-placement="top" title="Exoscale does not allow sufficient control over the apex NS records">
 			<i class="fa has-tooltip fa-times text-danger" aria-hidden="true"></i>
 		</td>
@@ -1414,6 +1414,9 @@
 		<td class="danger" data-toggle="tooltip" data-container="body" data-placement="top" title="AD depends on the zone already existing on the dns server">
 			<i class="fa has-tooltip fa-times text-danger" aria-hidden="true"></i>
 		</td>
+		<td class="success">
+			<i class="fa fa-check text-success" aria-hidden="true"></i>
+		</td>
 		<td class="danger">
 			<i class="fa fa-times text-danger" aria-hidden="true"></i>
 		</td>
@@ -1446,9 +1449,6 @@
 		</td>
 		<td class="danger">
 			<i class="fa fa-times text-danger" aria-hidden="true"></i>
-		</td>
-		<td class="success">
-			<i class="fa fa-check text-success" aria-hidden="true"></i>
 		</td>
 		<td class="danger">
 			<i class="fa fa-times text-danger" aria-hidden="true"></i>
@@ -1528,6 +1528,9 @@
 		<td class="danger">
 			<i class="fa fa-times text-danger" aria-hidden="true"></i>
 		</td>
+		<td class="danger">
+			<i class="fa fa-times text-danger" aria-hidden="true"></i>
+		</td>
 		<td class="success">
 			<i class="fa fa-check text-success" aria-hidden="true"></i>
 		</td>
@@ -1557,9 +1560,6 @@
 		</td>
 		<td class="success">
 			<i class="fa fa-check text-success" aria-hidden="true"></i>
-		</td>
-		<td class="danger">
-			<i class="fa fa-times text-danger" aria-hidden="true"></i>
 		</td>
 		<td class="success">
 			<i class="fa fa-check text-success" aria-hidden="true"></i>
@@ -1636,6 +1636,9 @@
 		<td class="info">
 			<i class="fa fa-circle-o text-info" aria-hidden="true"></i>
 		</td>
+		<td class="success">
+			<i class="fa fa-check text-success" aria-hidden="true"></i>
+		</td>
 		<td class="danger">
 			<i class="fa fa-times text-danger" aria-hidden="true"></i>
 		</td>
@@ -1665,9 +1668,6 @@
 			<i class="fa fa-check text-success" aria-hidden="true"></i>
 		</td>
 		<td><i class="fa fa-minus dim"></i></td>
-		<td class="success">
-			<i class="fa fa-check text-success" aria-hidden="true"></i>
-		</td>
 		<td class="info">
 			<i class="fa fa-circle-o text-info" aria-hidden="true"></i>
 		</td>
