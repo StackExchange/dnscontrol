@@ -1,4 +1,5 @@
 # providers/activedir
+providers/akamaiedgedns @svernick
 providers/axfrddns @hnrgrgr
 providers/azuredns @vatsalyagoel
 providers/bind @tlimoncelli
@@ -9,7 +10,6 @@ providers/doh @mikenz
 providers/digitalocean @Deraen
 providers/dnsimple @aeden
 providers/dnsmadeeasy @vojtad
-providers/edgedns @svernick
 providers/gandi_v5 @TomOnTime
 # providers/gcloud
 providers/hedns @rblenkinsopp

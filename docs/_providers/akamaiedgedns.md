@@ -1,8 +1,8 @@
 ---
-name: EdgeDns
+name: AkamaiEdgeDns
 title: Akamai Edge DNS Provider
 layout: default
-jsId: EDGEDNS
+jsId: AKAMAIEDGEDNS
 ---
 # Akamai Edge DNS Provider
 "Akamai Edge DNS Provider" configures Akamai's
@@ -23,7 +23,7 @@ the required credentials.
 ## Configuration
 In the credentials file (creds.json), you must provide the following:
 {% highlight json %}
-"edgedns": {
+"akamaiedgedns": {
     "client_secret": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
     "host": "akaa-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx.xxxx.akamaiapis.net",
     "access_token": "akaa-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
@@ -54,9 +54,9 @@ modifier to the dnscontrol.js D() function so that DNSControl does not change th
 Example 'dnsconfig.js':
 {% highlight js %}
 var REG_NONE = NewRegistrar('none', 'NONE');
-var DNS_EDGEDNS = NewDnsProvider('edgedns', 'EDGEDNS');
+var DNS_AKAMAIEDGEDNS = NewDnsProvider('akamaiedgedns', 'AKAMAIEDGEDNS');
 
-D('example.com', REG_NONE, DnsProvider(DNS_EDGEDNS),
+D('example.com', REG_NONE, DnsProvider(DNS_AKAMAIEDGEDNS),
   NAMESERVER_TTL(86400),
   AUTODNSSEC_ON,
   AKAMAICDN("@", "www.preconfigured.edgesuite.net", TTL(20)),
