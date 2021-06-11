@@ -4,7 +4,6 @@ package all
 import (
 	// Define all known providers here. They should each register themselves with the providers package via init function.
 	_ "github.com/StackExchange/dnscontrol/v3/providers/activedir"
-	_ "github.com/StackExchange/dnscontrol/v3/providers/akamai"
 	_ "github.com/StackExchange/dnscontrol/v3/providers/axfrddns"
 	_ "github.com/StackExchange/dnscontrol/v3/providers/azuredns"
 	_ "github.com/StackExchange/dnscontrol/v3/providers/bind"
@@ -16,6 +15,7 @@ import (
 	_ "github.com/StackExchange/dnscontrol/v3/providers/dnsimple"
 	_ "github.com/StackExchange/dnscontrol/v3/providers/dnsmadeeasy"
 	_ "github.com/StackExchange/dnscontrol/v3/providers/doh"
+	_ "github.com/StackExchange/dnscontrol/v3/providers/edgedns"
 	_ "github.com/StackExchange/dnscontrol/v3/providers/exoscale"
 	_ "github.com/StackExchange/dnscontrol/v3/providers/gandiv5"
 	_ "github.com/StackExchange/dnscontrol/v3/providers/gcloud"

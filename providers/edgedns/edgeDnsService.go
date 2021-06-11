@@ -1,4 +1,4 @@
-package akamai
+package edgedns
 
 /*
 For information about Akamai's "Edge DNS Zone Management API", see:
@@ -16,8 +16,8 @@ import (
 	"github.com/akamai/AkamaiOPEN-edgegrid-golang/edgegrid"
 )
 
-// AkaInitialize initializes the "Akamai OPEN EdgeGrid" library
-func AkaInitialize(clientSecret string, host string, accessToken string, clientToken string) {
+// EDInitialize initializes the "Akamai OPEN EdgeGrid" library
+func EDInitialize(clientSecret string, host string, accessToken string, clientToken string) {
 
 	eg := edgegrid.Config{
 		ClientSecret: clientSecret,
@@ -30,16 +30,16 @@ func AkaInitialize(clientSecret string, host string, accessToken string, clientT
 	dnsv2.Init(eg)
 }
 
-// AkaZoneDoesExist returns true if the zone exists, false otherwise.
-func AkaZoneDoesExist(zonename string) bool {
+// EDZoneDoesExist returns true if the zone exists, false otherwise.
+func EDZoneDoesExist(zonename string) bool {
 	_, err := dnsv2.GetZone(zonename)
 	return err == nil
 }
 
-// AkaCreateZone create a new zone and creates SOA and NS records for the zone.
+// EDCreateZone create a new zone and creates SOA and NS records for the zone.
 // Akamai assigns a unique set of authoritative nameservers for each contract. These authorities should be
 // used as the NS records on all zones belonging to this contract.
-func AkaCreateZone(zonename string, contractID string, groupID string) error {
+func EDCreateZone(zonename string, contractID string, groupID string) error {
 	zone := &dnsv2.ZoneCreate{
 		Zone:                  zonename,
 		Type:                  "PRIMARY",
@@ -85,8 +85,8 @@ func AkaCreateZone(zonename string, contractID string, groupID string) error {
 	return nil
 }
 
-// AkaListZones lists all zones associated with this contract.
-func AkaListZones(contractID string) ([]string, error) {
+// EDListZones lists all zones associated with this contract.
+func EDListZones(contractID string) ([]string, error) {
 	queryArgs := dnsv2.ZoneListQueryArgs{
 		ContractIds: contractID,
 		ShowAll:     true,
@@ -97,18 +97,18 @@ func AkaListZones(contractID string) ([]string, error) {
 		return nil, fmt.Errorf("Zone List retrieval failed. Error: %s", err.Error())
 	}
 
-	akaZones := zoneListResp.Zones // what we have
-	var zones []string             // what we return
+	edgeDNSZones := zoneListResp.Zones // what we have
+	var zones []string                 // what we return
 
-	for _, akaZone := range akaZones {
-		zones = append(zones, akaZone.Zone)
+	for _, edgeDNSZone := range edgeDNSZones {
+		zones = append(zones, edgeDNSZone.Zone)
 	}
 
 	return zones, nil
 }
 
-// AkaIsAutoDNSSecEnabled returns true if AutoDNSSEC (SignAndServe) is enabled, false otherwise.
-func AkaIsAutoDNSSecEnabled(zonename string) (bool, error) {
+// EDIsAutoDNSSecEnabled returns true if AutoDNSSEC (SignAndServe) is enabled, false otherwise.
+func EDIsAutoDNSSecEnabled(zonename string) (bool, error) {
 	zone, err := dnsv2.GetZone(zonename)
 	if err != nil {
 		if dnsv2.IsConfigDNSError(err) && err.(dnsv2.ConfigDNSError).NotFound() {
@@ -121,8 +121,8 @@ func AkaIsAutoDNSSecEnabled(zonename string) (bool, error) {
 	return zone.SignAndServe, nil
 }
 
-// AkaAutoDNSSecEnable enables or disables AutoDNSSEC (SignAndServe) for the zone.
-func AkaAutoDNSSecEnable(enable bool, zonename string) error {
+// EDAutoDNSSecEnable enables or disables AutoDNSSEC (SignAndServe) for the zone.
+func EDAutoDNSSecEnable(enable bool, zonename string) error {
 	zone, err := dnsv2.GetZone(zonename)
 	if err != nil {
 		if dnsv2.IsConfigDNSError(err) && err.(dnsv2.ConfigDNSError).NotFound() {
@@ -143,7 +143,7 @@ func AkaAutoDNSSecEnable(enable bool, zonename string) error {
 		Type:                  zone.Type,
 		Masters:               zone.Masters,
 		Comment:               zone.Comment,
-		SignAndServe:          enable, // AutoDnsSec enable
+		SignAndServe:          enable, // AutoDNSSEC
 		SignAndServeAlgorithm: algorithm,
 		TsigKey:               zone.TsigKey,
 		EndCustomerId:         zone.EndCustomerId,
@@ -161,31 +161,31 @@ func AkaAutoDNSSecEnable(enable bool, zonename string) error {
 	return nil
 }
 
-// AkaGetAuthorities returns the list of authoritative nameservers for the contract.
+// EDGetAuthorities returns the list of authoritative nameservers for the contract.
 // Akamai assigns a unique set of authoritative nameservers for each contract. These authorities should be
 // used as the NS records on all zones belonging to this contract.
-func AkaGetAuthorities(contractID string) ([]string, error) {
+func EDGetAuthorities(contractID string) ([]string, error) {
 	authorityResponse, err := dnsv2.GetAuthorities(contractID)
 	if err != nil {
-		return nil, fmt.Errorf("AkaGetAuthorities - ContractID %s: Authorities retrieval failed. Error: %s",
+		return nil, fmt.Errorf("EDGetAuthorities - ContractID %s: Authorities retrieval failed. Error: %s",
 			contractID, err.Error())
 	}
 	contracts := authorityResponse.Contracts
 	if len(contracts) != 1 {
-		return nil, fmt.Errorf("AkaGetAuthorities - ContractID %s: Expected 1 element in array but got %d",
+		return nil, fmt.Errorf("EDGetAuthorities - ContractID %s: Expected 1 element in array but got %d",
 			contractID, len(contracts))
 	}
 	cid := contracts[0].ContractID
 	if cid != contractID {
-		return nil, fmt.Errorf("AkaGetAuthorities - ContractID %s: Got authorities for wrong contractID (%s)",
+		return nil, fmt.Errorf("EDGetAuthorities - ContractID %s: Got authorities for wrong contractID (%s)",
 			contractID, cid)
 	}
 	authorities := contracts[0].Authorities
 	return authorities, nil
 }
 
-// akaRCtoRecordset converts DNSControl RecordConfig records to an Akamai recordset.
-func akaRCtoRecordset(records []*models.RecordConfig, zonename string) (*dnsv2.RecordBody, error) {
+// rcToRs converts DNSControl RecordConfig records to an EdgeDNS recordset.
+func rcToRs(records []*models.RecordConfig, zonename string) (*dnsv2.RecordBody, error) {
 	if len(records) == 0 {
 		return nil, fmt.Errorf("No records to replace")
 	}
@@ -203,9 +203,9 @@ func akaRCtoRecordset(records []*models.RecordConfig, zonename string) (*dnsv2.R
 	return akaRecord, nil
 }
 
-// AkaCreateRecordset creates a new Akamai recordset in the zone.
-func AkaCreateRecordset(records []*models.RecordConfig, zonename string) error {
-	akaRecord, err := akaRCtoRecordset(records, zonename)
+// EDCreateRecordset creates a new EdgeDNS recordset in the zone.
+func EDCreateRecordset(records []*models.RecordConfig, zonename string) error {
+	akaRecord, err := rcToRs(records, zonename)
 	if err != nil {
 		return err
 	}
@@ -217,9 +217,9 @@ func AkaCreateRecordset(records []*models.RecordConfig, zonename string) error {
 	return nil
 }
 
-// AkaReplaceRecordset replaces an existing Akamai recordset in the zone.
-func AkaReplaceRecordset(records []*models.RecordConfig, zonename string) error {
-	akaRecord, err := akaRCtoRecordset(records, zonename)
+// EDReplaceRecordset replaces an existing EdgeDNS recordset in the zone.
+func EDReplaceRecordset(records []*models.RecordConfig, zonename string) error {
+	akaRecord, err := rcToRs(records, zonename)
 	if err != nil {
 		return err
 	}
@@ -231,9 +231,9 @@ func AkaReplaceRecordset(records []*models.RecordConfig, zonename string) error 
 	return nil
 }
 
-// AkaDeleteRecordset deletes an existing Akamai recordset in the zone.
-func AkaDeleteRecordset(records []*models.RecordConfig, zonename string) error {
-	akaRecord, err := akaRCtoRecordset(records, zonename)
+// EDDeleteRecordset deletes an existing EdgeDNS recordset in the zone.
+func EDDeleteRecordset(records []*models.RecordConfig, zonename string) error {
+	akaRecord, err := rcToRs(records, zonename)
 	if err != nil {
 		return err
 	}
@@ -249,7 +249,7 @@ func AkaDeleteRecordset(records []*models.RecordConfig, zonename string) error {
 }
 
 /*
-  Example Akamai Recordset (as JSON):
+  Example EdgeDNS Recordset (as JSON):
         {
             "name": "test.com",
             "rdata": [
@@ -262,8 +262,8 @@ func AkaDeleteRecordset(records []*models.RecordConfig, zonename string) error {
         }
 */
 
-// AkaGetRecords returns all RecordConfig records in the zone.
-func AkaGetRecords(zonename string) ([]*models.RecordConfig, error) {
+// EDGetRecords returns all RecordConfig records in the zone.
+func EDGetRecords(zonename string) ([]*models.RecordConfig, error) {
 	queryArgs := dnsv2.RecordsetQueryArgs{ShowAll: true}
 
 	rsetResp, err := dnsv2.GetRecordsets(zonename, queryArgs)
@@ -274,7 +274,7 @@ func AkaGetRecords(zonename string) ([]*models.RecordConfig, error) {
 	akaRecordsets := rsetResp.Recordsets     // what we have
 	var recordConfigs []*models.RecordConfig // what we return
 
-	// For each Akamai recordset...
+	// For each EdgeDNS recordset...
 	for _, akarecset := range akaRecordsets {
 		akaname := akarecset.Name
 		akatype := akarecset.Type

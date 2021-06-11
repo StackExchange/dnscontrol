@@ -1,4 +1,4 @@
-package akamai
+package edgedns
 
 /*
 Akamai Edge DNS provider
@@ -35,29 +35,29 @@ var features = providers.DocumentationNotes{
 	providers.CanAutoDNSSEC:          providers.Can(),
 	providers.CantUseNOPURGE:         providers.Cannot(),
 	providers.DocOfficiallySupported: providers.Cannot(),
-	providers.DocDualHost:            providers.Cannot(),
+	providers.DocDualHost:            providers.Can(),
 	providers.CanUseSOA:              providers.Cannot(),
 	providers.DocCreateDomains:       providers.Can(),
 	providers.CanGetZones:            providers.Can(),
 	providers.CanUseAKAMAICDN:        providers.Can(),
 }
 
-type akamaiProvider struct {
+type edgeDNSProvider struct {
 	contractID string
 	groupID    string
 }
 
 func init() {
 	fns := providers.DspFuncs{
-		Initializer:   newAkamaiDSP,
+		Initializer:   newEdgeDNSDSP,
 		RecordAuditor: AuditRecords,
 	}
-	providers.RegisterDomainServiceProviderType("AKAMAI", fns, features)
-	providers.RegisterCustomRecordType("AKAMAICDN", "AKAMAI", "")
+	providers.RegisterDomainServiceProviderType("EDGEDNS", fns, features)
+	providers.RegisterCustomRecordType("AKAMAICDN", "EDGEDNS", "")
 }
 
 // DnsServiceProvider
-func newAkamaiDSP(config map[string]string, metadata json.RawMessage) (providers.DNSServiceProvider, error) {
+func newEdgeDNSDSP(config map[string]string, metadata json.RawMessage) (providers.DNSServiceProvider, error) {
 	clientSecret := config["client_secret"]
 	host := config["host"]
 	accessToken := config["access_token"]
@@ -84,9 +84,9 @@ func newAkamaiDSP(config map[string]string, metadata json.RawMessage) (providers
 		return nil, fmt.Errorf("creds.json: groupID must not be empty")
 	}
 
-	AkaInitialize(clientSecret, host, accessToken, clientToken)
+	EDInitialize(clientSecret, host, accessToken, clientToken)
 
-	api := &akamaiProvider{
+	api := &edgeDNSProvider{
 		contractID: contractID,
 		groupID:    groupID,
 	}
@@ -99,25 +99,25 @@ func AuditRecords(records []*models.RecordConfig) error {
 }
 
 // EnsureDomainExists configures a new zone if the zone does not already exist.
-func (a *akamaiProvider) EnsureDomainExists(domain string) error {
-	if AkaZoneDoesExist(domain) {
+func (a *edgeDNSProvider) EnsureDomainExists(domain string) error {
+	if EDZoneDoesExist(domain) {
 		printer.Debugf("Zone %s already exists\n", domain)
 		return nil
 	}
-	return AkaCreateZone(domain, a.contractID, a.groupID)
+	return EDCreateZone(domain, a.contractID, a.groupID)
 }
 
 // GetDomainCorrections return a list of corrections. Each correction is a text string describing the change
 // and a function that, if called, will make the change.
 // “dnscontrol preview” simply prints the text strings.
 // "dnscontrol push" prints the strings and calls the functions.
-func (a *akamaiProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Correction, error) {
+func (a *edgeDNSProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Correction, error) {
 	err := dc.Punycode()
 	if err != nil {
 		return nil, err
 	}
 
-	existingRecords, err := AkaGetRecords(dc.Name)
+	existingRecords, err := EDGetRecords(dc.Name)
 	if err != nil {
 		return nil, err
 	}
@@ -156,10 +156,10 @@ func (a *akamaiProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*model
 			corrections = append(corrections, &models.Correction{
 				Msg: strings.Join(msg, "\n   "),
 				F: func() error {
-					return AkaDeleteRecordset(existing, dc.Name)
+					return EDDeleteRecordset(existing, dc.Name)
 				},
 			})
-			printer.Debugf("AkaDeleteRecordset: %s %s\n", key.NameFQDN, key.Type)
+			printer.Debugf("EDDeleteRecordset: %s %s\n", key.NameFQDN, key.Type)
 			for _, rdata := range existing {
 				printer.Debugf("  Rdata: %s\n", rdata.GetTargetCombined())
 			}
@@ -168,10 +168,10 @@ func (a *akamaiProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*model
 			lastCorrections = append(lastCorrections, &models.Correction{
 				Msg: strings.Join(msg, "\n   "),
 				F: func() error {
-					return AkaCreateRecordset(desired, dc.Name)
+					return EDCreateRecordset(desired, dc.Name)
 				},
 			})
-			printer.Debugf("AkaCreateRecordset: %s %s\n", key.NameFQDN, key.Type)
+			printer.Debugf("EDCreateRecordset: %s %s\n", key.NameFQDN, key.Type)
 			for _, rdata := range desired {
 				printer.Debugf("  Rdata: %s\n", rdata.GetTargetCombined())
 			}
@@ -180,10 +180,10 @@ func (a *akamaiProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*model
 			lastCorrections = append(lastCorrections, &models.Correction{
 				Msg: strings.Join(msg, "\n   "),
 				F: func() error {
-					return AkaReplaceRecordset(desired, dc.Name)
+					return EDReplaceRecordset(desired, dc.Name)
 				},
 			})
-			printer.Debugf("AkaReplaceRecordset: %s %s\n", key.NameFQDN, key.Type)
+			printer.Debugf("EDReplaceRecordset: %s %s\n", key.NameFQDN, key.Type)
 			for _, rdata := range desired {
 				printer.Debugf("  Rdata: %s\n", rdata.GetTargetCombined())
 			}
@@ -194,7 +194,7 @@ func (a *akamaiProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*model
 	corrections = append(corrections, lastCorrections...)
 
 	// AutoDnsSec correction
-	existingAutoDNSSecEnabled, err := AkaIsAutoDNSSecEnabled(dc.Name)
+	existingAutoDNSSecEnabled, err := EDIsAutoDNSSecEnabled(dc.Name)
 	if err != nil {
 		return nil, err
 	}
@@ -206,27 +206,27 @@ func (a *akamaiProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*model
 		corrections = append(corrections, &models.Correction{
 			Msg: "Enable AutoDnsSec\n",
 			F: func() error {
-				return AkaAutoDNSSecEnable(true, dc.Name)
+				return EDAutoDNSSecEnable(true, dc.Name)
 			},
 		})
-		printer.Debugf("AkaAutoDNSSecEnable: Enable AutoDnsSec for zone %s\n", dc.Name)
+		printer.Debugf("EDAutoDNSSecEnable: Enable AutoDnsSec for zone %s\n", dc.Name)
 	} else if existingAutoDNSSecEnabled && !desiredAutoDNSSecEnabled {
 		// Existing true (enabled), Desired false (disabled)
 		corrections = append(corrections, &models.Correction{
 			Msg: "Disable AutoDnsSec\n",
 			F: func() error {
-				return AkaAutoDNSSecEnable(false, dc.Name)
+				return EDAutoDNSSecEnable(false, dc.Name)
 			},
 		})
-		printer.Debugf("AkaAutoDNSSecEnable: Disable AutoDnsSec for zone %s\n", dc.Name)
+		printer.Debugf("EDAutoDNSSecEnable: Disable AutoDnsSec for zone %s\n", dc.Name)
 	}
 
 	return corrections, nil
 }
 
 // GetNameservers returns the nameservers for a domain.
-func (a *akamaiProvider) GetNameservers(domain string) ([]*models.Nameserver, error) {
-	authorities, err := AkaGetAuthorities(a.contractID)
+func (a *edgeDNSProvider) GetNameservers(domain string) ([]*models.Nameserver, error) {
+	authorities, err := EDGetAuthorities(a.contractID)
 	if err != nil {
 		return nil, err
 	}
@@ -234,8 +234,8 @@ func (a *akamaiProvider) GetNameservers(domain string) ([]*models.Nameserver, er
 }
 
 // GetZoneRecords returns an array of RecordConfig structs for a zone.
-func (a *akamaiProvider) GetZoneRecords(domain string) (models.Records, error) {
-	records, err := AkaGetRecords(domain)
+func (a *edgeDNSProvider) GetZoneRecords(domain string) (models.Records, error) {
+	records, err := EDGetRecords(domain)
 	if err != nil {
 		return nil, err
 	}
@@ -243,8 +243,8 @@ func (a *akamaiProvider) GetZoneRecords(domain string) (models.Records, error) {
 }
 
 // ListZones returns all DNS zones managed by this provider.
-func (a *akamaiProvider) ListZones() ([]string, error) {
-	zones, err := AkaListZones(a.contractID)
+func (a *edgeDNSProvider) ListZones() ([]string, error) {
+	zones, err := EDListZones(a.contractID)
 	if err != nil {
 		return nil, err
 	}

@@ -1,8 +1,8 @@
 ---
-name: Akamai
+name: EdgeDns
 title: Akamai Edge DNS Provider
 layout: default
-jsId: AKAMAI
+jsId: EDGEDNS
 ---
 # Akamai Edge DNS Provider
 "Akamai Edge DNS Provider" configures Akamai's
@@ -23,7 +23,7 @@ the required credentials.
 ## Configuration
 In the credentials file (creds.json), you must provide the following:
 {% highlight json %}
-"akamai": {
+"edgedns": {
     "client_secret": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
     "host": "akaa-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx.xxxx.akamaiapis.net",
     "access_token": "akaa-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
@@ -54,9 +54,9 @@ modifier to the dnscontrol.js D() function so that DNSControl does not change th
 Example 'dnsconfig.js':
 {% highlight js %}
 var REG_NONE = NewRegistrar('none', 'NONE');
-var DNS_AKAMAI = NewDnsProvider('akamai', 'AKAMAI');
+var DNS_EDGEDNS = NewDnsProvider('edgedns', 'EDGEDNS');
 
-D('example.com', REG_NONE, DnsProvider(DNS_AKAMAI),
+D('example.com', REG_NONE, DnsProvider(DNS_EDGEDNS),
   NAMESERVER_TTL(86400),
   AUTODNSSEC_ON,
   AKAMAICDN("@", "www.preconfigured.edgesuite.net", TTL(20)),
@@ -66,4 +66,3 @@ D('example.com', REG_NONE, DnsProvider(DNS_AKAMAI),
 
 AKAMAICDN is a proprietary record type that is used to configure [Zone Apex Mapping](https://blogs.akamai.com/2019/08/fast-dns-zone-apex-mapping-dnssec.html).
 The AKAMAICDN target must be preconfigured in the Akamai network.
-

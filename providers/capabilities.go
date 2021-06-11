@@ -70,7 +70,7 @@ const (
 	// CanUseSOA indicates the provider supports full management of a zone's SOA record
 	CanUseSOA
 
-	// CanUseAKAMAICDN indicates the provider support the specific AKAMAICDN records that only the Akamai provider supports
+	// CanUseAKAMAICDN indicates the provider support the specific AKAMAICDN records that only the Akamai EdgeDns provider supports
 	CanUseAKAMAICDN
 )
 

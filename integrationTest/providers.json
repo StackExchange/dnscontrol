@@ -3,15 +3,6 @@
     "ADServer": "$AD_SERVER",
     "domain": "$AD_DOMAIN"
   },
-  "AKAMAI": {
-    "client_secret": "$AK_CLIENT_SECRET",
-    "host": "$AK_HOST",
-    "access_token": "$AK_ACCESS_TOKEN",
-    "client_token": "$AK_CLIENT_TOKEN",
-    "contract_id": "$AK_CONTRACT_ID",
-    "group_id": "$AK_GROUP_ID",
-    "domain": "$AK_DOMAIN"
-  },
   "AXFRDDNS": {
     "domain": "$AXFRDDNS_DOMAIN",
     "master": "$AXFRDDNS_MASTER",
@@ -66,6 +57,15 @@
     "sandbox": "true",
     "api_key": "$DNSMADEEASY_API_KEY",
     "secret_key": "$DNSMADEEASY_SECRET_KEY"
+  },
+  "EDGEDNS": {
+    "client_secret": "$ED_CLIENT_SECRET",
+    "host": "$ED_HOST",
+    "access_token": "$ED_ACCESS_TOKEN",
+    "client_token": "$ED_CLIENT_TOKEN",
+    "contract_id": "$ED_CONTRACT_ID",
+    "group_id": "$ED_GROUP_ID",
+    "domain": "$ED_DOMAIN"
   },
   "EXOSCALE": {
     "apikey": "$EXOSCALE_API_KEY",
