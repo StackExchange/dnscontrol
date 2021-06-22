@@ -42,6 +42,7 @@ func generateFeatureMatrix() error {
 			{"R53_ALIAS", "Provider supports Route 53 limited ALIAS"},
 			{"AZURE_ALIAS", "Provider supports Azure DNS limited ALIAS"},
 			{"DS", "Provider supports adding DS records"},
+			{ "AKAMAICDN", "Provider supports adding AKAMAICDN records"},
 
 			{"dual host", "This provider is recommended for use in 'dual hosting' scenarios. Usually this means the provider allows full control over the apex NS records"},
 			{"create-domains", "This means the provider can automatically create domains that do not currently exist on your account. The 'dnscontrol create-domains' command will initialize any missing domains"},
@@ -88,6 +89,7 @@ func generateFeatureMatrix() error {
 		setCap("SRV", providers.CanUseSRV)
 		setCap("SSHFP", providers.CanUseSSHFP)
 		setCap("TLSA", providers.CanUseTLSA)
+		setCap("AKAMAICDN", providers.CanUseAKAMAICDN)
 		setCap("get-zones", providers.CanGetZones)
 		setCap("DS", providers.CanUseDS)
 		setDoc("dual host", providers.DocDualHost, false)

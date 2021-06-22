@@ -72,6 +72,7 @@ provided to help community members support their code independently.
 Maintainers of contributed providers:
 
 * `AXFRDDNS` @hnrgrgr
+* `AKAMAIEDGEDNS` @svernick
 * `CLOUDNS` @pragmaton
 * `CSCGLOBAL` @Air-New-Zealand
 * `DESEC` @D3luxee

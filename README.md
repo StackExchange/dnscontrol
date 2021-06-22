@@ -18,6 +18,7 @@ Currently supported DNS providers:
  - AWS Route 53
  - AXFR+DDNS
  - Active Directory (Deprecated, see Microsoft DNS)
+ - Akamai Edge DNS
  - Azure DNS
  - BIND
  - ClouDNS

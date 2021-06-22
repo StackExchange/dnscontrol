@@ -91,7 +91,7 @@ func (rc *RecordConfig) GetTargetSortable() string {
 func (rc *RecordConfig) GetTargetDebug() string {
 	content := fmt.Sprintf("%s %s %s %d", rc.Type, rc.NameFQDN, rc.target, rc.TTL)
 	switch rc.Type { // #rtype_variations
-	case "A", "AAAA", "CNAME", "NS", "PTR", "TXT":
+	case "A", "AAAA", "CNAME", "NS", "PTR", "TXT", "AKAMAICDN":
 		// Nothing special.
 	case "DS":
 		content += fmt.Sprintf(" ds_algorithm=%d ds_keytag=%d ds_digesttype=%d ds_digest=%s", rc.DsAlgorithm, rc.DsKeyTag, rc.DsDigestType, rc.DsDigest)
