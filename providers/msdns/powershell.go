@@ -97,50 +97,62 @@ func generatePSZoneAll(dnsserver string) string {
 }
 
 func (psh *psHandle) GetDNSZoneRecords(dnsserver, domain string) ([]nativeRecord, error) {
+
 	tmpfile, err := ioutil.TempFile("", "zonerecords.*.json")
 	if err != nil {
 		log.Fatal(err)
 	}
+	filename := tmpfile.Name()
 	tmpfile.Close()
 
-	stdout, stderr, err := psh.shell.Execute(generatePSZoneDump(dnsserver, domain))
+	stdout, stderr, err := psh.shell.Execute(generatePSZoneDump(dnsserver, domain, filename))
 	if err != nil {
 		return nil, err
-	}
-	if stdout != "" {
-		//writing all stdout from powershell to file
-		ioutil.WriteFile(tmpfile.Name(), []byte(stdout), 0)
 	}
 	if stderr != "" {
 		fmt.Printf("STDERROR = %q\n", stderr)
 		return nil, fmt.Errorf("unexpected stderr from PSZoneDump: %q", stderr)
 	}
+	if stdout != "" {
+		fmt.Printf("STDOUT = %q\n", stdout)
+	}
 
-	contents, err := utfutil.ReadFile(tmpfile.Name(), utfutil.UTF8)
+	contents, err := utfutil.ReadFile(filename, utfutil.UTF8)
 	if err != nil {
 		return nil, err
 	}
-	os.Remove(tmpfile.Name())
+	os.Remove(filename) // TODO(tlim): There should be a debug flag that leaves the tmp file around.
 
 	var records []nativeRecord
-	json.Unmarshal([]byte(contents), &records)
+	err = json.Unmarshal(contents, &records)
+	if err != nil {
+		return nil, fmt.Errorf("PSZoneDump json error: %w", err)
+	}
 
 	return records, nil
 }
 
 // powerShellDump runs a PowerShell command to get a dump of all records in a DNS zone.
-func generatePSZoneDump(dnsserver, domainname string) string {
+func generatePSZoneDump(dnsserver, domainname, filename string) string {
+	// @dnsserver: Hostname of the DNS server.
+	// @domainname: Name of the domain.
+	// @filename: Where to write the resulting JSON file.
+	// NB(tlim): On Windows PowerShell, the JSON file will be UTF8 with
+	// a BOM.  A UTF-8 file shouldn't have a BOM, but Microsoft messed up.
+	// When we switch to PowerShell Core, the BOM will disappear.
 	var b bytes.Buffer
+	fmt.Fprintf(&b, `$OutputEncoding = [Text.UTF8Encoding]::UTF8 ; `)
 	fmt.Fprintf(&b, `Get-DnsServerResourceRecord`)
 	if dnsserver != "" {
 		fmt.Fprintf(&b, ` -ComputerName "%v"`, dnsserver)
 	}
 	fmt.Fprintf(&b, ` -ZoneName "%v"`, domainname)
 	fmt.Fprintf(&b, ` | `)
+	fmt.Fprintf(&b, `Select-Object -Property * -ExcludeProperty Cim*`)
+	fmt.Fprintf(&b, ` | `)
 	fmt.Fprintf(&b, `ConvertTo-Json -depth 4`) // Tested with 3 (causes errors).  4 and larger work.
-	// All file writing via dnsserver or pssession should be handled outside this function
-	//fmt.Fprintf(&b, ` > %s`, filename)
-	//fmt.Printf("DEBUG PSZoneDump CMD = (\n%s\n)\n", b.String())
+	fmt.Fprintf(&b, ` | `)
+	fmt.Fprintf(&b, `Out-File "%s" -Encoding utf8`, filename)
 	return b.String()
 }
 
