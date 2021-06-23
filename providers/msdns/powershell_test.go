@@ -49,17 +49,17 @@ func Test_generatePSZoneDump(t *testing.T) {
 		{
 			name: "local",
 			args: args{domainname: "example.com"},
-			want: `Get-DnsServerResourceRecord -ZoneName "example.com" | ConvertTo-Json -depth 4`,
+			want: `$OutputEncoding = [Text.UTF8Encoding]::UTF8 ; Get-DnsServerResourceRecord -ZoneName "example.com" | Select-Object -Property * -ExcludeProperty Cim* | ConvertTo-Json -depth 4 | Out-File "foo" -Encoding utf8`,
 		},
 		{
 			name: "remote",
 			args: args{domainname: "example.com", dnsserver: "mydnsserver"},
-			want: `Get-DnsServerResourceRecord -ComputerName "mydnsserver" -ZoneName "example.com" | ConvertTo-Json -depth 4`,
+			want: `$OutputEncoding = [Text.UTF8Encoding]::UTF8 ; Get-DnsServerResourceRecord -ComputerName "mydnsserver" -ZoneName "example.com" | Select-Object -Property * -ExcludeProperty Cim* | ConvertTo-Json -depth 4 | Out-File "foo" -Encoding utf8`,
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := generatePSZoneDump(tt.args.dnsserver, tt.args.domainname); got != tt.want {
+			if got := generatePSZoneDump(tt.args.dnsserver, tt.args.domainname, "foo"); got != tt.want {
 				t.Errorf("generatePSZoneDump() = got=(\n%s\n) want=(\n%s\n)", got, tt.want)
 			}
 		})
