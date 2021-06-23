@@ -105,7 +105,7 @@ func (c ConsolePrinter) StartDNSProvider(provider string, skip bool) {
 	if skip {
 		lbl = " (skipping)\n"
 	}
-	fmt.Fprintf(c.Writer, "----- DNS Provider: %s...%s", provider, lbl)
+	fmt.Fprintf(c.Writer, "----- DNS Provider: %s...%s\n", provider, lbl)
 }
 
 // StartRegistrar is called at the start of each new registrar.
@@ -114,7 +114,7 @@ func (c ConsolePrinter) StartRegistrar(provider string, skip bool) {
 	if skip {
 		lbl = " (skipping)\n"
 	}
-	fmt.Fprintf(c.Writer, "----- Registrar: %s...%s", provider, lbl)
+	fmt.Fprintf(c.Writer, "----- Registrar: %s...%s\n", provider, lbl)
 }
 
 // EndProvider is called at the end of each provider.

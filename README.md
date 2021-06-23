@@ -18,6 +18,7 @@ Currently supported DNS providers:
  - AWS Route 53
  - AXFR+DDNS
  - Active Directory (Deprecated, see Microsoft DNS)
+ - Akamai Edge DNS
  - Azure DNS
  - BIND
  - ClouDNS
@@ -119,7 +120,7 @@ See [Getting Started](https://stackexchange.github.io/dnscontrol/getting-started
 
 ## From source
 
-DNSControl can be built with Go version 1.14 or higher.
+DNSControl can be built with Go version 1.16 or higher.
 
 The `go get` command will download the source, compile it, and
 install `dnscontrol` in your `$GOBIN` directory.

@@ -42,20 +42,20 @@ jobs:
       uses: bpicode/github-action-fpm@master
       with:
         fpm_args: 'usr/'
-        fpm_opts: '-n dnscontrol -t rpm -s dir -v ${{ steps.versioner.outputs.RELEASE_VERSION }}'
+        fpm_opts: '-n dnscontrol -t rpm -s dir -v ${{ steps.versioner.outputs.RELEASE_VERSION }} --license "The MIT License (MIT)" --url "https://dnscontrol.org/" --description "DNSControl: Infrastructure as Code for DNS Zones"'
 
     - name: Bundle DEB
       uses: bpicode/github-action-fpm@master
       with:
         fpm_args: 'usr/'
-        fpm_opts: '-n dnscontrol -t deb -s dir -v ${{ steps.versioner.outputs.RELEASE_VERSION }}'
+        fpm_opts: '-n dnscontrol -t deb -s dir -v ${{ steps.versioner.outputs.RELEASE_VERSION }} --license "The MIT License (MIT)" --url "https://dnscontrol.org/" --description "DNSControl: Infrastructure as Code for DNS Zones"'
 
     - name: Upload dnscontrol-Darwin
       uses: actions/upload-release-asset@v1
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
-        upload_url: ${{ steps.get_release.outputs.upload_url }} 
+        upload_url: ${{ steps.get_release.outputs.upload_url }}
         asset_path: ./dnscontrol-Darwin
         asset_name: dnscontrol-Darwin
         asset_content_type: application/octet-stream
@@ -65,7 +65,7 @@ jobs:
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
-        upload_url: ${{ steps.get_release.outputs.upload_url }} 
+        upload_url: ${{ steps.get_release.outputs.upload_url }}
         asset_path: ./dnscontrol-Linux
         asset_name: dnscontrol-Linux
         asset_content_type: application/octet-stream
@@ -75,7 +75,7 @@ jobs:
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
-        upload_url: ${{ steps.get_release.outputs.upload_url }} 
+        upload_url: ${{ steps.get_release.outputs.upload_url }}
         asset_path: ./dnscontrol.exe
         asset_name: dnscontrol.exe
         asset_content_type: application/octet-stream
@@ -85,7 +85,7 @@ jobs:
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
-        upload_url: ${{ steps.get_release.outputs.upload_url }} 
+        upload_url: ${{ steps.get_release.outputs.upload_url }}
         asset_path: dnscontrol-${{ steps.versioner.outputs.RELEASE_VERSION }}-1.x86_64.rpm
         asset_name: dnscontrol-${{ steps.versioner.outputs.RELEASE_VERSION }}-1.x86_64.rpm
         asset_content_type: application/x-rpm
@@ -95,7 +95,7 @@ jobs:
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
-        upload_url: ${{ steps.get_release.outputs.upload_url }} 
+        upload_url: ${{ steps.get_release.outputs.upload_url }}
         asset_path: dnscontrol_${{ steps.versioner.outputs.RELEASE_VERSION }}_amd64.deb
         asset_name: dnscontrol_${{ steps.versioner.outputs.RELEASE_VERSION }}_amd64.deb
         asset_content_type: application/vnd.debian.binary-package
