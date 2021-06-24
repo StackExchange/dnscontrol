@@ -218,7 +218,7 @@ func makeChanges(t *testing.T, prv providers.DNSServiceProvider, dc *models.Doma
 		if len(corrections) != 0 {
 			t.Logf("Expected 0 corrections on second run, but found %d.", len(corrections))
 			for i, c := range corrections {
-				t.Logf("#%d: %s", i, c.Msg)
+				t.Logf("UNEXPECTED #%d: %s", i, c.Msg)
 			}
 			t.FailNow()
 		}

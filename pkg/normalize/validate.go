@@ -180,7 +180,9 @@ func checkTargets(rec *models.RecordConfig, domain string) (errs []error) {
 	case "PTR":
 		check(checkTarget(target))
 	case "NAPTR":
-		check(checkTarget(target))
+		if target != "" {
+			check(checkTarget(target))
+		}
 	case "ALIAS":
 		check(checkTarget(target))
 	case "SOA":
@@ -345,7 +347,7 @@ func ValidateAndNormalizeConfig(config *models.DNSConfig) (errs []error) {
 			}
 
 			// Canonicalize Targets.
-			if rec.Type == "CNAME" || rec.Type == "MX" || rec.Type == "NAPTR" || rec.Type == "NS" || rec.Type == "SRV" {
+			if rec.Type == "CNAME" || rec.Type == "MX" || rec.Type == "NS" || rec.Type == "SRV" {
 				// #rtype_variations
 				// These record types have a target that is a hostname.
 				// We normalize them to a FQDN so there is less variation to handle.  If a

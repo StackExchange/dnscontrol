@@ -55,12 +55,14 @@ func (rc *RecordConfig) GetTargetCombined() string {
 		case "AZURE_ALIAS":
 			// Differentiate between multiple AZURE_ALIASs on the same label.
 			return fmt.Sprintf("%s atype=%s", rc.target, rc.AzureAlias["type"])
-		case "SOA":
-			return fmt.Sprintf("%s %v %d %d %d %d %d", rc.target, rc.SoaMbox, rc.SoaSerial, rc.SoaRefresh, rc.SoaRetry, rc.SoaExpire, rc.SoaMinttl)
 		default:
 			// Just return the target.
 			return rc.target
 		}
+	}
+
+	if rc.Type == "SOA" {
+		return fmt.Sprintf("%s %v %d %d %d %d %d", rc.target, rc.SoaMbox, rc.SoaSerial, rc.SoaRefresh, rc.SoaRetry, rc.SoaExpire, rc.SoaMinttl)
 	}
 
 	return rc.zoneFileQuoted()
@@ -73,6 +75,9 @@ func (rc *RecordConfig) zoneFileQuoted() string {
 	// Sadly String() always includes a header, which we must strip out.
 	// TODO(tlim): Request the dns project add a function that returns
 	// the string without the header.
+	if rc.Type == "NAPTR" && rc.GetTargetField() == "" {
+		rc.SetTarget(".")
+	}
 	rr := rc.ToRR()
 	header := rr.Header().String()
 	full := rr.String()
