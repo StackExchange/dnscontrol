@@ -73,7 +73,10 @@ func (psh *psHandle) GetDNSServerZoneAll(dnsserver string) ([]string, error) {
 	}
 
 	var zones []dnsZone
-	json.Unmarshal([]byte(stdout), &zones)
+	err = json.Unmarshal([]byte(stdout), &zones)
+	if err != nil {
+		return nil, err
+	}
 
 	var result []string
 	for _, z := range zones {
@@ -110,11 +113,11 @@ func (psh *psHandle) GetDNSZoneRecords(dnsserver, domain string) ([]nativeRecord
 		return nil, err
 	}
 	if stderr != "" {
-		fmt.Printf("STDERROR = %q\n", stderr)
+		fmt.Printf("STDERROR GetDNSZR = %q\n", stderr)
 		return nil, fmt.Errorf("unexpected stderr from PSZoneDump: %q", stderr)
 	}
 	if stdout != "" {
-		fmt.Printf("STDOUT = %q\n", stdout)
+		fmt.Printf("STDOUT GetDNSZR = %q\n", stdout)
 	}
 
 	contents, err := utfutil.ReadFile(filename, utfutil.UTF8)
@@ -123,10 +126,18 @@ func (psh *psHandle) GetDNSZoneRecords(dnsserver, domain string) ([]nativeRecord
 	}
 	os.Remove(filename) // TODO(tlim): There should be a debug flag that leaves the tmp file around.
 
+	//fmt.Printf("CONTENTS = %s\n", contents)
+	//fmt.Printf("CONTENTS STR = %q\n", contents[:10])
+	//fmt.Printf("CONTENTS HEX = %v\n", []byte(contents)[:10])
+	//ioutil.WriteFile("/temp/list.json", contents, 0777)
 	var records []nativeRecord
 	err = json.Unmarshal(contents, &records)
 	if err != nil {
-		return nil, fmt.Errorf("PSZoneDump json error: %w", err)
+		records = append(records, nativeRecord{})
+		err2 := json.Unmarshal(contents, &(records[0]))
+		if err2 != nil {
+			return nil, fmt.Errorf("PSZoneDump json error: %w", err)
+		}
 	}
 
 	return records, nil
@@ -181,7 +192,7 @@ func (psh *psHandle) RecordDelete(dnsserver, domain string, rec *models.RecordCo
 	var c string
 	if rec.Type == "NAPTR" {
 		c = generatePSDeleteNaptr(dnsserver, domain, rec)
-		fmt.Printf("DEBUG: deleteNAPTR: %s\n", c)
+		//fmt.Printf("DEBUG: deleteNAPTR: %s\n", c)
 	} else {
 		c = generatePSDelete(dnsserver, domain, rec)
 	}
@@ -239,18 +250,16 @@ func (psh *psHandle) RecordCreate(dnsserver, domain string, rec *models.RecordCo
 		fmt.Printf("DEBUG: createNAPTR: %s\n", c)
 	} else {
 		c = generatePSCreate(dnsserver, domain, rec)
-		fmt.Printf("DEBUG: PScreate\n")
+		//fmt.Printf("DEBUG: PScreate\n")
 	}
 
 	stdout, stderr, err := psh.shell.Execute(c)
 	if err != nil {
 		return err
 	}
-	if stdout != "" {
-		fmt.Printf("STDOUT = %s\n", stdout)
-	}
 	if stderr != "" {
-		fmt.Printf("STDERROR = %q\n", stderr)
+		fmt.Printf("STDOUT RecordCreate = %s\n", stdout)
+		fmt.Printf("STDERROR RecordCreate = %q\n", stderr)
 		return fmt.Errorf("unexpected stderr from PSCreate: %q", stderr)
 	}
 	return nil
