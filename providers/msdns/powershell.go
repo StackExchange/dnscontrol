@@ -141,17 +141,35 @@ func generatePSZoneDump(dnsserver, domainname, filename string) string {
 	// a BOM.  A UTF-8 file shouldn't have a BOM, but Microsoft messed up.
 	// When we switch to PowerShell Core, the BOM will disappear.
 	var b bytes.Buffer
+
+	// Set the output to be UTF8.  Previously we didn't do that and the
+	// output was twice as large, plus it required an extra conversion
+	// step.  Windows PowerShell is native UTF16 but PowerShell Core is
+	// native UTF8, thus this may not be needed if we move to Core.
 	fmt.Fprintf(&b, `$OutputEncoding = [Text.UTF8Encoding]::UTF8 ; `)
+
+	// Output everything we know about the zone.
 	fmt.Fprintf(&b, `Get-DnsServerResourceRecord`)
 	if dnsserver != "" {
 		fmt.Fprintf(&b, ` -ComputerName "%v"`, dnsserver)
 	}
 	fmt.Fprintf(&b, ` -ZoneName "%v"`, domainname)
+
+	// Strip out the `Cim*` properties at the root. This shrinks one
+	// zone from 99M to 11M.  We don't need the Cim* properties (at
+	// least the ones at the root) and decocding 99M of JSON was slow
+	// (30+ minutes).
+	// NB(tlim): Windows PowerShell requires the `-Property *` but
+	// Windows PowerShell Core makes that optional.
 	fmt.Fprintf(&b, ` | `)
 	fmt.Fprintf(&b, `Select-Object -Property * -ExcludeProperty Cim*`)
 	fmt.Fprintf(&b, ` | `)
 	fmt.Fprintf(&b, `ConvertTo-Json -depth 4`) // Tested with 3 (causes errors).  4 and larger work.
 	fmt.Fprintf(&b, ` | `)
+
+	// Prevously we captured stdout. Now we write it to a file. This is
+	// safer since there is no chance of junk accidentally being mixed
+	// into stdout.
 	fmt.Fprintf(&b, `Out-File "%s" -Encoding utf8`, filename)
 	return b.String()
 }
@@ -159,7 +177,16 @@ func generatePSZoneDump(dnsserver, domainname, filename string) string {
 // Functions for record manipulation
 
 func (psh *psHandle) RecordDelete(dnsserver, domain string, rec *models.RecordConfig) error {
-	_, stderr, err := psh.shell.Execute(generatePSDelete(dnsserver, domain, rec))
+
+	var c string
+	if rec.Type == "NAPTR" {
+		c = generatePSDeleteNaptr(dnsserver, domain, rec)
+		fmt.Printf("DEBUG: deleteNAPTR: %s\n", c)
+	} else {
+		c = generatePSDelete(dnsserver, domain, rec)
+	}
+
+	_, stderr, err := psh.shell.Execute(c)
 	if err != nil {
 		return err
 	}
@@ -178,7 +205,7 @@ func generatePSDelete(dnsserver, domain string, rec *models.RecordConfig) string
 
 	if rec.Type == "NAPTR" {
 		x := b.String() + generatePSDeleteNaptr(dnsserver, domain, rec)
-		//fmt.Printf("NAPTR DELETE: %s\n\n", x)
+		fmt.Printf("NAPTR DELETE: %s\n", x)
 		return x
 	}
 
@@ -205,9 +232,22 @@ func generatePSDelete(dnsserver, domain string, rec *models.RecordConfig) string
 }
 
 func (psh *psHandle) RecordCreate(dnsserver, domain string, rec *models.RecordConfig) error {
-	_, stderr, err := psh.shell.Execute(generatePSCreate(dnsserver, domain, rec))
+
+	var c string
+	if rec.Type == "NAPTR" {
+		c = generatePSCreateNaptr(dnsserver, domain, rec)
+		fmt.Printf("DEBUG: createNAPTR: %s\n", c)
+	} else {
+		c = generatePSCreate(dnsserver, domain, rec)
+		fmt.Printf("DEBUG: PScreate\n")
+	}
+
+	stdout, stderr, err := psh.shell.Execute(c)
 	if err != nil {
 		return err
+	}
+	if stdout != "" {
+		fmt.Printf("STDOUT = %s\n", stdout)
 	}
 	if stderr != "" {
 		fmt.Printf("STDERROR = %q\n", stderr)
