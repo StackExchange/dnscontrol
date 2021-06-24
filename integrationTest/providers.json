@@ -58,6 +58,15 @@
     "api_key": "$DNSMADEEASY_API_KEY",
     "secret_key": "$DNSMADEEASY_SECRET_KEY"
   },
+  "AKAMAIEDGEDNS": {
+    "client_secret": "$AED_CLIENT_SECRET",
+    "host": "$AED_HOST",
+    "access_token": "$AED_ACCESS_TOKEN",
+    "client_token": "$AED_CLIENT_TOKEN",
+    "contract_id": "$AED_CONTRACT_ID",
+    "group_id": "$AED_GROUP_ID",
+    "domain": "$AED_DOMAIN"
+  },
   "EXOSCALE": {
     "apikey": "$EXOSCALE_API_KEY",
     "dns-endpoint": "https://api.exoscale.ch/dns",
