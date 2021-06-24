@@ -133,6 +133,9 @@ func (psh *psHandle) GetDNSZoneRecords(dnsserver, domain string) ([]nativeRecord
 	var records []nativeRecord
 	err = json.Unmarshal(contents, &records)
 	if err != nil {
+		// PowerShell generates bad JSON if there is only one record.  Therefore, if there
+		// is an error we try decoding the bad format before completing erroring out.
+		// The "bad JSON" is that they generate a single record instead of a list of length 1.
 		records = append(records, nativeRecord{})
 		err2 := json.Unmarshal(contents, &(records[0]))
 		if err2 != nil {
@@ -247,7 +250,7 @@ func (psh *psHandle) RecordCreate(dnsserver, domain string, rec *models.RecordCo
 	var c string
 	if rec.Type == "NAPTR" {
 		c = generatePSCreateNaptr(dnsserver, domain, rec)
-		fmt.Printf("DEBUG: createNAPTR: %s\n", c)
+		//fmt.Printf("DEBUG: createNAPTR: %s\n", c)
 	} else {
 		c = generatePSCreate(dnsserver, domain, rec)
 		//fmt.Printf("DEBUG: PScreate\n")
