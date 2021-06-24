@@ -88,7 +88,7 @@ func ipMatchesClasslessDomain(ip net.IP, domain string) bool {
 }
 
 // atob converts a to a byte value or panics.
-func atob(s string) byte {
+func atob(s string) uint8 {
 	if i, err := strconv.Atoi(s); err == nil {
 		if i < 256 {
 			return byte(i)
