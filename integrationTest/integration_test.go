@@ -218,7 +218,7 @@ func makeChanges(t *testing.T, prv providers.DNSServiceProvider, dc *models.Doma
 		if len(corrections) != 0 {
 			t.Logf("Expected 0 corrections on second run, but found %d.", len(corrections))
 			for i, c := range corrections {
-				t.Logf("#%d: %s", i, c.Msg)
+				t.Logf("UNEXPECTED #%d: %s", i, c.Msg)
 			}
 			t.FailNow()
 		}
@@ -986,8 +986,9 @@ func makeTests(t *testing.T) []*TestGroup {
 
 		testgroup("pager1201",
 			only(
-				//"MSDNS",     //  No paging done. No need to test.
-				//"AZURE_DNS", // Currently failing. See https://github.com/StackExchange/dnscontrol/issues/770
+				//"MSDNS",         //  No paging done. No need to test.
+				//"AKAMAIEDGEDNS", //  No paging done. No need to test.
+				//"AZURE_DNS",     // Currently failing. See https://github.com/StackExchange/dnscontrol/issues/770
 				"HEXONET",
 				"HOSTINGDE",
 				//"ROUTE53", // Currently failing. See https://github.com/StackExchange/dnscontrol/issues/908

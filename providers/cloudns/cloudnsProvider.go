@@ -201,9 +201,9 @@ func (c *cloudnsProvider) EnsureDomainExists(domain string) error {
 func toRc(domain string, r *domainRecord) *models.RecordConfig {
 
 	ttl, _ := strconv.ParseUint(r.TTL, 10, 32)
-	priority, _ := strconv.ParseUint(r.Priority, 10, 32)
-	weight, _ := strconv.ParseUint(r.Weight, 10, 32)
-	port, _ := strconv.ParseUint(r.Port, 10, 32)
+	priority, _ := strconv.ParseUint(r.Priority, 10, 16)
+	weight, _ := strconv.ParseUint(r.Weight, 10, 16)
+	port, _ := strconv.ParseUint(r.Port, 10, 16)
 
 	rc := &models.RecordConfig{
 		Type:         r.Type,
@@ -222,30 +222,30 @@ func toRc(domain string, r *domainRecord) *models.RecordConfig {
 	case "CNAME", "MX", "NS", "SRV", "ALIAS", "PTR":
 		rc.SetTarget(dnsutil.AddOrigin(r.Target+".", domain))
 	case "CAA":
-		caaFlag, _ := strconv.ParseUint(r.CaaFlag, 10, 32)
+		caaFlag, _ := strconv.ParseUint(r.CaaFlag, 10, 8)
 		rc.CaaFlag = uint8(caaFlag)
 		rc.CaaTag = r.CaaTag
 		rc.SetTarget(r.CaaValue)
 	case "TLSA":
-		tlsaUsage, _ := strconv.ParseUint(r.TlsaUsage, 10, 32)
+		tlsaUsage, _ := strconv.ParseUint(r.TlsaUsage, 10, 8)
 		rc.TlsaUsage = uint8(tlsaUsage)
-		tlsaSelector, _ := strconv.ParseUint(r.TlsaSelector, 10, 32)
+		tlsaSelector, _ := strconv.ParseUint(r.TlsaSelector, 10, 8)
 		rc.TlsaSelector = uint8(tlsaSelector)
-		tlsaMatchingType, _ := strconv.ParseUint(r.TlsaMatchingType, 10, 32)
+		tlsaMatchingType, _ := strconv.ParseUint(r.TlsaMatchingType, 10, 8)
 		rc.TlsaMatchingType = uint8(tlsaMatchingType)
 		rc.SetTarget(r.Target)
 	case "SSHFP":
-		sshfpAlgorithm, _ := strconv.ParseUint(r.SshfpAlgorithm, 10, 32)
+		sshfpAlgorithm, _ := strconv.ParseUint(r.SshfpAlgorithm, 10, 8)
 		rc.SshfpAlgorithm = uint8(sshfpAlgorithm)
-		sshfpFingerprint, _ := strconv.ParseUint(r.SshfpFingerprint, 10, 32)
+		sshfpFingerprint, _ := strconv.ParseUint(r.SshfpFingerprint, 10, 8)
 		rc.SshfpFingerprint = uint8(sshfpFingerprint)
 		rc.SetTarget(r.Target)
 	case "DS":
-		dsKeyTag, _ := strconv.ParseUint(r.DsKeyTag, 10, 32)
+		dsKeyTag, _ := strconv.ParseUint(r.DsKeyTag, 10, 16)
 		rc.DsKeyTag = uint16(dsKeyTag)
-		dsAlgorithm, _ := strconv.ParseUint(r.SshfpAlgorithm, 10, 32) // SshFpAlgorithm and DsAlgorithm both use json field "algorithm"
+		dsAlgorithm, _ := strconv.ParseUint(r.SshfpAlgorithm, 10, 8) // SshFpAlgorithm and DsAlgorithm both use json field "algorithm"
 		rc.DsAlgorithm = uint8(dsAlgorithm)
-		dsDigestType, _ := strconv.ParseUint(r.DsDigestType, 10, 32)
+		dsDigestType, _ := strconv.ParseUint(r.DsDigestType, 10, 8)
 		rc.DsDigestType = uint8(dsDigestType)
 		rc.DsDigest = r.Target
 		rc.SetTarget(r.Target)

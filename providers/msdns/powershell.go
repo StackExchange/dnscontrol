@@ -73,7 +73,10 @@ func (psh *psHandle) GetDNSServerZoneAll(dnsserver string) ([]string, error) {
 	}
 
 	var zones []dnsZone
-	json.Unmarshal([]byte(stdout), &zones)
+	err = json.Unmarshal([]byte(stdout), &zones)
+	if err != nil {
+		return nil, err
+	}
 
 	var result []string
 	for _, z := range zones {
@@ -97,57 +100,107 @@ func generatePSZoneAll(dnsserver string) string {
 }
 
 func (psh *psHandle) GetDNSZoneRecords(dnsserver, domain string) ([]nativeRecord, error) {
+
 	tmpfile, err := ioutil.TempFile("", "zonerecords.*.json")
 	if err != nil {
 		log.Fatal(err)
 	}
+	filename := tmpfile.Name()
 	tmpfile.Close()
 
-	stdout, stderr, err := psh.shell.Execute(generatePSZoneDump(dnsserver, domain))
+	stdout, stderr, err := psh.shell.Execute(generatePSZoneDump(dnsserver, domain, filename))
 	if err != nil {
 		return nil, err
-	}
-	if stdout != "" {
-		//writing all stdout from powershell to file
-		ioutil.WriteFile(tmpfile.Name(), []byte(stdout), 0)
 	}
 	if stderr != "" {
-		fmt.Printf("STDERROR = %q\n", stderr)
+		fmt.Printf("STDERROR GetDNSZR = %q\n", stderr)
 		return nil, fmt.Errorf("unexpected stderr from PSZoneDump: %q", stderr)
 	}
+	if stdout != "" {
+		fmt.Printf("STDOUT GetDNSZR = %q\n", stdout)
+	}
 
-	contents, err := utfutil.ReadFile(tmpfile.Name(), utfutil.UTF8)
+	contents, err := utfutil.ReadFile(filename, utfutil.UTF8)
 	if err != nil {
 		return nil, err
 	}
-	os.Remove(tmpfile.Name())
+	os.Remove(filename) // TODO(tlim): There should be a debug flag that leaves the tmp file around.
 
+	//fmt.Printf("CONTENTS = %s\n", contents)
+	//fmt.Printf("CONTENTS STR = %q\n", contents[:10])
+	//fmt.Printf("CONTENTS HEX = %v\n", []byte(contents)[:10])
+	//ioutil.WriteFile("/temp/list.json", contents, 0777)
 	var records []nativeRecord
-	json.Unmarshal([]byte(contents), &records)
+	err = json.Unmarshal(contents, &records)
+	if err != nil {
+		// PowerShell generates bad JSON if there is only one record.  Therefore, if there
+		// is an error we try decoding the bad format before completing erroring out.
+		// The "bad JSON" is that they generate a single record instead of a list of length 1.
+		records = append(records, nativeRecord{})
+		err2 := json.Unmarshal(contents, &(records[0]))
+		if err2 != nil {
+			return nil, fmt.Errorf("PSZoneDump json error: %w", err)
+		}
+	}
 
 	return records, nil
 }
 
 // powerShellDump runs a PowerShell command to get a dump of all records in a DNS zone.
-func generatePSZoneDump(dnsserver, domainname string) string {
+func generatePSZoneDump(dnsserver, domainname, filename string) string {
+	// @dnsserver: Hostname of the DNS server.
+	// @domainname: Name of the domain.
+	// @filename: Where to write the resulting JSON file.
+	// NB(tlim): On Windows PowerShell, the JSON file will be UTF8 with
+	// a BOM.  A UTF-8 file shouldn't have a BOM, but Microsoft messed up.
+	// When we switch to PowerShell Core, the BOM will disappear.
 	var b bytes.Buffer
+
+	// Set the output to be UTF8.  Previously we didn't do that and the
+	// output was twice as large, plus it required an extra conversion
+	// step.  Windows PowerShell is native UTF16 but PowerShell Core is
+	// native UTF8, thus this may not be needed if we move to Core.
+	fmt.Fprintf(&b, `$OutputEncoding = [Text.UTF8Encoding]::UTF8 ; `)
+
+	// Output everything we know about the zone.
 	fmt.Fprintf(&b, `Get-DnsServerResourceRecord`)
 	if dnsserver != "" {
 		fmt.Fprintf(&b, ` -ComputerName "%v"`, dnsserver)
 	}
 	fmt.Fprintf(&b, ` -ZoneName "%v"`, domainname)
+
+	// Strip out the `Cim*` properties at the root. This shrinks one
+	// zone from 99M to 11M.  We don't need the Cim* properties (at
+	// least the ones at the root) and decocding 99M of JSON was slow
+	// (30+ minutes).
+	// NB(tlim): Windows PowerShell requires the `-Property *` but
+	// Windows PowerShell Core makes that optional.
+	fmt.Fprintf(&b, ` | `)
+	fmt.Fprintf(&b, `Select-Object -Property * -ExcludeProperty Cim*`)
 	fmt.Fprintf(&b, ` | `)
 	fmt.Fprintf(&b, `ConvertTo-Json -depth 4`) // Tested with 3 (causes errors).  4 and larger work.
-	// All file writing via dnsserver or pssession should be handled outside this function
-	//fmt.Fprintf(&b, ` > %s`, filename)
-	//fmt.Printf("DEBUG PSZoneDump CMD = (\n%s\n)\n", b.String())
+	fmt.Fprintf(&b, ` | `)
+
+	// Prevously we captured stdout. Now we write it to a file. This is
+	// safer since there is no chance of junk accidentally being mixed
+	// into stdout.
+	fmt.Fprintf(&b, `Out-File "%s" -Encoding utf8`, filename)
 	return b.String()
 }
 
 // Functions for record manipulation
 
 func (psh *psHandle) RecordDelete(dnsserver, domain string, rec *models.RecordConfig) error {
-	_, stderr, err := psh.shell.Execute(generatePSDelete(dnsserver, domain, rec))
+
+	var c string
+	if rec.Type == "NAPTR" {
+		c = generatePSDeleteNaptr(dnsserver, domain, rec)
+		//fmt.Printf("DEBUG: deleteNAPTR: %s\n", c)
+	} else {
+		c = generatePSDelete(dnsserver, domain, rec)
+	}
+
+	_, stderr, err := psh.shell.Execute(c)
 	if err != nil {
 		return err
 	}
@@ -159,9 +212,17 @@ func (psh *psHandle) RecordDelete(dnsserver, domain string, rec *models.RecordCo
 }
 
 func generatePSDelete(dnsserver, domain string, rec *models.RecordConfig) string {
+
 	var b bytes.Buffer
-	fmt.Fprintf(&b, `echo DELETE "%s" "%s" "%s"`, rec.Type, rec.Name, rec.GetTargetCombined())
+	fmt.Fprintf(&b, `echo DELETE "%s" "%s" "..."`, rec.Type, rec.Name)
 	fmt.Fprintf(&b, " ; ")
+
+	if rec.Type == "NAPTR" {
+		x := b.String() + generatePSDeleteNaptr(dnsserver, domain, rec)
+		//fmt.Printf("NAPTR DELETE: %s\n", x)
+		return x
+	}
+
 	fmt.Fprintf(&b, `Remove-DnsServerResourceRecord`)
 	if dnsserver != "" {
 		fmt.Fprintf(&b, ` -ComputerName "%s"`, dnsserver)
@@ -185,12 +246,23 @@ func generatePSDelete(dnsserver, domain string, rec *models.RecordConfig) string
 }
 
 func (psh *psHandle) RecordCreate(dnsserver, domain string, rec *models.RecordConfig) error {
-	_, stderr, err := psh.shell.Execute(generatePSCreate(dnsserver, domain, rec))
+
+	var c string
+	if rec.Type == "NAPTR" {
+		c = generatePSCreateNaptr(dnsserver, domain, rec)
+		//fmt.Printf("DEBUG: createNAPTR: %s\n", c)
+	} else {
+		c = generatePSCreate(dnsserver, domain, rec)
+		//fmt.Printf("DEBUG: PScreate\n")
+	}
+
+	stdout, stderr, err := psh.shell.Execute(c)
 	if err != nil {
 		return err
 	}
 	if stderr != "" {
-		fmt.Printf("STDERROR = %q\n", stderr)
+		fmt.Printf("STDOUT RecordCreate = %s\n", stdout)
+		fmt.Printf("STDERROR RecordCreate = %q\n", stderr)
 		return fmt.Errorf("unexpected stderr from PSCreate: %q", stderr)
 	}
 	return nil
@@ -198,8 +270,12 @@ func (psh *psHandle) RecordCreate(dnsserver, domain string, rec *models.RecordCo
 
 func generatePSCreate(dnsserver, domain string, rec *models.RecordConfig) string {
 	var b bytes.Buffer
-	fmt.Fprintf(&b, `echo CREATE "%s" "%s" "%s"`, rec.Type, rec.Name, rec.GetTargetCombined())
+	fmt.Fprintf(&b, `echo CREATE "%s" "%s" "..."`, rec.Type, rec.Name)
 	fmt.Fprintf(&b, " ; ")
+
+	if rec.Type == "NAPTR" {
+		return b.String() + generatePSCreateNaptr(dnsserver, domain, rec)
+	}
 
 	fmt.Fprint(&b, `Add-DnsServerResourceRecord`)
 	if dnsserver != "" {
@@ -226,8 +302,8 @@ func generatePSCreate(dnsserver, domain string, rec *models.RecordConfig) string
 	//case "WKS":
 	//	fmt.Fprintf(&b, ` -Wks -InternetAddress <IPAddress> -InternetProtocol {UDP | TCP} -Service <String[]>`, rec.GetTargetField())
 	case "TXT":
-		fmt.Printf("DEBUG TXT len = %v\n", rec.TxtStrings)
-		fmt.Printf("DEBUG TXT target = %q\n", rec.GetTargetField())
+		//fmt.Printf("DEBUG TXT len = %v\n", rec.TxtStrings)
+		//fmt.Printf("DEBUG TXT target = %q\n", rec.GetTargetField())
 		fmt.Fprintf(&b, ` -Txt -DescriptiveText %s`, rec.GetTargetField())
 	//case "RT":
 	//	fmt.Fprintf(&b, ` -RT -IntermediateHost <String> -Preference <UInt16>`, rec.GetTargetField())

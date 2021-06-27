@@ -180,7 +180,9 @@ func checkTargets(rec *models.RecordConfig, domain string) (errs []error) {
 	case "PTR":
 		check(checkTarget(target))
 	case "NAPTR":
-		check(checkTarget(target))
+		if target != "" {
+			check(checkTarget(target))
+		}
 	case "ALIAS":
 		check(checkTarget(target))
 	case "SOA":
@@ -248,7 +250,7 @@ func importTransform(srcDomain, dstDomain *models.DomainConfig, transforms []tra
 			r := newRec()
 			r.SetTarget(transformCNAME(r.GetTargetField(), srcDomain.Name, dstDomain.Name))
 			dstDomain.Records = append(dstDomain.Records, r)
-		case "MX", "NAPTR", "NS", "SOA", "SRV", "TXT", "CAA", "TLSA":
+		case "AKAMAICDN", "MX", "NAPTR", "NS", "SOA", "SRV", "TXT", "CAA", "TLSA":
 			// Not imported.
 			continue
 		default:
@@ -345,7 +347,7 @@ func ValidateAndNormalizeConfig(config *models.DNSConfig) (errs []error) {
 			}
 
 			// Canonicalize Targets.
-			if rec.Type == "CNAME" || rec.Type == "MX" || rec.Type == "NAPTR" || rec.Type == "NS" || rec.Type == "SRV" {
+			if rec.Type == "CNAME" || rec.Type == "MX" || rec.Type == "NS" || rec.Type == "SRV" {
 				// #rtype_variations
 				// These record types have a target that is a hostname.
 				// We normalize them to a FQDN so there is less variation to handle.  If a
@@ -555,6 +557,7 @@ var providerCapabilityChecks = []pairTypeCapability{
 	capabilityCheck("SRV", providers.CanUseSRV),
 	capabilityCheck("TLSA", providers.CanUseTLSA),
 	capabilityCheck("AZURE_ALIAS", providers.CanUseAzureAlias),
+	capabilityCheck("AKAMAICDN", providers.CanUseAKAMAICDN),
 
 	// DS needs special record-level checks
 	{

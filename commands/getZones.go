@@ -1,6 +1,7 @@
 package commands
 
 import (
+	"encoding/json"
 	"fmt"
 	"os"
 	"strings"
@@ -249,6 +250,16 @@ func GetZone(args GetZoneArgs) error {
 	return nil
 }
 
+// jsonQuoted returns a properly escaped JSON string (without quotes).
+func jsonQuoted(i string) string {
+	// https://stackoverflow.com/questions/51691901
+	b, err := json.Marshal(i)
+	if err != nil {
+		panic(err)
+	}
+	return string(b)
+}
+
 func formatDsl(zonename string, rec *models.RecordConfig, defaultTTL uint32) string {
 
 	target := rec.GetTargetCombined()
@@ -272,6 +283,15 @@ func formatDsl(zonename string, rec *models.RecordConfig, defaultTTL uint32) str
 		return makeCaa(rec, ttlop)
 	case "MX":
 		target = fmt.Sprintf("%d, '%s'", rec.MxPreference, rec.GetTargetField())
+	case "NAPTR":
+		target = fmt.Sprintf(`%d, %d, %s, %s, %s, %s`,
+			rec.NaptrOrder,                   // 1
+			rec.NaptrPreference,              // 10
+			jsonQuoted(rec.NaptrFlags),       // U
+			jsonQuoted(rec.NaptrService),     // E2U+sip
+			jsonQuoted(rec.NaptrRegexp),      // regex
+			jsonQuoted(rec.GetTargetField()), // .
+		)
 	case "SSHFP":
 		target = fmt.Sprintf("%d, %d, '%s'", rec.SshfpAlgorithm, rec.SshfpFingerprint, rec.GetTargetField())
 	case "SOA":
