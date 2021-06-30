@@ -16,3 +16,5 @@ updates:
     directory: "/"
     schedule:
       interval: "daily"
+    ignore:
+      - dependency-name: "github.com/billputer/go-namecheap"
