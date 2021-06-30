@@ -147,8 +147,6 @@ github.com/envoyproxy/go-control-plane v0.9.9-0.20210217033140-668b12f5399d/go.m
 github.com/envoyproxy/protoc-gen-validate v0.1.0/go.mod h1:iSmxcyjqTsJpI2R4NaDN7+kN2VEUnK/pcBlmesArF7c=
 github.com/exoscale/egoscale v0.59.0 h1:Causl63SlZaw4hgyO630T0vk2HY04uKdgWMKovcJeGY=
 github.com/exoscale/egoscale v0.59.0/go.mod h1:wi0myUxPsV8SdEtdJHQJxFLL/wEw9fiw9Gs1PWRkvkM=
-github.com/exoscale/egoscale v1.19.0 h1:DbSyyzaPyxDBgGOuduCU26rQ4PJb/GP+8srXRabRf5U=
-github.com/exoscale/egoscale v1.19.0/go.mod h1:Z7OOdzzTOz1Q1PjQXumlz9Wn/CddH0zSYdCF3rnBKXE=
 github.com/fatih/color v1.7.0/go.mod h1:Zm6kSWBoL9eyXnKyktHP6abPY2pDugNf5KwzbycvMj4=
 github.com/fatih/color v1.10.0 h1:s36xzo75JdqLaaWoiEHk767eHiwo0598uUxyfiPkDsg=
 github.com/fatih/color v1.10.0/go.mod h1:ELkj/draVOlAH/xkhN6mQ50Qd0MPOk5AAr3maGEBuJM=
@@ -478,8 +476,10 @@ github.com/stretchr/testify v1.5.1/go.mod h1:5W2xD1RspED5o8YsWQXVCued0rvSQ+mT+I5
 github.com/stretchr/testify v1.6.1/go.mod h1:6Fq8oRcR53rry900zMqJjRRixrwX3KX962/h/Wwjteg=
 github.com/stretchr/testify v1.7.0 h1:nwc3DEeHmmLAfoZucVR881uASk0Mfjw8xYJ99tb5CcY=
 github.com/stretchr/testify v1.7.0/go.mod h1:6Fq8oRcR53rry900zMqJjRRixrwX3KX962/h/Wwjteg=
-github.com/tdewolff/minify/v2 v2.9.17 h1:0RPKCBSz5plIKZkmkm/zeQdqPYf/9NJVwG63NHtViHQ=
-github.com/tdewolff/minify/v2 v2.9.17/go.mod h1:OLHZpngMfp36EyqxkGGta1l3hB1c+sHhXNHk8WTrsQo=
+github.com/tdewolff/minify/v2 v2.9.18 h1:j5Is0sOGp4cxm0o3HgvHCWCvTtmKnfB0qv0FCRbmgZY=
+github.com/tdewolff/minify/v2 v2.9.18/go.mod h1:0y0mXZnisZm8HcgQvAV0btxa1IgecGam90zMuHqEZuc=
+github.com/tdewolff/parse/v2 v2.5.18 h1:d67Ql/Pe36JcJZ7J2MY8upx6iTxbxGS9lzwyFGtMmd0=
+github.com/tdewolff/parse/v2 v2.5.18/go.mod h1:WzaJpRSbwq++EIQHYIRTpbYKNA3gn9it1Ik++q4zyho=
 github.com/tdewolff/test v1.0.6 h1:76mzYJQ83Op284kMT+63iCNCI7NEERsIN8dLM+RiKr4=
 github.com/tdewolff/test v1.0.6/go.mod h1:6DAvZliBAAnD7rhVgwaM7DE5/d9NMOAJ09SqYqeK4QE=
 github.com/tv42/httpunix v0.0.0-20150427012821-b75d8614f926/go.mod h1:9ESjWnEqriFuLhtthL60Sar/7RFoluCcXsuvEwTV5KM=
