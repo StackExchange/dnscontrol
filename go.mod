@@ -24,7 +24,7 @@ require (
 	github.com/digitalocean/godo v1.62.0
 	github.com/ditashi/jsbeautifier-go v0.0.0-20141206144643-2520a8026a9c
 	github.com/dnsimple/dnsimple-go v0.70.1
-	github.com/exoscale/egoscale v1.19.0
+	github.com/exoscale/egoscale v0.59.0
 	github.com/fatih/color v1.10.0 // indirect
 	github.com/frankban/quicktest v1.11.3 // indirect
 	github.com/go-acme/lego v2.7.2+incompatible
