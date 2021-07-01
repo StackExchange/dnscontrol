@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"net"
 	"regexp"
-	"strconv"
 	"strings"
 )
 
@@ -89,12 +88,10 @@ func ipMatchesClasslessDomain(ip net.IP, domain string) bool {
 
 // atob converts a to a byte value or panics.
 func atob(s string) uint8 {
-	if i, err := strconv.Atoi(s); err == nil {
-		if i < 256 {
-			return byte(i)
-		}
+	if i, err := ParseUint(s, 10, 8); err == nil {
+		return byte(i)
 	}
-	panic(fmt.Sprintf("(%v) matched \\d{1,3} but is not a byte", s))
+	panic(fmt.Sprintf("%v is not a byte", s))
 }
 
 func ipv6magic(name, domain string) (string, error) {
