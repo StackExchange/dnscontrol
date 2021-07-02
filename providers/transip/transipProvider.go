@@ -76,14 +76,24 @@ func (n *transipProvider) GetZoneRecords(domainName string) (models.Records, err
 }
 
 func (n *transipProvider) GetNameservers(domainName string) ([]*models.Nameserver, error) {
-	return nil, fmt.Errorf("not implements ns")
+	var nss []string
+
+	entries, err := n.domains.GetNameservers(domainName)
+	if err != nil {
+		return nil, err
+	}
+	for _, entry := range entries {
+		nss = append(nss, entry.Hostname)
+	}
+
+	return models.ToNameservers(nss)
 }
 
 func nativeToRecord(entry domain.DNSEntry, origin string) (*models.RecordConfig, error) {
 	rc := &models.RecordConfig{TTL: uint32(*&entry.Expire)}
 	rc.SetLabelFromFQDN(entry.Name, origin)
 	if err := rc.PopulateFromString(entry.Type, entry.Content, origin); err != nil {
-		return nil, fmt.Errorf("unparsable record received from R53: %w", err)
+		return nil, fmt.Errorf("unparsable record received from TransIP: %w", err)
 	}
 
 	return rc, nil
