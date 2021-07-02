@@ -48,7 +48,10 @@ func TestMostCommonTtl(t *testing.T) {
 	// All records are TTL=100
 	records = nil
 	records, e = append(records, r1, r1, r1), 100
-	x := models.RRstoRCs(records, "bosun.org")
+	x, err := models.RRstoRCs(records, "bosun.org")
+	if err != nil {
+		panic(err)
+	}
 	g = MostCommonTTL(x)
 	if e != g {
 		t.Fatalf("expected %d; got %d\n", e, g)
@@ -57,7 +60,11 @@ func TestMostCommonTtl(t *testing.T) {
 	// Mixture of TTLs with an obvious winner.
 	records = nil
 	records, e = append(records, r1, r2, r2), 200
-	g = MostCommonTTL(models.RRstoRCs(records, "bosun.org"))
+	rcs, err := models.RRstoRCs(records, "bosun.org")
+	if err != nil {
+		panic(err)
+	}
+	g = MostCommonTTL(rcs)
 	if e != g {
 		t.Fatalf("expected %d; got %d\n", e, g)
 	}
@@ -65,7 +72,11 @@ func TestMostCommonTtl(t *testing.T) {
 	// 3-way tie. Largest TTL should be used.
 	records = nil
 	records, e = append(records, r1, r2, r3), 300
-	g = MostCommonTTL(models.RRstoRCs(records, "bosun.org"))
+	rcs, err = models.RRstoRCs(records, "bosun.org")
+	if err != nil {
+		panic(err)
+	}
+	g = MostCommonTTL(rcs)
 	if e != g {
 		t.Fatalf("expected %d; got %d\n", e, g)
 	}
@@ -73,7 +84,11 @@ func TestMostCommonTtl(t *testing.T) {
 	// NS records are ignored.
 	records = nil
 	records, e = append(records, r1, r4, r5), 100
-	g = MostCommonTTL(models.RRstoRCs(records, "bosun.org"))
+	rcs, err = models.RRstoRCs(records, "bosun.org")
+	if err != nil {
+		panic(err)
+	}
+	g = MostCommonTTL(rcs)
 	if e != g {
 		t.Fatalf("expected %d; got %d\n", e, g)
 	}
@@ -289,7 +304,10 @@ func TestWriteZoneFileSynth(t *testing.T) {
 	rsynz := &models.RecordConfig{Type: "R53_ALIAS", TTL: 300}
 	rsynz.SetLabel("zalias", "bosun.org")
 
-	recs := models.RRstoRCs([]dns.RR{r1, r2, r3}, "bosun.org")
+	recs, err := models.RRstoRCs([]dns.RR{r1, r2, r3}, "bosun.org")
+	if err != nil {
+		panic(err)
+	}
 	recs = append(recs, rsynm)
 	recs = append(recs, rsynm)
 	recs = append(recs, rsynz)
