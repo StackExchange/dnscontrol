@@ -43,6 +43,16 @@ sed -i.bak -e 's@github.com.StackExchange.dnscontrol.v2@github.com/StackExchange
 find * -name \*.bak -delete
 ```
 
+## Step 2b. Verify the version string
+
+Verify the version string was updated:
+
+```
+$ grep Version main.go
+```
+
+(Make sure that it lists the new version number.)
+
 ## Step 3. Write the release notes.
 
 draft-notes.txt is just a draft and needs considerable editing.

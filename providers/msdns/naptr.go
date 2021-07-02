@@ -86,7 +86,7 @@ func decodeRecordDataNaptr(s string) models.RecordConfig {
 // eatUint16 consumes the first 16 bits of the string, returns it as a
 // uint16, and returns the remaining bytes of the string.
 func eatUint16(s string) (string, uint16) {
-	value, err := strconv.ParseUint(s[2:4]+s[0:2], 16, 64)
+	value, err := strconv.ParseUint(s[2:4]+s[0:2], 16, 16)
 	if err != nil {
 		log.Fatal(err)
 	}
