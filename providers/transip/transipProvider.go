@@ -3,7 +3,6 @@ package transip
 import (
 	"encoding/json"
 	"fmt"
-	"strings"
 
 	"github.com/StackExchange/dnscontrol/v3/models"
 	"github.com/StackExchange/dnscontrol/v3/pkg/diff"
@@ -21,8 +20,6 @@ type transipProvider struct {
 var features = providers.DocumentationNotes{
 	providers.DocCreateDomains:       providers.Cannot(),
 	providers.DocOfficiallySupported: providers.Cannot(),
-	providers.CanUseSRV:              providers.Can(),
-	providers.CanUseCAA:              providers.Can("Semicolons not supported in issue/issuewild fields.", "https://www.digitalocean.com/docs/networking/dns/how-to/create-caa-records"),
 	providers.CanGetZones:            providers.Can(),
 }
 
@@ -57,19 +54,20 @@ func init() {
 func (n *transipProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Correction, error) {
 	var corrections []*models.Correction
 
-	// get current zone records
 	curRecords, err := n.GetZoneRecords(dc.Name)
 	if err != nil {
 		return nil, err
 	}
 
-	// post-process records
 	if err := dc.Punycode(); err != nil {
 		return nil, err
 	}
+
+	curRecords = removeNS(curRecords)
+	removeOtherNS(dc)
+
 	models.PostProcessRecords(curRecords)
 
-	// create record diff by group
 	differ := diff.New(dc)
 	_, create, del, modify, err := differ.IncrementalDiff(curRecords)
 	if err != nil {
@@ -157,13 +155,38 @@ func recordToNative(config *models.RecordConfig) (domain.DNSEntry, error) {
 }
 
 func nativeToRecord(entry domain.DNSEntry, origin string) (*models.RecordConfig, error) {
-	rc := &models.RecordConfig{TTL: uint32(*&entry.Expire)}
-	rc.SetLabelFromFQDN(entry.Name, origin)
+	rc := &models.RecordConfig{
+		TTL:      uint32(*&entry.Expire),
+		Type:     entry.Type,
+		Original: entry,
+	}
+	rc.SetLabel(entry.Name, origin)
 	if err := rc.PopulateFromString(entry.Type, entry.Content, origin); err != nil {
 		return nil, fmt.Errorf("unparsable record received from TransIP: %w", err)
 	}
 
 	return rc, nil
+}
+
+func removeNS(records models.Records) models.Records {
+	var noNameServers models.Records
+	for _, r := range records {
+		if r.Type != "NS" {
+			noNameServers = append(noNameServers, r)
+		}
+	}
+	return noNameServers
+}
+
+func removeOtherNS(dc *models.DomainConfig) {
+	newList := make([]*models.RecordConfig, 0, len(dc.Records))
+	for _, rec := range dc.Records {
+		if rec.Type == "NS" {
+			continue
+		}
+		newList = append(newList, rec)
+	}
+	dc.Records = newList
 }
 
 func getTargetRecordContent(rc *models.RecordConfig) string {
@@ -176,18 +199,6 @@ func getTargetRecordContent(rc *models.RecordConfig) string {
 		return fmt.Sprintf("%d %d %d %s", rc.DsKeyTag, rc.DsAlgorithm, rc.DsDigestType, rc.DsDigest)
 	case "SRV":
 		return fmt.Sprintf("%d %d %s", rc.SrvWeight, rc.SrvPort, rc.GetTargetField())
-	case "TXT":
-		quoted := make([]string, len(rc.TxtStrings))
-		for i := range rc.TxtStrings {
-			quoted[i] = quoteDNSString(rc.TxtStrings[i])
-		}
-		return strings.Join(quoted, " ")
-	case "NAPTR":
-		return fmt.Sprintf("%d %d %s %s %s %s",
-			rc.NaptrOrder, rc.NaptrPreference,
-			quoteDNSString(rc.NaptrFlags), quoteDNSString(rc.NaptrService),
-			quoteDNSString(rc.NaptrRegexp),
-			rc.GetTargetField())
 	default:
 		return rc.GetTargetField()
 	}
