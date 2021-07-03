@@ -3,6 +3,7 @@ package transip
 import (
 	"encoding/json"
 	"fmt"
+	"strings"
 
 	"github.com/StackExchange/dnscontrol/v3/models"
 	"github.com/StackExchange/dnscontrol/v3/pkg/diff"
@@ -81,7 +82,6 @@ func (n *transipProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*mode
 		return nil, err
 	}
 
-	curRecords = removeNS(curRecords)
 	removeOtherNS(dc)
 
 	models.PostProcessRecords(curRecords)
@@ -225,7 +225,9 @@ func removeNS(records models.Records) models.Records {
 func removeOtherNS(dc *models.DomainConfig) {
 	newList := make([]*models.RecordConfig, 0, len(dc.Records))
 	for _, rec := range dc.Records {
-		if rec.Type == "NS" {
+		if rec.Type == "NS" && (strings.HasPrefix(rec.GetTargetField(), "ns0.transip") ||
+			strings.HasPrefix(rec.GetTargetField(), "ns1.transip") ||
+			strings.HasPrefix(rec.GetTargetField(), "ns2.transip")) {
 			continue
 		}
 		newList = append(newList, rec)
@@ -244,6 +246,6 @@ func getTargetRecordContent(rc *models.RecordConfig) string {
 	case "SRV":
 		return fmt.Sprintf("%d %d %s", rc.SrvWeight, rc.SrvPort, rc.GetTargetField())
 	default:
-		return rc.GetTargetField()
+		return rc.GetTargetCombined()
 	}
 }
