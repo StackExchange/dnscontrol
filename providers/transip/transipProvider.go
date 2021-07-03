@@ -112,22 +112,48 @@ func (n *transipProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*mode
 
 		corrections = append(corrections, &models.Correction{
 			Msg: cre.String(),
-			F:   func() error { return n.domains.UpdateDNSEntry(dc.Name, entry) },
+			F:   func() error { return n.domains.AddDNSEntry(dc.Name, entry) },
 		})
 	}
 
 	for _, mod := range modify {
-		entry, err := recordToNative(mod.Desired)
+		targetEntry, err := recordToNative(mod.Desired)
 		if err != nil {
 			return nil, err
 		}
-		corrections = append(corrections, &models.Correction{
-			Msg: mod.String(),
-			F:   func() error { return n.domains.UpdateDNSEntry(dc.Name, entry) },
-		})
+
+		// TransIP identifies records by (Label, TTL Type), we can only update it if only the contents
+		// has changed. Otherwise we delete the old record and create the new one
+		if canUpdateDNSEntry(mod.Desired, mod.Existing) {
+			corrections = append(corrections, &models.Correction{
+				Msg: mod.String(),
+				F:   func() error { return n.domains.UpdateDNSEntry(dc.Name, targetEntry) },
+			})
+		} else {
+			oldEntry, err := recordToNative(mod.Existing)
+			if err != nil {
+				return nil, err
+			}
+
+			corrections = append(corrections,
+				&models.Correction{
+					Msg: mod.String() + "[1/2]",
+					F:   func() error { return n.domains.RemoveDNSEntry(dc.Name, oldEntry) },
+				},
+				&models.Correction{
+					Msg: mod.String() + "[2/2]",
+					F:   func() error { return n.domains.AddDNSEntry(dc.Name, targetEntry) },
+				},
+			)
+		}
+
 	}
 
 	return corrections, nil
+}
+
+func canUpdateDNSEntry(desired *models.RecordConfig, existing *models.RecordConfig) bool {
+	return desired.Name == existing.Name && desired.TTL == existing.TTL && desired.Type == existing.Type
 }
 
 func (n *transipProvider) GetZoneRecords(domainName string) (models.Records, error) {
