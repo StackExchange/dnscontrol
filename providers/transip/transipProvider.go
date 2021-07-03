@@ -12,15 +12,33 @@ import (
 	"github.com/transip/gotransip/v6/repository"
 )
 
+/*
+
+TransIP DNS Provider (transip.nl)
+
+Info required in `creds.json`
+	- AccessToken
+
+*/
+
 type transipProvider struct {
 	client  *repository.Client
 	domains *domain.Repository
 }
 
 var features = providers.DocumentationNotes{
+	providers.CanAutoDNSSEC:          providers.Cannot(),
+	providers.CanGetZones:            providers.Can(),
+	providers.CanUseAlias:            providers.Cannot(),
+	providers.CanUseCAA:              providers.Can(),
+	providers.CanUseDS:               providers.Cannot(),
+	providers.CanUseDSForChildren:    providers.Cannot(),
+	providers.CanUseNAPTR:            providers.Can(),
+	providers.CanUseSRV:              providers.Can(),
+	providers.CanUseSSHFP:            providers.Can(),
+	providers.CanUseTLSA:             providers.Can(),
 	providers.DocCreateDomains:       providers.Cannot(),
 	providers.DocOfficiallySupported: providers.Cannot(),
-	providers.CanGetZones:            providers.Can(),
 }
 
 func NewTransip(m map[string]string, metadata json.RawMessage) (providers.DNSServiceProvider, error) {
