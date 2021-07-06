@@ -171,7 +171,10 @@ func (c *bindProvider) GetZoneRecords(domain string) (models.Records, error) {
 	zp := dns.NewZoneParser(strings.NewReader(string(content)), domain, c.zonefile)
 
 	for rr, ok := zp.Next(); ok; rr, ok = zp.Next() {
-		rec := models.RRtoRC(rr, domain)
+		rec, err := models.RRtoRC(rr, domain)
+		if err != nil {
+			return nil, err
+		}
 		// FIXME(tlim): Empty branch?  Is the intention to skip SOAs?
 		if rec.Type == "SOA" {
 		}
