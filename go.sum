@@ -129,8 +129,8 @@ github.com/davecgh/go-spew v1.1.1/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSs
 github.com/deepmap/oapi-codegen v1.6.1 h1:2BvsmRb6pogGNtr8Ann+esAbSKFXx2CZN18VpAMecnw=
 github.com/deepmap/oapi-codegen v1.6.1/go.mod h1:ryDa9AgbELGeB+YEXE1dR53yAjHwFvE9iAUlWl9Al3M=
 github.com/dgrijalva/jwt-go v3.2.0+incompatible/go.mod h1:E3ru+11k8xSBh+hMPgOLZmtrrCbhqsmaPHjLKYnJCaQ=
-github.com/digitalocean/godo v1.62.0 h1:7Gw2KFsWkxl36qJa0s50tgXaE0Cgm51JdRP+MFQvNnM=
-github.com/digitalocean/godo v1.62.0/go.mod h1:p7dOjjtSBqCTUksqtA5Fd3uaKs9kyTq2xcz76ulEJRU=
+github.com/digitalocean/godo v1.63.0 h1:WN/mv8M1DGKQ58VwnD9PjIyULpo1TZGYhoNhvEtBREk=
+github.com/digitalocean/godo v1.63.0/go.mod h1:p7dOjjtSBqCTUksqtA5Fd3uaKs9kyTq2xcz76ulEJRU=
 github.com/dimchansky/utfbom v1.1.0/go.mod h1:rO41eb7gLfo8SF1jd9F8HplJm1Fewwi4mQvIirEdv+8=
 github.com/dimchansky/utfbom v1.1.1 h1:vV6w1AhK4VMnhBno/TPVCoK9U/LP0PkLCS9tbxHdi/U=
 github.com/dimchansky/utfbom v1.1.1/go.mod h1:SxdoEBH5qIqFocHMyGOXVAybYJdr71b1Q/j0mACtrfE=
@@ -478,10 +478,10 @@ github.com/stretchr/testify v1.5.1/go.mod h1:5W2xD1RspED5o8YsWQXVCued0rvSQ+mT+I5
 github.com/stretchr/testify v1.6.1/go.mod h1:6Fq8oRcR53rry900zMqJjRRixrwX3KX962/h/Wwjteg=
 github.com/stretchr/testify v1.7.0 h1:nwc3DEeHmmLAfoZucVR881uASk0Mfjw8xYJ99tb5CcY=
 github.com/stretchr/testify v1.7.0/go.mod h1:6Fq8oRcR53rry900zMqJjRRixrwX3KX962/h/Wwjteg=
-github.com/tdewolff/minify/v2 v2.9.18 h1:j5Is0sOGp4cxm0o3HgvHCWCvTtmKnfB0qv0FCRbmgZY=
-github.com/tdewolff/minify/v2 v2.9.18/go.mod h1:0y0mXZnisZm8HcgQvAV0btxa1IgecGam90zMuHqEZuc=
-github.com/tdewolff/parse/v2 v2.5.18 h1:d67Ql/Pe36JcJZ7J2MY8upx6iTxbxGS9lzwyFGtMmd0=
-github.com/tdewolff/parse/v2 v2.5.18/go.mod h1:WzaJpRSbwq++EIQHYIRTpbYKNA3gn9it1Ik++q4zyho=
+github.com/tdewolff/minify/v2 v2.9.19 h1:QdCQhIqCeBnSWU/4e0nJ8QJeQUNO5CC7jrH3xwETkVI=
+github.com/tdewolff/minify/v2 v2.9.19/go.mod h1:PoDBts2L7sCwUT28vTAlozGeD6qxjrrihtin4bR/RMM=
+github.com/tdewolff/parse/v2 v2.5.19 h1:Kjaj3KQOx/4elIxlBSglus4E2oMfdROphvbq2b+OBZ0=
+github.com/tdewolff/parse/v2 v2.5.19/go.mod h1:WzaJpRSbwq++EIQHYIRTpbYKNA3gn9it1Ik++q4zyho=
 github.com/tdewolff/test v1.0.6 h1:76mzYJQ83Op284kMT+63iCNCI7NEERsIN8dLM+RiKr4=
 github.com/tdewolff/test v1.0.6/go.mod h1:6DAvZliBAAnD7rhVgwaM7DE5/d9NMOAJ09SqYqeK4QE=
 github.com/transip/gotransip/v6 v6.6.1 h1:nsCU1ErZS5G0FeOpgGXc4FsWvBff9GPswSMggsC4564=
