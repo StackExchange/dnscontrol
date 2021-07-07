@@ -13,7 +13,7 @@ require (
 	github.com/akamai/AkamaiOPEN-edgegrid-golang v1.1.1
 	github.com/andreyvit/diff v0.0.0-20170406064948-c7f18ee00883
 	github.com/andybalholm/cascadia v1.2.0 // indirect
-	github.com/aws/aws-sdk-go v1.38.70
+	github.com/aws/aws-sdk-go v1.39.1
 	github.com/babolivier/go-doh-client v0.0.0-20201028162107-a76cff4cb8b6
 	github.com/bhendo/go-powershell v0.0.0-20190719160123-219e7fb4e41e
 	github.com/billputer/go-namecheap v0.0.0-20210108011502-994a912fb7f9
@@ -61,7 +61,7 @@ require (
 	github.com/softlayer/softlayer-go v1.0.3
 	github.com/stretchr/testify v1.7.0
 	github.com/tdewolff/minify/v2 v2.9.18
-	github.com/transip/gotransip/v6 v6.6.1 // indirect
+	github.com/transip/gotransip/v6 v6.6.1
 	github.com/urfave/cli/v2 v2.3.0
 	github.com/vultr/govultr v1.1.1
 	github.com/xddxdd/ottoext v0.0.0-20210101073831-439879ee6281
