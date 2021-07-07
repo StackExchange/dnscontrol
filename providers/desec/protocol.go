@@ -182,10 +182,12 @@ retry:
 			return bodyString, resp.StatusCode, fmt.Errorf("%s", errResp.Detail)
 		}
 		err = json.Unmarshal(bodyString, &nfieldErrors)
-		if err == nil {
-			return bodyString, resp.StatusCode, fmt.Errorf("%s", nfieldErrors[0].Errors[0])
+		if err == nil && len(nfieldErrors) > 0 {
+			if len(nfieldErrors[0].Errors) > 0 {
+				return bodyString, resp.StatusCode, fmt.Errorf("%s", nfieldErrors[0].Errors[0])
+			}
 		}
-		return bodyString, resp.StatusCode, fmt.Errorf("HTTP status %d %s, the API does not provide more information", resp.StatusCode, resp.Status)
+		return bodyString, resp.StatusCode, fmt.Errorf("HTTP status %s Body: %s, the API does not provide more information", resp.Status, bodyString)
 	}
 	return bodyString, resp.StatusCode, nil
 }
@@ -227,10 +229,12 @@ retry:
 			return bodyString, fmt.Errorf("HTTP status %d %s details: %s", resp.StatusCode, resp.Status, errResp.Detail)
 		}
 		err = json.Unmarshal(bodyString, &nfieldErrors)
-		if err == nil {
-			return bodyString, fmt.Errorf("%s", nfieldErrors[0].Errors[0])
+		if err == nil && len(nfieldErrors) > 0 {
+			if len(nfieldErrors[0].Errors) > 0 {
+				return bodyString, fmt.Errorf("%s", nfieldErrors[0].Errors[0])
+			}
 		}
-		return bodyString, fmt.Errorf("HTTP status %d %s, the API does not provide more information", resp.StatusCode, resp.Status)
+		return bodyString, fmt.Errorf("HTTP status %s Body: %s, the API does not provide more information", resp.Status, bodyString)
 	}
 	//time.Sleep(334 * time.Millisecond)
 	return bodyString, nil
