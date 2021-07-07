@@ -21,7 +21,7 @@ In your providers config json file you must include a TransIP personal access to
 
 ## Metadata
 
-This provider does not recognize any special metadata fields unique to Vultr.
+This provider does not recognize any special metadata fields unique to TransIP.
 
 ## Usage
 
