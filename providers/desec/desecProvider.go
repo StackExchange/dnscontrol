@@ -5,10 +5,12 @@ import (
 	"encoding/json"
 	"fmt"
 	"sort"
+	"strings"
 
 	"github.com/StackExchange/dnscontrol/v3/models"
 	"github.com/StackExchange/dnscontrol/v3/pkg/diff"
 	"github.com/StackExchange/dnscontrol/v3/pkg/printer"
+	"github.com/StackExchange/dnscontrol/v3/pkg/txtutil"
 	"github.com/StackExchange/dnscontrol/v3/providers"
 	"github.com/miekg/dns/dnsutil"
 )
@@ -30,10 +32,6 @@ func NewDeSec(m map[string]string, metadata json.RawMessage) (providers.DNSServi
 	if err := c.authenticate(); err != nil {
 		return nil, fmt.Errorf("authentication failed")
 	}
-	// Get a domain to validate authentication
-	/*if err := c.fetchDomainList(); err != nil {
-		return nil, err
-	}*/
 
 	return c, nil
 }
@@ -136,12 +134,20 @@ func PrepDesiredRecords(dc *models.DomainConfig, minTTL uint32) {
 	// confusing.
 
 	dc.Punycode()
+	txtutil.SplitSingleLongTxt(dc.Records)
 	recordsToKeep := make([]*models.RecordConfig, 0, len(dc.Records))
 	for _, rec := range dc.Records {
 		if rec.Type == "ALIAS" {
 			// deSEC does not permit ALIAS records, just ignore it
 			printer.Warnf("deSEC does not support alias records\n")
 			continue
+		}
+		if rec.Type == "TXT" {
+			//rec.TxtStrings = []string{strings.Join(rec.TxtStrings, "")}
+			for i, str := range rec.TxtStrings {
+				rec.TxtStrings[i] = fmt.Sprintf(`"%s"`, str)
+			}
+			rec.TxtStrings = []string{strings.Join(rec.TxtStrings, " ")}
 		}
 		if rec.TTL < minTTL {
 			if rec.Type != "NS" {
