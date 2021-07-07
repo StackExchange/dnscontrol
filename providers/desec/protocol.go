@@ -71,25 +71,6 @@ func (c *desecProvider) authenticate() error {
 	return nil
 }
 
-func (c *desecProvider) fetchDomainList() error {
-	c.domainIndex = map[string]uint32{}
-	var dr []domainObject
-	endpoint := "/domains/"
-	var bodyString, _, err = c.get(endpoint, "GET")
-	if err != nil {
-		return fmt.Errorf("Failed fetching domain list (deSEC): %s", err)
-	}
-	err = json.Unmarshal(bodyString, &dr)
-	if err != nil {
-		return err
-	}
-	for _, domain := range dr {
-		//We store the min ttl in the domain index
-		//This will be used for validation and auto correction
-		c.domainIndex[domain.Name] = domain.MinimumTTL
-	}
-	return nil
-}
 func (c *desecProvider) fetchDomain(domain string) error {
 	endpoint := fmt.Sprintf("/domains/%s", domain)
 	var dr domainObject
