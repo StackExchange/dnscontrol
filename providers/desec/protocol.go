@@ -58,12 +58,24 @@ type dnssecKey struct {
 type errorResponse struct {
 	Detail string `json:"detail"`
 }
+type nonFieldError struct {
+	Errors []string `json:"non_field_errors"`
+}
+
+func (c *desecProvider) authenticate() error {
+	endpoint := "/auth/account/"
+	var _, _, err = c.get(endpoint, "GET")
+	if err != nil {
+		return err
+	}
+	return nil
+}
 
 func (c *desecProvider) fetchDomainList() error {
 	c.domainIndex = map[string]uint32{}
 	var dr []domainObject
 	endpoint := "/domains/"
-	var bodyString, err = c.get(endpoint, "GET")
+	var bodyString, _, err = c.get(endpoint, "GET")
 	if err != nil {
 		return fmt.Errorf("Failed fetching domain list (deSEC): %s", err)
 	}
@@ -78,12 +90,29 @@ func (c *desecProvider) fetchDomainList() error {
 	}
 	return nil
 }
+func (c *desecProvider) fetchDomain(domain string) error {
+	endpoint := fmt.Sprintf("/domains/%s", domain)
+	var dr domainObject
+	var bodyString, statuscode, err = c.get(endpoint, "GET")
+	if err != nil {
+		if statuscode == 404 {
+			return nil
+		}
+		return fmt.Errorf("Failed fetching domain: %s", err)
+	}
+	err = json.Unmarshal(bodyString, &dr)
+	if err != nil {
+		return err
+	}
+	c.domainIndex[dr.Name] = dr.MinimumTTL
+	return nil
+}
 
 func (c *desecProvider) getRecords(domain string) ([]resourceRecord, error) {
 	endpoint := "/domains/%s/rrsets/"
 	var rrs []rrResponse
 	var rrsNew []resourceRecord
-	var bodyString, err = c.get(fmt.Sprintf(endpoint, domain), "GET")
+	var bodyString, _, err = c.get(fmt.Sprintf(endpoint, domain), "GET")
 	if err != nil {
 		return rrsNew, fmt.Errorf("Failed fetching records for domain %s (deSEC): %s", domain, err)
 	}
@@ -136,13 +165,13 @@ func (c *desecProvider) upsertRR(rr []resourceRecord, domain string) error {
 
 func (c *desecProvider) deleteRR(domain, shortname, t string) error {
 	endpoint := fmt.Sprintf("/domains/%s/rrsets/%s/%s/", domain, shortname, t)
-	if _, err := c.get(endpoint, "DELETE"); err != nil {
+	if _, _, err := c.get(endpoint, "DELETE"); err != nil {
 		return fmt.Errorf("Failed delete RRset (deSEC): %v", err)
 	}
 	return nil
 }
 
-func (c *desecProvider) get(endpoint, method string) ([]byte, error) {
+func (c *desecProvider) get(endpoint, method string) ([]byte, int, error) {
 	retrycnt := 0
 retry:
 	client := &http.Client{}
@@ -154,7 +183,7 @@ retry:
 
 	resp, err := client.Do(req)
 	if err != nil {
-		return []byte{}, err
+		return []byte{}, 0, err
 	}
 
 	bodyString, _ := ioutil.ReadAll(resp.Body)
@@ -166,13 +195,18 @@ retry:
 			goto retry
 		}
 		var errResp errorResponse
+		var nfieldErrors []nonFieldError
 		err = json.Unmarshal(bodyString, &errResp)
 		if err == nil {
-			return bodyString, fmt.Errorf("%s", errResp.Detail)
+			return bodyString, resp.StatusCode, fmt.Errorf("%s", errResp.Detail)
 		}
-		return bodyString, fmt.Errorf("HTTP status %d %s, the API does not provide more information", resp.StatusCode, resp.Status)
+		err = json.Unmarshal(bodyString, &nfieldErrors)
+		if err == nil {
+			return bodyString, resp.StatusCode, fmt.Errorf("%s", nfieldErrors[0].Errors[0])
+		}
+		return bodyString, resp.StatusCode, fmt.Errorf("HTTP status %d %s, the API does not provide more information", resp.StatusCode, resp.Status)
 	}
-	return bodyString, nil
+	return bodyString, resp.StatusCode, nil
 }
 
 func (c *desecProvider) post(endpoint, method string, payload []byte) ([]byte, error) {
@@ -206,9 +240,14 @@ retry:
 			goto retry
 		}
 		var errResp errorResponse
+		var nfieldErrors []nonFieldError
 		err = json.Unmarshal(bodyString, &errResp)
 		if err == nil {
 			return bodyString, fmt.Errorf("HTTP status %d %s details: %s", resp.StatusCode, resp.Status, errResp.Detail)
+		}
+		err = json.Unmarshal(bodyString, &nfieldErrors)
+		if err == nil {
+			return bodyString, fmt.Errorf("%s", nfieldErrors[0].Errors[0])
 		}
 		return bodyString, fmt.Errorf("HTTP status %d %s, the API does not provide more information", resp.StatusCode, resp.Status)
 	}
