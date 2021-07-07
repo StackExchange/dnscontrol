@@ -98,6 +98,7 @@ Maintainers of contributed providers:
 * `OVH` @masterzen
 * `POWERDNS` @jpbede
 * `SOFTLAYER`@jamielennox
+* `TRANSIP` @blackshadev
 * `VULTR` @pgaskin
 
 ### Requested providers

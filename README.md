@@ -48,6 +48,7 @@ Currently supported DNS providers:
  - Oracle Cloud
  - PowerDNS
  - SoftLayer
+ - TransIP
  - Vultr
  - deSEC
 
