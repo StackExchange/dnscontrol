@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"sort"
-	"strings"
 
 	"github.com/StackExchange/dnscontrol/v3/models"
 	"github.com/StackExchange/dnscontrol/v3/pkg/diff"
@@ -100,6 +99,7 @@ func (c *desecProvider) GetZoneRecords(domain string) (models.Records, error) {
 
 	// Convert them to DNScontrol's native format:
 	existingRecords := []*models.RecordConfig{}
+	//spew.Dump(records)
 	for _, rr := range records {
 		existingRecords = append(existingRecords, nativeToRecords(rr, domain)...)
 	}
@@ -141,13 +141,6 @@ func PrepDesiredRecords(dc *models.DomainConfig, minTTL uint32) {
 			// deSEC does not permit ALIAS records, just ignore it
 			printer.Warnf("deSEC does not support alias records\n")
 			continue
-		}
-		if rec.Type == "TXT" {
-			//rec.TxtStrings = []string{strings.Join(rec.TxtStrings, "")}
-			for i, str := range rec.TxtStrings {
-				rec.TxtStrings[i] = fmt.Sprintf(`"%s"`, str)
-			}
-			rec.TxtStrings = []string{strings.Join(rec.TxtStrings, " ")}
 		}
 		if rec.TTL < minTTL {
 			if rec.Type != "NS" {
