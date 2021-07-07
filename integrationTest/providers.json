@@ -183,5 +183,9 @@
   "VULTR": {
     "domain": "$VULTR_DOMAIN",
     "token": "$VULTR_TOKEN"
+  },
+  "TRANSIP": {
+    "AccessToken": "$TRANSIP_ACCESS_TOKEN",
+    "domain": "$TRANSIP_DOMAIN"
   }
 }
