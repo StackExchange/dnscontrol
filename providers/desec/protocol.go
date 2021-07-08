@@ -15,7 +15,7 @@ const apiBase = "https://desec.io/api/v1"
 
 // Api layer for desec
 type desecProvider struct {
-	domainIndex      map[string]uint32
+	domainIndex      map[string]uint32 //stores the minimum ttl of each domain. (key = domain and value = ttl)
 	nameserversNames []string
 	creds            struct {
 		tokenid  string
@@ -85,6 +85,9 @@ func (c *desecProvider) fetchDomain(domain string) error {
 	if err != nil {
 		return err
 	}
+
+	//deSEC allows different minimum ttls per domain
+	//we store the actual minimum ttl to use it in desecProvider.go GetDomainCorrections() to enforce the minimum ttl and avoid api errors.
 	c.domainIndex[dr.Name] = dr.MinimumTTL
 	return nil
 }
