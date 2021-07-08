@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net/http"
+	"strconv"
 	"time"
 
 	"github.com/StackExchange/dnscontrol/v3/pkg/printer"
@@ -175,6 +176,17 @@ retry:
 	if resp.StatusCode > 299 {
 		if resp.StatusCode == 429 && retrycnt < 5 {
 			retrycnt++
+			//we've got rate limiting and will try to get the Retry-After Header if this fails we fallback to sleep for 500ms max. 5 retries.
+			waitfor := resp.Header.Get("Retry-After")
+			if waitfor != "" {
+				wait, err := strconv.ParseInt(waitfor, 10, 64)
+				if err == nil {
+					printer.Warnf("Rate limiting.. waiting for %s seconds", waitfor)
+					time.Sleep(time.Duration(wait) * time.Second)
+					goto retry
+				}
+			}
+			printer.Warnf("Rate limiting.. waiting for 500 milliseconds")
 			time.Sleep(500 * time.Millisecond)
 			goto retry
 		}
@@ -222,6 +234,17 @@ retry:
 	if resp.StatusCode > 299 {
 		if resp.StatusCode == 429 && retrycnt < 5 {
 			retrycnt++
+			//we've got rate limiting and will try to get the Retry-After Header if this fails we fallback to sleep for 500ms max. 5 retries.
+			waitfor := resp.Header.Get("Retry-After")
+			if waitfor != "" {
+				wait, err := strconv.ParseInt(waitfor, 10, 64)
+				if err == nil {
+					printer.Warnf("Rate limiting.. waiting for %s seconds", waitfor)
+					time.Sleep(time.Duration(wait) * time.Second)
+					goto retry
+				}
+			}
+			printer.Warnf("Rate limiting.. waiting for 500 milliseconds")
 			time.Sleep(500 * time.Millisecond)
 			goto retry
 		}
