@@ -4,7 +4,6 @@ package desec
 
 import (
 	"fmt"
-	"strings"
 
 	"github.com/StackExchange/dnscontrol/v3/models"
 	"github.com/StackExchange/dnscontrol/v3/pkg/printer"
@@ -25,9 +24,7 @@ func nativeToRecords(n resourceRecord, origin string) (rcs []*models.RecordConfi
 		}
 		rc.SetLabel(n.Subname, origin)
 		switch rtype := n.Type; rtype {
-		case "TXT":
-			rc.SetTargetTXT(value)
-		default: //  "A", "AAAA", "CAA", "NS", "CNAME", "MX", "PTR", "SRV"
+		default: //  "A", "AAAA", "CAA", "NS", "CNAME", "MX", "PTR", "SRV", "TXT"
 			if err := rc.PopulateFromString(rtype, value, origin); err != nil {
 				panic(fmt.Errorf("unparsable record received from deSEC: %w", err))
 			}
@@ -45,7 +42,6 @@ func recordsToNative(rcs []*models.RecordConfig, origin string) []resourceRecord
 
 	var keys = map[models.RecordKey]*resourceRecord{}
 	var zrs []resourceRecord
-
 	for _, r := range rcs {
 		label := r.GetLabel()
 		if label == "@" {
@@ -60,9 +56,6 @@ func recordsToNative(rcs []*models.RecordConfig, origin string) []resourceRecord
 				TTL:     r.TTL,
 				Subname: label,
 				Records: []string{r.GetTargetCombined()},
-			}
-			if r.Type == "TXT" {
-				zr.Records = []string{strings.Join(r.TxtStrings, "")}
 			}
 			zrs = append(zrs, zr)
 			//keys[key] = &zr   // This didn't work.
