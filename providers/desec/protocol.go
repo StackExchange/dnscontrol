@@ -181,8 +181,11 @@ retry:
 			if waitfor != "" {
 				wait, err := strconv.ParseInt(waitfor, 10, 64)
 				if err == nil {
+					if wait > 180 {
+						return []byte{}, 0, fmt.Errorf("rate limiting exceeded")
+					}
 					printer.Warnf("Rate limiting.. waiting for %s seconds", waitfor)
-					time.Sleep(time.Duration(wait) * time.Second)
+					time.Sleep(time.Duration(wait+1) * time.Second)
 					goto retry
 				}
 			}
@@ -239,8 +242,11 @@ retry:
 			if waitfor != "" {
 				wait, err := strconv.ParseInt(waitfor, 10, 64)
 				if err == nil {
+					if wait > 180 {
+						return []byte{}, fmt.Errorf("rate limiting exceeded")
+					}
 					printer.Warnf("Rate limiting.. waiting for %s seconds", waitfor)
-					time.Sleep(time.Duration(wait) * time.Second)
+					time.Sleep(time.Duration(wait+1) * time.Second)
 					goto retry
 				}
 			}
