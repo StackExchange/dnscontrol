@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net/http"
+	"strconv"
 	"time"
 
 	"github.com/StackExchange/dnscontrol/v3/pkg/printer"
@@ -15,7 +16,7 @@ const apiBase = "https://desec.io/api/v1"
 
 // Api layer for desec
 type desecProvider struct {
-	domainIndex      map[string]uint32
+	domainIndex      map[string]uint32 //stores the minimum ttl of each domain. (key = domain and value = ttl)
 	nameserversNames []string
 	creds            struct {
 		tokenid  string
@@ -58,24 +59,37 @@ type dnssecKey struct {
 type errorResponse struct {
 	Detail string `json:"detail"`
 }
+type nonFieldError struct {
+	Errors []string `json:"non_field_errors"`
+}
 
-func (c *desecProvider) fetchDomainList() error {
-	c.domainIndex = map[string]uint32{}
-	var dr []domainObject
-	endpoint := "/domains/"
-	var bodyString, err = c.get(endpoint, "GET")
+func (c *desecProvider) authenticate() error {
+	endpoint := "/auth/account/"
+	var _, _, err = c.get(endpoint, "GET")
 	if err != nil {
-		return fmt.Errorf("Failed fetching domain list (deSEC): %s", err)
+		return err
+	}
+	return nil
+}
+
+func (c *desecProvider) fetchDomain(domain string) error {
+	endpoint := fmt.Sprintf("/domains/%s", domain)
+	var dr domainObject
+	var bodyString, statuscode, err = c.get(endpoint, "GET")
+	if err != nil {
+		if statuscode == 404 {
+			return nil
+		}
+		return fmt.Errorf("Failed fetching domain: %s", err)
 	}
 	err = json.Unmarshal(bodyString, &dr)
 	if err != nil {
 		return err
 	}
-	for _, domain := range dr {
-		//We store the min ttl in the domain index
-		//This will be used for validation and auto correction
-		c.domainIndex[domain.Name] = domain.MinimumTTL
-	}
+
+	//deSEC allows different minimum ttls per domain
+	//we store the actual minimum ttl to use it in desecProvider.go GetDomainCorrections() to enforce the minimum ttl and avoid api errors.
+	c.domainIndex[dr.Name] = dr.MinimumTTL
 	return nil
 }
 
@@ -83,7 +97,7 @@ func (c *desecProvider) getRecords(domain string) ([]resourceRecord, error) {
 	endpoint := "/domains/%s/rrsets/"
 	var rrs []rrResponse
 	var rrsNew []resourceRecord
-	var bodyString, err = c.get(fmt.Sprintf(endpoint, domain), "GET")
+	var bodyString, _, err = c.get(fmt.Sprintf(endpoint, domain), "GET")
 	if err != nil {
 		return rrsNew, fmt.Errorf("Failed fetching records for domain %s (deSEC): %s", domain, err)
 	}
@@ -136,13 +150,13 @@ func (c *desecProvider) upsertRR(rr []resourceRecord, domain string) error {
 
 func (c *desecProvider) deleteRR(domain, shortname, t string) error {
 	endpoint := fmt.Sprintf("/domains/%s/rrsets/%s/%s/", domain, shortname, t)
-	if _, err := c.get(endpoint, "DELETE"); err != nil {
+	if _, _, err := c.get(endpoint, "DELETE"); err != nil {
 		return fmt.Errorf("Failed delete RRset (deSEC): %v", err)
 	}
 	return nil
 }
 
-func (c *desecProvider) get(endpoint, method string) ([]byte, error) {
+func (c *desecProvider) get(endpoint, method string) ([]byte, int, error) {
 	retrycnt := 0
 retry:
 	client := &http.Client{}
@@ -154,7 +168,7 @@ retry:
 
 	resp, err := client.Do(req)
 	if err != nil {
-		return []byte{}, err
+		return []byte{}, 0, err
 	}
 
 	bodyString, _ := ioutil.ReadAll(resp.Body)
@@ -162,17 +176,38 @@ retry:
 	if resp.StatusCode > 299 {
 		if resp.StatusCode == 429 && retrycnt < 5 {
 			retrycnt++
+			//we've got rate limiting and will try to get the Retry-After Header if this fails we fallback to sleep for 500ms max. 5 retries.
+			waitfor := resp.Header.Get("Retry-After")
+			if waitfor != "" {
+				wait, err := strconv.ParseInt(waitfor, 10, 64)
+				if err == nil {
+					if wait > 180 {
+						return []byte{}, 0, fmt.Errorf("rate limiting exceeded")
+					}
+					printer.Warnf("Rate limiting.. waiting for %s seconds", waitfor)
+					time.Sleep(time.Duration(wait+1) * time.Second)
+					goto retry
+				}
+			}
+			printer.Warnf("Rate limiting.. waiting for 500 milliseconds")
 			time.Sleep(500 * time.Millisecond)
 			goto retry
 		}
 		var errResp errorResponse
+		var nfieldErrors []nonFieldError
 		err = json.Unmarshal(bodyString, &errResp)
 		if err == nil {
-			return bodyString, fmt.Errorf("%s", errResp.Detail)
+			return bodyString, resp.StatusCode, fmt.Errorf("%s", errResp.Detail)
 		}
-		return bodyString, fmt.Errorf("HTTP status %d %s, the API does not provide more information", resp.StatusCode, resp.Status)
+		err = json.Unmarshal(bodyString, &nfieldErrors)
+		if err == nil && len(nfieldErrors) > 0 {
+			if len(nfieldErrors[0].Errors) > 0 {
+				return bodyString, resp.StatusCode, fmt.Errorf("%s", nfieldErrors[0].Errors[0])
+			}
+		}
+		return bodyString, resp.StatusCode, fmt.Errorf("HTTP status %s Body: %s, the API does not provide more information", resp.Status, bodyString)
 	}
-	return bodyString, nil
+	return bodyString, resp.StatusCode, nil
 }
 
 func (c *desecProvider) post(endpoint, method string, payload []byte) ([]byte, error) {
@@ -202,15 +237,36 @@ retry:
 	if resp.StatusCode > 299 {
 		if resp.StatusCode == 429 && retrycnt < 5 {
 			retrycnt++
+			//we've got rate limiting and will try to get the Retry-After Header if this fails we fallback to sleep for 500ms max. 5 retries.
+			waitfor := resp.Header.Get("Retry-After")
+			if waitfor != "" {
+				wait, err := strconv.ParseInt(waitfor, 10, 64)
+				if err == nil {
+					if wait > 180 {
+						return []byte{}, fmt.Errorf("rate limiting exceeded")
+					}
+					printer.Warnf("Rate limiting.. waiting for %s seconds", waitfor)
+					time.Sleep(time.Duration(wait+1) * time.Second)
+					goto retry
+				}
+			}
+			printer.Warnf("Rate limiting.. waiting for 500 milliseconds")
 			time.Sleep(500 * time.Millisecond)
 			goto retry
 		}
 		var errResp errorResponse
+		var nfieldErrors []nonFieldError
 		err = json.Unmarshal(bodyString, &errResp)
 		if err == nil {
 			return bodyString, fmt.Errorf("HTTP status %d %s details: %s", resp.StatusCode, resp.Status, errResp.Detail)
 		}
-		return bodyString, fmt.Errorf("HTTP status %d %s, the API does not provide more information", resp.StatusCode, resp.Status)
+		err = json.Unmarshal(bodyString, &nfieldErrors)
+		if err == nil && len(nfieldErrors) > 0 {
+			if len(nfieldErrors[0].Errors) > 0 {
+				return bodyString, fmt.Errorf("%s", nfieldErrors[0].Errors[0])
+			}
+		}
+		return bodyString, fmt.Errorf("HTTP status %s Body: %s, the API does not provide more information", resp.Status, bodyString)
 	}
 	//time.Sleep(334 * time.Millisecond)
 	return bodyString, nil

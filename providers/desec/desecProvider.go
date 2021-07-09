@@ -9,6 +9,7 @@ import (
 	"github.com/StackExchange/dnscontrol/v3/models"
 	"github.com/StackExchange/dnscontrol/v3/pkg/diff"
 	"github.com/StackExchange/dnscontrol/v3/pkg/printer"
+	"github.com/StackExchange/dnscontrol/v3/pkg/txtutil"
 	"github.com/StackExchange/dnscontrol/v3/providers"
 	"github.com/miekg/dns/dnsutil"
 )
@@ -23,13 +24,12 @@ Info required in `creds.json`:
 func NewDeSec(m map[string]string, metadata json.RawMessage) (providers.DNSServiceProvider, error) {
 	c := &desecProvider{}
 	c.creds.token = m["auth-token"]
+	c.domainIndex = map[string]uint32{}
 	if c.creds.token == "" {
 		return nil, fmt.Errorf("missing deSEC auth-token")
 	}
-
-	// Get a domain to validate authentication
-	if err := c.fetchDomainList(); err != nil {
-		return nil, err
+	if err := c.authenticate(); err != nil {
+		return nil, fmt.Errorf("authentication failed")
 	}
 
 	return c, nil
@@ -99,6 +99,7 @@ func (c *desecProvider) GetZoneRecords(domain string) (models.Records, error) {
 
 	// Convert them to DNScontrol's native format:
 	existingRecords := []*models.RecordConfig{}
+	//spew.Dump(records)
 	for _, rr := range records {
 		existingRecords = append(existingRecords, nativeToRecords(rr, domain)...)
 	}
@@ -107,7 +108,7 @@ func (c *desecProvider) GetZoneRecords(domain string) (models.Records, error) {
 
 // EnsureDomainExists returns an error if domain doesn't exist.
 func (c *desecProvider) EnsureDomainExists(domain string) error {
-	if err := c.fetchDomainList(); err != nil {
+	if err := c.fetchDomain(domain); err != nil {
 		return err
 	}
 	// domain already exists
@@ -133,6 +134,7 @@ func PrepDesiredRecords(dc *models.DomainConfig, minTTL uint32) {
 	// confusing.
 
 	dc.Punycode()
+	txtutil.SplitSingleLongTxt(dc.Records)
 	recordsToKeep := make([]*models.RecordConfig, 0, len(dc.Records))
 	for _, rec := range dc.Records {
 		if rec.Type == "ALIAS" {
