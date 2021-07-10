@@ -84,6 +84,7 @@ func (c *desecProvider) initializeDomainIndex() error {
 		//pagination is required
 		links := c.convertLinks(resp.Header.Get("Link"))
 		endpoint = links["first"]
+		printer.Debugf("initial endpoint %s\n", endpoint)
 		for endpoint != "" {
 			bodyString, resp, err = c.get(endpoint, "GET")
 			if err != nil {
@@ -98,6 +99,7 @@ func (c *desecProvider) initializeDomainIndex() error {
 			}
 			links = c.convertLinks(resp.Header.Get("Link"))
 			endpoint = links["next"]
+			printer.Debugf("next endpoint %s\n", endpoint)
 		}
 		c.domainIndexInitialized = true
 		printer.Debugf("Domain Index initilized with pagination (%d domains)\n", len(c.domainIndex))
@@ -137,6 +139,7 @@ func (c *desecProvider) buildIndexFromResponse(bodyString []byte) error {
 //Parses the Link Header into a map (https://github.com/desec-io/desec-tools/blob/master/fetch_zone.py#L13)
 func (c *desecProvider) convertLinks(links string) map[string]string {
 	mapping := make(map[string]string)
+	printer.Debugf("Header: %s\n", links)
 	for _, link := range strings.Split(links, ", ") {
 		tmpurl := strings.Split(link, "; ")
 		if len(tmpurl) != 2 {
