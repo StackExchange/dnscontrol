@@ -6,7 +6,9 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net/http"
+	"regexp"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/StackExchange/dnscontrol/v3/pkg/printer"
@@ -16,9 +18,10 @@ const apiBase = "https://desec.io/api/v1"
 
 // Api layer for desec
 type desecProvider struct {
-	domainIndex      map[string]uint32 //stores the minimum ttl of each domain. (key = domain and value = ttl)
-	nameserversNames []string
-	creds            struct {
+	domainIndex            map[string]uint32 //stores the minimum ttl of each domain. (key = domain and value = ttl)
+	domainIndexInitialized bool              // if the domainIndex was fully initialized once
+	nameserversNames       []string
+	creds                  struct {
 		tokenid  string
 		token    string
 		user     string
@@ -71,26 +74,88 @@ func (c *desecProvider) authenticate() error {
 	}
 	return nil
 }
+func (c *desecProvider) initializeDomainIndex() error {
+	if c.domainIndexInitialized {
+		return nil
+	}
+	endpoint := "/domains/"
+	var bodyString, resp, err = c.get(endpoint, "GET")
+	if resp.StatusCode == 400 && resp.Header.Get("Link") != "" {
+		//pagination is required
+		links := c.convertLinks(resp.Header.Get("Link"))
+		endpoint = links["first"]
+		for endpoint != "" {
+			bodyString, resp, err = c.get(endpoint, "GET")
+			if err != nil {
+				if resp.StatusCode == 404 {
+					return nil
+				}
+				return fmt.Errorf("failed fetching domains: %s", err)
+			}
+			err = c.buildIndexFromResponse(bodyString)
+			if err != nil {
+				return fmt.Errorf("failed fetching domains: %s", err)
+			}
+			links = c.convertLinks(resp.Header.Get("Link"))
+			endpoint = links["next"]
+		}
+		c.domainIndexInitialized = true
+		printer.Debugf("Domain Index initilized with pagination (%d domains)\n", len(c.domainIndex))
+		return nil //domainIndex was build using pagination without errors
+	}
 
-func (c *desecProvider) fetchDomain(domain string) error {
-	endpoint := fmt.Sprintf("/domains/%s", domain)
-	var dr domainObject
-	var bodyString, statuscode, err = c.get(endpoint, "GET")
-	if err != nil {
-		if statuscode == 404 {
+	//no pagination required
+	if err != nil && resp.StatusCode != 400 {
+		if resp.StatusCode == 404 {
 			return nil
 		}
-		return fmt.Errorf("Failed fetching domain: %s", err)
+		return fmt.Errorf("failed fetching domains: %s", err)
 	}
-	err = json.Unmarshal(bodyString, &dr)
+	err = c.buildIndexFromResponse(bodyString)
+	if err == nil {
+		c.domainIndexInitialized = true
+		printer.Debugf("Domain Index initilized without pagination (%d domains)\n", len(c.domainIndex))
+	}
+	return err
+}
+
+//buildIndexFromResponse takes the bodyString from initializeDomainIndex and builds the domainIndex
+func (c *desecProvider) buildIndexFromResponse(bodyString []byte) error {
+	var dr []domainObject
+	err := json.Unmarshal(bodyString, &dr)
 	if err != nil {
 		return err
 	}
-
-	//deSEC allows different minimum ttls per domain
-	//we store the actual minimum ttl to use it in desecProvider.go GetDomainCorrections() to enforce the minimum ttl and avoid api errors.
-	c.domainIndex[dr.Name] = dr.MinimumTTL
+	for _, domain := range dr {
+		//deSEC allows different minimum ttls per domain
+		//we store the actual minimum ttl to use it in desecProvider.go GetDomainCorrections() to enforce the minimum ttl and avoid api errors.
+		c.domainIndex[domain.Name] = domain.MinimumTTL
+	}
 	return nil
+}
+
+//Parses the Link Header into a map (https://github.com/desec-io/desec-tools/blob/master/fetch_zone.py#L13)
+func (c *desecProvider) convertLinks(links string) map[string]string {
+	mapping := make(map[string]string)
+	for _, link := range strings.Split(links, ", ") {
+		tmpurl := strings.Split(link, "; ")
+		if len(tmpurl) != 2 {
+			fmt.Printf("unexpected link header %s", link)
+			continue
+		}
+		r := regexp.MustCompile(`rel="(.*)"`)
+		matches := r.FindStringSubmatch(tmpurl[1])
+		if len(matches) != 2 {
+			fmt.Printf("unexpected label %s", tmpurl[1])
+			continue
+		}
+		// mapping["$label"] = "$Endpoint"
+		//URL = https://desec.io/api/v1/domains/{domain}/rrsets/?cursor=:next_cursor
+		//Endpoint = /domains/{domain}/rrsets/?cursor=:next_cursor
+		//Our api client expects the endpoint because it already adds "https://desec.io/api/v1" as base url for all calls
+		mapping[matches[1]] = strings.Replace(strings.TrimSuffix(strings.TrimPrefix(tmpurl[0], "<"), ">"), "https://desec.io/api/v1", "", -1)
+	}
+	return mapping
 }
 
 func (c *desecProvider) getRecords(domain string) ([]resourceRecord, error) {
@@ -156,7 +221,7 @@ func (c *desecProvider) deleteRR(domain, shortname, t string) error {
 	return nil
 }
 
-func (c *desecProvider) get(endpoint, method string) ([]byte, int, error) {
+func (c *desecProvider) get(endpoint, method string) ([]byte, *http.Response, error) {
 	retrycnt := 0
 retry:
 	client := &http.Client{}
@@ -168,7 +233,7 @@ retry:
 
 	resp, err := client.Do(req)
 	if err != nil {
-		return []byte{}, 0, err
+		return []byte{}, resp, err
 	}
 
 	bodyString, _ := ioutil.ReadAll(resp.Body)
@@ -182,7 +247,7 @@ retry:
 				wait, err := strconv.ParseInt(waitfor, 10, 64)
 				if err == nil {
 					if wait > 180 {
-						return []byte{}, 0, fmt.Errorf("rate limiting exceeded")
+						return []byte{}, resp, fmt.Errorf("rate limiting exceeded")
 					}
 					printer.Warnf("Rate limiting.. waiting for %s seconds", waitfor)
 					time.Sleep(time.Duration(wait+1) * time.Second)
@@ -197,17 +262,17 @@ retry:
 		var nfieldErrors []nonFieldError
 		err = json.Unmarshal(bodyString, &errResp)
 		if err == nil {
-			return bodyString, resp.StatusCode, fmt.Errorf("%s", errResp.Detail)
+			return bodyString, resp, fmt.Errorf("%s", errResp.Detail)
 		}
 		err = json.Unmarshal(bodyString, &nfieldErrors)
 		if err == nil && len(nfieldErrors) > 0 {
 			if len(nfieldErrors[0].Errors) > 0 {
-				return bodyString, resp.StatusCode, fmt.Errorf("%s", nfieldErrors[0].Errors[0])
+				return bodyString, resp, fmt.Errorf("%s", nfieldErrors[0].Errors[0])
 			}
 		}
-		return bodyString, resp.StatusCode, fmt.Errorf("HTTP status %s Body: %s, the API does not provide more information", resp.Status, bodyString)
+		return bodyString, resp, fmt.Errorf("HTTP status %s Body: %s, the API does not provide more information", resp.Status, bodyString)
 	}
-	return bodyString, resp.StatusCode, nil
+	return bodyString, resp, nil
 }
 
 func (c *desecProvider) post(endpoint, method string, payload []byte) ([]byte, error) {

@@ -31,6 +31,10 @@ func NewDeSec(m map[string]string, metadata json.RawMessage) (providers.DNSServi
 	if err := c.authenticate(); err != nil {
 		return nil, fmt.Errorf("authentication failed")
 	}
+	//DomainIndex is used for corrections (minttl) and domain creation
+	if err := c.initializeDomainIndex(); err != nil {
+		return nil, err
+	}
 
 	return c, nil
 }
@@ -108,9 +112,6 @@ func (c *desecProvider) GetZoneRecords(domain string) (models.Records, error) {
 
 // EnsureDomainExists returns an error if domain doesn't exist.
 func (c *desecProvider) EnsureDomainExists(domain string) error {
-	if err := c.fetchDomain(domain); err != nil {
-		return err
-	}
 	// domain already exists
 	if _, ok := c.domainIndex[domain]; ok {
 		return nil
