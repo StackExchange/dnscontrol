@@ -152,11 +152,9 @@ func (c *desecProvider) convertLinks(links string) map[string]string {
 			fmt.Printf("unexpected label %s", tmpurl[1])
 			continue
 		}
-		// mapping["$label"] = "$Endpoint"
+		// mapping["$label"] = "$URL"
 		//URL = https://desec.io/api/v1/domains/{domain}/rrsets/?cursor=:next_cursor
-		//Endpoint = /domains/{domain}/rrsets/?cursor=:next_cursor
-		//Our api client expects the endpoint because it already adds "https://desec.io/api/v1" as base url for all calls
-		mapping[matches[1]] = strings.Replace(strings.TrimSuffix(strings.TrimPrefix(tmpurl[0], "<"), ">"), "https://desec.io/api/v1", "", -1)
+		mapping[matches[1]] = strings.TrimSuffix(strings.TrimPrefix(tmpurl[0], "<"), ">")
 	}
 	return mapping
 }
@@ -224,11 +222,17 @@ func (c *desecProvider) deleteRR(domain, shortname, t string) error {
 	return nil
 }
 
-func (c *desecProvider) get(endpoint, method string) ([]byte, *http.Response, error) {
+func (c *desecProvider) get(target, method string) ([]byte, *http.Response, error) {
 	retrycnt := 0
+	var endpoint string
+	if strings.Contains(target, "http") {
+		endpoint = target
+	} else {
+		endpoint = apiBase + target
+	}
 retry:
 	client := &http.Client{}
-	req, _ := http.NewRequest(method, apiBase+endpoint, nil)
+	req, _ := http.NewRequest(method, endpoint, nil)
 	q := req.URL.Query()
 	req.Header.Add("Authorization", fmt.Sprintf("Token %s", c.creds.token))
 
@@ -278,11 +282,17 @@ retry:
 	return bodyString, resp, nil
 }
 
-func (c *desecProvider) post(endpoint, method string, payload []byte) ([]byte, error) {
+func (c *desecProvider) post(target, method string, payload []byte) ([]byte, error) {
 	retrycnt := 0
+	var endpoint string
+	if strings.Contains(target, "http") {
+		endpoint = target
+	} else {
+		endpoint = apiBase + target
+	}
 retry:
 	client := &http.Client{}
-	req, err := http.NewRequest(method, apiBase+endpoint, bytes.NewReader(payload))
+	req, err := http.NewRequest(method, endpoint, bytes.NewReader(payload))
 	if err != nil {
 		return []byte{}, err
 	}
