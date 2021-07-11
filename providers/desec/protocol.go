@@ -20,7 +20,6 @@ const apiBase = "https://desec.io/api/v1"
 type desecProvider struct {
 	domainIndex            map[string]uint32 //stores the minimum ttl of each domain. (key = domain and value = ttl)
 	domainIndexInitialized bool              // if the domainIndex was fully initialized once
-	nameserversNames       []string
 	creds                  struct {
 		tokenid  string
 		token    string
@@ -230,7 +229,7 @@ func (c *desecProvider) createDomain(domain string) error {
 	var resp []byte
 	var err error
 	if resp, err = c.post(endpoint, "POST", byt); err != nil {
-		return fmt.Errorf("Failed domain create (deSEC): %v", err)
+		return fmt.Errorf("failed domain create (deSEC): %v", err)
 	}
 	dm := domainObject{}
 	err = json.Unmarshal(resp, &dm)
@@ -247,7 +246,7 @@ func (c *desecProvider) upsertRR(rr []resourceRecord, domain string) error {
 	endpoint := fmt.Sprintf("/domains/%s/rrsets/", domain)
 	byt, _ := json.Marshal(rr)
 	if _, err := c.post(endpoint, "PUT", byt); err != nil {
-		return fmt.Errorf("Failed create RRset (deSEC): %v", err)
+		return fmt.Errorf("failed create RRset (deSEC): %v", err)
 	}
 	return nil
 }
@@ -255,7 +254,7 @@ func (c *desecProvider) upsertRR(rr []resourceRecord, domain string) error {
 func (c *desecProvider) deleteRR(domain, shortname, t string) error {
 	endpoint := fmt.Sprintf("/domains/%s/rrsets/%s/%s/", domain, shortname, t)
 	if _, _, err := c.get(endpoint, "DELETE"); err != nil {
-		return fmt.Errorf("Failed delete RRset (deSEC): %v", err)
+		return fmt.Errorf("failed delete RRset (deSEC): %v", err)
 	}
 	return nil
 }
