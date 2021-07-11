@@ -161,13 +161,51 @@ func (c *desecProvider) convertLinks(links string) map[string]string {
 
 func (c *desecProvider) getRecords(domain string) ([]resourceRecord, error) {
 	endpoint := "/domains/%s/rrsets/"
+	var rrsNew []resourceRecord
+	var bodyString, resp, err = c.get(fmt.Sprintf(endpoint, domain), "GET")
+	if resp.StatusCode == 400 && resp.Header.Get("Link") != "" {
+		//pagination required
+		links := c.convertLinks(resp.Header.Get("Link"))
+		endpoint = links["first"]
+		printer.Debugf("getRecords: initial endpoint %s\n", fmt.Sprintf(endpoint, domain))
+		for endpoint != "" {
+			bodyString, resp, err = c.get(endpoint, "GET")
+			if err != nil {
+				if resp.StatusCode == 404 {
+					return rrsNew, nil
+				}
+				return rrsNew, fmt.Errorf("getRecords: failed fetching rrsets: %s", err)
+			}
+			tmp, err := generateRRSETfromResponse(bodyString)
+			if err != nil {
+				return rrsNew, fmt.Errorf("failed fetching records for domain %s (deSEC): %s", domain, err)
+			}
+			rrsNew = append(rrsNew, tmp...)
+			links = c.convertLinks(resp.Header.Get("Link"))
+			endpoint = links["next"]
+			printer.Debugf("getRecords: next endpoint %s\n", endpoint)
+		}
+		printer.Debugf("Build rrset using pagination (%d rrs)\n", len(rrsNew))
+		return rrsNew, nil //domainIndex was build using pagination without errors
+	}
+	//no pagination
+	if err != nil {
+		return rrsNew, fmt.Errorf("failed fetching records for domain %s (deSEC): %s", domain, err)
+	}
+	tmp, err := generateRRSETfromResponse(bodyString)
+	if err != nil {
+		return rrsNew, err
+	}
+	rrsNew = append(rrsNew, tmp...)
+	printer.Debugf("Build rrset without pagination (%d rrs)\n", len(rrsNew))
+	return rrsNew, nil
+}
+
+//generateRRSETfromResponse takes the response rrset api calls and returns []resourceRecord
+func generateRRSETfromResponse(bodyString []byte) ([]resourceRecord, error) {
 	var rrs []rrResponse
 	var rrsNew []resourceRecord
-	var bodyString, _, err = c.get(fmt.Sprintf(endpoint, domain), "GET")
-	if err != nil {
-		return rrsNew, fmt.Errorf("Failed fetching records for domain %s (deSEC): %s", domain, err)
-	}
-	err = json.Unmarshal(bodyString, &rrs)
+	err := json.Unmarshal(bodyString, &rrs)
 	if err != nil {
 		return rrsNew, err
 	}
