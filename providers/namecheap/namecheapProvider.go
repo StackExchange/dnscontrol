@@ -36,7 +36,7 @@ var features = providers.DocumentationNotes{
 	providers.DocCreateDomains:       providers.Cannot("Requires domain registered through their service"),
 	providers.DocDualHost:            providers.Cannot("Doesn't allow control of apex NS records"),
 	providers.DocOfficiallySupported: providers.Cannot(),
-	providers.CanGetZones:            providers.Unimplemented(),
+	providers.CanGetZones:            providers.Can(),
 }
 
 func init() {
@@ -112,10 +112,18 @@ func doWithRetry(f func() error) {
 
 // GetZoneRecords gets the records of a zone and returns them in RecordConfig format.
 func (n *namecheapProvider) GetZoneRecords(domain string) (models.Records, error) {
-	return nil, fmt.Errorf("not implemented")
-	// This enables the get-zones subcommand.
-	// Implement this by extracting the code from GetDomainCorrections into
-	// a single function.  For most providers this should be relatively easy.
+	sld, tld := splitDomain(domain)
+	var records *nc.DomainDNSGetHostsResult
+	var err error
+	doWithRetry(func() error {
+		records, err = n.client.DomainsDNSGetHosts(sld, tld)
+		return err
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	return toRecords(records, domain)
 }
 
 // GetDomainCorrections returns the corrections for the domain.
@@ -217,6 +225,23 @@ func (n *namecheapProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*mo
 	}
 
 	return corrections, nil
+}
+
+func toRecords(result *nc.DomainDNSGetHostsResult, origin string) ([]*models.RecordConfig, error) {
+	var records []*models.RecordConfig
+	for _, dnsHost := range result.Hosts {
+		record := models.RecordConfig{
+			Type:         dnsHost.Type,
+			TTL:          uint32(dnsHost.TTL),
+			MxPreference: uint16(dnsHost.MXPref),
+			Name:         dnsHost.Name,
+		}
+		record.PopulateFromString(dnsHost.Type, dnsHost.Address, origin)
+
+		records = append(records, &record)
+	}
+
+	return records, nil
 }
 
 func (n *namecheapProvider) generateRecords(dc *models.DomainConfig) error {
