@@ -84,11 +84,13 @@ func (c *desecProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*models
 	models.PostProcessRecords(existing)
 	clean := PrepFoundRecords(existing)
 	var minTTL uint32
+	c.mutex.Lock()
 	if ttl, ok := c.domainIndex[dc.Name]; !ok {
 		minTTL = 3600
 	} else {
 		minTTL = ttl
 	}
+	c.mutex.Unlock()
 	PrepDesiredRecords(dc, minTTL)
 	return c.GenerateDomainCorrections(dc, clean)
 }
@@ -112,6 +114,8 @@ func (c *desecProvider) GetZoneRecords(domain string) (models.Records, error) {
 // EnsureDomainExists returns an error if domain doesn't exist.
 func (c *desecProvider) EnsureDomainExists(domain string) error {
 	// domain already exists
+	c.mutex.Lock()
+	defer c.mutex.Unlock()
 	if _, ok := c.domainIndex[domain]; ok {
 		return nil
 	}

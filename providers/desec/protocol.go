@@ -9,6 +9,7 @@ import (
 	"regexp"
 	"strconv"
 	"strings"
+	"sync"
 	"time"
 
 	"github.com/StackExchange/dnscontrol/v3/pkg/printer"
@@ -25,6 +26,7 @@ type desecProvider struct {
 		user     string
 		password string
 	}
+	mutex sync.Mutex
 }
 
 type domainObject struct {
@@ -73,6 +75,8 @@ func (c *desecProvider) authenticate() error {
 	return nil
 }
 func (c *desecProvider) initializeDomainIndex() error {
+	c.mutex.Lock()
+	defer c.mutex.Unlock()
 	if c.domainIndex != nil {
 		return nil
 	}
