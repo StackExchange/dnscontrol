@@ -18,9 +18,8 @@ const apiBase = "https://desec.io/api/v1"
 
 // Api layer for desec
 type desecProvider struct {
-	domainIndex            map[string]uint32 //stores the minimum ttl of each domain. (key = domain and value = ttl)
-	domainIndexInitialized bool              // if the domainIndex was fully initialized once
-	creds                  struct {
+	domainIndex map[string]uint32 //stores the minimum ttl of each domain. (key = domain and value = ttl)
+	creds       struct {
 		tokenid  string
 		token    string
 		user     string
@@ -74,7 +73,7 @@ func (c *desecProvider) authenticate() error {
 	return nil
 }
 func (c *desecProvider) initializeDomainIndex() error {
-	if c.domainIndexInitialized {
+	if c.domainIndex != nil {
 		return nil
 	}
 	endpoint := "/domains/"
@@ -100,7 +99,6 @@ func (c *desecProvider) initializeDomainIndex() error {
 			endpoint = links["next"]
 			printer.Debugf("next endpoint %s\n", endpoint)
 		}
-		c.domainIndexInitialized = true
 		printer.Debugf("Domain Index initilized with pagination (%d domains)\n", len(c.domainIndex))
 		return nil //domainIndex was build using pagination without errors
 	}
@@ -114,7 +112,6 @@ func (c *desecProvider) initializeDomainIndex() error {
 	}
 	err = c.buildIndexFromResponse(bodyString)
 	if err == nil {
-		c.domainIndexInitialized = true
 		printer.Debugf("Domain Index initilized without pagination (%d domains)\n", len(c.domainIndex))
 	}
 	return err
@@ -122,6 +119,9 @@ func (c *desecProvider) initializeDomainIndex() error {
 
 //buildIndexFromResponse takes the bodyString from initializeDomainIndex and builds the domainIndex
 func (c *desecProvider) buildIndexFromResponse(bodyString []byte) error {
+	if c.domainIndex == nil {
+		c.domainIndex = map[string]uint32{}
+	}
 	var dr []domainObject
 	err := json.Unmarshal(bodyString, &dr)
 	if err != nil {

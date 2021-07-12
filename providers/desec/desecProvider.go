@@ -24,7 +24,6 @@ Info required in `creds.json`:
 func NewDeSec(m map[string]string, metadata json.RawMessage) (providers.DNSServiceProvider, error) {
 	c := &desecProvider{}
 	c.creds.token = m["auth-token"]
-	c.domainIndex = map[string]uint32{}
 	if c.creds.token == "" {
 		return nil, fmt.Errorf("missing deSEC auth-token")
 	}
