@@ -11,7 +11,7 @@ jsId: TRANSIP
 
 In your providers config json file you must include your TransIP credentials
 
-You can login with your AccountName and a PrivateKey which can be generated in the TransIP control panel. The PrivateKey is a stringified version of the private key given by the API, see the example below , each newline is replaced by "\n".
+You can login with your AccountName and a PrivateKey which can be generated in the TransIP control panel. The PrivateKey is a stringified version of the private key given by the API, see the example below, each newline is replaced by "\n".
 
 {% highlight json %}
 {
