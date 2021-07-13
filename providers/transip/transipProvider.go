@@ -43,12 +43,19 @@ var features = providers.DocumentationNotes{
 }
 
 func NewTransip(m map[string]string, metadata json.RawMessage) (providers.DNSServiceProvider, error) {
-	if m["AccessToken"] == "" {
-		return nil, fmt.Errorf("no TransIP token provided")
+
+	if m["AccessToken"] == "" && m["PrivateKey"] == "" {
+		return nil, fmt.Errorf("no TransIP AccessToken or PrivateKey provided")
+	}
+
+	if m["PrivateKey"] != "" && m["AccountName"] == "" {
+		return nil, fmt.Errorf("no AccountName given, required for authenticating with PrivateKey")
 	}
 
 	client, err := gotransip.NewClient(gotransip.ClientConfiguration{
-		Token: m["AccessToken"],
+		Token:            m["AccessToken"],
+		AccountName:      m["AccountName"],
+		PrivateKeyReader: strings.NewReader(m["PrivateKey"]),
 	})
 
 	if err != nil {
