@@ -26,7 +26,7 @@ From the "master" branch, run `bin/make-release.sh v3.xx.y` where
 
 NOTE: This warning can be ignored: `error: failed to push some refs to 'github.com:StackExchange/dnscontrol.git'`
 
-The `make-release.sh` script will do a few things.
+The `make-release.sh` script will do the following:
 
 1. Tag the current branch locally and remotely.
 2. Update main.go with the new version string.
