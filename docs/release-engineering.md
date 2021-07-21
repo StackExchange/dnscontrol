@@ -24,7 +24,9 @@ go version
 From the "master" branch, run `bin/make-release.sh v1.2.3` where
 "v1.2.3" should be the release version.
 
-This will do a few things.
+NOTE: This warning can be ignored: `error: failed to push some refs to 'github.com:StackExchange/dnscontrol.git'`
+
+The `make-release.sh` script will do a few things.
 
 1. Tag the current branch locally and remotely.
 2. Update main.go with the new version string.
