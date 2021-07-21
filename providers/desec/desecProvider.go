@@ -24,12 +24,15 @@ Info required in `creds.json`:
 func NewDeSec(m map[string]string, metadata json.RawMessage) (providers.DNSServiceProvider, error) {
 	c := &desecProvider{}
 	c.creds.token = m["auth-token"]
-	c.domainIndex = map[string]uint32{}
 	if c.creds.token == "" {
 		return nil, fmt.Errorf("missing deSEC auth-token")
 	}
 	if err := c.authenticate(); err != nil {
 		return nil, fmt.Errorf("authentication failed")
+	}
+	//DomainIndex is used for corrections (minttl) and domain creation
+	if err := c.initializeDomainIndex(); err != nil {
+		return nil, err
 	}
 
 	return c, nil
@@ -81,11 +84,13 @@ func (c *desecProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*models
 	models.PostProcessRecords(existing)
 	clean := PrepFoundRecords(existing)
 	var minTTL uint32
+	c.mutex.Lock()
 	if ttl, ok := c.domainIndex[dc.Name]; !ok {
 		minTTL = 3600
 	} else {
 		minTTL = ttl
 	}
+	c.mutex.Unlock()
 	PrepDesiredRecords(dc, minTTL)
 	return c.GenerateDomainCorrections(dc, clean)
 }
@@ -108,10 +113,9 @@ func (c *desecProvider) GetZoneRecords(domain string) (models.Records, error) {
 
 // EnsureDomainExists returns an error if domain doesn't exist.
 func (c *desecProvider) EnsureDomainExists(domain string) error {
-	if err := c.fetchDomain(domain); err != nil {
-		return err
-	}
 	// domain already exists
+	c.mutex.Lock()
+	defer c.mutex.Unlock()
 	if _, ok := c.domainIndex[domain]; ok {
 		return nil
 	}
