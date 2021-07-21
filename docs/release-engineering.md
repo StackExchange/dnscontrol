@@ -21,18 +21,20 @@ go version
 
 ## Step 2. Create a new release branch
 
-From the "master" branch, run `bin/make-release.sh v1.2.3` where
-"v1.2.3" should be the release version.
+From the "master" branch, run `bin/make-release.sh v3.xx.y` where
+"v3.xx.y" should be the new release version.
 
 NOTE: This warning can be ignored: `error: failed to push some refs to 'github.com:StackExchange/dnscontrol.git'`
 
-The `make-release.sh` script will do a few things.
+The `make-release.sh` script will do the following:
 
 1. Tag the current branch locally and remotely.
 2. Update main.go with the new version string.
 3. Create a file called draft-notes.txt which you will edit into the
    release notes.
 4. Print instructions on how to create the release PR.
+
+NOTE TO SELF: The last 2 times we did a release the tagging wasn't right. Be sure to watch this carefully, make sure the tag is handled correctly.  (i.e. tag vx.y.z should be on release_vx.y.z) and update the docs with the correct procedure.
 
 NOTE: If you bump the major version, you need to change all the source
 files.  The last time this was done (v2 -> v3) these two commands
