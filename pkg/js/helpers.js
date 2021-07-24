@@ -103,6 +103,16 @@ function D(name, registrar) {
     conf.domain_names.push(name);
 }
 
+function INCLUDE(name) {
+    var domain = _getDomainObject(name);
+    if (domain == null) {
+        throw name + ' was not declared yet and therefore cannot be updated. Use D() before.';
+    }
+    return function(d) {
+      d.records.push.apply(d.records, domain.obj.records);
+    }
+}
+
 // D_EXTEND(name): Update a DNS Domain already added with D(), or subdomain thereof
 function D_EXTEND(name) {
     var domain = _getDomainObject(name);
