@@ -15,9 +15,9 @@ func flattenSPFs(cfg *models.DNSConfig) []error {
 	var errs []error
 	var err error
 	for _, domain := range cfg.Domains {
-		apexTXTs := domain.Records.GroupedByKey()[models.RecordKey{Type: "TXT", NameFQDN: domain.Name}]
+		txtRecords := domain.Records.GetByType("TXT")
 		// flatten all spf records that have the "flatten" metadata
-		for _, txt := range apexTXTs {
+		for _, txt := range txtRecords {
 			var rec *spflib.SPFRecord
 			txtTarget := strings.Join(txt.TxtStrings, "")
 			if txt.Metadata["flatten"] != "" || txt.Metadata["split"] != "" {

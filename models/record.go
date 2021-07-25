@@ -452,6 +452,16 @@ func (recs Records) FQDNMap() (m map[string]bool) {
 	return m
 }
 
+func (recs Records) GetByType(typeName string) Records {
+	results := Records{}
+	for _, rec := range recs {
+		if rec.Type == typeName {
+			results = append(results, rec)
+		}
+	}
+	return results
+}
+
 // GroupedByKey returns a map of keys to records.
 func (recs Records) GroupedByKey() map[RecordKey]Records {
 	groups := map[RecordKey]Records{}
