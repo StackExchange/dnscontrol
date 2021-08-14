@@ -1130,3 +1130,32 @@ function CLI_DEFAULTS(defaults) {
 function FETCH() {
     return fetch.apply(null, arguments).catch(PANIC);
 }
+
+// DOMAIN_ELSEWHERE is a helper macro that delegates a domain to a
+// static list of nameservers.  It updates the registrar (the parent)
+// with a list of nameservers.  This is used when we own the domain (we
+// control the registrar) but something else controls the DNS records
+// (often a third-party of Azure).
+// Usage: DOMAIN_ELSEWHERE("example.com", REG_NAMEDOTCOM, ["ns1.foo.com", "ns2.foo.com"]);
+function DOMAIN_ELSEWHERE(domain, registrar, nslist) {
+    D(domain, registrar, NO_PURGE);
+    // NB(tlim): NO_PURGE is added as a precaution since something else
+    // is maintaining the DNS records in that zone.  In theory this is
+    // not needed since this domain won't have a DSP defined.
+    for (i = 0; i < nslist.length; i++) {
+        D_EXTEND(domain, NAMESERVER(nslist[i]));
+    }
+}
+
+// DOMAIN_ELSEWHERE_AUTO is similar to DOMAIN_ELSEWHERE but the list of
+// nameservers is queried from a DNS Service Provider.
+// Usage: DOMAIN_ELSEWHERE_AUTO("example.com", REG_NAMEDOTCOM, DNS_FOO)
+function DOMAIN_ELSEWHERE_AUTO(domain, registrar, dsplist) {
+    D(domain, registrar, NO_PURGE);
+    // NB(tlim): NO_PURGE is required since something else
+    // is maintaining the DNS records in that zone, and we have access
+    // to updating it (but we don't want to use it.)
+    for (i = 2; i < arguments.length; i++) {
+        D_EXTEND(domain, DnsProvider(arguments[i]));
+    }
+}
