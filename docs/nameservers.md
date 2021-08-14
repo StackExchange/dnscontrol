@@ -56,7 +56,8 @@ D("example1.com", REG_NAMECOM,
 
 // Let someone else manage the NS records for a dommain.
 // Why? Because you don't have access to the registrar, or the registrar is not
-// supported by DNSControl. However you do have API access for updating the zone's records.
+// supported by DNSControl. However you do have API access for
+// updating the zone's records (most likely at a different provider).
 D("example1.com", REG_THIRDPARTY,
   DnsProvider(DNS_NAMECOM),
   A("@", "10.2.3.4")
