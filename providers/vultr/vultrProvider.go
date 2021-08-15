@@ -251,6 +251,10 @@ func toVultrRecord(dc *models.DomainConfig, rc *models.RecordConfig, vultrID int
 		r.Data = fmt.Sprintf(`%v %s "%s"`, rc.CaaFlag, rc.CaaTag, rc.GetTargetField())
 	case "SSHFP":
 		r.Data = fmt.Sprintf("%d %d %s", rc.SshfpAlgorithm, rc.SshfpFingerprint, rc.GetTargetField())
+	case "TXT":
+		// Adds quotes if a TXT record. Without this, it fails to add TXT records with
+		//    "FAILURE! Unable to update record: Record data must be enclosed in quotes"
+		r.Data = fmt.Sprintf(`"%s"`, r.Data)
 	default:
 	}
 
