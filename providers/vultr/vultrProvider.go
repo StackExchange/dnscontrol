@@ -252,9 +252,13 @@ func toVultrRecord(dc *models.DomainConfig, rc *models.RecordConfig, vultrID int
 	case "SSHFP":
 		r.Data = fmt.Sprintf("%d %d %s", rc.SshfpAlgorithm, rc.SshfpFingerprint, rc.GetTargetField())
 	case "TXT":
-		// Adds quotes if a TXT record. Without this, it fails to add TXT records with
-		//    "FAILURE! Unable to update record: Record data must be enclosed in quotes"
-		r.Data = fmt.Sprintf(`"%s"`, r.Data)
+		if !(strings.Contains(r.Data, "spf")) {
+			// Adds quotes if a TXT record and not an spf record. Without this, it fails to add TXT records with
+			//    "FAILURE! Unable to update record: Record data must be enclosed in quotes"
+			// There must be a better way to detect a record built using SPF Builder as currently these records will fail
+			//    with "FAILURE! Unable to add record: Quotes may only appear at the beginning and end of the data"
+			r.Data = fmt.Sprintf(`"%s"`, r.Data)
+		}
 	default:
 	}
 
