@@ -256,6 +256,9 @@ func toVultrRecord(dc *models.DomainConfig, rc *models.RecordConfig, vultrID int
 	case "SSHFP":
 		r.Data = fmt.Sprintf("%d %d %s", rc.SshfpAlgorithm, rc.SshfpFingerprint, rc.GetTargetField())
 	case "TXT":
+		// Vultr doesn't permit TXT strings to include double-quotes
+		// therefore, we don't have to escape interior double-quotes.
+		// Vultr's API requires the string to begin and end with double-quotes.
 		r.Data = `"` + strings.Join(rc.TxtStrings, "") + `"`
 	default:
 	}
