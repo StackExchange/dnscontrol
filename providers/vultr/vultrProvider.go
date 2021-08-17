@@ -200,8 +200,12 @@ func toRecordConfig(domain string, r *govultr.DNSRecord) (*models.RecordConfig, 
 		// Vultr returns SRV records in the format "[weight] [port] [target]".
 		return rc, rc.SetTargetSRVPriorityString(uint16(vultrPriority(r)), data)
 	case "TXT":
-		// Remove quotes if it is a TXT record.
-		if !strings.HasPrefix(data, `"`) || !strings.HasSuffix(data, `"`) {
+		// TXT records from Vultr are always surrounded by quotes.
+		// They don't permit quotes within the string, therefore there is no
+		// need to resolve \" or other quoting.
+		if !(strings.HasPrefix(data, `"`) && strings.HasSuffix(data, `"`)) {
+			// Give an error if Vultr changes their protocol. We'd rather break
+			// than do the wrong thing.
 			return nil, errors.New("unexpected lack of quotes in TXT record from Vultr")
 		}
 		return rc, rc.SetTargetTXT(data[1 : len(data)-1])
@@ -252,13 +256,7 @@ func toVultrRecord(dc *models.DomainConfig, rc *models.RecordConfig, vultrID int
 	case "SSHFP":
 		r.Data = fmt.Sprintf("%d %d %s", rc.SshfpAlgorithm, rc.SshfpFingerprint, rc.GetTargetField())
 	case "TXT":
-		if !(strings.Contains(r.Data, "spf")) {
-			// Adds quotes if a TXT record and not an spf record. Without this, it fails to add TXT records with
-			//    "FAILURE! Unable to update record: Record data must be enclosed in quotes"
-			// There must be a better way to detect a record built using SPF Builder as currently these records will fail
-			//    with "FAILURE! Unable to add record: Quotes may only appear at the beginning and end of the data"
-			r.Data = fmt.Sprintf(`"%s"`, r.Data)
-		}
+		r.Data = `"` + strings.Join(rc.TxtStrings, "") + `"`
 	default:
 	}
 
