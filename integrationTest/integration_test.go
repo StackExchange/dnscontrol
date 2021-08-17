@@ -789,6 +789,12 @@ func makeTests(t *testing.T) []*TestGroup {
 			tc("Create a TXT with spaces", txt("foo", "with spaces")),
 		),
 
+		testgroup("simple TXT-spf1",
+			// This was added because Vultr syntax-checks TXT records with
+			// SPF contents.
+			tc("Create a TXT/SPF", txt("foo", "v=spf1 ip4:99.99.99.99 -all")),
+		),
+
 		testgroup("long TXT",
 			tc("Create long TXT", txt("foo", strings.Repeat("A", 300))),
 			tc("Change long TXT", txt("foo", strings.Repeat("B", 310))),
