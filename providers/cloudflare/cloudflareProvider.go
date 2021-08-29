@@ -60,6 +60,7 @@ func init() {
 	providers.RegisterDomainServiceProviderType("CLOUDFLAREAPI", fns, features)
 	providers.RegisterCustomRecordType("CF_REDIRECT", "CLOUDFLAREAPI", "")
 	providers.RegisterCustomRecordType("CF_TEMP_REDIRECT", "CLOUDFLAREAPI", "")
+	providers.RegisterCustomRecordType("CF_WORKER_ROUTE", "CLOUDFLAREAPI", "")
 }
 
 // cloudflareProvider is the handle for API calls.
@@ -191,6 +192,12 @@ func (c *cloudflareProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*m
 		records = append(records, prs...)
 	}
 
+	wrs, err := c.getWorkerRoutes(id, dc.Name)
+	if err != nil {
+		return nil, err
+	}
+	records = append(records, wrs...)
+
 	for _, rec := range dc.Records {
 		if rec.Type == "ALIAS" {
 			rec.Type = "CNAME"
@@ -227,6 +234,11 @@ func (c *cloudflareProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*m
 				Msg: d.String(),
 				F:   func() error { return c.deletePageRule(ex.Original.(*pageRule).ID, id) },
 			})
+		} else if ex.Type == "WORKER_ROUTE" {
+			corrections = append(corrections, &models.Correction{
+				Msg: d.String(),
+				F:   func() error { return c.deleteWorkerRoute(ex.Original.(*workerRoute).ID, id) },
+			})
 		} else {
 			corr := c.deleteRec(ex.Original.(*cfRecord), id)
 			// DS records must always have a corresponding NS record.
@@ -244,6 +256,11 @@ func (c *cloudflareProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*m
 			corrections = append(corrections, &models.Correction{
 				Msg: d.String(),
 				F:   func() error { return c.createPageRule(id, des.GetTargetField()) },
+			})
+		} else if des.Type == "WORKER_ROUTE" {
+			corrections = append(corrections, &models.Correction{
+				Msg: d.String(),
+				F:   func() error { return c.createWorkerRoute(id, des.GetTargetField()) },
 			})
 		} else {
 			corr := c.createRec(des, id)
@@ -264,6 +281,11 @@ func (c *cloudflareProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*m
 			corrections = append(corrections, &models.Correction{
 				Msg: d.String(),
 				F:   func() error { return c.updatePageRule(ex.Original.(*pageRule).ID, id, rec.GetTargetField()) },
+			})
+		} else if rec.Type == "WORKER_ROUTE" {
+			corrections = append(corrections, &models.Correction{
+				Msg: d.String(),
+				F:   func() error { return c.updateWorkerRoute(ex.Original.(*workerRoute).ID, id, rec.GetTargetField()) },
 			})
 		} else {
 			e := ex.Original.(*cfRecord)
@@ -422,6 +444,16 @@ func (c *cloudflareProvider) preprocessConfig(dc *models.DomainConfig) error {
 			currentPrPrio++
 			rec.TTL = 1
 			rec.Type = "PAGE_RULE"
+		}
+
+		// CF_WORKER_ROUTE record types. Encode target as $PATTERN,$SCRIPT
+		if rec.Type == "CF_WORKER_ROUTE" {
+			parts := strings.Split(rec.GetTargetField(), ",")
+			if len(parts) != 2 {
+				return fmt.Errorf("invalid data specified for cloudflare worker record")
+			}
+			rec.TTL = 1
+			rec.Type = "WORKER_ROUTE"
 		}
 	}
 

@@ -14,12 +14,14 @@ import (
 )
 
 const (
-	baseURL           = "https://api.cloudflare.com/client/v4/"
-	zonesURL          = baseURL + "zones/"
-	recordsURL        = zonesURL + "%s/dns_records/"
-	pageRulesURL      = zonesURL + "%s/pagerules/"
-	singlePageRuleURL = pageRulesURL + "%s"
-	singleRecordURL   = recordsURL + "%s"
+	baseURL              = "https://api.cloudflare.com/client/v4/"
+	zonesURL             = baseURL + "zones/"
+	recordsURL           = zonesURL + "%s/dns_records/"
+	singleRecordURL      = recordsURL + "%s"
+	pageRulesURL         = zonesURL + "%s/pagerules/"
+	singlePageRuleURL    = pageRulesURL + "%s"
+	workerRoutesURL      = zonesURL + "%s/workers/routes/"
+	singleWorkerRouteURL = workerRoutesURL + "%s"
 )
 
 // get list of domains for account. Cache so the ids can be looked up from domain name
@@ -505,6 +507,80 @@ func (c *cloudflareProvider) sendPageRule(endpoint, method string, data string) 
 	return err
 }
 
+func (c *cloudflareProvider) getWorkerRoutes(id string, domain string) ([]*models.RecordConfig, error) {
+	url := fmt.Sprintf(workerRoutesURL, id)
+	data := workerRouteResponse{}
+	if err := c.get(url, &data); err != nil {
+		return nil, fmt.Errorf("failed fetching worker route list from cloudflare: %s", err)
+	}
+	if !data.Success {
+		return nil, fmt.Errorf("failed fetching worker route list cloudflare: %s", stringifyErrors(data.Errors))
+	}
+	recs := []*models.RecordConfig{}
+	for _, pr := range data.Result {
+		var thisPr = pr
+		r := &models.RecordConfig{
+			Type:     "WORKER_ROUTE",
+			Original: thisPr,
+			TTL:      1,
+		}
+		r.SetLabel("@", domain)
+		r.SetTarget(fmt.Sprintf("%s,%s", // $PATTERN,$SCRIPT
+			pr.Pattern,
+			pr.Script))
+		recs = append(recs, r)
+	}
+	return recs, nil
+}
+
+func (c *cloudflareProvider) deleteWorkerRoute(recordID, domainID string) error {
+	endpoint := fmt.Sprintf(singleWorkerRouteURL, domainID, recordID)
+	req, err := http.NewRequest("DELETE", endpoint, nil)
+	if err != nil {
+		return err
+	}
+	c.setHeaders(req)
+	_, err = handleActionResponse(http.DefaultClient.Do(req))
+	return err
+}
+
+func (c *cloudflareProvider) updateWorkerRoute(recordID, domainID string, target string) error {
+	if err := c.deleteWorkerRoute(recordID, domainID); err != nil {
+		return err
+	}
+	return c.createWorkerRoute(domainID, target)
+}
+
+func (c *cloudflareProvider) createWorkerRoute(domainID string, target string) error {
+	endpoint := fmt.Sprintf(workerRoutesURL, domainID)
+	return c.sendWorkerRoute(endpoint, "POST", target)
+}
+
+func (c *cloudflareProvider) sendWorkerRoute(endpoint, method string, data string) error {
+	// $PATTERN,$SCRIPT
+	parts := strings.Split(data, ",")
+	pattern := parts[0]
+	script := parts[1]
+	wr := &workerRoute{
+		Pattern: pattern,
+		Script:  script}
+
+	buf := &bytes.Buffer{}
+	enc := json.NewEncoder(buf)
+	if err := enc.Encode(wr); err != nil {
+		return err
+	}
+	req, err := http.NewRequest(method, endpoint, buf)
+	if err != nil {
+		return err
+	}
+	c.setHeaders(req)
+	// Cloudflare API returns error code 10001 without Content-Type.
+	req.Header.Set("Content-Type", "application/json")
+	_, err = handleActionResponse(http.DefaultClient.Do(req))
+	return err
+}
+
 func stringifyErrors(errors []interface{}) string {
 	dat, err := json.Marshal(errors)
 	if err != nil {
@@ -563,6 +639,18 @@ type pageRuleAction struct {
 type pageRuleFwdInfo struct {
 	URL        string `json:"url"`
 	StatusCode int    `json:"status_code"`
+}
+
+type workerRouteResponse struct {
+	basicResponse
+	Result     []*workerRoute `json:"result"`
+	ResultInfo pagingInfo     `json:"result_info"`
+}
+
+type workerRoute struct {
+	ID      string `json:"id,omitempty"`
+	Pattern string `json:"pattern"`
+	Script  string `json:"script"`
 }
 
 type zoneResponse struct {
