@@ -132,6 +132,7 @@ func TestErrors(t *testing.T) {
 		{"MX reversed", `D("foo.com","reg",MX("@","test.", 5))`},
 		{"CF_REDIRECT With comma", `D("foo.com","reg",CF_REDIRECT("foo.com,","baaa"))`},
 		{"CF_TEMP_REDIRECT With comma", `D("foo.com","reg",CF_TEMP_REDIRECT("foo.com","baa,a"))`},
+		{"CF_WORKER_ROUTE With comma", `D("foo.com","reg",CF_WORKER_ROUTE("foo.com","baa,a"))`},
 		{"Bad cidr", `D(reverse("foo.com"), "reg")`},
 		{"Dup domains", `D("example.org", "reg"); D("example.org", "reg")`},
 		{"Bad NAMESERVER", `D("example.com","reg", NAMESERVER("@","ns1.foo.com."))`},
