@@ -170,3 +170,20 @@ Notice a few details:
 2. The IP address in those A records may be mostly irrelevant, as cloudflare should handle all requests (assuming some page rule matches).
 3. Ordering matters for priority. CF_REDIRECT records will be added in the order they appear in your js. So put catch-alls at the bottom.
 4. if _any_ `CF_REDIRECT` or `CF_TEMP_REDIRECT` functions are used then `dnscontrol` will manage _all_ "Forwarding URL" type Page Rules for the domain. Page Rule types other than "Forwarding URL” will be left alone.
+
+## Worker routes
+The Cloudflare provider can manage Worker Routes for your domains. Simply use the `CF_WORKER_ROUTE` function passing the route pattern and the worker name:
+
+{% highlight js %}
+
+var CLOUDFLARE = NewDnsProvider('cloudflare','CLOUDFLAREAPI');
+
+D("foo.com", REG_NONE, DnsProvider(CLOUDFLARE),
+    // Assign the patterns `api.foo.com/*` and `foo.com/api/*` to `my-worker` script.
+    CF_WORKER_ROUTE("api.foo.com/*", "my-worker"),
+    CF_WORKER_ROUTE("foo.com/api/*", "my-worker"),
+);
+
+{%endhighlight%}
+
+Please notice that if _any_ `CF_WORKER_ROUTE` function is used then `dnscontrol` will manage _all_ Worker Routes for the domain.
