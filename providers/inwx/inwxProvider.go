@@ -161,16 +161,11 @@ func newInwxDsp(m map[string]string, metadata json.RawMessage) (providers.DNSSer
 func makeNameserverRecordRequest(domain string, rec *models.RecordConfig) *goinwx.NameserverRecordRequest {
 	content := rec.GetTargetField()
 
-	name := rec.GetLabel()
-	if name == "@" {
-		name = ""
-	}
-
 	req := &goinwx.NameserverRecordRequest{
 		Domain:  domain,
 		Type:    rec.Type,
 		Content: content,
-		Name:    name,
+		Name:    rec.GetLabel(),
 		TTL:     int(rec.TTL),
 	}
 
@@ -304,9 +299,6 @@ func (api *inwxAPI) GetZoneRecords(domain string) (models.Records, error) {
 	var records = []*models.RecordConfig{}
 
 	for _, record := range info.Records {
-		if record.Name == "" {
-			record.Name = "@"
-		}
 		if record.Type == "SOA" {
 			continue
 		}
