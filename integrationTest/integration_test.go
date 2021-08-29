@@ -15,6 +15,7 @@ import (
 	"github.com/StackExchange/dnscontrol/v3/pkg/normalize"
 	"github.com/StackExchange/dnscontrol/v3/providers"
 	_ "github.com/StackExchange/dnscontrol/v3/providers/_all"
+	"github.com/StackExchange/dnscontrol/v3/providers/cloudflare"
 	"github.com/StackExchange/dnscontrol/v3/providers/config"
 	"github.com/miekg/dns/dnsutil"
 )
@@ -52,7 +53,7 @@ func getProvider(t *testing.T) (providers.DNSServiceProvider, string, map[int]bo
 		// use this feature. Maybe because we didn't have the capabilities
 		// feature at the time?
 		if name == "CLOUDFLAREAPI" {
-			metadata = []byte(`{ "manage_redirects": true }`)
+			metadata = []byte(`{ "manage_redirects": true, "manage_workers": true }`)
 		}
 
 		provider, err := providers.CreateDNSProvider(name, cfg, metadata)
@@ -68,6 +69,9 @@ func getProvider(t *testing.T) (providers.DNSServiceProvider, string, map[int]bo
 				fails[i] = true
 			}
 		}
+
+		// Cloudflare only. Will do nothing if provider != *cloudflareProvider.
+		cloudflare.PrepareCloudflareTestWorkers(t, provider)
 
 		return provider, cfg["domain"], fails, cfg
 	}
@@ -396,6 +400,12 @@ func cfProxyCNAME(name, target, status string) *models.RecordConfig {
 	r := cname(name, target)
 	r.Metadata = make(map[string]string)
 	r.Metadata["cloudflare_proxy"] = status
+	return r
+}
+
+func cfWorkerRoute(pattern, target string) *models.RecordConfig {
+	t := fmt.Sprintf("%s,%s", pattern, target)
+	r := makeRec("@", t, "CF_WORKER_ROUTE")
 	return r
 }
 
@@ -1383,6 +1393,33 @@ func makeTests(t *testing.T) []*TestGroup {
 			tc("proxycname", cfProxyCNAME("anewproxy", "example.com.", "on")),
 			tc("proxycnamechange", cfProxyCNAME("anewproxy", "example.com.", "off")),
 			clear(),
+		),
+
+		testgroup("CF_WORKER_ROUTE",
+			only("CLOUDFLAREAPI"),
+			// TODO(fdcastel): Add worker scripts via api call before test execution
+			tc("simple", cfWorkerRoute("cnn.**current-domain-no-trailing**/*", "dnscontrol_integrationtest_cnn")),
+			tc("changeScript", cfWorkerRoute("cnn.**current-domain-no-trailing**/*", "dnscontrol_integrationtest_msnbc")),
+			tc("changePattern", cfWorkerRoute("cable.**current-domain-no-trailing**/*", "dnscontrol_integrationtest_msnbc")),
+			clear(),
+			tc("createMultiple",
+				cfWorkerRoute("cnn.**current-domain-no-trailing**/*", "dnscontrol_integrationtest_cnn"),
+				cfWorkerRoute("msnbc.**current-domain-no-trailing**/*", "dnscontrol_integrationtest_msnbc"),
+			),
+			tc("addOne",
+				cfWorkerRoute("msnbc.**current-domain-no-trailing**/*", "dnscontrol_integrationtest_msnbc"),
+				cfWorkerRoute("cnn.**current-domain-no-trailing**/*", "dnscontrol_integrationtest_cnn"),
+				cfWorkerRoute("api.**current-domain-no-trailing**/cnn/*", "dnscontrol_integrationtest_cnn"),
+			),
+			tc("changeOne",
+				cfWorkerRoute("msn.**current-domain-no-trailing**/*", "dnscontrol_integrationtest_msnbc"),
+				cfWorkerRoute("cnn.**current-domain-no-trailing**/*", "dnscontrol_integrationtest_cnn"),
+				cfWorkerRoute("api.**current-domain-no-trailing**/cnn/*", "dnscontrol_integrationtest_cnn"),
+			),
+			tc("deleteOne",
+				cfWorkerRoute("msn.**current-domain-no-trailing**/*", "dnscontrol_integrationtest_msnbc"),
+				cfWorkerRoute("api.**current-domain-no-trailing**/cnn/*", "dnscontrol_integrationtest_cnn"),
+			),
 		),
 	}
 

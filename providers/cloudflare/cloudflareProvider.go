@@ -6,6 +6,7 @@ import (
 	"log"
 	"net"
 	"strings"
+	"testing"
 
 	"github.com/cloudflare/cloudflare-go"
 	"github.com/miekg/dns/dnsutil"
@@ -59,6 +60,7 @@ func init() {
 	providers.RegisterDomainServiceProviderType("CLOUDFLAREAPI", fns, features)
 	providers.RegisterCustomRecordType("CF_REDIRECT", "CLOUDFLAREAPI", "")
 	providers.RegisterCustomRecordType("CF_TEMP_REDIRECT", "CLOUDFLAREAPI", "")
+	providers.RegisterCustomRecordType("CF_WORKER_ROUTE", "CLOUDFLAREAPI", "")
 }
 
 // cloudflareProvider is the handle for API calls.
@@ -73,6 +75,7 @@ type cloudflareProvider struct {
 	ipConversions   []transform.IPConversion
 	ignoredLabels   []string
 	manageRedirects bool
+	manageWorkers   bool
 	cfClient        *cloudflare.API
 }
 
@@ -191,6 +194,14 @@ func (c *cloudflareProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*m
 		records = append(records, prs...)
 	}
 
+	if c.manageWorkers {
+		wrs, err := c.getWorkerRoutes(id, dc.Name)
+		if err != nil {
+			return nil, err
+		}
+		records = append(records, wrs...)
+	}
+
 	for _, rec := range dc.Records {
 		if rec.Type == "ALIAS" {
 			rec.Type = "CNAME"
@@ -226,6 +237,11 @@ func (c *cloudflareProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*m
 				Msg: d.String(),
 				F:   func() error { return c.deletePageRule(ex.Original.(cloudflare.PageRule).ID, id) },
 			})
+		} else if ex.Type == "WORKER_ROUTE" {
+			corrections = append(corrections, &models.Correction{
+				Msg: d.String(),
+				F:   func() error { return c.deleteWorkerRoute(ex.Original.(cloudflare.WorkerRoute).ID, id) },
+			})
 		} else {
 			corr := c.deleteRec(ex.Original.(cloudflare.DNSRecord), id)
 			// DS records must always have a corresponding NS record.
@@ -243,6 +259,11 @@ func (c *cloudflareProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*m
 			corrections = append(corrections, &models.Correction{
 				Msg: d.String(),
 				F:   func() error { return c.createPageRule(id, des.GetTargetField()) },
+			})
+		} else if des.Type == "WORKER_ROUTE" {
+			corrections = append(corrections, &models.Correction{
+				Msg: d.String(),
+				F:   func() error { return c.createWorkerRoute(id, des.GetTargetField()) },
 			})
 		} else {
 			corr := c.createRec(des, id)
@@ -263,6 +284,13 @@ func (c *cloudflareProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*m
 			corrections = append(corrections, &models.Correction{
 				Msg: d.String(),
 				F:   func() error { return c.updatePageRule(ex.Original.(cloudflare.PageRule).ID, id, rec.GetTargetField()) },
+			})
+		} else if rec.Type == "WORKER_ROUTE" {
+			corrections = append(corrections, &models.Correction{
+				Msg: d.String(),
+				F: func() error {
+					return c.updateWorkerRoute(ex.Original.(cloudflare.WorkerRoute).ID, id, rec.GetTargetField())
+				},
 			})
 		} else {
 			e := ex.Original.(cloudflare.DNSRecord)
@@ -422,6 +450,16 @@ func (c *cloudflareProvider) preprocessConfig(dc *models.DomainConfig) error {
 			rec.TTL = 1
 			rec.Type = "PAGE_RULE"
 		}
+
+		// CF_WORKER_ROUTE record types. Encode target as $PATTERN,$SCRIPT
+		if rec.Type == "CF_WORKER_ROUTE" {
+			parts := strings.Split(rec.GetTargetField(), ",")
+			if len(parts) != 2 {
+				return fmt.Errorf("invalid data specified for cloudflare worker record")
+			}
+			rec.TTL = 1
+			rec.Type = "WORKER_ROUTE"
+		}
 	}
 
 	// look for ip conversions and transform records
@@ -481,12 +519,14 @@ func newCloudflare(m map[string]string, metadata json.RawMessage) (providers.DNS
 			IPConversions   string   `json:"ip_conversions"`
 			IgnoredLabels   []string `json:"ignored_labels"`
 			ManageRedirects bool     `json:"manage_redirects"`
+			ManageWorkers   bool     `json:"manage_workers"`
 		}{}
 		err := json.Unmarshal([]byte(metadata), parsedMeta)
 		if err != nil {
 			return nil, err
 		}
 		api.manageRedirects = parsedMeta.ManageRedirects
+		api.manageWorkers = parsedMeta.ManageWorkers
 		// ignored_labels:
 		api.ignoredLabels = append(api.ignoredLabels, parsedMeta.IgnoredLabels...)
 		if len(api.ignoredLabels) > 0 {
@@ -637,4 +677,20 @@ func (c *cloudflareProvider) EnsureDomainExists(domain string) error {
 	id, err := c.createZone(domain)
 	fmt.Printf("Added zone for %s to Cloudflare account: %s\n", domain, id)
 	return err
+}
+
+// PrepareCloudflareWorkers creates Cloudflare Workers required for CF_WORKER_ROUTE tests.
+func PrepareCloudflareTestWorkers(t *testing.T, prv providers.DNSServiceProvider) {
+	cf, ok := prv.(*cloudflareProvider)
+	if ok {
+		err := cf.createTestWorker("dnscontrol_integrationtest_cnn")
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		err = cf.createTestWorker("dnscontrol_integrationtest_msnbc")
+		if err != nil {
+			t.Fatal(err)
+		}
+	}
 }
