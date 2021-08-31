@@ -559,6 +559,9 @@ func (c *cloudflareProvider) createWorkerRoute(domainID string, target string) e
 func (c *cloudflareProvider) sendWorkerRoute(endpoint, method string, data string) error {
 	// $PATTERN,$SCRIPT
 	parts := strings.Split(data, ",")
+	if len(parts) != 2 {
+		return fmt.Errorf("unexpected data: '%s' (expected: 'PATTERN,SCRIPT')", data)
+	}
 	pattern := parts[0]
 	script := parts[1]
 	wr := &workerRoute{
