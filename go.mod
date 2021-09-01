@@ -20,7 +20,7 @@ require (
 	github.com/cenkalti/backoff v2.2.1+incompatible // indirect
 	github.com/cpuguy83/go-md2man/v2 v2.0.0 // indirect
 	github.com/daaku/go.zipexe v1.0.1 // indirect
-	github.com/digitalocean/godo v1.64.2
+	github.com/digitalocean/godo v1.65.0
 	github.com/ditashi/jsbeautifier-go v0.0.0-20141206144643-2520a8026a9c
 	github.com/dnsimple/dnsimple-go v0.70.1
 	github.com/exoscale/egoscale v0.59.0
