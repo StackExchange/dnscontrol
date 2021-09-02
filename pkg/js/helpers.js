@@ -965,6 +965,7 @@ function CAA_BUILDER(value) {
 
 // DMARC_BUILDER takes an object:
 // label: The DNS label for the DMARC record (_dmarc prefix is added; default: '@')
+// version: The DMARC version, by default DMARC1 (optional)
 // policy: The DMARC policy (p=), must be one of 'none', 'quarantine', 'reject'
 // subdomainPolicy: The DMARC policy for subdomains (sp=), must be one of 'none', 'quarantine', 'reject' (optional)
 // alignmentSPF: 'strict'/'s' or 'relaxed'/'r' alignment for SPF (aspf=, default: 'r')
@@ -984,6 +985,10 @@ function DMARC_BUILDER(value) {
         value.label = '@';
     }
 
+    if (!value.version) {
+        value.version = 'DMARC1';
+    }
+
     var label = '_dmarc';
     if (value.label !== '@') {
         label += '.' + value.label;
@@ -997,7 +1002,8 @@ function DMARC_BUILDER(value) {
         throw 'Invalid DMARC policy';
     }
 
-    var record = ['v=DMARC1'];
+    var record = [];
+    record.push('v=' + value.version);
     record.push('p=' + value.policy);
 
     // Subdomain policy
@@ -1045,7 +1051,7 @@ function DMARC_BUILDER(value) {
     }
 
     // Percentage
-    if (value.percent && value.percent != 100) {
+    if (value.percent) {
         record.push('pct=' + value.percent);
     }
 
@@ -1082,7 +1088,7 @@ function DMARC_BUILDER(value) {
     }
 
     // Failure report format
-    if (value.ruf && value.failureFormat && value.failureFormat !== 'afrf') {
+    if (value.ruf && value.failureFormat) {
         record.push('rf=' + value.failureFormat);
     }
 
