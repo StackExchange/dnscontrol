@@ -130,6 +130,23 @@ D("example1.com", REG_NAMECOM,
   A("@", "10.2.3.4")
 );
 
+// ========== Fancy macros
+
+// There are some built-in macros that you might find useful.
+
+// DOMAIN_ELSEWHERE: This macro points the domain's delegation
+// (nameservers) to a list of DNS servers.
+DOMAIN_ELSEWHERE("example1.com", REG_NAMECOM, [
+    "dns1.example.net.",
+    "dns2.example.net.",
+    "dns3.example.net.",
+]);
+
+// DOMAIN_ELSEWHERE_AUTO: Similar to DOMAIN_ELSEWHERE but the list
+// of nameservers is queried from the API of a DNS provider.
+DOMAIN_ELSEWHERE_AUTO("example1.com", REG_NAMECOM, DNS_AWS);
+DOMAIN_ELSEWHERE_AUTO("example2.com", REG_NAMECOM, DNS_GOOGLE);
+
 {%endhighlight%}
 {% include endExample.html %}
 
