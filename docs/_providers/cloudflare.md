@@ -186,4 +186,6 @@ D("foo.com", REG_NONE, DnsProvider(CLOUDFLARE),
 
 {%endhighlight%}
 
-Please notice that if _any_ `CF_WORKER_ROUTE` function is used then `dnscontrol` will manage _all_ Worker Routes for the domain.
+Please notice that if _any_ `CF_WORKER_ROUTE` function is used then `dnscontrol` will manage _all_ 
+Worker Routes for the domain. To be clear: this means it will delete existing routes that
+were created outside of DNSControl.

@@ -6,7 +6,7 @@ parameters:
 ---
 
 `CF_WORKER_ROUTE` uses the [Cloudflare Workers](https://developers.cloudflare.com/workers/) 
-API to setup [routes](https://developers.cloudflare.com/workers/platform/routes)
+API to manage [worker routes](https://developers.cloudflare.com/workers/platform/routes)
 for a given domain.
 
 If _any_ `CF_WORKER_ROUTE` function is used then `dnscontrol` will manage _all_ 
