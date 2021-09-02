@@ -566,7 +566,8 @@ func (c *cloudflareProvider) sendWorkerRoute(endpoint, method string, data strin
 	script := parts[1]
 	wr := &workerRoute{
 		Pattern: pattern,
-		Script:  script}
+		Script:  script,
+	}
 
 	buf := &bytes.Buffer{}
 	enc := json.NewEncoder(buf)
