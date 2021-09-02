@@ -385,6 +385,12 @@ func cfRedirTemp(pattern, target string) *models.RecordConfig {
 	return r
 }
 
+func cfWorkerRoute(pattern, target string) *models.RecordConfig {
+	t := fmt.Sprintf("%s,%s", pattern, target)
+	r := makeRec("@", t, "WORKER_ROUTE")
+	return r
+}
+
 func ns(name, target string) *models.RecordConfig {
 	return makeRec(name, target, "NS")
 }
@@ -1358,6 +1364,13 @@ func makeTests(t *testing.T) []*TestGroup {
 			//	cfRedirTemp("cnn.**current-domain-no-trailing**/*", "https://www.cnn.com/$1"),
 			//	cfRedirTemp("nytimes.**current-domain-no-trailing**/*", "https://www.nytimes.com/$1"),
 			//),
+		),
+
+		testgroup("CF_WORKER",
+			only("CLOUDFLAREAPI"),
+			tc("create",
+				cfWorkerRoute("api.**current-domain-no-trailing**/*", "my-worker"),
+			),
 		),
 	}
 
