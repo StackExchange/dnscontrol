@@ -2,7 +2,7 @@
 name: DOMAIN_ELSEWHERE_AUTO
 parameters:
   - registrar
-  - list of nameserver names
+  - list of Dns Providers
 ---
 
 `DOMAIN_ELSEWHERE_AUTO()` is similar to `DOMAIN_ELSEWHERE()` but instead of
