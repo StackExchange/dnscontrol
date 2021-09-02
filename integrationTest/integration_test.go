@@ -387,7 +387,7 @@ func cfRedirTemp(pattern, target string) *models.RecordConfig {
 
 func cfWorkerRoute(pattern, target string) *models.RecordConfig {
 	t := fmt.Sprintf("%s,%s", pattern, target)
-	r := makeRec("@", t, "WORKER_ROUTE")
+	r := makeRec("@", t, "CF_WORKER_ROUTE")
 	return r
 }
 
@@ -1366,10 +1366,30 @@ func makeTests(t *testing.T) []*TestGroup {
 			//),
 		),
 
-		testgroup("CF_WORKER",
+		testgroup("CF_WORKER_ROUTE",
 			only("CLOUDFLAREAPI"),
-			tc("create",
-				cfWorkerRoute("api.**current-domain-no-trailing**/*", "my-worker"),
+			// TODO(fdcastel): Add worker scripts via api call before test execution
+			tc("simple", cfWorkerRoute("cnn.**current-domain-no-trailing**/*", "cnn-worker")),
+			tc("changeScript", cfWorkerRoute("cnn.**current-domain-no-trailing**/*", "msnbc-worker")),
+			tc("changePattern", cfWorkerRoute("cable.**current-domain-no-trailing**/*", "msnbc-worker")),
+			clear(),
+			tc("createMultiple",
+				cfWorkerRoute("cnn.**current-domain-no-trailing**/*", "cnn-worker"),
+				cfWorkerRoute("msnbc.**current-domain-no-trailing**/*", "msnbc-worker"),
+			),
+			tc("addOne",
+				cfWorkerRoute("msnbc.**current-domain-no-trailing**/*", "msnbc-worker"),
+				cfWorkerRoute("cnn.**current-domain-no-trailing**/*", "cnn-worker"),
+				cfWorkerRoute("api.**current-domain-no-trailing**/cnn/*", "cnn-worker"),
+			),
+			tc("changeOne",
+				cfWorkerRoute("msn.**current-domain-no-trailing**/*", "msnbc-worker"),
+				cfWorkerRoute("cnn.**current-domain-no-trailing**/*", "cnn-worker"),
+				cfWorkerRoute("api.**current-domain-no-trailing**/cnn/*", "cnn-worker"),
+			),
+			tc("deleteOne",
+				cfWorkerRoute("msn.**current-domain-no-trailing**/*", "msnbc-worker"),
+				cfWorkerRoute("api.**current-domain-no-trailing**/cnn/*", "cnn-worker"),
 			),
 		),
 	}
