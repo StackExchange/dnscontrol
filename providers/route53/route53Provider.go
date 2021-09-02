@@ -25,7 +25,8 @@ type route53Provider struct {
 	client          *r53.Route53
 	registrar       *r53d.Route53Domains
 	delegationSet   *string
-	zones           map[string]*r53.HostedZone
+	zonesById       map[string]*r53.HostedZone
+	zonesByDomain   map[string]*r53.HostedZone
 	originalRecords []*r53.ResourceRecordSet
 }
 
@@ -119,7 +120,7 @@ func withRetry(f func() error) {
 func (r *route53Provider) ListZones() ([]string, error) {
 	var zones []string
 	// Assumes r.zones was filled already by newRoute53().
-	for i := range r.zones {
+	for i := range r.zonesByDomain {
 		zones = append(zones, i)
 	}
 	return zones, nil
@@ -127,7 +128,8 @@ func (r *route53Provider) ListZones() ([]string, error) {
 
 func (r *route53Provider) getZones() error {
 	var nextMarker *string
-	r.zones = make(map[string]*r53.HostedZone)
+	r.zonesByDomain = make(map[string]*r53.HostedZone)
+	r.zonesById = make(map[string]*r53.HostedZone)
 	for {
 		var out *r53.ListHostedZonesOutput
 		var err error
@@ -143,7 +145,8 @@ func (r *route53Provider) getZones() error {
 		}
 		for _, z := range out.HostedZones {
 			domain := strings.TrimSuffix(*z.Name, ".")
-			r.zones[domain] = z
+			r.zonesByDomain[domain] = z
+			r.zonesById[parseZoneId(*z.Id)] = z
 		}
 		if out.NextMarker != nil {
 			nextMarker = out.NextMarker
@@ -154,19 +157,27 @@ func (r *route53Provider) getZones() error {
 	return nil
 }
 
-type errNoExist struct {
+type errDomainNoExist struct {
 	domain string
 }
 
-func (e errNoExist) Error() string {
+type errZoneNoExist struct {
+	zoneId string
+}
+
+func (e errDomainNoExist) Error() string {
 	return fmt.Sprintf("Domain %s not found in your route 53 account", e.domain)
+}
+
+func (e errZoneNoExist) Error() string {
+	return fmt.Sprintf("Zone with id %s not found in your route 53 account", e.zoneId)
 }
 
 func (r *route53Provider) GetNameservers(domain string) ([]*models.Nameserver, error) {
 
-	zone, ok := r.zones[domain]
+	zone, ok := r.zonesByDomain[domain]
 	if !ok {
-		return nil, errNoExist{domain}
+		return nil, errDomainNoExist{domain}
 	}
 	var z *r53.GetHostedZoneOutput
 	var err error
@@ -187,14 +198,31 @@ func (r *route53Provider) GetNameservers(domain string) ([]*models.Nameserver, e
 	return models.ToNameservers(nss)
 }
 
-// GetZoneRecords gets the records of a zone and returns them in RecordConfig format.
 func (r *route53Provider) GetZoneRecords(domain string) (models.Records, error) {
-
-	zone, ok := r.zones[domain]
-	if !ok {
-		return nil, errNoExist{domain}
+	if zone, ok := r.zonesByDomain[domain]; ok {
+		return r.getZoneRecords(zone)
 	}
 
+	return nil, errDomainNoExist{domain}
+}
+
+func (r *route53Provider) getZone(dc *models.DomainConfig) (*r53.HostedZone, error) {
+	if zoneId, ok := dc.Metadata["zone_id"]; ok {
+		zone, ok := r.zonesById[zoneId]
+		if !ok {
+			return nil, errZoneNoExist{zoneId}
+		}
+		return zone, nil
+	}
+
+	if zone, ok := r.zonesByDomain[dc.Name]; ok {
+		return zone, nil
+	}
+
+	return nil, errDomainNoExist{dc.Name}
+}
+
+func (r *route53Provider) getZoneRecords(zone *r53.HostedZone) (models.Records, error) {
 	records, err := r.fetchRecordSets(zone.Id)
 	if err != nil {
 		return nil, err
@@ -203,7 +231,7 @@ func (r *route53Provider) GetZoneRecords(domain string) (models.Records, error) 
 
 	var existingRecords = []*models.RecordConfig{}
 	for _, set := range records {
-		rts, err := nativeToRecords(set, domain)
+		rts, err := nativeToRecords(set, unescape(zone.Name))
 		if err != nil {
 			return nil, err
 		}
@@ -217,14 +245,14 @@ func (r *route53Provider) GetDomainCorrections(dc *models.DomainConfig) ([]*mode
 
 	var corrections = []*models.Correction{}
 
-	existingRecords, err := r.GetZoneRecords(dc.Name)
+	zone, err := r.getZone(dc)
 	if err != nil {
 		return nil, err
 	}
 
-	zone, ok := r.zones[dc.Name]
-	if !ok {
-		return nil, errNoExist{dc.Name}
+	existingRecords, err := r.getZoneRecords(zone)
+	if err != nil {
+		return nil, err
 	}
 
 	for _, want := range dc.Records {
@@ -492,6 +520,11 @@ func getZoneID(zone *r53.HostedZone, r *models.RecordConfig) string {
 	if zoneID == "" {
 		zoneID = aws.StringValue(zone.Id)
 	}
+	return parseZoneId(zoneID)
+}
+
+/** Removes "/hostedzone/"" prefix from AWS ZoneId */
+func parseZoneId(zoneID string) string {
 	if strings.HasPrefix(zoneID, "/hostedzone/") {
 		zoneID = strings.TrimPrefix(zoneID, "/hostedzone/")
 	}
@@ -613,7 +646,7 @@ func unescape(s *string) string {
 }
 
 func (r *route53Provider) EnsureDomainExists(domain string) error {
-	if _, ok := r.zones[domain]; ok {
+	if _, ok := r.zonesByDomain[domain]; ok {
 		return nil
 	}
 	if r.delegationSet != nil {

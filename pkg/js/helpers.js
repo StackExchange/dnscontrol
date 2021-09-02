@@ -26,6 +26,10 @@ function initialize() {
     defaultArgs = [];
 }
 
+function _isDomain(d) {
+  return _.isArray(d.nameservers) && _.isArray(d.records) && _.isString(d.name);
+}
+
 // Returns an array of domains which were registered so far during runtime
 // Own function for compatibility reasons or if some day special processing would be required.
 function getConfiguredDomains() {
@@ -276,8 +280,10 @@ var R53_ALIAS = recordBuilder('R53_ALIAS', {
 
 // R53_ZONE(zone_id)
 function R53_ZONE(zone_id) {
-    return function(r) {
-        if (_.isObject(r.r53_alias)) {
+    return function (r) {
+        if (_isDomain(r)) {
+            r.meta.zone_id = zone_id;
+        } else if (_.isObject(r.r53_alias)) {
             r.r53_alias['zone_id'] = zone_id;
         } else {
             r.r53_alias = { zone_id: zone_id };
