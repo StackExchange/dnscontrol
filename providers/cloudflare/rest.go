@@ -20,8 +20,10 @@ const (
 	singleRecordURL      = recordsURL + "%s"
 	pageRulesURL         = zonesURL + "%s/pagerules/"
 	singlePageRuleURL    = pageRulesURL + "%s"
-	workerRoutesURL      = zonesURL + "%s/workers/routes/"
-	singleWorkerRouteURL = workerRoutesURL + "%s"
+	workersRoutesURL     = zonesURL + "%s/workers/routes/"
+	singleWorkerRouteURL = workersRoutesURL + "%s"
+	accountsURL          = baseURL + "accounts/"
+	workersScriptsURL    = accountsURL + "%s/workers/scripts/%s"
 )
 
 // get list of domains for account. Cache so the ids can be looked up from domain name
@@ -508,7 +510,7 @@ func (c *cloudflareProvider) sendPageRule(endpoint, method string, data string) 
 }
 
 func (c *cloudflareProvider) getWorkerRoutes(id string, domain string) ([]*models.RecordConfig, error) {
-	url := fmt.Sprintf(workerRoutesURL, id)
+	url := fmt.Sprintf(workersRoutesURL, id)
 	data := workerRouteResponse{}
 	if err := c.get(url, &data); err != nil {
 		return nil, fmt.Errorf("failed fetching worker route list from cloudflare: %s", err)
@@ -552,7 +554,7 @@ func (c *cloudflareProvider) updateWorkerRoute(recordID, domainID string, target
 }
 
 func (c *cloudflareProvider) createWorkerRoute(domainID string, target string) error {
-	endpoint := fmt.Sprintf(workerRoutesURL, domainID)
+	endpoint := fmt.Sprintf(workersRoutesURL, domainID)
 	return c.sendWorkerRoute(endpoint, "POST", target)
 }
 
@@ -581,6 +583,28 @@ func (c *cloudflareProvider) sendWorkerRoute(endpoint, method string, data strin
 	c.setHeaders(req)
 	// Cloudflare API returns error code 10001 without Content-Type.
 	req.Header.Set("Content-Type", "application/json")
+	_, err = handleActionResponse(http.DefaultClient.Do(req))
+	return err
+}
+
+func (c *cloudflareProvider) createTestWorker(workerName string) error {
+	endpoint := fmt.Sprintf(workersScriptsURL, c.AccountID, workerName)
+
+	script := []byte(`
+		addEventListener("fetch", (event) => {
+			event.respondWith(
+				new Response("Ok.", { status: 200 })
+			);
+	  	});
+	`)
+
+	buf := bytes.NewBuffer(script)
+	req, err := http.NewRequest("PUT", endpoint, buf)
+	if err != nil {
+		return err
+	}
+	c.setHeaders(req)
+	req.Header.Set("Content-Type", "application/javascript")
 	_, err = handleActionResponse(http.DefaultClient.Do(req))
 	return err
 }

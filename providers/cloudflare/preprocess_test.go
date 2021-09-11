@@ -126,3 +126,18 @@ func TestIpRewriting(t *testing.T) {
 		}
 	}
 }
+
+func TestPreprocess_CreateTestWorkers(t *testing.T) {
+	cf := &cloudflareProvider{}
+
+	// Tests related to CF_WORKER_ROUTE requires these two workers installed.
+	err := cf.createTestWorker("dnscontrol_integrationtest_cnn")
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	err = cf.createTestWorker("dnscontrol_integrationtest_msnbc")
+	if err != nil {
+		t.Fatal(err)
+	}
+}
