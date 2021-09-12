@@ -180,12 +180,18 @@ The Cloudflare provider can manage Worker Routes for your domains. Simply use th
 var CLOUDFLARE = NewDnsProvider('cloudflare','CLOUDFLAREAPI');
 
 D("foo.com", REG_NONE, DnsProvider(CLOUDFLARE),
+    { manage_workers: true}, // Enable editing workers.
+
     // Assign the patterns `api.foo.com/*` and `foo.com/api/*` to `my-worker` script.
     CF_WORKER_ROUTE("api.foo.com/*", "my-worker"),
     CF_WORKER_ROUTE("foo.com/api/*", "my-worker"),
 );
 
 {%endhighlight%}
+
+The API key you use must be enabled to edit workers.  In the portal, edit the API key,
+under "Permissions" add "Account", "Workers Scripts", "Edit". Without this permission you may see errors that mention "failed fetching worker route list from cloudflare: bad status code from cloudflare: 403 not 200"
+
 
 Please notice that if _any_ `CF_WORKER_ROUTE` function is used then `dnscontrol` will manage _all_
 Worker Routes for the domain. To be clear: this means it will delete existing routes that
