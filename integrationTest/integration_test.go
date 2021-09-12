@@ -52,7 +52,7 @@ func getProvider(t *testing.T) (providers.DNSServiceProvider, string, map[int]bo
 		// use this feature. Maybe because we didn't have the capabilities
 		// feature at the time?
 		if name == "CLOUDFLAREAPI" {
-			metadata = []byte(`{ "manage_redirects": true }`)
+			metadata = []byte(`{ "manage_redirects": true, "manage_workers": true }`)
 		}
 
 		provider, err := providers.CreateDNSProvider(name, cfg, metadata)

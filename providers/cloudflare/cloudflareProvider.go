@@ -75,6 +75,7 @@ type cloudflareProvider struct {
 	ipConversions   []transform.IPConversion
 	ignoredLabels   []string
 	manageRedirects bool
+	manageWorkers   bool
 }
 
 func labelMatches(label string, matches []string) bool {
@@ -192,11 +193,13 @@ func (c *cloudflareProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*m
 		records = append(records, prs...)
 	}
 
-	wrs, err := c.getWorkerRoutes(id, dc.Name)
-	if err != nil {
-		return nil, err
+	if c.manageWorkers {
+		wrs, err := c.getWorkerRoutes(id, dc.Name)
+		if err != nil {
+			return nil, err
+		}
+		records = append(records, wrs...)
 	}
-	records = append(records, wrs...)
 
 	for _, rec := range dc.Records {
 		if rec.Type == "ALIAS" {
@@ -503,12 +506,14 @@ func newCloudflare(m map[string]string, metadata json.RawMessage) (providers.DNS
 			IPConversions   string   `json:"ip_conversions"`
 			IgnoredLabels   []string `json:"ignored_labels"`
 			ManageRedirects bool     `json:"manage_redirects"`
+			ManageWorkers   bool     `json:"manage_workers"`
 		}{}
 		err := json.Unmarshal([]byte(metadata), parsedMeta)
 		if err != nil {
 			return nil, err
 		}
 		api.manageRedirects = parsedMeta.ManageRedirects
+		api.manageWorkers = parsedMeta.ManageWorkers
 		// ignored_labels:
 		api.ignoredLabels = append(api.ignoredLabels, parsedMeta.IgnoredLabels...)
 		if len(api.ignoredLabels) > 0 {

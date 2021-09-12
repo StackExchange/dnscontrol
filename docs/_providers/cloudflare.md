@@ -59,6 +59,7 @@ Domain level metadata available:
 Provider level metadata available:
    * `ip_conversions`
    * `manage_redirects`: set to `true` to manage page-rule based redirects
+   * `manage_workers`: set to `true` to manage cloud workers (`CF_WORKER_ROUTE`)
 
 What does on/off/full mean?
 
@@ -186,6 +187,6 @@ D("foo.com", REG_NONE, DnsProvider(CLOUDFLARE),
 
 {%endhighlight%}
 
-Please notice that if _any_ `CF_WORKER_ROUTE` function is used then `dnscontrol` will manage _all_ 
+Please notice that if _any_ `CF_WORKER_ROUTE` function is used then `dnscontrol` will manage _all_
 Worker Routes for the domain. To be clear: this means it will delete existing routes that
 were created outside of DNSControl.
