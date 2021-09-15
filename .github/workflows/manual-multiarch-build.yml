@@ -1,0 +1,33 @@
+---
+name: build-test-local
+
+on:
+  workflow_dispatch
+
+jobs:
+  build:
+    runs-on: ${{ matrix.arch }}
+    strategy:
+      matrix:
+        arch: ['x64', 'ARM64']
+    steps:
+    - name: Checkout repo
+      uses: actions/checkout@v2.3.4
+      with:
+        fetch-depth: 0
+    - name: Set up Go
+      uses: actions/setup-go@v2
+      with:
+        go-version: ^1.15
+    - name: Cache
+      uses: actions/cache@v2
+      with:
+        path: ~/go/pkg/mod
+        key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
+        restore-keys: |
+          ${{ runner.os }}-go-
+    - name: Build binaries
+      run: go run build/build.go
+    - name: Run unit tests
+      run: go test ./...
+...

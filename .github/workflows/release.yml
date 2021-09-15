@@ -6,7 +6,10 @@ name: release
 jobs:
   release:
     name: release
-    runs-on: ubuntu-latest
+    runs-on: ${{ matrix.arch }}
+    strategy:
+      matrix:
+        arch: ['x64', 'ARM64']
     steps:
 
     - name: Get release
@@ -44,13 +47,22 @@ jobs:
         fpm_args: 'usr/'
         fpm_opts: '-n dnscontrol -t rpm -s dir -v ${{ steps.versioner.outputs.RELEASE_VERSION }} --license "The MIT License (MIT)" --url "https://dnscontrol.org/" --description "DNSControl: Infrastructure as Code for DNS Zones"'
 
-    - name: Bundle DEB
+    - name: Bundle DEB (x86_64)
+      if: ${{ matrix.arch != 'ARM64' }}
       uses: bpicode/github-action-fpm@master
       with:
         fpm_args: 'usr/'
         fpm_opts: '-n dnscontrol -t deb -s dir -v ${{ steps.versioner.outputs.RELEASE_VERSION }} --license "The MIT License (MIT)" --url "https://dnscontrol.org/" --description "DNSControl: Infrastructure as Code for DNS Zones"'
 
+    - name: Bundle DEB (arm64)
+      if: ${{ matrix.arch == 'ARM64' }}
+      uses: bpicode/github-action-fpm@master
+      with:
+        fpm_args: 'usr/'
+        fpm_opts: '--architecture arm64 -n dnscontrol -t deb -s dir -v ${{ steps.versioner.outputs.RELEASE_VERSION }} --license "The MIT License (MIT)" --url "https://dnscontrol.org/" --description "DNSControl: Infrastructure as Code for DNS Zones"'
+
     - name: Upload dnscontrol-Darwin
+      if: ${{ matrix.arch != 'ARM64' }}
       uses: actions/upload-release-asset@v1
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -60,17 +72,30 @@ jobs:
         asset_name: dnscontrol-Darwin
         asset_content_type: application/octet-stream
 
-    - name: Upload dnscontrol-Linux
+    - name: Upload dnscontrol-Linux (x86_64)
+      if: ${{ matrix.arch != 'ARM64' }}
       uses: actions/upload-release-asset@v1
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
         upload_url: ${{ steps.get_release.outputs.upload_url }}
         asset_path: ./dnscontrol-Linux
-        asset_name: dnscontrol-Linux
+        asset_name: dnscontrol-Linux-x86_64
+        asset_content_type: application/octet-stream
+
+    - name: Upload dnscontrol-Linux (aarch64)
+      if: ${{ matrix.arch == 'ARM64' }}
+      uses: actions/upload-release-asset@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        upload_url: ${{ steps.get_release.outputs.upload_url }}
+        asset_path: ./dnscontrol-Linux
+        asset_name: dnscontrol-Linux-aarch64
         asset_content_type: application/octet-stream
 
     - name: Upload dnscontrol.exe
+      if: ${{ matrix.arch != 'ARM64' }}
       uses: actions/upload-release-asset@v1
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -80,7 +105,8 @@ jobs:
         asset_name: dnscontrol.exe
         asset_content_type: application/octet-stream
 
-    - name: Upload RPM
+    - name: Upload RPM (x86_64)
+      if: ${{ matrix.arch != 'ARM64' }}
       uses: actions/upload-release-asset@v1
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -90,7 +116,19 @@ jobs:
         asset_name: dnscontrol-${{ steps.versioner.outputs.RELEASE_VERSION }}-1.x86_64.rpm
         asset_content_type: application/x-rpm
 
-    - name: Upload DEB
+    - name: Upload RPM (aarch64)
+      if: ${{ matrix.arch == 'ARM64' }}
+      uses: actions/upload-release-asset@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        upload_url: ${{ steps.get_release.outputs.upload_url }}
+        asset_path: dnscontrol-${{ steps.versioner.outputs.RELEASE_VERSION }}-1.aarch64.rpm
+        asset_name: dnscontrol-${{ steps.versioner.outputs.RELEASE_VERSION }}-1.aarch64.rpm
+        asset_content_type: application/x-rpm
+
+    - name: Upload DEB (amd64)
+      if: ${{ matrix.arch != 'ARM64' }}
       uses: actions/upload-release-asset@v1
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -100,3 +138,13 @@ jobs:
         asset_name: dnscontrol_${{ steps.versioner.outputs.RELEASE_VERSION }}_amd64.deb
         asset_content_type: application/vnd.debian.binary-package
 
+    - name: Upload DEB (arm64)
+      if: ${{ matrix.arch == 'ARM64' }}
+      uses: actions/upload-release-asset@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        upload_url: ${{ steps.get_release.outputs.upload_url }}
+        asset_path: dnscontrol_${{ steps.versioner.outputs.RELEASE_VERSION }}_arm64.deb
+        asset_name: dnscontrol_${{ steps.versioner.outputs.RELEASE_VERSION }}_arm64.deb
+        asset_content_type: application/vnd.debian.binary-package
