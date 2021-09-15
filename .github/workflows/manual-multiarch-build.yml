@@ -1,0 +1,32 @@
+name: manual-multiarch-build
+
+on:
+  workflow_dispatch
+
+jobs:
+  build:
+    name: build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Get version/branch
+        run: echo ::set-output name=VERSION::${GITHUB_REF/refs\/tags\//}
+        id: get_version
+
+      - name: Set up Go
+        uses: actions/setup-go@v2.1.4
+        with:
+          go-version: ^1.15
+        id: go
+
+      - name: Checkout repo
+        uses: actions/checkout@v2.3.4
+        with:
+          fetch-depth: 0
+
+      - name: Check environment
+        run: |
+          .ci/check-environment.sh
+
+      - name: Build everything
+        run: |
+          .ci/build.sh "${{ steps.get_version.outputs.VERSION }}"
