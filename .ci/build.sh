@@ -25,9 +25,9 @@ for BUILD_OS_ARCH in darwin/amd64 darwin/arm64 freebsd/386 freebsd/arm freebsd/a
     SUFFIX=""
     [[ "${BUILD_OS}" == "windows" ]] && SUFFIX=".exe"
     go clean
-    echo "**** Executing 'env${BUILD_OPTS} GOOS=\"${BUILD_OS}\" GOARCH=\"${BUILD_ARCH1}\" go build -mod vendor -ldflags=\"-s -w -X main.SHA='\"${MAIN_SHA}\"' -X main.BuildTime='${MAIN_BUILDTIME}'\"'"
+    echo "**** Executing 'env${BUILD_OPTS} GOOS=\"${BUILD_OS}\" GOARCH=\"${BUILD_ARCH1}\" go build -mod vendor -ldflags=\"-s -w -X main.SHA=\"${MAIN_SHA}\" -X main.BuildTime=${MAIN_BUILDTIME}\"'"
     # shellcheck disable=SC2086
-    env${BUILD_OPTS} GOOS="${BUILD_OS}" GOARCH="${BUILD_ARCH1}" go build -mod vendor -ldflags="-s -w -X main.SHA='\"${MAIN_SHA}\"' -X main.BuildTime='${MAIN_BUILDTIME}'"
+    env${BUILD_OPTS} GOOS="${BUILD_OS}" GOARCH="${BUILD_ARCH1}" go build -mod vendor -ldflags="-s -w -X main.SHA=\"${MAIN_SHA}\" -X main.BuildTime=${MAIN_BUILDTIME}"
     if [[ -f "dnscontrol${SUFFIX}" ]]; then
         if [[ "${BUILD_OS}" == "linux" ]]; then
             if type fpm 2>/dev/null 1>&2; then
