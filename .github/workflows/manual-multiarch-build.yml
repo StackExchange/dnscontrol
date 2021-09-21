@@ -23,10 +23,10 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Check environment
+      - name: Check/prepare environment
         run: |
           .ci/check-environment.sh
 
       - name: Build everything
         run: |
-          .ci/build.sh "${{ steps.get_version.outputs.VERSION }}"
+          .ci/build.sh --debug "${{ steps.get_version.outputs.VERSION }}"

@@ -42,6 +42,7 @@ jobs:
         files: |
           .ci/build/*.deb
           .ci/build/*.rpm
+          .ci/build/*.txz
           .ci/build/*.zip
       env:
         GITHUB_TOKEN: ${{ github.token }}
