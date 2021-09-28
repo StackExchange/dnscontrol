@@ -2,6 +2,7 @@ package cloudflare
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
@@ -11,6 +12,7 @@ import (
 	"time"
 
 	"github.com/StackExchange/dnscontrol/v3/models"
+	"github.com/cloudflare/cloudflare-go"
 )
 
 const (
@@ -26,106 +28,50 @@ const (
 func (c *cloudflareProvider) fetchDomainList() error {
 	c.domainIndex = map[string]string{}
 	c.nameservers = map[string][]string{}
-	page := 1
-	for {
-		zr := &zoneResponse{}
-		url := fmt.Sprintf("%s?page=%d&per_page=50", zonesURL, page)
-		if err := c.get(url, zr); err != nil {
-			return fmt.Errorf("failed fetching domain list from cloudflare: %s", err)
-		}
-		if !zr.Success {
-			return fmt.Errorf("failed fetching domain list from cloudflare: %s", stringifyErrors(zr.Errors))
-		}
-		for _, zone := range zr.Result {
-			c.domainIndex[zone.Name] = zone.ID
-			c.nameservers[zone.Name] = append(c.nameservers[zone.Name], zone.Nameservers...)
-		}
-		ri := zr.ResultInfo
-		if len(zr.Result) == 0 || ri.Page*ri.PerPage >= ri.TotalCount {
-			break
-		}
-		page++
+	zones, err := c.apiProvider.ListZones(context.Background())
+	if err != nil {
+		return fmt.Errorf("failed fetching domain list from cloudflare: %s", err)
 	}
+
+	for _, zone := range zones {
+		c.domainIndex[zone.Name] = zone.ID
+		c.nameservers[zone.Name] = append(c.nameservers[zone.Name], zone.NameServers...)
+	}
+
 	return nil
 }
 
 // get all records for a domain
 func (c *cloudflareProvider) getRecordsForDomain(id string, domain string) ([]*models.RecordConfig, error) {
-	url := fmt.Sprintf(recordsURL, id)
-	page := 1
 	records := []*models.RecordConfig{}
-	for {
-		reqURL := fmt.Sprintf("%s?page=%d&per_page=100", url, page)
-		var data recordsResponse
-		if err := c.get(reqURL, &data); err != nil {
-			return nil, fmt.Errorf("failed fetching record list from cloudflare: %s", err)
+	rrs, err := c.apiProvider.DNSRecords(context.Background(), id, cloudflare.DNSRecord{})
+	if err != nil {
+		return nil, fmt.Errorf("failed fetching record list from cloudflare: %s", err)
+	}
+	for _, rec := range rrs {
+		rt, err := c.nativeToRecord(domain, rec)
+		if err != nil {
+			return nil, err
 		}
-		if !data.Success {
-			return nil, fmt.Errorf("failed fetching record list cloudflare: %s", stringifyErrors(data.Errors))
-		}
-		for _, rec := range data.Result {
-			rt, err := rec.nativeToRecord(domain)
-			if err != nil {
-				return nil, err
-			}
-			records = append(records, rt)
-		}
-		ri := data.ResultInfo
-		if len(data.Result) == 0 || ri.Page*ri.PerPage >= ri.TotalCount {
-			break
-		}
-		page++
+		records = append(records, rt)
 	}
 	return records, nil
 }
 
 // create a correction to delete a record
-func (c *cloudflareProvider) deleteRec(rec *cfRecord, domainID string) *models.Correction {
+func (c *cloudflareProvider) deleteRec(rec cloudflare.DNSRecord, domainID string) *models.Correction {
 	return &models.Correction{
 		Msg: fmt.Sprintf("DELETE record: %s %s %d %s (id=%s)", rec.Name, rec.Type, rec.TTL, rec.Content, rec.ID),
 		F: func() error {
-			endpoint := fmt.Sprintf(singleRecordURL, domainID, rec.ID)
-			req, err := http.NewRequest("DELETE", endpoint, nil)
-			if err != nil {
-				return err
-			}
-			c.setHeaders(req)
-			_, err = handleActionResponse(http.DefaultClient.Do(req))
+			err := c.apiProvider.DeleteDNSRecord(context.Background(), domainID, rec.ID)
 			return err
 		},
 	}
 }
 
 func (c *cloudflareProvider) createZone(domainName string) (string, error) {
-	type createZone struct {
-		Name string `json:"name"`
-
-		Account struct {
-			ID   string `json:"id"`
-			Name string `json:"name"`
-		} `json:"account"`
-	}
-	var id string
-	cz := &createZone{
-		Name: domainName}
-
-	if c.AccountID != "" || c.AccountName != "" {
-		cz.Account.ID = c.AccountID
-		cz.Account.Name = c.AccountName
-	}
-
-	buf := &bytes.Buffer{}
-	encoder := json.NewEncoder(buf)
-	if err := encoder.Encode(cz); err != nil {
-		return "", err
-	}
-	req, err := http.NewRequest("POST", zonesURL, buf)
-	if err != nil {
-		return "", err
-	}
-	c.setHeaders(req)
-	id, err = handleActionResponse(http.DefaultClient.Do(req))
-	return id, err
+	zone, err := c.apiProvider.CreateZone(context.Background(), domainName, false, cloudflare.Account{Name: c.AccountName, ID: c.AccountID}, "full")
+	return zone.ID, err
 }
 
 func cfDSData(rec *models.RecordConfig) *cfRecData {
@@ -513,12 +459,6 @@ func stringifyErrors(errors []interface{}) string {
 	return string(dat)
 }
 
-type recordsResponse struct {
-	basicResponse
-	Result     []*cfRecord `json:"result"`
-	ResultInfo pagingInfo  `json:"result_info"`
-}
-
 type basicResponse struct {
 	Success  bool          `json:"success"`
 	Errors   []interface{} `json:"errors"`
@@ -563,16 +503,6 @@ type pageRuleAction struct {
 type pageRuleFwdInfo struct {
 	URL        string `json:"url"`
 	StatusCode int    `json:"status_code"`
-}
-
-type zoneResponse struct {
-	basicResponse
-	Result []struct {
-		ID          string   `json:"id"`
-		Name        string   `json:"name"`
-		Nameservers []string `json:"name_servers"`
-	} `json:"result"`
-	ResultInfo pagingInfo `json:"result_info"`
 }
 
 type pagingInfo struct {
