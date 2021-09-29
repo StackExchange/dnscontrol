@@ -150,7 +150,8 @@ func (c *cloudflareProvider) createRec(rec *models.RecordConfig, domainID string
 			} else if rec.Type == "DS" {
 				cf.Data = cfDSData(rec)
 			}
-			_, err := c.cfClient.CreateDNSRecord(context.Background(), domainID, cf)
+			resp, err := c.cfClient.CreateDNSRecord(context.Background(), domainID, cf)
+			id = resp.Result.ID
 			return err
 		},
 	}}
