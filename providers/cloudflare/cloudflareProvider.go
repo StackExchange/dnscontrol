@@ -73,7 +73,7 @@ type cloudflareProvider struct {
 	ipConversions   []transform.IPConversion
 	ignoredLabels   []string
 	manageRedirects bool
-	apiProvider     *cloudflare.API
+	cfClient        *cloudflare.API
 }
 
 func labelMatches(label string, matches []string) bool {
@@ -224,7 +224,7 @@ func (c *cloudflareProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*m
 		if ex.Type == "PAGE_RULE" {
 			corrections = append(corrections, &models.Correction{
 				Msg: d.String(),
-				F:   func() error { return c.deletePageRule(ex.Original.(*pageRule).ID, id) },
+				F:   func() error { return c.deletePageRule(ex.Original.(cloudflare.PageRule).ID, id) },
 			})
 		} else {
 			corr := c.deleteRec(ex.Original.(cloudflare.DNSRecord), id)
@@ -262,7 +262,7 @@ func (c *cloudflareProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*m
 		if rec.Type == "PAGE_RULE" {
 			corrections = append(corrections, &models.Correction{
 				Msg: d.String(),
-				F:   func() error { return c.updatePageRule(ex.Original.(*pageRule).ID, id, rec.GetTargetField()) },
+				F:   func() error { return c.updatePageRule(ex.Original.(cloudflare.PageRule).ID, id, rec.GetTargetField()) },
 			})
 		} else {
 			e := ex.Original.(cloudflare.DNSRecord)
@@ -461,9 +461,9 @@ func newCloudflare(m map[string]string, metadata json.RawMessage) (providers.DNS
 
 	var err error
 	if api.APIToken != "" {
-		api.apiProvider, err = cloudflare.NewWithAPIToken(api.APIToken)
+		api.cfClient, err = cloudflare.NewWithAPIToken(api.APIToken)
 	} else {
-		api.apiProvider, err = cloudflare.New(api.APIKey, api.APIUser)
+		api.cfClient, err = cloudflare.New(api.APIKey, api.APIUser)
 	}
 
 	if err != nil {
