@@ -467,7 +467,7 @@ func newCloudflare(m map[string]string, metadata json.RawMessage) (providers.DNS
 	}
 
 	if err != nil {
-		return nil, fmt.Errorf("cloudflare did not like whatever you did %s", err)
+		return nil, fmt.Errorf("cloudflare credentials: %w", err)
 	}
 
 	// Check account data if set
