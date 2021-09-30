@@ -385,6 +385,20 @@ func cfRedirTemp(pattern, target string) *models.RecordConfig {
 	return r
 }
 
+func cfProxyA(name, target, status string) *models.RecordConfig {
+	r := a(name, target)
+	r.Metadata = make(map[string]string)
+	r.Metadata["cloudflare_proxy"] = status
+	return r
+}
+
+func cfProxyCNAME(name, target, status string) *models.RecordConfig {
+	r := cname(name, target)
+	r.Metadata = make(map[string]string)
+	r.Metadata["cloudflare_proxy"] = status
+	return r
+}
+
 func ns(name, target string) *models.RecordConfig {
 	return makeRec(name, target, "NS")
 }
@@ -1358,6 +1372,17 @@ func makeTests(t *testing.T) []*TestGroup {
 			//	cfRedirTemp("cnn.**current-domain-no-trailing**/*", "https://www.cnn.com/$1"),
 			//	cfRedirTemp("nytimes.**current-domain-no-trailing**/*", "https://www.nytimes.com/$1"),
 			//),
+		),
+
+		testgroup("CF_PROXY",
+			only("CLOUDFLAREAPI"),
+			tc("proxyon", cfProxyA("proxyme", "1.2.3.4", "on")),
+			tc("proxychangetarget", cfProxyA("proxyme", "1.2.3.5", "on")),
+			tc("proxychangeproxy", cfProxyA("proxyme", "1.2.3.5", "off")),
+			clear(),
+			tc("proxycname", cfProxyCNAME("anewproxy", "example.com.", "on")),
+			tc("proxycnamechange", cfProxyCNAME("anewproxy", "example.com.", "off")),
+			clear(),
 		),
 	}
 
