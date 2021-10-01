@@ -311,7 +311,13 @@ func (c *cloudflareProvider) deleteWorkerRoute(recordID, domainID string) error 
 }
 
 func (c *cloudflareProvider) updateWorkerRoute(recordID, domainID string, target string) error {
-	return c.updateWorkerRoute(recordID, domainID, target)
+	// Causing stack overflow (!?)
+	// return c.updateWorkerRoute(recordID, domainID, target)
+
+	if err := c.deleteWorkerRoute(recordID, domainID); err != nil {
+		return err
+	}
+	return c.createWorkerRoute(domainID, target)
 }
 
 func (c *cloudflareProvider) createWorkerRoute(domainID string, target string) error {
