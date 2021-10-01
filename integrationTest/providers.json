@@ -26,6 +26,7 @@
     "apitoken": "$CLOUDFLAREAPI_TOKEN",
     "apiuser": "$CLOUDFLAREAPI_USER",
     "domain": "$CLOUDFLAREAPI_DOMAIN",
+    "enable_workers": "$CLOUDFLAREAPI_ENABLE_WORKERS",
     "accountid": "$CLOUDFLAREAPI_ACCOUNTID",
     "accountname": "$CLOUDFLAREAPI_ACCOUNTNAME"
   },

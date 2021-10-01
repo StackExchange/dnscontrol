@@ -70,6 +70,7 @@ type cloudflareProvider struct {
 	APIUser         string `json:"apiuser"`
 	AccountID       string `json:"accountid"`
 	AccountName     string `json:"accountname"`
+	EnableWorkers   bool   `json:"enable_workers"`
 	domainIndex     map[string]string
 	nameservers     map[string][]string
 	ipConversions   []transform.IPConversion
@@ -491,10 +492,22 @@ func newCloudflare(m map[string]string, metadata json.RawMessage) (providers.DNS
 	api.APIUser, api.APIKey, api.APIToken = m["apiuser"], m["apikey"], m["apitoken"]
 	// check api keys from creds json file
 	if api.APIToken == "" && (api.APIKey == "" || api.APIUser == "") {
-		return nil, fmt.Errorf("if cloudflare apitoken is not set, apikey and apiuser must be provided")
+		return nil, fmt.Errorf("if cloudflare apitoken is NOT set, apikey and apiuser must be provided")
 	}
 	if api.APIToken != "" && (api.APIKey != "" || api.APIUser != "") {
 		return nil, fmt.Errorf("if cloudflare apitoken is set, apikey and apiuser should not be provided")
+	}
+
+	if api.EnableWorkers {
+		//AccountID       string `json:"accountid"`
+		//AccountName     string `json:"accountname"`
+		//EnableWorkers   bool   `json:"enable_workers"`
+		if api.AccountID == "" {
+			return nil, fmt.Errorf("if cloudflare enable_workers is set, accountid must be provided")
+		}
+		if api.AccountName == "" {
+			return nil, fmt.Errorf("if cloudflare enable_workers is set, accountname must be provided")
+		}
 	}
 
 	var err error
@@ -684,15 +697,20 @@ func (c *cloudflareProvider) EnsureDomainExists(domain string) error {
 // PrepareCloudflareWorkers creates Cloudflare Workers required for CF_WORKER_ROUTE tests.
 func PrepareCloudflareTestWorkers(t *testing.T, prv providers.DNSServiceProvider) {
 	cf, ok := prv.(*cloudflareProvider)
-	if ok {
-		err := cf.createTestWorker("dnscontrol_integrationtest_cnn")
-		if err != nil {
-			t.Fatal(err)
-		}
+	if !ok { // Not cloudflare?  Exit.
+		return
+	}
+	if !cf.EnableWorkers { // Workers not enabled? Exit.
+		return
+	}
 
-		err = cf.createTestWorker("dnscontrol_integrationtest_msnbc")
-		if err != nil {
-			t.Fatal(err)
-		}
+	err := cf.createTestWorker("dnscontrol_integrationtest_cnn")
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	err = cf.createTestWorker("dnscontrol_integrationtest_msnbc")
+	if err != nil {
+		t.Fatal(err)
 	}
 }
