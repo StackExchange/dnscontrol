@@ -70,7 +70,7 @@ type cloudflareProvider struct {
 	APIUser         string `json:"apiuser"`
 	AccountID       string `json:"accountid"`
 	AccountName     string `json:"accountname"`
-	EnableWorkers   bool   `json:"enable_workers"`
+	EnableWorkers   string `json:"enable_workers"`
 	domainIndex     map[string]string
 	nameservers     map[string][]string
 	ipConversions   []transform.IPConversion
@@ -498,16 +498,14 @@ func newCloudflare(m map[string]string, metadata json.RawMessage) (providers.DNS
 		return nil, fmt.Errorf("if cloudflare apitoken is set, apikey and apiuser should not be provided")
 	}
 
-	if api.EnableWorkers {
-		//AccountID       string `json:"accountid"`
-		//AccountName     string `json:"accountname"`
-		//EnableWorkers   bool   `json:"enable_workers"`
+	if api.EnableWorkers != "" {
 		if api.AccountID == "" {
 			return nil, fmt.Errorf("if cloudflare enable_workers is set, accountid must be provided")
 		}
 		if api.AccountName == "" {
 			return nil, fmt.Errorf("if cloudflare enable_workers is set, accountname must be provided")
 		}
+		api.manageWorkers = true
 	}
 
 	var err error
@@ -534,14 +532,15 @@ func newCloudflare(m map[string]string, metadata json.RawMessage) (providers.DNS
 			IPConversions   string   `json:"ip_conversions"`
 			IgnoredLabels   []string `json:"ignored_labels"`
 			ManageRedirects bool     `json:"manage_redirects"`
-			ManageWorkers   bool     `json:"manage_workers"`
 		}{}
 		err := json.Unmarshal([]byte(metadata), parsedMeta)
 		if err != nil {
 			return nil, err
 		}
 		api.manageRedirects = parsedMeta.ManageRedirects
-		api.manageWorkers = parsedMeta.ManageWorkers
+		if api.EnableWorkers != "" {
+			api.manageWorkers = true
+		}
 		// ignored_labels:
 		api.ignoredLabels = append(api.ignoredLabels, parsedMeta.IgnoredLabels...)
 		if len(api.ignoredLabels) > 0 {
@@ -700,7 +699,7 @@ func PrepareCloudflareTestWorkers(t *testing.T, prv providers.DNSServiceProvider
 	if !ok { // Not cloudflare?  Exit.
 		return
 	}
-	if !cf.EnableWorkers { // Workers not enabled? Exit.
+	if !cf.manageWorkers { // Workers not enabled? Exit.
 		return
 	}
 
