@@ -10,6 +10,7 @@ import (
 
 	"github.com/StackExchange/dnscontrol/v3/models"
 	"github.com/StackExchange/dnscontrol/v3/pkg/diff"
+	"github.com/StackExchange/dnscontrol/v3/pkg/txtutil"
 )
 
 // HXRecord covers an individual DNS resource record.
@@ -69,6 +70,7 @@ func (n *HXClient) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Corr
 
 	// Normalize
 	models.PostProcessRecords(actual)
+	txtutil.SplitSingleLongTxt(dc.Records)
 
 	differ := diff.New(dc)
 	_, create, del, mod, err := differ.IncrementalDiff(actual)
@@ -280,8 +282,11 @@ func encodeTxt(txts []string) string {
 
 	if len(txts) > 1 {
 		ans = ""
-		for _, t := range txts {
+		for i, t := range txts {
 			ans += `"` + strings.Replace(t, `"`, `\"`, -1) + `"`
+			if len(txts) != i - 1 {
+				ans += " "
+			}
 		}
 	}
 	return ans
