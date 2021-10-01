@@ -506,6 +506,8 @@ func newCloudflare(m map[string]string, metadata json.RawMessage) (providers.DNS
 		api.cfClient.AccountID = m["accountid"]
 	}
 
+	api.cfClient.AccountID = api.AccountID
+
 	if len(metadata) > 0 {
 		parsedMeta := &struct {
 			IPConversions   string   `json:"ip_conversions"`
