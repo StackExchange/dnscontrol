@@ -23,19 +23,29 @@ type easynameProvider struct {
 	domains  map[string]easynameDomain
 }
 
+type easynameResponse interface {
+	GetStatus() easynameResponseStatus
+}
+
 type easynameResponseStatus struct {
 	Type    string `json:"type"`
 	Code    int64  `json:"code"`
 	Message string `json:"message"`
 }
-type easynameResponse struct {
+
+type easynameResponseData struct {
+	easynameResponseStatus
 	Timestamp int64                   `json:"timestamp"`
 	Signature string                  `json:"signature"`
 	Status    *easynameResponseStatus `json:"status"`
 }
 
+func (c easynameResponseData) GetStatus() easynameResponseStatus {
+	return *c.Status
+}
+
 type easynameDomainList struct {
-	easynameResponse
+	easynameResponseData
 	Domains []easynameDomain `json:"data"`
 }
 
@@ -51,7 +61,7 @@ type easynameDomain struct {
 }
 
 type easynameNameserveChange struct {
-	easynameResponse
+	easynameResponseData
 	Nameservers map[string]string `json:"data"`
 }
 
@@ -78,6 +88,29 @@ func hashEncodeString(s string) string {
 	return base64.StdEncoding.EncodeToString([]byte(hash))
 }
 
+func (c *easynameProvider) request(method, uri string, body *bytes.Buffer, result easynameResponse) error {
+	httpClient := http.Client{}
+	req, err := http.NewRequest(method, uri, body)
+	if err != nil {
+		return err
+	}
+	req.Header.Set("X-User-ApiKey", c.apikey)
+	req.Header.Set("X-User-Authentication", c.apiauth)
+	resp, err := httpClient.Do(req)
+	if err != nil {
+		return err
+	}
+
+	bodyString, _ := ioutil.ReadAll(resp.Body)
+	json.Unmarshal(bodyString, &result)
+
+	status := result.GetStatus()
+	if status.Type != "success" && status.Type != "pending" {
+		return fmt.Errorf("easyname error (%d): %s", status.Code, status.Message)
+	}
+	return nil
+}
+
 func (c *easynameProvider) updateNameservers(nss []string, domain int) error {
 	var signature string
 	enc := easynameNameserveChange{Nameservers: map[string]string{}}
@@ -102,25 +135,11 @@ func (c *easynameProvider) updateNameservers(nss []string, domain int) error {
 		return err
 	}
 
-	httpClient := http.Client{}
-	req, err := http.NewRequest("POST", fmt.Sprintf("https://api.easyname.com/domain/%d/nameserverchange", domain), bytes.NewBuffer(body))
-	if err != nil {
-		return err
-	}
-	req.Header.Set("X-User-ApiKey", c.apikey)
-	req.Header.Set("X-User-Authentication", c.apiauth)
-	resp, err := httpClient.Do(req)
-	if err != nil {
+	er := easynameResponseData{}
+	if err = c.request("POST", fmt.Sprintf("https://api.easyname.com/domain/%d/nameserverchange", domain), bytes.NewBuffer(body), &er); err != nil {
 		return err
 	}
 
-	var er *easynameResponse
-	bodyString, _ := ioutil.ReadAll(resp.Body)
-	json.Unmarshal(bodyString, &er)
-
-	if er.Status.Type != "success" && er.Status.Type != "pending" {
-		return fmt.Errorf("unable to update easyname nameservers (%d): %s", er.Status.Code, er.Status.Message)
-	}
 	return nil
 }
 
@@ -138,22 +157,10 @@ func (c *easynameProvider) getDomain(domain string) (easynameDomain, error) {
 
 func (c *easynameProvider) fetchDomainList() error {
 	c.domains = map[string]easynameDomain{}
-	httpClient := http.Client{}
-	req, err := http.NewRequest("GET", "https://api.easyname.com/domain", nil)
-	if err != nil {
+	domains := easynameDomainList{}
+	if err := c.request("GET", "https://api.easyname.com/domain", &bytes.Buffer{}, &domains); err != nil {
 		return err
 	}
-	req.Header.Set("X-User-ApiKey", c.apikey)
-	req.Header.Set("X-User-Authentication", c.apiauth)
-
-	resp, err := httpClient.Do(req)
-	if err != nil {
-		return err
-	}
-
-	bodyString, _ := ioutil.ReadAll(resp.Body)
-	var domains *easynameDomainList
-	json.Unmarshal(bodyString, &domains)
 
 	for _, domain := range domains.Domains {
 		c.domains[domain.Domain] = domain
