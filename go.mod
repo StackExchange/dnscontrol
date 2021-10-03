@@ -54,7 +54,7 @@ require (
 	github.com/pkg/errors v0.9.1
 	github.com/pquerna/otp v1.3.0
 	github.com/qdm12/reprint v0.0.0-20200326205758-722754a53494
-	github.com/robertkrimen/otto v0.0.0-20210614181706-373ff5438452
+	github.com/robertkrimen/otto v0.0.0-20210927222213-f9375a256948
 	github.com/russross/blackfriday/v2 v2.1.0 // indirect
 	github.com/sergi/go-diff v1.1.0 // indirect
 	github.com/smartystreets/assertions v1.0.0 // indirect
