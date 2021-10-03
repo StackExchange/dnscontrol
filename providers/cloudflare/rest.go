@@ -56,7 +56,7 @@ func (c *cloudflareProvider) deleteRec(rec cloudflare.DNSRecord, domainID string
 }
 
 func (c *cloudflareProvider) createZone(domainName string) (string, error) {
-	zone, err := c.cfClient.CreateZone(context.Background(), domainName, false, cloudflare.Account{Name: c.AccountName, ID: c.AccountID}, "full")
+	zone, err := c.cfClient.CreateZone(context.Background(), domainName, false, cloudflare.Account{ID: c.cfClient.AccountID}, "full")
 	return zone.ID, err
 }
 
