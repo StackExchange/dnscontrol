@@ -120,7 +120,7 @@ func (c *easynameProvider) getDomain(domain string) (easynameDomain, error) {
 
 	d, ok := c.domains[domain]
 	if !ok {
-		return easynameDomain{}, fmt.Errorf("nameservers not found for %s in easyname account", domain)
+		return easynameDomain{}, fmt.Errorf("the domain %s was not found in the easyname account", domain)
 	}
 	return d, nil
 }
