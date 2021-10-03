@@ -9,6 +9,16 @@ import (
 // supportable by this provider.
 func AuditRecords(records []*models.RecordConfig) error {
 
+	// if err := recordaudit.TxtNoLongStrings(records); err != nil {
+	// 	return err
+	// }
+	// Not needed as of 2021-03-26
+
+	// if err := recordaudit.TxtNoMultipleStrings(records); err != nil {
+	// 	 return err
+	// }
+	// Not needed as of 2021-10-03
+
 	if err := recordaudit.TxtNotEmpty(records); err != nil {
 		return err
 	}
