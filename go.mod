@@ -60,7 +60,7 @@ require (
 	github.com/smartystreets/assertions v1.0.0 // indirect
 	github.com/softlayer/softlayer-go v1.0.3
 	github.com/stretchr/testify v1.7.0
-	github.com/tdewolff/minify/v2 v2.9.21
+	github.com/tdewolff/minify/v2 v2.9.22
 	github.com/transip/gotransip/v6 v6.6.1
 	github.com/urfave/cli/v2 v2.3.0
 	github.com/vultr/govultr v1.1.1
