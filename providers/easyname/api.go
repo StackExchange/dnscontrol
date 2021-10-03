@@ -8,20 +8,8 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net/http"
-	"sort"
-	"strings"
 	"time"
-
-	"github.com/StackExchange/dnscontrol/v3/models"
-	"github.com/StackExchange/dnscontrol/v3/providers"
 )
-
-type easynameProvider struct {
-	apikey   string
-	apiauth  string
-	signSalt string
-	domains  map[string]easynameDomain
-}
 
 type easynameResponse interface {
 	GetStatus() easynameResponseStatus
@@ -63,24 +51,6 @@ type easynameDomain struct {
 type easynameNameserveChange struct {
 	easynameResponseData
 	Nameservers map[string]string `json:"data"`
-}
-
-func init() {
-	providers.RegisterRegistrarType("EASYNAME", newEasyname)
-}
-
-func newEasyname(m map[string]string) (providers.Registrar, error) {
-	api := &easynameProvider{}
-
-	if m["email"] == "" || m["userid"] == "" || m["apikey"] == "" || m["authsalt"] == "" || m["signsalt"] == "" {
-		return nil, fmt.Errorf("missing easyname email, userid, apikey, and/or salt")
-	}
-
-	api.apikey, api.signSalt = m["apikey"], m["signsalt"]
-	composed := fmt.Sprintf(m["authsalt"], m["userid"], m["email"])
-	api.apiauth = hashEncodeString(composed)
-
-	return api, nil
 }
 
 func hashEncodeString(s string) string {
@@ -167,39 +137,4 @@ func (c *easynameProvider) fetchDomainList() error {
 	}
 
 	return nil
-}
-
-// GetRegistrarCorrections gathers corrections that would being n to match dc.
-func (c *easynameProvider) GetRegistrarCorrections(dc *models.DomainConfig) ([]*models.Correction, error) {
-	domain, err := c.getDomain(dc.Name)
-	if err != nil {
-		return nil, err
-	}
-
-	nss := []string{}
-	for _, ns := range []string{domain.NameServer1, domain.NameServer2, domain.NameServer3, domain.NameServer4, domain.NameServer5, domain.NameServer6} {
-		if ns != "" {
-			nss = append(nss, ns)
-		}
-	}
-	foundNameservers := strings.Join(nss, ",")
-
-	expected := []string{}
-	for _, ns := range dc.Nameservers {
-		expected = append(expected, ns.Name)
-	}
-	sort.Strings(expected)
-	expectedNameservers := strings.Join(expected, ",")
-
-	if foundNameservers != expectedNameservers {
-		return []*models.Correction{
-			{
-				Msg: fmt.Sprintf("Update nameservers %s -> %s", foundNameservers, expectedNameservers),
-				F: func() error {
-					return c.updateNameservers(expected, domain.Id)
-				},
-			},
-		}, nil
-	}
-	return nil, nil
 }
