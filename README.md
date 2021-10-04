@@ -49,7 +49,7 @@ Currently supported DNS providers:
  - TransIP
  - Vultr
 
-Currently support Domain Registrars:
+Currently supported Domain Registrars:
  - AWS Route 53
  - CSC Global
  - DNSOVERHTTPS
