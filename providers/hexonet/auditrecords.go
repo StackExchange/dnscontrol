@@ -14,10 +14,5 @@ func AuditRecords(records []*models.RecordConfig) error {
 	}
 	// Still needed as of 2021-10-01
 
-	if err := recordaudit.TxtNoTrailingSpace(records); err != nil {
-		return err
-	}
-	// Still needed as of 2021-10-01
-
 	return nil
 }

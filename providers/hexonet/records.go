@@ -278,18 +278,12 @@ func (n *HXClient) deleteRecordString(record *HXRecord, domain string) string {
 
 // encodeTxt encodes TxtStrings for sending in the CREATE/MODIFY API:
 func encodeTxt(txts []string) string {
-	ans := txts[0]
-
-	if len(txts) > 1 {
-		ans = ""
-		for i, t := range txts {
-			ans += `"` + strings.Replace(t, `"`, `\"`, -1) + `"`
-			if len(txts) != i - 1 {
-				ans += " "
-			}
-		}
+	var r []string
+	for _, txt := range txts {
+		n := `"` + strings.Replace(txt, `"`, `\"`, -1) + `"`
+		r = append(r, n)
 	}
-	return ans
+	return strings.Join(r, " ")
 }
 
 // finds a string surrounded by quotes that might contain an escaped quote character.
