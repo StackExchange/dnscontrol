@@ -16,6 +16,7 @@ import (
 	_ "github.com/StackExchange/dnscontrol/v3/providers/dnsimple"
 	_ "github.com/StackExchange/dnscontrol/v3/providers/dnsmadeeasy"
 	_ "github.com/StackExchange/dnscontrol/v3/providers/doh"
+	_ "github.com/StackExchange/dnscontrol/v3/providers/easyname"
 	_ "github.com/StackExchange/dnscontrol/v3/providers/exoscale"
 	_ "github.com/StackExchange/dnscontrol/v3/providers/gandiv5"
 	_ "github.com/StackExchange/dnscontrol/v3/providers/gcloud"

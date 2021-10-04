@@ -10,6 +10,7 @@ providers/doh @mikenz
 providers/digitalocean @Deraen
 providers/dnsimple @aeden
 providers/dnsmadeeasy @vojtad
+providers/easyname @tresni
 providers/gandi_v5 @TomOnTime
 # providers/gcloud
 providers/hedns @rblenkinsopp
