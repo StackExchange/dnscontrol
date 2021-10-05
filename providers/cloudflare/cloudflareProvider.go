@@ -6,7 +6,6 @@ import (
 	"log"
 	"net"
 	"strings"
-	"testing"
 
 	"github.com/cloudflare/cloudflare-go"
 	"github.com/miekg/dns/dnsutil"
@@ -506,8 +505,6 @@ func newCloudflare(m map[string]string, metadata json.RawMessage) (providers.DNS
 		api.cfClient.AccountID = m["accountid"]
 	}
 
-	api.cfClient.AccountID = api.AccountID
-
 	if len(metadata) > 0 {
 		parsedMeta := &struct {
 			IPConversions   string   `json:"ip_conversions"`
@@ -674,17 +671,18 @@ func (c *cloudflareProvider) EnsureDomainExists(domain string) error {
 }
 
 // PrepareCloudflareWorkers creates Cloudflare Workers required for CF_WORKER_ROUTE tests.
-func PrepareCloudflareTestWorkers(t *testing.T, prv providers.DNSServiceProvider) {
+func PrepareCloudflareTestWorkers(prv providers.DNSServiceProvider) error {
 	cf, ok := prv.(*cloudflareProvider)
 	if ok {
 		err := cf.createTestWorker("dnscontrol_integrationtest_cnn")
 		if err != nil {
-			t.Fatal(err)
+			return err
 		}
 
 		err = cf.createTestWorker("dnscontrol_integrationtest_msnbc")
 		if err != nil {
-			t.Fatal(err)
+			return err
 		}
 	}
+	return nil
 }

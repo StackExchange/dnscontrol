@@ -70,8 +70,12 @@ func getProvider(t *testing.T) (providers.DNSServiceProvider, string, map[int]bo
 			}
 		}
 
-		// Cloudflare only. Will do nothing if provider != *cloudflareProvider.
-		cloudflare.PrepareCloudflareTestWorkers(t, provider)
+		if name == "CLOUDFLAREAPI" {
+			// Cloudflare only. Will do nothing if provider != *cloudflareProvider.
+			if err := cloudflare.PrepareCloudflareTestWorkers(provider); err != nil {
+				t.Fatal(err)
+			}
+		}
 
 		return provider, cfg["domain"], fails, cfg
 	}
