@@ -26,8 +26,7 @@
     "apitoken": "$CLOUDFLAREAPI_TOKEN",
     "apiuser": "$CLOUDFLAREAPI_USER",
     "domain": "$CLOUDFLAREAPI_DOMAIN",
-    "accountid": "$CLOUDFLAREAPI_ACCOUNTID",
-    "accountname": "$CLOUDFLAREAPI_ACCOUNTNAME"
+    "accountid": "$CLOUDFLAREAPI_ACCOUNTID"
   },
   "CLOUDFLAREAPI_OLD": {
     "apikey": "$CF_KEY",
