@@ -80,6 +80,7 @@ Maintainers of contributed providers:
 * `DNSOVERHTTPS` @mikenz
 * `DNSIMPLE` @aeden
 * `DNSMADEEASY` @vojtad
+* `EASYNAME` @tresni
 * `EXOSCALE` @pierre-emmanuelJ
 * `GANDI_V5` @TomOnTime
 * `HEDNS` @rblenkinsopp

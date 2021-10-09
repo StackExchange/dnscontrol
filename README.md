@@ -23,7 +23,7 @@ Currently supported DNS providers:
  - BIND
  - ClouDNS
  - Cloudflare
- - DNSOVERHTTPS
+ - deSEC
  - DNS Made Easy
  - DNSimple
  - DigitalOcean
@@ -35,7 +35,6 @@ Currently supported DNS providers:
  - hosting.de
  - Hurricane Electric DNS
  - INWX
- - Internet.bs
  - Linode
  - Microsoft Windows Server DNS Server
  - NS1
@@ -44,13 +43,27 @@ Currently supported DNS providers:
  - Netcup
  - OVH
  - OctoDNS
- - OpenSRS
  - Oracle Cloud
  - PowerDNS
  - SoftLayer
  - TransIP
  - Vultr
- - deSEC
+
+Currently supported Domain Registrars:
+ - AWS Route 53
+ - CSC Global
+ - DNSOVERHTTPS
+ - easyname
+ - Gandi
+ - HEXONET
+ - hosting.de
+ - Internet.bs
+ - INWX
+ - Name.com
+ - Namecheap
+ - OVH
+ - OpenSRS
+
 
 At Stack Overflow, we use this system to manage hundreds of domains
 and subdomains across multiple registrars and DNS providers.
