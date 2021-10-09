@@ -10,6 +10,7 @@ import (
 
 	"github.com/StackExchange/dnscontrol/v3/models"
 	"github.com/StackExchange/dnscontrol/v3/pkg/diff"
+	"github.com/StackExchange/dnscontrol/v3/pkg/txtutil"
 )
 
 // HXRecord covers an individual DNS resource record.
@@ -69,6 +70,7 @@ func (n *HXClient) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Corr
 
 	// Normalize
 	models.PostProcessRecords(actual)
+	txtutil.SplitSingleLongTxt(dc.Records)
 
 	differ := diff.New(dc)
 	_, create, del, mod, err := differ.IncrementalDiff(actual)
@@ -276,15 +278,12 @@ func (n *HXClient) deleteRecordString(record *HXRecord, domain string) string {
 
 // encodeTxt encodes TxtStrings for sending in the CREATE/MODIFY API:
 func encodeTxt(txts []string) string {
-	ans := txts[0]
-
-	if len(txts) > 1 {
-		ans = ""
-		for _, t := range txts {
-			ans += `"` + strings.Replace(t, `"`, `\"`, -1) + `"`
-		}
+	var r []string
+	for _, txt := range txts {
+		n := `"` + strings.Replace(txt, `"`, `\"`, -1) + `"`
+		r = append(r, n)
 	}
-	return ans
+	return strings.Join(r, " ")
 }
 
 // finds a string surrounded by quotes that might contain an escaped quote character.

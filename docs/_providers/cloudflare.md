@@ -43,7 +43,6 @@ If your Cloudflare account has access to multiple Cloudflare accounts, you can s
   "cloudflare": {
     "apitoken": "...",
     "accountid": "your-cloudflare-account-id",
-    "accountname": "your-cloudflare-account-name"
   }
 }
 {% endhighlight %}

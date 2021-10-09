@@ -25,7 +25,6 @@ Info required in `creds.json`:
    - apikey
    - apiuser
    - accountid (optional)
-   - accountname (optional)
 
 Record level metadata available:
    - cloudflare_proxy ("on", "off", or "full")
@@ -63,11 +62,6 @@ func init() {
 
 // cloudflareProvider is the handle for API calls.
 type cloudflareProvider struct {
-	APIKey          string `json:"apikey"`
-	APIToken        string `json:"apitoken"`
-	APIUser         string `json:"apiuser"`
-	AccountID       string `json:"accountid"`
-	AccountName     string `json:"accountname"`
 	domainIndex     map[string]string
 	nameservers     map[string][]string
 	ipConversions   []transform.IPConversion
@@ -450,20 +444,19 @@ func (c *cloudflareProvider) preprocessConfig(dc *models.DomainConfig) error {
 
 func newCloudflare(m map[string]string, metadata json.RawMessage) (providers.DNSServiceProvider, error) {
 	api := &cloudflareProvider{}
-	api.APIUser, api.APIKey, api.APIToken = m["apiuser"], m["apikey"], m["apitoken"]
 	// check api keys from creds json file
-	if api.APIToken == "" && (api.APIKey == "" || api.APIUser == "") {
+	if m["apitoken"] == "" && (m["apikey"] == "" || m["apiuser"] == "") {
 		return nil, fmt.Errorf("if cloudflare apitoken is not set, apikey and apiuser must be provided")
 	}
-	if api.APIToken != "" && (api.APIKey != "" || api.APIUser != "") {
+	if m["apitoken"] != "" && (m["apikey"] != "" || m["apiuser"] != "") {
 		return nil, fmt.Errorf("if cloudflare apitoken is set, apikey and apiuser should not be provided")
 	}
 
 	var err error
-	if api.APIToken != "" {
-		api.cfClient, err = cloudflare.NewWithAPIToken(api.APIToken)
+	if m["apitoken"] != "" {
+		api.cfClient, err = cloudflare.NewWithAPIToken(m["apitoken"])
 	} else {
-		api.cfClient, err = cloudflare.New(api.APIKey, api.APIUser)
+		api.cfClient, err = cloudflare.New(m["apikey"], m["apiuser"])
 	}
 
 	if err != nil {
@@ -471,9 +464,8 @@ func newCloudflare(m map[string]string, metadata json.RawMessage) (providers.DNS
 	}
 
 	// Check account data if set
-	api.AccountID, api.AccountName = m["accountid"], m["accountname"]
-	if (api.AccountID != "" && api.AccountName == "") || (api.AccountID == "" && api.AccountName != "") {
-		return nil, fmt.Errorf("either both cloudflare accountid and accountname must be provided or neither")
+	if m["accountid"] != "" {
+		api.cfClient.AccountID = m["accountid"]
 	}
 
 	if len(metadata) > 0 {
