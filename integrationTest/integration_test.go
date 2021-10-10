@@ -131,9 +131,11 @@ func testPermitted(t *testing.T, p string, f TestGroup) error {
 	// TODO(tlim): Have a separate validation pass so that such mistakes
 	// are more visible?
 
-	// If skip is true, skip!
-	if f.skip {
-		return fmt.Errorf("excluded by alltrue(false)")
+	// If there are any trueflags, make sure they are all true.
+	for _, c := range f.trueflags {
+		if !c {
+			return fmt.Errorf("excluded by alltrue(%v)", f.trueflags)
+		}
 	}
 
 	// If there are any required capabilities, make sure they all exist.
@@ -344,12 +346,12 @@ func TestDualProviders(t *testing.T) {
 }
 
 type TestGroup struct {
-	Desc     string
-	required []providers.Capability
-	only     []string
-	not      []string
-	skip     bool
-	tests    []*TestCase
+	Desc      string
+	required  []providers.Capability
+	only      []string
+	not       []string
+	trueflags []bool
+	tests     []*TestCase
 }
 
 type TestCase struct {
@@ -583,9 +585,7 @@ func testgroup(desc string, items ...interface{}) *TestGroup {
 				fmt.Printf("ERROR: alltrue() must be before all tc(): %v\n", desc)
 				os.Exit(1)
 			}
-			if group.skip != true { // Once skip is true, don't touch it.
-				group.skip = !v.flag // Skip if none of the flags are true.
-			}
+			group.trueflags = append(group.trueflags, v.flags...)
 		case *TestCase:
 			group.tests = append(group.tests, v)
 		default:
@@ -649,17 +649,11 @@ func only(n ...string) onlyFilter {
 }
 
 type alltrueFilter struct {
-	flag bool
+	flags []bool
 }
 
-func alltrue(fl ...bool) alltrueFilter {
-	// All the flags must be true for this to store "true".
-	for _, f := range fl {
-		if !f {
-			return alltrueFilter{flag: false}
-		}
-	}
-	return alltrueFilter{flag: true}
+func alltrue(f ...bool) alltrueFilter {
+	return alltrueFilter{flags: f}
 }
 
 //
