@@ -282,6 +282,76 @@ func (c *cloudflareProvider) createPageRule(domainID string, target string) erro
 	return err
 }
 
+func (c *cloudflareProvider) getWorkerRoutes(id string, domain string) ([]*models.RecordConfig, error) {
+	res, err := c.cfClient.ListWorkerRoutes(context.Background(), id)
+	if err != nil {
+		return nil, fmt.Errorf("failed fetching worker route list cloudflare: %s", err)
+	}
+
+	recs := []*models.RecordConfig{}
+	for _, pr := range res.Routes {
+		var thisPr = pr
+		r := &models.RecordConfig{
+			Type:     "WORKER_ROUTE",
+			Original: thisPr,
+			TTL:      1,
+		}
+		r.SetLabel("@", domain)
+		r.SetTarget(fmt.Sprintf("%s,%s", // $PATTERN,$SCRIPT
+			pr.Pattern,
+			pr.Script))
+		recs = append(recs, r)
+	}
+	return recs, nil
+}
+
+func (c *cloudflareProvider) deleteWorkerRoute(recordID, domainID string) error {
+	_, err := c.cfClient.DeleteWorkerRoute(context.Background(), domainID, recordID)
+	return err
+}
+
+func (c *cloudflareProvider) updateWorkerRoute(recordID, domainID string, target string) error {
+	// Causing stack overflow (!?)
+	// return c.updateWorkerRoute(recordID, domainID, target)
+
+	if err := c.deleteWorkerRoute(recordID, domainID); err != nil {
+		return err
+	}
+	return c.createWorkerRoute(domainID, target)
+}
+
+func (c *cloudflareProvider) createWorkerRoute(domainID string, target string) error {
+	// $PATTERN,$SCRIPT
+	parts := strings.Split(target, ",")
+	if len(parts) != 2 {
+		return fmt.Errorf("unexpected target: '%s' (expected: 'PATTERN,SCRIPT')", target)
+	}
+	wr := cloudflare.WorkerRoute{
+		Pattern: parts[0],
+		Script:  parts[1],
+	}
+
+	_, err := c.cfClient.CreateWorkerRoute(context.Background(), domainID, wr)
+	return err
+}
+
+func (c *cloudflareProvider) createTestWorker(workerName string) error {
+	wrp := cloudflare.WorkerRequestParams{
+		ZoneID:     "",
+		ScriptName: workerName,
+	}
+
+	script := `
+		addEventListener("fetch", (event) => {
+			event.respondWith(
+				new Response("Ok.", { status: 200 })
+			);
+	  	});`
+
+	_, err := c.cfClient.UploadWorker(context.Background(), &wrp, script)
+	return err
+}
+
 // go-staticcheck lies!
 type pageRuleConstraint struct {
 	Operator string `json:"operator"`
