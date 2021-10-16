@@ -2,10 +2,9 @@ package ovh
 
 import (
 	"fmt"
-	"strings"
-
 	"github.com/StackExchange/dnscontrol/v3/models"
 	"github.com/miekg/dns/dnsutil"
+	"strings"
 )
 
 // Void an empty structure.
@@ -141,10 +140,13 @@ func (c *ovhProvider) updateRecordFunc(old *Record, rc *models.RecordConfig, fqd
 			record.SubDomain = ""
 		}
 
-		err := c.client.CallAPI("PUT", fmt.Sprintf("/domain/zone/%s/record/%d", fqdn, old.ID), &record, &Void{}, true)
-		if err != nil && rc.Type == "DKIM" && strings.Contains(err.Error(), "alter read-only properties: fieldType") {
-			err = fmt.Errorf("this usually occurs when DKIM value is longer than the TXT record limit what OVH allows. Delete the TXT record to get past this limitation. [Original error: %s]", err.Error())
+		// We do this last just right before the final API call
+		if c.isDKIMRecord(rc) {
+			// When DKIM value is longer than 255, the MODIFY fails with "Try to alter read-only properties: fieldType"
+			// Setting FieldType to empty string results in the property not being altered, hence error does not occur.
+			record.FieldType = ""
 		}
+		err := c.client.CallAPI("PUT", fmt.Sprintf("/domain/zone/%s/record/%d", fqdn, old.ID), &record, &Void{}, true)
 
 		return err
 	}
