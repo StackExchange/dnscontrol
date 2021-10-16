@@ -111,9 +111,6 @@ func (c *ovhProvider) deleteRecordFunc(id int64, fqdn string) func() error {
 // Returns a function that can be invoked to create a record in a zone.
 func (c *ovhProvider) createRecordFunc(rc *models.RecordConfig, fqdn string) func() error {
 	return func() error {
-		if c.isDKIMRecord(rc) {
-			rc.Type = "DKIM"
-		}
 		record := Record{
 			SubDomain: dnsutil.TrimDomainName(rc.GetLabelFQDN(), fqdn),
 			FieldType: rc.Type,
@@ -132,9 +129,6 @@ func (c *ovhProvider) createRecordFunc(rc *models.RecordConfig, fqdn string) fun
 // Returns a function that can be invoked to update a record in a zone.
 func (c *ovhProvider) updateRecordFunc(old *Record, rc *models.RecordConfig, fqdn string) func() error {
 	return func() error {
-		if c.isDKIMRecord(rc) {
-			rc.Type = "DKIM"
-		}
 		record := Record{
 			SubDomain: rc.GetLabel(),
 			FieldType: rc.Type,
@@ -161,6 +155,7 @@ func (c *ovhProvider) isDKIMRecord(rc *models.RecordConfig) bool {
 	return (rc != nil && rc.Type == "TXT" && strings.Contains(rc.GetLabel(), "._domainkey"))
 }
 
+// refreshZone initiates a refresh task on OVHs backend
 func (c *ovhProvider) refreshZone(fqdn string) error {
 	return c.client.CallAPI("POST", fmt.Sprintf("/domain/zone/%s/refresh", fqdn), nil, &Void{}, true)
 }
