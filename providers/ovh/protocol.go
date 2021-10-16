@@ -2,10 +2,9 @@ package ovh
 
 import (
 	"fmt"
-	"strings"
-
 	"github.com/StackExchange/dnscontrol/v3/models"
 	"github.com/miekg/dns/dnsutil"
+	"strings"
 )
 
 // Void an empty structure.
@@ -111,9 +110,6 @@ func (c *ovhProvider) deleteRecordFunc(id int64, fqdn string) func() error {
 // Returns a function that can be invoked to create a record in a zone.
 func (c *ovhProvider) createRecordFunc(rc *models.RecordConfig, fqdn string) func() error {
 	return func() error {
-		if c.isDKIMRecord(rc) {
-			rc.Type = "DKIM"
-		}
 		record := Record{
 			SubDomain: dnsutil.TrimDomainName(rc.GetLabelFQDN(), fqdn),
 			FieldType: rc.Type,
@@ -132,9 +128,6 @@ func (c *ovhProvider) createRecordFunc(rc *models.RecordConfig, fqdn string) fun
 // Returns a function that can be invoked to update a record in a zone.
 func (c *ovhProvider) updateRecordFunc(old *Record, rc *models.RecordConfig, fqdn string) func() error {
 	return func() error {
-		if c.isDKIMRecord(rc) {
-			rc.Type = "DKIM"
-		}
 		record := Record{
 			SubDomain: rc.GetLabel(),
 			FieldType: rc.Type,
@@ -147,10 +140,13 @@ func (c *ovhProvider) updateRecordFunc(old *Record, rc *models.RecordConfig, fqd
 			record.SubDomain = ""
 		}
 
-		err := c.client.CallAPI("PUT", fmt.Sprintf("/domain/zone/%s/record/%d", fqdn, old.ID), &record, &Void{}, true)
-		if err != nil && rc.Type == "DKIM" && strings.Contains(err.Error(), "alter read-only properties: fieldType") {
-			err = fmt.Errorf("this usually occurs when DKIM value is longer than the TXT record limit what OVH allows. Delete the TXT record to get past this limitation. [Original error: %s]", err.Error())
+		// We do this last just right before the final API call
+		if c.isDKIMRecord(rc) {
+			// When DKIM value is longer than 255, the MODIFY fails with "Try to alter read-only properties: fieldType"
+			// Setting FieldType to empty string results in the property not being altered, hence error does not occur.
+			record.FieldType = ""
 		}
+		err := c.client.CallAPI("PUT", fmt.Sprintf("/domain/zone/%s/record/%d", fqdn, old.ID), &record, &Void{}, true)
 
 		return err
 	}
@@ -161,6 +157,7 @@ func (c *ovhProvider) isDKIMRecord(rc *models.RecordConfig) bool {
 	return (rc != nil && rc.Type == "TXT" && strings.Contains(rc.GetLabel(), "._domainkey"))
 }
 
+// refreshZone initiates a refresh task on OVHs backend
 func (c *ovhProvider) refreshZone(fqdn string) error {
 	return c.client.CallAPI("POST", fmt.Sprintf("/domain/zone/%s/refresh", fqdn), nil, &Void{}, true)
 }
