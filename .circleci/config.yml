@@ -1,5 +1,41 @@
 version: 2.1
+
 jobs:
-  {}
+  build:
+
+    docker:
+      - image: cimg/go:1.17.2
+
+    steps:
+      - checkout
+      - run: mkdir -p $TEST_RESULTS
+
+      - restore_cache: # restores saved cache if no changes are detected since last run
+          keys:
+            - linux-go-{{ checksum "go.sum" }}
+      - run:
+          name: Build binaries
+          command: go run build/build.go
+
+      - run:
+          name: Run unit tests
+
+          # store the results of our tests in the $TEST_RESULTS directory
+          command: |
+            PACKAGE_NAMES=$(go list ./... | circleci tests split --split-by=timings --timings-type=classname)
+            gotestsum --junitfile ${TEST_RESULTS}/gotestsum-report.xml -- $PACKAGE_NAMES
+
+      - save_cache:
+          key: linux-go-{{ checksum "go.sum" }}
+          paths:
+            - "/go/pkg/mod"
+
+      - store_test_results: # upload test results for display in Test Summary
+          path: /tmp/test-results
+
 workflows:
-  {}
+  version: 2
+  build-workflow:
+    jobs:
+      - build
+
