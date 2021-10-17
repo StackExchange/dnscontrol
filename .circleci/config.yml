@@ -3,7 +3,7 @@ version: 2.1
 parameters:
   cache-key:
     type: integer
-    default: 1634491732
+    default: 1634492241
     description: Change to force cache reset `pwsh > Get-Date -UFormat %s`
 
 jobs:
@@ -37,7 +37,7 @@ jobs:
       - save_cache:
           key: linux-go-{{ checksum "go.sum" }}-<< pipeline.parameters.cache-key >>
           paths:
-            - "$HOME/go/pkg/mod"
+            - "../go/pkg/mod"
 
       - store_test_results: # upload test results for display in Test Summary
           path: /tmp/test-results
@@ -84,6 +84,9 @@ jobs:
                 name: Run integration tests for << parameters.provider >> provider
                 working_directory: integrationTest
                 command: gotestsum --junitfile ${TEST_RESULTS}/gotestsum-report.xml -- -timeout 20m -v -verbose -provider << parameters.provider >> -cfworkers=false
+
+      - store_test_results: # upload test results for display in Test Summary
+          path: /tmp/test-results
 
 workflows:
   version: 2
