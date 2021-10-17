@@ -93,6 +93,16 @@ jobs:
       - store_test_results: # upload test results for display in Test Summary
           path: /tmp/test-results
 
+  release:
+    docker:
+      - image: cimg/go:1.17
+    steps:
+      - checkout
+      - run:
+          name: Install goreleaser
+          command: curl -sL https://git.io/goreleaser | bash
+      - run: goreleaser
+
 workflows:
   version: 2
   build-workflow:
@@ -121,3 +131,11 @@ workflows:
                 - HEDNS
                 - INWX
                 - POWERDNS
+
+      - release:
+          # Only run this job on git tag pushes
+          filters:
+            branches:
+              ignore: /.*/
+            tags:
+              only: /v[0-9]+(\.[0-9]+)*(-.*)*/
