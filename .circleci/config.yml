@@ -1,5 +1,11 @@
 version: 2.1
 
+parameters:
+  cache-key:
+    type: integer
+    default: 1634489802
+    description: Cache breaker `pwsh > Get-Date -UFormat %s`
+
 jobs:
   build:
 
@@ -15,7 +21,7 @@ jobs:
 
       - restore_cache: # restores saved cache if no changes are detected since last run
           keys:
-            - linux-go-{{ checksum "go.sum" }}
+            - linux-go-{{ checksum "go.sum" }}-<< pipeline.parameters.cache-key >>
       - run:
           name: Build binaries
           command: go run build/build.go
@@ -29,7 +35,7 @@ jobs:
             gotestsum --junitfile ${TEST_RESULTS}/gotestsum-report.xml -- $PACKAGE_NAMES
 
       - save_cache:
-          key: linux-go-{{ checksum "go.sum" }}
+          key: linux-go-{{ checksum "go.sum" }}-<< pipeline.parameters.cache-key >>
           paths:
             - "go/pkg/mod"
 
