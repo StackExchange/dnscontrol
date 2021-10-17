@@ -6,6 +6,9 @@ jobs:
     docker:
       - image: cimg/go:1.17.2
 
+    environment: # environment variables for the build itself
+      TEST_RESULTS: /tmp/test-results
+
     steps:
       - checkout
       - run: mkdir -p $TEST_RESULTS
