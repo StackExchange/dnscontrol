@@ -8,7 +8,6 @@ import (
 
 	"github.com/StackExchange/dnscontrol/v3/models"
 	"github.com/StackExchange/dnscontrol/v3/pkg/diff"
-	"github.com/StackExchange/dnscontrol/v3/pkg/txtutil"
 	"github.com/StackExchange/dnscontrol/v3/providers"
 	"github.com/ovh/go-ovh/ovh"
 )
@@ -128,22 +127,6 @@ func (c *ovhProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*models.C
 
 	// Normalize
 	models.PostProcessRecords(actual)
-	txtutil.SplitSingleLongTxt(dc.Records) // Autosplit long TXT records
-
-	// OVH handles DKIM keys differently, no matter if sent to API as TXT or DKIM record type. The OVH expects the DKIM
-	// string to be in one single string. That's why we'll need to un-split the DKIM TXT records. If not, dnscontrol
-	// will always detect a mismatch between the unsplitted string from API to the splitted one in dnscontrol.
-	for _, rc := range dc.Records {
-		if c.isDKIMRecord(rc) {
-			// When DKIM records are updated, OVH does special logic in their backend, most likely validating the string.
-			// Splitting the string causes the validation on the API backend to fail with error message:
-			// "FAILURE! Error 400: "Invalid subfield found in DKIM : \"v=DKIM1""
-			// Therefore, we merge the text string before we compare or send it to the API.
-			unsplittedTarget := strings.Join(rc.TxtStrings, "")
-			rc.SetTarget(unsplittedTarget)
-			rc.SetTargetTXTString(unsplittedTarget)
-		}
-	}
 
 	differ := diff.New(dc)
 	_, create, delete, modify, err := differ.IncrementalDiff(actual)
