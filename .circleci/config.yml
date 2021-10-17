@@ -31,7 +31,7 @@ jobs:
       - save_cache:
           key: linux-go-{{ checksum "go.sum" }}
           paths:
-            - "/go/pkg/mod"
+            - "go/pkg/mod"
 
       - store_test_results: # upload test results for display in Test Summary
           path: /tmp/test-results
