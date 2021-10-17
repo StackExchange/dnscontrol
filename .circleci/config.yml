@@ -11,6 +11,7 @@ jobs:
 
     docker:
       - image: cimg/go:1.17.2
+    resource_class: large
 
     environment: # environment variables for the build itself
       TEST_RESULTS: /tmp/test-results
@@ -48,6 +49,7 @@ jobs:
 
     environment: # environment variables for the build itself
       TEST_RESULTS: /tmp/test-results
+      GOTESTSUM_FORMAT: testname
 
       BIND_DOMAIN: example.com
 
@@ -97,6 +99,7 @@ workflows:
       - build
 
       - integration-tests:
+          requires: [build]
           context: DNSProviders
           matrix:
             parameters:
