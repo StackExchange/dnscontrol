@@ -96,12 +96,13 @@ jobs:
   release:
     docker:
       - image: cimg/go:1.17
+    resource_class: large
     steps:
       - checkout
       - run:
           name: Install goreleaser
           command: curl -sL https://git.io/goreleaser | bash
-      - run: goreleaser
+      - run: goreleaser release
 
 workflows:
   version: 2
