@@ -45,7 +45,6 @@ nfpms:
     description: "DNSControl: Infrastructure as Code for DNS Zones"
     license: MIT
     formats:
-    - apk
     - deb
     - rpm
 dockers:
