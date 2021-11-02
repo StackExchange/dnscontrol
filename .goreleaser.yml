@@ -10,6 +10,7 @@ builds:
       - linux
       - windows
       - darwin
+      - freebsd
     ldflags:
       - -s -w -X main.Version="{{ .Version }}" -X main.SHA="{{ .FullCommit }}" -X main.BuildTime={{ .Timestamp }}
 changelog:
