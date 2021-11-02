@@ -722,7 +722,8 @@ function recordBuilder(type, opts) {
             // Handle D_EXTEND() with subdomains.
             if (d.subdomain &&
                 record.type != 'CF_REDIRECT' &&
-                record.type != 'CF_TEMP_REDIRECT') {
+                record.type != 'CF_TEMP_REDIRECT' &&
+                record.type != 'CF_WORKER_ROUTE') {
                 fqdn = [d.subdomain, d.name].join(".")
 
                 record.subdomain = d.subdomain;
@@ -855,6 +856,18 @@ var CF_TEMP_REDIRECT = recordBuilder('CF_TEMP_REDIRECT', {
         record.target = args.source + ',' + args.destination;
     },
 });
+
+var CF_WORKER_ROUTE = recordBuilder('CF_WORKER_ROUTE', {
+    args: [
+        ['pattern', _validateCloudflareRedirect],
+        ['script', _validateCloudflareRedirect],
+    ],
+    transform: function(record, args, modifiers) {
+        record.name = '@';
+        record.target = args.pattern + ',' + args.script;
+    },
+});
+
 
 var URL = recordBuilder('URL');
 var URL301 = recordBuilder('URL301');

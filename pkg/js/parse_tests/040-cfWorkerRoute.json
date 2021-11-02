@@ -1,0 +1,18 @@
+{
+  "registrars": [],
+  "dns_providers": [],
+  "domains": [
+    {
+      "name": "foo.com",
+      "registrar": "none",
+      "dnsProviders": {},
+      "records": [
+        {
+          "type": "CF_WORKER_ROUTE",
+          "name": "@",
+          "target": "test.foo.com,test-worker"
+        }
+      ]
+    }
+  ]
+}

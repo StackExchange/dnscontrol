@@ -13,7 +13,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - name: Checkout repo
-      uses: actions/checkout@v2.3.4
+      uses: actions/checkout@v2.3.5
       with:
         fetch-depth: 0
     - name: Set up Go
@@ -94,6 +94,7 @@ jobs:
       CLOUDFLAREAPI_KEY: ${{ secrets.CLOUDFLAREAPI_KEY }}
       CLOUDFLAREAPI_TOKEN: ${{ secrets.CLOUDFLAREAPI_TOKEN }}
       CLOUDFLAREAPI_USER: ${{ secrets.CLOUDFLAREAPI_USER }}
+      CLOUDFLAREAPI_ACCOUNTID: ${{ secrets.CLOUDFLAREAPI_ACCOUNTID }}
 #
       CLOUDNS_DOMAIN: ${{ secrets.CLOUDNS_DOMAIN }}
       CLOUDNS_AUTH_ID: ${{ secrets.CLOUDNS_AUTH_ID }}
@@ -136,7 +137,7 @@ jobs:
       POWERDNS_SERVERNAME: ${{ secrets.POWERDNS_SERVERNAME }}
     steps:
     - name: Checkout repo
-      uses: actions/checkout@v2.3.4
+      uses: actions/checkout@v2.3.5
       with:
         fetch-depth: 0
     - name: Set up Go
@@ -155,5 +156,5 @@ jobs:
     - name: Run integration tests for ${{ matrix.provider }} provider
       if: env.CAN_CONTINUE == 'yes'
       working-directory: integrationTest
-      run: go test -timeout 20m -v -verbose -provider ${{ matrix.provider }}
+      run: go test -timeout 20m -v -verbose -provider ${{ matrix.provider }} -cfworkers=false
 ...

@@ -34,12 +34,14 @@ import (
 //     ALIAS
 //     CF_REDIRECT
 //     CF_TEMP_REDIRECT
+//     CF_WORKER_ROUTE
 //     FRAME
 //     IMPORT_TRANSFORM
 //     NAMESERVER
 //     NO_PURGE
 //     NS1_URLFWD
 //     PAGE_RULE
+//     WORKER_ROUTE
 //     PURGE
 //     URL
 //     URL301
@@ -512,7 +514,7 @@ func downcase(recs []*RecordConfig) {
 		case "ANAME", "CNAME", "DS", "MX", "NS", "PTR", "NAPTR", "SRV", "TLSA", "AKAMAICDN":
 			// These record types have a target that is case insensitive, so we downcase it.
 			r.target = strings.ToLower(r.target)
-		case "A", "AAAA", "ALIAS", "CAA", "IMPORT_TRANSFORM", "TXT", "SSHFP", "CF_REDIRECT", "CF_TEMP_REDIRECT":
+		case "A", "AAAA", "ALIAS", "CAA", "IMPORT_TRANSFORM", "TXT", "SSHFP", "CF_REDIRECT", "CF_TEMP_REDIRECT", "CF_WORKER_ROUTE":
 			// These record types have a target that is case sensitive, or is an IP address. We leave them alone.
 			// Do nothing.
 		case "SOA":
