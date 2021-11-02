@@ -1,8 +1,13 @@
 #! /bin/bash
-if [[ "$1" == "--debug" ]]; then set -x; shift; fi
+FPM_LOGLEVEL=error
+if [[ "${1,,}" == "--debug" || "${DRONE_BUILD_DEBUG,,}" == "true" ]]; then shift; set -x; FPM_LOGLEVEL=debug; fi
+set -e
 
-# the below is supposed to handle both tags, branches when specified as argument:
-PACKAGE_VERSION="${1:-v0.0.0}"
+# the below is supposed to handle both tags, branches when specified as argument/environment variable:
+PACKAGE_VERSION="$1"
+PACKAGE_VERSION="${PACKAGE_VERSION:-${DRONE_SEMVER}}"
+PACKAGE_VERSION="${PACKAGE_VERSION:-${DRONE_SOURCE_BRANCH}}"
+PACKAGE_VERSION="${PACKAGE_VERSION:-v0.0.0}"
 PACKAGE_VERSION="${PACKAGE_VERSION#v}"
 PACKAGE_VERSION="${PACKAGE_VERSION##*/}"
 
@@ -29,7 +34,7 @@ MAIN_SHA="$(git rev-parse HEAD)"
 MAIN_BUILDTIME="$(date +%s)"
 
 # TODO: check whether to include armel/armhf builds for .deb/.rpm/.txz (NB we might need to map 'arm' to 'armXX' in this case)
-for BUILD_OS_ARCH in darwin/amd64 darwin/arm64 freebsd/386 freebsd/amd64 freebsd/arm64 linux/386 linux/amd64 linux/arm64 windows/amd64 windows/arm64; do
+for BUILD_OS_ARCH in freebsd/386 freebsd/amd64 freebsd/arm64 linux/386 linux/amd64 linux/arm64 darwin/amd64 darwin/arm64 windows/amd64 windows/arm64; do
     BUILD_OS="${BUILD_OS_ARCH%%/*}"
     BUILD_ARCH1="${BUILD_OS_ARCH##*/}"
     BUILD_ARCH2="${BUILD_ARCH1}"
@@ -50,14 +55,14 @@ for BUILD_OS_ARCH in darwin/amd64 darwin/arm64 freebsd/386 freebsd/amd64 freebsd
         if [[ "${BUILD_OS}" == "linux" ]]; then
             # create rpm, deb archives using fpm (if available)
             if type fpm 2>/dev/null 1>&2; then
-                fpm -a "${BUILD_ARCH2}" --log error -p .ci/build --prefix /usr -s dir -t deb "${FPM_OPTIONS[@]}" "${DNSCONTROL_FILES[@]}"
-                fpm -a "${BUILD_ARCH4}" --log error -p .ci/build --prefix /usr -s dir -t rpm "${FPM_OPTIONS[@]}" "${DNSCONTROL_FILES[@]}"
+                fpm -a "${BUILD_ARCH2}" --log "${FPM_LOGLEVEL}" -p .ci/build --prefix /usr -s dir -t deb "${FPM_OPTIONS[@]}" "${DNSCONTROL_FILES[@]}"
+                fpm -a "${BUILD_ARCH4}" --log "${FPM_LOGLEVEL}" -p .ci/build --prefix /usr -s dir -t rpm "${FPM_OPTIONS[@]}" "${DNSCONTROL_FILES[@]}"
             fi
         elif [[ "${BUILD_OS}" == "freebsd" ]]; then
             # create txz archive using fpm (if available)
             if type fpm 2>/dev/null 1>&2; then
                 rm -Rf ./*.txz 2>/dev/null
-                fpm -a "${BUILD_ARCH3}" --log error --prefix /usr/local -s dir -t freebsd "${FPM_OPTIONS[@]}" "${DNSCONTROL_FILES[@]}"
+                fpm -a "${BUILD_ARCH3}" --log "${FPM_LOGLEVEL}" --prefix /usr/local -s dir -t freebsd "${FPM_OPTIONS[@]}" "${DNSCONTROL_FILES[@]}"
                 TXZNAME="$(ls ./*.txz 2>/dev/null)"
                 if [[ -n "${TXZNAME}" ]]; then
                     # FIXUP: fpm 3.13.1 (and older?) creates invalid txz archives lacking a leading '/' for non-metadata files
@@ -88,6 +93,7 @@ for BUILD_OS_ARCH in darwin/amd64 darwin/arm64 freebsd/386 freebsd/amd64 freebsd
     fi
 done
 
-echo "----------"
+set +x
+echo "===================="
 ls -l .ci/build/*
-echo "----------"
+echo "===================="
