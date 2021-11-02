@@ -15,6 +15,7 @@ import (
 	"github.com/StackExchange/dnscontrol/v3/pkg/normalize"
 	"github.com/StackExchange/dnscontrol/v3/providers"
 	_ "github.com/StackExchange/dnscontrol/v3/providers/_all"
+	"github.com/StackExchange/dnscontrol/v3/providers/cloudflare"
 	"github.com/StackExchange/dnscontrol/v3/providers/config"
 	"github.com/miekg/dns/dnsutil"
 )
@@ -24,6 +25,7 @@ var startIdx = flag.Int("start", 0, "Test number to begin with")
 var endIdx = flag.Int("end", 0, "Test index to stop after")
 var verbose = flag.Bool("verbose", false, "Print corrections as you run them")
 var printElapsed = flag.Bool("elapsed", false, "Print elapsed time for each testgroup")
+var enableCFWorkers = flag.Bool("cfworkers", true, "Set false to disable CF worker tests")
 
 func init() {
 	testing.Init()
@@ -52,7 +54,11 @@ func getProvider(t *testing.T) (providers.DNSServiceProvider, string, map[int]bo
 		// use this feature. Maybe because we didn't have the capabilities
 		// feature at the time?
 		if name == "CLOUDFLAREAPI" {
-			metadata = []byte(`{ "manage_redirects": true }`)
+			if *enableCFWorkers {
+				metadata = []byte(`{ "manage_redirects": true, "manage_workers": true }`)
+			} else {
+				metadata = []byte(`{ "manage_redirects": true }`)
+			}
 		}
 
 		provider, err := providers.CreateDNSProvider(name, cfg, metadata)
@@ -66,6 +72,13 @@ func getProvider(t *testing.T) (providers.DNSServiceProvider, string, map[int]bo
 					t.Fatal(err)
 				}
 				fails[i] = true
+			}
+		}
+
+		if name == "CLOUDFLAREAPI" && *enableCFWorkers {
+			// Cloudflare only. Will do nothing if provider != *cloudflareProvider.
+			if err := cloudflare.PrepareCloudflareTestWorkers(provider); err != nil {
+				t.Fatal(err)
 			}
 		}
 
@@ -117,6 +130,13 @@ func testPermitted(t *testing.T, p string, f TestGroup) error {
 	}
 	// TODO(tlim): Have a separate validation pass so that such mistakes
 	// are more visible?
+
+	// If there are any trueflags, make sure they are all true.
+	for _, c := range f.trueflags {
+		if !c {
+			return fmt.Errorf("excluded by alltrue(%v)", f.trueflags)
+		}
+	}
 
 	// If there are any required capabilities, make sure they all exist.
 	if len(f.required) != 0 {
@@ -326,11 +346,12 @@ func TestDualProviders(t *testing.T) {
 }
 
 type TestGroup struct {
-	Desc     string
-	required []providers.Capability
-	only     []string
-	not      []string
-	tests    []*TestCase
+	Desc      string
+	required  []providers.Capability
+	only      []string
+	not       []string
+	trueflags []bool
+	tests     []*TestCase
 }
 
 type TestCase struct {
@@ -396,6 +417,12 @@ func cfProxyCNAME(name, target, status string) *models.RecordConfig {
 	r := cname(name, target)
 	r.Metadata = make(map[string]string)
 	r.Metadata["cloudflare_proxy"] = status
+	return r
+}
+
+func cfWorkerRoute(pattern, target string) *models.RecordConfig {
+	t := fmt.Sprintf("%s,%s", pattern, target)
+	r := makeRec("@", t, "CF_WORKER_ROUTE")
 	return r
 }
 
@@ -553,6 +580,12 @@ func testgroup(desc string, items ...interface{}) *TestGroup {
 				os.Exit(1)
 			}
 			group.only = append(group.only, v.names...)
+		case alltrueFilter:
+			if len(group.tests) != 0 {
+				fmt.Printf("ERROR: alltrue() must be before all tc(): %v\n", desc)
+				os.Exit(1)
+			}
+			group.trueflags = append(group.trueflags, v.flags...)
 		case *TestCase:
 			group.tests = append(group.tests, v)
 		default:
@@ -615,6 +648,14 @@ func only(n ...string) onlyFilter {
 	return onlyFilter{names: n}
 }
 
+type alltrueFilter struct {
+	flags []bool
+}
+
+func alltrue(f ...bool) alltrueFilter {
+	return alltrueFilter{flags: f}
+}
+
 //
 
 func makeTests(t *testing.T) []*TestGroup {
@@ -635,6 +676,8 @@ func makeTests(t *testing.T) []*TestGroup {
 	//      only("ROUTE53", "GANDI_V5")
 	// Only apply to all providers except ROUTE53 + GANDI_V5:
 	//     not("ROUTE53", "GANDI_V5"),
+	// Only run this test if all these bool flags are true:
+	//     alltrue(*enableCFWorkers, *anotherFlag, myBoolValue)
 	// NOTE: You can't mix not() and only()
 	//     reset(not("ROUTE53"), only("GCLOUD")),  // ERROR!
 	// NOTE: All requires()/not()/only() must appear before any tc().
@@ -1383,6 +1426,34 @@ func makeTests(t *testing.T) []*TestGroup {
 			tc("proxycname", cfProxyCNAME("anewproxy", "example.com.", "on")),
 			tc("proxycnamechange", cfProxyCNAME("anewproxy", "example.com.", "off")),
 			clear(),
+		),
+
+		testgroup("CF_WORKER_ROUTE",
+			only("CLOUDFLAREAPI"),
+			alltrue(*enableCFWorkers),
+			// TODO(fdcastel): Add worker scripts via api call before test execution
+			tc("simple", cfWorkerRoute("cnn.**current-domain-no-trailing**/*", "dnscontrol_integrationtest_cnn")),
+			tc("changeScript", cfWorkerRoute("cnn.**current-domain-no-trailing**/*", "dnscontrol_integrationtest_msnbc")),
+			tc("changePattern", cfWorkerRoute("cable.**current-domain-no-trailing**/*", "dnscontrol_integrationtest_msnbc")),
+			clear(),
+			tc("createMultiple",
+				cfWorkerRoute("cnn.**current-domain-no-trailing**/*", "dnscontrol_integrationtest_cnn"),
+				cfWorkerRoute("msnbc.**current-domain-no-trailing**/*", "dnscontrol_integrationtest_msnbc"),
+			),
+			tc("addOne",
+				cfWorkerRoute("msnbc.**current-domain-no-trailing**/*", "dnscontrol_integrationtest_msnbc"),
+				cfWorkerRoute("cnn.**current-domain-no-trailing**/*", "dnscontrol_integrationtest_cnn"),
+				cfWorkerRoute("api.**current-domain-no-trailing**/cnn/*", "dnscontrol_integrationtest_cnn"),
+			),
+			tc("changeOne",
+				cfWorkerRoute("msn.**current-domain-no-trailing**/*", "dnscontrol_integrationtest_msnbc"),
+				cfWorkerRoute("cnn.**current-domain-no-trailing**/*", "dnscontrol_integrationtest_cnn"),
+				cfWorkerRoute("api.**current-domain-no-trailing**/cnn/*", "dnscontrol_integrationtest_cnn"),
+			),
+			tc("deleteOne",
+				cfWorkerRoute("msn.**current-domain-no-trailing**/*", "dnscontrol_integrationtest_msnbc"),
+				cfWorkerRoute("api.**current-domain-no-trailing**/cnn/*", "dnscontrol_integrationtest_cnn"),
+			),
 		),
 	}
 
