@@ -1,0 +1,9 @@
+$TTL 300
+@                IN A     10.0.0.7
+düsseltal       IN A     10.0.0.11
+www.düsseltal   IN A     10.0.0.12
+subdomain        IN A     10.0.0.9
+www.subdomain    IN A     10.0.0.10
+www              IN A     10.0.0.8
+ü               IN A     10.0.0.13
+www.ü           IN A     10.0.0.14
