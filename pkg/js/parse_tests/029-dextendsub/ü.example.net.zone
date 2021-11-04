@@ -1,0 +1,9 @@
+$TTL 300
+@                IN A     10.0.0.15
+düsseldorf      IN A     10.0.0.19
+www.düsseldorf  IN A     10.0.0.20
+subdomain        IN A     10.0.0.17
+www.subdomain    IN A     10.0.0.18
+www              IN A     10.0.0.16
+ü               IN A     10.0.0.21
+www.ü           IN A     10.0.0.22
