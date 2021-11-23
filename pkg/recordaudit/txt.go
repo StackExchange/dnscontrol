@@ -97,8 +97,6 @@ func TxtNoMultipleStrings(records []*models.RecordConfig) error {
 		if rc.HasFormatIdenticalToTXT() { // TXT and similar:
 			if len(rc.TxtStrings) > 1 {
 				return fmt.Errorf("multiple strings in one txt")
-			} else if len(rc.TxtStrings) == 1 && len(rc.TxtStrings[0]) > 255 {
-				return fmt.Errorf("strings >255 octets")
 			}
 		}
 
