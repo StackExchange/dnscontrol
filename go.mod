@@ -54,7 +54,6 @@ require (
 	github.com/robertkrimen/otto v0.0.0-20211024170158-b87d35c0b86f
 	github.com/russross/blackfriday/v2 v2.1.0 // indirect
 	github.com/sergi/go-diff v1.1.0 // indirect
-	github.com/smartystreets/assertions v1.0.0 // indirect
 	github.com/softlayer/softlayer-go v1.0.3
 	github.com/stretchr/testify v1.7.0
 	github.com/tdewolff/minify/v2 v2.9.22
@@ -69,3 +68,5 @@ require (
 	gopkg.in/ns1/ns1-go.v2 v2.5.1
 	gopkg.in/yaml.v2 v2.4.0
 )
+
+replace github.com/go-gandi/go-gandi v0.0.0-20211022162630-6f6232e901d4 => github.com/BedrockStreaming/go-gandi v0.0.0-20211126103655-65231553c548
