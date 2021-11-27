@@ -198,7 +198,7 @@ If you are at Stack Overflow:
 List out-of-date modules and update any that seem worth updating:
 
 ```
-go get github.com/oligot/go-mod-upgrade
+go install github.com/oligot/go-mod-upgrade
 go-mod-upgrade
 go mod tidy
 ```
@@ -206,13 +206,11 @@ go mod tidy
 OLD WAY:
 
 ```
-go get -u github.com/psampaz/go-mod-outdated
+go install github.com/psampaz/go-mod-outdated
 go list -mod=mod -u -m -json all | go-mod-outdated -update -direct
 
 # If any are out of date, update via:
 
-go get -u
-    or
 go get -u module/path
 
 # Once the updates are complete, tidy up:
