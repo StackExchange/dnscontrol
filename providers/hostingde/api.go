@@ -20,15 +20,10 @@ type hostingdeProvider struct {
 }
 
 func (hp *hostingdeProvider) getDomainConfig(domain string) (*domainConfig, error) {
-	zc, err := hp.getZoneConfig(domain)
-	if err != nil {
-		return nil, fmt.Errorf("error getting zone config: %w", err)
-	}
-
 	params := request{
 		Filter: filter{
 			Field: "domainName",
-			Value: zc.Name,
+			Value: domain,
 		},
 	}
 
