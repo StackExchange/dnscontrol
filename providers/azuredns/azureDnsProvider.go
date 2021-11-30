@@ -76,20 +76,20 @@ func init() {
 	providers.RegisterCustomRecordType("AZURE_ALIAS", "AZURE_DNS", "")
 }
 
-func (a *azurednsProvider) getExistingZones() (*adns.ZoneListResult, error) {
-	// Please note — this function doesn't work with > 100 zones
-	// https://github.com/StackExchange/dnscontrol/issues/792
-	// Copied this code to getZones and ListZones and modified it for using a paging
-	// As a result getExistingZones is not used anymore
-	ctx, cancel := context.WithTimeout(context.Background(), 6000*time.Second)
-	defer cancel()
-	zonesIterator, zonesErr := a.zonesClient.ListByResourceGroupComplete(ctx, *a.resourceGroup, to.Int32Ptr(100))
-	if zonesErr != nil {
-		return nil, zonesErr
-	}
-	zonesResult := zonesIterator.Response()
-	return &zonesResult, nil
-}
+//func (a *azurednsProvider) getExistingZones() (*adns.ZoneListResult, error) {
+//	// Please note — this function doesn't work with > 100 zones
+//	// https://github.com/StackExchange/dnscontrol/issues/792
+//	// Copied this code to getZones and ListZones and modified it for using a paging
+//	// As a result getExistingZones is not used anymore
+//	ctx, cancel := context.WithTimeout(context.Background(), 6000*time.Second)
+//	defer cancel()
+//	zonesIterator, zonesErr := a.zonesClient.ListByResourceGroupComplete(ctx, *a.resourceGroup, to.Int32Ptr(100))
+//	if zonesErr != nil {
+//		return nil, zonesErr
+//	}
+//	zonesResult := zonesIterator.Response()
+//	return &zonesResult, nil
+//}
 
 func (a *azurednsProvider) getZones() error {
 	a.zones = make(map[string]*adns.Zone)
@@ -131,9 +131,7 @@ func (a *azurednsProvider) GetNameservers(domain string) ([]*models.Nameserver, 
 
 	var nss []string
 	if zone.ZoneProperties != nil {
-		for _, ns := range *zone.ZoneProperties.NameServers {
-			nss = append(nss, ns)
-		}
+		nss = append(nss, *zone.ZoneProperties.NameServers...)
 	}
 	return models.ToNameserversStripTD(nss)
 }

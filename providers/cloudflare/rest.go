@@ -352,7 +352,7 @@ func (c *cloudflareProvider) createTestWorker(workerName string) error {
 	return err
 }
 
-// go-staticcheck lies!
+// NB(tlim): staticcheck generates a false-positive: "type pageRuleConstraint is unused (U1000)"
 type pageRuleConstraint struct {
 	Operator string `json:"operator"`
 	Value    string `json:"value"`

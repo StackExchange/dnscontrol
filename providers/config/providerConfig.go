@@ -36,6 +36,9 @@ func LoadProviderConfigs(fname string) (map[string]map[string]string, error) {
 	} else {
 		// no executable bit found nor marked as executable so read it in
 		dat, err = readCredsFile(fname)
+		if err != nil {
+			return nil, err
+		}
 	}
 
 	s := string(dat)

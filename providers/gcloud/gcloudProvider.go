@@ -135,7 +135,7 @@ func (g *gcloudProvider) GetNameservers(domain string) ([]*models.Nameserver, er
 		return nil, err
 	}
 	if zone == nil {
-		return nil, fmt.Errorf("Domain %q not found in your GCLOUD account", domain)
+		return nil, fmt.Errorf("domain %q not found in your GCLOUD account", domain)
 	}
 	return models.ToNameserversStripTD(zone.NameServers)
 }

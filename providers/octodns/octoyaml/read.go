@@ -131,9 +131,9 @@ func parseLeaf(results models.Records, k string, v interface{}, origin string) (
 			case "value":
 				rTarget = v2.(string)
 			case "values":
-				switch v2.(type) {
+				switch v2 := v2.(type) {
 				case string:
-					rTarget = v2.(string)
+					rTarget = v2
 				default:
 					return nil, fmt.Errorf("parseLeaf: unknown type in values: rtpe=%s k=%s k2=%s v2.(type)=%T v2=%v", rType, k, k2, v2, v2)
 				}

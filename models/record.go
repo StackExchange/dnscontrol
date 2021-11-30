@@ -260,14 +260,13 @@ func (rc *RecordConfig) SetLabelFromFQDN(fqdn, origin string) {
 	if strings.HasSuffix(origin, ".") {
 		panic(fmt.Errorf("origin (%s) is not supposed to end with a dot", origin))
 	}
+
+	// FQDN shouldn't end with "..". If it ends with ".", remove it.
 	if strings.HasSuffix(fqdn, "..") {
 		panic(fmt.Errorf("fqdn (%s) is not supposed to end with double dots", origin))
 	}
-
-	if strings.HasSuffix(fqdn, ".") {
-		// Trim off a trailing dot.
-		fqdn = fqdn[:len(fqdn)-1]
-	}
+	// Trim off a trailing dot if it exists.
+	fqdn = strings.TrimSuffix(fqdn, ".")
 
 	fqdn = strings.ToLower(fqdn)
 	origin = strings.ToLower(origin)
