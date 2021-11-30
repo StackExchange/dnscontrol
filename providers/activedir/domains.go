@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"os"
 	"strings"
+	"time"
 
 	"github.com/StackExchange/dnscontrol/v3/models"
 	"github.com/StackExchange/dnscontrol/v3/pkg/diff"
@@ -110,23 +111,23 @@ func (c *activedirProvider) readZoneDump(domainname string) ([]byte, error) {
 }
 
 // powerShellLogCommand logs to flagPsLog that a PowerShell command is going to be run.
-//func (c *activedirProvider) logCommand(command string) error {
-//	return c.logHelper(fmt.Sprintf("# %s\r\n%s\r\n", time.Now().UTC(), strings.TrimSpace(command)))
-//}
+func (c *activedirProvider) logCommand(command string) error {
+	return c.logHelper(fmt.Sprintf("# %s\r\n%s\r\n", time.Now().UTC(), strings.TrimSpace(command)))
+}
 
 // powerShellLogOutput logs to flagPsLog that a PowerShell command is going to be run.
-//func (c *activedirProvider) logOutput(s string) error {
-//	return c.logHelper(fmt.Sprintf("OUTPUT: START\r\n%s\r\nOUTPUT: END\r\n", s))
-//}
+func (c *activedirProvider) logOutput(s string) error {
+	return c.logHelper(fmt.Sprintf("OUTPUT: START\r\n%s\r\nOUTPUT: END\r\n", s))
+}
 
 // powerShellLogErr logs that a PowerShell command had an error.
-//func (c *activedirProvider) logErr(e error) error {
-//	err := c.logHelper(fmt.Sprintf("ERROR: %v\r\r", e)) // Log error to powershell.log
-//	if err != nil {
-//		return err // Bubble up error created in logHelper
-//	}
-//	return e // Bubble up original error
-//}
+func (c *activedirProvider) logErr(e error) error {
+	err := c.logHelper(fmt.Sprintf("ERROR: %v\r\r", e)) // Log error to powershell.log
+	if err != nil {
+		return err // Bubble up error created in logHelper
+	}
+	return e // Bubble up original error
+}
 
 //func (c *activedirProvider) logHelper(s string) error {
 //	logfile, err := os.OpenFile(c.psLog, os.O_APPEND|os.O_RDWR|os.O_CREATE, 0660)
