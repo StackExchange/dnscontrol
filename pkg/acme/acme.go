@@ -181,7 +181,7 @@ func getCertInfo(pemBytes []byte) (names []string, remaining float64, err error)
 	if err != nil {
 		return nil, 0, err
 	}
-	var daysLeft = float64(cert.NotAfter.Sub(time.Now())) / float64(time.Hour*24)
+	var daysLeft = float64(time.Until(cert.NotAfter)) / float64(time.Hour*24)
 	return cert.DNSNames, daysLeft, nil
 }
 
