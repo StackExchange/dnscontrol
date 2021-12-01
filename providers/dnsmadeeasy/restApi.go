@@ -95,7 +95,7 @@ func (restApi *dnsMadeEasyRestAPI) singleDomainCreate(data singleDomainRequestDa
 
 	req := &apiRequest{
 		method:   "POST",
-		endpoint: fmt.Sprintf("dns/managed/"),
+		endpoint: "dns/managed/",
 		data:     jsonData,
 	}
 
