@@ -36,9 +36,6 @@ type apiErrorResponse struct {
 	Error []string `json:"error"`
 }
 
-type apiEmptyResponse struct {
-}
-
 type apiRequest struct {
 	method   string
 	endpoint string
