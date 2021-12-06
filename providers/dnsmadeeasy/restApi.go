@@ -36,9 +36,6 @@ type apiErrorResponse struct {
 	Error []string `json:"error"`
 }
 
-type apiEmptyResponse struct {
-}
-
 type apiRequest struct {
 	method   string
 	endpoint string
@@ -98,7 +95,7 @@ func (restApi *dnsMadeEasyRestAPI) singleDomainCreate(data singleDomainRequestDa
 
 	req := &apiRequest{
 		method:   "POST",
-		endpoint: fmt.Sprintf("dns/managed/"),
+		endpoint: "dns/managed/",
 		data:     jsonData,
 	}
 

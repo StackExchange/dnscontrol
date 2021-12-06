@@ -135,8 +135,8 @@ func toRecordConfig(domain string, record *recordResponseDataEntry) *models.Reco
 	} else if record.Type == "SRV" {
 		err = rc.SetTargetSRV(uint16(record.Priority), uint16(record.Weight), uint16(record.Port), record.Value)
 	} else if record.Type == "CAA" {
-		value, err := strconv.Unquote(record.Value)
-		if err != nil {
+		value, unquoteErr := strconv.Unquote(record.Value)
+		if unquoteErr != nil {
 			panic(err)
 		}
 		err = rc.SetTargetCAA(uint8(record.IssuerCritical), record.CaaType, value)
