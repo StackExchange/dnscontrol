@@ -1041,7 +1041,7 @@ func makeTests(t *testing.T) []*TestGroup {
 				//"AZURE_DNS", // Currently failing.
 				"HEXONET",
 				"GCLOUD",
-				"ROUTE53", // Currently failing. See https://github.com/StackExchange/dnscontrol/issues/908
+				"ROUTE53",
 			),
 			tc("601 records", manyA("rec%04d", "1.2.3.4", 600)...),
 			tc("Update 601 records", manyA("rec%04d", "1.2.3.5", 600)...),
@@ -1054,7 +1054,7 @@ func makeTests(t *testing.T) []*TestGroup {
 				//"AZURE_DNS",     // Currently failing. See https://github.com/StackExchange/dnscontrol/issues/770
 				"HEXONET",
 				"HOSTINGDE",
-				"ROUTE53", // Currently failing. See https://github.com/StackExchange/dnscontrol/issues/908
+				"ROUTE53",
 			),
 			tc("1200 records", manyA("rec%04d", "1.2.3.4", 1200)...),
 			tc("Update 1200 records", manyA("rec%04d", "1.2.3.5", 1200)...),
