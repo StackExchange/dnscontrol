@@ -9,6 +9,7 @@ import (
 	"sort"
 	"strings"
 	"time"
+	"unicode/utf8"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/config"
@@ -419,40 +420,32 @@ func (r *route53Provider) GetDomainCorrections(dc *models.DomainConfig) ([]*mode
 			})
 	}
 
-	getBatchSize := func(size, max int) int {
-		if size > max {
-			return max
-		}
-		return size
-	}
-
-	for len(dels) > 0 {
-		batchSize := getBatchSize(len(dels), 1000)
-		batch := dels[:batchSize]
-		dels = dels[batchSize:]
-		delDescBatch := delDesc[:batchSize]
-		delDesc = delDesc[batchSize:]
-
-		delDescBatchStr := "\n" + strings.Join(delDescBatch, "\n") + "\n"
-
-		delReq := &r53.ChangeResourceRecordSetsInput{
+	batcher := newChangeBatcher(dels)
+	for batcher.Next() {
+		start, end := batcher.Batch()
+		batch := dels[start:end]
+		descBatchStr := "\n" + strings.Join(delDesc[start:end], "\n") + "\n"
+		req := &r53.ChangeResourceRecordSetsInput{
 			ChangeBatch: &r53Types.ChangeBatch{Changes: batch},
 		}
-		addCorrection(delDescBatchStr, delReq)
+		addCorrection(descBatchStr, req)
+	}
+	if err := batcher.Err(); err != nil {
+		return nil, err
 	}
 
-	for len(changes) > 0 {
-		batchSize := getBatchSize(len(changes), 500)
-		batch := changes[:batchSize]
-		changes = changes[batchSize:]
-		changeDescBatch := changeDesc[:batchSize]
-		changeDesc = changeDesc[batchSize:]
-		changeDescBatchStr := "\n" + strings.Join(changeDescBatch, "\n") + "\n"
-
-		changeReq := &r53.ChangeResourceRecordSetsInput{
+	batcher = newChangeBatcher(changes)
+	for batcher.Next() {
+		start, end := batcher.Batch()
+		batch := changes[start:end]
+		descBatchStr := "\n" + strings.Join(changeDesc[start:end], "\n") + "\n"
+		req := &r53.ChangeResourceRecordSetsInput{
 			ChangeBatch: &r53Types.ChangeBatch{Changes: batch},
 		}
-		addCorrection(changeDescBatchStr, changeReq)
+		addCorrection(descBatchStr, req)
+	}
+	if err := batcher.Err(); err != nil {
+		return nil, err
 	}
 
 	return corrections, nil
@@ -670,4 +663,94 @@ func (r *route53Provider) EnsureDomainExists(domain string) error {
 		return err
 	})
 	return err
+}
+
+// changeBatcher takes a set of r53Types.Changes and turns them into a series of
+// batches that meet the limits of the ChangeResourceRecordSets API.
+//
+// See also: https://docs.aws.amazon.com/Route53/latest/DeveloperGuide/DNSLimitations.html#limits-api-requests-changeresourcerecordsets
+type changeBatcher struct {
+	changes []r53Types.Change
+
+	maxSize  int // Max records per request.
+	maxChars int // Max record value characters per request.
+
+	start, end int   // Cursors into changes.
+	err        error // Populated by Next.
+}
+
+// newChangeBatcher returns a new changeBatcher.
+func newChangeBatcher(changes []r53Types.Change) *changeBatcher {
+	return &changeBatcher{
+		changes:  changes,
+		maxSize:  1000,  // "A request cannot contain more than 1,000 ResourceRecord elements."
+		maxChars: 32000, // "The sum of the number of characters (including spaces) in all Value elements in a request cannot exceed 32,000 characters."
+	}
+}
+
+// Next returns true if there is another batch of Changes.
+// It returns false if there are no more batches or an error occurred.
+func (b *changeBatcher) Next() bool {
+	if b.end >= len(b.changes) || b.err != nil {
+		return false
+	}
+
+	start, end := b.end, b.end
+	var (
+		reqSize  int
+		reqChars int
+	)
+	for end < len(b.changes) {
+		c := &b.changes[end]
+
+		// Check that we won't exceed 1000 ResourceRecords in the request.
+		rrsetSize := len(c.ResourceRecordSet.ResourceRecords)
+		if c.Action == r53Types.ChangeActionUpsert {
+			// "When the value of the Action element is UPSERT, each ResourceRecord element is counted twice."
+			rrsetSize *= 2
+		}
+		if newReqSize := reqSize + rrsetSize; newReqSize > b.maxSize {
+			break
+		} else {
+			reqSize = newReqSize
+		}
+
+		// Check that we won't exceed 32000 Value characters in the request.
+		var rrsetChars int
+		for _, rr := range c.ResourceRecordSet.ResourceRecords {
+			rrsetChars += utf8.RuneCountInString(aws.ToString(rr.Value))
+		}
+		if c.Action == r53Types.ChangeActionUpsert {
+			// "When the value of the Action element is UPSERT, each character in a Value element is counted twice."
+			rrsetChars *= 2
+		}
+		if newReqChars := reqChars + rrsetChars; newReqChars > b.maxChars {
+			break
+		} else {
+			reqChars = newReqChars
+		}
+
+		end++
+	}
+
+	if start == end {
+		b.err = errors.New("could not create ChangeResourceRecordSets request within AWS API limits")
+		return false
+	}
+
+	b.start = start
+	b.end = end
+
+	return true
+}
+
+// Batch returns the current batch. It should only be called
+// after Next returns true.
+func (b *changeBatcher) Batch() (start, end int) {
+	return b.start, b.end
+}
+
+// Err returns the error encountered during the previous call to Next.
+func (b *changeBatcher) Err() error {
+	return b.err
 }
