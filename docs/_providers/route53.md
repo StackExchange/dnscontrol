@@ -36,10 +36,9 @@ $ export AWS_SESSION_TOKEN=ZZZZZZZZ
 }
 {% endhighlight %}
 
-Alternatively if you want to used [named profiles](https://docs.aws.amazon.com/cli/latest/userguide/cli-configure-profiles.html) you need to export the following variables
+Alternatively if you want to used [named profiles](https://docs.aws.amazon.com/cli/latest/userguide/cli-configure-profiles.html) you need to export the following variable
 
 ```
-$ export AWS_SDK_LOAD_CONFIG=1
 $ export AWS_PROFILE=ZZZZZZZZ
 ```
 
