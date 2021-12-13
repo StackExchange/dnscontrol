@@ -96,7 +96,7 @@ if (emergency) {
     );
 
 } else {
-    // Normal operation: Configure A/B/C using A records as normal.
+    // Normal operation: Configure A/B/C using A records.
 
     D_EXTEND("example.com",
         A("a", "10.10.10.10"),
