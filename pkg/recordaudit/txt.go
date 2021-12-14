@@ -15,7 +15,7 @@ func TxtNoBackticks(records []*models.RecordConfig) error {
 
 		if rc.HasFormatIdenticalToTXT() {
 			for _, txt := range rc.TxtStrings {
-				if strings.Index(txt, "`") != -1 {
+				if strings.Contains(txt, "`") {
 					return fmt.Errorf("txtstring contains backtick")
 				}
 			}
@@ -31,7 +31,7 @@ func TxtNoSingleQuotes(records []*models.RecordConfig) error {
 
 		if rc.HasFormatIdenticalToTXT() {
 			for _, txt := range rc.TxtStrings {
-				if strings.Index(txt, "'") != -1 {
+				if strings.Contains(txt, "'") {
 					return fmt.Errorf("txtstring contains single-quotes")
 				}
 			}
@@ -47,7 +47,7 @@ func TxtNoDoubleQuotes(records []*models.RecordConfig) error {
 
 		if rc.HasFormatIdenticalToTXT() {
 			for _, txt := range rc.TxtStrings {
-				if strings.Index(txt, `"`) != -1 {
+				if strings.Contains(txt, `"`) {
 					return fmt.Errorf("txtstring contains doublequotes")
 				}
 			}

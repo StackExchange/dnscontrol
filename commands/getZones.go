@@ -21,7 +21,7 @@ var _ = cmd(catUtils, func() *cli.Command {
 		Usage:   "gets a zone from a provider (stand-alone)",
 		Action: func(ctx *cli.Context) error {
 			if ctx.NArg() < 3 {
-				return cli.NewExitError("Arguments should be: credskey providername zone(s) (Ex: r53 ROUTE53 example.com)", 1)
+				return cli.Exit("Arguments should be: credskey providername zone(s) (Ex: r53 ROUTE53 example.com)", 1)
 
 			}
 			args.CredName = ctx.Args().Get(0)
@@ -74,7 +74,7 @@ var _ = cmd(catUtils, func() *cli.Command {
 		Usage: "Do a small operation to verify credentials (stand-alone)",
 		Action: func(ctx *cli.Context) error {
 			if ctx.NArg() != 2 {
-				return cli.NewExitError("Arguments should be: credskey providername (Ex: r53 ROUTE53)", 1)
+				return cli.Exit("Arguments should be: credskey providername (Ex: r53 ROUTE53)", 1)
 
 			}
 			args.CredName = ctx.Args().Get(0)
