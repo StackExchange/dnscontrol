@@ -73,10 +73,13 @@ func (api *dnsMadeEasyProvider) GetDomainCorrections(dc *models.DomainConfig) ([
 		return nil, err
 	}
 
-	// ALIAS is called ANAME on DNS Made Easy
 	for _, rec := range dc.Records {
 		if rec.Type == "ALIAS" {
+			// ALIAS is called ANAME on DNS Made Easy
 			rec.Type = "ANAME"
+		} else if rec.Type == "NS" {
+			// NS records have fixed TTL on DNS Made Easy and it cannot be changed
+			rec.TTL = fixedNameServerRecordTTL
 		}
 	}
 
