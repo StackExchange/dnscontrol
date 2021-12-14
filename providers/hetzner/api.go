@@ -220,7 +220,7 @@ func (api *hetznerProvider) request(endpoint string, method string, request inte
 		cleanupResponseBody := func() {
 			err := resp.Body.Close()
 			if err != nil {
-				fmt.Println(fmt.Sprintf("failed closing response body: %q", err))
+				fmt.Printf("failed closing response body: %q\n", err)
 			}
 		}
 
