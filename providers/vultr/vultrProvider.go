@@ -225,9 +225,7 @@ func toVultrRecord(dc *models.DomainConfig, rc *models.RecordConfig, vultrID int
 	data := rc.GetTargetField()
 
 	// Vultr does not use a period suffix for CNAME, NS, or MX.
-	if strings.HasSuffix(data, ".") {
-		data = data[:len(data)-1]
-	}
+	data = strings.TrimSuffix(data, ".")
 
 	var priority *int
 
