@@ -189,7 +189,7 @@ func checkTargets(rec *models.RecordConfig, domain string) (errs []error) {
 		check(checkSoa(rec.SoaExpire, rec.SoaMinttl, rec.SoaRefresh, rec.SoaRetry, rec.SoaSerial, rec.SoaMbox))
 		check(checkTarget(target))
 		if label != "@" {
-			check(fmt.Errorf("SOA record is only valid for bare domain."))
+			check(fmt.Errorf("SOA record is only valid for bare domain"))
 		}
 	case "SRV":
 		check(checkTarget(target))
@@ -505,7 +505,7 @@ func parseDomainSpec(s string) (domain, tag string) {
 
 func checkAutoDNSSEC(dc *models.DomainConfig) (errs []error) {
 	if dc.AutoDNSSEC != "" && dc.AutoDNSSEC != "on" && dc.AutoDNSSEC != "off" {
-		errs = append(errs, fmt.Errorf("Domain %q AutoDNSSEC=%q is invalid (expecting \"\", \"off\", or \"on\")", dc.Name, dc.AutoDNSSEC))
+		errs = append(errs, fmt.Errorf("domain %q AutoDNSSEC=%q is invalid (expecting \"\", \"off\", or \"on\")", dc.Name, dc.AutoDNSSEC))
 	}
 	return
 }
