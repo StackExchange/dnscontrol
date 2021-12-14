@@ -521,10 +521,7 @@ func getZoneID(zone r53Types.HostedZone, r *models.RecordConfig) string {
 
 /** Removes "/hostedzone/"" prefix from AWS ZoneId */
 func parseZoneId(zoneID string) string {
-	if strings.HasPrefix(zoneID, "/hostedzone/") {
-		zoneID = strings.TrimPrefix(zoneID, "/hostedzone/")
-	}
-	return zoneID
+	return strings.TrimPrefix(zoneID, "/hostedzone/")
 }
 
 func (r *route53Provider) GetRegistrarCorrections(dc *models.DomainConfig) ([]*models.Correction, error) {
