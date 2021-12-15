@@ -122,18 +122,14 @@ func (api *autoDnsProvider) updateZone(domain string, resourceRecords []*Resourc
 	zone.NameServers = []*models.Nameserver{}
 	zone.ResourceRecords = []*ResourceRecord{}
 
-	for _, resourceRecord := range resourceRecords {
-		zone.ResourceRecords = append(zone.ResourceRecords, resourceRecord)
-	}
+	zone.ResourceRecords = append(zone.ResourceRecords, resourceRecords...)
 
 	// naive approach, the first nameserver passed should be the systemNameServer, the will be named alphabetically
 	sort.Slice(nameServers, func(i, j int) bool {
 		return nameServers[i].Name < nameServers[j].Name
 	})
 
-	for _, nameServer := range nameServers {
-		zone.NameServers = append(zone.NameServers, nameServer)
-	}
+	zone.NameServers = append(zone.NameServers, nameServers...)
 
 	var _, putErr = api.request("PUT", "zone/" + domain + "/" + systemNameServer.Name, zone)
 
