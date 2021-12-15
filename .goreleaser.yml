@@ -47,24 +47,24 @@ nfpms:
     formats:
     - deb
     - rpm
-dockers:
-  -
-    id: docker-build
-    goos: linux
-    goarch: amd64
-    image_templates:
-    - "stackexchange/{{.ProjectName}}:latest"
-    - "stackexchange/{{.ProjectName}}:{{ .Version }}"
-    ids:
-    - build
-    build_flag_templates:
-    - "--pull"
-    - "--label=org.opencontainers.image.created={{.Date}}"
-    - "--label=org.opencontainers.image.name={{.ProjectName}}"
-    - "--label=org.opencontainers.image.revision={{.FullCommit}}"
-    - "--label=org.opencontainers.image.version={{.Version}}"
-    - "--label=org.opencontainers.image.source={{.GitURL}}"
-    - "--platform=linux/amd64"
+#dockers:
+#  -
+#    id: docker-build
+#    goos: linux
+#    goarch: amd64
+#    image_templates:
+#    - "stackexchange/{{.ProjectName}}:latest"
+#    - "stackexchange/{{.ProjectName}}:{{ .Version }}"
+#    ids:
+#    - build
+#    build_flag_templates:
+#    - "--pull"
+#    - "--label=org.opencontainers.image.created={{.Date}}"
+#    - "--label=org.opencontainers.image.name={{.ProjectName}}"
+#    - "--label=org.opencontainers.image.revision={{.FullCommit}}"
+#    - "--label=org.opencontainers.image.version={{.Version}}"
+#    - "--label=org.opencontainers.image.source={{.GitURL}}"
+#    - "--platform=linux/amd64"
 checksum:
   name_template: 'checksums.txt'
 snapshot:
