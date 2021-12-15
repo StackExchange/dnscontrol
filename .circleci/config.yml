@@ -29,7 +29,7 @@ jobs:
             - linux-go-{{ checksum "go.sum" }}-<< pipeline.parameters.cache-key >>
       - run:
           name: Install goreleaser
-          command: curl -sL https://git.io/goreleaser | bash
+          command: go install github.com/goreleaser/goreleaser@latest
       - run:
           name: Build binaries
           command: goreleaser build --snapshot
@@ -114,7 +114,7 @@ jobs:
           at: .
       - run:
           name: Install goreleaser
-          command: curl -sL https://git.io/goreleaser | bash
+          command: go install github.com/goreleaser/goreleaser@latest
       - run: goreleaser release
 
 workflows:
