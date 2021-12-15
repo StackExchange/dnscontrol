@@ -15,7 +15,7 @@ jobs:
 
     docker:
       - image: cimg/go:<< pipeline.parameters.gover >>
-    resource_class: xlarge
+    resource_class: 2xlarge
 
     environment: # environment variables for the build itself
       TEST_RESULTS: /tmp/test-results
