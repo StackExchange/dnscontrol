@@ -63,12 +63,6 @@ func New(settings map[string]string, _ json.RawMessage) (providers.DNSServicePro
 	return api, nil
 }
 
-// AuditRecords returns an error if any records are not
-// supportable by this provider.
-func AuditRecords(records []*models.RecordConfig) error {
-	return nil
-}
-
 // GetDomainCorrections returns the corrections for a domain.
 func (api *autoDnsProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Correction, error) {
 	var changes []*models.RecordConfig
