@@ -131,9 +131,7 @@ func (a *azurednsProvider) GetNameservers(domain string) ([]*models.Nameserver, 
 
 	var nss []string
 	if zone.ZoneProperties != nil {
-		for _, ns := range *zone.ZoneProperties.NameServers {
-			nss = append(nss, ns)
-		}
+		nss = append(nss, *zone.ZoneProperties.NameServers...)
 	}
 	return models.ToNameserversStripTD(nss)
 }

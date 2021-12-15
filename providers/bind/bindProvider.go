@@ -175,9 +175,6 @@ func (c *bindProvider) GetZoneRecords(domain string) (models.Records, error) {
 		if err != nil {
 			return nil, err
 		}
-		// FIXME(tlim): Empty branch?  Is the intention to skip SOAs?
-		if rec.Type == "SOA" {
-		}
 		foundRecords = append(foundRecords, &rec)
 	}
 
