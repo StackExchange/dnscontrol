@@ -38,22 +38,17 @@ func (api *autoDnsProvider) request(method string, requestPath string, data inte
 
 	if data != nil {
 		body, _ := json.Marshal(data)
-
 		buffer := bytes.NewBuffer(body)
-
 		request.Body = io.NopCloser(buffer)
 	}
 
 	response, error := client.Do(request)
-
 	if error != nil {
 		return nil, error
 	}
-
 	defer response.Body.Close()
 
 	responseText, _ := ioutil.ReadAll(response.Body)
-
 	if response.StatusCode != 200 {
 		return nil, errors.New("Request to " + requestUrl.Path + " failed: " + string(responseText))
 	}
@@ -71,14 +66,12 @@ func (api *autoDnsProvider) findZoneSystemNameServer(domain string) (*models.Nam
 	})
 
 	responseData, err := api.request("POST", "zone/_search", request)
-
 	if err != nil {
 		return nil, err
 	}
 
 	var responseObject JSONResponseDataZone
 	_ = json.Unmarshal(responseData, &responseObject)
-
 	if len(responseObject.Data) != 1 {
 		return nil, errors.New("Domain " + domain + " could not be found in AutoDNS")
 	}
@@ -90,14 +83,18 @@ func (api *autoDnsProvider) findZoneSystemNameServer(domain string) (*models.Nam
 
 func (api *autoDnsProvider) getZone(domain string) (*Zone, error) {
 	systemNameServer, err := api.findZoneSystemNameServer(domain)
-
 	if err != nil {
 		return nil, err
 	}
 
+	// if resolving of a systemNameServer succeeds the system contains this zone
 	var responseData, _ = api.request("GET", "zone/" + domain + "/" + systemNameServer.Name, nil)
 	var responseObject JSONResponseDataZone
-	_ = json.Unmarshal(responseData, &responseObject)
+	// make sure that the response is valid, the zone is in AutoDNS but we're not sure the returned data meets our expectation
+	unmErr := json.Unmarshal(responseData, &responseObject)
+	if unmErr != nil {
+		return nil, unmErr
+	}
 
 	return responseObject.Data[0], nil
 }
