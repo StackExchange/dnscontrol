@@ -28,8 +28,15 @@ jobs:
           keys:
             - linux-go-{{ checksum "go.sum" }}-<< pipeline.parameters.cache-key >>
       - run:
+          name: Install goreleaser
+          command: curl -sL https://git.io/goreleaser | bash
+      - run:
           name: Build binaries
-          command: go run build/build.go
+          command: goreleaser build
+      - persist_to_workspace:
+          root: .
+          paths:
+            - dist
 
       - run:
           name: Run unit tests
@@ -103,6 +110,8 @@ jobs:
     resource_class: large
     steps:
       - checkout
+      - attach_workspace:
+          at: .
       - run:
           name: Install goreleaser
           command: curl -sL https://git.io/goreleaser | bash
