@@ -46,11 +46,6 @@ jobs:
             PACKAGE_NAMES=$(go list ./... | circleci tests split --split-by=timings --timings-type=classname)
             gotestsum --junitfile ${TEST_RESULTS}/gotestsum-report.xml -- $PACKAGE_NAMES
 
-      - save_cache:
-          key: linux-go-{{ checksum "go.sum" }}-<< pipeline.parameters.cache-key >>
-          paths:
-            - "../go/pkg/mod"
-
       - store_test_results: # upload test results for display in Test Summary
           path: /tmp/test-results
 
@@ -110,8 +105,6 @@ jobs:
     resource_class: large
     steps:
       - checkout
-      - attach_workspace:
-          at: .
       - run:
           name: Install goreleaser
           command: go install github.com/goreleaser/goreleaser@latest
