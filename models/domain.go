@@ -84,7 +84,7 @@ func (dc *DomainConfig) Punycode() error {
 				return err
 			}
 			rec.SetTarget(t)
-		case "CF_REDIRECT", "CF_TEMP_REDIRECT":
+		case "CF_REDIRECT", "CF_TEMP_REDIRECT", "CF_WORKER_ROUTE":
 			rec.SetTarget(rec.GetTargetField())
 		case "A", "AAAA", "CAA", "DS", "NAPTR", "SOA", "SSHFP", "TXT", "TLSA", "AZURE_ALIAS":
 			// Nothing to do.
