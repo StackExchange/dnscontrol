@@ -102,9 +102,10 @@ jobs:
   release:
     docker:
       - image: cimg/go:<< pipeline.parameters.gover >>
-    resource_class: large
+    resource_class: 2xlarge
     steps:
       - checkout
+      - setup_remote_docker
       - run:
           name: Install goreleaser
           command: go install github.com/goreleaser/goreleaser@latest
