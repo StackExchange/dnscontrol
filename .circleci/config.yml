@@ -105,7 +105,8 @@ jobs:
     resource_class: 2xlarge
     steps:
       - checkout
-      - setup_remote_docker
+      - setup_remote_docker:
+          version: 20.10.11
       - run:
           name: Install goreleaser
           command: go install github.com/goreleaser/goreleaser@latest
