@@ -32,7 +32,7 @@ jobs:
           command: curl -sL https://git.io/goreleaser | bash
       - run:
           name: Build binaries
-          command: goreleaser build
+          command: goreleaser build --snapshot
       - persist_to_workspace:
           root: .
           paths:
