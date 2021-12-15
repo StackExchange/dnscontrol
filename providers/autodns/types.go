@@ -22,7 +22,7 @@ type ResourceRecord struct {
 	TTL int64 `json:"ttl,omitempty"`
 
 	// The type of the record, e.g. A
-	// Example: A, MX, CNAME, TXT, SRV, PTR, AAAA, NS, CAA, PROCEED_MUC, TLSA, NAPTR, SSHFP, LOC, RP, HINFO, PROCEED, ALIAS, DNSKEY, NSEC, DS
+	// Permitted values: A, AAAA, CAA, CNAME, HINFO, MX, NAPTR, NS, PTR, SRV, TXT, ALIAS
 	Type string `json:"type,omitempty"`
 
 	// The value of the record.
