@@ -207,7 +207,7 @@ func recordToNative(config *models.RecordConfig) (domain.DNSEntry, error) {
 
 func nativeToRecord(entry domain.DNSEntry, origin string) (*models.RecordConfig, error) {
 	rc := &models.RecordConfig{
-		TTL:      uint32(*&entry.Expire),
+		TTL:      uint32(entry.Expire),
 		Type:     entry.Type,
 		Original: entry,
 	}
@@ -217,16 +217,6 @@ func nativeToRecord(entry domain.DNSEntry, origin string) (*models.RecordConfig,
 	}
 
 	return rc, nil
-}
-
-func removeNS(records models.Records) models.Records {
-	var noNameServers models.Records
-	for _, r := range records {
-		if r.Type != "NS" {
-			noNameServers = append(noNameServers, r)
-		}
-	}
-	return noNameServers
 }
 
 func removeOtherNS(dc *models.DomainConfig) {

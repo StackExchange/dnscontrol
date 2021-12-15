@@ -1,7 +1,6 @@
 package cloudns
 
 import (
-	"fmt"
 	"github.com/StackExchange/dnscontrol/v3/models"
 	"github.com/StackExchange/dnscontrol/v3/pkg/recordaudit"
 )
@@ -30,22 +29,9 @@ func AuditRecords(records []*models.RecordConfig) error {
 	}
 	// Still needed as of 2021-03-11
 
-	if err := txtNoMultipleStrings(records); err != nil {
+	if err := recordaudit.TxtNoMultipleStrings(records); err != nil {
 		return err
 	}
 
-	return nil
-}
-
-// ClouDNS NOT allow multiple TXT records with same name
-// But allow values longer the 255
-func txtNoMultipleStrings(records []*models.RecordConfig) error {
-	for _, rc := range records {
-		if rc.HasFormatIdenticalToTXT() { // TXT and similar:
-			if len(rc.TxtStrings) > 1 {
-				return fmt.Errorf("multiple strings in one txt")
-			}
-		}
-	}
 	return nil
 }
