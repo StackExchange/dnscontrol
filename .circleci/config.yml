@@ -27,12 +27,6 @@ jobs:
       - restore_cache: # restores saved cache if no changes are detected since last run
           keys:
             - linux-go-{{ checksum "go.sum" }}-<< pipeline.parameters.cache-key >>
-      - run:
-          name: Install goreleaser
-          command: go install github.com/goreleaser/goreleaser@latest
-      - run:
-          name: Build binaries
-          command: goreleaser build --snapshot
 
       - run:
           name: Run unit tests
@@ -44,6 +38,14 @@ jobs:
 
       - store_test_results: # upload test results for display in Test Summary
           path: /tmp/test-results
+
+      - run:
+          name: Install goreleaser
+          command: go install github.com/goreleaser/goreleaser@latest
+
+      - run:
+          name: Build binaries
+          command: goreleaser build --snapshot
 
   integration-tests:
     docker:
@@ -124,16 +126,16 @@ workflows:
           matrix:
             parameters:
               provider:
-# Providers that don't require secrets: (alphabetical)
+                # Providers that don't require secrets: (alphabetical)
                 - BIND
                 - HEXONET
-# Providers designated "officially supported": (alphabetical)
+                # Providers designated "officially supported": (alphabetical)
                 - AZURE_DNS
                 - CLOUDFLAREAPI
                 - GCLOUD
                 - NAMEDOTCOM
                 - ROUTE53
-# All others: (alphabetical)
+                # All others: (alphabetical)
                 - CLOUDNS
                 - DIGITALOCEAN
                 - GANDI_V5
