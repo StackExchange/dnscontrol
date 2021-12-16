@@ -22,7 +22,7 @@ jobs:
 
     steps:
       - checkout
-      - run: mkdir -p "$TEST_RESULTS
+      - run: mkdir -p "$TEST_RESULTS"
 
       - restore_cache: # restores saved cache if no changes are detected since last run
           keys:
@@ -83,7 +83,7 @@ jobs:
 
     steps:
       - checkout
-      - run: mkdir -p $TEST_RESULTS
+      - run: mkdir -p "$TEST_RESULTS"
 
       - restore_cache: # restores saved cache if no changes are detected since last run
           keys:
