@@ -148,8 +148,8 @@ workflows:
       - release:
           requires: [integration-tests]
           # Only run this job on git tag pushes
-          branches:
-            only: [main, master]
           filters:
+            branches:
+              only: [main, master]
             tags:
               only: /v[0-9]+(\.[0-9]+)*(-.*)*/
