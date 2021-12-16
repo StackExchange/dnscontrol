@@ -118,7 +118,7 @@ jobs:
 
 workflows:
   version: 2
-  build-workflow:
+  Build-Test-Release:
     jobs:
       - build
 
