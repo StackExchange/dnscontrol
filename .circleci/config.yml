@@ -3,7 +3,7 @@ version: 2.1
 parameters:
   cache-key:
     type: integer
-    default: 1634492241
+    default: 1639697695
     description: Change to force cache reset `pwsh > Get-Date -UFormat %s`
   gover:
     type: string
@@ -30,7 +30,6 @@ jobs:
       - run:
           name: Install goreleaser
           command: go install github.com/goreleaser/goreleaser@latest
-          background: true
 
       - run: mkdir -p "$TEST_RESULTS"
 
@@ -46,6 +45,11 @@ jobs:
       - run:
           name: Build binaries
           command: goreleaser build --snapshot
+
+      - save_cache: # restores saved cache if no changes are detected since last run
+          key: linux-go-{{ checksum "go.sum" }}-<< pipeline.parameters.cache-key >>
+          paths:
+            - /home/circleci/go/pkg/mod
 
   integration-tests:
     docker:
@@ -107,11 +111,18 @@ jobs:
     resource_class: 2xlarge
     steps:
       - checkout
+
+      - restore_cache: # restores saved cache if no changes are detected since last run
+          keys:
+            - linux-go-{{ checksum "go.sum" }}-<< pipeline.parameters.cache-key >>
+
       - setup_remote_docker:
           version: 20.10.11
+
       - run:
           name: Install goreleaser
           command: go install github.com/goreleaser/goreleaser@latest
+
       - run: goreleaser release
 
 workflows:
