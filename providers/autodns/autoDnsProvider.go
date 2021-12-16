@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"net/http"
 	"net/url"
+	"regexp"
+	"strconv"
 	"strings"
 
 	"github.com/StackExchange/dnscontrol/v3/models"
@@ -134,18 +136,32 @@ func (api *autoDnsProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*mo
 
 							zoneTTL = record.TTL
 						} else {
-							recordName := record.Name
-
-							if recordName == "@" {
-								recordName = ""
-							}
-
-							resourceRecords = append(resourceRecords, &ResourceRecord{
-								Name: recordName,
+							resourceRecord := &ResourceRecord{
+								Name:  record.Name,
 								TTL: int64(record.TTL),
 								Type: record.Type,
 								Value: record.GetTargetField(),
-							})
+							}
+
+							if resourceRecord.Name == "@" {
+								resourceRecord.Name = ""
+							}
+
+							if record.Type == "MX" {
+								resourceRecord.Pref = int32(record.MxPreference)
+							}
+
+							if record.Type == "SRV" {
+								resourceRecord.Value = fmt.Sprintf(
+									"%d %d %d %s",
+									record.SrvPriority,
+									record.SrvWeight,
+									record.SrvPort,
+									record.GetTargetField(),
+								)
+							}
+
+							resourceRecords = append(resourceRecords, resourceRecord)
 						}
 					}
 
@@ -243,6 +259,26 @@ func toRecordConfig(domain string, record *ResourceRecord) *models.RecordConfig 
 	rc.SetLabel(record.Name, domain)
 
 	_ = rc.PopulateFromString(record.Type, record.Value, domain)
+
+	if record.Type == "MX" {
+		rc.MxPreference = uint16(record.Pref)
+		rc.SetTarget(record.Value)
+	}
+
+	if record.Type == "SRV" {
+		rc.SrvPriority = uint16(record.Pref)
+
+		re := regexp.MustCompile("(\\d+) (\\d+) (.+)$")
+		found := re.FindStringSubmatch(record.Value)
+
+		weight, _ := strconv.Atoi(found[1])
+		rc.SrvWeight = uint16(weight)
+
+		port, _ := strconv.Atoi(found[2])
+		rc.SrvPort = uint16(port)
+
+		rc.SetTarget(found[3])
+	}
 
 	return rc
 }
