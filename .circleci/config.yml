@@ -22,6 +22,12 @@ jobs:
 
     steps:
       - checkout
+
+      - run:
+          name: Install goreleaser
+          command: go install github.com/goreleaser/goreleaser@latest
+          background: true
+
       - run: mkdir -p "$TEST_RESULTS"
 
       - restore_cache: # restores saved cache if no changes are detected since last run
@@ -39,9 +45,7 @@ jobs:
       - store_test_results: # upload test results for display in Test Summary
           path: /tmp/test-results
 
-      - run:
-          name: Install goreleaser
-          command: go install github.com/goreleaser/goreleaser@latest
+
 
       - run:
           name: Build binaries
