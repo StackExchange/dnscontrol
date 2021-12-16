@@ -23,6 +23,10 @@ jobs:
     steps:
       - checkout
 
+      - restore_cache: # restores saved cache if no changes are detected since last run
+          keys:
+            - linux-go-{{ checksum "go.sum" }}-<< pipeline.parameters.cache-key >>
+
       - run:
           name: Install goreleaser
           command: go install github.com/goreleaser/goreleaser@latest
@@ -30,22 +34,14 @@ jobs:
 
       - run: mkdir -p "$TEST_RESULTS"
 
-      - restore_cache: # restores saved cache if no changes are detected since last run
-          keys:
-            - linux-go-{{ checksum "go.sum" }}-<< pipeline.parameters.cache-key >>
-
       - run:
           name: Run unit tests
 
           # store the results of our tests in the $TEST_RESULTS directory
-          command: |
-            PACKAGE_NAMES=$(go list ./... | circleci tests split --split-by=timings --timings-type=classname)
-            gotestsum --junitfile ${TEST_RESULTS}/gotestsum-report.xml -- $PACKAGE_NAMES
+          command: gotestsum --junitfile ${TEST_RESULTS}/gotestsum-report.xml -- $PACKAGE_NAMES
 
       - store_test_results: # upload test results for display in Test Summary
           path: /tmp/test-results
-
-
 
       - run:
           name: Build binaries
