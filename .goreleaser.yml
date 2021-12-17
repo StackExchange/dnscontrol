@@ -1,0 +1,76 @@
+env:
+  - GO111MODULE=on
+
+builds:
+  -
+    id: build
+    env:
+      - CGO_ENABLED=0
+    goos:
+      - linux
+      - windows
+      - darwin
+      - freebsd
+    ldflags:
+      - -s -w -X main.Version="{{ .Version }}" -X main.SHA="{{ .FullCommit }}" -X main.BuildTime={{ .Timestamp }}
+changelog:
+  sort: asc
+  use: github
+  filters:
+    exclude:
+    - '^docs:'
+    - '^test:'
+    - '^chore'
+    - Merge pull request
+    - Merge branch
+archives:
+  - replacements:
+      darwin: Darwin
+      linux: Linux
+      windows: Windows
+      386: i386
+      amd64: x86_64
+    format_overrides:
+    - goos: windows
+      format: zip
+universal_binaries:
+  -
+    replace: true
+    id: build
+
+nfpms:
+  - file_name_template: '{{ .ProjectName }}_{{ .Arch }}{{ if .Arm }}v{{ .Arm }}{{ end }}'
+    id: packages
+    homepage:  https://stackexchange.github.io/dnscontrol/
+    description: "DNSControl: Infrastructure as Code for DNS Zones"
+    license: MIT
+    formats:
+    - deb
+    - rpm
+#dockers:
+#  -
+#    id: docker-build
+#    goos: linux
+#    goarch: amd64
+#    image_templates:
+#    - "stackexchange/{{.ProjectName}}:latest"
+#    - "stackexchange/{{.ProjectName}}:{{ .Version }}"
+#    ids:
+#    - build
+#    build_flag_templates:
+#    - "--pull"
+#    - "--label=org.opencontainers.image.created={{.Date}}"
+#    - "--label=org.opencontainers.image.name={{.ProjectName}}"
+#    - "--label=org.opencontainers.image.revision={{.FullCommit}}"
+#    - "--label=org.opencontainers.image.version={{.Version}}"
+#    - "--label=org.opencontainers.image.source={{.GitURL}}"
+#    - "--platform=linux/amd64"
+checksum:
+  name_template: 'checksums.txt'
+snapshot:
+  name_template: "{{ incpatch .Version }}-next"
+announce:
+  # Skip the announcing feature in some conditions, for instance, when publishing patch releases.
+  # Valid options are `true`, `false`, empty, or a template that evaluates to a boolean (`true` or `false`).
+  # Defaults to empty (which means false).
+  skip: true
