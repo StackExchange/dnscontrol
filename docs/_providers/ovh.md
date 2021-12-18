@@ -119,14 +119,13 @@ control panel manually.
 
 ## Dual providers scenario
 
-Since OVH doesn't allow to host DNS for a domain that is not registered in their registrar, some dual providers
-scenario are not possible:
+OVH now allows to host DNS zone for a domain that is not registered in their registrar (see: https://www.ovh.com/manager/web/#/zone). The following dual providers scenario are supported:
 
 | registrar | zone        | working? |
 |:---------:|:-----------:|:--------:|
 |  OVH      | other       |    √     |
 |  OVH      | OVH + other |    √     |
-|  other    | OVH         |    X     |
+|  other    | OVH         |    √     |
 
 ## Caveat
 
