@@ -141,12 +141,12 @@ func (o *oracleProvider) GetNameservers(domain string) ([]*models.Nameserver, er
 		return nil, err
 	}
 
-	nss := make([]string, len(getResp.Zone.Nameservers))
+	nss := make([]*models.Nameserver, len(getResp.Zone.Nameservers))
 	for i, ns := range getResp.Zone.Nameservers {
-		nss[i] = *ns.Hostname
+		nss[i] = &models.Nameserver{Name: *ns.Hostname}
 	}
 
-	return models.ToNameserversStripTD(nss)
+	return nss, nil
 }
 
 func (o *oracleProvider) GetZoneRecords(domain string) (models.Records, error) {
@@ -224,12 +224,9 @@ func (o *oracleProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*model
 	models.PostProcessRecords(existingRecords)
 	txtutil.SplitSingleLongTxt(dc.Records) // Autosplit long TXT records
 
-	filteredNewRecords := models.Records{}
-
 	// Ensure we don't emit changes for attempted modification of built-in apex NSs
 	for _, rec := range dc.Records {
 		if rec.Type != "NS" {
-			filteredNewRecords = append(filteredNewRecords, rec)
 			continue
 		}
 
@@ -243,7 +240,6 @@ func (o *oracleProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*model
 			printer.Warnf("Oracle Cloud forces TTL=86400 for NS records. Ignoring configured TTL of %d for %s\n", rec.TTL, recNS)
 			rec.TTL = 86400
 		}
-		filteredNewRecords = append(filteredNewRecords, rec)
 	}
 
 	differ := diff.New(dc)
