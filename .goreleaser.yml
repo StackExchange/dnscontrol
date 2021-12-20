@@ -23,6 +23,7 @@ changelog:
     - '^chore'
     - Merge pull request
     - Merge branch
+    - '^bump'
 archives:
   - replacements:
       darwin: Darwin
@@ -74,3 +75,7 @@ announce:
   # Valid options are `true`, `false`, empty, or a template that evaluates to a boolean (`true` or `false`).
   # Defaults to empty (which means false).
   skip: true
+release:
+  draft: true
+  prerelease: auto
+  name_template: "Release v{{.Version}}"
