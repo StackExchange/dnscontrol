@@ -99,11 +99,11 @@ func (api *autoDnsProvider) getZone(domain string) (*Zone, error) {
 	return responseObject.Data[0], nil
 }
 
-func (api *autoDnsProvider) updateZone(domain string, resourceRecords []*ResourceRecord, nameServers []*models.Nameserver, zoneTTL uint32) {
+func (api *autoDnsProvider) updateZone(domain string, resourceRecords []*ResourceRecord, nameServers []*models.Nameserver, zoneTTL uint32) error {
 	systemNameServer, err := api.findZoneSystemNameServer(domain)
 
 	if err != nil {
-		panic(err)
+		return err
 	}
 
 	zone, _ := api.getZone(domain)
@@ -131,6 +131,8 @@ func (api *autoDnsProvider) updateZone(domain string, resourceRecords []*Resourc
 	var _, putErr = api.request("PUT", "zone/" + domain + "/" + systemNameServer.Name, zone)
 
 	if putErr != nil {
-		panic(putErr)
+		return putErr
 	}
+
+	return nil
 }
