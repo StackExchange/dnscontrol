@@ -1,6 +1,6 @@
 # DNSControl
 
-[![Build Status](https://github.com/StackExchange/dnscontrol/workflows/build/badge.svg)](https://github.com/StackExchange/dnscontrol/actions?query=workflow%3Abuild+branch%3Amaster)
+[![CircleCI](https://circleci.com/gh/StackExchange/dnscontrol/tree/master.svg?style=svg)](https://circleci.com/gh/StackExchange/dnscontrol/tree/master)
 [![Gitter chat](https://badges.gitter.im/dnscontrol/Lobby.png)](https://gitter.im/dnscontrol/Lobby)
 [![Google Group](https://img.shields.io/badge/google%20group-chat-green.svg)](https://groups.google.com/forum/#!forum/dnscontrol-discuss)
 [![PkgGoDev](https://pkg.go.dev/badge/github.com/StackExchange/dnscontrol)](https://pkg.go.dev/github.com/StackExchange/dnscontrol)
