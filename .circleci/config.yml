@@ -1,7 +1,7 @@
 version: 2.1
 
 orbs:
-  github-cli: circleci/github-cli@1.1.0
+  gh: circleci/github-cli@1.1.0
 
 parameters:
   cache-key:
