@@ -15,7 +15,7 @@ builds:
       - -s -w -X main.Version="{{ .Version }}" -X main.SHA="{{ .FullCommit }}" -X main.BuildTime={{ .Timestamp }}
 changelog:
   sort: asc
-  use: github
+  use: github-native
   filters:
     exclude:
     - '^docs:'
