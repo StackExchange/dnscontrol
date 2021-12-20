@@ -24,6 +24,19 @@ changelog:
     - Merge pull request
     - Merge branch
     - '^bump'
+    - '^Release'
+  groups:
+    - title: 'Breaking changes:'
+      regex: ^.*breaking:+.*$
+      order: 0
+    - title: 'Major features:'
+      regex: ^.*major:+.*$
+      order: 1
+    - title: 'Provider-specific changes:'
+      regex: ^.*(CLOUDNS|CLOUDFLARE|DESEC|DIGITALOCEAN|DNSMADEEASY|EXOSCALE|GANDI_V5|HEXONET|INWX|MSDNS|NAMECHEAP|NS1|ORACLE|OVH|ROUTE53|VULTR):+.*$
+      order: 2
+    - title: 'Other changes and improvements:'
+      order: 999
 archives:
   - replacements:
       darwin: Darwin
@@ -79,3 +92,13 @@ release:
   draft: true
   prerelease: auto
   name_template: "Release v{{.Version}}"
+publishers:
+  - name: PR
+    env:
+      - GITHUB_TOKEN={{ .Env.GITHUB_TOKEN }}
+    cmd: >
+      gh pr create
+      --assignee @tlimoncelli
+      --base master
+      --body "See draft [release](https://github.com/StackExchange/dnscontrol/releases)"
+      --title "Release v{{.Version}}"
