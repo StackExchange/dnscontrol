@@ -27,13 +27,13 @@ changelog:
     - '^Release'
   groups:
     - title: 'Breaking changes:'
-      regex: ^.*breaking:+.*$
+      regexp: ^.*breaking:+.*$
       order: 0
     - title: 'Major features:'
-      regex: ^.*major:+.*$
+      regexp: ^.*major:+.*$
       order: 1
     - title: 'Provider-specific changes:'
-      regex: ^.*(CLOUDNS|CLOUDFLARE|DESEC|DIGITALOCEAN|DNSMADEEASY|EXOSCALE|GANDI_V5|HEXONET|INWX|MSDNS|NAMECHEAP|NS1|ORACLE|OVH|ROUTE53|VULTR):+.*$
+      regexp: ^.*(CLOUDNS|CLOUDFLARE|DESEC|DIGITALOCEAN|DNSMADEEASY|EXOSCALE|GANDI_V5|HEXONET|INWX|MSDNS|NAMECHEAP|NS1|ORACLE|OVH|ROUTE53|VULTR):+.*$
       order: 2
     - title: 'Other changes and improvements:'
       order: 999
@@ -91,6 +91,7 @@ announce:
 release:
   draft: true
   prerelease: auto
+  mode: replace
   name_template: "Release v{{.Version}}"
 publishers:
   - name: PR
