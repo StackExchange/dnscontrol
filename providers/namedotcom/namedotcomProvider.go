@@ -25,7 +25,7 @@ var features = providers.DocumentationNotes{
 	providers.CanUsePTR:              providers.Cannot("PTR records are not supported (See Link)", "https://www.name.com/support/articles/205188508-Reverse-DNS-records"),
 	providers.CanUseSRV:              providers.Can("SRV records with empty targets are not supported"),
 	providers.DocCreateDomains:       providers.Cannot("New domains require registration"),
-	providers.DocDualHost:            providers.Cannot("Apex NS records not editable"),
+	providers.DocDualHost:            providers.Can(),
 	providers.DocOfficiallySupported: providers.Can(),
 	providers.CanGetZones:            providers.Can(),
 }
