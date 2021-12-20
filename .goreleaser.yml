@@ -93,13 +93,3 @@ release:
   prerelease: auto
   mode: replace
   name_template: "Release v{{.Version}}"
-publishers:
-  - name: PR
-    env:
-      - GITHUB_TOKEN={{ .Env.GITHUB_TOKEN }}
-    cmd: >
-      gh pr create
-      --assignee @tlimoncelli
-      --base master
-      --body "See draft [release](https://github.com/StackExchange/dnscontrol/releases)"
-      --title "Release v{{.Version}}"
