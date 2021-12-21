@@ -61,6 +61,7 @@ nfpms:
     formats:
     - deb
     - rpm
+    bindir: /usr/bin
 #dockers:
 #  -
 #    id: docker-build
