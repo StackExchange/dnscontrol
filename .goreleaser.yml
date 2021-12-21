@@ -30,10 +30,10 @@ changelog:
       regexp: ^.*breaking:+.*$
       order: 0
     - title: 'Major features:'
-      regexp: ^.*major:+.*$
+      regexp: ^.*NEW PROVIDER:+.*$
       order: 1
     - title: 'Provider-specific changes:'
-      regexp: ^.*(CLOUDNS|CLOUDFLARE|DESEC|DIGITALOCEAN|DNSMADEEASY|EXOSCALE|GANDI_V5|HEXONET|INWX|MSDNS|NAMECHEAP|NS1|ORACLE|OVH|ROUTE53|VULTR):+.*$
+      regexp: ^.*(CLOUDNS|CLOUDFLARE|DESEC|DIGITALOCEAN|DNSMADEEASY|EASYNAME|EXOSCALE|GANDI_V5|HEXONET|INWX|MSDNS|NAMECHEAP|NS1|ORACLE|OVH|ROUTE53|VULTR):+.*$
       order: 2
     - title: 'Other changes and improvements:'
       order: 999
