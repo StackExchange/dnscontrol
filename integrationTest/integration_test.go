@@ -15,6 +15,7 @@ import (
 	"github.com/StackExchange/dnscontrol/v3/pkg/normalize"
 	"github.com/StackExchange/dnscontrol/v3/providers"
 	_ "github.com/StackExchange/dnscontrol/v3/providers/_all"
+	"github.com/StackExchange/dnscontrol/v3/providers/cloudflare"
 	"github.com/StackExchange/dnscontrol/v3/providers/config"
 	"github.com/miekg/dns/dnsutil"
 )
@@ -24,6 +25,7 @@ var startIdx = flag.Int("start", 0, "Test number to begin with")
 var endIdx = flag.Int("end", 0, "Test index to stop after")
 var verbose = flag.Bool("verbose", false, "Print corrections as you run them")
 var printElapsed = flag.Bool("elapsed", false, "Print elapsed time for each testgroup")
+var enableCFWorkers = flag.Bool("cfworkers", true, "Set false to disable CF worker tests")
 
 func init() {
 	testing.Init()
@@ -52,7 +54,11 @@ func getProvider(t *testing.T) (providers.DNSServiceProvider, string, map[int]bo
 		// use this feature. Maybe because we didn't have the capabilities
 		// feature at the time?
 		if name == "CLOUDFLAREAPI" {
-			metadata = []byte(`{ "manage_redirects": true }`)
+			if *enableCFWorkers {
+				metadata = []byte(`{ "manage_redirects": true, "manage_workers": true }`)
+			} else {
+				metadata = []byte(`{ "manage_redirects": true }`)
+			}
 		}
 
 		provider, err := providers.CreateDNSProvider(name, cfg, metadata)
@@ -66,6 +72,13 @@ func getProvider(t *testing.T) (providers.DNSServiceProvider, string, map[int]bo
 					t.Fatal(err)
 				}
 				fails[i] = true
+			}
+		}
+
+		if name == "CLOUDFLAREAPI" && *enableCFWorkers {
+			// Cloudflare only. Will do nothing if provider != *cloudflareProvider.
+			if err := cloudflare.PrepareCloudflareTestWorkers(provider); err != nil {
+				t.Fatal(err)
 			}
 		}
 
@@ -117,6 +130,13 @@ func testPermitted(t *testing.T, p string, f TestGroup) error {
 	}
 	// TODO(tlim): Have a separate validation pass so that such mistakes
 	// are more visible?
+
+	// If there are any trueflags, make sure they are all true.
+	for _, c := range f.trueflags {
+		if !c {
+			return fmt.Errorf("excluded by alltrue(%v)", f.trueflags)
+		}
+	}
 
 	// If there are any required capabilities, make sure they all exist.
 	if len(f.required) != 0 {
@@ -218,7 +238,7 @@ func makeChanges(t *testing.T, prv providers.DNSServiceProvider, dc *models.Doma
 		if len(corrections) != 0 {
 			t.Logf("Expected 0 corrections on second run, but found %d.", len(corrections))
 			for i, c := range corrections {
-				t.Logf("#%d: %s", i, c.Msg)
+				t.Logf("UNEXPECTED #%d: %s", i, c.Msg)
 			}
 			t.FailNow()
 		}
@@ -288,6 +308,10 @@ func TestDualProviders(t *testing.T) {
 		t.Fatal("NO DOMAIN SET!  Exiting!")
 	}
 	dc := getDomainConfigWithNameservers(t, p, domain)
+	if !providers.ProviderHasCapability(*providerToRun, providers.DocDualHost) {
+		t.Skip("Skipping.  DocDualHost == Cannot")
+		return
+	}
 	// clear everything
 	run := func() {
 		dom, _ := dc.Copy()
@@ -326,11 +350,12 @@ func TestDualProviders(t *testing.T) {
 }
 
 type TestGroup struct {
-	Desc     string
-	required []providers.Capability
-	only     []string
-	not      []string
-	tests    []*TestCase
+	Desc      string
+	required  []providers.Capability
+	only      []string
+	not       []string
+	trueflags []bool
+	tests     []*TestCase
 }
 
 type TestCase struct {
@@ -382,6 +407,26 @@ func cfRedir(pattern, target string) *models.RecordConfig {
 func cfRedirTemp(pattern, target string) *models.RecordConfig {
 	t := fmt.Sprintf("%s,%s", pattern, target)
 	r := makeRec("@", t, "CF_TEMP_REDIRECT")
+	return r
+}
+
+func cfProxyA(name, target, status string) *models.RecordConfig {
+	r := a(name, target)
+	r.Metadata = make(map[string]string)
+	r.Metadata["cloudflare_proxy"] = status
+	return r
+}
+
+func cfProxyCNAME(name, target, status string) *models.RecordConfig {
+	r := cname(name, target)
+	r.Metadata = make(map[string]string)
+	r.Metadata["cloudflare_proxy"] = status
+	return r
+}
+
+func cfWorkerRoute(pattern, target string) *models.RecordConfig {
+	t := fmt.Sprintf("%s,%s", pattern, target)
+	r := makeRec("@", t, "CF_WORKER_ROUTE")
 	return r
 }
 
@@ -539,6 +584,12 @@ func testgroup(desc string, items ...interface{}) *TestGroup {
 				os.Exit(1)
 			}
 			group.only = append(group.only, v.names...)
+		case alltrueFilter:
+			if len(group.tests) != 0 {
+				fmt.Printf("ERROR: alltrue() must be before all tc(): %v\n", desc)
+				os.Exit(1)
+			}
+			group.trueflags = append(group.trueflags, v.flags...)
 		case *TestCase:
 			group.tests = append(group.tests, v)
 		default:
@@ -601,6 +652,14 @@ func only(n ...string) onlyFilter {
 	return onlyFilter{names: n}
 }
 
+type alltrueFilter struct {
+	flags []bool
+}
+
+func alltrue(f ...bool) alltrueFilter {
+	return alltrueFilter{flags: f}
+}
+
 //
 
 func makeTests(t *testing.T) []*TestGroup {
@@ -621,6 +680,8 @@ func makeTests(t *testing.T) []*TestGroup {
 	//      only("ROUTE53", "GANDI_V5")
 	// Only apply to all providers except ROUTE53 + GANDI_V5:
 	//     not("ROUTE53", "GANDI_V5"),
+	// Only run this test if all these bool flags are true:
+	//     alltrue(*enableCFWorkers, *anotherFlag, myBoolValue)
 	// NOTE: You can't mix not() and only()
 	//     reset(not("ROUTE53"), only("GCLOUD")),  // ERROR!
 	// NOTE: All requires()/not()/only() must appear before any tc().
@@ -787,6 +848,12 @@ func makeTests(t *testing.T) []*TestGroup {
 			tc("Create a TXT", txt("foo", "simple")),
 			tc("Change a TXT", txt("foo", "changed")),
 			tc("Create a TXT with spaces", txt("foo", "with spaces")),
+		),
+
+		testgroup("simple TXT-spf1",
+			// This was added because Vultr syntax-checks TXT records with
+			// SPF contents.
+			tc("Create a TXT/SPF", txt("foo", "v=spf1 ip4:99.99.99.99 -all")),
 		),
 
 		testgroup("long TXT",
@@ -978,7 +1045,7 @@ func makeTests(t *testing.T) []*TestGroup {
 				//"AZURE_DNS", // Currently failing.
 				"HEXONET",
 				"GCLOUD",
-				//"ROUTE53", // Currently failing. See https://github.com/StackExchange/dnscontrol/issues/908
+				"ROUTE53",
 			),
 			tc("601 records", manyA("rec%04d", "1.2.3.4", 600)...),
 			tc("Update 601 records", manyA("rec%04d", "1.2.3.5", 600)...),
@@ -991,7 +1058,7 @@ func makeTests(t *testing.T) []*TestGroup {
 				//"AZURE_DNS",     // Currently failing. See https://github.com/StackExchange/dnscontrol/issues/770
 				"HEXONET",
 				"HOSTINGDE",
-				//"ROUTE53", // Currently failing. See https://github.com/StackExchange/dnscontrol/issues/908
+				"ROUTE53",
 			),
 			tc("1200 records", manyA("rec%04d", "1.2.3.4", 1200)...),
 			tc("Update 1200 records", manyA("rec%04d", "1.2.3.5", 1200)...),
@@ -1352,6 +1419,45 @@ func makeTests(t *testing.T) []*TestGroup {
 			//	cfRedirTemp("cnn.**current-domain-no-trailing**/*", "https://www.cnn.com/$1"),
 			//	cfRedirTemp("nytimes.**current-domain-no-trailing**/*", "https://www.nytimes.com/$1"),
 			//),
+		),
+
+		testgroup("CF_PROXY",
+			only("CLOUDFLAREAPI"),
+			tc("proxyon", cfProxyA("proxyme", "1.2.3.4", "on")),
+			tc("proxychangetarget", cfProxyA("proxyme", "1.2.3.5", "on")),
+			tc("proxychangeproxy", cfProxyA("proxyme", "1.2.3.5", "off")),
+			clear(),
+			tc("proxycname", cfProxyCNAME("anewproxy", "example.com.", "on")),
+			tc("proxycnamechange", cfProxyCNAME("anewproxy", "example.com.", "off")),
+			clear(),
+		),
+
+		testgroup("CF_WORKER_ROUTE",
+			only("CLOUDFLAREAPI"),
+			alltrue(*enableCFWorkers),
+			// TODO(fdcastel): Add worker scripts via api call before test execution
+			tc("simple", cfWorkerRoute("cnn.**current-domain-no-trailing**/*", "dnscontrol_integrationtest_cnn")),
+			tc("changeScript", cfWorkerRoute("cnn.**current-domain-no-trailing**/*", "dnscontrol_integrationtest_msnbc")),
+			tc("changePattern", cfWorkerRoute("cable.**current-domain-no-trailing**/*", "dnscontrol_integrationtest_msnbc")),
+			clear(),
+			tc("createMultiple",
+				cfWorkerRoute("cnn.**current-domain-no-trailing**/*", "dnscontrol_integrationtest_cnn"),
+				cfWorkerRoute("msnbc.**current-domain-no-trailing**/*", "dnscontrol_integrationtest_msnbc"),
+			),
+			tc("addOne",
+				cfWorkerRoute("msnbc.**current-domain-no-trailing**/*", "dnscontrol_integrationtest_msnbc"),
+				cfWorkerRoute("cnn.**current-domain-no-trailing**/*", "dnscontrol_integrationtest_cnn"),
+				cfWorkerRoute("api.**current-domain-no-trailing**/cnn/*", "dnscontrol_integrationtest_cnn"),
+			),
+			tc("changeOne",
+				cfWorkerRoute("msn.**current-domain-no-trailing**/*", "dnscontrol_integrationtest_msnbc"),
+				cfWorkerRoute("cnn.**current-domain-no-trailing**/*", "dnscontrol_integrationtest_cnn"),
+				cfWorkerRoute("api.**current-domain-no-trailing**/cnn/*", "dnscontrol_integrationtest_cnn"),
+			),
+			tc("deleteOne",
+				cfWorkerRoute("msn.**current-domain-no-trailing**/*", "dnscontrol_integrationtest_msnbc"),
+				cfWorkerRoute("api.**current-domain-no-trailing**/cnn/*", "dnscontrol_integrationtest_cnn"),
+			),
 		),
 	}
 

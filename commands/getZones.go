@@ -1,6 +1,7 @@
 package commands
 
 import (
+	"encoding/json"
 	"fmt"
 	"os"
 	"strings"
@@ -20,7 +21,7 @@ var _ = cmd(catUtils, func() *cli.Command {
 		Usage:   "gets a zone from a provider (stand-alone)",
 		Action: func(ctx *cli.Context) error {
 			if ctx.NArg() < 3 {
-				return cli.NewExitError("Arguments should be: credskey providername zone(s) (Ex: r53 ROUTE53 example.com)", 1)
+				return cli.Exit("Arguments should be: credskey providername zone(s) (Ex: r53 ROUTE53 example.com)", 1)
 
 			}
 			args.CredName = ctx.Args().Get(0)
@@ -73,7 +74,7 @@ var _ = cmd(catUtils, func() *cli.Command {
 		Usage: "Do a small operation to verify credentials (stand-alone)",
 		Action: func(ctx *cli.Context) error {
 			if ctx.NArg() != 2 {
-				return cli.NewExitError("Arguments should be: credskey providername (Ex: r53 ROUTE53)", 1)
+				return cli.Exit("Arguments should be: credskey providername (Ex: r53 ROUTE53)", 1)
 
 			}
 			args.CredName = ctx.Args().Get(0)
@@ -249,6 +250,16 @@ func GetZone(args GetZoneArgs) error {
 	return nil
 }
 
+// jsonQuoted returns a properly escaped JSON string (without quotes).
+func jsonQuoted(i string) string {
+	// https://stackoverflow.com/questions/51691901
+	b, err := json.Marshal(i)
+	if err != nil {
+		panic(err)
+	}
+	return string(b)
+}
+
 func formatDsl(zonename string, rec *models.RecordConfig, defaultTTL uint32) string {
 
 	target := rec.GetTargetCombined()
@@ -272,6 +283,15 @@ func formatDsl(zonename string, rec *models.RecordConfig, defaultTTL uint32) str
 		return makeCaa(rec, ttlop)
 	case "MX":
 		target = fmt.Sprintf("%d, '%s'", rec.MxPreference, rec.GetTargetField())
+	case "NAPTR":
+		target = fmt.Sprintf(`%d, %d, %s, %s, %s, %s`,
+			rec.NaptrOrder,                   // 1
+			rec.NaptrPreference,              // 10
+			jsonQuoted(rec.NaptrFlags),       // U
+			jsonQuoted(rec.NaptrService),     // E2U+sip
+			jsonQuoted(rec.NaptrRegexp),      // regex
+			jsonQuoted(rec.GetTargetField()), // .
+		)
 	case "SSHFP":
 		target = fmt.Sprintf("%d, %d, '%s'", rec.SshfpAlgorithm, rec.SshfpFingerprint, rec.GetTargetField())
 	case "SOA":

@@ -34,12 +34,14 @@ import (
 //     ALIAS
 //     CF_REDIRECT
 //     CF_TEMP_REDIRECT
+//     CF_WORKER_ROUTE
 //     FRAME
 //     IMPORT_TRANSFORM
 //     NAMESERVER
 //     NO_PURGE
 //     NS1_URLFWD
 //     PAGE_RULE
+//     WORKER_ROUTE
 //     PURGE
 //     URL
 //     URL301
@@ -262,10 +264,8 @@ func (rc *RecordConfig) SetLabelFromFQDN(fqdn, origin string) {
 		panic(fmt.Errorf("fqdn (%s) is not supposed to end with double dots", origin))
 	}
 
-	if strings.HasSuffix(fqdn, ".") {
-		// Trim off a trailing dot.
-		fqdn = fqdn[:len(fqdn)-1]
-	}
+	// Trim off a trailing dot.
+	fqdn = strings.TrimSuffix(fqdn, ".")
 
 	fqdn = strings.ToLower(fqdn)
 	origin = strings.ToLower(origin)
@@ -452,6 +452,16 @@ func (recs Records) FQDNMap() (m map[string]bool) {
 	return m
 }
 
+func (recs Records) GetByType(typeName string) Records {
+	results := Records{}
+	for _, rec := range recs {
+		if rec.Type == typeName {
+			results = append(results, rec)
+		}
+	}
+	return results
+}
+
 // GroupedByKey returns a map of keys to records.
 func (recs Records) GroupedByKey() map[RecordKey]Records {
 	groups := map[RecordKey]Records{}
@@ -502,7 +512,7 @@ func downcase(recs []*RecordConfig) {
 		case "ANAME", "CNAME", "DS", "MX", "NS", "PTR", "NAPTR", "SRV", "TLSA", "AKAMAICDN":
 			// These record types have a target that is case insensitive, so we downcase it.
 			r.target = strings.ToLower(r.target)
-		case "A", "AAAA", "ALIAS", "CAA", "IMPORT_TRANSFORM", "TXT", "SSHFP", "CF_REDIRECT", "CF_TEMP_REDIRECT":
+		case "A", "AAAA", "ALIAS", "CAA", "IMPORT_TRANSFORM", "TXT", "SSHFP", "CF_REDIRECT", "CF_TEMP_REDIRECT", "CF_WORKER_ROUTE":
 			// These record types have a target that is case sensitive, or is an IP address. We leave them alone.
 			// Do nothing.
 		case "SOA":

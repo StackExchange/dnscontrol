@@ -63,10 +63,7 @@ func recordsToNative(rcs []*models.RecordConfig, origin string) []livedns.Domain
 				RrsetName:   label,
 				RrsetValues: []string{r.GetTargetCombined()},
 			}
-			zrs = append(zrs, zr)
-			//keys[key] = &zr   // This didn't work.
-			keys[key] = &zrs[len(zrs)-1] // This does work. I don't know why.
-
+			keys[key] = &zr
 		} else {
 			zr.RrsetValues = append(zr.RrsetValues, r.GetTargetCombined())
 
@@ -80,5 +77,8 @@ func recordsToNative(rcs []*models.RecordConfig, origin string) []livedns.Domain
 		}
 	}
 
+	for _, zr := range keys {
+		zrs = append(zrs, *zr)
+	}
 	return zrs
 }

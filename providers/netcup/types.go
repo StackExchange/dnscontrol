@@ -72,7 +72,7 @@ type responseLogin struct {
 }
 
 func toRecordConfig(domain string, r *record) *models.RecordConfig {
-	priority, _ := strconv.ParseUint(r.Priority, 10, 32)
+	priority, _ := strconv.ParseUint(r.Priority, 10, 16)
 
 	rc := &models.RecordConfig{
 		Type:         r.Type,
@@ -101,7 +101,7 @@ func toRecordConfig(domain string, r *record) *models.RecordConfig {
 		_ = rc.SetTarget(parts[3])
 	case "CAA":
 		parts := strings.Split(r.Destination, " ")
-		caaFlag, _ := strconv.ParseUint(parts[0], 10, 32)
+		caaFlag, _ := strconv.ParseUint(parts[0], 10, 8)
 		rc.CaaFlag = uint8(caaFlag)
 		rc.CaaTag = parts[1]
 		_ = rc.SetTarget(strings.Trim(parts[2], "\""))

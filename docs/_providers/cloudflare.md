@@ -11,42 +11,69 @@ jsId: CLOUDFLAREAPI
 * When using `SPF()` or the `SPF_BUILDER()` the records are converted to RecordType `TXT` as Cloudflare API fails otherwise. See more [here](https://github.com/StackExchange/dnscontrol/issues/446).
 
 ## Configuration
-In the credentials file you must provide a [Cloudflare API token](https://dash.cloudflare.com/profile/api-tokens):
+
+The Cloudflare API supports two different authentication methods.
+
+The recommended (newer) method is to
+provide a [Cloudflare API token](https://dash.cloudflare.com/profile/api-tokens).
+
+This method is enabled by setting the "apitoken" value in `creds.json`:
 
 {% highlight json %}
 {
   "cloudflare": {
-    "apitoken": "your-cloudflare-api-token"
+    "apitoken": "your-cloudflare-api-token",
+    "accountid": "your-cloudflare-account-id"
   }
 }
 {% endhighlight %}
 
-Make sure the token has at least the right read zones and edit DNS records (i.e. `Zone → Zone → Read` and `Zone → DNS → Edit`; to modify Page Rules additionally requires `Zone → Page Rules → Edit`);
-checkout [Cloudflare's documentation](https://support.cloudflare.com/hc/en-us/articles/200167836-Managing-API-Tokens-and-Keys) for instructions on how to generate and configure permissions on API tokens.
+See [Cloudflare's documentation](https://support.cloudflare.com/hc/en-us/articles/200167836-Managing-API-Tokens-and-Keys) for instructions on how to generate and configure permissions on API tokens.
 
+A token can be granded rights (authorization to do certain tasks) at a very granular level.  DNSControl requires the token to have the following rights:
 
-Or you can provide your Cloudflare API username and access key instead (but it isn't recommended because those credentials give DNSControl access to the complete Cloudflare API):
+* Read zones (`Zone → Zone → Read`)
+* Edit DNS records (`Zone → DNS → Edit`)
+* Edit Page Rules (`Zone  → Page Rules → Edit`) (Only required if `manage_redirects` is true for any dommain.)
+* If Cloudflare Workers are being managed: (if `manage_workers`: set to `true` or `CF_WORKER_ROUTE()` is in use.)
+  * Edit Worker Scripts (`Account  → Workers Scripts → Edit`)
+  * Edit Worker Scripts (`Zone  → Workers Routes → Edit`)
+* FYI: [An example permissions configuration](https://user-images.githubusercontent.com/210250/136301050-1fd430bf-21b6-428b-aa54-f6009964031d.png)
+
+The other (older, not recommended) method is to
+provide your Cloudflare API username and access key.
+This key is available under "My Settings".
+This method is not recommended because these credentials give DNSControl access to the entire Cloudflare API.
+
+This method is enabled by setting the "apikey" and "apiuser" values in `creds.json`:
 
 {% highlight json %}
 {
   "cloudflare": {
     "apikey": "your-cloudflare-api-key",
-    "apiuser": "your-cloudflare-email-address"
+    "apiuser": "your-cloudflare-email-address",
+    "accountid": "your-cloudflare-account-id"
   }
 }
 {% endhighlight %}
 
-If your Cloudflare account has access to multiple Cloudflare accounts, you can specify which Cloudflare account should be used when adding new domains:
+You can not mix apikey/apiuser and apitoken.  If all three values are set, you will receive an error.
+
+You should also set the "accountid" value.  This is optional but may become required some day therefore we recommend setting it.
+The Account ID is used to disambiguate when API key has access to multiple Cloudflare accounts. For example, when creating domains this key is used to determine which account to place the new domain.  It is also required when using Workers.
+
+The "accountid" is found in the Cloudflare portal ("Account ID") on the DNS page. Set it in `creds.json`:
 
 {% highlight json %}
 {
   "cloudflare": {
     "apitoken": "...",
     "accountid": "your-cloudflare-account-id",
-    "accountname": "your-cloudflare-account-name"
   }
 }
 {% endhighlight %}
+
+Older `creds.json` files that do not have accountid set may work for now, but not in the future.
 
 ## Metadata
 Record level metadata available:
@@ -59,6 +86,7 @@ Domain level metadata available:
 Provider level metadata available:
    * `ip_conversions`
    * `manage_redirects`: set to `true` to manage page-rule based redirects
+   * `manage_workers`: set to `true` to manage cloud workers (`CF_WORKER_ROUTE`)
 
 What does on/off/full mean?
 
@@ -102,7 +130,7 @@ The following example shows how to set meta variables with and without aliases:
 D('example.tld', REG_NONE, DnsProvider(CLOUDFLARE),
     A('www1','1.2.3.11', CF_PROXY_ON),        // turn proxy ON.
     A('www2','1.2.3.12', CF_PROXY_OFF),       // default is OFF, this is a no-op.
-    A('www3','1.2.3.13', {'cloudflare_proxy': 'on'}) // why would anyone do this?
+    A('www3','1.2.3.13', {'cloudflare_proxy': 'on'}) // Old format.
 );
 {% endhighlight %}
 
@@ -133,8 +161,6 @@ D('example2.tld', REG_NONE, DnsProvider(CLOUDFLARE),
 );
 {%endhighlight%}
 
-## Activation
-DNSControl depends on a Cloudflare Global API Key that's available under "My Settings".
 
 ## New domains
 If a domain does not exist in your Cloudflare account, DNSControl
@@ -170,3 +196,43 @@ Notice a few details:
 2. The IP address in those A records may be mostly irrelevant, as cloudflare should handle all requests (assuming some page rule matches).
 3. Ordering matters for priority. CF_REDIRECT records will be added in the order they appear in your js. So put catch-alls at the bottom.
 4. if _any_ `CF_REDIRECT` or `CF_TEMP_REDIRECT` functions are used then `dnscontrol` will manage _all_ "Forwarding URL" type Page Rules for the domain. Page Rule types other than "Forwarding URL” will be left alone.
+
+## Worker routes
+The Cloudflare provider can manage Worker Routes for your domains. Simply use the `CF_WORKER_ROUTE` function passing the route pattern and the worker name:
+
+{% highlight js %}
+
+var CLOUDFLARE = NewDnsProvider('cloudflare','CLOUDFLAREAPI');
+
+D("foo.com", REG_NONE, DnsProvider(CLOUDFLARE),
+    { manage_workers: true}, // Enable editing workers.
+
+    // Assign the patterns `api.foo.com/*` and `foo.com/api/*` to `my-worker` script.
+    CF_WORKER_ROUTE("api.foo.com/*", "my-worker"),
+    CF_WORKER_ROUTE("foo.com/api/*", "my-worker"),
+);
+
+{%endhighlight%}
+
+The API key you use must be enabled to edit workers.  In the portal, edit the API key,
+under "Permissions" add "Account", "Workers Scripts", "Edit". Without this permission you may see errors that mention "failed fetching worker route list from cloudflare: bad status code from cloudflare: 403 not 200"
+
+
+Please notice that if _any_ `CF_WORKER_ROUTE` function is used then `dnscontrol` will manage _all_
+Worker Routes for the domain. To be clear: this means it will delete existing routes that
+were created outside of DNSControl.
+
+## Integration testing
+
+The integration tests assume that Cloudflare Workers are enabled and the credentials used
+have the required permissions listed above.  The flag `-cfworkers=false` will disable tests related to Workers.
+This flag is intended for use with legacy domains where the integration test credentials do not
+have access to read/edit Workers. This flag will eventually go away.
+
+{% highlight bash %}
+
+go test -v -verbose -provider CLOUDFLAREAPI -cfworkers=false
+
+{%endhighlight%}
+
+When `-cfworkers=false` is set, tests related to Workers are skipped.  The Account ID is not required.

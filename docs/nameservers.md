@@ -54,6 +54,15 @@ D("example1.com", REG_NAMECOM,
   A("@", "10.2.3.4")
 );
 
+// Let someone else manage the NS records for a dommain.
+// Why? Because you don't have access to the registrar, or the registrar is not
+// supported by DNSControl. However you do have API access for
+// updating the zone's records (most likely at a different provider).
+D("example1.com", REG_THIRDPARTY,
+  DnsProvider(DNS_NAMECOM),
+  A("@", "10.2.3.4")
+);
+
 // "Registrar only": Direct the registrar to point to some other DNS provider.
 // Why? In this example we're pointing the domain to the nsone.net DNS
 // service, which someone else is controlling.
@@ -120,6 +129,23 @@ D("example1.com", REG_NAMECOM,
   DnsProvider(DNS_GOOGLE, 2),  // Take 2 nameservers from GCP
   A("@", "10.2.3.4")
 );
+
+// ========== Fancy macros
+
+// There are some built-in macros that you might find useful.
+
+// DOMAIN_ELSEWHERE: This macro points the domain's delegation
+// (nameservers) to a list of DNS servers.
+DOMAIN_ELSEWHERE("example1.com", REG_NAMECOM, [
+    "dns1.example.net.",
+    "dns2.example.net.",
+    "dns3.example.net.",
+]);
+
+// DOMAIN_ELSEWHERE_AUTO: Similar to DOMAIN_ELSEWHERE but the list
+// of nameservers is queried from the API of a DNS provider.
+DOMAIN_ELSEWHERE_AUTO("example1.com", REG_NAMECOM, DNS_AWS);
+DOMAIN_ELSEWHERE_AUTO("example2.com", REG_NAMECOM, DNS_GOOGLE);
 
 {%endhighlight%}
 {% include endExample.html %}

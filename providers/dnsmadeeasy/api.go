@@ -18,7 +18,7 @@ func newProvider(apiKey string, secretKey string, sandbox bool, debug bool) *dns
 	}
 
 	fmt.Printf("Creating DNSMADEEASY provider for %q\n", baseURL)
-	
+
 	return &dnsMadeEasyProvider{
 		restAPI: &dnsMadeEasyRestAPI{
 			apiKey:    apiKey,

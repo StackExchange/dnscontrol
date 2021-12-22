@@ -36,11 +36,24 @@ $ export AWS_SESSION_TOKEN=ZZZZZZZZ
 }
 {% endhighlight %}
 
-Alternatively if you want to used [named profiles](https://docs.aws.amazon.com/cli/latest/userguide/cli-configure-profiles.html) you need to export the following variables
+Alternatively if you want to used [named profiles](https://docs.aws.amazon.com/cli/latest/userguide/cli-configure-profiles.html) you need to export the following variable
 
 ```
-$ export AWS_SDK_LOAD_CONFIG=1
 $ export AWS_PROFILE=ZZZZZZZZ
+```
+
+Ensure you have a minimal creds.json file with the DNS Provider specified, otherwise versions above 3.8.0 will fail. So, for:
+
+```
+var R53_MAIN = NewDnsProvider('r53_main', 'ROUTE53');
+```
+
+You will need a creds.json file with the following content:
+
+```json
+{
+  "R53_MAIN": {}
+}
 ```
 
 You can find some other ways to authenticate to Route53 in the [go sdk configuration](https://docs.aws.amazon.com/sdk-for-go/v1/developer-guide/configuring-sdk.html).

@@ -71,6 +71,7 @@ insecure    IN  TXT "v=DMARC1; p=none; ruf=mailto:mailauth-reports@example.com; 
 ### Parameters
 
 * `label:` The DNS label for the DMARC record (`_dmarc` prefix is added, default: `'@'`)
+* `version:` The DMARC version to be used (default: `DMARC1`)
 * `policy:` The DMARC policy (`p=`), must be one of `'none'`, `'quarantine'`, `'reject'`
 * `subdomainPolicy:` The DMARC policy for subdomains (`sp=`), must be one of `'none'`, `'quarantine'`, `'reject'` (optional)
 * `alignmentSPF:` `'strict'`/`'s'` or `'relaxed'`/`'r'` alignment for SPF (`aspf=`, default: `'r'`)

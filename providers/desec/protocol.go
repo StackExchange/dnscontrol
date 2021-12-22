@@ -6,6 +6,10 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net/http"
+	"regexp"
+	"strconv"
+	"strings"
+	"sync"
 	"time"
 
 	"github.com/StackExchange/dnscontrol/v3/pkg/printer"
@@ -15,14 +19,14 @@ const apiBase = "https://desec.io/api/v1"
 
 // Api layer for desec
 type desecProvider struct {
-	domainIndex      map[string]uint32
-	nameserversNames []string
-	creds            struct {
+	domainIndex map[string]uint32 //stores the minimum ttl of each domain. (key = domain and value = ttl)
+	creds       struct {
 		tokenid  string
 		token    string
 		user     string
 		password string
 	}
+	mutex sync.Mutex
 }
 
 type domainObject struct {
@@ -58,36 +62,153 @@ type dnssecKey struct {
 type errorResponse struct {
 	Detail string `json:"detail"`
 }
+type nonFieldError struct {
+	Errors []string `json:"non_field_errors"`
+}
 
-func (c *desecProvider) fetchDomainList() error {
-	c.domainIndex = map[string]uint32{}
-	var dr []domainObject
-	endpoint := "/domains/"
-	var bodyString, err = c.get(endpoint, "GET")
+func (c *desecProvider) authenticate() error {
+	endpoint := "/auth/account/"
+	var _, _, err = c.get(endpoint, "GET")
 	if err != nil {
-		return fmt.Errorf("Failed fetching domain list (deSEC): %s", err)
+		return err
 	}
-	err = json.Unmarshal(bodyString, &dr)
+	return nil
+}
+func (c *desecProvider) initializeDomainIndex() error {
+	c.mutex.Lock()
+	defer c.mutex.Unlock()
+	if c.domainIndex != nil {
+		return nil
+	}
+	endpoint := "/domains/"
+	var bodyString, resp, err = c.get(endpoint, "GET")
+	if resp.StatusCode == 400 && resp.Header.Get("Link") != "" {
+		//pagination is required
+		links := c.convertLinks(resp.Header.Get("Link"))
+		endpoint = links["first"]
+		printer.Debugf("initial endpoint %s\n", endpoint)
+		for endpoint != "" {
+			bodyString, resp, err = c.get(endpoint, "GET")
+			if err != nil {
+				if resp.StatusCode == 404 {
+					return nil
+				}
+				return fmt.Errorf("failed fetching domains: %s", err)
+			}
+			err = c.buildIndexFromResponse(bodyString)
+			if err != nil {
+				return fmt.Errorf("failed fetching domains: %s", err)
+			}
+			links = c.convertLinks(resp.Header.Get("Link"))
+			endpoint = links["next"]
+			printer.Debugf("next endpoint %s\n", endpoint)
+		}
+		printer.Debugf("Domain Index initilized with pagination (%d domains)\n", len(c.domainIndex))
+		return nil //domainIndex was build using pagination without errors
+	}
+
+	//no pagination required
+	if err != nil && resp.StatusCode != 400 {
+		if resp.StatusCode == 404 {
+			return nil
+		}
+		return fmt.Errorf("failed fetching domains: %s", err)
+	}
+	err = c.buildIndexFromResponse(bodyString)
+	if err == nil {
+		printer.Debugf("Domain Index initilized without pagination (%d domains)\n", len(c.domainIndex))
+	}
+	return err
+}
+
+//buildIndexFromResponse takes the bodyString from initializeDomainIndex and builds the domainIndex
+func (c *desecProvider) buildIndexFromResponse(bodyString []byte) error {
+	if c.domainIndex == nil {
+		c.domainIndex = map[string]uint32{}
+	}
+	var dr []domainObject
+	err := json.Unmarshal(bodyString, &dr)
 	if err != nil {
 		return err
 	}
 	for _, domain := range dr {
-		//We store the min ttl in the domain index
-		//This will be used for validation and auto correction
+		//deSEC allows different minimum ttls per domain
+		//we store the actual minimum ttl to use it in desecProvider.go GetDomainCorrections() to enforce the minimum ttl and avoid api errors.
 		c.domainIndex[domain.Name] = domain.MinimumTTL
 	}
 	return nil
 }
 
+//Parses the Link Header into a map (https://github.com/desec-io/desec-tools/blob/master/fetch_zone.py#L13)
+func (c *desecProvider) convertLinks(links string) map[string]string {
+	mapping := make(map[string]string)
+	printer.Debugf("Header: %s\n", links)
+	for _, link := range strings.Split(links, ", ") {
+		tmpurl := strings.Split(link, "; ")
+		if len(tmpurl) != 2 {
+			fmt.Printf("unexpected link header %s", link)
+			continue
+		}
+		r := regexp.MustCompile(`rel="(.*)"`)
+		matches := r.FindStringSubmatch(tmpurl[1])
+		if len(matches) != 2 {
+			fmt.Printf("unexpected label %s", tmpurl[1])
+			continue
+		}
+		// mapping["$label"] = "$URL"
+		//URL = https://desec.io/api/v1/domains/{domain}/rrsets/?cursor=:next_cursor
+		mapping[matches[1]] = strings.TrimSuffix(strings.TrimPrefix(tmpurl[0], "<"), ">")
+	}
+	return mapping
+}
+
 func (c *desecProvider) getRecords(domain string) ([]resourceRecord, error) {
 	endpoint := "/domains/%s/rrsets/"
+	var rrsNew []resourceRecord
+	var bodyString, resp, err = c.get(fmt.Sprintf(endpoint, domain), "GET")
+	if resp.StatusCode == 400 && resp.Header.Get("Link") != "" {
+		//pagination required
+		links := c.convertLinks(resp.Header.Get("Link"))
+		endpoint = links["first"]
+		printer.Debugf("getRecords: initial endpoint %s\n", fmt.Sprintf(endpoint, domain))
+		for endpoint != "" {
+			bodyString, resp, err = c.get(endpoint, "GET")
+			if err != nil {
+				if resp.StatusCode == 404 {
+					return rrsNew, nil
+				}
+				return rrsNew, fmt.Errorf("getRecords: failed fetching rrsets: %s", err)
+			}
+			tmp, err := generateRRSETfromResponse(bodyString)
+			if err != nil {
+				return rrsNew, fmt.Errorf("failed fetching records for domain %s (deSEC): %s", domain, err)
+			}
+			rrsNew = append(rrsNew, tmp...)
+			links = c.convertLinks(resp.Header.Get("Link"))
+			endpoint = links["next"]
+			printer.Debugf("getRecords: next endpoint %s\n", endpoint)
+		}
+		printer.Debugf("Build rrset using pagination (%d rrs)\n", len(rrsNew))
+		return rrsNew, nil //domainIndex was build using pagination without errors
+	}
+	//no pagination
+	if err != nil {
+		return rrsNew, fmt.Errorf("failed fetching records for domain %s (deSEC): %s", domain, err)
+	}
+	tmp, err := generateRRSETfromResponse(bodyString)
+	if err != nil {
+		return rrsNew, err
+	}
+	rrsNew = append(rrsNew, tmp...)
+	printer.Debugf("Build rrset without pagination (%d rrs)\n", len(rrsNew))
+	return rrsNew, nil
+}
+
+//generateRRSETfromResponse takes the response rrset api calls and returns []resourceRecord
+func generateRRSETfromResponse(bodyString []byte) ([]resourceRecord, error) {
 	var rrs []rrResponse
 	var rrsNew []resourceRecord
-	var bodyString, err = c.get(fmt.Sprintf(endpoint, domain), "GET")
-	if err != nil {
-		return rrsNew, fmt.Errorf("Failed fetching records for domain %s (deSEC): %s", domain, err)
-	}
-	err = json.Unmarshal(bodyString, &rrs)
+	err := json.Unmarshal(bodyString, &rrs)
 	if err != nil {
 		return rrsNew, err
 	}
@@ -112,7 +233,7 @@ func (c *desecProvider) createDomain(domain string) error {
 	var resp []byte
 	var err error
 	if resp, err = c.post(endpoint, "POST", byt); err != nil {
-		return fmt.Errorf("Failed domain create (deSEC): %v", err)
+		return fmt.Errorf("failed domain create (deSEC): %v", err)
 	}
 	dm := domainObject{}
 	err = json.Unmarshal(resp, &dm)
@@ -129,24 +250,30 @@ func (c *desecProvider) upsertRR(rr []resourceRecord, domain string) error {
 	endpoint := fmt.Sprintf("/domains/%s/rrsets/", domain)
 	byt, _ := json.Marshal(rr)
 	if _, err := c.post(endpoint, "PUT", byt); err != nil {
-		return fmt.Errorf("Failed create RRset (deSEC): %v", err)
+		return fmt.Errorf("failed create RRset (deSEC): %v", err)
 	}
 	return nil
 }
 
 func (c *desecProvider) deleteRR(domain, shortname, t string) error {
 	endpoint := fmt.Sprintf("/domains/%s/rrsets/%s/%s/", domain, shortname, t)
-	if _, err := c.get(endpoint, "DELETE"); err != nil {
-		return fmt.Errorf("Failed delete RRset (deSEC): %v", err)
+	if _, _, err := c.get(endpoint, "DELETE"); err != nil {
+		return fmt.Errorf("failed delete RRset (deSEC): %v", err)
 	}
 	return nil
 }
 
-func (c *desecProvider) get(endpoint, method string) ([]byte, error) {
+func (c *desecProvider) get(target, method string) ([]byte, *http.Response, error) {
 	retrycnt := 0
+	var endpoint string
+	if strings.Contains(target, "http") {
+		endpoint = target
+	} else {
+		endpoint = apiBase + target
+	}
 retry:
 	client := &http.Client{}
-	req, _ := http.NewRequest(method, apiBase+endpoint, nil)
+	req, _ := http.NewRequest(method, endpoint, nil)
 	q := req.URL.Query()
 	req.Header.Add("Authorization", fmt.Sprintf("Token %s", c.creds.token))
 
@@ -154,7 +281,7 @@ retry:
 
 	resp, err := client.Do(req)
 	if err != nil {
-		return []byte{}, err
+		return []byte{}, resp, err
 	}
 
 	bodyString, _ := ioutil.ReadAll(resp.Body)
@@ -162,24 +289,51 @@ retry:
 	if resp.StatusCode > 299 {
 		if resp.StatusCode == 429 && retrycnt < 5 {
 			retrycnt++
+			//we've got rate limiting and will try to get the Retry-After Header if this fails we fallback to sleep for 500ms max. 5 retries.
+			waitfor := resp.Header.Get("Retry-After")
+			if waitfor != "" {
+				wait, err := strconv.ParseInt(waitfor, 10, 64)
+				if err == nil {
+					if wait > 180 {
+						return []byte{}, resp, fmt.Errorf("rate limiting exceeded")
+					}
+					printer.Warnf("Rate limiting.. waiting for %s seconds", waitfor)
+					time.Sleep(time.Duration(wait+1) * time.Second)
+					goto retry
+				}
+			}
+			printer.Warnf("Rate limiting.. waiting for 500 milliseconds")
 			time.Sleep(500 * time.Millisecond)
 			goto retry
 		}
 		var errResp errorResponse
+		var nfieldErrors []nonFieldError
 		err = json.Unmarshal(bodyString, &errResp)
 		if err == nil {
-			return bodyString, fmt.Errorf("%s", errResp.Detail)
+			return bodyString, resp, fmt.Errorf("%s", errResp.Detail)
 		}
-		return bodyString, fmt.Errorf("HTTP status %d %s, the API does not provide more information", resp.StatusCode, resp.Status)
+		err = json.Unmarshal(bodyString, &nfieldErrors)
+		if err == nil && len(nfieldErrors) > 0 {
+			if len(nfieldErrors[0].Errors) > 0 {
+				return bodyString, resp, fmt.Errorf("%s", nfieldErrors[0].Errors[0])
+			}
+		}
+		return bodyString, resp, fmt.Errorf("HTTP status %s Body: %s, the API does not provide more information", resp.Status, bodyString)
 	}
-	return bodyString, nil
+	return bodyString, resp, nil
 }
 
-func (c *desecProvider) post(endpoint, method string, payload []byte) ([]byte, error) {
+func (c *desecProvider) post(target, method string, payload []byte) ([]byte, error) {
 	retrycnt := 0
+	var endpoint string
+	if strings.Contains(target, "http") {
+		endpoint = target
+	} else {
+		endpoint = apiBase + target
+	}
 retry:
 	client := &http.Client{}
-	req, err := http.NewRequest(method, apiBase+endpoint, bytes.NewReader(payload))
+	req, err := http.NewRequest(method, endpoint, bytes.NewReader(payload))
 	if err != nil {
 		return []byte{}, err
 	}
@@ -202,15 +356,36 @@ retry:
 	if resp.StatusCode > 299 {
 		if resp.StatusCode == 429 && retrycnt < 5 {
 			retrycnt++
+			//we've got rate limiting and will try to get the Retry-After Header if this fails we fallback to sleep for 500ms max. 5 retries.
+			waitfor := resp.Header.Get("Retry-After")
+			if waitfor != "" {
+				wait, err := strconv.ParseInt(waitfor, 10, 64)
+				if err == nil {
+					if wait > 180 {
+						return []byte{}, fmt.Errorf("rate limiting exceeded")
+					}
+					printer.Warnf("Rate limiting.. waiting for %s seconds", waitfor)
+					time.Sleep(time.Duration(wait+1) * time.Second)
+					goto retry
+				}
+			}
+			printer.Warnf("Rate limiting.. waiting for 500 milliseconds")
 			time.Sleep(500 * time.Millisecond)
 			goto retry
 		}
 		var errResp errorResponse
+		var nfieldErrors []nonFieldError
 		err = json.Unmarshal(bodyString, &errResp)
 		if err == nil {
 			return bodyString, fmt.Errorf("HTTP status %d %s details: %s", resp.StatusCode, resp.Status, errResp.Detail)
 		}
-		return bodyString, fmt.Errorf("HTTP status %d %s, the API does not provide more information", resp.StatusCode, resp.Status)
+		err = json.Unmarshal(bodyString, &nfieldErrors)
+		if err == nil && len(nfieldErrors) > 0 {
+			if len(nfieldErrors[0].Errors) > 0 {
+				return bodyString, fmt.Errorf("%s", nfieldErrors[0].Errors[0])
+			}
+		}
+		return bodyString, fmt.Errorf("HTTP status %s Body: %s, the API does not provide more information", resp.Status, bodyString)
 	}
 	//time.Sleep(334 * time.Millisecond)
 	return bodyString, nil
