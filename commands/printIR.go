@@ -138,7 +138,7 @@ func exit(err error) error {
 	if err == nil {
 		return nil
 	}
-	return cli.NewExitError(err, 1)
+	return cli.Exit(err, 1)
 }
 
 // stringSliceToMap converts cli.StringSlice to map[string]string for further processing

@@ -90,6 +90,9 @@ func nativeToRecords(nr nativeRecord, origin string) (*models.RecordConfig, erro
 		rc.SetTargetMX(uint16(uprops["Preference"]), sprops["MailExchange"])
 	case "NS":
 		rc.SetTarget(sprops["NameServer"])
+	case "NAPTR":
+		n := decodeRecordDataNaptr(sprops["Data"])
+		rc.SetTargetNAPTR(n.NaptrOrder, n.NaptrPreference, n.NaptrFlags, n.NaptrService, n.NaptrRegexp, n.GetTargetField())
 	case "PTR":
 		rc.SetTarget(sprops["PtrDomainName"])
 	case "SRV":

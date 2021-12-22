@@ -26,6 +26,10 @@ function initialize() {
     defaultArgs = [];
 }
 
+function _isDomain(d) {
+  return _.isArray(d.nameservers) && _.isArray(d.records) && _.isString(d.name);
+}
+
 // Returns an array of domains which were registered so far during runtime
 // Own function for compatibility reasons or if some day special processing would be required.
 function getConfiguredDomains() {
@@ -101,6 +105,16 @@ function D(name, registrar) {
     }
     conf.domains.push(domain);
     conf.domain_names.push(name);
+}
+
+function INCLUDE(name) {
+    var domain = _getDomainObject(name);
+    if (domain == null) {
+        throw name + ' was not declared yet and therefore cannot be updated. Use D() before.';
+    }
+    return function(d) {
+      d.records.push.apply(d.records, domain.obj.records);
+    }
 }
 
 // D_EXTEND(name): Update a DNS Domain already added with D(), or subdomain thereof
@@ -266,8 +280,10 @@ var R53_ALIAS = recordBuilder('R53_ALIAS', {
 
 // R53_ZONE(zone_id)
 function R53_ZONE(zone_id) {
-    return function(r) {
-        if (_.isObject(r.r53_alias)) {
+    return function (r) {
+        if (_isDomain(r)) {
+            r.meta.zone_id = zone_id;
+        } else if (_.isObject(r.r53_alias)) {
             r.r53_alias['zone_id'] = zone_id;
         } else {
             r.r53_alias = { zone_id: zone_id };
@@ -706,7 +722,8 @@ function recordBuilder(type, opts) {
             // Handle D_EXTEND() with subdomains.
             if (d.subdomain &&
                 record.type != 'CF_REDIRECT' &&
-                record.type != 'CF_TEMP_REDIRECT') {
+                record.type != 'CF_TEMP_REDIRECT' &&
+                record.type != 'CF_WORKER_ROUTE') {
                 fqdn = [d.subdomain, d.name].join(".")
 
                 record.subdomain = d.subdomain;
@@ -840,6 +857,18 @@ var CF_TEMP_REDIRECT = recordBuilder('CF_TEMP_REDIRECT', {
     },
 });
 
+var CF_WORKER_ROUTE = recordBuilder('CF_WORKER_ROUTE', {
+    args: [
+        ['pattern', _validateCloudflareRedirect],
+        ['script', _validateCloudflareRedirect],
+    ],
+    transform: function(record, args, modifiers) {
+        record.name = '@';
+        record.target = args.pattern + ',' + args.script;
+    },
+});
+
+
 var URL = recordBuilder('URL');
 var URL301 = recordBuilder('URL301');
 var FRAME = recordBuilder('FRAME');
@@ -955,6 +984,7 @@ function CAA_BUILDER(value) {
 
 // DMARC_BUILDER takes an object:
 // label: The DNS label for the DMARC record (_dmarc prefix is added; default: '@')
+// version: The DMARC version, by default DMARC1 (optional)
 // policy: The DMARC policy (p=), must be one of 'none', 'quarantine', 'reject'
 // subdomainPolicy: The DMARC policy for subdomains (sp=), must be one of 'none', 'quarantine', 'reject' (optional)
 // alignmentSPF: 'strict'/'s' or 'relaxed'/'r' alignment for SPF (aspf=, default: 'r')
@@ -974,6 +1004,10 @@ function DMARC_BUILDER(value) {
         value.label = '@';
     }
 
+    if (!value.version) {
+        value.version = 'DMARC1';
+    }
+
     var label = '_dmarc';
     if (value.label !== '@') {
         label += '.' + value.label;
@@ -987,7 +1021,8 @@ function DMARC_BUILDER(value) {
         throw 'Invalid DMARC policy';
     }
 
-    var record = ['v=DMARC1'];
+    var record = [];
+    record.push('v=' + value.version);
     record.push('p=' + value.policy);
 
     // Subdomain policy
@@ -1035,7 +1070,7 @@ function DMARC_BUILDER(value) {
     }
 
     // Percentage
-    if (value.percent && value.percent != 100) {
+    if (value.percent) {
         record.push('pct=' + value.percent);
     }
 
@@ -1072,7 +1107,7 @@ function DMARC_BUILDER(value) {
     }
 
     // Failure report format
-    if (value.ruf && value.failureFormat && value.failureFormat !== 'afrf') {
+    if (value.ruf && value.failureFormat) {
         record.push('rf=' + value.failureFormat);
     }
 
@@ -1119,4 +1154,33 @@ function CLI_DEFAULTS(defaults) {
 
 function FETCH() {
     return fetch.apply(null, arguments).catch(PANIC);
+}
+
+// DOMAIN_ELSEWHERE is a helper macro that delegates a domain to a
+// static list of nameservers.  It updates the registrar (the parent)
+// with a list of nameservers.  This is used when we own the domain (we
+// control the registrar) but something else controls the DNS records
+// (often a third-party of Azure).
+// Usage: DOMAIN_ELSEWHERE("example.com", REG_NAMEDOTCOM, ["ns1.foo.com", "ns2.foo.com"]);
+function DOMAIN_ELSEWHERE(domain, registrar, nslist) {
+    D(domain, registrar, NO_PURGE);
+    // NB(tlim): NO_PURGE is added as a precaution since something else
+    // is maintaining the DNS records in that zone.  In theory this is
+    // not needed since this domain won't have a DSP defined.
+    for (i = 0; i < nslist.length; i++) {
+        D_EXTEND(domain, NAMESERVER(nslist[i]));
+    }
+}
+
+// DOMAIN_ELSEWHERE_AUTO is similar to DOMAIN_ELSEWHERE but the list of
+// nameservers is queried from a DNS Service Provider.
+// Usage: DOMAIN_ELSEWHERE_AUTO("example.com", REG_NAMEDOTCOM, DNS_FOO)
+function DOMAIN_ELSEWHERE_AUTO(domain, registrar, dsplist) {
+    D(domain, registrar, NO_PURGE);
+    // NB(tlim): NO_PURGE is required since something else
+    // is maintaining the DNS records in that zone, and we have access
+    // to updating it (but we don't want to use it.)
+    for (i = 2; i < arguments.length; i++) {
+        D_EXTEND(domain, DnsProvider(arguments[i]));
+    }
 }

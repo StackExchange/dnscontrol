@@ -21,16 +21,19 @@ go version
 
 ## Step 2. Create a new release branch
 
-From the "master" branch, run `bin/make-release.sh v1.2.3` where
-"v1.2.3" should be the release version.
+From the "master" branch, run `bin/make-release.sh v3.xx.y` where
+"v3.xx.y" should be the new release version.
 
-This will do a few things.
+NOTE: This warning can be ignored: `error: failed to push some refs to 'github.com:StackExchange/dnscontrol.git'`
+
+The `make-release.sh` script will do the following:
 
 1. Tag the current branch locally and remotely.
 2. Update main.go with the new version string.
 3. Create a file called draft-notes.txt which you will edit into the
    release notes.
 4. Print instructions on how to create the release PR.
+
 
 NOTE: If you bump the major version, you need to change all the source
 files.  The last time this was done (v2 -> v3) these two commands
@@ -43,7 +46,26 @@ sed -i.bak -e 's@github.com.StackExchange.dnscontrol.v2@github.com/StackExchange
 find * -name \*.bak -delete
 ```
 
-## Step 3. Write the release notes.
+
+## Step 3. Verify the version string
+
+Verify the version string was updated:
+
+```
+$ grep Version main.go
+```
+
+(Make sure that it lists the new version number.)
+
+
+## Step 4. Make the PR
+
+The output of "make-release.sh" will mention a URL that will create the PR ("1. Create a PR:")
+
+Load the URL and make the PR.
+
+
+## Step 5. Write the release notes.
 
 draft-notes.txt is just a draft and needs considerable editing.
 
@@ -84,7 +106,8 @@ Provider-specific changes:
 * CLOUDFLARE: Fix CF trying to update non-changeable TTL (#issueid)
 ```
 
-## Step 4. Make the draft release.
+
+## Step 6. Make the draft release.
 
 [On github.com, click on "Draft a new release"](https://github.com/StackExchange/dnscontrol/releases/new)
 
@@ -102,24 +125,29 @@ Fill in the text box with the release notes written above.
 
 (DO use the "preview" tab to proofread the text.)
 
-## Step 5. Merge the release.
+
+## Step 7. Verify tests completed.
+
+By now the tests should have started running.
 
 Verify that the automated tests passed. If not, fix the problems
 before you continue.
 
-This is also an opportunity to update any dependencies (go modules).
-See the last section for commands that make that possible. Only
-update modules related to the providers in the automated testing
-system.  When those tests pass, wait for the Github Actions to
-complete and verify the tests all passed.
 
-Merge the PR into Master.
+## Step 8. Merge
 
-## Step 6. Publish the release
+Merge the PR.
+
+The tests will run again.
+
+Once they pass, you are ready to create and promote the release (see next step).
+
+
+## Step 9. Publish the release
 
 a. Publish the release.
 
-* Make sure the "This is a pre-release" checkbox is UNchecked.
+* Make sure the "This is a pre-release" checkbox is NOT checked.
 * Click "Publish Release".
 
 b. Wait for workflow to complete
@@ -129,7 +157,7 @@ all 3 binaries to the release. Refresh the page after a few minutes and you'll
 see dnscontrol-Darwin, dnscontrol-Linux, and dnscontrol.exe attached as assets.
 
 
-## Step 7. Announce it via email
+## Step 10. Announce it via email
 
 Email the release notes to the mailing list: (note the format of the Subject line and that the first line of the email is the URL of the release)
 
@@ -146,7 +174,7 @@ NOTE: You won't be able to post to the mailing list unless you are on
 it.  [Click here to join](https://groups.google.com/forum/#!forum/dnscontrol-discuss).
 
 
-## Step 8. Announce it via chat
+## Step 11. Announce it via chat
 
 Mention on [https://gitter.im/dnscontrol/Lobby](https://gitter.im/dnscontrol/Lobby) that the new release has shipped.
 
@@ -155,7 +183,7 @@ ANNOUNCEMENT: dnscontrol v$VERSION has been released! https://github.com/StackEx
 ```
 
 
-## Step 9. Get credit!
+## Step 12. Get credit!
 
 Mention the fact that you did this release in your weekly accomplishments.
 
@@ -170,7 +198,7 @@ If you are at Stack Overflow:
 List out-of-date modules and update any that seem worth updating:
 
 ```
-go get github.com/oligot/go-mod-upgrade
+go install github.com/oligot/go-mod-upgrade
 go-mod-upgrade
 go mod tidy
 ```
@@ -178,13 +206,11 @@ go mod tidy
 OLD WAY:
 
 ```
-go get -u github.com/psampaz/go-mod-outdated
+go install github.com/psampaz/go-mod-outdated
 go list -mod=mod -u -m -json all | go-mod-outdated -update -direct
 
 # If any are out of date, update via:
 
-go get -u
-    or
 go get -u module/path
 
 # Once the updates are complete, tidy up:

@@ -295,7 +295,7 @@ func (c *hednsProvider) GetZoneRecords(domain string) (models.Records, error) {
 
 		rc := &models.RecordConfig{
 			Type: parser.parseStringAttr(element.Find("td > .rrlabel"), "data"),
-			TTL:  uint32(parser.parseIntElement(element.Find("td:nth-child(5)"))),
+			TTL:  parser.parseIntElementUint32(element.Find("td:nth-child(5)")),
 			Original: Record{
 				ZoneName:   domain,
 				ZoneID:     domainID,
@@ -308,7 +308,7 @@ func (c *hednsProvider) GetZoneRecords(domain string) (models.Records, error) {
 			return false
 		}
 
-		priority := parser.parseIntElement(element.Find("td:nth-child(6)"))
+		priority := parser.parseIntElementUint16(element.Find("td:nth-child(6)"))
 		if parser.err != nil {
 			err = parser.err
 			return false
@@ -731,9 +731,9 @@ func (p *elementParser) parseStringElement(element *goquery.Selection) (result s
 	return element.Text()
 }
 
-func (p *elementParser) parseIntElement(element *goquery.Selection) (result uint64) {
+func (p *elementParser) parseIntElementUint16(element *goquery.Selection) uint16 {
 	if p.err != nil {
-		return
+		return 0
 	}
 
 	// Special case to deal with Priority
@@ -741,6 +741,22 @@ func (p *elementParser) parseIntElement(element *goquery.Selection) (result uint
 		return 0
 	}
 
-	result, p.err = strconv.ParseUint(element.Text(), 10, 64)
-	return result
+	var result64 uint64
+	result64, p.err = strconv.ParseUint(element.Text(), 10, 16)
+	return uint16(result64)
+}
+
+func (p *elementParser) parseIntElementUint32(element *goquery.Selection) uint32 {
+	if p.err != nil {
+		return 0
+	}
+
+	// Special case to deal with Priority
+	if element.Text() == "-" {
+		return 0
+	}
+
+	var result64 uint64
+	result64, p.err = strconv.ParseUint(element.Text(), 10, 32)
+	return uint32(result64)
 }

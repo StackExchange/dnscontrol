@@ -25,7 +25,8 @@
     "apikey": "$CLOUDFLAREAPI_KEY",
     "apitoken": "$CLOUDFLAREAPI_TOKEN",
     "apiuser": "$CLOUDFLAREAPI_USER",
-    "domain": "$CLOUDFLAREAPI_DOMAIN"
+    "domain": "$CLOUDFLAREAPI_DOMAIN",
+    "accountid": "$CLOUDFLAREAPI_ACCOUNTID"
   },
   "CLOUDFLAREAPI_OLD": {
     "apikey": "$CF_KEY",
@@ -183,5 +184,9 @@
   "VULTR": {
     "domain": "$VULTR_DOMAIN",
     "token": "$VULTR_TOKEN"
+  },
+  "TRANSIP": {
+    "AccessToken": "$TRANSIP_ACCESS_TOKEN",
+    "domain": "$TRANSIP_DOMAIN"
   }
 }

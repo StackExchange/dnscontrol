@@ -141,8 +141,8 @@ func (d *differ) IncrementalDiff(existing []*models.RecordConfig) (unchanged, cr
 			//if !apexException(dr) || !ignoreNameException(dr) {
 			if (!ignoreNameException(dr)) && (!apexException(dr)) {
 				return nil, nil, nil, nil, fmt.Errorf("trying to update/add IGNORE_NAMEd record: %s %s", dr.GetLabel(), dr.Type)
-			} else {
-				//fmt.Printf("********** DEBUG: desired EXCEPTION\n")
+				//} else {
+				//	fmt.Printf("********** DEBUG: desired EXCEPTION\n")
 			}
 		} else if d.matchIgnoredTarget(dr.GetTargetField(), dr.Type) {
 			return nil, nil, nil, nil, fmt.Errorf("trying to update/add IGNORE_TARGETd record: %s %s", dr.GetLabel(), dr.Type)

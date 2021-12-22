@@ -180,14 +180,16 @@ func checkTargets(rec *models.RecordConfig, domain string) (errs []error) {
 	case "PTR":
 		check(checkTarget(target))
 	case "NAPTR":
-		check(checkTarget(target))
+		if target != "" {
+			check(checkTarget(target))
+		}
 	case "ALIAS":
 		check(checkTarget(target))
 	case "SOA":
 		check(checkSoa(rec.SoaExpire, rec.SoaMinttl, rec.SoaRefresh, rec.SoaRetry, rec.SoaSerial, rec.SoaMbox))
 		check(checkTarget(target))
 		if label != "@" {
-			check(fmt.Errorf("SOA record is only valid for bare domain."))
+			check(fmt.Errorf("SOA record is only valid for bare domain"))
 		}
 	case "SRV":
 		check(checkTarget(target))
@@ -345,7 +347,7 @@ func ValidateAndNormalizeConfig(config *models.DNSConfig) (errs []error) {
 			}
 
 			// Canonicalize Targets.
-			if rec.Type == "CNAME" || rec.Type == "MX" || rec.Type == "NAPTR" || rec.Type == "NS" || rec.Type == "SRV" {
+			if rec.Type == "CNAME" || rec.Type == "MX" || rec.Type == "NS" || rec.Type == "SRV" {
 				// #rtype_variations
 				// These record types have a target that is a hostname.
 				// We normalize them to a FQDN so there is less variation to handle.  If a
@@ -503,7 +505,7 @@ func parseDomainSpec(s string) (domain, tag string) {
 
 func checkAutoDNSSEC(dc *models.DomainConfig) (errs []error) {
 	if dc.AutoDNSSEC != "" && dc.AutoDNSSEC != "on" && dc.AutoDNSSEC != "off" {
-		errs = append(errs, fmt.Errorf("Domain %q AutoDNSSEC=%q is invalid (expecting \"\", \"off\", or \"on\")", dc.Name, dc.AutoDNSSEC))
+		errs = append(errs, fmt.Errorf("domain %q AutoDNSSEC=%q is invalid (expecting \"\", \"off\", or \"on\")", dc.Name, dc.AutoDNSSEC))
 	}
 	return
 }

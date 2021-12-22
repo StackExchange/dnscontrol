@@ -200,8 +200,12 @@ func toRecordConfig(domain string, r *govultr.DNSRecord) (*models.RecordConfig, 
 		// Vultr returns SRV records in the format "[weight] [port] [target]".
 		return rc, rc.SetTargetSRVPriorityString(uint16(vultrPriority(r)), data)
 	case "TXT":
-		// Remove quotes if it is a TXT record.
-		if !strings.HasPrefix(data, `"`) || !strings.HasSuffix(data, `"`) {
+		// TXT records from Vultr are always surrounded by quotes.
+		// They don't permit quotes within the string, therefore there is no
+		// need to resolve \" or other quoting.
+		if !(strings.HasPrefix(data, `"`) && strings.HasSuffix(data, `"`)) {
+			// Give an error if Vultr changes their protocol. We'd rather break
+			// than do the wrong thing.
 			return nil, errors.New("unexpected lack of quotes in TXT record from Vultr")
 		}
 		return rc, rc.SetTargetTXT(data[1 : len(data)-1])
@@ -221,9 +225,7 @@ func toVultrRecord(dc *models.DomainConfig, rc *models.RecordConfig, vultrID int
 	data := rc.GetTargetField()
 
 	// Vultr does not use a period suffix for CNAME, NS, or MX.
-	if strings.HasSuffix(data, ".") {
-		data = data[:len(data)-1]
-	}
+	data = strings.TrimSuffix(data, ".")
 
 	var priority *int
 
@@ -251,6 +253,11 @@ func toVultrRecord(dc *models.DomainConfig, rc *models.RecordConfig, vultrID int
 		r.Data = fmt.Sprintf(`%v %s "%s"`, rc.CaaFlag, rc.CaaTag, rc.GetTargetField())
 	case "SSHFP":
 		r.Data = fmt.Sprintf("%d %d %s", rc.SshfpAlgorithm, rc.SshfpFingerprint, rc.GetTargetField())
+	case "TXT":
+		// Vultr doesn't permit TXT strings to include double-quotes
+		// therefore, we don't have to escape interior double-quotes.
+		// Vultr's API requires the string to begin and end with double-quotes.
+		r.Data = `"` + strings.Join(rc.TxtStrings, "") + `"`
 	default:
 	}
 

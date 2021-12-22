@@ -146,7 +146,7 @@ func (o *oracleProvider) GetNameservers(domain string) ([]*models.Nameserver, er
 		nss[i] = *ns.Hostname
 	}
 
-	return models.ToNameservers(nss)
+	return models.ToNameserversStripTD(nss)
 }
 
 func (o *oracleProvider) GetZoneRecords(domain string) (models.Records, error) {

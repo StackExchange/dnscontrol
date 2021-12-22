@@ -25,6 +25,12 @@
           "type": "A"
         },
         {
+          "name": "test3.foo.com.sub",
+          "subdomain": "sub",
+          "target": "10.2.3.3",
+          "type": "A"
+        },
+        {
           "name": "@",
           "target": "test1.foo.com,https://goo.com/$1",
           "type": "CF_REDIRECT"
@@ -33,6 +39,11 @@
           "name": "@",
           "target": "test2.foo.com,https://goo.com/$1",
           "type": "CF_TEMP_REDIRECT"
+        },
+        {
+          "name": "@",
+          "target": "test3.foo.com,test-worker",
+          "type": "CF_WORKER_ROUTE"
         }
       ],
       "registrar": "Third-Party"

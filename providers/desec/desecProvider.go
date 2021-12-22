@@ -9,6 +9,7 @@ import (
 	"github.com/StackExchange/dnscontrol/v3/models"
 	"github.com/StackExchange/dnscontrol/v3/pkg/diff"
 	"github.com/StackExchange/dnscontrol/v3/pkg/printer"
+	"github.com/StackExchange/dnscontrol/v3/pkg/txtutil"
 	"github.com/StackExchange/dnscontrol/v3/providers"
 	"github.com/miekg/dns/dnsutil"
 )
@@ -26,9 +27,11 @@ func NewDeSec(m map[string]string, metadata json.RawMessage) (providers.DNSServi
 	if c.creds.token == "" {
 		return nil, fmt.Errorf("missing deSEC auth-token")
 	}
-
-	// Get a domain to validate authentication
-	if err := c.fetchDomainList(); err != nil {
+	if err := c.authenticate(); err != nil {
+		return nil, fmt.Errorf("authentication failed")
+	}
+	//DomainIndex is used for corrections (minttl) and domain creation
+	if err := c.initializeDomainIndex(); err != nil {
 		return nil, err
 	}
 
@@ -81,11 +84,13 @@ func (c *desecProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*models
 	models.PostProcessRecords(existing)
 	clean := PrepFoundRecords(existing)
 	var minTTL uint32
+	c.mutex.Lock()
 	if ttl, ok := c.domainIndex[dc.Name]; !ok {
 		minTTL = 3600
 	} else {
 		minTTL = ttl
 	}
+	c.mutex.Unlock()
 	PrepDesiredRecords(dc, minTTL)
 	return c.GenerateDomainCorrections(dc, clean)
 }
@@ -99,6 +104,7 @@ func (c *desecProvider) GetZoneRecords(domain string) (models.Records, error) {
 
 	// Convert them to DNScontrol's native format:
 	existingRecords := []*models.RecordConfig{}
+	//spew.Dump(records)
 	for _, rr := range records {
 		existingRecords = append(existingRecords, nativeToRecords(rr, domain)...)
 	}
@@ -107,10 +113,9 @@ func (c *desecProvider) GetZoneRecords(domain string) (models.Records, error) {
 
 // EnsureDomainExists returns an error if domain doesn't exist.
 func (c *desecProvider) EnsureDomainExists(domain string) error {
-	if err := c.fetchDomainList(); err != nil {
-		return err
-	}
 	// domain already exists
+	c.mutex.Lock()
+	defer c.mutex.Unlock()
 	if _, ok := c.domainIndex[domain]; ok {
 		return nil
 	}
@@ -133,6 +138,7 @@ func PrepDesiredRecords(dc *models.DomainConfig, minTTL uint32) {
 	// confusing.
 
 	dc.Punycode()
+	txtutil.SplitSingleLongTxt(dc.Records)
 	recordsToKeep := make([]*models.RecordConfig, 0, len(dc.Records))
 	for _, rec := range dc.Records {
 		if rec.Type == "ALIAS" {

@@ -286,7 +286,10 @@ func (c *axfrddnsProvider) GetZoneRecords(domain string) (models.Records, error)
 			}
 			continue
 		default:
-			rec := models.RRtoRC(rr, domain)
+			rec, err := models.RRtoRC(rr, domain)
+			if err != nil {
+				return nil, err
+			}
 			foundRecords = append(foundRecords, &rec)
 		}
 	}
