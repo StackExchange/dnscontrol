@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
-	"net/http/cookiejar"
 	"net/url"
 	"strconv"
 	"strings"
@@ -18,6 +17,7 @@ import (
 type packetframeProvider struct {
 	client      *http.Client
 	baseURL     *url.URL
+	token       string
 	domainIndex map[string]zone
 }
 
@@ -32,24 +32,13 @@ func NewPacketframe(m map[string]string, metadata json.RawMessage) (providers.DN
 		return nil, fmt.Errorf("missing Packetframe token")
 	}
 
-	cookie := &http.Cookie{
-		Name:     "token",
-		Value:    m["apikey"],
-		HttpOnly: true,
-	}
-	cookies := make([]*http.Cookie, 1)
-	cookies[0] = cookie
-	urlObj, _ := url.Parse("https://v4.packetframe.com/")
-	jar, _ := cookiejar.New(nil)
-	jar.SetCookies(urlObj, cookies)
-
 	baseURL, err := url.Parse(defaultBaseURL)
 	if err != nil {
 		return nil, fmt.Errorf("invalid base URL for Packetframe")
 	}
-	client := http.Client{Jar: jar}
+	client := http.Client{}
 
-	api := &packetframeProvider{client: &client, baseURL: baseURL}
+	api := &packetframeProvider{client: &client, baseURL: baseURL, token: m["apikey"]}
 
 	// Get a domain to validate the token
 	if err := api.fetchDomainList(); err != nil {
@@ -63,6 +52,7 @@ var features = providers.DocumentationNotes{
 	providers.DocDualHost:            providers.Cannot(),
 	providers.DocOfficiallySupported: providers.Cannot(),
 	providers.CanUseSRV:              providers.Can(),
+	providers.CanUsePTR:              providers.Can(),
 	providers.CanGetZones:            providers.Unimplemented(),
 }
 
@@ -227,11 +217,15 @@ func toRc(dc *models.DomainConfig, r *domainRecord) *models.RecordConfig {
 		Original: r,
 	}
 
-	rc.SetLabel(r.Label, dc.Name)
+	label := strings.TrimSuffix(r.Label, dc.Name+".")
+	label = strings.TrimSuffix(label, ".")
+	if label == "" {
+		label = "@"
+	}
+	rc.SetLabel(label, dc.Name)
 
 	switch rtype := r.Type; rtype { // #rtype_variations
 	case "TXT":
-		fmt.Printf("TXT Record with value %s\n", r.Value)
 		rc.SetTargetTXTString(r.Value)
 	case "SRV":
 		spl := strings.Split(r.Value, " ")

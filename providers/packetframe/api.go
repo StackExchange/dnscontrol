@@ -116,6 +116,7 @@ func (c *packetframeProvider) newRequest(method, endpoint string, body interface
 
 	req.Header.Add("Content-Type", mediaType)
 	req.Header.Add("Accept", mediaType)
+	req.Header.Add("Authorization", fmt.Sprintf("Token %s", c.token))
 	return req, nil
 }
 
