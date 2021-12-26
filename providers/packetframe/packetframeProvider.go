@@ -26,8 +26,8 @@ var defaultNameServerNames = []string{
 	"ns2v4.packetframe.com",
 }
 
-// NewPacketframe creates the provider.
-func NewPacketframe(m map[string]string, metadata json.RawMessage) (providers.DNSServiceProvider, error) {
+// newPacketframe creates the provider.
+func newPacketframe(m map[string]string, metadata json.RawMessage) (providers.DNSServiceProvider, error) {
 	if m["apikey"] == "" {
 		return nil, fmt.Errorf("missing Packetframe token")
 	}
@@ -39,11 +39,6 @@ func NewPacketframe(m map[string]string, metadata json.RawMessage) (providers.DN
 	client := http.Client{}
 
 	api := &packetframeProvider{client: &client, baseURL: baseURL, token: m["apikey"]}
-
-	// Get a domain to validate the token
-	if err := api.fetchDomainList(); err != nil {
-		return nil, err
-	}
 
 	return api, nil
 }
@@ -58,7 +53,7 @@ var features = providers.DocumentationNotes{
 
 func init() {
 	fns := providers.DspFuncs{
-		Initializer:   NewPacketframe,
+		Initializer:   newPacketframe,
 		RecordAuditor: AuditRecords,
 	}
 	providers.RegisterDomainServiceProviderType("PACKETFRAME", fns, features)
@@ -86,9 +81,6 @@ func (api *packetframeProvider) GetZoneRecords(domain string) (models.Records, e
 	if err != nil {
 		return nil, fmt.Errorf("could not load records for '%s'", domain)
 	}
-	// This enables the get-zones subcommand.
-	// Implement this by extracting the code from GetDomainCorrections into
-	// a single function.  For most providers this should be relatively easy.
 
 	existingRecords := make([]*models.RecordConfig, len(records))
 
