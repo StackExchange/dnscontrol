@@ -1,10 +1,13 @@
 package ovh
 
 import (
+	"errors"
 	"fmt"
+	"strings"
+
 	"github.com/StackExchange/dnscontrol/v3/models"
 	"github.com/miekg/dns/dnsutil"
-	"strings"
+	"github.com/ovh/go-ovh/ovh"
 )
 
 // Void an empty structure.
@@ -164,13 +167,29 @@ func (c *ovhProvider) refreshZone(fqdn string) error {
 
 // fetch the NS OVH attributed to this zone (which is distinct from fetchRealNS which
 // get the exact NS stored at the registrar
-func (c *ovhProvider) fetchNS(fqdn string) ([]string, error) {
+func (c *ovhProvider) fetchZoneNS(fqdn string) ([]string, error) {
 	zone, err := c.fetchZone(fqdn)
 	if err != nil {
 		return nil, err
 	}
 
 	return zone.NameServers, nil
+}
+
+// Fetch first the registrar NS, if none found, return the zone defined NS
+func (c *ovhProvider) fetchNS(fqdn string) ([]string, error) {
+	ns, err := c.fetchRegistrarNS(fqdn)
+	if err != nil {
+		return nil, err
+	}
+
+	if len(ns) == 0 {
+		ns, err = c.fetchZoneNS(fqdn)
+		if err != nil {
+			return nil, err
+		}
+	}
+	return ns, nil
 }
 
 // CurrentNameServer stores information about nameservers.
@@ -187,6 +206,10 @@ func (c *ovhProvider) fetchRegistrarNS(fqdn string) ([]string, error) {
 	var nameServersID []int
 	err := c.client.CallAPI("GET", "/domain/"+fqdn+"/nameServer", nil, &nameServersID, true)
 	if err != nil {
+		var apiError *ovh.APIError
+		if errors.As(err, &apiError) && apiError.Code == 404 {
+			return []string{}, nil
+		}
 		return nil, err
 	}
 

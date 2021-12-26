@@ -65,7 +65,7 @@ jobs:
       #
       # FYI: The domain name name was selected at random. If it stops working, this command will list domains to choose from:
       # echo '{ "hexo": { "apientity": "OTE", "apilogin": "test.user", "apipassword": "test.passw0rd" } }' > hexo-creds.json ; dnscontrol  get-zones --creds hexo-creds.json --format=nameonly hexo HEXONET all
-      HEXONET_DOMAIN: a-b-c-movies.com
+      HEXONET_DOMAIN: a-b-c-music.com
       HEXONET_ENTITY: OTE
       HEXONET_PW: test.passw0rd
       HEXONET_UID: test.user
