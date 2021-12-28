@@ -141,12 +141,12 @@ func (o *oracleProvider) GetNameservers(domain string) ([]*models.Nameserver, er
 		return nil, err
 	}
 
-	nss := make([]*models.Nameserver, len(getResp.Zone.Nameservers))
+	nss := make([]string, len(getResp.Zone.Nameservers))
 	for i, ns := range getResp.Zone.Nameservers {
-		nss[i] = &models.Nameserver{Name: *ns.Hostname}
+		nss[i] = *ns.Hostname
 	}
 
-	return nss, nil
+	return models.ToNameservers(nss)
 }
 
 func (o *oracleProvider) GetZoneRecords(domain string) (models.Records, error) {
