@@ -202,11 +202,9 @@ The Cloudflare provider can manage Worker Routes for your domains. Simply use th
 
 {% highlight js %}
 
-var CLOUDFLARE = NewDnsProvider('cloudflare','CLOUDFLAREAPI');
+var CLOUDFLARE = NewDnsProvider('cloudflare','CLOUDFLAREAPI', {"manage_workers": true}); // enable managing worker routes
 
 D("foo.com", REG_NONE, DnsProvider(CLOUDFLARE),
-    { manage_workers: true}, // Enable editing workers.
-
     // Assign the patterns `api.foo.com/*` and `foo.com/api/*` to `my-worker` script.
     CF_WORKER_ROUTE("api.foo.com/*", "my-worker"),
     CF_WORKER_ROUTE("foo.com/api/*", "my-worker"),
