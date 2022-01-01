@@ -11,7 +11,7 @@ import (
 
 const (
 	mediaType      = "application/json"
-	defaultBaseURL = "https://v4.packetframe.com/api/"
+	defaultBaseURL = "https://packetframe.com/api/"
 )
 
 func (c *packetframeProvider) fetchDomainList() error {
