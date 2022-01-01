@@ -115,8 +115,8 @@ github.com/aws/aws-sdk-go-v2/internal/ini v1.3.2 h1:IQup8Q6lorXeiA/rK72PeToWoWK8
 github.com/aws/aws-sdk-go-v2/internal/ini v1.3.2/go.mod h1:VITe/MdW6EMXPb0o0txu/fsonXbMHUU2OC2Qp7ivU4o=
 github.com/aws/aws-sdk-go-v2/service/internal/presigned-url v1.5.2 h1:CKdUNKmuilw/KNmO2Q53Av8u+ZyXMC2M9aX8Z+c/gzg=
 github.com/aws/aws-sdk-go-v2/service/internal/presigned-url v1.5.2/go.mod h1:FgR1tCsn8C6+Hf+N5qkfrE4IXvUL1RgW87sunJ+5J4I=
-github.com/aws/aws-sdk-go-v2/service/route53 v1.14.2 h1:06w/iZ7RDTgkumD2w3oVAS55VUzuXjKAj6Fu6QPIRxs=
-github.com/aws/aws-sdk-go-v2/service/route53 v1.14.2/go.mod h1:UslaPoP9fD1ayK7ywpkIE9ft5gOEhPVJkT66D4OvSrM=
+github.com/aws/aws-sdk-go-v2/service/route53 v1.15.0 h1:TtL2aQTyJ/6HOpySI81wUcz5CaLNLCblBEprVYemK/g=
+github.com/aws/aws-sdk-go-v2/service/route53 v1.15.0/go.mod h1:UslaPoP9fD1ayK7ywpkIE9ft5gOEhPVJkT66D4OvSrM=
 github.com/aws/aws-sdk-go-v2/service/route53domains v1.7.2 h1:xv58XnJAz6V480UcaG7c4b6aurIhQMFGnWwDIIAQiYE=
 github.com/aws/aws-sdk-go-v2/service/route53domains v1.7.2/go.mod h1:QFRIvT3BRBJ3p7GtYtD60dxRaQKWPtlcltL11xPPD1M=
 github.com/aws/aws-sdk-go-v2/service/sso v1.6.2 h1:2IDmvSb86KT44lSg1uU4ONpzgWLOuApRl6Tg54mZ6Dk=

@@ -14,7 +14,7 @@ require (
 	github.com/aws/aws-sdk-go-v2 v1.11.2
 	github.com/aws/aws-sdk-go-v2/config v1.11.0
 	github.com/aws/aws-sdk-go-v2/credentials v1.6.4
-	github.com/aws/aws-sdk-go-v2/service/route53 v1.14.2
+	github.com/aws/aws-sdk-go-v2/service/route53 v1.15.0
 	github.com/aws/aws-sdk-go-v2/service/route53domains v1.7.2
 	github.com/babolivier/go-doh-client v0.0.0-20201028162107-a76cff4cb8b6
 	github.com/bhendo/go-powershell v0.0.0-20190719160123-219e7fb4e41e
