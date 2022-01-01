@@ -3,7 +3,7 @@ module github.com/StackExchange/dnscontrol/v3
 go 1.16
 
 require (
-	github.com/Azure/azure-sdk-for-go v60.0.0+incompatible
+	github.com/Azure/azure-sdk-for-go v61.0.0+incompatible
 	github.com/Azure/go-autorest/autorest/azure/auth v0.5.9
 	github.com/Azure/go-autorest/autorest/to v0.4.0
 	github.com/DisposaBoy/JsonConfigReader v0.0.0-20201129172854-99cf318d67e7
