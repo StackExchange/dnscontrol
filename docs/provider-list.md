@@ -97,6 +97,7 @@ Maintainers of contributed providers:
 * `OPENSRS` @pierre-emmanuelJ
 * `ORACLE` @kallsyms
 * `OVH` @masterzen
+* `PACKETFRAME` @hamptonmoore
 * `POWERDNS` @jpbede
 * `SOFTLAYER`@jamielennox
 * `TRANSIP` @blackshadev

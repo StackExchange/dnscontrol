@@ -41,7 +41,7 @@ func (c *packetframeProvider) getRecords(zoneID string) ([]domainRecord, error) 
 }
 
 func (c *packetframeProvider) createRecord(rec *domainRecord) (*domainRecord, error) {
-	endpoint := fmt.Sprintf("dns/records")
+	endpoint := "dns/records"
 
 	req, err := c.newRequest(http.MethodPost, endpoint, rec)
 	if err != nil {
@@ -58,7 +58,7 @@ func (c *packetframeProvider) createRecord(rec *domainRecord) (*domainRecord, er
 }
 
 func (c *packetframeProvider) modifyRecord(rec *domainRecord) error {
-	endpoint := fmt.Sprintf("dns/records")
+	endpoint := "dns/records"
 
 	req, err := c.newRequest(http.MethodPut, endpoint, rec)
 	if err != nil {
@@ -151,7 +151,7 @@ func (c *packetframeProvider) handleErrors(resp *http.Response) error {
 
 type zone struct {
 	ID         string   `json:"id"`
-	Zone       string   `json:zone`
+	Zone       string   `json:"zone"`
 	Users      []string `json:"users"`
 	UserEmails []string `json:"user_emails"`
 }
@@ -184,5 +184,5 @@ type domainRecord struct {
 	Value string `json:"value"`
 	TTL   int    `json:"ttl"`
 	Proxy bool   `json:"proxy"`
-	Zone  string `json:zone`
+	Zone  string `json:"zone"`
 }
