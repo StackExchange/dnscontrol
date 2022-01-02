@@ -6,6 +6,8 @@ jsId: CLOUDFLAREAPI
 ---
 # Cloudflare Provider
 
+This is the provider for [Cloudflare](https://www.cloudflare.com/).
+
 ## Important notes
 
 * When using `SPF()` or the `SPF_BUILDER()` the records are converted to RecordType `TXT` as Cloudflare API fails otherwise. See more [here](https://github.com/StackExchange/dnscontrol/issues/446).
@@ -30,19 +32,21 @@ This method is enabled by setting the "apitoken" value in `creds.json`:
 
 See [Cloudflare's documentation](https://support.cloudflare.com/hc/en-us/articles/200167836-Managing-API-Tokens-and-Keys) for instructions on how to generate and configure permissions on API tokens.
 
-A token can be granded rights (authorization to do certain tasks) at a very granular level.  DNSControl requires the token to have the following rights:
+A token can be granted rights (authorization to do certain tasks) at a very granular level.  DNSControl requires the token to have the following rights:
 
 * Read zones (`Zone → Zone → Read`)
 * Edit DNS records (`Zone → DNS → Edit`)
-* Edit Page Rules (`Zone  → Page Rules → Edit`) (Only required if `manage_redirects` is true for any dommain.)
+* Edit Page Rules (`Zone → Page Rules → Edit`) (Only required if `manage_redirects` is true for any dommain.)
+* Enable SSL controls (`Zone → SSL and Certificates → Edit`)
 * If Cloudflare Workers are being managed: (if `manage_workers`: set to `true` or `CF_WORKER_ROUTE()` is in use.)
-  * Edit Worker Scripts (`Account  → Workers Scripts → Edit`)
-  * Edit Worker Scripts (`Zone  → Workers Routes → Edit`)
+  * Edit Worker Scripts (`Account → Workers Scripts → Edit`)
+  * Edit Worker Scripts (`Zone → Workers Routes → Edit`)
 * FYI: [An example permissions configuration](https://user-images.githubusercontent.com/210250/136301050-1fd430bf-21b6-428b-aa54-f6009964031d.png)
 
 The other (older, not recommended) method is to
 provide your Cloudflare API username and access key.
 This key is available under "My Settings".
+
 This method is not recommended because these credentials give DNSControl access to the entire Cloudflare API.
 
 This method is enabled by setting the "apikey" and "apiuser" values in `creds.json`:
@@ -57,7 +61,7 @@ This method is enabled by setting the "apikey" and "apiuser" values in `creds.js
 }
 {% endhighlight %}
 
-You can not mix apikey/apiuser and apitoken.  If all three values are set, you will receive an error.
+You can not mix `apikey/apiuser` and `apitoken`.  If all three values are set, you will receive an error.
 
 You should also set the "accountid" value.  This is optional but may become required some day therefore we recommend setting it.
 The Account ID is used to disambiguate when API key has access to multiple Cloudflare accounts. For example, when creating domains this key is used to determine which account to place the new domain.  It is also required when using Workers.
@@ -81,7 +85,8 @@ Record level metadata available:
 
 Domain level metadata available:
    * `cloudflare_proxy_default` ("on", "off", or "full")
-   * `cloudflare_universalssl` (unset to keep untouched; otherwise "on, or "off")
+   * `cloudflare_universalssl` (unset to leave this setting unmanaged; otherwise use "on" or "off")
+     * NOTE: If "universal SSL" isn't working, verify the API key has `Zone → SSL and Certificates → Edit` permissions. See above.
 
 Provider level metadata available:
    * `ip_conversions`
@@ -94,7 +99,7 @@ What does on/off/full mean?
    * "on" enables the Cloudflare proxy (turns on the "orange cloud")
    * "full" is the same as "on" but also enables Railgun.  DNSControl will prevent you from accidentally enabling "full" on a CNAME that points to an A record that is set to "off", as this is generally not desired.
 
-Good to know: You can also set the default proxy mode using `DEFAULTS()` function, see:
+You can also set the default proxy mode using `DEFAULTS()` function, see:
 {% highlight js %}
 
 DEFAULTS(
@@ -167,26 +172,29 @@ If a domain does not exist in your Cloudflare account, DNSControl
 will *not* automatically add it. You'll need to do that via the
 control panel manually or via the `dnscontrol create-domains` command.
 
+
 ## Redirects
 The Cloudflare provider can manage "Forwarding URL" Page Rules (redirects) for your domains. Simply use the `CF_REDIRECT` and `CF_TEMP_REDIRECT` functions to make redirects:
 
 {% highlight js %}
 
-// chiphacker.com is an alias for electronics.stackexchange.com
+// chiphacker.com should redirect to electronics.stackexchange.com
 
 var CLOUDFLARE = NewDnsProvider('cloudflare','CLOUDFLAREAPI', {"manage_redirects": true}); // enable manage_redirects
 
 D("chiphacker.com", REG_NONE, DnsProvider(CLOUDFLARE),
-    // must have A records with orange cloud on. Otherwise page rule will never run.
-    A("@","1.2.3.4", CF_PROXY_ON),
-    A("www", "1.2.3.4", CF_PROXY_ON)
-    A("meta", "1.2.3.4", CF_PROXY_ON),
+    // ...
 
     // 302 for meta subdomain
     CF_TEMP_REDIRECT("meta.chiphacker.com/*", "https://electronics.meta.stackexchange.com/$1"),
 
     // 301 all subdomains and preserve path
     CF_REDIRECT("*chiphacker.com/*", "https://electronics.stackexchange.com/$2"),
+
+    // A redirect must have A records with orange cloud on. Otherwise the HTTP/HTTPS request will never arrive at Cloudflare.
+    A("meta", "1.2.3.4", CF_PROXY_ON),
+
+    // ...
 );
 {%endhighlight%}
 
@@ -195,7 +203,7 @@ Notice a few details:
 1. We need an A record with cloudflare proxy on, or the page rule will never run.
 2. The IP address in those A records may be mostly irrelevant, as cloudflare should handle all requests (assuming some page rule matches).
 3. Ordering matters for priority. CF_REDIRECT records will be added in the order they appear in your js. So put catch-alls at the bottom.
-4. if _any_ `CF_REDIRECT` or `CF_TEMP_REDIRECT` functions are used then `dnscontrol` will manage _all_ "Forwarding URL" type Page Rules for the domain. Page Rule types other than "Forwarding URL” will be left alone.
+4. if _any_ `CF_REDIRECT` or `CF_TEMP_REDIRECT` functions are used then `dnscontrol` will manage _all_ "Forwarding URL" type Page Rules for the domain. Page Rule types other than "Forwarding URL” will be left alone. In other words, `dnscontrol` will delete any Forwarding URL it doesn't recognize. Be careful!
 
 ## Worker routes
 The Cloudflare provider can manage Worker Routes for your domains. Simply use the `CF_WORKER_ROUTE` function passing the route pattern and the worker name:
@@ -214,7 +222,6 @@ D("foo.com", REG_NONE, DnsProvider(CLOUDFLARE),
 
 The API key you use must be enabled to edit workers.  In the portal, edit the API key,
 under "Permissions" add "Account", "Workers Scripts", "Edit". Without this permission you may see errors that mention "failed fetching worker route list from cloudflare: bad status code from cloudflare: 403 not 200"
-
 
 Please notice that if _any_ `CF_WORKER_ROUTE` function is used then `dnscontrol` will manage _all_
 Worker Routes for the domain. To be clear: this means it will delete existing routes that
