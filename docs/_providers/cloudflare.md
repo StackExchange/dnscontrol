@@ -61,7 +61,7 @@ This method is enabled by setting the "apikey" and "apiuser" values in `creds.js
 }
 {% endhighlight %}
 
-You can not mix `apikey/apiuser` and `apitoken`.  If all three values are set, you will receive an error.
+You can not mix `apikey`/`apiuser` and `apitoken`.  If all three values are set, you will receive an error.
 
 You should also set the "accountid" value.  This is optional but may become required some day therefore we recommend setting it.
 The Account ID is used to disambiguate when API key has access to multiple Cloudflare accounts. For example, when creating domains this key is used to determine which account to place the new domain.  It is also required when using Workers.
@@ -99,11 +99,12 @@ What does on/off/full mean?
    * "on" enables the Cloudflare proxy (turns on the "orange cloud")
    * "full" is the same as "on" but also enables Railgun.  DNSControl will prevent you from accidentally enabling "full" on a CNAME that points to an A record that is set to "off", as this is generally not desired.
 
-You can also set the default proxy mode using `DEFAULTS()` function, see:
+You can also set the default proxy mode using `DEFAULTS()` function. For example:
+
 {% highlight js %}
 
 DEFAULTS(
-	CF_PROXY_DEFAULT_OFF // turn proxy off when not specified otherwise
+  CF_PROXY_DEFAULT_OFF // turn proxy off when not specified otherwise
 );
 
 {% endhighlight %}
