@@ -308,6 +308,10 @@ func TestDualProviders(t *testing.T) {
 		t.Fatal("NO DOMAIN SET!  Exiting!")
 	}
 	dc := getDomainConfigWithNameservers(t, p, domain)
+	if !providers.ProviderHasCapability(*providerToRun, providers.DocDualHost) {
+		t.Skip("Skipping.  DocDualHost == Cannot")
+		return
+	}
 	// clear everything
 	run := func() {
 		dom, _ := dc.Copy()
