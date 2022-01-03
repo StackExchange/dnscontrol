@@ -56,7 +56,7 @@ require (
 	github.com/robertkrimen/otto v0.0.0-20211024170158-b87d35c0b86f
 	github.com/russross/blackfriday/v2 v2.1.0 // indirect
 	github.com/sergi/go-diff v1.1.0 // indirect
-	github.com/softlayer/softlayer-go v1.0.3
+	github.com/softlayer/softlayer-go v1.0.4
 	github.com/stretchr/testify v1.7.0
 	github.com/tdewolff/minify/v2 v2.9.26
 	github.com/transip/gotransip/v6 v6.11.0
