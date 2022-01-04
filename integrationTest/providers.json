@@ -172,7 +172,7 @@
     "domain": "$POWERDNS_DOMAIN"
   },
   "PACKETFRAME": {
-    "apikey": "$PACKETFRAME_APIKEY",
+    "token": "$PACKETFRAME_TOKEN",
     "domain": "$PACKETFRAME_DOMAIN"
   },
   "ROUTE53": {

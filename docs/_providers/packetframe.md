@@ -12,7 +12,7 @@ In your credentials file, you must provide your Packetframe Token which can be e
 {% highlight json %}
 {
   "packetframe": {
-    "apikey": "your-packetframe-token"
+    "token": "your-packetframe-token"
   }
 }
 {% endhighlight %}

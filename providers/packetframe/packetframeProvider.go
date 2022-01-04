@@ -22,13 +22,13 @@ type packetframeProvider struct {
 }
 
 var defaultNameServerNames = []string{
-	"ns1v4.packetframe.com",
-	"ns2v4.packetframe.com",
+	"ns1.packetframe.com",
+	"ns2.packetframe.com",
 }
 
 // newPacketframe creates the provider.
 func newPacketframe(m map[string]string, metadata json.RawMessage) (providers.DNSServiceProvider, error) {
-	if m["apikey"] == "" {
+	if m["token"] == "" {
 		return nil, fmt.Errorf("missing Packetframe token")
 	}
 
@@ -38,7 +38,7 @@ func newPacketframe(m map[string]string, metadata json.RawMessage) (providers.DN
 	}
 	client := http.Client{}
 
-	api := &packetframeProvider{client: &client, baseURL: baseURL, token: m["apikey"]}
+	api := &packetframeProvider{client: &client, baseURL: baseURL, token: m["token"]}
 
 	return api, nil
 }
@@ -74,12 +74,12 @@ func (api *packetframeProvider) GetZoneRecords(domain string) (models.Records, e
 	}
 	zone, ok := api.domainIndex[domain+"."]
 	if !ok {
-		return nil, fmt.Errorf("'%s' not a zone in Packetframe account", domain)
+		return nil, fmt.Errorf("%q not a zone in Packetframe account", domain)
 	}
 
 	records, err := api.getRecords(zone.ID)
 	if err != nil {
-		return nil, fmt.Errorf("could not load records for '%s'", domain)
+		return nil, fmt.Errorf("could not load records for domain %q", domain)
 	}
 
 	existingRecords := make([]*models.RecordConfig, len(records))
@@ -111,12 +111,12 @@ func (api *packetframeProvider) GetDomainCorrections(dc *models.DomainConfig) ([
 	}
 	zone, ok := api.domainIndex[dc.Name+"."]
 	if !ok {
-		return nil, fmt.Errorf("'%s' not a zone in Packetframe account", dc.Name)
+		return nil, fmt.Errorf("no such zone %q in Packetframe account", dc.Name)
 	}
 
 	records, err := api.getRecords(zone.ID)
 	if err != nil {
-		return nil, fmt.Errorf("could not load records for '%s'", dc.Name)
+		return nil, fmt.Errorf("could not load records for domain %q", dc.Name)
 	}
 
 	existingRecords := make([]*models.RecordConfig, len(records))
@@ -154,7 +154,7 @@ func (api *packetframeProvider) GetDomainCorrections(dc *models.DomainConfig) ([
 	for _, m := range delete {
 		original := m.Existing.Original.(*domainRecord)
 		corr := &models.Correction{
-			Msg: fmt.Sprintf("Deleting record %s from %s", original.ID, zone.Zone),
+			Msg: fmt.Sprintf("Deleting record %q from %q", original.ID, zone.Zone),
 			F: func() error {
 				err := api.deleteRecord(zone.ID, original.ID)
 				return err
@@ -168,7 +168,7 @@ func (api *packetframeProvider) GetDomainCorrections(dc *models.DomainConfig) ([
 		req, _ := toReq(zone.ID, dc, m.Desired)
 		req.ID = original.ID
 		corr := &models.Correction{
-			Msg: fmt.Sprintf("Modifying record %s from %s", original.ID, zone.Zone),
+			Msg: fmt.Sprintf("Modifying record %q from %q", original.ID, zone.Zone),
 			F: func() error {
 				err := api.modifyRecord(req)
 				return err
