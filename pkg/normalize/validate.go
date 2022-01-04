@@ -36,7 +36,10 @@ func checkTarget(target string) error {
 	if target == "" {
 		return fmt.Errorf("empty target")
 	}
-	if strings.ContainsAny(target, `'" +,|!£$%&/()=?^*ç°§;:<>[]()@`) {
+	if strings.ContainsAny(target, `'" +,|!£$%&()=?^*ç°§;:<>[]()@`) {
+		return fmt.Errorf("target (%v) includes invalid char", target)
+	}
+	if !strings.HasSuffix(target, ".in-addr.arpa.") && strings.Contains(target, "/") {
 		return fmt.Errorf("target (%v) includes invalid char", target)
 	}
 	// If it contains a ".", it must end in a ".".
