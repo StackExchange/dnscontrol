@@ -128,10 +128,21 @@ Add the provider list so DNSControl knows it exists.
 
 ## Step 5: Implement
 
-Implement all the calls in
-[providers.DNSServiceProvider interface.](https://godoc.org/github.com/StackExchange/dnscontrol/providers#DNSServiceProvider).
+**If you are implementing a DNS Service Provider:**
 
-The function `GetDomainCorrections` is a bit interesting. It returns
+Implement all the calls in the
+[providers.DNSServiceProvider interface.](https://pkg.go.dev/github.com/StackExchange/dnscontrol/providers#DNSServiceProvider).
+
+The function `GetDomainCorrections()` is a bit interesting. It returns
+a list of corrections to be made. These are in the form of functions
+that DNSControl can call to actually make the corrections.
+
+**If you are implementing a DNS Registrar:**
+
+Implement all the calls in the
+[providers.Registrar interface.](https://pkg.go.dev/github.com/StackExchange/dnscontrol/providers#Registrar).
+
+The function `GetRegistrarCorrections()` returns
 a list of corrections to be made. These are in the form of functions
 that DNSControl can call to actually make the corrections.
 
@@ -170,6 +181,22 @@ export R53_KEY_ID='CHANGE_TO_THE_ID'
 export R53_KEY='CHANGE_TO_THE_KEY'
 go test -v -verbose -provider ROUTE53
 ```
+
+Some useful `go test` flags:
+
+* Slow tests? Add `-timeout n` to increase the timeout for tests
+  * `go test` kills the tests after 10 minutes by default.  Some providers need more time.
+  * This flag must be *before* the `-verbose` flag.  Usually it is the first flag after `go test`.
+  * Example:  go test -timeout 20m -v -verbose -provider CLOUDFLAREAPI`
+* Run only certain tests using the `-start` and `-end` flags.
+  * Rather than running all the tests, run just the tests you want.
+  * These flags must be *after* the `-provider FOO` flag.
+  * Example: `go test -v -verbose -provider ROUTE53 -start 10 -end 20` run tests 10-20 inclusive.
+  * Example: `go test -v -verbose -provider ROUTE53 -start 5 -end 5` runs only test 5.
+  * Example: `go test -v -verbose -provider ROUTE53 -start 20` skip the first 19 tests.
+  * Example: `go test -v -verbose -provider ROUTE53 -end 20` only run the first 20 tests.
+* If a test will always fail because the provider doesn't support the feature, you can opt out of the test.  Look at `func makeTests()` in `integrationTest/integration_test.go` for more details.
+
 
 ## Step 8: Update docs
 
