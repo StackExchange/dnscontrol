@@ -187,7 +187,7 @@ Some useful `go test` flags:
 * Slow tests? Add `-timeout n` to increase the timeout for tests
   * `go test` kills the tests after 10 minutes by default.  Some providers need more time.
   * This flag must be *before* the `-verbose` flag.  Usually it is the first flag after `go test`.
-  * Example:  go test -timeout 20m -v -verbose -provider CLOUDFLAREAPI`
+  * Example:  `go test -timeout 20m -v -verbose -provider CLOUDFLAREAPI`
 * Run only certain tests using the `-start` and `-end` flags.
   * Rather than running all the tests, run just the tests you want.
   * These flags must be *after* the `-provider FOO` flag.
@@ -195,7 +195,7 @@ Some useful `go test` flags:
   * Example: `go test -v -verbose -provider ROUTE53 -start 5 -end 5` runs only test 5.
   * Example: `go test -v -verbose -provider ROUTE53 -start 20` skip the first 19 tests.
   * Example: `go test -v -verbose -provider ROUTE53 -end 20` only run the first 20 tests.
-* If a test will always fail because the provider doesn't support the feature, you can opt out of the test.  Look at `func makeTests()` in `integrationTest/integration_test.go` for more details.
+* If a test will always fail because the provider doesn't support the feature, you can opt out of the test.  Look at `func makeTests()` in [integrationTest/integration_test.go](https://github.com/StackExchange/dnscontrol/blob/2f65533e1b92c2967229a92a304fff7c14f7f4b6/integrationTest/integration_test.go#L675) for more details.
 
 
 ## Step 8: Update docs
