@@ -74,6 +74,9 @@ type responseLogin struct {
 func toRecordConfig(domain string, r *record) *models.RecordConfig {
 	priority, _ := strconv.ParseUint(r.Priority, 10, 16)
 
+	fmt.Printf("DEBUG: NETCUP: r=%+v\n", *r)
+	fmt.Printf("DEBUG: NETCUP: TARGET BEFORE=%q\n", r.Destination)
+
 	rc := &models.RecordConfig{
 		Type:         r.Type,
 		TTL:          uint32(0),
@@ -108,6 +111,9 @@ func toRecordConfig(domain string, r *record) *models.RecordConfig {
 	default:
 		_ = rc.SetTarget(r.Destination)
 	}
+
+	fmt.Printf("DEBUG: NETCUP: rc=%+v\n", rc)
+	fmt.Printf("DEBUG: NETCUP: TARGET AFTER =%q\n", rc.GetTargetCombined())
 
 	return rc
 }
