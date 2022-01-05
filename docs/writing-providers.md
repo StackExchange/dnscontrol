@@ -98,8 +98,9 @@ into three general categories:
 has A and MX records), you have to replace all the records at that
 label. (GANDI_V5)
 * **incremental-label-type:** Like incremental-record, but updates to any records at a label have to be done by type.  For example, if a label (www.example.com) has many A and MX records, even the smallest change to one of the A records requires replacing all the A records. Any changes to the MX records requires replacing all the MX records.  If an A record is converted to a CNAME, one must remove all the A records in one call, and add the CNAME record with another call.  This is deceptively difficult to get right; if you have the choice between incremental-label-type and incremental-label, pick incremental-label. (DESEC, ROUTE53)
+* **registrar only:** These providers are registrars but do not provide DNS service. (CSCGLOBAL, EASYNAME, INTERNETBS, OPENSRS)
 
-All providers use the "diff" module to detect differences. It takes
+All DNS providers use the "diff" module to detect differences. It takes
 two zones and returns records that are unchanged, created, deleted,
 and modified.
 The zone providers use the
