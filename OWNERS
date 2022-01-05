@@ -31,4 +31,5 @@ providers/oracle @kallsyms
 providers/vultr @pgaskin
 providers/ovh @masterzen
 providers/powerdns @jpbede
+providers/packetframe @hamptonmoore
 providers/transip @blackshadev
