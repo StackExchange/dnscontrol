@@ -177,6 +177,10 @@
     "serverName": "$POWERDNS_SERVERNAME",
     "domain": "$POWERDNS_DOMAIN"
   },
+  "PACKETFRAME": {
+    "token": "$PACKETFRAME_TOKEN",
+    "domain": "$PACKETFRAME_DOMAIN"
+  },
   "ROUTE53": {
     "KeyId": "$ROUTE53_KEY_ID",
     "SecretKey": "$ROUTE53_KEY",

@@ -44,6 +44,7 @@ Currently supported DNS providers:
  - OVH
  - OctoDNS
  - Oracle Cloud
+ - Packetframe
  - PowerDNS
  - SoftLayer
  - TransIP
