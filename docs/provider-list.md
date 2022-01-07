@@ -45,7 +45,7 @@ Official support means:
 * New features will work on these providers (unless the provider does not support it).
 * StackOverflow maintains test accounts with those providers for running integration tests.
 
-Current owners are:
+Providers in this category and their maintainers are:
 
 * `ACTIVEDIRECTORY_PS` @tlimoncelli
 * `AZURE_DNS` @vatsalyagoel
@@ -64,12 +64,15 @@ Due to the large number of DNS providers in the world, the DNSControl
 team can not support and test all providers.  Test frameworks are
 provided to help community members support their code independently.
 
-* Maintainers are expected to support their provider and/or find a new maintainer.
-* Bugs will be referred to the original contributor or their designate.
-* Maintainers should set up test accounts and regularly verify that all tests pass (`pkg/js/parse_tests` and `integrationTest`).
-* Contributors are encouraged to add new tests and refine old ones. (Test-driven development is encouraged.)
+Expectations of maintainers:
 
-Maintainers of contributed providers:
+* Maintainers are expected to support their provider and/or find a new maintainer.
+* Maintainers should set up test accounts and periodically verify that all tests pass (`pkg/js/parse_tests` and `integrationTest`).
+* Contributors are encouraged to add new tests and refine old ones. (Test-driven development is encouraged.)
+* Bugs will be referred to the maintainer or their designate.
+* Maintainers must be responsible to bug reports and PRs.  If a maintainer is unresponsive for more than 2 months, we will consider disabling the provider.  First we will put out a call for new maintainer. If noboby volunteers, the provider will be disabled.
+
+Providers in this category and their maintainers are:
 
 * `AXFRDDNS` @hnrgrgr
 * `AKAMAIEDGEDNS` @svernick
@@ -90,13 +93,14 @@ Maintainers of contributed providers:
 * `INTERNETBS` @pragmaton
 * `INWX` @svenpeter42
 * `LINODE` @koesie10
-* `NAMECHEAP` @captncraig
+* `NAMECHEAP` VOLUNTEER NEEDED
 * `NETCUP` @kordianbruck
-* `NS1` @captncraig
+* `NS1` VOLUNTEER NEEDED
 * `OCTODNS` @TomOnTime
 * `OPENSRS` @pierre-emmanuelJ
 * `ORACLE` @kallsyms
 * `OVH` @masterzen
+* `PACKETFRAME` @hamptonmoore
 * `POWERDNS` @jpbede
 * `SOFTLAYER`@jamielennox
 * `TRANSIP` @blackshadev
