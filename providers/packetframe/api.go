@@ -14,6 +14,11 @@ const (
 	defaultBaseURL = "https://packetframe.com/api/"
 )
 
+var defaultNameServerNames = []string{
+	"ns1.packetframe.com",
+	"ns2.packetframe.com",
+}
+
 type zone struct {
 	ID         string   `json:"id"`
 	Zone       string   `json:"zone"`
@@ -74,6 +79,16 @@ func (c *packetframeProvider) getRecords(zoneID string) ([]domainRecord, error) 
 		return records, fmt.Errorf("failed fetching domain list (Packetframe): %w", err)
 	}
 	records = append(records, dr.Data.Records...)
+
+	for i := range defaultNameServerNames {
+		records = append(records, domainRecord{
+			Type:  "NS",
+			TTL:   86400,
+			Value: defaultNameServerNames[i] + ".",
+			Zone:  zoneID,
+			ID:    "0",
+		})
+	}
 
 	return records, nil
 }
