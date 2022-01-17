@@ -21,11 +21,6 @@ type packetframeProvider struct {
 	domainIndex map[string]zone
 }
 
-var defaultNameServerNames = []string{
-	"ns1.packetframe.com",
-	"ns2.packetframe.com",
-}
-
 // newPacketframe creates the provider.
 func newPacketframe(m map[string]string, metadata json.RawMessage) (providers.DNSServiceProvider, error) {
 	if m["token"] == "" {
@@ -153,8 +148,12 @@ func (api *packetframeProvider) GetDomainCorrections(dc *models.DomainConfig) ([
 
 	for _, m := range delete {
 		original := m.Existing.Original.(*domainRecord)
+		if original.ID == "0" { // Skip the default nameservers
+			continue
+		}
+
 		corr := &models.Correction{
-			Msg: fmt.Sprintf("Deleting record %q from %q", original.ID, zone.Zone),
+			Msg: m.String(),
 			F: func() error {
 				err := api.deleteRecord(zone.ID, original.ID)
 				return err
@@ -165,10 +164,14 @@ func (api *packetframeProvider) GetDomainCorrections(dc *models.DomainConfig) ([
 
 	for _, m := range modify {
 		original := m.Existing.Original.(*domainRecord)
+		if original.ID == "0" { // Skip the default nameservers
+			continue
+		}
+
 		req, _ := toReq(zone.ID, dc, m.Desired)
 		req.ID = original.ID
 		corr := &models.Correction{
-			Msg: fmt.Sprintf("Modifying record %q from %q", original.ID, zone.Zone),
+			Msg: m.String(),
 			F: func() error {
 				err := api.modifyRecord(req)
 				return err

@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"strconv"
+	"strings"
 
 	"github.com/miekg/dns/dnsutil"
 
@@ -158,6 +159,12 @@ func (c *cloudnsProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*mode
 		req, err := toReq(m.Desired)
 		if err != nil {
 			return nil, err
+		}
+
+		// ClouDNS does not require the trailing period to be specified when updating an NS record where the A or AAAA record exists in the zone.
+		// So, modify it to remove the trailing period.
+		if req["record-type"] == "NS" && strings.HasSuffix(req["record"], domainID+".") {
+			req["record"] = strings.TrimSuffix(req["record"], ".")
 		}
 
 		corr := &models.Correction{
