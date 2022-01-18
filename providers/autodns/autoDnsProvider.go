@@ -272,7 +272,7 @@ func toRecordConfig(domain string, record *ResourceRecord) *models.RecordConfig 
 	if record.Type == "SRV" {
 		rc.SrvPriority = uint16(record.Pref)
 
-		re := regexp.MustCompile("(\\d+) (\\d+) (.+)$")
+		re := regexp.MustCompile(`(\d+) (\d+) (.+)$`)
 		found := re.FindStringSubmatch(record.Value)
 
 		weight, _ := strconv.Atoi(found[1])
