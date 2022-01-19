@@ -21,6 +21,7 @@ var docNotes = providers.DocumentationNotes{
 	providers.CanUsePTR:              providers.Can(),
 	providers.DocCreateDomains:       providers.Can(),
 	providers.DocDualHost:            providers.Can(),
+	providers.CanGetZones:            providers.Can(),
 	providers.DocOfficiallySupported: providers.Cannot(),
 }
 
@@ -68,36 +69,42 @@ func (n *nsone) GetNameservers(domain string) ([]*models.Nameserver, error) {
 
 // GetZoneRecords gets the records of a zone and returns them in RecordConfig format.
 func (n *nsone) GetZoneRecords(domain string) (models.Records, error) {
-	return nil, fmt.Errorf("not implemented")
-	// This enables the get-zones subcommand.
-	// Implement this by extracting the code from GetDomainCorrections into
-	// a single function.  For most providers this should be relatively easy.
-}
-
-func (n *nsone) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Correction, error) {
-	dc.Punycode()
-	//dc.CombineMXs()
-	z, _, err := n.Zones.Get(dc.Name)
+	z, _, err := n.Zones.Get(domain)
 	if err != nil {
 		return nil, err
 	}
 
 	found := models.Records{}
 	for _, r := range z.Records {
-		zrs, err := convert(r, dc.Name)
+		zrs, err := convert(r, domain)
 		if err != nil {
 			return nil, err
 		}
 		found = append(found, zrs...)
 	}
-	foundGrouped := found.GroupedByKey()
+	return found, nil
+}
+
+func (n *nsone) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Correction, error) {
+	dc.Punycode()
+	//dc.CombineMXs()
+
+	domain := dc.Name
+
+	// Get existing records
+	existingRecords, err := n.GetZoneRecords(domain)
+	if err != nil {
+		return nil, err
+	}
+
+	existingGrouped := existingRecords.GroupedByKey()
 	desiredGrouped := dc.Records.GroupedByKey()
 
 	//  Normalize
-	models.PostProcessRecords(found)
+	models.PostProcessRecords(existingRecords)
 
 	differ := diff.New(dc)
-	changedGroups, err := differ.ChangedGroups(found)
+	changedGroups, err := differ.ChangedGroups(existingRecords)
 	if err != nil {
 		return nil, err
 	}
@@ -107,7 +114,7 @@ func (n *nsone) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Correct
 		key := k
 
 		desc := strings.Join(descs, "\n")
-		_, current := foundGrouped[k]
+		_, current := existingGrouped[k]
 		recs, wanted := desiredGrouped[k]
 		if wanted && !current {
 			// pure addition
