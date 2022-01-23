@@ -68,10 +68,10 @@ dockers:
     goos: linux
     goarch: amd64
     image_templates:
-    - "docker.io/stackexchange/{{.ProjectName}}:latest"
+    #- "docker.io/stackexchange/{{.ProjectName}}:latest"
     - "docker.io/stackexchange/{{.ProjectName}}:{{ .Version }}"
-    - "docker.cloudsmith.io/stackoverflow/{{.ProjectName}}:latest"
-    - "docker.cloudsmith.io/stackoverflow/{{.ProjectName}}:{{ .Version }}"
+    - "docker.cloudsmith.io/stackoverflow/dnscontrol/{{.ProjectName}}:latest"
+    - "docker.cloudsmith.io/stackoverflow/dnscontrol/{{.ProjectName}}:{{ .Version }}"
     ids:
     - build
     build_flag_templates:
