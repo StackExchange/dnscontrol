@@ -159,11 +159,13 @@ jobs:
       - cloudsmith/publish:
           cloudsmith-repository: stackoverflow/dnscontrol
           package-format: rpm
+          package-distribution: any-distro/any-version
           package-path: dist/dnscontrol_*.rpm
 
       - cloudsmith/publish:
           cloudsmith-repository: stackoverflow/dnscontrol
           package-format: deb
+          package-distribution: any-distro/any-version
           package-path: dist/dnscontrol_*.deb
 
 
