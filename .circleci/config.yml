@@ -134,14 +134,38 @@ jobs:
           registry: docker.cloudsmith.io
           use-docker-credentials-store: true
 
-      - cloudsmith/install-cli
-      - cloudsmith/ensure-api-key
-
       - run:
           name: Install goreleaser
           command: go install github.com/goreleaser/goreleaser@latest
 
       - run: goreleaser release --release-header .circleci/header.md
+
+      - persist_to_workspace:
+          root: .
+          paths:
+            - dist
+
+  publish-packages:
+    docker:
+      - image: cloudsmith/default
+
+    steps:
+
+      - attach_workspace:
+          at: .
+
+      - cloudsmith/ensure-api-key
+      - cloudsmith/install-cli
+
+      - cloudsmith/publish:
+          cloudsmith-repository: stackoverflow/dnscontrol
+          package-format: rpm
+          package-path: dist/dnscontrol_*.rpm
+
+      - cloudsmith/publish:
+          cloudsmith-repository: stackoverflow/dnscontrol
+          package-format: deb
+          package-path: dist/dnscontrol_*.deb
 
 
 workflows:
@@ -175,8 +199,18 @@ workflows:
 
       - release:
           requires: [build]
-          context: StackExchange
+          context:
+            - StackExchange
           # Only run this job on git tag pushes
+          filters:
+            branches:
+              only: [main, master, "fix/release"]
+            tags:
+              only: /v[0-9]+(\.[0-9]+)*(-.*)*/
+      - publish-packages:
+          requires: [release]
+          context:
+            - StackExchange
           filters:
             branches:
               only: [main, master, "fix/release"]
