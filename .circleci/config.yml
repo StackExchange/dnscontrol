@@ -204,7 +204,7 @@ workflows:
             - equal: [ master, << pipeline.git.branch >> ]
             - equal: [ "fix/release", << pipeline.git.branch >> ]
         - matches:
-            pattern: /v[0-9]+(\.[0-9]+)*(-.*)*/
+            pattern: v[0-9]+(\.[0-9]+)*(-.*)*
             value: << pipeline.git.tag >>
     jobs:
       - release:
