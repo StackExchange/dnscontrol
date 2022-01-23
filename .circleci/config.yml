@@ -2,6 +2,8 @@ version: 2.1
 
 orbs:
   gh: circleci/github-cli@1.1.0
+  docker: circleci/docker@2.0.1
+  cloudsmith: cloudsmith/cloudsmith@1.0.4
 
 parameters:
   cache-key:
@@ -121,6 +123,19 @@ jobs:
 
       - setup_remote_docker:
           version: 20.10.11
+
+      - docker/check:
+          registry: docker.io
+          use-docker-credentials-store: true
+
+      - docker/check:
+          docker-password: CLOUDSMITH_API_KEY
+          docker-username: CLOUDSMITH_USERNAME
+          registry: docker.cloudsmith.io
+          use-docker-credentials-store: true
+
+      - cloudsmith/install-cli
+      - cloudsmith/ensure-api-key
 
       - run:
           name: Install goreleaser
