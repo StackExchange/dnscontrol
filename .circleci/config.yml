@@ -167,14 +167,14 @@ workflows:
                 - ROUTE53
                 # All others: (alphabetical)
                 - CLOUDNS
-                - DIGITALOCEAN
+                #- DIGITALOCEAN   BROKEN as of 2021-12-20
                 - GANDI_V5
                 - HEDNS
                 - INWX
                 - POWERDNS
 
       - release:
-          requires: [integration-tests]
+          requires: [build]
           # Only run this job on git tag pushes
           filters:
             branches:
