@@ -146,8 +146,7 @@ jobs:
             - dist
 
   publish-packages:
-    docker:
-      - image: cloudsmith/default
+    executor: cloudsmith/default
 
     steps:
 
