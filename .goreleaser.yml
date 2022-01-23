@@ -62,24 +62,27 @@ nfpms:
     - deb
     - rpm
     bindir: /usr/bin
-#dockers:
-#  -
-#    id: docker-build
-#    goos: linux
-#    goarch: amd64
-#    image_templates:
-#    - "stackexchange/{{.ProjectName}}:latest"
-#    - "stackexchange/{{.ProjectName}}:{{ .Version }}"
-#    ids:
-#    - build
-#    build_flag_templates:
-#    - "--pull"
-#    - "--label=org.opencontainers.image.created={{.Date}}"
-#    - "--label=org.opencontainers.image.name={{.ProjectName}}"
-#    - "--label=org.opencontainers.image.revision={{.FullCommit}}"
-#    - "--label=org.opencontainers.image.version={{.Version}}"
-#    - "--label=org.opencontainers.image.source={{.GitURL}}"
-#    - "--platform=linux/amd64"
+dockers:
+  -
+    id: docker-build
+    goos: linux
+    goarch: amd64
+    image_templates:
+    - "docker.io/stackexchange/{{.ProjectName}}:latest"
+    - "docker.io/stackexchange/{{.ProjectName}}:{{ .Version }}"
+    - "docker.cloudsmith.io/stackoverflow/{{.ProjectName}}:latest"
+    - "docker.cloudsmith.io/stackoverflow/{{.ProjectName}}:{{ .Version }}"
+    ids:
+    - build
+    build_flag_templates:
+    - "--pull"
+    - "--label=org.opencontainers.image.created={{.Date}}"
+    - "--label=org.opencontainers.image.name={{.ProjectName}}"
+    - "--label=org.opencontainers.image.revision={{.FullCommit}}"
+    - "--label=org.opencontainers.image.version={{.Version}}"
+    - "--label=org.opencontainers.image.source={{.GitURL}}"
+    - "--platform=linux/amd64"
+    use: buildx
 checksum:
   name_template: 'checksums.txt'
 snapshot:
@@ -94,3 +97,19 @@ release:
   prerelease: auto
   mode: replace
   name_template: "Release v{{.Version}}"
+publishers:
+  - name: cloudsmith-deb
+    cmd: cloudsmith push deb stackoverflow/dnscontrol/distro/release {{ .ProjectName }}_{{ .Arch }}{{ if .Arm }}v{{ .Arm }}{{ end }}.deb
+    dir: "{{ dir .ArtifactPath }}"
+    env:
+      - CLOUDSMITH_API_KEY={{ .Env.CLOUDSMITH_API_KEY }}
+  - name: cloudsmith-rpm
+    cmd: cloudsmith push rpm stackoverflow/dnscontrol/distro/release {{ .ProjectName }}_{{ .Arch }}{{ if .Arm }}v{{ .Arm }}{{ end }}.rpm
+    dir: "{{ dir .ArtifactPath }}"
+    env:
+      - CLOUDSMITH_API_KEY={{ .Env.CLOUDSMITH_API_KEY }}
+  - name: cloudsmith-zip
+    cmd: cloudsmith push raw stackoverflow/dnscontrol {{ .ProjectName }}-{{ .Version }}_Windows_x86_64.zip --version {{ .Version }}
+    dir: "{{ dir .ArtifactPath }}"
+    env:
+      - CLOUDSMITH_API_KEY={{ .Env.CLOUDSMITH_API_KEY }}
