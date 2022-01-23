@@ -198,19 +198,22 @@ workflows:
                 - POWERDNS
 
   release-publish:
-    when:
-      and:
-        - or:
-            - equal: [ master, << pipeline.git.branch >> ]
-            - equal: [ "fix/release", << pipeline.git.branch >> ]
-        - matches:
-            pattern: v[0-9]+(\.[0-9]+)*(-.*)*
-            value: << pipeline.git.tag >>
     jobs:
       - release:
           context:
             - StackExchange
+          # Only run this job on git tag pushes
+          filters:
+            branches:
+              only: [main, master, "fix/release"]
+            tags:
+              only: /v[0-9]+(\.[0-9]+)*(-.*)*/
       - publish-packages:
           requires: [release]
           context:
             - StackExchange
+          filters:
+            branches:
+              only: [main, master, "fix/release"]
+            tags:
+              only: /v[0-9]+(\.[0-9]+)*(-.*)*/
