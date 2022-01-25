@@ -709,7 +709,6 @@ func makeTests(t *testing.T) []*TestGroup {
 		//
 		// Basic functionality (add/rename/change/delete).
 		//
-
 		testgroup("GeneralACD",
 			// Test general ability to add/change/delete records of one
 			// type. These tests aren't specific to "A" records, but we
@@ -1087,8 +1086,8 @@ func makeTests(t *testing.T) []*TestGroup {
 		),
 		testgroup("Issue 1374",
 			requires(providers.CanUseCAA), not("DIGITALOCEAN"),
-			// Test support of ";" as a value
-			tc("CAA many records", caa("@", "issue", 0, "letsencrypt.org; validationmethods=dns-01; accounturi=https://acme-v02.api.letsencrypt.org/acme/acct/1234")),
+			// Test support of spaces in the 3rd field.
+			tc("CAA spaces", caa("@", "issue", 0, "letsencrypt.org; validationmethods=dns-01; accounturi=https://acme-v02.api.letsencrypt.org/acme/acct/1234")),
 		),
 
 		testgroup("NAPTR",
