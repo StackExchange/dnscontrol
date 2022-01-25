@@ -62,7 +62,7 @@ func (c *easynameProvider) GetRegistrarCorrections(dc *models.DomainConfig) ([]*
 			{
 				Msg: fmt.Sprintf("Update nameservers %s -> %s", foundNameservers, expectedNameservers),
 				F: func() error {
-					return c.updateNameservers(expected, domain.ID)
+					return c.updateNameservers(expected, domain.Id)
 				},
 			},
 		}, nil

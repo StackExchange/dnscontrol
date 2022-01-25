@@ -64,7 +64,9 @@ func (c *cscglobalProvider) getNameservers(domain string) ([]string, error) {
 	var dr domainRecord
 	json.Unmarshal(bodyString, &dr)
 	ns := []string{}
-	ns = append(ns, dr.Nameserver...)
+	for _, nameserver := range dr.Nameserver {
+		ns = append(ns, nameserver)
+	}
 	sort.Strings(ns)
 	return ns, nil
 }

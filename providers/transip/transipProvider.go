@@ -42,7 +42,6 @@ var features = providers.DocumentationNotes{
 	providers.DocOfficiallySupported: providers.Cannot(),
 }
 
-// NewTransip creates a new TransIP provider.
 func NewTransip(m map[string]string, metadata json.RawMessage) (providers.DNSServiceProvider, error) {
 
 	if m["AccessToken"] == "" && m["PrivateKey"] == "" {

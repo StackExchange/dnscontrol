@@ -13,6 +13,13 @@ import (
 	opensrs "github.com/philhug/opensrs-go/opensrs"
 )
 
+var docNotes = providers.DocumentationNotes{
+	providers.DocCreateDomains:       providers.Cannot(),
+	providers.DocOfficiallySupported: providers.Cannot(),
+	providers.CanUseTLSA:             providers.Cannot(),
+	providers.CanGetZones:            providers.Unimplemented(),
+}
+
 func init() {
 	providers.RegisterRegistrarType("OPENSRS", newReg)
 }
