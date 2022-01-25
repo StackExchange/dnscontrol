@@ -1,6 +1,9 @@
 package models
 
-import "strings"
+import (
+	"encoding/csv"
+	"strings"
+)
 
 // IsQuoted returns true if the string starts and ends with a double quote.
 func IsQuoted(s string) bool {
@@ -34,4 +37,15 @@ func ParseQuotedTxt(s string) []string {
 		return []string{s}
 	}
 	return strings.Split(StripQuotes(s), `" "`)
+}
+
+// ParseQuotedFields is like strings.Fields except individual fields
+// might be quoted using `"`.
+func ParseQuotedFields(s string) ([]string, error) {
+	// Fields are space-separated but a field might be quoted.  This is,
+	// essentially, a CSV where spaces are the field separator (not
+	// commas). Therefore, we use the CSV parser. See https://stackoverflow.com/a/47489846/71978
+	r := csv.NewReader(strings.NewReader(s))
+	r.Comma = ' ' // space
+	return r.Read()
 }
