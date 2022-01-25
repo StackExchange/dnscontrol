@@ -497,14 +497,14 @@ func processSplitHorizonDomains(config *models.DNSConfig) error {
 	return nil
 }
 
-// parseDomainSpec parses "domain.tld!tag" into its component parts.
-func parseDomainSpec(s string) (domain, tag string) {
-	l := strings.SplitN(s, "!", 2)
-	if len(l) == 2 {
-		return l[0], l[1]
-	}
-	return l[0], ""
-}
+//// parseDomainSpec parses "domain.tld!tag" into its component parts.
+//func parseDomainSpec(s string) (domain, tag string) {
+//	l := strings.SplitN(s, "!", 2)
+//	if len(l) == 2 {
+//		return l[0], l[1]
+//	}
+//	return l[0], ""
+//}
 
 func checkAutoDNSSEC(dc *models.DomainConfig) (errs []error) {
 	if dc.AutoDNSSEC != "" && dc.AutoDNSSEC != "on" && dc.AutoDNSSEC != "off" {
