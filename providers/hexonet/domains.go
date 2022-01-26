@@ -21,10 +21,7 @@ func (n *HXClient) EnsureDomainExists(domain string) error {
 		}
 	} else if code == 531 {
 		return n.GetHXApiError("Not authorized to manage dnszone", domain, r)
-		// FIXME(tlim) go-staticcheck reports:
-		// identical expressions on the left and right side of the '||' operator (SA4000)
-		// Perhaps the right side should be n.IsError() or deleted?
-	} else if r.IsError() || r.IsError() {
+	} else if r.IsError() || r.IsTmpError() {
 		return n.GetHXApiError("Error while checking status of dnszone", domain, r)
 	}
 	return nil
