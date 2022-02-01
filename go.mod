@@ -11,10 +11,10 @@ require (
 	github.com/TomOnTime/utfutil v0.0.0-20210710122150-437f72b26edf
 	github.com/akamai/AkamaiOPEN-edgegrid-golang v1.1.1
 	github.com/andreyvit/diff v0.0.0-20170406064948-c7f18ee00883
-	github.com/aws/aws-sdk-go-v2 v1.11.2
+	github.com/aws/aws-sdk-go-v2 v1.13.0
 	github.com/aws/aws-sdk-go-v2/config v1.11.1
 	github.com/aws/aws-sdk-go-v2/credentials v1.6.5
-	github.com/aws/aws-sdk-go-v2/service/route53 v1.15.0
+	github.com/aws/aws-sdk-go-v2/service/route53 v1.17.0
 	github.com/aws/aws-sdk-go-v2/service/route53domains v1.8.0
 	github.com/babolivier/go-doh-client v0.0.0-20201028162107-a76cff4cb8b6
 	github.com/bhendo/go-powershell v0.0.0-20190719160123-219e7fb4e41e
