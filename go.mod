@@ -59,7 +59,7 @@ require (
 	github.com/softlayer/softlayer-go v1.0.4
 	github.com/stretchr/testify v1.7.0
 	github.com/tdewolff/minify/v2 v2.10.0
-	github.com/transip/gotransip/v6 v6.11.0
+	github.com/transip/gotransip/v6 v6.14.0
 	github.com/urfave/cli/v2 v2.3.0
 	github.com/vultr/govultr v1.1.1
 	github.com/xddxdd/ottoext v0.0.0-20210101073831-439879ee6281
