@@ -93,9 +93,6 @@ title: DNSControl
 				<li>
 					<a href="{{site.github.url}}/migrating">Migrating</a>: Migrating zones to DNSControl
 				</li>
-				<li>
-				    <a href="{{site.github.url}}/cli-variables">CLI variables</a>: Passing variables from CLI to JS
-				</li>
 			</ul>
 		</div>
 		<div class="col-md-4">
@@ -143,6 +140,12 @@ title: DNSControl
 				</li>
 				<li>
 					<a href="{{site.github.url}}/code-tricks">Code Tricks</a>: Safely use macros and loops.
+				</li>
+				<li>
+				    <a href="{{site.github.url}}/cli-variables">CLI variables</a>: Passing variables from CLI to JS
+				</li>
+				<li>
+				    <a href="{{site.github.url}}/nameservers">Nameservers &amp; Delegation</a>: Many examples.
 				</li>
 
 			</ul>

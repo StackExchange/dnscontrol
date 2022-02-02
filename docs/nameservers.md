@@ -39,12 +39,16 @@ var DNS_BIND = NewDnsProvider("bind", "BIND");
 
 // ========== Domains:
 
-// "Keep it simple": Use the same provider as a registrar and DNS service.
+// ========== Same provider for REG and DNS.
+
+// Keep it simple: Use the same provider as a registrar and DNS service.
 // Why? Simplicity.
 D("example1.com", REG_NAMECOM,
   DnsProvider(DNS_NAMECOM),
   A("@", "10.2.3.4")
 );
+
+// ========== Different provider for REG and DNS.
 
 // "Separate DNS server": Use one provider as registrar, a different for DNS service.
 // Why? Use any registrar but a preferred DNS provider.
@@ -54,7 +58,9 @@ D("example1.com", REG_NAMECOM,
   A("@", "10.2.3.4")
 );
 
-// Let someone else manage the NS records for a dommain.
+// ========== Registrar is elsewhere.
+
+// "DNS only": Let someone else manage the NS records for a dommain.
 // Why? Because you don't have access to the registrar, or the registrar is not
 // supported by DNSControl. However you do have API access for
 // updating the zone's records (most likely at a different provider).
@@ -62,6 +68,8 @@ D("example1.com", REG_THIRDPARTY,
   DnsProvider(DNS_NAMECOM),
   A("@", "10.2.3.4")
 );
+
+// ========== Zone is elsewhere.
 
 // "Registrar only": Direct the registrar to point to some other DNS provider.
 // Why? In this example we're pointing the domain to the nsone.net DNS
@@ -72,6 +80,8 @@ D("example1.com", REG_NAMECOM,
   NAMESERVER("dns3.p03.nsone.net."),
   NAMESERVER("dns4.p03.nsone.net."),
 );
+
+// ========== Override nameservers.
 
 // "Custom nameservers": Ignore the provider's default nameservers and substitute our own.
 // Why? Rarely used unless the DNS provider's API does not support
@@ -84,6 +94,8 @@ D("example1.com", REG_NAMECOM,
   A("@", "10.2.3.4")
 );
 
+// ========== Add nameservers.
+
 // "Add additional nameservers." Use the default nameservers from the registrar but add additional ones.
 // Why? Usually only to correct a bug or misconfiguration elsewhere.
 D("example1.com", REG_NAMECOM,
@@ -91,6 +103,8 @@ D("example1.com", REG_NAMECOM,
   NAMESERVER("ns1.myexample.tld"),
   A("@", "10.2.3.4")
 );
+
+// ========== Shadow nameservers.
 
 // "Shadow DNS servers."  Secretly send your DNS records to another server.
 // Why? Many possibilities:
@@ -104,6 +118,8 @@ D("example1.com", REG_NAMECOM,
   A("@", "10.2.3.4")
 );
 
+// ========== Backup your zone.
+
 // "Zonefile backups." Make backups of the exact DNS records in zone-file format.
 // Why? In addition to the usual configuration, write out a BIND-style
 // zonefile perhaps for debugging, historical, or auditing purposes.
@@ -113,6 +129,8 @@ D("example1.com", REG_NAMECOM,
   DnsProvider(DNS_BIND, 0), // Don't activate any nameservers related to BIND.
   A("@", "10.2.3.4")
 );
+
+// ========== Dual DNS Providers.
 
 // "Dual DNS Providers": Use two different DNS services:
 // Why? Diversity. If one DNS provider goes down, the other will be used.
