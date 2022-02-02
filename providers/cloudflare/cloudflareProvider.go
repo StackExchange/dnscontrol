@@ -601,32 +601,32 @@ func (c cfTarget) FQDN() string {
 	return strings.TrimRight(string(c), ".") + "."
 }
 
-func (cfp *cloudflareProvider) nativeToRecord(domain string, c cloudflare.DNSRecord) (*models.RecordConfig, error) {
+func (c *cloudflareProvider) nativeToRecord(domain string, cr cloudflare.DNSRecord) (*models.RecordConfig, error) {
 	// normalize cname,mx,ns records with dots to be consistent with our config format.
-	if c.Type == "CNAME" || c.Type == "MX" || c.Type == "NS" {
-		if c.Content != "." {
-			c.Content = c.Content + "."
+	if cr.Type == "CNAME" || cr.Type == "MX" || cr.Type == "NS" {
+		if cr.Content != "." {
+			cr.Content = cr.Content + "."
 		}
 	}
 
 	rc := &models.RecordConfig{
-		TTL:      uint32(c.TTL),
-		Original: c,
+		TTL:      uint32(cr.TTL),
+		Original: cr,
 	}
-	rc.SetLabelFromFQDN(c.Name, domain)
+	rc.SetLabelFromFQDN(cr.Name, domain)
 
 	// workaround for https://github.com/StackExchange/dnscontrol/issues/446
-	if c.Type == "SPF" {
-		c.Type = "TXT"
+	if cr.Type == "SPF" {
+		cr.Type = "TXT"
 	}
 
-	switch rType := c.Type; rType { // #rtype_variations
+	switch rType := cr.Type; rType { // #rtype_variations
 	case "MX":
-		if err := rc.SetTargetMX(*c.Priority, c.Content); err != nil {
+		if err := rc.SetTargetMX(*cr.Priority, cr.Content); err != nil {
 			return nil, fmt.Errorf("unparsable MX record received from cloudflare: %w", err)
 		}
 	case "SRV":
-		data := c.Data.(map[string]interface{})
+		data := cr.Data.(map[string]interface{})
 		target := data["target"].(string)
 		if target != "." {
 			target += "."
@@ -636,7 +636,7 @@ func (cfp *cloudflareProvider) nativeToRecord(domain string, c cloudflare.DNSRec
 			return nil, fmt.Errorf("unparsable SRV record received from cloudflare: %w", err)
 		}
 	default: // "A", "AAAA", "ANAME", "CAA", "CNAME", "NS", "PTR", "TXT"
-		if err := rc.PopulateFromString(rType, c.Content, domain); err != nil {
+		if err := rc.PopulateFromString(rType, cr.Content, domain); err != nil {
 			return nil, fmt.Errorf("unparsable record received from cloudflare: %w", err)
 		}
 	}
@@ -670,7 +670,7 @@ func (c *cloudflareProvider) EnsureDomainExists(domain string) error {
 	return err
 }
 
-// PrepareCloudflareWorkers creates Cloudflare Workers required for CF_WORKER_ROUTE tests.
+// PrepareCloudflareTestWorkers creates Cloudflare Workers required for CF_WORKER_ROUTE tests.
 func PrepareCloudflareTestWorkers(prv providers.DNSServiceProvider) error {
 	cf, ok := prv.(*cloudflareProvider)
 	if ok {

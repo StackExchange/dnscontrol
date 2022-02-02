@@ -211,7 +211,7 @@ go list -mod=mod -u -m -json all | go-mod-outdated -update -direct
 
 # If any are out of date, update via:
 
-go get -u module/path
+go get module/path
 
 # Once the updates are complete, tidy up:
 

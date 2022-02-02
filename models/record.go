@@ -452,6 +452,7 @@ func (recs Records) FQDNMap() (m map[string]bool) {
 	return m
 }
 
+// GetByType returns the records that match rtype typeName.
 func (recs Records) GetByType(typeName string) Records {
 	results := Records{}
 	for _, rec := range recs {

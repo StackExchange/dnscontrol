@@ -181,6 +181,7 @@ func getCertInfo(pemBytes []byte) (names []string, remaining float64, err error)
 	if err != nil {
 		return nil, 0, err
 	}
+	// FIXME(tlim): should use time.Until instead of t.Sub(time.Now()) (S1024)
 	var daysLeft = float64(cert.NotAfter.Sub(time.Now())) / float64(time.Hour*24)
 	return cert.DNSNames, daysLeft, nil
 }

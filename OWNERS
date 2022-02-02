@@ -1,10 +1,11 @@
-# providers/activedir
+# providers/activedir  DEPRECATED
 providers/akamaiedgedns @svernick
 providers/axfrddns @hnrgrgr
 providers/azuredns @vatsalyagoel
 providers/bind @tlimoncelli
-# providers/cloudflare
+# providers/cloudflare NEEDS VOLUNTEER
 providers/cloudns @pragmaton
+providers/cscglobal @mikenz
 providers/desec @D3luxee
 providers/doh @mikenz
 providers/digitalocean @Deraen
@@ -22,12 +23,13 @@ providers/inwx @svenpeter42
 providers/msdns @tlimoncelli
 providers/linode @koesie10
 providers/namecheap @captncraig
-# providers/namedotcom
+# providers/namedotcom NEEDS VOLUNTEER
 providers/netcup @kordianbruck
 providers/ns1 @captncraig
+providers/opensrs @philhug
 providers/oracle @kallsyms
-# providers/route53
-# providers/softlayer
+# providers/route53 NEEDS VOLUNTEER
+# providers/softlayer NEEDS VOLUNTEER
 providers/vultr @pgaskin
 providers/ovh @masterzen
 providers/powerdns @jpbede

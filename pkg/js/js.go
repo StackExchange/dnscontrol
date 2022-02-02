@@ -1,7 +1,7 @@
 package js
 
 import (
-	_ "embed"
+	_ "embed" // Used to embed helpers.js in the binary.
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
