@@ -1,12 +1,9 @@
 ---
 layout: default
-title: Nameservers
+title: Nameservers and Delegations
 ---
 
-# Nameservers
-
-{% highlight javascript %}
-{% endhighlight %}
+# Nameservers and Delegations
 
 DNSControl can handle a variety of provider scenarios. The registrar and DNS
 provider can be the same company, different company, they can even be unknown!
@@ -15,7 +12,7 @@ The document shows examples of many common and uncommon configurations.
 * TOC
 {:toc}
 
-## Constants
+# Constants
 
 All the examples use the variables.  Substitute your own.
 
@@ -38,6 +35,8 @@ var DNS_GOOGLE = NewDnsProvider("gcp_main", "GCLOUD");
 var DNS_CLOUDFLARE = NewDnsProvider("cloudflare_main", "CLOUDFLAREAPI");
 var DNS_BIND = NewDnsProvider("bind", "BIND");
 {% endhighlight %}
+
+# Typical Delegations
 
 ## Same provider for REG and DNS
 
@@ -165,28 +164,6 @@ D("example1.com", REG_NAMECOM,
 );
 {% endhighlight %}
 
-## Backup your zone
-
-Purpose:
-Make backups of DNS records in a zone.  This generates a zonefile listing all
-the records in the zone.
-
-Why?
-You want to write out a BIND-style zonefile for debugging, historical, or
-auditing purposes. Some sites do backups of these zonefiles to create a history
-of changes. This is different than keeping a history of `dnsconfig.js` because
-this is the output of DNSControl, not the input.
-
-NOTE: This won't work if you use pseudo rtypes that BIND doesn't support.
-
-{% highlight javascript %}
-D("example1.com", REG_NAMECOM,
-  DnsProvider(DNS_NAMECOM),
-  DnsProvider(DNS_BIND, 0), // Don't activate any nameservers related to BIND.
-  A("@", "10.2.3.4")
-);
-{% endhighlight %}
-
 ## Dual DNS Providers
 
 Purpose:
@@ -209,6 +186,51 @@ D("example1.com", REG_NAMECOM,
   DnsProvider(DNS_AWS, 2),  // Take 2 nameservers from AWS
   DnsProvider(DNS_GOOGLE, 2),  // Take 2 nameservers from GCP
   A("@", "10.2.3.4")
+);
+{% endhighlight %}
+
+# Other uses
+
+## Make zonefile backups
+
+Purpose:
+Make backups of DNS records in a zone.  This generates a zonefile listing all
+the records in the zone.
+
+Why?
+You want to write out a BIND-style zonefile for debugging, historical, or
+auditing purposes. Some sites do backups of these zonefiles to create a history
+of changes. This is different than keeping a history of `dnsconfig.js` because
+this is the output of DNSControl, not the input.
+
+NOTE: This won't work if you use pseudo rtypes that BIND doesn't support.
+
+{% highlight javascript %}
+D("example1.com", REG_NAMECOM,
+  DnsProvider(DNS_NAMECOM),
+  DnsProvider(DNS_BIND, 0), // Don't activate any nameservers related to BIND.
+  A("@", "10.2.3.4")
+);
+{% endhighlight %}
+
+## Monitor delegation
+
+Purpose:
+You don't control the registrar but want to detect if the delegation changes.
+You can specify the existing nameservers in `dnsconfig.js` and you will get
+a notified if the delegation diverges.
+
+Why?
+Sometimes you just want to know if something changes!
+
+See the <a href="{{site.github.url}}/providers/doh">DNS-over-HTTPS Provider</a> documentation for more info.
+
+{% highlight javascript %}
+var REG_MONITOR = NewRegistrar('DNS-over-HTTPS', 'DNSOVERHTTPS');
+
+D("example1.com", REG_MONITOR,
+  NAMESERVER("ns1.example1.com."),
+  NAMESERVER("ns2.example1.com."),
 );
 {% endhighlight %}
 
@@ -240,6 +262,6 @@ DOMAIN_ELSEWHERE_AUTO("example1.com", REG_NAMECOM, DNS_AWS);
 DOMAIN_ELSEWHERE_AUTO("example2.com", REG_NAMECOM, DNS_GOOGLE);
 {% endhighlight %}
 
-# Warning!
+# Limits
 
 {% include alert.html text="Note: Not all providers allow full control over the NS records of your zone. It is not recommended to use these providers in complicated scenarios such as hosting across multiple providers. See individual provider docs for more info." %}
