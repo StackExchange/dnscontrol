@@ -170,7 +170,10 @@ docker run --rm -it -v $(pwd)/dnsconfig.js:/dns/dnsconfig.js -v $(pwd)/creds.jso
 The documentation can be viewed via Docker:
 
 ```
+cd docs
 docker run --rm -it --volume="$PWD:/srv/jekyll" --volume="$PWD/vendor/bundle:/usr/local/bundle" --env JEKYLL_ENV=production jekyll/jekyll:3.8 jekyll build -V
+# Open docs/_site/index.html in your web browser to see the results.
+# (Note: The preview isn't perfect. Links that use the site.github.url variable won't work.
 ```
 
 
