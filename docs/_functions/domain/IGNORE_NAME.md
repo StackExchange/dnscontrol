@@ -1,5 +1,5 @@
 ---
-name: `IGNORE_NAME`
+name: IGNORE_NAME
 parameters:
   - pattern
 ---
