@@ -177,7 +177,15 @@ docker run --rm -it --volume="$PWD:/srv/jekyll" --volume="$PWD/vendor/bundle:/us
 ```
 
 
-## More info at our web site
+# Depreciation warnings (updated 2022-02-05)
+
+* Provider ACTIVEDIRECTORY_PS is deprecated and will be removed soon. Use MSDNS instead.
+* Provider NS1 has no maintainer and is jeapardy of being removed or deactivated if no volunteer steps up soon.
+* Call for new volunteers maintainers for CLOUDFLARE_API, GCLOUD, NAMEDOTCOM, ROUTE53, and SOFTLAYER.
+* Should we retain Let's Encrypt support?  The "get-certs" command (renews certs via Let's Encrypt) has no maintainer. There are other projects that do a better job. We are considering removing this feature in the future.  See discussion in https://github.com/StackExchange/dnscontrol/issues/1400
+
+
+# More info at our web site
 
 The website: [https://stackexchange.github.io/dnscontrol/](https://stackexchange.github.io/dnscontrol/)
 
