@@ -197,22 +197,22 @@ func convert(zr *dns.ZoneRecord, domain string) ([]*models.RecordConfig, error) 
 		case "ALIAS":
 			rec.Type = rtype
 			if err := rec.SetTarget(ans); err != nil {
-				panic(fmt.Errorf("unparsable %s record received from ns1: %w", rtype, err))
+				return found, fmt.Errorf("unparsable %s record received from ns1: %w", rtype, err)
 			}
 		case "URLFWD":
 			rec.Type = rtype
 			if err := rec.SetTarget(ans); err != nil {
-				panic(fmt.Errorf("unparsable %s record received from ns1: %w", rtype, err))
+				return found, fmt.Errorf("unparsable %s record received from ns1: %w", rtype, err)
 			}
 		case "CAA":
 			//dnscontrol expects quotes around multivalue CAA entries, API doesn't add them
 			x_ans := strings.SplitN(ans, " ", 3)
 			if err := rec.SetTargetCAAStrings(x_ans[0], x_ans[1], x_ans[2]); err != nil {
-				panic(fmt.Errorf("unparsable %s record received from ns1: %w", err))
+				return found, fmt.Errorf("unparsable %s record received from ns1: %w", rtype, err)
 			}
 		default:
 			if err := rec.PopulateFromString(rtype, ans, domain); err != nil {
-				panic(fmt.Errorf("unparsable record received from ns1: %w", err))
+				return found, fmt.Errorf("unparsable record received from ns1: %w", err)
 			}
 		}
 		found = append(found, rec)
