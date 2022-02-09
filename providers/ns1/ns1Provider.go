@@ -205,10 +205,9 @@ func convert(zr *dns.ZoneRecord, domain string) ([]*models.RecordConfig, error) 
 				panic(fmt.Errorf("unparsable %s record received from ns1: %w", rtype, err))
 			}
 		case "CAA":
-			//dnscontrol expects quotes around multivalue CAA entries, API doesn't add them, so let's force them
+			//dnscontrol expects quotes around multivalue CAA entries, API doesn't add them
 			x_ans := strings.SplitN(ans, " ", 3)
-			answer := fmt.Sprintf(`%s %s "%s"`, x_ans[0],x_ans[1],x_ans[2])
-			if err := rec.PopulateFromString(rtype, answer, domain); err != nil {
+			if err := rec.SetTargetCAAStrings(x_ans[0], x_ans[1], x_ans[2]); err != nil {
 				panic(fmt.Errorf("unparsable %s record received from ns1: %w", err))
 			}
 		default:
