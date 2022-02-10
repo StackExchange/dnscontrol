@@ -170,7 +170,12 @@ func buildRecord(recs models.Records, domain string, id string) *dns.Record {
 		} else if r.Type == "TXT" {
 			rec.AddAnswer(&dns.Answer{Rdata: r.TxtStrings})
 		} else if r.Type == "CAA" {
-			rec.AddAnswer(&dns.Answer{Rdata: strings.Split(fmt.Sprintf("%v %s %s", r.CaaFlag, r.CaaTag, r.GetTargetField()), " ")})
+			rec.AddAnswer(&dns.Answer{
+				Rdata: []string{
+					fmt.Sprintf("%v", r.CaaFlag),
+					r.CaaTag,
+					fmt.Sprintf("%s", r.GetTargetField()),
+			}})
 		} else if r.Type == "SRV" {
 			rec.AddAnswer(&dns.Answer{Rdata: strings.Split(fmt.Sprintf("%d %d %d %v", r.SrvPriority, r.SrvWeight, r.SrvPort, r.GetTargetField()), " ")})
 		} else {
@@ -192,16 +197,22 @@ func convert(zr *dns.ZoneRecord, domain string) ([]*models.RecordConfig, error) 
 		case "ALIAS":
 			rec.Type = rtype
 			if err := rec.SetTarget(ans); err != nil {
-				panic(fmt.Errorf("unparsable %s record received from ns1: %w", rtype, err))
+				return nil, fmt.Errorf("unparsable %s record received from ns1: %w", rtype, err)
 			}
 		case "URLFWD":
 			rec.Type = rtype
 			if err := rec.SetTarget(ans); err != nil {
-				panic(fmt.Errorf("unparsable %s record received from ns1: %w", rtype, err))
+				return nil, fmt.Errorf("unparsable %s record received from ns1: %w", rtype, err)
+			}
+		case "CAA":
+			//dnscontrol expects quotes around multivalue CAA entries, API doesn't add them
+			x_ans := strings.SplitN(ans, " ", 3)
+			if err := rec.SetTargetCAAStrings(x_ans[0], x_ans[1], x_ans[2]); err != nil {
+				return nil, fmt.Errorf("unparsable %s record received from ns1: %w", rtype, err)
 			}
 		default:
 			if err := rec.PopulateFromString(rtype, ans, domain); err != nil {
-				panic(fmt.Errorf("unparsable record received from ns1: %w", err))
+				return nil, fmt.Errorf("unparsable record received from ns1: %w", err)
 			}
 		}
 		found = append(found, rec)
