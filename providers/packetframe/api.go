@@ -57,25 +57,25 @@ type domainRecord struct {
 	Zone  string `json:"zone"`
 }
 
-func (api *packetframeProvider) fetchDomainList() error {
-	api.domainIndex = map[string]zone{}
+func (c *packetframeProvider) fetchDomainList() error {
+	c.domainIndex = map[string]zone{}
 	dr := &domainResponse{}
 	endpoint := "dns/zones"
-	if err := api.get(endpoint, dr); err != nil {
+	if err := c.get(endpoint, dr); err != nil {
 		return fmt.Errorf("failed fetching domain list (Packetframe): %w", err)
 	}
 	for _, zone := range dr.Data.Zones {
-		api.domainIndex[zone.Zone] = zone
+		c.domainIndex[zone.Zone] = zone
 	}
 
 	return nil
 }
 
-func (api *packetframeProvider) getRecords(zoneID string) ([]domainRecord, error) {
+func (c *packetframeProvider) getRecords(zoneID string) ([]domainRecord, error) {
 	var records []domainRecord
 	dr := &recordResponse{}
 	endpoint := "dns/records/" + zoneID
-	if err := api.get(endpoint, dr); err != nil {
+	if err := c.get(endpoint, dr); err != nil {
 		return records, fmt.Errorf("failed fetching domain list (Packetframe): %w", err)
 	}
 	records = append(records, dr.Data.Records...)
@@ -93,15 +93,15 @@ func (api *packetframeProvider) getRecords(zoneID string) ([]domainRecord, error
 	return records, nil
 }
 
-func (api *packetframeProvider) createRecord(rec *domainRecord) (*domainRecord, error) {
+func (c *packetframeProvider) createRecord(rec *domainRecord) (*domainRecord, error) {
 	endpoint := "dns/records"
 
-	req, err := api.newRequest(http.MethodPost, endpoint, rec)
+	req, err := c.newRequest(http.MethodPost, endpoint, rec)
 	if err != nil {
 		return nil, err
 	}
 
-	_, err = api.client.Do(req)
+	_, err = c.client.Do(req)
 	if err != nil {
 		return nil, err
 	}
@@ -109,15 +109,15 @@ func (api *packetframeProvider) createRecord(rec *domainRecord) (*domainRecord, 
 	return rec, nil
 }
 
-func (api *packetframeProvider) modifyRecord(rec *domainRecord) error {
+func (c *packetframeProvider) modifyRecord(rec *domainRecord) error {
 	endpoint := "dns/records"
 
-	req, err := api.newRequest(http.MethodPut, endpoint, rec)
+	req, err := c.newRequest(http.MethodPut, endpoint, rec)
 	if err != nil {
 		return err
 	}
 
-	_, err = api.client.Do(req)
+	_, err = c.client.Do(req)
 	if err != nil {
 		return err
 	}
@@ -125,31 +125,31 @@ func (api *packetframeProvider) modifyRecord(rec *domainRecord) error {
 	return nil
 }
 
-func (api *packetframeProvider) deleteRecord(zoneID string, recordID string) error {
+func (c *packetframeProvider) deleteRecord(zoneID string, recordID string) error {
 	endpoint := "dns/records"
-	req, err := api.newRequest(http.MethodDelete, endpoint, deleteRequest{Zone: zoneID, Record: recordID})
+	req, err := c.newRequest(http.MethodDelete, endpoint, deleteRequest{Zone: zoneID, Record: recordID})
 	if err != nil {
 		return err
 	}
 
-	resp, err := api.client.Do(req)
+	resp, err := c.client.Do(req)
 	if err != nil {
 		return err
 	}
 	if resp.StatusCode != http.StatusOK {
-		return api.handleErrors(resp)
+		return c.handleErrors(resp)
 	}
 
 	return nil
 }
 
-func (api *packetframeProvider) newRequest(method, endpoint string, body interface{}) (*http.Request, error) {
+func (c *packetframeProvider) newRequest(method, endpoint string, body interface{}) (*http.Request, error) {
 	rel, err := url.Parse(endpoint)
 	if err != nil {
 		return nil, err
 	}
 
-	u := api.baseURL.ResolveReference(rel)
+	u := c.baseURL.ResolveReference(rel)
 
 	buf := new(bytes.Buffer)
 	if body != nil {
@@ -166,21 +166,21 @@ func (api *packetframeProvider) newRequest(method, endpoint string, body interfa
 
 	req.Header.Add("Content-Type", mediaType)
 	req.Header.Add("Accept", mediaType)
-	req.Header.Add("Authorization", "Token "+api.token)
+	req.Header.Add("Authorization", "Token "+c.token)
 	return req, nil
 }
 
-func (api *packetframeProvider) get(endpoint string, target interface{}) error {
-	req, err := api.newRequest(http.MethodGet, endpoint, nil)
+func (c *packetframeProvider) get(endpoint string, target interface{}) error {
+	req, err := c.newRequest(http.MethodGet, endpoint, nil)
 	if err != nil {
 		return err
 	}
-	resp, err := api.client.Do(req)
+	resp, err := c.client.Do(req)
 	if err != nil {
 		return err
 	}
 	if resp.StatusCode != http.StatusOK {
-		return api.handleErrors(resp)
+		return c.handleErrors(resp)
 	}
 	defer resp.Body.Close()
 
@@ -188,7 +188,7 @@ func (api *packetframeProvider) get(endpoint string, target interface{}) error {
 	return decoder.Decode(target)
 }
 
-func (api *packetframeProvider) handleErrors(resp *http.Response) error {
+func (c *packetframeProvider) handleErrors(resp *http.Response) error {
 	body, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
 		return err

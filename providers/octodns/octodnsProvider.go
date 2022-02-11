@@ -52,13 +52,13 @@ func initProvider(config map[string]string, providermeta json.RawMessage) (provi
 	if api.directory == "" {
 		api.directory = "config"
 	}
-	// Commented out because at this time api has no exported fields.
-	//	if len(providermeta) != 0 {
-	//		err := json.Unmarshal(providermeta, api)
-	//		if err != nil {
-	//			return nil, err
-	//		}
-	//	}
+	if len(providermeta) != 0 {
+		err := json.Unmarshal(providermeta, api)
+		if err != nil {
+			return nil, err
+		}
+	}
+	//api.nameservers = models.StringsToNameservers(api.DefaultNS)
 	return api, nil
 }
 

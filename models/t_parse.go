@@ -12,43 +12,43 @@ import (
 //
 // If this doesn't work for all rtypes, process the special cases then
 // call this for the remainder.
-func (rc *RecordConfig) PopulateFromString(rtype, contents, origin string) error {
-	if rc.Type != "" && rc.Type != rtype {
-		panic(fmt.Errorf("assertion failed: rtype already set (%s) (%s)", rtype, rc.Type))
+func (r *RecordConfig) PopulateFromString(rtype, contents, origin string) error {
+	if r.Type != "" && r.Type != rtype {
+		panic(fmt.Errorf("assertion failed: rtype already set (%s) (%s)", rtype, r.Type))
 	}
-	switch rc.Type = rtype; rtype { // #rtype_variations
+	switch r.Type = rtype; rtype { // #rtype_variations
 	case "A":
 		ip := net.ParseIP(contents)
 		if ip == nil || ip.To4() == nil {
 			return fmt.Errorf("invalid IP in A record: %s", contents)
 		}
-		return rc.SetTargetIP(ip) // Reformat to canonical form.
+		return r.SetTargetIP(ip) // Reformat to canonical form.
 	case "AAAA":
 		ip := net.ParseIP(contents)
 		if ip == nil || ip.To16() == nil {
 			return fmt.Errorf("invalid IP in AAAA record: %s", contents)
 		}
-		return rc.SetTargetIP(ip) // Reformat to canonical form.
+		return r.SetTargetIP(ip) // Reformat to canonical form.
 	case "AKAMAICDN", "ALIAS", "ANAME", "CNAME", "NS", "PTR":
-		return rc.SetTarget(contents)
+		return r.SetTarget(contents)
 	case "CAA":
-		return rc.SetTargetCAAString(contents)
+		return r.SetTargetCAAString(contents)
 	case "DS":
-		return rc.SetTargetDSString(contents)
+		return r.SetTargetDSString(contents)
 	case "MX":
-		return rc.SetTargetMXString(contents)
+		return r.SetTargetMXString(contents)
 	case "NAPTR":
-		return rc.SetTargetNAPTRString(contents)
+		return r.SetTargetNAPTRString(contents)
 	case "SRV":
-		return rc.SetTargetSRVString(contents)
+		return r.SetTargetSRVString(contents)
 	case "SOA":
-		return rc.SetTargetSOAString(contents)
+		return r.SetTargetSOAString(contents)
 	case "SSHFP":
-		return rc.SetTargetSSHFPString(contents)
+		return r.SetTargetSSHFPString(contents)
 	case "TLSA":
-		return rc.SetTargetTLSAString(contents)
+		return r.SetTargetTLSAString(contents)
 	case "SPF", "TXT":
-		return rc.SetTargetTXTString(contents)
+		return r.SetTargetTXTString(contents)
 	default:
 		return fmt.Errorf("unknown rtype (%s) when parsing (%s) domain=(%s)",
 			rtype, contents, origin)
