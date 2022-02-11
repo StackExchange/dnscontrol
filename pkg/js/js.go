@@ -149,7 +149,7 @@ func require(call otto.FunctionCall) otto.Value {
 		throw(call.Otto, err.Error())
 	}
 
-	var value otto.Value = otto.TrueValue()
+	var value = otto.TrueValue()
 
 	// If its a json file return the json value, else default to true
 	if strings.HasSuffix(filepath.Ext(relFile), "json") {
@@ -194,7 +194,7 @@ func listFiles(call otto.FunctionCall) otto.Value {
 	}
 
 	// Second: Recursive?
-	var recursive bool = true
+	var recursive = true
 	if call.Argument(1).IsDefined() && !call.Argument(1).IsNull() {
 		if call.Argument(1).IsBoolean() {
 			recursive, _ = call.Argument(1).ToBoolean() // If it should be recursive
@@ -204,7 +204,7 @@ func listFiles(call otto.FunctionCall) otto.Value {
 	}
 
 	// Third: File extension filter.
-	var fileExtension string = ".js"
+	var fileExtension = ".js"
 	if call.Argument(2).IsDefined() && !call.Argument(2).IsNull() {
 		if call.Argument(2).IsString() {
 			fileExtension = call.Argument(2).String() // Which file extension to filter for.

@@ -293,7 +293,7 @@ func toReq(dc *models.DomainConfig, rc *models.RecordConfig) (*recordEditRequest
 			return nil, fmt.Errorf("SRV Record must match format \"_service._protocol\" not %s", req.Name)
 		}
 
-		var serviceName, protocol string = result[1], strings.ToLower(result[2])
+		var serviceName, protocol = result[1], strings.ToLower(result[2])
 
 		req.Protocol = protocol
 		req.Service = serviceName

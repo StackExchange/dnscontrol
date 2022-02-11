@@ -4,8 +4,8 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
-	"strings"
 	"strconv"
+	"strings"
 
 	"gopkg.in/ns1/ns1-go.v2/rest"
 	"gopkg.in/ns1/ns1-go.v2/rest/model/dns"
@@ -177,7 +177,7 @@ func buildRecord(recs models.Records, domain string, id string) *dns.Record {
 					fmt.Sprintf("%v", r.CaaFlag),
 					r.CaaTag,
 					r.GetTargetField(),
-			}})
+				}})
 		} else if r.Type == "SRV" {
 			rec.AddAnswer(&dns.Answer{Rdata: strings.Split(fmt.Sprintf("%d %d %d %v", r.SrvPriority, r.SrvWeight, r.SrvPort, r.GetTargetField()), " ")})
 		} else if r.Type == "NAPTR" {
