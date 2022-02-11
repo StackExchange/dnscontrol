@@ -181,7 +181,11 @@ func getCertInfo(pemBytes []byte) (names []string, remaining float64, err error)
 	if err != nil {
 		return nil, 0, err
 	}
-	// FIXME(tlim): should use time.Until instead of t.Sub(time.Now()) (S1024)
+	//lint:ignore S1024 Fixing this without unit tests scares me.
+	// TODO(tlim): I think the fix is the line below but since this code
+	// may be decommed eventually, and since there are no unit tests,
+	// I'm not excited about making this change.
+	// var daysLeft = float64(time.Until(cert.NotAfter)) / float64(time.Hour*24)
 	var daysLeft = float64(cert.NotAfter.Sub(time.Now())) / float64(time.Hour*24)
 	return cert.DNSNames, daysLeft, nil
 }
