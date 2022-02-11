@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"net/http"
 	"strings"
+	"strconv"
 
 	"gopkg.in/ns1/ns1-go.v2/rest"
 	"gopkg.in/ns1/ns1-go.v2/rest/model/dns"
@@ -19,6 +20,7 @@ var docNotes = providers.DocumentationNotes{
 	providers.CanUseAlias:            providers.Can(),
 	providers.CanUseCAA:              providers.Can(),
 	providers.CanUsePTR:              providers.Can(),
+	providers.CanUseNAPTR:            providers.Can(),
 	providers.DocCreateDomains:       providers.Can(),
 	providers.DocDualHost:            providers.Can(),
 	providers.CanGetZones:            providers.Can(),
@@ -174,10 +176,18 @@ func buildRecord(recs models.Records, domain string, id string) *dns.Record {
 				Rdata: []string{
 					fmt.Sprintf("%v", r.CaaFlag),
 					r.CaaTag,
-					fmt.Sprintf("%s", r.GetTargetField()),
+					r.GetTargetField(),
 			}})
 		} else if r.Type == "SRV" {
 			rec.AddAnswer(&dns.Answer{Rdata: strings.Split(fmt.Sprintf("%d %d %d %v", r.SrvPriority, r.SrvWeight, r.SrvPort, r.GetTargetField()), " ")})
+		} else if r.Type == "NAPTR" {
+			rec.AddAnswer(&dns.Answer{Rdata: []string{
+				strconv.Itoa(int(r.NaptrOrder)),
+				strconv.Itoa(int(r.NaptrPreference)),
+				r.NaptrFlags,
+				r.NaptrService,
+				r.NaptrRegexp,
+				r.GetTargetField()}})
 		} else {
 			rec.AddAnswer(&dns.Answer{Rdata: strings.Split(r.GetTargetField(), " ")})
 		}
@@ -206,8 +216,8 @@ func convert(zr *dns.ZoneRecord, domain string) ([]*models.RecordConfig, error) 
 			}
 		case "CAA":
 			//dnscontrol expects quotes around multivalue CAA entries, API doesn't add them
-			x_ans := strings.SplitN(ans, " ", 3)
-			if err := rec.SetTargetCAAStrings(x_ans[0], x_ans[1], x_ans[2]); err != nil {
+			xAns := strings.SplitN(ans, " ", 3)
+			if err := rec.SetTargetCAAStrings(xAns[0], xAns[1], xAns[2]); err != nil {
 				return nil, fmt.Errorf("unparsable %s record received from ns1: %w", rtype, err)
 			}
 		default:
