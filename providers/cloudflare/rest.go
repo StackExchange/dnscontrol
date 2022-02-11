@@ -352,9 +352,7 @@ func (c *cloudflareProvider) createTestWorker(workerName string) error {
 	return err
 }
 
-//lint:ignore U1000 false positive due to
-// https://github.com/dominikh/go-tools/issues/1137 which is a dup of
-// https://github.com/dominikh/go-tools/issues/810
+// go-staticcheck lies!
 type pageRuleConstraint struct {
 	Operator string `json:"operator"`
 	Value    string `json:"value"`

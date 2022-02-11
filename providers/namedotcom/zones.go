@@ -5,18 +5,18 @@ import (
 )
 
 // ListZones returns all the zones in an account
-func (n *namedotcomProvider) ListZones() ([]string, error) {
+func (c *namedotcomProvider) ListZones() ([]string, error) {
 	var names []string
 	var page int32
 
 	for {
-		response, err := n.client.ListDomains(&namecom.ListDomainsRequest{Page: page})
+		n, err := c.client.ListDomains(&namecom.ListDomainsRequest{Page: page})
 		if err != nil {
 			return nil, err
 		}
-		page = response.NextPage
+		page = n.NextPage
 
-		for _, j := range response.Domains {
+		for _, j := range n.Domains {
 			names = append(names, j.DomainName)
 		}
 

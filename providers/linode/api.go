@@ -15,17 +15,17 @@ const (
 	domainsPath    = "domains"
 )
 
-func (api *linodeProvider) fetchDomainList() error {
-	api.domainIndex = map[string]int{}
+func (c *linodeProvider) fetchDomainList() error {
+	c.domainIndex = map[string]int{}
 	page := 1
 	for {
 		dr := &domainResponse{}
 		endpoint := fmt.Sprintf("%s?page=%d", domainsPath, page)
-		if err := api.get(endpoint, dr); err != nil {
+		if err := c.get(endpoint, dr); err != nil {
 			return fmt.Errorf("failed fetching domain list (Linode): %s", err)
 		}
 		for _, domain := range dr.Data {
-			api.domainIndex[domain.Domain] = domain.ID
+			c.domainIndex[domain.Domain] = domain.ID
 		}
 		if len(dr.Data) == 0 || dr.Page >= dr.Pages {
 			break
@@ -35,13 +35,13 @@ func (api *linodeProvider) fetchDomainList() error {
 	return nil
 }
 
-func (api *linodeProvider) getRecords(id int) ([]domainRecord, error) {
+func (c *linodeProvider) getRecords(id int) ([]domainRecord, error) {
 	records := []domainRecord{}
 	page := 1
 	for {
 		dr := &recordResponse{}
 		endpoint := fmt.Sprintf("%s/%d/records?page=%d", domainsPath, id, page)
-		if err := api.get(endpoint, dr); err != nil {
+		if err := c.get(endpoint, dr); err != nil {
 			return nil, fmt.Errorf("failed fetching record list (Linode): %s", err)
 		}
 
@@ -56,21 +56,21 @@ func (api *linodeProvider) getRecords(id int) ([]domainRecord, error) {
 	return records, nil
 }
 
-func (api *linodeProvider) createRecord(domainID int, rec *recordEditRequest) (*domainRecord, error) {
+func (c *linodeProvider) createRecord(domainID int, rec *recordEditRequest) (*domainRecord, error) {
 	endpoint := fmt.Sprintf("%s/%d/records", domainsPath, domainID)
 
-	req, err := api.newRequest(http.MethodPost, endpoint, rec)
+	req, err := c.newRequest(http.MethodPost, endpoint, rec)
 	if err != nil {
 		return nil, err
 	}
 
-	resp, err := api.client.Do(req)
+	resp, err := c.client.Do(req)
 	if err != nil {
 		return nil, err
 	}
 
 	if resp.StatusCode != http.StatusOK {
-		return nil, api.handleErrors(resp)
+		return nil, c.handleErrors(resp)
 	}
 
 	record := &domainRecord{}
@@ -84,52 +84,52 @@ func (api *linodeProvider) createRecord(domainID int, rec *recordEditRequest) (*
 	return record, nil
 }
 
-func (api *linodeProvider) modifyRecord(domainID, recordID int, rec *recordEditRequest) error {
+func (c *linodeProvider) modifyRecord(domainID, recordID int, rec *recordEditRequest) error {
 	endpoint := fmt.Sprintf("%s/%d/records/%d", domainsPath, domainID, recordID)
 
-	req, err := api.newRequest(http.MethodPut, endpoint, rec)
+	req, err := c.newRequest(http.MethodPut, endpoint, rec)
 	if err != nil {
 		return err
 	}
 
-	resp, err := api.client.Do(req)
+	resp, err := c.client.Do(req)
 	if err != nil {
 		return err
 	}
 
 	if resp.StatusCode != http.StatusOK {
-		return api.handleErrors(resp)
+		return c.handleErrors(resp)
 	}
 
 	return nil
 }
 
-func (api *linodeProvider) deleteRecord(domainID, recordID int) error {
+func (c *linodeProvider) deleteRecord(domainID, recordID int) error {
 	endpoint := fmt.Sprintf("%s/%d/records/%d", domainsPath, domainID, recordID)
-	req, err := api.newRequest(http.MethodDelete, endpoint, nil)
+	req, err := c.newRequest(http.MethodDelete, endpoint, nil)
 	if err != nil {
 		return err
 	}
 
-	resp, err := api.client.Do(req)
+	resp, err := c.client.Do(req)
 	if err != nil {
 		return err
 	}
 
 	if resp.StatusCode != http.StatusOK {
-		return api.handleErrors(resp)
+		return c.handleErrors(resp)
 	}
 
 	return nil
 }
 
-func (api *linodeProvider) newRequest(method, endpoint string, body interface{}) (*http.Request, error) {
+func (c *linodeProvider) newRequest(method, endpoint string, body interface{}) (*http.Request, error) {
 	rel, err := url.Parse(endpoint)
 	if err != nil {
 		return nil, err
 	}
 
-	u := api.baseURL.ResolveReference(rel)
+	u := c.baseURL.ResolveReference(rel)
 
 	buf := new(bytes.Buffer)
 	if body != nil {
@@ -149,24 +149,24 @@ func (api *linodeProvider) newRequest(method, endpoint string, body interface{})
 	return req, nil
 }
 
-func (api *linodeProvider) get(endpoint string, target interface{}) error {
-	req, err := api.newRequest(http.MethodGet, endpoint, nil)
+func (c *linodeProvider) get(endpoint string, target interface{}) error {
+	req, err := c.newRequest(http.MethodGet, endpoint, nil)
 	if err != nil {
 		return err
 	}
-	resp, err := api.client.Do(req)
+	resp, err := c.client.Do(req)
 	if err != nil {
 		return err
 	}
 	if resp.StatusCode != http.StatusOK {
-		return api.handleErrors(resp)
+		return c.handleErrors(resp)
 	}
 	defer resp.Body.Close()
 	decoder := json.NewDecoder(resp.Body)
 	return decoder.Decode(target)
 }
 
-func (api *linodeProvider) handleErrors(resp *http.Response) error {
+func (c *linodeProvider) handleErrors(resp *http.Response) error {
 	defer resp.Body.Close()
 	decoder := json.NewDecoder(resp.Body)
 
