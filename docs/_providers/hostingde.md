@@ -7,6 +7,7 @@ jsId: hostingde
 # hosting.de Provider
 
 ## Configuration
+
 In your credentials file, you must provide your [`authToken` and optionally an `ownerAccountId`](https://www.hosting.de/api/#requests-and-authentication).
 
 **If you want to use this provider with http.net or a demo system you need to provide a custom `baseURL`.**
@@ -28,6 +29,7 @@ In your credentials file, you must provide your [`authToken` and optionally an `
 {% endhighlight %}
 
 ## Usage
+
 Example JavaScript:
 
 {% highlight js %}
