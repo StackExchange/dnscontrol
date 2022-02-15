@@ -69,9 +69,9 @@ func initBind(config map[string]string, providermeta json.RawMessage) (providers
 		}
 	}
 	var nss []string
-	for _, ns := range api.DefaultNS {
+	for i, ns := range api.DefaultNS {
 		if ns == "" {
-			return nil, fmt.Errorf("default_ns (%v) can't be an empty string", ns)
+			return nil, fmt.Errorf("empty string in default_ns[%d]", i)
 		}
 		// If it contains a ".", it must end in a ".".
 		if strings.ContainsRune(ns, '.') && ns[len(ns)-1] != '.' {
