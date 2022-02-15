@@ -9,6 +9,7 @@ import (
 	"time"
 
 	"google.golang.org/api/googleapi"
+	"google.golang.org/api/option"
 
 	gauth "golang.org/x/oauth2/google"
 
@@ -77,7 +78,9 @@ func New(cfg map[string]string, metadata json.RawMessage) (providers.DNSServiceP
 	}
 	ctx := context.Background()
 	hc := config.Client(ctx)
-	dcli, err := gdns.New(hc)
+	// FIXME(tlim): Is it a problem that ctx is included with hc and in
+	// the call to NewService?  Seems redundant.
+	dcli, err := gdns.NewService(ctx, option.WithHTTPClient(hc))
 	if err != nil {
 		return nil, err
 	}

@@ -150,7 +150,7 @@ func (s *softlayerProvider) getExistingRecords(domain *datatypes.Dns_Domain) ([]
 
 		switch recType {
 		case "SRV":
-			var service, protocol string = "", "_tcp"
+			var service, protocol = "", "_tcp"
 
 			if record.Weight != nil {
 				recConfig.SrvWeight = uint16(*record.Weight)
@@ -190,9 +190,9 @@ func (s *softlayerProvider) getExistingRecords(domain *datatypes.Dns_Domain) ([]
 }
 
 func (s *softlayerProvider) createRecordFunc(desired *models.RecordConfig, domain *datatypes.Dns_Domain) func() error {
-	var ttl, preference, domainID int = verifyMinTTL(int(desired.TTL)), int(desired.MxPreference), *domain.Id
-	var weight, priority, port int = int(desired.SrvWeight), int(desired.SrvPriority), int(desired.SrvPort)
-	var host, data, newType string = desired.GetLabel(), desired.GetTargetField(), desired.Type
+	var ttl, preference, domainID = verifyMinTTL(int(desired.TTL)), int(desired.MxPreference), *domain.Id
+	var weight, priority, port = int(desired.SrvWeight), int(desired.SrvPriority), int(desired.SrvPort)
+	var host, data, newType = desired.GetLabel(), desired.GetTargetField(), desired.Type
 	var err error
 
 	srvRegexp := regexp.MustCompile(`^_(?P<Service>\w+)\.\_(?P<Protocol>\w+)$`)
@@ -226,7 +226,7 @@ func (s *softlayerProvider) createRecordFunc(desired *models.RecordConfig, domai
 				return fmt.Errorf("SRV Record must match format \"_service._protocol\" not %s", host)
 			}
 
-			var serviceName, protocol string = result[1], strings.ToLower(result[2])
+			var serviceName, protocol = result[1], strings.ToLower(result[2])
 
 			newSrv := datatypes.Dns_Domain_ResourceRecord_SrvType{
 				Dns_Domain_ResourceRecord: newRecord,
@@ -260,8 +260,8 @@ func (s *softlayerProvider) deleteRecordFunc(resID int) func() error {
 }
 
 func (s *softlayerProvider) updateRecordFunc(existing *datatypes.Dns_Domain_ResourceRecord, desired *models.RecordConfig) func() error {
-	var ttl, preference int = verifyMinTTL(int(desired.TTL)), int(desired.MxPreference)
-	var priority, weight, port int = int(desired.SrvPriority), int(desired.SrvWeight), int(desired.SrvPort)
+	var ttl, preference = verifyMinTTL(int(desired.TTL)), int(desired.MxPreference)
+	var priority, weight, port = int(desired.SrvPriority), int(desired.SrvWeight), int(desired.SrvPort)
 
 	return func() error {
 		var changes = false

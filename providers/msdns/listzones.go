@@ -1,7 +1,7 @@
 package msdns
 
-func (c *msdnsProvider) ListZones() ([]string, error) {
-	zones, err := c.shell.GetDNSServerZoneAll(c.dnsserver)
+func (client *msdnsProvider) ListZones() ([]string, error) {
+	zones, err := client.shell.GetDNSServerZoneAll(client.dnsserver)
 	if err != nil {
 		return nil, err
 	}
