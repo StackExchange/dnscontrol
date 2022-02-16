@@ -26,9 +26,11 @@ only after sufficient time has elapsed to prove this is what you really want.
 This example redirects the bare (aka apex, or naked) domain to www:
 
 {% include startExample.html %}
-{% highlight js %}
+
+```js
 D("foo.com", .... ,
   CF_REDIRECT("mydomain.com/*", "https://www.mydomain.com/$1"),
 );
-{%endhighlight%}
+```
+
 {% include endExample.html %}

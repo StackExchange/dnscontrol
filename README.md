@@ -163,13 +163,13 @@ Alternatively, on Mac you can install it using homebrew:
 
 ## Via [docker](https://hub.docker.com/r/stackexchange/dnscontrol/)
 
-```
+```bash
 docker run --rm -it -v $(pwd)/dnsconfig.js:/dns/dnsconfig.js -v $(pwd)/creds.json:/dns/creds.json stackexchange/dnscontrol dnscontrol preview
 ```
 
 The documentation can be viewed via Docker:
 
-```
+```bash
 cd docs
 docker run --rm -it --volume="$PWD:/srv/jekyll" --volume="$PWD/vendor/bundle:/usr/local/bundle" --env JEKYLL_ENV=production jekyll/jekyll:3.8 jekyll build -V
 # Open docs/_site/index.html in your web browser to see the results.

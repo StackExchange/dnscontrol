@@ -79,7 +79,7 @@ In this branch, edit `.github/workflows/build.yml`:
    to the matrix of providers.  Technically you are adding to the list
    at `jobs.integration-tests.strategy.matrix.provider`.
 
-```
+```yaml
       matrix:
         provider:
 ...
@@ -102,7 +102,7 @@ Please replicate the formatting of the existing entries:
 * The `*_DOMAIN` variable is first.
 * The remaining variables are sorted lexicographically (what nerds call alphabetical order).
 
-```
+```yaml
       FANCYDNS_DOMAIN: ${{ secrets.FANCYDNS_DOMAIN }}
       FANCYDNS_KEY: ${{ secrets.FANCYDNS_KEY }}
       FANCYDNS_USER: ${{ secrets.FANCYDNS_USER }}
@@ -117,7 +117,7 @@ Let's look at three examples:
 The `BIND` integration tests do not require any secrets because it
 simply generates files locally.
 
-```
+```yaml
       BIND_DOMAIN: example.com
 ```
 
@@ -139,7 +139,7 @@ Note that `AZURE_DNS_RESOURCE_GROUP` is hardcoded to `DNSControl`. If
 this is not true for you, please feel free to submit a PR that turns
 it into a secret.
 
-```
+```yaml
       AZURE_DNS_DOMAIN: ${{ secrets.AZURE_DNS_DOMAIN }}
       AZURE_DNS_CLIENT_ID: ${{ secrets.AZURE_DNS_CLIENT_ID }}
       AZURE_DNS_CLIENT_SECRET: ${{ secrets.AZURE_DNS_CLIENT_SECRET }}
@@ -159,7 +159,7 @@ secrets, we hard-code them into the `build.yml` file. Since
 `HEXONET_DOMAIN` does not come from secret storage, everyone can run
 these tests. (We are grateful to HEXONET for this public service!)
 
-```
+```yaml
       HEXONET_DOMAIN: a-b-c-movies.com
       HEXONET_ENTITY: OTE
       HEXONET_PW: test.passw0rd

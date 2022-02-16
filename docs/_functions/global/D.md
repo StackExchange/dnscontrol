@@ -18,7 +18,8 @@ Modifier arguments are processed according to type as follows:
    be used like a macro in multiple domains.
 
 {% include startExample.html %}
-{% highlight js %}
+
+```js
 var REGISTRAR = NewRegistrar("name.com", "NAMEDOTCOM");
 var r53 = NewDnsProvider("R53","ROUTE53");
 
@@ -42,7 +43,8 @@ D("example.com", REGISTRAR, DnsProvider(r53),
   CNAME("test", "foo.example2.com."),
   GOOGLE_APPS_DOMAIN_MX
 );
-{%endhighlight%}
+```
+
 {% include endExample.html %}
 
 
@@ -57,7 +59,8 @@ To differentiate the different domains, specify the domains as
 `example.com!outside`.
 
 {% include startExample.html %}
-{% highlight js %}
+
+```js
 var REG = NewRegistrar("Third-Party", "NONE");
 var DNS_INSIDE = NewDnsProvider("Cloudflare", "CLOUDFLAREAPI");
 var DNS_OUTSIDE = NewDnsProvider("bind", "BIND");
@@ -73,7 +76,8 @@ D("example.com!outside", REG, DnsProvider(DNS_OUTSIDE),
 D_EXTEND("example.com!inside",
   A("internal", "10.99.99.99")
 );
-{%endhighlight%}
+```
+
 {% include endExample.html %}
 
 A domain name without a `!` is assigned a tag that is the empty

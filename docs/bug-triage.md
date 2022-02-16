@@ -41,7 +41,7 @@ automatically from all the issues tagged `provider-request`:
 
 Message to requester:
 
-```
+```text
 Thank you for requesting this provider!
 
 I've tagged this issue as a provider-request.  It will (soon) be listed as a "requested provider" on the provider list web page:

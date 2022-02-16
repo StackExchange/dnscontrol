@@ -14,7 +14,7 @@ A few notes:
 1. A provider must "opt-in" to supporting ALIAS records. When registering a provider, you specify which capabilities you support. Here is an example of how the
   cloudflare provider declares its support for aliases:
 
-```
+```go
 func init() {
 	providers.RegisterDomainServiceProviderType("CLOUDFLAREAPI", newCloudflare, providers.CanUseAlias)
 }

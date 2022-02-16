@@ -28,14 +28,14 @@ same backend `"GANDI_V5"` provider.
 (NB: in practice, this doesn't appear to be necessary and `sharing_id` is not
 enforced?)
 
-{% highlight json %}
+```json
 {
   "gandi": {
     "apikey": "your-gandi-key",
     "sharing_id": "your-sharing_id"
   }
 }
-{% endhighlight %}
+```
 
 ## Metadata
 This provider does not recognize any special metadata fields unique to Gandi.
@@ -50,14 +50,14 @@ names.
 ## Usage
 Example Javascript:
 
-{% highlight js %}
+```js
 var GANDI = NewDnsProvider("gandi", "GANDI_V5");
 var REG_GANDI = NewRegistrar("gandi", "GANDI_V5");
 
 D("example.tld", REG_GANDI, DnsProvider(GANDI),
     A("test","1.2.3.4")
 );
-{% endhighlight %}
+```
 
 If you are converting from the old "GANDI" provider,
 simply change "GANDI" to "GANDI_V5" in `dnsconfig.js`.
@@ -71,6 +71,6 @@ If a domain does not exist in your Gandi account, DNSControl will *not* automati
 
 This is the error you'll see if your API key is invalid.
 
-```
+```text
 Error getting corrections: 401: The server could not verify that you authorized to access the document you requested. Either you supplied the wrong credentials (e.g., bad api key), or your access token has expired
 ```

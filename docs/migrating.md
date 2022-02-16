@@ -55,7 +55,7 @@ Example 1: Read a BIND zonefile
 
 Most DNS Service Providers have an 'export to zonefile' feature.
 
-```
+```bash
 dnscontrol get-zones --format=js bind BIND example.com
 dnscontrol get-zones --format=js --out=draft.js bind BIND example.com
 ```
@@ -74,7 +74,7 @@ This requires creating a `creds.json` file as described in
 Suppose your `creds.json` file has the name `global_aws`
 for the provider `ROUTE53`.  Your command would look like this:
 
-```
+```bash
 dnscontrol get-zones --format=js global_aws ROUTE53 example.com
 dnscontrol get-zones --format=js --out=draft.js global_aws ROUTE53 example.com
 ```

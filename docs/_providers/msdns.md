@@ -41,25 +41,25 @@ The `ActiveDirectory_PS` provider reads an `computername` setting from
 `creds.json` to know the name of the ActiveDirectory DNS Server to run the commands on.
 Otherwise
 
-{% highlight javascript %}
+```js
 {
   "msdns": {
     "dnsserver": "ny-dc01",
     "pssession": "mywindowshost"
   }
 }
-{% endhighlight %}
+```
 
 An example DNS configuration:
 
-{% highlight javascript %}
+```js
 var REG_NONE = NewRegistrar('none', 'NONE')
 var MSDNS = NewDnsProvider("msdns", "MSDNS");
 
 D('example.tld', REG_NONE, DnsProvider(MSDNS),
       A("test","1.2.3.4")
 )
-{% endhighlight %}
+```
 
 
 # Converting from `ACTIVEDIRECTORY_PS`
@@ -76,7 +76,7 @@ If you were using the `ACTIVEDIRECTORY_PS` provider and are switching to `MSDNS`
 
 During the transition your `creds.json` file might look like:
 
-{% highlight javascript %}
+```js
 {
   "msdns": {
     "ADServer": "ny-dc01",         << Delete these after you have
@@ -87,7 +87,7 @@ During the transition your `creds.json` file might look like:
     "pssession": "mywindowshost"
   }
 }
-{% endhighlight %}
+```
 
 3. Run `dnscontrol preview` to make sure the provider works as expected.
 
