@@ -18,6 +18,7 @@ import (
 var features = providers.DocumentationNotes{
 	providers.CanUseAlias:            providers.Can("Needs to be enabled in PowerDNS first", "https://doc.powerdns.com/authoritative/guides/alias.html"),
 	providers.CanUseCAA:              providers.Can(),
+	providers.CanUseDS:               providers.Can(),
 	providers.CanUsePTR:              providers.Can(),
 	providers.CanUseSRV:              providers.Can(),
 	providers.CanUseTLSA:             providers.Can(),
@@ -263,6 +264,8 @@ func toRecordConfig(domain string, r zones.Record, ttl int, name string, rtype s
 		return rc, rc.SetTarget(dnsutil.AddOrigin(content, domain))
 	case "CAA":
 		return rc, rc.SetTargetCAAString(content)
+	case "DS":
+		return rc, rc.SetTargetDSString(content)
 	case "MX":
 		return rc, rc.SetTargetMXString(content)
 	case "SRV":
