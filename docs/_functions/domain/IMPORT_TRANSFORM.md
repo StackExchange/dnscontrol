@@ -25,7 +25,7 @@ let `IMPORT_TRANSFORM` automatically generate bar.com.
 
 {% include startExample.html %}
 
-```html
+```text
 foo.com:
     one.foo.com.    IN A 1.2.3.1
     two.foo.com.    IN A 1.2.3.2

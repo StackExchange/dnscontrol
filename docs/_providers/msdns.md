@@ -41,7 +41,7 @@ The `ActiveDirectory_PS` provider reads an `computername` setting from
 `creds.json` to know the name of the ActiveDirectory DNS Server to run the commands on.
 Otherwise
 
-```js
+```json
 {
   "msdns": {
     "dnsserver": "ny-dc01",
@@ -76,7 +76,7 @@ If you were using the `ACTIVEDIRECTORY_PS` provider and are switching to `MSDNS`
 
 During the transition your `creds.json` file might look like:
 
-```js
+```json
 {
   "msdns": {
     "ADServer": "ny-dc01",         << Delete these after you have
