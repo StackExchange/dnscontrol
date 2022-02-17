@@ -16,11 +16,13 @@ address will update the record. Removing the A("foo", ...) record
 from dnscontrol will leave the record in place.
 
 {% include startExample.html %}
-{% highlight js %}
+
+```js
 D("example.com", .... , NO_PURGE,
   A("foo","1.2.3.4")
 );
-{%endhighlight%}
+```
+
 {% include endExample.html %}
 
 The main caveat of NO_PURGE is that intentionally deleting records

@@ -12,13 +12,13 @@ jsId: HETZNER
 In your credentials file, you must provide a
 [Hetzner API Key](https://dns.hetzner.com/settings/api-token).
 
-{% highlight json %}
+```json
 {
   "hetzner": {
     "api_key": "your-api-key"
   }
 }
-{% endhighlight %}
+```
 
 ## Metadata
 
@@ -29,14 +29,14 @@ This provider does not recognize any special metadata fields unique to Hetzner
 
 Example Javascript:
 
-{% highlight js %}
+```js
 var REG_NONE = NewRegistrar('none', 'NONE');
 var HETZNER = NewDnsProvider("hetzner", "HETZNER");
 
 D("example.tld", REG_NONE, DnsProvider(HETZNER),
     A("test","1.2.3.4")
 );
-{%endhighlight%}
+```
 
 ## Activation
 
@@ -73,26 +73,27 @@ Example: Your per minute quota is 60 requests and in your settings you
  DNSControl will emit a warning in case it breaches the next quota.
 
 In your `creds.json` for all `HETZNER` provider entries:
-{% highlight json %}
+
+```json
 {
   "hetzner": {
     "optimize_for_rate_limit_quota": "Minute",
     "api_key": "your-api-key"
   }
 }
-{% endhighlight %}
+```
 
 Every response from the Hetzner DNS Console API includes your limits:
 
-{% highlight txt %}
-$ curl --silent --include \
+```bash
+curl --silent --include \
     --header 'Auth-API-Token: ...' \
     https://dns.hetzner.com/api/v1/zones \
   | grep x-ratelimit-limit
 x-ratelimit-limit-second: 3
 x-ratelimit-limit-minute: 42
 x-ratelimit-limit-hour: 1337
-{% endhighlight %}
+```
 
 Every DNSControl invocation starts from scratch in regard to rate-limiting.
 In case you are frequently invoking DNSControl, you will likely hit a limit for
@@ -104,11 +105,12 @@ With `start_with_default_rate_limit` DNSControl uses a quota equivalent to
  API response.
 
 In your `creds.json` for all `HETZNER` provider entries:
-{% highlight json %}
+
+```json
 {
   "hetzner": {
     "start_with_default_rate_limit": "true",
     "api_key": "your-api-key"
   }
 }
-{% endhighlight %}
+```

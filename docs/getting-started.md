@@ -37,7 +37,7 @@ Alternatively, on Mac you can install it using homebrew:
 
 ## Via [docker](https://hub.docker.com/r/stackexchange/dnscontrol/)
 
-```
+```bash
 docker run --rm -it -v $(pwd)/dnsconfig.js:/dns/dnsconfig.js -v $(pwd)/creds.json:/dns/creds.json stackexchange/dnscontrol dnscontrol preview
 ```
 
@@ -72,8 +72,7 @@ and renaming it.
 
 The file looks like:
 
-{% highlight js %}
-
+```js
 // Providers:
 
 var REG_NONE = NewRegistrar('none', 'NONE');    // No registrar.
@@ -84,12 +83,12 @@ var DNS_BIND = NewDnsProvider('bind', 'BIND');  // ISC BIND.
 D('example.com', REG_NONE, DnsProvider(DNS_BIND),
     A('@', '1.2.3.4')
 );
-{%endhighlight%}
+```
 
 You may modify this file to match your particular providers and domains. See [the javascript docs]({{site.github.url}}/js) and  [the provider docs]({{site.github.url}}/provider-list) for more details.
 If you are using other providers, you will likely need to make a `creds.json` file with api tokens and other account information. For example, to use both name.com and Cloudflare, you would have:
 
-{% highlight js %}
+```js
 {
   "cloudflare":{ // provider name to be used in dnsconfig.js
     "apitoken": "token" // API token
@@ -99,7 +98,7 @@ If you are using other providers, you will likely need to make a `creds.json` fi
     "apiuser": "username" // username for name.com
   }
 }
-{%endhighlight%}
+```
 
 There are 2 types of providers:
 
@@ -126,7 +125,7 @@ and renaming it.
 
 The file looks like:
 
-{% highlight js %}
+```js
 {
   "bind": {
   },
@@ -135,7 +134,7 @@ The file looks like:
     "SecretKey": "change_to_your_secretkey"
   }
 }
-{%endhighlight%}
+```
 
 Ignore the `r53_ACCOUNTNAME` section.  It is a placeholder and will be ignored. You
 can use it later when you define your first set of API credentials.
@@ -167,9 +166,8 @@ exist.
 
 It should look something like this:
 
-{% highlight js %}
-
-$ dnscontrol preview
+```text
+dnscontrol preview
 Initialized 1 registrars and 1 dns service providers.
 ******************** Domain: example.com
 ----- Getting nameservers from: bind
@@ -179,14 +177,14 @@ Initialized 1 registrars and 1 dns service providers.
 
 ----- Registrar: none
 Done. 1 corrections.
-{%endhighlight%}
+```
 
 Next run `dnscontrol push` to actually make the changes. In this
 case, the change will be to create a zone file where one didn't
 previously exist.
 
-{% highlight js %}
-$ dnscontrol push
+```bash
+dnscontrol push
 Initialized 1 registrars and 1 dns service providers.
 ******************** Domain: example.com
 ----- Getting nameservers from: bind
@@ -198,7 +196,7 @@ CREATING ZONEFILE: zones/example.com.zone
 SUCCESS!
 ----- Registrar: none
 Done. 1 corrections.
-{%endhighlight%}
+```
 
 
 ## 6. Make a change.
@@ -209,8 +207,8 @@ address of in `A('@', '1.2.3.4')` or add an additional A record.
 In our case, we changed the IP address to 10.10.10.10. Previewing
 our change looks like this:
 
-{% highlight js %}
-$ dnscontrol preview
+```bash
+dnscontrol preview
 Initialized 1 registrars and 1 dns service providers.
 ******************** Domain: example.com
 ----- Getting nameservers from: bind
@@ -220,7 +218,7 @@ MODIFY A example.com: (1.2.3.4 300) -> (10.10.10.10 300)
 
 ----- Registrar: none
 Done. 1 corrections.
-{%endhighlight%}
+```
 
 Notice that it read the old zone file and was able to produce a
 "diff" between the old `A` record and the new one.  If the zonefile
@@ -236,11 +234,11 @@ specific records.
 Take a look at the `zones/example.com.zone` file.  It should look
 like:
 
-{% highlight js %}
+```text
 $TTL 300
 @                IN SOA   DEFAULT_NOT_SET. DEFAULT_NOT_SET. 1 3600 600 604800 1440
                  IN A     10.10.10.10
-{%endhighlight%}
+```
 
 You can change the "DEFAULT_NOT_SET" text by following the documentation
 for the [BIND provider]({{site.github.url}}/providers/bind) to set

@@ -13,14 +13,14 @@ The address should be an ip address, either a string, or a numeric value obtaine
 Modifiers can be any number of [record modifiers](#record-modifiers) or json objects, which will be merged into the record's metadata.
 
 {% include startExample.html %}
-{% highlight js %}
 
+```js
 D("example.com", REGISTRAR, DnsProvider("R53"),
   A("@", "1.2.3.4"),
   A("foo", "2.3.4.5"),
   A("test.foo", IP("1.2.3.4"), TTL(5000)),
   A("*", "1.2.3.4", {foo: 42})
 );
+```
 
-{%endhighlight%}
 {% include endExample.html %}

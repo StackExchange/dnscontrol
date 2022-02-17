@@ -39,14 +39,14 @@ the provider:
 
 For instance, your `creds.json` might looks like:
 
-{% highlight json %}
+```json
 {
     "axfrddns": {
         "transfer-key": "hmac-sha256:transfer-key-id:Base64EncodedSecret=",
         "update-key": "hmac-sha256:update-key-id:AnotherSecret="
     }
 }
-{% endhighlight %}
+```
 
 If either key is missing, DNSControl defaults to IP-based ACL
 authentication for that function. Including both keys is the most
@@ -56,14 +56,14 @@ operations, which is the least secure option.
 If distinct zones require distinct keys, you will need to instantiate the
 provider once for each key:
 
-{% highlight javascript %}
+```js
 var AXFRDDNS_A = NewDnsProvider('axfrddns-a', 'AXFRDDNS'}
 var AXFRDDNS_B = NewDnsProvider('axfrddns-b', 'AXFRDDNS'}
-{% endhighlight %}
+```
 
 And update `creds.json` accordingly:
 
-{% highlight json %}
+```json
 {
     "axfrddns-a": {
         "transfer-key": "hmac-sha256:transfer-key-id:Base64EncodedSecret=",
@@ -74,7 +74,7 @@ And update `creds.json` accordingly:
         "update-key": "hmac-sha512:update-key-id-B:YetAnotherSecret="
     }
 }
-{% endhighlight %}
+```
 
 ### Default nameservers
 
@@ -85,7 +85,7 @@ provider.
 This list can be provided either as metadata or in `creds.json`. Only
 the later allows `get-zones` to work properly.
 
-{% highlight javascript %}
+```js
 var AXFRDDNS = NewDnsProvider('axfrddns', 'AXFRDDNS',
     'default_ns': [
         'ns1.example.tld.',
@@ -94,13 +94,13 @@ var AXFRDDNS = NewDnsProvider('axfrddns', 'AXFRDDNS',
         'ns4.example.tld.'
     ]
 }
-{% endhighlight %}
+```
 
-{% highlight json %}
+```json
 {
    nameservers = "ns1.example.tld,ns2.example.tld,ns3.example.tld,ns4.example.tld"
 }
-{% endhighlight %}
+```
 
 ### Primary master
 
@@ -113,20 +113,20 @@ of the zone. In that case, the IP or the name of the primary server
 must be provided in `creds.json`. With this option, a non-standard
 port might be used.
 
-{% highlight json %}
+```json
 {
    master = "10.20.30.40:5353"
 }
-{% endhighlight %}
+```
 
 When no nameserver appears in the zone, and no default nameservers nor
 custom master are configured, the AXFR+DDNS provider will fail with
 the following error message:
 
-{% highlight text %}
+```text
 [Error] AXFRDDNS: the nameservers list cannot be empty.
 Please consider adding default `nameservers` or an explicit `master` in `creds.json`.
-{% endhighlight %}
+```
 
 
 ## Server configuration examples
@@ -137,7 +137,7 @@ Here is a sample `named.conf` example for an authauritative server on
 zone `example.tld`. It uses a simple IP-based ACL for the AXFR
 transfer and a conjunction of TSIG and IP-based ACL for the updates.
 
-{% highlight javascript %}
+```js
 options {
 
 	listen-on { any; };
@@ -179,7 +179,7 @@ key update-key-id {
   algorithm HMAC-SHA256;
   secret "AnotherSecret=";
 };
-{% endhighlight %}
+```
 
 ## FYI: get-zones
 
@@ -190,9 +190,9 @@ THe AXFR+DDNS provider does not display DNSSec records. But, if any
 DNSSec records is found in the zone, it will replace all of them with
 a single placeholder record:
 
-{% highlight text %}
+```text
     __dnssec         IN TXT   "Domain has DNSSec records, not displayed here."
-{% endhighlight %}
+```
 
 ## FYI: create-domain
 

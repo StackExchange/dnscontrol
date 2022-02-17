@@ -31,7 +31,7 @@ record has a field called `Flag`, therefore the field name in
 
 Here are some examples:
 
-```
+```go
 type RecordConfig struct {
   ...
   MxPreference uint16            `json:"mxpreference,omitempty"`
@@ -75,7 +75,7 @@ will report something like the `MISSING` message below. In this
 example we removed `providers.CanUseCAA` from the
 `providerCapabilityChecks` list.
 
-```
+```text
 --- FAIL: TestCapabilitiesAreFiltered (0.00s)
     capabilities_test.go:66: ok: providers.CanUseAlias (0) is checked for with "ALIAS"
     capabilities_test.go:68: MISSING: providers.CanUseCAA (1) is not checked by checkProviderCapabilities
@@ -141,7 +141,7 @@ list.
 
 Each `testgroup()` is a named list of tests.
 
-```
+```js
 testgroup("MX",                                   <<< 1
   tc("MX record", mx("@", 5, "foo.com.")),        <<< 2
   tc("Change MX pref", mx("@", 10, "foo.com.")),  <<< 3
