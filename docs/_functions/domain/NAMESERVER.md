@@ -18,8 +18,8 @@ delegations. `NAMESERVER()` is for informing upstream delegations.
 For more information, refer to [this page]({{site.github.url}}/nameservers).
 
 {% include startExample.html %}
-{% highlight js %}
 
+```js
 D("example.com", REGISTRAR, .... ,
   DnsProvider(route53, 0),
   // Replace the nameservers:
@@ -32,8 +32,8 @@ D("example2.com", REGISTRAR, .... ,
   NAMESERVER("ns1.myserver.com."),
   NAMESERVER("ns2.myserver.com."),
 );
+```
 
-{%endhighlight%}
 {% include endExample.html %}
 
 
@@ -79,7 +79,7 @@ special Registrar called "NONE". It makes no changes.
 
 It looks like this:
 
-```
+```js
 var REG_THIRDPARTY = NewRegistrar('ThirdParty', 'NONE')
 D("mydomain.com", REG_THIRDPARTY,
   ...

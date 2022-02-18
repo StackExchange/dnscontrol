@@ -115,7 +115,7 @@ In the `*Provider.go` file, change the setting to implemented.
 
 **Step 2. Update the docs**
 
-```
+```bash
 go generate
 ```
 

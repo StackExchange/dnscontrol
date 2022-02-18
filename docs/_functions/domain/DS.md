@@ -20,11 +20,11 @@ Digest Type must be a number.
 Digest must be a string.
 
 {% include startExample.html %}
-{% highlight js %}
 
+```js
 D("example.com", REGISTRAR, DnsProvider(R53),
   DS("example.com", 2371, 13, 2, "ABCDEF")
 );
+```
 
-{%endhighlight%}
 {% include endExample.html %}

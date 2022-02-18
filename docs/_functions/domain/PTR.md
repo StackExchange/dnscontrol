@@ -57,7 +57,8 @@ and A, B, C are the first 3 octets of the IP address. For example
 `128/27.18.20.172.in-addr.arpa`
 
 {% include startExample.html %}
-{% highlight js %}
+
+```js
 D(REV('1.2.3.0/24'), REGISTRAR, DnsProvider(BIND),
   PTR('1', 'foo.example.com.'),
   PTR('2', 'bar.example.com.'),
@@ -76,8 +77,8 @@ D(REV('2001:db8:302::/48'), REGISTRAR, DnsProvider(BIND),
   PTR('2001:db8:302::2', 'two.example.com.'),                          // '2.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0'
   PTR('2001:db8:302::3', 'three.example.com.'),                        // '3.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0'
 );
+```
 
-{%endhighlight%}
 {% include endExample.html %}
 
 In the future we plan on adding a flag to `A()` which will insert

@@ -1,6 +1,6 @@
 ---
 name: Google Cloud DNS
-title: Google Cloud DNS Provider 
+title: Google Cloud DNS Provider
 layout: default
 jsId: GCLOUD
 ---
@@ -11,7 +11,7 @@ jsId: GCLOUD
 
 For Google cloud authentication, DNSControl requires a JSON 'Service Account Key' for your project. Newlines in the private key need to be replaced with `\n`.Copy the full JSON object into your `creds.json` like so:
 
-{% highlight json %}
+```json
 {
     "gcloud": {
         "type": "service_account",
@@ -27,7 +27,7 @@ For Google cloud authentication, DNSControl requires a JSON 'Service Account Key
         "name_server_set" : "optional_name_server_set_name (contact your TAM)"
     }
 }
-{% endhighlight %}
+```
 
 **Note**: The `project_id`, `private_key`, and `client_email`, are the only fields that are strictly required, but it is sometimes easier to just paste the entire json object in. Either way is fine.  `name_server_set` is optional and requires special permission from your TAM at Google in order to setup (See [Name server sets](#name_server_sets) below)
 
@@ -39,14 +39,14 @@ This provider does not recognize any special metadata fields unique to google cl
 ## Usage
 Use this provider like any other DNS Provider:
 
-{% highlight js %}
+```js
 var REG_NAMECOM = NewRegistrar("name.com","NAMEDOTCOM");
 var GCLOUD = NewDnsProvider("gcloud", "GCLOUD");
 
 D("example.tld", REG_NAMECOM, DnsProvider(GCLOUD),
     A("test","1.2.3.4")
 );
-{%endhighlight%}
+```
 
 ## Activation
 1. Go to your app-engine console and select the appropriate project.
@@ -65,7 +65,7 @@ control panel manually or via the `create-domains` command.
 ## Name server sets
 
 This optional feature lets you pin domains to a set of GCLOUD name servers.  The `nameServerSet` field is exposed in their API but there is
-currently no facility for creating a name server set.  You need special permission from your technical account manager at Google and they 
+currently no facility for creating a name server set.  You need special permission from your technical account manager at Google and they
 will enable it on your account, responding with a list of names to use in the `name_server_set` field above.
 
 > `name_server_set` only applies on `create-domains` at the moment. Additional work needs to be done to support it during `push`

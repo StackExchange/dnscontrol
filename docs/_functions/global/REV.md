@@ -30,7 +30,8 @@ zeroed out automatically. Thus, `REV('1.2.3.4/24') is an error.  This is done
 to catch typos.
 
 {% include startExample.html %}
-{% highlight js %}
+
+```js
 D(REV('1.2.3.0/24'), REGISTRAR, DnsProvider(BIND),
   PTR("1", 'foo.example.com.'),
   PTR("2", 'bar.example.com.'),
@@ -45,9 +46,8 @@ D(REV('2001:db8:302::/48'), REGISTRAR, DnsProvider(BIND),
   PTR("2001:db8:302::2", 'two.example.com.'),                          // 2.0.0...
   PTR("2001:db8:302::3", 'three.example.com.'),                        // 3.0.0...
 );
+```
 
-
-{%endhighlight%}
 {% include endExample.html %}
 
 In the future we plan on adding a flag to `A()` which will insert

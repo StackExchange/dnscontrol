@@ -25,22 +25,23 @@ the required credentials.
 ## Configuration
 
 In the credentials file (creds.json), you must provide the following:
-{% highlight json %}  
-"akamaiedgedns": {  
-    "client_secret": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",  
-    "host": "akaa-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx.xxxx.akamaiapis.net",  
-    "access_token": "akaa-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",  
-    "client_token": "akaa-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",  
-    "contract_id": "X-XXXX",  
-    "group_id": "NNNNNN"  
-}  
-{% endhighlight %}  
+
+```json
+"akamaiedgedns": {
+    "client_secret": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+    "host": "akaa-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx.xxxx.akamaiapis.net",
+    "access_token": "akaa-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+    "client_token": "akaa-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+    "contract_id": "X-XXXX",
+    "group_id": "NNNNNN"
+}
+```
 
 ## Usage
 
 A new zone created by DNSControl:
 
-```
+```bash
 dnscontrol create-domains
 ```
 
@@ -53,24 +54,25 @@ The NS records for these authorities have a TTL of 86400.
 
 Add:
 
-```
+```js
 NAMESERVER_TTL(86400)
 ```
 
 modifier to the dnscontrol.js D() function so that DNSControl does not change the TTL of the authoritative NS records.
 
-Example 'dnsconfig.js':  
-{% highlight js %}  
-var REG_NONE = NewRegistrar('none', 'NONE');  
-var DNS_AKAMAIEDGEDNS = NewDnsProvider('akamaiedgedns', 'AKAMAIEDGEDNS');  
+Example 'dnsconfig.js':
 
-D('example.com', REG_NONE, DnsProvider(DNS_AKAMAIEDGEDNS),  
-  NAMESERVER_TTL(86400),  
-  AUTODNSSEC_ON,  
-  AKAMAICDN("@", "www.preconfigured.edgesuite.net", TTL(20)),  
-  A('foo','1.2.3.4')  
-);  
-{% endhighlight %}  
+```js
+var REG_NONE = NewRegistrar('none', 'NONE');
+var DNS_AKAMAIEDGEDNS = NewDnsProvider('akamaiedgedns', 'AKAMAIEDGEDNS');
+
+D('example.com', REG_NONE, DnsProvider(DNS_AKAMAIEDGEDNS),
+  NAMESERVER_TTL(86400),
+  AUTODNSSEC_ON,
+  AKAMAICDN("@", "www.preconfigured.edgesuite.net", TTL(20)),
+  A('foo','1.2.3.4')
+);
+```
 
 AKAMAICDN is a proprietary record type that is used to configure [Zone Apex Mapping](https://blogs.akamai.com/2019/08/fast-dns-zone-apex-mapping-dnssec.html).
 The AKAMAICDN target must be preconfigured in the Akamai network.

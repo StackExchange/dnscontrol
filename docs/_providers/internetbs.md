@@ -11,14 +11,14 @@ DNSControl's Internet.bs provider supports being a Registrar. Support for being 
 ## Configuration
 In your credentials file, you must provide your API key and account password
 
-{% highlight json %}
+```json
 {
   "internetbs": {
     "api-key": "your-api-key",
     "password": "account-password"
   }
 }
-{% endhighlight %}
+```
 
 ## Metadata
 This provider does not recognize any special metadata fields unique to Internet.bs.
@@ -26,14 +26,14 @@ This provider does not recognize any special metadata fields unique to Internet.
 ## Usage
 Example Javascript:
 
-{% highlight js %}
+```js
 var REG_INTERNETBS = NewRegistrar('internetbs', 'INTERNETBS');
 
 D("example.com", REG_INTERNETBS,
   NAMESERVER("ns1.example.com."),
   NAMESERVER("ns2.example.com."),
 );
-{% endhighlight %}
+```
 
 ## Activation
 

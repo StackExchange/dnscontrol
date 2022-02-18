@@ -14,7 +14,7 @@ Please change the version number as appropriate.
 Make sure you are using the latest version of `go`
 (listed on [https://golang.org/dl/](https://golang.org/dl/))
 
-```
+```bash
 go version
 ```
 
@@ -39,7 +39,7 @@ NOTE: If you bump the major version, you need to change all the source
 files.  The last time this was done (v2 -> v3) these two commands
 automated all that:
 
-```
+```bash
 #  Make all the changes:
 sed -i.bak -e 's@github.com.StackExchange.dnscontrol.v2@github.com/StackExchange/dnscontrol/v3@g' go.* $(fgrep -lri --include '*.go' github.com/StackExchange/dnscontrol/v2 *)
 # Delete the backup files:
@@ -51,8 +51,8 @@ find * -name \*.bak -delete
 
 Verify the version string was updated:
 
-```
-$ grep Version main.go
+```bash
+grep Version main.go
 ```
 
 (Make sure that it lists the new version number.)
@@ -88,7 +88,7 @@ See [https://github.com/StackExchange/dnscontrol/releases for examples](https://
 
 Example/template:
 
-```
+```text
 This release includes many new providers (JoeDNS and MaryDNS), dozens
 of bug fixes, and a new testing framework that makes it easier to add
 big features without fear of breaking old ones.
@@ -161,7 +161,7 @@ see dnscontrol-Darwin, dnscontrol-Linux, and dnscontrol.exe attached as assets.
 
 Email the release notes to the mailing list: (note the format of the Subject line and that the first line of the email is the URL of the release)
 
-```
+```text
 To: dnscontrol-discuss@googlegroups.com
 Subject: New release: dnscontrol v$VERSION
 
@@ -178,7 +178,7 @@ it.  [Click here to join](https://groups.google.com/forum/#!forum/dnscontrol-dis
 
 Mention on [https://gitter.im/dnscontrol/Lobby](https://gitter.im/dnscontrol/Lobby) that the new release has shipped.
 
-```
+```text
 ANNOUNCEMENT: dnscontrol v$VERSION has been released! https://github.com/StackExchange/dnscontrol/releases/tag/v$VERSION
 ```
 
@@ -197,7 +197,7 @@ If you are at Stack Overflow:
 
 List out-of-date modules and update any that seem worth updating:
 
-```
+```bash
 go install github.com/oligot/go-mod-upgrade@latest
 go-mod-upgrade
 go mod tidy
@@ -205,7 +205,7 @@ go mod tidy
 
 OLD WAY:
 
-```
+```bash
 go install github.com/psampaz/go-mod-outdated@latest
 go list -mod=mod -u -m -json all | go-mod-outdated -update -direct
 
