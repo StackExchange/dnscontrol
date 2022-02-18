@@ -98,7 +98,7 @@ func (a *azurednsProvider) getZones() error {
 	defer cancel()
 	zonesIterator, zonesErr := a.zonesClient.ListByResourceGroup(ctx, *a.resourceGroup, to.Int32Ptr(100))
 	if zonesErr != nil {
-		return fmt.Errorf("getZones: zonesErr: %w", zonesErr)
+		return fmt.Errorf("getZones: zonesErr: SubscriptionID=%q err=%w", a.zonesClient.BaseClient.SubscriptionID, zonesErr)
 	}
 
 	// Check getExistingZones and https://github.com/StackExchange/dnscontrol/issues/792 for the details
