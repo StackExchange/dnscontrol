@@ -14,14 +14,14 @@ parameters:
 Priority, weight, and port are ints.
 
 {% include startExample.html %}
-{% highlight js %}
 
+```js
 D("example.com", REGISTRAR, DnsProvider("GCLOUD"),
   // Create SRV records for a a SIP service:
   //               pr  w   port, target
   SRV('_sip._tcp', 10, 60, 5060, 'bigbox.example.tld.'),
   SRV('_sip._tcp', 10, 20, 5060, 'smallbox1.example.tld.'),
 );
+```
 
-{%endhighlight%}
 {% include endExample.html %}

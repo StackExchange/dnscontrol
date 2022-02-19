@@ -28,7 +28,7 @@ No "creds.json" configuration is expected.
 
 ## example dns config js:
 
-```
+```js
 var REG_NONE = NewRegistrar('none', 'NONE')
 var DSP_ACTIVEDIRECTORY_DS = NewDSP("activedir", "ACTIVEDIRECTORY_PS");
 

@@ -19,7 +19,7 @@ This is based on API documents found at [https://wiki.hexonet.net/wiki/DNS_API](
 
 Please provide your HEXONET login data in your credentials file `creds.json` as follows:
 
-{% highlight json %}
+```json
 {
   "hexonet": {
     "apilogin": "your-hexonet-account-id",
@@ -29,11 +29,11 @@ Please provide your HEXONET login data in your credentials file `creds.json` as 
     "debugmode": "0", // set it to "1" to get debug output of the communication with our Backend System API
   }
 }
-{% endhighlight %}
+```
 
 Here a working example for our OT&E System:
 
-{% highlight json %}
+```json
 {
   "hexonet": {
     "apilogin": "test.user",
@@ -42,7 +42,7 @@ Here a working example for our OT&E System:
     "debugmode": "0",
   }
 }
-{% endhighlight %}
+```
 
 NOTE: The above credentials are known to the public.
 
@@ -64,7 +64,7 @@ Here's an example DNS Configuration `dnsconfig.js` using our provider module.
 Even though it shows how you use us as Domain Registrar AND DNS Provider, we don't force you to do that.
 You are free to decide if you want to use both of our provider technology or just one of them.
 
-{% highlight javascript %}
+```js
 // Providers:
 var REG_HX = NewRegistrar('hexonet', 'HEXONET');
 var DNS_HX = NewDnsProvider('hexonet', 'HEXONET');
@@ -87,7 +87,7 @@ D('abhoster.com', REG_HX, DnsProvider(DNS_HX),
     A('elk1', '10.190.234.178'),
     A('test', '56.123.54.12')
 );
-{% endhighlight %}
+```
 
 ## Metadata
 

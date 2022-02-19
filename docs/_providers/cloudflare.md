@@ -21,14 +21,14 @@ provide a [Cloudflare API token](https://dash.cloudflare.com/profile/api-tokens)
 
 This method is enabled by setting the "apitoken" value in `creds.json`:
 
-{% highlight json %}
+```json
 {
   "cloudflare": {
     "apitoken": "your-cloudflare-api-token",
     "accountid": "your-cloudflare-account-id"
   }
 }
-{% endhighlight %}
+```
 
 See [Cloudflare's documentation](https://support.cloudflare.com/hc/en-us/articles/200167836-Managing-API-Tokens-and-Keys) for instructions on how to generate and configure permissions on API tokens.
 
@@ -51,7 +51,7 @@ This method is not recommended because these credentials give DNSControl access 
 
 This method is enabled by setting the "apikey" and "apiuser" values in `creds.json`:
 
-{% highlight json %}
+```json
 {
   "cloudflare": {
     "apikey": "your-cloudflare-api-key",
@@ -59,7 +59,7 @@ This method is enabled by setting the "apikey" and "apiuser" values in `creds.js
     "accountid": "your-cloudflare-account-id"
   }
 }
-{% endhighlight %}
+```
 
 You can not mix `apikey`/`apiuser` and `apitoken`.  If all three values are set, you will receive an error.
 
@@ -68,14 +68,14 @@ The Account ID is used to disambiguate when API key has access to multiple Cloud
 
 The "accountid" is found in the Cloudflare portal ("Account ID") on the DNS page. Set it in `creds.json`:
 
-{% highlight json %}
+```json
 {
   "cloudflare": {
     "apitoken": "...",
     "accountid": "your-cloudflare-account-id",
   }
 }
-{% endhighlight %}
+```
 
 Older `creds.json` files that do not have accountid set may work for now, but not in the future.
 
@@ -101,20 +101,18 @@ What does on/off/full mean?
 
 You can also set the default proxy mode using `DEFAULTS()` function. For example:
 
-{% highlight js %}
-
+```js
 DEFAULTS(
   CF_PROXY_DEFAULT_OFF // turn proxy off when not specified otherwise
 );
-
-{% endhighlight %}
+```
 
 **Aliases:**
 
 To make configuration files more readable and less prone to errors,
 the following aliases are *pre-defined*:
 
-{% highlight js %}
+```js
 // Meta settings for individual records.
 var CF_PROXY_OFF = {'cloudflare_proxy': 'off'};     // Proxy disabled.
 var CF_PROXY_ON = {'cloudflare_proxy': 'on'};       // Proxy enabled.
@@ -128,22 +126,22 @@ var CF_PROXY_DEFAULT_ON = {'cloudflare_proxy_default': 'on'};
 var CF_UNIVERSALSSL_OFF = { cloudflare_universalssl: 'off' };
 // UniversalSSL on for entire domain:
 var CF_UNIVERSALSSL_ON = { cloudflare_universalssl: 'on' };
-{% endhighlight %}
+```
 
 The following example shows how to set meta variables with and without aliases:
 
-{% highlight js %}
+```js
 D('example.tld', REG_NONE, DnsProvider(CLOUDFLARE),
     A('www1','1.2.3.11', CF_PROXY_ON),        // turn proxy ON.
     A('www2','1.2.3.12', CF_PROXY_OFF),       // default is OFF, this is a no-op.
     A('www3','1.2.3.13', {'cloudflare_proxy': 'on'}) // Old format.
 );
-{% endhighlight %}
+```
 
 ## Usage
 Example Javascript:
 
-{% highlight js %}
+```js
 var REG_NONE = NewRegistrar('none', 'NONE')
 var CLOUDFLARE = NewDnsProvider('cloudflare','CLOUDFLAREAPI');
 
@@ -165,7 +163,7 @@ D('example2.tld', REG_NONE, DnsProvider(CLOUDFLARE),
     ALIAS('@','www.example2.tld.'),
     CNAME('myalias','www.example2.tld.')
 );
-{%endhighlight%}
+```
 
 
 ## New domains
@@ -177,8 +175,7 @@ control panel manually or via the `dnscontrol create-domains` command.
 ## Redirects
 The Cloudflare provider can manage "Forwarding URL" Page Rules (redirects) for your domains. Simply use the `CF_REDIRECT` and `CF_TEMP_REDIRECT` functions to make redirects:
 
-{% highlight js %}
-
+```js
 // chiphacker.com should redirect to electronics.stackexchange.com
 
 var CLOUDFLARE = NewDnsProvider('cloudflare','CLOUDFLAREAPI', {"manage_redirects": true}); // enable manage_redirects
@@ -197,7 +194,7 @@ D("chiphacker.com", REG_NONE, DnsProvider(CLOUDFLARE),
 
     // ...
 );
-{%endhighlight%}
+```
 
 Notice a few details:
 
@@ -209,8 +206,7 @@ Notice a few details:
 ## Worker routes
 The Cloudflare provider can manage Worker Routes for your domains. Simply use the `CF_WORKER_ROUTE` function passing the route pattern and the worker name:
 
-{% highlight js %}
-
+```js
 var CLOUDFLARE = NewDnsProvider('cloudflare','CLOUDFLAREAPI', {"manage_workers": true}); // enable managing worker routes
 
 D("foo.com", REG_NONE, DnsProvider(CLOUDFLARE),
@@ -218,8 +214,7 @@ D("foo.com", REG_NONE, DnsProvider(CLOUDFLARE),
     CF_WORKER_ROUTE("api.foo.com/*", "my-worker"),
     CF_WORKER_ROUTE("foo.com/api/*", "my-worker"),
 );
-
-{%endhighlight%}
+```
 
 The API key you use must be enabled to edit workers.  In the portal, edit the API key,
 under "Permissions" add "Account", "Workers Scripts", "Edit". Without this permission you may see errors that mention "failed fetching worker route list from cloudflare: bad status code from cloudflare: 403 not 200"
@@ -235,10 +230,8 @@ have the required permissions listed above.  The flag `-cfworkers=false` will di
 This flag is intended for use with legacy domains where the integration test credentials do not
 have access to read/edit Workers. This flag will eventually go away.
 
-{% highlight bash %}
-
+```bash
 go test -v -verbose -provider CLOUDFLAREAPI -cfworkers=false
-
-{%endhighlight%}
+```
 
 When `-cfworkers=false` is set, tests related to Workers are skipped.  The Account ID is not required.

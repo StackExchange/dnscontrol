@@ -9,7 +9,7 @@ jsId: OVH
 
 In your providers config json file you must provide a OVH app-key, app-secret-key and consumer-key:
 
-{% highlight json %}
+```json
 {
   "ovh":{
     "app-key": "your app key",
@@ -17,7 +17,7 @@ In your providers config json file you must provide a OVH app-key, app-secret-ke
     "consumer-key": "your consumer key"
   }
 }
-{% endhighlight %}
+```
 
 See [the Activation section](#activation) for details on obtaining these credentials.
 
@@ -30,25 +30,26 @@ This provider does not recognize any special metadata fields unique to OVH.
 Example javascript:
 
 Example javascript (DNS hosted with OVH):
-{% highlight js %}
+
+```js
 var REG_OVH = NewRegistrar("ovh", "OVH");
 var OVH = NewDnsProvider("ovh", "OVH");
 
 D("example.tld", REG_OVH, DnsProvider(OVH),
     A("test","1.2.3.4")
 );
-{% endhighlight %}
+```
 
 Example javascript (Registrar only. DNS hosted elsewhere):
 
-{% highlight js %}
+```js
 var REG_OVH = NewRegistrar("ovh", "OVH");
 var R53 = NewDnsProvider("r53", "ROUTE53");
 
 D("example.tld", REG_OVH, DnsProvider(R53),
     A("test","1.2.3.4")
 );
-{%endhighlight%}
+```
 
 
 ## Activation
@@ -62,7 +63,7 @@ which gives the `app-key` and `app-secret-key`.
 Once done, to obtain the `consumer-key` it is necessary to authorize the just created app
 to access the data in a specific account:
 
-{% highlight bash %}
+```bash
 curl -XPOST -H"X-Ovh-Application: <you-app-key>" -H "Content-type: application/json" https://eu.api.ovh.com/1.0/auth/credential -d'{
   "accessRules": [
     {
@@ -95,16 +96,17 @@ curl -XPOST -H"X-Ovh-Application: <you-app-key>" -H "Content-type: application/j
     }
   ]
 }'
-{% endhighlight %}
+```
 
 It should return something akin to:
-{% highlight json %}
+
+```json
 {
   "validationUrl": "https://eu.api.ovh.com/auth/?credentialToken=<long-token>",
   "consumerKey": "<your-consumer-key>",
   "state": "pendingValidation"
 }
-{% endhighlight %}
+```
 
 Open the "validationUrl" in a browser and log in with your OVH account. This will link the app with your account,
 authorizing it to access your zones and domains.

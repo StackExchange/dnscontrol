@@ -19,7 +19,8 @@ will be done for you.
 Modifiers can be any number of [record modifiers](#record-modifiers) or json objects, which will be merged into the record's metadata.
 
 {% include startExample.html %}
-{% highlight js %}
+
+```js
     D("example.com", REGISTRAR, ....,
       TXT('@', '598611146-3338560'),
       TXT('listserve', 'google-site-verification=12345'),
@@ -28,7 +29,8 @@ Modifiers can be any number of [record modifiers](#record-modifiers) or json obj
       TXT('_domainkey', 't=y; o=-;'), // Escapes are done for you automatically.
       TXT('long', 'X'.repeat(300)) // Long strings are split automatically.
     );
-{%endhighlight%}
+```
+
 {% include endExample.html %}
 
 NOTE: In the past, long strings had to be annotated with the keyword

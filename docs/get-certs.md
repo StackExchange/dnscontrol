@@ -53,7 +53,7 @@ specify any number of certificates, with up to 100 SAN entries each. Subject nam
 
 The format of the file is a simple json array of objects:
 
-```
+```json
 [
     {
         "cert_name": "mainCert",
@@ -92,7 +92,7 @@ The working directory should generally contain:
 - `certs.json` to describe what certificates to issue.
 - `dnsconfig.js` and `creds.json` are the main files for other dnscontrol commands.
 
-```
+```text
 ┏━━.letsencrypt
 ┃  ┗━(*Let's Encrypt* account keys and metadata)
 ┃
@@ -110,6 +110,7 @@ The working directory should generally contain:
 ┣━━creds.json
 ┗━━dnsconfig.js
 ```
+
 ## Command line flags
 
 ### Required Flags
@@ -148,8 +149,7 @@ The push to the certificate repo can trigger further automation to deploy certs 
 
 ## Example script
 
-```
-
+```bash
 #!/bin/bash
 
 set -e

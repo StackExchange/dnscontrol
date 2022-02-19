@@ -16,7 +16,7 @@ In your credentials file, you must provide your [`authToken` and optionally an `
 * http.net: `https://partner.http.net`
 * Demo: `https://demo.routing.net`
 
-{% highlight json %}
+```json
 {
   "hosting.de": {
     "authToken": "YOUR_API_KEY"
@@ -26,20 +26,20 @@ In your credentials file, you must provide your [`authToken` and optionally an `
     "baseURL": "https://partner.http.net"
   }
 }
-{% endhighlight %}
+```
 
 ## Usage
 
 Example JavaScript:
 
-{% highlight js %}
+```js
 var REG_HOSTINGDE = NewRegistrar('hosting.de', 'HOSTINGDE')
 var DNS_HOSTINGDE = NewDnsProvider('hosting.de' 'HOSTINGDE');
 
 D('example.tld', REG_HOSTINGDE, DnsProvider(DNS_HOSTINGDE),
     A('test', '1.2.3.4')
 );
-{% endhighlight %}
+```
 
 ## Customize nameservers
 
