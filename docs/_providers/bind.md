@@ -15,21 +15,21 @@ Both of those tasks are different at each site, so they are best done by a local
 The BIND provider does not require anything in `creds.json`. However
 you can specify a `directory` where the provider will look for and create zone files. The default is the `zones` directory (in the current directory).
 
-{% highlight json %}
+```json
 {
   "bind": {
     "directory": "myzones",
     "filenameformat": "%U.zone"      << The default
   }
 }
-{% endhighlight %}
+```
 
 
 The BIND accepts some optional metadata via your DNS config when you create the provider:
 
 In this example we set the default SOA settings and NS records.
 
-{% highlight javascript %}
+```js
 var BIND = NewDnsProvider('bind', 'BIND', {
         'default_soa': {
         'master': 'ns1.example.tld.',
@@ -46,7 +46,7 @@ var BIND = NewDnsProvider('bind', 'BIND', {
         'ns4.example.tld.'
     ]
 })
-{% endhighlight %}
+```
 
 # FYI: SOA Records
 
@@ -111,7 +111,7 @@ forth.
 The dnscontrol `get-zones all` subcommand scans the directory for
 any files named `*.zone` and assumes they are zone files.
 
-```
+```bash
 dnscontrol get-zones --format=nameonly - BIND all
 ```
 

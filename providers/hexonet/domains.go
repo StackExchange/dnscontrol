@@ -21,7 +21,7 @@ func (n *HXClient) EnsureDomainExists(domain string) error {
 		}
 	} else if code == 531 {
 		return n.GetHXApiError("Not authorized to manage dnszone", domain, r)
-	} else if r.IsError() || r.IsError() {
+	} else if r.IsError() || r.IsTmpError() {
 		return n.GetHXApiError("Error while checking status of dnszone", domain, r)
 	}
 	return nil

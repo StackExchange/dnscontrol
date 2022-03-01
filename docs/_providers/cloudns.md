@@ -7,11 +7,11 @@ jsId: CLOUDNS
 # ClouDNS Provider
 
 ## Configuration
-In your credentials file, you must provide your [Api user ID and password](https://www.cloudns.net/wiki/article/42/). 
+In your credentials file, you must provide your [Api user ID and password](https://www.cloudns.net/wiki/article/42/).
 
-Current version of provider doesn't support `sub-auth-user`. 
+Current version of provider doesn't support `sub-auth-user`.
 
-{% highlight json %}
+```json
 {
   "cloudns": {
     "auth-id": "12345",
@@ -19,7 +19,7 @@ Current version of provider doesn't support `sub-auth-user`.
     "auth-password": "your-password"
   }
 }
-{% endhighlight %}
+```
 
 ## Records
 
@@ -35,14 +35,14 @@ This provider does not recognize any special metadata fields unique to ClouDNS.
 ## Usage
 Example Javascript:
 
-{% highlight js %}
+```js
 var REG_NONE = NewRegistrar('none', 'NONE')
 var CLOUDNS = NewDnsProvider("cloudns", "CLOUDNS");
 
 D("example.tld", REG_NONE, DnsProvider(CLOUDNS),
     A("test","1.2.3.4")
 );
-{%endhighlight%}
+```
 
 ## Activation
 [Create Auth ID](https://www.cloudns.net/api-settings/).  Only paid account can use API
@@ -64,4 +64,4 @@ ClouDNS does not allow all TTLs, only a specific subset of TTLs. By default, the
 - 2419200 (4 weeks)
 
 The provider will automatically round up your TTL to one of these values. For example, 350 seconds would become 900
-seconds, but 300 seconds would stay 300 seconds. 
+seconds, but 300 seconds would stay 300 seconds.

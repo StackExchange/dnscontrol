@@ -29,7 +29,7 @@ type route53Provider struct {
 	client          *r53.Client
 	registrar       *r53d.Client
 	delegationSet   *string
-	zonesById       map[string]r53Types.HostedZone
+	zonesByID       map[string]r53Types.HostedZone
 	zonesByDomain   map[string]r53Types.HostedZone
 	originalRecords []r53Types.ResourceRecordSet
 }
@@ -132,7 +132,7 @@ func (r *route53Provider) ListZones() ([]string, error) {
 func (r *route53Provider) getZones() error {
 	var nextMarker *string
 	r.zonesByDomain = make(map[string]r53Types.HostedZone)
-	r.zonesById = make(map[string]r53Types.HostedZone)
+	r.zonesByID = make(map[string]r53Types.HostedZone)
 	for {
 		var out *r53.ListHostedZonesOutput
 		var err error
@@ -149,7 +149,7 @@ func (r *route53Provider) getZones() error {
 		for _, z := range out.HostedZones {
 			domain := strings.TrimSuffix(aws.ToString(z.Name), ".")
 			r.zonesByDomain[domain] = z
-			r.zonesById[parseZoneId(aws.ToString(z.Id))] = z
+			r.zonesByID[parseZoneID(aws.ToString(z.Id))] = z
 		}
 		if out.NextMarker != nil {
 			nextMarker = out.NextMarker
@@ -165,7 +165,7 @@ type errDomainNoExist struct {
 }
 
 type errZoneNoExist struct {
-	zoneId string
+	zoneID string
 }
 
 func (e errDomainNoExist) Error() string {
@@ -173,7 +173,7 @@ func (e errDomainNoExist) Error() string {
 }
 
 func (e errZoneNoExist) Error() string {
-	return fmt.Sprintf("Zone with id %s not found in your route 53 account", e.zoneId)
+	return fmt.Sprintf("Zone with id %s not found in your route 53 account", e.zoneID)
 }
 
 func (r *route53Provider) GetNameservers(domain string) ([]*models.Nameserver, error) {
@@ -208,10 +208,10 @@ func (r *route53Provider) GetZoneRecords(domain string) (models.Records, error) 
 }
 
 func (r *route53Provider) getZone(dc *models.DomainConfig) (r53Types.HostedZone, error) {
-	if zoneId, ok := dc.Metadata["zone_id"]; ok {
-		zone, ok := r.zonesById[zoneId]
+	if zoneID, ok := dc.Metadata["zone_id"]; ok {
+		zone, ok := r.zonesByID[zoneID]
 		if !ok {
-			return r53Types.HostedZone{}, errZoneNoExist{zoneId}
+			return r53Types.HostedZone{}, errZoneNoExist{zoneID}
 		}
 		return zone, nil
 	}
@@ -478,9 +478,37 @@ func nativeToRecords(set r53Types.ResourceRecordSet, origin string) ([]*models.R
 				rtype = "TXT"
 				fallthrough
 			default:
+				ty := string(rtype)
+				val := *rec.Value
+
+				// AWS Route53 has a bug.  Sometimes it returns a target
+				// without a trailing dot. In this case we add the dot.  It is
+				// not risky to "just add the dot" because this field never
+				// includes shortnames.  That said, we only do it for certain
+				// record types where we can show the problem exists.
+				// 2022-02-23: NS records do NOT have this bug.
+				//
+				// NOTE: The dot is missing when the record is added via the
+				// AWS web console manually.
+				//
+				// The next "dnscontrol push" will update the record, even
+				// though it doesn't seem to be broken. This only happens once
+				// per record.  Sadly the updates only fix the first record.
+				// So, if n records are affected by this bug, the next n
+				// pushes will be required to clean up all the records.
+				// Someone converting a new zone will see this issue for the
+				// first n pushes. It will seem odd but this is AWS's bug.
+				// The UPSERT command only fixes the first record, even if
+				// the UPSET received a list of corrections.
+				if ty == "CNAME" || ty == "MX" {
+					if !strings.HasSuffix(val, ".") {
+						val = val + "."
+					}
+				}
+
 				rc := &models.RecordConfig{TTL: uint32(aws.ToInt64(set.TTL))}
 				rc.SetLabelFromFQDN(unescape(set.Name), origin)
-				if err := rc.PopulateFromString(string(rtype), *rec.Value, origin); err != nil {
+				if err := rc.PopulateFromString(string(rtype), val, origin); err != nil {
 					return nil, fmt.Errorf("unparsable record received from R53: %w", err)
 				}
 				results = append(results, rc)
@@ -516,11 +544,11 @@ func getZoneID(zone r53Types.HostedZone, r *models.RecordConfig) string {
 	if zoneID == "" {
 		zoneID = aws.ToString(zone.Id)
 	}
-	return parseZoneId(zoneID)
+	return parseZoneID(zoneID)
 }
 
 /** Removes "/hostedzone/"" prefix from AWS ZoneId */
-func parseZoneId(zoneID string) string {
+func parseZoneID(zoneID string) string {
 	return strings.TrimPrefix(zoneID, "/hostedzone/")
 }
 

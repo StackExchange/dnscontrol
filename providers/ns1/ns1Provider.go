@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"strconv"
 	"strings"
 
 	"gopkg.in/ns1/ns1-go.v2/rest"
@@ -19,8 +20,10 @@ var docNotes = providers.DocumentationNotes{
 	providers.CanUseAlias:            providers.Can(),
 	providers.CanUseCAA:              providers.Can(),
 	providers.CanUsePTR:              providers.Can(),
+	providers.CanUseNAPTR:            providers.Can(),
 	providers.DocCreateDomains:       providers.Can(),
 	providers.DocDualHost:            providers.Can(),
+	providers.CanGetZones:            providers.Can(),
 	providers.DocOfficiallySupported: providers.Cannot(),
 }
 
@@ -68,36 +71,42 @@ func (n *nsone) GetNameservers(domain string) ([]*models.Nameserver, error) {
 
 // GetZoneRecords gets the records of a zone and returns them in RecordConfig format.
 func (n *nsone) GetZoneRecords(domain string) (models.Records, error) {
-	return nil, fmt.Errorf("not implemented")
-	// This enables the get-zones subcommand.
-	// Implement this by extracting the code from GetDomainCorrections into
-	// a single function.  For most providers this should be relatively easy.
-}
-
-func (n *nsone) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Correction, error) {
-	dc.Punycode()
-	//dc.CombineMXs()
-	z, _, err := n.Zones.Get(dc.Name)
+	z, _, err := n.Zones.Get(domain)
 	if err != nil {
 		return nil, err
 	}
 
 	found := models.Records{}
 	for _, r := range z.Records {
-		zrs, err := convert(r, dc.Name)
+		zrs, err := convert(r, domain)
 		if err != nil {
 			return nil, err
 		}
 		found = append(found, zrs...)
 	}
-	foundGrouped := found.GroupedByKey()
+	return found, nil
+}
+
+func (n *nsone) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Correction, error) {
+	dc.Punycode()
+	//dc.CombineMXs()
+
+	domain := dc.Name
+
+	// Get existing records
+	existingRecords, err := n.GetZoneRecords(domain)
+	if err != nil {
+		return nil, err
+	}
+
+	existingGrouped := existingRecords.GroupedByKey()
 	desiredGrouped := dc.Records.GroupedByKey()
 
 	//  Normalize
-	models.PostProcessRecords(found)
+	models.PostProcessRecords(existingRecords)
 
 	differ := diff.New(dc)
-	changedGroups, err := differ.ChangedGroups(found)
+	changedGroups, err := differ.ChangedGroups(existingRecords)
 	if err != nil {
 		return nil, err
 	}
@@ -107,7 +116,7 @@ func (n *nsone) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Correct
 		key := k
 
 		desc := strings.Join(descs, "\n")
-		_, current := foundGrouped[k]
+		_, current := existingGrouped[k]
 		recs, wanted := desiredGrouped[k]
 		if wanted && !current {
 			// pure addition
@@ -163,9 +172,22 @@ func buildRecord(recs models.Records, domain string, id string) *dns.Record {
 		} else if r.Type == "TXT" {
 			rec.AddAnswer(&dns.Answer{Rdata: r.TxtStrings})
 		} else if r.Type == "CAA" {
-			rec.AddAnswer(&dns.Answer{Rdata: strings.Split(fmt.Sprintf("%v %s %s", r.CaaFlag, r.CaaTag, r.GetTargetField()), " ")})
+			rec.AddAnswer(&dns.Answer{
+				Rdata: []string{
+					fmt.Sprintf("%v", r.CaaFlag),
+					r.CaaTag,
+					r.GetTargetField(),
+				}})
 		} else if r.Type == "SRV" {
 			rec.AddAnswer(&dns.Answer{Rdata: strings.Split(fmt.Sprintf("%d %d %d %v", r.SrvPriority, r.SrvWeight, r.SrvPort, r.GetTargetField()), " ")})
+		} else if r.Type == "NAPTR" {
+			rec.AddAnswer(&dns.Answer{Rdata: []string{
+				strconv.Itoa(int(r.NaptrOrder)),
+				strconv.Itoa(int(r.NaptrPreference)),
+				r.NaptrFlags,
+				r.NaptrService,
+				r.NaptrRegexp,
+				r.GetTargetField()}})
 		} else {
 			rec.AddAnswer(&dns.Answer{Rdata: strings.Split(r.GetTargetField(), " ")})
 		}
@@ -185,16 +207,22 @@ func convert(zr *dns.ZoneRecord, domain string) ([]*models.RecordConfig, error) 
 		case "ALIAS":
 			rec.Type = rtype
 			if err := rec.SetTarget(ans); err != nil {
-				panic(fmt.Errorf("unparsable %s record received from ns1: %w", rtype, err))
+				return nil, fmt.Errorf("unparsable %s record received from ns1: %w", rtype, err)
 			}
 		case "URLFWD":
 			rec.Type = rtype
 			if err := rec.SetTarget(ans); err != nil {
-				panic(fmt.Errorf("unparsable %s record received from ns1: %w", rtype, err))
+				return nil, fmt.Errorf("unparsable %s record received from ns1: %w", rtype, err)
+			}
+		case "CAA":
+			//dnscontrol expects quotes around multivalue CAA entries, API doesn't add them
+			xAns := strings.SplitN(ans, " ", 3)
+			if err := rec.SetTargetCAAStrings(xAns[0], xAns[1], xAns[2]); err != nil {
+				return nil, fmt.Errorf("unparsable %s record received from ns1: %w", rtype, err)
 			}
 		default:
 			if err := rec.PopulateFromString(rtype, ans, domain); err != nil {
-				panic(fmt.Errorf("unparsable record received from ns1: %w", err))
+				return nil, fmt.Errorf("unparsable record received from ns1: %w", err)
 			}
 		}
 		found = append(found, rec)

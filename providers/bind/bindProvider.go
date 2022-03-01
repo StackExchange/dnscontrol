@@ -69,8 +69,17 @@ func initBind(config map[string]string, providermeta json.RawMessage) (providers
 		}
 	}
 	var nss []string
-	for _, ns := range api.DefaultNS {
-		nss = append(nss, ns[0:len(ns)-1])
+	for i, ns := range api.DefaultNS {
+		if ns == "" {
+			return nil, fmt.Errorf("empty string in default_ns[%d]", i)
+		}
+		// If it contains a ".", it must end in a ".".
+		if strings.ContainsRune(ns, '.') && ns[len(ns)-1] != '.' {
+			return nil, fmt.Errorf("default_ns (%v) must end with a (.) [https://stackexchange.github.io/dnscontrol/why-the-dot]", ns)
+		}
+		// This is one of the (increasingly rare) cases where we store a
+		// name without the trailing dot to indicate a FQDN.
+		nss = append(nss, strings.TrimSuffix(ns, "."))
 	}
 	var err error
 	api.nameservers, err = models.ToNameservers(nss)

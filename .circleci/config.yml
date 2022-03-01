@@ -94,10 +94,10 @@ jobs:
       - run:
           name: Run integration tests for << parameters.provider >> provider
           working_directory: integrationTest
-          no_output_timeout: 20m
+          no_output_timeout: 32m
           command: |
             if [ -n "$<< parameters.provider >>_DOMAIN" ] ; then
-              gotestsum --junitfile ${TEST_RESULTS}/gotestsum-report.xml -- -timeout 20m -v -verbose -provider << parameters.provider >> -cfworkers=false
+              gotestsum --junitfile ${TEST_RESULTS}/gotestsum-report.xml -- -timeout 30m -v -verbose -provider << parameters.provider >> -cfworkers=false
             else
               echo "Skip test for << parameters.provider >> provider"
             fi

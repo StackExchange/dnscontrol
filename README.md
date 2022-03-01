@@ -44,6 +44,7 @@ Currently supported DNS providers:
  - OVH
  - OctoDNS
  - Oracle Cloud
+ - Packetframe
  - PowerDNS
  - SoftLayer
  - TransIP
@@ -162,18 +163,31 @@ Alternatively, on Mac you can install it using homebrew:
 
 ## Via [docker](https://hub.docker.com/r/stackexchange/dnscontrol/)
 
-```
+```bash
 docker run --rm -it -v $(pwd)/dnsconfig.js:/dns/dnsconfig.js -v $(pwd)/creds.json:/dns/creds.json stackexchange/dnscontrol dnscontrol preview
 ```
 
 The documentation can be viewed via Docker:
 
-```
+```bash
+cd docs
 docker run --rm -it --volume="$PWD:/srv/jekyll" --volume="$PWD/vendor/bundle:/usr/local/bundle" --env JEKYLL_ENV=production jekyll/jekyll:3.8 jekyll build -V
+# Open docs/_site/index.html in your web browser to see the results.
+# (Note: The preview isn't perfect. Links that use the site.github.url variable won't work.
 ```
 
+## Via Github Actions (GHA)
 
-## More info at our web site
+See [dnscontrol-action](https://github.com/koenrh/dnscontrol-action)
+
+# Depreciation warnings (updated 2022-02-05)
+
+* Provider ACTIVEDIRECTORY_PS is deprecated and will be removed soon. Use MSDNS instead.
+* Call for new volunteers maintainers for CLOUDFLARE_API, GCLOUD, NAMEDOTCOM, ROUTE53, and SOFTLAYER.
+* Let's Encrypt support is frozen and will be removed in early 2023.  The "get-certs" command (renews certs via Let's Encrypt) has no maintainer. There are other projects that do a better job. If you don't use this feature, please do not start. If you do use this feature, please plan on migrating to something else.  See discussion in https://github.com/StackExchange/dnscontrol/issues/1400
+
+
+# More info at our web site
 
 The website: [https://stackexchange.github.io/dnscontrol/](https://stackexchange.github.io/dnscontrol/)
 

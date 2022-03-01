@@ -4,6 +4,7 @@ package namedotcom
 import (
 	"encoding/json"
 	"fmt"
+	"time"
 
 	"github.com/namedotcom/go/namecom"
 
@@ -50,6 +51,13 @@ func newProvider(conf map[string]string) (*namedotcomProvider, error) {
 	if api.APIUrl == "" {
 		api.APIUrl = defaultAPIBase
 	}
+
+	// Set the timeout to a high value.  Currently we get timeouts and
+	// the namecom library doesn't make it easy to do a clean
+	// retry-on-timeout or retry-on-429.  As a work-around we just give
+	// it more time to finish.
+	api.client.Client.Timeout = 60 * time.Second
+
 	return api, nil
 }
 

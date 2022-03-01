@@ -27,18 +27,18 @@ To activate this mode, set `"fakeps":"true"` inside your credentials file for th
 
 The `ActiveDirectory_PS` provider reads an `ADServer` setting from `creds.json` to know the name of the ActiveDirectory DNS Server to update.
 
-{% highlight javascript %}
+```js
 {
   "activedir": {
     "ADServer": "ny-dc01"
   }
 }
-{% endhighlight %}
+```
 
 
 If you want to modify the "fake powershell" mode details, you can set them in the credentials file:
 
-{% highlight javascript %}
+```js
 {
   "activedir": {
     "ADServer": "ny-dc01",
@@ -47,19 +47,19 @@ If you want to modify the "fake powershell" mode details, you can set them in th
     "psout": "commandsToRun.ps1"
   }
 }
-{% endhighlight %}
+```
 
 
 An example DNS configuration:
 
-{% highlight javascript %}
+```js
 var REG_NONE = NewRegistrar('none', 'NONE')
 var ACTIVEDIRECTORY = NewDnsProvider("activedir", "ACTIVEDIRECTORY_PS");
 
 D('example.tld', REG_NONE, DnsProvider(ACTIVEDIRECTORY),
       A("test","1.2.3.4")
 )
-{% endhighlight %}
+```
 
 To generate a `adzonedump.ZONE.json` file, run `dnscontrol preview` on a Windows system then copy the appropriate file to the system you'll use in "fake powershell" mode.
 

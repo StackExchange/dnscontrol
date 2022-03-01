@@ -11,7 +11,7 @@ jsId: ORACLE
 Create an API key through the Oracle Cloud portal, and provide the user OCID, tenancy OCID, key fingerprint, region, and the contents of the private key.
 The OCID of the compartment DNS resources should be put in can also optionally be provided.
 
-{% highlight json %}
+```json
 {
   "oracle": {
     "user_ocid": "$ORACLE_USER_OCID",
@@ -22,7 +22,7 @@ The OCID of the compartment DNS resources should be put in can also optionally b
     "compartment": "$ORACLE_COMPARTMENT"
   },
 }
-{% endhighlight %}
+```
 
 ## Metadata
 This provider does not recognize any special metadata fields unique to Oracle Cloud.
@@ -30,7 +30,7 @@ This provider does not recognize any special metadata fields unique to Oracle Cl
 ## Usage
 Example Javascript:
 
-{% highlight js %}
+```js
 var REG_NONE = NewRegistrar('none', 'NONE')
 var ORACLE = NewDnsProvider("oracle", "ORACLE");
 
@@ -39,5 +39,5 @@ D("example.tld", REG_NONE, DnsProvider(ORACLE),
 
     A("test","1.2.3.4")
 );
-{% endhighlight %}
+```
 

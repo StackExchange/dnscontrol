@@ -23,7 +23,8 @@ DMARC_BUILDER({
 ```
 
 This yield the following record:
-```
+
+```text
 @   IN  TXT "v=DMARC1; p=reject; ruf=mailto:mailauth-reports@example.com"
 ```
 
@@ -62,7 +63,7 @@ DMARC_BUILDER({
 
 This yields the following records:
 
-```
+```text
 @           IN  TXT "v=DMARC1; p=reject; sp=quarantine; adkim=s; aspf=r; pct=50; rua=mailto:mailauth-reports@example.com,https://dmarc.example.com/submit; ruf=mailto:mailauth-reports@example.com; fo=1; ri=3600"
 insecure    IN  TXT "v=DMARC1; p=none; ruf=mailto:mailauth-reports@example.com; fo=d"
 ```
