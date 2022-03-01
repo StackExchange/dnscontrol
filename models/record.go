@@ -45,6 +45,7 @@ import (
 //     PURGE
 //     URL
 //     URL301
+//     CLOUDNS_WR
 //
 // Notes about the fields:
 //

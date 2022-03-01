@@ -32,6 +32,20 @@ DS records in the same update, the NS records will be inserted first.
 ## Metadata
 This provider does not recognize any special metadata fields unique to ClouDNS.
 
+## Web Redirects
+ClouDNS supports ClouDNS-specific "WR record (web redirects)" for your domains.
+Simply use the `CLOUDNS_WR` functions to make redirects like any other record:
+
+```js
+var REG_NONE = NewRegistrar('none', 'NONE')
+var CLOUDNS = NewDnsProvider("cloudns", "CLOUDNS");
+
+D("example.tld", REG_NONE, DnsProvider(CLOUDNS),
+  CLOUDNS_WR('@', 'http://example.com/'),
+  CLOUDNS_WR('www', 'http://example.com/')
+)
+```
+
 ## Usage
 Example Javascript:
 
