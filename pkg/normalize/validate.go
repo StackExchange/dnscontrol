@@ -549,18 +549,18 @@ func checkDuplicates(records []*models.RecordConfig) (errs []error) {
 var providerCapabilityChecks = []pairTypeCapability{
 	// If a zone uses rType X, the provider must support capability Y.
 	//{"X", providers.Y},
+	capabilityCheck("AKAMAICDN", providers.CanUseAKAMAICDN),
 	capabilityCheck("ALIAS", providers.CanUseAlias),
 	capabilityCheck("AUTODNSSEC", providers.CanAutoDNSSEC),
+	capabilityCheck("AZURE_ALIAS", providers.CanUseAzureAlias),
 	capabilityCheck("CAA", providers.CanUseCAA),
 	capabilityCheck("NAPTR", providers.CanUseNAPTR),
 	capabilityCheck("PTR", providers.CanUsePTR),
 	capabilityCheck("R53_ALIAS", providers.CanUseRoute53Alias),
-	capabilityCheck("SSHFP", providers.CanUseSSHFP),
 	capabilityCheck("SOA", providers.CanUseSOA),
 	capabilityCheck("SRV", providers.CanUseSRV),
+	capabilityCheck("SSHFP", providers.CanUseSSHFP),
 	capabilityCheck("TLSA", providers.CanUseTLSA),
-	capabilityCheck("AZURE_ALIAS", providers.CanUseAzureAlias),
-	capabilityCheck("AKAMAICDN", providers.CanUseAKAMAICDN),
 
 	// DS needs special record-level checks
 	{
