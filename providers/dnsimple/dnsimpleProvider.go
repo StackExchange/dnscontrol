@@ -18,19 +18,19 @@ import (
 )
 
 var features = providers.DocumentationNotes{
+	providers.CanAutoDNSSEC:          providers.Can(),
+	providers.CanGetZones:            providers.Can(),
 	providers.CanUseAlias:            providers.Can(),
 	providers.CanUseCAA:              providers.Can(),
-	providers.CanUseNAPTR:            providers.Can(),
 	providers.CanUseDS:               providers.Can(),
+	providers.CanUseNAPTR:            providers.Can(),
 	providers.CanUsePTR:              providers.Can(),
-	providers.CanUseSSHFP:            providers.Can(),
 	providers.CanUseSRV:              providers.Can(),
-	providers.CanAutoDNSSEC:          providers.Can(),
+	providers.CanUseSSHFP:            providers.Can(),
 	providers.CanUseTLSA:             providers.Cannot(),
 	providers.DocCreateDomains:       providers.Cannot(),
 	providers.DocDualHost:            providers.Cannot("DNSimple does not allow sufficient control over the apex NS records"),
 	providers.DocOfficiallySupported: providers.Cannot(),
-	providers.CanGetZones:            providers.Can(),
 }
 
 func init() {
