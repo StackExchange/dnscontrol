@@ -39,11 +39,11 @@ func newPacketframe(m map[string]string, metadata json.RawMessage) (providers.DN
 }
 
 var features = providers.DocumentationNotes{
+	providers.CanGetZones:            providers.Unimplemented(),
+	providers.CanUsePTR:              providers.Can(),
+	providers.CanUseSRV:              providers.Can(),
 	providers.DocDualHost:            providers.Cannot(),
 	providers.DocOfficiallySupported: providers.Cannot(),
-	providers.CanUseSRV:              providers.Can(),
-	providers.CanUsePTR:              providers.Can(),
-	providers.CanGetZones:            providers.Unimplemented(),
 }
 
 func init() {
