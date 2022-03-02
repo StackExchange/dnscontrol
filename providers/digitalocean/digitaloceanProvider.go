@@ -72,11 +72,11 @@ retry:
 }
 
 var features = providers.DocumentationNotes{
+	providers.CanGetZones:            providers.Can(),
+	providers.CanUseCAA:              providers.Can("Semicolons not supported in issue/issuewild fields.", "https://www.digitalocean.com/docs/networking/dns/how-to/create-caa-records"),
+	providers.CanUseSRV:              providers.Can(),
 	providers.DocCreateDomains:       providers.Can(),
 	providers.DocOfficiallySupported: providers.Cannot(),
-	providers.CanUseSRV:              providers.Can(),
-	providers.CanUseCAA:              providers.Can("Semicolons not supported in issue/issuewild fields.", "https://www.digitalocean.com/docs/networking/dns/how-to/create-caa-records"),
-	providers.CanGetZones:            providers.Can(),
 }
 
 func init() {
