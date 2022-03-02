@@ -25,6 +25,7 @@ func NewExoscale(m map[string]string, metadata json.RawMessage) (providers.DNSSe
 }
 
 var features = providers.DocumentationNotes{
+	providers.CanGetZones:            providers.Unimplemented(),
 	providers.CanUseAlias:            providers.Can(),
 	providers.CanUseCAA:              providers.Can(),
 	providers.CanUsePTR:              providers.Can(),
@@ -33,7 +34,6 @@ var features = providers.DocumentationNotes{
 	providers.DocCreateDomains:       providers.Cannot(),
 	providers.DocDualHost:            providers.Cannot("Exoscale does not allow sufficient control over the apex NS records"),
 	providers.DocOfficiallySupported: providers.Cannot(),
-	providers.CanGetZones:            providers.Unimplemented(),
 }
 
 func init() {

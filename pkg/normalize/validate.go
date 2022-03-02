@@ -54,20 +54,20 @@ func validateRecordTypes(rec *models.RecordConfig, domain string, pTypes []strin
 	var validTypes = map[string]bool{
 		"A":                true,
 		"AAAA":             true,
-		"CNAME":            true,
+		"ALIAS":            false,
 		"CAA":              true,
+		"CNAME":            true,
 		"DS":               true,
-		"TLSA":             true,
 		"IMPORT_TRANSFORM": false,
 		"MX":               true,
+		"NAPTR":            true,
+		"NS":               true,
+		"PTR":              true,
 		"SOA":              true,
 		"SRV":              true,
 		"SSHFP":            true,
+		"TLSA":             true,
 		"TXT":              true,
-		"NS":               true,
-		"PTR":              true,
-		"NAPTR":            true,
-		"ALIAS":            false,
 	}
 	_, ok := validTypes[rec.Type]
 	if !ok {
@@ -168,6 +168,8 @@ func checkTargets(rec *models.RecordConfig, domain string) (errs []error) {
 		check(checkIPv4(target))
 	case "AAAA":
 		check(checkIPv6(target))
+	case "ALIAS":
+		check(checkTarget(target))
 	case "CNAME":
 		check(checkTarget(target))
 		if label == "@" {
@@ -175,18 +177,16 @@ func checkTargets(rec *models.RecordConfig, domain string) (errs []error) {
 		}
 	case "MX":
 		check(checkTarget(target))
+	case "NAPTR":
+		if target != "" {
+			check(checkTarget(target))
+		}
 	case "NS":
 		check(checkTarget(target))
 		if label == "@" {
 			check(fmt.Errorf("cannot create NS record for bare domain. Use NAMESERVER instead"))
 		}
 	case "PTR":
-		check(checkTarget(target))
-	case "NAPTR":
-		if target != "" {
-			check(checkTarget(target))
-		}
-	case "ALIAS":
 		check(checkTarget(target))
 	case "SOA":
 		check(checkSoa(rec.SoaExpire, rec.SoaMinttl, rec.SoaRefresh, rec.SoaRetry, rec.SoaSerial, rec.SoaMbox))
@@ -549,18 +549,18 @@ func checkDuplicates(records []*models.RecordConfig) (errs []error) {
 var providerCapabilityChecks = []pairTypeCapability{
 	// If a zone uses rType X, the provider must support capability Y.
 	//{"X", providers.Y},
+	capabilityCheck("AKAMAICDN", providers.CanUseAKAMAICDN),
 	capabilityCheck("ALIAS", providers.CanUseAlias),
 	capabilityCheck("AUTODNSSEC", providers.CanAutoDNSSEC),
+	capabilityCheck("AZURE_ALIAS", providers.CanUseAzureAlias),
 	capabilityCheck("CAA", providers.CanUseCAA),
 	capabilityCheck("NAPTR", providers.CanUseNAPTR),
 	capabilityCheck("PTR", providers.CanUsePTR),
 	capabilityCheck("R53_ALIAS", providers.CanUseRoute53Alias),
-	capabilityCheck("SSHFP", providers.CanUseSSHFP),
 	capabilityCheck("SOA", providers.CanUseSOA),
 	capabilityCheck("SRV", providers.CanUseSRV),
+	capabilityCheck("SSHFP", providers.CanUseSSHFP),
 	capabilityCheck("TLSA", providers.CanUseTLSA),
-	capabilityCheck("AZURE_ALIAS", providers.CanUseAzureAlias),
-	capabilityCheck("AKAMAICDN", providers.CanUseAKAMAICDN),
 
 	// DS needs special record-level checks
 	{

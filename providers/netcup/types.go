@@ -124,21 +124,21 @@ func fromRecordConfig(in *models.RecordConfig) *record {
 	switch rc.Type { // #rtype_variations
 	case "A", "AAAA", "PTR", "TXT", "SOA", "ALIAS":
 		// Nothing special.
+	case "CAA":
+		rc.Destination = strconv.Itoa(int(in.CaaFlag)) + " " + in.CaaTag + " \"" + in.GetTargetField() + "\""
 	case "CNAME":
 		rc.Destination = strings.TrimSuffix(in.GetTargetField(), ".")
-	case "NS":
-		return nil // API ignores NS records
 	case "MX":
 		rc.Destination = strings.TrimSuffix(in.GetTargetField(), ".")
 		rc.Priority = strconv.Itoa(int(in.MxPreference))
+	case "NS":
+		return nil // API ignores NS records
 	case "SRV":
 		rc.Destination = strconv.Itoa(int(in.SrvPriority)) + " " + strconv.Itoa(int(in.SrvWeight)) + " " + strconv.Itoa(int(in.SrvPort)) + " " + in.GetTargetField()
-	case "CAA":
-		rc.Destination = strconv.Itoa(int(in.CaaFlag)) + " " + in.CaaTag + " \"" + in.GetTargetField() + "\""
-	case "TLSA":
-		rc.Destination = strconv.Itoa(int(in.TlsaUsage)) + " " + strconv.Itoa(int(in.TlsaSelector)) + " " + strconv.Itoa(int(in.TlsaMatchingType))
 	case "SSHFP":
 		rc.Destination = strconv.Itoa(int(in.SshfpAlgorithm)) + " " + strconv.Itoa(int(in.SshfpFingerprint))
+	case "TLSA":
+		rc.Destination = strconv.Itoa(int(in.TlsaUsage)) + " " + strconv.Itoa(int(in.TlsaSelector)) + " " + strconv.Itoa(int(in.TlsaMatchingType))
 	default:
 		msg := fmt.Sprintf("ClouDNS.toReq rtype %v unimplemented", rc.Type)
 		panic(msg)

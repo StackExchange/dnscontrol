@@ -22,13 +22,13 @@ type namedotcomProvider struct {
 }
 
 var features = providers.DocumentationNotes{
+	providers.CanGetZones:            providers.Can(),
 	providers.CanUseAlias:            providers.Can(),
 	providers.CanUsePTR:              providers.Cannot("PTR records are not supported (See Link)", "https://www.name.com/support/articles/205188508-Reverse-DNS-records"),
 	providers.CanUseSRV:              providers.Can("SRV records with empty targets are not supported"),
 	providers.DocCreateDomains:       providers.Cannot("New domains require registration"),
 	providers.DocDualHost:            providers.Can(),
 	providers.DocOfficiallySupported: providers.Can(),
-	providers.CanGetZones:            providers.Can(),
 }
 
 func newReg(conf map[string]string) (providers.Registrar, error) {

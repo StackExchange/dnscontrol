@@ -18,16 +18,16 @@ type ovhProvider struct {
 }
 
 var features = providers.DocumentationNotes{
+	providers.CanGetZones:            providers.Can(),
 	providers.CanUseAlias:            providers.Cannot(),
 	providers.CanUseCAA:              providers.Can(),
 	providers.CanUsePTR:              providers.Cannot(),
 	providers.CanUseSRV:              providers.Can(),
-	providers.CanUseTLSA:             providers.Can(),
 	providers.CanUseSSHFP:            providers.Can(),
+	providers.CanUseTLSA:             providers.Can(),
 	providers.DocCreateDomains:       providers.Cannot("New domains require registration"),
 	providers.DocDualHost:            providers.Can(),
 	providers.DocOfficiallySupported: providers.Cannot(),
-	providers.CanGetZones:            providers.Can(),
 }
 
 func newOVH(m map[string]string, metadata json.RawMessage) (*ovhProvider, error) {

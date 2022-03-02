@@ -39,16 +39,16 @@ func (rc *RecordConfig) PopulateFromString(rtype, contents, origin string) error
 		return rc.SetTargetMXString(contents)
 	case "NAPTR":
 		return rc.SetTargetNAPTRString(contents)
-	case "SRV":
-		return rc.SetTargetSRVString(contents)
 	case "SOA":
 		return rc.SetTargetSOAString(contents)
+	case "SPF", "TXT":
+		return rc.SetTargetTXTString(contents)
+	case "SRV":
+		return rc.SetTargetSRVString(contents)
 	case "SSHFP":
 		return rc.SetTargetSSHFPString(contents)
 	case "TLSA":
 		return rc.SetTargetTLSAString(contents)
-	case "SPF", "TXT":
-		return rc.SetTargetTXTString(contents)
 	default:
 		return fmt.Errorf("unknown rtype (%s) when parsing (%s) domain=(%s)",
 			rtype, contents, origin)

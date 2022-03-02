@@ -17,6 +17,7 @@ type activedirProvider struct {
 }
 
 var features = providers.DocumentationNotes{
+	providers.CanGetZones:            providers.Unimplemented(),
 	providers.CanUseAlias:            providers.Cannot(),
 	providers.CanUseCAA:              providers.Cannot(),
 	providers.CanUsePTR:              providers.Cannot(),
@@ -24,7 +25,6 @@ var features = providers.DocumentationNotes{
 	providers.DocCreateDomains:       providers.Cannot("AD depends on the zone already existing on the dns server"),
 	providers.DocDualHost:            providers.Cannot("This driver does not manage NS records, so should not be used for dual-host scenarios"),
 	providers.DocOfficiallySupported: providers.Can(),
-	providers.CanGetZones:            providers.Unimplemented(),
 }
 
 // Register with the dnscontrol system.
