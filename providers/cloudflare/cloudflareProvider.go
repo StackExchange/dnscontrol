@@ -37,17 +37,17 @@ Domain level metadata available:
 */
 
 var features = providers.DocumentationNotes{
+	providers.CanGetZones:            providers.Can(),
 	providers.CanUseAlias:            providers.Can("CF automatically flattens CNAME records into A records dynamically"),
-	providers.CanUsePTR:              providers.Cannot(),
 	providers.CanUseCAA:              providers.Can(),
-	providers.CanUseSRV:              providers.Can(),
-	providers.CanUseTLSA:             providers.Can(),
-	providers.CanUseSSHFP:            providers.Can(),
 	providers.CanUseDSForChildren:    providers.Can(),
+	providers.CanUsePTR:              providers.Cannot(),
+	providers.CanUseSRV:              providers.Can(),
+	providers.CanUseSSHFP:            providers.Can(),
+	providers.CanUseTLSA:             providers.Can(),
 	providers.DocCreateDomains:       providers.Can(),
 	providers.DocDualHost:            providers.Cannot("Cloudflare will not work well in situations where it is not the only DNS server"),
 	providers.DocOfficiallySupported: providers.Can(),
-	providers.CanGetZones:            providers.Can(),
 }
 
 func init() {
