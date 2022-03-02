@@ -19,10 +19,6 @@ import (
 )
 
 var features = providers.DocumentationNotes{
-	providers.DocCreateDomains:       providers.Can(),
-	providers.DocDualHost:            providers.Can(),
-	providers.DocOfficiallySupported: providers.Cannot(),
-
 	providers.CanGetZones: providers.Can(),
 	providers.CanUseAlias: providers.Can(),
 	providers.CanUseCAA:   providers.Can(),
@@ -32,6 +28,10 @@ var features = providers.DocumentationNotes{
 	providers.CanUseSRV:   providers.Can(),
 	providers.CanUseSSHFP: providers.Can(),
 	providers.CanUseTLSA:  providers.Can(),
+
+	providers.DocCreateDomains:       providers.Can(),
+	providers.DocDualHost:            providers.Can(),
+	providers.DocOfficiallySupported: providers.Cannot(),
 }
 
 func init() {
