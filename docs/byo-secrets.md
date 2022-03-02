@@ -84,8 +84,8 @@ In this branch, edit `.github/workflows/build.yml`:
         provider:
 ...
         - DIGITALOCEAN
-        - GANDI_V5
         - FANCYDNS          <<< NEW ITEM ADDED HERE
+        - GANDI_V5
         - INWX
 ```
 
