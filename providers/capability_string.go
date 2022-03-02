@@ -8,29 +8,30 @@ func _() {
 	// An "invalid array index" compiler error signifies that the constant values have changed.
 	// Re-run the stringer command to generate them again.
 	var x [1]struct{}
-	_ = x[CanUseAlias-0]
-	_ = x[CanUseCAA-1]
-	_ = x[CanUseDS-2]
-	_ = x[CanUseDSForChildren-3]
-	_ = x[CanUsePTR-4]
-	_ = x[CanUseNAPTR-5]
-	_ = x[CanUseSRV-6]
-	_ = x[CanUseSSHFP-7]
-	_ = x[CanUseTLSA-8]
-	_ = x[CanAutoDNSSEC-9]
-	_ = x[CantUseNOPURGE-10]
-	_ = x[DocOfficiallySupported-11]
-	_ = x[DocDualHost-12]
-	_ = x[DocCreateDomains-13]
-	_ = x[CanUseRoute53Alias-14]
-	_ = x[CanGetZones-15]
-	_ = x[CanUseAzureAlias-16]
-	_ = x[CanUseSOA-17]
+	_ = x[CanAutoDNSSEC-0]
+	_ = x[CanGetZones-1]
+	_ = x[CanUseAKAMAICDN-2]
+	_ = x[CanUseAlias-3]
+	_ = x[CanUseAzureAlias-4]
+	_ = x[CanUseCAA-5]
+	_ = x[CanUseDS-6]
+	_ = x[CanUseDSForChildren-7]
+	_ = x[CanUseNAPTR-8]
+	_ = x[CanUsePTR-9]
+	_ = x[CanUseRoute53Alias-10]
+	_ = x[CanUseSOA-11]
+	_ = x[CanUseSRV-12]
+	_ = x[CanUseSSHFP-13]
+	_ = x[CanUseTLSA-14]
+	_ = x[CantUseNOPURGE-15]
+	_ = x[DocCreateDomains-16]
+	_ = x[DocDualHost-17]
+	_ = x[DocOfficiallySupported-18]
 }
 
-const _Capability_name = "CanUseAliasCanUseCAACanUseDSCanUseDSForChildrenCanUsePTRCanUseNAPTRCanUseSRVCanUseSSHFPCanUseTLSACanAutoDNSSECCantUseNOPURGEDocOfficiallySupportedDocDualHostDocCreateDomainsCanUseRoute53AliasCanGetZonesCanUseAzureAliasCanUseSOA"
+const _Capability_name = "CanAutoDNSSECCanGetZonesCanUseAKAMAICDNCanUseAliasCanUseAzureAliasCanUseCAACanUseDSCanUseDSForChildrenCanUseNAPTRCanUsePTRCanUseRoute53AliasCanUseSOACanUseSRVCanUseSSHFPCanUseTLSACantUseNOPURGEDocCreateDomainsDocDualHostDocOfficiallySupported"
 
-var _Capability_index = [...]uint8{0, 11, 20, 28, 47, 56, 67, 76, 87, 97, 110, 124, 146, 157, 173, 191, 202, 218, 227}
+var _Capability_index = [...]uint8{0, 13, 24, 39, 50, 66, 75, 83, 102, 113, 122, 140, 149, 158, 169, 179, 193, 209, 220, 242}
 
 func (i Capability) String() string {
 	if i >= Capability(len(_Capability_index)-1) {
