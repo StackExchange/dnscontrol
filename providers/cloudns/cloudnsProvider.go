@@ -59,6 +59,7 @@ func init() {
 		RecordAuditor: AuditRecords,
 	}
 	providers.RegisterDomainServiceProviderType("CLOUDNS", fns, features)
+	providers.RegisterCustomRecordType("CLOUDNS_WR", "CLOUDNS", "WR")
 }
 
 // GetNameservers returns the nameservers for a domain.
@@ -278,7 +279,7 @@ func toReq(rc *models.RecordConfig) (requestParams, error) {
 	}
 
 	switch rc.Type { // #rtype_variations
-	case "A", "AAAA", "NS", "PTR", "TXT", "SOA", "ALIAS", "CNAME":
+	case "A", "AAAA", "NS", "PTR", "TXT", "SOA", "ALIAS", "CNAME", "WR":
 		// Nothing special.
 	case "MX":
 		req["priority"] = strconv.Itoa(int(rc.MxPreference))

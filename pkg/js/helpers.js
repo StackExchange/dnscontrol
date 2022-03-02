@@ -873,6 +873,7 @@ var URL = recordBuilder('URL');
 var URL301 = recordBuilder('URL301');
 var FRAME = recordBuilder('FRAME');
 var NS1_URLFWD = recordBuilder('NS1_URLFWD');
+var CLOUDNS_WR = recordBuilder('CLOUDNS_WR');
 
 // SPF_BUILDER takes an object:
 // parts: The parts of the SPF record (to be joined with ' ').
