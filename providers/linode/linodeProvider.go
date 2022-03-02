@@ -86,9 +86,9 @@ func NewLinode(m map[string]string, metadata json.RawMessage) (providers.DNSServ
 }
 
 var features = providers.DocumentationNotes{
+	providers.CanGetZones:            providers.Unimplemented(),
 	providers.DocDualHost:            providers.Cannot(),
 	providers.DocOfficiallySupported: providers.Cannot(),
-	providers.CanGetZones:            providers.Unimplemented(),
 }
 
 func init() {
