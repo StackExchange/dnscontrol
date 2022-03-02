@@ -17,13 +17,13 @@ import (
 )
 
 var docNotes = providers.DocumentationNotes{
+	providers.CanGetZones:            providers.Can(),
 	providers.CanUseAlias:            providers.Can(),
 	providers.CanUseCAA:              providers.Can(),
-	providers.CanUsePTR:              providers.Can(),
 	providers.CanUseNAPTR:            providers.Can(),
+	providers.CanUsePTR:              providers.Can(),
 	providers.DocCreateDomains:       providers.Can(),
 	providers.DocDualHost:            providers.Can(),
-	providers.CanGetZones:            providers.Can(),
 	providers.DocOfficiallySupported: providers.Cannot(),
 }
 
