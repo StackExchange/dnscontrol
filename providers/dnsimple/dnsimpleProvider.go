@@ -574,10 +574,16 @@ func getTargetRecordContent(rc *models.RecordConfig) string {
 	switch rtype := rc.Type; rtype {
 	case "CAA":
 		return rc.GetTargetCombined()
-	case "SSHFP":
-		return fmt.Sprintf("%d %d %s", rc.SshfpAlgorithm, rc.SshfpFingerprint, rc.GetTargetField())
 	case "DS":
 		return fmt.Sprintf("%d %d %d %s", rc.DsKeyTag, rc.DsAlgorithm, rc.DsDigestType, rc.DsDigest)
+	case "NAPTR":
+		return fmt.Sprintf("%d %d %s %s %s %s",
+			rc.NaptrOrder, rc.NaptrPreference,
+			quoteDNSString(rc.NaptrFlags), quoteDNSString(rc.NaptrService),
+			quoteDNSString(rc.NaptrRegexp),
+			rc.GetTargetField())
+	case "SSHFP":
+		return fmt.Sprintf("%d %d %s", rc.SshfpAlgorithm, rc.SshfpFingerprint, rc.GetTargetField())
 	case "SRV":
 		return fmt.Sprintf("%d %d %s", rc.SrvWeight, rc.SrvPort, rc.GetTargetField())
 	case "TXT":
@@ -586,12 +592,6 @@ func getTargetRecordContent(rc *models.RecordConfig) string {
 			quoted[i] = quoteDNSString(rc.TxtStrings[i])
 		}
 		return strings.Join(quoted, " ")
-	case "NAPTR":
-		return fmt.Sprintf("%d %d %s %s %s %s",
-			rc.NaptrOrder, rc.NaptrPreference,
-			quoteDNSString(rc.NaptrFlags), quoteDNSString(rc.NaptrService),
-			quoteDNSString(rc.NaptrRegexp),
-			rc.GetTargetField())
 	default:
 		return rc.GetTargetField()
 	}

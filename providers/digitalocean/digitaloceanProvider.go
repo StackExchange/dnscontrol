@@ -289,6 +289,11 @@ func toReq(dc *models.DomainConfig, rc *models.RecordConfig) *godo.DomainRecordE
 	priority := 0                 // DO uses the same property for MX and SRV priority
 
 	switch rc.Type { // #rtype_variations
+	case "CAA":
+		// DO API requires that a CAA target ends in dot.
+		// Interestingly enough, the value returned from API doesn't
+		// contain a trailing dot.
+		target = target + "."
 	case "MX":
 		priority = int(rc.MxPreference)
 	case "SRV":
@@ -296,11 +301,6 @@ func toReq(dc *models.DomainConfig, rc *models.RecordConfig) *godo.DomainRecordE
 	case "TXT":
 		// TXT records are the one place where DO combines many items into one field.
 		target = rc.GetTargetField()
-	case "CAA":
-		// DO API requires that a CAA target ends in dot.
-		// Interestingly enough, the value returned from API doesn't
-		// contain a trailing dot.
-		target = target + "."
 	default:
 		// no action required
 	}
