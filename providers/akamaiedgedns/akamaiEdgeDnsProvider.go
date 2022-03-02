@@ -12,34 +12,35 @@ https://www.akamai.com/us/en/multimedia/documents/product-brief/edge-dns-product
 import (
 	"encoding/json"
 	"fmt"
+	"strings"
+
 	"github.com/StackExchange/dnscontrol/v3/models"
 	"github.com/StackExchange/dnscontrol/v3/pkg/diff"
 	"github.com/StackExchange/dnscontrol/v3/pkg/printer"
 	"github.com/StackExchange/dnscontrol/v3/pkg/txtutil"
 	"github.com/StackExchange/dnscontrol/v3/providers"
-	"strings"
 )
 
 var features = providers.DocumentationNotes{
 	// The default for unlisted capabilities is 'Cannot'.
 	// See providers/capabilities.go for the entire list of capabilties.
+	providers.CanAutoDNSSEC:          providers.Can(),
+	providers.CanGetZones:            providers.Can(),
+	providers.CanUseAKAMAICDN:        providers.Can(),
 	providers.CanUseAlias:            providers.Cannot(),
 	providers.CanUseCAA:              providers.Can(),
 	providers.CanUseDS:               providers.Cannot(),
 	providers.CanUseDSForChildren:    providers.Can(),
-	providers.CanUsePTR:              providers.Can(),
 	providers.CanUseNAPTR:            providers.Can(),
+	providers.CanUsePTR:              providers.Can(),
+	providers.CanUseSOA:              providers.Cannot(),
 	providers.CanUseSRV:              providers.Can(),
 	providers.CanUseSSHFP:            providers.Can(),
 	providers.CanUseTLSA:             providers.Can(),
-	providers.CanAutoDNSSEC:          providers.Can(),
 	providers.CantUseNOPURGE:         providers.Cannot(),
-	providers.DocOfficiallySupported: providers.Cannot(),
-	providers.DocDualHost:            providers.Can(),
-	providers.CanUseSOA:              providers.Cannot(),
 	providers.DocCreateDomains:       providers.Can(),
-	providers.CanGetZones:            providers.Can(),
-	providers.CanUseAKAMAICDN:        providers.Can(),
+	providers.DocDualHost:            providers.Can(),
+	providers.DocOfficiallySupported: providers.Cannot(),
 }
 
 type edgeDNSProvider struct {
