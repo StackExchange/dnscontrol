@@ -11,13 +11,13 @@ import (
 )
 
 var features = providers.DocumentationNotes{
+	providers.CanGetZones:            providers.Cannot(),
+	providers.CanUseCAA:              providers.Can(),
+	providers.CanUsePTR:              providers.Cannot(),
+	providers.CanUseSRV:              providers.Can(),
 	providers.DocCreateDomains:       providers.Cannot(),
 	providers.DocDualHost:            providers.Cannot(),
 	providers.DocOfficiallySupported: providers.Cannot(),
-	providers.CanUsePTR:              providers.Cannot(),
-	providers.CanUseSRV:              providers.Can(),
-	providers.CanUseCAA:              providers.Can(),
-	providers.CanGetZones:            providers.Cannot(),
 }
 
 func init() {

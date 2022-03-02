@@ -18,19 +18,19 @@ import (
 )
 
 var features = providers.DocumentationNotes{
+	providers.CanAutoDNSSEC:          providers.Can(),
+	providers.CanGetZones:            providers.Can(),
 	providers.CanUseAlias:            providers.Can(),
 	providers.CanUseCAA:              providers.Can(),
-	providers.CanUseNAPTR:            providers.Can(),
 	providers.CanUseDS:               providers.Can(),
+	providers.CanUseNAPTR:            providers.Can(),
 	providers.CanUsePTR:              providers.Can(),
-	providers.CanUseSSHFP:            providers.Can(),
 	providers.CanUseSRV:              providers.Can(),
-	providers.CanAutoDNSSEC:          providers.Can(),
+	providers.CanUseSSHFP:            providers.Can(),
 	providers.CanUseTLSA:             providers.Cannot(),
 	providers.DocCreateDomains:       providers.Cannot(),
 	providers.DocDualHost:            providers.Cannot("DNSimple does not allow sufficient control over the apex NS records"),
 	providers.DocOfficiallySupported: providers.Cannot(),
-	providers.CanGetZones:            providers.Can(),
 }
 
 func init() {
@@ -574,10 +574,16 @@ func getTargetRecordContent(rc *models.RecordConfig) string {
 	switch rtype := rc.Type; rtype {
 	case "CAA":
 		return rc.GetTargetCombined()
-	case "SSHFP":
-		return fmt.Sprintf("%d %d %s", rc.SshfpAlgorithm, rc.SshfpFingerprint, rc.GetTargetField())
 	case "DS":
 		return fmt.Sprintf("%d %d %d %s", rc.DsKeyTag, rc.DsAlgorithm, rc.DsDigestType, rc.DsDigest)
+	case "NAPTR":
+		return fmt.Sprintf("%d %d %s %s %s %s",
+			rc.NaptrOrder, rc.NaptrPreference,
+			quoteDNSString(rc.NaptrFlags), quoteDNSString(rc.NaptrService),
+			quoteDNSString(rc.NaptrRegexp),
+			rc.GetTargetField())
+	case "SSHFP":
+		return fmt.Sprintf("%d %d %s", rc.SshfpAlgorithm, rc.SshfpFingerprint, rc.GetTargetField())
 	case "SRV":
 		return fmt.Sprintf("%d %d %s", rc.SrvWeight, rc.SrvPort, rc.GetTargetField())
 	case "TXT":
@@ -586,12 +592,6 @@ func getTargetRecordContent(rc *models.RecordConfig) string {
 			quoted[i] = quoteDNSString(rc.TxtStrings[i])
 		}
 		return strings.Join(quoted, " ")
-	case "NAPTR":
-		return fmt.Sprintf("%d %d %s %s %s %s",
-			rc.NaptrOrder, rc.NaptrPreference,
-			quoteDNSString(rc.NaptrFlags), quoteDNSString(rc.NaptrService),
-			quoteDNSString(rc.NaptrRegexp),
-			rc.GetTargetField())
 	default:
 		return rc.GetTargetField()
 	}

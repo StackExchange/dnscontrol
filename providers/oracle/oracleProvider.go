@@ -19,19 +19,18 @@ import (
 )
 
 var features = providers.DocumentationNotes{
+	providers.CanGetZones:            providers.Can(),
+	providers.CanUseAlias:            providers.Can(),
+	providers.CanUseCAA:              providers.Can(),
+	providers.CanUseDS:               providers.Cannot(), // should be supported, but getting 500s in tests
+	providers.CanUseNAPTR:            providers.Can(),
+	providers.CanUsePTR:              providers.Can(),
+	providers.CanUseSRV:              providers.Can(),
+	providers.CanUseSSHFP:            providers.Can(),
+	providers.CanUseTLSA:             providers.Can(),
 	providers.DocCreateDomains:       providers.Can(),
 	providers.DocDualHost:            providers.Can(),
 	providers.DocOfficiallySupported: providers.Cannot(),
-
-	providers.CanGetZones: providers.Can(),
-	providers.CanUseAlias: providers.Can(),
-	providers.CanUseCAA:   providers.Can(),
-	providers.CanUseDS:    providers.Cannot(), // should be supported, but getting 500s in tests
-	providers.CanUseNAPTR: providers.Can(),
-	providers.CanUsePTR:   providers.Can(),
-	providers.CanUseSRV:   providers.Can(),
-	providers.CanUseSSHFP: providers.Can(),
-	providers.CanUseTLSA:  providers.Can(),
 }
 
 func init() {

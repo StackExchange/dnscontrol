@@ -42,20 +42,20 @@ var InwxSandboxDefaultNs = []string{"ns.ote.inwx.de", "ns2.ote.inwx.de"}
 
 // features is used to let dnscontrol know which features are supported by INWX.
 var features = providers.DocumentationNotes{
+	providers.CanAutoDNSSEC:          providers.Unimplemented("Supported by INWX but not implemented yet."),
+	providers.CanGetZones:            providers.Can(),
 	providers.CanUseAlias:            providers.Cannot("INWX does not support the ALIAS or ANAME record type."),
+	providers.CanUseAzureAlias:       providers.Cannot(),
 	providers.CanUseCAA:              providers.Can(),
 	providers.CanUseDS:               providers.Unimplemented("DS records are only supported at the apex and require a different API call that hasn't been implemented yet."),
-	providers.CanUsePTR:              providers.Can("PTR records with empty targets are not supported"),
 	providers.CanUseNAPTR:            providers.Can(),
+	providers.CanUsePTR:              providers.Can("PTR records with empty targets are not supported"),
 	providers.CanUseSRV:              providers.Can("SRV records with empty targets are not supported."),
 	providers.CanUseSSHFP:            providers.Can(),
 	providers.CanUseTLSA:             providers.Can(),
-	providers.CanAutoDNSSEC:          providers.Unimplemented("Supported by INWX but not implemented yet."),
-	providers.DocOfficiallySupported: providers.Cannot(),
-	providers.DocDualHost:            providers.Can(),
 	providers.DocCreateDomains:       providers.Can(),
-	providers.CanGetZones:            providers.Can(),
-	providers.CanUseAzureAlias:       providers.Cannot(),
+	providers.DocDualHost:            providers.Can(),
+	providers.DocOfficiallySupported: providers.Cannot(),
 }
 
 // inwxAPI is a thin wrapper around goinwx.Client.
