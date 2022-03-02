@@ -75,15 +75,15 @@ func newRoute53(m map[string]string, metadata json.RawMessage) (*route53Provider
 }
 
 var features = providers.DocumentationNotes{
+	providers.CanGetZones:            providers.Can(),
 	providers.CanUseAlias:            providers.Cannot("R53 does not provide a generic ALIAS functionality. Use R53_ALIAS instead."),
+	providers.CanUseCAA:              providers.Can(),
+	providers.CanUsePTR:              providers.Can(),
+	providers.CanUseRoute53Alias:     providers.Can(),
+	providers.CanUseSRV:              providers.Can(),
 	providers.DocCreateDomains:       providers.Can(),
 	providers.DocDualHost:            providers.Can(),
 	providers.DocOfficiallySupported: providers.Can(),
-	providers.CanUsePTR:              providers.Can(),
-	providers.CanUseSRV:              providers.Can(),
-	providers.CanUseCAA:              providers.Can(),
-	providers.CanUseRoute53Alias:     providers.Can(),
-	providers.CanGetZones:            providers.Can(),
 }
 
 func init() {
