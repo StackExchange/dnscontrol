@@ -628,11 +628,11 @@ func (c *cloudflareProvider) nativeToRecord(domain string, cr cloudflare.DNSReco
 	case "SRV":
 		data := cr.Data.(map[string]interface{})
 
-		switch v := data["target"].(type) {
-		case nil:
-			target := "MISSING.TARGET."
+		target := "MISSING.TARGET"
+		switch data["target"].(type) {
 		case string:
-			target := data["target"].(string)
+			target = data["target"].(string)
+		default:
 		}
 
 		if target != "." {
