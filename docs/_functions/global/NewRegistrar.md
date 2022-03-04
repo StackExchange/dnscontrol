@@ -14,13 +14,13 @@ Metadata is an optional object, that will only be used by certain providers. See
 
 This function will return the name as a string so that you may assign it to a variable to use inside [D](#D) directives.
 
-{% include startExample.html %}
-
+{% capture example %}
 ```js
 var REGISTRAR = NewRegistrar("name.com", "NAMEDOTCOM");
 var r53 = NewDnsProvider("R53","ROUTE53");
 
 D("example.com", REGISTRAR, DnsProvider(r53), A("@","1.2.3.4"));
 ```
+{% endcapture %}
 
-{% include endExample.html %}
+{% include example.html content=example %}

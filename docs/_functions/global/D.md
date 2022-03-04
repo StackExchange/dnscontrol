@@ -17,8 +17,7 @@ Modifier arguments are processed according to type as follows:
 - An array argument will have all of it's members evaluated recursively. This allows you to combine multiple common records or modifiers into a variable that can
    be used like a macro in multiple domains.
 
-{% include startExample.html %}
-
+{% capture example %}
 ```js
 var REGISTRAR = NewRegistrar("name.com", "NAMEDOTCOM");
 var r53 = NewDnsProvider("R53","ROUTE53");
@@ -44,8 +43,9 @@ D("example.com", REGISTRAR, DnsProvider(r53),
   GOOGLE_APPS_DOMAIN_MX
 );
 ```
+{% endcapture %}
 
-{% include endExample.html %}
+{% include example.html content=example %}
 
 
 # Split Horizon DNS
@@ -58,8 +58,7 @@ To differentiate the different domains, specify the domains as
 `domain.tld!tag`, such as `example.com!inside` and
 `example.com!outside`.
 
-{% include startExample.html %}
-
+{% capture example %}
 ```js
 var REG = NewRegistrar("Third-Party", "NONE");
 var DNS_INSIDE = NewDnsProvider("Cloudflare", "CLOUDFLAREAPI");
@@ -77,8 +76,9 @@ D_EXTEND("example.com!inside",
   A("internal", "10.99.99.99")
 );
 ```
+{% endcapture %}
 
-{% include endExample.html %}
+{% include example.html content=example %}
 
 A domain name without a `!` is assigned a tag that is the empty
 string. For example, `example.com` and `example.com!` are equivalent.

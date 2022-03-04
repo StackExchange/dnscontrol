@@ -31,8 +31,7 @@ in a `D_EXTEND` subdomain may not be what you expect.
 
 Example:
 
-{% include startExample.html %}
-
+{% capture example %}
 ```js
 D("domain.tld", REG, DnsProvider(DNS),
   A("@", "127.0.0.1"), // domain.tld
@@ -77,8 +76,9 @@ This will end up in the following modifications:
 #11: CREATE CNAME g.sub.sub.domain.tld h.sub.sub.domain.tld.
 #12: CREATE CNAME i.sub.domain.tld j.sub.domain.tld.
 ```
+{% endcapture %}
 
-{% include endExample.html %}
+{% include example.html content=example %}
 
 ProTips: `D_EXTEND()` permits you to create very complex and
 sophisticated configurations, but you shouldn't. Be nice to the next

@@ -42,13 +42,13 @@ Alias records can reference other record sets of the same type.
 For example, a DNS CNAME record set can be an alias to another CNAME record set.
 This arrangement is useful if you want some record sets to be aliases and some non-aliases.
 
-{% include startExample.html %}
-
+{% capture example %}
 ```js
 D("example.com", REGISTRAR, DnsProvider("AZURE_DNS"),
   AZURE_ALIAS("foo", "A", "/subscriptions/726f8cd6-6459-4db4-8e6d-2cd2716904e2/resourceGroups/test/providers/Microsoft.Network/trafficManagerProfiles/testpp2"), // record for traffic manager
   AZURE_ALIAS("foo", "CNAME", "/subscriptions/726f8cd6-6459-4db4-8e6d-2cd2716904e2/resourceGroups/test/providers/Microsoft.Network/dnszones/example.com/A/quux."), // record in the same zone
 );
 ```
+{% endcapture %}
 
-{% include endExample.html %}
+{% include example.html content=example %}

@@ -32,8 +32,7 @@ The zone id can be found depending on the target type:
 * _S3 bucket_ (configured as website): specify the hosted zone ID for the region that you created the bucket in. You can find it in [the List of regions and hosted Zone IDs](http://docs.aws.amazon.com/general/latest/gr/rande.html#s3_region)
 * _Another Route 53 record_: you can either specify the correct zone id or do not specify anything and dnscontrol will figure out the right zone id. (Note: Route53 alias can't reference a record in a different zone).
 
-{% include startExample.html %}
-
+{% capture example %}
 ```js
 D('example.com', REGISTRAR, DnsProvider('ROUTE53'),
   R53_ALIAS('foo', 'A', 'bar'),                              // record in same zone
@@ -43,5 +42,6 @@ D('example.com', REGISTRAR, DnsProvider('ROUTE53'),
   R53_ALIAS('foo', 'A', 'blahblah-bucket.s3-website-us-west-1.amazonaws.com.', R53_ZONE('Z2F56UZL2M1ACD')),     // a website S3 Bucket in us-west-1
 );
 ```
+{% endcapture %}
 
-{% include endExample.html %}
+{% include example.html content=example %}

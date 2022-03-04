@@ -18,8 +18,7 @@ the currently-loading file (which may not be the file where the
 is interpreted relative to the program's working directory at the time
 of the call.
 
-{% include startExample.html %}
-
+{% capture example %}
 ```js
 // dnsconfig.js
 require('kubernetes/clusters.js');
@@ -52,14 +51,14 @@ function includeK8Sdev() {
     return [ /* ... */ ];
 }
 ```
+{% endcapture %}
 
-{% include endExample.html %}
+{% include example.html content=example %}
 
 You can also use it to require json files and initialize variables with it:
 For Example:
 
-{% include startExample.html %}
-
+{% capture example %}
 ```js
 // dnsconfig.js
 var domains = require('./domain-ip-map.json')
@@ -78,8 +77,9 @@ for (var domain in domains) {
     "myotherdomain.org": "5.5.5.5"
 }
 ```
+{% endcapture %}
 
-{% include endExample.html %}
+{% include example.html content=example %}
 
 # Future
 

@@ -18,8 +18,7 @@ will be done for you.
 
 Modifiers can be any number of [record modifiers](#record-modifiers) or json objects, which will be merged into the record's metadata.
 
-{% include startExample.html %}
-
+{% capture example %}
 ```js
     D("example.com", REGISTRAR, ....,
       TXT('@', '598611146-3338560'),
@@ -30,8 +29,9 @@ Modifiers can be any number of [record modifiers](#record-modifiers) or json obj
       TXT('long', 'X'.repeat(300)) // Long strings are split automatically.
     );
 ```
+{% endcapture %}
 
-{% include endExample.html %}
+{% include example.html content=example %}
 
 NOTE: In the past, long strings had to be annotated with the keyword
 `AUTOSPLIT`. This is no longer required. The keyword is now a no-op.

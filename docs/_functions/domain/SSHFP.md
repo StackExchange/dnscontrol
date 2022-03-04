@@ -28,10 +28,10 @@ SSHFP contains a fingerprint of a SSH server which can be validated before SSH c
 
 `value` is the fingerprint as a string.
 
-{% include startExample.html %}
-
+{% capture example %}
 ```js
 SSHFP('@', 1, 1, '00yourAmazingFingerprint00'),
 ```
+{% endcapture %}
 
-{% include endExample.html %}
+{% include example.html content=example %}
