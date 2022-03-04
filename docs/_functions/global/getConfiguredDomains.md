@@ -11,8 +11,7 @@ configured at the time the function is called. Calling this function early or la
 domains at the end of your configuration file.
 
 Example for adding records to all configured domains:
-{% include startExample.html %}
-
+{% capture example %}
 ```js
 var domains = getConfiguredDomains();
 for(i = 0; i < domains.length; i++) {
@@ -37,12 +36,12 @@ This will end up in following modifications:
 #1: CREATE TXT _important.domain2.tld "BLA" ttl=43200
 #2: REFRESH zone domain2.tld
 ```
+{% endcapture %}
 
-{% include endExample.html %}
+{% include example.html content=example %}
 
 Example for adding DMARC report records:
-{% include startExample.html %}
-This example might be more useful, specially for configuring the DMARC report records. According to DMARC RFC you need to specify `domain2.tld._report.dmarc.domain1.tld` to allow `domain2.tld` to send aggregate/forensic email reports to `domain1.tld`. This can be used to do this in an easy way, without using the wildcard from the RFC.
+{% capture example %}This example might be more useful, specially for configuring the DMARC report records. According to DMARC RFC you need to specify `domain2.tld._report.dmarc.domain1.tld` to allow `domain2.tld` to send aggregate/forensic email reports to `domain1.tld`. This can be used to do this in an easy way, without using the wildcard from the RFC.
 
 ```js
 var domains = getConfiguredDomains();
@@ -64,5 +63,6 @@ This will end up in following modifications:
 #3: CREATE TXT domain4.tld._report._dmarc.domain2.tld "v=DMARC1" ttl=43200
 #4: REFRESH zone domain2.tld
 ```
+{% endcapture %}
 
-{% include endExample.html %}
+{% include example.html content=example %}

@@ -8,12 +8,12 @@ Converts an IPv4 address from string to an integer. This allows performing mathe
 
 This does not accept IPv6 addresses. (PRs gladly accepted.)
 
-{% include startExample.html %}
-
+{% capture example %}
 ```js
 var addrA = IP('1.2.3.4')
 var addrB = addrA + 1
 // addrB = 1.2.3.5
 ```
+{% endcapture %}
 
-{% include endExample.html %}
+{% include example.html content=example %}

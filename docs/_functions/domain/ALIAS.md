@@ -14,12 +14,12 @@ The name should be the relative label for the domain.
 
 Target should be a string representing the target. If it is a single label we will assume it is a relative name on the current domain. If it contains *any* dots, it should be a fully qualified domain name, ending with a `.`.
 
-{% include startExample.html %}
-
+{% capture example %}
 ```js
 D("example.com", REGISTRAR, DnsProvider("CLOUDFLARE"),
   ALIAS("@", "google.com."), // example.com -> google.com
 );
 ```
+{% endcapture %}
 
-{% include endExample.html %}
+{% include example.html content=example %}
