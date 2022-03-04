@@ -1052,11 +1052,12 @@ func makeTests(t *testing.T) []*TestGroup {
 
 		testgroup("pager1201",
 			only(
-				//"MSDNS",         //  No paging done. No need to test.
-				//"AKAMAIEDGEDNS", //  No paging done. No need to test.
+				//"AKAMAIEDGEDNS", // No paging done. No need to test.
 				//"AZURE_DNS",     // Currently failing. See https://github.com/StackExchange/dnscontrol/issues/770
+				//"CLOUDFLAREAPI", // Fails with >1000 corrections. See https://github.com/StackExchange/dnscontrol/issues/1440
 				"HEXONET",
 				"HOSTINGDE",
+				//"MSDNS",         // No paging done. No need to test.
 				"ROUTE53",
 			),
 			tc("1200 records", manyA("rec%04d", "1.2.3.4", 1200)...),
