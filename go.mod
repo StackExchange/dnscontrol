@@ -30,7 +30,7 @@ require (
 	github.com/exoscale/egoscale v0.59.0
 	github.com/fatih/color v1.13.0 // indirect
 	github.com/go-acme/lego v2.7.2+incompatible
-	github.com/go-gandi/go-gandi v0.0.0-20211124085723-a737785a1af0
+	github.com/go-gandi/go-gandi v0.1.0
 	github.com/gobwas/glob v0.2.4-0.20181002190808-e7a84e9525fe
 	github.com/gofrs/uuid v4.0.0+incompatible // indirect
 	github.com/google/go-github/v35 v35.3.0
