@@ -10,7 +10,8 @@ This is the provider for [Cloudflare](https://www.cloudflare.com/).
 
 ## Important notes
 
-* When using `SPF()` or the `SPF_BUILDER()` the records are converted to RecordType `TXT` as Cloudflare API fails otherwise. See more [here](https://github.com/StackExchange/dnscontrol/issues/446).
+* SPF records are silently converted to RecordType `TXT` as Cloudflare API fails otherwise. See [StackExchange/dnscontrol#446](https://github.com/StackExchange/dnscontrol/issues/446).
+* This provider currently fails if there are more than 1000 corrections on one domain. This only affects "push". This usually when moving a domain with many records to Cloudflare.  Try commenting out most records, then uncomment groups of 999. Typical updates are less than 1000 corrections and will not trigger this bug. See [StackExchange/dnscontrol#1440](https://github.com/StackExchange/dnscontrol/issues/1440).
 
 ## Configuration
 
