@@ -204,6 +204,11 @@ func convert(zr *dns.ZoneRecord, domain string) ([]*models.RecordConfig, error) 
 		}
 		rec.SetLabelFromFQDN(zr.Domain, domain)
 		switch rtype := zr.Type; rtype {
+		case "DNSKEY", "RRSIG":
+			// if a zone is enabled for DNSSEC, NS1 autoconfigures DNSKEY & RRSIG records.
+			// these entries are not modifiable via the API though, so we have to ignore them while converting.
+			// 	ie. API returns "405 Operation on DNSSEC record is not allowed" on such operations
+			continue
 		case "ALIAS":
 			rec.Type = rtype
 			if err := rec.SetTarget(ans); err != nil {
