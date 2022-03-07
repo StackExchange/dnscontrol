@@ -20,6 +20,8 @@ var docNotes = providers.DocumentationNotes{
 	providers.CanGetZones:            providers.Can(),
 	providers.CanUseAlias:            providers.Can(),
 	providers.CanUseCAA:              providers.Can(),
+	providers.CanUseDS:		  providers.Can(),
+	providers.CanUseDSForChildren:	  providers.Can(),
 	providers.CanUseNAPTR:            providers.Can(),
 	providers.CanUsePTR:              providers.Can(),
 	providers.DocCreateDomains:       providers.Can(),
@@ -188,6 +190,12 @@ func buildRecord(recs models.Records, domain string, id string) *dns.Record {
 				r.NaptrService,
 				r.NaptrRegexp,
 				r.GetTargetField()}})
+		} else if r.Type == "DS" {
+			rec.AddAnswer(&dns.Answer{Rdata: []string{
+				strconv.Itoa(int(r.DsKeyTag)),
+				strconv.Itoa(int(r.DsAlgorithm)),
+				strconv.Itoa(int(r.DsDigestType)),
+				r.DsDigest}})
 		} else {
 			rec.AddAnswer(&dns.Answer{Rdata: strings.Split(r.GetTargetField(), " ")})
 		}
