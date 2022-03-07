@@ -180,11 +180,11 @@ docker run --rm -it --volume="$PWD:/srv/jekyll" --volume="$PWD/vendor/bundle:/us
 
 See [dnscontrol-action](https://github.com/koenrh/dnscontrol-action)
 
-# Depreciation warnings (updated 2022-02-05)
+# Depreciation warnings (updated 2022-03-07)
 
-* Provider ACTIVEDIRECTORY_PS is deprecated and will be removed soon. Use MSDNS instead.
-* Call for new volunteers maintainers for CLOUDFLARE_API, GCLOUD, NAMEDOTCOM, ROUTE53, and SOFTLAYER.
 * Let's Encrypt support is frozen and will be removed in early 2023.  The "get-certs" command (renews certs via Let's Encrypt) has no maintainer. There are other projects that do a better job. If you don't use this feature, please do not start. If you do use this feature, please plan on migrating to something else.  See discussion in https://github.com/StackExchange/dnscontrol/issues/1400
+* Call for new volunteer maintainers for CLOUDFLARE_API, GCLOUD, NAMEDOTCOM, ROUTE53, and SOFTLAYER.
+* Provider ACTIVEDIRECTORY_PS is deprecated and will be removed soon. Use MSDNS instead.
 
 
 # More info at our web site
