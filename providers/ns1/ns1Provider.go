@@ -19,6 +19,7 @@ import (
 var docNotes = providers.DocumentationNotes{
 	providers.CanGetZones:            providers.Can(),
 	providers.CanUseAlias:            providers.Can(),
+	providers.CanAutoDNSSEC:	  providers.Can(),
 	providers.CanUseCAA:              providers.Can(),
 	providers.CanUseDS:		  providers.Can(),
 	providers.CanUseDSForChildren:	  providers.Can(),
@@ -88,6 +89,52 @@ func (n *nsone) GetZoneRecords(domain string) (models.Records, error) {
 	}
 	return found, nil
 }
+// Get DNSSEC status for zone. Returns true for enabled, false for disabled
+// a domain in NS1 can be in 3 states:
+//   1) DNSSEC is enabled  (returns true)
+//   2) DNSSEC is disabled (returns false)
+//   3) some error state   (return false plus the error)
+func (n *nsone) GetZoneDNSSEC(domain string) (bool, error) {
+	_, _, err := n.DNSSEC.Get(domain)
+
+	// rest.ErrDNSECNotEnabled is our "disabled" state
+	if err != nil && err == rest.ErrDNSECNotEnabled {
+		return false, nil
+	}
+
+	// any other errors not expected, let's surface them
+	if err != nil {
+		return false, err
+	}
+
+	// no errors returned, we assume DNSSEC is enabled
+	return true, nil
+}
+// Create DNSSEC zone corrections based on current state and preference
+func (n *nsone) getDomainCorrectionsDNSSEC(domain, toggleDNSSEC string) (*models.Correction) {
+
+	// get dnssec status from NS1 for domain
+	// if errors are returned, we bail out without any DNSSEC corrections
+	status, err := n.GetZoneDNSSEC(domain)
+	if err != nil {
+		return nil
+	}
+
+	if toggleDNSSEC == "on" && !status {
+		// disabled, but prefer it on, let's enable DNSSEC
+		return &models.Correction{
+			Msg: "ENABLE DNSSEC",
+			F:   func() error { return n.configureDNSSEC(domain, true) },
+		}
+	} else if toggleDNSSEC == "off" && status {
+		// enabled, but prefer it off, let's disable DNSSEC
+		return &models.Correction{
+			Msg: "DISABLE DNSSEC",
+			F:   func() error { return n.configureDNSSEC(domain, false) },
+		}
+	}
+	return nil
+}
 
 func (n *nsone) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Correction, error) {
 	dc.Punycode()
@@ -112,7 +159,13 @@ func (n *nsone) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Correct
 	if err != nil {
 		return nil, err
 	}
+
 	corrections := []*models.Correction{}
+
+        if dnssecCorrections := n.getDomainCorrectionsDNSSEC(domain, dc.AutoDNSSEC); dnssecCorrections != nil {
+		corrections = append(corrections, dnssecCorrections)
+	}
+
 	// each name/type is given to the api as a unit.
 	for k, descs := range changedGroups {
 		key := k
@@ -155,6 +208,21 @@ func (n *nsone) remove(key models.RecordKey, domain string) error {
 
 func (n *nsone) modify(recs models.Records, domain string) error {
 	_, err := n.Records.Update(buildRecord(recs, domain, ""))
+	return err
+}
+
+// Configures DNSSEC for a zone. Set 'enabled' to true to enable, false to disable.
+// There's a cornercase, in which DNSSEC is globally disabled for the account.
+// In that situation, enabling DNSSEC will always fail with:
+//   #1: ENABLE DNSSEC
+//   FAILURE! POST https://api.nsone.net/v1/zones/example.com: 400 DNSSEC support is not enabled for this account. Please contact support@ns1.com to enable it
+//
+// Unfortunately this is not detectable otherwise, so given that we have a nice error message, we just let this through.
+//
+func (n *nsone) configureDNSSEC(domain string, enabled bool) error {
+	z, _, err := n.Zones.Get(domain)
+	z.DNSSEC = &enabled
+	_, err = n.Zones.Update(z)
 	return err
 }
 
