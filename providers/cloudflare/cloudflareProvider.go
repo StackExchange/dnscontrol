@@ -601,6 +601,40 @@ func (c cfTarget) FQDN() string {
 	return strings.TrimRight(string(c), ".") + "."
 }
 
+// uint16Zero converts value to uint16 or returns 0.
+func uint16Zero(value interface{}) uint16 {
+	switch v := value.(type) {
+	case float64:
+		return uint16(v)
+	case uint16:
+		return v
+	case nil:
+	}
+	return 0
+}
+
+// intZero converts value to int or returns 0.
+func intZero(value interface{}) int {
+	switch v := value.(type) {
+	case float64:
+		return int(v)
+	case int:
+		return v
+	case nil:
+	}
+	return 0
+}
+
+// stringDefault returns the value as a string or returns the default value if nil.
+func stringDefault(value interface{}, def string) string {
+	switch v := value.(type) {
+	case string:
+		return v
+	case nil:
+	}
+	return def
+}
+
 func (c *cloudflareProvider) nativeToRecord(domain string, cr cloudflare.DNSRecord) (*models.RecordConfig, error) {
 	// normalize cname,mx,ns records with dots to be consistent with our config format.
 	if cr.Type == "CNAME" || cr.Type == "MX" || cr.Type == "NS" {
@@ -628,17 +662,11 @@ func (c *cloudflareProvider) nativeToRecord(domain string, cr cloudflare.DNSReco
 	case "SRV":
 		data := cr.Data.(map[string]interface{})
 
-		target := "MISSING.TARGET"
-		switch data["target"].(type) {
-		case string:
-			target = data["target"].(string)
-		default:
-		}
-
+		target := stringDefault(data["target"], "MISSING.TARGET")
 		if target != "." {
 			target += "."
 		}
-		if err := rc.SetTargetSRV(uint16(data["priority"].(float64)), uint16(data["weight"].(float64)), uint16(data["port"].(float64)),
+		if err := rc.SetTargetSRV(uint16Zero(data["priority"]), uint16Zero(data["weight"]), uint16Zero(data["port"]),
 			target); err != nil {
 			return nil, fmt.Errorf("unparsable SRV record received from cloudflare: %w", err)
 		}

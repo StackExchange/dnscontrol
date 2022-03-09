@@ -241,7 +241,7 @@ func (c *cloudflareProvider) getPageRules(id string, domain string) ([]*models.R
 			pr.Targets[0].Constraint.Value,
 			value["url"],
 			pr.Priority,
-			int(value["status_code"].(float64))))
+			intZero(value["status_code"])))
 		recs = append(recs, r)
 	}
 	return recs, nil
