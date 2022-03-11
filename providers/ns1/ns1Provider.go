@@ -89,7 +89,7 @@ func (n *nsone) GetZoneRecords(domain string) (models.Records, error) {
 	}
 	return found, nil
 }
-// Get DNSSEC status for zone. Returns true for enabled, false for disabled
+// GetZoneDNSSEC gets DNSSEC status for zone. Returns true for enabled, false for disabled
 // a domain in NS1 can be in 3 states:
 //   1) DNSSEC is enabled  (returns true)
 //   2) DNSSEC is disabled (returns false)
@@ -110,7 +110,7 @@ func (n *nsone) GetZoneDNSSEC(domain string) (bool, error) {
 	// no errors returned, we assume DNSSEC is enabled
 	return true, nil
 }
-// Create DNSSEC zone corrections based on current state and preference
+// getDomainCorrectionsDNSSEC creates DNSSEC zone corrections based on current state and preference
 func (n *nsone) getDomainCorrectionsDNSSEC(domain, toggleDNSSEC string) (*models.Correction) {
 
 	// get dnssec status from NS1 for domain
@@ -211,7 +211,7 @@ func (n *nsone) modify(recs models.Records, domain string) error {
 	return err
 }
 
-// Configures DNSSEC for a zone. Set 'enabled' to true to enable, false to disable.
+// configureDNSSEC configures DNSSEC for a zone. Set 'enabled' to true to enable, false to disable.
 // There's a cornercase, in which DNSSEC is globally disabled for the account.
 // In that situation, enabling DNSSEC will always fail with:
 //   #1: ENABLE DNSSEC
