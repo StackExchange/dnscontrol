@@ -89,6 +89,7 @@ func (n *nsone) GetZoneRecords(domain string) (models.Records, error) {
 	}
 	return found, nil
 }
+
 // GetZoneDNSSEC gets DNSSEC status for zone. Returns true for enabled, false for disabled
 // a domain in NS1 can be in 3 states:
 //   1) DNSSEC is enabled  (returns true)
@@ -110,6 +111,7 @@ func (n *nsone) GetZoneDNSSEC(domain string) (bool, error) {
 	// no errors returned, we assume DNSSEC is enabled
 	return true, nil
 }
+
 // getDomainCorrectionsDNSSEC creates DNSSEC zone corrections based on current state and preference
 func (n *nsone) getDomainCorrectionsDNSSEC(domain, toggleDNSSEC string) (*models.Correction) {
 
