@@ -221,6 +221,9 @@ func (n *nsone) modify(recs models.Records, domain string) error {
 //
 func (n *nsone) configureDNSSEC(domain string, enabled bool) error {
 	z, _, err := n.Zones.Get(domain)
+	if err != nil {
+		return err
+	}
 	z.DNSSEC = &enabled
 	_, err = n.Zones.Update(z)
 	return err
