@@ -87,6 +87,7 @@ func NewLinode(m map[string]string, metadata json.RawMessage) (providers.DNSServ
 
 var features = providers.DocumentationNotes{
 	providers.CanGetZones:            providers.Unimplemented(),
+	providers.CanUseCAA:              providers.Can("Linode doesn't support changing the CAA flag"),
 	providers.DocDualHost:            providers.Cannot(),
 	providers.DocOfficiallySupported: providers.Cannot(),
 }
@@ -242,18 +243,20 @@ func toRc(dc *models.DomainConfig, r *domainRecord) *models.RecordConfig {
 		MxPreference: r.Priority,
 		SrvPriority:  r.Priority,
 		SrvWeight:    r.Weight,
-		SrvPort:      uint16(r.Port),
+		SrvPort:      r.Port,
+		CaaTag:       r.Tag,
 		Original:     r,
 	}
 	rc.SetLabel(r.Name, dc.Name)
 
 	switch rtype := r.Type; rtype { // #rtype_variations
-	case "TXT":
-		rc.SetTargetTXT(r.Target)
 	case "CNAME", "MX", "NS", "SRV":
 		rc.SetTarget(dnsutil.AddOrigin(r.Target+".", dc.Name))
-	default:
+	case "CAA":
+		// Linode doesn't support CAA flags and just returns the tag and value separately
 		rc.SetTarget(r.Target)
+	default:
+		rc.PopulateFromString(r.Type, r.Target, dc.Name)
 	}
 
 	return rc
@@ -277,11 +280,16 @@ func toReq(dc *models.DomainConfig, rc *models.RecordConfig) (*recordEditRequest
 
 	// Linode uses the same property for MX and SRV priority
 	switch rc.Type { // #rtype_variations
-	case "A", "AAAA", "NS", "PTR", "TXT", "SOA", "TLSA", "CAA":
+	case "A", "AAAA", "NS", "PTR", "TXT", "SOA", "TLSA":
 		// Nothing special.
 	case "MX":
 		req.Priority = int(rc.MxPreference)
 		req.Target = fixTarget(req.Target, dc.Name)
+
+		// Linode doesn't use "." for a null MX record, it uses an empty name
+		if req.Target == "." {
+			req.Target = ""
+		}
 	case "SRV":
 		req.Priority = int(rc.SrvPriority)
 
@@ -300,6 +308,8 @@ func toReq(dc *models.DomainConfig, rc *models.RecordConfig) (*recordEditRequest
 		req.Name = ""
 	case "CNAME":
 		req.Target = fixTarget(req.Target, dc.Name)
+	case "CAA":
+		req.Tag = rc.CaaTag
 	default:
 		return nil, fmt.Errorf("linode.toReq rtype %q unimplemented", rc.Type)
 	}
@@ -329,5 +339,3 @@ func fixTTL(ttl uint32) uint32 {
 
 	return allowedTTLValues[0]
 }
-
-// that have not been updated for a new RR type.
