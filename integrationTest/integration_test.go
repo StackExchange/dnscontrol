@@ -1073,19 +1073,27 @@ func makeTests(t *testing.T) []*TestGroup {
 			tc("CAA record", caa("@", "issue", 0, "letsencrypt.org")),
 			tc("CAA change tag", caa("@", "issuewild", 0, "letsencrypt.org")),
 			tc("CAA change target", caa("@", "issuewild", 0, "example.com")),
-			tc("CAA change flag", caa("@", "issuewild", 128, "example.com")),
 			tc("CAA many records",
 				caa("@", "issue", 0, "letsencrypt.org"),
 				caa("@", "issuewild", 0, "comodoca.com"),
-				caa("@", "iodef", 128, "mailto:test@example.com")),
+				caa("@", "iodef", 0, "mailto:test@example.com")),
 			tc("CAA delete", caa("@", "issue", 0, "letsencrypt.org")),
+		),
+		testgroup("CAA noflag",
+			requires(providers.CanUseCAA), not("LINODE"),
+			// LINODE can only set the flag to "0".
+			// https://www.linode.com/community/questions/20714/how-to-i-change-the-flag-in-a-caa-record
+			// Consolidate any tests with a non-zero flag to this testgroup
+			// so they can be easily skipped.
+			tc("CAA flag0", caa("@", "issuewild", 0, "example.com")),
+			tc("CAA change flag", caa("@", "issuewild", 128, "example.com")),
 		),
 		testgroup("CAA with ;",
 			requires(providers.CanUseCAA), not("DIGITALOCEAN"),
 			// Test support of ";" as a value
 			tc("CAA many records", caa("@", "issuewild", 0, ";")),
 		),
-		testgroup("Issue 1374",
+		testgroup("CAA Issue 1374",
 			requires(providers.CanUseCAA), not("DIGITALOCEAN"),
 			// Test support of spaces in the 3rd field.
 			tc("CAA spaces", caa("@", "issue", 0, "letsencrypt.org; validationmethods=dns-01; accounturi=https://acme-v02.api.letsencrypt.org/acme/acct/1234")),
