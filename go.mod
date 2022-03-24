@@ -30,7 +30,8 @@ require (
 	github.com/google/go-github/v35 v35.3.0
 	github.com/gopherjs/jquery v0.0.0-20191017083323-73f4c7416038
 	github.com/hashicorp/vault/api v1.4.1
-	github.com/hexonet/go-sdk/v3 v3.5.2
+	github.com/hexonet/go-sdk/v3 v3.5.3
+	github.com/jarcoal/httpmock v1.0.8 // indirect
 	github.com/jinzhu/copier v0.3.5
 	github.com/miekg/dns v1.1.46
 	github.com/mittwald/go-powerdns v0.5.2
@@ -115,7 +116,6 @@ require (
 	github.com/hashicorp/hcl v1.0.0 // indirect
 	github.com/hashicorp/vault/sdk v0.4.1 // indirect
 	github.com/hashicorp/yamux v0.0.0-20180604194846-3520598351bb // indirect
-	github.com/jarcoal/httpmock v1.0.8 // indirect
 	github.com/jmespath/go-jmespath v0.4.0 // indirect
 	github.com/juju/errors v0.0.0-20200330140219-3fe23663418f // indirect
 	github.com/juju/testing v0.0.0-20210324180055-18c50b0c2098 // indirect
