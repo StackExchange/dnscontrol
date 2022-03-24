@@ -7,7 +7,7 @@ parameters:
     description: Change to force cache reset `pwsh > Get-Date -UFormat %s`
   gover:
     type: string
-    default: "1.17" # https://circleci.com/developer/images/image/cimg/go#image-tags
+    default: "1.18" # https://circleci.com/developer/images/image/cimg/go#image-tags
     description: Go Version to use
 
 jobs:
