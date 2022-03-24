@@ -1,6 +1,6 @@
 module github.com/StackExchange/dnscontrol/v3
 
-go 1.17
+go 1.18
 
 require (
 	github.com/Azure/azure-sdk-for-go v62.1.0+incompatible
