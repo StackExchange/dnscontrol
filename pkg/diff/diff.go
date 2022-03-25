@@ -199,9 +199,18 @@ func (d *differ) IncrementalDiff(existing []*models.RecordConfig) (unchanged, cr
 		// build index based on normalized content data
 		for _, ex := range existingRecords {
 			normalized := d.content(ex)
-			if existingLookup[normalized] != nil {
-				return nil, nil, nil, nil, fmt.Errorf("DUPLICATE E_RECORD FOUND: %s %s", key, normalized)
-			}
+			//fmt.Printf("DEBUG: normalized: %v\n", normalized)
+			// NB(tlim): Commenting this out. If the provider is returning
+			// records that are exact duplicates, that's bad and against the
+			// RFCs. However, we shouldn't error out. Instead, we should
+			// continue so that we can delete them.  Experience shows one
+			// record will be deleted per iteration but at least the problem
+			// will fix itself that way. Erroring out means it will require
+			// manually fixing (going to the control panel, deleting
+			// individual records, etc.)
+			//if existingLookup[normalized] != nil {
+			//	return nil, nil, nil, nil, fmt.Errorf("DUPLICATE E_RECORD FOUND: %s %s", key, normalized)
+			//}
 			existingLookup[normalized] = ex
 		}
 		for _, de := range desiredRecords {
