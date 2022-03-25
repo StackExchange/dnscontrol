@@ -757,6 +757,7 @@ func makeTests(t *testing.T) []*TestGroup {
 		testgroup("Null MX",
 			// These providers don't support RFC 7505
 			not(
+				"AUTODNS",
 				"AZURE_DNS",
 				"DIGITALOCEAN",
 				"DNSIMPLE",
