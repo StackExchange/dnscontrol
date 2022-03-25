@@ -28,6 +28,13 @@ func LoadProviderConfigs(fname string) (map[string]map[string]string, error) {
 		if err != nil {
 			return nil, err
 		}
+	} else if strings.HasSuffix(fname, ".json") {
+		// .json files are never executable (needed because in Windows WSL
+		// all files are executable).
+		dat, err = readCredsFile(fname)
+		if err != nil {
+			return nil, err
+		}
 	} else if isExecutable(fname) {
 		dat, err = executeCredsFile(fname)
 		if err != nil {

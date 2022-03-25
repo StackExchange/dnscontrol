@@ -140,11 +140,11 @@ func GetZone(args GetZoneArgs) error {
 	// Read it in:
 	providerConfigs, err = config.LoadProviderConfigs(args.CredsFile)
 	if err != nil {
-		return fmt.Errorf("failed GetZone lpc(%q): %w", args.CredsFile, err)
+		return fmt.Errorf("failed GetZone LoadProviderConfigs(%q): %w", args.CredsFile, err)
 	}
 	provider, err := providers.CreateDNSProvider(args.ProviderName, providerConfigs[args.CredName], nil)
 	if err != nil {
-		return fmt.Errorf("failed GetZone cdp: %w", err)
+		return fmt.Errorf("failed GetZone CreateDNSProvider: %w", err)
 	}
 
 	// decide which zones we need to convert
