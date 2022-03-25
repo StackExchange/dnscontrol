@@ -1,5 +1,5 @@
 ---
-name: `IGNORE_NAME`
+name: IGNORE_NAME
 parameters:
   - pattern
 ---
@@ -22,15 +22,17 @@ Technically `IGNORE_NAME` is a promise that DNSControl will not add, change, or 
 
 In this example, DNSControl will insert/update the "baz.example.com" record but will leave unchanged the "foo.example.com" and "bar.example.com" ones.
 
-{% include startExample.html %}
-{% highlight js %}
+{% capture example %}
+```js
 D("example.com",
   `IGNORE_NAME`("foo"),
   `IGNORE_NAME`("bar"),
   A("baz", "1.2.3.4")
 );
-{%endhighlight%}
-{% include endExample.html %}
+```
+{% endcapture %}
+
+{% include example.html content=example %}
 
 `IGNORE_NAME` also supports glob patterns in the style of the [gobwas/glob](https://github.com/gobwas/glob) library. All of
 the following patterns will work:

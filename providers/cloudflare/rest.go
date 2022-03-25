@@ -241,7 +241,7 @@ func (c *cloudflareProvider) getPageRules(id string, domain string) ([]*models.R
 			pr.Targets[0].Constraint.Value,
 			value["url"],
 			pr.Priority,
-			int(value["status_code"].(float64))))
+			intZero(value["status_code"])))
 		recs = append(recs, r)
 	}
 	return recs, nil
@@ -352,7 +352,9 @@ func (c *cloudflareProvider) createTestWorker(workerName string) error {
 	return err
 }
 
-// go-staticcheck lies!
+//lint:ignore U1000 false positive due to
+// https://github.com/dominikh/go-tools/issues/1137 which is a dup of
+// https://github.com/dominikh/go-tools/issues/810
 type pageRuleConstraint struct {
 	Operator string `json:"operator"`
 	Value    string `json:"value"`

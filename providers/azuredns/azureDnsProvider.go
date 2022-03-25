@@ -53,18 +53,18 @@ func newAzureDNS(m map[string]string, metadata json.RawMessage) (*azurednsProvid
 }
 
 var features = providers.DocumentationNotes{
+	providers.CanGetZones:            providers.Can(),
 	providers.CanUseAlias:            providers.Cannot("Azure DNS does not provide a generic ALIAS functionality. Use AZURE_ALIAS instead."),
+	providers.CanUseAzureAlias:       providers.Can(),
+	providers.CanUseCAA:              providers.Can(),
+	providers.CanUseNAPTR:            providers.Cannot(),
+	providers.CanUsePTR:              providers.Can(),
+	providers.CanUseSRV:              providers.Can(),
+	providers.CanUseSSHFP:            providers.Cannot(),
+	providers.CanUseTLSA:             providers.Cannot(),
 	providers.DocCreateDomains:       providers.Can(),
 	providers.DocDualHost:            providers.Can("Azure does not permit modifying the existing NS records, only adding/removing additional records."),
 	providers.DocOfficiallySupported: providers.Can(),
-	providers.CanUsePTR:              providers.Can(),
-	providers.CanUseSRV:              providers.Can(),
-	providers.CanUseCAA:              providers.Can(),
-	providers.CanUseNAPTR:            providers.Cannot(),
-	providers.CanUseSSHFP:            providers.Cannot(),
-	providers.CanUseTLSA:             providers.Cannot(),
-	providers.CanGetZones:            providers.Can(),
-	providers.CanUseAzureAlias:       providers.Can(),
 }
 
 func init() {
@@ -98,7 +98,7 @@ func (a *azurednsProvider) getZones() error {
 	defer cancel()
 	zonesIterator, zonesErr := a.zonesClient.ListByResourceGroup(ctx, *a.resourceGroup, to.Int32Ptr(100))
 	if zonesErr != nil {
-		return fmt.Errorf("getZones: zonesErr: %w", zonesErr)
+		return fmt.Errorf("getZones: zonesErr: SubscriptionID=%q err=%w", a.zonesClient.BaseClient.SubscriptionID, zonesErr)
 	}
 
 	// Check getExistingZones and https://github.com/StackExchange/dnscontrol/issues/792 for the details

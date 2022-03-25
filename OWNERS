@@ -25,7 +25,7 @@ providers/linode @koesie10
 providers/namecheap @captncraig
 # providers/namedotcom NEEDS VOLUNTEER
 providers/netcup @kordianbruck
-providers/ns1 @captncraig
+providers/ns1 @costasd
 providers/opensrs @philhug
 providers/oracle @kallsyms
 # providers/route53 NEEDS VOLUNTEER

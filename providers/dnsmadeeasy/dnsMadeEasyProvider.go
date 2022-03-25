@@ -13,18 +13,18 @@ import (
 )
 
 var features = providers.DocumentationNotes{
+	providers.CanGetZones:            providers.Can(),
 	providers.CanUseAlias:            providers.Can(),
-	providers.CanUsePTR:              providers.Can(),
 	providers.CanUseCAA:              providers.Can(),
-	providers.CanUseSRV:              providers.Can(),
-	providers.CanUseTLSA:             providers.Cannot(),
-	providers.CanUseSSHFP:            providers.Cannot(),
 	providers.CanUseDS:               providers.Cannot(),
 	providers.CanUseDSForChildren:    providers.Cannot(),
+	providers.CanUsePTR:              providers.Can(),
+	providers.CanUseSRV:              providers.Can(),
+	providers.CanUseSSHFP:            providers.Cannot(),
+	providers.CanUseTLSA:             providers.Cannot(),
 	providers.DocCreateDomains:       providers.Can(),
 	providers.DocDualHost:            providers.Can("System NS records cannot be edited. Custom apex NS records can be added/changed/deleted."),
 	providers.DocOfficiallySupported: providers.Cannot(),
-	providers.CanGetZones:            providers.Can(),
 }
 
 func init() {

@@ -18,10 +18,12 @@ backups and manually verifying `dnscontrol preview` output before running
 `dnscontrol push`. This is especially true when mixing Page Rules that are
 managed by DNSControl and those that aren't.
 
-{% include startExample.html %}
-{% highlight js %}
+{% capture example %}
+```js
 D("foo.com", .... ,
   CF_TEMP_REDIRECT("example.mydomain.com/*", "https://otherplace.yourdomain.com/$1"),
 );
-{%endhighlight%}
-{% include endExample.html %}
+```
+{% endcapture %}
+
+{% include example.html content=example %}

@@ -39,18 +39,18 @@ func NewCloudns(m map[string]string, metadata json.RawMessage) (providers.DNSSer
 }
 
 var features = providers.DocumentationNotes{
-	providers.DocDualHost:            providers.Unimplemented(),
-	providers.DocOfficiallySupported: providers.Cannot(),
-	providers.DocCreateDomains:       providers.Can(),
+	//providers.CanUseDS:               providers.Can(), // in ClouDNS we can add  DS record just for a subdomain(child)
+	providers.CanGetZones:            providers.Can(),
 	providers.CanUseAlias:            providers.Can(),
+	providers.CanUseCAA:              providers.Can(),
+	providers.CanUseDSForChildren:    providers.Can(),
+	providers.CanUsePTR:              providers.Can(),
 	providers.CanUseSRV:              providers.Can(),
 	providers.CanUseSSHFP:            providers.Can(),
-	providers.CanUseCAA:              providers.Can(),
 	providers.CanUseTLSA:             providers.Can(),
-	providers.CanUsePTR:              providers.Can(),
-	providers.CanGetZones:            providers.Can(),
-	providers.CanUseDSForChildren:    providers.Can(),
-	//providers.CanUseDS:               providers.Can(),  // in ClouDNS we can add  DS record just for a subdomain(child)
+	providers.DocCreateDomains:       providers.Can(),
+	providers.DocDualHost:            providers.Unimplemented(),
+	providers.DocOfficiallySupported: providers.Cannot(),
 }
 
 func init() {
@@ -59,6 +59,7 @@ func init() {
 		RecordAuditor: AuditRecords,
 	}
 	providers.RegisterDomainServiceProviderType("CLOUDNS", fns, features)
+	providers.RegisterCustomRecordType("CLOUDNS_WR", "CLOUDNS", "WR")
 }
 
 // GetNameservers returns the nameservers for a domain.
@@ -278,7 +279,7 @@ func toReq(rc *models.RecordConfig) (requestParams, error) {
 	}
 
 	switch rc.Type { // #rtype_variations
-	case "A", "AAAA", "NS", "PTR", "TXT", "SOA", "ALIAS", "CNAME":
+	case "A", "AAAA", "NS", "PTR", "TXT", "SOA", "ALIAS", "CNAME", "WR":
 		// Nothing special.
 	case "MX":
 		req["priority"] = strconv.Itoa(int(rc.MxPreference))

@@ -1028,11 +1028,11 @@ func makeTests(t *testing.T) []*TestGroup {
 			//  - Gandi: page size is 100, therefore we test with 99, 100, and 101
 			//  - DIGITALOCEAN: page size is 100 (default: 20)
 			not(
-				"NS1",           // Free acct only allows 50 records, therefore we skip
 				"CLOUDFLAREAPI", // Infinite pagesize but due to slow speed, skipping.
+				"GANDI_V5",      // Their API is so damn slow. We'll add it back as needed.
 				"MSDNS",         //  No paging done. No need to test.
 				"NAMEDOTCOM",    // Their API is so damn slow. We'll add it back as needed.
-				"GANDI_V5",      // Their API is so damn slow. We'll add it back as needed.
+				"NS1",           // Free acct only allows 50 records, therefore we skip
 			),
 			tc("99 records", manyA("rec%04d", "1.2.3.4", 99)...),
 			tc("100 records", manyA("rec%04d", "1.2.3.4", 100)...),
@@ -1053,11 +1053,12 @@ func makeTests(t *testing.T) []*TestGroup {
 
 		testgroup("pager1201",
 			only(
-				//"MSDNS",         //  No paging done. No need to test.
-				//"AKAMAIEDGEDNS", //  No paging done. No need to test.
+				//"AKAMAIEDGEDNS", // No paging done. No need to test.
 				//"AZURE_DNS",     // Currently failing. See https://github.com/StackExchange/dnscontrol/issues/770
+				//"CLOUDFLAREAPI", // Fails with >1000 corrections. See https://github.com/StackExchange/dnscontrol/issues/1440
 				"HEXONET",
 				"HOSTINGDE",
+				//"MSDNS",         // No paging done. No need to test.
 				"ROUTE53",
 			),
 			tc("1200 records", manyA("rec%04d", "1.2.3.4", 1200)...),
@@ -1073,19 +1074,27 @@ func makeTests(t *testing.T) []*TestGroup {
 			tc("CAA record", caa("@", "issue", 0, "letsencrypt.org")),
 			tc("CAA change tag", caa("@", "issuewild", 0, "letsencrypt.org")),
 			tc("CAA change target", caa("@", "issuewild", 0, "example.com")),
-			tc("CAA change flag", caa("@", "issuewild", 128, "example.com")),
 			tc("CAA many records",
 				caa("@", "issue", 0, "letsencrypt.org"),
 				caa("@", "issuewild", 0, "comodoca.com"),
-				caa("@", "iodef", 128, "mailto:test@example.com")),
+				caa("@", "iodef", 0, "mailto:test@example.com")),
 			tc("CAA delete", caa("@", "issue", 0, "letsencrypt.org")),
+		),
+		testgroup("CAA noflag",
+			requires(providers.CanUseCAA), not("LINODE"),
+			// LINODE can only set the flag to "0".
+			// https://www.linode.com/community/questions/20714/how-to-i-change-the-flag-in-a-caa-record
+			// Consolidate any tests with a non-zero flag to this testgroup
+			// so they can be easily skipped.
+			tc("CAA flag0", caa("@", "issuewild", 0, "example.com")),
+			tc("CAA change flag", caa("@", "issuewild", 128, "example.com")),
 		),
 		testgroup("CAA with ;",
 			requires(providers.CanUseCAA), not("DIGITALOCEAN"),
 			// Test support of ";" as a value
 			tc("CAA many records", caa("@", "issuewild", 0, ";")),
 		),
-		testgroup("Issue 1374",
+		testgroup("CAA Issue 1374",
 			requires(providers.CanUseCAA), not("DIGITALOCEAN"),
 			// Test support of spaces in the 3rd field.
 			tc("CAA spaces", caa("@", "issue", 0, "letsencrypt.org; validationmethods=dns-01; accounturi=https://acme-v02.api.letsencrypt.org/acme/acct/1234")),
@@ -1112,6 +1121,7 @@ func makeTests(t *testing.T) []*TestGroup {
 
 		// SOA
 		testgroup("SOA", requires(providers.CanUseSOA),
+			clear(), // Extra clear required or only the first run passes.
 			tc("Create SOA record", soa("@", "kim.ns.cloudflare.com.", "dns.cloudflare.com.", 2037190000, 10000, 2400, 604800, 3600)),
 			tc("Modify SOA ns    ", soa("@", "mmm.ns.cloudflare.com.", "dns.cloudflare.com.", 2037190000, 10000, 2400, 604800, 3600)),
 			tc("Modify SOA mbox  ", soa("@", "mmm.ns.cloudflare.com.", "eee.cloudflare.com.", 2037190000, 10000, 2400, 604800, 3600)),
@@ -1119,8 +1129,6 @@ func makeTests(t *testing.T) []*TestGroup {
 			tc("Modify SOA retry ", soa("@", "mmm.ns.cloudflare.com.", "eee.cloudflare.com.", 2037190000, 10001, 2401, 604800, 3600)),
 			tc("Modify SOA expire", soa("@", "mmm.ns.cloudflare.com.", "eee.cloudflare.com.", 2037190000, 10001, 2401, 604801, 3600)),
 			tc("Modify SOA minttl", soa("@", "mmm.ns.cloudflare.com.", "eee.cloudflare.com.", 2037190000, 10001, 2401, 604801, 3601)),
-			clear(),
-			tc("Create SOA record", soa("@", "kim.ns.cloudflare.com.", "dns.cloudflare.com.", 2037190000, 10000, 2400, 604800, 3600)),
 		),
 
 		testgroup("SRV", requires(providers.CanUseSRV), not("ACTIVEDIRECTORY_PS"),

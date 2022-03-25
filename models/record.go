@@ -15,7 +15,7 @@ import (
 
 // RecordConfig stores a DNS record.
 // Valid types:
-//   Official:
+//   Official: (alphabetical)
 //     A
 //     AAAA
 //     ANAME  // Technically not an official rtype yet.
@@ -25,26 +25,27 @@ import (
 //     NAPTR
 //     NS
 //     PTR
-//     SRV
 //     SOA
+//     SRV
 //     SSHFP
 //     TLSA
 //     TXT
-//   Pseudo-Types:
+//   Pseudo-Types: (alphabetical)
 //     ALIAS
 //     CF_REDIRECT
 //     CF_TEMP_REDIRECT
 //     CF_WORKER_ROUTE
+//     CLOUDNS_WR
 //     FRAME
 //     IMPORT_TRANSFORM
 //     NAMESERVER
 //     NO_PURGE
 //     NS1_URLFWD
 //     PAGE_RULE
-//     WORKER_ROUTE
 //     PURGE
 //     URL
 //     URL301
+//     WORKER_ROUTE
 //
 // Notes about the fields:
 //

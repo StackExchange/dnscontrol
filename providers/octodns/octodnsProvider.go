@@ -35,12 +35,11 @@ import (
 )
 
 var features = providers.DocumentationNotes{
-	//providers.CanUseCAA: providers.Can(),
+	providers.CanGetZones:      providers.Unimplemented(),
 	providers.CanUsePTR:        providers.Can(),
 	providers.CanUseSRV:        providers.Can(),
 	providers.DocCreateDomains: providers.Cannot("Driver just maintains list of OctoDNS config files. You must manually create the master config files that refer these."),
 	providers.DocDualHost:      providers.Cannot("Research is needed."),
-	providers.CanGetZones:      providers.Unimplemented(),
 }
 
 func initProvider(config map[string]string, providermeta json.RawMessage) (providers.DNSServiceProvider, error) {
@@ -52,13 +51,13 @@ func initProvider(config map[string]string, providermeta json.RawMessage) (provi
 	if api.directory == "" {
 		api.directory = "config"
 	}
-	if len(providermeta) != 0 {
-		err := json.Unmarshal(providermeta, api)
-		if err != nil {
-			return nil, err
-		}
-	}
-	//api.nameservers = models.StringsToNameservers(api.DefaultNS)
+	// Commented out because at this time api has no exported fields.
+	//	if len(providermeta) != 0 {
+	//		err := json.Unmarshal(providermeta, api)
+	//		if err != nil {
+	//			return nil, err
+	//		}
+	//	}
 	return api, nil
 }
 

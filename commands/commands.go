@@ -229,7 +229,7 @@ func (args *GetCredentialsArgs) flags() []cli.Flag {
 		&cli.StringFlag{
 			Name:        "creds",
 			Destination: &args.CredsFile,
-			Usage:       "Provider credentials JSON file",
+			Usage:       "Provider credentials JSON file (or !program to execute program that outputs json)",
 			Value:       "creds.json",
 		},
 	}

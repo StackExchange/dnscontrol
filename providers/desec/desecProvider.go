@@ -39,19 +39,19 @@ func NewDeSec(m map[string]string, metadata json.RawMessage) (providers.DNSServi
 }
 
 var features = providers.DocumentationNotes{
+	providers.CanAutoDNSSEC:          providers.Can("deSEC always signs all records. When trying to disable, a notice is printed."),
+	providers.CanGetZones:            providers.Can(),
+	providers.CanUseAlias:            providers.Unimplemented("Apex aliasing is supported via new SVCB and HTTPS record types. For details, check the deSEC docs."),
+	providers.CanUseCAA:              providers.Can(),
+	providers.CanUseDS:               providers.Can(),
+	providers.CanUseNAPTR:            providers.Can(),
+	providers.CanUsePTR:              providers.Can(),
+	providers.CanUseSRV:              providers.Can(),
+	providers.CanUseSSHFP:            providers.Can(),
+	providers.CanUseTLSA:             providers.Can(),
+	providers.DocCreateDomains:       providers.Can(),
 	providers.DocDualHost:            providers.Unimplemented(),
 	providers.DocOfficiallySupported: providers.Cannot(),
-	providers.DocCreateDomains:       providers.Can(),
-	providers.CanUseAlias:            providers.Unimplemented("Apex aliasing is supported via new SVCB and HTTPS record types. For details, check the deSEC docs."),
-	providers.CanUseSRV:              providers.Can(),
-	providers.CanUseDS:               providers.Can(),
-	providers.CanUseSSHFP:            providers.Can(),
-	providers.CanUseCAA:              providers.Can(),
-	providers.CanUseTLSA:             providers.Can(),
-	providers.CanUsePTR:              providers.Can(),
-	providers.CanUseNAPTR:            providers.Can(),
-	providers.CanGetZones:            providers.Can(),
-	providers.CanAutoDNSSEC:          providers.Can("deSEC always signs all records. When trying to disable, a notice is printed."),
 }
 
 var defaultNameServerNames = []string{

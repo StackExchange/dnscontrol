@@ -163,18 +163,32 @@ Alternatively, on Mac you can install it using homebrew:
 
 ## Via [docker](https://hub.docker.com/r/stackexchange/dnscontrol/)
 
-```
+```bash
 docker run --rm -it -v $(pwd)/dnsconfig.js:/dns/dnsconfig.js -v $(pwd)/creds.json:/dns/creds.json stackexchange/dnscontrol dnscontrol preview
 ```
 
 The documentation can be viewed via Docker:
 
-```
+```bash
+cd docs
 docker run --rm -it --volume="$PWD:/srv/jekyll" --volume="$PWD/vendor/bundle:/usr/local/bundle" --env JEKYLL_ENV=production jekyll/jekyll:3.8 jekyll build -V
+# Open docs/_site/index.html in your web browser to see the results.
+# (Note: The preview isn't perfect. Links that use the site.github.url variable won't work.
 ```
 
+## Via Github Actions (GHA)
 
-## More info at our web site
+See [dnscontrol-action](https://github.com/koenrh/dnscontrol-action)
+
+# Depreciation warnings (updated 2022-03-07)
+
+* **ACME/Let's Encrypt support is frozen and will be removed after December 31, 2022.**  The `get-certs` command (renews certs via Let's Encrypt) has no maintainer. There are other projects that do a better job. If you don't use this feature, please do not start. If you do use this feature, please plan on migrating to something else.  See discussion in https://github.com/StackExchange/dnscontrol/issues/1400
+* **convertzone is frozen and will be removed after June 30, 2022.** The `convertzone` stand-alone program is replaced by the `get-zone` subcommand of DNSControl. It does everything `convertzone` did and more.
+* **Provider ACTIVEDIRECTORY_PS is frozen and will be removed after June 30, 2022.** It is replaced by MSDNS which is 100% feature compatible and works better. (We believe nobody uses it.)
+* **Call for new volunteer maintainers for CLOUDFLARE_API, GCLOUD, NAMEDOTCOM, ROUTE53, and SOFTLAYER.** These providers have no maintainer. Maintainers respond to PRs and fix bugs in a timely manner, and try to stay on top of protocol changes.
+
+
+# More info at our web site
 
 The website: [https://stackexchange.github.io/dnscontrol/](https://stackexchange.github.io/dnscontrol/)
 

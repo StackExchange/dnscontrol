@@ -11,7 +11,7 @@ DNSControl's easyname provider supports being a Registrar. Support for being a D
 ## Configuration
 In your credentials file, you must provide your [API-Access](https://my.easyname.com/en/account/api) information
 
-{% highlight json %}
+```json
 {
   "easyname": {
     "userid": 12345,
@@ -21,7 +21,7 @@ In your credentials file, you must provide your [API-Access](https://my.easyname
     "signsalt": "API Signing Salt"
   }
 }
-{% endhighlight %}
+```
 
 ## Metadata
 This provider does not recognize any special metadata fields unique to easyname.
@@ -29,14 +29,14 @@ This provider does not recognize any special metadata fields unique to easyname.
 ## Usage
 Example Javascript:
 
-{% highlight js %}
+```js
 var REG_EASYNAME = NewRegistrar('easyname', 'EASYNAME');
 
 D("example.com", REG_EASYNAME,
   NAMESERVER("ns1.example.com."),
   NAMESERVER("ns2.example.com."),
 );
-{% endhighlight %}
+```
 
 ## Activation
 

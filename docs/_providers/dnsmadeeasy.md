@@ -9,14 +9,14 @@ jsId: DNSMADEEASY
 ## Configuration
 In your credentials file, you must provide your `api_key` and `secret_key`. More info about authentication can be found in [DNS Made Easy API docs](https://api-docs.dnsmadeeasy.com/).
 
-{% highlight json %}
+```json
 {
   "dnsmadeeasy": {
     "api_key": "1c1a3c91-4770-4ce7-96f4-54c0eb0e457a",
     "secret_key": "e2268cde-2ccd-4668-a518-8aa8757a65a0"
   }
 }
-{% endhighlight %}
+```
 
 ## Records
 
@@ -32,14 +32,14 @@ This provider does not recognize any special metadata fields unique to DNS Made 
 ## Usage
 Example Javascript:
 
-{% highlight js %}
+```js
 var REG_NONE = NewRegistrar('none', 'NONE')
 var DNSMADEEASY = NewDnsProvider("dnsmadeeasy", "DNSMADEEASY");
 
 D("example.tld", REG_NONE, DnsProvider(DNSMADEEASY),
     A("test","1.2.3.4")
 );
-{%endhighlight%}
+```
 
 ## Activation
 You can generate your `api_key` and `secret_key` in [Control Panel](https://cp.dnsmadeeasy.com/) in Account Information in Config menu.

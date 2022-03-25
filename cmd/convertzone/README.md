@@ -23,12 +23,11 @@ the OctoDNS provider), so why not use it?
 
 Build the software and install in your personal bin:
 
-```cmd
-$ cd cmd/convertzone
-$ go build
-$ cp convertzone ~/bin/.
+```bash
+cd cmd/convertzone
+go build
+cp convertzone ~/bin/.
 ```
-
 
 ## Usage Overview
 

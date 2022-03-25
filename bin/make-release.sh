@@ -32,22 +32,23 @@ echo >draft-notes.txt '
 This release includes many new providers (FILL IN), dozens
 of bug fixes, and FILL IN.
 
-Breaking changes:
+## Breaking changes:
 
 * FILL IN
 
-Major features:
+## Major features:
 
 * FILL IN
 
-Provider-specific changes:
+## Provider-specific changes:
 
 * FILL IN
 
-Other changes and improvements:
+## Other changes and improvements:
 
 * FILL IN
 
+## Depreciation warnings
 
 '
 git log "$NEWVERSION"..."$PREVVERSION" >>draft-notes.txt

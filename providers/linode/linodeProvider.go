@@ -86,9 +86,10 @@ func NewLinode(m map[string]string, metadata json.RawMessage) (providers.DNSServ
 }
 
 var features = providers.DocumentationNotes{
+	providers.CanGetZones:            providers.Can(),
+	providers.CanUseCAA:              providers.Can("Linode doesn't support changing the CAA flag"),
 	providers.DocDualHost:            providers.Cannot(),
 	providers.DocOfficiallySupported: providers.Cannot(),
-	providers.CanGetZones:            providers.Unimplemented(),
 }
 
 func init() {
@@ -107,10 +108,17 @@ func (api *linodeProvider) GetNameservers(domain string) ([]*models.Nameserver, 
 
 // GetZoneRecords gets the records of a zone and returns them in RecordConfig format.
 func (api *linodeProvider) GetZoneRecords(domain string) (models.Records, error) {
-	return nil, fmt.Errorf("not implemented")
-	// This enables the get-zones subcommand.
-	// Implement this by extracting the code from GetDomainCorrections into
-	// a single function.  For most providers this should be relatively easy.
+	if api.domainIndex == nil {
+		if err := api.fetchDomainList(); err != nil {
+			return nil, err
+		}
+	}
+	domainID, ok := api.domainIndex[domain]
+	if !ok {
+		return nil, fmt.Errorf("'%s' not a zone in Linode account", domain)
+	}
+
+	return api.getRecordsForDomain(domainID, domain)
 }
 
 // GetDomainCorrections returns the corrections for a domain.
@@ -132,27 +140,9 @@ func (api *linodeProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*mod
 		return nil, fmt.Errorf("'%s' not a zone in Linode account", dc.Name)
 	}
 
-	records, err := api.getRecords(domainID)
+	existingRecords, err := api.getRecordsForDomain(domainID, dc.Name)
 	if err != nil {
 		return nil, err
-	}
-
-	existingRecords := make([]*models.RecordConfig, len(records), len(records)+len(defaultNameServerNames))
-	for i := range records {
-		existingRecords[i] = toRc(dc, &records[i])
-	}
-
-	// Linode always has read-only NS servers, but these are not mentioned in the API response
-	// https://github.com/linode/manager/blob/edd99dc4e1be5ab8190f243c3dbf8b830716255e/src/constants.js#L184
-	for _, name := range defaultNameServerNames {
-		rc := &models.RecordConfig{
-			Type:     "NS",
-			Original: &domainRecord{},
-		}
-		rc.SetLabelFromFQDN(dc.Name, dc.Name)
-		rc.SetTarget(name)
-
-		existingRecords = append(existingRecords, rc)
 	}
 
 	// Normalize
@@ -235,25 +225,54 @@ func (api *linodeProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*mod
 	return corrections, nil
 }
 
-func toRc(dc *models.DomainConfig, r *domainRecord) *models.RecordConfig {
+func (api *linodeProvider) getRecordsForDomain(domainID int, domain string) (models.Records, error) {
+	records, err := api.getRecords(domainID)
+	if err != nil {
+		return nil, err
+	}
+
+	existingRecords := make([]*models.RecordConfig, len(records), len(records)+len(defaultNameServerNames))
+	for i := range records {
+		existingRecords[i] = toRc(domain, &records[i])
+	}
+
+	// Linode always has read-only NS servers, but these are not mentioned in the API response
+	// https://github.com/linode/manager/blob/edd99dc4e1be5ab8190f243c3dbf8b830716255e/src/constants.js#L184
+	for _, name := range defaultNameServerNames {
+		rc := &models.RecordConfig{
+			Type:     "NS",
+			Original: &domainRecord{},
+		}
+		rc.SetLabelFromFQDN(domain, domain)
+		rc.SetTarget(name)
+
+		existingRecords = append(existingRecords, rc)
+	}
+
+	return existingRecords, nil
+}
+
+func toRc(domain string, r *domainRecord) *models.RecordConfig {
 	rc := &models.RecordConfig{
 		Type:         r.Type,
 		TTL:          r.TTLSec,
 		MxPreference: r.Priority,
 		SrvPriority:  r.Priority,
 		SrvWeight:    r.Weight,
-		SrvPort:      uint16(r.Port),
+		SrvPort:      r.Port,
+		CaaTag:       r.Tag,
 		Original:     r,
 	}
-	rc.SetLabel(r.Name, dc.Name)
+	rc.SetLabel(r.Name, domain)
 
 	switch rtype := r.Type; rtype { // #rtype_variations
-	case "TXT":
-		rc.SetTargetTXT(r.Target)
 	case "CNAME", "MX", "NS", "SRV":
-		rc.SetTarget(dnsutil.AddOrigin(r.Target+".", dc.Name))
-	default:
+		rc.SetTarget(dnsutil.AddOrigin(r.Target+".", domain))
+	case "CAA":
+		// Linode doesn't support CAA flags and just returns the tag and value separately
 		rc.SetTarget(r.Target)
+	default:
+		rc.PopulateFromString(r.Type, r.Target, domain)
 	}
 
 	return rc
@@ -277,11 +296,16 @@ func toReq(dc *models.DomainConfig, rc *models.RecordConfig) (*recordEditRequest
 
 	// Linode uses the same property for MX and SRV priority
 	switch rc.Type { // #rtype_variations
-	case "A", "AAAA", "NS", "PTR", "TXT", "SOA", "TLSA", "CAA":
+	case "A", "AAAA", "NS", "PTR", "TXT", "SOA", "TLSA":
 		// Nothing special.
 	case "MX":
 		req.Priority = int(rc.MxPreference)
 		req.Target = fixTarget(req.Target, dc.Name)
+
+		// Linode doesn't use "." for a null MX record, it uses an empty name
+		if req.Target == "." {
+			req.Target = ""
+		}
 	case "SRV":
 		req.Priority = int(rc.SrvPriority)
 
@@ -293,13 +317,15 @@ func toReq(dc *models.DomainConfig, rc *models.RecordConfig) (*recordEditRequest
 			return nil, fmt.Errorf("SRV Record must match format \"_service._protocol\" not %s", req.Name)
 		}
 
-		var serviceName, protocol string = result[1], strings.ToLower(result[2])
+		var serviceName, protocol = result[1], strings.ToLower(result[2])
 
 		req.Protocol = protocol
 		req.Service = serviceName
 		req.Name = ""
 	case "CNAME":
 		req.Target = fixTarget(req.Target, dc.Name)
+	case "CAA":
+		req.Tag = rc.CaaTag
 	default:
 		return nil, fmt.Errorf("linode.toReq rtype %q unimplemented", rc.Type)
 	}
@@ -329,5 +355,3 @@ func fixTTL(ttl uint32) uint32 {
 
 	return allowedTTLValues[0]
 }
-
-// that have not been updated for a new RR type.
