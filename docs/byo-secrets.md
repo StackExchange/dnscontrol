@@ -160,7 +160,7 @@ secrets, we hard-code them into the `build.yml` file. Since
 these tests. (We are grateful to HEXONET for this public service!)
 
 ```yaml
-      HEXONET_DOMAIN: a-b-c-movies.com
+      HEXONET_DOMAIN: yodream.com
       HEXONET_ENTITY: OTE
       HEXONET_PW: test.passw0rd
       HEXONET_UID: test.user

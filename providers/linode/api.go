@@ -221,20 +221,21 @@ type domainRecord struct {
 	Port     uint16 `json:"port"`
 	Service  string `json:"service"`
 	Protocol string `json:"protocol"`
+	Tag      string `json:"tag"`
 	TTLSec   uint32 `json:"ttl_sec"`
 }
 
 type recordEditRequest struct {
 	Type     string `json:"type,omitempty"`
-	Name     string `json:"name,omitempty"`
-	Target   string `json:"target,omitempty"`
+	Name     string `json:"name"`
+	Target   string `json:"target"`
 	Priority int    `json:"priority,omitempty"`
 	Weight   int    `json:"weight,omitempty"`
 	Port     int    `json:"port,omitempty"`
 	Service  string `json:"service,omitempty"`
 	Protocol string `json:"protocol,omitempty"`
-	// Documented as field `ttl` in the documentation, but in reality `ttl_sec` should be used
-	TTL int `json:"ttl_sec,omitempty"`
+	Tag      string `json:"tag,omitempty"`
+	TTL      int    `json:"ttl_sec,omitempty"`
 }
 
 type errorResponse struct {
