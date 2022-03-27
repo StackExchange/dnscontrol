@@ -57,7 +57,22 @@ func LoadProviderConfigs(fname string) (map[string]map[string]string, error) {
 	if err = replaceEnvVars(results); err != nil {
 		return nil, err
 	}
+
+	ckeys := keysWithColons(results)
+	if len(ckeys) != 0 {
+		fmt.Printf("WARNING: Cred entries may not contain colons in the future. Please fix: %v\n", quotedList(ckeys))
+	}
+
+	pkeys := entriesWithoutProvider(results)
+	if len(pkeys) != 0 {
+		fmt.Printf("WARNING: Please add a PROVIDER field to these credential entries: %v\n", quotedList(pkeys))
+	}
+
 	return results, nil
+}
+
+func quotedList(l []string) string {
+	return `"` + strings.Join(l, `", "`) + `"`
 }
 
 func isExecutable(filename string) bool {

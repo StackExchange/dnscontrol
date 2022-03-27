@@ -25,6 +25,7 @@ This method is enabled by setting the "apitoken" value in `creds.json`:
 ```json
 {
   "cloudflare": {
+    "_PROVIDER": "CLOUDFLAREAPI",
     "apitoken": "your-cloudflare-api-token",
     "accountid": "your-cloudflare-account-id"
   }

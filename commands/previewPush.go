@@ -203,6 +203,11 @@ func InitializeProviders(credsFile string, cfg *models.DNSConfig, notifyFlag boo
 			isNonDefault[name] = true
 		}
 	}
+
+	// Collect the names of all providers.
+	// Run through the providerConfigs and output a warning if any are
+	// invalid.
+
 	registrars := map[string]providers.Registrar{}
 	dnsProviders := map[string]providers.DNSServiceProvider{}
 	for _, d := range cfg.Domains {
