@@ -103,7 +103,7 @@ func GetDNSConfig(args GetDNSConfigArgs) (*models.DNSConfig, error) {
 		// as normal.
 		cfg, err = ExecuteDSL(args.ExecuteDSLArgs)
 		if err != nil {
-			return cfg, err
+			return nil, err
 		}
 	} else {
 		// Read an IR file.
