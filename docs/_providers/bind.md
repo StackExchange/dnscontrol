@@ -18,7 +18,6 @@ you can specify a `directory` where the provider will look for and create zone f
 ```json
 {
   "bind": {
-    "_PROVIDER": "BIND",
     "directory": "myzones",
     "filenameformat": "%U.zone"      << The default
   }

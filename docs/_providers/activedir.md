@@ -30,7 +30,6 @@ The `ActiveDirectory_PS` provider reads an `ADServer` setting from `creds.json` 
 ```js
 {
   "activedir": {
-    "_PROVIDER": "ACTIVEDIRECTORY_PS",
     "ADServer": "ny-dc01"
   }
 }
@@ -42,7 +41,6 @@ If you want to modify the "fake powershell" mode details, you can set them in th
 ```js
 {
   "activedir": {
-    "_PROVIDER": "ACTIVEDIRECTORY_PS",
     "ADServer": "ny-dc01",
     "fakeps": "true",
     "pslog": "powershell.log",
@@ -51,7 +49,6 @@ If you want to modify the "fake powershell" mode details, you can set them in th
 }
 ```
 
-{% include providerfield.html %}
 
 An example DNS configuration:
 

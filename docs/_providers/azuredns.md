@@ -11,7 +11,6 @@ You can specify the API credentials in the credentials json file:
 ```json
 {
  "azuredns_main":{
-      "_PROVIDER": "AZURE_DNS",
       "SubscriptionID": "AZURE_SUBSCRIPTION_ID",
       "ResourceGroup": "AZURE_RESOURCE_GROUP",
       "TenantID": "AZURE_TENANT_ID",
@@ -34,7 +33,6 @@ export AZURE_CLIENT_SECRET=BBBBBBBBB
 ```json
 {
  "azuredns_main":{
-      "_PROVIDER": "AZURE_DNS",
       "SubscriptionID": "$AZURE_SUBSCRIPTION_ID",
       "ResourceGroup": "$AZURE_RESOURCE_GROUP",
       "TenantID": "$AZURE_TENANT_ID",

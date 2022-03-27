@@ -14,7 +14,6 @@ Current version of provider doesn't support `sub-auth-user`.
 ```json
 {
   "cloudns": {
-    "_PROVIDER": "CLOUDNS",
     "auth-id": "12345",
     "sub-auth-id": "12345",
     "auth-password": "your-password"
