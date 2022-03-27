@@ -11,6 +11,7 @@ In your providers credentials file you must provide a deSEC account auth token:
 ```json
 {
   "desec": {
+    "_PROVIDER": "DESEC",
     "auth-token": "your-deSEC-auth-token"
   }
 }

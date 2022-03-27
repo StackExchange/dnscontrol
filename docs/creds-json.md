@@ -8,19 +8,22 @@ title: creds.json file format
 When dnscontrol interacts with a provider, any API keys, credentials, or other
 configuration parameters required are stored in `creds.json`.   The file contains a set of key/value pairs for each configuration.  That is, since a provider can be used multiple times with different credentials, the file contains a section for each set of credentials.
 
-Here's a sample file:
+Here's a sample `creds.json` file:
 
 ```json
 {
   "cloudflare_tal": {
+    "_PROVIDER": "CLOUDFLAREAPI",
     "apikey": "REDACTED",
     "apiuser": "REDACTED"
   },
   "inside": {
+    "_PROVIDER": "BIND",
     "directory": "inzones",
     "filenameformat": "db_%T%?_%D"
   },
   "hexonet": {
+    "_PROVIDER": "HEXONET",
     "apilogin": "$HEXONET_APILOGIN",
     "apipassword": "$HEXONET_APIPASSWORD",
     "debugmode": "$HEXONET_DEBUGMODE",
@@ -39,6 +42,7 @@ Here's a sample file:
   * ...are whatever the provider specifies.
   * ...can be credentials, secrets, or configuration settings. In the above examples the `inside` setting is configuration parameters for the BIND provider, not credentials.
   * A missing subkey is not an error. The value is the empty string.
+  * The subkey `_PROVIDER` indicates which provider plug-in to use. In the future it will be required and dnscontrol will report an error if it is missing or invalid.  Currently DNSControl reports warnings.
 * Values:
   * ...may include any JSON string value including the empty string.
   * If a subkey starts with `$`, it is taken as an env variable.  In the above example, `$HEXONET_APILOGIN` would be replaced by the value of the environment variable `HEXONET_APILOGIN` or the empty string if no such environment variable exists.

@@ -14,6 +14,7 @@ In your `creds.json` file, you must provide your API key and user/client token. 
 ```json
 {
   "cscglobal": {
+    "_PROVIDER": "CSCGLOBAL",
     "api-key": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
     "user-token": "yyyyyyyy-yyyy-yyyy-yyyy-yyyyyyyyyyyy",
     "notification_emails": "test@exmaple.tld,hostmaster@example.tld"
