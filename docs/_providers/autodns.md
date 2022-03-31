@@ -27,7 +27,7 @@ Example Javascript:
 
 {% highlight js %}
 var REG_NONE = NewRegistrar('none', 'NONE');
-var HETZNER = NewDnsProvider("autodns", "AUTODNS");
+var AUTODNS = NewDnsProvider("autodns", "AUTODNS");
 
 D("example.tld", REG_NONE, DnsProvider(AUTODNS),
     A("test","1.2.3.4")
