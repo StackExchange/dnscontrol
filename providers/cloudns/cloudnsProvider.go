@@ -138,6 +138,12 @@ func (c *cloudnsProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*mode
 			return nil, err
 		}
 
+		// ClouDNS does not require the trailing period to be specified when creating an NS record where the A or AAAA record exists in the zone.
+		// So, modify it to remove the trailing period.
+		if req["record-type"] == "NS" && strings.HasSuffix(req["record"], domainID+".") {
+			req["record"] = strings.TrimSuffix(req["record"], ".")
+		}
+
 		corr := &models.Correction{
 			Msg: m.String(),
 			F: func() error {

@@ -78,7 +78,7 @@ func (c *dnsimpleProvider) GetZoneRecords(domain string) (models.Records, error)
 		if r.Name == "" {
 			r.Name = "@"
 		}
-		if r.Type == "CNAME" || r.Type == "MX" || r.Type == "ALIAS" {
+		if r.Type == "CNAME" || r.Type == "MX" || r.Type == "ALIAS" || r.Type == "NS" {
 			r.Content += "."
 		}
 		// DNSimple adds TXT records that mirror the alias records.
@@ -144,8 +144,9 @@ func (c *dnsimpleProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*mod
 	if err != nil {
 		return nil, err
 	}
-	actual := removeNS(records)
-	removeOtherNS(dc)
+	// Apex NS are immutable via API
+	actual := removeApexNS(records)
+	removeOtherApexNS(dc)
 
 	// Normalize
 	models.PostProcessRecords(actual)
@@ -185,14 +186,15 @@ func (c *dnsimpleProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*mod
 	return corrections, nil
 }
 
-func removeNS(records models.Records) models.Records {
-	var noNameServers models.Records
+func removeApexNS(records models.Records) models.Records {
+	var filtered models.Records
 	for _, r := range records {
-		if r.Type != "NS" {
-			noNameServers = append(noNameServers, r)
+		if r.Type == "NS" && r.Name == "@" {
+			continue
 		}
+		filtered = append(filtered, r)
 	}
-	return noNameServers
+	return filtered
 }
 
 // GetRegistrarCorrections returns corrections that update a domain's registrar.
@@ -552,16 +554,19 @@ func newProvider(m map[string]string, metadata json.RawMessage) (*dnsimpleProvid
 
 // remove all non-dnsimple NS records from our desired state.
 // if any are found, print a warning
-func removeOtherNS(dc *models.DomainConfig) {
+func removeOtherApexNS(dc *models.DomainConfig) {
 	newList := make([]*models.RecordConfig, 0, len(dc.Records))
 	for _, rec := range dc.Records {
 		if rec.Type == "NS" {
 			// apex NS inside dnsimple are expected.
-			if rec.GetLabelFQDN() == dc.Name && strings.HasSuffix(rec.GetTargetField(), ".dnsimple.com.") {
+			// We ignore them, warning as needed.
+			// Child delegations are supported so we allow non-apex NS records.
+			if rec.GetLabelFQDN() == dc.Name {
+				if !strings.HasSuffix(rec.GetTargetField(), ".dnsimple.com.") {
+					fmt.Printf("Warning: dnsimple.com does not allow NS records to be modified. %s will not be added.\n", rec.GetTargetField())
+				}
 				continue
 			}
-			fmt.Printf("Warning: dnsimple.com does not allow NS records to be modified. %s will not be added.\n", rec.GetTargetField())
-			continue
 		}
 		newList = append(newList, rec)
 	}
