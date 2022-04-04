@@ -1,9 +1,8 @@
 package normalize
 
 import (
-	"testing"
-
 	"fmt"
+	"testing"
 
 	"github.com/StackExchange/dnscontrol/v3/models"
 	"github.com/StackExchange/dnscontrol/v3/providers"
@@ -431,4 +430,31 @@ func Test_DSChecks(t *testing.T) {
 			}
 		})
 	})
+}
+
+func Test_errorRepeat(t *testing.T) {
+	type args struct {
+		label  string
+		domain string
+	}
+	tests := []struct {
+		name string
+		args args
+		want string
+	}{
+		{
+			name: "1",
+			args: args{label: "foo.bar.com", domain: "bar.com"},
+			want: `The name "foo.bar.com.bar.com." is an error (repeats the domain).` +
+				` Maybe instead of "foo.bar.com" you intended "foo"?` +
+				` If not add DISABLE_REPEATED_DOMAIN_CHECK to this record to permit this as-is.`,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := errorRepeat(tt.args.label, tt.args.domain); got != tt.want {
+				t.Errorf("errorRepeat() = \n'%s', want\n'%s'", got, tt.want)
+			}
+		})
+	}
 }

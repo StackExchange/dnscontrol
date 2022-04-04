@@ -1185,3 +1185,18 @@ function DOMAIN_ELSEWHERE_AUTO(domain, registrar, dsplist) {
         D_EXTEND(domain, DnsProvider(arguments[i]));
     }
 }
+
+var END = {}; // This is null. It permits the last item to include a comma.
+// D("foo.com", ...
+//    A(...),
+//    A(...),
+//    A(...),
+// END)
+
+// Record modifiers:
+
+// Permit labels like "foo.bar.com.bar.com" (normally an error):
+var DISABLE_REPEATED_DOMAIN_CHECK = { skip_fqdn_check: "true" };
+// D("bar.com", ...
+//     A("foo.bar.com", "10.1.1.1", DISABLE_REPEATED_DOMAIN_CHECK),
+// )
