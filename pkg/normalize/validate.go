@@ -89,6 +89,16 @@ func validateRecordTypes(rec *models.RecordConfig, domain string, pTypes []strin
 	return nil
 }
 
+func errorRepeat(label, domain string) string {
+	shortname := strings.TrimSuffix(label, "."+domain)
+	return fmt.Sprintf(
+		`The name "%s.%s." is an error (repeats the domain). Maybe instead of "%s" you intended "%s"? If not add DISABLE_REPEATED_DOMAIN_CHECK to this record to permit this as-is.`,
+		label, domain,
+		label,
+		shortname,
+	)
+}
+
 func checkLabel(label string, rType string, target, domain string, meta map[string]string) error {
 	if label == "@" {
 		return nil
@@ -101,7 +111,7 @@ func checkLabel(label string, rType string, target, domain string, meta map[stri
 	}
 	if label == domain || strings.HasSuffix(label, "."+domain) {
 		if m := meta["skip_fqdn_check"]; m != "true" {
-			return fmt.Errorf(`label %q ends with domain name %q. Record names should not be fully qualified. Add {skip_fqdn_check:"true"} to this record if you really want to make %s.%s`, label, domain, label, domain)
+			return fmt.Errorf(errorRepeat(label, domain))
 		}
 	}
 
