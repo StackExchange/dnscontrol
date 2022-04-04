@@ -12,6 +12,8 @@ import (
 	"path/filepath"
 	"strings"
 
+	"golang.org/x/exp/maps"
+
 	"github.com/DisposaBoy/JsonConfigReader"
 	"github.com/TomOnTime/utfutil"
 )
@@ -58,21 +60,29 @@ func LoadProviderConfigs(fname string) (map[string]map[string]string, error) {
 		return nil, err
 	}
 
-	ckeys := keysWithColons(results)
+	ckeys := keysWithColons(maps.Keys(results))
 	if len(ckeys) != 0 {
-		fmt.Printf("WARNING: Cred entries may not contain colons in the future. Please fix: %v\n", quotedList(ckeys))
-	}
-
-	pkeys := entriesWithoutProvider(results)
-	if len(pkeys) != 0 {
-		fmt.Printf("WARNING: Please add a PROVIDER field to these credential entries: %v\n", quotedList(pkeys))
+		fmt.Printf("WARNING: In the future, colons in cred entry names will have meaning.  Our best advice is to not use colons in cred entry names for now to avoid compatibility issues. Please rename these creds: %v\n", quotedList(ckeys))
 	}
 
 	return results, nil
 }
 
 func quotedList(l []string) string {
+	if len(l) == 0 {
+		return ""
+	}
 	return `"` + strings.Join(l, `", "`) + `"`
+}
+
+func keysWithColons(list []string) []string {
+	var r []string
+	for _, k := range list {
+		if strings.Contains(k, ":") {
+			r = append(r, k)
+		}
+	}
+	return r
 }
 
 func isExecutable(filename string) bool {
