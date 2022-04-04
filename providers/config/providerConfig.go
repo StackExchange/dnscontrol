@@ -14,7 +14,25 @@ import (
 
 	"github.com/DisposaBoy/JsonConfigReader"
 	"github.com/TomOnTime/utfutil"
+	"golang.org/x/exp/maps"
 )
+
+func quotedList(l []string) string {
+	if len(l) == 0 {
+		return ""
+	}
+	return `"` + strings.Join(l, `", "`) + `"`
+}
+
+func keysWithColons(list []string) []string {
+	var r []string
+	for _, k := range list {
+		if strings.Contains(k, ":") {
+			r = append(r, k)
+		}
+	}
+	return r
+}
 
 // LoadProviderConfigs will open or execute the specified file name, and parse its contents. It will replace environment variables it finds if any value matches $[A-Za-z_-0-9]+
 func LoadProviderConfigs(fname string) (map[string]map[string]string, error) {
@@ -56,6 +74,14 @@ func LoadProviderConfigs(fname string) (map[string]map[string]string, error) {
 	}
 	if err = replaceEnvVars(results); err != nil {
 		return nil, err
+	}
+
+	ckeys := keysWithColons(maps.Keys(results))
+	if len(ckeys) != 0 {
+		fmt.Printf(`WARNING: In the future, colons in cred entry names will have meaning.`+
+			` Our best advice is to remove the colons for now to avoid future compatibility issues.`+
+			` Specifically these keys: %v` + "\n",
+			quotedList(ckeys))
 	}
 	return results, nil
 }
