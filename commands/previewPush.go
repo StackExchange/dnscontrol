@@ -203,6 +203,10 @@ func InitializeProviders(credsFile string, cfg *models.DNSConfig, notifyFlag boo
 			isNonDefault[name] = true
 		}
 	}
+
+	// Find all "-" provider names and replace with actual provider.
+	fillProviderType(cfg, providerConfigs)
+
 	registrars := map[string]providers.Registrar{}
 	dnsProviders := map[string]providers.DNSServiceProvider{}
 	for _, d := range cfg.Domains {
@@ -230,6 +234,94 @@ func InitializeProviders(credsFile string, cfg *models.DNSConfig, notifyFlag boo
 		}
 	}
 	return
+}
+
+// fillProviderType scans a DNSConfig for blank provider types and fills them in based on providerConfigs.
+func fillProviderType(cfg *models.DNSConfig, providerConfigs map[string]map[string]string) []string {
+	var msgs []string
+
+	for i := range cfg.Registrars {
+		pName := cfg.Registrars[i].Name
+		pType := cfg.Registrars[i].Type
+		nt, msg, fatal := LookupProviderType(pName, pType, providerConfigs)
+		if fatal {
+			return nil // TODO(tlim): this is an error
+		}
+		if msg != "" {
+			msgs = append(msgs, msg)
+		} else {
+			cfg.Registrars[i].Type = nt
+		}
+	}
+
+	for i := range cfg.DNSProviders {
+		pName := cfg.DNSProviders[i].Name
+		pType := cfg.DNSProviders[i].Type
+		nt, msg, fatal := LookupProviderType(pName, pType, providerConfigs)
+		if fatal {
+			return nil // TODO(tlim): this is an error
+		}
+		if msg != "" {
+			msgs = append(msgs, msg)
+		} else {
+			cfg.Registrars[i].Type = nt
+		}
+	}
+
+	return msgs
+}
+
+func LookupProviderType(n, t string, providerConfigs map[string]map[string]string) (string, string, bool) {
+
+	// t="" and t="-" are processed the same. Standardize on "" to reduce the number of cases to check.
+	if t == "-" {
+		t = ""
+	}
+
+	if n == "" || n == "-" {
+		return "", fmt.Sprintf("Provider name %q invalid", n), true
+	}
+
+	ct := ""
+	if _, ok := providerConfigs[n]; !ok {
+		ct = t
+		fmt.Printf(`creds.json is missing an entry called %q. It should look like: %q: { "PROVIDER": "NONE" },`, n, n)
+		// In 3.x this is permitted.
+		// In 4.0 this will be an error or maybe we'll default to ct = "NONE".
+	} else {
+		ct = providerConfigs[n]["PROVIDER"]
+	}
+	if ct == "-" {
+		return "", fmt.Sprintf("Provider %q has invalid PROVIDER field: %q", n, ct), true
+	}
+
+	// name     type    credsType
+	// usergan  -       GANDI        lookup worked. Nothing to say.
+	// usergan  GANDI   ""           "Working but.... Please fix as follows..."
+	// usergan  GANDI   GANDI        "working but unneeded: clean up as follows..."
+	// usergan  GANDI   NAMEDOT      "error mismatched: please fix as follows..."
+
+	if t == "-" {
+		// "-" means "look in creds.json for the value". Some day this will be the norm.
+		if ct == "" {
+			// creds.json is missing the PROVIDER field.
+			return "", fmt.Sprintf("creds.json entry %q is missing the PROVIDER field. See https://FILL IN#creds", n), true
+			// In 4.0, this will be a hard error.
+		}
+		return ct, "", false
+	}
+
+	if ct == "" {
+		return "", fmt.Sprintf("Provider %q has no PROVIDER field. Please update. See https://FILLIN#creds", n), true
+	}
+
+	if t != ct {
+		// creds.json lists a PROVIDER but it doesn't match what's in dnsconfig.js!
+		return t, fmt.Sprintf("creds.json entry %q has PROVIDER set to %q but dnsconfig.js specifies %q, which is a mismatch. See https://FILL IN#mismatch", n, ct, t), true
+	}
+	// User has updated creds.json but is still providing redundant information.
+	return t, fmt.Sprintf("creds.json entry %q is valid. Please update dnsconfig.js. See https://FILL IN#dnsconfig", n), false
+
 }
 
 func printOrRunCorrections(domain string, provider string, corrections []*models.Correction, out printer.CLI, push bool, interactive bool, notifier notifications.Notifier) (anyErrors bool) {
