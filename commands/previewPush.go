@@ -205,7 +205,7 @@ func InitializeProviders(credsFile string, cfg *models.DNSConfig, notifyFlag boo
 	}
 
 	// Find all "-" provider names and replace with actual provider.
-	fillProviderType(cfg, providerConfigs)
+	populateProviderTypes(cfg, providerConfigs)
 
 	registrars := map[string]providers.Registrar{}
 	dnsProviders := map[string]providers.DNSServiceProvider{}
@@ -236,63 +236,58 @@ func InitializeProviders(credsFile string, cfg *models.DNSConfig, notifyFlag boo
 	return
 }
 
-// fillProviderType scans a DNSConfig for blank provider types and fills them in based on providerConfigs.
-func fillProviderType(cfg *models.DNSConfig, providerConfigs map[string]map[string]string) []string {
+// populateProviderTypes scans a DNSConfig for blank provider types and fills them in based on providerConfigs.
+func populateProviderTypes(cfg *models.DNSConfig, providerConfigs map[string]map[string]string) ([]string, error) {
 	var msgs []string
 
 	for i := range cfg.Registrars {
 		pName := cfg.Registrars[i].Name
 		pType := cfg.Registrars[i].Type
-		nt, msg, fatal := LookupProviderType(pName, pType, providerConfigs)
-		if fatal {
-			return nil // TODO(tlim): this is an error
+		nt, warnMsg, err := refineProviderType(pType, providerConfigs[pName])
+		cfg.Registrars[i].Type = nt
+		if warnMsg != "" {
+			msgs = append(msgs, warnMsg)
 		}
-		if msg != "" {
-			msgs = append(msgs, msg)
-		} else {
-			cfg.Registrars[i].Type = nt
+		if err != nil {
+			return msgs, err
 		}
 	}
 
 	for i := range cfg.DNSProviders {
 		pName := cfg.DNSProviders[i].Name
 		pType := cfg.DNSProviders[i].Type
-		nt, msg, fatal := LookupProviderType(pName, pType, providerConfigs)
-		if fatal {
-			return nil // TODO(tlim): this is an error
+		nt, warnMsg, err := refineProviderType(pType, providerConfigs[pName])
+		cfg.Registrars[i].Type = nt
+		if warnMsg != "" {
+			msgs = append(msgs, warnMsg)
 		}
-		if msg != "" {
-			msgs = append(msgs, msg)
-		} else {
-			cfg.Registrars[i].Type = nt
+		if err != nil {
+			return msgs, err
 		}
 	}
 
-	return msgs
+	return msgs, nil
 }
 
-func LookupProviderType(n, t string, providerConfigs map[string]map[string]string) (string, string, bool) {
+func refineProviderType(t string, credFields map[string]string) (replacementType string, warnMsg string, err error) {
 
 	// t="" and t="-" are processed the same. Standardize on "" to reduce the number of cases to check.
 	if t == "-" {
 		t = ""
 	}
 
-	if n == "" || n == "-" {
-		return "", fmt.Sprintf("Provider name %q invalid", n), true
-	}
-
-	ct := ""
-	if _, ok := providerConfigs[n]; !ok {
+	// Handle the preferred case.
+	ct := t
+	if credFields == nil {
 		ct = t
-		fmt.Printf(`creds.json is missing an entry called %q. It should look like: %q: { "PROVIDER": "NONE" },`, n, n)
+		return fmt.Sprintf(`WARNING: creds.json is missing an entry called %q. It should look like: %q: { "PROVIDER": "NONE" },`, n_Easier, n_Easier), ""
 		// In 3.x this is permitted.
 		// In 4.0 this will be an error or maybe we'll default to ct = "NONE".
 	} else {
-		ct = providerConfigs[n]["PROVIDER"]
+		ct = providerConfigs[n_Easier]["PROVIDER"]
 	}
 	if ct == "-" {
-		return "", fmt.Sprintf("Provider %q has invalid PROVIDER field: %q", n, ct), true
+		return "", fmt.Sprintf("Provider %q has invalid PROVIDER field: %q", n_Easier, ct), true
 	}
 
 	// name     type    credsType
@@ -305,22 +300,22 @@ func LookupProviderType(n, t string, providerConfigs map[string]map[string]strin
 		// "-" means "look in creds.json for the value". Some day this will be the norm.
 		if ct == "" {
 			// creds.json is missing the PROVIDER field.
-			return "", fmt.Sprintf("creds.json entry %q is missing the PROVIDER field. See https://FILL IN#creds", n), true
+			return "", fmt.Sprintf("creds.json entry %q is missing the PROVIDER field. See https://FILL IN#creds", n_Easier), true
 			// In 4.0, this will be a hard error.
 		}
 		return ct, "", false
 	}
 
 	if ct == "" {
-		return "", fmt.Sprintf("Provider %q has no PROVIDER field. Please update. See https://FILLIN#creds", n), true
+		return "", fmt.Sprintf("Provider %q has no PROVIDER field. Please update. See https://FILLIN#creds", n_Easier), true
 	}
 
 	if t != ct {
 		// creds.json lists a PROVIDER but it doesn't match what's in dnsconfig.js!
-		return t, fmt.Sprintf("creds.json entry %q has PROVIDER set to %q but dnsconfig.js specifies %q, which is a mismatch. See https://FILL IN#mismatch", n, ct, t), true
+		return t, fmt.Sprintf("creds.json entry %q has PROVIDER set to %q but dnsconfig.js specifies %q, which is a mismatch. See https://FILL IN#mismatch", n_Easier, ct, t), true
 	}
 	// User has updated creds.json but is still providing redundant information.
-	return t, fmt.Sprintf("creds.json entry %q is valid. Please update dnsconfig.js. See https://FILL IN#dnsconfig", n), false
+	return t, fmt.Sprintf("creds.json entry %q is valid. Please update dnsconfig.js. See https://FILL IN#dnsconfig", n_Easier), false
 
 }
 
