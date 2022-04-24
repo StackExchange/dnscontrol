@@ -43,19 +43,18 @@ type DNSProviderConfig struct {
 	Metadata json.RawMessage `json:"meta,omitempty"`
 }
 
-// FIXME(tal): In hindsight, the Nameserver struct is overkill. We
-// could have just used string.  Now every provider calls
-// ToNameservers or ToNameserversStripTD to construct the list;
-// every user calls NameserversToStrings to extract the strings
-// from it.  Nothing uses it any other way.  At this point it would be
-// safe to refactor the code to eliminate the struct and just us
-// []string.  See https://github.com/StackExchange/dnscontrol/issues/577
-
 // Nameserver describes a nameserver.
 type Nameserver struct {
 	Name string `json:"name"` // Normalized to a FQDN with NO trailing "."
 	// NB(tlim): DomainConfig.Nameservers are stored WITH a trailing "." (Sorry!)
 }
+
+// FIXME(tal): In hindsight the Nameserver struct is overkill. We
+// could have just used string.  Currently there are very few places
+// that refer to the .Name field directly.  All new code should use
+// ToNameservers/ToNameserversStripTD and NameserversToStrings to make
+// future refactoring easier.  See
+// https://github.com/StackExchange/dnscontrol/issues/577
 
 func (n *Nameserver) String() string {
 	return n.Name
