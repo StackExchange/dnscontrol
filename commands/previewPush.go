@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"strings"
 
 	"github.com/urfave/cli/v2"
 
@@ -205,7 +206,13 @@ func InitializeProviders(credsFile string, cfg *models.DNSConfig, notifyFlag boo
 	}
 
 	// Find all "-" provider names and replace with actual provider.
-	populateProviderTypes(cfg, providerConfigs)
+	msgs, err := populateProviderTypes(cfg, providerConfigs)
+	if len(msgs) != 0 {
+		fmt.Fprintln(os.Stderr, strings.Join(msgs, "\n"))
+	}
+	if err != nil {
+		return
+	}
 
 	registrars := map[string]providers.Registrar{}
 	dnsProviders := map[string]providers.DNSServiceProvider{}
@@ -236,14 +243,17 @@ func InitializeProviders(credsFile string, cfg *models.DNSConfig, notifyFlag boo
 	return
 }
 
+// We're not sure if the field should be PROVIDER or TYPE so I'm using this const.
+const providerTypeFieldName = "TYPE"
+
 // populateProviderTypes scans a DNSConfig for blank provider types and fills them in based on providerConfigs.
 func populateProviderTypes(cfg *models.DNSConfig, providerConfigs map[string]map[string]string) ([]string, error) {
 	var msgs []string
 
 	for i := range cfg.Registrars {
-		pName := cfg.Registrars[i].Name
 		pType := cfg.Registrars[i].Type
-		nt, warnMsg, err := refineProviderType(pType, providerConfigs[pName])
+		pName := cfg.Registrars[i].Name
+		nt, warnMsg, err := refineProviderType(pName, pType, providerConfigs[pName])
 		cfg.Registrars[i].Type = nt
 		if warnMsg != "" {
 			msgs = append(msgs, warnMsg)
@@ -256,8 +266,8 @@ func populateProviderTypes(cfg *models.DNSConfig, providerConfigs map[string]map
 	for i := range cfg.DNSProviders {
 		pName := cfg.DNSProviders[i].Name
 		pType := cfg.DNSProviders[i].Type
-		nt, warnMsg, err := refineProviderType(pType, providerConfigs[pName])
-		cfg.Registrars[i].Type = nt
+		nt, warnMsg, err := refineProviderType(pName, pType, providerConfigs[pName])
+		cfg.DNSProviders[i].Type = nt
 		if warnMsg != "" {
 			msgs = append(msgs, warnMsg)
 		}
@@ -269,53 +279,92 @@ func populateProviderTypes(cfg *models.DNSConfig, providerConfigs map[string]map
 	return msgs, nil
 }
 
-func refineProviderType(t string, credFields map[string]string) (replacementType string, warnMsg string, err error) {
+func refineProviderType(credEntryName string, t string, credFields map[string]string) (replacementType string, warnMsg string, err error) {
 
-	// t="" and t="-" are processed the same. Standardize on "" to reduce the number of cases to check.
-	if t == "-" {
-		t = ""
+	// t="" and t="-" are processed the same. Standardize on "-" to reduce the number of cases to check.
+	if t == "" {
+		// "" indicates nothing was specified. "-" indicates the
+		// backwards-compatible format. Both are processed the same way.
+		t = "-"
 	}
 
-	// Handle the preferred case.
-	ct := t
-	if credFields == nil {
-		ct = t
-		return fmt.Sprintf(`WARNING: creds.json is missing an entry called %q. It should look like: %q: { "PROVIDER": "NONE" },`, n_Easier, n_Easier), ""
-		// In 3.x this is permitted.
-		// In 4.0 this will be an error or maybe we'll default to ct = "NONE".
-	} else {
-		ct = providerConfigs[n_Easier]["PROVIDER"]
-	}
-	if ct == "-" {
-		return "", fmt.Sprintf("Provider %q has invalid PROVIDER field: %q", n_Easier, ct), true
-	}
+	// type     credsType
+	// ----     ---------
+	// - or ""  GANDI        lookup worked. Nothing to say.
+	// - or ""  - or ""      ERROR "creds.json has invalid or missing data"
+	// GANDI    ""           WARNING "Working but.... Please fix as follows..."
+	// GANDI    GANDI        INFO "working but unneeded: clean up as follows..."
+	// GANDI    NAMEDOT      ERROR "error mismatched: please fix as follows..."
 
-	// name     type    credsType
-	// usergan  -       GANDI        lookup worked. Nothing to say.
-	// usergan  GANDI   ""           "Working but.... Please fix as follows..."
-	// usergan  GANDI   GANDI        "working but unneeded: clean up as follows..."
-	// usergan  GANDI   NAMEDOT      "error mismatched: please fix as follows..."
+	// ERROR: Invalid.
+	// WARNING: Required change to remain compatible with 4.0
+	// INFO: Clean-up or other non-required changes.
 
-	if t == "-" {
-		// "-" means "look in creds.json for the value". Some day this will be the norm.
-		if ct == "" {
-			// creds.json is missing the PROVIDER field.
-			return "", fmt.Sprintf("creds.json entry %q is missing the PROVIDER field. See https://FILL IN#creds", n_Easier), true
-			// In 4.0, this will be a hard error.
+	if t != "-" {
+		// Old-style, dnsconfig.js specifies the type explicitly.
+		// This is supported but we suggest updates for future compatibility.
+
+		// If credFields is nil, that means there was no entry in creds.json:
+		if credFields == nil {
+			// Warn the user to update creds.json in preparation for 4.0:
+			return t, fmt.Sprintf(`WARNING: For future compatibility, add this entry creds.json: %q: { %q: %q }, (See https://FILLIN#missing)`,
+				credEntryName, providerTypeFieldName, t,
+			), nil
 		}
-		return ct, "", false
+
+		switch ct := credFields[providerTypeFieldName]; ct {
+		case "":
+			// Warn the user to update creds.json in preparation for 4.0:
+			return t, fmt.Sprintf(`WARNING: For future compatibility, update the %q entry in creds.json by adding: %q: %q, (See https://FILLIN#missing)`,
+				credEntryName,
+				providerTypeFieldName, t,
+			), nil
+		case "-":
+			// This should never happen. The user is specifying "-" in a place that it shouldn't be used.
+			return "-", "", fmt.Errorf("ERROR: creds.json entry %q has invalid %q value %q (See https://FILLIN#hyphen",
+				credEntryName, providerTypeFieldName, ct,
+			)
+		case t:
+			// creds.json file is compatible with and dnsconfig.js can be updated.
+			return ct, fmt.Sprintf("INFO: In dnsconfig.js New*(%q, %q) can be simplified to New*(%q, %q) (See https://FILLIN#cleanup)",
+				credEntryName, t,
+				credEntryName, "-",
+			), nil
+		default:
+			// creds.json lists a TYPE but it doesn't match what's in dnsconfig.js!
+			return t, "", fmt.Errorf("ERROR: Mismatch found! creds.json entry %q has %q set to %q but dnsconfig.js specifies New*(%q, %q) (See https://FILLIN#mismatch)",
+				credEntryName, providerTypeFieldName, ct,
+				credEntryName, t,
+			)
+		}
 	}
 
-	if ct == "" {
-		return "", fmt.Sprintf("Provider %q has no PROVIDER field. Please update. See https://FILLIN#creds", n_Easier), true
+	// t == "-"
+	// New-style, dnsconfig.js specifies the type as "-" which means "look it up in creds.json".
+
+	// If credFields is nil, that means there was no entry in creds.json:
+	if credFields == nil {
+		return "", "", fmt.Errorf(`ERROR: creds.json is missing an entry called %q. Suggestion: %q: { %q: %q },`,
+			credEntryName,
+			credEntryName, providerTypeFieldName, "FILL_IN_PROVIDER_TYPE",
+		)
 	}
 
-	if t != ct {
-		// creds.json lists a PROVIDER but it doesn't match what's in dnsconfig.js!
-		return t, fmt.Sprintf("creds.json entry %q has PROVIDER set to %q but dnsconfig.js specifies %q, which is a mismatch. See https://FILL IN#mismatch", n_Easier, ct, t), true
+	// New-style, dnsconfig.js specifies the type as "-" which means "Look it up in creds.json".
+	switch ct := credFields[providerTypeFieldName]; ct {
+	case "":
+		// Warn the user to update creds.json in preparation for 4.0:
+		return ct, "", fmt.Errorf("ERROR: creds.json entry %q is missing `%q: %q,` (See https://FILLIN#fixcreds)",
+			credEntryName,
+			providerTypeFieldName, "FILL_IN_PROVIDER_TYPE",
+		)
+	case "-":
+		// This should never happen. The user is specifying "-" in a place that it shouldn't be used.
+		return "-", "", fmt.Errorf("ERROR: creds.json entry %q has invalid %q value %q (See https://FILLIN#hyphen", credEntryName, providerTypeFieldName, ct)
+	default:
+		// use the value in creds.json (this should be the normal case)
+		return ct, "", nil
 	}
-	// User has updated creds.json but is still providing redundant information.
-	return t, fmt.Sprintf("creds.json entry %q is valid. Please update dnsconfig.js. See https://FILL IN#dnsconfig", n_Easier), false
 
 }
 

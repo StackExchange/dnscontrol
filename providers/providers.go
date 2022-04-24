@@ -57,7 +57,7 @@ var DNSProviderTypes = map[string]DspFuncs{}
 // RegisterRegistrarType adds a registrar type to the registry by providing a suitable initialization function.
 func RegisterRegistrarType(name string, init RegistrarInitializer, pm ...ProviderMetadata) {
 	if _, ok := RegistrarTypes[name]; ok {
-		log.Fatalf("Cannot register registrar type %s multiple times", name)
+		log.Fatalf("Cannot register registrar type %q multiple times", name)
 	}
 	RegistrarTypes[name] = init
 	unwrapProviderCapabilities(name, pm)
@@ -66,7 +66,7 @@ func RegisterRegistrarType(name string, init RegistrarInitializer, pm ...Provide
 // RegisterDomainServiceProviderType adds a dsp to the registry with the given initialization function.
 func RegisterDomainServiceProviderType(name string, fns DspFuncs, pm ...ProviderMetadata) {
 	if _, ok := DNSProviderTypes[name]; ok {
-		log.Fatalf("Cannot register registrar type %s multiple times", name)
+		log.Fatalf("Cannot register registrar type %q multiple times", name)
 	}
 	DNSProviderTypes[name] = fns
 	unwrapProviderCapabilities(name, pm)
@@ -76,7 +76,7 @@ func RegisterDomainServiceProviderType(name string, fns DspFuncs, pm ...Provider
 func CreateRegistrar(rType string, config map[string]string) (Registrar, error) {
 	initer, ok := RegistrarTypes[rType]
 	if !ok {
-		return nil, fmt.Errorf("registrar type %s not declared", rType)
+		return nil, fmt.Errorf("registrar type %q not declared", rType)
 	}
 	return initer(config)
 }
@@ -85,7 +85,7 @@ func CreateRegistrar(rType string, config map[string]string) (Registrar, error) 
 func CreateDNSProvider(dType string, config map[string]string, meta json.RawMessage) (DNSServiceProvider, error) {
 	p, ok := DNSProviderTypes[dType]
 	if !ok {
-		return nil, fmt.Errorf("DSP type %s not declared", dType)
+		return nil, fmt.Errorf("DSP type %q not declared", dType)
 	}
 	return p.Initializer(config, meta)
 }
@@ -94,10 +94,10 @@ func CreateDNSProvider(dType string, config map[string]string, meta json.RawMess
 func AuditRecords(dType string, rcs models.Records) error {
 	p, ok := DNSProviderTypes[dType]
 	if !ok {
-		return fmt.Errorf("DSP type %s not declared", dType)
+		return fmt.Errorf("DSP type %q not declared", dType)
 	}
 	if p.RecordAuditor == nil {
-		return fmt.Errorf("DSP type %s has no RecordAuditor", dType)
+		return fmt.Errorf("DSP type %q has no RecordAuditor", dType)
 	}
 	return p.RecordAuditor(rcs)
 }
