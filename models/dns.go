@@ -44,9 +44,12 @@ type DNSProviderConfig struct {
 }
 
 // FIXME(tal): In hindsight, the Nameserver struct is overkill. We
-// could have just used []string.  Now every provider calls StringsToNameservers
-// and ever user calls StringsToNameservers.  We should refactor this
-// some day.  https://github.com/StackExchange/dnscontrol/issues/577
+// could have just used string.  Now every provider calls
+// ToNameservers or ToNameserversStripTD to construct the list;
+// every user calls NameserversToStrings to extract the strings
+// from it.  Nothing uses it any other way.  At this point it would be
+// safe to refactor the code to eliminate the struct and just us
+// []string.  See https://github.com/StackExchange/dnscontrol/issues/577
 
 // Nameserver describes a nameserver.
 type Nameserver struct {
@@ -56,17 +59,6 @@ type Nameserver struct {
 
 func (n *Nameserver) String() string {
 	return n.Name
-}
-
-// StringsToNameservers constructs a list of *Nameserver structs using a list of FQDNs.
-// Deprecated. Please use ToNameservers, or maybe ToNameserversStripTD instead.
-// See https://github.com/StackExchange/dnscontrol/issues/491
-func StringsToNameservers(nss []string) []*Nameserver {
-	nservers := []*Nameserver{}
-	for _, ns := range nss {
-		nservers = append(nservers, &Nameserver{Name: ns})
-	}
-	return nservers
 }
 
 // ToNameservers turns a list of strings into a list of Nameservers.
