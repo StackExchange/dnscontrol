@@ -36,7 +36,27 @@ function getConfiguredDomains() {
     return conf.domain_names;
 }
 
-function NewRegistrar(name, type, meta) {
+// NewRegistrar returns an registrar object.
+// For backwards compatibility, it accepts (name), (name, meta),
+// (name, type), (name, type, meta).
+function NewRegistrar() {
+  // For backwards compatibility, this is a wrapper around the legacy
+  // version of this function.
+  switch (arguments.length) {
+    case 1:
+      return oldNewRegistrar(arguments[0], "-")
+      break;
+    case 2:
+      // x = NewRegistrar("myThing", "THING")
+      // x = NewRegistrar("myThing", { metakey: metavalue } )
+      if (typeof arguments[1] === 'object') {
+        return oldNewRegistrar(arguments[0], "-", arguments[1])
+      }
+      break;
+  }
+  return oldNewRegistrar.apply(null, arguments)
+}
+function oldNewRegistrar(name, type, meta) {
     if (type) {
         type == 'MANUAL';
     }
@@ -46,6 +66,23 @@ function NewRegistrar(name, type, meta) {
 }
 
 function NewDnsProvider(name, type, meta) {
+  // For backwards compatibility, this is a wrapper around the legacy
+  // version of this function.
+  switch (arguments.length) {
+    case 1:
+      return oldNewDnsProvider(arguments[0], "-")
+      break;
+    case 2:
+      // x = NewDnsProvider("myThing", "THING")
+      // x = NewDnsProvider("myThing", { metakey: metavalue } )
+      if (typeof arguments[1] === 'object') {
+        return oldNewDnsProvider(arguments[0], "-", arguments[1])
+      }
+      break;
+  }
+  return oldNewDnsProvider.apply(null, arguments)
+}
+function oldNewDnsProvider(name, type, meta) {
     if (typeof meta === 'object' && 'ip_conversions' in meta) {
         meta.ip_conversions = format_tt(meta.ip_conversions);
     }

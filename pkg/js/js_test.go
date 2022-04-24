@@ -54,6 +54,13 @@ func TestParsedFiles(t *testing.T) {
 			// Initialize any DNS providers mentioned.
 			for _, dProv := range conf.DNSProviders {
 				var pcfg = map[string]string{}
+
+				if dProv.Type == "-" {
+					// Pretend any "look up provider type in creds.json" results
+					// in a provider type that actually exists.
+					dProv.Type = "CLOUDFLAREAPI"
+				}
+
 				// Fake out any provider's validation tests.
 				switch dProv.Type {
 				case "CLOUDFLAREAPI":

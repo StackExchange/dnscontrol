@@ -85,7 +85,7 @@ func CreateRegistrar(rType string, config map[string]string) (Registrar, error) 
 func CreateDNSProvider(dType string, config map[string]string, meta json.RawMessage) (DNSServiceProvider, error) {
 	p, ok := DNSProviderTypes[dType]
 	if !ok {
-		return nil, fmt.Errorf("DSP type %q not declared", dType)
+		return nil, fmt.Errorf("DSP type %q not declared (create)", dType)
 	}
 	return p.Initializer(config, meta)
 }
@@ -94,7 +94,7 @@ func CreateDNSProvider(dType string, config map[string]string, meta json.RawMess
 func AuditRecords(dType string, rcs models.Records) error {
 	p, ok := DNSProviderTypes[dType]
 	if !ok {
-		return fmt.Errorf("DSP type %q not declared", dType)
+		return fmt.Errorf("DSP type %q not declared (audit)", dType)
 	}
 	if p.RecordAuditor == nil {
 		return fmt.Errorf("DSP type %q has no RecordAuditor", dType)
