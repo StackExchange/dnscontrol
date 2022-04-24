@@ -106,6 +106,30 @@ This message indicates that the same provider name is specified in `dnsconfig.js
 The fix is to update `dnsconfig.js` as suggested in the error.  Usually this is
 to simply remove the second parameter to the function.
 
+Examples:
+
+
+```
+OLD: var REG_THING = NewRegistrar("thing", "THING");
+NEW: var REG_THING = NewRegistrar("thing");
+
+OLD: var REG_THING = NewRegistrar("thing", "THING", { settings: "value" } );
+NEW: var REG_THING = NewRegistrar("thing", { settings: "value" } );
+
+OLD: var DNS_MYGANDI = NewDnsProvider("mygandi", "GANDI_V5");
+NEW: var DNS_MYGANDI = NewDnsProvider("mygandi");
+
+OLD: var DNS_MYGANDI = NewDnsProvider("mygandi", "GANDI_V5", { settings: "value" } );
+NEW: var DNS_MYGANDI = NewDnsProvider("mygandi", { settings: "value" } );
+```
+
+Starting with v3.16 use of th OLD format will trigger warnings with suggestions on how to adopt the NEW format.
+
+Starting with v4.0 support for the OLD format may or may not be depreciated.
+
+Please adopt the NEW format when your installation has eliminated any use of DNSControl pre-3.16.
+
+
 ### mismatch
 
 Message: `ERROR: Mismatch found! creds.json entry ... has ... set to ... but dnsconfig.js specifies New*(..., ...)`

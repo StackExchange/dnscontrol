@@ -332,9 +332,9 @@ func refineProviderType(credEntryName string, t string, credFields map[string]st
 			)
 		case t:
 			// creds.json file is compatible with and dnsconfig.js can be updated.
-			return ct, fmt.Sprintf(`INFO: In dnsconfig.js New*(%q, %q) can be simplified to New*(%q, %q) (See %s#cleanup)`,
+			return ct, fmt.Sprintf(`INFO: In dnsconfig.js New*(%q, %q) can be simplified to New*(%q) (See %s#cleanup)`,
 				credEntryName, t,
-				credEntryName, "-",
+				credEntryName,
 				url,
 			), nil
 		default:
