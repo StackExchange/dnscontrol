@@ -243,10 +243,13 @@ func InitializeProviders(credsFile string, cfg *models.DNSConfig, notifyFlag boo
 	return
 }
 
-// We're not sure if the field should be PROVIDER or TYPE so I'm using this const.
+// The field in creds.json used to store the provider type.
 const providerTypeFieldName = "TYPE"
+const url = "https://stackexchange.github.io/dnscontrol/creds-json"
 
 // populateProviderTypes scans a DNSConfig for blank provider types and fills them in based on providerConfigs.
+// That is, if the provider type is "-" or "", we take that as an flag
+// that means this value should be replaced by the type found in creds.json.
 func populateProviderTypes(cfg *models.DNSConfig, providerConfigs map[string]map[string]string) ([]string, error) {
 	var msgs []string
 
@@ -307,34 +310,39 @@ func refineProviderType(credEntryName string, t string, credFields map[string]st
 		// If credFields is nil, that means there was no entry in creds.json:
 		if credFields == nil {
 			// Warn the user to update creds.json in preparation for 4.0:
-			return t, fmt.Sprintf(`WARNING: For future compatibility, add this entry creds.json: %q: { %q: %q }, (See https://FILLIN#missing)`,
+			return t, fmt.Sprintf(`WARNING: For future compatibility, add this entry creds.json: %q: { %q: %q }, (See %s#missing)`,
 				credEntryName, providerTypeFieldName, t,
+				url,
 			), nil
 		}
 
 		switch ct := credFields[providerTypeFieldName]; ct {
 		case "":
 			// Warn the user to update creds.json in preparation for 4.0:
-			return t, fmt.Sprintf(`WARNING: For future compatibility, update the %q entry in creds.json by adding: %q: %q, (See https://FILLIN#missing)`,
+			return t, fmt.Sprintf(`WARNING: For future compatibility, update the %q entry in creds.json by adding: %q: %q, (See %s#missing)`,
 				credEntryName,
 				providerTypeFieldName, t,
+				url,
 			), nil
 		case "-":
 			// This should never happen. The user is specifying "-" in a place that it shouldn't be used.
-			return "-", "", fmt.Errorf("ERROR: creds.json entry %q has invalid %q value %q (See https://FILLIN#hyphen",
+			return "-", "", fmt.Errorf(`ERROR: creds.json entry %q has invalid %q value %q (See %s#hyphen)`,
 				credEntryName, providerTypeFieldName, ct,
+				url,
 			)
 		case t:
 			// creds.json file is compatible with and dnsconfig.js can be updated.
-			return ct, fmt.Sprintf("INFO: In dnsconfig.js New*(%q, %q) can be simplified to New*(%q, %q) (See https://FILLIN#cleanup)",
+			return ct, fmt.Sprintf(`INFO: In dnsconfig.js New*(%q, %q) can be simplified to New*(%q, %q) (See %s#cleanup)`,
 				credEntryName, t,
 				credEntryName, "-",
+				url,
 			), nil
 		default:
 			// creds.json lists a TYPE but it doesn't match what's in dnsconfig.js!
-			return t, "", fmt.Errorf("ERROR: Mismatch found! creds.json entry %q has %q set to %q but dnsconfig.js specifies New*(%q, %q) (See https://FILLIN#mismatch)",
+			return t, "", fmt.Errorf(`ERROR: Mismatch found! creds.json entry %q has %q set to %q but dnsconfig.js specifies New*(%q, %q) (See %s#mismatch)`,
 				credEntryName, providerTypeFieldName, ct,
 				credEntryName, t,
+				url,
 			)
 		}
 	}
@@ -344,9 +352,10 @@ func refineProviderType(credEntryName string, t string, credFields map[string]st
 
 	// If credFields is nil, that means there was no entry in creds.json:
 	if credFields == nil {
-		return "", "", fmt.Errorf(`ERROR: creds.json is missing an entry called %q. Suggestion: %q: { %q: %q },`,
+		return "", "", fmt.Errorf(`ERROR: creds.json is missing an entry called %q. Suggestion: %q: { %q: %q }, (See %s#missing)`,
 			credEntryName,
 			credEntryName, providerTypeFieldName, "FILL_IN_PROVIDER_TYPE",
+			url,
 		)
 	}
 
@@ -354,13 +363,18 @@ func refineProviderType(credEntryName string, t string, credFields map[string]st
 	switch ct := credFields[providerTypeFieldName]; ct {
 	case "":
 		// Warn the user to update creds.json in preparation for 4.0:
-		return ct, "", fmt.Errorf("ERROR: creds.json entry %q is missing `%q: %q,` (See https://FILLIN#fixcreds)",
+		return ct, "", fmt.Errorf(`ERROR: creds.json entry %q is missing: %q: %q, (See %s#fixcreds)`,
 			credEntryName,
 			providerTypeFieldName, "FILL_IN_PROVIDER_TYPE",
+			url,
 		)
 	case "-":
 		// This should never happen. The user is specifying "-" in a place that it shouldn't be used.
-		return "-", "", fmt.Errorf("ERROR: creds.json entry %q has invalid %q value %q (See https://FILLIN#hyphen", credEntryName, providerTypeFieldName, ct)
+		return "-", "", fmt.Errorf(`ERROR: creds.json entry %q has invalid %q value %q (See %s#hyphen)`,
+			credEntryName,
+			providerTypeFieldName, ct,
+			url,
+		)
 	default:
 		// use the value in creds.json (this should be the normal case)
 		return ct, "", nil

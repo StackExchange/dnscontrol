@@ -22,6 +22,8 @@ ARGUMENTS:
    credkey:  The name used in creds.json (first parameter to NewDnsProvider() in dnsconfig.js)
    provider: The name of the provider (second parameter to NewDnsProvider() in dnsconfig.js)
 
+If "provider" is `-`, the provider type is assumed to be the value of `TYPE` in `creds.json`.  Prior to v4.0 this parameter will become optional.  In v4.0 this paramenter is expected to go away.
+
 EXAMPLES:
    dnscontrol check-creds myr53 ROUTE53
 

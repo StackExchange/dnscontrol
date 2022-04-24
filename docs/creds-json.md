@@ -13,14 +13,17 @@ Here's a sample file:
 ```json
 {
   "cloudflare_tal": {
+    "TYPE": "CLOUDFLAREAPI",
     "apikey": "REDACTED",
     "apiuser": "REDACTED"
   },
   "inside": {
+    "TYPE": "BIND",
     "directory": "inzones",
     "filenameformat": "db_%T%?_%D"
   },
   "hexonet": {
+    "TYPE": "HEXONET",
     "apilogin": "$HEXONET_APILOGIN",
     "apipassword": "$HEXONET_APIPASSWORD",
     "debugmode": "$HEXONET_DEBUGMODE",
@@ -29,7 +32,7 @@ Here's a sample file:
 }
 ```
 
-# Format
+## Format
 
 * Primary keys: (e.g. `cloudflare_tal`, `inside`, `hexonet`)
   * ...refer to the first parameter in the `NewRegistrar()` or `NewDnsProvider()` functions in a dnsconfig.js file.
@@ -43,7 +46,99 @@ Here's a sample file:
   * ...may include any JSON string value including the empty string.
   * If a subkey starts with `$`, it is taken as an env variable.  In the above example, `$HEXONET_APILOGIN` would be replaced by the value of the environment variable `HEXONET_APILOGIN` or the empty string if no such environment variable exists.
 
-# Using a different name
+## New in v3.16:
+
+The special subkey "TYPE" is used to indicate the provider type (NONE,
+CLOUDFLAREAPI, GCLOUD, etc).
+
+Prior to v3.16, the provider type is specified as the second argument to
+`NewRegistrar()` and `NewDnsProvider()` in `dnsconfig.js` or as a command-line
+argument in tools such as `dnscontrol get-zones`.
+
+Starting in v3.16, specifying the provider type as `-` (in `NewRegistrar()`,
+`NewDnsProvider()` or on the command line) instructs DNSControl to substitute
+the `TYPE` value found in `creds.json` if it exists.
+
+In 4.0, DNSControl will require the "TYPE" subkey in `creds.json` entry. Using
+it as the second parameter to `NewRegistrar()`/`NewDnsProvider()` in
+`dnsconfig.js` or on the command line will no longer be supported. This will
+break backwards compatibility. Prior to 4.0, the various commands will output
+warnings and suggestions to avoid compatibility issues during the transition.
+
+## Error messages
+
+### Missing
+
+Message: `WARNING: For future compatibility, add this entry creds.json:...`
+
+Message: `WARNING: For future compatibility, update the ... entry in creds.json by adding:...`
+
+These messages indicates that this provider is not mentioned in `creds.json`.  In v4.0
+all providers used in `dnsconfig.js` will require an entry in `creds.json`.
+
+For a smooth transition, please update your `creds.json` file now.
+
+Here is the minimal entry required:
+
+```json
+{
+  "entryName": {
+    "TYPE": "FILL_IN"
+  }
+}
+```
+
+### hyphen
+
+Message: `ERROR: creds.json entry ... has invalid ... value ...`
+
+This indicates the entry for `creds.json` has a TYPE value that is invalid.  It might be blank or a hyphen (`-`).  Change it to one of the all caps identifiers
+in [the service provider list](https://stackexchange.github.io/dnscontrol/provider-list).
+
+The fix is to correct the `TYPE` parameter in the `creds.json` entry.
+
+### cleanup
+
+Message: `INFO: In dnsconfig.js New*(..., ...) can be simplified to New*(...)`
+
+This message indicates that the same provider name is specified in `dnsconfig.js` and `creds.json` and offers a suggestion for reducing the redundancy.
+
+The fix is to update `dnsconfig.js` as suggested in the error.  Usually this is
+to simply remove the second parameter to the function.
+
+### mismatch
+
+Message: `ERROR: Mismatch found! creds.json entry ... has ... set to ... but dnsconfig.js specifies New*(..., ...)`
+
+This indicates that the provider type specifed in `creds.json` does not match the one specifed in `dnsconfig.js` or on the command line.
+
+The fix is to change one to match the other.
+
+### fixcreds
+
+Message: `ERROR: creds.json entry ... is missing ...: ...`
+
+This indicates that the creds.json file is missing.  The token `-` was used in
+`dnsconfig.js` or on the command-line to indicate that the provider type is to
+be found in `creds.json`. However no `TYPE` subkey was found in that entry in
+`creds.json`.
+
+The fix is to add a `TYPE` subkey to the `creds.json` entry.
+
+### hyphen
+
+Message: `ERROR: creds.json entry ... has invalid ... value ...`
+
+This indicates that the type `-` was specified in `creds.json`, which is not
+allowed. The token `-` indicates that the value is to be found in `creds.json`
+thus it can not be used in`creds.json`.
+
+The fix is to change the `TYPE` subkey entry in `creds.json` from `-` to
+a valid service provider identifier, as listed
+in [the service provider list](https://stackexchange.github.io/dnscontrol/provider-list).
+
+
+## Using a different file name
 
 The `--creds` flag allows you to specify a different file name.
 
@@ -55,7 +150,7 @@ The `--creds` flag allows you to specify a different file name.
   * Exceptions: The `x` bit is not checked if the filename ends with `.yaml`, `.yml` or `.json`.
   * Windows: Executing an external script isn't supported. There's no code that prevents it from trying, but it isn't supported.
 
-# Don't store secrets in a Git repo!
+## Don't store secrets in a Git repo!
 
 Do NOT store secrets in a Git repository. That is not secure. For example,
 storing the example `cloudflare_tal` is insecure because anyone with access to
