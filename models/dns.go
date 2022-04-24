@@ -44,8 +44,9 @@ type DNSProviderConfig struct {
 }
 
 // FIXME(tal): In hindsight, the Nameserver struct is overkill. We
-// could have just used []string.  Now every provider calls StringsToNameservers
-// and ever user calls StringsToNameservers.  We should refactor this
+// could have just used []string.  Now every provider calls
+// ToNameservers or ToNameserversStripTD
+// and ever user calls NameserversToStrings.  We should refactor this
 // some day.  https://github.com/StackExchange/dnscontrol/issues/577
 
 // Nameserver describes a nameserver.
@@ -61,13 +62,13 @@ func (n *Nameserver) String() string {
 // StringsToNameservers constructs a list of *Nameserver structs using a list of FQDNs.
 // Deprecated. Please use ToNameservers, or maybe ToNameserversStripTD instead.
 // See https://github.com/StackExchange/dnscontrol/issues/491
-func StringsToNameservers(nss []string) []*Nameserver {
-	nservers := []*Nameserver{}
-	for _, ns := range nss {
-		nservers = append(nservers, &Nameserver{Name: ns})
-	}
-	return nservers
-}
+//func StringsToNameservers(nss []string) []*Nameserver {
+//	nservers := []*Nameserver{}
+//	for _, ns := range nss {
+//		nservers = append(nservers, &Nameserver{Name: ns})
+//	}
+//	return nservers
+//}
 
 // ToNameservers turns a list of strings into a list of Nameservers.
 // It is an error if any string has a trailing dot. Either remove the
