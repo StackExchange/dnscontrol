@@ -573,7 +573,7 @@ func checkLabelHasMultipleTTLs(records []*models.RecordConfig) (errs []error) {
 	for _, r := range records {
 		label := fmt.Sprintf("%s %s", r.GetLabelFQDN(), r.Type)
 
-		// if we have more records for a given label, append their TTLs here
+		// collect the TTLs at this label.
 		m[label] = append(m[label], r.TTL)
 	}
 
