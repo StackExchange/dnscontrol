@@ -95,7 +95,7 @@ Providers in this category and their maintainers are:
 * `LINODE` @koesie10
 * `NAMECHEAP` VOLUNTEER NEEDED
 * `NETCUP` @kordianbruck
-* `NS1` VOLUNTEER NEEDED
+* `NS1` @costasd
 * `OCTODNS` @TomOnTime
 * `OPENSRS` @pierre-emmanuelJ
 * `ORACLE` @kallsyms
