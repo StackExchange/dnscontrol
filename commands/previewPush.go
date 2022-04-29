@@ -205,7 +205,7 @@ func InitializeProviders(credsFile string, cfg *models.DNSConfig, notifyFlag boo
 		}
 	}
 
-	// Find all "-" provider names and replace with actual provider.
+	// Populate provider type ids based on values from creds.json:
 	msgs, err := populateProviderTypes(cfg, providerConfigs)
 	if len(msgs) != 0 {
 		fmt.Fprintln(os.Stderr, strings.Join(msgs, "\n"))
@@ -243,8 +243,10 @@ func InitializeProviders(credsFile string, cfg *models.DNSConfig, notifyFlag boo
 	return
 }
 
-// The field in creds.json used to store the provider type.
+// providerTypeFieldName is the name of the field in creds.json that species the provider type id.
 const providerTypeFieldName = "TYPE"
+
+// url is the documentation URL to list in the warnings related to missing provider type ids.
 const url = "https://stackexchange.github.io/dnscontrol/creds-json"
 
 // populateProviderTypes scans a DNSConfig for blank provider types and fills them in based on providerConfigs.
@@ -286,11 +288,11 @@ func refineProviderType(credEntryName string, t string, credFields map[string]st
 
 	// t="" and t="-" are processed the same. Standardize on "-" to reduce the number of cases to check.
 	if t == "" {
-		// "" indicates nothing was specified. "-" indicates the
-		// backwards-compatible format. Both are processed the same way.
 		t = "-"
 	}
 
+	// Use cases:
+	//
 	// type     credsType
 	// ----     ---------
 	// - or ""  GANDI        lookup worked. Nothing to say.
@@ -301,7 +303,7 @@ func refineProviderType(credEntryName string, t string, credFields map[string]st
 
 	// ERROR: Invalid.
 	// WARNING: Required change to remain compatible with 4.0
-	// INFO: Clean-up or other non-required changes.
+	// INFO: Post-4.0 cleanups or other non-required changes.
 
 	if t != "-" {
 		// Old-style, dnsconfig.js specifies the type explicitly.
@@ -310,6 +312,10 @@ func refineProviderType(credEntryName string, t string, credFields map[string]st
 		// If credFields is nil, that means there was no entry in creds.json:
 		if credFields == nil {
 			// Warn the user to update creds.json in preparation for 4.0:
+			// In 4.0 this should be an error.  We could default to a
+			// provider such as "NONE" but I suspect it would be confusing
+			// to users to see references to a provider name that they did
+			// not specify.
 			return t, fmt.Sprintf(`WARNING: For future compatibility, add this entry creds.json: %q: { %q: %q }, (See %s#missing)`,
 				credEntryName, providerTypeFieldName, t,
 				url,
@@ -319,6 +325,7 @@ func refineProviderType(credEntryName string, t string, credFields map[string]st
 		switch ct := credFields[providerTypeFieldName]; ct {
 		case "":
 			// Warn the user to update creds.json in preparation for 4.0:
+			// In 4.0 this should be an error.
 			return t, fmt.Sprintf(`WARNING: For future compatibility, update the %q entry in creds.json by adding: %q: %q, (See %s#missing)`,
 				credEntryName,
 				providerTypeFieldName, t,
@@ -348,7 +355,9 @@ func refineProviderType(credEntryName string, t string, credFields map[string]st
 	}
 
 	// t == "-"
-	// New-style, dnsconfig.js specifies the type as "-" which means "look it up in creds.json".
+	// New-style, dnsconfig.js does not specify the type (t == "") or a
+	// command line tool accepted "-" as a positional argument for
+	// backwards compatibility.
 
 	// If credFields is nil, that means there was no entry in creds.json:
 	if credFields == nil {
@@ -359,17 +368,17 @@ func refineProviderType(credEntryName string, t string, credFields map[string]st
 		)
 	}
 
-	// New-style, dnsconfig.js specifies the type as "-" which means "Look it up in creds.json".
+	// New-style, dnsconfig.js doesn't specifies the type. It will be
+	// looked up in creds.json.
 	switch ct := credFields[providerTypeFieldName]; ct {
 	case "":
-		// Warn the user to update creds.json in preparation for 4.0:
 		return ct, "", fmt.Errorf(`ERROR: creds.json entry %q is missing: %q: %q, (See %s#fixcreds)`,
 			credEntryName,
 			providerTypeFieldName, "FILL_IN_PROVIDER_TYPE",
 			url,
 		)
 	case "-":
-		// This should never happen. The user is specifying "-" in a place that it shouldn't be used.
+		// This should never happen. The user is confused and specified "-" in the wrong place!
 		return "-", "", fmt.Errorf(`ERROR: creds.json entry %q has invalid %q value %q (See %s#hyphen)`,
 			credEntryName,
 			providerTypeFieldName, ct,
