@@ -243,7 +243,7 @@ func InitializeProviders(credsFile string, cfg *models.DNSConfig, notifyFlag boo
 	return
 }
 
-// providerTypeFieldName is the name of the field in creds.json that species the provider type id.
+// providerTypeFieldName is the name of the field in creds.json that specifies the provider type id.
 const providerTypeFieldName = "TYPE"
 
 // url is the documentation URL to list in the warnings related to missing provider type ids.

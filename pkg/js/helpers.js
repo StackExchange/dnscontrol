@@ -1,8 +1,5 @@
 'use strict';
 
-// If you edit this file, you must run `go generate` to embed this
-// file in the source code.
-
 // If you are heavily debugging this code, the "-dev" flag will
 // read this file directly instead of using the output of
 // `go generate`. You'll still need to run `go generate` before
@@ -45,7 +42,6 @@ function NewRegistrar() {
   switch (arguments.length) {
     case 1:
       return oldNewRegistrar(arguments[0], "-")
-      break;
     case 2:
       // x = NewRegistrar("myThing", "THING")
       // x = NewRegistrar("myThing", { metakey: metavalue } )
@@ -53,6 +49,7 @@ function NewRegistrar() {
         return oldNewRegistrar(arguments[0], "-", arguments[1])
       }
       break;
+    default: // do nothing
   }
   return oldNewRegistrar.apply(null, arguments)
 }
@@ -71,7 +68,6 @@ function NewDnsProvider(name, type, meta) {
   switch (arguments.length) {
     case 1:
       return oldNewDnsProvider(arguments[0], "-")
-      break;
     case 2:
       // x = NewDnsProvider("myThing", "THING")
       // x = NewDnsProvider("myThing", { metakey: metavalue } )
@@ -79,6 +75,7 @@ function NewDnsProvider(name, type, meta) {
         return oldNewDnsProvider(arguments[0], "-", arguments[1])
       }
       break;
+    default: // do nothing
   }
   return oldNewDnsProvider.apply(null, arguments)
 }
