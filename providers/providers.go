@@ -74,6 +74,12 @@ func RegisterDomainServiceProviderType(name string, fns DspFuncs, pm ...Provider
 
 // CreateRegistrar initializes a registrar instance from given credentials.
 func CreateRegistrar(rType string, config map[string]string) (Registrar, error) {
+	var err error
+	rType, err = beCompatible(rType, config)
+	if err != nil {
+		return nil, err
+	}
+
 	initer, ok := RegistrarTypes[rType]
 	if !ok {
 		return nil, fmt.Errorf("registrar type %q not declared", rType)
@@ -82,12 +88,47 @@ func CreateRegistrar(rType string, config map[string]string) (Registrar, error) 
 }
 
 // CreateDNSProvider initializes a dns provider instance from given credentials.
-func CreateDNSProvider(dType string, config map[string]string, meta json.RawMessage) (DNSServiceProvider, error) {
-	p, ok := DNSProviderTypes[dType]
+func CreateDNSProvider(providerTypeName string, config map[string]string, meta json.RawMessage) (DNSServiceProvider, error) {
+	var err error
+	providerTypeName, err = beCompatible(providerTypeName, config)
+	if err != nil {
+		return nil, err
+	}
+
+	p, ok := DNSProviderTypes[providerTypeName]
 	if !ok {
-		return nil, fmt.Errorf("DSP type %q not declared (create)", dType)
+		return nil, fmt.Errorf("DSP type %q not declared (CDP)", providerTypeName)
 	}
 	return p.Initializer(config, meta)
+}
+
+// beCompatible looks up
+func beCompatible(n string, config map[string]string) (string, error) {
+	// Pre 4.0: If n is a placeholder, substitute the TYPE from creds.json.
+	// 4.0: Require TYPE from creds.json.
+
+	ct := config["TYPE"]
+	// If a placeholder value was specified...
+	if n == "" || n == "-" {
+		// But no TYPE exists in creds.json...
+		if ct == "" {
+			return "-", fmt.Errorf("creds.json entry missing TYPE field")
+		}
+		// Otherwise, use the value from creds.json.
+		return ct, nil
+	}
+
+	// Pre 4.0: The user specified the name manually.
+	// Cross check to detect user-error.
+	if ct != "" && n != ct {
+		return "", fmt.Errorf("creds.json entry mismatch: specified=%q TYPE=%q", n, ct)
+	}
+	// Seems like the user did it the right way. Return the original value.
+	return n, nil
+
+	// NB(tlim): My hope is that in 4.0 this entire function will simply be the
+	// following, but I may be wrong:
+	//return config["TYPE"], nil
 }
 
 // AuditRecords calls the RecordAudit function for a provider.
