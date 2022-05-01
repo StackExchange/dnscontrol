@@ -53,7 +53,7 @@ require (
 	github.com/xddxdd/ottoext v0.0.0-20210101073831-439879ee6281
 	golang.org/x/net v0.0.0-20220425223048-2871e0cb64e4
 	golang.org/x/oauth2 v0.0.0-20220411215720-9780585627b5
-	google.golang.org/api v0.76.0
+	google.golang.org/api v0.77.0
 	gopkg.in/ns1/ns1-go.v2 v2.5.1
 	gopkg.in/yaml.v2 v2.4.0
 )
