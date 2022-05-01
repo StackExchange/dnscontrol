@@ -44,6 +44,7 @@ Otherwise
 ```json
 {
   "msdns": {
+    "TYPE": "MSDNS",
     "dnsserver": "ny-dc01",
     "pssession": "mywindowshost"
   }

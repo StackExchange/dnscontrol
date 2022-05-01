@@ -12,6 +12,7 @@ In your credentials file, you must provide your [api key, password and your cust
 ```json
 {
   "netcup": {
+    "TYPE": "NETCUP",
     "api-key": "abc12345",
     "api-password": "abc12345",
     "customer-number": "123456"

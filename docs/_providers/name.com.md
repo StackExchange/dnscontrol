@@ -12,7 +12,8 @@ In your credentials file you must provide your name.com api username and access 
 
 ```json
 {
-  "name.com":{
+  "name.com": {
+    "TYPE": "NAMEDOTCOM",
     "apikey": "yourApiKeyFromName.com",
     "apiuser": "yourUsername"
   }

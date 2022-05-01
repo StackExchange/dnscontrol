@@ -13,6 +13,7 @@ In your credentials file, you must provide your
 ```json
 {
   "digitalocean": {
+    "TYPE": "DIGITALOCEAN",
     "token": "your-digitalocean-ouath-token"
   }
 }

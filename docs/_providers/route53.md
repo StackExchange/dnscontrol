@@ -10,12 +10,13 @@ You can specify the API credentials in the credentials json file:
 
 ```json
 {
-    "r53_main": {
-        "KeyId": "your-aws-key",
-        "SecretKey": "your-aws-secret-key",
-        "Token": "optional-sts-token",
-        "DelegationSet" : "optional-delegation-set-id"
-    }
+  "r53_main": {
+    "TYPE": "ROUTE53",
+    "DelegationSet": "optional-delegation-set-id",
+    "KeyId": "your-aws-key",
+    "SecretKey": "your-aws-secret-key",
+    "Token": "optional-sts-token"
+  }
 }
 ```
 
@@ -29,10 +30,11 @@ export AWS_SESSION_TOKEN=ZZZZZZZZ
 
 ```json
 {
-    "r53_main": {
-        "KeyId": "$AWS_ACCESS_KEY_ID",
-        "SecretKey": "$AWS_SECRET_ACCESS_KEY"
-    }
+  "r53_main": {
+    "KeyId": "$AWS_ACCESS_KEY_ID",
+    "SecretKey": "$AWS_SECRET_ACCESS_KEY",
+    "TYPE": "ROUTE53"
+  }
 }
 ```
 

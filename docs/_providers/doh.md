@@ -13,7 +13,8 @@ The DNS-over-HTTPS provider does not require anything in `creds.json`. By defaul
 
 ```json
 {
-  "DNS-over-HTTPS": {
+  "dohcloudflare": {
+    "TYPE": "DNSOVERHTTPS"
     "host": "cloudflare-dns.com"
   }
 }
@@ -28,7 +29,7 @@ This provider does not recognize any special metadata fields unique to DOH.
 Example Javascript:
 
 ```js
-var REG_MONITOR = NewRegistrar('DNS-over-HTTPS', 'DNSOVERHTTPS');
+var REG_MONITOR = NewRegistrar("dohcloudflare", "DNSOVERHTTPS");
 
 D("example.com", REG_MONITOR,
   NAMESERVER("ns1.example.com."),

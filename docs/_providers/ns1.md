@@ -12,7 +12,8 @@ In your credentials json file you must provide your NS1 api key:
 
 ```json
 {
-  "ns1":{
+  "ns1": {
+    "TYPE": "NS1",
     "api_token": "your-ns1-token"
   }
 }

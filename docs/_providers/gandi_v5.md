@@ -7,11 +7,11 @@ jsId: GANDI_V5
 # Gandi_v5 Provider
 
 `GANDI_V5` uses the v5 API and can act as a registrar provider
-    or a DNS provider. It is only able to work with domains
-    migrated to the new LiveDNS API, which should be all domains.
-    API keys are assigned to particular users.  Go to User Settings,
-    "Manage the user account and security settings", the "Security"
-    tab, then regenerate the "Production API key".
+or a DNS provider. It is only able to work with domains
+migrated to the new LiveDNS API, which should be all domains.
+API keys are assigned to particular users.  Go to User Settings,
+"Manage the user account and security settings", the "Security"
+tab, then regenerate the "Production API key".
 
 * API Documentation: https://api.gandi.net/docs
 * API Endpoint: https://api.gandi.net/
@@ -31,6 +31,7 @@ enforced?)
 ```json
 {
   "gandi": {
+    "TYPE": "GANDI_V5",
     "apikey": "your-gandi-key",
     "sharing_id": "your-sharing_id"
   }

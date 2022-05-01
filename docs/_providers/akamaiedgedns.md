@@ -28,6 +28,7 @@ In the credentials file (creds.json), you must provide the following:
 
 ```json
 "akamaiedgedns": {
+    "TYPE": "AKAMAIEDGEDNS",
     "client_secret": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
     "host": "akaa-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx.xxxx.akamaiapis.net",
     "access_token": "akaa-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",

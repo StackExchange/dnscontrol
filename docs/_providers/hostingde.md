@@ -2,7 +2,7 @@
 name: hosting.de
 title: hosting.de Provider
 layout: default
-jsId: hostingde
+jsId: HOSTINGDE
 ---
 
 # hosting.de Provider
@@ -16,6 +16,7 @@ In your credentials file, you must provide your [`authToken` and optionally an `
 ```json
 {
   "hosting.de": {
+    "TYPE": "HOSTINGDE",
     "authToken": "YOUR_API_KEY"
   }
 }
@@ -46,6 +47,7 @@ Using them requires setting the `baseURL` and (optionally) overriding the defaul
 ```json
 {
   "http.net": {
+    "TYPE": "HOSTINGDE",
     "authToken": "YOUR_API_KEY",
     "baseURL": "https://partner.http.net"
   }

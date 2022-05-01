@@ -18,8 +18,9 @@ you can specify a `directory` where the provider will look for and create zone f
 ```json
 {
   "bind": {
+    "TYPE": "BIND",
     "directory": "myzones",
-    "filenameformat": "%U.zone"      << The default
+    "filenameformat": "%U.zone"
   }
 }
 ```
@@ -74,8 +75,8 @@ DNSControl does not handle special serial number math such as "looping through z
 # filenameformat
 
 The `filenameformat` parameter specifies the file name to be used when
-writing the zone file. The default is acceptable in most cases: the
-name as specified in the `D()` function, plus ".zone".
+writing the zone file. The default (`%U.zone`) is acceptable in most cases: the
+file name is the name as specified in the `D()` function plus ".zone".
 
 The filenameformat is a string with a few printf-like `%` verbs:
 

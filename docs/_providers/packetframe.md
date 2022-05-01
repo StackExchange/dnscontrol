@@ -12,6 +12,7 @@ In your credentials file, you must provide your Packetframe Token which can be e
 ```json
 {
   "packetframe": {
+    "TYPE": "PACKETFRAME",
     "token": "your-packetframe-token"
   }
 }

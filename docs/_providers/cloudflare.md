@@ -25,8 +25,9 @@ This method is enabled by setting the "apitoken" value in `creds.json`:
 ```json
 {
   "cloudflare": {
-    "apitoken": "your-cloudflare-api-token",
-    "accountid": "your-cloudflare-account-id"
+    "TYPE": "CLOUDFLAREAPI",
+    "accountid": "your-cloudflare-account-id",
+    "apitoken": "your-cloudflare-api-token"
   }
 }
 ```
@@ -55,9 +56,10 @@ This method is enabled by setting the "apikey" and "apiuser" values in `creds.js
 ```json
 {
   "cloudflare": {
+    "TYPE": "CLOUDFLAREAPI",
+    "accountid": "your-cloudflare-account-id",
     "apikey": "your-cloudflare-api-key",
-    "apiuser": "your-cloudflare-email-address",
-    "accountid": "your-cloudflare-account-id"
+    "apiuser": "your-cloudflare-email-address"
   }
 }
 ```
@@ -72,8 +74,9 @@ The "accountid" is found in the Cloudflare portal ("Account ID") on the DNS page
 ```json
 {
   "cloudflare": {
-    "apitoken": "...",
+    "TYPE": "CLOUDFLAREAPI",
     "accountid": "your-cloudflare-account-id",
+    "apitoken": "..."
   }
 }
 ```

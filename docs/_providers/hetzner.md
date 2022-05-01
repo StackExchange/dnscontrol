@@ -15,6 +15,7 @@ In your credentials file, you must provide a
 ```json
 {
   "hetzner": {
+    "TYPE": "HETZNER",
     "api_key": "your-api-key"
   }
 }
@@ -30,7 +31,7 @@ This provider does not recognize any special metadata fields unique to Hetzner
 Example Javascript:
 
 ```js
-var REG_NONE = NewRegistrar('none', 'NONE');
+var REG_NONE = NewRegistrar("none", "NONE");
 var HETZNER = NewDnsProvider("hetzner", "HETZNER");
 
 D("example.tld", REG_NONE, DnsProvider(HETZNER),
@@ -77,8 +78,9 @@ In your `creds.json` for all `HETZNER` provider entries:
 ```json
 {
   "hetzner": {
-    "optimize_for_rate_limit_quota": "Minute",
-    "api_key": "your-api-key"
+    "TYPE": "HETZNER",
+    "api_key": "your-api-key",
+    "optimize_for_rate_limit_quota": "Minute"
   }
 }
 ```
@@ -109,8 +111,9 @@ In your `creds.json` for all `HETZNER` provider entries:
 ```json
 {
   "hetzner": {
-    "start_with_default_rate_limit": "true",
-    "api_key": "your-api-key"
+    "TYPE": "HETZNER",
+    "api_key": "your-api-key",
+    "start_with_default_rate_limit": "true"
   }
 }
 ```

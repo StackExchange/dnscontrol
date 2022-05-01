@@ -14,6 +14,7 @@ In your credentials file, you must provide your API key and account password
 ```json
 {
   "internetbs": {
+    "TYPE": "INTERNETBS",
     "api-key": "your-api-key",
     "password": "account-password"
   }

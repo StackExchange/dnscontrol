@@ -11,6 +11,7 @@ In your providers credentials file you must provide a DNSimple account access to
 ```json
 {
   "dnsimple": {
+    "TYPE": "DNSIMPLE",
     "token": "your-dnsimple-account-access-token"
   }
 }

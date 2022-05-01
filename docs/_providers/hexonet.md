@@ -22,6 +22,7 @@ Please provide your HEXONET login data in your credentials file `creds.json` as 
 ```json
 {
   "hexonet": {
+    "TYPE": "HEXONET",
     "apilogin": "your-hexonet-account-id",
     "apipassword": "your-hexonet-account-password",
     "apientity": "LIVE", // for the LIVE system; use "OTE" for the OT&E system
@@ -36,6 +37,7 @@ Here a working example for our OT&E System:
 ```json
 {
   "hexonet": {
+    "TYPE": "HEXONET",
     "apilogin": "test.user",
     "apipassword": "test.passw0rd",
     "apientity": "OTE",

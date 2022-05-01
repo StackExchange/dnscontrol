@@ -41,10 +41,11 @@ For instance, your `creds.json` might looks like:
 
 ```json
 {
-    "axfrddns": {
-        "transfer-key": "hmac-sha256:transfer-key-id:Base64EncodedSecret=",
-        "update-key": "hmac-sha256:update-key-id:AnotherSecret="
-    }
+  "axfrddns": {
+    "TYPE": "AUTODNS",
+    "transfer-key": "hmac-sha256:transfer-key-id:Base64EncodedSecret=",
+    "update-key": "hmac-sha256:update-key-id:AnotherSecret="
+  }
 }
 ```
 

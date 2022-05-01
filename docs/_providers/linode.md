@@ -13,6 +13,7 @@ In your credentials file, you must provide your
 ```json
 {
   "linode": {
+    "TYPE": "LINODE",
     "token": "your-linode-personal-access-token"
   }
 }

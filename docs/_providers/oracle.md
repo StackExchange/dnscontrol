@@ -14,13 +14,14 @@ The OCID of the compartment DNS resources should be put in can also optionally b
 ```json
 {
   "oracle": {
-    "user_ocid": "$ORACLE_USER_OCID",
-    "tenancy_ocid": "$ORACLE_TENANCY_OCID",
+    "TYPE": "ORACLE",
+    "compartment": "$ORACLE_COMPARTMENT",
     "fingerprint": "$ORACLE_FINGERPRINT",
-    "region": "$ORACLE_REGION",
     "private_key": "$ORACLE_PRIVATE_KEY",
-    "compartment": "$ORACLE_COMPARTMENT"
-  },
+    "region": "$ORACLE_REGION",
+    "tenancy_ocid": "$ORACLE_TENANCY_OCID",
+    "user_ocid": "$ORACLE_USER_OCID"
+  }
 }
 ```
 

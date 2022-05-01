@@ -19,8 +19,9 @@ These can be supplied in the `creds.json` file:
 ```json
 {
   "softlayer": {
-    "username": "myusername",
-    "api_key": "mysecretapikey"
+    "TYPE": "SOFTLAYER",
+    "api_key": "mysecretapikey",
+    "username": "myusername"
   }
 }
 ```

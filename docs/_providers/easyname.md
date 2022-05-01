@@ -14,11 +14,12 @@ In your credentials file, you must provide your [API-Access](https://my.easyname
 ```json
 {
   "easyname": {
-    "userid": 12345,
-    "email": "example@example.com",
+    "TYPE": "EASYNAME",
     "apikey": "API Key",
     "authsalt": "API Authentication Salt",
-    "signsalt": "API Signing Salt"
+    "email": "example@example.com",
+    "signsalt": "API Signing Salt",
+    "userid": 12345
   }
 }
 ```

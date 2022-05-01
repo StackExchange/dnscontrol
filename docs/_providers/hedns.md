@@ -17,9 +17,10 @@ and password used to login to the [web interface]([https://dns.he.net]).
 
 ```json
 {
-  "hedns":{
-    "username": "yourUsername",
-    "password": "yourPassword"
+  "hedns": {
+    "TYPE": "HEDNS",
+    "password": "yourPassword",
+    "username": "yourUsername"
   }
 }
 ```
@@ -31,10 +32,11 @@ This can also be done via an environment variable:
 
 ```json
 {
-  "hedns":{
-    "username": "yourUsername",
+  "hedns": {
+    "TYPE": "HEDNS",
     "password": "yourPassword",
-    "totp": "$HEDNS_TOTP"
+    "totp": "$HEDNS_TOTP",
+    "username": "yourUsername"
   }
 }
 ```

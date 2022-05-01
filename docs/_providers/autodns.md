@@ -14,6 +14,7 @@ In your credentials file, you must provide [username, password and a context](ht
 {% highlight json %}
 {
   "autodns": {
+    "TYPE": "AUTODNS",
     "username": "autodns.service-account@example.com",
     "password": "[***]",
     "context": "33004"

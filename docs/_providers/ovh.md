@@ -11,7 +11,8 @@ In your providers config json file you must provide a OVH app-key, app-secret-ke
 
 ```json
 {
-  "ovh":{
+  "ovh": {
+    "TYPE": "OVH",
     "app-key": "your app key",
     "app-secret-key": "your app secret key",
     "consumer-key": "your consumer key"

@@ -12,7 +12,8 @@ In your providers config json file you must include a Vultr personal access toke
 
 ```json
 {
-  "vultr":{
+  "vultr": {
+    "TYPE": "VULTR",
     "token": "your-vultr-personal-access-token"
   }
 }

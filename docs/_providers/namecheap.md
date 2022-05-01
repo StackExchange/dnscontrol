@@ -14,7 +14,8 @@ username and key:
 
 ```json
 {
-  "namecheap":{
+  "namecheap": {
+    "TYPE": "NAMECHEAP",
     "apikey": "yourApiKeyFromNameCheap",
     "apiuser": "yourUsername"
   }
@@ -26,9 +27,10 @@ sandbox:
 
 ```json
 {
-  "namecheap.com":{
+  "namecheap.com": {
+    "TYPE": "NAMECHEAP",
     "apikey": "yourApiKeyFromNameCheap",
-    "apiuser": "yourUsername"
+    "apiuser": "yourUsername",
     "BaseURL": "https://api.sandbox.namecheap.com/xml.response"
   }
 }

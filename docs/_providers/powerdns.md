@@ -14,8 +14,9 @@ In most cases the Server id is `localhost`
 ```json
 {
   "powerdns": {
-    "apiUrl": "http://localhost",
+    "TYPE": "POWERDNS",
     "apiKey": "your-key",
+    "apiUrl": "http://localhost",
     "serverName": "localhost"
   }
 }

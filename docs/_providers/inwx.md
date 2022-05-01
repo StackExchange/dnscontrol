@@ -14,9 +14,10 @@ username and password:
 
 ```json
 {
-  "inwx":{
-    "username": "yourUsername",
-    "password": "yourPassword"
+  "inwx": {
+    "TYPE": "INWX",
+    "password": "yourPassword",
+    "username": "yourUsername"
   }
 }
 ```
@@ -37,10 +38,11 @@ This can also be done via an environment variable:
 
 ```json
 {
-  "inwx":{
-    "username": "yourUsername",
+  "inwx": {
+    "TYPE": "INWX",
     "password": "yourPassword",
-    "totp": "$INWX_TOTP"
+    "totp": "$INWX_TOTP",
+    "username": "yourUsername"
   }
 }
 ```
@@ -60,10 +62,11 @@ This secret is only shown once when two factor authentication is enabled and you
 
 ```json
 {
-  "inwx":{
-    "username": "yourUsername",
+  "inwx": {
+    "TYPE": "INWX",
     "password": "yourPassword",
-    "totp-key": "yourTOTPSharedSecret"
+    "totp-key": "yourTOTPSharedSecret",
+    "username": "yourUsername"
   }
 }
 ```
