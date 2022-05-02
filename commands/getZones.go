@@ -7,9 +7,9 @@ import (
 	"strings"
 
 	"github.com/StackExchange/dnscontrol/v3/models"
+	"github.com/StackExchange/dnscontrol/v3/pkg/credsfile"
 	"github.com/StackExchange/dnscontrol/v3/pkg/prettyzone"
 	"github.com/StackExchange/dnscontrol/v3/providers"
-	"github.com/StackExchange/dnscontrol/v3/providers/config"
 	"github.com/urfave/cli/v2"
 )
 
@@ -138,7 +138,7 @@ func GetZone(args GetZoneArgs) error {
 	var err error
 
 	// Read it in:
-	providerConfigs, err = config.LoadProviderConfigs(args.CredsFile)
+	providerConfigs, err = credsfile.LoadProviderConfigs(args.CredsFile)
 	if err != nil {
 		return fmt.Errorf("failed GetZone LoadProviderConfigs(%q): %w", args.CredsFile, err)
 	}

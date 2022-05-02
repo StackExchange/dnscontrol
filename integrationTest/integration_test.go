@@ -11,12 +11,12 @@ import (
 	"time"
 
 	"github.com/StackExchange/dnscontrol/v3/models"
+	"github.com/StackExchange/dnscontrol/v3/pkg/credsfile"
 	"github.com/StackExchange/dnscontrol/v3/pkg/nameservers"
 	"github.com/StackExchange/dnscontrol/v3/pkg/normalize"
 	"github.com/StackExchange/dnscontrol/v3/providers"
 	_ "github.com/StackExchange/dnscontrol/v3/providers/_all"
 	"github.com/StackExchange/dnscontrol/v3/providers/cloudflare"
-	"github.com/StackExchange/dnscontrol/v3/providers/config"
 	"github.com/miekg/dns/dnsutil"
 )
 
@@ -37,7 +37,7 @@ func getProvider(t *testing.T) (providers.DNSServiceProvider, string, map[int]bo
 		t.Log("No provider specified with -provider")
 		return nil, "", nil, nil
 	}
-	jsons, err := config.LoadProviderConfigs("providers.json")
+	jsons, err := credsfile.LoadProviderConfigs("providers.json")
 	if err != nil {
 		t.Fatalf("Error loading provider configs: %s", err)
 	}

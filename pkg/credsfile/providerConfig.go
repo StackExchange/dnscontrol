@@ -2,7 +2,7 @@
 // It cleans nonstandard json features (comments and trailing commas), as well as replaces environment variable placeholders with
 // their environment variable equivalents. To reference an environment variable in your json file, simply use values in this format:
 //    "key"="$ENV_VAR_NAME"
-package config
+package credsfile
 
 import (
 	"encoding/json"
@@ -80,7 +80,7 @@ func LoadProviderConfigs(fname string) (map[string]map[string]string, error) {
 	if len(ckeys) != 0 {
 		fmt.Printf(`WARNING: In the future, colons in cred entry names will have meaning.`+
 			` Our best advice is to remove the colons for now to avoid future compatibility issues.`+
-			` Specifically these keys: %v` + "\n",
+			` Specifically these keys: %v`+"\n",
 			quotedList(ckeys))
 	}
 	return results, nil
