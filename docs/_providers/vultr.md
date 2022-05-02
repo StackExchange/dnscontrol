@@ -8,7 +8,10 @@ jsId: VULTR
 
 ## Configuration
 
-In your providers config json file you must include a Vultr personal access token:
+To use this provider, add an entry to `creds.json` with `TYPE` set to `VULTR`
+along with a Vultr personal access token.
+
+Example:
 
 ```json
 {
@@ -28,7 +31,7 @@ This provider does not recognize any special metadata fields unique to Vultr.
 Example javascript:
 
 ```js
-var VULTR = NewDnsProvider("vultr", "VULTR");
+var VULTR = NewDnsProvider("vultr");
 
 D("example.tld", REG_DNSIMPLE, DnsProvider(VULTR),
     A("test","1.2.3.4")

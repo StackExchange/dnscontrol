@@ -7,9 +7,12 @@ jsId: POWERDNS
 # PowerDNS Provider
 
 ## Configuration
-In your credentials file, you must provide your [API URL, API Key and Server ID](https://doc.powerdns.com/authoritative/http-api/index.html).
 
-In most cases the Server id is `localhost`
+To use this provider, add an entry to `creds.json` with `TYPE` set to `POWERDNS`
+along with your [API URL, API Key and Server ID](https://doc.powerdns.com/authoritative/http-api/index.html).
+In most cases the Server id is `localhost`.
+
+Example:
 
 ```json
 {
@@ -42,8 +45,8 @@ Following metadata are available:
 Example Javascript:
 
 ```js
-var REG_NONE = NewRegistrar('none', 'NONE')
-var POWERDNS = NewDnsProvider("powerdns", "POWERDNS");
+var REG_NONE = NewRegistrar('none');
+var POWERDNS = NewDnsProvider("powerdns");
 
 D("example.tld", REG_NONE, DnsProvider(POWERDNS),
     A("test","1.2.3.4")

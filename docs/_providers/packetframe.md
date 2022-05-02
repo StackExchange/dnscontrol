@@ -7,7 +7,11 @@ jsId: PACKETFRAME
 # Packetframe Provider
 
 ## Configuration
-In your credentials file, you must provide your Packetframe Token which can be extracted from the `token` cookie on packetframe.com
+
+To use this provider, add an entry to `creds.json` with `TYPE` set to `PACKETFRAME`
+along with your Packetframe Token which can be extracted from the `token` cookie on packetframe.com
+
+Example:
 
 ```json
 {
@@ -25,8 +29,8 @@ This provider does not recognize any special metadata fields unique to Packetfra
 Example Javascript:
 
 ```js
-var REG_NONE = NewRegistrar('none', 'NONE')
-var PACKETFRAME = NewDnsProvider("packetframe", "PACKETFRAME");
+var REG_NONE = NewRegistrar('none');
+var PACKETFRAME = NewDnsProvider("packetframe");
 
 D("example.tld", REG_NONE, DnsProvider(PACKETFRAME),
     A("test","1.2.3.4")

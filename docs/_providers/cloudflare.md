@@ -15,6 +15,27 @@ This is the provider for [Cloudflare](https://www.cloudflare.com/).
 
 ## Configuration
 
+To use this provider, add an entry to `creds.json` with `TYPE` set to `CLOUDFLAREAPI`.
+
+Optional fields include:
+
+* `accountid` and `apitoken`: Authentication information
+* `apikey` and `apiuser`: Old-style authentication
+
+Example:
+
+```json
+{
+  "cloudflare": {
+    "TYPE": "CLOUDFLAREAPI",
+    "accountid": "your-cloudflare-account-id",
+    "apitoken": "your-cloudflare-api-token"
+  }
+}
+```
+
+# Authentication
+
 The Cloudflare API supports two different authentication methods.
 
 The recommended (newer) method is to
@@ -49,7 +70,7 @@ The other (older, not recommended) method is to
 provide your Cloudflare API username and access key.
 This key is available under "My Settings".
 
-This method is not recommended because these credentials give DNSControl access to the entire Cloudflare API.
+This method is not recommended because these credentials give DNSControl access to everything (think of it as "root" for your account).
 
 This method is enabled by setting the "apikey" and "apiuser" values in `creds.json`:
 
@@ -83,7 +104,10 @@ The "accountid" is found in the Cloudflare portal ("Account ID") on the DNS page
 
 Older `creds.json` files that do not have accountid set may work for now, but not in the future.
 
-## Metadata
+## Meta configuration
+
+This provider accepts some optional metadata:
+
 Record level metadata available:
    * `cloudflare_proxy` ("on", "off", or "full")
 
@@ -146,26 +170,26 @@ D('example.tld', REG_NONE, DnsProvider(CLOUDFLARE),
 Example Javascript:
 
 ```js
-var REG_NONE = NewRegistrar('none', 'NONE')
-var CLOUDFLARE = NewDnsProvider('cloudflare','CLOUDFLAREAPI');
+var REG_NONE = NewRegistrar("none");
+var CLOUDFLARE = NewDnsProvider("cloudflare");
 
 // Example domain where the CF proxy abides by the default (off).
-D('example.tld', REG_NONE, DnsProvider(CLOUDFLARE),
-    A('proxied','1.2.3.4', CF_PROXY_ON),
-    A('notproxied','1.2.3.5'),
-    A('another','1.2.3.6', CF_PROXY_ON),
-    ALIAS('@','www.example.tld.', CF_PROXY_ON),
-    CNAME('myalias','www.example.tld.', CF_PROXY_ON)
+D("example.tld", REG_NONE, DnsProvider(CLOUDFLARE),
+    A("proxied","1.2.3.4", CF_PROXY_ON),
+    A("notproxied","1.2.3.5"),
+    A("another","1.2.3.6", CF_PROXY_ON),
+    ALIAS("@","www.example.tld.", CF_PROXY_ON),
+    CNAME("myalias","www.example.tld.", CF_PROXY_ON)
 );
 
 // Example domain where the CF proxy default is set to "on":
-D('example2.tld', REG_NONE, DnsProvider(CLOUDFLARE),
+D("example2.tld", REG_NONE, DnsProvider(CLOUDFLARE),
     CF_PROXY_DEFAULT_ON, // Enable CF proxy for all items unless otherwise noted.
-    A('proxied','1.2.3.4'),
-    A('notproxied','1.2.3.5', CF_PROXY_OFF),
-    A('another','1.2.3.6'),
-    ALIAS('@','www.example2.tld.'),
-    CNAME('myalias','www.example2.tld.')
+    A("proxied","1.2.3.4"),
+    A("notproxied","1.2.3.5", CF_PROXY_OFF),
+    A("another","1.2.3.6"),
+    ALIAS("@","www.example2.tld."),
+    CNAME("myalias","www.example2.tld.")
 );
 ```
 
@@ -182,7 +206,7 @@ The Cloudflare provider can manage "Forwarding URL" Page Rules (redirects) for y
 ```js
 // chiphacker.com should redirect to electronics.stackexchange.com
 
-var CLOUDFLARE = NewDnsProvider('cloudflare','CLOUDFLAREAPI', {"manage_redirects": true}); // enable manage_redirects
+var CLOUDFLARE = NewDnsProvider('cloudflare', {"manage_redirects": true}); // enable manage_redirects
 
 D("chiphacker.com", REG_NONE, DnsProvider(CLOUDFLARE),
     // ...
@@ -211,7 +235,7 @@ Notice a few details:
 The Cloudflare provider can manage Worker Routes for your domains. Simply use the `CF_WORKER_ROUTE` function passing the route pattern and the worker name:
 
 ```js
-var CLOUDFLARE = NewDnsProvider('cloudflare','CLOUDFLAREAPI', {"manage_workers": true}); // enable managing worker routes
+var CLOUDFLARE = NewDnsProvider('cloudflare', {"manage_workers": true}); // enable managing worker routes
 
 D("foo.com", REG_NONE, DnsProvider(CLOUDFLARE),
     // Assign the patterns `api.foo.com/*` and `foo.com/api/*` to `my-worker` script.

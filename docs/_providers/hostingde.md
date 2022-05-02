@@ -9,9 +9,10 @@ jsId: HOSTINGDE
 
 ## Configuration
 
-In your credentials file, you must provide your [`authToken` and optionally an `ownerAccountId`](https://www.hosting.de/api/#requests-and-authentication).
+To use this provider, add an entry to `creds.json` with `TYPE` set to `HOSTINGDE`
+along with your [`authToken` and optionally an `ownerAccountId`](https://www.hosting.de/api/#requests-and-authentication).
 
-### Example `creds.json`
+Example:
 
 ```json
 {
@@ -27,11 +28,11 @@ In your credentials file, you must provide your [`authToken` and optionally an `
 ### Example `dnsconfig.js`
 
 ```js
-var REG_HOSTINGDE = NewRegistrar('hosting.de', 'HOSTINGDE')
-var DNS_HOSTINGDE = NewDnsProvider('hosting.de' 'HOSTINGDE');
+var REG_HOSTINGDE = NewRegistrar("hosting.de");
+var DNS_HOSTINGDE = NewDnsProvider("hosting.de");
 
-D('example.tld', REG_HOSTINGDE, DnsProvider(DNS_HOSTINGDE),
-    A('test', '1.2.3.4')
+D("example.tld", REG_HOSTINGDE, DnsProvider(DNS_HOSTINGDE),
+    A("test", "1.2.3.4")
 );
 ```
 
@@ -57,13 +58,13 @@ Using them requires setting the `baseURL` and (optionally) overriding the defaul
 #### Example `dnsconfig.js`
 
 ```js
-var REG_HTTPNET = NewRegistrar('http.net', 'HOSTINGDE');
+var REG_HTTPNET = NewRegistrar("http.net");
 
-var DNS_HTTPNET = NewDnsProvider('http.net', 'HOSTINGDE', {
+var DNS_HTTPNET = NewDnsProvider("http.net");
   default_ns: [
-    'ns1.routing.net.',
-    'ns2.routing.net.',
-    'ns3.routing.net.',
+    "ns1.routing.net.",
+    "ns2.routing.net.",
+    "ns3.routing.net.",
   ],
 });
 ```

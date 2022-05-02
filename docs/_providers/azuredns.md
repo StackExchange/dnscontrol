@@ -1,22 +1,27 @@
 ---
-  name: Azure DNS
-  layout: default
-  jsId: AZURE_DNS
+name: Azure DNS
+layout: default
+jsId: AZURE_DNS
 ---
 
 # Azure DNS Provider
 
-Specify the API credentials in the cred.json file:
+## Configuration
+
+To use this provider, add an entry to `creds.json` with `TYPE` set to `AZURE_DNS`
+along with the API credentials.
+
+Example:
 
 ```json
 {
   "azuredns_main": {
     "TYPE": "AZURE_DNS",
+    "SubscriptionID": "AZURE_SUBSCRIPTION_ID",
+    "ResourceGroup": "AZURE_RESOURCE_GROUP",
+    "TenantID": "AZURE_TENANT_ID"
     "ClientID": "AZURE_CLIENT_ID",
     "ClientSecret": "AZURE_CLIENT_SECRET",
-    "ResourceGroup": "AZURE_RESOURCE_GROUP",
-    "SubscriptionID": "AZURE_SUBSCRIPTION_ID",
-    "TenantID": "AZURE_TENANT_ID"
   }
 }
 ```
@@ -35,11 +40,11 @@ export AZURE_CLIENT_SECRET=BBBBBBBBB
 {
   "azuredns_main": {
     "TYPE": "AZURE_DNS",
-    "ClientID": "$AZURE_CLIENT_ID",
-    "ClientSecret": "$AZURE_CLIENT_SECRET",
-    "ResourceGroup": "$AZURE_RESOURCE_GROUP",
     "SubscriptionID": "$AZURE_SUBSCRIPTION_ID",
+    "ResourceGroup": "$AZURE_RESOURCE_GROUP",
+    "ClientID": "$AZURE_CLIENT_ID",
     "TenantID": "$AZURE_TENANT_ID"
+    "ClientSecret": "$AZURE_CLIENT_SECRET",
   }
 }
 ```

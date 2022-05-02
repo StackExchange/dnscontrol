@@ -17,8 +17,9 @@ tab, then regenerate the "Production API key".
 * API Endpoint: https://api.gandi.net/
 
 ## Configuration
-In your credentials file you must provide your Gandi.net API key.
-The [sharing_id](https://api.gandi.net/docs/reference/) is optional.
+
+To use this provider, add an entry to `creds.json` with `TYPE` set to `GANDI_V5`
+along your Gandi.net API key. The [sharing_id](https://api.gandi.net/docs/reference/) is optional.
 
 The `sharing_id` selects between different organizations which your account is
 a member of; to manage domains in multiple organizations, you can use multiple
@@ -27,6 +28,8 @@ use in `creds.json`, and you can register multiple configured providers on the
 same backend `"GANDI_V5"` provider.
 (NB: in practice, this doesn't appear to be necessary and `sharing_id` is not
 enforced?)
+
+Example:
 
 ```json
 {
@@ -52,8 +55,8 @@ names.
 Example Javascript:
 
 ```js
-var GANDI = NewDnsProvider("gandi", "GANDI_V5");
-var REG_GANDI = NewRegistrar("gandi", "GANDI_V5");
+var GANDI = NewDnsProvider("gandi");
+var REG_GANDI = NewRegistrar("gandi");
 
 D("example.tld", REG_GANDI, DnsProvider(GANDI),
     A("test","1.2.3.4")

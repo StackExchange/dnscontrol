@@ -9,15 +9,20 @@ jsId: CSCGLOBAL
 DNSControl's CSC Global provider supports being a Registrar. Support for being a DNS Provider is not included, although CSC Global's API does provide for this so it could be implemented in the future.
 
 ## Configuration
+
+To use this provider, add an entry to `creds.json` with `TYPE` set to `CSCGLOBAL`.
+
 In your `creds.json` file, you must provide your API key and user/client token. You can optionally provide an comma separated list of email addresses to have CSC Global send updates to.
+
+Example:
 
 ```json
 {
   "cscglobal": {
     "TYPE": "CSCGLOBAL",
     "api-key": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
-    "notification_emails": "test@exmaple.tld,hostmaster@example.tld",
-    "user-token": "yyyyyyyy-yyyy-yyyy-yyyy-yyyyyyyyyyyy"
+    "user-token": "yyyyyyyy-yyyy-yyyy-yyyy-yyyyyyyyyyyy",
+    "notification_emails": "test@exmaple.tld,hostmaster@example.tld"
   }
 }
 ```
@@ -26,8 +31,8 @@ In your `creds.json` file, you must provide your API key and user/client token. 
 Example Javascript for `example.tld` and delegated to Route53:
 
 ```js
-var REG_CSCGLOBAL = NewRegistrar('cscglobal', 'CSCGLOBAL');
-var R53 = NewDnsProvider('r53_main', 'ROUTE53');
+var REG_CSCGLOBAL = NewRegistrar('cscglobal');
+var R53 = NewDnsProvider('r53_main');
 
 D("example.tld", REG_CSCGLOBAL, DnsProvider(R53),
   A('test','1.2.3.4')

@@ -96,7 +96,7 @@ The `--ttl` flag only applies to zone/js/djs formats.
     dnscontrol get-zones gmain GANDI_V5 example.comn other.com
     dnscontrol get-zones cfmain CLOUDFLAREAPI all
     dnscontrol get-zones --format=tsv bind BIND example.com
-    dnscontrol get-zones --format=djs --out=draft.js glcoud GCLOUD example.com`,
+    dnscontrol get-zones --format=djs --out=draft.js glcoud GCLOUD example.com
 
 As of v3.16:
     # NOTE: When "-" appears as the 2nd argument, it is assumed that the
@@ -107,19 +107,19 @@ As of v3.16:
     dnscontrol get-zones cfmain - all
     dnscontrol get-zones --format=tsv bind BIND example.com
     dnscontrol get-zones --format=tsv bind - example.com
-    dnscontrol get-zones --format=djs --out=draft.js glcoud GCLOUD example.com`,
-    dnscontrol get-zones --format=djs --out=draft.js glcoud - example.com`,
+    dnscontrol get-zones --format=djs --out=draft.js glcoud GCLOUD example.com
+    dnscontrol get-zones --format=djs --out=draft.js glcoud - example.com
 
 As of v4.0:
     dnscontrol get-zones gmain example.comn other.com
     dnscontrol get-zones cfmain all
     dnscontrol get-zones --format=tsv bind example.com
-    dnscontrol get-zones --format=djs --out=draft.js glcoud example.com`,
+    dnscontrol get-zones --format=djs --out=draft.js glcoud example.com
     # For backwards compatibility, these are valid until at least v5.0
     dnscontrol get-zones gmain - example.comn other.com
     dnscontrol get-zones cfmain - all
     dnscontrol get-zones --format=tsv bind - example.com
-    dnscontrol get-zones --format=djs --out=draft.js glcoud - example.com`,
+    dnscontrol get-zones --format=djs --out=draft.js glcoud - example.com
 
 Read a zonefile, generate a JS file, then use the JS file to see how
 different it is from the zonefile:

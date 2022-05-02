@@ -8,7 +8,10 @@ jsId: NS1
 
 ## Configuration
 
-In your credentials json file you must provide your NS1 api key:
+To use this provider, add an entry to `creds.json` with `TYPE` set to `NS1`
+along with your NS1 api key.
+
+Example:
 
 ```json
 {
@@ -26,8 +29,8 @@ This provider does not recognize any special metadata fields unique to NS1.
 Example Javascript:
 
 ```js
-var REG_NONE = NewRegistrar('none', 'NONE')
-var NS1 = NewDnsProvider("ns1", "NS1");
+var REG_NONE = NewRegistrar('none');
+var NS1 = NewDnsProvider("ns1");
 
 D("example.tld", REG_NONE, DnsProvider(NS1),
     A("test","1.2.3.4")

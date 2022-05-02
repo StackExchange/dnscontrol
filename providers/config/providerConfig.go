@@ -14,7 +14,6 @@ import (
 
 	"github.com/DisposaBoy/JsonConfigReader"
 	"github.com/TomOnTime/utfutil"
-	"golang.org/x/exp/maps"
 )
 
 func quotedList(l []string) string {
@@ -76,13 +75,16 @@ func LoadProviderConfigs(fname string) (map[string]map[string]string, error) {
 		return nil, err
 	}
 
-	ckeys := keysWithColons(maps.Keys(results))
-	if len(ckeys) != 0 {
-		fmt.Printf(`WARNING: In the future, colons in cred entry names will have meaning.`+
-			` Our best advice is to remove the colons for now to avoid future compatibility issues.`+
-			` Specifically these keys: %v` + "\n",
-			quotedList(ckeys))
+	// For backwards compatibility, insert NONE and BIND entries if
+	// they do not exist. These are the only providers that previously
+	// did not require entries in creds.json prior to v4.0.
+	if _, ok := results["none"]; !ok {
+		results["none"] = map[string]string{"TYPE": "NONE"}
 	}
+	if _, ok := results["bind"]; !ok {
+		results["bind"] = map[string]string{"TYPE": "BIND"}
+	}
+
 	return results, nil
 }
 

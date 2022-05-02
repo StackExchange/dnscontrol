@@ -9,8 +9,10 @@ jsId: HETZNER
 
 ## Configuration
 
-In your credentials file, you must provide a
-[Hetzner API Key](https://dns.hetzner.com/settings/api-token).
+To use this provider, add an entry to `creds.json` with `TYPE` set to `HETZNER`
+along with a [Hetzner API Key](https://dns.hetzner.com/settings/api-token).
+
+Example:
 
 ```json
 {
@@ -31,8 +33,8 @@ This provider does not recognize any special metadata fields unique to Hetzner
 Example Javascript:
 
 ```js
-var REG_NONE = NewRegistrar("none", "NONE");
-var HETZNER = NewDnsProvider("hetzner", "HETZNER");
+var REG_NONE = NewRegistrar("none");
+var HETZNER = NewDnsProvider("hetzner");
 
 D("example.tld", REG_NONE, DnsProvider(HETZNER),
     A("test","1.2.3.4")

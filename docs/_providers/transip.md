@@ -9,9 +9,12 @@ jsId: TRANSIP
 
 ## Configuration
 
-In your providers config json file you must include your TransIP credentials
+To use this provider, add an entry to `creds.json` with `TYPE` set to `TRANSIP`
+along with your TransIP credentials.
 
 You can login with your AccountName and a PrivateKey which can be generated in the TransIP control panel. The PrivateKey is a stringified version of the private key given by the API, see the example below, each newline is replaced by "\n".
+
+Example:
 
 ```json
 {
@@ -46,7 +49,7 @@ This provider does not recognize any special metadata fields unique to TransIP.
 Example javascript:
 
 ```js
-var TRANSIP = NewDnsProvider("transip", "TRANSIP");
+var TRANSIP = NewDnsProvider("transip");
 
 D("example.tld", REG_DNSIMPLE, DnsProvider(TRANSIP),
     A("test","1.2.3.4")

@@ -8,7 +8,11 @@ jsId: NAMEDOTCOM
 # Name.com Provider
 
 ## Configuration
-In your credentials file you must provide your name.com api username and access token:
+
+To use this provider, add an entry to `creds.json` with `TYPE` set to `NAMEDOTCOM`
+along with your name.com API username and access token:
+
+Example:
 
 ```json
 {
@@ -34,8 +38,8 @@ This provider does not recognize any special metadata fields unique to name.com.
 **Example Javascript (DNS hosted with name.com):**
 
 ```js
-var REG_NAMECOM = NewRegistrar("name.com","NAMEDOTCOM");
-var NAMECOM = NewDnsProvider("name.com","NAMEDOTCOM");
+var REG_NAMECOM = NewRegistrar("name.com");
+var NAMECOM = NewDnsProvider("name.com");
 
 D("example.tld", REG_NAMECOM, DnsProvider(NAMECOM),
     A("test","1.2.3.4")
@@ -46,8 +50,8 @@ D("example.tld", REG_NAMECOM, DnsProvider(NAMECOM),
 **Example Javascript (Registrar only. DNS hosted elsewhere):**
 
 ```js
-var REG_NAMECOM = NewRegistrar("name.com","NAMEDOTCOM");
-var R53 = NewDnsProvider("r53", "ROUTE53");
+var REG_NAMECOM = NewRegistrar("name.com");
+var R53 = NewDnsProvider("r53");
 
 D("example.tld", REG_NAMECOM, DnsProvider(R53),
     A("test","1.2.3.4")

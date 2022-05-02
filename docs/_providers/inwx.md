@@ -9,8 +9,11 @@ jsId: INWX
 INWX.de is a Berlin-based domain registrar.
 
 ## Configuration
-In your `creds.json` file you must provide your INWX
-username and password:
+
+To use this provider, add an entry to `creds.json` with `TYPE` set to `INWX`
+along with your INWX username and password.
+
+Example:
 
 ```json
 {
@@ -99,10 +102,10 @@ Example Javascript for `example.tld` registered with INWX
 and delegated to CloudFlare:
 
 ```js
-var regInwx = NewRegistrar('inwx', 'INWX')
-var dnsCF = NewDnsProvider('cloudflare', 'CLOUDFLAREAPI')
+var REG_INWX = NewRegistrar('inwx');
+var DSP_CF = NewDnsProvider('cloudflare');
 
-D("example.tld", regInwx, DnsProvider(dnsCF),
+D("example.tld", REG_INWX, DnsProvider(DSP_CF),
     A("test","1.2.3.4")
 );
 ```

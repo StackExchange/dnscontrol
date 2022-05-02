@@ -7,7 +7,10 @@ jsId: OVH
 
 ## Configuration
 
-In your providers config json file you must provide a OVH app-key, app-secret-key and consumer-key:
+To use this provider, add an entry to `creds.json` with `TYPE` set to `OVH`
+along with a OVH app-key, app-secret-key and consumer-key.
+
+Example:
 
 ```json
 {
@@ -33,8 +36,8 @@ Example javascript:
 Example javascript (DNS hosted with OVH):
 
 ```js
-var REG_OVH = NewRegistrar("ovh", "OVH");
-var OVH = NewDnsProvider("ovh", "OVH");
+var REG_OVH = NewRegistrar("ovh");
+var OVH = NewDnsProvider("ovh");
 
 D("example.tld", REG_OVH, DnsProvider(OVH),
     A("test","1.2.3.4")
@@ -44,8 +47,8 @@ D("example.tld", REG_OVH, DnsProvider(OVH),
 Example javascript (Registrar only. DNS hosted elsewhere):
 
 ```js
-var REG_OVH = NewRegistrar("ovh", "OVH");
-var R53 = NewDnsProvider("r53", "ROUTE53");
+var REG_OVH = NewRegistrar("ovh");
+var R53 = NewDnsProvider("r53");
 
 D("example.tld", REG_OVH, DnsProvider(R53),
     A("test","1.2.3.4")

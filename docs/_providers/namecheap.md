@@ -9,8 +9,11 @@ jsId: NAMECHEAP
 Namecheap only provides a registrar provider implementation.
 
 ## Configuration
-In your providers config json file you must provide your Namecheap api
-username and key:
+
+To use this provider, add an entry to `creds.json` with `TYPE` set to `NAMECHEAP`
+along with your Namecheap API username and key:
+
+Example:
 
 ```json
 {
@@ -27,7 +30,7 @@ sandbox:
 
 ```json
 {
-  "namecheap.com": {
+  "namecheapSandbox": {
     "TYPE": "NAMECHEAP",
     "apikey": "yourApiKeyFromNameCheap",
     "apiuser": "yourUsername",
@@ -36,7 +39,7 @@ sandbox:
 }
 ```
 
-if BaseURL is omitted, the production namecheap url is used.
+if BaseURL is omitted, the production namecheap URL is assumed.
 
 
 ## Metadata
@@ -47,8 +50,8 @@ Namecheap.
 Example Javascript:
 
 ```js
-var REG_NAMECHEAP = NewRegistrar("namecheap","NAMECHEAP");
-var R53 = NewDnsProvider("r53", "ROUTE53");
+var REG_NAMECHEAP = NewRegistrar("namecheap");
+var R53 = NewDnsProvider("r53");
 
 D("example.tld", REG_NAMECHEAP, DnsProvider(R53),
     A("test","1.2.3.4")
@@ -59,8 +62,8 @@ Namecheap provides custom redirect records URL, URL301, and FRAME.  These
 records can be used like any other record:
 
 ```js
-var REG_NAMECHEAP = NewRegistrar("namecheap","NAMECHEAP");
-var NAMECHEAP = NewDnsProvider("namecheap","NAMECHEAP");
+var REG_NAMECHEAP = NewRegistrar("namecheap");
+var NAMECHEAP = NewDnsProvider("namecheap");
 
 D("example.tld", REG_NAMECHEAP, DnsProvider(NAMECHEAP),
   URL('@', 'http://example.com/'),

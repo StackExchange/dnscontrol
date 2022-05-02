@@ -9,7 +9,7 @@ arguments passed as if they were the first modifiers in the argument list.
 
 {% capture example %}
 ```js
-var COMMON = NewDnsProvider("foo","BIND");
+var COMMON = NewDnsProvider("foo");
 // we want to create backup zone files for all domains, but not actually register them.
 // also create a default TTL
 DEFAULTS( DnsProvider(COMMON,0), DefaultTTL(1000));

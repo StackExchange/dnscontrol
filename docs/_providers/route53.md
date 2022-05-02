@@ -6,7 +6,11 @@ jsId: ROUTE53
 # Amazon Route 53 Provider
 
 ## Configuration
-You can specify the API credentials in the credentials json file:
+
+To use this provider, add an entry to `creds.json` with `TYPE` set to `ROUTE53`
+along with API credentials.
+
+Example:
 
 ```json
 {
@@ -20,7 +24,7 @@ You can specify the API credentials in the credentials json file:
 }
 ```
 
-You can also use environment variables, but this is discouraged, unless your environment provides them already.
+Alternatively you can also use environment variables.  This is discouraged unless your environment provides them already.
 
 ```bash
 export AWS_ACCESS_KEY_ID=XXXXXXXXX
@@ -38,23 +42,21 @@ export AWS_SESSION_TOKEN=ZZZZZZZZ
 }
 ```
 
-Alternatively if you want to used [named profiles](https://docs.aws.amazon.com/cli/latest/userguide/cli-configure-profiles.html) you need to export the following variable
+Alternatively, this provider supports [named profiles](https://docs.aws.amazon.com/cli/latest/userguide/cli-configure-profiles.html). In that case export the following variable:
 
 ```bash
 export AWS_PROFILE=ZZZZZZZZ
 ```
 
-Ensure you have a minimal creds.json file with the DNS Provider specified, otherwise versions above 3.8.0 will fail. So, for:
+and provide a minimal entry in creds.json:
 
-```js
-var R53_MAIN = NewDnsProvider('r53_main', 'ROUTE53');
-```
-
-You will need a creds.json file with the following content:
+Example:
 
 ```json
 {
-  "R53_MAIN": {}
+  "r53_main": {
+    "TYPE": "ROUTE53"
+  }
 }
 ```
 
@@ -67,8 +69,8 @@ This provider does not recognize any special metadata fields unique to route 53.
 Example Javascript:
 
 ```js
-var REG_NONE = NewRegistrar('none', 'NONE');
-var R53 = NewDnsProvider('r53_main', 'ROUTE53');
+var REG_NONE = NewRegistrar('none');
+var R53 = NewDnsProvider('r53_main');
 
 D('example.tld', REG_NONE, DnsProvider(R53),
     A('test','1.2.3.4')

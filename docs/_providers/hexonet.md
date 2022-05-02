@@ -17,7 +17,10 @@ This is based on API documents found at [https://wiki.hexonet.net/wiki/DNS_API](
 
 ## Configuration
 
-Please provide your HEXONET login data in your credentials file `creds.json` as follows:
+To use this provider, add an entry to `creds.json` with `TYPE` set to `HEXONET`
+along with your HEXONET login data.
+
+Example:
 
 ```json
 {
@@ -68,8 +71,8 @@ You are free to decide if you want to use both of our provider technology or jus
 
 ```js
 // Providers:
-var REG_HX = NewRegistrar('hexonet', 'HEXONET');
-var DNS_HX = NewDnsProvider('hexonet', 'HEXONET');
+var REG_HX = NewRegistrar('hexonet');
+var DNS_HX = NewDnsProvider('hexonet');
 
 // Set Default TTL for all RR to reflect our Backend API Default
 // If you use additional DNS Providers, configure a default TTL

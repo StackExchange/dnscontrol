@@ -7,20 +7,24 @@ jsId: CLOUDNS
 # ClouDNS Provider
 
 ## Configuration
-In your credentials file, you must provide your [Api user ID and password](https://www.cloudns.net/wiki/article/42/).
 
-Current version of provider doesn't support `sub-auth-user`.
+To use this provider, add an entry to `creds.json` with `TYPE` set to `CLOUDNS`
+along with your [Api user ID and password](https://www.cloudns.net/wiki/article/42/).
+
+Example:
 
 ```json
 {
   "cloudns": {
     "TYPE": "CLOUDNS",
     "auth-id": "12345",
-    "auth-password": "your-password",
-    "sub-auth-id": "12345"
+    "sub-auth-id": "12345",
+    "auth-password": "your-password"
   }
 }
 ```
+
+Current version of provider doesn't support `sub-auth-user`.
 
 ## Records
 
@@ -38,8 +42,8 @@ ClouDNS supports ClouDNS-specific "WR record (web redirects)" for your domains.
 Simply use the `CLOUDNS_WR` functions to make redirects like any other record:
 
 ```js
-var REG_NONE = NewRegistrar('none', 'NONE')
-var CLOUDNS = NewDnsProvider("cloudns", "CLOUDNS");
+var REG_NONE = NewRegistrar('none');
+var CLOUDNS = NewDnsProvider("cloudns");
 
 D("example.tld", REG_NONE, DnsProvider(CLOUDNS),
   CLOUDNS_WR('@', 'http://example.com/'),
@@ -48,11 +52,11 @@ D("example.tld", REG_NONE, DnsProvider(CLOUDNS),
 ```
 
 ## Usage
-Example Javascript:
+Example dnsconfig.js:
 
 ```js
-var REG_NONE = NewRegistrar('none', 'NONE')
-var CLOUDNS = NewDnsProvider("cloudns", "CLOUDNS");
+var REG_NONE = NewRegistrar('none');
+var CLOUDNS = NewDnsProvider("cloudns");
 
 D("example.tld", REG_NONE, DnsProvider(CLOUDNS),
     A("test","1.2.3.4")
