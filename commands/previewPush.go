@@ -100,10 +100,6 @@ func run(args PreviewArgs, push bool, interactive bool, out printer.CLI) error {
 	if err != nil {
 		return err
 	}
-	errs := normalize.ValidateAndNormalizeConfig(cfg)
-	if PrintValidationErrors(errs) {
-		return fmt.Errorf("exiting due to validation errors")
-	}
 	providerConfigs, err := credsfile.LoadProviderConfigs(args.CredsFile)
 	if err != nil {
 		return err
@@ -111,6 +107,10 @@ func run(args PreviewArgs, push bool, interactive bool, out printer.CLI) error {
 	notifier, err := InitializeProviders(cfg, providerConfigs, args.Notify)
 	if err != nil {
 		return err
+	}
+	errs := normalize.ValidateAndNormalizeConfig(cfg)
+	if PrintValidationErrors(errs) {
+		return fmt.Errorf("exiting due to validation errors")
 	}
 	anyErrors := false
 	totalCorrections := 0
