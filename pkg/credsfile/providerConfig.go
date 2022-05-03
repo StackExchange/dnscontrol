@@ -2,7 +2,7 @@
 // It cleans nonstandard json features (comments and trailing commas), as well as replaces environment variable placeholders with
 // their environment variable equivalents. To reference an environment variable in your json file, simply use values in this format:
 //    "key"="$ENV_VAR_NAME"
-package config
+package credsfile
 
 import (
 	"encoding/json"
