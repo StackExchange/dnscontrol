@@ -573,11 +573,13 @@ func checkLabelHasMultipleTTLs(records []*models.RecordConfig) (errs []error) {
 	for _, r := range records {
 		label := fmt.Sprintf("%s %s", r.GetLabelFQDN(), r.Type)
 
-		// if we have more records for a given label, append their TTLs here, but deduplicate slice before returning it
-		m[label] = uniq(append(m[label], r.TTL))
+		// if we have more records for a given label, append their TTLs here
+		m[label] = append(m[label], r.TTL)
+	}
 
+	for label := range m {
 		// if after the uniq() pass we still have more than one ttl, it means we have multiple TTLs for that label
-		if len(m[label]) > 1 {
+		if len(uniq(m[label])) > 1 {
 			errs = append(errs, Warning{fmt.Errorf("multiple TTLs detected for: %s. This should be avoided.", label)})
 		}
 	}
