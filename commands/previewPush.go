@@ -8,12 +8,12 @@ import (
 	"github.com/urfave/cli/v2"
 
 	"github.com/StackExchange/dnscontrol/v3/models"
+	"github.com/StackExchange/dnscontrol/v3/pkg/credsfile"
 	"github.com/StackExchange/dnscontrol/v3/pkg/nameservers"
 	"github.com/StackExchange/dnscontrol/v3/pkg/normalize"
 	"github.com/StackExchange/dnscontrol/v3/pkg/notifications"
 	"github.com/StackExchange/dnscontrol/v3/pkg/printer"
 	"github.com/StackExchange/dnscontrol/v3/providers"
-	"github.com/StackExchange/dnscontrol/v3/providers/config"
 )
 
 var _ = cmd(catMain, func() *cli.Command {
@@ -188,7 +188,7 @@ func InitializeProviders(credsFile string, cfg *models.DNSConfig, notifyFlag boo
 	defer func() {
 		notify = notifications.Init(notificationCfg)
 	}()
-	providerConfigs, err = config.LoadProviderConfigs(credsFile)
+	providerConfigs, err = credsfile.LoadProviderConfigs(credsFile)
 	if err != nil {
 		return
 	}
