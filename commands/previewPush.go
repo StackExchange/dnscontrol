@@ -109,13 +109,6 @@ func run(args PreviewArgs, push bool, interactive bool, out printer.CLI) error {
 		return err
 	}
 
-	//DEBUG
-	//	empJSON, err := json.MarshalIndent(cfg, "", "  ")
-	//	if err != nil {
-	//		log.Fatalf(err.Error())
-	//	}
-	//	fmt.Printf("DEBUG: cfg = %s\n", string(empJSON))
-
 	errs := normalize.ValidateAndNormalizeConfig(cfg)
 	if PrintValidationErrors(errs) {
 		return fmt.Errorf("exiting due to validation errors")
