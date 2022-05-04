@@ -12,18 +12,14 @@ with the web interface. Because there is no officially supported API, this provi
 Electric changes their interface, and you should be willing to accept this possibility before relying on this provider.
 
 ## Configuration
-
-To use this provider, add an entry to `creds.json` with `TYPE` set to `HEDNS`
-along with
-your `dns.he.net` account username and password. These are the same username
+In your `creds.json` file you must provide your `dns.he.net` account username and password. These are the same username
 and password used to login to the [web interface]([https://dns.he.net]).
 
 ```json
 {
-  "hedns": {
-    "TYPE": "HEDNS",
-    "password": "yourPassword",
-    "username": "yourUsername"
+  "hedns":{
+    "username": "yourUsername",
+    "password": "yourPassword"
   }
 }
 ```
@@ -35,11 +31,10 @@ This can also be done via an environment variable:
 
 ```json
 {
-  "hedns": {
-    "TYPE": "HEDNS",
+  "hedns":{
+    "username": "yourUsername",
     "password": "yourPassword",
-    "totp": "$HEDNS_TOTP",
-    "username": "yourUsername"
+    "totp": "$HEDNS_TOTP"
   }
 }
 ```
@@ -102,13 +97,12 @@ This option is disabled by default when this key is not present,
 This provider does not recognize any special metadata fields unique to Hurricane Electric DNS.
 
 ## Usage
-An example `dnsconfig.js` configuration:
+Example Javascript:
 
 ```js
-var REG_NONE = NewRegistrar("none");
-var DSP_HEDNS = NewDnsProvider("hedns");
+var DNSIMPLE = NewDnsProvider("hedns", "HEDNS");
 
-D("example.tld", REG_NONE, DnsProvider(DSP_HEDNS),
-    A("test", "1.2.3.4")
+D("example.tld", REG_DNSIMPLE, DnsProvider(HEDNS),
+    A("test","1.2.3.4")
 );
 ```

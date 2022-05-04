@@ -9,15 +9,11 @@ jsId: AUTODNS
 
 ## Configuration
 
-To use this provider, add an entry to `creds.json` with `TYPE` set to `AUTODNS` along with
-[username, password and a context](https://help.internetx.com/display/APIXMLEN/Authentication#Authentication-AuthenticationviaCredentials(username/password/context)).
-
-Example:
+In your credentials file, you must provide [username, password and a context](https://help.internetx.com/display/APIXMLEN/Authentication#Authentication-AuthenticationviaCredentials(username/password/context)).
 
 {% highlight json %}
 {
   "autodns": {
-    "TYPE": "AUTODNS",
     "username": "autodns.service-account@example.com",
     "password": "[***]",
     "context": "33004"
@@ -27,13 +23,13 @@ Example:
 
 ## Usage
 
-An example `dnsconfig.js` configuration:
+Example Javascript:
 
 {% highlight js %}
-var REG_NONE = NewRegistrar("none");
-var DSP_AUTODNS = NewDnsProvider("autodns");
+var REG_NONE = NewRegistrar('none', 'NONE');
+var AUTODNS = NewDnsProvider("autodns", "AUTODNS");
 
-D("example.tld", REG_NONE, DnsProvider(DSP_AUTODNS),
-    A("test", "1.2.3.4")
+D("example.tld", REG_NONE, DnsProvider(AUTODNS),
+    A("test","1.2.3.4")
 );
 {%endhighlight%}

@@ -9,15 +9,12 @@ jsId: HETZNER
 
 ## Configuration
 
-To use this provider, add an entry to `creds.json` with `TYPE` set to `HETZNER`
-along with a [Hetzner API Key](https://dns.hetzner.com/settings/api-token).
-
-Example:
+In your credentials file, you must provide a
+[Hetzner API Key](https://dns.hetzner.com/settings/api-token).
 
 ```json
 {
   "hetzner": {
-    "TYPE": "HETZNER",
     "api_key": "your-api-key"
   }
 }
@@ -30,14 +27,14 @@ This provider does not recognize any special metadata fields unique to Hetzner
 
 ## Usage
 
-An example `dnsconfig.js` configuration:
+Example Javascript:
 
 ```js
-var REG_NONE = NewRegistrar("none");
-var DSP_HETZNER = NewDnsProvider("hetzner");
+var REG_NONE = NewRegistrar('none', 'NONE');
+var HETZNER = NewDnsProvider("hetzner", "HETZNER");
 
-D("example.tld", REG_NONE, DnsProvider(DSP_HETZNER),
-    A("test", "1.2.3.4")
+D("example.tld", REG_NONE, DnsProvider(HETZNER),
+    A("test","1.2.3.4")
 );
 ```
 
@@ -80,9 +77,8 @@ In your `creds.json` for all `HETZNER` provider entries:
 ```json
 {
   "hetzner": {
-    "TYPE": "HETZNER",
-    "api_key": "your-api-key",
-    "optimize_for_rate_limit_quota": "Minute"
+    "optimize_for_rate_limit_quota": "Minute",
+    "api_key": "your-api-key"
   }
 }
 ```
@@ -113,9 +109,8 @@ In your `creds.json` for all `HETZNER` provider entries:
 ```json
 {
   "hetzner": {
-    "TYPE": "HETZNER",
-    "api_key": "your-api-key",
-    "start_with_default_rate_limit": "true"
+    "start_with_default_rate_limit": "true",
+    "api_key": "your-api-key"
   }
 }
 ```

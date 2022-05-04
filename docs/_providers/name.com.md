@@ -8,16 +8,11 @@ jsId: NAMEDOTCOM
 # Name.com Provider
 
 ## Configuration
-
-To use this provider, add an entry to `creds.json` with `TYPE` set to `NAMEDOTCOM`
-along with your name.com API username and access token:
-
-Example:
+In your credentials file you must provide your name.com api username and access token:
 
 ```json
 {
-  "name.com": {
-    "TYPE": "NAMEDOTCOM",
+  "name.com":{
     "apikey": "yourApiKeyFromName.com",
     "apiuser": "yourUsername"
   }
@@ -35,27 +30,25 @@ export NAMEDOTCOM_URL='api.name.com'
 This provider does not recognize any special metadata fields unique to name.com.
 
 ## Usage
-
-An example `dnsconfig.js` configuration with NAMEDOTCOM
-as the registrar and DNS service provider:
+**Example Javascript (DNS hosted with name.com):**
 
 ```js
-var REG_NAMECOM = NewRegistrar("name.com");
-var DSP_NAMECOM = NewDnsProvider("name.com");
+var REG_NAMECOM = NewRegistrar("name.com","NAMEDOTCOM");
+var NAMECOM = NewDnsProvider("name.com","NAMEDOTCOM");
 
-D("example.tld", REG_NAMECOM, DnsProvider(DSP_NAMECOM),
-    A("test", "1.2.3.4")
+D("example.tld", REG_NAMECOM, DnsProvider(NAMECOM),
+    A("test","1.2.3.4")
 );
 ```
 
-An example `dnsconfig.js` configuration with NAMEDOTCOM
-as the registrar and DNS only, DNS hosted elsewhere:
+
+**Example Javascript (Registrar only. DNS hosted elsewhere):**
 
 ```js
-var REG_NAMECOM = NewRegistrar("name.com");
-var DSP_R53 = NewDnsProvider("r53");
+var REG_NAMECOM = NewRegistrar("name.com","NAMEDOTCOM");
+var R53 = NewDnsProvider("r53", "ROUTE53");
 
-D("example.tld", REG_NAMECOM, DnsProvider(DSP_R53),
+D("example.tld", REG_NAMECOM, DnsProvider(R53),
     A("test","1.2.3.4")
 );
 ```

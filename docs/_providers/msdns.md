@@ -37,18 +37,13 @@ supports this. It should be easy to implement. Volunteers requested.
 
 ## Configuration
 
-To use this provider, add an entry to `creds.json` with `TYPE` set to `MSDNS`
-along with other settings:
-
-* `dnsserver`: (optional) the name of the Microsoft DNS Server to communicate with.
-* `pssession`: (optional) the name of the PowerShell PSSession host to run commands on.
-
-Example:
+The `ActiveDirectory_PS` provider reads an `computername` setting from
+`creds.json` to know the name of the ActiveDirectory DNS Server to run the commands on.
+Otherwise
 
 ```json
 {
   "msdns": {
-    "TYPE": "MSDNS",
     "dnsserver": "ny-dc01",
     "pssession": "mywindowshost"
   }
@@ -58,11 +53,11 @@ Example:
 An example DNS configuration:
 
 ```js
-var REG_NONE = NewRegistrar("none");
-var DSP_MSDNS = NewDnsProvider("msdns");
+var REG_NONE = NewRegistrar('none', 'NONE')
+var MSDNS = NewDnsProvider("msdns", "MSDNS");
 
-D("example.tld", REG_NONE, DnsProvider(DSP_MSDNS),
-      A("test", "1.2.3.4")
+D('example.tld', REG_NONE, DnsProvider(MSDNS),
+      A("test","1.2.3.4")
 )
 ```
 

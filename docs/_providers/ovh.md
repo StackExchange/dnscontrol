@@ -7,15 +7,11 @@ jsId: OVH
 
 ## Configuration
 
-To use this provider, add an entry to `creds.json` with `TYPE` set to `OVH`
-along with a OVH app-key, app-secret-key and consumer-key.
-
-Example:
+In your providers config json file you must provide a OVH app-key, app-secret-key and consumer-key:
 
 ```json
 {
-  "ovh": {
-    "TYPE": "OVH",
+  "ovh":{
     "app-key": "your app key",
     "app-secret-key": "your app secret key",
     "consumer-key": "your consumer key"
@@ -31,25 +27,27 @@ This provider does not recognize any special metadata fields unique to OVH.
 
 ## Usage
 
-An example `dnsconfig.js` configuration: (DNS hosted with OVH):
+Example javascript:
+
+Example javascript (DNS hosted with OVH):
 
 ```js
-var REG_OVH = NewRegistrar("ovh");
-var DSP_OVH = NewDnsProvider("ovh");
+var REG_OVH = NewRegistrar("ovh", "OVH");
+var OVH = NewDnsProvider("ovh", "OVH");
 
-D("example.tld", REG_OVH, DnsProvider(DSP_OVH),
-    A("test", "1.2.3.4")
+D("example.tld", REG_OVH, DnsProvider(OVH),
+    A("test","1.2.3.4")
 );
 ```
 
-An example `dnsconfig.js` configuration: (Registrar only. DNS hosted elsewhere)
+Example javascript (Registrar only. DNS hosted elsewhere):
 
 ```js
-var REG_OVH = NewRegistrar("ovh");
-var DSP_R53 = NewDnsProvider("r53");
+var REG_OVH = NewRegistrar("ovh", "OVH");
+var R53 = NewDnsProvider("r53", "ROUTE53");
 
-D("example.tld", REG_OVH, DnsProvider(DSP_R53),
-    A("test", "1.2.3.4")
+D("example.tld", REG_OVH, DnsProvider(R53),
+    A("test","1.2.3.4")
 );
 ```
 

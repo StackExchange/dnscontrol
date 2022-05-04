@@ -8,25 +8,19 @@ jsId: ORACLE
 
 ## Configuration
 
-To use this provider, add an entry to `creds.json` with `TYPE` set to `ORACLE`
-along with other authentication parameters.
-
 Create an API key through the Oracle Cloud portal, and provide the user OCID, tenancy OCID, key fingerprint, region, and the contents of the private key.
 The OCID of the compartment DNS resources should be put in can also optionally be provided.
-
-Example:
 
 ```json
 {
   "oracle": {
-    "TYPE": "ORACLE",
-    "compartment": "$ORACLE_COMPARTMENT",
-    "fingerprint": "$ORACLE_FINGERPRINT",
-    "private_key": "$ORACLE_PRIVATE_KEY",
-    "region": "$ORACLE_REGION",
+    "user_ocid": "$ORACLE_USER_OCID",
     "tenancy_ocid": "$ORACLE_TENANCY_OCID",
-    "user_ocid": "$ORACLE_USER_OCID"
-  }
+    "fingerprint": "$ORACLE_FINGERPRINT",
+    "region": "$ORACLE_REGION",
+    "private_key": "$ORACLE_PRIVATE_KEY",
+    "compartment": "$ORACLE_COMPARTMENT"
+  },
 }
 ```
 
@@ -34,16 +28,16 @@ Example:
 This provider does not recognize any special metadata fields unique to Oracle Cloud.
 
 ## Usage
-An example `dnsconfig.js` configuration:
+Example Javascript:
 
 ```js
-var REG_NONE = NewRegistrar("none");
-var DSP_ORACLE = NewDnsProvider("oracle");
+var REG_NONE = NewRegistrar('none', 'NONE')
+var ORACLE = NewDnsProvider("oracle", "ORACLE");
 
-D("example.tld", REG_NONE, DnsProvider(DSP_ORACLE),
+D("example.tld", REG_NONE, DnsProvider(ORACLE),
     NAMESERVER_TTL(86400),
 
-    A("test", "1.2.3.4")
+    A("test","1.2.3.4")
 );
 ```
 

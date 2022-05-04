@@ -12,19 +12,15 @@ a volunteer. If this provider breaks it may be disabled or removed if
 it can not be easily fixed.
 
 ## Configuration
+To authenticate with SoftLayer requires at least a `username` and `api_key` for authentication. It can also optionally take a `timeout` and `endpoint_url` parameter however these are optional and will use standard defaults if not provided.
 
-To use this provider, add an entry to `creds.json` with `TYPE` set to `SOFTLAYER`
-along with authentication fields.
-Authenticating with SoftLayer requires at least a `username` and `api_key` for authentication. It can also optionally take a `timeout` and `endpoint_url` parameter however these are optional and will use standard defaults if not provided.
-
-Example:
+These can be supplied in the `creds.json` file:
 
 ```json
 {
   "softlayer": {
-    "TYPE": "SOFTLAYER",
-    "api_key": "mysecretapikey",
-    "username": "myusername"
+    "username": "myusername",
+    "api_key": "mysecretapikey"
   }
 }
 ```
@@ -32,15 +28,14 @@ Example:
 To maintain compatibility with existing softlayer CLI services these can also be provided by the `SL_USERNAME` and `SL_API_KEY` environment variables or specified in the `~/.softlayer`, but this is discouraged. More information about these methods can be found at [the softlayer-go library documentation](https://github.com/softlayer/softlayer-go#sessions).
 
 ## Usage
-
-An example `dnsconfig.js` configuration:
+Use this provider like any other DNS Provider:
 
 ```js
-var REG_NONE = NewRegistrar("none"); // no registrar
-var DSP_SOFTLAYER = NewDnsProvider("softlayer");
+var REG_NONE = NewRegistrar("none","NONE"); // no registrar
+var SOFTLAYER = NewDnsProvider("softlayer", "SOFTLAYER");
 
-D("example.tld", registrary, DnsProvider(DSP_SOFTLAYER),
-    A("test", "1.2.3.4")
+D("example.tld", registrary, DnsProvider(SOFTLAYER),
+    A("test","1.2.3.4")
 );
 ```
 
@@ -52,6 +47,6 @@ For compatibility with the pre-generated NAMESERVER fields it's recommended to s
 D("example.tld", REG_NONE, DnsProvider(SOFTLAYER),
     NAMESERVER_TTL(86400),
 
-    A("test", "1.2.3.4")
+    A("test","1.2.3.4")
 );
 ```

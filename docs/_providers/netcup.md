@@ -7,16 +7,11 @@ jsId: NETCUP
 # Netcup Provider
 
 ## Configuration
-
-To use this provider, add an entry to `creds.json` with `TYPE` set to `NETCUP`
-along with your [api key, password and your customer number](https://www.netcup-wiki.de/wiki/CCP_API#Authentifizierung).
-
-Example:
+In your credentials file, you must provide your [api key, password and your customer number](https://www.netcup-wiki.de/wiki/CCP_API#Authentifizierung).
 
 ```json
 {
   "netcup": {
-    "TYPE": "NETCUP",
     "api-key": "abc12345",
     "api-password": "abc12345",
     "customer-number": "123456"
@@ -25,14 +20,14 @@ Example:
 ```
 
 ## Usage
-An example `dnsconfig.js` configuration:
+Example Javascript:
 
 ```js
-var REG_NONE = NewRegistrar("none");
-var DSP_NETCUP = NewDnsProvider("netcup");
+var REG_NONE = NewRegistrar('none', 'NONE')
+var NETCUP = NewDnsProvider('netcup' 'NETCUP');
 
-D("example.tld", REG_NONE, DnsProvider(DSP_NETCUP),
-    A("test", "1.2.3.4")
+D('example.tld', REG_NONE, DnsProvider(NETCUP),
+    A('test','1.2.3.4')
 );
 ```
 

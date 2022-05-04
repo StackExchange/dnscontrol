@@ -2,22 +2,20 @@
 name: hosting.de
 title: hosting.de Provider
 layout: default
-jsId: HOSTINGDE
+jsId: hostingde
 ---
 
 # hosting.de Provider
 
 ## Configuration
 
-To use this provider, add an entry to `creds.json` with `TYPE` set to `HOSTINGDE`
-along with your [`authToken` and optionally an `ownerAccountId`](https://www.hosting.de/api/#requests-and-authentication).
+In your credentials file, you must provide your [`authToken` and optionally an `ownerAccountId`](https://www.hosting.de/api/#requests-and-authentication).
 
-Example:
+### Example `creds.json`
 
 ```json
 {
   "hosting.de": {
-    "TYPE": "HOSTINGDE",
     "authToken": "YOUR_API_KEY"
   }
 }
@@ -25,14 +23,14 @@ Example:
 
 ## Usage
 
-An example `dnsconfig.js` configuration:
+### Example `dnsconfig.js`
 
 ```js
-var REG_HOSTINGDE = NewRegistrar("hosting.de");
-var DSP_HOSTINGDE = NewDnsProvider("hosting.de");
+var REG_HOSTINGDE = NewRegistrar('hosting.de', 'HOSTINGDE')
+var DNS_HOSTINGDE = NewDnsProvider('hosting.de' 'HOSTINGDE');
 
-D("example.tld", REG_HOSTINGDE, DnsProvider(DSP_HOSTINGDE),
-    A("test", "1.2.3.4")
+D('example.tld', REG_HOSTINGDE, DnsProvider(DNS_HOSTINGDE),
+    A('test', '1.2.3.4')
 );
 ```
 
@@ -43,28 +41,27 @@ Using them requires setting the `baseURL` and (optionally) overriding the defaul
 
 ### Example http.net configuration
 
-An example `creds.json` configuration:
+#### Example `creds.json`
 
 ```json
 {
   "http.net": {
-    "TYPE": "HOSTINGDE",
     "authToken": "YOUR_API_KEY",
     "baseURL": "https://partner.http.net"
   }
 }
 ```
 
-An example `dnsconfig.js` configuration:
+#### Example `dnsconfig.js`
 
 ```js
-var REG_HTTPNET = NewRegistrar("http.net");
+var REG_HTTPNET = NewRegistrar('http.net', 'HOSTINGDE');
 
-var DSP_HTTPNET = NewDnsProvider("http.net");
+var DNS_HTTPNET = NewDnsProvider('http.net', 'HOSTINGDE', {
   default_ns: [
-    "ns1.routing.net.",
-    "ns2.routing.net.",
-    "ns3.routing.net.",
+    'ns1.routing.net.',
+    'ns2.routing.net.',
+    'ns3.routing.net.',
   ],
 });
 ```

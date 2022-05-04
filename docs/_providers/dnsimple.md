@@ -6,16 +6,11 @@ jsId: DNSIMPLE
 ---
 # DNSimple Provider
 ## Configuration
-
-To use this provider, add an entry to `creds.json` with `TYPE` set to `DIGITALOCEAN`
-along with a DNSimple account access token.
-
-Example:
+In your providers credentials file you must provide a DNSimple account access token:
 
 ```json
 {
   "dnsimple": {
-    "TYPE": "DNSIMPLE",
     "token": "your-dnsimple-account-access-token"
   }
 }
@@ -25,14 +20,14 @@ Example:
 This provider does not recognize any special metadata fields unique to DNSimple.
 
 ## Usage
-An example `dnsconfig.js` configuration:
+Example Javascript:
 
 ```js
-var REG_DNSIMPLE = NewRegistrar("dnsimple");
-var DSP_DNSIMPLE = NewDnsProvider("dnsimple");
+var REG_DNSIMPLE = NewRegistrar("dnsimple", "DNSIMPLE");
+var DNSIMPLE = NewDnsProvider("dnsimple", "DNSIMPLE");
 
-D("example.tld", REG_DNSIMPLE, DnsProvider(DSP_DNSIMPLE),
-    A("test", "1.2.3.4")
+D("example.tld", REG_DNSIMPLE, DnsProvider(DNSIMPLE),
+    A("test","1.2.3.4")
 );
 ```
 
