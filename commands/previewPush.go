@@ -103,8 +103,11 @@ func run(args PreviewArgs, push bool, interactive bool, out printer.CLI) error {
 	if PrintValidationErrors(errs) {
 		return fmt.Errorf("exiting due to validation errors")
 	}
-	// TODO:
-	notifier, err := InitializeProviders(args.CredsFile, cfg, args.Notify)
+	providerConfigs, err := credsfile.LoadProviderConfigs(args.CredsFile)
+	if err != nil {
+		return err
+	}
+	notifier, err := InitializeProviders(cfg, providerConfigs, args.Notify)
 	if err != nil {
 		return err
 	}
@@ -180,18 +183,12 @@ DomainLoop:
 	return nil
 }
 
-// InitializeProviders takes a creds file path and a DNSConfig object. Creates all providers with the proper types, and returns them.
-// nonDefaultProviders is a list of providers that should not be run unless explicitly asked for by flags.
-func InitializeProviders(credsFile string, cfg *models.DNSConfig, notifyFlag bool) (notify notifications.Notifier, err error) {
-	var providerConfigs map[string]map[string]string
+// InitializeProviders takes (fully processed) configuration and instantiates all providers and returns them.
+func InitializeProviders(cfg *models.DNSConfig, providerConfigs map[string]map[string]string, notifyFlag bool) (notify notifications.Notifier, err error) {
 	var notificationCfg map[string]string
 	defer func() {
 		notify = notifications.Init(notificationCfg)
 	}()
-	providerConfigs, err = credsfile.LoadProviderConfigs(credsFile)
-	if err != nil {
-		return
-	}
 	if notifyFlag {
 		notificationCfg = providerConfigs["notifications"]
 	}
