@@ -108,6 +108,14 @@ func run(args PreviewArgs, push bool, interactive bool, out printer.CLI) error {
 	if err != nil {
 		return err
 	}
+
+	//DEBUG
+	//	empJSON, err := json.MarshalIndent(cfg, "", "  ")
+	//	if err != nil {
+	//		log.Fatalf(err.Error())
+	//	}
+	//	fmt.Printf("DEBUG: cfg = %s\n", string(empJSON))
+
 	errs := normalize.ValidateAndNormalizeConfig(cfg)
 	if PrintValidationErrors(errs) {
 		return fmt.Errorf("exiting due to validation errors")
@@ -270,6 +278,41 @@ func populateProviderTypes(cfg *models.DNSConfig, providerConfigs map[string]map
 		pType := cfg.DNSProviders[i].Type
 		nt, warnMsg, err := refineProviderType(pName, pType, providerConfigs[pName])
 		cfg.DNSProviders[i].Type = nt
+		if warnMsg != "" {
+			msgs = append(msgs, warnMsg)
+		}
+		if err != nil {
+			return msgs, err
+		}
+	}
+
+	// Update these fields set by // commands/commands.go:preloadProviders().
+	// This is probably a layering violation.  That said, the
+	// fundamental problem here is that we're storing the provider
+	// instances by string name, not by a pointer to a struct.  We
+	// should clean that up someday.
+	for _, domain := range cfg.Domains { // For each domain..
+		for _, provider := range domain.DNSProviderInstances { // For each provider...
+			pName := provider.ProviderBase.Name
+			pType := provider.ProviderBase.ProviderType
+			//fmt.Printf("DEBUG: OLD provider.ProviderBase.ProviderType = name=%q type=%q\n", pName, pType)
+			nt, warnMsg, err := refineProviderType(pName, pType, providerConfigs[pName])
+			provider.ProviderBase.ProviderType = nt
+			//fmt.Printf("DEBUG: NEW provider.ProviderBase.ProviderType = name=%q type=%q\n", pName, nt)
+			if warnMsg != "" {
+				msgs = append(msgs, warnMsg)
+			}
+			if err != nil {
+				return msgs, err
+			}
+		}
+		p := domain.RegistrarInstance
+		//fmt.Printf("DEBUG: OLD registrar name, type = %q %v\n", p.Name, p.ProviderType)
+		pName := p.Name
+		pType := p.ProviderType
+		nt, warnMsg, err := refineProviderType(pName, pType, providerConfigs[pName])
+		p.ProviderType = nt
+		//fmt.Printf("DEBUG: NEW registrar name, type = %q %v\n", p.Name, nt)
 		if warnMsg != "" {
 			msgs = append(msgs, warnMsg)
 		}
