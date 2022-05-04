@@ -53,13 +53,13 @@ export AZURE_CLIENT_SECRET=BBBBBBBBB
 This provider does not recognize any special metadata fields unique to Azure DNS.
 
 ## Usage
-Example Javascript:
+An example `dnsconfig.js` configuration:
 
 ```js
 var REG_NONE = NewRegistrar("none");
-var ADNS = NewDnsProvider("azuredns_main");
+var DSP_AZURE_MAIN = NewDnsProvider("azuredns_main");
 
-D("example.tld", REG_NONE, DnsProvider(ADNS),
+D("example.tld", REG_NONE, DnsProvider(DSP_AZURE_MAIN),
     A("test", "1.2.3.4")
 );
 ```

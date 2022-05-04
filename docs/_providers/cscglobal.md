@@ -28,14 +28,14 @@ Example:
 ```
 
 ## Usage
-Example Javascript for `example.tld` and delegated to Route53:
+An example `dnsconfig.js` configuration:
 
 ```js
-var REG_CSCGLOBAL = NewRegistrar('cscglobal');
-var R53 = NewDnsProvider('r53_main');
+var REG_CSCGLOBAL = NewRegistrar("cscglobal");
+var DSP_BIND = NewDnsProvider("bind");
 
-D("example.tld", REG_CSCGLOBAL, DnsProvider(R53),
-  A('test','1.2.3.4')
+D("example.tld", REG_CSCGLOBAL, DnsProvider(DSP_BIND),
+  A("test", "1.2.3.4")
 );
 ```
 

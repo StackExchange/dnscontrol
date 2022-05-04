@@ -66,14 +66,14 @@ You can find some other ways to authenticate to Route53 in the [go sdk configura
 This provider does not recognize any special metadata fields unique to route 53.
 
 ## Usage
-Example Javascript:
+An example `dnsconfig.js` configuration:
 
 ```js
-var REG_NONE = NewRegistrar('none');
-var R53 = NewDnsProvider('r53_main');
+var REG_NONE = NewRegistrar("none");
+var DSP_R53 = NewDnsProvider("r53_main");
 
-D('example.tld', REG_NONE, DnsProvider(R53),
-    A('test','1.2.3.4')
+D("example.tld", REG_NONE, DnsProvider(DSP_R53),
+    A("test", "1.2.3.4")
 );
 ```
 
@@ -149,7 +149,7 @@ Error getting corrections: AccessDeniedException: User: arn:aws:iam::86839973084
 Done. 1 corrections.
 ```
 
-If this happens to you, we'd appreciate it if you could help us fix the code. In the meanwhile, you can give the account additional IAM permissions so that it can do DNS-related actions, or simply use `NewRegistrar(..., 'NONE')` for now.
+If this happens to you, we'd appreciate it if you could help us fix the code. In the meanwhile, you can give the account additional IAM permissions so that it can do DNS-related actions, or simply use `NewRegistrar(..., "NONE")` for now.
 
 ### Bug when converting new zones
 
@@ -192,7 +192,7 @@ Creating r53 dns provider: NoCredentialProviders: no valid providers in chain. D
 ```
 
 This means that the creds.json entry isn't found. Either there is no entry, or the entry name doesn't match the first parameter in the `NewDnsProvider()` call. In the above example, note
-that the string `r53_main` is specified in `NewDnsProvider('r53_main', 'ROUTE53')` and that is the exact key used in the creds file above.
+that the string `r53_main` is specified in `NewDnsProvider("r53_main")` and that is the exact key used in the creds file above.
 
 ### Invalid KeyId
 

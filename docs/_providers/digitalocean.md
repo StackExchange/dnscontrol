@@ -26,14 +26,14 @@ Example:
 This provider does not recognize any special metadata fields unique to DigitalOcean.
 
 ## Usage
-Example Javascript:
+An example `dnsconfig.js` configuration:
 
 ```js
-var REG_NONE = NewRegistrar('none');
-var DIGITALOCEAN = NewDnsProvider("mydigitalocean");
+var REG_NONE = NewRegistrar("none");
+var DSP_DIGITALOCEAN = NewDnsProvider("mydigitalocean");
 
-D("example.tld", REG_NONE, DnsProvider(DIGITALOCEAN),
-    A("test","1.2.3.4")
+D("example.tld", REG_NONE, DnsProvider(DSP_DIGITALOCEAN),
+    A("test", "1.2.3.4")
 );
 ```
 

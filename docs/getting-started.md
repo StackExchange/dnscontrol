@@ -9,7 +9,7 @@ title: Getting Started
 
 ## From source
 
-DNSControl can be built with Go version 1.16 or higher.
+DNSControl can be built with Go version 1.18 or higher.
 
 The `go get` command will download the source, compile it, and
 install `dnscontrol` in your `$GOBIN` directory.
@@ -48,13 +48,6 @@ Create a directory where you'll be storing your configuration files.
 We highly recommend storing these files in a Git repo, but for
 simple tests anything will do.
 
-Note: Do **not** store your creds.json file in Git unencrypted.
-That is unsafe. Add `creds.json` to your
-`.gitignore` file as a precaution.  This file should be encrypted
-using something
-like [git-crypt](https://www.agwa.name/projects/git-crypt) or
-[Blackbox](https://github.com/StackExchange/blackbox).
-
 Create a subdirectory called `zones` in the same directory as the
 configuration files.  (`mkdir zones`).  `zones` is where the BIND
 provider writes the zonefiles it creates. Even if you don't
@@ -85,30 +78,43 @@ D('example.com', REG_NONE, DnsProvider(DNS_BIND),
 );
 ```
 
-You may modify this file to match your particular providers and domains. See [the javascript docs]({{site.github.url}}/js) and  [the provider docs]({{site.github.url}}/provider-list) for more details.
-If you are using other providers, you will likely need to make a `creds.json` file with api tokens and other account information. For example, to use both name.com and Cloudflare, you would have:
+Modify this file to match your particular providers and domains. See [the dnsconfig docs]({{site.github.url}}/js) and  [the provider docs]({{site.github.url}}/provider-list) for more details.
 
-```js
+Create a file called `creds.json` for storing provider configurations (API tokens and other account information).
+For example, to use both name.com and Cloudflare, you would have:
+
+```json
 {
-  "cloudflare":{ // provider name to be used in dnsconfig.js
-    "apitoken": "token" // API token
+  "cloudflare": {                               // The provider name used in dnsconfig.js
+    "TYPE": "CLOUDFLAREAPI",                    // The provider type identifier
+    "accountid": "your-cloudflare-account-id",  // credentials
+    "apitoken": "your-cloudflare-api-token"     // credentials
   },
-  "namecom":{ // provider name to be used in dnsconfig.js
-    "apikey": "key", // API Key
-    "apiuser": "username" // username for name.com
-  }
+  "namecom": {                                  // The provider name used in dnsconfig.js
+    "TYPE": "NAMEDOTCOM",                       // The provider type identifier
+    "apikey": "key",                            // credentials
+    "apiuser": "username"                       // credentials
+  },
+  "none": { "TYPE": "NONE" }                    // The no-op provider
 }
 ```
+
+Note: Do **not** store your creds.json file in Git unencrypted.
+That is unsafe. Add `creds.json` to your
+`.gitignore` file as a precaution.  This file should be encrypted
+using something
+like [git-crypt](https://www.agwa.name/projects/git-crypt) or
+[Blackbox](https://github.com/StackExchange/blackbox).
 
 There are 2 types of providers:
 
 A "Registrar" is who you register the domain with.  Start with
-`REG_NONE`, which is a provider that never talks to or updates the
+`NONE`, which is a provider that never talks to or updates the
 registrar.  You can define your registrar later when you want to
 use advanced features.
 
-The `DnsProvider` is the service that actually provides DNS service
-(port 53) and may be the same or different company. Even if both
+A "DnsProvider" is the service that actually provides DNS service
+(port 53) and may be the same or different as the registrar. Even if both
 your Registrar and DnsProvider are the same company, two different
 definitions must be included in `dnsconfig.js`.
 
@@ -128,15 +134,17 @@ The file looks like:
 ```js
 {
   "bind": {
+    "TYPE": "BIND"
   },
-  "r53_ACCOUNTNAME": {
+  "r53_accountname": {
+    "TYPE": "ROUTE53",
     "KeyId": "change_to_your_keyid",
     "SecretKey": "change_to_your_secretkey"
   }
 }
 ```
 
-Ignore the `r53_ACCOUNTNAME` section.  It is a placeholder and will be ignored. You
+Ignore the `r53_accountname` section.  It is a placeholder and will be ignored. You
 can use it later when you define your first set of API credentials.
 
 Note that `creds.json` is a JSON file. JSON is very strict about commas
@@ -148,7 +156,7 @@ Python:
 
 jq:
 
-    jq < creds.json
+    jq . < creds.json
 
 FYI: `creds.json` fields can be read from an environment variable. The field must begin with a `$` followed by the variable name. No other text. For example:
 

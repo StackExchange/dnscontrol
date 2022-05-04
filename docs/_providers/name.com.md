@@ -35,25 +35,27 @@ export NAMEDOTCOM_URL='api.name.com'
 This provider does not recognize any special metadata fields unique to name.com.
 
 ## Usage
-**Example Javascript (DNS hosted with name.com):**
+
+An example `dnsconfig.js` configuration with NAMEDOTCOM
+as the registrar and DNS service provider:
 
 ```js
 var REG_NAMECOM = NewRegistrar("name.com");
-var NAMECOM = NewDnsProvider("name.com");
+var DSP_NAMECOM = NewDnsProvider("name.com");
 
-D("example.tld", REG_NAMECOM, DnsProvider(NAMECOM),
-    A("test","1.2.3.4")
+D("example.tld", REG_NAMECOM, DnsProvider(DSP_NAMECOM),
+    A("test", "1.2.3.4")
 );
 ```
 
-
-**Example Javascript (Registrar only. DNS hosted elsewhere):**
+An example `dnsconfig.js` configuration with NAMEDOTCOM
+as the registrar and DNS only, DNS hosted elsewhere:
 
 ```js
 var REG_NAMECOM = NewRegistrar("name.com");
-var R53 = NewDnsProvider("r53");
+var DSP_R53 = NewDnsProvider("r53");
 
-D("example.tld", REG_NAMECOM, DnsProvider(R53),
+D("example.tld", REG_NAMECOM, DnsProvider(DSP_R53),
     A("test","1.2.3.4")
 );
 ```

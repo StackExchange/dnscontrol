@@ -25,14 +25,14 @@ Example:
 ```
 
 ## Usage
-Example Javascript:
+An example `dnsconfig.js` configuration:
 
 ```js
-var REG_NONE = NewRegistrar('none');
-var NETCUP = NewDnsProvider('netcup');
+var REG_NONE = NewRegistrar("none");
+var DSP_NETCUP = NewDnsProvider("netcup");
 
-D('example.tld', REG_NONE, DnsProvider(NETCUP),
-    A('test','1.2.3.4')
+D("example.tld", REG_NONE, DnsProvider(DSP_NETCUP),
+    A("test", "1.2.3.4")
 );
 ```
 

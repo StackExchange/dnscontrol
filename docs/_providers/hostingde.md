@@ -25,13 +25,13 @@ Example:
 
 ## Usage
 
-### Example `dnsconfig.js`
+An example `dnsconfig.js` configuration:
 
 ```js
 var REG_HOSTINGDE = NewRegistrar("hosting.de");
-var DNS_HOSTINGDE = NewDnsProvider("hosting.de");
+var DSP_HOSTINGDE = NewDnsProvider("hosting.de");
 
-D("example.tld", REG_HOSTINGDE, DnsProvider(DNS_HOSTINGDE),
+D("example.tld", REG_HOSTINGDE, DnsProvider(DSP_HOSTINGDE),
     A("test", "1.2.3.4")
 );
 ```
@@ -43,7 +43,7 @@ Using them requires setting the `baseURL` and (optionally) overriding the defaul
 
 ### Example http.net configuration
 
-#### Example `creds.json`
+An example `creds.json` configuration:
 
 ```json
 {
@@ -55,12 +55,12 @@ Using them requires setting the `baseURL` and (optionally) overriding the defaul
 }
 ```
 
-#### Example `dnsconfig.js`
+An example `dnsconfig.js` configuration:
 
 ```js
 var REG_HTTPNET = NewRegistrar("http.net");
 
-var DNS_HTTPNET = NewDnsProvider("http.net");
+var DSP_HTTPNET = NewDnsProvider("http.net");
   default_ns: [
     "ns1.routing.net.",
     "ns2.routing.net.",

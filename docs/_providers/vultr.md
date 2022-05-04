@@ -28,13 +28,13 @@ This provider does not recognize any special metadata fields unique to Vultr.
 
 ## Usage
 
-Example javascript:
+An example `dnsconfig.js` configuration:
 
 ```js
-var VULTR = NewDnsProvider("vultr");
+var DSP_VULTR = NewDnsProvider("vultr");
 
-D("example.tld", REG_DNSIMPLE, DnsProvider(VULTR),
-    A("test","1.2.3.4")
+D("example.tld", REG_DNSIMPLE, DnsProvider(DSP_VULTR),
+    A("test", "1.2.3.4")
 );
 ```
 

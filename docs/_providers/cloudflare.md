@@ -142,54 +142,54 @@ the following aliases are *pre-defined*:
 
 ```js
 // Meta settings for individual records.
-var CF_PROXY_OFF = {'cloudflare_proxy': 'off'};     // Proxy disabled.
-var CF_PROXY_ON = {'cloudflare_proxy': 'on'};       // Proxy enabled.
-var CF_PROXY_FULL = {'cloudflare_proxy': 'full'};   // Proxy+Railgun enabled.
+var CF_PROXY_OFF = {"cloudflare_proxy": "off"};     // Proxy disabled.
+var CF_PROXY_ON = {"cloudflare_proxy": "on"};       // Proxy enabled.
+var CF_PROXY_FULL = {"cloudflare_proxy": "full"};   // Proxy+Railgun enabled.
 // Per-domain meta settings:
 // Proxy default off for entire domain (the default):
-var CF_PROXY_DEFAULT_OFF = {'cloudflare_proxy_default': 'off'};
+var CF_PROXY_DEFAULT_OFF = {"cloudflare_proxy_default": "off"};
 // Proxy default on for entire domain:
-var CF_PROXY_DEFAULT_ON = {'cloudflare_proxy_default': 'on'};
+var CF_PROXY_DEFAULT_ON = {"cloudflare_proxy_default": "on"};
 // UniversalSSL off for entire domain:
-var CF_UNIVERSALSSL_OFF = { cloudflare_universalssl: 'off' };
+var CF_UNIVERSALSSL_OFF = { cloudflare_universalssl: "off" };
 // UniversalSSL on for entire domain:
-var CF_UNIVERSALSSL_ON = { cloudflare_universalssl: 'on' };
+var CF_UNIVERSALSSL_ON = { cloudflare_universalssl: "on" };
 ```
 
 The following example shows how to set meta variables with and without aliases:
 
 ```js
-D('example.tld', REG_NONE, DnsProvider(CLOUDFLARE),
-    A('www1','1.2.3.11', CF_PROXY_ON),        // turn proxy ON.
-    A('www2','1.2.3.12', CF_PROXY_OFF),       // default is OFF, this is a no-op.
-    A('www3','1.2.3.13', {'cloudflare_proxy': 'on'}) // Old format.
+D("example.tld", REG_NONE, DnsProvider(DSP_CLOUDFLARE),
+    A("www1","1.2.3.11", CF_PROXY_ON),        // turn proxy ON.
+    A("www2","1.2.3.12", CF_PROXY_OFF),       // default is OFF, this is a no-op.
+    A("www3","1.2.3.13", {"cloudflare_proxy": "on"}) // Old format.
 );
 ```
 
 ## Usage
-Example Javascript:
+An example `dnsconfig.js` configuration:
 
 ```js
 var REG_NONE = NewRegistrar("none");
-var CLOUDFLARE = NewDnsProvider("cloudflare");
+var DSP_CLOUDFLARE = NewDnsProvider("cloudflare");
 
 // Example domain where the CF proxy abides by the default (off).
-D("example.tld", REG_NONE, DnsProvider(CLOUDFLARE),
-    A("proxied","1.2.3.4", CF_PROXY_ON),
-    A("notproxied","1.2.3.5"),
-    A("another","1.2.3.6", CF_PROXY_ON),
-    ALIAS("@","www.example.tld.", CF_PROXY_ON),
-    CNAME("myalias","www.example.tld.", CF_PROXY_ON)
+D("example.tld", REG_NONE, DnsProvider(DSP_CLOUDFLARE),
+    A("proxied", "1.2.3.4", CF_PROXY_ON),
+    A("notproxied", "1.2.3.5"),
+    A("another", "1.2.3.6", CF_PROXY_ON),
+    ALIAS("@", "www.example.tld.", CF_PROXY_ON),
+    CNAME("myalias", "www.example.tld.", CF_PROXY_ON)
 );
 
 // Example domain where the CF proxy default is set to "on":
-D("example2.tld", REG_NONE, DnsProvider(CLOUDFLARE),
+D("example2.tld", REG_NONE, DnsProvider(DSP_CLOUDFLARE),
     CF_PROXY_DEFAULT_ON, // Enable CF proxy for all items unless otherwise noted.
-    A("proxied","1.2.3.4"),
-    A("notproxied","1.2.3.5", CF_PROXY_OFF),
-    A("another","1.2.3.6"),
-    ALIAS("@","www.example2.tld."),
-    CNAME("myalias","www.example2.tld.")
+    A("proxied", "1.2.3.4"),
+    A("notproxied", "1.2.3.5", CF_PROXY_OFF),
+    A("another", "1.2.3.6"),
+    ALIAS("@", "www.example2.tld."),
+    CNAME("myalias", "www.example2.tld.")
 );
 ```
 
@@ -206,9 +206,9 @@ The Cloudflare provider can manage "Forwarding URL" Page Rules (redirects) for y
 ```js
 // chiphacker.com should redirect to electronics.stackexchange.com
 
-var CLOUDFLARE = NewDnsProvider('cloudflare', {"manage_redirects": true}); // enable manage_redirects
+var DSP_CLOUDFLARE = NewDnsProvider("cloudflare", {"manage_redirects": true}); // enable manage_redirects
 
-D("chiphacker.com", REG_NONE, DnsProvider(CLOUDFLARE),
+D("chiphacker.com", REG_NONE, DnsProvider(DSP_CLOUDFLARE),
     // ...
 
     // 302 for meta subdomain
@@ -235,9 +235,9 @@ Notice a few details:
 The Cloudflare provider can manage Worker Routes for your domains. Simply use the `CF_WORKER_ROUTE` function passing the route pattern and the worker name:
 
 ```js
-var CLOUDFLARE = NewDnsProvider('cloudflare', {"manage_workers": true}); // enable managing worker routes
+var DSP_CLOUDFLARE = NewDnsProvider("cloudflare", {"manage_workers": true}); // enable managing worker routes
 
-D("foo.com", REG_NONE, DnsProvider(CLOUDFLARE),
+D("foo.com", REG_NONE, DnsProvider(DSP_CLOUDFLARE),
     // Assign the patterns `api.foo.com/*` and `foo.com/api/*` to `my-worker` script.
     CF_WORKER_ROUTE("api.foo.com/*", "my-worker"),
     CF_WORKER_ROUTE("foo.com/api/*", "my-worker"),

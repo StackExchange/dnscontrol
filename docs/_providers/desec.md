@@ -25,14 +25,14 @@ Example:
 This provider does not recognize any special metadata fields unique to deSEC.
 
 ## Usage
-Example Javascript:
+An example `dnsconfig.js` configuration:
 
 ```js
-var REG_NONE = NewRegistrar('none');    // No registrar.
-var deSEC = NewDnsProvider('desec');  // deSEC
+var REG_NONE = NewRegistrar("none");    // No registrar.
+var DSP_DESEC = NewDnsProvider("desec");  // deSEC
 
-D('example.tld', REG_NONE, DnsProvider(deSEC),
-    A('test','1.2.3.4')
+D("example.tld", REG_NONE, DnsProvider(DSP_DESEC),
+    A("test", "1.2.3.4")
 );
 ```
 

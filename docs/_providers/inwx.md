@@ -98,15 +98,16 @@ This provider does not recognize any special metadata fields unique to
 INWX.
 
 ## Usage
-Example Javascript for `example.tld` registered with INWX
+An example `dnsconfig.js` configuration file
+for `example.tld` registered with INWX
 and delegated to CloudFlare:
 
 ```js
-var REG_INWX = NewRegistrar('inwx');
-var DSP_CF = NewDnsProvider('cloudflare');
+var REG_INWX = NewRegistrar("inwx");
+var DSP_CF = NewDnsProvider("cloudflare");
 
 D("example.tld", REG_INWX, DnsProvider(DSP_CF),
-    A("test","1.2.3.4")
+    A("test", "1.2.3.4")
 );
 ```
 

@@ -32,10 +32,10 @@ Example:
 This provider does not recognize any special metadata fields unique to easyname.
 
 ## Usage
-Example Javascript:
+An example `dnsconfig.js` configuration:
 
 ```js
-var REG_EASYNAME = NewRegistrar('easyname');
+var REG_EASYNAME = NewRegistrar("easyname");
 
 D("example.com", REG_EASYNAME,
   NAMESERVER("ns1.example.com."),

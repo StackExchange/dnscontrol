@@ -42,24 +42,24 @@ ClouDNS supports ClouDNS-specific "WR record (web redirects)" for your domains.
 Simply use the `CLOUDNS_WR` functions to make redirects like any other record:
 
 ```js
-var REG_NONE = NewRegistrar('none');
-var CLOUDNS = NewDnsProvider("cloudns");
+var REG_NONE = NewRegistrar("none");
+var DSP_CLOUDNS = NewDnsProvider("cloudns");
 
-D("example.tld", REG_NONE, DnsProvider(CLOUDNS),
-  CLOUDNS_WR('@', 'http://example.com/'),
-  CLOUDNS_WR('www', 'http://example.com/')
+D("example.tld", REG_NONE, DnsProvider(DSP_CLOUDNS),
+  CLOUDNS_WR("@", "http://example.com/"),
+  CLOUDNS_WR("www", "http://example.com/")
 )
 ```
 
 ## Usage
-Example dnsconfig.js:
+An example `dnsconfig.js` configuration:
 
 ```js
-var REG_NONE = NewRegistrar('none');
-var CLOUDNS = NewDnsProvider("cloudns");
+var REG_NONE = NewRegistrar("none");
+var DSP_CLOUDNS = NewDnsProvider("cloudns");
 
-D("example.tld", REG_NONE, DnsProvider(CLOUDNS),
-    A("test","1.2.3.4")
+D("example.tld", REG_NONE, DnsProvider(DSP_CLOUDNS),
+    A("test", "1.2.3.4")
 );
 ```
 

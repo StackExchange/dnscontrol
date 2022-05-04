@@ -30,14 +30,14 @@ This provider does not recognize any special metadata fields unique to Hetzner
 
 ## Usage
 
-Example Javascript:
+An example `dnsconfig.js` configuration:
 
 ```js
 var REG_NONE = NewRegistrar("none");
-var HETZNER = NewDnsProvider("hetzner");
+var DSP_HETZNER = NewDnsProvider("hetzner");
 
-D("example.tld", REG_NONE, DnsProvider(HETZNER),
-    A("test","1.2.3.4")
+D("example.tld", REG_NONE, DnsProvider(DSP_HETZNER),
+    A("test", "1.2.3.4")
 );
 ```
 

@@ -55,11 +55,11 @@ If you want to modify the "fake powershell" mode details, you can set them in th
 An example DNS configuration:
 
 ```js
-var REG_NONE = NewRegistrar('none', 'NONE')
-var ACTIVEDIRECTORY = NewDnsProvider("activedir", "ACTIVEDIRECTORY_PS");
+var REG_NONE = NewRegistrar("none", "NONE")
+var DSP_ACTIVEDIRECTORY = NewDnsProvider("activedir", "ACTIVEDIRECTORY_PS");
 
-D('example.tld', REG_NONE, DnsProvider(ACTIVEDIRECTORY),
-      A("test","1.2.3.4")
+D("example.tld", REG_NONE, DnsProvider(DSP_ACTIVEDIRECTORY),
+      A("test", "1.2.3.4")
 )
 ```
 

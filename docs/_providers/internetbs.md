@@ -29,10 +29,10 @@ Example:
 This provider does not recognize any special metadata fields unique to Internet.bs.
 
 ## Usage
-Example Javascript:
+An example `dnsconfig.js` configuration:
 
 ```js
-var REG_INTERNETBS = NewRegistrar('internetbs');
+var REG_INTERNETBS = NewRegistrar("internetbs");
 
 D("example.com", REG_INTERNETBS,
   NAMESERVER("ns1.example.com."),

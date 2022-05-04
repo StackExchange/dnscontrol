@@ -46,13 +46,13 @@ This provider does not recognize any special metadata fields unique to TransIP.
 
 ## Usage
 
-Example javascript:
+An example `dnsconfig.js` configuration:
 
 ```js
-var TRANSIP = NewDnsProvider("transip");
+var DSP_TRANSIP = NewDnsProvider("transip");
 
-D("example.tld", REG_DNSIMPLE, DnsProvider(TRANSIP),
-    A("test","1.2.3.4")
+D("example.tld", REG_DNSIMPLE, DnsProvider(DSP_TRANSIP),
+    A("test", "1.2.3.4")
 );
 ```
 

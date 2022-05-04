@@ -34,16 +34,16 @@ Example:
 This provider does not recognize any special metadata fields unique to Oracle Cloud.
 
 ## Usage
-Example Javascript:
+An example `dnsconfig.js` configuration:
 
 ```js
-var REG_NONE = NewRegistrar('none');
-var ORACLE = NewDnsProvider("oracle");
+var REG_NONE = NewRegistrar("none");
+var DSP_ORACLE = NewDnsProvider("oracle");
 
-D("example.tld", REG_NONE, DnsProvider(ORACLE),
+D("example.tld", REG_NONE, DnsProvider(DSP_ORACLE),
     NAMESERVER_TTL(86400),
 
-    A("test","1.2.3.4")
+    A("test", "1.2.3.4")
 );
 ```
 

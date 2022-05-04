@@ -27,13 +27,13 @@ Example:
 
 ## Usage
 
-Example Javascript:
+An example `dnsconfig.js` configuration:
 
 {% highlight js %}
 var REG_NONE = NewRegistrar("none");
-var AUTODNS = NewDnsProvider("autodns");
+var DSP_AUTODNS = NewDnsProvider("autodns");
 
-D("example.tld", REG_NONE, DnsProvider(AUTODNS),
-    A("test","1.2.3.4")
+D("example.tld", REG_NONE, DnsProvider(DSP_AUTODNS),
+    A("test", "1.2.3.4")
 );
 {%endhighlight%}

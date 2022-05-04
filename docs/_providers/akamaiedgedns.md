@@ -67,9 +67,9 @@ Example `dnsconfig.js`:
 
 ```js
 var REG_NONE = NewRegistrar("none");
-var DNS_AKAMAIEDGEDNS = NewDnsProvider("akamaiedgedns");
+var DSP_AKAMAIEDGEDNS = NewDnsProvider("akamaiedgedns");
 
-D("example.com", REG_NONE, DnsProvider(DNS_AKAMAIEDGEDNS),
+D("example.com", REG_NONE, DnsProvider(DSP_AKAMAIEDGEDNS),
   NAMESERVER_TTL(86400),
   AUTODNSSEC_ON,
   AKAMAICDN("@", "www.preconfigured.edgesuite.net", TTL(20)),

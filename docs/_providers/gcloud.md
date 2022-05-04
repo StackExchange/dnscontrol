@@ -12,7 +12,7 @@ jsId: GCLOUD
 To use this provider, add an entry to `creds.json` with `TYPE` set to `GCLOUD`
 along with Google Cloud authentication values.
 
-The provider requires a 'Service Account Key' for your project. Newlines in the private key need to be replaced with `\n`. Copy the full JSON object into your `creds.json` like so:
+The provider requires a "Service Account Key" for your project. Newlines in the private key need to be replaced with `\n`. Copy the full JSON object into your `creds.json` like so:
 
 Example:
 
@@ -45,14 +45,14 @@ See [the Activation section](#activation) for some tips on obtaining these crede
 This provider does not recognize any special metadata fields unique to google cloud dns.
 
 ## Usage
-Use this provider like any other DNS Provider:
+An example `dnsconfig.js` configuration:
 
 ```js
-var REG_NAMECOM = NewRegistrar("name.com");
-var GCLOUD = NewDnsProvider("gcloud");
+var REG_NONE = NewRegistrar("name.com");
+var DSP_GCLOUD = NewDnsProvider("gcloud");
 
-D("example.tld", REG_NAMECOM, DnsProvider(GCLOUD),
-    A("test","1.2.3.4")
+D("example.tld", REG_NONE, DnsProvider(DSP_GCLOUD),
+    A("test", "1.2.3.4")
 );
 ```
 

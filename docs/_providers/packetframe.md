@@ -26,13 +26,13 @@ Example:
 This provider does not recognize any special metadata fields unique to Packetframe.
 
 ## Usage
-Example Javascript:
+An example `dnsconfig.js` configuration:
 
 ```js
-var REG_NONE = NewRegistrar('none');
-var PACKETFRAME = NewDnsProvider("packetframe");
+var REG_NONE = NewRegistrar("none");
+var DSP_PACKETFRAME = NewDnsProvider("packetframe");
 
-D("example.tld", REG_NONE, DnsProvider(PACKETFRAME),
-    A("test","1.2.3.4")
+D("example.tld", REG_NONE, DnsProvider(DSP_PACKETFRAME),
+    A("test", "1.2.3.4")
 );
 ```

@@ -59,10 +59,10 @@ An example DNS configuration:
 
 ```js
 var REG_NONE = NewRegistrar("none");
-var MSDNS = NewDnsProvider("msdns");
+var DSP_MSDNS = NewDnsProvider("msdns");
 
-D("example.tld", REG_NONE, DnsProvider(MSDNS),
-      A("test","1.2.3.4")
+D("example.tld", REG_NONE, DnsProvider(DSP_MSDNS),
+      A("test", "1.2.3.4")
 )
 ```
 

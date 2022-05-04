@@ -47,14 +47,14 @@ This provider does not recognize any special metadata fields unique to
 Namecheap.
 
 ## Usage
-Example Javascript:
+An example `dnsconfig.js` configuration:
 
 ```js
 var REG_NAMECHEAP = NewRegistrar("namecheap");
-var R53 = NewDnsProvider("r53");
+var DSP_BIND = NewDnsProvider("bind");
 
-D("example.tld", REG_NAMECHEAP, DnsProvider(R53),
-    A("test","1.2.3.4")
+D("example.tld", REG_NAMECHEAP, DnsProvider(DSP_BIND),
+    A("test", "1.2.3.4")
 );
 ```
 
@@ -63,12 +63,12 @@ records can be used like any other record:
 
 ```js
 var REG_NAMECHEAP = NewRegistrar("namecheap");
-var NAMECHEAP = NewDnsProvider("namecheap");
+var DSP_NAMECHEAP = NewDnsProvider("namecheap");
 
-D("example.tld", REG_NAMECHEAP, DnsProvider(NAMECHEAP),
-  URL('@', 'http://example.com/'),
-  URL('www', 'http://example.com/'),
-  URL301('backup', 'http://backup.example.com/')
+D("example.tld", REG_NAMECHEAP, DnsProvider(DSP_NAMECHEAP),
+  URL("@", "http://example.com/"),
+  URL("www", "http://example.com/"),
+  URL301("backup", "http://backup.example.com/")
 )
 ```
 

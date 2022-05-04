@@ -52,14 +52,14 @@ This provider only supports `ALIAS` on the `"@"` zone apex, not on any other
 names.
 
 ## Usage
-Example Javascript:
+An example `dnsconfig.js` configuration:
 
 ```js
-var GANDI = NewDnsProvider("gandi");
 var REG_GANDI = NewRegistrar("gandi");
+var DSP_GANDI = NewDnsProvider("gandi");
 
-D("example.tld", REG_GANDI, DnsProvider(GANDI),
-    A("test","1.2.3.4")
+D("example.tld", REG_GANDI, DnsProvider(DSP_GANDI),
+    A("test", "1.2.3.4")
 );
 ```
 

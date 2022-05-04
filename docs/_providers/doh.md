@@ -43,7 +43,7 @@ Some common DoH providers are:
 This provider does not recognize any special metadata fields unique to DOH.
 
 ## Usage
-Example `dnsconfig.js`:
+An example `dnsconfig.js` configuration:
 
 ```js
 var REG_MONITOR = NewRegistrar("dohcloudflare");

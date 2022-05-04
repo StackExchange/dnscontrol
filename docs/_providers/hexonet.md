@@ -71,8 +71,8 @@ You are free to decide if you want to use both of our provider technology or jus
 
 ```js
 // Providers:
-var REG_HX = NewRegistrar('hexonet');
-var DNS_HX = NewDnsProvider('hexonet');
+var REG_HX = NewRegistrar("hexonet");
+var DSP_HX = NewDnsProvider("hexonet");
 
 // Set Default TTL for all RR to reflect our Backend API Default
 // If you use additional DNS Providers, configure a default TTL
@@ -84,13 +84,13 @@ DEFAULTS(
 );
 
 // Domains:
-D('abhoster.com', REG_HX, DnsProvider(DNS_HX),
-    NAMESERVER('ns1.ispapi.net'),
-    NAMESERVER('ns2.ispapi.net'),
-    NAMESERVER('ns3.ispapi.net'),
-    NAMESERVER('ns4.ispapi.net'),
-    A('elk1', '10.190.234.178'),
-    A('test', '56.123.54.12')
+D("abhoster.com", REG_HX, DnsProvider(DSP_HX),
+    NAMESERVER("ns1.ispapi.net"),
+    NAMESERVER("ns2.ispapi.net"),
+    NAMESERVER("ns3.ispapi.net"),
+    NAMESERVER("ns4.ispapi.net"),
+    A("elk1", "10.190.234.178"),
+    A("test", "56.123.54.12")
 );
 ```
 

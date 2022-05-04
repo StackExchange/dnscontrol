@@ -35,14 +35,14 @@ SPF records are ignored by this provider. Use TXT records instead.
 This provider does not recognize any special metadata fields unique to DNS Made Easy.
 
 ## Usage
-Example Javascript:
+An example `dnsconfig.js` configuration:
 
 ```js
-var REG_NONE = NewRegistrar('none');
-var DNSMADEEASY = NewDnsProvider("dnsmadeeasy");
+var REG_NONE = NewRegistrar("none");
+var DSP_DNSMADEEASY = NewDnsProvider("dnsmadeeasy");
 
-D("example.tld", REG_NONE, DnsProvider(DNSMADEEASY),
-    A("test","1.2.3.4")
+D("example.tld", REG_NONE, DnsProvider(DSP_DNSMADEEASY),
+    A("test", "1.2.3.4")
 );
 ```
 
