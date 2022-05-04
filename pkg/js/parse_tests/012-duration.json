@@ -15,25 +15,25 @@
         },
         {
           "type": "A",
-          "name": "@",
+          "name": "a",
           "target": "1.2.3.5",
           "ttl": 300
         },
         {
           "type": "A",
-          "name": "@",
+          "name": "b",
           "target": "1.2.3.6",
           "ttl": 180
         },
         {
           "type": "A",
-          "name": "@",
+          "name": "c",
           "target": "1.2.3.7",
           "ttl": 10800
         },
         {
           "type": "A",
-          "name": "@",
+          "name": "d",
           "target": "1.2.3.8",
           "ttl": 259200
         }
