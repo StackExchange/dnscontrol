@@ -467,8 +467,6 @@ func ValidateAndNormalizeConfig(config *models.DNSConfig) (errs []error) {
 	// Let's ask the provider if there are any records they can't handle.
 	for _, domain := range config.Domains { // For each domain..
 		for _, provider := range domain.DNSProviderInstances { // For each provider...
-			//fmt.Printf("DEBUG: providers.AuditRecords(%q, %q)\n", provider.ProviderBase.ProviderType, domain.Records)
-			//fmt.Printf("DEBUG: provider = %+v\n", provider)
 			if err := providers.AuditRecords(provider.ProviderBase.ProviderType, domain.Records); err != nil {
 				errs = append(errs, err)
 			}

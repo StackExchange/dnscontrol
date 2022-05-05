@@ -1,7 +1,4 @@
 {
-  "none": {
-    "TYPE": "NONE"
-  },
   "bind": {
     "TYPE": "BIND"
   },

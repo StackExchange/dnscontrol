@@ -288,10 +288,8 @@ func populateProviderTypes(cfg *models.DNSConfig, providerConfigs map[string]map
 		for _, provider := range domain.DNSProviderInstances { // For each provider...
 			pName := provider.ProviderBase.Name
 			pType := provider.ProviderBase.ProviderType
-			//fmt.Printf("DEBUG: OLD provider.ProviderBase.ProviderType = name=%q type=%q\n", pName, pType)
 			nt, warnMsg, err := refineProviderType(pName, pType, providerConfigs[pName])
 			provider.ProviderBase.ProviderType = nt
-			//fmt.Printf("DEBUG: NEW provider.ProviderBase.ProviderType = name=%q type=%q\n", pName, nt)
 			if warnMsg != "" {
 				msgs = append(msgs, warnMsg)
 			}
@@ -300,12 +298,10 @@ func populateProviderTypes(cfg *models.DNSConfig, providerConfigs map[string]map
 			}
 		}
 		p := domain.RegistrarInstance
-		//fmt.Printf("DEBUG: OLD registrar name, type = %q %v\n", p.Name, p.ProviderType)
 		pName := p.Name
 		pType := p.ProviderType
 		nt, warnMsg, err := refineProviderType(pName, pType, providerConfigs[pName])
 		p.ProviderType = nt
-		//fmt.Printf("DEBUG: NEW registrar name, type = %q %v\n", p.Name, nt)
 		if warnMsg != "" {
 			msgs = append(msgs, warnMsg)
 		}
@@ -314,7 +310,21 @@ func populateProviderTypes(cfg *models.DNSConfig, providerConfigs map[string]map
 		}
 	}
 
-	return msgs, nil
+	return uniqueStrings(msgs), nil
+}
+
+// uniqueStrings takes an unsorted slice of strings and returns the
+// unique strings, in the order they first appeared in the list.
+func uniqueStrings(stringSlice []string) []string {
+	keys := make(map[string]bool)
+	list := []string{}
+	for _, entry := range stringSlice {
+		if _, ok := keys[entry]; !ok {
+			keys[entry] = true
+			list = append(list, entry)
+		}
+	}
+	return list
 }
 
 func refineProviderType(credEntryName string, t string, credFields map[string]string) (replacementType string, warnMsg string, err error) {
