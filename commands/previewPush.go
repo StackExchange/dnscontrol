@@ -256,7 +256,7 @@ func populateProviderTypes(cfg *models.DNSConfig, providerConfigs map[string]map
 	for i := range cfg.Registrars {
 		pType := cfg.Registrars[i].Type
 		pName := cfg.Registrars[i].Name
-		nt, warnMsg, err := refineProviderType(pName, pType, providerConfigs[pName])
+		nt, warnMsg, err := refineProviderType(pName, pType, providerConfigs[pName], "NewRegistrar")
 		cfg.Registrars[i].Type = nt
 		if warnMsg != "" {
 			msgs = append(msgs, warnMsg)
@@ -269,7 +269,7 @@ func populateProviderTypes(cfg *models.DNSConfig, providerConfigs map[string]map
 	for i := range cfg.DNSProviders {
 		pName := cfg.DNSProviders[i].Name
 		pType := cfg.DNSProviders[i].Type
-		nt, warnMsg, err := refineProviderType(pName, pType, providerConfigs[pName])
+		nt, warnMsg, err := refineProviderType(pName, pType, providerConfigs[pName], "NewDnsProvider")
 		cfg.DNSProviders[i].Type = nt
 		if warnMsg != "" {
 			msgs = append(msgs, warnMsg)
@@ -288,7 +288,7 @@ func populateProviderTypes(cfg *models.DNSConfig, providerConfigs map[string]map
 		for _, provider := range domain.DNSProviderInstances { // For each provider...
 			pName := provider.ProviderBase.Name
 			pType := provider.ProviderBase.ProviderType
-			nt, warnMsg, err := refineProviderType(pName, pType, providerConfigs[pName])
+			nt, warnMsg, err := refineProviderType(pName, pType, providerConfigs[pName], "NewDnsProvider")
 			provider.ProviderBase.ProviderType = nt
 			if warnMsg != "" {
 				msgs = append(msgs, warnMsg)
@@ -300,7 +300,7 @@ func populateProviderTypes(cfg *models.DNSConfig, providerConfigs map[string]map
 		p := domain.RegistrarInstance
 		pName := p.Name
 		pType := p.ProviderType
-		nt, warnMsg, err := refineProviderType(pName, pType, providerConfigs[pName])
+		nt, warnMsg, err := refineProviderType(pName, pType, providerConfigs[pName], "NewRegistrar")
 		p.ProviderType = nt
 		if warnMsg != "" {
 			msgs = append(msgs, warnMsg)
@@ -327,7 +327,7 @@ func uniqueStrings(stringSlice []string) []string {
 	return list
 }
 
-func refineProviderType(credEntryName string, t string, credFields map[string]string) (replacementType string, warnMsg string, err error) {
+func refineProviderType(credEntryName string, t string, credFields map[string]string, source string) (replacementType string, warnMsg string, err error) {
 
 	// t="" and t="-" are processed the same. Standardize on "-" to reduce the number of cases to check.
 	if t == "" {
@@ -382,16 +382,17 @@ func refineProviderType(credEntryName string, t string, credFields map[string]st
 			)
 		case t:
 			// creds.json file is compatible with and dnsconfig.js can be updated.
-			return ct, fmt.Sprintf(`INFO: In dnsconfig.js New*(%q, %q) can be simplified to New*(%q) (See %s#cleanup)`,
-				credEntryName, t,
-				credEntryName,
+			return ct, fmt.Sprintf(`INFO: In dnsconfig.js %s(%q, %q) can be simplified to %s(%q) (See %s#cleanup)`,
+				source, credEntryName, t,
+				source, credEntryName,
 				url,
 			), nil
 		default:
 			// creds.json lists a TYPE but it doesn't match what's in dnsconfig.js!
-			return t, "", fmt.Errorf(`ERROR: Mismatch found! creds.json entry %q has %q set to %q but dnsconfig.js specifies New*(%q, %q) (See %s#mismatch)`,
-				credEntryName, providerTypeFieldName, ct,
-				credEntryName, t,
+			return t, "", fmt.Errorf(`ERROR: Mismatch found! creds.json entry %q has %q set to %q but dnsconfig.js specifies %s(%q, %q) (See %s#mismatch)`,
+				credEntryName,
+				providerTypeFieldName, ct,
+				source, credEntryName, t,
 				url,
 			)
 		}

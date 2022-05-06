@@ -42,7 +42,7 @@ func Test_refineProviderType(t *testing.T) {
 			if tt.wantErr && (tt.wantWarnMsgPrefix != "") {
 				t.Error("refineProviderType() bad test data. Prefix should be \"\" if wantErr is set")
 			}
-			gotReplacementType, gotWarnMsg, err := refineProviderType("foo", tt.args.t, tt.args.credFields)
+			gotReplacementType, gotWarnMsg, err := refineProviderType("foo", tt.args.t, tt.args.credFields, "FOO")
 			if !strings.HasPrefix(gotWarnMsg, tt.wantWarnMsgPrefix) {
 				t.Errorf("refineProviderType() gotWarnMsg = %q, wanted prefix %q", gotWarnMsg, tt.wantWarnMsgPrefix)
 			}
