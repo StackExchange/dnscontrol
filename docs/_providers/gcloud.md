@@ -9,25 +9,33 @@ jsId: GCLOUD
 
 ## Configuration
 
-For Google cloud authentication, DNSControl requires a JSON 'Service Account Key' for your project. Newlines in the private key need to be replaced with `\n`.Copy the full JSON object into your `creds.json` like so:
+To use this provider, add an entry to `creds.json` with `TYPE` set to `GCLOUD`
+along with Google Cloud authentication values.
+
+The provider requires a "Service Account Key" for your project. Newlines in the private key need to be replaced with `\n`. Copy the full JSON object into your `creds.json` like so:
+
+Example:
 
 ```json
 {
-    "gcloud": {
-        "type": "service_account",
-        "project_id": "mydnsproject",
-        "private_key_id": "a05483aa208364c56716b384efff33c0574d365b",
-        "private_key": "-----BEGIN PRIVATE KEY-----\nMIIEvAIBADL2dhlY7YZbx7tpsfksOX\nih0DbxhiQ==\n-----END PRIVATE KEY-----\n",
-        "client_email": "dnscontrolacct@mydnsproject.iam.gserviceaccount.com",
-        "client_id": "107996619231234567750",
-        "auth_uri": "https://accounts.google.com/o/oauth2/auth",
-        "token_uri": "https://accounts.google.com/o/oauth2/token",
-        "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
-        "client_x509_cert_url": "https://www.googleapis.com/robot/v1/metadata/x509/dnscontrolsdfsdfsdf%40craigdnstest.iam.gserviceaccount.com",
-        "name_server_set" : "optional_name_server_set_name (contact your TAM)"
-    }
+  "gcloud": {
+    "TYPE": "GCLOUD",
+    "type": "service_account",
+    "project_id": "mydnsproject",
+    "private_key_id": "a05483aa208364c56716b384efff33c0574d365b",
+    "private_key": "-----BEGIN PRIVATE KEY-----\nMIIEvAIBADL2dhlY7YZbx7tpsfksOX\nih0DbxhiQ==\n-----END PRIVATE KEY-----\n",
+    "client_email": "dnscontrolacct@mydnsproject.iam.gserviceaccount.com",
+    "client_id": "107996619231234567750",
+    "auth_uri": "https://accounts.google.com/o/oauth2/auth",
+    "token_uri": "https://accounts.google.com/o/oauth2/token",
+    "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
+    "client_x509_cert_url": "https://www.googleapis.com/robot/v1/metadata/x509/dnscontrolsdfsdfsdf%40craigdnstest.iam.gserviceaccount.com",
+    "name_server_set": "optional_name_server_set_name (contact your TAM)"
+  }
 }
 ```
+
+**Note:** Don't confuse the `TYPE` and `type` fields.  `TYPE` is set to `GCLOUD` and specifies which provider type to use.  `type` specifies the type of account in use.
 
 **Note**: The `project_id`, `private_key`, and `client_email`, are the only fields that are strictly required, but it is sometimes easier to just paste the entire json object in. Either way is fine.  `name_server_set` is optional and requires special permission from your TAM at Google in order to setup (See [Name server sets](#name_server_sets) below)
 
@@ -37,14 +45,14 @@ See [the Activation section](#activation) for some tips on obtaining these crede
 This provider does not recognize any special metadata fields unique to google cloud dns.
 
 ## Usage
-Use this provider like any other DNS Provider:
+An example `dnsconfig.js` configuration:
 
 ```js
-var REG_NAMECOM = NewRegistrar("name.com","NAMEDOTCOM");
-var GCLOUD = NewDnsProvider("gcloud", "GCLOUD");
+var REG_NONE = NewRegistrar("name.com");
+var DSP_GCLOUD = NewDnsProvider("gcloud");
 
-D("example.tld", REG_NAMECOM, DnsProvider(GCLOUD),
-    A("test","1.2.3.4")
+D("example.tld", REG_NONE, DnsProvider(DSP_GCLOUD),
+    A("test", "1.2.3.4")
 );
 ```
 

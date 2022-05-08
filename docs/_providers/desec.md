@@ -6,11 +6,16 @@ jsId: DESEC
 ---
 # deSEC Provider
 ## Configuration
-In your providers credentials file you must provide a deSEC account auth token:
+
+To use this provider, add an entry to `creds.json` with `TYPE` set to `DESEC`
+along with a deSEC account auth token.
+
+Example:
 
 ```json
 {
   "desec": {
+    "TYPE": "DESEC",
     "auth-token": "your-deSEC-auth-token"
   }
 }
@@ -20,14 +25,14 @@ In your providers credentials file you must provide a deSEC account auth token:
 This provider does not recognize any special metadata fields unique to deSEC.
 
 ## Usage
-Example Javascript:
+An example `dnsconfig.js` configuration:
 
 ```js
-var REG_NONE = NewRegistrar('none', 'NONE');    // No registrar.
-var deSEC = NewDnsProvider('desec', 'DESEC');  // deSEC
+var REG_NONE = NewRegistrar("none");    // No registrar.
+var DSP_DESEC = NewDnsProvider("desec");  // deSEC
 
-D('example.tld', REG_NONE, DnsProvider(deSEC),
-    A('test','1.2.3.4')
+D("example.tld", REG_NONE, DnsProvider(DSP_DESEC),
+    A("test", "1.2.3.4")
 );
 ```
 

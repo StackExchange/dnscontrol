@@ -31,7 +31,7 @@ var _ = cmd(catUtils, func() *cli.Command {
 
 			if arg1 != "" && arg1 != "-" {
 				// NB(tlim): In v4.0 this "if" can be removed.
-				fmt.Fprintf(os.Stdout, "WARNING: To retain compatibility in future versions, please change %q to %q. See %q\n",
+				fmt.Fprintf(os.Stderr, "WARNING: To retain compatibility in future versions, please change %q to %q. See %q\n",
 					arg1, "-",
 					"https://stackexchange.github.io/dnscontrol/get-zones.html",
 				)
