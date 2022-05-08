@@ -1,26 +1,32 @@
 ---
-  name: Azure DNS
-  layout: default
-  jsId: AZURE_DNS
+name: Azure DNS
+layout: default
+jsId: AZURE_DNS
 ---
 
 # Azure DNS Provider
 
-You can specify the API credentials in the credentials json file:
+## Configuration
+
+To use this provider, add an entry to `creds.json` with `TYPE` set to `AZURE_DNS`
+along with the API credentials.
+
+Example:
 
 ```json
 {
- "azuredns_main":{
-      "SubscriptionID": "AZURE_SUBSCRIPTION_ID",
-      "ResourceGroup": "AZURE_RESOURCE_GROUP",
-      "TenantID": "AZURE_TENANT_ID",
-      "ClientID": "AZURE_CLIENT_ID",
-      "ClientSecret": "AZURE_CLIENT_SECRET",
- }
+  "azuredns_main": {
+    "TYPE": "AZURE_DNS",
+    "SubscriptionID": "AZURE_SUBSCRIPTION_ID",
+    "ResourceGroup": "AZURE_RESOURCE_GROUP",
+    "TenantID": "AZURE_TENANT_ID"
+    "ClientID": "AZURE_CLIENT_ID",
+    "ClientSecret": "AZURE_CLIENT_SECRET",
+  }
 }
 ```
 
-You can also use environment variables, but this is discouraged, unless your environment provides them already.
+You can also use environment variables:
 
 ```bash
 export AZURE_SUBSCRIPTION_ID=XXXXXXXXX
@@ -32,13 +38,14 @@ export AZURE_CLIENT_SECRET=BBBBBBBBB
 
 ```json
 {
- "azuredns_main":{
-      "SubscriptionID": "$AZURE_SUBSCRIPTION_ID",
-      "ResourceGroup": "$AZURE_RESOURCE_GROUP",
-      "TenantID": "$AZURE_TENANT_ID",
-      "ClientID": "$AZURE_CLIENT_ID",
-      "ClientSecret": "$AZURE_CLIENT_SECRET",
- }
+  "azuredns_main": {
+    "TYPE": "AZURE_DNS",
+    "SubscriptionID": "$AZURE_SUBSCRIPTION_ID",
+    "ResourceGroup": "$AZURE_RESOURCE_GROUP",
+    "ClientID": "$AZURE_CLIENT_ID",
+    "TenantID": "$AZURE_TENANT_ID"
+    "ClientSecret": "$AZURE_CLIENT_SECRET",
+  }
 }
 ```
 
@@ -46,14 +53,14 @@ export AZURE_CLIENT_SECRET=BBBBBBBBB
 This provider does not recognize any special metadata fields unique to Azure DNS.
 
 ## Usage
-Example Javascript:
+An example `dnsconfig.js` configuration:
 
 ```js
-var REG_NONE = NewRegistrar('none','NONE');
-var ADNS = NewDnsProvider('azuredns_main', 'AZURE_DNS');
+var REG_NONE = NewRegistrar("none");
+var DSP_AZURE_MAIN = NewDnsProvider("azuredns_main");
 
-D('example.tld', REG_NONE, DnsProvider(ADNS),
-    A('test','1.2.3.4')
+D("example.tld", REG_NONE, DnsProvider(DSP_AZURE_MAIN),
+    A("test", "1.2.3.4")
 );
 ```
 

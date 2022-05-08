@@ -2,20 +2,22 @@
 name: hosting.de
 title: hosting.de Provider
 layout: default
-jsId: hostingde
+jsId: HOSTINGDE
 ---
 
 # hosting.de Provider
 
 ## Configuration
 
-In your credentials file, you must provide your [`authToken` and optionally an `ownerAccountId`](https://www.hosting.de/api/#requests-and-authentication).
+To use this provider, add an entry to `creds.json` with `TYPE` set to `HOSTINGDE`
+along with your [`authToken` and optionally an `ownerAccountId`](https://www.hosting.de/api/#requests-and-authentication).
 
-### Example `creds.json`
+Example:
 
 ```json
 {
   "hosting.de": {
+    "TYPE": "HOSTINGDE",
     "authToken": "YOUR_API_KEY"
   }
 }
@@ -23,14 +25,14 @@ In your credentials file, you must provide your [`authToken` and optionally an `
 
 ## Usage
 
-### Example `dnsconfig.js`
+An example `dnsconfig.js` configuration:
 
 ```js
-var REG_HOSTINGDE = NewRegistrar('hosting.de', 'HOSTINGDE')
-var DNS_HOSTINGDE = NewDnsProvider('hosting.de' 'HOSTINGDE');
+var REG_HOSTINGDE = NewRegistrar("hosting.de");
+var DSP_HOSTINGDE = NewDnsProvider("hosting.de");
 
-D('example.tld', REG_HOSTINGDE, DnsProvider(DNS_HOSTINGDE),
-    A('test', '1.2.3.4')
+D("example.tld", REG_HOSTINGDE, DnsProvider(DSP_HOSTINGDE),
+    A("test", "1.2.3.4")
 );
 ```
 
@@ -41,27 +43,28 @@ Using them requires setting the `baseURL` and (optionally) overriding the defaul
 
 ### Example http.net configuration
 
-#### Example `creds.json`
+An example `creds.json` configuration:
 
 ```json
 {
   "http.net": {
+    "TYPE": "HOSTINGDE",
     "authToken": "YOUR_API_KEY",
     "baseURL": "https://partner.http.net"
   }
 }
 ```
 
-#### Example `dnsconfig.js`
+An example `dnsconfig.js` configuration:
 
 ```js
-var REG_HTTPNET = NewRegistrar('http.net', 'HOSTINGDE');
+var REG_HTTPNET = NewRegistrar("http.net");
 
-var DNS_HTTPNET = NewDnsProvider('http.net', 'HOSTINGDE', {
+var DSP_HTTPNET = NewDnsProvider("http.net");
   default_ns: [
-    'ns1.routing.net.',
-    'ns2.routing.net.',
-    'ns3.routing.net.',
+    "ns1.routing.net.",
+    "ns2.routing.net.",
+    "ns3.routing.net.",
   ],
 });
 ```

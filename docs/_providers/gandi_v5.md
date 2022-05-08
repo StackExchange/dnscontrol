@@ -7,18 +7,19 @@ jsId: GANDI_V5
 # Gandi_v5 Provider
 
 `GANDI_V5` uses the v5 API and can act as a registrar provider
-    or a DNS provider. It is only able to work with domains
-    migrated to the new LiveDNS API, which should be all domains.
-    API keys are assigned to particular users.  Go to User Settings,
-    "Manage the user account and security settings", the "Security"
-    tab, then regenerate the "Production API key".
+or a DNS provider. It is only able to work with domains
+migrated to the new LiveDNS API, which should be all domains.
+API keys are assigned to particular users.  Go to User Settings,
+"Manage the user account and security settings", the "Security"
+tab, then regenerate the "Production API key".
 
 * API Documentation: https://api.gandi.net/docs
 * API Endpoint: https://api.gandi.net/
 
 ## Configuration
-In your credentials file you must provide your Gandi.net API key.
-The [sharing_id](https://api.gandi.net/docs/reference/) is optional.
+
+To use this provider, add an entry to `creds.json` with `TYPE` set to `GANDI_V5`
+along your Gandi.net API key. The [sharing_id](https://api.gandi.net/docs/reference/) is optional.
 
 The `sharing_id` selects between different organizations which your account is
 a member of; to manage domains in multiple organizations, you can use multiple
@@ -28,9 +29,12 @@ same backend `"GANDI_V5"` provider.
 (NB: in practice, this doesn't appear to be necessary and `sharing_id` is not
 enforced?)
 
+Example:
+
 ```json
 {
   "gandi": {
+    "TYPE": "GANDI_V5",
     "apikey": "your-gandi-key",
     "sharing_id": "your-sharing_id"
   }
@@ -48,14 +52,14 @@ This provider only supports `ALIAS` on the `"@"` zone apex, not on any other
 names.
 
 ## Usage
-Example Javascript:
+An example `dnsconfig.js` configuration:
 
 ```js
-var GANDI = NewDnsProvider("gandi", "GANDI_V5");
-var REG_GANDI = NewRegistrar("gandi", "GANDI_V5");
+var REG_GANDI = NewRegistrar("gandi");
+var DSP_GANDI = NewDnsProvider("gandi");
 
-D("example.tld", REG_GANDI, DnsProvider(GANDI),
-    A("test","1.2.3.4")
+D("example.tld", REG_GANDI, DnsProvider(DSP_GANDI),
+    A("test", "1.2.3.4")
 );
 ```
 

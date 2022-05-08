@@ -9,12 +9,16 @@ jsId: NAMECHEAP
 Namecheap only provides a registrar provider implementation.
 
 ## Configuration
-In your providers config json file you must provide your Namecheap api
-username and key:
+
+To use this provider, add an entry to `creds.json` with `TYPE` set to `NAMECHEAP`
+along with your Namecheap API username and key:
+
+Example:
 
 ```json
 {
-  "namecheap":{
+  "namecheap": {
+    "TYPE": "NAMECHEAP",
     "apikey": "yourApiKeyFromNameCheap",
     "apiuser": "yourUsername"
   }
@@ -26,15 +30,16 @@ sandbox:
 
 ```json
 {
-  "namecheap.com":{
+  "namecheapSandbox": {
+    "TYPE": "NAMECHEAP",
     "apikey": "yourApiKeyFromNameCheap",
-    "apiuser": "yourUsername"
+    "apiuser": "yourUsername",
     "BaseURL": "https://api.sandbox.namecheap.com/xml.response"
   }
 }
 ```
 
-if BaseURL is omitted, the production namecheap url is used.
+if BaseURL is omitted, the production namecheap URL is assumed.
 
 
 ## Metadata
@@ -42,14 +47,14 @@ This provider does not recognize any special metadata fields unique to
 Namecheap.
 
 ## Usage
-Example Javascript:
+An example `dnsconfig.js` configuration:
 
 ```js
-var REG_NAMECHEAP = NewRegistrar("namecheap","NAMECHEAP");
-var R53 = NewDnsProvider("r53", "ROUTE53");
+var REG_NAMECHEAP = NewRegistrar("namecheap");
+var DSP_BIND = NewDnsProvider("bind");
 
-D("example.tld", REG_NAMECHEAP, DnsProvider(R53),
-    A("test","1.2.3.4")
+D("example.tld", REG_NAMECHEAP, DnsProvider(DSP_BIND),
+    A("test", "1.2.3.4")
 );
 ```
 
@@ -57,13 +62,13 @@ Namecheap provides custom redirect records URL, URL301, and FRAME.  These
 records can be used like any other record:
 
 ```js
-var REG_NAMECHEAP = NewRegistrar("namecheap","NAMECHEAP");
-var NAMECHEAP = NewDnsProvider("namecheap","NAMECHEAP");
+var REG_NAMECHEAP = NewRegistrar("namecheap");
+var DSP_NAMECHEAP = NewDnsProvider("namecheap");
 
-D("example.tld", REG_NAMECHEAP, DnsProvider(NAMECHEAP),
-  URL('@', 'http://example.com/'),
-  URL('www', 'http://example.com/'),
-  URL301('backup', 'http://backup.example.com/')
+D("example.tld", REG_NAMECHEAP, DnsProvider(DSP_NAMECHEAP),
+  URL("@", "http://example.com/"),
+  URL("www", "http://example.com/"),
+  URL301("backup", "http://backup.example.com/")
 )
 ```
 

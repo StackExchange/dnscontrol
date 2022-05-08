@@ -7,12 +7,16 @@ jsId: DIGITALOCEAN
 # DigitalOcean Provider
 
 ## Configuration
-In your credentials file, you must provide your
-[DigitalOcean OAuth Token](https://cloud.digitalocean.com/settings/applications)
+
+To use this provider, add an entry to `creds.json` with `TYPE` set to `DIGITALOCEAN`
+along with your [DigitalOcean OAuth Token](https://cloud.digitalocean.com/settings/applications).
+
+Example:
 
 ```json
 {
-  "digitalocean": {
+  "mydigitalocean": {
+    "TYPE": "DIGITALOCEAN",
     "token": "your-digitalocean-ouath-token"
   }
 }
@@ -22,14 +26,14 @@ In your credentials file, you must provide your
 This provider does not recognize any special metadata fields unique to DigitalOcean.
 
 ## Usage
-Example Javascript:
+An example `dnsconfig.js` configuration:
 
 ```js
-var REG_NONE = NewRegistrar('none', 'NONE')
-var DIGITALOCEAN = NewDnsProvider("digitalocean", "DIGITALOCEAN");
+var REG_NONE = NewRegistrar("none");
+var DSP_DIGITALOCEAN = NewDnsProvider("mydigitalocean");
 
-D("example.tld", REG_NONE, DnsProvider(DIGITALOCEAN),
-    A("test","1.2.3.4")
+D("example.tld", REG_NONE, DnsProvider(DSP_DIGITALOCEAN),
+    A("test", "1.2.3.4")
 );
 ```
 

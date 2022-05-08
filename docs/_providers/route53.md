@@ -6,20 +6,25 @@ jsId: ROUTE53
 # Amazon Route 53 Provider
 
 ## Configuration
-You can specify the API credentials in the credentials json file:
+
+To use this provider, add an entry to `creds.json` with `TYPE` set to `ROUTE53`
+along with API credentials.
+
+Example:
 
 ```json
 {
-    "r53_main": {
-        "KeyId": "your-aws-key",
-        "SecretKey": "your-aws-secret-key",
-        "Token": "optional-sts-token",
-        "DelegationSet" : "optional-delegation-set-id"
-    }
+  "r53_main": {
+    "TYPE": "ROUTE53",
+    "DelegationSet": "optional-delegation-set-id",
+    "KeyId": "your-aws-key",
+    "SecretKey": "your-aws-secret-key",
+    "Token": "optional-sts-token"
+  }
 }
 ```
 
-You can also use environment variables, but this is discouraged, unless your environment provides them already.
+Alternatively you can also use environment variables.  This is discouraged unless your environment provides them already.
 
 ```bash
 export AWS_ACCESS_KEY_ID=XXXXXXXXX
@@ -29,30 +34,29 @@ export AWS_SESSION_TOKEN=ZZZZZZZZ
 
 ```json
 {
-    "r53_main": {
-        "KeyId": "$AWS_ACCESS_KEY_ID",
-        "SecretKey": "$AWS_SECRET_ACCESS_KEY"
-    }
+  "r53_main": {
+    "KeyId": "$AWS_ACCESS_KEY_ID",
+    "SecretKey": "$AWS_SECRET_ACCESS_KEY",
+    "TYPE": "ROUTE53"
+  }
 }
 ```
 
-Alternatively if you want to used [named profiles](https://docs.aws.amazon.com/cli/latest/userguide/cli-configure-profiles.html) you need to export the following variable
+Alternatively, this provider supports [named profiles](https://docs.aws.amazon.com/cli/latest/userguide/cli-configure-profiles.html). In that case export the following variable:
 
 ```bash
 export AWS_PROFILE=ZZZZZZZZ
 ```
 
-Ensure you have a minimal creds.json file with the DNS Provider specified, otherwise versions above 3.8.0 will fail. So, for:
+and provide a minimal entry in creds.json:
 
-```js
-var R53_MAIN = NewDnsProvider('r53_main', 'ROUTE53');
-```
-
-You will need a creds.json file with the following content:
+Example:
 
 ```json
 {
-  "R53_MAIN": {}
+  "r53_main": {
+    "TYPE": "ROUTE53"
+  }
 }
 ```
 
@@ -62,14 +66,14 @@ You can find some other ways to authenticate to Route53 in the [go sdk configura
 This provider does not recognize any special metadata fields unique to route 53.
 
 ## Usage
-Example Javascript:
+An example `dnsconfig.js` configuration:
 
 ```js
-var REG_NONE = NewRegistrar('none', 'NONE');
-var R53 = NewDnsProvider('r53_main', 'ROUTE53');
+var REG_NONE = NewRegistrar("none");
+var DSP_R53 = NewDnsProvider("r53_main");
 
-D('example.tld', REG_NONE, DnsProvider(R53),
-    A('test','1.2.3.4')
+D("example.tld", REG_NONE, DnsProvider(DSP_R53),
+    A("test", "1.2.3.4")
 );
 ```
 
@@ -145,7 +149,7 @@ Error getting corrections: AccessDeniedException: User: arn:aws:iam::86839973084
 Done. 1 corrections.
 ```
 
-If this happens to you, we'd appreciate it if you could help us fix the code. In the meanwhile, you can give the account additional IAM permissions so that it can do DNS-related actions, or simply use `NewRegistrar(..., 'NONE')` for now.
+If this happens to you, we'd appreciate it if you could help us fix the code. In the meanwhile, you can give the account additional IAM permissions so that it can do DNS-related actions, or simply use `NewRegistrar(..., "NONE")` for now.
 
 ### Bug when converting new zones
 
@@ -188,7 +192,7 @@ Creating r53 dns provider: NoCredentialProviders: no valid providers in chain. D
 ```
 
 This means that the creds.json entry isn't found. Either there is no entry, or the entry name doesn't match the first parameter in the `NewDnsProvider()` call. In the above example, note
-that the string `r53_main` is specified in `NewDnsProvider('r53_main', 'ROUTE53')` and that is the exact key used in the creds file above.
+that the string `r53_main` is specified in `NewDnsProvider("r53_main")` and that is the exact key used in the creds file above.
 
 ### Invalid KeyId
 
