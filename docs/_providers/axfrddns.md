@@ -18,6 +18,8 @@ and [Yadifa](https://www.yadifa.eu/home).
 
 ## Configuration
 
+To use this provider, add an entry to `creds.json` with `TYPE` set to `AXFRDDNS`.
+
 ### Connection modes
 
 Zone transfers default to TCP, DDNS updates default to UDP when
@@ -41,10 +43,11 @@ For instance, your `creds.json` might looks like:
 
 ```json
 {
-    "axfrddns": {
-        "transfer-key": "hmac-sha256:transfer-key-id:Base64EncodedSecret=",
-        "update-key": "hmac-sha256:update-key-id:AnotherSecret="
-    }
+  "axfrddns": {
+    "TYPE": "AXFRDDNS",
+    "transfer-key": "hmac-sha256:transfer-key-id:Base64EncodedSecret=",
+    "update-key": "hmac-sha256:update-key-id:AnotherSecret="
+  }
 }
 ```
 
@@ -57,8 +60,8 @@ If distinct zones require distinct keys, you will need to instantiate the
 provider once for each key:
 
 ```js
-var AXFRDDNS_A = NewDnsProvider('axfrddns-a', 'AXFRDDNS'}
-var AXFRDDNS_B = NewDnsProvider('axfrddns-b', 'AXFRDDNS'}
+var DSP_AXFRDDNS_A = NewDnsProvider("axfrddns-a"}
+var DSP_AXFRDDNS_B = NewDnsProvider("axfrddns-b"}
 ```
 
 And update `creds.json` accordingly:
@@ -86,13 +89,14 @@ This list can be provided either as metadata or in `creds.json`. Only
 the later allows `get-zones` to work properly.
 
 ```js
-var AXFRDDNS = NewDnsProvider('axfrddns', 'AXFRDDNS',
-    'default_ns': [
-        'ns1.example.tld.',
-        'ns2.example.tld.',
-        'ns3.example.tld.',
-        'ns4.example.tld.'
-    ]
+var DSP_AXFRDDNS = NewDnsProvider("axfrddns", {
+		"default_ns": [
+			"ns1.example.tld.",
+			"ns2.example.tld.",
+			"ns3.example.tld.",
+			"ns4.example.tld."
+		]
+	}
 }
 ```
 

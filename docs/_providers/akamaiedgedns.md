@@ -24,10 +24,13 @@ the required credentials.
 
 ## Configuration
 
-In the credentials file (creds.json), you must provide the following:
+To use this provider, add an entry to `creds.json` with `TYPE` set to `AKAMAIEDGEDNS` along with the authentication fields.
+
+Example:
 
 ```json
 "akamaiedgedns": {
+    "TYPE": "AKAMAIEDGEDNS",
     "client_secret": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
     "host": "akaa-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx.xxxx.akamaiapis.net",
     "access_token": "akaa-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
@@ -60,17 +63,17 @@ NAMESERVER_TTL(86400)
 
 modifier to the dnscontrol.js D() function so that DNSControl does not change the TTL of the authoritative NS records.
 
-Example 'dnsconfig.js':
+Example `dnsconfig.js`:
 
 ```js
-var REG_NONE = NewRegistrar('none', 'NONE');
-var DNS_AKAMAIEDGEDNS = NewDnsProvider('akamaiedgedns', 'AKAMAIEDGEDNS');
+var REG_NONE = NewRegistrar("none");
+var DSP_AKAMAIEDGEDNS = NewDnsProvider("akamaiedgedns");
 
-D('example.com', REG_NONE, DnsProvider(DNS_AKAMAIEDGEDNS),
+D("example.com", REG_NONE, DnsProvider(DSP_AKAMAIEDGEDNS),
   NAMESERVER_TTL(86400),
   AUTODNSSEC_ON,
   AKAMAICDN("@", "www.preconfigured.edgesuite.net", TTL(20)),
-  A('foo','1.2.3.4')
+  A("foo", "1.2.3.4")
 );
 ```
 
