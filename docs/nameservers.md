@@ -20,20 +20,20 @@ All the examples use the variables.  Substitute your own.
 // ========== Registrars:
 
 // A typical registrar.
-var REG_NAMECOM = NewRegistrar("namedotcom_main", "NAMEDOTCOM");
+var REG_NAMECOM = NewRegistrar("namedotcom_main");
 
 // The "NONE" registrar is a "fake" registrar.
 // This is useful if the registrar is not supported by DNSControl,
 // or if you don't want to control the domain's delegation.
-var REG_THIRDPARTY = NewRegistrar("ThirdParty", "NONE");
+var REG_THIRDPARTY = NewRegistrar("ThirdParty");
 
 // ========== DNS Providers:
 
-var DNS_NAMECOM = NewDnsProvider("namedotcom_main", "NAMEDOTCOM");
-var DNS_AWS = NewDnsProvider("aws_main", "ROUTE53");
-var DNS_GOOGLE = NewDnsProvider("gcp_main", "GCLOUD");
-var DNS_CLOUDFLARE = NewDnsProvider("cloudflare_main", "CLOUDFLAREAPI");
-var DNS_BIND = NewDnsProvider("bind", "BIND");
+var DNS_NAMECOM = NewDnsProvider("namedotcom_main");
+var DNS_AWS = NewDnsProvider("aws_main");
+var DNS_GOOGLE = NewDnsProvider("gcp_main");
+var DNS_CLOUDFLARE = NewDnsProvider("cloudflare_main");
+var DNS_BIND = NewDnsProvider("bind");
 ```
 
 # Typical Delegations
@@ -226,7 +226,7 @@ Sometimes you just want to know if something changes!
 See the <a href="{{site.github.url}}/providers/doh">DNS-over-HTTPS Provider</a> documentation for more info.
 
 ```js
-var REG_MONITOR = NewRegistrar('DNS-over-HTTPS', 'DNSOVERHTTPS');
+var REG_MONITOR = NewRegistrar('DNS-over-HTTPS');
 
 D("example1.com", REG_MONITOR,
   NAMESERVER("ns1.example1.com."),

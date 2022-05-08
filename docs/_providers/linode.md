@@ -7,12 +7,16 @@ jsId: LINODE
 # Linode Provider
 
 ## Configuration
-In your credentials file, you must provide your
-[Linode Personal Access Token](https://cloud.linode.com/profile/tokens)
+
+To use this provider, add an entry to `creds.json` with `TYPE` set to `LINODE`
+along with your [Linode Personal Access Token](https://cloud.linode.com/profile/tokens).
+
+Example:
 
 ```json
 {
   "linode": {
+    "TYPE": "LINODE",
     "token": "your-linode-personal-access-token"
   }
 }
@@ -22,14 +26,14 @@ In your credentials file, you must provide your
 This provider does not recognize any special metadata fields unique to Linode.
 
 ## Usage
-Example Javascript:
+An example `dnsconfig.js` configuration:
 
 ```js
-var REG_NONE = NewRegistrar('none', 'NONE')
-var LINODE = NewDnsProvider("linode", "LINODE");
+var REG_NONE = NewRegistrar("none");
+var DSP_LINODE = NewDnsProvider("linode");
 
-D("example.tld", REG_NONE, DnsProvider(LINODE),
-    A("test","1.2.3.4")
+D("example.tld", REG_NONE, DnsProvider(DSP_LINODE),
+    A("test", "1.2.3.4")
 );
 ```
 

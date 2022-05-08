@@ -50,10 +50,8 @@ Providers in this category and their maintainers are:
 * `ACTIVEDIRECTORY_PS` @tlimoncelli
 * `AZURE_DNS` @vatsalyagoel
 * `BIND` @tlimoncelli
-* `CLOUDFLAREAPI` @tlimoncelli
 * `GCLOUD` @tlimoncelli
 * `NAMEDOTCOM` @tlimoncelli
-* `ROUTE53` @tlimoncelli
 
 ### Providers with "contributor support"
 
@@ -77,6 +75,7 @@ Providers in this category and their maintainers are:
 * `AXFRDDNS` @hnrgrgr
 * `AKAMAIEDGEDNS` @svernick
 * `CLOUDNS` @pragmaton
+* `CLOUDFLAREAPI` @tresni
 * `CSCGLOBAL` @Air-New-Zealand
 * `DESEC` @D3luxee
 * `DIGITALOCEAN` @Deraen
@@ -95,13 +94,14 @@ Providers in this category and their maintainers are:
 * `LINODE` @koesie10
 * `NAMECHEAP` VOLUNTEER NEEDED
 * `NETCUP` @kordianbruck
-* `NS1` VOLUNTEER NEEDED
+* `NS1` @costasd
 * `OCTODNS` @TomOnTime
 * `OPENSRS` @pierre-emmanuelJ
 * `ORACLE` @kallsyms
 * `OVH` @masterzen
 * `PACKETFRAME` @hamptonmoore
 * `POWERDNS` @jpbede
+* `ROUTE53` @tresni
 * `SOFTLAYER`@jamielennox
 * `TRANSIP` @blackshadev
 * `VULTR` @pgaskin

@@ -1,9 +1,9 @@
 package normalize
 
 import (
-	"testing"
-
 	"fmt"
+	"reflect"
+	"testing"
 
 	"github.com/StackExchange/dnscontrol/v3/models"
 	"github.com/StackExchange/dnscontrol/v3/providers"
@@ -333,6 +333,40 @@ func TestCheckDuplicates_dup_ns(t *testing.T) {
 	}
 }
 
+func TestUniq(t *testing.T) {
+	a := []uint32 {1, 2, 2, 3, 4, 5, 5, 6}
+	expected := []uint32 {1, 2, 3, 4, 5, 6}
+
+	r := uniq(a)
+	if !reflect.DeepEqual(r, expected) {
+		t.Error("Deduplicated slice is different than expected")
+	}
+}
+
+func TestCheckLabelHasMultipleTTLs(t *testing.T) {
+	records := []*models.RecordConfig{
+		// different ttl per record
+		makeRC("zzz", "example.com", "4.4.4.4", models.RecordConfig{Type: "A", TTL: 111}),
+		makeRC("zzz", "example.com", "4.4.4.5", models.RecordConfig{Type: "A", TTL: 222}),
+	}
+	errs := checkLabelHasMultipleTTLs(records)
+	if len(errs) == 0 {
+		t.Error("Expected error on multiple TTLs under the same label, but got none")
+	}
+}
+
+func TestCheckLabelHasNoMultipleTTLs(t *testing.T) {
+	records := []*models.RecordConfig{
+		// different ttl per record
+		makeRC("zzz", "example.com", "4.4.4.4", models.RecordConfig{Type: "A", TTL: 111}),
+		makeRC("zzz", "example.com", "4.4.4.5", models.RecordConfig{Type: "A", TTL: 111}),
+	}
+	errs := checkLabelHasMultipleTTLs(records)
+	if len(errs) != 0 {
+		t.Errorf("Expected 0 errors on records having the same TTL under the same label, but got %d", len(errs))
+	}
+}
+
 func TestTLSAValidation(t *testing.T) {
 	config := &models.DNSConfig{
 		Domains: []*models.DomainConfig{
@@ -431,4 +465,31 @@ func Test_DSChecks(t *testing.T) {
 			}
 		})
 	})
+}
+
+func Test_errorRepeat(t *testing.T) {
+	type args struct {
+		label  string
+		domain string
+	}
+	tests := []struct {
+		name string
+		args args
+		want string
+	}{
+		{
+			name: "1",
+			args: args{label: "foo.bar.com", domain: "bar.com"},
+			want: `The name "foo.bar.com.bar.com." is an error (repeats the domain).` +
+				` Maybe instead of "foo.bar.com" you intended "foo"?` +
+				` If not add DISABLE_REPEATED_DOMAIN_CHECK to this record to permit this as-is.`,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := errorRepeat(tt.args.label, tt.args.domain); got != tt.want {
+				t.Errorf("errorRepeat() = \n'%s', want\n'%s'", got, tt.want)
+			}
+		})
+	}
 }

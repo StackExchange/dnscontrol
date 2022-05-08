@@ -7,11 +7,16 @@ jsId: DNSMADEEASY
 # DNS Made Simple Provider
 
 ## Configuration
-In your credentials file, you must provide your `api_key` and `secret_key`. More info about authentication can be found in [DNS Made Easy API docs](https://api-docs.dnsmadeeasy.com/).
+
+To use this provider, add an entry to `creds.json` with `TYPE` set to `DNSMADEEASY`
+along with your `api_key` and `secret_key`. More info about authentication can be found in [DNS Made Easy API docs](https://api-docs.dnsmadeeasy.com/).
+
+Example:
 
 ```json
 {
   "dnsmadeeasy": {
+    "TYPE_key": "DNSMADEEASY",
     "api_key": "1c1a3c91-4770-4ce7-96f4-54c0eb0e457a",
     "secret_key": "e2268cde-2ccd-4668-a518-8aa8757a65a0"
   }
@@ -30,14 +35,14 @@ SPF records are ignored by this provider. Use TXT records instead.
 This provider does not recognize any special metadata fields unique to DNS Made Easy.
 
 ## Usage
-Example Javascript:
+An example `dnsconfig.js` configuration:
 
 ```js
-var REG_NONE = NewRegistrar('none', 'NONE')
-var DNSMADEEASY = NewDnsProvider("dnsmadeeasy", "DNSMADEEASY");
+var REG_NONE = NewRegistrar("none");
+var DSP_DNSMADEEASY = NewDnsProvider("dnsmadeeasy");
 
-D("example.tld", REG_NONE, DnsProvider(DNSMADEEASY),
-    A("test","1.2.3.4")
+D("example.tld", REG_NONE, DnsProvider(DSP_DNSMADEEASY),
+    A("test", "1.2.3.4")
 );
 ```
 

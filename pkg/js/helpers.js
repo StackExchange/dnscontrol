@@ -1,8 +1,5 @@
 'use strict';
 
-// If you edit this file, you must run `go generate` to embed this
-// file in the source code.
-
 // If you are heavily debugging this code, the "-dev" flag will
 // read this file directly instead of using the output of
 // `go generate`. You'll still need to run `go generate` before
@@ -36,7 +33,27 @@ function getConfiguredDomains() {
     return conf.domain_names;
 }
 
-function NewRegistrar(name, type, meta) {
+// NewRegistrar returns an registrar object.
+// For backwards compatibility, it accepts (name), (name, meta),
+// (name, type), (name, type, meta).
+function NewRegistrar() {
+  // For backwards compatibility, this is a wrapper around the legacy
+  // version of this function.
+  switch (arguments.length) {
+    case 1:
+      return oldNewRegistrar(arguments[0], "-")
+    case 2:
+      // x = NewRegistrar("myThing", "THING")
+      // x = NewRegistrar("myThing", { metakey: metavalue } )
+      if (typeof arguments[1] === 'object') {
+        return oldNewRegistrar(arguments[0], "-", arguments[1])
+      }
+      break;
+    default: // do nothing
+  }
+  return oldNewRegistrar.apply(null, arguments)
+}
+function oldNewRegistrar(name, type, meta) {
     if (type) {
         type == 'MANUAL';
     }
@@ -46,6 +63,23 @@ function NewRegistrar(name, type, meta) {
 }
 
 function NewDnsProvider(name, type, meta) {
+  // For backwards compatibility, this is a wrapper around the legacy
+  // version of this function.
+  switch (arguments.length) {
+    case 1:
+      return oldNewDnsProvider(arguments[0], "-")
+    case 2:
+      // x = NewDnsProvider("myThing", "THING")
+      // x = NewDnsProvider("myThing", { metakey: metavalue } )
+      if (typeof arguments[1] === 'object') {
+        return oldNewDnsProvider(arguments[0], "-", arguments[1])
+      }
+      break;
+    default: // do nothing
+  }
+  return oldNewDnsProvider.apply(null, arguments)
+}
+function oldNewDnsProvider(name, type, meta) {
     if (typeof meta === 'object' && 'ip_conversions' in meta) {
         meta.ip_conversions = format_tt(meta.ip_conversions);
     }
@@ -1185,3 +1219,18 @@ function DOMAIN_ELSEWHERE_AUTO(domain, registrar, dsplist) {
         D_EXTEND(domain, DnsProvider(arguments[i]));
     }
 }
+
+var END = {}; // This is null. It permits the last item to include a comma.
+// D("foo.com", ...
+//    A(...),
+//    A(...),
+//    A(...),
+// END)
+
+// Record modifiers:
+
+// Permit labels like "foo.bar.com.bar.com" (normally an error):
+var DISABLE_REPEATED_DOMAIN_CHECK = { skip_fqdn_check: "true" };
+// D("bar.com", ...
+//     A("foo.bar.com", "10.1.1.1", DISABLE_REPEATED_DOMAIN_CHECK),
+// )
