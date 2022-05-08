@@ -29,7 +29,6 @@ D("example.com", REG_MYNDC, DnsProvider(DNS_MYAWS),
   A("@","1.2.3.4")
 );
 ```
-{% endcapture %}
 
 In v3.16 and later:
 
