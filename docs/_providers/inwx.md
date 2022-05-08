@@ -9,14 +9,18 @@ jsId: INWX
 INWX.de is a Berlin-based domain registrar.
 
 ## Configuration
-In your `creds.json` file you must provide your INWX
-username and password:
+
+To use this provider, add an entry to `creds.json` with `TYPE` set to `INWX`
+along with your INWX username and password.
+
+Example:
 
 ```json
 {
-  "inwx":{
-    "username": "yourUsername",
-    "password": "yourPassword"
+  "inwx": {
+    "TYPE": "INWX",
+    "password": "yourPassword",
+    "username": "yourUsername"
   }
 }
 ```
@@ -37,10 +41,11 @@ This can also be done via an environment variable:
 
 ```json
 {
-  "inwx":{
-    "username": "yourUsername",
+  "inwx": {
+    "TYPE": "INWX",
     "password": "yourPassword",
-    "totp": "$INWX_TOTP"
+    "totp": "$INWX_TOTP",
+    "username": "yourUsername"
   }
 }
 ```
@@ -60,10 +65,11 @@ This secret is only shown once when two factor authentication is enabled and you
 
 ```json
 {
-  "inwx":{
-    "username": "yourUsername",
+  "inwx": {
+    "TYPE": "INWX",
     "password": "yourPassword",
-    "totp-key": "yourTOTPSharedSecret"
+    "totp-key": "yourTOTPSharedSecret",
+    "username": "yourUsername"
   }
 }
 ```
@@ -92,15 +98,16 @@ This provider does not recognize any special metadata fields unique to
 INWX.
 
 ## Usage
-Example Javascript for `example.tld` registered with INWX
+An example `dnsconfig.js` configuration file
+for `example.tld` registered with INWX
 and delegated to CloudFlare:
 
 ```js
-var regInwx = NewRegistrar('inwx', 'INWX')
-var dnsCF = NewDnsProvider('cloudflare', 'CLOUDFLAREAPI')
+var REG_INWX = NewRegistrar("inwx");
+var DSP_CF = NewDnsProvider("cloudflare");
 
-D("example.tld", regInwx, DnsProvider(dnsCF),
-    A("test","1.2.3.4")
+D("example.tld", REG_INWX, DnsProvider(DSP_CF),
+    A("test", "1.2.3.4")
 );
 ```
 

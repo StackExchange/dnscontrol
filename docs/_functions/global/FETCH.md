@@ -20,8 +20,8 @@ Otherwise the syntax of `FETCH` is the same as `fetch`.
 
 {% capture example %}
 ```js
-var REG_NONE = NewRegistrar('none', 'NONE');
-var DNS_BIND = NewDnsProvider('bind', 'BIND');
+var REG_NONE = NewRegistrar('none');
+var DNS_BIND = NewDnsProvider('bind');
 
 D('example.com', REG_NONE, DnsProvider(DNS_BIND), [
   A('@', '1.2.3.4'),
