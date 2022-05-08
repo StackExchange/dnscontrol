@@ -234,6 +234,10 @@ D("example1.com", REG_MONITOR,
 );
 ```
 
+NOTE: This checks the NS records via a DNS query.  It does not check the
+registrar's delegation (i.e. the `Name Server:` field in whois). In theory
+these are the same thing but there may be situations where they are not.
+
 # Helper macros
 
 DNSControl has some built-in macros that you might find useful.
