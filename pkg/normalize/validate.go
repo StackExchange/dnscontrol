@@ -464,7 +464,7 @@ func ValidateAndNormalizeConfig(config *models.DNSConfig) (errs []error) {
 
 	// At this point we've munged anything that needs to be munged, and
 	// validated anything that can be globally validated.
-	// Let's ask // the provider if there are any records they can't handle.
+	// Let's ask the provider if there are any records they can't handle.
 	for _, domain := range config.Domains { // For each domain..
 		for _, provider := range domain.DNSProviderInstances { // For each provider...
 			if err := providers.AuditRecords(provider.ProviderBase.ProviderType, domain.Records); err != nil {

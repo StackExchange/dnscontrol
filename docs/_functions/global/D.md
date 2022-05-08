@@ -19,8 +19,8 @@ Modifier arguments are processed according to type as follows:
 
 {% capture example %}
 ```js
-var REGISTRAR = NewRegistrar("name.com", "NAMEDOTCOM");
-var r53 = NewDnsProvider("R53","ROUTE53");
+var REGISTRAR = NewRegistrar("name.com");
+var r53 = NewDnsProvider("R53");
 
 // simple domain
 D("example.com", REGISTRAR, DnsProvider(r53),
@@ -60,9 +60,9 @@ To differentiate the different domains, specify the domains as
 
 {% capture example %}
 ```js
-var REG = NewRegistrar("Third-Party", "NONE");
-var DNS_INSIDE = NewDnsProvider("Cloudflare", "CLOUDFLAREAPI");
-var DNS_OUTSIDE = NewDnsProvider("bind", "BIND");
+var REG = NewRegistrar("Third-Party");
+var DNS_INSIDE = NewDnsProvider("Cloudflare");
+var DNS_OUTSIDE = NewDnsProvider("bind");
 
 D("example.com!inside", REG, DnsProvider(DNS_INSIDE),
   A("www", "10.10.10.10")

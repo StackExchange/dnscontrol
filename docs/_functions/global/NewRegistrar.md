@@ -7,20 +7,36 @@ parameters:
 return: string
 ---
 
-NewRegistrar registers a registrar provider. The name can be any string value you would like to use.
-The type must match a valid registrar provider type identifier (see [provider page.]({{site.github.url}}/provider-list))
+NewRegistrar activates a Registrar Provider specified in `creds.json`.
+A registrar maintains the domain's registration and delegation (i.e. the
+nameservers for the domain).  DNSControl only manages the delegation.
 
-Metadata is an optional object, that will only be used by certain providers. See [individual provider docs]({{site.github.url}}/provider-list) for specific details.
+* `name` must match the name of an entry in `creds.json`.
+* `type` specifies a valid DNS provider type identifier listed on the [provider page.]({{site.github.url}}/provider-list).
+  * Starting with v3.16, the type is optional. If it is absent, the `TYPE` field in `creds.json` is used instead. You can leave it out. (Thanks to JavaScript magic, you can leave it out even when there are more fields).
+  * Starting with v4.0, specifying the type may be an error. Please add the `TYPE` field to `creds.json` and remove this parameter from `dnsconfig.js` to prepare.
+* `meta` is a way to send additional parameters to the provider.  It is optional and only certain providers use it.  See the [individual provider docs]({{site.github.url}}/provider-list) for details.
 
-This function will return the name as a string so that you may assign it to a variable to use inside [D](#D) directives.
+This function will return an opaque string that should be assigned to a variable name for use in [D](#D) directives.
 
-{% capture example %}
+Prior to v3.16:
+
 ```js
-var REGISTRAR = NewRegistrar("name.com", "NAMEDOTCOM");
-var r53 = NewDnsProvider("R53","ROUTE53");
+var REG_MYNDC = NewRegistrar("mynamedotcom", "NAMEDOTCOM");
+var DNS_MYAWS = NewDnsProvider("myaws", "ROUTE53");
 
-D("example.com", REGISTRAR, DnsProvider(r53), A("@","1.2.3.4"));
+D("example.com", REG_MYNDC, DnsProvider(DNS_MYAWS),
+  A("@","1.2.3.4")
+);
 ```
-{% endcapture %}
 
-{% include example.html content=example %}
+In v3.16 and later:
+
+```js
+var REG_MYNDC = NewRegistrar("mynamedotcom");
+var DNS_MYAWS = NewDnsProvider("myaws");
+
+D("example.com", REG_MYNDC, DnsProvider(DNS_MYAWS),
+  A("@","1.2.3.4")
+);
+```

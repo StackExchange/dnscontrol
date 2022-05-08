@@ -22,11 +22,21 @@ var _ = cmd(catUtils, func() *cli.Command {
 		Action: func(ctx *cli.Context) error {
 			if ctx.NArg() < 3 {
 				return cli.Exit("Arguments should be: credskey providername zone(s) (Ex: r53 ROUTE53 example.com)", 1)
-
 			}
 			args.CredName = ctx.Args().Get(0)
-			args.ProviderName = ctx.Args().Get(1)
+			arg1 := ctx.Args().Get(1)
+			args.ProviderName = arg1
+			// In v4.0, skip the first args.ZoneNames if it it equals "-".
 			args.ZoneNames = ctx.Args().Slice()[2:]
+
+			if arg1 != "" && arg1 != "-" {
+				// NB(tlim): In v4.0 this "if" can be removed.
+				fmt.Fprintf(os.Stderr, "WARNING: To retain compatibility in future versions, please change %q to %q. See %q\n",
+					arg1, "-",
+					"https://stackexchange.github.io/dnscontrol/get-zones.html",
+				)
+			}
+
 			return exit(GetZone(args))
 		},
 		Flags:     args.flags(),
@@ -73,12 +83,21 @@ var _ = cmd(catUtils, func() *cli.Command {
 		Name:  "check-creds",
 		Usage: "Do a small operation to verify credentials (stand-alone)",
 		Action: func(ctx *cli.Context) error {
-			if ctx.NArg() != 2 {
-				return cli.Exit("Arguments should be: credskey providername (Ex: r53 ROUTE53)", 1)
-
+			var arg0, arg1 string
+			// This takes one or two command-line args.
+			// Starting in v3.16: Using it with 2 args will generate a warning.
+			// Starting in v4.0: Using it with 2 args might be an error.
+			if ctx.NArg() == 1 {
+				arg0 = ctx.Args().Get(0)
+				arg1 = ""
+			} else if ctx.NArg() == 2 {
+				arg0 = ctx.Args().Get(0)
+				arg1 = ctx.Args().Get(1)
+			} else {
+				return cli.Exit("Arguments should be: credskey [providername] (Ex: r53 ROUTE53)", 1)
 			}
-			args.CredName = ctx.Args().Get(0)
-			args.ProviderName = ctx.Args().Get(1)
+			args.CredName = arg0
+			args.ProviderName = arg1
 			args.ZoneNames = []string{"all"}
 			args.OutputFormat = "nameonly"
 			return exit(GetZone(args))
@@ -95,8 +114,9 @@ ARGUMENTS:
    provider: The name of the provider (second parameter to NewDnsProvider() in dnsconfig.js)
 
 EXAMPLES:
-   dnscontrol get-zones myr53 ROUTE53
-   dnscontrol get-zones --out=/dev/null myr53 ROUTE53`,
+   dnscontrol check-creds myr53 ROUTE53      # Pre v3.16, or pre-v4.0 for backwards-compatibility
+   dnscontrol check-creds myr53
+   dnscontrol check-creds --out=/dev/null myr53 && echo Success`,
 	}
 }())
 
@@ -104,7 +124,7 @@ EXAMPLES:
 type GetZoneArgs struct {
 	GetCredentialsArgs          // Args related to creds.json
 	CredName           string   // key in creds.json
-	ProviderName       string   // provider name: BIND, GANDI_V5, etc or "-"
+	ProviderName       string   // provider type: BIND, GANDI_V5, etc or "-"  (NB(tlim): In 4.0, this field goes away.)
 	ZoneNames          []string // The zones to get
 	OutputFormat       string   // Output format
 	OutputFile         string   // Filename to send output ("" means stdout)
@@ -144,7 +164,7 @@ func GetZone(args GetZoneArgs) error {
 	}
 	provider, err := providers.CreateDNSProvider(args.ProviderName, providerConfigs[args.CredName], nil)
 	if err != nil {
-		return fmt.Errorf("failed GetZone CreateDNSProvider: %w", err)
+		return fmt.Errorf("failed GetZone CDP: %w", err)
 	}
 
 	// decide which zones we need to convert
