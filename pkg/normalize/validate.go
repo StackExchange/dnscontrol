@@ -450,6 +450,8 @@ func ValidateAndNormalizeConfig(config *models.DNSConfig) (errs []error) {
 		}
 		// Check for duplicates
 		errs = append(errs, checkDuplicates(d.Records)...)
+		// Check for different TTLs under the same label
+		errs = append(errs, checkLabelHasMultipleTTLs(d.Records)...)
 		// Validate FQDN consistency
 		for _, r := range d.Records {
 			if r.NameFQDN == "" || !strings.HasSuffix(r.NameFQDN, d.Name) {
@@ -462,7 +464,7 @@ func ValidateAndNormalizeConfig(config *models.DNSConfig) (errs []error) {
 
 	// At this point we've munged anything that needs to be munged, and
 	// validated anything that can be globally validated.
-	// Let's ask // the provider if there are any records they can't handle.
+	// Let's ask the provider if there are any records they can't handle.
 	for _, domain := range config.Domains { // For each domain..
 		for _, provider := range domain.DNSProviderInstances { // For each provider...
 			if err := providers.AuditRecords(provider.ProviderBase.ProviderType, domain.Records); err != nil {
@@ -549,6 +551,37 @@ func checkDuplicates(records []*models.RecordConfig) (errs []error) {
 			errs = append(errs, fmt.Errorf("exact duplicate record found: %s", diffable))
 		}
 		seen[diffable] = r
+	}
+	return errs
+}
+
+func uniq(s []uint32) []uint32 {
+	seen := make(map[uint32]struct{})
+	var result []uint32
+
+	for _, k := range s {
+		if _, ok := seen[k]; !ok {
+			seen[k] = struct{}{}
+			result = append(result, k)
+		}
+	}
+	return result
+}
+
+func checkLabelHasMultipleTTLs(records []*models.RecordConfig) (errs []error) {
+	m := make(map[string][]uint32)
+	for _, r := range records {
+		label := fmt.Sprintf("%s %s", r.GetLabelFQDN(), r.Type)
+
+		// collect the TTLs at this label.
+		m[label] = append(m[label], r.TTL)
+	}
+
+	for label := range m {
+		// if after the uniq() pass we still have more than one ttl, it means we have multiple TTLs for that label
+		if len(uniq(m[label])) > 1 {
+			errs = append(errs, Warning{fmt.Errorf("multiple TTLs detected for: %s. This should be avoided.", label)})
+		}
 	}
 	return errs
 }

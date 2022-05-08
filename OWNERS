@@ -3,7 +3,7 @@ providers/akamaiedgedns @svernick
 providers/axfrddns @hnrgrgr
 providers/azuredns @vatsalyagoel
 providers/bind @tlimoncelli
-# providers/cloudflare NEEDS VOLUNTEER
+providers/cloudflare @tresni
 providers/cloudns @pragmaton
 providers/cscglobal @mikenz
 providers/desec @D3luxee
@@ -13,7 +13,7 @@ providers/dnsimple @aeden
 providers/dnsmadeeasy @vojtad
 providers/easyname @tresni
 providers/gandi_v5 @TomOnTime
-# providers/gcloud
+# providers/gcloud NEEDS VOLUNTEER
 providers/hedns @rblenkinsopp
 providers/hetzner @das7pad
 providers/hexonet @papakai
@@ -28,7 +28,7 @@ providers/netcup @kordianbruck
 providers/ns1 @costasd
 providers/opensrs @philhug
 providers/oracle @kallsyms
-# providers/route53 NEEDS VOLUNTEER
+providers/route53 @tresni
 # providers/softlayer NEEDS VOLUNTEER
 providers/vultr @pgaskin
 providers/ovh @masterzen

@@ -4,8 +4,8 @@
 
 // Providers:
 
-var REG_NONE = NewRegistrar('none', 'NONE');    // No registrar.
-var DNS_BIND = NewDnsProvider('bind', 'BIND');  // ISC BIND.
+var REG_NONE = NewRegistrar('none');    // No registrar.
+var DNS_BIND = NewDnsProvider('bind');  // ISC BIND.
 
 // Domains:
 

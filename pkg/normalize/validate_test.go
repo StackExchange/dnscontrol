@@ -2,6 +2,7 @@ package normalize
 
 import (
 	"fmt"
+	"reflect"
 	"testing"
 
 	"github.com/StackExchange/dnscontrol/v3/models"
@@ -329,6 +330,40 @@ func TestCheckDuplicates_dup_ns(t *testing.T) {
 	errs := checkDuplicates(records)
 	if len(errs) == 0 {
 		t.Error("Expect duplicate found but found none")
+	}
+}
+
+func TestUniq(t *testing.T) {
+	a := []uint32 {1, 2, 2, 3, 4, 5, 5, 6}
+	expected := []uint32 {1, 2, 3, 4, 5, 6}
+
+	r := uniq(a)
+	if !reflect.DeepEqual(r, expected) {
+		t.Error("Deduplicated slice is different than expected")
+	}
+}
+
+func TestCheckLabelHasMultipleTTLs(t *testing.T) {
+	records := []*models.RecordConfig{
+		// different ttl per record
+		makeRC("zzz", "example.com", "4.4.4.4", models.RecordConfig{Type: "A", TTL: 111}),
+		makeRC("zzz", "example.com", "4.4.4.5", models.RecordConfig{Type: "A", TTL: 222}),
+	}
+	errs := checkLabelHasMultipleTTLs(records)
+	if len(errs) == 0 {
+		t.Error("Expected error on multiple TTLs under the same label, but got none")
+	}
+}
+
+func TestCheckLabelHasNoMultipleTTLs(t *testing.T) {
+	records := []*models.RecordConfig{
+		// different ttl per record
+		makeRC("zzz", "example.com", "4.4.4.4", models.RecordConfig{Type: "A", TTL: 111}),
+		makeRC("zzz", "example.com", "4.4.4.5", models.RecordConfig{Type: "A", TTL: 111}),
+	}
+	errs := checkLabelHasMultipleTTLs(records)
+	if len(errs) != 0 {
+		t.Errorf("Expected 0 errors on records having the same TTL under the same label, but got %d", len(errs))
 	}
 }
 

@@ -3,6 +3,7 @@ package commands
 import (
 	"fmt"
 
+	"github.com/StackExchange/dnscontrol/v3/pkg/credsfile"
 	"github.com/StackExchange/dnscontrol/v3/providers"
 	"github.com/urfave/cli/v2"
 )
@@ -37,7 +38,11 @@ func CreateDomains(args CreateDomainsArgs) error {
 	if err != nil {
 		return err
 	}
-	_, err = InitializeProviders(args.CredsFile, cfg, false)
+	providerConfigs, err := credsfile.LoadProviderConfigs(args.CredsFile)
+	if err != nil {
+		return err
+	}
+	_, err = InitializeProviders(cfg, providerConfigs, false)
 	if err != nil {
 		return err
 	}
