@@ -19,6 +19,7 @@ Currently supported DNS providers:
  - AXFR+DDNS
  - Active Directory (Deprecated, see Microsoft DNS)
  - Akamai Edge DNS
+ - AutoDNS
  - Azure DNS
  - BIND
  - ClouDNS

@@ -1,5 +1,6 @@
 # providers/activedir  DEPRECATED
 providers/akamaiedgedns @svernick
+providers/autodns @arnoschoon
 providers/axfrddns @hnrgrgr
 providers/azuredns @vatsalyagoel
 providers/bind @tlimoncelli
@@ -7,10 +8,10 @@ providers/cloudflare @tresni
 providers/cloudns @pragmaton
 providers/cscglobal @mikenz
 providers/desec @D3luxee
-providers/doh @mikenz
 providers/digitalocean @Deraen
 providers/dnsimple @aeden
 providers/dnsmadeeasy @vojtad
+providers/doh @mikenz
 providers/easyname @tresni
 providers/gandi_v5 @TomOnTime
 # providers/gcloud NEEDS VOLUNTEER
