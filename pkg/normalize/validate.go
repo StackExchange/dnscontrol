@@ -467,6 +467,12 @@ func ValidateAndNormalizeConfig(config *models.DNSConfig) (errs []error) {
 	// Let's ask the provider if there are any records they can't handle.
 	for _, domain := range config.Domains { // For each domain..
 		for _, provider := range domain.DNSProviderInstances { // For each provider...
+			if provider.ProviderBase.ProviderType == "-" {
+				// The point of "dnscontrol check" is that it doesn't require
+				// creds.json.  Since the ProviderType is in creds.json, these
+				// pre-providerType checks must be skipped.
+				continue
+			}
 			if err := providers.AuditRecords(provider.ProviderBase.ProviderType, domain.Records); err != nil {
 				errs = append(errs, err)
 			}
