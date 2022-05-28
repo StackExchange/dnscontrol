@@ -57,6 +57,11 @@ func LoadProviderConfigs(fname string) (map[string]map[string]string, error) {
 		if err != nil {
 			return nil, err
 		}
+	} else if strings.HasPrefix(fname, "@") {
+		dat, err = executeCredsCommand(strings.TrimPrefix(fname, "@"))
+		if err != nil {
+			return nil, err
+		}
 	} else {
 		// no executable bit found nor marked as executable so read it in
 		dat, err = readCredsFile(fname)
@@ -108,6 +113,13 @@ func readCredsFile(filename string) ([]byte, error) {
 		return nil, fmt.Errorf("failed reading provider credentials file %v: %v", filename, err)
 	}
 	return dat, nil
+}
+
+func executeCredsCommand(filename string) ([]byte, error) {
+	cmd := strings.Fields(filename)
+	args := cmd[1:]
+	out, err := exec.Command(cmd[0], args...).Output()
+	return out, err
 }
 
 func executeCredsFile(filename string) ([]byte, error) {
