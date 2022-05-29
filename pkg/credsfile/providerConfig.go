@@ -14,6 +14,7 @@ import (
 
 	"github.com/DisposaBoy/JsonConfigReader"
 	"github.com/TomOnTime/utfutil"
+	"github.com/google/shlex"
 )
 
 func quotedList(l []string) string {
@@ -116,10 +117,14 @@ func readCredsFile(filename string) ([]byte, error) {
 }
 
 func executeCredsCommand(filename string) ([]byte, error) {
-	cmd := strings.Fields(filename)
+	cmd, err := shlex.Split(filename)
+	if err != nil {
+		fmt.Printf("INFO: failed parsing executable path")
+	}
 	args := cmd[1:]
 	out, err := exec.Command(cmd[0], args...).Output()
 	return out, err
+
 }
 
 func executeCredsFile(filename string) ([]byte, error) {
