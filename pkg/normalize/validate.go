@@ -301,6 +301,15 @@ func ValidateAndNormalizeConfig(config *models.DNSConfig) (errs []error) {
 		pTypes := []string{}
 		for _, provider := range domain.DNSProviderInstances {
 			pType := provider.ProviderType
+			if pType == "-" {
+				// "-" indicates that we don't yet know who the provider type
+				// is.  This is probably due to the fact that `dnscontrol
+				// check` doesn't read creds.json, which is where the TYPE is
+				// set.  We will skip this test in this instance.  Later if
+				// `dnscontrol preview` or `push` is used, the full check will
+				// be performed.
+				continue
+			}
 			// If NO_PURGE is in use, make sure this *isn't* a provider that *doesn't* support NO_PURGE.
 			if domain.KeepUnknown && providers.ProviderHasCapability(pType, providers.CantUseNOPURGE) {
 				errs = append(errs, fmt.Errorf("%s uses NO_PURGE which is not supported by %s(%s)", domain.Name, provider.Name, pType))
@@ -468,9 +477,12 @@ func ValidateAndNormalizeConfig(config *models.DNSConfig) (errs []error) {
 	for _, domain := range config.Domains { // For each domain..
 		for _, provider := range domain.DNSProviderInstances { // For each provider...
 			if provider.ProviderBase.ProviderType == "-" {
-				// The point of "dnscontrol check" is that it doesn't require
-				// creds.json.  Since the ProviderType is in creds.json, these
-				// pre-providerType checks must be skipped.
+				// "-" indicates that we don't yet know who the provider type
+				// is.  This is probably due to the fact that `dnscontrol
+				// check` doesn't read creds.json, which is where the TYPE is
+				// set.  We will skip this test in this instance.  Later if
+				// `dnscontrol preview` or `push` is used, the full check will
+				// be performed.
 				continue
 			}
 			if err := providers.AuditRecords(provider.ProviderBase.ProviderType, domain.Records); err != nil {
@@ -693,6 +705,15 @@ func checkProviderCapabilities(dc *models.DomainConfig) error {
 			continue
 		}
 		for _, provider := range dc.DNSProviderInstances {
+			if provider.ProviderType == "-" {
+				// "-" indicates that we don't yet know who the provider type
+				// is.  This is probably due to the fact that `dnscontrol
+				// check` doesn't read creds.json, which is where the TYPE is
+				// set.  We will skip this test in this instance.  Later if
+				// `dnscontrol preview` or `push` is used, the full check will
+				// be performed.
+				continue
+			}
 			// fmt.Printf("  (checking if %q can %q for domain %q)\n", provider.ProviderType, ty.rType, dc.Name)
 			if !providerHasAtLeastOneCapability(provider.ProviderType, ty.caps...) {
 				return fmt.Errorf("domain %s uses %s records, but DNS provider type %s does not support them", dc.Name, ty.rType, provider.ProviderType)
