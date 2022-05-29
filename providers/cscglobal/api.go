@@ -180,65 +180,65 @@ func (client *providerClient) getDomains() ([]string, error) {
 }
 
 type nativeRecordA = struct {
-	ID     string      `json:"id"`
-	Key    string      `json:"key"`
-	Value  string      `json:"value"`
-	TTL    interface{} `json:"ttl"`
-	Status string      `json:"status"`
-}
-type nativeRecordAAAA = struct {
-	ID     string      `json:"id"`
-	Key    string      `json:"key"`
-	Value  string      `json:"value"`
-	TTL    interface{} `json:"ttl"`
-	Status string      `json:"status"`
-}
-type nativeRecordTXT = struct {
-	ID     string      `json:"id"`
-	Key    string      `json:"key"`
-	Value  string      `json:"value"`
-	TTL    interface{} `json:"ttl"`
-	Status string      `json:"status"`
-}
-type nativeRecordMX = struct {
-	ID       string      `json:"id"`
-	Key      string      `json:"key"`
-	Value    string      `json:"value"`
-	TTL      interface{} `json:"ttl"`
-	Status   string      `json:"status"`
-	Priority int         `json:"priority"`
+	ID     string `json:"id"`
+	Key    string `json:"key"`
+	Value  string `json:"value"`
+	TTL    int    `json:"ttl"`
+	Status string `json:"status"`
 }
 type nativeRecordCNAME = struct {
-	ID       string      `json:"id"`
-	Key      string      `json:"key"`
-	Value    string      `json:"value"`
-	TTL      interface{} `json:"ttl"`
-	Status   string      `json:"status"`
-	Priority int         `json:"priority"`
+	ID     string `json:"id"`
+	Key    string `json:"key"`
+	Value  string `json:"value"`
+	TTL    int    `json:"ttl"`
+	Status string `json:"status"`
+}
+type nativeRecordAAAA = struct {
+	ID     string `json:"id"`
+	Key    string `json:"key"`
+	Value  string `json:"value"`
+	TTL    int    `json:"ttl"`
+	Status string `json:"status"`
+}
+type nativeRecordTXT = struct {
+	ID     string `json:"id"`
+	Key    string `json:"key"`
+	Value  string `json:"value"`
+	TTL    int    `json:"ttl"`
+	Status string `json:"status"`
+}
+type nativeRecordMX = struct {
+	ID       string `json:"id"`
+	Key      string `json:"key"`
+	Value    string `json:"value"`
+	TTL      int    `json:"ttl"`
+	Status   string `json:"status"`
+	Priority int    `json:"priority"`
 }
 type nativeRecordNS = struct {
-	ID       string      `json:"id"`
-	Key      string      `json:"key"`
-	Value    string      `json:"value"`
-	TTL      interface{} `json:"ttl"`
-	Status   string      `json:"status"`
-	Priority int         `json:"priority"`
+	ID       string `json:"id"`
+	Key      string `json:"key"`
+	Value    string `json:"value"`
+	TTL      int    `json:"ttl"`
+	Status   string `json:"status"`
+	Priority int    `json:"priority"`
 }
 type nativeRecordSRV = struct {
-	ID       string      `json:"id"`
-	Key      string      `json:"key"`
-	Value    string      `json:"value"`
-	TTL      interface{} `json:"ttl"`
-	Status   string      `json:"status"`
-	Priority int         `json:"priority"`
+	ID       string `json:"id"`
+	Key      string `json:"key"`
+	Value    string `json:"value"`
+	TTL      int    `json:"ttl"`
+	Status   string `json:"status"`
+	Priority int    `json:"priority"`
+	weight   int    `json:"weight"`
 }
 type nativeRecordCAA = struct {
-	ID       string      `json:"id"`
-	Key      string      `json:"key"`
-	Value    string      `json:"value"`
-	TTL      interface{} `json:"ttl"`
-	Status   string      `json:"status"`
-	Priority int         `json:"priority"`
+	ID       string `json:"id"`
+	Key      string `json:"key"`
+	Value    string `json:"value"`
+	TTL      int    `json:"ttl"`
+	Status   string `json:"status"`
+	Priority int    `json:"priority"`
 }
 type nativeRecordSOA = struct {
 	Serial     int    `json:"serial"`
