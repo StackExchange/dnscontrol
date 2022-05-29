@@ -9,8 +9,8 @@ import (
 )
 
 // GetRegistrarCorrections gathers corrections that would being n to match dc.
-func (c *cscglobalProvider) GetRegistrarCorrections(dc *models.DomainConfig) ([]*models.Correction, error) {
-	nss, err := c.getNameservers(dc.Name)
+func (client *providerClient) GetRegistrarCorrections(dc *models.DomainConfig) ([]*models.Correction, error) {
+	nss, err := client.getNameservers(dc.Name)
 	if err != nil {
 		return nil, err
 	}
@@ -33,7 +33,7 @@ func (c *cscglobalProvider) GetRegistrarCorrections(dc *models.DomainConfig) ([]
 			{
 				Msg: fmt.Sprintf("Update nameservers %s -> %s", foundNameservers, expectedNameservers),
 				F: func() error {
-					return c.updateNameservers(expected, dc.Name)
+					return client.updateNameservers(expected, dc.Name)
 				},
 			},
 		}, nil

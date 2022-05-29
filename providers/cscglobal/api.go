@@ -13,12 +13,6 @@ const apiBase = "https://apis.cscglobal.com/dbs/api/v2"
 
 // Api layer for CSC Global
 
-type cscglobalProvider struct {
-	key          string
-	token        string
-	notifyEmails []string
-}
-
 type requestParams map[string]string
 
 type errorResponse struct {
@@ -55,8 +49,8 @@ type domainRecord struct {
 	Nameserver []string `json:"nameservers"`
 }
 
-func (c *cscglobalProvider) getNameservers(domain string) ([]string, error) {
-	var bodyString, err = c.get("/domains/" + domain)
+func (client *providerClient) getNameservers(domain string) ([]string, error) {
+	var bodyString, err = client.get("/domains/" + domain)
 	if err != nil {
 		return nil, err
 	}
@@ -69,16 +63,16 @@ func (c *cscglobalProvider) getNameservers(domain string) ([]string, error) {
 	return ns, nil
 }
 
-func (c *cscglobalProvider) updateNameservers(ns []string, domain string) error {
+func (client *providerClient) updateNameservers(ns []string, domain string) error {
 	req := nsModRequest{
 		Domain:      domain,
 		NameServers: ns,
 		DNSType:     "OTHER_DNS",
 		ShowPrice:   false,
 	}
-	if c.notifyEmails != nil {
+	if client.notifyEmails != nil {
 		req.Notifications.Enabled = true
-		req.Notifications.Emails = c.notifyEmails
+		req.Notifications.Emails = client.notifyEmails
 	}
 	req.CustomFields = []string{}
 
@@ -87,7 +81,7 @@ func (c *cscglobalProvider) updateNameservers(ns []string, domain string) error 
 		return err
 	}
 
-	bodyString, err := c.put("/domains/nsmodification", requestBody)
+	bodyString, err := client.put("/domains/nsmodification", requestBody)
 	if err != nil {
 		return fmt.Errorf("CSC Global: Error update NS : %w", err)
 	}
@@ -101,17 +95,208 @@ func (c *cscglobalProvider) updateNameservers(ns []string, domain string) error 
 	return nil
 }
 
-func (c *cscglobalProvider) put(endpoint string, requestBody []byte) ([]byte, error) {
-	client := &http.Client{}
+// DomainsResult is the JSON returned by "/domains".  Fields we don't
+// use are commented out.
+type DomainsResult struct {
+	Meta struct {
+		NumResults int `json:"numResults"`
+		Pages      int `json:"pages"`
+	} `json:"meta"`
+	Domains []struct {
+		QualifiedDomainName string `json:"qualifiedDomainName"`
+		//		Domain                   string        `json:"domain"`
+		//		Idn                      string        `json:"idn"`
+		//		Extension                string        `json:"extension"`
+		//		NewGtld                  bool          `json:"newGtld"`
+		//		ManagedStatus            string        `json:"managedStatus"`
+		//		RegistrationDate         string        `json:"registrationDate"`
+		//		RegistryExpiryDate       string        `json:"registryExpiryDate"`
+		//		PaidThroughDate          string        `json:"paidThroughDate"`
+		//		CountryCode              string        `json:"countryCode"`
+		//		ServerDeleteProhibited   bool          `json:"serverDeleteProhibited"`
+		//		ServerTransferProhibited bool          `json:"serverTransferProhibited"`
+		//		ServerUpdateProhibited   bool          `json:"serverUpdateProhibited"`
+		//		DNSType                  string        `json:"dnsType"`
+		//		WhoisPrivacy             bool          `json:"whoisPrivacy"`
+		//		LocalAgent               bool          `json:"localAgent"`
+		//		DnssecActivated          string        `json:"dnssecActivated"`
+		//		CriticalDomain           bool          `json:"criticalDomain"`
+		//		BusinessUnit             string        `json:"businessUnit"`
+		//		BrandName                string        `json:"brandName"`
+		//		IdnReferenceName         string        `json:"idnReferenceName"`
+		//		CustomFields             []interface{} `json:"customFields"`
+		//		Account                  struct {
+		//			AccountNumber string `json:"accountNumber"`
+		//			AccountName   string `json:"accountName"`
+		//		} `json:"account"`
+		//		Urlf struct {
+		//			RedirectType  string `json:"redirectType"`
+		//			URLForwarding bool   `json:"urlForwarding"`
+		//		} `json:"urlf"`
+		//		NameServers   []string `json:"nameServers"`
+		//		WhoisContacts []struct {
+		//			ContactType   string `json:"contactType"`
+		//			FirstName     string `json:"firstName"`
+		//			LastName      string `json:"lastName"`
+		//			Organization  string `json:"organization"`
+		//			Street1       string `json:"street1"`
+		//			Street2       string `json:"street2"`
+		//			City          string `json:"city"`
+		//			StateProvince string `json:"stateProvince"`
+		//			Country       string `json:"country"`
+		//			PostalCode    string `json:"postalCode"`
+		//			Email         string `json:"email"`
+		//			Phone         string `json:"phone"`
+		//			PhoneExtn     string `json:"phoneExtn"`
+		//			Fax           string `json:"fax"`
+		//		} `json:"whoisContacts"`
+		//		LastModifiedDate        string `json:"lastModifiedDate"`
+		//		LastModifiedReason      string `json:"lastModifiedReason"`
+		//		LastModifiedDescription string `json:"lastModifiedDescription"`
+	} `json:"domains"`
+	//	Links struct {
+	//		Self string `json:"self"`
+	//	} `json:"links"`
+}
+
+func (client *providerClient) getDomains() ([]string, error) {
+	var bodyString, err = client.get("/domains")
+	if err != nil {
+		return nil, err
+	}
+
+	fmt.Printf("------------------\n")
+	fmt.Printf("BODYSTRING = %s\n", bodyString)
+	fmt.Printf("------------------\n")
+
+	var dr DomainsResult
+	json.Unmarshal(bodyString, &dr)
+
+	fmt.Printf("------------------\n")
+	fmt.Printf("DR = %+v\n", dr)
+	fmt.Printf("------------------\n")
+
+	return nil, nil
+}
+
+type nativeRecordA = struct {
+	ID     string      `json:"id"`
+	Key    string      `json:"key"`
+	Value  string      `json:"value"`
+	TTL    interface{} `json:"ttl"`
+	Status string      `json:"status"`
+}
+type nativeRecordAAAA = struct {
+	ID     string      `json:"id"`
+	Key    string      `json:"key"`
+	Value  string      `json:"value"`
+	TTL    interface{} `json:"ttl"`
+	Status string      `json:"status"`
+}
+type nativeRecordTXT = struct {
+	ID     string      `json:"id"`
+	Key    string      `json:"key"`
+	Value  string      `json:"value"`
+	TTL    interface{} `json:"ttl"`
+	Status string      `json:"status"`
+}
+type nativeRecordMX = struct {
+	ID       string      `json:"id"`
+	Key      string      `json:"key"`
+	Value    string      `json:"value"`
+	TTL      interface{} `json:"ttl"`
+	Status   string      `json:"status"`
+	Priority int         `json:"priority"`
+}
+type nativeRecordCNAME = struct {
+	ID       string      `json:"id"`
+	Key      string      `json:"key"`
+	Value    string      `json:"value"`
+	TTL      interface{} `json:"ttl"`
+	Status   string      `json:"status"`
+	Priority int         `json:"priority"`
+}
+type nativeRecordNS = struct {
+	ID       string      `json:"id"`
+	Key      string      `json:"key"`
+	Value    string      `json:"value"`
+	TTL      interface{} `json:"ttl"`
+	Status   string      `json:"status"`
+	Priority int         `json:"priority"`
+}
+type nativeRecordSRV = struct {
+	ID       string      `json:"id"`
+	Key      string      `json:"key"`
+	Value    string      `json:"value"`
+	TTL      interface{} `json:"ttl"`
+	Status   string      `json:"status"`
+	Priority int         `json:"priority"`
+}
+type nativeRecordCAA = struct {
+	ID       string      `json:"id"`
+	Key      string      `json:"key"`
+	Value    string      `json:"value"`
+	TTL      interface{} `json:"ttl"`
+	Status   string      `json:"status"`
+	Priority int         `json:"priority"`
+}
+type nativeRecordSOA = struct {
+	Serial     int    `json:"serial"`
+	Refresh    int    `json:"refresh"`
+	Retry      int    `json:"retry"`
+	Expire     int    `json:"expire"`
+	TTLMin     int    `json:"ttlMin"`
+	TTLNeg     int    `json:"ttlNeg"`
+	TTLZone    int    `json:"ttlZone"`
+	TechEmail  string `json:"techEmail"`
+	MasterHost string `json:"masterHost"`
+}
+
+type zoneResponse struct {
+	ZoneName    string              `json:"zoneName"`
+	HostingType string              `json:"hostingType"`
+	A           []nativeRecordA     `json:"a"`
+	Cname       []nativeRecordCNAME `json:"cname"`
+	Aaaa        []nativeRecordAAAA  `json:"aaaa"`
+	Txt         []nativeRecordTXT   `json:"txt"`
+	Mx          []nativeRecordMX    `json:"mx"`
+	Ns          []nativeRecordNS    `json:"ns"`
+	Srv         []nativeRecordSRV   `json:"srv"`
+	Caa         []nativeRecordCAA   `json:"caa"`
+	Soa         []nativeRecordSOA   `json:"soa"`
+}
+
+func (client *providerClient) getZoneRecordsAll(zone string) (*zoneResponse, error) {
+	var bodyString, err = client.get("/zones/" + zone)
+	if err != nil {
+		return nil, err
+	}
+
+	fmt.Printf("------------------\n")
+	fmt.Printf("BODYSTRING = %s\n", bodyString)
+	fmt.Printf("------------------\n")
+
+	var dr zoneResponse
+	json.Unmarshal(bodyString, &dr)
+
+	fmt.Printf("------------------\n")
+	fmt.Printf("DR = %+v\n", dr)
+	fmt.Printf("------------------\n")
+
+	return &dr, nil
+}
+
+func (client *providerClient) put(endpoint string, requestBody []byte) ([]byte, error) {
+	hclient := &http.Client{}
 	req, _ := http.NewRequest("PUT", apiBase+endpoint, bytes.NewReader(requestBody))
 
 	// Add headers
-	req.Header.Add("apikey", c.key)
-	req.Header.Add("Authorization", "Bearer "+c.token)
+	req.Header.Add("apikey", client.key)
+	req.Header.Add("Authorization", "Bearer "+client.token)
 	req.Header.Add("Accept", "application/json")
 	req.Header.Add("Content-Type", "application/json")
 
-	resp, err := client.Do(req)
+	resp, err := hclient.Do(req)
 	if err != nil {
 		return nil, err
 	}
@@ -135,16 +320,16 @@ func (c *cscglobalProvider) put(endpoint string, requestBody []byte) ([]byte, er
 		req.Host, req.URL.RequestURI())
 }
 
-func (c *cscglobalProvider) get(endpoint string) ([]byte, error) {
-	client := &http.Client{}
+func (client *providerClient) get(endpoint string) ([]byte, error) {
+	hclient := &http.Client{}
 	req, _ := http.NewRequest("GET", apiBase+endpoint, nil)
 
 	// Add headers
-	req.Header.Add("apikey", c.key)
-	req.Header.Add("Authorization", "Bearer "+c.token)
+	req.Header.Add("apikey", client.key)
+	req.Header.Add("Authorization", "Bearer "+client.token)
 	req.Header.Add("Accept", "application/json")
 
-	resp, err := client.Do(req)
+	resp, err := hclient.Do(req)
 	if err != nil {
 		return nil, err
 	}

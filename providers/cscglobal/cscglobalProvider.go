@@ -1,6 +1,7 @@
 package cscglobal
 
 import (
+	"encoding/json"
 	"fmt"
 	"strings"
 
@@ -17,12 +18,27 @@ Info required in `creds.json`:
    - notification_emails (optional) Comma separated list of email addresses to send notifications to
 */
 
-func init() {
-	providers.RegisterRegistrarType("CSCGLOBAL", newCscGlobal)
+type providerClient struct {
+	key          string
+	token        string
+	notifyEmails []string
 }
 
-func newCscGlobal(m map[string]string) (providers.Registrar, error) {
-	api := &cscglobalProvider{}
+var features = providers.DocumentationNotes{
+	providers.CanGetZones:            providers.Can(),
+	providers.DocOfficiallySupported: providers.Can(),
+}
+
+func newReg(conf map[string]string) (providers.Registrar, error) {
+	return newProvider(conf)
+}
+
+func newDsp(conf map[string]string, meta json.RawMessage) (providers.DNSServiceProvider, error) {
+	return newProvider(conf)
+}
+
+func newProvider(m map[string]string) (*providerClient, error) {
+	api := &providerClient{}
 
 	api.key, api.token = m["api-key"], m["user-token"]
 	if api.key == "" || api.token == "" {
@@ -34,4 +50,14 @@ func newCscGlobal(m map[string]string) (providers.Registrar, error) {
 	}
 
 	return api, nil
+}
+
+func init() {
+	providers.RegisterRegistrarType("CSCGLOBAL", newReg)
+
+	fns := providers.DspFuncs{
+		Initializer:   newDsp,
+		RecordAuditor: AuditRecords,
+	}
+	providers.RegisterDomainServiceProviderType("CSCGLOBAL", fns, features)
 }
