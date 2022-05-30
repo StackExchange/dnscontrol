@@ -39,11 +39,12 @@ func (client *providerClient) GetZoneRecords(domain string) (models.Records, err
 	// Option 3: Something else.  In this case, we get a big massive structure
 	// which needs to be broken up.  Still, we're returning a list of
 	// RecordConfig structures.
+	defaultTTL := records.Soa.TTL
 	for _, rr := range records.A {
-		existingRecords = append(existingRecords, nativeToRecordA(rr, domain))
+		existingRecords = append(existingRecords, nativeToRecordA(rr, domain, defaultTTL))
 	}
 	for _, rr := range records.Mx {
-		existingRecords = append(existingRecords, nativeToRecordMX(rr, domain))
+		existingRecords = append(existingRecords, nativeToRecordMX(rr, domain, defaultTTL))
 	}
 
 	return existingRecords, nil
@@ -139,13 +140,23 @@ func (client *providerClient) GenerateDomainCorrections(dc *models.DomainConfig,
 		descriptions = append(descriptions, m.String())
 	}
 	corrections := []*models.Correction{}
-	c := &models.Correction{
-		Msg: strings.Join(descriptions, "\n\t"),
-		F: func() error {
-			return client.SendZoneEditRequest(dc.Name, edits)
-		},
+	if len(edits) > 0 {
+		c := &models.Correction{
+			Msg: "\t" + strings.Join(descriptions, "\n\t"),
+			F: func() error {
+				// CSCGlobal only permits one pending request at a time; pending
+				// requests includes failed requests waiting for a human to
+				// acknowledge the failure and delete the request.  Therefore, we
+				// cancel any pending requests. What a stupid API decision.
+				err := client.ClearRequests(dc.Name)
+				if err != nil {
+					return err
+				}
+				return client.SendZoneEditRequest(dc.Name, edits)
+			},
+		}
+		corrections = append(corrections, c)
 	}
-	corrections = append(corrections, c)
 	return corrections, nil
 }
 
@@ -160,21 +171,55 @@ func makePurge(domainname string, cor diff.Correlation) ZoneResourceRecordEdit {
 }
 
 func makeAdd(domainname string, cre diff.Correlation) ZoneResourceRecordEdit {
+	rec := cre.Desired
 	zer := ZoneResourceRecordEdit{
-		Action:       "ADD",
-		RecordType:   cre.Existing.Type,
-		CurrentKey:   cre.Existing.Name,
-		CurrentValue: cre.Existing.GetTargetField(),
+		Action:     "ADD",
+		RecordType: rec.Type,
+		NewKey:     rec.Name,
+		NewValue:   rec.GetTargetField(),
+		NewTTL:     rec.TTL,
 	}
 	return zer
 }
 
 func makeEdit(domainname string, m diff.Correlation) ZoneResourceRecordEdit {
+	old, rec := m.Existing, m.Desired
+	// TODO: Assert that old.Type == rec.Type
+	// TODO: Assert that old.Name == rec.Name
 	zer := ZoneResourceRecordEdit{
 		Action:       "EDIT",
-		RecordType:   m.Existing.Type,
-		CurrentKey:   m.Existing.Name,
-		CurrentValue: m.Existing.GetTargetField(),
+		RecordType:   old.Type,
+		CurrentKey:   old.Name,
+		CurrentValue: old.GetTargetField(),
+	}
+	if old.GetTargetField() != rec.GetTargetField() {
+		zer.NewValue = rec.GetTargetField()
+	}
+	if old.TTL != rec.TTL {
+		zer.NewTTL = rec.TTL
+	}
+
+	switch old.Type {
+	case "A", "CNAME", "NS", "TXT":
+		// Nothing to do.
+
+	case "CAA":
+		zer.CurrentTag = old.CaaTag
+		if old.CaaTag != rec.CaaTag {
+			zer.NewTag = rec.CaaTag
+		}
+		if old.CaaFlag != rec.CaaFlag {
+			zer.NewFlag = rec.CaaFlag
+		}
+
+	case "MX":
+		if old.MxPreference != rec.MxPreference {
+			zer.NewPriority = rec.MxPreference
+		}
+
+	default:
+		panic(fmt.Sprintf("CSC Not implemented: %s\n", old.Type))
+
 	}
 	// TODO(tlim): Depending on the rType, we will have to set different fields.
 	return zer

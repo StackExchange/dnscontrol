@@ -9,10 +9,14 @@ import (
 )
 
 // nativeToRecordA takes an A record from DNS and returns a native RecordConfig struct.
-func nativeToRecordA(nr nativeRecordA, origin string) *models.RecordConfig {
+func nativeToRecordA(nr nativeRecordA, origin string, defaultTTL uint32) *models.RecordConfig {
+	ttl := nr.TTL
+	if ttl == 0 {
+		ttl = defaultTTL
+	}
 	rc := &models.RecordConfig{
 		Type: "A",
-		TTL:  nr.TTL,
+		TTL:  ttl,
 	}
 	rc.SetLabel(nr.Key, origin)
 	rc.SetTargetIP(net.ParseIP(nr.Value).To4())
@@ -20,10 +24,14 @@ func nativeToRecordA(nr nativeRecordA, origin string) *models.RecordConfig {
 }
 
 // nativeToRecordCNAME takes a CNAME record from DNS and returns a native RecordConfig struct.
-func nativeToRecordCNAME(nr nativeRecordCNAME, origin string) *models.RecordConfig {
+func nativeToRecordCNAME(nr nativeRecordCNAME, origin string, defaultTTL uint32) *models.RecordConfig {
+	ttl := nr.TTL
+	if ttl == 0 {
+		ttl = defaultTTL
+	}
 	rc := &models.RecordConfig{
 		Type: "CNAME",
-		TTL:  nr.TTL,
+		TTL:  ttl,
 	}
 	rc.SetLabel(nr.Key, origin)
 	rc.SetTarget(nr.Value)
@@ -31,10 +39,14 @@ func nativeToRecordCNAME(nr nativeRecordCNAME, origin string) *models.RecordConf
 }
 
 // nativeToRecordA takes an AAAA record from DNS and returns a native RecordConfig struct.
-func nativeToRecordAAAA(nr nativeRecordAAAA, origin string) *models.RecordConfig {
+func nativeToRecordAAAA(nr nativeRecordAAAA, origin string, defaultTTL uint32) *models.RecordConfig {
+	ttl := nr.TTL
+	if ttl == 0 {
+		ttl = defaultTTL
+	}
 	rc := &models.RecordConfig{
 		Type: "AAAA",
-		TTL:  nr.TTL,
+		TTL:  ttl,
 	}
 	rc.SetLabel(nr.Key, origin)
 	rc.SetTargetIP(net.ParseIP(nr.Value).To16())
@@ -42,10 +54,14 @@ func nativeToRecordAAAA(nr nativeRecordAAAA, origin string) *models.RecordConfig
 }
 
 // nativeToRecordTXT takes a TXT record from DNS and returns a native RecordConfig struct.
-func nativeToRecordTXT(nr nativeRecordTXT, origin string) *models.RecordConfig {
+func nativeToRecordTXT(nr nativeRecordTXT, origin string, defaultTTL uint32) *models.RecordConfig {
+	ttl := nr.TTL
+	if ttl == 0 {
+		ttl = defaultTTL
+	}
 	rc := &models.RecordConfig{
 		Type: "TXT",
-		TTL:  nr.TTL,
+		TTL:  ttl,
 	}
 	rc.SetLabel(nr.Key, origin)
 	rc.SetTarget(nr.Value)
@@ -53,10 +69,14 @@ func nativeToRecordTXT(nr nativeRecordTXT, origin string) *models.RecordConfig {
 }
 
 // nativeToRecordMX takes a MX record from DNS and returns a native RecordConfig struct.
-func nativeToRecordMX(nr nativeRecordMX, origin string) *models.RecordConfig {
+func nativeToRecordMX(nr nativeRecordMX, origin string, defaultTTL uint32) *models.RecordConfig {
+	ttl := nr.TTL
+	if ttl == 0 {
+		ttl = defaultTTL
+	}
 	rc := &models.RecordConfig{
 		Type: "MX",
-		TTL:  nr.TTL,
+		TTL:  ttl,
 	}
 	rc.SetLabel(nr.Key, origin)
 	rc.SetTargetMX(nr.Priority, nr.Value)
@@ -64,10 +84,14 @@ func nativeToRecordMX(nr nativeRecordMX, origin string) *models.RecordConfig {
 }
 
 // nativeToRecordNS takes a NS record from DNS and returns a native RecordConfig struct.
-func nativeToRecordNS(nr nativeRecordNS, origin string) *models.RecordConfig {
+func nativeToRecordNS(nr nativeRecordNS, origin string, defaultTTL uint32) *models.RecordConfig {
+	ttl := nr.TTL
+	if ttl == 0 {
+		ttl = defaultTTL
+	}
 	rc := &models.RecordConfig{
 		Type: "NS",
-		TTL:  nr.TTL,
+		TTL:  ttl,
 	}
 	rc.SetLabel(nr.Key, origin)
 	rc.SetTarget(nr.Value)
@@ -75,10 +99,14 @@ func nativeToRecordNS(nr nativeRecordNS, origin string) *models.RecordConfig {
 }
 
 // nativeToRecordSRV takes a SRV record from DNS and returns a native RecordConfig struct.
-func nativeToRecordSRV(nr nativeRecordSRV, origin string) *models.RecordConfig {
+func nativeToRecordSRV(nr nativeRecordSRV, origin string, defaultTTL uint32) *models.RecordConfig {
+	ttl := nr.TTL
+	if ttl == 0 {
+		ttl = defaultTTL
+	}
 	rc := &models.RecordConfig{
 		Type: "SRV",
-		TTL:  nr.TTL,
+		TTL:  ttl,
 	}
 	rc.SetLabel(nr.Key, origin)
 	rc.SetTargetSRV(nr.Priority, nr.Weight, nr.Port, nr.Value)
