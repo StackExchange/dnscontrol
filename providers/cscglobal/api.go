@@ -165,61 +165,70 @@ func (client *providerClient) getDomains() ([]string, error) {
 		return nil, err
 	}
 
-	fmt.Printf("------------------\n")
-	fmt.Printf("BODYSTRING = %s\n", bodyString)
-	fmt.Printf("------------------\n")
+	//fmt.Printf("------------------\n")
+	//fmt.Printf("BODYSTRING = %s\n", bodyString)
+	//fmt.Printf("------------------\n")
 
 	var dr DomainsResult
 	json.Unmarshal(bodyString, &dr)
 
-	fmt.Printf("------------------\n")
-	fmt.Printf("DR = %+v\n", dr)
-	fmt.Printf("------------------\n")
+	if dr.Meta.Pages > 1 {
+		return nil, fmt.Errorf("cscglobal getDomains: unimplemented  paganation")
+	}
 
-	return nil, nil
+	var r []string
+	for _, d := range dr.Domains {
+		r = append(r, d.QualifiedDomainName)
+	}
+
+	//fmt.Printf("------------------\n")
+	//fmt.Printf("DR = %+v\n", dr)
+	//fmt.Printf("------------------\n")
+
+	return r, nil
 }
 
 type nativeRecordA = struct {
 	ID     string `json:"id"`
 	Key    string `json:"key"`
 	Value  string `json:"value"`
-	TTL    int    `json:"ttl"`
+	TTL    uint32 `json:"ttl"`
 	Status string `json:"status"`
 }
 type nativeRecordCNAME = struct {
 	ID     string `json:"id"`
 	Key    string `json:"key"`
 	Value  string `json:"value"`
-	TTL    int    `json:"ttl"`
+	TTL    uint32 `json:"ttl"`
 	Status string `json:"status"`
 }
 type nativeRecordAAAA = struct {
 	ID     string `json:"id"`
 	Key    string `json:"key"`
 	Value  string `json:"value"`
-	TTL    int    `json:"ttl"`
+	TTL    uint32 `json:"ttl"`
 	Status string `json:"status"`
 }
 type nativeRecordTXT = struct {
 	ID     string `json:"id"`
 	Key    string `json:"key"`
 	Value  string `json:"value"`
-	TTL    int    `json:"ttl"`
+	TTL    uint32 `json:"ttl"`
 	Status string `json:"status"`
 }
 type nativeRecordMX = struct {
 	ID       string `json:"id"`
 	Key      string `json:"key"`
 	Value    string `json:"value"`
-	TTL      int    `json:"ttl"`
+	TTL      uint32 `json:"ttl"`
 	Status   string `json:"status"`
-	Priority int    `json:"priority"`
+	Priority uint16 `json:"priority"`
 }
 type nativeRecordNS = struct {
 	ID       string `json:"id"`
 	Key      string `json:"key"`
 	Value    string `json:"value"`
-	TTL      int    `json:"ttl"`
+	TTL      uint32 `json:"ttl"`
 	Status   string `json:"status"`
 	Priority int    `json:"priority"`
 }
@@ -227,16 +236,17 @@ type nativeRecordSRV = struct {
 	ID       string `json:"id"`
 	Key      string `json:"key"`
 	Value    string `json:"value"`
-	TTL      int    `json:"ttl"`
+	TTL      uint32 `json:"ttl"`
 	Status   string `json:"status"`
-	Priority int    `json:"priority"`
-	weight   int    `json:"weight"`
+	Priority uint16 `json:"priority"`
+	Weight   uint16 `json:"weight"`
+	Port     uint16 `json:"port"`
 }
 type nativeRecordCAA = struct {
 	ID       string `json:"id"`
 	Key      string `json:"key"`
 	Value    string `json:"value"`
-	TTL      int    `json:"ttl"`
+	TTL      uint32 `json:"ttl"`
 	Status   string `json:"status"`
 	Priority int    `json:"priority"`
 }
@@ -245,7 +255,7 @@ type nativeRecordSOA = struct {
 	Refresh    int    `json:"refresh"`
 	Retry      int    `json:"retry"`
 	Expire     int    `json:"expire"`
-	TTLMin     int    `json:"ttlMin"`
+	TTL        uint32 `json:"ttlMin"`
 	TTLNeg     int    `json:"ttlNeg"`
 	TTLZone    int    `json:"ttlZone"`
 	TechEmail  string `json:"techEmail"`
@@ -272,23 +282,79 @@ func (client *providerClient) getZoneRecordsAll(zone string) (*zoneResponse, err
 		return nil, err
 	}
 
-	fmt.Printf("------------------\n")
-	fmt.Printf("BODYSTRING = %s\n", bodyString)
-	fmt.Printf("------------------\n")
-
 	var dr zoneResponse
 	json.Unmarshal(bodyString, &dr)
 
-	fmt.Printf("------------------\n")
-	fmt.Printf("DR = %+v\n", dr)
-	fmt.Printf("------------------\n")
-
 	return &dr, nil
+}
+
+type ZoneResourceRecordEdit = struct {
+	Action       string `json:"action"`
+	RecordType   string `json:"recordType"`
+	CurrentKey   string `json:"currentKey"`
+	CurrentValue string `json:"currentValue"`
+	NewTTL       string `json:"newTtl,omitempty"`
+	NewPriority  uint16 `json:"newPriority,omitempty"`
+	NewWeight    uint16 `json:"newWeight,omitempty"`
+	NewPort      uint16 `json:"newPort,omitempty"`
+}
+
+type ZoneEditRequest = struct {
+	ZoneName string `json:"zoneName"`
+	Edits    []ZoneResourceRecordEdit
+}
+
+//type ZoneEditRequestResult = struct {
+//	ZoneName string `json:"zoneName"`
+//	Edits    []ZoneResourceRecordEdit
+//}
+
+func (client *providerClient) SendZoneEditRequest(domainname string, edits ZoneResourceRecordEdit) (*zoneResponse, error) {
+
+	data := ZoneEditRequest{
+		ZoneName: domainname,
+		Edits:    edits,
+	}
+	return client.post("/zones/edits", data)
 }
 
 func (client *providerClient) put(endpoint string, requestBody []byte) ([]byte, error) {
 	hclient := &http.Client{}
 	req, _ := http.NewRequest("PUT", apiBase+endpoint, bytes.NewReader(requestBody))
+
+	// Add headers
+	req.Header.Add("apikey", client.key)
+	req.Header.Add("Authorization", "Bearer "+client.token)
+	req.Header.Add("Accept", "application/json")
+	req.Header.Add("Content-Type", "application/json")
+
+	resp, err := hclient.Do(req)
+	if err != nil {
+		return nil, err
+	}
+
+	bodyString, _ := ioutil.ReadAll(resp.Body)
+	if resp.StatusCode == 200 {
+		return bodyString, nil
+	}
+
+	// Got a error response from API, see if it's json format
+	var errResp errorResponse
+	err = json.Unmarshal(bodyString, &errResp)
+	if err != nil {
+		// Some error messages are plain text
+		return nil, fmt.Errorf("CSC Global API error: %s URL: %s%s",
+			bodyString,
+			req.Host, req.URL.RequestURI())
+	}
+	return nil, fmt.Errorf("CSC Global API error code: %s description: %s URL: %s%s",
+		errResp.Code, errResp.Description,
+		req.Host, req.URL.RequestURI())
+}
+
+func (client *providerClient) post(endpoint string, requestBody []byte) error {
+	hclient := &http.Client{}
+	req, _ := http.NewRequest("POST", apiBase+endpoint, bytes.NewReader(requestBody))
 
 	// Add headers
 	req.Header.Add("apikey", client.key)

@@ -3,5 +3,5 @@ package cscglobal
 // ListZones returns all the zones in an account
 func (client *providerClient) ListZones() ([]string, error) {
 
-	return nil, nil
+	return client.getDomains()
 }

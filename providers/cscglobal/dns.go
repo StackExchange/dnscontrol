@@ -2,14 +2,16 @@ package cscglobal
 
 import (
 	"fmt"
+	"strings"
 
 	"github.com/StackExchange/dnscontrol/v3/models"
+	"github.com/StackExchange/dnscontrol/v3/pkg/diff"
 	"github.com/StackExchange/dnscontrol/v3/pkg/txtutil"
 )
 
 // GetZoneRecords gets the records of a zone and returns them in RecordConfig format.
-func (c *providerClient) GetZoneRecords(domain string) (models.Records, error) {
-	records, err := c.getZoneRecordsAll(domain)
+func (client *providerClient) GetZoneRecords(domain string) (models.Records, error) {
+	records, err := client.getZoneRecordsAll(domain)
 	if err != nil {
 		return nil, err
 	}
@@ -98,25 +100,82 @@ func (client *providerClient) GenerateDomainCorrections(dc *models.DomainConfig,
 
 	// Normalize
 	models.PostProcessRecords(foundRecords)
-	txtutil.SplitSingleLongTxt(dc.Records) // Autosplit long TXT records
+	//txtutil.SplitSingleLongTxt(dc.Records) // Autosplit long TXT records
 
-	//differ := diff.New(dc)
-	//_, creates, dels, modifications, err := differ.IncrementalDiff(foundRecords)
-	//if err != nil {
-	//  return nil, err
-	//}
+	differ := diff.New(dc)
+	_, creates, dels, modifications, err := differ.IncrementalDiff(foundRecords)
+	if err != nil {
+		return nil, err
+	}
 
-	// Generate changes.
+	// For most providers you'll see something like this:
+
+	// // Generate changes.
+	//	corrections := []*models.Correction{}
+	//	for _, del := range dels {
+	//		corrections = append(corrections, client.deleteRec(client.dnsserver, dc.Name, del))
+	//	}
+	//	for _, cre := range creates {
+	//		corrections = append(corrections, client.createRec(client.dnsserver, dc.Name, cre)...)
+	//	}
+	//	for _, m := range modifications {
+	//		corrections = append(corrections, client.modifyRec(client.dnsserver, dc.Name, m))
+	//	}
+	//	return corrections, nil
+
+	// However, CSCGlobal has a weird API and therefore we do this:
+	var edits []ZoneResourceRecordEdit
+	var descriptions []string
+	for _, del := range dels {
+		edits = append(edits, makePurge(dc.Name, del))
+		descriptions = append(descriptions, del.String())
+	}
+	for _, cre := range creates {
+		edits = append(edits, makeAdd(dc.Name, cre))
+		descriptions = append(descriptions, cre.String())
+	}
+	for _, m := range modifications {
+		edits = append(edits, makeEdit(dc.Name, m))
+		descriptions = append(descriptions, m.String())
+	}
 	corrections := []*models.Correction{}
-	//  for _, del := range dels {
-	//    corrections = append(corrections, client.deleteRec(client.dnsserver, dc.Name, del))
-	//  }
-	//  for _, cre := range creates {
-	//    corrections = append(corrections, client.createRec(client.dnsserver, dc.Name, cre)...)
-	//  }
-	//  for _, m := range modifications {
-	//    corrections = append(corrections, client.modifyRec(client.dnsserver, dc.Name, m))
-	//  }
+	c := &models.Correction{
+		Msg: strings.Join(descriptions, "\n\t"),
+		F: func() error {
+			return client.SendZoneEditRequest(dc.Name, edits)
+		},
+	}
+	corrections = append(corrections, c)
 	return corrections, nil
+}
 
+func makePurge(domainname string, cor diff.Correlation) ZoneResourceRecordEdit {
+	zer := ZoneResourceRecordEdit{
+		Action:       "PURGE",
+		RecordType:   cor.Existing.Type,
+		CurrentKey:   cor.Existing.Name,
+		CurrentValue: cor.Existing.GetTargetField(),
+	}
+	return zer
+}
+
+func makeAdd(domainname string, cre diff.Correlation) ZoneResourceRecordEdit {
+	zer := ZoneResourceRecordEdit{
+		Action:       "ADD",
+		RecordType:   cre.Existing.Type,
+		CurrentKey:   cre.Existing.Name,
+		CurrentValue: cre.Existing.GetTargetField(),
+	}
+	return zer
+}
+
+func makeEdit(domainname string, m diff.Correlation) ZoneResourceRecordEdit {
+	zer := ZoneResourceRecordEdit{
+		Action:       "EDIT",
+		RecordType:   m.Existing.Type,
+		CurrentKey:   m.Existing.Name,
+		CurrentValue: m.Existing.GetTargetField(),
+	}
+	// TODO(tlim): Depending on the rType, we will have to set different fields.
+	return zer
 }
