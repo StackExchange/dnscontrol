@@ -10,6 +10,7 @@ import (
 	"fmt"
 	"os"
 	"os/exec"
+	"path/filepath"
 	"strings"
 
 	"github.com/DisposaBoy/JsonConfigReader"
@@ -110,7 +111,7 @@ func executeCredsFile(filename string) ([]byte, error) {
 
 	// check if this is a file and not a command when there is no leading /
 	if fileExists(command) && !strings.HasPrefix(command, "/") {
-		command = "./" + command
+		command = strings.Join([]string{".", command}, string(filepath.Separator))
 	}
 
 	return exec.Command(command, cmd[1:]...).Output()
