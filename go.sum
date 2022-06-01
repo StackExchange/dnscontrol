@@ -211,7 +211,7 @@ github.com/fatih/structs v1.1.0/go.mod h1:9NiDSp5zOcgEDl+j00MP/WkGVPOlPRLejGD8Ga
 github.com/frankban/quicktest v1.10.0/go.mod h1:ui7WezCLWMWxVWr1GETZY3smRy0G4KWq9vcPtJmFl7Y=
 github.com/frankban/quicktest v1.13.0 h1:yNZif1OkDfNoDfb9zZa9aXIpejNR4F23Wely0c+Qdqk=
 github.com/frankban/quicktest v1.13.0/go.mod h1:qLE0fzW0VuyUAJgPU19zByoIr0HtCHN/r/VLSOOIySU=
-github.com/fsnotify/fsnotify v1.5.3/go.mod h1:T3375wBYaZdLLcVNkcVbzGHY7f1l/uK5T5Ai1i3InKU=
+github.com/fsnotify/fsnotify v1.5.4/go.mod h1:OVB6XrOHzAwXMpEM7uPOzcehqUV2UqJxmVXmkdnm1bU=
 github.com/getkin/kin-openapi v0.53.0/go.mod h1:7Yn5whZr5kJi6t+kShccXS8ae1APpYTW6yheSwk8Yi4=
 github.com/ghodss/yaml v1.0.0/go.mod h1:4dBDuWmgqj2HViK6kFavaiC9ZROes6MMH2rRYeMEF04=
 github.com/go-acme/lego v2.7.2+incompatible h1:ThhpPBgf6oa9X/vRd0kEmWOsX7+vmYdckmGZSb+FEp0=
@@ -600,10 +600,10 @@ github.com/stretchr/testify v1.6.1/go.mod h1:6Fq8oRcR53rry900zMqJjRRixrwX3KX962/
 github.com/stretchr/testify v1.7.0/go.mod h1:6Fq8oRcR53rry900zMqJjRRixrwX3KX962/h/Wwjteg=
 github.com/stretchr/testify v1.7.1 h1:5TQK59W5E3v0r2duFAb7P95B6hEeOyEnHRa8MjYSMTY=
 github.com/stretchr/testify v1.7.1/go.mod h1:6Fq8oRcR53rry900zMqJjRRixrwX3KX962/h/Wwjteg=
-github.com/tdewolff/minify/v2 v2.11.5 h1:wfRJ6JMmu87Azx+Lj7NcCTg8D/L/92SNuYF5fv31fjg=
-github.com/tdewolff/minify/v2 v2.11.5/go.mod h1:ZR6VK7tbgF0XXBVwDHXrbqM4tGYchBpdwhsbKeDmAww=
-github.com/tdewolff/parse/v2 v2.5.31 h1:PrJN/trWTUYaYxg7jRpKnKXpBK4kBjT9rAFhFAh2Lus=
-github.com/tdewolff/parse/v2 v2.5.31/go.mod h1:WzaJpRSbwq++EIQHYIRTpbYKNA3gn9it1Ik++q4zyho=
+github.com/tdewolff/minify/v2 v2.11.7 h1:8LpwPaXZ6tZoLIO29x6Zc9HRdGgv5ilrEy3fa8jqjvE=
+github.com/tdewolff/minify/v2 v2.11.7/go.mod h1:5DUsJtN43ScGB7HZDEDgCYsqu14M+Rx9fpg21t8J4WA=
+github.com/tdewolff/parse/v2 v2.5.32 h1:paypOpwqGqCjzm/QpgZj8+J4O4glJpe2qCtzM9zffgY=
+github.com/tdewolff/parse/v2 v2.5.32/go.mod h1:WzaJpRSbwq++EIQHYIRTpbYKNA3gn9it1Ik++q4zyho=
 github.com/tdewolff/test v1.0.6 h1:76mzYJQ83Op284kMT+63iCNCI7NEERsIN8dLM+RiKr4=
 github.com/tdewolff/test v1.0.6/go.mod h1:6DAvZliBAAnD7rhVgwaM7DE5/d9NMOAJ09SqYqeK4QE=
 github.com/transip/gotransip/v6 v6.17.0 h1:2RCyqYqz5+Ej8z96EyE4sf6tQrrfEBaFDO0LliSl6+8=
