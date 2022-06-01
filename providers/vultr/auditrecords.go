@@ -20,9 +20,5 @@ func AuditRecords(records []*models.RecordConfig) error {
 		return err
 	}
 
-	if err := recordaudit.TxtNoLongStrings(records); err != nil {
-		return err
-	}
-
 	return nil
 }
