@@ -7,6 +7,7 @@ import (
 	"io/ioutil"
 	"net/http"
 	"sort"
+	"strings"
 	"time"
 )
 
@@ -397,6 +398,8 @@ func (client *providerClient) waitRequestURL(statusURL string) error {
 		}
 		if status == "FAILED" {
 			fmt.Println()
+			parts := strings.Split(statusResp.Links.Cancel, "/")
+			client.cancelRequest(parts[len(parts)-1])
 			return fmt.Errorf("update failed: %s %s", msg, statusURL)
 		}
 		if status == "COMPLETED" {
@@ -513,6 +516,7 @@ func (client *providerClient) put(endpoint string, requestBody []byte) ([]byte, 
 }
 
 func (client *providerClient) delete(endpoint string) ([]byte, error) {
+	return nil, nil
 	hclient := &http.Client{}
 	fmt.Printf("DEBUG: delete endpoint: %q\n", apiBase+endpoint)
 	req, _ := http.NewRequest("DELETE", apiBase+endpoint, nil)

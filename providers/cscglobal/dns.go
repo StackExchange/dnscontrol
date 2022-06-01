@@ -6,7 +6,6 @@ import (
 
 	"github.com/StackExchange/dnscontrol/v3/models"
 	"github.com/StackExchange/dnscontrol/v3/pkg/diff"
-	"github.com/StackExchange/dnscontrol/v3/pkg/txtutil"
 )
 
 // GetZoneRecords gets the records of a zone and returns them in RecordConfig format.
@@ -65,7 +64,7 @@ func (client *providerClient) GetDomainCorrections(dc *models.DomainConfig) ([]*
 		return nil, err
 	}
 	models.PostProcessRecords(existing)
-	txtutil.SplitSingleLongTxt(dc.Records) // Autosplit long TXT records
+	//txtutil.SplitSingleLongTxt(dc.Records) // Autosplit long TXT records
 
 	clean := PrepFoundRecords(existing)
 	PrepDesiredRecords(dc)
@@ -176,8 +175,21 @@ func makeAdd(domainname string, cre diff.Correlation) ZoneResourceRecordEdit {
 		Action:     "ADD",
 		RecordType: rec.Type,
 		NewKey:     rec.Name,
-		NewValue:   rec.GetTargetField(),
-		NewTTL:     rec.TTL,
+		//NewValue:   strings.TrimSuffix(rec.GetTargetField(), "."),
+		NewValue: rec.GetTargetField(),
+		NewTTL:   rec.TTL,
+	}
+	switch rec.Type {
+
+	case "A", "CNAME", "NS", "TXT":
+		// Nothing to do.
+
+	case "MX":
+		zer.NewPriority = rec.MxPreference
+
+	default:
+		panic(fmt.Sprintf("CSC Not implemented: %s\n", rec.Type))
+
 	}
 	return zer
 }
@@ -193,6 +205,7 @@ func makeEdit(domainname string, m diff.Correlation) ZoneResourceRecordEdit {
 		CurrentValue: old.GetTargetField(),
 	}
 	if old.GetTargetField() != rec.GetTargetField() {
+		//zer.NewValue = strings.TrimSuffix(rec.GetTargetField(), ".")
 		zer.NewValue = rec.GetTargetField()
 	}
 	if old.TTL != rec.TTL {

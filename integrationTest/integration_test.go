@@ -760,6 +760,7 @@ func makeTests(t *testing.T) []*TestGroup {
 			not(
 				"AUTODNS",
 				"AZURE_DNS",
+				"CSCGLOBAL",
 				"DIGITALOCEAN",
 				"DNSIMPLE",
 				"GANDI_V5",
