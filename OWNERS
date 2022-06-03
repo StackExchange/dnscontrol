@@ -14,7 +14,7 @@ providers/dnsmadeeasy @vojtad
 providers/doh @mikenz
 providers/easyname @tresni
 providers/gandi_v5 @TomOnTime
-# providers/gcloud NEEDS VOLUNTEER
+providers/gcloud @riyadhalnur
 providers/hedns @rblenkinsopp
 providers/hetzner @das7pad
 providers/hexonet @papakai
