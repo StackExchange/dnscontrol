@@ -6,6 +6,7 @@ package credsfile
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"os"
 	"os/exec"
@@ -14,6 +15,7 @@ import (
 
 	"github.com/DisposaBoy/JsonConfigReader"
 	"github.com/TomOnTime/utfutil"
+	"github.com/google/shlex"
 )
 
 func quotedList(l []string) string {
@@ -39,21 +41,11 @@ func LoadProviderConfigs(fname string) (map[string]map[string]string, error) {
 
 	var dat []byte
 	var err error
+	filesIsExecutable := strings.HasPrefix(fname, "!") || isExecutable(fname)
 
-	if strings.HasPrefix(fname, "!") {
+	if filesIsExecutable && !strings.HasSuffix(fname, ".json") {
+		// file is executable and is not a .json (needed because in Windows WSL all files are executable).
 		dat, err = executeCredsFile(strings.TrimPrefix(fname, "!"))
-		if err != nil {
-			return nil, err
-		}
-	} else if strings.HasSuffix(fname, ".json") {
-		// .json files are never executable (needed because in Windows WSL
-		// all files are executable).
-		dat, err = readCredsFile(fname)
-		if err != nil {
-			return nil, err
-		}
-	} else if isExecutable(fname) {
-		dat, err = executeCredsFile(fname)
 		if err != nil {
 			return nil, err
 		}
@@ -111,13 +103,23 @@ func readCredsFile(filename string) ([]byte, error) {
 }
 
 func executeCredsFile(filename string) ([]byte, error) {
-	cmd := filename
-	if !strings.HasPrefix(filename, "/") {
-		// if the path doesn't start with `/` make sure we aren't relying on $PATH.
-		cmd = strings.Join([]string{".", filename}, string(filepath.Separator))
+	cmd, err := shlex.Split(filename)
+	if err != nil {
+		return nil, err
 	}
-	out, err := exec.Command(cmd).Output()
-	return out, err
+	command := cmd[0]
+
+	// check if this is a file and not a command when there is no leading /
+	if fileExists(command) && !strings.HasPrefix(command, "/") {
+		command = strings.Join([]string{".", command}, string(filepath.Separator))
+	}
+
+	return exec.Command(command, cmd[1:]...).Output()
+}
+
+func fileExists(filename string) bool {
+	_, err := os.Stat(filename)
+	return !errors.Is(err, os.ErrNotExist)
 }
 
 func replaceEnvVars(m map[string]map[string]string) error {

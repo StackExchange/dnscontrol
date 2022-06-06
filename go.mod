@@ -60,6 +60,8 @@ require (
 	gopkg.in/yaml.v2 v2.4.0
 )
 
+require github.com/google/shlex v0.0.0-20191202100458-e7afc7fbc510
+
 require (
 	cloud.google.com/go/compute v1.6.1 // indirect
 	github.com/Azure/go-autorest v14.2.0+incompatible // indirect
