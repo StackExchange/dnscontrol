@@ -113,7 +113,7 @@ func (api *powerdnsProvider) ListZones() ([]string, error) {
 		return result, err
 	}
 	for _, zone := range myZones {
-		result = append(result, zone.Name)
+		result = append(result, strings.TrimSuffix(zone.Name, "."))
 	}
 	return result, nil
 }
