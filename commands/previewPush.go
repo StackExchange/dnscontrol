@@ -469,9 +469,6 @@ func printOrRunCorrections(domain string, provider string, corrections []*models
 	if len(corrections) == 0 {
 		return false
 	}
-	for i := 0; i < len(corrections); i += 900 {
-
-	}
 	for i, correction := range corrections {
 		out.PrintCorrection(i, correction)
 		var err error
