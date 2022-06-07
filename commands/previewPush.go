@@ -36,9 +36,9 @@ type PreviewArgs struct {
 	GetDNSConfigArgs
 	GetCredentialsArgs
 	FilterArgs
-	Notify          bool
-	WarnChanges     bool
-	CreateWhilePush bool
+	Notify             bool
+	WarnChanges        bool
+	PopulateAtProvider bool
 }
 
 func (args *PreviewArgs) flags() []cli.Flag {
@@ -56,9 +56,9 @@ func (args *PreviewArgs) flags() []cli.Flag {
 		Usage:       `set to true for non-zero return code if there are changes`,
 	})
 	flags = append(flags, &cli.BoolFlag{
-		Name:        "create-while-push",
-		Destination: &args.CreateWhilePush,
-		Usage:       `set to true to create non-existing zones on provider`,
+		Name:        "populate-at-provider",
+		Destination: &args.PopulateAtProvider,
+		Usage:       `set to true to create non-existing zones at provider`,
 	})
 	return flags
 }
@@ -137,7 +137,7 @@ DomainLoop:
 		nameservers.AddNSRecords(domain)
 		for _, provider := range domain.DNSProviderInstances {
 
-			if args.CreateWhilePush {
+			if args.PopulateAtProvider {
 				// preview run: check if zone is already there, if not print a warning
 				if lister, ok := provider.Driver.(providers.ZoneLister); ok && !push {
 					zones, err := lister.ListZones()
