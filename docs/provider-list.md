@@ -50,7 +50,7 @@ Providers in this category and their maintainers are:
 * `ACTIVEDIRECTORY_PS` @tlimoncelli
 * `AZURE_DNS` @vatsalyagoel
 * `BIND` @tlimoncelli
-* `GCLOUD` @tlimoncelli
+* `GCLOUD` @riyadhalnur
 * `NAMEDOTCOM` @tlimoncelli
 
 ### Providers with "contributor support"

@@ -46,9 +46,9 @@ require (
 	github.com/pquerna/otp v1.3.0
 	github.com/qdm12/reprint v0.0.0-20200326205758-722754a53494
 	github.com/robertkrimen/otto v0.0.0-20211024170158-b87d35c0b86f
-	github.com/softlayer/softlayer-go v1.0.4
+	github.com/softlayer/softlayer-go v1.0.5
 	github.com/stretchr/testify v1.7.1
-	github.com/tdewolff/minify/v2 v2.11.5
+	github.com/tdewolff/minify/v2 v2.11.7
 	github.com/transip/gotransip/v6 v6.17.0
 	github.com/urfave/cli/v2 v2.8.1
 	github.com/vultr/govultr v1.1.1
@@ -59,6 +59,8 @@ require (
 	gopkg.in/ns1/ns1-go.v2 v2.5.1
 	gopkg.in/yaml.v2 v2.4.0
 )
+
+require github.com/google/shlex v0.0.0-20191202100458-e7afc7fbc510
 
 require (
 	cloud.google.com/go/compute v1.6.1 // indirect
@@ -141,7 +143,7 @@ require (
 	github.com/sirupsen/logrus v1.4.2 // indirect
 	github.com/softlayer/xmlrpc v0.0.0-20200409220501-5f089df7cb7e // indirect
 	github.com/stretchr/objx v0.3.0 // indirect
-	github.com/tdewolff/parse/v2 v2.5.31 // indirect
+	github.com/tdewolff/parse/v2 v2.5.32 // indirect
 	github.com/xrash/smetrics v0.0.0-20201216005158-039620a65673 // indirect
 	go.opencensus.io v0.23.0 // indirect
 	go.uber.org/atomic v1.9.0 // indirect
