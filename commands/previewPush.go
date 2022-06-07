@@ -58,7 +58,7 @@ func (args *PreviewArgs) flags() []cli.Flag {
 	flags = append(flags, &cli.BoolFlag{
 		Name:        "populate-at-provider",
 		Destination: &args.PopulateAtProvider,
-		Usage:       `set to true to create non-existing zones at provider`,
+		Usage:       `Use this flag to create non-existing zones at the provider`,
 	})
 	return flags
 }
