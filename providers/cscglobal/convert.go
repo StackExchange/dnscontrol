@@ -64,7 +64,9 @@ func nativeToRecordTXT(nr nativeRecordTXT, origin string, defaultTTL uint32) *mo
 		TTL:  ttl,
 	}
 	rc.SetLabel(nr.Key, origin)
-	rc.SetTarget(nr.Value)
+	rc.SetTargetTXT(nr.Value)
+	//fmt.Printf("DEBUG: TXT nr.Value=%q\n", nr.Value)
+	//fmt.Printf("DEBUG: TXT nr.Joind=%q\n", strings.Join(rc.TxtStrings, ""))
 	return rc
 }
 

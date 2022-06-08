@@ -760,7 +760,7 @@ func makeTests(t *testing.T) []*TestGroup {
 			not(
 				"AUTODNS",
 				"AZURE_DNS",
-				"CSCGLOBAL",
+				//"CSCGLOBAL",
 				"DIGITALOCEAN",
 				"DNSIMPLE",
 				"GANDI_V5",
@@ -1031,10 +1031,11 @@ func makeTests(t *testing.T) []*TestGroup {
 			//  - DIGITALOCEAN: page size is 100 (default: 20)
 			not(
 				"CLOUDFLAREAPI", // Infinite pagesize but due to slow speed, skipping.
-				"GANDI_V5",      // Their API is so damn slow. We'll add it back as needed.
-				"MSDNS",         //  No paging done. No need to test.
-				"NAMEDOTCOM",    // Their API is so damn slow. We'll add it back as needed.
-				"NS1",           // Free acct only allows 50 records, therefore we skip
+				//"CSCGLOBAL", // Not
+				"GANDI_V5",   // Their API is so damn slow. We'll add it back as needed.
+				"MSDNS",      //  No paging done. No need to test.
+				"NAMEDOTCOM", // Their API is so damn slow. We'll add it back as needed.
+				"NS1",        // Free acct only allows 50 records, therefore we skip
 			),
 			tc("99 records", manyA("rec%04d", "1.2.3.4", 99)...),
 			tc("100 records", manyA("rec%04d", "1.2.3.4", 100)...),
@@ -1043,10 +1044,11 @@ func makeTests(t *testing.T) []*TestGroup {
 
 		testgroup("pager601",
 			only(
-				//"MSDNS",     //  No paging done. No need to test.
 				//"AZURE_DNS", // Currently failing.
-				"HEXONET",
+				//"CSCGLOBAL",
 				"GCLOUD",
+				"HEXONET",
+				//"MSDNS",     //  No paging done. No need to test.
 				"ROUTE53",
 			),
 			tc("601 records", manyA("rec%04d", "1.2.3.4", 600)...),
@@ -1058,6 +1060,7 @@ func makeTests(t *testing.T) []*TestGroup {
 				//"AKAMAIEDGEDNS", // No paging done. No need to test.
 				//"AZURE_DNS",     // Currently failing. See https://github.com/StackExchange/dnscontrol/issues/770
 				//"CLOUDFLAREAPI", // Fails with >1000 corrections. See https://github.com/StackExchange/dnscontrol/issues/1440
+				//"CSCGLOBAL",
 				"HEXONET",
 				"HOSTINGDE",
 				//"MSDNS",         // No paging done. No need to test.

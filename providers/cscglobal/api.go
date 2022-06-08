@@ -346,6 +346,10 @@ func (client *providerClient) SendZoneEditRequest(domainname string, edits []Zon
 		Edits:    &edits,
 	}
 
+	//fmt.Printf("DEBUG: pre-marshal: edits = %+v\n", edits)
+	//fmt.Printf("DEBUG: pre-marshal: req   = %q\n", req)
+	//fmt.Printf("DEBUG: pre-marshal: RT    = %q\n", edits[0].RecordType)
+	//fmt.Printf("DEBUG: pre-marshal: NV    = %q\n", edits[0].NewValue)
 	requestBody, err := json.Marshal(req)
 	if err != nil {
 		return err

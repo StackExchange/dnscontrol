@@ -184,29 +184,47 @@ func (client *providerClient) GenerateDomainCorrections(dc *models.DomainConfig,
 }
 
 func makePurge(domainname string, cor diff.Correlation) ZoneResourceRecordEdit {
+	var existingTarget string
+	if cor.Existing.Type == "TXT" {
+		existingTarget = strings.Join(cor.Existing.TxtStrings, "")
+	} else {
+		existingTarget = cor.Existing.GetTargetField()
+	}
+
 	zer := ZoneResourceRecordEdit{
 		Action:       "PURGE",
 		RecordType:   cor.Existing.Type,
 		CurrentKey:   cor.Existing.Name,
-		CurrentValue: cor.Existing.GetTargetField(),
+		CurrentValue: existingTarget,
 	}
 	return zer
 }
 
 func makeAdd(domainname string, cre diff.Correlation) ZoneResourceRecordEdit {
 	rec := cre.Desired
+
+	var recTarget string
+	if rec.Type == "TXT" {
+		recTarget = strings.Join(rec.TxtStrings, "")
+	} else {
+		recTarget = rec.GetTargetField()
+	}
+
 	zer := ZoneResourceRecordEdit{
 		Action:     "ADD",
 		RecordType: rec.Type,
 		NewKey:     rec.Name,
-		//NewValue:   strings.TrimSuffix(rec.GetTargetField(), "."),
-		NewValue: rec.GetTargetField(),
-		NewTTL:   rec.TTL,
+		NewValue:   recTarget,
+		NewTTL:     rec.TTL,
 	}
 	switch rec.Type {
 
-	case "A", "CNAME", "NS", "TXT":
-		// Nothing to do.
+	case "A", "CNAME", "NS":
+	// Nothing to do.
+
+	case "TXT":
+		zer.NewValue = strings.Join(rec.TxtStrings, "")
+		fmt.Printf("DEBUG: makeAdd TXT NewValue=%q\n", zer.NewValue)
 
 	case "MX":
 		zer.NewPriority = rec.MxPreference
@@ -222,15 +240,23 @@ func makeEdit(domainname string, m diff.Correlation) ZoneResourceRecordEdit {
 	old, rec := m.Existing, m.Desired
 	// TODO: Assert that old.Type == rec.Type
 	// TODO: Assert that old.Name == rec.Name
+	var oldTarget, recTarget string
+	if old.Type == "TXT" {
+		oldTarget = strings.Join(old.TxtStrings, "")
+		recTarget = strings.Join(rec.TxtStrings, "")
+	} else {
+		oldTarget = old.GetTargetField()
+		recTarget = rec.GetTargetField()
+	}
+
 	zer := ZoneResourceRecordEdit{
 		Action:       "EDIT",
 		RecordType:   old.Type,
 		CurrentKey:   old.Name,
-		CurrentValue: old.GetTargetField(),
+		CurrentValue: oldTarget,
 	}
-	if old.GetTargetField() != rec.GetTargetField() {
-		//zer.NewValue = strings.TrimSuffix(rec.GetTargetField(), ".")
-		zer.NewValue = rec.GetTargetField()
+	if oldTarget != recTarget {
+		zer.NewValue = recTarget
 	}
 	if old.TTL != rec.TTL {
 		zer.NewTTL = rec.TTL
