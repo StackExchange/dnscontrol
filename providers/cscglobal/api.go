@@ -439,21 +439,21 @@ type PagedZoneEditResponsePagedZoneEditResponse struct {
 func (client *providerClient) ClearRequests(domain string) error {
 	fmt.Print("DEBUG ========= ClearRequests START\n")
 	var bodyString, err = client.get("/zones/edits?filter=zoneName==" + domain)
-	fmt.Print("DEBUG ========= ClearRequests 1\n")
+	//fmt.Print("DEBUG ========= ClearRequests 1\n")
 	if err != nil {
 		return err
 	}
 
 	var dr PagedZoneEditResponsePagedZoneEditResponse
 	json.Unmarshal(bodyString, &dr)
-	fmt.Print("DEBUG ========= ClearRequests 2\n")
+	//fmt.Print("DEBUG ========= ClearRequests 2\n")
 
 	// TODO(tlim): Handle paganation.
 	if dr.Meta.Pages != 1 {
 		return fmt.Errorf("cancelPendingEdits failed: Pages=%d", dr.Meta.Pages)
 	}
 
-	fmt.Printf("DEBUG: request count = %d\n", len(dr.ZoneEdits))
+	//fmt.Printf("DEBUG: request count = %d\n", len(dr.ZoneEdits))
 	for i, ze := range dr.ZoneEdits {
 		if ze.Status != "COMPLETED" && ze.Status != "CANCELED" {
 			fmt.Printf("REQUEST %d: %s %s\n", i, ze.ID, ze.Status)

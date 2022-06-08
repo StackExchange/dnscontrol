@@ -42,16 +42,38 @@ func (client *providerClient) GetZoneRecords(domain string) (models.Records, err
 	for _, rr := range records.A {
 		existingRecords = append(existingRecords, nativeToRecordA(rr, domain, defaultTTL))
 	}
+	for _, rr := range records.Cname {
+		existingRecords = append(existingRecords, nativeToRecordCNAME(rr, domain, defaultTTL))
+	}
+	for _, rr := range records.Aaaa {
+		existingRecords = append(existingRecords, nativeToRecordAAAA(rr, domain, defaultTTL))
+	}
+	for _, rr := range records.Txt {
+		existingRecords = append(existingRecords, nativeToRecordTXT(rr, domain, defaultTTL))
+	}
 	for _, rr := range records.Mx {
 		existingRecords = append(existingRecords, nativeToRecordMX(rr, domain, defaultTTL))
 	}
+	for _, rr := range records.Ns {
+		existingRecords = append(existingRecords, nativeToRecordNS(rr, domain, defaultTTL))
+	}
+	for _, rr := range records.Srv {
+		existingRecords = append(existingRecords, nativeToRecordSRV(rr, domain, defaultTTL))
+	}
+	//for _, rr := range records.Caa {
+	//	existingRecords = append(existingRecords, nativeToRecordCAA(rr, domain, defaultTTL))
+	//}
+	// TODO(tlim): SOA record.
 
 	return existingRecords, nil
 }
 
-func (client *providerClient) GetNameservers(string) ([]*models.Nameserver, error) {
-	// TODO: If using AD for publicly hosted zones, probably pull these from config.
-	return nil, nil
+func (client *providerClient) GetNameservers(domain string) ([]*models.Nameserver, error) {
+	nss, err := client.getNameservers(domain)
+	if err != nil {
+		return nil, err
+	}
+	return models.ToNameservers(nss)
 }
 
 // GetDomainCorrections get the current and existing records,
@@ -143,10 +165,12 @@ func (client *providerClient) GenerateDomainCorrections(dc *models.DomainConfig,
 		c := &models.Correction{
 			Msg: "\t" + strings.Join(descriptions, "\n\t"),
 			F: func() error {
-				// CSCGlobal only permits one pending request at a time; pending
-				// requests includes failed requests waiting for a human to
-				// acknowledge the failure and delete the request.  Therefore, we
-				// cancel any pending requests. What a stupid API decision.
+				// CSCGlobal's API only permits one pending update at a time.
+				// Therefore we block until any outstanding updates are done.
+				// We also clear out any failures, since (and I can't believe
+				// I'm writing this) any time something fails, the failure has
+				// to be cleared out with an additional API call.
+
 				err := client.ClearRequests(dc.Name)
 				if err != nil {
 					return err
