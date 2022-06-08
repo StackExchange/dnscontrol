@@ -15,6 +15,8 @@ import (
 	"github.com/StackExchange/dnscontrol/v3/pkg/notifications"
 	"github.com/StackExchange/dnscontrol/v3/pkg/printer"
 	"github.com/StackExchange/dnscontrol/v3/providers"
+
+	"golang.org/x/exp/slices"
 )
 
 var _ = cmd(catMain, func() *cli.Command {
@@ -36,6 +38,7 @@ type PreviewArgs struct {
 	FilterArgs
 	Notify      bool
 	WarnChanges bool
+	NoPopulate  bool
 }
 
 func (args *PreviewArgs) flags() []cli.Flag {
@@ -51,6 +54,11 @@ func (args *PreviewArgs) flags() []cli.Flag {
 		Name:        "expect-no-changes",
 		Destination: &args.WarnChanges,
 		Usage:       `set to true for non-zero return code if there are changes`,
+	})
+	flags = append(flags, &cli.BoolFlag{
+		Name:        "no-populate",
+		Destination: &args.NoPopulate,
+		Usage:       `Use this flag to not auto-create non-existing zones at the provider`,
 	})
 	return flags
 }
@@ -128,6 +136,27 @@ DomainLoop:
 		domain.Nameservers = nsList
 		nameservers.AddNSRecords(domain)
 		for _, provider := range domain.DNSProviderInstances {
+
+			if !args.NoPopulate {
+				// preview run: check if zone is already there, if not print a warning
+				if lister, ok := provider.Driver.(providers.ZoneLister); ok && !push {
+					zones, err := lister.ListZones()
+					if err != nil {
+						return err
+					}
+					if !slices.Contains(zones, domain.Name) {
+						out.Warnf("Domain '%s' does not exist in the '%s' profile and will be added automatically.\n", domain.Name, provider.Name)
+						continue // continue with next provider, as we can not determine corrections without an existing zone
+					}
+				} else if creator, ok := provider.Driver.(providers.DomainCreator); ok && push {
+					// this is the actual push, ensure domain exists at DSP
+					if err := creator.EnsureDomainExists(domain.Name); err != nil {
+						out.Warnf("Error creating domain: %s\n", err)
+						continue // continue with next provider, as we couldn't create this one
+					}
+				}
+			}
+
 			dc, err := domain.Copy()
 			if err != nil {
 				return err

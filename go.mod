@@ -60,7 +60,10 @@ require (
 	gopkg.in/yaml.v2 v2.4.0
 )
 
-require github.com/google/shlex v0.0.0-20191202100458-e7afc7fbc510
+require (
+	github.com/google/shlex v0.0.0-20191202100458-e7afc7fbc510
+	golang.org/x/exp v0.0.0-20220602145555-4a0574d9293f
+)
 
 require (
 	cloud.google.com/go/compute v1.6.1 // indirect
