@@ -36,9 +36,9 @@ type PreviewArgs struct {
 	GetDNSConfigArgs
 	GetCredentialsArgs
 	FilterArgs
-	Notify             bool
-	WarnChanges        bool
-	PopulateAtProvider bool
+	Notify      bool
+	WarnChanges bool
+	NoPopulate  bool
 }
 
 func (args *PreviewArgs) flags() []cli.Flag {
@@ -56,9 +56,9 @@ func (args *PreviewArgs) flags() []cli.Flag {
 		Usage:       `set to true for non-zero return code if there are changes`,
 	})
 	flags = append(flags, &cli.BoolFlag{
-		Name:        "populate-at-provider",
-		Destination: &args.PopulateAtProvider,
-		Usage:       `Use this flag to create non-existing zones at the provider`,
+		Name:        "no-populate",
+		Destination: &args.NoPopulate,
+		Usage:       `Use this flag to not auto-create non-existing zones at the provider`,
 	})
 	return flags
 }
@@ -137,7 +137,7 @@ DomainLoop:
 		nameservers.AddNSRecords(domain)
 		for _, provider := range domain.DNSProviderInstances {
 
-			if args.PopulateAtProvider {
+			if !args.NoPopulate {
 				// preview run: check if zone is already there, if not print a warning
 				if lister, ok := provider.Driver.(providers.ZoneLister); ok && !push {
 					zones, err := lister.ListZones()
@@ -146,13 +146,13 @@ DomainLoop:
 					}
 					if !slices.Contains(zones, domain.Name) {
 						out.Warnf("Domain '%s' does not exist in the '%s' profile and will be added automatically.\n", domain.Name, provider.Name)
-						continue // continue with next domain, as we can not determine corrections without an existing zone
+						continue // continue with next provider, as we can not determine corrections without an existing zone
 					}
 				} else if creator, ok := provider.Driver.(providers.DomainCreator); ok && push {
 					// this is the actual push, ensure domain exists at DSP
 					if err := creator.EnsureDomainExists(domain.Name); err != nil {
 						out.Warnf("Error creating domain: %s\n", err)
-						continue // continue with next domain, as we couldn't create this one
+						continue // continue with next provider, as we couldn't create this one
 					}
 				}
 			}
