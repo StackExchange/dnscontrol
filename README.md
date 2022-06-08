@@ -181,9 +181,9 @@ docker run --rm -it --volume="$PWD:/srv/jekyll" --volume="$PWD/vendor/bundle:/us
 
 See [dnscontrol-action](https://github.com/koenrh/dnscontrol-action)
 
-# Depreciation warnings (updated 2022-05-20)
+# Depreciation warnings (updated 2022-06-04)
 
-* **Call for new volunteer maintainers for GCLOUD, NAMEDOTCOM, and SOFTLAYER.** These providers have no maintainer. Maintainers respond to PRs and fix bugs in a timely manner, and try to stay on top of protocol changes.
+* **Call for new volunteer maintainers for NAMEDOTCOM, and SOFTLAYER.** These providers have no maintainer. Maintainers respond to PRs and fix bugs in a timely manner, and try to stay on top of protocol changes.
 * **ACME/Let's Encrypt support is frozen and will be removed after December 31, 2022.**  The `get-certs` command (renews certs via Let's Encrypt) has no maintainer. There are other projects that do a better job. If you don't use this feature, please do not start. If you do use this feature, please plan on migrating to something else.  See discussion in https://github.com/StackExchange/dnscontrol/issues/1400
 * **convertzone is frozen and will be removed after June 30, 2022.** The `convertzone` stand-alone program is replaced by the `get-zone` subcommand of DNSControl. It does everything `convertzone` did and more.
 * **Provider ACTIVEDIRECTORY_PS is frozen and will be removed after June 30, 2022.** It is replaced by MSDNS which is 100% feature compatible and works better. (We believe nobody uses it.)
