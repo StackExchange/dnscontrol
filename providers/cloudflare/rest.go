@@ -150,9 +150,12 @@ func (c *cloudflareProvider) createRec(rec *models.RecordConfig, domainID string
 			} else if rec.Type == "DS" {
 				cf.Data = cfDSData(rec)
 			}
-			resp, err := c.cfClient.CreateDNSRecord(context.Background(), domainID, cf)
-			id = resp.Result.ID
-			return err
+			if resp, err := c.cfClient.CreateDNSRecord(context.Background(), domainID, cf); err != nil {
+				return err
+			} else {
+				id = resp.Result.ID
+				return nil
+			}
 		},
 	}}
 	if rec.Metadata[metaProxy] != "off" {
