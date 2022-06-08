@@ -150,7 +150,7 @@ The fix is to change one to match the other.
 
 Message: `ERROR: creds.json entry ... is missing ...: ...`
 
-However no `TYPE` subkey was found in an entry in `creds.json`. 
+However no `TYPE` subkey was found in an entry in `creds.json`.
 In 3.16 forward, it is required if new-style `NewRegistrar()` or `NewDnsProvider()` was used.
 In 4.0 this is required. 
 
@@ -175,11 +175,28 @@ The `--creds` flag allows you to specify a different file name.
 
 * Normally the file is read as a JSON file.
 * Do not end the filename with `.yaml` or `.yml` as some day we hope to support YAML.
-* Rather than specifying a file, you can specify a program to be run. The output of the program must be valid JSON and will be read the same way.
-  * If the name begins with `!`, the remainder of the name is taken to be the command to be run.
+* Rather than specifying a file, you can specify a program or shell command to be run. The output of the program/command must be valid JSON and will be read the same way.
+  * If the name begins with `!`, the remainder of the name is taken to be a shell command or program to be run.
   * If the name is a file that is executable (chmod `+x` bit), it is taken as the command to be run.
   * Exceptions: The `x` bit is not checked if the filename ends with `.yaml`, `.yml` or `.json`.
   * Windows: Executing an external script isn't supported. There's no code that prevents it from trying, but it isn't supported.
+
+### Example commands
+
+Following commands would execute a program/script:
+``` bash
+dnscontrol preview --creds !./creds.sh
+dnscontrol preview --creds ./creds.sh
+dnscontrol preview --creds creds.sh
+dnscontrol preview --creds !creds.sh
+dnscontrol preview --creds !/some/absolute/path/creds.sh
+dnscontrol preview --creds /some/absolute/path/creds.sh
+```
+
+Following commands would execute a shell command:
+``` bash
+dnscontrol preview --creds "!op inject -i creds.json.tpl"
+```
 
 ## Don't store secrets in a Git repo!
 
