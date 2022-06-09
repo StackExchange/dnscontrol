@@ -153,6 +153,7 @@ func (c *cloudflareProvider) createRec(rec *models.RecordConfig, domainID string
 			if resp, err := c.cfClient.CreateDNSRecord(context.Background(), domainID, cf); err != nil {
 				return err
 			} else {
+				// Updating id (from the outer scope) by side-effect, required for updating proxy mode
 				id = resp.Result.ID
 				return nil
 			}
