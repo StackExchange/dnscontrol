@@ -213,7 +213,7 @@ func makePurge(domainname string, cor diff.Correlation) zoneResourceRecordEdit {
 
 	if cor.Existing.Type == "CAA" {
 		var tagValue = cor.Existing.CaaTag
-		fmt.Printf("DEBUG: CAA TAG = %q\n", tagValue)
+		//fmt.Printf("DEBUG: CAA TAG = %q\n", tagValue)
 		zer.CurrentTag = &tagValue
 	}
 
@@ -240,24 +240,19 @@ func makeAdd(domainname string, cre diff.Correlation) zoneResourceRecordEdit {
 	}
 
 	switch rec.Type {
-
 	case "CAA":
 		var tagValue = rec.CaaTag
 		zer.NewTag = &tagValue
 		zer.NewFlag = rec.CaaFlag
-
 	case "MX":
 		zer.NewPriority = rec.MxPreference
-
 	case "SRV":
 		zer.NewPriority = rec.SrvPriority
 		zer.NewWeight = rec.SrvWeight
 		zer.NewPort = rec.SrvPort
-
 	case "TXT":
 		zer.NewValue = strings.Join(rec.TxtStrings, "")
 		fmt.Printf("DEBUG: makeAdd TXT NewValue=%q\n", zer.NewValue)
-
 	default: // "A", "CNAME", "NS"
 		// Nothing to do.
 	}
@@ -294,7 +289,6 @@ func makeEdit(domainname string, m diff.Correlation) zoneResourceRecordEdit {
 	}
 
 	switch old.Type {
-
 	case "CAA":
 		var tagValue = old.CaaTag
 		zer.CurrentTag = &tagValue
@@ -304,18 +298,14 @@ func makeEdit(domainname string, m diff.Correlation) zoneResourceRecordEdit {
 		if old.CaaFlag != rec.CaaFlag {
 			zer.NewFlag = rec.CaaFlag
 		}
-
 	case "MX":
 		if old.MxPreference != rec.MxPreference {
 			zer.NewPriority = rec.MxPreference
 		}
-
 	case "SRV":
-		//zer.CurrenPriority = rec.SrvPriority
 		zer.NewWeight = rec.SrvWeight
 		zer.NewPort = rec.SrvPort
 		zer.NewPriority = rec.SrvPriority
-
 	default: // "A", "CNAME", "NS", "TXT"
 		// Nothing to do.
 	}

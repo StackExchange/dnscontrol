@@ -82,7 +82,7 @@ func CreateRegistrar(rType string, config map[string]string) (Registrar, error) 
 
 	initer, ok := RegistrarTypes[rType]
 	if !ok {
-		return nil, fmt.Errorf("No such registrar type: %q", rType)
+		return nil, fmt.Errorf("no such registrar type: %q", rType)
 	}
 	return initer(config)
 }
@@ -97,7 +97,7 @@ func CreateDNSProvider(providerTypeName string, config map[string]string, meta j
 
 	p, ok := DNSProviderTypes[providerTypeName]
 	if !ok {
-		return nil, fmt.Errorf("No such DNS service provider: %q", providerTypeName)
+		return nil, fmt.Errorf("no such DNS service provider: %q", providerTypeName)
 	}
 	return p.Initializer(config, meta)
 }
@@ -135,7 +135,7 @@ func beCompatible(n string, config map[string]string) (string, error) {
 func AuditRecords(dType string, rcs models.Records) error {
 	p, ok := DNSProviderTypes[dType]
 	if !ok {
-		return fmt.Errorf("Unknown DNS service provider type: %q", dType)
+		return fmt.Errorf("unknown DNS service provider type: %q", dType)
 	}
 	if p.RecordAuditor == nil {
 		return fmt.Errorf("DNS service provider type %q has no RecordAuditor", dType)
