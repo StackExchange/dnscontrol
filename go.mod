@@ -62,6 +62,7 @@ require (
 
 require (
 	github.com/google/shlex v0.0.0-20191202100458-e7afc7fbc510
+	github.com/mattn/go-isatty v0.0.14
 	golang.org/x/exp v0.0.0-20220602145555-4a0574d9293f
 )
 
@@ -129,7 +130,6 @@ require (
 	github.com/kolo/xmlrpc v0.0.0-20201022064351-38db28db192b // indirect
 	github.com/konsorten/go-windows-terminal-sequences v1.0.1 // indirect
 	github.com/mattn/go-colorable v0.1.9 // indirect
-	github.com/mattn/go-isatty v0.0.14 // indirect
 	github.com/mitchellh/copystructure v1.0.0 // indirect
 	github.com/mitchellh/go-homedir v1.1.0 // indirect
 	github.com/mitchellh/go-testing-interface v1.0.0 // indirect
