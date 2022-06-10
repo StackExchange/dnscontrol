@@ -469,8 +469,10 @@ func (client *providerClient) clearRequests(domain string) error {
 	}
 
 	for i, ze := range dr.ZoneEdits {
-		if ze.Status != "COMPLETED" && ze.Status != "CANCELED" {
-			fmt.Printf("REQUEST %d: %s %s\n", i, ze.ID, ze.Status)
+		if cscDebug {
+			if ze.Status != "COMPLETED" && ze.Status != "CANCELED" {
+				fmt.Printf("REQUEST %d: %s %s\n", i, ze.ID, ze.Status)
+			}
 		}
 		switch ze.Status {
 		case "PROPAGATING":
