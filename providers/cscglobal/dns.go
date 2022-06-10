@@ -253,7 +253,6 @@ func makeAdd(domainname string, cre diff.Correlation) zoneResourceRecordEdit {
 		zer.NewPort = rec.SrvPort
 	case "TXT":
 		zer.NewValue = strings.Join(rec.TxtStrings, "")
-		fmt.Printf("DEBUG: makeAdd TXT NewValue=%q\n", zer.NewValue)
 	default: // "A", "CNAME", "NS"
 		// Nothing to do.
 	}
