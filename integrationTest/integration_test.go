@@ -532,6 +532,10 @@ func ttl(r *models.RecordConfig, t uint32) *models.RecordConfig {
 	return r
 }
 
+// Generate unusual TXTmulti test cases.  The input string is used to
+// dictate the output, each char represents the substring in the
+// resulting TXTmulti.  0 or s outputs a short string, h outputs a 128-octet
+// string, 1 or l outputs a long (255-octet) string.
 func gentxt(s string) *TestCase {
 	title := fmt.Sprintf("Create TXT %s", s)
 	label := fmt.Sprintf("foo%d", len(s))
@@ -901,7 +905,10 @@ func makeTests(t *testing.T) []*TestGroup {
 			tc("Create TXT with double-quote", txt("foodq", `quo"te`)),
 			clear(),
 			tc("Create TXT with ws at end", txt("foows1", "with space at end ")),
-			clear(),
+		),
+
+		//
+		testgroup("gentxt TXT",
 			gentxt("0"),
 			gentxt("1"),
 			gentxt("10"),

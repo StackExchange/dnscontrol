@@ -31,6 +31,9 @@ var features = providers.DocumentationNotes{
 	providers.DocOfficiallySupported: providers.Can(),
 }
 
+// Set cscDebug to true if you want to see the JSON of important API requests and responses.
+var cscDebug = false
+
 func newReg(conf map[string]string) (providers.Registrar, error) {
 	return newProvider(conf)
 }

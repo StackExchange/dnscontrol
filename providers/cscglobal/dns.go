@@ -242,8 +242,9 @@ func makeAdd(domainname string, cre diff.Correlation) zoneResourceRecordEdit {
 	switch rec.Type {
 	case "CAA":
 		var tagValue = rec.CaaTag
+		var flagValue = rec.CaaFlag
 		zer.NewTag = &tagValue
-		zer.NewFlag = rec.CaaFlag
+		zer.NewFlag = &flagValue
 	case "MX":
 		zer.NewPriority = rec.MxPreference
 	case "SRV":
@@ -296,7 +297,7 @@ func makeEdit(domainname string, m diff.Correlation) zoneResourceRecordEdit {
 			zer.NewTag = &(rec.CaaTag)
 		}
 		if old.CaaFlag != rec.CaaFlag {
-			zer.NewFlag = rec.CaaFlag
+			zer.NewFlag = &(rec.CaaFlag)
 		}
 	case "MX":
 		if old.MxPreference != rec.MxPreference {

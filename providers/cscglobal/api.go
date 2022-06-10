@@ -158,14 +158,17 @@ type zoneResourceRecordEdit = struct {
 	NewWeight uint16 `json:"newWeight,omitempty"`
 	NewPort   uint16 `json:"newPort,omitempty"`
 	// CAA:
-	// These are pointers to strings so that a null string will generate
-	// JSON and not be considered "empty". Instead, the item is not
-	// printed if the pointer is nil. Thus, if we want to print the
-	// item, don't set the value to the zero value, set the pointer to
-	// nil.  See: https://emretanriverdi.medium.com/json-serialization-in-go-a27aeeb968de
+	// These are pointers so that we can display the zero-value on demand.  If
+	// they were not pointers, the zero-value ("" and 0) would result in no JSON
+	// output for those fields.  Sometimes we want to generate fields with
+	// zero-values, such as `"newTag":""`.  Thus we make these points. The
+	// zero-value is now "nil".  If we want the field to appear in the JSON, we
+	// set the pointer to a value. It is no longer nil, and will be output even
+	// if the value at the pointer is zero-value.
+	// See: https://emretanriverdi.medium.com/json-serialization-in-go-a27aeeb968de
 	CurrentTag *string `json:"currentTag,omitempty"`
-	NewTag     *string `json:"newTag,omitempty"`
-	NewFlag    uint8   `json:"newFlag,omitempty"`
+	NewTag     *string `json:"newTag,omitempty"`  // "" needs to be sent explicitly.
+	NewFlag    *uint8  `json:"newFlag,omitempty"` // 0 needs to be sent explictly.
 }
 
 type zoneEditRequest = struct {
@@ -339,9 +342,11 @@ func (client *providerClient) getZoneRecordsAll(zone string) (*zoneResponse, err
 		return nil, err
 	}
 
-	fmt.Printf("------------------\n")
-	fmt.Printf("DEBUG: ZONE RESPONSE = %s\n", bodyString)
-	fmt.Printf("------------------\n")
+	if cscDebug {
+		fmt.Printf("------------------\n")
+		fmt.Printf("DEBUG: ZONE RESPONSE = %s\n", bodyString)
+		fmt.Printf("------------------\n")
+	}
 
 	var dr zoneResponse
 	json.Unmarshal(bodyString, &dr)
@@ -360,7 +365,9 @@ func (client *providerClient) sendZoneEditRequest(domainname string, edits []zon
 	if err != nil {
 		return err
 	}
-	fmt.Printf("DEBUG: edit request = %s\n", requestBody)
+	if cscDebug {
+		fmt.Printf("DEBUG: edit request = %s\n", requestBody)
+	}
 	responseBody, err := client.post("/zones/edits", requestBody)
 	if err != nil {
 		return err
@@ -448,23 +455,19 @@ type pagedZoneEditResponsePagedZoneEditResponse struct {
 }
 
 func (client *providerClient) clearRequests(domain string) error {
-	//fmt.Print("DEBUG ========= ClearRequests START\n")
 	var bodyString, err = client.get("/zones/edits?filter=zoneName==" + domain)
-	//fmt.Print("DEBUG ========= ClearRequests 1\n")
 	if err != nil {
 		return err
 	}
 
 	var dr pagedZoneEditResponsePagedZoneEditResponse
 	json.Unmarshal(bodyString, &dr)
-	//fmt.Print("DEBUG ========= ClearRequests 2\n")
 
-	// TODO(tlim): Handle paganation.
+	// TODO(tlim): Properly handle paganation.
 	if dr.Meta.Pages != 1 {
 		return fmt.Errorf("cancelPendingEdits failed: Pages=%d", dr.Meta.Pages)
 	}
 
-	//fmt.Printf("DEBUG: request count = %d\n", len(dr.ZoneEdits))
 	for i, ze := range dr.ZoneEdits {
 		if ze.Status != "COMPLETED" && ze.Status != "CANCELED" {
 			fmt.Printf("REQUEST %d: %s %s\n", i, ze.ID, ze.Status)
