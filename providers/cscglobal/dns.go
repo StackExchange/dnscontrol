@@ -36,7 +36,7 @@ func (client *providerClient) GetZoneRecords(domain string) (models.Records, err
 	// }
 
 	// Option 3: Something else.  In this case, we get a big massive structure
-	// which needs to be broken up.  Still, we're returning a list of
+	// which needs to be broken up.  Still, we're generating a list of
 	// RecordConfig structures.
 	defaultTTL := records.Soa.TTL
 	for _, rr := range records.A {
@@ -60,10 +60,9 @@ func (client *providerClient) GetZoneRecords(domain string) (models.Records, err
 	for _, rr := range records.Srv {
 		existingRecords = append(existingRecords, nativeToRecordSRV(rr, domain, defaultTTL))
 	}
-	//for _, rr := range records.Caa {
-	//	existingRecords = append(existingRecords, nativeToRecordCAA(rr, domain, defaultTTL))
-	//}
-	// TODO(tlim): SOA record.
+	for _, rr := range records.Caa {
+		existingRecords = append(existingRecords, nativeToRecordCAA(rr, domain, defaultTTL))
+	}
 
 	return existingRecords, nil
 }
@@ -130,7 +129,10 @@ func (client *providerClient) GenerateDomainCorrections(dc *models.DomainConfig,
 		return nil, err
 	}
 
-	// For most providers you'll see something like this:
+	// How to generate corrections?
+
+	// (1) Most providers take individual deletes, creates, and
+	// modifications:
 
 	// // Generate changes.
 	//	corrections := []*models.Correction{}
@@ -145,7 +147,16 @@ func (client *providerClient) GenerateDomainCorrections(dc *models.DomainConfig,
 	//	}
 	//	return corrections, nil
 
-	// However, CSCGlobal has a weird API and therefore we do this:
+	// (2) Some providers upload the entire zone every time.  Look at
+	// GetDomainCorrections for BIND and NAMECHEAP for inspiration.
+
+	// (3) Others do something entirely different. Like CSCGlobal:
+
+	// CSCGlobal has a unique API.  A list of edits is sent in one API
+	// call. Edits aren't permitted if an existing edit is being
+	// processed. Therefore, before we do an edit we block until the
+	// previous edit is done executing.
+
 	var edits []ZoneResourceRecordEdit
 	var descriptions []string
 	for _, del := range dels {
@@ -185,9 +196,11 @@ func (client *providerClient) GenerateDomainCorrections(dc *models.DomainConfig,
 
 func makePurge(domainname string, cor diff.Correlation) ZoneResourceRecordEdit {
 	var existingTarget string
-	if cor.Existing.Type == "TXT" {
+
+	switch cor.Existing.Type {
+	case "TXT":
 		existingTarget = strings.Join(cor.Existing.TxtStrings, "")
-	} else {
+	default:
 		existingTarget = cor.Existing.GetTargetField()
 	}
 
@@ -197,6 +210,11 @@ func makePurge(domainname string, cor diff.Correlation) ZoneResourceRecordEdit {
 		CurrentKey:   cor.Existing.Name,
 		CurrentValue: existingTarget,
 	}
+
+	if cor.Existing.Type == "CAA" {
+		zer.CurrentTag = cor.Existing.CaaTag
+	}
+
 	return zer
 }
 
@@ -204,9 +222,10 @@ func makeAdd(domainname string, cre diff.Correlation) ZoneResourceRecordEdit {
 	rec := cre.Desired
 
 	var recTarget string
-	if rec.Type == "TXT" {
+	switch rec.Type {
+	case "TXT":
 		recTarget = strings.Join(rec.TxtStrings, "")
-	} else {
+	default:
 		recTarget = rec.GetTargetField()
 	}
 
@@ -217,22 +236,29 @@ func makeAdd(domainname string, cre diff.Correlation) ZoneResourceRecordEdit {
 		NewValue:   recTarget,
 		NewTTL:     rec.TTL,
 	}
+
 	switch rec.Type {
 
-	case "A", "CNAME", "NS":
-	// Nothing to do.
+	case "CAA":
+		zer.NewTag = rec.CaaTag
+		zer.NewFlag = rec.CaaFlag
+
+	case "MX":
+		zer.NewPriority = rec.MxPreference
+
+	case "SRV":
+		zer.NewPriority = rec.SrvPriority
+		zer.NewWeight = rec.SrvWeight
+		zer.NewPort = rec.SrvPort
 
 	case "TXT":
 		zer.NewValue = strings.Join(rec.TxtStrings, "")
 		fmt.Printf("DEBUG: makeAdd TXT NewValue=%q\n", zer.NewValue)
 
-	case "MX":
-		zer.NewPriority = rec.MxPreference
-
-	default:
-		panic(fmt.Sprintf("CSC Not implemented: %s\n", rec.Type))
-
+	default: // "A", "CNAME", "NS"
+		// Nothing to do.
 	}
+
 	return zer
 }
 
@@ -240,11 +266,13 @@ func makeEdit(domainname string, m diff.Correlation) ZoneResourceRecordEdit {
 	old, rec := m.Existing, m.Desired
 	// TODO: Assert that old.Type == rec.Type
 	// TODO: Assert that old.Name == rec.Name
+
 	var oldTarget, recTarget string
-	if old.Type == "TXT" {
+	switch old.Type {
+	case "TXT":
 		oldTarget = strings.Join(old.TxtStrings, "")
 		recTarget = strings.Join(rec.TxtStrings, "")
-	} else {
+	default:
 		oldTarget = old.GetTargetField()
 		recTarget = rec.GetTargetField()
 	}
@@ -263,8 +291,6 @@ func makeEdit(domainname string, m diff.Correlation) ZoneResourceRecordEdit {
 	}
 
 	switch old.Type {
-	case "A", "CNAME", "NS", "TXT":
-		// Nothing to do.
 
 	case "CAA":
 		zer.CurrentTag = old.CaaTag
@@ -280,10 +306,15 @@ func makeEdit(domainname string, m diff.Correlation) ZoneResourceRecordEdit {
 			zer.NewPriority = rec.MxPreference
 		}
 
-	default:
-		panic(fmt.Sprintf("CSC Not implemented: %s\n", old.Type))
+	case "SRV":
+		//zer.CurrenPriority = rec.SrvPriority
+		zer.NewWeight = rec.SrvWeight
+		zer.NewPort = rec.SrvPort
+		zer.NewPriority = rec.SrvPriority
 
+	default: // "A", "CNAME", "NS", "TXT"
+		// Nothing to do.
 	}
-	// TODO(tlim): Depending on the rType, we will have to set different fields.
+
 	return zer
 }

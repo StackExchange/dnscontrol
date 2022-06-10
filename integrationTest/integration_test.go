@@ -760,7 +760,7 @@ func makeTests(t *testing.T) []*TestGroup {
 			not(
 				"AUTODNS",
 				"AZURE_DNS",
-				//"CSCGLOBAL",
+				"CSCGLOBAL",
 				"DIGITALOCEAN",
 				"DNSIMPLE",
 				"GANDI_V5",
@@ -1030,8 +1030,8 @@ func makeTests(t *testing.T) []*TestGroup {
 			//  - Gandi: page size is 100, therefore we test with 99, 100, and 101
 			//  - DIGITALOCEAN: page size is 100 (default: 20)
 			not(
-				"CLOUDFLAREAPI", // Infinite pagesize but due to slow speed, skipping.
-				//"CSCGLOBAL", // Not
+				//"CLOUDFLAREAPI", // Infinite pagesize but due to slow speed, skipping.
+				"CSCGLOBAL",  // Doesn't page. Plus, due Works fine. Due to the slow API we skip.
 				"GANDI_V5",   // Their API is so damn slow. We'll add it back as needed.
 				"MSDNS",      //  No paging done. No need to test.
 				"NAMEDOTCOM", // Their API is so damn slow. We'll add it back as needed.
@@ -1045,7 +1045,7 @@ func makeTests(t *testing.T) []*TestGroup {
 		testgroup("pager601",
 			only(
 				//"AZURE_DNS", // Currently failing.
-				//"CSCGLOBAL",
+				//"CSCGLOBAL", // Doesn't page. Plus, due Works fine. Due to the slow API we skip
 				"GCLOUD",
 				"HEXONET",
 				//"MSDNS",     //  No paging done. No need to test.
@@ -1060,7 +1060,7 @@ func makeTests(t *testing.T) []*TestGroup {
 				//"AKAMAIEDGEDNS", // No paging done. No need to test.
 				//"AZURE_DNS",     // Currently failing. See https://github.com/StackExchange/dnscontrol/issues/770
 				//"CLOUDFLAREAPI", // Fails with >1000 corrections. See https://github.com/StackExchange/dnscontrol/issues/1440
-				//"CSCGLOBAL",
+				//"CSCGLOBAL",     // Doesn't page. Plus, due Works fine. Due to the slow API we skip
 				"HEXONET",
 				"HOSTINGDE",
 				//"MSDNS",         // No paging done. No need to test.
@@ -1148,6 +1148,7 @@ func makeTests(t *testing.T) []*TestGroup {
 		),
 		testgroup("SRV w/ null target", requires(providers.CanUseSRV),
 			not(
+				"CSCGLOBAL",  // Not supported.
 				"EXOSCALE",   // Not supported.
 				"HEXONET",    // Not supported.
 				"INWX",       // Not supported.

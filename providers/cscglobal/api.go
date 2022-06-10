@@ -51,144 +51,7 @@ type domainRecord struct {
 	Nameserver []string `json:"nameservers"`
 }
 
-func (client *providerClient) getNameservers(domain string) ([]string, error) {
-	var bodyString, err = client.get("/domains/" + domain)
-	if err != nil {
-		return nil, err
-	}
-
-	var dr domainRecord
-	json.Unmarshal(bodyString, &dr)
-	ns := []string{}
-	ns = append(ns, dr.Nameserver...)
-	sort.Strings(ns)
-	return ns, nil
-}
-
-func (client *providerClient) updateNameservers(ns []string, domain string) error {
-	req := nsModRequest{
-		Domain:      domain,
-		NameServers: ns,
-		DNSType:     "OTHER_DNS",
-		ShowPrice:   false,
-	}
-	if client.notifyEmails != nil {
-		req.Notifications.Enabled = true
-		req.Notifications.Emails = client.notifyEmails
-	}
-	req.CustomFields = []string{}
-
-	requestBody, err := json.MarshalIndent(req, "", "  ")
-	if err != nil {
-		return err
-	}
-
-	bodyString, err := client.put("/domains/nsmodification", requestBody)
-	if err != nil {
-		return fmt.Errorf("CSC Global: Error update NS : %w", err)
-	}
-
-	var res nsModRequestResult
-	json.Unmarshal(bodyString, &res)
-	if res.Result.Status.Code != "SUBMITTED" {
-		return fmt.Errorf("CSC Global: Error update NS Code: %s Message: %s AdditionalInfo: %s", res.Result.Status.Code, res.Result.Status.Message, res.Result.Status.AdditionalInformation)
-	}
-
-	return nil
-}
-
-// DomainsResult is the JSON returned by "/domains".  Fields we don't
-// use are commented out.
-type DomainsResult struct {
-	Meta struct {
-		NumResults int `json:"numResults"`
-		Pages      int `json:"pages"`
-	} `json:"meta"`
-	Domains []struct {
-		QualifiedDomainName string `json:"qualifiedDomainName"`
-		//		Domain                   string        `json:"domain"`
-		//		Idn                      string        `json:"idn"`
-		//		Extension                string        `json:"extension"`
-		//		NewGtld                  bool          `json:"newGtld"`
-		//		ManagedStatus            string        `json:"managedStatus"`
-		//		RegistrationDate         string        `json:"registrationDate"`
-		//		RegistryExpiryDate       string        `json:"registryExpiryDate"`
-		//		PaidThroughDate          string        `json:"paidThroughDate"`
-		//		CountryCode              string        `json:"countryCode"`
-		//		ServerDeleteProhibited   bool          `json:"serverDeleteProhibited"`
-		//		ServerTransferProhibited bool          `json:"serverTransferProhibited"`
-		//		ServerUpdateProhibited   bool          `json:"serverUpdateProhibited"`
-		//		DNSType                  string        `json:"dnsType"`
-		//		WhoisPrivacy             bool          `json:"whoisPrivacy"`
-		//		LocalAgent               bool          `json:"localAgent"`
-		//		DnssecActivated          string        `json:"dnssecActivated"`
-		//		CriticalDomain           bool          `json:"criticalDomain"`
-		//		BusinessUnit             string        `json:"businessUnit"`
-		//		BrandName                string        `json:"brandName"`
-		//		IdnReferenceName         string        `json:"idnReferenceName"`
-		//		CustomFields             []interface{} `json:"customFields"`
-		//		Account                  struct {
-		//			AccountNumber string `json:"accountNumber"`
-		//			AccountName   string `json:"accountName"`
-		//		} `json:"account"`
-		//		Urlf struct {
-		//			RedirectType  string `json:"redirectType"`
-		//			URLForwarding bool   `json:"urlForwarding"`
-		//		} `json:"urlf"`
-		//		NameServers   []string `json:"nameServers"`
-		//		WhoisContacts []struct {
-		//			ContactType   string `json:"contactType"`
-		//			FirstName     string `json:"firstName"`
-		//			LastName      string `json:"lastName"`
-		//			Organization  string `json:"organization"`
-		//			Street1       string `json:"street1"`
-		//			Street2       string `json:"street2"`
-		//			City          string `json:"city"`
-		//			StateProvince string `json:"stateProvince"`
-		//			Country       string `json:"country"`
-		//			PostalCode    string `json:"postalCode"`
-		//			Email         string `json:"email"`
-		//			Phone         string `json:"phone"`
-		//			PhoneExtn     string `json:"phoneExtn"`
-		//			Fax           string `json:"fax"`
-		//		} `json:"whoisContacts"`
-		//		LastModifiedDate        string `json:"lastModifiedDate"`
-		//		LastModifiedReason      string `json:"lastModifiedReason"`
-		//		LastModifiedDescription string `json:"lastModifiedDescription"`
-	} `json:"domains"`
-	//	Links struct {
-	//		Self string `json:"self"`
-	//	} `json:"links"`
-}
-
-func (client *providerClient) getDomains() ([]string, error) {
-	var bodyString, err = client.get("/domains")
-	if err != nil {
-		return nil, err
-	}
-
-	//fmt.Printf("------------------\n")
-	//fmt.Printf("BODYSTRING = %s\n", bodyString)
-	//fmt.Printf("------------------\n")
-
-	var dr DomainsResult
-	json.Unmarshal(bodyString, &dr)
-
-	if dr.Meta.Pages > 1 {
-		return nil, fmt.Errorf("cscglobal getDomains: unimplemented  paganation")
-	}
-
-	var r []string
-	for _, d := range dr.Domains {
-		r = append(r, d.QualifiedDomainName)
-	}
-
-	//fmt.Printf("------------------\n")
-	//fmt.Printf("DR = %+v\n", dr)
-	//fmt.Printf("------------------\n")
-
-	return r, nil
-}
+// Get zone
 
 type nativeRecordA = struct {
 	ID     string `json:"id"`
@@ -278,21 +141,7 @@ type zoneResponse struct {
 	Soa         nativeRecordSOA     `json:"soa"`
 }
 
-func (client *providerClient) getZoneRecordsAll(zone string) (*zoneResponse, error) {
-	var bodyString, err = client.get("/zones/" + zone)
-	if err != nil {
-		return nil, err
-	}
-
-	//fmt.Printf("------------------\n")
-	//fmt.Printf("BODYSTRING = %s\n", bodyString)
-	//fmt.Printf("------------------\n")
-
-	var dr zoneResponse
-	json.Unmarshal(bodyString, &dr)
-
-	return &dr, nil
-}
+// Zone edits
 
 type ZoneResourceRecordEdit = struct {
 	Action       string `json:"action"`
@@ -305,12 +154,12 @@ type ZoneResourceRecordEdit = struct {
 	// MX and SRV:
 	NewPriority uint16 `json:"newPriority,omitempty"`
 	// SRV:
-	CurrentTag string `json:"currentTag,omitempty"`
-	NewWeight  uint16 `json:"newWeight,omitempty"`
-	NewPort    uint16 `json:"newPort,omitempty"`
+	NewWeight uint16 `json:"newWeight,omitempty"`
+	NewPort   uint16 `json:"newPort,omitempty"`
 	// CAA:
-	NewTag  string `json:"newTag,omitempty"`
-	NewFlag uint8  `json:"newFlag,omitempty"`
+	CurrentTag string `json:"currentTag,omitempty"`
+	NewTag     string `json:"newTag,omitempty"`
+	NewFlag    uint8  `json:"newFlag,omitempty"`
 }
 
 type ZoneEditRequest = struct {
@@ -339,6 +188,161 @@ type ZoneEditStatusResultZoneEditStatusResult struct {
 	} `json:"links"`
 }
 
+func (client *providerClient) getNameservers(domain string) ([]string, error) {
+	var bodyString, err = client.get("/domains/" + domain)
+	if err != nil {
+		return nil, err
+	}
+
+	var dr domainRecord
+	json.Unmarshal(bodyString, &dr)
+	ns := []string{}
+	ns = append(ns, dr.Nameserver...)
+	sort.Strings(ns)
+	return ns, nil
+}
+
+func (client *providerClient) updateNameservers(ns []string, domain string) error {
+	req := nsModRequest{
+		Domain:      domain,
+		NameServers: ns,
+		DNSType:     "OTHER_DNS",
+		ShowPrice:   false,
+	}
+	if client.notifyEmails != nil {
+		req.Notifications.Enabled = true
+		req.Notifications.Emails = client.notifyEmails
+	}
+	req.CustomFields = []string{}
+
+	requestBody, err := json.MarshalIndent(req, "", "  ")
+	if err != nil {
+		return err
+	}
+
+	bodyString, err := client.put("/domains/nsmodification", requestBody)
+	if err != nil {
+		return fmt.Errorf("CSC Global: Error update NS : %w", err)
+	}
+
+	var res nsModRequestResult
+	json.Unmarshal(bodyString, &res)
+	if res.Result.Status.Code != "SUBMITTED" {
+		return fmt.Errorf("CSC Global: Error update NS Code: %s Message: %s AdditionalInfo: %s", res.Result.Status.Code, res.Result.Status.Message, res.Result.Status.AdditionalInformation)
+	}
+
+	return nil
+}
+
+// domainsResult is the JSON returned by "/domains".  Fields we don't
+// use are commented out.
+type domainsResult struct {
+	Meta struct {
+		NumResults int `json:"numResults"`
+		Pages      int `json:"pages"`
+	} `json:"meta"`
+	Domains []struct {
+		QualifiedDomainName string `json:"qualifiedDomainName"`
+		//		Domain                   string        `json:"domain"`
+		//		Idn                      string        `json:"idn"`
+		//		Extension                string        `json:"extension"`
+		//		NewGtld                  bool          `json:"newGtld"`
+		//		ManagedStatus            string        `json:"managedStatus"`
+		//		RegistrationDate         string        `json:"registrationDate"`
+		//		RegistryExpiryDate       string        `json:"registryExpiryDate"`
+		//		PaidThroughDate          string        `json:"paidThroughDate"`
+		//		CountryCode              string        `json:"countryCode"`
+		//		ServerDeleteProhibited   bool          `json:"serverDeleteProhibited"`
+		//		ServerTransferProhibited bool          `json:"serverTransferProhibited"`
+		//		ServerUpdateProhibited   bool          `json:"serverUpdateProhibited"`
+		//		DNSType                  string        `json:"dnsType"`
+		//		WhoisPrivacy             bool          `json:"whoisPrivacy"`
+		//		LocalAgent               bool          `json:"localAgent"`
+		//		DnssecActivated          string        `json:"dnssecActivated"`
+		//		CriticalDomain           bool          `json:"criticalDomain"`
+		//		BusinessUnit             string        `json:"businessUnit"`
+		//		BrandName                string        `json:"brandName"`
+		//		IdnReferenceName         string        `json:"idnReferenceName"`
+		//		CustomFields             []interface{} `json:"customFields"`
+		//		Account                  struct {
+		//			AccountNumber string `json:"accountNumber"`
+		//			AccountName   string `json:"accountName"`
+		//		} `json:"account"`
+		//		Urlf struct {
+		//			RedirectType  string `json:"redirectType"`
+		//			URLForwarding bool   `json:"urlForwarding"`
+		//		} `json:"urlf"`
+		//		NameServers   []string `json:"nameServers"`
+		//		WhoisContacts []struct {
+		//			ContactType   string `json:"contactType"`
+		//			FirstName     string `json:"firstName"`
+		//			LastName      string `json:"lastName"`
+		//			Organization  string `json:"organization"`
+		//			Street1       string `json:"street1"`
+		//			Street2       string `json:"street2"`
+		//			City          string `json:"city"`
+		//			StateProvince string `json:"stateProvince"`
+		//			Country       string `json:"country"`
+		//			PostalCode    string `json:"postalCode"`
+		//			Email         string `json:"email"`
+		//			Phone         string `json:"phone"`
+		//			PhoneExtn     string `json:"phoneExtn"`
+		//			Fax           string `json:"fax"`
+		//		} `json:"whoisContacts"`
+		//		LastModifiedDate        string `json:"lastModifiedDate"`
+		//		LastModifiedReason      string `json:"lastModifiedReason"`
+		//		LastModifiedDescription string `json:"lastModifiedDescription"`
+	} `json:"domains"`
+	//	Links struct {
+	//		Self string `json:"self"`
+	//	} `json:"links"`
+}
+
+func (client *providerClient) getDomains() ([]string, error) {
+	var bodyString, err = client.get("/domains")
+	if err != nil {
+		return nil, err
+	}
+
+	//fmt.Printf("------------------\n")
+	//fmt.Printf("BODYSTRING = %s\n", bodyString)
+	//fmt.Printf("------------------\n")
+
+	var dr domainsResult
+	json.Unmarshal(bodyString, &dr)
+
+	if dr.Meta.Pages > 1 {
+		return nil, fmt.Errorf("cscglobal getDomains: unimplemented  paganation")
+	}
+
+	var r []string
+	for _, d := range dr.Domains {
+		r = append(r, d.QualifiedDomainName)
+	}
+
+	//fmt.Printf("------------------\n")
+	//fmt.Printf("DR = %+v\n", dr)
+	//fmt.Printf("------------------\n")
+
+	return r, nil
+}
+
+func (client *providerClient) getZoneRecordsAll(zone string) (*zoneResponse, error) {
+	var bodyString, err = client.get("/zones/" + zone)
+	if err != nil {
+		return nil, err
+	}
+
+	//fmt.Printf("------------------\n")
+	//fmt.Printf("DEBUG: ZONE RESPONSE = %s\n", bodyString)
+	//fmt.Printf("------------------\n")
+
+	var dr zoneResponse
+	json.Unmarshal(bodyString, &dr)
+
+	return &dr, nil
+}
+
 func (client *providerClient) SendZoneEditRequest(domainname string, edits []ZoneResourceRecordEdit) error {
 
 	req := ZoneEditRequest{
@@ -346,15 +350,11 @@ func (client *providerClient) SendZoneEditRequest(domainname string, edits []Zon
 		Edits:    &edits,
 	}
 
-	//fmt.Printf("DEBUG: pre-marshal: edits = %+v\n", edits)
-	//fmt.Printf("DEBUG: pre-marshal: req   = %q\n", req)
-	//fmt.Printf("DEBUG: pre-marshal: RT    = %q\n", edits[0].RecordType)
-	//fmt.Printf("DEBUG: pre-marshal: NV    = %q\n", edits[0].NewValue)
 	requestBody, err := json.Marshal(req)
 	if err != nil {
 		return err
 	}
-	fmt.Printf("DEBUG: edit request = %s\n", requestBody)
+	//fmt.Printf("DEBUG: edit request = %s\n", requestBody)
 	responseBody, err := client.post("/zones/edits", requestBody)
 	if err != nil {
 		return err
@@ -413,6 +413,7 @@ func (client *providerClient) waitRequestURL(statusURL string) error {
 		time.Sleep(1 * time.Second)
 	}
 	return nil
+
 	// Response looks like:
 	//{
 	//	"content": {
@@ -441,7 +442,7 @@ type PagedZoneEditResponsePagedZoneEditResponse struct {
 }
 
 func (client *providerClient) ClearRequests(domain string) error {
-	fmt.Print("DEBUG ========= ClearRequests START\n")
+	//fmt.Print("DEBUG ========= ClearRequests START\n")
 	var bodyString, err = client.get("/zones/edits?filter=zoneName==" + domain)
 	//fmt.Print("DEBUG ========= ClearRequests 1\n")
 	if err != nil {
@@ -520,7 +521,6 @@ func (client *providerClient) put(endpoint string, requestBody []byte) ([]byte, 
 }
 
 func (client *providerClient) delete(endpoint string) ([]byte, error) {
-	return nil, nil
 	hclient := &http.Client{}
 	fmt.Printf("DEBUG: delete endpoint: %q\n", apiBase+endpoint)
 	req, _ := http.NewRequest("DELETE", apiBase+endpoint, nil)
@@ -558,9 +558,7 @@ func (client *providerClient) delete(endpoint string) ([]byte, error) {
 }
 
 func (client *providerClient) post(endpoint string, requestBody []byte) ([]byte, error) {
-
 	hclient := &http.Client{}
-	//req, _ := http.NewRequest("POST", apiBase+endpoint, bytes.NewReader(requestBody))
 	req, _ := http.NewRequest("POST", apiBase+endpoint, bytes.NewBuffer(requestBody))
 
 	// Add headers
@@ -575,10 +573,10 @@ func (client *providerClient) post(endpoint string, requestBody []byte) ([]byte,
 	}
 
 	bodyString, _ := ioutil.ReadAll(resp.Body)
-	fmt.Printf("------------------\n")
-	fmt.Printf("DEBUG: resp.StatusCode == %d\n", resp.StatusCode)
-	fmt.Printf("POST RESPONSE = %s\n", bodyString)
-	fmt.Printf("------------------\n")
+	//fmt.Printf("------------------\n")
+	//fmt.Printf("DEBUG: resp.StatusCode == %d\n", resp.StatusCode)
+	//fmt.Printf("POST RESPONSE = %s\n", bodyString)
+	//fmt.Printf("------------------\n")
 	if resp.StatusCode == 201 {
 		return bodyString, nil
 	}
