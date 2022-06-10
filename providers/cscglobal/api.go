@@ -6,9 +6,12 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net/http"
+	"os"
 	"sort"
 	"strings"
 	"time"
+
+	"github.com/mattn/go-isatty"
 )
 
 const apiBase = "https://apis.cscglobal.com/dbs/api/v2"
@@ -407,11 +410,13 @@ func (client *providerClient) waitRequestURL(statusURL string) error {
 		}
 		status, msg := statusResp.Content.Status, statusResp.Content.ErrorDescription
 
-		dur := time.Since(t1).Round(time.Second)
-		if msg == "" {
-			fmt.Printf("WAITING: % 6s STATUS=%s           \r", dur, status)
-		} else {
-			fmt.Printf("WAITING: % 6s STATUS=%s MSG=%q    \r", dur, status, msg)
+		if isatty.IsTerminal(os.Stdout.Fd()) {
+			dur := time.Since(t1).Round(time.Second)
+			if msg == "" {
+				fmt.Printf("WAITING: % 6s STATUS=%s           \r", dur, status)
+			} else {
+				fmt.Printf("WAITING: % 6s STATUS=%s MSG=%q    \r", dur, status, msg)
+			}
 		}
 		if status == "FAILED" {
 			fmt.Println()
