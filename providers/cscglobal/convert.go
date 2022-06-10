@@ -124,6 +124,6 @@ func nativeToRecordCAA(nr nativeRecordCAA, origin string, defaultTTL uint32) *mo
 		TTL:  ttl,
 	}
 	rc.SetLabel(nr.Key, origin)
-	rc.SetTargetCAA(nr.Flag, *(nr.Tag), nr.Value)
+	rc.SetTargetCAA(nr.Flag, nr.Tag, nr.Value)
 	return rc
 }

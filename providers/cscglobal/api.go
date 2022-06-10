@@ -108,13 +108,13 @@ type nativeRecordSRV = struct {
 	Port     uint16 `json:"port"`
 }
 type nativeRecordCAA = struct {
-	ID     string  `json:"id"`
-	Key    string  `json:"key"`
-	Value  string  `json:"value"`
-	TTL    uint32  `json:"ttl"`
-	Status string  `json:"status"`
-	Tag    *string `json:"tag"`
-	Flag   uint8   `json:"flag"`
+	ID     string `json:"id"`
+	Key    string `json:"key"`
+	Value  string `json:"value"`
+	TTL    uint32 `json:"ttl"`
+	Status string `json:"status"`
+	Tag    string `json:"tag"`
+	Flag   uint8  `json:"flag"`
 }
 type nativeRecordSOA = struct {
 	Serial     int    `json:"serial"`
@@ -158,6 +158,11 @@ type zoneResourceRecordEdit = struct {
 	NewWeight uint16 `json:"newWeight,omitempty"`
 	NewPort   uint16 `json:"newPort,omitempty"`
 	// CAA:
+	// These are pointers to strings so that a null string will generate
+	// JSON and not be considered "empty". Instead, the item is not
+	// printed if the pointer is nil. Thus, if we want to print the
+	// item, don't set the value to the zero value, set the pointer to
+	// nil.  See: https://emretanriverdi.medium.com/json-serialization-in-go-a27aeeb968de
 	CurrentTag *string `json:"currentTag,omitempty"`
 	NewTag     *string `json:"newTag,omitempty"`
 	NewFlag    uint8   `json:"newFlag,omitempty"`
