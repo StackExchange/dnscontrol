@@ -108,12 +108,13 @@ type nativeRecordSRV = struct {
 	Port     uint16 `json:"port"`
 }
 type nativeRecordCAA = struct {
-	ID       string `json:"id"`
-	Key      string `json:"key"`
-	Value    string `json:"value"`
-	TTL      uint32 `json:"ttl"`
-	Status   string `json:"status"`
-	Priority int    `json:"priority"`
+	ID     string  `json:"id"`
+	Key    string  `json:"key"`
+	Value  string  `json:"value"`
+	TTL    uint32  `json:"ttl"`
+	Status string  `json:"status"`
+	Tag    *string `json:"tag"`
+	Flag   uint8   `json:"flag"`
 }
 type nativeRecordSOA = struct {
 	Serial     int    `json:"serial"`
@@ -143,7 +144,7 @@ type zoneResponse struct {
 
 // Zone edits
 
-type ZoneResourceRecordEdit = struct {
+type zoneResourceRecordEdit = struct {
 	Action       string `json:"action"`
 	RecordType   string `json:"recordType"`
 	CurrentKey   string `json:"currentKey,omitempty"`
@@ -157,17 +158,17 @@ type ZoneResourceRecordEdit = struct {
 	NewWeight uint16 `json:"newWeight,omitempty"`
 	NewPort   uint16 `json:"newPort,omitempty"`
 	// CAA:
-	CurrentTag string `json:"currentTag,omitempty"`
-	NewTag     string `json:"newTag,omitempty"`
-	NewFlag    uint8  `json:"newFlag,omitempty"`
+	CurrentTag *string `json:"currentTag,omitempty"`
+	NewTag     *string `json:"newTag,omitempty"`
+	NewFlag    uint8   `json:"newFlag,omitempty"`
 }
 
-type ZoneEditRequest = struct {
+type zoneEditRequest = struct {
 	ZoneName string                    `json:"zoneName"`
-	Edits    *[]ZoneResourceRecordEdit `json:"edits"`
+	Edits    *[]zoneResourceRecordEdit `json:"edits"`
 }
 
-type ZoneEditRequestResultZoneEditRequestResult struct {
+type zoneEditRequestResultZoneEditRequestResult struct {
 	Content struct {
 		Status  string `json:"status"`
 		Message string `json:"message"`
@@ -178,7 +179,7 @@ type ZoneEditRequestResultZoneEditRequestResult struct {
 	} `json:"links"`
 }
 
-type ZoneEditStatusResultZoneEditStatusResult struct {
+type zoneEditStatusResultZoneEditStatusResult struct {
 	Content struct {
 		Status           string `json:"status"`
 		ErrorDescription string `json:"errorDescription"`
@@ -333,9 +334,9 @@ func (client *providerClient) getZoneRecordsAll(zone string) (*zoneResponse, err
 		return nil, err
 	}
 
-	//fmt.Printf("------------------\n")
-	//fmt.Printf("DEBUG: ZONE RESPONSE = %s\n", bodyString)
-	//fmt.Printf("------------------\n")
+	fmt.Printf("------------------\n")
+	fmt.Printf("DEBUG: ZONE RESPONSE = %s\n", bodyString)
+	fmt.Printf("------------------\n")
 
 	var dr zoneResponse
 	json.Unmarshal(bodyString, &dr)
@@ -343,9 +344,9 @@ func (client *providerClient) getZoneRecordsAll(zone string) (*zoneResponse, err
 	return &dr, nil
 }
 
-func (client *providerClient) SendZoneEditRequest(domainname string, edits []ZoneResourceRecordEdit) error {
+func (client *providerClient) sendZoneEditRequest(domainname string, edits []zoneResourceRecordEdit) error {
 
-	req := ZoneEditRequest{
+	req := zoneEditRequest{
 		ZoneName: domainname,
 		Edits:    &edits,
 	}
@@ -354,13 +355,13 @@ func (client *providerClient) SendZoneEditRequest(domainname string, edits []Zon
 	if err != nil {
 		return err
 	}
-	//fmt.Printf("DEBUG: edit request = %s\n", requestBody)
+	fmt.Printf("DEBUG: edit request = %s\n", requestBody)
 	responseBody, err := client.post("/zones/edits", requestBody)
 	if err != nil {
 		return err
 	}
 
-	var errResp ZoneEditRequestResultZoneEditRequestResult
+	var errResp zoneEditRequestResultZoneEditRequestResult
 	err = json.Unmarshal(responseBody, &errResp)
 	if err != nil {
 		return fmt.Errorf("CSC Global API error: %s DATA: %q", err, errResp)
@@ -386,7 +387,7 @@ func (client *providerClient) waitRequestURL(statusURL string) error {
 			fmt.Println()
 			return fmt.Errorf("CSC Global API error: %s DATA: %q", err, statusBody)
 		}
-		var statusResp ZoneEditStatusResultZoneEditStatusResult
+		var statusResp zoneEditStatusResultZoneEditStatusResult
 		err = json.Unmarshal(statusBody, &statusResp)
 		if err != nil {
 			fmt.Println()
@@ -429,7 +430,7 @@ func (client *providerClient) waitRequestURL(statusURL string) error {
 
 // Cancel pending/stuck edits
 
-type PagedZoneEditResponsePagedZoneEditResponse struct {
+type pagedZoneEditResponsePagedZoneEditResponse struct {
 	Meta struct {
 		NumResults int `json:"numResults"`
 		Pages      int `json:"pages"`
@@ -441,7 +442,7 @@ type PagedZoneEditResponsePagedZoneEditResponse struct {
 	} `json:"zoneEdits"`
 }
 
-func (client *providerClient) ClearRequests(domain string) error {
+func (client *providerClient) clearRequests(domain string) error {
 	//fmt.Print("DEBUG ========= ClearRequests START\n")
 	var bodyString, err = client.get("/zones/edits?filter=zoneName==" + domain)
 	//fmt.Print("DEBUG ========= ClearRequests 1\n")
@@ -449,7 +450,7 @@ func (client *providerClient) ClearRequests(domain string) error {
 		return err
 	}
 
-	var dr PagedZoneEditResponsePagedZoneEditResponse
+	var dr pagedZoneEditResponsePagedZoneEditResponse
 	json.Unmarshal(bodyString, &dr)
 	//fmt.Print("DEBUG ========= ClearRequests 2\n")
 

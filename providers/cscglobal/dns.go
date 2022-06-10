@@ -157,7 +157,7 @@ func (client *providerClient) GenerateDomainCorrections(dc *models.DomainConfig,
 	// processed. Therefore, before we do an edit we block until the
 	// previous edit is done executing.
 
-	var edits []ZoneResourceRecordEdit
+	var edits []zoneResourceRecordEdit
 	var descriptions []string
 	for _, del := range dels {
 		edits = append(edits, makePurge(dc.Name, del))
@@ -182,11 +182,11 @@ func (client *providerClient) GenerateDomainCorrections(dc *models.DomainConfig,
 				// I'm writing this) any time something fails, the failure has
 				// to be cleared out with an additional API call.
 
-				err := client.ClearRequests(dc.Name)
+				err := client.clearRequests(dc.Name)
 				if err != nil {
 					return err
 				}
-				return client.SendZoneEditRequest(dc.Name, edits)
+				return client.sendZoneEditRequest(dc.Name, edits)
 			},
 		}
 		corrections = append(corrections, c)
@@ -194,7 +194,7 @@ func (client *providerClient) GenerateDomainCorrections(dc *models.DomainConfig,
 	return corrections, nil
 }
 
-func makePurge(domainname string, cor diff.Correlation) ZoneResourceRecordEdit {
+func makePurge(domainname string, cor diff.Correlation) zoneResourceRecordEdit {
 	var existingTarget string
 
 	switch cor.Existing.Type {
@@ -204,7 +204,7 @@ func makePurge(domainname string, cor diff.Correlation) ZoneResourceRecordEdit {
 		existingTarget = cor.Existing.GetTargetField()
 	}
 
-	zer := ZoneResourceRecordEdit{
+	zer := zoneResourceRecordEdit{
 		Action:       "PURGE",
 		RecordType:   cor.Existing.Type,
 		CurrentKey:   cor.Existing.Name,
@@ -212,13 +212,15 @@ func makePurge(domainname string, cor diff.Correlation) ZoneResourceRecordEdit {
 	}
 
 	if cor.Existing.Type == "CAA" {
-		zer.CurrentTag = cor.Existing.CaaTag
+		var tagValue = cor.Existing.CaaTag
+		fmt.Printf("DEBUG: CAA TAG = %q\n", tagValue)
+		zer.CurrentTag = &tagValue
 	}
 
 	return zer
 }
 
-func makeAdd(domainname string, cre diff.Correlation) ZoneResourceRecordEdit {
+func makeAdd(domainname string, cre diff.Correlation) zoneResourceRecordEdit {
 	rec := cre.Desired
 
 	var recTarget string
@@ -229,7 +231,7 @@ func makeAdd(domainname string, cre diff.Correlation) ZoneResourceRecordEdit {
 		recTarget = rec.GetTargetField()
 	}
 
-	zer := ZoneResourceRecordEdit{
+	zer := zoneResourceRecordEdit{
 		Action:     "ADD",
 		RecordType: rec.Type,
 		NewKey:     rec.Name,
@@ -240,7 +242,8 @@ func makeAdd(domainname string, cre diff.Correlation) ZoneResourceRecordEdit {
 	switch rec.Type {
 
 	case "CAA":
-		zer.NewTag = rec.CaaTag
+		var tagValue = rec.CaaTag
+		zer.NewTag = &tagValue
 		zer.NewFlag = rec.CaaFlag
 
 	case "MX":
@@ -262,7 +265,7 @@ func makeAdd(domainname string, cre diff.Correlation) ZoneResourceRecordEdit {
 	return zer
 }
 
-func makeEdit(domainname string, m diff.Correlation) ZoneResourceRecordEdit {
+func makeEdit(domainname string, m diff.Correlation) zoneResourceRecordEdit {
 	old, rec := m.Existing, m.Desired
 	// TODO: Assert that old.Type == rec.Type
 	// TODO: Assert that old.Name == rec.Name
@@ -277,7 +280,7 @@ func makeEdit(domainname string, m diff.Correlation) ZoneResourceRecordEdit {
 		recTarget = rec.GetTargetField()
 	}
 
-	zer := ZoneResourceRecordEdit{
+	zer := zoneResourceRecordEdit{
 		Action:       "EDIT",
 		RecordType:   old.Type,
 		CurrentKey:   old.Name,
@@ -293,9 +296,10 @@ func makeEdit(domainname string, m diff.Correlation) ZoneResourceRecordEdit {
 	switch old.Type {
 
 	case "CAA":
-		zer.CurrentTag = old.CaaTag
+		var tagValue = old.CaaTag
+		zer.CurrentTag = &tagValue
 		if old.CaaTag != rec.CaaTag {
-			zer.NewTag = rec.CaaTag
+			zer.NewTag = &(rec.CaaTag)
 		}
 		if old.CaaFlag != rec.CaaFlag {
 			zer.NewFlag = rec.CaaFlag

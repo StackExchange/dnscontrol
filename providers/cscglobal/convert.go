@@ -112,3 +112,18 @@ func nativeToRecordSRV(nr nativeRecordSRV, origin string, defaultTTL uint32) *mo
 	rc.SetTargetSRV(nr.Priority, nr.Weight, nr.Port, nr.Value)
 	return rc
 }
+
+// nativeToRecordCAA takes a CAA record from DNS and returns a native RecordConfig struct.
+func nativeToRecordCAA(nr nativeRecordCAA, origin string, defaultTTL uint32) *models.RecordConfig {
+	ttl := nr.TTL
+	if ttl == 0 {
+		ttl = defaultTTL
+	}
+	rc := &models.RecordConfig{
+		Type: "CAA",
+		TTL:  ttl,
+	}
+	rc.SetLabel(nr.Key, origin)
+	rc.SetTargetCAA(nr.Flag, *(nr.Tag), nr.Value)
+	return rc
+}
