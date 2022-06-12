@@ -598,7 +598,7 @@ func checkLabelHasMultipleTTLs(records []*models.RecordConfig) (errs []error) {
 	for label := range m {
 		// if after the uniq() pass we still have more than one ttl, it means we have multiple TTLs for that label
 		if len(uniq(m[label])) > 1 {
-			errs = append(errs, Warning{fmt.Errorf("multiple TTLs detected for: %s. This should be avoided.", label)})
+			errs = append(errs, Warning{fmt.Errorf("multiple TTLs detected for: %s. This should be avoided", label)})
 		}
 	}
 	return errs

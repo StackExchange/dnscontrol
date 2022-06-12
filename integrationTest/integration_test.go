@@ -532,6 +532,10 @@ func ttl(r *models.RecordConfig, t uint32) *models.RecordConfig {
 	return r
 }
 
+// gentxt generates TXTmulti test cases.  The input string is used to
+// dictate the output, each char represents the substring in the
+// resulting TXTmulti.  0 or s outputs a short string, h outputs a 128-octet
+// string, 1 or l outputs a long (255-octet) string.
 func gentxt(s string) *TestCase {
 	title := fmt.Sprintf("Create TXT %s", s)
 	label := fmt.Sprintf("foo%d", len(s))
@@ -760,6 +764,7 @@ func makeTests(t *testing.T) []*TestGroup {
 			not(
 				"AUTODNS",
 				"AZURE_DNS",
+				"CSCGLOBAL", // Last verified 2022-06-07
 				"DIGITALOCEAN",
 				"DNSIMPLE",
 				"GANDI_V5",
@@ -900,7 +905,10 @@ func makeTests(t *testing.T) []*TestGroup {
 			tc("Create TXT with double-quote", txt("foodq", `quo"te`)),
 			clear(),
 			tc("Create TXT with ws at end", txt("foows1", "with space at end ")),
-			clear(),
+		),
+
+		//
+		testgroup("gentxt TXT",
 			gentxt("0"),
 			gentxt("1"),
 			gentxt("10"),
@@ -1030,6 +1038,7 @@ func makeTests(t *testing.T) []*TestGroup {
 			//  - DIGITALOCEAN: page size is 100 (default: 20)
 			not(
 				"CLOUDFLAREAPI", // Infinite pagesize but due to slow speed, skipping.
+				"CSCGLOBAL",     // Doesn't page. Works fine.  Due to the slow API we skip.
 				"GANDI_V5",      // Their API is so damn slow. We'll add it back as needed.
 				"MSDNS",         //  No paging done. No need to test.
 				"NAMEDOTCOM",    // Their API is so damn slow. We'll add it back as needed.
@@ -1042,10 +1051,11 @@ func makeTests(t *testing.T) []*TestGroup {
 
 		testgroup("pager601",
 			only(
-				//"MSDNS",     //  No paging done. No need to test.
 				//"AZURE_DNS", // Currently failing.
-				"HEXONET",
+				//"CSCGLOBAL", // Doesn't page. Works fine.  Due to the slow API we skip.
 				"GCLOUD",
+				"HEXONET",
+				//"MSDNS",     //  No paging done. No need to test.
 				"ROUTE53",
 			),
 			tc("601 records", manyA("rec%04d", "1.2.3.4", 600)...),
@@ -1057,6 +1067,7 @@ func makeTests(t *testing.T) []*TestGroup {
 				//"AKAMAIEDGEDNS", // No paging done. No need to test.
 				//"AZURE_DNS",     // Currently failing. See https://github.com/StackExchange/dnscontrol/issues/770
 				//"CLOUDFLAREAPI", // Fails with >1000 corrections. See https://github.com/StackExchange/dnscontrol/issues/1440
+				//"CSCGLOBAL",     // Doesn't page. Works fine.  Due to the slow API we skip.
 				"HEXONET",
 				"HOSTINGDE",
 				//"MSDNS",         // No paging done. No need to test.
@@ -1144,6 +1155,7 @@ func makeTests(t *testing.T) []*TestGroup {
 		),
 		testgroup("SRV w/ null target", requires(providers.CanUseSRV),
 			not(
+				"CSCGLOBAL",  // Not supported.
 				"EXOSCALE",   // Not supported.
 				"HEXONET",    // Not supported.
 				"INWX",       // Not supported.

@@ -8,6 +8,11 @@ jsId: CSCGLOBAL
 
 DNSControl's CSC Global provider supports being a Registrar. Support for being a DNS Provider is not included, although CSC Global's API does provide for this so it could be implemented in the future.
 
+NOTE: Experimental support for being a DNS Provider is available.
+However it is not recommended as updates take 5-7 minutes, and the
+next update is not permitted until the previous update is complete.
+Use it at your own risk.  Consider it experimental and undocumented.
+
 ## Configuration
 
 To use this provider, add an entry to `creds.json` with `TYPE` set to `CSCGLOBAL`.

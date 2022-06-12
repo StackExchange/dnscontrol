@@ -27,6 +27,12 @@
   "BIND": {
     "domain": "$BIND_DOMAIN"
   },
+  "CSCGLOBAL": {
+    "api-key": "$CSCGLOBAL_APIKEY",
+    "user-token": "$CSCGLOBAL_USERTOKEN",
+    "notification_emails": "$CSCGLOBAL_NOTIFICATION",
+    "domain": "$CSCGLOBAL_DOMAIN"
+  },
   "CLOUDFLAREAPI": {
     "apikey": "$CLOUDFLAREAPI_KEY",
     "apitoken": "$CLOUDFLAREAPI_TOKEN",
