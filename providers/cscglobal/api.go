@@ -164,7 +164,7 @@ type zoneResourceRecordEdit = struct {
 	// These are pointers so that we can display the zero-value on demand.  If
 	// they were not pointers, the zero-value ("" and 0) would result in no JSON
 	// output for those fields.  Sometimes we want to generate fields with
-	// zero-values, such as `"newTag":""`.  Thus we make these points. The
+	// zero-values, such as `"newTag":""`.  Thus we make these pointers. The
 	// zero-value is now "nil".  If we want the field to appear in the JSON, we
 	// set the pointer to a value. It is no longer nil, and will be output even
 	// if the value at the pointer is zero-value.
@@ -317,7 +317,7 @@ func (client *providerClient) getDomains() ([]string, error) {
 	}
 
 	//fmt.Printf("------------------\n")
-	//fmt.Printf("BODYSTRING = %s\n", bodyString)
+	//fmt.Printf("DEBUG: GETDOMAINS bodystring  = %s\n", bodyString)
 	//fmt.Printf("------------------\n")
 
 	var dr domainsResult
@@ -333,7 +333,7 @@ func (client *providerClient) getDomains() ([]string, error) {
 	}
 
 	//fmt.Printf("------------------\n")
-	//fmt.Printf("DR = %+v\n", dr)
+	//fmt.Printf("DEBUG: GETDOMAINS dr = %+v\n", dr)
 	//fmt.Printf("------------------\n")
 
 	return r, nil
