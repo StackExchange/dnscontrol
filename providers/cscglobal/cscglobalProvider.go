@@ -25,14 +25,14 @@ type providerClient struct {
 }
 
 var features = providers.DocumentationNotes{
-	providers.CanGetZones: providers.Can(),
-	//providers.CanUseCAA:              providers.Can(),
+	providers.CanGetZones:            providers.Can(),
+	providers.CanUseCAA:              providers.Can(),
 	providers.CanUseSRV:              providers.Can(),
 	providers.DocOfficiallySupported: providers.Can(),
 }
 
 // Set cscDebug to true if you want to see the JSON of important API requests and responses.
-var cscDebug = false
+var cscDebug = true
 
 func newReg(conf map[string]string) (providers.Registrar, error) {
 	return newProvider(conf)
