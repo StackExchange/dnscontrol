@@ -292,10 +292,9 @@ func makeEdit(domainname string, m diff.Correlation) zoneResourceRecordEdit {
 	case "CAA":
 		var tagValue = old.CaaTag
 		zer.CurrentTag = &tagValue
-		if old.CaaTag != rec.CaaTag {
+		if old.CaaTag != rec.CaaTag || old.CaaFlag != rec.CaaFlag || old.TTL != rec.TTL {
+			// If anything changed, we need to update both tag and flag.
 			zer.NewTag = &(rec.CaaTag)
-		}
-		if old.CaaFlag != rec.CaaFlag {
 			zer.NewFlag = &(rec.CaaFlag)
 		}
 	case "MX":
