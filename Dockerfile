@@ -2,15 +2,17 @@ FROM golang:1.18-alpine AS build
 
 WORKDIR /go/src/github.com/StackExchange/dnscontrol
 
+ARG BUILD_VERSION
+
 ENV GO111MODULE on
 
 COPY . .
 
 # build dnscontrol
-RUN apk update \ 
+RUN apk update \
     && apk add --no-cache ca-certificates curl gcc build-base git \
     && update-ca-certificates \
-    && go build -v -trimpath -buildmode=pie -ldflags="-s -w"
+    && go build -v -trimpath -buildmode=pie -ldflags="-s -w -X main.SHA=${BUILD_VERSION}"
 
 # Validation check
 RUN cp dnscontrol /go/bin/dnscontrol
