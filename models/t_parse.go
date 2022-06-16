@@ -42,7 +42,6 @@ func (rc *RecordConfig) PopulateFromString(rtype, contents, origin string) error
 	case "SOA":
 		return rc.SetTargetSOAString(contents)
 	case "SPF", "TXT":
-		fmt.Printf("DEBUG: popFrmStr txt=%q\n", contents)
 		return rc.SetTargetTXTString(contents)
 	case "SRV":
 		return rc.SetTargetSRVString(contents)
