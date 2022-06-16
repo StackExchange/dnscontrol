@@ -184,7 +184,6 @@ func (c *cloudflareProvider) modifyRecord(domainID, recID string, proxied bool, 
 	}
 	if rec.Type == "TXT" {
 		r.Content = rec.GetTargetRFC1035Quoted()
-		//fmt.Printf("DEBUG: modifyRecord TXT content = %q\n", r.Content)
 	}
 	if rec.Type == "SRV" {
 		r.Data = cfSrvData(rec)
