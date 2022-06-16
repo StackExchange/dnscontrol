@@ -91,7 +91,7 @@ func (rc *RecordConfig) zoneFileQuoted() string {
 	return full[len(header):]
 }
 
-func (rc *RecordConfig) GetTargetQuotedRFC1038() string {
+func (rc *RecordConfig) GetTargetRFC1038Quoted() string {
 	return rc.zoneFileQuoted()
 }
 
