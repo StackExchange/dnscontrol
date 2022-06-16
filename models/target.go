@@ -91,6 +91,10 @@ func (rc *RecordConfig) zoneFileQuoted() string {
 	return full[len(header):]
 }
 
+func (rc *RecordConfig) GetTargetQuotedRFC1038() string {
+	return rc.zoneFileQuoted()
+}
+
 // GetTargetSortable returns a string that is sortable.
 func (rc *RecordConfig) GetTargetSortable() string {
 	return rc.GetTargetDebug()
