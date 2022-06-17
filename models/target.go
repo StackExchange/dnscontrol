@@ -9,24 +9,30 @@ import (
 )
 
 /* .target is kind of a mess.
-For simple rtypes it is the record's value. (i.e. for an A record
-	it is the IP address).
-For complex rtypes (like an MX record has a preference and a value)
-	it might be a space-delimited string with all the parameters, or it
-	might just be the hostname.
+If an rType has more than one field, one field goes in .target and the remaining go in bespoke fields.
 
+We
 This was a bad design decision that I regret. Eventually we will eliminate this
 field and replace it with setters/getters.  The setters/getters are below
 so that it is easy to do things the right way in preparation.
 */
 
+// Set debugWarnTxtField to true if you want a warning when
+// GetTargetField is called on a TXT record.
+// GetTargetField works fine on TXT records for casual output but it
+// is often better to access .TxtStrings directly or call
+// GetTargetRFC1035Quoted() for nicely quoted text.
+var debugWarnTxtField = false
+
 // GetTargetField returns the target. There may be other fields (for example
 // an MX record also has a .MxPreference field.
 func (rc *RecordConfig) GetTargetField() string {
-	//if rc.Type == "TXT" {
-	//	fmt.Printf("DEBUG: WARNING: GetTargetField called on TXT record is usually wrong: %q\n", rc.target)
-	//	//debug.PrintStack()
-	//}
+	if debugWarnTxtField {
+		if rc.Type == "TXT" {
+			fmt.Printf("DEBUG: WARNING: GetTargetField called on TXT record is frequently wrong: %q\n", rc.target)
+			//debug.PrintStack()
+		}
+	}
 	return rc.target
 }
 
@@ -91,6 +97,8 @@ func (rc *RecordConfig) zoneFileQuoted() string {
 	return full[len(header):]
 }
 
+// GetTargetRFC1035Quoted returns the target as it would be in an
+// RFC1035-style zonefile.
 func (rc *RecordConfig) GetTargetRFC1035Quoted() string {
 	return rc.zoneFileQuoted()
 }
