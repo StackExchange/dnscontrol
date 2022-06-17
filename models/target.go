@@ -9,12 +9,8 @@ import (
 )
 
 /* .target is kind of a mess.
-If an rType has more than one field, one field goes in .target and the remaining go in bespoke fields.
-
-We
-This was a bad design decision that I regret. Eventually we will eliminate this
-field and replace it with setters/getters.  The setters/getters are below
-so that it is easy to do things the right way in preparation.
+If an rType has more than one field, one field goes in .target and the remaining are stored in bespoke fields.
+Not the best design, but we're stuck with it until we re-do RecordConfig, possibly using generics.
 */
 
 // Set debugWarnTxtField to true if you want a warning when
@@ -35,15 +31,6 @@ func (rc *RecordConfig) GetTargetField() string {
 	}
 	return rc.target
 }
-
-// // GetTargetSingle returns the target for types that have a single value target
-// // and panics for all others.
-// func (rc *RecordConfig) GetTargetSingle() string {
-// 	if rc.Type == "MX" || rc.Type == "SRV" || rc.Type == "CAA" || rc.Type == "TLSA" || rc.Type == "TXT" {
-// 		panic("TargetSingle called on a type with a multi-parameter rtype.")
-// 	}
-// 	return rc.target
-// }
 
 // GetTargetIP returns the net.IP stored in .target.
 func (rc *RecordConfig) GetTargetIP() net.IP {
@@ -157,10 +144,3 @@ func (rc *RecordConfig) SetTargetIP(ip net.IP) error {
 	rc.SetTarget(ip.String())
 	return nil
 }
-
-// // SetTargetFQDN sets the target to a string, verifying this is an appropriate rtype.
-// func (rc *RecordConfig) SetTargetFQDN(target string) error {
-// 	// TODO(tlim): Verify the rtype is appropriate for an hostname.
-// 	rc.Target = target
-// 	return nil
-// }
