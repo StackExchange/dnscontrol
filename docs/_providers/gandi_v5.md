@@ -23,11 +23,16 @@ along your Gandi.net API key. The [sharing_id](https://api.gandi.net/docs/refere
 
 The `sharing_id` selects between different organizations which your account is
 a member of; to manage domains in multiple organizations, you can use multiple
-`creds.json` entries.  The first parameter to `NewDnsProvider` is the key to
-use in `creds.json`, and you can register multiple configured providers on the
-same backend `"GANDI_V5"` provider.
-(NB: in practice, this doesn't appear to be necessary and `sharing_id` is not
-enforced?)
+`creds.json` entries.
+
+How to find the `sharing_id`: The sharing ID is the second hex string found in
+the URL on the portal. Log into the Gandi website, click on "organizations" in
+the leftnav, and click on the organization name.  The URL will be something
+like:
+
+```
+https://admin.gandi.net/organizations/[not this hex string]/PLTS/[sharing id]/profile
+```
 
 Example:
 
@@ -73,8 +78,26 @@ If a domain does not exist in your Gandi account, DNSControl will *not* automati
 
 ## Common errors
 
-This is the error you'll see if your API key is invalid.
+#### Error getting corrections
 
 ```text
 Error getting corrections: 401: The server could not verify that you authorized to access the document you requested. Either you supplied the wrong credentials (e.g., bad api key), or your access token has expired
 ```
+
+This is the error you'll see if your `apikey` in `creds.json` is wrong or invalid.
+
+#### Domain does not exist in profile
+
+```
+WARNING: Domain 'example.com' does not exist in the 'secname' profile and will be added automatically.
+```
+
+This error is caused by the internal `ListZones()` functions returning no domain names.  This is usually because your `creds.json` information is pointing at an empty organization or no organization.  The solution is to set
+`sharing_id` in `creds.json`.
+
+#### get-zones "nameonly" returns nothing
+
+If a `dnscontrol get-zones --format=nameonly CredId - all` returns nothing,
+this is usually because your `creds.json`  information is pointing at an empty
+organization or no organization.  The solution is to set `sharing_id` in
+`creds.json`.
