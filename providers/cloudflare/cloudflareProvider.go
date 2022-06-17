@@ -654,9 +654,18 @@ func (c *cloudflareProvider) nativeToRecord(domain string, cr cloudflare.DNSReco
 		cr.Type = "TXT"
 	}
 
-	switch rType := cr.Type; rType { // #rtype_variations
+	content := cr.Content
+	rType := cr.Type
+
+	if rType == "TXT" && isCloudflareQuoteBug(content) {
+		printer.Printf("DEBUG: TXT %q\n", content)
+		// Bug in Cloudflare: The contents is
+		content = fixCloudflareQuoteBug(content)
+	}
+
+	switch rType { // #rtype_variations
 	case "MX":
-		if err := rc.SetTargetMX(*cr.Priority, cr.Content); err != nil {
+		if err := rc.SetTargetMX(*cr.Priority, content); err != nil {
 			return nil, fmt.Errorf("unparsable MX record received from cloudflare: %w", err)
 		}
 	case "SRV":
@@ -670,8 +679,9 @@ func (c *cloudflareProvider) nativeToRecord(domain string, cr cloudflare.DNSReco
 			target); err != nil {
 			return nil, fmt.Errorf("unparsable SRV record received from cloudflare: %w", err)
 		}
-	default: // "A", "AAAA", "ANAME", "CAA", "CNAME", "NS", "PTR", "TXT"
-		if err := rc.PopulateFromString(rType, cr.Content, domain); err != nil {
+	default: // "A", "AAAA", "ANAME", "CAA", "CNAME", "NS", "PTR", "SSHFP", "TXT":
+		err := rc.PopulateFromString(rType, content, domain)
+		if err != nil {
 			return nil, fmt.Errorf("unparsable record received from cloudflare: %w", err)
 		}
 	}

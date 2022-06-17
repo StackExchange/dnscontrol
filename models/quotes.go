@@ -20,6 +20,7 @@ func IsQuoted(s string) bool {
 }
 
 // StripQuotes returns the string with the starting and ending quotes removed.
+// If it is not quoted, the original string is returned.
 func StripQuotes(s string) string {
 	if IsQuoted(s) {
 		return s[1 : len(s)-1]
@@ -36,6 +37,8 @@ func ParseQuotedTxt(s string) []string {
 	if !IsQuoted(s) {
 		return []string{s}
 	}
+
+	// TODO(tlim): Consider using r, err := ParseQuotedFields(s)
 	return strings.Split(StripQuotes(s), `" "`)
 }
 

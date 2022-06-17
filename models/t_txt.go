@@ -75,6 +75,7 @@ func (rc *RecordConfig) SetTargetTXTs(s []string) error {
 // which must be parsed into one or more strings based on how it is quoted.
 // Ex: foo             << 1 string
 //     foo bar         << 1 string
+//     "foo bar"       << 1 string
 //     "foo" "bar"     << 2 strings
 func (rc *RecordConfig) SetTargetTXTString(s string) error {
 	return rc.SetTargetTXTs(ParseQuotedTxt(s))
