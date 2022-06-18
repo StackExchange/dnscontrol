@@ -3,6 +3,7 @@ package hostingde
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/StackExchange/dnscontrol/v3/pkg/printer"
 	"sort"
 	"strings"
 
@@ -48,7 +49,7 @@ func newHostingde(m map[string]string, providermeta json.RawMessage) (*hostingde
 	authToken, ownerAccountID, baseURL := m["authToken"], m["ownerAccountId"], m["baseURL"]
 
 	if authToken == "" {
-		return nil, fmt.Errorf("hosting.de: authtoken must be provided")
+		return nil, printer.Errorf("hosting.de: authtoken must be provided")
 	}
 
 	if baseURL == "" {
@@ -66,7 +67,7 @@ func newHostingde(m map[string]string, providermeta json.RawMessage) (*hostingde
 	if len(providermeta) > 0 {
 		var pm providerMeta
 		if err := json.Unmarshal(providermeta, &pm); err != nil {
-			return nil, fmt.Errorf("hosting.de: could not parse providermeta: %w", err)
+			return nil, printer.Errorf("hosting.de: could not parse providermeta: %w", err)
 		}
 
 		if len(pm.DefaultNS) > 0 {
@@ -167,7 +168,7 @@ func (hp *hostingdeProvider) GetRegistrarCorrections(dc *models.DomainConfig) ([
 
 	found, err := hp.getNameservers(dc.Name)
 	if err != nil {
-		return nil, fmt.Errorf("error getting nameservers: %w", err)
+		return nil, printer.Errorf("error getting nameservers: %w", err)
 	}
 	sort.Strings(found)
 	foundNameservers := strings.Join(found, ",")

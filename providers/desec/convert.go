@@ -3,8 +3,6 @@ package desec
 // Convert the provider's native record description to models.RecordConfig.
 
 import (
-	"fmt"
-
 	"github.com/StackExchange/dnscontrol/v3/models"
 	"github.com/StackExchange/dnscontrol/v3/pkg/printer"
 )
@@ -26,7 +24,7 @@ func nativeToRecords(n resourceRecord, origin string) (rcs []*models.RecordConfi
 		switch rtype := n.Type; rtype {
 		default: //  "A", "AAAA", "CAA", "NS", "CNAME", "MX", "PTR", "SRV", "TXT"
 			if err := rc.PopulateFromString(rtype, value, origin); err != nil {
-				panic(fmt.Errorf("unparsable record received from deSEC: %w", err))
+				panic(printer.Errorf("unparsable record received from deSEC: %w", err))
 			}
 		}
 		rcs = append(rcs, rc)

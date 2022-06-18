@@ -3,6 +3,7 @@ package ns1
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/StackExchange/dnscontrol/v3/pkg/printer"
 	"net/http"
 	"strconv"
 	"strings"
@@ -19,10 +20,10 @@ import (
 var docNotes = providers.DocumentationNotes{
 	providers.CanGetZones:            providers.Can(),
 	providers.CanUseAlias:            providers.Can(),
-	providers.CanAutoDNSSEC:	  providers.Can(),
+	providers.CanAutoDNSSEC:          providers.Can(),
 	providers.CanUseCAA:              providers.Can(),
-	providers.CanUseDS:		  providers.Can(),
-	providers.CanUseDSForChildren:	  providers.Can(),
+	providers.CanUseDS:               providers.Can(),
+	providers.CanUseDSForChildren:    providers.Can(),
 	providers.CanUseNAPTR:            providers.Can(),
 	providers.CanUsePTR:              providers.Can(),
 	providers.DocCreateDomains:       providers.Can(),
@@ -45,7 +46,7 @@ type nsone struct {
 
 func newProvider(creds map[string]string, meta json.RawMessage) (providers.DNSServiceProvider, error) {
 	if creds["api_token"] == "" {
-		return nil, fmt.Errorf("api_token required for ns1")
+		return nil, printer.Errorf("api_token required for ns1")
 	}
 	return &nsone{rest.NewClient(http.DefaultClient, rest.SetAPIKey(creds["api_token"]))}, nil
 }
@@ -113,7 +114,7 @@ func (n *nsone) GetZoneDNSSEC(domain string) (bool, error) {
 }
 
 // getDomainCorrectionsDNSSEC creates DNSSEC zone corrections based on current state and preference
-func (n *nsone) getDomainCorrectionsDNSSEC(domain, toggleDNSSEC string) (*models.Correction) {
+func (n *nsone) getDomainCorrectionsDNSSEC(domain, toggleDNSSEC string) *models.Correction {
 
 	// get dnssec status from NS1 for domain
 	// if errors are returned, we bail out without any DNSSEC corrections
@@ -164,7 +165,7 @@ func (n *nsone) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Correct
 
 	corrections := []*models.Correction{}
 
-        if dnssecCorrections := n.getDomainCorrectionsDNSSEC(domain, dc.AutoDNSSEC); dnssecCorrections != nil {
+	if dnssecCorrections := n.getDomainCorrectionsDNSSEC(domain, dc.AutoDNSSEC); dnssecCorrections != nil {
 		corrections = append(corrections, dnssecCorrections)
 	}
 
@@ -293,22 +294,22 @@ func convert(zr *dns.ZoneRecord, domain string) ([]*models.RecordConfig, error) 
 		case "ALIAS":
 			rec.Type = rtype
 			if err := rec.SetTarget(ans); err != nil {
-				return nil, fmt.Errorf("unparsable %s record received from ns1: %w", rtype, err)
+				return nil, printer.Errorf("unparsable %s record received from ns1: %w", rtype, err)
 			}
 		case "URLFWD":
 			rec.Type = rtype
 			if err := rec.SetTarget(ans); err != nil {
-				return nil, fmt.Errorf("unparsable %s record received from ns1: %w", rtype, err)
+				return nil, printer.Errorf("unparsable %s record received from ns1: %w", rtype, err)
 			}
 		case "CAA":
 			//dnscontrol expects quotes around multivalue CAA entries, API doesn't add them
 			xAns := strings.SplitN(ans, " ", 3)
 			if err := rec.SetTargetCAAStrings(xAns[0], xAns[1], xAns[2]); err != nil {
-				return nil, fmt.Errorf("unparsable %s record received from ns1: %w", rtype, err)
+				return nil, printer.Errorf("unparsable %s record received from ns1: %w", rtype, err)
 			}
 		default:
 			if err := rec.PopulateFromString(rtype, ans, domain); err != nil {
-				return nil, fmt.Errorf("unparsable record received from ns1: %w", err)
+				return nil, printer.Errorf("unparsable record received from ns1: %w", err)
 			}
 		}
 		found = append(found, rec)

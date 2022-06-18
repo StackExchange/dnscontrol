@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"github.com/StackExchange/dnscontrol/v3/pkg/printer"
 	"io"
 	"io/ioutil"
 	"net/http"
@@ -26,7 +27,7 @@ func checkIsLockedSystemRecord(record record) error {
 	if record.Type == "SOA" {
 		// The upload of a BIND zone file can change the SOA record.
 		// Implementing this edge case this is too complex for now.
-		return fmt.Errorf("SOA records are locked in HETZNER zones. They are hence not available for updating")
+		return printer.Errorf("SOA records are locked in HETZNER zones. They are hence not available for updating")
 	}
 	return nil
 }
@@ -63,7 +64,7 @@ func getRetryAfterDelay(header http.Header) (time.Duration, error) {
 func parseHeaderAsInt(headers http.Header, headerName string) (int64, error) {
 	value, ok := headers[headerName]
 	if !ok {
-		return 0, fmt.Errorf("header %q is missing", headerName)
+		return 0, printer.Errorf("header %q is missing", headerName)
 	}
 	return strconv.ParseInt(value[0], 10, 0)
 }
@@ -136,7 +137,7 @@ func (api *hetznerProvider) getAllRecords(domain string) ([]record, error) {
 		response := &getAllRecordsResponse{}
 		url := fmt.Sprintf("/records?zone_id=%s&per_page=100&page=%d", zone.ID, page)
 		if err := api.request(url, "GET", nil, response, nil); err != nil {
-			return nil, fmt.Errorf("failed fetching zone records for %q: %w", domain, err)
+			return nil, printer.Errorf("failed fetching zone records for %q: %w", domain, err)
 		}
 		for _, record := range response.Records {
 			if record.TTL == nil {
@@ -180,7 +181,7 @@ func (api *hetznerProvider) getAllZones() error {
 		response := &getAllZonesResponse{}
 		url := fmt.Sprintf("/zones?per_page=100&page=%d", page)
 		if err := api.request(url, "GET", nil, response, statusOK); err != nil {
-			return fmt.Errorf("failed fetching zones: %w", err)
+			return printer.Errorf("failed fetching zones: %w", err)
 		}
 		for _, zone := range response.Zones {
 			zones[zone.Name] = zone
@@ -201,7 +202,7 @@ func (api *hetznerProvider) getZone(name string) (*zone, error) {
 	}
 	zone, ok := api.zones[name]
 	if !ok {
-		return nil, fmt.Errorf("%q is not a zone in this HETZNER account", name)
+		return nil, printer.Errorf("%q is not a zone in this HETZNER account", name)
 	}
 	return &zone, nil
 }
@@ -236,7 +237,7 @@ func (api *hetznerProvider) request(endpoint string, method string, request inte
 		cleanupResponseBody := func() {
 			err := resp.Body.Close()
 			if err != nil {
-				fmt.Printf("failed closing response body: %q\n", err)
+				printer.Printf("failed closing response body: %q\n", err)
 			}
 		}
 
@@ -251,8 +252,8 @@ func (api *hetznerProvider) request(endpoint string, method string, request inte
 		defer cleanupResponseBody()
 		if !statusOK(resp.StatusCode) {
 			data, _ := ioutil.ReadAll(resp.Body)
-			fmt.Println(string(data))
-			return fmt.Errorf("bad status code from HETZNER: %d not 200", resp.StatusCode)
+			printer.Printf(string(data))
+			return printer.Errorf("bad status code from HETZNER: %d not 200", resp.StatusCode)
 		}
 		if target == nil {
 			return nil
@@ -310,7 +311,7 @@ func (requestRateLimiter *requestRateLimiter) setOptimizeForRateLimitQuota(quota
 	case "":
 		requestRateLimiter.optimizeForRateLimitQuota = "second"
 	default:
-		return fmt.Errorf("%q is not a valid quota, expected 'Hour', 'Minute', 'Second' or unset", quota)
+		return printer.Errorf("%q is not a valid quota, expected 'Hour', 'Minute', 'Second' or unset", quota)
 	}
 	return nil
 }
@@ -325,7 +326,7 @@ func (requestRateLimiter *requestRateLimiter) handleRateLimitedRequest() {
 	case "second":
 		message = fmt.Sprintf(message, "Second", "Minute")
 	}
-	fmt.Println(message)
+	printer.Printf(message)
 }
 
 func (requestRateLimiter *requestRateLimiter) handleResponse(resp http.Response) {

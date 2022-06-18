@@ -3,6 +3,7 @@ package inwx
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/StackExchange/dnscontrol/v3/pkg/printer"
 	"sort"
 	"strings"
 	"time"
@@ -82,11 +83,11 @@ func getOTP(TOTPValue string, TOTPKey string) (string, error) {
 	} else if TOTPKey != "" {
 		tan, err := totp.GenerateCode(TOTPKey, time.Now())
 		if err != nil {
-			return "", fmt.Errorf("INWX: Unable to generate TOTP from totp-key: %v", err)
+			return "", printer.Errorf("INWX: Unable to generate TOTP from totp-key: %v", err)
 		}
 		return tan, nil
 	} else {
-		return "", fmt.Errorf("INWX: two factor authentication required but no TOTP configured")
+		return "", printer.Errorf("INWX: two factor authentication required but no TOTP configured")
 	}
 }
 
@@ -94,13 +95,13 @@ func getOTP(TOTPValue string, TOTPKey string) (string, error) {
 func (api *inwxAPI) loginHelper(TOTPValue string, TOTPKey string) error {
 	resp, err := api.client.Account.Login()
 	if err != nil {
-		return fmt.Errorf("INWX: Unable to login")
+		return printer.Errorf("INWX: Unable to login")
 	}
 
 	switch TFA := resp.TFA; TFA {
 	case "0":
 		if TOTPKey != "" || TOTPValue != "" {
-			fmt.Printf("INWX: Warning: no TOTP requested by INWX but totp/totp-key is present in `creds.json`\n")
+			printer.Printf("INWX: Warning: no TOTP requested by INWX but totp/totp-key is present in `creds.json`\n")
 		}
 	case "GOOGLE-AUTH":
 		tan, err := getOTP(TOTPValue, TOTPKey)
@@ -110,10 +111,10 @@ func (api *inwxAPI) loginHelper(TOTPValue string, TOTPKey string) error {
 
 		err = api.client.Account.Unlock(tan)
 		if err != nil {
-			return fmt.Errorf("INWX: Could not unlock account: %w", err)
+			return printer.Errorf("INWX: Could not unlock account: %w", err)
 		}
 	default:
-		return fmt.Errorf("INWX: Unknown two factor authentication mode `%s` has been requested", resp.TFA)
+		return printer.Errorf("INWX: Unknown two factor authentication mode `%s` has been requested", resp.TFA)
 	}
 
 	return nil
@@ -126,13 +127,13 @@ func newInwx(m map[string]string) (*inwxAPI, error) {
 	sandbox := m["sandbox"] == "1"
 
 	if username == "" {
-		return nil, fmt.Errorf("INWX: username must be provided")
+		return nil, printer.Errorf("INWX: username must be provided")
 	}
 	if password == "" {
-		return nil, fmt.Errorf("INWX: password must be provided")
+		return nil, printer.Errorf("INWX: password must be provided")
 	}
 	if TOTPValue != "" && TOTPKey != "" {
-		return nil, fmt.Errorf("INWX: totp and totp-key must not be specified at the same time")
+		return nil, printer.Errorf("INWX: totp and totp-key must not be specified at the same time")
 	}
 
 	opts := &goinwx.ClientOptions{Sandbox: sandbox}
@@ -217,7 +218,7 @@ func checkRecords(records models.Records) error {
 		if r.Type == "TXT" {
 			for _, target := range r.TxtStrings {
 				if strings.ContainsAny(target, "`") {
-					return fmt.Errorf("INWX TXT records do not support single-quotes in their target")
+					return printer.Errorf("INWX TXT records do not support single-quotes in their target")
 				}
 			}
 		}
@@ -329,7 +330,7 @@ func (api *inwxAPI) GetZoneRecords(domain string) (models.Records, error) {
 			err = rc.PopulateFromString(rType, record.Content, domain)
 		}
 		if err != nil {
-			return nil, fmt.Errorf("INWX: unparsable record received: %w", err)
+			return nil, printer.Errorf("INWX: unparsable record received: %w", err)
 		}
 
 		records = append(records, rc)
@@ -417,6 +418,6 @@ func (api *inwxAPI) EnsureDomainExists(domain string) error {
 	if err != nil {
 		return err
 	}
-	fmt.Printf("Added zone for %s to INWX account with id %d\n", domain, id)
+	printer.Printf("Added zone for %s to INWX account with id %d\n", domain, id)
 	return nil
 }

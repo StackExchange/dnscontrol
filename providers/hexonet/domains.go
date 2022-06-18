@@ -1,6 +1,6 @@
 package hexonet
 
-import "fmt"
+import "github.com/StackExchange/dnscontrol/v3/pkg/printer"
 
 //EnsureDomainExists returns an error
 // * if access to dnszone is not allowed (not authorized) or
@@ -42,7 +42,7 @@ func (n *HXClient) ListZones() ([]string, error) {
 		}
 		zoneColumn := r.GetColumn("DNSZONE")
 		if zoneColumn == nil {
-			return nil, fmt.Errorf("failed getting DNSZONE BASIC column")
+			return nil, printer.Errorf("failed getting DNSZONE BASIC column")
 		}
 		zones = append(zones, zoneColumn.GetData()...)
 	}
@@ -60,7 +60,7 @@ func (n *HXClient) ListZones() ([]string, error) {
 		}
 		zoneColumn := r.GetColumn("DNSZONE")
 		if zoneColumn == nil {
-			return nil, fmt.Errorf("failed getting DNSZONE PREMIUM column")
+			return nil, printer.Errorf("failed getting DNSZONE PREMIUM column")
 		}
 		zones = append(zones, zoneColumn.GetData()...)
 	}

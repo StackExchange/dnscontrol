@@ -2,7 +2,7 @@ package hetzner
 
 import (
 	"encoding/json"
-	"fmt"
+	"github.com/StackExchange/dnscontrol/v3/pkg/printer"
 	"strings"
 
 	"github.com/StackExchange/dnscontrol/v3/models"
@@ -36,7 +36,7 @@ func init() {
 // New creates a new API handle.
 func New(settings map[string]string, _ json.RawMessage) (providers.DNSServiceProvider, error) {
 	if settings["api_key"] == "" {
-		return nil, fmt.Errorf("missing HETZNER api_key")
+		return nil, printer.Errorf("missing HETZNER api_key")
 	}
 
 	api := &hetznerProvider{}
@@ -54,7 +54,7 @@ func New(settings map[string]string, _ json.RawMessage) (providers.DNSServicePro
 	quota := settings["optimize_for_rate_limit_quota"]
 	err := api.requestRateLimiter.setOptimizeForRateLimitQuota(quota)
 	if err != nil {
-		return nil, fmt.Errorf("unexpected value for optimize_for_rate_limit_quota: %w", err)
+		return nil, printer.Errorf("unexpected value for optimize_for_rate_limit_quota: %w", err)
 	}
 
 	return api, nil

@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"github.com/StackExchange/dnscontrol/v3/pkg/printer"
 	"log"
 	"sort"
 	"strings"
@@ -63,7 +64,7 @@ func newRoute53(m map[string]string, metadata json.RawMessage) (*route53Provider
 
 	var dls *string
 	if val, ok := m["DelegationSet"]; ok {
-		fmt.Printf("ROUTE53 DelegationSet %s configured\n", val)
+		printer.Printf("ROUTE53 DelegationSet %s configured\n", val)
 		dls = aws.String(val)
 	}
 	api := &route53Provider{client: r53.NewFromConfig(config), registrar: r53d.NewFromConfig(config), delegationSet: dls}
@@ -111,7 +112,7 @@ func withRetry(f func() error) {
 			if currentRetry >= maxRetries {
 				return
 			}
-			fmt.Printf("============ Route53 rate limit exceeded. Waiting %s to retry.\n", sleepTime)
+			printer.Printf("============ Route53 rate limit exceeded. Waiting %s to retry.\n", sleepTime)
 			time.Sleep(sleepTime)
 		} else {
 			return
@@ -347,7 +348,7 @@ func (r *route53Provider) GetDomainCorrections(dc *models.DomainConfig) ([]*mode
 			}
 			if !found {
 				// This should not happen.
-				return nil, fmt.Errorf("no record set found to delete. Name: '%s'. Type: '%s'", k.NameFQDN, k.Type)
+				return nil, printer.Errorf("no record set found to delete. Name: '%s'. Type: '%s'", k.NameFQDN, k.Type)
 			}
 			// Assemble the change and add it to the list:
 			chg := r53Types.Change{
@@ -509,7 +510,7 @@ func nativeToRecords(set r53Types.ResourceRecordSet, origin string) ([]*models.R
 				rc := &models.RecordConfig{TTL: uint32(aws.ToInt64(set.TTL))}
 				rc.SetLabelFromFQDN(unescape(set.Name), origin)
 				if err := rc.PopulateFromString(string(rtype), val, origin); err != nil {
-					return nil, fmt.Errorf("unparsable record received from R53: %w", err)
+					return nil, printer.Errorf("unparsable record received from R53: %w", err)
 				}
 				results = append(results, rc)
 			}
@@ -673,9 +674,9 @@ func (r *route53Provider) EnsureDomainExists(domain string) error {
 		return nil
 	}
 	if r.delegationSet != nil {
-		fmt.Printf("Adding zone for %s to route 53 account with delegationSet %s\n", domain, *r.delegationSet)
+		printer.Printf("Adding zone for %s to route 53 account with delegationSet %s\n", domain, *r.delegationSet)
 	} else {
-		fmt.Printf("Adding zone for %s to route 53 account\n", domain)
+		printer.Printf("Adding zone for %s to route 53 account\n", domain)
 	}
 	in := &r53.CreateHostedZoneInput{
 		Name:            &domain,

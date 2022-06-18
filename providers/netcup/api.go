@@ -3,7 +3,7 @@ package netcup
 import (
 	"bytes"
 	"encoding/json"
-	"fmt"
+	"github.com/StackExchange/dnscontrol/v3/pkg/printer"
 	"io/ioutil"
 	"net/http"
 )
@@ -35,7 +35,7 @@ func (api *netcupProvider) createRecord(domain string, rec *record) error {
 	}
 	_, err := api.get("updateDnsRecords", data)
 	if err != nil {
-		return fmt.Errorf("error while trying to create a record: %s", err)
+		return printer.Errorf("error while trying to create a record: %s", err)
 	}
 	return nil
 }
@@ -53,7 +53,7 @@ func (api *netcupProvider) deleteRecord(domain string, rec *record) error {
 	}
 	_, err := api.get("updateDnsRecords", data)
 	if err != nil {
-		return fmt.Errorf("error while trying to delete a record: %s", err)
+		return printer.Errorf("error while trying to delete a record: %s", err)
 	}
 	return nil
 }
@@ -71,7 +71,7 @@ func (api *netcupProvider) modifyRecord(domain string, rec *record) error {
 	}
 	_, err := api.get("updateDnsRecords", data)
 	if err != nil {
-		return fmt.Errorf("error while trying to modify a record: %s", err)
+		return printer.Errorf("error while trying to modify a record: %s", err)
 	}
 	return nil
 }
@@ -85,7 +85,7 @@ func (api *netcupProvider) getRecords(domain string) ([]record, error) {
 	}
 	rawJSON, err := api.get("infoDnsRecords", data)
 	if err != nil {
-		return nil, fmt.Errorf("failed while trying to login (netcup): %s", err)
+		return nil, printer.Errorf("failed while trying to login (netcup): %s", err)
 	}
 
 	resp := &records{}
@@ -101,7 +101,7 @@ func (api *netcupProvider) login(apikey, password, customernumber string) error 
 	}
 	rawJSON, err := api.get("login", data)
 	if err != nil {
-		return fmt.Errorf("failed while trying to login to (netcup): %s", err)
+		return printer.Errorf("failed while trying to login to (netcup): %s", err)
 	}
 
 	resp := &responseLogin{}
@@ -120,7 +120,7 @@ func (api *netcupProvider) logout() error {
 	}
 	_, err := api.get("logout", data)
 	if err != nil {
-		return fmt.Errorf("failed to logout from netcup: %s", err)
+		return printer.Errorf("failed to logout from netcup: %s", err)
 	}
 	api.credentials.apikey, api.credentials.sessionID, api.credentials.customernumber = "", "", ""
 	return nil
@@ -156,7 +156,7 @@ func (api *netcupProvider) get(action string, params interface{}) (json.RawMessa
 
 	// Check for any errors and log them
 	if respData.StatusCode != 2000 && (action == "") {
-		return nil, fmt.Errorf("netcup API error: %v\n%v", reqParam, respData)
+		return nil, printer.Errorf("netcup API error: %v\n%v", reqParam, respData)
 	}
 
 	return respData.Data, nil

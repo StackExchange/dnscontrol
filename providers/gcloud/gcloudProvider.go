@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"github.com/StackExchange/dnscontrol/v3/pkg/printer"
 	"log"
 	"strings"
 	"time"
@@ -86,7 +87,7 @@ func New(cfg map[string]string, metadata json.RawMessage) (providers.DNSServiceP
 	}
 	var nss *string
 	if val, ok := cfg["name_server_set"]; ok {
-		fmt.Printf("GCLOUD :name_server_set %s configured\n", val)
+		printer.Printf("GCLOUD :name_server_set %s configured\n", val)
 		nss = sPtr(val)
 	}
 
@@ -138,7 +139,7 @@ func (g *gcloudProvider) GetNameservers(domain string) ([]*models.Nameserver, er
 		return nil, err
 	}
 	if zone == nil {
-		return nil, fmt.Errorf("domain %q not found in your GCLOUD account", domain)
+		return nil, printer.Errorf("domain %q not found in your GCLOUD account", domain)
 	}
 	return models.ToNameserversStripTD(zone.NameServers)
 }
@@ -185,11 +186,11 @@ func (g *gcloudProvider) getZoneSets(domain string) (models.Records, map[key]*gd
 
 func (g *gcloudProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Correction, error) {
 	if err := dc.Punycode(); err != nil {
-		return nil, fmt.Errorf("punycode error: %w", err)
+		return nil, printer.Errorf("punycode error: %w", err)
 	}
 	existingRecords, oldRRs, zoneName, err := g.getZoneSets(dc.Name)
 	if err != nil {
-		return nil, fmt.Errorf("getzonesets error: %w", err)
+		return nil, printer.Errorf("getzonesets error: %w", err)
 	}
 
 	// Normalize
@@ -200,7 +201,7 @@ func (g *gcloudProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*model
 	differ := diff.New(dc)
 	_, create, delete, modify, err := differ.IncrementalDiff(existingRecords)
 	if err != nil {
-		return nil, fmt.Errorf("incdiff error: %w", err)
+		return nil, printer.Errorf("incdiff error: %w", err)
 	}
 
 	changedKeys := map[key]bool{}
@@ -258,7 +259,7 @@ func (g *gcloudProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*model
 			goto retry
 		}
 		if err != nil {
-			return fmt.Errorf("runChange error: %w", err)
+			return printer.Errorf("runChange error: %w", err)
 		}
 		return nil
 	}
@@ -274,7 +275,7 @@ func nativeToRecord(set *gdns.ResourceRecordSet, rec, origin string) (*models.Re
 	r.SetLabelFromFQDN(set.Name, origin)
 	r.TTL = uint32(set.Ttl)
 	if err := r.PopulateFromString(set.Type, rec, origin); err != nil {
-		return nil, fmt.Errorf("unparsable record received from GCLOUD: %w", err)
+		return nil, printer.Errorf("unparsable record received from GCLOUD: %w", err)
 	}
 	return r, nil
 }
@@ -320,7 +321,7 @@ func (g *gcloudProvider) EnsureDomainExists(domain string) error {
 	}
 	var mz *gdns.ManagedZone
 	if g.nameServerSet != nil {
-		fmt.Printf("Adding zone for %s to gcloud account with name_server_set %s\n", domain, *g.nameServerSet)
+		printer.Printf("Adding zone for %s to gcloud account with name_server_set %s\n", domain, *g.nameServerSet)
 		mz = &gdns.ManagedZone{
 			DnsName:       domain + ".",
 			NameServerSet: *g.nameServerSet,
@@ -328,7 +329,7 @@ func (g *gcloudProvider) EnsureDomainExists(domain string) error {
 			Description:   "zone added by dnscontrol",
 		}
 	} else {
-		fmt.Printf("Adding zone for %s to gcloud account \n", domain)
+		printer.Printf("Adding zone for %s to gcloud account \n", domain)
 		mz = &gdns.ManagedZone{
 			DnsName:     domain + ".",
 			Name:        "zone-" + strings.Replace(domain, ".", "-", -1),

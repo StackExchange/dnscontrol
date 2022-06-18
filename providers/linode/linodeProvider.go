@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"github.com/StackExchange/dnscontrol/v3/pkg/printer"
 	"net/http"
 	"net/url"
 	"regexp"
@@ -61,7 +62,7 @@ var defaultNameServerNames = []string{
 // NewLinode creates the provider.
 func NewLinode(m map[string]string, metadata json.RawMessage) (providers.DNSServiceProvider, error) {
 	if m["token"] == "" {
-		return nil, fmt.Errorf("missing Linode token")
+		return nil, printer.Errorf("missing Linode token")
 	}
 
 	ctx := context.Background()
@@ -72,7 +73,7 @@ func NewLinode(m map[string]string, metadata json.RawMessage) (providers.DNSServ
 
 	baseURL, err := url.Parse(defaultBaseURL)
 	if err != nil {
-		return nil, fmt.Errorf("invalid base URL for Linode")
+		return nil, printer.Errorf("invalid base URL for Linode")
 	}
 
 	api := &linodeProvider{client: client, baseURL: baseURL}
@@ -115,7 +116,7 @@ func (api *linodeProvider) GetZoneRecords(domain string) (models.Records, error)
 	}
 	domainID, ok := api.domainIndex[domain]
 	if !ok {
-		return nil, fmt.Errorf("'%s' not a zone in Linode account", domain)
+		return nil, printer.Errorf("'%s' not a zone in Linode account", domain)
 	}
 
 	return api.getRecordsForDomain(domainID, domain)
@@ -137,7 +138,7 @@ func (api *linodeProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*mod
 	}
 	domainID, ok := api.domainIndex[dc.Name]
 	if !ok {
-		return nil, fmt.Errorf("'%s' not a zone in Linode account", dc.Name)
+		return nil, printer.Errorf("'%s' not a zone in Linode account", dc.Name)
 	}
 
 	existingRecords, err := api.getRecordsForDomain(domainID, dc.Name)
@@ -314,7 +315,7 @@ func toReq(dc *models.DomainConfig, rc *models.RecordConfig) (*recordEditRequest
 		result := srvRegexp.FindStringSubmatch(req.Name)
 
 		if len(result) != 3 {
-			return nil, fmt.Errorf("SRV Record must match format \"_service._protocol\" not %s", req.Name)
+			return nil, printer.Errorf("SRV Record must match format \"_service._protocol\" not %s", req.Name)
 		}
 
 		var serviceName, protocol = result[1], strings.ToLower(result[2])
@@ -327,7 +328,7 @@ func toReq(dc *models.DomainConfig, rc *models.RecordConfig) (*recordEditRequest
 	case "CAA":
 		req.Tag = rc.CaaTag
 	default:
-		return nil, fmt.Errorf("linode.toReq rtype %q unimplemented", rc.Type)
+		return nil, printer.Errorf("linode.toReq rtype %q unimplemented", rc.Type)
 	}
 
 	return req, nil

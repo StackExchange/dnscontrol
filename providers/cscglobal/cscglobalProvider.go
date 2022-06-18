@@ -2,7 +2,7 @@ package cscglobal
 
 import (
 	"encoding/json"
-	"fmt"
+	"github.com/StackExchange/dnscontrol/v3/pkg/printer"
 	"strings"
 
 	"github.com/StackExchange/dnscontrol/v3/providers"
@@ -47,7 +47,7 @@ func newProvider(m map[string]string) (*providerClient, error) {
 
 	api.key, api.token = m["api-key"], m["user-token"]
 	if api.key == "" || api.token == "" {
-		return nil, fmt.Errorf("missing CSC Global api-key and/or user-token")
+		return nil, printer.Errorf("missing CSC Global api-key and/or user-token")
 	}
 
 	if m["notification_emails"] != "" {

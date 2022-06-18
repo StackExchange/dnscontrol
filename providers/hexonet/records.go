@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"github.com/StackExchange/dnscontrol/v3/pkg/printer"
 	"regexp"
 	"strconv"
 	"strings"
@@ -49,7 +50,7 @@ func (n *HXClient) GetZoneRecords(domain string) (models.Records, error) {
 
 	for _, rec := range actual {
 		if rec.Type == "ALIAS" {
-			return nil, fmt.Errorf("we support realtime ALIAS RR over our X-DNS service, please get in touch with us")
+			return nil, printer.Errorf("we support realtime ALIAS RR over our X-DNS service, please get in touch with us")
 		}
 	}
 
@@ -145,15 +146,15 @@ func toRecord(r *HXRecord, origin string) *models.RecordConfig {
 		rc.SetTargetTXTs(decodeTxt(r.Answer))
 	case "MX":
 		if err := rc.SetTargetMX(uint16(r.Priority), r.Answer); err != nil {
-			panic(fmt.Errorf("unparsable MX record received from hexonet api: %w", err))
+			panic(printer.Errorf("unparsable MX record received from hexonet api: %w", err))
 		}
 	case "SRV":
 		if err := rc.SetTargetSRVPriorityString(uint16(r.Priority), r.Answer); err != nil {
-			panic(fmt.Errorf("unparsable SRV record received from hexonet api: %w", err))
+			panic(printer.Errorf("unparsable SRV record received from hexonet api: %w", err))
 		}
 	default: // "A", "AAAA", "ANAME", "CNAME", "NS"
 		if err := rc.PopulateFromString(rtype, r.Answer, r.Fqdn); err != nil {
-			panic(fmt.Errorf("unparsable record received from hexonet api: %w", err))
+			panic(printer.Errorf("unparsable record received from hexonet api: %w", err))
 		}
 	}
 	return rc
@@ -162,9 +163,9 @@ func toRecord(r *HXRecord, origin string) *models.RecordConfig {
 func (n *HXClient) showCommand(cmd map[string]string) {
 	b, err := json.MarshalIndent(cmd, "", "  ")
 	if err != nil {
-		fmt.Println("error:", err)
+		printer.Errorf("error: %w", err)
 	}
-	fmt.Print(string(b))
+	printer.Printf(string(b))
 }
 
 func (n *HXClient) updateZoneBy(params map[string]interface{}, domain string) error {
@@ -203,7 +204,7 @@ func (n *HXClient) getRecords(domain string) ([]*HXRecord, error) {
 	}
 	rrColumn := r.GetColumn("RR")
 	if rrColumn == nil {
-		return nil, fmt.Errorf("failed getting RR column for domain: %s", domain)
+		return nil, printer.Errorf("failed getting RR column for domain: %s", domain)
 	}
 	rrs := rrColumn.GetData()
 	for _, rr := range rrs {
@@ -254,7 +255,7 @@ func (n *HXClient) createRecordString(rc *models.RecordConfig, domain string) (s
 		record.Answer = encodeTxt(rc.TxtStrings)
 	case "SRV":
 		if rc.GetTargetField() == "." {
-			return "", fmt.Errorf("SRV records with empty targets are not supported (as of 2020-02-27, the API returns 'Invalid attribute value syntax')")
+			return "", printer.Errorf("SRV records with empty targets are not supported (as of 2020-02-27, the API returns 'Invalid attribute value syntax')")
 		}
 		record.Answer = fmt.Sprintf("%d %d %v", rc.SrvWeight, rc.SrvPort, record.Answer)
 		record.Priority = uint32(rc.SrvPriority)

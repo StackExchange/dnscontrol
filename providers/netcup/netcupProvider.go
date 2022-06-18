@@ -3,6 +3,7 @@ package netcup
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/StackExchange/dnscontrol/v3/pkg/printer"
 
 	"github.com/StackExchange/dnscontrol/v3/models"
 	"github.com/StackExchange/dnscontrol/v3/pkg/diff"
@@ -32,13 +33,13 @@ func init() {
 // New creates a new API handle.
 func New(settings map[string]string, _ json.RawMessage) (providers.DNSServiceProvider, error) {
 	if settings["api-key"] == "" || settings["api-password"] == "" || settings["customer-number"] == "" {
-		return nil, fmt.Errorf("missing netcup login parameters")
+		return nil, printer.Errorf("missing netcup login parameters")
 	}
 
 	api := &netcupProvider{}
 	err := api.login(settings["api-key"], settings["api-password"], settings["customer-number"])
 	if err != nil {
-		return nil, fmt.Errorf("login to netcup DNS failed, please check your credentials: %v", err)
+		return nil, printer.Errorf("login to netcup DNS failed, please check your credentials: %v", err)
 	}
 	return api, nil
 }

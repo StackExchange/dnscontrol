@@ -4,6 +4,7 @@ import (
 	"crypto/sha1"
 	"encoding/json"
 	"fmt"
+	"github.com/StackExchange/dnscontrol/v3/pkg/printer"
 	"io/ioutil"
 	"net/http"
 	"net/http/cookiejar"
@@ -111,13 +112,13 @@ func newHEDNSProvider(cfg map[string]string, _ json.RawMessage) (providers.DNSSe
 	sessionFilePath := cfg["session-file-path"]
 
 	if username == "" {
-		return nil, fmt.Errorf("username must be provided")
+		return nil, printer.Errorf("username must be provided")
 	}
 	if password == "" {
-		return nil, fmt.Errorf("password must be provided")
+		return nil, printer.Errorf("password must be provided")
 	}
 	if totpSecret != "" && totpValue != "" {
-		return nil, fmt.Errorf("totp and totp-key must not be specified at the same time")
+		return nil, printer.Errorf("totp and totp-key must not be specified at the same time")
 	}
 
 	// Perform the initial login
@@ -261,7 +262,7 @@ func (c *hednsProvider) GetZoneRecords(domain string) (models.Records, error) {
 
 	domainID, domainExists := domains[domain]
 	if !domainExists {
-		return nil, fmt.Errorf("domain %s does not exist", domain)
+		return nil, printer.Errorf("domain %s does not exist", domain)
 	}
 
 	queryURL, _ := url.Parse(apiEndpoint)
@@ -285,7 +286,7 @@ func (c *hednsProvider) GetZoneRecords(domain string) (models.Records, error) {
 
 	// Check we can find the zone records
 	if document.Find("#dns_main_content").Size() == 0 {
-		return nil, fmt.Errorf("zone records listing failed")
+		return nil, printer.Errorf("zone records listing failed")
 	}
 
 	// Load all the domain records
@@ -386,7 +387,7 @@ func (c *hednsProvider) authUsernameAndPassword() (authenticated bool, requiresT
 	document, err := c.parseResponseForDocumentAndErrors(response)
 	if err != nil {
 		if err.Error() == errorInvalidCredentials {
-			err = fmt.Errorf("authentication failed with incorrect username or password")
+			err = printer.Errorf("authentication failed with incorrect username or password")
 		}
 		if err.Error() == errorTotpTokenRequired {
 			return false, true, nil
@@ -404,7 +405,7 @@ func (c *hednsProvider) authUsernameAndPassword() (authenticated bool, requiresT
 func (c *hednsProvider) auth2FA() (authenticated bool, err error) {
 
 	if c.TfaValue == "" && c.TfaSecret == "" {
-		return false, fmt.Errorf("account requires two-factor authentication but neither totp or totp-key were provided")
+		return false, printer.Errorf("account requires two-factor authentication but neither totp or totp-key were provided")
 	}
 
 	if c.TfaValue == "" && c.TfaSecret != "" {
@@ -428,9 +429,9 @@ func (c *hednsProvider) auth2FA() (authenticated bool, err error) {
 	if err != nil {
 		switch err.Error() {
 		case errorInvalidTotpToken:
-			err = fmt.Errorf("invalid TOTP token value")
+			err = printer.Errorf("invalid TOTP token value")
 		case errorTotpTokenReused:
-			err = fmt.Errorf("TOTP token was reused within its period (30 seconds)")
+			err = printer.Errorf("TOTP token was reused within its period (30 seconds)")
 		}
 		return false, err
 	}
@@ -469,7 +470,7 @@ func (c *hednsProvider) authenticate() error {
 	}
 
 	if !authenticated {
-		err = fmt.Errorf("unknown authentication failure")
+		err = printer.Errorf("unknown authentication failure")
 	} else {
 		if c.SessionFilePath != "" {
 			err = c.saveSessionFile()
@@ -655,7 +656,7 @@ func (c *hednsProvider) loadSessionFile() error {
 	for i, entry := range strings.Split(string(bytes), "\n") {
 		if i == 0 {
 			if entry != c.generateCredentialHash() {
-				return fmt.Errorf("invalid credential hash in session file")
+				return printer.Errorf("invalid credential hash in session file")
 			}
 		} else {
 			kv := strings.Split(entry, "=")
@@ -690,7 +691,7 @@ func (c *hednsProvider) parseResponseForDocumentAndErrors(response *http.Respons
 				return true
 			}
 		}
-		err = fmt.Errorf(element.Text())
+		err = printer.Errorf(element.Text())
 		return false
 	})
 
@@ -707,7 +708,7 @@ func (p *elementParser) parseStringAttr(element *goquery.Selection, attr string)
 	}
 	result, exists := element.Attr(attr)
 	if !exists {
-		p.err = fmt.Errorf("could not locate attribute %s", attr)
+		p.err = printer.Errorf("could not locate attribute %s", attr)
 	}
 	return result
 }
@@ -719,7 +720,7 @@ func (p *elementParser) parseIntAttr(element *goquery.Selection, attr string) (r
 	if value, exists := element.Attr(attr); exists {
 		result, p.err = strconv.ParseUint(value, 10, 64)
 	} else {
-		p.err = fmt.Errorf("could not locate attribute %s", attr)
+		p.err = printer.Errorf("could not locate attribute %s", attr)
 	}
 	return result
 }

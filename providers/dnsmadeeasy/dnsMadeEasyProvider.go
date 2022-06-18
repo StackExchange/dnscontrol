@@ -2,7 +2,7 @@ package dnsmadeeasy
 
 import (
 	"encoding/json"
-	"fmt"
+	"github.com/StackExchange/dnscontrol/v3/pkg/printer"
 	"os"
 	"strings"
 
@@ -39,11 +39,11 @@ func init() {
 // New creates a new API handle.
 func New(settings map[string]string, _ json.RawMessage) (providers.DNSServiceProvider, error) {
 	if settings["api_key"] == "" {
-		return nil, fmt.Errorf("missing DNSMADEEASY api_key")
+		return nil, printer.Errorf("missing DNSMADEEASY api_key")
 	}
 
 	if settings["secret_key"] == "" {
-		return nil, fmt.Errorf("missing DNSMADEEASY secret_key")
+		return nil, printer.Errorf("missing DNSMADEEASY secret_key")
 	}
 
 	sandbox := false

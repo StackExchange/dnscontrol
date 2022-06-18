@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"github.com/StackExchange/dnscontrol/v3/pkg/printer"
 	"sort"
 	"strings"
 	"time"
@@ -98,7 +99,7 @@ func (a *azurednsProvider) getZones() error {
 	defer cancel()
 	zonesIterator, zonesErr := a.zonesClient.ListByResourceGroup(ctx, *a.resourceGroup, to.Int32Ptr(100))
 	if zonesErr != nil {
-		return fmt.Errorf("getZones: zonesErr: SubscriptionID=%q err=%w", a.zonesClient.BaseClient.SubscriptionID, zonesErr)
+		return printer.Errorf("getZones: zonesErr: SubscriptionID=%q err=%w", a.zonesClient.BaseClient.SubscriptionID, zonesErr)
 	}
 
 	// Check getExistingZones and https://github.com/StackExchange/dnscontrol/issues/792 for the details
@@ -143,7 +144,7 @@ func (a *azurednsProvider) ListZones() ([]string, error) {
 	defer cancel()
 	zonesIterator, zonesErr := a.zonesClient.ListByResourceGroup(ctx, *a.resourceGroup, to.Int32Ptr(100))
 	if zonesErr != nil {
-		return nil, fmt.Errorf("ListZones: zonesErr: %w", zonesErr)
+		return nil, printer.Errorf("ListZones: zonesErr: %w", zonesErr)
 	}
 
 	// Check getExistingZones and https://github.com/StackExchange/dnscontrol/issues/792 for the details
@@ -266,7 +267,7 @@ func (a *azurednsProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*mod
 						},
 					})
 			} else {
-				return nil, fmt.Errorf("no record set found to delete. Name: '%s'. Type: '%s'", k.NameFQDN, k.Type)
+				return nil, printer.Errorf("no record set found to delete. Name: '%s'. Type: '%s'", k.NameFQDN, k.Type)
 			}
 		} else {
 			rrset, recordType, err := a.recordToNative(k, recs)
@@ -363,7 +364,7 @@ func nativeToRecordType(recordType *string) (adns.RecordType, error) {
 		return adns.SOA, nil
 	default:
 		// Unimplemented type. Return adns.A as a decoy, but send an error.
-		return adns.A, fmt.Errorf("rc.String rtype %v unimplemented", *recordType)
+		return adns.A, printer.Errorf("rc.String rtype %v unimplemented", *recordType)
 	}
 }
 
@@ -489,7 +490,7 @@ func nativeToRecords(set *adns.RecordSet, origin string) []*models.RecordConfig 
 		}
 	case "Microsoft.Network/dnszones/SOA":
 	default:
-		panic(fmt.Errorf("rc.String rtype %v unimplemented", *set.Type))
+		panic(printer.Errorf("rc.String rtype %v unimplemented", *set.Type))
 	}
 	return results
 }
@@ -547,7 +548,7 @@ func (a *azurednsProvider) recordToNative(recordKey models.RecordKey, recordConf
 			*recordSet.Type = rec.AzureAlias["type"]
 			recordSet.TargetResource = &adns.SubResource{ID: to.StringPtr(rec.GetTargetField())}
 		default:
-			return nil, adns.A, fmt.Errorf("rc.String rtype %v unimplemented", recordKey.Type) // ands.A is a placeholder
+			return nil, adns.A, printer.Errorf("rc.String rtype %v unimplemented", recordKey.Type) // ands.A is a placeholder
 		}
 	}
 
@@ -586,7 +587,7 @@ func (a *azurednsProvider) EnsureDomainExists(domain string) error {
 	if _, ok := a.zones[domain]; ok {
 		return nil
 	}
-	fmt.Printf("Adding zone for %s to Azure dns account\n", domain)
+	printer.Printf("Adding zone for %s to Azure dns account\n", domain)
 
 	ctx, cancel := context.WithTimeout(context.Background(), 6000*time.Second)
 	defer cancel()

@@ -1,7 +1,7 @@
 package cscglobal
 
 import (
-	"fmt"
+	"github.com/StackExchange/dnscontrol/v3/pkg/printer"
 	"strings"
 
 	"github.com/StackExchange/dnscontrol/v3/models"
@@ -116,7 +116,7 @@ func (client *providerClient) GenerateDomainCorrections(dc *models.DomainConfig,
 	// Read foundRecords:
 	foundRecords, err := client.GetZoneRecords(dc.Name)
 	if err != nil {
-		return nil, fmt.Errorf("c.GetDNSZoneRecords(%v) failed: %v", dc.Name, err)
+		return nil, printer.Errorf("c.GetDNSZoneRecords(%v) failed: %v", dc.Name, err)
 	}
 
 	// Normalize
@@ -213,7 +213,7 @@ func makePurge(domainname string, cor diff.Correlation) zoneResourceRecordEdit {
 
 	if cor.Existing.Type == "CAA" {
 		var tagValue = cor.Existing.CaaTag
-		//fmt.Printf("DEBUG: CAA TAG = %q\n", tagValue)
+		//printer.Printf("DEBUG: CAA TAG = %q\n", tagValue)
 		zer.CurrentTag = &tagValue
 	}
 

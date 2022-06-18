@@ -63,7 +63,7 @@ func newProvider(m map[string]string, metadata json.RawMessage) (*namecheapProvi
 	api := &namecheapProvider{}
 	api.APIUser, api.APIKEY = m["apiuser"], m["apikey"]
 	if api.APIKEY == "" || api.APIUser == "" {
-		return nil, fmt.Errorf("missing Namecheap apikey and apiuser")
+		return nil, printer.Errorf("missing Namecheap apikey and apiuser")
 	}
 	api.client = nc.NewClient(api.APIUser, api.APIKEY, api.APIUser)
 	// if BaseURL is specified in creds, use that url
@@ -146,7 +146,7 @@ func (n *namecheapProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*mo
 	dc.Filter(func(r *models.RecordConfig) bool {
 		if r.Type == "NS" && r.GetLabel() == "@" {
 			if !strings.HasSuffix(r.GetTargetField(), "registrar-servers.com.") {
-				fmt.Println("\n", r.GetTargetField(), "Namecheap does not support changing apex NS records. Skipping.")
+				printer.Println("\n", r.GetTargetField(), "Namecheap does not support changing apex NS records. Skipping.")
 			}
 			return false
 		}

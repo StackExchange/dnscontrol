@@ -2,7 +2,7 @@ package cloudns
 
 import (
 	"encoding/json"
-	"fmt"
+	"github.com/StackExchange/dnscontrol/v3/pkg/printer"
 	"io/ioutil"
 	"net/http"
 	"strconv"
@@ -78,7 +78,7 @@ func (c *cloudnsProvider) fetchAvailableNameservers() error {
 
 	var bodyString, err = c.get("/dns/available-name-servers.json", requestParams{})
 	if err != nil {
-		return fmt.Errorf("failed fetching available nameservers list from ClouDNS: %s", err)
+		return printer.Errorf("failed fetching available nameservers list from ClouDNS: %s", err)
 	}
 
 	var nr nameserverResponse
@@ -101,7 +101,7 @@ func (c *cloudnsProvider) fetchAvailableTTLValues(domain string) error {
 
 	var bodyString, err = c.get("/dns/get-available-ttl.json", params)
 	if err != nil {
-		return fmt.Errorf("failed fetching available TTL values list from ClouDNS: %s", err)
+		return printer.Errorf("failed fetching available TTL values list from ClouDNS: %s", err)
 	}
 
 	json.Unmarshal(bodyString, &allowedTTLValues)
@@ -121,7 +121,7 @@ func (c *cloudnsProvider) fetchDomainList() error {
 		endpoint := "/dns/list-zones.json"
 		var bodyString, err = c.get(endpoint, params)
 		if err != nil {
-			return fmt.Errorf("failed fetching domain list from ClouDNS: %s", err)
+			return printer.Errorf("failed fetching domain list from ClouDNS: %s", err)
 		}
 		json.Unmarshal(bodyString, &dr)
 
@@ -142,7 +142,7 @@ func (c *cloudnsProvider) createDomain(domain string) error {
 		"zone-type":   "master",
 	}
 	if _, err := c.get("/dns/register.json", params); err != nil {
-		return fmt.Errorf("failed create domain (ClouDNS): %s", err)
+		return printer.Errorf("failed create domain (ClouDNS): %s", err)
 	}
 	return nil
 }
@@ -150,7 +150,7 @@ func (c *cloudnsProvider) createDomain(domain string) error {
 func (c *cloudnsProvider) createRecord(domainID string, rec requestParams) error {
 	rec["domain-name"] = domainID
 	if _, err := c.get("/dns/add-record.json", rec); err != nil { // here we add record
-		return fmt.Errorf("failed create record (ClouDNS): %s", err)
+		return printer.Errorf("failed create record (ClouDNS): %s", err)
 	}
 	return nil
 }
@@ -161,7 +161,7 @@ func (c *cloudnsProvider) deleteRecord(domainID string, recordID string) error {
 		"record-id":   recordID,
 	}
 	if _, err := c.get("/dns/delete-record.json", params); err != nil {
-		return fmt.Errorf("failed delete record (ClouDNS): %s", err)
+		return printer.Errorf("failed delete record (ClouDNS): %s", err)
 	}
 	return nil
 }
@@ -170,7 +170,7 @@ func (c *cloudnsProvider) modifyRecord(domainID string, recordID string, rec req
 	rec["domain-name"] = domainID
 	rec["record-id"] = recordID
 	if _, err := c.get("/dns/mod-record.json", rec); err != nil {
-		return fmt.Errorf("failed update (ClouDNS): %s", err)
+		return printer.Errorf("failed update (ClouDNS): %s", err)
 	}
 	return nil
 }
@@ -180,7 +180,7 @@ func (c *cloudnsProvider) getRecords(id string) ([]domainRecord, error) {
 
 	var bodyString, err = c.get("/dns/records.json", params)
 	if err != nil {
-		return nil, fmt.Errorf("failed fetching record list from ClouDNS: %s", err)
+		return nil, printer.Errorf("failed fetching record list from ClouDNS: %s", err)
 	}
 
 	var dr recordResponse
@@ -225,7 +225,7 @@ func (c *cloudnsProvider) get(endpoint string, params requestParams) ([]byte, er
 	err = json.Unmarshal(bodyString, &errResp)
 	if err == nil {
 		if errResp.Status == "Failed" {
-			return bodyString, fmt.Errorf("ClouDNS API error: %s URL:%s%s ", errResp.Description, req.Host, req.URL.RequestURI())
+			return bodyString, printer.Errorf("ClouDNS API error: %s URL:%s%s ", errResp.Description, req.Host, req.URL.RequestURI())
 		}
 	}
 

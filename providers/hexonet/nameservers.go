@@ -2,6 +2,7 @@ package hexonet
 
 import (
 	"fmt"
+	"github.com/StackExchange/dnscontrol/v3/pkg/printer"
 	"regexp"
 	"sort"
 	"strings"
@@ -51,7 +52,7 @@ func (n *HXClient) getNameserversRaw(domain string) ([]string, error) {
 	}
 	nsColumn := r.GetColumn("NAMESERVER")
 	if nsColumn == nil {
-		return nil, fmt.Errorf("error getting NAMESERVER column for domain: %s", domain)
+		return nil, printer.Errorf("error getting NAMESERVER column for domain: %s", domain)
 	}
 	ns := nsColumn.GetData()
 	sort.Strings(ns)
@@ -97,7 +98,7 @@ func (n *HXClient) updateNameservers(ns []string, domain string) func() error {
 		response := n.client.Request(cmd)
 		code := response.GetCode()
 		if code != 200 {
-			return fmt.Errorf("%d %s", code, response.GetDescription())
+			return printer.Errorf("%d %s", code, response.GetDescription())
 		}
 		return nil
 	}

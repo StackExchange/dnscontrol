@@ -93,11 +93,11 @@ func (c *desecProvider) initializeDomainIndex() error {
 				if resp.StatusCode == 404 {
 					return nil
 				}
-				return fmt.Errorf("failed fetching domains: %s", err)
+				return printer.Errorf("failed fetching domains: %s", err)
 			}
 			err = c.buildIndexFromResponse(bodyString)
 			if err != nil {
-				return fmt.Errorf("failed fetching domains: %s", err)
+				return printer.Errorf("failed fetching domains: %s", err)
 			}
 			links = c.convertLinks(resp.Header.Get("Link"))
 			endpoint = links["next"]
@@ -112,7 +112,7 @@ func (c *desecProvider) initializeDomainIndex() error {
 		if resp.StatusCode == 404 {
 			return nil
 		}
-		return fmt.Errorf("failed fetching domains: %s", err)
+		return printer.Errorf("failed fetching domains: %s", err)
 	}
 	err = c.buildIndexFromResponse(bodyString)
 	if err == nil {
@@ -146,13 +146,13 @@ func (c *desecProvider) convertLinks(links string) map[string]string {
 	for _, link := range strings.Split(links, ", ") {
 		tmpurl := strings.Split(link, "; ")
 		if len(tmpurl) != 2 {
-			fmt.Printf("unexpected link header %s", link)
+			printer.Printf("unexpected link header %s", link)
 			continue
 		}
 		r := regexp.MustCompile(`rel="(.*)"`)
 		matches := r.FindStringSubmatch(tmpurl[1])
 		if len(matches) != 2 {
-			fmt.Printf("unexpected label %s", tmpurl[1])
+			printer.Printf("unexpected label %s", tmpurl[1])
 			continue
 		}
 		// mapping["$label"] = "$URL"
@@ -177,11 +177,11 @@ func (c *desecProvider) getRecords(domain string) ([]resourceRecord, error) {
 				if resp.StatusCode == 404 {
 					return rrsNew, nil
 				}
-				return rrsNew, fmt.Errorf("getRecords: failed fetching rrsets: %s", err)
+				return rrsNew, printer.Errorf("getRecords: failed fetching rrsets: %s", err)
 			}
 			tmp, err := generateRRSETfromResponse(bodyString)
 			if err != nil {
-				return rrsNew, fmt.Errorf("failed fetching records for domain %s (deSEC): %s", domain, err)
+				return rrsNew, printer.Errorf("failed fetching records for domain %s (deSEC): %s", domain, err)
 			}
 			rrsNew = append(rrsNew, tmp...)
 			links = c.convertLinks(resp.Header.Get("Link"))
@@ -193,7 +193,7 @@ func (c *desecProvider) getRecords(domain string) ([]resourceRecord, error) {
 	}
 	//no pagination
 	if err != nil {
-		return rrsNew, fmt.Errorf("failed fetching records for domain %s (deSEC): %s", domain, err)
+		return rrsNew, printer.Errorf("failed fetching records for domain %s (deSEC): %s", domain, err)
 	}
 	tmp, err := generateRRSETfromResponse(bodyString)
 	if err != nil {
@@ -233,7 +233,7 @@ func (c *desecProvider) createDomain(domain string) error {
 	var resp []byte
 	var err error
 	if resp, err = c.post(endpoint, "POST", byt); err != nil {
-		return fmt.Errorf("failed domain create (deSEC): %v", err)
+		return printer.Errorf("failed domain create (deSEC): %v", err)
 	}
 	dm := domainObject{}
 	err = json.Unmarshal(resp, &dm)
@@ -250,7 +250,7 @@ func (c *desecProvider) upsertRR(rr []resourceRecord, domain string) error {
 	endpoint := fmt.Sprintf("/domains/%s/rrsets/", domain)
 	byt, _ := json.Marshal(rr)
 	if _, err := c.post(endpoint, "PUT", byt); err != nil {
-		return fmt.Errorf("failed create RRset (deSEC): %v", err)
+		return printer.Errorf("failed create RRset (deSEC): %v", err)
 	}
 	return nil
 }
@@ -258,7 +258,7 @@ func (c *desecProvider) upsertRR(rr []resourceRecord, domain string) error {
 func (c *desecProvider) deleteRR(domain, shortname, t string) error {
 	endpoint := fmt.Sprintf("/domains/%s/rrsets/%s/%s/", domain, shortname, t)
 	if _, _, err := c.get(endpoint, "DELETE"); err != nil {
-		return fmt.Errorf("failed delete RRset (deSEC): %v", err)
+		return printer.Errorf("failed delete RRset (deSEC): %v", err)
 	}
 	return nil
 }
@@ -295,7 +295,7 @@ retry:
 				wait, err := strconv.ParseInt(waitfor, 10, 64)
 				if err == nil {
 					if wait > 180 {
-						return []byte{}, resp, fmt.Errorf("rate limiting exceeded")
+						return []byte{}, resp, printer.Errorf("rate limiting exceeded")
 					}
 					printer.Warnf("Rate limiting.. waiting for %s seconds", waitfor)
 					time.Sleep(time.Duration(wait+1) * time.Second)
@@ -310,15 +310,15 @@ retry:
 		var nfieldErrors []nonFieldError
 		err = json.Unmarshal(bodyString, &errResp)
 		if err == nil {
-			return bodyString, resp, fmt.Errorf("%s", errResp.Detail)
+			return bodyString, resp, printer.Errorf("%s", errResp.Detail)
 		}
 		err = json.Unmarshal(bodyString, &nfieldErrors)
 		if err == nil && len(nfieldErrors) > 0 {
 			if len(nfieldErrors[0].Errors) > 0 {
-				return bodyString, resp, fmt.Errorf("%s", nfieldErrors[0].Errors[0])
+				return bodyString, resp, printer.Errorf("%s", nfieldErrors[0].Errors[0])
 			}
 		}
-		return bodyString, resp, fmt.Errorf("HTTP status %s Body: %s, the API does not provide more information", resp.Status, bodyString)
+		return bodyString, resp, printer.Errorf("HTTP status %s Body: %s, the API does not provide more information", resp.Status, bodyString)
 	}
 	return bodyString, resp, nil
 }
@@ -362,7 +362,7 @@ retry:
 				wait, err := strconv.ParseInt(waitfor, 10, 64)
 				if err == nil {
 					if wait > 180 {
-						return []byte{}, fmt.Errorf("rate limiting exceeded")
+						return []byte{}, printer.Errorf("rate limiting exceeded")
 					}
 					printer.Warnf("Rate limiting.. waiting for %s seconds", waitfor)
 					time.Sleep(time.Duration(wait+1) * time.Second)
@@ -377,15 +377,15 @@ retry:
 		var nfieldErrors []nonFieldError
 		err = json.Unmarshal(bodyString, &errResp)
 		if err == nil {
-			return bodyString, fmt.Errorf("HTTP status %d %s details: %s", resp.StatusCode, resp.Status, errResp.Detail)
+			return bodyString, printer.Errorf("HTTP status %d %s details: %s", resp.StatusCode, resp.Status, errResp.Detail)
 		}
 		err = json.Unmarshal(bodyString, &nfieldErrors)
 		if err == nil && len(nfieldErrors) > 0 {
 			if len(nfieldErrors[0].Errors) > 0 {
-				return bodyString, fmt.Errorf("%s", nfieldErrors[0].Errors[0])
+				return bodyString, printer.Errorf("%s", nfieldErrors[0].Errors[0])
 			}
 		}
-		return bodyString, fmt.Errorf("HTTP status %s Body: %s, the API does not provide more information", resp.Status, bodyString)
+		return bodyString, printer.Errorf("HTTP status %s Body: %s, the API does not provide more information", resp.Status, bodyString)
 	}
 	//time.Sleep(334 * time.Millisecond)
 	return bodyString, nil

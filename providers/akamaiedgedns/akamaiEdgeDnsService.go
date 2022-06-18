@@ -9,7 +9,6 @@ https://github.com/akamai/AkamaiOPEN-edgegrid-golang
 */
 
 import (
-	"fmt"
 	"github.com/StackExchange/dnscontrol/v3/models"
 	"github.com/StackExchange/dnscontrol/v3/pkg/printer"
 	dnsv2 "github.com/akamai/AkamaiOPEN-edgegrid-golang/configdns-v2"
@@ -56,22 +55,22 @@ func createZone(zonename string, contractID string, groupID string) error {
 
 	err := dnsv2.ValidateZone(zone)
 	if err != nil {
-		return fmt.Errorf("invalid value provided for zone. error: %s", err.Error())
+		return printer.Errorf("invalid value provided for zone. error: %s", err.Error())
 	}
 
 	err = zone.Save(*queryArgs)
 	if err != nil {
-		return fmt.Errorf("zone create failed. error: %s", err.Error())
+		return printer.Errorf("zone create failed. error: %s", err.Error())
 	}
 
 	// Indirectly create NS and SOA records
 	err = zone.SaveChangelist()
 	if err != nil {
-		return fmt.Errorf("zone initialization failed. SOA and NS records need to be created")
+		return printer.Errorf("zone initialization failed. SOA and NS records need to be created")
 	}
 	err = zone.SubmitChangelist()
 	if err != nil {
-		return fmt.Errorf("zone create failed. error: %s", err.Error())
+		return printer.Errorf("zone create failed. error: %s", err.Error())
 	}
 
 	printer.Printf("Created zone: %s\n", zone.Zone)
@@ -94,7 +93,7 @@ func listZones(contractID string) ([]string, error) {
 
 	zoneListResp, err := dnsv2.ListZones(queryArgs)
 	if err != nil {
-		return nil, fmt.Errorf("zone list retrieval failed. error: %s", err.Error())
+		return nil, printer.Errorf("zone list retrieval failed. error: %s", err.Error())
 	}
 
 	edgeDNSZones := zoneListResp.Zones // what we have
@@ -112,10 +111,10 @@ func isAutoDNSSecEnabled(zonename string) (bool, error) {
 	zone, err := dnsv2.GetZone(zonename)
 	if err != nil {
 		if dnsv2.IsConfigDNSError(err) && err.(dnsv2.ConfigDNSError).NotFound() {
-			return false, fmt.Errorf("zone %s does not exist. error: %s",
+			return false, printer.Errorf("zone %s does not exist. error: %s",
 				zonename, err.Error())
 		}
-		return false, fmt.Errorf("error retrieving information for zone %s. error: %s",
+		return false, printer.Errorf("error retrieving information for zone %s. error: %s",
 			zonename, err.Error())
 	}
 	return zone.SignAndServe, nil
@@ -126,10 +125,10 @@ func autoDNSSecEnable(enable bool, zonename string) error {
 	zone, err := dnsv2.GetZone(zonename)
 	if err != nil {
 		if dnsv2.IsConfigDNSError(err) && err.(dnsv2.ConfigDNSError).NotFound() {
-			return fmt.Errorf("zone %s does not exist. error: %s",
+			return printer.Errorf("zone %s does not exist. error: %s",
 				zonename, err.Error())
 		}
-		return fmt.Errorf("error retrieving information for zone %s. error: %s",
+		return printer.Errorf("error retrieving information for zone %s. error: %s",
 			zonename, err.Error())
 	}
 
@@ -154,7 +153,7 @@ func autoDNSSecEnable(enable bool, zonename string) error {
 
 	err = modifiedzone.Update(queryArgs)
 	if err != nil {
-		return fmt.Errorf("error updating zone %s. error: %s",
+		return printer.Errorf("error updating zone %s. error: %s",
 			zonename, err.Error())
 	}
 
@@ -167,17 +166,17 @@ func autoDNSSecEnable(enable bool, zonename string) error {
 func getAuthorities(contractID string) ([]string, error) {
 	authorityResponse, err := dnsv2.GetAuthorities(contractID)
 	if err != nil {
-		return nil, fmt.Errorf("getAuthorities - contractid %s: authorities retrieval failed. Error: %s",
+		return nil, printer.Errorf("getAuthorities - contractid %s: authorities retrieval failed. Error: %s",
 			contractID, err.Error())
 	}
 	contracts := authorityResponse.Contracts
 	if len(contracts) != 1 {
-		return nil, fmt.Errorf("getAuthorities - contractid %s: Expected 1 element in array but got %d",
+		return nil, printer.Errorf("getAuthorities - contractid %s: Expected 1 element in array but got %d",
 			contractID, len(contracts))
 	}
 	cid := contracts[0].ContractID
 	if cid != contractID {
-		return nil, fmt.Errorf("getAuthorities - contractID %s: got authorities for wrong contractID (%s)",
+		return nil, printer.Errorf("getAuthorities - contractID %s: got authorities for wrong contractID (%s)",
 			contractID, cid)
 	}
 	authorities := contracts[0].Authorities
@@ -187,7 +186,7 @@ func getAuthorities(contractID string) ([]string, error) {
 // rcToRs converts DNSControl RecordConfig records to an AkamaiEdgeDNS recordset.
 func rcToRs(records []*models.RecordConfig, zonename string) (*dnsv2.RecordBody, error) {
 	if len(records) == 0 {
-		return nil, fmt.Errorf("no records to replace")
+		return nil, printer.Errorf("no records to replace")
 	}
 
 	akaRecord := &dnsv2.RecordBody{
@@ -212,7 +211,7 @@ func createRecordset(records []*models.RecordConfig, zonename string) error {
 
 	err = akaRecord.Save(zonename, true)
 	if err != nil {
-		return fmt.Errorf("recordset creation failed. error: %s", err.Error())
+		return printer.Errorf("recordset creation failed. error: %s", err.Error())
 	}
 	return nil
 }
@@ -226,7 +225,7 @@ func replaceRecordset(records []*models.RecordConfig, zonename string) error {
 
 	err = akaRecord.Update(zonename, true)
 	if err != nil {
-		return fmt.Errorf("recordset update failed. error: %s", err.Error())
+		return printer.Errorf("recordset update failed. error: %s", err.Error())
 	}
 	return nil
 }
@@ -241,9 +240,9 @@ func deleteRecordset(records []*models.RecordConfig, zonename string) error {
 	err = akaRecord.Delete(zonename, true)
 	if err != nil {
 		if dnsv2.IsConfigDNSError(err) && err.(dnsv2.ConfigDNSError).NotFound() {
-			return fmt.Errorf("recordset not found")
+			return printer.Errorf("recordset not found")
 		}
-		return fmt.Errorf("failed to delete recordset. error: %s", err.Error())
+		return printer.Errorf("failed to delete recordset. error: %s", err.Error())
 	}
 	return nil
 }
@@ -268,7 +267,7 @@ func getRecords(zonename string) ([]*models.RecordConfig, error) {
 
 	rsetResp, err := dnsv2.GetRecordsets(zonename, queryArgs)
 	if err != nil {
-		return nil, fmt.Errorf("recordset list retrieval failed. error: %s", err.Error())
+		return nil, printer.Errorf("recordset list retrieval failed. error: %s", err.Error())
 	}
 
 	akaRecordsets := rsetResp.Recordsets     // what we have

@@ -3,6 +3,7 @@ package ovh
 import (
 	"errors"
 	"fmt"
+	"github.com/StackExchange/dnscontrol/v3/pkg/printer"
 	"strings"
 
 	"github.com/StackExchange/dnscontrol/v3/models"
@@ -290,7 +291,7 @@ func (c *ovhProvider) updateNS(fqdn string, ns []string) error {
 	}
 
 	if task.Status == "error" {
-		return fmt.Errorf("API error while updating ns for %s: %s", fqdn, task.Comment)
+		return printer.Errorf("API error while updating ns for %s: %s", fqdn, task.Comment)
 	}
 
 	// we don't wait for the task execution. One of the reason is that

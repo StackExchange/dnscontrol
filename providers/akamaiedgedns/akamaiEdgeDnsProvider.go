@@ -11,7 +11,6 @@ https://www.akamai.com/us/en/multimedia/documents/product-brief/edge-dns-product
 
 import (
 	"encoding/json"
-	"fmt"
 	"strings"
 
 	"github.com/StackExchange/dnscontrol/v3/models"
@@ -67,22 +66,22 @@ func newEdgeDNSDSP(config map[string]string, metadata json.RawMessage) (provider
 	groupID := config["group_id"]
 
 	if clientSecret == "" {
-		return nil, fmt.Errorf("creds.json: client_secret must not be empty")
+		return nil, printer.Errorf("creds.json: client_secret must not be empty")
 	}
 	if host == "" {
-		return nil, fmt.Errorf("creds.json: host must not be empty")
+		return nil, printer.Errorf("creds.json: host must not be empty")
 	}
 	if accessToken == "" {
-		return nil, fmt.Errorf("creds.json: accessToken must not be empty")
+		return nil, printer.Errorf("creds.json: accessToken must not be empty")
 	}
 	if clientToken == "" {
-		return nil, fmt.Errorf("creds.json: clientToken must not be empty")
+		return nil, printer.Errorf("creds.json: clientToken must not be empty")
 	}
 	if contractID == "" {
-		return nil, fmt.Errorf("creds.json: contractID must not be empty")
+		return nil, printer.Errorf("creds.json: contractID must not be empty")
 	}
 	if groupID == "" {
-		return nil, fmt.Errorf("creds.json: groupID must not be empty")
+		return nil, printer.Errorf("creds.json: groupID must not be empty")
 	}
 
 	initialize(clientSecret, host, accessToken, clientToken)

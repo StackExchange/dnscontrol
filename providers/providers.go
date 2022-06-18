@@ -2,7 +2,7 @@ package providers
 
 import (
 	"encoding/json"
-	"fmt"
+	"github.com/StackExchange/dnscontrol/v3/pkg/printer"
 	"log"
 
 	"github.com/StackExchange/dnscontrol/v3/models"
@@ -82,7 +82,7 @@ func CreateRegistrar(rType string, config map[string]string) (Registrar, error) 
 
 	initer, ok := RegistrarTypes[rType]
 	if !ok {
-		return nil, fmt.Errorf("no such registrar type: %q", rType)
+		return nil, printer.Errorf("no such registrar type: %q", rType)
 	}
 	return initer(config)
 }
@@ -97,7 +97,7 @@ func CreateDNSProvider(providerTypeName string, config map[string]string, meta j
 
 	p, ok := DNSProviderTypes[providerTypeName]
 	if !ok {
-		return nil, fmt.Errorf("no such DNS service provider: %q", providerTypeName)
+		return nil, printer.Errorf("no such DNS service provider: %q", providerTypeName)
 	}
 	return p.Initializer(config, meta)
 }
@@ -112,7 +112,7 @@ func beCompatible(n string, config map[string]string) (string, error) {
 	if n == "" || n == "-" {
 		// But no TYPE exists in creds.json...
 		if ct == "" {
-			return "-", fmt.Errorf("creds.json entry missing TYPE field")
+			return "-", printer.Errorf("creds.json entry missing TYPE field")
 		}
 		// Otherwise, use the value from creds.json.
 		return ct, nil
@@ -121,7 +121,7 @@ func beCompatible(n string, config map[string]string) (string, error) {
 	// Pre 4.0: The user specified the name manually.
 	// Cross check to detect user-error.
 	if ct != "" && n != ct {
-		return "", fmt.Errorf("creds.json entry mismatch: specified=%q TYPE=%q", n, ct)
+		return "", printer.Errorf("creds.json entry mismatch: specified=%q TYPE=%q", n, ct)
 	}
 	// Seems like the user did it the right way. Return the original value.
 	return n, nil
@@ -135,10 +135,10 @@ func beCompatible(n string, config map[string]string) (string, error) {
 func AuditRecords(dType string, rcs models.Records) error {
 	p, ok := DNSProviderTypes[dType]
 	if !ok {
-		return fmt.Errorf("unknown DNS service provider type: %q", dType)
+		return printer.Errorf("unknown DNS service provider type: %q", dType)
 	}
 	if p.RecordAuditor == nil {
-		return fmt.Errorf("DNS service provider type %q has no RecordAuditor", dType)
+		return printer.Errorf("DNS service provider type %q has no RecordAuditor", dType)
 	}
 	return p.RecordAuditor(rcs)
 }
@@ -158,7 +158,7 @@ func (n None) GetNameservers(string) ([]*models.Nameserver, error) {
 
 // GetZoneRecords gets the records of a zone and returns them in RecordConfig format.
 func (n None) GetZoneRecords(domain string) (models.Records, error) {
-	return nil, fmt.Errorf("not implemented")
+	return nil, printer.Errorf("not implemented")
 	// This enables the get-zones subcommand.
 	// Implement this by extracting the code from GetDomainCorrections into
 	// a single function.  For most providers this should be relatively easy.

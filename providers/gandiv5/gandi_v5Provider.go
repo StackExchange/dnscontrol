@@ -89,7 +89,7 @@ func newHelper(m map[string]string, metadata json.RawMessage) (*gandiv5Provider,
 	api := &gandiv5Provider{}
 	api.apikey = m["apikey"]
 	if api.apikey == "" {
-		return nil, fmt.Errorf("missing Gandi apikey")
+		return nil, printer.Errorf("missing Gandi apikey")
 	}
 	api.sharingid = m["sharing_id"]
 	debug, err := strconv.ParseBool(os.Getenv("GANDI_V5_DEBUG"))
@@ -292,7 +292,7 @@ func (client *gandiv5Provider) GenerateDomainCorrections(dc *models.DomainConfig
 						F: func() error {
 							res, err := g.UpdateDomainRecordsByName(domain, shortname, ns)
 							if err != nil {
-								return fmt.Errorf("%+v: %w", res, err)
+								return printer.Errorf("%+v: %w", res, err)
 							}
 							return nil
 						},
@@ -315,7 +315,7 @@ func (client *gandiv5Provider) GenerateDomainCorrections(dc *models.DomainConfig
 							F: func() error {
 								res, err := g.CreateDomainRecord(domain, shortname, rtype, ttl, values)
 								if err != nil {
-									return fmt.Errorf("%+v: %w", res, err)
+									return printer.Errorf("%+v: %w", res, err)
 								}
 								return nil
 							},
@@ -338,9 +338,9 @@ func (client *gandiv5Provider) GenerateDomainCorrections(dc *models.DomainConfig
 
 // debugRecords prints a list of RecordConfig.
 func debugRecords(note string, recs []*models.RecordConfig) {
-	fmt.Println("DEBUG:", note)
+	printer.Debugf(note)
 	for k, v := range recs {
-		fmt.Printf("   %v: %v %v %v %v\n", k, v.GetLabel(), v.Type, v.TTL, v.GetTargetCombined())
+		printer.Printf("   %v: %v %v %v %v\n", k, v.GetLabel(), v.Type, v.TTL, v.GetTargetCombined())
 	}
 }
 

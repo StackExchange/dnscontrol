@@ -3,6 +3,7 @@ package transip
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/StackExchange/dnscontrol/v3/pkg/printer"
 	"strings"
 
 	"github.com/StackExchange/dnscontrol/v3/models"
@@ -46,11 +47,11 @@ var features = providers.DocumentationNotes{
 func NewTransip(m map[string]string, metadata json.RawMessage) (providers.DNSServiceProvider, error) {
 
 	if m["AccessToken"] == "" && m["PrivateKey"] == "" {
-		return nil, fmt.Errorf("no TransIP AccessToken or PrivateKey provided")
+		return nil, printer.Errorf("no TransIP AccessToken or PrivateKey provided")
 	}
 
 	if m["PrivateKey"] != "" && m["AccountName"] == "" {
-		return nil, fmt.Errorf("no AccountName given, required for authenticating with PrivateKey")
+		return nil, printer.Errorf("no AccountName given, required for authenticating with PrivateKey")
 	}
 
 	client, err := gotransip.NewClient(gotransip.ClientConfiguration{
@@ -60,7 +61,7 @@ func NewTransip(m map[string]string, metadata json.RawMessage) (providers.DNSSer
 	})
 
 	if err != nil {
-		return nil, fmt.Errorf("TransIP client fail %s", err.Error())
+		return nil, printer.Errorf("TransIP client fail %s", err.Error())
 	}
 
 	api := &transipProvider{}
@@ -214,7 +215,7 @@ func nativeToRecord(entry domain.DNSEntry, origin string) (*models.RecordConfig,
 	}
 	rc.SetLabel(entry.Name, origin)
 	if err := rc.PopulateFromString(entry.Type, entry.Content, origin); err != nil {
-		return nil, fmt.Errorf("unparsable record received from TransIP: %w", err)
+		return nil, printer.Errorf("unparsable record received from TransIP: %w", err)
 	}
 
 	return rc, nil

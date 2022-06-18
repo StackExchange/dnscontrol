@@ -41,7 +41,7 @@ var supportedTypes = map[string]bool{
 func (c *activedirProvider) GetZoneRecords(domain string) (models.Records, error) {
 	foundRecords, err := c.getExistingRecords(domain)
 	if err != nil {
-		return nil, fmt.Errorf("c.getExistingRecords(%q) failed: %v", domain, err)
+		return nil, printer.Errorf("c.getExistingRecords(%q) failed: %v", domain, err)
 	}
 	return foundRecords, nil
 }
@@ -63,7 +63,7 @@ func (c *activedirProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*mo
 	// Read foundRecords:
 	foundRecords, err := c.getExistingRecords(dc.Name)
 	if err != nil {
-		return nil, fmt.Errorf("c.getExistingRecords(%v) failed: %v", dc.Name, err)
+		return nil, printer.Errorf("c.getExistingRecords(%v) failed: %v", dc.Name, err)
 	}
 
 	// Normalize
@@ -132,14 +132,14 @@ func (c *activedirProvider) logErr(e error) error {
 func (c *activedirProvider) logHelper(s string) error {
 	logfile, err := os.OpenFile(c.psLog, os.O_APPEND|os.O_RDWR|os.O_CREATE, 0660)
 	if err != nil {
-		return fmt.Errorf("error: Can not create/append to %#v: %v", c.psLog, err)
+		return printer.Errorf("error: Can not create/append to %#v: %v", c.psLog, err)
 	}
 	_, err = fmt.Fprintln(logfile, s)
 	if err != nil {
-		return fmt.Errorf("append to %#v failed: %v", c.psLog, err)
+		return printer.Errorf("append to %#v failed: %v", c.psLog, err)
 	}
 	if logfile.Close() != nil {
-		return fmt.Errorf("closing %#v failed: %v", c.psLog, err)
+		return printer.Errorf("closing %#v failed: %v", c.psLog, err)
 	}
 	return nil
 }
@@ -148,11 +148,11 @@ func (c *activedirProvider) logHelper(s string) error {
 func (c *activedirProvider) powerShellRecord(command string) error {
 	recordfile, err := os.OpenFile(c.psOut, os.O_APPEND|os.O_RDWR|os.O_CREATE, 0660)
 	if err != nil {
-		return fmt.Errorf("can not create/append to %#v: %v", c.psOut, err)
+		return printer.Errorf("can not create/append to %#v: %v", c.psOut, err)
 	}
 	_, err = recordfile.WriteString(command)
 	if err != nil {
-		return fmt.Errorf("append to %#v failed: %v", c.psOut, err)
+		return printer.Errorf("append to %#v failed: %v", c.psOut, err)
 	}
 	return recordfile.Close()
 }
@@ -161,7 +161,7 @@ func (c *activedirProvider) getExistingRecords(domainname string) ([]*models.Rec
 	// Get the JSON either from adzonedump or by running a PowerShell script.
 	data, err := c.getRecords(domainname)
 	if err != nil {
-		return nil, fmt.Errorf("getRecords failed on %#v: %v", domainname, err)
+		return nil, printer.Errorf("getRecords failed on %#v: %v", domainname, err)
 	}
 
 	var recs []*RecordConfigJSON
@@ -174,7 +174,7 @@ func (c *activedirProvider) getExistingRecords(domainname string) ([]*models.Rec
 	}
 	err = json.Unmarshal(data, &recs)
 	if err != nil {
-		return nil, fmt.Errorf("json.Unmarshal failed on %#v: %v", domainname, err)
+		return nil, printer.Errorf("json.Unmarshal failed on %#v: %v", domainname, err)
 	}
 
 	result := make([]*models.RecordConfig, 0, len(recs))
@@ -252,7 +252,7 @@ func (c *activedirProvider) generatePowerShellCreate(domainname string, rec *mod
 	case "NS":
 		text += fmt.Sprintf(` -NS -NameServer "%s"`, content)
 	default:
-		panic(fmt.Errorf("generatePowerShellCreate() does not yet handle recType=%s recName=%#v content=%#v)",
+		panic(printer.Errorf("generatePowerShellCreate() does not yet handle recType=%s recName=%#v content=%#v)",
 			rec.Type, rec.GetLabel(), content))
 		// We panic so that we quickly find any switch statements
 		// that have not been updated for a new RR type.
@@ -276,7 +276,7 @@ func (c *activedirProvider) generatePowerShellModify(domainname, recName, recTyp
 	case "NS":
 		queryField = "NameServer"
 	default:
-		panic(fmt.Errorf("generatePowerShellModify() does not yet handle recType=%s recName=%#v content=(%#v, %#v)", recType, recName, oldContent, newContent))
+		panic(printer.Errorf("generatePowerShellModify() does not yet handle recType=%s recName=%#v content=(%#v, %#v)", recType, recName, oldContent, newContent))
 		// We panic so that we quickly find any switch statements
 		// that have not been updated for a new RR type.
 	}

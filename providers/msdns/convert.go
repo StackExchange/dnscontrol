@@ -4,7 +4,7 @@ package msdns
 
 import (
 	"encoding/json"
-	"fmt"
+	"github.com/StackExchange/dnscontrol/v3/pkg/printer"
 	"net"
 
 	"github.com/StackExchange/dnscontrol/v3/models"
@@ -31,7 +31,7 @@ func extractProps(cip []ciProperty) (map[string]string, map[string]uint32, error
 			var svalue string
 			err := json.Unmarshal(p.Value, &svalue)
 			if err != nil {
-				return nil, nil, fmt.Errorf("could not unmarshal string value=%q: %w", p.Value, err)
+				return nil, nil, printer.Errorf("could not unmarshal string value=%q: %w", p.Value, err)
 			}
 			sprops[name] = svalue
 		} else if p.Value[0] == '{' {
@@ -39,7 +39,7 @@ func extractProps(cip []ciProperty) (map[string]string, map[string]uint32, error
 			var dvalue ciValueDuration
 			err := json.Unmarshal(p.Value, &dvalue)
 			if err != nil {
-				return nil, nil, fmt.Errorf("could not unmarshal duration value=%q: %w", p.Value, err)
+				return nil, nil, printer.Errorf("could not unmarshal duration value=%q: %w", p.Value, err)
 			}
 			uprops[name] = uint32(dvalue.TotalSeconds)
 		} else {
@@ -47,7 +47,7 @@ func extractProps(cip []ciProperty) (map[string]string, map[string]uint32, error
 			var uvalue uint32
 			err := json.Unmarshal(p.Value, &uvalue)
 			if err != nil {
-				return nil, nil, fmt.Errorf("could not unmarshal uint value=%q: %w", p.Value, err)
+				return nil, nil, printer.Errorf("could not unmarshal uint value=%q: %w", p.Value, err)
 			}
 			uprops[name] = uvalue
 		}
@@ -74,14 +74,14 @@ func nativeToRecords(nr nativeRecord, origin string) (*models.RecordConfig, erro
 		contents := sprops["IPv4Address"]
 		ip := net.ParseIP(contents)
 		if ip == nil || ip.To4() == nil {
-			return nil, fmt.Errorf("invalid IP in A record: %q", contents)
+			return nil, printer.Errorf("invalid IP in A record: %q", contents)
 		}
 		rc.SetTargetIP(ip)
 	case "AAAA":
 		contents := sprops["IPv6Address"]
 		ip := net.ParseIP(contents)
 		if ip == nil || ip.To16() == nil {
-			return nil, fmt.Errorf("invalid IPv6 in AAAA record: %q", contents)
+			return nil, printer.Errorf("invalid IPv6 in AAAA record: %q", contents)
 		}
 		rc.SetTargetIP(ip)
 	case "CNAME":
@@ -116,7 +116,7 @@ func nativeToRecords(nr nativeRecord, origin string) (*models.RecordConfig, erro
 	case "TXT":
 		rc.SetTargetTXTString(sprops["DescriptiveText"])
 	default:
-		return nil, fmt.Errorf(
+		return nil, printer.Errorf(
 			"msdns/convert.go:nativeToRecord rtype=%q unknown: props=%+v and %+v",
 			rtype, sprops, uprops)
 	}

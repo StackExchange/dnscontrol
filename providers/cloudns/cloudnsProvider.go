@@ -3,6 +3,7 @@ package cloudns
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/StackExchange/dnscontrol/v3/pkg/printer"
 	"strconv"
 	"strings"
 
@@ -27,7 +28,7 @@ func NewCloudns(m map[string]string, metadata json.RawMessage) (providers.DNSSer
 	c.creds.id, c.creds.password, c.creds.subid = m["auth-id"], m["auth-password"], m["sub-auth-id"]
 
 	if (c.creds.id == "" && c.creds.subid == "") || c.creds.password == "" {
-		return nil, fmt.Errorf("missing ClouDNS auth-id or sub-auth-id and auth-password")
+		return nil, printer.Errorf("missing ClouDNS auth-id or sub-auth-id and auth-password")
 	}
 
 	// Get a domain to validate authentication
@@ -86,7 +87,7 @@ func (c *cloudnsProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*mode
 	}
 	domainID, ok := c.domainIndex[dc.Name]
 	if !ok {
-		return nil, fmt.Errorf("'%s' not a zone in ClouDNS account", dc.Name)
+		return nil, printer.Errorf("'%s' not a zone in ClouDNS account", dc.Name)
 	}
 
 	existingRecords, err := c.GetZoneRecords(dc.Name)
@@ -310,7 +311,7 @@ func toReq(rc *models.RecordConfig) (requestParams, error) {
 		req["digest-type"] = strconv.Itoa(int(rc.DsDigestType))
 		req["record"] = rc.DsDigest
 	default:
-		return nil, fmt.Errorf("ClouDNS.toReq rtype %q unimplemented", rc.Type)
+		return nil, printer.Errorf("ClouDNS.toReq rtype %q unimplemented", rc.Type)
 	}
 
 	return req, nil

@@ -17,6 +17,7 @@ import (
 	"encoding/base64"
 	"encoding/json"
 	"fmt"
+	"github.com/StackExchange/dnscontrol/v3/pkg/printer"
 	"math"
 	"math/rand"
 	"net"
@@ -96,7 +97,7 @@ func initAxfrDdns(config map[string]string, providermeta json.RawMessage) (provi
 		case "udp":
 			api.updateMode = ""
 		default:
-			fmt.Printf("[Warning] AXFRDDNS: Unknown update-mode in `creds.json` (%s)\n", config["update-mode"])
+			printer.Printf("[Warning] AXFRDDNS: Unknown update-mode in `creds.json` (%s)\n", config["update-mode"])
 		}
 	} else {
 		api.updateMode = ""
@@ -107,7 +108,7 @@ func initAxfrDdns(config map[string]string, providermeta json.RawMessage) (provi
 			"tcp-tls":
 			api.transferMode = config["transfer-mode"]
 		default:
-			fmt.Printf("[Warning] AXFRDDNS: Unknown transfer-mode in `creds.json` (%s)\n", config["transfer-mode"])
+			printer.Printf("[Warning] AXFRDDNS: Unknown transfer-mode in `creds.json` (%s)\n", config["transfer-mode"])
 		}
 	} else {
 		api.transferMode = "tcp"
@@ -120,7 +121,7 @@ func initAxfrDdns(config map[string]string, providermeta json.RawMessage) (provi
 	} else if len(api.nameservers) != 0 {
 		api.master = api.nameservers[0].Name + ":53"
 	} else {
-		return nil, fmt.Errorf("nameservers list is empty: creds.json needs a default `nameservers` or an explicit `master`")
+		return nil, printer.Errorf("nameservers list is empty: creds.json needs a default `nameservers` or an explicit `master`")
 	}
 	api.updateKey, err = readKey(config["update-key"], "update-key")
 	if err != nil {
@@ -140,7 +141,7 @@ func initAxfrDdns(config map[string]string, providermeta json.RawMessage) (provi
 			"transfer-mode":
 			continue
 		default:
-			fmt.Printf("[Warning] AXFRDDNS: unknown key in `creds.json` (%s)\n", key)
+			printer.Printf("[Warning] AXFRDDNS: unknown key in `creds.json` (%s)\n", key)
 		}
 	}
 	return api, err
@@ -172,7 +173,7 @@ func readKey(raw string, kind string) (*Key, error) {
 	}
 	arr := strings.Split(raw, ":")
 	if len(arr) != 3 {
-		return nil, fmt.Errorf("invalid key format (%s) in AXFRDDNS.TSIG", kind)
+		return nil, printer.Errorf("invalid key format (%s) in AXFRDDNS.TSIG", kind)
 	}
 	var algo string
 	switch arr[0] {
@@ -185,11 +186,11 @@ func readKey(raw string, kind string) (*Key, error) {
 	case "hmac-sha512", "sha512":
 		algo = dns.HmacSHA512
 	default:
-		return nil, fmt.Errorf("unknown algorithm (%s) in AXFRDDNS.TSIG", kind)
+		return nil, printer.Errorf("unknown algorithm (%s) in AXFRDDNS.TSIG", kind)
 	}
 	_, err := base64.StdEncoding.DecodeString(arr[2])
 	if err != nil {
-		return nil, fmt.Errorf("cannot decode Base64 secret (%s) in AXFRDDNS.TSIG", kind)
+		return nil, printer.Errorf("cannot decode Base64 secret (%s) in AXFRDDNS.TSIG", kind)
 	}
 	return &Key{algo: algo, id: arr[1] + ".", secret: arr[2]}, nil
 }
@@ -246,7 +247,7 @@ func (c *axfrddnsProvider) FetchZoneRecords(domain string) ([]dns.RR, error) {
 			if err == "dns: bad xfr rcode: 9" {
 				err = "NOT AUTH (9)"
 			}
-			return nil, fmt.Errorf("[Error] AXFRDDNS: nameserver refused to transfer the zone: %s", err)
+			return nil, printer.Errorf("[Error] AXFRDDNS: nameserver refused to transfer the zone: %s", err)
 		}
 		rawRecords = append(rawRecords, msg.RR...)
 	}
@@ -336,10 +337,10 @@ func (c *axfrddnsProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*mod
 
 	// TODO(tlim): This check should be done on all providers. Move to the global validation code.
 	if dc.AutoDNSSEC == "on" && !hasDnssecRecords {
-		fmt.Printf("Warning: AUTODNSSEC is enabled, but no DNSKEY or RRSIG record was found in the AXFR answer!\n")
+		printer.Printf("Warning: AUTODNSSEC is enabled, but no DNSKEY or RRSIG record was found in the AXFR answer!\n")
 	}
 	if dc.AutoDNSSEC == "off" && hasDnssecRecords {
-		fmt.Printf("Warning: AUTODNSSEC is disabled, but DNSKEY or RRSIG records were found in the AXFR answer!\n")
+		printer.Printf("Warning: AUTODNSSEC is disabled, but DNSKEY or RRSIG records were found in the AXFR answer!\n")
 	}
 
 	// Normalize
@@ -432,7 +433,7 @@ func (c *axfrddnsProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*mod
 						return err
 					}
 					if msg.MsgHdr.Rcode != 0 {
-						return fmt.Errorf("[Error] AXFRDDNS: nameserver refused to update the zone: %s (%d)",
+						return printer.Errorf("[Error] AXFRDDNS: nameserver refused to update the zone: %s (%d)",
 							dns.RcodeToString[msg.MsgHdr.Rcode],
 							msg.MsgHdr.Rcode)
 					}

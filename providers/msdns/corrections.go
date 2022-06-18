@@ -1,10 +1,9 @@
 package msdns
 
 import (
-	"fmt"
-
 	"github.com/StackExchange/dnscontrol/v3/models"
 	"github.com/StackExchange/dnscontrol/v3/pkg/diff"
+	"github.com/StackExchange/dnscontrol/v3/pkg/printer"
 	"github.com/StackExchange/dnscontrol/v3/pkg/txtutil"
 )
 
@@ -14,7 +13,7 @@ func (client *msdnsProvider) GenerateDomainCorrections(dc *models.DomainConfig, 
 	// Read foundRecords:
 	foundRecords, err := client.GetZoneRecords(dc.Name)
 	if err != nil {
-		return nil, fmt.Errorf("c.GetDNSZoneRecords(%v) failed: %v", dc.Name, err)
+		return nil, printer.Errorf("c.GetDNSZoneRecords(%v) failed: %v", dc.Name, err)
 	}
 
 	// Normalize

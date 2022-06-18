@@ -7,6 +7,7 @@ import (
 	"encoding/hex"
 	"encoding/json"
 	"fmt"
+	"github.com/StackExchange/dnscontrol/v3/pkg/printer"
 	"net/http"
 	"net/http/httputil"
 	"strings"
@@ -189,7 +190,7 @@ func (restApi *dnsMadeEasyRestAPI) createRequest(request *apiRequest) (*http.Req
 	} else if request.method == "GET" || request.method == "DELETE" {
 		req, err = http.NewRequest(request.method, url, nil)
 	} else {
-		return nil, fmt.Errorf("unknown API request method in DNSMADEEASY REST API: %s", request.method)
+		return nil, printer.Errorf("unknown API request method in DNSMADEEASY REST API: %s", request.method)
 	}
 
 	if err != nil {
@@ -221,7 +222,7 @@ retry:
 
 	if restApi.dumpHTTPRequest {
 		dump, _ := httputil.DumpRequest(req, true)
-		fmt.Println(string(dump))
+		printer.Printf(string(dump))
 	}
 
 	res, err := restApi.httpClient.Do(req)
@@ -233,18 +234,18 @@ retry:
 
 	if restApi.dumpHTTPResponse {
 		dump, _ := httputil.DumpResponse(res, true)
-		fmt.Println(string(dump))
+		printer.Printf(string(dump))
 	}
 
 	if res.StatusCode < http.StatusOK || res.StatusCode >= http.StatusBadRequest {
 		var apiErr apiErrorResponse
 		err = json.NewDecoder(res.Body).Decode(&apiErr)
 		if err != nil {
-			return res.StatusCode, fmt.Errorf("DNSMADEEASY API unknown error, status code: %d", res.StatusCode)
+			return res.StatusCode, printer.Errorf("DNSMADEEASY API unknown error, status code: %d", res.StatusCode)
 		}
 
 		if len(apiErr.Error) == 1 && apiErr.Error[0] == "Rate limit exceeded" {
-			fmt.Printf("pausing DNSMADEEASY due to ratelimit: %v seconds\n", backoff)
+			printer.Printf("pausing DNSMADEEASY due to ratelimit: %v seconds\n", backoff)
 
 			time.Sleep(backoff)
 
@@ -256,7 +257,7 @@ retry:
 			goto retry
 		}
 
-		return res.StatusCode, fmt.Errorf("DNSMADEEASY API error: %s", strings.Join(apiErr.Error, " "))
+		return res.StatusCode, printer.Errorf("DNSMADEEASY API error: %s", strings.Join(apiErr.Error, " "))
 	}
 
 	backoff = initialBackoff
