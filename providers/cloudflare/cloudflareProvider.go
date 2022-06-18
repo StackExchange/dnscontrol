@@ -214,6 +214,14 @@ func (c *cloudflareProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*m
 
 	// Normalize
 	models.PostProcessRecords(records)
+	//txtutil.SplitSingleLongTxt(dc.Records) // Autosplit long TXT records
+	// Don't split.
+	// Cloudflare's API only supports one TXT string of any non-zero length. No
+	// multiple strings (TXTMulti).
+	// When serving the DNS record, it splits strings >255 octets into
+	// individual segments of 255 each. However that is hidden from the API.
+	// Therefore, whether the string is 1 octet or thousands, just store it as
+	// one string in the first element of .TxtStrings.
 
 	differ := diff.New(dc, getProxyMetadata)
 	_, create, del, mod, err := differ.IncrementalDiff(records)
@@ -636,6 +644,12 @@ func stringDefault(value interface{}, def string) string {
 }
 
 func (c *cloudflareProvider) nativeToRecord(domain string, cr cloudflare.DNSRecord) (*models.RecordConfig, error) {
+
+	if cr.Type == "TXT" {
+		printer.Printf("DEBUG: TXT label=%s rawcontent=X%sX\n", cr.Name, cr.Content)
+
+	}
+
 	// normalize cname,mx,ns records with dots to be consistent with our config format.
 	if cr.Type == "CNAME" || cr.Type == "MX" || cr.Type == "NS" || cr.Type == "PTR" {
 		if cr.Content != "." {
@@ -657,11 +671,11 @@ func (c *cloudflareProvider) nativeToRecord(domain string, cr cloudflare.DNSReco
 	content := cr.Content
 	rType := cr.Type
 
-	if rType == "TXT" && isCloudflareQuoteBug(content) {
-		printer.Printf("DEBUG: TXT %q\n", content)
-		// Bug in Cloudflare: The contents is
-		content = fixCloudflareQuoteBug(content)
-	}
+	//if rType == "TXT" && isCloudflareQuoteBug(content) {
+	// 	printer.Printf("DEBUG: TXT %q\n", content)
+	// 	// Bug in Cloudflare: The contents is
+	// 	content = fixCloudflareQuoteBug(content)
+	// }
 
 	switch rType { // #rtype_variations
 	case "MX":
@@ -679,6 +693,9 @@ func (c *cloudflareProvider) nativeToRecord(domain string, cr cloudflare.DNSReco
 			target); err != nil {
 			return nil, fmt.Errorf("unparsable SRV record received from cloudflare: %w", err)
 		}
+	case "TXT":
+		err := rc.SetTargetTXT(cr.Content)
+		return rc, err
 	default: // "A", "AAAA", "ANAME", "CAA", "CNAME", "NS", "PTR", "SSHFP", "TXT":
 		err := rc.PopulateFromString(rType, content, domain)
 		if err != nil {

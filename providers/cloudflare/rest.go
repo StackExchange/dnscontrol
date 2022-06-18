@@ -47,7 +47,7 @@ func (c *cloudflareProvider) getRecordsForDomain(id string, domain string) ([]*m
 // create a correction to delete a record
 func (c *cloudflareProvider) deleteRec(rec cloudflare.DNSRecord, domainID string) *models.Correction {
 	return &models.Correction{
-		Msg: fmt.Sprintf("DELETE record: %s %s %d %s (id=%s)", rec.Name, rec.Type, rec.TTL, rec.Content, rec.ID),
+		Msg: fmt.Sprintf("DELETE record: %s %s %d %q (id=%s)", rec.Name, rec.Type, rec.TTL, rec.Content, rec.ID),
 		F: func() error {
 			err := c.cfClient.DeleteDNSRecord(context.Background(), domainID, rec.ID)
 			return err
@@ -119,7 +119,7 @@ func (c *cloudflareProvider) createRec(rec *models.RecordConfig, domainID string
 		prio = fmt.Sprintf(" %d ", rec.MxPreference)
 	}
 	if rec.Type == "TXT" {
-		content = rec.GetTargetRFC1035Quoted()
+		content = rec.GetTargetTXTJoined()
 	}
 	if rec.Type == "DS" {
 		content = fmt.Sprintf("%d %d %d %s", rec.DsKeyTag, rec.DsAlgorithm, rec.DsDigestType, rec.DsDigest)
@@ -183,7 +183,7 @@ func (c *cloudflareProvider) modifyRecord(domainID, recID string, proxied bool, 
 		TTL:      int(rec.TTL),
 	}
 	if rec.Type == "TXT" {
-		r.Content = rec.GetTargetRFC1035Quoted()
+		r.Content = rec.GetTargetTXTJoined()
 	}
 	if rec.Type == "SRV" {
 		r.Data = cfSrvData(rec)
