@@ -58,6 +58,7 @@ func TxtNoDoubleQuotes(records []*models.RecordConfig) error {
 }
 
 // TxtNoLen255 audits TXT records for strings exactly 255 octets long.
+// This is rare; you probably want to use TxtNoLongStrings() instead.
 func TxtNoLen255(records []*models.RecordConfig) error {
 	for _, rc := range records {
 
