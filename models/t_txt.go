@@ -1,5 +1,7 @@
 package models
 
+import "strings"
+
 /*
 Sadly many providers handle TXT records in strange and non-compliant ways.
 
@@ -71,11 +73,30 @@ func (rc *RecordConfig) SetTargetTXTs(s []string) error {
 	return nil
 }
 
+// GetTargetTXTJoined returns the TXT target as one string. If it was stored as multiple strings, concatenate them.
+func (rc *RecordConfig) GetTargetTXTJoined() string {
+	return strings.Join(rc.TxtStrings, "")
+}
+
 // SetTargetTXTString is like SetTargetTXT but accepts one big string,
 // which must be parsed into one or more strings based on how it is quoted.
 // Ex: foo             << 1 string
 //     foo bar         << 1 string
+//     "foo bar"       << 1 string
 //     "foo" "bar"     << 2 strings
+// FIXME(tlim): This function is badly named. It obscures the fact
+// that the string is parsed for quotes and should only be used for returns TXTMulti.
+// Deprecated: Use SetTargetTXTfromRFC1035Quoted instead.
 func (rc *RecordConfig) SetTargetTXTString(s string) error {
 	return rc.SetTargetTXTs(ParseQuotedTxt(s))
 }
+
+func (rc *RecordConfig) SetTargetTXTfromRFC1035Quoted(s string) error {
+	many, err := ParseQuotedFields(s)
+	if err != nil {
+		return err
+	}
+	return rc.SetTargetTXTs(many)
+}
+
+// There is no GetTargetTXTfromRFC1025Quoted(). Use GetTargetRFC1035Quoted()
