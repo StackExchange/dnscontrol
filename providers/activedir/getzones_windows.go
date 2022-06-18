@@ -6,6 +6,8 @@ import (
 	"strconv"
 	"strings"
 	"sync"
+
+	"github.com/StackExchange/dnscontrol/v3/pkg/printer"
 )
 
 var checkPS sync.Once
@@ -20,12 +22,12 @@ func (c *activedirProvider) getRecords(domainname string) ([]byte, error) {
 		checkPS.Do(func() {
 			psAvailible = c.isPowerShellReady()
 			if !psAvailible {
-				fmt.Printf("\n\n\n")
-				fmt.Printf("***********************************************\n")
-				fmt.Printf("PowerShell DnsServer module not installed.\n")
-				fmt.Printf("See http://social.technet.microsoft.com/wiki/contents/articles/2202.remote-server-administration-tools-rsat-for-windows-client-and-windows-server-dsforum2wiki.aspx\n")
-				fmt.Printf("***********************************************\n")
-				fmt.Printf("\n\n\n")
+				printer.Printf("\n\n\n")
+				printer.Printf("***********************************************\n")
+				printer.Printf("PowerShell DnsServer module not installed.\n")
+				printer.Printf("See http://social.technet.microsoft.com/wiki/contents/articles/2202.remote-server-administration-tools-rsat-for-windows-client-and-windows-server-dsforum2wiki.aspx\n")
+				printer.Printf("***********************************************\n")
+				printer.Printf("\n\n\n")
 			}
 		})
 		if !psAvailible {

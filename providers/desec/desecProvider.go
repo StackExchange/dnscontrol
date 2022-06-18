@@ -74,7 +74,7 @@ func (c *desecProvider) GetNameservers(domain string) ([]*models.Nameserver, err
 
 func (c *desecProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Correction, error) {
 	if dc.AutoDNSSEC == "off" {
-		fmt.Printf("Notice: DNSSEC signing was not requested, but cannot be turned off. (deSEC always signs all records.)\n")
+		printer.Printf("Notice: DNSSEC signing was not requested, but cannot be turned off. (deSEC always signs all records.)\n")
 	}
 
 	existing, err := c.GetZoneRecords(dc.Name)

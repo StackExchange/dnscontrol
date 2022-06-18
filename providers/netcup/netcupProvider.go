@@ -3,7 +3,6 @@ package netcup
 import (
 	"encoding/json"
 	"fmt"
-
 	"github.com/StackExchange/dnscontrol/v3/models"
 	"github.com/StackExchange/dnscontrol/v3/pkg/diff"
 	// no need for txtutil.SplitSingleLongTxt in function GetDomainCorrections

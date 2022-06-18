@@ -3,6 +3,7 @@ package softlayer
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/StackExchange/dnscontrol/v3/pkg/printer"
 	"regexp"
 	"strings"
 
@@ -35,7 +36,7 @@ func init() {
 }
 
 func newReg(conf map[string]string, _ json.RawMessage) (providers.DNSServiceProvider, error) {
-	fmt.Println("WARNING: THe SOFTLAYER provider is unmaintained: https://github.com/StackExchange/dnscontrol/issues/1079")
+	printer.Warnf("The SOFTLAYER provider is unmaintained: https://github.com/StackExchange/dnscontrol/issues/1079")
 	s := session.New(conf["username"], conf["api_key"], conf["endpoint_url"], conf["timeout"])
 
 	if len(s.UserName) == 0 || len(s.APIKey) == 0 {
@@ -380,7 +381,7 @@ func (s *softlayerProvider) updateRecordFunc(existing *datatypes.Dns_Domain_Reso
 func verifyMinTTL(ttl int) int {
 	const minTTL = 60
 	if ttl < minTTL {
-		fmt.Printf("\nMODIFY TTL to Min supported TTL value: (ttl=%d) -> (ttl=%d)\n", ttl, minTTL)
+		printer.Printf("\nMODIFY TTL to Min supported TTL value: (ttl=%d) -> (ttl=%d)\n", ttl, minTTL)
 		return minTTL
 	}
 	return ttl

@@ -3,6 +3,7 @@ package autodns
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/StackExchange/dnscontrol/v3/pkg/printer"
 	"net/http"
 	"net/url"
 	"regexp"
@@ -102,17 +103,17 @@ func (api *autoDnsProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*mo
 
 	for _, m := range del {
 		// Just notify, these records don't have to be deleted explicitly
-		fmt.Println(m)
+		printer.Debugf(m.String())
 	}
 
 	for _, m := range create {
-		fmt.Println(m)
+		printer.Debugf(m.String())
 		changes = append(changes, m.Desired)
 	}
 
 	for _, m := range modify {
-		fmt.Println("mod")
-		fmt.Println(m)
+		printer.Debugf("mod")
+		printer.Debugf(m.String())
 		changes = append(changes, m.Desired)
 	}
 
@@ -168,7 +169,7 @@ func (api *autoDnsProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*mo
 					err := api.updateZone(domain, resourceRecords, nameServers, zoneTTL)
 
 					if err != nil {
-						fmt.Println(err)
+						fmt.Errorf(err.Error())
 					}
 
 					return nil

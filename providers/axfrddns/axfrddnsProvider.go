@@ -17,6 +17,7 @@ import (
 	"encoding/base64"
 	"encoding/json"
 	"fmt"
+	"github.com/StackExchange/dnscontrol/v3/pkg/printer"
 	"math"
 	"math/rand"
 	"net"
@@ -96,7 +97,7 @@ func initAxfrDdns(config map[string]string, providermeta json.RawMessage) (provi
 		case "udp":
 			api.updateMode = ""
 		default:
-			fmt.Printf("[Warning] AXFRDDNS: Unknown update-mode in `creds.json` (%s)\n", config["update-mode"])
+			printer.Printf("[Warning] AXFRDDNS: Unknown update-mode in `creds.json` (%s)\n", config["update-mode"])
 		}
 	} else {
 		api.updateMode = ""
@@ -107,7 +108,7 @@ func initAxfrDdns(config map[string]string, providermeta json.RawMessage) (provi
 			"tcp-tls":
 			api.transferMode = config["transfer-mode"]
 		default:
-			fmt.Printf("[Warning] AXFRDDNS: Unknown transfer-mode in `creds.json` (%s)\n", config["transfer-mode"])
+			printer.Printf("[Warning] AXFRDDNS: Unknown transfer-mode in `creds.json` (%s)\n", config["transfer-mode"])
 		}
 	} else {
 		api.transferMode = "tcp"
@@ -140,7 +141,7 @@ func initAxfrDdns(config map[string]string, providermeta json.RawMessage) (provi
 			"transfer-mode":
 			continue
 		default:
-			fmt.Printf("[Warning] AXFRDDNS: unknown key in `creds.json` (%s)\n", key)
+			printer.Printf("[Warning] AXFRDDNS: unknown key in `creds.json` (%s)\n", key)
 		}
 	}
 	return api, err
@@ -336,10 +337,10 @@ func (c *axfrddnsProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*mod
 
 	// TODO(tlim): This check should be done on all providers. Move to the global validation code.
 	if dc.AutoDNSSEC == "on" && !hasDnssecRecords {
-		fmt.Printf("Warning: AUTODNSSEC is enabled, but no DNSKEY or RRSIG record was found in the AXFR answer!\n")
+		printer.Printf("Warning: AUTODNSSEC is enabled, but no DNSKEY or RRSIG record was found in the AXFR answer!\n")
 	}
 	if dc.AutoDNSSEC == "off" && hasDnssecRecords {
-		fmt.Printf("Warning: AUTODNSSEC is disabled, but DNSKEY or RRSIG records were found in the AXFR answer!\n")
+		printer.Printf("Warning: AUTODNSSEC is disabled, but DNSKEY or RRSIG records were found in the AXFR answer!\n")
 	}
 
 	// Normalize

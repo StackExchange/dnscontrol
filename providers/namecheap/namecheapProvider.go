@@ -146,7 +146,7 @@ func (n *namecheapProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*mo
 	dc.Filter(func(r *models.RecordConfig) bool {
 		if r.Type == "NS" && r.GetLabel() == "@" {
 			if !strings.HasSuffix(r.GetTargetField(), "registrar-servers.com.") {
-				fmt.Println("\n", r.GetTargetField(), "Namecheap does not support changing apex NS records. Skipping.")
+				printer.Println("\n", r.GetTargetField(), "Namecheap does not support changing apex NS records. Skipping.")
 			}
 			return false
 		}
