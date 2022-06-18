@@ -28,6 +28,10 @@ jobs:
             - linux-go-{{ checksum "go.sum" }}-<< pipeline.parameters.cache-key >>
 
       - run:
+          name: Enforce Go Formatted Code
+          command: "[ `go fmt ./... 2>&1 | wc -l` -eq 0 ]"
+
+      - run:
           name: Install goreleaser
           command: go install github.com/goreleaser/goreleaser@latest
 
