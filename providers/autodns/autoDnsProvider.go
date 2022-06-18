@@ -30,8 +30,8 @@ var features = providers.DocumentationNotes{
 }
 
 type autoDnsProvider struct {
-	baseURL          url.URL
-	defaultHeaders   http.Header
+	baseURL        url.URL
+	defaultHeaders http.Header
 }
 
 func init() {
@@ -47,18 +47,18 @@ func New(settings map[string]string, _ json.RawMessage) (providers.DNSServicePro
 	api := &autoDnsProvider{}
 
 	api.baseURL = url.URL{
-		Scheme:      "https",
-		User:        url.UserPassword(
+		Scheme: "https",
+		User: url.UserPassword(
 			settings["username"],
 			settings["password"],
-			),
-		Host:        "api.autodns.com",
-		Path:        "/v1/",
+		),
+		Host: "api.autodns.com",
+		Path: "/v1/",
 	}
 
 	api.defaultHeaders = http.Header{
-		"Accept": []string{"application/json; charset=UTF-8"},
-		"Content-Type": []string{"application/json; charset=UTF-8"},
+		"Accept":                []string{"application/json; charset=UTF-8"},
+		"Content-Type":          []string{"application/json; charset=UTF-8"},
 		"X-Domainrobot-Context": []string{settings["context"]},
 	}
 
@@ -138,8 +138,8 @@ func (api *autoDnsProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*mo
 						} else {
 							resourceRecord := &ResourceRecord{
 								Name:  record.Name,
-								TTL: int64(record.TTL),
-								Type: record.Type,
+								TTL:   int64(record.TTL),
+								Type:  record.Type,
 								Value: record.GetTargetField(),
 							}
 
@@ -212,7 +212,7 @@ func (api *autoDnsProvider) GetZoneRecords(domain string) (models.Records, error
 		nameServerRecord.SetLabel("", domain)
 
 		// make sure the value for this NS record is suffixed with a dot at the end
-		_ = nameServerRecord.PopulateFromString("NS", strings.TrimSuffix(nameServer.Name, ".") + ".", domain)
+		_ = nameServerRecord.PopulateFromString("NS", strings.TrimSuffix(nameServer.Name, ".")+".", domain)
 
 		existingRecords = append(existingRecords, nameServerRecord)
 	}

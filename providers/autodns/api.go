@@ -13,11 +13,11 @@ import (
 )
 
 type ZoneListFilter struct {
-	Key string `json:"key"`
-	Value string `json:"value"`
-	Operator string `json:"operator"`
-	Link string `json:"link,omitempty"`
-	Filter []*ZoneListFilter `json:"filters,omitempty"`
+	Key      string            `json:"key"`
+	Value    string            `json:"value"`
+	Operator string            `json:"operator"`
+	Link     string            `json:"link,omitempty"`
+	Filter   []*ZoneListFilter `json:"filters,omitempty"`
 }
 
 type ZoneListRequest struct {
@@ -31,7 +31,7 @@ func (api *autoDnsProvider) request(method string, requestPath string, data inte
 	requestUrl.Path = api.baseURL.Path + requestPath
 
 	request := &http.Request{
-		URL: &requestUrl,
+		URL:    &requestUrl,
 		Header: api.defaultHeaders,
 		Method: method,
 	}
@@ -88,7 +88,7 @@ func (api *autoDnsProvider) getZone(domain string) (*Zone, error) {
 	}
 
 	// if resolving of a systemNameServer succeeds the system contains this zone
-	var responseData, _ = api.request("GET", "zone/" + domain + "/" + systemNameServer.Name, nil)
+	var responseData, _ = api.request("GET", "zone/"+domain+"/"+systemNameServer.Name, nil)
 	var responseObject JSONResponseDataZone
 	// make sure that the response is valid, the zone is in AutoDNS but we're not sure the returned data meets our expectation
 	unmErr := json.Unmarshal(responseData, &responseObject)
@@ -128,7 +128,7 @@ func (api *autoDnsProvider) updateZone(domain string, resourceRecords []*Resourc
 
 	zone.NameServers = append(zone.NameServers, nameServers...)
 
-	var _, putErr = api.request("PUT", "zone/" + domain + "/" + systemNameServer.Name, zone)
+	var _, putErr = api.request("PUT", "zone/"+domain+"/"+systemNameServer.Name, zone)
 
 	if putErr != nil {
 		return putErr
