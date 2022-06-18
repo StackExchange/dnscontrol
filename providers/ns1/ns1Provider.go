@@ -19,10 +19,10 @@ import (
 var docNotes = providers.DocumentationNotes{
 	providers.CanGetZones:            providers.Can(),
 	providers.CanUseAlias:            providers.Can(),
-	providers.CanAutoDNSSEC:	  providers.Can(),
+	providers.CanAutoDNSSEC:          providers.Can(),
 	providers.CanUseCAA:              providers.Can(),
-	providers.CanUseDS:		  providers.Can(),
-	providers.CanUseDSForChildren:	  providers.Can(),
+	providers.CanUseDS:               providers.Can(),
+	providers.CanUseDSForChildren:    providers.Can(),
 	providers.CanUseNAPTR:            providers.Can(),
 	providers.CanUsePTR:              providers.Can(),
 	providers.DocCreateDomains:       providers.Can(),
@@ -113,7 +113,7 @@ func (n *nsone) GetZoneDNSSEC(domain string) (bool, error) {
 }
 
 // getDomainCorrectionsDNSSEC creates DNSSEC zone corrections based on current state and preference
-func (n *nsone) getDomainCorrectionsDNSSEC(domain, toggleDNSSEC string) (*models.Correction) {
+func (n *nsone) getDomainCorrectionsDNSSEC(domain, toggleDNSSEC string) *models.Correction {
 
 	// get dnssec status from NS1 for domain
 	// if errors are returned, we bail out without any DNSSEC corrections
@@ -164,7 +164,7 @@ func (n *nsone) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Correct
 
 	corrections := []*models.Correction{}
 
-        if dnssecCorrections := n.getDomainCorrectionsDNSSEC(domain, dc.AutoDNSSEC); dnssecCorrections != nil {
+	if dnssecCorrections := n.getDomainCorrectionsDNSSEC(domain, dc.AutoDNSSEC); dnssecCorrections != nil {
 		corrections = append(corrections, dnssecCorrections)
 	}
 
