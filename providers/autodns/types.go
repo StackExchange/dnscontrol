@@ -39,10 +39,9 @@ type MainAddressRecord struct {
 }
 
 type Zone struct {
-
 	Origin string `json:"origin"`
 
-	Soa * bind.SoaDefaults `json:"soa,omitempty"`
+	Soa *bind.SoaDefaults `json:"soa,omitempty"`
 
 	// List of name servers
 	NameServers []*models.Nameserver `json:"nameServers,omitempty"`

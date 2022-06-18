@@ -334,8 +334,8 @@ func TestCheckDuplicates_dup_ns(t *testing.T) {
 }
 
 func TestUniq(t *testing.T) {
-	a := []uint32 {1, 2, 2, 3, 4, 5, 5, 6}
-	expected := []uint32 {1, 2, 3, 4, 5, 6}
+	a := []uint32{1, 2, 2, 3, 4, 5, 5, 6}
+	expected := []uint32{1, 2, 3, 4, 5, 6}
 
 	r := uniq(a)
 	if !reflect.DeepEqual(r, expected) {
