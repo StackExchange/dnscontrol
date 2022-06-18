@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"github.com/StackExchange/dnscontrol/v3/pkg/printer"
 	"strconv"
 	"strings"
 
@@ -61,7 +60,7 @@ var defaultNS = []string{
 func NewProvider(m map[string]string, metadata json.RawMessage) (providers.DNSServiceProvider, error) {
 	token := m["token"]
 	if token == "" {
-		return nil, printer.Errorf("missing Vultr API token")
+		return nil, fmt.Errorf("missing Vultr API token")
 	}
 
 	client := govultr.NewClient(nil, token)

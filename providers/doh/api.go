@@ -1,7 +1,7 @@
 package doh
 
 import (
-	"github.com/StackExchange/dnscontrol/v3/pkg/printer"
+	"fmt"
 	"sort"
 
 	"github.com/babolivier/go-doh-client"
@@ -20,7 +20,7 @@ func (c *dohProvider) getNameservers(domain string) ([]string, error) {
 	// Perform a NS lookup
 	nss, _, err := resolver.LookupNS(domain)
 	if err != nil {
-		return nil, printer.Errorf("failed fetching nameservers list (DNS-over-HTTPS): %s", err)
+		return nil, fmt.Errorf("failed fetching nameservers list (DNS-over-HTTPS): %s", err)
 	}
 
 	ns := []string{}
@@ -32,5 +32,5 @@ func (c *dohProvider) getNameservers(domain string) ([]string, error) {
 }
 
 func (c *dohProvider) updateNameservers(ns []string, domain string) error {
-	return printer.Errorf("DNS-over-HTTPS 'Registrar' is read only, changes must be applied to %s manually", domain)
+	return fmt.Errorf("DNS-over-HTTPS 'Registrar' is read only, changes must be applied to %s manually", domain)
 }

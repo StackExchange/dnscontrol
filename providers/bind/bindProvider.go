@@ -72,11 +72,11 @@ func initBind(config map[string]string, providermeta json.RawMessage) (providers
 	var nss []string
 	for i, ns := range api.DefaultNS {
 		if ns == "" {
-			return nil, printer.Errorf("empty string in default_ns[%d]", i)
+			return nil, fmt.Errorf("empty string in default_ns[%d]", i)
 		}
 		// If it contains a ".", it must end in a ".".
 		if strings.ContainsRune(ns, '.') && ns[len(ns)-1] != '.' {
-			return nil, printer.Errorf("default_ns (%v) must end with a (.) [https://stackexchange.github.io/dnscontrol/why-the-dot]", ns)
+			return nil, fmt.Errorf("default_ns (%v) must end with a (.) [https://stackexchange.github.io/dnscontrol/why-the-dot]", ns)
 		}
 		// This is one of the (increasingly rare) cases where we store a
 		// name without the trailing dot to indicate a FQDN.
@@ -134,18 +134,18 @@ func (c *bindProvider) GetNameservers(string) ([]*models.Nameserver, error) {
 // ListZones returns all the zones in an account
 func (c *bindProvider) ListZones() ([]string, error) {
 	if _, err := os.Stat(c.directory); os.IsNotExist(err) {
-		return nil, printer.Errorf("directory %q does not exist", c.directory)
+		return nil, fmt.Errorf("directory %q does not exist", c.directory)
 	}
 
 	var files []string
 	f, err := os.Open(c.directory)
 	if err != nil {
-		return files, printer.Errorf("bind ListZones open dir %q: %w",
+		return files, fmt.Errorf("bind ListZones open dir %q: %w",
 			c.directory, err)
 	}
 	filenames, err := f.Readdirnames(-1)
 	if err != nil {
-		return files, printer.Errorf("bind ListZones readdir %q: %w",
+		return files, fmt.Errorf("bind ListZones readdir %q: %w",
 			c.directory, err)
 	}
 
@@ -174,7 +174,7 @@ func (c *bindProvider) GetZoneRecords(domain string) (models.Records, error) {
 		return nil, nil
 	}
 	if err != nil {
-		return nil, printer.Errorf("can't open %s: %w", c.zonefile, err)
+		return nil, fmt.Errorf("can't open %s: %w", c.zonefile, err)
 	}
 	c.zoneFileFound = true
 
@@ -189,7 +189,7 @@ func (c *bindProvider) GetZoneRecords(domain string) (models.Records, error) {
 	}
 
 	if err := zp.Err(); err != nil {
-		return nil, printer.Errorf("error while parsing '%v': %w", c.zonefile, err)
+		return nil, fmt.Errorf("error while parsing '%v': %w", c.zonefile, err)
 	}
 	return foundRecords, nil
 }
@@ -293,7 +293,7 @@ func (c *bindProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*models.
 					printer.Printf("WRITING ZONEFILE: %v\n", c.zonefile)
 					zf, err := os.Create(c.zonefile)
 					if err != nil {
-						return printer.Errorf("could not create zonefile: %w", err)
+						return fmt.Errorf("could not create zonefile: %w", err)
 					}
 					// Beware that if there are any fake types, then they will
 					// be commented out on write, but we don't reverse that when
@@ -301,11 +301,11 @@ func (c *bindProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*models.
 					err = prettyzone.WriteZoneFileRC(zf, dc.Records, dc.Name, 0, comments)
 
 					if err != nil {
-						return printer.Errorf("failed WriteZoneFile: %w", err)
+						return fmt.Errorf("failed WriteZoneFile: %w", err)
 					}
 					err = zf.Close()
 					if err != nil {
-						return printer.Errorf("closing: %w", err)
+						return fmt.Errorf("closing: %w", err)
 					}
 					return nil
 				},

@@ -98,15 +98,15 @@ func (c *dnsimpleProvider) GetZoneRecords(domain string) (models.Records, error)
 		case "ALIAS", "URL":
 			rec.Type = r.Type
 			if err := rec.SetTarget(r.Content); err != nil {
-				return nil, printer.Errorf("unparsable record received from dnsimple: %w", err)
+				return nil, fmt.Errorf("unparsable record received from dnsimple: %w", err)
 			}
 		case "DS":
 			if err := rec.SetTargetDSString(r.Content); err != nil {
-				return nil, printer.Errorf("unparsable record received from dnsimple: %w", err)
+				return nil, fmt.Errorf("unparsable record received from dnsimple: %w", err)
 			}
 		case "MX":
 			if err := rec.SetTargetMX(uint16(r.Priority), r.Content); err != nil {
-				return nil, printer.Errorf("unparsable record received from dnsimple: %w", err)
+				return nil, fmt.Errorf("unparsable record received from dnsimple: %w", err)
 			}
 		case "SRV":
 			parts := strings.Fields(r.Content)
@@ -114,11 +114,11 @@ func (c *dnsimpleProvider) GetZoneRecords(domain string) (models.Records, error)
 				r.Content += "."
 			}
 			if err := rec.SetTargetSRVPriorityString(uint16(r.Priority), r.Content); err != nil {
-				return nil, printer.Errorf("unparsable record received from dnsimple: %w", err)
+				return nil, fmt.Errorf("unparsable record received from dnsimple: %w", err)
 			}
 		default:
 			if err := rec.PopulateFromString(r.Type, r.Content, domain); err != nil {
-				return nil, printer.Errorf("unparsable record received from dnsimple: %w", err)
+				return nil, fmt.Errorf("unparsable record received from dnsimple: %w", err)
 			}
 		}
 		cleanedRecords = append(cleanedRecords, rec)
@@ -281,7 +281,7 @@ func (c *dnsimpleProvider) getAccountID() (string, error) {
 			return "", err
 		}
 		if whoamiResponse.Data.User != nil && whoamiResponse.Data.Account == nil {
-			return "", printer.Errorf("DNSimple token appears to be a user token. Please supply an account token")
+			return "", fmt.Errorf("DNSimple token appears to be a user token. Please supply an account token")
 		}
 		c.accountID = strconv.FormatInt(whoamiResponse.Data.Account.ID, 10)
 	}
@@ -543,7 +543,7 @@ func newProvider(m map[string]string, metadata json.RawMessage) (*dnsimpleProvid
 	api := &dnsimpleProvider{}
 	api.AccountToken = m["token"]
 	if api.AccountToken == "" {
-		return nil, printer.Errorf("missing DNSimple token")
+		return nil, fmt.Errorf("missing DNSimple token")
 	}
 
 	if m["baseurl"] != "" {
@@ -631,7 +631,7 @@ func getTargetRecordPriority(rc *models.RecordConfig) int {
 func quoteDNSString(unquoted string) string {
 	b, err := json.Marshal(unquoted)
 	if err != nil {
-		panic(printer.Errorf("unable to marshal to JSON: %q", unquoted))
+		panic(fmt.Errorf("unable to marshal to JSON: %q", unquoted))
 	}
 	return string(b)
 }

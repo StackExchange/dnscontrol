@@ -2,6 +2,7 @@ package activedir
 
 import (
 	"encoding/json"
+	"fmt"
 	"github.com/StackExchange/dnscontrol/v3/pkg/printer"
 	"runtime"
 
@@ -44,7 +45,7 @@ func newDNS(config map[string]string, metadata json.RawMessage) (providers.DNSSe
 	if fVal := config["fakeps"]; fVal == "true" {
 		fake = true
 	} else if fVal != "" && fVal != "false" {
-		return nil, printer.Errorf("fakeps value must be 'true' or 'false'")
+		return nil, fmt.Errorf("fakeps value must be 'true' or 'false'")
 	}
 
 	psOut, psLog := config["psout"], config["pslog"]
@@ -62,7 +63,7 @@ func newDNS(config map[string]string, metadata json.RawMessage) (providers.DNSSe
 	if runtime.GOOS == "windows" {
 		srv := config["ADServer"]
 		if srv == "" {
-			return nil, printer.Errorf("ADServer required for Active Directory provider")
+			return nil, fmt.Errorf("ADServer required for Active Directory provider")
 		}
 		p.adServer = srv
 		return p, nil

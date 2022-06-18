@@ -3,6 +3,7 @@ package cscglobal
 import (
 	"bytes"
 	"encoding/json"
+	"fmt"
 	"github.com/StackExchange/dnscontrol/v3/pkg/printer"
 	"io/ioutil"
 	"net/http"
@@ -234,13 +235,13 @@ func (client *providerClient) updateNameservers(ns []string, domain string) erro
 
 	bodyString, err := client.put("/domains/nsmodification", requestBody)
 	if err != nil {
-		return printer.Errorf("CSC Global: Error update NS : %w", err)
+		return fmt.Errorf("CSC Global: Error update NS : %w", err)
 	}
 
 	var res nsModRequestResult
 	json.Unmarshal(bodyString, &res)
 	if res.Result.Status.Code != "SUBMITTED" {
-		return printer.Errorf("CSC Global: Error update NS Code: %s Message: %s AdditionalInfo: %s", res.Result.Status.Code, res.Result.Status.Message, res.Result.Status.AdditionalInformation)
+		return fmt.Errorf("CSC Global: Error update NS Code: %s Message: %s AdditionalInfo: %s", res.Result.Status.Code, res.Result.Status.Message, res.Result.Status.AdditionalInformation)
 	}
 
 	return nil
@@ -324,7 +325,7 @@ func (client *providerClient) getDomains() ([]string, error) {
 	json.Unmarshal(bodyString, &dr)
 
 	if dr.Meta.Pages > 1 {
-		return nil, printer.Errorf("cscglobal getDomains: unimplemented  paganation")
+		return nil, fmt.Errorf("cscglobal getDomains: unimplemented  paganation")
 	}
 
 	var r []string
@@ -379,10 +380,10 @@ func (client *providerClient) sendZoneEditRequest(domainname string, edits []zon
 	var errResp zoneEditRequestResultZoneEditRequestResult
 	err = json.Unmarshal(responseBody, &errResp)
 	if err != nil {
-		return printer.Errorf("CSC Global API error: %s DATA: %q", err, errResp)
+		return fmt.Errorf("CSC Global API error: %s DATA: %q", err, errResp)
 	}
 	if errResp.Content.Status != "SUCCESS" {
-		return printer.Errorf("CSC Global API error: %s DATA: %q", errResp.Content.Status, errResp.Content.Message)
+		return fmt.Errorf("CSC Global API error: %s DATA: %q", errResp.Content.Status, errResp.Content.Message)
 	}
 
 	// The request was successfully submitted. Now query the status link until the request is complete.
@@ -399,12 +400,12 @@ func (client *providerClient) waitRequestURL(statusURL string) error {
 	for {
 		statusBody, err := client.geturl(statusURL)
 		if err != nil {
-			return printer.Errorf("CSC Global API error: %s DATA: %q", err, statusBody)
+			return fmt.Errorf("CSC Global API error: %s DATA: %q", err, statusBody)
 		}
 		var statusResp zoneEditStatusResultZoneEditStatusResult
 		err = json.Unmarshal(statusBody, &statusResp)
 		if err != nil {
-			return printer.Errorf("CSC Global API error: %s DATA: %q", err, statusBody)
+			return fmt.Errorf("CSC Global API error: %s DATA: %q", err, statusBody)
 		}
 		status, msg := statusResp.Content.Status, statusResp.Content.ErrorDescription
 
@@ -419,7 +420,7 @@ func (client *providerClient) waitRequestURL(statusURL string) error {
 		if status == "FAILED" {
 			parts := strings.Split(statusResp.Links.Cancel, "/")
 			client.cancelRequest(parts[len(parts)-1])
-			return printer.Errorf("update failed: %s %s", msg, statusURL)
+			return fmt.Errorf("update failed: %s %s", msg, statusURL)
 		}
 		if status == "COMPLETED" {
 			break
@@ -466,7 +467,7 @@ func (client *providerClient) clearRequests(domain string) error {
 
 	// TODO(tlim): Properly handle paganation.
 	if dr.Meta.Pages != 1 {
-		return printer.Errorf("cancelPendingEdits failed: Pages=%d", dr.Meta.Pages)
+		return fmt.Errorf("cancelPendingEdits failed: Pages=%d", dr.Meta.Pages)
 	}
 
 	for i, ze := range dr.ZoneEdits {
@@ -485,7 +486,7 @@ func (client *providerClient) clearRequests(domain string) error {
 		case "COMPLETED", "CANCELED":
 			continue
 		default:
-			return printer.Errorf("cscglobal ClearRequests: unimplemented status: %q", ze.Status)
+			return fmt.Errorf("cscglobal ClearRequests: unimplemented status: %q", ze.Status)
 		}
 
 	}
@@ -523,11 +524,11 @@ func (client *providerClient) put(endpoint string, requestBody []byte) ([]byte, 
 	err = json.Unmarshal(bodyString, &errResp)
 	if err != nil {
 		// Some error messages are plain text
-		return nil, printer.Errorf("CSC Global API error: %s URL: %s%s",
+		return nil, fmt.Errorf("CSC Global API error: %s URL: %s%s",
 			bodyString,
 			req.Host, req.URL.RequestURI())
 	}
-	return nil, printer.Errorf("CSC Global API error code: %s description: %s URL: %s%s",
+	return nil, fmt.Errorf("CSC Global API error code: %s description: %s URL: %s%s",
 		errResp.Code, errResp.Description,
 		req.Host, req.URL.RequestURI())
 }
@@ -560,11 +561,11 @@ func (client *providerClient) delete(endpoint string) ([]byte, error) {
 	err = json.Unmarshal(bodyString, &errResp)
 	if err != nil {
 		// Some error messages are plain text
-		return nil, printer.Errorf("CSC Global API error: %s URL: %s%s",
+		return nil, fmt.Errorf("CSC Global API error: %s URL: %s%s",
 			bodyString,
 			req.Host, req.URL.RequestURI())
 	}
-	return nil, printer.Errorf("CSC Global API error code: %s description: %s URL: %s%s",
+	return nil, fmt.Errorf("CSC Global API error code: %s description: %s URL: %s%s",
 		errResp.Code, errResp.Description,
 		req.Host, req.URL.RequestURI())
 }
@@ -598,11 +599,11 @@ func (client *providerClient) post(endpoint string, requestBody []byte) ([]byte,
 	err = json.Unmarshal(bodyString, &errResp)
 	if err != nil {
 		// Some error messages are plain text
-		return nil, printer.Errorf("CSC Global API error: %s URL: %s%s",
+		return nil, fmt.Errorf("CSC Global API error: %s URL: %s%s",
 			bodyString,
 			req.Host, req.URL.RequestURI())
 	}
-	return nil, printer.Errorf("CSC Global API error code: %s description: %s URL: %s%s",
+	return nil, fmt.Errorf("CSC Global API error code: %s description: %s URL: %s%s",
 		errResp.Code, errResp.Description,
 		req.Host, req.URL.RequestURI())
 }
@@ -632,7 +633,7 @@ func (client *providerClient) geturl(url string) ([]byte, error) {
 
 	if resp.StatusCode == 400 {
 		// 400, error message is in the body as plain text
-		return nil, printer.Errorf("CSC Global API error: %s URL: %s%s",
+		return nil, fmt.Errorf("CSC Global API error: %s URL: %s%s",
 			bodyString,
 			req.Host, req.URL.RequestURI())
 	}
@@ -643,7 +644,7 @@ func (client *providerClient) geturl(url string) ([]byte, error) {
 	if err != nil {
 		return nil, err
 	}
-	return nil, printer.Errorf("CSC Global API error code: %s description: %s URL: %s%s",
+	return nil, fmt.Errorf("CSC Global API error code: %s description: %s URL: %s%s",
 		errResp.Code, errResp.Description,
 		req.Host, req.URL.RequestURI())
 }

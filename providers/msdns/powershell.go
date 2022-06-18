@@ -70,7 +70,7 @@ func (psh *psHandle) GetDNSServerZoneAll(dnsserver string) ([]string, error) {
 	}
 	if stderr != "" {
 		printer.Printf("STDERROR = %q\n", stderr)
-		return nil, printer.Errorf("unexpected stderr from Get-DnsServerZones: %q", stderr)
+		return nil, fmt.Errorf("unexpected stderr from Get-DnsServerZones: %q", stderr)
 	}
 
 	var zones []dnsZone
@@ -115,7 +115,7 @@ func (psh *psHandle) GetDNSZoneRecords(dnsserver, domain string) ([]nativeRecord
 	}
 	if stderr != "" {
 		printer.Printf("STDERROR GetDNSZR = %q\n", stderr)
-		return nil, printer.Errorf("unexpected stderr from PSZoneDump: %q", stderr)
+		return nil, fmt.Errorf("unexpected stderr from PSZoneDump: %q", stderr)
 	}
 	if stdout != "" {
 		printer.Printf("STDOUT GetDNSZR = %q\n", stdout)
@@ -140,7 +140,7 @@ func (psh *psHandle) GetDNSZoneRecords(dnsserver, domain string) ([]nativeRecord
 		records = append(records, nativeRecord{})
 		err2 := json.Unmarshal(contents, &(records[0]))
 		if err2 != nil {
-			return nil, printer.Errorf("PSZoneDump json error: %w", err)
+			return nil, fmt.Errorf("PSZoneDump json error: %w", err)
 		}
 	}
 
@@ -207,7 +207,7 @@ func (psh *psHandle) RecordDelete(dnsserver, domain string, rec *models.RecordCo
 	}
 	if stderr != "" {
 		printer.Printf("STDERROR = %q\n", stderr)
-		return printer.Errorf("unexpected stderr from PSDelete: %q", stderr)
+		return fmt.Errorf("unexpected stderr from PSDelete: %q", stderr)
 	}
 	return nil
 }
@@ -264,7 +264,7 @@ func (psh *psHandle) RecordCreate(dnsserver, domain string, rec *models.RecordCo
 	if stderr != "" {
 		printer.Printf("STDOUT RecordCreate = %s\n", stdout)
 		printer.Printf("STDERROR RecordCreate = %q\n", stderr)
-		return printer.Errorf("unexpected stderr from PSCreate: %q", stderr)
+		return fmt.Errorf("unexpected stderr from PSCreate: %q", stderr)
 	}
 	return nil
 }
@@ -327,7 +327,7 @@ func generatePSCreate(dnsserver, domain string, rec *models.RecordConfig) string
 	//case "TLSA":
 	//	fmt.Fprintf(&b, ` -TLSA -CertificateAssociationData <System.String> -CertificateUsage {CAConstraint | ServiceCertificateConstraint | TrustAnchorAssertion | DomainIssuedCertificate} -MatchingType {ExactMatch | Sha256Hash | Sha512Hash} -Selector {FullCertificate | SubjectPublicKeyInfo}`, rec.GetTargetField())
 	default:
-		panic(printer.Errorf("generatePSCreate() has not implemented recType=%s recName=%#v content=%#v)",
+		panic(fmt.Errorf("generatePSCreate() has not implemented recType=%s recName=%#v content=%#v)",
 			rec.Type, rec.GetLabel(), rec.GetTargetField()))
 		// We panic so that we quickly find any switch statements
 		// that have not been updated for a new RR type.
@@ -343,7 +343,7 @@ func (psh *psHandle) RecordModify(dnsserver, domain string, old, rec *models.Rec
 	}
 	if stderr != "" {
 		printer.Printf("STDERROR = %q\n", stderr)
-		return printer.Errorf("unexpected stderr from PSModify: %q", stderr)
+		return fmt.Errorf("unexpected stderr from PSModify: %q", stderr)
 	}
 	return nil
 }
@@ -424,7 +424,7 @@ func generatePSModify(dnsserver, domain string, old, rec *models.RecordConfig) s
 // 	//case "TLSA":
 // 	//	fmt.Fprintf(&b, ` -TLSA -CertificateAssociationData <System.String> -CertificateUsage {CAConstraint | ServiceCertificateConstraint | TrustAnchorAssertion | DomainIssuedCertificate} -MatchingType {ExactMatch | Sha256Hash | Sha512Hash} -Selector {FullCertificate | SubjectPublicKeyInfo}`, rec.GetTargetField())
 // 	default:
-// 		panic(printer.Errorf("generatePSModify() has not implemented recType=%q recName=%q content=(%s))",
+// 		panic(fmt.Errorf("generatePSModify() has not implemented recType=%q recName=%q content=(%s))",
 // 			rec.Type, rec.GetLabel(), rec.GetTargetCombined()))
 // 		// We panic so that we quickly find any switch statements
 // 		// that have not been updated for a new RR type.
@@ -489,7 +489,7 @@ func generatePSModify(dnsserver, domain string, old, rec *models.RecordConfig) s
 // 	//case "TLSA":
 // 	//	fmt.Fprintf(&b, ` -TLSA -CertificateAssociationData <System.String> -CertificateUsage {CAConstraint | ServiceCertificateConstraint | TrustAnchorAssertion | DomainIssuedCertificate} -MatchingType {ExactMatch | Sha256Hash | Sha512Hash} -Selector {FullCertificate | SubjectPublicKeyInfo}`, rec.GetTargetField())
 // 	default:
-// 		panic(printer.Errorf("generatePSModify() update has not implemented recType=%q recName=%q content=(%s))",
+// 		panic(fmt.Errorf("generatePSModify() update has not implemented recType=%q recName=%q content=(%s))",
 // 			rec.Type, rec.GetLabel(), rec.GetTargetCombined()))
 // 		// We panic so that we quickly find any switch statements
 // 		// that have not been updated for a new RR type.

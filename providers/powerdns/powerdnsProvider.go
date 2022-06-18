@@ -3,7 +3,7 @@ package powerdns
 import (
 	"context"
 	"encoding/json"
-	"github.com/StackExchange/dnscontrol/v3/pkg/printer"
+	"fmt"
 	"net/http"
 	"strings"
 
@@ -58,17 +58,17 @@ func NewProvider(m map[string]string, metadata json.RawMessage) (providers.DNSSe
 
 	api.APIKey = m["apiKey"]
 	if api.APIKey == "" {
-		return nil, printer.Errorf("PowerDNS API Key is required")
+		return nil, fmt.Errorf("PowerDNS API Key is required")
 	}
 
 	api.APIUrl = m["apiUrl"]
 	if api.APIUrl == "" {
-		return nil, printer.Errorf("PowerDNS API URL is required")
+		return nil, fmt.Errorf("PowerDNS API URL is required")
 	}
 
 	api.ServerName = m["serverName"]
 	if api.ServerName == "" {
-		return nil, printer.Errorf("PowerDNS server name is required")
+		return nil, fmt.Errorf("PowerDNS server name is required")
 	}
 
 	// load js config

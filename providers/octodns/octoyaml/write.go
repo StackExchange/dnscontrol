@@ -2,7 +2,6 @@ package octoyaml
 
 import (
 	"fmt"
-	"github.com/StackExchange/dnscontrol/v3/pkg/printer"
 	"io"
 	"sort"
 	"strings"
@@ -176,7 +175,7 @@ func oneLabel(records models.Records) yaml.MapItem {
 		case "MX", "SRV":
 			// Always processed as a complex{}
 		default:
-			panic(printer.Errorf("yamlwrite:oneLabel:len1 rtype not implemented: %s", rtype))
+			panic(fmt.Errorf("yamlwrite:oneLabel:len1 rtype not implemented: %s", rtype))
 		}
 	}
 
@@ -197,7 +196,7 @@ func oneLabel(records models.Records) yaml.MapItem {
 		case "MX", "SRV":
 			// Always processed as a complex{}
 		default:
-			panic(printer.Errorf("oneLabel:many rtype not implemented: %s", rtype))
+			panic(fmt.Errorf("oneLabel:many rtype not implemented: %s", rtype))
 		}
 	}
 
@@ -284,7 +283,7 @@ func oneType(records models.Records) interface{} {
 		return vv
 
 	default:
-		panic(printer.Errorf("yamlwrite:oneType rtype=%s not implemented", rtype))
+		panic(fmt.Errorf("yamlwrite:oneType rtype=%s not implemented", rtype))
 	}
 }
 

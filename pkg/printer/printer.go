@@ -29,7 +29,7 @@ type Printer interface {
 	Printf(fmt string, args ...interface{})
 	Println(lines ...string)
 	Warnf(fmt string, args ...interface{})
-	Errorf(fmt string, args ...interface{}) error
+	Errorf(fmt string, args ...interface{})
 }
 
 // Debugf is called to print/format debug information.
@@ -52,9 +52,9 @@ func Warnf(fmt string, args ...interface{}) {
 	DefaultPrinter.Warnf(fmt, args...)
 }
 
-// Errorf is called to print/format a error.
-func Errorf(fmt string, args ...interface{}) error {
-	return DefaultPrinter.Errorf(fmt, args...)
+// Errorf is called to print/format an error.
+func Errorf(fmt string, args ...interface{}) {
+	DefaultPrinter.Errorf(fmt, args...)
 }
 
 var (
@@ -165,8 +165,7 @@ func (c ConsolePrinter) Warnf(format string, args ...interface{}) {
 	fmt.Fprintf(c.Writer, "WARNING: "+format, args...)
 }
 
-// Errorf is called to print/format a error.
-func (c ConsolePrinter) Errorf(format string, args ...interface{}) error {
+// Errorf is called to print/format an error.
+func (c ConsolePrinter) Errorf(format string, args ...interface{}) {
 	fmt.Fprintf(c.Writer, "ERROR: "+format, args...)
-	return fmt.Errorf(format, args...)
 }

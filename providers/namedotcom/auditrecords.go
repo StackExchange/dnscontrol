@@ -1,8 +1,8 @@
 package namedotcom
 
 import (
+	"fmt"
 	"github.com/StackExchange/dnscontrol/v3/models"
-	"github.com/StackExchange/dnscontrol/v3/pkg/printer"
 	"github.com/StackExchange/dnscontrol/v3/pkg/recordaudit"
 )
 
@@ -31,7 +31,7 @@ func MaxLengthNDC(records []*models.RecordConfig) error {
 
 		if rc.HasFormatIdenticalToTXT() { // TXT and similar:
 			if len(rc.GetTargetField()) > 512 {
-				return printer.Errorf("encoded txt too long")
+				return fmt.Errorf("encoded txt too long")
 			}
 		}
 

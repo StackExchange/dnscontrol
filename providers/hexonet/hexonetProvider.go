@@ -3,7 +3,7 @@ package hexonet
 
 import (
 	"encoding/json"
-	"github.com/StackExchange/dnscontrol/v3/pkg/printer"
+	"fmt"
 	"github.com/StackExchange/dnscontrol/v3/pkg/version"
 	"github.com/StackExchange/dnscontrol/v3/providers"
 	hxcl "github.com/hexonet/go-sdk/v3/apiclient"
@@ -44,13 +44,13 @@ func newProvider(conf map[string]string) (*HXClient, error) {
 		api.client.SetRemoteIPAddress(conf["ipaddress"])
 	}
 	if api.APIEntity != "OTE" && api.APIEntity != "LIVE" {
-		return nil, printer.Errorf("wrong api system entity used. use \"OTE\" for OT&E system or \"LIVE\" for Live system")
+		return nil, fmt.Errorf("wrong api system entity used. use \"OTE\" for OT&E system or \"LIVE\" for Live system")
 	}
 	if api.APIEntity == "OTE" {
 		api.client.UseOTESystem()
 	}
 	if api.APILogin == "" || api.APIPassword == "" {
-		return nil, printer.Errorf("missing login credentials apilogin or apipassword")
+		return nil, fmt.Errorf("missing login credentials apilogin or apipassword")
 	}
 	api.client.SetCredentials(api.APILogin, api.APIPassword)
 	return api, nil

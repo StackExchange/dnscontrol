@@ -3,7 +3,6 @@ package packetframe
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/StackExchange/dnscontrol/v3/pkg/printer"
 	"net/http"
 	"net/url"
 	"strconv"
@@ -25,12 +24,12 @@ type packetframeProvider struct {
 // newPacketframe creates the provider.
 func newPacketframe(m map[string]string, metadata json.RawMessage) (providers.DNSServiceProvider, error) {
 	if m["token"] == "" {
-		return nil, printer.Errorf("missing Packetframe token")
+		return nil, fmt.Errorf("missing Packetframe token")
 	}
 
 	baseURL, err := url.Parse(defaultBaseURL)
 	if err != nil {
-		return nil, printer.Errorf("invalid base URL for Packetframe")
+		return nil, fmt.Errorf("invalid base URL for Packetframe")
 	}
 	client := http.Client{}
 
@@ -70,12 +69,12 @@ func (api *packetframeProvider) GetZoneRecords(domain string) (models.Records, e
 	}
 	zone, ok := api.domainIndex[domain+"."]
 	if !ok {
-		return nil, printer.Errorf("%q not a zone in Packetframe account", domain)
+		return nil, fmt.Errorf("%q not a zone in Packetframe account", domain)
 	}
 
 	records, err := api.getRecords(zone.ID)
 	if err != nil {
-		return nil, printer.Errorf("could not load records for domain %q", domain)
+		return nil, fmt.Errorf("could not load records for domain %q", domain)
 	}
 
 	existingRecords := make([]*models.RecordConfig, len(records))
@@ -107,12 +106,12 @@ func (api *packetframeProvider) GetDomainCorrections(dc *models.DomainConfig) ([
 	}
 	zone, ok := api.domainIndex[dc.Name+"."]
 	if !ok {
-		return nil, printer.Errorf("no such zone %q in Packetframe account", dc.Name)
+		return nil, fmt.Errorf("no such zone %q in Packetframe account", dc.Name)
 	}
 
 	records, err := api.getRecords(zone.ID)
 	if err != nil {
-		return nil, printer.Errorf("could not load records for domain %q", dc.Name)
+		return nil, fmt.Errorf("could not load records for domain %q", dc.Name)
 	}
 
 	existingRecords := make([]*models.RecordConfig, len(records))
@@ -200,7 +199,7 @@ func toReq(zoneID string, dc *models.DomainConfig, rc *models.RecordConfig) (*do
 	case "SRV":
 		req.Value = fmt.Sprintf("%d %d %d %s", rc.SrvPriority, rc.SrvWeight, rc.SrvPort, rc.GetTargetField())
 	default:
-		return nil, printer.Errorf("packetframe.toReq rtype %q unimplemented", rc.Type)
+		return nil, fmt.Errorf("packetframe.toReq rtype %q unimplemented", rc.Type)
 	}
 
 	return req, nil

@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"github.com/StackExchange/dnscontrol/v3/pkg/printer"
 	"net/http"
 	"net/url"
 )
@@ -23,7 +22,7 @@ func (api *linodeProvider) fetchDomainList() error {
 		dr := &domainResponse{}
 		endpoint := fmt.Sprintf("%s?page=%d", domainsPath, page)
 		if err := api.get(endpoint, dr); err != nil {
-			return printer.Errorf("failed fetching domain list (Linode): %s", err)
+			return fmt.Errorf("failed fetching domain list (Linode): %s", err)
 		}
 		for _, domain := range dr.Data {
 			api.domainIndex[domain.Domain] = domain.ID
@@ -43,7 +42,7 @@ func (api *linodeProvider) getRecords(id int) ([]domainRecord, error) {
 		dr := &recordResponse{}
 		endpoint := fmt.Sprintf("%s/%d/records?page=%d", domainsPath, id, page)
 		if err := api.get(endpoint, dr); err != nil {
-			return nil, printer.Errorf("failed fetching record list (Linode): %s", err)
+			return nil, fmt.Errorf("failed fetching record list (Linode): %s", err)
 		}
 
 		records = append(records, dr.Data...)
@@ -174,7 +173,7 @@ func (api *linodeProvider) handleErrors(resp *http.Response) error {
 	errs := &errorResponse{}
 
 	if err := decoder.Decode(errs); err != nil {
-		return printer.Errorf("bad status code from Linode: %d not 200. Failed to decode response", resp.StatusCode)
+		return fmt.Errorf("bad status code from Linode: %d not 200. Failed to decode response", resp.StatusCode)
 	}
 
 	buf := bytes.NewBufferString(fmt.Sprintf("bad status code from Linode: %d not 200", resp.StatusCode))

@@ -190,7 +190,7 @@ func (restApi *dnsMadeEasyRestAPI) createRequest(request *apiRequest) (*http.Req
 	} else if request.method == "GET" || request.method == "DELETE" {
 		req, err = http.NewRequest(request.method, url, nil)
 	} else {
-		return nil, printer.Errorf("unknown API request method in DNSMADEEASY REST API: %s", request.method)
+		return nil, fmt.Errorf("unknown API request method in DNSMADEEASY REST API: %s", request.method)
 	}
 
 	if err != nil {
@@ -241,7 +241,7 @@ retry:
 		var apiErr apiErrorResponse
 		err = json.NewDecoder(res.Body).Decode(&apiErr)
 		if err != nil {
-			return res.StatusCode, printer.Errorf("DNSMADEEASY API unknown error, status code: %d", res.StatusCode)
+			return res.StatusCode, fmt.Errorf("DNSMADEEASY API unknown error, status code: %d", res.StatusCode)
 		}
 
 		if len(apiErr.Error) == 1 && apiErr.Error[0] == "Rate limit exceeded" {
@@ -257,7 +257,7 @@ retry:
 			goto retry
 		}
 
-		return res.StatusCode, printer.Errorf("DNSMADEEASY API error: %s", strings.Join(apiErr.Error, " "))
+		return res.StatusCode, fmt.Errorf("DNSMADEEASY API error: %s", strings.Join(apiErr.Error, " "))
 	}
 
 	backoff = initialBackoff

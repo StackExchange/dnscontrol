@@ -85,7 +85,7 @@ func (c *octodnsProvider) GetNameservers(string) ([]*models.Nameserver, error) {
 
 // GetZoneRecords gets the records of a zone and returns them in RecordConfig format.
 func (c *octodnsProvider) GetZoneRecords(domain string) (models.Records, error) {
-	return nil, printer.Errorf("not implemented")
+	return nil, fmt.Errorf("not implemented")
 	// This enables the get-zones subcommand.
 	// Implement this by extracting the code from GetDomainCorrections into
 	// a single function.  For most providers this should be relatively easy.
@@ -116,12 +116,12 @@ func (c *octodnsProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*mode
 		if os.IsNotExist(err) {
 			zoneFileFound = false
 		} else {
-			return nil, printer.Errorf("can't open %s: %w", zoneFileName, err)
+			return nil, fmt.Errorf("can't open %s: %w", zoneFileName, err)
 		}
 	} else {
 		foundRecords, err = octoyaml.ReadYaml(foundFH, dc.Name)
 		if err != nil {
-			return nil, printer.Errorf("can not get corrections: %w", err)
+			return nil, fmt.Errorf("can not get corrections: %w", err)
 		}
 	}
 

@@ -25,10 +25,10 @@ func NewDeSec(m map[string]string, metadata json.RawMessage) (providers.DNSServi
 	c := &desecProvider{}
 	c.creds.token = m["auth-token"]
 	if c.creds.token == "" {
-		return nil, printer.Errorf("missing deSEC auth-token")
+		return nil, fmt.Errorf("missing deSEC auth-token")
 	}
 	if err := c.authenticate(); err != nil {
-		return nil, printer.Errorf("authentication failed")
+		return nil, fmt.Errorf("authentication failed")
 	}
 	//DomainIndex is used for corrections (minttl) and domain creation
 	if err := c.initializeDomainIndex(); err != nil {

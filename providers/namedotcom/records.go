@@ -3,7 +3,6 @@ package namedotcom
 import (
 	"errors"
 	"fmt"
-	"github.com/StackExchange/dnscontrol/v3/pkg/printer"
 	"regexp"
 	"strings"
 
@@ -106,7 +105,7 @@ func toRecord(r *namecom.Record, origin string) *models.RecordConfig {
 		Original: r,
 	}
 	if !strings.HasSuffix(r.Fqdn, ".") {
-		panic(printer.Errorf("namedotcom suddenly changed protocol. Bailing. (%v)", r.Fqdn))
+		panic(fmt.Errorf("namedotcom suddenly changed protocol. Bailing. (%v)", r.Fqdn))
 	}
 	fqdn := r.Fqdn[:len(r.Fqdn)-1]
 	rc.SetLabelFromFQDN(fqdn, origin)
@@ -115,15 +114,15 @@ func toRecord(r *namecom.Record, origin string) *models.RecordConfig {
 		rc.SetTargetTXTs(decodeTxt(r.Answer))
 	case "MX":
 		if err := rc.SetTargetMX(uint16(r.Priority), r.Answer); err != nil {
-			panic(printer.Errorf("unparsable MX record received from ndc: %w", err))
+			panic(fmt.Errorf("unparsable MX record received from ndc: %w", err))
 		}
 	case "SRV":
 		if err := rc.SetTargetSRVPriorityString(uint16(r.Priority), r.Answer+"."); err != nil {
-			panic(printer.Errorf("unparsable SRV record received from ndc: %w", err))
+			panic(fmt.Errorf("unparsable SRV record received from ndc: %w", err))
 		}
 	default: // "A", "AAAA", "ANAME", "CNAME", "NS"
 		if err := rc.PopulateFromString(rtype, r.Answer, r.Fqdn); err != nil {
-			panic(printer.Errorf("unparsable record received from ndc: %w", err))
+			panic(fmt.Errorf("unparsable record received from ndc: %w", err))
 		}
 	}
 	return rc

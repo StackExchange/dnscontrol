@@ -4,7 +4,6 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"github.com/StackExchange/dnscontrol/v3/pkg/printer"
 	"log"
 	"net/http"
 	"time"
@@ -44,7 +43,7 @@ const perPageSize = 100
 // NewDo creates a DO-specific DNS provider.
 func NewDo(m map[string]string, metadata json.RawMessage) (providers.DNSServiceProvider, error) {
 	if m["token"] == "" {
-		return nil, printer.Errorf("no DigitalOcean token provided")
+		return nil, fmt.Errorf("no DigitalOcean token provided")
 	}
 
 	ctx := context.Background()
@@ -66,7 +65,7 @@ retry:
 		return nil, err
 	}
 	if resp.StatusCode != http.StatusOK {
-		return nil, printer.Errorf("token for digitalocean is not valid")
+		return nil, fmt.Errorf("token for digitalocean is not valid")
 	}
 
 	return api, nil

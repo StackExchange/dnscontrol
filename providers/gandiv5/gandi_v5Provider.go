@@ -89,7 +89,7 @@ func newHelper(m map[string]string, metadata json.RawMessage) (*gandiv5Provider,
 	api := &gandiv5Provider{}
 	api.apikey = m["apikey"]
 	if api.apikey == "" {
-		return nil, printer.Errorf("missing Gandi apikey")
+		return nil, fmt.Errorf("missing Gandi apikey")
 	}
 	api.sharingid = m["sharing_id"]
 	debug, err := strconv.ParseBool(os.Getenv("GANDI_V5_DEBUG"))
@@ -292,7 +292,7 @@ func (client *gandiv5Provider) GenerateDomainCorrections(dc *models.DomainConfig
 						F: func() error {
 							res, err := g.UpdateDomainRecordsByName(domain, shortname, ns)
 							if err != nil {
-								return printer.Errorf("%+v: %w", res, err)
+								return fmt.Errorf("%+v: %w", res, err)
 							}
 							return nil
 						},
@@ -315,7 +315,7 @@ func (client *gandiv5Provider) GenerateDomainCorrections(dc *models.DomainConfig
 							F: func() error {
 								res, err := g.CreateDomainRecord(domain, shortname, rtype, ttl, values)
 								if err != nil {
-									return printer.Errorf("%+v: %w", res, err)
+									return fmt.Errorf("%+v: %w", res, err)
 								}
 								return nil
 							},

@@ -169,7 +169,7 @@ func (api *autoDnsProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*mo
 					err := api.updateZone(domain, resourceRecords, nameServers, zoneTTL)
 
 					if err != nil {
-						printer.Errorf(err.Error())
+						fmt.Errorf(err.Error())
 					}
 
 					return nil

@@ -1,7 +1,7 @@
 package cscglobal
 
 import (
-	"github.com/StackExchange/dnscontrol/v3/pkg/printer"
+	"fmt"
 	"strings"
 
 	"github.com/StackExchange/dnscontrol/v3/models"
@@ -116,7 +116,7 @@ func (client *providerClient) GenerateDomainCorrections(dc *models.DomainConfig,
 	// Read foundRecords:
 	foundRecords, err := client.GetZoneRecords(dc.Name)
 	if err != nil {
-		return nil, printer.Errorf("c.GetDNSZoneRecords(%v) failed: %v", dc.Name, err)
+		return nil, fmt.Errorf("c.GetDNSZoneRecords(%v) failed: %v", dc.Name, err)
 	}
 
 	// Normalize

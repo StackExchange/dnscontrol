@@ -2,7 +2,6 @@ package internetbs
 
 import (
 	"fmt"
-	"github.com/StackExchange/dnscontrol/v3/pkg/printer"
 	"sort"
 	"strings"
 
@@ -29,7 +28,7 @@ func newInternetBs(m map[string]string) (providers.Registrar, error) {
 
 	api.key, api.password = m["api-key"], m["password"]
 	if api.key == "" || api.password == "" {
-		return nil, printer.Errorf("missing Internet.bs api-key and password")
+		return nil, fmt.Errorf("missing Internet.bs api-key and password")
 	}
 
 	return api, nil

@@ -3,7 +3,6 @@ package ovh
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/StackExchange/dnscontrol/v3/pkg/printer"
 	"sort"
 	"strings"
 
@@ -66,7 +65,7 @@ func init() {
 func (c *ovhProvider) GetNameservers(domain string) ([]*models.Nameserver, error) {
 	_, ok := c.zones[domain]
 	if !ok {
-		return nil, printer.Errorf("'%s' not a zone in ovh account", domain)
+		return nil, fmt.Errorf("'%s' not a zone in ovh account", domain)
 	}
 
 	ns, err := c.fetchNS(domain)
@@ -192,7 +191,7 @@ func nativeToRecord(r *Record, origin string) (*models.RecordConfig, error) {
 
 	rec.SetLabel(r.SubDomain, origin)
 	if err := rec.PopulateFromString(rtype, r.Target, origin); err != nil {
-		return nil, printer.Errorf("unparsable record received from ovh: %w", err)
+		return nil, fmt.Errorf("unparsable record received from ovh: %w", err)
 	}
 
 	// ovh default is 3600

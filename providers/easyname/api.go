@@ -6,7 +6,6 @@ import (
 	"encoding/base64"
 	"encoding/json"
 	"fmt"
-	"github.com/StackExchange/dnscontrol/v3/pkg/printer"
 	"io/ioutil"
 	"net/http"
 	"time"
@@ -77,7 +76,7 @@ func (c *easynameProvider) request(method, uri string, body *bytes.Buffer, resul
 
 	status := result.GetStatus()
 	if status.Type != "success" && status.Type != "pending" {
-		return printer.Errorf("easyname error (%d): %s", status.Code, status.Message)
+		return fmt.Errorf("easyname error (%d): %s", status.Code, status.Message)
 	}
 	return nil
 }
@@ -121,7 +120,7 @@ func (c *easynameProvider) getDomain(domain string) (easynameDomain, error) {
 
 	d, ok := c.domains[domain]
 	if !ok {
-		return easynameDomain{}, printer.Errorf("the domain %s was not found in the easyname account", domain)
+		return easynameDomain{}, fmt.Errorf("the domain %s was not found in the easyname account", domain)
 	}
 	return d, nil
 }

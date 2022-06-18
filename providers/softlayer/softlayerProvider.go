@@ -40,7 +40,7 @@ func newReg(conf map[string]string, _ json.RawMessage) (providers.DNSServiceProv
 	s := session.New(conf["username"], conf["api_key"], conf["endpoint_url"], conf["timeout"])
 
 	if len(s.UserName) == 0 || len(s.APIKey) == 0 {
-		return nil, printer.Errorf("SoftLayer UserName and APIKey must be provided")
+		return nil, fmt.Errorf("SoftLayer UserName and APIKey must be provided")
 	}
 
 	// s.Debug = true
@@ -60,7 +60,7 @@ func (s *softlayerProvider) GetNameservers(domain string) ([]*models.Nameserver,
 
 // GetZoneRecords gets the records of a zone and returns them in RecordConfig format.
 func (s *softlayerProvider) GetZoneRecords(domain string) (models.Records, error) {
-	return nil, printer.Errorf("not implemented")
+	return nil, fmt.Errorf("not implemented")
 	// This enables the get-zones subcommand.
 	// Implement this by extracting the code from GetDomainCorrections into
 	// a single function.  For most providers this should be relatively easy.
@@ -124,9 +124,9 @@ func (s *softlayerProvider) getDomain(name *string) (*datatypes.Dns_Domain, erro
 	}
 
 	if len(domains) == 0 {
-		return nil, printer.Errorf("didn't find a domain matching %s", *name)
+		return nil, fmt.Errorf("didn't find a domain matching %s", *name)
 	} else if len(domains) > 1 {
-		return nil, printer.Errorf("found %d domains matching %s", len(domains), *name)
+		return nil, fmt.Errorf("found %d domains matching %s", len(domains), *name)
 	}
 
 	return &domains[0], nil
@@ -224,7 +224,7 @@ func (s *softlayerProvider) createRecordFunc(desired *models.RecordConfig, domai
 			result := srvRegexp.FindStringSubmatch(host)
 
 			if len(result) != 3 {
-				return printer.Errorf("SRV Record must match format \"_service._protocol\" not %s", host)
+				return fmt.Errorf("SRV Record must match format \"_service._protocol\" not %s", host)
 			}
 
 			var serviceName, protocol = result[1], strings.ToLower(result[2])
@@ -296,7 +296,7 @@ func (s *softlayerProvider) updateRecordFunc(existing *datatypes.Dns_Domain_Reso
 			}
 
 			if !changes {
-				return printer.Errorf("didn't find changes when I expect some")
+				return fmt.Errorf("didn't find changes when I expect some")
 			}
 
 			_, err = service.Id(*existing.Id).EditObject(&updated)
@@ -341,7 +341,7 @@ func (s *softlayerProvider) updateRecordFunc(existing *datatypes.Dns_Domain_Reso
 			// delete and recreate?
 
 			if !changes {
-				return printer.Errorf("didn't find changes when I expect some")
+				return fmt.Errorf("didn't find changes when I expect some")
 			}
 
 			_, err = service.Id(*existing.Id).EditObject(&updated)
@@ -368,7 +368,7 @@ func (s *softlayerProvider) updateRecordFunc(existing *datatypes.Dns_Domain_Reso
 			}
 
 			if !changes {
-				return printer.Errorf("didn't find changes when I expect some")
+				return fmt.Errorf("didn't find changes when I expect some")
 			}
 
 			_, err = service.Id(*existing.Id).EditObject(&updated)

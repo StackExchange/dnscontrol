@@ -3,7 +3,6 @@ package bind
 import (
 	"bytes"
 	"fmt"
-	"github.com/StackExchange/dnscontrol/v3/pkg/printer"
 	"os"
 	"path/filepath"
 	"regexp"
@@ -137,7 +136,7 @@ func makeExtractor(format string) (string, error) {
 				continue
 			}
 			if pos == lastpos {
-				return ``, printer.Errorf("format may not end in %%: %q", format)
+				return ``, fmt.Errorf("format may not end in %%: %q", format)
 			}
 
 			// Process % verbs
@@ -162,7 +161,7 @@ func makeExtractor(format string) (string, error) {
 				generateB = true
 			case "?":
 				if pos == lastpos {
-					return ``, printer.Errorf("format may not end in %%?: %q", format)
+					return ``, fmt.Errorf("format may not end in %%?: %q", format)
 				}
 				// Move to the next token, the tag-only char.
 				pos++
@@ -173,7 +172,7 @@ func makeExtractor(format string) (string, error) {
 				}
 				generateB = true
 			default:
-				return ``, printer.Errorf("unknown %%verb %%%s: %q", tok, format)
+				return ``, fmt.Errorf("unknown %%verb %%%s: %q", tok, format)
 			}
 		}
 

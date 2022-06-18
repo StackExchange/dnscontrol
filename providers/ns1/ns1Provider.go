@@ -3,7 +3,6 @@ package ns1
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/StackExchange/dnscontrol/v3/pkg/printer"
 	"net/http"
 	"strconv"
 	"strings"
@@ -46,7 +45,7 @@ type nsone struct {
 
 func newProvider(creds map[string]string, meta json.RawMessage) (providers.DNSServiceProvider, error) {
 	if creds["api_token"] == "" {
-		return nil, printer.Errorf("api_token required for ns1")
+		return nil, fmt.Errorf("api_token required for ns1")
 	}
 	return &nsone{rest.NewClient(http.DefaultClient, rest.SetAPIKey(creds["api_token"]))}, nil
 }
@@ -294,22 +293,22 @@ func convert(zr *dns.ZoneRecord, domain string) ([]*models.RecordConfig, error) 
 		case "ALIAS":
 			rec.Type = rtype
 			if err := rec.SetTarget(ans); err != nil {
-				return nil, printer.Errorf("unparsable %s record received from ns1: %w", rtype, err)
+				return nil, fmt.Errorf("unparsable %s record received from ns1: %w", rtype, err)
 			}
 		case "URLFWD":
 			rec.Type = rtype
 			if err := rec.SetTarget(ans); err != nil {
-				return nil, printer.Errorf("unparsable %s record received from ns1: %w", rtype, err)
+				return nil, fmt.Errorf("unparsable %s record received from ns1: %w", rtype, err)
 			}
 		case "CAA":
 			//dnscontrol expects quotes around multivalue CAA entries, API doesn't add them
 			xAns := strings.SplitN(ans, " ", 3)
 			if err := rec.SetTargetCAAStrings(xAns[0], xAns[1], xAns[2]); err != nil {
-				return nil, printer.Errorf("unparsable %s record received from ns1: %w", rtype, err)
+				return nil, fmt.Errorf("unparsable %s record received from ns1: %w", rtype, err)
 			}
 		default:
 			if err := rec.PopulateFromString(rtype, ans, domain); err != nil {
-				return nil, printer.Errorf("unparsable record received from ns1: %w", err)
+				return nil, fmt.Errorf("unparsable record received from ns1: %w", err)
 			}
 		}
 		found = append(found, rec)

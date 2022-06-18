@@ -3,7 +3,7 @@ package packetframe
 import (
 	"bytes"
 	"encoding/json"
-	"github.com/StackExchange/dnscontrol/v3/pkg/printer"
+	"fmt"
 	"io/ioutil"
 	"net/http"
 	"net/url"
@@ -62,7 +62,7 @@ func (api *packetframeProvider) fetchDomainList() error {
 	dr := &domainResponse{}
 	endpoint := "dns/zones"
 	if err := api.get(endpoint, dr); err != nil {
-		return printer.Errorf("failed fetching domain list (Packetframe): %w", err)
+		return fmt.Errorf("failed fetching domain list (Packetframe): %w", err)
 	}
 	for _, zone := range dr.Data.Zones {
 		api.domainIndex[zone.Zone] = zone
@@ -76,7 +76,7 @@ func (api *packetframeProvider) getRecords(zoneID string) ([]domainRecord, error
 	dr := &recordResponse{}
 	endpoint := "dns/records/" + zoneID
 	if err := api.get(endpoint, dr); err != nil {
-		return records, printer.Errorf("failed fetching domain list (Packetframe): %w", err)
+		return records, fmt.Errorf("failed fetching domain list (Packetframe): %w", err)
 	}
 	records = append(records, dr.Data.Records...)
 
@@ -197,5 +197,5 @@ func (api *packetframeProvider) handleErrors(resp *http.Response) error {
 	dr := &domainResponse{}
 	json.Unmarshal(body, &dr)
 
-	return printer.Errorf("packetframe API error: %s", dr.Message)
+	return fmt.Errorf("packetframe API error: %s", dr.Message)
 }

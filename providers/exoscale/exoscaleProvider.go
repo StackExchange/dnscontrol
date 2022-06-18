@@ -3,6 +3,7 @@ package exoscale
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"github.com/StackExchange/dnscontrol/v3/pkg/printer"
 	"strings"
 
@@ -64,7 +65,7 @@ func (c *exoscaleProvider) GetNameservers(domain string) ([]*models.Nameserver, 
 
 // GetZoneRecords gets the records of a zone and returns them in RecordConfig format.
 func (c *exoscaleProvider) GetZoneRecords(domain string) (models.Records, error) {
-	return nil, printer.Errorf("not implemented")
+	return nil, fmt.Errorf("not implemented")
 	// This enables the get-zones subcommand.
 	// Implement this by extracting the code from GetDomainCorrections into
 	// a single function.  For most providers this should be relatively easy.
@@ -107,11 +108,11 @@ func (c *exoscaleProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*mod
 			rec.SetTarget(r.Content)
 		case "MX":
 			if err := rec.SetTargetMX(uint16(r.Prio), r.Content); err != nil {
-				return nil, printer.Errorf("unparsable record received from exoscale: %w", err)
+				return nil, fmt.Errorf("unparsable record received from exoscale: %w", err)
 			}
 		default:
 			if err := rec.PopulateFromString(r.RecordType, r.Content, dc.Name); err != nil {
-				return nil, printer.Errorf("unparsable record received from exoscale: %w", err)
+				return nil, fmt.Errorf("unparsable record received from exoscale: %w", err)
 			}
 		}
 		existingRecords = append(existingRecords, rec)

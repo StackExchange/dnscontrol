@@ -2,7 +2,6 @@ package easyname
 
 import (
 	"fmt"
-	"github.com/StackExchange/dnscontrol/v3/pkg/printer"
 	"sort"
 	"strings"
 
@@ -25,7 +24,7 @@ func newEasyname(m map[string]string) (providers.Registrar, error) {
 	api := &easynameProvider{}
 
 	if m["email"] == "" || m["userid"] == "" || m["apikey"] == "" || m["authsalt"] == "" || m["signsalt"] == "" {
-		return nil, printer.Errorf("missing easyname email, userid, apikey, authsalt and/or signsalt")
+		return nil, fmt.Errorf("missing easyname email, userid, apikey, authsalt and/or signsalt")
 	}
 
 	api.apikey, api.signSalt = m["apikey"], m["signsalt"]

@@ -3,6 +3,7 @@ package gandiv5
 // Convert the provider's native record description to models.RecordConfig.
 
 import (
+	"fmt"
 	"github.com/go-gandi/go-gandi/livedns"
 
 	"github.com/StackExchange/dnscontrol/v3/models"
@@ -29,7 +30,7 @@ func nativeToRecords(n livedns.DomainRecord, origin string) (rcs []*models.Recor
 			rc.SetTarget(value)
 		default: //  "A", "AAAA", "CAA", "DS", "NS", "CNAME", "MX", "PTR", "SRV", "TXT"
 			if err := rc.PopulateFromString(rtype, value, origin); err != nil {
-				panic(printer.Errorf("unparsable record received from gandi: %w", err))
+				panic(fmt.Errorf("unparsable record received from gandi: %w", err))
 			}
 		}
 		rcs = append(rcs, rc)

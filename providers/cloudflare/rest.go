@@ -3,7 +3,6 @@ package cloudflare
 import (
 	"context"
 	"fmt"
-	"github.com/StackExchange/dnscontrol/v3/pkg/printer"
 	"strconv"
 	"strings"
 
@@ -17,7 +16,7 @@ func (c *cloudflareProvider) fetchDomainList() error {
 	c.nameservers = map[string][]string{}
 	zones, err := c.cfClient.ListZones(context.Background())
 	if err != nil {
-		return printer.Errorf("failed fetching domain list from cloudflare: %s", err)
+		return fmt.Errorf("failed fetching domain list from cloudflare: %s", err)
 	}
 
 	for _, zone := range zones {
@@ -33,7 +32,7 @@ func (c *cloudflareProvider) getRecordsForDomain(id string, domain string) ([]*m
 	records := []*models.RecordConfig{}
 	rrs, err := c.cfClient.DNSRecords(context.Background(), id, cloudflare.DNSRecord{})
 	if err != nil {
-		return nil, printer.Errorf("failed fetching record list from cloudflare: %s", err)
+		return nil, fmt.Errorf("failed fetching record list from cloudflare: %s", err)
 	}
 	for _, rec := range rrs {
 		rt, err := c.nativeToRecord(domain, rec)
@@ -171,7 +170,7 @@ func (c *cloudflareProvider) createRec(rec *models.RecordConfig, domainID string
 
 func (c *cloudflareProvider) modifyRecord(domainID, recID string, proxied bool, rec *models.RecordConfig) error {
 	if domainID == "" || recID == "" {
-		return printer.Errorf("cannot modify record if domain or record id are empty")
+		return fmt.Errorf("cannot modify record if domain or record id are empty")
 	}
 
 	r := cloudflare.DNSRecord{
@@ -221,7 +220,7 @@ func (c *cloudflareProvider) getUniversalSSL(domainID string) (bool, error) {
 func (c *cloudflareProvider) getPageRules(id string, domain string) ([]*models.RecordConfig, error) {
 	rules, err := c.cfClient.ListPageRules(context.Background(), id)
 	if err != nil {
-		return nil, printer.Errorf("failed fetching page rule list cloudflare: %s", err)
+		return nil, fmt.Errorf("failed fetching page rule list cloudflare: %s", err)
 	}
 	recs := []*models.RecordConfig{}
 	for _, pr := range rules {
@@ -288,7 +287,7 @@ func (c *cloudflareProvider) createPageRule(domainID string, target string) erro
 func (c *cloudflareProvider) getWorkerRoutes(id string, domain string) ([]*models.RecordConfig, error) {
 	res, err := c.cfClient.ListWorkerRoutes(context.Background(), id)
 	if err != nil {
-		return nil, printer.Errorf("failed fetching worker route list cloudflare: %s", err)
+		return nil, fmt.Errorf("failed fetching worker route list cloudflare: %s", err)
 	}
 
 	recs := []*models.RecordConfig{}
@@ -327,7 +326,7 @@ func (c *cloudflareProvider) createWorkerRoute(domainID string, target string) e
 	// $PATTERN,$SCRIPT
 	parts := strings.Split(target, ",")
 	if len(parts) != 2 {
-		return printer.Errorf("unexpected target: '%s' (expected: 'PATTERN,SCRIPT')", target)
+		return fmt.Errorf("unexpected target: '%s' (expected: 'PATTERN,SCRIPT')", target)
 	}
 	wr := cloudflare.WorkerRoute{
 		Pattern: parts[0],

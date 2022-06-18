@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-	"github.com/StackExchange/dnscontrol/v3/pkg/printer"
 	"io/ioutil"
 	"net/http"
 
@@ -31,16 +30,16 @@ func (hp *hostingdeProvider) getDomainConfig(domain string) (*domainConfig, erro
 
 	resp, err := hp.get("domain", "domainsFind", params)
 	if err != nil {
-		return nil, printer.Errorf("error getting domain info: %w", err)
+		return nil, fmt.Errorf("error getting domain info: %w", err)
 	}
 
 	domainConf := []*domainConfig{}
 	if err := json.Unmarshal(resp.Data, &domainConf); err != nil {
-		return nil, printer.Errorf("error parsing response: %w", err)
+		return nil, fmt.Errorf("error parsing response: %w", err)
 	}
 
 	if len(domainConf) == 0 {
-		return nil, printer.Errorf("could not get domain config: %s", domain)
+		return nil, fmt.Errorf("could not get domain config: %s", domain)
 	}
 
 	return domainConf[0], nil
@@ -72,7 +71,7 @@ func (hp *hostingdeProvider) createZone(domain string) error {
 
 	_, err = hp.get("dns", "zoneCreate", params)
 	if err != nil {
-		return printer.Errorf("error creating zone: %w", err)
+		return fmt.Errorf("error creating zone: %w", err)
 	}
 	return nil
 }
@@ -85,14 +84,14 @@ func (hp *hostingdeProvider) getNameservers(domain string) ([]string, error) {
 
 	domainConf, err := hp.getDomainConfig(t)
 	if err != nil {
-		return nil, printer.Errorf("error getting domain config: %w", err)
+		return nil, fmt.Errorf("error getting domain config: %w", err)
 	}
 
 	nss := []string{}
 	for _, ns := range domainConf.Nameservers {
 		// Currently does not support glued IP addresses
 		if len(ns.IPs) > 0 {
-			return nil, printer.Errorf("domain %s has glued IP addresses which are not supported", domain)
+			return nil, fmt.Errorf("domain %s has glued IP addresses which are not supported", domain)
 		}
 
 		nss = append(nss, ns.Name)
@@ -219,12 +218,12 @@ func (hp *hostingdeProvider) getZoneConfig(domain string) (*zoneConfig, error) {
 
 	resp, err := hp.get("dns", "zoneConfigsFind", params)
 	if err != nil {
-		return nil, printer.Errorf("could not get zone config: %w", err)
+		return nil, fmt.Errorf("could not get zone config: %w", err)
 	}
 
 	zc := []*zoneConfig{}
 	if err := json.Unmarshal(resp.Data, &zc); err != nil {
-		return nil, printer.Errorf("could not parse response: %w", err)
+		return nil, fmt.Errorf("could not parse response: %w", err)
 	}
 
 	if len(zc) == 0 {
@@ -239,31 +238,31 @@ func (hp *hostingdeProvider) get(service, method string, params request) (*respo
 	params.OwnerAccountID = hp.ownerAccountID
 	reqBody, err := json.Marshal(params)
 	if err != nil {
-		return nil, printer.Errorf("could not marshal request body: %w", err)
+		return nil, fmt.Errorf("could not marshal request body: %w", err)
 	}
 
 	url := fmt.Sprintf(endpoint, hp.baseURL, service, method)
 	resp, err := http.Post(url, "application/json", bytes.NewBuffer(reqBody))
 	if err != nil {
-		return nil, printer.Errorf("could not carry out request: %w", err)
+		return nil, fmt.Errorf("could not carry out request: %w", err)
 	}
 	defer resp.Body.Close()
 
 	if resp.StatusCode >= 400 {
-		return nil, printer.Errorf("error occurred: %s", resp.Status)
+		return nil, fmt.Errorf("error occurred: %s", resp.Status)
 	}
 
 	bodyBytes, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
-		return nil, printer.Errorf("could not read response body: %w", err)
+		return nil, fmt.Errorf("could not read response body: %w", err)
 	}
 
 	respData := &response{}
 	if err := json.Unmarshal(bodyBytes, &respData); err != nil {
-		return nil, printer.Errorf("could not unmarshal response body: %w", err)
+		return nil, fmt.Errorf("could not unmarshal response body: %w", err)
 	}
 	if len(respData.Errors) > 0 && respData.Status == "error" {
-		return nil, printer.Errorf("%+v", respData.Errors)
+		return nil, fmt.Errorf("%+v", respData.Errors)
 	}
 
 	return respData.Response, nil

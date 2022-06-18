@@ -348,7 +348,7 @@ func (r *route53Provider) GetDomainCorrections(dc *models.DomainConfig) ([]*mode
 			}
 			if !found {
 				// This should not happen.
-				return nil, printer.Errorf("no record set found to delete. Name: '%s'. Type: '%s'", k.NameFQDN, k.Type)
+				return nil, fmt.Errorf("no record set found to delete. Name: '%s'. Type: '%s'", k.NameFQDN, k.Type)
 			}
 			// Assemble the change and add it to the list:
 			chg := r53Types.Change{
@@ -510,7 +510,7 @@ func nativeToRecords(set r53Types.ResourceRecordSet, origin string) ([]*models.R
 				rc := &models.RecordConfig{TTL: uint32(aws.ToInt64(set.TTL))}
 				rc.SetLabelFromFQDN(unescape(set.Name), origin)
 				if err := rc.PopulateFromString(string(rtype), val, origin); err != nil {
-					return nil, printer.Errorf("unparsable record received from R53: %w", err)
+					return nil, fmt.Errorf("unparsable record received from R53: %w", err)
 				}
 				results = append(results, rc)
 			}

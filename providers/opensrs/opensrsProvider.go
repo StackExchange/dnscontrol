@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"github.com/StackExchange/dnscontrol/v3/pkg/printer"
 	"sort"
 	"strings"
 
@@ -120,12 +119,12 @@ func newProvider(m map[string]string, metadata json.RawMessage) (*opensrsProvide
 	api.APIKey = m["apikey"]
 
 	if api.APIKey == "" {
-		return nil, printer.Errorf("openSRS apikey must be provided")
+		return nil, fmt.Errorf("openSRS apikey must be provided")
 	}
 
 	api.UserName = m["username"]
 	if api.UserName == "" {
-		return nil, printer.Errorf("openSRS username key must be provided")
+		return nil, fmt.Errorf("openSRS username key must be provided")
 	}
 
 	if m["baseurl"] != "" {
