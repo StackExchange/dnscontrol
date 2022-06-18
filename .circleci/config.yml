@@ -25,7 +25,7 @@ jobs:
 
       - run:
           name: Enforce Go Formatted Code
-          command: "[ `go fmt ./... 2>&1 | wc -l` -eq 0 ]"
+          command: "[ `go fmt ./... | wc -l` -eq 0 ]"
 
       - restore_cache: # restores saved cache if no changes are detected since last run
           keys:
