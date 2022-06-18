@@ -146,13 +146,13 @@ func (c *desecProvider) convertLinks(links string) map[string]string {
 	for _, link := range strings.Split(links, ", ") {
 		tmpurl := strings.Split(link, "; ")
 		if len(tmpurl) != 2 {
-			fmt.Printf("unexpected link header %s", link)
+			printer.Printf("unexpected link header %s", link)
 			continue
 		}
 		r := regexp.MustCompile(`rel="(.*)"`)
 		matches := r.FindStringSubmatch(tmpurl[1])
 		if len(matches) != 2 {
-			fmt.Printf("unexpected label %s", tmpurl[1])
+			printer.Printf("unexpected label %s", tmpurl[1])
 			continue
 		}
 		// mapping["$label"] = "$URL"

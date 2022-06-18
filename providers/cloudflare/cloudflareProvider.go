@@ -177,9 +177,9 @@ func (c *cloudflareProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*m
 
 	if c.manageRedirects {
 		prs, err := c.getPageRules(id, dc.Name)
-		//fmt.Printf("GET PAGE RULES:\n")
+		//printer.Printf("GET PAGE RULES:\n")
 		//for i, p := range prs {
-		//	fmt.Printf("%03d: %q\n", i, p.GetTargetField())
+		//	printer.Printf("%03d: %q\n", i, p.GetTargetField())
 		//}
 		if err != nil {
 			return nil, err
@@ -701,7 +701,7 @@ func (c *cloudflareProvider) EnsureDomainExists(domain string) error {
 	}
 	var id string
 	id, err := c.createZone(domain)
-	fmt.Printf("Added zone for %s to Cloudflare account: %s\n", domain, id)
+	printer.Printf("Added zone for %s to Cloudflare account: %s\n", domain, id)
 	return err
 }
 

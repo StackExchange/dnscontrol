@@ -213,7 +213,7 @@ func makePurge(domainname string, cor diff.Correlation) zoneResourceRecordEdit {
 
 	if cor.Existing.Type == "CAA" {
 		var tagValue = cor.Existing.CaaTag
-		//fmt.Printf("DEBUG: CAA TAG = %q\n", tagValue)
+		//printer.Printf("DEBUG: CAA TAG = %q\n", tagValue)
 		zer.CurrentTag = &tagValue
 	}
 

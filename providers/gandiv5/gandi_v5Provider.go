@@ -338,9 +338,9 @@ func (client *gandiv5Provider) GenerateDomainCorrections(dc *models.DomainConfig
 
 // debugRecords prints a list of RecordConfig.
 func debugRecords(note string, recs []*models.RecordConfig) {
-	fmt.Println("DEBUG:", note)
+	printer.Debugf(note)
 	for k, v := range recs {
-		fmt.Printf("   %v: %v %v %v %v\n", k, v.GetLabel(), v.Type, v.TTL, v.GetTargetCombined())
+		printer.Printf("   %v: %v %v %v %v\n", k, v.GetLabel(), v.Type, v.TTL, v.GetTargetCombined())
 	}
 }
 

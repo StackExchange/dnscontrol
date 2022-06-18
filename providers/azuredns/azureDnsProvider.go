@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"github.com/StackExchange/dnscontrol/v3/pkg/printer"
 	"sort"
 	"strings"
 	"time"
@@ -586,7 +587,7 @@ func (a *azurednsProvider) EnsureDomainExists(domain string) error {
 	if _, ok := a.zones[domain]; ok {
 		return nil
 	}
-	fmt.Printf("Adding zone for %s to Azure dns account\n", domain)
+	printer.Printf("Adding zone for %s to Azure dns account\n", domain)
 
 	ctx, cancel := context.WithTimeout(context.Background(), 6000*time.Second)
 	defer cancel()

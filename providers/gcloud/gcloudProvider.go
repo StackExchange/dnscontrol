@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"github.com/StackExchange/dnscontrol/v3/pkg/printer"
 	"log"
 	"strings"
 	"time"
@@ -86,7 +87,7 @@ func New(cfg map[string]string, metadata json.RawMessage) (providers.DNSServiceP
 	}
 	var nss *string
 	if val, ok := cfg["name_server_set"]; ok {
-		fmt.Printf("GCLOUD :name_server_set %s configured\n", val)
+		printer.Printf("GCLOUD :name_server_set %s configured\n", val)
 		nss = sPtr(val)
 	}
 
@@ -320,7 +321,7 @@ func (g *gcloudProvider) EnsureDomainExists(domain string) error {
 	}
 	var mz *gdns.ManagedZone
 	if g.nameServerSet != nil {
-		fmt.Printf("Adding zone for %s to gcloud account with name_server_set %s\n", domain, *g.nameServerSet)
+		printer.Printf("Adding zone for %s to gcloud account with name_server_set %s\n", domain, *g.nameServerSet)
 		mz = &gdns.ManagedZone{
 			DnsName:       domain + ".",
 			NameServerSet: *g.nameServerSet,
@@ -328,7 +329,7 @@ func (g *gcloudProvider) EnsureDomainExists(domain string) error {
 			Description:   "zone added by dnscontrol",
 		}
 	} else {
-		fmt.Printf("Adding zone for %s to gcloud account \n", domain)
+		printer.Printf("Adding zone for %s to gcloud account \n", domain)
 		mz = &gdns.ManagedZone{
 			DnsName:     domain + ".",
 			Name:        "zone-" + strings.Replace(domain, ".", "-", -1),

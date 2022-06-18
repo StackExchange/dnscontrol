@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"github.com/StackExchange/dnscontrol/v3/pkg/printer"
 	"sort"
 	"strconv"
 	"strings"
@@ -563,7 +564,7 @@ func removeOtherApexNS(dc *models.DomainConfig) {
 			// Child delegations are supported so we allow non-apex NS records.
 			if rec.GetLabelFQDN() == dc.Name {
 				if !strings.HasSuffix(rec.GetTargetField(), ".dnsimple.com.") {
-					fmt.Printf("Warning: dnsimple.com does not allow NS records to be modified. %s will not be added.\n", rec.GetTargetField())
+					printer.Printf("Warning: dnsimple.com does not allow NS records to be modified. %s will not be added.\n", rec.GetTargetField())
 				}
 				continue
 			}

@@ -3,6 +3,7 @@ package inwx
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/StackExchange/dnscontrol/v3/pkg/printer"
 	"sort"
 	"strings"
 	"time"
@@ -100,7 +101,7 @@ func (api *inwxAPI) loginHelper(TOTPValue string, TOTPKey string) error {
 	switch TFA := resp.TFA; TFA {
 	case "0":
 		if TOTPKey != "" || TOTPValue != "" {
-			fmt.Printf("INWX: Warning: no TOTP requested by INWX but totp/totp-key is present in `creds.json`\n")
+			printer.Printf("INWX: Warning: no TOTP requested by INWX but totp/totp-key is present in `creds.json`\n")
 		}
 	case "GOOGLE-AUTH":
 		tan, err := getOTP(TOTPValue, TOTPKey)
@@ -417,6 +418,6 @@ func (api *inwxAPI) EnsureDomainExists(domain string) error {
 	if err != nil {
 		return err
 	}
-	fmt.Printf("Added zone for %s to INWX account with id %d\n", domain, id)
+	printer.Printf("Added zone for %s to INWX account with id %d\n", domain, id)
 	return nil
 }

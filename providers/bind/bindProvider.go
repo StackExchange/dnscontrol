@@ -17,6 +17,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"github.com/StackExchange/dnscontrol/v3/pkg/printer"
 	"io/ioutil"
 	"os"
 	"path/filepath"
@@ -156,7 +157,7 @@ func (c *bindProvider) GetZoneRecords(domain string) (models.Records, error) {
 	foundRecords := models.Records{}
 
 	if _, err := os.Stat(c.directory); os.IsNotExist(err) {
-		fmt.Printf("\nWARNING: BIND directory %q does not exist!\n", c.directory)
+		printer.Printf("\nWARNING: BIND directory %q does not exist!\n", c.directory)
 	}
 
 	if c.zonefile == "" {
@@ -289,7 +290,7 @@ func (c *bindProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*models.
 			&models.Correction{
 				Msg: msg,
 				F: func() error {
-					fmt.Printf("WRITING ZONEFILE: %v\n", c.zonefile)
+					printer.Printf("WRITING ZONEFILE: %v\n", c.zonefile)
 					zf, err := os.Create(c.zonefile)
 					if err != nil {
 						return fmt.Errorf("could not create zonefile: %w", err)

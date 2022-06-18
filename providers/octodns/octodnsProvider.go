@@ -22,6 +22,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"github.com/StackExchange/dnscontrol/v3/pkg/printer"
 	"log"
 	"os"
 	"path/filepath"
@@ -162,7 +163,7 @@ func (c *octodnsProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*mode
 			&models.Correction{
 				Msg: msg,
 				F: func() error {
-					fmt.Printf("CREATING CONFIGFILE: %v\n", zoneFileName)
+					printer.Printf("CREATING CONFIGFILE: %v\n", zoneFileName)
 					zf, err := os.Create(zoneFileName)
 					if err != nil {
 						log.Fatalf("Could not create zonefile: %v", err)

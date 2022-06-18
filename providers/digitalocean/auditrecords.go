@@ -2,7 +2,6 @@ package digitalocean
 
 import (
 	"fmt"
-
 	"github.com/StackExchange/dnscontrol/v3/models"
 	"github.com/StackExchange/dnscontrol/v3/pkg/recordaudit"
 )
