@@ -5,6 +5,8 @@ import (
 	"strconv"
 	"strings"
 	"sync"
+
+	"github.com/StackExchange/dnscontrol/v3/pkg/printer"
 )
 
 var checkPS sync.Once
