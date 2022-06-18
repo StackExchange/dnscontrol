@@ -1,6 +1,7 @@
 package activedir
 
 import (
+	"fmt"
 	"os/exec"
 	"strconv"
 	"strings"
