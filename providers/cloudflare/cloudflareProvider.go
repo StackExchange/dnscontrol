@@ -645,11 +645,6 @@ func stringDefault(value interface{}, def string) string {
 
 func (c *cloudflareProvider) nativeToRecord(domain string, cr cloudflare.DNSRecord) (*models.RecordConfig, error) {
 
-	if cr.Type == "TXT" {
-		printer.Printf("DEBUG: TXT label=%s rawcontent=X%sX\n", cr.Name, cr.Content)
-
-	}
-
 	// normalize cname,mx,ns records with dots to be consistent with our config format.
 	if cr.Type == "CNAME" || cr.Type == "MX" || cr.Type == "NS" || cr.Type == "PTR" {
 		if cr.Content != "." {
@@ -668,18 +663,9 @@ func (c *cloudflareProvider) nativeToRecord(domain string, cr cloudflare.DNSReco
 		cr.Type = "TXT"
 	}
 
-	content := cr.Content
-	rType := cr.Type
-
-	//if rType == "TXT" && isCloudflareQuoteBug(content) {
-	// 	printer.Printf("DEBUG: TXT %q\n", content)
-	// 	// Bug in Cloudflare: The contents is
-	// 	content = fixCloudflareQuoteBug(content)
-	// }
-
-	switch rType { // #rtype_variations
+	switch rType := cr.Type; rType { // #rtype_variations
 	case "MX":
-		if err := rc.SetTargetMX(*cr.Priority, content); err != nil {
+		if err := rc.SetTargetMX(*cr.Priority, cr.Content); err != nil {
 			return nil, fmt.Errorf("unparsable MX record received from cloudflare: %w", err)
 		}
 	case "SRV":
@@ -696,9 +682,8 @@ func (c *cloudflareProvider) nativeToRecord(domain string, cr cloudflare.DNSReco
 	case "TXT":
 		err := rc.SetTargetTXT(cr.Content)
 		return rc, err
-	default: // "A", "AAAA", "ANAME", "CAA", "CNAME", "NS", "PTR", "SSHFP", "TXT":
-		err := rc.PopulateFromString(rType, content, domain)
-		if err != nil {
+	default:
+		if err := rc.PopulateFromString(rType, cr.Content, domain); err != nil {
 			return nil, fmt.Errorf("unparsable record received from cloudflare: %w", err)
 		}
 	}

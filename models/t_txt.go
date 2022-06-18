@@ -86,12 +86,12 @@ func (rc *RecordConfig) GetTargetTXTJoined() string {
 //     "foo" "bar"     << 2 strings
 // FIXME(tlim): This function is badly named. It obscures the fact
 // that the string is parsed for quotes and should only be used for returns TXTMulti.
-// Deprecated: Use SetTargetTXTfromRFC1025Quoted instead.
+// Deprecated: Use SetTargetTXTfromRFC1035Quoted instead.
 func (rc *RecordConfig) SetTargetTXTString(s string) error {
 	return rc.SetTargetTXTs(ParseQuotedTxt(s))
 }
 
-func (rc *RecordConfig) SetTargetTXTfromRFC1025Quoted(s string) error {
+func (rc *RecordConfig) SetTargetTXTfromRFC1035Quoted(s string) error {
 	many, err := ParseQuotedFields(s)
 	if err != nil {
 		return err
