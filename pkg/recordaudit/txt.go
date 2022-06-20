@@ -57,8 +57,9 @@ func TxtNoDoubleQuotes(records []*models.RecordConfig) error {
 	return nil
 }
 
-// TxtNoLen255 audits TXT records for strings exactly 255 octets long.
-func TxtNoLen255(records []*models.RecordConfig) error {
+// TxtNoStringsExactlyLen255 audits TXT records for strings exactly 255 octets long.
+// This is rare; you probably want to use TxtNoLongStrings() instead.
+func TxtNoStringsExactlyLen255(records []*models.RecordConfig) error {
 	for _, rc := range records {
 
 		if rc.HasFormatIdenticalToTXT() { // TXT and similar:
@@ -73,8 +74,8 @@ func TxtNoLen255(records []*models.RecordConfig) error {
 	return nil
 }
 
-// TxtNoLongStrings audits TXT records for strings that are >255 octets.
-func TxtNoLongStrings(records []*models.RecordConfig) error {
+// TxtNoStringsLen256orLonger audits TXT records for strings that are >255 octets.
+func TxtNoStringsLen256orLonger(records []*models.RecordConfig) error {
 	for _, rc := range records {
 
 		if rc.HasFormatIdenticalToTXT() { // TXT and similar:
