@@ -1,0 +1,14 @@
+{
+  "bind": {
+    "TYPE": "BIND"
+  },
+  "cloudflare": {
+    "TYPE": "CLOUDFLAREAPI",
+    "apitoken": "op://Secrets/Cloudflare DNSControl/credential",
+    "accountid": "op://Secrets/Cloudflare DNSControl/username"
+  },
+  "linode": {
+    "TYPE": "LINODE",
+    "token": "op://Secrets/Linode DNSControl/credential"
+  }
+}
