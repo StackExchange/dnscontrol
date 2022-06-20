@@ -2,7 +2,6 @@ package powerdns
 
 import (
 	"github.com/StackExchange/dnscontrol/v3/models"
-	"github.com/miekg/dns/dnsutil"
 	"github.com/mittwald/go-powerdns/apis/zones"
 	"strings"
 )
@@ -20,23 +19,21 @@ func toRecordConfig(domain string, r zones.Record, ttl int, name string, rtype s
 	}
 	rc.SetLabel(name, domain)
 
-	content := r.Content
 	switch rtype {
-	case "ALIAS":
-		return rc, rc.SetTarget(r.Content)
-	case "CNAME", "NS":
-		return rc, rc.SetTarget(dnsutil.AddOrigin(content, domain))
-	case "CAA":
-		return rc, rc.SetTargetCAAString(content)
-	case "DS":
-		return rc, rc.SetTargetDSString(content)
-	case "MX":
-		return rc, rc.SetTargetMXString(content)
-	case "SRV":
-		return rc, rc.SetTargetSRVString(content)
-	case "NAPTR":
-		return rc, rc.SetTargetNAPTRString(content)
+	case "TXT":
+		// PowerDNS API accepts long TXTs without requiring to split them
+		// The API then returns them as they initially came in, e.g. "averylooooooo[...]oooooongstring" or "string" "string"
+		// So we need to strip away " and split into multiple string
+		// We can't use SetTargetRFC1035Quoted, it would split the long strings into multiple parts
+		return rc, rc.SetTargetTXTs(parseTxt(r.Content))
 	default:
-		return rc, rc.PopulateFromString(rtype, content, domain)
+		return rc, rc.PopulateFromString(rtype, r.Content, domain)
 	}
+}
+
+func parseTxt(content string) (result []string) {
+	for _, r := range strings.Split(content, "\" ") {
+		result = append(result, strings.Trim(r, "\""))
+	}
+	return
 }
