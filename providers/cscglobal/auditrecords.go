@@ -20,7 +20,7 @@ func AuditRecords(records []*models.RecordConfig) error {
 		return err
 	} // Needed as of 2022-06-10
 
-	if err := recordaudit.TxtNoLen255(records); err != nil {
+	if err := recordaudit.TxtNoStringsLen256orLonger(records); err != nil {
 		return err
 	} // Needed as of 2022-06-10
 
