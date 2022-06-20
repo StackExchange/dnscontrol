@@ -190,7 +190,6 @@ See [dnscontrol-action](https://github.com/koenrh/dnscontrol-action)
 * **get-zones syntax changes in v3.16** Starting in v3.16, the command line arguments for `dnscontrol get-zones` changes. For backwards compatibility change `provider` to `-`. See documentation for details.
 
 
-
 # More info at our web site
 
 The website: [https://stackexchange.github.io/dnscontrol/](https://stackexchange.github.io/dnscontrol/)
