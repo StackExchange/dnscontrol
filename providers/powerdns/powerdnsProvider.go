@@ -26,7 +26,7 @@ var features = providers.DocumentationNotes{
 
 func init() {
 	fns := providers.DspFuncs{
-		Initializer:   NewProvider,
+		Initializer:   newDSP,
 		RecordAuditor: AuditRecords,
 	}
 	providers.RegisterDomainServiceProviderType("POWERDNS", fns, features)
@@ -44,46 +44,46 @@ type powerdnsProvider struct {
 	nameservers []*models.Nameserver
 }
 
-// NewProvider initializes a PowerDNS DNSServiceProvider.
-func NewProvider(m map[string]string, metadata json.RawMessage) (providers.DNSServiceProvider, error) {
-	api := &powerdnsProvider{}
+// newDSP initializes a PowerDNS DNSServiceProvider.
+func newDSP(m map[string]string, metadata json.RawMessage) (providers.DNSServiceProvider, error) {
+	dsp := &powerdnsProvider{}
 
-	api.APIKey = m["apiKey"]
-	if api.APIKey == "" {
+	dsp.APIKey = m["apiKey"]
+	if dsp.APIKey == "" {
 		return nil, fmt.Errorf("PowerDNS API Key is required")
 	}
 
-	api.APIUrl = m["apiUrl"]
-	if api.APIUrl == "" {
+	dsp.APIUrl = m["apiUrl"]
+	if dsp.APIUrl == "" {
 		return nil, fmt.Errorf("PowerDNS API URL is required")
 	}
 
-	api.ServerName = m["serverName"]
-	if api.ServerName == "" {
+	dsp.ServerName = m["serverName"]
+	if dsp.ServerName == "" {
 		return nil, fmt.Errorf("PowerDNS server name is required")
 	}
 
 	// load js config
 	if len(metadata) != 0 {
-		err := json.Unmarshal(metadata, api)
+		err := json.Unmarshal(metadata, dsp)
 		if err != nil {
 			return nil, err
 		}
 	}
 	var nss []string
-	for _, ns := range api.DefaultNS {
+	for _, ns := range dsp.DefaultNS {
 		nss = append(nss, ns[0:len(ns)-1])
 	}
 	var err error
-	api.nameservers, err = models.ToNameservers(nss)
+	dsp.nameservers, err = models.ToNameservers(nss)
 	if err != nil {
-		return api, err
+		return dsp, err
 	}
 
 	var clientErr error
-	api.client, clientErr = pdns.New(
-		pdns.WithBaseURL(api.APIUrl),
-		pdns.WithAPIKeyAuthentication(api.APIKey),
+	dsp.client, clientErr = pdns.New(
+		pdns.WithBaseURL(dsp.APIUrl),
+		pdns.WithAPIKeyAuthentication(dsp.APIKey),
 	)
-	return api, clientErr
+	return dsp, clientErr
 }

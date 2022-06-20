@@ -6,9 +6,9 @@ import (
 )
 
 // ListZones returns all the zones in an account
-func (api *powerdnsProvider) ListZones() ([]string, error) {
+func (dsp *powerdnsProvider) ListZones() ([]string, error) {
 	var result []string
-	myZones, err := api.client.Zones().ListZones(context.Background(), api.ServerName)
+	myZones, err := dsp.client.Zones().ListZones(context.Background(), dsp.ServerName)
 	if err != nil {
 		return result, err
 	}
