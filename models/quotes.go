@@ -1,8 +1,10 @@
 package models
 
 import (
-	"encoding/csv"
+	"fmt"
 	"strings"
+
+	"github.com/miekg/dns"
 )
 
 // IsQuoted returns true if the string starts and ends with a double quote.
@@ -32,13 +34,14 @@ func StripQuotes(s string) string {
 // `foo`  -> []string{"foo"}
 // `"foo"` -> []string{"foo"}
 // `"foo" "bar"` -> []string{"foo", "bar"}
-// NOTE: it is assumed there is exactly one space between the quotes.
+// `"f"oo" "bar"` -> []string{`f"oo`, "bar"}
+// NOTE: It is assumed there is exactly one space between the quotes.
+// NOTE: This doesn't handle escaped quotes.
+// NOTE: You probably want to use ParseQuotedFields() for RFC 1035-compliant quoting.
 func ParseQuotedTxt(s string) []string {
 	if !IsQuoted(s) {
 		return []string{s}
 	}
-
-	// TODO(tlim): Consider using r, err := ParseQuotedFields(s)
 	return strings.Split(StripQuotes(s), `" "`)
 }
 
@@ -50,11 +53,14 @@ func ParseQuotedFields(s string) ([]string, error) {
 	// "foo" "bar"  -> two strings: `foo` and `bar`
 	// Quotes are escaped with \"
 
-	// Implementation note:
-	// Fields are space-separated but a field might be quoted.  This is,
-	// essentially, a CSV where spaces are the field separator (not
-	// commas). Therefore, we use the CSV parser. See https://stackoverflow.com/a/47489846/71978
-	r := csv.NewReader(strings.NewReader(s))
-	r.Comma = ' ' // space
-	return r.Read()
+	// The dns package doesn't expose the quote parser. Therefore we create a TXT record "the hard way" and extract the strings.
+	rr, err := dns.NewRR("example.com. IN TXT " + s)
+	if err != nil {
+		return nil, fmt.Errorf("could not parse %q TXT: %w", s, err)
+	}
+
+	// Assert rr is of type dns.TXT
+
+	return rr.(*dns.TXT).Txt, nil
+
 }
