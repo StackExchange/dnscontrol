@@ -51,16 +51,12 @@ func ParseQuotedFields(s string) ([]string, error) {
 	// Parse according to RFC1035 zonefile specifications.
 	// "foo"  -> one string: `foo``
 	// "foo" "bar"  -> two strings: `foo` and `bar`
-	// Quotes are escaped with \"
 
-	// The dns package doesn't expose the quote parser. Therefore we create a TXT record "the hard way" and extract the strings.
+	// The dns package doesn't expose the quote parser. Therefore we create a TXT record and extract the strings.
 	rr, err := dns.NewRR("example.com. IN TXT " + s)
 	if err != nil {
 		return nil, fmt.Errorf("could not parse %q TXT: %w", s, err)
 	}
 
-	// Assert rr is of type dns.TXT
-
 	return rr.(*dns.TXT).Txt, nil
-
 }
