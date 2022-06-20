@@ -200,6 +200,8 @@ dnscontrol preview --creds "!op inject -i creds.json.tpl"
 
 This example requires the [1Password command-line tool](https://developer.1password.com/docs/cli/)
 but works with any shell command that returns a properly formatted `creds.json`.
+In this case, the 1Password CLI is used to inject the secrets from
+a 1Password vault, rather than storing them in environment variables.
 An example of a template file containing Linode and Cloudflare API credentials is available here: [creds.json.tpl-example.txt]({{ site.github.url }}/assets/creds.json.tpl-example.txt))
 
 ## Don't store secrets in a Git repo!
