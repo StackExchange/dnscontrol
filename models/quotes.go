@@ -20,6 +20,7 @@ func IsQuoted(s string) bool {
 }
 
 // StripQuotes returns the string with the starting and ending quotes removed.
+// If it is not quoted, the original string is returned.
 func StripQuotes(s string) string {
 	if IsQuoted(s) {
 		return s[1 : len(s)-1]
@@ -36,12 +37,20 @@ func ParseQuotedTxt(s string) []string {
 	if !IsQuoted(s) {
 		return []string{s}
 	}
+
+	// TODO(tlim): Consider using r, err := ParseQuotedFields(s)
 	return strings.Split(StripQuotes(s), `" "`)
 }
 
 // ParseQuotedFields is like strings.Fields except individual fields
 // might be quoted using `"`.
 func ParseQuotedFields(s string) ([]string, error) {
+	// Parse according to RFC1035 zonefile specifications.
+	// "foo"  -> one string: `foo``
+	// "foo" "bar"  -> two strings: `foo` and `bar`
+	// Quotes are escaped with \"
+
+	// Implementation note:
 	// Fields are space-separated but a field might be quoted.  This is,
 	// essentially, a CSV where spaces are the field separator (not
 	// commas). Therefore, we use the CSV parser. See https://stackoverflow.com/a/47489846/71978

@@ -43,5 +43,5 @@ func (rc *RecordConfig) SetTargetCAAString(s string) error {
 	if len(part) != 3 {
 		return fmt.Errorf("CAA value does not contain 3 fields: (%#v)", s)
 	}
-	return rc.SetTargetCAAStrings(part[0], part[1], StripQuotes(part[2]))
+	return rc.SetTargetCAAStrings(part[0], part[1], part[2])
 }

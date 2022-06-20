@@ -86,6 +86,10 @@ name of the provider, such as "ROUTE53: Added support for sandwiches (#100)"
 
 See [https://github.com/StackExchange/dnscontrol/releases for examples](https://github.com/StackExchange/dnscontrol/releases) for recent release notes and copy that style.
 
+The `Depreciation warnings` section should just copy from `README.md`.  If you
+change one, change it in the README too (you can make that change in this PR).
+
+
 Example/template:
 
 ```text
