@@ -152,7 +152,7 @@ Message: `ERROR: creds.json entry ... is missing ...: ...`
 
 However no `TYPE` subkey was found in an entry in `creds.json`.
 In 3.16 forward, it is required if new-style `NewRegistrar()` or `NewDnsProvider()` was used.
-In 4.0 this is required. 
+In 4.0 this is required.
 
 The fix is to add a `TYPE` subkey to the `creds.json` entry.
 
@@ -197,6 +197,10 @@ Following commands would execute a shell command:
 ``` bash
 dnscontrol preview --creds "!op inject -i creds.json.tpl"
 ```
+
+This example requires the [1Password command-line tool](https://developer.1password.com/docs/cli/)
+but works with any shell command that returns a properly formatted `creds.json`.
+An example of a template file containing Linode and Cloudflare API credentials is available here: [creds.json.tpl-example.txt]({{ site.github.url }}/assets/creds.json.tpl-example.txt))
 
 ## Don't store secrets in a Git repo!
 
