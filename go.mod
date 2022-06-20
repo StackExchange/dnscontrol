@@ -47,7 +47,7 @@ require (
 	github.com/qdm12/reprint v0.0.0-20200326205758-722754a53494
 	github.com/robertkrimen/otto v0.0.0-20211024170158-b87d35c0b86f
 	github.com/softlayer/softlayer-go v1.0.6
-	github.com/stretchr/testify v1.7.2
+	github.com/stretchr/testify v1.7.3
 	github.com/tdewolff/minify/v2 v2.11.10
 	github.com/transip/gotransip/v6 v6.17.0
 	github.com/urfave/cli/v2 v2.10.0
@@ -146,7 +146,7 @@ require (
 	github.com/sergi/go-diff v1.1.0 // indirect
 	github.com/sirupsen/logrus v1.4.2 // indirect
 	github.com/softlayer/xmlrpc v0.0.0-20200409220501-5f089df7cb7e // indirect
-	github.com/stretchr/objx v0.3.0 // indirect
+	github.com/stretchr/objx v0.4.0 // indirect
 	github.com/tdewolff/parse/v2 v2.6.0 // indirect
 	github.com/xrash/smetrics v0.0.0-20201216005158-039620a65673 // indirect
 	go.opencensus.io v0.23.0 // indirect
