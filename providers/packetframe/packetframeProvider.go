@@ -9,6 +9,7 @@ import (
 	"strings"
 
 	"github.com/StackExchange/dnscontrol/v3/models"
+	"github.com/StackExchange/dnscontrol/v3/pkg/decode"
 	"github.com/StackExchange/dnscontrol/v3/pkg/diff"
 	"github.com/StackExchange/dnscontrol/v3/providers"
 )
@@ -221,14 +222,20 @@ func toRc(dc *models.DomainConfig, r *domainRecord) *models.RecordConfig {
 
 	switch rtype := r.Type; rtype { // #rtype_variations
 	case "TXT":
-		rc.SetTargetTXTString(r.Value)
+		sl, err := decode.QuotedFields(r.Value)
+		if err != nil {
+			panic(err)
+		}
+		rc.SetTargetTXTs(sl)
 	case "SRV":
+		// TODO(tlim): Consider using decode.RFC1035Fields() instead of strings.Split()
 		spl := strings.Split(r.Value, " ")
 		prio, _ := strconv.ParseUint(spl[0], 10, 16)
 		weight, _ := strconv.ParseUint(spl[1], 10, 16)
 		port, _ := strconv.ParseUint(spl[2], 10, 16)
 		rc.SetTargetSRV(uint16(prio), uint16(weight), uint16(port), spl[3])
 	case "MX":
+		// TODO(tlim): Consider using decode.RFC1035Fields() instead of strings.Split()
 		spl := strings.Split(r.Value, " ")
 		prio, _ := strconv.ParseUint(spl[0], 10, 16)
 		rc.SetTargetMX(uint16(prio), spl[1])

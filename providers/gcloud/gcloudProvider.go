@@ -4,10 +4,12 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"github.com/StackExchange/dnscontrol/v3/pkg/printer"
 	"log"
 	"strings"
 	"time"
+
+	"github.com/StackExchange/dnscontrol/v3/pkg/decode"
+	"github.com/StackExchange/dnscontrol/v3/pkg/printer"
 
 	"google.golang.org/api/googleapi"
 	"google.golang.org/api/option"
@@ -235,7 +237,7 @@ func (g *gcloudProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*model
 		}
 		for _, r := range dc.Records {
 			if keyForRec(r) == ck {
-				newRRs.Rrdatas = append(newRRs.Rrdatas, r.GetTargetCombined())
+				newRRs.Rrdatas = append(newRRs.Rrdatas, r.GetTargetRFC1035Quoted())
 				newRRs.Ttl = int64(r.TTL)
 			}
 		}
@@ -274,6 +276,14 @@ func nativeToRecord(set *gdns.ResourceRecordSet, rec, origin string) (*models.Re
 	r := &models.RecordConfig{}
 	r.SetLabelFromFQDN(set.Name, origin)
 	r.TTL = uint32(set.Ttl)
+	if set.Type == "TXT" {
+		sl, err := decode.QuoteEscapedFields(rec)
+		if err != nil {
+			return nil, err
+		}
+		err = r.SetTargetTXTs(sl)
+		return r, err
+	}
 	if err := r.PopulateFromString(set.Type, rec, origin); err != nil {
 		return nil, fmt.Errorf("unparsable record received from GCLOUD: %w", err)
 	}
