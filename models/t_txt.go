@@ -6,6 +6,9 @@ import (
 )
 
 /*
+
+HOW DO TXT RECORDS WORK IN GENERAL:
+
 Sadly many providers handle TXT records in strange and non-compliant
 ways.  DNSControl has to handle all of them.  Over the years we've
 tried many things.  This explain the current state of the code.
@@ -108,6 +111,13 @@ Conclusion:
 
 When we follow these 4 principles, and stick with the helper functions
 provided, we're able to handle all the variations.
+
+*/
+
+/*
+
+HOW TO PARSE/SEND TXT STRINGS:
+
 
 */
 
