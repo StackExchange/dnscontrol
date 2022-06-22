@@ -1,7 +1,6 @@
 package models
 
 import (
-	"fmt"
 	"strings"
 
 	"github.com/StackExchange/dnscontrol/v3/pkg/decode"
@@ -54,9 +53,9 @@ We've found most APIs return TXT strings in one of three ways:
   * The API returns multiple strings: use RecordConfig.SetTargetTXTs().
 	* (THIS IS RARE) The API returns a single string that must be parsed
 		into multiple strings: The provider is responsible for the
-		parsing.  However, usually the format is "quoted like in RFC 1035"
-		which is vague, but we've implemented it as
-		RecordConfig.SetTargetTXTfromRFC1035Quoted().
+		parsing.  However, usually the format is "quoted like in RFC 1035".
+		Package `pkg/decode` provides RFC1035Fields(), QuoteEscapedFields(),
+		and QuotedFields().  One of those should work.
 
 If the format is something else, please write the parser as a separate
 function and write unit tests based on actual data received from the
@@ -120,8 +119,31 @@ provided, we're able to handle all the variations.
 
 HOW TO PARSE/SEND TXT STRINGS:
 
-INSERT INFO FROM BUG
+- Step 1: Does the API take/send 1 string or a list of strings?
+	- List of strings: Your nativeToRc() should call  SetTargetTXTs(many
+		[]string); your Corrections code should copy the individual strings
+		from rc.TxtStrings (which is []string).  Once this is implemented
+		you are done.
+	- 1 string: Go to Step 2.
 
+- Step 2: Go to the provider's website and manually create a TXT
+	record.  Does it permit you to enter 1 string or a list of strings?
+	- 1 string: Your nativeToRc() should call  SetTargetTXT(s string);
+		your Corrections code should read the field using
+		rc.GetTargetTXTJoined().  Once this is implemented you are done.
+  - List of strings: Go to Step 3.
+
+- Step 3: At this point, we can conclude that the string the API gives
+	you needs to be parsed into many separate strings.
+	- Your nativeToRc() should call SetTargetTXTs(decode.PARSER(s)); your
+		Corrections code should read the field using rc.GetTargetRFC1035Quoted().
+	- PARSER should be one of:
+		- decode.QuoteEscapedFields() -- Handles strings like: "one" "two" "in\"side"
+		- decode.QuotedFields() -- Handles quotes, doesn't allow escaped chars.
+		- decode.MiekgDNSFields() -- Uses `miekg/dns`'s parser, which leaves backslashes intact.
+		- decode.RFC1035Fields() -- Similar to decode.MiekgDNSFields but properly de-escapes quotes.
+		- Otherwise... write your own decoder. Please add it to
+			`pkg/decode/decoders.go` if you feel others will find it useful.
 
 */
 
@@ -171,28 +193,14 @@ func (rc *RecordConfig) GetTargetTXTFlattened255() []string {
 	return decode.Flatten255(rc.TxtStrings)
 }
 
-// SetTargetTXTString is like SetTargetTXTs but accepts one big string,
-// which is parsed into individual strings.
-// Ex: foo             << 1 string
-//     foo bar         << 1 string
-//     "foo bar"       << 1 string
-//     "foo" "bar"     << 2 strings
-//     "f"oo" "bar"    << 2 strings, one has a quote in it
+// There is no GetTargetTXTfromRFC1025Quoted(). Use GetTargetRFC1035Quoted()
+
+// SetTargetTXTString sets the TXT strings after calling decode.QuotedFields().
 //
-// BUG: This function doesn't handle escaped quotes ("like \" this").
+// Deprecated: This function has a confusing name. Use
+// SetTargetTXTs(decode.PARSER(s)) where PARSER is one of the provided
+// parsers, or write your own.
 //
-// FIXME(tlim): This function is badly named. It obscures the fact
-// that the string is parsed for quotes and stores a list of strings.
-//
-// Deprecated: This function has a confusing name. Most providers API
-// return a single string, in which case you should use
-// SetTargetTXT(). If your provider returns multiple strings, use
-// SetTargetTXTs().  If your provider returns a single string that
-// must be parsed to extract the individual strings, use
-// SetTargetTXTfromRFC1035Quoted().  Sadly we have not figured out
-// an integration test that will fail if you chose the wrong function.
-// As a result, we recommend trying SetTargetTXT() before you try
-// SetTargetTXTfromRFC1035Quoted().
 func (rc *RecordConfig) SetTargetTXTString(s string) error {
 	ts, err := decode.QuotedFields(s)
 	if err != nil {
@@ -200,25 +208,3 @@ func (rc *RecordConfig) SetTargetTXTString(s string) error {
 	}
 	return rc.SetTargetTXTs(ts)
 }
-
-// SetTargetTXTfromRFC1035Quoted parses a series of quoted strings
-// and sets .TxtStrings based on the result.
-// Note: Most APIs do notThis is rarely used. Try using SetTargetTXT() first.
-// Ex: "foo"        << 1 string
-//     "foo bar"    << 1 string
-//     "foo" "bar"  << 2 strings
-//     foo          << error. No quotes! Did you intend to use SetTargetTXT?
-func (rc *RecordConfig) SetTargetTXTfromRFC1035Quoted(s string) error {
-	if s != "" && s[0] != '"' {
-		// If you get this error, it is likely that you should use
-		// SetTargetTXT() instead of SetTargetTXTfromRFC1035Quoted().
-		return fmt.Errorf("non-quoted string used with SetTargetTXTfromRFC1035Quoted: (%s)", s)
-	}
-	many, err := decode.QuotedFields(s)
-	if err != nil {
-		return err
-	}
-	return rc.SetTargetTXTs(many)
-}
-
-// There is no GetTargetTXTfromRFC1025Quoted(). Use GetTargetRFC1035Quoted()
