@@ -147,7 +147,7 @@ To install, simply run
 
 To download the source
 
-    git clone github.com/StackExchange/dnscontrol
+    git clone https://github.com/StackExchange/dnscontrol.git
 
 If these don't work, more info is in [#805](https://github.com/StackExchange/dnscontrol/issues/805).
 
