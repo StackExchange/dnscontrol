@@ -3,6 +3,8 @@ package models
 import (
 	"fmt"
 	"strconv"
+
+	"github.com/StackExchange/dnscontrol/v3/pkg/decode"
 )
 
 // SetTargetCAA sets the CAA fields.
@@ -36,7 +38,7 @@ func (rc *RecordConfig) SetTargetCAAStrings(flag, tag, target string) error {
 // SetTargetCAAString is like SetTargetCAA but accepts one big string.
 // Ex: `0 issue "letsencrypt.org"`
 func (rc *RecordConfig) SetTargetCAAString(s string) error {
-	part, err := ParseQuotedFields(s)
+	part, err := decode.RFC1035Fields(s)
 	if err != nil {
 		return err
 	}

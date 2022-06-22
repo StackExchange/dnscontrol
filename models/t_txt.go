@@ -3,6 +3,8 @@ package models
 import (
 	"fmt"
 	"strings"
+
+	"github.com/StackExchange/dnscontrol/v3/pkg/decode"
 )
 
 /*
@@ -118,6 +120,8 @@ provided, we're able to handle all the variations.
 
 HOW TO PARSE/SEND TXT STRINGS:
 
+INSERT INFO FROM BUG
+
 
 */
 
@@ -129,8 +133,7 @@ func (rc *RecordConfig) HasFormatIdenticalToTXT() bool {
 }
 
 // SetTargetTXT sets the TXT fields when there is 1 string.
-// The string is stored in .Target, and split into 255-octet chunks
-// for .TxtStrings.
+// The string is stored in the first element of .TxtStrings.
 func (rc *RecordConfig) SetTargetTXT(s string) error {
 	if rc.Type == "" {
 		rc.Type = "TXT"
@@ -162,6 +165,12 @@ func (rc *RecordConfig) GetTargetTXTJoined() string {
 	return strings.Join(rc.TxtStrings, "")
 }
 
+// GetTargetTXTFlattened255 returns the TXT target as a list of
+// strings, each 255-octets or shorter.
+func (rc *RecordConfig) GetTargetTXTFlattened255() []string {
+	return decode.Flatten255(rc.TxtStrings)
+}
+
 // SetTargetTXTString is like SetTargetTXTs but accepts one big string,
 // which is parsed into individual strings.
 // Ex: foo             << 1 string
@@ -185,7 +194,11 @@ func (rc *RecordConfig) GetTargetTXTJoined() string {
 // As a result, we recommend trying SetTargetTXT() before you try
 // SetTargetTXTfromRFC1035Quoted().
 func (rc *RecordConfig) SetTargetTXTString(s string) error {
-	return rc.SetTargetTXTs(ParseQuotedTxt(s))
+	ts, err := decode.QuotedFields(s)
+	if err != nil {
+		return err
+	}
+	return rc.SetTargetTXTs(ts)
 }
 
 // SetTargetTXTfromRFC1035Quoted parses a series of quoted strings
@@ -201,7 +214,7 @@ func (rc *RecordConfig) SetTargetTXTfromRFC1035Quoted(s string) error {
 		// SetTargetTXT() instead of SetTargetTXTfromRFC1035Quoted().
 		return fmt.Errorf("non-quoted string used with SetTargetTXTfromRFC1035Quoted: (%s)", s)
 	}
-	many, err := ParseQuotedFields(s)
+	many, err := decode.QuotedFields(s)
 	if err != nil {
 		return err
 	}

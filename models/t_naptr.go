@@ -3,7 +3,8 @@ package models
 import (
 	"fmt"
 	"strconv"
-	"strings"
+
+	"github.com/StackExchange/dnscontrol/v3/pkg/decode"
 )
 
 // SetTargetNAPTR sets the NAPTR fields.
@@ -43,9 +44,12 @@ func (rc *RecordConfig) SetTargetNAPTRStrings(order, preference, flags string, s
 
 // SetTargetNAPTRString is like SetTargetNAPTR but accepts one big string.
 func (rc *RecordConfig) SetTargetNAPTRString(s string) error {
-	part := strings.Fields(s)
+	part, err := decode.RFC1035Fields(s)
+	if err != nil {
+		return err
+	}
 	if len(part) != 6 {
 		return fmt.Errorf("NAPTR value does not contain 6 fields: (%#v)", s)
 	}
-	return rc.SetTargetNAPTRStrings(part[0], part[1], StripQuotes(part[2]), StripQuotes(part[3]), StripQuotes(part[4]), StripQuotes(part[5]))
+	return rc.SetTargetNAPTRStrings(part[0], part[1], part[2], part[3], part[4], part[5])
 }

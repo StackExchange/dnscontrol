@@ -3,7 +3,8 @@ package models
 import (
 	"fmt"
 	"strconv"
-	"strings"
+
+	"github.com/StackExchange/dnscontrol/v3/pkg/decode"
 )
 
 // SetTargetSSHFP sets the SSHFP fields.
@@ -43,9 +44,12 @@ func (rc *RecordConfig) SetTargetSSHFPStrings(algorithm, fingerprint, target str
 
 // SetTargetSSHFPString is like SetTargetSSHFP but accepts one big string.
 func (rc *RecordConfig) SetTargetSSHFPString(s string) error {
-	part := strings.Fields(s)
+	part, err := decode.RFC1035Fields(s)
+	if err != nil {
+		return err
+	}
 	if len(part) != 3 {
 		return fmt.Errorf("SSHFP value does not contain 3 fields: (%#v)", s)
 	}
-	return rc.SetTargetSSHFPStrings(part[0], part[1], StripQuotes(part[2]))
+	return rc.SetTargetSSHFPStrings(part[0], part[1], part[2])
 }

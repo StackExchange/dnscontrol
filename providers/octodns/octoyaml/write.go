@@ -7,6 +7,7 @@ import (
 	"strings"
 
 	"github.com/StackExchange/dnscontrol/v3/models"
+	"github.com/StackExchange/dnscontrol/v3/pkg/decode"
 	"github.com/miekg/dns/dnsutil"
 	yaml "gopkg.in/yaml.v2"
 )
@@ -166,7 +167,7 @@ func oneLabel(records models.Records) yaml.MapItem {
 				TTL:   records[0].TTL,
 			}
 			if v.Type == "TXT" {
-				v.Value = strings.Replace(models.StripQuotes(v.Value), `;`, `\;`, -1)
+				v.Value = strings.Replace(decode.StripQuotes(v.Value), `;`, `\;`, -1)
 			}
 			//printer.Printf("yamlwrite:oneLabel: simple ttl=%d\n", v.TTL)
 			item.Value = v
@@ -274,10 +275,10 @@ func oneType(records models.Records) interface{} {
 			TTL:  records[0].TTL,
 		}
 		if len(records) == 1 {
-			vv.Value = strings.Replace(models.StripQuotes(records[0].GetTargetField()), `;`, `\;`, -1)
+			vv.Value = strings.Replace(decode.StripQuotes(records[0].GetTargetField()), `;`, `\;`, -1)
 		} else {
 			for _, rc := range records {
-				vv.Values = append(vv.Values, models.StripQuotes(rc.GetTargetCombined()))
+				vv.Values = append(vv.Values, decode.StripQuotes(rc.GetTargetCombined()))
 			}
 		}
 		return vv
