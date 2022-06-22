@@ -18,12 +18,25 @@ var tests = []testData{
 	{`one "two"`, [][]string{{`ERROR`}, {`ERROR`}, {`one`, `two`}, {`one`, `two`}}},
 	{`"foo"`, [][]string{{`foo`}, {`foo`}, {`foo`}, {`foo`}}},
 	{`"foo" "bar"`, [][]string{{`foo`, `bar`}, {`foo`, `bar`}, {`foo`, `bar`}, {`foo`, `bar`}}},
+	{`"foo bar"`, [][]string{{`foo bar`}, {`foo bar`}, {`foo bar`}, {`foo bar`}}},
 	{`"es\"caped"`, [][]string{{`es\"caped`}, {`es"caped`}, {`es\"caped`}, {`es"caped`}}},
 	{`"bumble\bee"`, [][]string{{`bumble\bee`}, {`bumble\bee`}, {`bumble\bee`}, {`bumble\bee`}}},
 	{`""doublequoted""`, [][]string{{`"doublequoted"`}, {`UNDEF`}, {``, `doublequoted`, ``}, {``, `doublequoted`, ``}}},
 	{`"\"escquoted\""`, [][]string{{`\"escquoted\"`}, {`"escquoted"`}, {`\"escquoted\"`}, {`"escquoted"`}}},
 	{`"in"side"`, [][]string{{`UNDEF`}, {`UNDEF`}, {`ERROR`}, {`ERROR`}}},
 	{`"do""ble"`, [][]string{{`UNDEF`}, {`UNDEF`}, {`do`, `ble`}, {`do`, `ble`}}},
+	{`1 2 3`, [][]string{{`ERROR`}, {`ERROR`}, {`1`, `2`, `3`}, {`1`, `2`, `3`}}},
+	{`1 "2" 3`, [][]string{{`ERROR`}, {`ERROR`}, {`1`, `2`, `3`}, {`1`, `2`, `3`}}},
+	{`1 "two" 3`, [][]string{{`ERROR`}, {`ERROR`}, {`1`, `two`, `3`}, {`1`, `two`, `3`}}},
+	{`1 2 "qu\"te" "4"`, [][]string{{`ERROR`}, {`ERROR`}, {`1`, `2`, `qu\"te`, `4`}, {`1`, `2`, `qu"te`, `4`}}},
+	//
+	{`0 issue "letsencrypt.org; validationmethods=dns-01; accounturi=https://acme-v02.api.letsencrypt.org/acme/acct/1234"`,
+		[][]string{
+			{`ERROR`}, // QUOTED
+			{`ERROR`}, // ESCAPED
+			{`0`, `issue`, `letsencrypt.org; validationmethods=dns-01; accounturi=https://acme-v02.api.letsencrypt.org/acme/acct/1234`}, // MIEKG
+			{`0`, `issue`, `letsencrypt.org; validationmethods=dns-01; accounturi=https://acme-v02.api.letsencrypt.org/acme/acct/1234`}, // RFC1035
+		}},
 }
 
 // TODO(tlim): Is there a better way to represent this test data?  Is

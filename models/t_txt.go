@@ -199,7 +199,7 @@ func (rc *RecordConfig) GetTargetTXTFlattened255() []string {
 //
 // Deprecated: This function has a confusing name. Use
 // SetTargetTXTs(decode.PARSER(s)) where PARSER is one of the provided
-// parsers, or write your own.
+// parsers in pkg/decode or write your own.
 //
 func (rc *RecordConfig) SetTargetTXTString(s string) error {
 	ts, err := decode.QuotedFields(s)
