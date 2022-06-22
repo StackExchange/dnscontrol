@@ -18,6 +18,7 @@ var tests = []testData{
 	{`one "two"`, [][]string{{`ERROR`}, {`ERROR`}, {`one`, `two`}, {`one`, `two`}}},
 	{`"foo"`, [][]string{{`foo`}, {`foo`}, {`foo`}, {`foo`}}},
 	{`"foo" "bar"`, [][]string{{`foo`, `bar`}, {`foo`, `bar`}, {`foo`, `bar`}, {`foo`, `bar`}}},
+	{`"many"  "spaces"`, [][]string{{`UNDEF`}, {`UNDEF`}, {`many`, `spaces`}, {`many`, `spaces`}}},
 	{`"foo bar"`, [][]string{{`foo bar`}, {`foo bar`}, {`foo bar`}, {`foo bar`}}},
 	{`"es\"caped"`, [][]string{{`es\"caped`}, {`es"caped`}, {`es\"caped`}, {`es"caped`}}},
 	{`"bumble\bee"`, [][]string{{`bumble\bee`}, {`bumble\bee`}, {`bumble\bee`}, {`bumble\bee`}}},
@@ -25,6 +26,9 @@ var tests = []testData{
 	{`"\"escquoted\""`, [][]string{{`\"escquoted\"`}, {`"escquoted"`}, {`\"escquoted\"`}, {`"escquoted"`}}},
 	{`"in"side"`, [][]string{{`UNDEF`}, {`UNDEF`}, {`ERROR`}, {`ERROR`}}},
 	{`"do""ble"`, [][]string{{`UNDEF`}, {`UNDEF`}, {`do`, `ble`}, {`do`, `ble`}}},
+	{`"one""two"`, [][]string{{`UNDEF`}, {`UNDEF`}, {`one`, `two`}, {`one`, `two`}}},
+	{`"eh""bee""cee"`, [][]string{{`UNDEF`}, {`UNDEF`}, {`eh`, `bee`, `cee`}, {`eh`, `bee`, `cee`}}},
+	{`"o\"ne""tw\"o"`, [][]string{{`UNDEF`}, {`UNDEF`}, {`o\"ne`, `tw\"o`}, {`o"ne`, `tw"o`}}},
 	{`1 2 3`, [][]string{{`ERROR`}, {`ERROR`}, {`1`, `2`, `3`}, {`1`, `2`, `3`}}},
 	{`1 "2" 3`, [][]string{{`ERROR`}, {`ERROR`}, {`1`, `2`, `3`}, {`1`, `2`, `3`}}},
 	{`1 "two" 3`, [][]string{{`ERROR`}, {`ERROR`}, {`1`, `two`, `3`}, {`1`, `two`, `3`}}},
@@ -75,7 +79,7 @@ func parserTest(t *testing.T, dataIndex int, f func(s string) ([]string, error),
 			if wantErr {
 				// We wanted an error, but didn't get one.
 				if err == nil {
-					t.Errorf("%s() expected error. Got none: (%v)", name, s)
+					t.Errorf("%s() expected error. (%v)->(%v)", name, s, got)
 					return
 				}
 				return

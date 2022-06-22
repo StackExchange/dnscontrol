@@ -3,12 +3,12 @@ package namedotcom
 import (
 	"errors"
 	"fmt"
-	"regexp"
 	"strings"
 
 	"github.com/namedotcom/go/namecom"
 
 	"github.com/StackExchange/dnscontrol/v3/models"
+	"github.com/StackExchange/dnscontrol/v3/pkg/decode"
 	"github.com/StackExchange/dnscontrol/v3/pkg/diff"
 )
 
@@ -111,7 +111,11 @@ func toRecord(r *namecom.Record, origin string) *models.RecordConfig {
 	rc.SetLabelFromFQDN(fqdn, origin)
 	switch rtype := r.Type; rtype { // #rtype_variations
 	case "TXT":
-		rc.SetTargetTXTs(decodeTxt(r.Answer))
+		sl, err := decode.QuoteEscapedFields(r.Answer)
+		if err != nil {
+			panic(fmt.Errorf("unparsable TXT record received from ndc: %w", err))
+		}
+		rc.SetTargetTXTs(sl)
 	case "MX":
 		if err := rc.SetTargetMX(uint16(r.Priority), r.Answer); err != nil {
 			panic(fmt.Errorf("unparsable MX record received from ndc: %w", err))
@@ -199,24 +203,6 @@ func (n *namedotcomProvider) createRecord(rc *models.RecordConfig, domain string
 // 	}
 // 	return ans
 // }
-
-// finds a string surrounded by quotes that might contain an escaped quote character.
-var quotedStringRegexp = regexp.MustCompile(`"((?:[^"\\]|\\.)*)"`)
-
-// decodeTxt decodes the TXT record as received from name.com and
-// returns the list of strings.
-func decodeTxt(s string) []string {
-
-	if len(s) >= 2 && s[0] == '"' && s[len(s)-1] == '"' {
-		txtStrings := []string{}
-		for _, t := range quotedStringRegexp.FindAllStringSubmatch(s, -1) {
-			txtString := strings.Replace(t[1], `\"`, `"`, -1)
-			txtStrings = append(txtStrings, txtString)
-		}
-		return txtStrings
-	}
-	return []string{s}
-}
 
 func (n *namedotcomProvider) deleteRecord(id int32, domain string) error {
 	request := &namecom.DeleteRecordRequest{
