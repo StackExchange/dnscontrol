@@ -183,7 +183,10 @@ func (api *hetznerProvider) GetZoneRecords(domain string) (models.Records, error
 	}
 	existingRecords := make([]*models.RecordConfig, len(records))
 	for i := range records {
-		existingRecords[i] = toRecordConfig(domain, &records[i])
+		existingRecords[i], err = toRecordConfig(domain, &records[i])
+		if err != nil {
+			return nil, err
+		}
 	}
 	return existingRecords, nil
 }
