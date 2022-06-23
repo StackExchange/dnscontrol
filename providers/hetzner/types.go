@@ -1,8 +1,10 @@
 package hetzner
 
 import (
-	"github.com/StackExchange/dnscontrol/v3/models"
 	"strings"
+
+	"github.com/StackExchange/dnscontrol/v3/models"
+	"github.com/StackExchange/dnscontrol/v3/pkg/decode"
 )
 
 type bulkCreateRecordsRequest struct {
@@ -69,7 +71,7 @@ func fromRecordConfig(in *models.RecordConfig, zone *zone) *record {
 		ZoneID: zone.ID,
 	}
 
-	if record.Type == "TXT" && len(in.TxtStrings) == 1 {
+	if in.HasFormatIdenticalToTXT() && len(in.TxtStrings) == 1 {
 		// HACK: HETZNER rejects values that fit into 255 bytes w/o quotes,
 		//  but do not fit w/ added quotes (via GetTargetCombined()).
 		// Sending the raw, non-quoted value works for the comprehensive
@@ -85,7 +87,7 @@ func fromRecordConfig(in *models.RecordConfig, zone *zone) *record {
 	return record
 }
 
-func toRecordConfig(domain string, record *record) *models.RecordConfig {
+func toRecordConfig(domain string, record *record) (*models.RecordConfig, error) {
 	rc := &models.RecordConfig{
 		Type:     record.Type,
 		TTL:      uint32(*record.TTL),
@@ -93,15 +95,24 @@ func toRecordConfig(domain string, record *record) *models.RecordConfig {
 	}
 	rc.SetLabel(record.Name, domain)
 
+	if !rc.HasFormatIdenticalToTXT() {
+		return rc, rc.PopulateFromString(record.Type, record.Value, domain)
+	}
+
 	value := record.Value
 	// HACK: Hetzner is inserting a trailing space after multiple, quoted values.
 	// NOTE: The actual DNS answer does not contain the space.
-	if record.Type == "TXT" && len(value) > 0 && value[len(value)-1] == ' ' {
-		// Per RFC 1035 spaces outside quoted values are irrelevant.
-		value = strings.TrimRight(value, " ")
+	// Per RFC 1035 spaces outside quoted values are irrelevant.
+	value = strings.TrimRight(value, " ")
+
+	if !decode.IsQuoted(value) {
+		// This is a simple value that was set via some other client/GUI; Or
+		//  this is a 254/255 long string -- see the HACK in encoding section.
+		return rc, rc.SetTargetTXTs([]string{value})
 	}
-
-	_ = rc.PopulateFromString(record.Type, value, domain)
-
-	return rc
+	s, err := decode.QuotedFields(value)
+	if err != nil {
+		return nil, err
+	}
+	return rc, rc.SetTargetTXTs(s)
 }
