@@ -5,12 +5,14 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"github.com/StackExchange/dnscontrol/v3/pkg/printer"
 	"log"
 	"sort"
 	"strings"
 	"time"
 	"unicode/utf8"
+
+	"github.com/StackExchange/dnscontrol/v3/pkg/decode"
+	"github.com/StackExchange/dnscontrol/v3/pkg/printer"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/config"
@@ -509,10 +511,25 @@ func nativeToRecords(set r53Types.ResourceRecordSet, origin string) ([]*models.R
 
 				rc := &models.RecordConfig{TTL: uint32(aws.ToInt64(set.TTL))}
 				rc.SetLabelFromFQDN(unescape(set.Name), origin)
-				if err := rc.PopulateFromString(string(rtype), val, origin); err != nil {
-					return nil, fmt.Errorf("unparsable record received from R53: %w", err)
+
+				switch ty {
+				case "TXT":
+					ts, err := decode.QuotedFields(val)
+					if err != nil {
+						return nil, fmt.Errorf("unparsable txt fields from R53: %w", err)
+					}
+					rc.SetTargetTXTs(ts)
+					if err != nil {
+						return nil, fmt.Errorf("could not set TXT target R53: %w", err)
+					}
+				default:
+					err := rc.PopulateFromString(string(rtype), val, origin)
+					if err != nil {
+						return nil, fmt.Errorf("unparsable record received from R53: %w", err)
+					}
 				}
 				results = append(results, rc)
+
 			}
 		}
 	}
