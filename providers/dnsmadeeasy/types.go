@@ -4,6 +4,7 @@ import (
 	"strconv"
 
 	"github.com/StackExchange/dnscontrol/v3/models"
+	"github.com/StackExchange/dnscontrol/v3/pkg/decode"
 )
 
 // DNS Made Easy does not allow the system name servers to be edited, and said records appear to always have a fixed TTL of 86400.
@@ -133,17 +134,28 @@ func toRecordConfig(domain string, record *recordResponseDataEntry) *models.Reco
 	rc.SetLabel(record.Name, domain)
 
 	var err error
-	if record.Type == "MX" {
+	switch record.Type {
+	case "MX":
 		err = rc.SetTargetMX(uint16(record.MxLevel), record.Value)
-	} else if record.Type == "SRV" {
+	case "SRV":
 		err = rc.SetTargetSRV(uint16(record.Priority), uint16(record.Weight), uint16(record.Port), record.Value)
-	} else if record.Type == "CAA" {
-		value, unquoteErr := strconv.Unquote(record.Value)
-		if unquoteErr != nil {
+	case "CAA":
+		{
+			value, unquoteErr := strconv.Unquote(record.Value)
+			if unquoteErr != nil {
+				panic(err)
+			}
+			err = rc.SetTargetCAA(uint8(record.IssuerCritical), record.CaaType, value)
+		}
+	case "TXT":
+		var txts []string
+		txts, err = decode.QuotedFields(record.Value)
+		if err != nil {
 			panic(err)
 		}
-		err = rc.SetTargetCAA(uint8(record.IssuerCritical), record.CaaType, value)
-	} else {
+
+		err = rc.SetTargetTXTs(txts)
+	default:
 		err = rc.PopulateFromString(record.Type, record.Value, domain)
 	}
 
@@ -168,23 +180,30 @@ func fromRecordConfig(rc *models.RecordConfig) *recordRequestData {
 		Value:       rc.GetTargetCombined(),
 	}
 
-	if record.Type == "MX" {
-		record.MxLevel = int(rc.MxPreference)
-		record.Value = rc.GetTargetField()
-	} else if record.Type == "SRV" {
-		target := rc.GetTargetField()
-		if target == "." {
-			target += "."
+	switch record.Type {
+	case "MX":
+		{
+			record.MxLevel = int(rc.MxPreference)
+			record.Value = rc.GetTargetField()
 		}
+	case "SRV":
+		{
+			target := rc.GetTargetField()
+			if target == "." {
+				target += "."
+			}
 
-		record.Priority = int(rc.SrvPriority)
-		record.Weight = int(rc.SrvWeight)
-		record.Port = int(rc.SrvPort)
-		record.Value = target
-	} else if record.Type == "CAA" {
-		record.IssuerCritical = int(rc.CaaFlag)
-		record.CaaType = rc.CaaTag
-		record.Value = rc.GetTargetField()
+			record.Priority = int(rc.SrvPriority)
+			record.Weight = int(rc.SrvWeight)
+			record.Port = int(rc.SrvPort)
+			record.Value = target
+		}
+	case "CAA":
+		{
+			record.IssuerCritical = int(rc.CaaFlag)
+			record.CaaType = rc.CaaTag
+			record.Value = rc.GetTargetField()
+		}
 	}
 
 	return record
