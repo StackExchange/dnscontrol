@@ -6,6 +6,7 @@ import (
 	"strings"
 
 	"github.com/StackExchange/dnscontrol/v3/models"
+	"github.com/StackExchange/dnscontrol/v3/pkg/decode"
 	"github.com/StackExchange/dnscontrol/v3/pkg/diff"
 	"github.com/StackExchange/dnscontrol/v3/providers"
 	"github.com/transip/gotransip/v6"
@@ -213,7 +214,16 @@ func nativeToRecord(entry domain.DNSEntry, origin string) (*models.RecordConfig,
 		Original: entry,
 	}
 	rc.SetLabel(entry.Name, origin)
-	if err := rc.PopulateFromString(entry.Type, entry.Content, origin); err != nil {
+
+	var err error
+	switch entry.Type {
+	case "TXT":
+		err = rc.SetTargetTXT(decode.StripQuotes(entry.Content))
+	default:
+		err = rc.PopulateFromString(entry.Type, entry.Content, origin)
+	}
+
+	if err != nil {
 		return nil, fmt.Errorf("unparsable record received from TransIP: %w", err)
 	}
 
