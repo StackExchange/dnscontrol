@@ -180,8 +180,8 @@ github.com/davecgh/go-spew v1.1.1/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSs
 github.com/deepmap/oapi-codegen v1.6.1 h1:2BvsmRb6pogGNtr8Ann+esAbSKFXx2CZN18VpAMecnw=
 github.com/deepmap/oapi-codegen v1.6.1/go.mod h1:ryDa9AgbELGeB+YEXE1dR53yAjHwFvE9iAUlWl9Al3M=
 github.com/dgrijalva/jwt-go v3.2.0+incompatible/go.mod h1:E3ru+11k8xSBh+hMPgOLZmtrrCbhqsmaPHjLKYnJCaQ=
-github.com/digitalocean/godo v1.80.0 h1:ZULJ/fWDM97YtO7Fa+K6hzJLd7+smCu4N+0n+B/xtj4=
-github.com/digitalocean/godo v1.80.0/go.mod h1:BPCqvwbjbGqxuUnIKB4EvS/AX7IDnNmt5fwvIkWo+ew=
+github.com/digitalocean/godo v1.81.0 h1:sjb3fOfPfSlUQUK22E87BcI8Zx2qtnF7VUCCO4UK3C8=
+github.com/digitalocean/godo v1.81.0/go.mod h1:BPCqvwbjbGqxuUnIKB4EvS/AX7IDnNmt5fwvIkWo+ew=
 github.com/dimchansky/utfbom v1.1.1 h1:vV6w1AhK4VMnhBno/TPVCoK9U/LP0PkLCS9tbxHdi/U=
 github.com/dimchansky/utfbom v1.1.1/go.mod h1:SxdoEBH5qIqFocHMyGOXVAybYJdr71b1Q/j0mACtrfE=
 github.com/ditashi/jsbeautifier-go v0.0.0-20141206144643-2520a8026a9c h1:+Zo5Ca9GH0RoeVZQKzFJcTLoAixx5s5Gq3pTIS+n354=
