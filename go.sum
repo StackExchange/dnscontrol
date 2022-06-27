@@ -388,8 +388,8 @@ github.com/hashicorp/vault/sdk v0.5.1 h1:zly/TmNgOXCGgWIRA8GojyXzG817POtVh3uzIwz
 github.com/hashicorp/vault/sdk v0.5.1/go.mod h1:DoGraE9kKGNcVgPmTuX357Fm6WAx1Okvde8Vp3dPDoU=
 github.com/hashicorp/yamux v0.0.0-20180604194846-3520598351bb h1:b5rjCoWHc7eqmAS4/qyk21ZsHyb6Mxv/jykxvNTkU4M=
 github.com/hashicorp/yamux v0.0.0-20180604194846-3520598351bb/go.mod h1:+NfK9FKeTrX5uv1uIXGdwYDTeHna2qgaIlx54MXqjAM=
-github.com/hexonet/go-sdk/v3 v3.5.3 h1:uAF3QK4Lplc+uSWZhq8uwezio4vO91hrG9eTVdIHwJc=
-github.com/hexonet/go-sdk/v3 v3.5.3/go.mod h1:X/TQ5RQ7MMNsTajP4/lr3/eBkOoz8qUiha2lydNBGZE=
+github.com/hexonet/go-sdk/v3 v3.5.4 h1:ovDTtjjdej2/54eebala1qhXQlXn2QUtmdyL6SrwoyU=
+github.com/hexonet/go-sdk/v3 v3.5.4/go.mod h1:X/TQ5RQ7MMNsTajP4/lr3/eBkOoz8qUiha2lydNBGZE=
 github.com/ianlancetaylor/demangle v0.0.0-20181102032728-5e5cf60278f6/go.mod h1:aSSvb/t6k1mPoxDqO4vJh6VOCGPwU4O0C2/Eqndh1Sc=
 github.com/ianlancetaylor/demangle v0.0.0-20200824232613-28f6c0f3b639/go.mod h1:aSSvb/t6k1mPoxDqO4vJh6VOCGPwU4O0C2/Eqndh1Sc=
 github.com/jarcoal/httpmock v1.0.5/go.mod h1:ATjnClrvW/3tijVmpL/va5Z3aAyGvqU3gCT8nX0Txik=
