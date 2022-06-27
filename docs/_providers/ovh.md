@@ -136,3 +136,7 @@ OVH now allows to host DNS zone for a domain that is not registered in their reg
 OVH doesn't allow resetting the zone to the OVH DNS through the API. If for any reasons OVH NS entries were
 removed the only way to add them back is by using the OVH Control Panel (in the DNS Servers tab, click on the "Reset the
 DNS servers" button.
+
+## Limitations
+
+* OVH doesn't support multiple TXT target for a given record name, but it supports arbitrary long target.

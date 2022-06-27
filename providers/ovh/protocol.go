@@ -110,13 +110,25 @@ func (c *ovhProvider) deleteRecordFunc(id int64, fqdn string) func() error {
 	}
 }
 
+func recordToNative(rc *models.RecordConfig) string {
+	switch rc.Type {
+	case "TXT":
+		return fmt.Sprintf(`"%s"`, rc.GetTargetTXTJoined())
+	default:
+		fmt.Printf("recordToNative for rc: %#v\n", rc)
+		return rc.GetTargetCombined()
+	}
+}
+
 // Returns a function that can be invoked to create a record in a zone.
 func (c *ovhProvider) createRecordFunc(rc *models.RecordConfig, fqdn string) func() error {
 	return func() error {
+		target := recordToNative(rc)
+		fmt.Printf("creating with %#v -> %s\n", *rc, target)
 		record := Record{
 			SubDomain: dnsutil.TrimDomainName(rc.GetLabelFQDN(), fqdn),
 			FieldType: rc.Type,
-			Target:    rc.GetTargetCombined(),
+			Target:    target,
 			TTL:       rc.TTL,
 		}
 		if record.SubDomain == "@" {
@@ -131,10 +143,12 @@ func (c *ovhProvider) createRecordFunc(rc *models.RecordConfig, fqdn string) fun
 // Returns a function that can be invoked to update a record in a zone.
 func (c *ovhProvider) updateRecordFunc(old *Record, rc *models.RecordConfig, fqdn string) func() error {
 	return func() error {
+		target := recordToNative(rc)
+		fmt.Printf("updating with %#v -> %s\n", *rc, target)
 		record := Record{
 			SubDomain: rc.GetLabel(),
 			FieldType: rc.Type,
-			Target:    rc.GetTargetCombined(),
+			Target:    target,
 			TTL:       rc.TTL,
 			Zone:      fqdn,
 			ID:        old.ID,
