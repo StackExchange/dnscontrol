@@ -7,6 +7,7 @@ import (
 	"strings"
 
 	"github.com/StackExchange/dnscontrol/v3/models"
+	"github.com/StackExchange/dnscontrol/v3/pkg/decode"
 	"github.com/StackExchange/dnscontrol/v3/pkg/diff"
 	"github.com/StackExchange/dnscontrol/v3/providers"
 	"github.com/ovh/go-ovh/ovh"
@@ -190,7 +191,15 @@ func nativeToRecord(r *Record, origin string) (*models.RecordConfig, error) {
 	}
 
 	rec.SetLabel(r.SubDomain, origin)
-	if err := rec.PopulateFromString(rtype, r.Target, origin); err != nil {
+
+	var err error
+	switch r.FieldType {
+	case "TXT":
+		err = rec.SetTargetTXT(decode.StripQuotes(r.Target))
+	default:
+		err = rec.PopulateFromString(rtype, r.Target, origin)
+	}
+	if err != nil {
 		return nil, fmt.Errorf("unparsable record received from ovh: %w", err)
 	}
 
