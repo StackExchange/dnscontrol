@@ -48,6 +48,19 @@ Create a new API Key in the
 
 ## Caveats
 
+### CAA
+
+As of June 2022, the Hetzner DNS Console API does not accept spaces in CAA
+ records.
+```
+0 issue "letsencrypt.org; validationmethods=dns-01; accounturi=https://acme-v02.api.letsencrypt.org/acme/acct/1234"
+```
+
+Removing the spaces might still work for any consumer of the record.
+```
+0 issue "letsencrypt.org;validationmethods=dns-01;accounturi=https://acme-v02.api.letsencrypt.org/acme/acct/1234"
+```
+
 ### SOA
 
 Hetzner DNS Console does not allow changing the SOA record via their API.
