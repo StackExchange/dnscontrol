@@ -10,7 +10,18 @@ import (
 // string (all the parameters of an MX, SRV, CAA, etc). Rather than have
 // each provider rewrite this code many times, here's a helper function to use.
 //
-// If this doesn't work for all rtypes, process the special cases then
+// Recommended calling convention:
+//	var err error
+//	switch rType {
+//	case "TXT": // Handle any special cases here. In this example, "TXT" is special.
+//		err = rec.SetTargetTXTs(decode(target))
+//	default:
+//		err = rec.PopulateFromString(rType, target, origin)
+//	}
+//	if err != nil {
+//		return nil, fmt.Errorf("unparsable record received from CHANGE_TO_PROVDER_NAME: %w", err)
+//	}
+
 // call this for the remainder.
 func (rc *RecordConfig) PopulateFromString(rtype, contents, origin string) error {
 	if rc.Type != "" && rc.Type != rtype {
@@ -53,4 +64,16 @@ func (rc *RecordConfig) PopulateFromString(rtype, contents, origin string) error
 		return fmt.Errorf("unknown rtype (%s) when parsing (%s) domain=(%s)",
 			rtype, contents, origin)
 	}
+}
+
+// PopulateFromStringOld is like PopulateFromString but parses TXT
+// records using SetTargetTXTQuotedFields().
+//
+// Deprecated: Use PopulateFromString() instead, potentially after
+// special-casing TXT records.
+func (rc *RecordConfig) PopulateFromStringOld(rtype, contents, origin string) error {
+	if rtype == "TXT" {
+		return rc.SetTargetTXTQuotedFields(contents)
+	}
+	return rc.PopulateFromString(rtype, contents, origin)
 }

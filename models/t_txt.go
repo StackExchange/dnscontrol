@@ -208,3 +208,39 @@ func (rc *RecordConfig) SetTargetTXTString(s string) error {
 	}
 	return rc.SetTargetTXTs(ts)
 }
+
+// SetTargetTXTQuotedFields sets a TXT target after decoding s.
+func (rc *RecordConfig) SetTargetTXTQuotedFields(s string) error {
+	ts, err := decode.QuotedFields(s)
+	if err != nil {
+		return err
+	}
+	return rc.SetTargetTXTs(ts)
+}
+
+// SetTargetTXTQuoteEscapedFields sets a TXT target after decoding s.
+func (rc *RecordConfig) SetTargetTXTQuoteEscapedFields(s string) error {
+	ts, err := decode.QuoteEscapedFields(s)
+	if err != nil {
+		return err
+	}
+	return rc.SetTargetTXTs(ts)
+}
+
+// SetTargetTXTMiekgDNSFields sets a TXT target after decoding s.
+func (rc *RecordConfig) SetTargetTXTMiekgDNSFields(s string) error {
+	ts, err := decode.MiekgDNSFields(s)
+	if err != nil {
+		return err
+	}
+	return rc.SetTargetTXTs(ts)
+}
+
+// SetTargetTXTRFC1035Fields sets a TXT target after decoding s.
+func (rc *RecordConfig) SetTargetTXTRFC1035Fields(s string) error {
+	ts, err := decode.RFC1035Fields(s)
+	if err != nil {
+		return err
+	}
+	return rc.SetTargetTXTs(ts)
+}
