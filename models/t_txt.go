@@ -120,30 +120,27 @@ provided, we're able to handle all the variations.
 HOW TO PARSE/SEND TXT STRINGS:
 
 - Step 1: Does the API take/send 1 string or a list of strings?
+	- 1 string: Go to Step 2.
 	- List of strings: Your nativeToRc() should call  SetTargetTXTs(many
 		[]string); your Corrections code should copy the individual strings
 		from rc.TxtStrings (which is []string).  Once this is implemented
 		you are done.
-	- 1 string: Go to Step 2.
 
 - Step 2: Go to the provider's website and manually create a TXT
-	record.  Does it permit you to enter 1 string or a list of strings?
+	record.  Does it permit you to enter a list of strings or 1 string?
+  - List of strings: Go to Step 3.
 	- 1 string: Your nativeToRc() should call  SetTargetTXT(s string);
 		your Corrections code should read the field using
 		rc.GetTargetTXTJoined().  Once this is implemented you are done.
-  - List of strings: Go to Step 3.
 
 - Step 3: At this point, we can conclude that the string the API gives
 	you needs to be parsed into many separate strings.
-	- Your nativeToRc() should call SetTargetTXTs(decode.PARSER(s)); your
-		Corrections code should read the field using rc.GetTargetRFC1035Quoted().
-	- PARSER should be one of:
-		- decode.QuoteEscapedFields() -- Handles strings like: "one" "two" "in\"side"
-		- decode.QuotedFields() -- Handles quotes, doesn't allow escaped chars.
-		- decode.MiekgDNSFields() -- Uses `miekg/dns`'s parser, which leaves backslashes intact.
-		- decode.RFC1035Fields() -- Similar to decode.MiekgDNSFields but properly de-escapes quotes.
-		- Otherwise... write your own decoder. Please add it to
-			`pkg/decode/decoders.go` if you feel others will find it useful.
+	- Your nativeToRc() should call one of:
+	  - SetTargetTXTQuoteEscapedFields()
+		- SetTargetTXTQuotedFields()
+		- SetTargetTXTRFC1035Fields()
+		- SetTargetTXTMiekgDNSFields()
+    - SetTargetTXTs(DECODER(s)) where DECODER is your own function.  Look at pkg/decode/decoders.go for examples.
 
 */
 
