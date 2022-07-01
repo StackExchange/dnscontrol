@@ -9,7 +9,6 @@ import (
 	"time"
 
 	"github.com/StackExchange/dnscontrol/v3/models"
-	"github.com/StackExchange/dnscontrol/v3/pkg/decode"
 	"github.com/StackExchange/dnscontrol/v3/pkg/diff"
 	"github.com/StackExchange/dnscontrol/v3/pkg/txtutil"
 	"github.com/StackExchange/dnscontrol/v3/providers"
@@ -277,11 +276,7 @@ func toRc(domain string, r *godo.DomainRecord) *models.RecordConfig {
 	t.SetTarget(target)
 	switch rtype := r.Type; rtype {
 	case "TXT":
-		sl, err := decode.QuotedFields(target)
-		if err != nil {
-			panic(err)
-		}
-		t.SetTargetTXTs(sl)
+		t.SetTargetTXTQuotedFields(target)
 	default:
 		// nothing additional required
 	}
