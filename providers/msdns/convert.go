@@ -8,7 +8,6 @@ import (
 	"net"
 
 	"github.com/StackExchange/dnscontrol/v3/models"
-	"github.com/StackExchange/dnscontrol/v3/pkg/decode"
 )
 
 // extractProps and collects Name/Value pairs into maps for easier access.
@@ -115,11 +114,7 @@ func nativeToRecords(nr nativeRecord, origin string) (*models.RecordConfig, erro
 		//	uprops["SerialNumber"], uprops["RefreshInterval"], uprops["RetryDelay"],
 		//	uprops["ExpireLimit"], uprops["MinimumTimeToLive"])
 	case "TXT":
-		sl, err := decode.QuoteEscapedFields(sprops["DescriptiveText"])
-		if err != nil {
-			return nil, err
-		}
-		rc.SetTargetTXTs(sl)
+		rc.SetTargetTXTQuoteEscapedFields(sprops["DescriptiveText"])
 	default:
 		return nil, fmt.Errorf(
 			"msdns/convert.go:nativeToRecord rtype=%q unknown: props=%+v and %+v",

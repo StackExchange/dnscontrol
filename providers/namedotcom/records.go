@@ -8,7 +8,6 @@ import (
 	"github.com/namedotcom/go/namecom"
 
 	"github.com/StackExchange/dnscontrol/v3/models"
-	"github.com/StackExchange/dnscontrol/v3/pkg/decode"
 	"github.com/StackExchange/dnscontrol/v3/pkg/diff"
 )
 
@@ -99,6 +98,7 @@ func checkNSModifications(dc *models.DomainConfig) {
 }
 
 func toRecord(r *namecom.Record, origin string) *models.RecordConfig {
+	// FIXME(tlim) This should return an error value too.
 	rc := &models.RecordConfig{
 		Type:     r.Type,
 		TTL:      r.TTL,
@@ -111,11 +111,7 @@ func toRecord(r *namecom.Record, origin string) *models.RecordConfig {
 	rc.SetLabelFromFQDN(fqdn, origin)
 	switch rtype := r.Type; rtype { // #rtype_variations
 	case "TXT":
-		sl, err := decode.QuoteEscapedFields(r.Answer)
-		if err != nil {
-			panic(fmt.Errorf("unparsable TXT record received from ndc: %w", err))
-		}
-		rc.SetTargetTXTs(sl)
+		rc.SetTargetTXTQuoteEscapedFields(r.Answer)
 	case "MX":
 		if err := rc.SetTargetMX(uint16(r.Priority), r.Answer); err != nil {
 			panic(fmt.Errorf("unparsable MX record received from ndc: %w", err))
