@@ -131,6 +131,8 @@ func (r *record) nativeToRecord(domain string) *models.RecordConfig {
 		err = rc.SetTargetMX(uint16(r.Priority), r.Content)
 	case "SRV":
 		err = rc.SetTargetSRVPriorityString(uint16(r.Priority), r.Content)
+	case "TXT":
+		err = rc.SetTargetTXTQuoteEscapedFields(r.Content)
 	default:
 		if err := rc.PopulateFromString(r.Type, r.Content, domain); err != nil {
 			panic(err)
