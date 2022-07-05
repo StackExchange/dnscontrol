@@ -106,7 +106,11 @@ func (c *desecProvider) GetZoneRecords(domain string) (models.Records, error) {
 	existingRecords := []*models.RecordConfig{}
 	//spew.Dump(records)
 	for _, rr := range records {
-		existingRecords = append(existingRecords, nativeToRecords(rr, domain)...)
+		rc, err := nativeToRecords(rr, domain)
+		if err != nil {
+			return nil, err
+		}
+		existingRecords = append(existingRecords, rc...)
 	}
 	return existingRecords, nil
 }

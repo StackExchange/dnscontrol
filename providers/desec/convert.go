@@ -4,12 +4,13 @@ package desec
 
 import (
 	"fmt"
+
 	"github.com/StackExchange/dnscontrol/v3/models"
 	"github.com/StackExchange/dnscontrol/v3/pkg/printer"
 )
 
 // nativeToRecord takes a DNS record from deSEC and returns a native RecordConfig struct.
-func nativeToRecords(n resourceRecord, origin string) (rcs []*models.RecordConfig) {
+func nativeToRecords(n resourceRecord, origin string) (rcs []*models.RecordConfig, err error) {
 
 	// deSEC returns all the values for a given label/rtype pair in each
 	// resourceRecord.  In other words, if there are multiple A
@@ -22,16 +23,22 @@ func nativeToRecords(n resourceRecord, origin string) (rcs []*models.RecordConfi
 			Original: n,
 		}
 		rc.SetLabel(n.Subname, origin)
+
+		var err error
 		switch rtype := n.Type; rtype {
-		default: //  "A", "AAAA", "CAA", "NS", "CNAME", "MX", "PTR", "SRV", "TXT"
-			if err := rc.PopulateFromString(rtype, value, origin); err != nil {
-				panic(fmt.Errorf("unparsable record received from deSEC: %w", err))
-			}
+		case "TXT":
+			err = rc.SetTargetTXTQuotedFields(value)
+		default:
+			err = rc.PopulateFromString(rtype, value, origin)
 		}
+		if err != nil {
+			return nil, fmt.Errorf("unparsable record received from deSEC: %w", err)
+		}
+
 		rcs = append(rcs, rc)
 	}
 
-	return rcs
+	return rcs, nil
 }
 
 func recordsToNative(rcs []*models.RecordConfig, origin string) []resourceRecord {
