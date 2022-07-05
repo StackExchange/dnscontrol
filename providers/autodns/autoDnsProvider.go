@@ -3,12 +3,13 @@ package autodns
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/StackExchange/dnscontrol/v3/pkg/printer"
 	"net/http"
 	"net/url"
 	"regexp"
 	"strconv"
 	"strings"
+
+	"github.com/StackExchange/dnscontrol/v3/pkg/printer"
 
 	"github.com/StackExchange/dnscontrol/v3/models"
 	"github.com/StackExchange/dnscontrol/v3/pkg/diff"
@@ -169,7 +170,7 @@ func (api *autoDnsProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*mo
 					err := api.updateZone(domain, resourceRecords, nameServers, zoneTTL)
 
 					if err != nil {
-						fmt.Errorf(err.Error())
+						return fmt.Errorf(err.Error())
 					}
 
 					return nil
@@ -196,7 +197,11 @@ func (api *autoDnsProvider) GetZoneRecords(domain string) (models.Records, error
 	zone, _ := api.getZone(domain)
 	existingRecords := make([]*models.RecordConfig, len(zone.ResourceRecords))
 	for i, resourceRecord := range zone.ResourceRecords {
-		existingRecords[i] = toRecordConfig(domain, resourceRecord)
+		var err error
+		existingRecords[i], err = toRecordConfig(domain, resourceRecord)
+		if err != nil {
+			return nil, err
+		}
 
 		// If TTL is not set for an individual RR AutoDNS defaults to the zone TTL defined in SOA
 		if existingRecords[i].TTL == 0 {
@@ -255,7 +260,7 @@ func (api *autoDnsProvider) GetZoneRecords(domain string) (models.Records, error
 	return existingRecords, nil
 }
 
-func toRecordConfig(domain string, record *ResourceRecord) *models.RecordConfig {
+func toRecordConfig(domain string, record *ResourceRecord) (*models.RecordConfig, error) {
 	rc := &models.RecordConfig{
 		Type:     record.Type,
 		TTL:      uint32(record.TTL),
@@ -263,27 +268,33 @@ func toRecordConfig(domain string, record *ResourceRecord) *models.RecordConfig 
 	}
 	rc.SetLabel(record.Name, domain)
 
-	_ = rc.PopulateFromString(record.Type, record.Value, domain)
-
-	if record.Type == "MX" {
+	var err error
+	switch record.Type {
+	case "MX":
 		rc.MxPreference = uint16(record.Pref)
 		rc.SetTarget(record.Value)
-	}
-
-	if record.Type == "SRV" {
+	case "SRV":
 		rc.SrvPriority = uint16(record.Pref)
 
 		re := regexp.MustCompile(`(\d+) (\d+) (.+)$`)
 		found := re.FindStringSubmatch(record.Value)
-
 		weight, _ := strconv.Atoi(found[1])
 		rc.SrvWeight = uint16(weight)
-
 		port, _ := strconv.Atoi(found[2])
 		rc.SrvPort = uint16(port)
-
 		rc.SetTarget(found[3])
-	}
 
-	return rc
+		// Proposal: Try this instead:
+		//found, err := decode.RFC1035Fields(s)
+		//weight, _ := strconv.Atoi(found[0])
+		//rc.SrvWeight = uint16(weight)
+		//port, _ := strconv.Atoi(found[1])
+		//rc.SrvPort = uint16(port)
+		//rc.SetTarget(found[2])
+	case "TXT":
+		err = rc.SetTargetTXTQuotedFields(record.Value)
+	default:
+		err = rc.PopulateFromString(record.Type, record.Value, domain)
+	}
+	return rc, err
 }
