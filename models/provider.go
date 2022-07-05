@@ -1,15 +1,17 @@
 package models
 
+import "github.com/StackExchange/dnscontrol/v3/internal/dnscontrol"
+
 // DNSProvider is an interface for DNS Provider plug-ins.
 type DNSProvider interface {
-	GetNameservers(domain string) ([]*Nameserver, error)
-	GetZoneRecords(domain string) (Records, error)
-	GetDomainCorrections(dc *DomainConfig) ([]*Correction, error)
+	GetNameservers(ctx dnscontrol.Context, domain string) ([]*Nameserver, error)
+	GetZoneRecords(ctx dnscontrol.Context, domain string) (Records, error)
+	GetDomainCorrections(ctx dnscontrol.Context, dc *DomainConfig) ([]*Correction, error)
 }
 
 // Registrar is an interface for Registrar plug-ins.
 type Registrar interface {
-	GetRegistrarCorrections(dc *DomainConfig) ([]*Correction, error)
+	GetRegistrarCorrections(ctx dnscontrol.Context, dc *DomainConfig) ([]*Correction, error)
 }
 
 // ProviderBase describes providers.

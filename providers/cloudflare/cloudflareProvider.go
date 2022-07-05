@@ -3,6 +3,7 @@ package cloudflare
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/StackExchange/dnscontrol/v3/internal/dnscontrol"
 	"log"
 	"net"
 	"strings"
@@ -12,7 +13,6 @@ import (
 
 	"github.com/StackExchange/dnscontrol/v3/models"
 	"github.com/StackExchange/dnscontrol/v3/pkg/diff"
-	"github.com/StackExchange/dnscontrol/v3/pkg/printer"
 	"github.com/StackExchange/dnscontrol/v3/pkg/transform"
 	"github.com/StackExchange/dnscontrol/v3/providers"
 )
@@ -73,7 +73,7 @@ type cloudflareProvider struct {
 }
 
 func labelMatches(label string, matches []string) bool {
-	printer.Debugf("DEBUG: labelMatches(%#v, %#v)\n", label, matches)
+	ctx.Log.Debugf("DEBUG: labelMatches(%#v, %#v)\n", label, matches)
 	for _, tst := range matches {
 		if label == tst {
 			return true
@@ -83,7 +83,7 @@ func labelMatches(label string, matches []string) bool {
 }
 
 // GetNameservers returns the nameservers for a domain.
-func (c *cloudflareProvider) GetNameservers(domain string) ([]*models.Nameserver, error) {
+func (c *cloudflareProvider) GetNameservers(_ dnscontrol.Context, domain string) ([]*models.Nameserver, error) {
 	if c.domainIndex == nil {
 		if err := c.fetchDomainList(); err != nil {
 			return nil, err
@@ -97,7 +97,7 @@ func (c *cloudflareProvider) GetNameservers(domain string) ([]*models.Nameserver
 }
 
 // ListZones returns a list of the DNS zones.
-func (c *cloudflareProvider) ListZones() ([]string, error) {
+func (c *cloudflareProvider) ListZones(_ dnscontrol.Context) ([]string, error) {
 	if err := c.fetchDomainList(); err != nil {
 		return nil, err
 	}
@@ -109,7 +109,7 @@ func (c *cloudflareProvider) ListZones() ([]string, error) {
 }
 
 // GetZoneRecords gets the records of a zone and returns them in RecordConfig format.
-func (c *cloudflareProvider) GetZoneRecords(domain string) (models.Records, error) {
+func (c *cloudflareProvider) GetZoneRecords(_ dnscontrol.Context, domain string) (models.Records, error) {
 	id, err := c.getDomainID(domain)
 	if err != nil {
 		return nil, err
@@ -148,7 +148,7 @@ func (c *cloudflareProvider) getDomainID(name string) (string, error) {
 }
 
 // GetDomainCorrections returns a list of corrections to update a domain.
-func (c *cloudflareProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Correction, error) {
+func (c *cloudflareProvider) GetDomainCorrections(ctx dnscontrol.Context, dc *models.DomainConfig) ([]*models.Correction, error) {
 	err := dc.Punycode()
 	if err != nil {
 		return nil, err
@@ -170,16 +170,16 @@ func (c *cloudflareProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*m
 		rec := records[i]
 		// Delete ignore labels
 		if labelMatches(dnsutil.TrimDomainName(rec.Original.(cloudflare.DNSRecord).Name, dc.Name), c.ignoredLabels) {
-			printer.Debugf("ignored_label: %s\n", rec.Original.(cloudflare.DNSRecord).Name)
+			ctx.Log.Debugf("ignored_label: %s\n", rec.Original.(cloudflare.DNSRecord).Name)
 			records = append(records[:i], records[i+1:]...)
 		}
 	}
 
 	if c.manageRedirects {
 		prs, err := c.getPageRules(id, dc.Name)
-		//printer.Printf("GET PAGE RULES:\n")
+		//ctx.Log.Printf("GET PAGE RULES:\n")
 		//for i, p := range prs {
-		//	printer.Printf("%03d: %q\n", i, p.GetTargetField())
+		//	ctx.Log.Printf("%03d: %q\n", i, p.GetTargetField())
 		//}
 		if err != nil {
 			return nil, err
@@ -325,7 +325,7 @@ func checkNSModifications(dc *models.DomainConfig) {
 	for _, rec := range dc.Records {
 		if rec.Type == "NS" && rec.GetLabelFQDN() == dc.Name {
 			if !strings.HasSuffix(rec.GetTargetField(), ".ns.cloudflare.com.") {
-				printer.Warnf("cloudflare does not support modifying NS records on base domain. %s will not be added.\n", rec.GetTargetField())
+				ctx.Log.Warnf("cloudflare does not support modifying NS records on base domain. %s will not be added.\n", rec.GetTargetField())
 			}
 			continue
 		}
@@ -529,7 +529,7 @@ func newCloudflare(m map[string]string, metadata json.RawMessage) (providers.DNS
 		// ignored_labels:
 		api.ignoredLabels = append(api.ignoredLabels, parsedMeta.IgnoredLabels...)
 		if len(api.ignoredLabels) > 0 {
-			printer.Warnf("Cloudflare 'ignored_labels' configuration is deprecated and might be removed. Please use the IGNORE domain directive to achieve the same effect.\n")
+			ctx.Log.Warnf("Cloudflare 'ignored_labels' configuration is deprecated and might be removed. Please use the IGNORE domain directive to achieve the same effect.\n")
 		}
 		// parse provider level metadata
 		if len(parsedMeta.IPConversions) > 0 {
@@ -707,13 +707,13 @@ func getProxyMetadata(r *models.RecordConfig) map[string]string {
 }
 
 // EnsureDomainExists returns an error of domain does not exist.
-func (c *cloudflareProvider) EnsureDomainExists(domain string) error {
+func (c *cloudflareProvider) EnsureDomainExists(_ dnscontrol.Context, domain string) error {
 	if _, ok := c.domainIndex[domain]; ok {
 		return nil
 	}
 	var id string
 	id, err := c.createZone(domain)
-	printer.Printf("Added zone for %s to Cloudflare account: %s\n", domain, id)
+	ctx.Log.Printf("Added zone for %s to Cloudflare account: %s\n", domain, id)
 	return err
 }
 

@@ -3,6 +3,7 @@ package providers
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/StackExchange/dnscontrol/v3/internal/dnscontrol"
 	"log"
 
 	"github.com/StackExchange/dnscontrol/v3/models"
@@ -21,14 +22,14 @@ type DNSServiceProvider interface {
 // DomainCreator should be implemented by providers that have the ability to add domains to an account. the create-domains command
 // can be run to ensure all domains are present before running preview/push.  Implement this only if the provider supoprts the `dnscontrol create-domain` command.
 type DomainCreator interface {
-	EnsureDomainExists(domain string) error
+	EnsureDomainExists(ctx dnscontrol.Context, domain string) error
 }
 
 // ZoneLister should be implemented by providers that have the
 // ability to list the zones they manage. This facilitates using the
 // "get-zones" command for "all" zones.
 type ZoneLister interface {
-	ListZones() ([]string, error)
+	ListZones(ctx dnscontrol.Context) ([]string, error)
 }
 
 // RegistrarInitializer is a function to create a registrar. Function will be passed the unprocessed json payload from the configuration file for the given provider.
@@ -147,17 +148,17 @@ func AuditRecords(dType string, rcs models.Records) error {
 type None struct{}
 
 // GetRegistrarCorrections returns corrections to update registrars.
-func (n None) GetRegistrarCorrections(dc *models.DomainConfig) ([]*models.Correction, error) {
+func (n None) GetRegistrarCorrections(_ dnscontrol.Context, dc *models.DomainConfig) ([]*models.Correction, error) {
 	return nil, nil
 }
 
 // GetNameservers returns the current nameservers for a domain.
-func (n None) GetNameservers(string) ([]*models.Nameserver, error) {
+func (n None) GetNameservers(dnscontrol.Context, string) ([]*models.Nameserver, error) {
 	return nil, nil
 }
 
 // GetZoneRecords gets the records of a zone and returns them in RecordConfig format.
-func (n None) GetZoneRecords(domain string) (models.Records, error) {
+func (n None) GetZoneRecords(_ dnscontrol.Context, domain string) (models.Records, error) {
 	return nil, fmt.Errorf("not implemented")
 	// This enables the get-zones subcommand.
 	// Implement this by extracting the code from GetDomainCorrections into
@@ -165,7 +166,7 @@ func (n None) GetZoneRecords(domain string) (models.Records, error) {
 }
 
 // GetDomainCorrections returns corrections to update a domain.
-func (n None) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Correction, error) {
+func (n None) GetDomainCorrections(_ dnscontrol.Context, dc *models.DomainConfig) ([]*models.Correction, error) {
 	return nil, nil
 }
 

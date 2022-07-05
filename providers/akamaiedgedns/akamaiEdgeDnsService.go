@@ -11,7 +11,6 @@ https://github.com/akamai/AkamaiOPEN-edgegrid-golang
 import (
 	"fmt"
 	"github.com/StackExchange/dnscontrol/v3/models"
-	"github.com/StackExchange/dnscontrol/v3/pkg/printer"
 	dnsv2 "github.com/akamai/AkamaiOPEN-edgegrid-golang/configdns-v2"
 	"github.com/akamai/AkamaiOPEN-edgegrid-golang/edgegrid"
 )
@@ -74,13 +73,13 @@ func createZone(zonename string, contractID string, groupID string) error {
 		return fmt.Errorf("zone create failed. error: %s", err.Error())
 	}
 
-	printer.Printf("Created zone: %s\n", zone.Zone)
-	printer.Printf("  Type: %s\n", zone.Type)
-	printer.Printf("  Comment: %s\n", zone.Comment)
-	printer.Printf("  SignAndServe: %v\n", zone.SignAndServe)
-	printer.Printf("  SignAndServeAlgorithm: %s\n", zone.SignAndServeAlgorithm)
-	printer.Printf("  ContractId: %s\n", zone.ContractId)
-	printer.Printf("  GroupId: %s\n", queryArgs.Group)
+	ctx.Log.Printf("Created zone: %s\n", zone.Zone)
+	ctx.Log.Printf("  Type: %s\n", zone.Type)
+	ctx.Log.Printf("  Comment: %s\n", zone.Comment)
+	ctx.Log.Printf("  SignAndServe: %v\n", zone.SignAndServe)
+	ctx.Log.Printf("  SignAndServeAlgorithm: %s\n", zone.SignAndServeAlgorithm)
+	ctx.Log.Printf("  ContractId: %s\n", zone.ContractId)
+	ctx.Log.Printf("  GroupId: %s\n", queryArgs.Group)
 
 	return nil
 }

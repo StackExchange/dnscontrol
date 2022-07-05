@@ -2,6 +2,7 @@ package commands
 
 import (
 	"fmt"
+	"github.com/StackExchange/dnscontrol/v3/internal/dnscontrol"
 	"github.com/urfave/cli/v2"
 
 	"github.com/StackExchange/dnscontrol/v3/pkg/credsfile"
@@ -56,7 +57,7 @@ func CreateDomains(args CreateDomainsArgs) error {
 		for _, provider := range domain.DNSProviderInstances {
 			if creator, ok := provider.Driver.(providers.DomainCreator); ok {
 				fmt.Println("  -", provider.Name)
-				err := creator.EnsureDomainExists(domain.Name)
+				err := creator.EnsureDomainExists(dnscontrol.GetDomainContext(dnscontrol.GetContext(), domain.Name), domain.Name)
 				if err != nil {
 					fmt.Printf("Error creating domain: %s\n", err)
 				}

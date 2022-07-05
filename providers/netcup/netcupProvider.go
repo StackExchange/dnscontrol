@@ -3,6 +3,7 @@ package netcup
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/StackExchange/dnscontrol/v3/internal/dnscontrol"
 	"github.com/StackExchange/dnscontrol/v3/models"
 	"github.com/StackExchange/dnscontrol/v3/pkg/diff"
 	// no need for txtutil.SplitSingleLongTxt in function GetDomainCorrections
@@ -43,7 +44,7 @@ func New(settings map[string]string, _ json.RawMessage) (providers.DNSServicePro
 }
 
 // GetZoneRecords gets the records of a zone and returns them in RecordConfig format.
-func (api *netcupProvider) GetZoneRecords(domain string) (models.Records, error) {
+func (api *netcupProvider) GetZoneRecords(_ dnscontrol.Context, domain string) (models.Records, error) {
 	records, err := api.getRecords(domain)
 	if err != nil {
 		return nil, err
@@ -58,7 +59,7 @@ func (api *netcupProvider) GetZoneRecords(domain string) (models.Records, error)
 // GetNameservers returns the nameservers for a domain.
 // As netcup doesn't support setting nameservers over this API, these are static.
 // Domains not managed by netcup DNS will return an error
-func (api *netcupProvider) GetNameservers(domain string) ([]*models.Nameserver, error) {
+func (api *netcupProvider) GetNameservers(_ dnscontrol.Context, domain string) ([]*models.Nameserver, error) {
 	return models.ToNameservers([]string{
 		"root-dns.netcup.net",
 		"second-dns.netcup.net",
@@ -67,7 +68,7 @@ func (api *netcupProvider) GetNameservers(domain string) ([]*models.Nameserver, 
 }
 
 // GetDomainCorrections returns the corrections for a domain.
-func (api *netcupProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Correction, error) {
+func (api *netcupProvider) GetDomainCorrections(ctx dnscontrol.Context, dc *models.DomainConfig) ([]*models.Correction, error) {
 	dc, err := dc.Copy()
 	if err != nil {
 		return nil, err
@@ -91,7 +92,7 @@ func (api *netcupProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*mod
 	dc.Records = newRecords
 
 	// Check existing set
-	existingRecords, err := api.GetZoneRecords(domain)
+	existingRecords, err := api.GetZoneRecords(ctx, domain)
 	if err != nil {
 		return nil, err
 	}

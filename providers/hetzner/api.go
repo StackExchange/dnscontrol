@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-	"github.com/StackExchange/dnscontrol/v3/pkg/printer"
 	"io"
 	"io/ioutil"
 	"net/http"
@@ -237,7 +236,7 @@ func (api *hetznerProvider) request(endpoint string, method string, request inte
 		cleanupResponseBody := func() {
 			err := resp.Body.Close()
 			if err != nil {
-				printer.Printf("failed closing response body: %q\n", err)
+				ctx.Log.Printf("failed closing response body: %q\n", err)
 			}
 		}
 
@@ -252,7 +251,7 @@ func (api *hetznerProvider) request(endpoint string, method string, request inte
 		defer cleanupResponseBody()
 		if !statusOK(resp.StatusCode) {
 			data, _ := ioutil.ReadAll(resp.Body)
-			printer.Printf(string(data))
+			ctx.Log.Printf(string(data))
 			return fmt.Errorf("bad status code from HETZNER: %d not 200", resp.StatusCode)
 		}
 		if target == nil {
@@ -326,7 +325,7 @@ func (requestRateLimiter *requestRateLimiter) handleRateLimitedRequest() {
 	case "second":
 		message = fmt.Sprintf(message, "Second", "Minute")
 	}
-	printer.Printf(message)
+	ctx.Log.Printf(message)
 }
 
 func (requestRateLimiter *requestRateLimiter) handleResponse(resp http.Response) {

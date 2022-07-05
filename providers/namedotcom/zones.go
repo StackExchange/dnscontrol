@@ -1,11 +1,12 @@
 package namedotcom
 
 import (
+	"github.com/StackExchange/dnscontrol/v3/internal/dnscontrol"
 	"github.com/namedotcom/go/namecom"
 )
 
 // ListZones returns all the zones in an account
-func (n *namedotcomProvider) ListZones() ([]string, error) {
+func (n *namedotcomProvider) ListZones(_ dnscontrol.Context) ([]string, error) {
 	var names []string
 	var page int32
 

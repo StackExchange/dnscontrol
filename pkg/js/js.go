@@ -141,7 +141,7 @@ func require(call otto.FunctionCall) otto.Value {
 	// Record the directory path leading up to the file we're about to require.
 	currentDirectory = filepath.Dir(cleanFile)
 
-	printer.Debugf("requiring: %s (%s)\n", file, relFile)
+	printer.DefaultPrinter.Debugf("requiring: %s (%s)\n", file, relFile)
 	// quick fix, by replacing to linux slashes, to make it work with windows paths too.
 	data, err := ioutil.ReadFile(filepath.ToSlash(relFile))
 
@@ -183,7 +183,7 @@ func listFiles(call otto.FunctionCall) otto.Value {
 		throw(call.Otto, "glob: first argument needs to be a path, provided as string.")
 	}
 	dir := call.Argument(0).String() // Path where to start listing
-	printer.Debugf("listFiles: cd: %s, user: %s \n", currentDirectory, dir)
+	printer.DefaultPrinter.Debugf("listFiles: cd: %s, user: %s \n", currentDirectory, dir)
 	// now we always prepend the current directory we're working in, which is being set within
 	// the func ExecuteJavascript() above. So when require("domains/load_all.js") is being used,
 	// where glob("customer1/") is being used, we basically search for files in domains/customer1/.

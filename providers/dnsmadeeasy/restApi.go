@@ -7,7 +7,6 @@ import (
 	"encoding/hex"
 	"encoding/json"
 	"fmt"
-	"github.com/StackExchange/dnscontrol/v3/pkg/printer"
 	"net/http"
 	"net/http/httputil"
 	"strings"
@@ -222,7 +221,7 @@ retry:
 
 	if restApi.dumpHTTPRequest {
 		dump, _ := httputil.DumpRequest(req, true)
-		printer.Printf(string(dump))
+		ctx.Log.Printf(string(dump))
 	}
 
 	res, err := restApi.httpClient.Do(req)
@@ -234,7 +233,7 @@ retry:
 
 	if restApi.dumpHTTPResponse {
 		dump, _ := httputil.DumpResponse(res, true)
-		printer.Printf(string(dump))
+		ctx.Log.Printf(string(dump))
 	}
 
 	if res.StatusCode < http.StatusOK || res.StatusCode >= http.StatusBadRequest {
@@ -245,7 +244,7 @@ retry:
 		}
 
 		if len(apiErr.Error) == 1 && apiErr.Error[0] == "Rate limit exceeded" {
-			printer.Printf("pausing DNSMADEEASY due to ratelimit: %v seconds\n", backoff)
+			ctx.Log.Printf("pausing DNSMADEEASY due to ratelimit: %v seconds\n", backoff)
 
 			time.Sleep(backoff)
 

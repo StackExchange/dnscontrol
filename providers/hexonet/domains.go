@@ -1,11 +1,14 @@
 package hexonet
 
-import "fmt"
+import (
+	"fmt"
+	"github.com/StackExchange/dnscontrol/v3/internal/dnscontrol"
+)
 
 //EnsureDomainExists returns an error
 // * if access to dnszone is not allowed (not authorized) or
 // * if it doesn't exist and creating it fails
-func (n *HXClient) EnsureDomainExists(domain string) error {
+func (n *HXClient) EnsureDomainExists(_ dnscontrol.Context, domain string) error {
 	r := n.client.Request(map[string]interface{}{
 		"COMMAND": "StatusDNSZone",
 		"DNSZONE": domain + ".",
@@ -28,7 +31,7 @@ func (n *HXClient) EnsureDomainExists(domain string) error {
 }
 
 // ListZones lists all the
-func (n *HXClient) ListZones() ([]string, error) {
+func (n *HXClient) ListZones(_ dnscontrol.Context) ([]string, error) {
 	var zones []string
 
 	// Basic

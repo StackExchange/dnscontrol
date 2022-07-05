@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"github.com/StackExchange/dnscontrol/v3/internal/dnscontrol"
 	"log"
 	"net/http"
 	"time"
@@ -88,7 +89,7 @@ func init() {
 }
 
 // EnsureDomainExists returns an error if domain doesn't exist.
-func (api *digitaloceanProvider) EnsureDomainExists(domain string) error {
+func (api *digitaloceanProvider) EnsureDomainExists(_ dnscontrol.Context, domain string) error {
 retry:
 	ctx := context.Background()
 	_, resp, err := api.client.Domains.Get(ctx, domain)
@@ -109,12 +110,12 @@ retry:
 }
 
 // GetNameservers returns the nameservers for domain.
-func (api *digitaloceanProvider) GetNameservers(domain string) ([]*models.Nameserver, error) {
+func (api *digitaloceanProvider) GetNameservers(_ dnscontrol.Context, domain string) ([]*models.Nameserver, error) {
 	return models.ToNameservers(defaultNameServerNames)
 }
 
 // GetZoneRecords gets the records of a zone and returns them in RecordConfig format.
-func (api *digitaloceanProvider) GetZoneRecords(domain string) (models.Records, error) {
+func (api *digitaloceanProvider) GetZoneRecords(_ dnscontrol.Context, domain string) (models.Records, error) {
 	records, err := getRecords(api, domain)
 	if err != nil {
 		return nil, err
@@ -133,11 +134,10 @@ func (api *digitaloceanProvider) GetZoneRecords(domain string) (models.Records, 
 }
 
 // GetDomainCorrections returns a list of corretions for the  domain.
-func (api *digitaloceanProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Correction, error) {
-	ctx := context.Background()
+func (api *digitaloceanProvider) GetDomainCorrections(ctx dnscontrol.Context, dc *models.DomainConfig) ([]*models.Correction, error) {
 	dc.Punycode()
 
-	existingRecords, err := api.GetZoneRecords(dc.Name)
+	existingRecords, err := api.GetZoneRecords(ctx, dc.Name)
 	if err != nil {
 		return nil, err
 	}
@@ -161,7 +161,7 @@ func (api *digitaloceanProvider) GetDomainCorrections(dc *models.DomainConfig) (
 			Msg: fmt.Sprintf("%s, DO ID: %d", m.String(), id),
 			F: func() error {
 			retry:
-				resp, err := api.client.Domains.DeleteRecord(ctx, dc.Name, id)
+				resp, err := api.client.Domains.DeleteRecord(ctx.Context, dc.Name, id)
 				if err != nil {
 					if pauseAndRetry(resp) {
 						goto retry
@@ -178,7 +178,7 @@ func (api *digitaloceanProvider) GetDomainCorrections(dc *models.DomainConfig) (
 			Msg: m.String(),
 			F: func() error {
 			retry:
-				_, resp, err := api.client.Domains.CreateRecord(ctx, dc.Name, req)
+				_, resp, err := api.client.Domains.CreateRecord(ctx.Context, dc.Name, req)
 				if err != nil {
 					if pauseAndRetry(resp) {
 						goto retry
@@ -196,7 +196,7 @@ func (api *digitaloceanProvider) GetDomainCorrections(dc *models.DomainConfig) (
 			Msg: fmt.Sprintf("%s, DO ID: %d", m.String(), id),
 			F: func() error {
 			retry:
-				_, resp, err := api.client.Domains.EditRecord(ctx, dc.Name, id, req)
+				_, resp, err := api.client.Domains.EditRecord(ctx.Context, dc.Name, id, req)
 				if err != nil {
 					if pauseAndRetry(resp) {
 						goto retry

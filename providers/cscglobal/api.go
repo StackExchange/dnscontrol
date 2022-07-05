@@ -318,9 +318,9 @@ func (client *providerClient) getDomains() ([]string, error) {
 		return nil, err
 	}
 
-	//printer.Printf("------------------\n")
-	//printer.Printf("DEBUG: GETDOMAINS bodystring  = %s\n", bodyString)
-	//printer.Printf("------------------\n")
+	//ctx.Log.Printf("------------------\n")
+	//ctx.Log.Printf("DEBUG: GETDOMAINS bodystring  = %s\n", bodyString)
+	//ctx.Log.Printf("------------------\n")
 
 	var dr domainsResult
 	json.Unmarshal(bodyString, &dr)
@@ -334,9 +334,9 @@ func (client *providerClient) getDomains() ([]string, error) {
 		r = append(r, d.QualifiedDomainName)
 	}
 
-	//printer.Printf("------------------\n")
-	//printer.Printf("DEBUG: GETDOMAINS dr = %+v\n", dr)
-	//printer.Printf("------------------\n")
+	//ctx.Log.Printf("------------------\n")
+	//ctx.Log.Printf("DEBUG: GETDOMAINS dr = %+v\n", dr)
+	//ctx.Log.Printf("------------------\n")
 
 	return r, nil
 }
@@ -348,9 +348,9 @@ func (client *providerClient) getZoneRecordsAll(zone string) (*zoneResponse, err
 	}
 
 	if cscDebug {
-		printer.Printf("------------------\n")
-		printer.Printf("DEBUG: ZONE RESPONSE = %s\n", bodyString)
-		printer.Printf("------------------\n")
+		ctx.Log.Printf("------------------\n")
+		ctx.Log.Printf("DEBUG: ZONE RESPONSE = %s\n", bodyString)
+		ctx.Log.Printf("------------------\n")
 	}
 
 	var dr zoneResponse
@@ -371,7 +371,7 @@ func (client *providerClient) sendZoneEditRequest(domainname string, edits []zon
 		return err
 	}
 	if cscDebug {
-		printer.Printf("DEBUG: edit request = %s\n", requestBody)
+		ctx.Log.Printf("DEBUG: edit request = %s\n", requestBody)
 	}
 	responseBody, err := client.post("/zones/edits", requestBody)
 	if err != nil {
@@ -418,9 +418,9 @@ func (client *providerClient) waitRequestURL(statusURL string) error {
 		if isatty.IsTerminal(os.Stdout.Fd()) {
 			dur := time.Since(t1).Round(time.Second)
 			if msg == "" {
-				printer.Printf("WAITING: % 6s STATUS=%s           \r", dur, status)
+				ctx.Log.Printf("WAITING: % 6s STATUS=%s           \r", dur, status)
 			} else {
-				printer.Printf("WAITING: % 6s STATUS=%s MSG=%q    \r", dur, status, msg)
+				ctx.Log.Printf("WAITING: % 6s STATUS=%s MSG=%q    \r", dur, status, msg)
 			}
 		}
 		if status == "FAILED" {
@@ -479,15 +479,15 @@ func (client *providerClient) clearRequests(domain string) error {
 	for i, ze := range dr.ZoneEdits {
 		if cscDebug {
 			if ze.Status != "COMPLETED" && ze.Status != "CANCELED" {
-				printer.Printf("REQUEST %d: %s %s\n", i, ze.ID, ze.Status)
+				ctx.Log.Printf("REQUEST %d: %s %s\n", i, ze.ID, ze.Status)
 			}
 		}
 		switch ze.Status {
 		case "PROPAGATING":
-			printer.Printf("INFO: Waiting for id=%s status=%s\n", ze.ID, ze.Status)
+			ctx.Log.Printf("INFO: Waiting for id=%s status=%s\n", ze.ID, ze.Status)
 			client.waitRequest(ze.ID)
 		case "FAILED":
-			printer.Printf("INFO: Deleting request status=%s id=%s\n", ze.Status, ze.ID)
+			ctx.Log.Printf("INFO: Deleting request status=%s id=%s\n", ze.Status, ze.ID)
 			client.cancelRequest(ze.ID)
 		case "COMPLETED", "CANCELED":
 			continue
@@ -541,7 +541,7 @@ func (client *providerClient) put(endpoint string, requestBody []byte) ([]byte, 
 
 func (client *providerClient) delete(endpoint string) ([]byte, error) {
 	hclient := &http.Client{}
-	printer.Printf("DEBUG: delete endpoint: %q\n", apiBase+endpoint)
+	ctx.Log.Printf("DEBUG: delete endpoint: %q\n", apiBase+endpoint)
 	req, _ := http.NewRequest("DELETE", apiBase+endpoint, nil)
 
 	// Add headers
@@ -557,10 +557,10 @@ func (client *providerClient) delete(endpoint string) ([]byte, error) {
 
 	bodyString, _ := ioutil.ReadAll(resp.Body)
 	if resp.StatusCode == 200 {
-		printer.Printf("DEBUG: Delete successful (200)\n")
+		ctx.Log.Printf("DEBUG: Delete successful (200)\n")
 		return bodyString, nil
 	}
-	printer.Printf("DEBUG: Delete failed (%d)\n", resp.StatusCode)
+	ctx.Log.Printf("DEBUG: Delete failed (%d)\n", resp.StatusCode)
 
 	// Got a error response from API, see if it's json format
 	var errResp errorResponse
@@ -592,10 +592,10 @@ func (client *providerClient) post(endpoint string, requestBody []byte) ([]byte,
 	}
 
 	bodyString, _ := ioutil.ReadAll(resp.Body)
-	//printer.Printf("------------------\n")
-	//printer.Printf("DEBUG: resp.StatusCode == %d\n", resp.StatusCode)
-	//printer.Printf("POST RESPONSE = %s\n", bodyString)
-	//printer.Printf("------------------\n")
+	//ctx.Log.Printf("------------------\n")
+	//ctx.Log.Printf("DEBUG: resp.StatusCode == %d\n", resp.StatusCode)
+	//ctx.Log.Printf("POST RESPONSE = %s\n", bodyString)
+	//ctx.Log.Printf("------------------\n")
 	if resp.StatusCode == 201 {
 		return bodyString, nil
 	}

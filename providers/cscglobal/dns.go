@@ -2,6 +2,7 @@ package cscglobal
 
 import (
 	"fmt"
+	"github.com/StackExchange/dnscontrol/v3/internal/dnscontrol"
 	"strings"
 
 	"github.com/StackExchange/dnscontrol/v3/models"
@@ -9,7 +10,7 @@ import (
 )
 
 // GetZoneRecords gets the records of a zone and returns them in RecordConfig format.
-func (client *providerClient) GetZoneRecords(domain string) (models.Records, error) {
+func (client *providerClient) GetZoneRecords(_ dnscontrol.Context, domain string) (models.Records, error) {
 	records, err := client.getZoneRecordsAll(domain)
 	if err != nil {
 		return nil, err
@@ -67,7 +68,7 @@ func (client *providerClient) GetZoneRecords(domain string) (models.Records, err
 	return existingRecords, nil
 }
 
-func (client *providerClient) GetNameservers(domain string) ([]*models.Nameserver, error) {
+func (client *providerClient) GetNameservers(_ dnscontrol.Context, domain string) ([]*models.Nameserver, error) {
 	nss, err := client.getNameservers(domain)
 	if err != nil {
 		return nil, err
@@ -79,8 +80,8 @@ func (client *providerClient) GetNameservers(domain string) ([]*models.Nameserve
 // post-process them, and generate corrections.
 // NB(tlim): This function should be exactly the same in all DNS providers.  Once
 // all providers do this, we can eliminate it and use a Go interface instead.
-func (client *providerClient) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Correction, error) {
-	existing, err := client.GetZoneRecords(dc.Name)
+func (client *providerClient) GetDomainCorrections(ctx dnscontrol.Context, dc *models.DomainConfig) ([]*models.Correction, error) {
+	existing, err := client.GetZoneRecords(ctx, dc.Name)
 	if err != nil {
 		return nil, err
 	}
@@ -89,7 +90,7 @@ func (client *providerClient) GetDomainCorrections(dc *models.DomainConfig) ([]*
 
 	clean := PrepFoundRecords(existing)
 	PrepDesiredRecords(dc)
-	return client.GenerateDomainCorrections(dc, clean)
+	return client.GenerateDomainCorrections(ctx, dc, clean)
 }
 
 // PrepFoundRecords munges any records to make them compatible with
@@ -111,10 +112,10 @@ func PrepDesiredRecords(dc *models.DomainConfig) {
 }
 
 // GetDomainCorrections gets existing records, diffs them against existing, and returns corrections.
-func (client *providerClient) GenerateDomainCorrections(dc *models.DomainConfig, existing models.Records) ([]*models.Correction, error) {
+func (client *providerClient) GenerateDomainCorrections(ctx dnscontrol.Context, dc *models.DomainConfig, existing models.Records) ([]*models.Correction, error) {
 
 	// Read foundRecords:
-	foundRecords, err := client.GetZoneRecords(dc.Name)
+	foundRecords, err := client.GetZoneRecords(ctx, dc.Name)
 	if err != nil {
 		return nil, fmt.Errorf("c.GetDNSZoneRecords(%v) failed: %v", dc.Name, err)
 	}
@@ -213,7 +214,7 @@ func makePurge(domainname string, cor diff.Correlation) zoneResourceRecordEdit {
 
 	if cor.Existing.Type == "CAA" {
 		var tagValue = cor.Existing.CaaTag
-		//printer.Printf("DEBUG: CAA TAG = %q\n", tagValue)
+		//ctx.Log.Printf("DEBUG: CAA TAG = %q\n", tagValue)
 		zer.CurrentTag = &tagValue
 	}
 

@@ -16,6 +16,7 @@ Settings from `creds.json`:
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/StackExchange/dnscontrol/v3/internal/dnscontrol"
 	"os"
 	"sort"
 	"strconv"
@@ -29,7 +30,6 @@ import (
 
 	"github.com/StackExchange/dnscontrol/v3/models"
 	"github.com/StackExchange/dnscontrol/v3/pkg/diff"
-	"github.com/StackExchange/dnscontrol/v3/pkg/printer"
 	"github.com/StackExchange/dnscontrol/v3/pkg/txtutil"
 	"github.com/StackExchange/dnscontrol/v3/providers"
 )
@@ -103,7 +103,7 @@ func newHelper(m map[string]string, metadata json.RawMessage) (*gandiv5Provider,
 // Section 3: Domain Service Provider (DSP) related functions
 
 // ListZones lists the zones on this account.
-func (client *gandiv5Provider) ListZones() ([]string, error) {
+func (client *gandiv5Provider) ListZones(_ dnscontrol.Context) ([]string, error) {
 	g := gandi.NewLiveDNSClient(config.Config{
 		APIKey:    client.apikey,
 		SharingID: client.sharingid,
@@ -134,8 +134,8 @@ func (client *gandiv5Provider) ListZones() ([]string, error) {
 
 // GetDomainCorrections get the current and existing records,
 // post-process them, and generate corrections.
-func (client *gandiv5Provider) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Correction, error) {
-	existing, err := client.GetZoneRecords(dc.Name)
+func (client *gandiv5Provider) GetDomainCorrections(ctx dnscontrol.Context, dc *models.DomainConfig) ([]*models.Correction, error) {
+	existing, err := client.GetZoneRecords(ctx, dc.Name)
 	if err != nil {
 		return nil, err
 	}
@@ -147,7 +147,7 @@ func (client *gandiv5Provider) GetDomainCorrections(dc *models.DomainConfig) ([]
 
 // GetZoneRecords gathers the DNS records and converts them to
 // dnscontrol's format.
-func (client *gandiv5Provider) GetZoneRecords(domain string) (models.Records, error) {
+func (client *gandiv5Provider) GetZoneRecords(_ dnscontrol.Context, domain string) (models.Records, error) {
 	g := gandi.NewLiveDNSClient(config.Config{
 		APIKey:    client.apikey,
 		SharingID: client.sharingid,
@@ -198,11 +198,11 @@ func PrepDesiredRecords(dc *models.DomainConfig) {
 			rec.Type = "CNAME"
 		}
 		if rec.TTL < 300 {
-			printer.Warnf("Gandi does not support ttls < 300. Setting %s from %d to 300\n", rec.GetLabelFQDN(), rec.TTL)
+			ctx.Log.Warnf("Gandi does not support ttls < 300. Setting %s from %d to 300\n", rec.GetLabelFQDN(), rec.TTL)
 			rec.TTL = 300
 		}
 		if rec.TTL > 2592000 {
-			printer.Warnf("Gandi does not support ttls > 30 days. Setting %s from %d to 2592000\n", rec.GetLabelFQDN(), rec.TTL)
+			ctx.Log.Warnf("Gandi does not support ttls > 30 days. Setting %s from %d to 2592000\n", rec.GetLabelFQDN(), rec.TTL)
 			rec.TTL = 2592000
 		}
 		if rec.Type == "TXT" {
@@ -210,7 +210,7 @@ func PrepDesiredRecords(dc *models.DomainConfig) {
 		}
 		if rec.Type == "NS" && rec.GetLabel() == "@" {
 			if !strings.HasSuffix(rec.GetTargetField(), ".gandi.net.") {
-				printer.Warnf("Gandi does not support changing apex NS records. Ignoring %s\n", rec.GetTargetField())
+				ctx.Log.Warnf("Gandi does not support changing apex NS records. Ignoring %s\n", rec.GetTargetField())
 			}
 			continue
 		}
@@ -342,9 +342,9 @@ func (client *gandiv5Provider) GenerateDomainCorrections(dc *models.DomainConfig
 
 // debugRecords prints a list of RecordConfig.
 func debugRecords(note string, recs []*models.RecordConfig) {
-	printer.Debugf(note)
+	ctx.Log.Debugf(note)
 	for k, v := range recs {
-		printer.Printf("   %v: %v %v %v %v\n", k, v.GetLabel(), v.Type, v.TTL, v.GetTargetCombined())
+		ctx.Log.Printf("   %v: %v %v %v %v\n", k, v.GetLabel(), v.Type, v.TTL, v.GetTargetCombined())
 	}
 }
 
@@ -364,7 +364,7 @@ func gatherAffectedLabels(groups map[models.RecordKey][]string) (labels map[stri
 // Section 3: Registrar-related functions
 
 // GetNameservers returns a list of nameservers for domain.
-func (client *gandiv5Provider) GetNameservers(domain string) ([]*models.Nameserver, error) {
+func (client *gandiv5Provider) GetNameservers(_ dnscontrol.Context, domain string) ([]*models.Nameserver, error) {
 	g := gandi.NewLiveDNSClient(config.Config{
 		APIKey:    client.apikey,
 		SharingID: client.sharingid,
@@ -378,7 +378,7 @@ func (client *gandiv5Provider) GetNameservers(domain string) ([]*models.Nameserv
 }
 
 // GetRegistrarCorrections returns a list of corrections for this registrar.
-func (client *gandiv5Provider) GetRegistrarCorrections(dc *models.DomainConfig) ([]*models.Correction, error) {
+func (client *gandiv5Provider) GetRegistrarCorrections(_ dnscontrol.Context, dc *models.DomainConfig) ([]*models.Correction, error) {
 	gd := gandi.NewDomainClient(config.Config{
 		APIKey:    client.apikey,
 		SharingID: client.sharingid,

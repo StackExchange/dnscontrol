@@ -3,7 +3,7 @@ package autodns
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/StackExchange/dnscontrol/v3/pkg/printer"
+	"github.com/StackExchange/dnscontrol/v3/internal/dnscontrol"
 	"net/http"
 	"net/url"
 	"regexp"
@@ -67,7 +67,7 @@ func New(settings map[string]string, _ json.RawMessage) (providers.DNSServicePro
 }
 
 // GetDomainCorrections returns the corrections for a domain.
-func (api *autoDnsProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Correction, error) {
+func (api *autoDnsProvider) GetDomainCorrections(ctx dnscontrol.Context, dc *models.DomainConfig) ([]*models.Correction, error) {
 	var changes []*models.RecordConfig
 
 	dc, err := dc.Copy()
@@ -82,7 +82,7 @@ func (api *autoDnsProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*mo
 	domain := dc.Name
 
 	// Get existing records
-	existingRecords, err := api.GetZoneRecords(domain)
+	existingRecords, err := api.GetZoneRecords(ctx, domain)
 	if err != nil {
 		return nil, err
 	}
@@ -103,17 +103,17 @@ func (api *autoDnsProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*mo
 
 	for _, m := range del {
 		// Just notify, these records don't have to be deleted explicitly
-		printer.Debugf(m.String())
+		ctx.Log.Debugf(m.String())
 	}
 
 	for _, m := range create {
-		printer.Debugf(m.String())
+		ctx.Log.Debugf(m.String())
 		changes = append(changes, m.Desired)
 	}
 
 	for _, m := range modify {
-		printer.Debugf("mod")
-		printer.Debugf(m.String())
+		ctx.Log.Debugf("mod")
+		ctx.Log.Debugf(m.String())
 		changes = append(changes, m.Desired)
 	}
 
@@ -181,7 +181,7 @@ func (api *autoDnsProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*mo
 }
 
 // GetNameservers returns the nameservers for a domain.
-func (api *autoDnsProvider) GetNameservers(domain string) ([]*models.Nameserver, error) {
+func (api *autoDnsProvider) GetNameservers(ctx dnscontrol.Context, domain string) ([]*models.Nameserver, error) {
 	zone, err := api.getZone(domain)
 
 	if err != nil {
@@ -192,7 +192,7 @@ func (api *autoDnsProvider) GetNameservers(domain string) ([]*models.Nameserver,
 }
 
 // GetZoneRecords gets the records of a zone and returns them in RecordConfig format.
-func (api *autoDnsProvider) GetZoneRecords(domain string) (models.Records, error) {
+func (api *autoDnsProvider) GetZoneRecords(_ dnscontrol.Context, domain string) (models.Records, error) {
 	zone, _ := api.getZone(domain)
 	existingRecords := make([]*models.RecordConfig, len(zone.ResourceRecords))
 	for i, resourceRecord := range zone.ResourceRecords {

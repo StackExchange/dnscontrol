@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"github.com/StackExchange/dnscontrol/v3/internal/dnscontrol"
 	"strconv"
 	"strings"
 
@@ -71,7 +72,7 @@ func NewProvider(m map[string]string, metadata json.RawMessage) (providers.DNSSe
 }
 
 // GetZoneRecords gets the records of a zone and returns them in RecordConfig format.
-func (api *vultrProvider) GetZoneRecords(domain string) (models.Records, error) {
+func (api *vultrProvider) GetZoneRecords(_ dnscontrol.Context, domain string) (models.Records, error) {
 	records, err := api.client.DNSRecord.List(context.Background(), domain)
 	if err != nil {
 		return nil, err
@@ -90,10 +91,10 @@ func (api *vultrProvider) GetZoneRecords(domain string) (models.Records, error) 
 }
 
 // GetDomainCorrections gets the corrections for a DomainConfig.
-func (api *vultrProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Correction, error) {
+func (api *vultrProvider) GetDomainCorrections(ctx dnscontrol.Context, dc *models.DomainConfig) ([]*models.Correction, error) {
 	dc.Punycode()
 
-	curRecords, err := api.GetZoneRecords(dc.Name)
+	curRecords, err := api.GetZoneRecords(ctx, dc.Name)
 	if err != nil {
 		return nil, err
 	}
@@ -142,12 +143,12 @@ func (api *vultrProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*mode
 }
 
 // GetNameservers gets the Vultr nameservers for a domain
-func (api *vultrProvider) GetNameservers(domain string) ([]*models.Nameserver, error) {
+func (api *vultrProvider) GetNameservers(_ dnscontrol.Context, domain string) ([]*models.Nameserver, error) {
 	return models.ToNameservers(defaultNS)
 }
 
 // EnsureDomainExists adds a domain to the Vutr DNS service if it does not exist
-func (api *vultrProvider) EnsureDomainExists(domain string) error {
+func (api *vultrProvider) EnsureDomainExists(_ dnscontrol.Context, domain string) error {
 	if ok, err := api.isDomainInAccount(domain); err != nil {
 		return err
 	} else if ok {

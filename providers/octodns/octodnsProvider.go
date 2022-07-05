@@ -22,7 +22,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-	"github.com/StackExchange/dnscontrol/v3/pkg/printer"
+	"github.com/StackExchange/dnscontrol/v3/internal/dnscontrol"
 	"log"
 	"os"
 	"path/filepath"
@@ -79,12 +79,12 @@ type octodnsProvider struct {
 }
 
 // GetNameservers returns the nameservers for a domain.
-func (c *octodnsProvider) GetNameservers(string) ([]*models.Nameserver, error) {
+func (c *octodnsProvider) GetNameservers(dnscontrol.Context, string) ([]*models.Nameserver, error) {
 	return nil, nil
 }
 
 // GetZoneRecords gets the records of a zone and returns them in RecordConfig format.
-func (c *octodnsProvider) GetZoneRecords(domain string) (models.Records, error) {
+func (c *octodnsProvider) GetZoneRecords(_ dnscontrol.Context, domain string) (models.Records, error) {
 	return nil, fmt.Errorf("not implemented")
 	// This enables the get-zones subcommand.
 	// Implement this by extracting the code from GetDomainCorrections into
@@ -92,7 +92,7 @@ func (c *octodnsProvider) GetZoneRecords(domain string) (models.Records, error) 
 }
 
 // GetDomainCorrections returns a list of corrections to update a domain.
-func (c *octodnsProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Correction, error) {
+func (c *octodnsProvider) GetDomainCorrections(ctx dnscontrol.Context, dc *models.DomainConfig) ([]*models.Correction, error) {
 	dc.Punycode()
 	// Phase 1: Copy everything to []*models.RecordConfig:
 	//    expectedRecords < dc.Records[i]
@@ -163,7 +163,7 @@ func (c *octodnsProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*mode
 			&models.Correction{
 				Msg: msg,
 				F: func() error {
-					printer.Printf("CREATING CONFIGFILE: %v\n", zoneFileName)
+					ctx.Log.Printf("CREATING CONFIGFILE: %v\n", zoneFileName)
 					zf, err := os.Create(zoneFileName)
 					if err != nil {
 						log.Fatalf("Could not create zonefile: %v", err)

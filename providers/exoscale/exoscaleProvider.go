@@ -4,7 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"github.com/StackExchange/dnscontrol/v3/pkg/printer"
+	"github.com/StackExchange/dnscontrol/v3/internal/dnscontrol"
 	"strings"
 
 	"github.com/exoscale/egoscale"
@@ -46,7 +46,7 @@ func init() {
 }
 
 // EnsureDomainExists returns an error if domain doesn't exist.
-func (c *exoscaleProvider) EnsureDomainExists(domain string) error {
+func (c *exoscaleProvider) EnsureDomainExists(_ dnscontrol.Context, domain string) error {
 	ctx := context.Background()
 	_, err := c.client.GetDomain(ctx, domain)
 	if err != nil {
@@ -59,12 +59,12 @@ func (c *exoscaleProvider) EnsureDomainExists(domain string) error {
 }
 
 // GetNameservers returns the nameservers for domain.
-func (c *exoscaleProvider) GetNameservers(domain string) ([]*models.Nameserver, error) {
+func (c *exoscaleProvider) GetNameservers(_ dnscontrol.Context, domain string) ([]*models.Nameserver, error) {
 	return nil, nil
 }
 
 // GetZoneRecords gets the records of a zone and returns them in RecordConfig format.
-func (c *exoscaleProvider) GetZoneRecords(domain string) (models.Records, error) {
+func (c *exoscaleProvider) GetZoneRecords(_ dnscontrol.Context, domain string) (models.Records, error) {
 	return nil, fmt.Errorf("not implemented")
 	// This enables the get-zones subcommand.
 	// Implement this by extracting the code from GetDomainCorrections into
@@ -72,11 +72,10 @@ func (c *exoscaleProvider) GetZoneRecords(domain string) (models.Records, error)
 }
 
 // GetDomainCorrections returns a list of corretions for the  domain.
-func (c *exoscaleProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Correction, error) {
+func (c *exoscaleProvider) GetDomainCorrections(ctx dnscontrol.Context, dc *models.DomainConfig) ([]*models.Correction, error) {
 	dc.Punycode()
 
-	ctx := context.Background()
-	records, err := c.client.GetRecords(ctx, dc.Name)
+	records, err := c.client.GetRecords(ctx.Context, dc.Name)
 	if err != nil {
 		return nil, err
 	}
@@ -258,7 +257,7 @@ func removeOtherNS(dc *models.DomainConfig) {
 			if rec.GetLabelFQDN() == dc.Name && defaultNSSUffix(rec.GetTargetField()) {
 				continue
 			}
-			printer.Printf("Warning: exoscale.com(.io, .ch, .net) does not allow NS records to be modified. %s will not be added.\n", rec.GetTargetField())
+			ctx.Log.Printf("Warning: exoscale.com(.io, .ch, .net) does not allow NS records to be modified. %s will not be added.\n", rec.GetTargetField())
 			continue
 		}
 		newList = append(newList, rec)

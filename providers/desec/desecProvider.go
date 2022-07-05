@@ -1,14 +1,14 @@
-package desec
+package desc
 
 import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"github.com/StackExchange/dnscontrol/v3/internal/dnscontrol"
 	"sort"
 
 	"github.com/StackExchange/dnscontrol/v3/models"
 	"github.com/StackExchange/dnscontrol/v3/pkg/diff"
-	"github.com/StackExchange/dnscontrol/v3/pkg/printer"
 	"github.com/StackExchange/dnscontrol/v3/pkg/txtutil"
 	"github.com/StackExchange/dnscontrol/v3/providers"
 	"github.com/miekg/dns/dnsutil"
@@ -68,16 +68,16 @@ func init() {
 }
 
 // GetNameservers returns the nameservers for a domain.
-func (c *desecProvider) GetNameservers(domain string) ([]*models.Nameserver, error) {
+func (c *desecProvider) GetNameservers(_ dnscontrol.Context, domain string) ([]*models.Nameserver, error) {
 	return models.ToNameservers(defaultNameServerNames)
 }
 
-func (c *desecProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Correction, error) {
+func (c *desecProvider) GetDomainCorrections(ctx dnscontrol.Context, dc *models.DomainConfig) ([]*models.Correction, error) {
 	if dc.AutoDNSSEC == "off" {
-		printer.Printf("Notice: DNSSEC signing was not requested, but cannot be turned off. (deSEC always signs all records.)\n")
+		ctx.Log.Printf("Notice: DNSSEC signing was not requested, but cannot be turned off. (deSEC always signs all records.)\n")
 	}
 
-	existing, err := c.GetZoneRecords(dc.Name)
+	existing, err := c.GetZoneRecords(ctx, dc.Name)
 	if err != nil {
 		return nil, err
 	}
@@ -96,7 +96,7 @@ func (c *desecProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*models
 }
 
 // GetZoneRecords gets the records of a zone and returns them in RecordConfig format.
-func (c *desecProvider) GetZoneRecords(domain string) (models.Records, error) {
+func (c *desecProvider) GetZoneRecords(_ dnscontrol.Context, domain string) (models.Records, error) {
 	records, err := c.getRecords(domain)
 	if err != nil {
 		return nil, err
@@ -112,7 +112,7 @@ func (c *desecProvider) GetZoneRecords(domain string) (models.Records, error) {
 }
 
 // EnsureDomainExists returns an error if domain doesn't exist.
-func (c *desecProvider) EnsureDomainExists(domain string) error {
+func (c *desecProvider) EnsureDomainExists(_ dnscontrol.Context, domain string) error {
 	// domain already exists
 	c.mutex.Lock()
 	defer c.mutex.Unlock()
@@ -143,12 +143,12 @@ func PrepDesiredRecords(dc *models.DomainConfig, minTTL uint32) {
 	for _, rec := range dc.Records {
 		if rec.Type == "ALIAS" {
 			// deSEC does not permit ALIAS records, just ignore it
-			printer.Warnf("deSEC does not support alias records\n")
+			ctx.Log.Warnf("deSEC does not support alias records\n")
 			continue
 		}
 		if rec.TTL < minTTL {
 			if rec.Type != "NS" {
-				printer.Warnf("Please contact support@desec.io if you need TTLs < %d. Setting TTL of %s type %s from %d to %d\n", minTTL, rec.GetLabelFQDN(), rec.Type, rec.TTL, minTTL)
+				ctx.Log.Warnf("Please contact support@desec.io if you need TTLs < %d. Setting TTL of %s type %s from %d to %d\n", minTTL, rec.GetLabelFQDN(), rec.Type, rec.TTL, minTTL)
 			}
 			rec.TTL = minTTL
 		}

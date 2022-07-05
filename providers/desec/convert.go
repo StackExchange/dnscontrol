@@ -1,11 +1,10 @@
-package desec
+package desc
 
 // Convert the provider's native record description to models.RecordConfig.
 
 import (
 	"fmt"
 	"github.com/StackExchange/dnscontrol/v3/models"
-	"github.com/StackExchange/dnscontrol/v3/pkg/printer"
 )
 
 // nativeToRecord takes a DNS record from deSEC and returns a native RecordConfig struct.
@@ -61,7 +60,7 @@ func recordsToNative(rcs []*models.RecordConfig, origin string) []resourceRecord
 			zr.Records = append(zr.Records, r.GetTargetCombined())
 
 			if r.TTL != zr.TTL {
-				printer.Warnf("All TTLs for a rrset (%v) must be the same. Using smaller of %v and %v.\n", key, r.TTL, zr.TTL)
+				ctx.Log.Warnf("All TTLs for a rrset (%v) must be the same. Using smaller of %v and %v.\n", key, r.TTL, zr.TTL)
 				if r.TTL < zr.TTL {
 					zr.TTL = r.TTL
 				}

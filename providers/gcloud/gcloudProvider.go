@@ -1,15 +1,13 @@
 package gcloud
 
 import (
-	"context"
 	"encoding/json"
 	"fmt"
+	"github.com/StackExchange/dnscontrol/v3/internal/dnscontrol"
 	"log"
 	"net/http"
 	"strings"
 	"time"
-
-	"github.com/StackExchange/dnscontrol/v3/pkg/printer"
 
 	"google.golang.org/api/googleapi"
 	"google.golang.org/api/option"
@@ -91,13 +89,13 @@ func New(cfg map[string]string, metadata json.RawMessage) (providers.DNSServiceP
 	}
 	// FIXME(tlim): Is it a problem that ctx is included with hc and in
 	// the call to NewService?  Seems redundant.
-	dcli, err := gdns.NewService(ctx, option.WithHTTPClient(hc))
+	dcli, err := gdns.NewService(ctx.Context, option.WithHTTPClient(hc))
 	if err != nil {
 		return nil, err
 	}
 	var nss *string
 	if val, ok := cfg["name_server_set"]; ok {
-		printer.Printf("GCLOUD :name_server_set %s configured\n", val)
+		ctx.Log.Printf("GCLOUD :name_server_set %s configured\n", val)
 		nss = sPtr(val)
 	}
 
@@ -131,7 +129,7 @@ func (g *gcloudProvider) loadZoneInfo() error {
 }
 
 // ListZones returns the list of zones (domains) in this account.
-func (g *gcloudProvider) ListZones() ([]string, error) {
+func (g *gcloudProvider) ListZones(_ dnscontrol.Context) ([]string, error) {
 	var zones []string
 	for i := range g.zones {
 		zones = append(zones, strings.TrimSuffix(i, "."))
@@ -143,7 +141,7 @@ func (g *gcloudProvider) getZone(domain string) (*gdns.ManagedZone, error) {
 	return g.zones[domain+"."], nil
 }
 
-func (g *gcloudProvider) GetNameservers(domain string) ([]*models.Nameserver, error) {
+func (g *gcloudProvider) GetNameservers(_ dnscontrol.Context, domain string) ([]*models.Nameserver, error) {
 	zone, err := g.getZone(domain)
 	if err != nil {
 		return nil, err
@@ -167,7 +165,7 @@ func keyForRec(r *models.RecordConfig) key {
 }
 
 // GetZoneRecords gets the records of a zone and returns them in RecordConfig format.
-func (g *gcloudProvider) GetZoneRecords(domain string) (models.Records, error) {
+func (g *gcloudProvider) GetZoneRecords(_ dnscontrol.Context, domain string) (models.Records, error) {
 	existingRecords, _, _, err := g.getZoneSets(domain)
 	return existingRecords, err
 }
@@ -194,7 +192,7 @@ func (g *gcloudProvider) getZoneSets(domain string) (models.Records, map[key]*gd
 	return existingRecords, oldRRs, zoneName, err
 }
 
-func (g *gcloudProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Correction, error) {
+func (g *gcloudProvider) GetDomainCorrections(ctx dnscontrol.Context, dc *models.DomainConfig) ([]*models.Correction, error) {
 	if err := dc.Punycode(); err != nil {
 		return nil, fmt.Errorf("punycode error: %w", err)
 	}
@@ -319,7 +317,7 @@ func (g *gcloudProvider) getRecords(domain string) ([]*gdns.ResourceRecordSet, s
 	return sets, zone.Name, nil
 }
 
-func (g *gcloudProvider) EnsureDomainExists(domain string) error {
+func (g *gcloudProvider) EnsureDomainExists(_ dnscontrol.Context, domain string) error {
 	z, err := g.getZone(domain)
 	if err != nil {
 		if _, ok := err.(errNoExist); !ok {
@@ -331,7 +329,7 @@ func (g *gcloudProvider) EnsureDomainExists(domain string) error {
 	}
 	var mz *gdns.ManagedZone
 	if g.nameServerSet != nil {
-		printer.Printf("Adding zone for %s to gcloud account with name_server_set %s\n", domain, *g.nameServerSet)
+		ctx.Log.Printf("Adding zone for %s to gcloud account with name_server_set %s\n", domain, *g.nameServerSet)
 		mz = &gdns.ManagedZone{
 			DnsName:       domain + ".",
 			NameServerSet: *g.nameServerSet,
@@ -339,7 +337,7 @@ func (g *gcloudProvider) EnsureDomainExists(domain string) error {
 			Description:   "zone added by dnscontrol",
 		}
 	} else {
-		printer.Printf("Adding zone for %s to gcloud account \n", domain)
+		ctx.Log.Printf("Adding zone for %s to gcloud account \n", domain)
 		mz = &gdns.ManagedZone{
 			DnsName:     domain + ".",
 			Name:        "zone-" + strings.Replace(domain, ".", "-", -1),

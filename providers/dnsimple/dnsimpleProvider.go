@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"github.com/StackExchange/dnscontrol/v3/internal/dnscontrol"
 	"sort"
 	"strconv"
 	"strings"
@@ -60,12 +61,12 @@ type dnsimpleProvider struct {
 }
 
 // GetNameservers returns the name servers for a domain.
-func (c *dnsimpleProvider) GetNameservers(_ string) ([]*models.Nameserver, error) {
+func (c *dnsimpleProvider) GetNameservers(_ dnscontrol.Context, _ string) ([]*models.Nameserver, error) {
 	return models.ToNameservers(defaultNameServerNames)
 }
 
 // GetZoneRecords gets the records of a zone and returns them in RecordConfig format.
-func (c *dnsimpleProvider) GetZoneRecords(domain string) (models.Records, error) {
+func (c *dnsimpleProvider) GetZoneRecords(_ dnscontrol.Context, domain string) (models.Records, error) {
 	records, err := c.getRecords(domain)
 	if err != nil {
 		return nil, err
@@ -131,7 +132,7 @@ func (c *dnsimpleProvider) GetZoneRecords(domain string) (models.Records, error)
 }
 
 // GetDomainCorrections returns corrections that update a domain.
-func (c *dnsimpleProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Correction, error) {
+func (c *dnsimpleProvider) GetDomainCorrections(ctx dnscontrol.Context, dc *models.DomainConfig) ([]*models.Correction, error) {
 	var corrections []*models.Correction
 	err := dc.Punycode()
 	if err != nil {
@@ -144,7 +145,7 @@ func (c *dnsimpleProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*mod
 	}
 	corrections = append(corrections, dnssecFixes...)
 
-	records, err := c.GetZoneRecords(dc.Name)
+	records, err := c.GetZoneRecords(ctx, dc.Name)
 	if err != nil {
 		return nil, err
 	}
@@ -201,7 +202,7 @@ func removeApexNS(records models.Records) models.Records {
 }
 
 // GetRegistrarCorrections returns corrections that update a domain's registrar.
-func (c *dnsimpleProvider) GetRegistrarCorrections(dc *models.DomainConfig) ([]*models.Correction, error) {
+func (c *dnsimpleProvider) GetRegistrarCorrections(_ dnscontrol.Context, dc *models.DomainConfig) ([]*models.Correction, error) {
 	var corrections []*models.Correction
 
 	nameServers, err := c.getNameservers(dc.Name)
@@ -503,7 +504,7 @@ func (c *dnsimpleProvider) updateRecordFunc(old *dnsimpleapi.ZoneRecord, rc *mod
 }
 
 // ListZones returns all the zones in an account
-func (c *dnsimpleProvider) ListZones() ([]string, error) {
+func (c *dnsimpleProvider) ListZones(_ dnscontrol.Context) ([]string, error) {
 	client := c.getClient()
 	accountID, err := c.getAccountID()
 	if err != nil {
@@ -566,7 +567,7 @@ func removeOtherApexNS(dc *models.DomainConfig) {
 			// Child delegations are supported so we allow non-apex NS records.
 			if rec.GetLabelFQDN() == dc.Name {
 				if !strings.HasSuffix(rec.GetTargetField(), ".dnsimple.com.") {
-					printer.Printf("Warning: dnsimple.com does not allow NS records to be modified. %s will not be added.\n", rec.GetTargetField())
+					ctx.Log.Printf("Warning: dnsimple.com does not allow NS records to be modified. %s will not be added.\n", rec.GetTargetField())
 				}
 				continue
 			}

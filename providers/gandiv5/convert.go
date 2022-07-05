@@ -8,7 +8,6 @@ import (
 	"github.com/go-gandi/go-gandi/livedns"
 
 	"github.com/StackExchange/dnscontrol/v3/models"
-	"github.com/StackExchange/dnscontrol/v3/pkg/printer"
 )
 
 // nativeToRecord takes a DNS record from Gandi and returns a native RecordConfig struct.
@@ -73,7 +72,7 @@ func recordsToNative(rcs []*models.RecordConfig, origin string) []livedns.Domain
 			zr.RrsetValues = append(zr.RrsetValues, r.GetTargetCombined())
 
 			if r.TTL != uint32(zr.RrsetTTL) {
-				printer.Warnf("All TTLs for a rrset (%v) must be the same. Using smaller of %v and %v.\n", key, r.TTL, zr.RrsetTTL)
+				ctx.Log.Warnf("All TTLs for a rrset (%v) must be the same. Using smaller of %v and %v.\n", key, r.TTL, zr.RrsetTTL)
 				if r.TTL < uint32(zr.RrsetTTL) {
 					zr.RrsetTTL = int(r.TTL)
 				}

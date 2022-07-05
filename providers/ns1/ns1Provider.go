@@ -3,6 +3,7 @@ package ns1
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/StackExchange/dnscontrol/v3/internal/dnscontrol"
 	"net/http"
 	"strconv"
 	"strings"
@@ -50,7 +51,7 @@ func newProvider(creds map[string]string, meta json.RawMessage) (providers.DNSSe
 	return &nsone{rest.NewClient(http.DefaultClient, rest.SetAPIKey(creds["api_token"]))}, nil
 }
 
-func (n *nsone) EnsureDomainExists(domain string) error {
+func (n *nsone) EnsureDomainExists(_ dnscontrol.Context, domain string) error {
 	// This enables the create-domains subcommand
 
 	zone := dns.NewZone(domain)
@@ -64,7 +65,7 @@ func (n *nsone) EnsureDomainExists(domain string) error {
 	return err
 }
 
-func (n *nsone) GetNameservers(domain string) ([]*models.Nameserver, error) {
+func (n *nsone) GetNameservers(_ dnscontrol.Context, domain string) ([]*models.Nameserver, error) {
 	z, _, err := n.Zones.Get(domain)
 	if err != nil {
 		return nil, err
@@ -73,7 +74,7 @@ func (n *nsone) GetNameservers(domain string) ([]*models.Nameserver, error) {
 }
 
 // GetZoneRecords gets the records of a zone and returns them in RecordConfig format.
-func (n *nsone) GetZoneRecords(domain string) (models.Records, error) {
+func (n *nsone) GetZoneRecords(_ dnscontrol.Context, domain string) (models.Records, error) {
 	z, _, err := n.Zones.Get(domain)
 	if err != nil {
 		return nil, err
@@ -138,14 +139,14 @@ func (n *nsone) getDomainCorrectionsDNSSEC(domain, toggleDNSSEC string) *models.
 	return nil
 }
 
-func (n *nsone) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Correction, error) {
+func (n *nsone) GetDomainCorrections(ctx dnscontrol.Context, dc *models.DomainConfig) ([]*models.Correction, error) {
 	dc.Punycode()
 	//dc.CombineMXs()
 
 	domain := dc.Name
 
 	// Get existing records
-	existingRecords, err := n.GetZoneRecords(domain)
+	existingRecords, err := n.GetZoneRecords(ctx, domain)
 	if err != nil {
 		return nil, err
 	}

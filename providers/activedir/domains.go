@@ -3,13 +3,13 @@ package activedir
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/StackExchange/dnscontrol/v3/internal/dnscontrol"
 	"os"
 	"strings"
 	"time"
 
 	"github.com/StackExchange/dnscontrol/v3/models"
 	"github.com/StackExchange/dnscontrol/v3/pkg/diff"
-	"github.com/StackExchange/dnscontrol/v3/pkg/printer"
 	"github.com/TomOnTime/utfutil"
 )
 
@@ -23,7 +23,7 @@ type RecordConfigJSON struct {
 	TTL  uint32 `json:"timetolive"`
 }
 
-func (c *activedirProvider) GetNameservers(string) ([]*models.Nameserver, error) {
+func (c *activedirProvider) GetNameservers(dnscontrol.Context, string) ([]*models.Nameserver, error) {
 	// TODO: If using AD for publicly hosted zones, probably pull these from config.
 	return nil, nil
 }
@@ -38,7 +38,7 @@ var supportedTypes = map[string]bool{
 }
 
 // GetZoneRecords gets the records of a zone and returns them in RecordConfig format.
-func (c *activedirProvider) GetZoneRecords(domain string) (models.Records, error) {
+func (c *activedirProvider) GetZoneRecords(_ dnscontrol.Context, domain string) (models.Records, error) {
 	foundRecords, err := c.getExistingRecords(domain)
 	if err != nil {
 		return nil, fmt.Errorf("c.getExistingRecords(%q) failed: %v", domain, err)
@@ -47,14 +47,14 @@ func (c *activedirProvider) GetZoneRecords(domain string) (models.Records, error
 }
 
 // GetDomainCorrections gets existing records, diffs them against existing, and returns corrections.
-func (c *activedirProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Correction, error) {
+func (c *activedirProvider) GetDomainCorrections(ctx dnscontrol.Context, dc *models.DomainConfig) ([]*models.Correction, error) {
 
 	dc.Filter(func(r *models.RecordConfig) bool {
 		if r.Type == "NS" && r.Name == "@" {
 			return false
 		}
 		if !supportedTypes[r.Type] {
-			printer.Warnf("Active Directory only manages certain record types. Won't consider %s %s\n", r.Type, r.GetLabelFQDN())
+			ctx.Log.Warnf("Active Directory only manages certain record types. Won't consider %s %s\n", r.Type, r.GetLabelFQDN())
 			return false
 		}
 		return true
@@ -104,8 +104,8 @@ func (c *activedirProvider) readZoneDump(domainname string) ([]byte, error) {
 	// File not found is considered an error.
 	dat, err := utfutil.ReadFile(zoneDumpFilename(domainname), utfutil.WINDOWS)
 	if err != nil {
-		printer.Printf("Powershell to generate zone dump:\n")
-		printer.Printf("%v\n", c.generatePowerShellZoneDump(domainname))
+		ctx.Log.Printf("Powershell to generate zone dump:\n")
+		ctx.Log.Printf("%v\n", c.generatePowerShellZoneDump(domainname))
 	}
 	return dat, err
 }
@@ -189,7 +189,7 @@ func (c *activedirProvider) getExistingRecords(domainname string) ([]*models.Rec
 		}
 	}
 	for t, count := range unsupportedCounts {
-		printer.Warnf("%d records of type %s found in AD zone. These will be ignored.\n", count, t)
+		ctx.Log.Warnf("%d records of type %s found in AD zone. These will be ignored.\n", count, t)
 	}
 
 	return result, nil

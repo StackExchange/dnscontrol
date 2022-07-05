@@ -7,7 +7,6 @@ import (
 	"bytes"
 	"encoding/hex"
 	"fmt"
-	"github.com/StackExchange/dnscontrol/v3/pkg/printer"
 	"log"
 	"strconv"
 
@@ -78,7 +77,7 @@ func decodeRecordDataNaptr(s string) models.RecordConfig {
 
 	// At this point we should have consumed the entire string.
 	if s != "" {
-		printer.Printf("WARNING: REMAINDER:=%q\n", s)
+		ctx.Log.Printf("WARNING: REMAINDER:=%q\n", s)
 	}
 
 	return rc

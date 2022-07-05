@@ -3,6 +3,7 @@ package ovh
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/StackExchange/dnscontrol/v3/internal/dnscontrol"
 	"sort"
 	"strings"
 
@@ -62,7 +63,7 @@ func init() {
 	providers.RegisterDomainServiceProviderType("OVH", fns, features)
 }
 
-func (c *ovhProvider) GetNameservers(domain string) ([]*models.Nameserver, error) {
+func (c *ovhProvider) GetNameservers(_ dnscontrol.Context, domain string) ([]*models.Nameserver, error) {
 	_, ok := c.zones[domain]
 	if !ok {
 		return nil, fmt.Errorf("'%s' not a zone in ovh account", domain)
@@ -85,7 +86,7 @@ func (e errNoExist) Error() string {
 }
 
 // ListZones lists the zones on this account.
-func (c *ovhProvider) ListZones() (zones []string, err error) {
+func (c *ovhProvider) ListZones(_ dnscontrol.Context) (zones []string, err error) {
 	for zone := range c.zones {
 		zones = append(zones, zone)
 	}
@@ -93,7 +94,7 @@ func (c *ovhProvider) ListZones() (zones []string, err error) {
 }
 
 // GetZoneRecords gets the records of a zone and returns them in RecordConfig format.
-func (c *ovhProvider) GetZoneRecords(domain string) (models.Records, error) {
+func (c *ovhProvider) GetZoneRecords(_ dnscontrol.Context, domain string) (models.Records, error) {
 	if !c.zones[domain] {
 		return nil, errNoExist{domain}
 	}
@@ -116,11 +117,11 @@ func (c *ovhProvider) GetZoneRecords(domain string) (models.Records, error) {
 	return actual, nil
 }
 
-func (c *ovhProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Correction, error) {
+func (c *ovhProvider) GetDomainCorrections(ctx dnscontrol.Context, dc *models.DomainConfig) ([]*models.Correction, error) {
 	dc.Punycode()
 	//dc.CombineMXs()
 
-	actual, err := c.GetZoneRecords(dc.Name)
+	actual, err := c.GetZoneRecords(ctx, dc.Name)
 	if err != nil {
 		return nil, err
 	}
@@ -202,7 +203,7 @@ func nativeToRecord(r *Record, origin string) (*models.RecordConfig, error) {
 	return rec, nil
 }
 
-func (c *ovhProvider) GetRegistrarCorrections(dc *models.DomainConfig) ([]*models.Correction, error) {
+func (c *ovhProvider) GetRegistrarCorrections(_ dnscontrol.Context, dc *models.DomainConfig) ([]*models.Correction, error) {
 
 	// get the actual in-use nameservers
 	actualNs, err := c.fetchRegistrarNS(dc.Name)

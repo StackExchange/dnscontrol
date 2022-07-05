@@ -3,6 +3,7 @@ package dnsmadeeasy
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/StackExchange/dnscontrol/v3/internal/dnscontrol"
 	"os"
 	"strings"
 
@@ -62,7 +63,7 @@ func New(settings map[string]string, _ json.RawMessage) (providers.DNSServicePro
 }
 
 // GetDomainCorrections returns the corrections for a domain.
-func (api *dnsMadeEasyProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Correction, error) {
+func (api *dnsMadeEasyProvider) GetDomainCorrections(ctx dnscontrol.Context, dc *models.DomainConfig) ([]*models.Correction, error) {
 	dc, err := dc.Copy()
 	if err != nil {
 		return nil, err
@@ -91,7 +92,7 @@ func (api *dnsMadeEasyProvider) GetDomainCorrections(dc *models.DomainConfig) ([
 	}
 
 	// Get existing records
-	existingRecords, err := api.GetZoneRecords(domainName)
+	existingRecords, err := api.GetZoneRecords(ctx, domainName)
 	if err != nil {
 		return nil, err
 	}
@@ -186,7 +187,7 @@ func (api *dnsMadeEasyProvider) EnsureDomainExists(domainName string) error {
 }
 
 // GetNameservers returns the nameservers for a domain.
-func (api *dnsMadeEasyProvider) GetNameservers(domain string) ([]*models.Nameserver, error) {
+func (api *dnsMadeEasyProvider) GetNameservers(_ dnscontrol.Context, domain string) ([]*models.Nameserver, error) {
 	nameServers, err := api.fetchDomainNameServers(domain)
 	if err != nil {
 		return nil, err
@@ -196,7 +197,7 @@ func (api *dnsMadeEasyProvider) GetNameservers(domain string) ([]*models.Nameser
 }
 
 // GetZoneRecords gets the records of a zone and returns them in RecordConfig format.
-func (api *dnsMadeEasyProvider) GetZoneRecords(domain string) (models.Records, error) {
+func (api *dnsMadeEasyProvider) GetZoneRecords(_ dnscontrol.Context, domain string) (models.Records, error) {
 	records, err := api.fetchDomainRecords(domain)
 	if err != nil {
 		return nil, err
@@ -224,7 +225,7 @@ func (api *dnsMadeEasyProvider) GetZoneRecords(domain string) (models.Records, e
 }
 
 // ListZones lists the zones on this account.
-func (api *dnsMadeEasyProvider) ListZones() ([]string, error) {
+func (api *dnsMadeEasyProvider) ListZones(_ dnscontrol.Context) ([]string, error) {
 	if err := api.loadDomains(); err != nil {
 		return nil, err
 	}

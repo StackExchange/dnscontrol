@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"github.com/StackExchange/dnscontrol/v3/internal/dnscontrol"
 	"sort"
 	"strings"
 
@@ -38,7 +39,7 @@ func (c *opensrsProvider) GetNameservers(domainName string) ([]*models.Nameserve
 }
 
 // GetRegistrarCorrections returns a list of corrections for a registrar.
-func (c *opensrsProvider) GetRegistrarCorrections(dc *models.DomainConfig) ([]*models.Correction, error) {
+func (c *opensrsProvider) GetRegistrarCorrections(_ dnscontrol.Context, dc *models.DomainConfig) ([]*models.Correction, error) {
 	corrections := []*models.Correction{}
 
 	nameServers, err := c.getNameservers(dc.Name)

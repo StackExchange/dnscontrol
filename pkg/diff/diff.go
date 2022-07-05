@@ -123,10 +123,10 @@ func (d *differ) IncrementalDiff(existing []*models.RecordConfig) (unchanged, cr
 		//fmt.Printf("********** DEBUG: existing %v %v %v\n", e.GetLabel(), e.Type, e.GetTargetCombined())
 		if d.matchIgnoredName(e.GetLabel()) {
 			//fmt.Printf("Ignoring record %s %s due to IGNORE_NAME\n", e.GetLabel(), e.Type)
-			printer.Debugf("Ignoring record %s %s due to IGNORE_NAME\n", e.GetLabel(), e.Type)
+			printer.DefaultPrinter.Debugf("Ignoring record %s %s due to IGNORE_NAME\n", e.GetLabel(), e.Type)
 		} else if d.matchIgnoredTarget(e.GetTargetField(), e.Type) {
 			//fmt.Printf("Ignoring record %s %s due to IGNORE_TARGET\n", e.GetLabel(), e.Type)
-			printer.Debugf("Ignoring record %s %s due to IGNORE_TARGET\n", e.GetLabel(), e.Type)
+			printer.DefaultPrinter.Debugf("Ignoring record %s %s due to IGNORE_TARGET\n", e.GetLabel(), e.Type)
 		} else {
 			k := e.Key()
 			existingByNameAndType[k] = append(existingByNameAndType[k], e)
@@ -155,7 +155,7 @@ func (d *differ) IncrementalDiff(existing []*models.RecordConfig) (unchanged, cr
 	if d.dc.KeepUnknown {
 		for k := range existingByNameAndType {
 			if _, ok := desiredByNameAndType[k]; !ok {
-				printer.Debugf("Ignoring record set %s %s due to NO_PURGE\n", k.Type, k.NameFQDN)
+				printer.DefaultPrinter.Debugf("Ignoring record set %s %s due to NO_PURGE\n", k.Type, k.NameFQDN)
 				delete(existingByNameAndType, k)
 			}
 		}

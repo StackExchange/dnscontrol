@@ -3,6 +3,7 @@ package namedotcom
 import (
 	"errors"
 	"fmt"
+	"github.com/StackExchange/dnscontrol/v3/internal/dnscontrol"
 	"regexp"
 	"strings"
 
@@ -20,7 +21,7 @@ var defaultNameservers = []*models.Nameserver{
 }
 
 // GetZoneRecords gets the records of a zone and returns them in RecordConfig format.
-func (n *namedotcomProvider) GetZoneRecords(domain string) (models.Records, error) {
+func (n *namedotcomProvider) GetZoneRecords(_ dnscontrol.Context, domain string) (models.Records, error) {
 	records, err := n.getRecords(domain)
 	if err != nil {
 		return nil, err
@@ -35,10 +36,10 @@ func (n *namedotcomProvider) GetZoneRecords(domain string) (models.Records, erro
 }
 
 // GetDomainCorrections gathers correctios that would bring n to match dc.
-func (n *namedotcomProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Correction, error) {
+func (n *namedotcomProvider) GetDomainCorrections(ctx dnscontrol.Context, dc *models.DomainConfig) ([]*models.Correction, error) {
 	dc.Punycode()
 
-	actual, err := n.GetZoneRecords(dc.Name)
+	actual, err := n.GetZoneRecords(ctx, dc.Name)
 	if err != nil {
 		return nil, err
 	}

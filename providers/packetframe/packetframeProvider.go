@@ -3,6 +3,7 @@ package packetframe
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/StackExchange/dnscontrol/v3/internal/dnscontrol"
 	"net/http"
 	"net/url"
 	"strconv"
@@ -55,12 +56,12 @@ func init() {
 }
 
 // GetNameservers returns the nameservers for a domain.
-func (api *packetframeProvider) GetNameservers(domain string) ([]*models.Nameserver, error) {
+func (api *packetframeProvider) GetNameservers(_ dnscontrol.Context, domain string) ([]*models.Nameserver, error) {
 	return models.ToNameservers(defaultNameServerNames)
 }
 
 // GetZoneRecords gets the records of a zone and returns them in RecordConfig format.
-func (api *packetframeProvider) GetZoneRecords(domain string) (models.Records, error) {
+func (api *packetframeProvider) GetZoneRecords(_ dnscontrol.Context, domain string) (models.Records, error) {
 
 	if api.domainIndex == nil {
 		if err := api.fetchDomainList(); err != nil {
@@ -91,7 +92,7 @@ func (api *packetframeProvider) GetZoneRecords(domain string) (models.Records, e
 }
 
 // GetDomainCorrections returns the corrections for a domain.
-func (api *packetframeProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Correction, error) {
+func (api *packetframeProvider) GetDomainCorrections(ctx dnscontrol.Context, dc *models.DomainConfig) ([]*models.Correction, error) {
 	dc, err := dc.Copy()
 	if err != nil {
 		return nil, err

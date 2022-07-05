@@ -3,6 +3,7 @@ package oracle
 import (
 	"context"
 	"encoding/json"
+	"github.com/StackExchange/dnscontrol/v3/internal/dnscontrol"
 	"strings"
 	"time"
 
@@ -13,7 +14,6 @@ import (
 
 	"github.com/StackExchange/dnscontrol/v3/models"
 	"github.com/StackExchange/dnscontrol/v3/pkg/diff"
-	"github.com/StackExchange/dnscontrol/v3/pkg/printer"
 	"github.com/StackExchange/dnscontrol/v3/pkg/txtutil"
 	"github.com/StackExchange/dnscontrol/v3/providers"
 )
@@ -67,7 +67,7 @@ func New(settings map[string]string, _ json.RawMessage) (providers.DNSServicePro
 }
 
 // ListZones lists the zones on this account.
-func (o *oracleProvider) ListZones() ([]string, error) {
+func (o *oracleProvider) ListZones(_ dnscontrol.Context) ([]string, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), time.Minute)
 	defer cancel()
 
@@ -86,7 +86,7 @@ func (o *oracleProvider) ListZones() ([]string, error) {
 }
 
 // EnsureDomainExists creates the domain if it does not exist.
-func (o *oracleProvider) EnsureDomainExists(domain string) error {
+func (o *oracleProvider) EnsureDomainExists(_ dnscontrol.Context, domain string) error {
 	ctx, cancel := context.WithTimeout(context.Background(), time.Minute)
 	defer cancel()
 
@@ -128,7 +128,7 @@ func (o *oracleProvider) EnsureDomainExists(domain string) error {
 	return err
 }
 
-func (o *oracleProvider) GetNameservers(domain string) ([]*models.Nameserver, error) {
+func (o *oracleProvider) GetNameservers(_ dnscontrol.Context, domain string) ([]*models.Nameserver, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), time.Minute)
 	defer cancel()
 
@@ -148,7 +148,7 @@ func (o *oracleProvider) GetNameservers(domain string) ([]*models.Nameserver, er
 	return models.ToNameservers(nss)
 }
 
-func (o *oracleProvider) GetZoneRecords(domain string) (models.Records, error) {
+func (o *oracleProvider) GetZoneRecords(_ dnscontrol.Context, domain string) (models.Records, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), time.Minute)
 	defer cancel()
 
@@ -202,7 +202,7 @@ func (o *oracleProvider) GetZoneRecords(domain string) (models.Records, error) {
 	return records, nil
 }
 
-func (o *oracleProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Correction, error) {
+func (o *oracleProvider) GetDomainCorrections(ctx dnscontrol.Context, dc *models.DomainConfig) ([]*models.Correction, error) {
 	dc, err := dc.Copy()
 	if err != nil {
 		return nil, err
@@ -214,7 +214,7 @@ func (o *oracleProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*model
 	}
 	domain := dc.Name
 
-	existingRecords, err := o.GetZoneRecords(domain)
+	existingRecords, err := o.GetZoneRecords(ctx, domain)
 	if err != nil {
 		return nil, err
 	}
@@ -231,12 +231,12 @@ func (o *oracleProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*model
 
 		recNS := rec.GetTargetField()
 		if rec.GetLabel() == "@" && strings.HasSuffix(recNS, "dns.oraclecloud.com.") {
-			printer.Warnf("Oracle Cloud does not allow changes to built-in apex NS records. Ignoring change to %s...\n", recNS)
+			ctx.Log.Warnf("Oracle Cloud does not allow changes to built-in apex NS records. Ignoring change to %s...\n", recNS)
 			continue
 		}
 
 		if rec.TTL != 86400 {
-			printer.Warnf("Oracle Cloud forces TTL=86400 for NS records. Ignoring configured TTL of %d for %s\n", rec.TTL, recNS)
+			ctx.Log.Warnf("Oracle Cloud forces TTL=86400 for NS records. Ignoring configured TTL of %d for %s\n", rec.TTL, recNS)
 			rec.TTL = 86400
 		}
 	}

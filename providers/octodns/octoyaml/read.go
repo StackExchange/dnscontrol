@@ -36,15 +36,15 @@ func ReadYaml(r io.Reader, origin string) (models.Records, error) {
 	if err != nil {
 		return nil, fmt.Errorf("could not unmarshal yaml: %w", err)
 	}
-	//printer.Printf("ReadYaml: mysterydata == %v\n", mysterydata)
+	//ctx.Log.Printf("ReadYaml: mysterydata == %v\n", mysterydata)
 
 	// Traverse every key/value pair.
 	for k, v := range mysterydata { // Each label
 		// k, v: k is the label, v is everything we know about the label.
 		// In other code, k1, v2 refers to one level deeper, k3, k3 refers to
 		// one more level deeper, and so on.
-		//printer.Printf("ReadYaml: NEXT KEY\n")
-		//printer.Printf("ReadYaml:  KEY=%s v.(type)=%s\n", k, reflect.TypeOf(v).String())
+		//ctx.Log.Printf("ReadYaml: NEXT KEY\n")
+		//ctx.Log.Printf("ReadYaml:  KEY=%s v.(type)=%s\n", k, reflect.TypeOf(v).String())
 		switch v.(type) {
 		case map[interface{}]interface{}:
 			// The value is itself a map. This means we have a label with
@@ -82,10 +82,10 @@ func ReadYaml(r io.Reader, origin string) (models.Records, error) {
 			// 	  value: mx2.example.com.
 			for i, v3 := range v.([]interface{}) { // All the label's list
 				_ = i
-				//printer.Printf("ReadYaml:   list key=%s i=%d v3.(type)=%s\n", k, i, typeof(v3))
+				//ctx.Log.Printf("ReadYaml:   list key=%s i=%d v3.(type)=%s\n", k, i, typeof(v3))
 				switch v3.(type) {
 				case map[interface{}]interface{}:
-					//printer.Printf("ReadYaml:   v3=%v\n", v3)
+					//ctx.Log.Printf("ReadYaml:   v3=%v\n", v3)
 					results, err = parseLeaf(results, k, v3, origin)
 					if err != nil {
 						return results, fmt.Errorf("leaf v3=%v: %w", v3, err)
@@ -101,7 +101,7 @@ func ReadYaml(r io.Reader, origin string) (models.Records, error) {
 	}
 
 	sortRecs(results, origin)
-	//printer.Printf("ReadYaml: RESULTS=%v\n", results)
+	//ctx.Log.Printf("ReadYaml: RESULTS=%v\n", results)
 	return results, nil
 }
 
@@ -111,14 +111,14 @@ func parseLeaf(results models.Records, k string, v interface{}, origin string) (
 	rTargets := []string{}
 	var someresults models.Records
 	for k2, v2 := range v.(map[interface{}]interface{}) { // All  the label's items
-		// printer.Printf("ReadYaml: ifs tk2=%s tv2=%s len(rTargets)=%d\n", typeof(k2), typeof(v2), len(rTargets))
+		// ctx.Log.Printf("ReadYaml: ifs tk2=%s tv2=%s len(rTargets)=%d\n", typeof(k2), typeof(v2), len(rTargets))
 		if typeof(k2) == "string" && (typeof(v2) == "string" || typeof(v2) == "int") {
 			// The 2nd level key is a string, and the 2nd level value is a string or int.
 			// Here are 3 examples:
 			// type: CNAME
 			// value: foo.example.com.
 			// ttl: 3
-			//printer.Printf("parseLeaf:   k2=%s v2=%v\n", k2, v2)
+			//ctx.Log.Printf("parseLeaf:   k2=%s v2=%v\n", k2, v2)
 			switch k2.(string) {
 			case "type":
 				rType = v2.(string)
@@ -153,7 +153,7 @@ func parseLeaf(results models.Records, k string, v interface{}, origin string) (
 					//   - 1.2.3.3
 					// We collect all the values for later, when we'll need to generate
 					// one RecordConfig for each value.
-					//printer.Printf("parseLeaf: s-append %s\n", v3.(string))
+					//ctx.Log.Printf("parseLeaf: s-append %s\n", v3.(string))
 					rTargets = append(rTargets, v3.(string))
 				case map[interface{}]interface{}:
 					// Example:
@@ -166,7 +166,7 @@ func parseLeaf(results models.Records, k string, v interface{}, origin string) (
 					// we should have enough to generate a single RecordConfig.
 					newRc := newRecordConfig(k, rType, "", rTTL, origin)
 					for k4, v4 := range v3.(map[interface{}]interface{}) {
-						//printer.Printf("parseLeaf: k4=%s v4=%s\n", k4, v4)
+						//ctx.Log.Printf("parseLeaf: k4=%s v4=%s\n", k4, v4)
 						switch k4.(string) {
 						case "priority": // MX,SRV
 							priority := uint16(v4.(int))
@@ -181,7 +181,7 @@ func parseLeaf(results models.Records, k string, v interface{}, origin string) (
 							newRc.SetTarget(v4.(string))
 						}
 					}
-					//printer.Printf("parseLeaf: append %v\n", newRc)
+					//ctx.Log.Printf("parseLeaf: append %v\n", newRc)
 					someresults = append(someresults, newRc)
 				default:
 					return nil, fmt.Errorf("parseLeaf: unknown type in map: rtype=%s k=%s v3.(type)=%T v3=%v", rType, k, v3, v3)
@@ -191,9 +191,9 @@ func parseLeaf(results models.Records, k string, v interface{}, origin string) (
 			return nil, fmt.Errorf("parseLeaf: unknown type in level 2: k=%s k2=%s v.2(type)=%T v2=%v", k, k2, v2, v2)
 		}
 	}
-	// printer.Printf("parseLeaf: Target=(%v)\n", rTarget)
-	// printer.Printf("parseLeaf: len(rTargets)=%d\n", len(rTargets))
-	// printer.Printf("parseLeaf: len(someresults)=%d\n", len(someresults))
+	// ctx.Log.Printf("parseLeaf: Target=(%v)\n", rTarget)
+	// ctx.Log.Printf("parseLeaf: len(rTargets)=%d\n", len(rTargets))
+	// ctx.Log.Printf("parseLeaf: len(someresults)=%d\n", len(someresults))
 
 	// We've now looped through everything about one label. Make the RecordConfig(s).
 
@@ -216,12 +216,12 @@ func parseLeaf(results models.Records, k string, v interface{}, origin string) (
 		}
 	} else if rTarget != "" && len(rTargets) == 0 {
 		// The file used "value".  Generate a single RecordConfig
-		//printer.Printf("parseLeaf: 1-newRecordConfig(%v, %v, %v, %v, %v)\n", k, rType, rTarget, rTTL, origin)
+		//ctx.Log.Printf("parseLeaf: 1-newRecordConfig(%v, %v, %v, %v, %v)\n", k, rType, rTarget, rTTL, origin)
 		results = append(results, newRecordConfig(k, rType, rTarget, rTTL, origin))
 	} else {
 		// The file used "values" so now we must generate a RecordConfig for each value.
 		for _, target := range rTargets {
-			//printer.Printf("parseLeaf: 3-newRecordConfig(%v, %v, %v, %v, %v)\n", k, rType, target, rTTL, origin)
+			//ctx.Log.Printf("parseLeaf: 3-newRecordConfig(%v, %v, %v, %v, %v)\n", k, rType, target, rTTL, origin)
 			results = append(results, newRecordConfig(k, rType, target, rTTL, origin))
 		}
 	}

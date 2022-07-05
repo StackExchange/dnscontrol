@@ -4,6 +4,8 @@ import (
 	"encoding/json"
 	"flag"
 	"fmt"
+	"github.com/StackExchange/dnscontrol/v3/internal/dnscontrol"
+	"github.com/StackExchange/dnscontrol/v3/pkg/printer"
 	"os"
 	"strconv"
 	"strings"
@@ -30,6 +32,10 @@ var enableCFWorkers = flag.Bool("cfworkers", true, "Set false to disable CF work
 func init() {
 	testing.Init()
 	flag.Parse()
+}
+
+var ctx = dnscontrol.Context{
+	Log: printer.DefaultPrinter,
 }
 
 func getProvider(t *testing.T) (providers.DNSServiceProvider, string, map[int]bool, map[string]string) {
@@ -111,7 +117,7 @@ func getDomainConfigWithNameservers(t *testing.T, prv providers.DNSServiceProvid
 	normalize.UpdateNameSplitHorizon(dc)
 
 	// fix up nameservers
-	ns, err := prv.GetNameservers(domainName)
+	ns, err := prv.GetNameservers(ctx, domainName)
 	if err != nil {
 		t.Fatal("Failed getting nameservers", err)
 	}
@@ -208,7 +214,7 @@ func makeChanges(t *testing.T, prv providers.DNSServiceProvider, dc *models.Doma
 		}
 
 		// get and run corrections for first time
-		corrections, err := prv.GetDomainCorrections(dom)
+		corrections, err := prv.GetDomainCorrections(ctx, dom)
 		if err != nil {
 			t.Fatal(fmt.Errorf("runTests: %w", err))
 		}
@@ -231,7 +237,7 @@ func makeChanges(t *testing.T, prv providers.DNSServiceProvider, dc *models.Doma
 		}
 
 		// run a second time and expect zero corrections
-		corrections, err = prv.GetDomainCorrections(dom2)
+		corrections, err = prv.GetDomainCorrections(ctx, dom2)
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -315,7 +321,7 @@ func TestDualProviders(t *testing.T) {
 	// clear everything
 	run := func() {
 		dom, _ := dc.Copy()
-		cs, err := p.GetDomainCorrections(dom)
+		cs, err := p.GetDomainCorrections(ctx, dom)
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -337,7 +343,7 @@ func TestDualProviders(t *testing.T) {
 	run()
 	// run again to make sure no corrections
 	t.Log("Running again to ensure stability")
-	cs, err := p.GetDomainCorrections(dc)
+	cs, err := p.GetDomainCorrections(ctx, dc)
 	if err != nil {
 		t.Fatal(err)
 	}

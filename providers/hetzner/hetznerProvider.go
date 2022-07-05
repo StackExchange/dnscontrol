@@ -3,6 +3,7 @@ package hetzner
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/StackExchange/dnscontrol/v3/internal/dnscontrol"
 	"strings"
 
 	"github.com/StackExchange/dnscontrol/v3/models"
@@ -61,8 +62,8 @@ func New(settings map[string]string, _ json.RawMessage) (providers.DNSServicePro
 }
 
 // EnsureDomainExists creates the domain if it does not exist.
-func (api *hetznerProvider) EnsureDomainExists(domain string) error {
-	domains, err := api.ListZones()
+func (api *hetznerProvider) EnsureDomainExists(ctx dnscontrol.Context, domain string) error {
+	domains, err := api.ListZones(ctx)
 	if err != nil {
 		return err
 	}
@@ -77,7 +78,7 @@ func (api *hetznerProvider) EnsureDomainExists(domain string) error {
 }
 
 // GetDomainCorrections returns the corrections for a domain.
-func (api *hetznerProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Correction, error) {
+func (api *hetznerProvider) GetDomainCorrections(ctx dnscontrol.Context, dc *models.DomainConfig) ([]*models.Correction, error) {
 	dc, err := dc.Copy()
 	if err != nil {
 		return nil, err
@@ -90,7 +91,7 @@ func (api *hetznerProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*mo
 	domain := dc.Name
 
 	// Get existing records
-	existingRecords, err := api.GetZoneRecords(domain)
+	existingRecords, err := api.GetZoneRecords(ctx, domain)
 	if err != nil {
 		return nil, err
 	}
@@ -163,7 +164,7 @@ func (api *hetznerProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*mo
 }
 
 // GetNameservers returns the nameservers for a domain.
-func (api *hetznerProvider) GetNameservers(domain string) ([]*models.Nameserver, error) {
+func (api *hetznerProvider) GetNameservers(_ dnscontrol.Context, domain string) ([]*models.Nameserver, error) {
 	zone, err := api.getZone(domain)
 	if err != nil {
 		return nil, err
@@ -176,7 +177,7 @@ func (api *hetznerProvider) GetNameservers(domain string) ([]*models.Nameserver,
 }
 
 // GetZoneRecords gets the records of a zone and returns them in RecordConfig format.
-func (api *hetznerProvider) GetZoneRecords(domain string) (models.Records, error) {
+func (api *hetznerProvider) GetZoneRecords(_ dnscontrol.Context, domain string) (models.Records, error) {
 	records, err := api.getAllRecords(domain)
 	if err != nil {
 		return nil, err
@@ -189,7 +190,7 @@ func (api *hetznerProvider) GetZoneRecords(domain string) (models.Records, error
 }
 
 // ListZones lists the zones on this account.
-func (api *hetznerProvider) ListZones() ([]string, error) {
+func (api *hetznerProvider) ListZones(_ dnscontrol.Context) ([]string, error) {
 	if err := api.getAllZones(); err != nil {
 		return nil, err
 	}

@@ -2,7 +2,6 @@ package dnsmadeeasy
 
 import (
 	"fmt"
-	"github.com/StackExchange/dnscontrol/v3/pkg/printer"
 	"net/http"
 	"time"
 )
@@ -18,7 +17,7 @@ func newProvider(apiKey string, secretKey string, sandbox bool, debug bool) *dns
 		baseURL = sandboxBaseURLV2_0
 	}
 
-	printer.Printf("Creating DNSMADEEASY provider for %q\n", baseURL)
+	ctx.Log.Printf("Creating DNSMADEEASY provider for %q\n", baseURL)
 
 	return &dnsMadeEasyProvider{
 		restAPI: &dnsMadeEasyRestAPI{

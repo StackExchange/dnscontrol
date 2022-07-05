@@ -17,7 +17,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-	"github.com/StackExchange/dnscontrol/v3/pkg/printer"
+	"github.com/StackExchange/dnscontrol/v3/internal/dnscontrol"
 	"io/ioutil"
 	"os"
 	"path/filepath"
@@ -123,7 +123,7 @@ type bindProvider struct {
 }
 
 // GetNameservers returns the nameservers for a domain.
-func (c *bindProvider) GetNameservers(string) ([]*models.Nameserver, error) {
+func (c *bindProvider) GetNameservers(dnscontrol.Context, string) ([]*models.Nameserver, error) {
 	var r []string
 	for _, j := range c.nameservers {
 		r = append(r, j.Name)
@@ -132,7 +132,7 @@ func (c *bindProvider) GetNameservers(string) ([]*models.Nameserver, error) {
 }
 
 // ListZones returns all the zones in an account
-func (c *bindProvider) ListZones() ([]string, error) {
+func (c *bindProvider) ListZones(_ dnscontrol.Context) ([]string, error) {
 	if _, err := os.Stat(c.directory); os.IsNotExist(err) {
 		return nil, fmt.Errorf("directory %q does not exist", c.directory)
 	}
@@ -153,11 +153,11 @@ func (c *bindProvider) ListZones() ([]string, error) {
 }
 
 // GetZoneRecords gets the records of a zone and returns them in RecordConfig format.
-func (c *bindProvider) GetZoneRecords(domain string) (models.Records, error) {
+func (c *bindProvider) GetZoneRecords(_ dnscontrol.Context, domain string) (models.Records, error) {
 	foundRecords := models.Records{}
 
 	if _, err := os.Stat(c.directory); os.IsNotExist(err) {
-		printer.Printf("\nWARNING: BIND directory %q does not exist!\n", c.directory)
+		ctx.Log.Printf("\nWARNING: BIND directory %q does not exist!\n", c.directory)
 	}
 
 	if c.zonefile == "" {
@@ -195,7 +195,7 @@ func (c *bindProvider) GetZoneRecords(domain string) (models.Records, error) {
 }
 
 // GetDomainCorrections returns a list of corrections to update a domain.
-func (c *bindProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Correction, error) {
+func (c *bindProvider) GetDomainCorrections(ctx dnscontrol.Context, dc *models.DomainConfig) ([]*models.Correction, error) {
 	dc.Punycode()
 
 	comments := make([]string, 0, 5)
@@ -213,7 +213,7 @@ func (c *bindProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*models.
 	c.zonefile = filepath.Join(c.directory,
 		makeFileName(c.filenameformat, dc.UniqueName, dc.Name, dc.Tag))
 
-	foundRecords, err := c.GetZoneRecords(dc.Name)
+	foundRecords, err := c.GetZoneRecords(ctx, dc.Name)
 	if err != nil {
 		return nil, err
 	}
@@ -290,7 +290,7 @@ func (c *bindProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*models.
 			&models.Correction{
 				Msg: msg,
 				F: func() error {
-					printer.Printf("WRITING ZONEFILE: %v\n", c.zonefile)
+					ctx.Log.Printf("WRITING ZONEFILE: %v\n", c.zonefile)
 					zf, err := os.Create(c.zonefile)
 					if err != nil {
 						return fmt.Errorf("could not create zonefile: %w", err)

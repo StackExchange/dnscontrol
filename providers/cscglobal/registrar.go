@@ -2,6 +2,7 @@ package cscglobal
 
 import (
 	"fmt"
+	"github.com/StackExchange/dnscontrol/v3/internal/dnscontrol"
 	"sort"
 	"strings"
 
@@ -9,7 +10,7 @@ import (
 )
 
 // GetRegistrarCorrections gathers corrections that would being n to match dc.
-func (client *providerClient) GetRegistrarCorrections(dc *models.DomainConfig) ([]*models.Correction, error) {
+func (client *providerClient) GetRegistrarCorrections(_ dnscontrol.Context, dc *models.DomainConfig) ([]*models.Correction, error) {
 	nss, err := client.getNameservers(dc.Name)
 	if err != nil {
 		return nil, err

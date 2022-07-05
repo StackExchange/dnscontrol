@@ -4,7 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"github.com/StackExchange/dnscontrol/v3/pkg/printer"
+	"github.com/StackExchange/dnscontrol/v3/internal/dnscontrol"
 	"sort"
 	"strings"
 	"time"
@@ -124,7 +124,7 @@ func (e errNoExist) Error() string {
 	return fmt.Sprintf("Domain %s not found in you Azure account", e.domain)
 }
 
-func (a *azurednsProvider) GetNameservers(domain string) ([]*models.Nameserver, error) {
+func (a *azurednsProvider) GetNameservers(_ dnscontrol.Context, domain string) ([]*models.Nameserver, error) {
 	zone, ok := a.zones[domain]
 	if !ok {
 		return nil, errNoExist{domain}
@@ -137,7 +137,7 @@ func (a *azurednsProvider) GetNameservers(domain string) ([]*models.Nameserver, 
 	return models.ToNameserversStripTD(nss)
 }
 
-func (a *azurednsProvider) ListZones() ([]string, error) {
+func (a *azurednsProvider) ListZones(_ dnscontrol.Context) ([]string, error) {
 	var zones []string
 
 	ctx, cancel := context.WithTimeout(context.Background(), 6000*time.Second)
@@ -161,7 +161,7 @@ func (a *azurednsProvider) ListZones() ([]string, error) {
 }
 
 // GetZoneRecords gets the records of a zone and returns them in RecordConfig format.
-func (a *azurednsProvider) GetZoneRecords(domain string) (models.Records, error) {
+func (a *azurednsProvider) GetZoneRecords(_ dnscontrol.Context, domain string) (models.Records, error) {
 	existingRecords, _, _, err := a.getExistingRecords(domain)
 	if err != nil {
 		return nil, err
@@ -192,7 +192,7 @@ func (a *azurednsProvider) getExistingRecords(domain string) (models.Records, []
 	return existingRecords, records, zoneName, nil
 }
 
-func (a *azurednsProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Correction, error) {
+func (a *azurednsProvider) GetDomainCorrections(ctx dnscontrol.Context, dc *models.DomainConfig) ([]*models.Correction, error) {
 	err := dc.Punycode()
 
 	if err != nil {
@@ -583,11 +583,11 @@ func (a *azurednsProvider) fetchRecordSets(zoneName string) ([]*adns.RecordSet, 
 	return records, nil
 }
 
-func (a *azurednsProvider) EnsureDomainExists(domain string) error {
+func (a *azurednsProvider) EnsureDomainExists(_ dnscontrol.Context, domain string) error {
 	if _, ok := a.zones[domain]; ok {
 		return nil
 	}
-	printer.Printf("Adding zone for %s to Azure dns account\n", domain)
+	ctx.Log.Printf("Adding zone for %s to Azure dns account\n", domain)
 
 	ctx, cancel := context.WithTimeout(context.Background(), 6000*time.Second)
 	defer cancel()

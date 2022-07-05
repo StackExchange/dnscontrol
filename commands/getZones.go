@@ -3,6 +3,7 @@ package commands
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/StackExchange/dnscontrol/v3/internal/dnscontrol"
 	"os"
 	"strings"
 
@@ -174,7 +175,7 @@ func GetZone(args GetZoneArgs) error {
 		if !ok {
 			return fmt.Errorf("provider type %s cannot list zones to use the 'all' feature", args.ProviderName)
 		}
-		zones, err = lister.ListZones()
+		zones, err = lister.ListZones(dnscontrol.GetContext())
 		if err != nil {
 			return fmt.Errorf("failed GetZone LZ: %w", err)
 		}
@@ -199,8 +200,9 @@ func GetZone(args GetZoneArgs) error {
 
 	// fetch all of the records
 	zoneRecs := make([]models.Records, len(zones))
+
 	for i, zone := range zones {
-		recs, err := provider.GetZoneRecords(zone)
+		recs, err := provider.GetZoneRecords(dnscontrol.GetDomainContext(dnscontrol.GetContext(), zone), zone)
 		if err != nil {
 			return fmt.Errorf("failed GetZone gzr: %w", err)
 		}

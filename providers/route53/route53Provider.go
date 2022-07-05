@@ -5,7 +5,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"github.com/StackExchange/dnscontrol/v3/pkg/printer"
+	"github.com/StackExchange/dnscontrol/v3/internal/dnscontrol"
 	"log"
 	"sort"
 	"strings"
@@ -64,7 +64,7 @@ func newRoute53(m map[string]string, metadata json.RawMessage) (*route53Provider
 
 	var dls *string
 	if val, ok := m["DelegationSet"]; ok {
-		printer.Printf("ROUTE53 DelegationSet %s configured\n", val)
+		ctx.Log.Printf("ROUTE53 DelegationSet %s configured\n", val)
 		dls = aws.String(val)
 	}
 	api := &route53Provider{client: r53.NewFromConfig(config), registrar: r53d.NewFromConfig(config), delegationSet: dls}
@@ -112,7 +112,7 @@ func withRetry(f func() error) {
 			if currentRetry >= maxRetries {
 				return
 			}
-			printer.Printf("============ Route53 rate limit exceeded. Waiting %s to retry.\n", sleepTime)
+			ctx.Log.Printf("============ Route53 rate limit exceeded. Waiting %s to retry.\n", sleepTime)
 			time.Sleep(sleepTime)
 		} else {
 			return
@@ -121,7 +121,7 @@ func withRetry(f func() error) {
 }
 
 // ListZones lists the zones on this account.
-func (r *route53Provider) ListZones() ([]string, error) {
+func (r *route53Provider) ListZones(_ dnscontrol.Context) ([]string, error) {
 	var zones []string
 	// Assumes r.zones was filled already by newRoute53().
 	for i := range r.zonesByDomain {
@@ -177,7 +177,7 @@ func (e errZoneNoExist) Error() string {
 	return fmt.Sprintf("Zone with id %s not found in your route 53 account", e.zoneID)
 }
 
-func (r *route53Provider) GetNameservers(domain string) ([]*models.Nameserver, error) {
+func (r *route53Provider) GetNameservers(_ dnscontrol.Context, domain string) ([]*models.Nameserver, error) {
 
 	zone, ok := r.zonesByDomain[domain]
 	if !ok {
@@ -200,7 +200,7 @@ func (r *route53Provider) GetNameservers(domain string) ([]*models.Nameserver, e
 	return models.ToNameservers(nss)
 }
 
-func (r *route53Provider) GetZoneRecords(domain string) (models.Records, error) {
+func (r *route53Provider) GetZoneRecords(_ dnscontrol.Context, domain string) (models.Records, error) {
 	if zone, ok := r.zonesByDomain[domain]; ok {
 		return r.getZoneRecords(zone)
 	}
@@ -242,7 +242,7 @@ func (r *route53Provider) getZoneRecords(zone r53Types.HostedZone) (models.Recor
 	return existingRecords, nil
 }
 
-func (r *route53Provider) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Correction, error) {
+func (r *route53Provider) GetDomainCorrections(ctx dnscontrol.Context, dc *models.DomainConfig) ([]*models.Correction, error) {
 	dc.Punycode()
 
 	var corrections = []*models.Correction{}
@@ -553,7 +553,7 @@ func parseZoneID(zoneID string) string {
 	return strings.TrimPrefix(zoneID, "/hostedzone/")
 }
 
-func (r *route53Provider) GetRegistrarCorrections(dc *models.DomainConfig) ([]*models.Correction, error) {
+func (r *route53Provider) GetRegistrarCorrections(_ dnscontrol.Context, dc *models.DomainConfig) ([]*models.Correction, error) {
 	corrections := []*models.Correction{}
 	actualSet, err := r.getRegistrarNameservers(&dc.Name)
 	if err != nil {
@@ -669,14 +669,14 @@ func unescape(s *string) string {
 	return name
 }
 
-func (r *route53Provider) EnsureDomainExists(domain string) error {
+func (r *route53Provider) EnsureDomainExists(_ dnscontrol.Context, domain string) error {
 	if _, ok := r.zonesByDomain[domain]; ok {
 		return nil
 	}
 	if r.delegationSet != nil {
-		printer.Printf("Adding zone for %s to route 53 account with delegationSet %s\n", domain, *r.delegationSet)
+		ctx.Log.Printf("Adding zone for %s to route 53 account with delegationSet %s\n", domain, *r.delegationSet)
 	} else {
-		printer.Printf("Adding zone for %s to route 53 account\n", domain)
+		ctx.Log.Printf("Adding zone for %s to route 53 account\n", domain)
 	}
 	in := &r53.CreateHostedZoneInput{
 		Name:            &domain,

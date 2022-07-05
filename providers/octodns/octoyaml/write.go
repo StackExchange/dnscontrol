@@ -168,9 +168,9 @@ func oneLabel(records models.Records) yaml.MapItem {
 			if v.Type == "TXT" {
 				v.Value = strings.Replace(models.StripQuotes(v.Value), `;`, `\;`, -1)
 			}
-			//printer.Printf("yamlwrite:oneLabel: simple ttl=%d\n", v.TTL)
+			//ctx.Log.Printf("yamlwrite:oneLabel: simple ttl=%d\n", v.TTL)
 			item.Value = v
-			//printer.Printf("yamlwrite:oneLabel: SIMPLE=%v\n", item)
+			//ctx.Log.Printf("yamlwrite:oneLabel: SIMPLE=%v\n", item)
 			return item
 		case "MX", "SRV":
 			// Always processed as a complex{}
@@ -191,7 +191,7 @@ func oneLabel(records models.Records) yaml.MapItem {
 				v.Values = append(v.Values, rec.GetTargetField())
 			}
 			item.Value = v
-			//printer.Printf("SIMPLE=%v\n", item)
+			//ctx.Log.Printf("SIMPLE=%v\n", item)
 			return item
 		case "MX", "SRV":
 			// Always processed as a complex{}
@@ -207,14 +207,14 @@ func oneLabel(records models.Records) yaml.MapItem {
 	var last = records[0].Type
 	for i := range records {
 		if records[i].Type != last {
-			//printer.Printf("yamlwrite:oneLabel: Calling oneType( [%d:%d] ) last=%s type=%s\n", low, i, last, records[0].Type)
+			//ctx.Log.Printf("yamlwrite:oneLabel: Calling oneType( [%d:%d] ) last=%s type=%s\n", low, i, last, records[0].Type)
 			lst = append(lst, oneType(records[low:i]))
 			low = i // Current is the first of a run.
 			last = records[i].Type
 		}
 		if i == (len(records) - 1) {
 			// we are on the last element.
-			//printer.Printf("yamlwrite:oneLabel: Calling oneType( [%d:%d] ) last=%s type=%s\n", low, i+1, last, records[0].Type)
+			//ctx.Log.Printf("yamlwrite:oneLabel: Calling oneType( [%d:%d] ) last=%s type=%s\n", low, i+1, last, records[0].Type)
 			lst = append(lst, oneType(records[low:i+1]))
 		}
 	}
@@ -226,7 +226,7 @@ func oneLabel(records models.Records) yaml.MapItem {
 // oneType returns interfaces that will MarshalYAML properly for a label with
 // one or more records, all the same rtype.
 func oneType(records models.Records) interface{} {
-	//printer.Printf("yamlwrite:oneType len=%d type=%s\n", len(records), records[0].Type)
+	//ctx.Log.Printf("yamlwrite:oneType len=%d type=%s\n", len(records), records[0].Type)
 	rtype := records[0].Type
 	switch rtype {
 	case "A", "AAAA", "NS":

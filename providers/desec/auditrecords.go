@@ -1,4 +1,4 @@
-package desec
+package desc
 
 import (
 	"github.com/StackExchange/dnscontrol/v3/models"

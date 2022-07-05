@@ -3,6 +3,7 @@ package namecheap
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/StackExchange/dnscontrol/v3/internal/dnscontrol"
 	"sort"
 	"strings"
 	"time"
@@ -12,7 +13,6 @@ import (
 
 	"github.com/StackExchange/dnscontrol/v3/models"
 	"github.com/StackExchange/dnscontrol/v3/pkg/diff"
-	"github.com/StackExchange/dnscontrol/v3/pkg/printer"
 	"github.com/StackExchange/dnscontrol/v3/providers"
 )
 
@@ -102,7 +102,7 @@ func doWithRetry(f func() error) {
 			if currentRetry >= maxRetries {
 				return
 			}
-			printer.Printf("Namecheap rate limit exceeded. Waiting %s to retry.\n", sleepTime)
+			ctx.Log.Printf("Namecheap rate limit exceeded. Waiting %s to retry.\n", sleepTime)
 			time.Sleep(sleepTime)
 		} else {
 			return
@@ -111,7 +111,7 @@ func doWithRetry(f func() error) {
 }
 
 // GetZoneRecords gets the records of a zone and returns them in RecordConfig format.
-func (n *namecheapProvider) GetZoneRecords(domain string) (models.Records, error) {
+func (n *namecheapProvider) GetZoneRecords(_ dnscontrol.Context, domain string) (models.Records, error) {
 	sld, tld := splitDomain(domain)
 	var records *nc.DomainDNSGetHostsResult
 	var err error
@@ -127,7 +127,7 @@ func (n *namecheapProvider) GetZoneRecords(domain string) (models.Records, error
 }
 
 // GetDomainCorrections returns the corrections for the domain.
-func (n *namecheapProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Correction, error) {
+func (n *namecheapProvider) GetDomainCorrections(ctx dnscontrol.Context, dc *models.DomainConfig) ([]*models.Correction, error) {
 	dc.Punycode()
 	sld, tld := splitDomain(dc.Name)
 	var records *nc.DomainDNSGetHostsResult
@@ -146,7 +146,7 @@ func (n *namecheapProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*mo
 	dc.Filter(func(r *models.RecordConfig) bool {
 		if r.Type == "NS" && r.GetLabel() == "@" {
 			if !strings.HasSuffix(r.GetTargetField(), "registrar-servers.com.") {
-				printer.Println("\n", r.GetTargetField(), "Namecheap does not support changing apex NS records. Skipping.")
+				ctx.Log.Println("\n", r.GetTargetField(), "Namecheap does not support changing apex NS records. Skipping.")
 			}
 			return false
 		}
@@ -279,13 +279,13 @@ func (n *namecheapProvider) generateRecords(dc *models.DomainConfig) error {
 }
 
 // GetNameservers returns the nameservers for a domain.
-func (n *namecheapProvider) GetNameservers(domainName string) ([]*models.Nameserver, error) {
+func (n *namecheapProvider) GetNameservers(_ dnscontrol.Context, domainName string) ([]*models.Nameserver, error) {
 	// return default namecheap nameservers
 	return models.ToNameservers(NamecheapDefaultNs)
 }
 
 // GetRegistrarCorrections returns corrections to update nameservers.
-func (n *namecheapProvider) GetRegistrarCorrections(dc *models.DomainConfig) ([]*models.Correction, error) {
+func (n *namecheapProvider) GetRegistrarCorrections(_ dnscontrol.Context, dc *models.DomainConfig) ([]*models.Correction, error) {
 	var info *nc.DomainInfo
 	var err error
 	doWithRetry(func() error {

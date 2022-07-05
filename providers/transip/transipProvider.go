@@ -3,6 +3,7 @@ package transip
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/StackExchange/dnscontrol/v3/internal/dnscontrol"
 	"strings"
 
 	"github.com/StackExchange/dnscontrol/v3/models"
@@ -78,10 +79,10 @@ func init() {
 	providers.RegisterDomainServiceProviderType("TRANSIP", fns, features)
 }
 
-func (n *transipProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Correction, error) {
+func (n *transipProvider) GetDomainCorrections(ctx dnscontrol.Context, dc *models.DomainConfig) ([]*models.Correction, error) {
 	var corrections []*models.Correction
 
-	curRecords, err := n.GetZoneRecords(dc.Name)
+	curRecords, err := n.GetZoneRecords(ctx, dc.Name)
 	if err != nil {
 		return nil, err
 	}
@@ -164,7 +165,7 @@ func canUpdateDNSEntry(desired *models.RecordConfig, existing *models.RecordConf
 	return desired.Name == existing.Name && desired.TTL == existing.TTL && desired.Type == existing.Type
 }
 
-func (n *transipProvider) GetZoneRecords(domainName string) (models.Records, error) {
+func (n *transipProvider) GetZoneRecords(_ dnscontrol.Context, domainName string) (models.Records, error) {
 
 	entries, err := n.domains.GetDNSEntries(domainName)
 	if err != nil {
@@ -183,7 +184,7 @@ func (n *transipProvider) GetZoneRecords(domainName string) (models.Records, err
 	return existingRecords, nil
 }
 
-func (n *transipProvider) GetNameservers(domainName string) ([]*models.Nameserver, error) {
+func (n *transipProvider) GetNameservers(_ dnscontrol.Context, domainName string) ([]*models.Nameserver, error) {
 	var nss []string
 
 	entries, err := n.domains.GetNameservers(domainName)

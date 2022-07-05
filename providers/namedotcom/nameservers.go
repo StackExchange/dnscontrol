@@ -2,6 +2,7 @@ package namedotcom
 
 import (
 	"fmt"
+	"github.com/StackExchange/dnscontrol/v3/internal/dnscontrol"
 	"regexp"
 	"sort"
 	"strings"
@@ -13,7 +14,7 @@ import (
 var nsRegex = regexp.MustCompile(`ns([1-4])[a-z]{3}\.name\.com`)
 
 // GetNameservers gets the nameservers set on a domain.
-func (n *namedotcomProvider) GetNameservers(domain string) ([]*models.Nameserver, error) {
+func (n *namedotcomProvider) GetNameservers(_ dnscontrol.Context, domain string) ([]*models.Nameserver, error) {
 	// This is an interesting edge case. Name.com expects you to SET the nameservers to ns[1-4].name.com,
 	// but it will internally set it to ns1xyz.name.com, where xyz is a uniqueish 3 letters.
 	// In order to avoid endless loops, we will use the unique nameservers if present, or else the generic ones if not.
@@ -46,7 +47,7 @@ func (n *namedotcomProvider) getNameserversRaw(domain string) ([]string, error) 
 }
 
 // GetRegistrarCorrections gathers corrections that would being n to match dc.
-func (n *namedotcomProvider) GetRegistrarCorrections(dc *models.DomainConfig) ([]*models.Correction, error) {
+func (n *namedotcomProvider) GetRegistrarCorrections(_ dnscontrol.Context, dc *models.DomainConfig) ([]*models.Correction, error) {
 	nss, err := n.getNameserversRaw(dc.Name)
 	if err != nil {
 		return nil, err

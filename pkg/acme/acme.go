@@ -5,6 +5,7 @@ import (
 	"crypto/x509"
 	"encoding/pem"
 	"fmt"
+	"github.com/StackExchange/dnscontrol/v3/internal/dnscontrol"
 	"io/ioutil"
 	"log"
 	"net/url"
@@ -216,7 +217,7 @@ func (c *certManager) Present(domain, token, keyAuth string) (e error) {
 		// if multiple validations on a single domain, we don't need to rebuild all this.
 
 		// fix NS records for this domain's DNS providers
-		nsList, err := nameservers.DetermineNameservers(d)
+		nsList, err := nameservers.DetermineNameservers(dnscontrol.GetDomainContext(dnscontrol.GetContext(), d.Name), d)
 		if err != nil {
 			return err
 		}
@@ -275,7 +276,8 @@ func (c *certManager) getCorrections(d *models.DomainConfig) ([]*models.Correcti
 		if err != nil {
 			return nil, err
 		}
-		corrections, err := p.Driver.GetDomainCorrections(dc)
+
+		corrections, err := p.Driver.GetDomainCorrections(dnscontrol.GetDomainContext(dnscontrol.GetContext(), dc.Name), dc)
 		if err != nil {
 			return nil, err
 		}

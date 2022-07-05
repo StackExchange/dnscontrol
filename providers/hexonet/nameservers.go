@@ -2,6 +2,7 @@ package hexonet
 
 import (
 	"fmt"
+	"github.com/StackExchange/dnscontrol/v3/internal/dnscontrol"
 	"regexp"
 	"sort"
 	"strings"
@@ -18,7 +19,7 @@ var defaultNameservers = []*models.Nameserver{
 var nsRegex = regexp.MustCompile(`ns([1-3]{1})[0-9]+\.ispapi\.net`)
 
 // GetNameservers gets the nameservers set on a domain.
-func (n *HXClient) GetNameservers(domain string) ([]*models.Nameserver, error) {
+func (n *HXClient) GetNameservers(_ dnscontrol.Context, domain string) ([]*models.Nameserver, error) {
 	// This is an interesting edge case. hexonet expects you to SET the nameservers to ns[1-3].ispapi.net,
 	// but it will internally set it to (ns1xyz|ns2uvw|ns3asd).ispapi.net, where xyz/uvw/asd is a uniqueish number.
 	// In order to avoid endless loops, we will use the unique nameservers if present, or else the generic ones if not.
@@ -59,7 +60,7 @@ func (n *HXClient) getNameserversRaw(domain string) ([]string, error) {
 }
 
 // GetRegistrarCorrections gathers corrections that would being n to match dc.
-func (n *HXClient) GetRegistrarCorrections(dc *models.DomainConfig) ([]*models.Correction, error) {
+func (n *HXClient) GetRegistrarCorrections(_ dnscontrol.Context, dc *models.DomainConfig) ([]*models.Correction, error) {
 	nss, err := n.getNameserversRaw(dc.Name)
 	if err != nil {
 		return nil, err

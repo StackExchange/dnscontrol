@@ -3,6 +3,7 @@ package hostingde
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/StackExchange/dnscontrol/v3/internal/dnscontrol"
 	"sort"
 	"strings"
 
@@ -85,11 +86,11 @@ func newHostingdeReg(m map[string]string) (providers.Registrar, error) {
 	return newHostingde(m, json.RawMessage{})
 }
 
-func (hp *hostingdeProvider) GetNameservers(domain string) ([]*models.Nameserver, error) {
+func (hp *hostingdeProvider) GetNameservers(_ dnscontrol.Context, domain string) ([]*models.Nameserver, error) {
 	return models.ToNameserversStripTD(hp.nameservers)
 }
 
-func (hp *hostingdeProvider) GetZoneRecords(domain string) (models.Records, error) {
+func (hp *hostingdeProvider) GetZoneRecords(_ dnscontrol.Context, domain string) (models.Records, error) {
 	src, err := hp.getRecords(domain)
 	if err != nil {
 		return nil, err
@@ -106,7 +107,7 @@ func (hp *hostingdeProvider) GetZoneRecords(domain string) (models.Records, erro
 	return records, nil
 }
 
-func (hp *hostingdeProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Correction, error) {
+func (hp *hostingdeProvider) GetDomainCorrections(ctx dnscontrol.Context, dc *models.DomainConfig) ([]*models.Correction, error) {
 	err := dc.Punycode()
 	if err != nil {
 		return nil, err
@@ -122,7 +123,7 @@ func (hp *hostingdeProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*m
 		}
 	}
 
-	records, err := hp.GetZoneRecords(dc.Name)
+	records, err := hp.GetZoneRecords(ctx, dc.Name)
 	if err != nil {
 		return nil, err
 	}
@@ -159,7 +160,7 @@ func (hp *hostingdeProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*m
 	return corrections, nil
 }
 
-func (hp *hostingdeProvider) GetRegistrarCorrections(dc *models.DomainConfig) ([]*models.Correction, error) {
+func (hp *hostingdeProvider) GetRegistrarCorrections(_ dnscontrol.Context, dc *models.DomainConfig) ([]*models.Correction, error) {
 	err := dc.Punycode()
 	if err != nil {
 		return nil, err
@@ -194,7 +195,7 @@ func (hp *hostingdeProvider) GetRegistrarCorrections(dc *models.DomainConfig) ([
 	// TODO: Handle AutoDNSSEC
 }
 
-func (hp *hostingdeProvider) EnsureDomainExists(domain string) error {
+func (hp *hostingdeProvider) EnsureDomainExists(_ dnscontrol.Context, domain string) error {
 	_, err := hp.getZoneConfig(domain)
 	if err == errZoneNotFound {
 		if err := hp.createZone(domain); err != nil {

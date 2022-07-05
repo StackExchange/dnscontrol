@@ -17,7 +17,7 @@ import (
 	"encoding/base64"
 	"encoding/json"
 	"fmt"
-	"github.com/StackExchange/dnscontrol/v3/pkg/printer"
+	"github.com/StackExchange/dnscontrol/v3/internal/dnscontrol"
 	"math"
 	"math/rand"
 	"net"
@@ -97,7 +97,7 @@ func initAxfrDdns(config map[string]string, providermeta json.RawMessage) (provi
 		case "udp":
 			api.updateMode = ""
 		default:
-			printer.Printf("[Warning] AXFRDDNS: Unknown update-mode in `creds.json` (%s)\n", config["update-mode"])
+			ctx.Log.Printf("[Warning] AXFRDDNS: Unknown update-mode in `creds.json` (%s)\n", config["update-mode"])
 		}
 	} else {
 		api.updateMode = ""
@@ -108,7 +108,7 @@ func initAxfrDdns(config map[string]string, providermeta json.RawMessage) (provi
 			"tcp-tls":
 			api.transferMode = config["transfer-mode"]
 		default:
-			printer.Printf("[Warning] AXFRDDNS: Unknown transfer-mode in `creds.json` (%s)\n", config["transfer-mode"])
+			ctx.Log.Printf("[Warning] AXFRDDNS: Unknown transfer-mode in `creds.json` (%s)\n", config["transfer-mode"])
 		}
 	} else {
 		api.transferMode = "tcp"
@@ -141,7 +141,7 @@ func initAxfrDdns(config map[string]string, providermeta json.RawMessage) (provi
 			"transfer-mode":
 			continue
 		default:
-			printer.Printf("[Warning] AXFRDDNS: unknown key in `creds.json` (%s)\n", key)
+			ctx.Log.Printf("[Warning] AXFRDDNS: unknown key in `creds.json` (%s)\n", key)
 		}
 	}
 	return api, err
@@ -196,7 +196,7 @@ func readKey(raw string, kind string) (*Key, error) {
 }
 
 // GetNameservers returns the nameservers for a domain.
-func (c *axfrddnsProvider) GetNameservers(domain string) ([]*models.Nameserver, error) {
+func (c *axfrddnsProvider) GetNameservers(_ dnscontrol.Context, domain string) ([]*models.Nameserver, error) {
 	return c.nameservers, nil
 }
 
@@ -256,7 +256,7 @@ func (c *axfrddnsProvider) FetchZoneRecords(domain string) ([]dns.RR, error) {
 }
 
 // GetZoneRecords gets the records of a zone and returns them in RecordConfig format.
-func (c *axfrddnsProvider) GetZoneRecords(domain string) (models.Records, error) {
+func (c *axfrddnsProvider) GetZoneRecords(_ dnscontrol.Context, domain string) (models.Records, error) {
 
 	rawRecords, err := c.FetchZoneRecords(domain)
 	if err != nil {
@@ -310,10 +310,10 @@ func (c *axfrddnsProvider) GetZoneRecords(domain string) (models.Records, error)
 }
 
 // GetDomainCorrections returns a list of corrections to update a domain.
-func (c *axfrddnsProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Correction, error) {
+func (c *axfrddnsProvider) GetDomainCorrections(ctx dnscontrol.Context, dc *models.DomainConfig) ([]*models.Correction, error) {
 	dc.Punycode()
 
-	foundRecords, err := c.GetZoneRecords(dc.Name)
+	foundRecords, err := c.GetZoneRecords(ctx, dc.Name)
 	if err != nil {
 		return nil, err
 	}
@@ -337,10 +337,10 @@ func (c *axfrddnsProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*mod
 
 	// TODO(tlim): This check should be done on all providers. Move to the global validation code.
 	if dc.AutoDNSSEC == "on" && !hasDnssecRecords {
-		printer.Printf("Warning: AUTODNSSEC is enabled, but no DNSKEY or RRSIG record was found in the AXFR answer!\n")
+		ctx.Log.Printf("Warning: AUTODNSSEC is enabled, but no DNSKEY or RRSIG record was found in the AXFR answer!\n")
 	}
 	if dc.AutoDNSSEC == "off" && hasDnssecRecords {
-		printer.Printf("Warning: AUTODNSSEC is disabled, but DNSKEY or RRSIG records were found in the AXFR answer!\n")
+		ctx.Log.Printf("Warning: AUTODNSSEC is disabled, but DNSKEY or RRSIG records were found in the AXFR answer!\n")
 	}
 
 	// Normalize

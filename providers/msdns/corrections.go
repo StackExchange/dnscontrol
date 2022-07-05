@@ -2,16 +2,17 @@ package msdns
 
 import (
 	"fmt"
+	"github.com/StackExchange/dnscontrol/v3/internal/dnscontrol"
 	"github.com/StackExchange/dnscontrol/v3/models"
 	"github.com/StackExchange/dnscontrol/v3/pkg/diff"
 	"github.com/StackExchange/dnscontrol/v3/pkg/txtutil"
 )
 
 // GetDomainCorrections gets existing records, diffs them against existing, and returns corrections.
-func (client *msdnsProvider) GenerateDomainCorrections(dc *models.DomainConfig, existing models.Records) ([]*models.Correction, error) {
+func (client *msdnsProvider) GenerateDomainCorrections(ctx dnscontrol.Context, dc *models.DomainConfig, existing models.Records) ([]*models.Correction, error) {
 
 	// Read foundRecords:
-	foundRecords, err := client.GetZoneRecords(dc.Name)
+	foundRecords, err := client.GetZoneRecords(ctx, dc.Name)
 	if err != nil {
 		return nil, fmt.Errorf("c.GetDNSZoneRecords(%v) failed: %v", dc.Name, err)
 	}

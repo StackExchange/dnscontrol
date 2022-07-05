@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"github.com/StackExchange/dnscontrol/v3/internal/dnscontrol"
 	"net/http"
 	"net/url"
 	"regexp"
@@ -102,12 +103,12 @@ func init() {
 }
 
 // GetNameservers returns the nameservers for a domain.
-func (api *linodeProvider) GetNameservers(domain string) ([]*models.Nameserver, error) {
+func (api *linodeProvider) GetNameservers(_ dnscontrol.Context, domain string) ([]*models.Nameserver, error) {
 	return models.ToNameservers(defaultNameServerNames)
 }
 
 // GetZoneRecords gets the records of a zone and returns them in RecordConfig format.
-func (api *linodeProvider) GetZoneRecords(domain string) (models.Records, error) {
+func (api *linodeProvider) GetZoneRecords(_ dnscontrol.Context, domain string) (models.Records, error) {
 	if api.domainIndex == nil {
 		if err := api.fetchDomainList(); err != nil {
 			return nil, err
@@ -122,7 +123,7 @@ func (api *linodeProvider) GetZoneRecords(domain string) (models.Records, error)
 }
 
 // GetDomainCorrections returns the corrections for a domain.
-func (api *linodeProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Correction, error) {
+func (api *linodeProvider) GetDomainCorrections(ctx dnscontrol.Context, dc *models.DomainConfig) ([]*models.Correction, error) {
 	dc, err := dc.Copy()
 	if err != nil {
 		return nil, err

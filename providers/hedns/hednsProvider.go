@@ -4,6 +4,7 @@ import (
 	"crypto/sha1"
 	"encoding/json"
 	"fmt"
+	"github.com/StackExchange/dnscontrol/v3/internal/dnscontrol"
 	"io/ioutil"
 	"net/http"
 	"net/http/cookiejar"
@@ -138,7 +139,7 @@ func newHEDNSProvider(cfg map[string]string, _ json.RawMessage) (providers.DNSSe
 }
 
 // ListZones list all zones on this provider.
-func (c *hednsProvider) ListZones() ([]string, error) {
+func (c *hednsProvider) ListZones(_ dnscontrol.Context) ([]string, error) {
 	domainsMap, err := c.listDomains()
 	if err != nil {
 		return nil, err
@@ -156,8 +157,8 @@ func (c *hednsProvider) ListZones() ([]string, error) {
 }
 
 // EnsureDomainExists creates the domain if it does not exist.
-func (c *hednsProvider) EnsureDomainExists(domain string) error {
-	domains, err := c.ListZones()
+func (c *hednsProvider) EnsureDomainExists(ctx dnscontrol.Context, domain string) error {
+	domains, err := c.ListZones(ctx)
 	if err != nil {
 		return err
 	}
@@ -172,12 +173,12 @@ func (c *hednsProvider) EnsureDomainExists(domain string) error {
 }
 
 // GetNameservers returns the default HEDNS nameservers.
-func (c *hednsProvider) GetNameservers(_ string) ([]*models.Nameserver, error) {
+func (c *hednsProvider) GetNameservers(_ dnscontrol.Context, _ string) ([]*models.Nameserver, error) {
 	return models.ToNameservers(defaultNameservers)
 }
 
 // GetDomainCorrections returns a list of corrections for the  domain.
-func (c *hednsProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Correction, error) {
+func (c *hednsProvider) GetDomainCorrections(ctx dnscontrol.Context, dc *models.DomainConfig) ([]*models.Correction, error) {
 	var corrections []*models.Correction
 
 	err := dc.Punycode()
@@ -185,7 +186,7 @@ func (c *hednsProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*models
 		return nil, err
 	}
 
-	records, err := c.GetZoneRecords(dc.Name)
+	records, err := c.GetZoneRecords(ctx, dc.Name)
 	if err != nil {
 		return nil, err
 	}
@@ -250,7 +251,7 @@ func (c *hednsProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*models
 }
 
 // GetZoneRecords returns all the records for the given domain
-func (c *hednsProvider) GetZoneRecords(domain string) (models.Records, error) {
+func (c *hednsProvider) GetZoneRecords(_ dnscontrol.Context, domain string) (models.Records, error) {
 	var zoneRecords []*models.RecordConfig
 
 	// Get Domain ID

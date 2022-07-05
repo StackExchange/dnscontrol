@@ -2,6 +2,7 @@ package easyname
 
 import (
 	"fmt"
+	"github.com/StackExchange/dnscontrol/v3/internal/dnscontrol"
 	"sort"
 	"strings"
 
@@ -35,7 +36,7 @@ func newEasyname(m map[string]string) (providers.Registrar, error) {
 }
 
 // GetRegistrarCorrections gathers corrections that would being n to match dc.
-func (c *easynameProvider) GetRegistrarCorrections(dc *models.DomainConfig) ([]*models.Correction, error) {
+func (c *easynameProvider) GetRegistrarCorrections(_ dnscontrol.Context, dc *models.DomainConfig) ([]*models.Correction, error) {
 	domain, err := c.getDomain(dc.Name)
 	if err != nil {
 		return nil, err

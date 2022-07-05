@@ -2,6 +2,7 @@ package powerdns
 
 import (
 	"context"
+	"github.com/StackExchange/dnscontrol/v3/internal/dnscontrol"
 	"github.com/StackExchange/dnscontrol/v3/models"
 	"github.com/StackExchange/dnscontrol/v3/pkg/diff"
 	"github.com/mittwald/go-powerdns/apis/zones"
@@ -11,7 +12,7 @@ import (
 )
 
 // GetNameservers returns the nameservers for a domain.
-func (dsp *powerdnsProvider) GetNameservers(string) ([]*models.Nameserver, error) {
+func (dsp *powerdnsProvider) GetNameservers(dnscontrol.Context, string) ([]*models.Nameserver, error) {
 	var r []string
 	for _, j := range dsp.nameservers {
 		r = append(r, j.Name)
@@ -20,7 +21,7 @@ func (dsp *powerdnsProvider) GetNameservers(string) ([]*models.Nameserver, error
 }
 
 // GetZoneRecords gets the records of a zone and returns them in RecordConfig format.
-func (dsp *powerdnsProvider) GetZoneRecords(domain string) (models.Records, error) {
+func (dsp *powerdnsProvider) GetZoneRecords(_ dnscontrol.Context, domain string) (models.Records, error) {
 	zone, err := dsp.client.Zones().GetZone(context.Background(), dsp.ServerName, domain)
 	if err != nil {
 		return nil, err
@@ -46,11 +47,11 @@ func (dsp *powerdnsProvider) GetZoneRecords(domain string) (models.Records, erro
 }
 
 // GetDomainCorrections returns a list of corrections to update a domain.
-func (dsp *powerdnsProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Correction, error) {
+func (dsp *powerdnsProvider) GetDomainCorrections(_ dnscontrol.Context, dc *models.DomainConfig) ([]*models.Correction, error) {
 	var corrections []*models.Correction
 
 	// get current zone records
-	curRecords, err := dsp.GetZoneRecords(dc.Name)
+	curRecords, err := dsp.GetZoneRecords(ctx, dc.Name)
 	if err != nil {
 		return nil, err
 	}
@@ -82,7 +83,7 @@ func (dsp *powerdnsProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*m
 			dCorrections = append(dCorrections, &models.Correction{
 				Msg: msgJoined,
 				F: func() error {
-					return dsp.client.Zones().RemoveRecordSetFromZone(context.Background(), dsp.ServerName, dc.Name, labelName, labelType)
+					return dsp.client.Zones().RemoveRecordSetFromZone(ctx, dsp.ServerName, dc.Name, labelName, labelType)
 				},
 			})
 		} else {
@@ -125,7 +126,7 @@ func (dsp *powerdnsProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*m
 }
 
 // EnsureDomainExists adds a domain to the DNS service if it does not exist
-func (dsp *powerdnsProvider) EnsureDomainExists(domain string) error {
+func (dsp *powerdnsProvider) EnsureDomainExists(_ dnscontrol.Context, domain string) error {
 	if _, err := dsp.client.Zones().GetZone(context.Background(), dsp.ServerName, domain+"."); err != nil {
 		if e, ok := err.(pdnshttp.ErrUnexpectedStatus); ok {
 			if e.StatusCode != http.StatusNotFound {

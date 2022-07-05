@@ -2,6 +2,7 @@ package internetbs
 
 import (
 	"fmt"
+	"github.com/StackExchange/dnscontrol/v3/internal/dnscontrol"
 	"sort"
 	"strings"
 
@@ -35,7 +36,7 @@ func newInternetBs(m map[string]string) (providers.Registrar, error) {
 }
 
 // GetRegistrarCorrections gathers corrections that would being n to match dc.
-func (c *internetbsProvider) GetRegistrarCorrections(dc *models.DomainConfig) ([]*models.Correction, error) {
+func (c *internetbsProvider) GetRegistrarCorrections(_ dnscontrol.Context, dc *models.DomainConfig) ([]*models.Correction, error) {
 	nss, err := c.getNameservers(dc.Name)
 	if err != nil {
 		return nil, err

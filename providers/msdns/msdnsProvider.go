@@ -2,9 +2,8 @@ package msdns
 
 import (
 	"encoding/json"
+	"github.com/StackExchange/dnscontrol/v3/internal/dnscontrol"
 	"runtime"
-
-	"github.com/StackExchange/dnscontrol/v3/pkg/printer"
 
 	"github.com/StackExchange/dnscontrol/v3/models"
 	"github.com/StackExchange/dnscontrol/v3/pkg/txtutil"
@@ -47,7 +46,7 @@ func init() {
 func newDNS(config map[string]string, metadata json.RawMessage) (providers.DNSServiceProvider, error) {
 
 	if runtime.GOOS != "windows" {
-		printer.Println("INFO: PowerShell not available. Disabling Active Directory provider.")
+		ctx.Log.Printf("INFO: PowerShell not available. Disabling Active Directory provider.")
 		return providers.None{}, nil
 	}
 
@@ -81,8 +80,8 @@ func newDNS(config map[string]string, metadata json.RawMessage) (providers.DNSSe
 
 // GetDomainCorrections get the current and existing records,
 // post-process them, and generate corrections.
-func (client *msdnsProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Correction, error) {
-	existing, err := client.GetZoneRecords(dc.Name)
+func (client *msdnsProvider) GetDomainCorrections(ctx dnscontrol.Context, dc *models.DomainConfig) ([]*models.Correction, error) {
+	existing, err := client.GetZoneRecords(ctx, dc.Name)
 	if err != nil {
 		return nil, err
 	}
@@ -91,12 +90,12 @@ func (client *msdnsProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*m
 
 	clean := PrepFoundRecords(existing)
 	PrepDesiredRecords(dc)
-	return client.GenerateDomainCorrections(dc, clean)
+	return client.GenerateDomainCorrections(ctx, dc, clean)
 }
 
 // GetZoneRecords gathers the DNS records and converts them to
 // dnscontrol's format.
-func (client *msdnsProvider) GetZoneRecords(domain string) (models.Records, error) {
+func (client *msdnsProvider) GetZoneRecords(_ dnscontrol.Context, domain string) (models.Records, error) {
 
 	// Get the existing DNS records in native format.
 	nativeExistingRecords, err := client.shell.GetDNSZoneRecords(client.dnsserver, domain)

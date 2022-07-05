@@ -3,6 +3,7 @@ package cloudns
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/StackExchange/dnscontrol/v3/internal/dnscontrol"
 	"strconv"
 	"strings"
 
@@ -63,7 +64,7 @@ func init() {
 }
 
 // GetNameservers returns the nameservers for a domain.
-func (c *cloudnsProvider) GetNameservers(domain string) ([]*models.Nameserver, error) {
+func (c *cloudnsProvider) GetNameservers(_ dnscontrol.Context, domain string) ([]*models.Nameserver, error) {
 	if len(c.nameserversNames) == 0 {
 		c.fetchAvailableNameservers()
 	}
@@ -71,7 +72,7 @@ func (c *cloudnsProvider) GetNameservers(domain string) ([]*models.Nameserver, e
 }
 
 // GetDomainCorrections returns the corrections for a domain.
-func (c *cloudnsProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Correction, error) {
+func (c *cloudnsProvider) GetDomainCorrections(ctx dnscontrol.Context, dc *models.DomainConfig) ([]*models.Correction, error) {
 	dc, err := dc.Copy()
 	if err != nil {
 		return nil, err
@@ -89,7 +90,7 @@ func (c *cloudnsProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*mode
 		return nil, fmt.Errorf("'%s' not a zone in ClouDNS account", dc.Name)
 	}
 
-	existingRecords, err := c.GetZoneRecords(dc.Name)
+	existingRecords, err := c.GetZoneRecords(ctx, dc.Name)
 	if err != nil {
 		return nil, err
 	}
@@ -187,7 +188,7 @@ func (c *cloudnsProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*mode
 }
 
 // GetZoneRecords gets the records of a zone and returns them in RecordConfig format.
-func (c *cloudnsProvider) GetZoneRecords(domain string) (models.Records, error) {
+func (c *cloudnsProvider) GetZoneRecords(_ dnscontrol.Context, domain string) (models.Records, error) {
 	records, err := c.getRecords(domain)
 	if err != nil {
 		return nil, err
@@ -200,7 +201,7 @@ func (c *cloudnsProvider) GetZoneRecords(domain string) (models.Records, error) 
 }
 
 // EnsureDomainExists returns an error if domain doesn't exist.
-func (c *cloudnsProvider) EnsureDomainExists(domain string) error {
+func (c *cloudnsProvider) EnsureDomainExists(_ dnscontrol.Context, domain string) error {
 	if err := c.fetchDomainList(); err != nil {
 		return err
 	}

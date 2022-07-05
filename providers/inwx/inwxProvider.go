@@ -3,7 +3,7 @@ package inwx
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/StackExchange/dnscontrol/v3/pkg/printer"
+	"github.com/StackExchange/dnscontrol/v3/internal/dnscontrol"
 	"sort"
 	"strings"
 	"time"
@@ -101,7 +101,7 @@ func (api *inwxAPI) loginHelper(TOTPValue string, TOTPKey string) error {
 	switch TFA := resp.TFA; TFA {
 	case "0":
 		if TOTPKey != "" || TOTPValue != "" {
-			printer.Printf("INWX: Warning: no TOTP requested by INWX but totp/totp-key is present in `creds.json`\n")
+			ctx.Log.Printf("INWX: Warning: no TOTP requested by INWX but totp/totp-key is present in `creds.json`\n")
 		}
 	case "GOOGLE-AUTH":
 		tan, err := getOTP(TOTPValue, TOTPKey)
@@ -227,10 +227,10 @@ func checkRecords(records models.Records) error {
 }
 
 // GetDomainCorrections finds the currently existing records and returns the corrections required to update them.
-func (api *inwxAPI) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Correction, error) {
+func (api *inwxAPI) GetDomainCorrections(ctx dnscontrol.Context, dc *models.DomainConfig) ([]*models.Correction, error) {
 	dc.Punycode()
 
-	foundRecords, err := api.GetZoneRecords(dc.Name)
+	foundRecords, err := api.GetZoneRecords(ctx, dc.Name)
 	if err != nil {
 		return nil, err
 	}
@@ -286,12 +286,12 @@ func (api *inwxAPI) getDefaultNameservers() []string {
 }
 
 // GetNameservers returns the default nameservers for INWX.
-func (api *inwxAPI) GetNameservers(domain string) ([]*models.Nameserver, error) {
+func (api *inwxAPI) GetNameservers(_ dnscontrol.Context, domain string) ([]*models.Nameserver, error) {
 	return models.ToNameservers(api.getDefaultNameservers())
 }
 
 // GetZoneRecords receives the current records from Inwx and converts them to models.RecordConfig.
-func (api *inwxAPI) GetZoneRecords(domain string) (models.Records, error) {
+func (api *inwxAPI) GetZoneRecords(_ dnscontrol.Context, domain string) (models.Records, error) {
 	info, err := api.client.Nameservers.Info(&goinwx.NameserverInfoRequest{Domain: domain})
 	if err != nil {
 		return nil, err
@@ -353,7 +353,7 @@ func (api *inwxAPI) updateNameservers(ns []string, domain string) func() error {
 }
 
 // GetRegistrarCorrections is part of the registrar provider and determines if the nameservers have to be updated.
-func (api *inwxAPI) GetRegistrarCorrections(dc *models.DomainConfig) ([]*models.Correction, error) {
+func (api *inwxAPI) GetRegistrarCorrections(_ dnscontrol.Context, dc *models.DomainConfig) ([]*models.Correction, error) {
 	info, err := api.client.Domains.Info(dc.Name, 0)
 	if err != nil {
 		return nil, err
@@ -396,7 +396,7 @@ func (api *inwxAPI) fetchNameserverDomains() error {
 }
 
 // EnsureDomainExists returns an error if domain does not exist.
-func (api *inwxAPI) EnsureDomainExists(domain string) error {
+func (api *inwxAPI) EnsureDomainExists(_ dnscontrol.Context, domain string) error {
 	if api.domainIndex == nil { // only pull the data once.
 		if err := api.fetchNameserverDomains(); err != nil {
 			return err
@@ -418,6 +418,6 @@ func (api *inwxAPI) EnsureDomainExists(domain string) error {
 	if err != nil {
 		return err
 	}
-	printer.Printf("Added zone for %s to INWX account with id %d\n", domain, id)
+	ctx.Log.Printf("Added zone for %s to INWX account with id %d\n", domain, id)
 	return nil
 }

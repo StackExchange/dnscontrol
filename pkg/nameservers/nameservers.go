@@ -3,6 +3,7 @@ package nameservers
 
 import (
 	"fmt"
+	"github.com/StackExchange/dnscontrol/v3/internal/dnscontrol"
 	"strings"
 
 	"strconv"
@@ -13,7 +14,7 @@ import (
 // DetermineNameservers will find all nameservers we should use for a domain. It follows the following rules:
 // 1. All explicitly defined NAMESERVER records will be used.
 // 2. Each DSP declares how many nameservers to use. Default is all. 0 indicates to use none.
-func DetermineNameservers(dc *models.DomainConfig) ([]*models.Nameserver, error) {
+func DetermineNameservers(ctx dnscontrol.Context, dc *models.DomainConfig) ([]*models.Nameserver, error) {
 	// always take explicit
 	ns := dc.Nameservers
 	for _, dnsProvider := range dc.DNSProviderInstances {
@@ -21,8 +22,9 @@ func DetermineNameservers(dc *models.DomainConfig) ([]*models.Nameserver, error)
 		if n == 0 {
 			continue
 		}
-		fmt.Printf("----- Getting nameservers from: %s\n", dnsProvider.Name)
-		nss, err := dnsProvider.Driver.GetNameservers(dc.Name)
+		ctx.Log.Printf("----- Getting nameservers from: %s\n", dnsProvider.Name)
+
+		nss, err := dnsProvider.Driver.GetNameservers(ctx, dc.Name)
 		if err != nil {
 			return nil, err
 		}

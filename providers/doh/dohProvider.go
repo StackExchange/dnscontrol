@@ -2,6 +2,7 @@ package doh
 
 import (
 	"fmt"
+	"github.com/StackExchange/dnscontrol/v3/internal/dnscontrol"
 	"sort"
 	"strings"
 
@@ -32,7 +33,7 @@ func newDNSOverHTTPS(m map[string]string) (providers.Registrar, error) {
 }
 
 // GetRegistrarCorrections gathers corrections that would being n to match dc.
-func (c *dohProvider) GetRegistrarCorrections(dc *models.DomainConfig) ([]*models.Correction, error) {
+func (c *dohProvider) GetRegistrarCorrections(_ dnscontrol.Context, dc *models.DomainConfig) ([]*models.Correction, error) {
 	nss, err := c.getNameservers(dc.Name)
 	if err != nil {
 		return nil, err

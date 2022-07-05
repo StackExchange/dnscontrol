@@ -1,4 +1,4 @@
-package desec
+package desc
 
 import (
 	"bytes"
@@ -11,8 +11,6 @@ import (
 	"strings"
 	"sync"
 	"time"
-
-	"github.com/StackExchange/dnscontrol/v3/pkg/printer"
 )
 
 const apiBase = "https://desec.io/api/v1"
@@ -86,7 +84,7 @@ func (c *desecProvider) initializeDomainIndex() error {
 		//pagination is required
 		links := c.convertLinks(resp.Header.Get("Link"))
 		endpoint = links["first"]
-		printer.Debugf("initial endpoint %s\n", endpoint)
+		ctx.Log.Debugf("initial endpoint %s\n", endpoint)
 		for endpoint != "" {
 			bodyString, resp, err = c.get(endpoint, "GET")
 			if err != nil {
@@ -101,9 +99,9 @@ func (c *desecProvider) initializeDomainIndex() error {
 			}
 			links = c.convertLinks(resp.Header.Get("Link"))
 			endpoint = links["next"]
-			printer.Debugf("next endpoint %s\n", endpoint)
+			ctx.Log.Debugf("next endpoint %s\n", endpoint)
 		}
-		printer.Debugf("Domain Index initilized with pagination (%d domains)\n", len(c.domainIndex))
+		ctx.Log.Debugf("Domain Index initilized with pagination (%d domains)\n", len(c.domainIndex))
 		return nil //domainIndex was build using pagination without errors
 	}
 
@@ -116,7 +114,7 @@ func (c *desecProvider) initializeDomainIndex() error {
 	}
 	err = c.buildIndexFromResponse(bodyString)
 	if err == nil {
-		printer.Debugf("Domain Index initilized without pagination (%d domains)\n", len(c.domainIndex))
+		ctx.Log.Debugf("Domain Index initilized without pagination (%d domains)\n", len(c.domainIndex))
 	}
 	return err
 }
@@ -142,17 +140,17 @@ func (c *desecProvider) buildIndexFromResponse(bodyString []byte) error {
 //Parses the Link Header into a map (https://github.com/desec-io/desec-tools/blob/master/fetch_zone.py#L13)
 func (c *desecProvider) convertLinks(links string) map[string]string {
 	mapping := make(map[string]string)
-	printer.Debugf("Header: %s\n", links)
+	ctx.Log.Debugf("Header: %s\n", links)
 	for _, link := range strings.Split(links, ", ") {
 		tmpurl := strings.Split(link, "; ")
 		if len(tmpurl) != 2 {
-			printer.Printf("unexpected link header %s", link)
+			ctx.Log.Printf("unexpected link header %s", link)
 			continue
 		}
 		r := regexp.MustCompile(`rel="(.*)"`)
 		matches := r.FindStringSubmatch(tmpurl[1])
 		if len(matches) != 2 {
-			printer.Printf("unexpected label %s", tmpurl[1])
+			ctx.Log.Printf("unexpected label %s", tmpurl[1])
 			continue
 		}
 		// mapping["$label"] = "$URL"
@@ -170,7 +168,7 @@ func (c *desecProvider) getRecords(domain string) ([]resourceRecord, error) {
 		//pagination required
 		links := c.convertLinks(resp.Header.Get("Link"))
 		endpoint = links["first"]
-		printer.Debugf("getRecords: initial endpoint %s\n", fmt.Sprintf(endpoint, domain))
+		ctx.Log.Debugf("getRecords: initial endpoint %s\n", fmt.Sprintf(endpoint, domain))
 		for endpoint != "" {
 			bodyString, resp, err = c.get(endpoint, "GET")
 			if err != nil {
@@ -186,9 +184,9 @@ func (c *desecProvider) getRecords(domain string) ([]resourceRecord, error) {
 			rrsNew = append(rrsNew, tmp...)
 			links = c.convertLinks(resp.Header.Get("Link"))
 			endpoint = links["next"]
-			printer.Debugf("getRecords: next endpoint %s\n", endpoint)
+			ctx.Log.Debugf("getRecords: next endpoint %s\n", endpoint)
 		}
-		printer.Debugf("Build rrset using pagination (%d rrs)\n", len(rrsNew))
+		ctx.Log.Debugf("Build rrset using pagination (%d rrs)\n", len(rrsNew))
 		return rrsNew, nil //domainIndex was build using pagination without errors
 	}
 	//no pagination
@@ -200,7 +198,7 @@ func (c *desecProvider) getRecords(domain string) ([]resourceRecord, error) {
 		return rrsNew, err
 	}
 	rrsNew = append(rrsNew, tmp...)
-	printer.Debugf("Build rrset without pagination (%d rrs)\n", len(rrsNew))
+	ctx.Log.Debugf("Build rrset without pagination (%d rrs)\n", len(rrsNew))
 	return rrsNew, nil
 }
 
@@ -240,8 +238,8 @@ func (c *desecProvider) createDomain(domain string) error {
 	if err != nil {
 		return err
 	}
-	printer.Printf("To enable DNSSEC validation for your domain, make sure to convey the DS record(s) to your registrar:\n")
-	printer.Printf("%+q", dm.Keys)
+	ctx.Log.Printf("To enable DNSSEC validation for your domain, make sure to convey the DS record(s) to your registrar:\n")
+	ctx.Log.Printf("%+q", dm.Keys)
 	return nil
 }
 
@@ -297,12 +295,12 @@ retry:
 					if wait > 180 {
 						return []byte{}, resp, fmt.Errorf("rate limiting exceeded")
 					}
-					printer.Warnf("Rate limiting.. waiting for %s seconds", waitfor)
+					ctx.Log.Warnf("Rate limiting.. waiting for %s seconds", waitfor)
 					time.Sleep(time.Duration(wait+1) * time.Second)
 					goto retry
 				}
 			}
-			printer.Warnf("Rate limiting.. waiting for 500 milliseconds")
+			ctx.Log.Warnf("Rate limiting.. waiting for 500 milliseconds")
 			time.Sleep(500 * time.Millisecond)
 			goto retry
 		}
@@ -364,12 +362,12 @@ retry:
 					if wait > 180 {
 						return []byte{}, fmt.Errorf("rate limiting exceeded")
 					}
-					printer.Warnf("Rate limiting.. waiting for %s seconds", waitfor)
+					ctx.Log.Warnf("Rate limiting.. waiting for %s seconds", waitfor)
 					time.Sleep(time.Duration(wait+1) * time.Second)
 					goto retry
 				}
 			}
-			printer.Warnf("Rate limiting.. waiting for 500 milliseconds")
+			ctx.Log.Warnf("Rate limiting.. waiting for 500 milliseconds")
 			time.Sleep(500 * time.Millisecond)
 			goto retry
 		}

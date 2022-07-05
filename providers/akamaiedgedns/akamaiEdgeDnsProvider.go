@@ -12,11 +12,11 @@ https://www.akamai.com/us/en/multimedia/documents/product-brief/edge-dns-product
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/StackExchange/dnscontrol/v3/internal/dnscontrol"
 	"strings"
 
 	"github.com/StackExchange/dnscontrol/v3/models"
 	"github.com/StackExchange/dnscontrol/v3/pkg/diff"
-	"github.com/StackExchange/dnscontrol/v3/pkg/printer"
 	"github.com/StackExchange/dnscontrol/v3/pkg/txtutil"
 	"github.com/StackExchange/dnscontrol/v3/providers"
 )
@@ -95,9 +95,9 @@ func newEdgeDNSDSP(config map[string]string, metadata json.RawMessage) (provider
 }
 
 // EnsureDomainExists configures a new zone if the zone does not already exist.
-func (a *edgeDNSProvider) EnsureDomainExists(domain string) error {
+func (a *edgeDNSProvider) EnsureDomainExists(_ dnscontrol.Context, domain string) error {
 	if zoneDoesExist(domain) {
-		printer.Debugf("Zone %s already exists\n", domain)
+		ctx.Log.Debugf("Zone %s already exists\n", domain)
 		return nil
 	}
 	return createZone(domain, a.contractID, a.groupID)
@@ -107,7 +107,7 @@ func (a *edgeDNSProvider) EnsureDomainExists(domain string) error {
 // and a function that, if called, will make the change.
 // “dnscontrol preview” simply prints the text strings.
 // "dnscontrol push" prints the strings and calls the functions.
-func (a *edgeDNSProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Correction, error) {
+func (a *edgeDNSProvider) GetDomainCorrections(ctx dnscontrol.Context, dc *models.DomainConfig) ([]*models.Correction, error) {
 	err := dc.Punycode()
 	if err != nil {
 		return nil, err
@@ -155,9 +155,9 @@ func (a *edgeDNSProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*mode
 					return deleteRecordset(existing, dc.Name)
 				},
 			})
-			printer.Debugf("deleteRecordset: %s %s\n", key.NameFQDN, key.Type)
+			ctx.Log.Debugf("deleteRecordset: %s %s\n", key.NameFQDN, key.Type)
 			for _, rdata := range existing {
-				printer.Debugf("  Rdata: %s\n", rdata.GetTargetCombined())
+				ctx.Log.Debugf("  Rdata: %s\n", rdata.GetTargetCombined())
 			}
 		} else if !okExisting && okDesired {
 			// Not in the existing map but in the desired map: Create
@@ -167,9 +167,9 @@ func (a *edgeDNSProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*mode
 					return createRecordset(desired, dc.Name)
 				},
 			})
-			printer.Debugf("createRecordset: %s %s\n", key.NameFQDN, key.Type)
+			ctx.Log.Debugf("createRecordset: %s %s\n", key.NameFQDN, key.Type)
 			for _, rdata := range desired {
-				printer.Debugf("  Rdata: %s\n", rdata.GetTargetCombined())
+				ctx.Log.Debugf("  Rdata: %s\n", rdata.GetTargetCombined())
 			}
 		} else if okExisting && okDesired {
 			// In the existing map and in the desired map: Replace
@@ -179,9 +179,9 @@ func (a *edgeDNSProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*mode
 					return replaceRecordset(desired, dc.Name)
 				},
 			})
-			printer.Debugf("replaceRecordset: %s %s\n", key.NameFQDN, key.Type)
+			ctx.Log.Debugf("replaceRecordset: %s %s\n", key.NameFQDN, key.Type)
 			for _, rdata := range desired {
-				printer.Debugf("  Rdata: %s\n", rdata.GetTargetCombined())
+				ctx.Log.Debugf("  Rdata: %s\n", rdata.GetTargetCombined())
 			}
 		}
 	}
@@ -205,7 +205,7 @@ func (a *edgeDNSProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*mode
 				return autoDNSSecEnable(true, dc.Name)
 			},
 		})
-		printer.Debugf("autoDNSSecEnable: Enable AutoDnsSec for zone %s\n", dc.Name)
+		ctx.Log.Debugf("autoDNSSecEnable: Enable AutoDnsSec for zone %s\n", dc.Name)
 	} else if existingAutoDNSSecEnabled && !desiredAutoDNSSecEnabled {
 		// Existing true (enabled), Desired false (disabled)
 		corrections = append(corrections, &models.Correction{
@@ -214,14 +214,14 @@ func (a *edgeDNSProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*mode
 				return autoDNSSecEnable(false, dc.Name)
 			},
 		})
-		printer.Debugf("autoDNSSecEnable: Disable AutoDnsSec for zone %s\n", dc.Name)
+		ctx.Log.Debugf("autoDNSSecEnable: Disable AutoDnsSec for zone %s\n", dc.Name)
 	}
 
 	return corrections, nil
 }
 
 // GetNameservers returns the nameservers for a domain.
-func (a *edgeDNSProvider) GetNameservers(domain string) ([]*models.Nameserver, error) {
+func (a *edgeDNSProvider) GetNameservers(_ dnscontrol.Context, domain string) ([]*models.Nameserver, error) {
 	authorities, err := getAuthorities(a.contractID)
 	if err != nil {
 		return nil, err
@@ -230,7 +230,7 @@ func (a *edgeDNSProvider) GetNameservers(domain string) ([]*models.Nameserver, e
 }
 
 // GetZoneRecords returns an array of RecordConfig structs for a zone.
-func (a *edgeDNSProvider) GetZoneRecords(domain string) (models.Records, error) {
+func (a *edgeDNSProvider) GetZoneRecords(_ dnscontrol.Context, domain string) (models.Records, error) {
 	records, err := getRecords(domain)
 	if err != nil {
 		return nil, err
@@ -239,7 +239,7 @@ func (a *edgeDNSProvider) GetZoneRecords(domain string) (models.Records, error) 
 }
 
 // ListZones returns all DNS zones managed by this provider.
-func (a *edgeDNSProvider) ListZones() ([]string, error) {
+func (a *edgeDNSProvider) ListZones(_ dnscontrol.Context) ([]string, error) {
 	zones, err := listZones(a.contractID)
 	if err != nil {
 		return nil, err

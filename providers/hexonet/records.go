@@ -4,7 +4,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-	"github.com/StackExchange/dnscontrol/v3/pkg/printer"
+	"github.com/StackExchange/dnscontrol/v3/internal/dnscontrol"
 	"regexp"
 	"strconv"
 	"strings"
@@ -38,7 +38,7 @@ type HXRecord struct {
 }
 
 // GetZoneRecords gets the records of a zone and returns them in RecordConfig format.
-func (n *HXClient) GetZoneRecords(domain string) (models.Records, error) {
+func (n *HXClient) GetZoneRecords(_ dnscontrol.Context, domain string) (models.Records, error) {
 	records, err := n.getRecords(domain)
 	if err != nil {
 		return nil, err
@@ -59,10 +59,10 @@ func (n *HXClient) GetZoneRecords(domain string) (models.Records, error) {
 }
 
 // GetDomainCorrections gathers correctios that would bring n to match dc.
-func (n *HXClient) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Correction, error) {
+func (n *HXClient) GetDomainCorrections(ctx dnscontrol.Context, dc *models.DomainConfig) ([]*models.Correction, error) {
 	dc.Punycode()
 
-	actual, err := n.GetZoneRecords(dc.Name)
+	actual, err := n.GetZoneRecords(ctx, dc.Name)
 	if err != nil {
 		return nil, err
 	}
@@ -165,7 +165,7 @@ func (n *HXClient) showCommand(cmd map[string]string) {
 	if err != nil {
 		fmt.Errorf("error: %w", err)
 	}
-	printer.Printf(string(b))
+	ctx.Log.Printf(string(b))
 }
 
 func (n *HXClient) updateZoneBy(params map[string]interface{}, domain string) error {

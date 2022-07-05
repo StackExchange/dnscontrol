@@ -2,6 +2,7 @@ package commands
 
 import (
 	"fmt"
+	"github.com/StackExchange/dnscontrol/v3/internal/dnscontrol"
 	"log"
 	"os"
 	"strings"
@@ -93,16 +94,18 @@ func (args *PushArgs) flags() []cli.Flag {
 
 // Preview implements the preview subcommand.
 func Preview(args PreviewArgs) error {
-	return run(args, false, false, printer.DefaultPrinter)
+	return run(args, false, false)
 }
 
 // Push implements the push subcommand.
 func Push(args PushArgs) error {
-	return run(args.PreviewArgs, true, args.Interactive, printer.DefaultPrinter)
+	return run(args.PreviewArgs, true, args.Interactive)
 }
 
 // run is the main routine common to preview/push
-func run(args PreviewArgs, push bool, interactive bool, out printer.CLI) error {
+func run(args PreviewArgs, push bool, interactive bool) error {
+	ctx := dnscontrol.GetContext()
+
 	// TODO: make truly CLI independent. Perhaps return results on a channel as they occur
 	cfg, err := GetDNSConfig(args.GetDNSConfigArgs)
 	if err != nil {
@@ -121,6 +124,7 @@ func run(args PreviewArgs, push bool, interactive bool, out printer.CLI) error {
 	if PrintValidationErrors(errs) {
 		return fmt.Errorf("exiting due to validation errors")
 	}
+
 	anyErrors := false
 	totalCorrections := 0
 DomainLoop:
@@ -128,30 +132,36 @@ DomainLoop:
 		if !args.shouldRunDomain(domain.UniqueName) {
 			continue
 		}
-		out.StartDomain(domain.UniqueName)
-		nsList, err := nameservers.DetermineNameservers(domain)
+
+		// get dnscontrol.Context with a logger scoped to domain
+		// to buffer log output and flush it at the end
+		domainCtx := dnscontrol.GetDomainContext(ctx, domain.UniqueName)
+		domainCtx.StartDomain()
+
+		nsList, err := nameservers.DetermineNameservers(domainCtx, domain)
 		if err != nil {
 			return err
 		}
 		domain.Nameservers = nsList
 		nameservers.AddNSRecords(domain)
 		for _, provider := range domain.DNSProviderInstances {
-
 			if !args.NoPopulate {
 				// preview run: check if zone is already there, if not print a warning
 				if lister, ok := provider.Driver.(providers.ZoneLister); ok && !push {
-					zones, err := lister.ListZones()
+					zones, err := lister.ListZones(domainCtx)
 					if err != nil {
 						return err
 					}
 					if !slices.Contains(zones, domain.Name) {
-						out.Warnf("Domain '%s' does not exist in the '%s' profile and will be added automatically.\n", domain.Name, provider.Name)
+						domainCtx.Log.Warnf("Domain '%s' does not exist in the '%s' profile and will be added automatically.\n", domain.Name, provider.Name)
+						domainCtx.EndDomain()
 						continue // continue with next provider, as we can not determine corrections without an existing zone
 					}
 				} else if creator, ok := provider.Driver.(providers.DomainCreator); ok && push {
 					// this is the actual push, ensure domain exists at DSP
-					if err := creator.EnsureDomainExists(domain.Name); err != nil {
-						out.Warnf("Error creating domain: %s\n", err)
+					if err := creator.EnsureDomainExists(domainCtx, domain.Name); err != nil {
+						domainCtx.Log.Warnf("Error creating domain: %s\n", err)
+						domainCtx.EndDomain()
 						continue // continue with next provider, as we couldn't create this one
 					}
 				}
@@ -161,50 +171,62 @@ DomainLoop:
 			if err != nil {
 				return err
 			}
-			shouldrun := args.shouldRunProvider(provider.Name, dc)
-			out.StartDNSProvider(provider.Name, !shouldrun)
-			if !shouldrun {
+
+			shouldRun := args.shouldRunProvider(provider.Name, dc)
+			domainCtx.StartDNSProvider(provider.Name, !shouldRun)
+			if !shouldRun {
+				domainCtx.EndDomain()
 				continue
 			}
 
 			/// This is where we should audit?
 
-			corrections, err := provider.Driver.GetDomainCorrections(dc)
-			out.EndProvider(len(corrections), err)
+			corrections, err := provider.Driver.GetDomainCorrections(domainCtx, dc)
+			domainCtx.EndProvider(len(corrections), err)
 			if err != nil {
 				anyErrors = true
+				domainCtx.EndDomain()
 				continue DomainLoop
 			}
 			totalCorrections += len(corrections)
-			anyErrors = printOrRunCorrections(domain.Name, provider.Name, corrections, out, push, interactive, notifier) || anyErrors
+			anyErrors = printOrRunCorrections(domainCtx, domain.Name, provider.Name, corrections, push, printer.DefaultPrinter, interactive, notifier) || anyErrors
 		}
+
 		run := args.shouldRunProvider(domain.RegistrarName, domain)
-		out.StartRegistrar(domain.RegistrarName, !run)
+		domainCtx.StartRegistrar(domain.RegistrarName, !run)
 		if !run {
+			domainCtx.EndDomain()
 			continue
 		}
+
 		if len(domain.Nameservers) == 0 && domain.Metadata["no_ns"] != "true" {
-			out.Warnf("No nameservers declared; skipping registrar. Add {no_ns:'true'} to force.\n")
+			domainCtx.Log.Warnf("No nameservers declared; skipping registrar. Add {no_ns:'true'} to force.\n")
+			domainCtx.EndDomain()
 			continue
 		}
+
 		dc, err := domain.Copy()
 		if err != nil {
 			log.Fatal(err)
 		}
-		corrections, err := domain.RegistrarInstance.Driver.GetRegistrarCorrections(dc)
-		out.EndProvider(len(corrections), err)
+
+		corrections, err := domain.RegistrarInstance.Driver.GetRegistrarCorrections(domainCtx, dc)
+		domainCtx.EndProvider(len(corrections), err)
 		if err != nil {
 			anyErrors = true
+			domainCtx.EndDomain()
 			continue
 		}
 		totalCorrections += len(corrections)
-		anyErrors = printOrRunCorrections(domain.Name, domain.RegistrarName, corrections, out, push, interactive, notifier) || anyErrors
+		anyErrors = printOrRunCorrections(domainCtx, domain.Name, domain.RegistrarName, corrections, push, printer.DefaultPrinter, interactive, notifier) || anyErrors
+		domainCtx.EndDomain()
 	}
+
 	if os.Getenv("TEAMCITY_VERSION") != "" {
 		fmt.Fprintf(os.Stderr, "##teamcity[buildStatus status='SUCCESS' text='%d corrections']", totalCorrections)
 	}
 	notifier.Done()
-	out.Printf("Done. %d corrections.\n", totalCorrections)
+	printer.DefaultPrinter.Printf("Done. %d corrections.\n", totalCorrections)
 	if anyErrors {
 		return fmt.Errorf("completed with errors")
 	}
@@ -464,20 +486,20 @@ func refineProviderType(credEntryName string, t string, credFields map[string]st
 
 }
 
-func printOrRunCorrections(domain string, provider string, corrections []*models.Correction, out printer.CLI, push bool, interactive bool, notifier notifications.Notifier) (anyErrors bool) {
+func printOrRunCorrections(ctx dnscontrol.Context, domain string, provider string, corrections []*models.Correction, push bool, out printer.CLI, interactive bool, notifier notifications.Notifier) (anyErrors bool) {
 	anyErrors = false
 	if len(corrections) == 0 {
 		return false
 	}
 	for i, correction := range corrections {
-		out.PrintCorrection(i, correction)
+		ctx.PrintCorrectionMsg(i, correction.Msg)
 		var err error
 		if push {
 			if interactive && !out.PromptToRun() {
 				continue
 			}
 			err = correction.F()
-			out.EndCorrection(err)
+			ctx.EndCorrection(err)
 			if err != nil {
 				anyErrors = true
 			}
