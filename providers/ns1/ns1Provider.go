@@ -284,7 +284,9 @@ func convert(zr *dns.ZoneRecord, domain string) ([]*models.RecordConfig, error) 
 			Original: zr,
 		}
 		rec.SetLabelFromFQDN(zr.Domain, domain)
-		switch rtype := zr.Type; rtype {
+		rtype := zr.Type
+		var err error
+		switch rtype {
 		case "DNSKEY", "RRSIG":
 			// if a zone is enabled for DNSSEC, NS1 autoconfigures DNSKEY & RRSIG records.
 			// these entries are not modifiable via the API though, so we have to ignore them while converting.
@@ -292,25 +294,23 @@ func convert(zr *dns.ZoneRecord, domain string) ([]*models.RecordConfig, error) 
 			continue
 		case "ALIAS":
 			rec.Type = rtype
-			if err := rec.SetTarget(ans); err != nil {
-				return nil, fmt.Errorf("unparsable %s record received from ns1: %w", rtype, err)
-			}
+			err = rec.SetTarget(ans)
 		case "URLFWD":
 			rec.Type = rtype
-			if err := rec.SetTarget(ans); err != nil {
-				return nil, fmt.Errorf("unparsable %s record received from ns1: %w", rtype, err)
-			}
+			err = rec.SetTarget(ans)
 		case "CAA":
 			//dnscontrol expects quotes around multivalue CAA entries, API doesn't add them
 			xAns := strings.SplitN(ans, " ", 3)
-			if err := rec.SetTargetCAAStrings(xAns[0], xAns[1], xAns[2]); err != nil {
-				return nil, fmt.Errorf("unparsable %s record received from ns1: %w", rtype, err)
-			}
+			err = rec.SetTargetCAAStrings(xAns[0], xAns[1], xAns[2])
+		case "TXT":
+			err = rec.SetTargetTXTQuotedFields(ans)
 		default:
-			if err := rec.PopulateFromString(rtype, ans, domain); err != nil {
-				return nil, fmt.Errorf("unparsable record received from ns1: %w", err)
-			}
+			err = rec.PopulateFromString(rtype, ans, domain)
 		}
+		if err != nil {
+			return nil, fmt.Errorf("unparsable %s record received from ns1: %w", rtype, err)
+		}
+
 		found = append(found, rec)
 	}
 	return found, nil
