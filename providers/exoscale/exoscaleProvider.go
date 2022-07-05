@@ -4,8 +4,9 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"github.com/StackExchange/dnscontrol/v3/pkg/printer"
 	"strings"
+
+	"github.com/StackExchange/dnscontrol/v3/pkg/printer"
 
 	"github.com/exoscale/egoscale"
 
@@ -102,19 +103,23 @@ func (c *exoscaleProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*mod
 			Original: r,
 		}
 		rec.SetLabel(r.Name, dc.Name)
+
+		var err error
 		switch rtype := r.RecordType; rtype {
 		case "ALIAS", "URL":
-			rec.Type = r.RecordType
-			rec.SetTarget(r.Content)
+			rec.Type = rtype
+			err = rec.SetTarget(r.Content)
 		case "MX":
-			if err := rec.SetTargetMX(uint16(r.Prio), r.Content); err != nil {
-				return nil, fmt.Errorf("unparsable record received from exoscale: %w", err)
-			}
+			err = rec.SetTargetMX(uint16(r.Prio), r.Content)
+		case "TXT":
+			err = rec.SetTargetTXTQuotedFields(r.Content)
 		default:
-			if err := rec.PopulateFromString(r.RecordType, r.Content, dc.Name); err != nil {
-				return nil, fmt.Errorf("unparsable record received from exoscale: %w", err)
-			}
+			err = rec.PopulateFromString(rtype, r.Content, dc.Name)
 		}
+		if err != nil {
+			return nil, fmt.Errorf("unparsable record received from exoscale: %w", err)
+		}
+
 		existingRecords = append(existingRecords, rec)
 	}
 	removeOtherNS(dc)
