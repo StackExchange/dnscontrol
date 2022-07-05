@@ -4,10 +4,11 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"github.com/StackExchange/dnscontrol/v3/pkg/printer"
 	"sort"
 	"strconv"
 	"strings"
+
+	"github.com/StackExchange/dnscontrol/v3/pkg/printer"
 
 	dnsimpleapi "github.com/dnsimple/dnsimple-go/dnsimple"
 	"golang.org/x/oauth2"
@@ -92,35 +93,33 @@ func (c *dnsimpleProvider) GetZoneRecords(domain string) (models.Records, error)
 			Original: r,
 		}
 		rec.SetLabel(r.Name, domain)
+
+		var err error
 		switch rtype := r.Type; rtype {
 		case "DNSKEY", "CDNSKEY", "CDS":
 			continue
 		case "ALIAS", "URL":
 			rec.Type = r.Type
-			if err := rec.SetTarget(r.Content); err != nil {
-				return nil, fmt.Errorf("unparsable record received from dnsimple: %w", err)
-			}
+			err = rec.SetTarget(r.Content)
 		case "DS":
-			if err := rec.SetTargetDSString(r.Content); err != nil {
-				return nil, fmt.Errorf("unparsable record received from dnsimple: %w", err)
-			}
+			err = rec.SetTargetDSString(r.Content)
 		case "MX":
-			if err := rec.SetTargetMX(uint16(r.Priority), r.Content); err != nil {
-				return nil, fmt.Errorf("unparsable record received from dnsimple: %w", err)
-			}
+			err = rec.SetTargetMX(uint16(r.Priority), r.Content)
 		case "SRV":
 			parts := strings.Fields(r.Content)
 			if len(parts) == 3 {
 				r.Content += "."
 			}
-			if err := rec.SetTargetSRVPriorityString(uint16(r.Priority), r.Content); err != nil {
-				return nil, fmt.Errorf("unparsable record received from dnsimple: %w", err)
-			}
+			err = rec.SetTargetSRVPriorityString(uint16(r.Priority), r.Content)
+		case "TXT":
+			err = rec.SetTargetTXTQuotedFields(r.Content)
 		default:
-			if err := rec.PopulateFromString(r.Type, r.Content, domain); err != nil {
-				return nil, fmt.Errorf("unparsable record received from dnsimple: %w", err)
-			}
+			err = rec.PopulateFromString(r.Type, r.Content, domain)
 		}
+		if err != nil {
+			return nil, fmt.Errorf("unparsable record received from dnsimple: %w", err)
+		}
+
 		cleanedRecords = append(cleanedRecords, rec)
 	}
 
