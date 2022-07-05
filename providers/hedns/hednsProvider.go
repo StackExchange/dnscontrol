@@ -329,10 +329,9 @@ func (c *hednsProvider) GetZoneRecords(domain string) (models.Records, error) {
 			err = rc.SetTargetMX(uint16(priority), data+".")
 		case "SRV":
 			err = rc.SetTargetSRVPriorityString(uint16(priority), data)
-		case "SPF":
-			// Convert to TXT record as SPF is deprecated
-			rc.Type = "TXT"
-			fallthrough
+		case "SPF", "TXT":
+			rc.Type = "TXT" // Convert to TXT record as SPF is deprecated
+			err = rc.SetTargetTXTQuotedFields(data)
 		default:
 			err = rc.PopulateFromString(rc.Type, data, domain)
 		}
