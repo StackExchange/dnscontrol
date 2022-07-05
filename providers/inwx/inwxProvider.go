@@ -3,10 +3,11 @@ package inwx
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/StackExchange/dnscontrol/v3/pkg/printer"
 	"sort"
 	"strings"
 	"time"
+
+	"github.com/StackExchange/dnscontrol/v3/pkg/printer"
 
 	"github.com/StackExchange/dnscontrol/v3/models"
 	"github.com/StackExchange/dnscontrol/v3/pkg/diff"
@@ -326,6 +327,8 @@ func (api *inwxAPI) GetZoneRecords(domain string) (models.Records, error) {
 			err = rc.SetTargetMX(uint16(record.Priority), record.Content)
 		case "SRV":
 			err = rc.SetTargetSRVPriorityString(uint16(record.Priority), record.Content)
+		case "TXT":
+			err = rc.SetTargetTXTQuotedFields(record.Content)
 		default:
 			err = rc.PopulateFromString(rType, record.Content, domain)
 		}
