@@ -10,6 +10,7 @@ https://github.com/akamai/AkamaiOPEN-edgegrid-golang
 
 import (
 	"fmt"
+
 	"github.com/StackExchange/dnscontrol/v3/models"
 	"github.com/StackExchange/dnscontrol/v3/pkg/printer"
 	dnsv2 "github.com/akamai/AkamaiOPEN-edgegrid-golang/configdns-v2"
@@ -292,7 +293,15 @@ func getRecords(zonename string) ([]*models.RecordConfig, error) {
 				TTL:  uint32(akattl),
 			}
 			rc.SetLabelFromFQDN(akaname, zonename)
-			err = rc.PopulateFromString(akatype, r, zonename)
+
+			//err = rc.PopulateFromString(akatype, r, zonename)
+			switch akatype {
+			case "TXT":
+				err = rec.SetTargetTXTQuotedFields(target)
+			default:
+				err = rec.PopulateFromString(rType, target, origin)
+			}
+
 			if err != nil {
 				return nil, err
 			}
