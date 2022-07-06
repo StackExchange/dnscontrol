@@ -50,6 +50,8 @@ var features = providers.DocumentationNotes{
 	providers.DocOfficiallySupported: providers.Can(),
 }
 
+var ctx = dnscontrol.GetContext()
+
 func initBind(config map[string]string, providermeta json.RawMessage) (providers.DNSServiceProvider, error) {
 	// config -- the key/values from creds.json
 	// meta -- the json blob from NewReq('name', 'TYPE', meta)
@@ -91,6 +93,7 @@ func init() {
 	fns := providers.DspFuncs{
 		Initializer:   initBind,
 		RecordAuditor: AuditRecords,
+		Context:       ctx,
 	}
 	providers.RegisterDomainServiceProviderType("BIND", fns, features)
 }

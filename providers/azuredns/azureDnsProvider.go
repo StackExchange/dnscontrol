@@ -68,10 +68,13 @@ var features = providers.DocumentationNotes{
 	providers.DocOfficiallySupported: providers.Can(),
 }
 
+var ctx = dnscontrol.GetContext()
+
 func init() {
 	fns := providers.DspFuncs{
 		Initializer:   newAzureDNSDsp,
 		RecordAuditor: AuditRecords,
+		Context:       ctx,
 	}
 	providers.RegisterDomainServiceProviderType("AZURE_DNS", fns, features)
 	providers.RegisterCustomRecordType("AZURE_ALIAS", "AZURE_DNS", "")

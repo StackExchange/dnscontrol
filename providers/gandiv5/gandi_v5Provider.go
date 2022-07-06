@@ -41,6 +41,7 @@ func init() {
 	fns := providers.DspFuncs{
 		Initializer:   newDsp,
 		RecordAuditor: AuditRecords,
+		Context:       ctx,
 	}
 	providers.RegisterDomainServiceProviderType("GANDI_V5", fns, features)
 	providers.RegisterRegistrarType("GANDI_V5", newReg)
@@ -61,6 +62,8 @@ var features = providers.DocumentationNotes{
 	providers.DocCreateDomains:       providers.Cannot("Can only manage domains registered through their service"),
 	providers.DocOfficiallySupported: providers.Cannot(),
 }
+
+var ctx = dnscontrol.GetContext()
 
 // DNSSEC: platform supports it, but it doesn't fit our GetDomainCorrections
 // model, so deferring for now.

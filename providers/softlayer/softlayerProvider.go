@@ -27,10 +27,13 @@ var features = providers.DocumentationNotes{
 	providers.CanUseSRV:   providers.Can(),
 }
 
+var ctx = dnscontrol.GetContext()
+
 func init() {
 	fns := providers.DspFuncs{
 		Initializer:   newReg,
 		RecordAuditor: AuditRecords,
+		Context:       ctx,
 	}
 	providers.RegisterDomainServiceProviderType("SOFTLAYER", fns, features)
 }

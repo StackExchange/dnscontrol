@@ -33,12 +33,15 @@ var features = providers.DocumentationNotes{
 	providers.DocOfficiallySupported: providers.Can(),
 }
 
+var ctx = dnscontrol.GetContext()
+
 // Register with the dnscontrol system.
 //   This establishes the name (all caps), and the function to call to initialize it.
 func init() {
 	fns := providers.DspFuncs{
 		Initializer:   newDNS,
 		RecordAuditor: AuditRecords,
+		Context:       ctx,
 	}
 	providers.RegisterDomainServiceProviderType("MSDNS", fns, features)
 }

@@ -87,10 +87,13 @@ var features = providers.DocumentationNotes{
 	providers.DocOfficiallySupported: providers.Can(),
 }
 
+var ctx = dnscontrol.GetContext()
+
 func init() {
 	fns := providers.DspFuncs{
 		Initializer:   newRoute53Dsp,
 		RecordAuditor: AuditRecords,
+		Context:       ctx,
 	}
 	providers.RegisterDomainServiceProviderType("ROUTE53", fns, features)
 	providers.RegisterRegistrarType("ROUTE53", newRoute53Reg)

@@ -3,6 +3,7 @@ package activedir
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/StackExchange/dnscontrol/v3/internal/dnscontrol"
 	"runtime"
 
 	"github.com/StackExchange/dnscontrol/v3/providers"
@@ -27,12 +28,15 @@ var features = providers.DocumentationNotes{
 	providers.DocOfficiallySupported: providers.Can(),
 }
 
+var ctx = dnscontrol.GetContext()
+
 // Register with the dnscontrol system.
 //   This establishes the name (all caps), and the function to call to initialize it.
 func init() {
 	fns := providers.DspFuncs{
 		Initializer:   newDNS,
 		RecordAuditor: AuditRecords,
+		Context:       ctx,
 	}
 	providers.RegisterDomainServiceProviderType("ACTIVEDIRECTORY_PS", fns, features)
 }

@@ -59,6 +59,8 @@ var features = providers.DocumentationNotes{
 	providers.DocOfficiallySupported: providers.Cannot(),
 }
 
+var ctx = dnscontrol.GetContext()
+
 // inwxAPI is a thin wrapper around goinwx.Client.
 type inwxAPI struct {
 	client      *goinwx.Client
@@ -72,6 +74,7 @@ func init() {
 	fns := providers.DspFuncs{
 		Initializer:   newInwxDsp,
 		RecordAuditor: AuditRecords,
+		Context:       ctx,
 	}
 	providers.RegisterDomainServiceProviderType("INWX", fns, features)
 }

@@ -3,6 +3,7 @@ package cscglobal
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/StackExchange/dnscontrol/v3/internal/dnscontrol"
 	"strings"
 
 	"github.com/StackExchange/dnscontrol/v3/providers"
@@ -57,12 +58,15 @@ func newProvider(m map[string]string) (*providerClient, error) {
 	return api, nil
 }
 
+var ctx = dnscontrol.GetContext()
+
 func init() {
 	providers.RegisterRegistrarType("CSCGLOBAL", newReg)
 
 	fns := providers.DspFuncs{
 		Initializer:   newDsp,
 		RecordAuditor: AuditRecords,
+		Context:       ctx,
 	}
 	providers.RegisterDomainServiceProviderType("CSCGLOBAL", fns, features)
 }

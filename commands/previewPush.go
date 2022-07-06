@@ -3,21 +3,20 @@ package commands
 import (
 	"fmt"
 	"github.com/StackExchange/dnscontrol/v3/internal/dnscontrol"
-	"log"
+	"github.com/StackExchange/dnscontrol/v3/pkg/nameservers"
+	"golang.org/x/exp/slices"
 	"os"
 	"strings"
+	"sync"
 
 	"github.com/urfave/cli/v2"
 
 	"github.com/StackExchange/dnscontrol/v3/models"
 	"github.com/StackExchange/dnscontrol/v3/pkg/credsfile"
-	"github.com/StackExchange/dnscontrol/v3/pkg/nameservers"
 	"github.com/StackExchange/dnscontrol/v3/pkg/normalize"
 	"github.com/StackExchange/dnscontrol/v3/pkg/notifications"
 	"github.com/StackExchange/dnscontrol/v3/pkg/printer"
 	"github.com/StackExchange/dnscontrol/v3/providers"
-
-	"golang.org/x/exp/slices"
 )
 
 var _ = cmd(catMain, func() *cli.Command {
@@ -104,6 +103,7 @@ func Push(args PushArgs) error {
 
 // run is the main routine common to preview/push
 func run(args PreviewArgs, push bool, interactive bool) error {
+	// get a global dnscontrol context with printer
 	ctx := dnscontrol.GetContext()
 
 	// TODO: make truly CLI independent. Perhaps return results on a channel as they occur
@@ -127,100 +127,115 @@ func run(args PreviewArgs, push bool, interactive bool) error {
 
 	anyErrors := false
 	totalCorrections := 0
-DomainLoop:
+
+	var wg sync.WaitGroup
+	wg.Add(len(cfg.Domains))
+
 	for _, domain := range cfg.Domains {
-		if !args.shouldRunDomain(domain.UniqueName) {
-			continue
-		}
+		func(domain *models.DomainConfig) {
+			defer wg.Done()
 
-		// get dnscontrol.Context with a logger scoped to domain
-		// to buffer log output and flush it at the end
-		domainCtx := dnscontrol.GetDomainContext(ctx, domain.UniqueName)
-		domainCtx.StartDomain()
+			if !args.shouldRunDomain(domain.UniqueName) {
+				return
+			}
 
-		nsList, err := nameservers.DetermineNameservers(domainCtx, domain)
-		if err != nil {
-			return err
-		}
-		domain.Nameservers = nsList
-		nameservers.AddNSRecords(domain)
-		for _, provider := range domain.DNSProviderInstances {
-			if !args.NoPopulate {
-				// preview run: check if zone is already there, if not print a warning
-				if lister, ok := provider.Driver.(providers.ZoneLister); ok && !push {
-					zones, err := lister.ListZones(domainCtx)
-					if err != nil {
-						return err
-					}
-					if !slices.Contains(zones, domain.Name) {
-						domainCtx.Log.Warnf("Domain '%s' does not exist in the '%s' profile and will be added automatically.\n", domain.Name, provider.Name)
-						domainCtx.EndDomain()
-						continue // continue with next provider, as we can not determine corrections without an existing zone
-					}
-				} else if creator, ok := provider.Driver.(providers.DomainCreator); ok && push {
-					// this is the actual push, ensure domain exists at DSP
-					if err := creator.EnsureDomainExists(domainCtx, domain.Name); err != nil {
-						domainCtx.Log.Warnf("Error creating domain: %s\n", err)
-						domainCtx.EndDomain()
-						continue // continue with next provider, as we couldn't create this one
+			// get dnscontrol.Context with a logger scoped to domain
+			// to buffer log output and flush it at the end
+			domainCtx := dnscontrol.GetDomainContext(ctx, domain.UniqueName)
+			domainCtx.StartDomain()
+
+			nsList, err := nameservers.DetermineNameservers(domainCtx, domain)
+			if err != nil {
+				domainCtx.Log.Errorf("Error determining nameservers for %s: %s", domain.UniqueName, err)
+				return
+			}
+			domain.Nameservers = nsList
+			nameservers.AddNSRecords(domain)
+			for _, provider := range domain.DNSProviderInstances {
+				// switching the provider's context to the domain scoped context
+				// this is required for the provider who are not capable of context aware operations
+				providers.SetContext(domainCtx, provider.ProviderType)
+
+				if !args.NoPopulate {
+					// preview run: check if zone is already there, if not print a warning
+					if lister, ok := provider.Driver.(providers.ZoneLister); ok && !push {
+						zones, err := lister.ListZones(domainCtx)
+						if err != nil {
+							domainCtx.Log.Errorf("Error listing zones for %s: %s", domain.UniqueName, err)
+							return
+						}
+						if !slices.Contains(zones, domain.Name) {
+							domainCtx.Log.Warnf("Domain '%s' does not exist in the '%s' profile and will be added automatically.\n", domain.Name, provider.Name)
+							domainCtx.EndDomain()
+							continue // continue with next provider, as we can not determine corrections without an existing zone
+						}
+					} else if creator, ok := provider.Driver.(providers.DomainCreator); ok && push {
+						// this is the actual push, ensure domain exists at DSP
+						if err := creator.EnsureDomainExists(domainCtx, domain.Name); err != nil {
+							domainCtx.Log.Warnf("Error creating domain: %s\n", err)
+							domainCtx.EndDomain()
+							continue // continue with next provider, as we couldn't create this one
+						}
 					}
 				}
+
+				dc, err := domain.Copy()
+				if err != nil {
+					domainCtx.Log.Errorf("Error copying domain: %s\n", err)
+					return
+				}
+
+				shouldRun := args.shouldRunProvider(provider.Name, dc)
+				domainCtx.StartDNSProvider(provider.Name, !shouldRun)
+				if !shouldRun {
+					domainCtx.EndDomain()
+					continue
+				}
+
+				/// This is where we should audit?
+
+				corrections, err := provider.Driver.GetDomainCorrections(domainCtx, dc)
+				domainCtx.EndProvider(len(corrections), err)
+				if err != nil {
+					anyErrors = true
+					domainCtx.EndDomain()
+					return
+				}
+				totalCorrections += len(corrections)
+				anyErrors = printOrRunCorrections(domainCtx, domain.Name, provider.Name, corrections, push, printer.DefaultPrinter, interactive, notifier) || anyErrors
+			}
+
+			run := args.shouldRunProvider(domain.RegistrarName, domain)
+			domainCtx.StartRegistrar(domain.RegistrarName, !run)
+			if !run {
+				domainCtx.EndDomain()
+				return
+			}
+
+			if len(domain.Nameservers) == 0 && domain.Metadata["no_ns"] != "true" {
+				domainCtx.Log.Warnf("No nameservers declared; skipping registrar. Add {no_ns:'true'} to force.\n")
+				domainCtx.EndDomain()
+				return
 			}
 
 			dc, err := domain.Copy()
 			if err != nil {
-				return err
+				domainCtx.Log.Errorf("Error copying domain: %s\n", err)
 			}
 
-			shouldRun := args.shouldRunProvider(provider.Name, dc)
-			domainCtx.StartDNSProvider(provider.Name, !shouldRun)
-			if !shouldRun {
-				domainCtx.EndDomain()
-				continue
-			}
-
-			/// This is where we should audit?
-
-			corrections, err := provider.Driver.GetDomainCorrections(domainCtx, dc)
+			corrections, err := domain.RegistrarInstance.Driver.GetRegistrarCorrections(domainCtx, dc)
 			domainCtx.EndProvider(len(corrections), err)
 			if err != nil {
 				anyErrors = true
 				domainCtx.EndDomain()
-				continue DomainLoop
+				return
 			}
 			totalCorrections += len(corrections)
-			anyErrors = printOrRunCorrections(domainCtx, domain.Name, provider.Name, corrections, push, printer.DefaultPrinter, interactive, notifier) || anyErrors
-		}
-
-		run := args.shouldRunProvider(domain.RegistrarName, domain)
-		domainCtx.StartRegistrar(domain.RegistrarName, !run)
-		if !run {
+			anyErrors = printOrRunCorrections(domainCtx, domain.Name, domain.RegistrarName, corrections, push, printer.DefaultPrinter, interactive, notifier) || anyErrors
 			domainCtx.EndDomain()
-			continue
-		}
-
-		if len(domain.Nameservers) == 0 && domain.Metadata["no_ns"] != "true" {
-			domainCtx.Log.Warnf("No nameservers declared; skipping registrar. Add {no_ns:'true'} to force.\n")
-			domainCtx.EndDomain()
-			continue
-		}
-
-		dc, err := domain.Copy()
-		if err != nil {
-			log.Fatal(err)
-		}
-
-		corrections, err := domain.RegistrarInstance.Driver.GetRegistrarCorrections(domainCtx, dc)
-		domainCtx.EndProvider(len(corrections), err)
-		if err != nil {
-			anyErrors = true
-			domainCtx.EndDomain()
-			continue
-		}
-		totalCorrections += len(corrections)
-		anyErrors = printOrRunCorrections(domainCtx, domain.Name, domain.RegistrarName, corrections, push, printer.DefaultPrinter, interactive, notifier) || anyErrors
-		domainCtx.EndDomain()
+		}(domain)
 	}
+	wg.Wait()
 
 	if os.Getenv("TEAMCITY_VERSION") != "" {
 		fmt.Fprintf(os.Stderr, "##teamcity[buildStatus status='SUCCESS' text='%d corrections']", totalCorrections)

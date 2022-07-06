@@ -53,6 +53,8 @@ var features = providers.DocumentationNotes{
 	providers.DocOfficiallySupported: providers.Cannot(),
 }
 
+var ctx = dnscontrol.GetContext()
+
 // axfrddnsProvider stores the client info for the provider.
 type axfrddnsProvider struct {
 	rand         *rand.Rand
@@ -151,6 +153,7 @@ func init() {
 	fns := providers.DspFuncs{
 		Initializer:   initAxfrDdns,
 		RecordAuditor: AuditRecords,
+		Context:       ctx,
 	}
 	providers.RegisterDomainServiceProviderType("AXFRDDNS", fns, features)
 }

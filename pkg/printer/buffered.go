@@ -3,21 +3,30 @@ package printer
 import (
 	"bytes"
 	"fmt"
+	"sync"
 )
 
 type BufferedPrinter struct {
 	Writer *bytes.Buffer
 }
 
+var mutex sync.RWMutex
+
 func GetBufferedPrinter(domain string) Printer {
-	if _, ok := DomainWriter[domain]; ok {
-		return DomainWriter[domain]
+	mutex.RLock()
+	if writer, ok := DomainWriter[domain]; ok {
+		mutex.RUnlock()
+		return writer
 	}
 
-	DomainWriter[domain] = &BufferedPrinter{
+	mutex.RUnlock()
+	writer := &BufferedPrinter{
 		Writer: &bytes.Buffer{},
 	}
-	return DomainWriter[domain]
+	mutex.Lock()
+	DomainWriter[domain] = writer
+	mutex.Unlock()
+	return writer
 }
 
 // Debugf is called to print/format debug information.

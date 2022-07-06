@@ -37,10 +37,13 @@ var features = providers.DocumentationNotes{
 	providers.DocOfficiallySupported: providers.Cannot(),
 }
 
+var ctx = dnscontrol.GetContext()
+
 func init() {
 	fns := providers.DspFuncs{
 		Initializer:   NewExoscale,
 		RecordAuditor: AuditRecords,
+		Context:       ctx,
 	}
 	providers.RegisterDomainServiceProviderType("EXOSCALE", fns, features)
 }

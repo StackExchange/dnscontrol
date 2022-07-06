@@ -39,11 +39,14 @@ var features = providers.DocumentationNotes{
 	providers.DocOfficiallySupported: providers.Cannot(),
 }
 
+var ctx = dnscontrol.GetContext()
+
 func init() {
 	providers.RegisterRegistrarType("NAMECHEAP", newReg)
 	fns := providers.DspFuncs{
 		Initializer:   newDsp,
 		RecordAuditor: AuditRecords,
+		Context:       ctx,
 	}
 	providers.RegisterDomainServiceProviderType("NAMECHEAP", fns, features)
 	providers.RegisterCustomRecordType("URL", "NAMECHEAP", "")

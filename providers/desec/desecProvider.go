@@ -54,6 +54,8 @@ var features = providers.DocumentationNotes{
 	providers.DocOfficiallySupported: providers.Cannot(),
 }
 
+var ctx = dnscontrol.GetContext()
+
 var defaultNameServerNames = []string{
 	"ns1.desec.io",
 	"ns2.desec.org",
@@ -63,6 +65,7 @@ func init() {
 	fns := providers.DspFuncs{
 		Initializer:   NewDeSec,
 		RecordAuditor: AuditRecords,
+		Context:       ctx,
 	}
 	providers.RegisterDomainServiceProviderType("DESEC", fns, features)
 }

@@ -34,6 +34,8 @@ var features = providers.DocumentationNotes{
 	providers.DocOfficiallySupported: providers.Can(),
 }
 
+var ctx = dnscontrol.GetContext()
+
 func sPtr(s string) *string {
 	return &s
 }
@@ -42,6 +44,7 @@ func init() {
 	fns := providers.DspFuncs{
 		Initializer:   New,
 		RecordAuditor: AuditRecords,
+		Context:       ctx,
 	}
 	providers.RegisterDomainServiceProviderType("GCLOUD", fns, features)
 }

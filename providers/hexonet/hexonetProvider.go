@@ -4,6 +4,7 @@ package hexonet
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/StackExchange/dnscontrol/v3/internal/dnscontrol"
 	"github.com/StackExchange/dnscontrol/v3/pkg/version"
 	"github.com/StackExchange/dnscontrol/v3/providers"
 	hxcl "github.com/hexonet/go-sdk/v3/apiclient"
@@ -30,6 +31,8 @@ var features = providers.DocumentationNotes{
 	providers.DocDualHost:            providers.Can(),
 	providers.DocOfficiallySupported: providers.Cannot("Actively maintained provider module."),
 }
+
+var ctx = dnscontrol.GetContext()
 
 func newProvider(conf map[string]string) (*HXClient, error) {
 	api := &HXClient{
@@ -68,6 +71,7 @@ func init() {
 	fns := providers.DspFuncs{
 		Initializer:   newDsp,
 		RecordAuditor: AuditRecords,
+		Context:       ctx,
 	}
 	providers.RegisterRegistrarType("HEXONET", newReg)
 	providers.RegisterDomainServiceProviderType("HEXONET", fns, features)

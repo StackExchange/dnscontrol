@@ -28,10 +28,13 @@ var features = providers.DocumentationNotes{
 	providers.DocOfficiallySupported: providers.Cannot(),
 }
 
+var ctx = dnscontrol.GetContext()
+
 func init() {
 	fns := providers.DspFuncs{
 		Initializer:   New,
 		RecordAuditor: AuditRecords,
+		Context:       ctx,
 	}
 
 	providers.RegisterDomainServiceProviderType("DNSMADEEASY", fns, features)

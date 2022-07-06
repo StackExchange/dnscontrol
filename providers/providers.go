@@ -46,10 +46,13 @@ type DspInitializer func(map[string]string, json.RawMessage) (DNSServiceProvider
 // the first record that this provider can not support.
 type RecordAuditor func([]*models.RecordConfig) error
 
+type LegacyContextSetter func(ctx dnscontrol.Context)
+
 // DspFuncs lists functions registered with a provider.
 type DspFuncs struct {
 	Initializer   DspInitializer
 	RecordAuditor RecordAuditor
+	Context       dnscontrol.Context
 }
 
 // DNSProviderTypes stores initializer for each DSP.
@@ -101,6 +104,15 @@ func CreateDNSProvider(providerTypeName string, config map[string]string, meta j
 		return nil, fmt.Errorf("no such DNS service provider: %q", providerTypeName)
 	}
 	return p.Initializer(config, meta)
+}
+
+func SetContext(ctx dnscontrol.Context, providerTypeName string) error {
+	p, ok := DNSProviderTypes[providerTypeName]
+	if !ok {
+		return fmt.Errorf("no such DNS service provider: %q", providerTypeName)
+	}
+	p.Context = ctx
+	return nil
 }
 
 // beCompatible looks up

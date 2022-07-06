@@ -43,6 +43,8 @@ var features = providers.DocumentationNotes{
 	providers.DocOfficiallySupported: providers.Cannot(),
 }
 
+var ctx = dnscontrol.GetContext()
+
 type edgeDNSProvider struct {
 	contractID string
 	groupID    string
@@ -52,6 +54,7 @@ func init() {
 	fns := providers.DspFuncs{
 		Initializer:   newEdgeDNSDSP,
 		RecordAuditor: AuditRecords,
+		Context:       ctx,
 	}
 	providers.RegisterDomainServiceProviderType("AKAMAIEDGEDNS", fns, features)
 	providers.RegisterCustomRecordType("AKAMAICDN", "AKAMAIEDGEDNS", "")
