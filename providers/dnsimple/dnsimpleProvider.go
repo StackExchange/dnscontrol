@@ -60,7 +60,7 @@ type dnsimpleProvider struct {
 }
 
 // GetNameservers returns the name servers for a domain.
-func (c *dnsimpleProvider) GetNameservers(domainName string) ([]*models.Nameserver, error) {
+func (c *dnsimpleProvider) GetNameservers(_ string) ([]*models.Nameserver, error) {
 	return models.ToNameservers(defaultNameServerNames)
 }
 
@@ -129,7 +129,7 @@ func (c *dnsimpleProvider) GetZoneRecords(domain string) (models.Records, error)
 
 // GetDomainCorrections returns corrections that update a domain.
 func (c *dnsimpleProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Correction, error) {
-	corrections := []*models.Correction{}
+	var corrections []*models.Correction
 	err := dc.Punycode()
 	if err != nil {
 		return nil, err
@@ -200,7 +200,7 @@ func removeApexNS(records models.Records) models.Records {
 
 // GetRegistrarCorrections returns corrections that update a domain's registrar.
 func (c *dnsimpleProvider) GetRegistrarCorrections(dc *models.DomainConfig) ([]*models.Correction, error) {
-	corrections := []*models.Correction{}
+	var corrections []*models.Correction
 
 	nameServers, err := c.getNameservers(dc.Name)
 	if err != nil {
@@ -210,7 +210,7 @@ func (c *dnsimpleProvider) GetRegistrarCorrections(dc *models.DomainConfig) ([]*
 
 	actual := strings.Join(nameServers, ",")
 
-	expectedSet := []string{}
+	var expectedSet []string
 	for _, ns := range dc.Nameservers {
 		expectedSet = append(expectedSet, ns.Name)
 	}
@@ -297,7 +297,7 @@ func (c *dnsimpleProvider) getRecords(domainName string) ([]dnsimpleapi.ZoneReco
 	}
 
 	opts := &dnsimpleapi.ZoneRecordListOptions{}
-	recs := []dnsimpleapi.ZoneRecord{}
+	var recs []dnsimpleapi.ZoneRecord
 	page := 1
 	for {
 		opts.Page = &page
@@ -539,7 +539,7 @@ func newDsp(conf map[string]string, metadata json.RawMessage) (providers.DNSServ
 	return newProvider(conf, metadata)
 }
 
-func newProvider(m map[string]string, metadata json.RawMessage) (*dnsimpleProvider, error) {
+func newProvider(m map[string]string, _ json.RawMessage) (*dnsimpleProvider, error) {
 	api := &dnsimpleProvider{}
 	api.AccountToken = m["token"]
 	if api.AccountToken == "" {
@@ -583,21 +583,13 @@ func getTargetRecordContent(rc *models.RecordConfig) string {
 	case "DS":
 		return fmt.Sprintf("%d %d %d %s", rc.DsKeyTag, rc.DsAlgorithm, rc.DsDigestType, rc.DsDigest)
 	case "NAPTR":
-		return fmt.Sprintf("%d %d %s %s %s %s",
-			rc.NaptrOrder, rc.NaptrPreference,
-			quoteDNSString(rc.NaptrFlags), quoteDNSString(rc.NaptrService),
-			quoteDNSString(rc.NaptrRegexp),
+		return fmt.Sprintf(`%d %d "%s" "%s" "%s" %s`,
+			rc.NaptrOrder, rc.NaptrPreference, rc.NaptrFlags, rc.NaptrService, rc.NaptrRegexp,
 			rc.GetTargetField())
 	case "SSHFP":
 		return fmt.Sprintf("%d %d %s", rc.SshfpAlgorithm, rc.SshfpFingerprint, rc.GetTargetField())
 	case "SRV":
 		return fmt.Sprintf("%d %d %s", rc.SrvWeight, rc.SrvPort, rc.GetTargetField())
-	case "TXT":
-		quoted := make([]string, len(rc.TxtStrings))
-		for i := range rc.TxtStrings {
-			quoted[i] = quoteDNSString(rc.TxtStrings[i])
-		}
-		return strings.Join(quoted, " ")
 	default:
 		return rc.GetTargetField()
 	}
@@ -616,22 +608,4 @@ func getTargetRecordPriority(rc *models.RecordConfig) int {
 	default:
 		return 0
 	}
-}
-
-// Return a DNS string appropriately escaped for DNSimple.
-// Should include the surrounding quotes.
-//
-// Warning: the DNSimple API is severely underdocumented in this area.
-// I know that it takes multiple quoted strings just fine, and constructs the
-// DNS multiple quoted items.
-// I'm not 100% on the escaping, but since it's a JSON API, JSON escaping seems
-// reasonable.
-// I do know that DNSimple have their own checks, so anything too crazy will
-// get a "400 Validation failed" HTTP response.
-func quoteDNSString(unquoted string) string {
-	b, err := json.Marshal(unquoted)
-	if err != nil {
-		panic(fmt.Errorf("unable to marshal to JSON: %q", unquoted))
-	}
-	return string(b)
 }
