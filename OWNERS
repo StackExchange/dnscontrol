@@ -9,7 +9,7 @@ providers/cloudns @pragmaton
 providers/cscglobal @mikenz
 providers/desec @D3luxee
 providers/digitalocean @Deraen
-providers/dnsimple @aeden
+providers/dnsimple @onlyhavecans
 providers/dnsmadeeasy @vojtad
 providers/doh @mikenz
 providers/easyname @tresni
