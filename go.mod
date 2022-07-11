@@ -24,7 +24,7 @@ require (
 	github.com/cloudflare/cloudflare-go v0.43.0
 	github.com/digitalocean/godo v1.81.0
 	github.com/ditashi/jsbeautifier-go v0.0.0-20141206144643-2520a8026a9c
-	github.com/dnsimple/dnsimple-go v0.70.1
+	github.com/dnsimple/dnsimple-go v0.71.1
 	github.com/exoscale/egoscale v0.89.0
 	github.com/go-acme/lego v2.7.2+incompatible
 	github.com/go-gandi/go-gandi v0.4.0

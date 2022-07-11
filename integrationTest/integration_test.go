@@ -1053,7 +1053,8 @@ func makeTests(t *testing.T) []*TestGroup {
 			tc("CAA many records", caa("@", "issuewild", 0, ";")),
 		),
 		testgroup("CAA Issue 1374",
-			requires(providers.CanUseCAA), not(
+			requires(providers.CanUseCAA),
+			not(
 				"DIGITALOCEAN",
 				"EXOSCALE", // Not supported.
 				"HETZNER",
