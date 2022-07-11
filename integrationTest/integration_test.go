@@ -905,6 +905,8 @@ func makeTests(t *testing.T) []*TestGroup {
 			tc("Create TXT with double-quote", txt("foodq", `quo"te`)),
 			clear(),
 			tc("Create TXT with ws at end", txt("foows1", "with space at end ")),
+			clear(),
+			tc("Create TXT with frequently escaped characters", txt("fooex", `!^.*$@#%^&()([][{}{<></:;-_=+\`)),
 		),
 
 		//
