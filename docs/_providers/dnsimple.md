@@ -38,3 +38,19 @@ D("example.tld", REG_DNSIMPLE, DnsProvider(DSP_DNSIMPLE),
 
 ## Activation
 DNSControl depends on a DNSimple account access token.
+
+## Caveats
+
+### CAA
+
+As of July 2022, the DNSimple DNS does not accept spaces in CAA records. Putting spaces in the record will result in a 400 Validation Failed error.
+
+```
+0 issue "letsencrypt.org; validationmethods=dns-01; accounturi=https://acme-v02.api.letsencrypt.org/acme/acct/1234"
+```
+
+Removing the spaces will work.
+```
+0 issue "letsencrypt.org;validationmethods=dns-01;accounturi=https://acme-v02.api.letsencrypt.org/acme/acct/1234"
+```
+

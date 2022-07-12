@@ -850,6 +850,8 @@ func makeTests(t *testing.T) []*TestGroup {
 			tc("Create TXT with double-quote", txt("foodq", `quo"te`)),
 			clear(),
 			tc("Create TXT with ws at end", txt("foows1", "with space at end ")),
+			clear(),
+			tc("Create TXT with frequently escaped characters", txt("fooex", `!^.*$@#%^&()([][{}{<></:;-_=+\`)),
 		),
 
 		//
@@ -1052,7 +1054,7 @@ func makeTests(t *testing.T) []*TestGroup {
 			tc("CAA many records", caa("@", "issuewild", 0, ";")),
 		),
 		testgroup("CAA Issue 1374",
-			requires(providers.CanUseCAA), not("DIGITALOCEAN", "HETZNER"),
+			requires(providers.CanUseCAA), not("DIGITALOCEAN", "DNSIMPLE", "HETZNER"),
 			// Test support of spaces in the 3rd field.
 			tc("CAA spaces", caa("@", "issue", 0, "letsencrypt.org; validationmethods=dns-01; accounturi=https://acme-v02.api.letsencrypt.org/acme/acct/1234")),
 		),

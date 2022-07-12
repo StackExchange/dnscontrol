@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"log"
+	"net/http"
 	"strings"
 	"time"
 
@@ -68,19 +69,27 @@ func New(cfg map[string]string, metadata json.RawMessage) (providers.DNSServiceP
 	// the key as downloaded is json encoded with literal "\n" instead of newlines.
 	// in some cases (round-tripping through env vars) this tends to get messed up.
 	// fix it if we find that.
+
+	ctx := context.Background()
+	var hc *http.Client
 	if key, ok := cfg["private_key"]; ok {
 		cfg["private_key"] = strings.Replace(key, "\\n", "\n", -1)
+		raw, err := json.Marshal(cfg)
+		if err != nil {
+			return nil, err
+		}
+		config, err := gauth.JWTConfigFromJSON(raw, "https://www.googleapis.com/auth/ndev.clouddns.readwrite")
+		if err != nil {
+			return nil, err
+		}
+		hc = config.Client(ctx)
+	} else {
+		var err error
+		hc, err = gauth.DefaultClient(ctx, "https://www.googleapis.com/auth/ndev.clouddns.readwrite")
+		if err != nil {
+			return nil, fmt.Errorf("No creds.json private_key found and ADC failed with:\n%s", err)
+		}
 	}
-	raw, err := json.Marshal(cfg)
-	if err != nil {
-		return nil, err
-	}
-	config, err := gauth.JWTConfigFromJSON(raw, "https://www.googleapis.com/auth/ndev.clouddns.readwrite")
-	if err != nil {
-		return nil, err
-	}
-	ctx := context.Background()
-	hc := config.Client(ctx)
 	// FIXME(tlim): Is it a problem that ctx is included with hc and in
 	// the call to NewService?  Seems redundant.
 	dcli, err := gdns.NewService(ctx, option.WithHTTPClient(hc))
