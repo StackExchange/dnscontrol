@@ -292,7 +292,14 @@ func getRecords(zonename string) ([]*models.RecordConfig, error) {
 				TTL:  uint32(akattl),
 			}
 			rc.SetLabelFromFQDN(akaname, zonename)
-			err = rc.PopulateFromString(akatype, r, zonename)
+
+			switch akatype {
+			case "TXT":
+				err = rc.SetTargetTXTQuotedFields(r)
+			default:
+				err = rc.PopulateFromString(akatype, r, zonename)
+			}
+
 			if err != nil {
 				return nil, err
 			}
