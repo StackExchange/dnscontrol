@@ -9,10 +9,12 @@ jsId: GCLOUD
 
 ## Configuration
 
-To use this provider, add an entry to `creds.json` with `TYPE` set to `GCLOUD`
-along with Google Cloud authentication values.
+To use this provider, add an entry to `creds.json` with `TYPE` set to `GCLOUD`.
 
-The provider requires a "Service Account Key" for your project. Newlines in the private key need to be replaced with `\n`. Copy the full JSON object into your `creds.json` like so:
+For authentication you can either include a Service Account Key in the file or use Application Default Credentials (ADC)
+
+### Using a Service Account Key
+Copy the full JSON object into your `creds.json`. Newlines in the private key need to be replaced with `\n`.
 
 Example:
 
@@ -40,6 +42,22 @@ Example:
 **Note**: The `project_id`, `private_key`, and `client_email`, are the only fields that are strictly required, but it is sometimes easier to just paste the entire json object in. Either way is fine.  `name_server_set` is optional and requires special permission from your TAM at Google in order to setup (See [Name server sets](#name_server_sets) below)
 
 See [the Activation section](#activation) for some tips on obtaining these credentials.
+
+### Using Application Default Credentials
+If you prefer to authenticate using ADC you only need to specify `project_id` in your creds.json file.
+
+Example:
+
+```json
+{
+  "gcloud": {
+    "TYPE": "GCLOUD",
+    "project_id": "mydnsproject"
+  }
+}
+```
+
+**Note:** To use ADC, make sure to not add any `private_key` value to your configuration as that will prevent dnscontrol from attempting to use ADC.
 
 ## Metadata
 This provider does not recognize any special metadata fields unique to google cloud dns.

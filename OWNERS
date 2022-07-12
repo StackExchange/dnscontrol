@@ -9,10 +9,11 @@ providers/cloudns @pragmaton
 providers/cscglobal @mikenz
 providers/desec @D3luxee
 providers/digitalocean @Deraen
-providers/dnsimple @aeden
+providers/dnsimple @onlyhavecans
 providers/dnsmadeeasy @vojtad
 providers/doh @mikenz
 providers/easyname @tresni
+providers/exoscale @pierre-emmanuelJ
 providers/gandi_v5 @TomOnTime
 providers/gcloud @riyadhalnur
 providers/hedns @rblenkinsopp
