@@ -80,7 +80,7 @@ Providers in this category and their maintainers are:
 * `DESEC` @D3luxee
 * `DIGITALOCEAN` @Deraen
 * `DNSOVERHTTPS` @mikenz
-* `DNSIMPLE` @aeden
+* `DNSIMPLE` @onlyhavecans
 * `DNSMADEEASY` @vojtad
 * `EASYNAME` @tresni
 * `EXOSCALE` @pierre-emmanuelJ
