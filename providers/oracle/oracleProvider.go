@@ -181,10 +181,11 @@ func (o *oracleProvider) GetZoneRecords(domain string) (models.Records, error) {
 			switch rc.Type {
 			case "ALIAS":
 				err = rc.SetTarget(*record.Rdata)
+			case "TXT":
+				err = rc.SetTargetTXTQuotedFields(*record.Rdata)
 			default:
 				err = rc.PopulateFromString(*record.Rtype, *record.Rdata, domain)
 			}
-
 			if err != nil {
 				return nil, err
 			}
