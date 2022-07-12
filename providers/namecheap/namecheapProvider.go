@@ -236,7 +236,17 @@ func toRecords(result *nc.DomainDNSGetHostsResult, origin string) ([]*models.Rec
 			MxPreference: uint16(dnsHost.MXPref),
 			Name:         dnsHost.Name,
 		}
-		record.PopulateFromString(dnsHost.Type, dnsHost.Address, origin)
+
+		var err error
+		switch dnsHost.Type {
+		case "TXT":
+			err = record.SetTargetTXTQuotedFields(dnsHost.Address)
+		default:
+			err = record.PopulateFromStringOld(dnsHost.Type, dnsHost.Address, origin)
+		}
+		if err != nil {
+			return nil, err
+		}
 
 		records = append(records, &record)
 	}
