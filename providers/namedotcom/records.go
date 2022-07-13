@@ -33,7 +33,7 @@ func (n *namedotcomProvider) GetZoneRecords(domain string) (models.Records, erro
 	return actual, nil
 }
 
-// GetDomainCorrections gathers correctios that would bring n to match dc.
+// GetDomainCorrections gathers corrections that would bring n to match dc.
 func (n *namedotcomProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Correction, error) {
 	dc.Punycode()
 
@@ -52,6 +52,7 @@ func (n *namedotcomProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*m
 
 	// Normalize
 	models.PostProcessRecords(actual)
+	//txtutil.SplitSingleLongTxt(dc.Records) // Autosplit long TXT records
 
 	differ := diff.New(dc)
 	_, create, del, mod, err := differ.IncrementalDiff(actual)
@@ -111,7 +112,7 @@ func toRecord(r *namecom.Record, origin string) *models.RecordConfig {
 	rc.SetLabelFromFQDN(fqdn, origin)
 	switch rtype := r.Type; rtype { // #rtype_variations
 	case "TXT":
-		rc.SetTargetTXTQuoteEscapedFields(r.Answer)
+		rc.SetTargetTXT(r.Answer)
 	case "MX":
 		if err := rc.SetTargetMX(uint16(r.Priority), r.Answer); err != nil {
 			panic(fmt.Errorf("unparsable MX record received from ndc: %w", err))
@@ -163,15 +164,14 @@ func (n *namedotcomProvider) createRecord(rc *models.RecordConfig, domain string
 		DomainName: domain,
 		Host:       rc.GetLabel(),
 		Type:       rc.Type,
-		Answer:     rc.GetTargetField(),
 		TTL:        rc.TTL,
 		Priority:   uint32(rc.MxPreference),
 	}
 	switch rc.Type { // #rtype_variations
 	case "A", "AAAA", "ANAME", "CNAME", "MX", "NS":
-	// nothing
+		record.Answer = rc.GetTargetField()
 	case "TXT":
-	// 	record.Answer = encodeTxt(rc.TxtStrings)
+		record.Answer = strings.Join(rc.TxtStrings, "")
 	case "SRV":
 		if rc.GetTargetField() == "." {
 			return errors.New("SRV records with empty targets are not supported (as of 2019-11-05, the API returns 'Parameter Value Error - Invalid Srv Format')")
@@ -186,19 +186,6 @@ func (n *namedotcomProvider) createRecord(rc *models.RecordConfig, domain string
 	_, err := n.client.CreateRecord(record)
 	return err
 }
-
-// // makeTxt encodes TxtStrings for sending in the CREATE/MODIFY API:
-// func encodeTxt(txts []string) string {
-// 	ans := txts[0]
-
-// 	if len(txts) > 1 {
-// 		ans = ""
-// 		for _, t := range txts {
-// 			ans += `"` + strings.Replace(t, `"`, `\"`, -1) + `"`
-// 		}
-// 	}
-// 	return ans
-// }
 
 func (n *namedotcomProvider) deleteRecord(id int32, domain string) error {
 	request := &namecom.DeleteRecordRequest{

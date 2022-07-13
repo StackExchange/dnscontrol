@@ -2,6 +2,7 @@ package digitalocean
 
 import (
 	"fmt"
+
 	"github.com/StackExchange/dnscontrol/v3/models"
 	"github.com/StackExchange/dnscontrol/v3/pkg/recordaudit"
 )
@@ -30,7 +31,7 @@ func AuditRecords(records []*models.RecordConfig) error {
 }
 
 // MaxLengthDO returns and error if the strings are longer than
-// permitted by DigitalOcean. Sadly their length limit is
+// permitted by DigitalOcean. Sadly the length limit is
 // undocumented. This is a guess.
 func MaxLengthDO(records []*models.RecordConfig) error {
 	// The total length of all strings can't be longer than 512; and in

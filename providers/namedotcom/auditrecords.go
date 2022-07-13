@@ -2,6 +2,7 @@ package namedotcom
 
 import (
 	"fmt"
+
 	"github.com/StackExchange/dnscontrol/v3/models"
 	"github.com/StackExchange/dnscontrol/v3/pkg/recordaudit"
 )
@@ -13,18 +14,28 @@ func AuditRecords(records []*models.RecordConfig) error {
 	if err := MaxLengthNDC(records); err != nil {
 		return err
 	}
-	// Still needed as of 2021-03-01
+	// Still needed as of 2022-07-13
 
 	if err := recordaudit.TxtNotEmpty(records); err != nil {
 		return err
 	}
-	// Still needed as of 2021-03-01
+	// Still needed as of 2022-07-13
+
+	if err := recordaudit.TxtNoDoubleQuotes(records); err != nil {
+		return err
+	}
+	// Still needed as of 2022-07-13
+
+	if err := recordaudit.TxtNoTrailingSpace(records); err != nil {
+		return err
+	}
+	// Still needed as of 2022-07-13
 
 	return nil
 }
 
 // MaxLengthNDC returns and error if the sum of the strings
-// are longer than permitted by DigitalOcean. Sadly their
+// are longer than permitted by NAME.COM. Sadly the
 // length limit is undocumented. This seems to work.
 func MaxLengthNDC(records []*models.RecordConfig) error {
 	for _, rc := range records {

@@ -57,9 +57,14 @@ func (d *differ) content(r *models.RecordConfig) string {
 	// r.GetTargetDiffable().  In the meanwhile, this function compares
 	// its output with r.GetTargetDiffable() to make sure the same
 	// results are generated.  Once we have confidence, this function will go away.
-	content := fmt.Sprintf("%v ttl=%d", r.GetTargetCombined(), r.TTL)
-	if r.Type == "SOA" {
+	var content string
+	switch r.Type {
+	case "SOA":
 		content = fmt.Sprintf("%s %v %d %d %d %d ttl=%d", r.GetTargetField(), r.SoaMbox, r.SoaRefresh, r.SoaRetry, r.SoaExpire, r.SoaMinttl, r.TTL) // SoaSerial is not used in comparison
+	case "TXT":
+		content = fmt.Sprintf("%v ttl=%d", r.GetTargetTXTJoined(), r.TTL)
+	default:
+		content = fmt.Sprintf("%v ttl=%d", r.GetTargetCombined(), r.TTL)
 	}
 	var allMaps []map[string]string
 	for _, f := range d.extraValues {
