@@ -8,6 +8,18 @@ We recently discovered a strange but with processing TXT records and
 double-quotes.  Sadly we haven't been able to determine a way to test this
 automatically.  Therefore, I've written up this methodology.
 
+# The problem
+
+The problem relates to TXT records that have a string with quotes in them.
+
+If a user creates a TXT record who's contents are `"something"` (yes, with
+double quotes), some APIs get confused.
+
+This bug is most likely to appear in a provider that uses
+`RecordConfig.PopulateFromString()` (see `models/t_parse.go`) to create TXT
+records. That function assumes the string should always have the quotes
+stripped, though it is more likely that the string should be taken verbatim.
+
 # The test
 
 To complete this test, you will need a test domain that you can add records to.
@@ -48,9 +60,9 @@ When you do a `dnscontrol preview`, you should see changes for t1 and t2.
 #2: MODIFY TXT t2.example.com: ("\"test2\"" ttl=1) -> ("test2" ttl=1)
 ```
 
-If you don't see those changes, that's a bug.  For example, we
-found that Cloudflare wouldn't change t2 and would change
-t3 to include double-quotes!  This was fixed in dad4115a5.
+If you don't see those changes, that's a bug.  For example, we found that
+Cloudflare leave t2 alone but would try to add double-quotes to t3!  This was
+fixed in https://github.com/StackExchange/dnscontrol/pull/1543.
 
 Step 3: Push
 
