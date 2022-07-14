@@ -7,16 +7,23 @@ jsId: DNSIMPLE
 # DNSimple Provider
 ## Configuration
 
-To use this provider, add an entry to `creds.json` with `TYPE` set to `DIGITALOCEAN`
+To use this provider, add an entry to `creds.json` with `TYPE` set to `DNSIMPLE`
 along with a DNSimple account access token.
 
-Example:
+You can also set the `baseurl` to use [DNSimple's free sandbox](https://developer.dnsimple.com/sandbox/) for testing.
+
+Examples:
 
 ```json
 {
   "dnsimple": {
     "TYPE": "DNSIMPLE",
     "token": "your-dnsimple-account-access-token"
+  },
+  "dnsimple_sandbox": {
+    "TYPE": "DNSIMPLE",
+    "baseurl": "https://api.sandbox.dnsimple.com",
+    "token": "your-sandbox-account-access-token"
   }
 }
 ```
