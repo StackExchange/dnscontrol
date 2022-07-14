@@ -115,8 +115,6 @@ func (c *dnsimpleProvider) GetZoneRecords(domain string) (models.Records, error)
 				r.Content += "."
 			}
 			err = rec.SetTargetSRVPriorityString(uint16(r.Priority), r.Content)
-		case "TXT":
-			err = rec.SetTargetTXT(r.Content)
 		default:
 			err = rec.PopulateFromString(r.Type, r.Content, domain)
 		}
