@@ -160,6 +160,10 @@ func (rc *RecordConfig) SetTargetTXT(s string) error {
 		panic("assertion failed: SetTargetTXT called when .Type is not TXT or compatible type")
 	}
 
+	//fmt.Fprintf(os.Stdout, "***DEBUG: Fixing quote! %s\n", s)
+	//s = strings.ReplaceAll(s, `\"`, `"`)
+	//fmt.Fprintf(os.Stdout, "***DEBUG: Fixing quote= %s\n", s)
+
 	rc.TxtStrings = []string{s}
 	rc.SetTarget(rc.zoneFileQuoted())
 	return nil

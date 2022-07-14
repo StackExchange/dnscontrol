@@ -3,6 +3,7 @@ package namedotcom
 import (
 	"errors"
 	"fmt"
+	"os"
 	"strings"
 
 	"github.com/namedotcom/go/namecom"
@@ -171,7 +172,8 @@ func (n *namedotcomProvider) createRecord(rc *models.RecordConfig, domain string
 	case "A", "AAAA", "ANAME", "CNAME", "MX", "NS":
 		record.Answer = rc.GetTargetField()
 	case "TXT":
-		record.Answer = strings.Join(rc.TxtStrings, "")
+		record.Answer = rc.GetTargetTXTJoined()
+		fmt.Fprintf(os.Stderr, "DEBUG: createRecord TXT answer=:%s:\n", record.Answer)
 	case "SRV":
 		if rc.GetTargetField() == "." {
 			return errors.New("SRV records with empty targets are not supported (as of 2019-11-05, the API returns 'Parameter Value Error - Invalid Srv Format')")

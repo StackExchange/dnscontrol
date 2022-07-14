@@ -62,6 +62,8 @@ func (d *differ) content(r *models.RecordConfig) string {
 	case "SOA":
 		content = fmt.Sprintf("%s %v %d %d %d %d ttl=%d", r.GetTargetField(), r.SoaMbox, r.SoaRefresh, r.SoaRetry, r.SoaExpire, r.SoaMinttl, r.TTL) // SoaSerial is not used in comparison
 	case "TXT":
+		//content = fmt.Sprintf("%v ttl=%d", r.GetTargetTXTJoined(), r.TTL)
+		//content = fmt.Sprintf("%v ttl=%d", r.GetTargetTXTFlattened255(), r.TTL)
 		content = fmt.Sprintf("%v ttl=%d", r.GetTargetTXTJoined(), r.TTL)
 	default:
 		content = fmt.Sprintf("%v ttl=%d", r.GetTargetCombined(), r.TTL)

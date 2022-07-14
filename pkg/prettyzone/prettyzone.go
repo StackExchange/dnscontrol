@@ -138,6 +138,7 @@ func (z *ZoneGenData) generateZoneFileHelper(w io.Writer) error {
 
 		// the remaining line
 		target := rr.GetTargetCombined()
+		//target := rr.GetTargetRFC1035Quoted()
 
 		// comment
 		comment := ""
