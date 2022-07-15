@@ -8,7 +8,7 @@ import (
 // AuditRecords returns an error if any records are not
 // supportable by this provider.
 func AuditRecords(records []*models.RecordConfig) error {
-	if err := recordaudit.TxtNoDoubleQuotes(records); err != nil {
+	if err := recordaudit.TxtNotEmpty(records); err != nil {
 		return err
 	}
 	return nil

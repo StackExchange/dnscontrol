@@ -115,6 +115,8 @@ func (c *dnsimpleProvider) GetZoneRecords(domain string) (models.Records, error)
 				r.Content += "."
 			}
 			err = rec.SetTargetSRVPriorityString(uint16(r.Priority), r.Content)
+		case "TXT":
+			err = rec.SetTargetTXT(r.Content)
 		default:
 			err = rec.PopulateFromString(r.Type, r.Content, domain)
 		}
@@ -593,7 +595,7 @@ func getTargetRecordContent(rc *models.RecordConfig) string {
 	case "SRV":
 		return fmt.Sprintf("%d %d %s", rc.SrvWeight, rc.SrvPort, rc.GetTargetField())
 	case "TXT":
-		return rc.GetTargetRFC1035Quoted()
+		return rc.GetTargetTXTJoined()
 	default:
 		return rc.GetTargetField()
 	}
