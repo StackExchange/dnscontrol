@@ -14,20 +14,23 @@ import (
 	"github.com/StackExchange/dnscontrol/v3/providers"
 )
 
-var features = providers.DocumentationNotes{}
-
-/*	providers.CanGetZones:            providers.Cannot(),
-	providers.CanUseAlias:            providers.Unimplemented(),
-	providers.CanUseCAA:              providers.Unimplemented(),
-	providers.CanUseDSForChildren:    providers.Unimplemented(),
-	providers.CanUsePTR:              providers.Unimplemented(),
-	providers.CanUseSRV:              providers.Unimplemented(),
-	providers.CanUseSSHFP:            providers.Unimplemented(),
-	providers.CanUseTLSA:             providers.Unimplemented(),
-	providers.DocCreateDomains:       providers.Unimplemented(),
-	providers.DocDualHost:            providers.Unimplemented(),
-	providers.DocOfficiallySupported: providers.Unimplemented(),
-}*/
+var features = providers.DocumentationNotes{
+	providers.CanAutoDNSSEC:          providers.Cannot(),        // Maybe there is support for it
+	providers.CanGetZones:            providers.Unimplemented(), //
+	providers.CanUseAlias:            providers.Unimplemented(), // Can possibly be implemented, needs further research
+	providers.CanUseCAA:              providers.Can(),
+	providers.CanUseDS:               providers.Unimplemented(), // Seems to support but needs to be implemented
+	providers.CanUseDSForChildren:    providers.Unimplemented(), // Seems to support but needs to be implemented
+	providers.CanUseNAPTR:            providers.Cannot(),        // Does not seem to support it
+	providers.CanUsePTR:              providers.Unimplemented(), //Seems to support but needs to be implemented
+	providers.CanUseSOA:              providers.Can(),
+	providers.CanUseSRV:              providers.Can(),
+	providers.CanUseSSHFP:            providers.Cannot(),        // Does not seem to support it
+	providers.CanUseTLSA:             providers.Unimplemented(), // //Seems to support but needs to be implemented
+	providers.DocCreateDomains:       providers.Unimplemented(), // Not tested
+	providers.DocDualHost:            providers.Unimplemented(), // Not tested
+	providers.DocOfficiallySupported: providers.Cannot(),
+}
 
 // dnsimpleProvider is the handle for this provider.
 type domainNameShopProvider struct {

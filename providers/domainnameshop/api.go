@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"net/http"
 	"strconv"
+	"strings"
 
 	"golang.org/x/net/idna"
 )
@@ -88,6 +89,18 @@ func (api *domainNameShopProvider) getDNS(domainName string) ([]DomainNameShopRe
 		}
 		record.ActualPriority = uint16(priority)
 
+		port, err := strconv.ParseUint(record.Port, 10, 16)
+		if err != nil {
+			record.ActualPort = 0
+		}
+		record.ActualPort = uint16(port)
+
+		weight, err := strconv.ParseUint(record.Weight, 10, 16)
+		if err != nil {
+			record.ActualWeight = 0
+		}
+		record.ActualWeight = uint16(weight)
+
 		// Fix CAA flags
 		if record.Type == "CAA" {
 			CaaFlag, err := strconv.ParseUint(record.ActualCAAFlag, 10, 8)
@@ -103,7 +116,10 @@ func (api *domainNameShopProvider) getDNS(domainName string) ([]DomainNameShopRe
 			if err != nil {
 				return nil, err
 			}
-			record.Data = punycodeData + "."
+			record.Data = punycodeData
+			if !strings.HasSuffix(record.Data, ".") {
+				record.Data += "."
+			}
 		}
 
 		// Add domain id
