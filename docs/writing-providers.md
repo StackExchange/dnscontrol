@@ -199,14 +199,21 @@ Some useful `go test` flags:
 * If a test will always fail because the provider doesn't support the feature, you can opt out of the test.  Look at `func makeTests()` in [integrationTest/integration_test.go](https://github.com/StackExchange/dnscontrol/blob/2f65533e1b92c2967229a92a304fff7c14f7f4b6/integrationTest/integration_test.go#L675) for more details.
 
 
-## Step 8: Update docs
+## Step 8: Manual tests
+
+There is a potential bug in how TXT records are handled. Sadly we haven't found
+an automated way to test for this bug.  The manual steps are here in
+[docs/testing-txt-records.md](testing-txt-records.html)
+
+
+## Step 9: Update docs
 
 * Edit [README.md](https://github.com/StackExchange/dnscontrol): Add the provider to the bullet list.
 * Edit [docs/provider-list.md](https://github.com/StackExchange/dnscontrol/blob/master/docs/provider-list.md): Add the provider to the provider list.
 * Create `docs/_providers/PROVIDERNAME.md`: Use one of the other files in that directory as a base.
 * Edit [OWNERS](https://github.com/StackExchange/dnscontrol/blob/master/OWNERS): Add the directory name and your github id.
 
-## Step 9: Submit a PR
+## Step 10: Submit a PR
 
 At this point you can submit a PR.
 
@@ -215,7 +222,7 @@ input, or have questions.  This is just a good stopping place to
 submit a PR if you haven't already.
 
 
-## Step 10: Capabilities
+## Step 11: Capabilities
 
 Some DNS providers have features that others do not.  For example some
 support the SRV record.  A provider announces what it can do using
@@ -249,7 +256,7 @@ FYI: If a provider's capabilities changes, run `go generate` to update
 the documentation.
 
 
-## Step 11: Clean up
+## Step 12: Clean up
 
 Run "go vet" and "golint" and clean up any errors found.
 
@@ -267,7 +274,7 @@ go get -u golang.org/x/lint/golint
 ```
 
 
-## Step 12: Dependencies
+## Step 13: Dependencies
 
 See
 [docs/release-engineering.md](https://github.com/StackExchange/dnscontrol/blob/master/docs/release-engineering.md)
@@ -275,16 +282,16 @@ for tips about managing modules and checking for outdated
 dependencies.
 
 
-## Step 13: Check your work.
+## Step 14: Check your work.
 
 Here are some last-minute things to check before you submit your PR.
 
 1. Run "go generate" to make sure all generated files are fresh.
 2. Make sure all appropriate documentation is current. (See Step 8)
-3. Check that dependencies are current (See Step 12)
+3. Check that dependencies are current (See Step 13)
 4. Re-run the integration test one last time (See Step 7)
 
-## Step 14: After the PR is merged
+## Step 15: After the PR is merged
 
 1. Remove the "provider-request" label from the PR.
 2. Verify that [docs/provider-list.md](https://github.com/StackExchange/dnscontrol/blob/master/docs/provider-list.md) no longer shows the provider as "requested"
