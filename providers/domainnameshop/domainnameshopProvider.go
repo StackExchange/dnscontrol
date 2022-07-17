@@ -1,11 +1,8 @@
 package domainnameshop
 
 import (
-	"crypto/tls"
 	"encoding/json"
 	"fmt"
-	"net/http"
-	"net/url"
 	"strconv"
 	"strings"
 
@@ -45,9 +42,6 @@ func init() {
 		Initializer:   newDomainNameShopProvider,
 		RecordAuditor: auditRecords,
 	}
-
-	proxyURL, _ := url.Parse("http://127.0.0.1:8080")
-	http.DefaultTransport = &http.Transport{Proxy: http.ProxyURL(proxyURL), TLSClientConfig: &tls.Config{InsecureSkipVerify: true}}
 
 	providers.RegisterDomainServiceProviderType("DOMAINNAMESHOP", fns, features)
 }
