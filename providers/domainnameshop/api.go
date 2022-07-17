@@ -122,6 +122,8 @@ func (api *domainNameShopProvider) getDNS(domainName string) ([]domainNameShopRe
 			}
 		}
 
+		record.TTL = uint16(fixTTL(uint32(record.TTL)))
+
 		// Add domain id
 		(&domainResponse[i]).DomainID = domainID
 	}

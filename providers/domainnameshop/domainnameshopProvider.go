@@ -85,6 +85,11 @@ func (api *domainNameShopProvider) GetDomainCorrections(dc *models.DomainConfig)
 	// Normalize
 	models.PostProcessRecords(existingRecords)
 
+	// Domainnameshop doesn't allow arbitrary TTLs they must be a multiple of 60.
+	for _, record := range dc.Records {
+		record.TTL = fixTTL(record.TTL)
+	}
+
 	differ := diff.New(dc)
 	_, create, delete, modify, err := differ.IncrementalDiff(existingRecords)
 	if err != nil {
@@ -160,7 +165,7 @@ func (api *domainNameShopProvider) GetZoneRecords(domain string) (models.Records
 
 const minAllowedTTL = 60
 const maxAllowedTTL = 604800
-const TTLSteps = 60
+const multiplierTTL = 60
 
 func fixTTL(ttl uint32) uint32 {
 	// if the TTL is larger than the largest allowed value, return the largest allowed value
@@ -172,5 +177,5 @@ func fixTTL(ttl uint32) uint32 {
 
 	// Return closest rounded down possible
 
-	return (ttl / TTLSteps) * TTLSteps
+	return (ttl / multiplierTTL) * multiplierTTL
 }
