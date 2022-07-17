@@ -8,7 +8,7 @@ import (
 	"github.com/miekg/dns/dnsutil"
 )
 
-func toRecordConfig(domain string, currentRecords *DomainNameShopRecord) *models.RecordConfig {
+func toRecordConfig(domain string, currentRecords *domainNameShopRecord) *models.RecordConfig {
 	name := dnsutil.AddOrigin(currentRecords.Host, domain)
 
 	target := currentRecords.Data
@@ -45,7 +45,7 @@ func toRecordConfig(domain string, currentRecords *DomainNameShopRecord) *models
 	return t
 }
 
-func (api *domainNameShopProvider) fromRecordConfig(domainName string, rc *models.RecordConfig) (*DomainNameShopRecord, error) {
+func (api *domainNameShopProvider) fromRecordConfig(domainName string, rc *models.RecordConfig) (*domainNameShopRecord, error) {
 	domainID, err := api.getDomainID(domainName)
 	if err != nil {
 		return nil, err
@@ -58,7 +58,7 @@ func (api *domainNameShopProvider) fromRecordConfig(domainName string, rc *model
 		data = rc.GetTargetField()
 	}
 
-	dnsR := &DomainNameShopRecord{
+	dnsR := &domainNameShopRecord{
 		ID:            0,
 		Host:          rc.GetLabel(),
 		TTL:           uint16(rc.TTL),

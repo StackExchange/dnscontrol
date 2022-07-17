@@ -43,7 +43,7 @@ type domainNameShopProvider struct {
 func init() {
 	fns := providers.DspFuncs{
 		Initializer:   newDomainNameShopProvider,
-		RecordAuditor: AuditRecords,
+		RecordAuditor: auditRecords,
 	}
 
 	proxyURL, _ := url.Parse("http://127.0.0.1:8080")
@@ -52,7 +52,7 @@ func init() {
 	providers.RegisterDomainServiceProviderType("DOMAINNAMESHOP", fns, features)
 }
 
-func AuditRecords(records []*models.RecordConfig) error {
+func auditRecords(records []*models.RecordConfig) error {
 	return nil
 }
 
@@ -101,8 +101,8 @@ func (api *domainNameShopProvider) GetDomainCorrections(dc *models.DomainConfig)
 
 	// Delete record
 	for _, r := range delete {
-		domainID := r.Existing.Original.(*DomainNameShopRecord).DomainID
-		recordID := strconv.Itoa(r.Existing.Original.(*DomainNameShopRecord).ID)
+		domainID := r.Existing.Original.(*domainNameShopRecord).DomainID
+		recordID := strconv.Itoa(r.Existing.Original.(*domainNameShopRecord).ID)
 
 		corr := &models.Correction{
 			Msg: fmt.Sprintf("%s, record id: %s", r.String(), recordID),
@@ -136,7 +136,7 @@ func (api *domainNameShopProvider) GetDomainCorrections(dc *models.DomainConfig)
 			return nil, err
 		}
 
-		dnsR.ID = r.Existing.Original.(*DomainNameShopRecord).ID
+		dnsR.ID = r.Existing.Original.(*domainNameShopRecord).ID
 
 		corr := &models.Correction{
 			Msg: r.String(),

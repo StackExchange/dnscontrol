@@ -14,7 +14,7 @@ import (
 var rootAPIURI = "https://api.domeneshop.no/v0"
 
 //TODO: CHECK that domains match
-func (api *domainNameShopProvider) getDomains(domainName string) ([]DomainResponse, error) {
+func (api *domainNameShopProvider) getDomains(domainName string) ([]domainResponse, error) {
 	client := &http.Client{}
 
 	req, err := http.NewRequest(http.MethodGet, rootAPIURI+"/domains?domain="+domainName, nil)
@@ -30,7 +30,7 @@ func (api *domainNameShopProvider) getDomains(domainName string) ([]DomainRespon
 		return nil, err
 	}
 	defer resp.Body.Close()
-	domainResponse := make([]DomainResponse, 1)
+	domainResponse := make([]domainResponse, 1)
 	err = json.NewDecoder(resp.Body).Decode(&domainResponse)
 	if err != nil {
 		return nil, err
@@ -54,7 +54,7 @@ func (api *domainNameShopProvider) getNS(domainName string) ([]string, error) {
 	return domainResp[0].Nameservers, nil
 }
 
-func (api *domainNameShopProvider) getDNS(domainName string) ([]DomainNameShopRecord, error) {
+func (api *domainNameShopProvider) getDNS(domainName string) ([]domainNameShopRecord, error) {
 	domainID, err := api.getDomainID(domainName)
 	if err != nil {
 		return nil, err
@@ -74,7 +74,7 @@ func (api *domainNameShopProvider) getDNS(domainName string) ([]DomainNameShopRe
 		return nil, err
 	}
 	defer resp.Body.Close()
-	domainResponse := make([]DomainNameShopRecord, 1)
+	domainResponse := make([]domainNameShopRecord, 1)
 	err = json.NewDecoder(resp.Body).Decode(&domainResponse)
 	if err != nil {
 		return nil, err
@@ -133,7 +133,7 @@ func (api *domainNameShopProvider) getDNS(domainName string) ([]DomainNameShopRe
 
 	// Adds NS as records
 	for _, nameserver := range ns {
-		domainResponse = append(domainResponse, DomainNameShopRecord{
+		domainResponse = append(domainResponse, domainNameShopRecord{
 			ID:       0,
 			Host:     "@",
 			TTL:      300,
@@ -174,7 +174,7 @@ func (api *domainNameShopProvider) deleteRecord(domainID string, recordID string
 	}
 }
 
-func (api *domainNameShopProvider) CreateRecord(domainName string, dnsR *DomainNameShopRecord) error {
+func (api *domainNameShopProvider) CreateRecord(domainName string, dnsR *domainNameShopRecord) error {
 	domainID, err := api.getDomainID(domainName)
 	if err != nil {
 		return err
@@ -209,7 +209,7 @@ func (api *domainNameShopProvider) CreateRecord(domainName string, dnsR *DomainN
 	}
 }
 
-func (api *domainNameShopProvider) UpdateRecord(dnsR *DomainNameShopRecord) error {
+func (api *domainNameShopProvider) UpdateRecord(dnsR *domainNameShopRecord) error {
 	domainID := dnsR.DomainID
 	recordID := strconv.Itoa(dnsR.ID)
 

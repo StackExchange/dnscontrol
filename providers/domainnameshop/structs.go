@@ -1,12 +1,12 @@
 package domainnameshop
 
-type DomainResponse struct {
+type domainResponse struct {
 	ID          int      `json:"id"`
 	Domain      string   `json:"domain"`
 	Nameservers []string `json:"nameservers"`
 }
 
-type DomainNameShopRecord struct {
+type domainNameShopRecord struct {
 	ID             int    `json:"id"`
 	Host           string `json:"host"`
 	TTL            uint16 `json:"ttl,omitempty"`
