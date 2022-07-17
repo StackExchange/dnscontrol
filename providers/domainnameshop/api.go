@@ -6,6 +6,8 @@ import (
 	"fmt"
 	"net/http"
 	"strconv"
+
+	"golang.org/x/net/idna"
 )
 
 var rootAPIURI = "https://api.domeneshop.no/v0"
@@ -93,6 +95,15 @@ func (api *domainNameShopProvider) getDNS(domainName string) ([]DomainNameShopRe
 				record.CAAFlag = 0
 			}
 			record.CAAFlag = CaaFlag
+		}
+
+		// Transform data field to punycode if CNAME
+		if record.Type == "CNAME" {
+			punycodeData, err := idna.ToASCII(record.Data)
+			if err != nil {
+				return nil, err
+			}
+			record.Data = punycodeData + "."
 		}
 
 		// Add domain id
