@@ -1,18 +1,22 @@
 package domainnameshop
 
 import (
+	"crypto/tls"
 	"encoding/json"
 	"fmt"
+	"net/http"
+	"net/url"
 	"strconv"
+	"strings"
 
 	"github.com/StackExchange/dnscontrol/v3/models"
 	"github.com/StackExchange/dnscontrol/v3/pkg/diff"
-	"github.com/StackExchange/dnscontrol/v3/pkg/txtutil"
 	"github.com/StackExchange/dnscontrol/v3/providers"
 )
 
-var features = providers.DocumentationNotes{
-	providers.CanGetZones:            providers.Cannot(),
+var features = providers.DocumentationNotes{}
+
+/*	providers.CanGetZones:            providers.Cannot(),
 	providers.CanUseAlias:            providers.Unimplemented(),
 	providers.CanUseCAA:              providers.Unimplemented(),
 	providers.CanUseDSForChildren:    providers.Unimplemented(),
@@ -23,7 +27,7 @@ var features = providers.DocumentationNotes{
 	providers.DocCreateDomains:       providers.Unimplemented(),
 	providers.DocDualHost:            providers.Unimplemented(),
 	providers.DocOfficiallySupported: providers.Unimplemented(),
-}
+}*/
 
 // dnsimpleProvider is the handle for this provider.
 type domainNameShopProvider struct {
@@ -38,6 +42,9 @@ func init() {
 		Initializer:   newDomainNameShopProvider,
 		RecordAuditor: AuditRecords,
 	}
+
+	proxyURL, _ := url.Parse("http://127.0.0.1:8080")
+	http.DefaultTransport = &http.Transport{Proxy: http.ProxyURL(proxyURL), TLSClientConfig: &tls.Config{InsecureSkipVerify: true}}
 
 	providers.RegisterDomainServiceProviderType("DOMAINNAMESHOP", fns, features)
 }
@@ -80,7 +87,6 @@ func (api *domainNameShopProvider) GetDomainCorrections(dc *models.DomainConfig)
 
 	// Normalize
 	models.PostProcessRecords(existingRecords)
-	txtutil.SplitSingleLongTxt(dc.Records) // Autosplit long TXT records
 
 	differ := diff.New(dc)
 	_, create, delete, modify, err := differ.IncrementalDiff(existingRecords)
@@ -96,7 +102,7 @@ func (api *domainNameShopProvider) GetDomainCorrections(dc *models.DomainConfig)
 		recordID := strconv.Itoa(r.Existing.Original.(*DomainNameShopRecord).ID)
 
 		corr := &models.Correction{
-			Msg: fmt.Sprintf("%s, domain ID: %s, record id: %s", r.String(), domainID, recordID),
+			Msg: fmt.Sprintf("%s, record id: %s", r.String(), recordID),
 			F:   func() error { return api.deleteRecord(domainID, recordID) },
 		}
 		corrections = append(corrections, corr)
@@ -104,11 +110,40 @@ func (api *domainNameShopProvider) GetDomainCorrections(dc *models.DomainConfig)
 
 	// Create records
 	for _, r := range create {
-		fmt.Println(r)
+		domainName := strings.Replace(r.Desired.GetLabelFQDN(), r.Desired.GetLabel()+".", "", -1)
+		dnsR, err := api.fromRecordConfig(domainName, r.Desired)
+
+		if err != nil {
+			return nil, err
+		}
+		corr := &models.Correction{
+			Msg: r.String(),
+			F:   func() error { return api.CreateRecord(domainName, dnsR) },
+		}
+
+		corrections = append(corrections, corr)
 	}
 
-	fmt.Sprint(modify, corrections)
-	return nil, nil
+	for _, r := range modify {
+		domainName := strings.Replace(r.Desired.GetLabelFQDN(), r.Desired.GetLabel()+".", "", -1)
+
+		dnsR, err := api.fromRecordConfig(domainName, r.Desired)
+
+		if err != nil {
+			return nil, err
+		}
+
+		dnsR.ID = r.Existing.Original.(*DomainNameShopRecord).ID
+
+		corr := &models.Correction{
+			Msg: r.String(),
+			F:   func() error { return api.UpdateRecord(dnsR) },
+		}
+
+		corrections = append(corrections, corr)
+	}
+
+	return corrections, nil
 }
 
 func (api *domainNameShopProvider) GetZoneRecords(domain string) (models.Records, error) {

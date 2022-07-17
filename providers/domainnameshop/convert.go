@@ -1,6 +1,7 @@
 package domainnameshop
 
 import (
+	"fmt"
 	"strconv"
 
 	"github.com/StackExchange/dnscontrol/v3/models"
@@ -44,17 +45,25 @@ func toRecordConfig(domain string, currentRecords *DomainNameShopRecord) *models
 	return t
 }
 
-func (api *domainNameShopProvider) fromRecordConfig(domain string, rc *models.RecordConfig) (*DomainNameShopRecord, error) {
-	domainID, err := api.getDomainID(domain)
+func (api *domainNameShopProvider) fromRecordConfig(domainName string, rc *models.RecordConfig) (*DomainNameShopRecord, error) {
+	domainID, err := api.getDomainID(domainName)
 	if err != nil {
 		return nil, err
 	}
+
+	data := ""
+	if rc.Type == "TXT" {
+		data = rc.GetTargetTXTJoined()
+	} else {
+		data = rc.GetTargetField()
+	}
+
 	dnsR := &DomainNameShopRecord{
 		ID:            0,
 		Host:          rc.GetLabel(),
 		TTL:           uint16(rc.TTL),
 		Type:          rc.Type,
-		Data:          rc.GetTargetField(),
+		Data:          data,
 		Priority:      strconv.Itoa(int(rc.MxPreference) + int(rc.SrvPriority)),
 		Weight:        rc.SrvWeight,
 		Port:          rc.SrvPort,
@@ -73,6 +82,11 @@ func (api *domainNameShopProvider) fromRecordConfig(domain string, rc *models.Re
 		case "iodef":
 			dnsR.CAATag = "2"
 		}
+	}
+
+	// TTL must be a multiple of 60.
+	if dnsR.TTL%60 != 0 {
+		return nil, fmt.Errorf("TTL must be a multiple of 60. Given TTL: %v", (*dnsR).TTL)
 	}
 
 	return dnsR, nil

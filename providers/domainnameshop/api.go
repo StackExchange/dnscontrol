@@ -1,6 +1,7 @@
 package domainnameshop
 
 import (
+	"bytes"
 	"encoding/json"
 	"fmt"
 	"net/http"
@@ -110,7 +111,7 @@ func (api *domainNameShopProvider) getDNS(domainName string) ([]DomainNameShopRe
 			Host:     "@",
 			TTL:      300,
 			Type:     "NS",
-			Data:     nameserver,
+			Data:     nameserver + ".",
 			DomainID: domainID,
 		})
 	}
@@ -141,6 +142,77 @@ func (api *domainNameShopProvider) deleteRecord(domainID string, recordID string
 		return fmt.Errorf("not authorized")
 	case 404:
 		return fmt.Errorf("DNS record does not exist")
+	default:
+		return fmt.Errorf("unknown statuscode: %v", resp.StatusCode)
+	}
+}
+
+func (api *domainNameShopProvider) CreateRecord(domainName string, dnsR *DomainNameShopRecord) error {
+	domainID, err := api.getDomainID(domainName)
+	if err != nil {
+		return err
+	}
+	client := &http.Client{}
+
+	payloadBuf := new(bytes.Buffer)
+	json.NewEncoder(payloadBuf).Encode(&dnsR)
+
+	req, err := http.NewRequest(http.MethodPost, rootAPIURI+"/domains/"+domainID+"/dns", payloadBuf)
+	if err != nil {
+		// handle error
+		return err
+	}
+	req.SetBasicAuth(api.Token, api.Secret)
+	resp, err := client.Do(req)
+	if err != nil {
+		// handle error
+		return err
+	}
+
+	switch resp.StatusCode {
+	case 201:
+		//Record is deleted
+		return nil
+	case 403:
+		return fmt.Errorf("not authorized")
+	case 404:
+		return fmt.Errorf("Domain " + domainID + " does not exist")
+	default:
+		return fmt.Errorf("unknown statuscode: %v", resp.StatusCode)
+	}
+}
+
+func (api *domainNameShopProvider) UpdateRecord(dnsR *DomainNameShopRecord) error {
+	domainID := dnsR.DomainID
+	recordID := strconv.Itoa(dnsR.ID)
+
+	client := &http.Client{}
+
+	payloadBuf := new(bytes.Buffer)
+	json.NewEncoder(payloadBuf).Encode(&dnsR)
+
+	req, err := http.NewRequest(http.MethodPut, rootAPIURI+"/domains/"+domainID+"/dns/"+recordID, payloadBuf)
+	if err != nil {
+		// handle error
+		return err
+	}
+	req.SetBasicAuth(api.Token, api.Secret)
+	resp, err := client.Do(req)
+	if err != nil {
+		// handle error
+		return err
+	}
+
+	switch resp.StatusCode {
+	case 204:
+		//Update successful
+		return nil
+	case 409:
+		return fmt.Errorf("not authorized")
+	case 404:
+		return fmt.Errorf("DNS record does not exist. RecordID: " + recordID)
+	case 400:
+		return fmt.Errorf("DNS record failed validation")
 	default:
 		return fmt.Errorf("unknown statuscode: %v", resp.StatusCode)
 	}
