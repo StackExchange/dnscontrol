@@ -791,11 +791,6 @@ func makeTests(t *testing.T) []*TestGroup {
 			tc("NS Record pointing to @", a("@", "1.2.3.4"), ns("foo", "**current-domain**")),
 		),
 
-		// NB(tlim): We don't have a test for IGNORE_TARGET at the apex
-		// because IGNORE_TARGET only works on CNAMEs and you can't have a
-		// CNAME at the apex.  If we extend IGNORE_TARGET to support other
-		// types of records, we should add a test at the apex.
-
 		testgroup("simple TXT",
 			tc("Create a TXT", txt("foo", "simple")),
 			tc("Change a TXT", txt("foo", "changed")),
@@ -851,6 +846,9 @@ func makeTests(t *testing.T) []*TestGroup {
 			tc("Create TXT with double-quote", txt("foodq", `quo"te`)),
 			clear(),
 			tc("Create TXT with ws at end", txt("foows1", "with space at end ")),
+			//clear(),
+			// TODO(tlim): Re-add this when we fix the RFC1035 escaped-quotes issue.
+			//tc("Create TXT with frequently escaped characters", txt("fooex", `!^.*$@#%^&()([][{}{<></:;-_=+\`)),
 		),
 
 		//
@@ -1491,6 +1489,11 @@ func makeTests(t *testing.T) []*TestGroup {
 				ignoreTarget("**.foo.com.", "CNAME"),
 			),
 		),
+		// NB(tlim): We don't have a test for IGNORE_TARGET at the apex
+		// because IGNORE_TARGET only works on CNAMEs and you can't have a
+		// CNAME at the apex.  If we extend IGNORE_TARGET to support other
+		// types of records, we should add a test at the apex.
+
 	}
 
 	return tests
