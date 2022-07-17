@@ -12,6 +12,7 @@ providers/digitalocean @Deraen
 providers/dnsimple @onlyhavecans
 providers/dnsmadeeasy @vojtad
 providers/doh @mikenz
+providers/domainnameshop @SimenBai
 providers/easyname @tresni
 providers/gandi_v5 @TomOnTime
 providers/gcloud @riyadhalnur

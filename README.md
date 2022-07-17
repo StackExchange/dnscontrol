@@ -28,6 +28,7 @@ Currently supported DNS providers:
  - DNS Made Easy
  - DNSimple
  - DigitalOcean
+ - DomainNameShop (domeneshop)
  - Exoscale
  - Gandi
  - Google DNS
