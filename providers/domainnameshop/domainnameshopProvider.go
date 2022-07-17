@@ -157,3 +157,20 @@ func (api *domainNameShopProvider) GetZoneRecords(domain string) (models.Records
 
 	return existingRecords, nil
 }
+
+const minAllowedTTL = 60
+const maxAllowedTTL = 604800
+const TTLSteps = 60
+
+func fixTTL(ttl uint32) uint32 {
+	// if the TTL is larger than the largest allowed value, return the largest allowed value
+	if ttl > maxAllowedTTL {
+		return maxAllowedTTL
+	} else if ttl < 60 {
+		return minAllowedTTL
+	}
+
+	// Return closest rounded down possible
+
+	return (ttl / TTLSteps) * TTLSteps
+}
