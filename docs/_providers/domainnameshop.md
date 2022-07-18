@@ -43,4 +43,4 @@ D("example.tld", REG_NONE, DnsProvider(DSP_DOMAINNAMESHOP),
 
 ## Limitations
 
-- Digitalocean DNS only supports TTLs which are a multiple of 60.
+- DomainNameShop DNS only supports TTLs which are a multiple of 60.
