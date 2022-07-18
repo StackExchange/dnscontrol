@@ -7,33 +7,33 @@ import (
 	"github.com/miekg/dns/dnsutil"
 )
 
-func toRecordConfig(domain string, currentRecords *domainNameShopRecord) *models.RecordConfig {
-	name := dnsutil.AddOrigin(currentRecords.Host, domain)
+func toRecordConfig(domain string, currentRecord *domainNameShopRecord) *models.RecordConfig {
+	name := dnsutil.AddOrigin(currentRecord.Host, domain)
 
-	target := currentRecords.Data
+	target := currentRecord.Data
 
 	t := &models.RecordConfig{
-		Type:         currentRecords.Type,
-		TTL:          fixTTL(uint32(currentRecords.TTL)),
-		MxPreference: uint16(currentRecords.ActualPriority),
-		SrvPriority:  uint16(currentRecords.ActualPriority),
-		SrvWeight:    uint16(currentRecords.ActualWeight),
-		SrvPort:      uint16(currentRecords.ActualPort),
-		Original:     currentRecords,
-		CaaTag:       currentRecords.CAATag,
-		CaaFlag:      uint8(currentRecords.CAAFlag),
+		Type:         currentRecord.Type,
+		TTL:          fixTTL(uint32(currentRecord.TTL)),
+		MxPreference: uint16(currentRecord.ActualPriority),
+		SrvPriority:  uint16(currentRecord.ActualPriority),
+		SrvWeight:    uint16(currentRecord.ActualWeight),
+		SrvPort:      uint16(currentRecord.ActualPort),
+		Original:     currentRecord,
+		CaaTag:       currentRecord.CAATag,
+		CaaFlag:      uint8(currentRecord.CAAFlag),
 	}
 
 	t.SetTarget(target)
 	t.SetLabelFromFQDN(name, domain)
 
-	switch rtype := currentRecords.Type; rtype {
+	switch rtype := currentRecord.Type; rtype {
 	case "TXT":
 		t.SetTargetTXT(target)
 	case "CAA":
-		if currentRecords.CAATag == "0" {
+		if currentRecord.CAATag == "0" {
 			t.CaaTag = "issue"
-		} else if currentRecords.CAATag == "1" {
+		} else if currentRecord.CAATag == "1" {
 			t.CaaTag = "issuewild"
 		} else {
 			t.CaaTag = "iodef"

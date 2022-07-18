@@ -114,7 +114,6 @@ func (api *domainNameShopProvider) GetDomainCorrections(dc *models.DomainConfig)
 	for _, r := range create {
 		domainName := strings.Replace(r.Desired.GetLabelFQDN(), r.Desired.GetLabel()+".", "", -1)
 		dnsR, err := api.fromRecordConfig(domainName, r.Desired)
-
 		if err != nil {
 			return nil, err
 		}

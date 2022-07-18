@@ -149,31 +149,7 @@ func (api *domainNameShopProvider) getDNS(domainName string) ([]domainNameShopRe
 }
 
 func (api *domainNameShopProvider) deleteRecord(domainID string, recordID string) error {
-	client := &http.Client{}
-
-	req, err := http.NewRequest(http.MethodDelete, rootAPIURI+"/domains/"+domainID+"/dns/"+recordID, nil)
-	if err != nil {
-		// handle error
-		return err
-	}
-	req.SetBasicAuth(api.Token, api.Secret)
-	resp, err := client.Do(req)
-	if err != nil {
-		// handle error
-		return err
-	}
-
-	switch resp.StatusCode {
-	case 204:
-		//Record is deleted
-		return nil
-	case 403:
-		return fmt.Errorf("not authorized")
-	case 404:
-		return fmt.Errorf("DNS record does not exist")
-	default:
-		return fmt.Errorf("unknown statuscode: %v", resp.StatusCode)
-	}
+	return api.sendChangeRequest(http.MethodDelete, rootAPIURI+"/domains/"+domainID+"/dns/"+recordID, nil)
 }
 
 func (api *domainNameShopProvider) CreateRecord(domainName string, dnsR *domainNameShopRecord) error {
@@ -181,12 +157,30 @@ func (api *domainNameShopProvider) CreateRecord(domainName string, dnsR *domainN
 	if err != nil {
 		return err
 	}
-	client := &http.Client{}
+
+	payloadBuf := new(bytes.Buffer)
+	err = json.NewEncoder(payloadBuf).Encode(&dnsR)
+	if err != nil {
+		return err
+	}
+
+	return api.sendChangeRequest(http.MethodPost, rootAPIURI+"/domains/"+domainID+"/dns", payloadBuf)
+}
+
+func (api *domainNameShopProvider) UpdateRecord(dnsR *domainNameShopRecord) error {
+	domainID := dnsR.DomainID
+	recordID := strconv.Itoa(dnsR.ID)
 
 	payloadBuf := new(bytes.Buffer)
 	json.NewEncoder(payloadBuf).Encode(&dnsR)
 
-	req, err := http.NewRequest(http.MethodPost, rootAPIURI+"/domains/"+domainID+"/dns", payloadBuf)
+	return api.sendChangeRequest(http.MethodPut, rootAPIURI+"/domains/"+domainID+"/dns/"+recordID, payloadBuf)
+}
+
+func (api *domainNameShopProvider) sendChangeRequest(method string, uri string, payload *bytes.Buffer) error {
+	client := &http.Client{}
+
+	req, err := http.NewRequest(method, uri, payload)
 	if err != nil {
 		// handle error
 		return err
@@ -200,48 +194,19 @@ func (api *domainNameShopProvider) CreateRecord(domainName string, dnsR *domainN
 
 	switch resp.StatusCode {
 	case 201:
-		//Record is deleted
+		// Record is deleted
 		return nil
-	case 403:
-		return fmt.Errorf("not authorized")
-	case 404:
-		return fmt.Errorf("Domain " + domainID + " does not exist")
-	default:
-		return fmt.Errorf("unknown statuscode: %v", resp.StatusCode)
-	}
-}
-
-func (api *domainNameShopProvider) UpdateRecord(dnsR *domainNameShopRecord) error {
-	domainID := dnsR.DomainID
-	recordID := strconv.Itoa(dnsR.ID)
-
-	client := &http.Client{}
-
-	payloadBuf := new(bytes.Buffer)
-	json.NewEncoder(payloadBuf).Encode(&dnsR)
-
-	req, err := http.NewRequest(http.MethodPut, rootAPIURI+"/domains/"+domainID+"/dns/"+recordID, payloadBuf)
-	if err != nil {
-		// handle error
-		return err
-	}
-	req.SetBasicAuth(api.Token, api.Secret)
-	resp, err := client.Do(req)
-	if err != nil {
-		// handle error
-		return err
-	}
-
-	switch resp.StatusCode {
 	case 204:
 		//Update successful
 		return nil
-	case 409:
-		return fmt.Errorf("not authorized")
-	case 404:
-		return fmt.Errorf("DNS record does not exist. RecordID: " + recordID)
 	case 400:
 		return fmt.Errorf("DNS record failed validation")
+	case 403:
+		return fmt.Errorf("not authorized")
+	case 404:
+		return fmt.Errorf("does not exist")
+	case 409:
+		return fmt.Errorf("collision")
 	default:
 		return fmt.Errorf("unknown statuscode: %v", resp.StatusCode)
 	}
