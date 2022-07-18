@@ -81,7 +81,7 @@ func TxtNoStringsLen256orLonger(records []*models.RecordConfig) error {
 		if rc.HasFormatIdenticalToTXT() { // TXT and similar:
 			for _, txt := range rc.TxtStrings {
 				if len(txt) > 255 {
-					return fmt.Errorf("txtstring length > 255")
+					return fmt.Errorf("%q txtstring length > 255", rc.GetLabel())
 				}
 			}
 		}
