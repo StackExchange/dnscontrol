@@ -101,6 +101,7 @@ Providers in this category and their maintainers are:
 * `OVH` @masterzen
 * `PACKETFRAME` @hamptonmoore
 * `POWERDNS` @jpbede
+* `RWTH` @MisterErwin
 * `ROUTE53` @tresni
 * `SOFTLAYER`@jamielennox
 * `TRANSIP` @blackshadev

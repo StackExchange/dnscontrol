@@ -36,3 +36,4 @@ providers/ovh @masterzen
 providers/powerdns @jpbede
 providers/packetframe @hamptonmoore
 providers/transip @blackshadev
+providers/rwth @mistererwin
