@@ -209,10 +209,18 @@ func GetZone(args GetZoneArgs) error {
 
 	// Write the heading:
 
+	dspVariableName := "DSP_" + strings.ToUpper(args.CredName)
+
 	if args.OutputFormat == "js" || args.OutputFormat == "djs" {
-		fmt.Fprintf(w, `var %s = NewDnsProvider("%s", "%s");`+"\n",
-			args.CredName, args.CredName, args.ProviderName)
-		fmt.Fprintf(w, `var REG_CHANGEME = NewRegistrar("ThirdParty", "NONE");`+"\n")
+
+		if args.ProviderName == "-" {
+			fmt.Fprintf(w, `var %s = NewDnsProvider("%s");`+"\n",
+				dspVariableName, args.CredName)
+		} else {
+			fmt.Fprintf(w, `var %s = NewDnsProvider("%s", "%s");`+"\n",
+				dspVariableName, args.CredName, args.ProviderName)
+		}
+		fmt.Fprintf(w, `var REG_CHANGEME = NewRegistrar("none");`+"\n")
 	}
 
 	// print each zone
@@ -234,7 +242,7 @@ func GetZone(args GetZoneArgs) error {
 			}
 			fmt.Fprintf(w, `D("%s", REG_CHANGEME%s`, zoneName, sep)
 			var o []string
-			o = append(o, fmt.Sprintf("DnsProvider(%s)", args.CredName))
+			o = append(o, fmt.Sprintf("DnsProvider(%s)", dspVariableName))
 			defaultTTL := uint32(args.DefaultTTL)
 			if defaultTTL == 0 {
 				defaultTTL = prettyzone.MostCommonTTL(recs)

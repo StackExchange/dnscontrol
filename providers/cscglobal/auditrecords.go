@@ -16,13 +16,13 @@ func AuditRecords(records []*models.RecordConfig) error {
 	// Each test should document the last time we verified the test was
 	// still needed. Sometimes companies change their API.
 
-	if err := recordaudit.TxtNoDoubleQuotes(records); err != nil {
-		return err
-	} // Needed as of 2022-06-10
+	//	if err := recordaudit.TxtNoDoubleQuotes(records); err != nil {
+	//		return err
+	//	} // Needed as of 2022-06-10
 
-	if err := recordaudit.TxtNoStringsLen256orLonger(records); err != nil {
-		return err
-	} // Needed as of 2022-06-10
+	//	if err := recordaudit.TxtNoStringsLen256orLonger(records); err != nil {
+	//		return err
+	//	} // Needed as of 2022-06-10
 
 	if err := recordaudit.TxtNoMultipleStrings(records); err != nil {
 		return err

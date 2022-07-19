@@ -1,7 +1,7 @@
-var bind = NewDnsProvider("bind", "BIND");
-var REG_CHANGEME = NewRegistrar("ThirdParty", "NONE");
+var DSP_BIND = NewDnsProvider("bind", "BIND");
+var REG_CHANGEME = NewRegistrar("none");
 D("simple.com", REG_CHANGEME,
-	DnsProvider(bind),
+	DnsProvider(DSP_BIND),
 	//SOA('@', 'ns3.serverfault.com.', 'sysadmin.stackoverflow.com.', 2020022300, 3600, 600, 604800, 1440),
 	//NAMESERVER('ns-1313.awsdns-36.org.'),
 	//NAMESERVER('ns-736.awsdns-28.net.'),

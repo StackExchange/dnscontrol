@@ -767,6 +767,7 @@ func makeTests(t *testing.T) []*TestGroup {
 				"CSCGLOBAL", // Last verified 2022-06-07
 				"DIGITALOCEAN",
 				"DNSIMPLE",
+				"EXOSCALE", // Last verified 2022-07-11
 				"GANDI_V5",
 				"HEDNS",
 				"INWX",
@@ -1050,7 +1051,12 @@ func makeTests(t *testing.T) []*TestGroup {
 			tc("CAA many records", caa("@", "issuewild", 0, ";")),
 		),
 		testgroup("CAA Issue 1374",
-			requires(providers.CanUseCAA), not("DIGITALOCEAN", "DNSIMPLE", "HETZNER"),
+			requires(providers.CanUseCAA), not(
+				"DIGITALOCEAN",
+				"DNSIMPLE",
+				"EXOSCALE", // Last verified 2022-07-11
+				"HETZNER",
+			),
 			// Test support of spaces in the 3rd field.
 			tc("CAA spaces", caa("@", "issue", 0, "letsencrypt.org; validationmethods=dns-01; accounturi=https://acme-v02.api.letsencrypt.org/acme/acct/1234")),
 		),
@@ -1161,8 +1167,7 @@ func makeTests(t *testing.T) []*TestGroup {
 		),
 
 		testgroup("DS (children only)",
-			requires(providers.CanUseDSForChildren),
-			not("CLOUDNS", "CLOUDFLAREAPI"),
+			requires(providers.CanUseDSForChildren), not("CLOUDNS", "CLOUDFLAREAPI"),
 			// Use a valid digest value here.  Some providers verify that a valid digest is in use.  See RFC 4034 and
 			// https://www.iana.org/assignments/dns-sec-alg-numbers/dns-sec-alg-numbers.xhtml
 			// https://www.iana.org/assignments/ds-rr-types/ds-rr-types.xhtml
