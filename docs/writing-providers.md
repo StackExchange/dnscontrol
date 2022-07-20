@@ -147,6 +147,20 @@ The function `GetRegistrarCorrections()` returns
 a list of corrections to be made. These are in the form of functions
 that DNSControl can call to actually make the corrections.
 
+## Step 5a: File layout
+
+Here are the filenames and their purpose.  (This is new and most providers have not been updated to use this layout, but
+`providers/cscglobal` is a good example.)
+
+- `cscglobalProvider.go` - Initializers, capabilities, and struct/type definitions
+- `dns.go` - Get/fix DNS records: GetZoneRecords, GetDomainCorrections, GenerateDomainCorrections and related functions.
+- `registrar.go` - Get/fix registrar (nameserver) info: GetRegistrarCorrections and related functions
+- `listzones.go` - ListZones and related functions
+- `convert.go` - Converting between models.RecordConfig and the provider's native format
+- `api.go` - API primatives, often an ediface in front of a vendor-provided library
+- `auditrecords.go` - the AuditRecords function
+
+
 ## Step 6: Unit Test
 
 Make sure the existing unit tests work.  Add unit tests for any
