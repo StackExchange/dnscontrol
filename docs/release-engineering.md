@@ -197,6 +197,34 @@ If you are at Stack Overflow:
   * Run this build: `dnscontrol_embed - Promote most recent artifact into ExternalDNS repo`
 
 
+# Tip: How to rebuild flattener
+
+Rebuilding flatter requites go1.17.1 and the gopherjs compiler.
+
+Install go1.17.1:
+
+```
+go install golang.org/dl/go1.17.1@latest
+go1.17.1 download
+```
+
+Install gopherjs:
+
+```
+go install github.com/gopherjs/gopherjs@latest
+```
+
+Build the software:
+
+NOTE: GOOS can't be Darwin because GOPHERJS doesn't support it.
+
+```
+export GOPHERJS_GOROOT="$(go1.17.1 env GOROOT)"
+export GOOS=linux
+gopherjs build
+```
+
+
 # Tip: How to update modules
 
 List out-of-date modules and update any that seem worth updating:

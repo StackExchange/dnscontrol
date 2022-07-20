@@ -100,7 +100,7 @@ func renderResults() {
 		content += fmt.Sprintf(`
 <h3> %s flattened (length %d, %d lookups)</h3><code>%s</code>	
 `, mode, len(flat.TXT()), lookups, flat.TXT())
-		split := flat.TXTSplit("_spf%d." + domain)
+		split := flat.TXTSplit("_spf%d."+domain, 0, 255)
 		if len(split) > 1 {
 			lookups += len(split) - 1
 			content += fmt.Sprintf("<h3>%s flattened split (%d lookups)</h3>", mode, lookups)
