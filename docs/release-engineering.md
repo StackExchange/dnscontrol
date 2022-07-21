@@ -219,6 +219,7 @@ Build the software:
 NOTE: GOOS can't be Darwin because GOPHERJS doesn't support it.
 
 ```
+cd docs/flattener
 export GOPHERJS_GOROOT="$(go1.17.1 env GOROOT)"
 export GOOS=linux
 gopherjs build
