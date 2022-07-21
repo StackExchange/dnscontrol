@@ -4,6 +4,7 @@ package gandiv5
 
 import (
 	"fmt"
+	"os"
 
 	"github.com/go-gandi/go-gandi/livedns"
 
@@ -31,7 +32,8 @@ func nativeToRecords(n livedns.DomainRecord, origin string) (rcs []*models.Recor
 			rc.Type = "ALIAS"
 			err = rc.SetTarget(value)
 		case "TXT":
-			err = rc.SetTargetTXT(value)
+			fmt.Fprintf(os.Stderr, "DEBUG: value=:%s:\n", value)
+			err = rc.SetTargetTXTfromRFC1035Quoted(value)
 		default:
 			err = rc.PopulateFromString(rtype, value, origin)
 		}
