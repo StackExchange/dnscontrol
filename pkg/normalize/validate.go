@@ -486,7 +486,7 @@ func ValidateAndNormalizeConfig(config *models.DNSConfig) (errs []error) {
 				continue
 			}
 			if err := providers.AuditRecords(provider.ProviderBase.ProviderType, domain.Records); err != nil {
-				errs = append(errs, err)
+				errs = append(errs, fmt.Errorf("%s rejects domain %s: %w", provider.ProviderBase.ProviderType, domain.Name, err))
 			}
 		}
 	}

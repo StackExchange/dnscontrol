@@ -81,7 +81,7 @@ func TxtNoStringsLen256orLonger(records []*models.RecordConfig) error {
 		if rc.HasFormatIdenticalToTXT() { // TXT and similar:
 			for _, txt := range rc.TxtStrings {
 				if len(txt) > 255 {
-					return fmt.Errorf("txtstring length > 255")
+					return fmt.Errorf("%q txtstring length > 255", rc.GetLabel())
 				}
 			}
 		}
@@ -134,6 +134,22 @@ func TxtNotEmpty(records []*models.RecordConfig) error {
 			for _, txt := range rc.TxtStrings {
 				if len(txt) == 0 {
 					return fmt.Errorf("txtstring is empty")
+				}
+			}
+		}
+
+	}
+	return nil
+}
+
+// TxtNoUnpairedDoubleQuotes audits TXT records for strings that contain unpaired doublequotes.
+func TxtNoUnpairedDoubleQuotes(records []*models.RecordConfig) error {
+	for _, rc := range records {
+
+		if rc.HasFormatIdenticalToTXT() {
+			for _, txt := range rc.TxtStrings {
+				if strings.Count(txt, `"`)%2 == 1 {
+					return fmt.Errorf("txtstring contains unpaired doublequotes")
 				}
 			}
 		}
