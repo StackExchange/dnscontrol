@@ -14,7 +14,6 @@ import (
 	"github.com/StackExchange/dnscontrol/v3/models"
 	"github.com/StackExchange/dnscontrol/v3/pkg/diff"
 	"github.com/StackExchange/dnscontrol/v3/pkg/printer"
-	"github.com/StackExchange/dnscontrol/v3/pkg/txtutil"
 	"github.com/StackExchange/dnscontrol/v3/providers"
 )
 
@@ -155,7 +154,6 @@ func (c *dnsimpleProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*mod
 
 	// Normalize
 	models.PostProcessRecords(actual)
-	txtutil.SplitSingleLongTxt(dc.Records) // Autosplit long TXT records
 
 	differ := diff.New(dc)
 	_, create, del, modify, err := differ.IncrementalDiff(actual)
