@@ -845,6 +845,8 @@ func makeTests(t *testing.T) []*TestGroup {
 			clear(),
 			tc("Create TXT with double-quote", txt("foodq", `quo"te`)),
 			clear(),
+			tc("Create TXT with double-quotes", txt("foodqs", `q"uo"te`)),
+			clear(),
 			tc("Create TXT with ws at end", txt("foows1", "with space at end ")),
 			//clear(),
 			// TODO(tlim): Re-add this when we fix the RFC1035 escaped-quotes issue.
