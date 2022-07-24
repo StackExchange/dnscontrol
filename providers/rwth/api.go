@@ -7,40 +7,45 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/StackExchange/dnscontrol/v3/models"
-	"github.com/StackExchange/dnscontrol/v3/pkg/prettyzone"
 	"github.com/StackExchange/dnscontrol/v3/pkg/printer"
 	"github.com/miekg/dns"
-	"io"
 	"io/ioutil"
 	"net/http"
 	"net/url"
 	"strconv"
 	"strings"
+	"time"
 )
 
 const (
 	baseURL = "https://noc-portal.rz.rwth-aachen.de/dns-admin/api/v1"
 )
 
-type rwthProvider struct {
-	apiToken string
-	zones    map[string]zone
+type RecordReply struct {
+	ID        int       `json:"id"`
+	ZoneID    int       `json:"zone_id"`
+	Type      string    `json:"type"`
+	Content   string    `json:"content"`
+	Status    string    `json:"status"`
+	UpdatedAt time.Time `json:"updated_at"`
+	Editable  bool      `json:"editable"`
+	rec       dns.RR    // Store miekg/dns
 }
 
-// Custom dns.NewRR with RWTH default TTL
-func NewRR(s string) (dns.RR, error) {
-	if len(s) > 0 && s[len(s)-1] != '\n' { // We need a closing newline
-		return ReadRR(strings.NewReader(s + "\n"))
-	}
-	return ReadRR(strings.NewReader(s))
-}
-
-func ReadRR(r io.Reader) (dns.RR, error) {
-	zp := dns.NewZoneParser(r, ".", "")
-	zp.SetDefaultTTL(172800)
-	zp.SetIncludeAllowed(true)
-	rr, _ := zp.Next()
-	return rr, zp.Err()
+type zone struct {
+	ID         int       `json:"id"`
+	ZoneName   string    `json:"zone_name"`
+	Status     string    `json:"status"`
+	UpdatedAt  time.Time `json:"updated_at"`
+	LastDeploy time.Time `json:"last_deploy"`
+	Dnssec     struct {
+		ZoneSigningKey struct {
+			CreatedAt time.Time `json:"created_at"`
+		} `json:"zone_signing_key"`
+		KeySigningKey struct {
+			CreatedAt time.Time `json:"created_at"`
+		} `json:"key_signing_key"`
+	} `json:"dnssec"`
 }
 
 func checkIsLockedSystemApiRecord(record RecordReply) error {
@@ -138,35 +143,6 @@ func (api *rwthProvider) getAllZones() error {
 	return nil
 }
 
-// Print the generateZoneFileHelper
-func (apo *rwthProvider) printRecConfig(rr models.RecordConfig) string {
-	// Similar to prettyzone
-	// Fake types are commented out.
-	prefix := ""
-	_, ok := dns.StringToType[rr.Type]
-	if !ok {
-		prefix = ";"
-	}
-
-	// ttl
-	ttl := ""
-	if rr.TTL != 172800 && rr.TTL != 0 {
-		ttl = fmt.Sprint(rr.TTL)
-	}
-
-	// type
-	typeStr := rr.Type
-
-	// the remaining line
-	target := rr.GetTargetCombined()
-
-	// comment
-	comment := ";"
-
-	return fmt.Sprintf("%s%s%s\n",
-		prefix, prettyzone.FormatLine([]int{10, 5, 2, 5, 0}, []string{rr.NameFQDN, ttl, "IN", typeStr, target}), comment)
-}
-
 func (api *rwthProvider) getZone(name string) (*zone, error) {
 	if err := api.getAllZones(); err != nil {
 		return nil, err
@@ -176,6 +152,17 @@ func (api *rwthProvider) getZone(name string) (*zone, error) {
 		return nil, fmt.Errorf("%q is not a zone in this RWTH account", name)
 	}
 	return &zone, nil
+}
+
+// Deploy the zone
+func (api *rwthProvider) deployZone(domain string) error {
+	zone, err := api.getZone(domain)
+	if err != nil {
+		return err
+	}
+	req := url.Values{}
+	req.Set("zone_id", strconv.Itoa(zone.ID))
+	return api.request("/deploy_zone", "POST", req, nil, nil)
 }
 
 // Send a request
@@ -215,15 +202,4 @@ func (api *rwthProvider) request(endpoint string, method string, request url.Val
 	}
 	decoder := json.NewDecoder(resp.Body)
 	return decoder.Decode(target)
-}
-
-// Deploy the zone
-func (api *rwthProvider) deployZone(domain string) error {
-	zone, err := api.getZone(domain)
-	if err != nil {
-		return err
-	}
-	req := url.Values{}
-	req.Set("zone_id", strconv.Itoa(zone.ID))
-	return api.request("/deploy_zone", "POST", req, nil, nil)
 }
