@@ -11,8 +11,6 @@ import (
 	"strings"
 	"time"
 
-	"github.com/StackExchange/dnscontrol/v3/pkg/printer"
-
 	"github.com/mattn/go-isatty"
 )
 

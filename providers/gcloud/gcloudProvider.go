@@ -70,7 +70,6 @@ func New(cfg map[string]string, metadata json.RawMessage) (providers.DNSServiceP
 	// in some cases (round-tripping through env vars) this tends to get messed up.
 	// fix it if we find that.
 
-	ctx := context.Background()
 	var hc *http.Client
 	if key, ok := cfg["private_key"]; ok {
 		cfg["private_key"] = strings.Replace(key, "\\n", "\n", -1)
