@@ -3,9 +3,8 @@ package nameservers
 
 import (
 	"fmt"
-	"strings"
-
 	"strconv"
+	"strings"
 
 	"github.com/StackExchange/dnscontrol/v3/models"
 )
@@ -14,9 +13,14 @@ import (
 // 1. All explicitly defined NAMESERVER records will be used.
 // 2. Each DSP declares how many nameservers to use. Default is all. 0 indicates to use none.
 func DetermineNameservers(dc *models.DomainConfig) ([]*models.Nameserver, error) {
+	return DetermineNameserversForProviders(dc, dc.DNSProviderInstances)
+}
+
+// DetermineNameserversForProviders is like DetermineNameservers, for a subset of providers.
+func DetermineNameserversForProviders(dc *models.DomainConfig, providers []*models.DNSProviderInstance) ([]*models.Nameserver, error) {
 	// always take explicit
 	ns := dc.Nameservers
-	for _, dnsProvider := range dc.DNSProviderInstances {
+	for _, dnsProvider := range providers {
 		n := dnsProvider.NumberOfNameservers
 		if n == 0 {
 			continue
