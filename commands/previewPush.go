@@ -143,6 +143,7 @@ func run(args PreviewArgs, push bool, interactive bool) error {
 			// to buffer log output and flush it at the end
 			domainCtx := dnscontrol.GetDomainContext(ctx, domain.UniqueName)
 			domainCtx.StartDomain()
+			defer domainCtx.EndDomain()
 
 			nsList, err := nameservers.DetermineNameservers(domainCtx, domain)
 			if err != nil {
@@ -166,14 +167,12 @@ func run(args PreviewArgs, push bool, interactive bool) error {
 						}
 						if !slices.Contains(zones, domain.Name) {
 							domainCtx.Log.Warnf("Domain '%s' does not exist in the '%s' profile and will be added automatically.\n", domain.Name, provider.Name)
-							domainCtx.EndDomain()
 							continue // continue with next provider, as we can not determine corrections without an existing zone
 						}
 					} else if creator, ok := provider.Driver.(providers.DomainCreator); ok && push {
 						// this is the actual push, ensure domain exists at DSP
 						if err := creator.EnsureDomainExists(domainCtx, domain.Name); err != nil {
 							domainCtx.Log.Warnf("Error creating domain: %s\n", err)
-							domainCtx.EndDomain()
 							continue // continue with next provider, as we couldn't create this one
 						}
 					}
@@ -188,7 +187,6 @@ func run(args PreviewArgs, push bool, interactive bool) error {
 				shouldRun := args.shouldRunProvider(provider.Name, dc)
 				domainCtx.StartDNSProvider(provider.Name, !shouldRun)
 				if !shouldRun {
-					domainCtx.EndDomain()
 					continue
 				}
 
@@ -198,7 +196,6 @@ func run(args PreviewArgs, push bool, interactive bool) error {
 				domainCtx.EndProvider(len(corrections), err)
 				if err != nil {
 					anyErrors = true
-					domainCtx.EndDomain()
 					return
 				}
 				totalCorrections += len(corrections)
@@ -208,13 +205,11 @@ func run(args PreviewArgs, push bool, interactive bool) error {
 			run := args.shouldRunProvider(domain.RegistrarName, domain)
 			domainCtx.StartRegistrar(domain.RegistrarName, !run)
 			if !run {
-				domainCtx.EndDomain()
 				return
 			}
 
 			if len(domain.Nameservers) == 0 && domain.Metadata["no_ns"] != "true" {
 				domainCtx.Log.Warnf("No nameservers declared; skipping registrar. Add {no_ns:'true'} to force.\n")
-				domainCtx.EndDomain()
 				return
 			}
 
@@ -227,12 +222,10 @@ func run(args PreviewArgs, push bool, interactive bool) error {
 			domainCtx.EndProvider(len(corrections), err)
 			if err != nil {
 				anyErrors = true
-				domainCtx.EndDomain()
 				return
 			}
 			totalCorrections += len(corrections)
 			anyErrors = printOrRunCorrections(domainCtx, domain.Name, domain.RegistrarName, corrections, push, printer.DefaultPrinter, interactive, notifier) || anyErrors
-			domainCtx.EndDomain()
 		}(domain)
 	}
 	wg.Wait()
