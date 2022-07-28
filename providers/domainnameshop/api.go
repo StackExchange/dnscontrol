@@ -180,11 +180,19 @@ func (api *domainNameShopProvider) UpdateRecord(dnsR *domainNameShopRecord) erro
 func (api *domainNameShopProvider) sendChangeRequest(method string, uri string, payload *bytes.Buffer) error {
 	client := &http.Client{}
 
-	req, err := http.NewRequest(method, uri, payload)
+	var req *http.Request
+	var err error
+	if payload != nil {
+		req, err = http.NewRequest(method, uri, payload)
+	} else {
+		req, err = http.NewRequest(method, uri, nil)
+	}
+
 	if err != nil {
 		// handle error
 		return err
 	}
+
 	req.SetBasicAuth(api.Token, api.Secret)
 	resp, err := client.Do(req)
 	if err != nil {

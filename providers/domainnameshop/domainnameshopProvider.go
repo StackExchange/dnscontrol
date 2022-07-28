@@ -19,8 +19,8 @@ var features = providers.DocumentationNotes{
 	providers.CanUseDS:               providers.Unimplemented(), // Seems to support but needs to be implemented
 	providers.CanUseDSForChildren:    providers.Unimplemented(), // Seems to support but needs to be implemented
 	providers.CanUseNAPTR:            providers.Cannot(),        // Does not seem to support it
-	providers.CanUsePTR:              providers.Unimplemented(), //Seems to support but needs to be implemented
-	providers.CanUseSOA:              providers.Can(),
+	providers.CanUsePTR:              providers.Unimplemented(), // Seems to support but needs to be implemented
+	providers.CanUseSOA:              providers.Cannot(),        // Does not seem to support it
 	providers.CanUseSRV:              providers.Can(),
 	providers.CanUseSSHFP:            providers.Cannot(),        // Does not seem to support it
 	providers.CanUseTLSA:             providers.Unimplemented(), // //Seems to support but needs to be implemented
@@ -84,6 +84,13 @@ func (api *domainNameShopProvider) GetDomainCorrections(dc *models.DomainConfig)
 
 	// Normalize
 	models.PostProcessRecords(existingRecords)
+
+	// Merge TXT strings to one string
+	for _, rc := range dc.Records {
+		if rc.HasFormatIdenticalToTXT() {
+			rc.SetTargetTXT(strings.Join(rc.TxtStrings, ""))
+		}
+	}
 
 	// Domainnameshop doesn't allow arbitrary TTLs they must be a multiple of 60.
 	for _, record := range dc.Records {
