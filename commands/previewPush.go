@@ -150,8 +150,10 @@ func run(args PreviewArgs, push bool, interactive bool) error {
 				domainCtx.Log.Errorf("Error determining nameservers for %s: %s", domain.UniqueName, err)
 				return
 			}
+
 			domain.Nameservers = nsList
 			nameservers.AddNSRecords(domain)
+
 			for _, provider := range domain.DNSProviderInstances {
 				// switching the provider's context to the domain scoped context
 				// this is required for the provider who are not capable of context aware operations

@@ -52,7 +52,7 @@ func (c *Context) StartDNSProvider(provider string, skip bool) {
 	if skip {
 		lbl = " (skipping)\n"
 	}
-	c.Log.Printf("----- DNS Provider: %s...%s\n", provider, lbl)
+	c.Log.Debugf("----- DNS Provider: %s...%s\n", provider, lbl)
 }
 
 // EndProvider is called at the end of each provider.
@@ -65,7 +65,11 @@ func (c *Context) EndProvider(numCorrections int, err error) {
 		if numCorrections == 1 {
 			plural = ""
 		}
-		c.Log.Printf("%d correction%s\n", numCorrections, plural)
+		if numCorrections == 0 {
+			c.Log.Debugf("%d correction%s\n", numCorrections, plural)
+		} else {
+			c.Log.Printf("%d correction%s\n", numCorrections, plural)
+		}
 	}
 }
 
@@ -89,5 +93,5 @@ func (c *Context) StartRegistrar(provider string, skip bool) {
 	if skip {
 		lbl = " (skipping)\n"
 	}
-	c.Log.Printf("----- Registrar: %s...%s\n", provider, lbl)
+	c.Log.Debugf("----- Registrar: %s...%s\n", provider, lbl)
 }

@@ -196,7 +196,7 @@ func GetCerts(args GetCertsArgs) error {
 		if args.Only != "" && cert.CertName != args.Only {
 			continue
 		}
-		v := args.Verbose || printer.DefaultPrinter.Verbose
+		v := args.Verbose || printer.Verbose
 		issued, err := client.IssueOrRenewCert(cert, args.RenewUnderDays, v)
 		if issued || err != nil {
 			notifier.Notify(cert.CertName, "certificate", "Issued new certificate", err, false)

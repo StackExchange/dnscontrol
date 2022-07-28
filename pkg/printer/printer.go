@@ -54,10 +54,11 @@ func Errorf(fmt string, args ...interface{}) {
 var (
 	// DefaultPrinter is the default Printer, used by Debugf, Printf, and Warnf.
 	DefaultPrinter = &ConsolePrinter{
-		Reader:  bufio.NewReader(os.Stdin),
-		Writer:  os.Stdout,
-		Verbose: false,
+		Reader: bufio.NewReader(os.Stdin),
+		Writer: os.Stdout,
 	}
+
+	Verbose = false
 
 	DomainWriter = map[string]*BufferedPrinter{}
 )

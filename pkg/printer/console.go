@@ -11,8 +11,6 @@ import (
 type ConsolePrinter struct {
 	Reader *bufio.Reader
 	Writer io.Writer
-
-	Verbose bool
 }
 
 // PromptToRun prompts the user to see if they want to execute a correction.
@@ -35,7 +33,7 @@ func (c ConsolePrinter) PromptToRun() bool {
 
 // Debugf is called to print/format debug information.
 func (c ConsolePrinter) Debugf(format string, args ...interface{}) {
-	if c.Verbose {
+	if Verbose {
 		fmt.Fprintf(c.Writer, format, args...)
 	}
 }

@@ -22,7 +22,7 @@ func DetermineNameservers(ctx dnscontrol.Context, dc *models.DomainConfig) ([]*m
 		if n == 0 {
 			continue
 		}
-		ctx.Log.Printf("----- Getting nameservers from: %s\n", dnsProvider.Name)
+		ctx.Log.Debugf("----- Getting nameservers from: %s\n", dnsProvider.Name)
 
 		nss, err := dnsProvider.Driver.GetNameservers(ctx, dc.Name)
 		if err != nil {

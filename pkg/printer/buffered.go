@@ -31,7 +31,7 @@ func GetBufferedPrinter(domain string) Printer {
 
 // Debugf is called to print/format debug information.
 func (b BufferedPrinter) Debugf(format string, args ...interface{}) {
-	if false {
+	if Verbose {
 		fmt.Fprintf(b.Writer, format, args...)
 	}
 }

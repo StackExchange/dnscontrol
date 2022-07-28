@@ -51,7 +51,7 @@ func Run(v string) int {
 		&cli.BoolFlag{
 			Name:        "v",
 			Usage:       "Enable detailed logging",
-			Destination: &printer.DefaultPrinter.Verbose,
+			Destination: &printer.Verbose,
 		},
 		&cli.BoolFlag{
 			Name:        "allow-fetch",
