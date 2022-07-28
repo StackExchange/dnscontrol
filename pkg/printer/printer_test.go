@@ -17,9 +17,10 @@ func TestDefaultPrinter(t *testing.T) {
 
 	output := &bytes.Buffer{}
 	DefaultPrinter = &ConsolePrinter{
-		Writer:  output,
-		Verbose: true,
+		Writer: output,
 	}
+
+	Verbose = true
 
 	Warnf("warn\n")
 	Printf("output\n")
@@ -28,10 +29,10 @@ func TestDefaultPrinter(t *testing.T) {
 }
 
 func TestVerbose(t *testing.T) {
+	Verbose = false
 	output := &bytes.Buffer{}
 	p := ConsolePrinter{
-		Writer:  output,
-		Verbose: false,
+		Writer: output,
 	}
 
 	// Test that verbose output is suppressed.
@@ -41,7 +42,7 @@ func TestVerbose(t *testing.T) {
 	assert.Equal(t, "WARNING: a dire warning!\noutput\n", output.String())
 
 	// Test that Verbose output can be dynamically enabled.
-	p.Verbose = true
+	Verbose = true
 	p.Debugf("more debugging\n")
 	assert.Equal(t, "WARNING: a dire warning!\noutput\nmore debugging\n", output.String())
 }

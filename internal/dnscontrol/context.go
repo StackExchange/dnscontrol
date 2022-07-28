@@ -41,7 +41,7 @@ func (c *Context) StartDomain() {
 func (c *Context) EndDomain() {
 	if c.domain != "" {
 		if writer, ok := printer.DomainWriter[c.domain]; ok {
-			c.parent.Log.Printf(writer.Writer.String())
+			c.parent.Log.Printf(writer.String())
 		}
 	}
 }
