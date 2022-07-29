@@ -63,7 +63,6 @@ func (api *domainNameShopProvider) fromRecordConfig(domainName string, rc *model
 		TTL:           uint16(fixTTL(rc.TTL)),
 		Type:          rc.Type,
 		Data:          data,
-		Priority:      strconv.Itoa(int(rc.MxPreference) + int(rc.SrvPriority)),
 		Weight:        strconv.Itoa(int(rc.SrvWeight)),
 		Port:          strconv.Itoa(int(rc.SrvPort)),
 		ActualWeight:  rc.SrvWeight,
@@ -73,7 +72,8 @@ func (api *domainNameShopProvider) fromRecordConfig(domainName string, rc *model
 		DomainID:      domainID,
 	}
 
-	if rc.Type == "CAA" {
+	switch rc.Type {
+	case "CAA":
 		// Actual CAA FLAG
 		switch rc.CaaTag {
 		case "issue":
@@ -83,6 +83,12 @@ func (api *domainNameShopProvider) fromRecordConfig(domainName string, rc *model
 		case "iodef":
 			dnsR.CAATag = "2"
 		}
+	case "MX":
+		dnsR.Priority = strconv.Itoa(int(rc.MxPreference))
+	case "SRV":
+		dnsR.Priority = strconv.Itoa(int(rc.SrvPriority))
+	default:
+		// pass through
 	}
 
 	return dnsR, nil

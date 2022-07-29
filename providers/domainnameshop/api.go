@@ -18,28 +18,30 @@ func (api *domainNameShopProvider) getDomains(domainName string) ([]domainRespon
 
 	req, err := http.NewRequest(http.MethodGet, rootAPIURI+"/domains?domain="+domainName, nil)
 	if err != nil {
-		// handle error
 		return nil, err
 	}
+
 	req.SetBasicAuth(api.Token, api.Secret)
 	resp, err := client.Do(req)
-
 	if err != nil {
-		// handle error
 		return nil, err
 	}
 	defer resp.Body.Close()
-	domainResponse := make([]domainResponse, 1)
-	err = json.NewDecoder(resp.Body).Decode(&domainResponse)
+
+	domainResp := make([]domainResponse, 1)
+	// SUGGESTION: Is "make" needed here or will "var" work?  If var works, use it. It is easier to read.  If it breaks the .Decode(), ignore this suggestion and use "make".
+	// SUGGESTION: Don't use a variable with the same name as a type. It's confusing to the reader.
+	//var domainResp []domainResponse
+	err = json.NewDecoder(resp.Body).Decode(&domainResp)
 	if err != nil {
 		return nil, err
 	}
 
-	if domainName != "" && domainName != domainResponse[0].Domain {
-		return nil, fmt.Errorf("invalid domain name")
+	if domainName != "" && domainName != domainResp[0].Domain {
+		return nil, fmt.Errorf("invalid domain name: %q != %q", domainName, domainResp[0].Domain)
 	}
 
-	return domainResponse, nil
+	return domainResp, nil
 }
 
 func (api *domainNameShopProvider) getDomainID(domainName string) (string, error) {
@@ -67,23 +69,27 @@ func (api *domainNameShopProvider) getDNS(domainName string) ([]domainNameShopRe
 	client := &http.Client{}
 	req, err := http.NewRequest(http.MethodGet, rootAPIURI+"/domains/"+domainID+"/dns", nil)
 	if err != nil {
-		// handle error
 		return nil, err
 	}
+
 	req.SetBasicAuth(api.Token, api.Secret)
 	resp, err := client.Do(req)
-
 	if err != nil {
-		// handle error
 		return nil, err
 	}
 	defer resp.Body.Close()
+
 	domainResponse := make([]domainNameShopRecord, 1)
+	// SUGGESTION: Is "make" needed here or will "var" work?  If var works, use it. It is easier to read.  If it breaks the .Decode(), ignore this suggestion and use "make".
+	//var domainResponse []domainNameShopRecord
 	err = json.NewDecoder(resp.Body).Decode(&domainResponse)
 	if err != nil {
 		return nil, err
 	}
 
+	// SUGGESTION: Add a comment explaining what this loop does.
+	// What I think it does is: Post-process the response. Mostly this involves
+	// converting various strings to int (or uint16, etc) for future use.
 	for i := range domainResponse {
 		// Fix priority
 		record := &domainResponse[i]
@@ -193,14 +199,12 @@ func (api *domainNameShopProvider) sendChangeRequest(method string, uri string, 
 	}
 
 	if err != nil {
-		// handle error
 		return err
 	}
 
 	req.SetBasicAuth(api.Token, api.Secret)
 	resp, err := client.Do(req)
 	if err != nil {
-		// handle error
 		return err
 	}
 

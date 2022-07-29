@@ -68,11 +68,14 @@ func (api *domainNameShopProvider) GetDomainCorrections(dc *models.DomainConfig)
 
 	// Create records
 	for _, r := range create {
+		// SUGGESTION: Add a comment explaining the purpose of this Replace:
 		domainName := strings.Replace(r.Desired.GetLabelFQDN(), r.Desired.GetLabel()+".", "", -1)
+
 		dnsR, err := api.fromRecordConfig(domainName, r.Desired)
 		if err != nil {
 			return nil, err
 		}
+
 		corr := &models.Correction{
 			Msg: r.String(),
 			F:   func() error { return api.CreateRecord(domainName, dnsR) },
@@ -85,7 +88,6 @@ func (api *domainNameShopProvider) GetDomainCorrections(dc *models.DomainConfig)
 		domainName := strings.Replace(r.Desired.GetLabelFQDN(), r.Desired.GetLabel()+".", "", -1)
 
 		dnsR, err := api.fromRecordConfig(domainName, r.Desired)
-
 		if err != nil {
 			return nil, err
 		}
@@ -103,10 +105,6 @@ func (api *domainNameShopProvider) GetDomainCorrections(dc *models.DomainConfig)
 	return corrections, nil
 }
 
-const minAllowedTTL = 60
-const maxAllowedTTL = 604800
-const multiplierTTL = 60
-
 func (api *domainNameShopProvider) GetNameservers(domain string) ([]*models.Nameserver, error) {
 	ns, err := api.getNS(domain)
 	if err != nil {
@@ -114,6 +112,10 @@ func (api *domainNameShopProvider) GetNameservers(domain string) ([]*models.Name
 	}
 	return models.ToNameservers(ns)
 }
+
+const minAllowedTTL = 60
+const maxAllowedTTL = 604800
+const multiplierTTL = 60
 
 func fixTTL(ttl uint32) uint32 {
 	// if the TTL is larger than the largest allowed value, return the largest allowed value
