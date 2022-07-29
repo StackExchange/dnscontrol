@@ -4,6 +4,7 @@ import (
 	_ "embed" // Used to embed helpers.js in the binary.
 	"encoding/json"
 	"fmt"
+	"github.com/StackExchange/dnscontrol/v3/internal/printer"
 	"io/ioutil"
 	"log"
 	"os"
@@ -19,7 +20,6 @@ import (
 	"github.com/xddxdd/ottoext/timers"
 
 	"github.com/StackExchange/dnscontrol/v3/models"
-	"github.com/StackExchange/dnscontrol/v3/pkg/printer"
 	"github.com/StackExchange/dnscontrol/v3/pkg/transform"
 )
 

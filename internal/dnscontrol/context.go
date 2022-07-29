@@ -2,7 +2,7 @@ package dnscontrol
 
 import (
 	"context"
-	"github.com/StackExchange/dnscontrol/v3/pkg/printer"
+	"github.com/StackExchange/dnscontrol/v3/internal/printer"
 )
 
 func GetDomainContext(ctx Context, domain string) Context {
@@ -40,7 +40,7 @@ func (c *Context) StartDomain() {
 // EndDomain is called at the end of each domain and flushes the buffer to the supplied printer.
 func (c *Context) EndDomain() {
 	if c.domain != "" {
-		if writer, ok := printer.DomainWriter[c.domain]; ok {
+		if writer := printer.GetDomainWriter(c.domain); writer != nil {
 			c.parent.Log.Printf(writer.String())
 		}
 	}

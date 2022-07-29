@@ -9,9 +9,9 @@ import (
 
 	"github.com/urfave/cli/v2"
 
+	"github.com/StackExchange/dnscontrol/v3/internal/printer"
 	"github.com/StackExchange/dnscontrol/v3/models"
 	"github.com/StackExchange/dnscontrol/v3/pkg/js"
-	"github.com/StackExchange/dnscontrol/v3/pkg/printer"
 )
 
 // categories of commands

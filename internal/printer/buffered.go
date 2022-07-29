@@ -7,21 +7,30 @@ import (
 )
 
 var mutex sync.RWMutex
+var domainWriter = map[string]*BufferedPrinter{}
+
+func GetDomainWriter(domain string) *BufferedPrinter {
+	defer mutex.RUnlock()
+	mutex.RLock()
+	if writer, ok := domainWriter[domain]; ok {
+		return writer
+	}
+	return nil
+}
 
 // GetBufferedPrinter return a BufferedPrinter for a domain
 func GetBufferedPrinter(domain string) Printer {
-	mutex.RLock()
-	if writer, ok := DomainWriter[domain]; ok {
-		mutex.RUnlock()
+	// check if we already have one
+	if writer := GetDomainWriter(domain); writer != nil {
 		return writer
 	}
 
-	mutex.RUnlock()
+	// if not, create one
 	writer := &BufferedPrinter{
 		Buffer: bytes.Buffer{},
 	}
 	mutex.Lock()
-	DomainWriter[domain] = writer
+	domainWriter[domain] = writer
 	mutex.Unlock()
 	return writer
 }

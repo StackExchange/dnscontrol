@@ -1,11 +1,12 @@
 package main
 
 import (
+	"context"
 	"encoding/json"
 	"flag"
 	"fmt"
 	"github.com/StackExchange/dnscontrol/v3/internal/dnscontrol"
-	"github.com/StackExchange/dnscontrol/v3/pkg/printer"
+	"github.com/StackExchange/dnscontrol/v3/internal/printer"
 	"os"
 	"strconv"
 	"strings"
@@ -35,7 +36,8 @@ func init() {
 }
 
 var ctx = dnscontrol.Context{
-	Log: printer.DefaultPrinter,
+	Context: context.Background(),
+	Log:     printer.DefaultPrinter,
 }
 
 func getProvider(t *testing.T) (providers.DNSServiceProvider, string, map[int]bool, map[string]string) {

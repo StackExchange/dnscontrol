@@ -7,11 +7,11 @@ import (
 	"regexp"
 	"strings"
 
+	"github.com/StackExchange/dnscontrol/v3/internal/printer"
 	"github.com/StackExchange/dnscontrol/v3/models"
 	"github.com/StackExchange/dnscontrol/v3/pkg/acme"
 	"github.com/StackExchange/dnscontrol/v3/pkg/credsfile"
 	"github.com/StackExchange/dnscontrol/v3/pkg/normalize"
-	"github.com/StackExchange/dnscontrol/v3/pkg/printer"
 	"github.com/urfave/cli/v2"
 )
 

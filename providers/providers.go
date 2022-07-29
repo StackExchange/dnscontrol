@@ -46,8 +46,6 @@ type DspInitializer func(map[string]string, json.RawMessage) (DNSServiceProvider
 // the first record that this provider can not support.
 type RecordAuditor func([]*models.RecordConfig) error
 
-type LegacyContextSetter func(ctx dnscontrol.Context)
-
 // DspFuncs lists functions registered with a provider.
 type DspFuncs struct {
 	Initializer   DspInitializer

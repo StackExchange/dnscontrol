@@ -7,27 +7,6 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-// TestDefaultPrinter checks that the DefaultPrinter properly controls output from the package-level
-// Warnf/Printf/Debugf functions.
-func TestDefaultPrinter(t *testing.T) {
-	old := DefaultPrinter
-	defer func() {
-		DefaultPrinter = old
-	}()
-
-	output := &bytes.Buffer{}
-	DefaultPrinter = &ConsolePrinter{
-		Writer: output,
-	}
-
-	Verbose = true
-
-	Warnf("warn\n")
-	Printf("output\n")
-	Debugf("debugging\n")
-	assert.Equal(t, "WARNING: warn\noutput\ndebugging\n", output.String())
-}
-
 func TestVerbose(t *testing.T) {
 	Verbose = false
 	output := &bytes.Buffer{}
