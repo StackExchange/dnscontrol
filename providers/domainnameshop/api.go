@@ -13,7 +13,6 @@ import (
 
 var rootAPIURI = "https://api.domeneshop.no/v0"
 
-//TODO: CHECK that domains match
 func (api *domainNameShopProvider) getDomains(domainName string) ([]domainResponse, error) {
 	client := &http.Client{}
 
@@ -35,6 +34,11 @@ func (api *domainNameShopProvider) getDomains(domainName string) ([]domainRespon
 	if err != nil {
 		return nil, err
 	}
+
+	if domainName != "" && domainName != domainResponse[0].Domain {
+		return nil, fmt.Errorf("invalid domain name")
+	}
+
 	return domainResponse, nil
 }
 
