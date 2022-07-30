@@ -79,9 +79,9 @@ type domainResponse struct {
 	Nameservers []string `json:"nameservers"`
 }
 
-// SUGGESTION: Add a comment to explain the "Actual*" fields.  I'm guessing that
-// the response comes as a string, but we convert it to an uint16 and store it
-// in Actual* for future use.
+// The Actual fields are the values in the right format according to what is needed for RecordConfig.
+//  While the values without Actual are the values directly as received from the DomainNameShop API.
+//  This is done to make it easier to use the values at later points.
 type domainNameShopRecord struct {
 	ID             int    `json:"id"`
 	Host           string `json:"host"`

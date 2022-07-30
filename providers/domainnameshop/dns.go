@@ -68,7 +68,7 @@ func (api *domainNameShopProvider) GetDomainCorrections(dc *models.DomainConfig)
 
 	// Create records
 	for _, r := range create {
-		// SUGGESTION: Add a comment explaining the purpose of this Replace:
+		// Retrieve the domain name that is targeted. I.e. example.com instead of sub.example.com
 		domainName := strings.Replace(r.Desired.GetLabelFQDN(), r.Desired.GetLabel()+".", "", -1)
 
 		dnsR, err := api.fromRecordConfig(domainName, r.Desired)

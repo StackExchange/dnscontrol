@@ -27,11 +27,7 @@ func (api *domainNameShopProvider) getDomains(domainName string) ([]domainRespon
 		return nil, err
 	}
 	defer resp.Body.Close()
-
-	domainResp := make([]domainResponse, 1)
-	// SUGGESTION: Is "make" needed here or will "var" work?  If var works, use it. It is easier to read.  If it breaks the .Decode(), ignore this suggestion and use "make".
-	// SUGGESTION: Don't use a variable with the same name as a type. It's confusing to the reader.
-	//var domainResp []domainResponse
+	var domainResp []domainResponse
 	err = json.NewDecoder(resp.Body).Decode(&domainResp)
 	if err != nil {
 		return nil, err
@@ -40,7 +36,6 @@ func (api *domainNameShopProvider) getDomains(domainName string) ([]domainRespon
 	if domainName != "" && domainName != domainResp[0].Domain {
 		return nil, fmt.Errorf("invalid domain name: %q != %q", domainName, domainResp[0].Domain)
 	}
-
 	return domainResp, nil
 }
 
@@ -79,19 +74,15 @@ func (api *domainNameShopProvider) getDNS(domainName string) ([]domainNameShopRe
 	}
 	defer resp.Body.Close()
 
-	domainResponse := make([]domainNameShopRecord, 1)
-	// SUGGESTION: Is "make" needed here or will "var" work?  If var works, use it. It is easier to read.  If it breaks the .Decode(), ignore this suggestion and use "make".
-	//var domainResponse []domainNameShopRecord
+	var domainResponse []domainNameShopRecord
 	err = json.NewDecoder(resp.Body).Decode(&domainResponse)
 	if err != nil {
 		return nil, err
 	}
 
-	// SUGGESTION: Add a comment explaining what this loop does.
-	// What I think it does is: Post-process the response. Mostly this involves
-	// converting various strings to int (or uint16, etc) for future use.
+	// Post processing of the data received. Converting to correct types and setting default values.
 	for i := range domainResponse {
-		// Fix priority
+		// Convert priority from string to Uint, defaulting to 0
 		record := &domainResponse[i]
 		priority, err := strconv.ParseUint(record.Priority, 10, 16)
 		if err != nil {
@@ -99,19 +90,21 @@ func (api *domainNameShopProvider) getDNS(domainName string) ([]domainNameShopRe
 		}
 		record.ActualPriority = uint16(priority)
 
+		// Convert port from string to Uint, defaulting to 0
 		port, err := strconv.ParseUint(record.Port, 10, 16)
 		if err != nil {
 			record.ActualPort = 0
 		}
 		record.ActualPort = uint16(port)
 
+		// Convert weight from string ti Uint, defaulting to 0
 		weight, err := strconv.ParseUint(record.Weight, 10, 16)
 		if err != nil {
 			record.ActualWeight = 0
 		}
 		record.ActualWeight = uint16(weight)
 
-		// Fix CAA flags
+		// Converting the CAA flag from string to correct value
 		if record.Type == "CAA" {
 			CaaFlag, err := strconv.ParseUint(record.ActualCAAFlag, 10, 8)
 			if err != nil {
@@ -132,6 +125,7 @@ func (api *domainNameShopProvider) getDNS(domainName string) ([]domainNameShopRe
 			}
 		}
 
+		// Normalize the TTL.
 		record.TTL = uint16(fixTTL(uint32(record.TTL)))
 
 		// Add domain id
