@@ -50,7 +50,7 @@ require (
 	github.com/stretchr/testify v1.8.0
 	github.com/tdewolff/minify/v2 v2.11.11
 	github.com/transip/gotransip/v6 v6.17.0
-	github.com/urfave/cli/v2 v2.10.3
+	github.com/urfave/cli/v2 v2.11.1
 	github.com/vultr/govultr v1.1.1
 	github.com/xddxdd/ottoext v0.0.0-20210101073831-439879ee6281
 	golang.org/x/net v0.0.0-20220630215102-69896b714898
