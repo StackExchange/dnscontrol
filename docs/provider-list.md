@@ -82,6 +82,7 @@ Providers in this category and their maintainers are:
 * `DNSOVERHTTPS` @mikenz
 * `DNSIMPLE` @onlyhavecans
 * `DNSMADEEASY` @vojtad
+* `DOMAINNAMESHOP` @SimenBai
 * `EASYNAME` @tresni
 * `EXOSCALE` @pierre-emmanuelJ
 * `GANDI_V5` @TomOnTime
