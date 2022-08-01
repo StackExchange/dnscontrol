@@ -141,3 +141,19 @@ func TxtNotEmpty(records []*models.RecordConfig) error {
 	}
 	return nil
 }
+
+// TxtNoUnpairedDoubleQuotes audits TXT records for strings that contain unpaired doublequotes.
+func TxtNoUnpairedDoubleQuotes(records []*models.RecordConfig) error {
+	for _, rc := range records {
+
+		if rc.HasFormatIdenticalToTXT() {
+			for _, txt := range rc.TxtStrings {
+				if strings.Count(txt, `"`)%2 == 1 {
+					return fmt.Errorf("txtstring contains unpaired doublequotes")
+				}
+			}
+		}
+
+	}
+	return nil
+}

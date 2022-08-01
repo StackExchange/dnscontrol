@@ -4,13 +4,14 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-	"github.com/StackExchange/dnscontrol/v3/pkg/printer"
 	"io/ioutil"
 	"net/http"
 	"os"
 	"sort"
 	"strings"
 	"time"
+
+	"github.com/StackExchange/dnscontrol/v3/pkg/printer"
 
 	"github.com/mattn/go-isatty"
 )
@@ -377,6 +378,7 @@ func (client *providerClient) sendZoneEditRequest(domainname string, edits []zon
 		return err
 	}
 
+	// What did we get back?
 	var errResp zoneEditRequestResultZoneEditRequestResult
 	err = json.Unmarshal(responseBody, &errResp)
 	if err != nil {
@@ -386,9 +388,13 @@ func (client *providerClient) sendZoneEditRequest(domainname string, edits []zon
 		return fmt.Errorf("CSC Global API error: %s DATA: %q", errResp.Content.Status, errResp.Content.Message)
 	}
 
-	// The request was successfully submitted. Now query the status link until the request is complete.
-	statusURL := errResp.Links.Status
-	return client.waitRequestURL(statusURL)
+	// NB(tlim): The request was successfully submitted. The "statusURL" is what we query if we want to wait until the request was processed and see if it was a success.
+	// Right now we don't want to wait. Instead, the next time we do a mutation we wait then.
+	// If we ever change our mind and want to wait for success/failure, it would look like:
+	//statusURL := errResp.Links.Status
+	//return client.waitRequestURL(statusURL)
+
+	return nil
 }
 
 func (client *providerClient) waitRequest(reqID string) error {
