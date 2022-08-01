@@ -5,12 +5,13 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"github.com/StackExchange/dnscontrol/v3/pkg/printer"
 	"log"
 	"sort"
 	"strings"
 	"time"
 	"unicode/utf8"
+
+	"github.com/StackExchange/dnscontrol/v3/pkg/printer"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/config"
@@ -122,8 +123,10 @@ func withRetry(f func() error) {
 
 // ListZones lists the zones on this account.
 func (r *route53Provider) ListZones() ([]string, error) {
+	if err := r.getZones(); err != nil {
+		return nil, err
+	}
 	var zones []string
-	// Assumes r.zones was filled already by newRoute53().
 	for i := range r.zonesByDomain {
 		zones = append(zones, i)
 	}
@@ -131,6 +134,10 @@ func (r *route53Provider) ListZones() ([]string, error) {
 }
 
 func (r *route53Provider) getZones() error {
+	if r.zonesByDomain != nil {
+		return nil
+	}
+
 	var nextMarker *string
 	r.zonesByDomain = make(map[string]r53Types.HostedZone)
 	r.zonesByID = make(map[string]r53Types.HostedZone)
@@ -178,6 +185,9 @@ func (e errZoneNoExist) Error() string {
 }
 
 func (r *route53Provider) GetNameservers(domain string) ([]*models.Nameserver, error) {
+	if err := r.getZones(); err != nil {
+		return nil, err
+	}
 
 	zone, ok := r.zonesByDomain[domain]
 	if !ok {
@@ -201,6 +211,10 @@ func (r *route53Provider) GetNameservers(domain string) ([]*models.Nameserver, e
 }
 
 func (r *route53Provider) GetZoneRecords(domain string) (models.Records, error) {
+	if err := r.getZones(); err != nil {
+		return nil, err
+	}
+
 	if zone, ok := r.zonesByDomain[domain]; ok {
 		return r.getZoneRecords(zone)
 	}
@@ -209,6 +223,10 @@ func (r *route53Provider) GetZoneRecords(domain string) (models.Records, error) 
 }
 
 func (r *route53Provider) getZone(dc *models.DomainConfig) (r53Types.HostedZone, error) {
+	if err := r.getZones(); err != nil {
+		return r53Types.HostedZone{}, err
+	}
+
 	if zoneID, ok := dc.Metadata["zone_id"]; ok {
 		zone, ok := r.zonesByID[zoneID]
 		if !ok {
@@ -670,6 +688,10 @@ func unescape(s *string) string {
 }
 
 func (r *route53Provider) EnsureDomainExists(domain string) error {
+	if err := r.getZones(); err != nil {
+		return err
+	}
+
 	if _, ok := r.zonesByDomain[domain]; ok {
 		return nil
 	}
@@ -683,6 +705,11 @@ func (r *route53Provider) EnsureDomainExists(domain string) error {
 		DelegationSetId: r.delegationSet,
 		CallerReference: aws.String(fmt.Sprint(time.Now().UnixNano())),
 	}
+
+	// reset zone cache
+	r.zonesByDomain = nil
+	r.zonesByID = nil
+
 	var err error
 	withRetry(func() error {
 		_, err := r.client.CreateHostedZone(context.Background(), in)
