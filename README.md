@@ -28,6 +28,7 @@ Currently supported DNS providers:
  - DNS Made Easy
  - DNSimple
  - DigitalOcean
+ - DomainNameShop (domeneshop)
  - Exoscale
  - Gandi
  - Google DNS
@@ -144,7 +145,7 @@ install `dnscontrol` in your `$GOBIN` directory.
 
 To install, simply run
 
-    GO111MODULE=on go get github.com/StackExchange/dnscontrol/v3
+    GO111MODULE=on go install github.com/StackExchange/dnscontrol/v3@latest
 
 To download the source
 

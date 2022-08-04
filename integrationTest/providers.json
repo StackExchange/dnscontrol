@@ -204,5 +204,10 @@
   "TRANSIP": {
     "AccessToken": "$TRANSIP_ACCESS_TOKEN",
     "domain": "$TRANSIP_DOMAIN"
+  },
+  "DOMAINNAMESHOP": {
+    "token": "$DOMAINNAMESHOP_TOKEN",
+    "secret": "$DOMAINNAMESHOP_SECRET",
+    "domain": "$DOMAINNAMESHOP_DOMAIN"
   }
 }
