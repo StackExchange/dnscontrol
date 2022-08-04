@@ -423,7 +423,7 @@ func TestFormatLine(t *testing.T) {
 		{[]int{2, 2, 0}, []string{"aaaaa", "b", "c"}, "aaaaa b c"},
 	}
 	for _, ts := range tests {
-		actual := formatLine(ts.lengths, ts.fields)
+		actual := FormatLine(ts.lengths, ts.fields)
 		if actual != ts.expected {
 			t.Errorf("\"%s\" != \"%s\"", actual, ts.expected)
 		}
