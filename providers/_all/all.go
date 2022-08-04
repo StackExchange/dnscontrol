@@ -41,6 +41,7 @@ import (
 	_ "github.com/StackExchange/dnscontrol/v3/providers/packetframe"
 	_ "github.com/StackExchange/dnscontrol/v3/providers/powerdns"
 	_ "github.com/StackExchange/dnscontrol/v3/providers/route53"
+	_ "github.com/StackExchange/dnscontrol/v3/providers/rwth"
 	_ "github.com/StackExchange/dnscontrol/v3/providers/softlayer"
 	_ "github.com/StackExchange/dnscontrol/v3/providers/transip"
 	_ "github.com/StackExchange/dnscontrol/v3/providers/vultr"
