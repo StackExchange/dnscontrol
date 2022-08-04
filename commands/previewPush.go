@@ -129,12 +129,7 @@ DomainLoop:
 			continue
 		}
 		out.StartDomain(domain.UniqueName)
-		nsList, err := nameservers.DetermineNameservers(domain)
-		if err != nil {
-			return err
-		}
-		domain.Nameservers = nsList
-		nameservers.AddNSRecords(domain)
+		var providersWithExistingZone []*models.DNSProviderInstance
 		for _, provider := range domain.DNSProviderInstances {
 
 			if !args.NoPopulate {
@@ -156,7 +151,17 @@ DomainLoop:
 					}
 				}
 			}
+			providersWithExistingZone = append(providersWithExistingZone, provider)
+		}
 
+		nsList, err := nameservers.DetermineNameserversForProviders(domain, providersWithExistingZone)
+		if err != nil {
+			return err
+		}
+		domain.Nameservers = nsList
+		nameservers.AddNSRecords(domain)
+
+		for _, provider := range providersWithExistingZone {
 			dc, err := domain.Copy()
 			if err != nil {
 				return err

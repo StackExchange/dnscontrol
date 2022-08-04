@@ -73,6 +73,8 @@ func (api *hetznerProvider) EnsureDomainExists(domain string) error {
 		}
 	}
 
+	// reset zone cache
+	api.zones = nil
 	return api.createZone(domain)
 }
 
