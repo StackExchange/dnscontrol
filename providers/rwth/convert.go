@@ -10,7 +10,7 @@ import (
 )
 
 // Print the generateZoneFileHelper
-func (apo *rwthProvider) printRecConfig(rr models.RecordConfig) string {
+func (api *rwthProvider) printRecConfig(rr models.RecordConfig) string {
 	// Similar to prettyzone
 	// Fake types are commented out.
 	prefix := ""
@@ -38,7 +38,7 @@ func (apo *rwthProvider) printRecConfig(rr models.RecordConfig) string {
 		prefix, prettyzone.FormatLine([]int{10, 5, 2, 5, 0}, []string{rr.NameFQDN, ttl, "IN", typeStr, target}), comment)
 }
 
-// Custom dns.NewRR with RWTH default TTL
+// NewRR returns custom dns.NewRR with RWTH default TTL
 func NewRR(s string) (dns.RR, error) {
 	if len(s) > 0 && s[len(s)-1] != '\n' { // We need a closing newline
 		return ReadRR(strings.NewReader(s + "\n"))

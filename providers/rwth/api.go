@@ -48,7 +48,7 @@ type zone struct {
 	} `json:"dnssec"`
 }
 
-func checkIsLockedSystemApiRecord(record RecordReply) error {
+func checkIsLockedSystemAPIRecord(record RecordReply) error {
 	if record.Type == "soa_record" {
 		// The upload of a BIND zone file can change the SOA record.
 		// Implementing this edge case this is too complex for now.
@@ -73,16 +73,16 @@ func (api *rwthProvider) createRecord(domain string, record *models.RecordConfig
 
 	req := url.Values{}
 	req.Set("record_content", api.printRecConfig(*record))
-	return api.request("/create_record", "POST", req, nil, nil)
+	return api.request("/create_record", "POST", req, nil)
 }
 
 func (api *rwthProvider) destroyRecord(record RecordReply) error {
-	if err := checkIsLockedSystemApiRecord(record); err != nil {
+	if err := checkIsLockedSystemAPIRecord(record); err != nil {
 		return err
 	}
 	req := url.Values{}
 	req.Set("record_id", strconv.Itoa(record.ID))
-	return api.request("/destroy_record", "DELETE", req, nil, nil)
+	return api.request("/destroy_record", "DELETE", req, nil)
 }
 
 func (api *rwthProvider) updateRecord(id int, record models.RecordConfig) error {
@@ -92,7 +92,7 @@ func (api *rwthProvider) updateRecord(id int, record models.RecordConfig) error 
 	req := url.Values{}
 	req.Set("record_id", strconv.Itoa(id))
 	req.Set("record_content", api.printRecConfig(record))
-	return api.request("/update_record", "POST", req, nil, nil)
+	return api.request("/update_record", "POST", req, nil)
 }
 
 func (api *rwthProvider) getAllRecords(domain string) ([]models.RecordConfig, error) {
@@ -101,14 +101,14 @@ func (api *rwthProvider) getAllRecords(domain string) ([]models.RecordConfig, er
 		return nil, err
 	}
 	records := make([]models.RecordConfig, 0)
-	response := &[]RecordReply{}
+	response := []RecordReply{}
 	request := url.Values{}
 	request.Set("zone_id", strconv.Itoa(zone.ID))
-	if err := api.request("/list_records", "GET", request, response, nil); err != nil {
+	if err := api.request("/list_records", "GET", request, &response); err != nil {
 		return nil, fmt.Errorf("failed fetching zone records for %q: %w", domain, err)
 	}
-	for _, apiRecord := range *response {
-		if checkIsLockedSystemApiRecord(apiRecord) != nil {
+	for _, apiRecord := range response {
+		if checkIsLockedSystemAPIRecord(apiRecord) != nil {
 			continue
 		}
 		dnsRec, err := NewRR(apiRecord.Content) // Parse content as DNS record
@@ -133,7 +133,7 @@ func (api *rwthProvider) getAllZones() error {
 	}
 	zones := map[string]zone{}
 	response := &[]zone{}
-	if err := api.request("/list_zones", "GET", url.Values{}, response, nil); err != nil {
+	if err := api.request("/list_zones", "GET", url.Values{}, response); err != nil {
 		return fmt.Errorf("failed fetching zones: %w", err)
 	}
 	for _, zone := range *response {
@@ -162,16 +162,11 @@ func (api *rwthProvider) deployZone(domain string) error {
 	}
 	req := url.Values{}
 	req.Set("zone_id", strconv.Itoa(zone.ID))
-	return api.request("/deploy_zone", "POST", req, nil, nil)
+	return api.request("/deploy_zone", "POST", req, nil)
 }
 
 // Send a request
-func (api *rwthProvider) request(endpoint string, method string, request url.Values, target interface{}, statusOK func(code int) bool) error {
-	if statusOK == nil {
-		statusOK = func(code int) bool {
-			return code == http.StatusOK
-		}
-	}
+func (api *rwthProvider) request(endpoint string, method string, request url.Values, target interface{}) error {
 	requestBody := strings.NewReader(request.Encode())
 	req, err := http.NewRequest(method, baseURL+endpoint, requestBody)
 	if err != nil {
@@ -192,7 +187,7 @@ func (api *rwthProvider) request(endpoint string, method string, request url.Val
 	}
 
 	defer cleanupResponseBody()
-	if !statusOK(resp.StatusCode) {
+	if resp.StatusCode != http.StatusOK {
 		data, _ := ioutil.ReadAll(resp.Body)
 		printer.Printf(string(data))
 		return fmt.Errorf("bad status code from RWTH: %d not 200", resp.StatusCode)

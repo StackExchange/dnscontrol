@@ -16,7 +16,7 @@ func (api *rwthProvider) GetZoneRecords(domain string) (models.Records, error) {
 		return nil, err
 	}
 	foundRecords := models.Records{}
-	for i, _ := range records {
+	for i := range records {
 		foundRecords = append(foundRecords, &records[i])
 	}
 	return foundRecords, nil
