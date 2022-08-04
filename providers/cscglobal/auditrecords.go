@@ -2,39 +2,29 @@ package cscglobal
 
 import (
 	"github.com/StackExchange/dnscontrol/v3/models"
-	"github.com/StackExchange/dnscontrol/v3/pkg/recordaudit"
 )
 
-// AuditRecords returns an error if any records are not
-// supportable by this provider.
-func AuditRecords(records []*models.RecordConfig) error {
+// AuditRecords returns a list of errors corresponding to the records
+// that aren't supported by this provider.  If all records are
+// supported, an empty list is returned.
+func AuditRecords(records []*models.RecordConfig) []error {
+	a = rejectif.Auditor{}
 
-	// Each test should be encapsulated in a function that can be tested
-	// individually.  If the test is of general use, add it to the
-	// recordaudit module.
+	a.Add("TXT", rejectif.TxtNoMultipleStrings) // Still needed as of 2022-06-10
+	a.Add("TXT", rejectif.TxtNoTrailingSpace)   // Still needed as of 2022-06-10
+	a.Add("TXT", rejectif.TxtNotEmpty)          // Still needed as of 2022-06-10
 
-	// Each test should document the last time we verified the test was
-	// still needed. Sometimes companies change their API.
-
-	//	if err := recordaudit.TxtNoDoubleQuotes(records); err != nil {
-	//		return err
-	//	} // Needed as of 2022-06-10
-
-	//	if err := recordaudit.TxtNoStringsLen256orLonger(records); err != nil {
-	//		return err
-	//	} // Needed as of 2022-06-10
-
-	if err := recordaudit.TxtNoMultipleStrings(records); err != nil {
-		return err
-	} // Needed as of 2022-06-10
-
-	if err := recordaudit.TxtNoTrailingSpace(records); err != nil {
-		return err
-	} // Needed as of 2022-06-10
-
-	if err := recordaudit.TxtNotEmpty(records); err != nil {
-		return err
-	} // Needed as of 2022-06-10
-
-	return nil
+	return a.Audit()
 }
+
+/* How To Write Providers:
+
+Each test should be encapsulated in a function that can be tested
+individually.  If the test is of general use, add it to the
+rejectif module.
+
+The "Still needed as of" comment logs the last time we verified this
+test was needed.  Sometimes companies change their API.  Once a year,
+try removing tests one at a time to verify they are still needed.
+
+*/

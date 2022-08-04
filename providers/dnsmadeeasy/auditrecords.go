@@ -2,16 +2,15 @@ package dnsmadeeasy
 
 import (
 	"github.com/StackExchange/dnscontrol/v3/models"
-	"github.com/StackExchange/dnscontrol/v3/pkg/recordaudit"
 )
 
-// AuditRecords returns an error if any records are not
-// supportable by this provider.
-func AuditRecords(records []*models.RecordConfig) error {
-	if err := recordaudit.TxtNoDoubleQuotes(records); err != nil {
-		return err
-	}
-	// Still needed as of 2021-03-11
+// AuditRecords returns a list of errors corresponding to the records
+// that aren't supported by this provider.  If all records are
+// supported, an empty list is returned.
+func AuditRecords(records []*models.RecordConfig) []error {
+	a = rejectif.Auditor{}
 
-	return nil
+	a.Add("TXT", rejectif.TxtHasDoubleQuotes) // Still needed as of 2021-03-11
+
+	return a.Audit()
 }
