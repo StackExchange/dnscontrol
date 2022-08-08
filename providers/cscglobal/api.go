@@ -391,10 +391,11 @@ func (client *providerClient) sendZoneEditRequest(domainname string, edits []zon
 	// NB(tlim): The request was successfully submitted. The "statusURL" is what we query if we want to wait until the request was processed and see if it was a success.
 	// Right now we don't want to wait. Instead, the next time we do a mutation we wait then.
 	// If we ever change our mind and want to wait for success/failure, it would look like:
-	statusURL := errResp.Links.Status
-	return client.waitRequestURL(statusURL)
+	//statusURL := errResp.Links.Status
+	//return client.waitRequestURL(statusURL)
 
-	//return nil
+	fmt.Printf("DEBUG: statusURL=%s\n", errResp.Links.Status)
+	return nil
 }
 
 func (client *providerClient) waitRequest(reqID string) error {
@@ -418,9 +419,9 @@ func (client *providerClient) waitRequestURL(statusURL string) error {
 		if isatty.IsTerminal(os.Stdout.Fd()) {
 			dur := time.Since(t1).Round(time.Second)
 			if msg == "" {
-				printer.Printf("WAITING: % 6s STATUS=%s           \r", dur, status)
+				printer.Printf("WAITING: % 6s STATUS=%s           \n", dur, status)
 			} else {
-				printer.Printf("WAITING: % 6s STATUS=%s MSG=%q    \r", dur, status, msg)
+				printer.Printf("WAITING: % 6s STATUS=%s MSG=%q    \n", dur, status, msg)
 			}
 		}
 		if status == "FAILED" {
@@ -431,7 +432,7 @@ func (client *providerClient) waitRequestURL(statusURL string) error {
 		if status == "COMPLETED" {
 			break
 		}
-		time.Sleep(1 * time.Second)
+		time.Sleep(60 * time.Second)
 	}
 	return nil
 
@@ -464,7 +465,7 @@ type pagedZoneEditResponsePagedZoneEditResponse struct {
 
 func (client *providerClient) clearRequests(domain string) error {
 	if cscDebug {
-		printer.Printf("DEBUG: Clearing requests\n")
+		printer.Printf("DEBUG: Clearing requests for %q\n", domain)
 	}
 	var bodyString, err = client.get("/zones/edits?filter=zoneName==" + domain)
 	if err != nil {
