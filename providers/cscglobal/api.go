@@ -490,7 +490,6 @@ func (client *providerClient) clearRequests(domain string) error {
 			printer.Printf("INFO: Deleting request status=%s id=%s\n", ze.Status, ze.ID)
 			client.cancelRequest(ze.ID)
 		case "COMPLETED", "CANCELED":
-			printer.Printf("INFO: Waiting for id=%s status=%s\n", ze.ID, ze.Status)
 			continue
 		default:
 			return fmt.Errorf("cscglobal ClearRequests: unimplemented status: %q", ze.Status)
