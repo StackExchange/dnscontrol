@@ -326,7 +326,7 @@ func (client *providerClient) getDomains() ([]string, error) {
 	json.Unmarshal(bodyString, &dr)
 
 	if dr.Meta.Pages > 1 {
-		return nil, fmt.Errorf("cscglobal getDomains: unimplemented  paganation")
+		return nil, fmt.Errorf("cscglobal getDomains: unimplemented paganation")
 	}
 
 	var r []string
@@ -483,7 +483,7 @@ func (client *providerClient) clearRequests(domain string) error {
 			}
 		}
 		switch ze.Status {
-		case "PROPAGATING":
+		case "NEW", "SUBMITTED", "PROCESSING", "PROPAGATING":
 			printer.Printf("INFO: Waiting for id=%s status=%s\n", ze.ID, ze.Status)
 			client.waitRequest(ze.ID)
 		case "FAILED":
