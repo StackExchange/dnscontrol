@@ -391,10 +391,10 @@ func (client *providerClient) sendZoneEditRequest(domainname string, edits []zon
 	// NB(tlim): The request was successfully submitted. The "statusURL" is what we query if we want to wait until the request was processed and see if it was a success.
 	// Right now we don't want to wait. Instead, the next time we do a mutation we wait then.
 	// If we ever change our mind and want to wait for success/failure, it would look like:
-	//statusURL := errResp.Links.Status
-	//return client.waitRequestURL(statusURL)
+	statusURL := errResp.Links.Status
+	return client.waitRequestURL(statusURL)
 
-	return nil
+	//return nil
 }
 
 func (client *providerClient) waitRequest(reqID string) error {
@@ -463,6 +463,9 @@ type pagedZoneEditResponsePagedZoneEditResponse struct {
 }
 
 func (client *providerClient) clearRequests(domain string) error {
+	if cscDebug {
+		printer.Printf("DEBUG: Clearing requests\n")
+	}
 	var bodyString, err = client.get("/zones/edits?filter=zoneName==" + domain)
 	if err != nil {
 		return err
@@ -472,7 +475,7 @@ func (client *providerClient) clearRequests(domain string) error {
 	json.Unmarshal(bodyString, &dr)
 
 	// TODO(tlim): Properly handle paganation.
-	if dr.Meta.Pages != 1 {
+	if dr.Meta.Pages > 1 {
 		return fmt.Errorf("cancelPendingEdits failed: Pages=%d", dr.Meta.Pages)
 	}
 
