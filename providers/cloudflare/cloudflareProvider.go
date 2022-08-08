@@ -63,7 +63,7 @@ func init() {
 
 // cloudflareProvider is the handle for API calls.
 type cloudflareProvider struct {
-	domainIndex     map[string]string
+	domainIndex     map[string]string // Call c.fetchDomainList() to populate before use.
 	nameservers     map[string][]string
 	ipConversions   []transform.IPConversion
 	ignoredLabels   []string
@@ -708,6 +708,11 @@ func getProxyMetadata(r *models.RecordConfig) map[string]string {
 
 // EnsureDomainExists returns an error of domain does not exist.
 func (c *cloudflareProvider) EnsureDomainExists(domain string) error {
+	if c.domainIndex == nil {
+		if err := c.fetchDomainList(); err != nil {
+			return err
+		}
+	}
 	if _, ok := c.domainIndex[domain]; ok {
 		return nil
 	}

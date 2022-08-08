@@ -32,6 +32,7 @@ providers/ns1 @costasd
 providers/opensrs @philhug
 providers/oracle @kallsyms
 providers/route53 @tresni
+providers/rwth @mistererwin
 # providers/softlayer NEEDS VOLUNTEER
 providers/vultr @pgaskin
 providers/ovh @masterzen

@@ -48,6 +48,7 @@ Currently supported DNS providers:
  - Oracle Cloud
  - Packetframe
  - PowerDNS
+ - RWTH DNS-Admin
  - SoftLayer
  - TransIP
  - Vultr
