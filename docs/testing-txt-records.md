@@ -61,7 +61,7 @@ When you do a `dnscontrol preview`, you should see changes for t1 and t2.
 ```
 
 If you don't see those changes, that's a bug.  For example, we found that
-Cloudflare leave t2 alone but would try to add double-quotes to t3!  This was
+Cloudflare left t2 alone but would try to add double-quotes to t3!  This was
 fixed in https://github.com/StackExchange/dnscontrol/pull/1543.
 
 Step 3: Push
