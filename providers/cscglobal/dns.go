@@ -182,7 +182,6 @@ func (client *providerClient) GenerateDomainCorrections(dc *models.DomainConfig,
 				// I'm writing this) any time something fails, the failure has
 				// to be cleared out with an additional API call.
 
-				fmt.Printf("CORRECTION ABOUT TO CLEAR REQUESTS FOR %q\n", dc.Name)
 				err := client.clearRequests(dc.Name)
 				if err != nil {
 					return err

@@ -489,7 +489,6 @@ func (client *providerClient) clearRequests(domain string) error {
 	}
 
 	for i, ze := range dr.ZoneEdits {
-		fmt.Printf("EDIT %03d: %+v\n", i, ze)
 		if cscDebug {
 			if ze.Status != "COMPLETED" && ze.Status != "CANCELED" {
 				printer.Printf("REQUEST %d: %s %s\n", i, ze.ID, ze.Status)
