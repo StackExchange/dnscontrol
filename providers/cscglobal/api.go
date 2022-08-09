@@ -359,6 +359,9 @@ func (client *providerClient) getZoneRecordsAll(zone string) (*zoneResponse, err
 	return &dr, nil
 }
 
+// sendZoneEditRequest sends a list of changes to be made to the zone.
+// It is best to send all the changes for a zone in one big request
+// because the zone is locked until the change propagates.
 func (client *providerClient) sendZoneEditRequest(domainname string, edits []zoneResourceRecordEdit) error {
 
 	req := zoneEditRequest{
@@ -388,14 +391,15 @@ func (client *providerClient) sendZoneEditRequest(domainname string, edits []zon
 		return fmt.Errorf("CSC Global API error: %s DATA: %q", errResp.Content.Status, errResp.Content.Message)
 	}
 
-	// NB(tlim): The request was successfully submitted. The "statusURL" is what we query if we want to wait until the request was processed and see if it was a success.
-	// Right now we don't want to wait. Instead, the next time we do a mutation we wait then.
-	// If we ever change our mind and want to wait for success/failure, it would look like:
-	statusURL := errResp.Links.Status
-	return client.waitRequestURL(statusURL, true)
+	// Now we verify that the request was successfully submitted. Do not
+	// wait for the change to propagate.  Propagation can take ~7
+	// minutes.  Instead, we wait before doing the next mutation.  In
+	// the typical case, that will be the next run of dnscontrol, which
+	// could be much longer than 7 minutes. Thus, we save a lot of time.
 
+	statusURL := errResp.Links.Status // The URL to query to check status.
 	//fmt.Printf("DEBUG: statusURL=%s\n", errResp.Links.Status)
-	//return nil
+	return client.waitRequestURL(statusURL, true)
 }
 
 func (client *providerClient) waitRequest(reqID string) error {
@@ -470,6 +474,10 @@ type pagedZoneEditResponsePagedZoneEditResponse struct {
 	} `json:"zoneEdits"`
 }
 
+// clearRequests returns after all pending requests for domain are
+// no longer blocking new mutations.  Requests in the FAILED state are
+// cancelled (because CSCG wants a human to acknowlege failures but
+// thankfully permits an API call to pretend to be the human).
 func (client *providerClient) clearRequests(domain string) error {
 	if cscDebug {
 		printer.Printf("DEBUG: Clearing requests for %q\n", domain)
