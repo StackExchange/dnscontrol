@@ -5,19 +5,20 @@ import (
 	"strings"
 
 	"github.com/StackExchange/dnscontrol/v3/models"
-	"github.com/StackExchange/dnscontrol/v3/pkg/recordaudit"
+	"github.com/StackExchange/dnscontrol/v3/pkg/rejectif"
 )
 
 // AuditRecords returns a list of errors corresponding to the records
 // that aren't supported by this provider.  If all records are
 // supported, an empty list is returned.
 func AuditRecords(records []*models.RecordConfig) []error {
-	audits = recordaudit.Auditor{}
+	a := rejectif.Auditor{}
 
-	audits.Add("TXT", MaxLengthNDC)            // Still needed as of 2021-03-01
-	audits.Add("TXT", recordaudit.TxtNotEmpty) // Still needed as of 2021-03-01
+	a.Add("TXT", MaxLengthNDC) // Last verified 2021-03-01
 
-	return audits.Audit()
+	a.Add("TXT", rejectif.TxtIsEmpty) // Last verified 2021-03-01
+
+	return a.Audit(records)
 }
 
 // MaxLengthNDC returns and error if the sum of the strings

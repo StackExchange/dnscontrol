@@ -153,6 +153,7 @@ func (z *ZoneGenData) generateZoneFileHelper(w io.Writer) error {
 	return nil
 }
 
+// FormatLine formats a zonefile line.
 func FormatLine(lengths []int, fields []string) string {
 	c := 0
 	result := ""

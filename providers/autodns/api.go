@@ -12,6 +12,7 @@ import (
 	"github.com/StackExchange/dnscontrol/v3/models"
 )
 
+// ZoneListFilter describes a JSON list filter.
 type ZoneListFilter struct {
 	Key      string            `json:"key"`
 	Value    string            `json:"value"`
@@ -20,6 +21,7 @@ type ZoneListFilter struct {
 	Filter   []*ZoneListFilter `json:"filters,omitempty"`
 }
 
+// ZoneListRequest describes a JSON zone list request.
 type ZoneListRequest struct {
 	Filter []*ZoneListFilter `json:"filters"`
 }
@@ -27,11 +29,11 @@ type ZoneListRequest struct {
 func (api *autoDnsProvider) request(method string, requestPath string, data interface{}) ([]byte, error) {
 	client := &http.Client{}
 
-	requestUrl := api.baseURL
-	requestUrl.Path = api.baseURL.Path + requestPath
+	requestURL := api.baseURL
+	requestURL.Path = api.baseURL.Path + requestPath
 
 	request := &http.Request{
-		URL:    &requestUrl,
+		URL:    &requestURL,
 		Header: api.defaultHeaders,
 		Method: method,
 	}
@@ -50,7 +52,7 @@ func (api *autoDnsProvider) request(method string, requestPath string, data inte
 
 	responseText, _ := ioutil.ReadAll(response.Body)
 	if response.StatusCode != 200 {
-		return nil, errors.New("Request to " + requestUrl.Path + " failed: " + string(responseText))
+		return nil, errors.New("Request to " + requestURL.Path + " failed: " + string(responseText))
 	}
 
 	return responseText, nil
