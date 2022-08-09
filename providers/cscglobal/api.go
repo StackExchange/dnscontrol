@@ -359,6 +359,9 @@ func (client *providerClient) getZoneRecordsAll(zone string) (*zoneResponse, err
 	return &dr, nil
 }
 
+// sendZoneEditRequest sends a list of changes to be made to the zone.
+// It is best to send all the changes for a zone in one big request
+// because the zone is locked until the change propagates.
 func (client *providerClient) sendZoneEditRequest(domainname string, edits []zoneResourceRecordEdit) error {
 
 	req := zoneEditRequest{
@@ -388,20 +391,23 @@ func (client *providerClient) sendZoneEditRequest(domainname string, edits []zon
 		return fmt.Errorf("CSC Global API error: %s DATA: %q", errResp.Content.Status, errResp.Content.Message)
 	}
 
-	// NB(tlim): The request was successfully submitted. The "statusURL" is what we query if we want to wait until the request was processed and see if it was a success.
-	// Right now we don't want to wait. Instead, the next time we do a mutation we wait then.
-	// If we ever change our mind and want to wait for success/failure, it would look like:
-	statusURL := errResp.Links.Status
-	return client.waitRequestURL(statusURL)
+	// Now we verify that the request was successfully submitted. Do not
+	// wait for the change to propagate.  Propagation can take ~7
+	// minutes.  Instead, we wait before doing the next mutation.  In
+	// the typical case, that will be the next run of dnscontrol, which
+	// could be much longer than 7 minutes. Thus, we save a lot of time.
 
-	//return nil
+	statusURL := errResp.Links.Status // The URL to query to check status.
+	return client.waitRequestURL(statusURL, true)
 }
 
 func (client *providerClient) waitRequest(reqID string) error {
-	return client.waitRequestURL(apiBase + "/zones/edits/status/" + reqID)
+	return client.waitRequestURL(apiBase+"/zones/edits/status/"+reqID, false)
 }
 
-func (client *providerClient) waitRequestURL(statusURL string) error {
+// waitRequestURL calls statusURL until status is COMPLETED or FAILED.
+// Set returnEarly == true and it will return if status is PROPAGATING.
+func (client *providerClient) waitRequestURL(statusURL string, returnEarly bool) error {
 	t1 := time.Now()
 	for {
 		statusBody, err := client.geturl(statusURL)
@@ -414,6 +420,7 @@ func (client *providerClient) waitRequestURL(statusURL string) error {
 			return fmt.Errorf("CSC Global API error: %s DATA: %q", err, statusBody)
 		}
 		status, msg := statusResp.Content.Status, statusResp.Content.ErrorDescription
+		//fmt.Printf("DEBUG: stat %s %s\n", statusURL, status)
 
 		if isatty.IsTerminal(os.Stdout.Fd()) {
 			dur := time.Since(t1).Round(time.Second)
@@ -431,7 +438,11 @@ func (client *providerClient) waitRequestURL(statusURL string) error {
 		if status == "COMPLETED" {
 			break
 		}
-		time.Sleep(1 * time.Second)
+		if returnEarly && (status == "PROPAGATING") {
+			break
+		}
+
+		time.Sleep(2 * time.Second)
 	}
 	return nil
 
@@ -462,9 +473,13 @@ type pagedZoneEditResponsePagedZoneEditResponse struct {
 	} `json:"zoneEdits"`
 }
 
+// clearRequests returns after all pending requests for domain are
+// no longer blocking new mutations.  Requests in the FAILED state are
+// cancelled (because CSCG wants a human to acknowlege failures but
+// thankfully permits an API call to pretend to be the human).
 func (client *providerClient) clearRequests(domain string) error {
 	if cscDebug {
-		printer.Printf("DEBUG: Clearing requests\n")
+		printer.Printf("DEBUG: Clearing requests for %q\n", domain)
 	}
 	var bodyString, err = client.get("/zones/edits?filter=zoneName==" + domain)
 	if err != nil {
@@ -533,7 +548,7 @@ func (client *providerClient) put(endpoint string, requestBody []byte) ([]byte, 
 	err = json.Unmarshal(bodyString, &errResp)
 	if err != nil {
 		// Some error messages are plain text
-		return nil, fmt.Errorf("CSC Global API error: %s URL: %s%s",
+		return nil, fmt.Errorf("CSC Global API error (put): %s URL: %s%s",
 			bodyString,
 			req.Host, req.URL.RequestURI())
 	}
@@ -544,7 +559,7 @@ func (client *providerClient) put(endpoint string, requestBody []byte) ([]byte, 
 
 func (client *providerClient) delete(endpoint string) ([]byte, error) {
 	hclient := &http.Client{}
-	printer.Printf("DEBUG: delete endpoint: %q\n", apiBase+endpoint)
+	//printer.Printf("DEBUG: delete endpoint: %q\n", apiBase+endpoint)
 	req, _ := http.NewRequest("DELETE", apiBase+endpoint, nil)
 
 	// Add headers
@@ -560,17 +575,17 @@ func (client *providerClient) delete(endpoint string) ([]byte, error) {
 
 	bodyString, _ := ioutil.ReadAll(resp.Body)
 	if resp.StatusCode == 200 {
-		printer.Printf("DEBUG: Delete successful (200)\n")
+		//printer.Printf("DEBUG: Delete successful (200)\n")
 		return bodyString, nil
 	}
-	printer.Printf("DEBUG: Delete failed (%d)\n", resp.StatusCode)
+	//printer.Printf("DEBUG: Delete failed (%d)\n", resp.StatusCode)
 
 	// Got a error response from API, see if it's json format
 	var errResp errorResponse
 	err = json.Unmarshal(bodyString, &errResp)
 	if err != nil {
 		// Some error messages are plain text
-		return nil, fmt.Errorf("CSC Global API error: %s URL: %s%s",
+		return nil, fmt.Errorf("CSC Global API error (delete): %s URL: %s%s",
 			bodyString,
 			req.Host, req.URL.RequestURI())
 	}
@@ -608,7 +623,7 @@ func (client *providerClient) post(endpoint string, requestBody []byte) ([]byte,
 	err = json.Unmarshal(bodyString, &errResp)
 	if err != nil {
 		// Some error messages are plain text
-		return nil, fmt.Errorf("CSC Global API error: %s URL: %s%s",
+		return nil, fmt.Errorf("CSC Global API error (post): %s URL: %s%s",
 			bodyString,
 			req.Host, req.URL.RequestURI())
 	}
@@ -642,7 +657,7 @@ func (client *providerClient) geturl(url string) ([]byte, error) {
 
 	if resp.StatusCode == 400 {
 		// 400, error message is in the body as plain text
-		return nil, fmt.Errorf("CSC Global API error: %s URL: %s%s",
+		return nil, fmt.Errorf("CSC Global API error (geturl): %s URL: %s%s",
 			bodyString,
 			req.Host, req.URL.RequestURI())
 	}
