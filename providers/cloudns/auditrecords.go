@@ -10,15 +10,15 @@ import (
 func AuditRecords(records []*models.RecordConfig) []error {
 	a = rejectif.Auditor{}
 
-	a.Add("TXT", rejectif.TxtHasBackticks) // Still needed as of 2021-03-01
+	a.Add("TXT", rejectif.TxtHasBackticks) // needed as of 2021-03-01
 
-	a.Add("TXT", rejectif.TxtIsEmpty) // Still needed as of 2021-03-01
+	a.Add("TXT", rejectif.TxtIsEmpty) // needed as of 2021-03-01
 
-	a.Add("TXT", rejectif.TxtHasTrailingSpace) // Still needed as of 2021-03-01
+	a.Add("TXT", rejectif.TxtHasTrailingSpace) // needed as of 2021-03-01
 
-	a.Add("TXT", rejectif.TxtHasDoubleQuotes) // Still needed as of 2021-03-01
+	a.Add("TXT", rejectif.TxtHasDoubleQuotes) // needed as of 2021-03-01
 
-	a.Add("TXT", rejectif.TxtHasMultipleStrings) // Still needed as of 2021-03-01
+	a.Add("TXT", rejectif.TxtHasMultipleStrings) // needed as of 2021-03-01
 
 	return audits.Audit()
 }

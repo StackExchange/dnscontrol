@@ -10,9 +10,11 @@ import (
 func AuditRecords(records []*models.RecordConfig) []error {
 	a = rejectif.Auditor{}
 
-	a.Add("TXT", rejectif.TxtNoMultipleStrings) // Still needed as of 2022-06-10
-	a.Add("TXT", rejectif.TxtNoTrailingSpace)   // Still needed as of 2022-06-10
-	a.Add("TXT", rejectif.TxtNotEmpty)          // Still needed as of 2022-06-10
+	a.Add("TXT", rejectif.TxtNoMultipleStrings) // needed as of 2022-06-10
+
+	a.Add("TXT", rejectif.TxtNoTrailingSpace) // needed as of 2022-06-10
+
+	a.Add("TXT", rejectif.TxtNotEmpty) // needed as of 2022-06-10
 
 	return a.Audit()
 }

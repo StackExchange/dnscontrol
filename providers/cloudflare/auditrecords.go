@@ -8,11 +8,11 @@ import "github.com/StackExchange/dnscontrol/v3/models"
 func AuditRecords(records []*models.RecordConfig) []error {
 	a = rejectif.Auditor{}
 
-	a.Add("TXT", rejectif.TxtHasMultipleStrings) // Still needed as of 2022-06-18
+	a.Add("TXT", rejectif.TxtHasMultipleStrings) // needed as of 2022-06-18
 
-	a.Add("TXT", rejectif.TxtHasTrailingSpace) // Still needed as of 2022-06-18
+	a.Add("TXT", rejectif.TxtHasTrailingSpace) // needed as of 2022-06-18
 
-	a.Add("TXT", rejectif.TxtIsEmpty) // Still needed as of 2022-06-18
+	a.Add("TXT", rejectif.TxtIsEmpty) // needed as of 2022-06-18
 
 	return a.Audit()
 }
