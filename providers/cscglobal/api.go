@@ -439,7 +439,7 @@ func (client *providerClient) waitRequestURL(statusURL string, returnEarly bool)
 			break
 		}
 
-		time.Sleep(1 * time.Second)
+		time.Sleep(2 * time.Second)
 	}
 	return nil
 
@@ -542,7 +542,7 @@ func (client *providerClient) put(endpoint string, requestBody []byte) ([]byte, 
 	err = json.Unmarshal(bodyString, &errResp)
 	if err != nil {
 		// Some error messages are plain text
-		return nil, fmt.Errorf("CSC Global API error: %s URL: %s%s",
+		return nil, fmt.Errorf("CSC Global API error (put): %s URL: %s%s",
 			bodyString,
 			req.Host, req.URL.RequestURI())
 	}
@@ -579,7 +579,7 @@ func (client *providerClient) delete(endpoint string) ([]byte, error) {
 	err = json.Unmarshal(bodyString, &errResp)
 	if err != nil {
 		// Some error messages are plain text
-		return nil, fmt.Errorf("CSC Global API error: %s URL: %s%s",
+		return nil, fmt.Errorf("CSC Global API error (delete): %s URL: %s%s",
 			bodyString,
 			req.Host, req.URL.RequestURI())
 	}
@@ -617,7 +617,7 @@ func (client *providerClient) post(endpoint string, requestBody []byte) ([]byte,
 	err = json.Unmarshal(bodyString, &errResp)
 	if err != nil {
 		// Some error messages are plain text
-		return nil, fmt.Errorf("CSC Global API error: %s URL: %s%s",
+		return nil, fmt.Errorf("CSC Global API error (post): %s URL: %s%s",
 			bodyString,
 			req.Host, req.URL.RequestURI())
 	}
@@ -651,7 +651,7 @@ func (client *providerClient) geturl(url string) ([]byte, error) {
 
 	if resp.StatusCode == 400 {
 		// 400, error message is in the body as plain text
-		return nil, fmt.Errorf("CSC Global API error: %s URL: %s%s",
+		return nil, fmt.Errorf("CSC Global API error (geturl): %s URL: %s%s",
 			bodyString,
 			req.Host, req.URL.RequestURI())
 	}
