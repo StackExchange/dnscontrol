@@ -398,7 +398,6 @@ func (client *providerClient) sendZoneEditRequest(domainname string, edits []zon
 	// could be much longer than 7 minutes. Thus, we save a lot of time.
 
 	statusURL := errResp.Links.Status // The URL to query to check status.
-	//fmt.Printf("DEBUG: statusURL=%s\n", errResp.Links.Status)
 	return client.waitRequestURL(statusURL, true)
 }
 
@@ -489,7 +488,6 @@ func (client *providerClient) clearRequests(domain string) error {
 
 	var dr pagedZoneEditResponsePagedZoneEditResponse
 	json.Unmarshal(bodyString, &dr)
-	//printer.Printf("DEBUG: Clearing requests RESULT=%+v\n", dr)
 
 	// TODO(tlim): Properly handle paganation.
 	if dr.Meta.Pages > 1 {
