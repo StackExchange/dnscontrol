@@ -111,7 +111,7 @@ func PrepDesiredRecords(dc *models.DomainConfig) {
 }
 
 // GetDomainCorrections gets existing records, diffs them against existing, and returns corrections.
-func (client *providerClient) GenerateDomainCorrections(dc *models.DomainConfig, existing models.Records) ([]*models.Correction, error) {
+func (client *providerClient) GenerateDomainCorrections(dc *models.DomainConfig, foundRecords models.Records) ([]*models.Correction, error) {
 
 	// Read foundRecords:
 	foundRecords, err := client.GetZoneRecords(dc.Name)
