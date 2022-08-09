@@ -391,18 +391,20 @@ func (client *providerClient) sendZoneEditRequest(domainname string, edits []zon
 	// NB(tlim): The request was successfully submitted. The "statusURL" is what we query if we want to wait until the request was processed and see if it was a success.
 	// Right now we don't want to wait. Instead, the next time we do a mutation we wait then.
 	// If we ever change our mind and want to wait for success/failure, it would look like:
-	//statusURL := errResp.Links.Status
-	//return client.waitRequestURL(statusURL)
+	statusURL := errResp.Links.Status
+	return client.waitRequestURL(statusURL, true)
 
-	fmt.Printf("DEBUG: statusURL=%s\n", errResp.Links.Status)
-	return nil
+	//fmt.Printf("DEBUG: statusURL=%s\n", errResp.Links.Status)
+	//return nil
 }
 
 func (client *providerClient) waitRequest(reqID string) error {
-	return client.waitRequestURL(apiBase + "/zones/edits/status/" + reqID)
+	return client.waitRequestURL(apiBase+"/zones/edits/status/"+reqID, false)
 }
 
-func (client *providerClient) waitRequestURL(statusURL string) error {
+// waitRequestURL calls statusURL until status is COMPLETED or FAILED.
+// Set returnEarly == true and it will return if status is PROPAGATING.
+func (client *providerClient) waitRequestURL(statusURL string, returnEarly bool) error {
 	t1 := time.Now()
 	for {
 		statusBody, err := client.geturl(statusURL)
@@ -415,13 +417,14 @@ func (client *providerClient) waitRequestURL(statusURL string) error {
 			return fmt.Errorf("CSC Global API error: %s DATA: %q", err, statusBody)
 		}
 		status, msg := statusResp.Content.Status, statusResp.Content.ErrorDescription
+		//fmt.Printf("DEBUG: stat %s %s\n", statusURL, status)
 
 		if isatty.IsTerminal(os.Stdout.Fd()) {
 			dur := time.Since(t1).Round(time.Second)
 			if msg == "" {
-				printer.Printf("WAITING: % 6s STATUS=%s           \n", dur, status)
+				printer.Printf("WAITING: % 6s STATUS=%s           \r", dur, status)
 			} else {
-				printer.Printf("WAITING: % 6s STATUS=%s MSG=%q    \n", dur, status, msg)
+				printer.Printf("WAITING: % 6s STATUS=%s MSG=%q    \r", dur, status, msg)
 			}
 		}
 		if status == "FAILED" {
@@ -432,7 +435,11 @@ func (client *providerClient) waitRequestURL(statusURL string) error {
 		if status == "COMPLETED" {
 			break
 		}
-		time.Sleep(60 * time.Second)
+		if returnEarly && (status == "PROPAGATING") {
+			break
+		}
+
+		time.Sleep(1 * time.Second)
 	}
 	return nil
 
@@ -474,6 +481,7 @@ func (client *providerClient) clearRequests(domain string) error {
 
 	var dr pagedZoneEditResponsePagedZoneEditResponse
 	json.Unmarshal(bodyString, &dr)
+	//printer.Printf("DEBUG: Clearing requests RESULT=%+v\n", dr)
 
 	// TODO(tlim): Properly handle paganation.
 	if dr.Meta.Pages > 1 {
@@ -481,6 +489,7 @@ func (client *providerClient) clearRequests(domain string) error {
 	}
 
 	for i, ze := range dr.ZoneEdits {
+		fmt.Printf("EDIT %03d: %+v\n", i, ze)
 		if cscDebug {
 			if ze.Status != "COMPLETED" && ze.Status != "CANCELED" {
 				printer.Printf("REQUEST %d: %s %s\n", i, ze.ID, ze.Status)
@@ -545,7 +554,7 @@ func (client *providerClient) put(endpoint string, requestBody []byte) ([]byte, 
 
 func (client *providerClient) delete(endpoint string) ([]byte, error) {
 	hclient := &http.Client{}
-	printer.Printf("DEBUG: delete endpoint: %q\n", apiBase+endpoint)
+	//printer.Printf("DEBUG: delete endpoint: %q\n", apiBase+endpoint)
 	req, _ := http.NewRequest("DELETE", apiBase+endpoint, nil)
 
 	// Add headers
@@ -561,10 +570,10 @@ func (client *providerClient) delete(endpoint string) ([]byte, error) {
 
 	bodyString, _ := ioutil.ReadAll(resp.Body)
 	if resp.StatusCode == 200 {
-		printer.Printf("DEBUG: Delete successful (200)\n")
+		//printer.Printf("DEBUG: Delete successful (200)\n")
 		return bodyString, nil
 	}
-	printer.Printf("DEBUG: Delete failed (%d)\n", resp.StatusCode)
+	//printer.Printf("DEBUG: Delete failed (%d)\n", resp.StatusCode)
 
 	// Got a error response from API, see if it's json format
 	var errResp errorResponse

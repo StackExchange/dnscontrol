@@ -174,9 +174,7 @@ DomainLoop:
 
 			/// This is where we should audit?
 
-			fmt.Printf("DEBUG: HERE1\n")
 			corrections, err := provider.Driver.GetDomainCorrections(dc)
-			fmt.Printf("DEBUG: HERE1\n")
 			out.EndProvider(len(corrections), err)
 			if err != nil {
 				anyErrors = true

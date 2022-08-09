@@ -80,7 +80,6 @@ func (client *providerClient) GetNameservers(domain string) ([]*models.Nameserve
 // NB(tlim): This function should be exactly the same in all DNS providers.  Once
 // all providers do this, we can eliminate it and use a Go interface instead.
 func (client *providerClient) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Correction, error) {
-	fmt.Printf("DEBUG: GDC HERE1\n")
 	existing, err := client.GetZoneRecords(dc.Name)
 	if err != nil {
 		return nil, err
@@ -89,9 +88,7 @@ func (client *providerClient) GetDomainCorrections(dc *models.DomainConfig) ([]*
 	//txtutil.SplitSingleLongTxt(dc.Records) // Autosplit long TXT records
 
 	clean := PrepFoundRecords(existing)
-	fmt.Printf("DEBUG: GDC HERE2\n")
 	PrepDesiredRecords(dc)
-	fmt.Printf("DEBUG: GDC HERE3\n")
 	return client.GenerateDomainCorrections(dc, clean)
 }
 
@@ -185,6 +182,7 @@ func (client *providerClient) GenerateDomainCorrections(dc *models.DomainConfig,
 				// I'm writing this) any time something fails, the failure has
 				// to be cleared out with an additional API call.
 
+				fmt.Printf("CORRECTION ABOUT TO CLEAR REQUESTS FOR %q\n", dc.Name)
 				err := client.clearRequests(dc.Name)
 				if err != nil {
 					return err
