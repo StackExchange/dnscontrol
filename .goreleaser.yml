@@ -1,11 +1,9 @@
-env:
-  - GO111MODULE=on
-
 builds:
   -
     id: build
     env:
       - CGO_ENABLED=0
+      - GO111MODULE=on
     goos:
       - linux
       - windows
@@ -13,6 +11,9 @@ builds:
       - freebsd
     ldflags:
       - -s -w -X main.Version="{{ .Version }}" -X main.SHA="{{ .FullCommit }}" -X main.BuildTime={{ .Timestamp }}
+before:
+  hooks:
+  - go mod tidy
 changelog:
   sort: asc
   use: github
@@ -56,6 +57,7 @@ dockers:
     image_templates:
     - "stackexchange/{{.ProjectName}}:latest"
     - "stackexchange/{{.ProjectName}}:{{ .Version }}"
+    use: buildx
     ids:
     - build
     build_flag_templates:
