@@ -133,7 +133,10 @@ workflows:
   version: 2
   build:
     jobs:
-      - build
+      - build:
+          filters:  # required since `release` has tag filters AND requires `build` through 'integration-tests'
+            tags:
+              only: /.*/
 
       - integration-tests:
           requires: [build]
@@ -157,12 +160,15 @@ workflows:
                 - HEDNS
                 - INWX
                 - POWERDNS
+          filters:
+            tags:
+              only: /.*/
 
       - release:
           requires: [integration-tests]
           # Only run this job on git tag pushes
           filters:
             branches:
-              only: [main, master]
+              only: [master, main, fix/cci]
             tags:
               only: /v[0-9]+(\.[0-9]+)*(-.*)*/
