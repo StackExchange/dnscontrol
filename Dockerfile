@@ -20,7 +20,7 @@ RUN dnscontrol version
 
 # -----
 
-FROM alpine:3.16.1@sha256:7580ece7963bfa863801466c0a488f11c86f85d9988051a9f9c68cb27f6b7872
+FROM alpine:3.16.2@sha256:6c1b23807ddcee59b594ebe3cbbc36371fe9737f7a796881b3f72aeef81e6dcb
 
 COPY --from=build /etc/ssl/certs /etc/ssl/certs
 COPY --from=build /go/bin/dnscontrol /usr/local/bin
