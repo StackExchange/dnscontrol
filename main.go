@@ -19,7 +19,7 @@ import (
 // Update the number here manually each release, so at least we have a range for go-get people.
 var (
 	SHA       = ""
-	Version   = "v3.18.0"
+	Version   = "v3.18.1"
 	BuildTime = ""
 )
 
