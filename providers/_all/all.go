@@ -3,7 +3,6 @@ package all
 
 import (
 	// Define all known providers here. They should each register themselves with the providers package via init function.
-	_ "github.com/StackExchange/dnscontrol/v3/providers/activedir"
 	_ "github.com/StackExchange/dnscontrol/v3/providers/akamaiedgedns"
 	_ "github.com/StackExchange/dnscontrol/v3/providers/autodns"
 	_ "github.com/StackExchange/dnscontrol/v3/providers/axfrddns"
