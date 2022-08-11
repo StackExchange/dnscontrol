@@ -19,7 +19,7 @@ jobs:
     environment:
       DOCKER_IMAGE_NAME: stackexchange/dnscontrol
       DOCKER_IMAGE_VERSION: 3.18.1
-      DOCKER_IMAGE_PLATFORM: linux/amd64,linux/386,linux/ppc64le,linux/s390x
+      DOCKER_IMAGE_PLATFORM: linux/amd64,linux/386
 
     steps:
       - checkout
