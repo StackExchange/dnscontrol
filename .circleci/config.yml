@@ -31,11 +31,6 @@ jobs:
           keys:
             - linux-go-{{ checksum "go.sum" }}-<< pipeline.parameters.cache-key >>
 
-      - go/install:
-          version: << pipeline.parameters.gover >>
-          cache: true
-          cache-key:  << pipeline.parameters.gover >>-<< pipeline.parameters.cache-key >>
-
       - run:
           name: Install goreleaser
           command: go install github.com/goreleaser/goreleaser@latest
@@ -126,13 +121,14 @@ jobs:
     steps:
       - checkout
 
+      - go/install:
+          version: << pipeline.parameters.gover >>
+          cache: true
+          cache-key:  << pipeline.parameters.gover >>-<< pipeline.parameters.cache-key >>
+
       - restore_cache: # restores saved cache if no changes are detected since last run
           keys:
             - linux-go-{{ checksum "go.sum" }}-<< pipeline.parameters.cache-key >>
-
-      - setup_remote_docker:
-          version: 20.10.11
-          docker_layer_caching: true
 
       - run:
           name: Install goreleaser
