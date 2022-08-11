@@ -11,6 +11,40 @@ parameters:
     description: Go Version to use
 
 jobs:
+
+  build-docker-image:
+    docker:
+      - image: jdrouet/docker-with-buildx:stable
+
+    environment:
+      DOCKER_IMAGE_NAME: stackexchange/dnscontrol
+      DOCKER_IMAGE_VERSION: 3.18.1
+      DOCKER_IMAGE_PLATFORM: linux/amd64,linux/386
+
+    steps:
+      - checkout
+      - setup_remote_docker:
+          version: 20.10.14 # https://circleci.com/docs/building-docker-images#docker-version
+          docker_layer_caching: true
+      - run:
+          name: Docker login
+          command: |
+            docker login \
+              --username "$DOCKERHUB_USERNAME" \
+              --password "$DOCKERHUB_ACCESS_TOKEN"
+      - deploy:
+          name: Build multi-arch Docker images and push to Docker Hub
+          command: |
+            export DOCKER_CLI_EXPERIMENTAL=enabled
+            docker context create multi-arch-build
+            docker buildx create \
+              --use multi-arch-build \
+              --platform $DOCKER_IMAGE_PLATFORM
+            docker buildx build \
+              --push \
+              --platform $DOCKER_IMAGE_PLATFORM \
+              --tag $DOCKER_IMAGE_NAME:$DOCKER_IMAGE_VERSION .
+
   build:
 
     docker:
@@ -166,3 +200,6 @@ workflows:
               only: [main, master]
             tags:
               only: /v[0-9]+(\.[0-9]+)*(-.*)*/
+
+      - build-docker-image:
+          context: DNSControl
