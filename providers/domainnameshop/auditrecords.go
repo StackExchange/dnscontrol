@@ -1,4 +1,4 @@
-package linode
+package domainnameshop
 
 import "github.com/StackExchange/dnscontrol/v3/models"
 

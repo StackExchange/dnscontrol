@@ -1047,7 +1047,7 @@ func makeTests(t *testing.T) []*TestGroup {
 			tc("CAA change flag", caa("@", "issuewild", 128, "example.com")),
 		),
 		testgroup("CAA with ;",
-			requires(providers.CanUseCAA), not("DIGITALOCEAN"),
+			requires(providers.CanUseCAA),
 			// Test support of ";" as a value
 			tc("CAA many records", caa("@", "issuewild", 0, ";")),
 		),
