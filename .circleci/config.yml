@@ -1,5 +1,8 @@
 version: 2.1
 
+orbs:
+  go: circleci/go@1.7.1
+
 parameters:
   cache-key:
     type: integer
@@ -27,6 +30,11 @@ jobs:
       - restore_cache: # restores saved cache if no changes are detected since last run
           keys:
             - linux-go-{{ checksum "go.sum" }}-<< pipeline.parameters.cache-key >>
+
+      - go/install:
+          version: << pipeline.parameters.gover >>
+          cache: true
+          cache-key:  << pipeline.parameters.gover >>-<< pipeline.parameters.cache-key >>
 
       - run:
           name: Install goreleaser
@@ -111,9 +119,10 @@ jobs:
           path: /tmp/test-results
 
   release:
-    docker:
-      - image: cimg/go:<< pipeline.parameters.gover >>
-    resource_class: 2xlarge
+    machine:
+      image: ubuntu-2204:2022.04.1
+      docker_layer_caching: true
+    resource_class: xlarge
     steps:
       - checkout
 
