@@ -12,5 +12,5 @@ When a major version is incremented, we'll support the previous major version fo
 
 To report a vulnerability please [create a new Github "issue"](https://github.com/StackExchange/dnscontrol/issues/new/choose).
 
-We will respond in a best-effort manner, usually within 1 week.  We will communciate via the Github issue unless we need to communicate privately, in which case we'll arrange a way to communicate directly.
+We will respond in a best-effort manner, usually within 1 week. We will communciate via the Github issue unless we need to communicate privately, in which case we'll arrange a way to communicate directly.
 
