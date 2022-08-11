@@ -47,7 +47,6 @@ Official support means:
 
 Providers in this category and their maintainers are:
 
-* `ACTIVEDIRECTORY_PS` @tlimoncelli
 * `AZURE_DNS` @vatsalyagoel
 * `BIND` @tlimoncelli
 * `GCLOUD` @riyadhalnur

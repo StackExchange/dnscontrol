@@ -1,8 +1,4 @@
 {
-  "ACTIVEDIRECTORY_PS": {
-    "ADServer": "$AD_SERVER",
-    "domain": "$AD_DOMAIN"
-  },
   "AUTODNS": {
     "username": "$AUTODNS_USERNAME",
     "password": "$AUTODNS_PASSWORD",
