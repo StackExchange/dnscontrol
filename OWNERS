@@ -1,4 +1,3 @@
-# providers/activedir  DEPRECATED
 providers/akamaiedgedns @svernick
 providers/autodns @arnoschoon
 providers/axfrddns @hnrgrgr
