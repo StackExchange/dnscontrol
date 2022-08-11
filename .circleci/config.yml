@@ -163,8 +163,8 @@ workflows:
                 - INWX
                 - POWERDNS
           filters:
-            tags:
-              only: /.*/
+            branches:
+              ignore: [master, main, fix/cci]
 
       - release:
           requires: [build]
