@@ -6,7 +6,7 @@ DNSControl is a command-line tool and therefore has a different (limited) attack
 
 Only the most recent release is supported with security updates.
 
-When a major version is incremented, we'll support the previous major version for 6 months.  For example, when v4.0 is released, we will support the most recent v3.x release for 6
+When a major version is incremented, we'll support the previous major version for 6 months. For example, when v4.0 is released, we will support the most recent v3.x release for 6 months.
 
 ## Reporting a Vulnerability
 
