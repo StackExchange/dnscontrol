@@ -16,7 +16,7 @@ func (c *cloudflareProvider) fetchDomainList() error {
 	c.nameservers = map[string][]string{}
 	zones, err := c.cfClient.ListZones(context.Background())
 	if err != nil {
-		return fmt.Errorf("failed fetching domain list from cloudflare: %s", err)
+		return fmt.Errorf("failed fetching domain list from cloudflare(%q): %s", c.cfClient.APIEmail, err)
 	}
 
 	for _, zone := range zones {
