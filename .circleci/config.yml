@@ -167,7 +167,7 @@ workflows:
               only: /.*/
 
       - release:
-          requires: [integration-tests]
+          requires: [build]
           # Only run this job on git tag pushes
           filters:
             branches:
