@@ -147,8 +147,8 @@ jobs:
       - persist_to_workspace:
           root: dist
           paths:
-            - dist/*.rpm
-            - dist/*.deb
+            - '*.rpm'
+            - '*.deb'
 
   upload:
     docker:
