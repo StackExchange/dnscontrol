@@ -78,7 +78,7 @@ You can think of it as a DNS compiler.  The configuration files are
 written in a DSL that looks a lot like JavaScript.  It is compiled
 to an intermediate representation (IR).  Compiler back-ends use the
 IR to update your DNS zones on services such as Route53, Cloudflare,
-and Gandi, or systems such as BIND and Active Directory.
+and Gandi, or systems such as BIND.
 
 ## An Example
 

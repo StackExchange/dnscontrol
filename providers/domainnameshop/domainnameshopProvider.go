@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"fmt"
 
-	"github.com/StackExchange/dnscontrol/v3/models"
 	"github.com/StackExchange/dnscontrol/v3/providers"
 )
 
@@ -46,7 +45,7 @@ var features = providers.DocumentationNotes{
 func init() {
 	fns := providers.DspFuncs{
 		Initializer:   newDomainNameShopProvider,
-		RecordAuditor: auditRecords,
+		RecordAuditor: AuditRecords,
 	}
 
 	providers.RegisterDomainServiceProviderType("DOMAINNAMESHOP", fns, features)
@@ -67,10 +66,6 @@ func newDomainNameShopProvider(conf map[string]string, metadata json.RawMessage)
 
 	// Consider testing if creds work
 	return api, nil
-}
-
-func auditRecords(records []*models.RecordConfig) error {
-	return nil
 }
 
 type domainResponse struct {

@@ -749,7 +749,6 @@ func makeTests(t *testing.T) []*TestGroup {
 		),
 
 		testgroup("MX",
-			not("ACTIVEDIRECTORY_PS"), // Not implemented.
 			tc("MX record", mx("@", 5, "foo.com.")),
 			tc("Second MX record, same prio", mx("@", 5, "foo.com."), mx("@", 5, "foo2.com.")),
 			tc("3 MX", mx("@", 5, "foo.com."), mx("@", 5, "foo2.com."), mx("@", 15, "foo3.com.")),
@@ -1048,7 +1047,7 @@ func makeTests(t *testing.T) []*TestGroup {
 			tc("CAA change flag", caa("@", "issuewild", 128, "example.com")),
 		),
 		testgroup("CAA with ;",
-			requires(providers.CanUseCAA), not("DIGITALOCEAN"),
+			requires(providers.CanUseCAA),
 			// Test support of ";" as a value
 			tc("CAA many records", caa("@", "issuewild", 0, ";")),
 		),
@@ -1077,7 +1076,7 @@ func makeTests(t *testing.T) []*TestGroup {
 		),
 
 		// ClouDNS provider can work with PTR records, but you need to create special type of zone
-		testgroup("PTR", requires(providers.CanUsePTR), not("ACTIVEDIRECTORY_PS", "CLOUDNS"),
+		testgroup("PTR", requires(providers.CanUsePTR), not("CLOUDNS"),
 			tc("Create PTR record", ptr("4", "foo.com.")),
 			tc("Modify PTR record", ptr("4", "bar.com.")),
 		),
@@ -1094,7 +1093,7 @@ func makeTests(t *testing.T) []*TestGroup {
 			tc("Modify SOA minttl", soa("@", "mmm.ns.cloudflare.com.", "eee.cloudflare.com.", 2037190000, 10001, 2401, 604801, 3601)),
 		),
 
-		testgroup("SRV", requires(providers.CanUseSRV), not("ACTIVEDIRECTORY_PS"),
+		testgroup("SRV", requires(providers.CanUseSRV),
 			tc("SRV record", srv("_sip._tcp", 5, 6, 7, "foo.com.")),
 			tc("Second SRV record, same prio", srv("_sip._tcp", 5, 6, 7, "foo.com."), srv("_sip._tcp", 5, 60, 70, "foo2.com.")),
 			tc("3 SRV", srv("_sip._tcp", 5, 6, 7, "foo.com."), srv("_sip._tcp", 5, 60, 70, "foo2.com."), srv("_sip._tcp", 15, 65, 75, "foo3.com.")),

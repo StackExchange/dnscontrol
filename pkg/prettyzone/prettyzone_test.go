@@ -411,7 +411,7 @@ zt.mup           IN A     1.2.3.14
 zap              IN A     1.2.3.15
 `
 
-// func formatLine
+// func FormatLine
 
 func TestFormatLine(t *testing.T) {
 	tests := []struct {

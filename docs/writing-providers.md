@@ -92,7 +92,7 @@ Pick a similar provider as your base.  Providers basically fall
 into three general categories:
 
 * **zone:** The API requires you to upload the entire zone every time. (BIND, NAMECHEAP).
-* **incremental-record:** The API lets you add/change/delete individual DNS records. (ACTIVEDIR, CLOUDFLARE, DNSIMPLE, NAMEDOTCOM, GCLOUD, HEXONET)
+* **incremental-record:** The API lets you add/change/delete individual DNS records. (CLOUDFLARE, DNSIMPLE, NAMEDOTCOM, GCLOUD, HEXONET)
 * **incremental-label:** Like incremental-record, but if there are
   multiple records on a label (for example, example www.example.com
 has A and MX records), you have to replace all the records at that

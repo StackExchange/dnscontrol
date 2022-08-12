@@ -1,4 +1,4 @@
-package recordaudit
+package rejectif
 
 /*
 I proposed that Go add something like "len()" that returns the highest

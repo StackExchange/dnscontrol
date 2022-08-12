@@ -41,9 +41,9 @@ var RegistrarTypes = map[string]RegistrarInitializer{}
 type DspInitializer func(map[string]string, json.RawMessage) (DNSServiceProvider, error)
 
 // RecordAuditor is a function that verifies that all the records
-// are supportable by this provider. It returns an error related to
-// the first record that this provider can not support.
-type RecordAuditor func([]*models.RecordConfig) error
+// are supportable by this provider. It returns a list of errors
+// detailing records that this provider can not support.
+type RecordAuditor func([]*models.RecordConfig) []error
 
 // DspFuncs lists functions registered with a provider.
 type DspFuncs struct {
@@ -132,13 +132,13 @@ func beCompatible(n string, config map[string]string) (string, error) {
 }
 
 // AuditRecords calls the RecordAudit function for a provider.
-func AuditRecords(dType string, rcs models.Records) error {
+func AuditRecords(dType string, rcs models.Records) []error {
 	p, ok := DNSProviderTypes[dType]
 	if !ok {
-		return fmt.Errorf("unknown DNS service provider type: %q", dType)
+		return []error{fmt.Errorf("unknown DNS service provider type: %q", dType)}
 	}
 	if p.RecordAuditor == nil {
-		return fmt.Errorf("DNS service provider type %q has no RecordAuditor", dType)
+		return []error{fmt.Errorf("DNS service provider type %q has no RecordAuditor", dType)}
 	}
 	return p.RecordAuditor(rcs)
 }
