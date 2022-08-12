@@ -1,5 +1,10 @@
 version: 2.1
 
+orbs:
+  go: circleci/go@1.7.1
+  docker: circleci/docker@2.1.2
+  cloudsmith: cloudsmith/cloudsmith@1.0.5
+
 parameters:
   cache-key:
     type: integer
@@ -11,40 +16,6 @@ parameters:
     description: Go Version to use
 
 jobs:
-
-  build-docker-image:
-    docker:
-      - image: jdrouet/docker-with-buildx:stable
-
-    environment:
-      DOCKER_IMAGE_NAME: stackexchange/dnscontrol
-      DOCKER_IMAGE_PLATFORM: linux/amd64,linux/386
-
-    steps:
-      - checkout
-      - setup_remote_docker:
-          version: 20.10.14 # https://circleci.com/docs/building-docker-images#docker-version
-          docker_layer_caching: true
-      - run:
-          name: Docker login
-          command: |
-            docker login \
-              --username "$DOCKERHUB_USERNAME" \
-              --password "$DOCKERHUB_ACCESS_TOKEN"
-      - deploy:
-          name: Build multi-arch Docker images and push to Docker Hub
-          command: |
-            export DOCKER_CLI_EXPERIMENTAL=enabled
-            export DOCKER_IMAGE_VERSION=$(grep -E "Version *= \"" main.go | awk '{ print $3 }' | tr -d \") >> $BASH_ENV
-            source $BASH_ENV
-            docker context create multi-arch-build
-            docker buildx create \
-              --use multi-arch-build \
-              --platform $DOCKER_IMAGE_PLATFORM
-            docker buildx build \
-              --push \
-              --platform $DOCKER_IMAGE_PLATFORM \
-              --tag $DOCKER_IMAGE_NAME:$DOCKER_IMAGE_VERSION .
 
   build:
 
@@ -148,15 +119,21 @@ jobs:
     docker:
       - image: cimg/go:<< pipeline.parameters.gover >>
     resource_class: 2xlarge
+
     steps:
       - checkout
+
+      - setup_remote_docker:
+          version: 20.10.11
+          docker_layer_caching: true
+
+      - docker/check:
+          docker-username: DOCKERHUB_USERNAME
+          docker-password: DOCKERHUB_ACCESS_TOKEN
 
       - restore_cache: # restores saved cache if no changes are detected since last run
           keys:
             - linux-go-{{ checksum "go.sum" }}-<< pipeline.parameters.cache-key >>
-
-      - setup_remote_docker:
-          version: 20.10.11
 
       - run:
           name: Install goreleaser
@@ -164,11 +141,52 @@ jobs:
 
       - run: goreleaser release
 
+      - store_artifacts:
+          path: dist
+
+      - persist_to_workspace:
+          root: dist
+          paths:
+            - '*.rpm'
+            - '*.deb'
+
+  upload:
+    docker:
+    - image: cimg/python:3.10
+
+    parameters:
+      arch:
+        type: enum
+        enum: ["i386", "amd64", "arm64", "x86_64"]
+      format:
+        type: enum
+        enum: ["deb", "rpm"]
+      distro:
+        type: string
+
+
+    steps:
+
+    - attach_workspace:
+        at: .
+
+    - cloudsmith/ensure-api-key
+    - cloudsmith/install-cli
+    - cloudsmith/publish:
+        cloudsmith-repository: stackoverflow/dnscontrol
+        package-format: << parameters.format >>
+                      # dnscontrol-3.18.2-next.arm64.deb
+        package-path: dnscontrol-*.<< parameters.arch >>.<< parameters.format >>
+        package-distribution: '<< parameters.distro >>'
+
 workflows:
   version: 2
   build:
     jobs:
-      - build
+      - build:
+          filters:  # required since `release` has tag filters AND requires `build`
+            tags:
+              only: /.*/
 
       - integration-tests:
           requires: [build]
@@ -192,15 +210,49 @@ workflows:
                 - HEDNS
                 - INWX
                 - POWERDNS
+          filters:
+            branches:
+              ignore: [master, main]
 
       - release:
-          requires: [integration-tests]
+          requires: [build]
+          context: [DNSControl]
           # Only run this job on git tag pushes
           filters:
             branches:
-              only: [main, master]
+              ignore: /.*/
             tags:
               only: /v[0-9]+(\.[0-9]+)*(-.*)*/
 
-      - build-docker-image:
-          context: DNSControl
+      - upload:
+          name: upload dnscontrol_<< matrix.arch >>.rpm
+          requires: [release]
+          context: [StackExchange]
+          format: rpm
+          distro: fedora/25
+          matrix:
+            parameters:
+              arch: ["i386", "x86_64", "arm64"]
+          # Only run this job on git tag pushes
+          filters:
+            branches:
+              ignore: /.*/
+            tags:
+              only: /v[0-9]+(\.[0-9]+)*(-.*)*/
+
+      - upload:
+          name: upload dnscontrol_<< matrix.arch >>.deb
+          requires: [release]
+          context: [StackExchange]
+          format: deb
+          distro: debian/buster
+          matrix:
+            parameters:
+              arch: ["i386", "amd64", "arm64"]
+          # Only run this job on git tag pushes
+          filters:
+            branches:
+              ignore: /.*/
+            tags:
+              only: /v[0-9]+(\.[0-9]+)*(-.*)*/
+
