@@ -25,7 +25,7 @@ changelog:
       regexp: "(?i)^.*(major|new provider|feature)[(\\w)]*:+.*$"
       order: 1
     - title: 'Provider-specific changes:'
-      regexp: "(?i)^(activedir|akamaiedgedns|autodns|axfrddns|azuredns|bind|cloudflare|cloudns|cscglobal|desec|digitalocean|dnsimple|dnsmadeeasy|doh|domainnameshop|easyname|exoscale|gandiv5|gcloud|hedns|hetzner|hexonet|hostingde|internetbs|inwx|linode|msdns|namecheap|namedotcom|netcup|ns1|octodns|opensrs|oracle|ovh|packetframe|powerdns|route53|rwth|softlayer|transip|vultr)[(\\w)]*:+.*$"
+      regexp: "(?i)^(akamaiedgedns|autodns|axfrddns|azure_dns|bind|cloudflareapi|cloudflareapi_old|cloudns|cscglobal|desec|digitalocean|dnsimple|dnsmadeeasy|domainnameshop|exoscale|gandi_v5|gcloud|hedns|hetzner|hexonet|hostingde|inwx|linode|msdns|namecheap|namedotcom|netcup|ns1|octodns|oracle|ovh|packetframe|powerdns|route53|softlayer|transip|vultr)[(\\w)]*:+.*$"
       order: 2
     - title: 'Depreciation warnings:'
       regexp: "(?i)^.*Deprecate[(\\w)]*:+.*$"
