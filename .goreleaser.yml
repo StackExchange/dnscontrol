@@ -66,6 +66,21 @@ dockers:
     - "--label=org.opencontainers.image.source={{ .GitURL }}"
     - "--platform=linux/amd64"
   - image_templates:
+    - &i386_image "stackexchange/{{.ProjectName}}:{{ .Version }}-i386"
+    goos: linux
+    goarch: i386
+    use: buildx
+    ids:
+    - build
+    build_flag_templates:
+    - "--pull"
+    - "--label=org.opencontainers.image.created={{ .Date }}"
+    - "--label=org.opencontainers.image.name={{ .ProjectName }}"
+    - "--label=org.opencontainers.image.revision={{ .FullCommit }}"
+    - "--label=org.opencontainers.image.version={{ .Version }}"
+    - "--label=org.opencontainers.image.source={{ .GitURL }}"
+    - "--platform=linux/i386"
+  - image_templates:
     - &arm_image "stackexchange/{{.ProjectName}}:{{ .Version }}-arm64"
     goos: linux
     goarch: arm64
@@ -84,14 +99,17 @@ docker_manifests:
   - name_template: "stackexchange/{{.ProjectName}}:{{ .Version }}"
     image_templates:
       - *amd_image
+      - *i386_image
       - *arm_image
   - name_template: "stackexchange/{{.ProjectName}}:v{{ .Version }}"
     image_templates:
       - *amd_image
+      - *i386_image
       - *arm_image
   - name_template: "stackexchange/{{.ProjectName}}:latest"
     image_templates:
       - *amd_image
+      - *i386_image
       - *arm_image
 checksum:
   name_template: 'checksums.txt'
