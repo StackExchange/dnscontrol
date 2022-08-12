@@ -140,6 +140,9 @@ jobs:
 
       - run: goreleaser release
 
+      - store_artifacts:
+          path: /dist
+
 workflows:
   version: 2
   build:
