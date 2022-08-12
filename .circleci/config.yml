@@ -161,6 +161,9 @@ jobs:
       format:
         type: enum
         enum: ["deb", "rpm"]
+      distro:
+        type: string
+
 
     steps:
 
@@ -174,7 +177,7 @@ jobs:
         package-format: << parameters.format >>
                       # dnscontrol-3.18.2-next.arm64.deb
         package-path: dnscontrol-*.<< parameters.arch >>.<< parameters.format >>
-        package-distribution: 'any-distro/any-version'
+        package-distribution: '<< parameters.distro >>'
 
 workflows:
   version: 2
@@ -226,6 +229,7 @@ workflows:
           requires: [release]
           context: [StackExchange]
           format: rpm
+          distro: fedora/25
           matrix:
             parameters:
               arch: ["i386", "x86_64", "arm64"]
@@ -241,6 +245,7 @@ workflows:
           requires: [release]
           context: [StackExchange]
           format: deb
+          distro: debian/buster
           matrix:
             parameters:
               arch: ["i386", "amd64", "arm64"]
