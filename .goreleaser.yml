@@ -44,7 +44,7 @@ nfpms:
     id: packages
     homepage:  https://stackexchange.github.io/dnscontrol/
     description: "DNSControl: Infrastructure as Code for DNS Zones"
-    maintainer: ''
+    maintainer: 'Tom Limoncelli <tlimoncelli@stackoverflow.com>'
     license: MIT
     formats:
     - deb
