@@ -79,9 +79,9 @@ dockers:
     - "--label=org.opencontainers.image.source={{ .GitURL }}"
     - "--platform=linux/amd64"
   - image_templates:
-    - &i386_image "stackexchange/{{.ProjectName}}:{{ .Version }}-i386"
+    - &386_image "stackexchange/{{.ProjectName}}:{{ .Version }}-386"
     goos: linux
-    goarch: i386
+    goarch: '386'
     use: buildx
     ids:
     - build
@@ -112,18 +112,18 @@ docker_manifests:
   - name_template: "stackexchange/{{.ProjectName}}:{{ .Version }}"
     image_templates:
       - *amd_image
-      - *i386_image
+      - *386_image
       - *arm_image
   - name_template: "stackexchange/{{.ProjectName}}:v{{ .Version }}"
     image_templates:
       - *amd_image
-      - *i386_image
+      - *386_image
       - *arm_image
   - name_template: "stackexchange/{{.ProjectName}}:latest"
     skip_push: auto
     image_templates:
       - *amd_image
-      - *i386_image
+      - *386_image
       - *arm_image
 checksum:
   name_template: 'checksums.txt'
