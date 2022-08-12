@@ -107,6 +107,7 @@ docker_manifests:
       - *i386_image
       - *arm_image
   - name_template: "stackexchange/{{.ProjectName}}:latest"
+    skip_push: auto
     image_templates:
       - *amd_image
       - *i386_image
