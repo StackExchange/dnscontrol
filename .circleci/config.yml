@@ -18,7 +18,6 @@ jobs:
 
     environment:
       DOCKER_IMAGE_NAME: stackexchange/dnscontrol
-      DOCKER_IMAGE_VERSION: 3.18.1
       DOCKER_IMAGE_PLATFORM: linux/amd64,linux/386
 
     steps:
@@ -36,6 +35,8 @@ jobs:
           name: Build multi-arch Docker images and push to Docker Hub
           command: |
             export DOCKER_CLI_EXPERIMENTAL=enabled
+            export DOCKER_IMAGE_VERSION=$(grep -E "Version *= \"" main.go | awk '{ print $3 }' | tr -d \") >> $BASH_ENV
+            source $BASH_ENV
             docker context create multi-arch-build
             docker buildx create \
               --use multi-arch-build \
