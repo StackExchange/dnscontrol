@@ -85,6 +85,10 @@ docker_manifests:
     image_templates:
       - *amd_image
       - *arm_image
+  - name_template: "stackexchange/{{.ProjectName}}:v{{ .Version }}"
+    image_templates:
+      - *amd_image
+      - *arm_image
   - name_template: "stackexchange/{{.ProjectName}}:latest"
     image_templates:
       - *amd_image
