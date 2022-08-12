@@ -192,7 +192,7 @@ workflows:
 
       - release:
           requires: [build]
-          context: [DNSControl]
+          context: [DNSControl, StackExchange]
           # Only run this job on git tag pushes
           filters:
             branches:
