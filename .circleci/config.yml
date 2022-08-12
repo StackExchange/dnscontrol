@@ -2,6 +2,7 @@ version: 2.1
 
 orbs:
   go: circleci/go@1.7.1
+  docker: circleci/docker@2.1.2
 
 parameters:
   cache-key:
@@ -114,17 +115,20 @@ jobs:
           path: /tmp/test-results
 
   release:
-    machine:
-      image: ubuntu-2204:2022.04.1
-      docker_layer_caching: true
-    resource_class: xlarge
+    docker:
+      - image: cimg/go:<< pipeline.parameters.gover >>
+    resource_class: 2xlarge
+
     steps:
       - checkout
 
-      - go/install:
-          version: << pipeline.parameters.gover >>
-          cache: true
-          cache-key:  << pipeline.parameters.gover >>-<< pipeline.parameters.cache-key >>
+      - setup_remote_docker:
+          version: 20.10.11
+          docker_layer_caching: true
+
+      - docker/check:
+          docker-username: DOCKERHUB_USERNAME
+          docker-password: DOCKERHUB_ACCESS_TOKEN
 
       - restore_cache: # restores saved cache if no changes are detected since last run
           keys:
