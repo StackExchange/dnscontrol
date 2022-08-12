@@ -144,23 +144,38 @@ jobs:
       - store_artifacts:
           path: dist
 
-      - cloudsmith/ensure-api-key
-      - cloudsmith/install-cli
-      - cloudsmith/publish:
-          cloudsmith-repository: stackoverflow/dnscontrol
-          package-format: rpm
-          package-path: dist/*.rpm
-      - cloudsmith/publish:
-          cloudsmith-repository: stackoverflow/dnscontrol
-          package-format: deb
-          package-path: dist/*.deb
+      - persist_to_workspace:
+          root: dist
+          paths:
+            - dist/*.rpm
+            - dist/*.deb
+
+  upload:
+    docker:
+    - image: cimg/python:3.10
+
+    steps:
+
+    - attach_workspace:
+        at: .
+
+    - cloudsmith/ensure-api-key
+    - cloudsmith/install-cli
+    - cloudsmith/publish:
+        cloudsmith-repository: stackoverflow/dnscontrol
+        package-format: rpm
+        package-path: '*.rpm'
+    - cloudsmith/publish:
+        cloudsmith-repository: stackoverflow/dnscontrol
+        package-format: deb
+        package-path: '*.deb'
 
 workflows:
   version: 2
   build:
     jobs:
       - build:
-          filters:  # required since `release` has tag filters AND requires `build` through 'integration-tests'
+          filters:  # required since `release` has tag filters AND requires `build`
             tags:
               only: /.*/
 
@@ -192,7 +207,17 @@ workflows:
 
       - release:
           requires: [build]
-          context: [DNSControl, StackExchange]
+          context: [DNSControl]
+          # Only run this job on git tag pushes
+          filters:
+            branches:
+              ignore: /.*/
+            tags:
+              only: /v[0-9]+(\.[0-9]+)*(-.*)*/
+
+      - upload:
+          requires: [release]
+          context: [StackExchange]
           # Only run this job on git tag pushes
           filters:
             branches:
