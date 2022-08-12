@@ -154,6 +154,14 @@ jobs:
     docker:
     - image: cimg/python:3.10
 
+    parameters:
+      arch:
+        type: enum
+        enum: ["386", "amd64", "arm64"]
+      format:
+        type: enum
+        enum: ["deb", "rpm"]
+
     steps:
 
     - attach_workspace:
@@ -163,13 +171,8 @@ jobs:
     - cloudsmith/install-cli
     - cloudsmith/publish:
         cloudsmith-repository: stackoverflow/dnscontrol
-        package-format: rpm
-        package-path: '*.rpm'
-        package-distribution: 'any-distro/any-version'
-    - cloudsmith/publish:
-        cloudsmith-repository: stackoverflow/dnscontrol
-        package-format: deb
-        package-path: '*.deb'
+        package-format: << parameters.format >>
+        package-path: dnscontrol_<< parameters.arch >>.<< parameters.format >>
         package-distribution: 'any-distro/any-version'
 
 workflows:
@@ -218,8 +221,13 @@ workflows:
               only: /v[0-9]+(\.[0-9]+)*(-.*)*/
 
       - upload:
+          name: upload dnscontrol_<< matrix.arch >>.<< matrix.format >>
           requires: [release]
           context: [StackExchange]
+          matrix:
+            parameters:
+              arch: ["386", "amd64", "arm64"]
+              format: ["deb", "rpm"]
           # Only run this job on git tag pushes
           filters:
             branches:
