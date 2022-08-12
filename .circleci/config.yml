@@ -3,6 +3,7 @@ version: 2.1
 orbs:
   go: circleci/go@1.7.1
   docker: circleci/docker@2.1.2
+  cloudsmith: cloudsmith/cloudsmith@1.0.5
 
 parameters:
   cache-key:
@@ -142,6 +143,17 @@ jobs:
 
       - store_artifacts:
           path: dist
+
+      - cloudsmith/ensure-api-key
+      - cloudsmith/install-cli
+      - cloudsmith/publish:
+          cloudsmith-repository: stackoverflow/dnscontrol
+          package-format: rpm
+          package-path: dist/*.rpm
+      - cloudsmith/publish:
+          cloudsmith-repository: stackoverflow/dnscontrol
+          package-format: deb
+          package-path: dist/*.deb
 
 workflows:
   version: 2
