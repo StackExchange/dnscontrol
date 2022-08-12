@@ -38,13 +38,7 @@ changelog:
     - Merge pull request
     - Merge branch
 archives:
-  - replacements:
-      darwin: Darwin
-      linux: Linux
-      windows: Windows
-      386: i386
-      amd64: x86_64
-    format_overrides:
+  - format_overrides:
     - goos: windows
       format: zip
 universal_binaries:
@@ -53,15 +47,27 @@ universal_binaries:
     id: build
 
 nfpms:
-  - file_name_template: '{{ .ProjectName }}_{{ .Arch }}{{ if .Arm }}v{{ .Arm }}{{ end }}'
-    id: packages
+  - file_name_template: '{{ .ProjectName }}-{{ .Version }}.{{ .Arch }}'
+    id: packages_rpm
+    homepage:  https://stackexchange.github.io/dnscontrol/
+    description: "DNSControl: Infrastructure as Code for DNS Zones"
+    maintainer: 'Tom Limoncelli <tlimoncelli@stackoverflow.com>'
+    license: MIT
+    formats:
+    - rpm
+    replacements:
+      386: i386
+      amd64: x86_64
+  - file_name_template: '{{ .ProjectName }}-{{ .Version }}.{{ .Arch }}'
+    id: packages_deb
     homepage:  https://stackexchange.github.io/dnscontrol/
     description: "DNSControl: Infrastructure as Code for DNS Zones"
     maintainer: 'Tom Limoncelli <tlimoncelli@stackoverflow.com>'
     license: MIT
     formats:
     - deb
-    - rpm
+    replacements:
+      386: i386
 dockers:
   - image_templates:
     - &amd_image "stackexchange/{{.ProjectName}}:{{ .Version }}-amd64"
