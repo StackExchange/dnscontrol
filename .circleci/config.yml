@@ -173,7 +173,7 @@ workflows:
                 - POWERDNS
           filters:
             branches:
-              ignore: [master, main, fix/cci]
+              ignore: [master, main]
 
       - release:
           requires: [build]
@@ -181,6 +181,6 @@ workflows:
           # Only run this job on git tag pushes
           filters:
             branches:
-              only: [master, main, fix/cci]
+              only: [master, main]
             tags:
-              only: /v[0-9]+(\.[0-9]+)*(-.*)*/
+              ignore: /.*/
