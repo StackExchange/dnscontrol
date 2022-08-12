@@ -165,10 +165,12 @@ jobs:
         cloudsmith-repository: stackoverflow/dnscontrol
         package-format: rpm
         package-path: '*.rpm'
+        package-distribution: 'any-distro/any-version'
     - cloudsmith/publish:
         cloudsmith-repository: stackoverflow/dnscontrol
         package-format: deb
         package-path: '*.deb'
+        package-distribution: 'any-distro/any-version'
 
 workflows:
   version: 2
