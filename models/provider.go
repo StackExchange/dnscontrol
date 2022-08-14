@@ -2,7 +2,8 @@ package models
 
 import "github.com/pkg/errors"
 
-var ErrNotImplemented = errors.New("divide by zero")
+// ErrNotImplemented is an error to indicate a function is not implemented.
+var ErrNotImplemented = errors.New("not implemented")
 
 // ZoneCorrector is an interface that defines a provider that can
 // correct the DNS records in a Zone (i.e. domain).

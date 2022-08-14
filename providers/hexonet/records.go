@@ -4,10 +4,11 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-	"github.com/StackExchange/dnscontrol/v3/pkg/printer"
 	"regexp"
 	"strconv"
 	"strings"
+
+	"github.com/StackExchange/dnscontrol/v3/pkg/printer"
 
 	"github.com/StackExchange/dnscontrol/v3/models"
 	"github.com/StackExchange/dnscontrol/v3/pkg/diff"
@@ -160,12 +161,13 @@ func toRecord(r *HXRecord, origin string) *models.RecordConfig {
 	return rc
 }
 
-func (n *HXClient) showCommand(cmd map[string]string) {
+func (n *HXClient) showCommand(cmd map[string]string) error {
 	b, err := json.MarshalIndent(cmd, "", "  ")
 	if err != nil {
-		fmt.Errorf("error: %w", err)
+		return fmt.Errorf("error: %w", err)
 	}
 	printer.Printf(string(b))
+	return nil
 }
 
 func (n *HXClient) updateZoneBy(params map[string]interface{}, domain string) error {

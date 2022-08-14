@@ -22,6 +22,7 @@ const (
 	baseURL = "https://noc-portal.rz.rwth-aachen.de/dns-admin/api/v1"
 )
 
+// RecordReply represents a DNS Record in an API.
 type RecordReply struct {
 	ID        int       `json:"id"`
 	ZoneID    int       `json:"zone_id"`

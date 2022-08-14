@@ -3,6 +3,7 @@ package rwth
 import (
 	"encoding/json"
 	"fmt"
+
 	"github.com/StackExchange/dnscontrol/v3/providers"
 )
 
@@ -38,6 +39,7 @@ func init() {
 	providers.RegisterDomainServiceProviderType("RWTH", fns, features)
 }
 
+// New allocates a DNS service provider.
 func New(settings map[string]string, _ json.RawMessage) (providers.DNSServiceProvider, error) {
 	if settings["api_token"] == "" {
 		return nil, fmt.Errorf("missing RWTH api_token")

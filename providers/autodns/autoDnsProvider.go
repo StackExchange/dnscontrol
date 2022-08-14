@@ -3,12 +3,13 @@ package autodns
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/StackExchange/dnscontrol/v3/pkg/printer"
 	"net/http"
 	"net/url"
 	"regexp"
 	"strconv"
 	"strings"
+
+	"github.com/StackExchange/dnscontrol/v3/pkg/printer"
 
 	"github.com/StackExchange/dnscontrol/v3/models"
 	"github.com/StackExchange/dnscontrol/v3/pkg/diff"
@@ -30,7 +31,7 @@ var features = providers.DocumentationNotes{
 	providers.CanUseTLSA:             providers.Cannot(),
 }
 
-type autoDnsProvider struct {
+type autoDNSProvider struct {
 	baseURL        url.URL
 	defaultHeaders http.Header
 }
@@ -45,7 +46,7 @@ func init() {
 
 // New creates a new API handle.
 func New(settings map[string]string, _ json.RawMessage) (providers.DNSServiceProvider, error) {
-	api := &autoDnsProvider{}
+	api := &autoDNSProvider{}
 
 	api.baseURL = url.URL{
 		Scheme: "https",
@@ -67,7 +68,7 @@ func New(settings map[string]string, _ json.RawMessage) (providers.DNSServicePro
 }
 
 // GetDomainCorrections returns the corrections for a domain.
-func (api *autoDnsProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Correction, error) {
+func (api *autoDNSProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Correction, error) {
 	var changes []*models.RecordConfig
 
 	dc, err := dc.Copy()
@@ -169,7 +170,7 @@ func (api *autoDnsProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*mo
 					err := api.updateZone(domain, resourceRecords, nameServers, zoneTTL)
 
 					if err != nil {
-						fmt.Errorf(err.Error())
+						return fmt.Errorf(err.Error())
 					}
 
 					return nil
@@ -181,7 +182,7 @@ func (api *autoDnsProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*mo
 }
 
 // GetNameservers returns the nameservers for a domain.
-func (api *autoDnsProvider) GetNameservers(domain string) ([]*models.Nameserver, error) {
+func (api *autoDNSProvider) GetNameservers(domain string) ([]*models.Nameserver, error) {
 	zone, err := api.getZone(domain)
 
 	if err != nil {
@@ -192,7 +193,7 @@ func (api *autoDnsProvider) GetNameservers(domain string) ([]*models.Nameserver,
 }
 
 // GetZoneRecords gets the records of a zone and returns them in RecordConfig format.
-func (api *autoDnsProvider) GetZoneRecords(domain string) (models.Records, error) {
+func (api *autoDNSProvider) GetZoneRecords(domain string) (models.Records, error) {
 	zone, _ := api.getZone(domain)
 	existingRecords := make([]*models.RecordConfig, len(zone.ResourceRecords))
 	for i, resourceRecord := range zone.ResourceRecords {
