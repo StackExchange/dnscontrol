@@ -4,13 +4,13 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-	"github.com/StackExchange/dnscontrol/v3/pkg/printer"
 	"io"
-	"io/ioutil"
 	"net/http"
 	"strconv"
 	"strings"
 	"time"
+
+	"github.com/StackExchange/dnscontrol/v3/pkg/printer"
 )
 
 const (
@@ -251,7 +251,7 @@ func (api *hetznerProvider) request(endpoint string, method string, request inte
 
 		defer cleanupResponseBody()
 		if !statusOK(resp.StatusCode) {
-			data, _ := ioutil.ReadAll(resp.Body)
+			data, _ := io.ReadAll(resp.Body)
 			printer.Printf(string(data))
 			return fmt.Errorf("bad status code from HETZNER: %d not 200", resp.StatusCode)
 		}

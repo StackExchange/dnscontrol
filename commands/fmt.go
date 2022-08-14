@@ -2,7 +2,6 @@ package commands
 
 import (
 	"fmt"
-	"io/ioutil"
 	"os"
 
 	"github.com/ditashi/jsbeautifier-go/jsbeautifier"
@@ -47,7 +46,7 @@ func (args *FmtArgs) flags() []cli.Flag {
 
 // FmtFile reads and formats a file.
 func FmtFile(args FmtArgs) error {
-	fileBytes, readErr := ioutil.ReadFile(args.InputFile)
+	fileBytes, readErr := os.ReadFile(args.InputFile)
 	if readErr != nil {
 		return readErr
 	}
@@ -67,7 +66,7 @@ func FmtFile(args FmtArgs) error {
 	if args.OutputFile == "" {
 		fmt.Print(beautified)
 	} else {
-		if err := ioutil.WriteFile(args.OutputFile, []byte(beautified), 0744); err != nil {
+		if err := os.WriteFile(args.OutputFile, []byte(beautified), 0744); err != nil {
 			return err
 		}
 		fmt.Fprintf(os.Stderr, "File %s successfully written\n", args.OutputFile)

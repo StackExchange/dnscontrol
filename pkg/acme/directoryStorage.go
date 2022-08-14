@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 	"encoding/pem"
 	"fmt"
-	"io/ioutil"
 	"os"
 	"path/filepath"
 
@@ -53,7 +52,7 @@ func (d directoryStorage) GetCertificate(name string) (*certificate.Resource, er
 		return nil, err
 	}
 	// load cert
-	crtBytes, err := ioutil.ReadFile(d.certFile(name, "crt"))
+	crtBytes, err := os.ReadFile(d.certFile(name, "crt"))
 	if err != nil {
 		return nil, err
 	}
@@ -75,16 +74,16 @@ func (d directoryStorage) StoreCertificate(name string, cert *certificate.Resour
 	if err != nil {
 		return err
 	}
-	if err = ioutil.WriteFile(d.certFile(name, "json"), jDAt, perms); err != nil {
+	if err = os.WriteFile(d.certFile(name, "json"), jDAt, perms); err != nil {
 		return err
 	}
-	if err = ioutil.WriteFile(d.certFile(name, "crt"), pub, perms); err != nil {
+	if err = os.WriteFile(d.certFile(name, "crt"), pub, perms); err != nil {
 		return err
 	}
-	if err = ioutil.WriteFile(d.certFile(name, "pem"), combined, perms); err != nil {
+	if err = os.WriteFile(d.certFile(name, "pem"), combined, perms); err != nil {
 		return err
 	}
-	return ioutil.WriteFile(d.certFile(name, "key"), priv, perms)
+	return os.WriteFile(d.certFile(name, "key"), priv, perms)
 }
 
 func (d directoryStorage) GetAccount(acmeHost string) (*Account, error) {
@@ -101,7 +100,7 @@ func (d directoryStorage) GetAccount(acmeHost string) (*Account, error) {
 	if err = dec.Decode(acct); err != nil {
 		return nil, err
 	}
-	keyBytes, err := ioutil.ReadFile(d.accountKeyFile(acmeHost))
+	keyBytes, err := os.ReadFile(d.accountKeyFile(acmeHost))
 	if err != nil {
 		return nil, err
 	}
@@ -124,7 +123,7 @@ func (d directoryStorage) StoreAccount(acmeHost string, account *Account) error 
 	if err != nil {
 		return err
 	}
-	if err = ioutil.WriteFile(d.accountFile(acmeHost), acctBytes, perms); err != nil {
+	if err = os.WriteFile(d.accountFile(acmeHost), acctBytes, perms); err != nil {
 		return err
 	}
 	keyBytes, err := x509.MarshalECPrivateKey(account.key)
@@ -133,5 +132,5 @@ func (d directoryStorage) StoreAccount(acmeHost string, account *Account) error 
 	}
 	pemKey := &pem.Block{Type: "EC PRIVATE KEY", Bytes: keyBytes}
 	pemBytes := pem.EncodeToMemory(pemKey)
-	return ioutil.WriteFile(d.accountKeyFile(acmeHost), pemBytes, perms)
+	return os.WriteFile(d.accountKeyFile(acmeHost), pemBytes, perms)
 }
