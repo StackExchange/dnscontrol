@@ -4,7 +4,6 @@ import (
 	_ "embed" // Used to embed helpers.js in the binary.
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
 	"log"
 	"os"
 	"path/filepath"
@@ -40,7 +39,7 @@ var EnableFetch bool = false
 
 // ExecuteJavascript accepts a javascript string and runs it, returning the resulting dnsConfig.
 func ExecuteJavascript(file string, devMode bool, variables map[string]string) (*models.DNSConfig, error) {
-	script, err := ioutil.ReadFile(file)
+	script, err := os.ReadFile(file)
 	if err != nil {
 		return nil, err
 	}
@@ -111,7 +110,7 @@ func ExecuteJavascript(file string, devMode bool, variables map[string]string) (
 func GetHelpers(devMode bool) string {
 	if devMode {
 		// Load the file:
-		b, err := ioutil.ReadFile(helpersJsFileName)
+		b, err := os.ReadFile(helpersJsFileName)
 		if err != nil {
 			log.Fatal(err)
 		}
@@ -143,7 +142,7 @@ func require(call otto.FunctionCall) otto.Value {
 
 	printer.Debugf("requiring: %s (%s)\n", file, relFile)
 	// quick fix, by replacing to linux slashes, to make it work with windows paths too.
-	data, err := ioutil.ReadFile(filepath.ToSlash(relFile))
+	data, err := os.ReadFile(filepath.ToSlash(relFile))
 
 	if err != nil {
 		throw(call.Otto, err.Error())

@@ -6,15 +6,16 @@ package rwth
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/StackExchange/dnscontrol/v3/models"
-	"github.com/StackExchange/dnscontrol/v3/pkg/printer"
-	"github.com/miekg/dns"
-	"io/ioutil"
+	"io"
 	"net/http"
 	"net/url"
 	"strconv"
 	"strings"
 	"time"
+
+	"github.com/StackExchange/dnscontrol/v3/models"
+	"github.com/StackExchange/dnscontrol/v3/pkg/printer"
+	"github.com/miekg/dns"
 )
 
 const (
@@ -188,7 +189,7 @@ func (api *rwthProvider) request(endpoint string, method string, request url.Val
 
 	defer cleanupResponseBody()
 	if resp.StatusCode != http.StatusOK {
-		data, _ := ioutil.ReadAll(resp.Body)
+		data, _ := io.ReadAll(resp.Body)
 		printer.Printf(string(data))
 		return fmt.Errorf("bad status code from RWTH: %d not 200", resp.StatusCode)
 	}
