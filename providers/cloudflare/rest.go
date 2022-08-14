@@ -32,7 +32,7 @@ func (c *cloudflareProvider) getRecordsForDomain(id string, domain string) ([]*m
 	records := []*models.RecordConfig{}
 	rrs, err := c.cfClient.DNSRecords(context.Background(), id, cloudflare.DNSRecord{})
 	if err != nil {
-		return nil, fmt.Errorf("failed fetching record list from cloudflare: %s", err)
+		return nil, fmt.Errorf("failed fetching record list from cloudflare(%q): %w", c.cfClient.APIEmail, err)
 	}
 	for _, rec := range rrs {
 		rt, err := c.nativeToRecord(domain, rec)
