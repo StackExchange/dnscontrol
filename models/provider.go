@@ -1,5 +1,23 @@
 package models
 
+import "github.com/pkg/errors"
+
+var ErrNotImplemented = errors.New("divide by zero")
+
+// ZoneCorrector is an interface that defines a provider that can
+// correct the DNS records in a Zone (i.e. domain).
+type ZoneCorrector interface {
+	//GetNameservers(domain string) ([]*Nameserver, error)
+	GetZoneRecords(domain string) (Records, error)
+	MakeZoneCorrections(*DomainConfig, Records) ([]*Correction, error)
+}
+
+// Popularizer is an interface that defines a provider that can
+// assure that a zone exists at a provider. It does not
+//type Popularizer interface {
+//	GenPopCorrection(domain string) ([]*Correction, error)
+//}
+
 // DNSProvider is an interface for DNS Provider plug-ins.
 type DNSProvider interface {
 	GetNameservers(domain string) ([]*Nameserver, error)
@@ -9,6 +27,7 @@ type DNSProvider interface {
 
 // Registrar is an interface for Registrar plug-ins.
 type Registrar interface {
+	GetNameservers(domain string) ([]*Nameserver, error)
 	GetRegistrarCorrections(dc *DomainConfig) ([]*Correction, error)
 }
 

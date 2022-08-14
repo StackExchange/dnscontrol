@@ -174,7 +174,15 @@ DomainLoop:
 
 			/// This is where we should audit?
 
-			corrections, err := provider.Driver.GetDomainCorrections(dc)
+			if true {
+				corrections, err := provider.Driver.GetDomainCorrections(dc)
+			} else {
+				existingRecords, err := provider.Driver.GetZoneRecords(dc, domain.Name)
+				if err != nil {
+					return err
+				}
+				corrections, err := provider.Driver.MakeZoneCorrections(dc, existingRecords)
+			}
 			out.EndProvider(len(corrections), err)
 			if err != nil {
 				anyErrors = true
