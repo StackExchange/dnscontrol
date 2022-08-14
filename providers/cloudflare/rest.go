@@ -32,7 +32,7 @@ func (c *cloudflareProvider) getRecordsForDomain(id string, domain string) ([]*m
 	records := []*models.RecordConfig{}
 	rrs, err := c.cfClient.DNSRecords(context.Background(), id, cloudflare.DNSRecord{})
 	if err != nil {
-		return nil, fmt.Errorf("failed fetching record list from cloudflare: %s", err)
+		return nil, fmt.Errorf("failed fetching record list from cloudflare(%q): %w", c.cfClient.APIEmail, err)
 	}
 	for _, rec := range rrs {
 		rt, err := c.nativeToRecord(domain, rec)
@@ -354,9 +354,10 @@ func (c *cloudflareProvider) createTestWorker(workerName string) error {
 	return err
 }
 
-//lint:ignore U1000 false positive due to
 // https://github.com/dominikh/go-tools/issues/1137 which is a dup of
 // https://github.com/dominikh/go-tools/issues/810
+//
+//lint:ignore U1000 false positive due to
 type pageRuleConstraint struct {
 	Operator string `json:"operator"`
 	Value    string `json:"value"`
