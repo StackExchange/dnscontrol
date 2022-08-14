@@ -538,7 +538,7 @@ func (client *providerClient) put(endpoint string, requestBody []byte) ([]byte, 
 		return nil, err
 	}
 
-	bodyString, _ := os.ReadAll(resp.Body)
+	bodyString, _ := io.ReadAll(resp.Body)
 	if resp.StatusCode == 200 {
 		return bodyString, nil
 	}
@@ -609,7 +609,7 @@ func (client *providerClient) post(endpoint string, requestBody []byte) ([]byte,
 		return nil, err
 	}
 
-	bodyString, _ := os.ReadAll(resp.Body)
+	bodyString, _ := io.ReadAll(resp.Body)
 	//printer.Printf("------------------\n")
 	//printer.Printf("DEBUG: resp.StatusCode == %d\n", resp.StatusCode)
 	//printer.Printf("POST RESPONSE = %s\n", bodyString)
