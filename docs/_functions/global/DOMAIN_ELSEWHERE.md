@@ -18,10 +18,10 @@ point (delegate) the domain at a specific list of DNS servers.
 
 For example these two statements are equivalent:
 
-```
+```js
 DOMAIN_ELSEWHERE("example.com", REG_NAMEDOTCOM, ["ns1.foo.com", "ns2.foo.com"]);
 
-# ...is equivalent to...
+// ...is equivalent to...
 
 D("example.com", REG_NAMEDOTCOM,
     NO_PURGE,

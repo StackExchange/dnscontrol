@@ -3,8 +3,8 @@ package all
 
 import (
 	// Define all known providers here. They should each register themselves with the providers package via init function.
-	_ "github.com/StackExchange/dnscontrol/v3/providers/activedir"
 	_ "github.com/StackExchange/dnscontrol/v3/providers/akamaiedgedns"
+	_ "github.com/StackExchange/dnscontrol/v3/providers/autodns"
 	_ "github.com/StackExchange/dnscontrol/v3/providers/axfrddns"
 	_ "github.com/StackExchange/dnscontrol/v3/providers/azuredns"
 	_ "github.com/StackExchange/dnscontrol/v3/providers/bind"
@@ -16,6 +16,7 @@ import (
 	_ "github.com/StackExchange/dnscontrol/v3/providers/dnsimple"
 	_ "github.com/StackExchange/dnscontrol/v3/providers/dnsmadeeasy"
 	_ "github.com/StackExchange/dnscontrol/v3/providers/doh"
+	_ "github.com/StackExchange/dnscontrol/v3/providers/domainnameshop"
 	_ "github.com/StackExchange/dnscontrol/v3/providers/easyname"
 	_ "github.com/StackExchange/dnscontrol/v3/providers/exoscale"
 	_ "github.com/StackExchange/dnscontrol/v3/providers/gandiv5"
@@ -36,8 +37,10 @@ import (
 	_ "github.com/StackExchange/dnscontrol/v3/providers/opensrs"
 	_ "github.com/StackExchange/dnscontrol/v3/providers/oracle"
 	_ "github.com/StackExchange/dnscontrol/v3/providers/ovh"
+	_ "github.com/StackExchange/dnscontrol/v3/providers/packetframe"
 	_ "github.com/StackExchange/dnscontrol/v3/providers/powerdns"
 	_ "github.com/StackExchange/dnscontrol/v3/providers/route53"
+	_ "github.com/StackExchange/dnscontrol/v3/providers/rwth"
 	_ "github.com/StackExchange/dnscontrol/v3/providers/softlayer"
 	_ "github.com/StackExchange/dnscontrol/v3/providers/transip"
 	_ "github.com/StackExchange/dnscontrol/v3/providers/vultr"

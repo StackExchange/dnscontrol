@@ -8,30 +8,41 @@ jsId: CSCGLOBAL
 
 DNSControl's CSC Global provider supports being a Registrar. Support for being a DNS Provider is not included, although CSC Global's API does provide for this so it could be implemented in the future.
 
+NOTE: Experimental support for being a DNS Provider is available.
+However it is not recommended as updates take 5-7 minutes, and the
+next update is not permitted until the previous update is complete.
+Use it at your own risk.  Consider it experimental and undocumented.
+
 ## Configuration
+
+To use this provider, add an entry to `creds.json` with `TYPE` set to `CSCGLOBAL`.
+
 In your `creds.json` file, you must provide your API key and user/client token. You can optionally provide an comma separated list of email addresses to have CSC Global send updates to.
 
-{% highlight json %}
+Example:
+
+```json
 {
   "cscglobal": {
+    "TYPE": "CSCGLOBAL",
     "api-key": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
     "user-token": "yyyyyyyy-yyyy-yyyy-yyyy-yyyyyyyyyyyy",
     "notification_emails": "test@exmaple.tld,hostmaster@example.tld"
   }
 }
-{% endhighlight %}
+```
 
 ## Usage
-Example Javascript for `example.tld` and delegated to Route53:
+An example `dnsconfig.js` configuration:
 
-{% highlight js %}
-var REG_CSCGLOBAL = NewRegistrar('cscglobal', 'CSCGLOBAL');
-var R53 = NewDnsProvider('r53_main', 'ROUTE53');
+```js
+var REG_CSCGLOBAL = NewRegistrar("cscglobal");
+var DSP_BIND = NewDnsProvider("bind");
 
-D("example.tld", REG_CSCGLOBAL, DnsProvider(R53),
-  A('test','1.2.3.4')
+D("example.tld", REG_CSCGLOBAL, DnsProvider(DSP_BIND),
+  A("test", "1.2.3.4")
 );
-{% endhighlight %}
+```
 
 ## Activation
 To get access to the [CSC Global API](https://www.cscglobal.com/cscglobal/docs/dbs/domainmanager/api-v2/) contact your account manager.

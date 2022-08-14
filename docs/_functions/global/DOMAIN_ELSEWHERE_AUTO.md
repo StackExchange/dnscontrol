@@ -21,10 +21,10 @@ hard-code them in your dnsconfig.js file.
 
 For example these two statements are equivalent:
 
-```
+```js
 DOMAIN_ELSEWHERE_AUTO("example.com", REG_NAMEDOTCOM, DSP_AZURE);
 
-# ...is equivalent to...
+// ...is equivalent to...
 
 D("example.com", REG_NAMEDOTCOM,
     NO_PURGE,

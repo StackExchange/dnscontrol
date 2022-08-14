@@ -12,7 +12,7 @@ import (
 )
 
 // nativeToRecord takes a DNS record from Gandi and returns a native RecordConfig struct.
-func nativeToRecords(n livedns.DomainRecord, origin string) (rcs []*models.RecordConfig) {
+func nativeToRecords(n livedns.DomainRecord, origin string) (rcs []*models.RecordConfig, err error) {
 
 	// Gandi returns all the values for a given label/rtype pair in each
 	// livedns.DomainRecord.  In other words, if there are multiple A
@@ -25,19 +25,24 @@ func nativeToRecords(n livedns.DomainRecord, origin string) (rcs []*models.Recor
 			Original: n,
 		}
 		rc.SetLabel(n.RrsetName, origin)
+
 		switch rtype := n.RrsetType; rtype {
 		case "ALIAS":
 			rc.Type = "ALIAS"
-			rc.SetTarget(value)
-		default: //  "A", "AAAA", "CAA", "DS", "NS", "CNAME", "MX", "PTR", "SRV", "TXT"
-			if err := rc.PopulateFromString(rtype, value, origin); err != nil {
-				panic(fmt.Errorf("unparsable record received from gandi: %w", err))
-			}
+			err = rc.SetTarget(value)
+		case "TXT":
+			err = rc.SetTargetTXTfromRFC1035Quoted(value)
+		default:
+			err = rc.PopulateFromString(rtype, value, origin)
 		}
+		if err != nil {
+			return nil, fmt.Errorf("unparsable record received from gandi: %w", err)
+		}
+
 		rcs = append(rcs, rc)
 	}
 
-	return rcs
+	return rcs, nil
 }
 
 func recordsToNative(rcs []*models.RecordConfig, origin string) []livedns.DomainRecord {

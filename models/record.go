@@ -15,7 +15,7 @@ import (
 
 // RecordConfig stores a DNS record.
 // Valid types:
-//   Official:
+//   Official: (alphabetical)
 //     A
 //     AAAA
 //     ANAME  // Technically not an official rtype yet.
@@ -25,26 +25,27 @@ import (
 //     NAPTR
 //     NS
 //     PTR
-//     SRV
 //     SOA
+//     SRV
 //     SSHFP
 //     TLSA
 //     TXT
-//   Pseudo-Types:
+//   Pseudo-Types: (alphabetical)
 //     ALIAS
 //     CF_REDIRECT
 //     CF_TEMP_REDIRECT
 //     CF_WORKER_ROUTE
+//     CLOUDNS_WR
 //     FRAME
 //     IMPORT_TRANSFORM
 //     NAMESERVER
 //     NO_PURGE
 //     NS1_URLFWD
 //     PAGE_RULE
-//     WORKER_ROUTE
 //     PURGE
 //     URL
 //     URL301
+//     WORKER_ROUTE
 //
 // Notes about the fields:
 //
@@ -264,10 +265,8 @@ func (rc *RecordConfig) SetLabelFromFQDN(fqdn, origin string) {
 		panic(fmt.Errorf("fqdn (%s) is not supposed to end with double dots", origin))
 	}
 
-	if strings.HasSuffix(fqdn, ".") {
-		// Trim off a trailing dot.
-		fqdn = fqdn[:len(fqdn)-1]
-	}
+	// Trim off a trailing dot.
+	fqdn = strings.TrimSuffix(fqdn, ".")
 
 	fqdn = strings.ToLower(fqdn)
 	origin = strings.ToLower(origin)
@@ -454,6 +453,7 @@ func (recs Records) FQDNMap() (m map[string]bool) {
 	return m
 }
 
+// GetByType returns the records that match rtype typeName.
 func (recs Records) GetByType(typeName string) Records {
 	results := Records{}
 	for _, rec := range recs {

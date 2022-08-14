@@ -93,10 +93,43 @@ title: DNSControl
 				<li>
 					<a href="{{site.github.url}}/migrating">Migrating</a>: Migrating zones to DNSControl
 				</li>
+			</ul>
+
+			<h2>
+				Commands
+			</h2>
+			<p>
+				DNSControl sub-commands and options.
+			</p>
+
+			<ul>
+<!--
 				<li>
-				    <a href="{{site.github.url}}/cli-variables">CLI variables</a>: Passing variables from CLI to JS
+ 					<a href="check-preview-push">check/preview/push</a>: dnscontrol's fundamentals
+				</li>
+-->
+				<li>
+ 					<a href="creds-json.html">creds.json</a>: creds.json file format
+				</li>
+				<li>
+ 					<a href="check-creds.html">check-creds</a>: Verify credentials
+				</li>
+<!--
+				<li>
+ 					<a href="create-domains">create-domains</a>: Populate domains at a provider
+				</li>
+				<li>
+ 					<a href="fmt">fmt</a>: Reformat dnsconfig.js
+				</li>
+-->
+				<li>
+ 					<a href="get-zones.html">get-zones</a>: Query a provider for zone info
+				</li>
+				<li>
+					<a href="get-certs.html">get-certs</a>: Renew SSL/TLS certs (DEPRECATED)
 				</li>
 			</ul>
+
 		</div>
 		<div class="col-md-4">
 			<h2>
@@ -119,9 +152,6 @@ title: DNSControl
 				<li>
 					<a href="{{site.github.url}}/caa-builder">CAA Builder</a>: Build CAA records the easy way
 				</li>
-				<li>
-					<a href="{{site.github.url}}/get-certs">Let's Encrypt</a>: Renew your SSL/TLS certs
-				</li>
 			</ul>
 		</div>
 		<div class="col-md-4">
@@ -133,16 +163,22 @@ title: DNSControl
 			</p>
 			<ul>
 				<li>
-					<a href="{{site.github.url}}/why-the-dot">Why CNAME/MX/NS targets require a "trailing dot"</a>
+					<a href="{{site.github.url}}/why-the-dot">Why CNAME/MX targets require a trailing dot</a>
 				</li>
 				<li>
 					<a href="{{site.github.url}}/unittests">Testing</a>: Unit Testing for you DNS Data
 				</li>
 				<li>
-					<a href="{{site.github.url}}/notifications">Notifications</a>: Be alerted when your domains are changed
+					<a href="{{site.github.url}}/notifications">Notifications</a>: Web-hook for changes
 				</li>
 				<li>
 					<a href="{{site.github.url}}/code-tricks">Code Tricks</a>: Safely use macros and loops.
+				</li>
+				<li>
+				    <a href="{{site.github.url}}/cli-variables">CLI variables</a>: Passing variables from CLI to JS
+				</li>
+				<li>
+				    <a href="{{site.github.url}}/nameservers">Nameservers &amp; Delegation</a>: Many examples.
 				</li>
 
 			</ul>

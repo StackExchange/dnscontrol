@@ -36,7 +36,10 @@ func checkTarget(target string) error {
 	if target == "" {
 		return fmt.Errorf("empty target")
 	}
-	if strings.ContainsAny(target, `'" +,|!£$%&/()=?^*ç°§;:<>[]()@`) {
+	if strings.ContainsAny(target, `'" +,|!£$%&()=?^*ç°§;:<>[]()@`) {
+		return fmt.Errorf("target (%v) includes invalid char", target)
+	}
+	if !strings.HasSuffix(target, ".in-addr.arpa.") && strings.Contains(target, "/") {
 		return fmt.Errorf("target (%v) includes invalid char", target)
 	}
 	// If it contains a ".", it must end in a ".".
@@ -51,20 +54,20 @@ func validateRecordTypes(rec *models.RecordConfig, domain string, pTypes []strin
 	var validTypes = map[string]bool{
 		"A":                true,
 		"AAAA":             true,
-		"CNAME":            true,
+		"ALIAS":            false,
 		"CAA":              true,
+		"CNAME":            true,
 		"DS":               true,
-		"TLSA":             true,
 		"IMPORT_TRANSFORM": false,
 		"MX":               true,
+		"NAPTR":            true,
+		"NS":               true,
+		"PTR":              true,
 		"SOA":              true,
 		"SRV":              true,
 		"SSHFP":            true,
+		"TLSA":             true,
 		"TXT":              true,
-		"NS":               true,
-		"PTR":              true,
-		"NAPTR":            true,
-		"ALIAS":            false,
 	}
 	_, ok := validTypes[rec.Type]
 	if !ok {
@@ -86,6 +89,16 @@ func validateRecordTypes(rec *models.RecordConfig, domain string, pTypes []strin
 	return nil
 }
 
+func errorRepeat(label, domain string) string {
+	shortname := strings.TrimSuffix(label, "."+domain)
+	return fmt.Sprintf(
+		`The name "%s.%s." is an error (repeats the domain). Maybe instead of "%s" you intended "%s"? If not add DISABLE_REPEATED_DOMAIN_CHECK to this record to permit this as-is.`,
+		label, domain,
+		label,
+		shortname,
+	)
+}
+
 func checkLabel(label string, rType string, target, domain string, meta map[string]string) error {
 	if label == "@" {
 		return nil
@@ -98,7 +111,7 @@ func checkLabel(label string, rType string, target, domain string, meta map[stri
 	}
 	if label == domain || strings.HasSuffix(label, "."+domain) {
 		if m := meta["skip_fqdn_check"]; m != "true" {
-			return fmt.Errorf(`label %q ends with domain name %q. Record names should not be fully qualified. Add {skip_fqdn_check:"true"} to this record if you really want to make %s.%s`, label, domain, label, domain)
+			return fmt.Errorf(errorRepeat(label, domain))
 		}
 	}
 
@@ -165,6 +178,8 @@ func checkTargets(rec *models.RecordConfig, domain string) (errs []error) {
 		check(checkIPv4(target))
 	case "AAAA":
 		check(checkIPv6(target))
+	case "ALIAS":
+		check(checkTarget(target))
 	case "CNAME":
 		check(checkTarget(target))
 		if label == "@" {
@@ -172,6 +187,10 @@ func checkTargets(rec *models.RecordConfig, domain string) (errs []error) {
 		}
 	case "MX":
 		check(checkTarget(target))
+	case "NAPTR":
+		if target != "" {
+			check(checkTarget(target))
+		}
 	case "NS":
 		check(checkTarget(target))
 		if label == "@" {
@@ -179,17 +198,11 @@ func checkTargets(rec *models.RecordConfig, domain string) (errs []error) {
 		}
 	case "PTR":
 		check(checkTarget(target))
-	case "NAPTR":
-		if target != "" {
-			check(checkTarget(target))
-		}
-	case "ALIAS":
-		check(checkTarget(target))
 	case "SOA":
 		check(checkSoa(rec.SoaExpire, rec.SoaMinttl, rec.SoaRefresh, rec.SoaRetry, rec.SoaSerial, rec.SoaMbox))
 		check(checkTarget(target))
 		if label != "@" {
-			check(fmt.Errorf("SOA record is only valid for bare domain."))
+			check(fmt.Errorf("SOA record is only valid for bare domain"))
 		}
 	case "SRV":
 		check(checkTarget(target))
@@ -288,6 +301,15 @@ func ValidateAndNormalizeConfig(config *models.DNSConfig) (errs []error) {
 		pTypes := []string{}
 		for _, provider := range domain.DNSProviderInstances {
 			pType := provider.ProviderType
+			if pType == "-" {
+				// "-" indicates that we don't yet know who the provider type
+				// is.  This is probably due to the fact that `dnscontrol
+				// check` doesn't read creds.json, which is where the TYPE is
+				// set.  We will skip this test in this instance.  Later if
+				// `dnscontrol preview` or `push` is used, the full check will
+				// be performed.
+				continue
+			}
 			// If NO_PURGE is in use, make sure this *isn't* a provider that *doesn't* support NO_PURGE.
 			if domain.KeepUnknown && providers.ProviderHasCapability(pType, providers.CantUseNOPURGE) {
 				errs = append(errs, fmt.Errorf("%s uses NO_PURGE which is not supported by %s(%s)", domain.Name, provider.Name, pType))
@@ -437,6 +459,8 @@ func ValidateAndNormalizeConfig(config *models.DNSConfig) (errs []error) {
 		}
 		// Check for duplicates
 		errs = append(errs, checkDuplicates(d.Records)...)
+		// Check for different TTLs under the same label
+		errs = append(errs, checkLabelHasMultipleTTLs(d.Records)...)
 		// Validate FQDN consistency
 		for _, r := range d.Records {
 			if r.NameFQDN == "" || !strings.HasSuffix(r.NameFQDN, d.Name) {
@@ -449,11 +473,22 @@ func ValidateAndNormalizeConfig(config *models.DNSConfig) (errs []error) {
 
 	// At this point we've munged anything that needs to be munged, and
 	// validated anything that can be globally validated.
-	// Let's ask // the provider if there are any records they can't handle.
+	// Let's ask the provider if there are any records they can't handle.
 	for _, domain := range config.Domains { // For each domain..
 		for _, provider := range domain.DNSProviderInstances { // For each provider...
-			if err := providers.AuditRecords(provider.ProviderBase.ProviderType, domain.Records); err != nil {
-				errs = append(errs, err)
+			if provider.ProviderBase.ProviderType == "-" {
+				// "-" indicates that we don't yet know who the provider type
+				// is.  This is probably due to the fact that `dnscontrol
+				// check` doesn't read creds.json, which is where the TYPE is
+				// set.  We will skip this test in this instance.  Later if
+				// `dnscontrol preview` or `push` is used, the full check will
+				// be performed.
+				continue
+			}
+			if es := providers.AuditRecords(provider.ProviderBase.ProviderType, domain.Records); len(es) != 0 {
+				for _, e := range es {
+					errs = append(errs, fmt.Errorf("%s rejects domain %s: %w", provider.ProviderBase.ProviderType, domain.Name, e))
+				}
 			}
 		}
 	}
@@ -494,18 +529,18 @@ func processSplitHorizonDomains(config *models.DNSConfig) error {
 	return nil
 }
 
-// parseDomainSpec parses "domain.tld!tag" into its component parts.
-func parseDomainSpec(s string) (domain, tag string) {
-	l := strings.SplitN(s, "!", 2)
-	if len(l) == 2 {
-		return l[0], l[1]
-	}
-	return l[0], ""
-}
+//// parseDomainSpec parses "domain.tld!tag" into its component parts.
+//func parseDomainSpec(s string) (domain, tag string) {
+//	l := strings.SplitN(s, "!", 2)
+//	if len(l) == 2 {
+//		return l[0], l[1]
+//	}
+//	return l[0], ""
+//}
 
 func checkAutoDNSSEC(dc *models.DomainConfig) (errs []error) {
 	if dc.AutoDNSSEC != "" && dc.AutoDNSSEC != "on" && dc.AutoDNSSEC != "off" {
-		errs = append(errs, fmt.Errorf("Domain %q AutoDNSSEC=%q is invalid (expecting \"\", \"off\", or \"on\")", dc.Name, dc.AutoDNSSEC))
+		errs = append(errs, fmt.Errorf("domain %q AutoDNSSEC=%q is invalid (expecting \"\", \"off\", or \"on\")", dc.Name, dc.AutoDNSSEC))
 	}
 	return
 }
@@ -540,24 +575,55 @@ func checkDuplicates(records []*models.RecordConfig) (errs []error) {
 	return errs
 }
 
+func uniq(s []uint32) []uint32 {
+	seen := make(map[uint32]struct{})
+	var result []uint32
+
+	for _, k := range s {
+		if _, ok := seen[k]; !ok {
+			seen[k] = struct{}{}
+			result = append(result, k)
+		}
+	}
+	return result
+}
+
+func checkLabelHasMultipleTTLs(records []*models.RecordConfig) (errs []error) {
+	m := make(map[string][]uint32)
+	for _, r := range records {
+		label := fmt.Sprintf("%s %s", r.GetLabelFQDN(), r.Type)
+
+		// collect the TTLs at this label.
+		m[label] = append(m[label], r.TTL)
+	}
+
+	for label := range m {
+		// if after the uniq() pass we still have more than one ttl, it means we have multiple TTLs for that label
+		if len(uniq(m[label])) > 1 {
+			errs = append(errs, Warning{fmt.Errorf("multiple TTLs detected for: %s. This should be avoided", label)})
+		}
+	}
+	return errs
+}
+
 // We pull this out of checkProviderCapabilities() so that it's visible within
 // the package elsewhere, so that our test suite can look at the list of
 // capabilities we're checking and make sure that it's up-to-date.
 var providerCapabilityChecks = []pairTypeCapability{
 	// If a zone uses rType X, the provider must support capability Y.
 	//{"X", providers.Y},
+	capabilityCheck("AKAMAICDN", providers.CanUseAKAMAICDN),
 	capabilityCheck("ALIAS", providers.CanUseAlias),
 	capabilityCheck("AUTODNSSEC", providers.CanAutoDNSSEC),
+	capabilityCheck("AZURE_ALIAS", providers.CanUseAzureAlias),
 	capabilityCheck("CAA", providers.CanUseCAA),
 	capabilityCheck("NAPTR", providers.CanUseNAPTR),
 	capabilityCheck("PTR", providers.CanUsePTR),
 	capabilityCheck("R53_ALIAS", providers.CanUseRoute53Alias),
-	capabilityCheck("SSHFP", providers.CanUseSSHFP),
 	capabilityCheck("SOA", providers.CanUseSOA),
 	capabilityCheck("SRV", providers.CanUseSRV),
+	capabilityCheck("SSHFP", providers.CanUseSSHFP),
 	capabilityCheck("TLSA", providers.CanUseTLSA),
-	capabilityCheck("AZURE_ALIAS", providers.CanUseAzureAlias),
-	capabilityCheck("AKAMAICDN", providers.CanUseAKAMAICDN),
 
 	// DS needs special record-level checks
 	{
@@ -641,6 +707,15 @@ func checkProviderCapabilities(dc *models.DomainConfig) error {
 			continue
 		}
 		for _, provider := range dc.DNSProviderInstances {
+			if provider.ProviderType == "-" {
+				// "-" indicates that we don't yet know who the provider type
+				// is.  This is probably due to the fact that `dnscontrol
+				// check` doesn't read creds.json, which is where the TYPE is
+				// set.  We will skip this test in this instance.  Later if
+				// `dnscontrol preview` or `push` is used, the full check will
+				// be performed.
+				continue
+			}
 			// fmt.Printf("  (checking if %q can %q for domain %q)\n", provider.ProviderType, ty.rType, dc.Name)
 			if !providerHasAtLeastOneCapability(provider.ProviderType, ty.caps...) {
 				return fmt.Errorf("domain %s uses %s records, but DNS provider type %s does not support them", dc.Name, ty.rType, provider.ProviderType)

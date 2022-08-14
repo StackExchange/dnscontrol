@@ -92,14 +92,15 @@ Pick a similar provider as your base.  Providers basically fall
 into three general categories:
 
 * **zone:** The API requires you to upload the entire zone every time. (BIND, NAMECHEAP).
-* **incremental-record:** The API lets you add/change/delete individual DNS records. (ACTIVEDIR, CLOUDFLARE, DNSIMPLE, NAMEDOTCOM, GCLOUD, HEXONET)
+* **incremental-record:** The API lets you add/change/delete individual DNS records. (CLOUDFLARE, DNSIMPLE, NAMEDOTCOM, GCLOUD, HEXONET)
 * **incremental-label:** Like incremental-record, but if there are
   multiple records on a label (for example, example www.example.com
 has A and MX records), you have to replace all the records at that
 label. (GANDI_V5)
 * **incremental-label-type:** Like incremental-record, but updates to any records at a label have to be done by type.  For example, if a label (www.example.com) has many A and MX records, even the smallest change to one of the A records requires replacing all the A records. Any changes to the MX records requires replacing all the MX records.  If an A record is converted to a CNAME, one must remove all the A records in one call, and add the CNAME record with another call.  This is deceptively difficult to get right; if you have the choice between incremental-label-type and incremental-label, pick incremental-label. (DESEC, ROUTE53)
+* **registrar only:** These providers are registrars but do not provide DNS service. (EASYNAME, INTERNETBS, OPENSRS)
 
-All providers use the "diff" module to detect differences. It takes
+All DNS providers use the "diff" module to detect differences. It takes
 two zones and returns records that are unchanged, created, deleted,
 and modified.
 The zone providers use the
@@ -128,10 +129,21 @@ Add the provider list so DNSControl knows it exists.
 
 ## Step 5: Implement
 
-Implement all the calls in
-[providers.DNSServiceProvider interface.](https://godoc.org/github.com/StackExchange/dnscontrol/providers#DNSServiceProvider).
+**If you are implementing a DNS Service Provider:**
 
-The function `GetDomainCorrections` is a bit interesting. It returns
+Implement all the calls in the
+[providers.DNSServiceProvider interface.](https://pkg.go.dev/github.com/StackExchange/dnscontrol/providers#DNSServiceProvider).
+
+The function `GetDomainCorrections()` is a bit interesting. It returns
+a list of corrections to be made. These are in the form of functions
+that DNSControl can call to actually make the corrections.
+
+**If you are implementing a DNS Registrar:**
+
+Implement all the calls in the
+[providers.Registrar interface.](https://pkg.go.dev/github.com/StackExchange/dnscontrol/providers#Registrar).
+
+The function `GetRegistrarCorrections()` returns
 a list of corrections to be made. These are in the form of functions
 that DNSControl can call to actually make the corrections.
 
@@ -155,7 +167,7 @@ Integration tests use a test account and a real domain.
 
 For example, this will run the tests using BIND:
 
-```
+```bash
 cd dnscontrol/integrationTest
 go test -v -verbose -provider BIND
 ```
@@ -164,21 +176,44 @@ go test -v -verbose -provider BIND
 
 This will run the tests on Amazon AWS Route53:
 
-```
+```bash
 export R53_DOMAIN=dnscontroltest-r53.com  # Use a test domain.
 export R53_KEY_ID='CHANGE_TO_THE_ID'
 export R53_KEY='CHANGE_TO_THE_KEY'
 go test -v -verbose -provider ROUTE53
 ```
 
-## Step 8: Update docs
+Some useful `go test` flags:
+
+* Slow tests? Add `-timeout n` to increase the timeout for tests
+  * `go test` kills the tests after 10 minutes by default.  Some providers need more time.
+  * This flag must be *before* the `-verbose` flag.  Usually it is the first flag after `go test`.
+  * Example:  `go test -timeout 20m -v -verbose -provider CLOUDFLAREAPI`
+* Run only certain tests using the `-start` and `-end` flags.
+  * Rather than running all the tests, run just the tests you want.
+  * These flags must be *after* the `-provider FOO` flag.
+  * Example: `go test -v -verbose -provider ROUTE53 -start 10 -end 20` run tests 10-20 inclusive.
+  * Example: `go test -v -verbose -provider ROUTE53 -start 5 -end 5` runs only test 5.
+  * Example: `go test -v -verbose -provider ROUTE53 -start 20` skip the first 19 tests.
+  * Example: `go test -v -verbose -provider ROUTE53 -end 20` only run the first 20 tests.
+* If a test will always fail because the provider doesn't support the feature, you can opt out of the test.  Look at `func makeTests()` in [integrationTest/integration_test.go](https://github.com/StackExchange/dnscontrol/blob/2f65533e1b92c2967229a92a304fff7c14f7f4b6/integrationTest/integration_test.go#L675) for more details.
+
+
+## Step 8: Manual tests
+
+There is a potential bug in how TXT records are handled. Sadly we haven't found
+an automated way to test for this bug.  The manual steps are here in
+[docs/testing-txt-records.md](testing-txt-records.html)
+
+
+## Step 9: Update docs
 
 * Edit [README.md](https://github.com/StackExchange/dnscontrol): Add the provider to the bullet list.
 * Edit [docs/provider-list.md](https://github.com/StackExchange/dnscontrol/blob/master/docs/provider-list.md): Add the provider to the provider list.
 * Create `docs/_providers/PROVIDERNAME.md`: Use one of the other files in that directory as a base.
 * Edit [OWNERS](https://github.com/StackExchange/dnscontrol/blob/master/OWNERS): Add the directory name and your github id.
 
-## Step 9: Submit a PR
+## Step 10: Submit a PR
 
 At this point you can submit a PR.
 
@@ -187,7 +222,7 @@ input, or have questions.  This is just a good stopping place to
 submit a PR if you haven't already.
 
 
-## Step 10: Capabilities
+## Step 11: Capabilities
 
 Some DNS providers have features that others do not.  For example some
 support the SRV record.  A provider announces what it can do using
@@ -221,11 +256,11 @@ FYI: If a provider's capabilities changes, run `go generate` to update
 the documentation.
 
 
-## Step 11: Clean up
+## Step 12: Clean up
 
 Run "go vet" and "golint" and clean up any errors found.
 
-```
+```bash
 go vet ./...
 golint ./...
 ```
@@ -234,12 +269,12 @@ Please use `go vet` from the [newest release of Go](https://golang.org/doc/devel
 
 If [golint](https://github.com/golang/lint) isn't installed on your machine:
 
-```
+```bash
 go get -u golang.org/x/lint/golint
 ```
 
 
-## Step 12: Dependencies
+## Step 13: Dependencies
 
 See
 [docs/release-engineering.md](https://github.com/StackExchange/dnscontrol/blob/master/docs/release-engineering.md)
@@ -247,16 +282,16 @@ for tips about managing modules and checking for outdated
 dependencies.
 
 
-## Step 13: Check your work.
+## Step 14: Check your work.
 
 Here are some last-minute things to check before you submit your PR.
 
 1. Run "go generate" to make sure all generated files are fresh.
 2. Make sure all appropriate documentation is current. (See Step 8)
-3. Check that dependencies are current (See Step 12)
+3. Check that dependencies are current (See Step 13)
 4. Re-run the integration test one last time (See Step 7)
 
-## Step 14: After the PR is merged
+## Step 15: After the PR is merged
 
 1. Remove the "provider-request" label from the PR.
 2. Verify that [docs/provider-list.md](https://github.com/StackExchange/dnscontrol/blob/master/docs/provider-list.md) no longer shows the provider as "requested"

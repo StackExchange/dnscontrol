@@ -17,18 +17,14 @@ type hostingdeProvider struct {
 	authToken      string
 	ownerAccountID string
 	baseURL        string
+	nameservers    []string
 }
 
 func (hp *hostingdeProvider) getDomainConfig(domain string) (*domainConfig, error) {
-	zc, err := hp.getZoneConfig(domain)
-	if err != nil {
-		return nil, fmt.Errorf("error getting zone config: %w", err)
-	}
-
 	params := request{
 		Filter: filter{
 			Field: "domainName",
-			Value: zc.Name,
+			Value: domain,
 		},
 	}
 
@@ -56,7 +52,7 @@ func (hp *hostingdeProvider) createZone(domain string) error {
 	}
 
 	records := []*record{}
-	for _, ns := range defaultNameservers {
+	for _, ns := range hp.nameservers {
 		records = append(records, &record{
 			Name:    domain,
 			Type:    "NS",

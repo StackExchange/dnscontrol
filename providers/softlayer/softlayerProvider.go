@@ -3,6 +3,7 @@ package softlayer
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/StackExchange/dnscontrol/v3/pkg/printer"
 	"regexp"
 	"strings"
 
@@ -35,7 +36,7 @@ func init() {
 }
 
 func newReg(conf map[string]string, _ json.RawMessage) (providers.DNSServiceProvider, error) {
-	fmt.Println("WARNING: THe SOFTLAYER provider is unmaintained: https://github.com/StackExchange/dnscontrol/issues/1079")
+	printer.Warnf("The SOFTLAYER provider is unmaintained: https://github.com/StackExchange/dnscontrol/issues/1079")
 	s := session.New(conf["username"], conf["api_key"], conf["endpoint_url"], conf["timeout"])
 
 	if len(s.UserName) == 0 || len(s.APIKey) == 0 {
@@ -150,7 +151,7 @@ func (s *softlayerProvider) getExistingRecords(domain *datatypes.Dns_Domain) ([]
 
 		switch recType {
 		case "SRV":
-			var service, protocol string = "", "_tcp"
+			var service, protocol = "", "_tcp"
 
 			if record.Weight != nil {
 				recConfig.SrvWeight = uint16(*record.Weight)
@@ -190,9 +191,9 @@ func (s *softlayerProvider) getExistingRecords(domain *datatypes.Dns_Domain) ([]
 }
 
 func (s *softlayerProvider) createRecordFunc(desired *models.RecordConfig, domain *datatypes.Dns_Domain) func() error {
-	var ttl, preference, domainID int = verifyMinTTL(int(desired.TTL)), int(desired.MxPreference), *domain.Id
-	var weight, priority, port int = int(desired.SrvWeight), int(desired.SrvPriority), int(desired.SrvPort)
-	var host, data, newType string = desired.GetLabel(), desired.GetTargetField(), desired.Type
+	var ttl, preference, domainID = verifyMinTTL(int(desired.TTL)), int(desired.MxPreference), *domain.Id
+	var weight, priority, port = int(desired.SrvWeight), int(desired.SrvPriority), int(desired.SrvPort)
+	var host, data, newType = desired.GetLabel(), desired.GetTargetField(), desired.Type
 	var err error
 
 	srvRegexp := regexp.MustCompile(`^_(?P<Service>\w+)\.\_(?P<Protocol>\w+)$`)
@@ -226,7 +227,7 @@ func (s *softlayerProvider) createRecordFunc(desired *models.RecordConfig, domai
 				return fmt.Errorf("SRV Record must match format \"_service._protocol\" not %s", host)
 			}
 
-			var serviceName, protocol string = result[1], strings.ToLower(result[2])
+			var serviceName, protocol = result[1], strings.ToLower(result[2])
 
 			newSrv := datatypes.Dns_Domain_ResourceRecord_SrvType{
 				Dns_Domain_ResourceRecord: newRecord,
@@ -260,8 +261,8 @@ func (s *softlayerProvider) deleteRecordFunc(resID int) func() error {
 }
 
 func (s *softlayerProvider) updateRecordFunc(existing *datatypes.Dns_Domain_ResourceRecord, desired *models.RecordConfig) func() error {
-	var ttl, preference int = verifyMinTTL(int(desired.TTL)), int(desired.MxPreference)
-	var priority, weight, port int = int(desired.SrvPriority), int(desired.SrvWeight), int(desired.SrvPort)
+	var ttl, preference = verifyMinTTL(int(desired.TTL)), int(desired.MxPreference)
+	var priority, weight, port = int(desired.SrvPriority), int(desired.SrvWeight), int(desired.SrvPort)
 
 	return func() error {
 		var changes = false
@@ -380,7 +381,7 @@ func (s *softlayerProvider) updateRecordFunc(existing *datatypes.Dns_Domain_Reso
 func verifyMinTTL(ttl int) int {
 	const minTTL = 60
 	if ttl < minTTL {
-		fmt.Printf("\nMODIFY TTL to Min supported TTL value: (ttl=%d) -> (ttl=%d)\n", ttl, minTTL)
+		printer.Printf("\nMODIFY TTL to Min supported TTL value: (ttl=%d) -> (ttl=%d)\n", ttl, minTTL)
 		return minTTL
 	}
 	return ttl

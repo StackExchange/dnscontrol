@@ -2,10 +2,34 @@ package cscglobal
 
 import (
 	"github.com/StackExchange/dnscontrol/v3/models"
+	"github.com/StackExchange/dnscontrol/v3/pkg/rejectif"
 )
 
-// AuditRecords returns an error if any records are not
-// supportable by this provider.
-func AuditRecords(records []*models.RecordConfig) error {
-	return nil
+// AuditRecords returns a list of errors corresponding to the records
+// that aren't supported by this provider.  If all records are
+// supported, an empty list is returned.
+func AuditRecords(records []*models.RecordConfig) []error {
+	a := rejectif.Auditor{}
+
+	a.Add("TXT", rejectif.TxtHasMultipleSegments) // Last verified 2022-06-10
+
+	a.Add("TXT", rejectif.TxtHasTrailingSpace) // Last verified 2022-06-10
+
+	a.Add("TXT", rejectif.TxtIsEmpty) // Last verified 2022-06-10
+
+	a.Add("TXT", rejectif.TxtHasDoubleQuotes) // Last verified 2022-08-08
+
+	return a.Audit(records)
 }
+
+/* How To Write Providers:
+
+Each test should be encapsulated in a function that can be tested
+individually.  If the test is of general use, add it to the
+rejectif module.
+
+The "Last verified" comment logs the last time we verified this
+test was needed.  Sometimes companies change their API.  Once a year,
+try removing tests one at a time to verify they are still needed.
+
+*/

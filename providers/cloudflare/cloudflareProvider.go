@@ -37,17 +37,17 @@ Domain level metadata available:
 */
 
 var features = providers.DocumentationNotes{
+	providers.CanGetZones:            providers.Can(),
 	providers.CanUseAlias:            providers.Can("CF automatically flattens CNAME records into A records dynamically"),
-	providers.CanUsePTR:              providers.Cannot(),
 	providers.CanUseCAA:              providers.Can(),
-	providers.CanUseSRV:              providers.Can(),
-	providers.CanUseTLSA:             providers.Can(),
-	providers.CanUseSSHFP:            providers.Can(),
 	providers.CanUseDSForChildren:    providers.Can(),
+	providers.CanUsePTR:              providers.Can(),
+	providers.CanUseSRV:              providers.Can(),
+	providers.CanUseSSHFP:            providers.Can(),
+	providers.CanUseTLSA:             providers.Can(),
 	providers.DocCreateDomains:       providers.Can(),
 	providers.DocDualHost:            providers.Cannot("Cloudflare will not work well in situations where it is not the only DNS server"),
 	providers.DocOfficiallySupported: providers.Can(),
-	providers.CanGetZones:            providers.Can(),
 }
 
 func init() {
@@ -63,7 +63,7 @@ func init() {
 
 // cloudflareProvider is the handle for API calls.
 type cloudflareProvider struct {
-	domainIndex     map[string]string
+	domainIndex     map[string]string // Call c.fetchDomainList() to populate before use.
 	nameservers     map[string][]string
 	ipConversions   []transform.IPConversion
 	ignoredLabels   []string
@@ -177,9 +177,9 @@ func (c *cloudflareProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*m
 
 	if c.manageRedirects {
 		prs, err := c.getPageRules(id, dc.Name)
-		//fmt.Printf("GET PAGE RULES:\n")
+		//printer.Printf("GET PAGE RULES:\n")
 		//for i, p := range prs {
-		//	fmt.Printf("%03d: %q\n", i, p.GetTargetField())
+		//	printer.Printf("%03d: %q\n", i, p.GetTargetField())
 		//}
 		if err != nil {
 			return nil, err
@@ -214,6 +214,14 @@ func (c *cloudflareProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*m
 
 	// Normalize
 	models.PostProcessRecords(records)
+	//txtutil.SplitSingleLongTxt(dc.Records) // Autosplit long TXT records
+	// Don't split.
+	// Cloudflare's API only supports one TXT string of any non-zero length. No
+	// multiple strings (TXTMulti).
+	// When serving the DNS record, it splits strings >255 octets into
+	// individual segments of 255 each. However that is hidden from the API.
+	// Therefore, whether the string is 1 octet or thousands, just store it as
+	// one string in the first element of .TxtStrings.
 
 	differ := diff.New(dc, getProxyMetadata)
 	_, create, del, mod, err := differ.IncrementalDiff(records)
@@ -601,42 +609,81 @@ func (c cfTarget) FQDN() string {
 	return strings.TrimRight(string(c), ".") + "."
 }
 
-func (cfp *cloudflareProvider) nativeToRecord(domain string, c cloudflare.DNSRecord) (*models.RecordConfig, error) {
+// uint16Zero converts value to uint16 or returns 0.
+func uint16Zero(value interface{}) uint16 {
+	switch v := value.(type) {
+	case float64:
+		return uint16(v)
+	case uint16:
+		return v
+	case nil:
+	}
+	return 0
+}
+
+// intZero converts value to int or returns 0.
+func intZero(value interface{}) int {
+	switch v := value.(type) {
+	case float64:
+		return int(v)
+	case int:
+		return v
+	case nil:
+	}
+	return 0
+}
+
+// stringDefault returns the value as a string or returns the default value if nil.
+func stringDefault(value interface{}, def string) string {
+	switch v := value.(type) {
+	case string:
+		return v
+	case nil:
+	}
+	return def
+}
+
+func (c *cloudflareProvider) nativeToRecord(domain string, cr cloudflare.DNSRecord) (*models.RecordConfig, error) {
+
 	// normalize cname,mx,ns records with dots to be consistent with our config format.
-	if c.Type == "CNAME" || c.Type == "MX" || c.Type == "NS" {
-		if c.Content != "." {
-			c.Content = c.Content + "."
+	if cr.Type == "CNAME" || cr.Type == "MX" || cr.Type == "NS" || cr.Type == "PTR" {
+		if cr.Content != "." {
+			cr.Content = cr.Content + "."
 		}
 	}
 
 	rc := &models.RecordConfig{
-		TTL:      uint32(c.TTL),
-		Original: c,
+		TTL:      uint32(cr.TTL),
+		Original: cr,
 	}
-	rc.SetLabelFromFQDN(c.Name, domain)
+	rc.SetLabelFromFQDN(cr.Name, domain)
 
 	// workaround for https://github.com/StackExchange/dnscontrol/issues/446
-	if c.Type == "SPF" {
-		c.Type = "TXT"
+	if cr.Type == "SPF" {
+		cr.Type = "TXT"
 	}
 
-	switch rType := c.Type; rType { // #rtype_variations
+	switch rType := cr.Type; rType { // #rtype_variations
 	case "MX":
-		if err := rc.SetTargetMX(*c.Priority, c.Content); err != nil {
+		if err := rc.SetTargetMX(*cr.Priority, cr.Content); err != nil {
 			return nil, fmt.Errorf("unparsable MX record received from cloudflare: %w", err)
 		}
 	case "SRV":
-		data := c.Data.(map[string]interface{})
-		target := data["target"].(string)
+		data := cr.Data.(map[string]interface{})
+
+		target := stringDefault(data["target"], "MISSING.TARGET")
 		if target != "." {
 			target += "."
 		}
-		if err := rc.SetTargetSRV(uint16(data["priority"].(float64)), uint16(data["weight"].(float64)), uint16(data["port"].(float64)),
+		if err := rc.SetTargetSRV(uint16Zero(data["priority"]), uint16Zero(data["weight"]), uint16Zero(data["port"]),
 			target); err != nil {
 			return nil, fmt.Errorf("unparsable SRV record received from cloudflare: %w", err)
 		}
-	default: // "A", "AAAA", "ANAME", "CAA", "CNAME", "NS", "PTR", "TXT"
-		if err := rc.PopulateFromString(rType, c.Content, domain); err != nil {
+	case "TXT":
+		err := rc.SetTargetTXT(cr.Content)
+		return rc, err
+	default:
+		if err := rc.PopulateFromString(rType, cr.Content, domain); err != nil {
 			return nil, fmt.Errorf("unparsable record received from cloudflare: %w", err)
 		}
 	}
@@ -661,16 +708,21 @@ func getProxyMetadata(r *models.RecordConfig) map[string]string {
 
 // EnsureDomainExists returns an error of domain does not exist.
 func (c *cloudflareProvider) EnsureDomainExists(domain string) error {
+	if c.domainIndex == nil {
+		if err := c.fetchDomainList(); err != nil {
+			return err
+		}
+	}
 	if _, ok := c.domainIndex[domain]; ok {
 		return nil
 	}
 	var id string
 	id, err := c.createZone(domain)
-	fmt.Printf("Added zone for %s to Cloudflare account: %s\n", domain, id)
+	printer.Printf("Added zone for %s to Cloudflare account: %s\n", domain, id)
 	return err
 }
 
-// PrepareCloudflareWorkers creates Cloudflare Workers required for CF_WORKER_ROUTE tests.
+// PrepareCloudflareTestWorkers creates Cloudflare Workers required for CF_WORKER_ROUTE tests.
 func PrepareCloudflareTestWorkers(prv providers.DNSServiceProvider) error {
 	cf, ok := prv.(*cloudflareProvider)
 	if ok {

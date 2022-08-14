@@ -3,21 +3,21 @@ package netcup
 import (
 	"encoding/json"
 	"fmt"
-
 	"github.com/StackExchange/dnscontrol/v3/models"
 	"github.com/StackExchange/dnscontrol/v3/pkg/diff"
-	"github.com/StackExchange/dnscontrol/v3/pkg/txtutil"
+	// no need for txtutil.SplitSingleLongTxt in function GetDomainCorrections
+	// "github.com/StackExchange/dnscontrol/v3/pkg/txtutil"
 	"github.com/StackExchange/dnscontrol/v3/providers"
 )
 
 var features = providers.DocumentationNotes{
+	providers.CanGetZones:            providers.Cannot(),
+	providers.CanUseCAA:              providers.Can(),
+	providers.CanUsePTR:              providers.Cannot(),
+	providers.CanUseSRV:              providers.Can(),
 	providers.DocCreateDomains:       providers.Cannot(),
 	providers.DocDualHost:            providers.Cannot(),
 	providers.DocOfficiallySupported: providers.Cannot(),
-	providers.CanUsePTR:              providers.Cannot(),
-	providers.CanUseSRV:              providers.Can(),
-	providers.CanUseCAA:              providers.Can(),
-	providers.CanGetZones:            providers.Cannot(),
 }
 
 func init() {
@@ -98,7 +98,8 @@ func (api *netcupProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*mod
 
 	// Normalize
 	models.PostProcessRecords(existingRecords)
-	txtutil.SplitSingleLongTxt(dc.Records) // Autosplit long TXT records
+	// no need for txtutil.SplitSingleLongTxt in function GetDomainCorrections
+	// txtutil.SplitSingleLongTxt(dc.Records) // Autosplit long TXT records
 
 	differ := diff.New(dc)
 	_, create, del, modify, err := differ.IncrementalDiff(existingRecords)

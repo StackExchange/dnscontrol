@@ -1,0 +1,142 @@
+builds:
+  -
+    id: build
+    env:
+      - CGO_ENABLED=0
+      - GO111MODULE=on
+    goos:
+      - linux
+      - windows
+      - darwin
+      - freebsd
+    ldflags:
+      - -s -w -X main.Version="{{ .Version }}" -X main.SHA="{{ .FullCommit }}" -X main.BuildTime={{ .Timestamp }}
+before:
+  hooks:
+  - go mod tidy
+changelog:
+  sort: asc
+  use: github
+  groups:
+    - title: 'Breaking changes:'
+      regexp: "(?i)^.*breaking[(\\w)]*:+.*$"
+      order: 0
+    - title: 'Major features:'
+      regexp: "(?i)^.*(major|new provider|feature)[(\\w)]*:+.*$"
+      order: 1
+    - title: 'Provider-specific changes:'
+      regexp: "(?i)^(akamaiedgedns|autodns|axfrddns|azure_dns|bind|cloudflareapi|cloudflareapi_old|cloudns|cscglobal|desec|digitalocean|dnsimple|dnsmadeeasy|domainnameshop|exoscale|gandi_v5|gcloud|hedns|hetzner|hexonet|hostingde|inwx|linode|msdns|namecheap|namedotcom|netcup|ns1|octodns|oracle|ovh|packetframe|powerdns|route53|softlayer|transip|vultr)[(\\w)]*:+.*$"
+      order: 2
+    - title: 'Depreciation warnings:'
+      regexp: "(?i)^.*Deprecate[(\\w)]*:+.*$"
+      order: 10
+    - title: 'Other changes and improvements:'
+      order: 9
+  filters:
+    exclude:
+    - '^test:'
+    - Merge pull request
+    - Merge branch
+archives:
+  - format_overrides:
+    - goos: windows
+      format: zip
+universal_binaries:
+  -
+    replace: true
+    id: build
+
+nfpms:
+  - file_name_template: '{{ .ProjectName }}-{{ .Version }}.{{ .Arch }}'
+    id: packages_rpm
+    homepage:  https://stackexchange.github.io/dnscontrol/
+    description: "DNSControl: Infrastructure as Code for DNS Zones"
+    maintainer: 'Tom Limoncelli <tlimoncelli@stackoverflow.com>'
+    license: MIT
+    formats:
+    - rpm
+    replacements:
+      386: i386
+      amd64: x86_64
+  - file_name_template: '{{ .ProjectName }}-{{ .Version }}.{{ .Arch }}'
+    id: packages_deb
+    homepage:  https://stackexchange.github.io/dnscontrol/
+    description: "DNSControl: Infrastructure as Code for DNS Zones"
+    maintainer: 'Tom Limoncelli <tlimoncelli@stackoverflow.com>'
+    license: MIT
+    formats:
+    - deb
+    replacements:
+      386: i386
+dockers:
+  - image_templates:
+    - &amd_image "stackexchange/{{.ProjectName}}:{{ .Version }}-amd64"
+    goos: linux
+    goarch: amd64
+    use: buildx
+    ids:
+    - build
+    build_flag_templates:
+    - "--pull"
+    - "--label=org.opencontainers.image.created={{ .Date }}"
+    - "--label=org.opencontainers.image.name={{ .ProjectName }}"
+    - "--label=org.opencontainers.image.revision={{ .FullCommit }}"
+    - "--label=org.opencontainers.image.version={{ .Version }}"
+    - "--label=org.opencontainers.image.source={{ .GitURL }}"
+    - "--platform=linux/amd64"
+  - image_templates:
+    - &386_image "stackexchange/{{.ProjectName}}:{{ .Version }}-386"
+    goos: linux
+    goarch: '386'
+    use: buildx
+    ids:
+    - build
+    build_flag_templates:
+    - "--pull"
+    - "--label=org.opencontainers.image.created={{ .Date }}"
+    - "--label=org.opencontainers.image.name={{ .ProjectName }}"
+    - "--label=org.opencontainers.image.revision={{ .FullCommit }}"
+    - "--label=org.opencontainers.image.version={{ .Version }}"
+    - "--label=org.opencontainers.image.source={{ .GitURL }}"
+    - "--platform=linux/i386"
+  - image_templates:
+    - &arm_image "stackexchange/{{.ProjectName}}:{{ .Version }}-arm64"
+    goos: linux
+    goarch: arm64
+    use: buildx
+    ids:
+    - build
+    build_flag_templates:
+    - "--pull"
+    - "--label=org.opencontainers.image.created={{ .Date }}"
+    - "--label=org.opencontainers.image.name={{ .ProjectName }}"
+    - "--label=org.opencontainers.image.revision={{ .FullCommit }}"
+    - "--label=org.opencontainers.image.version={{ .Version }}"
+    - "--label=org.opencontainers.image.source={{ .GitURL }}"
+    - "--platform=linux/arm64"
+docker_manifests:
+  - name_template: "stackexchange/{{.ProjectName}}:{{ .Version }}"
+    image_templates:
+      - *amd_image
+      - *386_image
+      - *arm_image
+  - name_template: "stackexchange/{{.ProjectName}}:v{{ .Version }}"
+    image_templates:
+      - *amd_image
+      - *386_image
+      - *arm_image
+  - name_template: "stackexchange/{{.ProjectName}}:latest"
+    skip_push: auto
+    image_templates:
+      - *amd_image
+      - *386_image
+      - *arm_image
+checksum:
+  name_template: 'checksums.txt'
+snapshot:
+  name_template: "{{ incpatch .Version }}-next"
+announce:
+  # Skip the announcing feature in some conditions, for instance, when publishing patch releases.
+  # Valid options are `true`, `false`, empty, or a template that evaluates to a boolean (`true` or `false`).
+  # Defaults to empty (which means false).
+  skip: true

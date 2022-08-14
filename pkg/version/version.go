@@ -9,9 +9,9 @@ import (
 
 // NOTE: main() updates these.
 var (
+	BuildTime = ""
 	SHA       = ""
 	Semver    = ""
-	BuildTime = ""
 )
 
 var versionCache string

@@ -8,15 +8,19 @@ jsId: VULTR
 
 ## Configuration
 
-In your providers config json file you must include a Vultr personal access token:
+To use this provider, add an entry to `creds.json` with `TYPE` set to `VULTR`
+along with a Vultr personal access token.
 
-{% highlight json %}
+Example:
+
+```json
 {
-  "vultr":{
+  "vultr": {
+    "TYPE": "VULTR",
     "token": "your-vultr-personal-access-token"
   }
 }
-{% endhighlight %}
+```
 
 ## Metadata
 
@@ -24,15 +28,15 @@ This provider does not recognize any special metadata fields unique to Vultr.
 
 ## Usage
 
-Example javascript:
+An example `dnsconfig.js` configuration:
 
-{% highlight js %}
-var VULTR = NewDnsProvider("vultr", "VULTR");
+```js
+var DSP_VULTR = NewDnsProvider("vultr");
 
-D("example.tld", REG_DNSIMPLE, DnsProvider(VULTR),
-    A("test","1.2.3.4")
+D("example.tld", REG_DNSIMPLE, DnsProvider(DSP_VULTR),
+    A("test", "1.2.3.4")
 );
-{% endhighlight %}
+```
 
 ## Activation
 

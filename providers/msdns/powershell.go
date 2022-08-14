@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"github.com/StackExchange/dnscontrol/v3/pkg/printer"
 	"io/ioutil"
 	"log"
 	"os"
@@ -30,7 +31,7 @@ func newPowerShell(config map[string]string) (*psHandle, error) {
 
 	pssession := config["pssession"]
 	if pssession != "" {
-		fmt.Printf("INFO: PowerShell commands will run on %q\n", pssession)
+		printer.Printf("INFO: PowerShell commands will run on %q\n", pssession)
 		// create a remote shell by wrapping the existing one in the session middleware
 		mconfig := middleware.NewSessionConfig()
 		mconfig.ComputerName = pssession
@@ -68,7 +69,7 @@ func (psh *psHandle) GetDNSServerZoneAll(dnsserver string) ([]string, error) {
 		return nil, err
 	}
 	if stderr != "" {
-		fmt.Printf("STDERROR = %q\n", stderr)
+		printer.Printf("STDERROR = %q\n", stderr)
 		return nil, fmt.Errorf("unexpected stderr from Get-DnsServerZones: %q", stderr)
 	}
 
@@ -113,11 +114,11 @@ func (psh *psHandle) GetDNSZoneRecords(dnsserver, domain string) ([]nativeRecord
 		return nil, err
 	}
 	if stderr != "" {
-		fmt.Printf("STDERROR GetDNSZR = %q\n", stderr)
+		printer.Printf("STDERROR GetDNSZR = %q\n", stderr)
 		return nil, fmt.Errorf("unexpected stderr from PSZoneDump: %q", stderr)
 	}
 	if stdout != "" {
-		fmt.Printf("STDOUT GetDNSZR = %q\n", stdout)
+		printer.Printf("STDOUT GetDNSZR = %q\n", stdout)
 	}
 
 	contents, err := utfutil.ReadFile(filename, utfutil.UTF8)
@@ -126,9 +127,9 @@ func (psh *psHandle) GetDNSZoneRecords(dnsserver, domain string) ([]nativeRecord
 	}
 	os.Remove(filename) // TODO(tlim): There should be a debug flag that leaves the tmp file around.
 
-	//fmt.Printf("CONTENTS = %s\n", contents)
-	//fmt.Printf("CONTENTS STR = %q\n", contents[:10])
-	//fmt.Printf("CONTENTS HEX = %v\n", []byte(contents)[:10])
+	//printer.Printf("CONTENTS = %s\n", contents)
+	//printer.Printf("CONTENTS STR = %q\n", contents[:10])
+	//printer.Printf("CONTENTS HEX = %v\n", []byte(contents)[:10])
 	//ioutil.WriteFile("/temp/list.json", contents, 0777)
 	var records []nativeRecord
 	err = json.Unmarshal(contents, &records)
@@ -195,7 +196,7 @@ func (psh *psHandle) RecordDelete(dnsserver, domain string, rec *models.RecordCo
 	var c string
 	if rec.Type == "NAPTR" {
 		c = generatePSDeleteNaptr(dnsserver, domain, rec)
-		//fmt.Printf("DEBUG: deleteNAPTR: %s\n", c)
+		//printer.Printf("DEBUG: deleteNAPTR: %s\n", c)
 	} else {
 		c = generatePSDelete(dnsserver, domain, rec)
 	}
@@ -205,7 +206,7 @@ func (psh *psHandle) RecordDelete(dnsserver, domain string, rec *models.RecordCo
 		return err
 	}
 	if stderr != "" {
-		fmt.Printf("STDERROR = %q\n", stderr)
+		printer.Printf("STDERROR = %q\n", stderr)
 		return fmt.Errorf("unexpected stderr from PSDelete: %q", stderr)
 	}
 	return nil
@@ -219,7 +220,7 @@ func generatePSDelete(dnsserver, domain string, rec *models.RecordConfig) string
 
 	if rec.Type == "NAPTR" {
 		x := b.String() + generatePSDeleteNaptr(dnsserver, domain, rec)
-		//fmt.Printf("NAPTR DELETE: %s\n", x)
+		//printer.Printf("NAPTR DELETE: %s\n", x)
 		return x
 	}
 
@@ -241,7 +242,7 @@ func generatePSDelete(dnsserver, domain string, rec *models.RecordConfig) string
 	} else {
 		fmt.Fprintf(&b, ` -RecordData "%s"`, rec.GetTargetField())
 	}
-	//fmt.Printf("DEBUG PSDelete CMD = (\n%s\n)\n", b.String())
+	//printer.Printf("DEBUG PSDelete CMD = (\n%s\n)\n", b.String())
 	return b.String()
 }
 
@@ -250,10 +251,10 @@ func (psh *psHandle) RecordCreate(dnsserver, domain string, rec *models.RecordCo
 	var c string
 	if rec.Type == "NAPTR" {
 		c = generatePSCreateNaptr(dnsserver, domain, rec)
-		//fmt.Printf("DEBUG: createNAPTR: %s\n", c)
+		//printer.Printf("DEBUG: createNAPTR: %s\n", c)
 	} else {
 		c = generatePSCreate(dnsserver, domain, rec)
-		//fmt.Printf("DEBUG: PScreate\n")
+		//printer.Printf("DEBUG: PScreate\n")
 	}
 
 	stdout, stderr, err := psh.shell.Execute(c)
@@ -261,8 +262,8 @@ func (psh *psHandle) RecordCreate(dnsserver, domain string, rec *models.RecordCo
 		return err
 	}
 	if stderr != "" {
-		fmt.Printf("STDOUT RecordCreate = %s\n", stdout)
-		fmt.Printf("STDERROR RecordCreate = %q\n", stderr)
+		printer.Printf("STDOUT RecordCreate = %s\n", stdout)
+		printer.Printf("STDERROR RecordCreate = %q\n", stderr)
 		return fmt.Errorf("unexpected stderr from PSCreate: %q", stderr)
 	}
 	return nil
@@ -302,8 +303,8 @@ func generatePSCreate(dnsserver, domain string, rec *models.RecordConfig) string
 	//case "WKS":
 	//	fmt.Fprintf(&b, ` -Wks -InternetAddress <IPAddress> -InternetProtocol {UDP | TCP} -Service <String[]>`, rec.GetTargetField())
 	case "TXT":
-		//fmt.Printf("DEBUG TXT len = %v\n", rec.TxtStrings)
-		//fmt.Printf("DEBUG TXT target = %q\n", rec.GetTargetField())
+		//printer.Printf("DEBUG TXT len = %v\n", rec.TxtStrings)
+		//printer.Printf("DEBUG TXT target = %q\n", rec.GetTargetField())
 		fmt.Fprintf(&b, ` -Txt -DescriptiveText %s`, rec.GetTargetField())
 	//case "RT":
 	//	fmt.Fprintf(&b, ` -RT -IntermediateHost <String> -Preference <UInt16>`, rec.GetTargetField())
@@ -331,7 +332,7 @@ func generatePSCreate(dnsserver, domain string, rec *models.RecordConfig) string
 		// We panic so that we quickly find any switch statements
 		// that have not been updated for a new RR type.
 	}
-	//fmt.Printf("DEBUG PSCreate CMD = (\n%s\n)\n", b.String())
+	//printer.Printf("DEBUG PSCreate CMD = (\n%s\n)\n", b.String())
 	return b.String()
 }
 
@@ -341,7 +342,7 @@ func (psh *psHandle) RecordModify(dnsserver, domain string, old, rec *models.Rec
 		return err
 	}
 	if stderr != "" {
-		fmt.Printf("STDERROR = %q\n", stderr)
+		printer.Printf("STDERROR = %q\n", stderr)
 		return fmt.Errorf("unexpected stderr from PSModify: %q", stderr)
 	}
 	return nil
@@ -494,11 +495,11 @@ func generatePSModify(dnsserver, domain string, old, rec *models.RecordConfig) s
 // 		// that have not been updated for a new RR type.
 // 	}
 // 	fmt.Fprintf(&b, " ; ")
-// 	//fmt.Printf("DEBUG CCMD: %s\n", b.String())
+// 	//printer.Printf("DEBUG CCMD: %s\n", b.String())
 //
 // 	fmt.Fprintf(&b, "Set-DnsServerResourceRecord")
 // 	fmt.Fprintf(&b, ` -ZoneName "%s"`, domain)
 // 	fmt.Fprintf(&b, ` -NewInputObject $NewObj -OldInputObject $OldObj`)
 //
-//  fmt.Printf("DEBUG MCMD: %s", b.String())
+//  printer.Printf("DEBUG MCMD: %s", b.String())
 // 	return b.String()

@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"strconv"
+	"strings"
 
 	"github.com/miekg/dns/dnsutil"
 
@@ -38,18 +39,18 @@ func NewCloudns(m map[string]string, metadata json.RawMessage) (providers.DNSSer
 }
 
 var features = providers.DocumentationNotes{
-	providers.DocDualHost:            providers.Unimplemented(),
-	providers.DocOfficiallySupported: providers.Cannot(),
-	providers.DocCreateDomains:       providers.Can(),
+	//providers.CanUseDS:               providers.Can(), // in ClouDNS we can add  DS record just for a subdomain(child)
+	providers.CanGetZones:            providers.Can(),
 	providers.CanUseAlias:            providers.Can(),
+	providers.CanUseCAA:              providers.Can(),
+	providers.CanUseDSForChildren:    providers.Can(),
+	providers.CanUsePTR:              providers.Can(),
 	providers.CanUseSRV:              providers.Can(),
 	providers.CanUseSSHFP:            providers.Can(),
-	providers.CanUseCAA:              providers.Can(),
 	providers.CanUseTLSA:             providers.Can(),
-	providers.CanUsePTR:              providers.Can(),
-	providers.CanGetZones:            providers.Can(),
-	providers.CanUseDSForChildren:    providers.Can(),
-	//providers.CanUseDS:               providers.Can(),  // in ClouDNS we can add  DS record just for a subdomain(child)
+	providers.DocCreateDomains:       providers.Can(),
+	providers.DocDualHost:            providers.Unimplemented(),
+	providers.DocOfficiallySupported: providers.Cannot(),
 }
 
 func init() {
@@ -58,6 +59,7 @@ func init() {
 		RecordAuditor: AuditRecords,
 	}
 	providers.RegisterDomainServiceProviderType("CLOUDNS", fns, features)
+	providers.RegisterCustomRecordType("CLOUDNS_WR", "CLOUDNS", "WR")
 }
 
 // GetNameservers returns the nameservers for a domain.
@@ -136,6 +138,12 @@ func (c *cloudnsProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*mode
 			return nil, err
 		}
 
+		// ClouDNS does not require the trailing period to be specified when creating an NS record where the A or AAAA record exists in the zone.
+		// So, modify it to remove the trailing period.
+		if req["record-type"] == "NS" && strings.HasSuffix(req["record"], domainID+".") {
+			req["record"] = strings.TrimSuffix(req["record"], ".")
+		}
+
 		corr := &models.Correction{
 			Msg: m.String(),
 			F: func() error {
@@ -158,6 +166,12 @@ func (c *cloudnsProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*mode
 		req, err := toReq(m.Desired)
 		if err != nil {
 			return nil, err
+		}
+
+		// ClouDNS does not require the trailing period to be specified when updating an NS record where the A or AAAA record exists in the zone.
+		// So, modify it to remove the trailing period.
+		if req["record-type"] == "NS" && strings.HasSuffix(req["record"], domainID+".") {
+			req["record"] = strings.TrimSuffix(req["record"], ".")
 		}
 
 		corr := &models.Correction{
@@ -271,7 +285,7 @@ func toReq(rc *models.RecordConfig) (requestParams, error) {
 	}
 
 	switch rc.Type { // #rtype_variations
-	case "A", "AAAA", "NS", "PTR", "TXT", "SOA", "ALIAS", "CNAME":
+	case "A", "AAAA", "NS", "PTR", "TXT", "SOA", "ALIAS", "CNAME", "WR":
 		// Nothing special.
 	case "MX":
 		req["priority"] = strconv.Itoa(int(rc.MxPreference))

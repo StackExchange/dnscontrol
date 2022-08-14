@@ -5,48 +5,63 @@ layout: default
 jsId: BIND
 ---
 # BIND Provider
-This provider maintains a directory with a collection of .zone files.
+
+This provider maintains a directory with a collection of .zone files
+as appropriate for ISC BIND, and other systems that use the RFC 1035
+zone-file format.
 
 This provider does not generate or update the named.conf file, nor does it deploy the .zone files to the BIND master.
 Both of those tasks are different at each site, so they are best done by a locally-written script.
 
 
 ## Configuration
-The BIND provider does not require anything in `creds.json`. However
-you can specify a `directory` where the provider will look for and create zone files. The default is the `zones` directory (in the current directory).
 
-{% highlight json %}
+To use this provider, add an entry to `creds.json` with `TYPE` set to `BIND`.
+
+Optional fields include:
+
+* `directory`: Location of the zone files.  Default: `zones` (in the current directory).
+* `filenameformat`: The formula used to generate the zone filenames. The default is usually sufficient.  Default: `"%U.zone"`
+
+Example:
+
+```json
 {
   "bind": {
-    "directory": "myzones",
-    "filenameformat": "%U.zone"      << The default
+    "TYPE": "BIND",
+    "directory": "myzones"
   }
 }
-{% endhighlight %}
+```
 
 
-The BIND accepts some optional metadata via your DNS config when you create the provider:
+## Meta configuration
+
+This provider accepts some optional metadata in the NewDnsProvider() call.
+
+* `default_soa`: If no SOA record exists in a zone file, one will be created. The values of the new SOA are specified here.
+* `default_ns`: Inject these NS records into the zone.
 
 In this example we set the default SOA settings and NS records.
 
-{% highlight javascript %}
-var BIND = NewDnsProvider('bind', 'BIND', {
-        'default_soa': {
-        'master': 'ns1.example.tld.',
-        'mbox': 'sysadmin.example.tld.',
-        'refresh': 3600,
-        'retry': 600,
-        'expire': 604800,
-        'minttl': 1440,
-    },
-    'default_ns': [
-        'ns1.example.tld.',
-        'ns2.example.tld.',
-        'ns3.example.tld.',
-        'ns4.example.tld.'
-    ]
+```js
+var DSP_BIND = NewDnsProvider("bind", {
+	"default_soa": {
+		"master": "ns1.example.tld.",
+		"mbox": "sysadmin.example.tld.",
+		"refresh": 3600,
+		"retry": 600,
+		"expire": 604800,
+		"minttl": 1440,
+	},
+	"default_ns": [
+		"ns1.example.tld.",
+		"ns2.example.tld.",
+		"ns3.example.tld.",
+		"ns4.example.tld."
+	]
 })
-{% endhighlight %}
+```
 
 # FYI: SOA Records
 
@@ -64,6 +79,8 @@ There is an effort to make SOA records handled like A, CNAME, and other records.
 
 # FYI: SOA serial numbers
 
+DNSControl maintains beautiful zone serial numbers.
+
 DNSControl tries to maintain the serial number as yyyymmddvv. The algorithm for increasing the serial number is to select the max of (current serial + 1) and (yyyymmdd00). If you use a number larger than today's date (say, 2099000099) DNSControl will simply increment it forever.
 
 The good news is that DNSControl is smart enough to only increment a zone's serial number if something in the zone changed. It does not increment the serial number just because DNSControl ran.
@@ -74,8 +91,8 @@ DNSControl does not handle special serial number math such as "looping through z
 # filenameformat
 
 The `filenameformat` parameter specifies the file name to be used when
-writing the zone file. The default is acceptable in most cases: the
-name as specified in the `D()` function, plus ".zone".
+writing the zone file. The default (`%U.zone`) is acceptable in most cases: the
+file name is the name as specified in the `D()` function plus ".zone".
 
 The filenameformat is a string with a few printf-like `%` verbs:
 
@@ -111,12 +128,11 @@ forth.
 The dnscontrol `get-zones all` subcommand scans the directory for
 any files named `*.zone` and assumes they are zone files.
 
-```
+```bash
 dnscontrol get-zones --format=nameonly - BIND all
 ```
 
 If `filenameformat` is defined, `dnscontrol` makes an guess at which
 filenames are zones but doesn't try to hard to get it right, which is
-mathematically impossible in all cases.  Feel free to file an issue if
+mathematically impossible in some cases.  Feel free to file an issue if
 your format string doesn't work. I love a challenge!
-

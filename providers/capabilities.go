@@ -10,10 +10,26 @@ import (
 type Capability uint32
 
 const (
-	// If you add something to this list, you probably want to add it to pkg/normalize/validate.go checkProviderCapabilities() or somewhere near there.
+	// Keep this list sorted.
+	// If you add something here, you probably want to also add it to
+	// pkg/normalize/validate.go checkProviderCapabilities() or
+	// somewhere near there.
+
+	// CanAutoDNSSEC indicates that the provider can automatically handle DNSSEC,
+	// so folks can ask for that.
+	CanAutoDNSSEC Capability = iota
+
+	// CanGetZones indicates the provider supports the get-zones subcommand.
+	CanGetZones
+
+	// CanUseAKAMAICDN indicates the provider support the specific AKAMAICDN records that only the Akamai EdgeDns provider supports
+	CanUseAKAMAICDN
 
 	// CanUseAlias indicates the provider support ALIAS records (or flattened CNAMES). Up to the provider to translate them to the appropriate record type.
-	CanUseAlias Capability = iota
+	CanUseAlias
+
+	// CanUseAzureAlias indicates the provider support the specific Azure_ALIAS records that only the Azure provider supports
+	CanUseAzureAlias
 
 	// CanUseCAA indicates the provider can handle CAA records
 	CanUseCAA
@@ -26,11 +42,17 @@ const (
 	// only for children records, not at the root of the zone.
 	CanUseDSForChildren
 
+	// CanUseNAPTR indicates the provider can handle NAPTR records
+	CanUseNAPTR
+
 	// CanUsePTR indicates the provider can handle PTR records
 	CanUsePTR
 
-	// CanUseNAPTR indicates the provider can handle NAPTR records
-	CanUseNAPTR
+	// CanUseRoute53Alias indicates the provider support the specific R53_ALIAS records that only the Route53 provider supports
+	CanUseRoute53Alias
+
+	// CanUseSOA indicates the provider supports full management of a zone's SOA record
+	CanUseSOA
 
 	// CanUseSRV indicates the provider can handle SRV records
 	CanUseSRV
@@ -41,37 +63,20 @@ const (
 	// CanUseTLSA indicates the provider can handle TLSA records
 	CanUseTLSA
 
-	// CanAutoDNSSEC indicates that the provider can automatically handle DNSSEC,
-	// so folks can ask for that.
-	CanAutoDNSSEC
-
 	// CantUseNOPURGE indicates NO_PURGE is broken for this provider. To make it
 	// work would require complex emulation of an incremental update mechanism,
 	// so it is easier to simply mark this feature as not working for this
 	// provider.
 	CantUseNOPURGE
 
-	// DocOfficiallySupported means it is actively used and maintained by stack exchange
-	DocOfficiallySupported
-	// DocDualHost means provider allows full management of apex NS records, so we can safely dual-host with anothe provider
-	DocDualHost
 	// DocCreateDomains means provider can add domains with the `dnscontrol create-domains` command
 	DocCreateDomains
 
-	// CanUseRoute53Alias indicates the provider support the specific R53_ALIAS records that only the Route53 provider supports
-	CanUseRoute53Alias
+	// DocDualHost means provider allows full management of apex NS records, so we can safely dual-host with anothe provider
+	DocDualHost
 
-	// CanGetZones indicates the provider supports the get-zones subcommand.
-	CanGetZones
-
-	// CanUseAzureAlias indicates the provider support the specific Azure_ALIAS records that only the Azure provider supports
-	CanUseAzureAlias
-
-	// CanUseSOA indicates the provider supports full management of a zone's SOA record
-	CanUseSOA
-
-	// CanUseAKAMAICDN indicates the provider support the specific AKAMAICDN records that only the Akamai EdgeDns provider supports
-	CanUseAKAMAICDN
+	// DocOfficiallySupported means it is actively used and maintained by stack exchange
+	DocOfficiallySupported
 )
 
 var providerCapabilities = map[string]map[Capability]bool{}

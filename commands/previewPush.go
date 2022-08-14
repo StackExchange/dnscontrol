@@ -4,16 +4,19 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"strings"
 
 	"github.com/urfave/cli/v2"
 
 	"github.com/StackExchange/dnscontrol/v3/models"
+	"github.com/StackExchange/dnscontrol/v3/pkg/credsfile"
 	"github.com/StackExchange/dnscontrol/v3/pkg/nameservers"
 	"github.com/StackExchange/dnscontrol/v3/pkg/normalize"
 	"github.com/StackExchange/dnscontrol/v3/pkg/notifications"
 	"github.com/StackExchange/dnscontrol/v3/pkg/printer"
 	"github.com/StackExchange/dnscontrol/v3/providers"
-	"github.com/StackExchange/dnscontrol/v3/providers/config"
+
+	"golang.org/x/exp/slices"
 )
 
 var _ = cmd(catMain, func() *cli.Command {
@@ -35,6 +38,7 @@ type PreviewArgs struct {
 	FilterArgs
 	Notify      bool
 	WarnChanges bool
+	NoPopulate  bool
 }
 
 func (args *PreviewArgs) flags() []cli.Flag {
@@ -50,6 +54,11 @@ func (args *PreviewArgs) flags() []cli.Flag {
 		Name:        "expect-no-changes",
 		Destination: &args.WarnChanges,
 		Usage:       `set to true for non-zero return code if there are changes`,
+	})
+	flags = append(flags, &cli.BoolFlag{
+		Name:        "no-populate",
+		Destination: &args.NoPopulate,
+		Usage:       `Use this flag to not auto-create non-existing zones at the provider`,
 	})
 	return flags
 }
@@ -99,14 +108,18 @@ func run(args PreviewArgs, push bool, interactive bool, out printer.CLI) error {
 	if err != nil {
 		return err
 	}
+	providerConfigs, err := credsfile.LoadProviderConfigs(args.CredsFile)
+	if err != nil {
+		return err
+	}
+	notifier, err := InitializeProviders(cfg, providerConfigs, args.Notify)
+	if err != nil {
+		return err
+	}
+
 	errs := normalize.ValidateAndNormalizeConfig(cfg)
 	if PrintValidationErrors(errs) {
 		return fmt.Errorf("exiting due to validation errors")
-	}
-	// TODO:
-	notifier, err := InitializeProviders(args.CredsFile, cfg, args.Notify)
-	if err != nil {
-		return err
 	}
 	anyErrors := false
 	totalCorrections := 0
@@ -116,13 +129,39 @@ DomainLoop:
 			continue
 		}
 		out.StartDomain(domain.UniqueName)
-		nsList, err := nameservers.DetermineNameservers(domain)
+		var providersWithExistingZone []*models.DNSProviderInstance
+		for _, provider := range domain.DNSProviderInstances {
+
+			if !args.NoPopulate {
+				// preview run: check if zone is already there, if not print a warning
+				if lister, ok := provider.Driver.(providers.ZoneLister); ok && !push {
+					zones, err := lister.ListZones()
+					if err != nil {
+						return err
+					}
+					if !slices.Contains(zones, domain.Name) {
+						out.Warnf("Domain '%s' does not exist in the '%s' profile and will be added automatically.\n", domain.Name, provider.Name)
+						continue // continue with next provider, as we can not determine corrections without an existing zone
+					}
+				} else if creator, ok := provider.Driver.(providers.DomainCreator); ok && push {
+					// this is the actual push, ensure domain exists at DSP
+					if err := creator.EnsureDomainExists(domain.Name); err != nil {
+						out.Warnf("Error creating domain: %s\n", err)
+						continue // continue with next provider, as we couldn't create this one
+					}
+				}
+			}
+			providersWithExistingZone = append(providersWithExistingZone, provider)
+		}
+
+		nsList, err := nameservers.DetermineNameserversForProviders(domain, providersWithExistingZone)
 		if err != nil {
 			return err
 		}
 		domain.Nameservers = nsList
 		nameservers.AddNSRecords(domain)
-		for _, provider := range domain.DNSProviderInstances {
+
+		for _, provider := range providersWithExistingZone {
 			dc, err := domain.Copy()
 			if err != nil {
 				return err
@@ -180,18 +219,12 @@ DomainLoop:
 	return nil
 }
 
-// InitializeProviders takes a creds file path and a DNSConfig object. Creates all providers with the proper types, and returns them.
-// nonDefaultProviders is a list of providers that should not be run unless explicitly asked for by flags.
-func InitializeProviders(credsFile string, cfg *models.DNSConfig, notifyFlag bool) (notify notifications.Notifier, err error) {
-	var providerConfigs map[string]map[string]string
+// InitializeProviders takes (fully processed) configuration and instantiates all providers and returns them.
+func InitializeProviders(cfg *models.DNSConfig, providerConfigs map[string]map[string]string, notifyFlag bool) (notify notifications.Notifier, err error) {
 	var notificationCfg map[string]string
 	defer func() {
 		notify = notifications.Init(notificationCfg)
 	}()
-	providerConfigs, err = config.LoadProviderConfigs(credsFile)
-	if err != nil {
-		return
-	}
 	if notifyFlag {
 		notificationCfg = providerConfigs["notifications"]
 	}
@@ -203,6 +236,16 @@ func InitializeProviders(credsFile string, cfg *models.DNSConfig, notifyFlag boo
 			isNonDefault[name] = true
 		}
 	}
+
+	// Populate provider type ids based on values from creds.json:
+	msgs, err := populateProviderTypes(cfg, providerConfigs)
+	if len(msgs) != 0 {
+		fmt.Fprintln(os.Stderr, strings.Join(msgs, "\n"))
+	}
+	if err != nil {
+		return
+	}
+
 	registrars := map[string]providers.Registrar{}
 	dnsProviders := map[string]providers.DNSServiceProvider{}
 	for _, d := range cfg.Domains {
@@ -230,6 +273,200 @@ func InitializeProviders(credsFile string, cfg *models.DNSConfig, notifyFlag boo
 		}
 	}
 	return
+}
+
+// providerTypeFieldName is the name of the field in creds.json that specifies the provider type id.
+const providerTypeFieldName = "TYPE"
+
+// url is the documentation URL to list in the warnings related to missing provider type ids.
+const url = "https://stackexchange.github.io/dnscontrol/creds-json"
+
+// populateProviderTypes scans a DNSConfig for blank provider types and fills them in based on providerConfigs.
+// That is, if the provider type is "-" or "", we take that as an flag
+// that means this value should be replaced by the type found in creds.json.
+func populateProviderTypes(cfg *models.DNSConfig, providerConfigs map[string]map[string]string) ([]string, error) {
+	var msgs []string
+
+	for i := range cfg.Registrars {
+		pType := cfg.Registrars[i].Type
+		pName := cfg.Registrars[i].Name
+		nt, warnMsg, err := refineProviderType(pName, pType, providerConfigs[pName], "NewRegistrar")
+		cfg.Registrars[i].Type = nt
+		if warnMsg != "" {
+			msgs = append(msgs, warnMsg)
+		}
+		if err != nil {
+			return msgs, err
+		}
+	}
+
+	for i := range cfg.DNSProviders {
+		pName := cfg.DNSProviders[i].Name
+		pType := cfg.DNSProviders[i].Type
+		nt, warnMsg, err := refineProviderType(pName, pType, providerConfigs[pName], "NewDnsProvider")
+		cfg.DNSProviders[i].Type = nt
+		if warnMsg != "" {
+			msgs = append(msgs, warnMsg)
+		}
+		if err != nil {
+			return msgs, err
+		}
+	}
+
+	// Update these fields set by // commands/commands.go:preloadProviders().
+	// This is probably a layering violation.  That said, the
+	// fundamental problem here is that we're storing the provider
+	// instances by string name, not by a pointer to a struct.  We
+	// should clean that up someday.
+	for _, domain := range cfg.Domains { // For each domain..
+		for _, provider := range domain.DNSProviderInstances { // For each provider...
+			pName := provider.ProviderBase.Name
+			pType := provider.ProviderBase.ProviderType
+			nt, warnMsg, err := refineProviderType(pName, pType, providerConfigs[pName], "NewDnsProvider")
+			provider.ProviderBase.ProviderType = nt
+			if warnMsg != "" {
+				msgs = append(msgs, warnMsg)
+			}
+			if err != nil {
+				return msgs, err
+			}
+		}
+		p := domain.RegistrarInstance
+		pName := p.Name
+		pType := p.ProviderType
+		nt, warnMsg, err := refineProviderType(pName, pType, providerConfigs[pName], "NewRegistrar")
+		p.ProviderType = nt
+		if warnMsg != "" {
+			msgs = append(msgs, warnMsg)
+		}
+		if err != nil {
+			return msgs, err
+		}
+	}
+
+	return uniqueStrings(msgs), nil
+}
+
+// uniqueStrings takes an unsorted slice of strings and returns the
+// unique strings, in the order they first appeared in the list.
+func uniqueStrings(stringSlice []string) []string {
+	keys := make(map[string]bool)
+	list := []string{}
+	for _, entry := range stringSlice {
+		if _, ok := keys[entry]; !ok {
+			keys[entry] = true
+			list = append(list, entry)
+		}
+	}
+	return list
+}
+
+func refineProviderType(credEntryName string, t string, credFields map[string]string, source string) (replacementType string, warnMsg string, err error) {
+
+	// t="" and t="-" are processed the same. Standardize on "-" to reduce the number of cases to check.
+	if t == "" {
+		t = "-"
+	}
+
+	// Use cases:
+	//
+	// type     credsType
+	// ----     ---------
+	// - or ""  GANDI        lookup worked. Nothing to say.
+	// - or ""  - or ""      ERROR "creds.json has invalid or missing data"
+	// GANDI    ""           WARNING "Working but.... Please fix as follows..."
+	// GANDI    GANDI        INFO "working but unneeded: clean up as follows..."
+	// GANDI    NAMEDOT      ERROR "error mismatched: please fix as follows..."
+
+	// ERROR: Invalid.
+	// WARNING: Required change to remain compatible with 4.0
+	// INFO: Post-4.0 cleanups or other non-required changes.
+
+	if t != "-" {
+		// Old-style, dnsconfig.js specifies the type explicitly.
+		// This is supported but we suggest updates for future compatibility.
+
+		// If credFields is nil, that means there was no entry in creds.json:
+		if credFields == nil {
+			// Warn the user to update creds.json in preparation for 4.0:
+			// In 4.0 this should be an error.  We could default to a
+			// provider such as "NONE" but I suspect it would be confusing
+			// to users to see references to a provider name that they did
+			// not specify.
+			return t, fmt.Sprintf(`WARNING: For future compatibility, add this entry creds.json: %q: { %q: %q }, (See %s#missing)`,
+				credEntryName, providerTypeFieldName, t,
+				url,
+			), nil
+		}
+
+		switch ct := credFields[providerTypeFieldName]; ct {
+		case "":
+			// Warn the user to update creds.json in preparation for 4.0:
+			// In 4.0 this should be an error.
+			return t, fmt.Sprintf(`WARNING: For future compatibility, update the %q entry in creds.json by adding: %q: %q, (See %s#missing)`,
+				credEntryName,
+				providerTypeFieldName, t,
+				url,
+			), nil
+		case "-":
+			// This should never happen. The user is specifying "-" in a place that it shouldn't be used.
+			return "-", "", fmt.Errorf(`ERROR: creds.json entry %q has invalid %q value %q (See %s#hyphen)`,
+				credEntryName, providerTypeFieldName, ct,
+				url,
+			)
+		case t:
+			// creds.json file is compatible with and dnsconfig.js can be updated.
+			return ct, fmt.Sprintf(`INFO: In dnsconfig.js %s(%q, %q) can be simplified to %s(%q) (See %s#cleanup)`,
+				source, credEntryName, t,
+				source, credEntryName,
+				url,
+			), nil
+		default:
+			// creds.json lists a TYPE but it doesn't match what's in dnsconfig.js!
+			return t, "", fmt.Errorf(`ERROR: Mismatch found! creds.json entry %q has %q set to %q but dnsconfig.js specifies %s(%q, %q) (See %s#mismatch)`,
+				credEntryName,
+				providerTypeFieldName, ct,
+				source, credEntryName, t,
+				url,
+			)
+		}
+	}
+
+	// t == "-"
+	// New-style, dnsconfig.js does not specify the type (t == "") or a
+	// command line tool accepted "-" as a positional argument for
+	// backwards compatibility.
+
+	// If credFields is nil, that means there was no entry in creds.json:
+	if credFields == nil {
+		return "", "", fmt.Errorf(`ERROR: creds.json is missing an entry called %q. Suggestion: %q: { %q: %q }, (See %s#missing)`,
+			credEntryName,
+			credEntryName, providerTypeFieldName, "FILL_IN_PROVIDER_TYPE",
+			url,
+		)
+	}
+
+	// New-style, dnsconfig.js doesn't specifies the type. It will be
+	// looked up in creds.json.
+	switch ct := credFields[providerTypeFieldName]; ct {
+	case "":
+		return ct, "", fmt.Errorf(`ERROR: creds.json entry %q is missing: %q: %q, (See %s#fixcreds)`,
+			credEntryName,
+			providerTypeFieldName, "FILL_IN_PROVIDER_TYPE",
+			url,
+		)
+	case "-":
+		// This should never happen. The user is confused and specified "-" in the wrong place!
+		return "-", "", fmt.Errorf(`ERROR: creds.json entry %q has invalid %q value %q (See %s#hyphen)`,
+			credEntryName,
+			providerTypeFieldName, ct,
+			url,
+		)
+	default:
+		// use the value in creds.json (this should be the normal case)
+		return ct, "", nil
+	}
+
 }
 
 func printOrRunCorrections(domain string, provider string, corrections []*models.Correction, out printer.CLI, push bool, interactive bool, notifier notifications.Notifier) (anyErrors bool) {

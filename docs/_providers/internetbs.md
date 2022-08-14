@@ -9,31 +9,36 @@ jsId: INTERNETBS
 DNSControl's Internet.bs provider supports being a Registrar. Support for being a DNS Provider is not included, but could be added in the future.
 
 ## Configuration
-In your credentials file, you must provide your API key and account password
 
-{% highlight json %}
+To use this provider, add an entry to `creds.json` with `TYPE` set to `INTERNETBS`
+along with an API key and account password.
+
+Example:
+
+```json
 {
   "internetbs": {
+    "TYPE": "INTERNETBS",
     "api-key": "your-api-key",
     "password": "account-password"
   }
 }
-{% endhighlight %}
+```
 
 ## Metadata
 This provider does not recognize any special metadata fields unique to Internet.bs.
 
 ## Usage
-Example Javascript:
+An example `dnsconfig.js` configuration:
 
-{% highlight js %}
-var REG_INTERNETBS = NewRegistrar('internetbs', 'INTERNETBS');
+```js
+var REG_INTERNETBS = NewRegistrar("internetbs");
 
 D("example.com", REG_INTERNETBS,
   NAMESERVER("ns1.example.com."),
   NAMESERVER("ns2.example.com."),
 );
-{% endhighlight %}
+```
 
 ## Activation
 

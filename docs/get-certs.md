@@ -5,6 +5,10 @@ title: Let's Encrypt Certificate generation
 
 # *Let's Encrypt* Certificate generation
 
+**WARNING: This feature
+is frozen and will be removed in early 2023. The "get-certs" command (renews certs via Let's Encrypt) has no maintainer. There are other projects that do a better job. If you don't use this feature, please do not start. If you do use this feature, please plan on migrating to something else. See discussion in [#1400](https://github.com/StackExchange/dnscontrol/issues/1400)**
+
+
 DNSControl will generate/renew Let's Encrypt certificates using DNS
 validation.  It is not a complete certificate management system, but
 can perform the renewal steps for the system you create.  If you
@@ -53,7 +57,7 @@ specify any number of certificates, with up to 100 SAN entries each. Subject nam
 
 The format of the file is a simple json array of objects:
 
-```
+```json
 [
     {
         "cert_name": "mainCert",
@@ -92,7 +96,7 @@ The working directory should generally contain:
 - `certs.json` to describe what certificates to issue.
 - `dnsconfig.js` and `creds.json` are the main files for other dnscontrol commands.
 
-```
+```text
 ┏━━.letsencrypt
 ┃  ┗━(*Let's Encrypt* account keys and metadata)
 ┃
@@ -110,6 +114,7 @@ The working directory should generally contain:
 ┣━━creds.json
 ┗━━dnsconfig.js
 ```
+
 ## Command line flags
 
 ### Required Flags
@@ -148,8 +153,7 @@ The push to the certificate repo can trigger further automation to deploy certs 
 
 ## Example script
 
-```
-
+```bash
 #!/bin/bash
 
 set -e

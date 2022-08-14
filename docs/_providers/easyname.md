@@ -9,34 +9,39 @@ jsId: EASYNAME
 DNSControl's easyname provider supports being a Registrar. Support for being a DNS Provider is not included, but could be added in the future.
 
 ## Configuration
-In your credentials file, you must provide your [API-Access](https://my.easyname.com/en/account/api) information
 
-{% highlight json %}
+To use this provider, add an entry to `creds.json` with `TYPE` set to `EASYNAME`
+along with [API-Access](https://my.easyname.com/en/account/api) information
+
+Example:
+
+```json
 {
   "easyname": {
-    "userid": 12345,
-    "email": "example@example.com",
+    "TYPE": "EASYNAME",
     "apikey": "API Key",
     "authsalt": "API Authentication Salt",
-    "signsalt": "API Signing Salt"
+    "email": "example@example.com",
+    "signsalt": "API Signing Salt",
+    "userid": 12345
   }
 }
-{% endhighlight %}
+```
 
 ## Metadata
 This provider does not recognize any special metadata fields unique to easyname.
 
 ## Usage
-Example Javascript:
+An example `dnsconfig.js` configuration:
 
-{% highlight js %}
-var REG_EASYNAME = NewRegistrar('easyname', 'EASYNAME');
+```js
+var REG_EASYNAME = NewRegistrar("easyname");
 
 D("example.com", REG_EASYNAME,
   NAMESERVER("ns1.example.com."),
   NAMESERVER("ns2.example.com."),
 );
-{% endhighlight %}
+```
 
 ## Activation
 

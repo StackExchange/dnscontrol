@@ -24,3 +24,4 @@ stack.sh
 .DS_Store
 .vscode/launch.json
 .ci/build/
+dist/

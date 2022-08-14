@@ -10,8 +10,7 @@ title: Examples
 
 ## Typical DNS Records
 
-{% highlight javascript %}
-
+```js
 D('example.com', REG, DnsProvider('GCLOUD'),
     A('@', '1.2.3.4'),  // The naked or 'apex' domain.
     A('server1', '2.3.4.5'),
@@ -24,13 +23,11 @@ D('example.com', REG, DnsProvider('GCLOUD'),
     NS('department2', 'ns1.dnsexample.com.'), // use different nameservers
     NS('department2', 'ns2.dnsexample.com.') // for department2.example.com
 )
-
-{% endhighlight %}
+```
 
 ## Set TTLs
 
-{% highlight javascript %}
-
+```js
 var mailTTL = TTL('1h');
 
 D('example.com', registrar,
@@ -43,25 +40,22 @@ D('example.com', registrar,
     A('@', '1.2.3.4', TTL('10m')), // individual record
     CNAME('mail', 'mx01') // TTL of 5m, as defined per DefaultTTL()
 );
-
-{% endhighlight %}
+```
 
 ## Variables for common IP Addresses
 
-{% highlight javascript %}
-
+```js
 var addrA = IP('1.2.3.4')
 
 D('example.com', REG, DnsProvider('R53'),
     A('@', addrA), // 1.2.3.4
     A('www', addrA + 1), // 1.2.3.5
 )
-{% endhighlight %}
+```
 
 ## Variables to swap active Data Center
 
-{% highlight javascript %}
-
+```js
 var dcA = IP('5.5.5.5');
 var dcB = IP('6.6.6.6');
 
@@ -71,12 +65,11 @@ var activeDC = dcA;
 D('example.com', REG, DnsProvider('R53'),
     A('@', activeDC + 5), // fixed address based on activeDC
 )
-{% endhighlight %}
+```
 
 ## Macro to for repeated records
 
-{% highlight javascript %}
-
+```js
 var GOOGLE_APPS_RECORDS = [
     MX('@', 1, 'aspmx.l.google.com.'),
     MX('@', 5, 'alt1.aspmx.l.google.com.'),
@@ -95,8 +88,7 @@ D('example.com', REG, DnsProvider('R53'),
    GOOGLE_APPS_RECORDS,
    A('@', '1.2.3.4')
 )
-
-{% endhighlight %}
+```
 
 ## Add comments along complex SPF records
 
@@ -104,8 +96,7 @@ You normally can't put comments in the middle of a string,
 but with a little bit of creativity you can document
 each element of an SPF record this way.
 
-{% highlight javascript %}
-
+```js
 var SPF_RECORDS = TXT('@', [
     'v=spf1',
     'ip4:1.2.3.0/24',           // NY mail server
@@ -121,13 +112,11 @@ var SPF_RECORDS = TXT('@', [
 D('example.com', REG, DnsProvider('R53'),
    SPF_RECORDS,
 )
-
-{% endhighlight %}
+```
 
 ## Dual DNS Providers
 
-{% highlight javascript %}
-
+```js
 D('example.com', REG, DnsProvider('R53'), DnsProvider('GCLOUD'),
    A('@', '1.2.3.4')
 )
@@ -143,17 +132,14 @@ D('example2.com', REG, DnsProvider('R53',2), DnsProvider('GCLOUD',2),
 D('example3.com', REG, DnsProvider('R53'), DnsProvider('GCLOUD',0),
    A('@', '1.2.3.4')
 )
-
-{% endhighlight %}
+```
 
 ## Set default records modifiers
 
-{% highlight javascript %}
-
+```js
 DEFAULTS(
 	NAMESERVER_TTL('24h'),
 	DefaultTTL('12h'),
 	CF_PROXY_DEFAULT_OFF
 );
-
-{% endhighlight %}
+```

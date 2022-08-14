@@ -6,6 +6,9 @@ import (
 	"github.com/StackExchange/dnscontrol/v3/models"
 )
 
+// DNS Made Easy does not allow the system name servers to be edited, and said records appear to always have a fixed TTL of 86400.
+const fixedNameServerRecordTTL = 86400
+
 type singleDomainResponse struct {
 	ID                  int                              `json:"id"`
 	Name                string                           `json:"name"`
@@ -135,8 +138,8 @@ func toRecordConfig(domain string, record *recordResponseDataEntry) *models.Reco
 	} else if record.Type == "SRV" {
 		err = rc.SetTargetSRV(uint16(record.Priority), uint16(record.Weight), uint16(record.Port), record.Value)
 	} else if record.Type == "CAA" {
-		value, err := strconv.Unquote(record.Value)
-		if err != nil {
+		value, unquoteErr := strconv.Unquote(record.Value)
+		if unquoteErr != nil {
 			panic(err)
 		}
 		err = rc.SetTargetCAA(uint8(record.IssuerCritical), record.CaaType, value)
@@ -188,9 +191,6 @@ func fromRecordConfig(rc *models.RecordConfig) *recordRequestData {
 }
 
 func systemNameServerToRecordConfig(domain string, nameServer string) *models.RecordConfig {
-	// DNS Made Easy does not allow the system name servers to be edited, and said records appear to always have a fixed TTL of 86400.
-	const fixedNameServerRecordTTL = 86400
-
 	target := nameServer + "."
 	return toRecordConfig(domain, &recordResponseDataEntry{Type: "NS", Value: target, TTL: fixedNameServerRecordTTL})
 }

@@ -7,6 +7,7 @@ import (
 	"encoding/hex"
 	"encoding/json"
 	"fmt"
+	"github.com/StackExchange/dnscontrol/v3/pkg/printer"
 	"net/http"
 	"net/http/httputil"
 	"strings"
@@ -34,9 +35,6 @@ type dnsMadeEasyRestAPI struct {
 
 type apiErrorResponse struct {
 	Error []string `json:"error"`
-}
-
-type apiEmptyResponse struct {
 }
 
 type apiRequest struct {
@@ -98,7 +96,7 @@ func (restApi *dnsMadeEasyRestAPI) singleDomainCreate(data singleDomainRequestDa
 
 	req := &apiRequest{
 		method:   "POST",
-		endpoint: fmt.Sprintf("dns/managed/"),
+		endpoint: "dns/managed/",
 		data:     jsonData,
 	}
 
@@ -224,7 +222,7 @@ retry:
 
 	if restApi.dumpHTTPRequest {
 		dump, _ := httputil.DumpRequest(req, true)
-		fmt.Println(string(dump))
+		printer.Printf(string(dump))
 	}
 
 	res, err := restApi.httpClient.Do(req)
@@ -236,7 +234,7 @@ retry:
 
 	if restApi.dumpHTTPResponse {
 		dump, _ := httputil.DumpResponse(res, true)
-		fmt.Println(string(dump))
+		printer.Printf(string(dump))
 	}
 
 	if res.StatusCode < http.StatusOK || res.StatusCode >= http.StatusBadRequest {
@@ -247,7 +245,7 @@ retry:
 		}
 
 		if len(apiErr.Error) == 1 && apiErr.Error[0] == "Rate limit exceeded" {
-			fmt.Printf("pausing DNSMADEEASY due to ratelimit: %v seconds\n", backoff)
+			printer.Printf("pausing DNSMADEEASY due to ratelimit: %v seconds\n", backoff)
 
 			time.Sleep(backoff)
 
