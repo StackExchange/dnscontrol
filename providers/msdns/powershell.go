@@ -4,10 +4,10 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-	"github.com/StackExchange/dnscontrol/v3/pkg/printer"
-	"io/ioutil"
 	"log"
 	"os"
+
+	"github.com/StackExchange/dnscontrol/v3/pkg/printer"
 
 	"github.com/StackExchange/dnscontrol/v3/models"
 	"github.com/TomOnTime/utfutil"
@@ -102,7 +102,7 @@ func generatePSZoneAll(dnsserver string) string {
 
 func (psh *psHandle) GetDNSZoneRecords(dnsserver, domain string) ([]nativeRecord, error) {
 
-	tmpfile, err := ioutil.TempFile("", "zonerecords.*.json")
+	tmpfile, err := os.CreateTemp("", "zonerecords.*.json")
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -130,7 +130,7 @@ func (psh *psHandle) GetDNSZoneRecords(dnsserver, domain string) ([]nativeRecord
 	//printer.Printf("CONTENTS = %s\n", contents)
 	//printer.Printf("CONTENTS STR = %q\n", contents[:10])
 	//printer.Printf("CONTENTS HEX = %v\n", []byte(contents)[:10])
-	//ioutil.WriteFile("/temp/list.json", contents, 0777)
+	//os.WriteFile("/temp/list.json", contents, 0777)
 	var records []nativeRecord
 	err = json.Unmarshal(contents, &records)
 	if err != nil {

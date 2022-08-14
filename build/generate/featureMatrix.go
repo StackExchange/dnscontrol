@@ -3,7 +3,7 @@ package main
 import (
 	"bytes"
 	"html/template"
-	"io/ioutil"
+	"os"
 	"sort"
 
 	"github.com/StackExchange/dnscontrol/v3/providers"
@@ -109,7 +109,7 @@ func generateFeatureMatrix() error {
 	if err != nil {
 		return err
 	}
-	return ioutil.WriteFile("docs/_includes/matrix.html", buf.Bytes(), 0644)
+	return os.WriteFile("docs/_includes/matrix.html", buf.Bytes(), 0644)
 }
 
 // FeatureDef describes features.
