@@ -19,7 +19,7 @@ enforce the "10 lookup rule".
 
 Here is an example of how SPF settings are normally done:
 
-```
+```js
 D("example.tld", REG, DNS, ...
   TXT("v=spf1 ip4:198.252.206.0/24 ip4:192.111.0.0/24 include:_spf.google.com include:mailgun.org include:spf-basic.fogcreek.com include:mail.zendesk.com include:servers.mcsv.net include:sendgrid.net include:450622.spf05.hubspotemail.net ~all")
 )
@@ -33,7 +33,7 @@ This has a few problems:
 
 ## The dnscontrol way
 
-```
+```js
 D("example.tld", REG, DSP, ...
   A("@", "10.2.2.2"),
   MX("@", "example.tld."),
@@ -74,7 +74,7 @@ By using the `SPF_BUILDER()` we gain many benefits:
 When you want to specify SPF settings for a domain, use the
 `SPF_BUILDER()` function.
 
-```
+```js
 D("example.tld", REG, DSP, ...
   ...
   ...
@@ -151,15 +151,15 @@ is no longer truncated.
 
 Example:
 
-```
-$ dig +short whatexit.org txt | wc -c
+```bash
+dig +short whatexit.org txt | wc -c
    118
 ```
 
 Setting `overhead1` to 118 should be sufficient.
 
-```
-$ dig +short stackoverflow.com txt | wc -c
+```bash
+dig +short stackoverflow.com txt | wc -c
      582
 ```
 
@@ -185,8 +185,8 @@ to be updated, the proper data will be written to a file called
 `spfcache.updated.json` and instructions such as the ones below
 will be output telling you exactly what to do:
 
-```
-$ dnscontrol preview
+```bash
+dnscontrol preview
 1 Validation errors:
 WARNING: 2 spf record lookups are out of date with cache (_spf.google.com,_netblocks3.google.com).
 Wrote changes to spfcache.updated.json. Please rename and commit:
@@ -265,7 +265,7 @@ record an include is added.
 In some situations we define an SPF setting once and want to re-use
 it on many domains. Here's how to do this:
 
-```
+```js
 var SPF_MYSETTINGS = SPF_BUILDER({
   label: "@",
   overflow: "_spf%d",

@@ -53,36 +53,15 @@ type differ struct {
 
 // get normalized content for record. target, ttl, mxprio, and specified metadata
 func (d *differ) content(r *models.RecordConfig) string {
-	// NB(tlim): This function will eventually be replaced by calling
-	// r.GetTargetDiffable().  In the meanwhile, this function compares
-	// its output with r.GetTargetDiffable() to make sure the same
-	// results are generated.  Once we have confidence, this function will go away.
-	content := fmt.Sprintf("%v ttl=%d", r.GetTargetCombined(), r.TTL)
-	if r.Type == "SOA" {
-		content = fmt.Sprintf("%s %v %d %d %d %d ttl=%d", r.GetTargetField(), r.SoaMbox, r.SoaRefresh, r.SoaRetry, r.SoaExpire, r.SoaMinttl, r.TTL) // SoaSerial is not used in comparison
-	}
+
+	// get the extra values maps to add to the comparison.
 	var allMaps []map[string]string
 	for _, f := range d.extraValues {
-		// sort the extra values map keys to perform a deterministic
-		// comparison since Golang maps iteration order is not guaranteed
 		valueMap := f(r)
 		allMaps = append(allMaps, valueMap)
-		keys := make([]string, 0)
-		for k := range valueMap {
-			keys = append(keys, k)
-		}
-		sort.Strings(keys)
-		for _, k := range keys {
-			v := valueMap[k]
-			content += fmt.Sprintf(" %s=%s", k, v)
-		}
 	}
-	control := r.ToDiffable(allMaps...)
-	if control != content {
-		fmt.Printf("CONTROL=%q CONTENT=%q\n", control, content)
-		panic("OOPS! control != content")
-	}
-	return content
+
+	return r.ToDiffable(allMaps...)
 }
 
 func apexException(rec *models.RecordConfig) bool {
@@ -141,8 +120,8 @@ func (d *differ) IncrementalDiff(existing []*models.RecordConfig) (unchanged, cr
 			//if !apexException(dr) || !ignoreNameException(dr) {
 			if (!ignoreNameException(dr)) && (!apexException(dr)) {
 				return nil, nil, nil, nil, fmt.Errorf("trying to update/add IGNORE_NAMEd record: %s %s", dr.GetLabel(), dr.Type)
-			} else {
-				//fmt.Printf("********** DEBUG: desired EXCEPTION\n")
+				//} else {
+				//	fmt.Printf("********** DEBUG: desired EXCEPTION\n")
 			}
 		} else if d.matchIgnoredTarget(dr.GetTargetField(), dr.Type) {
 			return nil, nil, nil, nil, fmt.Errorf("trying to update/add IGNORE_TARGETd record: %s %s", dr.GetLabel(), dr.Type)
@@ -199,9 +178,18 @@ func (d *differ) IncrementalDiff(existing []*models.RecordConfig) (unchanged, cr
 		// build index based on normalized content data
 		for _, ex := range existingRecords {
 			normalized := d.content(ex)
-			if existingLookup[normalized] != nil {
-				return nil, nil, nil, nil, fmt.Errorf("DUPLICATE E_RECORD FOUND: %s %s", key, normalized)
-			}
+			//fmt.Printf("DEBUG: normalized: %v\n", normalized)
+			// NB(tlim): Commenting this out. If the provider is returning
+			// records that are exact duplicates, that's bad and against the
+			// RFCs. However, we shouldn't error out. Instead, we should
+			// continue so that we can delete them.  Experience shows one
+			// record will be deleted per iteration but at least the problem
+			// will fix itself that way. Erroring out means it will require
+			// manually fixing (going to the control panel, deleting
+			// individual records, etc.)
+			//if existingLookup[normalized] != nil {
+			//	return nil, nil, nil, nil, fmt.Errorf("DUPLICATE E_RECORD FOUND: %s %s", key, normalized)
+			//}
 			existingLookup[normalized] = ex
 		}
 		for _, de := range desiredRecords {

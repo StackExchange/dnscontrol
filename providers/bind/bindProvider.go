@@ -17,6 +17,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"github.com/StackExchange/dnscontrol/v3/pkg/printer"
 	"io/ioutil"
 	"os"
 	"path/filepath"
@@ -69,8 +70,17 @@ func initBind(config map[string]string, providermeta json.RawMessage) (providers
 		}
 	}
 	var nss []string
-	for _, ns := range api.DefaultNS {
-		nss = append(nss, ns[0:len(ns)-1])
+	for i, ns := range api.DefaultNS {
+		if ns == "" {
+			return nil, fmt.Errorf("empty string in default_ns[%d]", i)
+		}
+		// If it contains a ".", it must end in a ".".
+		if strings.ContainsRune(ns, '.') && ns[len(ns)-1] != '.' {
+			return nil, fmt.Errorf("default_ns (%v) must end with a (.) [https://stackexchange.github.io/dnscontrol/why-the-dot]", ns)
+		}
+		// This is one of the (increasingly rare) cases where we store a
+		// name without the trailing dot to indicate a FQDN.
+		nss = append(nss, strings.TrimSuffix(ns, "."))
 	}
 	var err error
 	api.nameservers, err = models.ToNameservers(nss)
@@ -147,7 +157,7 @@ func (c *bindProvider) GetZoneRecords(domain string) (models.Records, error) {
 	foundRecords := models.Records{}
 
 	if _, err := os.Stat(c.directory); os.IsNotExist(err) {
-		fmt.Printf("\nWARNING: BIND directory %q does not exist!\n", c.directory)
+		printer.Printf("\nWARNING: BIND directory %q does not exist!\n", c.directory)
 	}
 
 	if c.zonefile == "" {
@@ -174,9 +184,6 @@ func (c *bindProvider) GetZoneRecords(domain string) (models.Records, error) {
 		rec, err := models.RRtoRC(rr, domain)
 		if err != nil {
 			return nil, err
-		}
-		// FIXME(tlim): Empty branch?  Is the intention to skip SOAs?
-		if rec.Type == "SOA" {
 		}
 		foundRecords = append(foundRecords, &rec)
 	}
@@ -283,7 +290,7 @@ func (c *bindProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*models.
 			&models.Correction{
 				Msg: msg,
 				F: func() error {
-					fmt.Printf("WRITING ZONEFILE: %v\n", c.zonefile)
+					printer.Printf("WRITING ZONEFILE: %v\n", c.zonefile)
 					zf, err := os.Create(c.zonefile)
 					if err != nil {
 						return fmt.Errorf("could not create zonefile: %w", err)

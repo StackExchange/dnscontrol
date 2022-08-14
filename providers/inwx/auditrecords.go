@@ -2,32 +2,22 @@ package inwx
 
 import (
 	"github.com/StackExchange/dnscontrol/v3/models"
-	"github.com/StackExchange/dnscontrol/v3/pkg/recordaudit"
+	"github.com/StackExchange/dnscontrol/v3/pkg/rejectif"
 )
 
-// AuditRecords returns an error if any records are not
-// supportable by this provider.
-func AuditRecords(records []*models.RecordConfig) error {
+// AuditRecords returns a list of errors corresponding to the records
+// that aren't supported by this provider.  If all records are
+// supported, an empty list is returned.
+func AuditRecords(records []*models.RecordConfig) []error {
+	a := rejectif.Auditor{}
 
-	if err := recordaudit.TxtNoBackticks(records); err != nil {
-		return err
-	}
-	// Still needed as of 2021-03-01
+	a.Add("TXT", rejectif.TxtHasBackticks) // Last verified 2021-03-01
 
-	if err := recordaudit.TxtNoLen255(records); err != nil {
-		return err
-	}
-	// Still needed as of 2021-03-01
+	a.Add("TXT", rejectif.TxtIsExactlyLen255) // Last verified 2021-03-01
 
-	if err := recordaudit.TxtNoTrailingSpace(records); err != nil {
-		return err
-	}
-	// Still needed as of 2021-03-01
+	a.Add("TXT", rejectif.TxtHasTrailingSpace) // Last verified 2021-03-01
 
-	if err := recordaudit.TxtNotEmpty(records); err != nil {
-		return err
-	}
-	// Still needed as of 2021-03-01
+	a.Add("TXT", rejectif.TxtIsEmpty) // Last verified 2021-03-01
 
-	return nil
+	return a.Audit(records)
 }

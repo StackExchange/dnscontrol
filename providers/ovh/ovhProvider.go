@@ -18,16 +18,16 @@ type ovhProvider struct {
 }
 
 var features = providers.DocumentationNotes{
+	providers.CanGetZones:            providers.Can(),
 	providers.CanUseAlias:            providers.Cannot(),
 	providers.CanUseCAA:              providers.Can(),
 	providers.CanUsePTR:              providers.Cannot(),
 	providers.CanUseSRV:              providers.Can(),
-	providers.CanUseTLSA:             providers.Can(),
 	providers.CanUseSSHFP:            providers.Can(),
+	providers.CanUseTLSA:             providers.Can(),
 	providers.DocCreateDomains:       providers.Cannot("New domains require registration"),
 	providers.DocDualHost:            providers.Can(),
 	providers.DocOfficiallySupported: providers.Cannot(),
-	providers.CanGetZones:            providers.Can(),
 }
 
 func newOVH(m map[string]string, metadata json.RawMessage) (*ovhProvider, error) {
@@ -68,7 +68,7 @@ func (c *ovhProvider) GetNameservers(domain string) ([]*models.Nameserver, error
 		return nil, fmt.Errorf("'%s' not a zone in ovh account", domain)
 	}
 
-	ns, err := c.fetchRegistrarNS(domain)
+	ns, err := c.fetchNS(domain)
 	if err != nil {
 		return nil, err
 	}

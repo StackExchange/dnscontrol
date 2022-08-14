@@ -15,13 +15,13 @@ Usage, selector, and type are ints.
 
 Certificate is a hex string.
 
-{% include startExample.html %}
-{% highlight js %}
-
+{% capture example %}
+```js
 D("example.com", REGISTRAR, DnsProvider("GCLOUD"),
   // Create TLSA record for certificate used on TCP port 443
   TLSA("_443._tcp", 3, 1, 1, "abcdef0"),
 );
+```
+{% endcapture %}
 
-{%endhighlight%}
-{% include endExample.html %}
+{% include example.html content=example %}

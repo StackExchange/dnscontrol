@@ -13,7 +13,7 @@ new types or destinations.
 
 Notifications are set up in your credentials json file. They will use the `notifications` key to look for keys or configuration needed for various notification types.
 
-```
+```json
   "r53": {
       ...
     },

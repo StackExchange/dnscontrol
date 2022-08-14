@@ -16,7 +16,7 @@ func (c *cloudflareProvider) fetchDomainList() error {
 	c.nameservers = map[string][]string{}
 	zones, err := c.cfClient.ListZones(context.Background())
 	if err != nil {
-		return fmt.Errorf("failed fetching domain list from cloudflare: %s", err)
+		return fmt.Errorf("failed fetching domain list from cloudflare(%q): %s", c.cfClient.APIEmail, err)
 	}
 
 	for _, zone := range zones {
@@ -47,7 +47,7 @@ func (c *cloudflareProvider) getRecordsForDomain(id string, domain string) ([]*m
 // create a correction to delete a record
 func (c *cloudflareProvider) deleteRec(rec cloudflare.DNSRecord, domainID string) *models.Correction {
 	return &models.Correction{
-		Msg: fmt.Sprintf("DELETE record: %s %s %d %s (id=%s)", rec.Name, rec.Type, rec.TTL, rec.Content, rec.ID),
+		Msg: fmt.Sprintf("DELETE record: %s %s %d %q (id=%s)", rec.Name, rec.Type, rec.TTL, rec.Content, rec.ID),
 		F: func() error {
 			err := c.cfClient.DeleteDNSRecord(context.Background(), domainID, rec.ID)
 			return err
@@ -119,7 +119,7 @@ func (c *cloudflareProvider) createRec(rec *models.RecordConfig, domainID string
 		prio = fmt.Sprintf(" %d ", rec.MxPreference)
 	}
 	if rec.Type == "TXT" {
-		content = rec.GetTargetField()
+		content = rec.GetTargetTXTJoined()
 	}
 	if rec.Type == "DS" {
 		content = fmt.Sprintf("%d %d %d %s", rec.DsKeyTag, rec.DsAlgorithm, rec.DsDigestType, rec.DsDigest)
@@ -150,9 +150,13 @@ func (c *cloudflareProvider) createRec(rec *models.RecordConfig, domainID string
 			} else if rec.Type == "DS" {
 				cf.Data = cfDSData(rec)
 			}
-			resp, err := c.cfClient.CreateDNSRecord(context.Background(), domainID, cf)
-			id = resp.Result.ID
-			return err
+			if resp, err := c.cfClient.CreateDNSRecord(context.Background(), domainID, cf); err != nil {
+				return err
+			} else {
+				// Updating id (from the outer scope) by side-effect, required for updating proxy mode
+				id = resp.Result.ID
+				return nil
+			}
 		},
 	}}
 	if rec.Metadata[metaProxy] != "off" {
@@ -179,9 +183,7 @@ func (c *cloudflareProvider) modifyRecord(domainID, recID string, proxied bool, 
 		TTL:      int(rec.TTL),
 	}
 	if rec.Type == "TXT" {
-		if len(rec.TxtStrings) > 1 {
-			r.Content = `"` + strings.Join(rec.TxtStrings, `" "`) + `"`
-		}
+		r.Content = rec.GetTargetTXTJoined()
 	}
 	if rec.Type == "SRV" {
 		r.Data = cfSrvData(rec)
@@ -241,7 +243,7 @@ func (c *cloudflareProvider) getPageRules(id string, domain string) ([]*models.R
 			pr.Targets[0].Constraint.Value,
 			value["url"],
 			pr.Priority,
-			int(value["status_code"].(float64))))
+			intZero(value["status_code"])))
 		recs = append(recs, r)
 	}
 	return recs, nil
@@ -352,7 +354,9 @@ func (c *cloudflareProvider) createTestWorker(workerName string) error {
 	return err
 }
 
-// go-staticcheck lies!
+//lint:ignore U1000 false positive due to
+// https://github.com/dominikh/go-tools/issues/1137 which is a dup of
+// https://github.com/dominikh/go-tools/issues/810
 type pageRuleConstraint struct {
 	Operator string `json:"operator"`
 	Value    string `json:"value"`

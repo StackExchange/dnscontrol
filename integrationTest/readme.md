@@ -12,20 +12,20 @@ For each step, it will run the config once and expect changes. It will run it ag
 
 ## Running a test
 
-1. Define all environment variables expected for the provider you wish to run. I setup a local `.env` file with the appropriate values and use [zoo](https://github.com/jsonmaur/zoo) to run my commands. 
-2. run `go test -v -provider $NAME` where $NAME is the name of the provider you wish to run. 
+1. Define all environment variables expected for the provider you wish to run. I setup a local `.env` file with the appropriate values and use [zoo](https://github.com/jsonmaur/zoo) to run my commands.
+2. run `go test -v -provider $NAME` where $NAME is the name of the provider you wish to run.
 
 Example:
 
-```
-$ egrep R53 providers.json 
-    "KeyId": "$R53_KEY_ID",
-    "SecretKey": "$R53_KEY",
-    "domain": "$R53_DOMAIN"
-$ export R53_KEY_ID="redacted"
-$ export R53_KEY="also redacted"
-$ export R53_DOMAIN="testdomain.tld"
-$ go test -v -verbose -provider ROUTE53
+```bash
+egrep ROUTE53 providers.json
+    "KeyId": "$ROUTE53_KEY_ID",
+    "SecretKey": "$ROUTE53_KEY",
+    "domain": "$ROUTE53_DOMAIN"
+export ROUTE53_KEY_ID="redacted"
+export ROUTE53_KEY="also redacted"
+export ROUTE53_DOMAIN="testdomain.tld"
+go test -v -verbose -provider ROUTE53
 ```
 
 WARNING: The records in the test domain will be deleted.  Only use

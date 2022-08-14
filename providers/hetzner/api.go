@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"github.com/StackExchange/dnscontrol/v3/pkg/printer"
 	"io"
 	"io/ioutil"
 	"net/http"
@@ -78,7 +79,7 @@ func (api *hetznerProvider) bulkCreateRecords(records []record) error {
 	request := bulkCreateRecordsRequest{
 		Records: records,
 	}
-	return api.request("/records/bulk", "POST", request, nil)
+	return api.request("/records/bulk", "POST", request, nil, nil)
 }
 
 func (api *hetznerProvider) bulkUpdateRecords(records []record) error {
@@ -91,7 +92,7 @@ func (api *hetznerProvider) bulkUpdateRecords(records []record) error {
 	request := bulkUpdateRecordsRequest{
 		Records: records,
 	}
-	return api.request("/records/bulk", "PUT", request, nil)
+	return api.request("/records/bulk", "PUT", request, nil, nil)
 }
 
 func (api *hetznerProvider) createRecord(record record) error {
@@ -106,14 +107,14 @@ func (api *hetznerProvider) createRecord(record record) error {
 		Value:  record.Value,
 		ZoneID: record.ZoneID,
 	}
-	return api.request("/records", "POST", request, nil)
+	return api.request("/records", "POST", request, nil, nil)
 }
 
 func (api *hetznerProvider) createZone(name string) error {
 	request := createZoneRequest{
 		Name: name,
 	}
-	return api.request("/zones", "POST", request, nil)
+	return api.request("/zones", "POST", request, nil, nil)
 }
 
 func (api *hetznerProvider) deleteRecord(record record) error {
@@ -122,7 +123,7 @@ func (api *hetznerProvider) deleteRecord(record record) error {
 	}
 
 	url := fmt.Sprintf("/records/%s", record.ID)
-	return api.request(url, "DELETE", nil, nil)
+	return api.request(url, "DELETE", nil, nil, nil)
 }
 
 func (api *hetznerProvider) getAllRecords(domain string) ([]record, error) {
@@ -135,7 +136,7 @@ func (api *hetznerProvider) getAllRecords(domain string) ([]record, error) {
 	for {
 		response := &getAllRecordsResponse{}
 		url := fmt.Sprintf("/records?zone_id=%s&per_page=100&page=%d", zone.ID, page)
-		if err := api.request(url, "GET", nil, response); err != nil {
+		if err := api.request(url, "GET", nil, response, nil); err != nil {
 			return nil, fmt.Errorf("failed fetching zone records for %q: %w", domain, err)
 		}
 		for _, record := range response.Records {
@@ -165,10 +166,21 @@ func (api *hetznerProvider) getAllZones() error {
 	}
 	zones := map[string]zone{}
 	page := 1
+	statusOK := func(code int) bool {
+		switch code {
+		case http.StatusOK:
+			return true
+		case http.StatusNotFound:
+			// Accept a 404 when requesting the first page
+			return page == 1
+		default:
+			return false
+		}
+	}
 	for {
 		response := &getAllZonesResponse{}
 		url := fmt.Sprintf("/zones?per_page=100&page=%d", page)
-		if err := api.request(url, "GET", nil, response); err != nil {
+		if err := api.request(url, "GET", nil, response, statusOK); err != nil {
 			return fmt.Errorf("failed fetching zones: %w", err)
 		}
 		for _, zone := range response.Zones {
@@ -195,7 +207,12 @@ func (api *hetznerProvider) getZone(name string) (*zone, error) {
 	return &zone, nil
 }
 
-func (api *hetznerProvider) request(endpoint string, method string, request interface{}, target interface{}) error {
+func (api *hetznerProvider) request(endpoint string, method string, request interface{}, target interface{}, statusOK func(code int) bool) error {
+	if statusOK == nil {
+		statusOK = func(code int) bool {
+			return code == http.StatusOK
+		}
+	}
 	for {
 		var requestBody io.Reader
 		if request != nil {
@@ -220,7 +237,7 @@ func (api *hetznerProvider) request(endpoint string, method string, request inte
 		cleanupResponseBody := func() {
 			err := resp.Body.Close()
 			if err != nil {
-				fmt.Println(fmt.Sprintf("failed closing response body: %q", err))
+				printer.Printf("failed closing response body: %q\n", err)
 			}
 		}
 
@@ -233,9 +250,9 @@ func (api *hetznerProvider) request(endpoint string, method string, request inte
 		}
 
 		defer cleanupResponseBody()
-		if resp.StatusCode != 200 {
+		if !statusOK(resp.StatusCode) {
 			data, _ := ioutil.ReadAll(resp.Body)
-			fmt.Println(string(data))
+			printer.Printf(string(data))
 			return fmt.Errorf("bad status code from HETZNER: %d not 200", resp.StatusCode)
 		}
 		if target == nil {
@@ -261,7 +278,7 @@ func (api *hetznerProvider) updateRecord(record record) error {
 	}
 
 	url := fmt.Sprintf("/records/%s", record.ID)
-	return api.request(url, "PUT", record, nil)
+	return api.request(url, "PUT", record, nil, nil)
 }
 
 type requestRateLimiter struct {
@@ -309,7 +326,7 @@ func (requestRateLimiter *requestRateLimiter) handleRateLimitedRequest() {
 	case "second":
 		message = fmt.Sprintf(message, "Second", "Minute")
 	}
-	fmt.Println(message)
+	printer.Printf(message)
 }
 
 func (requestRateLimiter *requestRateLimiter) handleResponse(resp http.Response) {

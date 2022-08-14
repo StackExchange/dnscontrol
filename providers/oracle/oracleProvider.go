@@ -19,19 +19,18 @@ import (
 )
 
 var features = providers.DocumentationNotes{
+	providers.CanGetZones:            providers.Can(),
+	providers.CanUseAlias:            providers.Can(),
+	providers.CanUseCAA:              providers.Can(),
+	providers.CanUseDS:               providers.Cannot(), // should be supported, but getting 500s in tests
+	providers.CanUseNAPTR:            providers.Can(),
+	providers.CanUsePTR:              providers.Can(),
+	providers.CanUseSRV:              providers.Can(),
+	providers.CanUseSSHFP:            providers.Can(),
+	providers.CanUseTLSA:             providers.Can(),
 	providers.DocCreateDomains:       providers.Can(),
 	providers.DocDualHost:            providers.Can(),
 	providers.DocOfficiallySupported: providers.Cannot(),
-
-	providers.CanGetZones: providers.Can(),
-	providers.CanUseAlias: providers.Can(),
-	providers.CanUseCAA:   providers.Can(),
-	providers.CanUseDS:    providers.Cannot(), // should be supported, but getting 500s in tests
-	providers.CanUseNAPTR: providers.Can(),
-	providers.CanUsePTR:   providers.Can(),
-	providers.CanUseSRV:   providers.Can(),
-	providers.CanUseSSHFP: providers.Can(),
-	providers.CanUseTLSA:  providers.Can(),
 }
 
 func init() {
@@ -224,12 +223,9 @@ func (o *oracleProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*model
 	models.PostProcessRecords(existingRecords)
 	txtutil.SplitSingleLongTxt(dc.Records) // Autosplit long TXT records
 
-	filteredNewRecords := models.Records{}
-
 	// Ensure we don't emit changes for attempted modification of built-in apex NSs
 	for _, rec := range dc.Records {
 		if rec.Type != "NS" {
-			filteredNewRecords = append(filteredNewRecords, rec)
 			continue
 		}
 
@@ -243,7 +239,6 @@ func (o *oracleProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*model
 			printer.Warnf("Oracle Cloud forces TTL=86400 for NS records. Ignoring configured TTL of %d for %s\n", rec.TTL, recNS)
 			rec.TTL = 86400
 		}
-		filteredNewRecords = append(filteredNewRecords, rec)
 	}
 
 	differ := diff.New(dc)

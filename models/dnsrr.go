@@ -95,7 +95,7 @@ func RRtoRC(rr dns.RR, origin string) (RecordConfig, error) {
 	case *dns.TXT:
 		err = rc.SetTargetTXTs(v.Txt)
 	default:
-		return *rc, fmt.Errorf("rrToRecord: Unimplemented zone record type=%s (%v)\n", rc.Type, rr)
+		return *rc, fmt.Errorf("rrToRecord: Unimplemented zone record type=%s (%v)", rc.Type, rr)
 	}
 	if err != nil {
 		return *rc, fmt.Errorf("unparsable record received: %w", err)

@@ -2,7 +2,7 @@ package octoyaml
 
 import (
 	"encoding/json"
-	"fmt"
+	"github.com/StackExchange/dnscontrol/v3/pkg/printer"
 	"io/ioutil"
 
 	"github.com/StackExchange/dnscontrol/v3/models"
@@ -62,7 +62,7 @@ func require(call otto.FunctionCall) otto.Value {
 		throw(call.Otto, "require takes exactly one argument")
 	}
 	file := call.Argument(0).String()
-	fmt.Printf("requiring: %s\n", file)
+	printer.Printf("requiring: %s\n", file)
 	data, err := ioutil.ReadFile(file)
 	if err != nil {
 		throw(call.Otto, err.Error())

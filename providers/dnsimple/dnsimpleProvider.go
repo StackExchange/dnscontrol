@@ -13,24 +13,25 @@ import (
 
 	"github.com/StackExchange/dnscontrol/v3/models"
 	"github.com/StackExchange/dnscontrol/v3/pkg/diff"
-	"github.com/StackExchange/dnscontrol/v3/pkg/txtutil"
+	"github.com/StackExchange/dnscontrol/v3/pkg/printer"
 	"github.com/StackExchange/dnscontrol/v3/providers"
 )
 
 var features = providers.DocumentationNotes{
+	providers.CanAutoDNSSEC:          providers.Can(),
+	providers.CanGetZones:            providers.Can(),
 	providers.CanUseAlias:            providers.Can(),
 	providers.CanUseCAA:              providers.Can(),
+	providers.CanUseDS:               providers.Cannot(),
+	providers.CanUseDSForChildren:    providers.Cannot(),
 	providers.CanUseNAPTR:            providers.Can(),
-	providers.CanUseDS:               providers.Can(),
 	providers.CanUsePTR:              providers.Can(),
-	providers.CanUseSSHFP:            providers.Can(),
 	providers.CanUseSRV:              providers.Can(),
-	providers.CanAutoDNSSEC:          providers.Can(),
+	providers.CanUseSSHFP:            providers.Can(),
 	providers.CanUseTLSA:             providers.Cannot(),
 	providers.DocCreateDomains:       providers.Cannot(),
 	providers.DocDualHost:            providers.Cannot("DNSimple does not allow sufficient control over the apex NS records"),
 	providers.DocOfficiallySupported: providers.Cannot(),
-	providers.CanGetZones:            providers.Can(),
 }
 
 func init() {
@@ -59,7 +60,7 @@ type dnsimpleProvider struct {
 }
 
 // GetNameservers returns the name servers for a domain.
-func (c *dnsimpleProvider) GetNameservers(domainName string) ([]*models.Nameserver, error) {
+func (c *dnsimpleProvider) GetNameservers(_ string) ([]*models.Nameserver, error) {
 	return models.ToNameservers(defaultNameServerNames)
 }
 
@@ -75,51 +76,54 @@ func (c *dnsimpleProvider) GetZoneRecords(domain string) (models.Records, error)
 		if r.Type == "SOA" {
 			continue
 		}
+
 		if r.Name == "" {
 			r.Name = "@"
 		}
-		if r.Type == "CNAME" || r.Type == "MX" || r.Type == "ALIAS" {
+
+		if r.Type == "CNAME" || r.Type == "MX" || r.Type == "ALIAS" || r.Type == "NS" {
 			r.Content += "."
 		}
+
 		// DNSimple adds TXT records that mirror the alias records.
 		// They manage them on ALIAS updates, so pretend they don't exist
 		if r.Type == "TXT" && strings.HasPrefix(r.Content, "ALIAS for ") {
 			continue
 		}
+
 		rec := &models.RecordConfig{
 			TTL:      uint32(r.TTL),
 			Original: r,
 		}
 		rec.SetLabel(r.Name, domain)
+
+		var err error
 		switch rtype := r.Type; rtype {
 		case "DNSKEY", "CDNSKEY", "CDS":
 			continue
 		case "ALIAS", "URL":
 			rec.Type = r.Type
-			if err := rec.SetTarget(r.Content); err != nil {
-				return nil, fmt.Errorf("unparsable record received from dnsimple: %w", err)
-			}
+			err = rec.SetTarget(r.Content)
 		case "DS":
-			if err := rec.SetTargetDSString(r.Content); err != nil {
-				return nil, fmt.Errorf("unparsable record received from dnsimple: %w", err)
-			}
+			err = rec.SetTargetDSString(r.Content)
 		case "MX":
-			if err := rec.SetTargetMX(uint16(r.Priority), r.Content); err != nil {
-				return nil, fmt.Errorf("unparsable record received from dnsimple: %w", err)
-			}
+			err = rec.SetTargetMX(uint16(r.Priority), r.Content)
 		case "SRV":
 			parts := strings.Fields(r.Content)
 			if len(parts) == 3 {
 				r.Content += "."
 			}
-			if err := rec.SetTargetSRVPriorityString(uint16(r.Priority), r.Content); err != nil {
-				return nil, fmt.Errorf("unparsable record received from dnsimple: %w", err)
-			}
+			err = rec.SetTargetSRVPriorityString(uint16(r.Priority), r.Content)
+		case "TXT":
+			err = rec.SetTargetTXT(r.Content)
 		default:
-			if err := rec.PopulateFromString(r.Type, r.Content, domain); err != nil {
-				return nil, fmt.Errorf("unparsable record received from dnsimple: %w", err)
-			}
+			err = rec.PopulateFromString(r.Type, r.Content, domain)
 		}
+
+		if err != nil {
+			return nil, fmt.Errorf("unparsable record received from dnsimple: %w", err)
+		}
+
 		cleanedRecords = append(cleanedRecords, rec)
 	}
 
@@ -128,7 +132,7 @@ func (c *dnsimpleProvider) GetZoneRecords(domain string) (models.Records, error)
 
 // GetDomainCorrections returns corrections that update a domain.
 func (c *dnsimpleProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Correction, error) {
-	corrections := []*models.Correction{}
+	var corrections []*models.Correction
 	err := dc.Punycode()
 	if err != nil {
 		return nil, err
@@ -144,12 +148,12 @@ func (c *dnsimpleProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*mod
 	if err != nil {
 		return nil, err
 	}
-	actual := removeNS(records)
-	removeOtherNS(dc)
+	// Apex NS are immutable via API
+	actual := removeApexNS(records)
+	removeOtherApexNS(dc)
 
 	// Normalize
 	models.PostProcessRecords(actual)
-	txtutil.SplitSingleLongTxt(dc.Records) // Autosplit long TXT records
 
 	differ := diff.New(dc)
 	_, create, del, modify, err := differ.IncrementalDiff(actual)
@@ -185,19 +189,20 @@ func (c *dnsimpleProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*mod
 	return corrections, nil
 }
 
-func removeNS(records models.Records) models.Records {
-	var noNameServers models.Records
+func removeApexNS(records models.Records) models.Records {
+	var filtered models.Records
 	for _, r := range records {
-		if r.Type != "NS" {
-			noNameServers = append(noNameServers, r)
+		if r.Type == "NS" && r.Name == "@" {
+			continue
 		}
+		filtered = append(filtered, r)
 	}
-	return noNameServers
+	return filtered
 }
 
 // GetRegistrarCorrections returns corrections that update a domain's registrar.
 func (c *dnsimpleProvider) GetRegistrarCorrections(dc *models.DomainConfig) ([]*models.Correction, error) {
-	corrections := []*models.Correction{}
+	var corrections []*models.Correction
 
 	nameServers, err := c.getNameservers(dc.Name)
 	if err != nil {
@@ -207,7 +212,7 @@ func (c *dnsimpleProvider) GetRegistrarCorrections(dc *models.DomainConfig) ([]*
 
 	actual := strings.Join(nameServers, ",")
 
-	expectedSet := []string{}
+	var expectedSet []string
 	for _, ns := range dc.Nameservers {
 		expectedSet = append(expectedSet, ns.Name)
 	}
@@ -294,7 +299,7 @@ func (c *dnsimpleProvider) getRecords(domainName string) ([]dnsimpleapi.ZoneReco
 	}
 
 	opts := &dnsimpleapi.ZoneRecordListOptions{}
-	recs := []dnsimpleapi.ZoneRecord{}
+	var recs []dnsimpleapi.ZoneRecord
 	page := 1
 	for {
 		opts.Page = &page
@@ -536,7 +541,7 @@ func newDsp(conf map[string]string, metadata json.RawMessage) (providers.DNSServ
 	return newProvider(conf, metadata)
 }
 
-func newProvider(m map[string]string, metadata json.RawMessage) (*dnsimpleProvider, error) {
+func newProvider(m map[string]string, _ json.RawMessage) (*dnsimpleProvider, error) {
 	api := &dnsimpleProvider{}
 	api.AccountToken = m["token"]
 	if api.AccountToken == "" {
@@ -552,16 +557,19 @@ func newProvider(m map[string]string, metadata json.RawMessage) (*dnsimpleProvid
 
 // remove all non-dnsimple NS records from our desired state.
 // if any are found, print a warning
-func removeOtherNS(dc *models.DomainConfig) {
+func removeOtherApexNS(dc *models.DomainConfig) {
 	newList := make([]*models.RecordConfig, 0, len(dc.Records))
 	for _, rec := range dc.Records {
 		if rec.Type == "NS" {
 			// apex NS inside dnsimple are expected.
-			if rec.GetLabelFQDN() == dc.Name && strings.HasSuffix(rec.GetTargetField(), ".dnsimple.com.") {
+			// We ignore them, warning as needed.
+			// Child delegations are supported so we allow non-apex NS records.
+			if rec.GetLabelFQDN() == dc.Name {
+				if !strings.HasSuffix(rec.GetTargetField(), ".dnsimple.com.") {
+					printer.Printf("Warning: dnsimple.com does not allow NS records to be modified. %s will not be added.\n", rec.GetTargetField())
+				}
 				continue
 			}
-			fmt.Printf("Warning: dnsimple.com does not allow NS records to be modified. %s will not be added.\n", rec.GetTargetField())
-			continue
 		}
 		newList = append(newList, rec)
 	}
@@ -574,24 +582,18 @@ func getTargetRecordContent(rc *models.RecordConfig) string {
 	switch rtype := rc.Type; rtype {
 	case "CAA":
 		return rc.GetTargetCombined()
-	case "SSHFP":
-		return fmt.Sprintf("%d %d %s", rc.SshfpAlgorithm, rc.SshfpFingerprint, rc.GetTargetField())
 	case "DS":
 		return fmt.Sprintf("%d %d %d %s", rc.DsKeyTag, rc.DsAlgorithm, rc.DsDigestType, rc.DsDigest)
+	case "NAPTR":
+		return fmt.Sprintf(`%d %d "%s" "%s" "%s" %s`,
+			rc.NaptrOrder, rc.NaptrPreference, rc.NaptrFlags, rc.NaptrService, rc.NaptrRegexp,
+			rc.GetTargetField())
+	case "SSHFP":
+		return fmt.Sprintf("%d %d %s", rc.SshfpAlgorithm, rc.SshfpFingerprint, rc.GetTargetField())
 	case "SRV":
 		return fmt.Sprintf("%d %d %s", rc.SrvWeight, rc.SrvPort, rc.GetTargetField())
 	case "TXT":
-		quoted := make([]string, len(rc.TxtStrings))
-		for i := range rc.TxtStrings {
-			quoted[i] = quoteDNSString(rc.TxtStrings[i])
-		}
-		return strings.Join(quoted, " ")
-	case "NAPTR":
-		return fmt.Sprintf("%d %d %s %s %s %s",
-			rc.NaptrOrder, rc.NaptrPreference,
-			quoteDNSString(rc.NaptrFlags), quoteDNSString(rc.NaptrService),
-			quoteDNSString(rc.NaptrRegexp),
-			rc.GetTargetField())
+		return rc.GetTargetTXTJoined()
 	default:
 		return rc.GetTargetField()
 	}
@@ -610,22 +612,4 @@ func getTargetRecordPriority(rc *models.RecordConfig) int {
 	default:
 		return 0
 	}
-}
-
-// Return a DNS string appropriately escaped for DNSimple.
-// Should include the surrounding quotes.
-//
-// Warning: the DNSimple API is severely underdocumented in this area.
-// I know that it takes multiple quoted strings just fine, and constructs the
-// DNS multiple quoted items.
-// I'm not 100% on the escaping, but since it's a JSON API, JSON escaping seems
-// reasonable.
-// I do know that DNSimple have their own checks, so anything too crazy will
-// get a "400 Validation failed" HTTP response.
-func quoteDNSString(unquoted string) string {
-	b, err := json.Marshal(unquoted)
-	if err != nil {
-		panic(fmt.Errorf("unable to marshal to JSON: %q", unquoted))
-	}
-	return string(b)
 }

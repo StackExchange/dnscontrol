@@ -4,7 +4,6 @@ package hexonet
 import (
 	"encoding/json"
 	"fmt"
-
 	"github.com/StackExchange/dnscontrol/v3/pkg/version"
 	"github.com/StackExchange/dnscontrol/v3/providers"
 	hxcl "github.com/hexonet/go-sdk/v3/apiclient"
@@ -19,6 +18,7 @@ type HXClient struct {
 }
 
 var features = providers.DocumentationNotes{
+	providers.CanGetZones:            providers.Unimplemented(),
 	providers.CanUseAlias:            providers.Cannot("Using ALIAS is possible through our extended DNS (X-DNS) service. Feel free to get in touch with us."),
 	providers.CanUseCAA:              providers.Can(),
 	providers.CanUsePTR:              providers.Can(),
@@ -29,7 +29,6 @@ var features = providers.DocumentationNotes{
 	providers.DocCreateDomains:       providers.Can(),
 	providers.DocDualHost:            providers.Can(),
 	providers.DocOfficiallySupported: providers.Cannot("Actively maintained provider module."),
-	providers.CanGetZones:            providers.Unimplemented(),
 }
 
 func newProvider(conf map[string]string) (*HXClient, error) {

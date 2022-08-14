@@ -17,10 +17,10 @@ Modifier arguments are processed according to type as follows:
 - An array argument will have all of it's members evaluated recursively. This allows you to combine multiple common records or modifiers into a variable that can
    be used like a macro in multiple domains.
 
-{% include startExample.html %}
-{% highlight js %}
-var REGISTRAR = NewRegistrar("name.com", "NAMEDOTCOM");
-var r53 = NewDnsProvider("R53","ROUTE53");
+{% capture example %}
+```js
+var REGISTRAR = NewRegistrar("name.com");
+var r53 = NewDnsProvider("R53");
 
 // simple domain
 D("example.com", REGISTRAR, DnsProvider(r53),
@@ -42,8 +42,10 @@ D("example.com", REGISTRAR, DnsProvider(r53),
   CNAME("test", "foo.example2.com."),
   GOOGLE_APPS_DOMAIN_MX
 );
-{%endhighlight%}
-{% include endExample.html %}
+```
+{% endcapture %}
+
+{% include example.html content=example %}
 
 
 # Split Horizon DNS
@@ -56,11 +58,11 @@ To differentiate the different domains, specify the domains as
 `domain.tld!tag`, such as `example.com!inside` and
 `example.com!outside`.
 
-{% include startExample.html %}
-{% highlight js %}
-var REG = NewRegistrar("Third-Party", "NONE");
-var DNS_INSIDE = NewDnsProvider("Cloudflare", "CLOUDFLAREAPI");
-var DNS_OUTSIDE = NewDnsProvider("bind", "BIND");
+{% capture example %}
+```js
+var REG = NewRegistrar("Third-Party");
+var DNS_INSIDE = NewDnsProvider("Cloudflare");
+var DNS_OUTSIDE = NewDnsProvider("bind");
 
 D("example.com!inside", REG, DnsProvider(DNS_INSIDE),
   A("www", "10.10.10.10")
@@ -73,8 +75,10 @@ D("example.com!outside", REG, DnsProvider(DNS_OUTSIDE),
 D_EXTEND("example.com!inside",
   A("internal", "10.99.99.99")
 );
-{%endhighlight%}
-{% include endExample.html %}
+```
+{% endcapture %}
+
+{% include example.html content=example %}
 
 A domain name without a `!` is assigned a tag that is the empty
 string. For example, `example.com` and `example.com!` are equivalent.

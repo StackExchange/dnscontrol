@@ -11,7 +11,7 @@ import (
 	"github.com/StackExchange/dnscontrol/v3/providers"
 )
 
-var defaultNameservers = []string{"ns1.hosting.de", "ns2.hosting.de", "ns3.hosting.de"}
+var defaultNameservers = []string{"ns1.hosting.de.", "ns2.hosting.de.", "ns3.hosting.de."}
 
 var features = providers.DocumentationNotes{
 	providers.CanAutoDNSSEC:          providers.Unimplemented("Supported but not implemented yet."),
@@ -40,7 +40,11 @@ func init() {
 	providers.RegisterDomainServiceProviderType("HOSTINGDE", fns, features)
 }
 
-func newHostingde(m map[string]string) (*hostingdeProvider, error) {
+type providerMeta struct {
+	DefaultNS []string `json:"default_ns"`
+}
+
+func newHostingde(m map[string]string, providermeta json.RawMessage) (*hostingdeProvider, error) {
 	authToken, ownerAccountID, baseURL := m["authToken"], m["ownerAccountId"], m["baseURL"]
 
 	if authToken == "" {
@@ -56,33 +60,33 @@ func newHostingde(m map[string]string) (*hostingdeProvider, error) {
 		authToken:      authToken,
 		ownerAccountID: ownerAccountID,
 		baseURL:        baseURL,
+		nameservers:    defaultNameservers,
+	}
+
+	if len(providermeta) > 0 {
+		var pm providerMeta
+		if err := json.Unmarshal(providermeta, &pm); err != nil {
+			return nil, fmt.Errorf("hosting.de: could not parse providermeta: %w", err)
+		}
+
+		if len(pm.DefaultNS) > 0 {
+			hp.nameservers = pm.DefaultNS
+		}
 	}
 
 	return hp, nil
 }
 
-func newHostingdeDsp(m map[string]string, raw json.RawMessage) (providers.DNSServiceProvider, error) {
-	return newHostingde(m)
+func newHostingdeDsp(m map[string]string, providermeta json.RawMessage) (providers.DNSServiceProvider, error) {
+	return newHostingde(m, providermeta)
 }
 
 func newHostingdeReg(m map[string]string) (providers.Registrar, error) {
-	return newHostingde(m)
+	return newHostingde(m, json.RawMessage{})
 }
 
 func (hp *hostingdeProvider) GetNameservers(domain string) ([]*models.Nameserver, error) {
-	src, err := hp.getRecords(domain)
-	if err != nil {
-		return nil, err
-	}
-
-	var nameservers []string
-	for _, record := range src {
-		if record.Type == "NS" {
-			nameservers = append(nameservers, record.Content)
-		}
-	}
-
-	return models.ToNameservers(nameservers)
+	return models.ToNameserversStripTD(hp.nameservers)
 }
 
 func (hp *hostingdeProvider) GetZoneRecords(domain string) (models.Records, error) {

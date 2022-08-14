@@ -38,7 +38,7 @@ type easynameDomainList struct {
 }
 
 type easynameDomain struct {
-	Id          int    `json:"id"`
+	ID          int    `json:"id"`
 	Domain      string `json:"domain"`
 	NameServer1 string `json:"nameserver1"`
 	NameServer2 string `json:"nameserver2"`

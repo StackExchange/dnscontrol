@@ -1,38 +1,32 @@
 package powerdns
 
 import (
-	"context"
 	"encoding/json"
 	"fmt"
 	"github.com/StackExchange/dnscontrol/v3/models"
-	"github.com/StackExchange/dnscontrol/v3/pkg/diff"
 	"github.com/StackExchange/dnscontrol/v3/providers"
-	"github.com/miekg/dns/dnsutil"
 	pdns "github.com/mittwald/go-powerdns"
-	"github.com/mittwald/go-powerdns/apis/zones"
-	"github.com/mittwald/go-powerdns/pdnshttp"
-	"net/http"
-	"strings"
 )
 
 var features = providers.DocumentationNotes{
+	providers.CanAutoDNSSEC:          providers.Can(),
+	providers.CanGetZones:            providers.Can(),
 	providers.CanUseAlias:            providers.Can("Needs to be enabled in PowerDNS first", "https://doc.powerdns.com/authoritative/guides/alias.html"),
 	providers.CanUseCAA:              providers.Can(),
+	providers.CanUseDS:               providers.Can(),
+	providers.CanUseNAPTR:            providers.Can(),
 	providers.CanUsePTR:              providers.Can(),
 	providers.CanUseSRV:              providers.Can(),
-	providers.CanUseTLSA:             providers.Can(),
 	providers.CanUseSSHFP:            providers.Can(),
-	providers.CanAutoDNSSEC:          providers.Can(),
+	providers.CanUseTLSA:             providers.Can(),
 	providers.DocCreateDomains:       providers.Can(),
-	providers.DocOfficiallySupported: providers.Cannot(),
-	providers.CanGetZones:            providers.Can(),
 	providers.DocDualHost:            providers.Can(),
-	providers.CanUseNAPTR:            providers.Can(),
+	providers.DocOfficiallySupported: providers.Cannot(),
 }
 
 func init() {
 	fns := providers.DspFuncs{
-		Initializer:   NewProvider,
+		Initializer:   newDSP,
 		RecordAuditor: AuditRecords,
 	}
 	providers.RegisterDomainServiceProviderType("POWERDNS", fns, features)
@@ -50,226 +44,46 @@ type powerdnsProvider struct {
 	nameservers []*models.Nameserver
 }
 
-// NewProvider initializes a PowerDNS DNSServiceProvider.
-func NewProvider(m map[string]string, metadata json.RawMessage) (providers.DNSServiceProvider, error) {
-	api := &powerdnsProvider{}
+// newDSP initializes a PowerDNS DNSServiceProvider.
+func newDSP(m map[string]string, metadata json.RawMessage) (providers.DNSServiceProvider, error) {
+	dsp := &powerdnsProvider{}
 
-	api.APIKey = m["apiKey"]
-	if api.APIKey == "" {
+	dsp.APIKey = m["apiKey"]
+	if dsp.APIKey == "" {
 		return nil, fmt.Errorf("PowerDNS API Key is required")
 	}
 
-	api.APIUrl = m["apiUrl"]
-	if api.APIUrl == "" {
+	dsp.APIUrl = m["apiUrl"]
+	if dsp.APIUrl == "" {
 		return nil, fmt.Errorf("PowerDNS API URL is required")
 	}
 
-	api.ServerName = m["serverName"]
-	if api.ServerName == "" {
+	dsp.ServerName = m["serverName"]
+	if dsp.ServerName == "" {
 		return nil, fmt.Errorf("PowerDNS server name is required")
 	}
 
 	// load js config
 	if len(metadata) != 0 {
-		err := json.Unmarshal(metadata, api)
+		err := json.Unmarshal(metadata, dsp)
 		if err != nil {
 			return nil, err
 		}
 	}
 	var nss []string
-	for _, ns := range api.DefaultNS {
+	for _, ns := range dsp.DefaultNS {
 		nss = append(nss, ns[0:len(ns)-1])
 	}
 	var err error
-	api.nameservers, err = models.ToNameservers(nss)
+	dsp.nameservers, err = models.ToNameservers(nss)
 	if err != nil {
-		return api, err
+		return dsp, err
 	}
 
 	var clientErr error
-	api.client, clientErr = pdns.New(
-		pdns.WithBaseURL(api.APIUrl),
-		pdns.WithAPIKeyAuthentication(api.APIKey),
+	dsp.client, clientErr = pdns.New(
+		pdns.WithBaseURL(dsp.APIUrl),
+		pdns.WithAPIKeyAuthentication(dsp.APIKey),
 	)
-	return api, clientErr
-}
-
-// GetNameservers returns the nameservers for a domain.
-func (api *powerdnsProvider) GetNameservers(string) ([]*models.Nameserver, error) {
-	var r []string
-	for _, j := range api.nameservers {
-		r = append(r, j.Name)
-	}
-	return models.ToNameservers(r)
-}
-
-// ListZones returns all the zones in an account
-func (api *powerdnsProvider) ListZones() ([]string, error) {
-	var result []string
-	myZones, err := api.client.Zones().ListZones(context.Background(), api.ServerName)
-	if err != nil {
-		return result, err
-	}
-	for _, zone := range myZones {
-		result = append(result, zone.Name)
-	}
-	return result, nil
-}
-
-// GetZoneRecords gets the records of a zone and returns them in RecordConfig format.
-func (api *powerdnsProvider) GetZoneRecords(domain string) (models.Records, error) {
-	zone, err := api.client.Zones().GetZone(context.Background(), api.ServerName, domain)
-	if err != nil {
-		return nil, err
-	}
-
-	curRecords := models.Records{}
-	// loop over grouped records by type, called RRSet
-	for _, rrset := range zone.ResourceRecordSets {
-		if rrset.Type == "SOA" {
-			continue
-		}
-		// loop over single records of this group and create records
-		for _, pdnsRecord := range rrset.Records {
-			r, err := toRecordConfig(domain, pdnsRecord, rrset.TTL, rrset.Name, rrset.Type)
-			if err != nil {
-				return nil, err
-			}
-			curRecords = append(curRecords, r)
-		}
-	}
-
-	return curRecords, nil
-}
-
-// GetDomainCorrections returns a list of corrections to update a domain.
-func (api *powerdnsProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Correction, error) {
-	var corrections []*models.Correction
-
-	// get current zone records
-	curRecords, err := api.GetZoneRecords(dc.Name)
-	if err != nil {
-		return nil, err
-	}
-
-	// post-process records
-	if err := dc.Punycode(); err != nil {
-		return nil, err
-	}
-	models.PostProcessRecords(curRecords)
-
-	// create record diff by group
-	keysToUpdate, err := (diff.New(dc)).ChangedGroups(curRecords)
-	if err != nil {
-		return nil, err
-	}
-	desiredRecords := dc.Records.GroupedByKey()
-
-	var cuCorrections []*models.Correction
-	var dCorrections []*models.Correction
-
-	// add create/update and delete corrections separately
-	for label, msgs := range keysToUpdate {
-		labelName := label.NameFQDN + "."
-		labelType := label.Type
-		msgJoined := strings.Join(msgs, "\n   ")
-
-		if _, ok := desiredRecords[label]; !ok {
-			// no record found so delete it
-			dCorrections = append(dCorrections, &models.Correction{
-				Msg: msgJoined,
-				F: func() error {
-					return api.client.Zones().RemoveRecordSetFromZone(context.Background(), api.ServerName, dc.Name, labelName, labelType)
-				},
-			})
-		} else {
-			// record found so create or update it
-			ttl := desiredRecords[label][0].TTL
-			var records []zones.Record
-			for _, recordContent := range desiredRecords[label] {
-				records = append(records, zones.Record{
-					Content: recordContent.GetTargetCombined(),
-				})
-			}
-			cuCorrections = append(cuCorrections, &models.Correction{
-				Msg: msgJoined,
-				F: func() error {
-					return api.client.Zones().AddRecordSetToZone(context.Background(), api.ServerName, dc.Name, zones.ResourceRecordSet{
-						Name:       labelName,
-						Type:       labelType,
-						TTL:        int(ttl),
-						Records:    records,
-						ChangeType: zones.ChangeTypeReplace,
-					})
-				},
-			})
-		}
-	}
-
-	// append corrections in the right order
-	// delete corrections must be run first to avoid correlations with existing RR
-	corrections = append(corrections, dCorrections...)
-	corrections = append(corrections, cuCorrections...)
-
-	// DNSSec corrections
-	dnssecCorrections, err := api.getDNSSECCorrections(dc)
-	if err != nil {
-		return nil, err
-	}
-	corrections = append(corrections, dnssecCorrections...)
-
-	return corrections, nil
-}
-
-// EnsureDomainExists adds a domain to the DNS service if it does not exist
-func (api *powerdnsProvider) EnsureDomainExists(domain string) error {
-	if _, err := api.client.Zones().GetZone(context.Background(), api.ServerName, domain+"."); err != nil {
-		if e, ok := err.(pdnshttp.ErrUnexpectedStatus); ok {
-			if e.StatusCode != http.StatusNotFound {
-				return err
-			}
-		}
-	} else { // domain seems to be there
-		return nil
-	}
-
-	_, err := api.client.Zones().CreateZone(context.Background(), api.ServerName, zones.Zone{
-		Name:        domain + ".",
-		Type:        zones.ZoneTypeZone,
-		DNSSec:      api.DNSSecOnCreate,
-		Nameservers: api.DefaultNS,
-	})
-	return err
-}
-
-// toRecordConfig converts a PowerDNS DNSRecord to a RecordConfig. #rtype_variations
-func toRecordConfig(domain string, r zones.Record, ttl int, name string, rtype string) (*models.RecordConfig, error) {
-	// trimming trailing dot and domain from name
-	name = strings.TrimSuffix(name, domain+".")
-	name = strings.TrimSuffix(name, ".")
-
-	rc := &models.RecordConfig{
-		TTL:      uint32(ttl),
-		Original: r,
-		Type:     rtype,
-	}
-	rc.SetLabel(name, domain)
-
-	content := r.Content
-	switch rtype {
-	case "ALIAS":
-		return rc, rc.SetTarget(r.Content)
-	case "CNAME", "NS":
-		return rc, rc.SetTarget(dnsutil.AddOrigin(content, domain))
-	case "CAA":
-		return rc, rc.SetTargetCAAString(content)
-	case "MX":
-		return rc, rc.SetTargetMXString(content)
-	case "SRV":
-		return rc, rc.SetTargetSRVString(content)
-	case "NAPTR":
-		return rc, rc.SetTargetNAPTRString(content)
-	default:
-		return rc, rc.PopulateFromString(rtype, content, domain)
-	}
+	return dsp, clientErr
 }

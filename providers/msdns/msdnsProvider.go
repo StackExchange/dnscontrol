@@ -2,8 +2,9 @@ package msdns
 
 import (
 	"encoding/json"
-	"fmt"
 	"runtime"
+
+	"github.com/StackExchange/dnscontrol/v3/pkg/printer"
 
 	"github.com/StackExchange/dnscontrol/v3/models"
 	"github.com/StackExchange/dnscontrol/v3/pkg/txtutil"
@@ -46,7 +47,7 @@ func init() {
 func newDNS(config map[string]string, metadata json.RawMessage) (providers.DNSServiceProvider, error) {
 
 	if runtime.GOOS != "windows" {
-		fmt.Println("INFO: PowerShell not available. Disabling Active Directory provider.")
+		printer.Println("INFO: PowerShell not available. Disabling Active Directory provider.")
 		return providers.None{}, nil
 	}
 

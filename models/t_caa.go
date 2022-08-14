@@ -3,7 +3,6 @@ package models
 import (
 	"fmt"
 	"strconv"
-	"strings"
 )
 
 // SetTargetCAA sets the CAA fields.
@@ -37,9 +36,12 @@ func (rc *RecordConfig) SetTargetCAAStrings(flag, tag, target string) error {
 // SetTargetCAAString is like SetTargetCAA but accepts one big string.
 // Ex: `0 issue "letsencrypt.org"`
 func (rc *RecordConfig) SetTargetCAAString(s string) error {
-	part := strings.Fields(s)
+	part, err := ParseQuotedFields(s)
+	if err != nil {
+		return err
+	}
 	if len(part) != 3 {
 		return fmt.Errorf("CAA value does not contain 3 fields: (%#v)", s)
 	}
-	return rc.SetTargetCAAStrings(part[0], part[1], StripQuotes(part[2]))
+	return rc.SetTargetCAAStrings(part[0], part[1], part[2])
 }

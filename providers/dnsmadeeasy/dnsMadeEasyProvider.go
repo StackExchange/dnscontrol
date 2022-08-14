@@ -13,18 +13,18 @@ import (
 )
 
 var features = providers.DocumentationNotes{
+	providers.CanGetZones:            providers.Can(),
 	providers.CanUseAlias:            providers.Can(),
-	providers.CanUsePTR:              providers.Can(),
 	providers.CanUseCAA:              providers.Can(),
-	providers.CanUseSRV:              providers.Can(),
-	providers.CanUseTLSA:             providers.Cannot(),
-	providers.CanUseSSHFP:            providers.Cannot(),
 	providers.CanUseDS:               providers.Cannot(),
 	providers.CanUseDSForChildren:    providers.Cannot(),
+	providers.CanUsePTR:              providers.Can(),
+	providers.CanUseSRV:              providers.Can(),
+	providers.CanUseSSHFP:            providers.Cannot(),
+	providers.CanUseTLSA:             providers.Cannot(),
 	providers.DocCreateDomains:       providers.Can(),
 	providers.DocDualHost:            providers.Can("System NS records cannot be edited. Custom apex NS records can be added/changed/deleted."),
 	providers.DocOfficiallySupported: providers.Cannot(),
-	providers.CanGetZones:            providers.Can(),
 }
 
 func init() {
@@ -73,10 +73,13 @@ func (api *dnsMadeEasyProvider) GetDomainCorrections(dc *models.DomainConfig) ([
 		return nil, err
 	}
 
-	// ALIAS is called ANAME on DNS Made Easy
 	for _, rec := range dc.Records {
 		if rec.Type == "ALIAS" {
+			// ALIAS is called ANAME on DNS Made Easy
 			rec.Type = "ANAME"
+		} else if rec.Type == "NS" {
+			// NS records have fixed TTL on DNS Made Easy and it cannot be changed
+			rec.TTL = fixedNameServerRecordTTL
 		}
 	}
 

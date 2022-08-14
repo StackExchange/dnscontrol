@@ -25,15 +25,15 @@ Info required in `creds.json`:
 */
 
 var features = providers.DocumentationNotes{
+	providers.CanGetZones:            providers.Can(),
 	providers.CanUseAlias:            providers.Cannot(),
 	providers.CanUseCAA:              providers.Can(),
 	providers.CanUsePTR:              providers.Cannot(),
 	providers.CanUseSRV:              providers.Can(),
-	providers.CanUseTLSA:             providers.Cannot(),
 	providers.CanUseSSHFP:            providers.Can(),
+	providers.CanUseTLSA:             providers.Cannot(),
 	providers.DocCreateDomains:       providers.Can(),
 	providers.DocOfficiallySupported: providers.Cannot(),
-	providers.CanGetZones:            providers.Can(),
 }
 
 func init() {
@@ -225,9 +225,7 @@ func toVultrRecord(dc *models.DomainConfig, rc *models.RecordConfig, vultrID int
 	data := rc.GetTargetField()
 
 	// Vultr does not use a period suffix for CNAME, NS, or MX.
-	if strings.HasSuffix(data, ".") {
-		data = data[:len(data)-1]
-	}
+	data = strings.TrimSuffix(data, ".")
 
 	var priority *int
 
