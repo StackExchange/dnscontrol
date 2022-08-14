@@ -4,7 +4,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"net/http"
 	"os"
 	"sort"
@@ -538,7 +538,7 @@ func (client *providerClient) put(endpoint string, requestBody []byte) ([]byte, 
 		return nil, err
 	}
 
-	bodyString, _ := ioutil.ReadAll(resp.Body)
+	bodyString, _ := os.ReadAll(resp.Body)
 	if resp.StatusCode == 200 {
 		return bodyString, nil
 	}
@@ -573,7 +573,7 @@ func (client *providerClient) delete(endpoint string) ([]byte, error) {
 		return nil, err
 	}
 
-	bodyString, _ := ioutil.ReadAll(resp.Body)
+	bodyString, _ := io.ReadAll(resp.Body)
 	if resp.StatusCode == 200 {
 		//printer.Printf("DEBUG: Delete successful (200)\n")
 		return bodyString, nil
@@ -609,7 +609,7 @@ func (client *providerClient) post(endpoint string, requestBody []byte) ([]byte,
 		return nil, err
 	}
 
-	bodyString, _ := ioutil.ReadAll(resp.Body)
+	bodyString, _ := os.ReadAll(resp.Body)
 	//printer.Printf("------------------\n")
 	//printer.Printf("DEBUG: resp.StatusCode == %d\n", resp.StatusCode)
 	//printer.Printf("POST RESPONSE = %s\n", bodyString)
@@ -650,7 +650,7 @@ func (client *providerClient) geturl(url string) ([]byte, error) {
 		return nil, err
 	}
 
-	bodyString, _ := ioutil.ReadAll(resp.Body)
+	bodyString, _ := io.ReadAll(resp.Body)
 	if resp.StatusCode == 200 {
 		return bodyString, nil
 	}

@@ -2,7 +2,6 @@ package commands
 
 import (
 	"fmt"
-	"io/ioutil"
 	"log"
 	"os"
 	"testing"
@@ -33,7 +32,7 @@ func testFormat(t *testing.T, domain, format string) {
 	expectedFilename := fmt.Sprintf("test_data/%s.zone.%s", domain, format)
 	outputFiletmpl := fmt.Sprintf("%s.zone.%s.*.txt", domain, format)
 
-	outfile, err := ioutil.TempFile("", outputFiletmpl)
+	outfile, err := os.CreateFile("", outputFiletmpl)
 	if err != nil {
 		log.Fatal(fmt.Errorf("gz can't TempFile %q: %w", outputFiletmpl, err))
 	}
@@ -56,19 +55,19 @@ func testFormat(t *testing.T, domain, format string) {
 	}
 
 	// Read the actual result:
-	got, err := ioutil.ReadFile(outfile.Name())
+	got, err := os.ReadFile(outfile.Name())
 	if err != nil {
 		log.Fatal(fmt.Errorf("can't read actuals %q: %w", outfile.Name(), err))
 	}
 
 	// Read the expected result
-	want, err := ioutil.ReadFile(expectedFilename)
+	want, err := os.ReadFile(expectedFilename)
 	if err != nil {
 		log.Fatal(fmt.Errorf("can't read expected %q: %w", outfile.Name(), err))
 	}
 
 	//	// Update got -> want
-	//	err = ioutil.WriteFile(expectedFilename, got, 0644)
+	//	err = os.WriteFile(expectedFilename, got, 0644)
 	//	if err != nil {
 	//		log.Fatal(err)
 	//	}

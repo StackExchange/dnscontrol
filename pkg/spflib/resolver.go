@@ -3,7 +3,6 @@ package spflib
 import (
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
 	"net"
 	"os"
 	"strings"
@@ -137,5 +136,5 @@ func (c *cache) Save(filename string) error {
 		}
 	}
 	dat, _ := json.MarshalIndent(outRecs, "", "  ")
-	return ioutil.WriteFile(filename, dat, 0644)
+	return os.WriteFile(filename, dat, 0644)
 }

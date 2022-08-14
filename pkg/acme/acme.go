@@ -5,7 +5,6 @@ import (
 	"crypto/x509"
 	"encoding/pem"
 	"fmt"
-	"io/ioutil"
 	"log"
 	"net/url"
 	"sort"
@@ -101,7 +100,7 @@ func NewVault(cfg *models.DNSConfig, vaultPath string, email string, server stri
 // It will return true if it issued or updated the certificate.
 func (c *certManager) IssueOrRenewCert(cfg *CertConfig, renewUnder int, verbose bool) (bool, error) {
 	if !verbose {
-		acmelog.Logger = log.New(ioutil.Discard, "", 0)
+		acmelog.Logger = log.New(os.Discard, "", 0)
 	}
 	defer c.finalCleanUp()
 

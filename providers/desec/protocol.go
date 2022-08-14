@@ -4,7 +4,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"net/http"
 	"regexp"
 	"strconv"
@@ -284,7 +284,7 @@ retry:
 		return []byte{}, resp, err
 	}
 
-	bodyString, _ := ioutil.ReadAll(resp.Body)
+	bodyString, _ := io.ReadAll(resp.Body)
 	// Got error from API ?
 	if resp.StatusCode > 299 {
 		if resp.StatusCode == 429 && retrycnt < 5 {
@@ -350,7 +350,7 @@ retry:
 		return []byte{}, err
 	}
 
-	bodyString, _ := ioutil.ReadAll(resp.Body)
+	bodyString, _ := io.ReadAll(resp.Body)
 
 	// Got error from API ?
 	if resp.StatusCode > 299 {

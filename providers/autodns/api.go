@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 	"errors"
 	"io"
-	"io/ioutil"
 	"net/http"
 	"sort"
 
@@ -50,7 +49,7 @@ func (api *autoDnsProvider) request(method string, requestPath string, data inte
 	}
 	defer response.Body.Close()
 
-	responseText, _ := ioutil.ReadAll(response.Body)
+	responseText, _ := io.ReadAll(response.Body)
 	if response.StatusCode != 200 {
 		return nil, errors.New("Request to " + requestURL.Path + " failed: " + string(responseText))
 	}

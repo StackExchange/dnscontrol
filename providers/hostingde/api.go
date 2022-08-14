@@ -4,7 +4,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"net/http"
 
 	"github.com/StackExchange/dnscontrol/v3/pkg/diff"
@@ -252,7 +252,7 @@ func (hp *hostingdeProvider) get(service, method string, params request) (*respo
 		return nil, fmt.Errorf("error occurred: %s", resp.Status)
 	}
 
-	bodyBytes, err := ioutil.ReadAll(resp.Body)
+	bodyBytes, err := io.ReadAll(resp.Body)
 	if err != nil {
 		return nil, fmt.Errorf("could not read response body: %w", err)
 	}
