@@ -15,66 +15,74 @@ import (
 
 // RecordConfig stores a DNS record.
 // Valid types:
-//   Official: (alphabetical)
-//     A
-//     AAAA
-//     ANAME  // Technically not an official rtype yet.
-//     CAA
-//     CNAME
-//     MX
-//     NAPTR
-//     NS
-//     PTR
-//     SOA
-//     SRV
-//     SSHFP
-//     TLSA
-//     TXT
-//   Pseudo-Types: (alphabetical)
-//     ALIAS
-//     CF_REDIRECT
-//     CF_TEMP_REDIRECT
-//     CF_WORKER_ROUTE
-//     CLOUDNS_WR
-//     FRAME
-//     IMPORT_TRANSFORM
-//     NAMESERVER
-//     NO_PURGE
-//     NS1_URLFWD
-//     PAGE_RULE
-//     PURGE
-//     URL
-//     URL301
-//     WORKER_ROUTE
+//
+//	Official: (alphabetical)
+//	  A
+//	  AAAA
+//	  ANAME  // Technically not an official rtype yet.
+//	  CAA
+//	  CNAME
+//	  MX
+//	  NAPTR
+//	  NS
+//	  PTR
+//	  SOA
+//	  SRV
+//	  SSHFP
+//	  TLSA
+//	  TXT
+//	Pseudo-Types: (alphabetical)
+//	  ALIAS
+//	  CF_REDIRECT
+//	  CF_TEMP_REDIRECT
+//	  CF_WORKER_ROUTE
+//	  CLOUDNS_WR
+//	  FRAME
+//	  IMPORT_TRANSFORM
+//	  NAMESERVER
+//	  NO_PURGE
+//	  NS1_URLFWD
+//	  PAGE_RULE
+//	  PURGE
+//	  URL
+//	  URL301
+//	  WORKER_ROUTE
 //
 // Notes about the fields:
 //
 // Name:
-//    This is the shortname i.e. the NameFQDN without the origin suffix.
-//    It should never have a trailing "."
-//    It should never be null. The apex (naked domain) is stored as "@".
-//    If the origin is "foo.com." and Name is "foo.com", this literally means
-//        the intended FQDN is "foo.com.foo.com." (which may look odd)
+//
+//	This is the shortname i.e. the NameFQDN without the origin suffix.
+//	It should never have a trailing "."
+//	It should never be null. The apex (naked domain) is stored as "@".
+//	If the origin is "foo.com." and Name is "foo.com", this literally means
+//	    the intended FQDN is "foo.com.foo.com." (which may look odd)
+//
 // NameFQDN:
-//    This is the FQDN version of Name.
-//    It should never have a trailing ".".
-//    NOTE: Eventually we will unexport Name/NameFQDN. Please start using
-//      the setters (SetLabel/SetLabelFromFQDN) and getters (GetLabel/GetLabelFQDN).
-//      as they will always work.
+//
+//	This is the FQDN version of Name.
+//	It should never have a trailing ".".
+//	NOTE: Eventually we will unexport Name/NameFQDN. Please start using
+//	  the setters (SetLabel/SetLabelFromFQDN) and getters (GetLabel/GetLabelFQDN).
+//	  as they will always work.
+//
 // target:
-//   This is the host or IP address of the record, with
-//     the other related parameters (weight, priority, etc.) stored in individual
-//     fields.
-//   NOTE: Eventually we will unexport Target. Please start using the
-//     setters (SetTarget*) and getters (GetTarget*) as they will always work.
+//
+//	This is the host or IP address of the record, with
+//	  the other related parameters (weight, priority, etc.) stored in individual
+//	  fields.
+//	NOTE: Eventually we will unexport Target. Please start using the
+//	  setters (SetTarget*) and getters (GetTarget*) as they will always work.
+//
 // SubDomain:
-//    This is the subdomain path, if any, imported from the configuration. If
-//        present at the time of canonicalization it is inserted between the
-//        Name and origin when constructing a canonical (FQDN) target.
+//
+//	This is the subdomain path, if any, imported from the configuration. If
+//	    present at the time of canonicalization it is inserted between the
+//	    Name and origin when constructing a canonical (FQDN) target.
 //
 // Idioms:
-//  rec.Label() == "@"   // Is this record at the apex?
 //
+//	rec.Label() == "@"   // Is this record at the apex?
 type RecordConfig struct {
 	Type      string            `json:"type"` // All caps rtype name.
 	Name      string            `json:"name"` // The short name. See above.
@@ -214,10 +222,13 @@ func (rc *RecordConfig) Copy() (*RecordConfig, error) {
 
 // SetLabel sets the .Name/.NameFQDN fields given a short name and origin.
 // origin must not have a trailing dot: The entire code base
-//   maintains dc.Name without the trailig dot. Finding a dot here means
-//   something is very wrong.
+//
+//	maintains dc.Name without the trailig dot. Finding a dot here means
+//	something is very wrong.
+//
 // short must not have a training dot: That would mean you have
-//   a FQDN, and shouldn't be using SetLabel().  Maybe SetLabelFromFQDN()?
+//
+//	a FQDN, and shouldn't be using SetLabel().  Maybe SetLabelFromFQDN()?
 func (rc *RecordConfig) SetLabel(short, origin string) {
 
 	// Assertions that make sure the function is being used correctly:
@@ -277,7 +288,9 @@ func (rc *RecordConfig) SetLabelFromFQDN(fqdn, origin string) {
 // GetLabel returns the shortname of the label associated with this RecordConfig.
 // It will never end with "."
 // It does not need further shortening (i.e. if it returns "foo.com" and the
-//   domain is "foo.com" then the FQDN is actually "foo.com.foo.com").
+//
+//	domain is "foo.com" then the FQDN is actually "foo.com.foo.com").
+//
 // It will never be "" (the apex is returned as "@").
 func (rc *RecordConfig) GetLabel() string {
 	return rc.Name

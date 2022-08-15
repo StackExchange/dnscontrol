@@ -121,7 +121,7 @@ func (c *desecProvider) initializeDomainIndex() error {
 	return err
 }
 
-//buildIndexFromResponse takes the bodyString from initializeDomainIndex and builds the domainIndex
+// buildIndexFromResponse takes the bodyString from initializeDomainIndex and builds the domainIndex
 func (c *desecProvider) buildIndexFromResponse(bodyString []byte) error {
 	if c.domainIndex == nil {
 		c.domainIndex = map[string]uint32{}
@@ -139,7 +139,7 @@ func (c *desecProvider) buildIndexFromResponse(bodyString []byte) error {
 	return nil
 }
 
-//Parses the Link Header into a map (https://github.com/desec-io/desec-tools/blob/master/fetch_zone.py#L13)
+// Parses the Link Header into a map (https://github.com/desec-io/desec-tools/blob/master/fetch_zone.py#L13)
 func (c *desecProvider) convertLinks(links string) map[string]string {
 	mapping := make(map[string]string)
 	printer.Debugf("Header: %s\n", links)
@@ -204,7 +204,7 @@ func (c *desecProvider) getRecords(domain string) ([]resourceRecord, error) {
 	return rrsNew, nil
 }
 
-//generateRRSETfromResponse takes the response rrset api calls and returns []resourceRecord
+// generateRRSETfromResponse takes the response rrset api calls and returns []resourceRecord
 func generateRRSETfromResponse(bodyString []byte) ([]resourceRecord, error) {
 	var rrs []rrResponse
 	var rrsNew []resourceRecord
@@ -245,7 +245,7 @@ func (c *desecProvider) createDomain(domain string) error {
 	return nil
 }
 
-//upsertRR will create or override the RRSet with the provided resource record.
+// upsertRR will create or override the RRSet with the provided resource record.
 func (c *desecProvider) upsertRR(rr []resourceRecord, domain string) error {
 	endpoint := fmt.Sprintf("/domains/%s/rrsets/", domain)
 	byt, _ := json.Marshal(rr)

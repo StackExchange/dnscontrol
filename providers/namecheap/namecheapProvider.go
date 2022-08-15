@@ -82,8 +82,10 @@ func splitDomain(domain string) (sld string, tld string) {
 
 // namecheap has request limiting at unpublished limits
 // from support in SEP-2017:
-//    "The limits for the API calls will be 20/Min, 700/Hour and 8000/Day for one user.
-//     If you can limit the requests within these it should be fine."
+//
+//	"The limits for the API calls will be 20/Min, 700/Hour and 8000/Day for one user.
+//	 If you can limit the requests within these it should be fine."
+//
 // this helper performs some api action, checks for rate limited response, and if so, enters a retry loop until it resolves
 // if you are consistently hitting this, you may have success asking their support to increase your account's limits.
 func doWithRetry(f func() error) {

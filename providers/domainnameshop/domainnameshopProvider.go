@@ -75,8 +75,9 @@ type domainResponse struct {
 }
 
 // The Actual fields are the values in the right format according to what is needed for RecordConfig.
-//  While the values without Actual are the values directly as received from the DomainNameShop API.
-//  This is done to make it easier to use the values at later points.
+//
+//	While the values without Actual are the values directly as received from the DomainNameShop API.
+//	This is done to make it easier to use the values at later points.
 type domainNameShopRecord struct {
 	ID             int    `json:"id"`
 	Host           string `json:"host"`

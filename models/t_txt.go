@@ -155,10 +155,11 @@ func (rc *RecordConfig) GetTargetTXTJoined() string {
 // SetTargetTXTString is like SetTargetTXTs but accepts one big string,
 // which is parsed into individual strings.
 // Ex: foo             << 1 string
-//     foo bar         << 1 string
-//     "foo bar"       << 1 string
-//     "foo" "bar"     << 2 strings
-//     "f"oo" "bar"    << 2 strings, one has a quote in it
+//
+//	foo bar         << 1 string
+//	"foo bar"       << 1 string
+//	"foo" "bar"     << 2 strings
+//	"f"oo" "bar"    << 2 strings, one has a quote in it
 //
 // BUG: This function doesn't handle escaped quotes ("like \" this").
 //
@@ -182,9 +183,10 @@ func (rc *RecordConfig) SetTargetTXTString(s string) error {
 // and sets .TxtStrings based on the result.
 // Note: Most APIs do notThis is rarely used. Try using SetTargetTXT() first.
 // Ex: "foo"        << 1 string
-//     "foo bar"    << 1 string
-//     "foo" "bar"  << 2 strings
-//     foo          << error. No quotes! Did you intend to use SetTargetTXT?
+//
+//	"foo bar"    << 1 string
+//	"foo" "bar"  << 2 strings
+//	foo          << error. No quotes! Did you intend to use SetTargetTXT?
 func (rc *RecordConfig) SetTargetTXTfromRFC1035Quoted(s string) error {
 	if s != "" && s[0] != '"' {
 		// If you get this error, it is likely that you should use

@@ -210,7 +210,7 @@ func (c *cloudnsProvider) EnsureDomainExists(domain string) error {
 	return c.createDomain(domain)
 }
 
-//parses the ClouDNS format into our standard RecordConfig
+// parses the ClouDNS format into our standard RecordConfig
 func toRc(domain string, r *domainRecord) *models.RecordConfig {
 
 	ttl, _ := strconv.ParseUint(r.TTL, 10, 32)
@@ -269,7 +269,7 @@ func toRc(domain string, r *domainRecord) *models.RecordConfig {
 	return rc
 }
 
-//toReq takes a RecordConfig and turns it into the native format used by the API.
+// toReq takes a RecordConfig and turns it into the native format used by the API.
 func toReq(rc *models.RecordConfig) (requestParams, error) {
 	req := requestParams{
 		"record-type": rc.Type,
