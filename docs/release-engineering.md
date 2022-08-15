@@ -14,7 +14,12 @@ Please change the version number as appropriate.  Substitute (for example)
 
 ## Step 1. Tag the commit in master that you want to release
 
-> insert instructions or an example of how to tag the commit.
+```shell
+git tag -a v3.19.0
+git push origin --tags
+```
+
+See [Git Docs](https://git-scm.com/book/en/v2/Git-Basics-Tagging) for more examples.
 
 Soon after
 CircleCI will start a [build](https://app.circleci.com/pipelines/github/StackExchange/dnscontrol?branch=master) Workflow and produce all of the artifacts for the release.
