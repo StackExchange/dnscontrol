@@ -496,15 +496,16 @@ func newCloudflare(m map[string]string, metadata json.RawMessage) (providers.DNS
 		return nil, fmt.Errorf("if cloudflare apitoken is set, apikey and apiuser should not be provided")
 	}
 
+	optRP := cloudflare.UsingRetryPolicy(20, 2, 60)
+	// UsingRetryPolicy is documented here:
+	// https://pkg.go.dev/github.com/cloudflare/cloudflare-go#UsingRetryPolicy
+	// The defaults are UsingRetryPolicy(3, 1, 30)
+
 	var err error
 	if m["apitoken"] != "" {
-		optRP = cloudflare.UsingRetryPolicy(20, 2, 60)
 		api.cfClient, err = cloudflare.NewWithAPIToken(m["apitoken"], optRP)
 	} else {
 		api.cfClient, err = cloudflare.New(m["apikey"], m["apiuser"], optRP)
-		// UsingRetryPolicy is documented here:
-		// https://pkg.go.dev/github.com/cloudflare/cloudflare-go#UsingRetryPolicy
-		// The defaults are UsingRetryPolicy(3, 1, 30)
 	}
 
 	if err != nil {
