@@ -12,7 +12,6 @@ CircleCI will do most of the work for you. You will need to edit the draft relea
 Please change the version number as appropriate.  Substitute (for example)
 `3.19.0` any place you see `VERSION` in this doc.
 
-
 ## Step 1. Tag the commit in master that you want to release
 
 > insert instructions or an example of how to tag the commit.
@@ -91,9 +90,8 @@ Mention the fact that you did this release in your weekly accomplishments.
 
 If you are at Stack Overflow:
 
-- Add the release to your weekly snippets
-- Run this build: `dnscontrol_embed - Promote most recent artifact into ExternalDNS repo`
-
+* Add the release to your weekly snippets
+* Run this build: `dnscontrol_embed - Promote most recent artifact into ExternalDNS repo`
 
 ## Tip: How to bump the major version
 
