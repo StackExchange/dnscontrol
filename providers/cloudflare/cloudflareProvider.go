@@ -496,7 +496,7 @@ func newCloudflare(m map[string]string, metadata json.RawMessage) (providers.DNS
 		return nil, fmt.Errorf("if cloudflare apitoken is set, apikey and apiuser should not be provided")
 	}
 
-	optRP := cloudflare.UsingRetryPolicy(20, 2, 60)
+	optRP := cloudflare.UsingRetryPolicy(20, 1, 120)
 	// UsingRetryPolicy is documented here:
 	// https://pkg.go.dev/github.com/cloudflare/cloudflare-go#UsingRetryPolicy
 	// The defaults are UsingRetryPolicy(3, 1, 30)
