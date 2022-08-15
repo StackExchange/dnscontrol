@@ -854,6 +854,11 @@ func makeTests(t *testing.T) []*TestGroup {
 
 		//
 		testgroup("gentxt TXT",
+			not(
+				"CLOUDFLAREAPI", // Too slow. Add back as needed.
+				"GANDI_V5",      // Too slow. Add back as needed.
+				"AZURE_DNS",     // Too slow. Add back as needed.
+			),
 			gentxt("0"),
 			gentxt("1"),
 			gentxt("10"),
@@ -867,6 +872,11 @@ func makeTests(t *testing.T) []*TestGroup {
 		),
 
 		testgroup("long TXT",
+			not(
+				"CLOUDFLAREAPI", // Too slow. Add back as needed.
+				"GANDI_V5",      // Too slow. Add back as needed.
+				"AZURE_DNS",     // Too slow. Add back as needed.
+			),
 			tc("Create a 505 TXT", txt("foo257", strings.Repeat("E", 505))),
 			tc("Create a 506 TXT", txt("foo257", strings.Repeat("E", 506))),
 			tc("Create a 507 TXT", txt("foo257", strings.Repeat("E", 507))),
@@ -883,6 +893,11 @@ func makeTests(t *testing.T) []*TestGroup {
 
 		// Test the ability to change TXT records on the DIFFERENT labels accurately.
 		testgroup("TXTMulti",
+			not(
+				"CLOUDFLAREAPI", // Too slow. Add back as needed.
+				"GANDI_V5",      // Too slow. Add back as needed.
+				"AZURE_DNS",     // Too slow. Add back as needed.
+			),
 			tc("Create TXTMulti 1",
 				txtmulti("foo1", []string{"simple"}),
 			),
@@ -914,6 +929,11 @@ func makeTests(t *testing.T) []*TestGroup {
 
 		// Test the ability to change TXT records on the SAME labels accurately.
 		testgroup("TXTMulti-same",
+			not(
+				"CLOUDFLAREAPI", // Too slow. Add back as needed.
+				"GANDI_V5",      // Too slow. Add back as needed.
+				"AZURE_DNS",     // Too slow. Add back as needed.
+			),
 			tc("Create TXTMulti 1",
 				txtmulti("foo", []string{"simple"}),
 			),
@@ -982,6 +1002,7 @@ func makeTests(t *testing.T) []*TestGroup {
 			//  - Gandi: page size is 100, therefore we test with 99, 100, and 101
 			//  - DIGITALOCEAN: page size is 100 (default: 20)
 			not(
+				"AZURE_DNS",     // Removed because it is too slow
 				"CLOUDFLAREAPI", // Infinite pagesize but due to slow speed, skipping.
 				"CSCGLOBAL",     // Doesn't page. Works fine.  Due to the slow API we skip.
 				"GANDI_V5",      // Their API is so damn slow. We'll add it back as needed.
@@ -996,8 +1017,10 @@ func makeTests(t *testing.T) []*TestGroup {
 
 		testgroup("pager601",
 			only(
-				//"AZURE_DNS", // Currently failing.
+				//"AZURE_DNS", // Removed because it is too slow
+				//"CLOUDFLAREAPI", // Infinite pagesize but due to slow speed, skipping.
 				//"CSCGLOBAL", // Doesn't page. Works fine.  Due to the slow API we skip.
+				//"GANDI_V5",   // Their API is so damn slow. We'll add it back as needed.
 				"GCLOUD",
 				"HEXONET",
 				//"MSDNS",     //  No paging done. No need to test.
@@ -1010,9 +1033,10 @@ func makeTests(t *testing.T) []*TestGroup {
 		testgroup("pager1201",
 			only(
 				//"AKAMAIEDGEDNS", // No paging done. No need to test.
-				//"AZURE_DNS",     // Currently failing. See https://github.com/StackExchange/dnscontrol/issues/770
+				//"AZURE_DNS", // Currently failing. See https://github.com/StackExchange/dnscontrol/issues/770
 				//"CLOUDFLAREAPI", // Fails with >1000 corrections. See https://github.com/StackExchange/dnscontrol/issues/1440
 				//"CSCGLOBAL",     // Doesn't page. Works fine.  Due to the slow API we skip.
+				//"GANDI_V5",   // Their API is so damn slow. We'll add it back as needed.
 				"HEXONET",
 				"HOSTINGDE",
 				//"MSDNS",         // No paging done. No need to test.
