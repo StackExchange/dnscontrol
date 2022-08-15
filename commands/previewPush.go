@@ -6,8 +6,6 @@ import (
 	"os"
 	"strings"
 
-	"github.com/urfave/cli/v2"
-
 	"github.com/StackExchange/dnscontrol/v3/models"
 	"github.com/StackExchange/dnscontrol/v3/pkg/credsfile"
 	"github.com/StackExchange/dnscontrol/v3/pkg/nameservers"
@@ -15,7 +13,7 @@ import (
 	"github.com/StackExchange/dnscontrol/v3/pkg/notifications"
 	"github.com/StackExchange/dnscontrol/v3/pkg/printer"
 	"github.com/StackExchange/dnscontrol/v3/providers"
-
+	"github.com/urfave/cli/v2"
 	"golang.org/x/exp/slices"
 )
 

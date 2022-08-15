@@ -1,9 +1,10 @@
 package powerdns
 
 import (
+	"strings"
+
 	"github.com/StackExchange/dnscontrol/v3/models"
 	"github.com/mittwald/go-powerdns/apis/zones"
-	"strings"
 )
 
 // toRecordConfig converts a PowerDNS DNSRecord to a RecordConfig. #rtype_variations

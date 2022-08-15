@@ -9,12 +9,11 @@ import (
 	"testing"
 	"unicode"
 
-	testifyrequire "github.com/stretchr/testify/require"
-
 	"github.com/StackExchange/dnscontrol/v3/pkg/normalize"
 	"github.com/StackExchange/dnscontrol/v3/pkg/prettyzone"
 	"github.com/StackExchange/dnscontrol/v3/providers"
 	_ "github.com/StackExchange/dnscontrol/v3/providers/_all"
+	testifyrequire "github.com/stretchr/testify/require"
 )
 
 const (

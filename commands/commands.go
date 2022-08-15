@@ -7,11 +7,10 @@ import (
 	"sort"
 	"strings"
 
-	"github.com/urfave/cli/v2"
-
 	"github.com/StackExchange/dnscontrol/v3/models"
 	"github.com/StackExchange/dnscontrol/v3/pkg/js"
 	"github.com/StackExchange/dnscontrol/v3/pkg/printer"
+	"github.com/urfave/cli/v2"
 )
 
 // categories of commands

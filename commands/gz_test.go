@@ -6,9 +6,8 @@ import (
 	"os"
 	"testing"
 
-	"github.com/andreyvit/diff"
-
 	_ "github.com/StackExchange/dnscontrol/v3/providers/_all"
+	"github.com/andreyvit/diff"
 )
 
 func TestFormatTypes(t *testing.T) {

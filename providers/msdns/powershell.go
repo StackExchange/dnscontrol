@@ -7,9 +7,8 @@ import (
 	"log"
 	"os"
 
-	"github.com/StackExchange/dnscontrol/v3/pkg/printer"
-
 	"github.com/StackExchange/dnscontrol/v3/models"
+	"github.com/StackExchange/dnscontrol/v3/pkg/printer"
 	"github.com/TomOnTime/utfutil"
 	ps "github.com/bhendo/go-powershell"
 	"github.com/bhendo/go-powershell/backend"

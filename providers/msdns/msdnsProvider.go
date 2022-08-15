@@ -4,9 +4,8 @@ import (
 	"encoding/json"
 	"runtime"
 
-	"github.com/StackExchange/dnscontrol/v3/pkg/printer"
-
 	"github.com/StackExchange/dnscontrol/v3/models"
+	"github.com/StackExchange/dnscontrol/v3/pkg/printer"
 	"github.com/StackExchange/dnscontrol/v3/pkg/txtutil"
 	"github.com/StackExchange/dnscontrol/v3/providers"
 )

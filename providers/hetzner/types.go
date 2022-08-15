@@ -1,8 +1,9 @@
 package hetzner
 
 import (
-	"github.com/StackExchange/dnscontrol/v3/models"
 	"strings"
+
+	"github.com/StackExchange/dnscontrol/v3/models"
 )
 
 type bulkCreateRecordsRequest struct {

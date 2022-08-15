@@ -1,8 +1,6 @@
 package models
 
-import (
-	"testing"
-)
+import "testing"
 
 func TestRR(t *testing.T) {
 	experiment := RecordConfig{

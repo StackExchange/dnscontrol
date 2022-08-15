@@ -8,13 +8,12 @@ import (
 	"strconv"
 	"strings"
 
-	"gopkg.in/ns1/ns1-go.v2/rest"
-	"gopkg.in/ns1/ns1-go.v2/rest/model/dns"
-	"gopkg.in/ns1/ns1-go.v2/rest/model/filter"
-
 	"github.com/StackExchange/dnscontrol/v3/models"
 	"github.com/StackExchange/dnscontrol/v3/pkg/diff"
 	"github.com/StackExchange/dnscontrol/v3/providers"
+	"gopkg.in/ns1/ns1-go.v2/rest"
+	"gopkg.in/ns1/ns1-go.v2/rest/model/dns"
+	"gopkg.in/ns1/ns1-go.v2/rest/model/filter"
 )
 
 var docNotes = providers.DocumentationNotes{

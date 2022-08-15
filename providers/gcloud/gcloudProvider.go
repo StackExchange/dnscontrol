@@ -9,18 +9,15 @@ import (
 	"strings"
 	"time"
 
-	"github.com/StackExchange/dnscontrol/v3/pkg/printer"
-
-	"google.golang.org/api/googleapi"
-	"google.golang.org/api/option"
-
-	gauth "golang.org/x/oauth2/google"
-
 	"github.com/StackExchange/dnscontrol/v3/models"
 	"github.com/StackExchange/dnscontrol/v3/pkg/diff"
+	"github.com/StackExchange/dnscontrol/v3/pkg/printer"
 	"github.com/StackExchange/dnscontrol/v3/pkg/txtutil"
 	"github.com/StackExchange/dnscontrol/v3/providers"
+	gauth "golang.org/x/oauth2/google"
 	gdns "google.golang.org/api/dns/v1"
+	"google.golang.org/api/googleapi"
+	"google.golang.org/api/option"
 )
 
 var features = providers.DocumentationNotes{
