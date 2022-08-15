@@ -6,48 +6,40 @@ title: How to build and ship a release
 # How to build and ship a release
 
 These are the instructions for producing a release.
-Please change the version number as appropriate.
 
-> **NOTE** If you bump the major version, you need to change all the source
-files.  The last time this was done (v2 -> v3) these two commands
-automated all that:
+CircleCI will do most of the work for you. You will need to edit the draft release notes.
 
-```bash
-#  Make all the changes:
-sed -i.bak -e 's@github.com.StackExchange.dnscontrol.v2@github.com/StackExchange/dnscontrol/v3@g' go.* $(fgrep -lri --include '*.go' github.com/StackExchange/dnscontrol/v2 *)
-# Delete the backup files:
-find * -name \*.bak -delete
-```
+Please change the version number as appropriate.  Substitute (for example)
+`3.19.0` any place you see `VERSION` in this doc.
+
 
 ## Step 1. Tag the commit in master that you want to release
 
+> insert instructions or an example of how to tag the commit.
+
+Soon after
 CircleCI will start a [build](https://app.circleci.com/pipelines/github/StackExchange/dnscontrol?branch=master) Workflow and produce all of the artifacts for the release.
 
 ![CircleCI Release Screenshot](public/circleci_release.png)
 
-The CircleCI build uses [GoReleaser](https://goreleaser.com/) which will also produce the [GitHub Release](https://github.com/StackExchange/dnscontrol/releases) with Release Notes derived from the commit history between now and the last tag.
+## Step 2. Create the release notes
+
+The draft release notes are created for you. In this step you'll edit them.
+
+The CircleCI build uses [GoReleaser](https://goreleaser.com/) which produces the [GitHub Release](https://github.com/StackExchange/dnscontrol/releases) with Release Notes derived from the commit history between now and the last tag.
 These notes are just a draft and needs considerable editing.
 You can also find a copy of the release notes in the CircleCI `release` job Artifacts.
+These release notes will be used in multiple places (release notes, email announcements, etc.)
 
-Once complete, the contents of this file will be used in multiple
-places (release notes, email announcements, etc.)
+Release notes style guide:
 
-Entries in the bullet list should be phrased in the positive: "Feature
-FOO now does BAR".  This is often the opposite of the related issue,
-which was probably phrased, "Feature FOO is broken because of BAR".
-
-Every item should include the ID of the issue related to the change.
-If there was no issue, create one and close it.
-
-Sort the list most important/exciting changes earlier in the list.
-
-Items related to a specific provier should begin with the all-caps
-name of the provider, such as "ROUTE53: Added support for sandwiches (#100)"
+* Entries in the bullet list should be phrased in the positive: "Feature FOO now does BAR".  This is often the opposite of the related issue, which was probably phrased, "Feature FOO is broken because of BAR".
+* Every item should include the ID of the issue related to the change. If there was no issue, create one and close it.
+* Sort the list most important/exciting changes earlier in the list.
+* Items related to a specific provier should begin with the all-caps name of the provider, such as "ROUTE53: Added support for sandwiches (#100)"
+* The `Depreciation warnings` section should just copy from `README.md`.  If you change one, change it in the README too (you can make that change in this PR).
 
 See [https://github.com/StackExchange/dnscontrol/releases for examples](https://github.com/StackExchange/dnscontrol/releases) for recent release notes and copy that style.
-
-The `Depreciation warnings` section should just copy from `README.md`.  If you
-change one, change it in the README too (you can make that change in this PR).
 
 Example/template:
 
@@ -101,6 +93,20 @@ If you are at Stack Overflow:
 
 - Add the release to your weekly snippets
 - Run this build: `dnscontrol_embed - Promote most recent artifact into ExternalDNS repo`
+
+
+## Tip: How to bump the major version
+
+If you bump the major version, you need to change all the source
+files.  The last time this was done (v2 -> v3) these two commands
+were used. They're included her for reference.
+
+```bash
+#  Make all the changes:
+sed -i.bak -e 's@github.com.StackExchange.dnscontrol.v2@github.com/StackExchange/dnscontrol/v3@g' go.* $(fgrep -lri --include '*.go' github.com/StackExchange/dnscontrol/v2 *)
+# Delete the backup files:
+find * -name \*.bak -delete
+```
 
 ## Tip: How to rebuild flattener
 
