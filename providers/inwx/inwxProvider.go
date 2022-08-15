@@ -3,16 +3,15 @@ package inwx
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/StackExchange/dnscontrol/v3/pkg/printer"
 	"sort"
 	"strings"
 	"time"
 
 	"github.com/StackExchange/dnscontrol/v3/models"
 	"github.com/StackExchange/dnscontrol/v3/pkg/diff"
+	"github.com/StackExchange/dnscontrol/v3/pkg/printer"
 	"github.com/StackExchange/dnscontrol/v3/pkg/txtutil"
 	"github.com/StackExchange/dnscontrol/v3/providers"
-
 	"github.com/nrdcg/goinwx"
 	"github.com/pquerna/otp/totp"
 )

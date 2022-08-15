@@ -25,7 +25,7 @@ type ZoneListRequest struct {
 	Filter []*ZoneListFilter `json:"filters"`
 }
 
-func (api *autoDnsProvider) request(method string, requestPath string, data interface{}) ([]byte, error) {
+func (api *autoDNSProvider) request(method string, requestPath string, data interface{}) ([]byte, error) {
 	client := &http.Client{}
 
 	requestURL := api.baseURL
@@ -57,7 +57,7 @@ func (api *autoDnsProvider) request(method string, requestPath string, data inte
 	return responseText, nil
 }
 
-func (api *autoDnsProvider) findZoneSystemNameServer(domain string) (*models.Nameserver, error) {
+func (api *autoDNSProvider) findZoneSystemNameServer(domain string) (*models.Nameserver, error) {
 	request := &ZoneListRequest{}
 
 	request.Filter = append(request.Filter, &ZoneListFilter{
@@ -82,7 +82,7 @@ func (api *autoDnsProvider) findZoneSystemNameServer(domain string) (*models.Nam
 	return systemNameServer, nil
 }
 
-func (api *autoDnsProvider) getZone(domain string) (*Zone, error) {
+func (api *autoDNSProvider) getZone(domain string) (*Zone, error) {
 	systemNameServer, err := api.findZoneSystemNameServer(domain)
 	if err != nil {
 		return nil, err
@@ -100,7 +100,7 @@ func (api *autoDnsProvider) getZone(domain string) (*Zone, error) {
 	return responseObject.Data[0], nil
 }
 
-func (api *autoDnsProvider) updateZone(domain string, resourceRecords []*ResourceRecord, nameServers []*models.Nameserver, zoneTTL uint32) error {
+func (api *autoDNSProvider) updateZone(domain string, resourceRecords []*ResourceRecord, nameServers []*models.Nameserver, zoneTTL uint32) error {
 	systemNameServer, err := api.findZoneSystemNameServer(domain)
 
 	if err != nil {

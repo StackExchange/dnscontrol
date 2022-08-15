@@ -22,15 +22,13 @@ import (
 	"strings"
 	"time"
 
-	"github.com/StackExchange/dnscontrol/v3/pkg/printer"
-
-	"github.com/miekg/dns"
-
 	"github.com/StackExchange/dnscontrol/v3/models"
 	"github.com/StackExchange/dnscontrol/v3/pkg/diff"
 	"github.com/StackExchange/dnscontrol/v3/pkg/prettyzone"
+	"github.com/StackExchange/dnscontrol/v3/pkg/printer"
 	"github.com/StackExchange/dnscontrol/v3/pkg/txtutil"
 	"github.com/StackExchange/dnscontrol/v3/providers"
+	"github.com/miekg/dns"
 )
 
 var features = providers.DocumentationNotes{

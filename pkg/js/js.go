@@ -9,17 +9,15 @@ import (
 	"path/filepath"
 	"strings"
 
+	"github.com/StackExchange/dnscontrol/v3/models"
+	"github.com/StackExchange/dnscontrol/v3/pkg/printer"
+	"github.com/StackExchange/dnscontrol/v3/pkg/transform"
 	"github.com/robertkrimen/otto"              // load underscore js into vm by default
 	_ "github.com/robertkrimen/otto/underscore" // required by otto
-
 	"github.com/xddxdd/ottoext/fetch"
 	"github.com/xddxdd/ottoext/loop"
 	"github.com/xddxdd/ottoext/promise"
 	"github.com/xddxdd/ottoext/timers"
-
-	"github.com/StackExchange/dnscontrol/v3/models"
-	"github.com/StackExchange/dnscontrol/v3/pkg/printer"
-	"github.com/StackExchange/dnscontrol/v3/pkg/transform"
 )
 
 //go:embed helpers.js

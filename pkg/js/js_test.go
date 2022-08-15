@@ -9,12 +9,11 @@ import (
 	"testing"
 	"unicode"
 
-	testifyrequire "github.com/stretchr/testify/require"
-
 	"github.com/StackExchange/dnscontrol/v3/pkg/normalize"
 	"github.com/StackExchange/dnscontrol/v3/pkg/prettyzone"
 	"github.com/StackExchange/dnscontrol/v3/providers"
 	_ "github.com/StackExchange/dnscontrol/v3/providers/_all"
+	testifyrequire "github.com/stretchr/testify/require"
 )
 
 const (
@@ -87,7 +86,7 @@ func TestParsedFiles(t *testing.T) {
 			as := string(actualJSON)
 			_, _ = es, as
 			// When debugging, leave behind the actual result:
-			//os.WriteFile(expectedFile+".ACTUAL", []byte(es), 0644)
+			// os.WriteFile(expectedFile+".ACTUAL", []byte(es), 0644)
 			testifyrequire.JSONEqf(t, es, as, "EXPECTING %q = \n```\n%s\n```", expectedFile, as)
 
 			// For each domain, if there is a zone file, test against it:

@@ -8,13 +8,12 @@ import (
 	"strconv"
 	"strings"
 
-	"gopkg.in/ns1/ns1-go.v2/rest"
-	"gopkg.in/ns1/ns1-go.v2/rest/model/dns"
-	"gopkg.in/ns1/ns1-go.v2/rest/model/filter"
-
 	"github.com/StackExchange/dnscontrol/v3/models"
 	"github.com/StackExchange/dnscontrol/v3/pkg/diff"
 	"github.com/StackExchange/dnscontrol/v3/providers"
+	"gopkg.in/ns1/ns1-go.v2/rest"
+	"gopkg.in/ns1/ns1-go.v2/rest/model/dns"
+	"gopkg.in/ns1/ns1-go.v2/rest/model/filter"
 )
 
 var docNotes = providers.DocumentationNotes{
@@ -99,9 +98,9 @@ func (n *nsone) GetZoneRecords(domain string) (models.Records, error) {
 
 // GetZoneDNSSEC gets DNSSEC status for zone. Returns true for enabled, false for disabled
 // a domain in NS1 can be in 3 states:
-//   1) DNSSEC is enabled  (returns true)
-//   2) DNSSEC is disabled (returns false)
-//   3) some error state   (return false plus the error)
+//  1. DNSSEC is enabled  (returns true)
+//  2. DNSSEC is disabled (returns false)
+//  3. some error state   (return false plus the error)
 func (n *nsone) GetZoneDNSSEC(domain string) (bool, error) {
 	_, _, err := n.DNSSEC.Get(domain)
 
@@ -223,11 +222,11 @@ func (n *nsone) modify(recs models.Records, domain string) error {
 // configureDNSSEC configures DNSSEC for a zone. Set 'enabled' to true to enable, false to disable.
 // There's a cornercase, in which DNSSEC is globally disabled for the account.
 // In that situation, enabling DNSSEC will always fail with:
-//   #1: ENABLE DNSSEC
-//   FAILURE! POST https://api.nsone.net/v1/zones/example.com: 400 DNSSEC support is not enabled for this account. Please contact support@ns1.com to enable it
+//
+//	#1: ENABLE DNSSEC
+//	FAILURE! POST https://api.nsone.net/v1/zones/example.com: 400 DNSSEC support is not enabled for this account. Please contact support@ns1.com to enable it
 //
 // Unfortunately this is not detectable otherwise, so given that we have a nice error message, we just let this through.
-//
 func (n *nsone) configureDNSSEC(domain string, enabled bool) error {
 	z, _, err := n.Zones.Get(domain)
 	if err != nil {

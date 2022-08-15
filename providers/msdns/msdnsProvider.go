@@ -4,9 +4,8 @@ import (
 	"encoding/json"
 	"runtime"
 
-	"github.com/StackExchange/dnscontrol/v3/pkg/printer"
-
 	"github.com/StackExchange/dnscontrol/v3/models"
+	"github.com/StackExchange/dnscontrol/v3/pkg/printer"
 	"github.com/StackExchange/dnscontrol/v3/pkg/txtutil"
 	"github.com/StackExchange/dnscontrol/v3/providers"
 )
@@ -35,7 +34,8 @@ var features = providers.DocumentationNotes{
 }
 
 // Register with the dnscontrol system.
-//   This establishes the name (all caps), and the function to call to initialize it.
+//
+//	This establishes the name (all caps), and the function to call to initialize it.
 func init() {
 	fns := providers.DspFuncs{
 		Initializer:   newDNS,

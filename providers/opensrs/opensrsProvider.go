@@ -9,7 +9,6 @@ import (
 
 	"github.com/StackExchange/dnscontrol/v3/models"
 	"github.com/StackExchange/dnscontrol/v3/providers"
-
 	opensrs "github.com/philhug/opensrs-go/opensrs"
 )
 

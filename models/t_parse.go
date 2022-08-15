@@ -14,24 +14,24 @@ import (
 //
 // Recommended calling convention:  Process the exceptions first, then use the
 // function for everything else.
-//	  var err error
-//	  switch rType {
-//    case "MX":
-//        // MX priority in a separate field.
-//        if err := rc.SetTargetMX(cr.Priority, target); err != nil {
-//          return nil, fmt.Errorf("unparsable MX record received from cloudflare: %w", err)
-//        }
-//	  case "TXT":
-//        // TXT records are stored verbatim; no quoting/escaping to parse.
-//		  err = rc.SetTargetTXT(target)
-//        // ProTip: Use rc.SetTargetTXTs(manystrings) if the API or parser returns a list of substrings.
-//	  default:
-//		  err = rec.PopulateFromString(rType, target, origin)
-//	  }
-//	  if err != nil {
-//		  return nil, fmt.Errorf("unparsable record received from CHANGE_TO_PROVDER_NAME: %w", err)
-//	  }
 //
+//		  var err error
+//		  switch rType {
+//	   case "MX":
+//	       // MX priority in a separate field.
+//	       if err := rc.SetTargetMX(cr.Priority, target); err != nil {
+//	         return nil, fmt.Errorf("unparsable MX record received from cloudflare: %w", err)
+//	       }
+//		  case "TXT":
+//	       // TXT records are stored verbatim; no quoting/escaping to parse.
+//			  err = rc.SetTargetTXT(target)
+//	       // ProTip: Use rc.SetTargetTXTs(manystrings) if the API or parser returns a list of substrings.
+//		  default:
+//			  err = rec.PopulateFromString(rType, target, origin)
+//		  }
+//		  if err != nil {
+//			  return nil, fmt.Errorf("unparsable record received from CHANGE_TO_PROVDER_NAME: %w", err)
+//		  }
 func (rc *RecordConfig) PopulateFromString(rtype, contents, origin string) error {
 	if rc.Type != "" && rc.Type != rtype {
 		panic(fmt.Errorf("assertion failed: rtype already set (%s) (%s)", rtype, rc.Type))

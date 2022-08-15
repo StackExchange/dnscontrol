@@ -3,6 +3,7 @@ package powerdns
 import (
 	"encoding/json"
 	"fmt"
+
 	"github.com/StackExchange/dnscontrol/v3/models"
 	"github.com/StackExchange/dnscontrol/v3/providers"
 	pdns "github.com/mittwald/go-powerdns"
