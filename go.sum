@@ -181,6 +181,8 @@ github.com/aws/aws-sdk-go-v2 v1.16.11 h1:xM1ZPSvty3xVmdxiGr7ay/wlqv+MWhH0rMlyLdb
 github.com/aws/aws-sdk-go-v2 v1.16.11/go.mod h1:WTACcleLz6VZTp7fak4EO5b9Q4foxbn+8PIz3PmyKlo=
 github.com/aws/aws-sdk-go-v2/config v1.16.1 h1:jasqFPOoNPXHOYGEEuvyT87ACiXhD3OkQckIm5uqi5I=
 github.com/aws/aws-sdk-go-v2/config v1.16.1/go.mod h1:4SKzBMiB8lV0fw2w7eDBo/LjQyHFITN4vUUuqpurFmI=
+github.com/aws/aws-sdk-go-v2/config v1.17.0 h1:e0tIuubcjp0gJQdllgEMwolWWXGK/sKAFd1tS5S6m6I=
+github.com/aws/aws-sdk-go-v2/config v1.17.0/go.mod h1:4SKzBMiB8lV0fw2w7eDBo/LjQyHFITN4vUUuqpurFmI=
 github.com/aws/aws-sdk-go-v2/credentials v1.12.13 h1:cuPzIsjKAWBUAAk8ZUR2l02Sxafl9hiaMsc7tlnjwAY=
 github.com/aws/aws-sdk-go-v2/credentials v1.12.13/go.mod h1:9fDEemXizwXrxPU1MTzv69LP/9D8HVl5qHAQO9A9ikY=
 github.com/aws/aws-sdk-go-v2/feature/ec2/imds v1.12.12 h1:wgJBHO58Pc1V1QAnzdVM3JK3WbE/6eUF0JxCZ+/izz0=
@@ -1238,8 +1240,6 @@ github.com/ultraware/whitespace v0.0.5 h1:hh+/cpIcopyMYbZNVov9iSxvJU3OYQg78Sfaqz
 github.com/ultraware/whitespace v0.0.5/go.mod h1:aVMh/gQve5Maj9hQ/hg+F75lr/X5A89uZnzAmWSineA=
 github.com/urfave/cli v1.20.0/go.mod h1:70zkFmudgCuE/ngEzBv17Jvp/497gISqfk5gWijbERA=
 github.com/urfave/cli v1.22.1/go.mod h1:Gos4lmkARVdJ6EkW0WaNv/tZAAMe9V7XWyB60NtXRu0=
-github.com/urfave/cli/v2 v2.11.1 h1:UKK6SP7fV3eKOefbS87iT9YHefv7iB/53ih6e+GNAsE=
-github.com/urfave/cli/v2 v2.11.1/go.mod h1:f8iq5LtQ/bLxafbdBSLPPNsgaW0l/2fYYEHhAyPlwvo=
 github.com/urfave/cli/v2 v2.11.2 h1:FVfNg4m3vbjbBpLYxW//WjxUoHvJ9TlppXcqY9Q9ZfA=
 github.com/urfave/cli/v2 v2.11.2/go.mod h1:f8iq5LtQ/bLxafbdBSLPPNsgaW0l/2fYYEHhAyPlwvo=
 github.com/uudashr/gocognit v1.0.6 h1:2Cgi6MweCsdB6kpcVQp7EW4U23iBFQWfTXiWlyp842Y=
