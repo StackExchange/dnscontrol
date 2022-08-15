@@ -2,10 +2,10 @@ package commands
 
 import (
 	"fmt"
-	"github.com/urfave/cli/v2"
 
 	"github.com/StackExchange/dnscontrol/v3/pkg/credsfile"
 	"github.com/StackExchange/dnscontrol/v3/providers"
+	"github.com/urfave/cli/v2"
 )
 
 var _ = cmd(catUtils, func() *cli.Command {

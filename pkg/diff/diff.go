@@ -4,10 +4,9 @@ import (
 	"fmt"
 	"sort"
 
-	"github.com/gobwas/glob"
-
 	"github.com/StackExchange/dnscontrol/v3/models"
 	"github.com/StackExchange/dnscontrol/v3/pkg/printer"
+	"github.com/gobwas/glob"
 )
 
 // Correlation stores a difference between two domains.

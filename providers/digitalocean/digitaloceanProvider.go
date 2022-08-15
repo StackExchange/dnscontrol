@@ -12,9 +12,8 @@ import (
 	"github.com/StackExchange/dnscontrol/v3/pkg/diff"
 	"github.com/StackExchange/dnscontrol/v3/pkg/txtutil"
 	"github.com/StackExchange/dnscontrol/v3/providers"
-	"github.com/miekg/dns/dnsutil"
-
 	"github.com/digitalocean/godo"
+	"github.com/miekg/dns/dnsutil"
 	"golang.org/x/oauth2"
 )
 

@@ -5,10 +5,9 @@ package gandiv5
 import (
 	"fmt"
 
-	"github.com/go-gandi/go-gandi/livedns"
-
 	"github.com/StackExchange/dnscontrol/v3/models"
 	"github.com/StackExchange/dnscontrol/v3/pkg/printer"
+	"github.com/go-gandi/go-gandi/livedns"
 )
 
 // nativeToRecord takes a DNS record from Gandi and returns a native RecordConfig struct.

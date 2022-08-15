@@ -2,11 +2,12 @@ package rwth
 
 import (
 	"fmt"
+	"io"
+	"strings"
+
 	"github.com/StackExchange/dnscontrol/v3/models"
 	"github.com/StackExchange/dnscontrol/v3/pkg/prettyzone"
 	"github.com/miekg/dns"
-	"io"
-	"strings"
 )
 
 // Print the generateZoneFileHelper
@@ -46,6 +47,7 @@ func NewRR(s string) (dns.RR, error) {
 	return ReadRR(strings.NewReader(s))
 }
 
+// ReadRR reads an RR from r.
 func ReadRR(r io.Reader) (dns.RR, error) {
 	zp := dns.NewZoneParser(r, ".", "")
 	zp.SetDefaultTTL(172800)

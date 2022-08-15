@@ -2,11 +2,13 @@ package rwth
 
 import (
 	"fmt"
+
 	"github.com/StackExchange/dnscontrol/v3/models"
 	"github.com/StackExchange/dnscontrol/v3/pkg/diff"
 	"github.com/StackExchange/dnscontrol/v3/pkg/txtutil"
 )
 
+// RWTHDefaultNs is the default DNS NS for this provider.
 var RWTHDefaultNs = []string{"dns-1.dfn.de", "dns-2.dfn.de", "zs1.rz.rwth-aachen.de", "zs2.rz.rwth-aachen.de"}
 
 // GetZoneRecords gets the records of a zone and returns them in RecordConfig format.
@@ -27,6 +29,7 @@ func (api *rwthProvider) GetNameservers(domain string) ([]*models.Nameserver, er
 	return models.ToNameservers(RWTHDefaultNs)
 }
 
+// GetDomainCorrections returns a list of corretions to execute.
 func (api *rwthProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Correction, error) {
 	dc, err := dc.Copy()
 	if err != nil {

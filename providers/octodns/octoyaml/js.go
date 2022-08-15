@@ -4,14 +4,10 @@ import (
 	"encoding/json"
 	"os"
 
-	"github.com/StackExchange/dnscontrol/v3/pkg/printer"
-
 	"github.com/StackExchange/dnscontrol/v3/models"
+	"github.com/StackExchange/dnscontrol/v3/pkg/printer"
 	"github.com/StackExchange/dnscontrol/v3/pkg/transform"
-
 	"github.com/robertkrimen/otto"
-	// load underscore js into vm by default
-
 	_ "github.com/robertkrimen/otto/underscore" // required by otto
 )
 

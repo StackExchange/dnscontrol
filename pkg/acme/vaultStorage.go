@@ -9,7 +9,6 @@ import (
 	"strings"
 
 	"github.com/go-acme/lego/certificate"
-
 	"github.com/hashicorp/vault/api"
 )
 

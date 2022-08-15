@@ -1,8 +1,6 @@
 package models
 
-import (
-	"testing"
-)
+import "testing"
 
 func TestToNameservers(t *testing.T) {
 	nss, e := ToNameservers([]string{"example.com", "example2.tld"})
