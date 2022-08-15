@@ -4,19 +4,34 @@ import "github.com/pkg/errors"
 
 var ErrNotImplemented = errors.New("divide by zero")
 
+// These interfaces are based on individual qualities of providers,
+// rather than the type of provider (registrar or DNS).
+
 // ZoneCorrector is an interface that defines a provider that can
 // correct the DNS records in a Zone (i.e. domain).
 type ZoneCorrector interface {
 	//GetNameservers(domain string) ([]*Nameserver, error)
 	GetZoneRecords(domain string) (Records, error)
-	MakeZoneCorrections(*DomainConfig, Records) ([]*Correction, error)
+	GetZoneRecordsCorrections(*DomainConfig, Records) ([]*Correction, error)
 }
 
-// Popularizer is an interface that defines a provider that can
-// assure that a zone exists at a provider. It does not
+//// Popularizer is an interface that defines a provider that can
+//// assure that a zone exists at a provider. It does not
 //type Popularizer interface {
 //	GenPopCorrection(domain string) ([]*Correction, error)
 //}
+
+////  is an interface that defines a provider that can
+//// assure that a zone exists at a provider. It does not
+//type NameserverCorrector interface {
+//	GetNameservers(domain string) ([]*Nameserver, error)
+//	GetNameserversCorrections(domain string) ([]*Correction, error)
+//}
+
+// Old style interfaces:
+// These define the provider based on a superset of features.  In the
+// future we will migrate away from these. However in the meanwhile
+// there is no rush for plug-in authors to avoid them.
 
 // DNSProvider is an interface for DNS Provider plug-ins.
 type DNSProvider interface {
