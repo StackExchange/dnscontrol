@@ -58,6 +58,11 @@ func (args *PreviewArgs) flags() []cli.Flag {
 		Destination: &args.NoPopulate,
 		Usage:       `Use this flag to not auto-create non-existing zones at the provider`,
 	})
+	flags = append(flags, &cli.BoolFlag{
+		Name:        "brief",
+		Destination: &args.Brief,
+		Usage:       `Omit headings, skipped providers, lack of changes, etc.`,
+	})
 	return flags
 }
 
