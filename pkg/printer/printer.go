@@ -148,7 +148,7 @@ func (c ConsolePrinter) EndProvider(numCorrections int, err error) {
 		if numCorrections == 1 {
 			plural = ""
 		}
-		if (!SkinnyReport) && (numCorrections == 0) {
+		if (SkinnyReport) && (numCorrections == 0) {
 			return
 		}
 		fmt.Fprintf(c.Writer, "%d correction%s\n", numCorrections, plural)
