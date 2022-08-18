@@ -21,7 +21,8 @@ for(i = 0; i < domains.length; i++) {
 }
 ```
 
-This will end up in following modifications:
+This will end up in following modifications: (All output assumes the `--verbose` flag)
+
 
 ```text
 ******************** Domain: domain1.tld

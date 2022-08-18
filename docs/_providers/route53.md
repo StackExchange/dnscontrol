@@ -140,7 +140,8 @@ This code may not function properly if a domain has R53 as a Registrar
 but not as a DnsProvider.  The situation is described in
 [PR#155](https://github.com/StackExchange/dnscontrol/pull/155).
 
-In this situation you will see a message like:
+In this situation you will see a message like: (This output assumes the `--verbose` flag)
+
 
 ```text
 ----- Registrar: r53_main
