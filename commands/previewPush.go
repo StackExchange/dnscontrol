@@ -37,6 +37,7 @@ type PreviewArgs struct {
 	Notify      bool
 	WarnChanges bool
 	NoPopulate  bool
+	Full        bool
 }
 
 func (args *PreviewArgs) flags() []cli.Flag {
@@ -59,9 +60,9 @@ func (args *PreviewArgs) flags() []cli.Flag {
 		Usage:       `Use this flag to not auto-create non-existing zones at the provider`,
 	})
 	flags = append(flags, &cli.BoolFlag{
-		Name:        "brief",
-		Destination: &args.Brief,
-		Usage:       `Omit headings, skipped providers, lack of changes, etc.`,
+		Name:        "full",
+		Destination: &args.Full,
+		Usage:       `Add headings, providers names, notifications of no changes, etc`,
 	})
 	return flags
 }
@@ -107,6 +108,10 @@ func Push(args PushArgs) error {
 // run is the main routine common to preview/push
 func run(args PreviewArgs, push bool, interactive bool, out printer.CLI) error {
 	// TODO: make truly CLI independent. Perhaps return results on a channel as they occur
+
+	// This is a hack until we have the new printer replacement.
+	printer.SkinnyReport = !args.Full
+
 	cfg, err := GetDNSConfig(args.GetDNSConfigArgs)
 	if err != nil {
 		return err
