@@ -1,6 +1,6 @@
 ---
-name: DomainNameShop
-title: DomainNameShop Provider
+name: Domainnameshop
+title: Domainnameshop Provider
 layout: default
 jsId: DOMAINNAMESHOP
 ---
@@ -9,7 +9,7 @@ jsId: DOMAINNAMESHOP
 ## Configuration
 
 To use this provider, add an entry to `creds.json` with `TYPE` set to `DOMAINNAMESHOP`
-along with your [DomainNameShop Token and Secret](https://www.domeneshop.no/admin?view=api).
+along with your [Domainnameshop Token and Secret](https://www.domeneshop.no/admin?view=api).
 
 Example:
 
@@ -24,7 +24,7 @@ Example:
 ```
 
 ## Metadata
-This provider does not recognize any special metadata fields unique to DomainNameShop.
+This provider does not recognize any special metadata fields unique to Domainnameshop.
 
 ## Usage
 An example `dnsconfig.js` configuration:
@@ -43,4 +43,4 @@ D("example.tld", REG_NONE, DnsProvider(DSP_DOMAINNAMESHOP),
 
 ## Limitations
 
-- DomainNameShop DNS only supports TTLs which are a multiple of 60.
+- Domainnameshop DNS only supports TTLs which are a multiple of 60.

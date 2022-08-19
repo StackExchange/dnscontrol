@@ -9,7 +9,7 @@ import (
 
 /**
 
-DomainNameShop Provider
+Domainnameshop Provider
 
 Info required in 'creds.json':
 	- token		API Token
@@ -51,12 +51,12 @@ func init() {
 	providers.RegisterDomainServiceProviderType("DOMAINNAMESHOP", fns, features)
 }
 
-// newDomainNameShopProvider creates a DomainNameShop specific DNS provider.
+// newDomainNameShopProvider creates a Domainnameshop specific DNS provider.
 func newDomainNameShopProvider(conf map[string]string, metadata json.RawMessage) (providers.DNSServiceProvider, error) {
 	if conf["token"] == "" {
-		return nil, fmt.Errorf("no DomainNameShop token provided")
+		return nil, fmt.Errorf("no Domainnameshop token provided")
 	} else if conf["secret"] == "" {
-		return nil, fmt.Errorf("no DomainNameShop secret provided")
+		return nil, fmt.Errorf("no Domainnameshop secret provided")
 	}
 
 	api := &domainNameShopProvider{
@@ -76,7 +76,7 @@ type domainResponse struct {
 
 // The Actual fields are the values in the right format according to what is needed for RecordConfig.
 //
-//	While the values without Actual are the values directly as received from the DomainNameShop API.
+//	While the values without Actual are the values directly as received from the Domainnameshop API.
 //	This is done to make it easier to use the values at later points.
 type domainNameShopRecord struct {
 	ID             int    `json:"id"`
