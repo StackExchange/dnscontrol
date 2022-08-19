@@ -67,7 +67,7 @@ type nonFieldError struct {
 }
 
 func (c *desecProvider) authenticate() error {
-	endpoint := "/auth/account/"
+	endpoint := "/domains/"
 	var _, _, err = c.get(endpoint, "GET")
 	if err != nil {
 		return err
