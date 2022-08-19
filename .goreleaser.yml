@@ -135,8 +135,8 @@ checksum:
   name_template: 'checksums.txt'
 snapshot:
   name_template: "{{ incpatch .Version }}-next"
-announce:
-  # Skip the announcing feature in some conditions, for instance, when publishing patch releases.
-  # Valid options are `true`, `false`, empty, or a template that evaluates to a boolean (`true` or `false`).
-  # Defaults to empty (which means false).
-  skip: true
+
+release:
+  draft: true
+  prerelease: auto
+  mode: append
