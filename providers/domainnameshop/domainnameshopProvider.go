@@ -9,7 +9,7 @@ import (
 
 /**
 
-DomainNameShop Provider
+Domainnameshop Provider
 
 Info required in 'creds.json':
 	- token		API Token
@@ -25,16 +25,16 @@ type domainNameShopProvider struct {
 var features = providers.DocumentationNotes{
 	providers.CanAutoDNSSEC:          providers.Cannot(),        // Maybe there is support for it
 	providers.CanGetZones:            providers.Unimplemented(), //
-	providers.CanUseAlias:            providers.Unimplemented(), // Can possibly be implemented, needs further research
+	providers.CanUseAlias:            providers.Unimplemented("Needs custom implementation"), // Can possibly be implemented, needs further research
 	providers.CanUseCAA:              providers.Can(),
 	providers.CanUseDS:               providers.Unimplemented(), // Seems to support but needs to be implemented
 	providers.CanUseDSForChildren:    providers.Unimplemented(), // Seems to support but needs to be implemented
-	providers.CanUseNAPTR:            providers.Cannot(),        // Does not seem to support it
-	providers.CanUsePTR:              providers.Unimplemented(), // Seems to support but needs to be implemented
+	providers.CanUseNAPTR:            providers.Cannot("According to Domainnameshop this will probably never be supported"),        // Does not seem to support it
+	providers.CanUsePTR:              providers.Cannot("According to Domainnameshop this will probably never be supported"), // Seems to support but needs to be implemented
 	providers.CanUseSOA:              providers.Cannot(),        // Does not seem to support it
 	providers.CanUseSRV:              providers.Can(),
-	providers.CanUseSSHFP:            providers.Cannot(),        // Does not seem to support it
-	providers.CanUseTLSA:             providers.Unimplemented(), // Seems to support but needs to be implemented
+	providers.CanUseSSHFP:            providers.Cannot("Might be supported in the future"),        // Does not seem to support it
+	providers.CanUseTLSA:             providers.Unimplemented("Has support but no documentation. Needs to be investigated."), // Seems to support but needs to be implemented
 	providers.DocCreateDomains:       providers.Unimplemented(), // Not tested
 	providers.DocDualHost:            providers.Unimplemented(), // Not tested
 	providers.DocOfficiallySupported: providers.Cannot(),
@@ -51,12 +51,12 @@ func init() {
 	providers.RegisterDomainServiceProviderType("DOMAINNAMESHOP", fns, features)
 }
 
-// newDomainNameShopProvider creates a DomainNameShop specific DNS provider.
+// newDomainNameShopProvider creates a Domainnameshop specific DNS provider.
 func newDomainNameShopProvider(conf map[string]string, metadata json.RawMessage) (providers.DNSServiceProvider, error) {
 	if conf["token"] == "" {
-		return nil, fmt.Errorf("no DomainNameShop token provided")
+		return nil, fmt.Errorf("no Domainnameshop token provided")
 	} else if conf["secret"] == "" {
-		return nil, fmt.Errorf("no DomainNameShop secret provided")
+		return nil, fmt.Errorf("no Domainnameshop secret provided")
 	}
 
 	api := &domainNameShopProvider{
@@ -76,7 +76,7 @@ type domainResponse struct {
 
 // The Actual fields are the values in the right format according to what is needed for RecordConfig.
 //
-//	While the values without Actual are the values directly as received from the DomainNameShop API.
+//	While the values without Actual are the values directly as received from the Domainnameshop API.
 //	This is done to make it easier to use the values at later points.
 type domainNameShopRecord struct {
 	ID             int    `json:"id"`
