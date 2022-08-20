@@ -31,7 +31,7 @@ Currently supported DNS providers:
 - DNS Made Easy
 - DNSimple
 - DigitalOcean
-- DomainNameShop (domeneshop)
+- Domainnameshop (Domeneshop)
 - Exoscale
 - Gandi
 - Google DNS
