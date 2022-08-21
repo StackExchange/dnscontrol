@@ -23,20 +23,20 @@ type domainNameShopProvider struct {
 }
 
 var features = providers.DocumentationNotes{
-	providers.CanAutoDNSSEC:          providers.Cannot(),        // Maybe there is support for it
-	providers.CanGetZones:            providers.Unimplemented(), //
+	providers.CanAutoDNSSEC:          providers.Cannot(),                                     // Maybe there is support for it
+	providers.CanGetZones:            providers.Unimplemented(),                              //
 	providers.CanUseAlias:            providers.Unimplemented("Needs custom implementation"), // Can possibly be implemented, needs further research
 	providers.CanUseCAA:              providers.Can(),
-	providers.CanUseDS:               providers.Unimplemented(), // Seems to support but needs to be implemented
-	providers.CanUseDSForChildren:    providers.Unimplemented(), // Seems to support but needs to be implemented
-	providers.CanUseNAPTR:            providers.Cannot("According to Domainnameshop this will probably never be supported"),        // Does not seem to support it
+	providers.CanUseDS:               providers.Unimplemented(),                                                             // Seems to support but needs to be implemented
+	providers.CanUseDSForChildren:    providers.Unimplemented(),                                                             // Seems to support but needs to be implemented
+	providers.CanUseNAPTR:            providers.Cannot("According to Domainnameshop this will probably never be supported"), // Does not seem to support it
 	providers.CanUsePTR:              providers.Cannot("According to Domainnameshop this will probably never be supported"), // Seems to support but needs to be implemented
-	providers.CanUseSOA:              providers.Cannot(),        // Does not seem to support it
+	providers.CanUseSOA:              providers.Cannot(),                                                                    // Does not seem to support it
 	providers.CanUseSRV:              providers.Can(),
-	providers.CanUseSSHFP:            providers.Cannot("Might be supported in the future"),        // Does not seem to support it
+	providers.CanUseSSHFP:            providers.Cannot("Might be supported in the future"),                                   // Does not seem to support it
 	providers.CanUseTLSA:             providers.Unimplemented("Has support but no documentation. Needs to be investigated."), // Seems to support but needs to be implemented
-	providers.DocCreateDomains:       providers.Unimplemented(), // Not tested
-	providers.DocDualHost:            providers.Unimplemented(), // Not tested
+	providers.DocCreateDomains:       providers.Unimplemented(),                                                              // Not tested
+	providers.DocDualHost:            providers.Unimplemented(),                                                              // Not tested
 	providers.DocOfficiallySupported: providers.Cannot(),
 }
 
