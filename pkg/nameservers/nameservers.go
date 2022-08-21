@@ -7,6 +7,7 @@ import (
 	"strings"
 
 	"github.com/StackExchange/dnscontrol/v3/models"
+	"github.com/StackExchange/dnscontrol/v3/pkg/printer"
 )
 
 // DetermineNameservers will find all nameservers we should use for a domain. It follows the following rules:
@@ -25,7 +26,9 @@ func DetermineNameserversForProviders(dc *models.DomainConfig, providers []*mode
 		if n == 0 {
 			continue
 		}
-		fmt.Printf("----- Getting nameservers from: %s\n", dnsProvider.Name)
+		if !printer.SkinnyReport {
+			fmt.Printf("----- Getting nameservers from: %s\n", dnsProvider.Name)
+		}
 		nss, err := dnsProvider.Driver.GetNameservers(dc.Name)
 		if err != nil {
 			return nil, err
