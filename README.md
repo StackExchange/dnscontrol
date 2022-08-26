@@ -194,8 +194,6 @@ See [dnscontrol-action](https://github.com/koenrh/dnscontrol-action)
 - **Call for new volunteer maintainers for NAMEDOTCOM, and SOFTLAYER.** These providers have no maintainer. Maintainers respond to PRs and fix bugs in a timely manner, and try to stay on top of protocol changes.
 - **ACME/Let's Encrypt support is frozen and will be removed after December 31, 2022.**  The `get-certs` command (renews certs via Let's Encrypt) has no maintainer. There are other projects that do a better job. If you don't use this feature, please do not start. If you do use this feature, please plan on migrating to something else.  See discussion in [issues/1400](https://github.com/StackExchange/dnscontrol/issues/1400)
 - **Provider OCTODNS is frozen and will be removed after Nov 1, 2022.** It was written as a joke and nobody laughed. It's time to remove the code and move on.
-- **convertzone is frozen and will be removed after June 30, 2022.** The `convertzone` stand-alone program is replaced by the `get-zone` subcommand of DNSControl. It does everything `convertzone` did and more.
-- **Provider ACTIVEDIRECTORY_PS is frozen and will be removed after June 30, 2022.** It is replaced by MSDNS which is 100% feature compatible and works better. (We believe nobody uses it.)
 - **get-zones syntax changes in v3.16** Starting in v3.16, the command line arguments for `dnscontrol get-zones` changes. For backwards compatibility change `provider` to `-`. See documentation for details.
 
 ## More info at our web site
