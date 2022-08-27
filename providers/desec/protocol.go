@@ -67,8 +67,13 @@ type nonFieldError struct {
 }
 
 func (c *desecProvider) authenticate() error {
-	endpoint := "/domains/"
-	var _, _, err = c.get(endpoint, "GET")
+	endpoint := "/auth/account/"
+	var _, resp, err = c.get(endpoint, "GET")
+	//restricted tokens are valid, but get 403 on /auth/account
+	//invalid tokens get 401
+	if resp.StatusCode == 403 {
+		return nil
+	}
 	if err != nil {
 		return err
 	}
