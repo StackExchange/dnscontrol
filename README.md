@@ -160,15 +160,19 @@ git clone https://github.com/StackExchange/dnscontrol.git
 
 If these don't work, more info is in [#805](https://github.com/StackExchange/dnscontrol/issues/805).
 
----
-
 ### Via packages
 
-Get prebuilt binaries from [github releases](https://github.com/StackExchange/dnscontrol/releases/latest)
+Get prebuilt binaries from [GitHub releases](https://github.com/StackExchange/dnscontrol/releases/latest).
 
-Alternatively, on Mac you can install it using homebrew:
+Alternatively, on Mac you can install it using Homebrew or MacPorts:
 
-`brew install dnscontrol`
+```bash
+# Homebrew
+brew install dnscontrol
+
+# MacPorts
+sudo port install dnscontrol
+````
 
 ## Via [docker](https://hub.docker.com/r/stackexchange/dnscontrol/)
 
