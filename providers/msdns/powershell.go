@@ -12,6 +12,7 @@ import (
 	"github.com/TomOnTime/utfutil"
 )
 
+// Sheller is an interface for running commands.
 type Sheller interface {
 	Exit()
 	Execute(s string) (string, string, error)

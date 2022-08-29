@@ -11,24 +11,31 @@ type psHandle struct {
 
 func newPowerShell(config map[string]string) (*psHandle, error) {
 
+	remoteHost := "remotehost" // Pull this out of config
+
 	psh := &psHandle{
-		shell: newShellHandle(),
+		shell: newShellHandle(remoteHost),
 	}
 	return psh, nil
 }
 
 type shellHandle struct {
+	remoteHost string
+	// Add fields for anything needed in the session.
 }
 
-func newShellHandle() *shellHandle {
-	return &shellHandle{}
+func newShellHandle(remoteHost string) *shellHandle {
+	return &shellHandle{
+		remoteHost: remoteHost,
+	}
 }
 
-func (*shellHandle) Execute(s string) (string, string, error) {
+func (sh *shellHandle) Execute(s string) (string, string, error) {
 	// NOT IMPLEMENTED
+	// Run the command on sh.remoteHost
 	return "", "", fmt.Errorf("Not implemented")
 }
 
-func (*shellHandle) Exit() {
+func (sh *shellHandle) Exit() {
 	// NOT IMPLEMENTED
 }
