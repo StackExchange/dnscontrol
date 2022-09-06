@@ -8,7 +8,7 @@ import (
 
 // Keep these in alphabetical order.
 
-// SrvHasNullTarget detects SRV records that contain semicolons.
+// SrvHasNullTarget detects SRV records that has a null target.
 func SrvHasNullTarget(rc *models.RecordConfig) error {
 	if rc.GetTargetField() == "." {
 		return fmt.Errorf("srv has null target")

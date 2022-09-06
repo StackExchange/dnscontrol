@@ -711,6 +711,14 @@ func makeTests(t *testing.T) []*TestGroup {
 			tc("Delete wildcard", a("www", "1.1.1.1")),
 		),
 
+		testgroup("TypeChange",
+			// Test whether the provider properly handles a label changing
+			// from one rtype to another.
+			tc("Create a CNAME", cname("foo", "google.com.")),
+			tc("Change to A record", a("foo", "1.2.3.4")),
+			tc("Change back to CNAME", cname("foo", "google2.com.")),
+		),
+
 		//
 		// Test each basic DNS type
 		//
@@ -723,21 +731,21 @@ func makeTests(t *testing.T) []*TestGroup {
 		// very slow on certain providers. This is faster but is a little
 		// more difficult to read.
 
-		testgroup("FasterVersion",
+		testgroup("CommonDNS",
 			tc("Create 1 of each",
-				a("testa", "1.1.1.1"),
+				//a("testa", "1.1.1.1"),  // Duplicates work done by Protocol-Plain
 				cname("testcname", "example.com."),
 				mx("testmx", 5, "foo.com."),
 				txt("testtxt", "simple"),
 			),
 			tc("Change param1",
-				a("testa", "2.2.2.2"),
+				//a("testa", "2.2.2.2"),  // Duplicates work done by Protocol-Plain
 				cname("testcname", "example2.com."),
 				mx("testmx", 6, "foo.com."),
 				txt("testtxt", "changed"),
 			),
 			tc("Change param2", // if there is one)
-				a("testa", "2.2.2.2"),
+				//a("testa", "2.2.2.2"),  // Duplicates work done by Protocol-Plain
 				cname("testcname", "example2.com."),
 				mx("testmx", 6, "bar.com."),
 				txt("testtxt", "changed"),
@@ -754,27 +762,7 @@ func makeTests(t *testing.T) []*TestGroup {
 
 		testgroup("MX",
 			tc("Record pointing to @", mx("foo", 8, "**current-domain**")),
-		),
-
-		testgroup("Null MX",
-			// These providers don't support RFC 7505
-			not(
-				"AUTODNS",
-				"AZURE_DNS",
-				"CSCGLOBAL", // Last verified 2022-06-07
-				"DIGITALOCEAN",
-				"DNSIMPLE",
-				"EXOSCALE", // Last verified 2022-07-11
-				"GANDI_V5",
-				"HEDNS",
-				"INWX",
-				"MSDNS",
-				"NAMEDOTCOM",
-				"NETCUP",
-				"OVH",
-				"VULTR",
-			),
-			tc("Null MX", mx("@", 0, ".")),
+			tc("Null MX", mx("@", 0, ".")), // RFC 7505
 		),
 
 		testgroup("NS",
@@ -808,36 +796,33 @@ func makeTests(t *testing.T) []*TestGroup {
 			tc("TXT with 0-octel string", txt("foo1", "")),
 			// https://github.com/StackExchange/dnscontrol/issues/598
 			// RFC1035 permits this, but rarely do provider support it.
-			clear(),
+			//clear(),
 
-			tc("Create a 254-byte TXT", txt("foo254", strings.Repeat("B", 254))),
-			clear(),
-			tc("Create a 255-byte TXT", txt("foo255", strings.Repeat("C", 255))),
-			clear(),
-			tc("Create a 256-byte TXT", txt("foo256", strings.Repeat("D", 256))),
-			clear(),
+			tc("a 255-byte TXT", txt("foo255", strings.Repeat("C", 255))),
+			//clear(),
+			tc("a 256-byte TXT", txt("foo256", strings.Repeat("D", 256))),
+			//clear(),
 
-			tc("Create a 511-byte TXT", txt("foo511", strings.Repeat("B", 511))),
-			clear(),
-			tc("Create a 512-byte TXT", txt("foo512", strings.Repeat("C", 512))),
-			clear(),
-			tc("Create a 513-byte TXT", txt("foo513", strings.Repeat("D", 513))),
-			clear(),
+			tc("a 512-byte TXT", txt("foo512", strings.Repeat("C", 512))),
+			//clear(),
+			tc("a 513-byte TXT", txt("foo513", strings.Repeat("D", 513))),
+			//clear(),
 
-			tc("Create a TXT with spaces", txt("foosp", "with spaces")),
-			clear(),
-			tc("Create TXT with single-quote", txt("foosq", "quo'te")),
-			clear(),
-			tc("Create TXT with backtick", txt("foobt", "blah`blah")),
-			clear(),
-			tc("Create TXT with double-quote", txt("foodq", `quo"te`)),
-			clear(),
-			tc("Create TXT with double-quotes", txt("foodqs", `q"uo"te`)),
-			clear(),
-			tc("Create TXT with ws at end", txt("foows1", "with space at end ")),
-			clear(),
+			tc("TXT with 1 single-quote", txt("foosq", "quo'te")),
+			//clear(),
+			tc("TXT with 1 backtick", txt("foobt", "blah`blah")),
+			//clear(),
+			tc("TXT with 1 double-quotes", txt("foodq", `quo"te`)),
+			//clear(),
+			tc("TXT with 2 double-quotes", txt("foodqs", `q"uo"te`)),
+			//clear(),
 
-			tc("Create a TXT/SPF", txt("foo", "v=spf1 ip4:99.99.99.99 -all")),
+			tc("a TXT with interior ws", txt("foosp", "with spaces")),
+			//clear(),
+			tc("TXT with ws at end", txt("foows1", "with space at end ")),
+			//clear(),
+
+			//tc("Create a TXT/SPF", txt("foo", "v=spf1 ip4:99.99.99.99 -all")),
 			// This was added because Vultr syntax-checks TXT records with SPF contents.
 			//clear(),
 
@@ -848,14 +833,6 @@ func makeTests(t *testing.T) []*TestGroup {
 		//
 		// API Edge Cases
 		//
-
-		testgroup("TypeChange",
-			// Test whether the provider properly handles a label changing
-			// from one rtype to another.
-			tc("Create a CNAME", cname("foo", "google.com.")),
-			tc("Change to A record", a("foo", "1.2.3.4")),
-			tc("Change back to CNAME", cname("foo", "google2.com.")),
-		),
 
 		testgroup("Case Sensitivity",
 			// The decoys are required so that there is at least one actual change in each tc.
@@ -1109,6 +1086,8 @@ func makeTests(t *testing.T) []*TestGroup {
 			tc("change it", alias("test", "foo2.com.")),
 		),
 
+		// AZURE features
+
 		testgroup("AZURE_ALIAS",
 			requires(providers.CanUseAzureAlias),
 			tc("create dependent A records",
@@ -1140,6 +1119,8 @@ func makeTests(t *testing.T) []*TestGroup {
 				azureAlias("bar.cname", "CNAME", "/subscriptions/**subscription-id**/resourceGroups/**resource-group**/providers/Microsoft.Network/dnszones/**current-domain-no-trailing**/CNAME/quux.cname"),
 			),
 		),
+
+		// ROUTE43 features
 
 		testgroup("R53_ALIAS2",
 			requires(providers.CanUseRoute53Alias),
@@ -1199,30 +1180,36 @@ func makeTests(t *testing.T) []*TestGroup {
 			),
 		),
 
+		// CLOUDFLAREAPI features
+
 		testgroup("CF_REDIRECT",
 			only("CLOUDFLAREAPI"),
 			tc("redir", cfRedir("cnn.**current-domain-no-trailing**/*", "https://www.cnn.com/$1")),
 			tc("change", cfRedir("cnn.**current-domain-no-trailing**/*", "https://change.cnn.com/$1")),
 			tc("changelabel", cfRedir("cable.**current-domain-no-trailing**/*", "https://change.cnn.com/$1")),
-			clear(),
-			tc("multipleA",
-				cfRedir("cnn.**current-domain-no-trailing**/*", "https://www.cnn.com/$1"),
-				cfRedir("msnbc.**current-domain-no-trailing**/*", "https://msnbc.cnn.com/$1"),
-			),
-			clear(),
-			tc("multipleB",
-				cfRedir("msnbc.**current-domain-no-trailing**/*", "https://msnbc.cnn.com/$1"),
-				cfRedir("cnn.**current-domain-no-trailing**/*", "https://www.cnn.com/$1"),
-			),
-			tc("change1",
-				cfRedir("msnbc.**current-domain-no-trailing**/*", "https://msnbc.cnn.com/$1"),
-				cfRedir("cnn.**current-domain-no-trailing**/*", "https://change.cnn.com/$1"),
-			),
-			tc("change1",
-				cfRedir("msnbc.**current-domain-no-trailing**/*", "https://msnbc.cnn.com/$1"),
-				cfRedir("cablenews.**current-domain-no-trailing**/*", "https://change.cnn.com/$1"),
-			),
-			// TODO(tlim): Fix this test case:
+
+			// Removed these for speed.  They were testing if order matters,
+			// which it doesn't seem to.  Re-add if needed.
+			//clear(),
+			//tc("multipleA",
+			//	cfRedir("cnn.**current-domain-no-trailing**/*", "https://www.cnn.com/$1"),
+			//	cfRedir("msnbc.**current-domain-no-trailing**/*", "https://msnbc.cnn.com/$1"),
+			//),
+			//clear(),
+			//tc("multipleB",
+			//	cfRedir("msnbc.**current-domain-no-trailing**/*", "https://msnbc.cnn.com/$1"),
+			//	cfRedir("cnn.**current-domain-no-trailing**/*", "https://www.cnn.com/$1"),
+			//),
+			//tc("change1",
+			//	cfRedir("msnbc.**current-domain-no-trailing**/*", "https://msnbc.cnn.com/$1"),
+			//	cfRedir("cnn.**current-domain-no-trailing**/*", "https://change.cnn.com/$1"),
+			//),
+			//tc("change1",
+			//	cfRedir("msnbc.**current-domain-no-trailing**/*", "https://msnbc.cnn.com/$1"),
+			//	cfRedir("cablenews.**current-domain-no-trailing**/*", "https://change.cnn.com/$1"),
+			//),
+
+			// TODO(tlim): Fix this test case. It is currently failing.
 			//clear(),
 			//tc("multiple3",
 			//	cfRedir("msnbc.**current-domain-no-trailing**/*", "https://msnbc.cnn.com/$1"),
@@ -1300,6 +1287,8 @@ func makeTests(t *testing.T) []*TestGroup {
 				cfWorkerRoute("api.**current-domain-no-trailing**/cnn/*", "dnscontrol_integrationtest_cnn"),
 			),
 		),
+
+		// IGNORE* features
 
 		testgroup("IGNORE_NAME function",
 			tc("Create some records",
