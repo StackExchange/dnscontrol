@@ -36,7 +36,7 @@ require (
 	github.com/jarcoal/httpmock v1.0.8 // indirect
 	github.com/jinzhu/copier v0.3.5
 	github.com/miekg/dns v1.1.50
-	github.com/mittwald/go-powerdns v0.6.0
+	github.com/mittwald/go-powerdns v0.6.2
 	github.com/namedotcom/go v0.0.0-20180403034216-08470befbe04
 	github.com/nrdcg/goinwx v0.8.1
 	github.com/oracle/oci-go-sdk/v32 v32.0.0
@@ -50,7 +50,7 @@ require (
 	github.com/stretchr/testify v1.8.0
 	github.com/tdewolff/minify/v2 v2.12.0
 	github.com/transip/gotransip/v6 v6.17.0
-	github.com/urfave/cli/v2 v2.11.2
+	github.com/urfave/cli/v2 v2.14.0
 	github.com/vultr/govultr v1.1.1
 	github.com/xddxdd/ottoext v0.0.0-20210101073831-439879ee6281
 	golang.org/x/net v0.0.0-20220812174116-3211cb980234
