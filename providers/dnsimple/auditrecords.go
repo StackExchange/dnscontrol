@@ -11,6 +11,8 @@ import (
 func AuditRecords(records []*models.RecordConfig) []error {
 	a := rejectif.Auditor{}
 
+	a.Add("CAA", rejectif.CaaTargetContainsWhitespace) // Last verified xxxx-xx-xx
+
 	a.Add("TXT", rejectif.TxtHasMultipleSegments) // Last verified 2022-07
 	//TODO(onlyhavecans) I think we can support multiple strings.
 

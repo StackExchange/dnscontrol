@@ -532,33 +532,6 @@ func ttl(r *models.RecordConfig, t uint32) *models.RecordConfig {
 	return r
 }
 
-// gentxt generates TXTmulti test cases.  The input string is used to
-// dictate the output, each char represents the substring in the
-// resulting TXTmulti.  0 or s outputs a short string, h outputs a 128-octet
-// string, 1 or l outputs a long (255-octet) string.
-func gentxt(s string) *TestCase {
-	title := fmt.Sprintf("Create TXT %s", s)
-	label := fmt.Sprintf("foo%d", len(s))
-	l := []string{}
-	for _, j := range s {
-		switch j {
-		case '0', 's':
-			//title += " short"
-			label += "s"
-			l = append(l, "short")
-		case 'h':
-			//title += " 128"
-			label += "h"
-			l = append(l, strings.Repeat("H", 128))
-		case '1', 'l':
-			//title += " 255"
-			label += "l"
-			l = append(l, strings.Repeat("Z", 255))
-		}
-	}
-	return tc(title, txtmulti(label, l))
-}
-
 func manyA(namePattern, target string, n int) []*models.RecordConfig {
 	recs := []*models.RecordConfig{}
 	for i := 0; i < n; i++ {
@@ -714,11 +687,11 @@ func makeTests(t *testing.T) []*TestGroup {
 		//
 		// Basic functionality (add/rename/change/delete).
 		//
-		testgroup("GeneralACD",
-			// Test general ability to add/change/delete records of one
-			// type. These tests aren't specific to "A" records, but we
-			// don't do tests specific to A records because this exercises
-			// them very well.
+		// These tests verify the basic operations of the API: Create, Change, Delete.
+		// These are tested on "@" and "www".
+		// When these tests pass, you've implemented the basics correctly.
+
+		testgroup("Protocol-Plain",
 			tc("Create an A record", a("@", "1.1.1.1")),
 			tc("Change it", a("@", "1.2.3.4")),
 			tc("Add another", a("@", "1.2.3.4"), a("www", "1.2.3.4")),
@@ -731,30 +704,55 @@ func makeTests(t *testing.T) []*TestGroup {
 			tc("Change targets and ttls", a("www", "1.1.1.1"), a("www", "2.2.2.2")),
 		),
 
-		testgroup("WildcardACD",
+		testgroup("Protocol-Wildcard",
+			// Test the basic Add/Change/Delete with the domain wildcard.
 			not("HEDNS"), // Not supported by dns.he.net due to abuse
 			tc("Create wildcard", a("*", "1.2.3.4"), a("www", "1.1.1.1")),
 			tc("Delete wildcard", a("www", "1.1.1.1")),
 		),
 
 		//
-		// Test the basic rtypes.
+		// Test each basic DNS type
+		//
+		// This tests all the common DNS types in parallel for speed.
+		// First: 1 of each type is created.
+		// Second: the first parameter is modified.
+		// Third: the second parameter is modified. (if there is none, no changes)
+
+		// NOTE: Previously we did a seperate test for each type. It was
+		// very slow on certain providers. This is faster but is a little
+		// more difficult to read.
+
+		testgroup("FasterVersion",
+			tc("Create 1 of each",
+				a("testa", "1.1.1.1"),
+				cname("testcname", "example.com."),
+				mx("testmx", 5, "foo.com."),
+				txt("testtxt", "simple"),
+			),
+			tc("Change param1",
+				a("testa", "2.2.2.2"),
+				cname("testcname", "example2.com."),
+				mx("testmx", 6, "foo.com."),
+				txt("testtxt", "changed"),
+			),
+			tc("Change param2", // if there is one)
+				a("testa", "2.2.2.2"),
+				cname("testcname", "example2.com."),
+				mx("testmx", 6, "bar.com."),
+				txt("testtxt", "changed"),
+			),
+		),
+
+		//
+		// Test edge cases from various types.
 		//
 
 		testgroup("CNAME",
-			tc("Create a CNAME", cname("foo", "google.com.")),
-			tc("Change CNAME target", cname("foo", "google2.com.")),
-			clear(),
 			tc("Record pointing to @", cname("foo", "**current-domain**")),
 		),
 
 		testgroup("MX",
-			tc("MX record", mx("@", 5, "foo.com.")),
-			tc("Second MX record, same prio", mx("@", 5, "foo.com."), mx("@", 5, "foo2.com.")),
-			tc("3 MX", mx("@", 5, "foo.com."), mx("@", 5, "foo2.com."), mx("@", 15, "foo3.com.")),
-			tc("Delete one", mx("@", 5, "foo2.com."), mx("@", 15, "foo3.com.")),
-			tc("Change to other name", mx("@", 5, "foo2.com."), mx("mail", 15, "foo3.com.")),
-			tc("Change Preference", mx("@", 7, "foo2.com."), mx("mail", 15, "foo3.com.")),
 			tc("Record pointing to @", mx("foo", 8, "**current-domain**")),
 		),
 
@@ -790,24 +788,6 @@ func makeTests(t *testing.T) []*TestGroup {
 			tc("NS Record pointing to @", a("@", "1.2.3.4"), ns("foo", "**current-domain**")),
 		),
 
-		testgroup("simple TXT",
-			tc("Create a TXT", txt("foo", "simple")),
-			tc("Change a TXT", txt("foo", "changed")),
-			tc("Create a TXT with spaces", txt("foo", "with spaces")),
-		),
-
-		testgroup("simple TXT-spf1",
-			// This was added because Vultr syntax-checks TXT records with
-			// SPF contents.
-			tc("Create a TXT/SPF", txt("foo", "v=spf1 ip4:99.99.99.99 -all")),
-		),
-
-		testgroup("long TXT",
-			tc("Create long TXT", txt("foo", strings.Repeat("A", 300))),
-			tc("Change long TXT", txt("foo", strings.Repeat("B", 310))),
-			tc("Create long TXT with spaces", txt("foo", strings.Repeat("X", 200)+" "+strings.Repeat("Y", 200))),
-		),
-
 		// In this next section we test all the edge cases related to TXT
 		// records. Compliance with the RFCs varies greatly with each provider.
 		// Rather than creating a "Capability" for each possible different
@@ -824,20 +804,28 @@ func makeTests(t *testing.T) []*TestGroup {
 			// "provider/*/recordaudit.AuditRecords()" to reject that kind
 			// of record. When the provider fixes the bug or changes behavior,
 			// update the AuditRecords().
+
 			tc("TXT with 0-octel string", txt("foo1", "")),
 			// https://github.com/StackExchange/dnscontrol/issues/598
 			// RFC1035 permits this, but rarely do provider support it.
-			//clear(),
-			//tc("Create a 253-byte TXT", txt("foo253", strings.Repeat("A", 253))),
 			clear(),
+
 			tc("Create a 254-byte TXT", txt("foo254", strings.Repeat("B", 254))),
 			clear(),
 			tc("Create a 255-byte TXT", txt("foo255", strings.Repeat("C", 255))),
 			clear(),
 			tc("Create a 256-byte TXT", txt("foo256", strings.Repeat("D", 256))),
 			clear(),
-			//tc("Create a 257-byte TXT", txt("foo257", strings.Repeat("E", 257))),
-			//clear(),
+
+			tc("Create a 511-byte TXT", txt("foo511", strings.Repeat("B", 511))),
+			clear(),
+			tc("Create a 512-byte TXT", txt("foo512", strings.Repeat("C", 512))),
+			clear(),
+			tc("Create a 513-byte TXT", txt("foo513", strings.Repeat("D", 513))),
+			clear(),
+
+			tc("Create a TXT with spaces", txt("foosp", "with spaces")),
+			clear(),
 			tc("Create TXT with single-quote", txt("foosq", "quo'te")),
 			clear(),
 			tc("Create TXT with backtick", txt("foobt", "blah`blah")),
@@ -847,124 +835,18 @@ func makeTests(t *testing.T) []*TestGroup {
 			tc("Create TXT with double-quotes", txt("foodqs", `q"uo"te`)),
 			clear(),
 			tc("Create TXT with ws at end", txt("foows1", "with space at end ")),
+			clear(),
+
+			tc("Create a TXT/SPF", txt("foo", "v=spf1 ip4:99.99.99.99 -all")),
+			// This was added because Vultr syntax-checks TXT records with SPF contents.
 			//clear(),
+
 			// TODO(tlim): Re-add this when we fix the RFC1035 escaped-quotes issue.
 			//tc("Create TXT with frequently escaped characters", txt("fooex", `!^.*$@#%^&()([][{}{<></:;-_=+\`)),
 		),
 
 		//
-		testgroup("gentxt TXT",
-			not(
-				"CLOUDFLAREAPI", // Too slow. Add back as needed.
-				"GANDI_V5",      // Too slow. Add back as needed.
-				"AZURE_DNS",     // Too slow. Add back as needed.
-			),
-			gentxt("0"),
-			gentxt("1"),
-			gentxt("10"),
-			gentxt("11"),
-			gentxt("100"),
-			gentxt("101"),
-			gentxt("110"),
-			gentxt("111"),
-			gentxt("1hh"),
-			gentxt("1hh0"),
-		),
-
-		testgroup("long TXT",
-			not(
-				"CLOUDFLAREAPI", // Too slow. Add back as needed.
-				"GANDI_V5",      // Too slow. Add back as needed.
-				"AZURE_DNS",     // Too slow. Add back as needed.
-			),
-			tc("Create a 505 TXT", txt("foo257", strings.Repeat("E", 505))),
-			tc("Create a 506 TXT", txt("foo257", strings.Repeat("E", 506))),
-			tc("Create a 507 TXT", txt("foo257", strings.Repeat("E", 507))),
-			tc("Create a 508 TXT", txt("foo257", strings.Repeat("E", 508))),
-			tc("Create a 509 TXT", txt("foo257", strings.Repeat("E", 509))),
-			tc("Create a 510 TXT", txt("foo257", strings.Repeat("E", 510))),
-			tc("Create a 511 TXT", txt("foo257", strings.Repeat("E", 511))),
-			tc("Create a 512 TXT", txt("foo257", strings.Repeat("E", 512))),
-			tc("Create a 513 TXT", txt("foo257", strings.Repeat("E", 513))),
-			tc("Create a 514 TXT", txt("foo257", strings.Repeat("E", 514))),
-			tc("Create a 515 TXT", txt("foo257", strings.Repeat("E", 515))),
-			tc("Create a 516 TXT", txt("foo257", strings.Repeat("E", 516))),
-		),
-
-		// Test the ability to change TXT records on the DIFFERENT labels accurately.
-		testgroup("TXTMulti",
-			not(
-				"CLOUDFLAREAPI", // Too slow. Add back as needed.
-				"GANDI_V5",      // Too slow. Add back as needed.
-				"AZURE_DNS",     // Too slow. Add back as needed.
-			),
-			tc("Create TXTMulti 1",
-				txtmulti("foo1", []string{"simple"}),
-			),
-			tc("Add TXTMulti 2",
-				txtmulti("foo1", []string{"simple"}),
-				txtmulti("foo2", []string{"one", "two"}),
-			),
-			tc("Add TXTMulti 3",
-				txtmulti("foo1", []string{"simple"}),
-				txtmulti("foo2", []string{"one", "two"}),
-				txtmulti("foo3", []string{"eh", "bee", "cee"}),
-			),
-			tc("Change TXTMultii-0",
-				txtmulti("foo1", []string{"dimple"}),
-				txtmulti("foo2", []string{"fun", "two"}),
-				txtmulti("foo3", []string{"eh", "bzz", "cee"}),
-			),
-			tc("Change TXTMulti-1[0]",
-				txtmulti("foo1", []string{"dimple"}),
-				txtmulti("foo2", []string{"moja", "two"}),
-				txtmulti("foo3", []string{"eh", "bzz", "cee"}),
-			),
-			tc("Change TXTMulti-1[1]",
-				txtmulti("foo1", []string{"dimple"}),
-				txtmulti("foo2", []string{"moja", "mbili"}),
-				txtmulti("foo3", []string{"eh", "bzz", "cee"}),
-			),
-		),
-
-		// Test the ability to change TXT records on the SAME labels accurately.
-		testgroup("TXTMulti-same",
-			not(
-				"CLOUDFLAREAPI", // Too slow. Add back as needed.
-				"GANDI_V5",      // Too slow. Add back as needed.
-				"AZURE_DNS",     // Too slow. Add back as needed.
-			),
-			tc("Create TXTMulti 1",
-				txtmulti("foo", []string{"simple"}),
-			),
-			tc("Add TXTMulti 2",
-				txtmulti("foo", []string{"simple"}),
-				txtmulti("foo", []string{"one", "two"}),
-			),
-			tc("Add TXTMulti 3",
-				txtmulti("foo", []string{"simple"}),
-				txtmulti("foo", []string{"one", "two"}),
-				txtmulti("foo", []string{"eh", "bee", "cee"}),
-			),
-			tc("Change TXTMultii-0",
-				txtmulti("foo", []string{"dimple"}),
-				txtmulti("foo", []string{"fun", "two"}),
-				txtmulti("foo", []string{"eh", "bzz", "cee"}),
-			),
-			tc("Change TXTMulti-1[0]",
-				txtmulti("foo", []string{"dimple"}),
-				txtmulti("foo", []string{"moja", "two"}),
-				txtmulti("foo", []string{"eh", "bzz", "cee"}),
-			),
-			tc("Change TXTMulti-1[1]",
-				txtmulti("foo", []string{"dimple"}),
-				txtmulti("foo", []string{"moja", "mbili"}),
-				txtmulti("foo", []string{"eh", "bzz", "cee"}),
-			),
-		),
-
-		//
-		// Tests that exercise the API protocol and/or code.
+		// API Edge Cases
 		//
 
 		testgroup("TypeChange",
@@ -1055,35 +937,11 @@ func makeTests(t *testing.T) []*TestGroup {
 			tc("CAA record", caa("@", "issue", 0, "letsencrypt.org")),
 			tc("CAA change tag", caa("@", "issuewild", 0, "letsencrypt.org")),
 			tc("CAA change target", caa("@", "issuewild", 0, "example.com")),
-			tc("CAA many records",
-				caa("@", "issue", 0, "letsencrypt.org"),
-				caa("@", "issuewild", 0, "comodoca.com"),
-				caa("@", "iodef", 0, "mailto:test@example.com")),
-			tc("CAA delete", caa("@", "issue", 0, "letsencrypt.org")),
-		),
-		testgroup("CAA noflag",
-			requires(providers.CanUseCAA), not("LINODE"),
-			// LINODE can only set the flag to "0".
-			// https://www.linode.com/community/questions/20714/how-to-i-change-the-flag-in-a-caa-record
-			// Consolidate any tests with a non-zero flag to this testgroup
-			// so they can be easily skipped.
-			tc("CAA flag0", caa("@", "issuewild", 0, "example.com")),
 			tc("CAA change flag", caa("@", "issuewild", 128, "example.com")),
-		),
-		testgroup("CAA with ;",
-			requires(providers.CanUseCAA),
-			// Test support of ";" as a value
-			tc("CAA many records", caa("@", "issuewild", 0, ";")),
-		),
-		testgroup("CAA Issue 1374",
-			requires(providers.CanUseCAA), not(
-				"DIGITALOCEAN",
-				"DNSIMPLE",
-				"EXOSCALE", // Last verified 2022-07-11
-				"HETZNER",
-			),
-			// Test support of spaces in the 3rd field.
-			tc("CAA spaces", caa("@", "issue", 0, "letsencrypt.org; validationmethods=dns-01; accounturi=https://acme-v02.api.letsencrypt.org/acme/acct/1234")),
+			tc("CAA many records", caa("@", "issuewild", 128, ";")),
+			// Test support of spaces in the 3rd field. Some providers don't
+			// support this.  See providers/exoscale/auditrecords.go as an example.
+			tc("CAA whitespace", caa("@", "issue", 0, "letsencrypt.org; validationmethods=dns-01; accounturi=https://acme-v02.api.letsencrypt.org/acme/acct/1234")),
 		),
 
 		testgroup("NAPTR",
@@ -1126,17 +984,8 @@ func makeTests(t *testing.T) []*TestGroup {
 			tc("Change Priority", srv("_sip._tcp", 52, 6, 7, "foo.com."), srv("_sip._tcp", 15, 65, 75, "foo4.com.")),
 			tc("Change Weight", srv("_sip._tcp", 52, 62, 7, "foo.com."), srv("_sip._tcp", 15, 65, 75, "foo4.com.")),
 			tc("Change Port", srv("_sip._tcp", 52, 62, 72, "foo.com."), srv("_sip._tcp", 15, 65, 75, "foo4.com.")),
-		),
-		testgroup("SRV w/ null target", requires(providers.CanUseSRV),
-			not(
-				"CSCGLOBAL",  // Not supported.
-				"EXOSCALE",   // Not supported.
-				"HEXONET",    // Not supported.
-				"INWX",       // Not supported.
-				"MSDNS",      // Not supported.
-				"NAMEDOTCOM", // Not supported.
-			),
-			tc("Null Target", srv("_sip._tcp", 52, 62, 72, "foo.com."), srv("_sip._tcp", 15, 65, 75, ".")),
+			clear(),
+			tc("Null Target", srv("_sip._tcp", 15, 65, 75, ".")),
 		),
 
 		testgroup("SSHFP",
@@ -1147,13 +996,6 @@ func makeTests(t *testing.T) []*TestGroup {
 				sshfp("@", 2, 1, "66c7d5540b7d75a1fb4c84febfa178ad99bdd67c")),
 			tc("SSHFP change fingerprint and type",
 				sshfp("@", 2, 2, "745a635bc46a397a5c4f21d437483005bcc40d7511ff15fbfafe913a081559bc")),
-			tc("SSHFP Delete one"),
-			tc("SSHFP add many records",
-				sshfp("@", 1, 1, "66666666666d75a1fb4c84febfa178ad99bdd67c"),
-				sshfp("@", 1, 2, "777777777777797a5c4f21d437483005bcc40d7511ff15fbfafe913a081559bc"),
-				sshfp("@", 2, 1, "8888888888888888fb4c84febfa178ad99bdd67c")),
-			tc("SSHFP delete two",
-				sshfp("@", 1, 1, "66666666666d75a1fb4c84febfa178ad99bdd67c")),
 		),
 
 		testgroup("TLSA",
