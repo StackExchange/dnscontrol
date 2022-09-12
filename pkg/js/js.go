@@ -4,23 +4,20 @@ import (
 	_ "embed" // Used to embed helpers.js in the binary.
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
 	"log"
 	"os"
 	"path/filepath"
 	"strings"
 
+	"github.com/StackExchange/dnscontrol/v3/models"
+	"github.com/StackExchange/dnscontrol/v3/pkg/printer"
+	"github.com/StackExchange/dnscontrol/v3/pkg/transform"
 	"github.com/robertkrimen/otto"              // load underscore js into vm by default
 	_ "github.com/robertkrimen/otto/underscore" // required by otto
-
 	"github.com/xddxdd/ottoext/fetch"
 	"github.com/xddxdd/ottoext/loop"
 	"github.com/xddxdd/ottoext/promise"
 	"github.com/xddxdd/ottoext/timers"
-
-	"github.com/StackExchange/dnscontrol/v3/models"
-	"github.com/StackExchange/dnscontrol/v3/pkg/printer"
-	"github.com/StackExchange/dnscontrol/v3/pkg/transform"
 )
 
 //go:embed helpers.js
@@ -40,7 +37,7 @@ var EnableFetch bool = false
 
 // ExecuteJavascript accepts a javascript string and runs it, returning the resulting dnsConfig.
 func ExecuteJavascript(file string, devMode bool, variables map[string]string) (*models.DNSConfig, error) {
-	script, err := ioutil.ReadFile(file)
+	script, err := os.ReadFile(file)
 	if err != nil {
 		return nil, err
 	}
@@ -111,7 +108,7 @@ func ExecuteJavascript(file string, devMode bool, variables map[string]string) (
 func GetHelpers(devMode bool) string {
 	if devMode {
 		// Load the file:
-		b, err := ioutil.ReadFile(helpersJsFileName)
+		b, err := os.ReadFile(helpersJsFileName)
 		if err != nil {
 			log.Fatal(err)
 		}
@@ -143,7 +140,7 @@ func require(call otto.FunctionCall) otto.Value {
 
 	printer.Debugf("requiring: %s (%s)\n", file, relFile)
 	// quick fix, by replacing to linux slashes, to make it work with windows paths too.
-	data, err := ioutil.ReadFile(filepath.ToSlash(relFile))
+	data, err := os.ReadFile(filepath.ToSlash(relFile))
 
 	if err != nil {
 		throw(call.Otto, err.Error())

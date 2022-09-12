@@ -1,7 +1,8 @@
 // Package credsfile provides functions for reading and parsing the provider credentials json file.
 // It cleans nonstandard json features (comments and trailing commas), as well as replaces environment variable placeholders with
 // their environment variable equivalents. To reference an environment variable in your json file, simply use values in this format:
-//    "key"="$ENV_VAR_NAME"
+//
+//	"key"="$ENV_VAR_NAME"
 package credsfile
 
 import (

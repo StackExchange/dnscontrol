@@ -6,7 +6,7 @@ import (
 	"encoding/base64"
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"net/http"
 	"time"
 )
@@ -71,7 +71,7 @@ func (c *easynameProvider) request(method, uri string, body *bytes.Buffer, resul
 		return err
 	}
 
-	bodyString, _ := ioutil.ReadAll(resp.Body)
+	bodyString, _ := io.ReadAll(resp.Body)
 	json.Unmarshal(bodyString, &result)
 
 	status := result.GetStatus()

@@ -2,11 +2,12 @@ package powerdns
 
 import (
 	"fmt"
-	"github.com/mittwald/go-powerdns/apis/zones"
 	"strings"
 	"testing"
+
+	"github.com/mittwald/go-powerdns/apis/zones"
+	"github.com/stretchr/testify/assert"
 )
-import "github.com/stretchr/testify/assert"
 
 func TestToRecordConfig(t *testing.T) {
 	record := zones.Record{

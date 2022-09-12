@@ -2,23 +2,22 @@ package vultr
 
 import (
 	"github.com/StackExchange/dnscontrol/v3/models"
-	"github.com/StackExchange/dnscontrol/v3/pkg/recordaudit"
+	"github.com/StackExchange/dnscontrol/v3/pkg/rejectif"
 )
 
-// AuditRecords returns an error if any records are not
-// supportable by this provider.
-func AuditRecords(records []*models.RecordConfig) error {
+// AuditRecords returns a list of errors corresponding to the records
+// that aren't supported by this provider.  If all records are
+// supported, an empty list is returned.
+func AuditRecords(records []*models.RecordConfig) []error {
+	a := rejectif.Auditor{}
 
-	// TODO(tlim) Needs investigation. Could be a dnscontrol issue or
+	a.Add("MX", rejectif.MxNull) // Last verified 2020-12-28
+
+	a.Add("TXT", rejectif.TxtHasDoubleQuotes) // Last verified 2021-03-02
+	// Needs investigation. Could be a dnscontrol issue or
 	// the provider doesn't support double quotes.
-	if err := recordaudit.TxtNoDoubleQuotes(records); err != nil {
-		return err
-	}
-	// Still needed as of 2021-03-02
 
-	if err := recordaudit.TxtNoMultipleStrings(records); err != nil {
-		return err
-	}
+	a.Add("TXT", rejectif.TxtHasMultipleSegments)
 
-	return nil
+	return a.Audit(records)
 }

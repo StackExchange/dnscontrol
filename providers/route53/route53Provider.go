@@ -11,9 +11,12 @@ import (
 	"time"
 	"unicode/utf8"
 
+	"github.com/StackExchange/dnscontrol/v3/models"
 	"github.com/StackExchange/dnscontrol/v3/pkg/decode"
+	"github.com/StackExchange/dnscontrol/v3/pkg/diff"
 	"github.com/StackExchange/dnscontrol/v3/pkg/printer"
-
+	"github.com/StackExchange/dnscontrol/v3/pkg/txtutil"
+	"github.com/StackExchange/dnscontrol/v3/providers"
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/config"
 	"github.com/aws/aws-sdk-go-v2/credentials"
@@ -21,11 +24,6 @@ import (
 	r53Types "github.com/aws/aws-sdk-go-v2/service/route53/types"
 	r53d "github.com/aws/aws-sdk-go-v2/service/route53domains"
 	r53dTypes "github.com/aws/aws-sdk-go-v2/service/route53domains/types"
-
-	"github.com/StackExchange/dnscontrol/v3/models"
-	"github.com/StackExchange/dnscontrol/v3/pkg/diff"
-	"github.com/StackExchange/dnscontrol/v3/pkg/txtutil"
-	"github.com/StackExchange/dnscontrol/v3/providers"
 )
 
 type route53Provider struct {

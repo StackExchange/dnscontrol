@@ -5,13 +5,13 @@ import (
 	"encoding/json"
 	"errors"
 	"io"
-	"io/ioutil"
 	"net/http"
 	"sort"
 
 	"github.com/StackExchange/dnscontrol/v3/models"
 )
 
+// ZoneListFilter describes a JSON list filter.
 type ZoneListFilter struct {
 	Key      string            `json:"key"`
 	Value    string            `json:"value"`
@@ -20,18 +20,19 @@ type ZoneListFilter struct {
 	Filter   []*ZoneListFilter `json:"filters,omitempty"`
 }
 
+// ZoneListRequest describes a JSON zone list request.
 type ZoneListRequest struct {
 	Filter []*ZoneListFilter `json:"filters"`
 }
 
-func (api *autoDnsProvider) request(method string, requestPath string, data interface{}) ([]byte, error) {
+func (api *autoDNSProvider) request(method string, requestPath string, data interface{}) ([]byte, error) {
 	client := &http.Client{}
 
-	requestUrl := api.baseURL
-	requestUrl.Path = api.baseURL.Path + requestPath
+	requestURL := api.baseURL
+	requestURL.Path = api.baseURL.Path + requestPath
 
 	request := &http.Request{
-		URL:    &requestUrl,
+		URL:    &requestURL,
 		Header: api.defaultHeaders,
 		Method: method,
 	}
@@ -48,15 +49,15 @@ func (api *autoDnsProvider) request(method string, requestPath string, data inte
 	}
 	defer response.Body.Close()
 
-	responseText, _ := ioutil.ReadAll(response.Body)
+	responseText, _ := io.ReadAll(response.Body)
 	if response.StatusCode != 200 {
-		return nil, errors.New("Request to " + requestUrl.Path + " failed: " + string(responseText))
+		return nil, errors.New("Request to " + requestURL.Path + " failed: " + string(responseText))
 	}
 
 	return responseText, nil
 }
 
-func (api *autoDnsProvider) findZoneSystemNameServer(domain string) (*models.Nameserver, error) {
+func (api *autoDNSProvider) findZoneSystemNameServer(domain string) (*models.Nameserver, error) {
 	request := &ZoneListRequest{}
 
 	request.Filter = append(request.Filter, &ZoneListFilter{
@@ -81,7 +82,7 @@ func (api *autoDnsProvider) findZoneSystemNameServer(domain string) (*models.Nam
 	return systemNameServer, nil
 }
 
-func (api *autoDnsProvider) getZone(domain string) (*Zone, error) {
+func (api *autoDNSProvider) getZone(domain string) (*Zone, error) {
 	systemNameServer, err := api.findZoneSystemNameServer(domain)
 	if err != nil {
 		return nil, err
@@ -99,7 +100,7 @@ func (api *autoDnsProvider) getZone(domain string) (*Zone, error) {
 	return responseObject.Data[0], nil
 }
 
-func (api *autoDnsProvider) updateZone(domain string, resourceRecords []*ResourceRecord, nameServers []*models.Nameserver, zoneTTL uint32) error {
+func (api *autoDNSProvider) updateZone(domain string, resourceRecords []*ResourceRecord, nameServers []*models.Nameserver, zoneTTL uint32) error {
 	systemNameServer, err := api.findZoneSystemNameServer(domain)
 
 	if err != nil {

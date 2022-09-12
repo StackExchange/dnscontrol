@@ -5,49 +5,45 @@ import (
 	"strings"
 
 	"github.com/StackExchange/dnscontrol/v3/models"
-	"github.com/StackExchange/dnscontrol/v3/pkg/recordaudit"
+	"github.com/StackExchange/dnscontrol/v3/pkg/rejectif"
 )
 
-// AuditRecords returns an error if any records are not
-// supportable by this provider.
-func AuditRecords(records []*models.RecordConfig) error {
+// AuditRecords returns a list of errors corresponding to the records
+// that aren't supported by this provider.  If all records are
+// supported, an empty list is returned.
+func AuditRecords(records []*models.RecordConfig) []error {
+	a := rejectif.Auditor{}
 
-	if err := MaxLengthNDC(records); err != nil {
-		return err
-	}
-	// Still needed as of 2021-03-01
+	a.Add("MX", rejectif.MxNull) // Last verified 2020-12-28
 
-	if err := recordaudit.TxtNotEmpty(records); err != nil {
-		return err
-	}
-	// Still needed as of 2021-03-01
+	a.Add("SRV", rejectif.SrvHasNullTarget) // Last verified 2020-12-28
 
-	return nil
+	a.Add("TXT", MaxLengthNDC) // Last verified 2021-03-01
+
+	a.Add("TXT", rejectif.TxtIsEmpty) // Last verified 2021-03-01
+
+	return a.Audit(records)
 }
 
 // MaxLengthNDC returns and error if the sum of the strings
 // are longer than permitted by NDC. Sadly their
 // length limit is undocumented. This seems to work.
-func MaxLengthNDC(records []*models.RecordConfig) error {
-	for _, rc := range records {
+func MaxLengthNDC(rc *models.RecordConfig) error {
+	if len(rc.TxtStrings) == 0 {
+		return nil
+	}
 
-		if rc.HasFormatIdenticalToTXT() { // TXT and similar:
-			// Sum the length of the segments:
-			sum := 0
-			for _, segment := range rc.TxtStrings {
-				sum += len(segment)                // The length of each segment
-				sum += strings.Count(segment, `"`) // Add 1 for any char to be escaped
-			}
-			// Add the overhead of quoting them:
-			n := len(rc.TxtStrings)
-			if n > 0 {
-				sum += 2 + 3*(n-1) // Start and end double-quotes, plus `" "` between each segment.
-			}
-			if sum > 512 {
-				return fmt.Errorf("encoded txt too long")
-			}
-		}
+	sum := 2 // Count the start and end quote.
+	// Add the length of each segment.
+	for _, segment := range rc.TxtStrings {
+		sum += len(segment)                // The length of each segment
+		sum += strings.Count(segment, `"`) // Add 1 for any char to be escaped
+	}
+	// Add 3 (quote space quote) for each interior join.
+	sum += 3 * (len(rc.TxtStrings) - 1)
 
+	if sum > 512 {
+		return fmt.Errorf("encoded txt too long")
 	}
 	return nil
 }

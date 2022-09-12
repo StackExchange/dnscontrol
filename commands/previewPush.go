@@ -6,8 +6,6 @@ import (
 	"os"
 	"strings"
 
-	"github.com/urfave/cli/v2"
-
 	"github.com/StackExchange/dnscontrol/v3/models"
 	"github.com/StackExchange/dnscontrol/v3/pkg/credsfile"
 	"github.com/StackExchange/dnscontrol/v3/pkg/nameservers"
@@ -15,7 +13,7 @@ import (
 	"github.com/StackExchange/dnscontrol/v3/pkg/notifications"
 	"github.com/StackExchange/dnscontrol/v3/pkg/printer"
 	"github.com/StackExchange/dnscontrol/v3/providers"
-
+	"github.com/urfave/cli/v2"
 	"golang.org/x/exp/slices"
 )
 
@@ -39,6 +37,7 @@ type PreviewArgs struct {
 	Notify      bool
 	WarnChanges bool
 	NoPopulate  bool
+	Full        bool
 }
 
 func (args *PreviewArgs) flags() []cli.Flag {
@@ -59,6 +58,11 @@ func (args *PreviewArgs) flags() []cli.Flag {
 		Name:        "no-populate",
 		Destination: &args.NoPopulate,
 		Usage:       `Use this flag to not auto-create non-existing zones at the provider`,
+	})
+	flags = append(flags, &cli.BoolFlag{
+		Name:        "full",
+		Destination: &args.Full,
+		Usage:       `Add headings, providers names, notifications of no changes, etc`,
 	})
 	return flags
 }
@@ -104,6 +108,10 @@ func Push(args PushArgs) error {
 // run is the main routine common to preview/push
 func run(args PreviewArgs, push bool, interactive bool, out printer.CLI) error {
 	// TODO: make truly CLI independent. Perhaps return results on a channel as they occur
+
+	// This is a hack until we have the new printer replacement.
+	printer.SkinnyReport = !args.Full
+
 	cfg, err := GetDNSConfig(args.GetDNSConfigArgs)
 	if err != nil {
 		return err

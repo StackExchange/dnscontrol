@@ -1,8 +1,6 @@
 package domainnameshop
 
-import (
-	"testing"
-)
+import "testing"
 
 func TestFixTTL(t *testing.T) {
 	for i, test := range []struct {

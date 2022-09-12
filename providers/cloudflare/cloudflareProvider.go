@@ -7,14 +7,13 @@ import (
 	"net"
 	"strings"
 
-	"github.com/cloudflare/cloudflare-go"
-	"github.com/miekg/dns/dnsutil"
-
 	"github.com/StackExchange/dnscontrol/v3/models"
 	"github.com/StackExchange/dnscontrol/v3/pkg/diff"
 	"github.com/StackExchange/dnscontrol/v3/pkg/printer"
 	"github.com/StackExchange/dnscontrol/v3/pkg/transform"
 	"github.com/StackExchange/dnscontrol/v3/providers"
+	"github.com/cloudflare/cloudflare-go"
+	"github.com/miekg/dns/dnsutil"
 )
 
 /*
@@ -63,7 +62,7 @@ func init() {
 
 // cloudflareProvider is the handle for API calls.
 type cloudflareProvider struct {
-	domainIndex     map[string]string
+	domainIndex     map[string]string // Call c.fetchDomainList() to populate before use.
 	nameservers     map[string][]string
 	ipConversions   []transform.IPConversion
 	ignoredLabels   []string
@@ -497,11 +496,16 @@ func newCloudflare(m map[string]string, metadata json.RawMessage) (providers.DNS
 		return nil, fmt.Errorf("if cloudflare apitoken is set, apikey and apiuser should not be provided")
 	}
 
+	optRP := cloudflare.UsingRetryPolicy(20, 1, 120)
+	// UsingRetryPolicy is documented here:
+	// https://pkg.go.dev/github.com/cloudflare/cloudflare-go#UsingRetryPolicy
+	// The defaults are UsingRetryPolicy(3, 1, 30)
+
 	var err error
 	if m["apitoken"] != "" {
-		api.cfClient, err = cloudflare.NewWithAPIToken(m["apitoken"])
+		api.cfClient, err = cloudflare.NewWithAPIToken(m["apitoken"], optRP)
 	} else {
-		api.cfClient, err = cloudflare.New(m["apikey"], m["apiuser"])
+		api.cfClient, err = cloudflare.New(m["apikey"], m["apiuser"], optRP)
 	}
 
 	if err != nil {
@@ -708,6 +712,11 @@ func getProxyMetadata(r *models.RecordConfig) map[string]string {
 
 // EnsureDomainExists returns an error of domain does not exist.
 func (c *cloudflareProvider) EnsureDomainExists(domain string) error {
+	if c.domainIndex == nil {
+		if err := c.fetchDomainList(); err != nil {
+			return err
+		}
+	}
 	if _, ok := c.domainIndex[domain]; ok {
 		return nil
 	}

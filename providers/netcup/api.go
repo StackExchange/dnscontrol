@@ -4,7 +4,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"net/http"
 )
 
@@ -140,7 +140,7 @@ func (api *netcupProvider) get(action string, params interface{}) (json.RawMessa
 		return nil, err
 	}
 
-	bodyString, _ := ioutil.ReadAll(resp.Body)
+	bodyString, _ := io.ReadAll(resp.Body)
 
 	respData := &response{}
 	err = json.Unmarshal(bodyString, &respData)

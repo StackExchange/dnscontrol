@@ -3,7 +3,7 @@ package internetbs
 import (
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"net/http"
 	"strings"
 )
@@ -71,7 +71,7 @@ func (c *internetbsProvider) get(endpoint string, params requestParams) ([]byte,
 		return []byte{}, err
 	}
 
-	bodyString, _ := ioutil.ReadAll(resp.Body)
+	bodyString, _ := io.ReadAll(resp.Body)
 
 	// Got error from API ?
 	var errResp errorResponse

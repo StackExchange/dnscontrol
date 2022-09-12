@@ -6,13 +6,11 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/StackExchange/dnscontrol/v3/pkg/printer"
-
-	"github.com/exoscale/egoscale"
-
 	"github.com/StackExchange/dnscontrol/v3/models"
 	"github.com/StackExchange/dnscontrol/v3/pkg/diff"
+	"github.com/StackExchange/dnscontrol/v3/pkg/printer"
 	"github.com/StackExchange/dnscontrol/v3/providers"
+	"github.com/exoscale/egoscale"
 )
 
 type exoscaleProvider struct {

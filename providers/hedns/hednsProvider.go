@@ -4,7 +4,6 @@ import (
 	"crypto/sha1"
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
 	"net/http"
 	"net/http/cookiejar"
 	"net/url"
@@ -631,7 +630,7 @@ func (c *hednsProvider) saveSessionFile() error {
 	}
 
 	fileName := path.Join(c.SessionFilePath, sessionFileName)
-	err = ioutil.WriteFile(fileName, []byte(strings.Join(entries, "\n")), 0600)
+	err = os.WriteFile(fileName, []byte(strings.Join(entries, "\n")), 0600)
 	return err
 }
 
@@ -642,7 +641,7 @@ func (c *hednsProvider) loadSessionFile() error {
 	}
 
 	fileName := path.Join(c.SessionFilePath, sessionFileName)
-	bytes, err := ioutil.ReadFile(fileName)
+	bytes, err := os.ReadFile(fileName)
 	if err != nil {
 		if os.IsNotExist(err) {
 			// Skip loading the session.

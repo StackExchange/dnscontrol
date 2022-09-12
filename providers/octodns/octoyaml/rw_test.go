@@ -15,7 +15,6 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
 	"os"
 	"path/filepath"
 	"testing"
@@ -39,7 +38,7 @@ func TestYamlWrite(t *testing.T) {
 
 	// Read a .JS and make sure we can generate the expected YAML.
 
-	files, err := ioutil.ReadDir(testDir)
+	files, err := os.ReadDir(testDir)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -58,7 +57,7 @@ func TestYamlWrite(t *testing.T) {
 		t.Run(f.Name(), func(t *testing.T) {
 			fname := filepath.Join(testDir, f.Name())
 			fmt.Printf("Filename: %v\n", fname)
-			content, err := ioutil.ReadFile(fname)
+			content, err := os.ReadFile(fname)
 			if err != nil {
 				t.Fatal(err)
 			}
@@ -84,7 +83,7 @@ func TestYamlWrite(t *testing.T) {
 			// Read expected YAML
 
 			expectedFile := filepath.Join(testDir, basename+".yaml")
-			expectedData, err := ioutil.ReadFile(expectedFile)
+			expectedData, err := os.ReadFile(expectedFile)
 			if err != nil {
 				t.Fatal(err)
 			}
@@ -108,7 +107,7 @@ func TestYamlRead(t *testing.T) {
 
 	minifyFlag := true
 
-	files, err := ioutil.ReadDir(testDir)
+	files, err := os.ReadDir(testDir)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -126,7 +125,7 @@ func TestYamlRead(t *testing.T) {
 
 			// Parse YAML
 
-			content, err := ioutil.ReadFile(filepath.Join(testDir, f.Name()))
+			content, err := os.ReadFile(filepath.Join(testDir, f.Name()))
 			if err != nil {
 				if os.IsNotExist(err) {
 					content = nil
@@ -158,7 +157,7 @@ func TestYamlRead(t *testing.T) {
 
 			// Read expected JSON
 			expectedFile := filepath.Join(testDir, basename+".json")
-			expectedData, err := ioutil.ReadFile(expectedFile)
+			expectedData, err := os.ReadFile(expectedFile)
 			if err != nil {
 				if os.IsNotExist(err) {
 					fmt.Println("SKIPPING")

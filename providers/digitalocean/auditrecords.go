@@ -2,37 +2,36 @@ package digitalocean
 
 import (
 	"fmt"
+
 	"github.com/StackExchange/dnscontrol/v3/models"
-	"github.com/StackExchange/dnscontrol/v3/pkg/recordaudit"
+	"github.com/StackExchange/dnscontrol/v3/pkg/rejectif"
 )
 
-// AuditRecords returns an error if any records are not
-// supportable by this provider.
-func AuditRecords(records []*models.RecordConfig) error {
+// AuditRecords returns a list of errors corresponding to the records
+// that aren't supported by this provider.  If all records are
+// supported, an empty list is returned.
+func AuditRecords(records []*models.RecordConfig) []error {
+	a := rejectif.Auditor{}
 
-	// TODO(tlim): Audit CAA records.
-	// "Semicolons not supported in issue/issuewild fields.", "https://www.digitalocean.com/docs/networking/dns/how-to/create-caa-records"),
-	//	Users are warned about these limits in docs/_providers/digitalocean.md
+	a.Add("CAA", rejectif.CaaTargetContainsWhitespace) // Last verified xxxx-xx-xx
 
-	if err := MaxLengthDO(records); err != nil {
-		return err
-	}
-	// Still needed as of 2021-03-01
+	a.Add("CAA", rejectif.CaaTargetHasSemicolon) // Last verified 2021-03-01
 
+	a.Add("MX", rejectif.MxNull) // Last verified 2020-12-28
+
+	a.Add("TXT", MaxLengthDO) // Last verified 2021-03-01
+
+	a.Add("TXT", rejectif.TxtHasDoubleQuotes) // Last verified 2021-03-01
 	// Double-quotes not permitted in TXT strings. I have a hunch that
 	// this is due to a broken parser on the DO side.
-	if err := recordaudit.TxtNoDoubleQuotes(records); err != nil {
-		return err
-	}
-	// Still needed as of 2021-03-01
 
-	return nil
+	return a.Audit(records)
 }
 
-// MaxLengthDO returns and error if the strings are longer than
+// MaxLengthDO returns and error if the string is longer than
 // permitted by DigitalOcean. Sadly their length limit is
 // undocumented. This is a guess.
-func MaxLengthDO(records []*models.RecordConfig) error {
+func MaxLengthDO(rc *models.RecordConfig) error {
 	// The total length of all strings can't be longer than 512; and in
 	// reality must be shorter due to sloppy validation checks.
 	// https://github.com/StackExchange/dnscontrol/issues/370
@@ -47,14 +46,10 @@ func MaxLengthDO(records []*models.RecordConfig) error {
 	// In other words, they're doing the checking on the API protocol
 	// encoded data instead of on on the resulting TXT record.  Sigh.
 
-	for _, rc := range records {
-
-		if rc.HasFormatIdenticalToTXT() { // TXT and similar:
-			if len(rc.GetTargetField()) > 509 {
-				return fmt.Errorf("encoded txt too long")
-			}
-		}
-
+	if len(rc.GetTargetField()) > 509 {
+		return fmt.Errorf("encoded txt too long")
 	}
+	// FIXME(tlim): Try replacing GetTargetField() with (2 + (3*len(rc.TxtStrings) - 1))
+
 	return nil
 }

@@ -1,6 +1,7 @@
 package models
 
 import (
+	"fmt"
 	"strings"
 
 	"github.com/StackExchange/dnscontrol/v3/pkg/decode"
@@ -184,10 +185,52 @@ func (rc *RecordConfig) GetTargetTXTJoined() string {
 	return strings.Join(rc.TxtStrings, "")
 }
 
-// GetTargetTXTFlattened255 returns the TXT target as a list of
-// strings, each 255-octets or shorter.
-func (rc *RecordConfig) GetTargetTXTFlattened255() []string {
-	return decode.Flatten255(rc.TxtStrings)
+// SetTargetTXTString is like SetTargetTXTs but accepts one big string,
+// which is parsed into individual strings.
+// Ex: foo             << 1 string
+//
+//	foo bar         << 1 string
+//	"foo bar"       << 1 string
+//	"foo" "bar"     << 2 strings
+//	"f"oo" "bar"    << 2 strings, one has a quote in it
+//
+// BUG: This function doesn't handle escaped quotes ("like \" this").
+//
+// FIXME(tlim): This function is badly named. It obscures the fact
+// that the string is parsed for quotes and stores a list of strings.
+//
+// Deprecated: This function has a confusing name. Most providers API
+// return a single string, in which case you should use
+// SetTargetTXT(). If your provider returns multiple strings, use
+// SetTargetTXTs().  If your provider returns a single string that
+// must be parsed to extract the individual strings, use
+// SetTargetTXTfromRFC1035Quoted().  Sadly we have not figured out
+// an integration test that will fail if you chose the wrong function.
+// As a result, we recommend trying SetTargetTXT() before you try
+// SetTargetTXTfromRFC1035Quoted().
+func (rc *RecordConfig) SetTargetTXTString(s string) error {
+	return rc.SetTargetTXTs(ParseQuotedTxt(s))
+}
+
+// SetTargetTXTfromRFC1035Quoted parses a series of quoted strings
+// and sets .TxtStrings based on the result.
+// Note: Most APIs do notThis is rarely used. Try using SetTargetTXT() first.
+// Ex: "foo"        << 1 string
+//
+//	"foo bar"    << 1 string
+//	"foo" "bar"  << 2 strings
+//	foo          << error. No quotes! Did you intend to use SetTargetTXT?
+func (rc *RecordConfig) SetTargetTXTfromRFC1035Quoted(s string) error {
+	if s != "" && s[0] != '"' {
+		// If you get this error, it is likely that you should use
+		// SetTargetTXT() instead of SetTargetTXTfromRFC1035Quoted().
+		return fmt.Errorf("non-quoted string used with SetTargetTXTfromRFC1035Quoted: (%s)", s)
+	}
+	many, err := ParseQuotedFields(s)
+	if err != nil {
+		return err
+	}
+	return rc.SetTargetTXTs(many)
 }
 
 // There is no GetTargetTXTfromRFC1025Quoted(). Use GetTargetRFC1035Quoted()

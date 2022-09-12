@@ -74,9 +74,10 @@ func (z *genYamlData) genInterfaceList(w io.Writer) yaml.MapSlice {
 // It may have a single (simple) or multiple (many) values.
 
 // Used to generate:
-//  label:
-//    type: A
-//    value: 1.2.3.4
+//
+//	label:
+//	  type: A
+//	  value: 1.2.3.4
 type simple struct {
 	TTL   uint32 `yaml:"ttl,omitempty"`
 	Type  string `yaml:"type"`
@@ -84,11 +85,12 @@ type simple struct {
 }
 
 // Used to generate:
-//  label:
-//    type: A
-//    values:
-//    - 1.2.3.4
-//    - 2.3.4.5
+//
+//	label:
+//	  type: A
+//	  values:
+//	  - 1.2.3.4
+//	  - 2.3.4.5
 type many struct {
 	TTL    uint32   `yaml:"ttl,omitempty"`
 	Type   string   `yaml:"type"`
@@ -103,17 +105,18 @@ type complexItems []interface{}
 // 'thing':                             >> complexVals
 //   - type: CNAME
 //     value: newplace.example.com.     << value
+//
 // 'www':
 //   - type: A
 //     values:
-//       - 1.2.3.4                      << values
-//       - 1.2.3.5                      << values
+//   - 1.2.3.4                      << values
+//   - 1.2.3.5                      << values
 //   - type: MX
 //     values:
-//       - priority: 10                 << fields
-//         value: mx1.example.com.      << fields
-//       - priority: 10                 << fields
-//         value: mx2.example.com.      << fields
+//   - priority: 10                 << fields
+//     value: mx1.example.com.      << fields
+//   - priority: 10                 << fields
+//     value: mx2.example.com.      << fields
 type complexVals struct {
 	TTL    uint32   `yaml:"ttl,omitempty"`
 	Type   string   `yaml:"type"`

@@ -4,6 +4,7 @@ package hexonet
 import (
 	"encoding/json"
 	"fmt"
+
 	"github.com/StackExchange/dnscontrol/v3/pkg/version"
 	"github.com/StackExchange/dnscontrol/v3/providers"
 	hxcl "github.com/hexonet/go-sdk/v3/apiclient"

@@ -2,9 +2,7 @@
 
 package providers
 
-import (
-	"log"
-)
+import "log"
 
 // Capability is a bitmasked set of "features" that a provider supports. Only use constants from this package.
 type Capability uint32

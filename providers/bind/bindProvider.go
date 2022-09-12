@@ -17,20 +17,18 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-	"github.com/StackExchange/dnscontrol/v3/pkg/printer"
-	"io/ioutil"
 	"os"
 	"path/filepath"
 	"strings"
 	"time"
 
-	"github.com/miekg/dns"
-
 	"github.com/StackExchange/dnscontrol/v3/models"
 	"github.com/StackExchange/dnscontrol/v3/pkg/diff"
 	"github.com/StackExchange/dnscontrol/v3/pkg/prettyzone"
+	"github.com/StackExchange/dnscontrol/v3/pkg/printer"
 	"github.com/StackExchange/dnscontrol/v3/pkg/txtutil"
 	"github.com/StackExchange/dnscontrol/v3/providers"
+	"github.com/miekg/dns"
 )
 
 var features = providers.DocumentationNotes{
@@ -166,7 +164,7 @@ func (c *bindProvider) GetZoneRecords(domain string) (models.Records, error) {
 		c.zonefile = filepath.Join(c.directory,
 			makeFileName(c.filenameformat, domain, domain, ""))
 	}
-	content, err := ioutil.ReadFile(c.zonefile)
+	content, err := os.ReadFile(c.zonefile)
 	if os.IsNotExist(err) {
 		// If the file doesn't exist, that's not an error. Just informational.
 		c.zoneFileFound = false

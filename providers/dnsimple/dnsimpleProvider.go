@@ -8,13 +8,12 @@ import (
 	"strconv"
 	"strings"
 
-	dnsimpleapi "github.com/dnsimple/dnsimple-go/dnsimple"
-	"golang.org/x/oauth2"
-
 	"github.com/StackExchange/dnscontrol/v3/models"
 	"github.com/StackExchange/dnscontrol/v3/pkg/diff"
 	"github.com/StackExchange/dnscontrol/v3/pkg/printer"
 	"github.com/StackExchange/dnscontrol/v3/providers"
+	dnsimpleapi "github.com/dnsimple/dnsimple-go/dnsimple"
+	"golang.org/x/oauth2"
 )
 
 var features = providers.DocumentationNotes{

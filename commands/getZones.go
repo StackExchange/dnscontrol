@@ -251,10 +251,29 @@ func GetZone(args GetZoneArgs) error {
 				o = append(o, fmt.Sprintf("DefaultTTL(%d)", defaultTTL))
 			}
 			for _, rec := range recs {
+				if (rec.Type == "CNAME") && (rec.Name == "@") {
+					o = append(o, "// NOTE: CNAME at apex may require manual editing.")
+				}
 				o = append(o, formatDsl(zoneName, rec, defaultTTL))
 			}
 			out := strings.Join(o, sep)
-			fmt.Fprint(w, strings.ReplaceAll(out, "\n\t, //", "\n\t//, "))
+
+			// Joining with a comma between each item works great but
+			// makes comments look terrible.  Here we clean them up
+			// after the fact.
+			if args.OutputFormat == "djs" {
+				out = strings.ReplaceAll(out, "\n\t, //", "\n\t//, ") // Fix comments
+				out = strings.ReplaceAll(out,
+					"//,  NOTE: CNAME at apex may require manual editing.",
+					"// NOTE: CNAME at apex may require manual editing.",
+				)
+			} else {
+				out = strings.ReplaceAll(out,
+					"// NOTE: CNAME at apex may require manual editing.,",
+					"// NOTE: CNAME at apex may require manual editing.",
+				)
+			}
+			fmt.Fprint(w, out)
 			fmt.Fprint(w, "\n)\n")
 
 		case "tsv":

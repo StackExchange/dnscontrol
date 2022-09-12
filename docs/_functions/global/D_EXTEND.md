@@ -57,7 +57,7 @@ D_EXTEND("sub.domain.tld",
 );
 ```
 
-This will end up in the following modifications:
+This will end up in the following modifications: (This output assumes the `--verbose` flag)
 
 ```text
 ******************** Domain: domain.tld
