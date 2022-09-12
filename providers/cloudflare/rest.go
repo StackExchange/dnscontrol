@@ -343,14 +343,16 @@ func (c *cloudflareProvider) createTestWorker(workerName string) error {
 		ScriptName: workerName,
 	}
 
-	script := `
-		addEventListener("fetch", (event) => {
-			event.respondWith(
-				new Response("Ok.", { status: 200 })
-			);
-	  	});`
+	script := cloudflare.WorkerScriptParams{
+		Script: `
+			addEventListener("fetch", (event) => {
+				event.respondWith(
+					new Response("Ok.", { status: 200 })
+				);
+			});`,
+	}
 
-	_, err := c.cfClient.UploadWorker(context.Background(), &wrp, script)
+	_, err := c.cfClient.UploadWorker(context.Background(), &wrp, &script)
 	return err
 }
 
