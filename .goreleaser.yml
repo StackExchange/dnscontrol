@@ -25,9 +25,9 @@ changelog:
       regexp: "(?i)^.*(major|new provider|feature)[(\\w)]*:+.*$"
       order: 1
     - title: 'Provider-specific changes:'
-      regexp: "(?i)^(akamaiedgedns|autodns|axfrddns|azure_dns|bind|cloudflareapi|cloudflareapi_old|cloudns|cscglobal|desec|digitalocean|dnsimple|dnsmadeeasy|domainnameshop|exoscale|gandi_v5|gcloud|hedns|hetzner|hexonet|hostingde|inwx|linode|msdns|namecheap|namedotcom|netcup|ns1|octodns|oracle|ovh|packetframe|powerdns|route53|softlayer|transip|vultr)[(\\w)]*:+.*$"
+      regexp: "(?i)((akamaiedge|autodns|axfrd|azure_dns|bind|cloudflare|cloudflareapi_old|cloudns|cscglobal|desec|digitalocean|dnsimple|dnsmadeeasy|domainnameshop|exoscale|gandi_v5|gcloud|hedns|hetzner|hexonet|hostingde|inwx|linode|msdns|namecheap|namedotcom|netcup|ns1|octodns|oracle|ovh|packetframe|powerdns|route53|softlayer|transip|vultr).*:)+.*"
       order: 2
-    - title: 'Depreciation warnings:'
+    - title: 'Deprecation warnings:'
       regexp: "(?i)^.*Deprecate[(\\w)]*:+.*$"
       order: 10
     - title: 'Other changes and improvements:'
@@ -135,8 +135,8 @@ checksum:
   name_template: 'checksums.txt'
 snapshot:
   name_template: "{{ incpatch .Version }}-next"
-announce:
-  # Skip the announcing feature in some conditions, for instance, when publishing patch releases.
-  # Valid options are `true`, `false`, empty, or a template that evaluates to a boolean (`true` or `false`).
-  # Defaults to empty (which means false).
-  skip: true
+
+release:
+  draft: true
+  prerelease: auto
+  mode: append

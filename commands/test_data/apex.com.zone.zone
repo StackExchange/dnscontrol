@@ -1,0 +1,10 @@
+$ORIGIN apex.com.
+$TTL 300
+@                IN SOA   ns3.serverfault.com. sysadmin.stackoverflow.com. 2020022300 3600 600 604800 1440
+           172800 IN NS   ns-1313.awsdns-36.org.
+           172800 IN NS   ns-736.awsdns-28.net.
+           172800 IN NS   ns-cloud-c1.googledomains.com.
+           172800 IN NS   ns-cloud-c2.googledomains.com.
+                 IN CNAME cnametest1.example.com.
+www              IN CNAME cnametest2.example.com.
+
