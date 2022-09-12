@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"strconv"
 	"strings"
 
 	egoscale "github.com/exoscale/egoscale/v2"
@@ -126,6 +127,10 @@ func (c *exoscaleProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*mod
 		}
 		if *record.Type == "CNAME" || *record.Type == "MX" || *record.Type == "ALIAS" || *record.Type == "SRV" {
 			t := *record.Content + "."
+			// for SRV records we need to aditionally prefix target with priority, which API handles as separate field.
+			if *record.Type == "SRV" && record.Priority != nil {
+				t = fmt.Sprintf("%s %s", strconv.FormatInt(*record.Priority, 10), t)
+			}
 			record.Content = &t
 		}
 		// exoscale adds these odd txt records that mirror the alias records.
@@ -207,9 +212,26 @@ func (c *exoscaleProvider) createRecordFunc(rc *models.RecordConfig, domainID st
 	return func() error {
 		target := rc.GetTargetCombined()
 		name := rc.GetLabel()
+		var prio *int64
 
 		if rc.Type == "MX" {
 			target = rc.GetTargetField()
+
+			if rc.MxPreference != 0 {
+				p := int64(rc.MxPreference)
+				prio = &p
+			}
+		}
+
+		if rc.Type == "SRV" {
+			// API wants priority as separate argument, here we will strip it from combined target.
+			sp := strings.Split(target, " ")
+			target = strings.Join(sp[1:], " ")
+			p, err := strconv.ParseInt(sp[0], 10, 64)
+			if err != nil {
+				return err
+			}
+			prio = &p
 		}
 
 		if rc.Type == "NS" && (name == "@" || name == "") {
@@ -217,17 +239,15 @@ func (c *exoscaleProvider) createRecordFunc(rc *models.RecordConfig, domainID st
 		}
 
 		record := egoscale.DNSDomainRecord{
-			Name:    &name,
-			Type:    &rc.Type,
-			Content: &target,
+			Name:     &name,
+			Type:     &rc.Type,
+			Content:  &target,
+			Priority: prio,
 		}
+
 		if rc.TTL != 0 {
 			ttl := int64(rc.TTL)
 			record.TTL = &ttl
-		}
-		if rc.MxPreference != 0 {
-			prio := int64(rc.MxPreference)
-			record.Priority = &prio
 		}
 
 		_, err := c.client.CreateDNSDomainRecord(context.Background(), c.apiZone, domainID, &record)
@@ -256,6 +276,22 @@ func (c *exoscaleProvider) updateRecordFunc(record *egoscale.DNSDomainRecord, rc
 
 		if rc.Type == "MX" {
 			target = rc.GetTargetField()
+
+			if rc.MxPreference != 0 {
+				p := int64(rc.MxPreference)
+				record.Priority = &p
+			}
+		}
+
+		if rc.Type == "SRV" {
+			// API wants priority as separate argument, here we will strip it from combined target.
+			sp := strings.Split(target, " ")
+			target = strings.Join(sp[1:], " ")
+			p, err := strconv.ParseInt(sp[0], 10, 64)
+			if err != nil {
+				return err
+			}
+			record.Priority = &p
 		}
 
 		if rc.Type == "NS" && (name == "@" || name == "") {
@@ -268,10 +304,6 @@ func (c *exoscaleProvider) updateRecordFunc(record *egoscale.DNSDomainRecord, rc
 		if rc.TTL != 0 {
 			ttl := int64(rc.TTL)
 			record.TTL = &ttl
-		}
-		if rc.MxPreference != 0 {
-			prio := int64(rc.MxPreference)
-			record.Priority = &prio
 		}
 
 		return c.client.UpdateDNSDomainRecord(
