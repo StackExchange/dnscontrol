@@ -1,8 +1,6 @@
 package models
 
-import (
-	"testing"
-)
+import "testing"
 
 func TestIsQuoted(t *testing.T) {
 	tests := []struct {

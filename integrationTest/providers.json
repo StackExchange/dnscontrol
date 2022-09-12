@@ -1,8 +1,4 @@
 {
-  "ACTIVEDIRECTORY_PS": {
-    "ADServer": "$AD_SERVER",
-    "domain": "$AD_DOMAIN"
-  },
   "AUTODNS": {
     "username": "$AUTODNS_USERNAME",
     "password": "$AUTODNS_PASSWORD",
@@ -204,5 +200,10 @@
   "TRANSIP": {
     "AccessToken": "$TRANSIP_ACCESS_TOKEN",
     "domain": "$TRANSIP_DOMAIN"
+  },
+  "DOMAINNAMESHOP": {
+    "token": "$DOMAINNAMESHOP_TOKEN",
+    "secret": "$DOMAINNAMESHOP_SECRET",
+    "domain": "$DOMAINNAMESHOP_DOMAIN"
   }
 }

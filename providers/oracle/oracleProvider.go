@@ -6,16 +6,14 @@ import (
 	"strings"
 	"time"
 
-	"github.com/oracle/oci-go-sdk/v32/dns"
-
-	"github.com/oracle/oci-go-sdk/v32/common"
-	"github.com/oracle/oci-go-sdk/v32/example/helpers"
-
 	"github.com/StackExchange/dnscontrol/v3/models"
 	"github.com/StackExchange/dnscontrol/v3/pkg/diff"
 	"github.com/StackExchange/dnscontrol/v3/pkg/printer"
 	"github.com/StackExchange/dnscontrol/v3/pkg/txtutil"
 	"github.com/StackExchange/dnscontrol/v3/providers"
+	"github.com/oracle/oci-go-sdk/v32/common"
+	"github.com/oracle/oci-go-sdk/v32/dns"
+	"github.com/oracle/oci-go-sdk/v32/example/helpers"
 )
 
 var features = providers.DocumentationNotes{

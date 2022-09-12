@@ -5,6 +5,7 @@ import (
 	"github.com/StackExchange/dnscontrol/v3/providers/bind"
 )
 
+// ResourceRecord represents DNS records in API calls.
 type ResourceRecord struct {
 
 	// The name of the record.
@@ -29,6 +30,7 @@ type ResourceRecord struct {
 	Value string `json:"value,omitempty"`
 }
 
+// MainAddressRecord represents an address record in API calls.
 type MainAddressRecord struct {
 
 	// TTL of the record (Optionally if not set then Default SOA TTL is used)
@@ -38,6 +40,7 @@ type MainAddressRecord struct {
 	Value string `json:"address,omitempty"`
 }
 
+// Zone represents the Zone in API calls.
 type Zone struct {
 	Origin string `json:"origin"`
 
@@ -60,6 +63,7 @@ type Zone struct {
 	SystemNameServer string `json:"virtualNameServer,omitempty"`
 }
 
+// JSONResponseDataZone represents the response to the DataZone call.
 type JSONResponseDataZone struct {
 
 	// The data for the response. The type of the objects are depending on the request and are also specified in the responseObject value of the response.

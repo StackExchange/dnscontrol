@@ -3,25 +3,32 @@ package nameservers
 
 import (
 	"fmt"
+	"strconv"
 	"strings"
 
-	"strconv"
-
 	"github.com/StackExchange/dnscontrol/v3/models"
+	"github.com/StackExchange/dnscontrol/v3/pkg/printer"
 )
 
 // DetermineNameservers will find all nameservers we should use for a domain. It follows the following rules:
 // 1. All explicitly defined NAMESERVER records will be used.
 // 2. Each DSP declares how many nameservers to use. Default is all. 0 indicates to use none.
 func DetermineNameservers(dc *models.DomainConfig) ([]*models.Nameserver, error) {
+	return DetermineNameserversForProviders(dc, dc.DNSProviderInstances)
+}
+
+// DetermineNameserversForProviders is like DetermineNameservers, for a subset of providers.
+func DetermineNameserversForProviders(dc *models.DomainConfig, providers []*models.DNSProviderInstance) ([]*models.Nameserver, error) {
 	// always take explicit
 	ns := dc.Nameservers
-	for _, dnsProvider := range dc.DNSProviderInstances {
+	for _, dnsProvider := range providers {
 		n := dnsProvider.NumberOfNameservers
 		if n == 0 {
 			continue
 		}
-		fmt.Printf("----- Getting nameservers from: %s\n", dnsProvider.Name)
+		if !printer.SkinnyReport {
+			fmt.Printf("----- Getting nameservers from: %s\n", dnsProvider.Name)
+		}
 		nss, err := dnsProvider.Driver.GetNameservers(dc.Name)
 		if err != nil {
 			return nil, err

@@ -11,13 +11,11 @@ data we output models.RecordConfig objects.
 import (
 	"fmt"
 	"io"
-	"io/ioutil"
 	"reflect"
 	"strconv"
 
-	yaml "gopkg.in/yaml.v2"
-
 	"github.com/StackExchange/dnscontrol/v3/models"
+	yaml "gopkg.in/yaml.v2"
 )
 
 // ReadYaml parses a yaml input and returns a list of RecordConfigs
@@ -25,7 +23,7 @@ func ReadYaml(r io.Reader, origin string) (models.Records, error) {
 	results := models.Records{}
 
 	// Slurp the YAML into a string.
-	ydata, err := ioutil.ReadAll(r)
+	ydata, err := io.ReadAll(r)
 	if err != nil {
 		return nil, fmt.Errorf("can not read yaml filehandle: %w", err)
 	}

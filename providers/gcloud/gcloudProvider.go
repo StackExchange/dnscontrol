@@ -9,18 +9,15 @@ import (
 	"strings"
 	"time"
 
-	"github.com/StackExchange/dnscontrol/v3/pkg/printer"
-
-	"google.golang.org/api/googleapi"
-	"google.golang.org/api/option"
-
-	gauth "golang.org/x/oauth2/google"
-
 	"github.com/StackExchange/dnscontrol/v3/models"
 	"github.com/StackExchange/dnscontrol/v3/pkg/diff"
+	"github.com/StackExchange/dnscontrol/v3/pkg/printer"
 	"github.com/StackExchange/dnscontrol/v3/pkg/txtutil"
 	"github.com/StackExchange/dnscontrol/v3/providers"
+	gauth "golang.org/x/oauth2/google"
 	gdns "google.golang.org/api/dns/v1"
+	"google.golang.org/api/googleapi"
+	"google.golang.org/api/option"
 )
 
 var features = providers.DocumentationNotes{
@@ -86,7 +83,7 @@ func New(cfg map[string]string, metadata json.RawMessage) (providers.DNSServiceP
 		var err error
 		hc, err = gauth.DefaultClient(ctx, "https://www.googleapis.com/auth/ndev.clouddns.readwrite")
 		if err != nil {
-			return nil, fmt.Errorf("No creds.json private_key found and ADC failed with:\n%s", err)
+			return nil, fmt.Errorf("no creds.json private_key found and ADC failed with:\n%s", err)
 		}
 	}
 	// FIXME(tlim): Is it a problem that ctx is included with hc and in

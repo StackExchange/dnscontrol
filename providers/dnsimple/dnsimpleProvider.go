@@ -4,18 +4,16 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"github.com/StackExchange/dnscontrol/v3/pkg/printer"
 	"sort"
 	"strconv"
 	"strings"
 
-	dnsimpleapi "github.com/dnsimple/dnsimple-go/dnsimple"
-	"golang.org/x/oauth2"
-
 	"github.com/StackExchange/dnscontrol/v3/models"
 	"github.com/StackExchange/dnscontrol/v3/pkg/diff"
-	"github.com/StackExchange/dnscontrol/v3/pkg/txtutil"
+	"github.com/StackExchange/dnscontrol/v3/pkg/printer"
 	"github.com/StackExchange/dnscontrol/v3/providers"
+	dnsimpleapi "github.com/dnsimple/dnsimple-go/dnsimple"
+	"golang.org/x/oauth2"
 )
 
 var features = providers.DocumentationNotes{
@@ -77,51 +75,54 @@ func (c *dnsimpleProvider) GetZoneRecords(domain string) (models.Records, error)
 		if r.Type == "SOA" {
 			continue
 		}
+
 		if r.Name == "" {
 			r.Name = "@"
 		}
+
 		if r.Type == "CNAME" || r.Type == "MX" || r.Type == "ALIAS" || r.Type == "NS" {
 			r.Content += "."
 		}
+
 		// DNSimple adds TXT records that mirror the alias records.
 		// They manage them on ALIAS updates, so pretend they don't exist
 		if r.Type == "TXT" && strings.HasPrefix(r.Content, "ALIAS for ") {
 			continue
 		}
+
 		rec := &models.RecordConfig{
 			TTL:      uint32(r.TTL),
 			Original: r,
 		}
 		rec.SetLabel(r.Name, domain)
+
+		var err error
 		switch rtype := r.Type; rtype {
 		case "DNSKEY", "CDNSKEY", "CDS":
 			continue
 		case "ALIAS", "URL":
 			rec.Type = r.Type
-			if err := rec.SetTarget(r.Content); err != nil {
-				return nil, fmt.Errorf("unparsable record received from dnsimple: %w", err)
-			}
+			err = rec.SetTarget(r.Content)
 		case "DS":
-			if err := rec.SetTargetDSString(r.Content); err != nil {
-				return nil, fmt.Errorf("unparsable record received from dnsimple: %w", err)
-			}
+			err = rec.SetTargetDSString(r.Content)
 		case "MX":
-			if err := rec.SetTargetMX(uint16(r.Priority), r.Content); err != nil {
-				return nil, fmt.Errorf("unparsable record received from dnsimple: %w", err)
-			}
+			err = rec.SetTargetMX(uint16(r.Priority), r.Content)
 		case "SRV":
 			parts := strings.Fields(r.Content)
 			if len(parts) == 3 {
 				r.Content += "."
 			}
-			if err := rec.SetTargetSRVPriorityString(uint16(r.Priority), r.Content); err != nil {
-				return nil, fmt.Errorf("unparsable record received from dnsimple: %w", err)
-			}
+			err = rec.SetTargetSRVPriorityString(uint16(r.Priority), r.Content)
+		case "TXT":
+			err = rec.SetTargetTXT(r.Content)
 		default:
-			if err := rec.PopulateFromString(r.Type, r.Content, domain); err != nil {
-				return nil, fmt.Errorf("unparsable record received from dnsimple: %w", err)
-			}
+			err = rec.PopulateFromString(r.Type, r.Content, domain)
 		}
+
+		if err != nil {
+			return nil, fmt.Errorf("unparsable record received from dnsimple: %w", err)
+		}
+
 		cleanedRecords = append(cleanedRecords, rec)
 	}
 
@@ -152,7 +153,6 @@ func (c *dnsimpleProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*mod
 
 	// Normalize
 	models.PostProcessRecords(actual)
-	txtutil.SplitSingleLongTxt(dc.Records) // Autosplit long TXT records
 
 	differ := diff.New(dc)
 	_, create, del, modify, err := differ.IncrementalDiff(actual)
@@ -592,7 +592,7 @@ func getTargetRecordContent(rc *models.RecordConfig) string {
 	case "SRV":
 		return fmt.Sprintf("%d %d %s", rc.SrvWeight, rc.SrvPort, rc.GetTargetField())
 	case "TXT":
-		return rc.GetTargetRFC1035Quoted()
+		return rc.GetTargetTXTJoined()
 	default:
 		return rc.GetTargetField()
 	}

@@ -6,9 +6,8 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/namedotcom/go/namecom"
-
 	"github.com/StackExchange/dnscontrol/v3/providers"
+	"github.com/namedotcom/go/namecom"
 )
 
 const defaultAPIBase = "api.name.com"

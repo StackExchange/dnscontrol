@@ -3,7 +3,7 @@ package cloudns
 import (
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"net/http"
 	"strconv"
 	"time"
@@ -218,7 +218,7 @@ func (c *cloudnsProvider) get(endpoint string, params requestParams) ([]byte, er
 		return []byte{}, err
 	}
 
-	bodyString, _ := ioutil.ReadAll(resp.Body)
+	bodyString, _ := io.ReadAll(resp.Body)
 
 	// Got error from API ?
 	var errResp errorResponse

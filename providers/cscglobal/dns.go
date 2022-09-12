@@ -1,7 +1,6 @@
 package cscglobal
 
 import (
-	"fmt"
 	"strings"
 
 	"github.com/StackExchange/dnscontrol/v3/models"
@@ -111,13 +110,7 @@ func PrepDesiredRecords(dc *models.DomainConfig) {
 }
 
 // GetDomainCorrections gets existing records, diffs them against existing, and returns corrections.
-func (client *providerClient) GenerateDomainCorrections(dc *models.DomainConfig, existing models.Records) ([]*models.Correction, error) {
-
-	// Read foundRecords:
-	foundRecords, err := client.GetZoneRecords(dc.Name)
-	if err != nil {
-		return nil, fmt.Errorf("c.GetDNSZoneRecords(%v) failed: %v", dc.Name, err)
-	}
+func (client *providerClient) GenerateDomainCorrections(dc *models.DomainConfig, foundRecords models.Records) ([]*models.Correction, error) {
 
 	// Normalize
 	models.PostProcessRecords(foundRecords)

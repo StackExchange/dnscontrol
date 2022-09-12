@@ -6,10 +6,9 @@ import (
 	"regexp"
 	"strings"
 
-	"github.com/namedotcom/go/namecom"
-
 	"github.com/StackExchange/dnscontrol/v3/models"
 	"github.com/StackExchange/dnscontrol/v3/pkg/diff"
+	"github.com/namedotcom/go/namecom"
 )
 
 var defaultNameservers = []*models.Nameserver{

@@ -4,18 +4,16 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
 	"os"
 	"path/filepath"
 	"testing"
 	"unicode"
 
-	testifyrequire "github.com/stretchr/testify/require"
-
 	"github.com/StackExchange/dnscontrol/v3/pkg/normalize"
 	"github.com/StackExchange/dnscontrol/v3/pkg/prettyzone"
 	"github.com/StackExchange/dnscontrol/v3/providers"
 	_ "github.com/StackExchange/dnscontrol/v3/providers/_all"
+	testifyrequire "github.com/stretchr/testify/require"
 )
 
 const (
@@ -28,7 +26,7 @@ func init() {
 }
 
 func TestParsedFiles(t *testing.T) {
-	files, err := ioutil.ReadDir(testDir)
+	files, err := os.ReadDir(testDir)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -80,7 +78,7 @@ func TestParsedFiles(t *testing.T) {
 			}
 			testName := name[:len(name)-3]
 			expectedFile := filepath.Join(testDir, testName+".json")
-			expectedJSON, err := ioutil.ReadFile(expectedFile)
+			expectedJSON, err := os.ReadFile(expectedFile)
 			if err != nil {
 				t.Fatal(err)
 			}
@@ -88,7 +86,7 @@ func TestParsedFiles(t *testing.T) {
 			as := string(actualJSON)
 			_, _ = es, as
 			// When debugging, leave behind the actual result:
-			//ioutil.WriteFile(expectedFile+".ACTUAL", []byte(es), 0644)
+			// os.WriteFile(expectedFile+".ACTUAL", []byte(es), 0644)
 			testifyrequire.JSONEqf(t, es, as, "EXPECTING %q = \n```\n%s\n```", expectedFile, as)
 
 			// For each domain, if there is a zone file, test against it:
@@ -101,7 +99,7 @@ func TestParsedFiles(t *testing.T) {
 			var dCount int
 			for _, dc := range conf.Domains {
 				zoneFile := filepath.Join(testDir, testName, dc.Name+".zone")
-				expectedZone, err := ioutil.ReadFile(zoneFile)
+				expectedZone, err := os.ReadFile(zoneFile)
 				if err != nil {
 					continue
 				}
@@ -119,7 +117,7 @@ func TestParsedFiles(t *testing.T) {
 				as := actualZone
 				if es != as {
 					// On failure, leave behind the .ACTUAL file.
-					ioutil.WriteFile(zoneFile+".ACTUAL", []byte(actualZone), 0644)
+					os.WriteFile(zoneFile+".ACTUAL", []byte(actualZone), 0644)
 				}
 				testifyrequire.Equal(t, es, as, "EXPECTING %q =\n```\n%s```", zoneFile, as)
 			}

@@ -2,15 +2,12 @@ package octoyaml
 
 import (
 	"encoding/json"
-	"github.com/StackExchange/dnscontrol/v3/pkg/printer"
-	"io/ioutil"
+	"os"
 
 	"github.com/StackExchange/dnscontrol/v3/models"
+	"github.com/StackExchange/dnscontrol/v3/pkg/printer"
 	"github.com/StackExchange/dnscontrol/v3/pkg/transform"
-
 	"github.com/robertkrimen/otto"
-	// load underscore js into vm by default
-
 	_ "github.com/robertkrimen/otto/underscore" // required by otto
 )
 
@@ -50,7 +47,7 @@ func ExecuteJavascript(script string, devMode bool) (*models.DNSConfig, error) {
 
 // GetHelpers returns the filename of helpers.js, or the esc'ed version.
 func GetHelpers(devMode bool) string {
-	d, err := ioutil.ReadFile("../pkg/js/helpers.js")
+	d, err := os.ReadFile("../pkg/js/helpers.js")
 	if err != nil {
 		panic(err)
 	}
@@ -63,7 +60,7 @@ func require(call otto.FunctionCall) otto.Value {
 	}
 	file := call.Argument(0).String()
 	printer.Printf("requiring: %s\n", file)
-	data, err := ioutil.ReadFile(file)
+	data, err := os.ReadFile(file)
 	if err != nil {
 		throw(call.Otto, err.Error())
 	}

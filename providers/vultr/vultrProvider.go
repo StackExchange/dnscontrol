@@ -8,11 +8,10 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/vultr/govultr"
-
 	"github.com/StackExchange/dnscontrol/v3/models"
 	"github.com/StackExchange/dnscontrol/v3/pkg/diff"
 	"github.com/StackExchange/dnscontrol/v3/providers"
+	"github.com/vultr/govultr"
 )
 
 /*

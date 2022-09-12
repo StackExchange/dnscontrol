@@ -1,4 +1,3 @@
-# providers/activedir  DEPRECATED
 providers/akamaiedgedns @svernick
 providers/autodns @arnoschoon
 providers/axfrddns @hnrgrgr
@@ -12,6 +11,7 @@ providers/digitalocean @Deraen
 providers/dnsimple @onlyhavecans
 providers/dnsmadeeasy @vojtad
 providers/doh @mikenz
+providers/domainnameshop @SimenBai
 providers/easyname @tresni
 providers/exoscale @pierre-emmanuelJ
 providers/gandi_v5 @TomOnTime
@@ -21,7 +21,7 @@ providers/hetzner @das7pad
 providers/hexonet @papakai
 providers/hostingde @juliusrickert
 providers/internetbs @pragmaton
-providers/inwx @svenpeter42
+providers/inwx @patschi
 providers/msdns @tlimoncelli
 providers/linode @koesie10
 providers/namecheap @captncraig
@@ -31,6 +31,7 @@ providers/ns1 @costasd
 providers/opensrs @philhug
 providers/oracle @kallsyms
 providers/route53 @tresni
+providers/rwth @mistererwin
 # providers/softlayer NEEDS VOLUNTEER
 providers/vultr @pgaskin
 providers/ovh @masterzen

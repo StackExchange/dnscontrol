@@ -21,17 +21,14 @@ import (
 	"strconv"
 	"strings"
 
-	//gandi "github.com/go-gandi/go-gandi"
-	"github.com/go-gandi/go-gandi"
-	"github.com/go-gandi/go-gandi/config"
-
-	"github.com/miekg/dns/dnsutil"
-
 	"github.com/StackExchange/dnscontrol/v3/models"
 	"github.com/StackExchange/dnscontrol/v3/pkg/diff"
 	"github.com/StackExchange/dnscontrol/v3/pkg/printer"
 	"github.com/StackExchange/dnscontrol/v3/pkg/txtutil"
 	"github.com/StackExchange/dnscontrol/v3/providers"
+	"github.com/go-gandi/go-gandi"
+	"github.com/go-gandi/go-gandi/config"
+	"github.com/miekg/dns/dnsutil"
 )
 
 // Section 1: Register this provider in the system.
@@ -163,7 +160,11 @@ func (client *gandiv5Provider) GetZoneRecords(domain string) (models.Records, er
 	// Convert them to DNScontrol's native format:
 	existingRecords := []*models.RecordConfig{}
 	for _, rr := range records {
-		existingRecords = append(existingRecords, nativeToRecords(rr, domain)...)
+		rrs, err := nativeToRecords(rr, domain)
+		if err != nil {
+			return nil, err
+		}
+		existingRecords = append(existingRecords, rrs...)
 	}
 
 	return existingRecords, nil

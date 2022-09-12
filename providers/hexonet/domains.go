@@ -2,7 +2,7 @@ package hexonet
 
 import "fmt"
 
-//EnsureDomainExists returns an error
+// EnsureDomainExists returns an error
 // * if access to dnszone is not allowed (not authorized) or
 // * if it doesn't exist and creating it fails
 func (n *HXClient) EnsureDomainExists(domain string) error {

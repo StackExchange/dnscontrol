@@ -2,12 +2,13 @@ package powerdns
 
 import (
 	"context"
+	"net/http"
+	"strings"
+
 	"github.com/StackExchange/dnscontrol/v3/models"
 	"github.com/StackExchange/dnscontrol/v3/pkg/diff"
 	"github.com/mittwald/go-powerdns/apis/zones"
 	"github.com/mittwald/go-powerdns/pdnshttp"
-	"net/http"
-	"strings"
 )
 
 // GetNameservers returns the nameservers for a domain.

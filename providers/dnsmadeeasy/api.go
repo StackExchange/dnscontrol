@@ -2,9 +2,10 @@ package dnsmadeeasy
 
 import (
 	"fmt"
-	"github.com/StackExchange/dnscontrol/v3/pkg/printer"
 	"net/http"
 	"time"
+
+	"github.com/StackExchange/dnscontrol/v3/pkg/printer"
 )
 
 type dnsMadeEasyProvider struct {

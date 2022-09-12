@@ -1,7 +1,9 @@
 package transform
 
-import "testing"
-import "fmt"
+import (
+	"fmt"
+	"testing"
+)
 
 func TestReverse(t *testing.T) {
 	var tests = []struct {
