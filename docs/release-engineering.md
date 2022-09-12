@@ -10,19 +10,20 @@ These are the instructions for producing a release.
 CircleCI will do most of the work for you. You will need to edit the draft release notes.
 
 Please change the version number as appropriate.  Substitute (for example)
-`3.19.0` any place you see `VERSION` in this doc.
+`3.20.0` any place you see `VERSION` in this doc.
 
 ## Step 1. Tag the commit in master that you want to release
 
 ```shell
-git tag -a v3.19.0
+git checkout master
+git tag -a v3.20.0
 git push origin --tags
 ```
 
 See [Git Docs](https://git-scm.com/book/en/v2/Git-Basics-Tagging) for more examples.
 
 Soon after
-CircleCI will start a [build](https://app.circleci.com/pipelines/github/StackExchange/dnscontrol?branch=master) Workflow and produce all of the artifacts for the release.
+CircleCI will start a [build](https://app.circleci.com/pipelines/github/StackExchange/dnscontrol) Workflow and produce all of the artifacts for the release.
 
 ![CircleCI Release Screenshot](public/circleci_release.png)
 
@@ -41,28 +42,35 @@ Release notes style guide:
 * Every item should include the ID of the issue related to the change. If there was no issue, create one and close it.
 * Sort the list most important/exciting changes earlier in the list.
 * Items related to a specific provier should begin with the all-caps name of the provider, such as "ROUTE53: Added support for sandwiches (#100)"
-* The `Depreciation warnings` section should just copy from `README.md`.  If you change one, change it in the README too (you can make that change in this PR).
+* The `Deprecation warnings` section should just copy from `README.md`.  If you change one, change it in the README too (you can make that change in this PR).
 
 See [https://github.com/StackExchange/dnscontrol/releases for examples](https://github.com/StackExchange/dnscontrol/releases) for recent release notes and copy that style.
 
-Example/template:
+Template:
 
 ```text
-This release includes many new providers (JoeDNS and MaryDNS), dozens
-of bug fixes, and a new testing framework that makes it easier to add
-big features without fear of breaking old ones.
+## Changelog
 
-Major features:
+This release includes many new providers (FILL IN), dozens
+of bug fixes, and FILL IN.
 
-* NEW PROVIDER: Providername (#issueid)
-* Add FOO DNS record support (#issueid)
-* Add SIP/JABBER labels to underscore exception list (#453)
+### Breaking changes:
 
-Provider-specific changes:
+* FILL IN
 
-* PROVIDER: New feature or thing (#issueid)
-* PROVIDER: Another feature or bug fixed (#issueid)
-* CLOUDFLARE: Fix CF trying to update non-changeable TTL (#issueid)
+### Major features:
+
+* FILL IN
+
+### Provider-specific changes:
+
+* FILL IN
+
+### Other changes and improvements:
+
+* FILL IN
+
+### Deprecation warnings
 ```
 
 ## Step 2. Announce it via email
