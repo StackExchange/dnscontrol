@@ -155,15 +155,13 @@ func (c *exoscaleProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*mod
 				prio = uint16(*record.Priority)
 			}
 			err = rc.SetTargetMX(prio, *record.Content)
-			if err != nil {
-				return nil, fmt.Errorf("unparsable record received from exoscale: %w", err)
-			}
 		default:
-			err := rc.PopulateFromString(*record.Type, *record.Content, dc.Name)
-			if err != nil {
-				return nil, fmt.Errorf("unparsable record received from exoscale: %w", err)
-			}
+			err = rc.PopulateFromString(*record.Type, *record.Content, dc.Name)
 		}
+		if err != nil {
+			return nil, fmt.Errorf("unparsable record received from exoscale: %w", err)
+		}
+
 		existingRecords = append(existingRecords, rc)
 	}
 	removeOtherNS(dc)
