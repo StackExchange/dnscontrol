@@ -72,13 +72,9 @@ func init() {
 	providers.RegisterDomainServiceProviderType("EXOSCALE", fns, features)
 }
 
-// EnsureDomainExists adds a domain if it is not managed by Exoscale.
+// EnsureDomainExists returns an error if domain doesn't exist.
 func (c *exoscaleProvider) EnsureDomainExists(domainName string) error {
-	ctx := context.Background()
 	_, err := c.findDomainByName(domainName)
-	if errors.Is(err, ErrDomainNotFound) {
-		_, err = c.client.CreateDNSDomain(ctx, c.apiZone, &egoscale.DNSDomain{UnicodeName: &domainName})
-	}
 
 	return err
 }
