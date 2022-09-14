@@ -78,9 +78,10 @@
   },
   "EXOSCALE": {
     "apikey": "$EXOSCALE_API_KEY",
-    "dns-endpoint": "https://api.exoscale.ch/dns",
+    "dns-endpoint": "https://api.exoscale.com/v2",
     "domain": "$EXOSCALE_DOMAIN",
-    "secretkey": "$EXOSCALE_SECRET_KEY"
+    "secretkey": "$EXOSCALE_SECRET_KEY",
+		"apizone": "ch-gva-2"
   },
   "GANDI_V5": {
     "apikey": "$GANDI_V5_APIKEY",
