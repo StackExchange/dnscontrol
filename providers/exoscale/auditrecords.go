@@ -17,5 +17,7 @@ func AuditRecords(records []*models.RecordConfig) []error {
 
 	a.Add("SRV", rejectif.SrvHasNullTarget) // Last verified 2020-12-28
 
+	a.Add("TXT", rejectif.TxtHasUnpairedDoubleQuotes) // Last verified 2022-09-14
+
 	return a.Audit(records)
 }

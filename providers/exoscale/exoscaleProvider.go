@@ -20,6 +20,7 @@ const (
 	defaultAPIZone = "ch-gva-2"
 )
 
+// ErrDomainNotFound error indicates domain name is not managed by Exoscale.
 var ErrDomainNotFound = errors.New("domain not found")
 
 type exoscaleProvider struct {
@@ -101,58 +102,81 @@ func (c *exoscaleProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*mod
 		return nil, err
 	}
 
+	domainID := *domain.ID
+
 	ctx := context.Background()
-	records, err := c.client.ListDNSDomainRecords(ctx, c.apiZone, *domain.ID)
+	records, err := c.client.ListDNSDomainRecords(ctx, c.apiZone, domainID)
 	if err != nil {
 		return nil, err
 	}
 
 	existingRecords := make([]*models.RecordConfig, 0, len(records))
 	for _, r := range records {
-		record, err := c.client.GetDNSDomainRecord(ctx, c.apiZone, *domain.ID, *r.ID)
+		if r.ID == nil {
+			continue
+		}
+
+		recordID := *r.ID
+
+		record, err := c.client.GetDNSDomainRecord(ctx, c.apiZone, domainID, recordID)
 		if err != nil {
 			return nil, err
 		}
 
-		if *record.Type == "SOA" || *record.Type == "NS" {
+		// nil pointers are not expected, but just to be on the safe side...
+		var rtype, rcontent, rname string
+		if record.Type == nil {
 			continue
 		}
-		if *r.Name == "" {
+		rtype = *record.Type
+		if record.Content != nil {
+			rcontent = *record.Content
+		}
+		if record.Name != nil {
+			rname = *record.Name
+		}
+
+		if rtype == "SOA" || rtype == "NS" {
+			continue
+		}
+		if rname == "" {
 			t := "@"
 			record.Name = &t
 		}
-		if *record.Type == "CNAME" || *record.Type == "MX" || *record.Type == "ALIAS" || *record.Type == "SRV" {
-			t := *record.Content + "."
+		if rtype == "CNAME" || rtype == "MX" || rtype == "ALIAS" || rtype == "SRV" {
+			t := rcontent + "."
 			// for SRV records we need to aditionally prefix target with priority, which API handles as separate field.
-			if *record.Type == "SRV" && record.Priority != nil {
-				t = fmt.Sprintf("%s %s", strconv.FormatInt(*record.Priority, 10), t)
+			if rtype == "SRV" && record.Priority != nil {
+				t = fmt.Sprintf("%d %s", *record.Priority, t)
 			}
-			record.Content = &t
+			rcontent = t
 		}
 		// exoscale adds these odd txt records that mirror the alias records.
 		// they seem to manage them on deletes and things, so we'll just pretend they don't exist
-		if *record.Type == "TXT" && strings.HasPrefix(*record.Content, "ALIAS for ") {
+		if rtype == "TXT" && strings.HasPrefix(rcontent, "ALIAS for ") {
 			continue
 		}
 
 		rc := &models.RecordConfig{
-			TTL:      uint32(*record.TTL),
 			Original: record,
 		}
-		rc.SetLabel(*record.Name, dc.Name)
+		if record.TTL != nil {
+			rc.TTL = uint32(*record.TTL)
+		}
+		rc.SetLabel(rname, dc.Name)
 
-		switch rtype := *record.Type; rtype {
+		switch rtype {
 		case "ALIAS", "URL":
-			rc.Type = *record.Type
-			rc.SetTarget(*record.Content)
+			rc.Type = rtype
+			rc.SetTarget(rcontent)
 		case "MX":
 			var prio uint16
 			if record.Priority != nil {
 				prio = uint16(*record.Priority)
 			}
-			err = rc.SetTargetMX(prio, *record.Content)
+			err = rc.SetTargetMX(prio, rcontent)
 		default:
-			err = rc.PopulateFromString(*record.Type, *record.Content, dc.Name)
+			err = rc.PopulateFromString(rtype, rcontent, dc.Name)
 		}
 		if err != nil {
 			return nil, fmt.Errorf("unparsable record received from exoscale: %w", err)
@@ -177,7 +201,7 @@ func (c *exoscaleProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*mod
 		record := del.Existing.Original.(*egoscale.DNSDomainRecord)
 		corrections = append(corrections, &models.Correction{
 			Msg: del.String(),
-			F:   c.deleteRecordFunc(*record.ID, *domain.ID),
+			F:   c.deleteRecordFunc(*record.ID, domainID),
 		})
 	}
 
@@ -185,7 +209,7 @@ func (c *exoscaleProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*mod
 		rc := cre.Desired
 		corrections = append(corrections, &models.Correction{
 			Msg: cre.String(),
-			F:   c.createRecordFunc(rc, *domain.ID),
+			F:   c.createRecordFunc(rc, domainID),
 		})
 	}
 
@@ -194,7 +218,7 @@ func (c *exoscaleProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*mod
 		new := mod.Desired
 		corrections = append(corrections, &models.Correction{
 			Msg: mod.String(),
-			F:   c.updateRecordFunc(old, new, *domain.ID),
+			F:   c.updateRecordFunc(old, new, domainID),
 		})
 	}
 
@@ -218,7 +242,7 @@ func (c *exoscaleProvider) createRecordFunc(rc *models.RecordConfig, domainID st
 		}
 
 		if rc.Type == "SRV" {
-			// API wants priority as separate argument, here we will strip it from combined target.
+			// API wants priority as a separate argument, here we will strip it from combined target.
 			sp := strings.Split(target, " ")
 			target = strings.Join(sp[1:], " ")
 			p, err := strconv.ParseInt(sp[0], 10, 64)
@@ -316,7 +340,7 @@ func (c *exoscaleProvider) findDomainByName(name string) (*egoscale.DNSDomain, e
 	}
 
 	for _, domain := range domains {
-		if *domain.UnicodeName == name {
+		if domain.UnicodeName != nil && domain.ID != nil && *domain.UnicodeName == name {
 			return &domain, nil
 		}
 	}
