@@ -60,8 +60,8 @@ An example `dnsconfig.js` configuration:
 ```js
 var REG_HTTPNET = NewRegistrar("http.net");
 
-var DSP_HTTPNET = NewDnsProvider("http.net");
-  default_ns: [
+var DSP_HTTPNET = NewDnsProvider("http.net", {
+  "default_ns": [
     "ns1.routing.net.",
     "ns2.routing.net.",
     "ns3.routing.net.",
