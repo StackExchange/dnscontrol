@@ -60,8 +60,8 @@ If distinct zones require distinct keys, you will need to instantiate the
 provider once for each key:
 
 ```js
-var DSP_AXFRDDNS_A = NewDnsProvider("axfrddns-a"}
-var DSP_AXFRDDNS_B = NewDnsProvider("axfrddns-b"}
+var DSP_AXFRDDNS_A = NewDnsProvider("axfrddns-a");
+var DSP_AXFRDDNS_B = NewDnsProvider("axfrddns-b");
 ```
 
 And update `creds.json` accordingly:
