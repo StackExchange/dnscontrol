@@ -177,7 +177,7 @@ sudo port install dnscontrol
 ## Via [docker](https://hub.docker.com/r/stackexchange/dnscontrol/)
 
 ```bash
-docker run --rm -it -v $(pwd)/dnsconfig.js:/dns/dnsconfig.js -v $(pwd)/creds.json:/dns/creds.json stackexchange/dnscontrol dnscontrol preview
+docker run --rm -it -v $(pwd)/dnsconfig.js:/dns/dnsconfig.js -v $(pwd)/creds.json:/dns/creds.json stackexchange/dnscontrol preview
 ```
 
 The documentation can be viewed via Docker:
