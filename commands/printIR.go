@@ -39,7 +39,7 @@ var _ = cmd(catDebug, func() *cli.Command {
 			}
 			err := exit(PrintIR(args))
 			if err == nil {
-				fmt.Fprintf(os.Stderr, "No errors.\n")
+				fmt.Fprintf(os.Stdout, "No errors.\n")
 			}
 			return err
 		},
