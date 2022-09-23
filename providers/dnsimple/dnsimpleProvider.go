@@ -3,6 +3,7 @@ package dnsimple
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"sort"
 	"strconv"
@@ -422,6 +423,10 @@ func (c *dnsimpleProvider) updateNameserversFunc(nameServerNames []string, domai
 
 		_, err = client.Registrar.ChangeDomainDelegation(context.Background(), accountID, domainName, &nameServers)
 		if err != nil {
+			var errorResponse *dnsimpleapi.ErrorResponse
+			if errors.As(err, &errorResponse) {
+				return compileAttributeErrors(errorResponse)
+			}
 			return err
 		}
 
@@ -447,6 +452,10 @@ func (c *dnsimpleProvider) createRecordFunc(rc *models.RecordConfig, domainName 
 		}
 		_, err = client.Zones.CreateRecord(context.Background(), accountID, domainName, record)
 		if err != nil {
+			var errorResponse *dnsimpleapi.ErrorResponse
+			if errors.As(err, &errorResponse) {
+				return compileAttributeErrors(errorResponse)
+			}
 			return err
 		}
 
@@ -466,6 +475,10 @@ func (c *dnsimpleProvider) deleteRecordFunc(recordID int64, domainName string) f
 
 		_, err = client.Zones.DeleteRecord(context.Background(), accountID, domainName, recordID)
 		if err != nil {
+			var errorResponse *dnsimpleapi.ErrorResponse
+			if errors.As(err, &errorResponse) {
+				return compileAttributeErrors(errorResponse)
+			}
 			return err
 		}
 
@@ -494,6 +507,10 @@ func (c *dnsimpleProvider) updateRecordFunc(old *dnsimpleapi.ZoneRecord, rc *mod
 
 		_, err = client.Zones.UpdateRecord(context.Background(), accountID, domainName, old.ID, record)
 		if err != nil {
+			var errorResponse *dnsimpleapi.ErrorResponse
+			if errors.As(err, &errorResponse) {
+				return compileAttributeErrors(errorResponse)
+			}
 			return err
 		}
 
@@ -611,4 +628,13 @@ func getTargetRecordPriority(rc *models.RecordConfig) int {
 	default:
 		return 0
 	}
+}
+
+func compileAttributeErrors(err *dnsimpleapi.ErrorResponse) error {
+	message := err.Message
+	for field, errors := range err.AttributeErrors {
+		e := strings.Join(errors, "& ")
+		message += fmt.Sprintf(": %s %s", field, e)
+	}
+	return fmt.Errorf(message)
 }
