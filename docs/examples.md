@@ -143,3 +143,42 @@ DEFAULTS(
 	CF_PROXY_DEFAULT_OFF
 );
 ```
+# Advanced Examples
+
+## Automate Fastmail DKIM records
+
+In this example we need a macro that can dynamically change for each domain.
+
+Suppose you have many domains that use Fastmail as an MX. Here's a macro that sets the MX records.
+
+```
+var FASTMAIL_MX = [
+  MX('@', 10, 'in1-smtp.messagingengine.com.'),
+  MX('@', 20, 'in2-smtp.messagingengine.com.'),
+]
+```
+
+Fastmail also supplied CNAMES to implement DKIM, and they all match a pattern
+that includes the domain name. We can't use a simple macro. Instead, we use
+a function that takes the domain name as a parameter to generate the right
+records dynamically.
+
+```
+var FASTMAIL_DKIM = function(the_domain){
+  return [
+    CNAME('fm1._domainkey', 'fm1.' + the_domain + '.dkim.fmhosted.com.'),
+    CNAME('fm2._domainkey', 'fm2.' + the_domain + '.dkim.fmhosted.com.'),
+    CNAME('fm3._domainkey', 'fm3.' + the_domain + '.dkim.fmhosted.com.')
+  ]
+}
+```
+
+We can then use the macros as such:
+
+```
+D("example.com", REG_NONE, DnsProvider(DSP_R53_MAIN),
+    FASTMAIL_MX,
+    FASTMAIL_ONLY_SPF,
+    FASTMAIL_DKIM('example.com')
+)
+```
