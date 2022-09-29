@@ -178,7 +178,6 @@ We can then use the macros as such:
 ```
 D("example.com", REG_NONE, DnsProvider(DSP_R53_MAIN),
     FASTMAIL_MX,
-    FASTMAIL_ONLY_SPF,
     FASTMAIL_DKIM('example.com')
 )
 ```
