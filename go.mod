@@ -48,7 +48,7 @@ require (
 	github.com/robertkrimen/otto v0.0.0-20211024170158-b87d35c0b86f
 	github.com/softlayer/softlayer-go v1.0.6
 	github.com/stretchr/testify v1.8.0
-	github.com/tdewolff/minify/v2 v2.12.1
+	github.com/tdewolff/minify/v2 v2.12.2
 	github.com/transip/gotransip/v6 v6.17.0
 	github.com/urfave/cli/v2 v2.16.3
 	github.com/vultr/govultr v1.1.1
