@@ -180,7 +180,9 @@ title: DNSControl
 				<li>
 				    <a href="{{site.github.url}}/nameservers">Nameservers &amp; Delegation</a>: Many examples.
 				</li>
-
+                <li>
+				    <a href="{{site.github.url}}/ci-cd-gitlab">Gitlab CI/CD example</a>.
+				</li>
 			</ul>
 		</div>
 	</div>
