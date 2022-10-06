@@ -81,7 +81,7 @@ dnscontrol-preview:
     - '/usr/local/bin/dnscontrol version'
     - '/usr/local/bin/dnscontrol preview'
   rules:
-    - if: '$CI_PIPELINE_SOURCE == "merge_request_event" && $CI_MERGE_REQUEST_IID'
+    - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
       changes:
         - 'dnsconfig.js'
 ```
@@ -211,7 +211,7 @@ dnscontrol-preview:
   script:
     - '/usr/local/bin/dnscontrol preview'
   rules:
-    - if: '$CI_PIPELINE_SOURCE == "merge_request_event" && $CI_MERGE_REQUEST_IID'
+    - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
       changes:
         - 'dnsconfig.js'
 
