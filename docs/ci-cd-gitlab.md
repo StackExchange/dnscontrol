@@ -79,6 +79,7 @@ dnscontrol-preview:
     entrypoint: ['']
   script:
     - '/usr/local/bin/dnscontrol version'
+    - '/usr/local/bin/dnscontrol check'
     - '/usr/local/bin/dnscontrol preview'
   rules:
     - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
@@ -91,6 +92,7 @@ What does this YAML configuration mean?
 - The `dnscontrol preview` is run within the Gitlab CI [predefined stage](https://docs.gitlab.com/ee/ci/yaml/#stages) `test` using the Docker image [stackexchange/dnscontrol](https://hub.docker.com/r/stackexchange/dnscontrol).
   - A conscious decision has been made to always use the latest version so that no maintenance is required. Of course you can choose to include a Docker image version. You do this by choosing from the [available versions](https://hub.docker.com/r/stackexchange/dnscontrol/tags), and including it in `image:` for example: `name: 'stackexchange/dnscontrol:v3.20.0'`
 - Because the choice was made not to adopt a version, it's nice to know from the Gitlab CI jobs which version DNSControl is running.
+  We check and validate the DNSControl set-up `dnsconfig.js`.
 - Then we ask TransIP which DNS diff there is.
 - **(!)** This only happens in the context of a Gitlab merge request and (_**very important**_) only when there is a change in the DNSControl configuration (`dnsconfig.js`).
 
@@ -209,6 +211,7 @@ dnscontrol-preview:
   extends: '.dnscontrol'
   stage: 'test'
   script:
+    - '/usr/local/bin/dnscontrol check'
     - '/usr/local/bin/dnscontrol preview'
   rules:
     - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
