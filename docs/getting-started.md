@@ -38,7 +38,7 @@ Alternatively, on Mac you can install it using homebrew:
 ## Via [docker](https://hub.docker.com/r/stackexchange/dnscontrol/)
 
 ```bash
-docker run --rm -it -v $(pwd)/dnsconfig.js:/dns/dnsconfig.js -v $(pwd)/creds.json:/dns/creds.json stackexchange/dnscontrol dnscontrol preview
+docker run --rm -it -v $(pwd)/dnsconfig.js:/dns/dnsconfig.js -v $(pwd)/creds.json:/dns/creds.json stackexchange/dnscontrol preview
 ```
 
 
