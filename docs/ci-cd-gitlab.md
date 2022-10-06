@@ -140,7 +140,7 @@ _<https://gitlab.com/cafferata/dnscontrol/-/jobs/3115895010>_
 
 We just saw that we can view the DNSControl diff from the [Gitlab job](https://gitlab.com/cafferata/dnscontrol/-/jobs/3115895010). Now it's time to make Gitlab CI responsible for the command `dnscontrol push`.
 
-From here several choices can be made. You can choose to have the `dnscontrol push` run as soon as a merge request is pushed to main, or from a Gitlab pipeline trigger within the [Gitlab web interface](https://gitlab.com/cafferata/dnscontrol/-/pipelines/new). We have opted for the [Gitlab pipeline web interface](https://gitlab.com/cafferata/dnscontrol/-/pipelines/new) so that it cannot happen that DNS changes are made from previous merge requests in main.
+From here several choices can be made. You can choose to have the `dnscontrol push` run as soon as a merge request is pushed to default branch (e.g. `main`), or from a Gitlab pipeline trigger within the [Gitlab web interface](https://gitlab.com/cafferata/dnscontrol/-/pipelines/new). We have opted for the [Gitlab pipeline web interface](https://gitlab.com/cafferata/dnscontrol/-/pipelines/new) so that it cannot happen that DNS changes are made from previous merge requests in default branch (e.g. `main`).
 
 It will probably not surprise you that the basis of this Gitlab YAML configuration corresponds for 90% with the DNSControl preview. See the [Gitlab merge request #2](https://gitlab.com/cafferata/dnscontrol/-/merge_requests/2) here.
 
@@ -156,13 +156,13 @@ dnscontrol-push:
     - '/usr/local/bin/dnscontrol version'
     - '/usr/local/bin/dnscontrol push'
   rules:
-    - if: '$CI_COMMIT_BRANCH == "main" && $CI_PIPELINE_SOURCE == "web"'
+    - if: '$CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH && $CI_PIPELINE_SOURCE == "web"'
 ```
 
 What does this (new) YAML configuration mean?
 
 - The `dnscontrol push` is run within the Gitlab CI [predefined stage](https://docs.gitlab.com/ee/ci/yaml/#stages) `deploy`.
-- This only happens when you start a Gitlab pipeline from the [Gitlab web interface](https://gitlab.com/cafferata/dnscontrol/-/pipelines/new) for the branch `main`.
+- This only happens when you start a Gitlab pipeline from the [Gitlab web interface](https://gitlab.com/cafferata/dnscontrol/-/pipelines/new) for the default branch (e.g. `main`).
 
 <img src="{{ site.github.url }}/assets/ci-cd-gitlab/ci-cd-pipelines-new.png" alt="Start new CI/CD pipeline from the Gitlab web interface" style="width: 900px;"/>
 
@@ -221,7 +221,7 @@ dnscontrol-push:
   script:
     - '/usr/local/bin/dnscontrol push'
   rules:
-    - if: '$CI_COMMIT_BRANCH == "main" && $CI_PIPELINE_SOURCE == "web"'
+    - if: '$CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH && $CI_PIPELINE_SOURCE == "web"'
 ```
 
 If you are unexpectedly unable to set up this setup, feel free to [ask questions](https://github.com/StackExchange/dnscontrol/issues/new) about it.
