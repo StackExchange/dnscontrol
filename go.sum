@@ -644,8 +644,8 @@ github.com/urfave/cli/v2 v2.17.1/go.mod h1:1CNUng3PtjQMtRzJO4FMXBQvkGtuYRxxiR9xM
 github.com/valyala/bytebufferpool v1.0.0/go.mod h1:6bBcMArwyJ5K/AmCkWv1jt77kVWyCJ6HpOuEn7z0Csc=
 github.com/valyala/fasttemplate v1.0.1/go.mod h1:UQGH1tvbgY+Nz5t2n7tXsz52dQxojPUpymEIMZ47gx8=
 github.com/valyala/fasttemplate v1.2.1/go.mod h1:KHLXt3tVN2HBp8eijSv/kGJopbvo7S+qRAEEKiv+SiQ=
-github.com/vultr/govultr v1.1.1 h1:ntltxMYyJstjKz1v2CLNxFZiqjlt/8HqD1GZeJ/fAMc=
-github.com/vultr/govultr v1.1.1/go.mod h1:QXCNTRg0nwu95ayiMC3feYvrAFTLnj94s2FiibIpoC4=
+github.com/vultr/govultr/v2 v2.17.2 h1:gej/rwr91Puc/tgh+j33p/BLR16UrIPnSr+AIwYWZQs=
+github.com/vultr/govultr/v2 v2.17.2/go.mod h1:ZFOKGWmgjytfyjeyAdhQlSWwTjh2ig+X49cAp50dzXI=
 github.com/xddxdd/ottoext v0.0.0-20210101073831-439879ee6281 h1:QruJ/b9zaFRxtNYvekIXlqWh/BoJJrSJg+FdmMNp8cw=
 github.com/xddxdd/ottoext v0.0.0-20210101073831-439879ee6281/go.mod h1:8Hr+gV9GtucFQOptKfzuYxqg++CyIjg4E7QCR7F3Dxw=
 github.com/xeipuuv/gojsonpointer v0.0.0-20180127040702-4e3ac2762d5f/go.mod h1:N2zxlSyiKSe5eX1tZViRH5QA0qijqEDrYZiPEAiq3wU=

@@ -51,7 +51,6 @@ require (
 	github.com/tdewolff/minify/v2 v2.12.3
 	github.com/transip/gotransip/v6 v6.17.0
 	github.com/urfave/cli/v2 v2.17.1
-	github.com/vultr/govultr v1.1.1
 	github.com/xddxdd/ottoext v0.0.0-20210101073831-439879ee6281
 	golang.org/x/net v0.0.0-20221002022538-bcab6841153b
 	golang.org/x/oauth2 v0.0.0-20220909003341-f21342109be1
@@ -149,6 +148,7 @@ require (
 	github.com/softlayer/xmlrpc v0.0.0-20200409220501-5f089df7cb7e // indirect
 	github.com/stretchr/objx v0.4.0 // indirect
 	github.com/tdewolff/parse/v2 v2.6.4 // indirect
+	github.com/vultr/govultr/v2 v2.17.2 // indirect
 	github.com/xrash/smetrics v0.0.0-20201216005158-039620a65673 // indirect
 	go.opencensus.io v0.23.0 // indirect
 	go.uber.org/atomic v1.9.0 // indirect
