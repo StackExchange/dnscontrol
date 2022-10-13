@@ -11,17 +11,17 @@ jobs:
 
     - name: Get release
       id: get_release
-      uses: bruceadams/get-release@v1.2.3
+      uses: bruceadams/get-release@3a8733307b85cd96d52772b037617bd63d99522e
       env:
         GITHUB_TOKEN: ${{ github.token }}
 
     - name: Checkout repo
-      uses: actions/checkout@v3
+      uses: actions/checkout@93ea575cb5d8a053eaa0ac8fa3b40d7e05a33cc8
       with:
         fetch-depth: 0
 
     - name: Set up Go
-      uses: actions/setup-go@v3
+      uses: actions/setup-go@268d8c0ca0432bb2cf416faae41297df9d262d7f
       with:
         go-version: ^1.15
 
@@ -39,19 +39,19 @@ jobs:
       run: cp dnscontrol-Linux usr/bin/dnscontrol
 
     - name: Bundle RPM
-      uses: bpicode/github-action-fpm@master
+      uses: bpicode/github-action-fpm@e76c0e2166030f4691d641a700b16958c7d12f5d
       with:
         fpm_args: 'usr/'
         fpm_opts: '-n dnscontrol -t rpm -s dir -v ${{ steps.versioner.outputs.RELEASE_VERSION }} --license "The MIT License (MIT)" --url "https://dnscontrol.org/" --description "DNSControl: Infrastructure as Code for DNS Zones"'
 
     - name: Bundle DEB
-      uses: bpicode/github-action-fpm@master
+      uses: bpicode/github-action-fpm@e76c0e2166030f4691d641a700b16958c7d12f5d
       with:
         fpm_args: 'usr/'
         fpm_opts: '-n dnscontrol -t deb -s dir -v ${{ steps.versioner.outputs.RELEASE_VERSION }} --license "The MIT License (MIT)" --url "https://dnscontrol.org/" --description "DNSControl: Infrastructure as Code for DNS Zones"'
 
     - name: Upload dnscontrol-Darwin
-      uses: actions/upload-release-asset@v1
+      uses: actions/upload-release-asset@e8f9f06c4b078e705bd2ea027f0926603fc9b4d5
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
@@ -61,7 +61,7 @@ jobs:
         asset_content_type: application/octet-stream
 
     - name: Upload dnscontrol-Linux
-      uses: actions/upload-release-asset@v1
+      uses: actions/upload-release-asset@e8f9f06c4b078e705bd2ea027f0926603fc9b4d5
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
@@ -71,7 +71,7 @@ jobs:
         asset_content_type: application/octet-stream
 
     - name: Upload dnscontrol.exe
-      uses: actions/upload-release-asset@v1
+      uses: actions/upload-release-asset@e8f9f06c4b078e705bd2ea027f0926603fc9b4d5
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
@@ -81,7 +81,7 @@ jobs:
         asset_content_type: application/octet-stream
 
     - name: Upload RPM
-      uses: actions/upload-release-asset@v1
+      uses: actions/upload-release-asset@e8f9f06c4b078e705bd2ea027f0926603fc9b4d5
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
@@ -91,7 +91,7 @@ jobs:
         asset_content_type: application/x-rpm
 
     - name: Upload DEB
-      uses: actions/upload-release-asset@v1
+      uses: actions/upload-release-asset@e8f9f06c4b078e705bd2ea027f0926603fc9b4d5
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
