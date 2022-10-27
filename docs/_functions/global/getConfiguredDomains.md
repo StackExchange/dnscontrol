@@ -47,9 +47,9 @@ Example for adding DMARC report records:
 ```js
 var domains = getConfiguredDomains();
 for(i = 0; i < domains.length; i++) {
-	D_EXTEND("domain1.tld",
-		TXT(domains[i] + '._report._dmarc', 'v=DMARC1')
-	);
+    D_EXTEND("domain1.tld",
+        TXT(domains[i] + '._report._dmarc', 'v=DMARC1')
+    );
 }
 ```
 

@@ -189,7 +189,7 @@ More info is available in
 ```bash
 dnscontrol preview
 Creating r53 dns provider: NoCredentialProviders: no valid providers in chain. Deprecated.
-	For verbose messaging see aws.Config.CredentialsChainVerboseErrors
+    For verbose messaging see aws.Config.CredentialsChainVerboseErrors
 ```
 
 This means that the creds.json entry isn't found. Either there is no entry, or the entry name doesn't match the first parameter in the `NewDnsProvider()` call. In the above example, note
@@ -200,7 +200,7 @@ that the string `r53_main` is specified in `NewDnsProvider("r53_main")` and that
 ```bash
 dnscontrol preview
 Creating r53_main dns provider: InvalidClientTokenId: The security token included in the request is invalid.
-	status code: 403, request id: 8c006a24-e7df-11e7-9162-01963394e1df
+    status code: 403, request id: 8c006a24-e7df-11e7-9162-01963394e1df
 ```
 
 This means the KeyId is unknown to AWS.
@@ -210,7 +210,7 @@ This means the KeyId is unknown to AWS.
 ```bash
 dnscontrol preview
 Creating r53_main dns provider: SignatureDoesNotMatch: The request signature we calculated does not match the signature you provided. Check your AWS Secret Access Key and signing method. Consult the service documentation for details.
-	status code: 403, request id: 9171d89a-e7df-11e7-8586-cbea3ea4e710
+    status code: 403, request id: 9171d89a-e7df-11e7-8586-cbea3ea4e710
 ```
 
 This means the SecretKey is incorrect. It may be a quoting issue.
