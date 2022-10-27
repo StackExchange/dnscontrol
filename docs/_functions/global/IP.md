@@ -16,7 +16,7 @@ var addrB = addrA + 1
 
 {% include example.html content=example %}
 
-NOTE: IP() does not accept IPv6 addresses (PRs gladly accepted!). IPv6 addresses are simply strings:
+NOTE: `IP()` does not accept IPv6 addresses (PRs gladly accepted!). IPv6 addresses are simply strings:
 
 {% capture example2 %}
 ```js
