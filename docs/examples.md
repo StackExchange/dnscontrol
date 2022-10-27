@@ -53,6 +53,12 @@ D('example.com', REG, DnsProvider('R53'),
 )
 ```
 
+NOTE: The `IP()` function doesn't currently support IPv6 (PRs welcome!).  IPv6 addresses are strings.
+
+```js
+var addrAAAA = "0:0:0:0:0:0:0:0";
+```
+
 ## Variables to swap active Data Center
 
 ```js
