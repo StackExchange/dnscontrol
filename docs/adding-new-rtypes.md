@@ -102,7 +102,7 @@ The dnscontrol `-dev` flag ignores `pkg/js/static.go` and reads
 `pkg/js/helpers.js` directly. This is useful when debugging since it
 is one less step.
 
-Likewise, if you are debugging helpers.js and you can't figure out why
+Likewise, if you are debugging `helpers.js` and you can't figure out why
 your changes aren't making a difference, it usually means you aren't
 running `go generate` after any change, or using the `-dev` flag.
 

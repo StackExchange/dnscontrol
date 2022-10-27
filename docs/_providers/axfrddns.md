@@ -90,13 +90,13 @@ the later allows `get-zones` to work properly.
 
 ```js
 var DSP_AXFRDDNS = NewDnsProvider("axfrddns", {
-		"default_ns": [
-			"ns1.example.tld.",
-			"ns2.example.tld.",
-			"ns3.example.tld.",
-			"ns4.example.tld."
-		]
-	}
+        "default_ns": [
+            "ns1.example.tld.",
+            "ns2.example.tld.",
+            "ns3.example.tld.",
+            "ns4.example.tld."
+        ]
+    }
 }
 ```
 
@@ -144,15 +144,15 @@ transfer and a conjunction of TSIG and IP-based ACL for the updates.
 ```js
 options {
 
-	listen-on { any; };
-	listen-on-v6 { any; };
+    listen-on { any; };
+    listen-on-v6 { any; };
 
-	allow-query { any; };
-	allow-notify { none; };
-	allow-recursion { none; };
-	allow-transfer { none; };
-	allow-update { none; };
-	allow-query-cache { none; };
+    allow-query { any; };
+    allow-notify { none; };
+    allow-recursion { none; };
+    allow-transfer { none; };
+    allow-update { none; };
+    allow-query-cache { none; };
 
 };
 

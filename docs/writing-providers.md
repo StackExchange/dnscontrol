@@ -36,7 +36,7 @@ Pretty cool, eh?
 
 So how does `GetDomainCorrections()` work?
 
-First, some terminology: The DNS records specified in the dnsconfig.js
+First, some terminology: The DNS records specified in the `dnsconfig.js`
 file are called the "desired" records. The DNS records stored at
 the DNS service provider are called the "existing" records.
 

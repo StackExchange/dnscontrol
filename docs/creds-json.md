@@ -35,7 +35,7 @@ Here's a sample file:
 ## Format
 
 * Primary keys: (e.g. `cloudflare_tal`, `inside`, `hexonet`)
-  * ...refer to the first parameter in the `NewRegistrar()` or `NewDnsProvider()` functions in a dnsconfig.js file.
+  * ...refer to the first parameter in the `NewRegistrar()` or `NewDnsProvider()` functions in a `dnsconfig.js` file.
   * ...may include any printable character except colon (`:`)
   * Convention: all lower case, usually the name of the provider or the username at the provider or both.
 * Subkeys: (e.g. `apikey`, `apiuser` and etc.)

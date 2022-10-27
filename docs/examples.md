@@ -144,9 +144,9 @@ D('example3.com', REG, DnsProvider('R53'), DnsProvider('GCLOUD',0),
 
 ```js
 DEFAULTS(
-	NAMESERVER_TTL('24h'),
-	DefaultTTL('12h'),
-	CF_PROXY_DEFAULT_OFF
+    NAMESERVER_TTL('24h'),
+    DefaultTTL('12h'),
+    CF_PROXY_DEFAULT_OFF
 );
 ```
 # Advanced Examples

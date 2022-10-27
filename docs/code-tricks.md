@@ -82,7 +82,7 @@ _.each(
 
 # Caveats about getting too fancy.
 
-The dnsconfig.js language is JavaScript. On the plus side, this means
+The `dnsconfig.js` language is JavaScript. On the plus side, this means
 you can use loops and variables and anything else you want.
 
 However, we don't recommend you get too fancy.

@@ -16,7 +16,7 @@ Each string is a JavaScript string (quoted using single or double
 quotes).  The (somewhat complex) quoting rules of the DNS protocol
 will be done for you.
 
-Modifiers can be any number of [record modifiers](#record-modifiers) or json objects, which will be merged into the record's metadata.
+Modifiers can be any number of [record modifiers](#record-modifiers) or JSON objects, which will be merged into the record's metadata.
 
 {% capture example %}
 ```js

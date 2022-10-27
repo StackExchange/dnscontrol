@@ -16,7 +16,7 @@ A few notes:
 
 ```go
 func init() {
-	providers.RegisterDomainServiceProviderType("CLOUDFLAREAPI", newCloudflare, providers.CanUseAlias)
+    providers.RegisterDomainServiceProviderType("CLOUDFLAREAPI", newCloudflare, providers.CanUseAlias)
 }
 ```
 

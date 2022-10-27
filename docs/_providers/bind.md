@@ -46,20 +46,20 @@ In this example we set the default SOA settings and NS records.
 
 ```js
 var DSP_BIND = NewDnsProvider("bind", {
-	"default_soa": {
-		"master": "ns1.example.tld.",
-		"mbox": "sysadmin.example.tld.",
-		"refresh": 3600,
-		"retry": 600,
-		"expire": 604800,
-		"minttl": 1440,
-	},
-	"default_ns": [
-		"ns1.example.tld.",
-		"ns2.example.tld.",
-		"ns3.example.tld.",
-		"ns4.example.tld."
-	]
+    "default_soa": {
+        "master": "ns1.example.tld.",
+        "mbox": "sysadmin.example.tld.",
+        "refresh": 3600,
+        "retry": 600,
+        "expire": 604800,
+        "minttl": 1440,
+    },
+    "default_ns": [
+        "ns1.example.tld.",
+        "ns2.example.tld.",
+        "ns3.example.tld.",
+        "ns4.example.tld."
+    ]
 })
 ```
 
