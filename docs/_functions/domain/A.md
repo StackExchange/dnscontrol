@@ -10,7 +10,7 @@ A adds an A record To a domain. The name should be the relative label for the re
 
 The address should be an ip address, either a string, or a numeric value obtained via [IP](#IP).
 
-Modifiers can be any number of [record modifiers](#record-modifiers) or json objects, which will be merged into the record's metadata.
+Modifiers can be any number of [record modifiers](#record-modifiers) or JSON objects, which will be merged into the record's metadata.
 
 {% capture example %}
 ```js

@@ -11,7 +11,7 @@ new types or destinations.
 
 ## Configuration
 
-Notifications are set up in your credentials json file. They will use the `notifications` key to look for keys or configuration needed for various notification types.
+Notifications are set up in your credentials JSON file. They will use the `notifications` key to look for keys or configuration needed for various notification types.
 
 ```json
   "r53": {
