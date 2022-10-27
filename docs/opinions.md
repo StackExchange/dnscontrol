@@ -48,7 +48,7 @@ knowledge.  That's your job.
 Your coworkers should not have to know what happens in ambiguous
 situations.  That's your job.
 
-Your coworkers should be able to submit PRs to dnsconfig.js for you
+Your coworkers should be able to submit PRs to `dnsconfig.js` for you
 to approve; preferably via a CI system that does rudimentary checks
 before you even have to see the PR.
 
@@ -63,7 +63,7 @@ A zonefile can list any kind of DNS record. It has no judgement and
 no morals. It will let you do bad practices as long as the bits are
 RFC-compliant.
 
-dnsconfig.js is a high-level description of your DNS zone data.
+`dnsconfig.js` is a high-level description of your DNS zone data.
 Being high-level permits the code to understand intent, and stop
 bad behavior.
 
@@ -74,7 +74,7 @@ TODO: List an example.
 
 DNSControl downcases all DNS names (domains, labels, and targets).  #sorrynotsorry
 
-When the system reads dnsconfig.js or receives data from DNS providers,
+When the system reads `dnsconfig.js` or receives data from DNS providers,
 the DNS names are downcased.
 
 This reduces code complexity, reduces the number of edge-cases that must
@@ -85,7 +85,7 @@ Yes, we know that DNS is case insensitive.  See Opinion #3.
 
 # Opinion #5: Users should state what they want, and DNSControl should do the rest.
 
-When possible, dnsconfig.js lists a high-level description of what
+When possible, `dnsconfig.js` lists a high-level description of what
 is desired and the compiler does the hard work for you.
 
 Some examples:

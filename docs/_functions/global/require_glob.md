@@ -27,13 +27,13 @@ require_glob("./domains/", false);
 One more important thing to note: `require_glob()` is as smart as `require()` is. It loads files always relative to the JavaScript
 file where it's being executed in. Let's go with an example, as it describes it better:
 
-dnscontrol.js:
+`dnscontrol.js`:
 
 ```js
 require("domains/index.js");
 ```
 
-domains/index.js:
+`domains/index.js`:
 
 ```js
 require_glob("./user1/");
