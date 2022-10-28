@@ -196,7 +196,7 @@ docker run --rm -it --volume="$PWD:/srv/jekyll" --volume="$PWD/vendor/bundle:/us
 
 ## Via Github Actions (GHA)
 
-See [dnscontrol-action](https://github.com/koenrh/dnscontrol-action)
+See [dnscontrol-action](https://github.com/koenrh/dnscontrol-action) or [gacts/install-dnscontrol](https://github.com/gacts/install-dnscontrol).
 
 ## Deprecation warnings (updated 2022-06-04)
 
