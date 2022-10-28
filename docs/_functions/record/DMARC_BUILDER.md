@@ -1,6 +1,5 @@
 ---
-layout: default
-title: DMARC Builder
+name: DMARC_BUILDER
 ---
 
 # DMARC Builder
