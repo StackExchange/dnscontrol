@@ -11,16 +11,16 @@ title: Getting Started
 
 DNSControl can be built with Go version 1.18 or higher.
 
-The `go get` command will download the source, compile it, and
+The `go install` command will download the source, compile it, and
 install `dnscontrol` in your `$GOBIN` directory.
 
 To install, simply run
 
-    GO111MODULE=on go get github.com/StackExchange/dnscontrol/v3
+    go install github.com/StackExchange/dnscontrol/v3@latest
 
 To download the source
 
-    git clone github.com/StackExchange/dnscontrol
+    git clone https://github.com/StackExchange/dnscontrol
 
 If these don't work, more info is in [#805](https://github.com/StackExchange/dnscontrol/issues/805).
 
@@ -51,7 +51,7 @@ simple tests anything will do.
 Create a subdirectory called `zones` in the same directory as the
 configuration files.  (`mkdir zones`).  `zones` is where the BIND
 provider writes the zonefiles it creates. Even if you don't
-use BIND, it is useful for testing.
+use BIND for DNS service, it is useful for testing.
 
 
 ## 3. Create the initial `dnsconfig.js`
