@@ -2,6 +2,7 @@
 name: R53_ZONE
 parameters:
   - zone_id
+provider: ROUTE53
 ---
 
 R53_ZONE lets you specify the AWS Zone ID for an entire domain (D()) or a specific R53_ALIAS() record.

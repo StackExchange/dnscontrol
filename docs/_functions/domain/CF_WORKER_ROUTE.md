@@ -3,6 +3,7 @@ name: CF_WORKER_ROUTE
 parameters:
   - pattern
   - script
+provider: CLOUDFLAREAPI
 ---
 
 `CF_WORKER_ROUTE` uses the [Cloudflare Workers](https://developers.cloudflare.com/workers/)

@@ -5,6 +5,7 @@ parameters:
   - type
   - target
   - modifiers ...
+provider: AZURE_DNS
 ---
 
 AZURE_ALIAS is a Azure specific virtual record type that points a record at either another record or an Azure entity.
