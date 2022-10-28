@@ -3,6 +3,7 @@ name: CF_REDIRECT
 parameters:
   - destination
   - modifiers...
+provider: CLOUDFLAREAPI
 ---
 
 `CF_REDIRECT` uses Cloudflare-specific features ("Forwarding URL" Page Rules) to

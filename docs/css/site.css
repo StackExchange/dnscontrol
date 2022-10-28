@@ -81,3 +81,12 @@ body {
 .dim {
   color: #eeeeee
 }
+
+.table-of-contents {
+  width: 100%;
+}
+
+.table-of-contents td {
+  vertical-align: top;
+  width: 50%;
+}

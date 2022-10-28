@@ -3,6 +3,7 @@ name: CF_TEMP_REDIRECT
 parameters:
   - destination
   - modifiers...
+provider: CLOUDFLAREAPI
 ---
 
 `CF_TEMP_REDIRECT` uses Cloudflare-specific features ("Forwarding URL" Page
