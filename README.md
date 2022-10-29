@@ -205,7 +205,7 @@ See [dnscontrol-action](https://github.com/koenrh/dnscontrol-action)
 - **Provider OCTODNS is frozen and will be removed after Nov 1, 2022.** It was written as a joke and nobody laughed. It's time to remove the code and move on.
 - **get-zones syntax changes in v3.16** Starting in v3.16, the command line arguments for `dnscontrol get-zones` changes. For backwards compatibility change `provider` to `-`. See documentation for details.
 
-## More info at our web site
+## More info at our website
 
 The website: [https://stackexchange.github.io/dnscontrol/](https://stackexchange.github.io/dnscontrol/)
 
