@@ -184,8 +184,10 @@ exist.
 
 It should look something like this:
 
-```text
+```bash
 dnscontrol preview
+```
+```text
 Initialized 1 registrars and 1 dns service providers.
 ******************** Domain: example.com
 ----- Getting nameservers from: bind
@@ -203,6 +205,8 @@ previously exist.
 
 ```bash
 dnscontrol push
+```
+```text
 Initialized 1 registrars and 1 dns service providers.
 ******************** Domain: example.com
 ----- Getting nameservers from: bind
@@ -227,6 +231,8 @@ our change looks like this:
 
 ```bash
 dnscontrol preview
+```
+```text
 Initialized 1 registrars and 1 dns service providers.
 ******************** Domain: example.com
 ----- Getting nameservers from: bind
