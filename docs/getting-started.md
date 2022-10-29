@@ -29,7 +29,7 @@ If these don't work, more info is in [#805](https://github.com/StackExchange/dns
 
 ## Via packages
 
-Get prebuilt binaries from [github releases](https://github.com/StackExchange/dnscontrol/releases/latest)
+Get prebuilt binaries from [GitHub releases](https://github.com/StackExchange/dnscontrol/releases/latest)
 
 Alternatively, on Mac you can install it using homebrew:
 
@@ -293,5 +293,5 @@ If you are going to use this in production, we highly recommend the following:
 * Store the configuration files in Git.
 * Encrypt the `creds.json` file before storing it in Git. Do NOT store
   API keys or other credentials without encrypting them.
-* Use a CI/CD tool like Jenkins/CircleCI/Github Actions/etc. to automatically push DNS changes.
+* Use a CI/CD tool like Jenkins/CircleCI/GitHub Actions/etc. to automatically push DNS changes.
 * Join the DNSControl community. File [issues and PRs](https://github.com/StackExchange/dnscontrol).

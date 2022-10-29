@@ -194,7 +194,7 @@ docker run --rm -it --volume="$PWD:/srv/jekyll" --volume="$PWD/vendor/bundle:/us
 # (Note: The preview isn't perfect. Links that use the site.github.url variable won't work.
 ```
 
-## Via Github Actions (GHA)
+## Via GitHub Actions (GHA)
 
 See [dnscontrol-action](https://github.com/koenrh/dnscontrol-action)
 
