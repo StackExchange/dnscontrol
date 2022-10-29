@@ -19,7 +19,7 @@ This is based on:
 For convenience, both configuration files are shown below.
 
 - `dnsconfig.js`
-  ```javascript
+  ```js
   var PROVIDER_NONE = NewRegistrar('none');
   var PROVIDER_TRANSIP = NewDnsProvider('transip', '-');
 

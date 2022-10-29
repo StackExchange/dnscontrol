@@ -152,15 +152,23 @@ and other formatting.  There are a few different ways to check for typos:
 
 Python:
 
-    python -m json.tool creds.json
+```bash
+python -m json.tool creds.json
+```
 
 jq:
 
-    jq . < creds.json
+```bash
+jq . < creds.json
+```
 
 FYI: `creds.json` fields can be read from an environment variable. The field must begin with a `$` followed by the variable name. No other text. For example:
 
-    "apikey": "$GANDI_V5_APIKEY",
+```json
+{
+    "apikey": "$GANDI_V5_APIKEY"
+}
+```
 
 ## 5. Test the sample files.
 

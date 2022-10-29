@@ -46,4 +46,3 @@ The parameters are:
   * `CAA("@", "issue", "letsencrypt.org")`
   * `CAA("@", "issue", "comodoca.com")`
   * `CAA("@", "issuewild", ";")`
-```

@@ -161,7 +161,7 @@ In this example we need a macro that can dynamically change for each domain.
 
 Suppose you have many domains that use Fastmail as an MX. Here's a macro that sets the MX records.
 
-```
+```js
 var FASTMAIL_MX = [
   MX('@', 10, 'in1-smtp.messagingengine.com.'),
   MX('@', 20, 'in2-smtp.messagingengine.com.'),
@@ -173,7 +173,7 @@ that includes the domain name. We can't use a simple macro. Instead, we use
 a function that takes the domain name as a parameter to generate the right
 records dynamically.
 
-```
+```js
 var FASTMAIL_DKIM = function(the_domain){
   return [
     CNAME('fm1._domainkey', 'fm1.' + the_domain + '.dkim.fmhosted.com.'),
@@ -185,7 +185,7 @@ var FASTMAIL_DKIM = function(the_domain){
 
 We can then use the macros as such:
 
-```
+```js
 D("example.com", REG_NONE, DnsProvider(DSP_R53_MAIN),
     FASTMAIL_MX,
     FASTMAIL_DKIM('example.com')
