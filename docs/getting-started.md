@@ -308,4 +308,4 @@ If you are going to use this in production, we highly recommend the following:
 * Encrypt the `creds.json` file before storing it in Git. Do NOT store
   API keys or other credentials without encrypting them.
 * Use a CI/CD tool like Jenkins/CircleCI/GitHub Actions/etc. to automatically push DNS changes.
-* Join the DNSControl community. File [issues and PRs](https://github.com/StackExchange/dnscontrol).
+* Join the DNSControl community. File [issues](https://github.com/StackExchange/dnscontrol/issues) and [PRs](https://github.com/StackExchange/dnscontrol/pulls).
