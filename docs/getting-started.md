@@ -78,7 +78,7 @@ D('example.com', REG_NONE, DnsProvider(DNS_BIND),
 );
 ```
 
-Modify this file to match your particular providers and domains. See [the dnsconfig docs]({{site.github.url}}/js) and  [the provider docs]({{site.github.url}}/provider-list) for more details.
+Modify this file to match your particular providers and domains. See [the DNSConfig docs]({{site.github.url}}/js) and  [the provider docs]({{site.github.url}}/provider-list) for more details.
 
 Create a file called `creds.json` for storing provider configurations (API tokens and other account information).
 For example, to use both name.com and Cloudflare, you would have:
