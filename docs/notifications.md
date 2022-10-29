@@ -46,7 +46,7 @@ Configure `teams_url` to this webhook.
 
 ### Bonfire
 
-This is stack overflow's built in chat system. This is probably not useful for most people.
+This is Stack Overflow's built in chat system. This is probably not useful for most people.
 
 Configure `bonfire_url` to be the full url including room and api key.
 

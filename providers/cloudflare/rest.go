@@ -7,7 +7,6 @@ import (
 	"strings"
 
 	"github.com/StackExchange/dnscontrol/v3/models"
-	"github.com/cloudflare/cloudflare-go"
 )
 
 // get list of domains for account. Cache so the ids can be looked up from domain name
@@ -313,7 +312,7 @@ func (c *cloudflareProvider) deleteWorkerRoute(recordID, domainID string) error 
 }
 
 func (c *cloudflareProvider) updateWorkerRoute(recordID, domainID string, target string) error {
-	// Causing stack overflow (!?)
+	// Causing Stack Overflow (!?)
 	// return c.updateWorkerRoute(recordID, domainID, target)
 
 	if err := c.deleteWorkerRoute(recordID, domainID); err != nil {
