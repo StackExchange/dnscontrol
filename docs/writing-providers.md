@@ -282,7 +282,7 @@ for tips about managing modules and checking for outdated
 dependencies.
 
 
-## Step 14: Check your work.
+## Step 14: Check your work
 
 Here are some last-minute things to check before you submit your PR.
 

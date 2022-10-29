@@ -42,7 +42,7 @@ docker run --rm -it -v $(pwd)/dnsconfig.js:/dns/dnsconfig.js -v $(pwd)/creds.jso
 ```
 
 
-## 2. Create a place for the config files.
+## 2. Create a place for the config files
 
 Create a directory where you'll be storing your configuration files.
 We highly recommend storing these files in a Git repo, but for
@@ -170,7 +170,7 @@ FYI: `creds.json` fields can be read from an environment variable. The field mus
 }
 ```
 
-## 5. Test the sample files.
+## 5. Test the sample files
 
 Before you edit the sample files, verify that the system is working.
 
@@ -221,7 +221,7 @@ Done. 1 corrections.
 ```
 
 
-## 6. Make a change.
+## 6. Make a change
 
 Try making a change to `dnsconfig.js`. For example, change the IP
 address of in `A('@', '1.2.3.4')` or add an additional A record.
