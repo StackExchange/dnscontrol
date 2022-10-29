@@ -174,7 +174,7 @@ brew install dnscontrol
 sudo port install dnscontrol
 ````
 
-## Via [docker](https://hub.docker.com/r/stackexchange/dnscontrol/)
+## Via [Docker](https://hub.docker.com/r/stackexchange/dnscontrol/)
 
 ```bash
 docker run --rm -it -v $(pwd)/dnsconfig.js:/dns/dnsconfig.js -v $(pwd)/creds.json:/dns/creds.json stackexchange/dnscontrol preview
