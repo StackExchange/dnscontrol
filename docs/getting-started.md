@@ -99,7 +99,7 @@ For example, to use both name.com and Cloudflare, you would have:
 }
 ```
 
-Note: Do **not** store your creds.json file in Git unencrypted.
+Note: Do **not** store your `creds.json` file in Git unencrypted.
 That is unsafe. Add `creds.json` to your
 `.gitignore` file as a precaution.  This file should be encrypted
 using something

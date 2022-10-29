@@ -48,7 +48,7 @@ Alternatively, this provider supports [named profiles](https://docs.aws.amazon.c
 export AWS_PROFILE=ZZZZZZZZ
 ```
 
-and provide a minimal entry in creds.json:
+and provide a minimal entry in `creds.json`:
 
 Example:
 
@@ -192,7 +192,7 @@ Creating r53 dns provider: NoCredentialProviders: no valid providers in chain. D
     For verbose messaging see aws.Config.CredentialsChainVerboseErrors
 ```
 
-This means that the creds.json entry isn't found. Either there is no entry, or the entry name doesn't match the first parameter in the `NewDnsProvider()` call. In the above example, note
+This means that the `creds.json` entry isn't found. Either there is no entry, or the entry name doesn't match the first parameter in the `NewDnsProvider()` call. In the above example, note
 that the string `r53_main` is specified in `NewDnsProvider("r53_main")` and that is the exact key used in the creds file above.
 
 ### Invalid KeyId

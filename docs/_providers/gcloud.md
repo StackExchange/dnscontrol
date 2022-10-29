@@ -44,7 +44,7 @@ Example:
 See [the Activation section](#activation) for some tips on obtaining these credentials.
 
 ### Using Application Default Credentials
-If you prefer to authenticate using ADC you only need to specify `project_id` in your creds.json file.
+If you prefer to authenticate using ADC you only need to specify `project_id` in your `creds.json` file.
 
 Example:
 
