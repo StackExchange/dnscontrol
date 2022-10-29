@@ -4,7 +4,7 @@ name: DMARC_BUILDER
 
 # DMARC Builder
 
-dnscontrol contains a DMARC_BUILDER which can be used to simply create
+DNSControl contains a DMARC_BUILDER which can be used to simply create
 DMARC policies for your domains.
 
 

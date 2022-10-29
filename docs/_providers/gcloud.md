@@ -57,7 +57,7 @@ Example:
 }
 ```
 
-**Note:** To use ADC, make sure to not add any `private_key` value to your configuration as that will prevent dnscontrol from attempting to use ADC.
+**Note:** To use ADC, make sure to not add any `private_key` value to your configuration as that will prevent DNSControl from attempting to use ADC.
 
 ## Metadata
 This provider does not recognize any special metadata fields unique to google cloud dns.

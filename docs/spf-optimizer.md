@@ -5,8 +5,8 @@ title: SPF Optimizer
 
 # SPF Optimizer
 
-dnscontrol can optimize the SPF settings on a domain by flattening
-(inlining) includes and removing duplicates.  dnscontrol also makes
+DNSControl can optimize the SPF settings on a domain by flattening
+(inlining) includes and removing duplicates. DNSControl also makes
 it easier to document your SPF configuration.
 
 **Warning:** Flattening SPF includes is risky.  Only flatten an SPF
@@ -31,7 +31,7 @@ This has a few problems:
 * Ugly diffs.  If you add an element to the SPF setting, the diff will show the entire line changed, which is difficult to read.
 * Too many lookups. The SPF RFC says that SPF settings should not require more than 10 DNS lookups. If we manually flatten (i.e. "inline") an include, we have to remember to check back to see if the settings have changed. Humans are not good at that kind of thing.
 
-## The dnscontrol way
+## The DNSControl way
 
 ```js
 D("example.tld", REG, DSP, ...
@@ -67,7 +67,7 @@ By using the `SPF_BUILDER()` we gain many benefits:
 
 * Comments can appear next to the element they refer to.
 * Diffs will be shorter and more specific; therefore easier to read.
-* Automatic flattening.  We can specify which includes should be flattened and dnscontrol will do the work. It will even warn us if the includes change.
+* Automatic flattening.  We can specify which includes should be flattened and DNSControl will do the work. It will even warn us if the includes change.
 
 ## Syntax
 
@@ -101,7 +101,7 @@ D("example.tld", REG, DSP, ...
 The parameters are:
 
 * `label:` The label of the first TXT record. (Optional. Default: `"@"`)
-* `overflow:` If set, SPF strings longer than 255 chars will be split into multiple TXT records. The value of this setting determines the template for what the additional labels will be named. If not set, no splitting will occur and dnscontrol may generate TXT strings that are too long.
+* `overflow:` If set, SPF strings longer than 255 chars will be split into multiple TXT records. The value of this setting determines the template for what the additional labels will be named. If not set, no splitting will occur and DNSControl may generate TXT strings that are too long.
 * `overhead1:` "Overhead for the 1st TXT record".  When calculating the max length of each TXT record, reduce the maximum for the first TXT record in the chain by this amount.
 * `raw:` The label of the unaltered SPF settings. Setting to an empty string `''` will disable this. (Optional. Default: `"_rawspf"`)
 * `ttl:` This allows setting a specific TTL on this SPF record. (Optional. Default: using default record TTL)
@@ -174,7 +174,7 @@ to get the entire record. (Sadly it caches heavily.)
 
 ## Notes about the `spfcache.json`
 
-dnscontrol keeps a cache of the DNS lookups performed during
+DNSControl keeps a cache of the DNS lookups performed during
 optimization.  The cache is maintained so that the optimizer does
 not produce different results depending on the ups and downs of
 other people's DNS servers. This makes it possible to do `dnscontrol
@@ -233,7 +233,7 @@ In which case, it is equivalent to `include:`.
 
 ## Advanced Technique: Interactive SPF Debugger
 
-dnscontrol includes an experimental system for viewing
+DNSControl includes an experimental system for viewing
 SPF settings:
 
 [https://stackexchange.github.io/dnscontrol/flattener/index.html](https://stackexchange.github.io/dnscontrol/flattener/index.html)
