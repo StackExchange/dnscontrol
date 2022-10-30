@@ -1,15 +1,19 @@
 ---
-layout: default
-title: CAA Builder
+name: CAA_BUILDER
+parameters:
+  - label
+  - iodef
+  - iodef_critical
+  - issue
+  - issuewild
 ---
 
 # CAA Builder
 
-DNSControl contains a CAA_BUILDER which can be used to simply create
+DNSControl contains a `CAA_BUILDER` which can be used to simply create
 CAA records for your domains. Instead of creating each CAA record
 individually, you can simply configure your report mail address, the
 authorized certificate authorities and the builder cares about the rest.
-
 
 ## Example
 

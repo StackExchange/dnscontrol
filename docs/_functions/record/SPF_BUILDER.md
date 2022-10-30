@@ -1,6 +1,14 @@
 ---
-layout: default
-title: SPF Optimizer
+name: SPF_BUILDER
+parameters:
+  - label
+  - overflow
+  - overhead1
+  - raw
+  - ttl
+  - txtMaxSize
+  - parts
+  - flatten
 ---
 
 # SPF Optimizer
