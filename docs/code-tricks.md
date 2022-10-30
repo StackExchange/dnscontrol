@@ -10,6 +10,7 @@ Problem: It is difficult to get CAA and other records exactly right.
 Solution: Use a "builder" to construct it for you.
 
 * [CAA Builder]({{site.github.url}}/js#CAA_BUILDER)
+* [DMARC Builder]({{site.github.url}}/js#DMARC_BUILDER)
 * [SPF Optimizer]({{site.github.url}}/js#SPF_BUILDER)
 
 # Repeat records in many domains (macros)
