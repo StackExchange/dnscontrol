@@ -128,7 +128,7 @@ title: DNSControl
 
             <ul>
                 <li>
-                    <a href="{{site.github.url}}/js">Language Reference</a>: Full language description
+                    <a href="{{site.github.url}}/js">Language Reference</a>: Description of the DNSControl language (DSL)
                 </li>
                 <li>
                     <a href="{{site.github.url}}/alias">Aliases</a>: ALIAS/ANAME records
@@ -150,7 +150,7 @@ title: DNSControl
             </p>
             <ul>
                 <li>
-                    <a href="{{site.github.url}}/why-the-dot">Why CNAME/MX targets require a trailing dot</a>
+                    <a href="{{site.github.url}}/why-the-dot">Why CNAME/MX/NS targets require a trailing "dot"</a>
                 </li>
                 <li>
                     <a href="{{site.github.url}}/unittests">Testing</a>: Unit Testing for you DNS Data
@@ -183,7 +183,7 @@ title: DNSControl
             </p>
             <ul>
                 <li>
-                    GitHub: <a href="https://github.com/StackExchange/dnscontrol">https://github.com/StackExchange/dnscontrol</a>
+                    GitHub <a href="https://github.com/StackExchange/dnscontrol">https://github.com/StackExchange/dnscontrol</a>: Get the source!
                 </li>
                 <li>
                     Mailing list: <a href="https://groups.google.com/forum/#!forum/dnscontrol-discuss">dnscontrol-discuss</a>: The friendly best place to ask questions and propose new features
@@ -213,4 +213,4 @@ title: DNSControl
 
 <hr class="feature">
 
-<p><small>Icons made by Freepik from <a href="http://www.flaticon.com">www.flaticon.com</a></small></p>
+<p><small>Icons made by Freepik from <a href="https://www.flaticon.com">www.flaticon.com</a></small></p>
