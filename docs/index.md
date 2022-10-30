@@ -28,7 +28,7 @@ title: DNSControl
     <div class="col-md-4">
         <h3>Use It</h3>
         <p>Take advantage of the
-         <strong><a href="">advanced features</a></strong>.
+         <strong><a href="#advanced-features">advanced features</a></strong>.
          Use macros and variables for easier updates.
          <!-- Optimize your SPF records. -->
          Upload your zones to
@@ -142,8 +142,8 @@ title: DNSControl
             </ul>
         </div>
         <div class="col-md-4">
-            <h2>
-                Advanced Topics
+            <h2 id="advanced-features">
+                Advanced features
             </h2>
             <p>
                 Take advantage of DNSControl's unique features.
