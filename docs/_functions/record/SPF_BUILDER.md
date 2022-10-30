@@ -1,9 +1,15 @@
 ---
-layout: default
-title: SPF Optimizer
+name: SPF_BUILDER
+parameters:
+  - label
+  - overflow
+  - overhead1
+  - raw
+  - ttl
+  - txtMaxSize
+  - parts
+  - flatten
 ---
-
-# SPF Optimizer
 
 dnscontrol can optimize the SPF settings on a domain by flattening
 (inlining) includes and removing duplicates.  dnscontrol also makes

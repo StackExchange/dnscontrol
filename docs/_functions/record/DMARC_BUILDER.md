@@ -1,8 +1,20 @@
 ---
 name: DMARC_BUILDER
+parameters:
+  - label
+  - version
+  - policy
+  - subdomainPolicy
+  - alignmentSPF
+  - alignmentDKIM
+  - percent
+  - rua
+  - ruf
+  - failureOptions
+  - failureFormat
+  - reportInterval
+  - ttl
 ---
-
-# DMARC Builder
 
 dnscontrol contains a DMARC_BUILDER which can be used to simply create
 DMARC policies for your domains.
