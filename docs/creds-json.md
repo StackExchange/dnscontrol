@@ -204,6 +204,23 @@ In this case, the 1Password CLI is used to inject the secrets from
 a 1Password vault, rather than storing them in environment variables.
 An example of a template file containing Linode and Cloudflare API credentials is available here: [creds.json.tpl-example.txt]({{ site.github.url }}/assets/creds.json.tpl-example.txt))
 
+```json
+{
+  "bind": {
+    "TYPE": "BIND"
+  },
+  "cloudflare": {
+    "TYPE": "CLOUDFLAREAPI",
+    "apitoken": "op://Secrets/Cloudflare DNSControl/credential",
+    "accountid": "op://Secrets/Cloudflare DNSControl/username"
+  },
+  "linode": {
+    "TYPE": "LINODE",
+    "token": "op://Secrets/Linode DNSControl/credential"
+  }
+}
+```
+
 ## Don't store secrets in a Git repo!
 
 Do NOT store secrets in a Git repository. That is not secure. For example,
