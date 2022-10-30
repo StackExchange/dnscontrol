@@ -103,25 +103,12 @@ title: DNSControl
             </p>
 
             <ul>
-<!--
-                <li>
-                     <a href="check-preview-push">check/preview/push</a>: dnscontrol's fundamentals
-                </li>
--->
                 <li>
                      <a href="creds-json.html">creds.json</a>: creds.json file format
                 </li>
                 <li>
                      <a href="check-creds.html">check-creds</a>: Verify credentials
                 </li>
-<!--
-                <li>
-                     <a href="create-domains">create-domains</a>: Populate domains at a provider
-                </li>
-                <li>
-                     <a href="fmt">fmt</a>: Reformat dnsconfig.js
-                </li>
--->
                 <li>
                      <a href="get-zones.html">get-zones</a>: Query a provider for zone info
                 </li>
