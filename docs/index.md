@@ -183,7 +183,7 @@ title: DNSControl
             </p>
             <ul>
                 <li>
-                    GitHub <a href="https://github.com/StackExchange/dnscontrol">https://github.com/StackExchange/dnscontrol</a>: Get the source!
+                    GitHub <a href="https://github.com/StackExchange/dnscontrol">StackExchange/dnscontrol</a>: Get the source!
                 </li>
                 <li>
                     Mailing list: <a href="https://groups.google.com/forum/#!forum/dnscontrol-discuss">dnscontrol-discuss</a>: The friendly best place to ask questions and propose new features
