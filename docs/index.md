@@ -147,7 +147,7 @@ title: DNSControl
                     <a href="{{site.github.url}}/alias">Aliases</a>: ALIAS/ANAME records
                 </li>
                 <li>
-                    <a href="{{site.github.url}}/spf-optimizer">SPF Optimizer</a>: Optimize your SPF records
+                    <a href="{{site.github.url}}/js#SPF_BUILDER">SPF Optimizer</a>: Optimize your SPF records
                 </li>
                 <li>
                     <a href="{{site.github.url}}/js#CAA_BUILDER">CAA Builder</a>: Build CAA records the easy way
