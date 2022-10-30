@@ -21,7 +21,7 @@ title: DNSControl
          <strong><a href="migrating">migrate</a></strong>
          an existing one. Read the
          <strong><a href="js">language spec</a></strong>
-         for more info. You can also <strong><a href="toc">view a list of all topics</a></strong>.
+         for more info. You can also <strong><a href="#getting-started">view a list of all topics</a></strong>.
     </p>
     </div>
 
@@ -73,7 +73,7 @@ title: DNSControl
 <div class="container-fluid">
     <div class="row">
         <div class="col-md-4">
-            <h2>
+            <h2 id="getting-started">
                 Getting Started
             </h2>
             <p>
