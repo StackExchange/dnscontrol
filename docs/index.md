@@ -95,7 +95,7 @@ title: DNSControl
                 </li>
             </ul>
 
-            <h2>
+            <h2 id="commands">
                 Commands
             </h2>
             <p>
@@ -119,7 +119,7 @@ title: DNSControl
 
         </div>
         <div class="col-md-4">
-            <h2>
+            <h2 id="reference">
                 Reference
             </h2>
             <p>
@@ -175,7 +175,7 @@ title: DNSControl
     </div>
     <div class="row">
         <div class="col-md-12">
-            <h2>
+            <h2 id="developer-info">
                 Developer Info
             </h2>
             <p>
