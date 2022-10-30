@@ -16,7 +16,9 @@ parameters:
   - ttl
 ---
 
-dnscontrol contains a DMARC_BUILDER which can be used to simply create
+# DMARC Builder
+
+DNSControl contains a `DMARC_BUILDER` which can be used to simply create
 DMARC policies for your domains.
 
 
