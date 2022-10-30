@@ -79,7 +79,7 @@ A provider can be a DnsProvider, a Registrar, or both. We recommend
 you write the DnsProvider first, release it, and then write the
 Registrar if needed.
 
-If you have any questions, please discuss them in the Github issue
+If you have any questions, please discuss them in the GitHub issue
 related to the request for this provider. Please let us know what
 was confusing so we can update this document with advice for future
 authors (or even better, update [this document](https://github.com/StackExchange/dnscontrol/blob/master/docs/writing-providers.md)
@@ -211,7 +211,7 @@ an automated way to test for this bug.  The manual steps are here in
 * Edit [README.md](https://github.com/StackExchange/dnscontrol): Add the provider to the bullet list.
 * Edit [docs/provider-list.md](https://github.com/StackExchange/dnscontrol/blob/master/docs/provider-list.md): Add the provider to the provider list.
 * Create `docs/_providers/PROVIDERNAME.md`: Use one of the other files in that directory as a base.
-* Edit [OWNERS](https://github.com/StackExchange/dnscontrol/blob/master/OWNERS): Add the directory name and your github id.
+* Edit [OWNERS](https://github.com/StackExchange/dnscontrol/blob/master/OWNERS): Add the directory name and your GitHub id.
 
 ## Step 10: Submit a PR
 

@@ -80,4 +80,4 @@ You can override this error by adding the
 Disabling this safety check creates two risks:
 
 1. Two owners (DNSControl and some other entity) toggling a record between two settings.
-2. The other owner wiping all records at this label, which won't be noticed until the next time dnscontrol is run.
+2. The other owner wiping all records at this label, which won't be noticed until the next time DNSControl is run.

@@ -5,7 +5,7 @@ title: creds.json file format
 
 # creds.json
 
-When dnscontrol interacts with a provider, any API keys, credentials, or other
+When DNSControl interacts with a provider, any API keys, credentials, or other
 configuration parameters required are stored in `creds.json`.   The file contains a set of key/value pairs for each configuration.  That is, since a provider can be used multiple times with different credentials, the file contains a section for each set of credentials.
 
 Here's a sample file:

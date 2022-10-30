@@ -13,7 +13,7 @@ NO_PURGE is generally used in very specific situations:
 In this example DNSControl will insert "foo.example.com" into the
 zone, but otherwise leave the zone alone.  Changes to "foo"'s IP
 address will update the record. Removing the A("foo", ...) record
-from dnscontrol will leave the record in place.
+from DNSControl will leave the record in place.
 
 {% capture example %}
 ```js

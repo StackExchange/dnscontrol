@@ -26,9 +26,9 @@ secrets.
 
 # Background: How GitHub Actions protects secrets
 
-Github Actions has a secure
+GitHub Actions has a secure
 [secrets storage system](https://docs.github.com/en/free-pro-team@latest/actions/reference/encrypted-secrets).
-Those secrets are available to Github Actions and are required for the
+Those secrets are available to GitHub Actions and are required for the
 integration tests to communicate with the various DNS providers that
 DNSControl supports.
 
