@@ -9,8 +9,9 @@ Problem: It is difficult to get CAA and other records exactly right.
 
 Solution: Use a "builder" to construct it for you.
 
-* [CAA Builder]({{site.github.url}}/caa-builder)
-* [SPF Optimizer]({{site.github.url}}/spf-optimizer)
+* [CAA Builder]({{site.github.url}}/js#CAA_BUILDER)
+* [DMARC Builder]({{site.github.url}}/js#DMARC_BUILDER)
+* [SPF Optimizer]({{site.github.url}}/js#SPF_BUILDER)
 
 # Repeat records in many domains (macros)
 
@@ -139,5 +140,5 @@ domain exists, who requested it, any associated ticket numbers, and so
 on.
 
 We also comment the individual parts of a record. Look at the [SPF
-Optimizer]({{site.github.url}}/spf-optimizer) example.  Each part of
+Optimizer]({{site.github.url}}/js#SPF_BUILDER) example.  Each part of
 the SPF record has a comment.

@@ -4,7 +4,7 @@ parameters:
   - ttl
 ---
 
-DefaultTTL sets the TTL for all records in a domain that do not explicitly set one with [TTL](#TTL). If neither `DefaultTTl` or `TTL` exist for a record,
+DefaultTTL sets the TTL for all records in a domain that do not explicitly set one with [TTL](#TTL). If neither `DefaultTTL` or `TTL` exist for a record,
 it will use the DNSControl global default of 300 seconds.
 
 {% capture example %}

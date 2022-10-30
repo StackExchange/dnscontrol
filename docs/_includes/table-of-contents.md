@@ -3,7 +3,7 @@
 </a>
 {% if include.provider-jsId != nill %}
     for
-    <a href="/providers/{{include.provider-jsId}}">
+    <a href="{{ site.github.url }}/providers/{{include.provider-jsId | downcase}}">
         <strong>
             {{include.provider-name}}
         </strong>

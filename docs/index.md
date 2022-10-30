@@ -147,10 +147,10 @@ title: DNSControl
                     <a href="{{site.github.url}}/alias">Aliases</a>: ALIAS/ANAME records
                 </li>
                 <li>
-                    <a href="{{site.github.url}}/spf-optimizer">SPF Optimizer</a>: Optimize your SPF records
+                    <a href="{{site.github.url}}/js#SPF_BUILDER">SPF Optimizer</a>: Optimize your SPF records
                 </li>
                 <li>
-                    <a href="{{site.github.url}}/caa-builder">CAA Builder</a>: Build CAA records the easy way
+                    <a href="{{site.github.url}}/js#CAA_BUILDER">CAA Builder</a>: Build CAA records the easy way
                 </li>
             </ul>
         </div>
@@ -196,7 +196,7 @@ title: DNSControl
             </p>
             <ul>
                 <li>
-                    Github: <a href="https://github.com/StackExchange/dnscontrol">https://github.com/StackExchange/dnscontrol</a>
+                    GitHub: <a href="https://github.com/StackExchange/dnscontrol">https://github.com/StackExchange/dnscontrol</a>
                 </li>
                 <li>
                     Mailing list: <a href="https://groups.google.com/forum/#!forum/dnscontrol-discuss">dnscontrol-discuss</a>: The friendly best place to ask questions and propose new features

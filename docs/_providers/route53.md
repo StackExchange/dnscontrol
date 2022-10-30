@@ -159,7 +159,7 @@ You will see some weirdness if:
 1.  A CNAME was created using the web UI
 2.  The CNAME's target does NOT end with a dot.
 
-What you will see: When dnscontrol tries to update such records, R53
+What you will see: When DNSControl tries to update such records, R53
 only updates the first one.  For example if DNSControl is updating 3
 such records, you will need to run `dnscontrol push` three times for
 all three records to update.  Each time DNSControl is sending three

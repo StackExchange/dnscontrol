@@ -29,13 +29,13 @@ If these don't work, more info is in [#805](https://github.com/StackExchange/dns
 
 ## Via packages
 
-Get prebuilt binaries from [github releases](https://github.com/StackExchange/dnscontrol/releases/latest)
+Get prebuilt binaries from [GitHub releases](https://github.com/StackExchange/dnscontrol/releases/latest)
 
 Alternatively, on Mac you can install it using homebrew:
 
 `brew install dnscontrol`
 
-## Via [docker](https://hub.docker.com/r/stackexchange/dnscontrol/)
+## Via [Docker](https://hub.docker.com/r/stackexchange/dnscontrol/)
 
 ```bash
 docker run --rm -it -v $(pwd)/dnsconfig.js:/dns/dnsconfig.js -v $(pwd)/creds.json:/dns/creds.json stackexchange/dnscontrol preview
@@ -78,7 +78,7 @@ D('example.com', REG_NONE, DnsProvider(DNS_BIND),
 );
 ```
 
-Modify this file to match your particular providers and domains. See [the dnsconfig docs]({{site.github.url}}/js) and  [the provider docs]({{site.github.url}}/provider-list) for more details.
+Modify this file to match your particular providers and domains. See [the DNSConfig docs]({{site.github.url}}/js) and  [the provider docs]({{site.github.url}}/provider-list) for more details.
 
 Create a file called `creds.json` for storing provider configurations (API tokens and other account information).
 For example, to use both name.com and Cloudflare, you would have:
@@ -293,5 +293,5 @@ If you are going to use this in production, we highly recommend the following:
 * Store the configuration files in Git.
 * Encrypt the `creds.json` file before storing it in Git. Do NOT store
   API keys or other credentials without encrypting them.
-* Use a CI/CD tool like Jenkins/CircleCI/Github Actions/etc. to automatically push DNS changes.
+* Use a CI/CD tool like Jenkins/CircleCI/GitHub Actions/etc. to automatically push DNS changes.
 * Join the DNSControl community. File [issues and PRs](https://github.com/StackExchange/dnscontrol).
