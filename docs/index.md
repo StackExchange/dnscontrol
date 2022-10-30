@@ -150,7 +150,7 @@ title: DNSControl
                     <a href="{{site.github.url}}/spf-optimizer">SPF Optimizer</a>: Optimize your SPF records
                 </li>
                 <li>
-                    <a href="{{site.github.url}}/caa-builder">CAA Builder</a>: Build CAA records the easy way
+                    <a href="{{site.github.url}}/js#CAA_BUILDER">CAA Builder</a>: Build CAA records the easy way
                 </li>
             </ul>
         </div>
