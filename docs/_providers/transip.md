@@ -12,7 +12,9 @@ jsId: TRANSIP
 To use this provider, add an entry to `creds.json` with `TYPE` set to `TRANSIP`
 along with your TransIP credentials.
 
-You can login with your AccountName and a PrivateKey which can be generated in the TransIP control panel. The PrivateKey is a stringified version of the private key given by the API, see the example below, each newline is replaced by "\n".
+### Key Pairs
+
+You can login with your `AccountName` and a `PrivateKey` which can be generated in the [TransIP control panel](https://www.transip.nl/cp/account/api/). The `PrivateKey` is a stringified version of the Private Key given by the API, see the example below, each newline is replaced by "\n".
 
 Example:
 
@@ -26,7 +28,9 @@ Example:
 }
 ```
 
-Or you can choose to have an AccessToken as credential. These can be generated in the TransIP control panel and have a limited lifetime
+### Access tokens
+
+Or you can choose to have an `AccessToken` as credential. These can be generated in the [TransIP control panel](https://www.transip.nl/cp/account/api/) and have a limited lifetime
 
 
 ```json
