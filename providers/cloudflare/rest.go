@@ -7,6 +7,7 @@ import (
 	"strings"
 
 	"github.com/StackExchange/dnscontrol/v3/models"
+	"github.com/cloudflare/cloudflare-go"
 )
 
 // get list of domains for account. Cache so the ids can be looked up from domain name
