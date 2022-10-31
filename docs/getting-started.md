@@ -60,7 +60,7 @@ use BIND for DNS service, it is useful for testing.
 domains, and so on.
 
 Start your `dnsconfig.js` file by downloading
-[dnsconfig.js-example.txt]({{ site.github.url }}/assets/dnsconfig.js-example.txt))
+[dnsconfig.js](https://github.com/StackExchange/dnscontrol/blob/master/docs/assets/getting-started/dnsconfig.js)
 and renaming it.
 
 The file looks like:
@@ -126,7 +126,7 @@ It is only needed if any providers require credentials (API keys,
 usernames, passwords, etc.).
 
 Start your `creds.json` file by downloading
-[creds.json-example.txt]({{ site.github.url }}/assets/creds.json-example.txt))
+[creds.json](https://github.com/StackExchange/dnscontrol/blob/master/docs/assets/getting-started/creds.json)
 and renaming it.
 
 The file looks like:
