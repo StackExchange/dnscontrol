@@ -139,66 +139,7 @@ See [Getting Started](https://stackexchange.github.io/dnscontrol/getting-started
 
 ## Installation
 
-### From source
-
-DNSControl can be built with Go version 1.16 or higher.
-
-The `go get` command will download the source, compile it, and
-install `dnscontrol` in your `$GOBIN` directory.
-
-To install, simply run
-
-```shell
-GO111MODULE=on go install github.com/StackExchange/dnscontrol/v3@latest
-```
-
-To download the source
-
-```shell
-git clone https://github.com/StackExchange/dnscontrol.git
-```
-
-If these don't work, more info is in [#805](https://github.com/StackExchange/dnscontrol/issues/805).
-
-### Via packages
-
-Get prebuilt binaries from [GitHub releases](https://github.com/StackExchange/dnscontrol/releases/latest).
-
-### Through a package manager
-
-Alternatively, on macOS (or Linux) you can install it using [Homebrew](https://brew.sh) or [MacPorts](https://www.macports.org):
-
-#### Homebrew
-
-```bash
-brew install dnscontrol
-```
-
-#### MacPorts
-
-```bash
-sudo port install dnscontrol
-````
-
-## Via [Docker](https://hub.docker.com/r/stackexchange/dnscontrol/)
-
-```bash
-docker run --rm -it -v $(pwd)/dnsconfig.js:/dns/dnsconfig.js -v $(pwd)/creds.json:/dns/creds.json stackexchange/dnscontrol preview
-```
-
-The documentation can be viewed via Docker:
-
-```bash
-cd docs
-./runDocker.sh
-```
-
-FYI: Alternative Docker command:
-```bash
-docker run --rm -it --volume="$PWD:/srv/jekyll" --volume="$PWD/vendor/bundle:/usr/local/bundle" --env JEKYLL_ENV=production jekyll/jekyll:3.8 jekyll build -V
-# Open docs/_site/index.html in your web browser to see the results.
-# (Note: The preview isn't perfect. Links that use the site.github.url variable won't work.
-```
+Install DNSControl by following the [official instructions](https://stackexchange.github.io/dnscontrol/getting-started#1-install-the-software).
 
 ## Via GitHub Actions (GHA)
 
