@@ -82,7 +82,7 @@ In integration tests:
  * Wrong: `export NAMEDOTCOM_URL='api.name.com/api'`
  * Right: `export NAMEDOTCOM_URL='api.name.com'`
 
-In production, the `apiurl` setting in creds.json is wrong. You can
+In production, the `apiurl` setting in `creds.json` is wrong. You can
 simply leave this option out and use the default, which is correct.
 
 TODO(tlim): Improve the error message. (Volunteer needed!)
@@ -98,7 +98,7 @@ When running integration tests, this error
 means you included the `https://` in the `NAMEDOTCOM_URL` variable.
 You meant to do something like `export NAMEDOTCOM_URL='api.name.com' instead.
 
-In production, the `apiurl` setting in creds.json needs to be
+In production, the `apiurl` setting in `creds.json` needs to be
 adjusted. You can simply leave this option out and use the default,
 which is correct. If you are using the EO&T system, leave the
 protocol (`http://`) off the URL.

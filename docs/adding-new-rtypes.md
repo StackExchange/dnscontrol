@@ -112,7 +112,7 @@ Anywhere a rtype requires special handling has been marked with a
 comment that includes the string `#rtype_variations`.  Search for
 this string and add your new type to this code.
 
-## Step 5: Add a `parse_tests` test case.
+## Step 5: Add a `parse_tests` test case
 
 Add at least one test case to the `pkg/js/parse_tests` directory.
 Test `013-mx.js` is a very simple one and is good for cloning.
@@ -133,7 +133,7 @@ The tests also verify that for every "capability" there is a
 validation. This is explained in Step 2 (search for
 `TestCapabilitiesAreFiltered` or `MISSING`)
 
-## Step 6: Add an `integrationTest` test case.
+## Step 6: Add an `integrationTest` test case
 
 Add at least one test case to the `integrationTest/integration_test.go`
 file. Look for `func makeTests` and add the test to the end of this

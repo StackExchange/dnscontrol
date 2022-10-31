@@ -55,7 +55,7 @@ Step 3: Preview
 
 When you do a `dnscontrol preview`, you should see changes for t1 and t2.
 
-```
+```text
 #1: MODIFY TXT t1.example.com: ("test1" ttl=1) -> ("\"test1\"" ttl=1)
 #2: MODIFY TXT t2.example.com: ("\"test2\"" ttl=1) -> ("test2" ttl=1)
 ```
@@ -69,7 +69,7 @@ Step 3: Push
 Let's assume you DO see the changes.  Push them using `dnscontrol push`
 then check the webui to see that the changes are correct.
 
-```
+```text
 2 corrections
 #1: MODIFY TXT t1.stackoverflow.help: ("test1" ttl=1) -> ("\"test1\"" ttl=1)
 SUCCESS!

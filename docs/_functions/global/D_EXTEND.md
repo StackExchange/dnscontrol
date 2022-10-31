@@ -29,8 +29,6 @@ Some operators only act on an apex domain (e.g.
 `CF_REDIRECT` and `CF_TEMP_REDIRECT`). Using them
 in a `D_EXTEND` subdomain may not be what you expect.
 
-Example:
-
 {% capture example %}
 ```js
 D("domain.tld", REG, DnsProvider(DNS),

@@ -42,7 +42,7 @@ docker run --rm -it -v $(pwd)/dnsconfig.js:/dns/dnsconfig.js -v $(pwd)/creds.jso
 ```
 
 
-## 2. Create a place for the config files.
+## 2. Create a place for the config files
 
 Create a directory where you'll be storing your configuration files.
 We highly recommend storing these files in a Git repo, but for
@@ -99,7 +99,7 @@ For example, to use both name.com and Cloudflare, you would have:
 }
 ```
 
-Note: Do **not** store your creds.json file in Git unencrypted.
+Note: Do **not** store your `creds.json` file in Git unencrypted.
 That is unsafe. Add `creds.json` to your
 `.gitignore` file as a precaution.  This file should be encrypted
 using something
@@ -152,17 +152,25 @@ and other formatting.  There are a few different ways to check for typos:
 
 Python:
 
-    python -m json.tool creds.json
+```bash
+python -m json.tool creds.json
+```
 
 jq:
 
-    jq . < creds.json
+```bash
+jq . < creds.json
+```
 
 FYI: `creds.json` fields can be read from an environment variable. The field must begin with a `$` followed by the variable name. No other text. For example:
 
-    "apikey": "$GANDI_V5_APIKEY",
+```json
+{
+    "apikey": "$GANDI_V5_APIKEY"
+}
+```
 
-## 5. Test the sample files.
+## 5. Test the sample files
 
 Before you edit the sample files, verify that the system is working.
 
@@ -176,8 +184,10 @@ exist.
 
 It should look something like this:
 
-```text
+```bash
 dnscontrol preview
+```
+```text
 Initialized 1 registrars and 1 dns service providers.
 ******************** Domain: example.com
 ----- Getting nameservers from: bind
@@ -195,6 +205,8 @@ previously exist.
 
 ```bash
 dnscontrol push
+```
+```text
 Initialized 1 registrars and 1 dns service providers.
 ******************** Domain: example.com
 ----- Getting nameservers from: bind
@@ -209,7 +221,7 @@ Done. 1 corrections.
 ```
 
 
-## 6. Make a change.
+## 6. Make a change
 
 Try making a change to `dnsconfig.js`. For example, change the IP
 address of in `A('@', '1.2.3.4')` or add an additional A record.
@@ -219,6 +231,8 @@ our change looks like this:
 
 ```bash
 dnscontrol preview
+```
+```text
 Initialized 1 registrars and 1 dns service providers.
 ******************** Domain: example.com
 ----- Getting nameservers from: bind
@@ -293,5 +307,5 @@ If you are going to use this in production, we highly recommend the following:
 * Store the configuration files in Git.
 * Encrypt the `creds.json` file before storing it in Git. Do NOT store
   API keys or other credentials without encrypting them.
-* Use a CI/CD tool like Jenkins/CircleCI/GitHub Actions/etc. to automatically push DNS changes.
-* Join the DNSControl community. File [issues and PRs](https://github.com/StackExchange/dnscontrol).
+* Use a CI/CD tool like [Gitlab]({{site.github.url}}/ci-cd-gitlab), Jenkins, CircleCI, [GitHub Actions](https://github.com/StackExchange/dnscontrol#via-github-actions-gha), etc. to automatically push DNS changes.
+* Join the DNSControl community. File [issues](https://github.com/StackExchange/dnscontrol/issues) and [PRs](https://github.com/StackExchange/dnscontrol/pulls).

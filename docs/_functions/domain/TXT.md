@@ -43,7 +43,7 @@ split into 255-octets chunks or the provider may report an error
 if it does not handle multiple strings.
 
 
-### TXT record edge cases.
+### TXT record edge cases
 
 Most providers do not support the full possibilities of what a TXT
 record can store.  DNSControl can not handle all the edge cases

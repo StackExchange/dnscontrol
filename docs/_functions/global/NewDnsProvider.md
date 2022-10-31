@@ -7,7 +7,7 @@ parameters:
 return: string
 ---
 
-NewDnsProvider activates a DNS Service Provider (DSP) specified in creds.json.
+NewDnsProvider activates a DNS Service Provider (DSP) specified in `creds.json`.
 A DSP stores a DNS zone's records and provides DNS service for the zone (i.e.
 answers on port 53 to queries related to the zone).
 

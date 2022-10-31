@@ -1,6 +1,6 @@
 # Testing:
 
-## Create the environment.
+## Create the environment
 
 These variables are used in all other sections of this doc.
 

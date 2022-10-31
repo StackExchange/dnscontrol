@@ -163,7 +163,7 @@ Run the unit tests with this command:
 This is the most important kind of testing when adding a new provider.
 Integration tests use a test account and a real domain.
 
-* Edit [integrationTest/providers.json](https://github.com/StackExchange/dnscontrol/blob/master/integrationTest/providers.json): Add the creds.json info required for this provider.
+* Edit [integrationTest/providers.json](https://github.com/StackExchange/dnscontrol/blob/master/integrationTest/providers.json): Add the `creds.json` info required for this provider.
 
 For example, this will run the tests using BIND:
 
@@ -282,7 +282,7 @@ for tips about managing modules and checking for outdated
 dependencies.
 
 
-## Step 14: Check your work.
+## Step 14: Check your work
 
 Here are some last-minute things to check before you submit your PR.
 

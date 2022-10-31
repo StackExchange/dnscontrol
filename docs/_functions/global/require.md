@@ -56,7 +56,6 @@ function includeK8Sdev() {
 {% include example.html content=example %}
 
 You can also use it to require JSON files and initialize variables with it:
-For Example:
 
 {% capture example %}
 ```js
