@@ -76,12 +76,15 @@ D('example.com', REG, DnsProvider('R53'),
 ## Macro to for repeated records
 
 ```js
-var GOOGLE_APPS_RECORDS = [
+var GOOGLE_APPS_MX_RECORDS = [
     MX('@', 1, 'aspmx.l.google.com.'),
     MX('@', 5, 'alt1.aspmx.l.google.com.'),
     MX('@', 5, 'alt2.aspmx.l.google.com.'),
     MX('@', 10, 'alt3.aspmx.l.google.com.'),
     MX('@', 10, 'alt4.aspmx.l.google.com.'),
+]
+
+var GOOGLE_APPS_CNAME_RECORDS = [
     CNAME('calendar', 'ghs.googlehosted.com.'),
     CNAME('drive', 'ghs.googlehosted.com.'),
     CNAME('mail', 'ghs.googlehosted.com.'),
@@ -91,7 +94,8 @@ var GOOGLE_APPS_RECORDS = [
 ]
 
 D('example.com', REG, DnsProvider('R53'),
-   GOOGLE_APPS_RECORDS,
+   GOOGLE_APPS_MX_RECORDS,
+   GOOGLE_APPS_CNAME_RECORDS,
    A('@', '1.2.3.4')
 )
 ```
