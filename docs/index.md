@@ -21,14 +21,14 @@ title: DNSControl
          <strong><a href="migrating">migrate</a></strong>
          an existing one. Read the
          <strong><a href="js">language spec</a></strong>
-         for more info. You can also <strong><a href="toc">view a list of all topics</a></strong>.
+         for more info. You can also <strong><a href="#getting-started">view a list of all topics</a></strong>.
     </p>
     </div>
 
     <div class="col-md-4">
         <h3>Use It</h3>
         <p>Take advantage of the
-         <strong><a href="">advanced features</a></strong>.
+         <strong><a href="#advanced-features">advanced features</a></strong>.
          Use macros and variables for easier updates.
          <!-- Optimize your SPF records. -->
          Upload your zones to
@@ -73,7 +73,7 @@ title: DNSControl
 <div class="container-fluid">
     <div class="row">
         <div class="col-md-4">
-            <h2>
+            <h2 id="getting-started">
                 Getting Started
             </h2>
             <p>
@@ -95,7 +95,7 @@ title: DNSControl
                 </li>
             </ul>
 
-            <h2>
+            <h2 id="commands">
                 Commands
             </h2>
             <p>
@@ -103,25 +103,12 @@ title: DNSControl
             </p>
 
             <ul>
-<!--
-                <li>
-                     <a href="check-preview-push">check/preview/push</a>: dnscontrol's fundamentals
-                </li>
--->
                 <li>
                      <a href="creds-json.html">creds.json</a>: creds.json file format
                 </li>
                 <li>
                      <a href="check-creds.html">check-creds</a>: Verify credentials
                 </li>
-<!--
-                <li>
-                     <a href="create-domains">create-domains</a>: Populate domains at a provider
-                </li>
-                <li>
-                     <a href="fmt">fmt</a>: Reformat dnsconfig.js
-                </li>
--->
                 <li>
                      <a href="get-zones.html">get-zones</a>: Query a provider for zone info
                 </li>
@@ -132,7 +119,7 @@ title: DNSControl
 
         </div>
         <div class="col-md-4">
-            <h2>
+            <h2 id="reference">
                 Reference
             </h2>
             <p>
@@ -141,7 +128,7 @@ title: DNSControl
 
             <ul>
                 <li>
-                    <a href="{{site.github.url}}/js">Language Reference</a>: Full language description
+                    <a href="{{site.github.url}}/js">Language Reference</a>: Description of the DNSControl language (DSL)
                 </li>
                 <li>
                     <a href="{{site.github.url}}/alias">Aliases</a>: ALIAS/ANAME records
@@ -155,15 +142,15 @@ title: DNSControl
             </ul>
         </div>
         <div class="col-md-4">
-            <h2>
-                Advanced Topics
+            <h2 id="advanced-features">
+                Advanced features
             </h2>
             <p>
                 Take advantage of DNSControl's unique features.
             </p>
             <ul>
                 <li>
-                    <a href="{{site.github.url}}/why-the-dot">Why CNAME/MX targets require a trailing dot</a>
+                    <a href="{{site.github.url}}/why-the-dot">Why CNAME/MX/NS targets require a trailing "dot"</a>
                 </li>
                 <li>
                     <a href="{{site.github.url}}/unittests">Testing</a>: Unit Testing for you DNS Data
@@ -188,7 +175,7 @@ title: DNSControl
     </div>
     <div class="row">
         <div class="col-md-12">
-            <h2>
+            <h2 id="developer-info">
                 Developer Info
             </h2>
             <p>
@@ -196,7 +183,7 @@ title: DNSControl
             </p>
             <ul>
                 <li>
-                    GitHub: <a href="https://github.com/StackExchange/dnscontrol">https://github.com/StackExchange/dnscontrol</a>
+                    GitHub <a href="https://github.com/StackExchange/dnscontrol">StackExchange/dnscontrol</a>: Get the source!
                 </li>
                 <li>
                     Mailing list: <a href="https://groups.google.com/forum/#!forum/dnscontrol-discuss">dnscontrol-discuss</a>: The friendly best place to ask questions and propose new features
@@ -226,4 +213,4 @@ title: DNSControl
 
 <hr class="feature">
 
-<p><small>Icons made by Freepik from <a href="http://www.flaticon.com">www.flaticon.com</a></small></p>
+<p><small>Icons made by Freepik from <a href="https://www.flaticon.com">www.flaticon.com</a></small></p>
