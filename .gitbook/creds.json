@@ -1,0 +1,7 @@
+{
+  "transip": {
+    "TYPE": "TRANSIP",
+    "AccountName": "dnscontrol",
+    "PrivateKey": ""
+  }
+}
