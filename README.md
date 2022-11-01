@@ -139,7 +139,7 @@ See [Getting Started](https://stackexchange.github.io/dnscontrol/getting-started
 
 ## Installation
 
-Install DNSControl by following the [official instructions](https://stackexchange.github.io/dnscontrol/getting-started#1-install-the-software).
+DNSControl can be installed via packages for macOS, Linux and Windows, or from source code. See the [official instructions](https://stackexchange.github.io/dnscontrol/getting-started#1-install-the-software).
 
 ## Via GitHub Actions (GHA)
 
