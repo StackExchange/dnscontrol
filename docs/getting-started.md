@@ -7,9 +7,39 @@ title: Getting Started
 
 ## 1. Install the software
 
-## From source
+Choose one of the following installation methods:
 
-DNSControl can be built with Go version 1.18 or higher.
+### Homebrew
+
+On macOS (or Linux) you can install it using [Homebrew](https://brew.sh).
+
+```bash
+brew install dnscontrol
+```
+
+### MacPorts
+
+Alternatively on macOS you can install it using [MacPorts](https://www.macports.org).
+
+```bash
+sudo port install dnscontrol
+````
+
+### Docker
+
+You can use DNSControl locally using the Docker image from [Docker hub](https://hub.docker.com/r/stackexchange/dnscontrol/) and the command below.
+
+```bash
+docker run --rm -it -v $(pwd)/dnsconfig.js:/dns/dnsconfig.js -v $(pwd)/creds.json:/dns/creds.json stackexchange/dnscontrol preview
+```
+
+### Binaries
+
+Download binaries from [GitHub](https://github.com/StackExchange/dnscontrol/releases/latest) for Linux (binary, tar, RPM, DEB), FreeBSD (tar), Windows (exec, ZIP) for 32-bit, 64-bit, and ARM.
+
+### Source
+
+DNSControl can be built from source with Go version 1.18 or higher.
 
 The `go install` command will download the source, compile it, and
 install `dnscontrol` in your `$GOBIN` directory.
@@ -23,24 +53,6 @@ To download the source
     git clone https://github.com/StackExchange/dnscontrol
 
 If these don't work, more info is in [#805](https://github.com/StackExchange/dnscontrol/issues/805).
-
----
-
-
-## Via packages
-
-Get prebuilt binaries from [GitHub releases](https://github.com/StackExchange/dnscontrol/releases/latest)
-
-Alternatively, on Mac you can install it using homebrew:
-
-`brew install dnscontrol`
-
-## Via [Docker](https://hub.docker.com/r/stackexchange/dnscontrol/)
-
-```bash
-docker run --rm -it -v $(pwd)/dnsconfig.js:/dns/dnsconfig.js -v $(pwd)/creds.json:/dns/creds.json stackexchange/dnscontrol preview
-```
-
 
 ## 2. Create a place for the config files
 
