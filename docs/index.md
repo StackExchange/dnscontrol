@@ -58,7 +58,7 @@ title: DNSControl
     {% include feature.html text="Super extensible! Plug-in architecture makes adding new DNS providers and Registrars easy!" img="light-bulb.svg" %}
     {% include feature.html text="Eliminate vendor lock-in. Switch DNS providers easily, any time, with full fidelity." img="group.svg" %}
     {% include feature.html text="Reduce points of failure: Easily maintain dual DNS providers and easily drop one that is down." img="layers.svg" %}
-    {% include feature.html text="Supports 10+ DNS Providers including BIND, AWS Route 53, Google DNS, and name.com" img="cancel.svg" %}
+    {% include feature.html text="Supports 35+ DNS Providers including BIND, AWS Route 53, Google DNS, and name.com" img="cancel.svg" %}
     {% include feature.html text="Apply CI/CD principles to DNS: Unit-tests, system-tests, automated deployment." img="share.svg" %}
     {% include feature.html text="All the benefits of Git (or any VCS) for your DNS zone data. View history. Accept PRs." img="document.svg" %}
     {% include feature.html text="Optimize DNS with SPF optimizer. Detect too many lookups. Flatten includes." img="mail.svg" %}
