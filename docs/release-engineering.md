@@ -41,7 +41,7 @@ Release notes style guide:
 * Entries in the bullet list should be phrased in the positive: "Feature FOO now does BAR".  This is often the opposite of the related issue, which was probably phrased, "Feature FOO is broken because of BAR".
 * Every item should include the ID of the issue related to the change. If there was no issue, create one and close it.
 * Sort the list most important/exciting changes earlier in the list.
-* Items related to a specific provier should begin with the all-caps name of the provider, such as "ROUTE53: Added support for sandwiches (#100)"
+* Items related to a specific provider should begin with the all-caps name of the provider, such as "ROUTE53: Added support for sandwiches (#100)"
 * The `Deprecation warnings` section should just copy from `README.md`.  If you change one, change it in the README too (you can make that change in this PR).
 
 See [https://github.com/StackExchange/dnscontrol/releases for examples](https://github.com/StackExchange/dnscontrol/releases) for recent release notes and copy that style.

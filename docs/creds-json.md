@@ -142,7 +142,7 @@ Please adopt the NEW format when your installation has eliminated any use of DNS
 
 Message: `ERROR: Mismatch found! creds.json entry ... has ... set to ... but dnsconfig.js specifies New*(..., ...)`
 
-This indicates that the provider type specifed in `creds.json` does not match the one specifed in `dnsconfig.js` or on the command line.
+This indicates that the provider type specified in `creds.json` does not match the one specified in `dnsconfig.js` or on the command line.
 
 The fix is to change one to match the other.
 

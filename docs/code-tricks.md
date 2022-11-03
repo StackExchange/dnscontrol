@@ -124,7 +124,7 @@ without too much hand-holding.  Complexity prevents that.
 
 Isolate the clever stuff from what a typical user will need to edit.
 
-At Stack Overflow, we put all our macro defintions and fancy stuff at
+At Stack Overflow, we put all our macro definitions and fancy stuff at
 the top of the file. The domains are later in the file.
 
 We name the macros to be easy to understand for the user.  For
