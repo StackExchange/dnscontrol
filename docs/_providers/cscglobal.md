@@ -27,7 +27,7 @@ Example:
     "TYPE": "CSCGLOBAL",
     "api-key": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
     "user-token": "yyyyyyyy-yyyy-yyyy-yyyy-yyyyyyyyyyyy",
-    "notification_emails": "test@exmaple.tld,hostmaster@example.tld"
+    "notification_emails": "test@example.tld,hostmaster@example.tld"
   }
 }
 ```

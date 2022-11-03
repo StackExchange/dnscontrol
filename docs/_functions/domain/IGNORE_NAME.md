@@ -55,7 +55,7 @@ anything at a particular label, therefore DNSControl prevents you from
 adding records at a label that is `IGNORE_NAME`'ed.
 
 Use `IGNORE_NAME("@")` to ignore at the domain's apex. Most providers
-insert magic or unchangable records at the domain's apex; usually `NS`
+insert magic or unchangeable records at the domain's apex; usually `NS`
 and `SOA` records.  DNSControl treats them specially.
 
 # Errors

@@ -28,7 +28,7 @@ this may be useful if:
 At Stack Overflow we have dual-hosted DNS i.e. zones having
 nameservers at two different DNS providers. Most Let's Encrypt systems
 do not support DNS validation in that case.  DNSControl's `get-certs`
-command leverages the core DNSControl commands when issueing
+command leverages the core DNSControl commands when issuing
 certificates, therefore dual-hosted DNS is supported.
 
 ## General Process
