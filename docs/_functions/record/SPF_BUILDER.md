@@ -64,8 +64,8 @@ D("example.tld", REG, DSP, ...
       "~all"
     ],
     flatten: [
-      "spf-basic.fogcreek.com", // Rational: Being deprecated. Low risk if it breaks.
-      "450622.spf05.hubspotemail.net" // Rational: Unlikely to change without warning.
+      "spf-basic.fogcreek.com", // Rationale: Being deprecated. Low risk if it breaks.
+      "450622.spf05.hubspotemail.net" // Rationale: Unlikely to change without warning.
     ]
   }),
 );
