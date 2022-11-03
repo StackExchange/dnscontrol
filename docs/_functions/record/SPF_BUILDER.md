@@ -21,8 +21,6 @@ parameter_types:
   flatten: string[]?
 ---
 
-# SPF Optimizer
-
 DNSControl can optimize the SPF settings on a domain by flattening
 (inlining) includes and removing duplicates. DNSControl also makes
 it easier to document your SPF configuration.
