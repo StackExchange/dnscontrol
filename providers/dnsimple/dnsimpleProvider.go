@@ -49,7 +49,15 @@ var defaultNameServerNames = []string{
 	"ns1.dnsimple.com",
 	"ns2.dnsimple.com",
 	"ns3.dnsimple.com",
-	"ns4.dnsimple.com",
+	"ns4.dnsimple-edge.org",
+}
+
+var nameServerSuffixes = []string{
+	".dnsimple.com.",
+	".dnsimple-edge.org.",
+	".dnsimple-edge.net.",
+	".dnsimple-edge.io.",
+	".dnsimple-edge.com.",
 }
 
 // dnsimpleProvider is the handle for this provider.
@@ -649,7 +657,7 @@ func removeOtherApexNS(dc *models.DomainConfig) {
 			// We ignore them, warning as needed.
 			// Child delegations are supported so we allow non-apex NS records.
 			if rec.GetLabelFQDN() == dc.Name {
-				if !strings.HasSuffix(rec.GetTargetField(), ".dnsimple.com.") {
+				if !isDnsimpleNameServerDomain(rec.GetTargetField()) {
 					printer.Printf("Warning: dnsimple.com does not allow NS records to be modified. %s will not be added.\n", rec.GetTargetField())
 				}
 				continue
@@ -698,6 +706,7 @@ func getTargetRecordPriority(rc *models.RecordConfig) int {
 	}
 }
 
+// Compile the error messages returned by DNSimple's API into a single error message
 func compileAttributeErrors(err *dnsimpleapi.ErrorResponse) error {
 	message := fmt.Sprintf("%d %s", err.HTTPResponse.StatusCode, err.Message)
 	for field, errors := range err.AttributeErrors {
@@ -705,4 +714,15 @@ func compileAttributeErrors(err *dnsimpleapi.ErrorResponse) error {
 		message += fmt.Sprintf(": %s %s", field, e)
 	}
 	return fmt.Errorf(message)
+}
+
+// Return true if the string ends in one of DNSimple's name server domains
+// False if anything else
+func isDnsimpleNameServerDomain(name string) bool {
+	for _, i := range nameServerSuffixes {
+		if strings.HasSuffix(name, i) {
+			return true
+		}
+	}
+	return false
 }
