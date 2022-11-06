@@ -51,7 +51,7 @@ This can also be done via an environment variable:
 
 and then you can run
 
-```bash
+```shell
 INWX_TOTP=12345 dnscontrol preview
 ```
 

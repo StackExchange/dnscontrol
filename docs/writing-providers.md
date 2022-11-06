@@ -166,7 +166,7 @@ Integration tests use a test account and a real domain.
 
 For example, this will run the tests using BIND:
 
-```bash
+```shell
 cd dnscontrol/integrationTest
 go test -v -verbose -provider BIND
 ```
@@ -175,7 +175,7 @@ go test -v -verbose -provider BIND
 
 This will run the tests on Amazon AWS Route53:
 
-```bash
+```shell
 export R53_DOMAIN=dnscontroltest-r53.com  # Use a test domain.
 export R53_KEY_ID='CHANGE_TO_THE_ID'
 export R53_KEY='CHANGE_TO_THE_KEY'
@@ -259,7 +259,7 @@ the documentation.
 
 Run "go vet" and "golint" and clean up any errors found.
 
-```bash
+```shell
 go vet ./...
 golint ./...
 ```
@@ -268,7 +268,7 @@ Please use `go vet` from the [newest release of Go](https://golang.org/doc/devel
 
 If [golint](https://github.com/golang/lint) isn't installed on your machine:
 
-```bash
+```shell
 go get -u golang.org/x/lint/golint
 ```
 

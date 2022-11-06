@@ -172,7 +172,8 @@ The `--creds` flag allows you to specify a different file name.
 ### Example commands
 
 Following commands would execute a program/script:
-``` bash
+
+```shell
 dnscontrol preview --creds !./creds.sh
 dnscontrol preview --creds ./creds.sh
 dnscontrol preview --creds creds.sh
@@ -182,7 +183,8 @@ dnscontrol preview --creds /some/absolute/path/creds.sh
 ```
 
 Following commands would execute a shell command:
-``` bash
+
+```shell
 dnscontrol preview --creds "!op inject -i creds.json.tpl"
 ```
 

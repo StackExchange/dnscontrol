@@ -12,7 +12,7 @@ Choose one of the following installation methods:
 
 On macOS (or Linux) you can install it using [Homebrew](https://brew.sh).
 
-```bash
+```shell
 brew install dnscontrol
 ```
 
@@ -20,7 +20,7 @@ brew install dnscontrol
 
 Alternatively on macOS you can install it using [MacPorts](https://www.macports.org).
 
-```bash
+```shell
 sudo port install dnscontrol
 ```
 
@@ -28,7 +28,7 @@ sudo port install dnscontrol
 
 You can use DNSControl locally using the Docker image from [Docker hub](https://hub.docker.com/r/stackexchange/dnscontrol/) and the command below.
 
-```bash
+```shell
 docker run --rm -it -v $(pwd)/dnsconfig.js:/dns/dnsconfig.js -v $(pwd)/creds.json:/dns/creds.json stackexchange/dnscontrol preview
 ```
 
@@ -45,13 +45,13 @@ install `dnscontrol` in your `$GOBIN` directory.
 
 To install, simply run
 
-```bash
+```shell
 go install github.com/StackExchange/dnscontrol/v3@latest
 ```
 
 To download the source
 
-```bash
+```shell
 git clone https://github.com/StackExchange/dnscontrol
 ```
 
@@ -167,13 +167,13 @@ and other formatting.  There are a few different ways to check for typos:
 
 Python:
 
-```bash
+```shell
 python -m json.tool creds.json
 ```
 
 jq:
 
-```bash
+```shell
 jq . < creds.json
 ```
 
@@ -199,7 +199,7 @@ exist.
 
 It should look something like this:
 
-```bash
+```shell
 dnscontrol preview
 ```
 ```text
@@ -218,7 +218,7 @@ Next run `dnscontrol push` to actually make the changes. In this
 case, the change will be to create a zone file where one didn't
 previously exist.
 
-```bash
+```shell
 dnscontrol push
 ```
 ```text
@@ -244,7 +244,7 @@ address of in `A('@', '1.2.3.4')` or add an additional A record.
 In our case, we changed the IP address to 10.10.10.10. Previewing
 our change looks like this:
 
-```bash
+```shell
 dnscontrol preview
 ```
 ```text

@@ -153,7 +153,7 @@ The push to the certificate repo can trigger further automation to deploy certs 
 
 ## Example script
 
-```bash
+```shell
 #!/bin/bash
 
 set -e

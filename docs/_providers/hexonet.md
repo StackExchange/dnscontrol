@@ -53,10 +53,10 @@ NOTE: The above credentials are known to the public.
 With the above hexonet entry in `creds.json`, you can run the
 integration tests as follows:
 
-```bash
+```shell
 dnscontrol get-zones --format=nameonly hexonet HEXONET  all
 ```
-```bash
+```shell
 # Review the output.  Pick one domain and set HEXONET_DOMAIN.
 cd $GIT/dnscontrol/integrationTest
 export HEXONET_DOMAIN=yodream.com            # Pick a domain name.

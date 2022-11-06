@@ -64,7 +64,7 @@ which gives the `app-key` and `app-secret-key`.
 Once done, to obtain the `consumer-key` it is necessary to authorize the just created app
 to access the data in a specific account:
 
-```bash
+```shell
 curl -XPOST -H"X-Ovh-Application: <you-app-key>" -H "Content-type: application/json" https://eu.api.ovh.com/1.0/auth/credential -d'{
   "accessRules": [
     {

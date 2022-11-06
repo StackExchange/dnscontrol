@@ -127,7 +127,7 @@ forth.
 The DNSControl `get-zones all` subcommand scans the directory for
 any files named `*.zone` and assumes they are zone files.
 
-```bash
+```shell
 dnscontrol get-zones --format=nameonly - BIND all
 ```
 

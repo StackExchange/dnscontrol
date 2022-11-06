@@ -18,7 +18,7 @@ tests on this data.
 
 Output the intermediate representation:
 
-```bash
+```shell
 dnscontrol print-ir --out foo.json --pretty
 ```
 

@@ -43,7 +43,7 @@ Example:
 
 A new zone created by DNSControl:
 
-```bash
+```shell
 dnscontrol create-domains
 ```
 

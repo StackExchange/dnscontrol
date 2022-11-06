@@ -101,7 +101,7 @@ In your `creds.json` for all `HETZNER` provider entries:
 
 Every response from the Hetzner DNS Console API includes your limits:
 
-```bash
+```shell
 curl --silent --include \
     --header 'Auth-API-Token: ...' \
     https://dns.hetzner.com/api/v1/zones \

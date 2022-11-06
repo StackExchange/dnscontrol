@@ -24,7 +24,7 @@ To set up TypeScript support in Visual Studio Code, follow these steps:
 
 1. Run this command to generate the file `types-dnscontrol.d.ts`.
 
-```bash
+```shell
 dnscontrol write-types
 ```
 

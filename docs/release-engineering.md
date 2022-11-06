@@ -126,7 +126,7 @@ If you bump the major version, you need to change all the source
 files.  The last time this was done (v2 -> v3) these two commands
 were used. They're included her for reference.
 
-```bash
+```shell
 #  Make all the changes:
 sed -i.bak -e 's@github.com.StackExchange.dnscontrol.v2@github.com/StackExchange/dnscontrol/v3@g' go.* $(fgrep -lri --include '*.go' github.com/StackExchange/dnscontrol/v2 *)
 # Delete the backup files:
@@ -256,7 +256,7 @@ gopherjs build
 
 List out-of-date modules and update any that seem worth updating:
 
-```bash
+```shell
 go install github.com/oligot/go-mod-upgrade@latest
 go-mod-upgrade
 go mod tidy
@@ -264,7 +264,7 @@ go mod tidy
 
 OLD WAY:
 
-```bash
+```shell
 go install github.com/psampaz/go-mod-outdated@latest
 go list -mod=mod -u -m -json all | go-mod-outdated -update -direct
 

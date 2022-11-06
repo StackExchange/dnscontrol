@@ -25,7 +25,7 @@ Example:
 
 Alternatively you can also use environment variables.  This is discouraged unless your environment provides them already.
 
-```bash
+```shell
 export AWS_ACCESS_KEY_ID=XXXXXXXXX
 export AWS_SECRET_ACCESS_KEY=YYYYYYYYY
 export AWS_SESSION_TOKEN=ZZZZZZZZ
@@ -43,7 +43,7 @@ export AWS_SESSION_TOKEN=ZZZZZZZZ
 
 Alternatively, this provider supports [named profiles](https://docs.aws.amazon.com/cli/latest/userguide/cli-configure-profiles.html). In that case export the following variable:
 
-```bash
+```shell
 export AWS_PROFILE=ZZZZZZZZ
 ```
 
@@ -109,7 +109,7 @@ If a domain does not exist in your Route53 account, DNSControl will *not* automa
 ## Delegation Sets
 Creation of new delegation sets are not supported by this code. However, if you have a delegation set already created, ala:
 
-```bash
+```shell
 aws route53 create-reusable-delegation-set --caller-reference "foo"
 {
     "Location": "https://route53.amazonaws.com/2013-04-01/delegationset/12312312123",
@@ -184,7 +184,7 @@ More info is available in [#891](https://github.com/StackExchange/dnscontrol/iss
 
 ### Creds key mismatch
 
-```bash
+```shell
 dnscontrol preview
 Creating r53 dns provider: NoCredentialProviders: no valid providers in chain. Deprecated.
     For verbose messaging see aws.Config.CredentialsChainVerboseErrors
@@ -195,7 +195,7 @@ that the string `r53_main` is specified in `NewDnsProvider("r53_main")` and that
 
 ### Invalid KeyId
 
-```bash
+```shell
 dnscontrol preview
 Creating r53_main dns provider: InvalidClientTokenId: The security token included in the request is invalid.
     status code: 403, request id: 8c006a24-e7df-11e7-9162-01963394e1df
@@ -205,7 +205,7 @@ This means the KeyId is unknown to AWS.
 
 ### Invalid SecretKey
 
-```bash
+```shell
 dnscontrol preview
 Creating r53_main dns provider: SignatureDoesNotMatch: The request signature we calculated does not match the signature you provided. Check your AWS Secret Access Key and signing method. Consult the service documentation for details.
     status code: 403, request id: 9171d89a-e7df-11e7-8586-cbea3ea4e710
@@ -215,7 +215,7 @@ This means the SecretKey is incorrect. It may be a quoting issue.
 
 ### Incomplete Signature
 
-```bash
+```shell
 dnscontrol preview
 IncompleteSignature: 'ABCDEFGHIJKLMNOPQRST/20200118/us-east-1/route53/aws4_request' not a valid key=value pair (missing equal-sign) in Authorization header: 'AWS4-HMAC-SHA256 Credential= ABCDEFGHIJKLMNOPQRST/20200118/us-east-1/route53/aws4_request, SignedHeaders=host;x-amz-date, Signature=571c0b13205669a338f0fb9f351dc03c7016c8737c738081bc885c68378ad877'.
         status code: 403, request id: 12a34b5c-d678-9e01-f2gh-3456i7jk89lm

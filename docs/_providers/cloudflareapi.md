@@ -245,7 +245,7 @@ have the required permissions listed above.  The flag `-cfworkers=false` will di
 This flag is intended for use with legacy domains where the integration test credentials do not
 have access to read/edit Workers. This flag will eventually go away.
 
-```bash
+```shell
 go test -v -verbose -provider CLOUDFLAREAPI -cfworkers=false
 ```
 

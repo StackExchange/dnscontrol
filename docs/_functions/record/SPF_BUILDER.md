@@ -167,14 +167,14 @@ is no longer truncated.
 
 Example:
 
-```bash
+```shell
 dig +short whatexit.org txt | wc -c
    118
 ```
 
 Setting `overhead1` to 118 should be sufficient.
 
-```bash
+```shell
 dig +short stackoverflow.com txt | wc -c
      582
 ```
@@ -201,7 +201,7 @@ to be updated, the proper data will be written to a file called
 `spfcache.updated.json` and instructions such as the ones below
 will be output telling you exactly what to do:
 
-```bash
+```shell
 dnscontrol preview
 1 Validation errors:
 WARNING: 2 spf record lookups are out of date with cache (_spf.google.com,_netblocks3.google.com).
