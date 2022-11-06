@@ -1,7 +1,6 @@
 ---
 name: BIND
 title: BIND Provider
-layout: default
 jsId: BIND
 ---
 # BIND Provider

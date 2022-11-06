@@ -1,6 +1,5 @@
 ---
 name: Ovh
-layout: default
 jsId: OVH
 ---
 # OVH Provider

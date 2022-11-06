@@ -1,7 +1,6 @@
 ---
 name: DigitalOcean
 title: DigitalOcean Provider
-layout: default
 jsId: DIGITALOCEAN
 ---
 # DigitalOcean Provider

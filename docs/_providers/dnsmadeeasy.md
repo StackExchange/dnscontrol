@@ -1,7 +1,6 @@
 ---
 name: DNSMADEEASY
 title: DNS Made Simple Provider
-layout: default
 jsId: DNSMADEEASY
 ---
 # DNS Made Simple Provider

@@ -1,7 +1,6 @@
 ---
 name: Packetframe
 title: Packetframe Provider
-layout: default
 jsId: PACKETFRAME
 ---
 # Packetframe Provider

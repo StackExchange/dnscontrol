@@ -1,5 +1,4 @@
 ---
-layout: default
 title: CLI variables
 ---
 # CLI variables

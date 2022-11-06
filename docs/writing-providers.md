@@ -1,5 +1,4 @@
 ---
-layout: default
 title: Writing new DNS providers
 ---
 

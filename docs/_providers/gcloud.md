@@ -1,7 +1,6 @@
 ---
 name: Google Cloud DNS
 title: Google Cloud DNS Provider
-layout: default
 jsId: GCLOUD
 ---
 

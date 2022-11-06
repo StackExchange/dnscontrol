@@ -1,7 +1,6 @@
 ---
 name: SoftLayer DNS
 title: SoftLayer DNS Provider
-layout: default
 jsId: SOFTLAYER
 ---
 

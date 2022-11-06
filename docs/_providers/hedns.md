@@ -1,7 +1,6 @@
 ---
 name: Hurricane Electric DNS
 title: Hurricane Electric DNS Provider
-layout: default
 jsId: HEDNS
 ---
 # Hurricane Electric DNS Provider

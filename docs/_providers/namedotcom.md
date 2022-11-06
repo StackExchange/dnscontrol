@@ -1,7 +1,6 @@
 ---
 name: Name.com
 title: Name.com Provider
-layout: default
 jsId: NAMEDOTCOM
 ---
 

@@ -1,7 +1,6 @@
 ---
 name: HEXONET
 title: HEXONET Provider
-layout: default
 jsId: HEXONET
 ---
 # HEXONET Provider

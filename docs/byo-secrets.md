@@ -1,5 +1,4 @@
 ---
-layout: default
 title: Bring-Your-Own-Secrets for automated testing
 ---
 

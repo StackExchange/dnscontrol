@@ -1,5 +1,4 @@
 ---
-layout: default
 title: Bug Triage Process
 ---
 

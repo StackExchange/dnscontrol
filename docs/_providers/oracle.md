@@ -1,7 +1,6 @@
 ---
 name: Oracle Cloud
 title: Oracle Cloud Provider
-layout: default
 jsId: ORACLE
 ---
 # Oracle Cloud Provider

@@ -1,7 +1,6 @@
 ---
 name: easyname
 title: easyname Provider
-layout: default
 jsId: EASYNAME
 ---
 # easyname Provider

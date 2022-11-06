@@ -1,5 +1,4 @@
 ---
-layout: default
 title: Creating new DNS Resource Types (rtypes)
 ---
 

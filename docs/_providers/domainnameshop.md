@@ -1,7 +1,6 @@
 ---
 name: Domainnameshop
 title: Domainnameshop Provider
-layout: default
 jsId: DOMAINNAMESHOP
 ---
 # DOMAINNAMESHOP Provider

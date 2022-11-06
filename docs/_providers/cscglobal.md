@@ -1,7 +1,6 @@
 ---
 name: CSC Global
 title: CSC Global Provider
-layout: default
 jsId: CSCGLOBAL
 ---
 # CSC Global Provider

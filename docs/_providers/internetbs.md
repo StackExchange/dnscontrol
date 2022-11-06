@@ -1,7 +1,6 @@
 ---
 name: Internet.bs
 title: Internet.bs Provider
-layout: default
 jsId: INTERNETBS
 ---
 # Internet.bs Provider

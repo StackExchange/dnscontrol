@@ -1,5 +1,4 @@
 ---
-layout: default
 title: How to build and ship a release
 ---
 

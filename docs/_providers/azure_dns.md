@@ -1,6 +1,5 @@
 ---
 name: Azure DNS
-layout: default
 jsId: AZURE_DNS
 ---
 

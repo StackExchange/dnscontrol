@@ -1,7 +1,6 @@
 ---
 name: AutoDNS
 title: AutoDNS (InternetX)
-layout: default
 jsId: AUTODNS
 ---
 

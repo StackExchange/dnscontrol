@@ -1,5 +1,4 @@
 ---
-layout: default
 title: Let's Encrypt Certificate generation
 ---
 

@@ -1,6 +1,5 @@
 ---
 name: INWX
-layout: default
 jsId: INWX
 ---
 

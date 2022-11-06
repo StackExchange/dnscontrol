@@ -1,7 +1,6 @@
 ---
 name: deSEC
 title: deSEC Provider
-layout: default
 jsId: DESEC
 ---
 # deSEC Provider

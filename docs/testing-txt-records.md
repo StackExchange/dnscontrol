@@ -1,5 +1,4 @@
 ---
-layout: default
 title: TXT record testing
 ---
 # TXT record testing

@@ -1,5 +1,4 @@
 ---
-layout: default
 title: Get-Zones subcommand
 ---
 

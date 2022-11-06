@@ -1,7 +1,6 @@
 ---
 name: PowerDNS
 title: PowerDNS Provider
-layout: default
 jsId: POWERDNS
 ---
 # PowerDNS Provider

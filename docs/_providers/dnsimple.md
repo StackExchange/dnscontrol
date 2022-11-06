@@ -1,7 +1,6 @@
 ---
 name: DNSimple
 title: DNSimple Provider
-layout: default
 jsId: DNSIMPLE
 ---
 # DNSimple Provider

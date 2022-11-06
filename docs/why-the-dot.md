@@ -1,5 +1,4 @@
 ---
-layout: default
 title: Why CNAME/MX/NS targets require a "dot"
 ---
 

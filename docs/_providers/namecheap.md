@@ -1,6 +1,5 @@
 ---
 name: Namecheap
-layout: default
 jsId: NAMECHEAP
 ---
 

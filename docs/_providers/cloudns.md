@@ -1,7 +1,6 @@
 ---
 name: ClouDNS
 title: ClouDNS Provider
-layout: default
 jsId: CLOUDNS
 ---
 # ClouDNS Provider

@@ -1,7 +1,6 @@
 ---
 name: Hetzner DNS Console
 title: Hetzner DNS Console
-layout: default
 jsId: HETZNER
 ---
 

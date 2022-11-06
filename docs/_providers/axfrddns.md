@@ -1,7 +1,6 @@
 ---
 name: AXFRDDNS
 title: AXFR+DDNS Provider
-layout: default
 jsId: AXFRDDNS
 ---
 # AXFR+DDNS Provider

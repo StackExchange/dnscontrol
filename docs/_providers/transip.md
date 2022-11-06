@@ -1,7 +1,6 @@
 ---
 name: TransIP DNS
 title: TransIP DNS Provider
-layout: default
 jsId: TRANSIP
 ---
 

@@ -1,7 +1,6 @@
 ---
 name: hosting.de
 title: hosting.de Provider
-layout: default
 jsId: HOSTINGDE
 ---
 

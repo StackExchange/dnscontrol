@@ -1,7 +1,6 @@
 ---
 name: DNS-over-HTTPS
 title: DNS-over-HTTPS Provider
-layout: default
 jsId: DNSOVERHTTPS
 ---
 # DNS-over-HTTPS Provider
