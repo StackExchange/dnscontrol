@@ -584,10 +584,13 @@ function IGNORE(name) {
     return IGNORE_NAME(name);
 }
 
-// IGNORE_NAME(name)
-function IGNORE_NAME(name) {
+// IGNORE_NAME(name, rTypes)
+function IGNORE_NAME(name, rTypes) {
+    if (rTypes === undefined) {
+      rTypes = "*";
+    }
     return function(d) {
-        d.ignored_names.push(name);
+        d.ignored_names.push({pattern: name, types: rTypes});
     };
 }
 
@@ -600,7 +603,7 @@ var IGNORE_NAME_DISABLE_SAFETY_CHECK = {
   // See https://github.com/StackExchange/dnscontrol/issues/1106
 };
 
-// IGNORE_TARGET(target)
+// IGNORE_TARGET(target, rType)
 function IGNORE_TARGET(target, rType) {
     return function(d) {
         d.ignored_targets.push({pattern: target, type: rType});

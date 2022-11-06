@@ -4,9 +4,30 @@
     {
       "dnsProviders": {},
       "ignored_names": [
-        "testignore",
-        "legacyignore",
-        "@"
+        {
+          "pattern": "testignore",
+          "types": "*"
+        },
+        {
+          "pattern": "testignore2",
+          "types": "A"
+        },
+        {
+          "pattern": "testignore3",
+          "types": "A, CNAME, TXT"
+        },
+        {
+          "pattern": "testignore4",
+          "types": "*"
+        },
+        {
+          "pattern": "legacyignore",
+          "types": "*"
+        },
+        {
+          "pattern": "@",
+          "types": "*"
+        }
       ],
       "ignored_targets": [
         {

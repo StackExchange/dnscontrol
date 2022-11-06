@@ -362,7 +362,7 @@ type TestGroup struct {
 type TestCase struct {
 	Desc           string
 	Records        []*models.RecordConfig
-	IgnoredNames   []string
+	IgnoredNames   []*models.IgnoreName
 	IgnoredTargets []*models.IgnoreTarget
 }
 
@@ -579,11 +579,11 @@ func testgroup(desc string, items ...interface{}) *TestGroup {
 
 func tc(desc string, recs ...*models.RecordConfig) *TestCase {
 	var records []*models.RecordConfig
-	var ignoredNames []string
+	var ignoredNames []*models.IgnoreName
 	var ignoredTargets []*models.IgnoreTarget
 	for _, r := range recs {
 		if r.Type == "IGNORE_NAME" {
-			ignoredNames = append(ignoredNames, r.GetLabel())
+			ignoredNames = append(ignoredNames, &models.IgnoreName{Pattern: r.GetLabel(), Types: r.GetTargetField()})
 		} else if r.Type == "IGNORE_TARGET" {
 			rec := &models.IgnoreTarget{
 				Pattern: r.GetLabel(),
