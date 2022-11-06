@@ -147,7 +147,7 @@ and renaming it.
 
 The file looks like:
 
-```js
+```json
 {
   "bind": {
     "TYPE": "BIND"
