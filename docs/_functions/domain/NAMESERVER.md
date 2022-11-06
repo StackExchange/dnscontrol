@@ -18,7 +18,7 @@ This is different than the `NS()` function, which inserts NS records
 in the current zone and accepts a label. `NS()` is useful for downward
 delegations. `NAMESERVER()` is for informing upstream delegations.
 
-For more information, refer to [this page]({{site.github.url}}/nameservers).
+For more information, refer to [this page](../../nameservers.md).
 
 {% capture example %}
 ```js

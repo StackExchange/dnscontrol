@@ -93,7 +93,7 @@ D('example.com', REG_NONE, DnsProvider(DNS_BIND),
 );
 ```
 
-Modify this file to match your particular providers and domains. See [the DNSConfig docs]({{site.github.url}}/js) and  [the provider docs]({{site.github.url}}/provider-list) for more details.
+Modify this file to match your particular providers and domains. See [the DNSConfig docs](js.md) and  [the provider docs](provider-list.md) for more details.
 
 Create a file called `creds.json` for storing provider configurations (API tokens and other account information).
 For example, to use both name.com and Cloudflare, you would have:
@@ -280,7 +280,7 @@ $TTL 300
 ```
 
 You can change the "DEFAULT_NOT_SET" text by following the documentation
-for the [BIND provider]({{site.github.url}}/providers/bind) to set
+for the [BIND provider](_providers/bind.md) to set
 the "master" and "mbox" settings.  Try that now.
 
 
@@ -291,7 +291,7 @@ a real domain (or a test domain if you have one).
 
 Set up the provider:  Add the providers's definition to `dnsconfig.js`
 and list any credentials in `creds.json`.  Each provider is different.
-See [the provider docs]({{site.github.url}}/provider-list) for
+See [the provider docs](provider-list.md) for
 specifics.
 
 Edit the domain: Add the `D()` entry for the domain, or repurpose
@@ -303,11 +303,11 @@ Run `dnscontrol preview` to test your work. It may take a few tries
 to list all the DNS records that make up the domain.  When preview
 shows no changes required, then you know you are at feature parity.
 
-The [Migrating]({{site.github.url}}/migrating) doc has advice
+The [Migrating](migrating.md) doc has advice
 about converting from other systems.
 You can manually create the `D()` statements, or you can
 generate them automatically using the
-[dnscontrol get-zones]({{site.github.url}}/get-zones)
+[dnscontrol get-zones](get-zones.md)
 command to import the zone from (most) providers and output it as code
 that can be added to `dnsconfig.js` and used with very little
 modification.
@@ -322,5 +322,5 @@ If you are going to use this in production, we highly recommend the following:
 * Store the configuration files in Git.
 * Encrypt the `creds.json` file before storing it in Git. Do NOT store
   API keys or other credentials without encrypting them.
-* Use a CI/CD tool like [Gitlab]({{site.github.url}}/ci-cd-gitlab), Jenkins, CircleCI, [GitHub Actions](https://github.com/StackExchange/dnscontrol#via-github-actions-gha), etc. to automatically push DNS changes.
+* Use a CI/CD tool like [Gitlab](ci-cd-gitlab.md), Jenkins, CircleCI, [GitHub Actions](https://github.com/StackExchange/dnscontrol#via-github-actions-gha), etc. to automatically push DNS changes.
 * Join the DNSControl community. File [issues](https://github.com/StackExchange/dnscontrol/issues) and [PRs](https://github.com/StackExchange/dnscontrol/pulls).

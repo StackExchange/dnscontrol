@@ -165,7 +165,7 @@ these tests. (We are grateful to HEXONET for this public service!)
       HEXONET_UID: test.user
 ```
 
-NOTE: The above credentials are [known to the public]({{site.github.url}}/providers/hexonet).
+NOTE: The above credentials are [known to the public](_providers/hexonet.md).
 
 
 # Caveats

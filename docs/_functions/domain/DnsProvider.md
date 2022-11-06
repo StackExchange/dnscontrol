@@ -9,7 +9,7 @@ parameter_types:
 ---
 
 DnsProvider indicates that the specified provider should be used to manage
-records for this domain. The name must match the name used with [NewDnsProvider](#NewDnsProvider).
+records for this domain. The name must match the name used with [NewDnsProvider](../global/NewDnsProvider.md).
 
 The nsCount parameter determines how the nameservers will be managed from this provider.
 
@@ -20,7 +20,7 @@ Using `0` for nsCount means "do not fetch nameservers from this domain, or give 
 Using a different number, ie: `DnsProvider("name",2)`, means "fetch all nameservers from this provider,
 but limit it to this many.
 
-See [this page]({{site.github.url}}/nameservers) for a detailed explanation of how DNSControl handles nameservers and NS records.
+See [this page](../../nameservers.md) for a detailed explanation of how DNSControl handles nameservers and NS records.
 
 If a domain (`D()`) does not include any `DnsProvider()` functions,
 the DNS records will not be modified. In fact, if you want to control

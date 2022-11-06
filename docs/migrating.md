@@ -10,12 +10,12 @@ other systems to DNSControl's `dnsconfig.js` file.
 This document assumes you have DNSControl set up and working on at
 least one zone.  You should have a working `dnsconfig.js` file and
 `creds.json` file as explained in the
-[Getting Started]({{site.github.url}}/getting-started) doc.
+[Getting Started](getting-started.md) doc.
 
 ## General advice
 
 First, use the
-[Getting Started]({{site.github.url}}/getting-started) doc
+[Getting Started](getting-started.md) doc
 so that you have a working `dnsconfig.js` with at least one domain.
 
 We recommend migrating one zone at a time. Start with a small,
@@ -42,7 +42,7 @@ hand, possibly with your text editor's search and replace functions.
 However, where's the fun in that?
 
 The `dnscontrol get-zones` subcommand
-[documented here]({{site.github.url}}/get-zones)
+[documented here](get-zones.md)
 can automate 90% of the conversion for you. It reads BIND-style zonefiles,
 or will use a providers API to gather the DNS records.  It will then output
 the records in a variety of formats, including as a `D()` statement
@@ -68,7 +68,7 @@ Add the contents of `draft.js` to `dnsconfig.js` and edit it as needed.
 Example 2: Read from a provider
 
 This requires creating a `creds.json` file as described in
-[Getting Started]({{site.github.url}}/getting-started).
+[Getting Started](getting-started.md).
 
 Suppose your `creds.json` file has the name `global_aws`
 for the provider `ROUTE53`.  Your command would look like this:
