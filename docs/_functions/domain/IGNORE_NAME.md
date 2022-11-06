@@ -26,9 +26,9 @@ In this example, DNSControl will insert/update the "baz.example.com" record but 
 {% capture example %}
 ```js
 D("example.com",
-  `IGNORE_NAME`("foo"), // ignore all record types for name foo
-  `IGNORE_NAME`("baz", "*"), // ignore all record types for name baz
-  `IGNORE_NAME`("bar", "A,MX"), // ignore only A and MX records for name bar
+  IGNORE_NAME("foo"), // ignore all record types for name foo
+  IGNORE_NAME("baz", "*"), // ignore all record types for name baz
+  IGNORE_NAME("bar", "A,MX"), // ignore only A and MX records for name bar
   CNAME("bar", "www"), // CNAME is not ignored
   A("baz", "1.2.3.4")
 );
