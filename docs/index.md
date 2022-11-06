@@ -197,9 +197,6 @@ title: DNSControl
                     <a href="release-engineering.md">Release Engineering</a>: How to build and ship a release
                 </li>
                 <li>
-                    <a href="documentation.md">Edit Documentation</a>: How to edit these docs
-                </li>
-                <li>
                     <a href="byo-secrets.md">Bring-Your-Own-Secrets</a>: Automate tests
                 </li>
                 <li>

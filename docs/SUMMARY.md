@@ -54,7 +54,6 @@
 * [Gitlab CI/CD example](ci-cd-gitlab.md)
 * [CLI variables](cli-variables.md)
 * [Useful code tricks](code-tricks.md)
-* [How to edit the documentation](documentation.md)
 * [Let's Encrypt Certificate generation](get-certs.md)
 * [Nameservers and Delegations](nameservers.md)
 * [Notifications](notifications.md)
