@@ -102,7 +102,7 @@ https://github.com/StackExchange/dnscontrol/releases/tag/v$VERSION
 ```
 
 NOTE: You won't be able to post to the mailing list unless you are on
-it.  [Click here to join](https://groups.google.com/forum/#!forum/dnscontrol-discuss).
+it.  [Click here to join](https://groups.google.com/g/dnscontrol-discuss).
 
 ## Step 5. Announce it via chat
 

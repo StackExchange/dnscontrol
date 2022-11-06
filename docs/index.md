@@ -39,7 +39,7 @@ title: DNSControl
     <div class="col-md-4">
         <h3>Get Involved</h3>
         <p>Join our
-         <strong><a href="https://groups.google.com/forum/#!forum/dnscontrol-discuss">mailing list</a></strong>.
+         <strong><a href="https://groups.google.com/g/dnscontrol-discuss">mailing list</a></strong>.
          We make it easy to contribute by using
          <strong><a href="https://github.com/StackExchange/dnscontrol">GitHub</a></strong>,
          you can make code changes with confidence thanks to extensive integration tests.
@@ -189,7 +189,7 @@ title: DNSControl
                     GitHub <a href="https://github.com/StackExchange/dnscontrol">StackExchange/dnscontrol</a>: Get the source!
                 </li>
                 <li>
-                    Mailing list: <a href="https://groups.google.com/forum/#!forum/dnscontrol-discuss">dnscontrol-discuss</a>: The friendly best place to ask questions and propose new features
+                    Mailing list: <a href="https://groups.google.com/g/dnscontrol-discuss">dnscontrol-discuss</a>: The friendly best place to ask questions and propose new features
                 </li>
                 <li>
                     <a href="{{site.github.url}}/bug-triage">Bug Triage</a>: How bugs are triaged
