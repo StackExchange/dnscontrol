@@ -56,28 +56,31 @@ zones at the provider.
 
 ## Syntax
 
-    dnscontrol get-zones [command options] credkey provider zone [...]
+```bash
+dnscontrol get-zones [command options] credkey provider zone [...]
 
-    --creds value   Provider credentials JSON file (default: "creds.json")
-    --format value  Output format: js djs zone tsv nameonly (default: "zone")
-    --out value     Instead of stdout, write to this file
-    --ttl value     Default TTL (0 picks the zone's most common TTL) (default: 0)
+--creds value   Provider credentials JSON file (default: "creds.json")
+--format value  Output format: js djs zone tsv nameonly (default: "zone")
+--out value     Instead of stdout, write to this file
+--ttl value     Default TTL (0 picks the zone's most common TTL) (default: 0)
 
-    ARGUMENTS:
-    credkey:  The name used in creds.json (first parameter to NewDnsProvider() in dnsconfig.js)
-    provider: The name of the provider (second parameter to NewDnsProvider() in dnsconfig.js)
-    zone:     One or more zones (domains) to download; or "all".
+ARGUMENTS:
+credkey:  The name used in creds.json (first parameter to NewDnsProvider() in dnsconfig.js)
+provider: The name of the provider (second parameter to NewDnsProvider() in dnsconfig.js)
+zone:     One or more zones (domains) to download; or "all".
+```
 
-    As of v3.16, `provider` can be `-` to indicate that the provider name is listed in `creds.json` in the `TYPE` field. Doing this will be backwards compatible with an (otherwise) breaking change due in v4.0.
+As of v3.16, `provider` can be `-` to indicate that the provider name is listed in `creds.json` in the `TYPE` field. Doing this will be backwards compatible with an (otherwise) breaking change due in v4.0.
 
-    As of v4.0 (BREAKING CHANGE), you must not specify `provider`.  That value is found in the `TYPE` field of the credkey's `creds.json` file.  For backwards compatibility, if the first `zone` is `-`, it will be skipped.
+As of v4.0 (BREAKING CHANGE), you must not specify `provider`.  That value is found in the `TYPE` field of the credkey's `creds.json` file.  For backwards compatibility, if the first `zone` is `-`, it will be skipped.
 
-    FORMATS:
-    --format=js        dnsconfig.js format (not perfect, just a decent first draft)
-    --format=djs       js with disco commas (leading commas)
-    --format=zone      BIND zonefile format
-    --format=tsv       TAB separated value (useful for AWK)
-    --format=nameonly  Just print the zone names
+```bash
+FORMATS:
+--format=js        dnsconfig.js format (not perfect, just a decent first draft)
+--format=djs       js with disco commas (leading commas)
+--format=zone      BIND zonefile format
+--format=tsv       TAB separated value (useful for AWK)
+--format=nameonly  Just print the zone names
 
 The columns in `--format=tsv` are:
 
@@ -89,43 +92,58 @@ The columns in `--format=tsv` are:
     Either empty or a comma-separated list of properties like "cloudflare_proxy=true"
 
 The `--ttl` flag only applies to zone/js/djs formats.
+```
 
 ## Examples
 
-    dnscontrol get-zones myr53 ROUTE53 example.com
-    dnscontrol get-zones gmain GANDI_V5 example.comn other.com
-    dnscontrol get-zones cfmain CLOUDFLAREAPI all
-    dnscontrol get-zones --format=tsv bind BIND example.com
-    dnscontrol get-zones --format=djs --out=draft.js glcoud GCLOUD example.com
+```bash
+dnscontrol get-zones myr53 ROUTE53 example.com
+dnscontrol get-zones gmain GANDI_V5 example.comn other.com
+dnscontrol get-zones cfmain CLOUDFLAREAPI all
+dnscontrol get-zones --format=tsv bind BIND example.com
+dnscontrol get-zones --format=djs --out=draft.js glcoud GCLOUD example.com
+```
 
 As of v3.16:
-    # NOTE: When "-" appears as the 2nd argument, it is assumed that the
-    # creds.json entry has a field TYPE with the provider's type name.
-    dnscontrol get-zones gmain GANDI_V5 example.comn other.com
-    dnscontrol get-zones gmain - example.comn other.com
-    dnscontrol get-zones cfmain CLOUDFLAREAPI all
-    dnscontrol get-zones cfmain - all
-    dnscontrol get-zones --format=tsv bind BIND example.com
-    dnscontrol get-zones --format=tsv bind - example.com
-    dnscontrol get-zones --format=djs --out=draft.js glcoud GCLOUD example.com
-    dnscontrol get-zones --format=djs --out=draft.js glcoud - example.com
+
+```bash
+# NOTE: When "-" appears as the 2nd argument, it is assumed that the
+# creds.json entry has a field TYPE with the provider's type name.
+dnscontrol get-zones gmain GANDI_V5 example.comn other.com
+dnscontrol get-zones gmain - example.comn other.com
+dnscontrol get-zones cfmain CLOUDFLAREAPI all
+dnscontrol get-zones cfmain - all
+dnscontrol get-zones --format=tsv bind BIND example.com
+dnscontrol get-zones --format=tsv bind - example.com
+dnscontrol get-zones --format=djs --out=draft.js glcoud GCLOUD example.com
+dnscontrol get-zones --format=djs --out=draft.js glcoud - example.com
+```
 
 As of v4.0:
-    dnscontrol get-zones gmain example.comn other.com
-    dnscontrol get-zones cfmain all
-    dnscontrol get-zones --format=tsv bind example.com
-    dnscontrol get-zones --format=djs --out=draft.js glcoud example.com
-    # For backwards compatibility, these are valid until at least v5.0
-    dnscontrol get-zones gmain - example.comn other.com
-    dnscontrol get-zones cfmain - all
-    dnscontrol get-zones --format=tsv bind - example.com
-    dnscontrol get-zones --format=djs --out=draft.js glcoud - example.com
+
+```bash
+dnscontrol get-zones gmain example.comn other.com
+dnscontrol get-zones cfmain all
+dnscontrol get-zones --format=tsv bind example.com
+dnscontrol get-zones --format=djs --out=draft.js glcoud example.com
+```
+
+For backwards compatibility, these are valid until at least v5.0
+
+```bash
+dnscontrol get-zones gmain - example.comn other.com
+dnscontrol get-zones cfmain - all
+dnscontrol get-zones --format=tsv bind - example.com
+dnscontrol get-zones --format=djs --out=draft.js glcoud - example.com
+```
 
 Read a zonefile, generate a JS file, then use the JS file to see how
 different it is from the zonefile:
 
-    dnscontrol get-zone --format=djs -out=foo.djs bind - example.org
-    dnscontrol preview --config foo.js
+```bash
+dnscontrol get-zone --format=djs -out=foo.djs bind - example.org
+dnscontrol preview --config foo.js
+```
 
 # Developer Notes
 

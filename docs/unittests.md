@@ -19,7 +19,9 @@ tests on this data.
 
 Output the intermediate representation:
 
-    dnscontrol print-ir --out foo.json --pretty
+```bash
+dnscontrol print-ir --out foo.json --pretty
+```
 
 NOTE: The `--pretty` flag is optional.
 

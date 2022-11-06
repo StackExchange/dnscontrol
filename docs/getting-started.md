@@ -46,11 +46,15 @@ install `dnscontrol` in your `$GOBIN` directory.
 
 To install, simply run
 
-    go install github.com/StackExchange/dnscontrol/v3@latest
+```bash
+go install github.com/StackExchange/dnscontrol/v3@latest
+```
 
 To download the source
 
-    git clone https://github.com/StackExchange/dnscontrol
+```bash
+git clone https://github.com/StackExchange/dnscontrol
+```
 
 If these don't work, more info is in [#805](https://github.com/StackExchange/dnscontrol/issues/805).
 
