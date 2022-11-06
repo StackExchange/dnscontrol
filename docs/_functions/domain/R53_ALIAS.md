@@ -38,7 +38,7 @@ The zone id can be found depending on the target type:
 * _Another Route 53 record_: you can either specify the correct zone id or do not specify anything and DNSControl will figure out the right zone id. (Note: Route53 alias can't reference a record in a different zone).
 
 {% capture example %}
-```js
+```javascript
 D('example.com', REGISTRAR, DnsProvider('ROUTE53'),
   R53_ALIAS('foo', 'A', 'bar'),                              // record in same zone
   R53_ALIAS('foo', 'A', 'bar', R53_ZONE('Z35SXDOTRQ7X7K')),  // record in same zone, zone specified

@@ -10,7 +10,7 @@ DefaultTTL sets the TTL for all records in a domain that do not explicitly set o
 it will use the DNSControl global default of 300 seconds.
 
 {% capture example %}
-```js
+```javascript
 D('example.com', REGISTRAR, DnsProvider('R53'),
   DefaultTTL("4h"),
   A('@','1.2.3.4'), // uses default

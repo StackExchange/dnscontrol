@@ -56,7 +56,7 @@ The NS records for these authorities have a TTL of 86400.
 
 Add:
 
-```js
+```javascript
 NAMESERVER_TTL(86400)
 ```
 
@@ -64,7 +64,7 @@ modifier to the dnscontrol.js D() function so that DNSControl does not change th
 
 Example `dnsconfig.js`:
 
-```js
+```javascript
 var REG_NONE = NewRegistrar("none");
 var DSP_AKAMAIEDGEDNS = NewDnsProvider("akamaiedgedns");
 

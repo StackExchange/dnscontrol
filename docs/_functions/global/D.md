@@ -22,7 +22,7 @@ Modifier arguments are processed according to type as follows:
    be used like a macro in multiple domains.
 
 {% capture example %}
-```js
+```javascript
 var REGISTRAR = NewRegistrar("name.com");
 var r53 = NewDnsProvider("R53");
 
@@ -63,7 +63,7 @@ To differentiate the different domains, specify the domains as
 `example.com!outside`.
 
 {% capture example %}
-```js
+```javascript
 var REG = NewRegistrar("Third-Party");
 var DNS_INSIDE = NewDnsProvider("Cloudflare");
 var DNS_OUTSIDE = NewDnsProvider("bind");

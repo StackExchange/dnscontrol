@@ -54,7 +54,7 @@ Example:
 
 An example DNS configuration:
 
-```js
+```javascript
 var REG_NONE = NewRegistrar("none");
 var DSP_MSDNS = NewDnsProvider("msdns");
 

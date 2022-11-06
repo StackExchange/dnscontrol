@@ -105,7 +105,7 @@ Usually this is to simply remove the second parameter to the function.
 Examples:
 
 
-```js
+```javascript
 OLD: var REG_THING = NewRegistrar("thing", "THING");
 NEW: var REG_THING = NewRegistrar("thing");
 

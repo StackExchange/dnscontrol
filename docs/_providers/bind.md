@@ -43,7 +43,7 @@ This provider accepts some optional metadata in the NewDnsProvider() call.
 
 In this example we set the default SOA settings and NS records.
 
-```js
+```javascript
 var DSP_BIND = NewDnsProvider("bind", {
     "default_soa": {
         "master": "ns1.example.tld.",

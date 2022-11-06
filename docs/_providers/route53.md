@@ -67,7 +67,7 @@ This provider does not recognize any special metadata fields unique to route 53.
 ## Usage
 An example `dnsconfig.js` configuration:
 
-```js
+```javascript
 var REG_NONE = NewRegistrar("none");
 var DSP_R53 = NewDnsProvider("r53_main");
 

@@ -116,7 +116,7 @@ What does on/off/full mean?
 
 You can also set the default proxy mode using `DEFAULTS()` function. For example:
 
-```js
+```javascript
 DEFAULTS(
   CF_PROXY_DEFAULT_OFF // turn proxy off when not specified otherwise
 );
@@ -127,7 +127,7 @@ DEFAULTS(
 To make configuration files more readable and less prone to errors,
 the following aliases are *pre-defined*:
 
-```js
+```javascript
 // Meta settings for individual records.
 var CF_PROXY_OFF = {"cloudflare_proxy": "off"};     // Proxy disabled.
 var CF_PROXY_ON = {"cloudflare_proxy": "on"};       // Proxy enabled.
@@ -145,7 +145,7 @@ var CF_UNIVERSALSSL_ON = { cloudflare_universalssl: "on" };
 
 The following example shows how to set meta variables with and without aliases:
 
-```js
+```javascript
 D("example.tld", REG_NONE, DnsProvider(DSP_CLOUDFLARE),
     A("www1","1.2.3.11", CF_PROXY_ON),        // turn proxy ON.
     A("www2","1.2.3.12", CF_PROXY_OFF),       // default is OFF, this is a no-op.
@@ -156,7 +156,7 @@ D("example.tld", REG_NONE, DnsProvider(DSP_CLOUDFLARE),
 ## Usage
 An example `dnsconfig.js` configuration:
 
-```js
+```javascript
 var REG_NONE = NewRegistrar("none");
 var DSP_CLOUDFLARE = NewDnsProvider("cloudflare");
 
@@ -190,7 +190,7 @@ control panel manually or via the `dnscontrol create-domains` command.
 ## Redirects
 The Cloudflare provider can manage "Forwarding URL" Page Rules (redirects) for your domains. Simply use the `CF_REDIRECT` and `CF_TEMP_REDIRECT` functions to make redirects:
 
-```js
+```javascript
 // chiphacker.com should redirect to electronics.stackexchange.com
 
 var DSP_CLOUDFLARE = NewDnsProvider("cloudflare", {"manage_redirects": true}); // enable manage_redirects
@@ -221,7 +221,7 @@ Notice a few details:
 ## Worker routes
 The Cloudflare provider can manage Worker Routes for your domains. Simply use the `CF_WORKER_ROUTE` function passing the route pattern and the worker name:
 
-```js
+```javascript
 var DSP_CLOUDFLARE = NewDnsProvider("cloudflare", {"manage_workers": true}); // enable managing worker routes
 
 D("foo.com", REG_NONE, DnsProvider(DSP_CLOUDFLARE),

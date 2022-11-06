@@ -35,7 +35,7 @@ This provider does not recognize any special metadata fields unique to Oracle Cl
 ## Usage
 An example `dnsconfig.js` configuration:
 
-```js
+```javascript
 var REG_NONE = NewRegistrar("none");
 var DSP_ORACLE = NewDnsProvider("oracle");
 

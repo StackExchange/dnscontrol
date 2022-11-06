@@ -35,7 +35,7 @@ enforce the "10 lookup rule".
 
 Here is an example of how SPF settings are normally done:
 
-```js
+```javascript
 D("example.tld", REG, DNS, ...
   TXT("v=spf1 ip4:198.252.206.0/24 ip4:192.111.0.0/24 include:_spf.google.com include:mailgun.org include:spf-basic.fogcreek.com include:mail.zendesk.com include:servers.mcsv.net include:sendgrid.net include:450622.spf05.hubspotemail.net ~all")
 )
@@ -49,7 +49,7 @@ This has a few problems:
 
 ## The DNSControl way
 
-```js
+```javascript
 D("example.tld", REG, DSP, ...
   A("@", "10.2.2.2"),
   MX("@", "example.tld."),
@@ -90,7 +90,7 @@ By using the `SPF_BUILDER()` we gain many benefits:
 When you want to specify SPF settings for a domain, use the
 `SPF_BUILDER()` function.
 
-```js
+```javascript
 D("example.tld", REG, DSP, ...
   ...
   ...
@@ -281,7 +281,7 @@ record an include is added.
 In some situations we define an SPF setting once and want to re-use
 it on many domains. Here's how to do this:
 
-```js
+```javascript
 var SPF_MYSETTINGS = SPF_BUILDER({
   label: "@",
   overflow: "_spf%d",

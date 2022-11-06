@@ -72,7 +72,7 @@ Here's an example DNS Configuration `dnsconfig.js` using our provider module.
 Even though it shows how you use us as Domain Registrar AND DNS Provider, we don't force you to do that.
 You are free to decide if you want to use both of our provider technology or just one of them.
 
-```js
+```javascript
 // Providers:
 var REG_HX = NewRegistrar("hexonet");
 var DSP_HX = NewDnsProvider("hexonet");

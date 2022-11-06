@@ -21,7 +21,7 @@ Otherwise the syntax of `FETCH` is the same as `fetch`.
 > 2. Make sure DNSControl only uses verified configuration if you want to use `FETCH`. For example, an attacker can send Pull Requests to your config repo, and have your CI test malicious configurations and make arbitrary HTTP requests. Therefore, `FETCH` must be explicitly enabled with flag `--allow-fetch` on DNSControl invocation.
 
 {% capture example %}
-```js
+```javascript
 var REG_NONE = NewRegistrar('none');
 var DNS_BIND = NewDnsProvider('bind');
 

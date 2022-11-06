@@ -21,7 +21,7 @@ parameter_types:
 Priority, weight, and port are ints.
 
 {% capture example %}
-```js
+```javascript
 D("example.com", REGISTRAR, DnsProvider("GCLOUD"),
   // Create SRV records for a a SIP service:
   //               pr  w   port, target

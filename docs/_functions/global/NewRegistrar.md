@@ -25,7 +25,7 @@ This function will return an opaque string that should be assigned to a variable
 
 Prior to v3.16:
 
-```js
+```javascript
 var REG_MYNDC = NewRegistrar("mynamedotcom", "NAMEDOTCOM");
 var DNS_MYAWS = NewDnsProvider("myaws", "ROUTE53");
 
@@ -36,7 +36,7 @@ D("example.com", REG_MYNDC, DnsProvider(DNS_MYAWS),
 
 In v3.16 and later:
 
-```js
+```javascript
 var REG_MYNDC = NewRegistrar("mynamedotcom");
 var DNS_MYAWS = NewDnsProvider("myaws");
 

@@ -24,7 +24,7 @@ Domains that use Google G-Suite require a specific list of MX
 records, plus there are some CNAMEs that are useful (but we only
 want the CNAMEs on a subset of domains).
 
-```js
+```javascript
 var GOOGLE_APPS_DOMAIN_MX = [
   MX("@", 1, "aspmx.l.google.com."),
   MX("@", 5, "alt1.aspmx.l.google.com."),
@@ -63,7 +63,7 @@ records.
 
 Solution: Use a loop. (Note: See caveats below.)
 
-```js
+```javascript
 // The domains are parked. Use the exact same records for each.
 _.each(
   [

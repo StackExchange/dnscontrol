@@ -48,7 +48,7 @@ Namecheap.
 ## Usage
 An example `dnsconfig.js` configuration:
 
-```js
+```javascript
 var REG_NAMECHEAP = NewRegistrar("namecheap");
 var DSP_BIND = NewDnsProvider("bind");
 
@@ -60,7 +60,7 @@ D("example.tld", REG_NAMECHEAP, DnsProvider(DSP_BIND),
 Namecheap provides custom redirect records URL, URL301, and FRAME.  These
 records can be used like any other record:
 
-```js
+```javascript
 var REG_NAMECHEAP = NewRegistrar("namecheap");
 var DSP_NAMECHEAP = NewDnsProvider("namecheap");
 

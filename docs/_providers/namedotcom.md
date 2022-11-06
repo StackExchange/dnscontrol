@@ -38,7 +38,7 @@ This provider does not recognize any special metadata fields unique to name.com.
 An example `dnsconfig.js` configuration with NAMEDOTCOM
 as the registrar and DNS service provider:
 
-```js
+```javascript
 var REG_NAMECOM = NewRegistrar("name.com");
 var DSP_NAMECOM = NewDnsProvider("name.com");
 
@@ -50,7 +50,7 @@ D("example.tld", REG_NAMECOM, DnsProvider(DSP_NAMECOM),
 An example `dnsconfig.js` configuration with NAMEDOTCOM
 as the registrar and DNS only, DNS hosted elsewhere:
 
-```js
+```javascript
 var REG_NAMECOM = NewRegistrar("name.com");
 var DSP_R53 = NewDnsProvider("r53");
 

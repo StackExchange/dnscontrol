@@ -17,13 +17,13 @@ Possible parameters are:
 
 Example to load `.js` files recursively:
 
-```js
+```javascript
 require_glob("./domains/");
 ```
 
 Example to load `.js` files only in `domains/`:
 
-```js
+```javascript
 require_glob("./domains/", false);
 ```
 
@@ -32,13 +32,13 @@ file where it's being executed in. Let's go with an example, as it describes it 
 
 `dnscontrol.js`:
 
-```js
+```javascript
 require("domains/index.js");
 ```
 
 `domains/index.js`:
 
-```js
+```javascript
 require_glob("./user1/");
 ```
 

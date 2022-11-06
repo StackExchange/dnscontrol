@@ -33,7 +33,7 @@ This provider does not recognize any special metadata fields unique to easyname.
 ## Usage
 An example `dnsconfig.js` configuration:
 
-```js
+```javascript
 var REG_EASYNAME = NewRegistrar("easyname");
 
 D("example.com", REG_EASYNAME,

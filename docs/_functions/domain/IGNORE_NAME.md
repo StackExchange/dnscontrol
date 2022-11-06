@@ -29,7 +29,7 @@ Technically `IGNORE_NAME` is a promise that DNSControl will not add, change, or 
 In this example, DNSControl will insert/update the "baz.example.com" record but will leave unchanged the "foo.example.com" and "bar.example.com" ones.
 
 {% capture example %}
-```js
+```javascript
 D("example.com",
   IGNORE_NAME("foo"), // ignore all record types for name foo
   IGNORE_NAME("baz", "*"), // ignore all record types for name baz

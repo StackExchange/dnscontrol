@@ -11,7 +11,7 @@ domains at the end of your configuration file.
 
 Example for adding records to all configured domains:
 {% capture example %}
-```js
+```javascript
 var domains = getConfiguredDomains();
 for(i = 0; i < domains.length; i++) {
   D_EXTEND(domains[i],
@@ -43,7 +43,7 @@ This will end up in following modifications: (All output assumes the `--verbose`
 Example for adding DMARC report records:
 {% capture example %}This example might be more useful, specially for configuring the DMARC report records. According to DMARC RFC you need to specify `domain2.tld._report.dmarc.domain1.tld` to allow `domain2.tld` to send aggregate/forensic email reports to `domain1.tld`. This can be used to do this in an easy way, without using the wildcard from the RFC.
 
-```js
+```javascript
 var domains = getConfiguredDomains();
 for(i = 0; i < domains.length; i++) {
     D_EXTEND("domain1.tld",

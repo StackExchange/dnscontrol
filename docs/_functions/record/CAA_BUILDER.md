@@ -24,7 +24,7 @@ authorized certificate authorities and the builder cares about the rest.
 
 For example you can use:
 
-```js
+```javascript
 CAA_BUILDER({
   label: "@",
   iodef: "mailto:test@domain.tld",

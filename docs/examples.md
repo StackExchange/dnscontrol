@@ -9,7 +9,7 @@ title: Examples
 
 ## Typical DNS Records
 
-```js
+```javascript
 D('example.com', REG, DnsProvider('GCLOUD'),
     A('@', '1.2.3.4'),  // The naked or 'apex' domain.
     A('server1', '2.3.4.5'),
@@ -26,7 +26,7 @@ D('example.com', REG, DnsProvider('GCLOUD'),
 
 ## Set TTLs
 
-```js
+```javascript
 var mailTTL = TTL('1h');
 
 D('example.com', registrar,
@@ -43,7 +43,7 @@ D('example.com', registrar,
 
 ## Variables for common IP Addresses
 
-```js
+```javascript
 var addrA = IP('1.2.3.4')
 
 D('example.com', REG, DnsProvider('R53'),
@@ -54,13 +54,13 @@ D('example.com', REG, DnsProvider('R53'),
 
 NOTE: The `IP()` function doesn't currently support IPv6 (PRs welcome!).  IPv6 addresses are strings.
 
-```js
+```javascript
 var addrAAAA = "0:0:0:0:0:0:0:0";
 ```
 
 ## Variables to swap active Data Center
 
-```js
+```javascript
 var dcA = IP('5.5.5.5');
 var dcB = IP('6.6.6.6');
 
@@ -74,7 +74,7 @@ D('example.com', REG, DnsProvider('R53'),
 
 ## Macro to for repeated records
 
-```js
+```javascript
 var GOOGLE_APPS_MX_RECORDS = [
     MX('@', 1, 'aspmx.l.google.com.'),
     MX('@', 5, 'alt1.aspmx.l.google.com.'),
@@ -105,7 +105,7 @@ You normally can't put comments in the middle of a string,
 but with a little bit of creativity you can document
 each element of an SPF record this way.
 
-```js
+```javascript
 var SPF_RECORDS = TXT('@', [
     'v=spf1',
     'ip4:1.2.3.0/24',           // NY mail server
@@ -125,7 +125,7 @@ D('example.com', REG, DnsProvider('R53'),
 
 ## Dual DNS Providers
 
-```js
+```javascript
 D('example.com', REG, DnsProvider('R53'), DnsProvider('GCLOUD'),
    A('@', '1.2.3.4')
 )
@@ -145,7 +145,7 @@ D('example3.com', REG, DnsProvider('R53'), DnsProvider('GCLOUD',0),
 
 ## Set default records modifiers
 
-```js
+```javascript
 DEFAULTS(
     NAMESERVER_TTL('24h'),
     DefaultTTL('12h'),
@@ -160,7 +160,7 @@ In this example we need a macro that can dynamically change for each domain.
 
 Suppose you have many domains that use Fastmail as an MX. Here's a macro that sets the MX records.
 
-```js
+```javascript
 var FASTMAIL_MX = [
   MX('@', 10, 'in1-smtp.messagingengine.com.'),
   MX('@', 20, 'in2-smtp.messagingengine.com.'),
@@ -172,7 +172,7 @@ that includes the domain name. We can't use a simple macro. Instead, we use
 a function that takes the domain name as a parameter to generate the right
 records dynamically.
 
-```js
+```javascript
 var FASTMAIL_DKIM = function(the_domain){
   return [
     CNAME('fm1._domainkey', 'fm1.' + the_domain + '.dkim.fmhosted.com.'),
@@ -184,7 +184,7 @@ var FASTMAIL_DKIM = function(the_domain){
 
 We can then use the macros as such:
 
-```js
+```javascript
 D("example.com", REG_NONE, DnsProvider(DSP_R53_MAIN),
     FASTMAIL_MX,
     FASTMAIL_DKIM('example.com')

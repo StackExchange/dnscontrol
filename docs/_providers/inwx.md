@@ -101,7 +101,7 @@ An example `dnsconfig.js` configuration file
 for `example.tld` registered with INWX
 and delegated to Cloudflare:
 
-```js
+```javascript
 var REG_INWX = NewRegistrar("inwx");
 var DSP_CF = NewDnsProvider("cloudflare");
 

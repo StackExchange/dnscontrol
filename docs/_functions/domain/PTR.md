@@ -61,7 +61,7 @@ and A, B, C are the first 3 octets of the IP address. For example
 `128/27.18.20.172.in-addr.arpa`
 
 {% capture example %}
-```js
+```javascript
 D(REV('1.2.3.0/24'), REGISTRAR, DnsProvider(BIND),
   PTR('1', 'foo.example.com.'),
   PTR('2', 'bar.example.com.'),

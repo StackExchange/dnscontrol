@@ -31,7 +31,7 @@ This provider does not recognize any special metadata fields unique to Porkbun.
 
 An example `dnsconfig.js` configuration:
 
-```js
+```javascript
 var REG_NONE = NewRegistrar("none");
 var DSP_PORKBUN = NewDnsProvider("porkbun");
 

@@ -33,7 +33,7 @@ zeroed out automatically. Thus, `REV('1.2.3.4/24')` is an error.  This is done
 to catch typos.
 
 {% capture example %}
-```js
+```javascript
 D(REV('1.2.3.0/24'), REGISTRAR, DnsProvider(BIND),
   PTR("1", 'foo.example.com.'),
   PTR("2", 'bar.example.com.'),

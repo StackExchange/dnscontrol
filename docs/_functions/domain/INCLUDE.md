@@ -10,7 +10,7 @@ Includes all records from a given domain
 
 
 {% capture example %}
-```js
+```javascript
 D("example.com!external", REGISTRAR, DnsProvider(R53),
   A("test", "8.8.8.8")
 );

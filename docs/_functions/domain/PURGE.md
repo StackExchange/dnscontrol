@@ -13,7 +13,7 @@ These three examples all are equivalent.
 PURGE is the default:
 
 {% capture example %}
-```js
+```javascript
 D("example.com", .... ,
 );
 ```
@@ -24,7 +24,7 @@ D("example.com", .... ,
 Purge is the default, but we set it anyway:
 
 {% capture example %}
-```js
+```javascript
 D("example.com", .... ,
   PURGE,
 );
@@ -36,7 +36,7 @@ D("example.com", .... ,
 Since the "last command wins", this is the same as `PURGE`:
 
 {% capture example %}
-```js
+```javascript
 D("example.com", .... ,
   PURGE,
   NO_PURGE,

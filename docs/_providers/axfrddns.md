@@ -58,7 +58,7 @@ operations, which is the least secure option.
 If distinct zones require distinct keys, you will need to instantiate the
 provider once for each key:
 
-```js
+```javascript
 var DSP_AXFRDDNS_A = NewDnsProvider("axfrddns-a");
 var DSP_AXFRDDNS_B = NewDnsProvider("axfrddns-b");
 ```
@@ -87,7 +87,7 @@ provider.
 This list can be provided either as metadata or in `creds.json`. Only
 the later allows `get-zones` to work properly.
 
-```js
+```javascript
 var DSP_AXFRDDNS = NewDnsProvider("axfrddns", {
         "default_ns": [
             "ns1.example.tld.",
@@ -140,7 +140,7 @@ Here is a sample `named.conf` example for an authauritative server on
 zone `example.tld`. It uses a simple IP-based ACL for the AXFR
 transfer and a conjunction of TSIG and IP-based ACL for the updates.
 
-```js
+```javascript
 options {
 
     listen-on { any; };

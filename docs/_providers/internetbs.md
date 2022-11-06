@@ -30,7 +30,7 @@ This provider does not recognize any special metadata fields unique to Internet.
 ## Usage
 An example `dnsconfig.js` configuration:
 
-```js
+```javascript
 var REG_INTERNETBS = NewRegistrar("internetbs");
 
 D("example.com", REG_INTERNETBS,

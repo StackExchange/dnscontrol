@@ -40,7 +40,7 @@ This provider does not recognize any special metadata fields unique to ClouDNS.
 ClouDNS supports ClouDNS-specific "WR record (web redirects)" for your domains.
 Simply use the `CLOUDNS_WR` functions to make redirects like any other record:
 
-```js
+```javascript
 var REG_NONE = NewRegistrar("none");
 var DSP_CLOUDNS = NewDnsProvider("cloudns");
 
@@ -53,7 +53,7 @@ D("example.tld", REG_NONE, DnsProvider(DSP_CLOUDNS),
 ## Usage
 An example `dnsconfig.js` configuration:
 
-```js
+```javascript
 var REG_NONE = NewRegistrar("none");
 var DSP_CLOUDNS = NewDnsProvider("cloudns");
 

@@ -10,7 +10,7 @@ return: number
 Converts an IPv4 address from string to an integer. This allows performing mathematical operations with the IP address.
 
 {% capture example %}
-```js
+```javascript
 var addrA = IP('1.2.3.4')
 var addrB = addrA + 1
 // addrB = 1.2.3.5
@@ -22,7 +22,7 @@ var addrB = addrA + 1
 NOTE: `IP()` does not accept IPv6 addresses (PRs gladly accepted!). IPv6 addresses are simply strings:
 
 {% capture example2 %}
-```js
+```javascript
 // IPv4 Var
 var addrA1 = IP("1.2.3.4");
 var addrA2 = "1.2.3.4";

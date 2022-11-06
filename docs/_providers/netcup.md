@@ -26,7 +26,7 @@ Example:
 ## Usage
 An example `dnsconfig.js` configuration:
 
-```js
+```javascript
 var REG_NONE = NewRegistrar("none");
 var DSP_NETCUP = NewDnsProvider("netcup");
 

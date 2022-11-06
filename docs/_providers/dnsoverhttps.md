@@ -44,7 +44,7 @@ This provider does not recognize any special metadata fields unique to DOH.
 ## Usage
 An example `dnsconfig.js` configuration:
 
-```js
+```javascript
 var REG_MONITOR = NewRegistrar("dohcloudflare");
 
 D("example.com", REG_MONITOR,

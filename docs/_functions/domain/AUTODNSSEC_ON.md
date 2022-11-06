@@ -18,7 +18,7 @@ NOTE: No parenthesis should follow these keywords.  That is, the
 correct syntax is `AUTODNSSEC_ON` not `AUTODNSSEC_ON()`
 
 {% capture example %}
-```js
+```javascript
 D("example.com", .... ,
   AUTODNSSEC_ON,  // Enable AutoDNSSEC.
   A("@", "10.1.1.1")

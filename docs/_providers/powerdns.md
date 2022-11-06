@@ -27,7 +27,7 @@ Example:
 ## Metadata
 Following metadata are available:
 
-```js
+```javascript
 {
     'default_ns': [
         'a.example.com.',
@@ -43,7 +43,7 @@ Following metadata are available:
 ## Usage
 An example `dnsconfig.js` configuration:
 
-```js
+```javascript
 var REG_NONE = NewRegistrar("none");
 var DSP_POWERDNS = NewDnsProvider("powerdns");
 

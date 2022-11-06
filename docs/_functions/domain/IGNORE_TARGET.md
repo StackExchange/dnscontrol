@@ -25,7 +25,7 @@ IGNORE_TARGET is generally used in very specific situations:
 In this example, DNSControl will insert/update the "baz.example.com" record but will leave unchanged a CNAME to "foo.acm-validations.aws" record.
 
 {% capture example %}
-```js
+```javascript
 D("example.com",
   IGNORE_TARGET('**.acm-validations.aws.', 'CNAME'),
   A("baz", "1.2.3.4")

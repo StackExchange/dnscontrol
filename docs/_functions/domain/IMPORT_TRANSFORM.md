@@ -46,7 +46,7 @@ bar.com:
 Here's how you'd implement this in DNSControl:
 
 {% capture example %}
-```js
+```javascript
 var TRANSFORM_INT = [
     // RANGE_START, RANGE_END, NEW_BASE
     { low: "1.2.3.10", high: "1.2.3.20", newBase: "123.123.123.100" },  //   .10 to .20 rewritten as 123.123.123.100+IP

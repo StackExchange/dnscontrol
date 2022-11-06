@@ -26,7 +26,7 @@ This provider does not recognize any special metadata fields unique to deSEC.
 ## Usage
 An example `dnsconfig.js` configuration:
 
-```js
+```javascript
 var REG_NONE = NewRegistrar("none");    // No registrar.
 var DSP_DESEC = NewDnsProvider("desec");  // deSEC
 

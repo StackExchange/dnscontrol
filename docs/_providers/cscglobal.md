@@ -34,7 +34,7 @@ Example:
 ## Usage
 An example `dnsconfig.js` configuration:
 
-```js
+```javascript
 var REG_CSCGLOBAL = NewRegistrar("cscglobal");
 var DSP_BIND = NewDnsProvider("bind");
 

@@ -25,7 +25,7 @@ The value can be:
   * We highly recommend using units instead of the number of seconds. Would your coworkers understand your intention better if you wrote `14400` or `'4h'`?
 
 {% capture example %}
-```js
+```javascript
 D('example.com', REGISTRAR, DnsProvider('R53'),
   DefaultTTL(2000),
   A('@','1.2.3.4'), // uses default

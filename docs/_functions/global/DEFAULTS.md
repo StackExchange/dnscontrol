@@ -10,7 +10,7 @@ parameter_types:
 arguments passed as if they were the first modifiers in the argument list.
 
 {% capture example %}
-```js
+```javascript
 var COMMON = NewDnsProvider("foo");
 // we want to create backup zone files for all domains, but not actually register them.
 // also create a default TTL

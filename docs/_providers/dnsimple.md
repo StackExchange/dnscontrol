@@ -33,7 +33,7 @@ This provider does not recognize any special metadata fields unique to DNSimple.
 ## Usage
 An example `dnsconfig.js` configuration:
 
-```js
+```javascript
 var REG_DNSIMPLE = NewRegistrar("dnsimple");
 var DSP_DNSIMPLE = NewDnsProvider("dnsimple");
 

@@ -26,7 +26,7 @@ Example:
 
 An example `dnsconfig.js` configuration:
 
-```js
+```javascript
 var REG_HOSTINGDE = NewRegistrar("hosting.de");
 var DSP_HOSTINGDE = NewDnsProvider("hosting.de");
 
@@ -56,7 +56,7 @@ An example `creds.json` configuration:
 
 An example `dnsconfig.js` configuration:
 
-```js
+```javascript
 var REG_HTTPNET = NewRegistrar("http.net");
 
 var DSP_HTTPNET = NewDnsProvider("http.net", {

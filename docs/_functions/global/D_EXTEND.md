@@ -33,7 +33,7 @@ Some operators only act on an apex domain (e.g.
 in a `D_EXTEND` subdomain may not be what you expect.
 
 {% capture example %}
-```js
+```javascript
 D("domain.tld", REG, DnsProvider(DNS),
   A("@", "127.0.0.1"), // domain.tld
   A("www", "127.0.0.2"), // www.domain.tld

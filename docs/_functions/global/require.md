@@ -20,7 +20,7 @@ is interpreted relative to the program's working directory at the time
 of the call.
 
 {% capture example %}
-```js
+```javascript
 // dnsconfig.js
 require('kubernetes/clusters.js');
 
@@ -29,7 +29,7 @@ D("mydomain.net", REG, PROVIDER,
 );
 ```
 
-```js
+```javascript
 // kubernetes/clusters.js
 require('./clusters/prod.js');
 require('./clusters/dev.js');
@@ -39,7 +39,7 @@ function IncludeKubernetes() {
 }
 ```
 
-```js
+```javascript
 // kubernetes/clusters/prod.js
 function includeK8Sprod() {
     return [
@@ -48,7 +48,7 @@ function includeK8Sprod() {
 }
 ```
 
-```js
+```javascript
 // kubernetes/clusters/dev.js
 function includeK8Sdev() {
     return [
@@ -63,7 +63,7 @@ function includeK8Sdev() {
 You can also use it to require JSON files and initialize variables with it:
 
 {% capture example %}
-```js
+```javascript
 // dnsconfig.js
 var domains = require('./domain-ip-map.json')
 
@@ -74,7 +74,7 @@ for (var domain in domains) {
 }
 ```
 
-```js
+```javascript
 // domain-ip-map.json
 {
     "mydomain.net": "1.1.1.1",

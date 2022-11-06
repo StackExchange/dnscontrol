@@ -39,7 +39,7 @@ DMARC policies for your domains.
 
 ### Simple example
 
-```js
+```javascript
 DMARC_BUILDER({
   policy: 'reject',
   ruf: [
@@ -56,7 +56,7 @@ This yield the following record:
 
 ### Advanced example
 
-```js
+```javascript
 DMARC_BUILDER({
   policy: 'reject',
   subdomainPolicy: 'quarantine',

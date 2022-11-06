@@ -140,7 +140,7 @@ list.
 
 Each `testgroup()` is a named list of tests.
 
-```js
+```javascript
 testgroup("MX",                                   <<< 1
   tc("MX record", mx("@", 5, "foo.com.")),        <<< 2
   tc("Change MX pref", mx("@", 10, "foo.com.")),  <<< 3

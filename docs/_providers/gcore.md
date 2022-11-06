@@ -27,7 +27,7 @@ This provider does not recognize any special metadata fields unique to Gcore.
 ## Usage
 An example `dnsconfig.js` configuration:
 
-```js
+```javascript
 var REG_NONE = NewRegistrar("none");    // No registrar.
 var DSP_GCORE = NewDnsProvider("gcore");  // Gcore
 

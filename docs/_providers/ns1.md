@@ -27,7 +27,7 @@ This provider does not recognize any special metadata fields unique to NS1.
 ## Usage
 An example `dnsconfig.js` configuration:
 
-```js
+```javascript
 var REG_NONE = NewRegistrar("none");
 var DSP_NS1 = NewDnsProvider("ns1");
 

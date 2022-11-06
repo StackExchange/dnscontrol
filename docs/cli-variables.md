@@ -19,7 +19,7 @@ This would set the variable with the name `testKey` and the value of `testValue`
 
 The `CLI_DEFAULTS` feature is used to define default values for when a variable is not defined on the command line.
 
-```js
+```javascript
 CLI_DEFAULTS({
     "variableName": "defaultValue",
 });
@@ -38,7 +38,7 @@ In this configuration:
 * `dnscontrol push` would generate the external (default) view.
 * `dnscontrol push -v view=internal` would generate the internal view.
 
-```js
+```javascript
 // See https://stackexchange.github.io/dnscontrol/cli-variables
 CLI_DEFAULTS({
     "view": "external",
@@ -73,7 +73,7 @@ In this configuration:
 * `dnscontrol push` would generate the normal configuration.
 * `dnscontrol push -v emergency=true` would generate the emergency configuration.
 
-```js
+```javascript
 // See https://stackexchange.github.io/dnscontrol/cli-variables
 CLI_DEFAULTS({
     "emergency": false,

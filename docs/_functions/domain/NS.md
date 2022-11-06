@@ -19,7 +19,7 @@ The difference between `NS()` and `NAMESERVER()` is explained in the `NAMESERVER
 Target should be a string representing the NS target. If it is a single label we will assume it is a relative name on the current domain. If it contains *any* dots, it should be a fully qualified domain name, ending with a `.`.
 
 {% capture example %}
-```js
+```javascript
 D("example.com", REGISTRAR, DnsProvider("R53"),
   NS("foo", "ns1.example2.com."), // Delegate ".foo.example.com" zone to another server.
   NS("foo", "ns2.example2.com."), // Delegate ".foo.example.com" zone to another server.

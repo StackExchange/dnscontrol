@@ -80,7 +80,7 @@ and renaming it.
 
 The file looks like:
 
-```js
+```javascript
 // Providers:
 
 var REG_NONE = NewRegistrar('none');    // No registrar.

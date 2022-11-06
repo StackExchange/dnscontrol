@@ -32,7 +32,7 @@ This provider does not recognize any special metadata fields unique to OVH.
 
 An example `dnsconfig.js` configuration: (DNS hosted with OVH):
 
-```js
+```javascript
 var REG_OVH = NewRegistrar("ovh");
 var DSP_OVH = NewDnsProvider("ovh");
 
@@ -43,7 +43,7 @@ D("example.tld", REG_OVH, DnsProvider(DSP_OVH),
 
 An example `dnsconfig.js` configuration: (Registrar only. DNS hosted elsewhere)
 
-```js
+```javascript
 var REG_OVH = NewRegistrar("ovh");
 var DSP_R53 = NewDnsProvider("r53");
 

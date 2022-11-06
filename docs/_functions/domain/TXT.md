@@ -23,7 +23,7 @@ will be done for you.
 Modifiers can be any number of [record modifiers](#record-modifiers) or JSON objects, which will be merged into the record's metadata.
 
 {% capture example %}
-```js
+```javascript
     D("example.com", REGISTRAR, ....,
       TXT('@', '598611146-3338560'),
       TXT('listserve', 'google-site-verification=12345'),

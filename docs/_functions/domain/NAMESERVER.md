@@ -21,7 +21,7 @@ delegations. `NAMESERVER()` is for informing upstream delegations.
 For more information, refer to [this page](../../nameservers.md).
 
 {% capture example %}
-```js
+```javascript
 D("example.com", REGISTRAR, .... ,
   DnsProvider(route53, 0),
   // Replace the nameservers:
@@ -82,7 +82,7 @@ special Registrar called "NONE". It makes no changes.
 
 It looks like this:
 
-```js
+```javascript
 var REG_THIRDPARTY = NewRegistrar('ThirdParty', 'NONE')
 D("mydomain.com", REG_THIRDPARTY,
   ...

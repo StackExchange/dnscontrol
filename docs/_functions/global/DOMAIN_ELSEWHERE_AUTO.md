@@ -26,7 +26,7 @@ hard-code them in your dnsconfig.js file.
 
 For example these two statements are equivalent:
 
-```js
+```javascript
 DOMAIN_ELSEWHERE_AUTO("example.com", REG_NAMEDOTCOM, DSP_AZURE);
 
 // ...is equivalent to...

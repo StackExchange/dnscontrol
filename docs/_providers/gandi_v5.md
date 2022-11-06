@@ -58,7 +58,7 @@ names.
 ## Usage
 An example `dnsconfig.js` configuration:
 
-```js
+```javascript
 var REG_GANDI = NewRegistrar("gandi");
 var DSP_GANDI = NewDnsProvider("gandi");
 

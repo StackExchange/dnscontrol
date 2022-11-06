@@ -27,7 +27,7 @@ managed by DNSControl and those that aren't.
 {% endhint %}
 
 {% capture example %}
-```js
+```javascript
 D("foo.com", .... ,
   CF_TEMP_REDIRECT("example.mydomain.com/*", "https://otherplace.yourdomain.com/$1"),
 );
