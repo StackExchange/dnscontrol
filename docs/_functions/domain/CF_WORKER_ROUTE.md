@@ -17,9 +17,11 @@ If _any_ `CF_WORKER_ROUTE` function is used then `dnscontrol` will manage _all_
 Worker Routes for the domain. To be clear: this means it will delete existing routes that
 were created outside of DNSControl.
 
-WARNING: This interface is not extensively tested. Take precautions such as making
+{% hint style="warning" %}
+**WARNING**: This interface is not extensively tested. Take precautions such as making
 backups and manually verifying `dnscontrol preview` output before running
 `dnscontrol push`.
+{% endhint %}
 
 This example assigns the patterns `api.foo.com/*` and `foo.com/api/*` to a `my-worker` script:
 

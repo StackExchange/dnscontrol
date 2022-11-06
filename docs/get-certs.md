@@ -4,9 +4,10 @@ title: Let's Encrypt Certificate generation
 
 # *Let's Encrypt* Certificate generation
 
-**WARNING: This feature
-is frozen and will be removed in early 2023. The "get-certs" command (renews certs via Let's Encrypt) has no maintainer. There are other projects that do a better job. If you don't use this feature, please do not start. If you do use this feature, please plan on migrating to something else. See discussion in [#1400](https://github.com/StackExchange/dnscontrol/issues/1400)**
-
+{% hint style="warning" %}
+**WARNING**: This feature
+is frozen and will be removed in early 2023. The "get-certs" command (renews certs via Let's Encrypt) has no maintainer. There are other projects that do a better job. If you don't use this feature, please do not start. If you do use this feature, please plan on migrating to something else. See discussion in [#1400](https://github.com/StackExchange/dnscontrol/issues/1400)
+{% endhint %}
 
 DNSControl will generate/renew Let's Encrypt certificates using DNS
 validation.  It is not a complete certificate management system, but

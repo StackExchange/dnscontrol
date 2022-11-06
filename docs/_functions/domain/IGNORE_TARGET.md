@@ -8,9 +8,11 @@ parameter_types:
   rType: string
 ---
 
-WARNING: The `IGNORE_*` family  of functions is risky to use. The code
+{% hint style="warning" %}
+**WARNING**: The `IGNORE_*` family  of functions is risky to use. The code
 is brittle and has subtle bugs. Use at your own risk. Do not use these
 commands with `D_EXTEND()` or use it at the domain apex.
+{% endhint %}
 
 IGNORE_TARGET can be used to ignore some records present in zone based on the record's target and type. IGNORE_TARGET currently only supports CNAME record types.
 

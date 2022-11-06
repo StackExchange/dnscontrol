@@ -8,9 +8,11 @@ parameter_types:
   rTypes: string?
 ---
 
-WARNING: The `IGNORE_*` family  of functions is risky to use. The code
+{% hint style="warning" %}
+**WARNING**: The `IGNORE_*` family  of functions is risky to use. The code
 is brittle and has subtle bugs. Use at your own risk. Do not use these
 commands with `D_EXTEND()`.
+{% endhint %}
 
 `IGNORE_NAME` can be used to ignore some records present in zone.
 Records of that name will be completely ignored. An optional `rTypes` may be specified as a comma separated list to only ignore records of the given type, e.g. `"A"`, `"A,CNAME"`, `"A, MX, CNAME"`. If `rTypes` is omitted or is `"*"` all record types matching the name will be ignored.
