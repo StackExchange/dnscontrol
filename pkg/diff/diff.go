@@ -353,8 +353,9 @@ func sortedKeys(m map[string]*models.RecordConfig) []string {
 	return s
 }
 
+var spaceCommaTokenizerRegexp = regexp.MustCompile(`\s*,\s*`)
+
 func compileIgnoredNames(ignoredNames []*models.IgnoreName) []ignoredName {
-	rTypesRegexp := regexp.MustCompile(`\s*,\s*`)
 	result := make([]ignoredName, 0, len(ignoredNames))
 
 	for _, tst := range ignoredNames {
@@ -365,7 +366,7 @@ func compileIgnoredNames(ignoredNames []*models.IgnoreName) []ignoredName {
 
 		t := []string{}
 		if tst.Types != "" {
-			t = rTypesRegexp.Split(tst.Types, -1)
+			t = spaceCommaTokenizerRegexp.Split(tst.Types, -1)
 		}
 
 		result = append(result, ignoredName{nameGlob: g, rTypes: t})
