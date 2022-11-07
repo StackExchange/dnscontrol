@@ -92,17 +92,6 @@ Here is the minimal entry required:
 }
 ```
 
-### hyphen
-
-Message: `ERROR: creds.json entry ... has invalid ... value ...`
-
-This indicates the entry for `creds.json` has a TYPE value that is
-invalid i.e. it is the empty string or a hyphen (`-`).
-
-The fix is to correct the `TYPE` parameter in the `creds.json` entry.
-Change it to one of the all caps identifiers in [the service provider list](https://stackexchange.github.io/dnscontrol/provider-list).
-
-
 ### cleanup
 
 Message: `INFO: In dnsconfig.js New*(..., ...) can be simplified to New*(...)`
