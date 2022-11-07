@@ -2,6 +2,7 @@ package diff
 
 import (
 	"fmt"
+	"regexp"
 	"sort"
 
 	"github.com/StackExchange/dnscontrol/v3/models"
@@ -42,11 +43,18 @@ func New(dc *models.DomainConfig, extraValues ...func(*models.RecordConfig) map[
 	}
 }
 
+// An ignoredName must match both the name glob and one of the recordTypes in rTypes. If rTypes is empty, any
+// record type will match.
+type ignoredName struct {
+	nameGlob glob.Glob
+	rTypes   []string
+}
+
 type differ struct {
 	dc          *models.DomainConfig
 	extraValues []func(*models.RecordConfig) map[string]string
 
-	compiledIgnoredNames   []glob.Glob
+	compiledIgnoredNames   []ignoredName
 	compiledIgnoredTargets []glob.Glob
 }
 
@@ -99,7 +107,7 @@ func (d *differ) IncrementalDiff(existing []*models.RecordConfig) (unchanged, cr
 	// Gather the existing records. Skip over any that should be ignored.
 	for _, e := range existing {
 		//fmt.Printf("********** DEBUG: existing %v %v %v\n", e.GetLabel(), e.Type, e.GetTargetCombined())
-		if d.matchIgnoredName(e.GetLabel()) {
+		if d.matchIgnoredName(e.GetLabel(), e.Type) {
 			//fmt.Printf("Ignoring record %s %s due to IGNORE_NAME\n", e.GetLabel(), e.Type)
 			printer.Debugf("Ignoring record %s %s due to IGNORE_NAME\n", e.GetLabel(), e.Type)
 		} else if d.matchIgnoredTarget(e.GetTargetField(), e.Type) {
@@ -115,7 +123,7 @@ func (d *differ) IncrementalDiff(existing []*models.RecordConfig) (unchanged, cr
 	//fmt.Printf("********** DEBUG: desired list %+v\n", desired)
 	for _, dr := range desired {
 		//fmt.Printf("********** DEBUG: desired %v %v %v -- %v %v\n", dr.GetLabel(), dr.Type, dr.GetTargetCombined(), apexException(dr), d.matchIgnoredName(dr.GetLabel()))
-		if d.matchIgnoredName(dr.GetLabel()) {
+		if d.matchIgnoredName(dr.GetLabel(), dr.Type) {
 			//if !apexException(dr) || !ignoreNameException(dr) {
 			if (!ignoreNameException(dr)) && (!apexException(dr)) {
 				return nil, nil, nil, nil, fmt.Errorf("trying to update/add IGNORE_NAMEd record: %s %s", dr.GetLabel(), dr.Type)
@@ -345,16 +353,23 @@ func sortedKeys(m map[string]*models.RecordConfig) []string {
 	return s
 }
 
-func compileIgnoredNames(ignoredNames []string) []glob.Glob {
-	result := make([]glob.Glob, 0, len(ignoredNames))
+var spaceCommaTokenizerRegexp = regexp.MustCompile(`\s*,\s*`)
+
+func compileIgnoredNames(ignoredNames []*models.IgnoreName) []ignoredName {
+	result := make([]ignoredName, 0, len(ignoredNames))
 
 	for _, tst := range ignoredNames {
-		g, err := glob.Compile(tst, '.')
+		g, err := glob.Compile(tst.Pattern, '.')
 		if err != nil {
-			panic(fmt.Sprintf("Failed to compile IGNORE_NAME pattern %q: %v", tst, err))
+			panic(fmt.Sprintf("Failed to compile IGNORE_NAME pattern %q: %v", tst.Pattern, err))
 		}
 
-		result = append(result, g)
+		t := []string{}
+		if tst.Types != "" {
+			t = spaceCommaTokenizerRegexp.Split(tst.Types, -1)
+		}
+
+		result = append(result, ignoredName{nameGlob: g, rTypes: t})
 	}
 
 	return result
@@ -379,11 +394,19 @@ func compileIgnoredTargets(ignoredTargets []*models.IgnoreTarget) []glob.Glob {
 	return result
 }
 
-func (d *differ) matchIgnoredName(name string) bool {
+func (d *differ) matchIgnoredName(name string, rType string) bool {
 	for _, tst := range d.compiledIgnoredNames {
-		//fmt.Printf("********** DEBUG: matchIgnoredName %q %q %v\n", name, tst, tst.Match(name))
-		if tst.Match(name) {
-			return true
+		//fmt.Printf("********** DEBUG: matchIgnoredName %q %q %v %v\n", name, rType, tst, tst.nameGlob.Match(name))
+		if tst.nameGlob.Match(name) {
+			if tst.rTypes == nil {
+				return true
+			}
+
+			for _, rt := range tst.rTypes {
+				if rt == "*" || rt == rType {
+					return true
+				}
+			}
 		}
 	}
 	return false

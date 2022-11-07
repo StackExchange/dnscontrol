@@ -19,7 +19,7 @@ type DomainConfig struct {
 	Records        Records           `json:"records"`
 	Nameservers    []*Nameserver     `json:"nameservers,omitempty"`
 	KeepUnknown    bool              `json:"keepunknown,omitempty"`
-	IgnoredNames   []string          `json:"ignored_names,omitempty"`
+	IgnoredNames   []*IgnoreName     `json:"ignored_names,omitempty"`
 	IgnoredTargets []*IgnoreTarget   `json:"ignored_targets,omitempty"`
 	AutoDNSSEC     string            `json:"auto_dnssec,omitempty"` // "", "on", "off"
 	//DNSSEC        bool              `json:"dnssec,omitempty"`
