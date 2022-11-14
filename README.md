@@ -34,6 +34,7 @@ Currently supported DNS providers:
 - Domainnameshop (Domeneshop)
 - Exoscale
 - Gandi
+- Gcore
 - Google DNS
 - Hetzner
 - HEXONET
