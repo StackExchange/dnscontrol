@@ -21,6 +21,7 @@ import (
 	_ "github.com/StackExchange/dnscontrol/v3/providers/exoscale"
 	_ "github.com/StackExchange/dnscontrol/v3/providers/gandiv5"
 	_ "github.com/StackExchange/dnscontrol/v3/providers/gcloud"
+	_ "github.com/StackExchange/dnscontrol/v3/providers/gcore"
 	_ "github.com/StackExchange/dnscontrol/v3/providers/hedns"
 	_ "github.com/StackExchange/dnscontrol/v3/providers/hetzner"
 	_ "github.com/StackExchange/dnscontrol/v3/providers/hexonet"

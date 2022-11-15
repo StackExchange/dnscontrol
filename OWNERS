@@ -15,6 +15,7 @@ providers/domainnameshop @SimenBai
 providers/easyname @tresni
 providers/exoscale @pierre-emmanuelJ
 providers/gandi_v5 @TomOnTime
+providers/gcore @xddxdd
 providers/gcloud @riyadhalnur
 providers/hedns @rblenkinsopp
 providers/hetzner @das7pad

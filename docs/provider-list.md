@@ -85,6 +85,7 @@ Providers in this category and their maintainers are:
 * `EASYNAME` @tresni
 * `EXOSCALE` @pierre-emmanuelJ
 * `GANDI_V5` @TomOnTime
+* `GCORE` @xddxdd
 * `HEDNS` @rblenkinsopp
 * `HETZNER` @das7pad
 * `HEXONET` @papakai

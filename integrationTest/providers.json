@@ -94,6 +94,10 @@
     "project_id": "$GCLOUD_PROJECT",
     "type": "$GCLOUD_TYPE"
   },
+  "GCORE": {
+    "api-key": "$GCORE_API_KEY",
+    "domain": "$GCORE_DOMAIN"
+  },
   "HEDNS": {
     "domain": "$HEDNS_DOMAIN",
     "password": "$HEDNS_PASSWORD",
