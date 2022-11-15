@@ -100,7 +100,10 @@ func (c *gcoreProvider) GetZoneRecords(domain string) (models.Records, error) {
 		if err != nil {
 			return nil, err
 		}
-		nativeRecords := nativeToRecords(rrset, zone.Name, rec.Name, rec.Type)
+		nativeRecords, err := nativeToRecords(rrset, zone.Name, rec.Name, rec.Type)
+		if err != nil {
+			return nil, err
+		}
 		existingRecords = append(existingRecords, nativeRecords...)
 	}
 

@@ -3,6 +3,7 @@ package gcore
 // Convert the provider's native record description to models.RecordConfig.
 
 import (
+	"errors"
 	"fmt"
 
 	dnssdk "github.com/G-Core/gcore-dns-sdk-go"
@@ -11,7 +12,9 @@ import (
 )
 
 // nativeToRecord takes a DNS record from G-Core and returns a native RecordConfig struct.
-func nativeToRecords(n dnssdk.RRSet, zoneName string, recName string, recType string) (rcs []*models.RecordConfig) {
+func nativeToRecords(n dnssdk.RRSet, zoneName string, recName string, recType string) ([]*models.RecordConfig, error) {
+	var rcs []*models.RecordConfig
+
 	// Split G-Core's RRset into individual records
 	for _, value := range n.Records {
 		rc := &models.RecordConfig{
@@ -22,7 +25,7 @@ func nativeToRecords(n dnssdk.RRSet, zoneName string, recName string, recType st
 		switch recType {
 		case "CAA": // G-Core API don't need quotes around CAA with whitespace
 			if len(value.Content) != 3 {
-				panic("incorrect number of fields in G-Core's CAA record")
+				return nil, errors.New("incorrect number of fields in G-Core's CAA record")
 			}
 
 			parts := make([]string, len(value.Content))
@@ -32,18 +35,18 @@ func nativeToRecords(n dnssdk.RRSet, zoneName string, recName string, recType st
 
 			flag, tag, target := parts[0], parts[1], parts[2]
 			if err := rc.SetTargetCAAStrings(flag, tag, target); err != nil {
-				panic(fmt.Errorf("unparsable record received from G-Core: %w", err))
+				return nil, fmt.Errorf("unparsable record received from G-Core: %w", err)
 			}
 
 		default: //  "A", "AAAA", "CAA", "NS", "CNAME", "MX", "PTR", "SRV", "TXT"
 			if err := rc.PopulateFromString(recType, value.ContentToString(), zoneName); err != nil {
-				panic(fmt.Errorf("unparsable record received from G-Core: %w", err))
+				return nil, fmt.Errorf("unparsable record received from G-Core: %w", err)
 			}
 		}
 		rcs = append(rcs, rc)
 	}
 
-	return rcs
+	return rcs, nil
 }
 
 func recordsToNative(rcs []*models.RecordConfig, expectedKey models.RecordKey) *dnssdk.RRSet {
