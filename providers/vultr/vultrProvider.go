@@ -140,7 +140,7 @@ func (api *vultrProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*mode
 		corrections = append(corrections, &models.Correction{
 			Msg: mod.String(),
 			F: func() error {
-				_, err := api.client.DomainRecord.Create(context.Background(), dc.Name, &govultr.DomainRecordReq{r.Name, r.Type, r.Data, r.TTL, &r.Priority})
+				_, err := api.client.DomainRecord.Create(context.Background(), dc.Name, &govultr.DomainRecordReq{Name: r.Name, Type: r.Type, Data: r.Data, TTL: r.TTL, Priority: &r.Priority})
 				return err
 			},
 		})
@@ -151,7 +151,7 @@ func (api *vultrProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*mode
 		corrections = append(corrections, &models.Correction{
 			Msg: fmt.Sprintf("%s; Vultr RecordID: %v", mod.String(), r.ID),
 			F: func() error {
-				return api.client.DomainRecord.Update(context.Background(), dc.Name, r.ID, &govultr.DomainRecordReq{r.Name, r.Type, r.Data, r.TTL, &r.Priority})
+				return api.client.DomainRecord.Update(context.Background(), dc.Name, r.ID, &govultr.DomainRecordReq{Name: r.Name, Type: r.Type, Data: r.Data, TTL: r.TTL, Priority: &r.Priority})
 			},
 		})
 	}
@@ -173,7 +173,7 @@ func (api *vultrProvider) EnsureDomainExists(domain string) error {
 	}
 
 	// Vultr requires an initial IP, use a dummy one.
-	_, err := api.client.Domain.Create(context.Background(), &govultr.DomainReq{domain, "0.0.0.0", "disabled"})
+	_, err := api.client.Domain.Create(context.Background(), &govultr.DomainReq{Domain: domain, IP: "0.0.0.0", DNSSec: "disabled"})
 	return err
 }
 
