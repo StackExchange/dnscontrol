@@ -51,6 +51,7 @@ Currently supported DNS providers:
 - OctoDNS
 - Oracle Cloud
 - Packetframe
+- Porkbun
 - PowerDNS
 - RWTH DNS-Admin
 - SoftLayer

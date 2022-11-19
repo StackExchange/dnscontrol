@@ -188,6 +188,11 @@
     "token": "$PACKETFRAME_TOKEN",
     "domain": "$PACKETFRAME_DOMAIN"
   },
+  "PORKBUN": {
+    "api_key": "$PORKBUN_API_KEY",
+    "secret_key": "$PORKBUN_SECRET_KEY",
+    "domain": "$PORKBUN_DOMAIN"
+  },
   "ROUTE53": {
     "KeyId": "$ROUTE53_KEY_ID",
     "SecretKey": "$ROUTE53_KEY",

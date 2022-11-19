@@ -39,6 +39,7 @@ import (
 	_ "github.com/StackExchange/dnscontrol/v3/providers/oracle"
 	_ "github.com/StackExchange/dnscontrol/v3/providers/ovh"
 	_ "github.com/StackExchange/dnscontrol/v3/providers/packetframe"
+	_ "github.com/StackExchange/dnscontrol/v3/providers/porkbun"
 	_ "github.com/StackExchange/dnscontrol/v3/providers/powerdns"
 	_ "github.com/StackExchange/dnscontrol/v3/providers/route53"
 	_ "github.com/StackExchange/dnscontrol/v3/providers/rwth"
