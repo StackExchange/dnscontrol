@@ -45,7 +45,7 @@ type DNSZone struct {
 }
 
 type DNSRecordCreate struct {
-	Flag     int64  `json:"flag,omitempty"`
+	Flag     int64  `json:"flag"`
 	Hostname string `json:"hostname,omitempty"`
 	Port     int64  `json:"port,omitempty"`
 	Priority int64  `json:"priority,omitempty"`
@@ -53,7 +53,7 @@ type DNSRecordCreate struct {
 	TTL      int64  `json:"ttl,omitempty"`
 	Type     string `json:"type,omitempty"`
 	Value    string `json:"value,omitempty"`
-	Weight   int64  `json:"weight,omitempty"`
+	Weight   int64  `json:"weight"`
 }
 
 func (n *netlifyProvider) getDNSZones() ([]*DNSZone, error) {
