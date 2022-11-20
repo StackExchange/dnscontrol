@@ -118,7 +118,7 @@ func (n *netlifyProvider) GetZoneRecords(domain string) (models.Records, error) 
 			}
 			err = rec.SetTargetSRV(uint16(r.Priority), r.Weight, r.Port, r.Value)
 		case "TXT":
-			err = rec.SetTargetTXT(r.Value)
+			err = rec.SetTargetTXTfromRFC1035Quoted(r.Value)
 		case "CAA":
 			err = rec.SetTargetCAA(uint8(r.Flag), r.Tag, r.Value)
 		default:
@@ -250,7 +250,7 @@ func toReq(rc *models.RecordConfig) *DNSRecordCreate {
 	case "SRV":
 		priority = int64(rc.SrvPriority)
 	case "TXT":
-		target = rc.GetTargetField()
+		target = rc.GetTargetRFC1035Quoted()
 	default:
 		// no action required
 	}
