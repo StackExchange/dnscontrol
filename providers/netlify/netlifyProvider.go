@@ -107,8 +107,6 @@ func (n *netlifyProvider) GetZoneRecords(domain string) (models.Records, error) 
 		rec.SetLabelFromFQDN(r.Hostname, domain) // netlify returns the FQDN
 
 		switch rtype := r.Type; rtype {
-		case "ALIAS":
-			rec.Type = r.Type
 		case "MX":
 			err = rec.SetTargetMX(uint16(r.Priority), r.Value)
 		case "SRV":
