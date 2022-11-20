@@ -47,6 +47,7 @@ Currently supported DNS providers:
 - Name.com
 - Namecheap
 - Netcup
+- Netlify
 - OVH
 - OctoDNS
 - Oracle Cloud
