@@ -66,7 +66,7 @@ func (n *netlifyProvider) GetNameservers(domain string) ([]*models.Nameserver, e
 	return models.ToNameservers(zone.DNSServers)
 }
 
-func (n *netlifyProvider) getZone(domain string) (*DNSZone, error) {
+func (n *netlifyProvider) getZone(domain string) (*dnsZone, error) {
 	zones, err := n.getDNSZones()
 	if err != nil {
 		return nil, err
@@ -195,7 +195,7 @@ func (n *netlifyProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*mode
 
 	// Deletes first so changing type works etc.
 	for _, m := range del {
-		id := m.Existing.Original.(*DNSRecord).ID
+		id := m.Existing.Original.(*dnsRecord).ID
 		corr := &models.Correction{
 			Msg: m.String(),
 			F: func() error {
@@ -218,7 +218,7 @@ func (n *netlifyProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*mode
 	}
 
 	for _, m := range modify {
-		id := m.Existing.Original.(*DNSRecord).ID
+		id := m.Existing.Original.(*dnsRecord).ID
 		req := toReq(m.Desired)
 		corr := &models.Correction{
 			Msg: m.String(),
@@ -237,7 +237,7 @@ func (n *netlifyProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*mode
 	return corrections, nil
 }
 
-func toReq(rc *models.RecordConfig) *DNSRecordCreate {
+func toReq(rc *models.RecordConfig) *dnsRecordCreate {
 	name := rc.GetLabelFQDN() // Netlify wants the FQDN
 	target := rc.GetTargetField()
 	priority := int64(0)
@@ -253,7 +253,7 @@ func toReq(rc *models.RecordConfig) *DNSRecordCreate {
 		// no action required
 	}
 
-	return &DNSRecordCreate{
+	return &dnsRecordCreate{
 		Type:     rc.Type,
 		Hostname: name,
 		Value:    target,

@@ -9,7 +9,7 @@ import (
 
 const baseURL = "https://api.netlify.com/api/v1"
 
-type DNSRecord struct {
+type dnsRecord struct {
 	Hostname  string `json:"hostname,omitempty"`
 	Type      string `json:"type,omitempty"`
 	TTL       int64  `json:"ttl,omitempty"`
@@ -25,7 +25,7 @@ type DNSRecord struct {
 	Value     string `json:"value,omitempty"`
 }
 
-type DNSZone struct {
+type dnsZone struct {
 	AccountID            string       `json:"account_id,omitempty"`
 	AccountName          string       `json:"account_name,omitempty"`
 	AccountSlug          string       `json:"account_slug,omitempty"`
@@ -37,14 +37,14 @@ type DNSZone struct {
 	ID                   string       `json:"id,omitempty"`
 	IPV6Enabled          bool         `json:"ipv6_enabled,omitempty"`
 	Name                 string       `json:"name,omitempty"`
-	Records              []*DNSRecord `json:"records"`
+	Records              []*dnsRecord `json:"records"`
 	SiteID               string       `json:"site_id,omitempty"`
 	SupportedRecordTypes []string     `json:"supported_record_types"`
 	UpdatedAt            string       `json:"updated_at,omitempty"`
 	UserID               string       `json:"user_id,omitempty"`
 }
 
-type DNSRecordCreate struct {
+type dnsRecordCreate struct {
 	Flag     int64  `json:"flag"`
 	Hostname string `json:"hostname,omitempty"`
 	Port     int64  `json:"port,omitempty"`
@@ -56,7 +56,7 @@ type DNSRecordCreate struct {
 	Weight   int64  `json:"weight"`
 }
 
-func (n *netlifyProvider) getDNSZones() ([]*DNSZone, error) {
+func (n *netlifyProvider) getDNSZones() ([]*dnsZone, error) {
 	reqURL := fmt.Sprintf("%s/dns_zones", baseURL)
 
 	req, err := http.NewRequest("GET", reqURL, nil)
@@ -77,7 +77,7 @@ func (n *netlifyProvider) getDNSZones() ([]*DNSZone, error) {
 	}
 	defer res.Body.Close()
 
-	dnsZones := make([]*DNSZone, 0)
+	dnsZones := make([]*dnsZone, 0)
 
 	err = json.NewDecoder(res.Body).Decode(&dnsZones)
 	if err != nil {
@@ -87,7 +87,7 @@ func (n *netlifyProvider) getDNSZones() ([]*DNSZone, error) {
 	return dnsZones, nil
 }
 
-func (n *netlifyProvider) getDNSZone(id string) (*DNSZone, error) {
+func (n *netlifyProvider) getDNSZone(id string) (*dnsZone, error) {
 	reqURL := fmt.Sprintf("%s/dns_zones/%s", baseURL, id)
 
 	req, err := http.NewRequest("GET", reqURL, nil)
@@ -102,7 +102,7 @@ func (n *netlifyProvider) getDNSZone(id string) (*DNSZone, error) {
 	}
 	defer res.Body.Close()
 
-	dnsZone := &DNSZone{}
+	dnsZone := &dnsZone{}
 
 	err = json.NewDecoder(res.Body).Decode(dnsZone)
 	if err != nil {
@@ -112,7 +112,7 @@ func (n *netlifyProvider) getDNSZone(id string) (*DNSZone, error) {
 	return dnsZone, nil
 }
 
-func (n *netlifyProvider) getDNSRecords(zoneID string) ([]*DNSRecord, error) {
+func (n *netlifyProvider) getDNSRecords(zoneID string) ([]*dnsRecord, error) {
 	reqURL := fmt.Sprintf("%s/dns_zones/%s/dns_records", baseURL, zoneID)
 
 	req, err := http.NewRequest("GET", reqURL, nil)
@@ -133,7 +133,7 @@ func (n *netlifyProvider) getDNSRecords(zoneID string) ([]*DNSRecord, error) {
 	}
 	defer res.Body.Close()
 
-	records := make([]*DNSRecord, 0)
+	records := make([]*dnsRecord, 0)
 
 	err = json.NewDecoder(res.Body).Decode(&records)
 	if err != nil {
@@ -162,7 +162,7 @@ func (n *netlifyProvider) deleteDNSRecords(zoneID string, recordID string) error
 	return nil
 }
 
-func (n *netlifyProvider) createDNSRecords(zoneID string, rec *DNSRecordCreate) (*DNSRecord, error) {
+func (n *netlifyProvider) createDNSRecords(zoneID string, rec *dnsRecordCreate) (*dnsRecord, error) {
 	reqURL := fmt.Sprintf("%s/dns_zones/%s/dns_records", baseURL, zoneID)
 
 	data, err := json.Marshal(rec)
@@ -183,7 +183,7 @@ func (n *netlifyProvider) createDNSRecords(zoneID string, rec *DNSRecordCreate) 
 	}
 	defer res.Body.Close()
 
-	record := &DNSRecord{}
+	record := &dnsRecord{}
 
 	err = json.NewDecoder(res.Body).Decode(record)
 	if err != nil {
