@@ -8,7 +8,8 @@ jsId: NETLIFY
 ## Configuration
 
 To use this provider, add an entry to `creds.json` with `TYPE` set to `NETLIFY`
-along with a Netlify account personal access token.
+along with a Netlify account personal access token. You can also optionally add an
+account slug. This is _typically_ your username on Netlify.
 
 Examples:
 
@@ -16,7 +17,8 @@ Examples:
 {
   "netlify": {
     "TYPE": "NETLIFY",
-    "token": "your-netlify-account-access-token"
+    "token": "your-netlify-account-access-token",
+    "slug": "account-slug" // this is optional
   }
 }
 ```

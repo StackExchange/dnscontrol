@@ -218,7 +218,7 @@
   },
   "NETLIFY": {
     "token": "$NETLIFY_TOKEN",
-    "account_slug": "$NETLIFY_ACCOUNT_SLUG",
+    "slug": "$NETLIFY_ACCOUNT_SLUG",
     "domain": "$NETLIFY_DOMAIN"
   }
 }
