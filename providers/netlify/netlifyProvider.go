@@ -8,7 +8,6 @@ import (
 	"github.com/StackExchange/dnscontrol/v3/pkg/printer"
 	"github.com/StackExchange/dnscontrol/v3/pkg/txtutil"
 	"github.com/StackExchange/dnscontrol/v3/providers"
-	"net"
 	"strings"
 )
 
@@ -110,20 +109,8 @@ func (n *netlifyProvider) GetZoneRecords(domain string) (models.Records, error) 
 		rec.SetLabelFromFQDN(r.Hostname, domain) // netlify returns the FQDN
 
 		switch rtype := r.Type; rtype {
-		case "NETLIFY": // this is basically an A record
-			ip := net.ParseIP(r.Value)
-			if ip == nil || ip.To4() == nil {
-				err = fmt.Errorf("invalid IP in NETLIFY record: %s", r.Value)
-				break
-			}
-			err = rec.SetTargetIP(ip) // Reformat to canonical form.
-		case "NETLIFYv6": // this is basically an AAAA record
-			ip := net.ParseIP(r.Value)
-			if ip == nil || ip.To16() == nil {
-				err = fmt.Errorf("invalid IP in NETLIFYv6 record: %s", r.Value)
-				break
-			}
-			err = rec.SetTargetIP(ip) // Reformat to canonical form.
+		case "NETLIFY", "NETLIFYv6":
+			err = rec.SetTarget(r.Value)
 		case "MX":
 			err = rec.SetTargetMX(uint16(r.Priority), r.Value)
 		case "SRV":
