@@ -44,7 +44,7 @@ func init() {
 
 type netlifyProvider struct {
 	apiToken    string // the account access token
-	accountSlug string // the account identifier slug
+	accountSlug string // the account identifier slug. optional.
 }
 
 func newNetlify(m map[string]string, message json.RawMessage) (providers.DNSServiceProvider, error) {
@@ -109,7 +109,7 @@ func (n *netlifyProvider) GetZoneRecords(domain string) (models.Records, error) 
 		rec.SetLabelFromFQDN(r.Hostname, domain) // netlify returns the FQDN
 
 		switch rtype := r.Type; rtype {
-		case "NETLIFY", "NETLIFYv6":
+		case "NETLIFY", "NETLIFYv6": // these behave similar to a CNAME
 			err = rec.SetTarget(r.Value)
 		case "MX":
 			err = rec.SetTargetMX(uint16(r.Priority), r.Value)
@@ -203,7 +203,7 @@ func (n *netlifyProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*mode
 		corr := &models.Correction{
 			Msg: m.String(),
 			F: func() error {
-				return n.deleteDNSRecords(zone.ID, id)
+				return n.deleteDNSRecord(zone.ID, id)
 			},
 		}
 		corrections = append(corrections, corr)
@@ -214,7 +214,7 @@ func (n *netlifyProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*mode
 		corr := &models.Correction{
 			Msg: m.String(),
 			F: func() error {
-				_, err := n.createDNSRecords(zone.ID, req)
+				_, err := n.createDNSRecord(zone.ID, req)
 				return err
 			},
 		}
@@ -227,11 +227,11 @@ func (n *netlifyProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*mode
 		corr := &models.Correction{
 			Msg: m.String(),
 			F: func() error {
-				if err := n.deleteDNSRecords(zone.ID, id); err != nil {
+				if err := n.deleteDNSRecord(zone.ID, id); err != nil {
 					return err
 				}
 
-				_, err := n.createDNSRecords(zone.ID, req)
+				_, err := n.createDNSRecord(zone.ID, req)
 				return err
 			},
 		}

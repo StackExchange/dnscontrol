@@ -87,31 +87,6 @@ func (n *netlifyProvider) getDNSZones() ([]*dnsZone, error) {
 	return dnsZones, nil
 }
 
-func (n *netlifyProvider) getDNSZone(id string) (*dnsZone, error) {
-	reqURL := fmt.Sprintf("%s/dns_zones/%s", baseURL, id)
-
-	req, err := http.NewRequest("GET", reqURL, nil)
-	if err != nil {
-		return nil, err
-	}
-	req.Header.Add("Authorization", fmt.Sprintf("Bearer %s", n.apiToken))
-
-	res, err := http.DefaultClient.Do(req)
-	if err != nil {
-		return nil, err
-	}
-	defer res.Body.Close()
-
-	dnsZone := &dnsZone{}
-
-	err = json.NewDecoder(res.Body).Decode(dnsZone)
-	if err != nil {
-		return nil, err
-	}
-
-	return dnsZone, nil
-}
-
 func (n *netlifyProvider) getDNSRecords(zoneID string) ([]*dnsRecord, error) {
 	reqURL := fmt.Sprintf("%s/dns_zones/%s/dns_records", baseURL, zoneID)
 
@@ -143,7 +118,7 @@ func (n *netlifyProvider) getDNSRecords(zoneID string) ([]*dnsRecord, error) {
 	return records, nil
 }
 
-func (n *netlifyProvider) deleteDNSRecords(zoneID string, recordID string) error {
+func (n *netlifyProvider) deleteDNSRecord(zoneID string, recordID string) error {
 	reqURL := fmt.Sprintf("%s/dns_zones/%s/dns_records/%s", baseURL, zoneID, recordID)
 
 	req, err := http.NewRequest("DELETE", reqURL, nil)
@@ -162,7 +137,7 @@ func (n *netlifyProvider) deleteDNSRecords(zoneID string, recordID string) error
 	return nil
 }
 
-func (n *netlifyProvider) createDNSRecords(zoneID string, rec *dnsRecordCreate) (*dnsRecord, error) {
+func (n *netlifyProvider) createDNSRecord(zoneID string, rec *dnsRecordCreate) (*dnsRecord, error) {
 	reqURL := fmt.Sprintf("%s/dns_zones/%s/dns_records", baseURL, zoneID)
 
 	data, err := json.Marshal(rec)
