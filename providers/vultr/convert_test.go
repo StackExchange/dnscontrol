@@ -12,7 +12,7 @@ func TestConversion(t *testing.T) {
 		Name: "example.com",
 	}
 
-	records := []*govultr.DomainRecord{
+	records := []govultr.DomainRecord{
 		{
 			Type: "A",
 			Name: "",
