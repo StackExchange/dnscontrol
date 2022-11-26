@@ -17,7 +17,7 @@ Example:
 {
   "rwth": {
     "TYPE": "RWTH",
-    "api_key": "bQGz0DOi0AkTzG...="
+    "api_token": "bQGz0DOi0AkTzG...="
   }
 }
 ```
