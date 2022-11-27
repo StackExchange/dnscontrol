@@ -410,9 +410,6 @@ var NAPTR = recordBuilder('NAPTR', {
     },
 });
 
-var NETLIFY = recordBuilder('NETLIFY')
-var NETLIFYv6 = recordBuilder('NETLIFYv6')
-
 // SOA(name,ns,mbox,refresh,retry,expire,minimum, recordModifiers...)
 var SOA = recordBuilder('SOA', {
   args: [
