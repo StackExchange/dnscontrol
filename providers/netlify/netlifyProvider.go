@@ -110,7 +110,7 @@ func (n *netlifyProvider) GetZoneRecords(domain string) (models.Records, error) 
 
 		switch rtype := r.Type; rtype {
 		case "NETLIFY", "NETLIFYv6": // these behave similar to a CNAME
-			err = rec.SetTarget(r.Value)
+			continue
 		case "MX":
 			err = rec.SetTargetMX(uint16(r.Priority), r.Value)
 		case "SRV":
