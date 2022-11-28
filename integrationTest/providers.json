@@ -215,5 +215,10 @@
     "token": "$DOMAINNAMESHOP_TOKEN",
     "secret": "$DOMAINNAMESHOP_SECRET",
     "domain": "$DOMAINNAMESHOP_DOMAIN"
+  },
+  "NETLIFY": {
+    "token": "$NETLIFY_TOKEN",
+    "slug": "$NETLIFY_ACCOUNT_SLUG",
+    "domain": "$NETLIFY_DOMAIN"
   }
 }

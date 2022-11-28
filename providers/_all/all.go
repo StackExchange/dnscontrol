@@ -33,6 +33,7 @@ import (
 	_ "github.com/StackExchange/dnscontrol/v3/providers/namecheap"
 	_ "github.com/StackExchange/dnscontrol/v3/providers/namedotcom"
 	_ "github.com/StackExchange/dnscontrol/v3/providers/netcup"
+	_ "github.com/StackExchange/dnscontrol/v3/providers/netlify"
 	_ "github.com/StackExchange/dnscontrol/v3/providers/ns1"
 	_ "github.com/StackExchange/dnscontrol/v3/providers/octodns"
 	_ "github.com/StackExchange/dnscontrol/v3/providers/opensrs"
