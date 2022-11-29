@@ -171,11 +171,11 @@ func (f Function) formatParams() string {
 	for i, p := range f.Params {
 		typeName := f.ParamTypes[i]
 		name := p
+		if strings.HasSuffix(typeName, "?") {
+			typeName = typeName[:len(typeName)-1]
+			p += "?"
+		}
 		if strings.Contains(name, " ") {
-			if strings.HasSuffix(typeName, "?") {
-				typeName = typeName[:len(typeName)-1]
-				p += "?"
-			}
 			name = strings.ReplaceAll(caser.String(p), " ", "")
 			name = strings.ToLower(name[:1]) + name[1:]
 		}
