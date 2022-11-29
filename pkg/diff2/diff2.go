@@ -1,13 +1,13 @@
 package diff2
 
-import "github.com/StackExchange/dnscontrol/v3/models"
-
 // This module provides functions that "diff" the existing records
 // against the desired records.
 
-// Change stores information about a record change.
-// If Old is nil, this is a creation.
-// If New is nil, this is a deletion.
+import "github.com/StackExchange/dnscontrol/v3/models"
+
+// Change stores the "before and after" of a DNS record change.
+// To indicate a new record is being created, set Old to nil.
+// To indicate a record is being deleted, set New to nil.
 type Change struct {
 	Old *models.RecordConfig
 	New *models.RecordConfig
@@ -24,13 +24,42 @@ type Change struct {
 // updates one record at a time. This is the most typical situation.
 func ByRecord(existing, desired models.Records) (creations, deletions, modifications []Change, err error) {
 	toCreate, toDelete, toModify, err := analyze(existing, desired)
+
+	// Maybe this should return a []Change and add a field for ".Type"
+	// which indicates delete/add/change?
+	//  []ChangeRecord
+	//  []ChangeSet
+	//  []ChangeLabel
+	//  []ChangeZone
+
 	if err != nil {
 		return nil, nil, nil, err
 	}
 	return toCreate, toDelete, toModify, nil
 }
 
-// ByLabel takes two lists of records (existing and desired) and
+// ByRecordSet takes two lists of records (existing and desired)
+// and returns instructions that allow you to turn existing into
+// desired.
+//
+// The instructions are in a form of records to add, change, delete.
+//
+// This function is appropriate for a DNS provider with an API that
+// updates one recordset at a time. A recordset is all the records of a
+// particular type at a label. For example, if www.example.com has 3 A records
+// and a TXT record, the API would require you to replace all the "A" records in
+// one API call, and the TXT record in another API call.
+//
+// Example providers include: GCLOUD
+// func ByRecordSet(existing, desired models.Records) (deletions models.Records, modifiedSets []RecordSetKey, modifications map[RecordSetKey]models.Records, err error) {
+// 	toCreate, toDelete, toModify, err := analyze(existing, desired)
+// 	if err != nil {
+// 		return nil, nil, nil, err
+// 	}
+// 	return toCreate, toDelete, toModify, nil
+// }
+
+// abel takes two lists of records (existing and desired) and
 // returns instructions that allow you to turn existing into desired.
 //
 // The instructions are in a form of which labels have records that
@@ -96,6 +125,8 @@ func ByLabel(existing, desired models.Records) (deletions models.Records, modifi
 //
 // This function is appropriate for a DNS provider with an API that
 // updates entire zones at a time. For example BIND.
+//
+// Example providers include: BIND
 func ByZone(existing, desired models.Records, firstMsg string) (report []string, err error) {
 
 	// If we are creating the zone from scratch, no need to list all the

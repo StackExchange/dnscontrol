@@ -8,6 +8,7 @@ import (
 	"strings"
 
 	"github.com/StackExchange/dnscontrol/v3/models"
+	"github.com/StackExchange/dnscontrol/v3/pkg/diff2"
 	"github.com/StackExchange/dnscontrol/v3/pkg/js"
 	"github.com/StackExchange/dnscontrol/v3/pkg/printer"
 	"github.com/urfave/cli/v2"
@@ -56,6 +57,11 @@ func Run(v string) int {
 			Name:        "allow-fetch",
 			Usage:       "Enable JS fetch(), dangerous on untrusted code!",
 			Destination: &js.EnableFetch,
+		},
+		&cli.BoolFlag{
+			Name:        "diff2",
+			Usage:       "Enable replacement diff algorithm",
+			Destination: &diff2.EnableDiff2,
 		},
 	}
 	sort.Sort(cli.CommandsByName(commands))
