@@ -32,8 +32,8 @@ func fixRuns(s string) string {
 
 var returnTypes = map[string]string{
 	"domain": "DomainModifier",
-	"global": "any",
-	"record": "RecordModifier[]",
+	"global": "void",
+	"record": "RecordModifier",
 }
 var paramTypeDefaults = map[string]string{
 	"name": "string",
@@ -43,6 +43,7 @@ var paramTypeDefaults = map[string]string{
 	"address": "string | number",
 	"priority": "number",
 	"registrar": "string",
+	"source": "string",
 	"ttl": "Duration",
 	"...modifiers": "RecordModifier[]",
 }
@@ -79,7 +80,7 @@ func generateTypes() error {
 			if err != nil {
 				return err
 			}
-			if frontMatter["ts_ignore"] != nil && frontMatter["ts_ignore"].(bool) {
+			if frontMatter["ts_ignore"] == true {
 				continue
 			}
 
@@ -128,20 +129,18 @@ func generateTypes() error {
 			}
 
 			returnType := returnTypes[t.Name()]
-			if frontMatter["return"] != nil {
+			if frontMatter["ts_return"] != nil {
+				returnType = frontMatter["ts_return"].(string)
+			} else if frontMatter["return"] != nil {
 				returnType = frontMatter["return"].(string)
-			}
-
-			objectParam := false
-			if frontMatter["parameters_object"] != nil && frontMatter["parameters_object"].(bool) {
-				objectParam = true
 			}
 
 			funcs = append(funcs, Function{
 				Name:        frontMatter["name"].(string),
 				Params:      params,
 				ParamTypes:  paramTypes,
-				ObjectParam: objectParam,
+				ObjectParam: frontMatter["parameters_object"] == true,
+				Deprecated:  frontMatter["deprecated"] == true,
 				ReturnType:  returnType,
 				Description: strings.TrimSpace(body),
 			})
@@ -160,6 +159,7 @@ type Function struct {
 	Params      []string
 	ParamTypes  []string
 	ObjectParam bool
+	Deprecated  bool
 	ReturnType  string
 	Description string
 }
@@ -188,12 +188,15 @@ func (f Function) formatParams() string {
 	}
 }
 
-func (f Function) String() string {
-	return fmt.Sprintf(`/**
- * %s
- */
-declare function %s(%s): %s;
+func (f Function) Docs() string {
+	content := f.Description
+	if f.Deprecated {
+		content += "\n\n@deprecated"
+	}
+	return "/**\n * " + strings.ReplaceAll(content, "\n", "\n * ") + "\n */"
+}
 
-`, strings.ReplaceAll(f.Description, "\n", "\n * "), f.Name, f.formatParams(), f.ReturnType)
+func (f Function) String() string {
+	return fmt.Sprintf("%s\ndeclare function %s(%s): %s;\n\n", f.Docs(), f.Name, f.formatParams(), f.ReturnType)
 }
 

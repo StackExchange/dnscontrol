@@ -199,7 +199,7 @@ declare function CAA(name: string, tag: "issue" | "issuewild" | "iodef", value: 
  * );
  * ```
  */
-declare function CF_REDIRECT(destination: string, ...modifiers: RecordModifier[]): DomainModifier;
+declare function CF_REDIRECT(source: string, destination: string, ...modifiers: RecordModifier[]): DomainModifier;
 
 /**
  * `CF_TEMP_REDIRECT` uses Cloudflare-specific features ("Forwarding URL" Page
@@ -221,7 +221,7 @@ declare function CF_REDIRECT(destination: string, ...modifiers: RecordModifier[]
  * );
  * ```
  */
-declare function CF_TEMP_REDIRECT(destination: string, ...modifiers: RecordModifier[]): DomainModifier;
+declare function CF_TEMP_REDIRECT(source: string, destination: string, ...modifiers: RecordModifier[]): DomainModifier;
 
 /**
  * `CF_WORKER_ROUTE` uses the [Cloudflare Workers](https://developers.cloudflare.com/workers/)
@@ -246,6 +246,11 @@ declare function CF_TEMP_REDIRECT(destination: string, ...modifiers: RecordModif
  * ```
  */
 declare function CF_WORKER_ROUTE(pattern: string, script: string): DomainModifier;
+
+/**
+ * Documentation needed.
+ */
+declare function CLOUDNS_WR(name: string, target: string, ...modifiers: RecordModifier[]): DomainModifier;
 
 /**
  * CNAME adds a CNAME record to the domain. The name should be the relative label for the domain.
@@ -328,6 +333,8 @@ declare function FRAME(name: string, target: string, ...modifiers: RecordModifie
 
 /**
  * IGNORE has been renamed to `IGNORE_NAME`. IGNORE will continue to function, but its use is deprecated. Please update your configuration files to use `IGNORE_NAME`.
+ * 
+ * @deprecated
  */
 declare function IGNORE(): DomainModifier;
 
@@ -625,6 +632,11 @@ declare function NO_PURGE(): DomainModifier;
  * ```
  */
 declare function NS(name: string, target: string, ...modifiers: RecordModifier[]): DomainModifier;
+
+/**
+ * Documentation needed.
+ */
+declare function NS1_URLFWD(name: string, target: string, ...modifiers: RecordModifier[]): DomainModifier;
 
 /**
  * PTR adds a PTR record to the domain.
@@ -1039,7 +1051,7 @@ declare function URL301(name: string, ...modifiers: RecordModifier[]): DomainMod
  * character, which is probably does.  If you see an error that mentions
  * `event not found` you probably forgot the quotes.
  */
-declare function D(name: string, registrar: string, ...modifiers: RecordModifier[]): any;
+declare function D(name: string, registrar: string, ...modifiers: RecordModifier[]): void;
 
 /**
  * `DEFAULTS` allows you to declare a set of default arguments to apply to all subsequent domains. Subsequent calls to [D](https://dnscontrol.org/js#D) will have these
@@ -1058,7 +1070,7 @@ declare function D(name: string, registrar: string, ...modifiers: RecordModifier
  * D("example2.com", REGISTRAR, DnsProvider("R53"), A("@","1.2.3.4")); // this domain will not have the previous defaults.
  * ```
  */
-declare function DEFAULTS(...modifiers: RecordModifier[]): any;
+declare function DEFAULTS(...modifiers: RecordModifier[]): void;
 
 /**
  * `DOMAIN_ELSEWHERE()` is a helper macro that lets you easily indicate that
@@ -1089,7 +1101,7 @@ declare function DEFAULTS(...modifiers: RecordModifier[]): any;
  * NOTE: The `NO_PURGE` is used out of abundance of caution but since no
  * `DnsProvider()` statements exist, no updates would be performed.
  */
-declare function DOMAIN_ELSEWHERE(registrar: string, nameserver_names: string[]): any;
+declare function DOMAIN_ELSEWHERE(registrar: string, nameserver_names: string[]): void;
 
 /**
  * `DOMAIN_ELSEWHERE_AUTO()` is similar to `DOMAIN_ELSEWHERE()` but instead of
@@ -1121,7 +1133,7 @@ declare function DOMAIN_ELSEWHERE(registrar: string, nameserver_names: string[])
  * 
  * NOTE: The `NO_PURGE` is used to prevent DNSControl from changing the records.
  */
-declare function DOMAIN_ELSEWHERE_AUTO(domain: string, registrar: string, dnsProvider: string): any;
+declare function DOMAIN_ELSEWHERE_AUTO(domain: string, registrar: string, dnsProvider: string): void;
 
 /**
  * ---
@@ -1180,7 +1192,7 @@ declare function DOMAIN_ELSEWHERE_AUTO(domain: string, registrar: string, dnsPro
  * ```text
  * ******************** Domain: domain.tld
  */
-declare function D_EXTEND(name: string, ...modifiers: RecordModifier[]): any;
+declare function D_EXTEND(name: string, ...modifiers: RecordModifier[]): void;
 
 /**
  * Converts an IPv4 address from string to an integer. This allows performing mathematical operations with the IP address.
@@ -1285,7 +1297,7 @@ declare function NewRegistrar(name: string, type: string?, meta: object?): strin
  * PANIC("Something really bad has happened");
  * ```
  */
-declare function PANIC(message: string): any;
+declare function PANIC(message: string): never;
 
 /**
  * `REV` returns the reverse lookup domain for an IP network. For
@@ -1334,7 +1346,7 @@ declare function PANIC(message: string): any;
  * the correct PTR() record if the appropriate `D(REV()` domain (i.e. `.arpa` domain) has been
  * defined.
  */
-declare function REV(address: string | number): any;
+declare function REV(address: string | number): string;
 
 /**
  * ---
@@ -1359,7 +1371,7 @@ declare function REV(address: string | number): any;
  * ```text
  * ******************** Domain: domain1.tld
  */
-declare function getConfiguredDomains(name: string, ...modifiers: RecordModifier[]): any;
+declare function getConfiguredDomains(name: string, ...modifiers: RecordModifier[]): string[];
 
 /**
  * `require_glob()` can recursively load `.js` files, optionally non-recursive as well.
@@ -1399,11 +1411,9 @@ declare function getConfiguredDomains(name: string, ...modifiers: RecordModifier
  * This will now load files being present underneath `./domains/user1/` and **NOT** at below `./domains/`, as `require_glob()`
  * is called in the subfolder `domains/`.
  */
-declare function require_glob(path: string, recursive: boolean): any;
+declare function require_glob(path: string, recursive: boolean): void;
 
 /**
- * # CAA Builder
- * 
  * DNSControl contains a `CAA_BUILDER` which can be used to simply create
  * CAA records for your domains. Instead of creating each CAA record
  * individually, you can simply configure your report mail address, the
@@ -1441,11 +1451,9 @@ declare function require_glob(path: string, recursive: boolean): any;
  *   * `CAA("@", "issue", "comodoca.com")`
  *   * `CAA("@", "issuewild", ";")`
  */
-declare function CAA_BUILDER(opts: { label: string?; iodef: string; iodef_critical: boolean?; issue: string[]; issuewild: string }): RecordModifier[];
+declare function CAA_BUILDER(opts: { label: string?; iodef: string; iodef_critical: boolean?; issue: string[]; issuewild: string }): RecordModifier;
 
 /**
- * # DMARC Builder
- * 
  * DNSControl contains a `DMARC_BUILDER` which can be used to simply create
  * DMARC policies for your domains.
  * 
@@ -1529,7 +1537,7 @@ declare function CAA_BUILDER(opts: { label: string?; iodef: string; iodef_critic
  * * TXT records are automatically split using `AUTOSPLIT`.
  * * URIs in the `rua` and `ruf` arrays are passed raw. You must percent-encode all commas and exclamation points in the URI itself.
  */
-declare function DMARC_BUILDER(opts: { label: string?; version: string?; policy: 'none' | 'quarantine' | 'reject'; subdomainPolicy: 'none' | 'quarantine' | 'reject'?; alignmentSPF: 'strict' | 's' | 'relaxed' | 'r'?; alignmentDKIM: 'strict' | 's' | 'relaxed' | 'r'?; percent: number?; rua: string[]?; ruf: string[]?; failureOptions: { SPF: boolean, DKIM: boolean } | string?; failureFormat: string?; reportInterval: Duration?; ttl: Duration }): RecordModifier[];
+declare function DMARC_BUILDER(opts: { label: string?; version: string?; policy: 'none' | 'quarantine' | 'reject'; subdomainPolicy: 'none' | 'quarantine' | 'reject'?; alignmentSPF: 'strict' | 's' | 'relaxed' | 'r'?; alignmentDKIM: 'strict' | 's' | 'relaxed' | 'r'?; percent: number?; rua: string[]?; ruf: string[]?; failureOptions: { SPF: boolean, DKIM: boolean } | string?; failureFormat: string?; reportInterval: Duration?; ttl: Duration }): RecordModifier;
 
 /**
  * R53_ZONE lets you specify the AWS Zone ID for an entire domain (D()) or a specific R53_ALIAS() record.
@@ -1538,7 +1546,7 @@ declare function DMARC_BUILDER(opts: { label: string?; version: string?; policy:
  * 
  * When used with R53_ALIAS() it sets the required Route53 hosted zone id in a R53_ALIAS record. See [R53_ALIAS's documentation](https://stackexchange.github.io/dnscontrol/js#R53_ALIAS) for details.
  */
-declare function R53_ZONE(zone_id: string): RecordModifier[];
+declare function R53_ZONE(zone_id: string): DomainModifier & RecordModifier;
 
 /**
  * # SPF Optimizer
@@ -1823,7 +1831,7 @@ declare function R53_ZONE(zone_id: string): RecordModifier[];
  * );
  * ```
  */
-declare function SPF_BUILDER(opts: { label: string?; overflow: string?; overhead1: string?; raw: string?; ttl: Duration?; txtMaxSize: string[]; parts: number?; flatten: string[]? }): RecordModifier[];
+declare function SPF_BUILDER(opts: { label: string?; overflow: string?; overhead1: string?; raw: string?; ttl: Duration?; txtMaxSize: string[]; parts: number?; flatten: string[]? }): RecordModifier;
 
 /**
  * TTL sets the TTL for a single record only. This will take precedence
@@ -1854,5 +1862,5 @@ declare function SPF_BUILDER(opts: { label: string?; overflow: string?; overhead
  * );
  * ```
  */
-declare function TTL(ttl: Duration): RecordModifier[];
+declare function TTL(ttl: Duration): RecordModifier;
 
