@@ -1,0 +1,184 @@
+package main
+
+import (
+	"bytes"
+	"errors"
+	"fmt"
+	"os"
+	"strings"
+
+	"github.com/gernest/front"
+)
+
+func join(parts ...string) string {
+	return strings.Join(parts, string(os.PathSeparator))
+}
+
+func fixRuns(s string) string {
+	lines := strings.Split(s, "\n")
+	var out []string
+	for _, line := range lines {
+		if len(line) == 0 {
+			if len(out) > 0 && len(out[len(out)-1]) == 0 {
+				continue
+			}
+		}
+		out = append(out, line)
+	}
+	return strings.Join(out, "\n")
+}
+
+var returnTypes = map[string]string{
+	"domain": "DomainModifier",
+	"global": "any",
+	"record": "Record",
+}
+var paramTypeDefaults = map[string]string{
+	"name": "string",
+	"target": "string",
+	"value": "string",
+	"destination": "string",
+	"address": "string | number",
+	"priority": "number",
+	"registrar": "string",
+	"ttl": "Duration",
+	"...modifiers": "RecordModifier[]",
+}
+
+func generateTypes() error {
+	funcs := []Function{}
+
+	m := front.NewMatter()
+	m.Handle("---", front.YAMLHandler)
+
+	types, err := os.ReadDir(join("docs", "_functions"))
+	if err != nil {
+		return err
+	}
+	for _, t := range types {
+		if !t.IsDir() {
+			return errors.New("not a directory: " + join("docs", "_functions", t.Name()))
+		}
+		funcNames, err := os.ReadDir(join("docs", "_functions", t.Name()))
+		if err != nil {
+			return err
+		}
+
+		for _, f := range funcNames {
+			if f.IsDir() {
+				return errors.New("not a file: " + join("docs", "_functions", t.Name(), f.Name()))
+			}
+			println("Processing ", join("docs", "_functions", t.Name(), f.Name()))
+			content, err := os.ReadFile(join("docs", "_functions", t.Name(), f.Name()))
+			if err != nil {
+				return err
+			}
+			frontMatter, body, err := m.Parse(bytes.NewReader(content))
+			if err != nil {
+				return err
+			}
+			if frontMatter["ts_ignore"] != nil && frontMatter["ts_ignore"].(bool) {
+				continue
+			}
+
+			params := []string{}
+			if frontMatter["parameters"] != nil {
+				for _, p := range frontMatter["parameters"].([]interface{}) {
+					name := p.(string)
+					if strings.HasSuffix(name, "...") {
+						params = append(params, "..." + name[:len(name)-3])
+					} else {
+						params = append(params, name)
+					}
+				}
+			}
+
+			body = body + "\n"
+			body = strings.ReplaceAll(body, "{{site.github.url}}", "https://dnscontrol.org/")
+			body = strings.ReplaceAll(body, "{% capture example %}\n", "")
+			body = strings.ReplaceAll(body, "{% capture example2 %}\n", "")
+			body = strings.ReplaceAll(body, "{% endcapture %}\n", "")
+			body = strings.ReplaceAll(body, "{% include example.html content=example %}\n", "")
+			body = strings.ReplaceAll(body, "{% include example.html content=example2 %}\n", "")
+			body = strings.ReplaceAll(body, "](#", "](https://dnscontrol.org/js#")
+			body = fixRuns(body)
+
+			suppliedParamTypes := map[string]string{}
+			if frontMatter["parameter_types"] != nil {
+				rawTypes := frontMatter["parameter_types"].(map[interface {}]interface {})
+				for k, v := range rawTypes {
+					suppliedParamTypes[k.(string)] = v.(string)
+				}
+			}
+
+			paramTypes := []string{}
+			for _, p := range params {
+				// start with supplied type, fall back to defaultParamType
+				paramType := suppliedParamTypes[p]
+				if paramType == "" {
+					paramType = paramTypeDefaults[p]
+				}
+				if paramType == "" {
+					println("WARNING:", f.Name() + ":", "no type for parameter ", "'" + p + "'")
+					paramType = "unknown"
+				}
+				paramTypes = append(paramTypes, paramType)
+			}
+
+			returnType := returnTypes[t.Name()]
+			if frontMatter["return"] != nil {
+				returnType = frontMatter["return"].(string)
+			}
+
+			funcs = append(funcs, Function{
+				Name:        frontMatter["name"].(string),
+				Params:      params,
+				ParamTypes:  paramTypes,
+				ReturnType:  returnType,
+				Description: strings.TrimSpace(body),
+			})
+		}
+	}
+
+	content := ""
+	for _, f := range funcs {
+		content += f.String()
+	}
+	return os.WriteFile("docs/_includes/functions.d.ts", []byte(content), 0644)
+}
+
+type Function struct {
+	Name        string
+	Params      []string
+	ParamTypes  []string
+	ObjectParam bool
+	ReturnType  string
+	Description string
+}
+
+func (f Function) formatParams() string {
+	var params []string
+	for i, p := range f.Params {
+		typeName := f.ParamTypes[i]
+		if strings.HasSuffix(typeName, "?") {
+			typeName = typeName[:len(typeName)-1]
+			p += "?"
+		}
+		params = append(params, fmt.Sprintf("%s: %s", p, typeName))
+	}
+	if f.ObjectParam {
+		return "opts: { " + strings.Join(params, "; ") + " }"
+	} else {
+		return strings.Join(params, ", ")
+	}
+}
+
+func (f Function) String() string {
+	return fmt.Sprintf(`/**
+ * %s
+ */
+function %s(%s): %s;
+
+`, strings.ReplaceAll(f.Description, "\n", "\n * "), f.Name, f.formatParams(), f.ReturnType)
+}
+

@@ -4,6 +4,8 @@ parameters:
   - name
   - contents
   - modifiers...
+parameter_types:
+  contents: string
 ---
 
 TXT adds an TXT record To a domain. The name should be the relative

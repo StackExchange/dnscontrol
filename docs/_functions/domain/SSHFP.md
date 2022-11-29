@@ -6,6 +6,9 @@ parameters:
   - type
   - value
   - modifiers...
+parameter_types:
+  algorithm: 0 | 1 | 2 | 3 | 4
+  type: 0 | 1 | 2
 ---
 
 SSHFP contains a fingerprint of a SSH server which can be validated before SSH clients are establishing the connection.

@@ -4,6 +4,7 @@ parameters:
   - transform table
   - domain
   - modifiers...
+ts_ignore: true
 ---
 
 Don't use this feature. It was added for a very specific situation at Stack Overflow.

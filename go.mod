@@ -94,6 +94,7 @@ require (
 	github.com/fatih/color v1.13.0 // indirect
 	github.com/fatih/structs v1.1.0 // indirect
 	github.com/frankban/quicktest v1.14.3 // indirect
+	github.com/gernest/front v0.0.0-20210301115436-8a0b0a782d0a // indirect
 	github.com/go-test/deep v1.0.3 // indirect
 	github.com/gofrs/uuid v4.0.0+incompatible // indirect
 	github.com/golang-jwt/jwt v3.2.2+incompatible // indirect

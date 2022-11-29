@@ -5,6 +5,8 @@ parameters:
   - tag
   - value
   - modifiers...
+parameter_types:
+  tag: '"issue" | "issuewild" | "iodef"'
 ---
 
 CAA adds a CAA record to a domain. The name should be the relative label for the record. Use `@` for the domain apex.

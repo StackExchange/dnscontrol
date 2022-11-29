@@ -9,6 +9,15 @@ parameters:
   - txtMaxSize
   - parts
   - flatten
+parameter_types:
+  label: string?
+  overflow: string?
+  overhead1: string?
+  raw: string?
+  ttl: Duration?
+  txtMaxSize: string[]
+  parts: number?
+  flatten: string[]?
 ---
 
 # SPF Optimizer

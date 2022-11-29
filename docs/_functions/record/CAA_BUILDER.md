@@ -6,6 +6,13 @@ parameters:
   - iodef_critical
   - issue
   - issuewild
+parameters_object: true
+parameter_types:
+  label: string?
+  iodef: string
+  iodef_critical: boolean?
+  issue: string[]
+  issuewild: string
 ---
 
 # CAA Builder

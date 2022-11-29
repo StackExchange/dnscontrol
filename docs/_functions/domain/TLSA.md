@@ -7,6 +7,11 @@ parameters:
   - type
   - certificate
   - modifiers...
+parameter_types:
+  usage: number
+  selector: number
+  type: number
+  certificate: string
 ---
 
 TLSA adds a TLSA record to a domain. The name should be the relative label for the record.

@@ -4,7 +4,9 @@ parameters:
   - name
   - type
   - target
-  - modifiers ...
+  - modifiers...
+parameter_types:
+  type: '"A" | "AAAA" | "CNAME"'
 provider: AZURE_DNS
 ---
 

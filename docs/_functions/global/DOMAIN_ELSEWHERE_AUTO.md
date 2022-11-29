@@ -1,8 +1,12 @@
 ---
 name: DOMAIN_ELSEWHERE_AUTO
 parameters:
+  - domain
   - registrar
-  - list of Dns Providers
+  - dns provider
+parameter_types:
+  domain: string
+  dns provider: string
 ---
 
 `DOMAIN_ELSEWHERE_AUTO()` is similar to `DOMAIN_ELSEWHERE()` but instead of

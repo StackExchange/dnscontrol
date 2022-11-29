@@ -9,6 +9,13 @@ parameters:
   - expire
   - minttl
   - modifiers...
+parameter_types:
+  ns: string
+  mbox: string
+  refresh: number
+  retry: number
+  expire: number
+  minttl: number
 ---
 
 `SOA` adds an `SOA` record to a domain. The name should be `@`.  ns and mbox are strings. The other fields are unsigned 32-bit ints.
