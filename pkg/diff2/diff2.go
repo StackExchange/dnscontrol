@@ -5,150 +5,109 @@ package diff2
 
 import "github.com/StackExchange/dnscontrol/v3/models"
 
-// Change stores the "before and after" of a DNS record change.
-// To indicate a new record is being created, set Old to nil.
-// To indicate a record is being deleted, set New to nil.
+const (
+	COMMENT Verb = iota
+	ADD
+	CHANGE
+	DELETE
+)
+
+type ChangeList []Change
+
 type Change struct {
-	Old *models.RecordConfig
-	New *models.RecordConfig
-	Msg string // Human-friendly explaination of what this change is.
+	Type Verb // Add, Change, Delete
+
+	Key   models.RecordKey // .Type is "" unless using ByRecordSet
+	Old   []models.Records
+	New   []models.Records // any changed or added records at Key.
+	AllAt []models.Records // all desired records at Key.
+	Msgs  []string         // Human-friendly explanation of what changed
 }
 
-// ByRecord takes two lists of records (existing and desired)
-// and returns instructions that allow you to turn existing into
-// desired.
+// ByRecord takes two lists of records (existing and desired) and
+// returns instructions for turning existing into desired.
 //
-// The instructions are in a form of records to add, change, delete.
+// Use this with DNS providers whose API updates one record at a time.
 //
-// This function is appropriate for a DNS provider with an API that
-// updates one record at a time. This is the most typical situation.
-func ByRecord(existing, desired models.Records) (creations, deletions, modifications []Change, err error) {
-	toCreate, toDelete, toModify, err := analyze(existing, desired)
+// Examples include: INWX
+func ByRecord(existing, desired models.Records) (instructions ChangeList, err error) {
+	existing = handsoff(existing, desired)
 
-	// Maybe this should return a []Change and add a field for ".Type"
-	// which indicates delete/add/change?
-	//  []ChangeRecord
-	//  []ChangeSet
-	//  []ChangeLabel
-	//  []ChangeZone
-
+	instructions, err := analyzeByRecord(existing, desired)
 	if err != nil {
-		return nil, nil, nil, err
+		return nil, err
 	}
-	return toCreate, toDelete, toModify, nil
+
+	return processPurge(instructions, config.NoPurge)
 }
 
-// ByRecordSet takes two lists of records (existing and desired)
-// and returns instructions that allow you to turn existing into
-// desired.
+// ByRecordSet takes two lists of records (existing and desired) and
+// returns instructions for turning existing into desired.
 //
-// The instructions are in a form of records to add, change, delete.
+// Use this with DNS providers whose API updates one recordset at a
+// time. A recordset is all the records of a particular type at a
+// label. For example, if www.example.com has 3 A records and a TXT
+// record, if A records are added, changed, or removed, the API takes
+// www.example.com, A, and a list of all the desired IP addresses.
 //
-// This function is appropriate for a DNS provider with an API that
-// updates one recordset at a time. A recordset is all the records of a
-// particular type at a label. For example, if www.example.com has 3 A records
-// and a TXT record, the API would require you to replace all the "A" records in
-// one API call, and the TXT record in another API call.
-//
-// Example providers include: GCLOUD
-// func ByRecordSet(existing, desired models.Records) (deletions models.Records, modifiedSets []RecordSetKey, modifications map[RecordSetKey]models.Records, err error) {
-// 	toCreate, toDelete, toModify, err := analyze(existing, desired)
-// 	if err != nil {
-// 		return nil, nil, nil, err
-// 	}
-// 	return toCreate, toDelete, toModify, nil
-// }
+// Examples include:
+func ByRecordSet(existing, desired models.Records) (instructions ChangeList, err error) {
+	existing = handsoff(existing, desired)
 
-// abel takes two lists of records (existing and desired) and
-// returns instructions that allow you to turn existing into desired.
-//
-// The instructions are in a form of which labels have records that
-// changed and which labels should be deleted entirely.  It also
-// returns a map indicating what records should be installed at a
-// given label.
-//
-// This function is appropriate for a DNS provider with an API that
-// updates one label at a time (i.e. the only update mechanism is to
-// specify a label and all the DNS records at that label).
-func ByLabel(existing, desired models.Records) (deletions models.Records, modifiedLabels []string, modifications map[string]models.Records, err error) {
-	toCreate, toDelete, toModify, err := analyze(existing, desired)
+	instructions, err := analyzeByRecordSet(existing, desired)
 	if err != nil {
-		return nil, nil, nil, err
+		return nil, err
 	}
 
-	// Gather the items to be deleted
-	for _, j := range toDelete {
-		deletions = append(deletions, j.Old)
+	return processPurge(instructions, config.NoPurge)
+}
+
+// ByLabel takes two lists of records (existing and desired) and
+// returns instructions for turning existing into desired.
+//
+// Use this with DNS providers whose API updates one label at a
+// time. That is, updates are done by sending a list of DNS records
+// to be served at a particular label, or the label itself is deleted.
+//
+// Examples include:
+func ByLabel(existing, desired models.Records) (instructions CHangeList, err error) {
+	existing = handsoff(existing, desired)
+
+	instructions, err := analyzeByLabel(existing, desired)
+	if err != nil {
+		return nil, err
 	}
 
-	// Gather the labels that will need to be created/updated.
-	modified := map[string]bool{}
-	for _, c := range toCreate {
-		modified[c.New.Name] = true
-	}
-	for _, c := range toModify {
-		modified[c.New.Name] = true
-	}
-
-	// Gather the records to install at each label.
-	modifications = map[string]models.Records{}
-	for _, d := range desired {
-		label := d.Name
-		if _, ok := modified[label]; ok { // If the label was one that was modified...
-			if _, ok := modifications[label]; !ok { // map key doesn't exist yet?
-				modifications[label] = models.Records{} // Intialize it
-			}
-			modifications[label] = append(modifications[label], d)
-		}
-	}
-
-	// Gather they label names as a list.
-	modifiedLabels = make([]string, len(modifications))
-	i := 0
-	for k := range modifications {
-		modifiedLabels[i] = k
-		i++
-	}
-
-	return deletions, modifiedLabels, modifications, nil
+	return processPurge(instructions, config.NoPurge)
 }
 
 // ByZone takes two lists of records (existing and desired) and
 // returns text one would output to users describing the change.
 //
-// Some providers accepts updates that are "all or nothing". That is,
-// each update uploads the entire zonefile. In this case, the user
-// should see a list of changes. As an optimization, if existing is
-// empty, we just output a 1-line message such as:
+// Use this with DNS providers whose API updates the entire zone at a
+// time. That is, to make any change (1 record or many) the entire DNS
+// zone is uploaded.
 //
-//	WRITING ZONEFILE: zones/example.com.zone
-//
-// This function is appropriate for a DNS provider with an API that
-// updates entire zones at a time. For example BIND.
+// The user should see a list of changes as if individual records were
+// updated.  However, as an optimization, if existing is empty, we
+// just output a 1-line message such as:
+//		WRITING ZONEFILE: zones/example.com.zone
 //
 // Example providers include: BIND
 func ByZone(existing, desired models.Records, firstMsg string) (report []string, err error) {
-
-	// If we are creating the zone from scratch, no need to list all the
-	// details.
+	// Short-circuit if we are creating the zone from scratch:
 	if len(existing) == 0 {
+		// TODO(tlim): If no_purge is set, output a warning that this may
+		// be dangerous.
 		return []string{firstMsg}, nil
 	}
 
-	// Document the changes.
-	toCreate, toDelete, toModify, err := analyze(existing, desired)
+	existing = handsoff(existing, desired)
+
+	instructions, err := analyzeByZone(existing, desired)
 	if err != nil {
 		return nil, err
 	}
 
-	for _, c := range toDelete {
-		report = append(report, c.Msg)
-	}
-	for _, c := range toCreate {
-		report = append(report, c.Msg)
-	}
-	for _, c := range toModify {
-		report = append(report, c.Msg)
-	}
-	return report, nil
+	return processPurge(instructions, config.NoPurge)
 }

@@ -1,0 +1,63 @@
+EXISTING:
+  laba A 1.2.3.4      [0]
+  laba MX 10 laba     [1]
+  labc CNAME laba     [2]
+  labe A 10.10.10.15  [3]
+  labe A 10.10.10.16  [4]
+  labe A 10.10.10.17  [5]
+  labe A 10.10.10.18  [6]
+  labg NS 10.10.10.15 [7]
+  labg NS 10.10.10.16 [8]
+  labg NS 10.10.10.17 [9]
+  labg NS 10.10.10.18 [10]
+  labh CNAME labd     [11]
+
+DESIRED:
+  laba A 1.2.3.4      [0']
+  laba A 1.2.3.5      [1']
+  laba MX 20 labb     [2']
+  labe A 10.10.10.95  [3']
+  labe A 10.10.10.96  [4']
+  labe A 10.10.10.97  [5']
+  labe A 10.10.10.98  [6']
+  labf TXT "foo"      [7']
+  labg NS 10.10.10.10 [8']
+  labg NS 10.10.10.15 [9']
+  labg NS 10.10.10.16 [10']
+  labg NS 10.10.10.97 [11']
+  labh A 1.2.3.4      [12']
+
+ByRRSet:
+  [] laba:A     CHANGE NewSet: { [0], [1'] } (ByRecords needs: Old [0] )
+  [] laba:MX    CHANGE NewSet: { [2'] }  (ByLabel needs: Old: [2])
+  [] labc:CNAME DELETE Old: { [2 ] }
+  [] labe:A     CHANGE NewSet: { [3'], [4'], [5'], [6'] }
+  [] labf:TXT   CHANGE NewSet: { [7'] }
+  [] labg:NS    CHANGE NewSet: { [7] [8] [8'] [11'] }
+  [] labh:CNAME DELETE Old { [11] }
+  [] labh:A     CREATE NewSet: { [12'] }
+
+ByRecord:
+CREATE [1']
+CHANGE [1] [2']
+DELETE [2]
+CHANGE [3] [3']
+CHANGE [4] [4']
+CHANGE [5] [5']
+CHANGE [6] [6']
+CREATE [7']
+CREATE [8']
+CHANGE [10] [11']
+DELETE [11]
+CREATE [12']
+
+
+ByLabel: (take ByRRSet gather all CHANGES)
+laba   CHANGE NewSet: { [0'], [1'], [2'] }
+labc   DELETE Old: { [2] }
+labe   CHANGE New: { [3'], [4'], [5'], [6'] }
+labf   CREATE New: { [7'] }
+labg   CHANGE NewSet: { [7] [8] [8'] [11'] }
+labh   DELETE Old { [11] }
+labh   CREATE NewSet: { [12'] }
+
