@@ -16,6 +16,7 @@ body {
 
 .table-header-rotated {
   border-collapse: collapse;
+  margin: 0 auto;
 }
 
 .table-header-rotated td {
@@ -24,6 +25,10 @@ body {
 
 .table-header-rotated th {
   padding: 5px 10px;
+}
+
+.table-header-rotated th:first-child {
+  max-width: 120px;
 }
 
 .table-header-rotated td {
