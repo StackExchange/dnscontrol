@@ -324,7 +324,7 @@ declare function DefaultTTL(ttl: Duration): DomainModifier;
  * the Registrar for a domain but not the DNS records themselves, simply
  * do not include a `DnsProvider()` function for that `D()`.
  */
-declare function DnsProvider(name: string, nsCount: number): DomainModifier;
+declare function DnsProvider(name: string, nsCount?: number): DomainModifier;
 
 /**
  * Documentation needed.
@@ -415,7 +415,7 @@ declare function IGNORE(): DomainModifier;
  * 1. Two owners (DNSControl and some other entity) toggling a record between two settings.
  * 2. The other owner wiping all records at this label, which won't be noticed until the next time DNSControl is run.
  */
-declare function IGNORE_NAME(pattern: string, rTypes: string): DomainModifier;
+declare function IGNORE_NAME(pattern: string, rTypes?: string): DomainModifier;
 
 /**
  * WARNING: The `IGNORE_*` family  of functions is risky to use. The code
@@ -1051,7 +1051,7 @@ declare function URL301(name: string, ...modifiers: RecordModifier[]): DomainMod
  * character, which is probably does.  If you see an error that mentions
  * `event not found` you probably forgot the quotes.
  */
-declare function D(name: string, registrar: string, ...modifiers: RecordModifier[]): void;
+declare function D(name: string, registrar: string, ...modifiers: DomainModifier[]): void;
 
 /**
  * `DEFAULTS` allows you to declare a set of default arguments to apply to all subsequent domains. Subsequent calls to [D](https://dnscontrol.org/js#D) will have these
@@ -1251,7 +1251,7 @@ declare function IP(ip: string): number;
  * );
  * ```
  */
-declare function NewDnsProvider(name: string, type: string, meta: object): string;
+declare function NewDnsProvider(name: string, type?: string, meta?: object): string;
 
 /**
  * NewRegistrar activates a Registrar Provider specified in `creds.json`.
@@ -1288,7 +1288,7 @@ declare function NewDnsProvider(name: string, type: string, meta: object): strin
  * );
  * ```
  */
-declare function NewRegistrar(name: string, type: string, meta: object): string;
+declare function NewRegistrar(name: string, type?: string, meta?: object): string;
 
 /**
  * `PANIC` terminates the script and therefore DNSControl with an exit code of 1. This should be used if your script cannot gather enough information to generate records, for example when a HTTP request failed.
@@ -1451,7 +1451,7 @@ declare function require_glob(path: string, recursive: boolean): void;
  *   * `CAA("@", "issue", "comodoca.com")`
  *   * `CAA("@", "issuewild", ";")`
  */
-declare function CAA_BUILDER(opts: { label: string; iodef: string; iodef_critical: boolean; issue: string[]; issuewild: string }): RecordModifier;
+declare function CAA_BUILDER(opts: { label?: string; iodef: string; iodef_critical?: boolean; issue: string[]; issuewild: string }): RecordModifier;
 
 /**
  * DNSControl contains a `DMARC_BUILDER` which can be used to simply create
@@ -1537,7 +1537,7 @@ declare function CAA_BUILDER(opts: { label: string; iodef: string; iodef_critica
  * * TXT records are automatically split using `AUTOSPLIT`.
  * * URIs in the `rua` and `ruf` arrays are passed raw. You must percent-encode all commas and exclamation points in the URI itself.
  */
-declare function DMARC_BUILDER(opts: { label: string; version: string; policy: 'none' | 'quarantine' | 'reject'; subdomainPolicy: 'none' | 'quarantine' | 'reject'; alignmentSPF: 'strict' | 's' | 'relaxed' | 'r'; alignmentDKIM: 'strict' | 's' | 'relaxed' | 'r'; percent: number; rua: string[]; ruf: string[]; failureOptions: { SPF: boolean, DKIM: boolean } | string; failureFormat: string; reportInterval: Duration; ttl: Duration }): RecordModifier;
+declare function DMARC_BUILDER(opts: { label?: string; version?: string; policy: 'none' | 'quarantine' | 'reject'; subdomainPolicy?: 'none' | 'quarantine' | 'reject'; alignmentSPF?: 'strict' | 's' | 'relaxed' | 'r'; alignmentDKIM?: 'strict' | 's' | 'relaxed' | 'r'; percent?: number; rua?: string[]; ruf?: string[]; failureOptions?: { SPF: boolean, DKIM: boolean } | string; failureFormat?: string; reportInterval?: Duration; ttl: Duration }): RecordModifier;
 
 /**
  * R53_ZONE lets you specify the AWS Zone ID for an entire domain (D()) or a specific R53_ALIAS() record.
@@ -1831,7 +1831,7 @@ declare function R53_ZONE(zone_id: string): DomainModifier & RecordModifier;
  * );
  * ```
  */
-declare function SPF_BUILDER(opts: { label: string; overflow: string; overhead1: string; raw: string; ttl: Duration; txtMaxSize: string[]; parts: number; flatten: string[] }): RecordModifier;
+declare function SPF_BUILDER(opts: { label?: string; overflow?: string; overhead1?: string; raw?: string; ttl?: Duration; txtMaxSize: string[]; parts?: number; flatten?: string[] }): RecordModifier;
 
 /**
  * TTL sets the TTL for a single record only. This will take precedence

@@ -45,7 +45,7 @@ var paramTypeDefaults = map[string]string{
 	"registrar": "string",
 	"source": "string",
 	"ttl": "Duration",
-	"...modifiers": "RecordModifier[]",
+	"modifiers...": "RecordModifier[]",
 }
 
 func generateTypes() error {
@@ -87,12 +87,7 @@ func generateTypes() error {
 			params := []string{}
 			if frontMatter["parameters"] != nil {
 				for _, p := range frontMatter["parameters"].([]interface{}) {
-					name := p.(string)
-					if strings.HasSuffix(name, "...") {
-						params = append(params, "..." + name[:len(name)-3])
-					} else {
-						params = append(params, name)
-					}
+					params = append(params, p.(string))
 				}
 			}
 
@@ -171,9 +166,12 @@ func (f Function) formatParams() string {
 	for i, p := range f.Params {
 		typeName := f.ParamTypes[i]
 		name := p
+		if strings.HasSuffix(name, "...") {
+			name = "..." + name[:len(name)-3]
+		}
 		if strings.HasSuffix(typeName, "?") {
 			typeName = typeName[:len(typeName)-1]
-			p += "?"
+			name += "?"
 		}
 		if strings.Contains(name, " ") {
 			name = strings.ReplaceAll(caser.String(p), " ", "")
