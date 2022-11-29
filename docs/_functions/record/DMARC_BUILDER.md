@@ -14,6 +14,7 @@ parameters:
   - failureFormat
   - reportInterval
   - ttl
+parameters_object: true
 parameter_types:
   label: string?
   version: string?

@@ -8,6 +8,8 @@ import (
 	"strings"
 
 	"github.com/gernest/front"
+	"golang.org/x/text/cases"
+	"golang.org/x/text/language"
 )
 
 func join(parts ...string) string {
@@ -31,7 +33,7 @@ func fixRuns(s string) string {
 var returnTypes = map[string]string{
 	"domain": "DomainModifier",
 	"global": "any",
-	"record": "Record",
+	"record": "RecordModifier[]",
 }
 var paramTypeDefaults = map[string]string{
 	"name": "string",
@@ -130,10 +132,16 @@ func generateTypes() error {
 				returnType = frontMatter["return"].(string)
 			}
 
+			objectParam := false
+			if frontMatter["parameters_object"] != nil && frontMatter["parameters_object"].(bool) {
+				objectParam = true
+			}
+
 			funcs = append(funcs, Function{
 				Name:        frontMatter["name"].(string),
 				Params:      params,
 				ParamTypes:  paramTypes,
+				ObjectParam: objectParam,
 				ReturnType:  returnType,
 				Description: strings.TrimSpace(body),
 			})
@@ -156,15 +164,22 @@ type Function struct {
 	Description string
 }
 
+var caser = cases.Title(language.AmericanEnglish)
+
 func (f Function) formatParams() string {
 	var params []string
 	for i, p := range f.Params {
 		typeName := f.ParamTypes[i]
-		if strings.HasSuffix(typeName, "?") {
-			typeName = typeName[:len(typeName)-1]
-			p += "?"
+		name := p
+		if strings.Contains(name, " ") {
+			if strings.HasSuffix(typeName, "?") {
+				typeName = typeName[:len(typeName)-1]
+				p += "?"
+			}
+			name = strings.ReplaceAll(caser.String(p), " ", "")
+			name = strings.ToLower(name[:1]) + name[1:]
 		}
-		params = append(params, fmt.Sprintf("%s: %s", p, typeName))
+		params = append(params, fmt.Sprintf("%s: %s", name, typeName))
 	}
 	if f.ObjectParam {
 		return "opts: { " + strings.Join(params, "; ") + " }"
@@ -177,7 +192,7 @@ func (f Function) String() string {
 	return fmt.Sprintf(`/**
  * %s
  */
-function %s(%s): %s;
+declare function %s(%s): %s;
 
 `, strings.ReplaceAll(f.Description, "\n", "\n * "), f.Name, f.formatParams(), f.ReturnType)
 }

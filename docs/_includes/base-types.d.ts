@@ -31,7 +31,7 @@ type Duration =
     | `${number}${'s' | 'm' | 'h' | 'd' | 'w' | 'n' | 'y' | ''}`
     | number /* seconds */;
 
-var FETCH = fetch;
+declare var FETCH = fetch;
 
-function require(name: `${string}.json`): unknown;
-function require(name: string): true;
+declare function require(name: `${string}.json`): unknown;
+declare function require(name: string): true;

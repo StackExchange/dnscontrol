@@ -9,6 +9,7 @@ parameters:
   - txtMaxSize
   - parts
   - flatten
+parameters_object: true
 parameter_types:
   label: string?
   overflow: string?
