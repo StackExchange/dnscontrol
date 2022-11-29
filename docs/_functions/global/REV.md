@@ -2,6 +2,7 @@
 name: REV
 parameters:
   - address
+ts_return: string
 ---
 
 `REV` returns the reverse lookup domain for an IP network. For

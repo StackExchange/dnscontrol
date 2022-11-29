@@ -15,8 +15,6 @@ parameter_types:
   issuewild: string
 ---
 
-# CAA Builder
-
 DNSControl contains a `CAA_BUILDER` which can be used to simply create
 CAA records for your domains. Instead of creating each CAA record
 individually, you can simply configure your report mail address, the

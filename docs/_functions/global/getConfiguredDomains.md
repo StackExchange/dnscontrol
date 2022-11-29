@@ -3,6 +3,7 @@ name: getConfiguredDomains
 parameters:
   - name
   - modifiers...
+ts_return: string[]
 ---
 
 `getConfiguredDomains` getConfiguredDomains is a helper function that returns the domain names

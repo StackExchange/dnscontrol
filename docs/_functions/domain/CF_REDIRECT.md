@@ -1,6 +1,7 @@
 ---
 name: CF_REDIRECT
 parameters:
+  - source
   - destination
   - modifiers...
 provider: CLOUDFLAREAPI
