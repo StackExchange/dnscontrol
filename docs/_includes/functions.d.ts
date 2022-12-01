@@ -828,14 +828,31 @@ declare function SOA(name: string, ns: string, mbox: string, refresh: number, re
 declare function SRV(name: string, priority: number, weight: number, port: number, target: string, ...modifiers: RecordModifier[]): DomainModifier;
 
 /**
- * ---
- * 
  * SSHFP contains a fingerprint of a SSH server which can be validated before SSH clients are establishing the connection.
  * 
  * **Algorithm** (type of the key)
  * 
  * | ID | Algorithm |
- * |
+ * |----|-----------|
+ * | 0  | reserved  |
+ * | 1  | RSA       |
+ * | 2  | DSA       |
+ * | 3  | ECDSA     |
+ * | 4  | ED25519   |
+ * 
+ * **Type** (fingerprint format)
+ * 
+ * | ID | Algorithm |
+ * |----|-----------|
+ * | 0  | reserved  |
+ * | 1  | SHA-1     |
+ * | 2  | SHA-256   |
+ * 
+ * `value` is the fingerprint as a string.
+ * 
+ * ```js
+ * SSHFP('@', 1, 1, '00yourAmazingFingerprint00'),
+ * ```
  */
 declare function SSHFP(name: string, algorithm: 0 | 1 | 2 | 3 | 4, type: 0 | 1 | 2, value: string, ...modifiers: RecordModifier[]): DomainModifier;
 
@@ -1136,8 +1153,6 @@ declare function DOMAIN_ELSEWHERE(registrar: string, nameserver_names: string[])
 declare function DOMAIN_ELSEWHERE_AUTO(domain: string, registrar: string, dnsProvider: string): void;
 
 /**
- * ---
- * 
  * `D_EXTEND` adds records (and metadata) to a domain previously defined
  * by `D()`. It can also be used to add subdomain records (and metadata)
  * to a previously defined domain.
@@ -1191,6 +1206,30 @@ declare function DOMAIN_ELSEWHERE_AUTO(domain: string, registrar: string, dnsPro
  * 
  * ```text
  * ******************** Domain: domain.tld
+ * ----- Getting nameservers from: cloudflare
+ * ----- DNS Provider: cloudflare...7 corrections
+ * #1: CREATE A aaa.domain.tld 127.0.0.3
+ * #2: CREATE A bbb.sub.domain.tld 127.0.0.4
+ * #3: CREATE A ccc.sub.domain.tld 127.0.0.5
+ * #4: CREATE A ddd.sub.sub.domain.tld 127.0.0.6
+ * #5: CREATE A sub.domain.tld 127.0.0.7
+ * #6: CREATE A www.domain.tld 127.0.0.2
+ * #7: CREATE A domain.tld 127.0.0.1
+ * #8: CREATE CNAME a.domain.tld b.domain.tld.
+ * #9: CREATE CNAME c.domain.tld d.domain.tld.
+ * #10: CREATE CNAME e.sub.domain.tld f.sub.domain.tld.
+ * #11: CREATE CNAME g.sub.sub.domain.tld h.sub.sub.domain.tld.
+ * #12: CREATE CNAME i.sub.domain.tld j.sub.domain.tld.
+ * ```
+ * 
+ * ProTips: `D_EXTEND()` permits you to create very complex and
+ * sophisticated configurations, but you shouldn't. Be nice to the next
+ * person that edits the file, who may not be as expert as yourself.
+ * Enhance readability by putting any `D_EXTEND()` statements immediately
+ * after the original `D()`, like in above example.  Avoid the temptation
+ * to obscure the addition of records to existing domains with randomly
+ * placed `D_EXTEND()` statements. Don't build up a domain using loops of
+ * `D_EXTEND()` statements. You'll be glad you didn't.
  */
 declare function D_EXTEND(name: string, ...modifiers: RecordModifier[]): void;
 
@@ -1349,14 +1388,13 @@ declare function PANIC(message: string): never;
 declare function REV(address: string | number): string;
 
 /**
- * ---
- * 
  * `getConfiguredDomains` getConfiguredDomains is a helper function that returns the domain names
  * configured at the time the function is called. Calling this function early or later in
  * `dnsconfig.js` may return different results. Typical usage is to iterate over all
  * domains at the end of your configuration file.
  * 
  * Example for adding records to all configured domains:
+ * 
  * ```js
  * var domains = getConfiguredDomains();
  * for(i = 0; i < domains.length; i++) {
@@ -1370,6 +1408,41 @@ declare function REV(address: string | number): string;
  * 
  * ```text
  * ******************** Domain: domain1.tld
+ * ----- Getting nameservers from: registrar
+ * ----- DNS Provider: registrar...2 corrections
+ * #1: CREATE TXT _important.domain1.tld "BLA" ttl=43200
+ * #2: REFRESH zone domain1.tld
+ * 
+ * ******************** Domain: domain2.tld
+ * ----- Getting nameservers from: registrar
+ * ----- DNS Provider: registrar...2 corrections
+ * #1: CREATE TXT _important.domain2.tld "BLA" ttl=43200
+ * #2: REFRESH zone domain2.tld
+ * ```
+ * 
+ * Example for adding DMARC report records:
+ * This example might be more useful, specially for configuring the DMARC report records. According to DMARC RFC you need to specify `domain2.tld._report.dmarc.domain1.tld` to allow `domain2.tld` to send aggregate/forensic email reports to `domain1.tld`. This can be used to do this in an easy way, without using the wildcard from the RFC.
+ * 
+ * ```js
+ * var domains = getConfiguredDomains();
+ * for(i = 0; i < domains.length; i++) {
+ *     D_EXTEND("domain1.tld",
+ *         TXT(domains[i] + '._report._dmarc', 'v=DMARC1')
+ *     );
+ * }
+ * ```
+ * 
+ * This will end up in following modifications:
+ * 
+ * ```text
+ * ******************** Domain: domain2.tld
+ * ----- Getting nameservers from: registrar
+ * ----- DNS Provider: registrar...4 corrections
+ * #1: CREATE TXT domain1.tld._report._dmarc.domain2.tld "v=DMARC1" ttl=43200
+ * #2: CREATE TXT domain3.tld._report._dmarc.domain2.tld "v=DMARC1" ttl=43200
+ * #3: CREATE TXT domain4.tld._report._dmarc.domain2.tld "v=DMARC1" ttl=43200
+ * #4: REFRESH zone domain2.tld
+ * ```
  */
 declare function getConfiguredDomains(name: string, ...modifiers: RecordModifier[]): string[];
 

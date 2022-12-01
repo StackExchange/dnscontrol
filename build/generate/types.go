@@ -1,15 +1,15 @@
 package main
 
 import (
-	"bytes"
 	"errors"
 	"fmt"
 	"os"
+	"regexp"
 	"strings"
 
-	"github.com/gernest/front"
 	"golang.org/x/text/cases"
 	"golang.org/x/text/language"
+	"gopkg.in/yaml.v3"
 )
 
 func join(parts ...string) string {
@@ -28,6 +28,21 @@ func fixRuns(s string) string {
 		out = append(out, line)
 	}
 	return strings.Join(out, "\n")
+}
+
+// Compile the regular expression to find the delimiters
+var delimiterRegex = regexp.MustCompile(`(?m)^---\n`)
+func parseFrontMatter(content string) (map[string]interface{}, string, error) {
+	delimiterIndices := delimiterRegex.FindAllStringIndex(content, 2)
+	startIndex := delimiterIndices[0][0]
+	endIndex := delimiterIndices[1][0]
+	yamlString := content[startIndex+4:endIndex]
+	var frontMatter map[string]interface{}
+	err := yaml.Unmarshal([]byte(yamlString), &frontMatter)
+	if err != nil {
+		return nil, "", err
+	}
+	return frontMatter, content[endIndex+4:], nil
 }
 
 var returnTypes = map[string]string{
@@ -51,9 +66,6 @@ var paramTypeDefaults = map[string]string{
 func generateTypes() error {
 	funcs := []Function{}
 
-	m := front.NewMatter()
-	m.Handle("---", front.YAMLHandler)
-
 	types, err := os.ReadDir(join("docs", "_functions"))
 	if err != nil {
 		return err
@@ -76,7 +88,7 @@ func generateTypes() error {
 			if err != nil {
 				return err
 			}
-			frontMatter, body, err := m.Parse(bytes.NewReader(content))
+			frontMatter, body, err := parseFrontMatter(string(content))
 			if err != nil {
 				return err
 			}
@@ -93,19 +105,19 @@ func generateTypes() error {
 
 			body = body + "\n"
 			body = strings.ReplaceAll(body, "{{site.github.url}}", "https://dnscontrol.org/")
-			body = strings.ReplaceAll(body, "{% capture example %}\n", "")
-			body = strings.ReplaceAll(body, "{% capture example2 %}\n", "")
-			body = strings.ReplaceAll(body, "{% endcapture %}\n", "")
-			body = strings.ReplaceAll(body, "{% include example.html content=example %}\n", "")
-			body = strings.ReplaceAll(body, "{% include example.html content=example2 %}\n", "")
+			body = strings.ReplaceAll(body, "{% capture example %}", "")
+			body = strings.ReplaceAll(body, "{% capture example2 %}", "")
+			body = strings.ReplaceAll(body, "{% endcapture %}", "")
+			body = strings.ReplaceAll(body, "{% include example.html content=example %}", "")
+			body = strings.ReplaceAll(body, "{% include example.html content=example2 %}", "")
 			body = strings.ReplaceAll(body, "](#", "](https://dnscontrol.org/js#")
 			body = fixRuns(body)
 
 			suppliedParamTypes := map[string]string{}
 			if frontMatter["parameter_types"] != nil {
-				rawTypes := frontMatter["parameter_types"].(map[interface {}]interface {})
+				rawTypes := frontMatter["parameter_types"].(map[string]interface {})
 				for k, v := range rawTypes {
-					suppliedParamTypes[k.(string)] = v.(string)
+					suppliedParamTypes[k] = v.(string)
 				}
 			}
 
