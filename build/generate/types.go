@@ -96,13 +96,6 @@ func generateTypes() error {
 				continue
 			}
 
-			params := []string{}
-			if frontMatter["parameters"] != nil {
-				for _, p := range frontMatter["parameters"].([]interface{}) {
-					params = append(params, p.(string))
-				}
-			}
-
 			body = body + "\n"
 			body = strings.ReplaceAll(body, "{{site.github.url}}", "https://dnscontrol.org/")
 			body = strings.ReplaceAll(body, "{% capture example %}", "")
@@ -113,6 +106,13 @@ func generateTypes() error {
 			body = strings.ReplaceAll(body, "](#", "](https://dnscontrol.org/js#")
 			body = fixRuns(body)
 
+			paramNames := []string{}
+			if frontMatter["parameters"] != nil {
+				for _, p := range frontMatter["parameters"].([]interface{}) {
+					paramNames = append(paramNames, p.(string))
+				}
+			}
+
 			suppliedParamTypes := map[string]string{}
 			if frontMatter["parameter_types"] != nil {
 				rawTypes := frontMatter["parameter_types"].(map[string]interface {})
@@ -121,8 +121,8 @@ func generateTypes() error {
 				}
 			}
 
-			paramTypes := []string{}
-			for _, p := range params {
+			params := []Param{}
+			for _, p := range paramNames {
 				// start with supplied type, fall back to defaultParamType
 				paramType := suppliedParamTypes[p]
 				if paramType == "" {
@@ -132,7 +132,7 @@ func generateTypes() error {
 					println("WARNING:", f.Name() + ":", "no type for parameter ", "'" + p + "'")
 					paramType = "unknown"
 				}
-				paramTypes = append(paramTypes, paramType)
+				params = append(params, Param{Name: p, Type: paramType})
 			}
 
 			returnType := returnTypes[t.Name()]
@@ -145,7 +145,6 @@ func generateTypes() error {
 			funcs = append(funcs, Function{
 				Name:        frontMatter["name"].(string),
 				Params:      params,
-				ParamTypes:  paramTypes,
 				ObjectParam: frontMatter["parameters_object"] == true,
 				Deprecated:  frontMatter["deprecated"] == true,
 				ReturnType:  returnType,
@@ -163,32 +162,38 @@ func generateTypes() error {
 
 type Function struct {
 	Name        string
-	Params      []string
-	ParamTypes  []string
+	Params      []Param
 	ObjectParam bool
 	Deprecated  bool
 	ReturnType  string
 	Description string
 }
 
+type Param struct {
+	Name string
+	Type string
+}
+
 var caser = cases.Title(language.AmericanEnglish)
 
 func (f Function) formatParams() string {
 	var params []string
-	for i, p := range f.Params {
-		typeName := f.ParamTypes[i]
-		name := p
+	for _, p := range f.Params {
+		name := p.Name
 		if strings.HasSuffix(name, "...") {
 			name = "..." + name[:len(name)-3]
 		}
+		if strings.Contains(name, " ") {
+			name = strings.ReplaceAll(caser.String(name), " ", "")
+			name = strings.ToLower(name[:1]) + name[1:]
+		}
+
+		typeName := p.Type
 		if strings.HasSuffix(typeName, "?") {
 			typeName = typeName[:len(typeName)-1]
 			name += "?"
 		}
-		if strings.Contains(name, " ") {
-			name = strings.ReplaceAll(caser.String(p), " ", "")
-			name = strings.ToLower(name[:1]) + name[1:]
-		}
+
 		params = append(params, fmt.Sprintf("%s: %s", name, typeName))
 	}
 	if f.ObjectParam {
