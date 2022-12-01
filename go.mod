@@ -22,7 +22,7 @@ require (
 	github.com/bhendo/go-powershell v0.0.0-20190719160123-219e7fb4e41e
 	github.com/billputer/go-namecheap v0.0.0-20210108011502-994a912fb7f9
 	github.com/cloudflare/cloudflare-go v0.53.0
-	github.com/digitalocean/godo v1.88.0
+	github.com/digitalocean/godo v1.91.1
 	github.com/ditashi/jsbeautifier-go v0.0.0-20141206144643-2520a8026a9c
 	github.com/dnsimple/dnsimple-go v1.0.0
 	github.com/exoscale/egoscale v0.90.2
