@@ -4,6 +4,7 @@ parameters:
   - url
   - args
 ts_ignore: true
+# Make sure to update fetch.d.ts if changing the docs below!
 ---
 
 `FETCH` is a wrapper for the [Fetch API](https://developer.mozilla.org/en-US/docs/Web/API/Fetch_API). This allows dynamically setting DNS records based on an external data source, e.g. the API of your cloud provider.

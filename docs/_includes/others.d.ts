@@ -1,5 +1,3 @@
-declare var FETCH: typeof fetch;
-
 declare function require(name: `${string}.json`): unknown;
 declare function require(name: string): true;
 
