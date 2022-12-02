@@ -424,6 +424,10 @@ type RecordKey struct {
 	Type     string
 }
 
+func (rk *RecordKey) String() string {
+	return rk.NameFQDN + ":" + rk.Type
+}
+
 // Key converts a RecordConfig into a RecordKey.
 func (rc *RecordConfig) Key() RecordKey {
 	t := rc.Type
