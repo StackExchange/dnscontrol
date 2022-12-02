@@ -3,12 +3,14 @@ package netlify
 import (
 	"encoding/json"
 	"fmt"
+	"strings"
+
 	"github.com/StackExchange/dnscontrol/v3/models"
 	"github.com/StackExchange/dnscontrol/v3/pkg/diff"
 	"github.com/StackExchange/dnscontrol/v3/pkg/printer"
 	"github.com/StackExchange/dnscontrol/v3/pkg/txtutil"
 	"github.com/StackExchange/dnscontrol/v3/providers"
-	"strings"
+	"github.com/miekg/dns"
 )
 
 var nameServerSuffixes = []string{
@@ -108,8 +110,12 @@ func (n *netlifyProvider) GetZoneRecords(domain string) (models.Records, error) 
 
 		rec.SetLabelFromFQDN(r.Hostname, domain) // netlify returns the FQDN
 
+		if r.Type == "CNAME" || r.Type == "MX" || r.Type == "NS" {
+			r.Value = dns.CanonicalName(r.Value)
+		}
+
 		switch rtype := r.Type; rtype {
-		case "NETLIFY", "NETLIFYv6": // these behave similar to a CNAME
+		case "NETLIFY", "NETLIFYv6": // transparently ignore
 			continue
 		case "MX":
 			err = rec.SetTargetMX(uint16(r.Priority), r.Value)

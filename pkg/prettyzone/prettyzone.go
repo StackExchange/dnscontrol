@@ -90,6 +90,7 @@ func PrettySort(records models.Records, origin string, defaultTTL uint32, commen
 	}
 	z.Records = nil
 	z.Records = append(z.Records, records...)
+	sort.Sort(z)
 	return z
 }
 
