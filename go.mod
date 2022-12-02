@@ -45,7 +45,7 @@ require (
 	github.com/pkg/errors v0.9.1
 	github.com/pquerna/otp v1.3.0
 	github.com/qdm12/reprint v0.0.0-20200326205758-722754a53494
-	github.com/robertkrimen/otto v0.0.0-20221025135307-511d75fba9f8
+	github.com/robertkrimen/otto v0.2.0
 	github.com/softlayer/softlayer-go v1.0.6
 	github.com/stretchr/testify v1.8.1
 	github.com/tdewolff/minify/v2 v2.12.4
