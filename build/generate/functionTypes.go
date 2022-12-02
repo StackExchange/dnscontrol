@@ -61,37 +61,37 @@ var paramTypeDefaults = map[string]string{
 	"modifiers...": "RecordModifier[]",
 }
 
-func generateFunctionTypes() error {
+func generateFunctionTypes() (string, error) {
 	funcs := []Function{}
 
 	srcRoot := join("docs", "_functions")
 	types, err := os.ReadDir(srcRoot)
 	if err != nil {
-		return err
+		return "", err
 	}
 	for _, t := range types {
 		if !t.IsDir() {
-			return errors.New("not a directory: " + join(srcRoot, t.Name()))
+			return "", errors.New("not a directory: " + join(srcRoot, t.Name()))
 		}
 		tPath := join(srcRoot, t.Name())
 		funcNames, err := os.ReadDir(tPath)
 		if err != nil {
-			return err
+			return "", err
 		}
 
 		for _, f := range funcNames {
 			fPath := join(tPath, f.Name())
 			if f.IsDir() {
-				return errors.New("not a file: " + fPath)
+				return "", errors.New("not a file: " + fPath)
 			}
 			// println("Processing", fPath)
 			content, err := os.ReadFile(fPath)
 			if err != nil {
-				return err
+				return "", err
 			}
 			frontMatter, body, err := parseFrontMatter(string(content))
 			if err != nil {
-				return err
+				return "", err
 			}
 			if frontMatter["ts_ignore"] == true {
 				continue
@@ -164,7 +164,7 @@ func generateFunctionTypes() error {
 	for _, f := range funcs {
 		content += f.String()
 	}
-	return os.WriteFile(join("types", "src", "functions.d.ts"), []byte(content), 0644)
+	return content, nil
 }
 
 type Function struct {

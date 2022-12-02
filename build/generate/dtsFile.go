@@ -5,11 +5,10 @@ import (
 	"strings"
 )
 
-func combineTypes() error {
+func generateDTSFile(funcs string) error {
 	names := []string{
 		"base-types",
 		"fetch",
-		"functions",
 		"others",
 	}
 
@@ -21,6 +20,7 @@ func combineTypes() error {
 		}
 		combined = append(combined, string(content))
 	}
+	combined = append(combined, funcs)
 	os.WriteFile(join("types", "dnscontrol.d.ts"), []byte(strings.Join(combined, "\n\n")), 0644)
 	return nil
 }

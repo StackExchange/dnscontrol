@@ -6,10 +6,11 @@ func main() {
 	if err := generateFeatureMatrix(); err != nil {
 		log.Fatal(err)
 	}
-	if err := generateFunctionTypes(); err != nil {
+	funcs, err := generateFunctionTypes()
+	if err != nil {
 		log.Fatal(err)
 	}
-	if err := combineTypes(); err != nil {
+	if err := generateDTSFile(funcs); err != nil {
 		log.Fatal(err)
 	}
 }
