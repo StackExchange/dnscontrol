@@ -188,6 +188,11 @@
     "token": "$PACKETFRAME_TOKEN",
     "domain": "$PACKETFRAME_DOMAIN"
   },
+  "PORKBUN": {
+    "api_key": "$PORKBUN_API_KEY",
+    "secret_key": "$PORKBUN_SECRET_KEY",
+    "domain": "$PORKBUN_DOMAIN"
+  },
   "ROUTE53": {
     "KeyId": "$ROUTE53_KEY_ID",
     "SecretKey": "$ROUTE53_KEY",
@@ -210,5 +215,10 @@
     "token": "$DOMAINNAMESHOP_TOKEN",
     "secret": "$DOMAINNAMESHOP_SECRET",
     "domain": "$DOMAINNAMESHOP_DOMAIN"
+  },
+  "NETLIFY": {
+    "token": "$NETLIFY_TOKEN",
+    "slug": "$NETLIFY_ACCOUNT_SLUG",
+    "domain": "$NETLIFY_DOMAIN"
   }
 }

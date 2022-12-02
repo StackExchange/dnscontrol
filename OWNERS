@@ -28,6 +28,7 @@ providers/linode @koesie10
 providers/namecheap @captncraig
 # providers/namedotcom NEEDS VOLUNTEER
 providers/netcup @kordianbruck
+providers/netlify @SphericalKat
 providers/ns1 @costasd
 providers/opensrs @philhug
 providers/oracle @kallsyms
@@ -38,4 +39,5 @@ providers/vultr @pgaskin
 providers/ovh @masterzen
 providers/powerdns @jpbede
 providers/packetframe @hamptonmoore
+providers/porkbun @imlonghao
 providers/transip @blackshadev

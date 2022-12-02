@@ -47,10 +47,12 @@ Currently supported DNS providers:
 - Name.com
 - Namecheap
 - Netcup
+- Netlify
 - OVH
 - OctoDNS
 - Oracle Cloud
 - Packetframe
+- Porkbun
 - PowerDNS
 - RWTH DNS-Admin
 - SoftLayer

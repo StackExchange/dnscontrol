@@ -23,5 +23,6 @@ stack.sh
 *.nupkg
 .DS_Store
 .vscode/launch.json
+.jekyll-cache
 
 dist/

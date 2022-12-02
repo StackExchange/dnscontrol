@@ -1,12 +1,12 @@
 ---
-name: Namecheap Provider
+name: Namecheap
 layout: default
 jsId: NAMECHEAP
 ---
 
 # Namecheap Provider
 
-Namecheap only provides a registrar provider implementation.
+This is the provider for [Namecheap](https://www.namecheap.com/).
 
 ## Configuration
 
