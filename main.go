@@ -11,7 +11,7 @@ import (
 	_ "github.com/StackExchange/dnscontrol/v3/providers/_all"
 )
 
-//go:generate go run build/generate/generate.go build/generate/featureMatrix.go build/generate/functionTypes.go build/generate/combineTypes.go
+//go:generate go run build/generate/generate.go build/generate/featureMatrix.go build/generate/functionTypes.go build/generate/dtsFile.go
 
 // Version management. Goals:
 // 1. Someone who just does "go get" has at least some information.
