@@ -20,20 +20,20 @@ declare const IGNORE_NAME_DISABLE_SAFETY_CHECK: RecordModifier;
 // Cloudflare aliases:
 
 /** Proxy disabled. */
-const CF_PROXY_OFF: RecordModifier;
+declare const CF_PROXY_OFF: RecordModifier;
 /** Proxy enabled. */
-const CF_PROXY_ON: RecordModifier;
+declare const CF_PROXY_ON: RecordModifier;
 /** Proxy+Railgun enabled. */
-const CF_PROXY_FULL: RecordModifier;
+declare const CF_PROXY_FULL: RecordModifier;
 
 /** Proxy default off for entire domain (the default) */
-const CF_PROXY_DEFAULT_OFF: DomainModifier;
+declare const CF_PROXY_DEFAULT_OFF: DomainModifier;
 /** Proxy default on for entire domain */
-var CF_PROXY_DEFAULT_ON: DomainModifier;
+declare const CF_PROXY_DEFAULT_ON: DomainModifier;
 /** UniversalSSL off for entire domain */
-var CF_UNIVERSALSSL_OFF: DomainModifier;
+declare const CF_UNIVERSALSSL_OFF: DomainModifier;
 /** UniversalSSL on for entire domain */
-var CF_UNIVERSALSSL_ON: DomainModifier;
+declare const CF_UNIVERSALSSL_ON: DomainModifier;
 
 /**
  * Set default values for CLI variables. See: https://dnscontrol.org/cli-variables
@@ -51,7 +51,7 @@ declare function CLI_DEFAULTS(vars: Record<string, unknown>): void;
  * END)
  * ```
  */
-declare var END: DomainModifier & RecordModifier;
+declare const END: DomainModifier & RecordModifier;
 
 /**
  * Permit labels like `"foo.bar.com.bar.com"` (normally an error)
@@ -62,4 +62,4 @@ declare var END: DomainModifier & RecordModifier;
  * )
  * ```
  */
-declare var DISABLE_REPEATED_DOMAIN_CHECK: RecordModifier;
+declare const DISABLE_REPEATED_DOMAIN_CHECK: RecordModifier;
