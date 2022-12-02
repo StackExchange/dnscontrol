@@ -6,7 +6,10 @@ func main() {
 	if err := generateFeatureMatrix(); err != nil {
 		log.Fatal(err)
 	}
-	if err := generateTypes(); err != nil {
+	if err := generateFunctionTypes(); err != nil {
+		log.Fatal(err)
+	}
+	if err := combineTypes(); err != nil {
 		log.Fatal(err)
 	}
 }

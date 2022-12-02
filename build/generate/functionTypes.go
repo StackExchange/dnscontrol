@@ -61,28 +61,31 @@ var paramTypeDefaults = map[string]string{
 	"modifiers...": "RecordModifier[]",
 }
 
-func generateTypes() error {
+func generateFunctionTypes() error {
 	funcs := []Function{}
 
-	types, err := os.ReadDir(join("docs", "_functions"))
+	srcRoot := join("docs", "_functions")
+	types, err := os.ReadDir(srcRoot)
 	if err != nil {
 		return err
 	}
 	for _, t := range types {
 		if !t.IsDir() {
-			return errors.New("not a directory: " + join("docs", "_functions", t.Name()))
+			return errors.New("not a directory: " + join(srcRoot, t.Name()))
 		}
-		funcNames, err := os.ReadDir(join("docs", "_functions", t.Name()))
+		tPath := join(srcRoot, t.Name())
+		funcNames, err := os.ReadDir(tPath)
 		if err != nil {
 			return err
 		}
 
 		for _, f := range funcNames {
+			fPath := join(tPath, f.Name())
 			if f.IsDir() {
-				return errors.New("not a file: " + join("docs", "_functions", t.Name(), f.Name()))
+				return errors.New("not a file: " + fPath)
 			}
-			println("Processing ", join("docs", "_functions", t.Name(), f.Name()))
-			content, err := os.ReadFile(join("docs", "_functions", t.Name(), f.Name()))
+			// println("Processing", fPath)
+			content, err := os.ReadFile(fPath)
 			if err != nil {
 				return err
 			}
@@ -161,7 +164,7 @@ func generateTypes() error {
 	for _, f := range funcs {
 		content += f.String()
 	}
-	return os.WriteFile("docs/_includes/functions.d.ts", []byte(content), 0644)
+	return os.WriteFile(join("types", "src", "functions.d.ts"), []byte(content), 0644)
 }
 
 type Function struct {
