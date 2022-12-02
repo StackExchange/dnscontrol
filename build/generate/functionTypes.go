@@ -98,13 +98,13 @@ func generateFunctionTypes() (string, error) {
 			}
 
 			body = body + "\n"
-			body = strings.ReplaceAll(body, "{{site.github.url}}", "https://dnscontrol.org/")
+			body = strings.ReplaceAll(body, "{{site.github.url}}", "https://www.dnscontrol.org/")
 			body = strings.ReplaceAll(body, "{% capture example %}", "")
 			body = strings.ReplaceAll(body, "{% capture example2 %}", "")
 			body = strings.ReplaceAll(body, "{% endcapture %}", "")
 			body = strings.ReplaceAll(body, "{% include example.html content=example %}", "")
 			body = strings.ReplaceAll(body, "{% include example.html content=example2 %}", "")
-			body = strings.ReplaceAll(body, "](#", "](https://dnscontrol.org/js#")
+			body = strings.ReplaceAll(body, "](#", "](https://www.dnscontrol.org/js#")
 			body = fixRuns(body)
 
 			paramNames := []string{}
@@ -215,7 +215,7 @@ func (f Function) docs() string {
 	if f.Deprecated {
 		content += "\n\n@deprecated"
 	}
-	content += "\n\n@see https://dnscontrol.org/js#" + f.Name
+	content += "\n\n@see https://www.dnscontrol.org/js#" + f.Name
 	return "/**\n * " + strings.ReplaceAll(content, "\n", "\n * ") + "\n */"
 }
 
