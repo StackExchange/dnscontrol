@@ -30,7 +30,6 @@ func fixRuns(s string) string {
 	return strings.Join(out, "\n")
 }
 
-// Compile the regular expression to find the delimiters
 var delimiterRegex = regexp.MustCompile(`(?m)^---\n`)
 func parseFrontMatter(content string) (map[string]interface{}, string, error) {
 	delimiterIndices := delimiterRegex.FindAllStringIndex(content, 2)
