@@ -2,6 +2,8 @@
 name: REV
 parameters:
   - address
+parameter_types:
+  address: string
 ts_return: string
 ---
 

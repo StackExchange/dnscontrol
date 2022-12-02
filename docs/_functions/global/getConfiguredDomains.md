@@ -1,8 +1,6 @@
 ---
 name: getConfiguredDomains
-parameters:
-  - name
-  - modifiers...
+ts_is_function: true
 ts_return: string[]
 ---
 

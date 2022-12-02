@@ -4,6 +4,8 @@ parameters:
   - name
   - address
   - modifiers...
+parameter_types:
+  address: string | number
 ---
 
 A adds an A record To a domain. The name should be the relative label for the record. Use `@` for the domain apex.

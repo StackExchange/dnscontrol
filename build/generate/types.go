@@ -55,7 +55,6 @@ var paramTypeDefaults = map[string]string{
 	"target": "string",
 	"value": "string",
 	"destination": "string",
-	"address": "string | number",
 	"priority": "number",
 	"registrar": "string",
 	"source": "string",
@@ -142,6 +141,12 @@ func generateTypes() error {
 				returnType = frontMatter["return"].(string)
 			}
 
+			if len(params) == 0 {
+				if frontMatter["ts_is_function"] != true {
+					params = nil
+				}
+			}
+
 			funcs = append(funcs, Function{
 				Name:        frontMatter["name"].(string),
 				Params:      params,
@@ -203,7 +208,7 @@ func (f Function) formatParams() string {
 	}
 }
 
-func (f Function) Docs() string {
+func (f Function) docs() string {
 	content := f.Description
 	if f.Deprecated {
 		content += "\n\n@deprecated"
@@ -212,7 +217,14 @@ func (f Function) Docs() string {
 	return "/**\n * " + strings.ReplaceAll(content, "\n", "\n * ") + "\n */"
 }
 
+func (f Function) formatMain() string {
+	if f.Params == nil {
+		return fmt.Sprintf("declare const %s: %s", f.Name, f.ReturnType)
+	}
+	return fmt.Sprintf("declare function %s(%s): %s", f.Name, f.formatParams(), f.ReturnType)
+}
+
 func (f Function) String() string {
-	return fmt.Sprintf("%s\ndeclare function %s(%s): %s;\n\n", f.Docs(), f.Name, f.formatParams(), f.ReturnType)
+	return fmt.Sprintf("%s\n%s;\n\n", f.docs(), f.formatMain())
 }
 

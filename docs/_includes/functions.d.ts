@@ -13,6 +13,8 @@
  *   A("*", "1.2.3.4", {foo: 42})
  * );
  * ```
+ * 
+ * @see https://dnscontrol.org/js#A
  */
 declare function A(name: string, address: string | number, ...modifiers: RecordModifier[]): DomainModifier;
 
@@ -33,12 +35,16 @@ declare function A(name: string, address: string | number, ...modifiers: RecordM
  *   AAAA("*", addrV6, {foo: 42})
  * );
  * ```
+ * 
+ * @see https://dnscontrol.org/js#AAAA
  */
-declare function AAAA(name: string, address: string | number, ...modifiers: RecordModifier[]): DomainModifier;
+declare function AAAA(name: string, address: string, ...modifiers: RecordModifier[]): DomainModifier;
 
 /**
  * AKAMAICDN is a proprietary record type that is used to configure [Zone Apex Mapping](https://blogs.akamai.com/2019/08/fast-dns-zone-apex-mapping-dnssec.html).
  * The AKAMAICDN target must be preconfigured in the Akamai network.
+ * 
+ * @see https://dnscontrol.org/js#AKAMAICDN
  */
 declare function AKAMAICDN(name: string, target: string, ...modifiers: RecordModifier[]): DomainModifier;
 
@@ -56,6 +62,8 @@ declare function AKAMAICDN(name: string, target: string, ...modifiers: RecordMod
  *   ALIAS("@", "google.com."), // example.com -> google.com
  * );
  * ```
+ * 
+ * @see https://dnscontrol.org/js#ALIAS
  */
 declare function ALIAS(name: string, target: string, ...modifiers: RecordModifier[]): DomainModifier;
 
@@ -64,8 +72,10 @@ declare function ALIAS(name: string, target: string, ...modifiers: RecordModifie
  * parameters.
  * 
  * See `AUTODNSSEC_ON` for further details.
+ * 
+ * @see https://dnscontrol.org/js#AUTODNSSEC_OFF
  */
-declare function AUTODNSSEC_OFF(): DomainModifier;
+declare const AUTODNSSEC_OFF: DomainModifier;
 
 /**
  * AUTODNSSEC_ON tells the provider to enable AutoDNSSEC.
@@ -97,8 +107,10 @@ declare function AUTODNSSEC_OFF(): DomainModifier;
  * 
  * If neither `AUTODNSSEC_ON` or `AUTODNSSEC_OFF` is specified for a
  * domain no changes will be requested.
+ * 
+ * @see https://dnscontrol.org/js#AUTODNSSEC_ON
  */
-declare function AUTODNSSEC_ON(): DomainModifier;
+declare const AUTODNSSEC_ON: DomainModifier;
 
 /**
  * AZURE_ALIAS is a Azure specific virtual record type that points a record at either another record or an Azure entity.
@@ -142,6 +154,8 @@ declare function AUTODNSSEC_ON(): DomainModifier;
  *   AZURE_ALIAS("foo", "CNAME", "/subscriptions/726f8cd6-6459-4db4-8e6d-2cd2716904e2/resourceGroups/test/providers/Microsoft.Network/dnszones/example.com/A/quux."), // record in the same zone
  * );
  * ```
+ * 
+ * @see https://dnscontrol.org/js#AZURE_ALIAS
  */
 declare function AZURE_ALIAS(name: string, type: "A" | "AAAA" | "CNAME", target: string, ...modifiers: RecordModifier[]): DomainModifier;
 
@@ -169,6 +183,8 @@ declare function AZURE_ALIAS(name: string, type: "A" | "AAAA" | "CNAME", target:
  *   CAA("@", "iodef", "mailto:test@example.com", CAA_CRITICAL)
  * );
  * ```
+ * 
+ * @see https://dnscontrol.org/js#CAA
  */
 declare function CAA(name: string, tag: "issue" | "issuewild" | "iodef", value: string, ...modifiers: RecordModifier[]): DomainModifier;
 
@@ -198,6 +214,8 @@ declare function CAA(name: string, tag: "issue" | "issuewild" | "iodef", value: 
  *   CF_REDIRECT("mydomain.com/*", "https://www.mydomain.com/$1"),
  * );
  * ```
+ * 
+ * @see https://dnscontrol.org/js#CF_REDIRECT
  */
 declare function CF_REDIRECT(source: string, destination: string, ...modifiers: RecordModifier[]): DomainModifier;
 
@@ -220,6 +238,8 @@ declare function CF_REDIRECT(source: string, destination: string, ...modifiers: 
  *   CF_TEMP_REDIRECT("example.mydomain.com/*", "https://otherplace.yourdomain.com/$1"),
  * );
  * ```
+ * 
+ * @see https://dnscontrol.org/js#CF_TEMP_REDIRECT
  */
 declare function CF_TEMP_REDIRECT(source: string, destination: string, ...modifiers: RecordModifier[]): DomainModifier;
 
@@ -244,11 +264,15 @@ declare function CF_TEMP_REDIRECT(source: string, destination: string, ...modifi
  *     CF_WORKER_ROUTE("foo.com/api/*", "my-worker"),
  * );
  * ```
+ * 
+ * @see https://dnscontrol.org/js#CF_WORKER_ROUTE
  */
 declare function CF_WORKER_ROUTE(pattern: string, script: string): DomainModifier;
 
 /**
  * Documentation needed.
+ * 
+ * @see https://dnscontrol.org/js#CLOUDNS_WR
  */
 declare function CLOUDNS_WR(name: string, target: string, ...modifiers: RecordModifier[]): DomainModifier;
 
@@ -265,6 +289,8 @@ declare function CLOUDNS_WR(name: string, target: string, ...modifiers: RecordMo
  *   CNAME("def", "test"), // def.example.com -> test.example.com
  * );
  * ```
+ * 
+ * @see https://dnscontrol.org/js#CNAME
  */
 declare function CNAME(name: string, target: string, ...modifiers: RecordModifier[]): DomainModifier;
 
@@ -284,6 +310,8 @@ declare function CNAME(name: string, target: string, ...modifiers: RecordModifie
  *   DS("example.com", 2371, 13, 2, "ABCDEF")
  * );
  * ```
+ * 
+ * @see https://dnscontrol.org/js#DS
  */
 declare function DS(name: string, keytag: number, algorithm: number, digesttype: number, digest: string, ...modifiers: RecordModifier[]): DomainModifier;
 
@@ -301,6 +329,8 @@ declare function DS(name: string, keytag: number, algorithm: number, digesttype:
  * 
  * The DefaultTTL duration is the same format as [TTL](https://dnscontrol.org/js#TTL), an integer number of seconds
  * or a string with a unit such as `'4d'`.
+ * 
+ * @see https://dnscontrol.org/js#DefaultTTL
  */
 declare function DefaultTTL(ttl: Duration): DomainModifier;
 
@@ -323,20 +353,17 @@ declare function DefaultTTL(ttl: Duration): DomainModifier;
  * the DNS records will not be modified. In fact, if you want to control
  * the Registrar for a domain but not the DNS records themselves, simply
  * do not include a `DnsProvider()` function for that `D()`.
+ * 
+ * @see https://dnscontrol.org/js#DnsProvider
  */
 declare function DnsProvider(name: string, nsCount?: number): DomainModifier;
 
 /**
  * Documentation needed.
+ * 
+ * @see https://dnscontrol.org/js#FRAME
  */
 declare function FRAME(name: string, target: string, ...modifiers: RecordModifier[]): DomainModifier;
-
-/**
- * IGNORE has been renamed to `IGNORE_NAME`. IGNORE will continue to function, but its use is deprecated. Please update your configuration files to use `IGNORE_NAME`.
- * 
- * @deprecated
- */
-declare function IGNORE(): DomainModifier;
 
 /**
  * WARNING: The `IGNORE_*` family  of functions is risky to use. The code
@@ -414,6 +441,8 @@ declare function IGNORE(): DomainModifier;
  * 
  * 1. Two owners (DNSControl and some other entity) toggling a record between two settings.
  * 2. The other owner wiping all records at this label, which won't be noticed until the next time DNSControl is run.
+ * 
+ * @see https://dnscontrol.org/js#IGNORE_NAME
  */
 declare function IGNORE_NAME(pattern: string, rTypes?: string): DomainModifier;
 
@@ -447,6 +476,8 @@ declare function IGNORE_NAME(pattern: string, rTypes?: string): DomainModifier;
  * * `IGNORE_TARGET("dev.*.foo", "CNAME")` will ignore all CNAME records with targets in the style of `dev.bar.foo`, but will not ignore records with targets using a double subdomain, such as `dev.foo.bar.foo`.
  * 
  * It is considered as an error to try to manage an ignored record.
+ * 
+ * @see https://dnscontrol.org/js#IGNORE_TARGET
  */
 declare function IGNORE_TARGET(pattern: string, rType: string): DomainModifier;
 
@@ -463,6 +494,8 @@ declare function IGNORE_TARGET(pattern: string, rType: string): DomainModifier;
  *   A("home", "127.0.0.1")
  * );
  * ```
+ * 
+ * @see https://dnscontrol.org/js#INCLUDE
  */
 declare function INCLUDE(domain: string): DomainModifier;
 
@@ -479,6 +512,8 @@ declare function INCLUDE(domain: string): DomainModifier;
  *   MX("sub", 10, "mail.foo.com.")
  * );
  * ```
+ * 
+ * @see https://dnscontrol.org/js#MX
  */
 declare function MX(name: string, priority: number, target: string, ...modifiers: RecordModifier[]): DomainModifier;
 
@@ -558,6 +593,8 @@ declare function MX(name: string, priority: number, target: string, ...modifiers
  *   ...
  * )
  * ```
+ * 
+ * @see https://dnscontrol.org/js#NAMESERVER
  */
 declare function NAMESERVER(name: string, ...modifiers: RecordModifier[]): DomainModifier;
 
@@ -572,6 +609,8 @@ declare function NAMESERVER(name: string, ...modifiers: RecordModifier[]): Domai
  *   NAMESERVER('ns')
  * );
  * ```
+ * 
+ * @see https://dnscontrol.org/js#NAMESERVER_TTL
  */
 declare function NAMESERVER_TTL(ttl: Duration): DomainModifier;
 
@@ -611,8 +650,10 @@ declare function NAMESERVER_TTL(ttl: Duration): DomainModifier;
  * 
  * There is also `PURGE` command for completeness. `PURGE` is the
  * default, thus this command is a no-op.
+ * 
+ * @see https://dnscontrol.org/js#NO_PURGE
  */
-declare function NO_PURGE(): DomainModifier;
+declare const NO_PURGE: DomainModifier;
 
 /**
  * NS adds a NS record to the domain. The name should be the relative label for the domain.
@@ -630,11 +671,15 @@ declare function NO_PURGE(): DomainModifier;
  *   A("ns2.example2.com", "10.10.10.20"), // Glue records
  * );
  * ```
+ * 
+ * @see https://dnscontrol.org/js#NS
  */
 declare function NS(name: string, target: string, ...modifiers: RecordModifier[]): DomainModifier;
 
 /**
  * Documentation needed.
+ * 
+ * @see https://dnscontrol.org/js#NS1_URLFWD
  */
 declare function NS1_URLFWD(name: string, target: string, ...modifiers: RecordModifier[]): DomainModifier;
 
@@ -713,6 +758,8 @@ declare function NS1_URLFWD(name: string, target: string, ...modifiers: RecordMo
  * In the future we plan on adding a flag to `A()` which will insert
  * the correct PTR() record if the appropriate `.arpa` domain has been
  * defined.
+ * 
+ * @see https://dnscontrol.org/js#PTR
  */
 declare function PTR(name: string, target: string, ...modifiers: RecordModifier[]): DomainModifier;
 
@@ -751,8 +798,10 @@ declare function PTR(name: string, target: string, ...modifiers: RecordModifier[
  *   PURGE,
  * );
  * ```
+ * 
+ * @see https://dnscontrol.org/js#PURGE
  */
-declare function PURGE(): DomainModifier;
+declare const PURGE: DomainModifier;
 
 /**
  * R53_ALIAS is a Route53 specific virtual record type that points a record at either another record or an AWS entity (like a Cloudfront distribution, an ELB, etc...). It is analogous to a CNAME, but is usually resolved at request-time and served as an A record. Unlike CNAMEs, ALIAS records can be used at the zone apex (`@`)
@@ -790,6 +839,8 @@ declare function PURGE(): DomainModifier;
  *   R53_ALIAS('foo', 'A', 'blahblah-bucket.s3-website-us-west-1.amazonaws.com.', R53_ZONE('Z2F56UZL2M1ACD')),     // a website S3 Bucket in us-west-1
  * );
  * ```
+ * 
+ * @see https://dnscontrol.org/js#R53_ALIAS
  */
 declare function R53_ALIAS(name: string, target: string, zone_idModifier: DomainModifier & RecordModifier): DomainModifier;
 
@@ -808,6 +859,8 @@ declare function R53_ALIAS(name: string, target: string, zone_idModifier: Domain
  * * Most providers automatically generate SOA records.  They will ignore any `SOA()` statements.
  * 
  * There is more info about SOA in the documentation for the [BIND provider](https://dnscontrol.org//providers/bind).
+ * 
+ * @see https://dnscontrol.org/js#SOA
  */
 declare function SOA(name: string, ns: string, mbox: string, refresh: number, retry: number, expire: number, minttl: number, ...modifiers: RecordModifier[]): DomainModifier;
 
@@ -824,6 +877,8 @@ declare function SOA(name: string, ns: string, mbox: string, refresh: number, re
  *   SRV('_sip._tcp', 10, 20, 5060, 'smallbox1.example.tld.'),
  * );
  * ```
+ * 
+ * @see https://dnscontrol.org/js#SRV
  */
 declare function SRV(name: string, priority: number, weight: number, port: number, target: string, ...modifiers: RecordModifier[]): DomainModifier;
 
@@ -853,6 +908,8 @@ declare function SRV(name: string, priority: number, weight: number, port: numbe
  * ```js
  * SSHFP('@', 1, 1, '00yourAmazingFingerprint00'),
  * ```
+ * 
+ * @see https://dnscontrol.org/js#SSHFP
  */
 declare function SSHFP(name: string, algorithm: 0 | 1 | 2 | 3 | 4, type: 0 | 1 | 2, value: string, ...modifiers: RecordModifier[]): DomainModifier;
 
@@ -869,6 +926,8 @@ declare function SSHFP(name: string, algorithm: 0 | 1 | 2 | 3 | 4, type: 0 | 1 |
  *   TLSA("_443._tcp", 3, 1, 1, "abcdef0"),
  * );
  * ```
+ * 
+ * @see https://dnscontrol.org/js#TLSA
  */
 declare function TLSA(name: string, usage: number, selector: number, type: number, certificate: string, ...modifiers: RecordModifier[]): DomainModifier;
 
@@ -969,16 +1028,22 @@ declare function TLSA(name: string, usage: number, selector: number, type: numbe
  * `dnsconfig.js` and seeing if `dnscontrol push` is able to push that
  * record into production. (Be careful if you are testing this on a
  * domain used in production.)
+ * 
+ * @see https://dnscontrol.org/js#TXT
  */
 declare function TXT(name: string, contents: string, ...modifiers: RecordModifier[]): DomainModifier;
 
 /**
  * Documentation needed.
+ * 
+ * @see https://dnscontrol.org/js#URL
  */
 declare function URL(name: string, ...modifiers: RecordModifier[]): DomainModifier;
 
 /**
  * Documentation needed.
+ * 
+ * @see https://dnscontrol.org/js#URL301
  */
 declare function URL301(name: string, ...modifiers: RecordModifier[]): DomainModifier;
 
@@ -1067,6 +1132,8 @@ declare function URL301(name: string, ...modifiers: RecordModifier[]): DomainMod
  * NOTE: The quotes are required if your shell treats `!` as a special
  * character, which is probably does.  If you see an error that mentions
  * `event not found` you probably forgot the quotes.
+ * 
+ * @see https://dnscontrol.org/js#D
  */
 declare function D(name: string, registrar: string, ...modifiers: DomainModifier[]): void;
 
@@ -1086,6 +1153,8 @@ declare function D(name: string, registrar: string, ...modifiers: DomainModifier
  * DEFAULTS();
  * D("example2.com", REGISTRAR, DnsProvider("R53"), A("@","1.2.3.4")); // this domain will not have the previous defaults.
  * ```
+ * 
+ * @see https://dnscontrol.org/js#DEFAULTS
  */
 declare function DEFAULTS(...modifiers: RecordModifier[]): void;
 
@@ -1117,6 +1186,8 @@ declare function DEFAULTS(...modifiers: RecordModifier[]): void;
  * 
  * NOTE: The `NO_PURGE` is used out of abundance of caution but since no
  * `DnsProvider()` statements exist, no updates would be performed.
+ * 
+ * @see https://dnscontrol.org/js#DOMAIN_ELSEWHERE
  */
 declare function DOMAIN_ELSEWHERE(registrar: string, nameserver_names: string[]): void;
 
@@ -1149,6 +1220,8 @@ declare function DOMAIN_ELSEWHERE(registrar: string, nameserver_names: string[])
  * ```
  * 
  * NOTE: The `NO_PURGE` is used to prevent DNSControl from changing the records.
+ * 
+ * @see https://dnscontrol.org/js#DOMAIN_ELSEWHERE_AUTO
  */
 declare function DOMAIN_ELSEWHERE_AUTO(domain: string, registrar: string, dnsProvider: string): void;
 
@@ -1230,6 +1303,8 @@ declare function DOMAIN_ELSEWHERE_AUTO(domain: string, registrar: string, dnsPro
  * to obscure the addition of records to existing domains with randomly
  * placed `D_EXTEND()` statements. Don't build up a domain using loops of
  * `D_EXTEND()` statements. You'll be glad you didn't.
+ * 
+ * @see https://dnscontrol.org/js#D_EXTEND
  */
 declare function D_EXTEND(name: string, ...modifiers: RecordModifier[]): void;
 
@@ -1252,6 +1327,8 @@ declare function D_EXTEND(name: string, ...modifiers: RecordModifier[]): void;
  * // IPv6 Var
  * var addrAAAA = "0:0:0:0:0:0:0:0";
  * ```
+ * 
+ * @see https://dnscontrol.org/js#IP
  */
 declare function IP(ip: string): number;
 
@@ -1289,6 +1366,8 @@ declare function IP(ip: string): number;
  *   A("@","1.2.3.4")
  * );
  * ```
+ * 
+ * @see https://dnscontrol.org/js#NewDnsProvider
  */
 declare function NewDnsProvider(name: string, type?: string, meta?: object): string;
 
@@ -1326,6 +1405,8 @@ declare function NewDnsProvider(name: string, type?: string, meta?: object): str
  *   A("@","1.2.3.4")
  * );
  * ```
+ * 
+ * @see https://dnscontrol.org/js#NewRegistrar
  */
 declare function NewRegistrar(name: string, type?: string, meta?: object): string;
 
@@ -1335,6 +1416,8 @@ declare function NewRegistrar(name: string, type?: string, meta?: object): strin
  * ```js
  * PANIC("Something really bad has happened");
  * ```
+ * 
+ * @see https://dnscontrol.org/js#PANIC
  */
 declare function PANIC(message: string): never;
 
@@ -1384,8 +1467,10 @@ declare function PANIC(message: string): never;
  * In the future we plan on adding a flag to `A()` which will insert
  * the correct PTR() record if the appropriate `D(REV()` domain (i.e. `.arpa` domain) has been
  * defined.
+ * 
+ * @see https://dnscontrol.org/js#REV
  */
-declare function REV(address: string | number): string;
+declare function REV(address: string): string;
 
 /**
  * `getConfiguredDomains` getConfiguredDomains is a helper function that returns the domain names
@@ -1443,8 +1528,10 @@ declare function REV(address: string | number): string;
  * #3: CREATE TXT domain4.tld._report._dmarc.domain2.tld "v=DMARC1" ttl=43200
  * #4: REFRESH zone domain2.tld
  * ```
+ * 
+ * @see https://dnscontrol.org/js#getConfiguredDomains
  */
-declare function getConfiguredDomains(name: string, ...modifiers: RecordModifier[]): string[];
+declare function getConfiguredDomains(): string[];
 
 /**
  * `require_glob()` can recursively load `.js` files, optionally non-recursive as well.
@@ -1483,6 +1570,8 @@ declare function getConfiguredDomains(name: string, ...modifiers: RecordModifier
  * 
  * This will now load files being present underneath `./domains/user1/` and **NOT** at below `./domains/`, as `require_glob()`
  * is called in the subfolder `domains/`.
+ * 
+ * @see https://dnscontrol.org/js#require_glob
  */
 declare function require_glob(path: string, recursive: boolean): void;
 
@@ -1523,6 +1612,8 @@ declare function require_glob(path: string, recursive: boolean): void;
  *   * `CAA("@", "issue", "letsencrypt.org")`
  *   * `CAA("@", "issue", "comodoca.com")`
  *   * `CAA("@", "issuewild", ";")`
+ * 
+ * @see https://dnscontrol.org/js#CAA_BUILDER
  */
 declare function CAA_BUILDER(opts: { label?: string; iodef: string; iodef_critical?: boolean; issue: string[]; issuewild: string }): RecordModifier;
 
@@ -1609,6 +1700,8 @@ declare function CAA_BUILDER(opts: { label?: string; iodef: string; iodef_critic
  * 
  * * TXT records are automatically split using `AUTOSPLIT`.
  * * URIs in the `rua` and `ruf` arrays are passed raw. You must percent-encode all commas and exclamation points in the URI itself.
+ * 
+ * @see https://dnscontrol.org/js#DMARC_BUILDER
  */
 declare function DMARC_BUILDER(opts: { label?: string; version?: string; policy: 'none' | 'quarantine' | 'reject'; subdomainPolicy?: 'none' | 'quarantine' | 'reject'; alignmentSPF?: 'strict' | 's' | 'relaxed' | 'r'; alignmentDKIM?: 'strict' | 's' | 'relaxed' | 'r'; percent?: number; rua?: string[]; ruf?: string[]; failureOptions?: { SPF: boolean, DKIM: boolean } | string; failureFormat?: string; reportInterval?: Duration; ttl: Duration }): RecordModifier;
 
@@ -1618,6 +1711,8 @@ declare function DMARC_BUILDER(opts: { label?: string; version?: string; policy:
  * When used with D(), it sets the zone id of the domain. This can be used to differentiate between split horizon domains in public and private zones.
  * 
  * When used with R53_ALIAS() it sets the required Route53 hosted zone id in a R53_ALIAS record. See [R53_ALIAS's documentation](https://stackexchange.github.io/dnscontrol/js#R53_ALIAS) for details.
+ * 
+ * @see https://dnscontrol.org/js#R53_ZONE
  */
 declare function R53_ZONE(zone_id: string): DomainModifier & RecordModifier;
 
@@ -1903,6 +1998,8 @@ declare function R53_ZONE(zone_id: string): DomainModifier & RecordModifier;
  *      SPF_MYSETTINGS
  * );
  * ```
+ * 
+ * @see https://dnscontrol.org/js#SPF_BUILDER
  */
 declare function SPF_BUILDER(opts: { label?: string; overflow?: string; overhead1?: string; raw?: string; ttl?: Duration; txtMaxSize: string[]; parts?: number; flatten?: string[] }): RecordModifier;
 
@@ -1934,6 +2031,8 @@ declare function SPF_BUILDER(opts: { label?: string; overflow?: string; overhead
  *   A('demo2', '3.4.5.12', TTL('5w')),  // 5 weeks
  * );
  * ```
+ * 
+ * @see https://dnscontrol.org/js#TTL
  */
 declare function TTL(ttl: Duration): RecordModifier;
 
