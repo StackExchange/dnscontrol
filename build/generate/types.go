@@ -208,6 +208,7 @@ func (f Function) Docs() string {
 	if f.Deprecated {
 		content += "\n\n@deprecated"
 	}
+	content += "\n\n@see https://dnscontrol.org/js#" + f.Name
 	return "/**\n * " + strings.ReplaceAll(content, "\n", "\n * ") + "\n */"
 }
 
