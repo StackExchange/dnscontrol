@@ -1,6 +1,8 @@
 package diff2
 
 import (
+	"fmt"
+
 	"github.com/StackExchange/dnscontrol/v3/models"
 	"github.com/StackExchange/dnscontrol/v3/pkg/prettyzone"
 )
@@ -47,6 +49,7 @@ func NewCompareConfig(origin string, existing, desired models.Records, compFn Co
 		labelMap: map[string]bool{},
 		keyMap:   map[models.RecordKey]bool{},
 	}
+	fmt.Printf("COMPARE = %+v\n", *cc)
 	cc.addRecords(existing, true)
 	cc.addRecords(desired, false)
 	return cc
