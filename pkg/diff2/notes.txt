@@ -61,3 +61,138 @@ labg   CHANGE NewSet: { [7] [8] [8'] [11'] }
 labh   DELETE Old { [11] }
 labh   CREATE NewSet: { [12'] }
 
+
+
+
+By Record:
+
+rewrite as triples:   FQDN+TYPE, TARGET, RC
+byRecord:
+  group-by key=FQDN+TYPE, use targets to make add/change/delete for each record.
+
+byRSet:
+  group-by key=FQDN+TYPE, use targets to make add/change/delete for each record.
+     for each key:
+        if both have this key:
+            IF targets are the same, skip.
+            Else generate CHANGE for KEY:
+                New = Recs from desired.
+                Msgs = The msgs from targetdiff(e.Recs, d.Recs)
+
+byLabel:
+  group-by key=FQDN, use type+targets to make add/change/delete for each record.
+
+
+rewrite as triples:   FQDN {, TYPE, TARGET, RC
+
+type CompareConfig struct {
+  existing, desired models.Records
+  ldata: []LabelConfig
+}
+
+type ByLabelConfig struct {
+  label string
+  tdata: []ByRTypeConfig
+}
+
+type ByRTypeConfig struct {
+  rtype string
+  existing: []TargetConfig
+  desired: []TargetConfig
+  existingRecs: []*models.RecordConfig
+  desiredRecs: []*models.RecordConfig
+}
+
+type TargetConfig struct {
+  compareable string
+  rec *model.RecordConfig
+}
+
+func highest[S ~[]T, T any](s S) int {
+    return len(s) - 1 
+}
+
+populate CompareConfig.
+for rec := range desired {
+  label = FILL
+  rtype = FILL
+  comp = FILL
+  cc.labelMap[label] = &rc
+  cc.keyMap[key] = &rc
+  if not seen label:
+     append cc.ldata ByLabelConfig{}
+  labelIdx = last(cc.ldata)
+  if not seen key:
+     append cc.ldata[labelIdx].tdata ByRTypeConfig{}
+     rtIdx = last(cc.ldata[labelIdx].tdata)
+  cc.ldata[labelIdx].label = label
+  cc.ldata[labelIdx].tdata[rtIdx].rtype = rtype
+  cc.ldata[labelIdx].tdata[rtIdx].existing[append].comparable = comp
+  cc.ldata[labelIdx].tdata[rtIdx].existing[append].rec = &rc
+}
+
+ByRSet:
+func traverse(cc CompareConfig) {
+  for label := range cc.data {
+    for rtype := range label.data {
+      Msgs := genmsgs(rtype.existing, rtype.desired)
+      if no Msgs, continue
+      if len(rtype.existing) = 0 {
+          yield create(label, rtype, rtype.desiredRecs, Msgs)
+      } else if len(rtype.desired) = 0 {
+          yield delete(label, rtype, rtype.existingRecs, Msgs)
+      } else { // equal
+          yield change(label, rtype, rtype.desiredRecs, Msgs)
+    }
+  }
+}
+
+byLabel:
+func traverse(cc CompareConfig) {
+  for label := range cc.data {
+    initialize msgs, desiredRecords
+    anyExisting = false
+    for rtype := range label.data {
+      accumulate Msgs := genmsgs(rtype.existing, rtype.desired)
+      if Msgs (i.e. there were changes) {
+          accumulate AllDesired := rtype.desiredRecs
+          if len(rtype.existing) != 0 {
+            anyExisting = true
+          }
+      }
+    }
+    if there are Msgs:
+        if len(AllDesired) = 0 {
+          yield delete(label)
+        } else if countAllExisting == 0 {
+          yield create(label, AllDesired)
+        } else {
+          yield change(label, AllDesired)
+        }
+  }
+}
+
+ByRecord:
+func traverse(cc CompareConfig) {
+  for label := range cc.data {
+    for rtype := range label.data {
+      create, change, delete := difftargets(rtype.existing, rtype.desired)
+          yield creates, changes, deletes
+    }
+  }
+}
+
+Byzone:
+func traverse(cc CompareConfig) {
+  for label := range cc.data {
+    for rtype := range label.data {
+      Msgs := genmsgs(rtype.existing, rtype.desired)
+      accumulate Msgs
+    }
+  }
+  if len(accumMsgs) == 0 {
+    return nil, FirstMsg
+  } else {
+    return desired, Msgs
+  }
+}

@@ -19,11 +19,10 @@ type ChangeList []Change
 type Change struct {
 	Type Verb // Add, Change, Delete
 
-	Key   models.RecordKey // .Key.Type is "" unless using ByRecordSet
-	Old   models.Records
-	New   models.Records // any changed or added records at Key.
-	AllAt models.Records // all desired records at Key.
-	Msgs  []string       // Human-friendly explanation of what changed
+	Key  models.RecordKey // .Key.Type is "" unless using ByRecordSet
+	Old  models.Records
+	New  models.Records // any changed or added records at Key.
+	Msgs []string       // Human-friendly explanation of what changed
 }
 
 // ByRecordSet takes two lists of records (existing and desired) and
@@ -36,15 +35,18 @@ type Change struct {
 // www.example.com, A, and a list of all the desired IP addresses.
 //
 // Examples include:
-func ByRecordSet(existing, desired models.Records, domain string) (ChangeList, error) {
+func ByRecordSet(existing, desired models.Records,
+	origin string, compFunc ComparableFunc) (ChangeList, error) {
+
 	existing = handsoff(existing, desired)
+	// There will need to be error checking eventually.
+	// if err != nil {
+	// 	return nil, err
+	// }
 
-	instructions, err := analyzeByRecordSet(existing, desired, domain)
-	if err != nil {
-		return nil, err
-	}
+	cc := NewCompareConfig(origin, existing, desired, compFunc)
+	instructions := analyzeByRecordSet(cc)
 
-	//return processPurge(instructions, config.NoPurge)
 	return processPurge(instructions, true)
 }
 
