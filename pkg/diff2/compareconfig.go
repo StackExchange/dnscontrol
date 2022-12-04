@@ -1,17 +1,14 @@
 package diff2
 
 import (
-	"fmt"
-
 	"github.com/StackExchange/dnscontrol/v3/models"
-	"github.com/StackExchange/dnscontrol/v3/pkg/prettyzone"
 )
 
 type ComparableFunc func(*models.RecordConfig) string
 
 type CompareConfig struct {
 	existing, desired models.Records
-	ldata             []labelConfig
+	ldata             []*labelConfig
 	//
 	origin          string // Domain zone
 	compareableFunc ComparableFunc
@@ -22,7 +19,7 @@ type CompareConfig struct {
 
 type labelConfig struct {
 	label string
-	tdata []rTypeConfig
+	tdata []*rTypeConfig
 }
 
 type rTypeConfig struct {
@@ -49,9 +46,9 @@ func NewCompareConfig(origin string, existing, desired models.Records, compFn Co
 		labelMap: map[string]bool{},
 		keyMap:   map[models.RecordKey]bool{},
 	}
-	fmt.Printf("COMPARE = %+v\n", *cc)
 	cc.addRecords(existing, true)
 	cc.addRecords(desired, false)
+	// FIXME(tlim): Labels of ADD items will always be at the end of ldata. Will that be ugly?
 	return cc
 }
 
@@ -62,54 +59,56 @@ func comparable(rc *models.RecordConfig, f func(*models.RecordConfig) string) st
 	return rc.ToDiffable() + " " + f(rc)
 }
 
-func (cc *CompareConfig) addRecords(recs models.Records, existing bool) {
+func (cc *CompareConfig) addRecords(recs models.Records, storeInExisting bool) {
 
 	// Sort, because sorted data is easier to work with.
 	// NB(tlim): The actual sort order doesn't matter as long as all the records
 	// of the same label+rtype are adjacent. We use PrettySort because it works,
 	// has been extensively tested, and assures that the ChangeList will be a
 	// pretty order.
-	z := prettyzone.PrettySort(recs, cc.origin, 0, nil)
+	//z := prettyzone.PrettySort(recs, cc.origin, 0, nil)
+	//for _, rec := range z.Records {
+	for _, rec := range recs {
 
-	for _, rec := range z.Records {
 		label := rec.NameFQDN
 		rtype := rec.Type
 		comp := comparable(rec, cc.compareableFunc)
+		//fmt.Printf("DEBUG addRecords rec=%v:%v es=%v comp=%v\n", label, rtype, storeInExisting, comp)
 
+		//fmt.Printf("BEFORE L: %v\n", len(cc.ldata))
 		// Are we seeing this label for the first time?
 		var labelIdx int
 		if _, ok := cc.labelMap[label]; !ok {
+			//fmt.Printf("DEBUG: I haven't see label=%v before. Adding.\n", label)
 			cc.labelMap[label] = true
-			cc.ldata = append(cc.ldata, labelConfig{})
+			cc.ldata = append(cc.ldata, &labelConfig{label: label})
 		}
 		labelIdx = highest(cc.ldata)
 
 		// Are we seeing this label+rtype for the first time?
 		key := rec.Key()
 		if _, ok := cc.keyMap[key]; !ok {
+			//fmt.Printf("DEBUG: I haven't see key=%v before. Adding.\n", key)
 			cc.keyMap[key] = true
-			cc.ldata[labelIdx].tdata = append(cc.ldata[labelIdx].tdata, rTypeConfig{})
+			x := cc.ldata[labelIdx]
+			x.tdata = append(x.tdata, &rTypeConfig{rType: rtype})
 		}
 		rtIdx := highest(cc.ldata[labelIdx].tdata)
 
 		// Now it is safe to add/modify the records.
 
-		cc.ldata[labelIdx].label = label
-		cc.ldata[labelIdx].tdata[rtIdx].rType = rtype
-		if existing {
-			cc.ldata[labelIdx].tdata[rtIdx].existingRecs = append(
-				cc.ldata[labelIdx].tdata[rtIdx].existingRecs,
-				rec)
-			cc.ldata[labelIdx].tdata[rtIdx].existingTargets = append(
-				cc.ldata[labelIdx].tdata[rtIdx].existingTargets,
-				targetConfig{compareable: comp, rec: rec})
+		td := cc.ldata[labelIdx].tdata[rtIdx]
+		td.rType = rtype
+		//fmt.Printf("BEFORE E/D: %v/%v\n", len(td.existingRecs), len(td.desiredRecs))
+		if storeInExisting {
+			td.existingRecs = append(td.existingRecs, rec)
+			td.existingTargets = append(td.existingTargets, targetConfig{compareable: comp, rec: rec})
 		} else {
-			cc.ldata[labelIdx].tdata[rtIdx].desiredRecs = append(
-				cc.ldata[labelIdx].tdata[rtIdx].desiredRecs,
-				rec)
-			cc.ldata[labelIdx].tdata[rtIdx].desiredTargets = append(
-				cc.ldata[labelIdx].tdata[rtIdx].desiredTargets,
-				targetConfig{compareable: comp, rec: rec})
+			td.desiredRecs = append(td.desiredRecs, rec)
+			td.desiredTargets = append(td.desiredTargets, targetConfig{compareable: comp, rec: rec})
 		}
+		//fmt.Printf("AFTER  L: %v\n", len(cc.ldata))
+		//fmt.Printf("AFTER  E/D: %v/%v\n", len(td.existingRecs), len(td.desiredRecs))
+		//fmt.Printf("\n")
 	}
 }

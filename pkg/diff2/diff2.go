@@ -9,7 +9,7 @@ type Verb int
 
 const (
 	COMMENT Verb = iota
-	ADD
+	CREATE
 	CHANGE
 	DELETE
 )

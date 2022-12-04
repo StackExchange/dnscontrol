@@ -100,7 +100,7 @@ func analyzeByZone(cc *CompareConfig) []string {
 }
 
 func add(l string, t string, msgs []string, recs models.Records) Change {
-	c := Change{Type: ADD, Msgs: msgs}
+	c := Change{Type: CREATE, Msgs: msgs}
 	c.Key.NameFQDN = l
 	c.Key.Type = t
 	c.New = recs
@@ -143,6 +143,42 @@ func diffTargets(existing, desired []targetConfig) ChangeList {
 	ei := 0
 	di := 0
 	for {
+
+		if ei == len(existing) {
+			// Existing is depleted. Create the remaining desired.
+			for _, recd := range desired[di:] {
+				r := recd.rec
+				instructions = append(instructions,
+					add(
+						r.NameFQDN,
+						r.Type, // Not needed?
+						[]string{
+							fmt.Sprintf("CREATE %s %s %s", r.GetLabelFQDN(), r.Type, r.GetTargetCombined()),
+						},
+						models.Records{r},
+					),
+				)
+			}
+			break
+		}
+		if di == len(desired) {
+			// Desired is depleted. Delete the remaining existing.
+			for _, rece := range existing[ei:] {
+				r := rece.rec
+				instructions = append(instructions,
+					deleteRec(
+						r.NameFQDN,
+						r.Type, // Not needed?
+						[]string{
+							fmt.Sprintf("DELETE %s %s %s", r.GetLabelFQDN(), r.Type, r.GetTargetCombined()),
+						},
+						r,
+					),
+				)
+			}
+			break
+		}
+
 		compe := existing[ei].compareable
 		compd := desired[di].compareable
 		rece := existing[ei].rec
@@ -170,41 +206,11 @@ func diffTargets(existing, desired []targetConfig) ChangeList {
 		// Are we done?
 		if ei == len(existing) && di == len(desired) { // Done.
 			break
-		} else if ei == len(existing) {
-			// Existing is depleted. Create the remaining desired.
-			for _, recd := range desired[di:] {
-				r := recd.rec
-				instructions = append(instructions,
-					add(
-						r.NameFQDN,
-						r.Type, // Not needed?
-						[]string{
-							fmt.Sprintf("CREATE %s %s %s", r.GetLabelFQDN(), r.Type, r.GetTargetCombined()),
-						},
-						models.Records{r},
-					),
-				)
-			}
-		} else {
-			// Desired is depleted. Delete the remaining existing.
-			for _, rece := range existing[di:] {
-				r := rece.rec
-				instructions = append(instructions,
-					deleteRec(
-						r.NameFQDN,
-						r.Type, // Not needed?
-						[]string{
-							fmt.Sprintf("DELETE %s %s %s", r.GetLabelFQDN(), r.Type, r.GetTargetCombined()),
-						},
-						r,
-					),
-				)
-			}
-
 		}
+
 	}
 
-	return nil
+	return instructions
 }
 
 func genmsgs(existing, desired []targetConfig) []string {
