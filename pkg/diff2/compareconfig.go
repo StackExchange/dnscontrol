@@ -2,6 +2,7 @@ package diff2
 
 import (
 	"github.com/StackExchange/dnscontrol/v3/models"
+	"github.com/StackExchange/dnscontrol/v3/pkg/prettyzone"
 )
 
 type ComparableFunc func(*models.RecordConfig) string
@@ -66,9 +67,9 @@ func (cc *CompareConfig) addRecords(recs models.Records, storeInExisting bool) {
 	// of the same label+rtype are adjacent. We use PrettySort because it works,
 	// has been extensively tested, and assures that the ChangeList will be a
 	// pretty order.
-	//z := prettyzone.PrettySort(recs, cc.origin, 0, nil)
-	//for _, rec := range z.Records {
-	for _, rec := range recs {
+	//for _, rec := range recs {
+	z := prettyzone.PrettySort(recs, cc.origin, 0, nil)
+	for _, rec := range z.Records {
 
 		label := rec.NameFQDN
 		rtype := rec.Type

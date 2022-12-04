@@ -40,16 +40,16 @@ func TestNewCompareConfig(t *testing.T) {
 				existing: models.Records{e0},
 				desired:  models.Records{d0},
 				ldata: []*labelConfig{
-					&labelConfig{
+					{
 						label: "laba.f.com",
 						tdata: []*rTypeConfig{
-							&rTypeConfig{
+							{
 								rType: "A",
 								existingTargets: []targetConfig{
-									targetConfig{compareable: "1.2.3.4 ttl=0", rec: e0},
+									{compareable: "1.2.3.4 ttl=0", rec: e0},
 								},
 								desiredTargets: []targetConfig{
-									targetConfig{compareable: "1.2.3.4 ttl=0", rec: d0},
+									{compareable: "1.2.3.4 ttl=0", rec: d0},
 								},
 								existingRecs: []*models.RecordConfig{e0},
 								desiredRecs:  []*models.RecordConfig{d0},
@@ -76,36 +76,52 @@ func TestNewCompareConfig(t *testing.T) {
 				existing: models.Records{e0, e2},
 				desired:  models.Records{d0},
 				ldata: []*labelConfig{
-					&labelConfig{
+					// {
+					// 	label: "laba.f.com",
+					// 	tdata: []*rTypeConfig{
+					// 		{
+					// 			rType: "A",
+					// 			existingTargets: []targetConfig{
+					// 				{compareable: "1.2.3.4 ttl=0", rec: e0},
+					// 			},
+					// 			desiredTargets: []targetConfig{
+					// 				{compareable: "1.2.3.4 ttl=0", rec: d0},
+					// 			},
+					// 			existingRecs: []*models.RecordConfig{e0},
+					// 			desiredRecs:  []*models.RecordConfig{d0},
+					// 		},
+					// 	},
+					// },
+					// {
+					// 	label: "labc.f.com",
+					// 	tdata: []*rTypeConfig{
+					// 		{
+					// 			rType: "A",
+					// 			existingTargets: []targetConfig{
+					// 				{compareable: "1.2.3.4 ttl=0", rec: e0},
+					// 				{compareable: "laba ttl=0", rec: e2},
+					// 			},
+					// 			desiredTargets: []targetConfig{
+					// 				{compareable: "1.2.3.4 ttl=0", rec: d0},
+					// 			},
+					// 			existingRecs: []*models.RecordConfig{e0},
+					// 			desiredRecs:  []*models.RecordConfig{d0},
+					// 		},
+					// 	},
+					// },
+					{
 						label: "laba.f.com",
 						tdata: []*rTypeConfig{
-							&rTypeConfig{
+							{
 								rType: "A",
 								existingTargets: []targetConfig{
-									targetConfig{compareable: "1.2.3.4 ttl=0", rec: e0},
+									{compareable: "10 laba ttl=0", rec: e1},
 								},
 								desiredTargets: []targetConfig{
-									targetConfig{compareable: "1.2.3.4 ttl=0", rec: d0},
+									{compareable: "20 labb ttl=0", rec: d2},
 								},
-								existingRecs: []*models.RecordConfig{e0},
-								desiredRecs:  []*models.RecordConfig{d0},
-							},
-						},
-					},
-					&labelConfig{
-						label: "labc.f.com",
-						tdata: []*rTypeConfig{
-							&rTypeConfig{
-								rType: "CNAME",
-								existingTargets: []targetConfig{
-									targetConfig{compareable: "1.2.3.4 ttl=0", rec: e0},
-									targetConfig{compareable: "laba ttl=0", rec: e2},
-								},
-								desiredTargets: []targetConfig{
-									targetConfig{compareable: "1.2.3.4 ttl=0", rec: d0},
-								},
-								existingRecs: []*models.RecordConfig{e0},
-								desiredRecs:  []*models.RecordConfig{d0},
+								existingRecs: []*models.RecordConfig{e1},
+								desiredRecs:  []*models.RecordConfig{d2},
 							},
 						},
 					},
@@ -131,7 +147,9 @@ func TestNewCompareConfig(t *testing.T) {
 			// 	}
 			// 	t.Errorf("NewCompareConfig() = ldata DEEP\n got=%v\nwant=%v", got.ldata, tt.want.ldata)
 			// }
-			if got := NewCompareConfig(tt.args.origin, tt.args.existing, tt.args.desired, tt.args.compFn); compareCC(t, got, tt.want) != nil {
+			cc := NewCompareConfig(tt.args.origin, tt.args.existing, tt.args.desired, tt.args.compFn)
+			spew.Dump(cc)
+			if compareCC(t, got, tt.want) != nil {
 				fmt.Println("GOT:")
 				spew.Dump(got)
 				fmt.Println("WANT:")
