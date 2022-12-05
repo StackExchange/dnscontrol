@@ -16,6 +16,7 @@ Please change the version number as appropriate.  Substitute (for example)
 
 ```shell
 git checkout master
+git pull
 go generate
 git add -A
 git commit -m "Update generated files for VERSION"
