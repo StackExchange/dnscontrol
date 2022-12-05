@@ -220,3 +220,13 @@ please add a test that demonstrates the bug (then fix the bug, of
 course). This
 will help all future contributors. If you need help with adding
 tests, please ask!
+
+## Step 8: Write documentation
+
+Add a new Markdown file to `docs/_functions/domain`. Copy an existing file (`CNAME.md` is a good example). The section between the lines of `---` is called the front matter and it has the following keys:
+
+* `name`: The name of the record. This should match the file name and the name of the record in `helpers.js`.
+* `parameters`: A list of parameter names, in order. Feel free to use spaces in the name if necessary.  Your last parameter should be `modifiers...` to allow arbitrary modifiers like `TTL` to be applied to your record.
+* `parameter_types` (optional): an object with parameter names as keys and TypeScript type names as values. You only need this if you have parameter names that aren’t listed in the `paramTypeDefaults` in `build/generate/functionTypes.go`, or if your parameters use different types from the defaults listed there.
+
+The rest of the file is the documentation. You can use Markdown syntax to format the text. Use the `{% capture example %}` format to set up a collapsible code block. You can also use it multiple times to show multiple examples.
