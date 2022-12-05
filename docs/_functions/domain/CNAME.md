@@ -4,6 +4,10 @@ parameters:
   - name
   - target
   - modifiers...
+parameter_types:
+  name: string
+  target: string
+  "modifiers...": RecordModifier[]
 ---
 
 CNAME adds a CNAME record to the domain. The name should be the relative label for the domain.

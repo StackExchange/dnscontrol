@@ -4,6 +4,7 @@ parameters:
   - registrar
   - nameserver_names
 parameter_types:
+  registrar: string
   nameserver_names: string[]
 ---
 

@@ -6,7 +6,10 @@ parameters:
   - target
   - modifiers...
 parameter_types:
+  name: string
   type: '"A" | "AAAA" | "CNAME"'
+  target: string
+  "modifiers...": RecordModifier[]
 provider: AZURE_DNS
 ---
 

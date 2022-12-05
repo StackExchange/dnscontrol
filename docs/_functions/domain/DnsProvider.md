@@ -4,6 +4,7 @@ parameters:
   - name
   - nsCount
 parameter_types:
+  name: string
   nsCount: number?
 ---
 

@@ -49,17 +49,6 @@ var returnTypes = map[string]string{
 	"global": "void",
 	"record": "RecordModifier",
 }
-var paramTypeDefaults = map[string]string{
-	"name": "string",
-	"target": "string",
-	"value": "string",
-	"destination": "string",
-	"priority": "number",
-	"registrar": "string",
-	"source": "string",
-	"ttl": "Duration",
-	"modifiers...": "RecordModifier[]",
-}
 
 func generateFunctionTypes() (string, error) {
 	funcs := []Function{}
@@ -91,6 +80,7 @@ func generateFunctionTypes() (string, error) {
 			}
 			frontMatter, body, err := parseFrontMatter(string(content))
 			if err != nil {
+				println("Error parsing front matter in", fPath)
 				return "", err
 			}
 			if frontMatter["ts_ignore"] == true {
@@ -127,10 +117,7 @@ func generateFunctionTypes() (string, error) {
 				// start with supplied type, fall back to defaultParamType
 				paramType := suppliedParamTypes[p]
 				if paramType == "" {
-					paramType = paramTypeDefaults[p]
-				}
-				if paramType == "" {
-					println("WARNING:", f.Name() + ":", "no type for parameter ", "'" + p + "'")
+					println("WARNING:", fPath + ":", "no type for parameter ", "'" + p + "'")
 					paramType = "unknown"
 				}
 				params = append(params, Param{Name: p, Type: paramType})

@@ -5,7 +5,9 @@ parameters:
   - address
   - modifiers...
 parameter_types:
+  name: string
   address: string | number
+  "modifiers...": RecordModifier[]
 ---
 
 A adds an A record To a domain. The name should be the relative label for the record. Use `@` for the domain apex.

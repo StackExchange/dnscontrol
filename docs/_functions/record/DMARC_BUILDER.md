@@ -28,6 +28,7 @@ parameter_types:
   failureOptions: "{ SPF: boolean, DKIM: boolean } | string?"
   failureFormat: string?
   reportInterval: Duration?
+  ttl: Duration?
 ---
 
 DNSControl contains a `DMARC_BUILDER` which can be used to simply create

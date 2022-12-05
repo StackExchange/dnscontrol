@@ -8,8 +8,12 @@ parameters:
   - target
   - modifiers...
 parameter_types:
+  name: string
+  priority: number
   weight: number
   port: number
+  target: string
+  "modifiers...": RecordModifier[]
 ---
 
 `SRV` adds a `SRV` record to a domain. The name should be the relative label for the record.

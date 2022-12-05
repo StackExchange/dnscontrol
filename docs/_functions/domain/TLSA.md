@@ -8,10 +8,12 @@ parameters:
   - certificate
   - modifiers...
 parameter_types:
+  name: string
   usage: number
   selector: number
   type: number
   certificate: string
+  "modifiers...": RecordModifier[]
 ---
 
 TLSA adds a TLSA record to a domain. The name should be the relative label for the record.

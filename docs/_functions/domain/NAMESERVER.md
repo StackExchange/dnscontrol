@@ -3,6 +3,9 @@ name: NAMESERVER
 parameters:
   - name
   - modifiers...
+parameter_types:
+  name: string
+  "modifiers...": RecordModifier[]
 ---
 
 `NAMESERVER()` instructs DNSControl to inform the domain's registrar where to find this zone.

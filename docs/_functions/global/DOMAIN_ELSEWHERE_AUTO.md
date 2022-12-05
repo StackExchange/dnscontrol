@@ -6,6 +6,7 @@ parameters:
   - dns provider
 parameter_types:
   domain: string
+  registrar: string
   dns provider: string
 ---
 

@@ -2,6 +2,8 @@
 name: TTL
 parameters:
   - ttl
+parameter_types:
+  ttl: Duration
 ---
 
 TTL sets the TTL for a single record only. This will take precedence

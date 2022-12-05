@@ -5,6 +5,10 @@ parameters:
   - destination
   - modifiers...
 provider: CLOUDFLAREAPI
+parameter_types:
+  source: string
+  destination: string
+  "modifiers...": RecordModifier[]
 ---
 
 `CF_TEMP_REDIRECT` uses Cloudflare-specific features ("Forwarding URL" Page

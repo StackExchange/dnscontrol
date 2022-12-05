@@ -1217,7 +1217,7 @@ declare function TXT(name: string, contents: string, ...modifiers: RecordModifie
  * 
  * @see https://dnscontrol.org/js#URL
  */
-declare function URL(name: string, ...modifiers: RecordModifier[]): DomainModifier;
+declare function URL(name: string, target: string, ...modifiers: RecordModifier[]): DomainModifier;
 
 /**
  * Documentation needed.
@@ -1485,7 +1485,7 @@ declare function DOMAIN_ELSEWHERE_AUTO(domain: string, registrar: string, dnsPro
  * 
  * @see https://dnscontrol.org/js#D_EXTEND
  */
-declare function D_EXTEND(name: string, ...modifiers: RecordModifier[]): void;
+declare function D_EXTEND(name: string, ...modifiers: DomainModifier[]): void;
 
 /**
  * Converts an IPv4 address from string to an integer. This allows performing mathematical operations with the IP address.
@@ -1882,7 +1882,7 @@ declare function CAA_BUILDER(opts: { label?: string; iodef: string; iodef_critic
  * 
  * @see https://dnscontrol.org/js#DMARC_BUILDER
  */
-declare function DMARC_BUILDER(opts: { label?: string; version?: string; policy: 'none' | 'quarantine' | 'reject'; subdomainPolicy?: 'none' | 'quarantine' | 'reject'; alignmentSPF?: 'strict' | 's' | 'relaxed' | 'r'; alignmentDKIM?: 'strict' | 's' | 'relaxed' | 'r'; percent?: number; rua?: string[]; ruf?: string[]; failureOptions?: { SPF: boolean, DKIM: boolean } | string; failureFormat?: string; reportInterval?: Duration; ttl: Duration }): RecordModifier;
+declare function DMARC_BUILDER(opts: { label?: string; version?: string; policy: 'none' | 'quarantine' | 'reject'; subdomainPolicy?: 'none' | 'quarantine' | 'reject'; alignmentSPF?: 'strict' | 's' | 'relaxed' | 'r'; alignmentDKIM?: 'strict' | 's' | 'relaxed' | 'r'; percent?: number; rua?: string[]; ruf?: string[]; failureOptions?: { SPF: boolean, DKIM: boolean } | string; failureFormat?: string; reportInterval?: Duration; ttl?: Duration }): RecordModifier;
 
 /**
  * R53_ZONE lets you specify the AWS Zone ID for an entire domain (D()) or a specific R53_ALIAS() record.
