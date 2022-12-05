@@ -1,6 +1,9 @@
 package diff2
 
 import (
+	"bytes"
+	"fmt"
+
 	"github.com/StackExchange/dnscontrol/v3/models"
 	"github.com/StackExchange/dnscontrol/v3/pkg/prettyzone"
 )
@@ -51,6 +54,31 @@ func NewCompareConfig(origin string, existing, desired models.Records, compFn Co
 	cc.addRecords(desired, false)
 	// FIXME(tlim): Labels of ADD items will always be at the end of ldata. Will that be ugly?
 	return cc
+}
+
+func (cc *CompareConfig) String() string {
+	var buf bytes.Buffer
+	b := &buf
+	fmt.Fprintf(b, "existing: %+v\n", cc.existing)
+	fmt.Fprintf(b, "desired: %v\n", cc.desired)
+	fmt.Fprintf(b, "ldata:\n")
+	for i, ld := range cc.ldata {
+		fmt.Fprintf(b, "  ldata[%02d]: %s\n", i, ld.label)
+		for j, t := range ld.tdata {
+			fmt.Fprintf(b, "    tdata[%d]: %q (%d, %d, %d, %d)\n", j, t.rType,
+				len(t.existingTargets),
+				len(t.desiredTargets),
+				len(t.existingRecs),
+				len(t.desiredRecs),
+			)
+		}
+		fmt.Fprintf(b, "origin: %v\n", cc.origin)
+		fmt.Fprintf(b, "compFn: %v\n", cc.compareableFunc)
+		fmt.Fprintf(b, "labelMap: %v\n", cc.labelMap)
+		fmt.Fprintf(b, "keyMap:   %v\n", cc.keyMap)
+	}
+
+	return b.String()
 }
 
 func comparable(rc *models.RecordConfig, f func(*models.RecordConfig) string) string {
