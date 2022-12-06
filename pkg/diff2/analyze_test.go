@@ -21,6 +21,7 @@ var e8 = makeRec("labg", "NS", "10.10.10.16")  // [8]
 var e9 = makeRec("labg", "NS", "10.10.10.17")  // [9]
 var e10 = makeRec("labg", "NS", "10.10.10.18") // [10]
 var e11 = makeRec("labh", "CNAME", "labd")     //     [11]
+var e13 = makeRec("", "MX", "1 aaa")
 
 var d0 = makeRec("laba", "A", "1.2.3.4")       //      [0']
 var d1 = makeRec("laba", "A", "1.2.3.5")       //      [1']
@@ -35,6 +36,7 @@ var d9 = makeRec("labg", "NS", "10.10.10.15")  // [9']
 var d10 = makeRec("labg", "NS", "10.10.10.16") // [10']
 var d11 = makeRec("labg", "NS", "10.10.10.97") // [11']
 var d12 = makeRec("labh", "A", "1.2.3.4")      //      [12']
+var d13 = makeRec("", "MX", "22 bbb")
 
 var e0tc = targetConfig{compareable: "1.2.3.4 ttl=0", rec: e0}
 var d0tc = targetConfig{compareable: "1.2.3.4 ttl=0", rec: d0}
@@ -52,19 +54,6 @@ func makeChange(v Verb, l, t string, old, new models.Records, msgs []string) Cha
 	return c
 }
 
-// func xTest_analyzeByRecordSet(t *testing.T) {
-// 	origin := "f.com"
-// 	existing := models.Records{e0, e1, e2, e3, e4, e5, e6, e7, e8, e9, e10, e11}
-// 	desired := models.Records{d0, d1, d2, d3, d4, d5, d6, d7, d8, d9, d10, d11, d12}
-// 	cc := NewCompareConfig(origin, existing, desired, nil)
-// 	want := makeChange(CHANGE, "laba.f.com", "A", nil, models.Records{e0, d1}, []string{"CHANGE"})
-// 	t.Run("01", func(t *testing.T) {
-// 		if got := analyzeByRecordSet(cc); !reflect.DeepEqual(got, want) {
-// 			t.Errorf("analyzeByRecordSet()\ngot =%+v\nwant=%+v", got, want)
-// 		}
-// 	})
-// }
-
 func Test_analyzeByRecordSet(t *testing.T) {
 	type args struct {
 		cc *CompareConfig
@@ -73,6 +62,8 @@ func Test_analyzeByRecordSet(t *testing.T) {
 	origin := "f.com"
 	existing := models.Records{e0, e1, e2, e3, e4, e5, e6, e7, e8, e9, e10, e11}
 	desired := models.Records{d0, d1, d2, d3, d4, d5, d6, d7, d8, d9, d10, d11, d12}
+	_ = existing
+	_ = desired
 
 	tests := []struct {
 		name string
@@ -103,6 +94,17 @@ func Test_analyzeByRecordSet(t *testing.T) {
 		},
 
 		{
+			name: "apex",
+			args: args{
+				cc: NewCompareConfig(origin,
+					models.Records{e0, e13},
+					models.Records{d0, d13},
+					nil),
+			},
+			want: []string{"CHANGE f.com MX (1 aaa) -> (22 bbb)"},
+		},
+
+		{
 			name: "big",
 			args: args{NewCompareConfig(origin, existing, desired, nil)},
 			want: []string{`
@@ -118,7 +120,7 @@ CHANGE labg.f.com NS (10.10.10.18) -> (10.10.10.97)
 DELETE labh.f.com CNAME labd
 CREATE labh.f.com A 1.2.3.4
 CREATE labf.f.com TXT "foo"
-`,
+		`,
 			},
 		},
 	}
@@ -129,9 +131,10 @@ CREATE labf.f.com TXT "foo"
 			ws := strings.TrimSpace(strings.Join(tt.want, "\n"))
 			d := diff.Diff(gs, ws)
 			if d != "" {
-				t.Errorf("analyzeByRecordSet() = %q, want %q\n%s\n", got, tt.want, d)
+				t.Errorf("analyzeByRecordSet() = %q, want %q\ndiff:\n%s\n", got, tt.want, d)
 			}
 		})
+
 	}
 }
 

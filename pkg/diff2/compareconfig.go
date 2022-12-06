@@ -52,7 +52,6 @@ func NewCompareConfig(origin string, existing, desired models.Records, compFn Co
 	}
 	cc.addRecords(existing, true)
 	cc.addRecords(desired, false)
-	// FIXME(tlim): Labels of ADD items will always be at the end of ldata. Will that be ugly?
 	return cc
 }
 

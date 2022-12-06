@@ -37,7 +37,7 @@ func Test_groupbyRSet(t *testing.T) {
 		*makeRecSet(zzzmx1),
 	}
 
-	t.Run("01", func(t *testing.T) {
+	t.Run("afew", func(t *testing.T) {
 		if gotResult := groupbyRSet(orig, "f.com"); !reflect.DeepEqual(gotResult, wantResult) {
 			t.Errorf("groupbyRSet() = %v, want %v", gotResult, wantResult)
 		}

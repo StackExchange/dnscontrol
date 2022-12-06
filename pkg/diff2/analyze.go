@@ -12,20 +12,26 @@ func analyzeByRecordSet(cc *CompareConfig) ChangeList {
 	var instructions ChangeList
 	// For each label, for each type at that label, if there are changes generate an instruction.
 	for _, lc := range cc.ldata {
+		//fmt.Printf("DEBUG: START LABEL = %q\n", lc.label)
 		for _, rt := range lc.tdata {
+			//fmt.Printf("DEBUG: START RTYPE = %q\n", rt.rType)
 			ets := rt.existingTargets
 			dts := rt.desiredTargets
 			msgs := genmsgs(ets, dts)
 			if len(msgs) == 0 {
+				//fmt.Printf("DEBUG: done. Records are the same\n")
 				// The records at this rset are the same. No work to be done.
 				continue
 			}
 			if len(ets) == 0 { // Create a new label.
+				//fmt.Printf("DEBUG: add\n")
 				instructions = append(instructions, add(lc.label, rt.rType, msgs, rt.desiredRecs))
 			} else if len(dts) == 0 { // Delete that label and all its records.
+				//fmt.Printf("DEBUG: delete\n")
 				instructions = append(instructions, deleteM(lc.label, rt.rType, msgs))
 			} else { // Change the records at that label
-				instructions = append(instructions, change(lc.label, rt.rType, msgs, nil, rt.desiredRecs))
+				//fmt.Printf("DEBUG: change\n")
+				instructions = append(instructions, change(lc.label, rt.rType, msgs, rt.existingRecs, rt.desiredRecs))
 			}
 		}
 	}
@@ -194,8 +200,10 @@ func diffTargets(existing, desired []targetConfig) ChangeList {
 		dr := desired[i].rec
 		m := fmt.Sprintf("CHANGE %s %s (%s) -> (%s) ", dr.NameFQDN, dr.Type, er.GetTargetCombined(), dr.GetTargetCombined())
 		instructions = append(instructions, change(dr.NameFQDN, dr.Type, []string{m},
-			models.Records{existing[i].rec},
-			models.Records{desired[i].rec},
+			//models.Records{existing[i].rec},
+			//models.Records{desired[i].rec},
+			models.Records{er},
+			models.Records{dr},
 		))
 	}
 
