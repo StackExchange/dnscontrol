@@ -114,6 +114,7 @@ func (cc *CompareConfig) VerifyCNAMEAssertions() {
 func (cc *CompareConfig) String() string {
 	var buf bytes.Buffer
 	b := &buf
+
 	fmt.Fprintf(b, "ldata:\n")
 	for i, ld := range cc.ldata {
 		fmt.Fprintf(b, "  ldata[%02d]: %s\n", i, ld.label)

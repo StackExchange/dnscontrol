@@ -63,9 +63,10 @@ func Test_analyzeByRecordSet(t *testing.T) {
 	desired := models.Records{d0, d1, d2, d3, d4, d5, d6, d7, d8, d9, d10, d11, d12}
 
 	tests := []struct {
-		name string
-		args args
-		want []string
+		name     string
+		args     args
+		wantMsgs string
+		wantCL   string
 	}{
 
 		{
@@ -76,7 +77,8 @@ func Test_analyzeByRecordSet(t *testing.T) {
 					models.Records{d0},
 					nil),
 			},
-			want: []string{},
+			wantMsgs: "",
+			wantCL:   "ChangeList: len=0",
 		},
 
 		{
@@ -87,7 +89,15 @@ func Test_analyzeByRecordSet(t *testing.T) {
 					models.Records{d0, d2},
 					nil),
 			},
-			want: []string{"CHANGE laba.f.com MX (10 laba) -> (20 labb)"},
+			wantMsgs: "CHANGE laba.f.com MX (10 laba) -> (20 labb)",
+			wantCL: `
+ChangeList: len=1
+00: Change: verb=CHANGE
+    key={laba.f.com MX}
+    old=[10 laba]
+    new=[20 labb]
+    msg=[CHANGE laba.f.com MX (10 laba) -> (20 labb) ]
+`,
 		},
 
 		{
@@ -98,13 +108,21 @@ func Test_analyzeByRecordSet(t *testing.T) {
 					models.Records{d0, d13},
 					nil),
 			},
-			want: []string{"CHANGE f.com MX (1 aaa) -> (22 bbb)"},
+			wantMsgs: "CHANGE f.com MX (1 aaa) -> (22 bbb)",
+			wantCL: `
+ChangeList: len=1
+00: Change: verb=CHANGE
+    key={f.com MX}
+    old=[1 aaa]
+    new=[22 bbb]
+    msg=[CHANGE f.com MX (1 aaa) -> (22 bbb) ]
+`,
 		},
 
 		{
 			name: "big",
 			args: args{NewCompareConfig(origin, existing, desired, nil)},
-			want: []string{`
+			wantMsgs: `
 CREATE laba.f.com A 1.2.3.5
 CHANGE laba.f.com MX (10 laba) -> (20 labb) 
 DELETE labc.f.com CNAME laba
@@ -118,23 +136,75 @@ CHANGE labg.f.com NS (10.10.10.18) -> (10.10.10.97)
 DELETE labh.f.com CNAME labd
 CREATE labh.f.com A 1.2.3.4
 		`,
-			},
+			wantCL: `
+ChangeList: len=8
+00: Change: verb=CHANGE
+    key={laba.f.com A}
+    old=[1.2.3.4]
+    new=[1.2.3.4 1.2.3.5]
+    msg=[CREATE laba.f.com A 1.2.3.5]
+01: Change: verb=CHANGE
+    key={laba.f.com MX}
+    old=[10 laba]
+    new=[20 labb]
+    msg=[CHANGE laba.f.com MX (10 laba) -> (20 labb) ]
+02: Change: verb=DELETE
+    key={labc.f.com CNAME}
+    msg=[DELETE labc.f.com CNAME laba]
+03: Change: verb=CHANGE
+    key={labe.f.com A}
+    old=[10.10.10.15 10.10.10.16 10.10.10.17 10.10.10.18]
+    new=[10.10.10.95 10.10.10.96 10.10.10.97 10.10.10.98]
+    msg=[CHANGE labe.f.com A (10.10.10.15) -> (10.10.10.95)  CHANGE labe.f.com A (10.10.10.16) -> (10.10.10.96)  CHANGE labe.f.com A (10.10.10.17) -> (10.10.10.97)  CHANGE labe.f.com A (10.10.10.18) -> (10.10.10.98) ]
+04: Change: verb=CREATE
+    key={labf.f.com TXT}
+    new=["foo"]
+    msg=[CREATE labf.f.com TXT "foo"]
+05: Change: verb=CHANGE
+    key={labg.f.com NS}
+    old=[10.10.10.15 10.10.10.16 10.10.10.17 10.10.10.18]
+    new=[10.10.10.10 10.10.10.15 10.10.10.16 10.10.10.97]
+    msg=[CHANGE labg.f.com NS (10.10.10.17) -> (10.10.10.10)  CHANGE labg.f.com NS (10.10.10.18) -> (10.10.10.97) ]
+06: Change: verb=DELETE
+    key={labh.f.com CNAME}
+    msg=[DELETE labh.f.com CNAME labd]
+07: Change: verb=CREATE
+    key={labh.f.com A}
+    new=[1.2.3.4]
+    msg=[CREATE labh.f.com A 1.2.3.4]
+`,
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got := analyzeByRecordSet(tt.args.cc)
-			gs := strings.TrimSpace(justMsgString(got))
-			ws := strings.TrimSpace(strings.Join(tt.want, "\n"))
-			d := diff.Diff(gs, ws)
-			if d != "" {
-				t.Errorf("analyzeByRecordSet() = %q, want %q\ndiff:\n%s\n", got, tt.want, d)
-			}
+			cl := analyzeByRecordSet(tt.args.cc)
+			compareMsgs(t, "analyzeByRecordSet", cl, tt.wantMsgs)
+			compareCL(t, "analyzeByRecordSet", cl, tt.wantCL)
 		})
 
 	}
 }
 
+func compareMsgs(t *testing.T, fnname string, gotcc ChangeList, wantstring string) {
+	t.Helper()
+	gs := strings.TrimSpace(justMsgString(gotcc))
+	ws := strings.TrimSpace(wantstring)
+	d := diff.Diff(gs, ws)
+	if d != "" {
+		t.Errorf("%s():\n===got===\n%s\n===want===\n%s\n===diff===\n%s\n===", fnname, gs, ws, d)
+	}
+}
+
+func compareCL(t *testing.T, fnname string, gotcl ChangeList, wantstring string) {
+	t.Helper()
+	gs := strings.TrimSpace(gotcl.String())
+	ws := strings.TrimSpace(wantstring)
+	d := diff.Diff(gs, ws)
+	if d != "" {
+		t.Errorf("%s():\n===got===\n%s\n===want===\n%s\n===diff===\n%s\n===", fnname, gs, ws, d)
+	}
+
+}
 func Test_diffTargets(t *testing.T) {
 	type args struct {
 		existing []targetConfig

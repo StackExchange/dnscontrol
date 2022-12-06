@@ -1,17 +1,24 @@
 package diff2
 
+//go:generate stringer -type=Verb
+
 // This module provides functions that "diff" the existing records
 // against the desired records.
 
-import "github.com/StackExchange/dnscontrol/v3/models"
+import (
+	"bytes"
+	"fmt"
+
+	"github.com/StackExchange/dnscontrol/v3/models"
+)
 
 type Verb int
 
 const (
-	COMMENT Verb = iota
-	CREATE
-	CHANGE
-	DELETE
+	COMMENT Verb = iota // No change. Just a txt message to output.
+	CREATE              // Create a record/recordset/label where none existed before.
+	CHANGE              // Change existing record/recordset/label
+	DELETE              // Delete existing record/recordset/label
 )
 
 type ChangeList []Change
@@ -118,3 +125,32 @@ func ByRecordSet(existing, desired models.Records,
 //	return processPurge(instructions, config.NoPurge)
 //}
 //
+
+func (c Change) String() string {
+	var buf bytes.Buffer
+	b := &buf
+
+	fmt.Fprintf(b, "Change: verb=%v\n", c.Type)
+	fmt.Fprintf(b, "    key=%v\n", c.Key)
+	if len(c.Old) != 0 {
+		fmt.Fprintf(b, "    old=%v\n", c.Old)
+	}
+	if len(c.New) != 0 {
+		fmt.Fprintf(b, "    new=%v\n", c.New)
+	}
+	fmt.Fprintf(b, "    msg=%v\n", c.Msgs)
+
+	return b.String()
+}
+
+func (cl ChangeList) String() string {
+	var buf bytes.Buffer
+	b := &buf
+
+	fmt.Fprintf(b, "ChangeList: len=%d\n", len(cl))
+	for i, j := range cl {
+		fmt.Fprintf(b, "%02d: %s", i, j)
+	}
+
+	return b.String()
+}
