@@ -61,8 +61,6 @@ func Test_analyzeByRecordSet(t *testing.T) {
 	origin := "f.com"
 	existing := models.Records{e0, e1, e2, e3, e4, e5, e6, e7, e8, e9, e10, e11}
 	desired := models.Records{d0, d1, d2, d3, d4, d5, d6, d7, d8, d9, d10, d11, d12}
-	_ = existing
-	_ = desired
 
 	tests := []struct {
 		name string
