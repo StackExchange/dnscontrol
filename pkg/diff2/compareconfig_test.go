@@ -49,6 +49,52 @@ compFn: <nil>
 		},
 
 		{
+			name: "cnameAdd",
+			args: args{
+				origin:   "f.com",
+				existing: models.Records{e11mx, d12},
+				desired:  models.Records{e11},
+				compFn:   nil,
+			},
+			want: `
+ldata:
+  ldata[00]: labh.f.com
+             tdata[0]: "A" e(1, 1) d(0, 0)
+             tdata[1]: "MX" e(1, 1) d(0, 0)
+             tdata[2]: "CNAME" e(0, 0) d(1, 1)
+labelMap: len=1 map[labh.f.com:true]
+keyMap:   len=3 map[{labh.f.com A}:true {labh.f.com CNAME}:true {labh.f.com MX}:true]
+existing: ["22 ttt" "1.2.3.4"]
+desired: ["labd"]
+origin: f.com
+compFn: <nil>
+		`,
+		},
+
+		{
+			name: "cnameDel",
+			args: args{
+				origin:   "f.com",
+				existing: models.Records{e11},
+				desired:  models.Records{d12, e11mx},
+				compFn:   nil,
+			},
+			want: `
+ldata:
+  ldata[00]: labh.f.com
+             tdata[0]: "CNAME" e(1, 1) d(0, 0)
+             tdata[1]: "A" e(0, 0) d(1, 1)
+             tdata[2]: "MX" e(0, 0) d(1, 1)
+labelMap: len=1 map[labh.f.com:true]
+keyMap:   len=3 map[{labh.f.com A}:true {labh.f.com CNAME}:true {labh.f.com MX}:true]
+existing: ["labd"]
+desired: ["1.2.3.4" "22 ttt"]
+origin: f.com
+compFn: <nil>
+		`,
+		},
+
+		{
 			name: "two",
 			args: args{
 				origin:   "f.com",
@@ -137,13 +183,13 @@ ldata:
              tdata[0]: "CNAME" e(1, 1) d(0, 0)
   ldata[02]: labe.f.com
              tdata[0]: "A" e(4, 4) d(4, 4)
-  ldata[03]: labg.f.com
+  ldata[03]: labf.f.com
+             tdata[0]: "TXT" e(0, 0) d(1, 1)
+  ldata[04]: labg.f.com
              tdata[0]: "NS" e(4, 4) d(4, 4)
-  ldata[04]: labh.f.com
+  ldata[05]: labh.f.com
              tdata[0]: "CNAME" e(1, 1) d(0, 0)
              tdata[1]: "A" e(0, 0) d(1, 1)
-  ldata[05]: labf.f.com
-             tdata[0]: "TXT" e(0, 0) d(1, 1)
 labelMap: len=6 map[laba.f.com:true labc.f.com:true labe.f.com:true labf.f.com:true labg.f.com:true labh.f.com:true]
 keyMap:   len=8 map[{laba.f.com A}:true {laba.f.com MX}:true {labc.f.com CNAME}:true {labe.f.com A}:true {labf.f.com TXT}:true {labg.f.com NS}:true {labh.f.com A}:true {labh.f.com CNAME}:true]
 existing: ["1.2.3.4" "10 laba" "laba" "10.10.10.15" "10.10.10.16" "10.10.10.17" "10.10.10.18" "10.10.10.15" "10.10.10.16" "10.10.10.17" "10.10.10.18" "labd"]

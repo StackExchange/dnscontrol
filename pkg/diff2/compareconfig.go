@@ -3,6 +3,7 @@ package diff2
 import (
 	"bytes"
 	"fmt"
+	"sort"
 
 	"github.com/StackExchange/dnscontrol/v3/models"
 	"github.com/StackExchange/dnscontrol/v3/pkg/prettyzone"
@@ -52,7 +53,62 @@ func NewCompareConfig(origin string, existing, desired models.Records, compFn Co
 	}
 	cc.addRecords(existing, true)
 	cc.addRecords(desired, false)
+	cc.VerifyCNAMEAssertions()
+	sort.Slice(cc.ldata, func(i, j int) bool {
+		return prettyzone.LabelLess(cc.ldata[i].label, cc.ldata[j].label)
+	})
 	return cc
+}
+
+func (cc *CompareConfig) VerifyCNAMEAssertions() {
+
+	// NB(tlim): This can be deleted. This should be probably not possible.
+	// However, let's keep it around for a few iterations to be paranoid.
+
+	// According to the RFCs if a label has a CNAME, it can not have any other
+	// records at that label... even other CNAMEs.  Therefore, we need to be
+	// careful with changes at a label that involve a CNAME.
+	// Example 1:
+	//   OLD: a.example.com CNAME b
+	//   NEW: a.example.com A 1.2.3.4
+	//   We must delete the CNAME record THEN create the A record.  If we
+	//   blindly create the the A first, most APIs will reply with an error
+	//   because there is already a CNAME at that label.
+	// Example 2:
+	//   OLD: a.example.com A 1.2.3.4
+	//   NEW: a.example.com CNAME b
+	//   We must delete the A record THEN create the CNAME.  If we blindly
+	//   create the CNAME first, most APIs will reply with an error because
+	//   there is already an A record at that label.
+	//
+	// To assure that DNS providers don't have to think about this, we order
+	// the tdata items so that we generate the instructions in the best order.
+	// In other words:
+	//     If there is a CNAME in existing, it should be in front.
+	//     If there is a CNAME in desired, it should be at the end.
+
+	// That said, since we addRecords existing first, and desired last, the data
+	// should already be in the right order.
+
+	for _, ld := range cc.ldata {
+		for j, td := range ld.tdata {
+			if td.rType == "CNAME" {
+				if len(td.existingTargets) != 0 {
+					//fmt.Printf("DEBUG: cname in existing: index=%d\n", j)
+					if j != 0 {
+						panic("should not happen: (CNAME not in first position)")
+					}
+				}
+				if len(td.desiredTargets) != 0 {
+					//fmt.Printf("DEBUG: cname in desired: index=%d\n", j)
+					if j != highest(ld.tdata) {
+						panic("should not happen: (CNAME not in last position)")
+					}
+				}
+			}
+		}
+	}
+
 }
 
 func (cc *CompareConfig) String() string {
@@ -127,7 +183,7 @@ func (cc *CompareConfig) addRecords(recs models.Records, storeInExisting bool) {
 			//fmt.Printf("DEBUG: I haven't see key=%v before. Adding.\n", key)
 			cc.keyMap[key] = true
 			x := cc.ldata[labelIdx]
-			//fmt.Printf("DEBUG: APpending rtype=%v\n", rtype)
+			//fmt.Printf("DEBUG: appending rtype=%v\n", rtype)
 			x.tdata = append(x.tdata, &rTypeConfig{rType: rtype})
 		}
 		var rtIdx int

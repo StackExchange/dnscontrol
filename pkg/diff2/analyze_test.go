@@ -20,6 +20,7 @@ var e7 = makeRec("labg", "NS", "10.10.10.15")  // [7]
 var e8 = makeRec("labg", "NS", "10.10.10.16")  // [8]
 var e9 = makeRec("labg", "NS", "10.10.10.17")  // [9]
 var e10 = makeRec("labg", "NS", "10.10.10.18") // [10]
+var e11mx = makeRec("labh", "MX", "22 ttt")    //     [11]
 var e11 = makeRec("labh", "CNAME", "labd")     //     [11]
 var e13 = makeRec("", "MX", "1 aaa")
 
@@ -38,9 +39,7 @@ var d11 = makeRec("labg", "NS", "10.10.10.97") // [11']
 var d12 = makeRec("labh", "A", "1.2.3.4")      //      [12']
 var d13 = makeRec("", "MX", "22 bbb")
 
-var e0tc = targetConfig{compareable: "1.2.3.4 ttl=0", rec: e0}
 var d0tc = targetConfig{compareable: "1.2.3.4 ttl=0", rec: d0}
-var d1tc = targetConfig{compareable: "1.2.3.5 ttl=0", rec: d1}
 
 func makeChange(v Verb, l, t string, old, new models.Records, msgs []string) Change {
 	c := Change{
@@ -115,11 +114,11 @@ CHANGE labe.f.com A (10.10.10.15) -> (10.10.10.95)
 CHANGE labe.f.com A (10.10.10.16) -> (10.10.10.96) 
 CHANGE labe.f.com A (10.10.10.17) -> (10.10.10.97) 
 CHANGE labe.f.com A (10.10.10.18) -> (10.10.10.98) 
+CREATE labf.f.com TXT "foo"
 CHANGE labg.f.com NS (10.10.10.17) -> (10.10.10.10) 
 CHANGE labg.f.com NS (10.10.10.18) -> (10.10.10.97) 
 DELETE labh.f.com CNAME labd
 CREATE labh.f.com A 1.2.3.4
-CREATE labf.f.com TXT "foo"
 		`,
 			},
 		},
