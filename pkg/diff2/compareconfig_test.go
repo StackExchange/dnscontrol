@@ -31,8 +31,8 @@ func TestNewCompareConfig(t *testing.T) {
 			name: "one",
 			args: args{
 				origin:   "f.com",
-				existing: models.Records{e0},
-				desired:  models.Records{d0},
+				existing: models.Records{testDataAA1234},
+				desired:  models.Records{testDataAA1234clone},
 				compFn:   nil,
 			},
 			want: `
@@ -98,8 +98,8 @@ compFn: <nil>
 			name: "two",
 			args: args{
 				origin:   "f.com",
-				existing: models.Records{e0, e2},
-				desired:  models.Records{d0},
+				existing: models.Records{testDataAA1234, testDataCCa},
+				desired:  models.Records{testDataAA1234clone},
 				compFn:   nil,
 			},
 			want: `
@@ -121,8 +121,8 @@ compFn: <nil>
 			name: "apex",
 			args: args{
 				origin:   "f.com",
-				existing: models.Records{e0, e13},
-				desired:  models.Records{d0, d13},
+				existing: models.Records{testDataAA1234, testDataApexMX1aaa},
+				desired:  models.Records{testDataAA1234clone, testDataApexMX22bbb},
 				compFn:   nil,
 			},
 			want: `
@@ -144,8 +144,8 @@ compFn: <nil>
 			name: "many",
 			args: args{
 				origin:   "f.com",
-				existing: models.Records{e0, e1, e2, e3},
-				desired:  models.Records{d0, d1, d2, d3, d4},
+				existing: models.Records{testDataAA1234, testDataAMX10a, testDataCCa, testDataEA15},
+				desired:  models.Records{testDataAA1234clone, testDataAA12345, testDataAMX20b, d3, d4},
 				compFn:   nil,
 			},
 			want: `
@@ -170,8 +170,8 @@ compFn: <nil>
 			name: "all",
 			args: args{
 				origin:   "f.com",
-				existing: models.Records{e0, e1, e2, e3, e4, e5, e6, e7, e8, e9, e10, e11},
-				desired:  models.Records{d0, d1, d2, d3, d4, d5, d6, d7, d8, d9, d10, d11, d12},
+				existing: models.Records{testDataAA1234, testDataAMX10a, testDataCCa, testDataEA15, e4, e5, e6, e7, e8, e9, e10, e11},
+				desired:  models.Records{testDataAA1234clone, testDataAA12345, testDataAMX20b, d3, d4, d5, d6, d7, d8, d9, d10, d11, d12},
 				compFn:   nil,
 			},
 			want: `

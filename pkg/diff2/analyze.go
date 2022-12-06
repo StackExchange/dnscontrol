@@ -18,7 +18,7 @@ func analyzeByRecordSet(cc *CompareConfig) ChangeList {
 			ets := rt.existingTargets
 			dts := rt.desiredTargets
 			msgs := genmsgs(ets, dts)
-			if len(msgs) == 0 {
+			if len(msgs) == 0 { // No differences?
 				//fmt.Printf("DEBUG: done. Records are the same\n")
 				// The records at this rset are the same. No work to be done.
 				continue
@@ -40,38 +40,48 @@ func analyzeByRecordSet(cc *CompareConfig) ChangeList {
 
 func analyzeByLabel(cc *CompareConfig) ChangeList {
 	var instructions ChangeList
+	fmt.Printf("DEBUG: START: analyzeByLabel\n")
 	// Accumulate if there are any changes and collect the info needed to generate instructions.
-	for _, lc := range cc.ldata {
+	for i, lc := range cc.ldata {
+		fmt.Printf("DEBUG: START LABEL = %q\n", lc.label)
 		label := lc.label
 		var accMsgs []string
 		var accExisting models.Records
 		var accDesired models.Records
 		for _, rt := range lc.tdata {
+			fmt.Printf("DEBUG: START RTYPE = %q\n", rt.rType)
 			ets := rt.existingTargets
 			dts := rt.desiredTargets
 			msgs := genmsgs(ets, dts)
-			if len(msgs) != 0 { // If there were differences
-				accMsgs = append(accMsgs, msgs...)                   // Accumulate the messages
-				accExisting = append(accExisting, rt.desiredRecs...) // Accumulate what records were at this label.
-				accDesired = append(accDesired, rt.desiredRecs...)   // Accumulate what records should be at this label.
-			}
+			fmt.Printf("DEBUG:    appending msgs=%v\n", msgs)
+			accMsgs = append(accMsgs, msgs...)                    // Accumulate the messages
+			accExisting = append(accExisting, rt.existingRecs...) // Accumulate records existing at this label.
+			accDesired = append(accDesired, rt.desiredRecs...)    // Accumulate records desired at this label.
 		}
 
-		// We now know what changed (accMsgs), what records should exist at that
-		// label (accDesired), and if any old records used to exist at this label
-		// (accExisting).  Based on that info, we can generate the instructions.
+		// We now know what changed (accMsgs),
+		// what records USED TO EXIST at that label (accExisting),
+		// and what records SHOULD EXIST at that label (accDesired).
+		// Based on that info, we can generate the instructions.
 
 		if len(accMsgs) == 0 { // Nothing changed.
-			return nil
-		}
-		if len(accDesired) == 0 { // No new records at the label? This must be a delete.
+			fmt.Printf("DEBUG: analyzeByLabel: %02d: no change\n", i)
+		} else if len(accDesired) == 0 { // No new records at the label? This must be a delete.
+			fmt.Printf("DEBUG: analyzeByLabel: %02d: delete\n", i)
 			instructions = append(instructions, deleteM(label, "", accMsgs))
-		} else if len(accExisting) == 0 { // No old records at the label? This must be a create/add.
-			instructions = append(instructions, add(label, "", accMsgs, accDesired))
+		} else if len(accExisting) == 0 { // No old records at the label? This must be a change.
+			fmt.Printf("DEBUG: analyzeByLabel: %02d: create\n", i)
+			instructions = append(instructions, addL(label, "", accMsgs, accDesired))
 		} else { // If we get here, it must be a change.
+			fmt.Printf("DEBUG: analyzeByLabel: %02d: change %d{%v} %d{%v} msgs=%v\n", i,
+				len(accExisting), accExisting,
+				len(accDesired), accDesired,
+				accMsgs,
+			)
 			instructions = append(instructions, change(label, "", accMsgs, accExisting, accDesired))
 		}
 	}
+	fmt.Println()
 
 	return instructions
 }
@@ -111,6 +121,15 @@ func add(l string, t string, msgs []string, recs models.Records) Change {
 	c.New = recs
 	return c
 }
+
+func addL(l string, t string, msgs []string, recs models.Records) Change {
+	c := Change{Type: CREATE, Msgs: msgs}
+	c.Key.NameFQDN = l
+	c.Key.Type = t
+	c.New = recs
+	return c
+}
+
 func change(l string, t string, msgs []string, oldRecs, newRecs models.Records) Change {
 	c := Change{Type: CHANGE, Msgs: msgs}
 	c.Key.NameFQDN = l

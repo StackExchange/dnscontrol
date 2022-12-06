@@ -9,37 +9,37 @@ import (
 	"github.com/kylelemons/godebug/diff"
 )
 
-var e0 = makeRec("laba", "A", "1.2.3.4")       //      [0]
-var e1 = makeRec("laba", "MX", "10 laba")      //     [1]
-var e2 = makeRec("labc", "CNAME", "laba")      //     [2]
-var e3 = makeRec("labe", "A", "10.10.10.15")   //  [3]
-var e4 = makeRec("labe", "A", "10.10.10.16")   //  [4]
-var e5 = makeRec("labe", "A", "10.10.10.17")   //  [5]
-var e6 = makeRec("labe", "A", "10.10.10.18")   //  [6]
-var e7 = makeRec("labg", "NS", "10.10.10.15")  // [7]
-var e8 = makeRec("labg", "NS", "10.10.10.16")  // [8]
-var e9 = makeRec("labg", "NS", "10.10.10.17")  // [9]
-var e10 = makeRec("labg", "NS", "10.10.10.18") // [10]
-var e11mx = makeRec("labh", "MX", "22 ttt")    //     [11]
-var e11 = makeRec("labh", "CNAME", "labd")     //     [11]
-var e13 = makeRec("", "MX", "1 aaa")
+var testDataAA1234 = makeRec("laba", "A", "1.2.3.4")   //      [0]
+var testDataAMX10a = makeRec("laba", "MX", "10 laba")  //     [1]
+var testDataCCa = makeRec("labc", "CNAME", "laba")     //     [2]
+var testDataEA15 = makeRec("labe", "A", "10.10.10.15") //  [3]
+var e4 = makeRec("labe", "A", "10.10.10.16")           //  [4]
+var e5 = makeRec("labe", "A", "10.10.10.17")           //  [5]
+var e6 = makeRec("labe", "A", "10.10.10.18")           //  [6]
+var e7 = makeRec("labg", "NS", "10.10.10.15")          // [7]
+var e8 = makeRec("labg", "NS", "10.10.10.16")          // [8]
+var e9 = makeRec("labg", "NS", "10.10.10.17")          // [9]
+var e10 = makeRec("labg", "NS", "10.10.10.18")         // [10]
+var e11mx = makeRec("labh", "MX", "22 ttt")            //     [11]
+var e11 = makeRec("labh", "CNAME", "labd")             //     [11]
+var testDataApexMX1aaa = makeRec("", "MX", "1 aaa")
 
-var d0 = makeRec("laba", "A", "1.2.3.4")       //      [0']
-var d1 = makeRec("laba", "A", "1.2.3.5")       //      [1']
-var d2 = makeRec("laba", "MX", "20 labb")      //     [2']
-var d3 = makeRec("labe", "A", "10.10.10.95")   //  [3']
-var d4 = makeRec("labe", "A", "10.10.10.96")   //  [4']
-var d5 = makeRec("labe", "A", "10.10.10.97")   //  [5']
-var d6 = makeRec("labe", "A", "10.10.10.98")   //  [6']
-var d7 = makeRec("labf", "TXT", "foo")         //      [7']
-var d8 = makeRec("labg", "NS", "10.10.10.10")  // [8']
-var d9 = makeRec("labg", "NS", "10.10.10.15")  // [9']
-var d10 = makeRec("labg", "NS", "10.10.10.16") // [10']
-var d11 = makeRec("labg", "NS", "10.10.10.97") // [11']
-var d12 = makeRec("labh", "A", "1.2.3.4")      //      [12']
-var d13 = makeRec("", "MX", "22 bbb")
+var testDataAA1234clone = makeRec("laba", "A", "1.2.3.4") //      [0']
+var testDataAA12345 = makeRec("laba", "A", "1.2.3.5")     //      [1']
+var testDataAMX20b = makeRec("laba", "MX", "20 labb")     //     [2']
+var d3 = makeRec("labe", "A", "10.10.10.95")              //  [3']
+var d4 = makeRec("labe", "A", "10.10.10.96")              //  [4']
+var d5 = makeRec("labe", "A", "10.10.10.97")              //  [5']
+var d6 = makeRec("labe", "A", "10.10.10.98")              //  [6']
+var d7 = makeRec("labf", "TXT", "foo")                    //      [7']
+var d8 = makeRec("labg", "NS", "10.10.10.10")             // [8']
+var d9 = makeRec("labg", "NS", "10.10.10.15")             // [9']
+var d10 = makeRec("labg", "NS", "10.10.10.16")            // [10']
+var d11 = makeRec("labg", "NS", "10.10.10.97")            // [11']
+var d12 = makeRec("labh", "A", "1.2.3.4")                 //      [12']
+var testDataApexMX22bbb = makeRec("", "MX", "22 bbb")
 
-var d0tc = targetConfig{compareable: "1.2.3.4 ttl=0", rec: d0}
+var d0tc = targetConfig{compareable: "1.2.3.4 ttl=0", rec: testDataAA1234clone}
 
 func makeChange(v Verb, l, t string, old, new models.Records, msgs []string) Change {
 	c := Change{
@@ -80,8 +80,8 @@ func Test_analyzeByRecordSet(t *testing.T) {
 	}
 
 	origin := "f.com"
-	existing := models.Records{e0, e1, e2, e3, e4, e5, e6, e7, e8, e9, e10, e11}
-	desired := models.Records{d0, d1, d2, d3, d4, d5, d6, d7, d8, d9, d10, d11, d12}
+	existing := models.Records{testDataAA1234, testDataAMX10a, testDataCCa, testDataEA15, e4, e5, e6, e7, e8, e9, e10, e11}
+	desired := models.Records{testDataAA1234clone, testDataAA12345, testDataAMX20b, d3, d4, d5, d6, d7, d8, d9, d10, d11, d12}
 
 	tests := []struct {
 		name        string
@@ -95,8 +95,8 @@ func Test_analyzeByRecordSet(t *testing.T) {
 			name: "oneequal",
 			args: args{
 				cc: NewCompareConfig(origin,
-					models.Records{e0},
-					models.Records{d0},
+					models.Records{testDataAA1234},
+					models.Records{testDataAA1234clone},
 					nil),
 			},
 			wantMsgs:    "", // Empty
@@ -108,8 +108,8 @@ func Test_analyzeByRecordSet(t *testing.T) {
 			name: "onediff",
 			args: args{
 				cc: NewCompareConfig(origin,
-					models.Records{e0, e1},
-					models.Records{d0, d2},
+					models.Records{testDataAA1234, testDataAMX10a},
+					models.Records{testDataAA1234clone, testDataAMX20b},
 					nil),
 			},
 			wantMsgs: "CHANGE laba.f.com MX (10 laba) -> (20 labb)",
@@ -125,8 +125,8 @@ ChangeList: len=1
 ChangeList: len=1
 00: Change: verb=CHANGE
     key={laba.f.com }
-    old=[20 labb]
-    new=[20 labb]
+    old=[1.2.3.4 10 laba]
+    new=[1.2.3.4 20 labb]
     msg=["CHANGE laba.f.com MX (10 laba) -> (20 labb)"]
 `,
 		},
@@ -135,8 +135,8 @@ ChangeList: len=1
 			name: "apex",
 			args: args{
 				cc: NewCompareConfig(origin,
-					models.Records{e0, e13},
-					models.Records{d0, d13},
+					models.Records{testDataAA1234, testDataApexMX1aaa},
+					models.Records{testDataAA1234clone, testDataApexMX22bbb},
 					nil),
 			},
 			wantMsgs: "CHANGE f.com MX (1 aaa) -> (22 bbb)",
@@ -149,7 +149,45 @@ ChangeList: len=1
     msg=["CHANGE f.com MX (1 aaa) -> (22 bbb)"]
 `,
 			wantCLlabel: `
-ChangeList: len=0
+ChangeList: len=1
+00: Change: verb=CHANGE
+    key={f.com }
+    old=[1 aaa]
+    new=[22 bbb]
+    msg=["CHANGE f.com MX (1 aaa) -> (22 bbb)"]
+`,
+		},
+
+		{
+			name: "firsta",
+			args: args{NewCompareConfig(origin,
+				models.Records{testDataAA1234, testDataAMX10a},
+				models.Records{testDataAA1234clone, testDataAA12345, testDataAMX20b},
+				nil)},
+			wantMsgs: `
+CREATE laba.f.com A 1.2.3.5
+CHANGE laba.f.com MX (10 laba) -> (20 labb)
+`,
+			wantCLrset: `
+ChangeList: len=2
+00: Change: verb=CHANGE
+    key={laba.f.com A}
+    old=[1.2.3.4]
+    new=[1.2.3.4 1.2.3.5]
+    msg=["CREATE laba.f.com A 1.2.3.5"]
+01: Change: verb=CHANGE
+    key={laba.f.com MX}
+    old=[10 laba]
+    new=[20 labb]
+    msg=["CHANGE laba.f.com MX (10 laba) -> (20 labb)"]
+`,
+			wantCLlabel: `
+ChangeList: len=1
+00: Change: verb=CHANGE
+    key={laba.f.com A}
+    old=[1.2.3.4 10 laba]
+    new=[1.2.3.4 1.2.3.5 20 labb]
+    msg=["CREATE laba.f.com A 1.2.3.5" "CHANGE laba.f.com MX (10 laba) -> (20 labb)"]
 `,
 		},
 
@@ -211,7 +249,7 @@ ChangeList: len=8
 ChangeList: len=6
 00: Change: verb=CHANGE
     key={laba.f.com }
-    old=[1.2.3.4 1.2.3.5 20 labb]
+    old=[1.2.3.4 10 laba]
     new=[1.2.3.4 1.2.3.5 20 labb]
     msg=["CHANGE laba.f.com A (1.2.3.4) -> (1.2.3.5)" "CREATE laba.f.com A 1.2.3.5" "CHANGE laba.f.com MX (10 laba) -> (20 labb)"]
 01: Change: verb=DELETE
@@ -219,22 +257,21 @@ ChangeList: len=6
     msg=["DELETE labc.f.com CNAME laba"]
 02: Change: verb=CHANGE
     key={labe.f.com }
-    old=[10.10.10.95 10.10.10.96 10.10.10.97 10.10.10.98]
+    old=[10.10.10.15 10.10.10.16 10.10.10.17 10.10.10.18]
     new=[10.10.10.95 10.10.10.96 10.10.10.97 10.10.10.98]
     msg=["CHANGE labe.f.com A (10.10.10.15) -> (10.10.10.95)" "CHANGE labe.f.com A (10.10.10.16) -> (10.10.10.96)" "CHANGE labe.f.com A (10.10.10.17) -> (10.10.10.97)" "CHANGE labe.f.com A (10.10.10.18) -> (10.10.10.98)"]
-03: Change: verb=CHANGE
+03: Change: verb=CREATE
     key={labf.f.com }
-    old=["foo"]
     new=["foo"]
     msg=["CREATE labf.f.com TXT \"foo\""]
 04: Change: verb=CHANGE
     key={labg.f.com }
-    old=[10.10.10.10 10.10.10.15 10.10.10.16 10.10.10.97]
+    old=[10.10.10.15 10.10.10.16 10.10.10.17 10.10.10.18]
     new=[10.10.10.10 10.10.10.15 10.10.10.16 10.10.10.97]
     msg=["CHANGE labg.f.com NS (10.10.10.17) -> (10.10.10.10)" "CHANGE labg.f.com NS (10.10.10.17) -> (10.10.10.16)" "CHANGE labg.f.com NS (10.10.10.18) -> (10.10.10.97)" "CHANGE labg.f.com NS (10.10.10.18) -> (10.10.10.97)"]
 05: Change: verb=CHANGE
     key={labh.f.com }
-    old=[1.2.3.4]
+    old=[labd]
     new=[1.2.3.4]
     msg=["DELETE labh.f.com CNAME labd" "CREATE labh.f.com A 1.2.3.4"]
 `,
@@ -244,14 +281,14 @@ ChangeList: len=6
 
 		t.Run(tt.name, func(t *testing.T) {
 			cl := analyzeByRecordSet(tt.args.cc)
-			compareMsgs(t, "analyzeByRecordSet", tt.name, "wantMsgs", cl, tt.wantMsgs)
+			compareMsgs(t, "analyzeByRecordSet", tt.name, "wantMsgsRS", cl, tt.wantMsgs)
 			compareCL(t, "analyzeByRecordSet", tt.name, "wantCLrset", cl, tt.wantCLrset)
 		})
 
 		// byLabel should get the same mesages, but a different set of instructions.
 		t.Run(tt.name, func(t *testing.T) {
 			cl := analyzeByLabel(tt.args.cc)
-			//compareMsgs(t, "analyzeByLabel", tt.name, "wantMsgs", cl, tt.wantMsgs)
+			compareMsgs(t, "analyzeByLabel", tt.name, "wantMsgsCL", cl, tt.wantMsgs)
 			compareCL(t, "analyzeByLabel", tt.name, "wantCLlabel", cl, tt.wantCLlabel)
 		})
 
@@ -272,10 +309,10 @@ func Test_diffTargets(t *testing.T) {
 			name: "single",
 			args: args{
 				existing: []targetConfig{
-					{compareable: "1.2.3.4", rec: e0},
+					{compareable: "1.2.3.4", rec: testDataAA1234},
 				},
 				desired: []targetConfig{
-					{compareable: "1.2.3.4", rec: e0},
+					{compareable: "1.2.3.4", rec: testDataAA1234},
 				},
 			},
 			//want: ,
@@ -285,17 +322,17 @@ func Test_diffTargets(t *testing.T) {
 			name: "add1",
 			args: args{
 				existing: []targetConfig{
-					{compareable: "1.2.3.4", rec: e0},
+					{compareable: "1.2.3.4", rec: testDataAA1234},
 				},
 				desired: []targetConfig{
-					{compareable: "1.2.3.4", rec: e0},
-					{compareable: "10 laba", rec: e1},
+					{compareable: "1.2.3.4", rec: testDataAA1234},
+					{compareable: "10 laba", rec: testDataAMX10a},
 				},
 			},
 			want: ChangeList{
 				Change{Type: CREATE,
 					Key:  models.RecordKey{NameFQDN: "laba.f.com", Type: "MX"},
-					New:  models.Records{e1},
+					New:  models.Records{testDataAMX10a},
 					Msgs: []string{"CREATE laba.f.com MX 10 laba"},
 				},
 			},
@@ -305,17 +342,17 @@ func Test_diffTargets(t *testing.T) {
 			name: "del1",
 			args: args{
 				existing: []targetConfig{
-					{compareable: "1.2.3.4", rec: e0},
-					{compareable: "10 laba", rec: e1},
+					{compareable: "1.2.3.4", rec: testDataAA1234},
+					{compareable: "10 laba", rec: testDataAMX10a},
 				},
 				desired: []targetConfig{
-					{compareable: "1.2.3.4", rec: e0},
+					{compareable: "1.2.3.4", rec: testDataAA1234},
 				},
 			},
 			want: ChangeList{
 				Change{Type: DELETE,
 					Key:  models.RecordKey{NameFQDN: "laba.f.com", Type: "MX"},
-					Old:  models.Records{e1},
+					Old:  models.Records{testDataAMX10a},
 					Msgs: []string{"DELETE laba.f.com MX 10 laba"},
 				},
 			},
@@ -325,19 +362,19 @@ func Test_diffTargets(t *testing.T) {
 			name: "change2nd",
 			args: args{
 				existing: []targetConfig{
-					{compareable: "1.2.3.4", rec: e0},
-					{compareable: "10 laba", rec: e1},
+					{compareable: "1.2.3.4", rec: testDataAA1234},
+					{compareable: "10 laba", rec: testDataAMX10a},
 				},
 				desired: []targetConfig{
-					{compareable: "1.2.3.4", rec: e0},
-					{compareable: "20 laba", rec: d2},
+					{compareable: "1.2.3.4", rec: testDataAA1234},
+					{compareable: "20 laba", rec: testDataAMX20b},
 				},
 			},
 			want: ChangeList{
 				Change{Type: CHANGE,
 					Key:  models.RecordKey{NameFQDN: "laba.f.com", Type: "MX"},
-					Old:  models.Records{e1},
-					New:  models.Records{d2},
+					Old:  models.Records{testDataAMX10a},
+					New:  models.Records{testDataAMX20b},
 					Msgs: []string{"CHANGE laba.f.com MX (10 laba) -> (20 labb)"},
 				},
 			},
