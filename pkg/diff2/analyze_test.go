@@ -1,12 +1,12 @@
 package diff2
 
 import (
-	"fmt"
 	"reflect"
+	"strings"
 	"testing"
 
 	"github.com/StackExchange/dnscontrol/v3/models"
-	"github.com/stretchr/testify/assert"
+	"github.com/kylelemons/godebug/diff"
 )
 
 var e0 = makeRec("laba", "A", "1.2.3.4")       //      [0]
@@ -71,10 +71,8 @@ func Test_analyzeByRecordSet(t *testing.T) {
 	}
 
 	origin := "f.com"
-	//existing := models.Records{e0, e1, e2, e3, e4, e5, e6, e7, e8, e9, e10, e11}
-	//desired := models.Records{d0, d1, d2, d3, d4, d5, d6, d7, d8, d9, d10, d11, d12}
-	//	cc0 := NewCompareConfig(origin, models.Records{e0}, models.Records{d0}, nil)
-	//	cc1 := NewCompareConfig(origin, existing, desired, nil)
+	existing := models.Records{e0, e1, e2, e3, e4, e5, e6, e7, e8, e9, e10, e11}
+	desired := models.Records{d0, d1, d2, d3, d4, d5, d6, d7, d8, d9, d10, d11, d12}
 
 	tests := []struct {
 		name string
@@ -93,61 +91,45 @@ func Test_analyzeByRecordSet(t *testing.T) {
 			want: []string{},
 		},
 
-		// {
-		// 	name: "sameequal",
-		// 	args: args{
-		// 		cc: NewCompareConfig(origin,
-		// 			models.Records{e0, e1},
-		// 			models.Records{d0, d2},
-		// 			nil),
-		// 	},
-		// 	want: []string{"CHANGE laba.f.com MX 20 labb"},
-		// },
+		{
+			name: "sameequal",
+			args: args{
+				cc: NewCompareConfig(origin,
+					models.Records{e0, e1},
+					models.Records{d0, d2},
+					nil),
+			},
+			want: []string{"CHANGE laba.f.com MX (10 laba) -> (20 labb)"},
+		},
 
-		// {
-		// 	name: "big",
-		// 	args: args{cc1},
-		// 	want: []string{
-		// 		"CHANGE laba.f.com MX 20 labb",
-		// 		"DELETE labc.f.com CNAME laba",
-		// 		"DELETE labe.f.com A 10.10.10.15",
-		// 		"DELETE labe.f.com A 10.10.10.16",
-		// 		"DELETE labe.f.com A 10.10.10.17",
-		// 		"DELETE labe.f.com A 10.10.10.18",
-		// 		"DELETE labg.f.com NS 10.10.10.15",
-		// 		"DELETE labg.f.com NS 10.10.10.16",
-		// 		"DELETE labg.f.com NS 10.10.10.17",
-		// 		"DELETE labg.f.com NS 10.10.10.18",
-		// 		"CHANGE laba.f.com A 1.2.3.4",
-		// 		"CREATE laba.f.com A 1.2.3.5",
-		// 		"CREATE labe.f.com A 10.10.10.95",
-		// 		"CREATE labe.f.com A 10.10.10.96",
-		// 		"CREATE labe.f.com A 10.10.10.97",
-		// 		"CREATE labe.f.com A 10.10.10.98",
-		// 		"CREATE laba.f.com MX 20 labb",
-		// 		"CREATE labf.f.com TXT \"foo\"",
-		// 		"CREATE labg.f.com NS 10.10.10.10",
-		// 		"CREATE labg.f.com NS 10.10.10.15",
-		// 		"CREATE labg.f.com NS 10.10.10.16",
-		// 		"CREATE labg.f.com NS 10.10.10.97",
-		// 		"CREATE labh.f.com A 1.2.3.4",
-		// 	},
-		// },
-
+		{
+			name: "big",
+			args: args{NewCompareConfig(origin, existing, desired, nil)},
+			want: []string{`
+CREATE laba.f.com A 1.2.3.5
+CHANGE laba.f.com MX (10 laba) -> (20 labb) 
+DELETE labc.f.com CNAME laba
+CHANGE labe.f.com A (10.10.10.15) -> (10.10.10.95) 
+CHANGE labe.f.com A (10.10.10.16) -> (10.10.10.96) 
+CHANGE labe.f.com A (10.10.10.17) -> (10.10.10.97) 
+CHANGE labe.f.com A (10.10.10.18) -> (10.10.10.98) 
+CHANGE labg.f.com NS (10.10.10.17) -> (10.10.10.10) 
+CHANGE labg.f.com NS (10.10.10.18) -> (10.10.10.97) 
+DELETE labh.f.com CNAME labd
+CREATE labh.f.com A 1.2.3.4
+CREATE labf.f.com TXT "foo"
+`,
+			},
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got := justMsgs(analyzeByRecordSet(tt.args.cc))
-			//fmt.Printf("ABRS %02d: got=%q\n", i, got)
-			//fmt.Printf("ABRS %02d: wrn=%q\n", i, tt.want)
-			//fmt.Printf("EQUAL = %v %v\n", len(got) == 0, len(tt.want) == 0)
-			if len(got) == 0 && len(tt.want) == 0 {
-				// assert.Equal fails to notice this is equal.
-				// TODO(tlim): Re-check this once everything else works.
-			} else {
-				if assert.Equal(t, got, tt.want, "Oh no!!!") {
-					t.Errorf("analyzeByRecordSet() = %q, want %q", got, tt.want)
-				}
+			got := analyzeByRecordSet(tt.args.cc)
+			gs := strings.TrimSpace(justMsgString(got))
+			ws := strings.TrimSpace(strings.Join(tt.want, "\n"))
+			d := diff.Diff(gs, ws)
+			if d != "" {
+				t.Errorf("analyzeByRecordSet() = %q, want %q\n%s\n", got, tt.want, d)
 			}
 		})
 	}
@@ -234,17 +216,19 @@ func Test_diffTargets(t *testing.T) {
 					Key:  models.RecordKey{NameFQDN: "laba.f.com", Type: "MX"},
 					Old:  models.Records{e1},
 					New:  models.Records{d2},
-					Msgs: []string{"CHANGE laba.f.com MX 20 labb"},
+					Msgs: []string{"CHANGE laba.f.com MX (10 laba) -> (20 labb)"},
 				},
 			},
 		},
 	}
-	for i, tt := range tests {
+	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			fmt.Printf("DEBUG: Test %02d\n", i)
-			if got := diffTargets(tt.args.existing, tt.args.desired); !reflect.DeepEqual(got, tt.want) {
-				fmt.Printf("DEBUG: %d %d\n", len(got), len(tt.want))
-				t.Errorf("diffTargets()\n GOT=%+v\nWANT=%+v", got, tt.want)
+			//fmt.Printf("DEBUG: Test %02d\n", i)
+			got := diffTargets(tt.args.existing, tt.args.desired)
+			d := diff.Diff(strings.TrimSpace(justMsgString(got)), strings.TrimSpace(justMsgString(tt.want)))
+			if d != "" {
+				//fmt.Printf("DEBUG: %d %d\n", len(got), len(tt.want))
+				t.Errorf("diffTargets()\n diff=%s", d)
 			}
 		})
 	}

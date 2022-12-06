@@ -172,7 +172,7 @@ func diffTargets(existing, desired []targetConfig) ChangeList {
 
 	// Nothing to do?
 	if len(existing) == 0 && len(desired) == 0 {
-		fmt.Printf("DEBUG: diffTargets: nothing to do\n")
+		//fmt.Printf("DEBUG: diffTargets: nothing to do\n")
 		return nil
 	}
 
@@ -187,11 +187,12 @@ func diffTargets(existing, desired []targetConfig) ChangeList {
 
 	// the common chunk are changes
 	mi := min(len(existing), len(desired))
-	fmt.Printf("DEBUG: min=%d\n", mi)
+	//fmt.Printf("DEBUG: min=%d\n", mi)
 	for i := 0; i < mi; i++ {
-		fmt.Println(i, "CHANGE")
+		//fmt.Println(i, "CHANGE")
+		er := existing[i].rec
 		dr := desired[i].rec
-		m := fmt.Sprintf("CHANGE %s %s %s", dr.NameFQDN, dr.Type, dr.GetTargetCombined())
+		m := fmt.Sprintf("CHANGE %s %s (%s) -> (%s) ", dr.NameFQDN, dr.Type, er.GetTargetCombined(), dr.GetTargetCombined())
 		instructions = append(instructions, change(dr.NameFQDN, dr.Type, []string{m},
 			models.Records{existing[i].rec},
 			models.Records{desired[i].rec},
@@ -200,7 +201,7 @@ func diffTargets(existing, desired []targetConfig) ChangeList {
 
 	// any left-over existing are deletes
 	for i := mi; i < len(existing); i++ {
-		fmt.Println(i, "DEL")
+		//fmt.Println(i, "DEL")
 		er := existing[i].rec
 		m := fmt.Sprintf("DELETE %s %s %s", er.NameFQDN, er.Type, er.GetTargetCombined())
 		instructions = append(instructions, deleteRec(er.NameFQDN, er.Type, []string{m}, er))
@@ -208,7 +209,7 @@ func diffTargets(existing, desired []targetConfig) ChangeList {
 
 	// any left-over desired are creates
 	for i := mi; i < len(desired); i++ {
-		fmt.Println(i, "CREATE")
+		//fmt.Println(i, "CREATE")
 		dr := desired[i].rec
 		m := fmt.Sprintf("CREATE %s %s %s", dr.NameFQDN, dr.Type, dr.GetTargetCombined())
 		instructions = append(instructions, add(dr.NameFQDN, dr.Type, []string{m}, models.Records{dr}))

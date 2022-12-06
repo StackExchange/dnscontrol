@@ -59,24 +59,24 @@ func NewCompareConfig(origin string, existing, desired models.Records, compFn Co
 func (cc *CompareConfig) String() string {
 	var buf bytes.Buffer
 	b := &buf
-	fmt.Fprintf(b, "existing: %+v\n", cc.existing)
-	fmt.Fprintf(b, "desired: %v\n", cc.desired)
 	fmt.Fprintf(b, "ldata:\n")
 	for i, ld := range cc.ldata {
 		fmt.Fprintf(b, "  ldata[%02d]: %s\n", i, ld.label)
 		for j, t := range ld.tdata {
-			fmt.Fprintf(b, "    tdata[%d]: %q (%d, %d, %d, %d)\n", j, t.rType,
+			fmt.Fprintf(b, "             tdata[%d]: %q e(%d, %d) d(%d, %d)\n", j, t.rType,
 				len(t.existingTargets),
-				len(t.desiredTargets),
 				len(t.existingRecs),
+				len(t.desiredTargets),
 				len(t.desiredRecs),
 			)
 		}
-		fmt.Fprintf(b, "origin: %v\n", cc.origin)
-		fmt.Fprintf(b, "compFn: %v\n", cc.compareableFunc)
-		fmt.Fprintf(b, "labelMap: %v\n", cc.labelMap)
-		fmt.Fprintf(b, "keyMap:   %v\n", cc.keyMap)
 	}
+	fmt.Fprintf(b, "labelMap: len=%d %v\n", len(cc.labelMap), cc.labelMap)
+	fmt.Fprintf(b, "keyMap:   len=%d %v\n", len(cc.keyMap), cc.keyMap)
+	fmt.Fprintf(b, "existing: %q\n", cc.existing)
+	fmt.Fprintf(b, "desired: %q\n", cc.desired)
+	fmt.Fprintf(b, "origin: %v\n", cc.origin)
+	fmt.Fprintf(b, "compFn: %v\n", cc.compareableFunc)
 
 	return b.String()
 }
@@ -111,8 +111,16 @@ func (cc *CompareConfig) addRecords(recs models.Records, storeInExisting bool) {
 			//fmt.Printf("DEBUG: I haven't see label=%v before. Adding.\n", label)
 			cc.labelMap[label] = true
 			cc.ldata = append(cc.ldata, &labelConfig{label: label})
+			labelIdx = highest(cc.ldata)
+		} else {
+			// find label in cc.ldata:
+			for k, v := range cc.ldata {
+				if v.label == label {
+					labelIdx = k
+					break
+				}
+			}
 		}
-		labelIdx = highest(cc.ldata)
 
 		// Are we seeing this label+rtype for the first time?
 		key := rec.Key()
@@ -120,21 +128,28 @@ func (cc *CompareConfig) addRecords(recs models.Records, storeInExisting bool) {
 			//fmt.Printf("DEBUG: I haven't see key=%v before. Adding.\n", key)
 			cc.keyMap[key] = true
 			x := cc.ldata[labelIdx]
+			//fmt.Printf("DEBUG: APpending rtype=%v\n", rtype)
 			x.tdata = append(x.tdata, &rTypeConfig{rType: rtype})
 		}
-		rtIdx := highest(cc.ldata[labelIdx].tdata)
+		var rtIdx int
+		// find rtype in tdata:
+		for k, v := range cc.ldata[labelIdx].tdata {
+			if v.rType == rtype {
+				rtIdx = k
+				break
+			}
+		}
+		//fmt.Printf("DEBUG: found rtype=%v at index %d\n", rtype, rtIdx)
 
 		// Now it is safe to add/modify the records.
 
-		td := cc.ldata[labelIdx].tdata[rtIdx]
-		td.rType = rtype
 		//fmt.Printf("BEFORE E/D: %v/%v\n", len(td.existingRecs), len(td.desiredRecs))
 		if storeInExisting {
-			td.existingRecs = append(td.existingRecs, rec)
-			td.existingTargets = append(td.existingTargets, targetConfig{compareable: comp, rec: rec})
+			cc.ldata[labelIdx].tdata[rtIdx].existingRecs = append(cc.ldata[labelIdx].tdata[rtIdx].existingRecs, rec)
+			cc.ldata[labelIdx].tdata[rtIdx].existingTargets = append(cc.ldata[labelIdx].tdata[rtIdx].existingTargets, targetConfig{compareable: comp, rec: rec})
 		} else {
-			td.desiredRecs = append(td.desiredRecs, rec)
-			td.desiredTargets = append(td.desiredTargets, targetConfig{compareable: comp, rec: rec})
+			cc.ldata[labelIdx].tdata[rtIdx].desiredRecs = append(cc.ldata[labelIdx].tdata[rtIdx].desiredRecs, rec)
+			cc.ldata[labelIdx].tdata[rtIdx].desiredTargets = append(cc.ldata[labelIdx].tdata[rtIdx].desiredTargets, targetConfig{compareable: comp, rec: rec})
 		}
 		//fmt.Printf("AFTER  L: %v\n", len(cc.ldata))
 		//fmt.Printf("AFTER  E/D: %v/%v\n", len(td.existingRecs), len(td.desiredRecs))
