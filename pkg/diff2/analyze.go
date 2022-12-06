@@ -43,35 +43,33 @@ func analyzeByLabel(cc *CompareConfig) ChangeList {
 	// Accumulate if there are any changes and collect the info needed to generate instructions.
 	for _, lc := range cc.ldata {
 		label := lc.label
-		hadExisting := false
 		var accMsgs []string
+		var accExisting models.Records
 		var accDesired models.Records
 		for _, rt := range lc.tdata {
 			ets := rt.existingTargets
 			dts := rt.desiredTargets
 			msgs := genmsgs(ets, dts)
 			if len(msgs) != 0 { // If there were differences
-				accMsgs = append(accMsgs, msgs...)                 // Accumulate the messages
-				accDesired = append(accDesired, rt.desiredRecs...) // Accumulate what records should be at this label.
-				if len(rt.existingRecs) != 0 {                     // Are we adding to an existing label?
-					hadExisting = true
-				}
+				accMsgs = append(accMsgs, msgs...)                   // Accumulate the messages
+				accExisting = append(accExisting, rt.desiredRecs...) // Accumulate what records were at this label.
+				accDesired = append(accDesired, rt.desiredRecs...)   // Accumulate what records should be at this label.
 			}
 		}
 
 		// We now know what changed (accMsgs), what records should exist at that
 		// label (accDesired), and if any old records used to exist at this label
-		// (hadExisting).  Based on that info, we can generate the instructions.
+		// (accExisting).  Based on that info, we can generate the instructions.
 
 		if len(accMsgs) == 0 { // Nothing changed.
 			return nil
 		}
 		if len(accDesired) == 0 { // No new records at the label? This must be a delete.
 			instructions = append(instructions, deleteM(label, "", accMsgs))
-		} else if !hadExisting { // No old records at the label? This must be a create/add.
+		} else if len(accExisting) == 0 { // No old records at the label? This must be a create/add.
 			instructions = append(instructions, add(label, "", accMsgs, accDesired))
-		} else { // Must be a change
-			instructions = append(instructions, add(label, "", accMsgs, accDesired))
+		} else { // If we get here, it must be a change.
+			instructions = append(instructions, change(label, "", accMsgs, accExisting, accDesired))
 		}
 	}
 

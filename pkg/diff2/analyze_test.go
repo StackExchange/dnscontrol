@@ -105,7 +105,7 @@ func Test_analyzeByRecordSet(t *testing.T) {
 		},
 
 		{
-			name: "sameequal",
+			name: "onediff",
 			args: args{
 				cc: NewCompareConfig(origin,
 					models.Records{e0, e1},
@@ -123,8 +123,9 @@ ChangeList: len=1
 `,
 			wantCLlabel: `
 ChangeList: len=1
-00: Change: verb=CREATE
+00: Change: verb=CHANGE
     key={laba.f.com }
+    old=[20 labb]
     new=[20 labb]
     msg=["CHANGE laba.f.com MX (10 laba) -> (20 labb)"]
 `,
@@ -208,27 +209,32 @@ ChangeList: len=8
 `,
 			wantCLlabel: `
 ChangeList: len=6
-00: Change: verb=CREATE
+00: Change: verb=CHANGE
     key={laba.f.com }
+    old=[1.2.3.4 1.2.3.5 20 labb]
     new=[1.2.3.4 1.2.3.5 20 labb]
     msg=["CHANGE laba.f.com A (1.2.3.4) -> (1.2.3.5)" "CREATE laba.f.com A 1.2.3.5" "CHANGE laba.f.com MX (10 laba) -> (20 labb)"]
 01: Change: verb=DELETE
     key={labc.f.com }
     msg=["DELETE labc.f.com CNAME laba"]
-02: Change: verb=CREATE
+02: Change: verb=CHANGE
     key={labe.f.com }
+    old=[10.10.10.95 10.10.10.96 10.10.10.97 10.10.10.98]
     new=[10.10.10.95 10.10.10.96 10.10.10.97 10.10.10.98]
     msg=["CHANGE labe.f.com A (10.10.10.15) -> (10.10.10.95)" "CHANGE labe.f.com A (10.10.10.16) -> (10.10.10.96)" "CHANGE labe.f.com A (10.10.10.17) -> (10.10.10.97)" "CHANGE labe.f.com A (10.10.10.18) -> (10.10.10.98)"]
-03: Change: verb=CREATE
+03: Change: verb=CHANGE
     key={labf.f.com }
+    old=["foo"]
     new=["foo"]
     msg=["CREATE labf.f.com TXT \"foo\""]
-04: Change: verb=CREATE
+04: Change: verb=CHANGE
     key={labg.f.com }
+    old=[10.10.10.10 10.10.10.15 10.10.10.16 10.10.10.97]
     new=[10.10.10.10 10.10.10.15 10.10.10.16 10.10.10.97]
     msg=["CHANGE labg.f.com NS (10.10.10.17) -> (10.10.10.10)" "CHANGE labg.f.com NS (10.10.10.17) -> (10.10.10.16)" "CHANGE labg.f.com NS (10.10.10.18) -> (10.10.10.97)" "CHANGE labg.f.com NS (10.10.10.18) -> (10.10.10.97)"]
-05: Change: verb=CREATE
+05: Change: verb=CHANGE
     key={labh.f.com }
+    old=[1.2.3.4]
     new=[1.2.3.4]
     msg=["DELETE labh.f.com CNAME labd" "CREATE labh.f.com A 1.2.3.4"]
 `,
