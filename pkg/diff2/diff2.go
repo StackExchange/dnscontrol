@@ -138,7 +138,7 @@ func (c Change) String() string {
 	if len(c.New) != 0 {
 		fmt.Fprintf(b, "    new=%v\n", c.New)
 	}
-	fmt.Fprintf(b, "    msg=%v\n", c.Msgs)
+	fmt.Fprintf(b, "    msg=%q\n", c.Msgs)
 
 	return b.String()
 }

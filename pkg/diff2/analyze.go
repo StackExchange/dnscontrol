@@ -198,7 +198,7 @@ func diffTargets(existing, desired []targetConfig) ChangeList {
 		//fmt.Println(i, "CHANGE")
 		er := existing[i].rec
 		dr := desired[i].rec
-		m := fmt.Sprintf("CHANGE %s %s (%s) -> (%s) ", dr.NameFQDN, dr.Type, er.GetTargetCombined(), dr.GetTargetCombined())
+		m := fmt.Sprintf("CHANGE %s %s (%s) -> (%s)", dr.NameFQDN, dr.Type, er.GetTargetCombined(), dr.GetTargetCombined())
 		instructions = append(instructions, change(dr.NameFQDN, dr.Type, []string{m},
 			//models.Records{existing[i].rec},
 			//models.Records{desired[i].rec},

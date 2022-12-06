@@ -53,6 +53,27 @@ func makeChange(v Verb, l, t string, old, new models.Records, msgs []string) Cha
 	return c
 }
 
+func compareMsgs(t *testing.T, fnname, testname, testpart string, gotcc ChangeList, wantstring string) {
+	t.Helper()
+	gs := strings.TrimSpace(justMsgString(gotcc))
+	ws := strings.TrimSpace(wantstring)
+	d := diff.Diff(gs, ws)
+	if d != "" {
+		t.Errorf("%s()/%s (%s):\n===got===\n%s\n===want===\n%s\n===diff===\n%s\n===", fnname, testname, testpart, gs, ws, d)
+	}
+}
+
+func compareCL(t *testing.T, fnname, testname, testpart string, gotcl ChangeList, wantstring string) {
+	t.Helper()
+	gs := strings.TrimSpace(gotcl.String())
+	ws := strings.TrimSpace(wantstring)
+	d := diff.Diff(gs, ws)
+	if d != "" {
+		t.Errorf("%s()/%s (%s):\n===got===\n%s\n===want===\n%s\n===diff===\n%s\n===", fnname, testname, testpart, gs, ws, d)
+	}
+
+}
+
 func Test_analyzeByRecordSet(t *testing.T) {
 	type args struct {
 		cc *CompareConfig
@@ -63,10 +84,11 @@ func Test_analyzeByRecordSet(t *testing.T) {
 	desired := models.Records{d0, d1, d2, d3, d4, d5, d6, d7, d8, d9, d10, d11, d12}
 
 	tests := []struct {
-		name     string
-		args     args
-		wantMsgs string
-		wantCL   string
+		name        string
+		args        args
+		wantMsgs    string
+		wantCLrset  string
+		wantCLlabel string
 	}{
 
 		{
@@ -77,8 +99,9 @@ func Test_analyzeByRecordSet(t *testing.T) {
 					models.Records{d0},
 					nil),
 			},
-			wantMsgs: "",
-			wantCL:   "ChangeList: len=0",
+			wantMsgs:    "", // Empty
+			wantCLrset:  "ChangeList: len=0",
+			wantCLlabel: "ChangeList: len=0",
 		},
 
 		{
@@ -90,13 +113,20 @@ func Test_analyzeByRecordSet(t *testing.T) {
 					nil),
 			},
 			wantMsgs: "CHANGE laba.f.com MX (10 laba) -> (20 labb)",
-			wantCL: `
+			wantCLrset: `
 ChangeList: len=1
 00: Change: verb=CHANGE
     key={laba.f.com MX}
     old=[10 laba]
     new=[20 labb]
-    msg=[CHANGE laba.f.com MX (10 laba) -> (20 labb) ]
+    msg=["CHANGE laba.f.com MX (10 laba) -> (20 labb)"]
+`,
+			wantCLlabel: `
+ChangeList: len=1
+00: Change: verb=CREATE
+    key={laba.f.com }
+    new=[20 labb]
+    msg=["CHANGE laba.f.com MX (10 laba) -> (20 labb)"]
 `,
 		},
 
@@ -109,13 +139,16 @@ ChangeList: len=1
 					nil),
 			},
 			wantMsgs: "CHANGE f.com MX (1 aaa) -> (22 bbb)",
-			wantCL: `
+			wantCLrset: `
 ChangeList: len=1
 00: Change: verb=CHANGE
     key={f.com MX}
     old=[1 aaa]
     new=[22 bbb]
-    msg=[CHANGE f.com MX (1 aaa) -> (22 bbb) ]
+    msg=["CHANGE f.com MX (1 aaa) -> (22 bbb)"]
+`,
+			wantCLlabel: `
+ChangeList: len=0
 `,
 		},
 
@@ -124,86 +157,99 @@ ChangeList: len=1
 			args: args{NewCompareConfig(origin, existing, desired, nil)},
 			wantMsgs: `
 CREATE laba.f.com A 1.2.3.5
-CHANGE laba.f.com MX (10 laba) -> (20 labb) 
+CHANGE laba.f.com MX (10 laba) -> (20 labb)
 DELETE labc.f.com CNAME laba
-CHANGE labe.f.com A (10.10.10.15) -> (10.10.10.95) 
-CHANGE labe.f.com A (10.10.10.16) -> (10.10.10.96) 
-CHANGE labe.f.com A (10.10.10.17) -> (10.10.10.97) 
-CHANGE labe.f.com A (10.10.10.18) -> (10.10.10.98) 
+CHANGE labe.f.com A (10.10.10.15) -> (10.10.10.95)
+CHANGE labe.f.com A (10.10.10.16) -> (10.10.10.96)
+CHANGE labe.f.com A (10.10.10.17) -> (10.10.10.97)
+CHANGE labe.f.com A (10.10.10.18) -> (10.10.10.98)
 CREATE labf.f.com TXT "foo"
-CHANGE labg.f.com NS (10.10.10.17) -> (10.10.10.10) 
-CHANGE labg.f.com NS (10.10.10.18) -> (10.10.10.97) 
+CHANGE labg.f.com NS (10.10.10.17) -> (10.10.10.10)
+CHANGE labg.f.com NS (10.10.10.18) -> (10.10.10.97)
 DELETE labh.f.com CNAME labd
 CREATE labh.f.com A 1.2.3.4
-		`,
-			wantCL: `
+`,
+			wantCLrset: `
 ChangeList: len=8
 00: Change: verb=CHANGE
     key={laba.f.com A}
     old=[1.2.3.4]
     new=[1.2.3.4 1.2.3.5]
-    msg=[CREATE laba.f.com A 1.2.3.5]
+    msg=["CREATE laba.f.com A 1.2.3.5"]
 01: Change: verb=CHANGE
     key={laba.f.com MX}
     old=[10 laba]
     new=[20 labb]
-    msg=[CHANGE laba.f.com MX (10 laba) -> (20 labb) ]
+    msg=["CHANGE laba.f.com MX (10 laba) -> (20 labb)"]
 02: Change: verb=DELETE
     key={labc.f.com CNAME}
-    msg=[DELETE labc.f.com CNAME laba]
+    msg=["DELETE labc.f.com CNAME laba"]
 03: Change: verb=CHANGE
     key={labe.f.com A}
     old=[10.10.10.15 10.10.10.16 10.10.10.17 10.10.10.18]
     new=[10.10.10.95 10.10.10.96 10.10.10.97 10.10.10.98]
-    msg=[CHANGE labe.f.com A (10.10.10.15) -> (10.10.10.95)  CHANGE labe.f.com A (10.10.10.16) -> (10.10.10.96)  CHANGE labe.f.com A (10.10.10.17) -> (10.10.10.97)  CHANGE labe.f.com A (10.10.10.18) -> (10.10.10.98) ]
+    msg=["CHANGE labe.f.com A (10.10.10.15) -> (10.10.10.95)" "CHANGE labe.f.com A (10.10.10.16) -> (10.10.10.96)" "CHANGE labe.f.com A (10.10.10.17) -> (10.10.10.97)" "CHANGE labe.f.com A (10.10.10.18) -> (10.10.10.98)"]
 04: Change: verb=CREATE
     key={labf.f.com TXT}
     new=["foo"]
-    msg=[CREATE labf.f.com TXT "foo"]
+    msg=["CREATE labf.f.com TXT \"foo\""]
 05: Change: verb=CHANGE
     key={labg.f.com NS}
     old=[10.10.10.15 10.10.10.16 10.10.10.17 10.10.10.18]
     new=[10.10.10.10 10.10.10.15 10.10.10.16 10.10.10.97]
-    msg=[CHANGE labg.f.com NS (10.10.10.17) -> (10.10.10.10)  CHANGE labg.f.com NS (10.10.10.18) -> (10.10.10.97) ]
+    msg=["CHANGE labg.f.com NS (10.10.10.17) -> (10.10.10.10)" "CHANGE labg.f.com NS (10.10.10.18) -> (10.10.10.97)"]
 06: Change: verb=DELETE
     key={labh.f.com CNAME}
-    msg=[DELETE labh.f.com CNAME labd]
+    msg=["DELETE labh.f.com CNAME labd"]
 07: Change: verb=CREATE
     key={labh.f.com A}
     new=[1.2.3.4]
-    msg=[CREATE labh.f.com A 1.2.3.4]
+    msg=["CREATE labh.f.com A 1.2.3.4"]
+`,
+			wantCLlabel: `
+ChangeList: len=6
+00: Change: verb=CREATE
+    key={laba.f.com }
+    new=[1.2.3.4 1.2.3.5 20 labb]
+    msg=["CHANGE laba.f.com A (1.2.3.4) -> (1.2.3.5)" "CREATE laba.f.com A 1.2.3.5" "CHANGE laba.f.com MX (10 laba) -> (20 labb)"]
+01: Change: verb=DELETE
+    key={labc.f.com }
+    msg=["DELETE labc.f.com CNAME laba"]
+02: Change: verb=CREATE
+    key={labe.f.com }
+    new=[10.10.10.95 10.10.10.96 10.10.10.97 10.10.10.98]
+    msg=["CHANGE labe.f.com A (10.10.10.15) -> (10.10.10.95)" "CHANGE labe.f.com A (10.10.10.16) -> (10.10.10.96)" "CHANGE labe.f.com A (10.10.10.17) -> (10.10.10.97)" "CHANGE labe.f.com A (10.10.10.18) -> (10.10.10.98)"]
+03: Change: verb=CREATE
+    key={labf.f.com }
+    new=["foo"]
+    msg=["CREATE labf.f.com TXT \"foo\""]
+04: Change: verb=CREATE
+    key={labg.f.com }
+    new=[10.10.10.10 10.10.10.15 10.10.10.16 10.10.10.97]
+    msg=["CHANGE labg.f.com NS (10.10.10.17) -> (10.10.10.10)" "CHANGE labg.f.com NS (10.10.10.17) -> (10.10.10.16)" "CHANGE labg.f.com NS (10.10.10.18) -> (10.10.10.97)" "CHANGE labg.f.com NS (10.10.10.18) -> (10.10.10.97)"]
+05: Change: verb=CREATE
+    key={labh.f.com }
+    new=[1.2.3.4]
+    msg=["DELETE labh.f.com CNAME labd" "CREATE labh.f.com A 1.2.3.4"]
 `,
 		},
 	}
 	for _, tt := range tests {
+
 		t.Run(tt.name, func(t *testing.T) {
 			cl := analyzeByRecordSet(tt.args.cc)
-			compareMsgs(t, "analyzeByRecordSet", cl, tt.wantMsgs)
-			compareCL(t, "analyzeByRecordSet", cl, tt.wantCL)
+			compareMsgs(t, "analyzeByRecordSet", tt.name, "wantMsgs", cl, tt.wantMsgs)
+			compareCL(t, "analyzeByRecordSet", tt.name, "wantCLrset", cl, tt.wantCLrset)
+		})
+
+		// byLabel should get the same mesages, but a different set of instructions.
+		t.Run(tt.name, func(t *testing.T) {
+			cl := analyzeByLabel(tt.args.cc)
+			//compareMsgs(t, "analyzeByLabel", tt.name, "wantMsgs", cl, tt.wantMsgs)
+			compareCL(t, "analyzeByLabel", tt.name, "wantCLlabel", cl, tt.wantCLlabel)
 		})
 
 	}
-}
-
-func compareMsgs(t *testing.T, fnname string, gotcc ChangeList, wantstring string) {
-	t.Helper()
-	gs := strings.TrimSpace(justMsgString(gotcc))
-	ws := strings.TrimSpace(wantstring)
-	d := diff.Diff(gs, ws)
-	if d != "" {
-		t.Errorf("%s():\n===got===\n%s\n===want===\n%s\n===diff===\n%s\n===", fnname, gs, ws, d)
-	}
-}
-
-func compareCL(t *testing.T, fnname string, gotcl ChangeList, wantstring string) {
-	t.Helper()
-	gs := strings.TrimSpace(gotcl.String())
-	ws := strings.TrimSpace(wantstring)
-	d := diff.Diff(gs, ws)
-	if d != "" {
-		t.Errorf("%s():\n===got===\n%s\n===want===\n%s\n===diff===\n%s\n===", fnname, gs, ws, d)
-	}
-
 }
 func Test_diffTargets(t *testing.T) {
 	type args struct {
