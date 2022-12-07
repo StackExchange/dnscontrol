@@ -1,9 +1,16 @@
 'use strict';
 
-// If you are heavily debugging this code, the "-dev" flag will
-// read this file directly instead of using the output of
-// `go generate`. You'll still need to run `go generate` before
-// you commit the changes.
+// How to keep this file clean:
+// 1. Add new functions in alphabetical order when it makes sense.
+// 2. Run [prettier](https://github.com/prettier/prettier) on the file to ensure
+//    your code conforms to our coding standard:
+//        npm install prettier
+//        node_modules/.bin/prettier --write pkg/js/helpers.js
+
+// Development tip:
+// This file is embeded in the binary via "go build". If you are
+// debugging/developing this code, it may be faster to specify the
+// -dev file to have helpers.js read from the file instead.
 
 var conf = {
     registrars: [],
