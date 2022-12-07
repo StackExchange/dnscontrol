@@ -642,10 +642,8 @@ var DISABLE_UNMANAGED_SAFETY_CHECK = {
   // the same record over and over, back and forth.  However, people
   // kept asking for it so... caveat emptor!
   // It only affects the current domain.
-  return function(d) {
-    d.unmanaged_disable_safety_check: "true"
-  };
-};
+    d.unmanaged_disable_safety_check = false;
+}
 
 // IMPORT_TRANSFORM(translation_table, domain)
 var IMPORT_TRANSFORM = recordBuilder('IMPORT_TRANSFORM', {
