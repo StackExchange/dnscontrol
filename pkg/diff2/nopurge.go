@@ -18,4 +18,5 @@ func processPurge(instructions ChangeList, nopurge bool) ChangeList {
 	}
 
 	return instructions
+
 }

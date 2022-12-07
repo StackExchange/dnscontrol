@@ -42,10 +42,13 @@ type Change struct {
 // www.example.com, A, and a list of all the desired IP addresses.
 //
 // Examples include:
-func ByRecordSet(existing, desired models.Records,
-	origin string, compFunc ComparableFunc) (ChangeList, error) {
+func ByRecordSet(
+	existing, desired models.Records,
+	origin string,
+	compFunc ComparableFunc,
+) (ChangeList, error) {
 
-	existing = handsoff(existing, desired)
+	desired = handsoff(existing, desired)
 	// There will need to be error checking eventually.
 	// if err != nil {
 	// 	return nil, err
@@ -57,74 +60,85 @@ func ByRecordSet(existing, desired models.Records,
 	return processPurge(instructions, true), nil
 }
 
-//// ByRecord takes two lists of records (existing and desired) and
-//// returns instructions for turning existing into desired.
-////
-//// Use this with DNS providers whose API updates one record at a time.
-////
-//// Examples include: INWX
-//func ByRecord(existing, desired models.Records) (instructions ChangeList, err error) {
-//	existing = handsoff(existing, desired)
+// ByLabel takes two lists of records (existing and desired) and
+// returns instructions for turning existing into desired.
 //
-//	instructions, err := analyzeByRecord(existing, desired)
-//	if err != nil {
-//		return nil, err
+// Use this with DNS providers whose API updates one label at a
+// time. That is, updates are done by sending a list of DNS records
+// to be served at a particular label, or the label itself is deleted.
+//
+// Examples include:
+func ByLabel(
+	existing, desired models.Records,
+	origin string,
+	compFunc ComparableFunc,
+) (ChangeList, error) {
+
+	desired = handsoff(existing, desired)
+	instructions := analyzeByLabel(NewCompareConfig(origin, existing, desired, compFunc))
+
+	return processPurge(instructions, true)
+}
+
+// ByRecord takes two lists of records (existing and desired) and
+// returns instructions for turning existing into desired.
+//
+// Use this with DNS providers whose API updates one record at a time.
+//
+// Examples include: INWX
+func ByRecord(
+	existing, desired models.Records,
+	origin string,
+	compFunc ComparableFunc,
+) (ChangeList, error) {
+
+	desired = handsoff(existing, desired)
+	instructions := analyzeByRecord(NewCompareConfig(origin, existing, desired, compFunc))
+
+	return processPurge(instructions, true)
+}
+
+// ByZone takes two lists of records (existing and desired) and
+// returns text one would output to users describing the change.
+//
+// Use this with DNS providers whose API updates the entire zone at a
+// time. That is, to make any change (1 record or many) the entire DNS
+// zone is uploaded.
+//
+// The user should see a list of changes as if individual records were
+// updated.
+//
+// The caller of this function should:
+//
+//	changed, msgs := diff2.ByZone(existing, desired, origin, nil
+//		fmt.Sprintf("CREATING ZONEFILE FOR THE FIRST TIME: dir/example.com.zone"))
+//	if changed {
+//		// output msgs
+//		// generate the zone using the "desired" records
 //	}
 //
-//	return processPurge(instructions, config.NoPurge)
-//}
-//
-//// ByLabel takes two lists of records (existing and desired) and
-//// returns instructions for turning existing into desired.
-////
-//// Use this with DNS providers whose API updates one label at a
-//// time. That is, updates are done by sending a list of DNS records
-//// to be served at a particular label, or the label itself is deleted.
-////
-//// Examples include:
-//func ByLabel(existing, desired models.Records) (instructions CHangeList, err error) {
-//	existing = handsoff(existing, desired)
-//
-//	instructions, err := analyzeByLabel(existing, desired)
-//	if err != nil {
-//		return nil, err
-//	}
-//
-//	return processPurge(instructions, config.NoPurge)
-//}
-//
-//// ByZone takes two lists of records (existing and desired) and
-//// returns text one would output to users describing the change.
-////
-//// Use this with DNS providers whose API updates the entire zone at a
-//// time. That is, to make any change (1 record or many) the entire DNS
-//// zone is uploaded.
-////
-//// The user should see a list of changes as if individual records were
-//// updated.  However, as an optimization, if existing is empty, we
-//// just output a 1-line message such as:
-////
-////	WRITING ZONEFILE: zones/example.com.zone
-////
-//// Example providers include: BIND
-//func ByZone(existing, desired models.Records, firstMsg string) (report []string, err error) {
-//	// Short-circuit if we are creating the zone from scratch:
-//	if len(existing) == 0 {
-//		// TODO(tlim): If no_purge is set, output a warning that this may
-//		// be dangerous.
-//		return []string{firstMsg}, nil
-//	}
-//
-//	existing = handsoff(existing, desired)
-//
-//	instructions, err := analyzeByZone(existing, desired)
-//	if err != nil {
-//		return nil, err
-//	}
-//
-//	return processPurge(instructions, config.NoPurge)
-//}
-//
+// Example providers include: BIND
+func ByZone(
+	existing, desired models.Records,
+	origin string,
+	compFunc ComparableFunc,
+	first string,
+) ([]string, error) {
+
+	if len(existing) == 0 {
+		// Nothing previously existed. No need to output a list of individual changes.
+		return []string{first}, nil
+	}
+
+	desired = handsoff(existing, desired)
+	instructions := analyzeByRecord(NewCompareConfig(origin, existing, desired, compFunc))
+
+	instructions, err := processPurge(instructions, true)
+	if err != nil {
+		return nil, err
+	}
+	return justMsgs(instructions), nil
+}
 
 func (c Change) String() string {
 	var buf bytes.Buffer

@@ -59,7 +59,7 @@ func compareMsgs(t *testing.T, fnname, testname, testpart string, gotcc ChangeLi
 	ws := strings.TrimSpace(wantstring)
 	d := diff.Diff(gs, ws)
 	if d != "" {
-		t.Errorf("%s()/%s (%s):\n===got===\n%s\n===want===\n%s\n===diff===\n%s\n===", fnname, testname, testpart, gs, ws, d)
+		t.Errorf("%s()/%s (wantMsgs:%s):\n===got===\n%s\n===want===\n%s\n===diff===\n%s\n===", fnname, testname, testpart, gs, ws, d)
 	}
 }
 
@@ -69,14 +69,16 @@ func compareCL(t *testing.T, fnname, testname, testpart string, gotcl ChangeList
 	ws := strings.TrimSpace(wantstring)
 	d := diff.Diff(gs, ws)
 	if d != "" {
-		t.Errorf("%s()/%s (%s):\n===got===\n%s\n===want===\n%s\n===diff===\n%s\n===", fnname, testname, testpart, gs, ws, d)
+		t.Errorf("%s()/%s (wantChange%s):\n===got===\n%s\n===want===\n%s\n===diff===\n%s\n===", fnname, testname, testpart, gs, ws, d)
 	}
 
 }
 
 func Test_analyzeByRecordSet(t *testing.T) {
 	type args struct {
-		cc *CompareConfig
+		origin            string
+		existing, desired models.Records
+		compFn            ComparableFunc
 	}
 
 	origin := "f.com"
@@ -84,36 +86,37 @@ func Test_analyzeByRecordSet(t *testing.T) {
 	desired := models.Records{testDataAA1234clone, testDataAA12345, testDataAMX20b, d3, d4, d5, d6, d7, d8, d9, d10, d11, d12}
 
 	tests := []struct {
-		name        string
-		args        args
-		wantMsgs    string
-		wantCLrset  string
-		wantCLlabel string
+		name            string
+		args            args
+		wantMsgs        string
+		wantChangeRSet  string
+		wantChangeLabel string
+		wantChangeRec   string
+		wantChangeZone  string
 	}{
 
 		{
 			name: "oneequal",
 			args: args{
-				cc: NewCompareConfig(origin,
-					models.Records{testDataAA1234},
-					models.Records{testDataAA1234clone},
-					nil),
+				origin:   origin,
+				existing: models.Records{testDataAA1234},
+				desired:  models.Records{testDataAA1234clone},
 			},
-			wantMsgs:    "", // Empty
-			wantCLrset:  "ChangeList: len=0",
-			wantCLlabel: "ChangeList: len=0",
+			wantMsgs:        "", // Empty
+			wantChangeRSet:  "ChangeList: len=0",
+			wantChangeLabel: "ChangeList: len=0",
+			wantChangeRec:   "ChangeList: len=0",
 		},
 
 		{
 			name: "onediff",
 			args: args{
-				cc: NewCompareConfig(origin,
-					models.Records{testDataAA1234, testDataAMX10a},
-					models.Records{testDataAA1234clone, testDataAMX20b},
-					nil),
+				origin:   origin,
+				existing: models.Records{testDataAA1234, testDataAMX10a},
+				desired:  models.Records{testDataAA1234clone, testDataAMX20b},
 			},
 			wantMsgs: "CHANGE laba.f.com MX (10 laba) -> (20 labb)",
-			wantCLrset: `
+			wantChangeRSet: `
 ChangeList: len=1
 00: Change: verb=CHANGE
     key={laba.f.com MX}
@@ -121,7 +124,7 @@ ChangeList: len=1
     new=[20 labb]
     msg=["CHANGE laba.f.com MX (10 laba) -> (20 labb)"]
 `,
-			wantCLlabel: `
+			wantChangeLabel: `
 ChangeList: len=1
 00: Change: verb=CHANGE
     key={laba.f.com }
@@ -129,18 +132,25 @@ ChangeList: len=1
     new=[1.2.3.4 20 labb]
     msg=["CHANGE laba.f.com MX (10 laba) -> (20 labb)"]
 `,
+			wantChangeRec: `
+ChangeList: len=1
+00: Change: verb=CHANGE
+    key={laba.f.com MX}
+    old=[10 laba]
+    new=[20 labb]
+    msg=["CHANGE laba.f.com MX (10 laba) -> (20 labb)"]
+`,
 		},
 
 		{
 			name: "apex",
 			args: args{
-				cc: NewCompareConfig(origin,
-					models.Records{testDataAA1234, testDataApexMX1aaa},
-					models.Records{testDataAA1234clone, testDataApexMX22bbb},
-					nil),
+				origin:   origin,
+				existing: models.Records{testDataAA1234, testDataApexMX1aaa},
+				desired:  models.Records{testDataAA1234clone, testDataApexMX22bbb},
 			},
 			wantMsgs: "CHANGE f.com MX (1 aaa) -> (22 bbb)",
-			wantCLrset: `
+			wantChangeRSet: `
 ChangeList: len=1
 00: Change: verb=CHANGE
     key={f.com MX}
@@ -148,10 +158,18 @@ ChangeList: len=1
     new=[22 bbb]
     msg=["CHANGE f.com MX (1 aaa) -> (22 bbb)"]
 `,
-			wantCLlabel: `
+			wantChangeLabel: `
 ChangeList: len=1
 00: Change: verb=CHANGE
     key={f.com }
+    old=[1 aaa]
+    new=[22 bbb]
+    msg=["CHANGE f.com MX (1 aaa) -> (22 bbb)"]
+`,
+			wantChangeRec: `
+ChangeList: len=1
+00: Change: verb=CHANGE
+    key={f.com MX}
     old=[1 aaa]
     new=[22 bbb]
     msg=["CHANGE f.com MX (1 aaa) -> (22 bbb)"]
@@ -160,15 +178,16 @@ ChangeList: len=1
 
 		{
 			name: "firsta",
-			args: args{NewCompareConfig(origin,
-				models.Records{testDataAA1234, testDataAMX10a},
-				models.Records{testDataAA1234clone, testDataAA12345, testDataAMX20b},
-				nil)},
+			args: args{
+				origin:   origin,
+				existing: models.Records{testDataAA1234, testDataAMX10a},
+				desired:  models.Records{testDataAA1234clone, testDataAA12345, testDataAMX20b},
+			},
 			wantMsgs: `
 CREATE laba.f.com A 1.2.3.5
 CHANGE laba.f.com MX (10 laba) -> (20 labb)
-`,
-			wantCLrset: `
+		`,
+			wantChangeRSet: `
 ChangeList: len=2
 00: Change: verb=CHANGE
     key={laba.f.com A}
@@ -180,20 +199,36 @@ ChangeList: len=2
     old=[10 laba]
     new=[20 labb]
     msg=["CHANGE laba.f.com MX (10 laba) -> (20 labb)"]
-`,
-			wantCLlabel: `
+		`,
+			wantChangeLabel: `
 ChangeList: len=1
 00: Change: verb=CHANGE
-    key={laba.f.com A}
+    key={laba.f.com }
     old=[1.2.3.4 10 laba]
     new=[1.2.3.4 1.2.3.5 20 labb]
     msg=["CREATE laba.f.com A 1.2.3.5" "CHANGE laba.f.com MX (10 laba) -> (20 labb)"]
+		`,
+			wantChangeRec: `
+ChangeList: len=2
+00: Change: verb=CREATE
+    key={laba.f.com A}
+    new=[1.2.3.5]
+    msg=["CREATE laba.f.com A 1.2.3.5"]
+01: Change: verb=CHANGE
+    key={laba.f.com MX}
+    old=[10 laba]
+    new=[20 labb]
+    msg=["CHANGE laba.f.com MX (10 laba) -> (20 labb)"]
 `,
 		},
 
 		{
 			name: "big",
-			args: args{NewCompareConfig(origin, existing, desired, nil)},
+			args: args{
+				origin:   origin,
+				existing: existing,
+				desired:  desired,
+			},
 			wantMsgs: `
 CREATE laba.f.com A 1.2.3.5
 CHANGE laba.f.com MX (10 laba) -> (20 labb)
@@ -207,8 +242,8 @@ CHANGE labg.f.com NS (10.10.10.17) -> (10.10.10.10)
 CHANGE labg.f.com NS (10.10.10.18) -> (10.10.10.97)
 DELETE labh.f.com CNAME labd
 CREATE labh.f.com A 1.2.3.4
-`,
-			wantCLrset: `
+		`,
+			wantChangeRSet: `
 ChangeList: len=8
 00: Change: verb=CHANGE
     key={laba.f.com A}
@@ -244,14 +279,14 @@ ChangeList: len=8
     key={labh.f.com A}
     new=[1.2.3.4]
     msg=["CREATE labh.f.com A 1.2.3.4"]
-`,
-			wantCLlabel: `
+		`,
+			wantChangeLabel: `
 ChangeList: len=6
 00: Change: verb=CHANGE
     key={laba.f.com }
     old=[1.2.3.4 10 laba]
     new=[1.2.3.4 1.2.3.5 20 labb]
-    msg=["CHANGE laba.f.com A (1.2.3.4) -> (1.2.3.5)" "CREATE laba.f.com A 1.2.3.5" "CHANGE laba.f.com MX (10 laba) -> (20 labb)"]
+    msg=["CREATE laba.f.com A 1.2.3.5" "CHANGE laba.f.com MX (10 laba) -> (20 labb)"]
 01: Change: verb=DELETE
     key={labc.f.com }
     msg=["DELETE labc.f.com CNAME laba"]
@@ -268,29 +303,98 @@ ChangeList: len=6
     key={labg.f.com }
     old=[10.10.10.15 10.10.10.16 10.10.10.17 10.10.10.18]
     new=[10.10.10.10 10.10.10.15 10.10.10.16 10.10.10.97]
-    msg=["CHANGE labg.f.com NS (10.10.10.17) -> (10.10.10.10)" "CHANGE labg.f.com NS (10.10.10.17) -> (10.10.10.16)" "CHANGE labg.f.com NS (10.10.10.18) -> (10.10.10.97)" "CHANGE labg.f.com NS (10.10.10.18) -> (10.10.10.97)"]
+    msg=["CHANGE labg.f.com NS (10.10.10.17) -> (10.10.10.10)" "CHANGE labg.f.com NS (10.10.10.18) -> (10.10.10.97)"]
 05: Change: verb=CHANGE
     key={labh.f.com }
     old=[labd]
     new=[1.2.3.4]
     msg=["DELETE labh.f.com CNAME labd" "CREATE labh.f.com A 1.2.3.4"]
+		`,
+			wantChangeRec: `
+ChangeList: len=12
+00: Change: verb=CREATE
+    key={laba.f.com A}
+    new=[1.2.3.5]
+    msg=["CREATE laba.f.com A 1.2.3.5"]
+01: Change: verb=CHANGE
+    key={laba.f.com MX}
+    old=[10 laba]
+    new=[20 labb]
+    msg=["CHANGE laba.f.com MX (10 laba) -> (20 labb)"]
+02: Change: verb=DELETE
+    key={labc.f.com CNAME}
+    old=[laba]
+    msg=["DELETE labc.f.com CNAME laba"]
+03: Change: verb=CHANGE
+    key={labe.f.com A}
+    old=[10.10.10.15]
+    new=[10.10.10.95]
+    msg=["CHANGE labe.f.com A (10.10.10.15) -> (10.10.10.95)"]
+04: Change: verb=CHANGE
+    key={labe.f.com A}
+    old=[10.10.10.16]
+    new=[10.10.10.96]
+    msg=["CHANGE labe.f.com A (10.10.10.16) -> (10.10.10.96)"]
+05: Change: verb=CHANGE
+    key={labe.f.com A}
+    old=[10.10.10.17]
+    new=[10.10.10.97]
+    msg=["CHANGE labe.f.com A (10.10.10.17) -> (10.10.10.97)"]
+06: Change: verb=CHANGE
+    key={labe.f.com A}
+    old=[10.10.10.18]
+    new=[10.10.10.98]
+    msg=["CHANGE labe.f.com A (10.10.10.18) -> (10.10.10.98)"]
+07: Change: verb=CREATE
+    key={labf.f.com TXT}
+    new=["foo"]
+    msg=["CREATE labf.f.com TXT \"foo\""]
+08: Change: verb=CHANGE
+    key={labg.f.com NS}
+    old=[10.10.10.17]
+    new=[10.10.10.10]
+    msg=["CHANGE labg.f.com NS (10.10.10.17) -> (10.10.10.10)"]
+09: Change: verb=CHANGE
+    key={labg.f.com NS}
+    old=[10.10.10.18]
+    new=[10.10.10.97]
+    msg=["CHANGE labg.f.com NS (10.10.10.18) -> (10.10.10.97)"]
+10: Change: verb=DELETE
+    key={labh.f.com CNAME}
+    old=[labd]
+    msg=["DELETE labh.f.com CNAME labd"]
+11: Change: verb=CREATE
+    key={labh.f.com A}
+    new=[1.2.3.4]
+    msg=["CREATE labh.f.com A 1.2.3.4"]
 `,
 		},
 	}
 	for _, tt := range tests {
 
+		// Each "analyze*()" should return the same msgs, but a different ChangeList.
+		// Sadly the analyze*() functions are destructive to the CompareConfig struct.
+		// Therefore we have to run NewCompareConfig() each time.
+
 		t.Run(tt.name, func(t *testing.T) {
-			cl := analyzeByRecordSet(tt.args.cc)
-			compareMsgs(t, "analyzeByRecordSet", tt.name, "wantMsgsRS", cl, tt.wantMsgs)
-			compareCL(t, "analyzeByRecordSet", tt.name, "wantCLrset", cl, tt.wantCLrset)
+			cl := analyzeByRecordSet(NewCompareConfig(tt.args.origin, tt.args.existing, tt.args.desired, tt.args.compFn))
+			compareMsgs(t, "analyzeByRecordSet", tt.name, "RSet", cl, tt.wantMsgs)
+			compareCL(t, "analyzeByRecordSet", tt.name, "RSet", cl, tt.wantChangeRSet)
 		})
 
-		// byLabel should get the same mesages, but a different set of instructions.
 		t.Run(tt.name, func(t *testing.T) {
-			cl := analyzeByLabel(tt.args.cc)
-			compareMsgs(t, "analyzeByLabel", tt.name, "wantMsgsCL", cl, tt.wantMsgs)
-			compareCL(t, "analyzeByLabel", tt.name, "wantCLlabel", cl, tt.wantCLlabel)
+			cl := analyzeByLabel(NewCompareConfig(tt.args.origin, tt.args.existing, tt.args.desired, tt.args.compFn))
+			compareMsgs(t, "analyzeByLabel", tt.name, "Label", cl, tt.wantMsgs)
+			compareCL(t, "analyzeByLabel", tt.name, "Label", cl, tt.wantChangeLabel)
 		})
+
+		t.Run(tt.name, func(t *testing.T) {
+			cl := analyzeByRecord(NewCompareConfig(tt.args.origin, tt.args.existing, tt.args.desired, tt.args.compFn))
+			compareMsgs(t, "analyzeByRecord", tt.name, "Rec", cl, tt.wantMsgs)
+			compareCL(t, "analyzeByRecord", tt.name, "Rec", cl, tt.wantChangeRec)
+		})
+
+		// NB(tlim): There is no analyzeByZone().  ByZone() uses analyzeByRecord().
 
 	}
 }
@@ -422,6 +526,84 @@ func Test_removeCommon(t *testing.T) {
 			}
 			if (!(got1 == nil && tt.want1 == nil)) && !reflect.DeepEqual(got1, tt.want1) {
 				t.Errorf("removeCommon() got1 = %v, want %v", got1, tt.want1)
+			}
+		})
+	}
+}
+
+func comparables(s []targetConfig) []string {
+	var r []string
+	for _, j := range s {
+		r = append(r, j.compareable)
+	}
+	return r
+}
+
+func Test_filterBy(t *testing.T) {
+	type args struct {
+		s []targetConfig
+		m map[string]*targetConfig
+	}
+	tests := []struct {
+		name string
+		args args
+		want []targetConfig
+	}{
+
+		{
+			name: "removeall",
+			args: args{
+				s: []targetConfig{
+					{compareable: "1.2.3.4", rec: testDataAA1234},
+					{compareable: "10 laba", rec: testDataAMX10a},
+				},
+				m: map[string]*targetConfig{
+					"1.2.3.4": {compareable: "1.2.3.4", rec: testDataAA1234},
+					"10 laba": {compareable: "10 laba", rec: testDataAMX10a},
+				},
+			},
+			want: []targetConfig{},
+		},
+
+		{
+			name: "keepall",
+			args: args{
+				s: []targetConfig{
+					{compareable: "1.2.3.4", rec: testDataAA1234},
+					{compareable: "10 laba", rec: testDataAMX10a},
+				},
+				m: map[string]*targetConfig{
+					"nothing": {compareable: "1.2.3.4", rec: testDataAA1234},
+					"matches": {compareable: "10 laba", rec: testDataAMX10a},
+				},
+			},
+			want: []targetConfig{
+				{compareable: "1.2.3.4", rec: testDataAA1234},
+				{compareable: "10 laba", rec: testDataAMX10a},
+			},
+		},
+
+		{
+			name: "keepsome",
+			args: args{
+				s: []targetConfig{
+					{compareable: "1.2.3.4", rec: testDataAA1234},
+					{compareable: "10 laba", rec: testDataAMX10a},
+				},
+				m: map[string]*targetConfig{
+					"nothing": {compareable: "1.2.3.4", rec: testDataAA1234},
+					"10 laba": {compareable: "10 laba", rec: testDataAMX10a},
+				},
+			},
+			want: []targetConfig{
+				{compareable: "1.2.3.4", rec: testDataAA1234},
+			},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := filterBy(tt.args.s, tt.args.m); !reflect.DeepEqual(comparables(got), comparables(tt.want)) {
+				t.Errorf("filterBy() = %v, want %v", got, tt.want)
 			}
 		})
 	}

@@ -100,19 +100,7 @@ func analyzeByRecord(cc *CompareConfig) ChangeList {
 	return instructions
 }
 
-func analyzeByZone(cc *CompareConfig) []string {
-	var accMsgs []string
-	// For each label, for each type at that label, see if there are any changes.
-	for _, lc := range cc.ldata {
-		for _, rt := range lc.tdata {
-			ets := rt.existingTargets
-			dts := rt.desiredTargets
-			msgs := genmsgs(ets, dts)
-			accMsgs = append(accMsgs, msgs...) // Accumulate the messages
-		}
-	}
-	return accMsgs
-}
+// NB(tlim): there is no analyzeByZone.  ByZone calls anayzeByRecords.
 
 func add(l string, t string, msgs []string, recs models.Records) Change {
 	c := Change{Type: CREATE, Msgs: msgs}
