@@ -591,6 +591,11 @@ function IGNORE_NAME(name, rTypes) {
     }
     return function(d) {
         d.ignored_names.push({pattern: name, types: rTypes});
+        d.unmanaged.push({
+          label_pattern: name,
+          rType_pattern: rTypes,
+          target_pattern: "*",
+        });
     };
 }
 
@@ -607,9 +612,40 @@ var IGNORE_NAME_DISABLE_SAFETY_CHECK = {
 function IGNORE_TARGET(target, rType) {
     return function(d) {
         d.ignored_targets.push({pattern: target, type: rType});
+        d.unmanaged.push({
+          label_pattern: "*",
+          rType_pattern: rType,
+          target_pattern: target,
+        });
     };
 }
 
+function UNMANAGED(label_pattern, rType_pattern, target_pattern) {
+    if (rType_pattern === undefined) {
+      rType_pattern = "*";
+    }
+    if (target_pattern === undefined) {
+      target_pattern = "*";
+    }
+    return function(d) {
+        d.unmanaged.push({
+          label_pattern: label_pattern,
+          rType_pattern: rType_pattern,
+          target_pattern: target_pattern,
+        });
+    };
+}
+
+var DISABLE_UNMANAGED_SAFETY_CHECK = {
+  // This disables a safety check intended to prevent DNSControl and
+  // another system getting into a battle as they both try to update
+  // the same record over and over, back and forth.  However, people
+  // kept asking for it so... caveat emptor!
+  // It only affects the current domain.
+  return function(d) {
+    d.unmanaged_disable_safety_check: "true"
+  };
+};
 
 // IMPORT_TRANSFORM(translation_table, domain)
 var IMPORT_TRANSFORM = recordBuilder('IMPORT_TRANSFORM', {
