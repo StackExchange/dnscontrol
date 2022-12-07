@@ -54,7 +54,7 @@ func ByRecordSet(existing, desired models.Records,
 	cc := NewCompareConfig(origin, existing, desired, compFunc)
 	instructions := analyzeByRecordSet(cc)
 
-	return processPurge(instructions, true)
+	return processPurge(instructions, true), nil
 }
 
 //// ByRecord takes two lists of records (existing and desired) and
