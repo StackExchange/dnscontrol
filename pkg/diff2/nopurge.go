@@ -17,6 +17,6 @@ func processPurge(instructions ChangeList, nopurge bool) ChangeList {
 		newinstructions = append(newinstructions, j)
 	}
 
-	return instructions
+	return newinstructions
 
 }

@@ -42,22 +42,15 @@ type Change struct {
 // www.example.com, A, and a list of all the desired IP addresses.
 //
 // Examples include:
-func ByRecordSet(
-	existing, desired models.Records,
-	origin string,
-	compFunc ComparableFunc,
-) (ChangeList, error) {
-
-	desired = handsoff(existing, desired)
-	// There will need to be error checking eventually.
-	// if err != nil {
-	// 	return nil, err
-	// }
-
-	cc := NewCompareConfig(origin, existing, desired, compFunc)
+func ByRecordSet(existing models.Records, dc models.DomainConfig, compFunc ComparableFunc) (ChangeList, error) {
+	// dc stores the desired state.
+	existing, err := handsoff(existing, dc.Records, dc.Unmanaged) // Handle UNMANAGED()
+	if err != nil {
+		return nil, err
+	}
+	cc := NewCompareConfig(dc.Name, existing, dc.Records, compFunc)
 	instructions := analyzeByRecordSet(cc)
-
-	return processPurge(instructions, true), nil
+	return processPurge(instructions, dc.KeepUnknown), nil
 }
 
 // ByLabel takes two lists of records (existing and desired) and
@@ -68,16 +61,15 @@ func ByRecordSet(
 // to be served at a particular label, or the label itself is deleted.
 //
 // Examples include:
-func ByLabel(
-	existing, desired models.Records,
-	origin string,
-	compFunc ComparableFunc,
-) (ChangeList, error) {
-
-	desired = handsoff(existing, desired)
-	instructions := analyzeByLabel(NewCompareConfig(origin, existing, desired, compFunc))
-
-	return processPurge(instructions, true)
+func ByLabel(existing models.Records, dc models.DomainConfig, compFunc ComparableFunc) (ChangeList, error) {
+	// dc stores the desired state.
+	existing, err := handsoff(existing, dc.Records, dc.Unmanaged) // Handle UNMANAGED()
+	if err != nil {
+		return nil, err
+	}
+	cc := NewCompareConfig(dc.Name, existing, dc.Records, compFunc)
+	instructions := analyzeByLabel(cc)
+	return processPurge(instructions, dc.KeepUnknown), nil
 }
 
 // ByRecord takes two lists of records (existing and desired) and
@@ -86,16 +78,15 @@ func ByLabel(
 // Use this with DNS providers whose API updates one record at a time.
 //
 // Examples include: INWX
-func ByRecord(
-	existing, desired models.Records,
-	origin string,
-	compFunc ComparableFunc,
-) (ChangeList, error) {
-
-	desired = handsoff(existing, desired)
-	instructions := analyzeByRecord(NewCompareConfig(origin, existing, desired, compFunc))
-
-	return processPurge(instructions, true)
+func ByRecord(existing models.Records, dc models.DomainConfig, compFunc ComparableFunc) (ChangeList, error) {
+	// dc stores the desired state.
+	existing, err := handsoff(existing, dc.Records, dc.Unmanaged) // Handle UNMANAGED()
+	if err != nil {
+		return nil, err
+	}
+	cc := NewCompareConfig(dc.Name, existing, dc.Records, compFunc)
+	instructions := analyzeByRecord(cc)
+	return processPurge(instructions, dc.KeepUnknown), nil
 }
 
 // ByZone takes two lists of records (existing and desired) and
@@ -118,25 +109,24 @@ func ByRecord(
 //	}
 //
 // Example providers include: BIND
-func ByZone(
-	existing, desired models.Records,
-	origin string,
-	compFunc ComparableFunc,
+func ByZone(existing models.Records, dc models.DomainConfig, compFunc ComparableFunc,
 	first string,
 ) ([]string, error) {
+	// dc stores the desired state.
 
 	if len(existing) == 0 {
 		// Nothing previously existed. No need to output a list of individual changes.
+		// Just output the "first" string.
 		return []string{first}, nil
 	}
 
-	desired = handsoff(existing, desired)
-	instructions := analyzeByRecord(NewCompareConfig(origin, existing, desired, compFunc))
-
-	instructions, err := processPurge(instructions, true)
+	existing, err := handsoff(existing, dc.Records, dc.Unmanaged) // Handle UNMANAGED()
 	if err != nil {
 		return nil, err
 	}
+	cc := NewCompareConfig(dc.Name, existing, dc.Records, compFunc)
+	instructions := analyzeByRecord(cc)
+	instructions = processPurge(instructions, dc.KeepUnknown)
 	return justMsgs(instructions), nil
 }
 
