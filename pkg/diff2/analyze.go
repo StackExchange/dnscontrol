@@ -40,7 +40,7 @@ func analyzeByRecordSet(cc *CompareConfig) ChangeList {
 
 func analyzeByLabel(cc *CompareConfig) ChangeList {
 	var instructions ChangeList
-	fmt.Printf("DEBUG: START: analyzeByLabel\n")
+	//fmt.Printf("DEBUG: START: analyzeByLabel\n")
 	// Accumulate if there are any changes and collect the info needed to generate instructions.
 	for i, lc := range cc.ldata {
 		//fmt.Printf("DEBUG: START LABEL = %q\n", lc.label)
@@ -48,11 +48,13 @@ func analyzeByLabel(cc *CompareConfig) ChangeList {
 		var accMsgs []string
 		var accExisting models.Records
 		var accDesired models.Records
+		msgsByKey := map[models.RecordKey][]string{}
 		for _, rt := range lc.tdata {
 			//fmt.Printf("DEBUG: START RTYPE = %q\n", rt.rType)
 			ets := rt.existingTargets
 			dts := rt.desiredTargets
 			msgs := genmsgs(ets, dts)
+			msgsByKey[models.RecordKey{NameFQDN: label, Type: rt.rType}] = msgs
 			//fmt.Printf("DEBUG:    appending msgs=%v\n", msgs)
 			accMsgs = append(accMsgs, msgs...)                    // Accumulate the messages
 			accExisting = append(accExisting, rt.existingRecs...) // Accumulate records existing at this label.
@@ -65,20 +67,21 @@ func analyzeByLabel(cc *CompareConfig) ChangeList {
 		// Based on that info, we can generate the instructions.
 
 		if len(accMsgs) == 0 { // Nothing changed.
-			fmt.Printf("DEBUG: analyzeByLabel: %02d: no change\n", i)
+			//fmt.Printf("DEBUG: analyzeByLabel: %02d: no change\n", i)
 		} else if len(accDesired) == 0 { // No new records at the label? This must be a delete.
-			fmt.Printf("DEBUG: analyzeByLabel: %02d: delete\n", i)
+			//fmt.Printf("DEBUG: analyzeByLabel: %02d: delete\n", i)
 			instructions = append(instructions, deleteM(label, "", accMsgs))
 		} else if len(accExisting) == 0 { // No old records at the label? This must be a change.
-			fmt.Printf("DEBUG: analyzeByLabel: %02d: create\n", i)
+			//fmt.Printf("DEBUG: analyzeByLabel: %02d: create\n", i)
 			instructions = append(instructions, addL(label, "", accMsgs, accDesired))
 		} else { // If we get here, it must be a change.
-			fmt.Printf("DEBUG: analyzeByLabel: %02d: change %d{%v} %d{%v} msgs=%v\n", i,
-				len(accExisting), accExisting,
-				len(accDesired), accDesired,
-				accMsgs,
-			)
-			instructions = append(instructions, change(label, "", accMsgs, accExisting, accDesired))
+			_ = i
+			// fmt.Printf("DEBUG: analyzeByLabel: %02d: change %d{%v} %d{%v} msgs=%v\n", i,
+			// 	len(accExisting), accExisting,
+			// 	len(accDesired), accDesired,
+			// 	accMsgs,
+			// )
+			instructions = append(instructions, changeLabel(label, "", accMsgs, accExisting, accDesired, msgsByKey))
 		}
 	}
 	fmt.Println()
@@ -87,13 +90,17 @@ func analyzeByLabel(cc *CompareConfig) ChangeList {
 }
 
 func analyzeByRecord(cc *CompareConfig) ChangeList {
+	//fmt.Printf("DEBUG: analyzeByRecord: cc=%v\n", cc)
+
 	var instructions ChangeList
 	// For each label, for each type at that label, see if there are any changes.
 	for _, lc := range cc.ldata {
+		//fmt.Printf("DEBUG: analyzeByRecord: next lc=%v\n", lc)
 		for _, rt := range lc.tdata {
 			ets := rt.existingTargets
 			dts := rt.desiredTargets
 			cs := diffTargets(ets, dts)
+			//fmt.Printf("DEBUG: analyzeByRecord: cs=%v\n", cs)
 			instructions = append(instructions, cs...)
 		}
 	}
@@ -124,6 +131,16 @@ func change(l string, t string, msgs []string, oldRecs, newRecs models.Records) 
 	c.Key.Type = t
 	c.Old = oldRecs
 	c.New = newRecs
+	return c
+}
+
+func changeLabel(l string, t string, msgs []string, oldRecs, newRecs models.Records, msgsByKey map[models.RecordKey][]string) Change {
+	c := Change{Type: CHANGE, Msgs: msgs}
+	c.Key.NameFQDN = l
+	c.Key.Type = t
+	c.Old = oldRecs
+	c.New = newRecs
+	c.MsgsByKey = msgsByKey
 	return c
 }
 
@@ -180,6 +197,7 @@ func filterBy(s []targetConfig, m map[string]*targetConfig) []targetConfig {
 }
 
 func diffTargets(existing, desired []targetConfig) ChangeList {
+	//fmt.Printf("DEBUG: diffTargets called with len(e)=%d len(d)=%d\n", len(existing), len(desired))
 
 	// Nothing to do?
 	if len(existing) == 0 && len(desired) == 0 {

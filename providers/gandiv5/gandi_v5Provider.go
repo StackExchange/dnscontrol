@@ -23,6 +23,7 @@ import (
 
 	"github.com/StackExchange/dnscontrol/v3/models"
 	"github.com/StackExchange/dnscontrol/v3/pkg/diff"
+	"github.com/StackExchange/dnscontrol/v3/pkg/diff2"
 	"github.com/StackExchange/dnscontrol/v3/pkg/printer"
 	"github.com/StackExchange/dnscontrol/v3/pkg/txtutil"
 	"github.com/StackExchange/dnscontrol/v3/providers"
@@ -230,86 +231,35 @@ func (client *gandiv5Provider) GenerateDomainCorrections(dc *models.DomainConfig
 
 	txtutil.SplitSingleLongTxt(dc.Records) // Autosplit long TXT records
 
-	// diff existing vs. current.
-	differ := diff.New(dc)
-	keysToUpdate, err := differ.ChangedGroups(existing)
-	if err != nil {
-		return nil, err
-	}
-	if client.debug {
-		diff.DebugKeyMapMap("GenDC diff", keysToUpdate)
-	}
-	if len(keysToUpdate) == 0 {
-		return nil, nil
-	}
+	if diff2.EnableDiff2 {
 
-	// Regroup data by FQDN.  ChangedGroups returns data grouped by label:RType tuples.
-	affectedLabels, msgsForLabel := gatherAffectedLabels(keysToUpdate)
-	_, desiredRecords := dc.Records.GroupedByFQDN()
-	doesLabelExist := existing.FQDNMap()
+		g := gandi.NewLiveDNSClient(config.Config{
+			APIKey:    client.apikey,
+			SharingID: client.sharingid,
+			Debug:     client.debug,
+		})
 
-	g := gandi.NewLiveDNSClient(config.Config{
-		APIKey:    client.apikey,
-		SharingID: client.sharingid,
-		Debug:     client.debug,
-	})
+		// Gandi is a "ByLabel" API with the odd exception that changes must be
+		// done one label:rtype at a time.
+		instructions, err := diff2.ByLabel(existing, dc, nil)
+		if err != nil {
+			return nil, err
+		}
+		for _, inst := range instructions {
+			switch inst.Type {
 
-	// For any key with an update, delete or replace those records.
-	for label := range affectedLabels {
-		if len(desiredRecords[label]) == 0 {
-			// No records matching this key?  This can only mean that all
-			// the records were deleted. Delete them.
-
-			msgs := strings.Join(msgsForLabel[label], "\n")
-			domain := dc.Name
-			shortname := dnsutil.TrimDomainName(label, dc.Name)
-			corrections = append(corrections,
-				&models.Correction{
-					Msg: msgs,
-					F: func() error {
-						err := g.DeleteDomainRecordsByName(domain, shortname)
-						if err != nil {
-							return err
-						}
-						return nil
-					},
-				})
-
-		} else {
-			// Replace all the records at a label with our new records.
-
-			// Generate the new data in Gandi's format.
-			ns := recordsToNative(desiredRecords[label], dc.Name)
-
-			if doesLabelExist[label] {
-				// Records exist for this label. Replace them with what we have.
-
-				msg := strings.Join(msgsForLabel[label], "\n")
-				domain := dc.Name
-				shortname := dnsutil.TrimDomainName(label, dc.Name)
-				corrections = append(corrections,
-					&models.Correction{
-						Msg: msg,
-						F: func() error {
-							res, err := g.UpdateDomainRecordsByName(domain, shortname, ns)
-							if err != nil {
-								return fmt.Errorf("%+v: %w", res, err)
-							}
-							return nil
-						},
-					})
-
-			} else {
-				// First time putting data on this label. Create it.
-
+			case diff2.CREATE:
 				// We have to create the label one rtype at a time.
-				for _, n := range ns {
-					msg := strings.Join(msgsForLabel[label], "\n")
+				natives := recordsToNative(inst.New, dc.Name)
+				for _, n := range natives {
+					label := inst.Key.NameFQDN
+					rtype := n.RrsetType
 					domain := dc.Name
 					shortname := dnsutil.TrimDomainName(label, dc.Name)
-					rtype := n.RrsetType
 					ttl := n.RrsetTTL
 					values := n.RrsetValues
+					key := models.RecordKey{NameFQDN: label, Type: rtype}
+					msg := strings.Join(inst.MsgsByKey[key], "\n")
 					corrections = append(corrections,
 						&models.Correction{
 							Msg: msg,
@@ -322,17 +272,152 @@ func (client *gandiv5Provider) GenerateDomainCorrections(dc *models.DomainConfig
 							},
 						})
 				}
+
+			case diff2.CHANGE:
+				msgs := strings.Join(inst.Msgs, "\n")
+				domain := dc.Name
+				label := inst.Key.NameFQDN
+				shortname := dnsutil.TrimDomainName(label, dc.Name)
+				ns := recordsToNative(inst.New, dc.Name)
+				corrections = append(corrections,
+					&models.Correction{
+						Msg: msgs,
+						F: func() error {
+							res, err := g.UpdateDomainRecordsByName(domain, shortname, ns)
+							if err != nil {
+								return fmt.Errorf("%+v: %w", res, err)
+							}
+							return nil
+						},
+					})
+
+			case diff2.DELETE:
+				msgs := strings.Join(inst.Msgs, "\n")
+				domain := dc.Name
+				label := inst.Key.NameFQDN
+				shortname := dnsutil.TrimDomainName(label, dc.Name)
+				corrections = append(corrections,
+					&models.Correction{
+						Msg: msgs,
+						F: func() error {
+							err := g.DeleteDomainRecordsByName(domain, shortname)
+							if err != nil {
+								return err
+							}
+							return nil
+						},
+					})
+			}
+
+		}
+
+	} else {
+
+		// diff existing vs. current.
+		differ := diff.New(dc)
+		keysToUpdate, err := differ.ChangedGroups(existing)
+		if err != nil {
+			return nil, err
+		}
+		if client.debug {
+			diff.DebugKeyMapMap("GenDC diff", keysToUpdate)
+		}
+		if len(keysToUpdate) == 0 {
+			return nil, nil
+		}
+
+		// Regroup data by FQDN.  ChangedGroups returns data grouped by label:RType tuples.
+		affectedLabels, msgsForLabel := gatherAffectedLabels(keysToUpdate)
+		_, desiredRecords := dc.Records.GroupedByFQDN()
+		doesLabelExist := existing.FQDNMap()
+
+		g := gandi.NewLiveDNSClient(config.Config{
+			APIKey:    client.apikey,
+			SharingID: client.sharingid,
+			Debug:     client.debug,
+		})
+
+		// For any key with an update, delete or replace those records.
+		for label := range affectedLabels {
+			if len(desiredRecords[label]) == 0 {
+				// No records matching this key?  This can only mean that all
+				// the records were deleted. Delete them.
+
+				msgs := strings.Join(msgsForLabel[label], "\n")
+				domain := dc.Name
+				shortname := dnsutil.TrimDomainName(label, dc.Name)
+				corrections = append(corrections,
+					&models.Correction{
+						Msg: msgs,
+						F: func() error {
+							err := g.DeleteDomainRecordsByName(domain, shortname)
+							if err != nil {
+								return err
+							}
+							return nil
+						},
+					})
+
+			} else {
+				// Replace all the records at a label with our new records.
+
+				// Generate the new data in Gandi's format.
+				ns := recordsToNative(desiredRecords[label], dc.Name)
+
+				if doesLabelExist[label] {
+					// Records exist for this label. Replace them with what we have.
+
+					msg := strings.Join(msgsForLabel[label], "\n")
+					domain := dc.Name
+					shortname := dnsutil.TrimDomainName(label, dc.Name)
+					corrections = append(corrections,
+						&models.Correction{
+							Msg: msg,
+							F: func() error {
+								res, err := g.UpdateDomainRecordsByName(domain, shortname, ns)
+								if err != nil {
+									return fmt.Errorf("%+v: %w", res, err)
+								}
+								return nil
+							},
+						})
+
+				} else {
+					// First time putting data on this label. Create it.
+
+					// We have to create the label one rtype at a time.
+					ns := recordsToNative(desiredRecords[label], dc.Name)
+					for _, n := range ns {
+						msg := strings.Join(msgsForLabel[label], "\n")
+						domain := dc.Name
+						shortname := dnsutil.TrimDomainName(label, dc.Name)
+						rtype := n.RrsetType
+						ttl := n.RrsetTTL
+						values := n.RrsetValues
+						corrections = append(corrections,
+							&models.Correction{
+								Msg: msg,
+								F: func() error {
+									res, err := g.CreateDomainRecord(domain, shortname, rtype, ttl, values)
+									if err != nil {
+										return fmt.Errorf("%+v: %w", res, err)
+									}
+									return nil
+								},
+							})
+					}
+				}
 			}
 		}
-	}
 
-	// NB(tlim): This sort is just to make updates look pretty. It is
-	// cosmetic.  The risk here is that there may be some updates that
-	// require a specific order (for example a delete before an add).
-	// However the code doesn't seem to have such situation.  All tests
-	// pass.  That said, if this breaks anything, the easiest fix might
-	// be to just remove the sort.
-	sort.Slice(corrections, func(i, j int) bool { return diff.CorrectionLess(corrections, i, j) })
+		// NB(tlim): This sort is just to make updates look pretty. It is
+		// cosmetic.  The risk here is that there may be some updates that
+		// require a specific order (for example a delete before an add).
+		// However the code doesn't seem to have such situation.  All tests
+		// pass.  That said, if this breaks anything, the easiest fix might
+		// be to just remove the sort.
+		sort.Slice(corrections, func(i, j int) bool { return diff.CorrectionLess(corrections, i, j) })
+	}
 
 	return corrections, nil
 }

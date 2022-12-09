@@ -15,10 +15,10 @@ import (
 type Verb int
 
 const (
-	COMMENT Verb = iota // No change. Just a txt message to output.
-	CREATE              // Create a record/recordset/label where none existed before.
-	CHANGE              // Change existing record/recordset/label
-	DELETE              // Delete existing record/recordset/label
+	_      Verb = iota // Skip the first value of 0
+	CREATE             // Create a record/recordset/label where none existed before.
+	CHANGE             // Change existing record/recordset/label
+	DELETE             // Delete existing record/recordset/label
 )
 
 type ChangeList []Change
@@ -26,10 +26,11 @@ type ChangeList []Change
 type Change struct {
 	Type Verb // Add, Change, Delete
 
-	Key  models.RecordKey // .Key.Type is "" unless using ByRecordSet
-	Old  models.Records
-	New  models.Records // any changed or added records at Key.
-	Msgs []string       // Human-friendly explanation of what changed
+	Key       models.RecordKey // .Key.Type is "" unless using ByRecordSet
+	Old       models.Records
+	New       models.Records                // any changed or added records at Key.
+	Msgs      []string                      // Human-friendly explanation of what changed
+	MsgsByKey map[models.RecordKey][]string // Messages for a given key
 }
 
 // ByRecordSet takes two lists of records (existing and desired) and
@@ -42,15 +43,16 @@ type Change struct {
 // www.example.com, A, and a list of all the desired IP addresses.
 //
 // Examples include:
-func ByRecordSet(existing models.Records, dc models.DomainConfig, compFunc ComparableFunc) (ChangeList, error) {
+func ByRecordSet(existing models.Records, dc *models.DomainConfig, compFunc ComparableFunc) (ChangeList, error) {
 	// dc stores the desired state.
-	existing, err := handsoff(existing, dc.Records, dc.Unmanaged) // Handle UNMANAGED()
+	desired := dc.Records
+	desired, err := handsoff(existing, desired, dc.Unmanaged) // Handle UNMANAGED()
 	if err != nil {
 		return nil, err
 	}
-	cc := NewCompareConfig(dc.Name, existing, dc.Records, compFunc)
+	cc := NewCompareConfig(dc.Name, existing, desired, compFunc)
 	instructions := analyzeByRecordSet(cc)
-	return processPurge(instructions, dc.KeepUnknown), nil
+	return processPurge(instructions, !dc.KeepUnknown), nil
 }
 
 // ByLabel takes two lists of records (existing and desired) and
@@ -61,15 +63,16 @@ func ByRecordSet(existing models.Records, dc models.DomainConfig, compFunc Compa
 // to be served at a particular label, or the label itself is deleted.
 //
 // Examples include:
-func ByLabel(existing models.Records, dc models.DomainConfig, compFunc ComparableFunc) (ChangeList, error) {
+func ByLabel(existing models.Records, dc *models.DomainConfig, compFunc ComparableFunc) (ChangeList, error) {
 	// dc stores the desired state.
-	existing, err := handsoff(existing, dc.Records, dc.Unmanaged) // Handle UNMANAGED()
+	desired := dc.Records
+	desired, err := handsoff(existing, desired, dc.Unmanaged) // Handle UNMANAGED()
 	if err != nil {
 		return nil, err
 	}
-	cc := NewCompareConfig(dc.Name, existing, dc.Records, compFunc)
+	cc := NewCompareConfig(dc.Name, existing, desired, compFunc)
 	instructions := analyzeByLabel(cc)
-	return processPurge(instructions, dc.KeepUnknown), nil
+	return processPurge(instructions, !dc.KeepUnknown), nil
 }
 
 // ByRecord takes two lists of records (existing and desired) and
@@ -78,15 +81,16 @@ func ByLabel(existing models.Records, dc models.DomainConfig, compFunc Comparabl
 // Use this with DNS providers whose API updates one record at a time.
 //
 // Examples include: INWX
-func ByRecord(existing models.Records, dc models.DomainConfig, compFunc ComparableFunc) (ChangeList, error) {
+func ByRecord(existing models.Records, dc *models.DomainConfig, compFunc ComparableFunc) (ChangeList, error) {
 	// dc stores the desired state.
-	existing, err := handsoff(existing, dc.Records, dc.Unmanaged) // Handle UNMANAGED()
+	desired := dc.Records
+	desired, err := handsoff(existing, desired, dc.Unmanaged) // Handle UNMANAGED()
 	if err != nil {
 		return nil, err
 	}
-	cc := NewCompareConfig(dc.Name, existing, dc.Records, compFunc)
+	cc := NewCompareConfig(dc.Name, existing, desired, compFunc)
 	instructions := analyzeByRecord(cc)
-	return processPurge(instructions, dc.KeepUnknown), nil
+	return processPurge(instructions, !dc.KeepUnknown), nil
 }
 
 // ByZone takes two lists of records (existing and desired) and
@@ -109,26 +113,43 @@ func ByRecord(existing models.Records, dc models.DomainConfig, compFunc Comparab
 //	}
 //
 // Example providers include: BIND
-func ByZone(existing models.Records, dc models.DomainConfig, compFunc ComparableFunc,
-	first string,
-) ([]string, error) {
+func ByZone(existing models.Records, dc *models.DomainConfig, compFunc ComparableFunc) ([]string, bool, error) {
 	// dc stores the desired state.
+	//fmt.Printf("ByZone CALLED\n")
 
 	if len(existing) == 0 {
 		// Nothing previously existed. No need to output a list of individual changes.
-		// Just output the "first" string.
-		return []string{first}, nil
+		//fmt.Printf("ByZone CREATE\n")
+		return nil, true, nil
 	}
 
-	existing, err := handsoff(existing, dc.Records, dc.Unmanaged) // Handle UNMANAGED()
+	var err error
+	desired := dc.Records
+	desired, err = handsoff(existing, desired, dc.Unmanaged) // Handle UNMANAGED()
 	if err != nil {
-		return nil, err
+		fmt.Printf("ByZone handsoff error=%v\n", err)
+		return nil, false, err
 	}
-	cc := NewCompareConfig(dc.Name, existing, dc.Records, compFunc)
+	cc := NewCompareConfig(dc.Name, existing, desired, compFunc)
+	//fmt.Printf("ByZone cc=%s\n", cc.String())
 	instructions := analyzeByRecord(cc)
-	instructions = processPurge(instructions, dc.KeepUnknown)
-	return justMsgs(instructions), nil
+	//fmt.Printf("DEBUG: ByZone A len(inst)=%d\n", len(instructions))
+	instructions = processPurge(instructions, !dc.KeepUnknown)
+	//fmt.Printf("DEBUG: ByZone B len(inst)=%d\n", len(instructions))
+	return justMsgs(instructions), len(instructions) != 0, nil
 }
+
+/*
+nil, nil :
+nil, nonzero :   nil, true, nil
+nonzero, nil :   msgs, true, nil
+nonzero, nonzero :
+
+existing: changes       : return msgs, true, nil
+existing: no changes    : return nil, false, nil
+not existing: no changes: return nil, false, nil
+not existing: changes   : return nil, true, nil
+*/
 
 func (c Change) String() string {
 	var buf bytes.Buffer

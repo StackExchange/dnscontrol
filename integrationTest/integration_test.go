@@ -12,6 +12,7 @@ import (
 
 	"github.com/StackExchange/dnscontrol/v3/models"
 	"github.com/StackExchange/dnscontrol/v3/pkg/credsfile"
+	"github.com/StackExchange/dnscontrol/v3/pkg/diff2"
 	"github.com/StackExchange/dnscontrol/v3/pkg/nameservers"
 	"github.com/StackExchange/dnscontrol/v3/pkg/normalize"
 	"github.com/StackExchange/dnscontrol/v3/providers"
@@ -26,6 +27,10 @@ var endIdx = flag.Int("end", 0, "Test index to stop after")
 var verbose = flag.Bool("verbose", false, "Print corrections as you run them")
 var printElapsed = flag.Bool("elapsed", false, "Print elapsed time for each testgroup")
 var enableCFWorkers = flag.Bool("cfworkers", true, "Set false to disable CF worker tests")
+
+func init() {
+	flag.BoolVar(&diff2.EnableDiff2, "diff2", false, "enable diff2")
+}
 
 func init() {
 	testing.Init()
@@ -217,7 +222,7 @@ func makeChanges(t *testing.T, prv providers.DNSServiceProvider, dc *models.Doma
 		}
 		for _, c := range corrections {
 			if *verbose {
-				t.Log(c.Msg)
+				t.Log("\n" + strings.TrimSpace(c.Msg))
 			}
 			err = c.F()
 			if err != nil {

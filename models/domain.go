@@ -19,7 +19,7 @@ type DomainConfig struct {
 	Records     Records           `json:"records"`
 	Nameservers []*Nameserver     `json:"nameservers,omitempty"`
 
-	KeepUnknown    bool               `json:"keepunknown,omitempty"` // a.k.a. nopurge
+	KeepUnknown    bool               `json:"keepunknown,omitempty"`
 	IgnoredNames   []*IgnoreName      `json:"ignored_names,omitempty"`
 	IgnoredTargets []*IgnoreTarget    `json:"ignored_targets,omitempty"`
 	Unmanaged      []*UnmanagedConfig `json:"unmanaged,omitempty"`

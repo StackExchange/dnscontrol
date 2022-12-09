@@ -10,6 +10,7 @@ import (
 )
 
 var testDataAA1234 = makeRec("laba", "A", "1.2.3.4")   //      [0]
+var testDataAA5678 = makeRec("laba", "A", "5.6.7.8")   //      [0]
 var testDataAMX10a = makeRec("laba", "MX", "10 laba")  //     [1]
 var testDataCCa = makeRec("labc", "CNAME", "laba")     //     [2]
 var testDataEA15 = makeRec("labe", "A", "10.10.10.15") //  [3]
@@ -480,6 +481,27 @@ func Test_diffTargets(t *testing.T) {
 					Old:  models.Records{testDataAMX10a},
 					New:  models.Records{testDataAMX20b},
 					Msgs: []string{"CHANGE laba.f.com MX (10 laba) -> (20 labb)"},
+				},
+			},
+		},
+
+		{
+			name: "del2nd",
+			args: args{
+				existing: []targetConfig{
+					{compareable: "1.2.3.4", rec: testDataAA1234},
+					{compareable: "5.6.7.8", rec: testDataAA5678},
+				},
+				desired: []targetConfig{
+					{compareable: "1.2.3.4", rec: testDataAA1234},
+				},
+			},
+			want: ChangeList{
+				Change{Type: CHANGE,
+					Key:  models.RecordKey{NameFQDN: "laba.f.com", Type: "A"},
+					Old:  models.Records{testDataAA1234, testDataAA5678},
+					New:  models.Records{testDataAA1234},
+					Msgs: []string{"DELETE laba.f.com A 5.6.7.8"},
 				},
 			},
 		},
