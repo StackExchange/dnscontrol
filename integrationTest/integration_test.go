@@ -222,7 +222,7 @@ func makeChanges(t *testing.T, prv providers.DNSServiceProvider, dc *models.Doma
 		}
 		for _, c := range corrections {
 			if *verbose {
-				t.Log("\n" + strings.TrimSpace(c.Msg))
+				t.Log(c.Msg)
 			}
 			err = c.F()
 			if err != nil {

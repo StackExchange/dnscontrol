@@ -109,6 +109,7 @@ function newDomain(name, registrar) {
         nameservers: [],
         ignored_names: [],
         ignored_targets: [],
+        unmanaged: [],
     };
 }
 

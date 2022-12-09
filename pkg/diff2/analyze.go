@@ -84,7 +84,6 @@ func analyzeByLabel(cc *CompareConfig) ChangeList {
 			instructions = append(instructions, changeLabel(label, "", accMsgs, accExisting, accDesired, msgsByKey))
 		}
 	}
-	fmt.Println()
 
 	return instructions
 }
