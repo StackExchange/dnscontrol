@@ -1,6 +1,7 @@
 package diff2
 
 import (
+	"fmt"
 	"strings"
 
 	"github.com/gobwas/glob"
@@ -11,7 +12,9 @@ import (
 
 func handsoff(
 	existing, desired models.Records,
-	unmanaged []*models.UnmanagedConfig) (models.Records, error) {
+	unmanaged []*models.UnmanagedConfig,
+	beSafe bool,
+) (models.Records, error) {
 
 	// What foreign items should we ignore?
 	foreign, err := manyQueries(existing, unmanaged)
@@ -31,9 +34,16 @@ func handsoff(
 		return nil, err
 	}
 	if len(conflicts) != 0 {
-		printer.Printf("WARN: dnsconfig.js records that overlap MANAGED: (%d)\n", len(conflicts))
+		level := "WARN"
+		if beSafe {
+			level = "ERROR"
+		}
+		printer.Printf("%s: dnsconfig.js records that overlap MANAGED: (%d)\n", level, len(conflicts))
 		for i, r := range conflicts {
 			printer.Printf("- % 4d: %s %s %s\n", i, r.GetLabelFQDN(), r.Type, r.GetTargetRFC1035Quoted())
+		}
+		if beSafe {
+			return nil, fmt.Errorf("ERROR: Unsafe to continue. Add DISABLE_UNMANAGED_SAFETY_CHECK to D() to override")
 		}
 	}
 

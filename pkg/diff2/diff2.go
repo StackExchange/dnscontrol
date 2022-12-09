@@ -45,11 +45,14 @@ type Change struct {
 // Examples include:
 func ByRecordSet(existing models.Records, dc *models.DomainConfig, compFunc ComparableFunc) (ChangeList, error) {
 	// dc stores the desired state.
+
 	desired := dc.Records
-	desired, err := handsoff(existing, desired, dc.Unmanaged) // Handle UNMANAGED()
+	var err error
+	desired, err = handsoff(existing, desired, dc.Unmanaged, dc.UnmanagedUnsafe) // Handle UNMANAGED()
 	if err != nil {
 		return nil, err
 	}
+
 	cc := NewCompareConfig(dc.Name, existing, desired, compFunc)
 	instructions := analyzeByRecordSet(cc)
 	return processPurge(instructions, !dc.KeepUnknown), nil
@@ -65,11 +68,14 @@ func ByRecordSet(existing models.Records, dc *models.DomainConfig, compFunc Comp
 // Examples include:
 func ByLabel(existing models.Records, dc *models.DomainConfig, compFunc ComparableFunc) (ChangeList, error) {
 	// dc stores the desired state.
+
 	desired := dc.Records
-	desired, err := handsoff(existing, desired, dc.Unmanaged) // Handle UNMANAGED()
+	var err error
+	desired, err = handsoff(existing, desired, dc.Unmanaged, dc.UnmanagedUnsafe) // Handle UNMANAGED()
 	if err != nil {
 		return nil, err
 	}
+
 	cc := NewCompareConfig(dc.Name, existing, desired, compFunc)
 	instructions := analyzeByLabel(cc)
 	return processPurge(instructions, !dc.KeepUnknown), nil
@@ -83,11 +89,14 @@ func ByLabel(existing models.Records, dc *models.DomainConfig, compFunc Comparab
 // Examples include: INWX
 func ByRecord(existing models.Records, dc *models.DomainConfig, compFunc ComparableFunc) (ChangeList, error) {
 	// dc stores the desired state.
+
 	desired := dc.Records
-	desired, err := handsoff(existing, desired, dc.Unmanaged) // Handle UNMANAGED()
+	var err error
+	desired, err = handsoff(existing, desired, dc.Unmanaged, dc.UnmanagedUnsafe) // Handle UNMANAGED()
 	if err != nil {
 		return nil, err
 	}
+
 	cc := NewCompareConfig(dc.Name, existing, desired, compFunc)
 	instructions := analyzeByRecord(cc)
 	return processPurge(instructions, !dc.KeepUnknown), nil
@@ -115,27 +124,22 @@ func ByRecord(existing models.Records, dc *models.DomainConfig, compFunc Compara
 // Example providers include: BIND
 func ByZone(existing models.Records, dc *models.DomainConfig, compFunc ComparableFunc) ([]string, bool, error) {
 	// dc stores the desired state.
-	//fmt.Printf("ByZone CALLED\n")
 
 	if len(existing) == 0 {
 		// Nothing previously existed. No need to output a list of individual changes.
-		//fmt.Printf("ByZone CREATE\n")
 		return nil, true, nil
 	}
 
-	var err error
 	desired := dc.Records
-	desired, err = handsoff(existing, desired, dc.Unmanaged) // Handle UNMANAGED()
+	var err error
+	desired, err = handsoff(existing, desired, dc.Unmanaged, dc.UnmanagedUnsafe) // Handle UNMANAGED()
 	if err != nil {
-		fmt.Printf("ByZone handsoff error=%v\n", err)
 		return nil, false, err
 	}
+
 	cc := NewCompareConfig(dc.Name, existing, desired, compFunc)
-	//fmt.Printf("ByZone cc=%s\n", cc.String())
 	instructions := analyzeByRecord(cc)
-	//fmt.Printf("DEBUG: ByZone A len(inst)=%d\n", len(instructions))
 	instructions = processPurge(instructions, !dc.KeepUnknown)
-	//fmt.Printf("DEBUG: ByZone B len(inst)=%d\n", len(instructions))
 	return justMsgs(instructions), len(instructions) != 0, nil
 }
 
