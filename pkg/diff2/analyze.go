@@ -25,13 +25,13 @@ func analyzeByRecordSet(cc *CompareConfig) ChangeList {
 			}
 			if len(ets) == 0 { // Create a new label.
 				//fmt.Printf("DEBUG: add\n")
-				instructions = append(instructions, add(lc.label, rt.rType, msgs, rt.desiredRecs))
+				instructions = append(instructions, mkAdd(lc.label, rt.rType, msgs, rt.desiredRecs))
 			} else if len(dts) == 0 { // Delete that label and all its records.
 				//fmt.Printf("DEBUG: delete\n")
-				instructions = append(instructions, deleteM(lc.label, rt.rType, msgs))
+				instructions = append(instructions, mkDelete(lc.label, rt.rType, rt.existingRecs, msgs))
 			} else { // Change the records at that label
 				//fmt.Printf("DEBUG: change\n")
-				instructions = append(instructions, change(lc.label, rt.rType, msgs, rt.existingRecs, rt.desiredRecs))
+				instructions = append(instructions, mkChange(lc.label, rt.rType, msgs, rt.existingRecs, rt.desiredRecs))
 			}
 		}
 	}
@@ -70,10 +70,11 @@ func analyzeByLabel(cc *CompareConfig) ChangeList {
 			//fmt.Printf("DEBUG: analyzeByLabel: %02d: no change\n", i)
 		} else if len(accDesired) == 0 { // No new records at the label? This must be a delete.
 			//fmt.Printf("DEBUG: analyzeByLabel: %02d: delete\n", i)
-			instructions = append(instructions, deleteM(label, "", accMsgs))
+			instructions = append(instructions, mkDelete(label, "", accExisting, accMsgs))
 		} else if len(accExisting) == 0 { // No old records at the label? This must be a change.
 			//fmt.Printf("DEBUG: analyzeByLabel: %02d: create\n", i)
-			instructions = append(instructions, addL(label, "", accMsgs, accDesired))
+			fmt.Printf("DEBUG: analyzeByLabel mkAdd msgs=%d\n", len(accMsgs))
+			instructions = append(instructions, mkAddByLabel(label, "", accMsgs, accDesired))
 		} else { // If we get here, it must be a change.
 			_ = i
 			// fmt.Printf("DEBUG: analyzeByLabel: %02d: change %d{%v} %d{%v} msgs=%v\n", i,
@@ -81,7 +82,8 @@ func analyzeByLabel(cc *CompareConfig) ChangeList {
 			// 	len(accDesired), accDesired,
 			// 	accMsgs,
 			// )
-			instructions = append(instructions, changeLabel(label, "", accMsgs, accExisting, accDesired, msgsByKey))
+			fmt.Printf("DEBUG: analyzeByLabel mkchange msgs=%d\n", len(accMsgs))
+			instructions = append(instructions, mkChangeLabel(label, "", accMsgs, accExisting, accDesired, msgsByKey))
 		}
 	}
 
@@ -108,7 +110,7 @@ func analyzeByRecord(cc *CompareConfig) ChangeList {
 
 // NB(tlim): there is no analyzeByZone.  ByZone calls anayzeByRecords().
 
-func add(l string, t string, msgs []string, recs models.Records) Change {
+func mkAdd(l string, t string, msgs []string, recs models.Records) Change {
 	c := Change{Type: CREATE, Msgs: msgs}
 	c.Key.NameFQDN = l
 	c.Key.Type = t
@@ -116,15 +118,19 @@ func add(l string, t string, msgs []string, recs models.Records) Change {
 	return c
 }
 
-func addL(l string, t string, msgs []string, recs models.Records) Change {
+// TODO(tlim): Clean these up. Some of them are exact duplicates!
+
+func mkAddByLabel(l string, t string, msgs []string, newRecs models.Records) Change {
+	fmt.Printf("DEBUG: mkAddByLabel: len(o)=%d len(m)=%d\n", len(newRecs), len(msgs))
+	fmt.Printf("DEBUG: mkAddByLabel: msgs = %v\n", msgs)
 	c := Change{Type: CREATE, Msgs: msgs}
 	c.Key.NameFQDN = l
 	c.Key.Type = t
-	c.New = recs
+	c.New = newRecs
 	return c
 }
 
-func change(l string, t string, msgs []string, oldRecs, newRecs models.Records) Change {
+func mkChange(l string, t string, msgs []string, oldRecs, newRecs models.Records) Change {
 	c := Change{Type: CHANGE, Msgs: msgs}
 	c.Key.NameFQDN = l
 	c.Key.Type = t
@@ -133,7 +139,8 @@ func change(l string, t string, msgs []string, oldRecs, newRecs models.Records) 
 	return c
 }
 
-func changeLabel(l string, t string, msgs []string, oldRecs, newRecs models.Records, msgsByKey map[models.RecordKey][]string) Change {
+func mkChangeLabel(l string, t string, msgs []string, oldRecs, newRecs models.Records, msgsByKey map[models.RecordKey][]string) Change {
+	//fmt.Printf("DEBUG: mkChangeLabel: len(o)=%d\n", len(oldRecs))
 	c := Change{Type: CHANGE, Msgs: msgs}
 	c.Key.NameFQDN = l
 	c.Key.Type = t
@@ -143,13 +150,14 @@ func changeLabel(l string, t string, msgs []string, oldRecs, newRecs models.Reco
 	return c
 }
 
-func deleteM(l string, t string, msgs []string) Change {
+func mkDelete(l string, t string, oldRecs models.Records, msgs []string) Change {
 	c := Change{Type: DELETE, Msgs: msgs}
 	c.Key.NameFQDN = l
 	c.Key.Type = t
+	c.Old = oldRecs
 	return c
 }
-func deleteRec(l string, t string, msgs []string, rec *models.RecordConfig) Change {
+func mkDeleteRec(l string, t string, msgs []string, rec *models.RecordConfig) Change {
 	c := Change{Type: DELETE, Msgs: msgs}
 	c.Key.NameFQDN = l
 	c.Key.Type = t
@@ -221,7 +229,7 @@ func diffTargets(existing, desired []targetConfig) ChangeList {
 		er := existing[i].rec
 		dr := desired[i].rec
 		m := fmt.Sprintf("CHANGE %s %s (%s) -> (%s)", dr.NameFQDN, dr.Type, er.GetTargetCombined(), dr.GetTargetCombined())
-		instructions = append(instructions, change(dr.NameFQDN, dr.Type, []string{m},
+		instructions = append(instructions, mkChange(dr.NameFQDN, dr.Type, []string{m},
 			//models.Records{existing[i].rec},
 			//models.Records{desired[i].rec},
 			models.Records{er},
@@ -234,7 +242,7 @@ func diffTargets(existing, desired []targetConfig) ChangeList {
 		//fmt.Println(i, "DEL")
 		er := existing[i].rec
 		m := fmt.Sprintf("DELETE %s %s %s", er.NameFQDN, er.Type, er.GetTargetCombined())
-		instructions = append(instructions, deleteRec(er.NameFQDN, er.Type, []string{m}, er))
+		instructions = append(instructions, mkDeleteRec(er.NameFQDN, er.Type, []string{m}, er))
 	}
 
 	// any left-over desired are creates
@@ -242,7 +250,7 @@ func diffTargets(existing, desired []targetConfig) ChangeList {
 		//fmt.Println(i, "CREATE")
 		dr := desired[i].rec
 		m := fmt.Sprintf("CREATE %s %s %s", dr.NameFQDN, dr.Type, dr.GetTargetCombined())
-		instructions = append(instructions, add(dr.NameFQDN, dr.Type, []string{m}, models.Records{dr}))
+		instructions = append(instructions, mkAdd(dr.NameFQDN, dr.Type, []string{m}, models.Records{dr}))
 	}
 
 	return instructions
