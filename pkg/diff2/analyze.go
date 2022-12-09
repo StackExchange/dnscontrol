@@ -10,11 +10,11 @@ import (
 
 func analyzeByRecordSet(cc *CompareConfig) ChangeList {
 	var instructions ChangeList
-	// For each label, for each type at that label, if there are changes generate an instruction.
+	// For each label...
 	for _, lc := range cc.ldata {
-		//fmt.Printf("DEBUG: START LABEL = %q\n", lc.label)
+		// for each type at that label...
 		for _, rt := range lc.tdata {
-			//fmt.Printf("DEBUG: START RTYPE = %q\n", rt.rType)
+			// ...if there are changes generate an instruction.
 			ets := rt.existingTargets
 			dts := rt.desiredTargets
 			msgs := genmsgs(ets, dts)
@@ -43,17 +43,17 @@ func analyzeByLabel(cc *CompareConfig) ChangeList {
 	fmt.Printf("DEBUG: START: analyzeByLabel\n")
 	// Accumulate if there are any changes and collect the info needed to generate instructions.
 	for i, lc := range cc.ldata {
-		fmt.Printf("DEBUG: START LABEL = %q\n", lc.label)
+		//fmt.Printf("DEBUG: START LABEL = %q\n", lc.label)
 		label := lc.label
 		var accMsgs []string
 		var accExisting models.Records
 		var accDesired models.Records
 		for _, rt := range lc.tdata {
-			fmt.Printf("DEBUG: START RTYPE = %q\n", rt.rType)
+			//fmt.Printf("DEBUG: START RTYPE = %q\n", rt.rType)
 			ets := rt.existingTargets
 			dts := rt.desiredTargets
 			msgs := genmsgs(ets, dts)
-			fmt.Printf("DEBUG:    appending msgs=%v\n", msgs)
+			//fmt.Printf("DEBUG:    appending msgs=%v\n", msgs)
 			accMsgs = append(accMsgs, msgs...)                    // Accumulate the messages
 			accExisting = append(accExisting, rt.existingRecs...) // Accumulate records existing at this label.
 			accDesired = append(accDesired, rt.desiredRecs...)    // Accumulate records desired at this label.
@@ -100,7 +100,7 @@ func analyzeByRecord(cc *CompareConfig) ChangeList {
 	return instructions
 }
 
-// NB(tlim): there is no analyzeByZone.  ByZone calls anayzeByRecords.
+// NB(tlim): there is no analyzeByZone.  ByZone calls anayzeByRecords().
 
 func add(l string, t string, msgs []string, recs models.Records) Change {
 	c := Change{Type: CREATE, Msgs: msgs}
@@ -141,24 +141,6 @@ func deleteRec(l string, t string, msgs []string, rec *models.RecordConfig) Chan
 	return c
 }
 
-func filterBy(s []targetConfig, m map[string]*targetConfig) []targetConfig {
-	i := 0 // output index
-	for _, x := range s {
-		if _, ok := m[x.compareable]; !ok {
-			// copy and increment index
-			s[i] = x
-			i++
-		}
-	}
-	// // Prevent memory leak by erasing truncated values
-	// // (not needed if values don't contain pointers, directly or indirectly)
-	// for j := i; j < len(s); j++ {
-	// 	s[j] = nil
-	// }
-	s = s[:i]
-	return s
-}
-
 func removeCommon(existing, desired []targetConfig) ([]targetConfig, []targetConfig) {
 
 	// NB(tlim): We could probably make this faster. Some ideas:
@@ -177,6 +159,24 @@ func removeCommon(existing, desired []targetConfig) ([]targetConfig, []targetCon
 	}
 
 	return filterBy(existing, dKeys), filterBy(desired, eKeys)
+}
+
+func filterBy(s []targetConfig, m map[string]*targetConfig) []targetConfig {
+	i := 0 // output index
+	for _, x := range s {
+		if _, ok := m[x.compareable]; !ok {
+			// copy and increment index
+			s[i] = x
+			i++
+		}
+	}
+	// // Prevent memory leak by erasing truncated values
+	// // (not needed if values don't contain pointers, directly or indirectly)
+	// for j := i; j < len(s); j++ {
+	// 	s[j] = nil
+	// }
+	s = s[:i]
+	return s
 }
 
 func diffTargets(existing, desired []targetConfig) ChangeList {

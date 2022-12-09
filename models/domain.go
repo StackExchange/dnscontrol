@@ -18,12 +18,13 @@ type DomainConfig struct {
 	Metadata    map[string]string `json:"meta,omitempty"`
 	Records     Records           `json:"records"`
 	Nameservers []*Nameserver     `json:"nameservers,omitempty"`
-	KeepUnknown bool              `json:"keepunknown,omitempty"` // a.k.a. nopurge
 
+	KeepUnknown    bool               `json:"keepunknown,omitempty"` // a.k.a. nopurge
 	IgnoredNames   []*IgnoreName      `json:"ignored_names,omitempty"`
 	IgnoredTargets []*IgnoreTarget    `json:"ignored_targets,omitempty"`
 	Unmanaged      []*UnmanagedConfig `json:"unmanaged,omitempty"`
-	AutoDNSSEC     string             `json:"auto_dnssec,omitempty"` // "", "on", "off"
+
+	AutoDNSSEC string `json:"auto_dnssec,omitempty"` // "", "on", "off"
 	//DNSSEC        bool              `json:"dnssec,omitempty"`
 
 	// These fields contain instantiated provider instances once everything is linked up.
