@@ -8,6 +8,7 @@ import (
 
 	"github.com/StackExchange/dnscontrol/v3/models"
 	"github.com/StackExchange/dnscontrol/v3/pkg/diff"
+	"github.com/StackExchange/dnscontrol/v3/pkg/diff2"
 	"github.com/namedotcom/go/namecom"
 )
 
@@ -53,36 +54,44 @@ func (n *namedotcomProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*m
 	// Normalize
 	models.PostProcessRecords(actual)
 
-	differ := diff.New(dc)
-	_, create, del, mod, err := differ.IncrementalDiff(actual)
-	if err != nil {
-		return nil, err
+	var corrections []*models.Correction
+	if !diff2.EnableDiff2 || true { // Remove "|| true" when diff2 version arrives
+
+		differ := diff.New(dc)
+		_, create, del, mod, err := differ.IncrementalDiff(actual)
+		if err != nil {
+			return nil, err
+		}
+
+		corrections := []*models.Correction{}
+
+		for _, d := range del {
+			rec := d.Existing.Original.(*namecom.Record)
+			c := &models.Correction{Msg: d.String(), F: func() error { return n.deleteRecord(rec.ID, dc.Name) }}
+			corrections = append(corrections, c)
+		}
+		for _, cre := range create {
+			rec := cre.Desired
+			c := &models.Correction{Msg: cre.String(), F: func() error { return n.createRecord(rec, dc.Name) }}
+			corrections = append(corrections, c)
+		}
+		for _, chng := range mod {
+			old := chng.Existing.Original.(*namecom.Record)
+			new := chng.Desired
+			c := &models.Correction{Msg: chng.String(), F: func() error {
+				err := n.deleteRecord(old.ID, dc.Name)
+				if err != nil {
+					return err
+				}
+				return n.createRecord(new, dc.Name)
+			}}
+			corrections = append(corrections, c)
+		}
+		return corrections, nil
 	}
 
-	corrections := []*models.Correction{}
+	// Insert Future diff2 version here.
 
-	for _, d := range del {
-		rec := d.Existing.Original.(*namecom.Record)
-		c := &models.Correction{Msg: d.String(), F: func() error { return n.deleteRecord(rec.ID, dc.Name) }}
-		corrections = append(corrections, c)
-	}
-	for _, cre := range create {
-		rec := cre.Desired
-		c := &models.Correction{Msg: cre.String(), F: func() error { return n.createRecord(rec, dc.Name) }}
-		corrections = append(corrections, c)
-	}
-	for _, chng := range mod {
-		old := chng.Existing.Original.(*namecom.Record)
-		new := chng.Desired
-		c := &models.Correction{Msg: chng.String(), F: func() error {
-			err := n.deleteRecord(old.ID, dc.Name)
-			if err != nil {
-				return err
-			}
-			return n.createRecord(new, dc.Name)
-		}}
-		corrections = append(corrections, c)
-	}
 	return corrections, nil
 }
 

@@ -11,6 +11,7 @@ import (
 
 	"github.com/StackExchange/dnscontrol/v3/models"
 	"github.com/StackExchange/dnscontrol/v3/pkg/diff"
+	"github.com/StackExchange/dnscontrol/v3/pkg/diff2"
 	"github.com/StackExchange/dnscontrol/v3/providers"
 	"github.com/miekg/dns/dnsutil"
 	"golang.org/x/oauth2"
@@ -155,71 +156,79 @@ func (api *linodeProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*mod
 		record.TTL = fixTTL(record.TTL)
 	}
 
-	differ := diff.New(dc)
-	_, create, del, modify, err := differ.IncrementalDiff(existingRecords)
-	if err != nil {
-		return nil, err
-	}
-
 	var corrections []*models.Correction
+	if !diff2.EnableDiff2 || true { // Remove "|| true" when diff2 version arrives
 
-	// Deletes first so changing type works etc.
-	for _, m := range del {
-		id := m.Existing.Original.(*domainRecord).ID
-		if id == 0 { // Skip ID 0, these are the default nameservers always present
-			continue
+		differ := diff.New(dc)
+		_, create, del, modify, err := differ.IncrementalDiff(existingRecords)
+		if err != nil {
+			return nil, err
 		}
-		corr := &models.Correction{
-			Msg: fmt.Sprintf("%s, Linode ID: %d", m.String(), id),
-			F: func() error {
-				return api.deleteRecord(domainID, id)
-			},
+
+		var corrections []*models.Correction
+
+		// Deletes first so changing type works etc.
+		for _, m := range del {
+			id := m.Existing.Original.(*domainRecord).ID
+			if id == 0 { // Skip ID 0, these are the default nameservers always present
+				continue
+			}
+			corr := &models.Correction{
+				Msg: fmt.Sprintf("%s, Linode ID: %d", m.String(), id),
+				F: func() error {
+					return api.deleteRecord(domainID, id)
+				},
+			}
+			corrections = append(corrections, corr)
 		}
-		corrections = append(corrections, corr)
+		for _, m := range create {
+			req, err := toReq(dc, m.Desired)
+			if err != nil {
+				return nil, err
+			}
+			j, err := json.Marshal(req)
+			if err != nil {
+				return nil, err
+			}
+			corr := &models.Correction{
+				Msg: fmt.Sprintf("%s: %s", m.String(), string(j)),
+				F: func() error {
+					record, err := api.createRecord(domainID, req)
+					if err != nil {
+						return err
+					}
+					// TTL isn't saved when creating a record, so we will need to modify it immediately afterwards
+					return api.modifyRecord(domainID, record.ID, req)
+				},
+			}
+			corrections = append(corrections, corr)
+		}
+		for _, m := range modify {
+			id := m.Existing.Original.(*domainRecord).ID
+			if id == 0 { // Skip ID 0, these are the default nameservers always present
+				continue
+			}
+			req, err := toReq(dc, m.Desired)
+			if err != nil {
+				return nil, err
+			}
+			j, err := json.Marshal(req)
+			if err != nil {
+				return nil, err
+			}
+			corr := &models.Correction{
+				Msg: fmt.Sprintf("%s, Linode ID: %d: %s", m.String(), id, string(j)),
+				F: func() error {
+					return api.modifyRecord(domainID, id, req)
+				},
+			}
+			corrections = append(corrections, corr)
+		}
+
+		return corrections, nil
 	}
-	for _, m := range create {
-		req, err := toReq(dc, m.Desired)
-		if err != nil {
-			return nil, err
-		}
-		j, err := json.Marshal(req)
-		if err != nil {
-			return nil, err
-		}
-		corr := &models.Correction{
-			Msg: fmt.Sprintf("%s: %s", m.String(), string(j)),
-			F: func() error {
-				record, err := api.createRecord(domainID, req)
-				if err != nil {
-					return err
-				}
-				// TTL isn't saved when creating a record, so we will need to modify it immediately afterwards
-				return api.modifyRecord(domainID, record.ID, req)
-			},
-		}
-		corrections = append(corrections, corr)
-	}
-	for _, m := range modify {
-		id := m.Existing.Original.(*domainRecord).ID
-		if id == 0 { // Skip ID 0, these are the default nameservers always present
-			continue
-		}
-		req, err := toReq(dc, m.Desired)
-		if err != nil {
-			return nil, err
-		}
-		j, err := json.Marshal(req)
-		if err != nil {
-			return nil, err
-		}
-		corr := &models.Correction{
-			Msg: fmt.Sprintf("%s, Linode ID: %d: %s", m.String(), id, string(j)),
-			F: func() error {
-				return api.modifyRecord(domainID, id, req)
-			},
-		}
-		corrections = append(corrections, corr)
-	}
+
+	// Insert Future diff2 version here.
 
 	return corrections, nil
 }

@@ -3,6 +3,7 @@ package msdns
 import (
 	"github.com/StackExchange/dnscontrol/v3/models"
 	"github.com/StackExchange/dnscontrol/v3/pkg/diff"
+	"github.com/StackExchange/dnscontrol/v3/pkg/diff2"
 	"github.com/StackExchange/dnscontrol/v3/pkg/txtutil"
 )
 
@@ -13,25 +14,33 @@ func (client *msdnsProvider) GenerateDomainCorrections(dc *models.DomainConfig, 
 	models.PostProcessRecords(foundRecords)
 	txtutil.SplitSingleLongTxt(dc.Records) // Autosplit long TXT records
 
-	differ := diff.New(dc)
-	_, creates, dels, modifications, err := differ.IncrementalDiff(foundRecords)
-	if err != nil {
-		return nil, err
+	var corrections []*models.Correction
+	if !diff2.EnableDiff2 || true { // Remove "|| true" when diff2 version arrives
+
+		differ := diff.New(dc)
+		_, creates, dels, modifications, err := differ.IncrementalDiff(foundRecords)
+		if err != nil {
+			return nil, err
+		}
+
+		// Generate changes.
+		corrections := []*models.Correction{}
+		for _, del := range dels {
+			corrections = append(corrections, client.deleteRec(client.dnsserver, dc.Name, del))
+		}
+		for _, cre := range creates {
+			corrections = append(corrections, client.createRec(client.dnsserver, dc.Name, cre)...)
+		}
+		for _, m := range modifications {
+			corrections = append(corrections, client.modifyRec(client.dnsserver, dc.Name, m))
+		}
+		return corrections, nil
+
 	}
 
-	// Generate changes.
-	corrections := []*models.Correction{}
-	for _, del := range dels {
-		corrections = append(corrections, client.deleteRec(client.dnsserver, dc.Name, del))
-	}
-	for _, cre := range creates {
-		corrections = append(corrections, client.createRec(client.dnsserver, dc.Name, cre)...)
-	}
-	for _, m := range modifications {
-		corrections = append(corrections, client.modifyRec(client.dnsserver, dc.Name, m))
-	}
+	// Insert Future diff2 version here.
+
 	return corrections, nil
-
 }
 
 func (client *msdnsProvider) deleteRec(dnsserver, domainname string, cor diff.Correlation) *models.Correction {

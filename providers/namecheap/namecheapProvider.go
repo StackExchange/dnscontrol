@@ -9,6 +9,7 @@ import (
 
 	"github.com/StackExchange/dnscontrol/v3/models"
 	"github.com/StackExchange/dnscontrol/v3/pkg/diff"
+	"github.com/StackExchange/dnscontrol/v3/pkg/diff2"
 	"github.com/StackExchange/dnscontrol/v3/pkg/printer"
 	"github.com/StackExchange/dnscontrol/v3/providers"
 	nc "github.com/billputer/go-namecheap"
@@ -190,40 +191,48 @@ func (n *namecheapProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*mo
 	// Normalize
 	models.PostProcessRecords(actual)
 
-	differ := diff.New(dc)
-	_, create, delete, modify, err := differ.IncrementalDiff(actual)
-	if err != nil {
-		return nil, err
+	var corrections []*models.Correction
+	if !diff2.EnableDiff2 || true { // Remove "|| true" when diff2 version arrives
+
+		differ := diff.New(dc)
+		_, create, delete, modify, err := differ.IncrementalDiff(actual)
+		if err != nil {
+			return nil, err
+		}
+
+		// // because namecheap doesn't have selective create, delete, modify,
+		// // we bundle them all up to send at once.  We *do* want to see the
+		// // changes though
+
+		var desc []string
+		for _, i := range create {
+			desc = append(desc, "\n"+i.String())
+		}
+		for _, i := range delete {
+			desc = append(desc, "\n"+i.String())
+		}
+		for _, i := range modify {
+			desc = append(desc, "\n"+i.String())
+		}
+
+		msg := fmt.Sprintf("GENERATE_ZONE: %s (%d records)%s", dc.Name, len(dc.Records), desc)
+		corrections := []*models.Correction{}
+
+		// only create corrections if there are changes
+		if len(desc) > 0 {
+			corrections = append(corrections,
+				&models.Correction{
+					Msg: msg,
+					F: func() error {
+						return n.generateRecords(dc)
+					},
+				})
+		}
+
+		return corrections, nil
 	}
 
-	// // because namecheap doesn't have selective create, delete, modify,
-	// // we bundle them all up to send at once.  We *do* want to see the
-	// // changes though
-
-	var desc []string
-	for _, i := range create {
-		desc = append(desc, "\n"+i.String())
-	}
-	for _, i := range delete {
-		desc = append(desc, "\n"+i.String())
-	}
-	for _, i := range modify {
-		desc = append(desc, "\n"+i.String())
-	}
-
-	msg := fmt.Sprintf("GENERATE_ZONE: %s (%d records)%s", dc.Name, len(dc.Records), desc)
-	corrections := []*models.Correction{}
-
-	// only create corrections if there are changes
-	if len(desc) > 0 {
-		corrections = append(corrections,
-			&models.Correction{
-				Msg: msg,
-				F: func() error {
-					return n.generateRecords(dc)
-				},
-			})
-	}
+	// Insert Future diff2 version here.
 
 	return corrections, nil
 }

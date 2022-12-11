@@ -6,6 +6,7 @@ import (
 
 	"github.com/StackExchange/dnscontrol/v3/models"
 	"github.com/StackExchange/dnscontrol/v3/pkg/diff"
+	"github.com/StackExchange/dnscontrol/v3/pkg/diff2"
 	"github.com/StackExchange/dnscontrol/v3/providers"
 )
 
@@ -100,48 +101,56 @@ func (api *netcupProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*mod
 	// no need for txtutil.SplitSingleLongTxt in function GetDomainCorrections
 	// txtutil.SplitSingleLongTxt(dc.Records) // Autosplit long TXT records
 
-	differ := diff.New(dc)
-	_, create, del, modify, err := differ.IncrementalDiff(existingRecords)
-	if err != nil {
-		return nil, err
-	}
-
 	var corrections []*models.Correction
+	if !diff2.EnableDiff2 || true { // Remove "|| true" when diff2 version arrives
 
-	// Deletes first so changing type works etc.
-	for _, m := range del {
-		req := m.Existing.Original.(*record)
-		corr := &models.Correction{
-			Msg: fmt.Sprintf("%s, Netcup ID: %s", m.String(), req.ID),
-			F: func() error {
-				return api.deleteRecord(domain, req)
-			},
+		differ := diff.New(dc)
+		_, create, del, modify, err := differ.IncrementalDiff(existingRecords)
+		if err != nil {
+			return nil, err
 		}
-		corrections = append(corrections, corr)
+
+		var corrections []*models.Correction
+
+		// Deletes first so changing type works etc.
+		for _, m := range del {
+			req := m.Existing.Original.(*record)
+			corr := &models.Correction{
+				Msg: fmt.Sprintf("%s, Netcup ID: %s", m.String(), req.ID),
+				F: func() error {
+					return api.deleteRecord(domain, req)
+				},
+			}
+			corrections = append(corrections, corr)
+		}
+
+		for _, m := range create {
+			req := fromRecordConfig(m.Desired)
+			corr := &models.Correction{
+				Msg: m.String(),
+				F: func() error {
+					return api.createRecord(domain, req)
+				},
+			}
+			corrections = append(corrections, corr)
+		}
+		for _, m := range modify {
+			id := m.Existing.Original.(*record).ID
+			req := fromRecordConfig(m.Desired)
+			req.ID = id
+			corr := &models.Correction{
+				Msg: fmt.Sprintf("%s, Netcup ID: %s: ", m.String(), id),
+				F: func() error {
+					return api.modifyRecord(domain, req)
+				},
+			}
+			corrections = append(corrections, corr)
+		}
+
+		return corrections, nil
 	}
 
-	for _, m := range create {
-		req := fromRecordConfig(m.Desired)
-		corr := &models.Correction{
-			Msg: m.String(),
-			F: func() error {
-				return api.createRecord(domain, req)
-			},
-		}
-		corrections = append(corrections, corr)
-	}
-	for _, m := range modify {
-		id := m.Existing.Original.(*record).ID
-		req := fromRecordConfig(m.Desired)
-		req.ID = id
-		corr := &models.Correction{
-			Msg: fmt.Sprintf("%s, Netcup ID: %s: ", m.String(), id),
-			F: func() error {
-				return api.modifyRecord(domain, req)
-			},
-		}
-		corrections = append(corrections, corr)
-	}
+	// Insert Future diff2 version here.
 
 	return corrections, nil
 }

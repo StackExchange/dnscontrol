@@ -13,6 +13,7 @@ import (
 	"github.com/Azure/go-autorest/autorest/to"
 	"github.com/StackExchange/dnscontrol/v3/models"
 	"github.com/StackExchange/dnscontrol/v3/pkg/diff"
+	"github.com/StackExchange/dnscontrol/v3/pkg/diff2"
 	"github.com/StackExchange/dnscontrol/v3/pkg/printer"
 	"github.com/StackExchange/dnscontrol/v3/pkg/txtutil"
 	"github.com/StackExchange/dnscontrol/v3/providers"
@@ -188,8 +189,6 @@ func (a *azurednsProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*mod
 		return nil, err
 	}
 
-	var corrections []*models.Correction
-
 	existingRecords, records, zoneName, err := a.getExistingRecords(dc.Name)
 	if err != nil {
 		return nil, err
@@ -197,133 +196,141 @@ func (a *azurednsProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*mod
 
 	txtutil.SplitSingleLongTxt(dc.Records) // Autosplit long TXT records
 
-	differ := diff.New(dc)
-	namesToUpdate, err := differ.ChangedGroups(existingRecords)
-	if err != nil {
-		return nil, err
-	}
+	var corrections []*models.Correction
+	if !diff2.EnableDiff2 || true { // Remove "|| true" when diff2 version arrives
 
-	if len(namesToUpdate) == 0 {
-		return nil, nil
-	}
-
-	updates := map[models.RecordKey][]*models.RecordConfig{}
-
-	for k := range namesToUpdate {
-		updates[k] = nil
-		for _, rc := range dc.Records {
-			if rc.Key() == k {
-				updates[k] = append(updates[k], rc)
-			}
+		differ := diff.New(dc)
+		namesToUpdate, err := differ.ChangedGroups(existingRecords)
+		if err != nil {
+			return nil, err
 		}
-	}
 
-	for k, recs := range updates {
-		if len(recs) == 0 {
-			var rrset *adns.RecordSet
-			for _, r := range records {
-				if strings.TrimSuffix(*r.Properties.Fqdn, ".") == k.NameFQDN {
-					n1, err := nativeToRecordType(r.Type)
-					if err != nil {
-						return nil, err
-					}
-					n2, err := nativeToRecordType(to.StringPtr(k.Type))
-					if err != nil {
-						return nil, err
-					}
-					if n1 == n2 {
-						rrset = r
-						break
-					}
+		if len(namesToUpdate) == 0 {
+			return nil, nil
+		}
+
+		updates := map[models.RecordKey][]*models.RecordConfig{}
+
+		for k := range namesToUpdate {
+			updates[k] = nil
+			for _, rc := range dc.Records {
+				if rc.Key() == k {
+					updates[k] = append(updates[k], rc)
 				}
 			}
-			if rrset != nil {
+		}
+
+		for k, recs := range updates {
+			if len(recs) == 0 {
+				var rrset *adns.RecordSet
+				for _, r := range records {
+					if strings.TrimSuffix(*r.Properties.Fqdn, ".") == k.NameFQDN {
+						n1, err := nativeToRecordType(r.Type)
+						if err != nil {
+							return nil, err
+						}
+						n2, err := nativeToRecordType(to.StringPtr(k.Type))
+						if err != nil {
+							return nil, err
+						}
+						if n1 == n2 {
+							rrset = r
+							break
+						}
+					}
+				}
+				if rrset != nil {
+					corrections = append(corrections,
+						&models.Correction{
+							Msg: strings.Join(namesToUpdate[k], "\n"),
+							F: func() error {
+								ctx, cancel := context.WithTimeout(context.Background(), 6000*time.Second)
+								defer cancel()
+								rt, err := nativeToRecordType(rrset.Type)
+								if err != nil {
+									return err
+								}
+								_, err = a.recordsClient.Delete(ctx, *a.resourceGroup, zoneName, *rrset.Name, rt, nil)
+								if err != nil {
+									return err
+								}
+								return nil
+							},
+						})
+				} else {
+					return nil, fmt.Errorf("no record set found to delete. Name: '%s'. Type: '%s'", k.NameFQDN, k.Type)
+				}
+			} else {
+				rrset, recordType, err := a.recordToNative(k, recs)
+				if err != nil {
+					return nil, err
+				}
+				var recordName string
+				for _, r := range recs {
+					i := int64(r.TTL)
+					rrset.Properties.TTL = &i // TODO: make sure that ttls are consistent within a set
+					recordName = r.Name
+				}
+
+				for _, r := range records {
+					existingRecordType, err := nativeToRecordType(r.Type)
+					if err != nil {
+						return nil, err
+					}
+					changedRecordType, err := nativeToRecordType(to.StringPtr(k.Type))
+					if err != nil {
+						return nil, err
+					}
+					if strings.TrimSuffix(*r.Properties.Fqdn, ".") == k.NameFQDN && (changedRecordType == adns.RecordTypeCNAME || existingRecordType == adns.RecordTypeCNAME) {
+						if existingRecordType == adns.RecordTypeA || existingRecordType == adns.RecordTypeAAAA || changedRecordType == adns.RecordTypeA || changedRecordType == adns.RecordTypeAAAA { //CNAME cannot coexist with an A or AA
+							corrections = append(corrections,
+								&models.Correction{
+									Msg: strings.Join(namesToUpdate[k], "\n"),
+									F: func() error {
+										ctx, cancel := context.WithTimeout(context.Background(), 6000*time.Second)
+										defer cancel()
+										_, err := a.recordsClient.Delete(ctx, *a.resourceGroup, zoneName, recordName, existingRecordType, nil)
+										if err != nil {
+											return err
+										}
+										return nil
+									},
+								})
+						}
+					}
+				}
+
 				corrections = append(corrections,
 					&models.Correction{
 						Msg: strings.Join(namesToUpdate[k], "\n"),
 						F: func() error {
 							ctx, cancel := context.WithTimeout(context.Background(), 6000*time.Second)
 							defer cancel()
-							rt, err := nativeToRecordType(rrset.Type)
-							if err != nil {
-								return err
-							}
-							_, err = a.recordsClient.Delete(ctx, *a.resourceGroup, zoneName, *rrset.Name, rt, nil)
+							_, err := a.recordsClient.CreateOrUpdate(ctx, *a.resourceGroup, zoneName, recordName, recordType, *rrset, nil)
 							if err != nil {
 								return err
 							}
 							return nil
 						},
 					})
-			} else {
-				return nil, fmt.Errorf("no record set found to delete. Name: '%s'. Type: '%s'", k.NameFQDN, k.Type)
 			}
-		} else {
-			rrset, recordType, err := a.recordToNative(k, recs)
-			if err != nil {
-				return nil, err
-			}
-			var recordName string
-			for _, r := range recs {
-				i := int64(r.TTL)
-				rrset.Properties.TTL = &i // TODO: make sure that ttls are consistent within a set
-				recordName = r.Name
-			}
-
-			for _, r := range records {
-				existingRecordType, err := nativeToRecordType(r.Type)
-				if err != nil {
-					return nil, err
-				}
-				changedRecordType, err := nativeToRecordType(to.StringPtr(k.Type))
-				if err != nil {
-					return nil, err
-				}
-				if strings.TrimSuffix(*r.Properties.Fqdn, ".") == k.NameFQDN && (changedRecordType == adns.RecordTypeCNAME || existingRecordType == adns.RecordTypeCNAME) {
-					if existingRecordType == adns.RecordTypeA || existingRecordType == adns.RecordTypeAAAA || changedRecordType == adns.RecordTypeA || changedRecordType == adns.RecordTypeAAAA { //CNAME cannot coexist with an A or AA
-						corrections = append(corrections,
-							&models.Correction{
-								Msg: strings.Join(namesToUpdate[k], "\n"),
-								F: func() error {
-									ctx, cancel := context.WithTimeout(context.Background(), 6000*time.Second)
-									defer cancel()
-									_, err := a.recordsClient.Delete(ctx, *a.resourceGroup, zoneName, recordName, existingRecordType, nil)
-									if err != nil {
-										return err
-									}
-									return nil
-								},
-							})
-					}
-				}
-			}
-
-			corrections = append(corrections,
-				&models.Correction{
-					Msg: strings.Join(namesToUpdate[k], "\n"),
-					F: func() error {
-						ctx, cancel := context.WithTimeout(context.Background(), 6000*time.Second)
-						defer cancel()
-						_, err := a.recordsClient.CreateOrUpdate(ctx, *a.resourceGroup, zoneName, recordName, recordType, *rrset, nil)
-						if err != nil {
-							return err
-						}
-						return nil
-					},
-				})
 		}
+
+		// Sort the records for cosmetic reasons: It just makes a long list
+		// of deletes or adds easier to read if they are in sorted order.
+		// That said, it may be risky to sort them (sort key is the text
+		// message "Msg") if there are deletes that must happen before adds.
+		// Reading the above code it isn't clear that any of the updates are
+		// order-dependent.  That said, all the tests pass.
+		// If in the future this causes a bug, we can either just remove
+		// this next line, or (even better) put any order-dependent
+		// operations in a single models.Correction{}.
+		sort.Slice(corrections, func(i, j int) bool { return diff.CorrectionLess(corrections, i, j) })
+
+		return corrections, nil
 	}
 
-	// Sort the records for cosmetic reasons: It just makes a long list
-	// of deletes or adds easier to read if they are in sorted order.
-	// That said, it may be risky to sort them (sort key is the text
-	// message "Msg") if there are deletes that must happen before adds.
-	// Reading the above code it isn't clear that any of the updates are
-	// order-dependent.  That said, all the tests pass.
-	// If in the future this causes a bug, we can either just remove
-	// this next line, or (even better) put any order-dependent
-	// operations in a single models.Correction{}.
-	sort.Slice(corrections, func(i, j int) bool { return diff.CorrectionLess(corrections, i, j) })
+	// Insert Future diff2 version here.
 
 	return corrections, nil
 }

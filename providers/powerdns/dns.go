@@ -7,6 +7,7 @@ import (
 
 	"github.com/StackExchange/dnscontrol/v3/models"
 	"github.com/StackExchange/dnscontrol/v3/pkg/diff"
+	"github.com/StackExchange/dnscontrol/v3/pkg/diff2"
 	"github.com/mittwald/go-powerdns/apis/zones"
 	"github.com/mittwald/go-powerdns/pdnshttp"
 )
@@ -48,7 +49,6 @@ func (dsp *powerdnsProvider) GetZoneRecords(domain string) (models.Records, erro
 
 // GetDomainCorrections returns a list of corrections to update a domain.
 func (dsp *powerdnsProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Correction, error) {
-	var corrections []*models.Correction
 
 	// get current zone records
 	curRecords, err := dsp.GetZoneRecords(dc.Name)
@@ -62,65 +62,73 @@ func (dsp *powerdnsProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*m
 	}
 	models.PostProcessRecords(curRecords)
 
-	// create record diff by group
-	keysToUpdate, err := (diff.New(dc)).ChangedGroups(curRecords)
-	if err != nil {
-		return nil, err
-	}
-	desiredRecords := dc.Records.GroupedByKey()
+	var corrections []*models.Correction
+	if !diff2.EnableDiff2 || true { // Remove "|| true" when diff2 version arrives
 
-	var cuCorrections []*models.Correction
-	var dCorrections []*models.Correction
+		// create record diff by group
+		keysToUpdate, err := (diff.New(dc)).ChangedGroups(curRecords)
+		if err != nil {
+			return nil, err
+		}
+		desiredRecords := dc.Records.GroupedByKey()
 
-	// add create/update and delete corrections separately
-	for label, msgs := range keysToUpdate {
-		labelName := label.NameFQDN + "."
-		labelType := label.Type
-		msgJoined := strings.Join(msgs, "\n   ")
+		var cuCorrections []*models.Correction
+		var dCorrections []*models.Correction
 
-		if _, ok := desiredRecords[label]; !ok {
-			// no record found so delete it
-			dCorrections = append(dCorrections, &models.Correction{
-				Msg: msgJoined,
-				F: func() error {
-					return dsp.client.Zones().RemoveRecordSetFromZone(context.Background(), dsp.ServerName, dc.Name, labelName, labelType)
-				},
-			})
-		} else {
-			// record found so create or update it
-			ttl := desiredRecords[label][0].TTL
-			var records []zones.Record
-			for _, recordContent := range desiredRecords[label] {
-				records = append(records, zones.Record{
-					Content: recordContent.GetTargetCombined(),
+		// add create/update and delete corrections separately
+		for label, msgs := range keysToUpdate {
+			labelName := label.NameFQDN + "."
+			labelType := label.Type
+			msgJoined := strings.Join(msgs, "\n   ")
+
+			if _, ok := desiredRecords[label]; !ok {
+				// no record found so delete it
+				dCorrections = append(dCorrections, &models.Correction{
+					Msg: msgJoined,
+					F: func() error {
+						return dsp.client.Zones().RemoveRecordSetFromZone(context.Background(), dsp.ServerName, dc.Name, labelName, labelType)
+					},
+				})
+			} else {
+				// record found so create or update it
+				ttl := desiredRecords[label][0].TTL
+				var records []zones.Record
+				for _, recordContent := range desiredRecords[label] {
+					records = append(records, zones.Record{
+						Content: recordContent.GetTargetCombined(),
+					})
+				}
+				cuCorrections = append(cuCorrections, &models.Correction{
+					Msg: msgJoined,
+					F: func() error {
+						return dsp.client.Zones().AddRecordSetToZone(context.Background(), dsp.ServerName, dc.Name, zones.ResourceRecordSet{
+							Name:       labelName,
+							Type:       labelType,
+							TTL:        int(ttl),
+							Records:    records,
+							ChangeType: zones.ChangeTypeReplace,
+						})
+					},
 				})
 			}
-			cuCorrections = append(cuCorrections, &models.Correction{
-				Msg: msgJoined,
-				F: func() error {
-					return dsp.client.Zones().AddRecordSetToZone(context.Background(), dsp.ServerName, dc.Name, zones.ResourceRecordSet{
-						Name:       labelName,
-						Type:       labelType,
-						TTL:        int(ttl),
-						Records:    records,
-						ChangeType: zones.ChangeTypeReplace,
-					})
-				},
-			})
 		}
+
+		// append corrections in the right order
+		// delete corrections must be run first to avoid correlations with existing RR
+		corrections = append(corrections, dCorrections...)
+		corrections = append(corrections, cuCorrections...)
+
+		// DNSSec corrections
+		dnssecCorrections, err := dsp.getDNSSECCorrections(dc)
+		if err != nil {
+			return nil, err
+		}
+		corrections = append(corrections, dnssecCorrections...)
+
+		return corrections, nil
 	}
 
-	// append corrections in the right order
-	// delete corrections must be run first to avoid correlations with existing RR
-	corrections = append(corrections, dCorrections...)
-	corrections = append(corrections, cuCorrections...)
-
-	// DNSSec corrections
-	dnssecCorrections, err := dsp.getDNSSECCorrections(dc)
-	if err != nil {
-		return nil, err
-	}
-	corrections = append(corrections, dnssecCorrections...)
+	// Insert Future diff2 version here.
 
 	return corrections, nil
 }

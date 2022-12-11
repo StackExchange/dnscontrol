@@ -11,6 +11,7 @@ import (
 
 	"github.com/StackExchange/dnscontrol/v3/models"
 	"github.com/StackExchange/dnscontrol/v3/pkg/diff"
+	"github.com/StackExchange/dnscontrol/v3/pkg/diff2"
 	"github.com/StackExchange/dnscontrol/v3/providers"
 	"github.com/vultr/govultr/v2"
 )
@@ -117,44 +118,52 @@ func (api *vultrProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*mode
 
 	models.PostProcessRecords(curRecords)
 
-	differ := diff.New(dc)
-	_, create, delete, modify, err := differ.IncrementalDiff(curRecords)
-	if err != nil {
-		return nil, err
-	}
-
 	var corrections []*models.Correction
+	if !diff2.EnableDiff2 || true { // Remove "|| true" when diff2 version arrives
 
-	for _, mod := range delete {
-		id := mod.Existing.Original.(govultr.DomainRecord).ID
-		corrections = append(corrections, &models.Correction{
-			Msg: fmt.Sprintf("%s; Vultr RecordID: %v", mod.String(), id),
-			F: func() error {
-				return api.client.DomainRecord.Delete(context.Background(), dc.Name, id)
-			},
-		})
+		differ := diff.New(dc)
+		_, create, delete, modify, err := differ.IncrementalDiff(curRecords)
+		if err != nil {
+			return nil, err
+		}
+
+		var corrections []*models.Correction
+
+		for _, mod := range delete {
+			id := mod.Existing.Original.(govultr.DomainRecord).ID
+			corrections = append(corrections, &models.Correction{
+				Msg: fmt.Sprintf("%s; Vultr RecordID: %v", mod.String(), id),
+				F: func() error {
+					return api.client.DomainRecord.Delete(context.Background(), dc.Name, id)
+				},
+			})
+		}
+
+		for _, mod := range create {
+			r := toVultrRecord(dc, mod.Desired, "0")
+			corrections = append(corrections, &models.Correction{
+				Msg: mod.String(),
+				F: func() error {
+					_, err := api.client.DomainRecord.Create(context.Background(), dc.Name, &govultr.DomainRecordReq{Name: r.Name, Type: r.Type, Data: r.Data, TTL: r.TTL, Priority: &r.Priority})
+					return err
+				},
+			})
+		}
+
+		for _, mod := range modify {
+			r := toVultrRecord(dc, mod.Desired, mod.Existing.Original.(govultr.DomainRecord).ID)
+			corrections = append(corrections, &models.Correction{
+				Msg: fmt.Sprintf("%s; Vultr RecordID: %v", mod.String(), r.ID),
+				F: func() error {
+					return api.client.DomainRecord.Update(context.Background(), dc.Name, r.ID, &govultr.DomainRecordReq{Name: r.Name, Type: r.Type, Data: r.Data, TTL: r.TTL, Priority: &r.Priority})
+				},
+			})
+		}
+
+		return corrections, nil
 	}
 
-	for _, mod := range create {
-		r := toVultrRecord(dc, mod.Desired, "0")
-		corrections = append(corrections, &models.Correction{
-			Msg: mod.String(),
-			F: func() error {
-				_, err := api.client.DomainRecord.Create(context.Background(), dc.Name, &govultr.DomainRecordReq{Name: r.Name, Type: r.Type, Data: r.Data, TTL: r.TTL, Priority: &r.Priority})
-				return err
-			},
-		})
-	}
-
-	for _, mod := range modify {
-		r := toVultrRecord(dc, mod.Desired, mod.Existing.Original.(govultr.DomainRecord).ID)
-		corrections = append(corrections, &models.Correction{
-			Msg: fmt.Sprintf("%s; Vultr RecordID: %v", mod.String(), r.ID),
-			F: func() error {
-				return api.client.DomainRecord.Update(context.Background(), dc.Name, r.ID, &govultr.DomainRecordReq{Name: r.Name, Type: r.Type, Data: r.Data, TTL: r.TTL, Priority: &r.Priority})
-			},
-		})
-	}
+	// Insert Future diff2 version here.
 
 	return corrections, nil
 }

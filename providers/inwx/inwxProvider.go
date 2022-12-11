@@ -9,6 +9,7 @@ import (
 
 	"github.com/StackExchange/dnscontrol/v3/models"
 	"github.com/StackExchange/dnscontrol/v3/pkg/diff"
+	"github.com/StackExchange/dnscontrol/v3/pkg/diff2"
 	"github.com/StackExchange/dnscontrol/v3/pkg/printer"
 	"github.com/StackExchange/dnscontrol/v3/pkg/txtutil"
 	"github.com/StackExchange/dnscontrol/v3/providers"
@@ -247,30 +248,36 @@ func (api *inwxAPI) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Cor
 		return nil, err
 	}
 
-	corrections := []*models.Correction{}
+	var corrections []*models.Correction
+	if !diff2.EnableDiff2 || true { // Remove "|| true" when diff2 version arrives
 
-	for _, d := range create {
-		des := d.Desired
-		corrections = append(corrections, &models.Correction{
-			Msg: d.String(),
-			F:   func() error { return api.createRecord(dc.Name, des) },
-		})
+		for _, d := range create {
+			des := d.Desired
+			corrections = append(corrections, &models.Correction{
+				Msg: d.String(),
+				F:   func() error { return api.createRecord(dc.Name, des) },
+			})
+		}
+		for _, d := range del {
+			existingID := d.Existing.Original.(goinwx.NameserverRecord).ID
+			corrections = append(corrections, &models.Correction{
+				Msg: d.String(),
+				F:   func() error { return api.deleteRecord(existingID) },
+			})
+		}
+		for _, d := range mod {
+			rec := d.Desired
+			existingID := d.Existing.Original.(goinwx.NameserverRecord).ID
+			corrections = append(corrections, &models.Correction{
+				Msg: d.String(),
+				F:   func() error { return api.updateRecord(existingID, rec) },
+			})
+		}
+
+		return corrections, nil
 	}
-	for _, d := range del {
-		existingID := d.Existing.Original.(goinwx.NameserverRecord).ID
-		corrections = append(corrections, &models.Correction{
-			Msg: d.String(),
-			F:   func() error { return api.deleteRecord(existingID) },
-		})
-	}
-	for _, d := range mod {
-		rec := d.Desired
-		existingID := d.Existing.Original.(goinwx.NameserverRecord).ID
-		corrections = append(corrections, &models.Correction{
-			Msg: d.String(),
-			F:   func() error { return api.updateRecord(existingID, rec) },
-		})
-	}
+
+	// Insert Future diff2 version here.
 
 	return corrections, nil
 }

@@ -17,6 +17,7 @@ import (
 	"github.com/PuerkitoBio/goquery"
 	"github.com/StackExchange/dnscontrol/v3/models"
 	"github.com/StackExchange/dnscontrol/v3/pkg/diff"
+	"github.com/StackExchange/dnscontrol/v3/pkg/diff2"
 	"github.com/StackExchange/dnscontrol/v3/pkg/txtutil"
 	"github.com/StackExchange/dnscontrol/v3/providers"
 	"github.com/pquerna/otp/totp"
@@ -177,7 +178,6 @@ func (c *hednsProvider) GetNameservers(_ string) ([]*models.Nameserver, error) {
 
 // GetDomainCorrections returns a list of corrections for the  domain.
 func (c *hednsProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Correction, error) {
-	var corrections []*models.Correction
 
 	err := dc.Punycode()
 	if err != nil {
@@ -204,48 +204,56 @@ func (c *hednsProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*models
 	models.PostProcessRecords(prunedRecords)
 	txtutil.SplitSingleLongTxt(dc.Records) // Autosplit long TXT records
 
-	differ := diff.New(dc)
-	_, toCreate, toDelete, toModify, err := differ.IncrementalDiff(prunedRecords)
-	if err != nil {
-		return nil, err
-	}
+	var corrections []*models.Correction
+	if !diff2.EnableDiff2 || true { // Remove "|| true" when diff2 version arrives
 
-	for _, del := range toDelete {
-		record := del.Existing
-		corrections = append(corrections, &models.Correction{
-			Msg: del.String(),
-			F:   func() error { return c.deleteZoneRecord(record) },
-		})
-	}
-
-	for _, cre := range toCreate {
-		record := cre.Desired
-		record.Original = Record{
-			ZoneName:   dc.Name,
-			ZoneID:     zoneID,
-			RecordName: cre.Desired.Name,
+		differ := diff.New(dc)
+		_, toCreate, toDelete, toModify, err := differ.IncrementalDiff(prunedRecords)
+		if err != nil {
+			return nil, err
 		}
-		corrections = append(corrections, &models.Correction{
-			Msg: cre.String(),
-			F:   func() error { return c.editZoneRecord(record, true) },
-		})
-	}
 
-	for _, mod := range toModify {
-		record := mod.Desired
-		record.Original = Record{
-			ZoneName:   dc.Name,
-			ZoneID:     zoneID,
-			RecordID:   mod.Existing.Original.(Record).RecordID,
-			RecordName: mod.Desired.Name,
+		for _, del := range toDelete {
+			record := del.Existing
+			corrections = append(corrections, &models.Correction{
+				Msg: del.String(),
+				F:   func() error { return c.deleteZoneRecord(record) },
+			})
 		}
-		corrections = append(corrections, &models.Correction{
-			Msg: mod.String(),
-			F:   func() error { return c.editZoneRecord(record, false) },
-		})
+
+		for _, cre := range toCreate {
+			record := cre.Desired
+			record.Original = Record{
+				ZoneName:   dc.Name,
+				ZoneID:     zoneID,
+				RecordName: cre.Desired.Name,
+			}
+			corrections = append(corrections, &models.Correction{
+				Msg: cre.String(),
+				F:   func() error { return c.editZoneRecord(record, true) },
+			})
+		}
+
+		for _, mod := range toModify {
+			record := mod.Desired
+			record.Original = Record{
+				ZoneName:   dc.Name,
+				ZoneID:     zoneID,
+				RecordID:   mod.Existing.Original.(Record).RecordID,
+				RecordName: mod.Desired.Name,
+			}
+			corrections = append(corrections, &models.Correction{
+				Msg: mod.String(),
+				F:   func() error { return c.editZoneRecord(record, false) },
+			})
+		}
+
+		return corrections, err
 	}
 
-	return corrections, err
+	// Insert Future diff2 version here.
+
+	return corrections, nil
 }
 
 // GetZoneRecords returns all the records for the given domain
