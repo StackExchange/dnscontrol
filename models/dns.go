@@ -100,9 +100,8 @@ func NameserversToStrings(nss []*Nameserver) (s []string) {
 
 // Correction is anything that can be run. Implementation is up to the specific provider.
 type Correction struct {
-	F    func() error `json:"-"`
-	Msg  string
-	Msgs []string
+	F   func() error `json:"-"`
+	Msg string
 }
 
 // DomainContainingFQDN finds the best domain from the dns config for the given record fqdn.

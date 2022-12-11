@@ -310,11 +310,6 @@ func (rc *RecordConfig) ToDiffable(extraMaps ...map[string]string) string {
 	case "SOA":
 		content = fmt.Sprintf("%s %v %d %d %d %d ttl=%d", rc.target, rc.SoaMbox, rc.SoaRefresh, rc.SoaRetry, rc.SoaExpire, rc.SoaMinttl, rc.TTL)
 		// SoaSerial is not used in comparison
-	// FIXME(tlim): IP addresses should sort properly.
-	// case "A":
-	// 	ip := rc.GetTargetIP()
-	// 	sortableIP := fmt.Sprintf("%03d.%03d.%03d.%03d", ip[0], ip[1], ip[2], ip[3])
-	// 	content = fmt.Sprintf("%v ttl=%d", sortableIP, rc.TTL)
 	default:
 		content = fmt.Sprintf("%v ttl=%d", rc.GetTargetCombined(), rc.TTL)
 	}

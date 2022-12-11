@@ -86,7 +86,7 @@ func TestParsedFiles(t *testing.T) {
 			as := string(actualJSON)
 			_, _ = es, as
 			// When debugging, leave behind the actual result:
-			os.WriteFile(expectedFile+".ACTUAL", []byte(as), 0644)
+			//os.WriteFile(expectedFile+".ACTUAL", []byte(as), 0644)
 			testifyrequire.JSONEqf(t, es, as, "EXPECTING %q = \n```\n%s\n```", expectedFile, as)
 
 			// For each domain, if there is a zone file, test against it:
