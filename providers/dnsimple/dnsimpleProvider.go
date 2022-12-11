@@ -11,6 +11,7 @@ import (
 
 	"github.com/StackExchange/dnscontrol/v3/models"
 	"github.com/StackExchange/dnscontrol/v3/pkg/diff"
+	"github.com/StackExchange/dnscontrol/v3/pkg/diff2"
 	"github.com/StackExchange/dnscontrol/v3/pkg/printer"
 	"github.com/StackExchange/dnscontrol/v3/providers"
 	dnsimpleapi "github.com/dnsimple/dnsimple-go/dnsimple"
@@ -163,36 +164,43 @@ func (c *dnsimpleProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*mod
 	// Normalize
 	models.PostProcessRecords(actual)
 
-	differ := diff.New(dc)
-	_, create, del, modify, err := differ.IncrementalDiff(actual)
-	if err != nil {
-		return nil, err
+	if !diff2.EnableDiff2 || true {
+
+		differ := diff.New(dc)
+		_, create, del, modify, err := differ.IncrementalDiff(actual)
+		if err != nil {
+			return nil, err
+		}
+
+		for _, del := range del {
+			rec := del.Existing.Original.(dnsimpleapi.ZoneRecord)
+			corrections = append(corrections, &models.Correction{
+				Msg: del.String(),
+				F:   c.deleteRecordFunc(rec.ID, dc.Name),
+			})
+		}
+
+		for _, cre := range create {
+			rec := cre.Desired
+			corrections = append(corrections, &models.Correction{
+				Msg: cre.String(),
+				F:   c.createRecordFunc(rec, dc.Name),
+			})
+		}
+
+		for _, mod := range modify {
+			old := mod.Existing.Original.(dnsimpleapi.ZoneRecord)
+			rec := mod.Desired
+			corrections = append(corrections, &models.Correction{
+				Msg: mod.String(),
+				F:   c.updateRecordFunc(&old, rec, dc.Name),
+			})
+		}
+
+		return corrections, nil
 	}
 
-	for _, del := range del {
-		rec := del.Existing.Original.(dnsimpleapi.ZoneRecord)
-		corrections = append(corrections, &models.Correction{
-			Msg: del.String(),
-			F:   c.deleteRecordFunc(rec.ID, dc.Name),
-		})
-	}
-
-	for _, cre := range create {
-		rec := cre.Desired
-		corrections = append(corrections, &models.Correction{
-			Msg: cre.String(),
-			F:   c.createRecordFunc(rec, dc.Name),
-		})
-	}
-
-	for _, mod := range modify {
-		old := mod.Existing.Original.(dnsimpleapi.ZoneRecord)
-		rec := mod.Desired
-		corrections = append(corrections, &models.Correction{
-			Msg: mod.String(),
-			F:   c.updateRecordFunc(&old, rec, dc.Name),
-		})
-	}
+	// Insert Future diff2 version here.
 
 	return corrections, nil
 }

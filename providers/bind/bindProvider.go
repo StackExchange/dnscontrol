@@ -253,7 +253,6 @@ func (c *bindProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*models.
 		if err != nil {
 			return nil, err
 		}
-		//fmt.Printf("DEBUG: BIND changes=%v\n", changes)
 		msg = strings.Join(msgs, "\n")
 
 	} else {
@@ -293,7 +292,6 @@ func (c *bindProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*models.
 	}
 
 	corrections := []*models.Correction{}
-	//fmt.Printf("DEBUG: BIND changes=%v\n", changes)
 	if changes {
 
 		// We only change the serial number if there is a change.

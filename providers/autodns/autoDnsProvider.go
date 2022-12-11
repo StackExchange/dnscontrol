@@ -11,6 +11,7 @@ import (
 
 	"github.com/StackExchange/dnscontrol/v3/models"
 	"github.com/StackExchange/dnscontrol/v3/pkg/diff"
+	"github.com/StackExchange/dnscontrol/v3/pkg/diff2"
 	"github.com/StackExchange/dnscontrol/v3/pkg/printer"
 	"github.com/StackExchange/dnscontrol/v3/pkg/txtutil"
 	"github.com/StackExchange/dnscontrol/v3/providers"
@@ -91,93 +92,101 @@ func (api *autoDNSProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*mo
 	models.PostProcessRecords(existingRecords)
 	txtutil.SplitSingleLongTxt(dc.Records) // Autosplit long TXT records
 
-	differ := diff.New(dc)
-	unchanged, create, del, modify, err := differ.IncrementalDiff(existingRecords)
-	if err != nil {
-		return nil, err
-	}
+	if !diff2.EnableDiff2 || true { // Remove the "|| true" when the diff2 version is ready.
 
-	for _, m := range unchanged {
-		changes = append(changes, m.Desired)
-	}
+		differ := diff.New(dc)
+		unchanged, create, del, modify, err := differ.IncrementalDiff(existingRecords)
+		if err != nil {
+			return nil, err
+		}
 
-	for _, m := range del {
-		// Just notify, these records don't have to be deleted explicitly
-		printer.Debugf(m.String())
-	}
+		for _, m := range unchanged {
+			changes = append(changes, m.Desired)
+		}
 
-	for _, m := range create {
-		printer.Debugf(m.String())
-		changes = append(changes, m.Desired)
-	}
+		for _, m := range del {
+			// Just notify, these records don't have to be deleted explicitly
+			printer.Debugf(m.String())
+		}
 
-	for _, m := range modify {
-		printer.Debugf("mod")
-		printer.Debugf(m.String())
-		changes = append(changes, m.Desired)
-	}
+		for _, m := range create {
+			printer.Debugf(m.String())
+			changes = append(changes, m.Desired)
+		}
 
-	var corrections []*models.Correction
+		for _, m := range modify {
+			printer.Debugf("mod")
+			printer.Debugf(m.String())
+			changes = append(changes, m.Desired)
+		}
 
-	if len(create) > 0 || len(del) > 0 || len(modify) > 0 {
-		corrections = append(corrections,
-			&models.Correction{
-				Msg: "Zone update for " + domain,
-				F: func() error {
-					zoneTTL := uint32(0)
-					nameServers := []*models.Nameserver{}
-					resourceRecords := []*ResourceRecord{}
+		var corrections []*models.Correction
 
-					for _, record := range changes {
-						// NS records for the APEX should be handled differently
-						if record.Type == "NS" && record.Name == "@" {
-							nameServers = append(nameServers, &models.Nameserver{
-								Name: strings.TrimSuffix(record.GetTargetField(), "."),
-							})
+		if len(create) > 0 || len(del) > 0 || len(modify) > 0 {
+			corrections = append(corrections,
+				&models.Correction{
+					Msg: "Zone update for " + domain,
+					F: func() error {
+						zoneTTL := uint32(0)
+						nameServers := []*models.Nameserver{}
+						resourceRecords := []*ResourceRecord{}
 
-							zoneTTL = record.TTL
-						} else {
-							resourceRecord := &ResourceRecord{
-								Name:  record.Name,
-								TTL:   int64(record.TTL),
-								Type:  record.Type,
-								Value: record.GetTargetField(),
+						for _, record := range changes {
+							// NS records for the APEX should be handled differently
+							if record.Type == "NS" && record.Name == "@" {
+								nameServers = append(nameServers, &models.Nameserver{
+									Name: strings.TrimSuffix(record.GetTargetField(), "."),
+								})
+
+								zoneTTL = record.TTL
+							} else {
+								resourceRecord := &ResourceRecord{
+									Name:  record.Name,
+									TTL:   int64(record.TTL),
+									Type:  record.Type,
+									Value: record.GetTargetField(),
+								}
+
+								if resourceRecord.Name == "@" {
+									resourceRecord.Name = ""
+								}
+
+								if record.Type == "MX" {
+									resourceRecord.Pref = int32(record.MxPreference)
+								}
+
+								if record.Type == "SRV" {
+									resourceRecord.Value = fmt.Sprintf(
+										"%d %d %d %s",
+										record.SrvPriority,
+										record.SrvWeight,
+										record.SrvPort,
+										record.GetTargetField(),
+									)
+								}
+
+								resourceRecords = append(resourceRecords, resourceRecord)
 							}
-
-							if resourceRecord.Name == "@" {
-								resourceRecord.Name = ""
-							}
-
-							if record.Type == "MX" {
-								resourceRecord.Pref = int32(record.MxPreference)
-							}
-
-							if record.Type == "SRV" {
-								resourceRecord.Value = fmt.Sprintf(
-									"%d %d %d %s",
-									record.SrvPriority,
-									record.SrvWeight,
-									record.SrvPort,
-									record.GetTargetField(),
-								)
-							}
-
-							resourceRecords = append(resourceRecords, resourceRecord)
 						}
-					}
 
-					err := api.updateZone(domain, resourceRecords, nameServers, zoneTTL)
+						err := api.updateZone(domain, resourceRecords, nameServers, zoneTTL)
 
-					if err != nil {
-						return fmt.Errorf(err.Error())
-					}
+						if err != nil {
+							return fmt.Errorf(err.Error())
+						}
 
-					return nil
-				},
-			})
+						return nil
+					},
+				})
+		}
+
+		return corrections, nil
 	}
+
+	// Insert Future diff2 version here.
 
 	return corrections, nil
+
 }
 
 // GetNameservers returns the nameservers for a domain.

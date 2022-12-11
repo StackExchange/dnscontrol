@@ -8,6 +8,7 @@ import (
 
 	"github.com/StackExchange/dnscontrol/v3/models"
 	"github.com/StackExchange/dnscontrol/v3/pkg/diff"
+	"github.com/StackExchange/dnscontrol/v3/pkg/diff2"
 	"github.com/StackExchange/dnscontrol/v3/pkg/txtutil"
 	"github.com/StackExchange/dnscontrol/v3/providers"
 )
@@ -100,72 +101,78 @@ func (api *dnsMadeEasyProvider) GetDomainCorrections(dc *models.DomainConfig) ([
 	models.PostProcessRecords(existingRecords)
 	txtutil.SplitSingleLongTxt(dc.Records) // Autosplit long TXT records
 
-	differ := diff.New(dc)
-	_, create, del, modify, err := differ.IncrementalDiff(existingRecords)
-	if err != nil {
-		return nil, err
-	}
-
 	var corrections []*models.Correction
+	if !diff2.EnableDiff2 || true {
 
-	var deleteRecordIds []int
-	deleteDescription := []string{"Batch deletion of records:"}
-	for _, m := range del {
-		originalRecordID := m.Existing.Original.(*recordResponseDataEntry).ID
-		deleteRecordIds = append(deleteRecordIds, originalRecordID)
-		deleteDescription = append(deleteDescription, m.String())
-	}
-
-	if len(deleteRecordIds) > 0 {
-		corr := &models.Correction{
-			Msg: strings.Join(deleteDescription, "\n\t"),
-			F: func() error {
-				return api.deleteRecords(domain.ID, deleteRecordIds)
-			},
+		differ := diff.New(dc)
+		_, create, del, modify, err := differ.IncrementalDiff(existingRecords)
+		if err != nil {
+			return nil, err
 		}
-		corrections = append(corrections, corr)
-	}
 
-	var createRecords []recordRequestData
-	createDescription := []string{"Batch creation of records:"}
-	for _, m := range create {
-		record := fromRecordConfig(m.Desired)
-		createRecords = append(createRecords, *record)
-		createDescription = append(createDescription, m.String())
-	}
-
-	if len(createRecords) > 0 {
-		corr := &models.Correction{
-			Msg: strings.Join(createDescription, "\n\t"),
-			F: func() error {
-				return api.createRecords(domain.ID, createRecords)
-			},
+		var deleteRecordIds []int
+		deleteDescription := []string{"Batch deletion of records:"}
+		for _, m := range del {
+			originalRecordID := m.Existing.Original.(*recordResponseDataEntry).ID
+			deleteRecordIds = append(deleteRecordIds, originalRecordID)
+			deleteDescription = append(deleteDescription, m.String())
 		}
-		corrections = append(corrections, corr)
-	}
 
-	var modifyRecords []recordRequestData
-	modifyDescription := []string{"Batch modification of records:"}
-	for _, m := range modify {
-		originalRecord := m.Existing.Original.(*recordResponseDataEntry)
-
-		record := fromRecordConfig(m.Desired)
-		record.ID = originalRecord.ID
-		record.GtdLocation = originalRecord.GtdLocation
-
-		modifyRecords = append(modifyRecords, *record)
-		modifyDescription = append(modifyDescription, m.String())
-	}
-
-	if len(modifyRecords) > 0 {
-		corr := &models.Correction{
-			Msg: strings.Join(modifyDescription, "\n\t"),
-			F: func() error {
-				return api.updateRecords(domain.ID, modifyRecords)
-			},
+		if len(deleteRecordIds) > 0 {
+			corr := &models.Correction{
+				Msg: strings.Join(deleteDescription, "\n\t"),
+				F: func() error {
+					return api.deleteRecords(domain.ID, deleteRecordIds)
+				},
+			}
+			corrections = append(corrections, corr)
 		}
-		corrections = append(corrections, corr)
+
+		var createRecords []recordRequestData
+		createDescription := []string{"Batch creation of records:"}
+		for _, m := range create {
+			record := fromRecordConfig(m.Desired)
+			createRecords = append(createRecords, *record)
+			createDescription = append(createDescription, m.String())
+		}
+
+		if len(createRecords) > 0 {
+			corr := &models.Correction{
+				Msg: strings.Join(createDescription, "\n\t"),
+				F: func() error {
+					return api.createRecords(domain.ID, createRecords)
+				},
+			}
+			corrections = append(corrections, corr)
+		}
+
+		var modifyRecords []recordRequestData
+		modifyDescription := []string{"Batch modification of records:"}
+		for _, m := range modify {
+			originalRecord := m.Existing.Original.(*recordResponseDataEntry)
+
+			record := fromRecordConfig(m.Desired)
+			record.ID = originalRecord.ID
+			record.GtdLocation = originalRecord.GtdLocation
+
+			modifyRecords = append(modifyRecords, *record)
+			modifyDescription = append(modifyDescription, m.String())
+		}
+
+		if len(modifyRecords) > 0 {
+			corr := &models.Correction{
+				Msg: strings.Join(modifyDescription, "\n\t"),
+				F: func() error {
+					return api.updateRecords(domain.ID, modifyRecords)
+				},
+			}
+			corrections = append(corrections, corr)
+		}
+
+		return corrections, nil
 	}
+
+	// Insert Future diff2 version here.
 
 	return corrections, nil
 }

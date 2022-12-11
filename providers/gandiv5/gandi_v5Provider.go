@@ -231,87 +231,7 @@ func (client *gandiv5Provider) GenerateDomainCorrections(dc *models.DomainConfig
 
 	txtutil.SplitSingleLongTxt(dc.Records) // Autosplit long TXT records
 
-	if diff2.EnableDiff2 {
-
-		g := gandi.NewLiveDNSClient(config.Config{
-			APIKey:    client.apikey,
-			SharingID: client.sharingid,
-			Debug:     client.debug,
-		})
-
-		// Gandi is a "ByLabel" API with the odd exception that changes must be
-		// done one label:rtype at a time.
-		instructions, err := diff2.ByLabel(existing, dc, nil)
-		if err != nil {
-			return nil, err
-		}
-		for _, inst := range instructions {
-			switch inst.Type {
-
-			case diff2.CREATE:
-				// We have to create the label one rtype at a time.
-				natives := recordsToNative(inst.New, dc.Name)
-				for _, n := range natives {
-					label := inst.Key.NameFQDN
-					rtype := n.RrsetType
-					domain := dc.Name
-					shortname := dnsutil.TrimDomainName(label, dc.Name)
-					ttl := n.RrsetTTL
-					values := n.RrsetValues
-					key := models.RecordKey{NameFQDN: label, Type: rtype}
-					msg := strings.Join(inst.MsgsByKey[key], "\n")
-					corrections = append(corrections,
-						&models.Correction{
-							Msg: msg,
-							F: func() error {
-								res, err := g.CreateDomainRecord(domain, shortname, rtype, ttl, values)
-								if err != nil {
-									return fmt.Errorf("%+v: %w", res, err)
-								}
-								return nil
-							},
-						})
-				}
-
-			case diff2.CHANGE:
-				msgs := strings.Join(inst.Msgs, "\n")
-				domain := dc.Name
-				label := inst.Key.NameFQDN
-				shortname := dnsutil.TrimDomainName(label, dc.Name)
-				ns := recordsToNative(inst.New, dc.Name)
-				corrections = append(corrections,
-					&models.Correction{
-						Msg: msgs,
-						F: func() error {
-							res, err := g.UpdateDomainRecordsByName(domain, shortname, ns)
-							if err != nil {
-								return fmt.Errorf("%+v: %w", res, err)
-							}
-							return nil
-						},
-					})
-
-			case diff2.DELETE:
-				msgs := strings.Join(inst.Msgs, "\n")
-				domain := dc.Name
-				label := inst.Key.NameFQDN
-				shortname := dnsutil.TrimDomainName(label, dc.Name)
-				corrections = append(corrections,
-					&models.Correction{
-						Msg: msgs,
-						F: func() error {
-							err := g.DeleteDomainRecordsByName(domain, shortname)
-							if err != nil {
-								return err
-							}
-							return nil
-						},
-					})
-			}
-
-		}
-
-	} else {
+	if !diff2.EnableDiff2 {
 
 		// diff existing vs. current.
 		differ := diff.New(dc)
@@ -417,6 +337,86 @@ func (client *gandiv5Provider) GenerateDomainCorrections(dc *models.DomainConfig
 		// pass.  That said, if this breaks anything, the easiest fix might
 		// be to just remove the sort.
 		sort.Slice(corrections, func(i, j int) bool { return diff.CorrectionLess(corrections, i, j) })
+
+		return corrections, nil
+	}
+
+	g := gandi.NewLiveDNSClient(config.Config{
+		APIKey:    client.apikey,
+		SharingID: client.sharingid,
+		Debug:     client.debug,
+	})
+
+	// Gandi is a "ByLabel" API with the odd exception that changes must be
+	// done one label:rtype at a time.
+	instructions, err := diff2.ByLabel(existing, dc, nil)
+	if err != nil {
+		return nil, err
+	}
+	for _, inst := range instructions {
+		switch inst.Type {
+
+		case diff2.CREATE:
+			// We have to create the label one rtype at a time.
+			natives := recordsToNative(inst.New, dc.Name)
+			for _, n := range natives {
+				label := inst.Key.NameFQDN
+				rtype := n.RrsetType
+				domain := dc.Name
+				shortname := dnsutil.TrimDomainName(label, dc.Name)
+				ttl := n.RrsetTTL
+				values := n.RrsetValues
+				key := models.RecordKey{NameFQDN: label, Type: rtype}
+				msg := strings.Join(inst.MsgsByKey[key], "\n")
+				corrections = append(corrections,
+					&models.Correction{
+						Msg: msg,
+						F: func() error {
+							res, err := g.CreateDomainRecord(domain, shortname, rtype, ttl, values)
+							if err != nil {
+								return fmt.Errorf("%+v: %w", res, err)
+							}
+							return nil
+						},
+					})
+			}
+
+		case diff2.CHANGE:
+			msgs := strings.Join(inst.Msgs, "\n")
+			domain := dc.Name
+			label := inst.Key.NameFQDN
+			shortname := dnsutil.TrimDomainName(label, dc.Name)
+			ns := recordsToNative(inst.New, dc.Name)
+			corrections = append(corrections,
+				&models.Correction{
+					Msg: msgs,
+					F: func() error {
+						res, err := g.UpdateDomainRecordsByName(domain, shortname, ns)
+						if err != nil {
+							return fmt.Errorf("%+v: %w", res, err)
+						}
+						return nil
+					},
+				})
+
+		case diff2.DELETE:
+			msgs := strings.Join(inst.Msgs, "\n")
+			domain := dc.Name
+			label := inst.Key.NameFQDN
+			shortname := dnsutil.TrimDomainName(label, dc.Name)
+			corrections = append(corrections,
+				&models.Correction{
+					Msg: msgs,
+					F: func() error {
+						err := g.DeleteDomainRecordsByName(domain, shortname)
+						if err != nil {
+							return err
+						}
+						return nil
+					},
+				})
+		}
+
 	}
 
 	return corrections, nil
