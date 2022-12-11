@@ -277,7 +277,6 @@ func (c *bindProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*models.
 			}
 		}
 
-		var msg string
 		if c.zoneFileFound {
 			msg = fmt.Sprintf("GENERATE_ZONEFILE: '%s'. Changes:\n%s", dc.Name, buf)
 		} else {
