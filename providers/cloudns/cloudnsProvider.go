@@ -113,8 +113,6 @@ func (c *cloudnsProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*mode
 			return nil, err
 		}
 
-		var corrections []*models.Correction
-
 		// Deletes first so changing type works etc.
 		for _, m := range del {
 			id := m.Existing.Original.(*domainRecord).ID

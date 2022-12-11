@@ -199,8 +199,6 @@ func (c *exoscaleProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*mod
 			return nil, err
 		}
 
-		var corrections = []*models.Correction{}
-
 		for _, del := range delete {
 			record := del.Existing.Original.(*egoscale.DNSDomainRecord)
 			corrections = append(corrections, &models.Correction{

@@ -110,8 +110,6 @@ func (api *dnsMadeEasyProvider) GetDomainCorrections(dc *models.DomainConfig) ([
 			return nil, err
 		}
 
-		var corrections []*models.Correction
-
 		var deleteRecordIds []int
 		deleteDescription := []string{"Batch deletion of records:"}
 		for _, m := range del {

@@ -111,8 +111,6 @@ func (api *hetznerProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*mo
 			return nil, err
 		}
 
-		var corrections []*models.Correction
-
 		zone, err := api.getZone(domain)
 		if err != nil {
 			return nil, err

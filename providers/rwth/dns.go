@@ -61,8 +61,6 @@ func (api *rwthProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*model
 			return nil, err
 		}
 
-		var corrections []*models.Correction
-
 		for _, d := range create {
 			des := d.Desired
 			corrections = append(corrections, &models.Correction{

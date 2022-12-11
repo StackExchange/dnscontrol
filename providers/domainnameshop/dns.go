@@ -56,8 +56,6 @@ func (api *domainNameShopProvider) GetDomainCorrections(dc *models.DomainConfig)
 			return nil, err
 		}
 
-		var corrections = []*models.Correction{}
-
 		// Delete record
 		for _, r := range delete {
 			domainID := r.Existing.Original.(*domainNameShopRecord).DomainID

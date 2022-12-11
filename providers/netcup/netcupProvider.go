@@ -110,8 +110,6 @@ func (api *netcupProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*mod
 			return nil, err
 		}
 
-		var corrections []*models.Correction
-
 		// Deletes first so changing type works etc.
 		for _, m := range del {
 			req := m.Existing.Original.(*record)

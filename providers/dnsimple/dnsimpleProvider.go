@@ -141,12 +141,12 @@ func (c *dnsimpleProvider) GetZoneRecords(domain string) (models.Records, error)
 
 // GetDomainCorrections returns corrections that update a domain.
 func (c *dnsimpleProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Correction, error) {
+	var corrections []*models.Correction
+
 	err := dc.Punycode()
 	if err != nil {
 		return nil, err
 	}
-
-	var corrections []*models.Correction
 
 	dnssecFixes, err := c.getDNSSECCorrections(dc)
 	if err != nil {

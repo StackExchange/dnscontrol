@@ -127,8 +127,6 @@ func (api *vultrProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*mode
 			return nil, err
 		}
 
-		var corrections []*models.Correction
-
 		for _, mod := range delete {
 			id := mod.Existing.Original.(govultr.DomainRecord).ID
 			corrections = append(corrections, &models.Correction{

@@ -155,8 +155,6 @@ func (api *digitaloceanProvider) GetDomainCorrections(dc *models.DomainConfig) (
 			return nil, err
 		}
 
-		var corrections = []*models.Correction{}
-
 		// Deletes first so changing type works etc.
 		for _, m := range delete {
 			id := m.Existing.Original.(*godo.DomainRecord).ID
