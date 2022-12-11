@@ -257,8 +257,6 @@ func (o *oracleProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*model
 			for any size zone.
 		*/
 
-		corrections := []*models.Correction{}
-
 		if len(create) > 0 {
 			createRecords := models.Records{}
 			desc := ""

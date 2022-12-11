@@ -190,6 +190,7 @@ func (c *cloudnsProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*mode
 	// Insert Future diff2 version here.
 
 	return corrections, nil
+
 }
 
 // GetZoneRecords gets the records of a zone and returns them in RecordConfig format.

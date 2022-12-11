@@ -1,0 +1,34 @@
+{
+  "registrars": [],
+  "dns_providers": [],
+  "domains": [
+    {
+      "name": "foo.com",
+      "registrar": "none",
+      "dnsProviders": {},
+      "records": [],
+      "unmanaged": [
+        {
+          "label_pattern": "one",
+          "rType_pattern": "*",
+          "target_pattern": "*"
+        },
+        {
+          "label_pattern": "two",
+          "rType_pattern": "A, CNAME",
+          "target_pattern": "*"
+        },
+        {
+          "label_pattern": "three",
+          "rType_pattern": "TXT",
+          "target_pattern": "findme"
+        },
+        {
+          "label_pattern": "notype",
+          "rType_pattern": "*",
+          "target_pattern": "targglob"
+        }
+      ]
+    }
+  ]
+}

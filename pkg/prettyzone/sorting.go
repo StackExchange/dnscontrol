@@ -26,6 +26,8 @@ func (z *ZoneGenData) Less(i, j int) bool {
 	a, b := z.Records[i], z.Records[j]
 
 	// Sort by name.
+
+	// If we are at the apex, use "@" in the sorting.
 	compA, compB := a.NameFQDN, b.NameFQDN
 	if compA != compB {
 		if a.Name == "@" {
@@ -34,7 +36,7 @@ func (z *ZoneGenData) Less(i, j int) bool {
 		if b.Name == "@" {
 			compB = "@"
 		}
-		return zoneLabelLess(compA, compB)
+		return LabelLess(compA, compB)
 	}
 
 	// sub-sort by type
@@ -103,7 +105,7 @@ func (z *ZoneGenData) Less(i, j int) bool {
 	return a.String() < b.String()
 }
 
-func zoneLabelLess(a, b string) bool {
+func LabelLess(a, b string) bool {
 	// Compare two zone labels for the purpose of sorting the RRs in a Zone.
 
 	// If they are equal, we are done. All other code is simplified

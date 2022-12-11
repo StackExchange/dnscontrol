@@ -194,6 +194,7 @@ func (client *providerClient) GenerateDomainCorrections(dc *models.DomainConfig,
 	// Insert Future diff2 version here.
 
 	return corrections, nil
+
 }
 
 func makePurge(domainname string, cor diff.Correlation) zoneResourceRecordEdit {

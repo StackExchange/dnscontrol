@@ -62,6 +62,7 @@ require (
 require (
 	github.com/G-Core/gcore-dns-sdk-go v0.2.3
 	github.com/google/shlex v0.0.0-20191202100458-e7afc7fbc510
+	github.com/kylelemons/godebug v1.1.0
 	github.com/mattn/go-isatty v0.0.16
 	github.com/vultr/govultr/v2 v2.17.2
 	golang.org/x/exp v0.0.0-20221126150942-6ab00d035af9
@@ -129,7 +130,6 @@ require (
 	github.com/juju/errors v0.0.0-20200330140219-3fe23663418f // indirect
 	github.com/juju/testing v0.0.0-20210324180055-18c50b0c2098 // indirect
 	github.com/kolo/xmlrpc v0.0.0-20201022064351-38db28db192b // indirect
-	github.com/kylelemons/godebug v1.1.0 // indirect
 	github.com/mattn/go-colorable v0.1.12 // indirect
 	github.com/mitchellh/copystructure v1.2.0 // indirect
 	github.com/mitchellh/go-homedir v1.1.0 // indirect

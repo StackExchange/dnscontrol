@@ -185,6 +185,7 @@ func (api *autoDNSProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*mo
 	// Insert Future diff2 version here.
 
 	return corrections, nil
+
 }
 
 // GetNameservers returns the nameservers for a domain.

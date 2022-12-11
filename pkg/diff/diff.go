@@ -10,7 +10,7 @@ import (
 	"github.com/gobwas/glob"
 )
 
-// Correlation stores a difference between two domains.
+// Correlation stores a difference between two records.
 type Correlation struct {
 	d        *differ
 	Existing *models.RecordConfig

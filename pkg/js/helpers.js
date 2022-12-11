@@ -109,6 +109,7 @@ function newDomain(name, registrar) {
         nameservers: [],
         ignored_names: [],
         ignored_targets: [],
+        unmanaged: [],
     };
 }
 
@@ -610,6 +611,11 @@ function IGNORE_NAME(name, rTypes) {
     }
     return function (d) {
         d.ignored_names.push({ pattern: name, types: rTypes });
+        d.unmanaged.push({
+            label_pattern: name,
+            rType_pattern: rTypes,
+            target_pattern: '*',
+        });
     };
 }
 
@@ -622,10 +628,14 @@ var IGNORE_NAME_DISABLE_SAFETY_CHECK = {
     // See https://github.com/StackExchange/dnscontrol/issues/1106
 };
 
-// IGNORE_TARGET(target, rType)
 function IGNORE_TARGET(target, rType) {
     return function (d) {
         d.ignored_targets.push({ pattern: target, type: rType });
+        d.unmanaged.push({
+            label_pattern: '*',
+            rType_pattern: rType,
+            target_pattern: target,
+        });
     };
 }
 
@@ -665,6 +675,34 @@ function AUTODNSSEC(d) {
     console.log(
         'WARNING: AUTODNSSEC is deprecated. It is now a no-op.  Please use AUTODNSSEC_ON or AUTODNSSEC_OFF. The default is to make no modifications. This message will disappear in a future release.'
     );
+}
+
+function UNMANAGED(label_pattern, rType_pattern, target_pattern) {
+    if (rType_pattern === undefined) {
+        rType_pattern = '*';
+    }
+    if (rType_pattern === "") {
+        rType_pattern = '*';
+    }
+    if (target_pattern === undefined) {
+        target_pattern = '*';
+    }
+    return function (d) {
+        d.unmanaged.push({
+            label_pattern: label_pattern,
+            rType_pattern: rType_pattern,
+            target_pattern: target_pattern,
+        });
+    };
+}
+
+function DISABLE_UNMANAGED_SAFETY_CHECK(d) {
+    // This disables a safety check intended to prevent DNSControl and
+    // another system getting into a battle as they both try to update
+    // the same record over and over, back and forth.  However, people
+    // kept asking for it so... caveat emptor!
+    // It only affects the current domain.
+    d.unmanaged_disable_safety_check = true;
 }
 
 /**

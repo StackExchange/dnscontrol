@@ -326,6 +326,7 @@ func (c *cloudflareProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*m
 	// Insert Future diff2 version here.
 
 	return corrections, nil
+
 }
 
 func checkNSModifications(dc *models.DomainConfig) {

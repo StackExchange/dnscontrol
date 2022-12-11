@@ -248,5 +248,6 @@ func (c *desecProvider) GenerateDomainCorrections(dc *models.DomainConfig, exist
 
 	// Insert Future diff2 version here.
 
+	// Insert Future diff2 version here.
 	return corrections, nil
 }

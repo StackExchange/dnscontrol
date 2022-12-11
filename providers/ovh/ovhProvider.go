@@ -138,8 +138,6 @@ func (c *ovhProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*models.C
 			return nil, err
 		}
 
-		corrections := []*models.Correction{}
-
 		for _, del := range delete {
 			rec := del.Existing.Original.(*Record)
 			corrections = append(corrections, &models.Correction{

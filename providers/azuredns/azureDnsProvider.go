@@ -197,7 +197,7 @@ func (a *azurednsProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*mod
 	txtutil.SplitSingleLongTxt(dc.Records) // Autosplit long TXT records
 
 	var corrections []*models.Correction
-	if !diff2.EnableDiff2 || true { // Remove "|| true" when diff2 version arrives
+	if !diff2.EnableDiff2 {
 
 		differ := diff.New(dc)
 		namesToUpdate, err := differ.ChangedGroups(existingRecords)
@@ -330,7 +330,69 @@ func (a *azurednsProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*mod
 		return corrections, nil
 	}
 
-	// Insert Future diff2 version here.
+	// Azure is a "ByRSet" API.
+
+	instructions, err := diff2.ByLabel(existingRecords, dc, nil)
+	if err != nil {
+		return nil, err
+	}
+
+	for _, inst := range instructions {
+		switch inst.Type {
+
+		case diff2.CHANGE, diff2.CREATE:
+			var rrset *adns.RecordSet
+			var recordName string
+			var recordType adns.RecordType
+			if len(inst.Old) == 0 { // Create
+				rrset = &adns.RecordSet{Type: to.StringPtr(inst.Key.Type), Properties: &adns.RecordSetProperties{}}
+				recordType, _ = nativeToRecordType(to.StringPtr(inst.Key.Type))
+				recordName = inst.Key.NameFQDN
+			} else { // Change
+				rrset = inst.Old[0].Original.(*adns.RecordSet)
+				recordType, _ = nativeToRecordType(to.StringPtr(*rrset.Type))
+				recordName = *rrset.Name
+			}
+			// ^^^ this is broken and can probably be cleaned up significantly by
+			// someone that understands Azure's API.
+
+			corrections = append(corrections,
+				&models.Correction{
+					Msg: strings.Join(inst.Msgs, "\n"),
+					F: func() error {
+						ctx, cancel := context.WithTimeout(context.Background(), 6000*time.Second)
+						defer cancel()
+						_, err := a.recordsClient.CreateOrUpdate(ctx, *a.resourceGroup, zoneName, recordName, recordType, *rrset, nil)
+						if err != nil {
+							return err
+						}
+						return nil
+					},
+				})
+
+		case diff2.DELETE:
+			fmt.Printf("DEBUG: azure inst=%s\n", inst)
+			rrset := inst.Old[0].Original.(*adns.RecordSet)
+			corrections = append(corrections,
+				&models.Correction{
+					Msg: strings.Join(inst.Msgs, "\n"),
+					F: func() error {
+						ctx, cancel := context.WithTimeout(context.Background(), 6000*time.Second)
+						defer cancel()
+						rt, err := nativeToRecordType(rrset.Type)
+						if err != nil {
+							return err
+						}
+						_, err = a.recordsClient.Delete(ctx, *a.resourceGroup, zoneName, *rrset.Name, rt, nil)
+						if err != nil {
+							return err
+						}
+						return nil
+					},
+				})
+		}
+
+	}
 
 	return corrections, nil
 }
@@ -370,7 +432,7 @@ func nativeToRecords(set *adns.RecordSet, origin string) []*models.RecordConfig 
 	case "Microsoft.Network/dnszones/A":
 		if set.Properties.ARecords != nil {
 			for _, rec := range set.Properties.ARecords {
-				rc := &models.RecordConfig{TTL: uint32(*set.Properties.TTL)}
+				rc := &models.RecordConfig{TTL: uint32(*set.Properties.TTL), Original: set}
 				rc.SetLabelFromFQDN(*set.Properties.Fqdn, origin)
 				rc.Type = "A"
 				_ = rc.SetTarget(*rec.IPv4Address)
@@ -383,6 +445,7 @@ func nativeToRecords(set *adns.RecordSet, origin string) []*models.RecordConfig 
 				AzureAlias: map[string]string{
 					"type": "A",
 				},
+				Original: set,
 			}
 			rc.SetLabelFromFQDN(*set.Properties.Fqdn, origin)
 			_ = rc.SetTarget(*set.Properties.TargetResource.ID)
@@ -391,7 +454,7 @@ func nativeToRecords(set *adns.RecordSet, origin string) []*models.RecordConfig 
 	case "Microsoft.Network/dnszones/AAAA":
 		if set.Properties.AaaaRecords != nil {
 			for _, rec := range set.Properties.AaaaRecords {
-				rc := &models.RecordConfig{TTL: uint32(*set.Properties.TTL)}
+				rc := &models.RecordConfig{TTL: uint32(*set.Properties.TTL), Original: set}
 				rc.SetLabelFromFQDN(*set.Properties.Fqdn, origin)
 				rc.Type = "AAAA"
 				_ = rc.SetTarget(*rec.IPv6Address)
@@ -404,6 +467,7 @@ func nativeToRecords(set *adns.RecordSet, origin string) []*models.RecordConfig 
 				AzureAlias: map[string]string{
 					"type": "AAAA",
 				},
+				Original: set,
 			}
 			rc.SetLabelFromFQDN(*set.Properties.Fqdn, origin)
 			_ = rc.SetTarget(*set.Properties.TargetResource.ID)
@@ -411,7 +475,7 @@ func nativeToRecords(set *adns.RecordSet, origin string) []*models.RecordConfig 
 		}
 	case "Microsoft.Network/dnszones/CNAME":
 		if set.Properties.CnameRecord != nil {
-			rc := &models.RecordConfig{TTL: uint32(*set.Properties.TTL)}
+			rc := &models.RecordConfig{TTL: uint32(*set.Properties.TTL), Original: set}
 			rc.SetLabelFromFQDN(*set.Properties.Fqdn, origin)
 			rc.Type = "CNAME"
 			_ = rc.SetTarget(*set.Properties.CnameRecord.Cname)
@@ -423,6 +487,7 @@ func nativeToRecords(set *adns.RecordSet, origin string) []*models.RecordConfig 
 				AzureAlias: map[string]string{
 					"type": "CNAME",
 				},
+				Original: set,
 			}
 			rc.SetLabelFromFQDN(*set.Properties.Fqdn, origin)
 			_ = rc.SetTarget(*set.Properties.TargetResource.ID)
@@ -430,7 +495,7 @@ func nativeToRecords(set *adns.RecordSet, origin string) []*models.RecordConfig 
 		}
 	case "Microsoft.Network/dnszones/NS":
 		for _, rec := range set.Properties.NsRecords {
-			rc := &models.RecordConfig{TTL: uint32(*set.Properties.TTL)}
+			rc := &models.RecordConfig{TTL: uint32(*set.Properties.TTL), Original: set}
 			rc.SetLabelFromFQDN(*set.Properties.Fqdn, origin)
 			rc.Type = "NS"
 			_ = rc.SetTarget(*rec.Nsdname)
@@ -438,7 +503,7 @@ func nativeToRecords(set *adns.RecordSet, origin string) []*models.RecordConfig 
 		}
 	case "Microsoft.Network/dnszones/PTR":
 		for _, rec := range set.Properties.PtrRecords {
-			rc := &models.RecordConfig{TTL: uint32(*set.Properties.TTL)}
+			rc := &models.RecordConfig{TTL: uint32(*set.Properties.TTL), Original: set}
 			rc.SetLabelFromFQDN(*set.Properties.Fqdn, origin)
 			rc.Type = "PTR"
 			_ = rc.SetTarget(*rec.Ptrdname)
@@ -446,14 +511,14 @@ func nativeToRecords(set *adns.RecordSet, origin string) []*models.RecordConfig 
 		}
 	case "Microsoft.Network/dnszones/TXT":
 		if len(set.Properties.TxtRecords) == 0 { // Empty String Record Parsing
-			rc := &models.RecordConfig{TTL: uint32(*set.Properties.TTL)}
+			rc := &models.RecordConfig{TTL: uint32(*set.Properties.TTL), Original: set}
 			rc.SetLabelFromFQDN(*set.Properties.Fqdn, origin)
 			rc.Type = "TXT"
 			_ = rc.SetTargetTXT("")
 			results = append(results, rc)
 		} else {
 			for _, rec := range set.Properties.TxtRecords {
-				rc := &models.RecordConfig{TTL: uint32(*set.Properties.TTL)}
+				rc := &models.RecordConfig{TTL: uint32(*set.Properties.TTL), Original: set}
 				rc.SetLabelFromFQDN(*set.Properties.Fqdn, origin)
 				rc.Type = "TXT"
 				var txts []string
@@ -466,7 +531,7 @@ func nativeToRecords(set *adns.RecordSet, origin string) []*models.RecordConfig 
 		}
 	case "Microsoft.Network/dnszones/MX":
 		for _, rec := range set.Properties.MxRecords {
-			rc := &models.RecordConfig{TTL: uint32(*set.Properties.TTL)}
+			rc := &models.RecordConfig{TTL: uint32(*set.Properties.TTL), Original: set}
 			rc.SetLabelFromFQDN(*set.Properties.Fqdn, origin)
 			rc.Type = "MX"
 			_ = rc.SetTargetMX(uint16(*rec.Preference), *rec.Exchange)
@@ -474,7 +539,7 @@ func nativeToRecords(set *adns.RecordSet, origin string) []*models.RecordConfig 
 		}
 	case "Microsoft.Network/dnszones/SRV":
 		for _, rec := range set.Properties.SrvRecords {
-			rc := &models.RecordConfig{TTL: uint32(*set.Properties.TTL)}
+			rc := &models.RecordConfig{TTL: uint32(*set.Properties.TTL), Original: set}
 			rc.SetLabelFromFQDN(*set.Properties.Fqdn, origin)
 			rc.Type = "SRV"
 			_ = rc.SetTargetSRV(uint16(*rec.Priority), uint16(*rec.Weight), uint16(*rec.Port), *rec.Target)
@@ -482,7 +547,7 @@ func nativeToRecords(set *adns.RecordSet, origin string) []*models.RecordConfig 
 		}
 	case "Microsoft.Network/dnszones/CAA":
 		for _, rec := range set.Properties.CaaRecords {
-			rc := &models.RecordConfig{TTL: uint32(*set.Properties.TTL)}
+			rc := &models.RecordConfig{TTL: uint32(*set.Properties.TTL), Original: set}
 			rc.SetLabelFromFQDN(*set.Properties.Fqdn, origin)
 			rc.Type = "CAA"
 			_ = rc.SetTargetCAA(uint8(*rec.Flags), *rec.Tag, *rec.Value)

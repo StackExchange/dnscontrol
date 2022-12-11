@@ -450,4 +450,5 @@ func (c *axfrddnsProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*mod
 	// Insert Future diff2 version here.
 
 	return corrections, nil
+
 }
