@@ -7,6 +7,7 @@ import (
 
 	"github.com/StackExchange/dnscontrol/v3/models"
 	"github.com/StackExchange/dnscontrol/v3/pkg/diff"
+	"github.com/StackExchange/dnscontrol/v3/pkg/diff2"
 )
 
 func (api *domainNameShopProvider) GetZoneRecords(domain string) (models.Records, error) {
@@ -46,61 +47,67 @@ func (api *domainNameShopProvider) GetDomainCorrections(dc *models.DomainConfig)
 		record.TTL = fixTTL(record.TTL)
 	}
 
-	differ := diff.New(dc)
-	_, create, delete, modify, err := differ.IncrementalDiff(existingRecords)
-	if err != nil {
-		return nil, err
-	}
+	var corrections []*models.Correction
+	if !diff2.EnableDiff2 || true { // Remove "|| true" when diff2 version arrives
 
-	var corrections = []*models.Correction{}
-
-	// Delete record
-	for _, r := range delete {
-		domainID := r.Existing.Original.(*domainNameShopRecord).DomainID
-		recordID := strconv.Itoa(r.Existing.Original.(*domainNameShopRecord).ID)
-
-		corr := &models.Correction{
-			Msg: fmt.Sprintf("%s, record id: %s", r.String(), recordID),
-			F:   func() error { return api.deleteRecord(domainID, recordID) },
-		}
-		corrections = append(corrections, corr)
-	}
-
-	// Create records
-	for _, r := range create {
-		// Retrieve the domain name that is targeted. I.e. example.com instead of sub.example.com
-		domainName := strings.Replace(r.Desired.GetLabelFQDN(), r.Desired.GetLabel()+".", "", -1)
-
-		dnsR, err := api.fromRecordConfig(domainName, r.Desired)
+		differ := diff.New(dc)
+		_, create, delete, modify, err := differ.IncrementalDiff(existingRecords)
 		if err != nil {
 			return nil, err
 		}
 
-		corr := &models.Correction{
-			Msg: r.String(),
-			F:   func() error { return api.CreateRecord(domainName, dnsR) },
+		// Delete record
+		for _, r := range delete {
+			domainID := r.Existing.Original.(*domainNameShopRecord).DomainID
+			recordID := strconv.Itoa(r.Existing.Original.(*domainNameShopRecord).ID)
+
+			corr := &models.Correction{
+				Msg: fmt.Sprintf("%s, record id: %s", r.String(), recordID),
+				F:   func() error { return api.deleteRecord(domainID, recordID) },
+			}
+			corrections = append(corrections, corr)
 		}
 
-		corrections = append(corrections, corr)
+		// Create records
+		for _, r := range create {
+			// Retrieve the domain name that is targeted. I.e. example.com instead of sub.example.com
+			domainName := strings.Replace(r.Desired.GetLabelFQDN(), r.Desired.GetLabel()+".", "", -1)
+
+			dnsR, err := api.fromRecordConfig(domainName, r.Desired)
+			if err != nil {
+				return nil, err
+			}
+
+			corr := &models.Correction{
+				Msg: r.String(),
+				F:   func() error { return api.CreateRecord(domainName, dnsR) },
+			}
+
+			corrections = append(corrections, corr)
+		}
+
+		for _, r := range modify {
+			domainName := strings.Replace(r.Desired.GetLabelFQDN(), r.Desired.GetLabel()+".", "", -1)
+
+			dnsR, err := api.fromRecordConfig(domainName, r.Desired)
+			if err != nil {
+				return nil, err
+			}
+
+			dnsR.ID = r.Existing.Original.(*domainNameShopRecord).ID
+
+			corr := &models.Correction{
+				Msg: r.String(),
+				F:   func() error { return api.UpdateRecord(dnsR) },
+			}
+
+			corrections = append(corrections, corr)
+		}
+
+		return corrections, nil
 	}
 
-	for _, r := range modify {
-		domainName := strings.Replace(r.Desired.GetLabelFQDN(), r.Desired.GetLabel()+".", "", -1)
-
-		dnsR, err := api.fromRecordConfig(domainName, r.Desired)
-		if err != nil {
-			return nil, err
-		}
-
-		dnsR.ID = r.Existing.Original.(*domainNameShopRecord).ID
-
-		corr := &models.Correction{
-			Msg: r.String(),
-			F:   func() error { return api.UpdateRecord(dnsR) },
-		}
-
-		corrections = append(corrections, corr)
-	}
+	// Insert Future diff2 version here.
 
 	return corrections, nil
 }

@@ -7,6 +7,7 @@ import (
 
 	"github.com/StackExchange/dnscontrol/v3/models"
 	"github.com/StackExchange/dnscontrol/v3/pkg/diff"
+	"github.com/StackExchange/dnscontrol/v3/pkg/diff2"
 	"github.com/StackExchange/dnscontrol/v3/pkg/txtutil"
 	"github.com/StackExchange/dnscontrol/v3/providers"
 )
@@ -101,65 +102,71 @@ func (api *hetznerProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*mo
 	models.PostProcessRecords(existingRecords)
 	txtutil.SplitSingleLongTxt(dc.Records) // Autosplit long TXT records
 
-	differ := diff.New(dc)
-	_, create, del, modify, err := differ.IncrementalDiff(existingRecords)
-	if err != nil {
-		return nil, err
-	}
-
 	var corrections []*models.Correction
+	if !diff2.EnableDiff2 || true { // Remove "|| true" when diff2 version arrives
 
-	zone, err := api.getZone(domain)
-	if err != nil {
-		return nil, err
-	}
-
-	for _, m := range del {
-		record := m.Existing.Original.(*record)
-		corr := &models.Correction{
-			Msg: m.String(),
-			F: func() error {
-				return api.deleteRecord(*record)
-			},
+		differ := diff.New(dc)
+		_, create, del, modify, err := differ.IncrementalDiff(existingRecords)
+		if err != nil {
+			return nil, err
 		}
-		corrections = append(corrections, corr)
+
+		zone, err := api.getZone(domain)
+		if err != nil {
+			return nil, err
+		}
+
+		for _, m := range del {
+			record := m.Existing.Original.(*record)
+			corr := &models.Correction{
+				Msg: m.String(),
+				F: func() error {
+					return api.deleteRecord(*record)
+				},
+			}
+			corrections = append(corrections, corr)
+		}
+
+		var createRecords []record
+		createDescription := []string{"Batch creation of records:"}
+		for _, m := range create {
+			record := fromRecordConfig(m.Desired, zone)
+			createRecords = append(createRecords, *record)
+			createDescription = append(createDescription, m.String())
+		}
+		if len(createRecords) > 0 {
+			corr := &models.Correction{
+				Msg: strings.Join(createDescription, "\n\t"),
+				F: func() error {
+					return api.bulkCreateRecords(createRecords)
+				},
+			}
+			corrections = append(corrections, corr)
+		}
+
+		var modifyRecords []record
+		modifyDescription := []string{"Batch modification of records:"}
+		for _, m := range modify {
+			id := m.Existing.Original.(*record).ID
+			record := fromRecordConfig(m.Desired, zone)
+			record.ID = id
+			modifyRecords = append(modifyRecords, *record)
+			modifyDescription = append(modifyDescription, m.String())
+		}
+		if len(modifyRecords) > 0 {
+			corr := &models.Correction{
+				Msg: strings.Join(modifyDescription, "\n\t"),
+				F: func() error {
+					return api.bulkUpdateRecords(modifyRecords)
+				},
+			}
+			corrections = append(corrections, corr)
+		}
+
+		return corrections, nil
 	}
 
-	var createRecords []record
-	createDescription := []string{"Batch creation of records:"}
-	for _, m := range create {
-		record := fromRecordConfig(m.Desired, zone)
-		createRecords = append(createRecords, *record)
-		createDescription = append(createDescription, m.String())
-	}
-	if len(createRecords) > 0 {
-		corr := &models.Correction{
-			Msg: strings.Join(createDescription, "\n\t"),
-			F: func() error {
-				return api.bulkCreateRecords(createRecords)
-			},
-		}
-		corrections = append(corrections, corr)
-	}
-
-	var modifyRecords []record
-	modifyDescription := []string{"Batch modification of records:"}
-	for _, m := range modify {
-		id := m.Existing.Original.(*record).ID
-		record := fromRecordConfig(m.Desired, zone)
-		record.ID = id
-		modifyRecords = append(modifyRecords, *record)
-		modifyDescription = append(modifyDescription, m.String())
-	}
-	if len(modifyRecords) > 0 {
-		corr := &models.Correction{
-			Msg: strings.Join(modifyDescription, "\n\t"),
-			F: func() error {
-				return api.bulkUpdateRecords(modifyRecords)
-			},
-		}
-		corrections = append(corrections, corr)
-	}
+	// Insert Future diff2 version here.
 
 	return corrections, nil
 }

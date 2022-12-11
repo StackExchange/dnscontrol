@@ -34,6 +34,8 @@ func init() {
 
 func init() {
 	testing.Init()
+
+	flag.BoolVar(&diff2.EnableDiff2, "diff2", false, "enable diff2")
 	flag.Parse()
 }
 

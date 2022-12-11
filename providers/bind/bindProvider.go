@@ -257,6 +257,7 @@ func (c *bindProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*models.
 
 		buf := &bytes.Buffer{}
 		// Print a list of changes. Generate an actual change that is the zone
+
 		for _, i := range create {
 			changes = true
 			if c.zoneFileFound {
@@ -276,11 +277,13 @@ func (c *bindProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*models.
 			}
 		}
 
+		var msg string
 		if c.zoneFileFound {
 			msg = fmt.Sprintf("GENERATE_ZONEFILE: '%s'. Changes:\n%s", dc.Name, buf)
 		} else {
 			msg = fmt.Sprintf("GENERATE_ZONEFILE: '%s' (new file with %d records)\n", dc.Name, len(create))
 		}
+
 	} else {
 
 		var msgs []string
@@ -293,7 +296,7 @@ func (c *bindProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*models.
 
 	}
 
-	corrections := []*models.Correction{}
+	var corrections []*models.Correction
 	//fmt.Printf("DEBUG: BIND changes=%v\n", changes)
 	if changes {
 

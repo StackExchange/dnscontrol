@@ -25,6 +25,7 @@ import (
 
 	"github.com/StackExchange/dnscontrol/v3/models"
 	"github.com/StackExchange/dnscontrol/v3/pkg/diff"
+	"github.com/StackExchange/dnscontrol/v3/pkg/diff2"
 	"github.com/StackExchange/dnscontrol/v3/pkg/printer"
 	"github.com/StackExchange/dnscontrol/v3/pkg/txtutil"
 	"github.com/StackExchange/dnscontrol/v3/providers"
@@ -346,100 +347,107 @@ func (c *axfrddnsProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*mod
 	models.PostProcessRecords(foundRecords)
 	txtutil.SplitSingleLongTxt(dc.Records) // Autosplit long TXT records
 
-	differ := diff.New(dc)
-	_, create, del, mod, err := differ.IncrementalDiff(foundRecords)
-	if err != nil {
-		return nil, err
-	}
+	var corrections []*models.Correction
+	if !diff2.EnableDiff2 || true { // Remove "|| true" when diff2 version arrives
 
-	buf := &bytes.Buffer{}
-	// Print a list of changes. Generate an actual change that is the zone
-	changes := false
-	for _, i := range create {
-		changes = true
-		fmt.Fprintln(buf, i)
-	}
-	for _, i := range del {
-		changes = true
-		fmt.Fprintln(buf, i)
-	}
-	for _, i := range mod {
-		changes = true
-		fmt.Fprintln(buf, i)
-	}
-	msg := fmt.Sprintf("DDNS UPDATES to '%s' (primary master: '%s'). Changes:\n%s", dc.Name, c.master, buf)
+		differ := diff.New(dc)
+		_, create, del, mod, err := differ.IncrementalDiff(foundRecords)
+		if err != nil {
+			return nil, err
+		}
 
-	corrections := []*models.Correction{}
-	if changes {
+		buf := &bytes.Buffer{}
+		// Print a list of changes. Generate an actual change that is the zone
+		changes := false
+		for _, i := range create {
+			changes = true
+			fmt.Fprintln(buf, i)
+		}
+		for _, i := range del {
+			changes = true
+			fmt.Fprintln(buf, i)
+		}
+		for _, i := range mod {
+			changes = true
+			fmt.Fprintln(buf, i)
+		}
+		msg := fmt.Sprintf("DDNS UPDATES to '%s' (primary master: '%s'). Changes:\n%s", dc.Name, c.master, buf)
 
-		corrections = append(corrections,
-			&models.Correction{
-				Msg: msg,
-				F: func() error {
+		if changes {
 
-					// An RFC2136-compliant server must silently ignore an
-					// update that inserts a non-CNAME RRset when a CNAME RR
-					// with the same name is present in the zone (and
-					// vice-versa). Therefore we prefer to first remove records
-					// and then insert new ones.
-					//
-					// Compliant servers must also silently ignore an update
-					// that removes the last NS record of a zone. Therefore we
-					// don't want to remove all NS records before inserting a
-					// new one. For the particular case of NS record, we prefer
-					// to insert new records before ot remove old ones.
-					//
-					// This remarks does not apply for "modified" NS records, as
-					// updates are processed one-by-one.
-					//
-					// This provider does not allow modifying the TTL of an NS
-					// record in a zone that defines only one NS. That would
-					// would require removing the single NS record, before
-					// adding the new one. But who does that anyway?
+			corrections = append(corrections,
+				&models.Correction{
+					Msg: msg,
+					F: func() error {
 
-					update := new(dns.Msg)
-					update.SetUpdate(dc.Name + ".")
-					update.Id = uint16(c.rand.Intn(math.MaxUint16))
-					for _, c := range create {
-						if c.Desired.Type == "NS" {
+						// An RFC2136-compliant server must silently ignore an
+						// update that inserts a non-CNAME RRset when a CNAME RR
+						// with the same name is present in the zone (and
+						// vice-versa). Therefore we prefer to first remove records
+						// and then insert new ones.
+						//
+						// Compliant servers must also silently ignore an update
+						// that removes the last NS record of a zone. Therefore we
+						// don't want to remove all NS records before inserting a
+						// new one. For the particular case of NS record, we prefer
+						// to insert new records before ot remove old ones.
+						//
+						// This remarks does not apply for "modified" NS records, as
+						// updates are processed one-by-one.
+						//
+						// This provider does not allow modifying the TTL of an NS
+						// record in a zone that defines only one NS. That would
+						// would require removing the single NS record, before
+						// adding the new one. But who does that anyway?
+
+						update := new(dns.Msg)
+						update.SetUpdate(dc.Name + ".")
+						update.Id = uint16(c.rand.Intn(math.MaxUint16))
+						for _, c := range create {
+							if c.Desired.Type == "NS" {
+								update.Insert([]dns.RR{c.Desired.ToRR()})
+							}
+						}
+						for _, c := range del {
+							update.Remove([]dns.RR{c.Existing.ToRR()})
+						}
+						for _, c := range mod {
+							update.Remove([]dns.RR{c.Existing.ToRR()})
 							update.Insert([]dns.RR{c.Desired.ToRR()})
 						}
-					}
-					for _, c := range del {
-						update.Remove([]dns.RR{c.Existing.ToRR()})
-					}
-					for _, c := range mod {
-						update.Remove([]dns.RR{c.Existing.ToRR()})
-						update.Insert([]dns.RR{c.Desired.ToRR()})
-					}
-					for _, c := range create {
-						if c.Desired.Type != "NS" {
-							update.Insert([]dns.RR{c.Desired.ToRR()})
+						for _, c := range create {
+							if c.Desired.Type != "NS" {
+								update.Insert([]dns.RR{c.Desired.ToRR()})
+							}
 						}
-					}
 
-					client := new(dns.Client)
-					client.Net = c.updateMode
-					client.Timeout = dnsTimeout
-					if c.updateKey != nil {
-						client.TsigSecret =
-							map[string]string{c.updateKey.id: c.updateKey.secret}
-						update.SetTsig(c.updateKey.id, c.updateKey.algo, 300, time.Now().Unix())
-					}
+						client := new(dns.Client)
+						client.Net = c.updateMode
+						client.Timeout = dnsTimeout
+						if c.updateKey != nil {
+							client.TsigSecret =
+								map[string]string{c.updateKey.id: c.updateKey.secret}
+							update.SetTsig(c.updateKey.id, c.updateKey.algo, 300, time.Now().Unix())
+						}
 
-					msg, _, err := client.Exchange(update, c.master)
-					if err != nil {
-						return err
-					}
-					if msg.MsgHdr.Rcode != 0 {
-						return fmt.Errorf("[Error] AXFRDDNS: nameserver refused to update the zone: %s (%d)",
-							dns.RcodeToString[msg.MsgHdr.Rcode],
-							msg.MsgHdr.Rcode)
-					}
+						msg, _, err := client.Exchange(update, c.master)
+						if err != nil {
+							return err
+						}
+						if msg.MsgHdr.Rcode != 0 {
+							return fmt.Errorf("[Error] AXFRDDNS: nameserver refused to update the zone: %s (%d)",
+								dns.RcodeToString[msg.MsgHdr.Rcode],
+								msg.MsgHdr.Rcode)
+						}
 
-					return nil
-				},
-			})
+						return nil
+					},
+				})
+		}
+		return corrections, nil
 	}
+
+	// Insert Future diff2 version here.
+
 	return corrections, nil
 }

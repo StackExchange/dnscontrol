@@ -391,6 +391,7 @@ func (a *azurednsProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*mod
 					},
 				})
 		}
+
 	}
 
 	return corrections, nil

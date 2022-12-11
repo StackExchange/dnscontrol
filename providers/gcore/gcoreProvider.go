@@ -8,6 +8,7 @@ import (
 
 	"github.com/StackExchange/dnscontrol/v3/models"
 	"github.com/StackExchange/dnscontrol/v3/pkg/diff"
+	"github.com/StackExchange/dnscontrol/v3/pkg/diff2"
 	"github.com/StackExchange/dnscontrol/v3/providers"
 
 	dnssdk "github.com/G-Core/gcore-dns-sdk-go"
@@ -151,86 +152,92 @@ func generateChangeMsg(updates []string) string {
 // made.
 func (c *gcoreProvider) GenerateDomainCorrections(dc *models.DomainConfig, existing models.Records) ([]*models.Correction, error) {
 
-	var corrections = []*models.Correction{}
+	var corrections []*models.Correction
+	if !diff2.EnableDiff2 || true { // Remove "|| true" when diff2 version arrives
 
-	// diff existing vs. current.
-	differ := diff.New(dc)
-	keysToUpdate, err := differ.ChangedGroups(existing)
-	if err != nil {
-		return nil, err
-	}
-	if len(keysToUpdate) == 0 {
-		return nil, nil
-	}
-
-	desiredRecords := dc.Records.GroupedByKey()
-	existingRecords := existing.GroupedByKey()
-
-	// First pass: delete records to avoid coexisting of conflicting types
-	for label := range keysToUpdate {
-		if _, ok := desiredRecords[label]; !ok {
-			// record deleted in update
-			// Copy all params to avoid overwrites
-			zone := dc.Name
-			name := label.NameFQDN
-			typ := label.Type
-			msg := generateChangeMsg(keysToUpdate[label])
-			corrections = append(corrections, &models.Correction{
-				Msg: msg,
-				F: func() error {
-					return c.provider.DeleteRRSet(c.ctx, zone, name, typ)
-				},
-			})
+		// diff existing vs. current.
+		differ := diff.New(dc)
+		keysToUpdate, err := differ.ChangedGroups(existing)
+		if err != nil {
+			return nil, err
 		}
-	}
-
-	// Second pass: create and update records
-	for label := range keysToUpdate {
-		if _, ok := desiredRecords[label]; !ok {
-			// record deleted in update
-			// do nothing here
-
-		} else if _, ok := existingRecords[label]; !ok {
-			// record created in update
-			record := recordsToNative(desiredRecords[label], label)
-			if record == nil {
-				panic("No records matching label")
-			}
-
-			// Copy all params to avoid overwrites
-			zone := dc.Name
-			name := label.NameFQDN
-			typ := label.Type
-			rec := *record
-			msg := generateChangeMsg(keysToUpdate[label])
-			corrections = append(corrections, &models.Correction{
-				Msg: msg,
-				F: func() error {
-					return c.provider.CreateRRSet(c.ctx, zone, name, typ, rec)
-				},
-			})
-
-		} else {
-			// record modified in update
-			record := recordsToNative(desiredRecords[label], label)
-			if record == nil {
-				panic("No records matching label")
-			}
-
-			// Copy all params to avoid overwrites
-			zone := dc.Name
-			name := label.NameFQDN
-			typ := label.Type
-			rec := *record
-			msg := generateChangeMsg(keysToUpdate[label])
-			corrections = append(corrections, &models.Correction{
-				Msg: msg,
-				F: func() error {
-					return c.provider.UpdateRRSet(c.ctx, zone, name, typ, rec)
-				},
-			})
+		if len(keysToUpdate) == 0 {
+			return nil, nil
 		}
+
+		desiredRecords := dc.Records.GroupedByKey()
+		existingRecords := existing.GroupedByKey()
+
+		// First pass: delete records to avoid coexisting of conflicting types
+		for label := range keysToUpdate {
+			if _, ok := desiredRecords[label]; !ok {
+				// record deleted in update
+				// Copy all params to avoid overwrites
+				zone := dc.Name
+				name := label.NameFQDN
+				typ := label.Type
+				msg := generateChangeMsg(keysToUpdate[label])
+				corrections = append(corrections, &models.Correction{
+					Msg: msg,
+					F: func() error {
+						return c.provider.DeleteRRSet(c.ctx, zone, name, typ)
+					},
+				})
+			}
+		}
+
+		// Second pass: create and update records
+		for label := range keysToUpdate {
+			if _, ok := desiredRecords[label]; !ok {
+				// record deleted in update
+				// do nothing here
+
+			} else if _, ok := existingRecords[label]; !ok {
+				// record created in update
+				record := recordsToNative(desiredRecords[label], label)
+				if record == nil {
+					panic("No records matching label")
+				}
+
+				// Copy all params to avoid overwrites
+				zone := dc.Name
+				name := label.NameFQDN
+				typ := label.Type
+				rec := *record
+				msg := generateChangeMsg(keysToUpdate[label])
+				corrections = append(corrections, &models.Correction{
+					Msg: msg,
+					F: func() error {
+						return c.provider.CreateRRSet(c.ctx, zone, name, typ, rec)
+					},
+				})
+
+			} else {
+				// record modified in update
+				record := recordsToNative(desiredRecords[label], label)
+				if record == nil {
+					panic("No records matching label")
+				}
+
+				// Copy all params to avoid overwrites
+				zone := dc.Name
+				name := label.NameFQDN
+				typ := label.Type
+				rec := *record
+				msg := generateChangeMsg(keysToUpdate[label])
+				corrections = append(corrections, &models.Correction{
+					Msg: msg,
+					F: func() error {
+						return c.provider.UpdateRRSet(c.ctx, zone, name, typ, rec)
+					},
+				})
+			}
+		}
+
+		return corrections, nil
 	}
+
+	// Insert Future diff2 version here.
 
 	return corrections, nil
 }
