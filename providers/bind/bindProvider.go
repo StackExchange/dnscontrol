@@ -246,17 +246,8 @@ func (c *bindProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*models.
 
 	changes := false
 	var msg string
-	if diff2.EnableDiff2 {
 
-		var msgs []string
-		msgs, changes, err = diff2.ByZone(foundRecords, dc, nil)
-		if err != nil {
-			return nil, err
-		}
-		//fmt.Printf("DEBUG: BIND changes=%v\n", changes)
-		msg = strings.Join(msgs, "\n")
-
-	} else {
+	if !diff2.EnableDiff2 {
 
 		differ := diff.New(dc)
 		_, create, del, mod, err := differ.IncrementalDiff(foundRecords)
@@ -290,6 +281,16 @@ func (c *bindProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*models.
 		} else {
 			msg = fmt.Sprintf("GENERATE_ZONEFILE: '%s' (new file with %d records)\n", dc.Name, len(create))
 		}
+	} else {
+
+		var msgs []string
+		msgs, changes, err = diff2.ByZone(foundRecords, dc, nil)
+		if err != nil {
+			return nil, err
+		}
+		//fmt.Printf("DEBUG: BIND changes=%v\n", changes)
+		msg = strings.Join(msgs, "\n")
+
 	}
 
 	corrections := []*models.Correction{}
