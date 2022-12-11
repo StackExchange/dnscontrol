@@ -347,7 +347,8 @@ func (c *axfrddnsProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*mod
 	models.PostProcessRecords(foundRecords)
 	txtutil.SplitSingleLongTxt(dc.Records) // Autosplit long TXT records
 
-	if !diff2.EnableDiff2 || true { // Remove the "|| true" when the diff2 version is ready.
+	var corrections []*models.Correction
+	if !diff2.EnableDiff2 || true { // Remove "|| true" when diff2 version arrives
 
 		differ := diff.New(dc)
 		_, create, del, mod, err := differ.IncrementalDiff(foundRecords)
@@ -372,7 +373,6 @@ func (c *axfrddnsProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*mod
 		}
 		msg := fmt.Sprintf("DDNS UPDATES to '%s' (primary master: '%s'). Changes:\n%s", dc.Name, c.master, buf)
 
-		corrections := []*models.Correction{}
 		if changes {
 
 			corrections = append(corrections,
@@ -444,9 +444,7 @@ func (c *axfrddnsProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*mod
 					},
 				})
 		}
-
 		return corrections, nil
-
 	}
 
 	// Insert Future diff2 version here.

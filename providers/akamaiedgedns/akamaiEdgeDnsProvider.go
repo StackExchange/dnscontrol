@@ -122,7 +122,8 @@ func (a *edgeDNSProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*mode
 	models.PostProcessRecords(existingRecords)
 	txtutil.SplitSingleLongTxt(dc.Records)
 
-	if !diff2.EnableDiff2 || true {
+	var corrections []*models.Correction
+	if !diff2.EnableDiff2 || true { // Remove "|| true" when diff2 version arrives
 
 		keysToUpdate, err := (diff.New(dc)).ChangedGroups(existingRecords)
 		if err != nil {
@@ -143,7 +144,6 @@ func (a *edgeDNSProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*mode
 		//    CREATE A foo.example.net
 		// because both an A and a CNAME for the same name is not allowed.
 
-		corrections := []*models.Correction{}     // deletes first
 		lastCorrections := []*models.Correction{} // creates and replaces last
 
 		for key, msg := range keysToUpdate {
@@ -221,11 +221,11 @@ func (a *edgeDNSProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*mode
 		}
 
 		return corrections, nil
-
 	}
 
 	// Insert Future diff2 version here.
 
+	return corrections, nil
 }
 
 // GetNameservers returns the nameservers for a domain.

@@ -105,7 +105,7 @@ func (c *cloudnsProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*mode
 	}
 
 	var corrections []*models.Correction
-	if !diff2.EnableDiff2 || true { // Remove the "|| true" when the diff2 version is ready.
+	if !diff2.EnableDiff2 || true { // Remove "|| true" when diff2 version arrives
 
 		differ := diff.New(dc)
 		_, create, del, modify, err := differ.IncrementalDiff(existingRecords)

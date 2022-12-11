@@ -8,6 +8,7 @@ import (
 
 	"github.com/StackExchange/dnscontrol/v3/models"
 	"github.com/StackExchange/dnscontrol/v3/pkg/diff"
+	"github.com/StackExchange/dnscontrol/v3/pkg/diff2"
 	"github.com/StackExchange/dnscontrol/v3/pkg/printer"
 	"github.com/StackExchange/dnscontrol/v3/providers"
 	"github.com/softlayer/softlayer-go/datatypes"
@@ -67,7 +68,6 @@ func (s *softlayerProvider) GetZoneRecords(domain string) (models.Records, error
 
 // GetDomainCorrections returns corrections to update a domain.
 func (s *softlayerProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Correction, error) {
-	corrections := []*models.Correction{}
 
 	domain, err := s.getDomain(&dc.Name)
 
@@ -81,33 +81,41 @@ func (s *softlayerProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*mo
 		return nil, err
 	}
 
-	_, create, delete, modify, err := diff.New(dc).IncrementalDiff(actual)
-	if err != nil {
-		return nil, err
+	var corrections []*models.Correction
+	if !diff2.EnableDiff2 || true { // Remove "|| true" when diff2 version arrives
+
+		_, create, delete, modify, err := diff.New(dc).IncrementalDiff(actual)
+		if err != nil {
+			return nil, err
+		}
+
+		for _, del := range delete {
+			existing := del.Existing.Original.(datatypes.Dns_Domain_ResourceRecord)
+			corrections = append(corrections, &models.Correction{
+				Msg: del.String(),
+				F:   s.deleteRecordFunc(*existing.Id),
+			})
+		}
+
+		for _, cre := range create {
+			corrections = append(corrections, &models.Correction{
+				Msg: cre.String(),
+				F:   s.createRecordFunc(cre.Desired, domain),
+			})
+		}
+
+		for _, mod := range modify {
+			existing := mod.Existing.Original.(datatypes.Dns_Domain_ResourceRecord)
+			corrections = append(corrections, &models.Correction{
+				Msg: mod.String(),
+				F:   s.updateRecordFunc(&existing, mod.Desired),
+			})
+		}
+
+		return corrections, nil
 	}
 
-	for _, del := range delete {
-		existing := del.Existing.Original.(datatypes.Dns_Domain_ResourceRecord)
-		corrections = append(corrections, &models.Correction{
-			Msg: del.String(),
-			F:   s.deleteRecordFunc(*existing.Id),
-		})
-	}
-
-	for _, cre := range create {
-		corrections = append(corrections, &models.Correction{
-			Msg: cre.String(),
-			F:   s.createRecordFunc(cre.Desired, domain),
-		})
-	}
-
-	for _, mod := range modify {
-		existing := mod.Existing.Original.(datatypes.Dns_Domain_ResourceRecord)
-		corrections = append(corrections, &models.Correction{
-			Msg: mod.String(),
-			F:   s.updateRecordFunc(&existing, mod.Desired),
-		})
-	}
+	// Insert Future diff2 version here.
 
 	return corrections, nil
 }

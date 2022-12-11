@@ -142,6 +142,7 @@ func (c *dnsimpleProvider) GetZoneRecords(domain string) (models.Records, error)
 // GetDomainCorrections returns corrections that update a domain.
 func (c *dnsimpleProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Correction, error) {
 	var corrections []*models.Correction
+
 	err := dc.Punycode()
 	if err != nil {
 		return nil, err
@@ -164,7 +165,7 @@ func (c *dnsimpleProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*mod
 	// Normalize
 	models.PostProcessRecords(actual)
 
-	if !diff2.EnableDiff2 || true {
+	if !diff2.EnableDiff2 || true { // Remove "|| true" when diff2 version arrives
 
 		differ := diff.New(dc)
 		_, create, del, modify, err := differ.IncrementalDiff(actual)

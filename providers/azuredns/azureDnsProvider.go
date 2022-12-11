@@ -189,8 +189,6 @@ func (a *azurednsProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*mod
 		return nil, err
 	}
 
-	var corrections []*models.Correction
-
 	existingRecords, records, zoneName, err := a.getExistingRecords(dc.Name)
 	if err != nil {
 		return nil, err
@@ -198,72 +196,8 @@ func (a *azurednsProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*mod
 
 	txtutil.SplitSingleLongTxt(dc.Records) // Autosplit long TXT records
 
-	if diff2.EnableDiff2 {
-
-		// Azure is a "ByRSet" API.
-
-		instructions, err := diff2.ByLabel(existingRecords, dc, nil)
-		if err != nil {
-			return nil, err
-		}
-
-		for _, inst := range instructions {
-			switch inst.Type {
-
-			case diff2.CHANGE, diff2.CREATE:
-				var rrset *adns.RecordSet
-				var recordName string
-				var recordType adns.RecordType
-				if len(inst.Old) == 0 { // Create
-					rrset = &adns.RecordSet{Type: to.StringPtr(inst.Key.Type), Properties: &adns.RecordSetProperties{}}
-					recordType, _ = nativeToRecordType(to.StringPtr(inst.Key.Type))
-					recordName = inst.Key.NameFQDN
-				} else { // Change
-					rrset = inst.Old[0].Original.(*adns.RecordSet)
-					recordType, _ = nativeToRecordType(to.StringPtr(*rrset.Type))
-					recordName = *rrset.Name
-				}
-				// ^^^ this is broken and can probably be cleaned up significantly by
-				// someone that understands Azure's API.
-
-				corrections = append(corrections,
-					&models.Correction{
-						Msg: strings.Join(inst.Msgs, "\n"),
-						F: func() error {
-							ctx, cancel := context.WithTimeout(context.Background(), 6000*time.Second)
-							defer cancel()
-							_, err := a.recordsClient.CreateOrUpdate(ctx, *a.resourceGroup, zoneName, recordName, recordType, *rrset, nil)
-							if err != nil {
-								return err
-							}
-							return nil
-						},
-					})
-
-			case diff2.DELETE:
-				fmt.Printf("DEBUG: azure inst=%s\n", inst)
-				rrset := inst.Old[0].Original.(*adns.RecordSet)
-				corrections = append(corrections,
-					&models.Correction{
-						Msg: strings.Join(inst.Msgs, "\n"),
-						F: func() error {
-							ctx, cancel := context.WithTimeout(context.Background(), 6000*time.Second)
-							defer cancel()
-							rt, err := nativeToRecordType(rrset.Type)
-							if err != nil {
-								return err
-							}
-							_, err = a.recordsClient.Delete(ctx, *a.resourceGroup, zoneName, *rrset.Name, rt, nil)
-							if err != nil {
-								return err
-							}
-							return nil
-						},
-					})
-			}
-		}
-
-	} else {
+	var corrections []*models.Correction
+	if !diff2.EnableDiff2 {
 
 		differ := diff.New(dc)
 		namesToUpdate, err := differ.ChangedGroups(existingRecords)
@@ -392,6 +326,72 @@ func (a *azurednsProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*mod
 		// this next line, or (even better) put any order-dependent
 		// operations in a single models.Correction{}.
 		sort.Slice(corrections, func(i, j int) bool { return diff.CorrectionLess(corrections, i, j) })
+
+		return corrections, nil
+	}
+
+	// Azure is a "ByRSet" API.
+
+	instructions, err := diff2.ByLabel(existingRecords, dc, nil)
+	if err != nil {
+		return nil, err
+	}
+
+	for _, inst := range instructions {
+		switch inst.Type {
+
+		case diff2.CHANGE, diff2.CREATE:
+			var rrset *adns.RecordSet
+			var recordName string
+			var recordType adns.RecordType
+			if len(inst.Old) == 0 { // Create
+				rrset = &adns.RecordSet{Type: to.StringPtr(inst.Key.Type), Properties: &adns.RecordSetProperties{}}
+				recordType, _ = nativeToRecordType(to.StringPtr(inst.Key.Type))
+				recordName = inst.Key.NameFQDN
+			} else { // Change
+				rrset = inst.Old[0].Original.(*adns.RecordSet)
+				recordType, _ = nativeToRecordType(to.StringPtr(*rrset.Type))
+				recordName = *rrset.Name
+			}
+			// ^^^ this is broken and can probably be cleaned up significantly by
+			// someone that understands Azure's API.
+
+			corrections = append(corrections,
+				&models.Correction{
+					Msg: strings.Join(inst.Msgs, "\n"),
+					F: func() error {
+						ctx, cancel := context.WithTimeout(context.Background(), 6000*time.Second)
+						defer cancel()
+						_, err := a.recordsClient.CreateOrUpdate(ctx, *a.resourceGroup, zoneName, recordName, recordType, *rrset, nil)
+						if err != nil {
+							return err
+						}
+						return nil
+					},
+				})
+
+		case diff2.DELETE:
+			fmt.Printf("DEBUG: azure inst=%s\n", inst)
+			rrset := inst.Old[0].Original.(*adns.RecordSet)
+			corrections = append(corrections,
+				&models.Correction{
+					Msg: strings.Join(inst.Msgs, "\n"),
+					F: func() error {
+						ctx, cancel := context.WithTimeout(context.Background(), 6000*time.Second)
+						defer cancel()
+						rt, err := nativeToRecordType(rrset.Type)
+						if err != nil {
+							return err
+						}
+						_, err = a.recordsClient.Delete(ctx, *a.resourceGroup, zoneName, *rrset.Name, rt, nil)
+						if err != nil {
+							return err
+						}
+						return nil
+					},
+				})
+		}
+
 	}
 
 	return corrections, nil

@@ -223,7 +223,8 @@ func (c *cloudflareProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*m
 	// Therefore, whether the string is 1 octet or thousands, just store it as
 	// one string in the first element of .TxtStrings.
 
-	if !diff2.EnableDiff2 || true { // Remove the "|| true" when the diff2 version is ready.
+	var corrections []*models.Correction
+	if !diff2.EnableDiff2 || true { // Remove "|| true" when diff2 version arrives
 
 		differ := diff.New(dc, getProxyMetadata)
 		_, create, del, mod, err := differ.IncrementalDiff(records)
@@ -320,10 +321,10 @@ func (c *cloudflareProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*m
 		}
 
 		return corrections, nil
-
 	}
 
 	// Insert Future diff2 version here.
+
 	return corrections, nil
 
 }

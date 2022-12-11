@@ -92,7 +92,8 @@ func (api *autoDNSProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*mo
 	models.PostProcessRecords(existingRecords)
 	txtutil.SplitSingleLongTxt(dc.Records) // Autosplit long TXT records
 
-	if !diff2.EnableDiff2 || true { // Remove the "|| true" when the diff2 version is ready.
+	var corrections []*models.Correction
+	if !diff2.EnableDiff2 || true { // Remove "|| true" when diff2 version arrives
 
 		differ := diff.New(dc)
 		unchanged, create, del, modify, err := differ.IncrementalDiff(existingRecords)
@@ -119,8 +120,6 @@ func (api *autoDNSProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*mo
 			printer.Debugf(m.String())
 			changes = append(changes, m.Desired)
 		}
-
-		var corrections []*models.Correction
 
 		if len(create) > 0 || len(del) > 0 || len(modify) > 0 {
 			corrections = append(corrections,

@@ -117,8 +117,8 @@ func (client *providerClient) GenerateDomainCorrections(dc *models.DomainConfig,
 	models.PostProcessRecords(foundRecords)
 	//txtutil.SplitSingleLongTxt(dc.Records) // Autosplit long TXT records
 
-	corrections := []*models.Correction{}
-	if !diff2.EnableDiff2 || true { // Remove the "|| true" when the diff2 version is ready.
+	var corrections []*models.Correction
+	if !diff2.EnableDiff2 || true { // Remove "|| true" when diff2 version arrives
 
 		differ := diff.New(dc)
 		_, creates, dels, modifications, err := differ.IncrementalDiff(foundRecords)
@@ -168,6 +168,7 @@ func (client *providerClient) GenerateDomainCorrections(dc *models.DomainConfig,
 			edits = append(edits, makeEdit(dc.Name, m))
 			descriptions = append(descriptions, m.String())
 		}
+		corrections := []*models.Correction{}
 		if len(edits) > 0 {
 			c := &models.Correction{
 				Msg: "\t" + strings.Join(descriptions, "\n\t"),
@@ -188,10 +189,10 @@ func (client *providerClient) GenerateDomainCorrections(dc *models.DomainConfig,
 			corrections = append(corrections, c)
 		}
 		return corrections, nil
-
 	}
 
-	// Future diff2 version
+	// Insert Future diff2 version here.
+
 	return corrections, nil
 
 }

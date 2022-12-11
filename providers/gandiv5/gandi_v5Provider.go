@@ -227,10 +227,9 @@ func (client *gandiv5Provider) GenerateDomainCorrections(dc *models.DomainConfig
 		debugRecords("GenDC input", existing)
 	}
 
-	var corrections = []*models.Correction{}
-
 	txtutil.SplitSingleLongTxt(dc.Records) // Autosplit long TXT records
 
+	var corrections []*models.Correction
 	if !diff2.EnableDiff2 {
 
 		// diff existing vs. current.

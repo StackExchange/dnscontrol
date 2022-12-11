@@ -29,11 +29,9 @@ var printElapsed = flag.Bool("elapsed", false, "Print elapsed time for each test
 var enableCFWorkers = flag.Bool("cfworkers", true, "Set false to disable CF worker tests")
 
 func init() {
-	flag.BoolVar(&diff2.EnableDiff2, "diff2", false, "enable diff2")
-}
-
-func init() {
 	testing.Init()
+
+	flag.BoolVar(&diff2.EnableDiff2, "diff2", false, "enable diff2")
 	flag.Parse()
 }
 

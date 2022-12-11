@@ -191,7 +191,7 @@ func (c *exoscaleProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*mod
 	models.PostProcessRecords(existingRecords)
 
 	var corrections []*models.Correction
-	if !diff2.EnableDiff2 || true {
+	if !diff2.EnableDiff2 || true { // Remove "|| true" when diff2 version arrives
 
 		differ := diff.New(dc)
 		_, create, delete, modify, err := differ.IncrementalDiff(existingRecords)

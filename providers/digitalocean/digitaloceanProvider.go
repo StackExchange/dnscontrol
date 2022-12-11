@@ -147,7 +147,7 @@ func (api *digitaloceanProvider) GetDomainCorrections(dc *models.DomainConfig) (
 	txtutil.SplitSingleLongTxt(dc.Records) // Autosplit long TXT records
 
 	var corrections []*models.Correction
-	if !diff2.EnableDiff2 || true {
+	if !diff2.EnableDiff2 || true { // Remove "|| true" when diff2 version arrives
 
 		differ := diff.New(dc)
 		_, create, delete, modify, err := differ.IncrementalDiff(existingRecords)

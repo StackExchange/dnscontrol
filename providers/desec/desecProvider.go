@@ -166,7 +166,7 @@ func PrepDesiredRecords(dc *models.DomainConfig, minTTL uint32) {
 func (c *desecProvider) GenerateDomainCorrections(dc *models.DomainConfig, existing models.Records) ([]*models.Correction, error) {
 
 	var corrections []*models.Correction
-	if !diff2.EnableDiff2 || true { // Remove the "|| true" when the diff2 version is ready.
+	if !diff2.EnableDiff2 || true { // Remove "|| true" when diff2 version arrives
 
 		// diff existing vs. current.
 		differ := diff.New(dc)
@@ -245,6 +245,8 @@ func (c *desecProvider) GenerateDomainCorrections(dc *models.DomainConfig, exist
 
 		return corrections, nil
 	}
+
+	// Insert Future diff2 version here.
 
 	// Insert Future diff2 version here.
 	return corrections, nil
