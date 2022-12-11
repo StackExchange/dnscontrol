@@ -13,6 +13,7 @@ import (
 
 	"github.com/StackExchange/dnscontrol/v3/models"
 	"github.com/StackExchange/dnscontrol/v3/pkg/diff"
+	"github.com/StackExchange/dnscontrol/v3/pkg/diff2"
 	"github.com/StackExchange/dnscontrol/v3/pkg/printer"
 	"github.com/StackExchange/dnscontrol/v3/pkg/txtutil"
 	"github.com/StackExchange/dnscontrol/v3/providers"
@@ -261,8 +262,6 @@ func (r *route53Provider) getZoneRecords(zone r53Types.HostedZone) (models.Recor
 func (r *route53Provider) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Correction, error) {
 	dc.Punycode()
 
-	var corrections = []*models.Correction{}
-
 	zone, err := r.getZone(dc)
 	if err != nil {
 		return nil, err
@@ -284,108 +283,134 @@ func (r *route53Provider) GetDomainCorrections(dc *models.DomainConfig) ([]*mode
 	models.PostProcessRecords(existingRecords)
 	txtutil.SplitSingleLongTxt(dc.Records) // Autosplit long TXT records
 
-	// diff
-	differ := diff.New(dc, getAliasMap)
-	namesToUpdate, err := differ.ChangedGroups(existingRecords)
-	if err != nil {
-		return nil, err
-	}
+	var corrections []*models.Correction
+	if !diff2.EnableDiff2 || true { // Remove "|| true" when diff2 version arrives
 
-	if len(namesToUpdate) == 0 {
-		return nil, nil
-	}
+		// diff
+		differ := diff.New(dc, getAliasMap)
+		namesToUpdate, err := differ.ChangedGroups(existingRecords)
+		if err != nil {
+			return nil, err
+		}
 
-	updates := map[models.RecordKey][]*models.RecordConfig{}
+		if len(namesToUpdate) == 0 {
+			return nil, nil
+		}
 
-	// for each name we need to update, collect relevant records from our desired domain state
-	for k := range namesToUpdate {
-		updates[k] = nil
-		for _, rc := range dc.Records {
-			if rc.Key() == k {
-				updates[k] = append(updates[k], rc)
+		updates := map[models.RecordKey][]*models.RecordConfig{}
+
+		// for each name we need to update, collect relevant records from our desired domain state
+		for k := range namesToUpdate {
+			updates[k] = nil
+			for _, rc := range dc.Records {
+				if rc.Key() == k {
+					updates[k] = append(updates[k], rc)
+				}
 			}
 		}
-	}
 
-	// updateOrder is the order that the updates will happen.
-	// The order should be sorted by NameFQDN, then Type, with R53_ALIAS_*
-	// types sorted after all other types. R53_ALIAS_* needs to be last
-	// because they are order dependent (aliases must refer to labels
-	// that already exist).
-	var updateOrder []models.RecordKey
-	// Collect the keys
-	for k := range updates {
-		updateOrder = append(updateOrder, k)
-	}
-	// Sort themm
-	sort.Slice(updateOrder, func(i, j int) bool {
-		if updateOrder[i].Type == updateOrder[j].Type {
+		// updateOrder is the order that the updates will happen.
+		// The order should be sorted by NameFQDN, then Type, with R53_ALIAS_*
+		// types sorted after all other types. R53_ALIAS_* needs to be last
+		// because they are order dependent (aliases must refer to labels
+		// that already exist).
+		var updateOrder []models.RecordKey
+		// Collect the keys
+		for k := range updates {
+			updateOrder = append(updateOrder, k)
+		}
+		// Sort themm
+		sort.Slice(updateOrder, func(i, j int) bool {
+			if updateOrder[i].Type == updateOrder[j].Type {
+				return updateOrder[i].NameFQDN < updateOrder[j].NameFQDN
+			}
+
+			if strings.HasPrefix(updateOrder[i].Type, "R53_ALIAS_") {
+				return false
+			}
+			if strings.HasPrefix(updateOrder[j].Type, "R53_ALIAS_") {
+				return true
+			}
+
+			if updateOrder[i].NameFQDN == updateOrder[j].NameFQDN {
+				return updateOrder[i].Type < updateOrder[j].Type
+			}
 			return updateOrder[i].NameFQDN < updateOrder[j].NameFQDN
-		}
+		})
 
-		if strings.HasPrefix(updateOrder[i].Type, "R53_ALIAS_") {
-			return false
-		}
-		if strings.HasPrefix(updateOrder[j].Type, "R53_ALIAS_") {
-			return true
-		}
+		// we collect all changes into one of two categories now:
+		// pure deletions where we delete an entire record set,
+		// or changes where we upsert an entire record set.
+		dels := []r53Types.Change{}
+		delDesc := []string{}
+		changes := []r53Types.Change{}
+		changeDesc := []string{}
 
-		if updateOrder[i].NameFQDN == updateOrder[j].NameFQDN {
-			return updateOrder[i].Type < updateOrder[j].Type
-		}
-		return updateOrder[i].NameFQDN < updateOrder[j].NameFQDN
-	})
-
-	// we collect all changes into one of two categories now:
-	// pure deletions where we delete an entire record set,
-	// or changes where we upsert an entire record set.
-	dels := []r53Types.Change{}
-	delDesc := []string{}
-	changes := []r53Types.Change{}
-	changeDesc := []string{}
-
-	for _, k := range updateOrder {
-		recs := updates[k]
-		// If there are no records in our desired state for a key, this
-		// indicates we should delete all records at that key.
-		if len(recs) == 0 {
-			// To delete, we submit the original resource set we got from r53.
-			var (
-				rrset r53Types.ResourceRecordSet
-				found bool
-			)
-			// Find the original resource set:
-			for _, r := range r.originalRecords {
-				if unescape(r.Name) == k.NameFQDN && (string(r.Type) == k.Type || k.Type == "R53_ALIAS_"+string(r.Type)) {
-					rrset = r
-					found = true
-					break
+		for _, k := range updateOrder {
+			recs := updates[k]
+			// If there are no records in our desired state for a key, this
+			// indicates we should delete all records at that key.
+			if len(recs) == 0 {
+				// To delete, we submit the original resource set we got from r53.
+				var (
+					rrset r53Types.ResourceRecordSet
+					found bool
+				)
+				// Find the original resource set:
+				for _, r := range r.originalRecords {
+					if unescape(r.Name) == k.NameFQDN && (string(r.Type) == k.Type || k.Type == "R53_ALIAS_"+string(r.Type)) {
+						rrset = r
+						found = true
+						break
+					}
 				}
-			}
-			if !found {
-				// This should not happen.
-				return nil, fmt.Errorf("no record set found to delete. Name: '%s'. Type: '%s'", k.NameFQDN, k.Type)
-			}
-			// Assemble the change and add it to the list:
-			chg := r53Types.Change{
-				Action:            r53Types.ChangeActionDelete,
-				ResourceRecordSet: &rrset,
-			}
-			dels = append(dels, chg)
-			delDesc = append(delDesc, strings.Join(namesToUpdate[k], "\n"))
-		} else {
-			// If it isn't a delete, it must be either a change or create. In
-			// either case, we build a new record set from the desired state and
-			// UPSERT it.
-
-			if strings.HasPrefix(k.Type, "R53_ALIAS_") {
-				// Each R53_ALIAS_* requires an individual change.
-				if len(recs) != 1 {
-					log.Fatal("Only one R53_ALIAS_ permitted on a label")
+				if !found {
+					// This should not happen.
+					return nil, fmt.Errorf("no record set found to delete. Name: '%s'. Type: '%s'", k.NameFQDN, k.Type)
 				}
-				for _, r := range recs {
-					rrset := aliasToRRSet(zone, r)
-					rrset.Name = aws.String(k.NameFQDN)
+				// Assemble the change and add it to the list:
+				chg := r53Types.Change{
+					Action:            r53Types.ChangeActionDelete,
+					ResourceRecordSet: &rrset,
+				}
+				dels = append(dels, chg)
+				delDesc = append(delDesc, strings.Join(namesToUpdate[k], "\n"))
+			} else {
+				// If it isn't a delete, it must be either a change or create. In
+				// either case, we build a new record set from the desired state and
+				// UPSERT it.
+
+				if strings.HasPrefix(k.Type, "R53_ALIAS_") {
+					// Each R53_ALIAS_* requires an individual change.
+					if len(recs) != 1 {
+						log.Fatal("Only one R53_ALIAS_ permitted on a label")
+					}
+					for _, r := range recs {
+						rrset := aliasToRRSet(zone, r)
+						rrset.Name = aws.String(k.NameFQDN)
+						// Assemble the change and add it to the list:
+						chg := r53Types.Change{
+							Action:            r53Types.ChangeActionUpsert,
+							ResourceRecordSet: rrset,
+						}
+						changes = append(changes, chg)
+						changeDesc = append(changeDesc, strings.Join(namesToUpdate[k], "\n"))
+					}
+				} else {
+					// All other keys combine their updates into one rrset:
+					rrset := &r53Types.ResourceRecordSet{
+						Name: aws.String(k.NameFQDN),
+						Type: r53Types.RRType(k.Type),
+					}
+					for _, r := range recs {
+						val := r.GetTargetCombined()
+						rr := r53Types.ResourceRecord{
+							Value: aws.String(val),
+						}
+						rrset.ResourceRecords = append(rrset.ResourceRecords, rr)
+						i := int64(r.TTL)
+						rrset.TTL = &i // TODO: make sure that ttls are consistent within a set
+					}
 					// Assemble the change and add it to the list:
 					chg := r53Types.Change{
 						Action:            r53Types.ChangeActionUpsert,
@@ -394,79 +419,61 @@ func (r *route53Provider) GetDomainCorrections(dc *models.DomainConfig) ([]*mode
 					changes = append(changes, chg)
 					changeDesc = append(changeDesc, strings.Join(namesToUpdate[k], "\n"))
 				}
-			} else {
-				// All other keys combine their updates into one rrset:
-				rrset := &r53Types.ResourceRecordSet{
-					Name: aws.String(k.NameFQDN),
-					Type: r53Types.RRType(k.Type),
-				}
-				for _, r := range recs {
-					val := r.GetTargetCombined()
-					rr := r53Types.ResourceRecord{
-						Value: aws.String(val),
-					}
-					rrset.ResourceRecords = append(rrset.ResourceRecords, rr)
-					i := int64(r.TTL)
-					rrset.TTL = &i // TODO: make sure that ttls are consistent within a set
-				}
-				// Assemble the change and add it to the list:
-				chg := r53Types.Change{
-					Action:            r53Types.ChangeActionUpsert,
-					ResourceRecordSet: rrset,
-				}
-				changes = append(changes, chg)
-				changeDesc = append(changeDesc, strings.Join(namesToUpdate[k], "\n"))
+
 			}
-
 		}
-	}
 
-	addCorrection := func(msg string, req *r53.ChangeResourceRecordSetsInput) {
-		corrections = append(corrections,
-			&models.Correction{
-				Msg: msg,
-				F: func() error {
-					var err error
-					req.HostedZoneId = zone.Id
-					withRetry(func() error {
-						_, err = r.client.ChangeResourceRecordSets(context.Background(), req)
+		addCorrection := func(msg string, req *r53.ChangeResourceRecordSetsInput) {
+			corrections = append(corrections,
+				&models.Correction{
+					Msg: msg,
+					F: func() error {
+						var err error
+						req.HostedZoneId = zone.Id
+						withRetry(func() error {
+							_, err = r.client.ChangeResourceRecordSets(context.Background(), req)
+							return err
+						})
 						return err
-					})
-					return err
-				},
-			})
+					},
+				})
+		}
+
+		batcher := newChangeBatcher(dels)
+		for batcher.Next() {
+			start, end := batcher.Batch()
+			batch := dels[start:end]
+			descBatchStr := "\n" + strings.Join(delDesc[start:end], "\n") + "\n"
+			req := &r53.ChangeResourceRecordSetsInput{
+				ChangeBatch: &r53Types.ChangeBatch{Changes: batch},
+			}
+			addCorrection(descBatchStr, req)
+		}
+		if err := batcher.Err(); err != nil {
+			return nil, err
+		}
+
+		batcher = newChangeBatcher(changes)
+		for batcher.Next() {
+			start, end := batcher.Batch()
+			batch := changes[start:end]
+			descBatchStr := "\n" + strings.Join(changeDesc[start:end], "\n") + "\n"
+			req := &r53.ChangeResourceRecordSetsInput{
+				ChangeBatch: &r53Types.ChangeBatch{Changes: batch},
+			}
+			addCorrection(descBatchStr, req)
+		}
+		if err := batcher.Err(); err != nil {
+			return nil, err
+		}
+
+		return corrections, nil
+
 	}
 
-	batcher := newChangeBatcher(dels)
-	for batcher.Next() {
-		start, end := batcher.Batch()
-		batch := dels[start:end]
-		descBatchStr := "\n" + strings.Join(delDesc[start:end], "\n") + "\n"
-		req := &r53.ChangeResourceRecordSetsInput{
-			ChangeBatch: &r53Types.ChangeBatch{Changes: batch},
-		}
-		addCorrection(descBatchStr, req)
-	}
-	if err := batcher.Err(); err != nil {
-		return nil, err
-	}
-
-	batcher = newChangeBatcher(changes)
-	for batcher.Next() {
-		start, end := batcher.Batch()
-		batch := changes[start:end]
-		descBatchStr := "\n" + strings.Join(changeDesc[start:end], "\n") + "\n"
-		req := &r53.ChangeResourceRecordSetsInput{
-			ChangeBatch: &r53Types.ChangeBatch{Changes: batch},
-		}
-		addCorrection(descBatchStr, req)
-	}
-	if err := batcher.Err(); err != nil {
-		return nil, err
-	}
+	// Insert Future diff2 version here.
 
 	return corrections, nil
-
 }
 
 func nativeToRecords(set r53Types.ResourceRecordSet, origin string) ([]*models.RecordConfig, error) {

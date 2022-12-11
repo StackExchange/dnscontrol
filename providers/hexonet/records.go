@@ -10,6 +10,7 @@ import (
 
 	"github.com/StackExchange/dnscontrol/v3/models"
 	"github.com/StackExchange/dnscontrol/v3/pkg/diff"
+	"github.com/StackExchange/dnscontrol/v3/pkg/diff2"
 	"github.com/StackExchange/dnscontrol/v3/pkg/printer"
 	"github.com/StackExchange/dnscontrol/v3/pkg/txtutil"
 )
@@ -73,62 +74,70 @@ func (n *HXClient) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Corr
 	models.PostProcessRecords(actual)
 	txtutil.SplitSingleLongTxt(dc.Records)
 
-	differ := diff.New(dc)
-	_, create, del, mod, err := differ.IncrementalDiff(actual)
-	if err != nil {
-		return nil, err
-	}
+	var corrections []*models.Correction
+	if !diff2.EnableDiff2 || true { // Remove "|| true" when diff2 version arrives
 
-	corrections := []*models.Correction{}
-
-	buf := &bytes.Buffer{}
-	// Print a list of changes. Generate an actual change that is the zone
-	changes := false
-	params := map[string]interface{}{}
-	delrridx := 0
-	addrridx := 0
-	for _, cre := range create {
-		changes = true
-		fmt.Fprintln(buf, cre)
-		rec := cre.Desired
-		recordString, err := n.createRecordString(rec, dc.Name)
+		differ := diff.New(dc)
+		_, create, del, mod, err := differ.IncrementalDiff(actual)
 		if err != nil {
-			return corrections, err
+			return nil, err
 		}
-		params[fmt.Sprintf("ADDRR%d", addrridx)] = recordString
-		addrridx++
-	}
-	for _, d := range del {
-		changes = true
-		fmt.Fprintln(buf, d)
-		rec := d.Existing.Original.(*HXRecord)
-		params[fmt.Sprintf("DELRR%d", delrridx)] = n.deleteRecordString(rec, dc.Name)
-		delrridx++
-	}
-	for _, chng := range mod {
-		changes = true
-		fmt.Fprintln(buf, chng)
-		old := chng.Existing.Original.(*HXRecord)
-		new := chng.Desired
-		params[fmt.Sprintf("DELRR%d", delrridx)] = n.deleteRecordString(old, dc.Name)
-		newRecordString, err := n.createRecordString(new, dc.Name)
-		if err != nil {
-			return corrections, err
-		}
-		params[fmt.Sprintf("ADDRR%d", addrridx)] = newRecordString
-		addrridx++
-		delrridx++
-	}
-	msg := fmt.Sprintf("GENERATE_ZONEFILE: %s\n", dc.Name) + buf.String()
 
-	if changes {
-		corrections = append(corrections, &models.Correction{
-			Msg: msg,
-			F: func() error {
-				return n.updateZoneBy(params, dc.Name)
-			},
-		})
+		corrections := []*models.Correction{}
+
+		buf := &bytes.Buffer{}
+		// Print a list of changes. Generate an actual change that is the zone
+		changes := false
+		params := map[string]interface{}{}
+		delrridx := 0
+		addrridx := 0
+		for _, cre := range create {
+			changes = true
+			fmt.Fprintln(buf, cre)
+			rec := cre.Desired
+			recordString, err := n.createRecordString(rec, dc.Name)
+			if err != nil {
+				return corrections, err
+			}
+			params[fmt.Sprintf("ADDRR%d", addrridx)] = recordString
+			addrridx++
+		}
+		for _, d := range del {
+			changes = true
+			fmt.Fprintln(buf, d)
+			rec := d.Existing.Original.(*HXRecord)
+			params[fmt.Sprintf("DELRR%d", delrridx)] = n.deleteRecordString(rec, dc.Name)
+			delrridx++
+		}
+		for _, chng := range mod {
+			changes = true
+			fmt.Fprintln(buf, chng)
+			old := chng.Existing.Original.(*HXRecord)
+			new := chng.Desired
+			params[fmt.Sprintf("DELRR%d", delrridx)] = n.deleteRecordString(old, dc.Name)
+			newRecordString, err := n.createRecordString(new, dc.Name)
+			if err != nil {
+				return corrections, err
+			}
+			params[fmt.Sprintf("ADDRR%d", addrridx)] = newRecordString
+			addrridx++
+			delrridx++
+		}
+		msg := fmt.Sprintf("GENERATE_ZONEFILE: %s\n", dc.Name) + buf.String()
+
+		if changes {
+			corrections = append(corrections, &models.Correction{
+				Msg: msg,
+				F: func() error {
+					return n.updateZoneBy(params, dc.Name)
+				},
+			})
+		}
+		return corrections, nil
 	}
+
+	// Insert Future diff2 version here.
+
 	return corrections, nil
 }
 

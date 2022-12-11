@@ -24,6 +24,7 @@ import (
 
 	"github.com/StackExchange/dnscontrol/v3/models"
 	"github.com/StackExchange/dnscontrol/v3/pkg/diff"
+	"github.com/StackExchange/dnscontrol/v3/pkg/diff2"
 	"github.com/StackExchange/dnscontrol/v3/pkg/prettyzone"
 	"github.com/StackExchange/dnscontrol/v3/pkg/printer"
 	"github.com/StackExchange/dnscontrol/v3/pkg/txtutil"
@@ -243,72 +244,79 @@ func (c *bindProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*models.
 	models.PostProcessRecords(foundRecords)
 	txtutil.SplitSingleLongTxt(dc.Records) // Autosplit long TXT records
 
-	differ := diff.New(dc)
-	_, create, del, mod, err := differ.IncrementalDiff(foundRecords)
-	if err != nil {
-		return nil, err
-	}
+	var corrections []*models.Correction
+	if !diff2.EnableDiff2 || true { // Remove "|| true" when diff2 version arrives
 
-	buf := &bytes.Buffer{}
-	// Print a list of changes. Generate an actual change that is the zone
-	changes := false
-	for _, i := range create {
-		changes = true
-		if c.zoneFileFound {
-			fmt.Fprintln(buf, i)
+		differ := diff.New(dc)
+		_, create, del, mod, err := differ.IncrementalDiff(foundRecords)
+		if err != nil {
+			return nil, err
 		}
-	}
-	for _, i := range del {
-		changes = true
-		if c.zoneFileFound {
-			fmt.Fprintln(buf, i)
+
+		buf := &bytes.Buffer{}
+		// Print a list of changes. Generate an actual change that is the zone
+		changes := false
+		for _, i := range create {
+			changes = true
+			if c.zoneFileFound {
+				fmt.Fprintln(buf, i)
+			}
 		}
-	}
-	for _, i := range mod {
-		changes = true
-		if c.zoneFileFound {
-			fmt.Fprintln(buf, i)
+		for _, i := range del {
+			changes = true
+			if c.zoneFileFound {
+				fmt.Fprintln(buf, i)
+			}
 		}
+		for _, i := range mod {
+			changes = true
+			if c.zoneFileFound {
+				fmt.Fprintln(buf, i)
+			}
+		}
+
+		var msg string
+		if c.zoneFileFound {
+			msg = fmt.Sprintf("GENERATE_ZONEFILE: '%s'. Changes:\n%s", dc.Name, buf)
+		} else {
+			msg = fmt.Sprintf("GENERATE_ZONEFILE: '%s' (new file with %d records)\n", dc.Name, len(create))
+		}
+
+		if changes {
+
+			// We only change the serial number if there is a change.
+			desiredSoa.SoaSerial = nextSerial
+
+			corrections = append(corrections,
+				&models.Correction{
+					Msg: msg,
+					F: func() error {
+						printer.Printf("WRITING ZONEFILE: %v\n", c.zonefile)
+						zf, err := os.Create(c.zonefile)
+						if err != nil {
+							return fmt.Errorf("could not create zonefile: %w", err)
+						}
+						// Beware that if there are any fake types, then they will
+						// be commented out on write, but we don't reverse that when
+						// reading, so there will be a diff on every invocation.
+						err = prettyzone.WriteZoneFileRC(zf, dc.Records, dc.Name, 0, comments)
+
+						if err != nil {
+							return fmt.Errorf("failed WriteZoneFile: %w", err)
+						}
+						err = zf.Close()
+						if err != nil {
+							return fmt.Errorf("closing: %w", err)
+						}
+						return nil
+					},
+				})
+		}
+
+		return corrections, nil
 	}
 
-	var msg string
-	if c.zoneFileFound {
-		msg = fmt.Sprintf("GENERATE_ZONEFILE: '%s'. Changes:\n%s", dc.Name, buf)
-	} else {
-		msg = fmt.Sprintf("GENERATE_ZONEFILE: '%s' (new file with %d records)\n", dc.Name, len(create))
-	}
-
-	corrections := []*models.Correction{}
-	if changes {
-
-		// We only change the serial number if there is a change.
-		desiredSoa.SoaSerial = nextSerial
-
-		corrections = append(corrections,
-			&models.Correction{
-				Msg: msg,
-				F: func() error {
-					printer.Printf("WRITING ZONEFILE: %v\n", c.zonefile)
-					zf, err := os.Create(c.zonefile)
-					if err != nil {
-						return fmt.Errorf("could not create zonefile: %w", err)
-					}
-					// Beware that if there are any fake types, then they will
-					// be commented out on write, but we don't reverse that when
-					// reading, so there will be a diff on every invocation.
-					err = prettyzone.WriteZoneFileRC(zf, dc.Records, dc.Name, 0, comments)
-
-					if err != nil {
-						return fmt.Errorf("failed WriteZoneFile: %w", err)
-					}
-					err = zf.Close()
-					if err != nil {
-						return fmt.Errorf("closing: %w", err)
-					}
-					return nil
-				},
-			})
-	}
+	// Insert Future diff2 version here.
 
 	return corrections, nil
 }

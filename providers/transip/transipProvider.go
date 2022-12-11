@@ -7,6 +7,7 @@ import (
 
 	"github.com/StackExchange/dnscontrol/v3/models"
 	"github.com/StackExchange/dnscontrol/v3/pkg/diff"
+	"github.com/StackExchange/dnscontrol/v3/pkg/diff2"
 	"github.com/StackExchange/dnscontrol/v3/providers"
 	"github.com/transip/gotransip/v6"
 	"github.com/transip/gotransip/v6/domain"
@@ -79,7 +80,6 @@ func init() {
 }
 
 func (n *transipProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Correction, error) {
-	var corrections []*models.Correction
 
 	curRecords, err := n.GetZoneRecords(dc.Name)
 	if err != nil {
@@ -94,68 +94,76 @@ func (n *transipProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*mode
 
 	models.PostProcessRecords(curRecords)
 
-	differ := diff.New(dc)
-	_, create, del, modify, err := differ.IncrementalDiff(curRecords)
-	if err != nil {
-		return nil, err
-	}
+	var corrections []*models.Correction
+	if !diff2.EnableDiff2 || true { // Remove "|| true" when diff2 version arrives
 
-	for _, del := range del {
-		entry, err := recordToNative(del.Existing)
+		differ := diff.New(dc)
+		_, create, del, modify, err := differ.IncrementalDiff(curRecords)
 		if err != nil {
 			return nil, err
 		}
 
-		corrections = append(corrections, &models.Correction{
-			Msg: del.String(),
-			F:   func() error { return n.domains.RemoveDNSEntry(dc.Name, entry) },
-		})
-	}
-
-	for _, cre := range create {
-		entry, err := recordToNative(cre.Desired)
-		if err != nil {
-			return nil, err
-		}
-
-		corrections = append(corrections, &models.Correction{
-			Msg: cre.String(),
-			F:   func() error { return n.domains.AddDNSEntry(dc.Name, entry) },
-		})
-	}
-
-	for _, mod := range modify {
-		targetEntry, err := recordToNative(mod.Desired)
-		if err != nil {
-			return nil, err
-		}
-
-		// TransIP identifies records by (Label, TTL Type), we can only update it if only the contents
-		// has changed. Otherwise we delete the old record and create the new one
-		if canUpdateDNSEntry(mod.Desired, mod.Existing) {
-			corrections = append(corrections, &models.Correction{
-				Msg: mod.String(),
-				F:   func() error { return n.domains.UpdateDNSEntry(dc.Name, targetEntry) },
-			})
-		} else {
-			oldEntry, err := recordToNative(mod.Existing)
+		for _, del := range del {
+			entry, err := recordToNative(del.Existing)
 			if err != nil {
 				return nil, err
 			}
 
-			corrections = append(corrections,
-				&models.Correction{
-					Msg: mod.String() + "[1/2]",
-					F:   func() error { return n.domains.RemoveDNSEntry(dc.Name, oldEntry) },
-				},
-				&models.Correction{
-					Msg: mod.String() + "[2/2]",
-					F:   func() error { return n.domains.AddDNSEntry(dc.Name, targetEntry) },
-				},
-			)
+			corrections = append(corrections, &models.Correction{
+				Msg: del.String(),
+				F:   func() error { return n.domains.RemoveDNSEntry(dc.Name, entry) },
+			})
 		}
 
+		for _, cre := range create {
+			entry, err := recordToNative(cre.Desired)
+			if err != nil {
+				return nil, err
+			}
+
+			corrections = append(corrections, &models.Correction{
+				Msg: cre.String(),
+				F:   func() error { return n.domains.AddDNSEntry(dc.Name, entry) },
+			})
+		}
+
+		for _, mod := range modify {
+			targetEntry, err := recordToNative(mod.Desired)
+			if err != nil {
+				return nil, err
+			}
+
+			// TransIP identifies records by (Label, TTL Type), we can only update it if only the contents
+			// has changed. Otherwise we delete the old record and create the new one
+			if canUpdateDNSEntry(mod.Desired, mod.Existing) {
+				corrections = append(corrections, &models.Correction{
+					Msg: mod.String(),
+					F:   func() error { return n.domains.UpdateDNSEntry(dc.Name, targetEntry) },
+				})
+			} else {
+				oldEntry, err := recordToNative(mod.Existing)
+				if err != nil {
+					return nil, err
+				}
+
+				corrections = append(corrections,
+					&models.Correction{
+						Msg: mod.String() + "[1/2]",
+						F:   func() error { return n.domains.RemoveDNSEntry(dc.Name, oldEntry) },
+					},
+					&models.Correction{
+						Msg: mod.String() + "[2/2]",
+						F:   func() error { return n.domains.AddDNSEntry(dc.Name, targetEntry) },
+					},
+				)
+			}
+
+		}
+
+		return corrections, nil
 	}
+
+	// Insert Future diff2 version here.
 
 	return corrections, nil
 }

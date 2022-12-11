@@ -8,6 +8,7 @@ import (
 
 	"github.com/StackExchange/dnscontrol/v3/models"
 	"github.com/StackExchange/dnscontrol/v3/pkg/diff"
+	"github.com/StackExchange/dnscontrol/v3/pkg/diff2"
 	"github.com/StackExchange/dnscontrol/v3/providers"
 	"github.com/ovh/go-ovh/ovh"
 )
@@ -128,47 +129,55 @@ func (c *ovhProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*models.C
 	// Normalize
 	models.PostProcessRecords(actual)
 
-	differ := diff.New(dc)
-	_, create, delete, modify, err := differ.IncrementalDiff(actual)
-	if err != nil {
-		return nil, err
+	var corrections []*models.Correction
+	if !diff2.EnableDiff2 || true { // Remove "|| true" when diff2 version arrives
+
+		differ := diff.New(dc)
+		_, create, delete, modify, err := differ.IncrementalDiff(actual)
+		if err != nil {
+			return nil, err
+		}
+
+		corrections := []*models.Correction{}
+
+		for _, del := range delete {
+			rec := del.Existing.Original.(*Record)
+			corrections = append(corrections, &models.Correction{
+				Msg: del.String(),
+				F:   c.deleteRecordFunc(rec.ID, dc.Name),
+			})
+		}
+
+		for _, cre := range create {
+			rec := cre.Desired
+			corrections = append(corrections, &models.Correction{
+				Msg: cre.String(),
+				F:   c.createRecordFunc(rec, dc.Name),
+			})
+		}
+
+		for _, mod := range modify {
+			oldR := mod.Existing.Original.(*Record)
+			newR := mod.Desired
+			corrections = append(corrections, &models.Correction{
+				Msg: mod.String(),
+				F:   c.updateRecordFunc(oldR, newR, dc.Name),
+			})
+		}
+
+		if len(corrections) > 0 {
+			corrections = append(corrections, &models.Correction{
+				Msg: "REFRESH zone " + dc.Name,
+				F: func() error {
+					return c.refreshZone(dc.Name)
+				},
+			})
+		}
+
+		return corrections, nil
 	}
 
-	corrections := []*models.Correction{}
-
-	for _, del := range delete {
-		rec := del.Existing.Original.(*Record)
-		corrections = append(corrections, &models.Correction{
-			Msg: del.String(),
-			F:   c.deleteRecordFunc(rec.ID, dc.Name),
-		})
-	}
-
-	for _, cre := range create {
-		rec := cre.Desired
-		corrections = append(corrections, &models.Correction{
-			Msg: cre.String(),
-			F:   c.createRecordFunc(rec, dc.Name),
-		})
-	}
-
-	for _, mod := range modify {
-		oldR := mod.Existing.Original.(*Record)
-		newR := mod.Desired
-		corrections = append(corrections, &models.Correction{
-			Msg: mod.String(),
-			F:   c.updateRecordFunc(oldR, newR, dc.Name),
-		})
-	}
-
-	if len(corrections) > 0 {
-		corrections = append(corrections, &models.Correction{
-			Msg: "REFRESH zone " + dc.Name,
-			F: func() error {
-				return c.refreshZone(dc.Name)
-			},
-		})
-	}
+	// Insert Future diff2 version here.
 
 	return corrections, nil
 }

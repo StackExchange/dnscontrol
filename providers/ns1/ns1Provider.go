@@ -10,6 +10,7 @@ import (
 
 	"github.com/StackExchange/dnscontrol/v3/models"
 	"github.com/StackExchange/dnscontrol/v3/pkg/diff"
+	"github.com/StackExchange/dnscontrol/v3/pkg/diff2"
 	"github.com/StackExchange/dnscontrol/v3/providers"
 	"gopkg.in/ns1/ns1-go.v2/rest"
 	"gopkg.in/ns1/ns1-go.v2/rest/model/dns"
@@ -162,45 +163,53 @@ func (n *nsone) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Correct
 	//  Normalize
 	models.PostProcessRecords(existingRecords)
 
-	differ := diff.New(dc)
-	changedGroups, err := differ.ChangedGroups(existingRecords)
-	if err != nil {
-		return nil, err
-	}
+	var corrections []*models.Correction
+	if !diff2.EnableDiff2 || true { // Remove "|| true" when diff2 version arrives
 
-	corrections := []*models.Correction{}
-
-	if dnssecCorrections := n.getDomainCorrectionsDNSSEC(domain, dc.AutoDNSSEC); dnssecCorrections != nil {
-		corrections = append(corrections, dnssecCorrections)
-	}
-
-	// each name/type is given to the api as a unit.
-	for k, descs := range changedGroups {
-		key := k
-
-		desc := strings.Join(descs, "\n")
-		_, current := existingGrouped[k]
-		recs, wanted := desiredGrouped[k]
-		if wanted && !current {
-			// pure addition
-			corrections = append(corrections, &models.Correction{
-				Msg: desc,
-				F:   func() error { return n.add(recs, dc.Name) },
-			})
-		} else if current && !wanted {
-			// pure deletion
-			corrections = append(corrections, &models.Correction{
-				Msg: desc,
-				F:   func() error { return n.remove(key, dc.Name) },
-			})
-		} else {
-			// modification
-			corrections = append(corrections, &models.Correction{
-				Msg: desc,
-				F:   func() error { return n.modify(recs, dc.Name) },
-			})
+		differ := diff.New(dc)
+		changedGroups, err := differ.ChangedGroups(existingRecords)
+		if err != nil {
+			return nil, err
 		}
+
+		corrections := []*models.Correction{}
+
+		if dnssecCorrections := n.getDomainCorrectionsDNSSEC(domain, dc.AutoDNSSEC); dnssecCorrections != nil {
+			corrections = append(corrections, dnssecCorrections)
+		}
+
+		// each name/type is given to the api as a unit.
+		for k, descs := range changedGroups {
+			key := k
+
+			desc := strings.Join(descs, "\n")
+			_, current := existingGrouped[k]
+			recs, wanted := desiredGrouped[k]
+			if wanted && !current {
+				// pure addition
+				corrections = append(corrections, &models.Correction{
+					Msg: desc,
+					F:   func() error { return n.add(recs, dc.Name) },
+				})
+			} else if current && !wanted {
+				// pure deletion
+				corrections = append(corrections, &models.Correction{
+					Msg: desc,
+					F:   func() error { return n.remove(key, dc.Name) },
+				})
+			} else {
+				// modification
+				corrections = append(corrections, &models.Correction{
+					Msg: desc,
+					F:   func() error { return n.modify(recs, dc.Name) },
+				})
+			}
+		}
+		return corrections, nil
 	}
+
+	// Insert Future diff2 version here.
+
 	return corrections, nil
 }
 

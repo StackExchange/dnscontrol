@@ -12,6 +12,7 @@ import (
 
 	"github.com/StackExchange/dnscontrol/v3/models"
 	"github.com/StackExchange/dnscontrol/v3/pkg/diff"
+	"github.com/StackExchange/dnscontrol/v3/pkg/diff2"
 	"github.com/StackExchange/dnscontrol/v3/pkg/printer"
 	"github.com/StackExchange/dnscontrol/v3/providers"
 )
@@ -189,38 +190,44 @@ func (c *exoscaleProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*mod
 	// Normalize
 	models.PostProcessRecords(existingRecords)
 
-	differ := diff.New(dc)
-	_, create, delete, modify, err := differ.IncrementalDiff(existingRecords)
-	if err != nil {
-		return nil, err
+	var corrections []*models.Correction
+	if !diff2.EnableDiff2 || true { // Remove "|| true" when diff2 version arrives
+
+		differ := diff.New(dc)
+		_, create, delete, modify, err := differ.IncrementalDiff(existingRecords)
+		if err != nil {
+			return nil, err
+		}
+
+		for _, del := range delete {
+			record := del.Existing.Original.(*egoscale.DNSDomainRecord)
+			corrections = append(corrections, &models.Correction{
+				Msg: del.String(),
+				F:   c.deleteRecordFunc(*record.ID, domainID),
+			})
+		}
+
+		for _, cre := range create {
+			rc := cre.Desired
+			corrections = append(corrections, &models.Correction{
+				Msg: cre.String(),
+				F:   c.createRecordFunc(rc, domainID),
+			})
+		}
+
+		for _, mod := range modify {
+			old := mod.Existing.Original.(*egoscale.DNSDomainRecord)
+			new := mod.Desired
+			corrections = append(corrections, &models.Correction{
+				Msg: mod.String(),
+				F:   c.updateRecordFunc(old, new, domainID),
+			})
+		}
+
+		return corrections, nil
 	}
 
-	var corrections = []*models.Correction{}
-
-	for _, del := range delete {
-		record := del.Existing.Original.(*egoscale.DNSDomainRecord)
-		corrections = append(corrections, &models.Correction{
-			Msg: del.String(),
-			F:   c.deleteRecordFunc(*record.ID, domainID),
-		})
-	}
-
-	for _, cre := range create {
-		rc := cre.Desired
-		corrections = append(corrections, &models.Correction{
-			Msg: cre.String(),
-			F:   c.createRecordFunc(rc, domainID),
-		})
-	}
-
-	for _, mod := range modify {
-		old := mod.Existing.Original.(*egoscale.DNSDomainRecord)
-		new := mod.Desired
-		corrections = append(corrections, &models.Correction{
-			Msg: mod.String(),
-			F:   c.updateRecordFunc(old, new, domainID),
-		})
-	}
+	// Insert Future diff2 version here.
 
 	return corrections, nil
 }
