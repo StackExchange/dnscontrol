@@ -143,18 +143,6 @@ func ByZone(existing models.Records, dc *models.DomainConfig, compFunc Comparabl
 	return justMsgs(instructions), len(instructions) != 0, nil
 }
 
-/*
-nil, nil :
-nil, nonzero :   nil, true, nil
-nonzero, nil :   msgs, true, nil
-nonzero, nonzero :
-
-existing: changes       : return msgs, true, nil
-existing: no changes    : return nil, false, nil
-not existing: no changes: return nil, false, nil
-not existing: changes   : return nil, true, nil
-*/
-
 func (c Change) String() string {
 	var buf bytes.Buffer
 	b := &buf
