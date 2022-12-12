@@ -143,7 +143,7 @@ func (c *porkbunProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*mode
 			}
 
 			corr := &models.Correction{
-				Msg: fmt.Sprintf("%s, porkbun ID: %s: ", m.String(), id),
+				Msg: fmt.Sprintf("%s, porkbun ID: %s", m.String(), id),
 				F: func() error {
 					return c.modifyRecord(dc.Name, id, req)
 				},
