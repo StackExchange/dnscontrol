@@ -54,7 +54,7 @@ func (c *porkbunProvider) post(endpoint string, params requestParams) ([]byte, e
 
 	// If request sending too fast, the server will fail with the following error:
 	// porkbun API error: Create error: We were unable to create the DNS record.
-	time.Sleep(300 * time.Millisecond)
+	time.Sleep(500 * time.Millisecond)
 	resp, err := client.Do(req)
 	if err != nil {
 		return []byte{}, err
