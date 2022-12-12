@@ -100,7 +100,7 @@ func (c *porkbunProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*mode
 	}
 
 	var corrections []*models.Correction
-	if !diff2.EnableDiff2 || true { // Remove "|| true" when diff2 version arrives
+	if !diff2.EnableDiff2 {
 
 		differ := diff.New(dc)
 		_, create, del, modify, err := differ.IncrementalDiff(existingRecords)
@@ -154,7 +154,47 @@ func (c *porkbunProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*mode
 		return corrections, nil
 	}
 
-	// Insert Future diff2 version here.
+	changes, err := diff2.ByRecord(existingRecords, dc, nil)
+	if err != nil {
+		return nil, err
+	}
+	for _, change := range changes {
+		var corr *models.Correction
+		switch change.Type {
+		case diff2.CREATE:
+			req, err := toReq(change.New[0])
+			if err != nil {
+				return nil, err
+			}
+			corr = &models.Correction{
+				Msg: change.Msgs[0],
+				F: func() error {
+					return c.createRecord(dc.Name, req)
+				},
+			}
+		case diff2.CHANGE:
+			id := change.Old[0].Original.(*domainRecord).ID
+			req, err := toReq(change.New[0])
+			if err != nil {
+				return nil, err
+			}
+			corr = &models.Correction{
+				Msg: fmt.Sprintf("%s, porkbun ID: %s", change.Msgs[0], id),
+				F: func() error {
+					return c.modifyRecord(dc.Name, id, req)
+				},
+			}
+		case diff2.DELETE:
+			id := change.Old[0].Original.(*domainRecord).ID
+			corr = &models.Correction{
+				Msg: fmt.Sprintf("%s, porkbun ID: %s", change.Msgs[0], id),
+				F: func() error {
+					return c.deleteRecord(dc.Name, id)
+				},
+			}
+		}
+		corrections = append(corrections, corr)
+	}
 
 	return corrections, nil
 }
