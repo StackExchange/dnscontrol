@@ -281,13 +281,66 @@ func (g *gcloudProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*model
 		}}, nil
 	}
 
-	// Insert Future diff2 version here.
+	existing := existingRecords
+	instructions, err := diff2.ByRecordSet(existing, dc, nil)
+	if err != nil {
+		return nil, err
+	}
 
+	chg := &gdns.Change{Kind: "dns#change"}
+	var msgs []string
+	for _, inst := range instructions {
+		switch inst.Type {
+
+		case diff2.CREATE:
+			fallthrough
+		case diff2.CHANGE:
+			// collect records to replace at name:rtype
+			msgs = append(msgs, inst.Msgs...)
+			newRRs := &gdns.ResourceRecordSet{
+				Name: inst.Key.NameFQDN,
+				Type: inst.Key.Type,
+				Kind: "dns#resourceRecordSet",
+			}
+			for _, r := range inst.New {
+				newRRs.Rrdatas = append(newRRs.Rrdatas, r.GetTargetRFC1035Quoted())
+				newRRs.Ttl = int64(r.TTL)
+			}
+			chg.Additions = append(chg.Additions, newRRs)
+
+		case diff2.DELETE:
+			msgs = append(msgs, inst.Msgs...)
+			for _, v := range inst.Old {
+				chg.Deletions = append(chg.Deletions, v.Original.(*gdns.ResourceRecordSet))
+			}
+		}
+
+	}
+
+	// TODO: Start a new correction every 600 items.
+
+	runChange := func() error {
+	retry:
+		resp, err := g.client.Changes.Create(g.project, zoneName, chg).Do()
+		if retryNeeded(resp, err) {
+			goto retry
+		}
+		if err != nil {
+			return fmt.Errorf("runChange error: %w", err)
+		}
+		return nil
+	}
+
+	corrections = append(corrections, &models.Correction{
+		Msg: strings.Join(msgs, "\n"),
+		F:   runChange,
+	})
 	return corrections, nil
+
 }
 
 func nativeToRecord(set *gdns.ResourceRecordSet, rec, origin string) (*models.RecordConfig, error) {
-	r := &models.RecordConfig{}
+	r := &models.RecordConfig{Original: set}
 	r.SetLabelFromFQDN(set.Name, origin)
 	r.TTL = uint32(set.Ttl)
 	if err := r.PopulateFromString(set.Type, rec, origin); err != nil {
