@@ -25,12 +25,15 @@ func analyzeByRecordSet(cc *CompareConfig) ChangeList {
 			}
 			if len(ets) == 0 { // Create a new label.
 				//fmt.Printf("DEBUG: add\n")
+				fmt.Printf("DEBUG: ADD aBRS l=%q t=%q len(m)=%d, len(d)=%d\n", lc.label, rt.rType, len(msgs), len(rt.desiredRecs))
 				instructions = append(instructions, mkAdd(lc.label, rt.rType, msgs, rt.desiredRecs))
 			} else if len(dts) == 0 { // Delete that label and all its records.
 				//fmt.Printf("DEBUG: delete\n")
+				fmt.Printf("DEBUG: DEL aBRS l=%q t=%q len(m)=%d, len(d)=%d\n", lc.label, rt.rType, len(msgs), len(rt.desiredRecs))
 				instructions = append(instructions, mkDelete(lc.label, rt.rType, rt.existingRecs, msgs))
 			} else { // Change the records at that label
 				//fmt.Printf("DEBUG: change\n")
+				fmt.Printf("DEBUG: CHG aBRS l=%q t=%q len(m)=%d, len(d)=%d\n", lc.label, rt.rType, len(msgs), len(rt.desiredRecs))
 				instructions = append(instructions, mkChange(lc.label, rt.rType, msgs, rt.existingRecs, rt.desiredRecs))
 			}
 		}

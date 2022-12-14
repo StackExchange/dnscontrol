@@ -219,6 +219,7 @@ func makeChanges(t *testing.T, prv providers.DNSServiceProvider, dc *models.Doma
 			t.Fatalf("Expected changes, but got none")
 		}
 		for _, c := range corrections {
+			fmt.Printf("DEBUG: len-log=%d\n", len(c.Msg))
 			if *verbose {
 				t.Log(c.Msg)
 			}
@@ -899,6 +900,7 @@ func makeTests(t *testing.T) []*TestGroup {
 				//"CLOUDFLAREAPI", // Fails with >1000 corrections. See https://github.com/StackExchange/dnscontrol/issues/1440
 				//"CSCGLOBAL",     // Doesn't page. Works fine.  Due to the slow API we skip.
 				//"GANDI_V5",   // Their API is so damn slow. We'll add it back as needed.
+				"GCLOUD",
 				"HEXONET",
 				"HOSTINGDE",
 				//"MSDNS",         // No paging done. No need to test.

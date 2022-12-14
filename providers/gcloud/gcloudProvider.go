@@ -206,7 +206,7 @@ func (g *gcloudProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*model
 	txtutil.SplitSingleLongTxt(dc.Records) // Autosplit long TXT records
 
 	var corrections []*models.Correction
-	if !diff2.EnableDiff2 || true { // Remove "|| true" when diff2 version arrives
+	if !diff2.EnableDiff2 {
 
 		// first collect keys that have changed
 		differ := diff.New(dc)
@@ -244,6 +244,7 @@ func (g *gcloudProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*model
 				Type: ck.Type,
 				Kind: "dns#resourceRecordSet",
 			}
+			fmt.Printf("DEBUG gcloud ck.Name=%q\n", ck.Name)
 			for _, r := range dc.Records {
 				if keyForRec(r) == ck {
 					newRRs.Rrdatas = append(newRRs.Rrdatas, r.GetTargetCombined())
@@ -265,6 +266,7 @@ func (g *gcloudProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*model
 
 		runChange := func() error {
 		retry:
+			fmt.Printf("DEBUG: gcloud zoneName=%q\n", zoneName)
 			resp, err := g.client.Changes.Create(g.project, zoneName, chg).Do()
 			if retryNeeded(resp, err) {
 				goto retry
@@ -288,21 +290,27 @@ func (g *gcloudProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*model
 	}
 
 	chg := &gdns.Change{Kind: "dns#change"}
+	const maxGroup = 2000
+	var count int
 	var msgs []string
 	for _, inst := range instructions {
 		switch inst.Type {
 
 		case diff2.CREATE:
+			fmt.Printf("DEBUG: gcloud CREATE\n")
 			fallthrough
 		case diff2.CHANGE:
 			// collect records to replace at name:rtype
+			fmt.Printf("DEBUG: gcloud msgs=%v\n", inst.Msgs)
 			msgs = append(msgs, inst.Msgs...)
+			fmt.Printf("DEBUG: gcloud name:type=%v:%v\n", inst.Key.NameFQDN + ".", inst.Key.Type)
 			newRRs := &gdns.ResourceRecordSet{
-				Name: inst.Key.NameFQDN,
+				Name: inst.Key.NameFQDN + ".",
 				Type: inst.Key.Type,
 				Kind: "dns#resourceRecordSet",
 			}
 			for _, r := range inst.New {
+				count++
 				newRRs.Rrdatas = append(newRRs.Rrdatas, r.GetTargetRFC1035Quoted())
 				newRRs.Ttl = int64(r.TTL)
 			}
@@ -311,32 +319,29 @@ func (g *gcloudProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*model
 		case diff2.DELETE:
 			msgs = append(msgs, inst.Msgs...)
 			for _, v := range inst.Old {
+				count++
 				chg.Deletions = append(chg.Deletions, v.Original.(*gdns.ResourceRecordSet))
 			}
 		}
 
 	}
 
-	// TODO: Start a new correction every 600 items.
-
-	runChange := func() error {
-	retry:
-		resp, err := g.client.Changes.Create(g.project, zoneName, chg).Do()
-		if retryNeeded(resp, err) {
-			goto retry
-		}
-		if err != nil {
-			return fmt.Errorf("runChange error: %w", err)
-		}
-		return nil
-	}
-
 	corrections = append(corrections, &models.Correction{
 		Msg: strings.Join(msgs, "\n"),
-		F:   runChange,
+		F: func() error {
+		retry:
+			resp, err := g.client.Changes.Create(g.project, zoneName, chg).Do()
+			if retryNeeded(resp, err) {
+				goto retry
+			}
+			if err != nil {
+				return fmt.Errorf("runChange error: %w", err)
+			}
+			return nil
+		},
 	})
-	return corrections, nil
 
+	return corrections, nil
 }
 
 func nativeToRecord(set *gdns.ResourceRecordSet, rec, origin string) (*models.RecordConfig, error) {
