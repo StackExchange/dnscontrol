@@ -164,7 +164,7 @@ func (n *nsone) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Correct
 	models.PostProcessRecords(existingRecords)
 
 	var corrections []*models.Correction
-	if !diff2.EnableDiff2 || true { // Remove "|| true" when diff2 version arrives
+	if !diff2.EnableDiff2 { // Remove "|| true" when diff2 version arrives
 
 		differ := diff.New(dc)
 		changedGroups, err := differ.ChangedGroups(existingRecords)
@@ -206,6 +206,51 @@ func (n *nsone) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Correct
 			}
 		}
 		return corrections, nil
+	} else {
+		//var msgs []string
+        changes, err := diff2.ByRecordSet(existingRecords, dc, nil)
+        if err != nil {
+            return nil, err
+        }
+        fmt.Printf("DEBUG: NS1 changes=%v\n", changes)
+        //msg = strings.Join(msgs, "\n")
+
+		corrections := []*models.Correction{}
+
+		if dnssecCorrections := n.getDomainCorrectionsDNSSEC(domain, dc.AutoDNSSEC); dnssecCorrections != nil {
+			corrections = append(corrections, dnssecCorrections)
+		}
+
+		// each name/type is given to the api as a unit.
+		for _, change := range changes {
+			key := change.Key
+			descs := change.Msgs
+
+			desc := strings.Join(descs, "\n")
+			_, current := existingGrouped[key]
+			recs, wanted := desiredGrouped[key]
+			if wanted && !current {
+				// pure addition
+				corrections = append(corrections, &models.Correction{
+					Msg: desc,
+					F:   func() error { return n.add(recs, dc.Name) },
+				})
+			} else if current && !wanted {
+				// pure deletion
+				corrections = append(corrections, &models.Correction{
+					Msg: desc,
+					F:   func() error { return n.remove(key, dc.Name) },
+				})
+			} else {
+				// modification
+				corrections = append(corrections, &models.Correction{
+					Msg: desc,
+					F:   func() error { return n.modify(recs, dc.Name) },
+				})
+			}
+		}
+		return corrections, nil
+
 	}
 
 	// Insert Future diff2 version here.
