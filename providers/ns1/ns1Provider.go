@@ -2,7 +2,6 @@ package ns1
 
 import (
 	"encoding/json"
-	"errors"
 	"fmt"
 	"net/http"
 	"strconv"
@@ -59,12 +58,6 @@ func (n *nsone) EnsureDomainExists(domain string) error {
 
 	if err == rest.ErrZoneExists {
 		// if domain exists already, just return nil, nothing to do here.
-		return nil
-	}
-
-	newZoneExistsError := errors.New("invalid: FQDN already exists in the view")
-	if errors.As(err, &newZoneExistsError) {
-		// XXX: FIX: This is an ugly workaround for https://github.com/ns1/ns1-go/issues/163. Remove when resolved.
 		return nil
 	}
 
