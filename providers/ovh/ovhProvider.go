@@ -118,8 +118,12 @@ func (c *ovhProvider) GetZoneRecords(domain string) (models.Records, error) {
 }
 
 func (c *ovhProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Correction, error) {
-	dc.Punycode()
-	//dc.CombineMXs()
+	var err error
+
+	err = dc.Punycode()
+	if err != nil {
+		return nil, err
+	}
 
 	actual, err := c.GetZoneRecords(dc.Name)
 	if err != nil {
@@ -130,53 +134,91 @@ func (c *ovhProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*models.C
 	models.PostProcessRecords(actual)
 
 	var corrections []*models.Correction
-	if !diff2.EnableDiff2 || true { // Remove "|| true" when diff2 version arrives
+	if !diff2.EnableDiff2 {
+		corrections, err = c.getDiff1DomainCorrections(dc, actual)
+	} else {
+		corrections, err = c.getDiff2DomainCorrections(dc, actual)
+	}
 
-		differ := diff.New(dc)
-		_, create, delete, modify, err := differ.IncrementalDiff(actual)
-		if err != nil {
-			return nil, err
-		}
+	if err != nil {
+		return nil, err
+	}
 
-		for _, del := range delete {
-			rec := del.Existing.Original.(*Record)
+	if len(corrections) > 0 {
+		corrections = append(corrections, &models.Correction{
+			Msg: "REFRESH zone " + dc.Name,
+			F: func() error {
+				return c.refreshZone(dc.Name)
+			},
+		})
+	}
+
+	return corrections, nil
+}
+
+func (c *ovhProvider) getDiff1DomainCorrections(dc *models.DomainConfig, actual models.Records) ([]*models.Correction, error) {
+	var corrections []*models.Correction
+
+	differ := diff.New(dc)
+	_, create, delete, modify, err := differ.IncrementalDiff(actual)
+	if err != nil {
+		return nil, err
+	}
+
+	for _, del := range delete {
+		rec := del.Existing.Original.(*Record)
+		corrections = append(corrections, &models.Correction{
+			Msg: del.String(),
+			F:   c.deleteRecordFunc(rec.ID, dc.Name),
+		})
+	}
+
+	for _, cre := range create {
+		rec := cre.Desired
+		corrections = append(corrections, &models.Correction{
+			Msg: cre.String(),
+			F:   c.createRecordFunc(rec, dc.Name),
+		})
+	}
+
+	for _, mod := range modify {
+		oldR := mod.Existing.Original.(*Record)
+		newR := mod.Desired
+		corrections = append(corrections, &models.Correction{
+			Msg: mod.String(),
+			F:   c.updateRecordFunc(oldR, newR, dc.Name),
+		})
+	}
+	return corrections, nil
+}
+
+func (c *ovhProvider) getDiff2DomainCorrections(dc *models.DomainConfig, actual models.Records) ([]*models.Correction, error) {
+	var corrections []*models.Correction
+	instructions, err := diff2.ByRecord(actual, dc, nil)
+	if err != nil {
+		return nil, err
+	}
+
+	for _, inst := range instructions {
+		switch inst.Type {
+		case diff2.CHANGE:
 			corrections = append(corrections, &models.Correction{
-				Msg: del.String(),
+				Msg: inst.Msgs[0],
+				F:   c.updateRecordFunc(inst.Old[0].Original.(*Record), inst.New[0], dc.Name),
+			})
+		case diff2.CREATE:
+			corrections = append(corrections, &models.Correction{
+				Msg: inst.Msgs[0],
+				F:   c.createRecordFunc(inst.New[0], dc.Name),
+			})
+		case diff2.DELETE:
+			rec := inst.Old[0].Original.(*Record)
+			corrections = append(corrections, &models.Correction{
+				Msg: inst.Msgs[0],
 				F:   c.deleteRecordFunc(rec.ID, dc.Name),
 			})
 		}
-
-		for _, cre := range create {
-			rec := cre.Desired
-			corrections = append(corrections, &models.Correction{
-				Msg: cre.String(),
-				F:   c.createRecordFunc(rec, dc.Name),
-			})
-		}
-
-		for _, mod := range modify {
-			oldR := mod.Existing.Original.(*Record)
-			newR := mod.Desired
-			corrections = append(corrections, &models.Correction{
-				Msg: mod.String(),
-				F:   c.updateRecordFunc(oldR, newR, dc.Name),
-			})
-		}
-
-		if len(corrections) > 0 {
-			corrections = append(corrections, &models.Correction{
-				Msg: "REFRESH zone " + dc.Name,
-				F: func() error {
-					return c.refreshZone(dc.Name)
-				},
-			})
-		}
-
-		return corrections, nil
 	}
-
-	// Insert Future diff2 version here.
-
 	return corrections, nil
 }
 
