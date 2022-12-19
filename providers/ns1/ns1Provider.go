@@ -143,6 +143,7 @@ func (n *nsone) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Correct
 	//dc.CombineMXs()
 
 	domain := dc.Name
+	corrections := []*models.Correction{}
 
 	// Get existing records
 	existingRecords, err := n.GetZoneRecords(domain)
@@ -150,14 +151,18 @@ func (n *nsone) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Correct
 		return nil, err
 	}
 
-	existingGrouped := existingRecords.GroupedByKey()
-	desiredGrouped := dc.Records.GroupedByKey()
-
 	//  Normalize
 	models.PostProcessRecords(existingRecords)
 
-	var corrections []*models.Correction
-	if !diff2.EnableDiff2 || true { // Remove "|| true" when diff2 version arrives
+	// add DNSSEC-related corrections
+	if dnssecCorrections := n.getDomainCorrectionsDNSSEC(domain, dc.AutoDNSSEC); dnssecCorrections != nil {
+		corrections = append(corrections, dnssecCorrections)
+	}
+
+	if !diff2.EnableDiff2 {
+
+		existingGrouped := existingRecords.GroupedByKey()
+		desiredGrouped := dc.Records.GroupedByKey()
 
 		differ := diff.New(dc)
 		changedGroups, err := differ.ChangedGroups(existingRecords)
@@ -165,19 +170,15 @@ func (n *nsone) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Correct
 			return nil, err
 		}
 
-		corrections := []*models.Correction{}
-
-		if dnssecCorrections := n.getDomainCorrectionsDNSSEC(domain, dc.AutoDNSSEC); dnssecCorrections != nil {
-			corrections = append(corrections, dnssecCorrections)
-		}
-
 		// each name/type is given to the api as a unit.
 		for k, descs := range changedGroups {
 			key := k
 
 			desc := strings.Join(descs, "\n")
+
 			_, current := existingGrouped[k]
 			recs, wanted := desiredGrouped[k]
+
 			if wanted && !current {
 				// pure addition
 				corrections = append(corrections, &models.Correction{
@@ -201,8 +202,36 @@ func (n *nsone) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Correct
 		return corrections, nil
 	}
 
-	// Insert Future diff2 version here.
+	changes, err := diff2.ByRecordSet(existingRecords, dc, nil)
+	if err != nil {
+		return nil, err
+	}
 
+	for _, change := range changes {
+		key := change.Key
+		recs := change.New
+		desc := strings.Join(change.Msgs, "\n")
+
+		if change.Type == diff2.CREATE {
+			corrections = append(corrections, &models.Correction{
+				Msg: desc,
+				F:   func() error { return n.add(recs, dc.Name) },
+			})
+		}
+		if change.Type == diff2.CHANGE {
+			corrections = append(corrections, &models.Correction{
+				Msg: desc,
+				F:   func() error { return n.modify(recs, dc.Name) },
+			})
+
+		}
+		if change.Type == diff2.DELETE {
+			corrections = append(corrections, &models.Correction{
+				Msg: desc,
+				F:   func() error { return n.remove(key, dc.Name) },
+			})
+		}
+	}
 	return corrections, nil
 }
 
