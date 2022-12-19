@@ -199,42 +199,38 @@ func (n *nsone) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Correct
 				})
 			}
 		}
-
+		return corrections, nil
 	}
 
-	if diff2.EnableDiff2 {
+	changes, err := diff2.ByRecordSet(existingRecords, dc, nil)
+	if err != nil {
+		return nil, err
+	}
+	fmt.Printf("DEBUG: NS1 changes=%v\n", changes)
 
-		changes, err := diff2.ByRecordSet(existingRecords, dc, nil)
-		if err != nil {
-			return nil, err
+	for _, change := range changes {
+		key := change.Key
+		recs := change.New
+		desc := strings.Join(change.Msgs, "\n")
+
+		if change.Type == diff2.CREATE {
+			corrections = append(corrections, &models.Correction{
+				Msg: desc,
+				F:   func() error { return n.add(recs, dc.Name) },
+			})
 		}
-		fmt.Printf("DEBUG: NS1 changes=%v\n", changes)
+		if change.Type == diff2.CHANGE {
+			corrections = append(corrections, &models.Correction{
+				Msg: desc,
+				F:   func() error { return n.modify(recs, dc.Name) },
+			})
 
-		for _, change := range changes {
-			key := change.Key
-			recs := change.New
-			desc := strings.Join(change.Msgs, "\n")
-
-			if change.Type == diff2.CREATE {
-				corrections = append(corrections, &models.Correction{
-					Msg: desc,
-					F:   func() error { return n.add(recs, dc.Name) },
-				})
-			}
-			if change.Type == diff2.CHANGE {
-				corrections = append(corrections, &models.Correction{
-					Msg: desc,
-					F:   func() error { return n.modify(recs, dc.Name) },
-				})
-
-			}
-			if change.Type == diff2.DELETE {
-				corrections = append(corrections, &models.Correction{
-					Msg: desc,
-					F:   func() error { return n.remove(key, dc.Name) },
-				})
-			}
-
+		}
+		if change.Type == diff2.DELETE {
+			corrections = append(corrections, &models.Correction{
+				Msg: desc,
+				F:   func() error { return n.remove(key, dc.Name) },
+			})
 		}
 	}
 	return corrections, nil
