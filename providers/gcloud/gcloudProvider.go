@@ -303,7 +303,7 @@ func (g *gcloudProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*model
 			// collect records to replace at name:rtype
 			fmt.Printf("DEBUG: gcloud msgs=%v\n", inst.Msgs)
 			msgs = append(msgs, inst.Msgs...)
-			fmt.Printf("DEBUG: gcloud name:type=%v:%v\n", inst.Key.NameFQDN + ".", inst.Key.Type)
+			fmt.Printf("DEBUG: gcloud name:type=%v:%v\n", inst.Key.NameFQDN+".", inst.Key.Type)
 			newRRs := &gdns.ResourceRecordSet{
 				Name: inst.Key.NameFQDN + ".",
 				Type: inst.Key.Type,
