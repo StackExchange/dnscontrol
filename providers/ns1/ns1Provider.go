@@ -206,7 +206,6 @@ func (n *nsone) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Correct
 	if err != nil {
 		return nil, err
 	}
-	fmt.Printf("DEBUG: NS1 changes=%v\n", changes)
 
 	for _, change := range changes {
 		key := change.Key
