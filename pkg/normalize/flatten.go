@@ -87,10 +87,8 @@ func flattenSPFs(cfg *models.DNSConfig) []error {
 					continue
 				}
 				recs := rec.TXTSplit(split+"."+domain.Name, overhead1, txtMaxSize)
-				recsKeys := sortedKeys(recs)
 
-				//for k, v := range recs {
-				for _, k := range recsKeys {
+				for _, k := range sortedKeys(recs) {
 					v := recs[k]
 					if k == "@" {
 						txt.SetTargetTXTs(v)
