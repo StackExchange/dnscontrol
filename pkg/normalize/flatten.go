@@ -2,12 +2,25 @@ package normalize
 
 import (
 	"fmt"
+	"sort"
 	"strconv"
 	"strings"
 
 	"github.com/StackExchange/dnscontrol/v3/models"
 	"github.com/StackExchange/dnscontrol/v3/pkg/spflib"
+	"golang.org/x/exp/constraints"
 )
+
+func sortedKeys[K constraints.Ordered, V any](m map[K]V) []K {
+	keys := make([]K, len(m))
+	i := 0
+	for k := range m {
+		keys[i] = k
+		i++
+	}
+	sort.Slice(keys, func(i, j int) bool { return keys[i] < keys[j] })
+	return keys
+}
 
 // hasSpfRecords returns true if this record requests SPF unrolling.
 func flattenSPFs(cfg *models.DNSConfig) []error {
@@ -74,7 +87,11 @@ func flattenSPFs(cfg *models.DNSConfig) []error {
 					continue
 				}
 				recs := rec.TXTSplit(split+"."+domain.Name, overhead1, txtMaxSize)
-				for k, v := range recs {
+				recsKeys := sortedKeys(recs)
+
+				//for k, v := range recs {
+				for _, k := range recsKeys {
+					v := recs[k]
 					if k == "@" {
 						txt.SetTargetTXTs(v)
 					} else {
