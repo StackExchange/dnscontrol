@@ -155,8 +155,11 @@ func generateChangeMsg(updates []string) string {
 // made.
 func (c *gcoreProvider) GenerateDomainCorrections(dc *models.DomainConfig, existing models.Records) ([]*models.Correction, error) {
 
+	// Make delete happen earlier than creates & updates.
 	var corrections []*models.Correction
-	if !diff2.EnableDiff2 || true { // Remove "|| true" when diff2 version arrives
+	var deletions []*models.Correction
+
+	if !diff2.EnableDiff2 {
 
 		// diff existing vs. current.
 		differ := diff.New(dc)
@@ -171,7 +174,6 @@ func (c *gcoreProvider) GenerateDomainCorrections(dc *models.DomainConfig, exist
 		desiredRecords := dc.Records.GroupedByKey()
 		existingRecords := existing.GroupedByKey()
 
-		// First pass: delete records to avoid coexisting of conflicting types
 		for label := range keysToUpdate {
 			if _, ok := desiredRecords[label]; !ok {
 				// record deleted in update
@@ -180,20 +182,12 @@ func (c *gcoreProvider) GenerateDomainCorrections(dc *models.DomainConfig, exist
 				name := label.NameFQDN
 				typ := label.Type
 				msg := generateChangeMsg(keysToUpdate[label])
-				corrections = append(corrections, &models.Correction{
+				deletions = append(deletions, &models.Correction{
 					Msg: msg,
 					F: func() error {
 						return c.provider.DeleteRRSet(c.ctx, zone, name, typ)
 					},
 				})
-			}
-		}
-
-		// Second pass: create and update records
-		for label := range keysToUpdate {
-			if _, ok := desiredRecords[label]; !ok {
-				// record deleted in update
-				// do nothing here
 
 			} else if _, ok := existingRecords[label]; !ok {
 				// record created in update
@@ -206,12 +200,11 @@ func (c *gcoreProvider) GenerateDomainCorrections(dc *models.DomainConfig, exist
 				zone := dc.Name
 				name := label.NameFQDN
 				typ := label.Type
-				rec := *record
 				msg := generateChangeMsg(keysToUpdate[label])
 				corrections = append(corrections, &models.Correction{
 					Msg: msg,
 					F: func() error {
-						return c.provider.CreateRRSet(c.ctx, zone, name, typ, rec)
+						return c.provider.CreateRRSet(c.ctx, zone, name, typ, *record)
 					},
 				})
 
@@ -226,21 +219,57 @@ func (c *gcoreProvider) GenerateDomainCorrections(dc *models.DomainConfig, exist
 				zone := dc.Name
 				name := label.NameFQDN
 				typ := label.Type
-				rec := *record
 				msg := generateChangeMsg(keysToUpdate[label])
 				corrections = append(corrections, &models.Correction{
 					Msg: msg,
 					F: func() error {
-						return c.provider.UpdateRRSet(c.ctx, zone, name, typ, rec)
+						return c.provider.UpdateRRSet(c.ctx, zone, name, typ, *record)
 					},
 				})
 			}
 		}
 
-		return corrections, nil
+	} else {
+		// Diff2 version
+		changes, err := diff2.ByRecordSet(existing, dc, nil)
+		if err != nil {
+			return nil, err
+		}
+
+		for _, change := range changes {
+			record := recordsToNative(change.New, change.Key)
+
+			// Copy all params to avoid overwrites
+			zone := dc.Name
+			name := change.Key.NameFQDN
+			typ := change.Key.Type
+			msg := generateChangeMsg(change.Msgs)
+
+			switch change.Type {
+			case diff2.CREATE:
+				corrections = append(corrections, &models.Correction{
+					Msg: msg,
+					F: func() error {
+						return c.provider.CreateRRSet(c.ctx, zone, name, typ, *record)
+					},
+				})
+			case diff2.CHANGE:
+				corrections = append(corrections, &models.Correction{
+					Msg: msg,
+					F: func() error {
+						return c.provider.UpdateRRSet(c.ctx, zone, name, typ, *record)
+					},
+				})
+			case diff2.DELETE:
+				deletions = append(deletions, &models.Correction{
+					Msg: msg,
+					F: func() error {
+						return c.provider.DeleteRRSet(c.ctx, zone, name, typ)
+					},
+				})
+			}
+		}
 	}
 
-	// Insert Future diff2 version here.
-
-	return corrections, nil
+	return append(deletions, corrections...), nil
 }
