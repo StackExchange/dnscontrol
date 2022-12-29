@@ -23,6 +23,7 @@ Info required in `creds.json`:
 type gcoreProvider struct {
 	provider *dnssdk.Client
 	ctx      context.Context
+	apiKey   string
 }
 
 // NewGCore creates the provider.
@@ -34,6 +35,7 @@ func NewGCore(m map[string]string, metadata json.RawMessage) (providers.DNSServi
 	c := &gcoreProvider{
 		provider: dnssdk.NewClient(dnssdk.PermanentAPIKeyAuth(m["api-key"])),
 		ctx:      context.TODO(),
+		apiKey:   m["api-key"],
 	}
 
 	return c, nil
@@ -94,14 +96,15 @@ func (c *gcoreProvider) GetZoneRecords(domain string) (models.Records, error) {
 	// Convert RRsets to DNSControl format on the fly
 	existingRecords := []*models.RecordConfig{}
 
-	// We cannot directly use Zone's ShortAnswers
-	// they aren't complete for CAA & SRV
-	for _, rec := range zone.Records {
-		rrset, err := c.provider.RRSet(c.ctx, zone.Name, rec.Name, rec.Type)
-		if err != nil {
-			return nil, err
-		}
-		nativeRecords, err := nativeToRecords(rrset, zone.Name, rec.Name, rec.Type)
+	// We cannot directly use Zone's ShortAnswers, they aren't complete for CAA & SRV
+
+	rrsets, err := c.dnssdkRRSets(domain)
+	if err != nil {
+		return nil, err
+	}
+
+	for _, rec := range rrsets.RRSets {
+		nativeRecords, err := nativeToRecords(rec, zone.Name)
 		if err != nil {
 			return nil, err
 		}
