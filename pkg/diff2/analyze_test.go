@@ -9,20 +9,22 @@ import (
 	"github.com/kylelemons/godebug/diff"
 )
 
-var testDataAA1234 = makeRec("laba", "A", "1.2.3.4") //      [0]
-var testDataAA5678 = makeRec("laba", "A", "5.6.7.8")
-var testDataAMX10a = makeRec("laba", "MX", "10 laba")  //     [1]
-var testDataCCa = makeRec("labc", "CNAME", "laba")     //     [2]
-var testDataEA15 = makeRec("labe", "A", "10.10.10.15") //  [3]
-var e4 = makeRec("labe", "A", "10.10.10.16")           //  [4]
-var e5 = makeRec("labe", "A", "10.10.10.17")           //  [5]
-var e6 = makeRec("labe", "A", "10.10.10.18")           //  [6]
-var e7 = makeRec("labg", "NS", "10.10.10.15")          // [7]
-var e8 = makeRec("labg", "NS", "10.10.10.16")          // [8]
-var e9 = makeRec("labg", "NS", "10.10.10.17")          // [9]
-var e10 = makeRec("labg", "NS", "10.10.10.18")         // [10]
-var e11mx = makeRec("labh", "MX", "22 ttt")            //     [11]
-var e11 = makeRec("labh", "CNAME", "labd")             //     [11]
+var testDataAA1234 = makeRec("laba", "A", "1.2.3.4")               //  [0]
+var testDataAA5678 = makeRec("laba", "A", "5.6.7.8")               //
+var testDataAA1234ttl700 = makeRecTTL("laba", "A", "1.2.3.4", 700) //
+var testDataAA5678ttl700 = makeRecTTL("laba", "A", "5.6.7.8", 700) //
+var testDataAMX10a = makeRec("laba", "MX", "10 laba")              //     [1]
+var testDataCCa = makeRec("labc", "CNAME", "laba")                 //     [2]
+var testDataEA15 = makeRec("labe", "A", "10.10.10.15")             //  [3]
+var e4 = makeRec("labe", "A", "10.10.10.16")                       //  [4]
+var e5 = makeRec("labe", "A", "10.10.10.17")                       //  [5]
+var e6 = makeRec("labe", "A", "10.10.10.18")                       //  [6]
+var e7 = makeRec("labg", "NS", "10.10.10.15")                      // [7]
+var e8 = makeRec("labg", "NS", "10.10.10.16")                      // [8]
+var e9 = makeRec("labg", "NS", "10.10.10.17")                      // [9]
+var e10 = makeRec("labg", "NS", "10.10.10.18")                     // [10]
+var e11mx = makeRec("labh", "MX", "22 ttt")                        //     [11]
+var e11 = makeRec("labh", "CNAME", "labd")                         //     [11]
 var testDataApexMX1aaa = makeRec("", "MX", "1 aaa")
 
 var testDataAA1234clone = makeRec("laba", "A", "1.2.3.4") //      [0']
@@ -40,7 +42,7 @@ var d11 = makeRec("labg", "NS", "10.10.10.97")            // [11']
 var d12 = makeRec("labh", "A", "1.2.3.4")                 //      [12']
 var testDataApexMX22bbb = makeRec("", "MX", "22 bbb")
 
-var d0tc = targetConfig{compareable: "1.2.3.4 ttl=0", rec: testDataAA1234clone}
+var d0tc = mkTargetConfig(testDataAA1234clone)
 
 func makeChange(v Verb, l, t string, old, new models.Records, msgs []string) Change {
 	c := Change{
@@ -414,12 +416,15 @@ func mkTargetConfig(x ...*models.RecordConfig) []targetConfig {
 	return tc
 }
 
-func Test_diffTargets(t *testing.T) {
+func mkTargetConfigMap(x ...*models.RecordConfig) map[string]*targetConfig {
+	var m = map[string]*targetConfig{}
+	for _, v := range mkTargetConfig(x...) {
+		m[v.compareable] = &v
+	}
+	return m
+}
 
-	testDataAA5678ttl700 := testDataAA5678
-	testDataAA5678ttl700.TTL = 700
-	testDataAA1234ttl700 := testDataAA1234
-	testDataAA1234ttl700.TTL = 700
+func Test_diffTargets(t *testing.T) {
 
 	type args struct {
 		existing []targetConfig
@@ -439,9 +444,9 @@ func Test_diffTargets(t *testing.T) {
 			},
 			want: ChangeList{
 				Change{Type: CHANGE,
-					Key:  models.RecordKey{NameFQDN: "laba.f.com", Type: "MX"},
-					New:  models.Records{testDataAMX10a},
-					Msgs: []string{"CREATE laba.f.com MX 10 laba"},
+					Key:  models.RecordKey{NameFQDN: "laba.f.com", Type: "A"},
+					New:  models.Records{testDataAA5678ttl700, testDataAA1234ttl700},
+					Msgs: []string{"CREATE laba.f.com A 5.6.7.8 ttl=700", "CHANGE laba.f.com A (1.2.3.4 ttl=400 -> (1.2.3.4 ttl=700)"},
 				},
 			},
 		},
@@ -449,12 +454,8 @@ func Test_diffTargets(t *testing.T) {
 		{
 			name: "single",
 			args: args{
-				existing: []targetConfig{
-					{compareable: "1.2.3.4", rec: testDataAA1234},
-				},
-				desired: []targetConfig{
-					{compareable: "1.2.3.4", rec: testDataAA1234},
-				},
+				existing: mkTargetConfig(testDataAA1234),
+				desired:  mkTargetConfig(testDataAA1234),
 			},
 			//want: ,
 		},
@@ -462,13 +463,8 @@ func Test_diffTargets(t *testing.T) {
 		{
 			name: "add1",
 			args: args{
-				existing: []targetConfig{
-					{compareable: "1.2.3.4", rec: testDataAA1234},
-				},
-				desired: []targetConfig{
-					{compareable: "1.2.3.4", rec: testDataAA1234},
-					{compareable: "10 laba", rec: testDataAMX10a},
-				},
+				existing: mkTargetConfig(testDataAA1234),
+				desired:  mkTargetConfig(testDataAA1234, testDataAMX10a),
 			},
 			want: ChangeList{
 				Change{Type: CREATE,
@@ -482,13 +478,8 @@ func Test_diffTargets(t *testing.T) {
 		{
 			name: "del1",
 			args: args{
-				existing: []targetConfig{
-					{compareable: "1.2.3.4", rec: testDataAA1234},
-					{compareable: "10 laba", rec: testDataAMX10a},
-				},
-				desired: []targetConfig{
-					{compareable: "1.2.3.4", rec: testDataAA1234},
-				},
+				existing: mkTargetConfig(testDataAA1234, testDataAMX10a),
+				desired:  mkTargetConfig(testDataAA1234),
 			},
 			want: ChangeList{
 				Change{Type: DELETE,
@@ -502,14 +493,8 @@ func Test_diffTargets(t *testing.T) {
 		{
 			name: "change2nd",
 			args: args{
-				existing: []targetConfig{
-					{compareable: "1.2.3.4", rec: testDataAA1234},
-					{compareable: "10 laba", rec: testDataAMX10a},
-				},
-				desired: []targetConfig{
-					{compareable: "1.2.3.4", rec: testDataAA1234},
-					{compareable: "20 laba", rec: testDataAMX20b},
-				},
+				existing: mkTargetConfig(testDataAA1234, testDataAMX10a),
+				desired:  mkTargetConfig(testDataAA1234, testDataAMX20b),
 			},
 			want: ChangeList{
 				Change{Type: CHANGE,
@@ -524,13 +509,8 @@ func Test_diffTargets(t *testing.T) {
 		{
 			name: "del2nd",
 			args: args{
-				existing: []targetConfig{
-					{compareable: "1.2.3.4", rec: testDataAA1234},
-					{compareable: "5.6.7.8", rec: testDataAA5678},
-				},
-				desired: []targetConfig{
-					{compareable: "1.2.3.4", rec: testDataAA1234},
-				},
+				existing: mkTargetConfig(testDataAA1234, testDataAA5678),
+				desired:  mkTargetConfig(testDataAA1234),
 			},
 			want: ChangeList{
 				Change{Type: CHANGE,
@@ -569,8 +549,8 @@ func Test_removeCommon(t *testing.T) {
 		{
 			name: "same",
 			args: args{
-				existing: []targetConfig{d0tc},
-				desired:  []targetConfig{d0tc},
+				existing: d0tc,
+				desired:  d0tc,
 			},
 			want:  []targetConfig{},
 			want1: []targetConfig{},
@@ -611,14 +591,8 @@ func Test_filterBy(t *testing.T) {
 		{
 			name: "removeall",
 			args: args{
-				s: []targetConfig{
-					{compareable: "1.2.3.4", rec: testDataAA1234},
-					{compareable: "10 laba", rec: testDataAMX10a},
-				},
-				m: map[string]*targetConfig{
-					"1.2.3.4": {compareable: "1.2.3.4", rec: testDataAA1234},
-					"10 laba": {compareable: "10 laba", rec: testDataAMX10a},
-				},
+				s: mkTargetConfig(testDataAA1234, testDataAMX10a),
+				m: mkTargetConfigMap(testDataAA1234, testDataAMX10a),
 			},
 			want: []targetConfig{},
 		},
@@ -626,36 +600,19 @@ func Test_filterBy(t *testing.T) {
 		{
 			name: "keepall",
 			args: args{
-				s: []targetConfig{
-					{compareable: "1.2.3.4", rec: testDataAA1234},
-					{compareable: "10 laba", rec: testDataAMX10a},
-				},
-				m: map[string]*targetConfig{
-					"nothing": {compareable: "1.2.3.4", rec: testDataAA1234},
-					"matches": {compareable: "10 laba", rec: testDataAMX10a},
-				},
+				s: mkTargetConfig(testDataAA1234, testDataAMX10a),
+				m: mkTargetConfigMap(),
 			},
-			want: []targetConfig{
-				{compareable: "1.2.3.4", rec: testDataAA1234},
-				{compareable: "10 laba", rec: testDataAMX10a},
-			},
+			want: mkTargetConfig(testDataAA1234, testDataAMX10a),
 		},
 
 		{
 			name: "keepsome",
 			args: args{
-				s: []targetConfig{
-					{compareable: "1.2.3.4", rec: testDataAA1234},
-					{compareable: "10 laba", rec: testDataAMX10a},
-				},
-				m: map[string]*targetConfig{
-					"nothing": {compareable: "1.2.3.4", rec: testDataAA1234},
-					"10 laba": {compareable: "10 laba", rec: testDataAMX10a},
-				},
+				s: mkTargetConfig(testDataAA1234, testDataAMX10a),
+				m: mkTargetConfigMap(testDataAMX10a),
 			},
-			want: []targetConfig{
-				{compareable: "1.2.3.4", rec: testDataAA1234},
-			},
+			want: mkTargetConfig(testDataAA1234),
 		},
 	}
 	for _, tt := range tests {
