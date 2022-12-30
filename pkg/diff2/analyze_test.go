@@ -9,7 +9,7 @@ import (
 	"github.com/kylelemons/godebug/diff"
 )
 
-var testDataAA1234 = makeRec("laba", "A", "1.2.3.4")               //  [0]
+var testDataAA1234 = makeRec("laba", "A", "1.2.3.4")               //      [0]
 var testDataAA5678 = makeRec("laba", "A", "5.6.7.8")               //
 var testDataAA1234ttl700 = makeRecTTL("laba", "A", "1.2.3.4", 700) //
 var testDataAA5678ttl700 = makeRecTTL("laba", "A", "5.6.7.8", 700) //
@@ -41,8 +41,6 @@ var d10 = makeRec("labg", "NS", "10.10.10.16")            // [10']
 var d11 = makeRec("labg", "NS", "10.10.10.97")            // [11']
 var d12 = makeRec("labh", "A", "1.2.3.4")                 //      [12']
 var testDataApexMX22bbb = makeRec("", "MX", "22 bbb")
-
-var d0tc = mkTargetConfig(testDataAA1234clone)
 
 func makeChange(v Verb, l, t string, old, new models.Records, msgs []string) Change {
 	c := Change{
@@ -444,9 +442,12 @@ func Test_diffTargets(t *testing.T) {
 			},
 			want: ChangeList{
 				Change{Type: CHANGE,
-					Key:  models.RecordKey{NameFQDN: "laba.f.com", Type: "A"},
-					New:  models.Records{testDataAA5678ttl700, testDataAA1234ttl700},
-					Msgs: []string{"CREATE laba.f.com A 5.6.7.8 ttl=700", "CHANGE laba.f.com A (1.2.3.4 ttl=400 -> (1.2.3.4 ttl=700)"},
+					Key: models.RecordKey{NameFQDN: "laba.f.com", Type: "A"},
+					New: models.Records{testDataAA5678ttl700, testDataAA1234ttl700},
+					Msgs: []string{
+						"CHANGE laba.f.com A 5.6.7.8 (ttl 300->700)",
+						"CREATE laba.f.com A 1.2.3.4 ttl=700",
+					},
 				},
 			},
 		},
@@ -546,14 +547,25 @@ func Test_removeCommon(t *testing.T) {
 		want  []targetConfig
 		want1 []targetConfig
 	}{
+
 		{
 			name: "same",
 			args: args{
-				existing: d0tc,
-				desired:  d0tc,
+				existing: mkTargetConfig(testDataAA1234clone),
+				desired:  mkTargetConfig(testDataAA1234clone),
 			},
 			want:  []targetConfig{},
 			want1: []targetConfig{},
+		},
+
+		{
+			name: "disjoint",
+			args: args{
+				existing: mkTargetConfig(testDataAA1234),
+				desired:  mkTargetConfig(testDataAA5678),
+			},
+			want:  mkTargetConfig(testDataAA1234),
+			want1: mkTargetConfig(testDataAA5678),
 		},
 	}
 	for _, tt := range tests {
@@ -619,6 +631,63 @@ func Test_filterBy(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			if got := filterBy(tt.args.s, tt.args.m); !reflect.DeepEqual(comparables(got), comparables(tt.want)) {
 				t.Errorf("filterBy() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func Test_splitTTLOnly(t *testing.T) {
+	type args struct {
+		existing []targetConfig
+		desired  []targetConfig
+	}
+	tests := []struct {
+		name           string
+		args           args
+		wantExistDiff  []targetConfig
+		wantDesireDiff []targetConfig
+		wantExistTTL   models.Records
+		wantDesireTTL  models.Records
+	}{
+
+		{
+			name: "simple",
+			args: args{
+				existing: mkTargetConfig(testDataAA1234),
+				desired:  mkTargetConfig(testDataAA1234ttl700),
+			},
+			wantExistDiff:  mkTargetConfig(),
+			wantDesireDiff: mkTargetConfig(),
+			wantExistTTL:   models.Records{testDataAA1234},
+			wantDesireTTL:  models.Records{testDataAA1234ttl700},
+		},
+
+		{
+			name: "both",
+			args: args{
+				existing: mkTargetConfig(testDataAA1234),
+				desired:  mkTargetConfig(testDataAA5678),
+			},
+			wantExistDiff:  mkTargetConfig(testDataAA1234),
+			wantDesireDiff: mkTargetConfig(testDataAA5678),
+			wantExistTTL:   models.Records{},
+			wantDesireTTL:  models.Records{},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			gotExistDiff, gotDesireDiff, gotExistTTL, gotDesireTTL := splitTTLOnly(tt.args.existing, tt.args.desired)
+			if !reflect.DeepEqual(gotExistDiff, tt.wantExistDiff) {
+				t.Errorf("splitTTLOnly() gotExistDiff = %v, want %v", gotExistDiff, tt.wantExistDiff)
+			}
+			if !reflect.DeepEqual(gotDesireDiff, tt.wantDesireDiff) {
+				t.Errorf("splitTTLOnly() gotDesireDiff = %v, want %v", gotDesireDiff, tt.wantDesireDiff)
+			}
+			if ((len(tt.wantExistTTL) != 0) && len(gotExistTTL) != 0) && !reflect.DeepEqual(gotExistTTL, tt.wantExistTTL) {
+				t.Errorf("splitTTLOnly() gotExistTTL = %v, want %v (len=%d %d)", gotExistTTL, tt.wantExistTTL, len(gotExistTTL), len(tt.wantExistTTL))
+			}
+			if ((len(tt.wantDesireTTL) != 0) && len(gotDesireTTL) != 0) && !reflect.DeepEqual(gotDesireTTL, tt.wantDesireTTL) {
+				t.Errorf("splitTTLOnly() gotDesireTTL = %v, want %v", gotDesireTTL, tt.wantDesireTTL)
 			}
 		})
 	}
