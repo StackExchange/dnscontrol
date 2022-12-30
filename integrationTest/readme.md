@@ -39,3 +39,19 @@ ProTip: If you run these tests frequently (and we hope you do), you
 should create a script that you can `source` to set these
 variables. Be careful not to check this script into Git since it
 contains credentials.
+
+## Debugger
+
+Test a particular function:
+
+```
+dlv test github.com/StackExchange/dnscontrol/v3/pkg/diff2 -- -test.run Test_analyzeByRecordSet
+```
+
+Debug the integration tests:
+
+
+```
+dlv test github.com/StackExchange/dnscontrol/v3/integrationTest -- -test.v -test.run ^TestDNSProviders -verbose -provider NAMEDOTCOM -start 1 -end 1 -diff2
+```
+

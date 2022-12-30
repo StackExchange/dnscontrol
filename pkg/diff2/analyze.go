@@ -96,7 +96,7 @@ func analyzeByRecord(cc *CompareConfig) ChangeList {
 	var instructions ChangeList
 	// For each label, for each type at that label, see if there are any changes.
 	for _, lc := range cc.ldata {
-		//fmt.Printf("DEBUG: analyzeByRecord: next lc=%v\n", lc)
+		fmt.Printf("DEBUG: analyzeByRecord: next lc=%v\n", lc)
 		for _, rt := range lc.tdata {
 			ets := rt.existingTargets
 			dts := rt.desiredTargets
@@ -123,7 +123,7 @@ func mkAdd(l string, t string, msgs []string, recs models.Records) Change {
 func mkAddByLabel(l string, t string, msgs []string, newRecs models.Records) Change {
 	fmt.Printf("DEBUG: mkAddByLabel: len(o)=%d len(m)=%d\n", len(newRecs), len(msgs))
 	fmt.Printf("DEBUG: mkAddByLabel: msgs = %v\n", msgs)
-	c := Change{Type: CREATE, Msgs: msgs}
+	c := Change{Type: CREATE, Msgs: msgs, MsgsJoined: strings.Join(msgs, "\n")}
 	c.Key.NameFQDN = l
 	c.Key.Type = t
 	c.New = newRecs
@@ -131,7 +131,7 @@ func mkAddByLabel(l string, t string, msgs []string, newRecs models.Records) Cha
 }
 
 func mkChange(l string, t string, msgs []string, oldRecs, newRecs models.Records) Change {
-	c := Change{Type: CHANGE, Msgs: msgs}
+	c := Change{Type: CHANGE, Msgs: msgs, MsgsJoined: strings.Join(msgs, "\n")}
 	c.Key.NameFQDN = l
 	c.Key.Type = t
 	c.Old = oldRecs
@@ -141,7 +141,7 @@ func mkChange(l string, t string, msgs []string, oldRecs, newRecs models.Records
 
 func mkChangeLabel(l string, t string, msgs []string, oldRecs, newRecs models.Records, msgsByKey map[models.RecordKey][]string) Change {
 	//fmt.Printf("DEBUG: mkChangeLabel: len(o)=%d\n", len(oldRecs))
-	c := Change{Type: CHANGE, Msgs: msgs}
+	c := Change{Type: CHANGE, Msgs: msgs, MsgsJoined: strings.Join(msgs, "\n")}
 	c.Key.NameFQDN = l
 	c.Key.Type = t
 	c.Old = oldRecs
@@ -151,14 +151,14 @@ func mkChangeLabel(l string, t string, msgs []string, oldRecs, newRecs models.Re
 }
 
 func mkDelete(l string, t string, oldRecs models.Records, msgs []string) Change {
-	c := Change{Type: DELETE, Msgs: msgs}
+	c := Change{Type: DELETE, Msgs: msgs, MsgsJoined: strings.Join(msgs, "\n")}
 	c.Key.NameFQDN = l
 	c.Key.Type = t
 	c.Old = oldRecs
 	return c
 }
 func mkDeleteRec(l string, t string, msgs []string, rec *models.RecordConfig) Change {
-	c := Change{Type: DELETE, Msgs: msgs}
+	c := Change{Type: DELETE, Msgs: msgs, MsgsJoined: strings.Join(msgs, "\n")}
 	c.Key.NameFQDN = l
 	c.Key.Type = t
 	c.Old = models.Records{rec}

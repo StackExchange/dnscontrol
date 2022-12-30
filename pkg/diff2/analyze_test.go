@@ -9,8 +9,8 @@ import (
 	"github.com/kylelemons/godebug/diff"
 )
 
-var testDataAA1234 = makeRec("laba", "A", "1.2.3.4")   //      [0]
-var testDataAA5678 = makeRec("laba", "A", "5.6.7.8")   //      [0]
+var testDataAA1234 = makeRec("laba", "A", "1.2.3.4") //      [0]
+var testDataAA5678 = makeRec("laba", "A", "5.6.7.8")
 var testDataAMX10a = makeRec("laba", "MX", "10 laba")  //     [1]
 var testDataCCa = makeRec("labc", "CNAME", "laba")     //     [2]
 var testDataEA15 = makeRec("labe", "A", "10.10.10.15") //  [3]
@@ -402,7 +402,25 @@ ChangeList: len=12
 
 	}
 }
+
+func mkTargetConfig(x ...*models.RecordConfig) []targetConfig {
+	var tc []targetConfig
+	for _, r := range x {
+		tc = append(tc, targetConfig{
+			compareable: comparable(r, nil),
+			rec:         r,
+		})
+	}
+	return tc
+}
+
 func Test_diffTargets(t *testing.T) {
+
+	testDataAA5678ttl700 := testDataAA5678
+	testDataAA5678ttl700.TTL = 700
+	testDataAA1234ttl700 := testDataAA1234
+	testDataAA1234ttl700.TTL = 700
+
 	type args struct {
 		existing []targetConfig
 		desired  []targetConfig
@@ -412,6 +430,21 @@ func Test_diffTargets(t *testing.T) {
 		args args
 		want ChangeList
 	}{
+
+		{
+			name: "add1changettl",
+			args: args{
+				existing: mkTargetConfig(testDataAA5678),
+				desired:  mkTargetConfig(testDataAA5678ttl700, testDataAA1234ttl700),
+			},
+			want: ChangeList{
+				Change{Type: CHANGE,
+					Key:  models.RecordKey{NameFQDN: "laba.f.com", Type: "MX"},
+					New:  models.Records{testDataAMX10a},
+					Msgs: []string{"CREATE laba.f.com MX 10 laba"},
+				},
+			},
+		},
 
 		{
 			name: "single",

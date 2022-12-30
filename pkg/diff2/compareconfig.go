@@ -202,10 +202,12 @@ func (cc *CompareConfig) addRecords(recs models.Records, storeInExisting bool) {
 		//fmt.Printf("BEFORE E/D: %v/%v\n", len(td.existingRecs), len(td.desiredRecs))
 		if storeInExisting {
 			cc.ldata[labelIdx].tdata[rtIdx].existingRecs = append(cc.ldata[labelIdx].tdata[rtIdx].existingRecs, rec)
-			cc.ldata[labelIdx].tdata[rtIdx].existingTargets = append(cc.ldata[labelIdx].tdata[rtIdx].existingTargets, targetConfig{compareable: comp, rec: rec})
+			cc.ldata[labelIdx].tdata[rtIdx].existingTargets = append(cc.ldata[labelIdx].tdata[rtIdx].existingTargets,
+				targetConfig{compareable: comp, rec: rec})
 		} else {
 			cc.ldata[labelIdx].tdata[rtIdx].desiredRecs = append(cc.ldata[labelIdx].tdata[rtIdx].desiredRecs, rec)
-			cc.ldata[labelIdx].tdata[rtIdx].desiredTargets = append(cc.ldata[labelIdx].tdata[rtIdx].desiredTargets, targetConfig{compareable: comp, rec: rec})
+			cc.ldata[labelIdx].tdata[rtIdx].desiredTargets = append(cc.ldata[labelIdx].tdata[rtIdx].desiredTargets,
+				targetConfig{compareable: comp, rec: rec})
 		}
 		//fmt.Printf("AFTER  L: %v\n", len(cc.ldata))
 		//fmt.Printf("AFTER  E/D: %v/%v\n", len(td.existingRecs), len(td.desiredRecs))

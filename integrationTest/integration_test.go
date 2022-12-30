@@ -707,6 +707,21 @@ func makeTests(t *testing.T) []*TestGroup {
 			tc("Change targets and ttls", a("www", "1.1.1.1"), a("www", "2.2.2.2")),
 		),
 
+		//		testgroup("add to label",
+		//			tc("Setup", ttl(a("www", "5.6.7.8"), 400)),
+		//			tc("Add at same label", ttl(a("www", "5.6.7.8"), 400), ttl(a("www", "1.2.3.4"), 400)),
+		//		),
+		//
+		//		testgroup("add to label with diff ttl",
+		//			tc("Setup", ttl(a("www", "5.6.7.8"), 400)),
+		//			tc("Add at same label, new ttl", ttl(a("www", "5.6.7.8"), 400), ttl(a("www", "1.2.3.4"), 700)),
+		//		),
+
+		testgroup("add to label and change orig ttl",
+			tc("Setup", ttl(a("www", "5.6.7.8"), 400)),
+			tc("Add at same label, new ttl", ttl(a("www", "5.6.7.8"), 700), ttl(a("www", "1.2.3.4"), 700)),
+		),
+
 		testgroup("Protocol-Wildcard",
 			// Test the basic Add/Change/Delete with the domain wildcard.
 			not("HEDNS"), // Not supported by dns.he.net due to abuse
