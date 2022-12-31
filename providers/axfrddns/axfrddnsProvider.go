@@ -232,6 +232,9 @@ func (c *axfrddnsProvider) FetchZoneRecords(domain string) ([]dns.RR, error) {
 		transfer.TsigSecret =
 			map[string]string{c.transferKey.id: c.transferKey.secret}
 		request.SetTsig(c.transferKey.id, c.transferKey.algo, 300, time.Now().Unix())
+		if c.transferKey.algo == dns.HmacMD5 {
+			transfer.TsigProvider = md5Provider(c.transferKey.secret)
+		}
 	}
 
 	envelope, err := transfer.In(request, c.master)
@@ -428,6 +431,9 @@ func (c *axfrddnsProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*mod
 							client.TsigSecret =
 								map[string]string{c.updateKey.id: c.updateKey.secret}
 							update.SetTsig(c.updateKey.id, c.updateKey.algo, 300, time.Now().Unix())
+							if c.updateKey.algo == dns.HmacMD5 {
+								client.TsigProvider = md5Provider(c.updateKey.secret)
+							}
 						}
 
 						msg, _, err := client.Exchange(update, c.master)
