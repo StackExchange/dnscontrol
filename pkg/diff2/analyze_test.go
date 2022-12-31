@@ -446,7 +446,7 @@ func Test_diffTargets(t *testing.T) {
 					New: models.Records{testDataAA5678ttl700, testDataAA1234ttl700},
 					Msgs: []string{
 						"CHANGE laba.f.com A 5.6.7.8 (ttl 300->700)",
-						"CREATE laba.f.com A 1.2.3.4 ttl=700",
+						"CREATE laba.f.com A 1.2.3.4",
 					},
 				},
 			},
