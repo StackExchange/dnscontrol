@@ -9,10 +9,15 @@ import (
 
 func makeRec(label, rtype, content string) *models.RecordConfig {
 	origin := "f.com"
-	r := models.RecordConfig{}
+	r := models.RecordConfig{TTL: 300}
 	r.SetLabel(label, origin)
 	r.PopulateFromString(rtype, content, origin)
 	return &r
+}
+func makeRecTTL(label, rtype, content string, ttl uint32) *models.RecordConfig {
+	r := makeRec(label, rtype, content)
+	r.TTL = ttl
+	return r
 }
 func makeRecSet(recs ...*models.RecordConfig) *recset {
 	result := recset{}

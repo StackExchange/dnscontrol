@@ -97,7 +97,7 @@ func compileTypeGlob(g string) map[string]bool {
 }
 
 func match(rc *models.RecordConfig, glabel, gtarget glob.Glob, hasRType map[string]bool) bool {
-	printer.Printf("DEBUG: match(%v, %v, %v, %v)\n", rc.NameFQDN, glabel, gtarget, hasRType)
+	//printer.Printf("DEBUG: match(%v, %v, %v, %v)\n", rc.NameFQDN, glabel, gtarget, hasRType)
 
 	// _ = glabel.Match(rc.NameFQDN)
 	// _ = matchType(rc.Type, hasRType)
@@ -105,22 +105,22 @@ func match(rc *models.RecordConfig, glabel, gtarget glob.Glob, hasRType map[stri
 	// _ = gtarget.Match(x)
 
 	if !glabel.Match(rc.NameFQDN) {
-		printer.Printf("DEBUG: REJECTED LABEL: %s:%v\n", rc.NameFQDN, glabel)
+		//printer.Printf("DEBUG: REJECTED LABEL: %s:%v\n", rc.NameFQDN, glabel)
 		return false
 	} else if !matchType(rc.Type, hasRType) {
-		printer.Printf("DEBUG: REJECTED TYPE: %s:%v\n", rc.Type, hasRType)
+		//printer.Printf("DEBUG: REJECTED TYPE: %s:%v\n", rc.Type, hasRType)
 		return false
 	} else if gtarget == nil {
 		return true
 	} else if !gtarget.Match(rc.GetTargetField()) {
-		printer.Printf("DEBUG: REJECTED TARGET: %v:%v\n", rc.GetTargetField(), gtarget)
+		//printer.Printf("DEBUG: REJECTED TARGET: %v:%v\n", rc.GetTargetField(), gtarget)
 		return false
 	}
 	return true
 }
 
 func matchType(s string, hasRType map[string]bool) bool {
-	printer.Printf("DEBUG: matchType map=%v\n", hasRType)
+	//printer.Printf("DEBUG: matchType map=%v\n", hasRType)
 	if len(hasRType) == 0 {
 		return true
 	}
