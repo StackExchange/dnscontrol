@@ -348,16 +348,17 @@ func (client *gandiv5Provider) GenerateDomainCorrections(dc *models.DomainConfig
 
 	// Gandi is a "ByLabel" API with the odd exception that changes must be
 	// done one label:rtype at a time.
-	instructions, err := diff2.ByLabel(existing, dc, nil)
+	corrections, err := diff2.ByLabel(existing, dc, nil)
 	if err != nil {
 		return nil, err
 	}
-	for _, inst := range instructions {
-		switch inst.Type {
+	for i, correction := range corrections {
+		switch correction.Type {
 
 		case diff2.CREATE:
 			// We have to create the label one rtype at a time.
 			natives := recordsToNative(inst.New, dc.Name)
+			var newcorrections models.Corrections
 			for _, n := range natives {
 				label := inst.Key.NameFQDN
 				rtype := n.RrsetType
@@ -367,7 +368,7 @@ func (client *gandiv5Provider) GenerateDomainCorrections(dc *models.DomainConfig
 				values := n.RrsetValues
 				key := models.RecordKey{NameFQDN: label, Type: rtype}
 				msg := strings.Join(inst.MsgsByKey[key], "\n")
-				corrections = append(corrections,
+				newcorrections = append(newcorrections,
 					&models.Correction{
 						Msg: msg,
 						F: func() error {
@@ -379,41 +380,32 @@ func (client *gandiv5Provider) GenerateDomainCorrections(dc *models.DomainConfig
 						},
 					})
 			}
+			correction = slices.Replace(correction, i, i, newcorrections...)
+			// BUG!  The above line modifies "correction" which is being
+			// iterated on.
 
 		case diff2.CHANGE:
-			msgs := strings.Join(inst.Msgs, "\n")
 			domain := dc.Name
-			label := inst.Key.NameFQDN
-			shortname := dnsutil.TrimDomainName(label, dc.Name)
+			shortname := dnsutil.TrimDomainName(inst.Key.NameFQDN, dc.Name)
 			ns := recordsToNative(inst.New, dc.Name)
-			corrections = append(corrections,
-				&models.Correction{
-					Msg: msgs,
-					F: func() error {
-						res, err := g.UpdateDomainRecordsByName(domain, shortname, ns)
-						if err != nil {
-							return fmt.Errorf("%+v: %w", res, err)
-						}
-						return nil
-					},
-				})
+			correction.F = func() error {
+				res, err := g.UpdateDomainRecordsByName(domain, shortname, ns)
+				if err != nil {
+					return fmt.Errorf("%+v: %w", res, err)
+				}
+				return nil
+			}
 
 		case diff2.DELETE:
-			msgs := strings.Join(inst.Msgs, "\n")
 			domain := dc.Name
-			label := inst.Key.NameFQDN
-			shortname := dnsutil.TrimDomainName(label, dc.Name)
-			corrections = append(corrections,
-				&models.Correction{
-					Msg: msgs,
-					F: func() error {
-						err := g.DeleteDomainRecordsByName(domain, shortname)
-						if err != nil {
-							return err
-						}
-						return nil
-					},
-				})
+			shortname := dnsutil.TrimDomainName(inst.Key.NameFQDN, dc.Name)
+			correction.F = func() error {
+				err := g.DeleteDomainRecordsByName(domain, shortname)
+				if err != nil {
+					return err
+				}
+				return nil
+			}
 		}
 
 	}

@@ -100,8 +100,22 @@ func NameserversToStrings(nss []*Nameserver) (s []string) {
 
 // Correction is anything that can be run. Implementation is up to the specific provider.
 type Correction struct {
-	F   func() error `json:"-"`
-	Msg string
+	// These fields are used to preview or execute the changes.  Preview
+	// simply outputs each Msg.  Execute outputs the Msg then executes F.
+	F   func() error `json:"-"` // Function to call to execute this change.
+	Msg string       // strings.Join(Msgs, "\n")
+
+	// diff2:
+	// The remaining fields are available for use when generating F. Some of the
+	// data is provided in duplidate (Msgs*) for your convienence.
+
+	Key RecordKey // .Key.Type is "" unless using ByRecordSet
+
+	Old Records // The existing records related to this change (nil for a DELETE)
+	New Records // The desired records related to this change (nil for CREATE)
+
+	Msgs      []string               // Human-friendly explanation of what changed
+	MsgsByKey map[RecordKey][]string // Msgs for a given RecordKey
 }
 
 // DomainContainingFQDN finds the best domain from the dns config for the given record fqdn.
@@ -118,6 +132,8 @@ func (config *DNSConfig) DomainContainingFQDN(fqdn string) *DomainConfig {
 	}
 	return d
 }
+
+type Corrections []*Correction
 
 // IgnoreName describes an IGNORE_NAME rule.
 type IgnoreName struct {

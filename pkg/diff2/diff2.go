@@ -112,8 +112,7 @@ func ByRecordSet(existing models.Records, dc *models.DomainConfig, compFunc Comp
 // to be served at a particular label, or the label itself is deleted.
 //
 // Examples include:
-func ByLabel(existing models.Records, dc *models.DomainConfig, compFunc ComparableFunc) (ChangeList, error) {
-	// dc stores the desired state.
+func ByLabel(existing models.Records, dc *models.DomainConfig, compFunc ComparableFunc) (Corrections, error) {
 
 	desired := dc.Records
 	var err error
