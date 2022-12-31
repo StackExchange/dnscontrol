@@ -55,9 +55,7 @@ func (n *namedotcomProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*m
 	models.PostProcessRecords(actual)
 
 	var corrections []*models.Correction
-
 	var create, del, mod diff.Changeset
-
 	if !diff2.EnableDiff2 {
 		differ := diff.New(dc)
 		_, create, del, mod, err = differ.IncrementalDiff(actual)
