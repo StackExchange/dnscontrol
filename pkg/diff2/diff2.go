@@ -27,35 +27,65 @@ type ChangeList []Change
 type Change struct {
 	Type Verb // Add, Change, Delete
 
-	Key       models.RecordKey // .Key.Type is "" unless using ByRecordSet
-	Old       models.Records
-	New       models.Records                // any changed or added records at Key.
-	Msgs      []string                      // Human-friendly explanation of what changed
-	MsgsByKey map[models.RecordKey][]string // Messages for a given key
+	Key        models.RecordKey // .Key.Type is "" unless using ByRecordSet
+	Old        models.Records
+	New        models.Records                // any changed or added records at Key.
+	Msgs       []string                      // Human-friendly explanation of what changed
+	MsgsJoined string                        // strings.Join(Msgs, "\n")
+	MsgsByKey  map[models.RecordKey][]string // Messages for a given key
 }
 
-func (c *Change) Msg() string {
-	return strings.Join(c.Msgs, "\n")
-}
+/*
 
-// CreateCorrection creates a new Correction based on the given
-// function and prefills it with the Msg of the current Change
-func (c *Change) CreateCorrection(correctionFunction func() error) *models.Correction {
-	return &models.Correction{
-		F:   correctionFunction,
-		Msg: c.Msg(),
+Example Usage:
+
+In this example, each "change" results in a new "correction".
+
+	changes, err := diff2.ByRecord(existing, dc, nil)
+	//changes, err := diff2.ByRecordSet(existing, dc, nil)
+	//changes, err := diff2.ByLabel(existing, dc, nil)
+	if err != nil {
+		return nil, err
 	}
-}
 
-// CreateCorrectionWithMessage creates a new Correction based on the
-// given function and prefixes given function with the Msg of the
-// current change
-func (c *Change) CreateCorrectionWithMessage(msg string, correctionFunction func() error) *models.Correction {
-	return &models.Correction{
-		F:   correctionFunction,
-		Msg: fmt.Sprintf("%s: %s", msg, c.Msg()),
+	var corrections []*models.Correction
+
+	for _, change := range changes {
+
+		switch change.Type {
+
+		case diff2.CREATE:
+			corr = &models.Correction{
+				Msg: change.MsgsJoined,
+				F: func() error {
+					return c.createRecord(FILLIN)
+				},
+			}
+
+		case diff2.CHANGE:
+			corr = &models.Correction{
+				Msg: change.MsgsJoined,
+				F: func() error {
+					return c.modifyRecord(FILLIN)
+				},
+			}
+
+		case diff2.DELETE:
+			corr = &models.Correction{
+				Msg: change.MsgsJoined,
+				F: func() error {
+					return c.deleteRecord(FILLIN)
+				},
+			}
+		}
+
+		corrections = append(corrections, corr)
+
 	}
-}
+
+	return corrections, nil
+
+*/
 
 // ByRecordSet takes two lists of records (existing and desired) and
 // returns instructions for turning existing into desired.
@@ -194,4 +224,27 @@ func (cl ChangeList) String() string {
 	}
 
 	return b.String()
+}
+
+func (c *Change) Msg() string {
+	return strings.Join(c.Msgs, "\n")
+}
+
+// CreateCorrection creates a new Correction based on the given
+// function and prefills it with the Msg of the current Change
+func (c *Change) CreateCorrection(correctionFunction func() error) *models.Correction {
+	return &models.Correction{
+		F:   correctionFunction,
+		Msg: c.Msg(),
+	}
+}
+
+// CreateCorrectionWithMessage creates a new Correction based on the
+// given function and prefixes given function with the Msg of the
+// current change
+func (c *Change) CreateCorrectionWithMessage(msg string, correctionFunction func() error) *models.Correction {
+	return &models.Correction{
+		F:   correctionFunction,
+		Msg: fmt.Sprintf("%s: %s", msg, c.Msg()),
+	}
 }
