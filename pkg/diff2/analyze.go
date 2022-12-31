@@ -73,7 +73,7 @@ func analyzeByLabel(cc *CompareConfig) ChangeList {
 			instructions = append(instructions, mkDelete(label, "", accExisting, accMsgs))
 		} else if len(accExisting) == 0 { // No old records at the label? This must be a change.
 			//fmt.Printf("DEBUG: analyzeByLabel: %02d: create\n", i)
-			fmt.Printf("DEBUG: analyzeByLabel mkAdd msgs=%d\n", len(accMsgs))
+			//fmt.Printf("DEBUG: analyzeByLabel mkAdd msgs=%d\n", len(accMsgs))
 			instructions = append(instructions, mkAddByLabel(label, "", accMsgs, accDesired))
 		} else { // If we get here, it must be a change.
 			_ = i
@@ -82,7 +82,7 @@ func analyzeByLabel(cc *CompareConfig) ChangeList {
 			// 	len(accDesired), accDesired,
 			// 	accMsgs,
 			// )
-			fmt.Printf("DEBUG: analyzeByLabel mkchange msgs=%d\n", len(accMsgs))
+			//fmt.Printf("DEBUG: analyzeByLabel mkchange msgs=%d\n", len(accMsgs))
 			instructions = append(instructions, mkChangeLabel(label, "", accMsgs, accExisting, accDesired, msgsByKey))
 		}
 	}
@@ -121,8 +121,8 @@ func mkAdd(l string, t string, msgs []string, recs models.Records) Change {
 // TODO(tlim): Clean these up. Some of them are exact duplicates!
 
 func mkAddByLabel(l string, t string, msgs []string, newRecs models.Records) Change {
-	fmt.Printf("DEBUG: mkAddByLabel: len(o)=%d len(m)=%d\n", len(newRecs), len(msgs))
-	fmt.Printf("DEBUG: mkAddByLabel: msgs = %v\n", msgs)
+	//fmt.Printf("DEBUG: mkAddByLabel: len(o)=%d len(m)=%d\n", len(newRecs), len(msgs))
+	//fmt.Printf("DEBUG: mkAddByLabel: msgs = %v\n", msgs)
 	c := Change{Type: CREATE, Msgs: msgs}
 	c.Key.NameFQDN = l
 	c.Key.Type = t
@@ -185,13 +185,21 @@ func removeCommon(existing, desired []targetConfig) ([]targetConfig, []targetCon
 	return filterBy(existing, dKeys), filterBy(desired, eKeys)
 }
 
+// Return s but remove any items that can be found in m.
 func filterBy(s []targetConfig, m map[string]*targetConfig) []targetConfig {
+	// fmt.Printf("DEBUG: filterBy called with %v\n", s)
+	// for k := range m {
+	// 	fmt.Printf("DEBUG:    map %q\n", k)
+	// }
 	i := 0 // output index
 	for _, x := range s {
 		if _, ok := m[x.compareable]; !ok {
+			//fmt.Printf("DEBUG: comp %q NO\n", x.compareable)
 			// copy and increment index
 			s[i] = x
 			i++
+		} else {
+			//fmt.Printf("DEBUG: comp %q YES\n", x.compareable)
 		}
 	}
 	// // Prevent memory leak by erasing truncated values
@@ -200,6 +208,7 @@ func filterBy(s []targetConfig, m map[string]*targetConfig) []targetConfig {
 	// 	s[j] = nil
 	// }
 	s = s[:i]
+	// fmt.Printf("DEBUG: filterBy returns %v\n", s)
 	return s
 }
 
