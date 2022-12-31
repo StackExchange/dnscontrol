@@ -5,7 +5,17 @@ import (
 	"github.com/StackExchange/dnscontrol/v3/pkg/diff2"
 )
 
-// NewCompat is a constructor that uses the new Diff2 system but provides minimal backwards compatibility.
+// NewCompat is a constructor that uses the new pkg/diff2 system
+// instead of pkg/diff.
+//
+// It is for backwards compatibility only. New providers should use
+// pkg/diff2.  Older providers should use this to reduce their
+// dependency on pkg/diff2 until they can move to the pkg/diff2/By*()
+// functions.
+//
+// To use this simply change New() to NewCompat(). If that doesn't
+// work please report a bug. The only exception is if you depend on
+// the extraValues feature, which will not be supported
 func NewCompat(dc *models.DomainConfig, extraValues ...func(*models.RecordConfig) map[string]string) Differ {
 	if len(extraValues) != 0 {
 		panic("extraValues not supported")
@@ -19,15 +29,15 @@ func NewCompat(dc *models.DomainConfig, extraValues ...func(*models.RecordConfig
 	}
 }
 
+// differCompat meets the Differ interface but provides its service
+// using pkg/diff2 instead of pkg/diff.
 type differCompat struct {
 	OldDiffer *differ // Store the backwards-compatible "d" for pkg/diff
 
 	dc *models.DomainConfig
 }
 
-// IncrementalDiff generates the diff using the pkg/diff2 code. It is for
-// backwards compatibility only. New providers should use pkg/diff2.  Older
-// providers should use this to wean off the pkg/diff2 code until they can
+// IncrementalDiff generates the diff using the pkg/diff2 code.
 func (d *differCompat) IncrementalDiff(existing []*models.RecordConfig) (unchanged, create, toDelete, modify Changeset, err error) {
 	unchanged = Changeset{}
 	create = Changeset{}
