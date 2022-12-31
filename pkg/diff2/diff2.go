@@ -26,12 +26,58 @@ type ChangeList []Change
 type Change struct {
 	Type Verb // Add, Change, Delete
 
-	Key       models.RecordKey // .Key.Type is "" unless using ByRecordSet
-	Old       models.Records
-	New       models.Records                // any changed or added records at Key.
-	Msgs      []string                      // Human-friendly explanation of what changed
-	MsgsByKey map[models.RecordKey][]string // Messages for a given key
+	Key        models.RecordKey // .Key.Type is "" unless using ByRecordSet
+	Old        models.Records
+	New        models.Records                // any changed or added records at Key.
+	Msgs       []string                      // Human-friendly explanation of what changed
+	MsgsJoined string                        // strings.Join(Msgs, "\n")
+	MsgsByKey  map[models.RecordKey][]string // Messages for a given key
 }
+
+/*
+General instructions:
+
+  changes, err := diff2.ByRecord(existing, dc, nil)
+  //changes, err := diff2.ByRecordSet(existing, dc, nil)
+  //changes, err := diff2.ByLabel(existing, dc, nil)
+  if err != nil {
+    return nil, err
+  }
+
+  var corrections []*models.Correction
+
+  for _, change := range changes {
+    switch change.Type {
+    case diff2.CREATE:
+      corr = &models.Correction{
+        Msg: change.MsgsJoined,
+        F: func() error {
+          return c.createRecord(FILL IN)
+        },
+      }
+    case diff2.CHANGE:
+      corr = &models.Correction{
+        Msg: change.MsgsJoined,
+        F: func() error {
+          return c.modifyRecord(FILL IN)
+        },
+      }
+    case diff2.DELETE:
+      corr = &models.Correction{
+        Msg: change.MsgsJoined,
+        F: func() error {
+          return c.deleteRecord(FILL IN)
+        },
+      }
+    }
+    corrections = append(corrections, corr)
+  }
+
+  return corrections, nil
+}
+
+
+*/
 
 // ByRecordSet takes two lists of records (existing and desired) and
 // returns instructions for turning existing into desired.
@@ -142,18 +188,6 @@ func ByZone(existing models.Records, dc *models.DomainConfig, compFunc Comparabl
 	instructions = processPurge(instructions, !dc.KeepUnknown)
 	return justMsgs(instructions), len(instructions) != 0, nil
 }
-
-/*
-nil, nil :
-nil, nonzero :   nil, true, nil
-nonzero, nil :   msgs, true, nil
-nonzero, nonzero :
-
-existing: changes       : return msgs, true, nil
-existing: no changes    : return nil, false, nil
-not existing: no changes: return nil, false, nil
-not existing: changes   : return nil, true, nil
-*/
 
 func (c Change) String() string {
 	var buf bytes.Buffer
