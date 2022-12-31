@@ -1,102 +1,85 @@
 package diff2
 
-import (
-	"fmt"
+// import (
+// 	"github.com/StackExchange/dnscontrol/v3/models"
+// 	"github.com/StackExchange/dnscontrol/v3/pkg/diff"
+// )
 
-	"github.com/StackExchange/dnscontrol/v3/models"
-)
+// // Provide an interface that is backwards compatible with pkg/diff.
 
-// Provide an interface that is backwards compatible with pkg/diff.
+// // // /diff/IncrementalDiffCompat(). It not as efficient as converting
+// // to the diff2.By*() functions. However, using this is better than
+// // staying with pkg/diff.
+// func CompatIncrementalDiff(dc *models.DomainConfig, existing []*models.RecordConfig) (unchanged, create, toDelete, modify diff.Changeset, err error) {
+// 	unchanged = diff.Changeset{}
+// 	create = diff.Changeset{}
+// 	toDelete = diff.Changeset{}
+// 	modify = diff.Changeset{}
 
-type Differ struct {
-	dc          *models.DomainConfig
-	extraValues []func(*models.RecordConfig) map[string]string
+// 	instructions, err := ByRecord(existing, dc, nil)
+// 	if err != nil {
+// 		return nil, nil, nil, nil, err
+// 	}
 
-	//compiledIgnoredNames   []ignoredName
-	//compiledIgnoredTargets []glob.Glob
-}
+// 	d := diff.New(dc, nil)
 
-// Correlation stores a difference between two records.
-type Correlation struct {
-	d        *Differ
-	Existing *models.RecordConfig
-	Desired  *models.RecordConfig
-}
+// 	for _, inst := range instructions {
+// 		//cor := Correlation{d: d}
+// 		cor := diff.Correlation{d: d}
+// 		switch inst.Type {
+// 		case CREATE:
+// 			cor.Desired = inst.New[0]
+// 			create = append(create, cor)
+// 		case CHANGE:
+// 			cor.Existing = inst.Old[0]
+// 			cor.Desired = inst.New[0]
+// 			modify = append(modify, cor)
+// 		case DELETE:
+// 			cor.Existing = inst.Old[0]
+// 			toDelete = append(toDelete, cor)
+// 		}
+// 	}
 
-// Changeset stores many Correlation.
-type Changeset []Correlation
+// 	return
+// }
 
-// New is a constructor for a Differ.
-func New(dc *models.DomainConfig, extraValues ...func(*models.RecordConfig) map[string]string) *Differ {
-	if len(extraValues) != 0 {
-		panic("compat.New() does not implement extraValues")
-	}
-	return &Differ{
-		dc:          dc,
-		extraValues: extraValues,
+// // func (d *Differ) ChangedGroups(existing []*models.RecordConfig) (map[models.RecordKey][]string, error) {
+// // 	changedKeys := map[models.RecordKey][]string{}
+// // 	_, create, toDelete, modify, err := d.IncrementalDiff(existing)
+// // 	if err != nil {
+// // 		return nil, err
+// // 	}
+// // 	for _, c := range create {
+// // 		changedKeys[c.Desired.Key()] = append(changedKeys[c.Desired.Key()], c.String())
+// // 	}
+// // 	for _, d := range toDelete {
+// // 		changedKeys[d.Existing.Key()] = append(changedKeys[d.Existing.Key()], d.String())
+// // 	}
+// // 	for _, m := range modify {
+// // 		changedKeys[m.Desired.Key()] = append(changedKeys[m.Desired.Key()], m.String())
+// // 	}
+// // 	return changedKeys, nil
+// // }
 
-		// compile IGNORE_NAME glob patterns
-		//compiledIgnoredNames: compileIgnoredNames(dc.IgnoredNames),
+// // func (c Correlation) String() string {
+// // 	if c.Existing == nil {
+// // 		return fmt.Sprintf("CREATE %s %s %s", c.Desired.Type, c.Desired.GetLabelFQDN(), c.d.content(c.Desired))
+// // 	}
+// // 	if c.Desired == nil {
+// // 		return fmt.Sprintf("DELETE %s %s %s", c.Existing.Type, c.Existing.GetLabelFQDN(), c.d.content(c.Existing))
+// // 	}
+// // 	return fmt.Sprintf("MODIFY %s %s: (%s) -> (%s)", c.Existing.Type, c.Existing.GetLabelFQDN(), c.d.content(c.Existing), c.d.content(c.Desired))
+// // }
 
-		// compile IGNORE_TARGET glob patterns
-		//compiledIgnoredTargets: compileIgnoredTargets(dc.IgnoredTargets),
-	}
-}
+// // // get normalized content for record. target, ttl, mxprio, and specified metadata
+// // func (d *Differ) content(r *models.RecordConfig) string {
 
-// IncrementalDiff provides an interface that is compatible with
-// pkg/diff/IncrementalDiffCompat(). It not as efficient as converting
-// to the diff2.By*() functions. However, using this is better than
-// staying with pkg/diff.
-func (d *Differ) IncrementalDiff(existing []*models.RecordConfig) (unchanged, create, toDelete, modify Changeset, err error) {
-	unchanged = Changeset{}
-	create = Changeset{}
-	toDelete = Changeset{}
-	modify = Changeset{}
-	//desired := d.dc.Records
+// // 	// get the extra values maps to add to the comparison.
+// // 	var allMaps []map[string]string
+// // 	for _, f := range d.extraValues {
+// // 		valueMap := f(r)
+// // 		allMaps = append(allMaps, valueMap)
+// // 	}
 
-	instructions, err := ByRecord(existing, d.dc, nil)
-	if err != nil {
-		return nil, nil, nil, nil, err
-	}
-
-	for _, inst := range instructions {
-		cor := Correlation{d: d}
-		switch inst.Type {
-		case CREATE:
-			cor.Desired = inst.New[0]
-			create = append(create, cor)
-		case CHANGE:
-			cor.Existing = inst.Old[0]
-			cor.Desired = inst.New[0]
-			modify = append(modify, cor)
-		case DELETE:
-			cor.Existing = inst.Old[0]
-			toDelete = append(toDelete, cor)
-		}
-	}
-
-	return
-}
-
-func (c Correlation) String() string {
-	if c.Existing == nil {
-		return fmt.Sprintf("CREATE %s %s %s", c.Desired.Type, c.Desired.GetLabelFQDN(), c.d.content(c.Desired))
-	}
-	if c.Desired == nil {
-		return fmt.Sprintf("DELETE %s %s %s", c.Existing.Type, c.Existing.GetLabelFQDN(), c.d.content(c.Existing))
-	}
-	return fmt.Sprintf("MODIFY %s %s: (%s) -> (%s)", c.Existing.Type, c.Existing.GetLabelFQDN(), c.d.content(c.Existing), c.d.content(c.Desired))
-}
-
-// get normalized content for record. target, ttl, mxprio, and specified metadata
-func (d *Differ) content(r *models.RecordConfig) string {
-
-	// get the extra values maps to add to the comparison.
-	var allMaps []map[string]string
-	for _, f := range d.extraValues {
-		valueMap := f(r)
-		allMaps = append(allMaps, valueMap)
-	}
-
-	return r.ToDiffable(allMaps...)
-}
+// // 	return r.ToDiffable(allMaps...)
+// // }
