@@ -196,7 +196,7 @@ func (n *namecheapProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*mo
 		differ := diff.New(dc)
 		_, create, delete, modify, err = differ.IncrementalDiff(actual)
 	} else {
-		differ := diff.New(dc)
+		differ := diff.NewCompat(dc)
 		_, create, delete, modify, err = differ.IncrementalDiff(actual)
 	}
 	if err != nil {
