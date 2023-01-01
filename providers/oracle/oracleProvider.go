@@ -241,79 +241,82 @@ func (o *oracleProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*model
 	}
 
 	var corrections []*models.Correction
-	if !diff2.EnableDiff2 || true { // Remove "|| true" when diff2 version arrives
-
+	var create, dels, modify diff.Changeset
+	if !diff2.EnableDiff2 {
 		differ := diff.New(dc)
-		_, create, dels, modify, err := differ.IncrementalDiff(existingRecords)
-		if err != nil {
-			return nil, err
-		}
-
-		/*
-			Oracle's API doesn't have a way to update an existing record.
-			You can either update an existing RRSet, Domain (FQDN), or Zone in which you have to supply
-			the entire desired state, or you can patch specifying ADD/REMOVE actions.
-			Oracle's API is also increadibly slow, so updating individual RRSets is unbearably slow
-			for any size zone.
-		*/
-
-		if len(create) > 0 {
-			createRecords := models.Records{}
-			desc := ""
-			for _, d := range create {
-				createRecords = append(createRecords, d.Desired)
-				desc += d.String() + "\n"
-			}
-			desc = desc[:len(desc)-1]
-
-			corrections = append(corrections, &models.Correction{
-				Msg: desc,
-				F: func() error {
-					return o.patch(createRecords, nil, domain)
-				},
-			})
-		}
-
-		if len(dels) > 0 {
-			deleteRecords := models.Records{}
-			desc := ""
-			for _, d := range dels {
-				deleteRecords = append(deleteRecords, d.Existing)
-				desc += d.String() + "\n"
-			}
-			desc = desc[:len(desc)-1]
-
-			corrections = append(corrections, &models.Correction{
-				Msg: desc,
-				F: func() error {
-					return o.patch(nil, deleteRecords, domain)
-				},
-			})
-		}
-
-		if len(modify) > 0 {
-			createRecords := models.Records{}
-			deleteRecords := models.Records{}
-			desc := ""
-			for _, d := range modify {
-				createRecords = append(createRecords, d.Desired)
-				deleteRecords = append(deleteRecords, d.Existing)
-				desc += d.String() + "\n"
-			}
-			desc = desc[:len(desc)-1]
-
-			corrections = append(corrections, &models.Correction{
-				Msg: desc,
-				F: func() error {
-					return o.patch(createRecords, deleteRecords, domain)
-				},
-			})
-		}
-
-		return corrections, nil
+		_, create, dels, modify, err = differ.IncrementalDiff(existingRecords)
+	} else {
+		differ := diff.New(dc)
+		_, create, dels, modify, err = differ.IncrementalDiff(existingRecords)
+	}
+	if err != nil {
+		return nil, err
 	}
 
-	// Insert Future diff2 version here.
+	if err != nil {
+		return nil, err
+	}
+
+	/*
+		Oracle's API doesn't have a way to update an existing record.
+		You can either update an existing RRSet, Domain (FQDN), or Zone in which you have to supply
+		the entire desired state, or you can patch specifying ADD/REMOVE actions.
+		Oracle's API is also increadibly slow, so updating individual RRSets is unbearably slow
+		for any size zone.
+	*/
+
+	if len(create) > 0 {
+		createRecords := models.Records{}
+		desc := ""
+		for _, d := range create {
+			createRecords = append(createRecords, d.Desired)
+			desc += d.String() + "\n"
+		}
+		desc = desc[:len(desc)-1]
+
+		corrections = append(corrections, &models.Correction{
+			Msg: desc,
+			F: func() error {
+				return o.patch(createRecords, nil, domain)
+			},
+		})
+	}
+
+	if len(dels) > 0 {
+		deleteRecords := models.Records{}
+		desc := ""
+		for _, d := range dels {
+			deleteRecords = append(deleteRecords, d.Existing)
+			desc += d.String() + "\n"
+		}
+		desc = desc[:len(desc)-1]
+
+		corrections = append(corrections, &models.Correction{
+			Msg: desc,
+			F: func() error {
+				return o.patch(nil, deleteRecords, domain)
+			},
+		})
+	}
+
+	if len(modify) > 0 {
+		createRecords := models.Records{}
+		deleteRecords := models.Records{}
+		desc := ""
+		for _, d := range modify {
+			createRecords = append(createRecords, d.Desired)
+			deleteRecords = append(deleteRecords, d.Existing)
+			desc += d.String() + "\n"
+		}
+		desc = desc[:len(desc)-1]
+
+		corrections = append(corrections, &models.Correction{
+			Msg: desc,
+			F: func() error {
+				return o.patch(createRecords, deleteRecords, domain)
+			},
+		})
+	}
 
 	return corrections, nil
 }
