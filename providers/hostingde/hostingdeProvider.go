@@ -126,42 +126,35 @@ func (hp *hostingdeProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*m
 		return nil, err
 	}
 
-	var corrections []*models.Correction
-	if !diff2.EnableDiff2 || true { // Remove "|| true" when diff2 version arrives
-
+	var create, del, mod diff.Changeset
+	if !diff2.EnableDiff2 {
 		differ := diff.New(dc)
-		_, create, del, mod, err := differ.IncrementalDiff(records)
-		if err != nil {
-			return nil, err
-		}
-
-		// NOPURGE
-		if dc.KeepUnknown {
-			del = []diff.Correlation{}
-		}
-
-		msg := []string{}
-		for _, c := range append(del, append(create, mod...)...) {
-			msg = append(msg, c.String())
-		}
-
-		if len(create) == 0 && len(del) == 0 && len(mod) == 0 {
-			return nil, nil
-		}
-
-		corrections := []*models.Correction{
-			{
-				Msg: fmt.Sprintf("\n%s", strings.Join(msg, "\n")),
-				F: func() error {
-					return hp.updateRecords(dc.Name, create, del, mod)
-				},
-			},
-		}
-
-		return corrections, nil
+		_, create, del, mod, err = differ.IncrementalDiff(records)
+	} else {
+		differ := diff.New(dc)
+		_, create, del, mod, err = differ.IncrementalDiff(records)
+	}
+	if err != nil {
+		return nil, err
 	}
 
-	// Insert Future diff2 version here.
+	msg := []string{}
+	for _, c := range append(del, append(create, mod...)...) {
+		msg = append(msg, c.String())
+	}
+
+	if len(create) == 0 && len(del) == 0 && len(mod) == 0 {
+		return nil, nil
+	}
+
+	corrections := []*models.Correction{
+		{
+			Msg: fmt.Sprintf("\n%s", strings.Join(msg, "\n")),
+			F: func() error {
+				return hp.updateRecords(dc.Name, create, del, mod)
+			},
+		},
+	}
 
 	return corrections, nil
 }
