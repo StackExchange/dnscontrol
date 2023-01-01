@@ -191,7 +191,6 @@ func (n *namecheapProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*mo
 	// Normalize
 	models.PostProcessRecords(actual)
 
-	var corrections []*models.Correction
 	var create, delete, modify diff.Changeset
 	if !diff2.EnableDiff2 {
 		differ := diff.New(dc)
@@ -222,6 +221,7 @@ func (n *namecheapProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*mo
 	msg := fmt.Sprintf("GENERATE_ZONE: %s (%d records)%s", dc.Name, len(dc.Records), desc)
 
 	// only create corrections if there are changes
+	var corrections []*models.Correction
 	if len(desc) > 0 {
 		corrections = append(corrections,
 			&models.Correction{
