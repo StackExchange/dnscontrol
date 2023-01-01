@@ -219,9 +219,9 @@ func (n *namecheapProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*mo
 	}
 
 	msg := fmt.Sprintf("GENERATE_ZONE: %s (%d records)%s", dc.Name, len(dc.Records), desc)
+	var corrections []*models.Correction
 
 	// only create corrections if there are changes
-	var corrections []*models.Correction
 	if len(desc) > 0 {
 		corrections = append(corrections,
 			&models.Correction{
