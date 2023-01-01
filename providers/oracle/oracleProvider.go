@@ -246,7 +246,7 @@ func (o *oracleProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*model
 		differ := diff.New(dc)
 		_, create, dels, modify, err = differ.IncrementalDiff(existingRecords)
 	} else {
-		differ := diff.New(dc)
+		differ := diff.NewCompat(dc)
 		_, create, dels, modify, err = differ.IncrementalDiff(existingRecords)
 	}
 	if err != nil {
