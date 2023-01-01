@@ -107,7 +107,7 @@ func (api *netcupProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*mod
 		differ := diff.New(dc)
 		_, create, del, modify, err = differ.IncrementalDiff(existingRecords)
 	} else {
-		differ := diff.New(dc)
+		differ := diff.NewCompat(dc)
 		_, create, del, modify, err = differ.IncrementalDiff(existingRecords)
 	}
 	if err != nil {
