@@ -9,35 +9,81 @@ import (
 	"github.com/StackExchange/dnscontrol/v3/pkg/prettyzone"
 )
 
+/*
+
+Diffing the existing and desired DNS records is difficult. There are
+many edge cases to consider.  The old pkg/diff system was successful
+at handling all these edge cases but it made the code very complex.
+
+pkg/diff2 was inspired by the intuition that the edge cases would
+disappear if we simply stored the data in a way that was easier to
+compare. The edge cases would disappear and the code would become more
+simple.  Simple is better.
+
+The struct CompareConfig is a data structure that stores all the
+existing/desired RecordConfig items in a way that makes the
+differencing engine easier to implement.
+
+However, complexity never disappears it just moves elsewhere in the
+system.  Converting our RecordConfigs to this datastructure is
+complex. However by decoupling the conversion and the differencing, we
+get two systems that can be tested independently. Thus, we have more
+confidence in this system.
+
+CompareConfig stores pointers to the original models.RecordConfig
+grouped by label, and within each label grouped by rType (A, CNAME,
+etc.).  In that final grouping the records are stored two ways. First,
+as a list.  Second, as a list of (string,RecordConfig) tuples, where
+the string is an opaque blob that can be used to compare for equality.
+These lists are stored in an order that makes generating lists of
+changes naturally be in the correct order for updates.
+
+The structure also stores or pre-computes data that is needed by the
+differencing engine, such as maps of which labels and RecordKeys
+exist.
+*/
+
 type ComparableFunc func(*models.RecordConfig) string
 
 type CompareConfig struct {
-	existing, desired models.Records
-	ldata             []*labelConfig
+	// The primary data. Each record stored once, grouped by label then
+	// by rType:
+	existing, desired models.Records // The original Recs.
+	ldata             []*labelConfig // The Recs, grouped by label.
 	//
-	origin          string // Domain zone
+	// Pre-computed values stored for easy access.
+	origin   string                    // Domain zone
+	labelMap map[string]bool           // Which labels exist?
+	keyMap   map[models.RecordKey]bool // Which RecordKey exists?
+	//
+	// A function that generates a string used to compare two
+	// RecordConfigs for equality.  This is normally nil. If it is not
+	// nil, the function is called and the resulting string is joined to
+	// the existing compareable string. This enables (for example)
+	// custom rtypes to have their own comparison text added to the
+	// comparison string.
 	compareableFunc ComparableFunc
 	//
-	labelMap map[string]bool
-	keyMap   map[models.RecordKey]bool
 }
 
 type labelConfig struct {
-	label string
-	tdata []*rTypeConfig
+	label string         // The label
+	tdata []*rTypeConfig // The records for that label, grouped by rType.
 }
 
 type rTypeConfig struct {
-	rType           string
+	rType string // The rType for all records in this group (A, CNAME, etc)
+	// The records stored as lists:
+	existingRecs []*models.RecordConfig
+	desiredRecs  []*models.RecordConfig
+	// The records stored as compareable/rec tuples:
 	existingTargets []targetConfig
 	desiredTargets  []targetConfig
-	existingRecs    []*models.RecordConfig
-	desiredRecs     []*models.RecordConfig
 }
 
 type targetConfig struct {
-	compareable string
-	rec         *models.RecordConfig
+	compareable string               // A string that can be used to compare two rec's for equality.
+	rec         *models.RecordConfig // The RecordConfig itself.
 }
 
 func NewCompareConfig(origin string, existing, desired models.Records, compFn ComparableFunc) *CompareConfig {
@@ -51,7 +97,7 @@ func NewCompareConfig(origin string, existing, desired models.Records, compFn Co
 		labelMap: map[string]bool{},
 		keyMap:   map[models.RecordKey]bool{},
 	}
-	cc.addRecords(existing, true)
+	cc.addRecords(existing, true) // Must be called first so that CNAME manipulations happen in the correct order.
 	cc.addRecords(desired, false)
 	cc.VerifyCNAMEAssertions()
 	sort.Slice(cc.ldata, func(i, j int) bool {
@@ -62,8 +108,11 @@ func NewCompareConfig(origin string, existing, desired models.Records, compFn Co
 
 func (cc *CompareConfig) VerifyCNAMEAssertions() {
 
-	// NB(tlim): This can be deleted. This should be probably not possible.
-	// However, let's keep it around for a few iterations to be paranoid.
+	// In theory these assertions do not need to be tested as they test
+	// something that can not happen. In my head I've proved this to be
+	// true.  That said, a little paranoia is healthy.  Those familiar
+	// with the Therac-25 accident will agree:
+	// https://hackaday.com/2015/10/26/killed-by-a-machine-the-therac-25/
 
 	// According to the RFCs if a label has a CNAME, it can not have any other
 	// records at that label... even other CNAMEs.  Therefore, we need to be
@@ -111,6 +160,9 @@ func (cc *CompareConfig) VerifyCNAMEAssertions() {
 
 }
 
+// String returns cc represented as a string. This is used for
+// debugging and unit tests, as the structure may otherwise be
+// difficult to compare.
 func (cc *CompareConfig) String() string {
 	var buf bytes.Buffer
 	b := &buf
@@ -137,6 +189,8 @@ func (cc *CompareConfig) String() string {
 	return b.String()
 }
 
+// Generate a string that can be used to compare this record to others
+// for equality.
 func comparable(rc *models.RecordConfig, f func(*models.RecordConfig) string) string {
 	if f == nil {
 		return rc.ToDiffable()
@@ -145,22 +199,22 @@ func comparable(rc *models.RecordConfig, f func(*models.RecordConfig) string) st
 }
 
 func (cc *CompareConfig) addRecords(recs models.Records, storeInExisting bool) {
+	// storeInExisting indicates if the records should be stored in the
+	// cc.existing* fields (true) or the cc.desired* fields (false).
 
 	// Sort, because sorted data is easier to work with.
 	// NB(tlim): The actual sort order doesn't matter as long as all the records
-	// of the same label+rtype are adjacent. We use PrettySort because it works,
-	// has been extensively tested, and assures that the ChangeList will be a
-	// pretty order.
-	//for _, rec := range recs {
+	// of the same label+rtype are grouped. We use PrettySort because it works,
+	// has been extensively tested, and assures that the ChangeList will
+	// be in an order that is pretty to look at.
 	z := prettyzone.PrettySort(recs, cc.origin, 0, nil)
+
 	for _, rec := range z.Records {
 
 		label := rec.NameFQDN
 		rtype := rec.Type
 		comp := comparable(rec, cc.compareableFunc)
-		//fmt.Printf("DEBUG addRecords rec=%v:%v es=%v comp=%v\n", label, rtype, storeInExisting, comp)
 
-		//fmt.Printf("BEFORE L: %v\n", len(cc.ldata))
 		// Are we seeing this label for the first time?
 		var labelIdx int
 		if _, ok := cc.labelMap[label]; !ok {
