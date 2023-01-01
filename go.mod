@@ -27,7 +27,7 @@ require (
 	github.com/dnsimple/dnsimple-go v1.0.0
 	github.com/exoscale/egoscale v0.90.2
 	github.com/go-acme/lego v2.7.2+incompatible
-	github.com/go-gandi/go-gandi v0.5.0
+	github.com/go-gandi/go-gandi v0.6.0
 	github.com/gobwas/glob v0.2.4-0.20181002190808-e7a84e9525fe
 	github.com/google/go-github/v35 v35.3.0
 	github.com/gopherjs/jquery v0.0.0-20191017083323-73f4c7416038
@@ -48,7 +48,6 @@ require (
 	github.com/robertkrimen/otto v0.2.0
 	github.com/softlayer/softlayer-go v1.0.6
 	github.com/stretchr/testify v1.8.1
-	github.com/tdewolff/minify/v2 v2.12.4
 	github.com/transip/gotransip/v6 v6.17.0
 	github.com/urfave/cli/v2 v2.23.5
 	github.com/xddxdd/ottoext v0.0.0-20221109171055-210517fa4419
@@ -56,7 +55,6 @@ require (
 	golang.org/x/oauth2 v0.2.0
 	google.golang.org/api v0.103.0
 	gopkg.in/ns1/ns1-go.v2 v2.7.2
-	gopkg.in/yaml.v2 v2.4.0
 )
 
 require (
@@ -148,7 +146,6 @@ require (
 	github.com/sirupsen/logrus v1.9.0 // indirect
 	github.com/softlayer/xmlrpc v0.0.0-20200409220501-5f089df7cb7e // indirect
 	github.com/stretchr/objx v0.5.0 // indirect
-	github.com/tdewolff/parse/v2 v2.6.4 // indirect
 	github.com/xrash/smetrics v0.0.0-20201216005158-039620a65673 // indirect
 	go.opencensus.io v0.24.0 // indirect
 	go.uber.org/atomic v1.9.0 // indirect
