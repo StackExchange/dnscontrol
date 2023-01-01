@@ -80,7 +80,7 @@ func (n *HXClient) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Corr
 		differ := diff.New(dc)
 		_, create, del, mod, err = differ.IncrementalDiff(actual)
 	} else {
-		differ := diff.New(dc)
+		differ := diff.NewCompat(dc)
 		_, create, del, mod, err = differ.IncrementalDiff(actual)
 	}
 	if err != nil {
