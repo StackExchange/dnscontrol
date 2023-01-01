@@ -48,7 +48,6 @@ require (
 	github.com/robertkrimen/otto v0.2.0
 	github.com/softlayer/softlayer-go v1.0.6
 	github.com/stretchr/testify v1.8.1
-	github.com/tdewolff/minify/v2 v2.12.4
 	github.com/transip/gotransip/v6 v6.17.0
 	github.com/urfave/cli/v2 v2.23.5
 	github.com/xddxdd/ottoext v0.0.0-20221109171055-210517fa4419
@@ -56,14 +55,13 @@ require (
 	golang.org/x/oauth2 v0.2.0
 	google.golang.org/api v0.103.0
 	gopkg.in/ns1/ns1-go.v2 v2.7.2
-	gopkg.in/yaml.v2 v2.4.0
 )
 
 require (
 	github.com/G-Core/gcore-dns-sdk-go v0.2.3
 	github.com/google/shlex v0.0.0-20191202100458-e7afc7fbc510
 	github.com/kylelemons/godebug v1.1.0
-	github.com/mattn/go-isatty v0.0.16
+	github.com/mattn/go-isatty v0.0.17
 	github.com/vultr/govultr/v2 v2.17.2
 	golang.org/x/exp v0.0.0-20221126150942-6ab00d035af9
 )
@@ -148,7 +146,6 @@ require (
 	github.com/sirupsen/logrus v1.9.0 // indirect
 	github.com/softlayer/xmlrpc v0.0.0-20200409220501-5f089df7cb7e // indirect
 	github.com/stretchr/objx v0.5.0 // indirect
-	github.com/tdewolff/parse/v2 v2.6.4 // indirect
 	github.com/xrash/smetrics v0.0.0-20201216005158-039620a65673 // indirect
 	go.opencensus.io v0.24.0 // indirect
 	go.uber.org/atomic v1.9.0 // indirect
