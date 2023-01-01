@@ -82,40 +82,38 @@ func (s *softlayerProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*mo
 	}
 
 	var corrections []*models.Correction
-	if !diff2.EnableDiff2 || true { // Remove "|| true" when diff2 version arrives
-
-		_, create, delete, modify, err := diff.New(dc).IncrementalDiff(actual)
-		if err != nil {
-			return nil, err
-		}
-
-		for _, del := range delete {
-			existing := del.Existing.Original.(datatypes.Dns_Domain_ResourceRecord)
-			corrections = append(corrections, &models.Correction{
-				Msg: del.String(),
-				F:   s.deleteRecordFunc(*existing.Id),
-			})
-		}
-
-		for _, cre := range create {
-			corrections = append(corrections, &models.Correction{
-				Msg: cre.String(),
-				F:   s.createRecordFunc(cre.Desired, domain),
-			})
-		}
-
-		for _, mod := range modify {
-			existing := mod.Existing.Original.(datatypes.Dns_Domain_ResourceRecord)
-			corrections = append(corrections, &models.Correction{
-				Msg: mod.String(),
-				F:   s.updateRecordFunc(&existing, mod.Desired),
-			})
-		}
-
-		return corrections, nil
+	var create, deletes, modify diff.Changeset
+	if !diff2.EnableDiff2 {
+		_, create, deletes, modify, err = diff.New(dc).IncrementalDiff(actual)
+	} else {
+		_, create, deletes, modify, err = diff.NewCompat(dc).IncrementalDiff(actual)
+	}
+	if err != nil {
+		return nil, err
 	}
 
-	// Insert Future diff2 version here.
+	for _, del := range deletes {
+		existing := del.Existing.Original.(datatypes.Dns_Domain_ResourceRecord)
+		corrections = append(corrections, &models.Correction{
+			Msg: del.String(),
+			F:   s.deleteRecordFunc(*existing.Id),
+		})
+	}
+
+	for _, cre := range create {
+		corrections = append(corrections, &models.Correction{
+			Msg: cre.String(),
+			F:   s.createRecordFunc(cre.Desired, domain),
+		})
+	}
+
+	for _, mod := range modify {
+		existing := mod.Existing.Original.(datatypes.Dns_Domain_ResourceRecord)
+		corrections = append(corrections, &models.Correction{
+			Msg: mod.String(),
+			F:   s.updateRecordFunc(&existing, mod.Desired),
+		})
+	}
 
 	return corrections, nil
 }
