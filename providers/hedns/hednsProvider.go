@@ -205,53 +205,52 @@ func (c *hednsProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*models
 	txtutil.SplitSingleLongTxt(dc.Records) // Autosplit long TXT records
 
 	var corrections []*models.Correction
-	if !diff2.EnableDiff2 || true { // Remove "|| true" when diff2 version arrives
-
+	var toCreate, toDelete, toModify diff.Changeset
+	if !diff2.EnableDiff2 {
 		differ := diff.New(dc)
-		_, toCreate, toDelete, toModify, err := differ.IncrementalDiff(prunedRecords)
-		if err != nil {
-			return nil, err
-		}
-
-		for _, del := range toDelete {
-			record := del.Existing
-			corrections = append(corrections, &models.Correction{
-				Msg: del.String(),
-				F:   func() error { return c.deleteZoneRecord(record) },
-			})
-		}
-
-		for _, cre := range toCreate {
-			record := cre.Desired
-			record.Original = Record{
-				ZoneName:   dc.Name,
-				ZoneID:     zoneID,
-				RecordName: cre.Desired.Name,
-			}
-			corrections = append(corrections, &models.Correction{
-				Msg: cre.String(),
-				F:   func() error { return c.editZoneRecord(record, true) },
-			})
-		}
-
-		for _, mod := range toModify {
-			record := mod.Desired
-			record.Original = Record{
-				ZoneName:   dc.Name,
-				ZoneID:     zoneID,
-				RecordID:   mod.Existing.Original.(Record).RecordID,
-				RecordName: mod.Desired.Name,
-			}
-			corrections = append(corrections, &models.Correction{
-				Msg: mod.String(),
-				F:   func() error { return c.editZoneRecord(record, false) },
-			})
-		}
-
-		return corrections, err
+		_, toCreate, toDelete, toModify, err = differ.IncrementalDiff(prunedRecords)
+	} else {
+		differ := diff.NewCompat(dc)
+		_, toCreate, toDelete, toModify, err = differ.IncrementalDiff(prunedRecords)
+	}
+	if err != nil {
+		return nil, err
 	}
 
-	// Insert Future diff2 version here.
+	for _, del := range toDelete {
+		record := del.Existing
+		corrections = append(corrections, &models.Correction{
+			Msg: del.String(),
+			F:   func() error { return c.deleteZoneRecord(record) },
+		})
+	}
+
+	for _, cre := range toCreate {
+		record := cre.Desired
+		record.Original = Record{
+			ZoneName:   dc.Name,
+			ZoneID:     zoneID,
+			RecordName: cre.Desired.Name,
+		}
+		corrections = append(corrections, &models.Correction{
+			Msg: cre.String(),
+			F:   func() error { return c.editZoneRecord(record, true) },
+		})
+	}
+
+	for _, mod := range toModify {
+		record := mod.Desired
+		record.Original = Record{
+			ZoneName:   dc.Name,
+			ZoneID:     zoneID,
+			RecordID:   mod.Existing.Original.(Record).RecordID,
+			RecordName: mod.Desired.Name,
+		}
+		corrections = append(corrections, &models.Correction{
+			Msg: mod.String(),
+			F:   func() error { return c.editZoneRecord(record, false) },
+		})
+	}
 
 	return corrections, nil
 }
