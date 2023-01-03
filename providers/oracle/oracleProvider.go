@@ -147,14 +147,14 @@ func (o *oracleProvider) GetNameservers(domain string) ([]*models.Nameserver, er
 	return models.ToNameservers(nss)
 }
 
-func (o *oracleProvider) GetZoneRecords(domain string) (models.Records, error) {
+func (o *oracleProvider) GetZoneRecords(zone string) (models.Records, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), time.Minute)
 	defer cancel()
 
 	records := models.Records{}
 
 	request := dns.GetZoneRecordsRequest{
-		ZoneNameOrId:  &domain,
+		ZoneNameOrId:  &zone,
 		CompartmentId: &o.compartment,
 	}
 
@@ -175,13 +175,13 @@ func (o *oracleProvider) GetZoneRecords(domain string) (models.Records, error) {
 				TTL:      uint32(*record.Ttl),
 				Original: record,
 			}
-			rc.SetLabelFromFQDN(*record.Domain, domain)
+			rc.SetLabelFromFQDN(*record.Domain, zone)
 
 			switch rc.Type {
 			case "ALIAS":
 				err = rc.SetTarget(*record.Rdata)
 			default:
-				err = rc.PopulateFromString(*record.Rtype, *record.Rdata, domain)
+				err = rc.PopulateFromString(*record.Rtype, *record.Rdata, zone)
 			}
 
 			if err != nil {
@@ -240,7 +240,6 @@ func (o *oracleProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*model
 		}
 	}
 
-	var corrections []*models.Correction
 	var create, dels, modify diff.Changeset
 	if !diff2.EnableDiff2 {
 		differ := diff.New(dc)
@@ -253,10 +252,6 @@ func (o *oracleProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*model
 		return nil, err
 	}
 
-	if err != nil {
-		return nil, err
-	}
-
 	/*
 		Oracle's API doesn't have a way to update an existing record.
 		You can either update an existing RRSet, Domain (FQDN), or Zone in which you have to supply
@@ -265,60 +260,44 @@ func (o *oracleProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*model
 		for any size zone.
 	*/
 
+	desc := ""
+	createRecords := models.Records{}
+	deleteRecords := models.Records{}
+
 	if len(create) > 0 {
-		createRecords := models.Records{}
-		desc := ""
-		for _, d := range create {
-			createRecords = append(createRecords, d.Desired)
-			desc += d.String() + "\n"
+		for _, rec := range create {
+			createRecords = append(createRecords, rec.Desired)
+			desc += rec.String() + "\n"
 		}
 		desc = desc[:len(desc)-1]
-
-		corrections = append(corrections, &models.Correction{
-			Msg: desc,
-			F: func() error {
-				return o.patch(createRecords, nil, domain)
-			},
-		})
 	}
 
 	if len(dels) > 0 {
-		deleteRecords := models.Records{}
-		desc := ""
-		for _, d := range dels {
-			deleteRecords = append(deleteRecords, d.Existing)
-			desc += d.String() + "\n"
+		for _, rec := range dels {
+			deleteRecords = append(deleteRecords, rec.Existing)
+			desc += rec.String() + "\n"
 		}
 		desc = desc[:len(desc)-1]
-
-		corrections = append(corrections, &models.Correction{
-			Msg: desc,
-			F: func() error {
-				return o.patch(nil, deleteRecords, domain)
-			},
-		})
 	}
 
 	if len(modify) > 0 {
-		createRecords := models.Records{}
-		deleteRecords := models.Records{}
-		desc := ""
-		for _, d := range modify {
-			createRecords = append(createRecords, d.Desired)
-			deleteRecords = append(deleteRecords, d.Existing)
-			desc += d.String() + "\n"
+		for _, rec := range modify {
+			createRecords = append(createRecords, rec.Desired)
+			deleteRecords = append(deleteRecords, rec.Existing)
+			desc += rec.String() + "\n"
 		}
 		desc = desc[:len(desc)-1]
+	}
 
-		corrections = append(corrections, &models.Correction{
+	if len(createRecords) > 0 || len(deleteRecords) > 0 {
+		return []*models.Correction{{
 			Msg: desc,
 			F: func() error {
 				return o.patch(createRecords, deleteRecords, domain)
 			},
-		})
+		}}, nil
 	}
-
-	return corrections, nil
+	return []*models.Correction{}, nil
 }
 
 func (o *oracleProvider) patch(createRecords, deleteRecords models.Records, domain string) error {
@@ -355,10 +334,18 @@ func (o *oracleProvider) patch(createRecords, deleteRecords models.Records, doma
 }
 
 func convertToRecordOperation(rec *models.RecordConfig, op dns.RecordOperationOperationEnum) dns.RecordOperation {
+	if rec.Original != nil {
+		return dns.RecordOperation{
+			RecordHash: rec.Original.(dns.Record).RecordHash,
+			Operation:  op,
+		}
+	}
+
 	fqdn := rec.GetLabelFQDN()
 	rtype := rec.Type
 	rdata := rec.GetTargetCombined()
 	ttl := int(rec.TTL)
+
 	return dns.RecordOperation{
 		Domain:    &fqdn,
 		Rtype:     &rtype,
