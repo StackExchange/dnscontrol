@@ -129,42 +129,33 @@ func (n *transipProvider) getCorrectionsUsingDiff2(dc *models.DomainConfig, reco
 	}
 
 	for _, change := range instructions {
-		msg := strings.Join(change.Msgs, "\n")
 
-		switch change.Type {
-
-		case diff2.CREATE:
-			corrections = append(corrections, &models.Correction{
-				Msg: msg,
-				F:   wrapChangeFunction(change.New, func(rec domain.DNSEntry) error { return n.domains.AddDNSEntry(dc.Name, rec) }),
-			})
-
-		case diff2.CHANGE:
-			if canUpdateDNSEntries(change.New, change.Old) {
-				corrections = append(corrections, &models.Correction{
-					Msg: msg,
-					F:   wrapChangeFunction(change.New, func(rec domain.DNSEntry) error { return n.domains.UpdateDNSEntry(dc.Name, rec) }),
-				})
-			} else {
-				corrections = append(corrections, &models.Correction{
-					Msg: fmt.Sprintf("[1/2] delete of %s", msg),
-					F:   wrapChangeFunction(change.Old, func(rec domain.DNSEntry) error { return n.domains.RemoveDNSEntry(dc.Name, rec) }),
-				})
-				corrections = append(corrections, &models.Correction{
-					Msg: fmt.Sprintf("[2/2] create of %s", msg),
-					F:   wrapChangeFunction(change.New, func(rec domain.DNSEntry) error { return n.domains.AddDNSEntry(dc.Name, rec) }),
-				})
-			}
-
-		case diff2.DELETE:
-			corrections = append(corrections, &models.Correction{
-				Msg: msg,
-				F:   wrapChangeFunction(change.Old, func(rec domain.DNSEntry) error { return n.domains.RemoveDNSEntry(dc.Name, rec) }),
-			})
+		if canDirectApplyDNSEntries(change) {
+			changeFunction := n.getChangeFunction(change.Type, dc, change)
+			corrections = append(corrections, change.CreateCorrection(changeFunction))
+		} else {
+			deleteFunction := n.getChangeFunction(diff2.DELETE, dc, change)
+			createFunction := n.getChangeFunction(diff2.CREATE, dc, change)
+			corrections = append(corrections, change.CreateCorrectionWithMessage("[1/2] delete", deleteFunction), change.CreateCorrectionWithMessage("[2/2] create", createFunction))
 		}
 	}
 
 	return corrections, nil
+}
+
+func (n *transipProvider) getChangeFunction(changeType diff2.Verb, dc *models.DomainConfig, change diff2.Change) func() error {
+	switch changeType {
+	case diff2.DELETE:
+		return wrapChangeFunction(change.Old, func(rec domain.DNSEntry) error { return n.domains.RemoveDNSEntry(dc.Name, rec) })
+
+	case diff2.CREATE:
+		return wrapChangeFunction(change.New, func(rec domain.DNSEntry) error { return n.domains.AddDNSEntry(dc.Name, rec) })
+
+	case diff2.CHANGE:
+		return wrapChangeFunction(change.Old, func(rec domain.DNSEntry) error { return n.domains.UpdateDNSEntry(dc.Name, rec) })
+	}
+
+	panic(fmt.Sprintf("Unsupported change type %s", changeType))
 }
 
 func wrapChangeFunction(records models.Records, executer func(rec domain.DNSEntry) error) func() error {
@@ -185,7 +176,13 @@ func wrapChangeFunction(records models.Records, executer func(rec domain.DNSEntr
 	}
 }
 
-func canUpdateDNSEntries(desired models.Records, existing models.Records) bool {
+func canDirectApplyDNSEntries(change diff2.Change) bool {
+	desired, existing := change.New, change.Old
+
+	if change.Type != diff2.CHANGE {
+		return true
+	}
+
 	if len(desired) != len(existing) {
 		return false
 	}
