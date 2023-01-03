@@ -165,43 +165,46 @@ func (c *dnsimpleProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*mod
 	// Normalize
 	models.PostProcessRecords(actual)
 
-	if !diff2.EnableDiff2 || true { // Remove "|| true" when diff2 version arrives
-
+	var create, del, modify diff.Changeset
+	if !diff2.EnableDiff2 {
 		differ := diff.New(dc)
-		_, create, del, modify, err := differ.IncrementalDiff(actual)
-		if err != nil {
-			return nil, err
-		}
-
-		for _, del := range del {
-			rec := del.Existing.Original.(dnsimpleapi.ZoneRecord)
-			corrections = append(corrections, &models.Correction{
-				Msg: del.String(),
-				F:   c.deleteRecordFunc(rec.ID, dc.Name),
-			})
-		}
-
-		for _, cre := range create {
-			rec := cre.Desired
-			corrections = append(corrections, &models.Correction{
-				Msg: cre.String(),
-				F:   c.createRecordFunc(rec, dc.Name),
-			})
-		}
-
-		for _, mod := range modify {
-			old := mod.Existing.Original.(dnsimpleapi.ZoneRecord)
-			rec := mod.Desired
-			corrections = append(corrections, &models.Correction{
-				Msg: mod.String(),
-				F:   c.updateRecordFunc(&old, rec, dc.Name),
-			})
-		}
-
-		return corrections, nil
+		_, create, del, modify, err = differ.IncrementalDiff(actual)
+	} else {
+		differ := diff.NewCompat(dc)
+		_, create, del, modify, err = differ.IncrementalDiff(actual)
+	}
+	if err != nil {
+		return nil, err
 	}
 
-	// Insert Future diff2 version here.
+	if err != nil {
+		return nil, err
+	}
+
+	for _, del := range del {
+		rec := del.Existing.Original.(dnsimpleapi.ZoneRecord)
+		corrections = append(corrections, &models.Correction{
+			Msg: del.String(),
+			F:   c.deleteRecordFunc(rec.ID, dc.Name),
+		})
+	}
+
+	for _, cre := range create {
+		rec := cre.Desired
+		corrections = append(corrections, &models.Correction{
+			Msg: cre.String(),
+			F:   c.createRecordFunc(rec, dc.Name),
+		})
+	}
+
+	for _, mod := range modify {
+		old := mod.Existing.Original.(dnsimpleapi.ZoneRecord)
+		rec := mod.Desired
+		corrections = append(corrections, &models.Correction{
+			Msg: mod.String(),
+			F:   c.updateRecordFunc(&old, rec, dc.Name),
+		})
+	}
 
 	return corrections, nil
 }
