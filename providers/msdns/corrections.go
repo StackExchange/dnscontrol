@@ -15,32 +15,31 @@ func (client *msdnsProvider) GenerateDomainCorrections(dc *models.DomainConfig, 
 	txtutil.SplitSingleLongTxt(dc.Records) // Autosplit long TXT records
 
 	var corrections []*models.Correction
-	if !diff2.EnableDiff2 || true { // Remove "|| true" when diff2 version arrives
-
+	var creates, dels, modifications diff.Changeset
+	var err error
+	if !diff2.EnableDiff2 {
 		differ := diff.New(dc)
-		_, creates, dels, modifications, err := differ.IncrementalDiff(foundRecords)
-		if err != nil {
-			return nil, err
-		}
-
-		// Generate changes.
-		corrections := []*models.Correction{}
-		for _, del := range dels {
-			corrections = append(corrections, client.deleteRec(client.dnsserver, dc.Name, del))
-		}
-		for _, cre := range creates {
-			corrections = append(corrections, client.createRec(client.dnsserver, dc.Name, cre)...)
-		}
-		for _, m := range modifications {
-			corrections = append(corrections, client.modifyRec(client.dnsserver, dc.Name, m))
-		}
-		return corrections, nil
-
+		_, creates, dels, modifications, err = differ.IncrementalDiff(foundRecords)
+	} else {
+		differ := diff.NewCompat(dc)
+		_, creates, dels, modifications, err = differ.IncrementalDiff(foundRecords)
+	}
+	if err != nil {
+		return nil, err
 	}
 
-	// Insert Future diff2 version here.
-
+	// Generate changes.
+	for _, del := range dels {
+		corrections = append(corrections, client.deleteRec(client.dnsserver, dc.Name, del))
+	}
+	for _, cre := range creates {
+		corrections = append(corrections, client.createRec(client.dnsserver, dc.Name, cre)...)
+	}
+	for _, m := range modifications {
+		corrections = append(corrections, client.modifyRec(client.dnsserver, dc.Name, m))
+	}
 	return corrections, nil
+
 }
 
 func (client *msdnsProvider) deleteRec(dnsserver, domainname string, cor diff.Correlation) *models.Correction {
