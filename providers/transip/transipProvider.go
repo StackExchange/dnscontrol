@@ -243,8 +243,6 @@ func removeOtherNS(dc *models.DomainConfig) {
 
 func getTargetRecordContent(rc *models.RecordConfig) string {
 	switch rtype := rc.Type; rtype {
-	case "CAA":
-		return rc.GetTargetCombined()
 	case "SSHFP":
 		return fmt.Sprintf("%d %d %s", rc.SshfpAlgorithm, rc.SshfpFingerprint, rc.GetTargetField())
 	case "DS":
@@ -252,6 +250,6 @@ func getTargetRecordContent(rc *models.RecordConfig) string {
 	case "SRV":
 		return fmt.Sprintf("%d %d %s", rc.SrvWeight, rc.SrvPort, rc.GetTargetField())
 	default:
-		return rc.GetTargetCombined()
+		return models.StripQuotes(rc.GetTargetCombined())
 	}
 }
