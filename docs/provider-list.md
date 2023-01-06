@@ -99,20 +99,15 @@ Providers in this category and their maintainers are:
 ### Requested providers
 
 We have received requests for the following providers. If you would like to contribute
-code to support this provider, please re-open the issue. We'd be glad to help in any way.
+code to support this provider, we'd be glad to help in any way.
 
-* [Provider request: Alibaba cloud ](https://github.com/StackExchange/dnscontrol/issues/420)(#420)
-
-### In progress providers
-
-These requests have an *open* issue, which indicates somebody is actively working on it. Feel free to follow the issue, or pitch in if you think you can help.
-
-* [Provider Request: knot-dns](https://github.com/StackExchange/dnscontrol/issues/436) (#436)
-* [Provider request: Constellix (DNSMadeEasy)](https://github.com/StackExchange/dnscontrol/issues/842) (#842)
-* [Provider request: Joker.com](https://github.com/StackExchange/dnscontrol/issues/854) (#854)
-* [Provider request: RcodeZero](https://github.com/StackExchange/dnscontrol/issues/884) (#884)
-* [New Feature Request: Customer-Accessible API for EnCirca](https://github.com/StackExchange/dnscontrol/issues/1048) (#1048)
-* [Provider request: Infoblox/NIOS](https://github.com/StackExchange/dnscontrol/issues/1077) (#1077)
-* [EU.ORG Registrar Support](https://github.com/StackExchange/dnscontrol/issues/1176) (#1176)
-* [DNS Provider: 1984Hosting Support](https://github.com/StackExchange/dnscontrol/issues/1251) (#1251)
-* [PROVIDER REQUEST: coredns](https://github.com/StackExchange/dnscontrol/issues/1284) (#1284)
+* [1984 Hosting](https://github.com/StackExchange/dnscontrol/issues/1251) (#1251)
+* [Alibaba Cloud DNS](https://github.com/StackExchange/dnscontrol/issues/420)(#420)
+* [Constellix (DNSMadeEasy)](https://github.com/StackExchange/dnscontrol/issues/842) (#842)
+* [CoreDNS](https://github.com/StackExchange/dnscontrol/issues/1284) (#1284)
+* [EnCirca](https://github.com/StackExchange/dnscontrol/issues/1048) (#1048)
+* [EU.ORG](https://github.com/StackExchange/dnscontrol/issues/1176) (#1176)
+* [Infoblox DNS](https://github.com/StackExchange/dnscontrol/issues/1077) (#1077)
+* [Joker.com](https://github.com/StackExchange/dnscontrol/issues/854) (#854)
+* [Knot DNS](https://github.com/StackExchange/dnscontrol/issues/436) (#436)
+* [RcodeZero](https://github.com/StackExchange/dnscontrol/issues/884) (#884)
