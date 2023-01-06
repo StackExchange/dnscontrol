@@ -2,11 +2,6 @@
 title: Examples
 ---
 
-# Examples
-
-* TOC
-{:toc}
-
 ## Typical DNS Records
 
 ```javascript

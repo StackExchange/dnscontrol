@@ -8,9 +8,6 @@ DNSControl can handle a variety of provider scenarios. The registrar and DNS
 provider can be the same company, different company, they can even be unknown!
 The document shows examples of many common and uncommon configurations.
 
-* TOC
-{:toc}
-
 # Constants
 
 All the examples use the variables.  Substitute your own.
