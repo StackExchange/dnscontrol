@@ -23,7 +23,7 @@ Alternatively on macOS you can install it using [MacPorts](https://www.macports.
 
 ```bash
 sudo port install dnscontrol
-````
+```
 
 ### Docker
 
