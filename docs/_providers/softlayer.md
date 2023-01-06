@@ -6,9 +6,11 @@ jsId: SOFTLAYER
 
 # SoftLayer DNS Provider
 
-NOTE: This provider is currently has no maintainer. We are looking for
+{% hint style="info" %}
+**NOTE**: This provider is currently has no maintainer. We are looking for
 a volunteer. If this provider breaks it may be disabled or removed if
 it can not be easily fixed.
+{% endhint %}
 
 ## Configuration
 

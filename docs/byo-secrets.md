@@ -165,8 +165,9 @@ these tests. (We are grateful to HEXONET for this public service!)
       HEXONET_UID: test.user
 ```
 
-NOTE: The above credentials are [known to the public](_providers/hexonet.md).
-
+{% hint style="info" %}
+**NOTE**: The above credentials are [known to the public](_providers/hexonet.md).
+{% endhint %}
 
 # Caveats
 

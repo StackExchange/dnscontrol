@@ -33,5 +33,7 @@ D("example.com", REG_NAMEDOTCOM,
 );
 ```
 
-NOTE: The `NO_PURGE` is used out of abundance of caution but since no
+{% hint style="info" %}
+**NOTE**: The `NO_PURGE` is used out of abundance of caution but since no
 `DnsProvider()` statements exist, no updates would be performed.
+{% endhint %}

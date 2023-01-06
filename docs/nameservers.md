@@ -175,7 +175,9 @@ and one DNS provider goes down, after a
 while your users won't be affected.  Not all software does this properly.
 More info: https://www.dns-oarc.net/files/workshop-201203/OARC-workshop-London-2012-NS-selection.pdf
 
-NOTE: This is overkill unless you have millions of users and strict up-time requirements.
+{% hint style="info" %}
+**NOTE**: This is overkill unless you have millions of users and strict up-time requirements.
+{% endhint %}
 
 ```javascript
 D("example1.com", REG_NAMECOM,
@@ -199,7 +201,9 @@ auditing purposes. Some sites do backups of these zonefiles to create a history
 of changes. This is different than keeping a history of `dnsconfig.js` because
 this is the output of DNSControl, not the input.
 
-NOTE: This won't work if you use pseudo rtypes that BIND doesn't support.
+{% hint style="info" %}
+**NOTE**: This won't work if you use pseudo rtypes that BIND doesn't support.
+{% endhint %}
 
 ```javascript
 D("example1.com", REG_NAMECOM,
@@ -230,9 +234,11 @@ D("example1.com", REG_MONITOR,
 );
 ```
 
-NOTE: This checks the NS records via a DNS query.  It does not check the
+{% hint style="info" %}
+**NOTE**: This checks the NS records via a DNS query.  It does not check the
 registrar's delegation (i.e. the `Name Server:` field in whois). In theory
 these are the same thing but there may be situations where they are not.
+{% endhint %}
 
 # Helper macros
 

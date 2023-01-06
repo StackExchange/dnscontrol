@@ -48,7 +48,9 @@ Here a working example for our OT&E System:
 }
 ```
 
-NOTE: The above credentials are known to the public.
+{% hint style="info" %}
+**NOTE**: The above credentials are known to the public.
+{% endhint %}
 
 With the above hexonet entry in `creds.json`, you can run the
 integration tests as follows:

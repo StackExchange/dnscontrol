@@ -37,4 +37,6 @@ D("example.com", REG_NAMEDOTCOM,
 );
 ```
 
-NOTE: The `NO_PURGE` is used to prevent DNSControl from changing the records.
+{% hint style="info" %}
+**NOTE**: The `NO_PURGE` is used to prevent DNSControl from changing the records.
+{% endhint %}

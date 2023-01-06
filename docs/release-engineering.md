@@ -100,8 +100,10 @@ https://github.com/StackExchange/dnscontrol/releases/tag/v$VERSION
 [insert the release notes here]
 ```
 
-NOTE: You won't be able to post to the mailing list unless you are on
+{% hint style="info" %}
+**NOTE**: You won't be able to post to the mailing list unless you are on
 it.  [Click here to join](https://groups.google.com/g/dnscontrol-discuss).
+{% endhint %}
 
 ## Step 5. Announce it via chat
 
@@ -243,7 +245,9 @@ go install github.com/gopherjs/gopherjs@latest
 
 Build the software:
 
-NOTE: GOOS can't be Darwin because GOPHERJS doesn't support it.
+{% hint style="info" %}
+**NOTE**: GOOS can't be Darwin because GOPHERJS doesn't support it.
+{% endhint %}
 
 ```shell
 cd docs/flattener

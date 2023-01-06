@@ -14,8 +14,10 @@ to tune what the DNS provider sets, no algorithm choice.  We simply
 ask that they follow their defaults when enabling a no-fuss DNSSEC
 data model.
 
-NOTE: No parenthesis should follow these keywords.  That is, the
+{% hint style="info" %}
+**NOTE**: No parenthesis should follow these keywords.  That is, the
 correct syntax is `AUTODNSSEC_ON` not `AUTODNSSEC_ON()`
+{% endhint %}
 
 {% capture example %}
 ```javascript

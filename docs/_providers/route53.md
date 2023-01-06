@@ -169,13 +169,15 @@ We believe this is a bug with R53.
 
 This is only a problem for users converting old zones to DNSControl.
 
-NOTE: When converting zones that include such records, the `get-zones`
+{% hint style="info" %}
+**NOTE**: When converting zones that include such records, the `get-zones`
 command will generate `CNAME()` records without the trailing dot. You
 should manually add the dot.  Run `dnscontrol preview` as normal to
 check your work. However when you run `dnscontrol push` you'll find
 you have to run it multiple times, each time one of those corrections
 executes and the others do not.  Once all such records are replaced
 this problem disappears.
+{% endhint %}
 
 More info is available in [#891](https://github.com/StackExchange/dnscontrol/issues/891).
 

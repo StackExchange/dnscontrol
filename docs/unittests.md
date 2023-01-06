@@ -22,7 +22,9 @@ Output the intermediate representation:
 dnscontrol print-ir --out foo.json --pretty
 ```
 
-NOTE: The `--pretty` flag is optional.
+{% hint style="info" %}
+**NOTE**: The `--pretty` flag is optional.
+{% endhint %}
 
 Here is a sample test written in `bash` using the [jq](https://stedolan.github.io/jq/) command.  This fails if the number of MX records in the `stackex.com` domain is not exactly 5:
 

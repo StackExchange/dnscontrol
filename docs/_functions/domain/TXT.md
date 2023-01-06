@@ -37,8 +37,10 @@ Modifiers can be any number of [record modifiers](#record-modifiers) or JSON obj
 
 {% include example.html content=example %}
 
-NOTE: In the past, long strings had to be annotated with the keyword
+{% hint style="info" %}
+**NOTE**: In the past, long strings had to be annotated with the keyword
 `AUTOSPLIT`. This is no longer required. The keyword is now a no-op.
+{% endhint %}
 
 ### Long strings
 
