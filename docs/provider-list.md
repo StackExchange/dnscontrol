@@ -126,7 +126,3 @@ These requests have an *open* issue, which indicates somebody is actively workin
 * [DNS Provider: 1984Hosting Support](https://github.com/StackExchange/dnscontrol/issues/1251) (#1251)
 * [PROVIDER REQUEST: coredns](https://github.com/StackExchange/dnscontrol/issues/1284) (#1284)
 * [Provider request: AutoDNS](https://github.com/StackExchange/dnscontrol/issues/1323) (#1323)
-
-### Providers with open PRs
-
-These providers have an open PR with (potentially) working code. They may be ready to merge, or may have blockers. See issue and PR for details.
