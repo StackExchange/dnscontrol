@@ -147,3 +147,4 @@
 * [Creating new DNS Resource Types (rtypes)](adding-new-rtypes.md)
 * [TXT record testing](testing-txt-records.md)
 * [Releases](https://github.com/StackExchange/dnscontrol/releases/latest)
+* [DNSControl is an opinionated system](opinions.md)
