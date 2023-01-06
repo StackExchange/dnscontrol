@@ -37,7 +37,7 @@
  */
 declare function FETCH(
     url: string,
-    init: {
+    init?: {
         method?:
             | 'GET'
             | 'POST'

@@ -1,4 +1,4 @@
-declare function require(name: `${string}.json`): unknown;
+declare function require(name: `${string}.json`): any;
 declare function require(name: string): true;
 
 /**

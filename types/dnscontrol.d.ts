@@ -71,7 +71,7 @@ type Duration =
  */
 declare function FETCH(
     url: string,
-    init: {
+    init?: {
         method?:
             | 'GET'
             | 'POST'
@@ -110,7 +110,7 @@ interface ResponseHeaders {
 }
 
 
-declare function require(name: `${string}.json`): unknown;
+declare function require(name: `${string}.json`): any;
 declare function require(name: string): true;
 
 /**
