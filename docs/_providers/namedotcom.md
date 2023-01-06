@@ -6,6 +6,12 @@ jsId: NAMEDOTCOM
 
 # Name.com Provider
 
+{% hint style="info" %}
+**NOTE**: This provider is currently has no maintainer. We are looking for
+a volunteer. If this provider breaks it may be disabled or removed if
+it can not be easily fixed.
+{% endhint %}
+
 ## Configuration
 
 To use this provider, add an entry to `creds.json` with `TYPE` set to `NAMEDOTCOM`
