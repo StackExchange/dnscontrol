@@ -3,19 +3,6 @@ title: Service Providers
 ---
 # Service Providers
 
-<table class='table table-bordered'>
-  <thead>
-    <th>Name</th>
-    <th>Identifier</th>
-  </thead>
-{% for p in site.providers %}
-<tr>
-  <td><a href=".{{p.id}}">{{p.name}}</a></td>
-  <td>{{p.jsId}}</td>
-</tr>
-{% endfor %}
-</table>
-
 ## Provider Features {#features}
 
 The table below shows various features supported, or not supported by DNSControl providers.
