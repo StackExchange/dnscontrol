@@ -8,6 +8,7 @@ import (
 
 	"github.com/StackExchange/dnscontrol/v3/models"
 	"github.com/StackExchange/dnscontrol/v3/pkg/diff"
+	"github.com/StackExchange/dnscontrol/v3/pkg/diff2"
 	"github.com/StackExchange/dnscontrol/v3/pkg/printer"
 	"github.com/StackExchange/dnscontrol/v3/providers"
 	"github.com/softlayer/softlayer-go/datatypes"
@@ -67,7 +68,6 @@ func (s *softlayerProvider) GetZoneRecords(domain string) (models.Records, error
 
 // GetDomainCorrections returns corrections to update a domain.
 func (s *softlayerProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Correction, error) {
-	corrections := []*models.Correction{}
 
 	domain, err := s.getDomain(&dc.Name)
 
@@ -81,12 +81,18 @@ func (s *softlayerProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*mo
 		return nil, err
 	}
 
-	_, create, delete, modify, err := diff.New(dc).IncrementalDiff(actual)
+	var corrections []*models.Correction
+	var create, deletes, modify diff.Changeset
+	if !diff2.EnableDiff2 {
+		_, create, deletes, modify, err = diff.New(dc).IncrementalDiff(actual)
+	} else {
+		_, create, deletes, modify, err = diff.NewCompat(dc).IncrementalDiff(actual)
+	}
 	if err != nil {
 		return nil, err
 	}
 
-	for _, del := range delete {
+	for _, del := range deletes {
 		existing := del.Existing.Original.(datatypes.Dns_Domain_ResourceRecord)
 		corrections = append(corrections, &models.Correction{
 			Msg: del.String(),

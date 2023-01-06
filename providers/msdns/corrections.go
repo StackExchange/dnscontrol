@@ -3,6 +3,7 @@ package msdns
 import (
 	"github.com/StackExchange/dnscontrol/v3/models"
 	"github.com/StackExchange/dnscontrol/v3/pkg/diff"
+	"github.com/StackExchange/dnscontrol/v3/pkg/diff2"
 	"github.com/StackExchange/dnscontrol/v3/pkg/txtutil"
 )
 
@@ -13,14 +14,21 @@ func (client *msdnsProvider) GenerateDomainCorrections(dc *models.DomainConfig, 
 	models.PostProcessRecords(foundRecords)
 	txtutil.SplitSingleLongTxt(dc.Records) // Autosplit long TXT records
 
-	differ := diff.New(dc)
-	_, creates, dels, modifications, err := differ.IncrementalDiff(foundRecords)
+	var corrections []*models.Correction
+	var creates, dels, modifications diff.Changeset
+	var err error
+	if !diff2.EnableDiff2 {
+		differ := diff.New(dc)
+		_, creates, dels, modifications, err = differ.IncrementalDiff(foundRecords)
+	} else {
+		differ := diff.NewCompat(dc)
+		_, creates, dels, modifications, err = differ.IncrementalDiff(foundRecords)
+	}
 	if err != nil {
 		return nil, err
 	}
 
 	// Generate changes.
-	corrections := []*models.Correction{}
 	for _, del := range dels {
 		corrections = append(corrections, client.deleteRec(client.dnsserver, dc.Name, del))
 	}

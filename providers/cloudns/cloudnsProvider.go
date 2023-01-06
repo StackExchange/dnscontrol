@@ -8,6 +8,7 @@ import (
 
 	"github.com/StackExchange/dnscontrol/v3/models"
 	"github.com/StackExchange/dnscontrol/v3/pkg/diff"
+	"github.com/StackExchange/dnscontrol/v3/pkg/diff2"
 	"github.com/StackExchange/dnscontrol/v3/providers"
 	"github.com/miekg/dns/dnsutil"
 )
@@ -103,86 +104,93 @@ func (c *cloudnsProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*mode
 		record.TTL = fixTTL(record.TTL)
 	}
 
-	differ := diff.New(dc)
-	_, create, del, modify, err := differ.IncrementalDiff(existingRecords)
-	if err != nil {
-		return nil, err
-	}
-
 	var corrections []*models.Correction
+	if !diff2.EnableDiff2 || true { // Remove "|| true" when diff2 version arrives
 
-	// Deletes first so changing type works etc.
-	for _, m := range del {
-		id := m.Existing.Original.(*domainRecord).ID
-		corr := &models.Correction{
-			Msg: fmt.Sprintf("%s, ClouDNS ID: %s", m.String(), id),
-			F: func() error {
-				return c.deleteRecord(domainID, id)
-			},
+		differ := diff.New(dc)
+		_, create, del, modify, err := differ.IncrementalDiff(existingRecords)
+		if err != nil {
+			return nil, err
 		}
-		// at ClouDNS, we MUST have a NS for a DS
-		// So, when deleting, we must delete the DS first, otherwise deleting the NS throws an error
-		if m.Existing.Type == "DS" {
-			// type DS is prepended - so executed first
-			corrections = append([]*models.Correction{corr}, corrections...)
-		} else {
+
+		// Deletes first so changing type works etc.
+		for _, m := range del {
+			id := m.Existing.Original.(*domainRecord).ID
+			corr := &models.Correction{
+				Msg: fmt.Sprintf("%s, ClouDNS ID: %s", m.String(), id),
+				F: func() error {
+					return c.deleteRecord(domainID, id)
+				},
+			}
+			// at ClouDNS, we MUST have a NS for a DS
+			// So, when deleting, we must delete the DS first, otherwise deleting the NS throws an error
+			if m.Existing.Type == "DS" {
+				// type DS is prepended - so executed first
+				corrections = append([]*models.Correction{corr}, corrections...)
+			} else {
+				corrections = append(corrections, corr)
+			}
+		}
+
+		var createCorrections []*models.Correction
+		for _, m := range create {
+			req, err := toReq(m.Desired)
+			if err != nil {
+				return nil, err
+			}
+
+			// ClouDNS does not require the trailing period to be specified when creating an NS record where the A or AAAA record exists in the zone.
+			// So, modify it to remove the trailing period.
+			if req["record-type"] == "NS" && strings.HasSuffix(req["record"], domainID+".") {
+				req["record"] = strings.TrimSuffix(req["record"], ".")
+			}
+
+			corr := &models.Correction{
+				Msg: m.String(),
+				F: func() error {
+					return c.createRecord(domainID, req)
+				},
+			}
+			// at ClouDNS, we MUST have a NS for a DS
+			// So, when creating, we must create the NS first, otherwise creating the DS throws an error
+			if m.Desired.Type == "NS" {
+				// type NS is prepended - so executed first
+				createCorrections = append([]*models.Correction{corr}, createCorrections...)
+			} else {
+				createCorrections = append(createCorrections, corr)
+			}
+		}
+		corrections = append(corrections, createCorrections...)
+
+		for _, m := range modify {
+			id := m.Existing.Original.(*domainRecord).ID
+			req, err := toReq(m.Desired)
+			if err != nil {
+				return nil, err
+			}
+
+			// ClouDNS does not require the trailing period to be specified when updating an NS record where the A or AAAA record exists in the zone.
+			// So, modify it to remove the trailing period.
+			if req["record-type"] == "NS" && strings.HasSuffix(req["record"], domainID+".") {
+				req["record"] = strings.TrimSuffix(req["record"], ".")
+			}
+
+			corr := &models.Correction{
+				Msg: fmt.Sprintf("%s, ClouDNS ID: %s: ", m.String(), id),
+				F: func() error {
+					return c.modifyRecord(domainID, id, req)
+				},
+			}
 			corrections = append(corrections, corr)
 		}
+
+		return corrections, nil
 	}
 
-	var createCorrections []*models.Correction
-	for _, m := range create {
-		req, err := toReq(m.Desired)
-		if err != nil {
-			return nil, err
-		}
-
-		// ClouDNS does not require the trailing period to be specified when creating an NS record where the A or AAAA record exists in the zone.
-		// So, modify it to remove the trailing period.
-		if req["record-type"] == "NS" && strings.HasSuffix(req["record"], domainID+".") {
-			req["record"] = strings.TrimSuffix(req["record"], ".")
-		}
-
-		corr := &models.Correction{
-			Msg: m.String(),
-			F: func() error {
-				return c.createRecord(domainID, req)
-			},
-		}
-		// at ClouDNS, we MUST have a NS for a DS
-		// So, when creating, we must create the NS first, otherwise creating the DS throws an error
-		if m.Desired.Type == "NS" {
-			// type NS is prepended - so executed first
-			createCorrections = append([]*models.Correction{corr}, createCorrections...)
-		} else {
-			createCorrections = append(createCorrections, corr)
-		}
-	}
-	corrections = append(corrections, createCorrections...)
-
-	for _, m := range modify {
-		id := m.Existing.Original.(*domainRecord).ID
-		req, err := toReq(m.Desired)
-		if err != nil {
-			return nil, err
-		}
-
-		// ClouDNS does not require the trailing period to be specified when updating an NS record where the A or AAAA record exists in the zone.
-		// So, modify it to remove the trailing period.
-		if req["record-type"] == "NS" && strings.HasSuffix(req["record"], domainID+".") {
-			req["record"] = strings.TrimSuffix(req["record"], ".")
-		}
-
-		corr := &models.Correction{
-			Msg: fmt.Sprintf("%s, ClouDNS ID: %s: ", m.String(), id),
-			F: func() error {
-				return c.modifyRecord(domainID, id, req)
-			},
-		}
-		corrections = append(corrections, corr)
-	}
+	// Insert Future diff2 version here.
 
 	return corrections, nil
+
 }
 
 // GetZoneRecords gets the records of a zone and returns them in RecordConfig format.

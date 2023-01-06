@@ -24,6 +24,7 @@ import (
 
 	"github.com/StackExchange/dnscontrol/v3/models"
 	"github.com/StackExchange/dnscontrol/v3/pkg/diff"
+	"github.com/StackExchange/dnscontrol/v3/pkg/diff2"
 	"github.com/StackExchange/dnscontrol/v3/pkg/prettyzone"
 	"github.com/StackExchange/dnscontrol/v3/pkg/printer"
 	"github.com/StackExchange/dnscontrol/v3/pkg/txtutil"
@@ -168,7 +169,7 @@ func (c *bindProvider) GetZoneRecords(domain string) (models.Records, error) {
 	if os.IsNotExist(err) {
 		// If the file doesn't exist, that's not an error. Just informational.
 		c.zoneFileFound = false
-		fmt.Fprintf(os.Stderr, "File does not yet exist: %q\n", c.zonefile)
+		fmt.Fprintf(os.Stderr, "File does not yet exist: %q (will create)\n", c.zonefile)
 		return nil, nil
 	}
 	if err != nil {
@@ -243,42 +244,59 @@ func (c *bindProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*models.
 	models.PostProcessRecords(foundRecords)
 	txtutil.SplitSingleLongTxt(dc.Records) // Autosplit long TXT records
 
-	differ := diff.New(dc)
-	_, create, del, mod, err := differ.IncrementalDiff(foundRecords)
-	if err != nil {
-		return nil, err
-	}
-
-	buf := &bytes.Buffer{}
-	// Print a list of changes. Generate an actual change that is the zone
 	changes := false
-	for _, i := range create {
-		changes = true
-		if c.zoneFileFound {
-			fmt.Fprintln(buf, i)
-		}
-	}
-	for _, i := range del {
-		changes = true
-		if c.zoneFileFound {
-			fmt.Fprintln(buf, i)
-		}
-	}
-	for _, i := range mod {
-		changes = true
-		if c.zoneFileFound {
-			fmt.Fprintln(buf, i)
-		}
-	}
-
 	var msg string
-	if c.zoneFileFound {
-		msg = fmt.Sprintf("GENERATE_ZONEFILE: '%s'. Changes:\n%s", dc.Name, buf)
+
+	if !diff2.EnableDiff2 {
+
+		differ := diff.New(dc)
+		_, create, del, mod, err := differ.IncrementalDiff(foundRecords)
+		if err != nil {
+			return nil, err
+		}
+
+		buf := &bytes.Buffer{}
+		// Print a list of changes. Generate an actual change that is the zone
+
+		for _, i := range create {
+			changes = true
+			if c.zoneFileFound {
+				fmt.Fprintln(buf, i)
+			}
+		}
+		for _, i := range del {
+			changes = true
+			if c.zoneFileFound {
+				fmt.Fprintln(buf, i)
+			}
+		}
+		for _, i := range mod {
+			changes = true
+			if c.zoneFileFound {
+				fmt.Fprintln(buf, i)
+			}
+		}
+
+		if c.zoneFileFound {
+			msg = fmt.Sprintf("GENERATE_ZONEFILE: '%s'. Changes:\n%s", dc.Name, buf)
+		} else {
+			msg = fmt.Sprintf("GENERATE_ZONEFILE: '%s' (new file with %d records)\n", dc.Name, len(create))
+		}
+
 	} else {
-		msg = fmt.Sprintf("GENERATE_ZONEFILE: '%s' (new file with %d records)\n", dc.Name, len(create))
+
+		var msgs []string
+		msgs, changes, err = diff2.ByZone(foundRecords, dc, nil)
+		if err != nil {
+			return nil, err
+		}
+		//fmt.Printf("DEBUG: BIND changes=%v\n", changes)
+		msg = strings.Join(msgs, "\n")
+
 	}
 
-	corrections := []*models.Correction{}
+	var corrections []*models.Correction
+	//fmt.Printf("DEBUG: BIND changes=%v\n", changes)
 	if changes {
 
 		// We only change the serial number if there is a change.

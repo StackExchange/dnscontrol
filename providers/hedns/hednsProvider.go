@@ -17,6 +17,7 @@ import (
 	"github.com/PuerkitoBio/goquery"
 	"github.com/StackExchange/dnscontrol/v3/models"
 	"github.com/StackExchange/dnscontrol/v3/pkg/diff"
+	"github.com/StackExchange/dnscontrol/v3/pkg/diff2"
 	"github.com/StackExchange/dnscontrol/v3/pkg/txtutil"
 	"github.com/StackExchange/dnscontrol/v3/providers"
 	"github.com/pquerna/otp/totp"
@@ -177,7 +178,6 @@ func (c *hednsProvider) GetNameservers(_ string) ([]*models.Nameserver, error) {
 
 // GetDomainCorrections returns a list of corrections for the  domain.
 func (c *hednsProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Correction, error) {
-	var corrections []*models.Correction
 
 	err := dc.Punycode()
 	if err != nil {
@@ -204,8 +204,15 @@ func (c *hednsProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*models
 	models.PostProcessRecords(prunedRecords)
 	txtutil.SplitSingleLongTxt(dc.Records) // Autosplit long TXT records
 
-	differ := diff.New(dc)
-	_, toCreate, toDelete, toModify, err := differ.IncrementalDiff(prunedRecords)
+	var corrections []*models.Correction
+	var toCreate, toDelete, toModify diff.Changeset
+	if !diff2.EnableDiff2 {
+		differ := diff.New(dc)
+		_, toCreate, toDelete, toModify, err = differ.IncrementalDiff(prunedRecords)
+	} else {
+		differ := diff.NewCompat(dc)
+		_, toCreate, toDelete, toModify, err = differ.IncrementalDiff(prunedRecords)
+	}
 	if err != nil {
 		return nil, err
 	}
@@ -245,7 +252,7 @@ func (c *hednsProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*models
 		})
 	}
 
-	return corrections, err
+	return corrections, nil
 }
 
 // GetZoneRecords returns all the records for the given domain

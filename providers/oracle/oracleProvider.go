@@ -8,6 +8,7 @@ import (
 
 	"github.com/StackExchange/dnscontrol/v3/models"
 	"github.com/StackExchange/dnscontrol/v3/pkg/diff"
+	"github.com/StackExchange/dnscontrol/v3/pkg/diff2"
 	"github.com/StackExchange/dnscontrol/v3/pkg/printer"
 	"github.com/StackExchange/dnscontrol/v3/pkg/txtutil"
 	"github.com/StackExchange/dnscontrol/v3/providers"
@@ -239,8 +240,19 @@ func (o *oracleProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*model
 		}
 	}
 
-	differ := diff.New(dc)
-	_, create, dels, modify, err := differ.IncrementalDiff(existingRecords)
+	var corrections []*models.Correction
+	var create, dels, modify diff.Changeset
+	if !diff2.EnableDiff2 {
+		differ := diff.New(dc)
+		_, create, dels, modify, err = differ.IncrementalDiff(existingRecords)
+	} else {
+		differ := diff.NewCompat(dc)
+		_, create, dels, modify, err = differ.IncrementalDiff(existingRecords)
+	}
+	if err != nil {
+		return nil, err
+	}
+
 	if err != nil {
 		return nil, err
 	}
@@ -252,8 +264,6 @@ func (o *oracleProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*model
 		Oracle's API is also increadibly slow, so updating individual RRSets is unbearably slow
 		for any size zone.
 	*/
-
-	corrections := []*models.Correction{}
 
 	if len(create) > 0 {
 		createRecords := models.Records{}

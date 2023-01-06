@@ -7,6 +7,7 @@ import (
 
 	"github.com/StackExchange/dnscontrol/v3/models"
 	"github.com/StackExchange/dnscontrol/v3/pkg/diff"
+	"github.com/StackExchange/dnscontrol/v3/pkg/diff2"
 )
 
 func (api *domainNameShopProvider) GetZoneRecords(domain string) (models.Records, error) {
@@ -46,13 +47,18 @@ func (api *domainNameShopProvider) GetDomainCorrections(dc *models.DomainConfig)
 		record.TTL = fixTTL(record.TTL)
 	}
 
-	differ := diff.New(dc)
-	_, create, delete, modify, err := differ.IncrementalDiff(existingRecords)
+	var corrections []*models.Correction
+	var create, delete, modify diff.Changeset
+	if !diff2.EnableDiff2 {
+		differ := diff.New(dc)
+		_, create, delete, modify, err = differ.IncrementalDiff(existingRecords)
+	} else {
+		differ := diff.NewCompat(dc)
+		_, create, delete, modify, err = differ.IncrementalDiff(existingRecords)
+	}
 	if err != nil {
 		return nil, err
 	}
-
-	var corrections = []*models.Correction{}
 
 	// Delete record
 	for _, r := range delete {

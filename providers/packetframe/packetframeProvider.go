@@ -10,6 +10,7 @@ import (
 
 	"github.com/StackExchange/dnscontrol/v3/models"
 	"github.com/StackExchange/dnscontrol/v3/pkg/diff"
+	"github.com/StackExchange/dnscontrol/v3/pkg/diff2"
 	"github.com/StackExchange/dnscontrol/v3/providers"
 )
 
@@ -123,62 +124,68 @@ func (api *packetframeProvider) GetDomainCorrections(dc *models.DomainConfig) ([
 	// Normalize
 	models.PostProcessRecords(existingRecords)
 
-	differ := diff.New(dc)
-	_, create, delete, modify, err := differ.IncrementalDiff(existingRecords)
-	if err != nil {
-		return nil, err
-	}
-
 	var corrections []*models.Correction
+	if !diff2.EnableDiff2 || true { // Remove "|| true" when diff2 version arrives
 
-	for _, m := range create {
-		req, err := toReq(zone.ID, dc, m.Desired)
+		differ := diff.New(dc)
+		_, create, delete, modify, err := differ.IncrementalDiff(existingRecords)
 		if err != nil {
 			return nil, err
 		}
-		corr := &models.Correction{
-			Msg: m.String(),
-			F: func() error {
-				_, err := api.createRecord(req)
-				return err
-			},
+
+		for _, m := range create {
+			req, err := toReq(zone.ID, dc, m.Desired)
+			if err != nil {
+				return nil, err
+			}
+			corr := &models.Correction{
+				Msg: m.String(),
+				F: func() error {
+					_, err := api.createRecord(req)
+					return err
+				},
+			}
+			corrections = append(corrections, corr)
 		}
-		corrections = append(corrections, corr)
+
+		for _, m := range delete {
+			original := m.Existing.Original.(*domainRecord)
+			if original.ID == "0" { // Skip the default nameservers
+				continue
+			}
+
+			corr := &models.Correction{
+				Msg: m.String(),
+				F: func() error {
+					err := api.deleteRecord(zone.ID, original.ID)
+					return err
+				},
+			}
+			corrections = append(corrections, corr)
+		}
+
+		for _, m := range modify {
+			original := m.Existing.Original.(*domainRecord)
+			if original.ID == "0" { // Skip the default nameservers
+				continue
+			}
+
+			req, _ := toReq(zone.ID, dc, m.Desired)
+			req.ID = original.ID
+			corr := &models.Correction{
+				Msg: m.String(),
+				F: func() error {
+					err := api.modifyRecord(req)
+					return err
+				},
+			}
+			corrections = append(corrections, corr)
+		}
+
+		return corrections, nil
 	}
 
-	for _, m := range delete {
-		original := m.Existing.Original.(*domainRecord)
-		if original.ID == "0" { // Skip the default nameservers
-			continue
-		}
-
-		corr := &models.Correction{
-			Msg: m.String(),
-			F: func() error {
-				err := api.deleteRecord(zone.ID, original.ID)
-				return err
-			},
-		}
-		corrections = append(corrections, corr)
-	}
-
-	for _, m := range modify {
-		original := m.Existing.Original.(*domainRecord)
-		if original.ID == "0" { // Skip the default nameservers
-			continue
-		}
-
-		req, _ := toReq(zone.ID, dc, m.Desired)
-		req.ID = original.ID
-		corr := &models.Correction{
-			Msg: m.String(),
-			F: func() error {
-				err := api.modifyRecord(req)
-				return err
-			},
-		}
-		corrections = append(corrections, corr)
-	}
+	// Insert Future diff2 version here.
 
 	return corrections, nil
 }

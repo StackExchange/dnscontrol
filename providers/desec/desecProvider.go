@@ -8,6 +8,7 @@ import (
 
 	"github.com/StackExchange/dnscontrol/v3/models"
 	"github.com/StackExchange/dnscontrol/v3/pkg/diff"
+	"github.com/StackExchange/dnscontrol/v3/pkg/diff2"
 	"github.com/StackExchange/dnscontrol/v3/pkg/printer"
 	"github.com/StackExchange/dnscontrol/v3/pkg/txtutil"
 	"github.com/StackExchange/dnscontrol/v3/providers"
@@ -164,82 +165,89 @@ func PrepDesiredRecords(dc *models.DomainConfig, minTTL uint32) {
 // made.
 func (c *desecProvider) GenerateDomainCorrections(dc *models.DomainConfig, existing models.Records) ([]*models.Correction, error) {
 
-	var corrections = []*models.Correction{}
+	var corrections []*models.Correction
+	if !diff2.EnableDiff2 || true { // Remove "|| true" when diff2 version arrives
 
-	// diff existing vs. current.
-	differ := diff.New(dc)
-	keysToUpdate, err := differ.ChangedGroups(existing)
-	if err != nil {
-		return nil, err
-	}
-	if len(keysToUpdate) == 0 {
-		return nil, nil
-	}
+		// diff existing vs. current.
+		differ := diff.New(dc)
+		keysToUpdate, err := differ.ChangedGroups(existing)
+		if err != nil {
+			return nil, err
+		}
+		if len(keysToUpdate) == 0 {
+			return nil, nil
+		}
 
-	desiredRecords := dc.Records.GroupedByKey()
-	var rrs []resourceRecord
-	buf := &bytes.Buffer{}
-	// For any key with an update, delete or replace those records.
-	for label := range keysToUpdate {
-		if _, ok := desiredRecords[label]; !ok {
-			//we could not find this RecordKey in the desiredRecords
-			//this means it must be deleted
-			for i, msg := range keysToUpdate[label] {
-				if i == 0 {
-					rc := resourceRecord{}
-					rc.Type = label.Type
-					rc.Records = make([]string, 0) // empty array of records should delete this rrset
-					rc.TTL = 3600
-					shortname := dnsutil.TrimDomainName(label.NameFQDN, dc.Name)
-					if shortname == "@" {
-						shortname = ""
+		desiredRecords := dc.Records.GroupedByKey()
+		var rrs []resourceRecord
+		buf := &bytes.Buffer{}
+		// For any key with an update, delete or replace those records.
+		for label := range keysToUpdate {
+			if _, ok := desiredRecords[label]; !ok {
+				//we could not find this RecordKey in the desiredRecords
+				//this means it must be deleted
+				for i, msg := range keysToUpdate[label] {
+					if i == 0 {
+						rc := resourceRecord{}
+						rc.Type = label.Type
+						rc.Records = make([]string, 0) // empty array of records should delete this rrset
+						rc.TTL = 3600
+						shortname := dnsutil.TrimDomainName(label.NameFQDN, dc.Name)
+						if shortname == "@" {
+							shortname = ""
+						}
+						rc.Subname = shortname
+						fmt.Fprintln(buf, msg)
+						rrs = append(rrs, rc)
+					} else {
+						//just add the message
+						fmt.Fprintln(buf, msg)
 					}
-					rc.Subname = shortname
-					fmt.Fprintln(buf, msg)
-					rrs = append(rrs, rc)
-				} else {
-					//just add the message
-					fmt.Fprintln(buf, msg)
 				}
-			}
-		} else {
-			//it must be an update or create, both can be done with the same api call.
-			ns := recordsToNative(desiredRecords[label], dc.Name)
-			if len(ns) > 1 {
-				panic("we got more than one resource record to create / modify")
-			}
-			for i, msg := range keysToUpdate[label] {
-				if i == 0 {
-					rrs = append(rrs, ns[0])
-					fmt.Fprintln(buf, msg)
-				} else {
-					//noop just for printing the additional messages
-					fmt.Fprintln(buf, msg)
+			} else {
+				//it must be an update or create, both can be done with the same api call.
+				ns := recordsToNative(desiredRecords[label], dc.Name)
+				if len(ns) > 1 {
+					panic("we got more than one resource record to create / modify")
+				}
+				for i, msg := range keysToUpdate[label] {
+					if i == 0 {
+						rrs = append(rrs, ns[0])
+						fmt.Fprintln(buf, msg)
+					} else {
+						//noop just for printing the additional messages
+						fmt.Fprintln(buf, msg)
+					}
 				}
 			}
 		}
+		msg := fmt.Sprintf("Changes:\n%s", buf)
+		corrections = append(corrections,
+			&models.Correction{
+				Msg: msg,
+				F: func() error {
+					rc := rrs
+					err := c.upsertRR(rc, dc.Name)
+					if err != nil {
+						return err
+					}
+					return nil
+				},
+			})
+
+		// NB(tlim): This sort is just to make updates look pretty. It is
+		// cosmetic.  The risk here is that there may be some updates that
+		// require a specific order (for example a delete before an add).
+		// However the code doesn't seem to have such situation.  All tests
+		// pass.  That said, if this breaks anything, the easiest fix might
+		// be to just remove the sort.
+		sort.Slice(corrections, func(i, j int) bool { return diff.CorrectionLess(corrections, i, j) })
+
+		return corrections, nil
 	}
-	msg := fmt.Sprintf("Changes:\n%s", buf)
-	corrections = append(corrections,
-		&models.Correction{
-			Msg: msg,
-			F: func() error {
-				rc := rrs
-				err := c.upsertRR(rc, dc.Name)
-				if err != nil {
-					return err
-				}
-				return nil
-			},
-		})
 
-	// NB(tlim): This sort is just to make updates look pretty. It is
-	// cosmetic.  The risk here is that there may be some updates that
-	// require a specific order (for example a delete before an add).
-	// However the code doesn't seem to have such situation.  All tests
-	// pass.  That said, if this breaks anything, the easiest fix might
-	// be to just remove the sort.
-	sort.Slice(corrections, func(i, j int) bool { return diff.CorrectionLess(corrections, i, j) })
+	// Insert Future diff2 version here.
 
+	// Insert Future diff2 version here.
 	return corrections, nil
 }

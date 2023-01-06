@@ -25,6 +25,7 @@ import (
 
 	"github.com/StackExchange/dnscontrol/v3/models"
 	"github.com/StackExchange/dnscontrol/v3/pkg/diff"
+	"github.com/StackExchange/dnscontrol/v3/pkg/diff2"
 	"github.com/StackExchange/dnscontrol/v3/pkg/printer"
 	"github.com/StackExchange/dnscontrol/v3/pkg/txtutil"
 	"github.com/StackExchange/dnscontrol/v3/providers"
@@ -231,6 +232,9 @@ func (c *axfrddnsProvider) FetchZoneRecords(domain string) ([]dns.RR, error) {
 		transfer.TsigSecret =
 			map[string]string{c.transferKey.id: c.transferKey.secret}
 		request.SetTsig(c.transferKey.id, c.transferKey.algo, 300, time.Now().Unix())
+		if c.transferKey.algo == dns.HmacMD5 {
+			transfer.TsigProvider = md5Provider(c.transferKey.secret)
+		}
 	}
 
 	envelope, err := transfer.In(request, c.master)
@@ -346,8 +350,15 @@ func (c *axfrddnsProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*mod
 	models.PostProcessRecords(foundRecords)
 	txtutil.SplitSingleLongTxt(dc.Records) // Autosplit long TXT records
 
-	differ := diff.New(dc)
-	_, create, del, mod, err := differ.IncrementalDiff(foundRecords)
+	var corrections []*models.Correction
+	var create, del, mod diff.Changeset
+	if !diff2.EnableDiff2 {
+		differ := diff.New(dc)
+		_, create, del, mod, err = differ.IncrementalDiff(foundRecords)
+	} else {
+		differ := diff.NewCompat(dc)
+		_, create, del, mod, err = differ.IncrementalDiff(foundRecords)
+	}
 	if err != nil {
 		return nil, err
 	}
@@ -369,7 +380,6 @@ func (c *axfrddnsProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*mod
 	}
 	msg := fmt.Sprintf("DDNS UPDATES to '%s' (primary master: '%s'). Changes:\n%s", dc.Name, c.master, buf)
 
-	corrections := []*models.Correction{}
 	if changes {
 
 		corrections = append(corrections,
@@ -425,6 +435,9 @@ func (c *axfrddnsProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*mod
 						client.TsigSecret =
 							map[string]string{c.updateKey.id: c.updateKey.secret}
 						update.SetTsig(c.updateKey.id, c.updateKey.algo, 300, time.Now().Unix())
+						if c.updateKey.algo == dns.HmacMD5 {
+							client.TsigProvider = md5Provider(c.updateKey.secret)
+						}
 					}
 
 					msg, _, err := client.Exchange(update, c.master)
@@ -441,5 +454,7 @@ func (c *axfrddnsProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*mod
 				},
 			})
 	}
+
 	return corrections, nil
+
 }
