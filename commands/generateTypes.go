@@ -69,5 +69,3 @@ func DownloadTypes(args TypesArgs) error {
 	print(" done.")
 	return nil
 }
-
-

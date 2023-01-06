@@ -31,11 +31,12 @@ func fixRuns(s string) string {
 }
 
 var delimiterRegex = regexp.MustCompile(`(?m)^---\n`)
+
 func parseFrontMatter(content string) (map[string]interface{}, string, error) {
 	delimiterIndices := delimiterRegex.FindAllStringIndex(content, 2)
 	startIndex := delimiterIndices[0][0]
 	endIndex := delimiterIndices[1][0]
-	yamlString := content[startIndex+4:endIndex]
+	yamlString := content[startIndex+4 : endIndex]
 	var frontMatter map[string]interface{}
 	err := yaml.Unmarshal([]byte(yamlString), &frontMatter)
 	if err != nil {
@@ -106,7 +107,7 @@ func generateFunctionTypes() (string, error) {
 
 			suppliedParamTypes := map[string]string{}
 			if frontMatter["parameter_types"] != nil {
-				rawTypes := frontMatter["parameter_types"].(map[string]interface {})
+				rawTypes := frontMatter["parameter_types"].(map[string]interface{})
 				for k, v := range rawTypes {
 					suppliedParamTypes[k] = v.(string)
 				}
@@ -117,7 +118,7 @@ func generateFunctionTypes() (string, error) {
 				// start with supplied type, fall back to defaultParamType
 				paramType := suppliedParamTypes[p]
 				if paramType == "" {
-					println("WARNING:", fPath + ":", "no type for parameter ", "'" + p + "'")
+					println("WARNING:", fPath+":", "no type for parameter ", "'"+p+"'")
 					paramType = "unknown"
 				}
 				params = append(params, Param{Name: p, Type: paramType})
@@ -216,4 +217,3 @@ func (f Function) formatMain() string {
 func (f Function) String() string {
 	return fmt.Sprintf("%s\n%s;\n\n", f.docs(), f.formatMain())
 }
-
