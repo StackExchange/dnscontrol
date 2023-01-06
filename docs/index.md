@@ -12,7 +12,7 @@ Want to jump right in? Follow our [quick start tutorial](getting-started.md) on 
 
 # Use It
 
-Take advantage of the [advanced features](@TODO). Use macros and variables for easier updates. Upload your zones to [multiple DNS providers](provider-list.md).
+Take advantage of the advanced features. Use macros and variables for easier updates. Upload your zones to [multiple DNS providers](provider-list.md).
 
 {% hint style="success" %}
 * Maintain your DNS data as a high-level DS, with macros, and variables for easier updates.
