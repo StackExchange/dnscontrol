@@ -32,8 +32,8 @@ func (args *TypesArgs) flags() []cli.Flag {
 	flags = append(flags, &cli.StringFlag{
 		Name:        "dts-file",
 		Aliases:     []string{"o"},
-		Value:       "dnscontrol.d.ts",
-		Usage:       ".d.ts file",
+		Value:       "types-dnscontrol.d.ts",
+		Usage:       "Path to the .d.ts file to create",
 		Destination: &args.DTSFile,
 	})
 	return flags
