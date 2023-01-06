@@ -101,43 +101,32 @@ Providers in this category and their maintainers are:
 We have received requests for the following providers. If you would like to contribute
 code to support this provider, please re-open the issue. We'd be glad to help in any way.
 
-<ul id='requests'>
-
-</ul>
+* [Support Gandi as a registrar](https://github.com/StackExchange/dnscontrol/issues/87) (#87)
+* [Provider request: GoDaddy](https://github.com/StackExchange/dnscontrol/issues/145) (#145)
+* [Provider request: NameSilo](https://github.com/StackExchange/dnscontrol/issues/220) (#220)
+* [OpenSRS: Add Registrar and DSP support](https://github.com/StackExchange/dnscontrol/issues/272) (#272)
+* [Provider request: Oracle Cloud Infrastructure](https://github.com/StackExchange/dnscontrol/issues/419) (#419)
+* [Provider request: Alibaba cloud ](https://github.com/StackExchange/dnscontrol/issues/420)(#420)
+* [Provider request: Netlify](https://github.com/StackExchange/dnscontrol/issues/714) (#714)
+* [Provider request: Hetzner](https://github.com/StackExchange/dnscontrol/issues/715) (#715)
+* [Provider request: CSC Global](https://github.com/StackExchange/dnscontrol/issues/815) (#815)
+* [Provider request: Porkbun](https://github.com/StackExchange/dnscontrol/issues/1295) (#1295)
 
 ### In progress providers
 
 These requests have an *open* issue, which indicates somebody is actively working on it. Feel free to follow the issue, or pitch in if you think you can help.
 
-<ul id='inprog'>
-</ul>
+* [Provider Request: knot-dns](https://github.com/StackExchange/dnscontrol/issues/436) (#436)
+* [Provider request: Constellix (DNSMadeEasy)](https://github.com/StackExchange/dnscontrol/issues/842) (#842)
+* [Provider request: Joker.com](https://github.com/StackExchange/dnscontrol/issues/854) (#854)
+* [Provider request: RcodeZero](https://github.com/StackExchange/dnscontrol/issues/884) (#884)
+* [New Feature Request: Customer-Accessible API for EnCirca](https://github.com/StackExchange/dnscontrol/issues/1048) (#1048)
+* [Provider request: Infoblox/NIOS](https://github.com/StackExchange/dnscontrol/issues/1077) (#1077)
+* [EU.ORG Registrar Support](https://github.com/StackExchange/dnscontrol/issues/1176) (#1176)
+* [DNS Provider: 1984Hosting Support](https://github.com/StackExchange/dnscontrol/issues/1251) (#1251)
+* [PROVIDER REQUEST: coredns](https://github.com/StackExchange/dnscontrol/issues/1284) (#1284)
+* [Provider request: AutoDNS](https://github.com/StackExchange/dnscontrol/issues/1323) (#1323)
 
 ### Providers with open PRs
 
 These providers have an open PR with (potentially) working code. They may be ready to merge, or may have blockers. See issue and PR for details.
-
-<ul id='haspr'>
-</ul>
-
-<script>
-$(function() {
-  $.get("https://api.github.com/repos/StackExchange/dnscontrol/issues?state=all&labels=provider-request&direction=asc")
-  .done(function(data) {
-    for(var i of data) {
-      var el = $(`<li><a href='${i.html_url}'>${i.title}</a> (#${i.number})</li>`);
-      var target = $("#requests");
-      if (i.state == "open") {
-        target = $("#inprog");
-        for(var l of i.labels) {
-          if (l.name == "has-pr")
-            target = $("#haspr");
-        }
-      }
-      target.append(el);
-    }
-  })
-  .fail(function(err){
-    console.log("???", err)
-  });
-});
-</script>
