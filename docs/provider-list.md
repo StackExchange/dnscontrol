@@ -101,16 +101,7 @@ Providers in this category and their maintainers are:
 We have received requests for the following providers. If you would like to contribute
 code to support this provider, please re-open the issue. We'd be glad to help in any way.
 
-* [Support Gandi as a registrar](https://github.com/StackExchange/dnscontrol/issues/87) (#87)
-* [Provider request: GoDaddy](https://github.com/StackExchange/dnscontrol/issues/145) (#145)
-* [Provider request: NameSilo](https://github.com/StackExchange/dnscontrol/issues/220) (#220)
-* [OpenSRS: Add Registrar and DSP support](https://github.com/StackExchange/dnscontrol/issues/272) (#272)
-* [Provider request: Oracle Cloud Infrastructure](https://github.com/StackExchange/dnscontrol/issues/419) (#419)
 * [Provider request: Alibaba cloud ](https://github.com/StackExchange/dnscontrol/issues/420)(#420)
-* [Provider request: Netlify](https://github.com/StackExchange/dnscontrol/issues/714) (#714)
-* [Provider request: Hetzner](https://github.com/StackExchange/dnscontrol/issues/715) (#715)
-* [Provider request: CSC Global](https://github.com/StackExchange/dnscontrol/issues/815) (#815)
-* [Provider request: Porkbun](https://github.com/StackExchange/dnscontrol/issues/1295) (#1295)
 
 ### In progress providers
 
@@ -125,4 +116,3 @@ These requests have an *open* issue, which indicates somebody is actively workin
 * [EU.ORG Registrar Support](https://github.com/StackExchange/dnscontrol/issues/1176) (#1176)
 * [DNS Provider: 1984Hosting Support](https://github.com/StackExchange/dnscontrol/issues/1251) (#1251)
 * [PROVIDER REQUEST: coredns](https://github.com/StackExchange/dnscontrol/issues/1284) (#1284)
-* [Provider request: AutoDNS](https://github.com/StackExchange/dnscontrol/issues/1323) (#1323)
