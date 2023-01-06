@@ -31,10 +31,12 @@ Official support means:
 
 Providers in this category and their maintainers are:
 
-* `AZURE_DNS` @vatsalyagoel
-* `BIND` @tlimoncelli
-* `GCLOUD` @riyadhalnur
-* `NAMEDOTCOM` @tlimoncelli
+|Name|Maintainer|
+|---|---|
+|`AZURE_DNS`|@vatsalyagoel|
+|`BIND`|@tlimoncelli|
+|`GCLOUD`|@riyadhalnur|
+|`NAMEDOTCOM`|@tlimoncelli|
 
 ### Providers with "contributor support"
 
@@ -55,42 +57,44 @@ Expectations of maintainers:
 
 Providers in this category and their maintainers are:
 
-* `AXFRDDNS` @hnrgrgr
-* `AKAMAIEDGEDNS` @svernick
-* `CLOUDNS` @pragmaton
-* `CLOUDFLAREAPI` @tresni
-* `CSCGLOBAL` @Air-New-Zealand
-* `DESEC` @D3luxee
-* `DIGITALOCEAN` @Deraen
-* `DNSOVERHTTPS` @mikenz
-* `DNSIMPLE` @onlyhavecans
-* `DNSMADEEASY` @vojtad
-* `DOMAINNAMESHOP` @SimenBai
-* `EASYNAME` @tresni
-* `EXOSCALE` @pierre-emmanuelJ
-* `GANDI_V5` @TomOnTime
-* `GCORE` @xddxdd
-* `HEDNS` @rblenkinsopp
-* `HETZNER` @das7pad
-* `HEXONET` @papakai
-* `HOSTINGDE` @membero
-* `INTERNETBS` @pragmaton
-* `INWX` @svenpeter42
-* `LINODE` @koesie10
-* `NAMECHEAP` VOLUNTEER NEEDED
-* `NETCUP` @kordianbruck
-* `NETLIFY` @SphericalKat
-* `NS1` @costasd
-* `OPENSRS` @pierre-emmanuelJ
-* `ORACLE` @kallsyms
-* `OVH` @masterzen
-* `PACKETFRAME` @hamptonmoore
-* `POWERDNS` @jpbede
-* `RWTH` @MisterErwin
-* `ROUTE53` @tresni
-* `SOFTLAYER`@jamielennox
-* `TRANSIP` @blackshadev
-* `VULTR` @pgaskin
+|Name|Maintainer|
+|---|---|
+|`AXFRDDNS`|@hnrgrgr|
+|`AKAMAIEDGEDNS`|@svernick|
+|`CLOUDNS`|@pragmaton|
+|`CLOUDFLAREAPI`|@tresni|
+|`CSCGLOBAL`|@Air-New-Zealand|
+|`DESEC`|@D3luxee|
+|`DIGITALOCEAN`|@Deraen|
+|`DNSOVERHTTPS`|@mikenz|
+|`DNSIMPLE`|@onlyhavecans|
+|`DNSMADEEASY`|@vojtad|
+|`DOMAINNAMESHOP`|@SimenBai|
+|`EASYNAME`|@tresni|
+|`EXOSCALE`|@pierre-emmanuelJ|
+|`GANDI_V5`|@TomOnTime|
+|`GCORE`|@xddxdd|
+|`HEDNS`|@rblenkinsopp|
+|`HETZNER`|@das7pad|
+|`HEXONET`|@papakai|
+|`HOSTINGDE`|@membero|
+|`INTERNETBS`|@pragmaton|
+|`INWX`|@svenpeter42|
+|`LINODE`|@koesie10|
+|`NAMECHEAP`|VOLUNTEER NEEDED|
+|`NETCUP`|@kordianbruck|
+|`NETLIFY`|@SphericalKat|
+|`NS1`|@costasd|
+|`OPENSRS`|@pierre-emmanuelJ|
+|`ORACLE`|@kallsyms|
+|`OVH`|@masterzen|
+|`PACKETFRAME`|@hamptonmoore|
+|`POWERDNS`|@jpbede|
+|`RWTH`|@MisterErwin|
+|`ROUTE53`|@tresni|
+|`SOFTLAYER`|@jamielennox|
+|`TRANSIP`|@blackshadev|
+|`VULTR`|@pgaskin|
 
 ### Requested providers
 
