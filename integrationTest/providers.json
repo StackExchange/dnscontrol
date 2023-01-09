@@ -159,10 +159,6 @@
     "api_token": "$NS1_TOKEN",
     "domain": "$NS1_DOMAIN"
   },
-  "OCTODNS": {
-    "directory": "config",
-    "domain": "example.com"
-  },
   "ORACLE": {
     "user_ocid": "$ORACLE_USER_OCID",
     "tenancy_ocid": "$ORACLE_TENANCY_OCID",
