@@ -78,15 +78,16 @@ In this branch, edit `.github/workflows/build.yml`:
    to the matrix of providers.  Technically you are adding to the list
    at `jobs.integration-tests.strategy.matrix.provider`.
 
-```yaml
-      matrix:
-        provider:
-...
-        - DIGITALOCEAN
-        - FANCYDNS          <<< NEW ITEM ADDED HERE
-        - GANDI_V5
-        - INWX
-```
+   {% code title=".github/workflows/build.yml" %}
+   ```diff
+   matrix:
+     provider:
+     - DIGITALOCEAN
+   + - FANCYDNS
+     - GANDI_V5
+     - INWX
+   ```
+   {% endcode %}
 
 2. Add your test's env:
 
@@ -102,9 +103,9 @@ Please replicate the formatting of the existing entries:
 * The remaining variables are sorted lexicographically (what nerds call alphabetical order).
 
 ```yaml
-      FANCYDNS_DOMAIN: ${{ secrets.FANCYDNS_DOMAIN }}
-      FANCYDNS_KEY: ${{ secrets.FANCYDNS_KEY }}
-      FANCYDNS_USER: ${{ secrets.FANCYDNS_USER }}
+FANCYDNS_DOMAIN: ${{ secrets.FANCYDNS_DOMAIN }}
+FANCYDNS_KEY: ${{ secrets.FANCYDNS_KEY }}
+FANCYDNS_USER: ${{ secrets.FANCYDNS_USER }}
 ```
 
 # Examples
@@ -117,7 +118,7 @@ The `BIND` integration tests do not require any secrets because it
 simply generates files locally.
 
 ```yaml
-      BIND_DOMAIN: example.com
+BIND_DOMAIN: example.com
 ```
 
 The existence of `BIND_DOMAIN`, and the fact that the value is
@@ -139,12 +140,12 @@ this is not true for you, please feel free to submit a PR that turns
 it into a secret.
 
 ```yaml
-      AZURE_DNS_DOMAIN: ${{ secrets.AZURE_DNS_DOMAIN }}
-      AZURE_DNS_CLIENT_ID: ${{ secrets.AZURE_DNS_CLIENT_ID }}
-      AZURE_DNS_CLIENT_SECRET: ${{ secrets.AZURE_DNS_CLIENT_SECRET }}
-      AZURE_DNS_RESOURCE_GROUP: DNSControl
-      AZURE_DNS_SUBSCRIPTION_ID: ${{ secrets.AZURE_DNS_SUBSCRIPTION_ID }}
-      AZURE_DNS_TENANT_ID: ${{ secrets.AZURE_DNS_TENANT_ID }}
+AZURE_DNS_DOMAIN: ${{ secrets.AZURE_DNS_DOMAIN }}
+AZURE_DNS_CLIENT_ID: ${{ secrets.AZURE_DNS_CLIENT_ID }}
+AZURE_DNS_CLIENT_SECRET: ${{ secrets.AZURE_DNS_CLIENT_SECRET }}
+AZURE_DNS_RESOURCE_GROUP: DNSControl
+AZURE_DNS_SUBSCRIPTION_ID: ${{ secrets.AZURE_DNS_SUBSCRIPTION_ID }}
+AZURE_DNS_TENANT_ID: ${{ secrets.AZURE_DNS_TENANT_ID }}
 ```
 
 ## Example 3:
@@ -159,10 +160,10 @@ secrets, we hard-code them into the `build.yml` file. Since
 these tests. (We are grateful to HEXONET for this public service!)
 
 ```yaml
-      HEXONET_DOMAIN: yodream.com
-      HEXONET_ENTITY: OTE
-      HEXONET_PW: test.passw0rd
-      HEXONET_UID: test.user
+HEXONET_DOMAIN: yodream.com
+HEXONET_ENTITY: OTE
+HEXONET_PW: test.passw0rd
+HEXONET_UID: test.user
 ```
 
 {% hint style="info" %}

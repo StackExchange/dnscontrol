@@ -152,10 +152,14 @@ To add this to a provider:
 
 **Step 1. Document the feature**
 
-In the `*Provider.go` file, change the setting to implemented.
+In the `*provider.go` file, change the setting to implemented.
 
-* OLD: `  providers.CanGetZones:     providers.Unimplemented(),`
-* NEW: `  providers.CanGetZones:     providers.Can(),`
+{% code title="provider.go" %}
+```diff
+-providers.CanGetZones: providers.Unimplemented(),
++providers.CanGetZones: providers.Can(),
+```
+{% endcode %}
 
 **Step 2. Update the docs**
 

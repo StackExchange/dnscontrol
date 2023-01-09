@@ -104,20 +104,33 @@ Usually this is to simply remove the second parameter to the function.
 
 Examples:
 
-
-```javascript
-OLD: var REG_THING = NewRegistrar("thing", "THING");
-NEW: var REG_THING = NewRegistrar("thing");
-
-OLD: var REG_THING = NewRegistrar("thing", "THING", { settings: "value" } );
-NEW: var REG_THING = NewRegistrar("thing", { settings: "value" } );
-
-OLD: var DNS_MYGANDI = NewDnsProvider("mygandi", "GANDI_V5");
-NEW: var DNS_MYGANDI = NewDnsProvider("mygandi");
-
-OLD: var DNS_MYGANDI = NewDnsProvider("mygandi", "GANDI_V5", { settings: "value" } );
-NEW: var DNS_MYGANDI = NewDnsProvider("mygandi", { settings: "value" } );
+{% code title="dnsconfig.js" %}
+```diff
+-var REG_THING = NewRegistrar("thing", "THING");
++var REG_THING = NewRegistrar("thing");
 ```
+{% endcode %}
+
+{% code title="dnsconfig.js" %}
+```diff
+-var REG_THING = NewRegistrar("thing", "THING", { settings: "value" } );
++var REG_THING = NewRegistrar("thing", { settings: "value" } );
+```
+{% endcode %}
+
+{% code title="dnsconfig.js" %}
+```diff
+-var DNS_MYGANDI = NewDnsProvider("mygandi", "GANDI_V5");
++var DNS_MYGANDI = NewDnsProvider("mygandi");
+```
+{% endcode %}
+
+{% code title="dnsconfig.js" %}
+```diff
+-var DNS_MYGANDI = NewDnsProvider("mygandi", "GANDI_V5", { settings: "value" } );
++var DNS_MYGANDI = NewDnsProvider("mygandi", { settings: "value" } );
+```
+{% endcode %}
 
 Starting with v3.16 use of an OLD format will trigger warnings with suggestions on how to adopt the NEW format.
 

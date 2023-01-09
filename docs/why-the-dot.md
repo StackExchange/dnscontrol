@@ -12,15 +12,10 @@ You received this error message:
 
 This means you should add a "." to the end of the target.
 
-```javascript
-OLD   CNAME("foo", "ghs.googlehosted.com"),
-NEW   CNAME("foo", "ghs.googlehosted.com."),
-                                        ^
-                                        ^
-                                        ^
-                                        ^Add this dot.
+```diff
+-   CNAME("foo", "ghs.googlehosted.com"),
++   CNAME("foo", "ghs.googlehosted.com."),
 ```
-
 
 # Why CNAME/MX/NS targets require a trailing "dot"
 
@@ -39,7 +34,7 @@ add the domain to it.
 Here are four examples:
 
 ```javascript
-    CNAME("foo", "bar")        // Permitted. (expands to bar.$DOMAIN)
+    CNAME("foo", "bar")       // Permitted. (expands to bar.$DOMAIN)
     CNAME("foo", "bar.com.")  // Permitted. (we are certain what the user wants)
     CNAME("foo", "bar.com")   // ERROR (ambiguous)
     CNAME("foo", "meta.xyz")  // ERROR (ambiguous)
