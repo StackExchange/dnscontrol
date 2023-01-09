@@ -3,7 +3,7 @@ title: DNSControl
 ---
 
 {% hint style="info" %}
-<span style="font-size: 21px; font-weight: 200;">DNSControl is an [opinionated](opinions.md) platform for seamlessly managing your DNS configuration across any number of DNS hosts, both in the cloud or in your own infrastructure. It manages all of the domains for the Stack Overflow network, and can do the same for you!</span>
+<span style="font-size: 21px; font-weight: 200;">DNSControl is an <a href="https://docs.dnscontrol.org/developer-info/opinions">opinionated</a> platform for seamlessly managing your DNS configuration across any number of DNS hosts, both in the cloud or in your own infrastructure. It manages all of the domains for the Stack Overflow network, and can do the same for you!</span>
 {% endhint %}
 
 # Try It
@@ -25,8 +25,8 @@ Take advantage of the advanced features. Use macros and variables for easier upd
 * Optimize DNS with [SPF optimizer](_functions/record/SPF_BUILDER.md). Detect too many lookups. Flatten includes.
 * Runs on Linux, Windows, Mac, or any operating system supported by Go.
 * Enable/disable Cloudflare proxying (the "orange cloud" button) directly from your DNSControl files.
-* [Assign an IP address to a constant](examples#variables-for-common-ip-addresses) and use the variable name throughout the configuration. Need to change the IP address globally? Just change the variable and "recompile".
-* Keep similar domains in sync with transforms, [macros](examples#macro-to-for-repeated-records), and variables.
+* [Assign an IP address to a constant](examples.md#variables-for-common-ip-addresses) and use the variable name throughout the configuration. Need to change the IP address globally? Just change the variable and "recompile".
+* Keep similar domains in sync with transforms, [macros](examples.md#macro-to-for-repeated-records), and variables.
 {% endhint %}
 
 # Get Involved

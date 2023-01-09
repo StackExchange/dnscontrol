@@ -39,8 +39,8 @@ Example:
 **Note**:
 
 * Don't confuse the `TYPE` and `type` fields.  `TYPE` is set to `GCLOUD` and specifies which provider type to use.  `type` specifies the type of account in use.
-* The JSON object that Google sends includes many, many fields.  The `project_id`, `private_key`, and `client_email`, are the only fields that are required. The example above includes all fields. 
-* `name_server_set` is optional and requires special permission from your TAM at Google in order to setup (See [Name server sets](#name_server_sets) below)
+* The JSON object that Google sends includes many, many fields.  The `project_id`, `private_key`, and `client_email`, are the only fields that are required. The example above includes all fields.
+* `name_server_set` is optional and requires special permission from your TAM at Google in order to setup (See [Name server sets](#name-server-sets) below)
 See [the Activation section](#activation) for some tips on obtaining these credentials.
 
 ### Using Application Default Credentials

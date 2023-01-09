@@ -9,7 +9,7 @@ ts_ignore: true
 
 `FETCH` is a wrapper for the [Fetch API](https://developer.mozilla.org/en-US/docs/Web/API/Fetch_API). This allows dynamically setting DNS records based on an external data source, e.g. the API of your cloud provider.
 
-Compared to `fetch` from Fetch API, `FETCH` will call [PANIC](#PANIC) to terminate the execution of the script, and therefore DNSControl, if a network error occurs.
+Compared to `fetch` from Fetch API, `FETCH` will call [PANIC](PANIC.md) to terminate the execution of the script, and therefore DNSControl, if a network error occurs.
 
 Otherwise the syntax of `FETCH` is the same as `fetch`.
 

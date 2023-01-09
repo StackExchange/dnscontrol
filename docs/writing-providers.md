@@ -202,7 +202,7 @@ Some useful `go test` flags:
 
 There is a potential bug in how TXT records are handled. Sadly we haven't found
 an automated way to test for this bug.  The manual steps are here in
-[docs/testing-txt-records.md](testing-txt-records.html)
+[docs/testing-txt-records.md](testing-txt-records.md)
 
 
 ## Step 9: Update docs
@@ -275,8 +275,7 @@ go get -u golang.org/x/lint/golint
 
 ## Step 13: Dependencies
 
-See
-[docs/release-engineering.md](https://github.com/StackExchange/dnscontrol/blob/master/docs/release-engineering.md)
+See [docs/release-engineering.md](release-engineering.md)
 for tips about managing modules and checking for outdated
 dependencies.
 
@@ -293,4 +292,4 @@ Here are some last-minute things to check before you submit your PR.
 ## Step 15: After the PR is merged
 
 1. Remove the "provider-request" label from the PR.
-2. Verify that [docs/provider-list.md](https://github.com/StackExchange/dnscontrol/blob/master/docs/provider-list.md) no longer shows the provider as "requested"
+2. Verify that [docs/provider-list.md](provider-list.md) no longer shows the provider as "requested"

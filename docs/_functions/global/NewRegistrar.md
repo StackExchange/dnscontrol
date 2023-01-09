@@ -21,7 +21,7 @@ nameservers for the domain).  DNSControl only manages the delegation.
   * Starting with v4.0, specifying the type may be an error. Please add the `TYPE` field to `creds.json` and remove this parameter from `dnsconfig.js` to prepare.
 * `meta` is a way to send additional parameters to the provider.  It is optional and only certain providers use it.  See the [individual provider docs](../../provider-list.md) for details.
 
-This function will return an opaque string that should be assigned to a variable name for use in [D](#D) directives.
+This function will return an opaque string that should be assigned to a variable name for use in [D](D.md) directives.
 
 Prior to [v3.16](../../v316.md):
 

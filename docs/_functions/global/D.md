@@ -11,12 +11,12 @@ parameter_types:
 ---
 
 `D` adds a new Domain for DNSControl to manage. The first two arguments are required: the domain name (fully qualified `example.com` without a trailing dot), and the
-name of the registrar (as previously declared with [NewRegistrar](#NewRegistrar)). Any number of additional arguments may be included to add DNS Providers with [DNSProvider](#DNSProvider),
-add records with [A](#A), [CNAME](#CNAME), and so forth, or add metadata.
+name of the registrar (as previously declared with [NewRegistrar](NewRegistrar.md)). Any number of additional arguments may be included to add DNS Providers with [DNSProvider](NewDnsProvider.md),
+add records with [A](../domain/A.md), [CNAME](../domain/CNAME.md), and so forth, or add metadata.
 
 Modifier arguments are processed according to type as follows:
 
-- A function argument will be called with the domain object as it's only argument. Most of the [built-in modifier functions](#domain-modifiers) return such functions.
+- A function argument will be called with the domain object as it's only argument. Most of the [built-in modifier functions](https://docs.dnscontrol.org/language-reference/domain-modifiers) return such functions.
 - An object argument will be merged into the domain's metadata collection.
 - An array argument will have all of it's members evaluated recursively. This allows you to combine multiple common records or modifiers into a variable that can
    be used like a macro in multiple domains.

@@ -6,7 +6,7 @@ parameter_types:
   ttl: Duration
 ---
 
-DefaultTTL sets the TTL for all records in a domain that do not explicitly set one with [TTL](#TTL). If neither `DefaultTTL` or `TTL` exist for a record,
+DefaultTTL sets the TTL for all records in a domain that do not explicitly set one with [TTL](../record/TTL.md). If neither `DefaultTTL` or `TTL` exist for a record,
 it will use the DNSControl global default of 300 seconds.
 
 ```javascript
@@ -17,5 +17,5 @@ D('example.com', REGISTRAR, DnsProvider('R53'),
 );
 ```
 
-The DefaultTTL duration is the same format as [TTL](#TTL), an integer number of seconds
+The DefaultTTL duration is the same format as [TTL](../record/TTL.md), an integer number of seconds
 or a string with a unit such as `'4d'`.

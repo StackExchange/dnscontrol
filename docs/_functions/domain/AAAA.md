@@ -14,7 +14,7 @@ AAAA adds an AAAA record To a domain. The name should be the relative label for 
 
 The address should be an IPv6 address as a string.
 
-Modifiers can be any number of [record modifiers](#record-modifiers) or JSON objects, which will be merged into the record's metadata.
+Modifiers can be any number of [record modifiers](https://docs.dnscontrol.org/language-reference/record-modifiers) or JSON objects, which will be merged into the record's metadata.
 
 ```javascript
 var addrV6 = "2001:0db8:85a3:0000:0000:8a2e:0370:7334"
