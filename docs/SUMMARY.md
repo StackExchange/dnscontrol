@@ -133,7 +133,6 @@
 * [CLI variables](cli-variables.md)
 * [Nameservers and Delegations](nameservers.md)
 * [Notifications](notifications.md)
-* [Unit Testing DNS Data](unittests.md)
 * [Useful code tricks](code-tricks.md)
 * [Why CNAME/MX/NS targets require a "dot"](why-the-dot.md)
 
@@ -146,5 +145,6 @@
 * [Writing new DNS providers](writing-providers.md)
 * [Creating new DNS Resource Types (rtypes)](adding-new-rtypes.md)
 * [TXT record testing](testing-txt-records.md)
+* [Unit Testing DNS Data](unittests.md)
 * [Releases](https://github.com/StackExchange/dnscontrol/releases/latest)
 * [DNSControl is an opinionated system](opinions.md)
