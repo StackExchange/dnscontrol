@@ -26,7 +26,7 @@ Starting in [v3.16](v316.md), "provider" is optional.  If it is omitted (or the 
 
 Starting in v4.0, the "provider" argument is expected to go away.
 
-EXAMPLES:
+## Examples
 
 ```shell
 dnscontrol check-creds myr53 ROUTE53
