@@ -7,7 +7,9 @@ parameters:
 ts_ignore: true
 ---
 
+{% hint style="warning" %}
 Don't use this feature. It was added for a very specific situation at Stack Overflow.
+{% endhint %}
 
 `IMPORT_TRANSFORM` adds to the domain all the records from another
 domain, after making certain transformations and resetting the TTL.
