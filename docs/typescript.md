@@ -1,9 +1,11 @@
 ---
 layout: default
-title: Using TypeScript with DNSControl
+title: '[EXPERIMENTAL] Using TypeScript with DNSControl'
 ---
 
-# Using TypeScript with DNSControl
+# [EXPERIMENTAL] Using TypeScript with DNSControl
+
+> **NOTE**: This feature is currently experimental. Type information may change in future releases, and any release (even a patch release) could introduce new type-checking errors into your `dnsconfig.js` file. If you plan to use TypeScript, please file bug reports for any issues you encounter, and avoid manually running type-checking as part of your deployment process until the “experimental” label is removed.
 
 While DNSControl does not support TypeScript syntax in `dnsconfig.js`, you can still use TypeScript’s features in editors which support it (including Visual Studio Code). To set up TypeScript support in Visual Studio Code, follow these steps:
 First, you’ll need to grab the `dnscontrol.d.ts` file corresponding to your version of DNSControl. You can manually download this file off of GitHub, or you can use the following command:

@@ -1,3 +1,5 @@
+// WARNING: These type definitions are experimental and subject to change in future releases.
+
 interface Domain {
     name: string;
     subdomain: string;

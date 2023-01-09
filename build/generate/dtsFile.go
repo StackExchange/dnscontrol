@@ -12,7 +12,9 @@ func generateDTSFile(funcs string) error {
 		"others",
 	}
 
-	combined := []string{}
+	combined := []string{
+		"// WARNING: These type definitions are experimental and subject to change in future releases.",
+	}
 	for _, name := range names {
 		content, err := os.ReadFile(join("types", "src", name+".d.ts"))
 		if err != nil {

@@ -14,7 +14,7 @@ var _ = cmd(catUtils, func() *cli.Command {
 	var args TypesArgs
 	return &cli.Command{
 		Name:  "write-types",
-		Usage: "Write a TypeScript declaration file in the current directory",
+		Usage: "[BETA] Write a TypeScript declaration file in the current directory",
 		Action: func(c *cli.Context) error {
 			return exit(WriteTypes(args))
 		},
