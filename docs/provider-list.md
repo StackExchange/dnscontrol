@@ -14,11 +14,6 @@ the feature has not been investigated and implemented yet. If a feature you need
 a provider that supports it, we'd love your contribution to ensure it works correctly and add it to this matrix.
 
 If a feature is definitively not supported for whatever reason, we would also like a PR to clarify why it is not supported, and fill in this entire matrix.
-<br/>
-<br/>
-
-{% include matrix.html %}
-
 
 ### Providers with "official support"
 
