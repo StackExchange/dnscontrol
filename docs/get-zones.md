@@ -69,7 +69,7 @@ provider: The name of the provider (second parameter to NewDnsProvider() in dnsc
 zone:     One or more zones (domains) to download; or "all".
 ```
 
-As of v3.16, `provider` can be `-` to indicate that the provider name is listed in `creds.json` in the `TYPE` field. Doing this will be backwards compatible with an (otherwise) breaking change due in v4.0.
+As of [v3.16](v316.md), `provider` can be `-` to indicate that the provider name is listed in `creds.json` in the `TYPE` field. Doing this will be backwards compatible with an (otherwise) breaking change due in v4.0.
 
 As of v4.0 (BREAKING CHANGE), you must not specify `provider`.  That value is found in the `TYPE` field of the credkey's `creds.json` file.  For backwards compatibility, if the first `zone` is `-`, it will be skipped.
 
@@ -103,7 +103,7 @@ dnscontrol get-zones --format=tsv bind BIND example.com
 dnscontrol get-zones --format=djs --out=draft.js glcoud GCLOUD example.com
 ```
 
-As of v3.16:
+As of [v3.16](v316.md):
 
 ```shell
 # NOTE: When "-" appears as the 2nd argument, it is assumed that the

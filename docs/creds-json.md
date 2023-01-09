@@ -50,11 +50,11 @@ Here's a sample file:
 The special subkey "TYPE" is used to indicate the provider type (NONE,
 CLOUDFLAREAPI, GCLOUD, etc).
 
-Prior to v3.16, the provider type is specified as the second argument
+Prior to [v3.16](v316.md), the provider type is specified as the second argument
 to `NewRegistrar()` and `NewDnsProvider()` in `dnsconfig.js` or as a
 command-line argument in tools such as `dnscontrol get-zones`.
 
-Starting in v3.16, `NewRegistrar()`, and `NewDnsProvider()` no longer
+Starting in [v3.16](v316.md), `NewRegistrar()`, and `NewDnsProvider()` no longer
 require the provider type to be specified. It may be specified for
 backwards compatibility, but a warning will be generated with a
 suggestion of how to upgrade to the 4.0 format.  Likewise,
@@ -132,7 +132,7 @@ Examples:
 ```
 {% endcode %}
 
-Starting with v3.16 use of an OLD format will trigger warnings with suggestions on how to adopt the NEW format.
+Starting with [v3.16](v316.md) use of an OLD format will trigger warnings with suggestions on how to adopt the NEW format.
 
 Starting with v4.0 support for the OLD format may be reported as an error.
 
