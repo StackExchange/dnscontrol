@@ -45,14 +45,14 @@
     * Service Provider specific
         * Akamai Edge Dns
             * [AKAMAICDN](_functions/domain/AKAMAICDN.md)
+        * Amazon Route 53
+            * [R53_ALIAS](_functions/domain/R53_ALIAS.md)
         * Azure DNS
             * [AZURE_ALIAS](_functions/domain/AZURE_ALIAS.md)
         * Cloudflare DNS
             * [CF_REDIRECT](_functions/domain/CF_REDIRECT.md)
             * [CF_TEMP_REDIRECT](_functions/domain/CF_TEMP_REDIRECT.md)
             * [CF_WORKER_ROUTE](_functions/domain/CF_WORKER_ROUTE.md)
-        * Amazon Route 53
-            * [R53_ALIAS](_functions/domain/R53_ALIAS.md)
 * Record Modifiers
     * [CAA_BUILDER](_functions/record/CAA_BUILDER.md)
     * [DMARC_BUILDER](_functions/record/DMARC_BUILDER.md)
