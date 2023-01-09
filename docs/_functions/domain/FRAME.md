@@ -10,4 +10,6 @@ parameter_types:
   "modifiers...": RecordModifier[]
 ---
 
+{% hint style="info" %}
 Documentation needed.
+{% endhint %}
