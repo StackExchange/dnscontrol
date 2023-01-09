@@ -65,7 +65,9 @@ D("example.tld", REG_NAMECOM, DnsProvider(DSP_R53),
 );
 ```
 
-{% include alert.html text="Note: name.com does not allow control over the NS records of your zones via the api. It is not recommended to use name.com's dns provider unless it is your only dns host." %}
+{% hint style="info" %}
+**NOTE**: name.com does not allow control over the NS records of your zones via the api. It is not recommended to use name.com's dns provider unless it is your only dns host.
+{% endhint %}
 
 ## Activation
 In order to activate API functionality on your Name.com account, you must apply to the API program. The application form is [located here](https://www.name.com/reseller/apply). It usually takes a few days to get a response. After you are accepted, you should receive your API token via email.

@@ -270,4 +270,6 @@ DOMAIN_ELSEWHERE_AUTO("example2.com", REG_NAMECOM, DNS_GOOGLE);
 
 # Limits
 
-{% include alert.html text="Note: Not all providers allow full control over the NS records of your zone. It is not recommended to use these providers in complicated scenarios such as hosting across multiple providers. See individual provider docs for more info." %}
+{% hint style="info" %}
+**NOTE**: Not all providers allow full control over the NS records of your zone. It is not recommended to use these providers in complicated scenarios such as hosting across multiple providers. See individual provider docs for more info.
+{% endhint %}
