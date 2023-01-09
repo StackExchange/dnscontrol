@@ -9,10 +9,10 @@ While DNSControl does not support TypeScript syntax in `dnsconfig.js`, you can s
 First, you’ll need to grab the `dnscontrol.d.ts` file corresponding to your version of DNSControl. You can manually download this file off of GitHub, or you can use the following command:
 
 ```bash
-dnscontrol types
+dnscontrol write-types
 ```
 
-When run, `dnscontrol types` will create a `dnscontrol.d.ts` file in the current directory, overwriting an existing file if it exists. The file will use the type information corresponding to the current version of `dnscontrol`, so you can be confident that everything in the type declarations are consistent with DNSControl functionality. That does mean that you should re-run `dnscontrol types` when you update DNSControl, though!
+When run, `dnscontrol write-types` will create a `dnscontrol.d.ts` file in the current directory, overwriting an existing file if it exists. The file will use the type information corresponding to the current version of `dnscontrol`, so you can be confident that everything in the type declarations are consistent with DNSControl functionality. That does mean that you should re-run `dnscontrol write-types` when you update DNSControl, though!
 
 That should be all you need to do! If you’re using VS Code (or another editor that supports TypeScript), you should now be able to see the type information in your `dnsconfig.js` file as you type. Hover over record names to read their documentation without having to open the website!
 
