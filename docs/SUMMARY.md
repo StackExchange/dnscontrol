@@ -124,9 +124,9 @@
 ## Commands
 
 * [creds.json](creds-json.md)
-* [Check-Creds subcommand](check-creds.md)
-* [Get-Zones subcommand](get-zones.md)
-* [Let's Encrypt Certificate generation](get-certs.md)
+* [check-creds](check-creds.md)
+* [get-certs](get-certs.md)
+* [get-zones](get-zones.md)
 
 ## Advanced features
 
