@@ -76,6 +76,7 @@
     * [getConfiguredDomains](_functions/global/getConfiguredDomains.md)
     * [require](_functions/global/require.md)
     * [require_glob](_functions/global/require_glob.md)
+* [Why CNAME/MX/NS targets require a "dot"](why-the-dot.md)
 
 ## Service Providers
 
@@ -134,7 +135,6 @@
 * [Nameservers and Delegations](nameservers.md)
 * [Notifications](notifications.md)
 * [Useful code tricks](code-tricks.md)
-* [Why CNAME/MX/NS targets require a "dot"](why-the-dot.md)
 
 ## Developer info
 
