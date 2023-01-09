@@ -140,11 +140,15 @@
 
 * [ALIAS Records](alias.md)
 * [Bug Triage Process](bug-triage.md)
-* [How to build and ship a release](release-engineering.md)
 * [Bring-Your-Own-Secrets for automated testing](byo-secrets.md)
 * [Writing new DNS providers](writing-providers.md)
 * [Creating new DNS Resource Types (rtypes)](adding-new-rtypes.md)
 * [TXT record testing](testing-txt-records.md)
 * [Unit Testing DNS Data](unittests.md)
-* [Releases](https://github.com/StackExchange/dnscontrol/releases/latest)
 * [DNSControl is an opinionated system](opinions.md)
+
+## Release
+
+* [How to build and ship a release](release-engineering.md)
+* [Changelog v3.16.0](v316.md)
+* [GitHub releases](https://github.com/StackExchange/dnscontrol/releases/latest)
