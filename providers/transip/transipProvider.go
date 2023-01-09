@@ -133,30 +133,23 @@ func (n *transipProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*mode
 				return nil, err
 			}
 
-			// TransIP identifies records by (Label, TTL Type), we can only update it if only the contents
-			// has changed. Otherwise we delete the old record and create the new one
-			if canUpdateDNSEntry(mod.Desired, mod.Existing) {
-				corrections = append(corrections, &models.Correction{
-					Msg: mod.String(),
-					F:   func() error { return n.domains.UpdateDNSEntry(dc.Name, targetEntry) },
-				})
-			} else {
-				oldEntry, err := recordToNative(mod.Existing)
-				if err != nil {
-					return nil, err
-				}
-
-				corrections = append(corrections,
-					&models.Correction{
-						Msg: mod.String() + "[1/2]",
-						F:   func() error { return n.domains.RemoveDNSEntry(dc.Name, oldEntry) },
-					},
-					&models.Correction{
-						Msg: mod.String() + "[2/2]",
-						F:   func() error { return n.domains.AddDNSEntry(dc.Name, targetEntry) },
-					},
-				)
+			// TransIP identifies records by (Label, TTL Type), we can only update it if only the contents has changed and there exists no records with the same name.
+			// In diff2 this is solved by diffing against the recordset for the old diff mechanism we always remove the record and re-add it.
+			oldEntry, err := recordToNative(mod.Existing)
+			if err != nil {
+				return nil, err
 			}
+
+			corrections = append(corrections,
+				&models.Correction{
+					Msg: mod.String() + "[1/2]",
+					F:   func() error { return n.domains.RemoveDNSEntry(dc.Name, oldEntry) },
+				},
+				&models.Correction{
+					Msg: mod.String() + "[2/2]",
+					F:   func() error { return n.domains.AddDNSEntry(dc.Name, targetEntry) },
+				},
+			)
 
 		}
 
