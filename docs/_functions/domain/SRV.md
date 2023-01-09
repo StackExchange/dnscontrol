@@ -20,7 +20,6 @@ parameter_types:
 
 Priority, weight, and port are ints.
 
-{% capture example %}
 ```javascript
 D("example.com", REGISTRAR, DnsProvider("GCLOUD"),
   // Create SRV records for a a SIP service:
@@ -29,6 +28,3 @@ D("example.com", REGISTRAR, DnsProvider("GCLOUD"),
   SRV('_sip._tcp', 10, 20, 5060, 'smallbox1.example.tld.'),
 );
 ```
-{% endcapture %}
-
-{% include example.html content=example %}

@@ -24,7 +24,6 @@ You wouldn't want to maintain bar.com manually, would you?  It would
 be very error prone. Therefore instead you maintain foo.com and
 let `IMPORT_TRANSFORM` automatically generate bar.com.
 
-{% capture example %}
 ```text
 foo.com:
     one.foo.com.    IN A 1.2.3.1
@@ -39,13 +38,9 @@ bar.com:
     three.foo.com.bar.com.  IN A 123.123.123.113
     four.foo.com.bar.com.   IN A 123.123.123.114
 ```
-{% endcapture %}
-
-{% include example.html content=example %}
 
 Here's how you'd implement this in DNSControl:
 
-{% capture example %}
 ```javascript
 var TRANSFORM_INT = [
     // RANGE_START, RANGE_END, NEW_BASE
@@ -65,9 +60,6 @@ D("bar.com", .... ,
   IMPORT_TRANSFORM(TRANSFORM_INT, 'foo.com', 300),
 );
 ```
-{% endcapture %}
-
-{% include example.html content=example %}
 
 Transform rules are: RANGE_START, RANGE_END, NEW_BASE.  NEW_BASE may be:
 

@@ -12,30 +12,21 @@ These three examples all are equivalent.
 
 PURGE is the default:
 
-{% capture example %}
 ```javascript
 D("example.com", .... ,
 );
 ```
-{% endcapture %}
-
-{% include example.html content=example %}
 
 Purge is the default, but we set it anyway:
 
-{% capture example %}
 ```javascript
 D("example.com", .... ,
   PURGE,
 );
 ```
-{% endcapture %}
-
-{% include example.html content=example %}
 
 Since the "last command wins", this is the same as `PURGE`:
 
-{% capture example %}
 ```javascript
 D("example.com", .... ,
   PURGE,
@@ -45,6 +36,3 @@ D("example.com", .... ,
   PURGE,
 );
 ```
-{% endcapture %}
-
-{% include example.html content=example %}

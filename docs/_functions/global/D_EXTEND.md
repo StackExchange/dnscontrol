@@ -32,7 +32,6 @@ Some operators only act on an apex domain (e.g.
 `CF_REDIRECT` and `CF_TEMP_REDIRECT`). Using them
 in a `D_EXTEND` subdomain may not be what you expect.
 
-{% capture example %}
 ```javascript
 D("domain.tld", REG, DnsProvider(DNS),
   A("@", "127.0.0.1"), // domain.tld
@@ -77,9 +76,6 @@ This will end up in the following modifications: (This output assumes the `--ver
 #11: CREATE CNAME g.sub.sub.domain.tld h.sub.sub.domain.tld.
 #12: CREATE CNAME i.sub.domain.tld j.sub.domain.tld.
 ```
-{% endcapture %}
-
-{% include example.html content=example %}
 
 ProTips: `D_EXTEND()` permits you to create very complex and
 sophisticated configurations, but you shouldn't. Be nice to the next

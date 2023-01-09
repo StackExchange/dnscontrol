@@ -16,7 +16,6 @@ The address should be an ip address, either a string, or a numeric value obtaine
 
 Modifiers can be any number of [record modifiers](#record-modifiers) or JSON objects, which will be merged into the record's metadata.
 
-{% capture example %}
 ```javascript
 D("example.com", REGISTRAR, DnsProvider("R53"),
   A("@", "1.2.3.4"),
@@ -25,6 +24,3 @@ D("example.com", REGISTRAR, DnsProvider("R53"),
   A("*", "1.2.3.4", {foo: 42})
 );
 ```
-{% endcapture %}
-
-{% include example.html content=example %}

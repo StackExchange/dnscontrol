@@ -22,15 +22,11 @@ parameter_types:
 
 `SOA` adds an `SOA` record to a domain. The name should be `@`.  ns and mbox are strings. The other fields are unsigned 32-bit ints.
 
-{% capture example %}
 ```javascript
 D("example.com", REG_THIRDPARTY, DnsProvider("DNS_BIND"),
   SOA("@", "ns3.example.org.", "hostmaster.example.org.", 3600, 600, 604800, 1440),
 );
 ```
-{% endcapture %}
-
-{% include example.html content=example %}
 
 ## Notes:
 

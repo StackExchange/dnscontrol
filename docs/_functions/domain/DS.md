@@ -26,12 +26,8 @@ Digest Type must be a number.
 
 Digest must be a string.
 
-{% capture example %}
 ```javascript
 D("example.com", REGISTRAR, DnsProvider(R53),
   DS("example.com", 2371, 13, 2, "ABCDEF")
 );
 ```
-{% endcapture %}
-
-{% include example.html content=example %}

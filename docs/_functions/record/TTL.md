@@ -24,7 +24,6 @@ The value can be:
     * If no unit is specified, the default is seconds.
   * We highly recommend using units instead of the number of seconds. Would your coworkers understand your intention better if you wrote `14400` or `'4h'`?
 
-{% capture example %}
 ```javascript
 D('example.com', REGISTRAR, DnsProvider('R53'),
   DefaultTTL(2000),
@@ -34,6 +33,3 @@ D('example.com', REGISTRAR, DnsProvider('R53'),
   A('demo2', '3.4.5.12', TTL('5w')),  // 5 weeks
 );
 ```
-{% endcapture %}
-
-{% include example.html content=example %}

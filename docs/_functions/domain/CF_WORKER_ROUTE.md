@@ -25,13 +25,9 @@ backups and manually verifying `dnscontrol preview` output before running
 
 This example assigns the patterns `api.foo.com/*` and `foo.com/api/*` to a `my-worker` script:
 
-{% capture example %}
 ```javascript
 D("foo.com", .... ,
     CF_WORKER_ROUTE("api.foo.com/*", "my-worker"),
     CF_WORKER_ROUTE("foo.com/api/*", "my-worker"),
 );
 ```
-{% endcapture %}
-
-{% include example.html content=example %}

@@ -22,7 +22,6 @@ will be done for you.
 
 Modifiers can be any number of [record modifiers](#record-modifiers) or JSON objects, which will be merged into the record's metadata.
 
-{% capture example %}
 ```javascript
     D("example.com", REGISTRAR, ....,
       TXT('@', '598611146-3338560'),
@@ -33,9 +32,6 @@ Modifiers can be any number of [record modifiers](#record-modifiers) or JSON obj
       TXT('long', 'X'.repeat(300)) // Long strings are split automatically.
     );
 ```
-{% endcapture %}
-
-{% include example.html content=example %}
 
 {% hint style="info" %}
 **NOTE**: In the past, long strings had to be annotated with the keyword

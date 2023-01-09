@@ -15,15 +15,11 @@ zone, but otherwise leave the zone alone.  Changes to "foo"'s IP
 address will update the record. Removing the A("foo", ...) record
 from DNSControl will leave the record in place.
 
-{% capture example %}
 ```javascript
 D("example.com", .... , NO_PURGE,
   A("foo","1.2.3.4")
 );
 ```
-{% endcapture %}
-
-{% include example.html content=example %}
 
 The main caveat of NO_PURGE is that intentionally deleting records
 becomes more difficult. Suppose a NO_PURGE zone has an record such

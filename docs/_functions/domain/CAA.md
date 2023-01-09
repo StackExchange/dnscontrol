@@ -24,7 +24,6 @@ Flags are controlled by modifier:
 
 CAA record is supported only by BIND, Google Cloud DNS, Amazon Route 53 and OVH. Some certificate authorities may not support this record until the mandatory date of September 2017.
 
-{% capture example %}
 ```javascript
 D("example.com", REGISTRAR, DnsProvider("GCLOUD"),
   // Allow letsencrypt to issue certificate for this domain
@@ -36,6 +35,3 @@ D("example.com", REGISTRAR, DnsProvider("GCLOUD"),
   CAA("@", "iodef", "mailto:test@example.com", CAA_CRITICAL)
 );
 ```
-{% endcapture %}
-
-{% include example.html content=example %}

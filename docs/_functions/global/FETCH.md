@@ -20,7 +20,6 @@ Otherwise the syntax of `FETCH` is the same as `fetch`.
 > 1. Relying on external sources adds a point of failure. If the external source doesn't work, your script won't either. Please make sure you are aware of the consequences.
 > 2. Make sure DNSControl only uses verified configuration if you want to use `FETCH`. For example, an attacker can send Pull Requests to your config repo, and have your CI test malicious configurations and make arbitrary HTTP requests. Therefore, `FETCH` must be explicitly enabled with flag `--allow-fetch` on DNSControl invocation.
 
-{% capture example %}
 ```javascript
 var REG_NONE = NewRegistrar('none');
 var DNS_BIND = NewDnsProvider('bind');
@@ -43,6 +42,3 @@ FETCH('https://example.com', {
   ]);
 });
 ```
-{% endcapture %}
-
-{% include example.html content=example %}

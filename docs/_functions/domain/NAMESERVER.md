@@ -20,7 +20,6 @@ delegations. `NAMESERVER()` is for informing upstream delegations.
 
 For more information, refer to [this page](../../nameservers.md).
 
-{% capture example %}
 ```javascript
 D("example.com", REGISTRAR, .... ,
   DnsProvider(route53, 0),
@@ -35,9 +34,6 @@ D("example2.com", REGISTRAR, .... ,
   NAMESERVER("ns2.myserver.com."),
 );
 ```
-{% endcapture %}
-
-{% include example.html content=example %}
 
 
 # The difference between NS() and NAMESERVER()
