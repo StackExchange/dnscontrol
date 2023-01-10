@@ -8,7 +8,7 @@ parameters:
 
 PTR adds a PTR record to the domain.
 
-The name is normally a the relative label for the domain, or a FQDN that ends with `.`.  If magic mode is enabled (see below) it can also be an IP address, which will be replaced by the proper string automatically, thus
+The name is normally a relative label for the domain, or a FQDN that ends with `.`.  If magic mode is enabled (see below) it can also be an IP address, which will be replaced by the proper string automatically, thus
 saving the user from having to reverse the IP address manually.
 
 Target should be a string representing the FQDN of a host.  Like all FQDNs in DNSControl, it must end with a `.`.
@@ -56,8 +56,8 @@ and A, B, C are the first 3 octets of the IP address. For example
 `172.20.18.130/27` is located in a zone named
 `128/27.18.20.172.in-addr.arpa`
 
-{% include startExample.html %}
-{% highlight js %}
+{% capture example %}
+```js
 D(REV('1.2.3.0/24'), REGISTRAR, DnsProvider(BIND),
   PTR('1', 'foo.example.com.'),
   PTR('2', 'bar.example.com.'),
@@ -76,9 +76,10 @@ D(REV('2001:db8:302::/48'), REGISTRAR, DnsProvider(BIND),
   PTR('2001:db8:302::2', 'two.example.com.'),                          // '2.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0'
   PTR('2001:db8:302::3', 'three.example.com.'),                        // '3.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0'
 );
+```
+{% endcapture %}
 
-{%endhighlight%}
-{% include endExample.html %}
+{% include example.html content=example %}
 
 In the future we plan on adding a flag to `A()` which will insert
 the correct PTR() record if the appropriate `.arpa` domain has been

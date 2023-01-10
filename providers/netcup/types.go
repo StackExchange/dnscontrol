@@ -72,7 +72,7 @@ type responseLogin struct {
 }
 
 func toRecordConfig(domain string, r *record) *models.RecordConfig {
-	priority, _ := strconv.ParseUint(r.Priority, 10, 32)
+	priority, _ := strconv.ParseUint(r.Priority, 10, 16)
 
 	rc := &models.RecordConfig{
 		Type:         r.Type,
@@ -101,7 +101,7 @@ func toRecordConfig(domain string, r *record) *models.RecordConfig {
 		_ = rc.SetTarget(parts[3])
 	case "CAA":
 		parts := strings.Split(r.Destination, " ")
-		caaFlag, _ := strconv.ParseUint(parts[0], 10, 32)
+		caaFlag, _ := strconv.ParseUint(parts[0], 10, 8)
 		rc.CaaFlag = uint8(caaFlag)
 		rc.CaaTag = parts[1]
 		_ = rc.SetTarget(strings.Trim(parts[2], "\""))
@@ -124,21 +124,21 @@ func fromRecordConfig(in *models.RecordConfig) *record {
 	switch rc.Type { // #rtype_variations
 	case "A", "AAAA", "PTR", "TXT", "SOA", "ALIAS":
 		// Nothing special.
+	case "CAA":
+		rc.Destination = strconv.Itoa(int(in.CaaFlag)) + " " + in.CaaTag + " \"" + in.GetTargetField() + "\""
 	case "CNAME":
 		rc.Destination = strings.TrimSuffix(in.GetTargetField(), ".")
-	case "NS":
-		return nil // API ignores NS records
 	case "MX":
 		rc.Destination = strings.TrimSuffix(in.GetTargetField(), ".")
 		rc.Priority = strconv.Itoa(int(in.MxPreference))
+	case "NS":
+		return nil // API ignores NS records
 	case "SRV":
-		rc.Destination = strconv.Itoa(int(in.SrvPriority)) + " " + strconv.Itoa(int(in.SrvWeight)) + " " + strconv.Itoa(int(in.SrvPort)) + " " + in.Target
-	case "CAA":
-		rc.Destination = strconv.Itoa(int(in.CaaFlag)) + " " + in.CaaTag + " \"" + in.GetTargetField() + "\""
-	case "TLSA":
-		rc.Destination = strconv.Itoa(int(in.TlsaUsage)) + " " + strconv.Itoa(int(in.TlsaSelector)) + " " + strconv.Itoa(int(in.TlsaMatchingType))
+		rc.Destination = strconv.Itoa(int(in.SrvPriority)) + " " + strconv.Itoa(int(in.SrvWeight)) + " " + strconv.Itoa(int(in.SrvPort)) + " " + in.GetTargetField()
 	case "SSHFP":
 		rc.Destination = strconv.Itoa(int(in.SshfpAlgorithm)) + " " + strconv.Itoa(int(in.SshfpFingerprint))
+	case "TLSA":
+		rc.Destination = strconv.Itoa(int(in.TlsaUsage)) + " " + strconv.Itoa(int(in.TlsaSelector)) + " " + strconv.Itoa(int(in.TlsaMatchingType))
 	default:
 		msg := fmt.Sprintf("ClouDNS.toReq rtype %v unimplemented", rc.Type)
 		panic(msg)

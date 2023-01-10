@@ -1,71 +1,167 @@
 module github.com/StackExchange/dnscontrol/v3
 
-go 1.14
+go 1.18
+
+require gopkg.in/yaml.v3 v3.0.1 // indirect
 
 require (
-	cloud.google.com/go v0.69.1 // indirect
-	github.com/Azure/azure-sdk-for-go v47.0.0+incompatible
-	github.com/Azure/go-autorest/autorest v0.11.10 // indirect
-	github.com/Azure/go-autorest/autorest/azure/auth v0.5.3
+	github.com/Azure/azure-sdk-for-go/sdk/azidentity v1.2.0
+	github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/dns/armdns v1.0.0
 	github.com/Azure/go-autorest/autorest/to v0.4.0
-	github.com/DisposaBoy/JsonConfigReader v0.0.0-20171218180944-5ea4d0ddac55
-	github.com/PuerkitoBio/goquery v1.6.0
-	github.com/TomOnTime/utfutil v0.0.0-20200626160131-0b0178852c8f
+	github.com/DisposaBoy/JsonConfigReader v0.0.0-20201129172854-99cf318d67e7
+	github.com/PuerkitoBio/goquery v1.8.0
+	github.com/TomOnTime/utfutil v0.0.0-20210710122150-437f72b26edf
+	github.com/akamai/AkamaiOPEN-edgegrid-golang v1.2.1
 	github.com/andreyvit/diff v0.0.0-20170406064948-c7f18ee00883
-	github.com/andybalholm/cascadia v1.2.0 // indirect
-	github.com/aws/aws-sdk-go v1.35.9
-	github.com/babolivier/go-doh-client v0.0.0-20200723140836-2f86c709ac4a
-	github.com/billputer/go-namecheap v0.0.0-20170915210158-0c7adb0710f8
-	github.com/cenkalti/backoff v2.1.1+incompatible // indirect
-	github.com/cpuguy83/go-md2man/v2 v2.0.0 // indirect
-	github.com/digitalocean/godo v1.52.0
-	github.com/dnsimple/dnsimple-go v0.62.0
-	github.com/exoscale/egoscale v0.23.0
+	github.com/aws/aws-sdk-go-v2 v1.17.3
+	github.com/aws/aws-sdk-go-v2/config v1.18.7
+	github.com/aws/aws-sdk-go-v2/credentials v1.13.7
+	github.com/aws/aws-sdk-go-v2/service/route53 v1.25.2
+	github.com/aws/aws-sdk-go-v2/service/route53domains v1.13.0
+	github.com/babolivier/go-doh-client v0.0.0-20201028162107-a76cff4cb8b6
+	github.com/bhendo/go-powershell v0.0.0-20190719160123-219e7fb4e41e
+	github.com/billputer/go-namecheap v0.0.0-20210108011502-994a912fb7f9
+	github.com/cloudflare/cloudflare-go v0.55.0
+	github.com/digitalocean/godo v1.93.0
+	github.com/ditashi/jsbeautifier-go v0.0.0-20141206144643-2520a8026a9c
+	github.com/dnsimple/dnsimple-go v1.0.0
+	github.com/exoscale/egoscale v0.90.2
 	github.com/go-acme/lego v2.7.2+incompatible
-	github.com/go-gandi/go-gandi v0.0.0-20200921091836-0d8a64b9cc09
+	github.com/go-gandi/go-gandi v0.6.0
 	github.com/gobwas/glob v0.2.4-0.20181002190808-e7a84e9525fe
-	github.com/golang/protobuf v1.4.3 // indirect
-	github.com/google/go-github v17.0.0+incompatible
-	github.com/google/go-querystring v1.0.1-0.20190318165438-c8c88dbee036 // indirect
+	github.com/google/go-github/v35 v35.3.0
 	github.com/gopherjs/jquery v0.0.0-20191017083323-73f4c7416038
-	github.com/hashicorp/vault/api v1.0.4
-	github.com/hexonet/go-sdk v3.5.0+incompatible
-	github.com/jarcoal/httpmock v1.0.4 // indirect
-	github.com/kr/text v0.2.0 // indirect
-	github.com/miekg/dns v1.1.34
-	github.com/mittwald/go-powerdns v0.5.2
-	github.com/mjibson/esc v0.2.0
+	github.com/hashicorp/vault/api v1.8.2
+	github.com/hexonet/go-sdk/v3 v3.5.4
+	github.com/jarcoal/httpmock v1.0.8 // indirect
+	github.com/jinzhu/copier v0.3.5
+	github.com/miekg/dns v1.1.50
+	github.com/mittwald/go-powerdns v0.6.2
 	github.com/namedotcom/go v0.0.0-20180403034216-08470befbe04
-	github.com/niemeyer/pretty v0.0.0-20200227124842-a10e7caefd8e // indirect
 	github.com/nrdcg/goinwx v0.8.1
-	github.com/ovh/go-ovh v0.0.0-20181109152953-ba5adb4cf014
+	github.com/oracle/oci-go-sdk/v32 v32.0.0
+	github.com/ovh/go-ovh v1.1.0
 	github.com/philhug/opensrs-go v0.0.0-20171126225031-9dfa7433020d
 	github.com/pkg/errors v0.9.1
-	github.com/pquerna/otp v1.2.0
-	github.com/renier/xmlrpc v0.0.0-20170708154548-ce4a1a486c03 // indirect
-	github.com/robertkrimen/otto v0.0.0-20200922221731-ef014fd054ac
-	github.com/sergi/go-diff v1.1.0 // indirect
-	github.com/smartystreets/goconvey v0.0.0-20190330032615-68dc04aab96a // indirect
-	github.com/softlayer/softlayer-go v0.0.0-20170804160555-5e1c8cccc730
-	github.com/stretchr/testify v1.6.1
-	github.com/tdewolff/minify v2.3.6+incompatible
-	github.com/tdewolff/parse v2.3.4+incompatible // indirect
-	github.com/tdewolff/test v1.0.6 // indirect
-	github.com/urfave/cli/v2 v2.2.0
-	github.com/vultr/govultr v1.0.0
-	golang.org/x/crypto v0.0.0-20201016220609-9e8e0b390897 // indirect
-	golang.org/x/net v0.0.0-20201110031124-69a78807bb2b
-	golang.org/x/oauth2 v0.0.0-20201109201403-9fd604954f58
-	golang.org/x/sync v0.0.0-20201008141435-b3e1573b7520 // indirect
-	golang.org/x/sys v0.0.0-20201018121011-98379d014ca7 // indirect
-	golang.org/x/tools v0.0.0-20201017001424-6003fad69a88 // indirect
-	google.golang.org/api v0.33.0
+	github.com/pquerna/otp v1.4.0
+	github.com/qdm12/reprint v0.0.0-20200326205758-722754a53494
+	github.com/robertkrimen/otto v0.2.1
+	github.com/softlayer/softlayer-go v1.0.6
+	github.com/stretchr/testify v1.8.1
+	github.com/transip/gotransip/v6 v6.17.0
+	github.com/urfave/cli/v2 v2.23.7
+	github.com/xddxdd/ottoext v0.0.0-20221109171055-210517fa4419
+	golang.org/x/net v0.4.0
+	golang.org/x/oauth2 v0.3.0
+	google.golang.org/api v0.105.0
+	gopkg.in/ns1/ns1-go.v2 v2.7.2
+)
+
+require (
+	github.com/G-Core/gcore-dns-sdk-go v0.2.3
+	github.com/google/shlex v0.0.0-20191202100458-e7afc7fbc510
+	github.com/kylelemons/godebug v1.1.0
+	github.com/mattn/go-isatty v0.0.17
+	github.com/vultr/govultr/v2 v2.17.2
+	golang.org/x/exp v0.0.0-20221230185412-738e83a70c30
+)
+
+require (
+	cloud.google.com/go/compute v1.13.0 // indirect
+	cloud.google.com/go/compute/metadata v0.2.2 // indirect
+	github.com/Azure/azure-sdk-for-go/sdk/azcore v1.0.0 // indirect
+	github.com/Azure/azure-sdk-for-go/sdk/internal v1.0.0 // indirect
+	github.com/Azure/go-autorest v14.2.0+incompatible // indirect
+	github.com/AzureAD/microsoft-authentication-library-for-go v0.7.0 // indirect
+	github.com/andybalholm/cascadia v1.3.1 // indirect
+	github.com/armon/go-metrics v0.3.10 // indirect
+	github.com/armon/go-radix v1.0.0 // indirect
+	github.com/aws/aws-sdk-go-v2/feature/ec2/imds v1.12.21 // indirect
+	github.com/aws/aws-sdk-go-v2/internal/configsources v1.1.27 // indirect
+	github.com/aws/aws-sdk-go-v2/internal/endpoints/v2 v2.4.21 // indirect
+	github.com/aws/aws-sdk-go-v2/internal/ini v1.3.28 // indirect
+	github.com/aws/aws-sdk-go-v2/service/internal/presigned-url v1.9.21 // indirect
+	github.com/aws/aws-sdk-go-v2/service/sso v1.11.28 // indirect
+	github.com/aws/aws-sdk-go-v2/service/ssooidc v1.13.11 // indirect
+	github.com/aws/aws-sdk-go-v2/service/sts v1.17.7 // indirect
+	github.com/aws/smithy-go v1.13.5 // indirect
+	github.com/boombuler/barcode v1.0.1 // indirect
+	github.com/cenkalti/backoff v2.2.1+incompatible // indirect
+	github.com/cenkalti/backoff/v3 v3.0.0 // indirect
+	github.com/cpuguy83/go-md2man/v2 v2.0.2 // indirect
+	github.com/davecgh/go-spew v1.1.1 // indirect
+	github.com/deepmap/oapi-codegen v1.9.1 // indirect
+	github.com/fatih/color v1.13.0 // indirect
+	github.com/fatih/structs v1.1.0 // indirect
+	github.com/frankban/quicktest v1.14.3 // indirect
+	github.com/go-test/deep v1.0.3 // indirect
+	github.com/gofrs/uuid v4.0.0+incompatible // indirect
+	github.com/golang-jwt/jwt/v4 v4.4.2 // indirect
+	github.com/golang/groupcache v0.0.0-20210331224755-41bb18bfe9da // indirect
+	github.com/golang/protobuf v1.5.2 // indirect
+	github.com/golang/snappy v0.0.4 // indirect
+	github.com/google/go-querystring v1.1.0 // indirect
+	github.com/google/uuid v1.3.0 // indirect
+	github.com/googleapis/enterprise-certificate-proxy v0.2.0 // indirect
+	github.com/googleapis/gax-go/v2 v2.7.0 // indirect
+	github.com/gopherjs/gopherjs v1.17.2 // indirect
+	github.com/hashicorp/errwrap v1.1.0 // indirect
+	github.com/hashicorp/go-cleanhttp v0.5.2 // indirect
+	github.com/hashicorp/go-hclog v1.2.0 // indirect
+	github.com/hashicorp/go-immutable-radix v1.3.1 // indirect
+	github.com/hashicorp/go-multierror v1.1.1 // indirect
+	github.com/hashicorp/go-plugin v1.4.5 // indirect
+	github.com/hashicorp/go-retryablehttp v0.7.1 // indirect
+	github.com/hashicorp/go-rootcerts v1.0.2 // indirect
+	github.com/hashicorp/go-secure-stdlib/mlock v0.1.1 // indirect
+	github.com/hashicorp/go-secure-stdlib/parseutil v0.1.6 // indirect
+	github.com/hashicorp/go-secure-stdlib/strutil v0.1.2 // indirect
+	github.com/hashicorp/go-sockaddr v1.0.2 // indirect
+	github.com/hashicorp/go-uuid v1.0.3 // indirect
+	github.com/hashicorp/go-version v1.6.0 // indirect
+	github.com/hashicorp/golang-lru v0.5.4 // indirect
+	github.com/hashicorp/hcl v1.0.0 // indirect
+	github.com/hashicorp/vault/sdk v0.6.0 // indirect
+	github.com/hashicorp/yamux v0.0.0-20181012175058-2f1d1f20f75d // indirect
+	github.com/jhump/protoreflect v1.6.1 // indirect
+	github.com/jmespath/go-jmespath v0.4.0 // indirect
+	github.com/juju/errors v0.0.0-20200330140219-3fe23663418f // indirect
+	github.com/juju/testing v0.0.0-20210324180055-18c50b0c2098 // indirect
+	github.com/kolo/xmlrpc v0.0.0-20201022064351-38db28db192b // indirect
+	github.com/mattn/go-colorable v0.1.12 // indirect
+	github.com/mitchellh/copystructure v1.2.0 // indirect
+	github.com/mitchellh/go-homedir v1.1.0 // indirect
+	github.com/mitchellh/go-testing-interface v1.0.4 // indirect
+	github.com/mitchellh/mapstructure v1.5.0 // indirect
+	github.com/mitchellh/reflectwalk v1.0.2 // indirect
+	github.com/oklog/run v1.0.0 // indirect
+	github.com/patrickmn/go-cache v2.1.0+incompatible // indirect
+	github.com/peterhellberg/link v1.1.0 // indirect
+	github.com/pierrec/lz4 v2.6.0+incompatible // indirect
+	github.com/pkg/browser v0.0.0-20210115035449-ce105d075bb4 // indirect
+	github.com/pmezard/go-difflib v1.0.0 // indirect
+	github.com/russross/blackfriday/v2 v2.1.0 // indirect
+	github.com/ryanuber/go-glob v1.0.0 // indirect
+	github.com/sergi/go-diff v1.2.0 // indirect
+	github.com/sirupsen/logrus v1.9.0 // indirect
+	github.com/softlayer/xmlrpc v0.0.0-20200409220501-5f089df7cb7e // indirect
+	github.com/stretchr/objx v0.5.0 // indirect
+	github.com/xrash/smetrics v0.0.0-20201216005158-039620a65673 // indirect
+	go.opencensus.io v0.24.0 // indirect
+	go.uber.org/atomic v1.9.0 // indirect
+	golang.org/x/crypto v0.1.0 // indirect
+	golang.org/x/mod v0.6.0 // indirect
+	golang.org/x/sync v0.1.0 // indirect
+	golang.org/x/sys v0.3.0 // indirect
+	golang.org/x/text v0.5.0 // indirect
+	golang.org/x/time v0.0.0-20220922220347-f3bd1da661af // indirect
+	golang.org/x/tools v0.2.0 // indirect
 	google.golang.org/appengine v1.6.7 // indirect
-	google.golang.org/genproto v0.0.0-20201015140912-32ed001d685c // indirect
-	gopkg.in/check.v1 v1.0.0-20200227125254-8fa46927fb4f // indirect
-	gopkg.in/ini.v1 v1.42.0 // indirect
-	gopkg.in/ns1/ns1-go.v2 v2.0.0-20170502175150-c563826f4cbe
+	google.golang.org/genproto v0.0.0-20221206210731-b1a01be3a5f6 // indirect
+	google.golang.org/grpc v1.51.0 // indirect
+	google.golang.org/protobuf v1.28.1 // indirect
+	gopkg.in/ini.v1 v1.66.6 // indirect
 	gopkg.in/sourcemap.v1 v1.0.5 // indirect
-	gopkg.in/yaml.v2 v2.3.0
-	gopkg.in/yaml.v3 v3.0.0-20200605160147-a5ece683394c // indirect
+	gopkg.in/square/go-jose.v2 v2.5.1 // indirect
+	moul.io/http2curl v1.0.0 // indirect
 )

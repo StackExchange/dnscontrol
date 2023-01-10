@@ -5,7 +5,7 @@ import (
 	"crypto/x509"
 	"encoding/pem"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"log"
 	"net/url"
 	"sort"
@@ -101,7 +101,7 @@ func NewVault(cfg *models.DNSConfig, vaultPath string, email string, server stri
 // It will return true if it issued or updated the certificate.
 func (c *certManager) IssueOrRenewCert(cfg *CertConfig, renewUnder int, verbose bool) (bool, error) {
 	if !verbose {
-		acmelog.Logger = log.New(ioutil.Discard, "", 0)
+		acmelog.Logger = log.New(io.Discard, "", 0)
 	}
 	defer c.finalCleanUp()
 
@@ -181,6 +181,11 @@ func getCertInfo(pemBytes []byte) (names []string, remaining float64, err error)
 	if err != nil {
 		return nil, 0, err
 	}
+	//lint:ignore S1024 Fixing this without unit tests scares me.
+	// TODO(tlim): I think the fix is the line below but since this code
+	// may be decommed eventually, and since there are no unit tests,
+	// I'm not excited about making this change.
+	// var daysLeft = float64(time.Until(cert.NotAfter)) / float64(time.Hour*24)
 	var daysLeft = float64(cert.NotAfter.Sub(time.Now())) / float64(time.Hour*24)
 	return cert.DNSNames, daysLeft, nil
 }

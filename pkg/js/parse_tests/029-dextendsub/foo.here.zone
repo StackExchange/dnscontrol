@@ -1,0 +1,7 @@
+$TTL 300
+@                IN A     60.19.19.19
+bar              IN A     60.21.21.21
+baz.bar          IN A     60.23.23.23
+www.baz.bar      IN A     60.24.24.24
+www.bar          IN A     60.22.22.22
+www              IN A     60.20.20.20

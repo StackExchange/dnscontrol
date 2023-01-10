@@ -17,45 +17,50 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
 	"os"
 	"path/filepath"
 	"strings"
 	"time"
 
-	"github.com/miekg/dns"
-
 	"github.com/StackExchange/dnscontrol/v3/models"
 	"github.com/StackExchange/dnscontrol/v3/pkg/diff"
+	"github.com/StackExchange/dnscontrol/v3/pkg/diff2"
 	"github.com/StackExchange/dnscontrol/v3/pkg/prettyzone"
+	"github.com/StackExchange/dnscontrol/v3/pkg/printer"
+	"github.com/StackExchange/dnscontrol/v3/pkg/txtutil"
 	"github.com/StackExchange/dnscontrol/v3/providers"
+	"github.com/miekg/dns"
 )
 
 var features = providers.DocumentationNotes{
+	providers.CanAutoDNSSEC:          providers.Can("Just writes out a comment indicating DNSSEC was requested"),
+	providers.CanGetZones:            providers.Can(),
 	providers.CanUseCAA:              providers.Can(),
 	providers.CanUseDS:               providers.Can(),
-	providers.CanUsePTR:              providers.Can(),
 	providers.CanUseNAPTR:            providers.Can(),
+	providers.CanUsePTR:              providers.Can(),
+	providers.CanUseSOA:              providers.Can(),
 	providers.CanUseSRV:              providers.Can(),
 	providers.CanUseSSHFP:            providers.Can(),
 	providers.CanUseTLSA:             providers.Can(),
-	providers.CanUseTXTMulti:         providers.Can(),
-	providers.CanAutoDNSSEC:          providers.Can("Just writes out a comment indicating DNSSEC was requested"),
 	providers.CantUseNOPURGE:         providers.Cannot(),
 	providers.DocCreateDomains:       providers.Can("Driver just maintains list of zone files. It should automatically add missing ones."),
 	providers.DocDualHost:            providers.Can(),
 	providers.DocOfficiallySupported: providers.Can(),
-	providers.CanGetZones:            providers.Can(),
 }
 
 func initBind(config map[string]string, providermeta json.RawMessage) (providers.DNSServiceProvider, error) {
 	// config -- the key/values from creds.json
 	// meta -- the json blob from NewReq('name', 'TYPE', meta)
 	api := &bindProvider{
-		directory: config["directory"],
+		directory:      config["directory"],
+		filenameformat: config["filenameformat"],
 	}
 	if api.directory == "" {
 		api.directory = "zones"
+	}
+	if api.filenameformat == "" {
+		api.filenameformat = "%U.zone"
 	}
 	if len(providermeta) != 0 {
 		err := json.Unmarshal(providermeta, api)
@@ -64,8 +69,17 @@ func initBind(config map[string]string, providermeta json.RawMessage) (providers
 		}
 	}
 	var nss []string
-	for _, ns := range api.DefaultNS {
-		nss = append(nss, ns[0:len(ns)-1])
+	for i, ns := range api.DefaultNS {
+		if ns == "" {
+			return nil, fmt.Errorf("empty string in default_ns[%d]", i)
+		}
+		// If it contains a ".", it must end in a ".".
+		if strings.ContainsRune(ns, '.') && ns[len(ns)-1] != '.' {
+			return nil, fmt.Errorf("default_ns (%v) must end with a (.) [https://stackexchange.github.io/dnscontrol/why-the-dot]", ns)
+		}
+		// This is one of the (increasingly rare) cases where we store a
+		// name without the trailing dot to indicate a FQDN.
+		nss = append(nss, strings.TrimSuffix(ns, "."))
 	}
 	var err error
 	api.nameservers, err = models.ToNameservers(nss)
@@ -73,11 +87,15 @@ func initBind(config map[string]string, providermeta json.RawMessage) (providers
 }
 
 func init() {
-	providers.RegisterDomainServiceProviderType("BIND", initBind, features)
+	fns := providers.DspFuncs{
+		Initializer:   initBind,
+		RecordAuditor: AuditRecords,
+	}
+	providers.RegisterDomainServiceProviderType("BIND", fns, features)
 }
 
-// SoaInfo contains the parts of the default SOA settings.
-type SoaInfo struct {
+// SoaDefaults contains the parts of the default SOA settings.
+type SoaDefaults struct {
 	Ns      string `json:"master"`
 	Mbox    string `json:"mbox"`
 	Serial  uint32 `json:"serial"`
@@ -88,18 +106,19 @@ type SoaInfo struct {
 	TTL     uint32 `json:"ttl,omitempty"`
 }
 
-func (s SoaInfo) String() string {
+func (s SoaDefaults) String() string {
 	return fmt.Sprintf("%s %s %d %d %d %d %d %d", s.Ns, s.Mbox, s.Serial, s.Refresh, s.Retry, s.Expire, s.Minttl, s.TTL)
 }
 
 // bindProvider is the provider handle for the bindProvider driver.
 type bindProvider struct {
-	DefaultNS     []string `json:"default_ns"`
-	DefaultSoa    SoaInfo  `json:"default_soa"`
-	nameservers   []*models.Nameserver
-	directory     string
-	zonefile      string // Where the zone data is expected
-	zoneFileFound bool   // Did the zonefile exist?
+	DefaultNS      []string    `json:"default_ns"`
+	DefaultSoa     SoaDefaults `json:"default_soa"`
+	nameservers    []*models.Nameserver
+	directory      string
+	filenameformat string
+	zonefile       string // Where the zone data is expected
+	zoneFileFound  bool   // Did the zonefile exist?
 }
 
 // GetNameservers returns the nameservers for a domain.
@@ -117,16 +136,19 @@ func (c *bindProvider) ListZones() ([]string, error) {
 		return nil, fmt.Errorf("directory %q does not exist", c.directory)
 	}
 
-	filenames, err := filepath.Glob(filepath.Join(c.directory, "*.zone"))
+	var files []string
+	f, err := os.Open(c.directory)
 	if err != nil {
-		return nil, err
+		return files, fmt.Errorf("bind ListZones open dir %q: %w",
+			c.directory, err)
 	}
-	var zones []string
-	for _, n := range filenames {
-		_, file := filepath.Split(n)
-		zones = append(zones, strings.TrimSuffix(file, ".zone"))
+	filenames, err := f.Readdirnames(-1)
+	if err != nil {
+		return files, fmt.Errorf("bind ListZones readdir %q: %w",
+			c.directory, err)
 	}
-	return zones, nil
+
+	return extractZonesFromFilenames(c.filenameformat, filenames), nil
 }
 
 // GetZoneRecords gets the records of a zone and returns them in RecordConfig format.
@@ -134,18 +156,20 @@ func (c *bindProvider) GetZoneRecords(domain string) (models.Records, error) {
 	foundRecords := models.Records{}
 
 	if _, err := os.Stat(c.directory); os.IsNotExist(err) {
-		fmt.Printf("\nWARNING: BIND directory %q does not exist!\n", c.directory)
+		printer.Printf("\nWARNING: BIND directory %q does not exist!\n", c.directory)
 	}
 
-	c.zonefile = filepath.Join(
-		c.directory,
-		strings.Replace(strings.ToLower(domain), "/", "_", -1)+".zone")
-
-	content, err := ioutil.ReadFile(c.zonefile)
+	if c.zonefile == "" {
+		// This layering violation is needed for tests only.
+		// Otherwise, this is set already.
+		c.zonefile = filepath.Join(c.directory,
+			makeFileName(c.filenameformat, domain, domain, ""))
+	}
+	content, err := os.ReadFile(c.zonefile)
 	if os.IsNotExist(err) {
 		// If the file doesn't exist, that's not an error. Just informational.
 		c.zoneFileFound = false
-		fmt.Fprintf(os.Stderr, "File not found: '%v'\n", c.zonefile)
+		fmt.Fprintf(os.Stderr, "File does not yet exist: %q (will create)\n", c.zonefile)
 		return nil, nil
 	}
 	if err != nil {
@@ -156,9 +180,9 @@ func (c *bindProvider) GetZoneRecords(domain string) (models.Records, error) {
 	zp := dns.NewZoneParser(strings.NewReader(string(content)), domain, c.zonefile)
 
 	for rr, ok := zp.Next(); ok; rr, ok = zp.Next() {
-		rec := models.RRtoRC(rr, domain)
-		// FIXME(tlim): Empty branch?  Is the intention to skip SOAs?
-		if rec.Type == "SOA" {
+		rec, err := models.RRtoRC(rr, domain)
+		if err != nil {
+			return nil, err
 		}
 		foundRecords = append(foundRecords, &rec)
 	}
@@ -184,6 +208,9 @@ func (c *bindProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*models.
 		// has multiple providers.
 		comments = append(comments, "Automatic DNSSEC signing requested")
 	}
+
+	c.zonefile = filepath.Join(c.directory,
+		makeFileName(c.filenameformat, dc.UniqueName, dc.Name, dc.Tag))
 
 	foundRecords, err := c.GetZoneRecords(dc.Name)
 	if err != nil {
@@ -215,43 +242,61 @@ func (c *bindProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*models.
 
 	// Normalize
 	models.PostProcessRecords(foundRecords)
+	txtutil.SplitSingleLongTxt(dc.Records) // Autosplit long TXT records
 
-	differ := diff.New(dc)
-	_, create, del, mod, err := differ.IncrementalDiff(foundRecords)
-	if err != nil {
-		return nil, err
-	}
-
-	buf := &bytes.Buffer{}
-	// Print a list of changes. Generate an actual change that is the zone
 	changes := false
-	for _, i := range create {
-		changes = true
-		if c.zoneFileFound {
-			fmt.Fprintln(buf, i)
-		}
-	}
-	for _, i := range del {
-		changes = true
-		if c.zoneFileFound {
-			fmt.Fprintln(buf, i)
-		}
-	}
-	for _, i := range mod {
-		changes = true
-		if c.zoneFileFound {
-			fmt.Fprintln(buf, i)
-		}
-	}
-
 	var msg string
-	if c.zoneFileFound {
-		msg = fmt.Sprintf("GENERATE_ZONEFILE: '%s'. Changes:\n%s", dc.Name, buf)
+
+	if !diff2.EnableDiff2 {
+
+		differ := diff.New(dc)
+		_, create, del, mod, err := differ.IncrementalDiff(foundRecords)
+		if err != nil {
+			return nil, err
+		}
+
+		buf := &bytes.Buffer{}
+		// Print a list of changes. Generate an actual change that is the zone
+
+		for _, i := range create {
+			changes = true
+			if c.zoneFileFound {
+				fmt.Fprintln(buf, i)
+			}
+		}
+		for _, i := range del {
+			changes = true
+			if c.zoneFileFound {
+				fmt.Fprintln(buf, i)
+			}
+		}
+		for _, i := range mod {
+			changes = true
+			if c.zoneFileFound {
+				fmt.Fprintln(buf, i)
+			}
+		}
+
+		if c.zoneFileFound {
+			msg = fmt.Sprintf("GENERATE_ZONEFILE: '%s'. Changes:\n%s", dc.Name, buf)
+		} else {
+			msg = fmt.Sprintf("GENERATE_ZONEFILE: '%s' (new file with %d records)\n", dc.Name, len(create))
+		}
+
 	} else {
-		msg = fmt.Sprintf("GENERATE_ZONEFILE: '%s' (new file with %d records)\n", dc.Name, len(create))
+
+		var msgs []string
+		msgs, changes, err = diff2.ByZone(foundRecords, dc, nil)
+		if err != nil {
+			return nil, err
+		}
+		//fmt.Printf("DEBUG: BIND changes=%v\n", changes)
+		msg = strings.Join(msgs, "\n")
+
 	}
 
-	corrections := []*models.Correction{}
+	var corrections []*models.Correction
+	//fmt.Printf("DEBUG: BIND changes=%v\n", changes)
 	if changes {
 
 		// We only change the serial number if there is a change.
@@ -261,7 +306,7 @@ func (c *bindProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*models.
 			&models.Correction{
 				Msg: msg,
 				F: func() error {
-					fmt.Printf("WRITING ZONEFILE: %v\n", c.zonefile)
+					printer.Printf("WRITING ZONEFILE: %v\n", c.zonefile)
 					zf, err := os.Create(c.zonefile)
 					if err != nil {
 						return fmt.Errorf("could not create zonefile: %w", err)

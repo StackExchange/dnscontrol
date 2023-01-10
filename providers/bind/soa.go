@@ -1,17 +1,15 @@
 package bind
 
-import (
-	"github.com/StackExchange/dnscontrol/v3/models"
-)
+import "github.com/StackExchange/dnscontrol/v3/models"
 
-func makeSoa(origin string, defSoa *SoaInfo, existing, desired *models.RecordConfig) (*models.RecordConfig, uint32) {
+func makeSoa(origin string, defSoa *SoaDefaults, existing, desired *models.RecordConfig) (*models.RecordConfig, uint32) {
 	// Create a SOA record.  Take data from desired, existing, default,
 	// or hardcoded defaults.
 	soaRec := models.RecordConfig{}
 	soaRec.SetLabel("@", origin)
 
 	if defSoa == nil {
-		defSoa = &SoaInfo{}
+		defSoa = &SoaDefaults{}
 	}
 	if existing == nil {
 		existing = &models.RecordConfig{}

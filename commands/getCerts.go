@@ -9,6 +9,7 @@ import (
 
 	"github.com/StackExchange/dnscontrol/v3/models"
 	"github.com/StackExchange/dnscontrol/v3/pkg/acme"
+	"github.com/StackExchange/dnscontrol/v3/pkg/credsfile"
 	"github.com/StackExchange/dnscontrol/v3/pkg/normalize"
 	"github.com/StackExchange/dnscontrol/v3/pkg/printer"
 	"github.com/urfave/cli/v2"
@@ -141,7 +142,11 @@ func GetCerts(args GetCertsArgs) error {
 	if PrintValidationErrors(errs) {
 		return fmt.Errorf("exiting due to validation errors")
 	}
-	notifier, err := InitializeProviders(args.CredsFile, cfg, args.Notify)
+	providerConfigs, err := credsfile.LoadProviderConfigs(args.CredsFile)
+	if err != nil {
+		return err
+	}
+	notifier, err := InitializeProviders(cfg, providerConfigs, args.Notify)
 	if err != nil {
 		return err
 	}

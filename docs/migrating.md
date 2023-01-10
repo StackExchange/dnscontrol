@@ -55,7 +55,7 @@ Example 1: Read a BIND zonefile
 
 Most DNS Service Providers have an 'export to zonefile' feature.
 
-```
+```bash
 dnscontrol get-zones --format=js bind BIND example.com
 dnscontrol get-zones --format=js --out=draft.js bind BIND example.com
 ```
@@ -74,7 +74,7 @@ This requires creating a `creds.json` file as described in
 Suppose your `creds.json` file has the name `global_aws`
 for the provider `ROUTE53`.  Your command would look like this:
 
-```
+```bash
 dnscontrol get-zones --format=js global_aws ROUTE53 example.com
 dnscontrol get-zones --format=js --out=draft.js global_aws ROUTE53 example.com
 ```
@@ -106,21 +106,32 @@ If `dnscontrol get-zones` could have done a better job, please
 Here is an example series of commands that would be used
 to convert a zone. Lines that start with `#` are comments.
 
-    # Note this command uses ">>" to append to dnsconfig.js.  Do
-    # not use ">" as that will erase the existing file.
-    dnscontrol get-zones --format=js --out=draft.js bind BIND foo.com
-    cat >>dnsconfig.js draft.js   # Append to dnsconfig.js
-    #
-    dnscontrol preview
-    vim dnsconfig.js
-    # (repeat these two commands until all warnings/errors are resolved)
-    #
-    # When everything is as you wish, push the changes live:
-    dnscontrol push
-    # (this should be a no-op)
-    #
-    # Make any changes you do desire:
-    vim dnsconfig.js
-    dnscontrol preview
-    # (repeat until all warnings/errors are resolved)
-    dnscontrol push
+
+```bash
+# Note this command uses ">>" to append to dnsconfig.js. Do not use ">" as that will erase the existing file.
+dnscontrol get-zones --format=js --out=draft.js bind BIND foo.com
+cat >>dnsconfig.js draft.js # Append to dnsconfig.js
+dnscontrol preview
+vim dnsconfig.js
+```
+
+Repeat these two commands until all warnings/errors are resolved.
+When everything is as you wish, push the changes live:
+
+```bash
+dnscontrol push
+```
+
+
+Make any changes you do desire:
+
+```bash
+vim dnsconfig.js
+dnscontrol preview
+```
+
+Repeat until all warnings/errors are resolved.
+
+```bash
+dnscontrol push
+```

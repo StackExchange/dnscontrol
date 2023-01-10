@@ -8,6 +8,9 @@ import (
 
 // SetTargetNAPTR sets the NAPTR fields.
 func (rc *RecordConfig) SetTargetNAPTR(order uint16, preference uint16, flags string, service string, regexp string, target string) error {
+	if target == "" {
+		target = "."
+	}
 	rc.NaptrOrder = order
 	rc.NaptrPreference = preference
 	rc.NaptrFlags = flags

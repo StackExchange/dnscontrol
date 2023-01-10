@@ -1,0 +1,7 @@
+$TTL 300
+@                IN A     127.0.1.1
+                 IN A     127.0.1.3
+aa               IN A     127.0.1.2
+bb               IN CNAME cc.sub.domain.tld.
+dd               IN A     127.0.1.4
+ee               IN CNAME ff.sub.domain.tld.

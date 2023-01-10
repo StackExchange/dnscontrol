@@ -1,94 +1,450 @@
 {
-  "dns_providers": [ { "name": "Cloudflare", "type": "CLOUDFLAREAPI" } ],
+  "registrars": [
+    {
+      "name": "Third-Party",
+      "type": "NONE"
+    }
+  ],
+  "dns_providers": [
+    {
+      "name": "Cloudflare",
+      "type": "CLOUDFLAREAPI"
+    }
+  ],
   "domains": [
     {
       "name": "foo.net",
-      "dnsProviders": { "Cloudflare": -1 },
+      "registrar": "Third-Party",
+      "dnsProviders": {
+        "Cloudflare": -1
+      },
       "records": [
-        { "name": "@", "target": "10.1.1.1", "type": "A" },
-        { "name": "www", "target": "10.2.2.2", "type": "A" },
-        { "name": "bar", "subdomain": "bar", "target": "10.3.3.3", "type": "A" },
-        { "name": "www.bar", "subdomain": "bar", "target": "10.4.4.4", "type": "A" },
-        { "name": "a.long.path.of.sub.domains", "subdomain": "a.long.path.of.sub.domains", "target": "10.25.25.25", "type": "A" },
-        { "name": "www.a.long.path.of.sub.domains", "subdomain": "a.long.path.of.sub.domains", "target": "10.26.26.26", "type": "A" }
-      ],
-      "registrar": "Third-Party"
+        {
+          "type": "A",
+          "name": "@",
+          "ttl": 300,
+          "target": "10.1.1.1"
+        },
+        {
+          "type": "A",
+          "name": "www",
+          "ttl": 300,
+          "target": "10.2.2.2"
+        },
+        {
+          "type": "A",
+          "name": "bar",
+          "subdomain": "bar",
+          "ttl": 300,
+          "target": "10.3.3.3"
+        },
+        {
+          "type": "A",
+          "name": "www.bar",
+          "subdomain": "bar",
+          "ttl": 300,
+          "target": "10.4.4.4"
+        },
+        {
+          "type": "A",
+          "name": "a.long.path.of.sub.domains",
+          "subdomain": "a.long.path.of.sub.domains",
+          "ttl": 300,
+          "target": "10.25.25.25"
+        },
+        {
+          "type": "A",
+          "name": "www.a.long.path.of.sub.domains",
+          "subdomain": "a.long.path.of.sub.domains",
+          "ttl": 300,
+          "target": "10.26.26.26"
+        }
+      ]
     },
     {
       "name": "foo.tld",
-      "dnsProviders": { "Cloudflare": -1 },
+      "registrar": "Third-Party",
+      "dnsProviders": {
+        "Cloudflare": -1
+      },
       "records": [
-        { "name": "@", "target": "20.5.5.5", "type": "A" },
-        { "name": "www", "target": "20.6.6.6", "type": "A" },
-        { "name": "a", "target": "20.10.10.10", "type": "A" }
-      ],
-      "registrar": "Third-Party"
+        {
+          "type": "A",
+          "name": "@",
+          "ttl": 300,
+          "target": "20.5.5.5"
+        },
+        {
+          "type": "A",
+          "name": "www",
+          "ttl": 300,
+          "target": "20.6.6.6"
+        },
+        {
+          "type": "A",
+          "name": "a",
+          "ttl": 300,
+          "target": "20.10.10.10"
+        }
+      ]
     },
     {
       "name": "bar.foo.tld",
-      "dnsProviders": { "Cloudflare": -1 },
+      "registrar": "Third-Party",
+      "dnsProviders": {
+        "Cloudflare": -1
+      },
       "records": [
-        { "name": "@", "target": "30.7.7.7", "type": "A" },
-        { "name": "www", "target": "30.8.8.8", "type": "A" },
-        { "name": "a", "target": "30.9.9.9", "type": "A" }
-      ],
-      "registrar": "Third-Party"
+        {
+          "type": "A",
+          "name": "@",
+          "ttl": 300,
+          "target": "30.7.7.7"
+        },
+        {
+          "type": "A",
+          "name": "www",
+          "ttl": 300,
+          "target": "30.8.8.8"
+        },
+        {
+          "type": "A",
+          "name": "a",
+          "ttl": 300,
+          "target": "30.9.9.9"
+        }
+      ]
     },
     {
       "name": "foo.help",
-      "dnsProviders": { "Cloudflare": -1 },
+      "registrar": "Third-Party",
+      "dnsProviders": {
+        "Cloudflare": -1
+      },
       "records": [
-        { "name": "@", "target": "40.12.12.12", "type": "A" },
-        { "name": "www", "target": "40.12.12.12", "type": "A" },
-        { "name": "morty", "subdomain": "morty", "target": "40.17.17.17", "type": "A" },
-        { "name": "www.morty", "subdomain": "morty", "target": "40.18.18.18", "type": "A" }
-      ],
-      "registrar": "Third-Party"
+        {
+          "type": "A",
+          "name": "@",
+          "ttl": 300,
+          "target": "40.12.12.12"
+        },
+        {
+          "type": "A",
+          "name": "www",
+          "ttl": 300,
+          "target": "40.12.12.12"
+        },
+        {
+          "type": "A",
+          "name": "morty",
+          "subdomain": "morty",
+          "ttl": 300,
+          "target": "40.17.17.17"
+        },
+        {
+          "type": "A",
+          "name": "www.morty",
+          "subdomain": "morty",
+          "ttl": 300,
+          "target": "40.18.18.18"
+        }
+      ]
     },
     {
       "name": "bar.foo.help",
-      "dnsProviders": { "Cloudflare": -1 },
+      "registrar": "Third-Party",
+      "dnsProviders": {
+        "Cloudflare": -1
+      },
       "records": [
-        { "name": "@", "target": "50.13.13.13", "type": "A" },
-        { "name": "www", "target": "50.14.14.14", "type": "A" },
-        { "name": "zip", "subdomain": "zip", "target": "50.15.15.15", "type": "A" },
-        { "name": "www.zip", "subdomain": "zip", "target": "50.16.16.16", "type": "A" }
-      ],
-      "registrar": "Third-Party"
+        {
+          "type": "A",
+          "name": "@",
+          "ttl": 300,
+          "target": "50.13.13.13"
+        },
+        {
+          "type": "A",
+          "name": "www",
+          "ttl": 300,
+          "target": "50.14.14.14"
+        },
+        {
+          "type": "A",
+          "name": "zip",
+          "subdomain": "zip",
+          "ttl": 300,
+          "target": "50.15.15.15"
+        },
+        {
+          "type": "A",
+          "name": "www.zip",
+          "subdomain": "zip",
+          "ttl": 300,
+          "target": "50.16.16.16"
+        }
+      ]
     },
     {
       "name": "foo.here",
-      "dnsProviders": { "Cloudflare": -1 },
+      "registrar": "Third-Party",
+      "dnsProviders": {
+        "Cloudflare": -1
+      },
       "records": [
-        { "name": "@", "target": "60.19.19.19", "type": "A" },
-        { "name": "www", "target": "60.20.20.20", "type": "A" },
-        { "name": "bar", "subdomain": "bar", "target": "60.21.21.21", "type": "A" },
-        { "name": "www.bar", "subdomain": "bar", "target": "60.22.22.22", "type": "A" },
-        { "name": "baz.bar", "subdomain": "baz.bar", "target": "60.23.23.23", "type": "A" },
-        { "name": "www.baz.bar", "subdomain": "baz.bar", "target": "60.24.24.24", "type": "A" }
-      ],
-      "registrar": "Third-Party"
+        {
+          "type": "A",
+          "name": "@",
+          "ttl": 300,
+          "target": "60.19.19.19"
+        },
+        {
+          "type": "A",
+          "name": "www",
+          "ttl": 300,
+          "target": "60.20.20.20"
+        },
+        {
+          "type": "A",
+          "name": "bar",
+          "subdomain": "bar",
+          "ttl": 300,
+          "target": "60.21.21.21"
+        },
+        {
+          "type": "A",
+          "name": "www.bar",
+          "subdomain": "bar",
+          "ttl": 300,
+          "target": "60.22.22.22"
+        },
+        {
+          "type": "A",
+          "name": "baz.bar",
+          "subdomain": "baz.bar",
+          "ttl": 300,
+          "target": "60.23.23.23"
+        },
+        {
+          "type": "A",
+          "name": "www.baz.bar",
+          "subdomain": "baz.bar",
+          "ttl": 300,
+          "target": "60.24.24.24"
+        }
+      ]
+    },
+    {
+      "name": "example.com",
+      "registrar": "Third-Party",
+      "dnsProviders": {
+        "Cloudflare": -1
+      },
+      "records": [
+        {
+          "type": "A",
+          "name": "@",
+          "ttl": 300,
+          "target": "10.0.0.1"
+        },
+        {
+          "type": "A",
+          "name": "www",
+          "ttl": 300,
+          "target": "10.0.0.2"
+        },
+        {
+          "type": "A",
+          "name": "düsseldorf",
+          "subdomain": "düsseldorf",
+          "ttl": 300,
+          "target": "10.0.0.3"
+        },
+        {
+          "type": "A",
+          "name": "www.düsseldorf",
+          "subdomain": "düsseldorf",
+          "ttl": 300,
+          "target": "10.0.0.4"
+        },
+        {
+          "type": "A",
+          "name": "ü",
+          "subdomain": "ü",
+          "ttl": 300,
+          "target": "10.0.0.5"
+        },
+        {
+          "type": "A",
+          "name": "www.ü",
+          "subdomain": "ü",
+          "ttl": 300,
+          "target": "10.0.0.6"
+        }
+      ]
+    },
+    {
+      "name": "düsseldorf.example.net",
+      "registrar": "Third-Party",
+      "dnsProviders": {
+        "Cloudflare": -1
+      },
+      "records": [
+        {
+          "type": "A",
+          "name": "@",
+          "ttl": 300,
+          "target": "10.0.0.7"
+        },
+        {
+          "type": "A",
+          "name": "www",
+          "ttl": 300,
+          "target": "10.0.0.8"
+        },
+        {
+          "type": "A",
+          "name": "subdomain",
+          "subdomain": "subdomain",
+          "ttl": 300,
+          "target": "10.0.0.9"
+        },
+        {
+          "type": "A",
+          "name": "www.subdomain",
+          "subdomain": "subdomain",
+          "ttl": 300,
+          "target": "10.0.0.10"
+        },
+        {
+          "type": "A",
+          "name": "düsseltal",
+          "subdomain": "düsseltal",
+          "ttl": 300,
+          "target": "10.0.0.11"
+        },
+        {
+          "type": "A",
+          "name": "www.düsseltal",
+          "subdomain": "düsseltal",
+          "ttl": 300,
+          "target": "10.0.0.12"
+        },
+        {
+          "type": "A",
+          "name": "ü",
+          "subdomain": "ü",
+          "ttl": 300,
+          "target": "10.0.0.13"
+        },
+        {
+          "type": "A",
+          "name": "www.ü",
+          "subdomain": "ü",
+          "ttl": 300,
+          "target": "10.0.0.14"
+        }
+      ]
+    },
+    {
+      "name": "ü.example.net",
+      "registrar": "Third-Party",
+      "dnsProviders": {
+        "Cloudflare": -1
+      },
+      "records": [
+        {
+          "type": "A",
+          "name": "@",
+          "ttl": 300,
+          "target": "10.0.0.15"
+        },
+        {
+          "type": "A",
+          "name": "www",
+          "ttl": 300,
+          "target": "10.0.0.16"
+        },
+        {
+          "type": "A",
+          "name": "subdomain",
+          "subdomain": "subdomain",
+          "ttl": 300,
+          "target": "10.0.0.17"
+        },
+        {
+          "type": "A",
+          "name": "www.subdomain",
+          "subdomain": "subdomain",
+          "ttl": 300,
+          "target": "10.0.0.18"
+        },
+        {
+          "type": "A",
+          "name": "düsseldorf",
+          "subdomain": "düsseldorf",
+          "ttl": 300,
+          "target": "10.0.0.19"
+        },
+        {
+          "type": "A",
+          "name": "www.düsseldorf",
+          "subdomain": "düsseldorf",
+          "ttl": 300,
+          "target": "10.0.0.20"
+        },
+        {
+          "type": "A",
+          "name": "ü",
+          "subdomain": "ü",
+          "ttl": 300,
+          "target": "10.0.0.21"
+        },
+        {
+          "type": "A",
+          "name": "www.ü",
+          "subdomain": "ü",
+          "ttl": 300,
+          "target": "10.0.0.22"
+        }
+      ]
     },
     {
       "name": "example.tld",
-      "dnsProviders": { "Cloudflare": -1 },
+      "registrar": "Third-Party",
+      "dnsProviders": {
+        "Cloudflare": -1
+      },
       "records": [
-        { "name": "a.sub", "subdomain": "sub", "target": "b", "type": "CNAME" },
-        { "name": "b.sub", "subdomain": "sub", "target": "@", "type": "CNAME" },
-        { "name": "c.sub", "subdomain": "sub", "target": "sub.example.tld.", "type": "CNAME" },
-        { "name": "e.sub", "subdomain": "sub", "target": "otherdomain.tld.", "type": "CNAME" }
-      ],
-      "registrar": "Third-Party"
-    },
-    {
-      "name": "foo.com",
-      "dnsProviders": { "Cloudflare": -1 },
-      "records": [
-        { "name": "@", "target": "test.foo.com,https://goo.com/$1", "type": "CF_REDIRECT" },
-        { "name": "@", "target": "test.foo.com,https://goo.com/$1", "type": "CF_TEMP_REDIRECT" }
-      ],
-      "registrar": "Third-Party"
+        {
+          "type": "CNAME",
+          "name": "a.sub",
+          "subdomain": "sub",
+          "ttl": 300,
+          "target": "b"
+        },
+        {
+          "type": "CNAME",
+          "name": "b.sub",
+          "subdomain": "sub",
+          "ttl": 300,
+          "target": "@"
+        },
+        {
+          "type": "CNAME",
+          "name": "c.sub",
+          "subdomain": "sub",
+          "ttl": 300,
+          "target": "sub.example.tld."
+        },
+        {
+          "type": "CNAME",
+          "name": "e.sub",
+          "subdomain": "sub",
+          "ttl": 300,
+          "target": "otherdomain.tld."
+        }
+      ]
     }
-  ],
-  "registrars": [ { "name": "Third-Party", "type": "NONE" } ]
+  ]
 }

@@ -48,7 +48,10 @@ func TestMostCommonTtl(t *testing.T) {
 	// All records are TTL=100
 	records = nil
 	records, e = append(records, r1, r1, r1), 100
-	x := models.RRstoRCs(records, "bosun.org")
+	x, err := models.RRstoRCs(records, "bosun.org")
+	if err != nil {
+		panic(err)
+	}
 	g = MostCommonTTL(x)
 	if e != g {
 		t.Fatalf("expected %d; got %d\n", e, g)
@@ -57,7 +60,11 @@ func TestMostCommonTtl(t *testing.T) {
 	// Mixture of TTLs with an obvious winner.
 	records = nil
 	records, e = append(records, r1, r2, r2), 200
-	g = MostCommonTTL(models.RRstoRCs(records, "bosun.org"))
+	rcs, err := models.RRstoRCs(records, "bosun.org")
+	if err != nil {
+		panic(err)
+	}
+	g = MostCommonTTL(rcs)
 	if e != g {
 		t.Fatalf("expected %d; got %d\n", e, g)
 	}
@@ -65,7 +72,11 @@ func TestMostCommonTtl(t *testing.T) {
 	// 3-way tie. Largest TTL should be used.
 	records = nil
 	records, e = append(records, r1, r2, r3), 300
-	g = MostCommonTTL(models.RRstoRCs(records, "bosun.org"))
+	rcs, err = models.RRstoRCs(records, "bosun.org")
+	if err != nil {
+		panic(err)
+	}
+	g = MostCommonTTL(rcs)
 	if e != g {
 		t.Fatalf("expected %d; got %d\n", e, g)
 	}
@@ -73,7 +84,11 @@ func TestMostCommonTtl(t *testing.T) {
 	// NS records are ignored.
 	records = nil
 	records, e = append(records, r1, r4, r5), 100
-	g = MostCommonTTL(models.RRstoRCs(records, "bosun.org"))
+	rcs, err = models.RRstoRCs(records, "bosun.org")
+	if err != nil {
+		panic(err)
+	}
+	g = MostCommonTTL(rcs)
 	if e != g {
 		t.Fatalf("expected %d; got %d\n", e, g)
 	}
@@ -289,7 +304,10 @@ func TestWriteZoneFileSynth(t *testing.T) {
 	rsynz := &models.RecordConfig{Type: "R53_ALIAS", TTL: 300}
 	rsynz.SetLabel("zalias", "bosun.org")
 
-	recs := models.RRstoRCs([]dns.RR{r1, r2, r3}, "bosun.org")
+	recs, err := models.RRstoRCs([]dns.RR{r1, r2, r3}, "bosun.org")
+	if err != nil {
+		panic(err)
+	}
 	recs = append(recs, rsynm)
 	recs = append(recs, rsynm)
 	recs = append(recs, rsynz)
@@ -393,7 +411,7 @@ zt.mup           IN A     1.2.3.14
 zap              IN A     1.2.3.15
 `
 
-// func formatLine
+// func FormatLine
 
 func TestFormatLine(t *testing.T) {
 	tests := []struct {
@@ -405,7 +423,7 @@ func TestFormatLine(t *testing.T) {
 		{[]int{2, 2, 0}, []string{"aaaaa", "b", "c"}, "aaaaa b c"},
 	}
 	for _, ts := range tests {
-		actual := formatLine(ts.lengths, ts.fields)
+		actual := FormatLine(ts.lengths, ts.fields)
 		if actual != ts.expected {
 			t.Errorf("\"%s\" != \"%s\"", actual, ts.expected)
 		}
@@ -466,11 +484,11 @@ func TestZoneLabelLess(t *testing.T) {
 	}
 
 	for _, test := range tests {
-		actual := zoneLabelLess(test.e1, test.e2)
+		actual := LabelLess(test.e1, test.e2)
 		if test.expected != actual {
 			t.Errorf("%v: expected (%v) got (%v)\n", test.e1, test.e2, actual)
 		}
-		actual = zoneLabelLess(test.e2, test.e1)
+		actual = LabelLess(test.e2, test.e1)
 		// The reverse should work too:
 		var expected bool
 		if test.e1 == test.e2 {

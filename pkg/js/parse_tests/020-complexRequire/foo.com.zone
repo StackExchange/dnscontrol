@@ -1,0 +1,6 @@
+$TTL 300
+@                IN A     1.2.3.4
+a                IN CNAME foo.com.
+b                IN CNAME foo.com.
+c                IN CNAME foo.com.
+d                IN CNAME foo.com.

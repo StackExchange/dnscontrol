@@ -4,7 +4,6 @@ package models
 
 import (
 	"fmt"
-	"log"
 	"strings"
 
 	"github.com/miekg/dns"
@@ -42,17 +41,21 @@ func (rc *RecordConfig) String() string {
 // Conversions
 
 // RRstoRCs converts []dns.RR to []RecordConfigs.
-func RRstoRCs(rrs []dns.RR, origin string) Records {
+func RRstoRCs(rrs []dns.RR, origin string) (Records, error) {
 	rcs := make(Records, 0, len(rrs))
 	for _, r := range rrs {
-		rc := RRtoRC(r, origin)
+		rc, err := RRtoRC(r, origin)
+		if err != nil {
+			return nil, err
+		}
+
 		rcs = append(rcs, &rc)
 	}
-	return rcs
+	return rcs, nil
 }
 
 // RRtoRC converts dns.RR to RecordConfig
-func RRtoRC(rr dns.RR, origin string) RecordConfig {
+func RRtoRC(rr dns.RR, origin string) (RecordConfig, error) {
 	// Convert's dns.RR into our native data type (RecordConfig).
 	// Records are translated directly with no changes.
 	header := rr.Header()
@@ -61,43 +64,41 @@ func RRtoRC(rr dns.RR, origin string) RecordConfig {
 	rc.TTL = header.Ttl
 	rc.Original = rr
 	rc.SetLabelFromFQDN(strings.TrimSuffix(header.Name, "."), origin)
+	var err error
 	switch v := rr.(type) { // #rtype_variations
 	case *dns.A:
-		panicInvalid(rc.SetTarget(v.A.String()))
+		err = rc.SetTarget(v.A.String())
 	case *dns.AAAA:
-		panicInvalid(rc.SetTarget(v.AAAA.String()))
+		err = rc.SetTarget(v.AAAA.String())
 	case *dns.CAA:
-		panicInvalid(rc.SetTargetCAA(v.Flag, v.Tag, v.Value))
+		err = rc.SetTargetCAA(v.Flag, v.Tag, v.Value)
 	case *dns.CNAME:
-		panicInvalid(rc.SetTarget(v.Target))
+		err = rc.SetTarget(v.Target)
 	case *dns.DS:
-		panicInvalid(rc.SetTargetDS(v.KeyTag, v.Algorithm, v.DigestType, v.Digest))
+		err = rc.SetTargetDS(v.KeyTag, v.Algorithm, v.DigestType, v.Digest)
 	case *dns.MX:
-		panicInvalid(rc.SetTargetMX(v.Preference, v.Mx))
+		err = rc.SetTargetMX(v.Preference, v.Mx)
 	case *dns.NS:
-		panicInvalid(rc.SetTarget(v.Ns))
+		err = rc.SetTarget(v.Ns)
 	case *dns.PTR:
-		panicInvalid(rc.SetTarget(v.Ptr))
+		err = rc.SetTarget(v.Ptr)
 	case *dns.NAPTR:
-		panicInvalid(rc.SetTargetNAPTR(v.Order, v.Preference, v.Flags, v.Service, v.Regexp, v.Replacement))
+		err = rc.SetTargetNAPTR(v.Order, v.Preference, v.Flags, v.Service, v.Regexp, v.Replacement)
 	case *dns.SOA:
-		panicInvalid(rc.SetTargetSOA(v.Ns, v.Mbox, v.Serial, v.Refresh, v.Retry, v.Expire, v.Minttl))
+		err = rc.SetTargetSOA(v.Ns, v.Mbox, v.Serial, v.Refresh, v.Retry, v.Expire, v.Minttl)
 	case *dns.SRV:
-		panicInvalid(rc.SetTargetSRV(v.Priority, v.Weight, v.Port, v.Target))
+		err = rc.SetTargetSRV(v.Priority, v.Weight, v.Port, v.Target)
 	case *dns.SSHFP:
-		panicInvalid(rc.SetTargetSSHFP(v.Algorithm, v.Type, v.FingerPrint))
+		err = rc.SetTargetSSHFP(v.Algorithm, v.Type, v.FingerPrint)
 	case *dns.TLSA:
-		panicInvalid(rc.SetTargetTLSA(v.Usage, v.Selector, v.MatchingType, v.Certificate))
+		err = rc.SetTargetTLSA(v.Usage, v.Selector, v.MatchingType, v.Certificate)
 	case *dns.TXT:
-		panicInvalid(rc.SetTargetTXTs(v.Txt))
+		err = rc.SetTargetTXTs(v.Txt)
 	default:
-		log.Fatalf("rrToRecord: Unimplemented zone record type=%s (%v)\n", rc.Type, rr)
+		return *rc, fmt.Errorf("rrToRecord: Unimplemented zone record type=%s (%v)", rc.Type, rr)
 	}
-	return *rc
-}
-
-func panicInvalid(err error) {
 	if err != nil {
-		panic(fmt.Errorf("unparsable record received from BIND: %w", err))
+		return *rc, fmt.Errorf("unparsable record received: %w", err)
 	}
+	return *rc, nil
 }

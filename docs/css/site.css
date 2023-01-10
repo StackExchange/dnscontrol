@@ -16,6 +16,7 @@ body {
 
 .table-header-rotated {
   border-collapse: collapse;
+  margin: 0 auto;
 }
 
 .table-header-rotated td {
@@ -24,6 +25,10 @@ body {
 
 .table-header-rotated th {
   padding: 5px 10px;
+}
+
+.table-header-rotated th:first-child {
+  max-width: 120px;
 }
 
 .table-header-rotated td {
@@ -38,10 +43,12 @@ body {
 }
 
 .table-header-rotated th.rotate>div {
-  -webkit-transform: translate(25px, 51px) rotate(315deg);
-  -ms-transform: translate(25px, 51px) rotate(315deg);
-  transform: translate(25px, 51px) rotate(315deg);
+  -webkit-transform: translate(26px, 51px) rotate(315deg);
+  -ms-transform: translate(26px, 51px) rotate(315deg);
+  transform: translate(26px, 51px) rotate(315deg);
   width: 30px;
+  position: relative;
+  bottom: 1px;
 }
 
 .table-header-rotated th.rotate>div>span {
@@ -52,6 +59,39 @@ body {
 .table-header-rotated th.row-header {
   padding: 0 10px;
   border-bottom: 1px solid #ccc;
+  /* box-shadow since border-right doesn’t work */
+  box-shadow: 0.5px 0 0 #ccc;
+  background-color: white;
+  position: sticky;
+  left: 0;
+  z-index: 1;
+}
+.table-header-rotated thead tr:first-child th.row-header {
+  box-shadow: none;
+}
+
+.table-header-rotated th.row-header.rotate>div {
+  position: relative;
+  left: 43px;
+  bottom: 27px;
+}
+.table-header-rotated th.row-header.rotate>div>span {
+  display: inline-block;
+  width: 190px;
+  background-color: white;
+  line-height: 90px;
+}
+
+
+.full-width {
+  width: 100vw;
+  max-width: 100vw;
+  margin-left: -50vw;
+  margin-right: -50vw;
+  left: 50%;
+  right: 50%;
+  position: relative;
+  overflow-x: auto;
 }
 
 .success {
@@ -80,4 +120,13 @@ body {
 
 .dim {
   color: #eeeeee
+}
+
+.table-of-contents {
+  width: 100%;
+}
+
+.table-of-contents td {
+  vertical-align: top;
+  width: 50%;
 }

@@ -31,7 +31,7 @@ record has a field called `Flag`, therefore the field name in
 
 Here are some examples:
 
-```
+```go
 type RecordConfig struct {
   ...
   MxPreference uint16            `json:"mxpreference,omitempty"`
@@ -54,7 +54,7 @@ a minimum.
 it to the end of the list.)
 * Add this feature to the feature matrix in `dnscontrol/build/generate/featureMatrix.go` (Add it to the variable `matrix` then add it later in the file with a `setCap()` statement.
 * Add the capability to the list of features that zones are validated
-  against (i.e. if you want dnscontrol to report an error if this
+  against (i.e. if you want DNSControl to report an error if this
   feature is used with a DNS provider that doesn't support it). That's
   in the `checkProviderCapabilities` function in
   `pkg/normalize/validate.go`.
@@ -65,7 +65,7 @@ provider that does not support the capability.
 
 * Add the capability to the validations in `pkg/normalize/validate.go`
   by adding it to `providerCapabilityChecks`
-* Some capabilities can't be tested for, such as `CanUseTXTMulti`.  If
+* Some capabilities can't be tested for.  If
   such testing can't be done, add it to the whitelist in function
   `TestCapabilitiesAreFiltered` in
   `pkg/normalize/capabilities_test.go`
@@ -75,7 +75,7 @@ will report something like the `MISSING` message below. In this
 example we removed `providers.CanUseCAA` from the
 `providerCapabilityChecks` list.
 
-```
+```text
 --- FAIL: TestCapabilitiesAreFiltered (0.00s)
     capabilities_test.go:66: ok: providers.CanUseAlias (0) is checked for with "ALIAS"
     capabilities_test.go:68: MISSING: providers.CanUseCAA (1) is not checked by checkProviderCapabilities
@@ -102,7 +102,7 @@ The dnscontrol `-dev` flag ignores `pkg/js/static.go` and reads
 `pkg/js/helpers.js` directly. This is useful when debugging since it
 is one less step.
 
-Likewise, if you are debugging helpers.js and you can't figure out why
+Likewise, if you are debugging `helpers.js` and you can't figure out why
 your changes aren't making a difference, it usually means you aren't
 running `go generate` after any change, or using the `-dev` flag.
 
@@ -112,7 +112,7 @@ Anywhere a rtype requires special handling has been marked with a
 comment that includes the string `#rtype_variations`.  Search for
 this string and add your new type to this code.
 
-## Step 5: Add a `parse_tests` test case.
+## Step 5: Add a `parse_tests` test case
 
 Add at least one test case to the `pkg/js/parse_tests` directory.
 Test `013-mx.js` is a very simple one and is good for cloning.
@@ -133,7 +133,7 @@ The tests also verify that for every "capability" there is a
 validation. This is explained in Step 2 (search for
 `TestCapabilitiesAreFiltered` or `MISSING`)
 
-## Step 6: Add an `integrationTest` test case.
+## Step 6: Add an `integrationTest` test case
 
 Add at least one test case to the `integrationTest/integration_test.go`
 file. Look for `func makeTests` and add the test to the end of this
@@ -141,14 +141,14 @@ list.
 
 Each `testgroup()` is a named list of tests.
 
-```
+```js
 testgroup("MX",                                   <<< 1
   tc("MX record", mx("@", 5, "foo.com.")),        <<< 2
   tc("Change MX pref", mx("@", 10, "foo.com.")),  <<< 3
   tc("MX record",                                 <<< 4
       mx("@", 10, "foo.com."),
       mx("@", 20, "bar.com."),
-  ), 
+  ),
   )
 ```
 
@@ -156,7 +156,7 @@ Line 1: `testgroup()` gives a name to a group of tests.  It also tells
 the system to delete all records for this domain so that the tests
 begin with a blank slate.
 
-Line 2: 
+Line 2:
 Each `tc()` encodes all the records of a zone.  The test framework
 will try to do the smallest changes to bring the zone up to date.
 In this case, we know the zone is empty, so this will add one MX

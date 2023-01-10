@@ -45,7 +45,12 @@ func MostCommonTTL(records models.Records) uint32 {
 
 // WriteZoneFileRR is a helper for when you have []dns.RR instead of models.Records
 func WriteZoneFileRR(w io.Writer, records []dns.RR, origin string) error {
-	return WriteZoneFileRC(w, models.RRstoRCs(records, origin), origin, 0, nil)
+	rcs, err := models.RRstoRCs(records, origin)
+	if err != nil {
+		return err
+	}
+
+	return WriteZoneFileRC(w, rcs, origin, 0, nil)
 }
 
 // WriteZoneFileRC writes a beautifully formatted zone file.
@@ -85,6 +90,7 @@ func PrettySort(records models.Records, origin string, defaultTTL uint32, commen
 	}
 	z.Records = nil
 	z.Records = append(z.Records, records...)
+	sort.Sort(z)
 	return z
 }
 
@@ -143,12 +149,13 @@ func (z *ZoneGenData) generateZoneFileHelper(w io.Writer) error {
 		}
 
 		fmt.Fprintf(w, "%s%s%s\n",
-			prefix, formatLine([]int{10, 5, 2, 5, 0}, []string{name, ttl, "IN", typeStr, target}), comment)
+			prefix, FormatLine([]int{10, 5, 2, 5, 0}, []string{name, ttl, "IN", typeStr, target}), comment)
 	}
 	return nil
 }
 
-func formatLine(lengths []int, fields []string) string {
+// FormatLine formats a zonefile line.
+func FormatLine(lengths []int, fields []string) string {
 	c := 0
 	result := ""
 	for i, length := range lengths {

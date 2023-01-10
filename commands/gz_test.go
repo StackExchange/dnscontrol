@@ -2,14 +2,12 @@ package commands
 
 import (
 	"fmt"
-	"io/ioutil"
 	"log"
 	"os"
 	"testing"
 
-	"github.com/andreyvit/diff"
-
 	_ "github.com/StackExchange/dnscontrol/v3/providers/_all"
+	"github.com/andreyvit/diff"
 )
 
 func TestFormatTypes(t *testing.T) {
@@ -20,8 +18,9 @@ func TestFormatTypes(t *testing.T) {
 	  test_data/$DOMAIN.zone   zone            test_data/$DOMAIN.zone.zone
 	*/
 
-	for _, domain := range []string{"simple.com", "example.org"} {
+	for _, domain := range []string{"simple.com", "example.org", "apex.com"} {
 		t.Run(domain+"/js", func(t *testing.T) { testFormat(t, domain, "js") })
+		t.Run(domain+"/djs", func(t *testing.T) { testFormat(t, domain, "djs") })
 		t.Run(domain+"/tsv", func(t *testing.T) { testFormat(t, domain, "tsv") })
 		t.Run(domain+"/zone", func(t *testing.T) { testFormat(t, domain, "zone") })
 	}
@@ -33,9 +32,9 @@ func testFormat(t *testing.T, domain, format string) {
 	expectedFilename := fmt.Sprintf("test_data/%s.zone.%s", domain, format)
 	outputFiletmpl := fmt.Sprintf("%s.zone.%s.*.txt", domain, format)
 
-	outfile, err := ioutil.TempFile("", outputFiletmpl)
+	outfile, err := os.CreateTemp("", outputFiletmpl)
 	if err != nil {
-		log.Fatal(err)
+		log.Fatal(fmt.Errorf("gz can't TempFile %q: %w", outputFiletmpl, err))
 	}
 	defer os.Remove(outfile.Name())
 
@@ -52,23 +51,23 @@ func testFormat(t *testing.T, domain, format string) {
 	// Read the zonefile and convert
 	err = GetZone(gzargs)
 	if err != nil {
-		log.Fatal(err)
+		log.Fatal(fmt.Errorf("can't GetZone: %w", err))
 	}
 
 	// Read the actual result:
-	got, err := ioutil.ReadFile(outfile.Name())
+	got, err := os.ReadFile(outfile.Name())
 	if err != nil {
-		log.Fatal(err)
+		log.Fatal(fmt.Errorf("can't read actuals %q: %w", outfile.Name(), err))
 	}
 
 	// Read the expected result
-	want, err := ioutil.ReadFile(expectedFilename)
+	want, err := os.ReadFile(expectedFilename)
 	if err != nil {
-		log.Fatal(err)
+		log.Fatal(fmt.Errorf("can't read expected %q: %w", outfile.Name(), err))
 	}
 
 	//	// Update got -> want
-	//	err = ioutil.WriteFile(expectedFilename, got, 0644)
+	//	err = os.WriteFile(expectedFilename, got, 0644)
 	//	if err != nil {
 	//		log.Fatal(err)
 	//	}
@@ -76,5 +75,4 @@ func testFormat(t *testing.T, domain, format string) {
 	if w, g := string(want), string(got); w != g {
 		t.Errorf("testFormat mismatch (-got +want):\n%s", diff.LineDiff(g, w))
 	}
-
 }

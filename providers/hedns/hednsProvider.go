@@ -4,7 +4,6 @@ import (
 	"crypto/sha1"
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
 	"net/http"
 	"net/http/cookiejar"
 	"net/url"
@@ -18,6 +17,8 @@ import (
 	"github.com/PuerkitoBio/goquery"
 	"github.com/StackExchange/dnscontrol/v3/models"
 	"github.com/StackExchange/dnscontrol/v3/pkg/diff"
+	"github.com/StackExchange/dnscontrol/v3/pkg/diff2"
+	"github.com/StackExchange/dnscontrol/v3/pkg/txtutil"
 	"github.com/StackExchange/dnscontrol/v3/providers"
 	"github.com/pquerna/otp/totp"
 )
@@ -42,25 +43,29 @@ Additionally
 */
 
 var features = providers.DocumentationNotes{
+	providers.CanAutoDNSSEC:          providers.Cannot(),
+	providers.CanGetZones:            providers.Can(),
 	providers.CanUseAlias:            providers.Can(),
 	providers.CanUseCAA:              providers.Can(),
-	providers.CanUseNAPTR:            providers.Can(),
 	providers.CanUseDS:               providers.Cannot(),
 	providers.CanUseDSForChildren:    providers.Cannot(),
+	providers.CanUseNAPTR:            providers.Can(),
 	providers.CanUsePTR:              providers.Can(),
-	providers.CanUseSSHFP:            providers.Can(),
+	providers.CanUseSOA:              providers.Cannot(),
 	providers.CanUseSRV:              providers.Can(),
+	providers.CanUseSSHFP:            providers.Can(),
 	providers.CanUseTLSA:             providers.Cannot(),
-	providers.CanUseTXTMulti:         providers.Can(),
-	providers.CanAutoDNSSEC:          providers.Cannot(),
 	providers.DocCreateDomains:       providers.Can(),
 	providers.DocDualHost:            providers.Can(),
 	providers.DocOfficiallySupported: providers.Cannot(),
-	providers.CanGetZones:            providers.Can(),
 }
 
 func init() {
-	providers.RegisterDomainServiceProviderType("HEDNS", newHDNSProvider, features)
+	fns := providers.DspFuncs{
+		Initializer:   newHEDNSProvider,
+		RecordAuditor: AuditRecords,
+	}
+	providers.RegisterDomainServiceProviderType("HEDNS", fns, features)
 }
 
 var defaultNameservers = []string{
@@ -93,7 +98,7 @@ type hednsProvider struct {
 	httpClient http.Client
 }
 
-// Record stores the HDNS specific zone and record IDs
+// Record stores the HEDNS specific zone and record IDs
 type Record struct {
 	RecordName string
 	RecordID   uint64
@@ -101,7 +106,7 @@ type Record struct {
 	ZoneID     uint64
 }
 
-func newHDNSProvider(cfg map[string]string, _ json.RawMessage) (providers.DNSServiceProvider, error) {
+func newHEDNSProvider(cfg map[string]string, _ json.RawMessage) (providers.DNSServiceProvider, error) {
 	username, password := cfg["username"], cfg["password"]
 	totpSecret, totpValue := cfg["totp-key"], cfg["totp"]
 	sessionFilePath := cfg["session-file-path"]
@@ -167,14 +172,13 @@ func (c *hednsProvider) EnsureDomainExists(domain string) error {
 	return c.createDomain(domain)
 }
 
-// GetNameservers returns the default HDNS nameservers.
+// GetNameservers returns the default HEDNS nameservers.
 func (c *hednsProvider) GetNameservers(_ string) ([]*models.Nameserver, error) {
 	return models.ToNameservers(defaultNameservers)
 }
 
 // GetDomainCorrections returns a list of corrections for the  domain.
 func (c *hednsProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Correction, error) {
-	var corrections []*models.Correction
 
 	err := dc.Punycode()
 	if err != nil {
@@ -199,49 +203,92 @@ func (c *hednsProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*models
 
 	// Normalize
 	models.PostProcessRecords(prunedRecords)
+	txtutil.SplitSingleLongTxt(dc.Records) // Autosplit long TXT records
+
+	// Fallback to legacy mode if diff2 is not enabled, remove when diff1 is deprecated.
+	if !diff2.EnableDiff2 {
+		return c.getDiff1DomainCorrections(dc, zoneID, prunedRecords)
+	} else {
+		return c.getDiff2DomainCorrections(dc, zoneID, prunedRecords)
+	}
+}
+
+func (c *hednsProvider) getDiff1DomainCorrections(dc *models.DomainConfig, zoneID uint64, records models.Records) ([]*models.Correction, error) {
+	var corrections []*models.Correction
+	var toCreate, toDelete, toModify diff.Changeset
 
 	differ := diff.New(dc)
-	_, toCreate, toDelete, toModify, err := differ.IncrementalDiff(prunedRecords)
+	_, toCreate, toDelete, toModify, err := differ.IncrementalDiff(records)
 	if err != nil {
 		return nil, err
 	}
 
 	for _, del := range toDelete {
-		record := del.Existing
+		recordID := del.Existing.Original.(Record).RecordID
 		corrections = append(corrections, &models.Correction{
 			Msg: del.String(),
-			F:   func() error { return c.deleteZoneRecord(record) },
+			F:   func() error { return c.deleteZoneRecord(zoneID, recordID) },
 		})
 	}
 
 	for _, cre := range toCreate {
 		record := cre.Desired
-		record.Original = Record{
-			ZoneName:   dc.Name,
-			ZoneID:     zoneID,
-			RecordName: cre.Desired.Name,
-		}
 		corrections = append(corrections, &models.Correction{
 			Msg: cre.String(),
-			F:   func() error { return c.editZoneRecord(record, true) },
+			F:   func() error { return c.createZoneRecord(zoneID, record) },
 		})
 	}
 
 	for _, mod := range toModify {
 		record := mod.Desired
-		record.Original = Record{
-			ZoneName:   dc.Name,
-			ZoneID:     zoneID,
-			RecordID:   mod.Existing.Original.(Record).RecordID,
-			RecordName: mod.Desired.Name,
-		}
+		recordID := mod.Existing.Original.(Record).RecordID
 		corrections = append(corrections, &models.Correction{
 			Msg: mod.String(),
-			F:   func() error { return c.editZoneRecord(record, false) },
+			F:   func() error { return c.changeZoneRecord(zoneID, recordID, record) },
 		})
 	}
 
-	return corrections, err
+	return corrections, nil
+}
+
+func (c *hednsProvider) getDiff2DomainCorrections(dc *models.DomainConfig, zoneID uint64, records models.Records) ([]*models.Correction, error) {
+	changes, err := diff2.ByRecord(records, dc, nil)
+	if err != nil {
+		return nil, err
+	}
+
+	var corrections []*models.Correction
+	for _, change := range changes {
+		switch change.Type {
+		case diff2.CREATE:
+			record := change.New[0]
+			corrections = append(corrections, &models.Correction{
+				Msg: change.MsgsJoined,
+				F: func() error {
+					return c.createZoneRecord(zoneID, record)
+				},
+			})
+		case diff2.CHANGE:
+			record := change.New[0]
+			recordID := change.Old[0].Original.(Record).RecordID
+			corrections = append(corrections, &models.Correction{
+				Msg: change.MsgsJoined,
+				F: func() error {
+					return c.changeZoneRecord(zoneID, recordID, record)
+				},
+			})
+		case diff2.DELETE:
+			recordID := change.Old[0].Original.(Record).RecordID
+			corrections = append(corrections, &models.Correction{
+				Msg: change.MsgsJoined,
+				F: func() error {
+					return c.deleteZoneRecord(zoneID, recordID)
+				},
+			})
+		}
+	}
+
+	return corrections, nil
 }
 
 // GetZoneRecords returns all the records for the given domain
@@ -290,17 +337,20 @@ func (c *hednsProvider) GetZoneRecords(domain string) (models.Records, error) {
 
 		rc := &models.RecordConfig{
 			Type: parser.parseStringAttr(element.Find("td > .rrlabel"), "data"),
-			TTL:  uint32(parser.parseIntElement(element.Find("td:nth-child(5)"))),
+			TTL:  parser.parseIntElementUint32(element.Find("td:nth-child(5)")),
 			Original: Record{
 				ZoneName:   domain,
 				ZoneID:     domainID,
 				RecordName: parser.parseStringElement(element.Find(".dns_view")),
 				RecordID:   parser.parseIntAttr(element, "id"),
 			},
-			Target: parser.parseStringAttr(element.Find("td:nth-child(7)"), "data"),
+		}
+		data := parser.parseStringAttr(element.Find("td:nth-child(7)"), "data")
+		if err != nil {
+			return false
 		}
 
-		priority := parser.parseIntElement(element.Find("td:nth-child(6)"))
+		priority := parser.parseIntElementUint16(element.Find("td:nth-child(6)"))
 		if parser.err != nil {
 			err = parser.err
 			return false
@@ -313,24 +363,20 @@ func (c *hednsProvider) GetZoneRecords(domain string) (models.Records, error) {
 
 		rc.SetLabelFromFQDN(rc.Original.(Record).RecordName, domain)
 
-		// dns.he.net omits the trailing "." on the hostnames for certain record types
-		if rc.Type == "CNAME" || rc.Type == "MX" || rc.Type == "NS" || rc.Type == "PTR" {
-			rc.Target += "."
-		}
-
 		switch rc.Type {
 		case "ALIAS":
-			err = rc.SetTarget(rc.Target)
+			err = rc.SetTarget(data)
 		case "MX":
-			err = rc.SetTargetMX(uint16(priority), rc.Target)
+			// dns.he.net omits the trailing "." on the hostnames for MX records
+			err = rc.SetTargetMX(priority, data+".")
 		case "SRV":
-			err = rc.SetTargetSRVPriorityString(uint16(priority), rc.Target)
+			err = rc.SetTargetSRVPriorityString(priority, data)
 		case "SPF":
 			// Convert to TXT record as SPF is deprecated
 			rc.Type = "TXT"
 			fallthrough
 		default:
-			err = rc.PopulateFromString(rc.Type, rc.Target, domain)
+			err = rc.PopulateFromString(rc.Type, data, domain)
 		}
 
 		if err != nil {
@@ -487,13 +533,13 @@ func (c *hednsProvider) listDomains() (map[string]uint64, error) {
 		return nil, err
 	}
 
-	// Check we can list domains
+	// Check there are any domains in this account
+	domains := make(map[string]uint64)
 	if document.Find("#domains_table").Size() == 0 {
-		return nil, fmt.Errorf("domain listing failed")
+		return domains, nil
 	}
 
 	// Find all the forward & reverse domains
-	domains := make(map[string]uint64)
 	recordsSelector := strings.Join([]string{
 		"#domains_table > tbody > tr > td:last-child > img",                // Forward records
 		"#tabs-advanced .generic_table > tbody > tr > td:last-child > img", // Reverse records
@@ -530,11 +576,11 @@ func (c *hednsProvider) createDomain(domain string) error {
 	return err
 }
 
-func (c *hednsProvider) editZoneRecord(rc *models.RecordConfig, create bool) error {
+func (c *hednsProvider) editZoneRecord(zoneID uint64, recordID uint64, rc *models.RecordConfig, create bool) error {
 	values := url.Values{
 		"account":             {},
 		"menu":                {"edit_zone"},
-		"hosted_dns_zoneid":   {strconv.FormatUint(rc.Original.(Record).ZoneID, 10)},
+		"hosted_dns_zoneid":   {strconv.FormatUint(zoneID, 10)},
 		"hosted_dns_editzone": {"1"},
 		"TTL":                 {strconv.FormatUint(uint64(rc.TTL), 10)},
 		"Name":                {rc.Name},
@@ -545,16 +591,11 @@ func (c *hednsProvider) editZoneRecord(rc *models.RecordConfig, create bool) err
 		values.Set("Type", rc.Type)
 		values.Set("hosted_dns_editrecord", "Submit")
 		values.Set("hosted_dns_recordid", "")
+		values.Set("Priority", "")
 	} else {
 		values.Set("Type", strings.ToLower(rc.Type)) // Lowercase on update
 		values.Set("hosted_dns_editrecord", "Update")
-		values.Set("hosted_dns_recordid", strconv.FormatUint(rc.Original.(Record).RecordID, 10))
-	}
-
-	// Handle priorities
-	if create {
-		values.Set("Priority", "")
-	} else {
+		values.Set("hosted_dns_recordid", strconv.FormatUint(recordID, 10))
 		values.Set("Priority", "-")
 	}
 
@@ -562,10 +603,10 @@ func (c *hednsProvider) editZoneRecord(rc *models.RecordConfig, create bool) err
 	switch rc.Type {
 	case "MX":
 		values.Set("Priority", strconv.FormatUint(uint64(rc.MxPreference), 10))
-		values.Set("Content", rc.Target)
+		values.Set("Content", rc.GetTargetField())
 	case "SRV":
 		values.Del("Content")
-		values.Set("Target", rc.Target)
+		values.Set("Target", rc.GetTargetField())
 		values.Set("Priority", strconv.FormatUint(uint64(rc.SrvPriority), 10))
 		values.Set("Weight", strconv.FormatUint(uint64(rc.SrvWeight), 10))
 		values.Set("Port", strconv.FormatUint(uint64(rc.SrvPort), 10))
@@ -583,11 +624,19 @@ func (c *hednsProvider) editZoneRecord(rc *models.RecordConfig, create bool) err
 	return err
 }
 
-func (c *hednsProvider) deleteZoneRecord(rc *models.RecordConfig) error {
+func (c *hednsProvider) createZoneRecord(zoneID uint64, rc *models.RecordConfig) error {
+	return c.editZoneRecord(zoneID, 0, rc, true)
+}
+
+func (c *hednsProvider) changeZoneRecord(zoneID uint64, recordID uint64, rc *models.RecordConfig) error {
+	return c.editZoneRecord(zoneID, recordID, rc, false)
+}
+
+func (c *hednsProvider) deleteZoneRecord(zoneID uint64, recordID uint64) error {
 	values := url.Values{
 		"menu":                  {"edit_zone"},
-		"hosted_dns_zoneid":     {strconv.FormatUint(rc.Original.(Record).ZoneID, 10)},
-		"hosted_dns_recordid":   {strconv.FormatUint(rc.Original.(Record).RecordID, 10)},
+		"hosted_dns_zoneid":     {strconv.FormatUint(zoneID, 10)},
+		"hosted_dns_recordid":   {strconv.FormatUint(recordID, 10)},
 		"hosted_dns_editzone":   {"1"},
 		"hosted_dns_delrecord":  {"1"},
 		"hosted_dns_delconfirm": {"delete"},
@@ -627,7 +676,7 @@ func (c *hednsProvider) saveSessionFile() error {
 	}
 
 	fileName := path.Join(c.SessionFilePath, sessionFileName)
-	err = ioutil.WriteFile(fileName, []byte(strings.Join(entries, "\n")), 0600)
+	err = os.WriteFile(fileName, []byte(strings.Join(entries, "\n")), 0600)
 	return err
 }
 
@@ -638,7 +687,7 @@ func (c *hednsProvider) loadSessionFile() error {
 	}
 
 	fileName := path.Join(c.SessionFilePath, sessionFileName)
-	bytes, err := ioutil.ReadFile(fileName)
+	bytes, err := os.ReadFile(fileName)
 	if err != nil {
 		if os.IsNotExist(err) {
 			// Skip loading the session.
@@ -727,9 +776,9 @@ func (p *elementParser) parseStringElement(element *goquery.Selection) (result s
 	return element.Text()
 }
 
-func (p *elementParser) parseIntElement(element *goquery.Selection) (result uint64) {
+func (p *elementParser) parseIntElementUint16(element *goquery.Selection) uint16 {
 	if p.err != nil {
-		return
+		return 0
 	}
 
 	// Special case to deal with Priority
@@ -737,6 +786,22 @@ func (p *elementParser) parseIntElement(element *goquery.Selection) (result uint
 		return 0
 	}
 
-	result, p.err = strconv.ParseUint(element.Text(), 10, 64)
-	return result
+	var result64 uint64
+	result64, p.err = strconv.ParseUint(element.Text(), 10, 16)
+	return uint16(result64)
+}
+
+func (p *elementParser) parseIntElementUint32(element *goquery.Selection) uint32 {
+	if p.err != nil {
+		return 0
+	}
+
+	// Special case to deal with Priority
+	if element.Text() == "-" {
+		return 0
+	}
+
+	var result64 uint64
+	result64, p.err = strconv.ParseUint(element.Text(), 10, 32)
+	return uint32(result64)
 }

@@ -2,12 +2,25 @@ package normalize
 
 import (
 	"fmt"
+	"sort"
 	"strconv"
 	"strings"
 
 	"github.com/StackExchange/dnscontrol/v3/models"
 	"github.com/StackExchange/dnscontrol/v3/pkg/spflib"
+	"golang.org/x/exp/constraints"
 )
+
+func sortedKeys[K constraints.Ordered, V any](m map[K]V) []K {
+	keys := make([]K, len(m))
+	i := 0
+	for k := range m {
+		keys[i] = k
+		i++
+	}
+	sort.Slice(keys, func(i, j int) bool { return keys[i] < keys[j] })
+	return keys
+}
 
 // hasSpfRecords returns true if this record requests SPF unrolling.
 func flattenSPFs(cfg *models.DNSConfig) []error {
@@ -15,9 +28,9 @@ func flattenSPFs(cfg *models.DNSConfig) []error {
 	var errs []error
 	var err error
 	for _, domain := range cfg.Domains {
-		apexTXTs := domain.Records.GroupedByKey()[models.RecordKey{Type: "TXT", NameFQDN: domain.Name}]
+		txtRecords := domain.Records.GetByType("TXT")
 		// flatten all spf records that have the "flatten" metadata
-		for _, txt := range apexTXTs {
+		for _, txt := range txtRecords {
 			var rec *spflib.SPFRecord
 			txtTarget := strings.Join(txt.TxtStrings, "")
 			if txt.Metadata["flatten"] != "" || txt.Metadata["split"] != "" {
@@ -74,7 +87,9 @@ func flattenSPFs(cfg *models.DNSConfig) []error {
 					continue
 				}
 				recs := rec.TXTSplit(split+"."+domain.Name, overhead1, txtMaxSize)
-				for k, v := range recs {
+
+				for _, k := range sortedKeys(recs) {
+					v := recs[k]
 					if k == "@" {
 						txt.SetTargetTXTs(v)
 					} else {

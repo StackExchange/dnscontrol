@@ -7,17 +7,21 @@ jsId: OVH
 
 ## Configuration
 
-In your providers config json file you must provide a OVH app-key, app-secret-key and consumer-key:
+To use this provider, add an entry to `creds.json` with `TYPE` set to `OVH`
+along with a OVH app-key, app-secret-key and consumer-key.
 
-{% highlight json %}
+Example:
+
+```json
 {
-  "ovh":{
+  "ovh": {
+    "TYPE": "OVH",
     "app-key": "your app key",
     "app-secret-key": "your app secret key",
     "consumer-key": "your consumer key"
   }
 }
-{% endhighlight %}
+```
 
 See [the Activation section](#activation) for details on obtaining these credentials.
 
@@ -27,28 +31,27 @@ This provider does not recognize any special metadata fields unique to OVH.
 
 ## Usage
 
-Example javascript:
+An example `dnsconfig.js` configuration: (DNS hosted with OVH):
 
-Example javascript (DNS hosted with OVH):
-{% highlight js %}
-var REG_OVH = NewRegistrar("ovh", "OVH");
-var OVH = NewDnsProvider("ovh", "OVH");
+```js
+var REG_OVH = NewRegistrar("ovh");
+var DSP_OVH = NewDnsProvider("ovh");
 
-D("example.tld", REG_OVH, DnsProvider(OVH),
-    A("test","1.2.3.4")
+D("example.tld", REG_OVH, DnsProvider(DSP_OVH),
+    A("test", "1.2.3.4")
 );
-{% endhighlight %}
+```
 
-Example javascript (Registrar only. DNS hosted elsewhere):
+An example `dnsconfig.js` configuration: (Registrar only. DNS hosted elsewhere)
 
-{% highlight js %}
-var REG_OVH = NewRegistrar("ovh", "OVH");
-var R53 = NewDnsProvider("r53", "ROUTE53");
+```js
+var REG_OVH = NewRegistrar("ovh");
+var DSP_R53 = NewDnsProvider("r53");
 
-D("example.tld", REG_OVH, DnsProvider(R53),
-    A("test","1.2.3.4")
+D("example.tld", REG_OVH, DnsProvider(DSP_R53),
+    A("test", "1.2.3.4")
 );
-{%endhighlight%}
+```
 
 
 ## Activation
@@ -62,7 +65,7 @@ which gives the `app-key` and `app-secret-key`.
 Once done, to obtain the `consumer-key` it is necessary to authorize the just created app
 to access the data in a specific account:
 
-{% highlight bash %}
+```bash
 curl -XPOST -H"X-Ovh-Application: <you-app-key>" -H "Content-type: application/json" https://eu.api.ovh.com/1.0/auth/credential -d'{
   "accessRules": [
     {
@@ -95,16 +98,17 @@ curl -XPOST -H"X-Ovh-Application: <you-app-key>" -H "Content-type: application/j
     }
   ]
 }'
-{% endhighlight %}
+```
 
 It should return something akin to:
-{% highlight json %}
+
+```json
 {
   "validationUrl": "https://eu.api.ovh.com/auth/?credentialToken=<long-token>",
   "consumerKey": "<your-consumer-key>",
   "state": "pendingValidation"
 }
-{% endhighlight %}
+```
 
 Open the "validationUrl" in a browser and log in with your OVH account. This will link the app with your account,
 authorizing it to access your zones and domains.
@@ -119,14 +123,13 @@ control panel manually.
 
 ## Dual providers scenario
 
-Since OVH doesn't allow to host DNS for a domain that is not registered in their registrar, some dual providers
-scenario are not possible:
+OVH now allows to host DNS zone for a domain that is not registered in their registrar (see: https://www.ovh.com/manager/web/#/zone). The following dual providers scenario are supported:
 
 | registrar | zone        | working? |
 |:---------:|:-----------:|:--------:|
 |  OVH      | other       |    √     |
 |  OVH      | OVH + other |    √     |
-|  other    | OVH         |    X     |
+|  other    | OVH         |    √     |
 
 ## Caveat
 

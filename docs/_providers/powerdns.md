@@ -7,24 +7,28 @@ jsId: POWERDNS
 # PowerDNS Provider
 
 ## Configuration
-In your credentials file, you must provide your [API URL, API Key and Server ID](https://doc.powerdns.com/authoritative/http-api/index.html). 
 
-In most cases the Server id is `localhost`
+To use this provider, add an entry to `creds.json` with `TYPE` set to `POWERDNS`
+along with your [API URL, API Key and Server ID](https://doc.powerdns.com/authoritative/http-api/index.html).
+In most cases the Server id is `localhost`.
 
-{% highlight json %}
+Example:
+
+```json
 {
   "powerdns": {
-    "apiurl": "http://localhost",
-    "apikey": "your-key",
-    "servername": "localhost"
+    "TYPE": "POWERDNS",
+    "apiKey": "your-key",
+    "apiUrl": "http://localhost",
+    "serverName": "localhost"
   }
 }
-{% endhighlight %}
+```
 
 ## Metadata
 Following metadata are available:
 
-{% highlight js %}
+```js
 {
     'default_ns': [
         'a.example.com.',
@@ -32,26 +36,22 @@ Following metadata are available:
     ],
     'dnssec_on_create': false
 }
-{% endhighlight %}
+```
 
 - `default_ns` sets the nameserver which are used
 - `dnssec_on_create` specifies if DNSSEC should be enabled when creating zones
 
 ## Usage
-Example Javascript:
+An example `dnsconfig.js` configuration:
 
-{% highlight js %}
-var REG_NONE = NewRegistrar('none', 'NONE')
-var POWERDNS = NewDnsProvider("powerdns", "POWERDNS");
+```js
+var REG_NONE = NewRegistrar("none");
+var DSP_POWERDNS = NewDnsProvider("powerdns");
 
-D("example.tld", REG_NONE, DnsProvider(POWERDNS),
-    A("test","1.2.3.4")
+D("example.tld", REG_NONE, DnsProvider(DSP_POWERDNS),
+    A("test", "1.2.3.4")
 );
-{%endhighlight%}
+```
 
 ## Activation
 See the [PowerDNS documentation](https://doc.powerdns.com/authoritative/http-api/index.html) how the API can be enabled.
-
-## Caveats
-Currently it is only possible to enable DNSSec while creating a new zone.
-On-demand activation/deactivation of DNSSec will be added later.

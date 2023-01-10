@@ -3,18 +3,20 @@ package cloudns
 import (
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"net/http"
 	"strconv"
+	"time"
 )
 
-// Api layer for CloDNS
+// Api layer for ClouDNS
 type cloudnsProvider struct {
 	domainIndex      map[string]string
 	nameserversNames []string
 	creds            struct {
 		id       string
 		password string
+		subid    string
 	}
 }
 
@@ -61,25 +63,15 @@ type domainRecord struct {
 	TlsaMatchingType string `json:"tlsa_matching_type,omitempty"`
 	SshfpAlgorithm   string `json:"algorithm,omitempty"`
 	SshfpFingerprint string `json:"fp_type,omitempty"`
+	DsKeyTag         string `json:"key_tag,omitempty"`
+	DsAlgorithm      string `json:"dsalgorithm,omitempty"`
+	DsDigestType     string `json:"digest_type,omitempty"`
+	DsDigest         string `json:"dsdigest,omitempty"`
 }
 
 type recordResponse map[string]domainRecord
 
-var allowedTTLValues = []uint32{
-	60,      // 1 minute
-	300,     // 5 minutes
-	900,     // 15 minutes
-	1800,    // 30 minutes
-	3600,    // 1 hour
-	21600,   // 6 hours
-	43200,   // 12 hours
-	86400,   // 1 day
-	172800,  // 2 days
-	259200,  // 3 days
-	604800,  // 1 week
-	1209600, // 2 weeks
-	2419200, // 4 weeks
-}
+var allowedTTLValues = []uint32{}
 
 func (c *cloudnsProvider) fetchAvailableNameservers() error {
 	c.nameserversNames = nil
@@ -98,6 +90,21 @@ func (c *cloudnsProvider) fetchAvailableNameservers() error {
 		}
 
 	}
+	return nil
+}
+
+func (c *cloudnsProvider) fetchAvailableTTLValues(domain string) error {
+	allowedTTLValues = nil
+	params := requestParams{
+		"domain-name": domain,
+	}
+
+	var bodyString, err = c.get("/dns/get-available-ttl.json", params)
+	if err != nil {
+		return fmt.Errorf("failed fetching available TTL values list from ClouDNS: %s", err)
+	}
+
+	json.Unmarshal(bodyString, &allowedTTLValues)
 	return nil
 }
 
@@ -142,7 +149,7 @@ func (c *cloudnsProvider) createDomain(domain string) error {
 
 func (c *cloudnsProvider) createRecord(domainID string, rec requestParams) error {
 	rec["domain-name"] = domainID
-	if _, err := c.get("/dns/add-record.json", rec); err != nil {
+	if _, err := c.get("/dns/add-record.json", rec); err != nil { // here we add record
 		return fmt.Errorf("failed create record (ClouDNS): %s", err)
 	}
 	return nil
@@ -191,10 +198,11 @@ func (c *cloudnsProvider) get(endpoint string, params requestParams) ([]byte, er
 	req, _ := http.NewRequest("GET", "https://api.cloudns.net"+endpoint, nil)
 	q := req.URL.Query()
 
-	//TODO: Support  sub-auth-id / sub-auth-user https://asia.cloudns.net/wiki/article/42/
+	//TODO: Support  sub-auth-user https://asia.cloudns.net/wiki/article/42/
 	// Add auth params
 	q.Add("auth-id", c.creds.id)
 	q.Add("auth-password", c.creds.password)
+	q.Add("sub-auth-id", c.creds.subid)
 
 	for pName, pValue := range params {
 		q.Add(pName, pValue)
@@ -202,12 +210,15 @@ func (c *cloudnsProvider) get(endpoint string, params requestParams) ([]byte, er
 
 	req.URL.RawQuery = q.Encode()
 
+	// ClouDNS has a rate limit (not documented) of 10 request/second
+	// so we do a very primitive rate-limiting here - delay every request for 100ms - so max. 10 requests/second ...
+	time.Sleep(100 * time.Millisecond)
 	resp, err := client.Do(req)
 	if err != nil {
 		return []byte{}, err
 	}
 
-	bodyString, _ := ioutil.ReadAll(resp.Body)
+	bodyString, _ := io.ReadAll(resp.Body)
 
 	// Got error from API ?
 	var errResp errorResponse

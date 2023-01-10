@@ -1,0 +1,6 @@
+$TTL 300
+_ntp._udp        IN SRV   0 0 1 zeros.foo.com.
+                 IN SRV   1 100 123 one.foo.com.
+                 IN SRV   2 100 123 two.foo.com.
+                 IN SRV   3 100 123 localhost.foo.com.
+                 IN SRV   4 100 123 three.example.com.

@@ -1,22 +1,28 @@
 {
-  "registrars": [],
   "dns_providers": [],
   "domains": [
     {
-      "name": "foo.com",
-      "registrar": "reg",
       "dnsProviders": {},
+      "name": "foo2.com",
+      "records": [],
+      "registrar": "reg"
+    },
+    {
+      "dnsProviders": {},
+      "name": "foo.com",
       "records": [
         {
-          "type": "IMPORT_TRANSFORM",
+          "meta": {
+            "transform_table": "0.0.0.0 ~ 1.1.1.1 ~ 2.2.2.2 ~ "
+          },
           "name": "@",
           "target": "foo2.com",
           "ttl": 60,
-          "meta": {
-            "transform_table": "0.0.0.0 ~ 1.1.1.1 ~ 2.2.2.2 ~ "
-          }
+          "type": "IMPORT_TRANSFORM"
         }
-      ]
+      ],
+      "registrar": "reg"
     }
-  ]
+  ],
+  "registrars": []
 }

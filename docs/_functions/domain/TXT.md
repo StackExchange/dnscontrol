@@ -10,66 +10,100 @@ TXT adds an TXT record To a domain. The name should be the relative
 label for the record. Use `@` for the domain apex.
 
 The contents is either a single or multiple strings.  To
-specify multiple strings, include them in an array.
-
-TXT records with multiple strings are only supported by some
-providers. DNSControl will produce a validation error if the
-provider does not support multiple strings.
+specify multiple strings, specify them as an array.
 
 Each string is a JavaScript string (quoted using single or double
 quotes).  The (somewhat complex) quoting rules of the DNS protocol
 will be done for you.
 
-Modifiers can be any number of [record modifiers](#record-modifiers) or json objects, which will be merged into the record's metadata.
+Modifiers can be any number of [record modifiers](#record-modifiers) or JSON objects, which will be merged into the record's metadata.
 
-{% include startExample.html %}
-{% highlight js %}
+{% capture example %}
+```js
     D("example.com", REGISTRAR, ....,
       TXT('@', '598611146-3338560'),
       TXT('listserve', 'google-site-verification=12345'),
       TXT('multiple', ['one', 'two', 'three']),  // Multiple strings
       TXT('quoted', 'any "quotes" and escapes? ugh; no worries!'),
       TXT('_domainkey', 't=y; o=-;'), // Escapes are done for you automatically.
-      TXT('long', '#'.repeat(10), AUTOSPLIT) // Escapes are done for you automatically.
+      TXT('long', 'X'.repeat(300)) // Long strings are split automatically.
     );
-{%endhighlight%}
-{% include endExample.html %}
+```
+{% endcapture %}
+
+{% include example.html content=example %}
+
+NOTE: In the past, long strings had to be annotated with the keyword
+`AUTOSPLIT`. This is no longer required. The keyword is now a no-op.
+
+### Long strings
+
+Strings that are longer than 255 octets (bytes) will be quietly
+split into 255-octets chunks or the provider may report an error
+if it does not handle multiple strings.
 
 
-# Long and multiple strings
+### TXT record edge cases
 
-DNS RFCs limit TXT strings to 255 bytes, but you can have multiple
-such strings.  Most applications blindly concatenate the strings but
-some services that use TXT records join them with a space between each
-substring (citation needed!).
+Most providers do not support the full possibilities of what a TXT
+record can store.  DNSControl can not handle all the edge cases
+and incompatibles that providers have introduced.  Instead, it
+stores the string(s) that you provide and passes them to the provider
+verbatim. The provider may opt to accept the data, fix it, or
+reject it. This happens early in the processing, long before
+the DNSControl talks to the provider's API.
 
-Not all providers support multiple strings and those that do often put
-limits on them.
+The RFCs specify that a TXT record stores one or more strings,
+each is up to 255 octets (bytes) long. We call these individual
+strings *chunks*.  Each chunk may be zero to 255 octets long.
+There is no limit to the number of chunks in a TXT record,
+other than IP packet length restrictions.  The contents of each chunk
+may be octets of value from 0x00 to 0xff.
 
-Therefore, DNSControl requires you to explicitly mark TXT records that
-should be split.
+In reality DNS Service Providers (DSPs) place many restrictions on TXT
+records.
 
-Here are some examples:
+Some DSPs only support a single string of 255 octets or fewer.
+Multiple strings, or any one string being longer than 255 octets will
+result in an error. One provider limits the string to 254 octets,
+which makes me think they're code has an off-by-one error.
 
-    VERY_LONG_STRING = 'Z'.repeat(300)
+Some DSPs only support one string, but it may be of any length.
+Behind the scenes the provider splits it into 255-octet chunks
+(except the last one, of course).
 
-    // This will produce a validation-time error:
-    TXT('long1', VERY_LONG_STRING),
+Some DSPs support multiple strings, but API requests must be 512-bytes
+or fewer, and with quoting, escaping, and other encoding mishegoss
+you can't be sure what will be permitted until you actually try it.
 
-    // String will be split on 255-byte boundaries:
-    TXT('long', VERY_LONG_STRING, AUTOSPLIT),
+Regardless of the quantity and length of strings, some providers ban
+double quotes, back-ticks, or other chars.
 
-    // String split manually:
-    TXT('long', ['part1', 'part2', 'part3']),
+### Testing the support of a provider
 
-NOTE: Old releases of DNSControl blindly sent long strings to
-providers. Some gave an error at that time, others quietly truncated
-the strings, and some silently split them into multiple short
-strings.  If you see an error that mentions
-`ERROR: txt target >255 bytes and AUTOSPLIT not set` this means you
-need to add AUTOSPLIT to explicitly split the string manually.
+#### How can you tell if a provider will support a particular `TXT()` record?
 
-An example error might look like this:
+Include the `TXT()` record in a `D()` as usual, along
+with the `DnsProvider()` for that provider.  Run `dnscontrol check` to
+see if any errors are produced.  The check command does not talk to
+the provider's API, thus permitting you to do this without having an
+account at that provider.
 
-    2020/11/21 00:03:21 printIR.go:94: ERROR: txt target >255 bytes and AUTOSPLIT not set: label="20201._domainkey" index=0 len=424 string[:50]="v=DKIM1; k=rsa; t=s; s=email; p=MIIBIjANBgkqhkiG9w..."
+#### What if the provider rejects a string that is supported?
 
+Suppose I can create the TXT record using the DSP's web portal but
+DNSControl rejects the string?
+
+It is possible that the provider code in DNSControl rejects strings
+that the DSP accepts.  This is because the test is done in code, not
+by querying the provider's API.  It is possible that the code was
+written to work around a bug (such as rejecting a string with a
+back-tick) but now that bug has been fixed.
+
+All such checks are in `providers/${providername}/auditrecords.go`.
+You can try removing the check that you feel is in error and see if
+the provider's API accepts the record.  You can do this by running the
+integration tests, or by simply adding that record to an existing
+`dnsconfig.js` and seeing if `dnscontrol push` is able to push that
+record into production. (Be careful if you are testing this on a
+domain used in production.)

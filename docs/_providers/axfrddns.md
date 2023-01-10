@@ -18,6 +18,19 @@ and [Yadifa](https://www.yadifa.eu/home).
 
 ## Configuration
 
+To use this provider, add an entry to `creds.json` with `TYPE` set to `AXFRDDNS`.
+
+### Connection modes
+
+Zone transfers default to TCP, DDNS updates default to UDP when
+using this provider.
+
+The following two parameters in `creds.json` allow switching
+to TCP or TCP over TLS.
+
+* `update-mode`: May contain `udp` (the default), `tcp`, or `tcp-tls`.
+* `transfer-mode`: May contain `tcp` (the default), or `tcp-tls`.
+
 ### Authentication
 
 Authentication information is included in the `creds.json` entry for
@@ -28,14 +41,15 @@ the provider:
 
 For instance, your `creds.json` might looks like:
 
-{% highlight json %}
+```json
 {
-    "axfrddns": {
-        "transfer-key": "hmac-sha256:transfer-key-id:Base64EncodedSecret=",
-        "update-key": "hmac-sha256:update-key-id:AnotherSecret="
-    }
+  "axfrddns": {
+    "TYPE": "AXFRDDNS",
+    "transfer-key": "hmac-sha256:transfer-key-id:Base64EncodedSecret=",
+    "update-key": "hmac-sha256:update-key-id:AnotherSecret="
+  }
 }
-{% endhighlight %}
+```
 
 If either key is missing, DNSControl defaults to IP-based ACL
 authentication for that function. Including both keys is the most
@@ -45,14 +59,14 @@ operations, which is the least secure option.
 If distinct zones require distinct keys, you will need to instantiate the
 provider once for each key:
 
-{% highlight javascript %}
-var AXFRDDNS_A = NewDnsProvider('axfrddns-a', 'AXFRDDNS'}
-var AXFRDDNS_B = NewDnsProvider('axfrddns-b', 'AXFRDDNS'}
-{% endhighlight %}
+```js
+var DSP_AXFRDDNS_A = NewDnsProvider("axfrddns-a");
+var DSP_AXFRDDNS_B = NewDnsProvider("axfrddns-b");
+```
 
 And update `creds.json` accordingly:
 
-{% highlight json %}
+```json
 {
     "axfrddns-a": {
         "transfer-key": "hmac-sha256:transfer-key-id:Base64EncodedSecret=",
@@ -63,7 +77,7 @@ And update `creds.json` accordingly:
         "update-key": "hmac-sha512:update-key-id-B:YetAnotherSecret="
     }
 }
-{% endhighlight %}
+```
 
 ### Default nameservers
 
@@ -74,22 +88,23 @@ provider.
 This list can be provided either as metadata or in `creds.json`. Only
 the later allows `get-zones` to work properly.
 
-{% highlight javascript %}
-var AXFRDDNS = NewDnsProvider('axfrddns', 'AXFRDDNS',
-    'default_ns': [
-        'ns1.example.tld.',
-        'ns2.example.tld.',
-        'ns3.example.tld.',
-        'ns4.example.tld.'
-    ]
+```js
+var DSP_AXFRDDNS = NewDnsProvider("axfrddns", {
+        "default_ns": [
+            "ns1.example.tld.",
+            "ns2.example.tld.",
+            "ns3.example.tld.",
+            "ns4.example.tld."
+        ]
+    }
 }
-{% endhighlight %}
+```
 
-{% highlight json %}
+```json
 {
    nameservers = "ns1.example.tld,ns2.example.tld,ns3.example.tld,ns4.example.tld"
 }
-{% endhighlight %}
+```
 
 ### Primary master
 
@@ -102,20 +117,20 @@ of the zone. In that case, the IP or the name of the primary server
 must be provided in `creds.json`. With this option, a non-standard
 port might be used.
 
-{% highlight json %}
+```json
 {
    master = "10.20.30.40:5353"
 }
-{% endhighlight %}
+```
 
 When no nameserver appears in the zone, and no default nameservers nor
 custom master are configured, the AXFR+DDNS provider will fail with
 the following error message:
 
-{% highlight text %}
+```text
 [Error] AXFRDDNS: the nameservers list cannot be empty.
 Please consider adding default `nameservers` or an explicit `master` in `creds.json`.
-{% endhighlight %}
+```
 
 
 ## Server configuration examples
@@ -126,18 +141,18 @@ Here is a sample `named.conf` example for an authauritative server on
 zone `example.tld`. It uses a simple IP-based ACL for the AXFR
 transfer and a conjunction of TSIG and IP-based ACL for the updates.
 
-{% highlight javascript %}
+```js
 options {
 
-	listen-on { any; };
-	listen-on-v6 { any; };
+    listen-on { any; };
+    listen-on-v6 { any; };
 
-	allow-query { any; };
-	allow-notify { none; };
-	allow-recursion { none; };
-	allow-transfer { none; };
-	allow-update { none; };
-	allow-query-cache { none; };
+    allow-query { any; };
+    allow-notify { none; };
+    allow-recursion { none; };
+    allow-transfer { none; };
+    allow-update { none; };
+    allow-query-cache { none; };
 
 };
 
@@ -168,7 +183,7 @@ key update-key-id {
   algorithm HMAC-SHA256;
   secret "AnotherSecret=";
 };
-{% endhighlight %}
+```
 
 ## FYI: get-zones
 
@@ -179,9 +194,9 @@ THe AXFR+DDNS provider does not display DNSSec records. But, if any
 DNSSec records is found in the zone, it will replace all of them with
 a single placeholder record:
 
-{% highlight text %}
+```text
     __dnssec         IN TXT   "Domain has DNSSec records, not displayed here."
-{% endhighlight %}
+```
 
 ## FYI: create-domain
 
@@ -196,3 +211,7 @@ When AutoDNSSEC is enabled, the AXFR+DDNS provider will emit a warning when no R
 When AutoDNSSEC is disabled, the AXFR+DDNS provider will emit a warning when RRSIG, DNSKEY or NSEC records are found in the zone.
 
 When AutoDNSSEC is not enabled or disabled, no checking is done.
+
+## FYI: MD5 Support
+
+By default the used DNS Go package by miekg has deprecated supporting the (insecure) MD5 algorithm [https://github.com/miekg/dns/commit/93945c284489394b77653323d11d5de83a2a6fb5](Link). Some providers like the Leibniz Supercomputing Centre (LRZ) located in Munich still use this algorithm to authenticate internal dynamic DNS updates. To compensate the lack of MD5 a custom MD5 TSIG Provider was added into DNSControl.  

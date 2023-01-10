@@ -1,9 +1,0 @@
-{
-  "bind": {
-  },
-  "r53_ACCOUNTNAME": {
-    "KeyId": "change_to_your_keyid",
-    "SecretKey": "change_to_your_secretkey",
-    "Token": "optional_sts_token"
-  }
-}

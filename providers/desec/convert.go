@@ -42,7 +42,6 @@ func recordsToNative(rcs []*models.RecordConfig, origin string) []resourceRecord
 
 	var keys = map[models.RecordKey]*resourceRecord{}
 	var zrs []resourceRecord
-
 	for _, r := range rcs {
 		label := r.GetLabel()
 		if label == "@" {
@@ -58,10 +57,7 @@ func recordsToNative(rcs []*models.RecordConfig, origin string) []resourceRecord
 				Subname: label,
 				Records: []string{r.GetTargetCombined()},
 			}
-			zrs = append(zrs, zr)
-			//keys[key] = &zr   // This didn't work.
-			keys[key] = &zrs[len(zrs)-1] // This does work. I don't know why.
-
+			keys[key] = &zr
 		} else {
 			zr.Records = append(zr.Records, r.GetTargetCombined())
 
@@ -75,5 +71,8 @@ func recordsToNative(rcs []*models.RecordConfig, origin string) []resourceRecord
 		}
 	}
 
+	for _, zr := range keys {
+		zrs = append(zrs, *zr)
+	}
 	return zrs
 }

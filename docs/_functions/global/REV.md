@@ -9,7 +9,7 @@ example `REV('1.2.3.0/24')` returns `3.2.1.in-addr.arpa.` and
 `REV('2001:db8:302::/48)` returns `2.0.3.0.8.b.d.0.1.0.0.2.ip6.arpa.`.
 This is used in `D()` functions to create reverse DNS lookup zones.
 
-This is a convenience function. You could specify `D('3.2.1.in-addr.arpa`,
+This is a convenience function. You could specify `D('3.2.1.in-addr.arpa',
 ...` if you like to do things manually but why would you risk making
 typos?
 
@@ -26,11 +26,11 @@ If the address does not include a "/" then `REV` assumes /32 for IPv4 addresses
 and /128 for IPv6 addresses.
 
 Note that the lower bits (the ones outside the netmask) must be zeros. They are not
-zeroed out automatically. Thus, `REV('1.2.3.4/24') is an error.  This is done
+zeroed out automatically. Thus, `REV('1.2.3.4/24')` is an error.  This is done
 to catch typos.
 
-{% include startExample.html %}
-{% highlight js %}
+{% capture example %}
+```js
 D(REV('1.2.3.0/24'), REGISTRAR, DnsProvider(BIND),
   PTR("1", 'foo.example.com.'),
   PTR("2", 'bar.example.com.'),
@@ -45,10 +45,10 @@ D(REV('2001:db8:302::/48'), REGISTRAR, DnsProvider(BIND),
   PTR("2001:db8:302::2", 'two.example.com.'),                          // 2.0.0...
   PTR("2001:db8:302::3", 'three.example.com.'),                        // 3.0.0...
 );
+```
+{% endcapture %}
 
-
-{%endhighlight%}
-{% include endExample.html %}
+{% include example.html content=example %}
 
 In the future we plan on adding a flag to `A()` which will insert
 the correct PTR() record if the appropriate `D(REV()` domain (i.e. `.arpa` domain) has been

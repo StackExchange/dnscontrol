@@ -7,58 +7,63 @@ title: Getting Started
 
 ## 1. Install the software
 
-## From source
+Choose one of the following installation methods:
 
-DNSControl can be built with Go version 1.14 or higher.
+### Homebrew
 
-The `go get` command will will download the source, compile it, and
+On macOS (or Linux) you can install it using [Homebrew](https://brew.sh).
+
+```bash
+brew install dnscontrol
+```
+
+### MacPorts
+
+Alternatively on macOS you can install it using [MacPorts](https://www.macports.org).
+
+```bash
+sudo port install dnscontrol
+````
+
+### Docker
+
+You can use DNSControl locally using the Docker image from [Docker hub](https://hub.docker.com/r/stackexchange/dnscontrol/) and the command below.
+
+```bash
+docker run --rm -it -v $(pwd)/dnsconfig.js:/dns/dnsconfig.js -v $(pwd)/creds.json:/dns/creds.json stackexchange/dnscontrol preview
+```
+
+### Binaries
+
+Download binaries from [GitHub](https://github.com/StackExchange/dnscontrol/releases/latest) for Linux (binary, tar, RPM, DEB), FreeBSD (tar), Windows (exec, ZIP) for 32-bit, 64-bit, and ARM.
+
+### Source
+
+DNSControl can be built from source with Go version 1.18 or higher.
+
+The `go install` command will download the source, compile it, and
 install `dnscontrol` in your `$GOBIN` directory.
 
 To install, simply run
 
-    GO111MODULE=on go get github.com/StackExchange/dnscontrol/v3
+    go install github.com/StackExchange/dnscontrol/v3@latest
 
 To download the source
 
-    git clone github.com/StackExchange/dnscontrol
+    git clone https://github.com/StackExchange/dnscontrol
 
 If these don't work, more info is in [#805](https://github.com/StackExchange/dnscontrol/issues/805).
 
----
-
-
-## Via packages
-
-Get prebuilt binaries from [github releases](https://github.com/StackExchange/dnscontrol/releases/latest)
-
-Alternatively, on Mac you can install it using homebrew:
-
-`brew install dnscontrol`
-
-## Via [docker](https://hub.docker.com/r/stackexchange/dnscontrol/)
-
-```
-docker run --rm -it -v $(pwd)/dnsconfig.js:/dns/dnsconfig.js -v $(pwd)/creds.json:/dns/creds.json stackexchange/dnscontrol dnscontrol preview
-```
-
-
-## 2. Create a place for the config files.
+## 2. Create a place for the config files
 
 Create a directory where you'll be storing your configuration files.
 We highly recommend storing these files in a Git repo, but for
 simple tests anything will do.
 
-Note: Do **not** store your creds.json file in Git unencrypted.
-That is unsafe. Add `creds.json` to your
-`.gitignore` file as a precaution.  This file should be encrypted
-using something
-like [git-crypt](https://www.agwa.name/projects/git-crypt) or
-[Blackbox](https://github.com/StackExchange/blackbox).
-
 Create a subdirectory called `zones` in the same directory as the
 configuration files.  (`mkdir zones`).  `zones` is where the BIND
 provider writes the zonefiles it creates. Even if you don't
-use BIND, it is useful for testing.
+use BIND for DNS service, it is useful for testing.
 
 
 ## 3. Create the initial `dnsconfig.js`
@@ -67,49 +72,61 @@ use BIND, it is useful for testing.
 domains, and so on.
 
 Start your `dnsconfig.js` file by downloading
-[dnsconfig.js-example.txt]({{ site.github.url }}/assets/dnsconfig.js-example.txt))
+[dnsconfig.js](https://github.com/StackExchange/dnscontrol/blob/master/docs/assets/getting-started/dnsconfig.js)
 and renaming it.
 
 The file looks like:
 
-{% highlight js %}
-
+```js
 // Providers:
 
-var REG_NONE = NewRegistrar('none', 'NONE');    // No registrar.
-var DNS_BIND = NewDnsProvider('bind', 'BIND');  // ISC BIND.
+var REG_NONE = NewRegistrar('none');    // No registrar.
+var DNS_BIND = NewDnsProvider('bind');  // ISC BIND.
 
 // Domains:
 
 D('example.com', REG_NONE, DnsProvider(DNS_BIND),
     A('@', '1.2.3.4')
 );
-{%endhighlight%}
+```
 
-You may modify this file to match your particular providers and domains. See [the javascript docs]({{site.github.url}}/js) and  [the provider docs]({{site.github.url}}/provider-list) for more details.
-If you are using other providers, you will likely need to make a `creds.json` file with api tokens and other account information. For example, to use both name.com and Cloudflare, you would have:
+Modify this file to match your particular providers and domains. See [the DNSConfig docs]({{site.github.url}}/js) and  [the provider docs]({{site.github.url}}/provider-list) for more details.
 
-{% highlight js %}
+Create a file called `creds.json` for storing provider configurations (API tokens and other account information).
+For example, to use both name.com and Cloudflare, you would have:
+
+```json
 {
-  "cloudflare":{ // provider name to be used in dnsconfig.js
-    "apitoken": "token" // API token
+  "cloudflare": {                               // The provider name used in dnsconfig.js
+    "TYPE": "CLOUDFLAREAPI",                    // The provider type identifier
+    "accountid": "your-cloudflare-account-id",  // credentials
+    "apitoken": "your-cloudflare-api-token"     // credentials
   },
-  "namecom":{ // provider name to be used in dnsconfig.js
-    "apikey": "key", // API Key
-    "apiuser": "username" // username for name.com
-  }
+  "namecom": {                                  // The provider name used in dnsconfig.js
+    "TYPE": "NAMEDOTCOM",                       // The provider type identifier
+    "apikey": "key",                            // credentials
+    "apiuser": "username"                       // credentials
+  },
+  "none": { "TYPE": "NONE" }                    // The no-op provider
 }
-{%endhighlight%}
+```
+
+Note: Do **not** store your `creds.json` file in Git unencrypted.
+That is unsafe. Add `creds.json` to your
+`.gitignore` file as a precaution.  This file should be encrypted
+using something
+like [git-crypt](https://www.agwa.name/projects/git-crypt) or
+[Blackbox](https://github.com/StackExchange/blackbox).
 
 There are 2 types of providers:
 
 A "Registrar" is who you register the domain with.  Start with
-`REG_NONE`, which is a provider that never talks to or updates the
+`NONE`, which is a provider that never talks to or updates the
 registrar.  You can define your registrar later when you want to
 use advanced features.
 
-The `DnsProvider` is the service that actually provides DNS service
-(port 53) and may be the same or different company. Even if both
+A "DnsProvider" is the service that actually provides DNS service
+(port 53) and may be the same or different as the registrar. Even if both
 your Registrar and DnsProvider are the same company, two different
 definitions must be included in `dnsconfig.js`.
 
@@ -121,23 +138,25 @@ It is only needed if any providers require credentials (API keys,
 usernames, passwords, etc.).
 
 Start your `creds.json` file by downloading
-[creds.json-example.txt]({{ site.github.url }}/assets/creds.json-example.txt))
+[creds.json](https://github.com/StackExchange/dnscontrol/blob/master/docs/assets/getting-started/creds.json)
 and renaming it.
 
 The file looks like:
 
-{% highlight js %}
+```js
 {
   "bind": {
+    "TYPE": "BIND"
   },
-  "r53_ACCOUNTNAME": {
+  "r53_accountname": {
+    "TYPE": "ROUTE53",
     "KeyId": "change_to_your_keyid",
     "SecretKey": "change_to_your_secretkey"
   }
 }
-{%endhighlight%}
+```
 
-Ignore the `r53_ACCOUNTNAME` section.  It is a placeholder and will be ignored. You
+Ignore the `r53_accountname` section.  It is a placeholder and will be ignored. You
 can use it later when you define your first set of API credentials.
 
 Note that `creds.json` is a JSON file. JSON is very strict about commas
@@ -145,17 +164,25 @@ and other formatting.  There are a few different ways to check for typos:
 
 Python:
 
-    python -m json.tool creds.json
+```bash
+python -m json.tool creds.json
+```
 
 jq:
 
-    jq < creds.json
+```bash
+jq . < creds.json
+```
 
 FYI: `creds.json` fields can be read from an environment variable. The field must begin with a `$` followed by the variable name. No other text. For example:
 
-    "apikey": "$GANDI_V5_APIKEY",
+```json
+{
+    "apikey": "$GANDI_V5_APIKEY"
+}
+```
 
-## 5. Test the sample files.
+## 5. Test the sample files
 
 Before you edit the sample files, verify that the system is working.
 
@@ -165,11 +192,14 @@ what changes need to be made and never makes any actual changes.
 It will use APIs if needed to find out what DNS entries currently
 exist.
 
+(All output assumes the `--verbose` flag)
+
 It should look something like this:
 
-{% highlight js %}
-
-$ dnscontrol preview
+```bash
+dnscontrol preview
+```
+```text
 Initialized 1 registrars and 1 dns service providers.
 ******************** Domain: example.com
 ----- Getting nameservers from: bind
@@ -179,14 +209,16 @@ Initialized 1 registrars and 1 dns service providers.
 
 ----- Registrar: none
 Done. 1 corrections.
-{%endhighlight%}
+```
 
 Next run `dnscontrol push` to actually make the changes. In this
 case, the change will be to create a zone file where one didn't
 previously exist.
 
-{% highlight js %}
-$ dnscontrol push
+```bash
+dnscontrol push
+```
+```text
 Initialized 1 registrars and 1 dns service providers.
 ******************** Domain: example.com
 ----- Getting nameservers from: bind
@@ -198,10 +230,10 @@ CREATING ZONEFILE: zones/example.com.zone
 SUCCESS!
 ----- Registrar: none
 Done. 1 corrections.
-{%endhighlight%}
+```
 
 
-## 6. Make a change.
+## 6. Make a change
 
 Try making a change to `dnsconfig.js`. For example, change the IP
 address of in `A('@', '1.2.3.4')` or add an additional A record.
@@ -209,8 +241,10 @@ address of in `A('@', '1.2.3.4')` or add an additional A record.
 In our case, we changed the IP address to 10.10.10.10. Previewing
 our change looks like this:
 
-{% highlight js %}
-$ dnscontrol preview
+```bash
+dnscontrol preview
+```
+```text
 Initialized 1 registrars and 1 dns service providers.
 ******************** Domain: example.com
 ----- Getting nameservers from: bind
@@ -220,7 +254,7 @@ MODIFY A example.com: (1.2.3.4 300) -> (10.10.10.10 300)
 
 ----- Registrar: none
 Done. 1 corrections.
-{%endhighlight%}
+```
 
 Notice that it read the old zone file and was able to produce a
 "diff" between the old `A` record and the new one.  If the zonefile
@@ -236,11 +270,11 @@ specific records.
 Take a look at the `zones/example.com.zone` file.  It should look
 like:
 
-{% highlight js %}
+```text
 $TTL 300
 @                IN SOA   DEFAULT_NOT_SET. DEFAULT_NOT_SET. 1 3600 600 604800 1440
                  IN A     10.10.10.10
-{%endhighlight%}
+```
 
 You can change the "DEFAULT_NOT_SET" text by following the documentation
 for the [BIND provider]({{site.github.url}}/providers/bind) to set
@@ -285,5 +319,5 @@ If you are going to use this in production, we highly recommend the following:
 * Store the configuration files in Git.
 * Encrypt the `creds.json` file before storing it in Git. Do NOT store
   API keys or other credentials without encrypting them.
-* Use a CI/CD tool like Jenkins/CircleCI/Github Actions/etc. to automatically push DNS changes.
-* Join the DNSControl community. File [issues and PRs](https://github.com/StackExchange/dnscontrol).
+* Use a CI/CD tool like [Gitlab]({{site.github.url}}/ci-cd-gitlab), Jenkins, CircleCI, [GitHub Actions](https://github.com/StackExchange/dnscontrol#via-github-actions-gha), etc. to automatically push DNS changes.
+* Join the DNSControl community. File [issues](https://github.com/StackExchange/dnscontrol/issues) and [PRs](https://github.com/StackExchange/dnscontrol/pulls).

@@ -40,43 +40,107 @@ var RegistrarTypes = map[string]RegistrarInitializer{}
 // DspInitializer is a function to create a DNS service provider. Function will be passed the unprocessed json payload from the configuration file for the given provider.
 type DspInitializer func(map[string]string, json.RawMessage) (DNSServiceProvider, error)
 
+// RecordAuditor is a function that verifies that all the records
+// are supportable by this provider. It returns a list of errors
+// detailing records that this provider can not support.
+type RecordAuditor func([]*models.RecordConfig) []error
+
+// DspFuncs lists functions registered with a provider.
+type DspFuncs struct {
+	Initializer   DspInitializer
+	RecordAuditor RecordAuditor
+}
+
 // DNSProviderTypes stores initializer for each DSP.
-var DNSProviderTypes = map[string]DspInitializer{}
+var DNSProviderTypes = map[string]DspFuncs{}
 
 // RegisterRegistrarType adds a registrar type to the registry by providing a suitable initialization function.
 func RegisterRegistrarType(name string, init RegistrarInitializer, pm ...ProviderMetadata) {
 	if _, ok := RegistrarTypes[name]; ok {
-		log.Fatalf("Cannot register registrar type %s multiple times", name)
+		log.Fatalf("Cannot register registrar type %q multiple times", name)
 	}
 	RegistrarTypes[name] = init
 	unwrapProviderCapabilities(name, pm)
 }
 
 // RegisterDomainServiceProviderType adds a dsp to the registry with the given initialization function.
-func RegisterDomainServiceProviderType(name string, init DspInitializer, pm ...ProviderMetadata) {
+func RegisterDomainServiceProviderType(name string, fns DspFuncs, pm ...ProviderMetadata) {
 	if _, ok := DNSProviderTypes[name]; ok {
-		log.Fatalf("Cannot register registrar type %s multiple times", name)
+		log.Fatalf("Cannot register registrar type %q multiple times", name)
 	}
-	DNSProviderTypes[name] = init
+	DNSProviderTypes[name] = fns
 	unwrapProviderCapabilities(name, pm)
 }
 
 // CreateRegistrar initializes a registrar instance from given credentials.
 func CreateRegistrar(rType string, config map[string]string) (Registrar, error) {
+	var err error
+	rType, err = beCompatible(rType, config)
+	if err != nil {
+		return nil, err
+	}
+
 	initer, ok := RegistrarTypes[rType]
 	if !ok {
-		return nil, fmt.Errorf("registrar type %s not declared", rType)
+		return nil, fmt.Errorf("no such registrar type: %q", rType)
 	}
 	return initer(config)
 }
 
 // CreateDNSProvider initializes a dns provider instance from given credentials.
-func CreateDNSProvider(dType string, config map[string]string, meta json.RawMessage) (DNSServiceProvider, error) {
-	initer, ok := DNSProviderTypes[dType]
-	if !ok {
-		return nil, fmt.Errorf("DSP type %s not declared", dType)
+func CreateDNSProvider(providerTypeName string, config map[string]string, meta json.RawMessage) (DNSServiceProvider, error) {
+	var err error
+	providerTypeName, err = beCompatible(providerTypeName, config)
+	if err != nil {
+		return nil, err
 	}
-	return initer(config, meta)
+
+	p, ok := DNSProviderTypes[providerTypeName]
+	if !ok {
+		return nil, fmt.Errorf("no such DNS service provider: %q", providerTypeName)
+	}
+	return p.Initializer(config, meta)
+}
+
+// beCompatible looks up
+func beCompatible(n string, config map[string]string) (string, error) {
+	// Pre 4.0: If n is a placeholder, substitute the TYPE from creds.json.
+	// 4.0: Require TYPE from creds.json.
+
+	ct := config["TYPE"]
+	// If a placeholder value was specified...
+	if n == "" || n == "-" {
+		// But no TYPE exists in creds.json...
+		if ct == "" {
+			return "-", fmt.Errorf("creds.json entry missing TYPE field")
+		}
+		// Otherwise, use the value from creds.json.
+		return ct, nil
+	}
+
+	// Pre 4.0: The user specified the name manually.
+	// Cross check to detect user-error.
+	if ct != "" && n != ct {
+		return "", fmt.Errorf("creds.json entry mismatch: specified=%q TYPE=%q", n, ct)
+	}
+	// Seems like the user did it the right way. Return the original value.
+	return n, nil
+
+	// NB(tlim): My hope is that in 4.0 this entire function will simply be the
+	// following, but I may be wrong:
+	//return config["TYPE"], nil
+}
+
+// AuditRecords calls the RecordAudit function for a provider.
+func AuditRecords(dType string, rcs models.Records) []error {
+	p, ok := DNSProviderTypes[dType]
+	if !ok {
+		return []error{fmt.Errorf("unknown DNS service provider type: %q", dType)}
+	}
+	if p.RecordAuditor == nil {
+		return []error{fmt.Errorf("DNS service provider type %q has no RecordAuditor", dType)}
+	}
+	return p.RecordAuditor(rcs)
 }
 
 // None is a basic provider type that does absolutely nothing. Can be useful as a placeholder for third parties or unimplemented providers.

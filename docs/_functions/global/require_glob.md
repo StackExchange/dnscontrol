@@ -13,25 +13,29 @@ Possible parameters are:
 - If being recursive. This is a boolean if the search should be recursive or not. Define either `true` or `false`. Default is `true`.
 
 Example to load `.js` files recursively:
-```
+
+```js
 require_glob("./domains/");
 ```
 
 Example to load `.js` files only in `domains/`:
-```
+
+```js
 require_glob("./domains/", false);
 ```
 
 One more important thing to note: `require_glob()` is as smart as `require()` is. It loads files always relative to the JavaScript
 file where it's being executed in. Let's go with an example, as it describes it better:
 
-dnscontrol.js:
-```
+`dnscontrol.js`:
+
+```js
 require("domains/index.js");
 ```
 
-domains/index.js:
-```
+`domains/index.js`:
+
+```js
 require_glob("./user1/");
 ```
 

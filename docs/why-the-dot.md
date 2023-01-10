@@ -7,13 +7,13 @@ title: Why CNAME/MX/NS targets require a "dot"
 
 You received this error message:
 
-```
+```text
  1: ERROR: target (ghs.googlehosted.com) includes a (.), must end with a (.)
 ```
 
 This means you should add a "." to the end of the target.
 
-```
+```js
 OLD   CNAME("foo", "ghs.googlehosted.com"),
 NEW   CNAME("foo", "ghs.googlehosted.com."),
                                         ^
@@ -23,11 +23,11 @@ NEW   CNAME("foo", "ghs.googlehosted.com."),
 ```
 
 
-# Why CNAME/MX/NS targets require a "dot"
+# Why CNAME/MX/NS targets require a trailing "dot"
 
 People are often confused about this error message:
 
-```
+```text
  1: ERROR: target (ghs.googlehosted.com) includes a (.), must end with a (.)
 ```
 
@@ -39,12 +39,11 @@ add the domain to it.
 
 Here are four examples:
 
-```
-    CNAME("foo", "bar)        // Permitted. (expands to bar.$DOMAIN)
+```js
+    CNAME("foo", "bar")        // Permitted. (expands to bar.$DOMAIN)
     CNAME("foo", "bar.com.")  // Permitted. (we are certain what the user wants)
     CNAME("foo", "bar.com")   // ERROR (ambiguous)
     CNAME("foo", "meta.xyz")  // ERROR (ambiguous)
-
 ```
 
 The first 2 examples are permitted.  The last 2 examples are

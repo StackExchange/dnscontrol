@@ -4,6 +4,7 @@ parameters:
   - name
   - target
   - ZONE_ID modifier
+provider: ROUTE53
 ---
 
 R53_ALIAS is a Route53 specific virtual record type that points a record at either another record or an AWS entity (like a Cloudfront distribution, an ELB, etc...). It is analogous to a CNAME, but is usually resolved at request-time and served as an A record. Unlike CNAMEs, ALIAS records can be used at the zone apex (`@`)
@@ -30,18 +31,18 @@ The zone id can be found depending on the target type:
 * _Elastic Beanstalk environment_: specify the hosted zone ID for the region in which the environment has been created. Refer to the [List of regions and hosted Zone IDs](http://docs.aws.amazon.com/general/latest/gr/rande.html#elasticbeanstalk_region).
 * _ELB load balancer_: specify the value of the hosted zone ID for the load balancer. You can find it in [the List of regions and hosted Zone IDs](http://docs.aws.amazon.com/general/latest/gr/rande.html#elb_region)
 * _S3 bucket_ (configured as website): specify the hosted zone ID for the region that you created the bucket in. You can find it in [the List of regions and hosted Zone IDs](http://docs.aws.amazon.com/general/latest/gr/rande.html#s3_region)
-* _Another Route 53 record_: you can either specify the correct zone id or do not specify anything and dnscontrol will figure out the right zone id. (Note: Route53 alias can't reference a record in a different zone).
+* _Another Route 53 record_: you can either specify the correct zone id or do not specify anything and DNSControl will figure out the right zone id. (Note: Route53 alias can't reference a record in a different zone).
 
-{% include startExample.html %}
-{% highlight js %}
-
+{% capture example %}
+```js
 D('example.com', REGISTRAR, DnsProvider('ROUTE53'),
   R53_ALIAS('foo', 'A', 'bar'),                              // record in same zone
   R53_ALIAS('foo', 'A', 'bar', R53_ZONE('Z35SXDOTRQ7X7K')),  // record in same zone, zone specified
-  R53_ALIAS('foo', 'A', 'blahblah.elasticloadbalancing.us-west-1.amazonaws.com', R53_ZONE('Z368ELLRRE2KJ0')),     // a classic ELB in us-west-1
-  R53_ALIAS('foo', 'A', 'blahblah.elasticbeanstalk.us-west-2.amazonaws.com', R53_ZONE('Z38NKT9BP95V3O')),     // an Elastic Beanstalk environment in us-west-2
-  R53_ALIAS('foo', 'A', 'blahblah-bucket.s3-website-us-west-1.amazonaws.com', R53_ZONE('Z2F56UZL2M1ACD')),     // a website S3 Bucket in us-west-1
+  R53_ALIAS('foo', 'A', 'blahblah.elasticloadbalancing.us-west-1.amazonaws.com.', R53_ZONE('Z368ELLRRE2KJ0')),     // a classic ELB in us-west-1
+  R53_ALIAS('foo', 'A', 'blahblah.elasticbeanstalk.us-west-2.amazonaws.com.', R53_ZONE('Z38NKT9BP95V3O')),     // an Elastic Beanstalk environment in us-west-2
+  R53_ALIAS('foo', 'A', 'blahblah-bucket.s3-website-us-west-1.amazonaws.com.', R53_ZONE('Z2F56UZL2M1ACD')),     // a website S3 Bucket in us-west-1
 );
+```
+{% endcapture %}
 
-{%endhighlight%}
-{% include endExample.html %}
+{% include example.html content=example %}

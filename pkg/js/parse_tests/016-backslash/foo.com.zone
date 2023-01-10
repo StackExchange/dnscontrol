@@ -1,0 +1,2 @@
+$TTL 300
+_dmarc           IN TXT   "v=DMARC1; p=reject; sp=reject; pct=100; rua=mailto:xx...@yyyy.com; ruf=mailto:xx...@yyyy.com; fo=1"

@@ -1,7 +1,7 @@
-var bind = NewDnsProvider("bind", "BIND");
-var REG_CHANGEME = NewRegistrar("ThirdParty", "NONE");
+var DSP_BIND = NewDnsProvider("bind", "BIND");
+var REG_CHANGEME = NewRegistrar("none");
 D("example.org", REG_CHANGEME,
-	DnsProvider(bind),
+	DnsProvider(DSP_BIND),
 	DefaultTTL(7200),
 	//SOA('@', 'ns1.example.org.', 'hostmaster.example.org.', 2020030700, 7200, 3600, 864000, 7200, TTL(43200)),
 	//NAMESERVER('ns1.example.org.'),

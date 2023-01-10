@@ -16,6 +16,7 @@ type DNSConfig struct {
 	Domains            []*DomainConfig               `json:"domains"`
 	RegistrarsByName   map[string]*RegistrarConfig   `json:"-"`
 	DNSProvidersByName map[string]*DNSProviderConfig `json:"-"`
+	SkipRecordAudit    bool                          `json:"skiprecordaudit,omitempty"`
 }
 
 // FindDomain returns the *DomainConfig for domain query in config.
@@ -42,30 +43,21 @@ type DNSProviderConfig struct {
 	Metadata json.RawMessage `json:"meta,omitempty"`
 }
 
-// FIXME(tal): In hindsight, the Nameserver struct is overkill. We
-// could have just used []string.  Now every provider calls StringsToNameservers
-// and ever user calls StringsToNameservers.  We should refactor this
-// some day.  https://github.com/StackExchange/dnscontrol/issues/577
-
 // Nameserver describes a nameserver.
 type Nameserver struct {
 	Name string `json:"name"` // Normalized to a FQDN with NO trailing "."
 	// NB(tlim): DomainConfig.Nameservers are stored WITH a trailing "." (Sorry!)
 }
 
+// FIXME(tal): In hindsight the Nameserver struct is overkill. We
+// could have just used string.  Currently there are very few places
+// that refer to the .Name field directly.  All new code should use
+// ToNameservers/ToNameserversStripTD and NameserversToStrings to make
+// future refactoring easier.  See
+// https://github.com/StackExchange/dnscontrol/issues/577
+
 func (n *Nameserver) String() string {
 	return n.Name
-}
-
-// StringsToNameservers constructs a list of *Nameserver structs using a list of FQDNs.
-// Deprecated. Please use ToNameservers, or maybe ToNameserversStripTD instead.
-// See https://github.com/StackExchange/dnscontrol/issues/491
-func StringsToNameservers(nss []string) []*Nameserver {
-	nservers := []*Nameserver{}
-	for _, ns := range nss {
-		nservers = append(nservers, &Nameserver{Name: ns})
-	}
-	return nservers
 }
 
 // ToNameservers turns a list of strings into a list of Nameservers.
@@ -127,9 +119,15 @@ func (config *DNSConfig) DomainContainingFQDN(fqdn string) *DomainConfig {
 	return d
 }
 
+// IgnoreName describes an IGNORE_NAME rule.
+type IgnoreName struct {
+	Pattern string `json:"pattern"` // Glob pattern.
+	Types   string `json:"types"`   // All caps rtype names, comma separated.
+}
+
 // IgnoreTarget describes an IGNORE_TARGET rule.
 type IgnoreTarget struct {
-	Pattern string `json:"pattern"` // Glob pattern
+	Pattern string `json:"pattern"` // Glob pattern.
 	Type    string `json:"type"`    // All caps rtype name.
 }
 

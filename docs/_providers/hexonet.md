@@ -17,11 +17,15 @@ This is based on API documents found at [https://wiki.hexonet.net/wiki/DNS_API](
 
 ## Configuration
 
-Please provide your HEXONET login data in your credentials file `creds.json` as follows:
+To use this provider, add an entry to `creds.json` with `TYPE` set to `HEXONET`
+along with your HEXONET login data.
 
-{% highlight json %}
+Example:
+
+```json
 {
   "hexonet": {
+    "TYPE": "HEXONET",
     "apilogin": "your-hexonet-account-id",
     "apipassword": "your-hexonet-account-password",
     "apientity": "LIVE", // for the LIVE system; use "OTE" for the OT&E system
@@ -29,20 +33,21 @@ Please provide your HEXONET login data in your credentials file `creds.json` as 
     "debugmode": "0", // set it to "1" to get debug output of the communication with our Backend System API
   }
 }
-{% endhighlight %}
+```
 
 Here a working example for our OT&E System:
 
-{% highlight json %}
+```json
 {
   "hexonet": {
+    "TYPE": "HEXONET",
     "apilogin": "test.user",
     "apipassword": "test.passw0rd",
     "apientity": "OTE",
     "debugmode": "0",
   }
 }
-{% endhighlight %}
+```
 
 NOTE: The above credentials are known to the public.
 
@@ -52,7 +57,7 @@ integration tests as follows:
     dnscontrol get-zones --format=nameonly hexonet HEXONET  all
     # Review the output.  Pick one domain and set HEXONET_DOMAIN.
     cd $GIT/dnscontrol/integrationTest
-    export HEXONET_DOMAIN=a-b-c-movies.com       # Pick a domain name.
+    export HEXONET_DOMAIN=yodream.com            # Pick a domain name.
     export HEXONET_ENTITY=OTE
     export HEXONET_UID=test.user
     export HEXONET_PW=test.passw0rd
@@ -64,10 +69,10 @@ Here's an example DNS Configuration `dnsconfig.js` using our provider module.
 Even though it shows how you use us as Domain Registrar AND DNS Provider, we don't force you to do that.
 You are free to decide if you want to use both of our provider technology or just one of them.
 
-{% highlight javascript %}
+```js
 // Providers:
-var REG_HX = NewRegistrar('hexonet', 'HEXONET');
-var DNS_HX = NewDnsProvider('hexonet', 'HEXONET');
+var REG_HX = NewRegistrar("hexonet");
+var DSP_HX = NewDnsProvider("hexonet");
 
 // Set Default TTL for all RR to reflect our Backend API Default
 // If you use additional DNS Providers, configure a default TTL
@@ -79,15 +84,15 @@ DEFAULTS(
 );
 
 // Domains:
-D('abhoster.com', REG_HX, DnsProvider(DNS_HX),
-    NAMESERVER('ns1.ispapi.net'),
-    NAMESERVER('ns2.ispapi.net'),
-    NAMESERVER('ns3.ispapi.net'),
-    NAMESERVER('ns4.ispapi.net'),
-    A('elk1', '10.190.234.178'),
-    A('test', '56.123.54.12')
+D("abhoster.com", REG_HX, DnsProvider(DSP_HX),
+    NAMESERVER("ns1.ispapi.net"),
+    NAMESERVER("ns2.ispapi.net"),
+    NAMESERVER("ns3.ispapi.net"),
+    NAMESERVER("ns4.ispapi.net"),
+    A("elk1", "10.190.234.178"),
+    A("test", "56.123.54.12")
 );
-{% endhighlight %}
+```
 
 ## Metadata
 

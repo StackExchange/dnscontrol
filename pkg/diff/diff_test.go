@@ -158,10 +158,10 @@ func checkLengths(t *testing.T, existing, desired []*models.RecordConfig, unCoun
 }
 
 func checkLengthsWithKeepUnknown(t *testing.T, existing, desired []*models.RecordConfig, unCount, createCount, delCount, modCount int, keepUnknown bool, valFuncs ...func(*models.RecordConfig) map[string]string) (un, cre, del, mod Changeset) {
-	return checkLengthsFull(t, existing, desired, unCount, createCount, delCount, modCount, keepUnknown, []string{}, nil, valFuncs...)
+	return checkLengthsFull(t, existing, desired, unCount, createCount, delCount, modCount, keepUnknown, []*models.IgnoreName{}, nil, valFuncs...)
 }
 
-func checkLengthsFull(t *testing.T, existing, desired []*models.RecordConfig, unCount, createCount, delCount, modCount int, keepUnknown bool, ignoredRecords []string, ignoredTargets []*models.IgnoreTarget, valFuncs ...func(*models.RecordConfig) map[string]string) (un, cre, del, mod Changeset) {
+func checkLengthsFull(t *testing.T, existing, desired []*models.RecordConfig, unCount, createCount, delCount, modCount int, keepUnknown bool, ignoredRecords []*models.IgnoreName, ignoredTargets []*models.IgnoreTarget, valFuncs ...func(*models.RecordConfig) map[string]string) (un, cre, del, mod Changeset) {
 	dc := &models.DomainConfig{
 		Name:           "example.com",
 		Records:        desired,
@@ -206,14 +206,23 @@ func TestNoPurge(t *testing.T) {
 
 func TestIgnoredRecords(t *testing.T) {
 	existing := []*models.RecordConfig{
+		myRecord("www1 A 1 1.1.1.1"),
 		myRecord("www1 MX 1 1.1.1.1"),
+		myRecord("www2 A 1 1.1.1.1"),
+		myRecord("www2 CNAME 1 www"),
 		myRecord("www2 MX 1 1.1.1.1"),
 		myRecord("www3 MX 1 1.1.1.1"),
 	}
 	desired := []*models.RecordConfig{
 		myRecord("www3 MX 1 2.2.2.2"),
 	}
-	checkLengthsFull(t, existing, desired, 0, 0, 0, 1, false, []string{"www1", "www2"}, nil)
+	checkLengthsFull(t, existing, desired, 0, 0, 0, 1, false,
+		[]*models.IgnoreName{
+			{Pattern: "www1", Types: "*"},
+			{Pattern: "www2", Types: "A,MX, CNAME"},
+		},
+		nil,
+	)
 }
 
 func TestModifyingIgnoredRecords(t *testing.T) {
@@ -232,7 +241,10 @@ func TestModifyingIgnoredRecords(t *testing.T) {
 		}
 	}()
 
-	checkLengthsFull(t, existing, desired, 0, 0, 0, 1, false, []string{"www1", "www2"}, nil)
+	checkLengthsFull(t, existing, desired, 0, 0, 0, 1, false,
+		[]*models.IgnoreName{{Pattern: "www1", Types: "MX"}, {Pattern: "www2", Types: "*"}},
+		nil,
+	)
 }
 
 func TestGlobIgnoredName(t *testing.T) {
@@ -245,7 +257,14 @@ func TestGlobIgnoredName(t *testing.T) {
 	desired := []*models.RecordConfig{
 		myRecord("www4 MX 1 2.2.2.2"),
 	}
-	checkLengthsFull(t, existing, desired, 0, 0, 0, 1, false, []string{"www1", "*.www2", "**.www3"}, nil)
+	checkLengthsFull(t, existing, desired, 0, 0, 0, 1, false,
+		[]*models.IgnoreName{
+			{Pattern: "www1", Types: "*"},
+			{Pattern: "*.www2", Types: "*"},
+			{Pattern: "**.www3", Types: "*"},
+		},
+		nil,
+	)
 }
 
 func TestInvalidGlobIgnoredName(t *testing.T) {
@@ -264,7 +283,10 @@ func TestInvalidGlobIgnoredName(t *testing.T) {
 		}
 	}()
 
-	checkLengthsFull(t, existing, desired, 0, 1, 0, 0, false, []string{"www1", "www2", "[.www3"}, nil)
+	checkLengthsFull(t, existing, desired, 0, 1, 0, 0, false,
+		[]*models.IgnoreName{{Pattern: "www1"}, {Pattern: "*.www2"}, {Pattern: "[.www3"}},
+		nil,
+	)
 }
 
 func TestGlobIgnoredTarget(t *testing.T) {

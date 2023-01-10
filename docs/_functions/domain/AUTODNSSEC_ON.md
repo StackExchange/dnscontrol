@@ -17,8 +17,8 @@ data model.
 NOTE: No parenthesis should follow these keywords.  That is, the
 correct syntax is `AUTODNSSEC_ON` not `AUTODNSSEC_ON()`
 
-{% include startExample.html %}
-{% highlight js %}
+{% capture example %}
+```js
 D("example.com", .... ,
   AUTODNSSEC_ON,  // Enable AutoDNSSEC.
   A("@", "10.1.1.1")
@@ -28,8 +28,10 @@ D("insecure.com", .... ,
   AUTODNSSEC_OFF,  // Disable AutoDNSSEC.
   A("@", "10.2.2.2")
 );
-{%endhighlight%}
-{% include endExample.html %}
+```
+{% endcapture %}
+
+{% include example.html content=example %}
 
 If neither `AUTODNSSEC_ON` or `AUTODNSSEC_OFF` is specified for a
 domain no changes will be requested.

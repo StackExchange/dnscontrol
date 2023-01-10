@@ -10,6 +10,9 @@ import (
 
 	"github.com/StackExchange/dnscontrol/v3/models"
 	"github.com/StackExchange/dnscontrol/v3/pkg/diff"
+	"github.com/StackExchange/dnscontrol/v3/pkg/diff2"
+	"github.com/StackExchange/dnscontrol/v3/pkg/printer"
+	"github.com/StackExchange/dnscontrol/v3/pkg/txtutil"
 )
 
 // HXRecord covers an individual DNS resource record.
@@ -69,63 +72,72 @@ func (n *HXClient) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Corr
 
 	// Normalize
 	models.PostProcessRecords(actual)
+	txtutil.SplitSingleLongTxt(dc.Records)
 
-	differ := diff.New(dc)
-	_, create, del, mod, err := differ.IncrementalDiff(actual)
-	if err != nil {
-		return nil, err
-	}
+	var corrections []*models.Correction
+	if !diff2.EnableDiff2 || true { // Remove "|| true" when diff2 version arrives
 
-	corrections := []*models.Correction{}
-
-	buf := &bytes.Buffer{}
-	// Print a list of changes. Generate an actual change that is the zone
-	changes := false
-	params := map[string]interface{}{}
-	delrridx := 0
-	addrridx := 0
-	for _, cre := range create {
-		changes = true
-		fmt.Fprintln(buf, cre)
-		rec := cre.Desired
-		recordString, err := n.createRecordString(rec, dc.Name)
+		differ := diff.New(dc)
+		_, create, del, mod, err := differ.IncrementalDiff(actual)
 		if err != nil {
-			return corrections, err
+			return nil, err
 		}
-		params[fmt.Sprintf("ADDRR%d", addrridx)] = recordString
-		addrridx++
-	}
-	for _, d := range del {
-		changes = true
-		fmt.Fprintln(buf, d)
-		rec := d.Existing.Original.(*HXRecord)
-		params[fmt.Sprintf("DELRR%d", delrridx)] = n.deleteRecordString(rec, dc.Name)
-		delrridx++
-	}
-	for _, chng := range mod {
-		changes = true
-		fmt.Fprintln(buf, chng)
-		old := chng.Existing.Original.(*HXRecord)
-		new := chng.Desired
-		params[fmt.Sprintf("DELRR%d", delrridx)] = n.deleteRecordString(old, dc.Name)
-		newRecordString, err := n.createRecordString(new, dc.Name)
-		if err != nil {
-			return corrections, err
-		}
-		params[fmt.Sprintf("ADDRR%d", addrridx)] = newRecordString
-		addrridx++
-		delrridx++
-	}
-	msg := fmt.Sprintf("GENERATE_ZONEFILE: %s\n", dc.Name) + buf.String()
 
-	if changes {
-		corrections = append(corrections, &models.Correction{
-			Msg: msg,
-			F: func() error {
-				return n.updateZoneBy(params, dc.Name)
-			},
-		})
+		corrections := []*models.Correction{}
+
+		buf := &bytes.Buffer{}
+		// Print a list of changes. Generate an actual change that is the zone
+		changes := false
+		params := map[string]interface{}{}
+		delrridx := 0
+		addrridx := 0
+		for _, cre := range create {
+			changes = true
+			fmt.Fprintln(buf, cre)
+			rec := cre.Desired
+			recordString, err := n.createRecordString(rec, dc.Name)
+			if err != nil {
+				return corrections, err
+			}
+			params[fmt.Sprintf("ADDRR%d", addrridx)] = recordString
+			addrridx++
+		}
+		for _, d := range del {
+			changes = true
+			fmt.Fprintln(buf, d)
+			rec := d.Existing.Original.(*HXRecord)
+			params[fmt.Sprintf("DELRR%d", delrridx)] = n.deleteRecordString(rec, dc.Name)
+			delrridx++
+		}
+		for _, chng := range mod {
+			changes = true
+			fmt.Fprintln(buf, chng)
+			old := chng.Existing.Original.(*HXRecord)
+			new := chng.Desired
+			params[fmt.Sprintf("DELRR%d", delrridx)] = n.deleteRecordString(old, dc.Name)
+			newRecordString, err := n.createRecordString(new, dc.Name)
+			if err != nil {
+				return corrections, err
+			}
+			params[fmt.Sprintf("ADDRR%d", addrridx)] = newRecordString
+			addrridx++
+			delrridx++
+		}
+		msg := fmt.Sprintf("GENERATE_ZONEFILE: %s\n", dc.Name) + buf.String()
+
+		if changes {
+			corrections = append(corrections, &models.Correction{
+				Msg: msg,
+				F: func() error {
+					return n.updateZoneBy(params, dc.Name)
+				},
+			})
+		}
+		return corrections, nil
 	}
+
+	// Insert Future diff2 version here.
+
 	return corrections, nil
 }
 
@@ -157,12 +169,13 @@ func toRecord(r *HXRecord, origin string) *models.RecordConfig {
 	return rc
 }
 
-func (n *HXClient) showCommand(cmd map[string]string) {
+func (n *HXClient) showCommand(cmd map[string]string) error {
 	b, err := json.MarshalIndent(cmd, "", "  ")
 	if err != nil {
-		fmt.Println("error:", err)
+		return fmt.Errorf("error: %w", err)
 	}
-	fmt.Print(string(b))
+	printer.Printf(string(b))
+	return nil
 }
 
 func (n *HXClient) updateZoneBy(params map[string]interface{}, domain string) error {
@@ -245,7 +258,7 @@ func (n *HXClient) createRecordString(rc *models.RecordConfig, domain string) (s
 	case "A", "AAAA", "ANAME", "CNAME", "MX", "NS", "PTR":
 		// nothing
 	case "TLSA":
-		record.Answer = fmt.Sprintf(`%v %v %v %s`, rc.TlsaUsage, rc.TlsaSelector, rc.TlsaMatchingType, rc.Target)
+		record.Answer = fmt.Sprintf(`%v %v %v %s`, rc.TlsaUsage, rc.TlsaSelector, rc.TlsaMatchingType, rc.GetTargetField())
 	case "CAA":
 		record.Answer = fmt.Sprintf(`%v %s "%s"`, rc.CaaFlag, rc.CaaTag, record.Answer)
 	case "TXT":
@@ -276,15 +289,12 @@ func (n *HXClient) deleteRecordString(record *HXRecord, domain string) string {
 
 // encodeTxt encodes TxtStrings for sending in the CREATE/MODIFY API:
 func encodeTxt(txts []string) string {
-	ans := txts[0]
-
-	if len(txts) > 1 {
-		ans = ""
-		for _, t := range txts {
-			ans += `"` + strings.Replace(t, `"`, `\"`, -1) + `"`
-		}
+	var r []string
+	for _, txt := range txts {
+		n := `"` + strings.Replace(txt, `"`, `\"`, -1) + `"`
+		r = append(r, n)
 	}
-	return ans
+	return strings.Join(r, " ")
 }
 
 // finds a string surrounded by quotes that might contain an escaped quote character.

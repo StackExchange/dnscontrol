@@ -6,15 +6,15 @@ import (
 	"log"
 	"net"
 	"strings"
-	"time"
-
-	"github.com/miekg/dns/dnsutil"
 
 	"github.com/StackExchange/dnscontrol/v3/models"
 	"github.com/StackExchange/dnscontrol/v3/pkg/diff"
+	"github.com/StackExchange/dnscontrol/v3/pkg/diff2"
 	"github.com/StackExchange/dnscontrol/v3/pkg/printer"
 	"github.com/StackExchange/dnscontrol/v3/pkg/transform"
 	"github.com/StackExchange/dnscontrol/v3/providers"
+	"github.com/cloudflare/cloudflare-go"
+	"github.com/miekg/dns/dnsutil"
 )
 
 /*
@@ -25,7 +25,6 @@ Info required in `creds.json`:
    - apikey
    - apiuser
    - accountid (optional)
-   - accountname (optional)
 
 Record level metadata available:
    - cloudflare_proxy ("on", "off", or "full")
@@ -38,37 +37,39 @@ Domain level metadata available:
 */
 
 var features = providers.DocumentationNotes{
+	providers.CanGetZones:            providers.Can(),
 	providers.CanUseAlias:            providers.Can("CF automatically flattens CNAME records into A records dynamically"),
-	providers.CanUsePTR:              providers.Cannot(),
 	providers.CanUseCAA:              providers.Can(),
+	providers.CanUseDSForChildren:    providers.Can(),
+	providers.CanUsePTR:              providers.Can(),
 	providers.CanUseSRV:              providers.Can(),
-	providers.CanUseTLSA:             providers.Can(),
 	providers.CanUseSSHFP:            providers.Can(),
-	providers.CanUseDS:               providers.Can(),
+	providers.CanUseTLSA:             providers.Can(),
 	providers.DocCreateDomains:       providers.Can(),
 	providers.DocDualHost:            providers.Cannot("Cloudflare will not work well in situations where it is not the only DNS server"),
 	providers.DocOfficiallySupported: providers.Can(),
-	providers.CanGetZones:            providers.Can(),
 }
 
 func init() {
-	providers.RegisterDomainServiceProviderType("CLOUDFLAREAPI", newCloudflare, features)
+	fns := providers.DspFuncs{
+		Initializer:   newCloudflare,
+		RecordAuditor: AuditRecords,
+	}
+	providers.RegisterDomainServiceProviderType("CLOUDFLAREAPI", fns, features)
 	providers.RegisterCustomRecordType("CF_REDIRECT", "CLOUDFLAREAPI", "")
 	providers.RegisterCustomRecordType("CF_TEMP_REDIRECT", "CLOUDFLAREAPI", "")
+	providers.RegisterCustomRecordType("CF_WORKER_ROUTE", "CLOUDFLAREAPI", "")
 }
 
 // cloudflareProvider is the handle for API calls.
 type cloudflareProvider struct {
-	APIKey          string `json:"apikey"`
-	APIToken        string `json:"apitoken"`
-	APIUser         string `json:"apiuser"`
-	AccountID       string `json:"accountid"`
-	AccountName     string `json:"accountname"`
-	domainIndex     map[string]string
+	domainIndex     map[string]string // Call c.fetchDomainList() to populate before use.
 	nameservers     map[string][]string
 	ipConversions   []transform.IPConversion
 	ignoredLabels   []string
 	manageRedirects bool
+	manageWorkers   bool
+	cfClient        *cloudflare.API
 }
 
 func labelMatches(label string, matches []string) bool {
@@ -148,6 +149,11 @@ func (c *cloudflareProvider) getDomainID(name string) (string, error) {
 
 // GetDomainCorrections returns a list of corrections to update a domain.
 func (c *cloudflareProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Correction, error) {
+	err := dc.Punycode()
+	if err != nil {
+		return nil, err
+	}
+
 	id, err := c.getDomainID(dc.Name)
 	if err != nil {
 		return nil, err
@@ -163,18 +169,30 @@ func (c *cloudflareProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*m
 	for i := len(records) - 1; i >= 0; i-- {
 		rec := records[i]
 		// Delete ignore labels
-		if labelMatches(dnsutil.TrimDomainName(rec.Original.(*cfRecord).Name, dc.Name), c.ignoredLabels) {
-			printer.Debugf("ignored_label: %s\n", rec.Original.(*cfRecord).Name)
+		if labelMatches(dnsutil.TrimDomainName(rec.Original.(cloudflare.DNSRecord).Name, dc.Name), c.ignoredLabels) {
+			printer.Debugf("ignored_label: %s\n", rec.Original.(cloudflare.DNSRecord).Name)
 			records = append(records[:i], records[i+1:]...)
 		}
 	}
 
 	if c.manageRedirects {
 		prs, err := c.getPageRules(id, dc.Name)
+		//printer.Printf("GET PAGE RULES:\n")
+		//for i, p := range prs {
+		//	printer.Printf("%03d: %q\n", i, p.GetTargetField())
+		//}
 		if err != nil {
 			return nil, err
 		}
 		records = append(records, prs...)
+	}
+
+	if c.manageWorkers {
+		wrs, err := c.getWorkerRoutes(id, dc.Name)
+		if err != nil {
+			return nil, err
+		}
+		records = append(records, wrs...)
 	}
 
 	for _, rec := range dc.Records {
@@ -196,72 +214,119 @@ func (c *cloudflareProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*m
 
 	// Normalize
 	models.PostProcessRecords(records)
+	//txtutil.SplitSingleLongTxt(dc.Records) // Autosplit long TXT records
+	// Don't split.
+	// Cloudflare's API only supports one TXT string of any non-zero length. No
+	// multiple strings (TXTMulti).
+	// When serving the DNS record, it splits strings >255 octets into
+	// individual segments of 255 each. However that is hidden from the API.
+	// Therefore, whether the string is 1 octet or thousands, just store it as
+	// one string in the first element of .TxtStrings.
 
-	differ := diff.New(dc, getProxyMetadata)
-	_, create, del, mod, err := differ.IncrementalDiff(records)
-	if err != nil {
-		return nil, err
-	}
+	var corrections []*models.Correction
+	if !diff2.EnableDiff2 || true { // Remove "|| true" when diff2 version arrives
 
-	corrections := []*models.Correction{}
-
-	for _, d := range del {
-		ex := d.Existing
-		if ex.Type == "PAGE_RULE" {
-			corrections = append(corrections, &models.Correction{
-				Msg: d.String(),
-				F:   func() error { return c.deletePageRule(ex.Original.(*pageRule).ID, id) },
-			})
-
-		} else {
-			corrections = append(corrections, c.deleteRec(ex.Original.(*cfRecord), id))
+		differ := diff.New(dc, getProxyMetadata)
+		_, create, del, mod, err := differ.IncrementalDiff(records)
+		if err != nil {
+			return nil, err
 		}
-	}
-	for _, d := range create {
-		des := d.Desired
-		if des.Type == "PAGE_RULE" {
-			corrections = append(corrections, &models.Correction{
-				Msg: d.String(),
-				F:   func() error { return c.createPageRule(id, des.GetTargetField()) },
-			})
-		} else {
-			corrections = append(corrections, c.createRec(des, id)...)
+
+		corrections := []*models.Correction{}
+
+		for _, d := range del {
+			ex := d.Existing
+			if ex.Type == "PAGE_RULE" {
+				corrections = append(corrections, &models.Correction{
+					Msg: d.String(),
+					F:   func() error { return c.deletePageRule(ex.Original.(cloudflare.PageRule).ID, id) },
+				})
+			} else if ex.Type == "WORKER_ROUTE" {
+				corrections = append(corrections, &models.Correction{
+					Msg: d.String(),
+					F:   func() error { return c.deleteWorkerRoute(ex.Original.(cloudflare.WorkerRoute).ID, id) },
+				})
+			} else {
+				corr := c.deleteRec(ex.Original.(cloudflare.DNSRecord), id)
+				// DS records must always have a corresponding NS record.
+				// Therefore, we remove DS records before any NS records.
+				if d.Existing.Type == "DS" {
+					corrections = append([]*models.Correction{corr}, corrections...)
+				} else {
+					corrections = append(corrections, corr)
+				}
+			}
 		}
+		for _, d := range create {
+			des := d.Desired
+			if des.Type == "PAGE_RULE" {
+				corrections = append(corrections, &models.Correction{
+					Msg: d.String(),
+					F:   func() error { return c.createPageRule(id, des.GetTargetField()) },
+				})
+			} else if des.Type == "WORKER_ROUTE" {
+				corrections = append(corrections, &models.Correction{
+					Msg: d.String(),
+					F:   func() error { return c.createWorkerRoute(id, des.GetTargetField()) },
+				})
+			} else {
+				corr := c.createRec(des, id)
+				// DS records must always have a corresponding NS record.
+				// Therefore, we create NS records before any DS records.
+				if d.Desired.Type == "NS" {
+					corrections = append(corr, corrections...)
+				} else {
+					corrections = append(corrections, corr...)
+				}
+			}
+		}
+
+		for _, d := range mod {
+			rec := d.Desired
+			ex := d.Existing
+			if rec.Type == "PAGE_RULE" {
+				corrections = append(corrections, &models.Correction{
+					Msg: d.String(),
+					F:   func() error { return c.updatePageRule(ex.Original.(cloudflare.PageRule).ID, id, rec.GetTargetField()) },
+				})
+			} else if rec.Type == "WORKER_ROUTE" {
+				corrections = append(corrections, &models.Correction{
+					Msg: d.String(),
+					F: func() error {
+						return c.updateWorkerRoute(ex.Original.(cloudflare.WorkerRoute).ID, id, rec.GetTargetField())
+					},
+				})
+			} else {
+				e := ex.Original.(cloudflare.DNSRecord)
+				proxy := e.Proxiable && rec.Metadata[metaProxy] != "off"
+				corrections = append(corrections, &models.Correction{
+					Msg: d.String(),
+					F:   func() error { return c.modifyRecord(id, e.ID, proxy, rec) },
+				})
+			}
+		}
+
+		// Add universalSSL change to corrections when needed
+		if changed, newState, err := c.checkUniversalSSL(dc, id); err == nil && changed {
+			var newStateString string
+			if newState {
+				newStateString = "enabled"
+			} else {
+				newStateString = "disabled"
+			}
+			corrections = append(corrections, &models.Correction{
+				Msg: fmt.Sprintf("Universal SSL will be %s for this domain.", newStateString),
+				F:   func() error { return c.changeUniversalSSL(id, newState) },
+			})
+		}
+
+		return corrections, nil
 	}
 
-	for _, d := range mod {
-		rec := d.Desired
-		ex := d.Existing
-		if rec.Type == "PAGE_RULE" {
-			corrections = append(corrections, &models.Correction{
-				Msg: d.String(),
-				F:   func() error { return c.updatePageRule(ex.Original.(*pageRule).ID, id, rec.GetTargetField()) },
-			})
-		} else {
-			e := ex.Original.(*cfRecord)
-			proxy := e.Proxiable && rec.Metadata[metaProxy] != "off"
-			corrections = append(corrections, &models.Correction{
-				Msg: d.String(),
-				F:   func() error { return c.modifyRecord(id, e.ID, proxy, rec) },
-			})
-		}
-	}
-
-	// Add universalSSL change to corrections when needed
-	if changed, newState, err := c.checkUniversalSSL(dc, id); err == nil && changed {
-		var newStateString string
-		if newState {
-			newStateString = "enabled"
-		} else {
-			newStateString = "disabled"
-		}
-		corrections = append(corrections, &models.Correction{
-			Msg: fmt.Sprintf("Universal SSL will be %s for this domain.", newStateString),
-			F:   func() error { return c.changeUniversalSSL(id, newState) },
-		})
-	}
+	// Insert Future diff2 version here.
 
 	return corrections, nil
+
 }
 
 func checkNSModifications(dc *models.DomainConfig) {
@@ -395,6 +460,16 @@ func (c *cloudflareProvider) preprocessConfig(dc *models.DomainConfig) error {
 			rec.TTL = 1
 			rec.Type = "PAGE_RULE"
 		}
+
+		// CF_WORKER_ROUTE record types. Encode target as $PATTERN,$SCRIPT
+		if rec.Type == "CF_WORKER_ROUTE" {
+			parts := strings.Split(rec.GetTargetField(), ",")
+			if len(parts) != 2 {
+				return fmt.Errorf("invalid data specified for cloudflare worker record")
+			}
+			rec.TTL = 1
+			rec.Type = "WORKER_ROUTE"
+		}
 	}
 
 	// look for ip conversions and transform records
@@ -423,24 +498,33 @@ func (c *cloudflareProvider) preprocessConfig(dc *models.DomainConfig) error {
 
 func newCloudflare(m map[string]string, metadata json.RawMessage) (providers.DNSServiceProvider, error) {
 	api := &cloudflareProvider{}
-	api.APIUser, api.APIKey, api.APIToken = m["apiuser"], m["apikey"], m["apitoken"]
 	// check api keys from creds json file
-	if api.APIToken == "" && (api.APIKey == "" || api.APIUser == "") {
+	if m["apitoken"] == "" && (m["apikey"] == "" || m["apiuser"] == "") {
 		return nil, fmt.Errorf("if cloudflare apitoken is not set, apikey and apiuser must be provided")
 	}
-	if api.APIToken != "" && (api.APIKey != "" || api.APIUser != "") {
+	if m["apitoken"] != "" && (m["apikey"] != "" || m["apiuser"] != "") {
 		return nil, fmt.Errorf("if cloudflare apitoken is set, apikey and apiuser should not be provided")
 	}
 
-	// Check account data if set
-	api.AccountID, api.AccountName = m["accountid"], m["accountname"]
-	if (api.AccountID != "" && api.AccountName == "") || (api.AccountID == "" && api.AccountName != "") {
-		return nil, fmt.Errorf("either both cloudflare accountid and accountname must be provided or neither")
+	optRP := cloudflare.UsingRetryPolicy(20, 1, 120)
+	// UsingRetryPolicy is documented here:
+	// https://pkg.go.dev/github.com/cloudflare/cloudflare-go#UsingRetryPolicy
+	// The defaults are UsingRetryPolicy(3, 1, 30)
+
+	var err error
+	if m["apitoken"] != "" {
+		api.cfClient, err = cloudflare.NewWithAPIToken(m["apitoken"], optRP)
+	} else {
+		api.cfClient, err = cloudflare.New(m["apikey"], m["apiuser"], optRP)
 	}
 
-	err := api.fetchDomainList()
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("cloudflare credentials: %w", err)
+	}
+
+	// Check account data if set
+	if m["accountid"] != "" {
+		api.cfClient.AccountID = m["accountid"]
 	}
 
 	if len(metadata) > 0 {
@@ -448,12 +532,14 @@ func newCloudflare(m map[string]string, metadata json.RawMessage) (providers.DNS
 			IPConversions   string   `json:"ip_conversions"`
 			IgnoredLabels   []string `json:"ignored_labels"`
 			ManageRedirects bool     `json:"manage_redirects"`
+			ManageWorkers   bool     `json:"manage_workers"`
 		}{}
 		err := json.Unmarshal([]byte(metadata), parsedMeta)
 		if err != nil {
 			return nil, err
 		}
 		api.manageRedirects = parsedMeta.ManageRedirects
+		api.manageWorkers = parsedMeta.ManageWorkers
 		// ignored_labels:
 		api.ignoredLabels = append(api.ignoredLabels, parsedMeta.IgnoredLabels...)
 		if len(api.ignoredLabels) > 0 {
@@ -537,65 +623,81 @@ func (c cfTarget) FQDN() string {
 	return strings.TrimRight(string(c), ".") + "."
 }
 
-type cfRecord struct {
-	ID         string      `json:"id"`
-	Type       string      `json:"type"`
-	Name       string      `json:"name"`
-	Content    string      `json:"content"`
-	Proxiable  bool        `json:"proxiable"`
-	Proxied    bool        `json:"proxied"`
-	TTL        uint32      `json:"ttl"`
-	Locked     bool        `json:"locked"`
-	ZoneID     string      `json:"zone_id"`
-	ZoneName   string      `json:"zone_name"`
-	CreatedOn  time.Time   `json:"created_on"`
-	ModifiedOn time.Time   `json:"modified_on"`
-	Data       *cfRecData  `json:"data"`
-	Priority   json.Number `json:"priority"`
+// uint16Zero converts value to uint16 or returns 0.
+func uint16Zero(value interface{}) uint16 {
+	switch v := value.(type) {
+	case float64:
+		return uint16(v)
+	case uint16:
+		return v
+	case nil:
+	}
+	return 0
 }
 
-func (c *cfRecord) nativeToRecord(domain string) (*models.RecordConfig, error) {
+// intZero converts value to int or returns 0.
+func intZero(value interface{}) int {
+	switch v := value.(type) {
+	case float64:
+		return int(v)
+	case int:
+		return v
+	case nil:
+	}
+	return 0
+}
+
+// stringDefault returns the value as a string or returns the default value if nil.
+func stringDefault(value interface{}, def string) string {
+	switch v := value.(type) {
+	case string:
+		return v
+	case nil:
+	}
+	return def
+}
+
+func (c *cloudflareProvider) nativeToRecord(domain string, cr cloudflare.DNSRecord) (*models.RecordConfig, error) {
+
 	// normalize cname,mx,ns records with dots to be consistent with our config format.
-	if c.Type == "CNAME" || c.Type == "MX" || c.Type == "NS" || c.Type == "SRV" {
-		if c.Content != "." {
-			c.Content = c.Content + "."
+	if cr.Type == "CNAME" || cr.Type == "MX" || cr.Type == "NS" || cr.Type == "PTR" {
+		if cr.Content != "." {
+			cr.Content = cr.Content + "."
 		}
 	}
 
 	rc := &models.RecordConfig{
-		TTL:      c.TTL,
-		Original: c,
+		TTL:      uint32(cr.TTL),
+		Original: cr,
 	}
-	rc.SetLabelFromFQDN(c.Name, domain)
+	rc.SetLabelFromFQDN(cr.Name, domain)
 
 	// workaround for https://github.com/StackExchange/dnscontrol/issues/446
-	if c.Type == "SPF" {
-		c.Type = "TXT"
+	if cr.Type == "SPF" {
+		cr.Type = "TXT"
 	}
 
-	switch rType := c.Type; rType { // #rtype_variations
+	switch rType := cr.Type; rType { // #rtype_variations
 	case "MX":
-		var priority uint16
-		if c.Priority == "" {
-			priority = 0
-		} else {
-			p, err := c.Priority.Int64()
-			if err != nil {
-				return nil, fmt.Errorf("error decoding priority from cloudflare record: %w", err)
-			}
-			priority = uint16(p)
-		}
-		if err := rc.SetTargetMX(priority, c.Content); err != nil {
+		if err := rc.SetTargetMX(*cr.Priority, cr.Content); err != nil {
 			return nil, fmt.Errorf("unparsable MX record received from cloudflare: %w", err)
 		}
 	case "SRV":
-		data := *c.Data
-		if err := rc.SetTargetSRV(data.Priority, data.Weight, data.Port,
-			dnsutil.AddOrigin(data.Target.FQDN(), domain)); err != nil {
+		data := cr.Data.(map[string]interface{})
+
+		target := stringDefault(data["target"], "MISSING.TARGET")
+		if target != "." {
+			target += "."
+		}
+		if err := rc.SetTargetSRV(uint16Zero(data["priority"]), uint16Zero(data["weight"]), uint16Zero(data["port"]),
+			target); err != nil {
 			return nil, fmt.Errorf("unparsable SRV record received from cloudflare: %w", err)
 		}
-	default: // "A", "AAAA", "ANAME", "CAA", "CNAME", "NS", "PTR", "TXT"
-		if err := rc.PopulateFromString(rType, c.Content, domain); err != nil {
+	case "TXT":
+		err := rc.SetTargetTXT(cr.Content)
+		return rc, err
+	default:
+		if err := rc.PopulateFromString(rType, cr.Content, domain); err != nil {
 			return nil, fmt.Errorf("unparsable record received from cloudflare: %w", err)
 		}
 	}
@@ -609,7 +711,7 @@ func getProxyMetadata(r *models.RecordConfig) map[string]string {
 	}
 	var proxied bool
 	if r.Original != nil {
-		proxied = r.Original.(*cfRecord).Proxied
+		proxied = *r.Original.(cloudflare.DNSRecord).Proxied
 	} else {
 		proxied = r.Metadata[metaProxy] != "off"
 	}
@@ -620,11 +722,33 @@ func getProxyMetadata(r *models.RecordConfig) map[string]string {
 
 // EnsureDomainExists returns an error of domain does not exist.
 func (c *cloudflareProvider) EnsureDomainExists(domain string) error {
+	if c.domainIndex == nil {
+		if err := c.fetchDomainList(); err != nil {
+			return err
+		}
+	}
 	if _, ok := c.domainIndex[domain]; ok {
 		return nil
 	}
 	var id string
 	id, err := c.createZone(domain)
-	fmt.Printf("Added zone for %s to Cloudflare account: %s\n", domain, id)
+	printer.Printf("Added zone for %s to Cloudflare account: %s\n", domain, id)
 	return err
+}
+
+// PrepareCloudflareTestWorkers creates Cloudflare Workers required for CF_WORKER_ROUTE tests.
+func PrepareCloudflareTestWorkers(prv providers.DNSServiceProvider) error {
+	cf, ok := prv.(*cloudflareProvider)
+	if ok {
+		err := cf.createTestWorker("dnscontrol_integrationtest_cnn")
+		if err != nil {
+			return err
+		}
+
+		err = cf.createTestWorker("dnscontrol_integrationtest_msnbc")
+		if err != nil {
+			return err
+		}
+	}
+	return nil
 }

@@ -1,0 +1,6 @@
+$TTL 300
+@                IN CAA   128 iodef "https://example.com"
+                 IN CAA   128 iodef "mailto:test@example.com"
+                 IN CAA   0 iodef "http://example.com"
+                 IN CAA   0 issue "letsencrypt.org"
+                 IN CAA   0 issuewild ";"

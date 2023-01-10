@@ -17,10 +17,10 @@ Modifier arguments are processed according to type as follows:
 - An array argument will have all of it's members evaluated recursively. This allows you to combine multiple common records or modifiers into a variable that can
    be used like a macro in multiple domains.
 
-{% include startExample.html %}
-{% highlight js %}
-var REGISTRAR = NewRegistrar("name.com", "NAMEDOTCOM");
-var r53 = NewDnsProvider("R53","ROUTE53");
+{% capture example %}
+```js
+var REGISTRAR = NewRegistrar("name.com");
+var r53 = NewDnsProvider("R53");
 
 // simple domain
 D("example.com", REGISTRAR, DnsProvider(r53),
@@ -42,6 +42,60 @@ D("example.com", REGISTRAR, DnsProvider(r53),
   CNAME("test", "foo.example2.com."),
   GOOGLE_APPS_DOMAIN_MX
 );
+```
+{% endcapture %}
 
-{%endhighlight%}
-{% include endExample.html %}
+{% include example.html content=example %}
+
+
+# Split Horizon DNS
+
+DNSControl supports Split Horizon DNS. Simply
+define the domain two or more times, each with
+their own unique parameters.
+
+To differentiate the different domains, specify the domains as
+`domain.tld!tag`, such as `example.com!inside` and
+`example.com!outside`.
+
+{% capture example %}
+```js
+var REG = NewRegistrar("Third-Party");
+var DNS_INSIDE = NewDnsProvider("Cloudflare");
+var DNS_OUTSIDE = NewDnsProvider("bind");
+
+D("example.com!inside", REG, DnsProvider(DNS_INSIDE),
+  A("www", "10.10.10.10")
+);
+
+D("example.com!outside", REG, DnsProvider(DNS_OUTSIDE),
+  A("www", "20.20.20.20")
+);
+
+D_EXTEND("example.com!inside",
+  A("internal", "10.99.99.99")
+);
+```
+{% endcapture %}
+
+{% include example.html content=example %}
+
+A domain name without a `!` is assigned a tag that is the empty
+string. For example, `example.com` and `example.com!` are equivalent.
+However, we strongly recommend against using the empty tag, as it
+risks creating confusion.  In other words, if you have `domain.tld`
+and `domain.tld!external` you now require humans to remember that
+`domain.tld` is the external one.  I mean... the internal one.  You
+may have noticed this mistake, but will your coworkers?  Will you in
+six months? You get the idea.
+
+DNSControl command line flag `--domains` is an exact match.  If you
+define domains `example.com!george` and `example.com!john` then:
+
+* `--domains=example.com` will not match either domain.
+* `--domains='example.com!george'` will match only match the first.
+* `--domains='example.com!george',example.com!john` will match both.
+
+NOTE: The quotes are required if your shell treats `!` as a special
+character, which is probably does.  If you see an error that mentions
+`event not found` you probably forgot the quotes.

@@ -10,8 +10,7 @@ title: Examples
 
 ## Typical DNS Records
 
-{% highlight javascript %}
-
+```js
 D('example.com', REG, DnsProvider('GCLOUD'),
     A('@', '1.2.3.4'),  // The naked or 'apex' domain.
     A('server1', '2.3.4.5'),
@@ -24,13 +23,11 @@ D('example.com', REG, DnsProvider('GCLOUD'),
     NS('department2', 'ns1.dnsexample.com.'), // use different nameservers
     NS('department2', 'ns2.dnsexample.com.') // for department2.example.com
 )
-
-{% endhighlight %}
+```
 
 ## Set TTLs
 
-{% highlight javascript %}
-
+```js
 var mailTTL = TTL('1h');
 
 D('example.com', registrar,
@@ -43,25 +40,28 @@ D('example.com', registrar,
     A('@', '1.2.3.4', TTL('10m')), // individual record
     CNAME('mail', 'mx01') // TTL of 5m, as defined per DefaultTTL()
 );
-
-{% endhighlight %}
+```
 
 ## Variables for common IP Addresses
 
-{% highlight javascript %}
-
+```js
 var addrA = IP('1.2.3.4')
 
 D('example.com', REG, DnsProvider('R53'),
     A('@', addrA), // 1.2.3.4
     A('www', addrA + 1), // 1.2.3.5
 )
-{% endhighlight %}
+```
+
+NOTE: The `IP()` function doesn't currently support IPv6 (PRs welcome!).  IPv6 addresses are strings.
+
+```js
+var addrAAAA = "0:0:0:0:0:0:0:0";
+```
 
 ## Variables to swap active Data Center
 
-{% highlight javascript %}
-
+```js
 var dcA = IP('5.5.5.5');
 var dcB = IP('6.6.6.6');
 
@@ -71,18 +71,20 @@ var activeDC = dcA;
 D('example.com', REG, DnsProvider('R53'),
     A('@', activeDC + 5), // fixed address based on activeDC
 )
-{% endhighlight %}
+```
 
 ## Macro to for repeated records
 
-{% highlight javascript %}
-
-var GOOGLE_APPS_RECORDS = [
+```js
+var GOOGLE_APPS_MX_RECORDS = [
     MX('@', 1, 'aspmx.l.google.com.'),
     MX('@', 5, 'alt1.aspmx.l.google.com.'),
     MX('@', 5, 'alt2.aspmx.l.google.com.'),
     MX('@', 10, 'alt3.aspmx.l.google.com.'),
     MX('@', 10, 'alt4.aspmx.l.google.com.'),
+]
+
+var GOOGLE_APPS_CNAME_RECORDS = [
     CNAME('calendar', 'ghs.googlehosted.com.'),
     CNAME('drive', 'ghs.googlehosted.com.'),
     CNAME('mail', 'ghs.googlehosted.com.'),
@@ -92,11 +94,11 @@ var GOOGLE_APPS_RECORDS = [
 ]
 
 D('example.com', REG, DnsProvider('R53'),
-   GOOGLE_APPS_RECORDS,
+   GOOGLE_APPS_MX_RECORDS,
+   GOOGLE_APPS_CNAME_RECORDS,
    A('@', '1.2.3.4')
 )
-
-{% endhighlight %}
+```
 
 ## Add comments along complex SPF records
 
@@ -104,8 +106,7 @@ You normally can't put comments in the middle of a string,
 but with a little bit of creativity you can document
 each element of an SPF record this way.
 
-{% highlight javascript %}
-
+```js
 var SPF_RECORDS = TXT('@', [
     'v=spf1',
     'ip4:1.2.3.0/24',           // NY mail server
@@ -121,13 +122,11 @@ var SPF_RECORDS = TXT('@', [
 D('example.com', REG, DnsProvider('R53'),
    SPF_RECORDS,
 )
-
-{% endhighlight %}
+```
 
 ## Dual DNS Providers
 
-{% highlight javascript %}
-
+```js
 D('example.com', REG, DnsProvider('R53'), DnsProvider('GCLOUD'),
    A('@', '1.2.3.4')
 )
@@ -143,17 +142,52 @@ D('example2.com', REG, DnsProvider('R53',2), DnsProvider('GCLOUD',2),
 D('example3.com', REG, DnsProvider('R53'), DnsProvider('GCLOUD',0),
    A('@', '1.2.3.4')
 )
-
-{% endhighlight %}
+```
 
 ## Set default records modifiers
 
-{% highlight javascript %}
-
+```js
 DEFAULTS(
-	NAMESERVER_TTL('24h'),
-	DefaultTTL('12h'),
-	CF_PROXY_DEFAULT_OFF
+    NAMESERVER_TTL('24h'),
+    DefaultTTL('12h'),
+    CF_PROXY_DEFAULT_OFF
 );
+```
+# Advanced Examples
 
-{% endhighlight %}
+## Automate Fastmail DKIM records
+
+In this example we need a macro that can dynamically change for each domain.
+
+Suppose you have many domains that use Fastmail as an MX. Here's a macro that sets the MX records.
+
+```js
+var FASTMAIL_MX = [
+  MX('@', 10, 'in1-smtp.messagingengine.com.'),
+  MX('@', 20, 'in2-smtp.messagingengine.com.'),
+]
+```
+
+Fastmail also supplied CNAMES to implement DKIM, and they all match a pattern
+that includes the domain name. We can't use a simple macro. Instead, we use
+a function that takes the domain name as a parameter to generate the right
+records dynamically.
+
+```js
+var FASTMAIL_DKIM = function(the_domain){
+  return [
+    CNAME('fm1._domainkey', 'fm1.' + the_domain + '.dkim.fmhosted.com.'),
+    CNAME('fm2._domainkey', 'fm2.' + the_domain + '.dkim.fmhosted.com.'),
+    CNAME('fm3._domainkey', 'fm3.' + the_domain + '.dkim.fmhosted.com.')
+  ]
+}
+```
+
+We can then use the macros as such:
+
+```js
+D("example.com", REG_NONE, DnsProvider(DSP_R53_MAIN),
+    FASTMAIL_MX,
+    FASTMAIL_DKIM('example.com')
+)
+```

@@ -26,13 +26,11 @@ defined as separate domains via separate `D()` statements, then
 not `domain.tld`.
 
 Some operators only act on an apex domain (e.g.
-`CF_REDIRECT` and `CF_TEMP_REDIRECT`). Using them 
+`CF_REDIRECT` and `CF_TEMP_REDIRECT`). Using them
 in a `D_EXTEND` subdomain may not be what you expect.
 
-Example:
-
-{% include startExample.html %}
-{% highlight js %}
+{% capture example %}
+```js
 D("domain.tld", REG, DnsProvider(DNS),
   A("@", "127.0.0.1"), // domain.tld
   A("www", "127.0.0.2"), // www.domain.tld
@@ -55,11 +53,11 @@ D_EXTEND("sub.domain.tld",
   A("@", "127.0.0.7"), // sub.domain.tld
   CNAME("i", "j") // i.sub.domain.tld -> j.sub.domain.tld
 );
-{%endhighlight%}
-
-This will end up in the following modifications:
-
 ```
+
+This will end up in the following modifications: (This output assumes the `--verbose` flag)
+
+```text
 ******************** Domain: domain.tld
 ----- Getting nameservers from: cloudflare
 ----- DNS Provider: cloudflare...7 corrections
@@ -76,7 +74,9 @@ This will end up in the following modifications:
 #11: CREATE CNAME g.sub.sub.domain.tld h.sub.sub.domain.tld.
 #12: CREATE CNAME i.sub.domain.tld j.sub.domain.tld.
 ```
-{% include endExample.html %}
+{% endcapture %}
+
+{% include example.html content=example %}
 
 ProTips: `D_EXTEND()` permits you to create very complex and
 sophisticated configurations, but you shouldn't. Be nice to the next

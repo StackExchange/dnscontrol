@@ -7,13 +7,13 @@ import (
 	"strings"
 	"time"
 
-	nc "github.com/billputer/go-namecheap"
-	"golang.org/x/net/publicsuffix"
-
 	"github.com/StackExchange/dnscontrol/v3/models"
 	"github.com/StackExchange/dnscontrol/v3/pkg/diff"
+	"github.com/StackExchange/dnscontrol/v3/pkg/diff2"
 	"github.com/StackExchange/dnscontrol/v3/pkg/printer"
 	"github.com/StackExchange/dnscontrol/v3/providers"
+	nc "github.com/billputer/go-namecheap"
+	"golang.org/x/net/publicsuffix"
 )
 
 // NamecheapDefaultNs lists the default nameservers for this provider.
@@ -27,7 +27,8 @@ type namecheapProvider struct {
 }
 
 var features = providers.DocumentationNotes{
-	providers.CanUseAlias:            providers.Cannot(),
+	providers.CanGetZones:            providers.Can(),
+	providers.CanUseAlias:            providers.Can(),
 	providers.CanUseCAA:              providers.Can(),
 	providers.CanUsePTR:              providers.Cannot(),
 	providers.CanUseSRV:              providers.Cannot("The namecheap web console allows you to make SRV records, but their api does not let you read or set them"),
@@ -36,12 +37,15 @@ var features = providers.DocumentationNotes{
 	providers.DocCreateDomains:       providers.Cannot("Requires domain registered through their service"),
 	providers.DocDualHost:            providers.Cannot("Doesn't allow control of apex NS records"),
 	providers.DocOfficiallySupported: providers.Cannot(),
-	providers.CanGetZones:            providers.Unimplemented(),
 }
 
 func init() {
 	providers.RegisterRegistrarType("NAMECHEAP", newReg)
-	providers.RegisterDomainServiceProviderType("NAMECHEAP", newDsp, features)
+	fns := providers.DspFuncs{
+		Initializer:   newDsp,
+		RecordAuditor: AuditRecords,
+	}
+	providers.RegisterDomainServiceProviderType("NAMECHEAP", fns, features)
 	providers.RegisterCustomRecordType("URL", "NAMECHEAP", "")
 	providers.RegisterCustomRecordType("URL301", "NAMECHEAP", "")
 	providers.RegisterCustomRecordType("FRAME", "NAMECHEAP", "")
@@ -79,8 +83,10 @@ func splitDomain(domain string) (sld string, tld string) {
 
 // namecheap has request limiting at unpublished limits
 // from support in SEP-2017:
-//    "The limits for the API calls will be 20/Min, 700/Hour and 8000/Day for one user.
-//     If you can limit the requests within these it should be fine."
+//
+//	"The limits for the API calls will be 20/Min, 700/Hour and 8000/Day for one user.
+//	 If you can limit the requests within these it should be fine."
+//
 // this helper performs some api action, checks for rate limited response, and if so, enters a retry loop until it resolves
 // if you are consistently hitting this, you may have success asking their support to increase your account's limits.
 func doWithRetry(f func() error) {
@@ -108,10 +114,18 @@ func doWithRetry(f func() error) {
 
 // GetZoneRecords gets the records of a zone and returns them in RecordConfig format.
 func (n *namecheapProvider) GetZoneRecords(domain string) (models.Records, error) {
-	return nil, fmt.Errorf("not implemented")
-	// This enables the get-zones subcommand.
-	// Implement this by extracting the code from GetDomainCorrections into
-	// a single function.  For most providers this should be relatively easy.
+	sld, tld := splitDomain(domain)
+	var records *nc.DomainDNSGetHostsResult
+	var err error
+	doWithRetry(func() error {
+		records, err = n.client.DomainsDNSGetHosts(sld, tld)
+		return err
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	return toRecords(records, domain)
 }
 
 // GetDomainCorrections returns the corrections for the domain.
@@ -134,7 +148,7 @@ func (n *namecheapProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*mo
 	dc.Filter(func(r *models.RecordConfig) bool {
 		if r.Type == "NS" && r.GetLabel() == "@" {
 			if !strings.HasSuffix(r.GetTargetField(), "registrar-servers.com.") {
-				fmt.Println("\n", r.GetTargetField(), "Namecheap does not support changing apex NS records. Skipping.")
+				printer.Println("\n", r.GetTargetField(), "Namecheap does not support changing apex NS records. Skipping.")
 			}
 			return false
 		}
@@ -177,42 +191,67 @@ func (n *namecheapProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*mo
 	// Normalize
 	models.PostProcessRecords(actual)
 
-	differ := diff.New(dc)
-	_, create, delete, modify, err := differ.IncrementalDiff(actual)
-	if err != nil {
-		return nil, err
+	var corrections []*models.Correction
+	if !diff2.EnableDiff2 || true { // Remove "|| true" when diff2 version arrives
+
+		differ := diff.New(dc)
+		_, create, delete, modify, err := differ.IncrementalDiff(actual)
+		if err != nil {
+			return nil, err
+		}
+
+		// // because namecheap doesn't have selective create, delete, modify,
+		// // we bundle them all up to send at once.  We *do* want to see the
+		// // changes though
+
+		var desc []string
+		for _, i := range create {
+			desc = append(desc, "\n"+i.String())
+		}
+		for _, i := range delete {
+			desc = append(desc, "\n"+i.String())
+		}
+		for _, i := range modify {
+			desc = append(desc, "\n"+i.String())
+		}
+
+		msg := fmt.Sprintf("GENERATE_ZONE: %s (%d records)%s", dc.Name, len(dc.Records), desc)
+		corrections := []*models.Correction{}
+
+		// only create corrections if there are changes
+		if len(desc) > 0 {
+			corrections = append(corrections,
+				&models.Correction{
+					Msg: msg,
+					F: func() error {
+						return n.generateRecords(dc)
+					},
+				})
+		}
+
+		return corrections, nil
 	}
 
-	// // because namecheap doesn't have selective create, delete, modify,
-	// // we bundle them all up to send at once.  We *do* want to see the
-	// // changes though
-
-	var desc []string
-	for _, i := range create {
-		desc = append(desc, "\n"+i.String())
-	}
-	for _, i := range delete {
-		desc = append(desc, "\n"+i.String())
-	}
-	for _, i := range modify {
-		desc = append(desc, "\n"+i.String())
-	}
-
-	msg := fmt.Sprintf("GENERATE_ZONE: %s (%d records)%s", dc.Name, len(dc.Records), desc)
-	corrections := []*models.Correction{}
-
-	// only create corrections if there are changes
-	if len(desc) > 0 {
-		corrections = append(corrections,
-			&models.Correction{
-				Msg: msg,
-				F: func() error {
-					return n.generateRecords(dc)
-				},
-			})
-	}
+	// Insert Future diff2 version here.
 
 	return corrections, nil
+}
+
+func toRecords(result *nc.DomainDNSGetHostsResult, origin string) ([]*models.RecordConfig, error) {
+	var records []*models.RecordConfig
+	for _, dnsHost := range result.Hosts {
+		record := models.RecordConfig{
+			Type:         dnsHost.Type,
+			TTL:          uint32(dnsHost.TTL),
+			MxPreference: uint16(dnsHost.MXPref),
+			Name:         dnsHost.Name,
+		}
+		record.PopulateFromString(dnsHost.Type, dnsHost.Address, origin)
+
+		records = append(records, &record)
+	}
+
+	return records, nil
 }
 
 func (n *namecheapProvider) generateRecords(dc *models.DomainConfig) error {

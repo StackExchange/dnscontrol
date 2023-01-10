@@ -12,8 +12,8 @@ func TestR53Test_1(t *testing.T) {
 		Type:     "R53_ALIAS",
 		Name:     "foo",
 		NameFQDN: "foo.domain.tld",
-		Target:   "bar",
 	}
+	rec.SetTarget("bar")
 	rec.R53Alias = make(map[string]string)
 	rec.R53Alias["type"] = "A"
 	w := `R53_ALIAS('foo', 'A', 'bar')`
@@ -27,8 +27,8 @@ func TestR53Test_1ttl(t *testing.T) {
 		Type:     "R53_ALIAS",
 		Name:     "foo",
 		NameFQDN: "foo.domain.tld",
-		Target:   "bar",
 	}
+	rec.SetTarget("bar")
 	rec.R53Alias = make(map[string]string)
 	rec.R53Alias["type"] = "A"
 	w := `R53_ALIAS('foo', 'A', 'bar', TTL(321))`
@@ -42,8 +42,8 @@ func TestR53Test_2(t *testing.T) {
 		Type:     "R53_ALIAS",
 		Name:     "foo",
 		NameFQDN: "foo.domain.tld",
-		Target:   "bar",
 	}
+	rec.SetTarget("bar")
 	rec.R53Alias = make(map[string]string)
 	rec.R53Alias["type"] = "A"
 	rec.R53Alias["zone_id"] = "blarg"
@@ -58,8 +58,8 @@ func TestR53Test_2ttl(t *testing.T) {
 		Type:     "R53_ALIAS",
 		Name:     "foo",
 		NameFQDN: "foo.domain.tld",
-		Target:   "bar",
 	}
+	rec.SetTarget("bar")
 	rec.R53Alias = make(map[string]string)
 	rec.R53Alias["type"] = "A"
 	rec.R53Alias["zone_id"] = "blarg"

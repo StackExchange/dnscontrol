@@ -1,0 +1,34 @@
+{
+  "registrars": [],
+  "dns_providers": [],
+  "domains": [
+    {
+      "name": "foo.com",
+      "registrar": "none",
+      "dnsProviders": {},
+      "records": [],
+      "meta": {
+        "zone_id": "Z2FTEDLFRTZ"
+      }
+    },
+    {
+      "name": "foo.com!internal",
+      "registrar": "none",
+      "dnsProviders": {},
+      "records": [
+        {
+          "type": "R53_ALIAS",
+          "name": "atest",
+          "r53_alias": {
+            "type": "A",
+            "zone_id": "Z2FTEDLFRTZ"
+          },
+          "target": "foo.com."
+        }
+      ],
+      "meta": {
+        "zone_id": "Z2FTEDLFRTF"
+      }
+    }
+  ]
+}

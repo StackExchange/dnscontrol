@@ -7,13 +7,12 @@ import (
 
 	"github.com/StackExchange/dnscontrol/v3/models"
 	"github.com/StackExchange/dnscontrol/v3/pkg/diff"
+	"github.com/StackExchange/dnscontrol/v3/pkg/diff2"
+	"github.com/StackExchange/dnscontrol/v3/pkg/txtutil"
 	"github.com/StackExchange/dnscontrol/v3/providers"
 )
 
 var features = providers.DocumentationNotes{
-	providers.DocCreateDomains:       providers.Can(),
-	providers.DocDualHost:            providers.Can(),
-	providers.DocOfficiallySupported: providers.Cannot(),
 	providers.CanGetZones:            providers.Can(),
 	providers.CanUseAlias:            providers.Cannot(),
 	providers.CanUseCAA:              providers.Can(),
@@ -22,11 +21,17 @@ var features = providers.DocumentationNotes{
 	providers.CanUseSRV:              providers.Can(),
 	providers.CanUseSSHFP:            providers.Cannot(),
 	providers.CanUseTLSA:             providers.Cannot(),
-	providers.CanUseTXTMulti:         providers.Cannot(),
+	providers.DocCreateDomains:       providers.Can(),
+	providers.DocDualHost:            providers.Can(),
+	providers.DocOfficiallySupported: providers.Cannot(),
 }
 
 func init() {
-	providers.RegisterDomainServiceProviderType("HETZNER", New, features)
+	fns := providers.DspFuncs{
+		Initializer:   New,
+		RecordAuditor: AuditRecords,
+	}
+	providers.RegisterDomainServiceProviderType("HETZNER", fns, features)
 }
 
 // New creates a new API handle.
@@ -69,6 +74,8 @@ func (api *hetznerProvider) EnsureDomainExists(domain string) error {
 		}
 	}
 
+	// reset zone cache
+	api.zones = nil
 	return api.createZone(domain)
 }
 
@@ -93,14 +100,20 @@ func (api *hetznerProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*mo
 
 	// Normalize
 	models.PostProcessRecords(existingRecords)
+	txtutil.SplitSingleLongTxt(dc.Records) // Autosplit long TXT records
 
-	differ := diff.New(dc)
-	_, create, del, modify, err := differ.IncrementalDiff(existingRecords)
+	var corrections []*models.Correction
+	var create, del, modify diff.Changeset
+	if !diff2.EnableDiff2 {
+		differ := diff.New(dc)
+		_, create, del, modify, err = differ.IncrementalDiff(existingRecords)
+	} else {
+		differ := diff.NewCompat(dc)
+		_, create, del, modify, err = differ.IncrementalDiff(existingRecords)
+	}
 	if err != nil {
 		return nil, err
 	}
-
-	var corrections []*models.Correction
 
 	zone, err := api.getZone(domain)
 	if err != nil {

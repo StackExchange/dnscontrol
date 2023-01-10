@@ -1,11 +1,13 @@
 package ovh
 
 import (
+	"errors"
 	"fmt"
 	"strings"
 
 	"github.com/StackExchange/dnscontrol/v3/models"
 	"github.com/miekg/dns/dnsutil"
+	"github.com/ovh/go-ovh/ovh"
 )
 
 // Void an empty structure.
@@ -111,9 +113,6 @@ func (c *ovhProvider) deleteRecordFunc(id int64, fqdn string) func() error {
 // Returns a function that can be invoked to create a record in a zone.
 func (c *ovhProvider) createRecordFunc(rc *models.RecordConfig, fqdn string) func() error {
 	return func() error {
-		if c.isDKIMRecord(rc) {
-			rc.Type = "DKIM"
-		}
 		record := Record{
 			SubDomain: dnsutil.TrimDomainName(rc.GetLabelFQDN(), fqdn),
 			FieldType: rc.Type,
@@ -132,9 +131,6 @@ func (c *ovhProvider) createRecordFunc(rc *models.RecordConfig, fqdn string) fun
 // Returns a function that can be invoked to update a record in a zone.
 func (c *ovhProvider) updateRecordFunc(old *Record, rc *models.RecordConfig, fqdn string) func() error {
 	return func() error {
-		if c.isDKIMRecord(rc) {
-			rc.Type = "DKIM"
-		}
 		record := Record{
 			SubDomain: rc.GetLabel(),
 			FieldType: rc.Type,
@@ -147,10 +143,13 @@ func (c *ovhProvider) updateRecordFunc(old *Record, rc *models.RecordConfig, fqd
 			record.SubDomain = ""
 		}
 
-		err := c.client.CallAPI("PUT", fmt.Sprintf("/domain/zone/%s/record/%d", fqdn, old.ID), &record, &Void{}, true)
-		if err != nil && rc.Type == "DKIM" && strings.Contains(err.Error(), "alter read-only properties: fieldType") {
-			err = fmt.Errorf("this usually occurs when DKIM value is longer than the TXT record limit what OVH allows. Delete the TXT record to get past this limitation. [Original error: %s]", err.Error())
+		// We do this last just right before the final API call
+		if c.isDKIMRecord(rc) {
+			// When DKIM value is longer than 255, the MODIFY fails with "Try to alter read-only properties: fieldType"
+			// Setting FieldType to empty string results in the property not being altered, hence error does not occur.
+			record.FieldType = ""
 		}
+		err := c.client.CallAPI("PUT", fmt.Sprintf("/domain/zone/%s/record/%d", fqdn, old.ID), &record, &Void{}, true)
 
 		return err
 	}
@@ -161,19 +160,36 @@ func (c *ovhProvider) isDKIMRecord(rc *models.RecordConfig) bool {
 	return (rc != nil && rc.Type == "TXT" && strings.Contains(rc.GetLabel(), "._domainkey"))
 }
 
+// refreshZone initiates a refresh task on OVHs backend
 func (c *ovhProvider) refreshZone(fqdn string) error {
 	return c.client.CallAPI("POST", fmt.Sprintf("/domain/zone/%s/refresh", fqdn), nil, &Void{}, true)
 }
 
 // fetch the NS OVH attributed to this zone (which is distinct from fetchRealNS which
 // get the exact NS stored at the registrar
-func (c *ovhProvider) fetchNS(fqdn string) ([]string, error) {
+func (c *ovhProvider) fetchZoneNS(fqdn string) ([]string, error) {
 	zone, err := c.fetchZone(fqdn)
 	if err != nil {
 		return nil, err
 	}
 
 	return zone.NameServers, nil
+}
+
+// Fetch first the registrar NS, if none found, return the zone defined NS
+func (c *ovhProvider) fetchNS(fqdn string) ([]string, error) {
+	ns, err := c.fetchRegistrarNS(fqdn)
+	if err != nil {
+		return nil, err
+	}
+
+	if len(ns) == 0 {
+		ns, err = c.fetchZoneNS(fqdn)
+		if err != nil {
+			return nil, err
+		}
+	}
+	return ns, nil
 }
 
 // CurrentNameServer stores information about nameservers.
@@ -190,6 +206,10 @@ func (c *ovhProvider) fetchRegistrarNS(fqdn string) ([]string, error) {
 	var nameServersID []int
 	err := c.client.CallAPI("GET", "/domain/"+fqdn+"/nameServer", nil, &nameServersID, true)
 	if err != nil {
+		var apiError *ovh.APIError
+		if errors.As(err, &apiError) && apiError.Code == 404 {
+			return []string{}, nil
+		}
 		return nil, err
 	}
 

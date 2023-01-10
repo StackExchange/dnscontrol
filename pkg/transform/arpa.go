@@ -8,6 +8,17 @@ import (
 
 // ReverseDomainName turns a CIDR block into a reversed (in-addr) name.
 func ReverseDomainName(cidr string) (string, error) {
+
+	// If it is an IP address, add the /32 or /128
+	ip := net.ParseIP(cidr)
+	if ip != nil {
+		if ip.To4() != nil {
+			cidr = cidr + "/32"
+		} else {
+			cidr = cidr + "/128"
+		}
+	}
+
 	a, c, err := net.ParseCIDR(cidr)
 	if err != nil {
 		return "", err

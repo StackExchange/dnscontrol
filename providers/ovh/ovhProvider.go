@@ -8,6 +8,7 @@ import (
 
 	"github.com/StackExchange/dnscontrol/v3/models"
 	"github.com/StackExchange/dnscontrol/v3/pkg/diff"
+	"github.com/StackExchange/dnscontrol/v3/pkg/diff2"
 	"github.com/StackExchange/dnscontrol/v3/providers"
 	"github.com/ovh/go-ovh/ovh"
 )
@@ -18,16 +19,16 @@ type ovhProvider struct {
 }
 
 var features = providers.DocumentationNotes{
+	providers.CanGetZones:            providers.Can(),
 	providers.CanUseAlias:            providers.Cannot(),
 	providers.CanUseCAA:              providers.Can(),
 	providers.CanUsePTR:              providers.Cannot(),
 	providers.CanUseSRV:              providers.Can(),
-	providers.CanUseTLSA:             providers.Can(),
 	providers.CanUseSSHFP:            providers.Can(),
+	providers.CanUseTLSA:             providers.Can(),
 	providers.DocCreateDomains:       providers.Cannot("New domains require registration"),
 	providers.DocDualHost:            providers.Can(),
 	providers.DocOfficiallySupported: providers.Cannot(),
-	providers.CanGetZones:            providers.Can(),
 }
 
 func newOVH(m map[string]string, metadata json.RawMessage) (*ovhProvider, error) {
@@ -54,8 +55,12 @@ func newReg(conf map[string]string) (providers.Registrar, error) {
 }
 
 func init() {
+	fns := providers.DspFuncs{
+		Initializer:   newDsp,
+		RecordAuditor: AuditRecords,
+	}
 	providers.RegisterRegistrarType("OVH", newReg)
-	providers.RegisterDomainServiceProviderType("OVH", newDsp, features)
+	providers.RegisterDomainServiceProviderType("OVH", fns, features)
 }
 
 func (c *ovhProvider) GetNameservers(domain string) ([]*models.Nameserver, error) {
@@ -64,7 +69,7 @@ func (c *ovhProvider) GetNameservers(domain string) ([]*models.Nameserver, error
 		return nil, fmt.Errorf("'%s' not a zone in ovh account", domain)
 	}
 
-	ns, err := c.fetchRegistrarNS(domain)
+	ns, err := c.fetchNS(domain)
 	if err != nil {
 		return nil, err
 	}
@@ -78,6 +83,14 @@ type errNoExist struct {
 
 func (e errNoExist) Error() string {
 	return fmt.Sprintf("Domain %s not found in your ovh account", e.domain)
+}
+
+// ListZones lists the zones on this account.
+func (c *ovhProvider) ListZones() (zones []string, err error) {
+	for zone := range c.zones {
+		zones = append(zones, zone)
+	}
+	return
 }
 
 // GetZoneRecords gets the records of a zone and returns them in RecordConfig format.
@@ -105,8 +118,12 @@ func (c *ovhProvider) GetZoneRecords(domain string) (models.Records, error) {
 }
 
 func (c *ovhProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Correction, error) {
-	dc.Punycode()
-	//dc.CombineMXs()
+	var err error
+
+	err = dc.Punycode()
+	if err != nil {
+		return nil, err
+	}
 
 	actual, err := c.GetZoneRecords(dc.Name)
 	if err != nil {
@@ -116,13 +133,37 @@ func (c *ovhProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*models.C
 	// Normalize
 	models.PostProcessRecords(actual)
 
+	var corrections []*models.Correction
+	if !diff2.EnableDiff2 {
+		corrections, err = c.getDiff1DomainCorrections(dc, actual)
+	} else {
+		corrections, err = c.getDiff2DomainCorrections(dc, actual)
+	}
+
+	if err != nil {
+		return nil, err
+	}
+
+	if len(corrections) > 0 {
+		corrections = append(corrections, &models.Correction{
+			Msg: "REFRESH zone " + dc.Name,
+			F: func() error {
+				return c.refreshZone(dc.Name)
+			},
+		})
+	}
+
+	return corrections, nil
+}
+
+func (c *ovhProvider) getDiff1DomainCorrections(dc *models.DomainConfig, actual models.Records) ([]*models.Correction, error) {
+	var corrections []*models.Correction
+
 	differ := diff.New(dc)
 	_, create, delete, modify, err := differ.IncrementalDiff(actual)
 	if err != nil {
 		return nil, err
 	}
-
-	corrections := []*models.Correction{}
 
 	for _, del := range delete {
 		rec := del.Existing.Original.(*Record)
@@ -148,16 +189,36 @@ func (c *ovhProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*models.C
 			F:   c.updateRecordFunc(oldR, newR, dc.Name),
 		})
 	}
+	return corrections, nil
+}
 
-	if len(corrections) > 0 {
-		corrections = append(corrections, &models.Correction{
-			Msg: "REFRESH zone " + dc.Name,
-			F: func() error {
-				return c.refreshZone(dc.Name)
-			},
-		})
+func (c *ovhProvider) getDiff2DomainCorrections(dc *models.DomainConfig, actual models.Records) ([]*models.Correction, error) {
+	var corrections []*models.Correction
+	instructions, err := diff2.ByRecord(actual, dc, nil)
+	if err != nil {
+		return nil, err
 	}
 
+	for _, inst := range instructions {
+		switch inst.Type {
+		case diff2.CHANGE:
+			corrections = append(corrections, &models.Correction{
+				Msg: inst.Msgs[0],
+				F:   c.updateRecordFunc(inst.Old[0].Original.(*Record), inst.New[0], dc.Name),
+			})
+		case diff2.CREATE:
+			corrections = append(corrections, &models.Correction{
+				Msg: inst.Msgs[0],
+				F:   c.createRecordFunc(inst.New[0], dc.Name),
+			})
+		case diff2.DELETE:
+			rec := inst.Old[0].Original.(*Record)
+			corrections = append(corrections, &models.Correction{
+				Msg: inst.Msgs[0],
+				F:   c.deleteRecordFunc(rec.ID, dc.Name),
+			})
+		}
+	}
 	return corrections, nil
 }
 

@@ -6,10 +6,10 @@ import (
 	"regexp"
 	"strings"
 
-	"github.com/namedotcom/go/namecom"
-
 	"github.com/StackExchange/dnscontrol/v3/models"
 	"github.com/StackExchange/dnscontrol/v3/pkg/diff"
+	"github.com/StackExchange/dnscontrol/v3/pkg/diff2"
+	"github.com/namedotcom/go/namecom"
 )
 
 var defaultNameservers = []*models.Nameserver{
@@ -54,13 +54,18 @@ func (n *namedotcomProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*m
 	// Normalize
 	models.PostProcessRecords(actual)
 
-	differ := diff.New(dc)
-	_, create, del, mod, err := differ.IncrementalDiff(actual)
+	var corrections []*models.Correction
+	var create, del, mod diff.Changeset
+	if !diff2.EnableDiff2 {
+		differ := diff.New(dc)
+		_, create, del, mod, err = differ.IncrementalDiff(actual)
+	} else {
+		differ := diff.NewCompat(dc)
+		_, create, del, mod, err = differ.IncrementalDiff(actual)
+	}
 	if err != nil {
 		return nil, err
 	}
-
-	corrections := []*models.Correction{}
 
 	for _, d := range del {
 		rec := d.Existing.Original.(*namecom.Record)
@@ -84,6 +89,7 @@ func (n *namedotcomProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*m
 		}}
 		corrections = append(corrections, c)
 	}
+
 	return corrections, nil
 }
 
@@ -169,9 +175,9 @@ func (n *namedotcomProvider) createRecord(rc *models.RecordConfig, domain string
 	}
 	switch rc.Type { // #rtype_variations
 	case "A", "AAAA", "ANAME", "CNAME", "MX", "NS":
-		// nothing
+	// nothing
 	case "TXT":
-		record.Answer = encodeTxt(rc.TxtStrings)
+	// 	record.Answer = encodeTxt(rc.TxtStrings)
 	case "SRV":
 		if rc.GetTargetField() == "." {
 			return errors.New("SRV records with empty targets are not supported (as of 2019-11-05, the API returns 'Parameter Value Error - Invalid Srv Format')")
@@ -187,18 +193,18 @@ func (n *namedotcomProvider) createRecord(rc *models.RecordConfig, domain string
 	return err
 }
 
-// makeTxt encodes TxtStrings for sending in the CREATE/MODIFY API:
-func encodeTxt(txts []string) string {
-	ans := txts[0]
+// // makeTxt encodes TxtStrings for sending in the CREATE/MODIFY API:
+// func encodeTxt(txts []string) string {
+// 	ans := txts[0]
 
-	if len(txts) > 1 {
-		ans = ""
-		for _, t := range txts {
-			ans += `"` + strings.Replace(t, `"`, `\"`, -1) + `"`
-		}
-	}
-	return ans
-}
+// 	if len(txts) > 1 {
+// 		ans = ""
+// 		for _, t := range txts {
+// 			ans += `"` + strings.Replace(t, `"`, `\"`, -1) + `"`
+// 		}
+// 	}
+// 	return ans
+// }
 
 // finds a string surrounded by quotes that might contain an escaped quote character.
 var quotedStringRegexp = regexp.MustCompile(`"((?:[^"\\]|\\.)*)"`)

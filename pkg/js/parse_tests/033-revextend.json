@@ -1,0 +1,36 @@
+{
+  "dns_providers": [
+    {
+      "name": "bind",
+      "type": "BIND"
+    }
+  ],
+  "domains": [
+    {
+      "dnsProviders": {
+        "bind": -1
+      },
+      "name": "3.1.in-addr.arpa",
+      "records": [
+        {
+          "name": "1.3.1.in-addr.arpa",
+          "target": "ns1.example.com.",
+          "type": "NS"
+        },
+        {
+          "name": "2.3.1.in-addr.arpa",
+          "subdomain": "2",
+          "target": "ns2.example.org.",
+          "type": "NS"
+        }
+      ],
+      "registrar": "none"
+    }
+  ],
+  "registrars": [
+    {
+      "name": "none",
+      "type": "NONE"
+    }
+  ]
+}

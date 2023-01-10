@@ -1,0 +1,53 @@
+{
+  "dns_providers": [],
+  "domains": [
+    {
+      "dnsProviders": {},
+      "name": "foo.com",
+      "records": [
+        {
+          "name": "@",
+          "naptrflags": "U",
+          "naptrorder": 100,
+          "naptrpreference": 10,
+          "naptrregexp": "!^.*$!sip:customer-service@example.com!",
+          "naptrservice": "E2U+sip",
+          "target": "example",
+          "type": "NAPTR"
+        },
+        {
+          "name": "@",
+          "naptrflags": "U",
+          "naptrorder": 102,
+          "naptrpreference": 10,
+          "naptrregexp": "!^.*$!mailto:information@example.com!",
+          "naptrservice": "E2U+email",
+          "target": "example",
+          "type": "NAPTR"
+        },
+        {
+          "name": "@",
+          "naptrflags": "U",
+          "naptrorder": 103,
+          "naptrpreference": 10,
+          "naptrregexp": "!^.*$!mailto:information@example.com!",
+          "naptrservice": "E2U+email",
+          "target": "",
+          "type": "NAPTR"
+        },
+        {
+          "name": "@",
+          "naptrflags": "U",
+          "naptrorder": 104,
+          "naptrpreference": 10,
+          "naptrregexp": "!^.*$!mailto:information@example.com!",
+          "naptrservice": "E2U+email",
+          "target": ".",
+          "type": "NAPTR"
+        }
+      ],
+      "registrar": "none"
+    }
+  ],
+  "registrars": []
+}

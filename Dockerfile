@@ -1,17 +1,14 @@
-FROM golang:1.14-alpine AS build-env
-WORKDIR /go/src/github.com/StackExchange/dnscontrol
-ADD . .
-RUN apk update && apk add git
-RUN GO111MODULE=on go run build/build.go -os=linux
-RUN cp dnscontrol-Linux /go/bin/dnscontrol
-RUN dnscontrol version
-RUN go build -o cmd/convertzone/convertzone cmd/convertzone/main.go
-RUN cp cmd/convertzone/convertzone /go/bin/convertzone
+# syntax = docker/dockerfile:1.4
 
-FROM alpine
-RUN apk add --no-cache ca-certificates
-COPY --from=build-env /go/bin/dnscontrol /usr/local/bin
-COPY --from=build-env /go/bin/convertzone /usr/local/bin
+FROM alpine:3.17.0@sha256:8914eb54f968791faf6a8638949e480fef81e697984fba772b3976835194c6d4 as RUN
+
+#RUN --mount=type=cache,target=/var/cache/apk \
+#    apk update \
+#    && apk add ca-certificates \
+#    && update-ca-certificates
+
+COPY dnscontrol /usr/local/bin/
+
 WORKDIR /dns
-RUN dnscontrol version
-CMD dnscontrol
+
+ENTRYPOINT ["/usr/local/bin/dnscontrol"]

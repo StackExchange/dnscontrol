@@ -1,6 +1,8 @@
 package hetzner
 
 import (
+	"strings"
+
 	"github.com/StackExchange/dnscontrol/v3/models"
 )
 
@@ -63,20 +65,22 @@ func fromRecordConfig(in *models.RecordConfig, zone *zone) *record {
 	record := &record{
 		Name:   in.GetLabel(),
 		Type:   in.Type,
-		Value:  in.GetTargetField(),
+		Value:  in.GetTargetCombined(),
 		TTL:    &ttl,
 		ZoneID: zone.ID,
 	}
 
-	switch record.Type {
-	case "TXT":
-		// Cannot use `in.GetTargetCombined()` for TXTs:
-		// Their validation would complain about a missing `;`.
-		// Test case: single_TXT:Create_a_255-byte_TXT
+	if record.Type == "TXT" && len(in.TxtStrings) == 1 {
+		// HACK: HETZNER rejects values that fit into 255 bytes w/o quotes,
+		//  but do not fit w/ added quotes (via GetTargetCombined()).
+		// Sending the raw, non-quoted value works for the comprehensive
+		//  suite of integrations tests.
+		// The HETZNER validation does not provide helpful error messages.
 		// {"error":{"message":"422 Unprocessable Entity: missing: ; ","code":422}}
-		record.Value = in.GetTargetField()
-	default:
-		record.Value = in.GetTargetCombined()
+		valueNotQuoted := in.TxtStrings[0]
+		if len(valueNotQuoted) == 254 || len(valueNotQuoted) == 255 {
+			record.Value = valueNotQuoted
+		}
 	}
 
 	return record
@@ -90,7 +94,15 @@ func toRecordConfig(domain string, record *record) *models.RecordConfig {
 	}
 	rc.SetLabel(record.Name, domain)
 
-	_ = rc.PopulateFromString(record.Type, record.Value, domain)
+	value := record.Value
+	// HACK: Hetzner is inserting a trailing space after multiple, quoted values.
+	// NOTE: The actual DNS answer does not contain the space.
+	if record.Type == "TXT" && len(value) > 0 && value[len(value)-1] == ' ' {
+		// Per RFC 1035 spaces outside quoted values are irrelevant.
+		value = strings.TrimRight(value, " ")
+	}
+
+	_ = rc.PopulateFromString(record.Type, value, domain)
 
 	return rc
 }

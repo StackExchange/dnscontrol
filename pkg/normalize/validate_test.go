@@ -1,13 +1,80 @@
 package normalize
 
 import (
-	"testing"
-
 	"fmt"
+	"reflect"
+	"testing"
 
 	"github.com/StackExchange/dnscontrol/v3/models"
 	"github.com/StackExchange/dnscontrol/v3/providers"
 )
+
+func TestSoaLabelAndTarget(t *testing.T) {
+	var tests = []struct {
+		isError bool
+		label   string
+		target  string
+	}{
+		{false, "@", "ns1.foo.com."},
+		// Invalid target
+		{true, "@", "ns1.foo.com"},
+		// Invalid label, only '@' is allowed for SOA records
+		{true, "foo.com", "ns1.foo.com."},
+	}
+	for _, test := range tests {
+		experiment := fmt.Sprintf("%s %s", test.label, test.target)
+		rc := makeRC(test.label, "foo.com", test.target, models.RecordConfig{Type: "SOA",
+			SoaExpire: 1, SoaMinttl: 1, SoaRefresh: 1, SoaRetry: 1, SoaSerial: 1, SoaMbox: "bar.foo.com"})
+		err := checkTargets(rc, "foo.com")
+		if err != nil && !test.isError {
+			t.Errorf("%v: Error (%v)\n", experiment, err)
+		}
+		if err == nil && test.isError {
+			t.Errorf("%v: Expected error but got none \n", experiment)
+		}
+	}
+}
+
+func TestCheckSoa(t *testing.T) {
+	var tests = []struct {
+		isError bool
+		expire  uint32
+		minttl  uint32
+		refresh uint32
+		retry   uint32
+		serial  uint32
+		mbox    string
+	}{
+		// Expire
+		{false, 123, 123, 123, 123, 123, "foo.bar.com."},
+		{true, 0, 123, 123, 123, 123, "foo.bar.com."},
+		// MinTTL
+		{false, 123, 123, 123, 123, 123, "foo.bar.com."},
+		{true, 123, 0, 123, 123, 123, "foo.bar.com."},
+		// Refresh
+		{false, 123, 123, 123, 123, 123, "foo.bar.com."},
+		{true, 123, 123, 0, 123, 123, "foo.bar.com."},
+		// Retry
+		{false, 123, 123, 123, 123, 123, "foo.bar.com."},
+		{true, 123, 123, 123, 0, 123, "foo.bar.com."},
+		// Serial
+		{false, 123, 123, 123, 123, 123, "foo.bar.com."},
+		{false, 123, 123, 123, 123, 0, "foo.bar.com."},
+		// MBox
+		{true, 123, 123, 123, 123, 123, ""},
+		{true, 123, 123, 123, 123, 123, "foo@bar.com."},
+		{false, 123, 123, 123, 123, 123, "foo.bar.com."},
+	}
+
+	for _, test := range tests {
+		experiment := fmt.Sprintf("%d %d %d %d %d %s", test.expire, test.minttl, test.refresh,
+			test.retry, test.serial, test.mbox)
+		t.Run(experiment, func(t *testing.T) {
+			err := checkSoa(test.expire, test.minttl, test.refresh, test.retry, test.serial, test.mbox)
+			checkError(t, err, test.isError, experiment)
+		})
+	}
+}
 
 func TestCheckLabel(t *testing.T) {
 	var tests = []struct {
@@ -266,6 +333,40 @@ func TestCheckDuplicates_dup_ns(t *testing.T) {
 	}
 }
 
+func TestUniq(t *testing.T) {
+	a := []uint32{1, 2, 2, 3, 4, 5, 5, 6}
+	expected := []uint32{1, 2, 3, 4, 5, 6}
+
+	r := uniq(a)
+	if !reflect.DeepEqual(r, expected) {
+		t.Error("Deduplicated slice is different than expected")
+	}
+}
+
+func TestCheckLabelHasMultipleTTLs(t *testing.T) {
+	records := []*models.RecordConfig{
+		// different ttl per record
+		makeRC("zzz", "example.com", "4.4.4.4", models.RecordConfig{Type: "A", TTL: 111}),
+		makeRC("zzz", "example.com", "4.4.4.5", models.RecordConfig{Type: "A", TTL: 222}),
+	}
+	errs := checkLabelHasMultipleTTLs(records)
+	if len(errs) == 0 {
+		t.Error("Expected error on multiple TTLs under the same label, but got none")
+	}
+}
+
+func TestCheckLabelHasNoMultipleTTLs(t *testing.T) {
+	records := []*models.RecordConfig{
+		// different ttl per record
+		makeRC("zzz", "example.com", "4.4.4.4", models.RecordConfig{Type: "A", TTL: 111}),
+		makeRC("zzz", "example.com", "4.4.4.5", models.RecordConfig{Type: "A", TTL: 111}),
+	}
+	errs := checkLabelHasMultipleTTLs(records)
+	if len(errs) != 0 {
+		t.Errorf("Expected 0 errors on records having the same TTL under the same label, but got %d", len(errs))
+	}
+}
+
 func TestTLSAValidation(t *testing.T) {
 	config := &models.DNSConfig{
 		Domains: []*models.DomainConfig{
@@ -293,14 +394,14 @@ const (
 )
 
 func init() {
-	providers.RegisterDomainServiceProviderType(ProviderNoDS, nil, providers.DocumentationNotes{})
-	providers.RegisterDomainServiceProviderType(ProviderFullDS, nil, providers.DocumentationNotes{
+	providers.RegisterDomainServiceProviderType(ProviderNoDS, providers.DspFuncs{}, providers.DocumentationNotes{})
+	providers.RegisterDomainServiceProviderType(ProviderFullDS, providers.DspFuncs{}, providers.DocumentationNotes{
 		providers.CanUseDS: providers.Can(),
 	})
-	providers.RegisterDomainServiceProviderType(ProviderChildDSOnly, nil, providers.DocumentationNotes{
+	providers.RegisterDomainServiceProviderType(ProviderChildDSOnly, providers.DspFuncs{}, providers.DocumentationNotes{
 		providers.CanUseDSForChildren: providers.Can(),
 	})
-	providers.RegisterDomainServiceProviderType(ProviderBothDSCaps, nil, providers.DocumentationNotes{
+	providers.RegisterDomainServiceProviderType(ProviderBothDSCaps, providers.DspFuncs{}, providers.DocumentationNotes{
 		providers.CanUseDS:            providers.Can(),
 		providers.CanUseDSForChildren: providers.Can(),
 	})
@@ -364,4 +465,31 @@ func Test_DSChecks(t *testing.T) {
 			}
 		})
 	})
+}
+
+func Test_errorRepeat(t *testing.T) {
+	type args struct {
+		label  string
+		domain string
+	}
+	tests := []struct {
+		name string
+		args args
+		want string
+	}{
+		{
+			name: "1",
+			args: args{label: "foo.bar.com", domain: "bar.com"},
+			want: `The name "foo.bar.com.bar.com." is an error (repeats the domain).` +
+				` Maybe instead of "foo.bar.com" you intended "foo"?` +
+				` If not add DISABLE_REPEATED_DOMAIN_CHECK to this record to permit this as-is.`,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := errorRepeat(tt.args.label, tt.args.domain); got != tt.want {
+				t.Errorf("errorRepeat() = \n'%s', want\n'%s'", got, tt.want)
+			}
+		})
+	}
 }

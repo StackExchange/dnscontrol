@@ -3,22 +3,29 @@ package models
 import (
 	"fmt"
 
+	"github.com/qdm12/reprint"
 	"golang.org/x/net/idna"
 )
 
 // DomainConfig describes a DNS domain (tecnically a  DNS zone).
 type DomainConfig struct {
 	Name             string         `json:"name"` // NO trailing "."
+	Tag              string         `json:"-"`    // split horizon tag
+	UniqueName       string         `json:"-"`    // .Name + "!" + .Tag
 	RegistrarName    string         `json:"registrar"`
 	DNSProviderNames map[string]int `json:"dnsProviders"`
 
-	Metadata       map[string]string `json:"meta,omitempty"`
-	Records        Records           `json:"records"`
-	Nameservers    []*Nameserver     `json:"nameservers,omitempty"`
-	KeepUnknown    bool              `json:"keepunknown,omitempty"`
-	IgnoredNames   []string          `json:"ignored_names,omitempty"`
-	IgnoredTargets []*IgnoreTarget   `json:"ignored_targets,omitempty"`
-	AutoDNSSEC     string            `json:"auto_dnssec,omitempty"` // "", "on", "off"
+	Metadata    map[string]string `json:"meta,omitempty"`
+	Records     Records           `json:"records"`
+	Nameservers []*Nameserver     `json:"nameservers,omitempty"`
+
+	KeepUnknown     bool               `json:"keepunknown,omitempty"`
+	IgnoredNames    []*IgnoreName      `json:"ignored_names,omitempty"`
+	IgnoredTargets  []*IgnoreTarget    `json:"ignored_targets,omitempty"`
+	Unmanaged       []*UnmanagedConfig `json:"unmanaged,omitempty"`
+	UnmanagedUnsafe bool               `json:"unmanaged_disable_safety_check,omitempty"`
+
+	AutoDNSSEC string `json:"auto_dnssec,omitempty"` // "", "on", "off"
 	//DNSSEC        bool              `json:"dnssec,omitempty"`
 
 	// These fields contain instantiated provider instances once everything is linked up.
@@ -29,24 +36,30 @@ type DomainConfig struct {
 	DNSProviderInstances []*DNSProviderInstance `json:"-"`
 }
 
+// UnmanagedConfig describes an UNMANAGED() rule.
+type UnmanagedConfig struct {
+	Label   string          `json:"label_pattern"` // Glob pattern for matching labels.
+	RType   string          `json:"rType_pattern"` // Comma-separated list of DNS Resource Types.
+	typeMap map[string]bool // map of RTypes or len()=0 for all
+	Target  string          `json:"target_pattern"` // Glob pattern for matching targets.
+}
+
 // Copy returns a deep copy of the DomainConfig.
 func (dc *DomainConfig) Copy() (*DomainConfig, error) {
 	newDc := &DomainConfig{}
-	// provider instances are interfaces that gob hates if you don't register them.
-	// and the specific types are not gob encodable since nothing is exported.
-	// should find a better solution for this now.
-	//
-	// current strategy: remove everything, gob copy it. Then set both to stored copy.
-	reg := dc.RegistrarInstance
-	dnsps := dc.DNSProviderInstances
-	dc.RegistrarInstance = nil
-	dc.DNSProviderInstances = nil
-	err := copyObj(dc, newDc)
-	dc.RegistrarInstance = reg
-	newDc.RegistrarInstance = reg
-	dc.DNSProviderInstances = dnsps
-	newDc.DNSProviderInstances = dnsps
+	err := reprint.FromTo(dc, newDc) // Deep copy
 	return newDc, err
+
+	// NB(tlim): The old version of this copied the structure by gob-encoding
+	// and decoding it. gob doesn't like the dc.RegisterInstance or
+	// dc.DNSProviderInstances fields, so we saved a temporary copy of those,
+	// nil'ed out the original, did the gob copy, and then manually copied those
+	// fields using the temp variables we saved. It looked like:
+	//reg, dnsps := dc.RegistrarInstance, dc.DNSProviderInstances
+	//dc.RegistrarInstance, dc.DNSProviderInstances = nil, nil
+	// (perform the copy)
+	//dc.RegistrarInstance, dc.DNSProviderInstances = reg, dnsps
+	//newDc.RegistrarInstance, newDc.DNSProviderInstances = reg, dnsps
 }
 
 // Filter removes all records that don't match the filter f.
@@ -67,26 +80,28 @@ func (dc *DomainConfig) Filter(f func(r *RecordConfig) bool) {
 // - Target (CNAME and MX only)
 func (dc *DomainConfig) Punycode() error {
 	for _, rec := range dc.Records {
+		// Update the label:
 		t, err := idna.ToASCII(rec.GetLabelFQDN())
 		if err != nil {
 			return err
 		}
 		rec.SetLabelFromFQDN(t, dc.Name)
+
+		// Set the target:
 		switch rec.Type { // #rtype_variations
-		case "ALIAS", "MX", "NS", "CNAME", "PTR", "SRV", "URL", "URL301", "FRAME", "R53_ALIAS":
+		case "ALIAS", "MX", "NS", "CNAME", "PTR", "SRV", "URL", "URL301", "FRAME", "R53_ALIAS", "NS1_URLFWD", "AKAMAICDN", "CLOUDNS_WR":
 			// These rtypes are hostnames, therefore need to be converted (unlike, for example, an AAAA record)
 			t, err := idna.ToASCII(rec.GetTargetField())
-			rec.SetTarget(t)
 			if err != nil {
 				return err
 			}
+			rec.SetTarget(t)
+		case "CF_REDIRECT", "CF_TEMP_REDIRECT", "CF_WORKER_ROUTE":
+			rec.SetTarget(rec.GetTargetField())
 		case "A", "AAAA", "CAA", "DS", "NAPTR", "SOA", "SSHFP", "TXT", "TLSA", "AZURE_ALIAS":
 			// Nothing to do.
 		default:
-			msg := fmt.Sprintf("Punycode rtype %v unimplemented", rec.Type)
-			panic(msg)
-			// We panic so that we quickly find any switch statements
-			// that have not been updated for a new RR type.
+			return fmt.Errorf("Punycode rtype %v unimplemented", rec.Type)
 		}
 	}
 	return nil

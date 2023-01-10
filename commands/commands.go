@@ -7,10 +7,11 @@ import (
 	"sort"
 	"strings"
 
-	"github.com/urfave/cli/v2"
-
 	"github.com/StackExchange/dnscontrol/v3/models"
+	"github.com/StackExchange/dnscontrol/v3/pkg/diff2"
+	"github.com/StackExchange/dnscontrol/v3/pkg/js"
 	"github.com/StackExchange/dnscontrol/v3/pkg/printer"
+	"github.com/urfave/cli/v2"
 )
 
 // categories of commands
@@ -52,6 +53,16 @@ func Run(v string) int {
 			Usage:       "Enable detailed logging",
 			Destination: &printer.DefaultPrinter.Verbose,
 		},
+		&cli.BoolFlag{
+			Name:        "allow-fetch",
+			Usage:       "Enable JS fetch(), dangerous on untrusted code!",
+			Destination: &js.EnableFetch,
+		},
+		&cli.BoolFlag{
+			Name:        "diff2",
+			Usage:       "Enable replacement diff algorithm",
+			Destination: &diff2.EnableDiff2,
+		},
 	}
 	sort.Sort(cli.CommandsByName(commands))
 	app.Commands = commands
@@ -89,29 +100,36 @@ func (args *GetDNSConfigArgs) flags() []cli.Flag {
 
 // GetDNSConfig reads the json-formatted IR file. Or executes javascript. All depending on flags provided.
 func GetDNSConfig(args GetDNSConfigArgs) (*models.DNSConfig, error) {
-	if args.JSONFile != "" {
+	var err error
+	cfg := &models.DNSConfig{}
+
+	if args.JSONFile == "" {
+		// No IR file specified. Generate the IR by running dnsconfig.json
+		// as normal.
+		cfg, err = ExecuteDSL(args.ExecuteDSLArgs)
+		if err != nil {
+			return nil, err
+		}
+	} else {
+		// Read an IR file.
 		f, err := os.Open(args.JSONFile)
 		if err != nil {
 			return nil, err
 		}
 		defer f.Close()
 		dec := json.NewDecoder(f)
-		cfg := &models.DNSConfig{}
 		if err = dec.Decode(cfg); err != nil {
 			return nil, err
 		}
-		return preloadProviders(cfg, nil)
 	}
-	return preloadProviders(ExecuteDSL(args.ExecuteDSLArgs))
+
+	return preloadProviders(cfg)
 }
 
 // the json only contains provider names inside domains. This denormalizes the data for more
 // convenient access patterns. Does everything we need to prepare for the validation phase, but
 // cannot do anything that requires the credentials file yet.
-func preloadProviders(cfg *models.DNSConfig, err error) (*models.DNSConfig, error) {
-	if err != nil {
-		return cfg, err
-	}
+func preloadProviders(cfg *models.DNSConfig) (*models.DNSConfig, error) {
 	//build name to type maps
 	cfg.RegistrarsByName = map[string]*models.RegistrarConfig{}
 	cfg.DNSProvidersByName = map[string]*models.DNSProviderConfig{}
@@ -223,7 +241,7 @@ func (args *GetCredentialsArgs) flags() []cli.Flag {
 		&cli.StringFlag{
 			Name:        "creds",
 			Destination: &args.CredsFile,
-			Usage:       "Provider credentials JSON file",
+			Usage:       "Provider credentials JSON file (or !program to execute program that outputs json)",
 			Value:       "creds.json",
 		},
 	}

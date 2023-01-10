@@ -1,80 +1,99 @@
 package models
 
 import (
+	"encoding/json"
 	"fmt"
 	"log"
 	"sort"
 	"strings"
 
+	"github.com/jinzhu/copier"
 	"github.com/miekg/dns"
 	"github.com/miekg/dns/dnsutil"
+	"github.com/qdm12/reprint"
 )
 
 // RecordConfig stores a DNS record.
 // Valid types:
-//   Official:
-//     A
-//     AAAA
-//     ANAME  // Technically not an official rtype yet.
-//     CAA
-//     CNAME
-//     MX
-//     NAPTR
-//     NS
-//     PTR
-//     SRV
-//     SSHFP
-//     TLSA
-//     TXT
-//   Pseudo-Types:
-//     ALIAS
-//     CF_REDIRECT
-//     CF_TEMP_REDIRECT
-//     FRAME
-//     IMPORT_TRANSFORM
-//     NAMESERVER
-//     NO_PURGE
-//     PAGE_RULE
-//     PURGE
-//     URL
-//     URL301
+//
+//	Official: (alphabetical)
+//	  A
+//	  AAAA
+//	  ANAME  // Technically not an official rtype yet.
+//	  CAA
+//	  CNAME
+//	  MX
+//	  NAPTR
+//	  NS
+//	  PTR
+//	  SOA
+//	  SRV
+//	  SSHFP
+//	  TLSA
+//	  TXT
+//	Pseudo-Types: (alphabetical)
+//	  ALIAS
+//	  CF_REDIRECT
+//	  CF_TEMP_REDIRECT
+//	  CF_WORKER_ROUTE
+//	  CLOUDNS_WR
+//	  FRAME
+//	  IMPORT_TRANSFORM
+//	  NAMESERVER
+//	  NO_PURGE
+//	  NS1_URLFWD
+//	  PAGE_RULE
+//	  PURGE
+//	  URL
+//	  URL301
+//	  WORKER_ROUTE
 //
 // Notes about the fields:
 //
 // Name:
-//    This is the shortname i.e. the NameFQDN without the origin suffix.
-//    It should never have a trailing "."
-//    It should never be null. The apex (naked domain) is stored as "@".
-//    If the origin is "foo.com." and Name is "foo.com", this literally means
-//        the intended FQDN is "foo.com.foo.com." (which may look odd)
+//
+//	This is the shortname i.e. the NameFQDN without the origin suffix.
+//	It should never have a trailing "."
+//	It should never be null. The apex (naked domain) is stored as "@".
+//	If the origin is "foo.com." and Name is "foo.com", this literally means
+//	    the intended FQDN is "foo.com.foo.com." (which may look odd)
+//
 // NameFQDN:
-//    This is the FQDN version of Name.
-//    It should never have a trailing ".".
-//    NOTE: Eventually we will unexport Name/NameFQDN. Please start using
-//      the setters (SetLabel/SetLabelFromFQDN) and getters (GetLabel/GetLabelFQDN).
-//      as they will always work.
-// Target:
-//   This is the host or IP address of the record, with
-//     the other related parameters (weight, priority, etc.) stored in individual
-//     fields.
-//   NOTE: Eventually we will unexport Target. Please start using the
-//     setters (SetTarget*) and getters (GetTarget*) as they will always work.
+//
+//	This is the FQDN version of Name.
+//	It should never have a trailing ".".
+//	NOTE: Eventually we will unexport Name/NameFQDN. Please start using
+//	  the setters (SetLabel/SetLabelFromFQDN) and getters (GetLabel/GetLabelFQDN).
+//	  as they will always work.
+//
+// target:
+//
+//	This is the host or IP address of the record, with
+//	  the other related parameters (weight, priority, etc.) stored in individual
+//	  fields.
+//	NOTE: Eventually we will unexport Target. Please start using the
+//	  setters (SetTarget*) and getters (GetTarget*) as they will always work.
+//
 // SubDomain:
-//    This is the subdomain path, if any, imported from the configuration. If
-//        present at the time of canonicalization it is inserted between the
-//        Name and origin when constructing a canonical (FQDN) target.
+//
+//	This is the subdomain path, if any, imported from the configuration. If
+//	    present at the time of canonicalization it is inserted between the
+//	    Name and origin when constructing a canonical (FQDN) target.
 //
 // Idioms:
-//  rec.Label() == "@"   // Is this record at the apex?
 //
+//	rec.Label() == "@"   // Is this record at the apex?
 type RecordConfig struct {
-	Type             string            `json:"type"` // All caps rtype name.
-	Name             string            `json:"name"` // The short name. See above.
-	SubDomain        string            `json:"subdomain,omitempty"`
-	NameFQDN         string            `json:"-"`      // Must end with ".$origin". See above.
-	Target           string            `json:"target"` // If a name, must end with "."
-	TTL              uint32            `json:"ttl,omitempty"`
-	Metadata         map[string]string `json:"meta,omitempty"`
+	Type      string            `json:"type"` // All caps rtype name.
+	Name      string            `json:"name"` // The short name. See above.
+	SubDomain string            `json:"subdomain,omitempty"`
+	NameFQDN  string            `json:"-"` // Must end with ".$origin". See above.
+	target    string            // If a name, must end with "."
+	TTL       uint32            `json:"ttl,omitempty"`
+	Metadata  map[string]string `json:"meta,omitempty"`
+	Original  interface{}       `json:"-"` // Store pointer to provider-specific record object. Used in diffing.
+
+	// If you add a field to this struct, also add it to the list on MarshalJSON.
 	MxPreference     uint16            `json:"mxpreference,omitempty"`
 	SrvPriority      uint16            `json:"srvpriority,omitempty"`
 	SrvWeight        uint16            `json:"srvweight,omitempty"`
@@ -101,26 +120,115 @@ type RecordConfig struct {
 	TlsaUsage        uint8             `json:"tlsausage,omitempty"`
 	TlsaSelector     uint8             `json:"tlsaselector,omitempty"`
 	TlsaMatchingType uint8             `json:"tlsamatchingtype,omitempty"`
-	TxtStrings       []string          `json:"txtstrings,omitempty"` // TxtStrings stores all strings (including the first). Target stores only the first one.
+	TxtStrings       []string          `json:"txtstrings,omitempty"` // TxtStrings stores all strings (including the first). Target stores all the strings joined.
 	R53Alias         map[string]string `json:"r53_alias,omitempty"`
 	AzureAlias       map[string]string `json:"azure_alias,omitempty"`
+}
 
-	Original interface{} `json:"-"` // Store pointer to provider-specific record object. Used in diffing.
+// MarshalJSON marshals RecordConfig.
+func (rc *RecordConfig) MarshalJSON() ([]byte, error) {
+	recj := &struct {
+		RecordConfig
+		Target string `json:"target"`
+	}{
+		RecordConfig: *rc,
+		Target:       rc.GetTargetField(),
+	}
+	j, err := json.Marshal(*recj)
+	if err != nil {
+		return nil, err
+	}
+	return j, nil
+}
+
+// UnmarshalJSON unmarshals RecordConfig.
+func (rc *RecordConfig) UnmarshalJSON(b []byte) error {
+	recj := &struct {
+		Target string `json:"target"`
+
+		Type      string            `json:"type"` // All caps rtype name.
+		Name      string            `json:"name"` // The short name. See above.
+		SubDomain string            `json:"subdomain,omitempty"`
+		NameFQDN  string            `json:"-"` // Must end with ".$origin". See above.
+		target    string            // If a name, must end with "."
+		TTL       uint32            `json:"ttl,omitempty"`
+		Metadata  map[string]string `json:"meta,omitempty"`
+		Original  interface{}       `json:"-"` // Store pointer to provider-specific record object. Used in diffing.
+
+		MxPreference     uint16            `json:"mxpreference,omitempty"`
+		SrvPriority      uint16            `json:"srvpriority,omitempty"`
+		SrvWeight        uint16            `json:"srvweight,omitempty"`
+		SrvPort          uint16            `json:"srvport,omitempty"`
+		CaaTag           string            `json:"caatag,omitempty"`
+		CaaFlag          uint8             `json:"caaflag,omitempty"`
+		DsKeyTag         uint16            `json:"dskeytag,omitempty"`
+		DsAlgorithm      uint8             `json:"dsalgorithm,omitempty"`
+		DsDigestType     uint8             `json:"dsdigesttype,omitempty"`
+		DsDigest         string            `json:"dsdigest,omitempty"`
+		NaptrOrder       uint16            `json:"naptrorder,omitempty"`
+		NaptrPreference  uint16            `json:"naptrpreference,omitempty"`
+		NaptrFlags       string            `json:"naptrflags,omitempty"`
+		NaptrService     string            `json:"naptrservice,omitempty"`
+		NaptrRegexp      string            `json:"naptrregexp,omitempty"`
+		SshfpAlgorithm   uint8             `json:"sshfpalgorithm,omitempty"`
+		SshfpFingerprint uint8             `json:"sshfpfingerprint,omitempty"`
+		SoaMbox          string            `json:"soambox,omitempty"`
+		SoaSerial        uint32            `json:"soaserial,omitempty"`
+		SoaRefresh       uint32            `json:"soarefresh,omitempty"`
+		SoaRetry         uint32            `json:"soaretry,omitempty"`
+		SoaExpire        uint32            `json:"soaexpire,omitempty"`
+		SoaMinttl        uint32            `json:"soaminttl,omitempty"`
+		TlsaUsage        uint8             `json:"tlsausage,omitempty"`
+		TlsaSelector     uint8             `json:"tlsaselector,omitempty"`
+		TlsaMatchingType uint8             `json:"tlsamatchingtype,omitempty"`
+		TxtStrings       []string          `json:"txtstrings,omitempty"` // TxtStrings stores all strings (including the first). Target stores only the first one.
+		R53Alias         map[string]string `json:"r53_alias,omitempty"`
+		AzureAlias       map[string]string `json:"azure_alias,omitempty"`
+		// NB(tlim): If anyone can figure out how to do this without listing all
+		// the fields, please let us know!
+	}{}
+	if err := json.Unmarshal(b, &recj); err != nil {
+		return err
+	}
+
+	// Copy the exported fields.
+	copier.CopyWithOption(&rc, &recj, copier.Option{IgnoreEmpty: true, DeepCopy: true})
+	// Set each unexported field.
+	rc.SetTarget(recj.Target)
+
+	// Some sanity checks:
+	if recj.Type != rc.Type {
+		panic("DEBUG: TYPE NOT COPIED\n")
+	}
+	if recj.Type == "" {
+		panic("DEBUG: TYPE BLANK\n")
+	}
+	if recj.Name != rc.Name {
+		panic("DEBUG: NAME NOT COPIED\n")
+	}
+
+	return nil
 }
 
 // Copy returns a deep copy of a RecordConfig.
 func (rc *RecordConfig) Copy() (*RecordConfig, error) {
 	newR := &RecordConfig{}
-	err := copyObj(rc, newR)
+	// Copy the exported fields.
+	err := reprint.FromTo(rc, newR) // Deep copy
+	// Set each unexported field.
+	newR.target = rc.target
 	return newR, err
 }
 
 // SetLabel sets the .Name/.NameFQDN fields given a short name and origin.
 // origin must not have a trailing dot: The entire code base
-//   maintains dc.Name without the trailig dot. Finding a dot here means
-//   something is very wrong.
+//
+//	maintains dc.Name without the trailig dot. Finding a dot here means
+//	something is very wrong.
+//
 // short must not have a training dot: That would mean you have
-//   a FQDN, and shouldn't be using SetLabel().  Maybe SetLabelFromFQDN()?
+//
+//	a FQDN, and shouldn't be using SetLabel().  Maybe SetLabelFromFQDN()?
 func (rc *RecordConfig) SetLabel(short, origin string) {
 
 	// Assertions that make sure the function is being used correctly:
@@ -128,7 +236,9 @@ func (rc *RecordConfig) SetLabel(short, origin string) {
 		panic(fmt.Errorf("origin (%s) is not supposed to end with a dot", origin))
 	}
 	if strings.HasSuffix(short, ".") {
-		panic(fmt.Errorf("short (%s) is not supposed to end with a dot", origin))
+		if short != "**current-domain**" {
+			panic(fmt.Errorf("short (%s) is not supposed to end with a dot", origin))
+		}
 	}
 
 	// TODO(tlim): We should add more validation here or in a separate validation
@@ -166,10 +276,8 @@ func (rc *RecordConfig) SetLabelFromFQDN(fqdn, origin string) {
 		panic(fmt.Errorf("fqdn (%s) is not supposed to end with double dots", origin))
 	}
 
-	if strings.HasSuffix(fqdn, ".") {
-		// Trim off a trailing dot.
-		fqdn = fqdn[:len(fqdn)-1]
-	}
+	// Trim off a trailing dot.
+	fqdn = strings.TrimSuffix(fqdn, ".")
 
 	fqdn = strings.ToLower(fqdn)
 	origin = strings.ToLower(origin)
@@ -180,7 +288,9 @@ func (rc *RecordConfig) SetLabelFromFQDN(fqdn, origin string) {
 // GetLabel returns the shortname of the label associated with this RecordConfig.
 // It will never end with "."
 // It does not need further shortening (i.e. if it returns "foo.com" and the
-//   domain is "foo.com" then the FQDN is actually "foo.com.foo.com").
+//
+//	domain is "foo.com" then the FQDN is actually "foo.com.foo.com").
+//
 // It will never be "" (the apex is returned as "@").
 func (rc *RecordConfig) GetLabel() string {
 	return rc.Name
@@ -195,10 +305,13 @@ func (rc *RecordConfig) GetLabelFQDN() string {
 // ToDiffable returns a string that is comparable by a differ.
 // extraMaps: a list of maps that should be included in the comparison.
 func (rc *RecordConfig) ToDiffable(extraMaps ...map[string]string) string {
-	content := fmt.Sprintf("%v ttl=%d", rc.GetTargetCombined(), rc.TTL)
-	if rc.Type == "SOA" {
-		content = fmt.Sprintf("%s %v %d %d %d %d ttl=%d", rc.Target, rc.SoaMbox, rc.SoaRefresh, rc.SoaRetry, rc.SoaExpire, rc.SoaMinttl, rc.TTL)
+	var content string
+	switch rc.Type {
+	case "SOA":
+		content = fmt.Sprintf("%s %v %d %d %d %d ttl=%d", rc.target, rc.SoaMbox, rc.SoaRefresh, rc.SoaRetry, rc.SoaExpire, rc.SoaMinttl, rc.TTL)
 		// SoaSerial is not used in comparison
+	default:
+		content = fmt.Sprintf("%v ttl=%d", rc.GetTargetCombined(), rc.TTL)
 	}
 	for _, valueMap := range extraMaps {
 		// sort the extra values map keys to perform a deterministic
@@ -295,6 +408,8 @@ func (rc *RecordConfig) ToRR() dns.RR {
 		rr.(*dns.TLSA).MatchingType = rc.TlsaMatchingType
 		rr.(*dns.TLSA).Selector = rc.TlsaSelector
 		rr.(*dns.TLSA).Certificate = rc.GetTargetField()
+	case dns.TypeSPF:
+		rr.(*dns.SPF).Txt = rc.TxtStrings
 	case dns.TypeTXT:
 		rr.(*dns.TXT).Txt = rc.TxtStrings
 	default:
@@ -310,6 +425,10 @@ func (rc *RecordConfig) ToRR() dns.RR {
 type RecordKey struct {
 	NameFQDN string
 	Type     string
+}
+
+func (rk *RecordKey) String() string {
+	return rk.NameFQDN + ":" + rk.Type
 }
 
 // Key converts a RecordConfig into a RecordKey.
@@ -352,6 +471,17 @@ func (recs Records) FQDNMap() (m map[string]bool) {
 		m[rec.GetLabelFQDN()] = true
 	}
 	return m
+}
+
+// GetByType returns the records that match rtype typeName.
+func (recs Records) GetByType(typeName string) Records {
+	results := Records{}
+	for _, rec := range recs {
+		if rec.Type == typeName {
+			results = append(results, rec)
+		}
+	}
+	return results
 }
 
 // GroupedByKey returns a map of keys to records.
@@ -401,15 +531,15 @@ func downcase(recs []*RecordConfig) {
 		r.Name = strings.ToLower(r.Name)
 		r.NameFQDN = strings.ToLower(r.NameFQDN)
 		switch r.Type { // #rtype_variations
-		case "ANAME", "CNAME", "DS", "MX", "NS", "PTR", "NAPTR", "SRV":
+		case "ANAME", "CNAME", "DS", "MX", "NS", "PTR", "NAPTR", "SRV", "TLSA", "AKAMAICDN":
 			// These record types have a target that is case insensitive, so we downcase it.
-			r.Target = strings.ToLower(r.Target)
-		case "A", "AAAA", "ALIAS", "CAA", "IMPORT_TRANSFORM", "TLSA", "TXT", "SSHFP", "CF_REDIRECT", "CF_TEMP_REDIRECT":
+			r.target = strings.ToLower(r.target)
+		case "A", "AAAA", "ALIAS", "CAA", "IMPORT_TRANSFORM", "TXT", "SSHFP", "CF_REDIRECT", "CF_TEMP_REDIRECT", "CF_WORKER_ROUTE":
 			// These record types have a target that is case sensitive, or is an IP address. We leave them alone.
 			// Do nothing.
 		case "SOA":
-			if r.Target != "DEFAULT_NOT_SET." {
-				r.Target = strings.ToLower(r.Target) // .Target stores the Ns
+			if r.target != "DEFAULT_NOT_SET." {
+				r.target = strings.ToLower(r.target) // .target stores the Ns
 			}
 			if r.SoaMbox != "DEFAULT_NOT_SET." {
 				r.SoaMbox = strings.ToLower(r.SoaMbox)

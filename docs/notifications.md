@@ -11,9 +11,9 @@ new types or destinations.
 
 ## Configuration
 
-Notifications are set up in your credentials json file. They will use the `notifications` key to look for keys or configuration needed for various notification types.
+Notifications are set up in your credentials JSON file. They will use the `notifications` key to look for keys or configuration needed for various notification types.
 
-```
+```json
   "r53": {
       ...
     },
@@ -46,7 +46,7 @@ Configure `teams_url` to this webhook.
 
 ### Bonfire
 
-This is stack overflow's built in chat system. This is probably not useful for most people.
+This is Stack Overflow's built in chat system. This is probably not useful for most people.
 
 Configure `bonfire_url` to be the full url including room and api key.
 

@@ -27,7 +27,9 @@ type CLI interface {
 type Printer interface {
 	Debugf(fmt string, args ...interface{})
 	Printf(fmt string, args ...interface{})
+	Println(lines ...string)
 	Warnf(fmt string, args ...interface{})
+	Errorf(fmt string, args ...interface{})
 }
 
 // Debugf is called to print/format debug information.
@@ -40,9 +42,19 @@ func Printf(fmt string, args ...interface{}) {
 	DefaultPrinter.Printf(fmt, args...)
 }
 
+// Println is called to print/format information.
+func Println(lines ...string) {
+	DefaultPrinter.Println(lines...)
+}
+
 // Warnf is called to print/format a warning.
 func Warnf(fmt string, args ...interface{}) {
 	DefaultPrinter.Warnf(fmt, args...)
+}
+
+// Errorf is called to print/format an error.
+func Errorf(fmt string, args ...interface{}) {
+	DefaultPrinter.Errorf(fmt, args...)
 }
 
 var (
@@ -53,6 +65,11 @@ var (
 		Verbose: false,
 	}
 )
+
+// SkinnyReport is true to to disable certain print statements.
+// This is a hack until we have the new printer replacement. The long
+// variable name is easy to grep for when we make the conversion.
+var SkinnyReport = true
 
 // ConsolePrinter is a handle for the console printer.
 type ConsolePrinter struct {
@@ -105,7 +122,9 @@ func (c ConsolePrinter) StartDNSProvider(provider string, skip bool) {
 	if skip {
 		lbl = " (skipping)\n"
 	}
-	fmt.Fprintf(c.Writer, "----- DNS Provider: %s...%s", provider, lbl)
+	if !SkinnyReport {
+		fmt.Fprintf(c.Writer, "----- DNS Provider: %s...%s\n", provider, lbl)
+	}
 }
 
 // StartRegistrar is called at the start of each new registrar.
@@ -114,7 +133,9 @@ func (c ConsolePrinter) StartRegistrar(provider string, skip bool) {
 	if skip {
 		lbl = " (skipping)\n"
 	}
-	fmt.Fprintf(c.Writer, "----- Registrar: %s...%s", provider, lbl)
+	if !SkinnyReport {
+		fmt.Fprintf(c.Writer, "----- Registrar: %s...%s\n", provider, lbl)
+	}
 }
 
 // EndProvider is called at the end of each provider.
@@ -126,6 +147,9 @@ func (c ConsolePrinter) EndProvider(numCorrections int, err error) {
 		plural := "s"
 		if numCorrections == 1 {
 			plural = ""
+		}
+		if (SkinnyReport) && (numCorrections == 0) {
+			return
 		}
 		fmt.Fprintf(c.Writer, "%d correction%s\n", numCorrections, plural)
 	}
@@ -143,7 +167,17 @@ func (c ConsolePrinter) Printf(format string, args ...interface{}) {
 	fmt.Fprintf(c.Writer, format, args...)
 }
 
+// Println is called to print/format information.
+func (c ConsolePrinter) Println(lines ...string) {
+	fmt.Fprintln(c.Writer, lines)
+}
+
 // Warnf is called to print/format a warning.
 func (c ConsolePrinter) Warnf(format string, args ...interface{}) {
 	fmt.Fprintf(c.Writer, "WARNING: "+format, args...)
+}
+
+// Errorf is called to print/format an error.
+func (c ConsolePrinter) Errorf(format string, args ...interface{}) {
+	fmt.Fprintf(c.Writer, "ERROR: "+format, args...)
 }

@@ -10,10 +10,11 @@ import (
 
 	"github.com/StackExchange/dnscontrol/v3/models"
 	"github.com/StackExchange/dnscontrol/v3/pkg/diff"
+	"github.com/StackExchange/dnscontrol/v3/pkg/diff2"
+	"github.com/StackExchange/dnscontrol/v3/pkg/txtutil"
 	"github.com/StackExchange/dnscontrol/v3/providers"
-	"github.com/miekg/dns/dnsutil"
-
 	"github.com/digitalocean/godo"
+	"github.com/miekg/dns/dnsutil"
 	"golang.org/x/oauth2"
 )
 
@@ -71,16 +72,19 @@ retry:
 }
 
 var features = providers.DocumentationNotes{
+	providers.CanGetZones:            providers.Can(),
+	providers.CanUseCAA:              providers.Can(),
+	providers.CanUseSRV:              providers.Can(),
 	providers.DocCreateDomains:       providers.Can(),
 	providers.DocOfficiallySupported: providers.Cannot(),
-	providers.CanUseSRV:              providers.Can(),
-	providers.CanUseCAA:              providers.Can("Semicolons not supported in issue/issuewild fields.", "https://www.digitalocean.com/docs/networking/dns/how-to/create-caa-records"),
-	providers.CanGetZones:            providers.Can(),
-	providers.CanUseTXTMulti:         providers.Can("A broken parser prevents TXTMulti strings from including double-quotes; The total length of all strings can't be longer than 512; and in reality must be shorter due to sloppy validation checks.", "https://github.com/StackExchange/dnscontrol/issues/370"),
 }
 
 func init() {
-	providers.RegisterDomainServiceProviderType("DIGITALOCEAN", NewDo, features)
+	fns := providers.DspFuncs{
+		Initializer:   NewDo,
+		RecordAuditor: AuditRecords,
+	}
+	providers.RegisterDomainServiceProviderType("DIGITALOCEAN", fns, features)
 }
 
 // EnsureDomainExists returns an error if domain doesn't exist.
@@ -140,14 +144,20 @@ func (api *digitaloceanProvider) GetDomainCorrections(dc *models.DomainConfig) (
 
 	// Normalize
 	models.PostProcessRecords(existingRecords)
+	txtutil.SplitSingleLongTxt(dc.Records) // Autosplit long TXT records
 
-	differ := diff.New(dc)
-	_, create, delete, modify, err := differ.IncrementalDiff(existingRecords)
+	var corrections []*models.Correction
+	var create, delete, modify diff.Changeset
+	if !diff2.EnableDiff2 {
+		differ := diff.New(dc)
+		_, create, delete, modify, err = differ.IncrementalDiff(existingRecords)
+	} else {
+		differ := diff.NewCompat(dc)
+		_, create, delete, modify, err = differ.IncrementalDiff(existingRecords)
+	}
 	if err != nil {
 		return nil, err
 	}
-
-	var corrections = []*models.Correction{}
 
 	// Deletes first so changing type works etc.
 	for _, m := range delete {
@@ -284,18 +294,18 @@ func toReq(dc *models.DomainConfig, rc *models.RecordConfig) *godo.DomainRecordE
 	priority := 0                 // DO uses the same property for MX and SRV priority
 
 	switch rc.Type { // #rtype_variations
+	case "CAA":
+		// DO API requires that a CAA target ends in dot.
+		// Interestingly enough, the value returned from API doesn't
+		// contain a trailing dot.
+		target = target + "."
 	case "MX":
 		priority = int(rc.MxPreference)
 	case "SRV":
 		priority = int(rc.SrvPriority)
 	case "TXT":
 		// TXT records are the one place where DO combines many items into one field.
-		target = rc.GetTargetCombined()
-	case "CAA":
-		// DO API requires that value ends in dot
-		// But the value returned from API doesn't contain this,
-		// so no need to strip the dot when reading value from API.
-		target = target + "."
+		target = rc.GetTargetField()
 	default:
 		// no action required
 	}

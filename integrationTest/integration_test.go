@@ -1,29 +1,37 @@
 package main
 
 import (
+	"encoding/json"
 	"flag"
 	"fmt"
 	"os"
 	"strconv"
 	"strings"
 	"testing"
-
-	"github.com/miekg/dns/dnsutil"
+	"time"
 
 	"github.com/StackExchange/dnscontrol/v3/models"
+	"github.com/StackExchange/dnscontrol/v3/pkg/credsfile"
+	"github.com/StackExchange/dnscontrol/v3/pkg/diff2"
 	"github.com/StackExchange/dnscontrol/v3/pkg/nameservers"
+	"github.com/StackExchange/dnscontrol/v3/pkg/normalize"
 	"github.com/StackExchange/dnscontrol/v3/providers"
 	_ "github.com/StackExchange/dnscontrol/v3/providers/_all"
-	"github.com/StackExchange/dnscontrol/v3/providers/config"
+	"github.com/StackExchange/dnscontrol/v3/providers/cloudflare"
+	"github.com/miekg/dns/dnsutil"
 )
 
 var providerToRun = flag.String("provider", "", "Provider to run")
 var startIdx = flag.Int("start", 0, "Test number to begin with")
 var endIdx = flag.Int("end", 0, "Test index to stop after")
 var verbose = flag.Bool("verbose", false, "Print corrections as you run them")
+var printElapsed = flag.Bool("elapsed", false, "Print elapsed time for each testgroup")
+var enableCFWorkers = flag.Bool("cfworkers", true, "Set false to disable CF worker tests")
 
 func init() {
 	testing.Init()
+
+	flag.BoolVar(&diff2.EnableDiff2, "diff2", false, "enable diff2")
 	flag.Parse()
 }
 
@@ -32,7 +40,7 @@ func getProvider(t *testing.T) (providers.DNSServiceProvider, string, map[int]bo
 		t.Log("No provider specified with -provider")
 		return nil, "", nil, nil
 	}
-	jsons, err := config.LoadProviderConfigs("providers.json")
+	jsons, err := credsfile.LoadProviderConfigs("providers.json")
 	if err != nil {
 		t.Fatalf("Error loading provider configs: %s", err)
 	}
@@ -41,7 +49,22 @@ func getProvider(t *testing.T) (providers.DNSServiceProvider, string, map[int]bo
 		if *providerToRun != name {
 			continue
 		}
-		provider, err := providers.CreateDNSProvider(name, cfg, nil)
+
+		var metadata json.RawMessage
+		// CLOUDFLAREAPI tests related to CF_REDIRECT/CF_TEMP_REDIRECT
+		// requires metadata to enable this feature.
+		// In hindsight, I have no idea why this metadata flag is required to
+		// use this feature. Maybe because we didn't have the capabilities
+		// feature at the time?
+		if name == "CLOUDFLAREAPI" {
+			if *enableCFWorkers {
+				metadata = []byte(`{ "manage_redirects": true, "manage_workers": true }`)
+			} else {
+				metadata = []byte(`{ "manage_redirects": true }`)
+			}
+		}
+
+		provider, err := providers.CreateDNSProvider(name, cfg, metadata)
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -54,8 +77,17 @@ func getProvider(t *testing.T) (providers.DNSServiceProvider, string, map[int]bo
 				fails[i] = true
 			}
 		}
+
+		if name == "CLOUDFLAREAPI" && *enableCFWorkers {
+			// Cloudflare only. Will do nothing if provider != *cloudflareProvider.
+			if err := cloudflare.PrepareCloudflareTestWorkers(provider); err != nil {
+				t.Fatal(err)
+			}
+		}
+
 		return provider, cfg["domain"], fails, cfg
 	}
+
 	t.Fatalf("Provider %s not found", *providerToRun)
 	return nil, "", nil, nil
 }
@@ -65,6 +97,10 @@ func TestDNSProviders(t *testing.T) {
 	if provider == nil {
 		return
 	}
+	if domain == "" {
+		t.Fatal("NO DOMAIN SET!  Exiting!")
+	}
+
 	t.Run(domain, func(t *testing.T) {
 		runTests(t, provider, domain, fails, cfg)
 	})
@@ -75,6 +111,8 @@ func getDomainConfigWithNameservers(t *testing.T, prv providers.DNSServiceProvid
 	dc := &models.DomainConfig{
 		Name: domainName,
 	}
+	normalize.UpdateNameSplitHorizon(dc)
+
 	// fix up nameservers
 	ns, err := prv.GetNameservers(domainName)
 	if err != nil {
@@ -95,6 +133,13 @@ func testPermitted(t *testing.T, p string, f TestGroup) error {
 	}
 	// TODO(tlim): Have a separate validation pass so that such mistakes
 	// are more visible?
+
+	// If there are any trueflags, make sure they are all true.
+	for _, c := range f.trueflags {
+		if !c {
+			return fmt.Errorf("excluded by alltrue(%v)", f.trueflags)
+		}
+	}
 
 	// If there are any required capabilities, make sure they all exist.
 	if len(f.required) != 0 {
@@ -128,13 +173,6 @@ func testPermitted(t *testing.T, p string, f TestGroup) error {
 	return nil
 }
 
-//func makeClearFilter() *TestCase {
-//	tc := tc("Empty")
-//	tc.ChangeFilter = true
-//	return tc
-//}
-
-// desc := fmt.Sprintf("%d: %s", i, tst.Desc)
 // makeChanges runs one set of DNS record tests. Returns true on success.
 func makeChanges(t *testing.T, prv providers.DNSServiceProvider, dc *models.DomainConfig, tst *TestCase, desc string, expectChanges bool, origConfig map[string]string) bool {
 	domainName := dc.Name
@@ -167,12 +205,17 @@ func makeChanges(t *testing.T, prv providers.DNSServiceProvider, dc *models.Doma
 		models.PostProcessRecords(dom.Records)
 		dom2, _ := dom.Copy()
 
+		if err := providers.AuditRecords(*providerToRun, dom.Records); err != nil {
+			t.Skipf("***SKIPPED(PROVIDER DOES NOT SUPPORT '%s' ::%q)", err, desc)
+			return
+		}
+
 		// get and run corrections for first time
 		corrections, err := prv.GetDomainCorrections(dom)
 		if err != nil {
 			t.Fatal(fmt.Errorf("runTests: %w", err))
 		}
-		if len(corrections) == 0 && expectChanges {
+		if (len(corrections) == 0 && expectChanges) && (tst.Desc != "Empty") {
 			t.Fatalf("Expected changes, but got none")
 		}
 		for _, c := range corrections {
@@ -198,7 +241,7 @@ func makeChanges(t *testing.T, prv providers.DNSServiceProvider, dc *models.Doma
 		if len(corrections) != 0 {
 			t.Logf("Expected 0 corrections on second run, but found %d.", len(corrections))
 			for i, c := range corrections {
-				t.Logf("#%d: %s", i, c.Msg)
+				t.Logf("UNEXPECTED #%d: %s", i, c.Msg)
 			}
 			t.FailNow()
 		}
@@ -221,6 +264,7 @@ func runTests(t *testing.T, prv providers.DNSServiceProvider, domainName string,
 
 	curGroup := -1
 	for gIdx, group := range testGroups {
+		start := time.Now()
 
 		// Abide by -start -end flags
 		curGroup++
@@ -236,8 +280,11 @@ func runTests(t *testing.T, prv providers.DNSServiceProvider, domainName string,
 		}
 
 		// Run the tests.
+
 		for _, tst := range group.tests {
+
 			makeChanges(t, prv, dc, tst, fmt.Sprintf("%02d:%s", gIdx, group.Desc), true, origConfig)
+
 			if t.Failed() {
 				break
 			}
@@ -245,6 +292,11 @@ func runTests(t *testing.T, prv providers.DNSServiceProvider, domainName string,
 
 		// Remove all records so next group starts with a clean slate.
 		makeChanges(t, prv, dc, tc("Empty"), "Post cleanup", false, nil)
+
+		elapsed := time.Since(start)
+		if *printElapsed {
+			fmt.Printf("ELAPSED %02d %7.2f %q\n", gIdx, elapsed.Seconds(), group.Desc)
+		}
 
 	}
 
@@ -255,7 +307,14 @@ func TestDualProviders(t *testing.T) {
 	if p == nil {
 		return
 	}
+	if domain == "" {
+		t.Fatal("NO DOMAIN SET!  Exiting!")
+	}
 	dc := getDomainConfigWithNameservers(t, p, domain)
+	if !providers.ProviderHasCapability(*providerToRun, providers.DocDualHost) {
+		t.Skip("Skipping.  DocDualHost == Cannot")
+		return
+	}
 	// clear everything
 	run := func() {
 		dom, _ := dc.Copy()
@@ -274,7 +333,8 @@ func TestDualProviders(t *testing.T) {
 	run()
 	// add bogus nameservers
 	dc.Records = []*models.RecordConfig{}
-	dc.Nameservers = append(dc.Nameservers, models.StringsToNameservers([]string{"ns1.example.com", "ns2.example.com"})...)
+	nslist, _ := models.ToNameservers([]string{"ns1.example.com", "ns2.example.com"})
+	dc.Nameservers = append(dc.Nameservers, nslist...)
 	nameservers.AddNSRecords(dc)
 	t.Log("Adding nameservers from another provider")
 	run()
@@ -294,48 +354,39 @@ func TestDualProviders(t *testing.T) {
 }
 
 type TestGroup struct {
-	Desc     string
-	required []providers.Capability
-	only     []string
-	not      []string
-	tests    []*TestCase
+	Desc      string
+	required  []providers.Capability
+	only      []string
+	not       []string
+	trueflags []bool
+	tests     []*TestCase
 }
 
 type TestCase struct {
 	Desc           string
-	Records        []*rec
-	IgnoredNames   []string
+	Records        []*models.RecordConfig
+	IgnoredNames   []*models.IgnoreName
 	IgnoredTargets []*models.IgnoreTarget
 }
 
-type rec models.RecordConfig
-
-func (r *rec) GetLabel() string {
-	return r.Name
-}
-
-func (r *rec) SetLabel(label, domain string) {
+func SetLabel(r *models.RecordConfig, label, domain string) {
 	r.Name = label
 	r.NameFQDN = dnsutil.AddOrigin(label, "**current-domain**")
 }
 
-func (r *rec) SetTarget(target string) {
-	r.Target = target
-}
-
-func a(name, target string) *rec {
+func a(name, target string) *models.RecordConfig {
 	return makeRec(name, target, "A")
 }
 
-func cname(name, target string) *rec {
+func cname(name, target string) *models.RecordConfig {
 	return makeRec(name, target, "CNAME")
 }
 
-func alias(name, target string) *rec {
+func alias(name, target string) *models.RecordConfig {
 	return makeRec(name, target, "ALIAS")
 }
 
-func r53alias(name, aliasType, target string) *rec {
+func r53alias(name, aliasType, target string) *models.RecordConfig {
 	r := makeRec(name, target, "R53_ALIAS")
 	r.R53Alias = map[string]string{
 		"type": aliasType,
@@ -343,7 +394,7 @@ func r53alias(name, aliasType, target string) *rec {
 	return r
 }
 
-func azureAlias(name, aliasType, target string) *rec {
+func azureAlias(name, aliasType, target string) *models.RecordConfig {
 	r := makeRec(name, target, "AZURE_ALIAS")
 	r.AzureAlias = map[string]string{
 		"type": aliasType,
@@ -351,117 +402,141 @@ func azureAlias(name, aliasType, target string) *rec {
 	return r
 }
 
-func ns(name, target string) *rec {
+func cfRedir(pattern, target string) *models.RecordConfig {
+	t := fmt.Sprintf("%s,%s", pattern, target)
+	r := makeRec("@", t, "CF_REDIRECT")
+	return r
+}
+
+func cfRedirTemp(pattern, target string) *models.RecordConfig {
+	t := fmt.Sprintf("%s,%s", pattern, target)
+	r := makeRec("@", t, "CF_TEMP_REDIRECT")
+	return r
+}
+
+func cfProxyA(name, target, status string) *models.RecordConfig {
+	r := a(name, target)
+	r.Metadata = make(map[string]string)
+	r.Metadata["cloudflare_proxy"] = status
+	return r
+}
+
+func cfProxyCNAME(name, target, status string) *models.RecordConfig {
+	r := cname(name, target)
+	r.Metadata = make(map[string]string)
+	r.Metadata["cloudflare_proxy"] = status
+	return r
+}
+
+func cfWorkerRoute(pattern, target string) *models.RecordConfig {
+	t := fmt.Sprintf("%s,%s", pattern, target)
+	r := makeRec("@", t, "CF_WORKER_ROUTE")
+	return r
+}
+
+func ns(name, target string) *models.RecordConfig {
 	return makeRec(name, target, "NS")
 }
 
-func mx(name string, prio uint16, target string) *rec {
+func mx(name string, prio uint16, target string) *models.RecordConfig {
 	r := makeRec(name, target, "MX")
 	r.MxPreference = prio
 	return r
 }
 
-func ptr(name, target string) *rec {
+func ptr(name, target string) *models.RecordConfig {
 	return makeRec(name, target, "PTR")
 }
 
-func naptr(name string, order uint16, preference uint16, flags string, service string, regexp string, target string) *rec {
+func naptr(name string, order uint16, preference uint16, flags string, service string, regexp string, target string) *models.RecordConfig {
 	r := makeRec(name, target, "NAPTR")
-	r.NaptrOrder = order
-	r.NaptrPreference = preference
-	r.NaptrFlags = flags
-	r.NaptrService = service
-	r.NaptrRegexp = regexp
+	r.SetTargetNAPTR(order, preference, flags, service, regexp, target)
 	return r
 }
 
-func ds(name string, keyTag uint16, algorithm, digestType uint8, digest string) *rec {
+func ds(name string, keyTag uint16, algorithm, digestType uint8, digest string) *models.RecordConfig {
 	r := makeRec(name, "", "DS")
-	r.DsKeyTag = keyTag
-	r.DsAlgorithm = algorithm
-	r.DsDigestType = digestType
-	r.DsDigest = digest
+	r.SetTargetDS(keyTag, algorithm, digestType, digest)
 	return r
 }
 
-func srv(name string, priority, weight, port uint16, target string) *rec {
+func soa(name string, ns, mbox string, serial, refresh, retry, expire, minttl uint32) *models.RecordConfig {
+	r := makeRec(name, "", "SOA")
+	r.SetTargetSOA(ns, mbox, serial, refresh, retry, expire, minttl)
+	return r
+}
+
+func srv(name string, priority, weight, port uint16, target string) *models.RecordConfig {
 	r := makeRec(name, target, "SRV")
-	r.SrvPriority = priority
-	r.SrvWeight = weight
-	r.SrvPort = port
+	r.SetTargetSRV(priority, weight, port, target)
 	return r
 }
 
-func sshfp(name string, algorithm uint8, fingerprint uint8, target string) *rec {
+func sshfp(name string, algorithm uint8, fingerprint uint8, target string) *models.RecordConfig {
 	r := makeRec(name, target, "SSHFP")
-	r.SshfpAlgorithm = algorithm
-	r.SshfpFingerprint = fingerprint
+	r.SetTargetSSHFP(algorithm, fingerprint, target)
 	return r
 }
 
-func txt(name, target string) *rec {
-	// FYI: This must match the algorithm in pkg/js/helpers.js TXT.
-	r := makeRec(name, target, "TXT")
-	r.TxtStrings = []string{target}
+func txt(name, target string) *models.RecordConfig {
+	r := makeRec(name, "", "TXT")
+	r.SetTargetTXT(target)
 	return r
 }
 
-func txtmulti(name string, target []string) *rec {
-	// FYI: This must match the algorithm in pkg/js/helpers.js TXT.
-	r := makeRec(name, target[0], "TXT")
-	r.TxtStrings = target
+func txtmulti(name string, target []string) *models.RecordConfig {
+	r := makeRec(name, "", "TXT")
+	r.SetTargetTXTs(target)
 	return r
 }
 
-func caa(name string, tag string, flag uint8, target string) *rec {
+func caa(name string, tag string, flag uint8, target string) *models.RecordConfig {
 	r := makeRec(name, target, "CAA")
-	r.CaaFlag = flag
-	r.CaaTag = tag
+	r.SetTargetCAA(flag, tag, target)
 	return r
 }
 
-func tlsa(name string, usage, selector, matchingtype uint8, target string) *rec {
+func tlsa(name string, usage, selector, matchingtype uint8, target string) *models.RecordConfig {
 	r := makeRec(name, target, "TLSA")
-	r.TlsaUsage = usage
-	r.TlsaSelector = selector
-	r.TlsaMatchingType = matchingtype
+	r.SetTargetTLSA(usage, selector, matchingtype, target)
 	return r
 }
 
-func ignoreName(name string) *rec {
-	r := &rec{
+func ignoreName(name string) *models.RecordConfig {
+	r := &models.RecordConfig{
 		Type: "IGNORE_NAME",
 	}
-	r.SetLabel(name, "**current-domain**")
+	SetLabel(r, name, "**current-domain**")
 	return r
 }
 
-func ignoreTarget(name string, typ string) *rec {
-	r := &rec{
-		Type:   "IGNORE_TARGET",
-		Target: typ,
+func ignoreTarget(name string, typ string) *models.RecordConfig {
+	r := &models.RecordConfig{
+		Type: "IGNORE_TARGET",
 	}
-	r.SetLabel(name, "**current-domain**")
+	r.SetTarget(typ)
+	SetLabel(r, name, "**current-domain**")
 	return r
 }
 
-func makeRec(name, target, typ string) *rec {
-	r := &rec{
+func makeRec(name, target, typ string) *models.RecordConfig {
+	r := &models.RecordConfig{
 		Type: typ,
 		TTL:  300,
 	}
-	r.SetLabel(name, "**current-domain**")
+	SetLabel(r, name, "**current-domain**")
 	r.SetTarget(target)
 	return r
 }
 
-func (r *rec) ttl(t uint32) *rec {
+// func (r *models.RecordConfig) ttl(t uint32) *models.RecordConfig {
+func ttl(r *models.RecordConfig, t uint32) *models.RecordConfig {
 	r.TTL = t
 	return r
 }
 
-func manyA(namePattern, target string, n int) []*rec {
-	recs := []*rec{}
+func manyA(namePattern, target string, n int) []*models.RecordConfig {
+	recs := []*models.RecordConfig{}
 	for i := 0; i < n; i++ {
 		recs = append(recs, makeRec(fmt.Sprintf(namePattern, i), target, "A"))
 	}
@@ -490,6 +565,12 @@ func testgroup(desc string, items ...interface{}) *TestGroup {
 				os.Exit(1)
 			}
 			group.only = append(group.only, v.names...)
+		case alltrueFilter:
+			if len(group.tests) != 0 {
+				fmt.Printf("ERROR: alltrue() must be before all tc(): %v\n", desc)
+				os.Exit(1)
+			}
+			group.trueflags = append(group.trueflags, v.flags...)
 		case *TestCase:
 			group.tests = append(group.tests, v)
 		default:
@@ -499,18 +580,19 @@ func testgroup(desc string, items ...interface{}) *TestGroup {
 	return group
 }
 
-func tc(desc string, recs ...*rec) *TestCase {
-	var records []*rec
-	var ignoredNames []string
+func tc(desc string, recs ...*models.RecordConfig) *TestCase {
+	var records []*models.RecordConfig
+	var ignoredNames []*models.IgnoreName
 	var ignoredTargets []*models.IgnoreTarget
 	for _, r := range recs {
 		if r.Type == "IGNORE_NAME" {
-			ignoredNames = append(ignoredNames, r.GetLabel())
+			ignoredNames = append(ignoredNames, &models.IgnoreName{Pattern: r.GetLabel(), Types: r.GetTargetField()})
 		} else if r.Type == "IGNORE_TARGET" {
-			ignoredTargets = append(ignoredTargets, &models.IgnoreTarget{
+			rec := &models.IgnoreTarget{
 				Pattern: r.GetLabel(),
-				Type:    r.Target,
-			})
+				Type:    r.GetTargetField(),
+			}
+			ignoredTargets = append(ignoredTargets, rec)
 		} else {
 			records = append(records, r)
 		}
@@ -551,6 +633,14 @@ func only(n ...string) onlyFilter {
 	return onlyFilter{names: n}
 }
 
+type alltrueFilter struct {
+	flags []bool
+}
+
+func alltrue(f ...bool) alltrueFilter {
+	return alltrueFilter{flags: f}
+}
+
 //
 
 func makeTests(t *testing.T) []*TestGroup {
@@ -571,6 +661,8 @@ func makeTests(t *testing.T) []*TestGroup {
 	//      only("ROUTE53", "GANDI_V5")
 	// Only apply to all providers except ROUTE53 + GANDI_V5:
 	//     not("ROUTE53", "GANDI_V5"),
+	// Only run this test if all these bool flags are true:
+	//     alltrue(*enableCFWorkers, *anotherFlag, myBoolValue)
 	// NOTE: You can't mix not() and only()
 	//     reset(not("ROUTE53"), only("GCLOUD")),  // ERROR!
 	// NOTE: All requires()/not()/only() must appear before any tc().
@@ -598,117 +690,39 @@ func makeTests(t *testing.T) []*TestGroup {
 		//
 		// Basic functionality (add/rename/change/delete).
 		//
+		// These tests verify the basic operations of the API: Create, Change, Delete.
+		// These are tested on "@" and "www".
+		// When these tests pass, you've implemented the basics correctly.
 
-		testgroup("GeneralACD",
-			// Test general ability to add/change/delete records of one
-			// type. These tests aren't specific to "A" records, but we
-			// don't do tests specific to A records because this exercises
-			// them very well.
+		testgroup("Protocol-Plain",
 			tc("Create an A record", a("@", "1.1.1.1")),
 			tc("Change it", a("@", "1.2.3.4")),
 			tc("Add another", a("@", "1.2.3.4"), a("www", "1.2.3.4")),
 			tc("Add another(same name)", a("@", "1.2.3.4"), a("www", "1.2.3.4"), a("www", "5.6.7.8")),
-			tc("Change a ttl", a("@", "1.2.3.4").ttl(1000), a("www", "1.2.3.4"), a("www", "5.6.7.8")),
-			tc("Change single target from set", a("@", "1.2.3.4").ttl(1000), a("www", "2.2.2.2"), a("www", "5.6.7.8")),
-			tc("Change all ttls", a("@", "1.2.3.4").ttl(500), a("www", "2.2.2.2").ttl(400), a("www", "5.6.7.8").ttl(400)),
-			tc("Delete one", a("@", "1.2.3.4").ttl(500), a("www", "5.6.7.8").ttl(400)),
-			tc("Add back and change ttl", a("www", "5.6.7.8").ttl(700), a("www", "1.2.3.4").ttl(700)),
-			tc("Change targets and ttls", a("www", "1.1.1.1"), a("www", "2.2.2.2")),
+			tc("Change a ttl", ttl(a("@", "1.2.3.4"), 1000), a("www", "1.2.3.4"), a("www", "5.6.7.8")),
+			tc("Change single target from set", ttl(a("@", "1.2.3.4"), 1000), a("www", "2.2.2.2"), a("www", "5.6.7.8")),
+			tc("Change all ttls", ttl(a("@", "1.2.3.4"), 500), ttl(a("www", "2.2.2.2"), 400), ttl(a("www", "5.6.7.8"), 400)),
+			tc("Delete one", ttl(a("@", "1.2.3.4"), 500), ttl(a("www", "5.6.7.8"), 400)),
 		),
 
-		testgroup("WildcardACD",
+		testgroup("add to existing label",
+			tc("Setup", ttl(a("www", "5.6.7.8"), 400)),
+			tc("Add at same label", ttl(a("www", "5.6.7.8"), 400), ttl(a("www", "1.2.3.4"), 400)),
+		),
+
+		// This is a strange one.  It adds a new record to an existing
+		// label but the pre-existing label has its TTL change.
+		testgroup("add to label and change orig ttl",
+			tc("Setup", ttl(a("www", "5.6.7.8"), 400)),
+			tc("Add at same label, new ttl", ttl(a("www", "5.6.7.8"), 700), ttl(a("www", "1.2.3.4"), 700)),
+		),
+
+		testgroup("Protocol-Wildcard",
+			// Test the basic Add/Change/Delete with the domain wildcard.
 			not("HEDNS"), // Not supported by dns.he.net due to abuse
 			tc("Create wildcard", a("*", "1.2.3.4"), a("www", "1.1.1.1")),
 			tc("Delete wildcard", a("www", "1.1.1.1")),
 		),
-
-		//
-		// Test the basic rtypes.
-		//
-
-		testgroup("CNAME",
-			tc("Create a CNAME", cname("foo", "google.com.")),
-			tc("Change CNAME target", cname("foo", "google2.com.")),
-			clear(),
-			tc("Record pointing to @", cname("foo", "**current-domain**")),
-		),
-
-		testgroup("MX",
-			not("ACTIVEDIRECTORY_PS"), // Not implemented.
-			tc("MX record", mx("@", 5, "foo.com.")),
-			tc("Second MX record, same prio", mx("@", 5, "foo.com."), mx("@", 5, "foo2.com.")),
-			tc("3 MX", mx("@", 5, "foo.com."), mx("@", 5, "foo2.com."), mx("@", 15, "foo3.com.")),
-			tc("Delete one", mx("@", 5, "foo2.com."), mx("@", 15, "foo3.com.")),
-			tc("Change to other name", mx("@", 5, "foo2.com."), mx("mail", 15, "foo3.com.")),
-			tc("Change Preference", mx("@", 7, "foo2.com."), mx("mail", 15, "foo3.com.")),
-			tc("Record pointing to @", mx("foo", 8, "**current-domain**")),
-		),
-
-		testgroup("Null MX",
-			not("AZURE_DNS", "GANDI_V5", "INWX", "NAMEDOTCOM", "DIGITALOCEAN", "NETCUP", "DNSIMPLE", "HEDNS", "VULTR"), // These providers don't support RFC 7505
-			tc("Null MX", mx("@", 0, ".")),
-		),
-
-		testgroup("NS",
-			not("DNSIMPLE", "EXOSCALE", "NETCUP"),
-			// DNSIMPLE: Does not support NS records nor subdomains.
-			// EXOSCALE: FILL IN
-			// Netcup: NS records not currently supported.
-			tc("NS for subdomain", ns("xyz", "ns2.foo.com.")),
-			tc("Dual NS for subdomain", ns("xyz", "ns2.foo.com."), ns("xyz", "ns1.foo.com.")),
-			tc("NS Record pointing to @", ns("foo", "**current-domain**")),
-		),
-
-		testgroup("IGNORE_NAME function",
-			tc("Create some records", txt("foo", "simple"), a("foo", "1.2.3.4")),
-			tc("Add a new record - ignoring foo", a("bar", "1.2.3.4"), ignoreName("foo")),
-			clear(),
-			tc("Create some records", txt("bar.foo", "simple"), a("bar.foo", "1.2.3.4")),
-			tc("Add a new record - ignoring *.foo", a("bar", "1.2.3.4"), ignoreName("*.foo")),
-		),
-
-		testgroup("IGNORE_TARGET function",
-			tc("Create some records", cname("foo", "test.foo.com."), cname("bar", "test.bar.com.")),
-			tc("Add a new record - ignoring test.foo.com.", cname("bar", "bar.foo.com."), ignoreTarget("test.foo.com.", "CNAME")),
-			clear(),
-			tc("Create some records", cname("bar.foo", "a.b.foo.com."), a("test.foo", "1.2.3.4")),
-			tc("Add a new record - ignoring **.foo.com. targets", a("bar", "1.2.3.4"), ignoreTarget("**.foo.com.", "CNAME")),
-		),
-
-		testgroup("single TXT",
-			tc("Create a TXT", txt("foo", "simple")),
-			tc("Change a TXT", txt("foo", "changed")),
-			clear(),
-			tc("Create a TXT with spaces", txt("foo", "with spaces")),
-			tc("Create 1 TXT as array", txtmulti("foo", []string{"simple"})), // Same as non-TXTMulti
-			clear(),
-			tc("Create a 255-byte TXT", txt("foo", strings.Repeat("A", 255))),
-			clear(),
-			tc("Create TXT with single-quote", txt("foo", "blah`blah")),
-		),
-
-		testgroup("ws TXT",
-			not("CLOUDFLAREAPI", "HEXONET", "INWX", "NAMEDOTCOM"),
-			// These providers strip whitespace at the end of TXT records.
-			// TODO(tal): Add a check for this in normalize/validate.go
-			tc("Change a TXT with ws at end", txt("foo", "with space at end  ")),
-		),
-
-		testgroup("empty TXT",
-			not("CLOUDFLAREAPI", "HETZNER", "HEXONET", "INWX", "NETCUP"),
-			tc("TXT with empty str", txt("foo1", "")),
-			// https://github.com/StackExchange/dnscontrol/issues/598
-			// We decided that permitting the TXT target to be an empty
-			// string is not a requirement (even though RFC1035 permits it).
-			// In the future we might make it "capability" to
-			// indicate which vendors support an empty TXT record.
-			// However at this time there is no pressing need for this
-			// feature.
-		),
-
-		//
-		// Tests that exercise the API protocol and/or code.
-		//
 
 		testgroup("TypeChange",
 			// Test whether the provider properly handles a label changing
@@ -717,6 +731,121 @@ func makeTests(t *testing.T) []*TestGroup {
 			tc("Change to A record", a("foo", "1.2.3.4")),
 			tc("Change back to CNAME", cname("foo", "google2.com.")),
 		),
+
+		//
+		// Test each basic DNS type
+		//
+		// This tests all the common DNS types in parallel for speed.
+		// First: 1 of each type is created.
+		// Second: the first parameter is modified.
+		// Third: the second parameter is modified. (if there is none, no changes)
+
+		// NOTE: Previously we did a seperate test for each type. It was
+		// very slow on certain providers. This is faster but is a little
+		// more difficult to read.
+
+		testgroup("CommonDNS",
+			tc("Create 1 of each",
+				//a("testa", "1.1.1.1"),  // Duplicates work done by Protocol-Plain
+				cname("testcname", "example.com."),
+				mx("testmx", 5, "foo.com."),
+				txt("testtxt", "simple"),
+			),
+			tc("Change param1",
+				//a("testa", "2.2.2.2"),  // Duplicates work done by Protocol-Plain
+				cname("testcname", "example2.com."),
+				mx("testmx", 6, "foo.com."),
+				txt("testtxt", "changed"),
+			),
+			tc("Change param2", // if there is one)
+				//a("testa", "2.2.2.2"),  // Duplicates work done by Protocol-Plain
+				cname("testcname", "example2.com."),
+				mx("testmx", 6, "bar.com."),
+				txt("testtxt", "changed"),
+			),
+		),
+
+		//
+		// Test edge cases from various types.
+		//
+
+		testgroup("CNAME",
+			tc("Record pointing to @", cname("foo", "**current-domain**")),
+		),
+
+		testgroup("MX",
+			tc("Record pointing to @", mx("foo", 8, "**current-domain**")),
+			tc("Null MX", mx("@", 0, ".")), // RFC 7505
+		),
+
+		testgroup("NS",
+			not(
+				"DNSIMPLE", // Does not support NS records nor subdomains.
+				"EXOSCALE", // Not supported.
+				"NETCUP",   // NS records not currently supported.
+			),
+			tc("NS for subdomain", ns("xyz", "ns2.foo.com.")),
+			tc("Dual NS for subdomain", ns("xyz", "ns2.foo.com."), ns("xyz", "ns1.foo.com.")),
+			tc("NS Record pointing to @", a("@", "1.2.3.4"), ns("foo", "**current-domain**")),
+		),
+
+		// In this next section we test all the edge cases related to TXT
+		// records. Compliance with the RFCs varies greatly with each provider.
+		// Rather than creating a "Capability" for each possible different
+		// failing or malcompliance (there would be many!), each provider
+		// supplies a function AuditRecords() which returns an error if
+		// the provider can not support a record.
+		// The integration tests use this feedback to skip tests that we know would fail.
+		// (Elsewhere the result of AuditRecords() is used in the
+		// "dnscontrol check" phase.)
+
+		testgroup("complex TXT",
+			// Do not use only()/not()/requires() in this section.
+			// If your provider needs to skip one of these tests, update
+			// "provider/*/recordaudit.AuditRecords()" to reject that kind
+			// of record. When the provider fixes the bug or changes behavior,
+			// update the AuditRecords().
+
+			tc("TXT with 0-octel string", txt("foo1", "")),
+			// https://github.com/StackExchange/dnscontrol/issues/598
+			// RFC1035 permits this, but rarely do provider support it.
+			//clear(),
+
+			tc("a 255-byte TXT", txt("foo255", strings.Repeat("C", 255))),
+			//clear(),
+			tc("a 256-byte TXT", txt("foo256", strings.Repeat("D", 256))),
+			//clear(),
+
+			tc("a 512-byte TXT", txt("foo512", strings.Repeat("C", 512))),
+			//clear(),
+			tc("a 513-byte TXT", txt("foo513", strings.Repeat("D", 513))),
+			//clear(),
+
+			tc("TXT with 1 single-quote", txt("foosq", "quo'te")),
+			//clear(),
+			tc("TXT with 1 backtick", txt("foobt", "blah`blah")),
+			//clear(),
+			tc("TXT with 1 double-quotes", txt("foodq", `quo"te`)),
+			//clear(),
+			tc("TXT with 2 double-quotes", txt("foodqs", `q"uo"te`)),
+			//clear(),
+
+			tc("a TXT with interior ws", txt("foosp", "with spaces")),
+			//clear(),
+			tc("TXT with ws at end", txt("foows1", "with space at end ")),
+			//clear(),
+
+			//tc("Create a TXT/SPF", txt("foo", "v=spf1 ip4:99.99.99.99 -all")),
+			// This was added because Vultr syntax-checks TXT records with SPF contents.
+			//clear(),
+
+			// TODO(tlim): Re-add this when we fix the RFC1035 escaped-quotes issue.
+			//tc("Create TXT with frequently escaped characters", txt("fooex", `!^.*$@#%^&()([][{}{<></:;-_=+\`)),
+		),
+
+		//
+		// API Edge Cases
+		//
 
 		testgroup("Case Sensitivity",
 			// The decoys are required so that there is at least one actual change in each tc.
@@ -727,9 +856,8 @@ func makeTests(t *testing.T) []*TestGroup {
 		),
 
 		testgroup("IDNA",
-			not("SOFTLAYER", "CLOUDFLAREAPI"),
+			not("SOFTLAYER"),
 			// SOFTLAYER: fails at direct internationalization, punycode works, of course.
-			// CLOUDFLAREAPI: fails. Needs to be debugged.
 			tc("Internationalized name", a("ööö", "1.2.3.4")),
 			tc("Change IDN", a("ööö", "2.2.2.2")),
 			tc("Internationalized CNAME Target", cname("a", "ööö.com.")),
@@ -744,28 +872,48 @@ func makeTests(t *testing.T) []*TestGroup {
 			// Tests the paging code of providers.  Many providers page at 100.
 			// Notes:
 			//  - Gandi: page size is 100, therefore we test with 99, 100, and 101
-			//  - NS1: free acct only allows 50 records, therefore we skip
 			//  - DIGITALOCEAN: page size is 100 (default: 20)
-			//  - CLOUDFLAREAPI: Infinite pagesize but due to slow speed, skipping.
-			not("NS1", "CLOUDFLAREAPI"),
+			not(
+				"AZURE_DNS",     // Removed because it is too slow
+				"CLOUDFLAREAPI", // Infinite pagesize but due to slow speed, skipping.
+				"CSCGLOBAL",     // Doesn't page. Works fine.  Due to the slow API we skip.
+				"GANDI_V5",      // Their API is so damn slow. We'll add it back as needed.
+				"MSDNS",         //  No paging done. No need to test.
+				"NAMEDOTCOM",    // Their API is so damn slow. We'll add it back as needed.
+				"NS1",           // Free acct only allows 50 records, therefore we skip
+			),
 			tc("99 records", manyA("rec%04d", "1.2.3.4", 99)...),
 			tc("100 records", manyA("rec%04d", "1.2.3.4", 100)...),
 			tc("101 records", manyA("rec%04d", "1.2.3.4", 101)...),
 		),
 
 		testgroup("pager601",
-			// AWS:  https://github.com/StackExchange/dnscontrol/issues/493
-			//only("AZURE_DNS", "HEXONET", "ROUTE53"),
-			only("HEXONET", "ROUTE53", "GCLOUD"), // AZURE_DNS is failing.
+			only(
+				//"AZURE_DNS", // Removed because it is too slow
+				//"CLOUDFLAREAPI", // Infinite pagesize but due to slow speed, skipping.
+				//"CSCGLOBAL", // Doesn't page. Works fine.  Due to the slow API we skip.
+				//"GANDI_V5",   // Their API is so damn slow. We'll add it back as needed.
+				"GCLOUD",
+				"HEXONET",
+				//"MSDNS",     //  No paging done. No need to test.
+				"ROUTE53",
+			),
 			tc("601 records", manyA("rec%04d", "1.2.3.4", 600)...),
 			tc("Update 601 records", manyA("rec%04d", "1.2.3.5", 600)...),
 		),
 
 		testgroup("pager1201",
-			// AWS:  https://github.com/StackExchange/dnscontrol/issues/493
-			// Azure: https://github.com/StackExchange/dnscontrol/issues/770
-			//only("AZURE_DNS", "HEXONET", "ROUTE53"),
-			only("HEXONET", "ROUTE53"), // AZURE_DNS is failing.
+			only(
+				//"AKAMAIEDGEDNS", // No paging done. No need to test.
+				//"AZURE_DNS", // Currently failing. See https://github.com/StackExchange/dnscontrol/issues/770
+				//"CLOUDFLAREAPI", // Fails with >1000 corrections. See https://github.com/StackExchange/dnscontrol/issues/1440
+				//"CSCGLOBAL",     // Doesn't page. Works fine.  Due to the slow API we skip.
+				//"GANDI_V5",   // Their API is so damn slow. We'll add it back as needed.
+				"HEXONET",
+				"HOSTINGDE",
+				//"MSDNS",         // No paging done. No need to test.
+				"ROUTE53",
+			),
 			tc("1200 records", manyA("rec%04d", "1.2.3.4", 1200)...),
 			tc("Update 1200 records", manyA("rec%04d", "1.2.3.5", 1200)...),
 		),
@@ -780,16 +928,10 @@ func makeTests(t *testing.T) []*TestGroup {
 			tc("CAA change tag", caa("@", "issuewild", 0, "letsencrypt.org")),
 			tc("CAA change target", caa("@", "issuewild", 0, "example.com")),
 			tc("CAA change flag", caa("@", "issuewild", 128, "example.com")),
-			tc("CAA many records",
-				caa("@", "issue", 0, "letsencrypt.org"),
-				caa("@", "issuewild", 0, "comodoca.com"),
-				caa("@", "iodef", 128, "mailto:test@example.com")),
-			tc("CAA delete", caa("@", "issue", 0, "letsencrypt.org")),
-		),
-		testgroup("CAA with ;",
-			requires(providers.CanUseCAA), not("DIGITALOCEAN"),
-			// Test support of ";" as a value
-			tc("CAA many records", caa("@", "issuewild", 0, ";")),
+			tc("CAA many records", caa("@", "issuewild", 128, ";")),
+			// Test support of spaces in the 3rd field. Some providers don't
+			// support this.  See providers/exoscale/auditrecords.go as an example.
+			tc("CAA whitespace", caa("@", "issue", 0, "letsencrypt.org; validationmethods=dns-01; accounturi=https://acme-v02.api.letsencrypt.org/acme/acct/1234")),
 		),
 
 		testgroup("NAPTR",
@@ -805,12 +947,25 @@ func makeTests(t *testing.T) []*TestGroup {
 			tc("NAPTR change regexp", naptr("test", 103, 20, "A", "E2U+sip", "!^.*$!sip:customer-service@example.com!", "example2.foo.com.")),
 		),
 
-		testgroup("PTR", requires(providers.CanUsePTR), not("ACTIVEDIRECTORY_PS"),
+		// ClouDNS provider can work with PTR records, but you need to create special type of zone
+		testgroup("PTR", requires(providers.CanUsePTR), not("CLOUDNS"),
 			tc("Create PTR record", ptr("4", "foo.com.")),
 			tc("Modify PTR record", ptr("4", "bar.com.")),
 		),
 
-		testgroup("SRV", requires(providers.CanUseSRV), not("ACTIVEDIRECTORY_PS", "CLOUDNS"),
+		// SOA
+		testgroup("SOA", requires(providers.CanUseSOA),
+			clear(), // Extra clear required or only the first run passes.
+			tc("Create SOA record", soa("@", "kim.ns.cloudflare.com.", "dns.cloudflare.com.", 2037190000, 10000, 2400, 604800, 3600)),
+			tc("Modify SOA ns    ", soa("@", "mmm.ns.cloudflare.com.", "dns.cloudflare.com.", 2037190000, 10000, 2400, 604800, 3600)),
+			tc("Modify SOA mbox  ", soa("@", "mmm.ns.cloudflare.com.", "eee.cloudflare.com.", 2037190000, 10000, 2400, 604800, 3600)),
+			tc("Modify SOA refres", soa("@", "mmm.ns.cloudflare.com.", "eee.cloudflare.com.", 2037190000, 10001, 2400, 604800, 3600)),
+			tc("Modify SOA retry ", soa("@", "mmm.ns.cloudflare.com.", "eee.cloudflare.com.", 2037190000, 10001, 2401, 604800, 3600)),
+			tc("Modify SOA expire", soa("@", "mmm.ns.cloudflare.com.", "eee.cloudflare.com.", 2037190000, 10001, 2401, 604801, 3600)),
+			tc("Modify SOA minttl", soa("@", "mmm.ns.cloudflare.com.", "eee.cloudflare.com.", 2037190000, 10001, 2401, 604801, 3601)),
+		),
+
+		testgroup("SRV", requires(providers.CanUseSRV),
 			tc("SRV record", srv("_sip._tcp", 5, 6, 7, "foo.com.")),
 			tc("Second SRV record, same prio", srv("_sip._tcp", 5, 6, 7, "foo.com."), srv("_sip._tcp", 5, 60, 70, "foo2.com.")),
 			tc("3 SRV", srv("_sip._tcp", 5, 6, 7, "foo.com."), srv("_sip._tcp", 5, 60, 70, "foo2.com."), srv("_sip._tcp", 15, 65, 75, "foo3.com.")),
@@ -819,9 +974,8 @@ func makeTests(t *testing.T) []*TestGroup {
 			tc("Change Priority", srv("_sip._tcp", 52, 6, 7, "foo.com."), srv("_sip._tcp", 15, 65, 75, "foo4.com.")),
 			tc("Change Weight", srv("_sip._tcp", 52, 62, 7, "foo.com."), srv("_sip._tcp", 15, 65, 75, "foo4.com.")),
 			tc("Change Port", srv("_sip._tcp", 52, 62, 72, "foo.com."), srv("_sip._tcp", 15, 65, 75, "foo4.com.")),
-		),
-		testgroup("SRV w/ null target", requires(providers.CanUseSRV), not("EXOSCALE", "HEXONET", "INWX", "NAMEDOTCOM"),
-			tc("Null Target", srv("_sip._tcp", 52, 62, 72, "foo.com."), srv("_sip._tcp", 15, 65, 75, ".")),
+			clear(),
+			tc("Null Target", srv("_sip._tcp", 15, 65, 75, ".")),
 		),
 
 		testgroup("SSHFP",
@@ -832,13 +986,6 @@ func makeTests(t *testing.T) []*TestGroup {
 				sshfp("@", 2, 1, "66c7d5540b7d75a1fb4c84febfa178ad99bdd67c")),
 			tc("SSHFP change fingerprint and type",
 				sshfp("@", 2, 2, "745a635bc46a397a5c4f21d437483005bcc40d7511ff15fbfafe913a081559bc")),
-			tc("SSHFP Delete one"),
-			tc("SSHFP add many records",
-				sshfp("@", 1, 1, "66666666666d75a1fb4c84febfa178ad99bdd67c"),
-				sshfp("@", 1, 2, "777777777777797a5c4f21d437483005bcc40d7511ff15fbfafe913a081559bc"),
-				sshfp("@", 2, 1, "8888888888888888fb4c84febfa178ad99bdd67c")),
-			tc("SSHFP delete two",
-				sshfp("@", 1, 1, "66666666666d75a1fb4c84febfa178ad99bdd67c")),
 		),
 
 		testgroup("TLSA",
@@ -850,97 +997,94 @@ func makeTests(t *testing.T) []*TestGroup {
 			tc("TLSA change certificate", tlsa("_443._tcp", 2, 0, 2, reversedSha512)),
 		),
 
-		testgroup("TXTMulti",
-			requires(providers.CanUseTXTMulti),
-			tc("Create TXTMulti 1",
-				txtmulti("foo1", []string{"simple"}),
-			),
-			tc("Create TXTMulti 2",
-				txtmulti("foo1", []string{"simple"}),
-				txtmulti("foo2", []string{"one", "two"}),
-			),
-			tc("Create TXTMulti 3",
-				txtmulti("foo1", []string{"simple"}),
-				txtmulti("foo2", []string{"one", "two"}),
-				txtmulti("foo3", []string{"eh", "bee", "cee"}),
-			),
-			tc("Change TXTMulti",
-				txtmulti("foo1", []string{"dimple"}),
-				txtmulti("foo2", []string{"fun", "two"}),
-				txtmulti("foo3", []string{"eh", "bzz", "cee"}),
-			),
-			tc("Long TXTMulti",
-				// This isn't the longest a TXT record can be, but it is the
-				// longest DIGITALOCEAN permits.
-				txtmulti("foo4", []string{strings.Repeat("X", 255), strings.Repeat("Y", 252)}),
-			),
-		),
-
-		testgroup("TXTMulti tests that break DO",
-			// DO's implementation of TXTMulti is broken, thus we separate out
-			// tests that fail for it. Users are warned about these limits
-			// in docs/_providers/digitalocean.md
-			requires(providers.CanUseTXTMulti),
-			not("DIGITALOCEAN"),
-			// Digital Ocean's TXT record implementation checks size limits wrong.
-			// RFC 1035 Section 3.3.14 states that each substring can be 255
-			// octets, and there is no limit on the number of such
-			// substrings, aside from the usual packet length limits.  DO's
-			// implementation restricts the total length to be 512 octets,
-			// including any backlashes used for escapes, quotes, and other
-			// metachars.  In other words, they're doing the checking on the
-			// API protocol encoded data instead of on on the resulting TXT
-			// record.
-			// Proper TXT implementations can handle TXT records like this:
-			tc("3x255-byte TXTMulti",
-				txtmulti("foo3", []string{strings.Repeat("X", 255), strings.Repeat("Y", 255), strings.Repeat("Z", 255)})),
-			clear(),
-			// Digital Ocean's TXT record implementation handles quotes wrong.
-			// It craps out if your TXT record includes double-quotes.
-			// Someone doesn't understand how zonefile-style quoting is
-			// supposed to work.
-			// Proper TXT implementations can handle TXT records like these:
-			tc("Create TXTMulti with quotes",
-				txtmulti("foo1", []string{"simple"}),
-				txtmulti("foo2", []string{"o\"ne", "tw\"o"}),
-				txtmulti("foo3", []string{"eh", "bee", "cee"}),
-			),
-			tc("Change TXTMulti",
-				txtmulti("foo1", []string{"dimple"}),
-				txtmulti("foo2", []string{"fun", "t\"wo"}),
-				txtmulti("foo3", []string{"eh", "bzz", "cee"}),
-			),
-		),
-
 		testgroup("DS",
 			requires(providers.CanUseDS),
-			tc("create DS", ds("@", 1, 13, 1, "ADIGEST")),
-			tc("modify field 1", ds("@", 65535, 13, 1, "ADIGEST")),
-			tc("modify field 3", ds("@", 65535, 13, 2, "ADIGEST")),
-			tc("modify field 2+3", ds("@", 65535, 1, 4, "ADIGEST")),
-			tc("modify field 2", ds("@", 65535, 3, 4, "ADIGEST")),
-			tc("modify field 2", ds("@", 65535, 254, 4, "ADIGEST")),
-			tc("delete 1, create 1", ds("foo", 2, 13, 4, "ADIGEST")),
-			tc("add 2 more DS", ds("foo", 2, 13, 4, "ADIGEST"), ds("@", 65535, 5, 4, "ADIGEST"), ds("@", 65535, 253, 4, "ADIGEST")),
+			// Use a valid digest value here.  Some providers verify that a valid digest is in use.  See RFC 4034 and
+			// https://www.iana.org/assignments/dns-sec-alg-numbers/dns-sec-alg-numbers.xhtml
+			// https://www.iana.org/assignments/ds-rr-types/ds-rr-types.xhtml
+			tc("DS create", ds("@", 1, 13, 1, "da39a3ee5e6b4b0d3255bfef95601890afd80709")),
+			tc("DS change", ds("@", 8857, 8, 2, "4b9b6b073edd97feb5bc12dc4e1b32d2c6af7ae23a293936ceb87bb10494ec44")),
+			tc("DS change f1", ds("@", 3, 8, 2, "4b9b6b073edd97feb5bc12dc4e1b32d2c6af7ae23a293936ceb87bb10494ec44")),
+			tc("DS change f2", ds("@", 3, 13, 2, "4b9b6b073edd97feb5bc12dc4e1b32d2c6af7ae23a293936ceb87bb10494ec44")),
+			tc("DS change f3+4", ds("@", 3, 13, 1, "da39a3ee5e6b4b0d3255bfef95601890afd80709")),
+			tc("DS delete 1, create child", ds("another-child", 44, 13, 2, "4b9b6b073edd97feb5bc12dc4e1b32d2c6af7ae23a293936ceb87bb10494ec44")),
+			tc("add 2 more DS",
+				ds("another-child", 44, 13, 2, "4b9b6b073edd97feb5bc12dc4e1b32d2c6af7ae23a293936ceb87bb10494ec44"),
+				ds("another-child", 1501, 13, 1, "ee02c885b5b4ed64899f2d43eb2b8e6619bdb50c"),
+				ds("another-child", 1502, 8, 2, "2fa14f53e6b15cac9ac77846c7be87862c2a7e9ec0c6cea319db939317f126ed"),
+				ds("another-child", 65535, 13, 2, "2fa14f53e6b15cac9ac77846c7be87862c2a7e9ec0c6cea319db939317f126ed"),
+			),
+			// These are the same as below.
+			tc("DSchild create", ds("child", 1, 13, 1, "da39a3ee5e6b4b0d3255bfef95601890afd80709")),
+			tc("DSchild change", ds("child", 8857, 8, 2, "4b9b6b073edd97feb5bc12dc4e1b32d2c6af7ae23a293936ceb87bb10494ec44")),
+			tc("DSchild change f1", ds("child", 3, 8, 2, "4b9b6b073edd97feb5bc12dc4e1b32d2c6af7ae23a293936ceb87bb10494ec44")),
+			tc("DSchild change f2", ds("child", 3, 13, 2, "4b9b6b073edd97feb5bc12dc4e1b32d2c6af7ae23a293936ceb87bb10494ec44")),
+			tc("DSchild change f3+4", ds("child", 3, 13, 1, "da39a3ee5e6b4b0d3255bfef95601890afd80709")),
+			tc("DSchild delete 1, create child", ds("another-child", 44, 13, 2, "4b9b6b073edd97feb5bc12dc4e1b32d2c6af7ae23a293936ceb87bb10494ec44")),
 		),
 
 		testgroup("DS (children only)",
-			requires(providers.CanUseDSForChildren),
-			// Use a valid digest value here, because GCLOUD (which implements this capability) verifies
-			// the value passed in is a valid digest. RFC 4034, s5.1.4 specifies SHA1 as the only digest
-			// algo at present, i.e. only hexadecimal values currently usable.
-			tc("create DS", ds("child", 1, 13, 1, "0123456789ABCDEF")),
-			tc("modify field 1", ds("child", 65535, 13, 1, "0123456789ABCDEF")),
-			tc("modify field 3", ds("child", 65535, 13, 2, "0123456789ABCDEF")),
-			tc("modify field 2+3", ds("child", 65535, 1, 4, "0123456789ABCDEF")),
-			tc("modify field 2", ds("child", 65535, 3, 4, "0123456789ABCDEF")),
-			tc("modify field 2", ds("child", 65535, 254, 4, "0123456789ABCDEF")),
-			tc("delete 1, create 1", ds("another-child", 2, 13, 4, "0123456789ABCDEF")),
-			tc("add 2 more DS",
-				ds("another-child", 2, 13, 4, "0123456789ABCDEF"),
-				ds("another-child", 65535, 5, 4, "0123456789ABCDEF"),
-				ds("another-child", 65535, 253, 4, "0123456789ABCDEF"),
+			requires(providers.CanUseDSForChildren), not("CLOUDNS", "CLOUDFLAREAPI"),
+			// Use a valid digest value here.  Some providers verify that a valid digest is in use.  See RFC 4034 and
+			// https://www.iana.org/assignments/dns-sec-alg-numbers/dns-sec-alg-numbers.xhtml
+			// https://www.iana.org/assignments/ds-rr-types/ds-rr-types.xhtml
+			tc("DSchild create", ds("child", 1, 14, 4, "417212fd1c8bc5896fefd8db58af824545e85b0d0546409366a30aef7269fae258173bd185fb262c86f3bb86fba04368")),
+			tc("DSchild change", ds("child", 8857, 8, 2, "4b9b6b073edd97feb5bc12dc4e1b32d2c6af7ae23a293936ceb87bb10494ec44")),
+			tc("DSchild change f1", ds("child", 3, 8, 2, "4b9b6b073edd97feb5bc12dc4e1b32d2c6af7ae23a293936ceb87bb10494ec44")),
+			tc("DSchild change f2", ds("child", 3, 13, 2, "4b9b6b073edd97feb5bc12dc4e1b32d2c6af7ae23a293936ceb87bb10494ec44")),
+			tc("DSchild change f3+4", ds("child", 3, 14, 4, "3115238f89e0bf5252d9718113b1b9fff854608d84be94eefb9210dc1cc0b4f3557342a27465cfacc42ef137ae9a5489")),
+			tc("DSchild delete 1, create child", ds("another-child", 44, 13, 2, "4b9b6b073edd97feb5bc12dc4e1b32d2c6af7ae23a293936ceb87bb10494ec44")),
+			tc("add 2 more DSchild",
+				ds("another-child", 44, 13, 2, "4b9b6b073edd97feb5bc12dc4e1b32d2c6af7ae23a293936ceb87bb10494ec44"),
+				ds("another-child", 1501, 14, 4, "109bb6b5b6d5547c1ce03c7a8bd7d8f80c1cb0957f50c4f7fda04692079917e4f9cad52b878f3d8234e1a170b154b72d"),
+				ds("another-child", 1502, 8, 2, "2fa14f53e6b15cac9ac77846c7be87862c2a7e9ec0c6cea319db939317f126ed"),
+				ds("another-child", 65535, 13, 2, "2fa14f53e6b15cac9ac77846c7be87862c2a7e9ec0c6cea319db939317f126ed"),
 			),
+		),
+
+		testgroup("DS (children only) CLOUDNS",
+			requires(providers.CanUseDSForChildren),
+			only("CLOUDNS", "CLOUDFLAREAPI"),
+			// Cloudns requires NS records before creating DS Record. Verify
+			// they are done in the right order, even if they are listed in
+			// the wrong order in dnsconfig.js.
+			tc("create DS",
+				// we test that provider correctly handles creating NS first by reversing the entries here
+				ds("child", 35632, 13, 1, "1E07663FF507A40874B8605463DD41DE482079D6"),
+				ns("child", "ns101.cloudns.net."),
+			),
+			tc("modify field 1",
+				ds("child", 2075, 13, 1, "2706D12E256C8FDD9BFB45EFB25FE537E21A82F6"),
+				ns("child", "ns101.cloudns.net."),
+			),
+			tc("modify field 3",
+				ds("child", 2075, 13, 2, "3F7A1EAC8C813A0BEBD0C3B8AAB387E31945EA0CD5E1D84A2E8E27674566C156"),
+				ns("child", "ns101.cloudns.net."),
+			),
+			tc("modify field 2+3",
+				ds("child", 2159, 1, 4, "F50BEFEA333EE2901D72D31A08E1A3CD3F7E943FF4B38CF7C8AD92807F5302F76FB0B419182C0F47FFC71CBCB6EF4BD4"),
+				ns("child", "ns101.cloudns.net."),
+			),
+			tc("modify field 2",
+				ds("child", 63909, 3, 4, "EEC7FA02E6788DA889B2CE41D43D92F948AB126EDCF83B7037E73CE9531C8E7E45653ABBAA76C2D6E42F98316EDE599B"),
+				ns("child", "ns101.cloudns.net."),
+			),
+			//tc("modify field 2", ds("child", 65535, 254, 4, "0123456789ABCDEF")),
+			tc("delete 1, create 1",
+				ds("another-child", 35632, 13, 4, "F5F32ABCA6B01AA7A9963012F90B7C8523A1D946185A3AD70B67F3C9F18E7312FA9DD6AB2F7D8382F789213DB173D429"),
+				ns("another-child", "ns101.cloudns.net."),
+			),
+			tc("add 2 more DS",
+				ds("another-child", 35632, 13, 4, "F5F32ABCA6B01AA7A9963012F90B7C8523A1D946185A3AD70B67F3C9F18E7312FA9DD6AB2F7D8382F789213DB173D429"),
+				ds("another-child", 2159, 1, 4, "F50BEFEA333EE2901D72D31A08E1A3CD3F7E943FF4B38CF7C8AD92807F5302F76FB0B419182C0F47FFC71CBCB6EF4BD4"),
+				ds("another-child", 63909, 3, 4, "EEC7FA02E6788DA889B2CE41D43D92F948AB126EDCF83B7037E73CE9531C8E7E45653ABBAA76C2D6E42F98316EDE599B"),
+				ns("another-child", "ns101.cloudns.net."),
+			),
+			// in CLouDNS  we must delete DS Record before deleting NS record
+			// should no longer be necessary, provider should handle order correctly
+			//tc("delete all DS",
+			//	ns("another-child", "ns101.cloudns.net."),
+			//),
 		),
 
 		//
@@ -954,6 +1098,8 @@ func makeTests(t *testing.T) []*TestGroup {
 			tc("ALIAS at subdomain", alias("test", "foo.com.")),
 			tc("change it", alias("test", "foo2.com.")),
 		),
+
+		// AZURE features
 
 		testgroup("AZURE_ALIAS",
 			requires(providers.CanUseAzureAlias),
@@ -986,6 +1132,8 @@ func makeTests(t *testing.T) []*TestGroup {
 				azureAlias("bar.cname", "CNAME", "/subscriptions/**subscription-id**/resourceGroups/**resource-group**/providers/Microsoft.Network/dnszones/**current-domain-no-trailing**/CNAME/quux.cname"),
 			),
 		),
+
+		// ROUTE43 features
 
 		testgroup("R53_ALIAS2",
 			requires(providers.CanUseRoute53Alias),
@@ -1044,6 +1192,176 @@ func makeTests(t *testing.T) []*TestGroup {
 				cname("dev-system18", "ec2-54-91-33-155.compute-1.amazonaws.com."),
 			),
 		),
+
+		// CLOUDFLAREAPI features
+
+		testgroup("CF_REDIRECT",
+			only("CLOUDFLAREAPI"),
+			tc("redir", cfRedir("cnn.**current-domain-no-trailing**/*", "https://www.cnn.com/$1")),
+			tc("change", cfRedir("cnn.**current-domain-no-trailing**/*", "https://change.cnn.com/$1")),
+			tc("changelabel", cfRedir("cable.**current-domain-no-trailing**/*", "https://change.cnn.com/$1")),
+
+			// Removed these for speed.  They were testing if order matters,
+			// which it doesn't seem to.  Re-add if needed.
+			//clear(),
+			//tc("multipleA",
+			//	cfRedir("cnn.**current-domain-no-trailing**/*", "https://www.cnn.com/$1"),
+			//	cfRedir("msnbc.**current-domain-no-trailing**/*", "https://msnbc.cnn.com/$1"),
+			//),
+			//clear(),
+			//tc("multipleB",
+			//	cfRedir("msnbc.**current-domain-no-trailing**/*", "https://msnbc.cnn.com/$1"),
+			//	cfRedir("cnn.**current-domain-no-trailing**/*", "https://www.cnn.com/$1"),
+			//),
+			//tc("change1",
+			//	cfRedir("msnbc.**current-domain-no-trailing**/*", "https://msnbc.cnn.com/$1"),
+			//	cfRedir("cnn.**current-domain-no-trailing**/*", "https://change.cnn.com/$1"),
+			//),
+			//tc("change1",
+			//	cfRedir("msnbc.**current-domain-no-trailing**/*", "https://msnbc.cnn.com/$1"),
+			//	cfRedir("cablenews.**current-domain-no-trailing**/*", "https://change.cnn.com/$1"),
+			//),
+
+			// TODO(tlim): Fix this test case. It is currently failing.
+			//clear(),
+			//tc("multiple3",
+			//	cfRedir("msnbc.**current-domain-no-trailing**/*", "https://msnbc.cnn.com/$1"),
+			//	cfRedir("cnn.**current-domain-no-trailing**/*", "https://www.cnn.com/$1"),
+			//	cfRedir("nytimes.**current-domain-no-trailing**/*", "https://www.nytimes.com/$1"),
+			//),
+
+			// Repeat the above using CF_TEMP_REDIR instead
+			clear(),
+			tc("tempredir", cfRedirTemp("cnn.**current-domain-no-trailing**/*", "https://www.cnn.com/$1")),
+			tc("tempchange", cfRedirTemp("cnn.**current-domain-no-trailing**/*", "https://change.cnn.com/$1")),
+			tc("tempchangelabel", cfRedirTemp("cable.**current-domain-no-trailing**/*", "https://change.cnn.com/$1")),
+			clear(),
+			tc("tempmultipleA",
+				cfRedirTemp("cnn.**current-domain-no-trailing**/*", "https://www.cnn.com/$1"),
+				cfRedirTemp("msnbc.**current-domain-no-trailing**/*", "https://msnbc.cnn.com/$1"),
+			),
+			clear(),
+			tc("tempmultipleB",
+				cfRedirTemp("msnbc.**current-domain-no-trailing**/*", "https://msnbc.cnn.com/$1"),
+				cfRedirTemp("cnn.**current-domain-no-trailing**/*", "https://www.cnn.com/$1"),
+			),
+			tc("tempchange1",
+				cfRedirTemp("msnbc.**current-domain-no-trailing**/*", "https://msnbc.cnn.com/$1"),
+				cfRedirTemp("cnn.**current-domain-no-trailing**/*", "https://change.cnn.com/$1"),
+			),
+			tc("tempchange1",
+				cfRedirTemp("msnbc.**current-domain-no-trailing**/*", "https://msnbc.cnn.com/$1"),
+				cfRedirTemp("cablenews.**current-domain-no-trailing**/*", "https://change.cnn.com/$1"),
+			),
+			// TODO(tlim): Fix this test case:
+			//clear(),
+			//tc("tempmultiple3",
+			//	cfRedirTemp("msnbc.**current-domain-no-trailing**/*", "https://msnbc.cnn.com/$1"),
+			//	cfRedirTemp("cnn.**current-domain-no-trailing**/*", "https://www.cnn.com/$1"),
+			//	cfRedirTemp("nytimes.**current-domain-no-trailing**/*", "https://www.nytimes.com/$1"),
+			//),
+		),
+
+		testgroup("CF_PROXY",
+			only("CLOUDFLAREAPI"),
+			tc("proxyon", cfProxyA("proxyme", "1.2.3.4", "on")),
+			tc("proxychangetarget", cfProxyA("proxyme", "1.2.3.5", "on")),
+			tc("proxychangeproxy", cfProxyA("proxyme", "1.2.3.5", "off")),
+			clear(),
+			tc("proxycname", cfProxyCNAME("anewproxy", "example.com.", "on")),
+			tc("proxycnamechange", cfProxyCNAME("anewproxy", "example.com.", "off")),
+			clear(),
+		),
+
+		testgroup("CF_WORKER_ROUTE",
+			only("CLOUDFLAREAPI"),
+			alltrue(*enableCFWorkers),
+			// TODO(fdcastel): Add worker scripts via api call before test execution
+			tc("simple", cfWorkerRoute("cnn.**current-domain-no-trailing**/*", "dnscontrol_integrationtest_cnn")),
+			tc("changeScript", cfWorkerRoute("cnn.**current-domain-no-trailing**/*", "dnscontrol_integrationtest_msnbc")),
+			tc("changePattern", cfWorkerRoute("cable.**current-domain-no-trailing**/*", "dnscontrol_integrationtest_msnbc")),
+			clear(),
+			tc("createMultiple",
+				cfWorkerRoute("cnn.**current-domain-no-trailing**/*", "dnscontrol_integrationtest_cnn"),
+				cfWorkerRoute("msnbc.**current-domain-no-trailing**/*", "dnscontrol_integrationtest_msnbc"),
+			),
+			tc("addOne",
+				cfWorkerRoute("msnbc.**current-domain-no-trailing**/*", "dnscontrol_integrationtest_msnbc"),
+				cfWorkerRoute("cnn.**current-domain-no-trailing**/*", "dnscontrol_integrationtest_cnn"),
+				cfWorkerRoute("api.**current-domain-no-trailing**/cnn/*", "dnscontrol_integrationtest_cnn"),
+			),
+			tc("changeOne",
+				cfWorkerRoute("msn.**current-domain-no-trailing**/*", "dnscontrol_integrationtest_msnbc"),
+				cfWorkerRoute("cnn.**current-domain-no-trailing**/*", "dnscontrol_integrationtest_cnn"),
+				cfWorkerRoute("api.**current-domain-no-trailing**/cnn/*", "dnscontrol_integrationtest_cnn"),
+			),
+			tc("deleteOne",
+				cfWorkerRoute("msn.**current-domain-no-trailing**/*", "dnscontrol_integrationtest_msnbc"),
+				cfWorkerRoute("api.**current-domain-no-trailing**/cnn/*", "dnscontrol_integrationtest_cnn"),
+			),
+		),
+
+		// IGNORE* features
+
+		testgroup("IGNORE_NAME function",
+			tc("Create some records",
+				txt("foo", "simple"),
+				a("foo", "1.2.3.4"),
+			),
+			tc("Add a new record - ignoring foo",
+				a("bar", "1.2.3.4"),
+				ignoreName("foo"),
+			),
+			clear(),
+			tc("Create some records",
+				txt("bar.foo", "simple"),
+				a("bar.foo", "1.2.3.4"),
+			),
+			tc("Add a new record - ignoring *.foo",
+				a("bar", "1.2.3.4"),
+				ignoreName("*.foo"),
+			),
+		),
+
+		testgroup("IGNORE_NAME apex",
+			tc("Create some records",
+				txt("@", "simple"),
+				a("@", "1.2.3.4"),
+				txt("bar", "stringbar"),
+				a("bar", "2.4.6.8"),
+			),
+			tc("Add a new record - ignoring apex",
+				txt("bar", "stringbar"),
+				a("bar", "2.4.6.8"),
+				a("added", "4.6.8.9"),
+				ignoreName("@"),
+			),
+		),
+
+		testgroup("IGNORE_TARGET function",
+			tc("Create some records",
+				cname("foo", "test.foo.com."),
+				cname("bar", "test.bar.com."),
+			),
+			tc("Add a new record - ignoring test.foo.com.",
+				cname("bar", "bar.foo.com."),
+				ignoreTarget("test.foo.com.", "CNAME"),
+			),
+			clear(),
+			tc("Create some records",
+				cname("bar.foo", "a.b.foo.com."),
+				a("test.foo", "1.2.3.4"),
+			),
+			tc("Add a new record - ignoring **.foo.com. targets",
+				a("bar", "1.2.3.4"),
+				ignoreTarget("**.foo.com.", "CNAME"),
+			),
+		),
+		// NB(tlim): We don't have a test for IGNORE_TARGET at the apex
+		// because IGNORE_TARGET only works on CNAMEs and you can't have a
+		// CNAME at the apex.  If we extend IGNORE_TARGET to support other
+		// types of records, we should add a test at the apex.
+
 	}
 
 	return tests

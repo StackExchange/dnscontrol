@@ -7,7 +7,7 @@ import (
 
 	"github.com/StackExchange/dnscontrol/v3/pkg/version"
 	"github.com/StackExchange/dnscontrol/v3/providers"
-	hxcl "github.com/hexonet/go-sdk/apiclient"
+	hxcl "github.com/hexonet/go-sdk/v3/apiclient"
 )
 
 // HXClient describes a connection to the hexonet API.
@@ -19,18 +19,16 @@ type HXClient struct {
 }
 
 var features = providers.DocumentationNotes{
+	providers.CanGetZones:            providers.Unimplemented(),
 	providers.CanUseAlias:            providers.Cannot("Using ALIAS is possible through our extended DNS (X-DNS) service. Feel free to get in touch with us."),
 	providers.CanUseCAA:              providers.Can(),
 	providers.CanUsePTR:              providers.Can(),
-	providers.CanUseRoute53Alias:     providers.Cannot("Using ALIAS is possible through our extended DNS (X-DNS) service. Feel free to get in touch with us."),
 	providers.CanUseSRV:              providers.Can("SRV records with empty targets are not supported"),
 	providers.CanUseTLSA:             providers.Can(),
-	providers.CanUseTXTMulti:         providers.Can(),
 	providers.CantUseNOPURGE:         providers.Can(),
 	providers.DocCreateDomains:       providers.Can(),
 	providers.DocDualHost:            providers.Can(),
 	providers.DocOfficiallySupported: providers.Cannot("Actively maintained provider module."),
-	providers.CanGetZones:            providers.Unimplemented(),
 }
 
 func newProvider(conf map[string]string) (*HXClient, error) {
@@ -67,6 +65,10 @@ func newDsp(conf map[string]string, meta json.RawMessage) (providers.DNSServiceP
 }
 
 func init() {
+	fns := providers.DspFuncs{
+		Initializer:   newDsp,
+		RecordAuditor: AuditRecords,
+	}
 	providers.RegisterRegistrarType("HEXONET", newReg)
-	providers.RegisterDomainServiceProviderType("HEXONET", newDsp, features)
+	providers.RegisterDomainServiceProviderType("HEXONET", fns, features)
 }

@@ -8,7 +8,9 @@ import (
 
 	"github.com/StackExchange/dnscontrol/v3/models"
 	"github.com/StackExchange/dnscontrol/v3/pkg/diff"
+	"github.com/StackExchange/dnscontrol/v3/pkg/diff2"
 	"github.com/StackExchange/dnscontrol/v3/pkg/printer"
+	"github.com/StackExchange/dnscontrol/v3/pkg/txtutil"
 	"github.com/StackExchange/dnscontrol/v3/providers"
 	"github.com/miekg/dns/dnsutil"
 )
@@ -26,9 +28,11 @@ func NewDeSec(m map[string]string, metadata json.RawMessage) (providers.DNSServi
 	if c.creds.token == "" {
 		return nil, fmt.Errorf("missing deSEC auth-token")
 	}
-
-	// Get a domain to validate authentication
-	if err := c.fetchDomainList(); err != nil {
+	if err := c.authenticate(); err != nil {
+		return nil, fmt.Errorf("authentication failed")
+	}
+	//DomainIndex is used for corrections (minttl) and domain creation
+	if err := c.initializeDomainIndex(); err != nil {
 		return nil, err
 	}
 
@@ -36,18 +40,19 @@ func NewDeSec(m map[string]string, metadata json.RawMessage) (providers.DNSServi
 }
 
 var features = providers.DocumentationNotes{
+	providers.CanAutoDNSSEC:          providers.Can("deSEC always signs all records. When trying to disable, a notice is printed."),
+	providers.CanGetZones:            providers.Can(),
+	providers.CanUseAlias:            providers.Unimplemented("Apex aliasing is supported via new SVCB and HTTPS record types. For details, check the deSEC docs."),
+	providers.CanUseCAA:              providers.Can(),
+	providers.CanUseDS:               providers.Can(),
+	providers.CanUseNAPTR:            providers.Can(),
+	providers.CanUsePTR:              providers.Can(),
+	providers.CanUseSRV:              providers.Can(),
+	providers.CanUseSSHFP:            providers.Can(),
+	providers.CanUseTLSA:             providers.Can(),
+	providers.DocCreateDomains:       providers.Can(),
 	providers.DocDualHost:            providers.Unimplemented(),
 	providers.DocOfficiallySupported: providers.Cannot(),
-	providers.DocCreateDomains:       providers.Can(),
-	providers.CanUseAlias:            providers.Cannot(),
-	providers.CanUseSRV:              providers.Can(),
-	providers.CanUseDS:               providers.Can(),
-	providers.CanUseSSHFP:            providers.Can(),
-	providers.CanUseCAA:              providers.Can(),
-	providers.CanUseTLSA:             providers.Can(),
-	providers.CanUsePTR:              providers.Can(),
-	providers.CanGetZones:            providers.Can(),
-	providers.CanAutoDNSSEC:          providers.Cannot(),
 }
 
 var defaultNameServerNames = []string{
@@ -56,7 +61,11 @@ var defaultNameServerNames = []string{
 }
 
 func init() {
-	providers.RegisterDomainServiceProviderType("DESEC", NewDeSec, features)
+	fns := providers.DspFuncs{
+		Initializer:   NewDeSec,
+		RecordAuditor: AuditRecords,
+	}
+	providers.RegisterDomainServiceProviderType("DESEC", fns, features)
 }
 
 // GetNameservers returns the nameservers for a domain.
@@ -65,6 +74,10 @@ func (c *desecProvider) GetNameservers(domain string) ([]*models.Nameserver, err
 }
 
 func (c *desecProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Correction, error) {
+	if dc.AutoDNSSEC == "off" {
+		printer.Printf("Notice: DNSSEC signing was not requested, but cannot be turned off. (deSEC always signs all records.)\n")
+	}
+
 	existing, err := c.GetZoneRecords(dc.Name)
 	if err != nil {
 		return nil, err
@@ -72,11 +85,13 @@ func (c *desecProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*models
 	models.PostProcessRecords(existing)
 	clean := PrepFoundRecords(existing)
 	var minTTL uint32
+	c.mutex.Lock()
 	if ttl, ok := c.domainIndex[dc.Name]; !ok {
 		minTTL = 3600
 	} else {
 		minTTL = ttl
 	}
+	c.mutex.Unlock()
 	PrepDesiredRecords(dc, minTTL)
 	return c.GenerateDomainCorrections(dc, clean)
 }
@@ -90,6 +105,7 @@ func (c *desecProvider) GetZoneRecords(domain string) (models.Records, error) {
 
 	// Convert them to DNScontrol's native format:
 	existingRecords := []*models.RecordConfig{}
+	//spew.Dump(records)
 	for _, rr := range records {
 		existingRecords = append(existingRecords, nativeToRecords(rr, domain)...)
 	}
@@ -98,10 +114,9 @@ func (c *desecProvider) GetZoneRecords(domain string) (models.Records, error) {
 
 // EnsureDomainExists returns an error if domain doesn't exist.
 func (c *desecProvider) EnsureDomainExists(domain string) error {
-	if err := c.fetchDomainList(); err != nil {
-		return err
-	}
 	// domain already exists
+	c.mutex.Lock()
+	defer c.mutex.Unlock()
 	if _, ok := c.domainIndex[domain]; ok {
 		return nil
 	}
@@ -124,6 +139,7 @@ func PrepDesiredRecords(dc *models.DomainConfig, minTTL uint32) {
 	// confusing.
 
 	dc.Punycode()
+	txtutil.SplitSingleLongTxt(dc.Records)
 	recordsToKeep := make([]*models.RecordConfig, 0, len(dc.Records))
 	for _, rec := range dc.Records {
 		if rec.Type == "ALIAS" {
@@ -133,7 +149,7 @@ func PrepDesiredRecords(dc *models.DomainConfig, minTTL uint32) {
 		}
 		if rec.TTL < minTTL {
 			if rec.Type != "NS" {
-				printer.Warnf("Please contact support@desec.io if you need ttls < %d. Setting ttl of %s type %s from %d to %d\n", minTTL, rec.GetLabelFQDN(), rec.Type, rec.TTL, minTTL)
+				printer.Warnf("Please contact support@desec.io if you need TTLs < %d. Setting TTL of %s type %s from %d to %d\n", minTTL, rec.GetLabelFQDN(), rec.Type, rec.TTL, minTTL)
 			}
 			rec.TTL = minTTL
 		}
@@ -149,82 +165,89 @@ func PrepDesiredRecords(dc *models.DomainConfig, minTTL uint32) {
 // made.
 func (c *desecProvider) GenerateDomainCorrections(dc *models.DomainConfig, existing models.Records) ([]*models.Correction, error) {
 
-	var corrections = []*models.Correction{}
+	var corrections []*models.Correction
+	if !diff2.EnableDiff2 || true { // Remove "|| true" when diff2 version arrives
 
-	// diff existing vs. current.
-	differ := diff.New(dc)
-	keysToUpdate, err := differ.ChangedGroups(existing)
-	if err != nil {
-		return nil, err
-	}
-	if len(keysToUpdate) == 0 {
-		return nil, nil
-	}
+		// diff existing vs. current.
+		differ := diff.New(dc)
+		keysToUpdate, err := differ.ChangedGroups(existing)
+		if err != nil {
+			return nil, err
+		}
+		if len(keysToUpdate) == 0 {
+			return nil, nil
+		}
 
-	desiredRecords := dc.Records.GroupedByKey()
-	var rrs []resourceRecord
-	buf := &bytes.Buffer{}
-	// For any key with an update, delete or replace those records.
-	for label := range keysToUpdate {
-		if _, ok := desiredRecords[label]; !ok {
-			//we could not find this RecordKey in the desiredRecords
-			//this means it must be deleted
-			for i, msg := range keysToUpdate[label] {
-				if i == 0 {
-					rc := resourceRecord{}
-					rc.Type = label.Type
-					rc.Records = make([]string, 0) // empty array of records should delete this rrset
-					rc.TTL = 3600
-					shortname := dnsutil.TrimDomainName(label.NameFQDN, dc.Name)
-					if shortname == "@" {
-						shortname = ""
+		desiredRecords := dc.Records.GroupedByKey()
+		var rrs []resourceRecord
+		buf := &bytes.Buffer{}
+		// For any key with an update, delete or replace those records.
+		for label := range keysToUpdate {
+			if _, ok := desiredRecords[label]; !ok {
+				//we could not find this RecordKey in the desiredRecords
+				//this means it must be deleted
+				for i, msg := range keysToUpdate[label] {
+					if i == 0 {
+						rc := resourceRecord{}
+						rc.Type = label.Type
+						rc.Records = make([]string, 0) // empty array of records should delete this rrset
+						rc.TTL = 3600
+						shortname := dnsutil.TrimDomainName(label.NameFQDN, dc.Name)
+						if shortname == "@" {
+							shortname = ""
+						}
+						rc.Subname = shortname
+						fmt.Fprintln(buf, msg)
+						rrs = append(rrs, rc)
+					} else {
+						//just add the message
+						fmt.Fprintln(buf, msg)
 					}
-					rc.Subname = shortname
-					fmt.Fprintln(buf, msg)
-					rrs = append(rrs, rc)
-				} else {
-					//just add the message
-					fmt.Fprintln(buf, msg)
 				}
-			}
-		} else {
-			//it must be an update or create, both can be done with the same api call.
-			ns := recordsToNative(desiredRecords[label], dc.Name)
-			if len(ns) > 1 {
-				panic("we got more than one resource record to create / modify")
-			}
-			for i, msg := range keysToUpdate[label] {
-				if i == 0 {
-					rrs = append(rrs, ns[0])
-					fmt.Fprintln(buf, msg)
-				} else {
-					//noop just for printing the additional messages
-					fmt.Fprintln(buf, msg)
+			} else {
+				//it must be an update or create, both can be done with the same api call.
+				ns := recordsToNative(desiredRecords[label], dc.Name)
+				if len(ns) > 1 {
+					panic("we got more than one resource record to create / modify")
+				}
+				for i, msg := range keysToUpdate[label] {
+					if i == 0 {
+						rrs = append(rrs, ns[0])
+						fmt.Fprintln(buf, msg)
+					} else {
+						//noop just for printing the additional messages
+						fmt.Fprintln(buf, msg)
+					}
 				}
 			}
 		}
+		msg := fmt.Sprintf("Changes:\n%s", buf)
+		corrections = append(corrections,
+			&models.Correction{
+				Msg: msg,
+				F: func() error {
+					rc := rrs
+					err := c.upsertRR(rc, dc.Name)
+					if err != nil {
+						return err
+					}
+					return nil
+				},
+			})
+
+		// NB(tlim): This sort is just to make updates look pretty. It is
+		// cosmetic.  The risk here is that there may be some updates that
+		// require a specific order (for example a delete before an add).
+		// However the code doesn't seem to have such situation.  All tests
+		// pass.  That said, if this breaks anything, the easiest fix might
+		// be to just remove the sort.
+		sort.Slice(corrections, func(i, j int) bool { return diff.CorrectionLess(corrections, i, j) })
+
+		return corrections, nil
 	}
-	msg := fmt.Sprintf("Changes:\n%s", buf)
-	corrections = append(corrections,
-		&models.Correction{
-			Msg: msg,
-			F: func() error {
-				rc := rrs
-				err := c.upsertRR(rc, dc.Name)
-				if err != nil {
-					return err
-				}
-				return nil
-			},
-		})
 
-	// NB(tlim): This sort is just to make updates look pretty. It is
-	// cosmetic.  The risk here is that there may be some updates that
-	// require a specific order (for example a delete before an add).
-	// However the code doesn't seem to have such situation.  All tests
-	// pass.  That said, if this breaks anything, the easiest fix might
-	// be to just remove the sort.
-	sort.Slice(corrections, func(i, j int) bool { return diff.CorrectionLess(corrections, i, j) })
+	// Insert Future diff2 version here.
 
+	// Insert Future diff2 version here.
 	return corrections, nil
 }

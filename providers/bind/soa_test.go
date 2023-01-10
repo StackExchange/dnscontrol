@@ -8,10 +8,15 @@ import (
 	"github.com/StackExchange/dnscontrol/v3/models"
 )
 
+func mkRC(target string, rec *models.RecordConfig) *models.RecordConfig {
+	rec.SetTarget(target)
+	return rec
+}
+
 func Test_makeSoa(t *testing.T) {
 	origin := "example.com"
 	var tests = []struct {
-		def            *SoaInfo
+		def            *SoaDefaults
 		existing       *models.RecordConfig
 		desired        *models.RecordConfig
 		expectedSoa    *models.RecordConfig
@@ -19,59 +24,59 @@ func Test_makeSoa(t *testing.T) {
 	}{
 		{
 			// If everything is blank, the hard-coded defaults should kick in.
-			&SoaInfo{"", "", 0, 0, 0, 0, 0, models.DefaultTTL},
-			&models.RecordConfig{Target: "", SoaMbox: "", SoaSerial: 0, SoaRefresh: 0, SoaRetry: 0, SoaExpire: 0, SoaMinttl: 0},
-			&models.RecordConfig{Target: "", SoaMbox: "", SoaSerial: 0, SoaRefresh: 0, SoaRetry: 0, SoaExpire: 0, SoaMinttl: 0},
-			&models.RecordConfig{Target: "DEFAULT_NOT_SET.", SoaMbox: "DEFAULT_NOT_SET.", SoaSerial: 1, SoaRefresh: 3600, SoaRetry: 600, SoaExpire: 604800, SoaMinttl: 1440},
+			&SoaDefaults{"", "", 0, 0, 0, 0, 0, models.DefaultTTL},
+			mkRC("", &models.RecordConfig{SoaMbox: "", SoaSerial: 0, SoaRefresh: 0, SoaRetry: 0, SoaExpire: 0, SoaMinttl: 0}),
+			mkRC("", &models.RecordConfig{SoaMbox: "", SoaSerial: 0, SoaRefresh: 0, SoaRetry: 0, SoaExpire: 0, SoaMinttl: 0}),
+			mkRC("DEFAULT_NOT_SET.", &models.RecordConfig{SoaMbox: "DEFAULT_NOT_SET.", SoaSerial: 1, SoaRefresh: 3600, SoaRetry: 600, SoaExpire: 604800, SoaMinttl: 1440}),
 			2019022300,
 		},
 		{
 			// If everything is filled, leave the desired values in place.
-			&SoaInfo{"ns.example.com", "root.example.com", 1, 2, 3, 4, 5, models.DefaultTTL},
-			&models.RecordConfig{Target: "a", SoaMbox: "aa", SoaSerial: 10, SoaRefresh: 11, SoaRetry: 12, SoaExpire: 13, SoaMinttl: 14},
-			&models.RecordConfig{Target: "b", SoaMbox: "bb", SoaSerial: 15, SoaRefresh: 16, SoaRetry: 17, SoaExpire: 18, SoaMinttl: 19},
-			&models.RecordConfig{Target: "b", SoaMbox: "bb", SoaSerial: 15, SoaRefresh: 16, SoaRetry: 17, SoaExpire: 18, SoaMinttl: 19},
+			&SoaDefaults{"ns.example.com", "root.example.com", 1, 2, 3, 4, 5, models.DefaultTTL},
+			mkRC("a", &models.RecordConfig{SoaMbox: "aa", SoaSerial: 10, SoaRefresh: 11, SoaRetry: 12, SoaExpire: 13, SoaMinttl: 14}),
+			mkRC("b", &models.RecordConfig{SoaMbox: "bb", SoaSerial: 15, SoaRefresh: 16, SoaRetry: 17, SoaExpire: 18, SoaMinttl: 19}),
+			mkRC("b", &models.RecordConfig{SoaMbox: "bb", SoaSerial: 15, SoaRefresh: 16, SoaRetry: 17, SoaExpire: 18, SoaMinttl: 19}),
 			2019022300,
 		},
 		{
 			// Test incrementing serial.
-			&SoaInfo{"ns.example.com", "root.example.com", 1, 2, 3, 4, 5, models.DefaultTTL},
-			&models.RecordConfig{Target: "a", SoaMbox: "aa", SoaSerial: 2019022301, SoaRefresh: 11, SoaRetry: 12, SoaExpire: 13, SoaMinttl: 14},
-			&models.RecordConfig{Target: "b", SoaMbox: "bb", SoaSerial: 0, SoaRefresh: 16, SoaRetry: 17, SoaExpire: 18, SoaMinttl: 19},
-			&models.RecordConfig{Target: "b", SoaMbox: "bb", SoaSerial: 2019022301, SoaRefresh: 16, SoaRetry: 17, SoaExpire: 18, SoaMinttl: 19},
+			&SoaDefaults{"ns.example.com", "root.example.com", 1, 2, 3, 4, 5, models.DefaultTTL},
+			mkRC("a", &models.RecordConfig{SoaMbox: "aa", SoaSerial: 2019022301, SoaRefresh: 11, SoaRetry: 12, SoaExpire: 13, SoaMinttl: 14}),
+			mkRC("b", &models.RecordConfig{SoaMbox: "bb", SoaSerial: 0, SoaRefresh: 16, SoaRetry: 17, SoaExpire: 18, SoaMinttl: 19}),
+			mkRC("b", &models.RecordConfig{SoaMbox: "bb", SoaSerial: 2019022301, SoaRefresh: 16, SoaRetry: 17, SoaExpire: 18, SoaMinttl: 19}),
 			2019022302,
 		},
 		{
 			// Test incrementing serial_2.
-			&SoaInfo{"ns.example.com", "root.example.com", 1, 2, 3, 4, 5, models.DefaultTTL},
-			&models.RecordConfig{Target: "a", SoaMbox: "aa", SoaSerial: 0, SoaRefresh: 11, SoaRetry: 12, SoaExpire: 13, SoaMinttl: 14},
-			&models.RecordConfig{Target: "b", SoaMbox: "bb", SoaSerial: 2019022304, SoaRefresh: 16, SoaRetry: 17, SoaExpire: 18, SoaMinttl: 19},
-			&models.RecordConfig{Target: "b", SoaMbox: "bb", SoaSerial: 2019022304, SoaRefresh: 16, SoaRetry: 17, SoaExpire: 18, SoaMinttl: 19},
+			&SoaDefaults{"ns.example.com", "root.example.com", 1, 2, 3, 4, 5, models.DefaultTTL},
+			mkRC("a", &models.RecordConfig{SoaMbox: "aa", SoaSerial: 0, SoaRefresh: 11, SoaRetry: 12, SoaExpire: 13, SoaMinttl: 14}),
+			mkRC("b", &models.RecordConfig{SoaMbox: "bb", SoaSerial: 2019022304, SoaRefresh: 16, SoaRetry: 17, SoaExpire: 18, SoaMinttl: 19}),
+			mkRC("b", &models.RecordConfig{SoaMbox: "bb", SoaSerial: 2019022304, SoaRefresh: 16, SoaRetry: 17, SoaExpire: 18, SoaMinttl: 19}),
 			2019022305,
 		},
 		{
 			// If there are gaps in existing or desired, fill in as appropriate.
-			&SoaInfo{"ns.example.com", "root.example.com", 1, 2, 3, 4, 5, models.DefaultTTL},
-			&models.RecordConfig{Target: "", SoaMbox: "aa", SoaSerial: 0, SoaRefresh: 11, SoaRetry: 0, SoaExpire: 13, SoaMinttl: 0},
-			&models.RecordConfig{Target: "b", SoaMbox: "", SoaSerial: 15, SoaRefresh: 0, SoaRetry: 17, SoaExpire: 0, SoaMinttl: 19},
-			&models.RecordConfig{Target: "b", SoaMbox: "aa", SoaSerial: 15, SoaRefresh: 11, SoaRetry: 17, SoaExpire: 13, SoaMinttl: 19},
+			&SoaDefaults{"ns.example.com", "root.example.com", 1, 2, 3, 4, 5, models.DefaultTTL},
+			mkRC("", &models.RecordConfig{SoaMbox: "aa", SoaSerial: 0, SoaRefresh: 11, SoaRetry: 0, SoaExpire: 13, SoaMinttl: 0}),
+			mkRC("b", &models.RecordConfig{SoaMbox: "", SoaSerial: 15, SoaRefresh: 0, SoaRetry: 17, SoaExpire: 0, SoaMinttl: 19}),
+			mkRC("b", &models.RecordConfig{SoaMbox: "aa", SoaSerial: 15, SoaRefresh: 11, SoaRetry: 17, SoaExpire: 13, SoaMinttl: 19}),
 			2019022300,
 		},
 		{
 			// Gaps + existing==nil
-			&SoaInfo{"ns.example.com", "root.example.com", 1, 2, 3, 4, 5, models.DefaultTTL},
+			&SoaDefaults{"ns.example.com", "root.example.com", 1, 2, 3, 4, 5, models.DefaultTTL},
 			nil,
-			&models.RecordConfig{Target: "b", SoaMbox: "", SoaSerial: 15, SoaRefresh: 0, SoaRetry: 17, SoaExpire: 0, SoaMinttl: 19},
-			&models.RecordConfig{Target: "b", SoaMbox: "root.example.com", SoaSerial: 15, SoaRefresh: 2, SoaRetry: 17, SoaExpire: 4, SoaMinttl: 19},
+			mkRC("b", &models.RecordConfig{SoaMbox: "", SoaSerial: 15, SoaRefresh: 0, SoaRetry: 17, SoaExpire: 0, SoaMinttl: 19}),
+			mkRC("b", &models.RecordConfig{SoaMbox: "root.example.com", SoaSerial: 15, SoaRefresh: 2, SoaRetry: 17, SoaExpire: 4, SoaMinttl: 19}),
 			2019022300,
 		},
 		{
 			// Gaps + desired==nil
 			// NB(tom): In the code as of 2020-02-23, desired will never be nil.
-			&SoaInfo{"ns.example.com", "root.example.com", 1, 2, 3, 4, 5, models.DefaultTTL},
-			&models.RecordConfig{Target: "", SoaMbox: "aa", SoaSerial: 0, SoaRefresh: 11, SoaRetry: 0, SoaExpire: 13, SoaMinttl: 0},
+			&SoaDefaults{"ns.example.com", "root.example.com", 1, 2, 3, 4, 5, models.DefaultTTL},
+			mkRC("", &models.RecordConfig{SoaMbox: "aa", SoaSerial: 0, SoaRefresh: 11, SoaRetry: 0, SoaExpire: 13, SoaMinttl: 0}),
 			nil,
-			&models.RecordConfig{Target: "ns.example.com", SoaMbox: "aa", SoaSerial: 1, SoaRefresh: 11, SoaRetry: 3, SoaExpire: 13, SoaMinttl: 5},
+			mkRC("ns.example.com", &models.RecordConfig{SoaMbox: "aa", SoaSerial: 1, SoaRefresh: 11, SoaRetry: 3, SoaExpire: 13, SoaMinttl: 5}),
 			2019022300,
 		},
 	}
@@ -115,8 +120,8 @@ func areEqualSoa(r1, r2 *models.RecordConfig) bool {
 		fmt.Printf("ERROR: name %q != %q\n", r1.Name, r2.Name)
 		return false
 	}
-	if r1.Target != r2.Target {
-		fmt.Printf("ERROR: target %q != %q\n", r1.Target, r2.Target)
+	if r1.GetTargetField() != r2.GetTargetField() {
+		fmt.Printf("ERROR: target %q != %q\n", r1, r2.GetTargetField())
 		return false
 	}
 	if r1.SoaMbox != r2.SoaMbox {
