@@ -98,12 +98,8 @@ func (n *transipProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*mode
 		return corrections, err
 	}
 
-	if diff2.EnableDiff2 {
-		corrections, err := n.getCorrectionsUsingDiff2(dc, curRecords)
-		return corrections, err
-	}
-
-	return nil, fmt.Errorf("unexpected error: unreachable code. should either use old Diff or Diff2, but neither used")
+	corrections, err := n.getCorrectionsUsingDiff2(dc, curRecords)
+	return corrections, err
 }
 
 func (n *transipProvider) getCorrectionsUsingDiff2(dc *models.DomainConfig, records models.Records) ([]*models.Correction, error) {
