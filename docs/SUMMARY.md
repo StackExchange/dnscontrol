@@ -11,6 +11,21 @@
 ## Language Reference
 
 * [JavaScript DSL](js.md)
+* Top Level Functions
+  * [D](_functions/global/D.md)
+  * [DEFAULTS](_functions/global/DEFAULTS.md)
+  * [DOMAIN_ELSEWHERE](_functions/global/DOMAIN_ELSEWHERE.md)
+  * [DOMAIN_ELSEWHERE_AUTO](_functions/global/DOMAIN_ELSEWHERE_AUTO.md)
+  * [D_EXTEND](_functions/global/D_EXTEND.md)
+  * [FETCH](_functions/global/FETCH.md)
+  * [IP](_functions/global/IP.md)
+  * [NewDnsProvider](_functions/global/NewDnsProvider.md)
+  * [NewRegistrar](_functions/global/NewRegistrar.md)
+  * [PANIC](_functions/global/PANIC.md)
+  * [REV](_functions/global/REV.md)
+  * [getConfiguredDomains](_functions/global/getConfiguredDomains.md)
+  * [require](_functions/global/require.md)
+  * [require_glob](_functions/global/require_glob.md)
 * Domain Modifiers
     * [A](_functions/domain/A.md)
     * [AAAA](_functions/domain/AAAA.md)
@@ -61,21 +76,6 @@
     * Service Provider specific
         * Amazon Route 53
             * [R53_ZONE](_functions/record/R53_ZONE.md)
-* Top Level Functions
-    * [D](_functions/global/D.md)
-    * [DEFAULTS](_functions/global/DEFAULTS.md)
-    * [DOMAIN_ELSEWHERE](_functions/global/DOMAIN_ELSEWHERE.md)
-    * [DOMAIN_ELSEWHERE_AUTO](_functions/global/DOMAIN_ELSEWHERE_AUTO.md)
-    * [D_EXTEND](_functions/global/D_EXTEND.md)
-    * [FETCH](_functions/global/FETCH.md)
-    * [IP](_functions/global/IP.md)
-    * [NewDnsProvider](_functions/global/NewDnsProvider.md)
-    * [NewRegistrar](_functions/global/NewRegistrar.md)
-    * [PANIC](_functions/global/PANIC.md)
-    * [REV](_functions/global/REV.md)
-    * [getConfiguredDomains](_functions/global/getConfiguredDomains.md)
-    * [require](_functions/global/require.md)
-    * [require_glob](_functions/global/require_glob.md)
 * [Why CNAME/MX/NS targets require a "dot"](why-the-dot.md)
 
 ## Service Providers
