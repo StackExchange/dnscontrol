@@ -92,6 +92,8 @@ func (c *Change) Msg() string {
 	return strings.Join(c.Msgs, "\n")
 }
 
+// CreateCorrection creates a new Correction based on the given
+// function and prefills it with the Msg of the current Change
 func (c *Change) CreateCorrection(correctionFunction func() error) *models.Correction {
 	return &models.Correction{
 		F:   correctionFunction,
@@ -99,6 +101,9 @@ func (c *Change) CreateCorrection(correctionFunction func() error) *models.Corre
 	}
 }
 
+// CreateCorrectionWithMessage creates a new Correction based on the
+// given function and prefixes given function with the Msg of the
+// current change
 func (c *Change) CreateCorrectionWithMessage(msg string, correctionFunction func() error) *models.Correction {
 	return &models.Correction{
 		F:   correctionFunction,
