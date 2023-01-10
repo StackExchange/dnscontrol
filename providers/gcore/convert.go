@@ -12,8 +12,10 @@ import (
 )
 
 // nativeToRecord takes a DNS record from G-Core and returns a native RecordConfig struct.
-func nativeToRecords(n dnssdk.RRSet, zoneName string, recName string, recType string) ([]*models.RecordConfig, error) {
+func nativeToRecords(n gcoreRRSetExtended, zoneName string) ([]*models.RecordConfig, error) {
 	var rcs []*models.RecordConfig
+	recName := n.Name
+	recType := n.Type
 
 	// Split G-Core's RRset into individual records
 	for _, value := range n.Records {

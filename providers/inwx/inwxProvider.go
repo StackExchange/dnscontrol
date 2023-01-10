@@ -242,42 +242,41 @@ func (api *inwxAPI) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Cor
 		return nil, err
 	}
 
-	differ := diff.New(dc)
-	_, create, del, mod, err := differ.IncrementalDiff(foundRecords)
+	var corrections []*models.Correction
+	var create, del, mod diff.Changeset
+	if !diff2.EnableDiff2 {
+		differ := diff.New(dc)
+		_, create, del, mod, err = differ.IncrementalDiff(foundRecords)
+	} else {
+		differ := diff.NewCompat(dc)
+		_, create, del, mod, err = differ.IncrementalDiff(foundRecords)
+	}
 	if err != nil {
 		return nil, err
 	}
 
-	var corrections []*models.Correction
-	if !diff2.EnableDiff2 || true { // Remove "|| true" when diff2 version arrives
-
-		for _, d := range create {
-			des := d.Desired
-			corrections = append(corrections, &models.Correction{
-				Msg: d.String(),
-				F:   func() error { return api.createRecord(dc.Name, des) },
-			})
-		}
-		for _, d := range del {
-			existingID := d.Existing.Original.(goinwx.NameserverRecord).ID
-			corrections = append(corrections, &models.Correction{
-				Msg: d.String(),
-				F:   func() error { return api.deleteRecord(existingID) },
-			})
-		}
-		for _, d := range mod {
-			rec := d.Desired
-			existingID := d.Existing.Original.(goinwx.NameserverRecord).ID
-			corrections = append(corrections, &models.Correction{
-				Msg: d.String(),
-				F:   func() error { return api.updateRecord(existingID, rec) },
-			})
-		}
-
-		return corrections, nil
+	for _, d := range create {
+		des := d.Desired
+		corrections = append(corrections, &models.Correction{
+			Msg: d.String(),
+			F:   func() error { return api.createRecord(dc.Name, des) },
+		})
 	}
-
-	// Insert Future diff2 version here.
+	for _, d := range del {
+		existingID := d.Existing.Original.(goinwx.NameserverRecord).ID
+		corrections = append(corrections, &models.Correction{
+			Msg: d.String(),
+			F:   func() error { return api.deleteRecord(existingID) },
+		})
+	}
+	for _, d := range mod {
+		rec := d.Desired
+		existingID := d.Existing.Original.(goinwx.NameserverRecord).ID
+		corrections = append(corrections, &models.Correction{
+			Msg: d.String(),
+			F:   func() error { return api.updateRecord(existingID, rec) },
+		})
+	}
 
 	return corrections, nil
 }

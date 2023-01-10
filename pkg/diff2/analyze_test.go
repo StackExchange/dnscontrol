@@ -9,20 +9,22 @@ import (
 	"github.com/kylelemons/godebug/diff"
 )
 
-var testDataAA1234 = makeRec("laba", "A", "1.2.3.4")   //      [0]
-var testDataAA5678 = makeRec("laba", "A", "5.6.7.8")   //      [0]
-var testDataAMX10a = makeRec("laba", "MX", "10 laba")  //     [1]
-var testDataCCa = makeRec("labc", "CNAME", "laba")     //     [2]
-var testDataEA15 = makeRec("labe", "A", "10.10.10.15") //  [3]
-var e4 = makeRec("labe", "A", "10.10.10.16")           //  [4]
-var e5 = makeRec("labe", "A", "10.10.10.17")           //  [5]
-var e6 = makeRec("labe", "A", "10.10.10.18")           //  [6]
-var e7 = makeRec("labg", "NS", "10.10.10.15")          // [7]
-var e8 = makeRec("labg", "NS", "10.10.10.16")          // [8]
-var e9 = makeRec("labg", "NS", "10.10.10.17")          // [9]
-var e10 = makeRec("labg", "NS", "10.10.10.18")         // [10]
-var e11mx = makeRec("labh", "MX", "22 ttt")            //     [11]
-var e11 = makeRec("labh", "CNAME", "labd")             //     [11]
+var testDataAA1234 = makeRec("laba", "A", "1.2.3.4")               //      [0]
+var testDataAA5678 = makeRec("laba", "A", "5.6.7.8")               //
+var testDataAA1234ttl700 = makeRecTTL("laba", "A", "1.2.3.4", 700) //
+var testDataAA5678ttl700 = makeRecTTL("laba", "A", "5.6.7.8", 700) //
+var testDataAMX10a = makeRec("laba", "MX", "10 laba")              //     [1]
+var testDataCCa = makeRec("labc", "CNAME", "laba")                 //     [2]
+var testDataEA15 = makeRec("labe", "A", "10.10.10.15")             //  [3]
+var e4 = makeRec("labe", "A", "10.10.10.16")                       //  [4]
+var e5 = makeRec("labe", "A", "10.10.10.17")                       //  [5]
+var e6 = makeRec("labe", "A", "10.10.10.18")                       //  [6]
+var e7 = makeRec("labg", "NS", "10.10.10.15")                      // [7]
+var e8 = makeRec("labg", "NS", "10.10.10.16")                      // [8]
+var e9 = makeRec("labg", "NS", "10.10.10.17")                      // [9]
+var e10 = makeRec("labg", "NS", "10.10.10.18")                     // [10]
+var e11mx = makeRec("labh", "MX", "22 ttt")                        //     [11]
+var e11 = makeRec("labh", "CNAME", "labd")                         //     [11]
 var testDataApexMX1aaa = makeRec("", "MX", "1 aaa")
 
 var testDataAA1234clone = makeRec("laba", "A", "1.2.3.4") //      [0']
@@ -39,8 +41,6 @@ var d10 = makeRec("labg", "NS", "10.10.10.16")            // [10']
 var d11 = makeRec("labg", "NS", "10.10.10.97")            // [11']
 var d12 = makeRec("labh", "A", "1.2.3.4")                 //      [12']
 var testDataApexMX22bbb = makeRec("", "MX", "22 bbb")
-
-var d0tc = targetConfig{compareable: "1.2.3.4 ttl=0", rec: testDataAA1234clone}
 
 func makeChange(v Verb, l, t string, old, new models.Records, msgs []string) Change {
 	c := Change{
@@ -402,7 +402,28 @@ ChangeList: len=12
 
 	}
 }
+
+func mkTargetConfig(x ...*models.RecordConfig) []targetConfig {
+	var tc []targetConfig
+	for _, r := range x {
+		tc = append(tc, targetConfig{
+			compareable: comparable(r, nil),
+			rec:         r,
+		})
+	}
+	return tc
+}
+
+func mkTargetConfigMap(x ...*models.RecordConfig) map[string]*targetConfig {
+	var m = map[string]*targetConfig{}
+	for _, v := range mkTargetConfig(x...) {
+		m[v.compareable] = &v
+	}
+	return m
+}
+
 func Test_diffTargets(t *testing.T) {
+
 	type args struct {
 		existing []targetConfig
 		desired  []targetConfig
@@ -414,14 +435,28 @@ func Test_diffTargets(t *testing.T) {
 	}{
 
 		{
+			name: "add1changettl",
+			args: args{
+				existing: mkTargetConfig(testDataAA5678),
+				desired:  mkTargetConfig(testDataAA5678ttl700, testDataAA1234ttl700),
+			},
+			want: ChangeList{
+				Change{Type: CHANGE,
+					Key: models.RecordKey{NameFQDN: "laba.f.com", Type: "A"},
+					New: models.Records{testDataAA5678ttl700, testDataAA1234ttl700},
+					Msgs: []string{
+						"CHANGE laba.f.com A 5.6.7.8 (ttl 300->700)",
+						"CREATE laba.f.com A 1.2.3.4",
+					},
+				},
+			},
+		},
+
+		{
 			name: "single",
 			args: args{
-				existing: []targetConfig{
-					{compareable: "1.2.3.4", rec: testDataAA1234},
-				},
-				desired: []targetConfig{
-					{compareable: "1.2.3.4", rec: testDataAA1234},
-				},
+				existing: mkTargetConfig(testDataAA1234),
+				desired:  mkTargetConfig(testDataAA1234),
 			},
 			//want: ,
 		},
@@ -429,13 +464,8 @@ func Test_diffTargets(t *testing.T) {
 		{
 			name: "add1",
 			args: args{
-				existing: []targetConfig{
-					{compareable: "1.2.3.4", rec: testDataAA1234},
-				},
-				desired: []targetConfig{
-					{compareable: "1.2.3.4", rec: testDataAA1234},
-					{compareable: "10 laba", rec: testDataAMX10a},
-				},
+				existing: mkTargetConfig(testDataAA1234),
+				desired:  mkTargetConfig(testDataAA1234, testDataAMX10a),
 			},
 			want: ChangeList{
 				Change{Type: CREATE,
@@ -449,13 +479,8 @@ func Test_diffTargets(t *testing.T) {
 		{
 			name: "del1",
 			args: args{
-				existing: []targetConfig{
-					{compareable: "1.2.3.4", rec: testDataAA1234},
-					{compareable: "10 laba", rec: testDataAMX10a},
-				},
-				desired: []targetConfig{
-					{compareable: "1.2.3.4", rec: testDataAA1234},
-				},
+				existing: mkTargetConfig(testDataAA1234, testDataAMX10a),
+				desired:  mkTargetConfig(testDataAA1234),
 			},
 			want: ChangeList{
 				Change{Type: DELETE,
@@ -469,14 +494,8 @@ func Test_diffTargets(t *testing.T) {
 		{
 			name: "change2nd",
 			args: args{
-				existing: []targetConfig{
-					{compareable: "1.2.3.4", rec: testDataAA1234},
-					{compareable: "10 laba", rec: testDataAMX10a},
-				},
-				desired: []targetConfig{
-					{compareable: "1.2.3.4", rec: testDataAA1234},
-					{compareable: "20 laba", rec: testDataAMX20b},
-				},
+				existing: mkTargetConfig(testDataAA1234, testDataAMX10a),
+				desired:  mkTargetConfig(testDataAA1234, testDataAMX20b),
 			},
 			want: ChangeList{
 				Change{Type: CHANGE,
@@ -491,13 +510,8 @@ func Test_diffTargets(t *testing.T) {
 		{
 			name: "del2nd",
 			args: args{
-				existing: []targetConfig{
-					{compareable: "1.2.3.4", rec: testDataAA1234},
-					{compareable: "5.6.7.8", rec: testDataAA5678},
-				},
-				desired: []targetConfig{
-					{compareable: "1.2.3.4", rec: testDataAA1234},
-				},
+				existing: mkTargetConfig(testDataAA1234, testDataAA5678),
+				desired:  mkTargetConfig(testDataAA1234),
 			},
 			want: ChangeList{
 				Change{Type: CHANGE,
@@ -533,14 +547,25 @@ func Test_removeCommon(t *testing.T) {
 		want  []targetConfig
 		want1 []targetConfig
 	}{
+
 		{
 			name: "same",
 			args: args{
-				existing: []targetConfig{d0tc},
-				desired:  []targetConfig{d0tc},
+				existing: mkTargetConfig(testDataAA1234clone),
+				desired:  mkTargetConfig(testDataAA1234clone),
 			},
 			want:  []targetConfig{},
 			want1: []targetConfig{},
+		},
+
+		{
+			name: "disjoint",
+			args: args{
+				existing: mkTargetConfig(testDataAA1234),
+				desired:  mkTargetConfig(testDataAA5678),
+			},
+			want:  mkTargetConfig(testDataAA1234),
+			want1: mkTargetConfig(testDataAA5678),
 		},
 	}
 	for _, tt := range tests {
@@ -578,14 +603,8 @@ func Test_filterBy(t *testing.T) {
 		{
 			name: "removeall",
 			args: args{
-				s: []targetConfig{
-					{compareable: "1.2.3.4", rec: testDataAA1234},
-					{compareable: "10 laba", rec: testDataAMX10a},
-				},
-				m: map[string]*targetConfig{
-					"1.2.3.4": {compareable: "1.2.3.4", rec: testDataAA1234},
-					"10 laba": {compareable: "10 laba", rec: testDataAMX10a},
-				},
+				s: mkTargetConfig(testDataAA1234, testDataAMX10a),
+				m: mkTargetConfigMap(testDataAA1234, testDataAMX10a),
 			},
 			want: []targetConfig{},
 		},
@@ -593,42 +612,82 @@ func Test_filterBy(t *testing.T) {
 		{
 			name: "keepall",
 			args: args{
-				s: []targetConfig{
-					{compareable: "1.2.3.4", rec: testDataAA1234},
-					{compareable: "10 laba", rec: testDataAMX10a},
-				},
-				m: map[string]*targetConfig{
-					"nothing": {compareable: "1.2.3.4", rec: testDataAA1234},
-					"matches": {compareable: "10 laba", rec: testDataAMX10a},
-				},
+				s: mkTargetConfig(testDataAA1234, testDataAMX10a),
+				m: mkTargetConfigMap(),
 			},
-			want: []targetConfig{
-				{compareable: "1.2.3.4", rec: testDataAA1234},
-				{compareable: "10 laba", rec: testDataAMX10a},
-			},
+			want: mkTargetConfig(testDataAA1234, testDataAMX10a),
 		},
 
 		{
 			name: "keepsome",
 			args: args{
-				s: []targetConfig{
-					{compareable: "1.2.3.4", rec: testDataAA1234},
-					{compareable: "10 laba", rec: testDataAMX10a},
-				},
-				m: map[string]*targetConfig{
-					"nothing": {compareable: "1.2.3.4", rec: testDataAA1234},
-					"10 laba": {compareable: "10 laba", rec: testDataAMX10a},
-				},
+				s: mkTargetConfig(testDataAA1234, testDataAMX10a),
+				m: mkTargetConfigMap(testDataAMX10a),
 			},
-			want: []targetConfig{
-				{compareable: "1.2.3.4", rec: testDataAA1234},
-			},
+			want: mkTargetConfig(testDataAA1234),
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			if got := filterBy(tt.args.s, tt.args.m); !reflect.DeepEqual(comparables(got), comparables(tt.want)) {
 				t.Errorf("filterBy() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func Test_splitTTLOnly(t *testing.T) {
+	type args struct {
+		existing []targetConfig
+		desired  []targetConfig
+	}
+	tests := []struct {
+		name           string
+		args           args
+		wantExistDiff  []targetConfig
+		wantDesireDiff []targetConfig
+		wantExistTTL   models.Records
+		wantDesireTTL  models.Records
+	}{
+
+		{
+			name: "simple",
+			args: args{
+				existing: mkTargetConfig(testDataAA1234),
+				desired:  mkTargetConfig(testDataAA1234ttl700),
+			},
+			wantExistDiff:  mkTargetConfig(),
+			wantDesireDiff: mkTargetConfig(),
+			wantExistTTL:   models.Records{testDataAA1234},
+			wantDesireTTL:  models.Records{testDataAA1234ttl700},
+		},
+
+		{
+			name: "both",
+			args: args{
+				existing: mkTargetConfig(testDataAA1234),
+				desired:  mkTargetConfig(testDataAA5678),
+			},
+			wantExistDiff:  mkTargetConfig(testDataAA1234),
+			wantDesireDiff: mkTargetConfig(testDataAA5678),
+			wantExistTTL:   models.Records{},
+			wantDesireTTL:  models.Records{},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			gotExistDiff, gotDesireDiff, gotExistTTL, gotDesireTTL := splitTTLOnly(tt.args.existing, tt.args.desired)
+			if !reflect.DeepEqual(gotExistDiff, tt.wantExistDiff) {
+				t.Errorf("splitTTLOnly() gotExistDiff = %v, want %v", gotExistDiff, tt.wantExistDiff)
+			}
+			if !reflect.DeepEqual(gotDesireDiff, tt.wantDesireDiff) {
+				t.Errorf("splitTTLOnly() gotDesireDiff = %v, want %v", gotDesireDiff, tt.wantDesireDiff)
+			}
+			if ((len(tt.wantExistTTL) != 0) && len(gotExistTTL) != 0) && !reflect.DeepEqual(gotExistTTL, tt.wantExistTTL) {
+				t.Errorf("splitTTLOnly() gotExistTTL = %v, want %v (len=%d %d)", gotExistTTL, tt.wantExistTTL, len(gotExistTTL), len(tt.wantExistTTL))
+			}
+			if ((len(tt.wantDesireTTL) != 0) && len(gotDesireTTL) != 0) && !reflect.DeepEqual(gotDesireTTL, tt.wantDesireTTL) {
+				t.Errorf("splitTTLOnly() gotDesireTTL = %v, want %v", gotDesireTTL, tt.wantDesireTTL)
 			}
 		})
 	}
