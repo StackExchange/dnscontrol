@@ -85,7 +85,7 @@
 
 ## Service Providers
 
-* [Providers](provider-list.md)
+* [Providers](providers.md)
     * [Akamai Edge DNS](_providers/akamaiedgedns.md)
     * [AutoDNS](_providers/autodns.md)
     * [AXFR+DDNS](_providers/axfrddns.md)

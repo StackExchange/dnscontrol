@@ -12,14 +12,14 @@ Want to jump right in? Follow our [quick start tutorial](getting-started.md) on 
 
 # Use It
 
-Take advantage of the advanced features. Use macros and variables for easier updates. Upload your zones to [multiple DNS providers](provider-list.md).
+Take advantage of the advanced features. Use macros and variables for easier updates. Upload your zones to [multiple DNS providers](providers.md).
 
 {% hint style="success" %}
 * Maintain your DNS data as a high-level DS, with macros, and variables for easier updates.
 * Super extensible! Plug-in architecture makes adding new DNS providers and Registrars easy!
 * Eliminate vendor lock-in. Switch DNS providers easily, any time, with full fidelity.
 * Reduce points of failure: Easily maintain dual DNS providers and easily drop one that is down.
-* Supports 35+ [DNS Providers](provider-list.md) including [BIND](_providers/bind.md), [AWS Route 53](_providers/route53.md), [Google DNS](_providers/gcloud.md), and [name.com](_providers/namedotcom.md).
+* Supports 35+ [DNS Providers](providers.md) including [BIND](_providers/bind.md), [AWS Route 53](_providers/route53.md), [Google DNS](_providers/gcloud.md), and [name.com](_providers/namedotcom.md).
 * [Apply CI/CD principles](ci-cd-gitlab.md) to DNS: Unit-tests, system-tests, automated deployment.
 * All the benefits of Git (or any VCS) for your DNS zone data. View history. Accept PRs.
 * Optimize DNS with [SPF optimizer](_functions/record/SPF_BUILDER.md). Detect too many lookups. Flatten includes.

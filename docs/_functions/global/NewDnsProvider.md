@@ -16,10 +16,10 @@ A DSP stores a DNS zone's records and provides DNS service for the zone (i.e.
 answers on port 53 to queries related to the zone).
 
 * `name` must match the name of an entry in `creds.json`.
-* `type` specifies a valid DNS provider type identifier listed on the [provider page](../../provider-list.md).
+* `type` specifies a valid DNS provider type identifier listed on the [provider page](../../providers.md).
   * Starting with [v3.16](../../v316.md), the type is optional. If it is absent, the `TYPE` field in `creds.json` is used instead. You can leave it out. (Thanks to JavaScript magic, you can leave it out even when there are more fields).
   * Starting with v4.0, specifying the type may be an error. Please add the `TYPE` field to `creds.json` and remove this parameter from `dnsconfig.js` to prepare.
-* `meta` is a way to send additional parameters to the provider.  It is optional and only certain providers use it.  See the [individual provider docs](../../provider-list.md) for details.
+* `meta` is a way to send additional parameters to the provider.  It is optional and only certain providers use it.  See the [individual provider docs](../../providers.md) for details.
 
 This function will return an opaque string that should be assigned to a variable name for use in [D](D.md) directives.
 

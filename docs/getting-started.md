@@ -93,7 +93,7 @@ D('example.com', REG_NONE, DnsProvider(DNS_BIND),
 );
 ```
 
-Modify this file to match your particular providers and domains. See [the DNSConfig docs](js.md) and  [the provider docs](provider-list.md) for more details.
+Modify this file to match your particular providers and domains. See [the DNSConfig docs](js.md) and  [the provider docs](providers.md) for more details.
 
 Create a file called `creds.json` for storing provider configurations (API tokens and other account information).
 For example, to use both name.com and Cloudflare, you would have:
@@ -291,7 +291,7 @@ a real domain (or a test domain if you have one).
 
 Set up the provider:  Add the providers's definition to `dnsconfig.js`
 and list any credentials in `creds.json`.  Each provider is different.
-See [the provider docs](provider-list.md) for
+See [the provider docs](providers.md) for
 specifics.
 
 Edit the domain: Add the `D()` entry for the domain, or repurpose

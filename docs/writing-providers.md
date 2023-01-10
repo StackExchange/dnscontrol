@@ -12,7 +12,7 @@ and the system takes care of the rest.
 Please do note that if you submit a new provider you will be
 assigned bugs related to the provider in the future (unless
 you designate someone else as the maintainer). More details
-[here](provider-list.md).
+[here](providers.md).
 
 ## Overview
 
@@ -208,7 +208,7 @@ an automated way to test for this bug.  The manual steps are here in
 ## Step 9: Update docs
 
 * Edit [README.md](https://github.com/StackExchange/dnscontrol): Add the provider to the bullet list.
-* Edit [docs/provider-list.md](https://github.com/StackExchange/dnscontrol/blob/master/docs/provider-list.md): Add the provider to the provider list.
+* Edit [docs/providers.md](https://github.com/StackExchange/dnscontrol/blob/master/docs/providers.md): Add the provider to the provider list.
 * Create `docs/_providers/PROVIDERNAME.md`: Use one of the other files in that directory as a base.
 * Edit [OWNERS](https://github.com/StackExchange/dnscontrol/blob/master/OWNERS): Add the directory name and your GitHub username.
 
@@ -292,4 +292,4 @@ Here are some last-minute things to check before you submit your PR.
 ## Step 15: After the PR is merged
 
 1. Remove the "provider-request" label from the PR.
-2. Verify that [docs/provider-list.md](provider-list.md) no longer shows the provider as "requested"
+2. Verify that [docs/providers.md](providers.md) no longer shows the provider as "requested"
