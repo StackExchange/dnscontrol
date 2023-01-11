@@ -98,7 +98,7 @@ jobs:
           condition:
             equal: [ foo, foo ]
           steps:
-            echo did not skip
+            -run: echo did not skip
       - checkout
       - run: mkdir -p "$TEST_RESULTS"
 
