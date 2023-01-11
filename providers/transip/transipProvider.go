@@ -136,7 +136,7 @@ func (n *transipProvider) getChangeFunction(changeType diff2.Verb, dc *models.Do
 		return wrapChangeFunction(change.Old, func(rec domain.DNSEntry) error { return n.domains.UpdateDNSEntry(dc.Name, rec) })
 	}
 
-	panic(fmt.Sprintf("Unsupported change type %s", changeType))
+	return nil
 }
 
 func wrapChangeFunction(records models.Records, executer func(rec domain.DNSEntry) error) func() error {
