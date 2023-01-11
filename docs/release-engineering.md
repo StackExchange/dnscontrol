@@ -201,7 +201,14 @@ Go to Project Settings (for this project), and "Environment Variables".
 
 From the pipelnies page, you can trigger a build by setting the branch to "master" then click "trigger".
 
-At this point the job failed because a free account doesn't have access to "2xlarge" resources. Drat.
+Merges to "master" result in the software being built.  Merges to any other branch causes integration tests to run.
+
+Verify that your tests are working properly by making a branch.  You'll see on the `Run integration tests for _____ provider` step the results of the test.
+
+Some notes:
+
+* Tests that are skipped take 25-30 seconds to complete. In other words, if you look at a list of tests, you can tell which ones were skipped by looking at the completion time.
+* Free accounts don't have access to `2xlarge` instanace. You'll either need to upgrade your CCI account or change `2xlarge` to `large` in `.circleci/config.yml` in your fork. Please be careful to not include that file when you send a PR. (Anyone have tips on how to make that easier?)
 
 ## Tip: How to rebuild flattener
 
