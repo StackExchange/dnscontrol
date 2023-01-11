@@ -8,6 +8,7 @@ package diff2
 import (
 	"bytes"
 	"fmt"
+	"strings"
 
 	"github.com/StackExchange/dnscontrol/v3/models"
 )
@@ -31,6 +32,29 @@ type Change struct {
 	New       models.Records                // any changed or added records at Key.
 	Msgs      []string                      // Human-friendly explanation of what changed
 	MsgsByKey map[models.RecordKey][]string // Messages for a given key
+}
+
+func (c *Change) Msg() string {
+	return strings.Join(c.Msgs, "\n")
+}
+
+// CreateCorrection creates a new Correction based on the given
+// function and prefills it with the Msg of the current Change
+func (c *Change) CreateCorrection(correctionFunction func() error) *models.Correction {
+	return &models.Correction{
+		F:   correctionFunction,
+		Msg: c.Msg(),
+	}
+}
+
+// CreateCorrectionWithMessage creates a new Correction based on the
+// given function and prefixes given function with the Msg of the
+// current change
+func (c *Change) CreateCorrectionWithMessage(msg string, correctionFunction func() error) *models.Correction {
+	return &models.Correction{
+		F:   correctionFunction,
+		Msg: fmt.Sprintf("%s: %s", msg, c.Msg()),
+	}
 }
 
 // ByRecordSet takes two lists of records (existing and desired) and
