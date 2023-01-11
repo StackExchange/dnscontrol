@@ -94,26 +94,30 @@ jobs:
         type: string
 
     steps:
-      - checkout
-      - run: mkdir -p "$TEST_RESULTS"
+      - when:
+        condition:
+          equal: [ foo, foo ]
+        steps:
+          - checkout
+          - run: mkdir -p "$TEST_RESULTS"
 
-      - restore_cache: # restores saved cache if no changes are detected since last run
-          keys:
-            - linux-go-{{ checksum "go.sum" }}-<< pipeline.parameters.cache-key >>
+          - restore_cache: # restores saved cache if no changes are detected since last run
+              keys:
+                - linux-go-{{ checksum "go.sum" }}-<< pipeline.parameters.cache-key >>
 
-      - run:
-          name: Run integration tests for << parameters.provider >> provider
-          working_directory: integrationTest
-          no_output_timeout: 32m
-          command: |
-            if [ -n "$<< parameters.provider >>_DOMAIN" ] ; then
-              gotestsum --junitfile ${TEST_RESULTS}/gotestsum-report.xml -- -timeout 30m -v -verbose -provider << parameters.provider >> -cfworkers=false
-            else
-              echo "Skip test for << parameters.provider >> provider"
-            fi
+          - run:
+              name: Run integration tests for << parameters.provider >> provider
+              working_directory: integrationTest
+              no_output_timeout: 32m
+              command: |
+                if [ -n "$<< parameters.provider >>_DOMAIN" ] ; then
+                  gotestsum --junitfile ${TEST_RESULTS}/gotestsum-report.xml -- -timeout 30m -v -verbose -provider << parameters.provider >> -cfworkers=false
+                else
+                  echo "Skip test for << parameters.provider >> provider"
+                fi
 
-      - store_test_results: # upload test results for display in Test Summary
-          path: /tmp/test-results
+          - store_test_results: # upload test results for display in Test Summary
+              path: /tmp/test-results
 
   release:
     docker:
