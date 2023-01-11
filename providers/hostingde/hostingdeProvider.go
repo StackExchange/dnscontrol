@@ -8,6 +8,7 @@ import (
 
 	"github.com/StackExchange/dnscontrol/v3/models"
 	"github.com/StackExchange/dnscontrol/v3/pkg/diff"
+	"github.com/StackExchange/dnscontrol/v3/pkg/diff2"
 	"github.com/StackExchange/dnscontrol/v3/providers"
 )
 
@@ -17,12 +18,10 @@ var features = providers.DocumentationNotes{
 	providers.CanAutoDNSSEC:          providers.Unimplemented("Supported but not implemented yet."),
 	providers.CanGetZones:            providers.Can(),
 	providers.CanUseAlias:            providers.Can(),
-	providers.CanUseAzureAlias:       providers.Cannot(),
 	providers.CanUseCAA:              providers.Can(),
 	providers.CanUseDS:               providers.Can(),
 	providers.CanUseNAPTR:            providers.Cannot(),
 	providers.CanUsePTR:              providers.Can(),
-	providers.CanUseRoute53Alias:     providers.Cannot(),
 	providers.CanUseSRV:              providers.Can(),
 	providers.CanUseSSHFP:            providers.Can(),
 	providers.CanUseTLSA:             providers.Can(),
@@ -127,34 +126,42 @@ func (hp *hostingdeProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*m
 		return nil, err
 	}
 
-	differ := diff.New(dc)
-	_, create, del, mod, err := differ.IncrementalDiff(records)
-	if err != nil {
-		return nil, err
-	}
+	var corrections []*models.Correction
+	if !diff2.EnableDiff2 || true { // Remove "|| true" when diff2 version arrives
 
-	// NOPURGE
-	if dc.KeepUnknown {
-		del = []diff.Correlation{}
-	}
+		differ := diff.New(dc)
+		_, create, del, mod, err := differ.IncrementalDiff(records)
+		if err != nil {
+			return nil, err
+		}
 
-	msg := []string{}
-	for _, c := range append(del, append(create, mod...)...) {
-		msg = append(msg, c.String())
-	}
+		// NOPURGE
+		if dc.KeepUnknown {
+			del = []diff.Correlation{}
+		}
 
-	if len(create) == 0 && len(del) == 0 && len(mod) == 0 {
-		return nil, nil
-	}
+		msg := []string{}
+		for _, c := range append(del, append(create, mod...)...) {
+			msg = append(msg, c.String())
+		}
 
-	corrections := []*models.Correction{
-		{
-			Msg: fmt.Sprintf("\n%s", strings.Join(msg, "\n")),
-			F: func() error {
-				return hp.updateRecords(dc.Name, create, del, mod)
+		if len(create) == 0 && len(del) == 0 && len(mod) == 0 {
+			return nil, nil
+		}
+
+		corrections := []*models.Correction{
+			{
+				Msg: fmt.Sprintf("\n%s", strings.Join(msg, "\n")),
+				F: func() error {
+					return hp.updateRecords(dc.Name, create, del, mod)
+				},
 			},
-		},
+		}
+
+		return corrections, nil
 	}
+
+	// Insert Future diff2 version here.
 
 	return corrections, nil
 }

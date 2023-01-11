@@ -106,21 +106,32 @@ If `dnscontrol get-zones` could have done a better job, please
 Here is an example series of commands that would be used
 to convert a zone. Lines that start with `#` are comments.
 
-    # Note this command uses ">>" to append to dnsconfig.js.  Do
-    # not use ">" as that will erase the existing file.
-    dnscontrol get-zones --format=js --out=draft.js bind BIND foo.com
-    cat >>dnsconfig.js draft.js   # Append to dnsconfig.js
-    #
-    dnscontrol preview
-    vim dnsconfig.js
-    # (repeat these two commands until all warnings/errors are resolved)
-    #
-    # When everything is as you wish, push the changes live:
-    dnscontrol push
-    # (this should be a no-op)
-    #
-    # Make any changes you do desire:
-    vim dnsconfig.js
-    dnscontrol preview
-    # (repeat until all warnings/errors are resolved)
-    dnscontrol push
+
+```bash
+# Note this command uses ">>" to append to dnsconfig.js. Do not use ">" as that will erase the existing file.
+dnscontrol get-zones --format=js --out=draft.js bind BIND foo.com
+cat >>dnsconfig.js draft.js # Append to dnsconfig.js
+dnscontrol preview
+vim dnsconfig.js
+```
+
+Repeat these two commands until all warnings/errors are resolved.
+When everything is as you wish, push the changes live:
+
+```bash
+dnscontrol push
+```
+
+
+Make any changes you do desire:
+
+```bash
+vim dnsconfig.js
+dnscontrol preview
+```
+
+Repeat until all warnings/errors are resolved.
+
+```bash
+dnscontrol push
+```

@@ -36,7 +36,7 @@ Pretty cool, eh?
 
 So how does `GetDomainCorrections()` work?
 
-First, some terminology: The DNS records specified in the dnsconfig.js
+First, some terminology: The DNS records specified in the `dnsconfig.js`
 file are called the "desired" records. The DNS records stored at
 the DNS service provider are called the "existing" records.
 
@@ -79,7 +79,7 @@ A provider can be a DnsProvider, a Registrar, or both. We recommend
 you write the DnsProvider first, release it, and then write the
 Registrar if needed.
 
-If you have any questions, please discuss them in the Github issue
+If you have any questions, please discuss them in the GitHub issue
 related to the request for this provider. Please let us know what
 was confusing so we can update this document with advice for future
 authors (or even better, update [this document](https://github.com/StackExchange/dnscontrol/blob/master/docs/writing-providers.md)
@@ -132,7 +132,7 @@ Add the provider list so DNSControl knows it exists.
 **If you are implementing a DNS Service Provider:**
 
 Implement all the calls in the
-[providers.DNSServiceProvider interface.](https://pkg.go.dev/github.com/StackExchange/dnscontrol/providers#DNSServiceProvider).
+[providers.DNSServiceProvider interface](https://pkg.go.dev/github.com/StackExchange/dnscontrol/v3/providers#DNSServiceProvider).
 
 The function `GetDomainCorrections()` is a bit interesting. It returns
 a list of corrections to be made. These are in the form of functions
@@ -141,7 +141,7 @@ that DNSControl can call to actually make the corrections.
 **If you are implementing a DNS Registrar:**
 
 Implement all the calls in the
-[providers.Registrar interface.](https://pkg.go.dev/github.com/StackExchange/dnscontrol/providers#Registrar).
+[providers.Registrar interface](https://pkg.go.dev/github.com/StackExchange/dnscontrol/v3/providers#Registrar).
 
 The function `GetRegistrarCorrections()` returns
 a list of corrections to be made. These are in the form of functions
@@ -163,7 +163,7 @@ Run the unit tests with this command:
 This is the most important kind of testing when adding a new provider.
 Integration tests use a test account and a real domain.
 
-* Edit [integrationTest/providers.json](https://github.com/StackExchange/dnscontrol/blob/master/integrationTest/providers.json): Add the creds.json info required for this provider.
+* Edit [integrationTest/providers.json](https://github.com/StackExchange/dnscontrol/blob/master/integrationTest/providers.json): Add the `creds.json` info required for this provider.
 
 For example, this will run the tests using BIND:
 
@@ -211,7 +211,7 @@ an automated way to test for this bug.  The manual steps are here in
 * Edit [README.md](https://github.com/StackExchange/dnscontrol): Add the provider to the bullet list.
 * Edit [docs/provider-list.md](https://github.com/StackExchange/dnscontrol/blob/master/docs/provider-list.md): Add the provider to the provider list.
 * Create `docs/_providers/PROVIDERNAME.md`: Use one of the other files in that directory as a base.
-* Edit [OWNERS](https://github.com/StackExchange/dnscontrol/blob/master/OWNERS): Add the directory name and your github id.
+* Edit [OWNERS](https://github.com/StackExchange/dnscontrol/blob/master/OWNERS): Add the directory name and your GitHub id.
 
 ## Step 10: Submit a PR
 
@@ -282,7 +282,7 @@ for tips about managing modules and checking for outdated
 dependencies.
 
 
-## Step 14: Check your work.
+## Step 14: Check your work
 
 Here are some last-minute things to check before you submit your PR.
 

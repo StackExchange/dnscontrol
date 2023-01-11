@@ -2,7 +2,7 @@
 layout: default
 title: Service Providers
 ---
-<h1> Service Providers </h1>
+# Service Providers
 
 <table class='table table-bordered'>
   <thead>
@@ -17,19 +17,17 @@ title: Service Providers
 {% endfor %}
 </table>
 
-<a name="features"></a>
-<h2> Provider Features </h2>
+## Provider Features {#features}
 
-<p>The table below shows various features supported, or not supported by DNSControl providers.
-  Underlined items have tooltips for more detailed explanation. This table is automatically generated
-  from metadata supplied by the provider when they register themselves inside dnscontrol.
-</p>
-<p>
-  An empty space may indicate the feature is not supported by a provider, or it may simply mean
-  the feature has not been investigated and implemented yet. If a feature you need is missing from
-  a provider that supports it, we'd love your contribution to ensure it works correctly and add it to this matrix.
-</p>
-<p>If a feature is definitively not supported for whatever reason, we would also like a PR to clarify why it is not supported, and fill in this entire matrix.</p>
+The table below shows various features supported, or not supported by DNSControl providers.
+Underlined items have tooltips for more detailed explanation. This table is automatically generated
+from metadata supplied by the provider when they register themselves inside dnscontrol.
+
+An empty space may indicate the feature is not supported by a provider, or it may simply mean
+the feature has not been investigated and implemented yet. If a feature you need is missing from
+a provider that supports it, we'd love your contribution to ensure it works correctly and add it to this matrix.
+
+If a feature is definitively not supported for whatever reason, we would also like a PR to clarify why it is not supported, and fill in this entire matrix.
 <br/>
 <br/>
 
@@ -85,6 +83,7 @@ Providers in this category and their maintainers are:
 * `EASYNAME` @tresni
 * `EXOSCALE` @pierre-emmanuelJ
 * `GANDI_V5` @TomOnTime
+* `GCORE` @xddxdd
 * `HEDNS` @rblenkinsopp
 * `HETZNER` @das7pad
 * `HEXONET` @papakai
@@ -94,8 +93,8 @@ Providers in this category and their maintainers are:
 * `LINODE` @koesie10
 * `NAMECHEAP` VOLUNTEER NEEDED
 * `NETCUP` @kordianbruck
+* `NETLIFY` @SphericalKat
 * `NS1` @costasd
-* `OCTODNS` @TomOnTime
 * `OPENSRS` @pierre-emmanuelJ
 * `ORACLE` @kallsyms
 * `OVH` @masterzen

@@ -12,6 +12,7 @@ import (
 
 	"github.com/StackExchange/dnscontrol/v3/models"
 	"github.com/StackExchange/dnscontrol/v3/pkg/credsfile"
+	"github.com/StackExchange/dnscontrol/v3/pkg/diff2"
 	"github.com/StackExchange/dnscontrol/v3/pkg/nameservers"
 	"github.com/StackExchange/dnscontrol/v3/pkg/normalize"
 	"github.com/StackExchange/dnscontrol/v3/providers"
@@ -29,6 +30,8 @@ var enableCFWorkers = flag.Bool("cfworkers", true, "Set false to disable CF work
 
 func init() {
 	testing.Init()
+
+	flag.BoolVar(&diff2.EnableDiff2, "diff2", false, "enable diff2")
 	flag.Parse()
 }
 
@@ -362,7 +365,7 @@ type TestGroup struct {
 type TestCase struct {
 	Desc           string
 	Records        []*models.RecordConfig
-	IgnoredNames   []string
+	IgnoredNames   []*models.IgnoreName
 	IgnoredTargets []*models.IgnoreTarget
 }
 
@@ -579,11 +582,11 @@ func testgroup(desc string, items ...interface{}) *TestGroup {
 
 func tc(desc string, recs ...*models.RecordConfig) *TestCase {
 	var records []*models.RecordConfig
-	var ignoredNames []string
+	var ignoredNames []*models.IgnoreName
 	var ignoredTargets []*models.IgnoreTarget
 	for _, r := range recs {
 		if r.Type == "IGNORE_NAME" {
-			ignoredNames = append(ignoredNames, r.GetLabel())
+			ignoredNames = append(ignoredNames, &models.IgnoreName{Pattern: r.GetLabel(), Types: r.GetTargetField()})
 		} else if r.Type == "IGNORE_TARGET" {
 			rec := &models.IgnoreTarget{
 				Pattern: r.GetLabel(),
@@ -700,8 +703,18 @@ func makeTests(t *testing.T) []*TestGroup {
 			tc("Change single target from set", ttl(a("@", "1.2.3.4"), 1000), a("www", "2.2.2.2"), a("www", "5.6.7.8")),
 			tc("Change all ttls", ttl(a("@", "1.2.3.4"), 500), ttl(a("www", "2.2.2.2"), 400), ttl(a("www", "5.6.7.8"), 400)),
 			tc("Delete one", ttl(a("@", "1.2.3.4"), 500), ttl(a("www", "5.6.7.8"), 400)),
-			tc("Add back and change ttl", ttl(a("www", "5.6.7.8"), 700), ttl(a("www", "1.2.3.4"), 700)),
-			tc("Change targets and ttls", a("www", "1.1.1.1"), a("www", "2.2.2.2")),
+		),
+
+		testgroup("add to existing label",
+			tc("Setup", ttl(a("www", "5.6.7.8"), 400)),
+			tc("Add at same label", ttl(a("www", "5.6.7.8"), 400), ttl(a("www", "1.2.3.4"), 400)),
+		),
+
+		// This is a strange one.  It adds a new record to an existing
+		// label but the pre-existing label has its TTL change.
+		testgroup("add to label and change orig ttl",
+			tc("Setup", ttl(a("www", "5.6.7.8"), 400)),
+			tc("Add at same label, new ttl", ttl(a("www", "5.6.7.8"), 700), ttl(a("www", "1.2.3.4"), 700)),
 		),
 
 		testgroup("Protocol-Wildcard",

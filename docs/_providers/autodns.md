@@ -14,7 +14,7 @@ To use this provider, add an entry to `creds.json` with `TYPE` set to `AUTODNS` 
 
 Example:
 
-{% highlight json %}
+```json
 {
   "autodns": {
     "TYPE": "AUTODNS",
@@ -23,17 +23,17 @@ Example:
     "context": "33004"
   }
 }
-{% endhighlight %}
+```
 
 ## Usage
 
 An example `dnsconfig.js` configuration:
 
-{% highlight js %}
+```js
 var REG_NONE = NewRegistrar("none");
 var DSP_AUTODNS = NewDnsProvider("autodns");
 
 D("example.tld", REG_NONE, DnsProvider(DSP_AUTODNS),
     A("test", "1.2.3.4")
 );
-{%endhighlight%}
+```

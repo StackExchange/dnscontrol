@@ -11,6 +11,7 @@ import (
 
 	"github.com/StackExchange/dnscontrol/v3/models"
 	"github.com/StackExchange/dnscontrol/v3/pkg/diff"
+	"github.com/StackExchange/dnscontrol/v3/pkg/diff2"
 	"github.com/StackExchange/dnscontrol/v3/pkg/printer"
 	"github.com/StackExchange/dnscontrol/v3/pkg/txtutil"
 	"github.com/StackExchange/dnscontrol/v3/providers"
@@ -204,77 +205,85 @@ func (g *gcloudProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*model
 	models.PostProcessRecords(existingRecords)
 	txtutil.SplitSingleLongTxt(dc.Records) // Autosplit long TXT records
 
-	// first collect keys that have changed
-	differ := diff.New(dc)
-	_, create, delete, modify, err := differ.IncrementalDiff(existingRecords)
-	if err != nil {
-		return nil, fmt.Errorf("incdiff error: %w", err)
-	}
+	var corrections []*models.Correction
+	if !diff2.EnableDiff2 || true { // Remove "|| true" when diff2 version arrives
 
-	changedKeys := map[key]bool{}
-	desc := ""
-	for _, c := range create {
-		desc += fmt.Sprintln(c)
-		changedKeys[keyForRec(c.Desired)] = true
-	}
-	for _, d := range delete {
-		desc += fmt.Sprintln(d)
-		changedKeys[keyForRec(d.Existing)] = true
-	}
-	for _, m := range modify {
-		desc += fmt.Sprintln(m)
-		changedKeys[keyForRec(m.Existing)] = true
-	}
-	if len(changedKeys) == 0 {
-		return nil, nil
-	}
-	chg := &gdns.Change{Kind: "dns#change"}
-	for ck := range changedKeys {
-		// remove old version (if present)
-		if old, ok := oldRRs[ck]; ok {
-			chg.Deletions = append(chg.Deletions, old)
+		// first collect keys that have changed
+		differ := diff.New(dc)
+		_, create, delete, modify, err := differ.IncrementalDiff(existingRecords)
+		if err != nil {
+			return nil, fmt.Errorf("incdiff error: %w", err)
 		}
-		// collect records to replace with
-		newRRs := &gdns.ResourceRecordSet{
-			Name: ck.Name,
-			Type: ck.Type,
-			Kind: "dns#resourceRecordSet",
+
+		changedKeys := map[key]bool{}
+		desc := ""
+		for _, c := range create {
+			desc += fmt.Sprintln(c)
+			changedKeys[keyForRec(c.Desired)] = true
 		}
-		for _, r := range dc.Records {
-			if keyForRec(r) == ck {
-				newRRs.Rrdatas = append(newRRs.Rrdatas, r.GetTargetCombined())
-				newRRs.Ttl = int64(r.TTL)
+		for _, d := range delete {
+			desc += fmt.Sprintln(d)
+			changedKeys[keyForRec(d.Existing)] = true
+		}
+		for _, m := range modify {
+			desc += fmt.Sprintln(m)
+			changedKeys[keyForRec(m.Existing)] = true
+		}
+		if len(changedKeys) == 0 {
+			return nil, nil
+		}
+		chg := &gdns.Change{Kind: "dns#change"}
+		for ck := range changedKeys {
+			// remove old version (if present)
+			if old, ok := oldRRs[ck]; ok {
+				chg.Deletions = append(chg.Deletions, old)
+			}
+			// collect records to replace with
+			newRRs := &gdns.ResourceRecordSet{
+				Name: ck.Name,
+				Type: ck.Type,
+				Kind: "dns#resourceRecordSet",
+			}
+			for _, r := range dc.Records {
+				if keyForRec(r) == ck {
+					newRRs.Rrdatas = append(newRRs.Rrdatas, r.GetTargetCombined())
+					newRRs.Ttl = int64(r.TTL)
+				}
+			}
+			if len(newRRs.Rrdatas) > 0 {
+				chg.Additions = append(chg.Additions, newRRs)
 			}
 		}
-		if len(newRRs.Rrdatas) > 0 {
-			chg.Additions = append(chg.Additions, newRRs)
+
+		// FIXME(tlim): Google will return an error if too many changes are
+		// specified in a single request. We should split up very large
+		// batches.  This can be reliably reproduced with the 1201
+		// integration test.  The error you get is:
+		// googleapi: Error 403: The change would exceed quota for additions per change., quotaExceeded
+		//log.Printf("PAUSE STT = %+v %v\n", err, resp)
+		//log.Printf("PAUSE ERR = %+v %v\n", err, resp)
+
+		runChange := func() error {
+		retry:
+			resp, err := g.client.Changes.Create(g.project, zoneName, chg).Do()
+			if retryNeeded(resp, err) {
+				goto retry
+			}
+			if err != nil {
+				return fmt.Errorf("runChange error: %w", err)
+			}
+			return nil
 		}
+
+		return []*models.Correction{{
+			Msg: desc,
+			F:   runChange,
+		}}, nil
 	}
 
-	// FIXME(tlim): Google will return an error if too many changes are
-	// specified in a single request. We should split up very large
-	// batches.  This can be reliably reproduced with the 1201
-	// integration test.  The error you get is:
-	// googleapi: Error 403: The change would exceed quota for additions per change., quotaExceeded
-	//log.Printf("PAUSE STT = %+v %v\n", err, resp)
-	//log.Printf("PAUSE ERR = %+v %v\n", err, resp)
+	// Insert Future diff2 version here.
 
-	runChange := func() error {
-	retry:
-		resp, err := g.client.Changes.Create(g.project, zoneName, chg).Do()
-		if retryNeeded(resp, err) {
-			goto retry
-		}
-		if err != nil {
-			return fmt.Errorf("runChange error: %w", err)
-		}
-		return nil
-	}
-
-	return []*models.Correction{{
-		Msg: desc,
-		F:   runChange,
-	}}, nil
+	return corrections, nil
 }
 
 func nativeToRecord(set *gdns.ResourceRecordSet, rec, origin string) (*models.RecordConfig, error) {

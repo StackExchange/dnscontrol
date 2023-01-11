@@ -3,8 +3,8 @@ dnscontrol-Darwin
 dnscontrol-Linux
 dnscontrol.exe
 dnscontrol
-dnsconfig.js
-creds.json
+/dnsconfig.js
+/creds.json
 ExternalDNS
 docs/_site
 powershell.log
@@ -23,5 +23,6 @@ stack.sh
 *.nupkg
 .DS_Store
 .vscode/launch.json
+.jekyll-cache
 
 dist/

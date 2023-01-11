@@ -23,7 +23,7 @@ NEW   CNAME("foo", "ghs.googlehosted.com."),
 ```
 
 
-# Why CNAME/MX/NS targets require a "dot"
+# Why CNAME/MX/NS targets require a trailing "dot"
 
 People are often confused about this error message:
 

@@ -7,42 +7,54 @@ title: Getting Started
 
 ## 1. Install the software
 
-## From source
+Choose one of the following installation methods:
 
-DNSControl can be built with Go version 1.18 or higher.
+### Homebrew
 
-The `go get` command will download the source, compile it, and
+On macOS (or Linux) you can install it using [Homebrew](https://brew.sh).
+
+```bash
+brew install dnscontrol
+```
+
+### MacPorts
+
+Alternatively on macOS you can install it using [MacPorts](https://www.macports.org).
+
+```bash
+sudo port install dnscontrol
+````
+
+### Docker
+
+You can use DNSControl locally using the Docker image from [Docker hub](https://hub.docker.com/r/stackexchange/dnscontrol/) and the command below.
+
+```bash
+docker run --rm -it -v $(pwd)/dnsconfig.js:/dns/dnsconfig.js -v $(pwd)/creds.json:/dns/creds.json stackexchange/dnscontrol preview
+```
+
+### Binaries
+
+Download binaries from [GitHub](https://github.com/StackExchange/dnscontrol/releases/latest) for Linux (binary, tar, RPM, DEB), FreeBSD (tar), Windows (exec, ZIP) for 32-bit, 64-bit, and ARM.
+
+### Source
+
+DNSControl can be built from source with Go version 1.18 or higher.
+
+The `go install` command will download the source, compile it, and
 install `dnscontrol` in your `$GOBIN` directory.
 
 To install, simply run
 
-    GO111MODULE=on go get github.com/StackExchange/dnscontrol/v3
+    go install github.com/StackExchange/dnscontrol/v3@latest
 
 To download the source
 
-    git clone github.com/StackExchange/dnscontrol
+    git clone https://github.com/StackExchange/dnscontrol
 
 If these don't work, more info is in [#805](https://github.com/StackExchange/dnscontrol/issues/805).
 
----
-
-
-## Via packages
-
-Get prebuilt binaries from [github releases](https://github.com/StackExchange/dnscontrol/releases/latest)
-
-Alternatively, on Mac you can install it using homebrew:
-
-`brew install dnscontrol`
-
-## Via [docker](https://hub.docker.com/r/stackexchange/dnscontrol/)
-
-```bash
-docker run --rm -it -v $(pwd)/dnsconfig.js:/dns/dnsconfig.js -v $(pwd)/creds.json:/dns/creds.json stackexchange/dnscontrol dnscontrol preview
-```
-
-
-## 2. Create a place for the config files.
+## 2. Create a place for the config files
 
 Create a directory where you'll be storing your configuration files.
 We highly recommend storing these files in a Git repo, but for
@@ -51,7 +63,7 @@ simple tests anything will do.
 Create a subdirectory called `zones` in the same directory as the
 configuration files.  (`mkdir zones`).  `zones` is where the BIND
 provider writes the zonefiles it creates. Even if you don't
-use BIND, it is useful for testing.
+use BIND for DNS service, it is useful for testing.
 
 
 ## 3. Create the initial `dnsconfig.js`
@@ -60,7 +72,7 @@ use BIND, it is useful for testing.
 domains, and so on.
 
 Start your `dnsconfig.js` file by downloading
-[dnsconfig.js-example.txt]({{ site.github.url }}/assets/dnsconfig.js-example.txt))
+[dnsconfig.js](https://github.com/StackExchange/dnscontrol/blob/master/docs/assets/getting-started/dnsconfig.js)
 and renaming it.
 
 The file looks like:
@@ -78,7 +90,7 @@ D('example.com', REG_NONE, DnsProvider(DNS_BIND),
 );
 ```
 
-Modify this file to match your particular providers and domains. See [the dnsconfig docs]({{site.github.url}}/js) and  [the provider docs]({{site.github.url}}/provider-list) for more details.
+Modify this file to match your particular providers and domains. See [the DNSConfig docs]({{site.github.url}}/js) and  [the provider docs]({{site.github.url}}/provider-list) for more details.
 
 Create a file called `creds.json` for storing provider configurations (API tokens and other account information).
 For example, to use both name.com and Cloudflare, you would have:
@@ -99,7 +111,7 @@ For example, to use both name.com and Cloudflare, you would have:
 }
 ```
 
-Note: Do **not** store your creds.json file in Git unencrypted.
+Note: Do **not** store your `creds.json` file in Git unencrypted.
 That is unsafe. Add `creds.json` to your
 `.gitignore` file as a precaution.  This file should be encrypted
 using something
@@ -126,7 +138,7 @@ It is only needed if any providers require credentials (API keys,
 usernames, passwords, etc.).
 
 Start your `creds.json` file by downloading
-[creds.json-example.txt]({{ site.github.url }}/assets/creds.json-example.txt))
+[creds.json](https://github.com/StackExchange/dnscontrol/blob/master/docs/assets/getting-started/creds.json)
 and renaming it.
 
 The file looks like:
@@ -152,17 +164,25 @@ and other formatting.  There are a few different ways to check for typos:
 
 Python:
 
-    python -m json.tool creds.json
+```bash
+python -m json.tool creds.json
+```
 
 jq:
 
-    jq . < creds.json
+```bash
+jq . < creds.json
+```
 
 FYI: `creds.json` fields can be read from an environment variable. The field must begin with a `$` followed by the variable name. No other text. For example:
 
-    "apikey": "$GANDI_V5_APIKEY",
+```json
+{
+    "apikey": "$GANDI_V5_APIKEY"
+}
+```
 
-## 5. Test the sample files.
+## 5. Test the sample files
 
 Before you edit the sample files, verify that the system is working.
 
@@ -176,8 +196,10 @@ exist.
 
 It should look something like this:
 
-```text
+```bash
 dnscontrol preview
+```
+```text
 Initialized 1 registrars and 1 dns service providers.
 ******************** Domain: example.com
 ----- Getting nameservers from: bind
@@ -195,6 +217,8 @@ previously exist.
 
 ```bash
 dnscontrol push
+```
+```text
 Initialized 1 registrars and 1 dns service providers.
 ******************** Domain: example.com
 ----- Getting nameservers from: bind
@@ -209,7 +233,7 @@ Done. 1 corrections.
 ```
 
 
-## 6. Make a change.
+## 6. Make a change
 
 Try making a change to `dnsconfig.js`. For example, change the IP
 address of in `A('@', '1.2.3.4')` or add an additional A record.
@@ -219,6 +243,8 @@ our change looks like this:
 
 ```bash
 dnscontrol preview
+```
+```text
 Initialized 1 registrars and 1 dns service providers.
 ******************** Domain: example.com
 ----- Getting nameservers from: bind
@@ -293,5 +319,5 @@ If you are going to use this in production, we highly recommend the following:
 * Store the configuration files in Git.
 * Encrypt the `creds.json` file before storing it in Git. Do NOT store
   API keys or other credentials without encrypting them.
-* Use a CI/CD tool like Jenkins/CircleCI/Github Actions/etc. to automatically push DNS changes.
-* Join the DNSControl community. File [issues and PRs](https://github.com/StackExchange/dnscontrol).
+* Use a CI/CD tool like [Gitlab]({{site.github.url}}/ci-cd-gitlab), Jenkins, CircleCI, [GitHub Actions](https://github.com/StackExchange/dnscontrol#via-github-actions-gha), etc. to automatically push DNS changes.
+* Join the DNSControl community. File [issues](https://github.com/StackExchange/dnscontrol/issues) and [PRs](https://github.com/StackExchange/dnscontrol/pulls).

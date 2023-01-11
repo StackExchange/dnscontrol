@@ -3,7 +3,7 @@
 [![CircleCI](https://circleci.com/gh/StackExchange/dnscontrol/tree/master.svg?style=svg)](https://circleci.com/gh/StackExchange/dnscontrol/tree/master)
 [![Gitter chat](https://badges.gitter.im/dnscontrol/Lobby.png)](https://gitter.im/dnscontrol/Lobby)
 [![Google Group](https://img.shields.io/badge/google%20group-chat-green.svg)](https://groups.google.com/forum/#!forum/dnscontrol-discuss)
-[![PkgGoDev](https://pkg.go.dev/badge/github.com/StackExchange/dnscontrol)](https://pkg.go.dev/github.com/StackExchange/dnscontrol)
+[![PkgGoDev](https://pkg.go.dev/badge/github.com/StackExchange/dnscontrol)](https://pkg.go.dev/github.com/StackExchange/dnscontrol/v3)
 
 [![CircleCI](https://dl.circleci.com/insights-snapshot/gh/StackExchange/dnscontrol/master/build/badge.svg?window=30d)](https://app.circleci.com/insights/github/StackExchange/dnscontrol/workflows/build/overview?branch=master&reporting-window=last-30-days&insights-snapshot=true)
 
@@ -34,6 +34,7 @@ Currently supported DNS providers:
 - Domainnameshop (Domeneshop)
 - Exoscale
 - Gandi
+- Gcore
 - Google DNS
 - Hetzner
 - HEXONET
@@ -46,10 +47,11 @@ Currently supported DNS providers:
 - Name.com
 - Namecheap
 - Netcup
+- Netlify
 - OVH
-- OctoDNS
 - Oracle Cloud
 - Packetframe
+- Porkbun
 - PowerDNS
 - RWTH DNS-Admin
 - SoftLayer
@@ -139,68 +141,19 @@ See [Getting Started](https://stackexchange.github.io/dnscontrol/getting-started
 
 ## Installation
 
-### From source
+DNSControl can be installed via packages for macOS, Linux and Windows, or from source code. See the [official instructions](https://stackexchange.github.io/dnscontrol/getting-started#1-install-the-software).
 
-DNSControl can be built with Go version 1.16 or higher.
+## Via GitHub Actions (GHA)
 
-The `go get` command will download the source, compile it, and
-install `dnscontrol` in your `$GOBIN` directory.
-
-To install, simply run
-
-```shell
-GO111MODULE=on go install github.com/StackExchange/dnscontrol/v3@latest
-```
-
-To download the source
-
-```shell
-git clone https://github.com/StackExchange/dnscontrol.git
-```
-
-If these don't work, more info is in [#805](https://github.com/StackExchange/dnscontrol/issues/805).
-
-### Via packages
-
-Get prebuilt binaries from [GitHub releases](https://github.com/StackExchange/dnscontrol/releases/latest).
-
-Alternatively, on Mac you can install it using Homebrew or MacPorts:
-
-```bash
-# Homebrew
-brew install dnscontrol
-
-# MacPorts
-sudo port install dnscontrol
-````
-
-## Via [docker](https://hub.docker.com/r/stackexchange/dnscontrol/)
-
-```bash
-docker run --rm -it -v $(pwd)/dnsconfig.js:/dns/dnsconfig.js -v $(pwd)/creds.json:/dns/creds.json stackexchange/dnscontrol dnscontrol preview
-```
-
-The documentation can be viewed via Docker:
-
-```bash
-cd docs
-docker run --rm -it --volume="$PWD:/srv/jekyll" --volume="$PWD/vendor/bundle:/usr/local/bundle" --env JEKYLL_ENV=production jekyll/jekyll:3.8 jekyll build -V
-# Open docs/_site/index.html in your web browser to see the results.
-# (Note: The preview isn't perfect. Links that use the site.github.url variable won't work.
-```
-
-## Via Github Actions (GHA)
-
-See [dnscontrol-action](https://github.com/koenrh/dnscontrol-action)
+See [dnscontrol-action](https://github.com/koenrh/dnscontrol-action) or [gacts/install-dnscontrol](https://github.com/gacts/install-dnscontrol).
 
 ## Deprecation warnings (updated 2022-06-04)
 
 - **Call for new volunteer maintainers for NAMEDOTCOM, and SOFTLAYER.** These providers have no maintainer. Maintainers respond to PRs and fix bugs in a timely manner, and try to stay on top of protocol changes.
 - **ACME/Let's Encrypt support is frozen and will be removed after December 31, 2022.**  The `get-certs` command (renews certs via Let's Encrypt) has no maintainer. There are other projects that do a better job. If you don't use this feature, please do not start. If you do use this feature, please plan on migrating to something else.  See discussion in [issues/1400](https://github.com/StackExchange/dnscontrol/issues/1400)
-- **Provider OCTODNS is frozen and will be removed after Nov 1, 2022.** It was written as a joke and nobody laughed. It's time to remove the code and move on.
 - **get-zones syntax changes in v3.16** Starting in v3.16, the command line arguments for `dnscontrol get-zones` changes. For backwards compatibility change `provider` to `-`. See documentation for details.
 
-## More info at our web site
+## More info at our website
 
 The website: [https://stackexchange.github.io/dnscontrol/](https://stackexchange.github.io/dnscontrol/)
 

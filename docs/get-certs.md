@@ -28,7 +28,7 @@ this may be useful if:
 At Stack Overflow we have dual-hosted DNS i.e. zones having
 nameservers at two different DNS providers. Most Let's Encrypt systems
 do not support DNS validation in that case.  DNSControl's `get-certs`
-command leverages the core DNSControl commands when issueing
+command leverages the core DNSControl commands when issuing
 certificates, therefore dual-hosted DNS is supported.
 
 ## General Process
@@ -55,7 +55,7 @@ time.
 This file should be provided to specify which names you would like to get certificates for. You can
 specify any number of certificates, with up to 100 SAN entries each. Subject names can contain wildcards if you wish.
 
-The format of the file is a simple json array of objects:
+The format of the file is a simple JSON array of objects:
 
 ```json
 [
@@ -128,7 +128,7 @@ The working directory should generally contain:
 - `--acme {url}`: URL of the acme server you wish to use. For *Let's Encrypt* you can use the presets `live` or `staging` for the standard services. If you are using a custom boulder instance or other acme server, you may specify the full **directory** url. Must be an acme **v2** server.
 - `--renew {n}`: `get-certs` will renew certs with less than this many **days** remaining. The default is 15, and certs will be renewed when they are within 15 days of expiration.
 - `--dir {d}`: Root directory holding all certificate and account data as described above. Default is current working directory.
-- `--certConfig {j}`: Location of certificate config json file as described above. Default is `./certs.json`
+- `--certConfig {j}`: Location of certificate config JSON file as described above. Default is `./certs.json`
 - `--vault` Store certificates as secrets in hashicorp vault instead of on disk. (default: false)
 - `--vaultPath {value}` Path in vault to store certificates (default: "/secret/certs")
 - `--skip {p}`: DNS Provider names (comma separated) to skip using as challenge providers. We use this to avoid unnecessary changes to our backup or internal dns providers that wouldn't be a part of the validation flow.

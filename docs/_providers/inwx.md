@@ -30,8 +30,8 @@ Example:
 INWX supports two factor authentication via TOTP and does not allow TOTP codes to be reused. This means that you will only be able to log into your INWX account once every 30 seconds.
 You will hit this limitation in the following two scenarios:
 
-* You run dnscontrol twice very quickly (to e.g. first use preview and then push). Waiting for 30 seconds to pass between these two invocations will work fine though.
-* You use INWX as both the registrar and the DNS provider. In this case, dnscontrol will try to login twice too quickly and the second login will fail because a TOTP code will be reused. The only way to support this configuration is to use a INWX account without two factor authentication.
+* You run DNSControl twice very quickly (to e.g. first use preview and then push). Waiting for 30 seconds to pass between these two invocations will work fine though.
+* You use INWX as both the registrar and the DNS provider. In this case, DNSControl will try to login twice too quickly and the second login will fail because a TOTP code will be reused. The only way to support this configuration is to use a INWX account without two factor authentication.
 
 If you cannot work around these two limitation it is possible to contact the INWX support to request a sub-account for API access only without two factor authentication.
 See issue [issue 848](https://github.com/StackExchange/dnscontrol/issues/848#issuecomment-692288859) for details.
@@ -100,7 +100,7 @@ INWX.
 ## Usage
 An example `dnsconfig.js` configuration file
 for `example.tld` registered with INWX
-and delegated to CloudFlare:
+and delegated to Cloudflare:
 
 ```js
 var REG_INWX = NewRegistrar("inwx");
@@ -110,6 +110,3 @@ D("example.tld", REG_INWX, DnsProvider(DSP_CF),
     A("test", "1.2.3.4")
 );
 ```
-
-
-

@@ -11,6 +11,7 @@ parameters:
 SSHFP contains a fingerprint of a SSH server which can be validated before SSH clients are establishing the connection.
 
 **Algorithm** (type of the key)
+
 | ID | Algorithm |
 |----|-----------|
 | 0  | reserved  |
@@ -20,6 +21,7 @@ SSHFP contains a fingerprint of a SSH server which can be validated before SSH c
 | 4  | ED25519   |
 
 **Type** (fingerprint format)
+
 | ID | Algorithm |
 |----|-----------|
 | 0  | reserved  |

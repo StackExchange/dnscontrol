@@ -8,7 +8,7 @@ parameters:
 
 PTR adds a PTR record to the domain.
 
-The name is normally a the relative label for the domain, or a FQDN that ends with `.`.  If magic mode is enabled (see below) it can also be an IP address, which will be replaced by the proper string automatically, thus
+The name is normally a relative label for the domain, or a FQDN that ends with `.`.  If magic mode is enabled (see below) it can also be an IP address, which will be replaced by the proper string automatically, thus
 saving the user from having to reverse the IP address manually.
 
 Target should be a string representing the FQDN of a host.  Like all FQDNs in DNSControl, it must end with a `.`.

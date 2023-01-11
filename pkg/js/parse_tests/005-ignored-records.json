@@ -1,12 +1,37 @@
 {
+  "registrars": [],
   "dns_providers": [],
   "domains": [
     {
+      "name": "foo.com",
+      "registrar": "none",
       "dnsProviders": {},
+      "records": [],
       "ignored_names": [
-        "testignore",
-        "legacyignore",
-        "@"
+        {
+          "pattern": "testignore",
+          "types": "*"
+        },
+        {
+          "pattern": "testignore2",
+          "types": "A"
+        },
+        {
+          "pattern": "testignore3",
+          "types": "A, CNAME, TXT"
+        },
+        {
+          "pattern": "testignore4",
+          "types": "*"
+        },
+        {
+          "pattern": "legacyignore",
+          "types": "*"
+        },
+        {
+          "pattern": "@",
+          "types": "*"
+        }
       ],
       "ignored_targets": [
         {
@@ -18,10 +43,48 @@
           "type": "CNAME"
         }
       ],
-      "name": "foo.com",
-      "records": [],
-      "registrar": "none"
+      "unmanaged": [
+        {
+          "label_pattern": "testignore",
+          "rType_pattern": "*",
+          "target_pattern": "*"
+        },
+        {
+          "label_pattern": "testignore2",
+          "rType_pattern": "A",
+          "target_pattern": "*"
+        },
+        {
+          "label_pattern": "testignore3",
+          "rType_pattern": "A, CNAME, TXT",
+          "target_pattern": "*"
+        },
+        {
+          "label_pattern": "testignore4",
+          "rType_pattern": "*",
+          "target_pattern": "*"
+        },
+        {
+          "label_pattern": "*",
+          "rType_pattern": "CNAME",
+          "target_pattern": "testtarget"
+        },
+        {
+          "label_pattern": "legacyignore",
+          "rType_pattern": "*",
+          "target_pattern": "*"
+        },
+        {
+          "label_pattern": "@",
+          "rType_pattern": "*",
+          "target_pattern": "*"
+        },
+        {
+          "label_pattern": "*",
+          "rType_pattern": "CNAME",
+          "target_pattern": "@"
+        }
+      ]
     }
-  ],
-  "registrars": []
+  ]
 }

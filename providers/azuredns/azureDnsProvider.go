@@ -13,6 +13,7 @@ import (
 	"github.com/Azure/go-autorest/autorest/to"
 	"github.com/StackExchange/dnscontrol/v3/models"
 	"github.com/StackExchange/dnscontrol/v3/pkg/diff"
+	"github.com/StackExchange/dnscontrol/v3/pkg/diff2"
 	"github.com/StackExchange/dnscontrol/v3/pkg/printer"
 	"github.com/StackExchange/dnscontrol/v3/pkg/txtutil"
 	"github.com/StackExchange/dnscontrol/v3/providers"
@@ -188,8 +189,6 @@ func (a *azurednsProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*mod
 		return nil, err
 	}
 
-	var corrections []*models.Correction
-
 	existingRecords, records, zoneName, err := a.getExistingRecords(dc.Name)
 	if err != nil {
 		return nil, err
@@ -197,110 +196,169 @@ func (a *azurednsProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*mod
 
 	txtutil.SplitSingleLongTxt(dc.Records) // Autosplit long TXT records
 
-	differ := diff.New(dc)
-	namesToUpdate, err := differ.ChangedGroups(existingRecords)
-	if err != nil {
-		return nil, err
-	}
+	var corrections []*models.Correction
+	if !diff2.EnableDiff2 {
 
-	if len(namesToUpdate) == 0 {
-		return nil, nil
-	}
-
-	updates := map[models.RecordKey][]*models.RecordConfig{}
-
-	for k := range namesToUpdate {
-		updates[k] = nil
-		for _, rc := range dc.Records {
-			if rc.Key() == k {
-				updates[k] = append(updates[k], rc)
-			}
+		differ := diff.New(dc)
+		namesToUpdate, err := differ.ChangedGroups(existingRecords)
+		if err != nil {
+			return nil, err
 		}
-	}
 
-	for k, recs := range updates {
-		if len(recs) == 0 {
-			var rrset *adns.RecordSet
-			for _, r := range records {
-				if strings.TrimSuffix(*r.Properties.Fqdn, ".") == k.NameFQDN {
-					n1, err := nativeToRecordType(r.Type)
-					if err != nil {
-						return nil, err
-					}
-					n2, err := nativeToRecordType(to.StringPtr(k.Type))
-					if err != nil {
-						return nil, err
-					}
-					if n1 == n2 {
-						rrset = r
-						break
-					}
+		if len(namesToUpdate) == 0 {
+			return nil, nil
+		}
+
+		updates := map[models.RecordKey][]*models.RecordConfig{}
+
+		for k := range namesToUpdate {
+			updates[k] = nil
+			for _, rc := range dc.Records {
+				if rc.Key() == k {
+					updates[k] = append(updates[k], rc)
 				}
 			}
-			if rrset != nil {
+		}
+
+		for k, recs := range updates {
+			if len(recs) == 0 {
+				var rrset *adns.RecordSet
+				for _, r := range records {
+					if strings.TrimSuffix(*r.Properties.Fqdn, ".") == k.NameFQDN {
+						n1, err := nativeToRecordType(r.Type)
+						if err != nil {
+							return nil, err
+						}
+						n2, err := nativeToRecordType(to.StringPtr(k.Type))
+						if err != nil {
+							return nil, err
+						}
+						if n1 == n2 {
+							rrset = r
+							break
+						}
+					}
+				}
+				if rrset != nil {
+					corrections = append(corrections,
+						&models.Correction{
+							Msg: strings.Join(namesToUpdate[k], "\n"),
+							F: func() error {
+								ctx, cancel := context.WithTimeout(context.Background(), 6000*time.Second)
+								defer cancel()
+								rt, err := nativeToRecordType(rrset.Type)
+								if err != nil {
+									return err
+								}
+								_, err = a.recordsClient.Delete(ctx, *a.resourceGroup, zoneName, *rrset.Name, rt, nil)
+								if err != nil {
+									return err
+								}
+								return nil
+							},
+						})
+				} else {
+					return nil, fmt.Errorf("no record set found to delete. Name: '%s'. Type: '%s'", k.NameFQDN, k.Type)
+				}
+			} else {
+				rrset, recordType, err := a.recordToNative(k, recs)
+				if err != nil {
+					return nil, err
+				}
+				var recordName string
+				for _, r := range recs {
+					i := int64(r.TTL)
+					rrset.Properties.TTL = &i // TODO: make sure that ttls are consistent within a set
+					recordName = r.Name
+				}
+
+				for _, r := range records {
+					existingRecordType, err := nativeToRecordType(r.Type)
+					if err != nil {
+						return nil, err
+					}
+					changedRecordType, err := nativeToRecordType(to.StringPtr(k.Type))
+					if err != nil {
+						return nil, err
+					}
+					if strings.TrimSuffix(*r.Properties.Fqdn, ".") == k.NameFQDN && (changedRecordType == adns.RecordTypeCNAME || existingRecordType == adns.RecordTypeCNAME) {
+						if existingRecordType == adns.RecordTypeA || existingRecordType == adns.RecordTypeAAAA || changedRecordType == adns.RecordTypeA || changedRecordType == adns.RecordTypeAAAA { //CNAME cannot coexist with an A or AA
+							corrections = append(corrections,
+								&models.Correction{
+									Msg: strings.Join(namesToUpdate[k], "\n"),
+									F: func() error {
+										ctx, cancel := context.WithTimeout(context.Background(), 6000*time.Second)
+										defer cancel()
+										_, err := a.recordsClient.Delete(ctx, *a.resourceGroup, zoneName, recordName, existingRecordType, nil)
+										if err != nil {
+											return err
+										}
+										return nil
+									},
+								})
+						}
+					}
+				}
+
 				corrections = append(corrections,
 					&models.Correction{
 						Msg: strings.Join(namesToUpdate[k], "\n"),
 						F: func() error {
 							ctx, cancel := context.WithTimeout(context.Background(), 6000*time.Second)
 							defer cancel()
-							rt, err := nativeToRecordType(rrset.Type)
-							if err != nil {
-								return err
-							}
-							_, err = a.recordsClient.Delete(ctx, *a.resourceGroup, zoneName, *rrset.Name, rt, nil)
+							_, err := a.recordsClient.CreateOrUpdate(ctx, *a.resourceGroup, zoneName, recordName, recordType, *rrset, nil)
 							if err != nil {
 								return err
 							}
 							return nil
 						},
 					})
-			} else {
-				return nil, fmt.Errorf("no record set found to delete. Name: '%s'. Type: '%s'", k.NameFQDN, k.Type)
 			}
-		} else {
-			rrset, recordType, err := a.recordToNative(k, recs)
-			if err != nil {
-				return nil, err
-			}
-			var recordName string
-			for _, r := range recs {
-				i := int64(r.TTL)
-				rrset.Properties.TTL = &i // TODO: make sure that ttls are consistent within a set
-				recordName = r.Name
-			}
+		}
 
-			for _, r := range records {
-				existingRecordType, err := nativeToRecordType(r.Type)
-				if err != nil {
-					return nil, err
-				}
-				changedRecordType, err := nativeToRecordType(to.StringPtr(k.Type))
-				if err != nil {
-					return nil, err
-				}
-				if strings.TrimSuffix(*r.Properties.Fqdn, ".") == k.NameFQDN && (changedRecordType == adns.RecordTypeCNAME || existingRecordType == adns.RecordTypeCNAME) {
-					if existingRecordType == adns.RecordTypeA || existingRecordType == adns.RecordTypeAAAA || changedRecordType == adns.RecordTypeA || changedRecordType == adns.RecordTypeAAAA { //CNAME cannot coexist with an A or AA
-						corrections = append(corrections,
-							&models.Correction{
-								Msg: strings.Join(namesToUpdate[k], "\n"),
-								F: func() error {
-									ctx, cancel := context.WithTimeout(context.Background(), 6000*time.Second)
-									defer cancel()
-									_, err := a.recordsClient.Delete(ctx, *a.resourceGroup, zoneName, recordName, existingRecordType, nil)
-									if err != nil {
-										return err
-									}
-									return nil
-								},
-							})
-					}
-				}
+		// Sort the records for cosmetic reasons: It just makes a long list
+		// of deletes or adds easier to read if they are in sorted order.
+		// That said, it may be risky to sort them (sort key is the text
+		// message "Msg") if there are deletes that must happen before adds.
+		// Reading the above code it isn't clear that any of the updates are
+		// order-dependent.  That said, all the tests pass.
+		// If in the future this causes a bug, we can either just remove
+		// this next line, or (even better) put any order-dependent
+		// operations in a single models.Correction{}.
+		sort.Slice(corrections, func(i, j int) bool { return diff.CorrectionLess(corrections, i, j) })
+
+		return corrections, nil
+	}
+
+	// Azure is a "ByRSet" API.
+
+	instructions, err := diff2.ByLabel(existingRecords, dc, nil)
+	if err != nil {
+		return nil, err
+	}
+
+	for _, inst := range instructions {
+		switch inst.Type {
+
+		case diff2.CHANGE, diff2.CREATE:
+			var rrset *adns.RecordSet
+			var recordName string
+			var recordType adns.RecordType
+			if len(inst.Old) == 0 { // Create
+				rrset = &adns.RecordSet{Type: to.StringPtr(inst.Key.Type), Properties: &adns.RecordSetProperties{}}
+				recordType, _ = nativeToRecordType(to.StringPtr(inst.Key.Type))
+				recordName = inst.Key.NameFQDN
+			} else { // Change
+				rrset = inst.Old[0].Original.(*adns.RecordSet)
+				recordType, _ = nativeToRecordType(to.StringPtr(*rrset.Type))
+				recordName = *rrset.Name
 			}
+			// ^^^ this is broken and can probably be cleaned up significantly by
+			// someone that understands Azure's API.
 
 			corrections = append(corrections,
 				&models.Correction{
-					Msg: strings.Join(namesToUpdate[k], "\n"),
+					Msg: strings.Join(inst.Msgs, "\n"),
 					F: func() error {
 						ctx, cancel := context.WithTimeout(context.Background(), 6000*time.Second)
 						defer cancel()
@@ -311,19 +369,30 @@ func (a *azurednsProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*mod
 						return nil
 					},
 				})
-		}
-	}
 
-	// Sort the records for cosmetic reasons: It just makes a long list
-	// of deletes or adds easier to read if they are in sorted order.
-	// That said, it may be risky to sort them (sort key is the text
-	// message "Msg") if there are deletes that must happen before adds.
-	// Reading the above code it isn't clear that any of the updates are
-	// order-dependent.  That said, all the tests pass.
-	// If in the future this causes a bug, we can either just remove
-	// this next line, or (even better) put any order-dependent
-	// operations in a single models.Correction{}.
-	sort.Slice(corrections, func(i, j int) bool { return diff.CorrectionLess(corrections, i, j) })
+		case diff2.DELETE:
+			fmt.Printf("DEBUG: azure inst=%s\n", inst)
+			rrset := inst.Old[0].Original.(*adns.RecordSet)
+			corrections = append(corrections,
+				&models.Correction{
+					Msg: strings.Join(inst.Msgs, "\n"),
+					F: func() error {
+						ctx, cancel := context.WithTimeout(context.Background(), 6000*time.Second)
+						defer cancel()
+						rt, err := nativeToRecordType(rrset.Type)
+						if err != nil {
+							return err
+						}
+						_, err = a.recordsClient.Delete(ctx, *a.resourceGroup, zoneName, *rrset.Name, rt, nil)
+						if err != nil {
+							return err
+						}
+						return nil
+					},
+				})
+		}
+
+	}
 
 	return corrections, nil
 }
@@ -357,13 +426,20 @@ func nativeToRecordType(recordType *string) (adns.RecordType, error) {
 	}
 }
 
+func safeTarget(t *string) string {
+	if t == nil {
+		return "foundnil"
+	}
+	return *t
+}
+
 func nativeToRecords(set *adns.RecordSet, origin string) []*models.RecordConfig {
 	var results []*models.RecordConfig
 	switch rtype := *set.Type; rtype {
 	case "Microsoft.Network/dnszones/A":
 		if set.Properties.ARecords != nil {
 			for _, rec := range set.Properties.ARecords {
-				rc := &models.RecordConfig{TTL: uint32(*set.Properties.TTL)}
+				rc := &models.RecordConfig{TTL: uint32(*set.Properties.TTL), Original: set}
 				rc.SetLabelFromFQDN(*set.Properties.Fqdn, origin)
 				rc.Type = "A"
 				_ = rc.SetTarget(*rec.IPv4Address)
@@ -376,15 +452,16 @@ func nativeToRecords(set *adns.RecordSet, origin string) []*models.RecordConfig 
 				AzureAlias: map[string]string{
 					"type": "A",
 				},
+				Original: set,
 			}
 			rc.SetLabelFromFQDN(*set.Properties.Fqdn, origin)
-			_ = rc.SetTarget(*set.Properties.TargetResource.ID)
+			_ = rc.SetTarget(safeTarget(set.Properties.TargetResource.ID))
 			results = append(results, rc)
 		}
 	case "Microsoft.Network/dnszones/AAAA":
 		if set.Properties.AaaaRecords != nil {
 			for _, rec := range set.Properties.AaaaRecords {
-				rc := &models.RecordConfig{TTL: uint32(*set.Properties.TTL)}
+				rc := &models.RecordConfig{TTL: uint32(*set.Properties.TTL), Original: set}
 				rc.SetLabelFromFQDN(*set.Properties.Fqdn, origin)
 				rc.Type = "AAAA"
 				_ = rc.SetTarget(*rec.IPv6Address)
@@ -397,14 +474,15 @@ func nativeToRecords(set *adns.RecordSet, origin string) []*models.RecordConfig 
 				AzureAlias: map[string]string{
 					"type": "AAAA",
 				},
+				Original: set,
 			}
 			rc.SetLabelFromFQDN(*set.Properties.Fqdn, origin)
-			_ = rc.SetTarget(*set.Properties.TargetResource.ID)
+			_ = rc.SetTarget(safeTarget(set.Properties.TargetResource.ID))
 			results = append(results, rc)
 		}
 	case "Microsoft.Network/dnszones/CNAME":
 		if set.Properties.CnameRecord != nil {
-			rc := &models.RecordConfig{TTL: uint32(*set.Properties.TTL)}
+			rc := &models.RecordConfig{TTL: uint32(*set.Properties.TTL), Original: set}
 			rc.SetLabelFromFQDN(*set.Properties.Fqdn, origin)
 			rc.Type = "CNAME"
 			_ = rc.SetTarget(*set.Properties.CnameRecord.Cname)
@@ -416,14 +494,15 @@ func nativeToRecords(set *adns.RecordSet, origin string) []*models.RecordConfig 
 				AzureAlias: map[string]string{
 					"type": "CNAME",
 				},
+				Original: set,
 			}
 			rc.SetLabelFromFQDN(*set.Properties.Fqdn, origin)
-			_ = rc.SetTarget(*set.Properties.TargetResource.ID)
+			_ = rc.SetTarget(safeTarget(set.Properties.TargetResource.ID))
 			results = append(results, rc)
 		}
 	case "Microsoft.Network/dnszones/NS":
 		for _, rec := range set.Properties.NsRecords {
-			rc := &models.RecordConfig{TTL: uint32(*set.Properties.TTL)}
+			rc := &models.RecordConfig{TTL: uint32(*set.Properties.TTL), Original: set}
 			rc.SetLabelFromFQDN(*set.Properties.Fqdn, origin)
 			rc.Type = "NS"
 			_ = rc.SetTarget(*rec.Nsdname)
@@ -431,7 +510,7 @@ func nativeToRecords(set *adns.RecordSet, origin string) []*models.RecordConfig 
 		}
 	case "Microsoft.Network/dnszones/PTR":
 		for _, rec := range set.Properties.PtrRecords {
-			rc := &models.RecordConfig{TTL: uint32(*set.Properties.TTL)}
+			rc := &models.RecordConfig{TTL: uint32(*set.Properties.TTL), Original: set}
 			rc.SetLabelFromFQDN(*set.Properties.Fqdn, origin)
 			rc.Type = "PTR"
 			_ = rc.SetTarget(*rec.Ptrdname)
@@ -439,14 +518,14 @@ func nativeToRecords(set *adns.RecordSet, origin string) []*models.RecordConfig 
 		}
 	case "Microsoft.Network/dnszones/TXT":
 		if len(set.Properties.TxtRecords) == 0 { // Empty String Record Parsing
-			rc := &models.RecordConfig{TTL: uint32(*set.Properties.TTL)}
+			rc := &models.RecordConfig{TTL: uint32(*set.Properties.TTL), Original: set}
 			rc.SetLabelFromFQDN(*set.Properties.Fqdn, origin)
 			rc.Type = "TXT"
 			_ = rc.SetTargetTXT("")
 			results = append(results, rc)
 		} else {
 			for _, rec := range set.Properties.TxtRecords {
-				rc := &models.RecordConfig{TTL: uint32(*set.Properties.TTL)}
+				rc := &models.RecordConfig{TTL: uint32(*set.Properties.TTL), Original: set}
 				rc.SetLabelFromFQDN(*set.Properties.Fqdn, origin)
 				rc.Type = "TXT"
 				var txts []string
@@ -459,7 +538,7 @@ func nativeToRecords(set *adns.RecordSet, origin string) []*models.RecordConfig 
 		}
 	case "Microsoft.Network/dnszones/MX":
 		for _, rec := range set.Properties.MxRecords {
-			rc := &models.RecordConfig{TTL: uint32(*set.Properties.TTL)}
+			rc := &models.RecordConfig{TTL: uint32(*set.Properties.TTL), Original: set}
 			rc.SetLabelFromFQDN(*set.Properties.Fqdn, origin)
 			rc.Type = "MX"
 			_ = rc.SetTargetMX(uint16(*rec.Preference), *rec.Exchange)
@@ -467,7 +546,7 @@ func nativeToRecords(set *adns.RecordSet, origin string) []*models.RecordConfig 
 		}
 	case "Microsoft.Network/dnszones/SRV":
 		for _, rec := range set.Properties.SrvRecords {
-			rc := &models.RecordConfig{TTL: uint32(*set.Properties.TTL)}
+			rc := &models.RecordConfig{TTL: uint32(*set.Properties.TTL), Original: set}
 			rc.SetLabelFromFQDN(*set.Properties.Fqdn, origin)
 			rc.Type = "SRV"
 			_ = rc.SetTargetSRV(uint16(*rec.Priority), uint16(*rec.Weight), uint16(*rec.Port), *rec.Target)
@@ -475,7 +554,7 @@ func nativeToRecords(set *adns.RecordSet, origin string) []*models.RecordConfig 
 		}
 	case "Microsoft.Network/dnszones/CAA":
 		for _, rec := range set.Properties.CaaRecords {
-			rc := &models.RecordConfig{TTL: uint32(*set.Properties.TTL)}
+			rc := &models.RecordConfig{TTL: uint32(*set.Properties.TTL), Original: set}
 			rc.SetLabelFromFQDN(*set.Properties.Fqdn, origin)
 			rc.Type = "CAA"
 			_ = rc.SetTargetCAA(uint8(*rec.Flags), *rec.Tag, *rec.Value)

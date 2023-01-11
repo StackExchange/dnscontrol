@@ -25,21 +25,41 @@ var _ = cmd(catDebug, func() *cli.Command {
 	}
 }())
 
+// CheckArgs encapsulates the flags/arguments for the check command.
+type CheckArgs struct {
+	GetDNSConfigArgs
+}
+
 var _ = cmd(catDebug, func() *cli.Command {
-	var args PrintIRArgs
+	var args CheckArgs
 	// This is the same as print-ir with the following changes:
-	// - output defaults to /dev/null.
+	// - no JSON is output
+	// - error messages are sent to stdout.
 	// - prints "No errors." if there were no errors.
 	return &cli.Command{
 		Name:  "check",
-		Usage: "Check and validate dnsconfig.js. Do not access providers.",
+		Usage: "Check and validate dnsconfig.js. Output to stdout.  Do not access providers.",
 		Action: func(c *cli.Context) error {
-			if args.Output == "" {
-				args.Output = os.DevNull
-			}
-			err := exit(PrintIR(args))
+
+			// Create a PrintIRArgs struct and copy our args to the
+			// appropriate fields.
+			var pargs PrintIRArgs
+			// Copy these verbatim:
+			pargs.JSFile = args.JSFile
+			pargs.JSONFile = args.JSONFile
+			pargs.DevMode = args.DevMode
+			pargs.Variable = args.Variable
+			// Force these settings:
+			pargs.Pretty = false
+			pargs.Output = os.DevNull
+
+			// "check" sends all errors to stdout, not stderr.
+			cli.ErrWriter = os.Stdout
+			log.SetOutput(os.Stdout)
+
+			err := exit(PrintIR(pargs))
 			if err == nil {
-				fmt.Fprintf(os.Stderr, "No errors.\n")
+				fmt.Fprintf(os.Stdout, "No errors.\n")
 			}
 			return err
 		},

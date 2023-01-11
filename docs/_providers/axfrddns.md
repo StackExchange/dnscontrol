@@ -60,8 +60,8 @@ If distinct zones require distinct keys, you will need to instantiate the
 provider once for each key:
 
 ```js
-var DSP_AXFRDDNS_A = NewDnsProvider("axfrddns-a"}
-var DSP_AXFRDDNS_B = NewDnsProvider("axfrddns-b"}
+var DSP_AXFRDDNS_A = NewDnsProvider("axfrddns-a");
+var DSP_AXFRDDNS_B = NewDnsProvider("axfrddns-b");
 ```
 
 And update `creds.json` accordingly:
@@ -90,13 +90,13 @@ the later allows `get-zones` to work properly.
 
 ```js
 var DSP_AXFRDDNS = NewDnsProvider("axfrddns", {
-		"default_ns": [
-			"ns1.example.tld.",
-			"ns2.example.tld.",
-			"ns3.example.tld.",
-			"ns4.example.tld."
-		]
-	}
+        "default_ns": [
+            "ns1.example.tld.",
+            "ns2.example.tld.",
+            "ns3.example.tld.",
+            "ns4.example.tld."
+        ]
+    }
 }
 ```
 
@@ -144,15 +144,15 @@ transfer and a conjunction of TSIG and IP-based ACL for the updates.
 ```js
 options {
 
-	listen-on { any; };
-	listen-on-v6 { any; };
+    listen-on { any; };
+    listen-on-v6 { any; };
 
-	allow-query { any; };
-	allow-notify { none; };
-	allow-recursion { none; };
-	allow-transfer { none; };
-	allow-update { none; };
-	allow-query-cache { none; };
+    allow-query { any; };
+    allow-notify { none; };
+    allow-recursion { none; };
+    allow-transfer { none; };
+    allow-update { none; };
+    allow-query-cache { none; };
 
 };
 
@@ -211,3 +211,7 @@ When AutoDNSSEC is enabled, the AXFR+DDNS provider will emit a warning when no R
 When AutoDNSSEC is disabled, the AXFR+DDNS provider will emit a warning when RRSIG, DNSKEY or NSEC records are found in the zone.
 
 When AutoDNSSEC is not enabled or disabled, no checking is done.
+
+## FYI: MD5 Support
+
+By default the used DNS Go package by miekg has deprecated supporting the (insecure) MD5 algorithm [https://github.com/miekg/dns/commit/93945c284489394b77653323d11d5de83a2a6fb5](Link). Some providers like the Leibniz Supercomputing Centre (LRZ) located in Munich still use this algorithm to authenticate internal dynamic DNS updates. To compensate the lack of MD5 a custom MD5 TSIG Provider was added into DNSControl.  

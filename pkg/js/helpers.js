@@ -1,9 +1,16 @@
 'use strict';
 
-// If you are heavily debugging this code, the "-dev" flag will
-// read this file directly instead of using the output of
-// `go generate`. You'll still need to run `go generate` before
-// you commit the changes.
+// How to keep this file clean:
+// 1. Add new functions in alphabetical order when it makes sense.
+// 2. Run [prettier](https://github.com/prettier/prettier) on the file to ensure
+//    your code conforms to our coding standard:
+//        npm install prettier
+//        node_modules/.bin/prettier --write pkg/js/helpers.js
+
+// Development tip:
+// This file is embeded in the binary via "go build". If you are
+// debugging/developing this code, it may be faster to specify the
+// -dev file to have helpers.js read from the file instead.
 
 var conf = {
     registrars: [],
@@ -24,7 +31,9 @@ function initialize() {
 }
 
 function _isDomain(d) {
-  return _.isArray(d.nameservers) && _.isArray(d.records) && _.isString(d.name);
+    return (
+        _.isArray(d.nameservers) && _.isArray(d.records) && _.isString(d.name)
+    );
 }
 
 // Returns an array of domains which were registered so far during runtime
@@ -37,21 +46,21 @@ function getConfiguredDomains() {
 // For backwards compatibility, it accepts (name), (name, meta),
 // (name, type), (name, type, meta).
 function NewRegistrar() {
-  // For backwards compatibility, this is a wrapper around the legacy
-  // version of this function.
-  switch (arguments.length) {
-    case 1:
-      return oldNewRegistrar(arguments[0], "-")
-    case 2:
-      // x = NewRegistrar("myThing", "THING")
-      // x = NewRegistrar("myThing", { metakey: metavalue } )
-      if (typeof arguments[1] === 'object') {
-        return oldNewRegistrar(arguments[0], "-", arguments[1])
-      }
-      break;
-    default: // do nothing
-  }
-  return oldNewRegistrar.apply(null, arguments)
+    // For backwards compatibility, this is a wrapper around the legacy
+    // version of this function.
+    switch (arguments.length) {
+        case 1:
+            return oldNewRegistrar(arguments[0], '-');
+        case 2:
+            // x = NewRegistrar("myThing", "THING")
+            // x = NewRegistrar("myThing", { metakey: metavalue } )
+            if (typeof arguments[1] === 'object') {
+                return oldNewRegistrar(arguments[0], '-', arguments[1]);
+            }
+            break;
+        default: // do nothing
+    }
+    return oldNewRegistrar.apply(null, arguments);
 }
 function oldNewRegistrar(name, type, meta) {
     if (type) {
@@ -63,21 +72,21 @@ function oldNewRegistrar(name, type, meta) {
 }
 
 function NewDnsProvider(name, type, meta) {
-  // For backwards compatibility, this is a wrapper around the legacy
-  // version of this function.
-  switch (arguments.length) {
-    case 1:
-      return oldNewDnsProvider(arguments[0], "-")
-    case 2:
-      // x = NewDnsProvider("myThing", "THING")
-      // x = NewDnsProvider("myThing", { metakey: metavalue } )
-      if (typeof arguments[1] === 'object') {
-        return oldNewDnsProvider(arguments[0], "-", arguments[1])
-      }
-      break;
-    default: // do nothing
-  }
-  return oldNewDnsProvider.apply(null, arguments)
+    // For backwards compatibility, this is a wrapper around the legacy
+    // version of this function.
+    switch (arguments.length) {
+        case 1:
+            return oldNewDnsProvider(arguments[0], '-');
+        case 2:
+            // x = NewDnsProvider("myThing", "THING")
+            // x = NewDnsProvider("myThing", { metakey: metavalue } )
+            if (typeof arguments[1] === 'object') {
+                return oldNewDnsProvider(arguments[0], '-', arguments[1]);
+            }
+            break;
+        default: // do nothing
+    }
+    return oldNewDnsProvider.apply(null, arguments);
 }
 function oldNewDnsProvider(name, type, meta) {
     if (typeof meta === 'object' && 'ip_conversions' in meta) {
@@ -100,6 +109,7 @@ function newDomain(name, registrar) {
         nameservers: [],
         ignored_names: [],
         ignored_targets: [],
+        unmanaged: [],
     };
 }
 
@@ -117,10 +127,12 @@ function processDargs(m, domain) {
     } else if (_.isObject(m)) {
         _.extend(domain.meta, m);
     } else {
-        throw 'WARNING: domain modifier type unsupported: ' +
+        throw (
+            'WARNING: domain modifier type unsupported: ' +
             typeof m +
             ' Domain: ' +
-            domain.name;
+            domain.name
+        );
     }
 }
 
@@ -144,20 +156,29 @@ function D(name, registrar) {
 function INCLUDE(name) {
     var domain = _getDomainObject(name);
     if (domain == null) {
-        throw name + ' was not declared yet and therefore cannot be updated. Use D() before.';
+        throw (
+            name +
+            ' was not declared yet and therefore cannot be updated. Use D() before.'
+        );
     }
-    return function(d) {
-      d.records.push.apply(d.records, domain.obj.records);
-    }
+    return function (d) {
+        d.records.push.apply(d.records, domain.obj.records);
+    };
 }
 
 // D_EXTEND(name): Update a DNS Domain already added with D(), or subdomain thereof
 function D_EXTEND(name) {
     var domain = _getDomainObject(name);
     if (domain == null) {
-        throw name + ' was not declared yet and therefore cannot be updated. Use D() before.';
+        throw (
+            name +
+            ' was not declared yet and therefore cannot be updated. Use D() before.'
+        );
     }
-    domain.obj.subdomain = name.substr(0, name.length-domain.obj.name.length - 1);
+    domain.obj.subdomain = name.substr(
+        0,
+        name.length - domain.obj.name.length - 1
+    );
     for (var i = 1; i < arguments.length; i++) {
         var m = arguments[i];
         processDargs(m, domain.obj);
@@ -173,8 +194,8 @@ function _getDomainObject(name) {
     var domain = null;
     var domainLen = 0;
     for (var i = 0; i < conf.domains.length; i++) {
-        var thisName = conf.domains[i]["name"];
-        var desiredSuffix = "." + thisName;
+        var thisName = conf.domains[i]['name'];
+        var desiredSuffix = '.' + thisName;
         var foundSuffix = name.substr(-desiredSuffix.length);
         // If this is an exact match or the suffix matches...
         if (name === thisName || foundSuffix === desiredSuffix) {
@@ -202,7 +223,7 @@ function TTL(v) {
     if (_.isString(v)) {
         v = stringToDuration(v);
     }
-    return function(r) {
+    return function (r) {
         r.ttl = v;
     };
 }
@@ -231,13 +252,13 @@ function DefaultTTL(v) {
     if (_.isString(v)) {
         v = stringToDuration(v);
     }
-    return function(d) {
+    return function (d) {
         d.defaultTTL = v;
     };
 }
 
 function makeCAAFlag(value) {
-    return function(record) {
+    return function (record) {
         record.caaflag |= value;
     };
 }
@@ -252,7 +273,7 @@ function DnsProvider(name, nsCount) {
     if (typeof nsCount === 'undefined') {
         nsCount = -1;
     }
-    return function(d) {
+    return function (d) {
         d.dnsProviders[name] = nsCount;
     };
 }
@@ -276,7 +297,7 @@ var AZURE_ALIAS = recordBuilder('AZURE_ALIAS', {
         ['type', validateAzureAliasType],
         ['target', _.isString],
     ],
-    transform: function(record, args, modifier) {
+    transform: function (record, args, modifier) {
         record.name = args.name;
         record.target = args.target;
         if (_.isObject(record.azure_alias)) {
@@ -301,7 +322,7 @@ var R53_ALIAS = recordBuilder('R53_ALIAS', {
         ['type', validateR53AliasType],
         ['target', _.isString],
     ],
-    transform: function(record, args, modifiers) {
+    transform: function (record, args, modifiers) {
         record.name = args.name;
         record.target = args.target;
         if (_.isObject(record.r53_alias)) {
@@ -353,12 +374,12 @@ var CAA = recordBuilder('CAA', {
         ['tag', _.isString],
         ['value', _.isString],
     ],
-    transform: function(record, args, modifiers) {
+    transform: function (record, args, modifiers) {
         record.name = args.name;
         record.caatag = args.tag;
         record.target = args.value;
     },
-    modifierNumber: function(record, value) {
+    modifierNumber: function (record, value) {
         record.caaflags |= value;
     },
 });
@@ -367,15 +388,15 @@ var CAA = recordBuilder('CAA', {
 var CNAME = recordBuilder('CNAME');
 
 // DS(name, keytag, algorithm, digestype, digest)
-var DS = recordBuilder("DS", {
+var DS = recordBuilder('DS', {
     args: [
         ['name', _.isString],
         ['keytag', _.isNumber],
         ['algorithm', _.isNumber],
         ['digesttype', _.isNumber],
-        ['digest', _.isString]
+        ['digest', _.isString],
     ],
-    transform: function(record, args, modifiers) {
+    transform: function (record, args, modifiers) {
         record.name = args.name;
         record.dskeytag = args.keytag;
         record.dsalgorithm = args.algorithm;
@@ -399,7 +420,7 @@ var NAPTR = recordBuilder('NAPTR', {
         ['regexp', _.isString],
         ['target', _.isString],
     ],
-    transform: function(record, args, modifiers) {
+    transform: function (record, args, modifiers) {
         record.name = args.name;
         record.naptrorder = args.order;
         record.naptrpreference = args.preference;
@@ -412,24 +433,24 @@ var NAPTR = recordBuilder('NAPTR', {
 
 // SOA(name,ns,mbox,refresh,retry,expire,minimum, recordModifiers...)
 var SOA = recordBuilder('SOA', {
-  args: [
-    ['name',    _.isString],
-    ['target',  _.isString],
-    ['mbox',    _.isString],
-    ['refresh', _.isNumber],
-    ['retry',   _.isNumber],
-    ['expire',  _.isNumber],
-    ['minttl',  _.isNumber],
-  ],
-  transform: function(record, args, modifiers) {
-    record.name = args.name;
-    record.target = args.target;
-    record.soambox = args.mbox;
-    record.soarefresh = args.refresh;
-    record.soaretry   = args.retry;
-    record.soaexpire  = args.expire;
-    record.soaminttl = args.minttl;
-  },
+    args: [
+        ['name', _.isString],
+        ['target', _.isString],
+        ['mbox', _.isString],
+        ['refresh', _.isNumber],
+        ['retry', _.isNumber],
+        ['expire', _.isNumber],
+        ['minttl', _.isNumber],
+    ],
+    transform: function (record, args, modifiers) {
+        record.name = args.name;
+        record.target = args.target;
+        record.soambox = args.mbox;
+        record.soarefresh = args.refresh;
+        record.soaretry = args.retry;
+        record.soaexpire = args.expire;
+        record.soaminttl = args.minttl;
+    },
 });
 
 // SRV(name,priority,weight,port,target, recordModifiers...)
@@ -441,7 +462,7 @@ var SRV = recordBuilder('SRV', {
         ['port', _.isNumber],
         ['target', _.isString],
     ],
-    transform: function(record, args, modifiers) {
+    transform: function (record, args, modifiers) {
         record.name = args.name;
         record.srvpriority = args.priority;
         record.srvweight = args.weight;
@@ -458,7 +479,7 @@ var SSHFP = recordBuilder('SSHFP', {
         ['fingerprint', _.isNumber],
         ['value', _.isString],
     ],
-    transform: function(record, args, modifiers) {
+    transform: function (record, args, modifiers) {
         record.name = args.name;
         record.sshfpalgorithm = args.algorithm;
         record.sshfpfingerprint = args.fingerprint;
@@ -475,7 +496,7 @@ var TLSA = recordBuilder('TLSA', {
         ['matchingtype', _.isNumber],
         ['target', _.isString], // recordBuilder needs a "target" argument
     ],
-    transform: function(record, args, modifiers) {
+    transform: function (record, args, modifiers) {
         record.name = args.name;
         record.tlsausage = args.usage;
         record.tlsaselector = args.selector;
@@ -488,9 +509,8 @@ function isStringOrArray(x) {
     return _.isString(x) || _.isArray(x);
 }
 
-
 // AUTOSPLIT is deprecated. It is now a no-op.
-var AUTOSPLIT = { };
+var AUTOSPLIT = {};
 
 // TXT(name,target, recordModifiers...)
 var TXT = recordBuilder('TXT', {
@@ -498,7 +518,7 @@ var TXT = recordBuilder('TXT', {
         ['name', _.isString],
         ['target', isStringOrArray],
     ],
-    transform: function(record, args, modifiers) {
+    transform: function (record, args, modifiers) {
         record.name = args.name;
         // Store the strings from the user verbatim.
         if (_.isString(args.target)) {
@@ -506,7 +526,7 @@ var TXT = recordBuilder('TXT', {
             record.target = args.target; // Overwritten by the Go code
         } else {
             record.txtstrings = args.target;
-            record.target = args.target.join(""); // Overwritten by the Go code
+            record.target = args.target.join(''); // Overwritten by the Go code
         }
     },
 });
@@ -518,7 +538,7 @@ var MX = recordBuilder('MX', {
         ['priority', _.isNumber],
         ['target', _.isString],
     ],
-    transform: function(record, args, modifiers) {
+    transform: function (record, args, modifiers) {
         record.name = args.name;
         record.mxpreference = args.priority;
         record.target = args.target;
@@ -533,7 +553,7 @@ function NAMESERVER(name) {
     if (arguments.length != 1) {
         throw 'NAMESERVER only accepts one argument for name.';
     }
-    return function(d) {
+    return function (d) {
         d.nameservers.push({ name: name });
     };
 }
@@ -555,7 +575,7 @@ function format_tt(transform_table) {
         var newIP = ip.newIP;
         if (newIP) {
             if (_.isArray(newIP)) {
-                newIP = _.map(newIP, function(i) {
+                newIP = _.map(newIP, function (i) {
                     return num2dot(i);
                 }).join(',');
             } else {
@@ -565,7 +585,7 @@ function format_tt(transform_table) {
         var newBase = ip.newBase;
         if (newBase) {
             if (_.isArray(newBase)) {
-                newBase = _.map(newBase, function(i) {
+                newBase = _.map(newBase, function (i) {
                     return num2dot(i);
                 }).join(',');
             } else {
@@ -584,34 +604,45 @@ function IGNORE(name) {
     return IGNORE_NAME(name);
 }
 
-// IGNORE_NAME(name)
-function IGNORE_NAME(name) {
-    return function(d) {
-        d.ignored_names.push(name);
+// IGNORE_NAME(name, rTypes)
+function IGNORE_NAME(name, rTypes) {
+    if (rTypes === undefined) {
+        rTypes = '*';
+    }
+    return function (d) {
+        d.ignored_names.push({ pattern: name, types: rTypes });
+        d.unmanaged.push({
+            label_pattern: name,
+            rType_pattern: rTypes,
+            target_pattern: '*',
+        });
     };
 }
 
 var IGNORE_NAME_DISABLE_SAFETY_CHECK = {
-  ignore_name_disable_safety_check: "true"
-  // This disables a safety check intended to prevent:
-  // 1. Two owners toggling a record between two settings.
-  // 2. The other owner wiping all records at this label, which won't
-  // be noticed until the next time dnscontrol is run.
-  // See https://github.com/StackExchange/dnscontrol/issues/1106
+    ignore_name_disable_safety_check: 'true',
+    // This disables a safety check intended to prevent:
+    // 1. Two owners toggling a record between two settings.
+    // 2. The other owner wiping all records at this label, which won't
+    // be noticed until the next time dnscontrol is run.
+    // See https://github.com/StackExchange/dnscontrol/issues/1106
 };
 
-// IGNORE_TARGET(target)
 function IGNORE_TARGET(target, rType) {
-    return function(d) {
-        d.ignored_targets.push({pattern: target, type: rType});
+    return function (d) {
+        d.ignored_targets.push({ pattern: target, type: rType });
+        d.unmanaged.push({
+            label_pattern: '*',
+            rType_pattern: rType,
+            target_pattern: target,
+        });
     };
 }
-
 
 // IMPORT_TRANSFORM(translation_table, domain)
 var IMPORT_TRANSFORM = recordBuilder('IMPORT_TRANSFORM', {
     args: [['translation_table'], ['domain'], ['ttl', _.isNumber]],
-    transform: function(record, args, modifiers) {
+    transform: function (record, args, modifiers) {
         record.name = '@';
         record.target = args.domain;
         record.meta['transform_table'] = format_tt(args.translation_table);
@@ -635,15 +666,43 @@ function NO_PURGE(d) {
 // "on"   Enable AUTODNSSEC for this domain
 // "off"  Disable AUTODNSSEC for this domain
 function AUTODNSSEC_ON(d) {
-  d.auto_dnssec = "on";
+    d.auto_dnssec = 'on';
 }
 function AUTODNSSEC_OFF(d) {
-  d.auto_dnssec = "off";
+    d.auto_dnssec = 'off';
 }
 function AUTODNSSEC(d) {
-  console.log(
-    "WARNING: AUTODNSSEC is deprecated. It is now a no-op.  Please use AUTODNSSEC_ON or AUTODNSSEC_OFF. The default is to make no modifications. This message will disappear in a future release."
-  );
+    console.log(
+        'WARNING: AUTODNSSEC is deprecated. It is now a no-op.  Please use AUTODNSSEC_ON or AUTODNSSEC_OFF. The default is to make no modifications. This message will disappear in a future release.'
+    );
+}
+
+function UNMANAGED(label_pattern, rType_pattern, target_pattern) {
+    if (rType_pattern === undefined) {
+        rType_pattern = '*';
+    }
+    if (rType_pattern === "") {
+        rType_pattern = '*';
+    }
+    if (target_pattern === undefined) {
+        target_pattern = '*';
+    }
+    return function (d) {
+        d.unmanaged.push({
+            label_pattern: label_pattern,
+            rType_pattern: rType_pattern,
+            target_pattern: target_pattern,
+        });
+    };
+}
+
+function DISABLE_UNMANAGED_SAFETY_CHECK(d) {
+    // This disables a safety check intended to prevent DNSControl and
+    // another system getting into a battle as they both try to update
+    // the same record over and over, back and forth.  However, people
+    // kept asking for it so... caveat emptor!
+    // It only affects the current domain.
+    d.unmanaged_disable_safety_check = true;
 }
 
 /**
@@ -671,7 +730,7 @@ function recordBuilder(type, opts) {
     opts = _.defaults({}, opts, {
         args: [['name', _.isString], ['target']],
 
-        transform: function(record, args, modifiers) {
+        transform: function (record, args, modifiers) {
             // record will have modifiers already applied
             // args will be an object for parameters defined
             record.name = args.name;
@@ -682,7 +741,7 @@ function recordBuilder(type, opts) {
             }
         },
 
-        applyModifier: function(record, modifiers) {
+        applyModifier: function (record, modifiers) {
             for (var i = 0; i < modifiers.length; i++) {
                 var mod = modifiers[i];
 
@@ -701,24 +760,26 @@ function recordBuilder(type, opts) {
         },
     });
 
-    return function() {
+    return function () {
         var parsedArgs = {};
         var modifiers = [];
 
         if (arguments.length < opts.args.length) {
             var argumentsList = opts.args
-                .map(function(item) {
+                .map(function (item) {
                     return item[0];
                 })
                 .join(', ');
-            throw type +
+            throw (
+                type +
                 ' record requires ' +
                 opts.args.length +
                 ' arguments (' +
                 argumentsList +
                 '). Only ' +
                 arguments.length +
-                ' were supplied';
+                ' were supplied'
+            );
             return;
         }
 
@@ -729,10 +790,12 @@ function recordBuilder(type, opts) {
             if (argDefinition.length > 1) {
                 // run validator if supplied
                 if (!argDefinition[1](value)) {
-                    throw type +
+                    throw (
+                        type +
                         ' record ' +
                         argDefinition[0] +
-                        ' argument validation failed';
+                        ' argument validation failed'
+                    );
                 }
             }
             parsedArgs[argDefinition[0]] = value;
@@ -743,7 +806,7 @@ function recordBuilder(type, opts) {
             modifiers.push(arguments[i]);
         }
 
-        return function(d) {
+        return function (d) {
             var record = {
                 type: type,
                 meta: {},
@@ -754,11 +817,13 @@ function recordBuilder(type, opts) {
             opts.transform(record, parsedArgs, modifiers);
 
             // Handle D_EXTEND() with subdomains.
-            if (d.subdomain &&
+            if (
+                d.subdomain &&
                 record.type != 'CF_REDIRECT' &&
                 record.type != 'CF_TEMP_REDIRECT' &&
-                record.type != 'CF_WORKER_ROUTE') {
-                fqdn = [d.subdomain, d.name].join(".")
+                record.type != 'CF_WORKER_ROUTE'
+            ) {
+                fqdn = [d.subdomain, d.name].join('.');
 
                 record.subdomain = d.subdomain;
                 if (record.name == '@') {
@@ -874,7 +939,7 @@ var CF_REDIRECT = recordBuilder('CF_REDIRECT', {
         ['source', _validateCloudflareRedirect],
         ['destination', _validateCloudflareRedirect],
     ],
-    transform: function(record, args, modifiers) {
+    transform: function (record, args, modifiers) {
         record.name = '@';
         record.target = args.source + ',' + args.destination;
     },
@@ -885,7 +950,7 @@ var CF_TEMP_REDIRECT = recordBuilder('CF_TEMP_REDIRECT', {
         ['source', _validateCloudflareRedirect],
         ['destination', _validateCloudflareRedirect],
     ],
-    transform: function(record, args, modifiers) {
+    transform: function (record, args, modifiers) {
         record.name = '@';
         record.target = args.source + ',' + args.destination;
     },
@@ -896,12 +961,11 @@ var CF_WORKER_ROUTE = recordBuilder('CF_WORKER_ROUTE', {
         ['pattern', _validateCloudflareRedirect],
         ['script', _validateCloudflareRedirect],
     ],
-    transform: function(record, args, modifiers) {
+    transform: function (record, args, modifiers) {
         record.name = '@';
         record.target = args.pattern + ',' + args.script;
     },
 });
-
 
 var URL = recordBuilder('URL');
 var URL301 = recordBuilder('URL301');
@@ -1052,7 +1116,11 @@ function DMARC_BUILDER(value) {
         value.policy = 'none';
     }
 
-    if (!value.policy === 'none' || !value.policy === 'quarantine' || !value.policy === 'reject') {
+    if (
+        !value.policy === 'none' ||
+        !value.policy === 'quarantine' ||
+        !value.policy === 'reject'
+    ) {
         throw 'Invalid DMARC policy';
     }
 
@@ -1061,7 +1129,11 @@ function DMARC_BUILDER(value) {
     record.push('p=' + value.policy);
 
     // Subdomain policy
-    if (!value.subdomainPolicy === 'none' || !value.subdomainPolicy === 'quarantine' || !value.subdomainPolicy === 'reject') {
+    if (
+        !value.subdomainPolicy === 'none' ||
+        !value.subdomainPolicy === 'quarantine' ||
+        !value.subdomainPolicy === 'reject'
+    ) {
         throw 'Invalid DMARC subdomain policy';
     }
     if (value.subdomainPolicy) {
@@ -1170,19 +1242,19 @@ function DKIM(arr) {
 // As the main function (in Go) is in our control anyway, all the values here are already sanity-checked.
 // Note: glob() is only an internal undocumented helper function. So use it on your own risk.
 function require_glob() {
-    arguments[2] = "js"; // force to only include .js files.
+    arguments[2] = 'js'; // force to only include .js files.
     var files = glob.apply(null, arguments);
     for (i = 0; i < files.length; i++) {
         require(files[i]);
     }
-    return files
+    return files;
 }
 
 // Set default values for CLI variables
 function CLI_DEFAULTS(defaults) {
     for (var key in defaults) {
-        if (typeof this[key] === "undefined") {
-            this[key] = defaults[key]
+        if (typeof this[key] === 'undefined') {
+            this[key] = defaults[key];
         }
     }
 }
@@ -1230,7 +1302,7 @@ var END = {}; // This is null. It permits the last item to include a comma.
 // Record modifiers:
 
 // Permit labels like "foo.bar.com.bar.com" (normally an error):
-var DISABLE_REPEATED_DOMAIN_CHECK = { skip_fqdn_check: "true" };
+var DISABLE_REPEATED_DOMAIN_CHECK = { skip_fqdn_check: 'true' };
 // D("bar.com", ...
 //     A("foo.bar.com", "10.1.1.1", DISABLE_REPEATED_DOMAIN_CHECK),
 // )

@@ -9,8 +9,9 @@ Problem: It is difficult to get CAA and other records exactly right.
 
 Solution: Use a "builder" to construct it for you.
 
-* [CAA Builder]({{site.github.url}}/caa-builder)
-* [SPF Optimizer]({{site.github.url}}/spf-optimizer)
+* [CAA Builder]({{site.github.url}}/js#CAA_BUILDER)
+* [DMARC Builder]({{site.github.url}}/js#DMARC_BUILDER)
+* [SPF Optimizer]({{site.github.url}}/js#SPF_BUILDER)
 
 # Repeat records in many domains (macros)
 
@@ -82,7 +83,7 @@ _.each(
 
 # Caveats about getting too fancy.
 
-The dnsconfig.js language is JavaScript. On the plus side, this means
+The `dnsconfig.js` language is JavaScript. On the plus side, this means
 you can use loops and variables and anything else you want.
 
 However, we don't recommend you get too fancy.
@@ -123,7 +124,7 @@ without too much hand-holding.  Complexity prevents that.
 
 Isolate the clever stuff from what a typical user will need to edit.
 
-At Stack Overflow, we put all our macro defintions and fancy stuff at
+At Stack Overflow, we put all our macro definitions and fancy stuff at
 the top of the file. The domains are later in the file.
 
 We name the macros to be easy to understand for the user.  For
@@ -139,5 +140,5 @@ domain exists, who requested it, any associated ticket numbers, and so
 on.
 
 We also comment the individual parts of a record. Look at the [SPF
-Optimizer]({{site.github.url}}/spf-optimizer) example.  Each part of
+Optimizer]({{site.github.url}}/js#SPF_BUILDER) example.  Each part of
 the SPF record has a comment.

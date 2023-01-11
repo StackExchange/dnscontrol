@@ -30,7 +30,7 @@ the URL on the portal. Log into the Gandi website, click on "organizations" in
 the leftnav, and click on the organization name.  The URL will be something
 like:
 
-```
+```text
 https://admin.gandi.net/organizations/[not this hex string]/PLTS/[sharing id]/profile
 ```
 
@@ -88,7 +88,7 @@ This is the error you'll see if your `apikey` in `creds.json` is wrong or invali
 
 #### Domain does not exist in profile
 
-```
+```text
 WARNING: Domain 'example.com' does not exist in the 'secname' profile and will be added automatically.
 ```
 

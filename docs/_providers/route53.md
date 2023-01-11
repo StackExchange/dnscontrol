@@ -48,7 +48,7 @@ Alternatively, this provider supports [named profiles](https://docs.aws.amazon.c
 export AWS_PROFILE=ZZZZZZZZ
 ```
 
-and provide a minimal entry in creds.json:
+and provide a minimal entry in `creds.json`:
 
 Example:
 
@@ -159,7 +159,7 @@ You will see some weirdness if:
 1.  A CNAME was created using the web UI
 2.  The CNAME's target does NOT end with a dot.
 
-What you will see: When dnscontrol tries to update such records, R53
+What you will see: When DNSControl tries to update such records, R53
 only updates the first one.  For example if DNSControl is updating 3
 such records, you will need to run `dnscontrol push` three times for
 all three records to update.  Each time DNSControl is sending three
@@ -178,8 +178,7 @@ you have to run it multiple times, each time one of those corrections
 executes and the others do not.  Once all such records are replaced
 this problem disappears.
 
-More info is available in
-[https://github.com/StackExchange/dnscontrol/issues/891](#891).
+More info is available in [#891](https://github.com/StackExchange/dnscontrol/issues/891).
 
 
 ## Error messages
@@ -189,10 +188,10 @@ More info is available in
 ```bash
 dnscontrol preview
 Creating r53 dns provider: NoCredentialProviders: no valid providers in chain. Deprecated.
-	For verbose messaging see aws.Config.CredentialsChainVerboseErrors
+    For verbose messaging see aws.Config.CredentialsChainVerboseErrors
 ```
 
-This means that the creds.json entry isn't found. Either there is no entry, or the entry name doesn't match the first parameter in the `NewDnsProvider()` call. In the above example, note
+This means that the `creds.json` entry isn't found. Either there is no entry, or the entry name doesn't match the first parameter in the `NewDnsProvider()` call. In the above example, note
 that the string `r53_main` is specified in `NewDnsProvider("r53_main")` and that is the exact key used in the creds file above.
 
 ### Invalid KeyId
@@ -200,7 +199,7 @@ that the string `r53_main` is specified in `NewDnsProvider("r53_main")` and that
 ```bash
 dnscontrol preview
 Creating r53_main dns provider: InvalidClientTokenId: The security token included in the request is invalid.
-	status code: 403, request id: 8c006a24-e7df-11e7-9162-01963394e1df
+    status code: 403, request id: 8c006a24-e7df-11e7-9162-01963394e1df
 ```
 
 This means the KeyId is unknown to AWS.
@@ -210,7 +209,7 @@ This means the KeyId is unknown to AWS.
 ```bash
 dnscontrol preview
 Creating r53_main dns provider: SignatureDoesNotMatch: The request signature we calculated does not match the signature you provided. Check your AWS Secret Access Key and signing method. Consult the service documentation for details.
-	status code: 403, request id: 9171d89a-e7df-11e7-8586-cbea3ea4e710
+    status code: 403, request id: 9171d89a-e7df-11e7-8586-cbea3ea4e710
 ```
 
 This means the SecretKey is incorrect. It may be a quoting issue.

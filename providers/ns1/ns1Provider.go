@@ -2,7 +2,6 @@ package ns1
 
 import (
 	"encoding/json"
-	"errors"
 	"fmt"
 	"net/http"
 	"strconv"
@@ -10,6 +9,7 @@ import (
 
 	"github.com/StackExchange/dnscontrol/v3/models"
 	"github.com/StackExchange/dnscontrol/v3/pkg/diff"
+	"github.com/StackExchange/dnscontrol/v3/pkg/diff2"
 	"github.com/StackExchange/dnscontrol/v3/providers"
 	"gopkg.in/ns1/ns1-go.v2/rest"
 	"gopkg.in/ns1/ns1-go.v2/rest/model/dns"
@@ -58,12 +58,6 @@ func (n *nsone) EnsureDomainExists(domain string) error {
 
 	if err == rest.ErrZoneExists {
 		// if domain exists already, just return nil, nothing to do here.
-		return nil
-	}
-
-	newZoneExistsError := errors.New("invalid: FQDN already exists in the view")
-	if errors.As(err, &newZoneExistsError) {
-		// XXX: FIX: This is an ugly workaround for https://github.com/ns1/ns1-go/issues/163. Remove when resolved.
 		return nil
 	}
 
@@ -149,6 +143,7 @@ func (n *nsone) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Correct
 	//dc.CombineMXs()
 
 	domain := dc.Name
+	corrections := []*models.Correction{}
 
 	// Get existing records
 	existingRecords, err := n.GetZoneRecords(domain)
@@ -156,48 +151,84 @@ func (n *nsone) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Correct
 		return nil, err
 	}
 
-	existingGrouped := existingRecords.GroupedByKey()
-	desiredGrouped := dc.Records.GroupedByKey()
-
 	//  Normalize
 	models.PostProcessRecords(existingRecords)
 
-	differ := diff.New(dc)
-	changedGroups, err := differ.ChangedGroups(existingRecords)
-	if err != nil {
-		return nil, err
-	}
-
-	corrections := []*models.Correction{}
-
+	// add DNSSEC-related corrections
 	if dnssecCorrections := n.getDomainCorrectionsDNSSEC(domain, dc.AutoDNSSEC); dnssecCorrections != nil {
 		corrections = append(corrections, dnssecCorrections)
 	}
 
-	// each name/type is given to the api as a unit.
-	for k, descs := range changedGroups {
-		key := k
+	if !diff2.EnableDiff2 {
 
-		desc := strings.Join(descs, "\n")
-		_, current := existingGrouped[k]
-		recs, wanted := desiredGrouped[k]
-		if wanted && !current {
-			// pure addition
+		existingGrouped := existingRecords.GroupedByKey()
+		desiredGrouped := dc.Records.GroupedByKey()
+
+		differ := diff.New(dc)
+		changedGroups, err := differ.ChangedGroups(existingRecords)
+		if err != nil {
+			return nil, err
+		}
+
+		// each name/type is given to the api as a unit.
+		for k, descs := range changedGroups {
+			key := k
+
+			desc := strings.Join(descs, "\n")
+
+			_, current := existingGrouped[k]
+			recs, wanted := desiredGrouped[k]
+
+			if wanted && !current {
+				// pure addition
+				corrections = append(corrections, &models.Correction{
+					Msg: desc,
+					F:   func() error { return n.add(recs, dc.Name) },
+				})
+			} else if current && !wanted {
+				// pure deletion
+				corrections = append(corrections, &models.Correction{
+					Msg: desc,
+					F:   func() error { return n.remove(key, dc.Name) },
+				})
+			} else {
+				// modification
+				corrections = append(corrections, &models.Correction{
+					Msg: desc,
+					F:   func() error { return n.modify(recs, dc.Name) },
+				})
+			}
+		}
+		return corrections, nil
+	}
+
+	changes, err := diff2.ByRecordSet(existingRecords, dc, nil)
+	if err != nil {
+		return nil, err
+	}
+
+	for _, change := range changes {
+		key := change.Key
+		recs := change.New
+		desc := strings.Join(change.Msgs, "\n")
+
+		if change.Type == diff2.CREATE {
 			corrections = append(corrections, &models.Correction{
 				Msg: desc,
 				F:   func() error { return n.add(recs, dc.Name) },
 			})
-		} else if current && !wanted {
-			// pure deletion
-			corrections = append(corrections, &models.Correction{
-				Msg: desc,
-				F:   func() error { return n.remove(key, dc.Name) },
-			})
-		} else {
-			// modification
+		}
+		if change.Type == diff2.CHANGE {
 			corrections = append(corrections, &models.Correction{
 				Msg: desc,
 				F:   func() error { return n.modify(recs, dc.Name) },
+			})
+
+		}
+		if change.Type == diff2.DELETE {
+			corrections = append(corrections, &models.Correction{
+				Msg: desc,
+				F:   func() error { return n.remove(key, dc.Name) },
 			})
 		}
 	}

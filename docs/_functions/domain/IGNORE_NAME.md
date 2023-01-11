@@ -2,6 +2,7 @@
 name: IGNORE_NAME
 parameters:
   - pattern
+  - rTypes
 ---
 
 WARNING: The `IGNORE_*` family  of functions is risky to use. The code
@@ -9,7 +10,7 @@ is brittle and has subtle bugs. Use at your own risk. Do not use these
 commands with `D_EXTEND()`.
 
 `IGNORE_NAME` can be used to ignore some records present in zone.
-All records (independently of their type) of that name will be completely ignored.
+Records of that name will be completely ignored. An optional `rTypes` may be specified as a comma separated list to only ignore records of the given type, e.g. `"A"`, `"A,CNAME"`, `"A, MX, CNAME"`. If `rTypes` is omitted or is `"*"` all record types matching the name will be ignored.
 
 `IGNORE_NAME` is like `NO_PURGE` except it acts only on some specific records instead of the whole zone.
 
@@ -17,7 +18,7 @@ Technically `IGNORE_NAME` is a promise that DNSControl will not add, change, or 
 
 `IGNORE_NAME` is generally used in very specific situations:
 
-* Some records are managed by some other system and DNSControl is only used to manage some records and/or keep them updated. For example a DNS record that is managed by Kubernetes External DNS, but DNSControl is used to manage the rest of the zone. In this case we don't want DNSControl to try to delete the externally managed record.
+* Some records are managed by some other system and DNSControl is only used to manage some records and/or keep them updated. For example a DNS `A` record that is managed by a dynamic DNS client, or by Kubernetes External DNS, but DNSControl is used to manage the rest of the zone. In this case we don't want DNSControl to try to delete the externally managed record.
 * To work-around a pseudo record type that is not supported by DNSControl. For example some providers have a fake DNS record type called "URL" which creates a redirect. DNSControl normally deletes these records because it doesn't understand them. `IGNORE_NAME` will leave those records alone.
 
 In this example, DNSControl will insert/update the "baz.example.com" record but will leave unchanged the "foo.example.com" and "bar.example.com" ones.
@@ -25,8 +26,10 @@ In this example, DNSControl will insert/update the "baz.example.com" record but 
 {% capture example %}
 ```js
 D("example.com",
-  `IGNORE_NAME`("foo"),
-  `IGNORE_NAME`("bar"),
+  IGNORE_NAME("foo"), // ignore all record types for name foo
+  IGNORE_NAME("baz", "*"), // ignore all record types for name baz
+  IGNORE_NAME("bar", "A,MX"), // ignore only A and MX records for name bar
+  CNAME("bar", "www"), // CNAME is not ignored
   A("baz", "1.2.3.4")
 );
 ```
@@ -55,7 +58,7 @@ anything at a particular label, therefore DNSControl prevents you from
 adding records at a label that is `IGNORE_NAME`'ed.
 
 Use `IGNORE_NAME("@")` to ignore at the domain's apex. Most providers
-insert magic or unchangable records at the domain's apex; usually `NS`
+insert magic or unchangeable records at the domain's apex; usually `NS`
 and `SOA` records.  DNSControl treats them specially.
 
 # Errors
@@ -80,4 +83,4 @@ You can override this error by adding the
 Disabling this safety check creates two risks:
 
 1. Two owners (DNSControl and some other entity) toggling a record between two settings.
-2. The other owner wiping all records at this label, which won't be noticed until the next time dnscontrol is run.
+2. The other owner wiping all records at this label, which won't be noticed until the next time DNSControl is run.
