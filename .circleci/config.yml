@@ -95,10 +95,10 @@ jobs:
 
     steps:
       - when:
-        condition:
-          equal: [ foo, foo ]
-        steps:
-          echo did not skip
+          condition:
+            equal: [ foo, foo ]
+          steps:
+            echo did not skip
       - checkout
       - run: mkdir -p "$TEST_RESULTS"
 
