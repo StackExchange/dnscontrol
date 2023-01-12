@@ -132,6 +132,12 @@ func ByLabel(existing models.Records, dc *models.DomainConfig, compFunc Comparab
 //
 // Use this with DNS providers whose API updates one record at a time.
 //
+// Note: The .Old and .New field are lists ([]models.RecordConfig) but
+// when using ByRecord() they will never have more than one entry.
+// A create always has exactly 1 new: .New[0]
+// A change always has exactly 1 old and 1 new: .Old[0] and .New[0]
+// A delete always has exactly 1 old: .Old[0]
+//
 // Examples include: INWX
 func ByRecord(existing models.Records, dc *models.DomainConfig, compFunc ComparableFunc) (ChangeList, error) {
 	// dc stores the desired state.
