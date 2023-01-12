@@ -38,10 +38,14 @@ Example:
 
 The Cloudflare API supports two different authentication methods.
 
+NOTE: You can not mix the two authentication methods.  If you try, DNSControl will report an error.
+
+## API Tokens (recommended)
+
 The recommended (newer) method is to
 provide a [Cloudflare API token](https://dash.cloudflare.com/profile/api-tokens).
 
-This method is enabled by setting the "apitoken" value in `creds.json`:
+This method is enabled by setting the `apitoken` value in `creds.json`:
 
 ```json
 {
@@ -53,9 +57,8 @@ This method is enabled by setting the "apitoken" value in `creds.json`:
 }
 ```
 
-See [Cloudflare's documentation](https://support.cloudflare.com/hc/en-us/articles/200167836-Managing-API-Tokens-and-Keys) for instructions on how to generate and configure permissions on API tokens.
-
-A token can be granted rights (authorization to do certain tasks) at a very granular level.  DNSControl requires the token to have the following rights:
+* `accountid` is found in the Cloudflare portal ("Account ID") on any "Website" page.  Click on any site and you'll see the "Account ID" on the lower right side of the page.
+* `apitoken` is something you must create. See [Cloudflare's documentation](https://support.cloudflare.com/hc/en-us/articles/200167836-Managing-API-Tokens-and-Keys) for instructions on how to generate and configure permissions on API tokens.  The token must be granted rights (authorization to do certain tasks) at a very granular level.  DNSControl requires the token to have the following rights:
 
 * Read zones (`Zone → Zone → Read`)
 * Edit DNS records (`Zone → DNS → Edit`)
@@ -66,13 +69,14 @@ A token can be granted rights (authorization to do certain tasks) at a very gran
   * Edit Worker Scripts (`Zone → Workers Routes → Edit`)
 * FYI: [An example permissions configuration](https://user-images.githubusercontent.com/210250/136301050-1fd430bf-21b6-428b-aa54-f6009964031d.png)
 
+## Username+Key (not recommended)
+
 The other (older, not recommended) method is to
 provide your Cloudflare API username and access key.
-This key is available under "My Settings".
 
-This method is not recommended because these credentials give DNSControl access to everything (think of it as "root" for your account).
+This method is not recommended because these credentials give DNSControl access to everything (think of it as "super user" for your account).
 
-This method is enabled by setting the "apikey" and "apiuser" values in `creds.json`:
+This method is enabled by setting the `apikey` and `apiuser` values in `creds.json`:
 
 ```json
 {
@@ -84,25 +88,9 @@ This method is enabled by setting the "apikey" and "apiuser" values in `creds.js
   }
 }
 ```
-
-You can not mix `apikey`/`apiuser` and `apitoken`.  If all three values are set, you will receive an error.
-
-You should also set the "accountid" value.  This is optional but may become required some day therefore we recommend setting it.
-The Account ID is used to disambiguate when API key has access to multiple Cloudflare accounts. For example, when creating domains this key is used to determine which account to place the new domain.  It is also required when using Workers.
-
-The "accountid" is found in the Cloudflare portal ("Account ID") on the DNS page. Set it in `creds.json`:
-
-```json
-{
-  "cloudflare": {
-    "TYPE": "CLOUDFLAREAPI",
-    "accountid": "your-cloudflare-account-id",
-    "apitoken": "..."
-  }
-}
-```
-
-Older `creds.json` files that do not have accountid set may work for now, but not in the future.
+* `accountid` (see above)
+* `apiuser` is the email address associated with the account.
+* `apikey` is found on "My Settings": https://dash.cloudflare.com/profile/api-tokens
 
 ## Meta configuration
 
