@@ -8,18 +8,18 @@ jsId: AKAMAIEDGEDNS
 # Akamai Edge DNS Provider
 
 "Akamai Edge DNS Provider" configures Akamai's
-[Edge DNS](https://www.akamai.com/us/en/products/security/edge-dns.jsp) service.
+[Edge DNS](https://www.akamai.com/products/edge-dns) service.
 
 This provider interacts with Edge DNS via the
-[Edge DNS Zone Management API](https://developer.akamai.com/api/cloud_security/edge_dns_zone_management/v2.html).
+[Edge DNS Zone Management API](https://techdocs.akamai.com/edge-dns/reference/edge-dns-api).
 
 Before you can use this provider, you need to create an "API Client" with authorization to use the
-[Edge DNS Zone Management API](https://developer.akamai.com/api/cloud_security/edge_dns_zone_management/v2.html).
+[Edge DNS Zone Management API](https://techdocs.akamai.com/edge-dns/reference/edge-dns-api).
 
-See the "Get Started" section of [Edge DNS Zone Management API](https://developer.akamai.com/api/cloud_security/edge_dns_zone_management/v2.html),
+See the "Get Started" section of [Edge DNS Zone Management API](https://techdocs.akamai.com/edge-dns/reference/edge-dns-api),
 which says, "To enable this API, choose the API service named DNS—Zone Record Management, and set the access level to READ-WRITE."
 
-Follow directions at [Authenticate With EdgeGrid](https://developer.akamai.com/getting-started/edgegrid) to generate
+Follow directions at [Authenticate With EdgeGrid](https://www.akamai.com/developer) to generate
 the required credentials.
 
 ## Configuration
@@ -77,5 +77,5 @@ D("example.com", REG_NONE, DnsProvider(DSP_AKAMAIEDGEDNS),
 );
 ```
 
-AKAMAICDN is a proprietary record type that is used to configure [Zone Apex Mapping](https://blogs.akamai.com/2019/08/fast-dns-zone-apex-mapping-dnssec.html).
+AKAMAICDN is a proprietary record type that is used to configure [Zone Apex Mapping](https://www.akamai.com/blog/security/edge-dns--zone-apex-mapping---dnssec).
 The AKAMAICDN target must be preconfigured in the Akamai network.

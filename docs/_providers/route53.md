@@ -178,8 +178,7 @@ you have to run it multiple times, each time one of those corrections
 executes and the others do not.  Once all such records are replaced
 this problem disappears.
 
-More info is available in
-[https://github.com/StackExchange/dnscontrol/issues/891](#891).
+More info is available in [#891](https://github.com/StackExchange/dnscontrol/issues/891).
 
 
 ## Error messages

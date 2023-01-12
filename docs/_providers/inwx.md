@@ -100,7 +100,7 @@ INWX.
 ## Usage
 An example `dnsconfig.js` configuration file
 for `example.tld` registered with INWX
-and delegated to CloudFlare:
+and delegated to Cloudflare:
 
 ```js
 var REG_INWX = NewRegistrar("inwx");
@@ -110,6 +110,3 @@ D("example.tld", REG_INWX, DnsProvider(DSP_CF),
     A("test", "1.2.3.4")
 );
 ```
-
-
-
