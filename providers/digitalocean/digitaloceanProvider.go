@@ -147,72 +147,71 @@ func (api *digitaloceanProvider) GetDomainCorrections(dc *models.DomainConfig) (
 	txtutil.SplitSingleLongTxt(dc.Records) // Autosplit long TXT records
 
 	var corrections []*models.Correction
-	if !diff2.EnableDiff2 || true { // Remove "|| true" when diff2 version arrives
-
+	var create, delete, modify diff.Changeset
+	if !diff2.EnableDiff2 {
 		differ := diff.New(dc)
-		_, create, delete, modify, err := differ.IncrementalDiff(existingRecords)
-		if err != nil {
-			return nil, err
-		}
-
-		// Deletes first so changing type works etc.
-		for _, m := range delete {
-			id := m.Existing.Original.(*godo.DomainRecord).ID
-			corr := &models.Correction{
-				Msg: fmt.Sprintf("%s, DO ID: %d", m.String(), id),
-				F: func() error {
-				retry:
-					resp, err := api.client.Domains.DeleteRecord(ctx, dc.Name, id)
-					if err != nil {
-						if pauseAndRetry(resp) {
-							goto retry
-						}
-					}
-					return err
-				},
-			}
-			corrections = append(corrections, corr)
-		}
-		for _, m := range create {
-			req := toReq(dc, m.Desired)
-			corr := &models.Correction{
-				Msg: m.String(),
-				F: func() error {
-				retry:
-					_, resp, err := api.client.Domains.CreateRecord(ctx, dc.Name, req)
-					if err != nil {
-						if pauseAndRetry(resp) {
-							goto retry
-						}
-					}
-					return err
-				},
-			}
-			corrections = append(corrections, corr)
-		}
-		for _, m := range modify {
-			id := m.Existing.Original.(*godo.DomainRecord).ID
-			req := toReq(dc, m.Desired)
-			corr := &models.Correction{
-				Msg: fmt.Sprintf("%s, DO ID: %d", m.String(), id),
-				F: func() error {
-				retry:
-					_, resp, err := api.client.Domains.EditRecord(ctx, dc.Name, id, req)
-					if err != nil {
-						if pauseAndRetry(resp) {
-							goto retry
-						}
-					}
-					return err
-				},
-			}
-			corrections = append(corrections, corr)
-		}
-
-		return corrections, nil
+		_, create, delete, modify, err = differ.IncrementalDiff(existingRecords)
+	} else {
+		differ := diff.NewCompat(dc)
+		_, create, delete, modify, err = differ.IncrementalDiff(existingRecords)
+	}
+	if err != nil {
+		return nil, err
 	}
 
-	// Insert Future diff2 version here.
+	// Deletes first so changing type works etc.
+	for _, m := range delete {
+		id := m.Existing.Original.(*godo.DomainRecord).ID
+		corr := &models.Correction{
+			Msg: fmt.Sprintf("%s, DO ID: %d", m.String(), id),
+			F: func() error {
+			retry:
+				resp, err := api.client.Domains.DeleteRecord(ctx, dc.Name, id)
+				if err != nil {
+					if pauseAndRetry(resp) {
+						goto retry
+					}
+				}
+				return err
+			},
+		}
+		corrections = append(corrections, corr)
+	}
+	for _, m := range create {
+		req := toReq(dc, m.Desired)
+		corr := &models.Correction{
+			Msg: m.String(),
+			F: func() error {
+			retry:
+				_, resp, err := api.client.Domains.CreateRecord(ctx, dc.Name, req)
+				if err != nil {
+					if pauseAndRetry(resp) {
+						goto retry
+					}
+				}
+				return err
+			},
+		}
+		corrections = append(corrections, corr)
+	}
+	for _, m := range modify {
+		id := m.Existing.Original.(*godo.DomainRecord).ID
+		req := toReq(dc, m.Desired)
+		corr := &models.Correction{
+			Msg: fmt.Sprintf("%s, DO ID: %d", m.String(), id),
+			F: func() error {
+			retry:
+				_, resp, err := api.client.Domains.EditRecord(ctx, dc.Name, id, req)
+				if err != nil {
+					if pauseAndRetry(resp) {
+						goto retry
+					}
+				}
+				return err
+			},
+		}
+		corrections = append(corrections, corr)
+	}
 
 	return corrections, nil
 }

@@ -118,83 +118,82 @@ func (client *providerClient) GenerateDomainCorrections(dc *models.DomainConfig,
 	//txtutil.SplitSingleLongTxt(dc.Records) // Autosplit long TXT records
 
 	var corrections []*models.Correction
-	if !diff2.EnableDiff2 || true { // Remove "|| true" when diff2 version arrives
-
+	var creates, dels, modifications diff.Changeset
+	var err error
+	if !diff2.EnableDiff2 {
 		differ := diff.New(dc)
-		_, creates, dels, modifications, err := differ.IncrementalDiff(foundRecords)
-		if err != nil {
-			return nil, err
-		}
-
-		// How to generate corrections?
-
-		// (1) Most providers take individual deletes, creates, and
-		// modifications:
-
-		// // Generate changes.
-		//	corrections := []*models.Correction{}
-		//	for _, del := range dels {
-		//		corrections = append(corrections, client.deleteRec(client.dnsserver, dc.Name, del))
-		//	}
-		//	for _, cre := range creates {
-		//		corrections = append(corrections, client.createRec(client.dnsserver, dc.Name, cre)...)
-		//	}
-		//	for _, m := range modifications {
-		//		corrections = append(corrections, client.modifyRec(client.dnsserver, dc.Name, m))
-		//	}
-		//	return corrections, nil
-
-		// (2) Some providers upload the entire zone every time.  Look at
-		// GetDomainCorrections for BIND and NAMECHEAP for inspiration.
-
-		// (3) Others do something entirely different. Like CSCGlobal:
-
-		// CSCGlobal has a unique API.  A list of edits is sent in one API
-		// call. Edits aren't permitted if an existing edit is being
-		// processed. Therefore, before we do an edit we block until the
-		// previous edit is done executing.
-
-		var edits []zoneResourceRecordEdit
-		var descriptions []string
-		for _, del := range dels {
-			edits = append(edits, makePurge(dc.Name, del))
-			descriptions = append(descriptions, del.String())
-		}
-		for _, cre := range creates {
-			edits = append(edits, makeAdd(dc.Name, cre))
-			descriptions = append(descriptions, cre.String())
-		}
-		for _, m := range modifications {
-			edits = append(edits, makeEdit(dc.Name, m))
-			descriptions = append(descriptions, m.String())
-		}
-		corrections := []*models.Correction{}
-		if len(edits) > 0 {
-			c := &models.Correction{
-				Msg: "\t" + strings.Join(descriptions, "\n\t"),
-				F: func() error {
-					// CSCGlobal's API only permits one pending update at a time.
-					// Therefore we block until any outstanding updates are done.
-					// We also clear out any failures, since (and I can't believe
-					// I'm writing this) any time something fails, the failure has
-					// to be cleared out with an additional API call.
-
-					err := client.clearRequests(dc.Name)
-					if err != nil {
-						return err
-					}
-					return client.sendZoneEditRequest(dc.Name, edits)
-				},
-			}
-			corrections = append(corrections, c)
-		}
-		return corrections, nil
+		_, creates, dels, modifications, err = differ.IncrementalDiff(foundRecords)
+	} else {
+		differ := diff.NewCompat(dc)
+		_, creates, dels, modifications, err = differ.IncrementalDiff(foundRecords)
+	}
+	if err != nil {
+		return nil, err
 	}
 
-	// Insert Future diff2 version here.
+	// How to generate corrections?
+
+	// (1) Most providers take individual deletes, creates, and
+	// modifications:
+
+	// // Generate changes.
+	//	corrections := []*models.Correction{}
+	//	for _, del := range dels {
+	//		corrections = append(corrections, client.deleteRec(client.dnsserver, dc.Name, del))
+	//	}
+	//	for _, cre := range creates {
+	//		corrections = append(corrections, client.createRec(client.dnsserver, dc.Name, cre)...)
+	//	}
+	//	for _, m := range modifications {
+	//		corrections = append(corrections, client.modifyRec(client.dnsserver, dc.Name, m))
+	//	}
+	//	return corrections, nil
+
+	// (2) Some providers upload the entire zone every time.  Look at
+	// GetDomainCorrections for BIND and NAMECHEAP for inspiration.
+
+	// (3) Others do something entirely different. Like CSCGlobal:
+
+	// CSCGlobal has a unique API.  A list of edits is sent in one API
+	// call. Edits aren't permitted if an existing edit is being
+	// processed. Therefore, before we do an edit we block until the
+	// previous edit is done executing.
+
+	var edits []zoneResourceRecordEdit
+	var descriptions []string
+	for _, del := range dels {
+		edits = append(edits, makePurge(dc.Name, del))
+		descriptions = append(descriptions, del.String())
+	}
+	for _, cre := range creates {
+		edits = append(edits, makeAdd(dc.Name, cre))
+		descriptions = append(descriptions, cre.String())
+	}
+	for _, m := range modifications {
+		edits = append(edits, makeEdit(dc.Name, m))
+		descriptions = append(descriptions, m.String())
+	}
+	if len(edits) > 0 {
+		c := &models.Correction{
+			Msg: "\t" + strings.Join(descriptions, "\n\t"),
+			F: func() error {
+				// CSCGlobal's API only permits one pending update at a time.
+				// Therefore we block until any outstanding updates are done.
+				// We also clear out any failures, since (and I can't believe
+				// I'm writing this) any time something fails, the failure has
+				// to be cleared out with an additional API call.
+
+				err := client.clearRequests(dc.Name)
+				if err != nil {
+					return err
+				}
+				return client.sendZoneEditRequest(dc.Name, edits)
+			},
+		}
+		corrections = append(corrections, c)
+	}
 
 	return corrections, nil
-
 }
 
 func makePurge(domainname string, cor diff.Correlation) zoneResourceRecordEdit {
