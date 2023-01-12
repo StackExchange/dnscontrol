@@ -189,7 +189,7 @@ Go to https://circleci.com/ and follow the instructions.
 
 On the projects page, find "dnscontrol". Click "Set Up Project". Use the "Fastest" method (use the existing `.circleci/config.yml` file.
 
-If you get this error: "Orb cloudsmith/cloudsmith@1.0.5 not loaded. To use this orb, an organization admin must opt-in to using third party orbs in Organization Security settings."  Go to the "Organization Settings" (left nav), then "Security" (left nav) and set "Orb Security Settings" to "yes".
+If you get this error: "Orb cloudsmith/cloudsmith@1.0.5 not loaded. To use this orb, an organization admin must opt-in to using third party orbs in Organization Security settings."  Go to the "Organization Settings" (left nav), then "Security" (left nav) and set "Allow Uncertified Orbs" under "Orb Security Settings" to "Yes".
 
 4. Add the secret env variables:
 
