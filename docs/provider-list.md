@@ -95,7 +95,6 @@ Providers in this category and their maintainers are:
 * `NETCUP` @kordianbruck
 * `NETLIFY` @SphericalKat
 * `NS1` @costasd
-* `OCTODNS` @TomOnTime
 * `OPENSRS` @pierre-emmanuelJ
 * `ORACLE` @kallsyms
 * `OVH` @masterzen
