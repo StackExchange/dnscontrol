@@ -2,6 +2,10 @@
 name: NAMESERVER_TTL
 parameters:
   - ttl
+parameter_types:
+  ttl: Duration
+  target: string
+  modifiers...: RecordModifier[]
 ---
 
 TTL sets the TTL on the domain apex NS RRs defined by [NAMESERVER](#NAMESERVER).
