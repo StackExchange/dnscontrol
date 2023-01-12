@@ -51,6 +51,7 @@ var features = providers.DocumentationNotes{
 	providers.CanUseDSForChildren:    providers.Cannot(),
 	providers.CanUseNAPTR:            providers.Can(),
 	providers.CanUsePTR:              providers.Can(),
+	providers.CanUseSOA:              providers.Cannot(),
 	providers.CanUseSRV:              providers.Can(),
 	providers.CanUseSSHFP:            providers.Can(),
 	providers.CanUseTLSA:             providers.Cannot(),
@@ -204,52 +205,87 @@ func (c *hednsProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*models
 	models.PostProcessRecords(prunedRecords)
 	txtutil.SplitSingleLongTxt(dc.Records) // Autosplit long TXT records
 
+	// Fallback to legacy mode if diff2 is not enabled, remove when diff1 is deprecated.
+	if !diff2.EnableDiff2 {
+		return c.getDiff1DomainCorrections(dc, zoneID, prunedRecords)
+	} else {
+		return c.getDiff2DomainCorrections(dc, zoneID, prunedRecords)
+	}
+}
+
+func (c *hednsProvider) getDiff1DomainCorrections(dc *models.DomainConfig, zoneID uint64, records models.Records) ([]*models.Correction, error) {
 	var corrections []*models.Correction
 	var toCreate, toDelete, toModify diff.Changeset
-	if !diff2.EnableDiff2 {
-		differ := diff.New(dc)
-		_, toCreate, toDelete, toModify, err = differ.IncrementalDiff(prunedRecords)
-	} else {
-		differ := diff.NewCompat(dc)
-		_, toCreate, toDelete, toModify, err = differ.IncrementalDiff(prunedRecords)
-	}
+
+	differ := diff.New(dc)
+	_, toCreate, toDelete, toModify, err := differ.IncrementalDiff(records)
 	if err != nil {
 		return nil, err
 	}
 
 	for _, del := range toDelete {
-		record := del.Existing
+		recordID := del.Existing.Original.(Record).RecordID
 		corrections = append(corrections, &models.Correction{
 			Msg: del.String(),
-			F:   func() error { return c.deleteZoneRecord(record) },
+			F:   func() error { return c.deleteZoneRecord(zoneID, recordID) },
 		})
 	}
 
 	for _, cre := range toCreate {
 		record := cre.Desired
-		record.Original = Record{
-			ZoneName:   dc.Name,
-			ZoneID:     zoneID,
-			RecordName: cre.Desired.Name,
-		}
 		corrections = append(corrections, &models.Correction{
 			Msg: cre.String(),
-			F:   func() error { return c.editZoneRecord(record, true) },
+			F:   func() error { return c.createZoneRecord(zoneID, record) },
 		})
 	}
 
 	for _, mod := range toModify {
 		record := mod.Desired
-		record.Original = Record{
-			ZoneName:   dc.Name,
-			ZoneID:     zoneID,
-			RecordID:   mod.Existing.Original.(Record).RecordID,
-			RecordName: mod.Desired.Name,
-		}
+		recordID := mod.Existing.Original.(Record).RecordID
 		corrections = append(corrections, &models.Correction{
 			Msg: mod.String(),
-			F:   func() error { return c.editZoneRecord(record, false) },
+			F:   func() error { return c.changeZoneRecord(zoneID, recordID, record) },
 		})
+	}
+
+	return corrections, nil
+}
+
+func (c *hednsProvider) getDiff2DomainCorrections(dc *models.DomainConfig, zoneID uint64, records models.Records) ([]*models.Correction, error) {
+	changes, err := diff2.ByRecord(records, dc, nil)
+	if err != nil {
+		return nil, err
+	}
+
+	var corrections []*models.Correction
+	for _, change := range changes {
+		switch change.Type {
+		case diff2.CREATE:
+			record := change.New[0]
+			corrections = append(corrections, &models.Correction{
+				Msg: change.MsgsJoined,
+				F: func() error {
+					return c.createZoneRecord(zoneID, record)
+				},
+			})
+		case diff2.CHANGE:
+			record := change.New[0]
+			recordID := change.Old[0].Original.(Record).RecordID
+			corrections = append(corrections, &models.Correction{
+				Msg: change.MsgsJoined,
+				F: func() error {
+					return c.changeZoneRecord(zoneID, recordID, record)
+				},
+			})
+		case diff2.DELETE:
+			recordID := change.Old[0].Original.(Record).RecordID
+			corrections = append(corrections, &models.Correction{
+				Msg: change.MsgsJoined,
+				F: func() error {
+					return c.deleteZoneRecord(zoneID, recordID)
+				},
+			})
+		}
 	}
 
 	return corrections, nil
@@ -332,9 +368,9 @@ func (c *hednsProvider) GetZoneRecords(domain string) (models.Records, error) {
 			err = rc.SetTarget(data)
 		case "MX":
 			// dns.he.net omits the trailing "." on the hostnames for MX records
-			err = rc.SetTargetMX(uint16(priority), data+".")
+			err = rc.SetTargetMX(priority, data+".")
 		case "SRV":
-			err = rc.SetTargetSRVPriorityString(uint16(priority), data)
+			err = rc.SetTargetSRVPriorityString(priority, data)
 		case "SPF":
 			// Convert to TXT record as SPF is deprecated
 			rc.Type = "TXT"
@@ -540,11 +576,11 @@ func (c *hednsProvider) createDomain(domain string) error {
 	return err
 }
 
-func (c *hednsProvider) editZoneRecord(rc *models.RecordConfig, create bool) error {
+func (c *hednsProvider) editZoneRecord(zoneID uint64, recordID uint64, rc *models.RecordConfig, create bool) error {
 	values := url.Values{
 		"account":             {},
 		"menu":                {"edit_zone"},
-		"hosted_dns_zoneid":   {strconv.FormatUint(rc.Original.(Record).ZoneID, 10)},
+		"hosted_dns_zoneid":   {strconv.FormatUint(zoneID, 10)},
 		"hosted_dns_editzone": {"1"},
 		"TTL":                 {strconv.FormatUint(uint64(rc.TTL), 10)},
 		"Name":                {rc.Name},
@@ -555,16 +591,11 @@ func (c *hednsProvider) editZoneRecord(rc *models.RecordConfig, create bool) err
 		values.Set("Type", rc.Type)
 		values.Set("hosted_dns_editrecord", "Submit")
 		values.Set("hosted_dns_recordid", "")
+		values.Set("Priority", "")
 	} else {
 		values.Set("Type", strings.ToLower(rc.Type)) // Lowercase on update
 		values.Set("hosted_dns_editrecord", "Update")
-		values.Set("hosted_dns_recordid", strconv.FormatUint(rc.Original.(Record).RecordID, 10))
-	}
-
-	// Handle priorities
-	if create {
-		values.Set("Priority", "")
-	} else {
+		values.Set("hosted_dns_recordid", strconv.FormatUint(recordID, 10))
 		values.Set("Priority", "-")
 	}
 
@@ -593,11 +624,19 @@ func (c *hednsProvider) editZoneRecord(rc *models.RecordConfig, create bool) err
 	return err
 }
 
-func (c *hednsProvider) deleteZoneRecord(rc *models.RecordConfig) error {
+func (c *hednsProvider) createZoneRecord(zoneID uint64, rc *models.RecordConfig) error {
+	return c.editZoneRecord(zoneID, 0, rc, true)
+}
+
+func (c *hednsProvider) changeZoneRecord(zoneID uint64, recordID uint64, rc *models.RecordConfig) error {
+	return c.editZoneRecord(zoneID, recordID, rc, false)
+}
+
+func (c *hednsProvider) deleteZoneRecord(zoneID uint64, recordID uint64) error {
 	values := url.Values{
 		"menu":                  {"edit_zone"},
-		"hosted_dns_zoneid":     {strconv.FormatUint(rc.Original.(Record).ZoneID, 10)},
-		"hosted_dns_recordid":   {strconv.FormatUint(rc.Original.(Record).RecordID, 10)},
+		"hosted_dns_zoneid":     {strconv.FormatUint(zoneID, 10)},
+		"hosted_dns_recordid":   {strconv.FormatUint(recordID, 10)},
 		"hosted_dns_editzone":   {"1"},
 		"hosted_dns_delrecord":  {"1"},
 		"hosted_dns_delconfirm": {"delete"},

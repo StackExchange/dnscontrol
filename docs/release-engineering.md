@@ -133,6 +133,97 @@ sed -i.bak -e 's@github.com.StackExchange.dnscontrol.v2@github.com/StackExchange
 find * -name \*.bak -delete
 ```
 
+## Tip: Configuring CCI integration tests.
+
+### Overview:
+
+CCI is configured to run an integration test for any provider listed in the "provider" list. However the test is skipped if the `*_DOMAIN` variable is not set. For example, the GCLOUD provider integration test is only run if `GCLOUD_DOMAIN` is set.
+
+* Q: Where is the list of providers to run integration tests on?
+* A: In `.circleci/config.yml` look for the "provider" list:
+
+Example:
+
+```
+workflows:
+...
+  build:
+    jobs:
+...
+      - integration-tests:
+...
+          matrix:
+            parameters:
+              provider:
+...
+                - GCLOUD
+...
+```
+
+* Q: Where are non-secret environment variables stored?
+* A: In `.circleci/config.yml` look for:
+
+```
+jobs:
+...
+  integration-tests:
+...
+    environment: # environment variables for the build itself
+...
+      GCLOUD_EMAIL: dnscontrol@dnscontrol-dev.iam.gserviceaccount.com
+      GCLOUD_PROJECT: dnscontrol-dev
+```
+
+* Q: Where are SECRET environment variables stored?
+* A: In the project: https://app.circleci.com/settings/project/github/StackExchange/dnscontrol/environment-variables
+
+### How do I add a single new integration test?
+
+1. Edit `.circleci/config.yml`
+2. Add the name of the provider (ALL CAPS) to the "provider" list.
+3. Any non-secret env variables needed? Add them to the "environment" section.
+4. Any secrets?  Add them to the [project settings / environment variables](https://app.circleci.com/settings/project/github/StackExchange/dnscontrol/environment-variables)
+4. Add the `_DOMAIN` environment variable to [project settings / environment variables](https://app.circleci.com/settings/project/github/StackExchange/dnscontrol/environment-variables). It is not secret, but must be set as part of the project.
+
+### How do I add a "bring your own keys" integration test?
+
+Overview: You will fork the repo and add any secrets to your fork.  For security reasons you won't have access to the secrets from the main repository.
+
+1. Fork dnscontrol in Github.
+
+Go to https://github.com/StackExchange/dnscontrol and click fork.  Follow the instructions.
+
+If you already have a fork, be sure to use the "sync fork" button on the main page to sync with master.
+
+2. Create a CCI account
+
+Go to https://circleci.com/ and follow the instructions.
+
+3. Set up a CCI project
+
+On the projects page, find "dnscontrol". Click "Set Up Project". Use the "Fastest" method (use the existing `.circleci/config.yml` file.
+
+If you get this error: "Orb cloudsmith/cloudsmith@1.0.5 not loaded. To use this orb, an organization admin must opt-in to using third party orbs in Organization Security settings."  Go to the "Organization Settings" (left nav), then "Security" (left nav) and set "Allow Uncertified Orbs" under "Orb Security Settings" to "Yes".
+
+4. Add the secret env variables:
+
+Go to Project Settings (for this project), and "Environment Variables".
+
+* Add env variable `provider_DOMAIN`  where "provider" is the all caps name of the provider. For example add `BIND_DOMAIN` with the value "example.com"
+
+5. Start a build
+
+From the pipelnies page, you can trigger a build by setting the branch to "master" then click "trigger".
+
+Merges to "master" result in the software being built.  Merges to any other branch causes integration tests to run.
+
+Verify that your tests are working properly by making a branch.  You'll see on the `Run integration tests for _____ provider` step the results of the test.
+
+Some notes:
+
+* Tests that are skipped take 25-30 seconds to complete. In other words, if you look at a list of tests, you can tell which ones were skipped by looking at the completion time.
+* Free accounts don't have access to `2xlarge` instanace. You'll either need to upgrade your CCI account or change `2xlarge` to `large` in `.circleci/config.yml` in your fork. Please be careful to not include that file when you send a PR. (Anyone have tips on how to make that easier?)
+
 ## Tip: How to rebuild flattener
 
 Rebuilding flatter requites go1.17.1 and the gopherjs compiler.
