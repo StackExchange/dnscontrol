@@ -18,6 +18,7 @@ Please change the version number as appropriate.  Substitute (for example)
 git checkout master
 git pull
 go generate
+go mod tidy
 git add -A
 git commit -m "Update generated files for VERSION"
 ```
