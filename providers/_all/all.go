@@ -35,7 +35,6 @@ import (
 	_ "github.com/StackExchange/dnscontrol/v3/providers/netcup"
 	_ "github.com/StackExchange/dnscontrol/v3/providers/netlify"
 	_ "github.com/StackExchange/dnscontrol/v3/providers/ns1"
-	_ "github.com/StackExchange/dnscontrol/v3/providers/octodns"
 	_ "github.com/StackExchange/dnscontrol/v3/providers/opensrs"
 	_ "github.com/StackExchange/dnscontrol/v3/providers/oracle"
 	_ "github.com/StackExchange/dnscontrol/v3/providers/ovh"

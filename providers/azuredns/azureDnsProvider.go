@@ -426,6 +426,13 @@ func nativeToRecordType(recordType *string) (adns.RecordType, error) {
 	}
 }
 
+func safeTarget(t *string) string {
+	if t == nil {
+		return "foundnil"
+	}
+	return *t
+}
+
 func nativeToRecords(set *adns.RecordSet, origin string) []*models.RecordConfig {
 	var results []*models.RecordConfig
 	switch rtype := *set.Type; rtype {
@@ -448,7 +455,7 @@ func nativeToRecords(set *adns.RecordSet, origin string) []*models.RecordConfig 
 				Original: set,
 			}
 			rc.SetLabelFromFQDN(*set.Properties.Fqdn, origin)
-			_ = rc.SetTarget(*set.Properties.TargetResource.ID)
+			_ = rc.SetTarget(safeTarget(set.Properties.TargetResource.ID))
 			results = append(results, rc)
 		}
 	case "Microsoft.Network/dnszones/AAAA":
@@ -470,7 +477,7 @@ func nativeToRecords(set *adns.RecordSet, origin string) []*models.RecordConfig 
 				Original: set,
 			}
 			rc.SetLabelFromFQDN(*set.Properties.Fqdn, origin)
-			_ = rc.SetTarget(*set.Properties.TargetResource.ID)
+			_ = rc.SetTarget(safeTarget(set.Properties.TargetResource.ID))
 			results = append(results, rc)
 		}
 	case "Microsoft.Network/dnszones/CNAME":
@@ -490,7 +497,7 @@ func nativeToRecords(set *adns.RecordSet, origin string) []*models.RecordConfig 
 				Original: set,
 			}
 			rc.SetLabelFromFQDN(*set.Properties.Fqdn, origin)
-			_ = rc.SetTarget(*set.Properties.TargetResource.ID)
+			_ = rc.SetTarget(safeTarget(set.Properties.TargetResource.ID))
 			results = append(results, rc)
 		}
 	case "Microsoft.Network/dnszones/NS":
