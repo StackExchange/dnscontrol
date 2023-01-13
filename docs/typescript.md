@@ -36,6 +36,9 @@ for the version of DNSControl you are using.
 
 2. Tell your editor
 
+At this point some features (autocomplete) will work. However to get the full experience, including
+type checking (i.e. red squiggly underlines when you misuse APIs), there is one more step.
+
 Add this comment to the top of your `dnsconfig.js` file:
 
 ```
