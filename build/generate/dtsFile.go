@@ -16,7 +16,7 @@ func generateDTSFile(funcs string) error {
 		"// WARNING: These type definitions are experimental and subject to change in future releases.",
 	}
 	for _, name := range names {
-		content, err := os.ReadFile(join("types", "src", name+".d.ts"))
+		content, err := os.ReadFile(join("types", name+".d.ts"))
 		if err != nil {
 			return err
 		}
