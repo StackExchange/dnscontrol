@@ -2,6 +2,8 @@
 name: INCLUDE
 parameters:
   - domain
+parameter_types:
+  domain: string
 ---
 
 Includes all records from a given domain

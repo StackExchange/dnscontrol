@@ -6,6 +6,12 @@ parameters:
   - type
   - value
   - modifiers...
+parameter_types:
+  name: string
+  algorithm: 0 | 1 | 2 | 3 | 4
+  type: 0 | 1 | 2
+  value: string
+  "modifiers...": RecordModifier[]
 ---
 
 SSHFP contains a fingerprint of a SSH server which can be validated before SSH clients are establishing the connection.

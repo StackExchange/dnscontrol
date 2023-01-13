@@ -2,7 +2,10 @@
 name: DOMAIN_ELSEWHERE
 parameters:
   - registrar
-  - list of nameserver names
+  - nameserver_names
+parameter_types:
+  registrar: string
+  nameserver_names: string[]
 ---
 
 `DOMAIN_ELSEWHERE()` is a helper macro that lets you easily indicate that

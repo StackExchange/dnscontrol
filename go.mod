@@ -2,7 +2,7 @@ module github.com/StackExchange/dnscontrol/v3
 
 go 1.18
 
-require gopkg.in/yaml.v3 v3.0.1 // indirect
+require gopkg.in/yaml.v3 v3.0.1
 
 require (
 	github.com/Azure/azure-sdk-for-go/sdk/azidentity v1.2.0
@@ -14,10 +14,10 @@ require (
 	github.com/akamai/AkamaiOPEN-edgegrid-golang v1.2.1
 	github.com/andreyvit/diff v0.0.0-20170406064948-c7f18ee00883
 	github.com/aws/aws-sdk-go-v2 v1.17.3
-	github.com/aws/aws-sdk-go-v2/config v1.18.7
-	github.com/aws/aws-sdk-go-v2/credentials v1.13.7
-	github.com/aws/aws-sdk-go-v2/service/route53 v1.25.2
-	github.com/aws/aws-sdk-go-v2/service/route53domains v1.13.0
+	github.com/aws/aws-sdk-go-v2/config v1.18.8
+	github.com/aws/aws-sdk-go-v2/credentials v1.13.8
+	github.com/aws/aws-sdk-go-v2/service/route53 v1.26.0
+	github.com/aws/aws-sdk-go-v2/service/route53domains v1.14.0
 	github.com/babolivier/go-doh-client v0.0.0-20201028162107-a76cff4cb8b6
 	github.com/bhendo/go-powershell v0.0.0-20190719160123-219e7fb4e41e
 	github.com/billputer/go-namecheap v0.0.0-20210108011502-994a912fb7f9
@@ -51,9 +51,9 @@ require (
 	github.com/transip/gotransip/v6 v6.17.0
 	github.com/urfave/cli/v2 v2.23.7
 	github.com/xddxdd/ottoext v0.0.0-20221109171055-210517fa4419
-	golang.org/x/net v0.4.0
-	golang.org/x/oauth2 v0.3.0
-	google.golang.org/api v0.105.0
+	golang.org/x/net v0.5.0
+	golang.org/x/oauth2 v0.4.0
+	google.golang.org/api v0.107.0
 	gopkg.in/ns1/ns1-go.v2 v2.7.2
 )
 
@@ -63,12 +63,13 @@ require (
 	github.com/kylelemons/godebug v1.1.0
 	github.com/mattn/go-isatty v0.0.17
 	github.com/vultr/govultr/v2 v2.17.2
-	golang.org/x/exp v0.0.0-20221230185412-738e83a70c30
+	golang.org/x/exp v0.0.0-20230111222715-75897c7a292a
+	golang.org/x/text v0.6.0
 )
 
 require (
-	cloud.google.com/go/compute v1.13.0 // indirect
-	cloud.google.com/go/compute/metadata v0.2.2 // indirect
+	cloud.google.com/go/compute v1.14.0 // indirect
+	cloud.google.com/go/compute/metadata v0.2.3 // indirect
 	github.com/Azure/azure-sdk-for-go/sdk/azcore v1.0.0 // indirect
 	github.com/Azure/azure-sdk-for-go/sdk/internal v1.0.0 // indirect
 	github.com/Azure/go-autorest v14.2.0+incompatible // indirect
@@ -81,9 +82,9 @@ require (
 	github.com/aws/aws-sdk-go-v2/internal/endpoints/v2 v2.4.21 // indirect
 	github.com/aws/aws-sdk-go-v2/internal/ini v1.3.28 // indirect
 	github.com/aws/aws-sdk-go-v2/service/internal/presigned-url v1.9.21 // indirect
-	github.com/aws/aws-sdk-go-v2/service/sso v1.11.28 // indirect
-	github.com/aws/aws-sdk-go-v2/service/ssooidc v1.13.11 // indirect
-	github.com/aws/aws-sdk-go-v2/service/sts v1.17.7 // indirect
+	github.com/aws/aws-sdk-go-v2/service/sso v1.12.0 // indirect
+	github.com/aws/aws-sdk-go-v2/service/ssooidc v1.14.0 // indirect
+	github.com/aws/aws-sdk-go-v2/service/sts v1.18.0 // indirect
 	github.com/aws/smithy-go v1.13.5 // indirect
 	github.com/boombuler/barcode v1.0.1 // indirect
 	github.com/cenkalti/backoff v2.2.1+incompatible // indirect
@@ -102,7 +103,7 @@ require (
 	github.com/golang/snappy v0.0.4 // indirect
 	github.com/google/go-querystring v1.1.0 // indirect
 	github.com/google/uuid v1.3.0 // indirect
-	github.com/googleapis/enterprise-certificate-proxy v0.2.0 // indirect
+	github.com/googleapis/enterprise-certificate-proxy v0.2.1 // indirect
 	github.com/googleapis/gax-go/v2 v2.7.0 // indirect
 	github.com/gopherjs/gopherjs v1.17.2 // indirect
 	github.com/hashicorp/errwrap v1.1.0 // indirect
@@ -152,12 +153,11 @@ require (
 	golang.org/x/crypto v0.1.0 // indirect
 	golang.org/x/mod v0.6.0 // indirect
 	golang.org/x/sync v0.1.0 // indirect
-	golang.org/x/sys v0.3.0 // indirect
-	golang.org/x/text v0.5.0 // indirect
+	golang.org/x/sys v0.4.0 // indirect
 	golang.org/x/time v0.0.0-20220922220347-f3bd1da661af // indirect
 	golang.org/x/tools v0.2.0 // indirect
 	google.golang.org/appengine v1.6.7 // indirect
-	google.golang.org/genproto v0.0.0-20221206210731-b1a01be3a5f6 // indirect
+	google.golang.org/genproto v0.0.0-20221227171554-f9683d7f8bef // indirect
 	google.golang.org/grpc v1.51.0 // indirect
 	google.golang.org/protobuf v1.28.1 // indirect
 	gopkg.in/ini.v1 v1.66.6 // indirect
