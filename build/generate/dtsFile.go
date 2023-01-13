@@ -23,6 +23,6 @@ func generateDTSFile(funcs string) error {
 		combined = append(combined, string(content))
 	}
 	combined = append(combined, funcs)
-	os.WriteFile(join("types", "dnscontrol.d.ts"), []byte(strings.Join(combined, "\n\n")), 0644)
+	os.WriteFile(join("commands", "types-dnscontrol.d.ts"), []byte(strings.Join(combined, "\n\n")), 0644)
 	return nil
 }
