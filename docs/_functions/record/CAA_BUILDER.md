@@ -6,9 +6,14 @@ parameters:
   - iodef_critical
   - issue
   - issuewild
+parameters_object: true
+parameter_types:
+  label: string?
+  iodef: string
+  iodef_critical: boolean?
+  issue: string[]
+  issuewild: string
 ---
-
-# CAA Builder
 
 DNSControl contains a `CAA_BUILDER` which can be used to simply create
 CAA records for your domains. Instead of creating each CAA record
