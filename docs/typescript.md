@@ -61,7 +61,7 @@ Bug: Values passed to `CLI_DEFAULTS` (and the corresponding `-v` command-line op
 Workaround: create a new `.d.ts` file in the same folder as your `dnsconfig.js` file. In that file, add the following line for each variable you want to use. 
 
 ```
-<code>declare const _variableName_: string;</code>
+declare const VARIABLE_NAME: string;
 ```
 
 This will tell TypeScript that the variable exists, and that it’s a string.
