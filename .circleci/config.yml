@@ -94,7 +94,16 @@ jobs:
         type: string
 
     steps:
+      - run:
+          name: Test << parameters.provider >> set
+          command: |
+            if [ -z "$<< parameters.provider >>_DOMAIN" ] ;
+              echo "Skip test for << parameters.provider >> provider"
+              circleci-agent step halt
+            fi
+
       - checkout
+
       - run: mkdir -p "$TEST_RESULTS"
 
       - restore_cache: # restores saved cache if no changes are detected since last run
