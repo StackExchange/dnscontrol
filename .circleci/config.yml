@@ -97,7 +97,7 @@ jobs:
       - run:
           name: Test << parameters.provider >> set
           command: |
-            if [ -z "$<< parameters.provider >>_DOMAIN" ] ;
+            if [ -z "$<< parameters.provider >>_DOMAIN" ] ; then
               echo "Skip test for << parameters.provider >> provider"
               circleci-agent step halt
             fi
