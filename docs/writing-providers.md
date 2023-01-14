@@ -243,10 +243,10 @@ in the file `dnscontrol/providers/providers.go` (look for `CanUseAlias`).
 
 Capabilities are processed early by DNSControl.  For example if a
 provider doesn't support SRV records, DNSControl will error out
-when parsing dnscontrol.js rather than waiting until the API fails
+when parsing `dnscontrol.js` rather than waiting until the API fails
 at the very end.
 
-Enable optional capabilities in the nameProvider.go file and run
+Enable optional capabilities in the `nameProvider.go` file and run
 the integration tests to see what works and what doesn't.  Fix any
 bugs and repeat, repeat, repeat until you have all the capabilities
 you want to implement.
