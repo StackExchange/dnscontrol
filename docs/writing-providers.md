@@ -284,10 +284,10 @@ dependencies.
 
 Here are some last-minute things to check before you submit your PR.
 
-1. Run "go generate" to make sure all generated files are fresh.
-2. Make sure all appropriate documentation is current. (See Step 8)
-3. Check that dependencies are current (See Step 13)
-4. Re-run the integration test one last time (See Step 7)
+1. Run `go generate` to make sure all generated files are fresh.
+2. Make sure all appropriate documentation is current. (See [Step 8](#step-8--manual-tests))
+3. Check that dependencies are current (See [Step 13](#step-13--dependencies))
+4. Re-run the integration test one last time (See [Step 7](#step-7--integration-test))
 
 ## Step 15: After the PR is merged
 
