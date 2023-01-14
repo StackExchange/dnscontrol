@@ -177,7 +177,7 @@ jobs:
 ```
 
 * Q: Where are SECRET environment variables stored?
-* A: In the project: https://app.circleci.com/settings/project/github/StackExchange/dnscontrol/environment-variables
+* A: In the project: [project settings / environment variables](https://app.circleci.com/settings/project/github/StackExchange/dnscontrol/environment-variables)
 
 ### How do I add a single new integration test?
 
@@ -197,7 +197,7 @@ If you already have a fork, be sure to use the "sync fork" button on the main pa
 
 2. Create a CircleCI account
 
-Go to https://circleci.com/ and follow the instructions.
+Go to [circleci.com](https://circleci.com/) and follow the instructions.
 
 3. Set up a CircleCI project
 
