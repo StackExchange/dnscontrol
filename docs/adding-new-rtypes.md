@@ -228,6 +228,4 @@ Add a new Markdown file to `docs/_functions/domain`. Copy an existing file (`CNA
 -   `parameters`: A list of parameter names, in order. Feel free to use spaces in the name if necessary. Your last parameter should be `modifiers...` to allow arbitrary modifiers like `TTL` to be applied to your record.
 -   `parameter_types`: an object with parameter names as keys and TypeScript type names as values. Check out existing record documentation if you’re not sure to put for a parameter. Note that this isn’t displayed on the website, it’s only used to generate the `.d.ts` file.
 
-{% raw %}
-The rest of the file is the documentation. You can use Markdown syntax to format the text. Use the `{% capture example %}` format to set up a collapsible code block. You can also use it multiple times to show multiple examples.
-{% endraw %}
+The rest of the file is the documentation. You can use Markdown syntax to format the text.
