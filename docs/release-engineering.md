@@ -201,7 +201,7 @@ Overview: You will fork the repo and add any secrets to your fork.  For security
 
 3. Set up a CircleCI project
 
-    On the projects page, find "dnscontrol". Click "Set Up Project". Use the "Fastest" method (use the existing `.circleci/config.yml` file.
+    On the projects page, find "dnscontrol". Click "Set Up Project". Use the "Fastest" method (use the existing `.circleci/config.yml` file).
 
     If you get the error message below, go to the "Organization Settings" (left nav). Then "Security" (left nav) and set "Allow Uncertified Orbs" under "Orb Security Settings" to "Yes".
 
