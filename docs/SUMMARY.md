@@ -7,6 +7,7 @@
 * [Overview](getting-started.md)
 * [Examples](examples.md)
 * [Migrating zones to DNSControl](migrating.md)
+* [TypeScript autocomplete and type checking](typescript.md)
 
 ## Language Reference
 
