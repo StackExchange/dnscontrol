@@ -89,6 +89,13 @@ func generateFunctionTypes() (string, error) {
 			}
 
 			body = body + "\n"
+			body = strings.ReplaceAll(body, "{% hint style=\"danger\" %}", "")
+			body = strings.ReplaceAll(body, "{% hint style=\"info\" %}", "")
+			body = strings.ReplaceAll(body, "{% hint style=\"success\" %}", "")
+			body = strings.ReplaceAll(body, "{% hint style=\"warning\" %}", "")
+			body = strings.ReplaceAll(body, "{% endhint %}", "")
+			body = strings.ReplaceAll(body, "**NOTE**", "NOTE")
+			body = strings.ReplaceAll(body, "**WARNING**", "WARNING")
 			body = fixRuns(body)
 
 			paramNames := []string{}
