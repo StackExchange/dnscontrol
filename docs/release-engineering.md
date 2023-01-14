@@ -189,7 +189,7 @@ Overview: You will fork the repo and add any secrets to your fork.  For security
 
 2. Create a CircleCI account
 
-    Go to [circleci.com](https://circleci.com/) and follow the instructions.
+    Go to [circleci.com](https://circleci.com/signup/) and follow the instructions.
 
 3. Set up a CircleCI project
 
