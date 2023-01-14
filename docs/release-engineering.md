@@ -148,18 +148,13 @@ Example:
 
 ```yaml
 workflows:
-...
   build:
     jobs:
-...
       - integration-tests:
-...
           matrix:
             parameters:
               provider:
-...
                 - GCLOUD
-...
 ```
 
 * Q: Where are non-secret environment variables stored?
@@ -167,11 +162,8 @@ workflows:
 
 ```yaml
 jobs:
-...
   integration-tests:
-...
     environment: # environment variables for the build itself
-...
       GCLOUD_EMAIL: dnscontrol@dnscontrol-dev.iam.gserviceaccount.com
       GCLOUD_PROJECT: dnscontrol-dev
 ```
