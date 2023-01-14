@@ -38,10 +38,7 @@ func generateFeatureMatrix() error {
 			{"SRV", "Driver has explicitly implemented SRV record management"},
 			{"SSHFP", "Provider can manage SSHFP records"},
 			{"TLSA", "Provider can manage TLSA records"},
-			{"R53_ALIAS", "Provider supports Route 53 limited ALIAS"},
-			{"AZURE_ALIAS", "Provider supports Azure DNS limited ALIAS"},
 			{"DS", "Provider supports adding DS records"},
-			{"AKAMAICDN", "Provider supports adding AKAMAICDN records"},
 
 			{"dual host", "This provider is recommended for use in 'dual hosting' scenarios. Usually this means the provider allows full control over the apex NS records"},
 			{"create-domains", "This means the provider can automatically create domains that do not currently exist on your account. The 'dnscontrol create-domains' command will initialize any missing domains"},
@@ -77,15 +74,12 @@ func generateFeatureMatrix() error {
 		setDoc("Official Support", providers.DocOfficiallySupported, true)
 		fm.SetSimple("DNS Provider", false, func() bool { return providers.DNSProviderTypes[p].Initializer != nil })
 		fm.SetSimple("Registrar", false, func() bool { return providers.RegistrarTypes[p] != nil })
-		setCap("AKAMAICDN", providers.CanUseAKAMAICDN)
 		setCap("ALIAS", providers.CanUseAlias)
 		setCap("AUTODNSSEC", providers.CanAutoDNSSEC)
-		setCap("AZURE_ALIAS", providers.CanUseAzureAlias)
 		setCap("CAA", providers.CanUseCAA)
 		setCap("DS", providers.CanUseDS)
 		setCap("NAPTR", providers.CanUseNAPTR)
 		setCap("PTR", providers.CanUsePTR)
-		setCap("R53_ALIAS", providers.CanUseRoute53Alias)
 		setCap("SOA", providers.CanUseSOA)
 		setCap("SRV", providers.CanUseSRV)
 		setCap("SSHFP", providers.CanUseSSHFP)
