@@ -207,7 +207,7 @@ Overview: You will fork the repo and add any secrets to your fork.  For security
 
 5. Start a build
 
-    From the pipelnies page, you can trigger a build by setting the branch to "master" then click "trigger".
+    From the pipelines page, you can trigger a build by setting the branch to "master" then click "trigger".
 
     Merges to "master" result in the software being built.  Merges to any other branch causes integration tests to run.
 
