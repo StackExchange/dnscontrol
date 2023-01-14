@@ -146,7 +146,7 @@ CCI is configured to run an integration test for any provider listed in the "pro
 
 Example:
 
-```
+```yaml
 workflows:
 ...
   build:
@@ -165,7 +165,7 @@ workflows:
 * Q: Where are non-secret environment variables stored?
 * A: In `.circleci/config.yml` look for:
 
-```
+```yaml
 jobs:
 ...
   integration-tests:
