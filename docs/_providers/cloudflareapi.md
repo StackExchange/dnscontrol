@@ -216,7 +216,7 @@ Notice a few details:
 1. We need an A record with cloudflare proxy on, or the page rule will never run.
 2. The IP address in those A records may be mostly irrelevant, as cloudflare should handle all requests (assuming some page rule matches).
 3. Ordering matters for priority. CF_REDIRECT records will be added in the order they appear in your js. So put catch-alls at the bottom.
-4. if _any_ `CF_REDIRECT` or `CF_TEMP_REDIRECT` functions are used then `dnscontrol` will manage _all_ "Forwarding URL" type Page Rules for the domain. Page Rule types other than "Forwarding URL” will be left alone. In other words, `dnscontrol` will delete any Forwarding URL it doesn't recognize. Be careful!
+4. if _any_ `CF_REDIRECT` or `CF_TEMP_REDIRECT` functions are used then `dnscontrol` will manage _all_ "Forwarding URL" type Page Rules for the domain. Page Rule types other than "Forwarding URL" will be left alone. In other words, `dnscontrol` will delete any Forwarding URL it doesn't recognize. Be careful!
 
 ## Worker routes
 The Cloudflare provider can manage Worker Routes for your domains. Simply use the `CF_WORKER_ROUTE` function passing the route pattern and the worker name:
