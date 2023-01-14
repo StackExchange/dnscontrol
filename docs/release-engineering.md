@@ -135,11 +135,11 @@ sed -i.bak -e 's@github.com.StackExchange.dnscontrol.v2@github.com/StackExchange
 find * -name \*.bak -delete
 ```
 
-## Tip: Configuring CCI integration tests.
+## Tip: Configuring CircleCI integration tests.
 
 ### Overview:
 
-CCI is configured to run an integration test for any provider listed in the "provider" list. However the test is skipped if the `*_DOMAIN` variable is not set. For example, the GCLOUD provider integration test is only run if `GCLOUD_DOMAIN` is set.
+CircleCI is configured to run an integration test for any provider listed in the "provider" list. However the test is skipped if the `*_DOMAIN` variable is not set. For example, the GCLOUD provider integration test is only run if `GCLOUD_DOMAIN` is set.
 
 * Q: Where is the list of providers to run integration tests on?
 * A: In `.circleci/config.yml` look for the "provider" list:
@@ -197,11 +197,11 @@ Go to https://github.com/StackExchange/dnscontrol and click fork.  Follow the in
 
 If you already have a fork, be sure to use the "sync fork" button on the main page to sync with master.
 
-2. Create a CCI account
+2. Create a CircleCI account
 
 Go to https://circleci.com/ and follow the instructions.
 
-3. Set up a CCI project
+3. Set up a CircleCI project
 
 On the projects page, find "dnscontrol". Click "Set Up Project". Use the "Fastest" method (use the existing `.circleci/config.yml` file.
 
@@ -224,7 +224,7 @@ Verify that your tests are working properly by making a branch.  You'll see on t
 Some notes:
 
 * Tests that are skipped take about 3 seconds to complete. In other words, if you look at a list of tests, you can tell which ones were skipped by looking at the completion time.
-* Free accounts don't have access to `2xlarge` instanace. You'll either need to upgrade your CCI account or change `2xlarge` to `large` in `.circleci/config.yml` in your fork. Please be careful to not include that file when you send a PR. See [#1935](https://github.com/StackExchange/dnscontrol/issues/1935) (Anyone have tips on how to make that easier?)
+* Free accounts don't have access to `2xlarge` instanace. You'll either need to upgrade your CircleCI account or change `2xlarge` to `large` in `.circleci/config.yml` in your fork. Please be careful to not include that file when you send a PR. See [#1935](https://github.com/StackExchange/dnscontrol/issues/1935) (Anyone have tips on how to make that easier?)
 
 ## Tip: How to rebuild flattener
 
