@@ -89,7 +89,7 @@ This method is enabled by setting the `apikey` and `apiuser` values in `creds.js
 ```
 * `accountid` (see above)
 * `apiuser` is the email address associated with the account.
-* `apikey` is found on "My Settings": https://dash.cloudflare.com/profile/api-tokens
+* `apikey` is found on [My Profile / API Tokens](https://dash.cloudflare.com/profile/api-tokens).
 
 ## Meta configuration
 
