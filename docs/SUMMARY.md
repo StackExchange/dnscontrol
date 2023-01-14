@@ -71,6 +71,8 @@
             * [CF_WORKER_ROUTE](_functions/domain/CF_WORKER_ROUTE.md)
         * ClouDNS
             * [CLOUDNS_WR](_functions/domain/CLOUDNS_WR.md)
+        * NS1
+            * [NS1_URLFWD](_functions/domain/NS1_URLFWD.md)
 * Record Modifiers
     * [CAA_BUILDER](_functions/record/CAA_BUILDER.md)
     * [DMARC_BUILDER](_functions/record/DMARC_BUILDER.md)
