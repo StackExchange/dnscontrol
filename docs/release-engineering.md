@@ -193,38 +193,38 @@ Overview: You will fork the repo and add any secrets to your fork.  For security
 
 1. [Fork StackExchange/dnscontrol](https://github.com/StackExchange/dnscontrol/fork) in GitHub.
 
-If you already have a fork, be sure to use the "sync fork" button on the main page to sync with master.
+    If you already have a fork, be sure to use the "sync fork" button on the main page to sync with master.
 
 2. Create a CircleCI account
 
-Go to [circleci.com](https://circleci.com/) and follow the instructions.
+    Go to [circleci.com](https://circleci.com/) and follow the instructions.
 
 3. Set up a CircleCI project
 
-On the projects page, find "dnscontrol". Click "Set Up Project". Use the "Fastest" method (use the existing `.circleci/config.yml` file.
+    On the projects page, find "dnscontrol". Click "Set Up Project". Use the "Fastest" method (use the existing `.circleci/config.yml` file.
 
-If you get the error message below, go to the "Organization Settings" (left nav). Then "Security" (left nav) and set "Allow Uncertified Orbs" under "Orb Security Settings" to "Yes".
+    If you get the error message below, go to the "Organization Settings" (left nav). Then "Security" (left nav) and set "Allow Uncertified Orbs" under "Orb Security Settings" to "Yes".
 
->"Orb cloudsmith/cloudsmith@1.0.5 not loaded. To use this orb, an organization admin must opt-in to using third party orbs in Organization Security settings."
+    >"Orb cloudsmith/cloudsmith@1.0.5 not loaded. To use this orb, an organization admin must opt-in to using third party orbs in Organization Security settings."
 
 4. Add the secret env variables:
 
-Go to Project Settings (for this project), and "Environment Variables".
+    Go to Project Settings (for this project), and "Environment Variables".
 
-* Add env variable `provider_DOMAIN`  where "provider" is the all caps name of the provider. For example add `BIND_DOMAIN` with the value "example.com"
+   * Add env variable `provider_DOMAIN`  where "provider" is the all caps name of the provider. For example add `BIND_DOMAIN` with the value "example.com"
 
 5. Start a build
 
-From the pipelnies page, you can trigger a build by setting the branch to "master" then click "trigger".
+    From the pipelnies page, you can trigger a build by setting the branch to "master" then click "trigger".
 
-Merges to "master" result in the software being built.  Merges to any other branch causes integration tests to run.
+    Merges to "master" result in the software being built.  Merges to any other branch causes integration tests to run.
 
-Verify that your tests are working properly by making a branch.  You'll see on the `Run integration tests for _____ provider` step the results of the test.
+    Verify that your tests are working properly by making a branch.  You'll see on the `Run integration tests for _____ provider` step the results of the test.
 
-Some notes:
+    Some notes:
 
-* Tests that are skipped take about 3 seconds to complete. In other words, if you look at a list of tests, you can tell which ones were skipped by looking at the completion time.
-* Free accounts don't have access to `2xlarge` instanace. You'll either need to upgrade your CircleCI account or change `2xlarge` to `large` in `.circleci/config.yml` in your fork. Please be careful to not include that file when you send a PR. See [#1935](https://github.com/StackExchange/dnscontrol/issues/1935) (Anyone have tips on how to make that easier?)
+   * Tests that are skipped take about 3 seconds to complete. In other words, if you look at a list of tests, you can tell which ones were skipped by looking at the completion time.
+   * Free accounts don't have access to `2xlarge` instanace. You'll either need to upgrade your CircleCI account or change `2xlarge` to `large` in `.circleci/config.yml` in your fork. Please be careful to not include that file when you send a PR. See [#1935](https://github.com/StackExchange/dnscontrol/issues/1935) (Anyone have tips on how to make that easier?)
 
 ## Tip: How to rebuild flattener
 
