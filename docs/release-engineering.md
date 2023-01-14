@@ -185,7 +185,7 @@ jobs:
 2. Add the name of the provider (ALL CAPS) to the "provider" list.
 3. Any non-secret env variables needed? Add them to the "environment" section.
 4. Any secrets?  Add them to the [project settings / environment variables](https://app.circleci.com/settings/project/github/StackExchange/dnscontrol/environment-variables)
-4. Add the `_DOMAIN` environment variable to [project settings / environment variables](https://app.circleci.com/settings/project/github/StackExchange/dnscontrol/environment-variables). It is not secret, but must be set as part of the project.
+5. Add the `_DOMAIN` environment variable to [project settings / environment variables](https://app.circleci.com/settings/project/github/StackExchange/dnscontrol/environment-variables). It is not secret, but must be set as part of the project.
 
 ### How do I add a "bring your own keys" integration test?
 
