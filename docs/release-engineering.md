@@ -191,9 +191,7 @@ jobs:
 
 Overview: You will fork the repo and add any secrets to your fork.  For security reasons you won't have access to the secrets from the main repository.
 
-1. Fork dnscontrol in Github.
-
-Go to https://github.com/StackExchange/dnscontrol and click fork.  Follow the instructions.
+1. [Fork StackExchange/dnscontrol](https://github.com/StackExchange/dnscontrol/fork) in GitHub.
 
 If you already have a fork, be sure to use the "sync fork" button on the main page to sync with master.
 
