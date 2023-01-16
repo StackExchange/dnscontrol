@@ -6,8 +6,7 @@ title: Service Providers
 ## Provider Features {#features}
 
 The table below shows various features supported, or not supported by DNSControl providers.
-Underlined items have tooltips for more detailed explanation. This table is automatically generated
-from metadata supplied by the provider when they register themselves inside dnscontrol.
+This table is automatically generated from metadata supplied by the provider when they register themselves inside dnscontrol.
 
 An empty space may indicate the feature is not supported by a provider, or it may simply mean
 the feature has not been investigated and implemented yet. If a feature you need is missing from
