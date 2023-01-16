@@ -219,7 +219,7 @@ Overview: You will fork the repo and add any secrets to your fork.  For security
 
 ## Tip: How to rebuild flattener
 
-Rebuilding flatter requites go1.17.1 and the gopherjs compiler.
+Rebuilding flatter requires go1.17.1 and the gopherjs compiler.
 
 Install go1.17.1:
 
