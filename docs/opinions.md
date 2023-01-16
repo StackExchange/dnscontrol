@@ -137,14 +137,14 @@ We want to prevent a naive user from including an underscore
 when they meant to use a hyphen (`-`).
 
 Hostnames are more restrictive than general DNS labels.
-To quote [the Wikipedia entry on hostnames](https://en.wikipedia.org/wiki/Hostname#Restrictions_on_valid_hostnames)
-"While a hostname may not contain other characters, such as the
+
+> "While a hostname may not contain other characters, such as the
 underscore character (`_`), other DNS names may contain the
 underscore. Systems such as DomainKeys and service records use
 the underscore as a means to assure that their special character
 is not confused with hostnames. For example,
 `_http._sctp.www.example.com` specifies a service pointer for an
-SCTP capable webserver host (www) in the domain example.com."
+SCTP capable webserver host (www) in the domain example.com." — _[the Wikipedia entry on hostnames](https://en.wikipedia.org/wiki/Hostname#Restrictions_on_valid_hostnames)_
 
 However that leads to an interesting problem. When is a DNS label
 a hostname and when it it just a DNS label?  There is no way to
