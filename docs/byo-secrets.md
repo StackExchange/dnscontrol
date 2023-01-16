@@ -51,7 +51,7 @@ gets its secrets from TomOnTime's secrets.
 Our automated integration tests leverages this info to have tests
 only run if they have access to the secrets they will need.
 
-# How it works:
+# How it works
 
 Tests are executed if `*_DOMAIN` exists.  If the value is empty or
 unset, the test is skipped.  If a test doesn't require secrets, the
@@ -112,7 +112,7 @@ FANCYDNS_USER: ${{ secrets.FANCYDNS_USER }}
 
 Let's look at three examples:
 
-## Example 1:
+## Example 1
 
 The `BIND` integration tests do not require any secrets because it
 simply generates files locally.
@@ -124,7 +124,7 @@ BIND_DOMAIN: example.com
 The existence of `BIND_DOMAIN`, and the fact that the value is
 available to all, means these tests will run for everyone.
 
-## Example 2:
+## Example 2
 
 The `AZURE_DNS` provider requires many settings. Since
 `AZURE_DNS_DOMAIN` comes from GHA's secrets storage, we can be assured
@@ -148,7 +148,7 @@ AZURE_DNS_SUBSCRIPTION_ID: ${{ secrets.AZURE_DNS_SUBSCRIPTION_ID }}
 AZURE_DNS_TENANT_ID: ${{ secrets.AZURE_DNS_TENANT_ID }}
 ```
 
-## Example 3:
+## Example 3
 
 The HEXONET integration tests require secrets, but HEXONET provides an
 Operational Test and Evaluation (OT&E) environment with some "fake"

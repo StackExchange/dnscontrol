@@ -10,7 +10,7 @@ opinions about how things should work.
 This page documents those opinions.
 
 
-# Opinion #1: DNS should be treated like code.
+# Opinion #1: DNS should be treated like code
 
 Code is written in a high-level language, version controlled,
 commented, tested, and reviewed by a third party... and all of that
@@ -33,7 +33,7 @@ credentials for updates should be controlled such that anyone can
 write a PR, but not everyone has access to the credentials.
 
 
-# Opinion #2: Non-experts should be able to safely make DNS changes.
+# Opinion #2: Non-experts should be able to safely make DNS changes
 
 The goal of DNSControl is to create a system that is set up by DNS
 experts like you, but updates and changes can be made by your
@@ -56,7 +56,7 @@ much training. The system should block them from doing dangerous
 things (even if they are technically legal).
 
 
-# Opinion #3: dnsconfig.js are not zonefiles.
+# Opinion #3: dnsconfig.js are not zonefiles
 
 A zonefile can list any kind of DNS record. It has no judgement and
 no morals. It will let you do bad practices as long as the bits are
@@ -67,7 +67,7 @@ Being high-level permits the code to understand intent, and stop
 bad behavior.
 
 
-# Opinion #4: All DNS is lowercase for languages that have such a concept.
+# Opinion #4: All DNS is lowercase for languages that have such a concept
 
 DNSControl downcases all DNS names (domains, labels, and targets).  #sorrynotsorry
 
@@ -80,7 +80,7 @@ be tested, and makes the system safer to operate.
 Yes, we know that DNS is case insensitive.  See [Opinion #3](#opinion-3--dnsconfigjs-are-not-zonefiles).
 
 
-# Opinion #5: Users should state what they want, and DNSControl should do the rest.
+# Opinion #5: Users should state what they want, and DNSControl should do the rest
 
 When possible, `dnsconfig.js` lists a high-level description of what
 is desired and the compiler does the hard work for you.
@@ -94,7 +94,7 @@ Some examples:
 * SPF records are stated in the most verbose way; DNSControl optimizes it for you in a safe, opt-in way.
 
 
-# Opinion #6 If it is ambiguous in DNS, it is forbidden in DNSControl.
+# Opinion #6 If it is ambiguous in DNS, it is forbidden in DNSControl
 
 When there is ambiguity an expert knows what the system will do.
 Your coworkers should not be expected to be experts. (See [Opinion #2](#opinion-2--non-experts-should-be-able-to-safely-make-dns-changes)).

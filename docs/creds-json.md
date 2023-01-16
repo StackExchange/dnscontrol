@@ -45,7 +45,7 @@ Here's a sample file:
   * ...may include any JSON string value including the empty string.
   * If a subkey starts with `$`, it is taken as an env variable.  In the above example, `$HEXONET_APILOGIN` would be replaced by the value of the environment variable `HEXONET_APILOGIN` or the empty string if no such environment variable exists.
 
-## New in v3.16:
+## New in v3.16
 
 The special subkey "TYPE" is used to indicate the provider type (NONE,
 CLOUDFLAREAPI, GCLOUD, etc).

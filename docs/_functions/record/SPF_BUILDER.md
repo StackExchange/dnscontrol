@@ -222,7 +222,7 @@ not change.
 Note: The instructions assume you use git. If you use something
 else, please do the appropriate equivalent command.
 
-## Caveats:
+## Caveats
 
 1. Dnscontrol 'gives up' if it sees SPF records it can't understand.
 This includes: syntax errors, features that our spflib doesn't know

@@ -83,7 +83,7 @@ of bug fixes, and FILL IN.
 
 * FILL IN
 
-### Deprecation warnings
+### Deprecation warnings:
 ```
 
 ## Step 4. Announce it via email
@@ -134,9 +134,9 @@ sed -i.bak -e 's@github.com.StackExchange.dnscontrol.v2@github.com/StackExchange
 find * -name \*.bak -delete
 ```
 
-## Tip: Configuring CircleCI integration tests.
+## Tip: Configuring CircleCI integration tests
 
-### Overview:
+### Overview
 
 CircleCI is configured to run an integration test for any provider listed in the "provider" list. However the test is skipped if the `*_DOMAIN` variable is not set. For example, the GCLOUD provider integration test is only run if `GCLOUD_DOMAIN` is set.
 
