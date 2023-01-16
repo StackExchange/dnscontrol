@@ -1,6 +1,3 @@
----
-name: NS1
----
 # NS1 Provider
 
 ## Configuration

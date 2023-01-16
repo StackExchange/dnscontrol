@@ -1,7 +1,3 @@
----
-name: AutoDNS
----
-
 # AutoDNS Provider
 
 ## Configuration

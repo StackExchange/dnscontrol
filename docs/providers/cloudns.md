@@ -1,6 +1,3 @@
----
-name: ClouDNS
----
 # ClouDNS Provider
 
 ## Configuration

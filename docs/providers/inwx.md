@@ -1,7 +1,3 @@
----
-name: INWX
----
-
 # INWX
 
 INWX.de is a Berlin-based domain registrar.

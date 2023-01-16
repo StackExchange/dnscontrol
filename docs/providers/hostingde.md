@@ -1,7 +1,3 @@
----
-name: hosting.de
----
-
 # hosting.de Provider
 
 ## Configuration

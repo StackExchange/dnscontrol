@@ -1,6 +1,3 @@
----
-name: Domainnameshop
----
 # DOMAINNAMESHOP Provider
 
 ## Configuration

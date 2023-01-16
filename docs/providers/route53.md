@@ -1,6 +1,3 @@
----
-name: Route 53
----
 # Amazon Route 53 Provider
 
 ## Configuration

@@ -1,6 +1,3 @@
----
-name: DNSMADEEASY
----
 # DNS Made Simple Provider
 
 ## Configuration

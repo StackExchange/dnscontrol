@@ -1,7 +1,3 @@
----
-name: Namecheap
----
-
 # Namecheap Provider
 
 This is the provider for [Namecheap](https://www.namecheap.com/).

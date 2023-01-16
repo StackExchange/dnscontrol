@@ -1,6 +1,3 @@
----
-name: Packetframe
----
 # Packetframe Provider
 
 ## Configuration

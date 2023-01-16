@@ -1,6 +1,3 @@
----
-name: Vultr
----
 # Vultr Provider
 
 ## Configuration

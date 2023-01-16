@@ -1,7 +1,3 @@
----
-name: SoftLayer DNS
----
-
 # SoftLayer DNS Provider
 
 {% hint style="info" %}

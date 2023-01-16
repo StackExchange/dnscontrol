@@ -1,6 +1,3 @@
----
-name: Gandi_v5
----
 # Gandi_v5 Provider
 
 `GANDI_V5` uses the v5 API and can act as a registrar provider

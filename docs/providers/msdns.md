@@ -1,7 +1,3 @@
----
-name: Microsoft DNS Server (Windows Server)
----
-
 # Microsoft DNS Server on Microsoft Windows Server
 
 This provider updates a Microsoft DNS server.

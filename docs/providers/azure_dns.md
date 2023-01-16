@@ -1,7 +1,3 @@
----
-name: Azure DNS
----
-
 # Azure DNS Provider
 
 ## Configuration

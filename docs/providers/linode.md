@@ -1,6 +1,3 @@
----
-name: Linode
----
 # Linode Provider
 
 ## Configuration

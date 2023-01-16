@@ -1,6 +1,3 @@
----
-name: deSEC
----
 # deSEC Provider
 ## Configuration
 

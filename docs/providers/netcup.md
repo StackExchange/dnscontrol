@@ -1,6 +1,3 @@
----
-name: Netcup
----
 # Netcup Provider
 
 ## Configuration

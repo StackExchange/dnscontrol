@@ -1,6 +1,3 @@
----
-name: RWTH
----
 # RWTH DNS-Admin Provider
 
 ## Configuration

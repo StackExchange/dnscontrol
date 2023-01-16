@@ -1,7 +1,3 @@
----
-name: Hetzner DNS Console
----
-
 # Hetzner DNS Console Provider
 
 ## Configuration

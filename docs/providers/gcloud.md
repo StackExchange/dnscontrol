@@ -1,7 +1,3 @@
----
-name: Google Cloud DNS
----
-
 # Google Cloud DNS Provider
 
 ## Configuration

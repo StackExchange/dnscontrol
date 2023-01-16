@@ -1,6 +1,3 @@
----
-name: Oracle Cloud
----
 # Oracle Cloud Provider
 
 ## Configuration

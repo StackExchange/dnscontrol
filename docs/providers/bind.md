@@ -1,6 +1,3 @@
----
-name: BIND
----
 # BIND Provider
 
 This provider maintains a directory with a collection of .zone files

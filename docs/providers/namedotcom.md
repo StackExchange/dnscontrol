@@ -1,7 +1,3 @@
----
-name: Name.com
----
-
 # Name.com Provider
 
 {% hint style="info" %}

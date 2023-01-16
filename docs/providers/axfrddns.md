@@ -1,6 +1,3 @@
----
-name: AXFRDDNS
----
 # AXFR+DDNS Provider
 
 This provider uses the native DNS protocols. It uses the AXFR (RFC5936,

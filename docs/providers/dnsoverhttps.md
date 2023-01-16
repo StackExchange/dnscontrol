@@ -1,6 +1,3 @@
----
-name: DNS-over-HTTPS
----
 # DNS-over-HTTPS Provider
 
 This is a read-only/monitoring "registrar". It does a DNS NS lookup to confirm the nameserver servers are correct. This "registrar" is unable to update/correct the NS servers but will alert you if they are incorrect. A common use of this provider is when the domain is with a registrar that does not have an API.

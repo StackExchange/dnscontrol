@@ -1,6 +1,3 @@
----
-name: PowerDNS
----
 # PowerDNS Provider
 
 ## Configuration

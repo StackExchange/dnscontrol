@@ -1,6 +1,3 @@
----
-name: DigitalOcean
----
 # DigitalOcean Provider
 
 ## Configuration

@@ -1,7 +1,3 @@
----
-name: Gcore
-layout: default
----
 # Gcore Provider
 ## Configuration
 

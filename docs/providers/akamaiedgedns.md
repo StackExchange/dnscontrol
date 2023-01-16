@@ -1,7 +1,3 @@
----
-name: AkamaiEdgeDns
----
-
 # Akamai Edge DNS Provider
 
 "Akamai Edge DNS Provider" configures Akamai's

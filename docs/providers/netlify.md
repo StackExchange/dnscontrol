@@ -1,7 +1,3 @@
----
-name: Netlify
-layout: default
----
 # Netlify Provider
 ## Configuration
 

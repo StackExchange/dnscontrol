@@ -1,6 +1,3 @@
----
-name: Ovh
----
 # OVH Provider
 
 ## Configuration

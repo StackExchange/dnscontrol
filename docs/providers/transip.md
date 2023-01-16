@@ -1,7 +1,3 @@
----
-name: TransIP DNS
----
-
 # TransIP DNS Provider
 
 ## Configuration

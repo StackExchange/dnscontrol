@@ -1,7 +1,3 @@
----
-name: Porkbun
-layout: default
----
 # Porkbun Provider
 
 ## Configuration
