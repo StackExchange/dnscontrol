@@ -1,5 +1,3 @@
-# Gandi_v5 Provider
-
 `GANDI_V5` uses the v5 API and can act as a registrar provider
 or a DNS provider. It is only able to work with domains
 migrated to the new LiveDNS API, which should be all domains.

@@ -1,5 +1,3 @@
-# Name.com Provider
-
 {% hint style="info" %}
 **NOTE**: This provider is currently has no maintainer. We are looking for
 a volunteer. If this provider breaks it may be disabled or removed if

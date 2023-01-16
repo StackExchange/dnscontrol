@@ -1,5 +1,3 @@
-# easyname Provider
-
 DNSControl's easyname provider supports being a Registrar. Support for being a DNS Provider is not included, but could be added in the future.
 
 ## Configuration

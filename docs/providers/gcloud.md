@@ -1,5 +1,3 @@
-# Google Cloud DNS Provider
-
 ## Configuration
 
 To use this provider, add an entry to `creds.json` with `TYPE` set to `GCLOUD`.

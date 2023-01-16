@@ -1,5 +1,3 @@
-# BIND Provider
-
 This provider maintains a directory with a collection of .zone files
 as appropriate for ISC BIND, and other systems that use the RFC 1035
 zone-file format.

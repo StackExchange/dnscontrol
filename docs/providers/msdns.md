@@ -1,5 +1,3 @@
-# Microsoft DNS Server on Microsoft Windows Server
-
 This provider updates a Microsoft DNS server.
 
 It interacts with the server via PowerShell commands. As a result, DNSControl

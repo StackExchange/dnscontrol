@@ -1,5 +1,3 @@
-# Akamai Edge DNS Provider
-
 "Akamai Edge DNS Provider" configures Akamai's
 [Edge DNS](https://www.akamai.com/products/edge-dns) service.
 

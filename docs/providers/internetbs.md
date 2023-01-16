@@ -1,5 +1,3 @@
-# Internet.bs Provider
-
 DNSControl's Internet.bs provider supports being a Registrar. Support for being a DNS Provider is not included, but could be added in the future.
 
 ## Configuration

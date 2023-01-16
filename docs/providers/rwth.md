@@ -1,5 +1,3 @@
-# RWTH DNS-Admin Provider
-
 ## Configuration
 
 To use this provider, add an entry to `creds.json` with `TYPE` set to `RWTH`

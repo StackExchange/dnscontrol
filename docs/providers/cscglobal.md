@@ -1,5 +1,3 @@
-# CSC Global Provider
-
 DNSControl's CSC Global provider supports being a Registrar. Support for being a DNS Provider is not included, although CSC Global's API does provide for this so it could be implemented in the future.
 
 {% hint style="info" %}

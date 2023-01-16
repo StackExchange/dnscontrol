@@ -1,5 +1,3 @@
-# Hurricane Electric DNS Provider
-
 ## Important Note
 Hurricane Electric does not currently expose an official JSON or XML API, and as such, this provider interacts directly
 with the web interface. Because there is no officially supported API, this provider may cease to function if Hurricane

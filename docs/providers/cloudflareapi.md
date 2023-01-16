@@ -1,5 +1,3 @@
-# Cloudflare Provider
-
 This is the provider for [Cloudflare](https://www.cloudflare.com/).
 
 ## Important notes

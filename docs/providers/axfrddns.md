@@ -1,5 +1,3 @@
-# AXFR+DDNS Provider
-
 This provider uses the native DNS protocols. It uses the AXFR (RFC5936,
 Zone Transfer Protocol) to retrieve the existing records and DDNS
 (RFC2136, Dynamic Update) to make corrections. It can use TSIG (RFC2845) or

@@ -1,5 +1,3 @@
-# HEXONET Provider
-
 HEXONET is a leading developer and operator of domain names and DNS platforms.
 Individual, service provider and registrars around the globe choose HEXONET for
 domains and DNS because of our advanced technology, operational performance and
