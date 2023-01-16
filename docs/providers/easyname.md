@@ -1,6 +1,5 @@
 ---
 name: easyname
-title: easyname Provider
 ---
 # easyname Provider
 

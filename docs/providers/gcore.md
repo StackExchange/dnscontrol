@@ -1,6 +1,5 @@
 ---
 name: Gcore
-title: Gcore Provider
 layout: default
 ---
 # Gcore Provider

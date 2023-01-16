@@ -1,6 +1,5 @@
 ---
 name: BIND
-title: BIND Provider
 ---
 # BIND Provider
 

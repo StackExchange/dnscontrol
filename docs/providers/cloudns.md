@@ -1,6 +1,5 @@
 ---
 name: ClouDNS
-title: ClouDNS Provider
 ---
 # ClouDNS Provider
 

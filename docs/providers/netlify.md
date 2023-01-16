@@ -1,6 +1,5 @@
 ---
 name: Netlify
-title: Netlify Provider
 layout: default
 ---
 # Netlify Provider

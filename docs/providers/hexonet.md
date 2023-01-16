@@ -1,6 +1,5 @@
 ---
 name: HEXONET
-title: HEXONET Provider
 ---
 # HEXONET Provider
 

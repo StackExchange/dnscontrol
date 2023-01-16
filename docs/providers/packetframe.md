@@ -1,6 +1,5 @@
 ---
 name: Packetframe
-title: Packetframe Provider
 ---
 # Packetframe Provider
 

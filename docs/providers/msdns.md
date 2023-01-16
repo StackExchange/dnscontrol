@@ -1,6 +1,5 @@
 ---
 name: Microsoft DNS Server (Windows Server)
-title: Microsoft DNS Server on Microsoft Windows Server
 ---
 
 # Microsoft DNS Server on Microsoft Windows Server

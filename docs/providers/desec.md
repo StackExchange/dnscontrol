@@ -1,6 +1,5 @@
 ---
 name: deSEC
-title: deSEC Provider
 ---
 # deSEC Provider
 ## Configuration

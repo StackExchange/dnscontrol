@@ -1,6 +1,5 @@
 ---
 name: DNSimple
-title: DNSimple Provider
 ---
 # DNSimple Provider
 ## Configuration

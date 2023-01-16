@@ -1,6 +1,5 @@
 ---
 name: Domainnameshop
-title: Domainnameshop Provider
 ---
 # DOMAINNAMESHOP Provider
 

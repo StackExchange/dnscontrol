@@ -1,6 +1,5 @@
 ---
 name: Cloudflare
-title: Cloudflare Provider
 ---
 # Cloudflare Provider
 

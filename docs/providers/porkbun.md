@@ -1,6 +1,5 @@
 ---
 name: Porkbun
-title: Porkbun Provider
 layout: default
 ---
 # Porkbun Provider

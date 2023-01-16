@@ -1,6 +1,5 @@
 ---
 name: Gandi_v5
-title: Gandi_v5 Provider
 ---
 # Gandi_v5 Provider
 

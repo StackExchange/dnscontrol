@@ -1,6 +1,5 @@
 ---
 name: DigitalOcean
-title: DigitalOcean Provider
 ---
 # DigitalOcean Provider
 

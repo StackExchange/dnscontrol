@@ -1,6 +1,5 @@
 ---
 name: AXFRDDNS
-title: AXFR+DDNS Provider
 ---
 # AXFR+DDNS Provider
 

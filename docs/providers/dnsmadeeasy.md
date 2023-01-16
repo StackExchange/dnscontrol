@@ -1,6 +1,5 @@
 ---
 name: DNSMADEEASY
-title: DNS Made Simple Provider
 ---
 # DNS Made Simple Provider
 

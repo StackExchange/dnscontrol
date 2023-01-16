@@ -1,6 +1,5 @@
 ---
 name: Internet.bs
-title: Internet.bs Provider
 ---
 # Internet.bs Provider
 

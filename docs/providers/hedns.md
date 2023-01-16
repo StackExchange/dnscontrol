@@ -1,6 +1,5 @@
 ---
 name: Hurricane Electric DNS
-title: Hurricane Electric DNS Provider
 ---
 # Hurricane Electric DNS Provider
 

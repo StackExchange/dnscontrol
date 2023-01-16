@@ -1,6 +1,5 @@
 ---
 name: Vultr
-title: Vultr Provider
 ---
 # Vultr Provider
 

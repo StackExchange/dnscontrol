@@ -1,6 +1,5 @@
 ---
 name: Oracle Cloud
-title: Oracle Cloud Provider
 ---
 # Oracle Cloud Provider
 

@@ -1,6 +1,5 @@
 ---
 name: AutoDNS
-title: AutoDNS (InternetX)
 ---
 
 # AutoDNS Provider

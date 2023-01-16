@@ -1,6 +1,5 @@
 ---
 name: CSC Global
-title: CSC Global Provider
 ---
 # CSC Global Provider
 

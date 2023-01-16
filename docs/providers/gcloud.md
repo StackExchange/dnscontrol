@@ -1,6 +1,5 @@
 ---
 name: Google Cloud DNS
-title: Google Cloud DNS Provider
 ---
 
 # Google Cloud DNS Provider

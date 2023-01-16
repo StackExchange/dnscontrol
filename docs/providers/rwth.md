@@ -1,6 +1,5 @@
 ---
 name: RWTH
-title: RWTH DNS-Admin Provider
 ---
 # RWTH DNS-Admin Provider
 

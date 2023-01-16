@@ -1,6 +1,5 @@
 ---
 name: Linode
-title: Linode Provider
 ---
 # Linode Provider
 

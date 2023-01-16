@@ -1,6 +1,5 @@
 ---
 name: hosting.de
-title: hosting.de Provider
 ---
 
 # hosting.de Provider

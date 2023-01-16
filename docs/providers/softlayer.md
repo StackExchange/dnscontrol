@@ -1,6 +1,5 @@
 ---
 name: SoftLayer DNS
-title: SoftLayer DNS Provider
 ---
 
 # SoftLayer DNS Provider

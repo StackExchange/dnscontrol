@@ -1,6 +1,5 @@
 ---
 name: PowerDNS
-title: PowerDNS Provider
 ---
 # PowerDNS Provider
 

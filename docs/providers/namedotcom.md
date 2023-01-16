@@ -1,6 +1,5 @@
 ---
 name: Name.com
-title: Name.com Provider
 ---
 
 # Name.com Provider

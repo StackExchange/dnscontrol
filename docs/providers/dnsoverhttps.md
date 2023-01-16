@@ -1,6 +1,5 @@
 ---
 name: DNS-over-HTTPS
-title: DNS-over-HTTPS Provider
 ---
 # DNS-over-HTTPS Provider
 

@@ -1,6 +1,5 @@
 ---
 name: TransIP DNS
-title: TransIP DNS Provider
 ---
 
 # TransIP DNS Provider

@@ -1,6 +1,5 @@
 ---
 name: Netcup
-title: Netcup Provider
 ---
 # Netcup Provider
 
