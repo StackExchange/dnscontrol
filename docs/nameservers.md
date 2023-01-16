@@ -223,7 +223,7 @@ a notified if the delegation diverges.
 Why?
 Sometimes you just want to know if something changes!
 
-See the [DNS-over-HTTPS Provider](_providers/dnsoverhttps.md) documentation for more info.
+See the [DNS-over-HTTPS Provider](providers/dnsoverhttps.md) documentation for more info.
 
 ```javascript
 var REG_MONITOR = NewRegistrar('DNS-over-HTTPS');

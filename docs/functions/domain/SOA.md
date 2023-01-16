@@ -33,4 +33,4 @@ D("example.com", REG_THIRDPARTY, DnsProvider("DNS_BIND"),
 * The serial number is managed automatically.  It isn't even a field in `SOA()`.
 * Most providers automatically generate SOA records.  They will ignore any `SOA()` statements.
 
-There is more info about SOA in the documentation for the [BIND provider](../../_providers/bind.md).
+There is more info about SOA in the documentation for the [BIND provider](../../providers/bind.md).

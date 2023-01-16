@@ -209,7 +209,7 @@ an automated way to test for this bug.  The manual steps are here in
 
 * Edit [README.md](https://github.com/StackExchange/dnscontrol): Add the provider to the bullet list.
 * Edit [docs/providers.md](https://github.com/StackExchange/dnscontrol/blob/master/docs/providers.md): Add the provider to the provider list.
-* Create `docs/_providers/PROVIDERNAME.md`: Use one of the other files in that directory as a base.
+* Create `docs/providers/PROVIDERNAME.md`: Use one of the other files in that directory as a base.
 * Edit [OWNERS](https://github.com/StackExchange/dnscontrol/blob/master/OWNERS): Add the directory name and your GitHub username.
 
 ## Step 10: Submit a PR
