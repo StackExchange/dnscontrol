@@ -228,7 +228,7 @@ go install golang.org/dl/go1.17.1@latest
 go1.17.1 download
 ```
 
-Install gopherjs:
+Install [GopherJS](https://github.com/gopherjs/gopherjs):
 
 ```shell
 go install github.com/gopherjs/gopherjs@latest
