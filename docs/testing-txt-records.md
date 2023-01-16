@@ -63,7 +63,7 @@ If you don't see those changes, that's a bug.  For example, we found that
 Cloudflare left t2 alone but would try to add double-quotes to t3!  This was
 fixed in https://github.com/StackExchange/dnscontrol/pull/1543.
 
-## Step 3: Push
+## Step 4: Push
 
 Let's assume you DO see the changes.  Push them using `dnscontrol push`
 then check the webui to see that the changes are correct.
@@ -80,6 +80,6 @@ Refresh your provider's web UI and you should see the changes as expected: t1
 should have double-quotes and t2 shouldn't.  If the change wasn't correctly
 done, that's a bug.
 
-## Step 4: That's it!
+## Step 5: That's it!
 
 Remove the lines from `dnsconfig.js` and run `dnscontrol push` to clean up.
