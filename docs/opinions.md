@@ -66,8 +66,6 @@ RFC-compliant.
 Being high-level permits the code to understand intent, and stop
 bad behavior.
 
-TODO: List an example.
-
 
 # Opinion #4: All DNS is lowercase for languages that have such a concept.
 
