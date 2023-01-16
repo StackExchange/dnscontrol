@@ -1,7 +1,6 @@
 ---
 name: BIND
 title: BIND Provider
-jsId: BIND
 ---
 # BIND Provider
 

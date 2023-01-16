@@ -1,7 +1,6 @@
 ---
 name: DNSimple
 title: DNSimple Provider
-jsId: DNSIMPLE
 ---
 # DNSimple Provider
 ## Configuration

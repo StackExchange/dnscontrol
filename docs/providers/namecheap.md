@@ -1,6 +1,5 @@
 ---
 name: Namecheap
-jsId: NAMECHEAP
 ---
 
 # Namecheap Provider

@@ -1,7 +1,6 @@
 ---
 name: Hetzner DNS Console
 title: Hetzner DNS Console
-jsId: HETZNER
 ---
 
 # Hetzner DNS Console Provider

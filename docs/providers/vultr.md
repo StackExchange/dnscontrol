@@ -1,7 +1,6 @@
 ---
 name: Vultr
 title: Vultr Provider
-jsId: VULTR
 ---
 # Vultr Provider
 

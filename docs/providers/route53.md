@@ -1,6 +1,5 @@
 ---
 name: Route 53
-jsId: ROUTE53
 ---
 # Amazon Route 53 Provider
 

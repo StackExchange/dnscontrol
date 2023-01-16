@@ -1,7 +1,6 @@
 ---
 name: ClouDNS
 title: ClouDNS Provider
-jsId: CLOUDNS
 ---
 # ClouDNS Provider
 

@@ -1,7 +1,6 @@
 ---
 name: Netcup
 title: Netcup Provider
-jsId: NETCUP
 ---
 # Netcup Provider
 

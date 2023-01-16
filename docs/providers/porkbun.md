@@ -2,7 +2,6 @@
 name: Porkbun
 title: Porkbun Provider
 layout: default
-jsId: PORKBUN
 ---
 # Porkbun Provider
 

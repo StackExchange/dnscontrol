@@ -1,7 +1,6 @@
 ---
 name: NS1
 title: NS1 Provider
-jsId: NS1
 ---
 # NS1 Provider
 

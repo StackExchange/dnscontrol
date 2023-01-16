@@ -1,6 +1,5 @@
 ---
 name: Ovh
-jsId: OVH
 ---
 # OVH Provider
 

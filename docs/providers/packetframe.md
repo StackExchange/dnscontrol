@@ -1,7 +1,6 @@
 ---
 name: Packetframe
 title: Packetframe Provider
-jsId: PACKETFRAME
 ---
 # Packetframe Provider
 

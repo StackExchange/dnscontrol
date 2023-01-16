@@ -1,7 +1,6 @@
 ---
 name: hosting.de
 title: hosting.de Provider
-jsId: HOSTINGDE
 ---
 
 # hosting.de Provider

@@ -1,7 +1,6 @@
 ---
 name: AkamaiEdgeDns
 title: Akamai Edge DNS Provider
-jsId: AKAMAIEDGEDNS
 ---
 
 # Akamai Edge DNS Provider

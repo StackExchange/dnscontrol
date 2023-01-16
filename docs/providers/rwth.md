@@ -1,7 +1,6 @@
 ---
 name: RWTH
 title: RWTH DNS-Admin Provider
-jsId: RWTH
 ---
 # RWTH DNS-Admin Provider
 

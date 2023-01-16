@@ -1,7 +1,6 @@
 ---
 name: Gandi_v5
 title: Gandi_v5 Provider
-jsId: GANDI_V5
 ---
 # Gandi_v5 Provider
 

@@ -1,7 +1,6 @@
 ---
 name: deSEC
 title: deSEC Provider
-jsId: DESEC
 ---
 # deSEC Provider
 ## Configuration

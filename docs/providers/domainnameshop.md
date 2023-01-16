@@ -1,7 +1,6 @@
 ---
 name: Domainnameshop
 title: Domainnameshop Provider
-jsId: DOMAINNAMESHOP
 ---
 # DOMAINNAMESHOP Provider
 

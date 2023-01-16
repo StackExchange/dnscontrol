@@ -1,7 +1,6 @@
 ---
 name: Oracle Cloud
 title: Oracle Cloud Provider
-jsId: ORACLE
 ---
 # Oracle Cloud Provider
 

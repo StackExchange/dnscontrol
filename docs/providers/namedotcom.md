@@ -1,7 +1,6 @@
 ---
 name: Name.com
 title: Name.com Provider
-jsId: NAMEDOTCOM
 ---
 
 # Name.com Provider

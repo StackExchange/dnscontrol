@@ -2,7 +2,6 @@
 name: Netlify
 title: Netlify Provider
 layout: default
-jsId: NETLIFY
 ---
 # Netlify Provider
 ## Configuration

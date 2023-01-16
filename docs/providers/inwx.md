@@ -1,6 +1,5 @@
 ---
 name: INWX
-jsId: INWX
 ---
 
 # INWX

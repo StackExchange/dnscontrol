@@ -1,6 +1,5 @@
 ---
 name: Azure DNS
-jsId: AZURE_DNS
 ---
 
 # Azure DNS Provider

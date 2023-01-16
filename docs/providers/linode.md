@@ -1,7 +1,6 @@
 ---
 name: Linode
 title: Linode Provider
-jsId: LINODE
 ---
 # Linode Provider
 

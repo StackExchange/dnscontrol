@@ -1,7 +1,6 @@
 ---
 name: Cloudflare
 title: Cloudflare Provider
-jsId: CLOUDFLAREAPI
 ---
 # Cloudflare Provider
 

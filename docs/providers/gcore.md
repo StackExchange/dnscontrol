@@ -2,7 +2,6 @@
 name: Gcore
 title: Gcore Provider
 layout: default
-jsId: GCORE
 ---
 # Gcore Provider
 ## Configuration

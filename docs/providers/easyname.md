@@ -1,7 +1,6 @@
 ---
 name: easyname
 title: easyname Provider
-jsId: EASYNAME
 ---
 # easyname Provider
 
