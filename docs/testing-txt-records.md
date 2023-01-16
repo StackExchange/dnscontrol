@@ -29,7 +29,7 @@ your provider doesn't permit double-quotes in TXT records (you'd be surprised!)
 you don't have to worry about this bug because those records are banned
 in your `auditrecords.go` file.
 
-Step 1: Create the test records
+## Step 1: Create the test records
 
 Log into your DNS provider's web UI (portal) and create these 4 TXT records.  (Don't use DNSControl!) Yes, include the double-quotes on test 1 and 3!
 
@@ -41,7 +41,7 @@ Log into your DNS provider's web UI (portal) and create these 4 TXT records.  (D
 | t3            | "test3"   |
 
 
-Step 2: Update `dnsconfig.js`
+## Step 2: Update `dnsconfig.js`
 
 Now in your `dnsconfig.js` file, add these records to the domain:
 
@@ -50,7 +50,7 @@ Now in your `dnsconfig.js` file, add these records to the domain:
     TXT("t2", "test2"),
     TXT("t3", "\"test3\""),
 
-Step 3: Preview
+## Step 3: Preview
 
 When you do a `dnscontrol preview`, you should see changes for t1 and t2.
 
@@ -63,7 +63,7 @@ If you don't see those changes, that's a bug.  For example, we found that
 Cloudflare left t2 alone but would try to add double-quotes to t3!  This was
 fixed in https://github.com/StackExchange/dnscontrol/pull/1543.
 
-Step 3: Push
+## Step 3: Push
 
 Let's assume you DO see the changes.  Push them using `dnscontrol push`
 then check the webui to see that the changes are correct.
@@ -80,6 +80,6 @@ Refresh your provider's web UI and you should see the changes as expected: t1
 should have double-quotes and t2 shouldn't.  If the change wasn't correctly
 done, that's a bug.
 
-Step 4: That's it!
+## Step 4: That's it!
 
 Remove the lines from `dnsconfig.js` and run `dnscontrol push` to clean up.
