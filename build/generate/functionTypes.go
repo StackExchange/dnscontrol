@@ -54,7 +54,7 @@ var returnTypes = map[string]string{
 func generateFunctionTypes() (string, error) {
 	funcs := []Function{}
 
-	srcRoot := join("docs", "_functions")
+	srcRoot := join("docs", "functions")
 	types, err := os.ReadDir(srcRoot)
 	if err != nil {
 		return "", err
