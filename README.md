@@ -104,7 +104,7 @@ Running `dnscontrol preview` will talk to the providers (here name.com as regist
 
 Running `dnscontrol push` will make those changes with the provider and my dns records will be correctly updated.
 
-See [Getting Started](https://stackexchange.github.io/dnscontrol/getting-started) page on documentation site.
+See [Getting Started](https://docs.dnscontrol.org/getting-started/getting-started) page on documentation site.
 
 ## Benefits
 
@@ -141,7 +141,7 @@ See [Getting Started](https://stackexchange.github.io/dnscontrol/getting-started
 
 ## Installation
 
-DNSControl can be installed via packages for macOS, Linux and Windows, or from source code. See the [official instructions](https://stackexchange.github.io/dnscontrol/getting-started#1-install-the-software).
+DNSControl can be installed via packages for macOS, Linux and Windows, or from source code. See the [official instructions](https://docs.dnscontrol.org/getting-started/getting-started#1-install-the-software).
 
 ## Via GitHub Actions (GHA)
 
@@ -157,4 +157,4 @@ See [dnscontrol-action](https://github.com/koenrh/dnscontrol-action) or [gacts/i
 
 The website: [https://stackexchange.github.io/dnscontrol/](https://stackexchange.github.io/dnscontrol/)
 
-The getting started guide: [https://stackexchange.github.io/dnscontrol/getting-started](https://stackexchange.github.io/dnscontrol/getting-started)
+The getting started guide: [https://docs.dnscontrol.org/getting-started/getting-started](https://docs.dnscontrol.org/getting-started/getting-started)

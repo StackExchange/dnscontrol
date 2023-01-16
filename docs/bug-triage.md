@@ -44,7 +44,7 @@ Message to requester:
 Thank you for requesting this provider!
 
 I've tagged this issue as a provider-request.  It will (soon) be listed as a "requested provider" on the provider list web page:
-https://stackexchange.github.io/dnscontrol/provider-list
+https://docs.dnscontrol.org/service-providers/providers
 
 I will now close the issue.  I know that's a bit confusing, but it will remain on the "requested provider" list.
 
@@ -54,6 +54,6 @@ We encourage you to try adding this provider yourself.  We've tried to
 make the process as friendly as possible.  Many people have reported
 that adding a provider was their first experience writing Go.  The
 process is documented here:
-https://stackexchange.github.io/dnscontrol/writing-providers
+https://docs.dnscontrol.org/developer-info/writing-providers
 If you need assistance, please speak up in this issue and someone will get back to you ASAP.
 ```

@@ -39,7 +39,7 @@ In this configuration:
 * `dnscontrol push -v view=internal` would generate the internal view.
 
 ```javascript
-// See https://stackexchange.github.io/dnscontrol/cli-variables
+// See https://docs.dnscontrol.org/advanced-features/cli-variables
 CLI_DEFAULTS({
     "view": "external",
 });
@@ -74,7 +74,7 @@ In this configuration:
 * `dnscontrol push -v emergency=true` would generate the emergency configuration.
 
 ```javascript
-// See https://stackexchange.github.io/dnscontrol/cli-variables
+// See https://docs.dnscontrol.org/advanced-features/cli-variables
 CLI_DEFAULTS({
     "emergency": false,
 });
