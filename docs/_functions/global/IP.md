@@ -2,6 +2,9 @@
 name: IP
 parameters:
   - ip
+parameter_types:
+  ip: string
+return: number
 ---
 
 Converts an IPv4 address from string to an integer. This allows performing mathematical operations with the IP address.
