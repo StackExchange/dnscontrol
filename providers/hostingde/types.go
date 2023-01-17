@@ -158,15 +158,15 @@ func recordToNative(rc *models.RecordConfig) *record {
 	case "A", "AAAA", "ALIAS", "CAA", "CNAME", "DNSKEY", "DS", "NS", "NSEC", "NSEC3", "NSEC3PARAM", "PTR", "RRSIG", "SSHFP", "TSLA":
 		// Nothing special.
 	case "TXT":
-		if cap(rc.TxtStrings) == 1 {
-			record.Content = "\"" + rc.TxtStrings[0] + "\""
-		} else if cap(rc.TxtStrings) > 1 {
-			record.Content = ""
-			for _, str := range rc.TxtStrings {
-				record.Content = record.Content + " \"" + str + "\""
-			}
-			record.Content = record.Content[1:len(record.Content)]
+		txtStrings := make([]string, len(rc.TxtStrings))
+		copy(txtStrings, rc.TxtStrings)
+
+		// Escape quotes
+		for i := range txtStrings {
+			txtStrings[i] = fmt.Sprintf(`"%s"`, strings.ReplaceAll(txtStrings[i], `"`, `\"`))
 		}
+
+		record.Content = strings.Join(txtStrings, " ")
 	case "MX":
 		record.Priority = rc.MxPreference
 		record.Content = strings.TrimSuffix(rc.GetTargetField(), ".")
