@@ -69,7 +69,7 @@ declare const VARIABLE_NAME: string;
 
 This will tell TypeScript that the variable exists, and that it’s a string.
 
-## Bug: `FETCH` not always accurate
+## Known issue: `FETCH` not always accurate
 
 Bug: `FETCH` is always shown as available, even if you don’t run DNSControl with the `--allow-fetch` flag.
 
