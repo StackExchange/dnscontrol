@@ -129,6 +129,9 @@ func (r *record) nativeToRecord(domain string) *models.RecordConfig {
 		err = rc.PopulateFromString("MX", "0 .", domain)
 	case "MX":
 		err = rc.SetTargetMX(uint16(r.Priority), r.Content)
+	case "PTR":
+		rc.Type = r.Type
+		err = rc.SetTarget(r.Content + ".")
 	case "SRV":
 		err = rc.SetTargetSRVPriorityString(uint16(r.Priority), r.Content)
 	default:
