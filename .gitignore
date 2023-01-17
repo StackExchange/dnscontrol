@@ -24,6 +24,6 @@ stack.sh
 .DS_Store
 .vscode/launch.json
 .jekyll-cache
-/dnscontrol.d.ts
+types-dnscontrol.d.ts
 
 dist/
