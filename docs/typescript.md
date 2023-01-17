@@ -1,7 +1,3 @@
----
-layout: default
----
-
 # Using TypeScript with DNSControl (experimental)
 
 ## What is this?
