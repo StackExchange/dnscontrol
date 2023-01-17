@@ -47,7 +47,7 @@ Add this comment to the top of your `dnsconfig.js` file:
 
 That should be all you need to do!
 
-If your edit requires extra steps, please [file a bug](https://github.com/StackExchange/dnscontrol/issues) and we'll update this page.
+If your editor requires extra steps, please [file a bug](https://github.com/StackExchange/dnscontrol/issues) and we'll update this page.
 
 ### Bugs?
 
