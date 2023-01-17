@@ -41,7 +41,7 @@ type checking (i.e. red squiggly underlines when you misuse APIs), there is one 
 
 Add this comment to the top of your `dnsconfig.js` file:
 
-```
+```javascript
 // @ts-check
 ```
 
