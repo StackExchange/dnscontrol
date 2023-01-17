@@ -73,4 +73,3 @@ This will tell TypeScript that the variable exists, and that it’s a string.
 
 Bug: `FETCH` is always shown as available, even if you don’t run DNSControl with the `--allow-fetch` flag.
 
-Workaround: None
