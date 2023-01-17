@@ -3,8 +3,10 @@ package hostingde
 import (
 	"encoding/json"
 	"fmt"
+	"math"
 	"sort"
 	"strings"
+	"time"
 
 	"github.com/StackExchange/dnscontrol/v3/models"
 	"github.com/StackExchange/dnscontrol/v3/pkg/diff"
@@ -149,16 +151,28 @@ func (hp *hostingdeProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*m
 			return nil, nil
 		}
 
-		corrections := []*models.Correction{
+		corrections = []*models.Correction{
 			{
 				Msg: fmt.Sprintf("\n%s", strings.Join(msg, "\n")),
 				F: func() error {
-					return hp.updateRecords(dc.Name, create, del, mod)
+					for i := 0; i < 10; i++ {
+						err := hp.updateRecords(dc.Name, create, del, mod)
+						if err == nil {
+							return nil
+						}
+						// Code:10205 indicates the zone is currently blocked due to a running zone update.
+						if !strings.Contains(err.Error(), "Code:10205") {
+							return err
+						}
+
+						// Exponential back-off retry.
+						// Base of 1.8 seemed like a good trade-off, retrying for approximately 45 seconds.
+						time.Sleep(time.Duration(math.Pow(1.8, float64(i))) * 100 * time.Millisecond)
+					}
+					return fmt.Errorf("retry exhaustion: zone blocked for 10 attempts")
 				},
 			},
 		}
-
-		return corrections, nil
 	}
 
 	// Insert Future diff2 version here.
