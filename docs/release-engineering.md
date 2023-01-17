@@ -26,7 +26,7 @@ git commit -m "Update generated files for VERSION"
 This will update the following generated files:
 
 * `docs/_includes/matrix.md`
-* `types/dnscontrol.d.ts`
+* `commands/types/dnscontrol.d.ts`
 
 ## Step 2. Tag the commit in master that you want to release
 
