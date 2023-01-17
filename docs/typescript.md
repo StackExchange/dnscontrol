@@ -61,7 +61,7 @@ If your edit requires extra steps, please [file a bug](https://github.com/StackE
 
 Bug: Values passed to `CLI_DEFAULTS` (and the corresponding `-v` command-line option) don’t show up as global variables
 
-Workaround: create a new `.d.ts` file in the same folder as your `dnsconfig.js` file. In that file, add the following line for each variable you want to use (replacing `VARIABLE_NAME` with the name of the variable. 
+Workaround: create a new `.d.ts` file in the same folder as your `dnsconfig.js` file. In that file, add the following line for each variable you want to use (replacing `VARIABLE_NAME` with the name of the variable).
 
 ```
 declare const VARIABLE_NAME: string;
