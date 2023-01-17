@@ -63,7 +63,7 @@ Bug: Values passed to `CLI_DEFAULTS` (and the corresponding `-v` command-line op
 
 Workaround: create a new `.d.ts` file in the same folder as your `dnsconfig.js` file. In that file, add the following line for each variable you want to use (replacing `VARIABLE_NAME` with the name of the variable).
 
-```
+```javascript
 declare const VARIABLE_NAME: string;
 ```
 
