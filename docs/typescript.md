@@ -31,7 +31,7 @@ dnscontrol write-types
 This file has all the information your editor or IDE needs.  It must be in the same directory as the `dnsconfig.js` file you are editing.
 
 NOTE: Re-run the `dnscontrol write-types` command any time you upgrade
-dnscontrol. Because it is generated from the command, it will always be correct
+DNSControl. Because it is generated from the command, it will always be correct
 for the version of DNSControl you are using.
 
 2. Tell your editor
