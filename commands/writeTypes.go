@@ -37,7 +37,7 @@ func (args *TypesArgs) flags() []cli.Flag {
 	return flags
 }
 
-//go:embed types-dnscontrol.d.ts
+//go:embed types/dnscontrol.d.ts
 var dtsContent string
 
 func WriteTypes(args TypesArgs) error {
