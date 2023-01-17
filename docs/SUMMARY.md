@@ -125,7 +125,7 @@
     * [Amazon Route 53](providers/route53.md)
     * [RWTH DNS-Admin](providers/rwth.md)
     * [SoftLayer DNS](providers/softlayer.md)
-    * [TransIP DNS](providers/transip.md)
+    * [TransIP](providers/transip.md)
     * [Vultr](providers/vultr.md)
 
 ## Commands
