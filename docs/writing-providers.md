@@ -1,7 +1,3 @@
----
-title: Writing new DNS providers
----
-
 # Writing new DNS providers
 
 Writing a new DNS provider is a relatively straightforward process.

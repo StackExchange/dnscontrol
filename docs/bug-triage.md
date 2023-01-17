@@ -1,7 +1,3 @@
----
-title: Bug Triage Process
----
-
 # Who to assign bugs to?
 
 If an issue is related to a particular provider, assign it to

@@ -1,6 +1,3 @@
----
-title: CLI variables
----
 # CLI variables
 
 You can pass variables into your configuration from the command line using the `-v key=value` flag. There is also a mechanism called `CLI_DEFAULTS` which lets you easily set the defaults on variables that are otherwise controlled from the command line.

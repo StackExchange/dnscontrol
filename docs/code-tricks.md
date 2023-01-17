@@ -1,7 +1,3 @@
----
-title: Useful code tricks
----
-
 # "Builders"
 
 Problem: It is difficult to get CAA and other records exactly right.

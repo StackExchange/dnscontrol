@@ -1,7 +1,3 @@
----
-title: Unit Testing DNS Data
----
-
 # Unit Testing DNS Data
 
 ## Built-in Tests

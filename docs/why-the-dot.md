@@ -1,7 +1,3 @@
----
-title: Why CNAME/MX/NS targets require a "dot"
----
-
 # Short version
 
 You received this error message:

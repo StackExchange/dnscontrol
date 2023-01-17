@@ -1,7 +1,3 @@
----
-title: How to build and ship a release
----
-
 # How to build and ship a release
 
 These are the instructions for producing a release.

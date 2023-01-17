@@ -1,7 +1,3 @@
----
-title: Let's Encrypt Certificate generation
----
-
 # *Let's Encrypt* Certificate generation
 
 {% hint style="warning" %}

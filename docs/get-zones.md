@@ -1,7 +1,3 @@
----
-title: Get-Zones subcommand
----
-
 # get-zones (was "convertzone")
 
 DNSControl has a stand-alone utility that will contact a provider,

@@ -1,7 +1,3 @@
----
-title: Nameservers and Delegations
----
-
 # Nameservers and Delegations
 
 DNSControl can handle a variety of provider scenarios. The registrar and DNS

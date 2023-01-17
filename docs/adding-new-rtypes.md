@@ -1,7 +1,3 @@
----
-title: Creating new DNS Resource Types (rtypes)
----
-
 # Creating new DNS Resource Types (rtypes)
 
 Everyone is familiar with A, AAAA, CNAME, NS and other Rtypes.

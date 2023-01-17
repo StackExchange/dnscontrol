@@ -1,7 +1,3 @@
----
-title: JavaScript DSL
----
-
 # JavaScript DSL
 
 DNSControl uses JavaScript as its primary input language to provide power and flexibility to configure your domains. The ultimate purpose of the JavaScript is to construct a

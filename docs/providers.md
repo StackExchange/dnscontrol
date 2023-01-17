@@ -1,6 +1,3 @@
----
-title: Service Providers
----
 # Service Providers
 
 ## Provider Features {#features}

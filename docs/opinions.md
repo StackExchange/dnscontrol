@@ -1,7 +1,3 @@
----
-title: An Opinionated System
----
-
 # DNSControl is an opinionated system
 
 DNSControl is an opinionated system. That means that we have certain

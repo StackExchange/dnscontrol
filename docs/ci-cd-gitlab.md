@@ -1,7 +1,3 @@
----
-title: Gitlab CI/CD example
----
-
 # Gitlab CI/CD example
 
 Before discussing the Gitlab CI/CD setup, let's assume you already have a working DNSControl setup. Aren't you there yet? Then first check out the '[Getting Started](getting-started.md)' section.

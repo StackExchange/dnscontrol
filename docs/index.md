@@ -1,7 +1,3 @@
----
-title: DNSControl
----
-
 {% hint style="info" %}
 <span style="font-size: 21px; font-weight: 200;">DNSControl is an <a href="https://docs.dnscontrol.org/developer-info/opinions">opinionated</a> platform for seamlessly managing your DNS configuration across any number of DNS hosts, both in the cloud or in your own infrastructure. It manages all of the domains for the Stack Overflow network, and can do the same for you!</span>
 {% endhint %}

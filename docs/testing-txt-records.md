@@ -1,6 +1,3 @@
----
-title: TXT record testing
----
 # TXT record testing
 
 We recently discovered a strange but with processing TXT records and

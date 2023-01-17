@@ -1,6 +1,5 @@
 ---
 layout: default
-title: Using TypeScript with DNSControl
 ---
 
 # Using TypeScript with DNSControl (experimental)

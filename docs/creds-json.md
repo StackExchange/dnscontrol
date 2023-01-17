@@ -1,7 +1,3 @@
----
-title: creds.json file format
----
-
 # creds.json
 
 When DNSControl interacts with a provider, any API keys, credentials, or other

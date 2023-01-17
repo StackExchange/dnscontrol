@@ -1,7 +1,3 @@
----
-title: Check-Creds subcommand
----
-
 # check-creds
 
 This is a stand-alone utility to help verify entries in `creds.json`.

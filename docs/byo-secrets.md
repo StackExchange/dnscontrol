@@ -1,7 +1,3 @@
----
-title: Bring-Your-Own-Secrets for automated testing
----
-
 # Bring-Your-Own-Secrets for automated testing
 
 Goal: Enable automated integration testing without accidentally

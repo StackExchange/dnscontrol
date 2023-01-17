@@ -1,6 +1,3 @@
----
-title: Notifications
----
 # Notifications
 
 DNSControl has build in support for notifications when changes are made. This allows you to post messages in team chat, or send emails when dns changes are made.

@@ -1,7 +1,3 @@
----
-title: Examples
----
-
 ## Typical DNS Records
 
 ```javascript
