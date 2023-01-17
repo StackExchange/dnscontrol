@@ -18,7 +18,7 @@ should now be able to see the type information in your `dnsconfig.js` file as
 you type. Hover over record names to read their documentation without having to
 open the documentation website!
 
-## How to activate
+## How to activate auto-completion
 
 To set up TypeScript support in Visual Studio Code, follow these steps:
 
