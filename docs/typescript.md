@@ -13,7 +13,7 @@ features when editing `dnsconfig.js`? Yes you can!
 While DNSControl does not support TypeScript syntax in `dnsconfig.js`, you can
 still use TypeScript’s features in editors which support it.
 
-If you’re using VS Code (or another editor that supports TypeScript), you
+If you’re using Visual Studio Code (or another editor that supports TypeScript), you
 should now be able to see the type information in your `dnsconfig.js` file as
 you type. Hover over record names to read their documentation without having to
 open the website!
