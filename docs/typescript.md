@@ -8,7 +8,7 @@ title: Using TypeScript with DNSControl
 ## What is this?
 
 Would you like your editor to support auto-completion and other advanced IDE
-features when editing dnsconfig.js?  Yes you can!
+features when editing `dnsconfig.js`? Yes you can!
 
 While DNSControl does not support TypeScript syntax in `dnsconfig.js`, you can
 still use TypeScript’s features in editors which support it.
