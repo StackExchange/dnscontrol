@@ -38,7 +38,6 @@ func generateFeatureMatrix() error {
 			{"SRV", "Driver has explicitly implemented SRV record management"},
 			{"SSHFP", "Provider can manage SSHFP records"},
 			{"TLSA", "Provider can manage TLSA records"},
-			{"TXTMulti", "Provider can manage TXT records with multiple strings"},
 			{"R53_ALIAS", "Provider supports Route 53 limited ALIAS"},
 			{"AZURE_ALIAS", "Provider supports Azure DNS limited ALIAS"},
 			{"DS", "Provider supports adding DS records"},
