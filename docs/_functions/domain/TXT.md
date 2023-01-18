@@ -4,6 +4,10 @@ parameters:
   - name
   - contents
   - modifiers...
+parameter_types:
+  name: string
+  contents: string
+  "modifiers...": RecordModifier[]
 ---
 
 TXT adds an TXT record To a domain. The name should be the relative

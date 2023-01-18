@@ -484,12 +484,6 @@ func txt(name, target string) *models.RecordConfig {
 	return r
 }
 
-func txtmulti(name string, target []string) *models.RecordConfig {
-	r := makeRec(name, "", "TXT")
-	r.SetTargetTXTs(target)
-	return r
-}
-
 func caa(name string, tag string, flag uint8, target string) *models.RecordConfig {
 	r := makeRec(name, target, "CAA")
 	r.SetTargetCAA(flag, tag, target)

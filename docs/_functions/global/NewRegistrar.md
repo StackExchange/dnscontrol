@@ -4,6 +4,10 @@ parameters:
   - name
   - type
   - meta
+parameter_types:
+  name: string
+  type: string?
+  meta: object?
 return: string
 ---
 

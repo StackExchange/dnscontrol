@@ -93,6 +93,9 @@ title: DNSControl
                 <li>
                     <a href="{{site.github.url}}/migrating">Migrating</a>: Migrating zones to DNSControl
                 </li>
+                <li>
+                    <a href="{{site.github.url}}/typescript">TypeScript</a> (optional): Improve autocomplete and add type checking
+                </li>
             </ul>
 
             <h2 id="commands">

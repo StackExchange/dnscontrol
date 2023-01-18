@@ -4,6 +4,10 @@ parameters:
   - name
   - target
   - modifiers...
+parameter_types:
+  name: string
+  target: string
+  "modifiers...": RecordModifier[]
 ---
 
 ALIAS is a virtual record type that points a record at another record. It is analogous to a CNAME, but is usually resolved at request-time and served as an A record. Unlike CNAMEs, ALIAS records can be used at the zone apex (`@`)

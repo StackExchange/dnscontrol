@@ -4,6 +4,10 @@ parameters:
   - name
   - target
   - modifiers...
+parameter_types:
+  name: string
+  target: string
+  "modifiers...": RecordModifier[]
 ---
 
 PTR adds a PTR record to the domain.
