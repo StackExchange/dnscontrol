@@ -194,64 +194,63 @@ func (n *netlifyProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*mode
 	removeOtherApexNS(dc)
 
 	var corrections []*models.Correction
-	if !diff2.EnableDiff2 || true { // Remove "|| true" when diff2 version arrives
-
+	var create, del, modify diff.Changeset
+	if !diff2.EnableDiff2 {
 		differ := diff.New(dc)
-		_, create, del, modify, err := differ.IncrementalDiff(records)
-		if err != nil {
-			return nil, err
-		}
-
-		zone, err := n.getZone(dc.Name)
-		if err != nil {
-			return nil, err
-		}
-
-		// Deletes first so changing type works etc.
-		for _, m := range del {
-			id := m.Existing.Original.(*dnsRecord).ID
-			corr := &models.Correction{
-				Msg: m.String(),
-				F: func() error {
-					return n.deleteDNSRecord(zone.ID, id)
-				},
-			}
-			corrections = append(corrections, corr)
-		}
-
-		for _, m := range create {
-			req := toReq(m.Desired)
-			corr := &models.Correction{
-				Msg: m.String(),
-				F: func() error {
-					_, err := n.createDNSRecord(zone.ID, req)
-					return err
-				},
-			}
-			corrections = append(corrections, corr)
-		}
-
-		for _, m := range modify {
-			id := m.Existing.Original.(*dnsRecord).ID
-			req := toReq(m.Desired)
-			corr := &models.Correction{
-				Msg: m.String(),
-				F: func() error {
-					if err := n.deleteDNSRecord(zone.ID, id); err != nil {
-						return err
-					}
-
-					_, err := n.createDNSRecord(zone.ID, req)
-					return err
-				},
-			}
-			corrections = append(corrections, corr)
-		}
-
-		return corrections, nil
+		_, create, del, modify, err = differ.IncrementalDiff(records)
+	} else {
+		differ := diff.NewCompat(dc)
+		_, create, del, modify, err = differ.IncrementalDiff(records)
+	}
+	if err != nil {
+		return nil, err
 	}
 
-	// Insert Future diff2 version here.
+	zone, err := n.getZone(dc.Name)
+	if err != nil {
+		return nil, err
+	}
+
+	// Deletes first so changing type works etc.
+	for _, m := range del {
+		id := m.Existing.Original.(*dnsRecord).ID
+		corr := &models.Correction{
+			Msg: m.String(),
+			F: func() error {
+				return n.deleteDNSRecord(zone.ID, id)
+			},
+		}
+		corrections = append(corrections, corr)
+	}
+
+	for _, m := range create {
+		req := toReq(m.Desired)
+		corr := &models.Correction{
+			Msg: m.String(),
+			F: func() error {
+				_, err := n.createDNSRecord(zone.ID, req)
+				return err
+			},
+		}
+		corrections = append(corrections, corr)
+	}
+
+	for _, m := range modify {
+		id := m.Existing.Original.(*dnsRecord).ID
+		req := toReq(m.Desired)
+		corr := &models.Correction{
+			Msg: m.String(),
+			F: func() error {
+				if err := n.deleteDNSRecord(zone.ID, id); err != nil {
+					return err
+				}
+
+				_, err := n.createDNSRecord(zone.ID, req)
+				return err
+			},
+		}
+		corrections = append(corrections, corr)
+	}
 
 	return corrections, nil
 }
