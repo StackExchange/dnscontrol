@@ -9,7 +9,6 @@ import (
 	"github.com/StackExchange/dnscontrol/v3/pkg/diff"
 	"github.com/StackExchange/dnscontrol/v3/pkg/diff2"
 	"github.com/StackExchange/dnscontrol/v3/pkg/printer"
-	"github.com/StackExchange/dnscontrol/v3/pkg/txtutil"
 	"github.com/StackExchange/dnscontrol/v3/providers"
 	"github.com/miekg/dns"
 )
@@ -190,7 +189,6 @@ func (n *netlifyProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*mode
 
 	// Normalize
 	models.PostProcessRecords(records)
-	txtutil.SplitSingleLongTxt(dc.Records) // Auto split long TXT records
 	removeOtherApexNS(dc)
 
 	var corrections []*models.Correction
