@@ -222,8 +222,8 @@ Verify that your tests are working properly by making a branch.  You'll see on t
 
 Some notes:
 
-* Tests that are skipped take 25-30 seconds to complete. In other words, if you look at a list of tests, you can tell which ones were skipped by looking at the completion time.
-* Free accounts don't have access to `2xlarge` instanace. You'll either need to upgrade your CCI account or change `2xlarge` to `large` in `.circleci/config.yml` in your fork. Please be careful to not include that file when you send a PR. (Anyone have tips on how to make that easier?)
+* Tests that are skipped take about 3 seconds to complete. In other words, if you look at a list of tests, you can tell which ones were skipped by looking at the completion time.
+* Free accounts don't have access to `2xlarge` instanace. You'll either need to upgrade your CCI account or change `2xlarge` to `large` in `.circleci/config.yml` in your fork. Please be careful to not include that file when you send a PR. See [#1935](https://github.com/StackExchange/dnscontrol/issues/1935) (Anyone have tips on how to make that easier?)
 
 ## Tip: How to rebuild flattener
 
