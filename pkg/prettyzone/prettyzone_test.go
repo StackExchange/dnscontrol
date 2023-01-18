@@ -484,11 +484,11 @@ func TestZoneLabelLess(t *testing.T) {
 	}
 
 	for _, test := range tests {
-		actual := zoneLabelLess(test.e1, test.e2)
+		actual := LabelLess(test.e1, test.e2)
 		if test.expected != actual {
 			t.Errorf("%v: expected (%v) got (%v)\n", test.e1, test.e2, actual)
 		}
-		actual = zoneLabelLess(test.e2, test.e1)
+		actual = LabelLess(test.e2, test.e1)
 		// The reverse should work too:
 		var expected bool
 		if test.e1 == test.e2 {

@@ -5,6 +5,7 @@ import (
 
 	"github.com/StackExchange/dnscontrol/v3/models"
 	"github.com/StackExchange/dnscontrol/v3/pkg/diff"
+	"github.com/StackExchange/dnscontrol/v3/pkg/diff2"
 )
 
 // GetZoneRecords gets the records of a zone and returns them in RecordConfig format.
@@ -116,8 +117,16 @@ func (client *providerClient) GenerateDomainCorrections(dc *models.DomainConfig,
 	models.PostProcessRecords(foundRecords)
 	//txtutil.SplitSingleLongTxt(dc.Records) // Autosplit long TXT records
 
-	differ := diff.New(dc)
-	_, creates, dels, modifications, err := differ.IncrementalDiff(foundRecords)
+	var corrections []*models.Correction
+	var creates, dels, modifications diff.Changeset
+	var err error
+	if !diff2.EnableDiff2 {
+		differ := diff.New(dc)
+		_, creates, dels, modifications, err = differ.IncrementalDiff(foundRecords)
+	} else {
+		differ := diff.NewCompat(dc)
+		_, creates, dels, modifications, err = differ.IncrementalDiff(foundRecords)
+	}
 	if err != nil {
 		return nil, err
 	}
@@ -164,7 +173,6 @@ func (client *providerClient) GenerateDomainCorrections(dc *models.DomainConfig,
 		edits = append(edits, makeEdit(dc.Name, m))
 		descriptions = append(descriptions, m.String())
 	}
-	corrections := []*models.Correction{}
 	if len(edits) > 0 {
 		c := &models.Correction{
 			Msg: "\t" + strings.Join(descriptions, "\n\t"),
@@ -184,6 +192,7 @@ func (client *providerClient) GenerateDomainCorrections(dc *models.DomainConfig,
 		}
 		corrections = append(corrections, c)
 	}
+
 	return corrections, nil
 }
 

@@ -8,6 +8,7 @@ import (
 
 	"github.com/StackExchange/dnscontrol/v3/models"
 	"github.com/StackExchange/dnscontrol/v3/pkg/diff"
+	"github.com/StackExchange/dnscontrol/v3/pkg/diff2"
 	"github.com/namedotcom/go/namecom"
 )
 
@@ -53,13 +54,18 @@ func (n *namedotcomProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*m
 	// Normalize
 	models.PostProcessRecords(actual)
 
-	differ := diff.New(dc)
-	_, create, del, mod, err := differ.IncrementalDiff(actual)
+	var corrections []*models.Correction
+	var create, del, mod diff.Changeset
+	if !diff2.EnableDiff2 {
+		differ := diff.New(dc)
+		_, create, del, mod, err = differ.IncrementalDiff(actual)
+	} else {
+		differ := diff.NewCompat(dc)
+		_, create, del, mod, err = differ.IncrementalDiff(actual)
+	}
 	if err != nil {
 		return nil, err
 	}
-
-	corrections := []*models.Correction{}
 
 	for _, d := range del {
 		rec := d.Existing.Original.(*namecom.Record)
@@ -83,6 +89,7 @@ func (n *namedotcomProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*m
 		}}
 		corrections = append(corrections, c)
 	}
+
 	return corrections, nil
 }
 

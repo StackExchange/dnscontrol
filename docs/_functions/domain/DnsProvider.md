@@ -3,6 +3,9 @@ name: DnsProvider
 parameters:
   - name
   - nsCount
+parameter_types:
+  name: string
+  nsCount: number?
 ---
 
 DnsProvider indicates that the specified provider should be used to manage

@@ -11,6 +11,7 @@ import (
 
 	"github.com/StackExchange/dnscontrol/v3/models"
 	"github.com/StackExchange/dnscontrol/v3/pkg/diff"
+	"github.com/StackExchange/dnscontrol/v3/pkg/diff2"
 	"github.com/StackExchange/dnscontrol/v3/providers"
 	"github.com/miekg/dns/dnsutil"
 	"golang.org/x/oauth2"
@@ -155,13 +156,18 @@ func (api *linodeProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*mod
 		record.TTL = fixTTL(record.TTL)
 	}
 
-	differ := diff.New(dc)
-	_, create, del, modify, err := differ.IncrementalDiff(existingRecords)
+	var corrections []*models.Correction
+	var create, del, modify diff.Changeset
+	if !diff2.EnableDiff2 {
+		differ := diff.New(dc)
+		_, create, del, modify, err = differ.IncrementalDiff(existingRecords)
+	} else {
+		differ := diff.NewCompat(dc)
+		_, create, del, modify, err = differ.IncrementalDiff(existingRecords)
+	}
 	if err != nil {
 		return nil, err
 	}
-
-	var corrections []*models.Correction
 
 	// Deletes first so changing type works etc.
 	for _, m := range del {

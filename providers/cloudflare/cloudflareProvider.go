@@ -9,6 +9,7 @@ import (
 
 	"github.com/StackExchange/dnscontrol/v3/models"
 	"github.com/StackExchange/dnscontrol/v3/pkg/diff"
+	"github.com/StackExchange/dnscontrol/v3/pkg/diff2"
 	"github.com/StackExchange/dnscontrol/v3/pkg/printer"
 	"github.com/StackExchange/dnscontrol/v3/pkg/transform"
 	"github.com/StackExchange/dnscontrol/v3/providers"
@@ -216,107 +217,116 @@ func (c *cloudflareProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*m
 	//txtutil.SplitSingleLongTxt(dc.Records) // Autosplit long TXT records
 	// Don't split.
 	// Cloudflare's API only supports one TXT string of any non-zero length. No
-	// multiple strings (TXTMulti).
+	// multiple strings.
 	// When serving the DNS record, it splits strings >255 octets into
 	// individual segments of 255 each. However that is hidden from the API.
 	// Therefore, whether the string is 1 octet or thousands, just store it as
 	// one string in the first element of .TxtStrings.
 
-	differ := diff.New(dc, getProxyMetadata)
-	_, create, del, mod, err := differ.IncrementalDiff(records)
-	if err != nil {
-		return nil, err
-	}
+	var corrections []*models.Correction
+	if !diff2.EnableDiff2 || true { // Remove "|| true" when diff2 version arrives
 
-	corrections := []*models.Correction{}
+		differ := diff.New(dc, getProxyMetadata)
+		_, create, del, mod, err := differ.IncrementalDiff(records)
+		if err != nil {
+			return nil, err
+		}
 
-	for _, d := range del {
-		ex := d.Existing
-		if ex.Type == "PAGE_RULE" {
-			corrections = append(corrections, &models.Correction{
-				Msg: d.String(),
-				F:   func() error { return c.deletePageRule(ex.Original.(cloudflare.PageRule).ID, id) },
-			})
-		} else if ex.Type == "WORKER_ROUTE" {
-			corrections = append(corrections, &models.Correction{
-				Msg: d.String(),
-				F:   func() error { return c.deleteWorkerRoute(ex.Original.(cloudflare.WorkerRoute).ID, id) },
-			})
-		} else {
-			corr := c.deleteRec(ex.Original.(cloudflare.DNSRecord), id)
-			// DS records must always have a corresponding NS record.
-			// Therefore, we remove DS records before any NS records.
-			if d.Existing.Type == "DS" {
-				corrections = append([]*models.Correction{corr}, corrections...)
+		corrections := []*models.Correction{}
+
+		for _, d := range del {
+			ex := d.Existing
+			if ex.Type == "PAGE_RULE" {
+				corrections = append(corrections, &models.Correction{
+					Msg: d.String(),
+					F:   func() error { return c.deletePageRule(ex.Original.(cloudflare.PageRule).ID, id) },
+				})
+			} else if ex.Type == "WORKER_ROUTE" {
+				corrections = append(corrections, &models.Correction{
+					Msg: d.String(),
+					F:   func() error { return c.deleteWorkerRoute(ex.Original.(cloudflare.WorkerRoute).ID, id) },
+				})
 			} else {
-				corrections = append(corrections, corr)
+				corr := c.deleteRec(ex.Original.(cloudflare.DNSRecord), id)
+				// DS records must always have a corresponding NS record.
+				// Therefore, we remove DS records before any NS records.
+				if d.Existing.Type == "DS" {
+					corrections = append([]*models.Correction{corr}, corrections...)
+				} else {
+					corrections = append(corrections, corr)
+				}
 			}
 		}
-	}
-	for _, d := range create {
-		des := d.Desired
-		if des.Type == "PAGE_RULE" {
-			corrections = append(corrections, &models.Correction{
-				Msg: d.String(),
-				F:   func() error { return c.createPageRule(id, des.GetTargetField()) },
-			})
-		} else if des.Type == "WORKER_ROUTE" {
-			corrections = append(corrections, &models.Correction{
-				Msg: d.String(),
-				F:   func() error { return c.createWorkerRoute(id, des.GetTargetField()) },
-			})
-		} else {
-			corr := c.createRec(des, id)
-			// DS records must always have a corresponding NS record.
-			// Therefore, we create NS records before any DS records.
-			if d.Desired.Type == "NS" {
-				corrections = append(corr, corrections...)
+		for _, d := range create {
+			des := d.Desired
+			if des.Type == "PAGE_RULE" {
+				corrections = append(corrections, &models.Correction{
+					Msg: d.String(),
+					F:   func() error { return c.createPageRule(id, des.GetTargetField()) },
+				})
+			} else if des.Type == "WORKER_ROUTE" {
+				corrections = append(corrections, &models.Correction{
+					Msg: d.String(),
+					F:   func() error { return c.createWorkerRoute(id, des.GetTargetField()) },
+				})
 			} else {
-				corrections = append(corrections, corr...)
+				corr := c.createRec(des, id)
+				// DS records must always have a corresponding NS record.
+				// Therefore, we create NS records before any DS records.
+				if d.Desired.Type == "NS" {
+					corrections = append(corr, corrections...)
+				} else {
+					corrections = append(corrections, corr...)
+				}
 			}
 		}
-	}
 
-	for _, d := range mod {
-		rec := d.Desired
-		ex := d.Existing
-		if rec.Type == "PAGE_RULE" {
+		for _, d := range mod {
+			rec := d.Desired
+			ex := d.Existing
+			if rec.Type == "PAGE_RULE" {
+				corrections = append(corrections, &models.Correction{
+					Msg: d.String(),
+					F:   func() error { return c.updatePageRule(ex.Original.(cloudflare.PageRule).ID, id, rec.GetTargetField()) },
+				})
+			} else if rec.Type == "WORKER_ROUTE" {
+				corrections = append(corrections, &models.Correction{
+					Msg: d.String(),
+					F: func() error {
+						return c.updateWorkerRoute(ex.Original.(cloudflare.WorkerRoute).ID, id, rec.GetTargetField())
+					},
+				})
+			} else {
+				e := ex.Original.(cloudflare.DNSRecord)
+				proxy := e.Proxiable && rec.Metadata[metaProxy] != "off"
+				corrections = append(corrections, &models.Correction{
+					Msg: d.String(),
+					F:   func() error { return c.modifyRecord(id, e.ID, proxy, rec) },
+				})
+			}
+		}
+
+		// Add universalSSL change to corrections when needed
+		if changed, newState, err := c.checkUniversalSSL(dc, id); err == nil && changed {
+			var newStateString string
+			if newState {
+				newStateString = "enabled"
+			} else {
+				newStateString = "disabled"
+			}
 			corrections = append(corrections, &models.Correction{
-				Msg: d.String(),
-				F:   func() error { return c.updatePageRule(ex.Original.(cloudflare.PageRule).ID, id, rec.GetTargetField()) },
-			})
-		} else if rec.Type == "WORKER_ROUTE" {
-			corrections = append(corrections, &models.Correction{
-				Msg: d.String(),
-				F: func() error {
-					return c.updateWorkerRoute(ex.Original.(cloudflare.WorkerRoute).ID, id, rec.GetTargetField())
-				},
-			})
-		} else {
-			e := ex.Original.(cloudflare.DNSRecord)
-			proxy := e.Proxiable && rec.Metadata[metaProxy] != "off"
-			corrections = append(corrections, &models.Correction{
-				Msg: d.String(),
-				F:   func() error { return c.modifyRecord(id, e.ID, proxy, rec) },
+				Msg: fmt.Sprintf("Universal SSL will be %s for this domain.", newStateString),
+				F:   func() error { return c.changeUniversalSSL(id, newState) },
 			})
 		}
+
+		return corrections, nil
 	}
 
-	// Add universalSSL change to corrections when needed
-	if changed, newState, err := c.checkUniversalSSL(dc, id); err == nil && changed {
-		var newStateString string
-		if newState {
-			newStateString = "enabled"
-		} else {
-			newStateString = "disabled"
-		}
-		corrections = append(corrections, &models.Correction{
-			Msg: fmt.Sprintf("Universal SSL will be %s for this domain.", newStateString),
-			F:   func() error { return c.changeUniversalSSL(id, newState) },
-		})
-	}
+	// Insert Future diff2 version here.
 
 	return corrections, nil
+
 }
 
 func checkNSModifications(dc *models.DomainConfig) {

@@ -3,6 +3,9 @@ name: IGNORE_TARGET
 parameters:
   - pattern
   - rType
+parameter_types:
+  pattern: string
+  rType: string
 ---
 
 WARNING: The `IGNORE_*` family  of functions is risky to use. The code

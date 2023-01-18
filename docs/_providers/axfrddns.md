@@ -211,3 +211,7 @@ When AutoDNSSEC is enabled, the AXFR+DDNS provider will emit a warning when no R
 When AutoDNSSEC is disabled, the AXFR+DDNS provider will emit a warning when RRSIG, DNSKEY or NSEC records are found in the zone.
 
 When AutoDNSSEC is not enabled or disabled, no checking is done.
+
+## FYI: MD5 Support
+
+By default the used DNS Go package by miekg has deprecated supporting the (insecure) MD5 algorithm [https://github.com/miekg/dns/commit/93945c284489394b77653323d11d5de83a2a6fb5](Link). Some providers like the Leibniz Supercomputing Centre (LRZ) located in Munich still use this algorithm to authenticate internal dynamic DNS updates. To compensate the lack of MD5 a custom MD5 TSIG Provider was added into DNSControl.  

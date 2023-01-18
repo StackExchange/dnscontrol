@@ -7,6 +7,7 @@ import (
 
 	"github.com/StackExchange/dnscontrol/v3/models"
 	"github.com/StackExchange/dnscontrol/v3/pkg/diff"
+	"github.com/StackExchange/dnscontrol/v3/pkg/diff2"
 	"github.com/mittwald/go-powerdns/apis/zones"
 	"github.com/mittwald/go-powerdns/pdnshttp"
 )
@@ -48,7 +49,6 @@ func (dsp *powerdnsProvider) GetZoneRecords(domain string) (models.Records, erro
 
 // GetDomainCorrections returns a list of corrections to update a domain.
 func (dsp *powerdnsProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Correction, error) {
-	var corrections []*models.Correction
 
 	// get current zone records
 	curRecords, err := dsp.GetZoneRecords(dc.Name)
@@ -63,7 +63,12 @@ func (dsp *powerdnsProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*m
 	models.PostProcessRecords(curRecords)
 
 	// create record diff by group
-	keysToUpdate, err := (diff.New(dc)).ChangedGroups(curRecords)
+	var keysToUpdate map[models.RecordKey][]string
+	if !diff2.EnableDiff2 {
+		keysToUpdate, err = (diff.New(dc)).ChangedGroups(curRecords)
+	} else {
+		keysToUpdate, err = (diff.NewCompat(dc)).ChangedGroups(curRecords)
+	}
 	if err != nil {
 		return nil, err
 	}
@@ -112,6 +117,7 @@ func (dsp *powerdnsProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*m
 
 	// append corrections in the right order
 	// delete corrections must be run first to avoid correlations with existing RR
+	var corrections []*models.Correction
 	corrections = append(corrections, dCorrections...)
 	corrections = append(corrections, cuCorrections...)
 

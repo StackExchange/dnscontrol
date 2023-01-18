@@ -7,6 +7,7 @@ import (
 
 	"github.com/StackExchange/dnscontrol/v3/models"
 	"github.com/StackExchange/dnscontrol/v3/pkg/diff"
+	"github.com/StackExchange/dnscontrol/v3/pkg/diff2"
 	"github.com/StackExchange/dnscontrol/v3/pkg/txtutil"
 	"github.com/StackExchange/dnscontrol/v3/providers"
 )
@@ -101,13 +102,18 @@ func (api *hetznerProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*mo
 	models.PostProcessRecords(existingRecords)
 	txtutil.SplitSingleLongTxt(dc.Records) // Autosplit long TXT records
 
-	differ := diff.New(dc)
-	_, create, del, modify, err := differ.IncrementalDiff(existingRecords)
+	var corrections []*models.Correction
+	var create, del, modify diff.Changeset
+	if !diff2.EnableDiff2 {
+		differ := diff.New(dc)
+		_, create, del, modify, err = differ.IncrementalDiff(existingRecords)
+	} else {
+		differ := diff.NewCompat(dc)
+		_, create, del, modify, err = differ.IncrementalDiff(existingRecords)
+	}
 	if err != nil {
 		return nil, err
 	}
-
-	var corrections []*models.Correction
 
 	zone, err := api.getZone(domain)
 	if err != nil {

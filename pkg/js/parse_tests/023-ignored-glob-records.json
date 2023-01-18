@@ -12,6 +12,13 @@
           "pattern": "\\*.testignore",
           "types": "*"
         }
+      ],
+      "unmanaged": [
+        {
+          "label_pattern": "\\*.testignore",
+          "rType_pattern": "*",
+          "target_pattern": "*"
+        }
       ]
     }
   ]

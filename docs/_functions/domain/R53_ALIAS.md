@@ -4,6 +4,10 @@ parameters:
   - name
   - target
   - ZONE_ID modifier
+parameter_types:
+  name: string
+  target: string
+  ZONE_ID modifier: DomainModifier & RecordModifier
 provider: ROUTE53
 ---
 

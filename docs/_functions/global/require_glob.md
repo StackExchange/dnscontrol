@@ -3,6 +3,9 @@ name: require_glob
 parameters:
   - path
   - recursive
+parameter_types:
+  path: string
+  recursive: boolean
 ---
 
 `require_glob()` can recursively load `.js` files, optionally non-recursive as well.

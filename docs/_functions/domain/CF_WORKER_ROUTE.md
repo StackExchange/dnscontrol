@@ -3,6 +3,9 @@ name: CF_WORKER_ROUTE
 parameters:
   - pattern
   - script
+parameter_types:
+  pattern: string
+  script: string
 provider: CLOUDFLAREAPI
 ---
 

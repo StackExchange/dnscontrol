@@ -12,6 +12,7 @@ import (
 
 	"github.com/StackExchange/dnscontrol/v3/models"
 	"github.com/StackExchange/dnscontrol/v3/pkg/diff"
+	"github.com/StackExchange/dnscontrol/v3/pkg/diff2"
 	"github.com/StackExchange/dnscontrol/v3/pkg/printer"
 	"github.com/StackExchange/dnscontrol/v3/providers"
 )
@@ -189,13 +190,18 @@ func (c *exoscaleProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*mod
 	// Normalize
 	models.PostProcessRecords(existingRecords)
 
-	differ := diff.New(dc)
-	_, create, delete, modify, err := differ.IncrementalDiff(existingRecords)
+	var corrections []*models.Correction
+	var create, delete, modify diff.Changeset
+	if !diff2.EnableDiff2 {
+		differ := diff.New(dc)
+		_, create, delete, modify, err = differ.IncrementalDiff(existingRecords)
+	} else {
+		differ := diff.NewCompat(dc)
+		_, create, delete, modify, err = differ.IncrementalDiff(existingRecords)
+	}
 	if err != nil {
 		return nil, err
 	}
-
-	var corrections = []*models.Correction{}
 
 	for _, del := range delete {
 		record := del.Existing.Original.(*egoscale.DNSDomainRecord)

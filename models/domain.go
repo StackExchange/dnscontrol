@@ -15,13 +15,17 @@ type DomainConfig struct {
 	RegistrarName    string         `json:"registrar"`
 	DNSProviderNames map[string]int `json:"dnsProviders"`
 
-	Metadata       map[string]string `json:"meta,omitempty"`
-	Records        Records           `json:"records"`
-	Nameservers    []*Nameserver     `json:"nameservers,omitempty"`
-	KeepUnknown    bool              `json:"keepunknown,omitempty"`
-	IgnoredNames   []*IgnoreName     `json:"ignored_names,omitempty"`
-	IgnoredTargets []*IgnoreTarget   `json:"ignored_targets,omitempty"`
-	AutoDNSSEC     string            `json:"auto_dnssec,omitempty"` // "", "on", "off"
+	Metadata    map[string]string `json:"meta,omitempty"`
+	Records     Records           `json:"records"`
+	Nameservers []*Nameserver     `json:"nameservers,omitempty"`
+
+	KeepUnknown     bool               `json:"keepunknown,omitempty"`
+	IgnoredNames    []*IgnoreName      `json:"ignored_names,omitempty"`
+	IgnoredTargets  []*IgnoreTarget    `json:"ignored_targets,omitempty"`
+	Unmanaged       []*UnmanagedConfig `json:"unmanaged,omitempty"`
+	UnmanagedUnsafe bool               `json:"unmanaged_disable_safety_check,omitempty"`
+
+	AutoDNSSEC string `json:"auto_dnssec,omitempty"` // "", "on", "off"
 	//DNSSEC        bool              `json:"dnssec,omitempty"`
 
 	// These fields contain instantiated provider instances once everything is linked up.
@@ -30,6 +34,14 @@ type DomainConfig struct {
 	// 2. Final driver instances are loaded after we load credentials. Any actual provider interaction requires that.
 	RegistrarInstance    *RegistrarInstance     `json:"-"`
 	DNSProviderInstances []*DNSProviderInstance `json:"-"`
+}
+
+// UnmanagedConfig describes an UNMANAGED() rule.
+type UnmanagedConfig struct {
+	Label   string          `json:"label_pattern"` // Glob pattern for matching labels.
+	RType   string          `json:"rType_pattern"` // Comma-separated list of DNS Resource Types.
+	typeMap map[string]bool // map of RTypes or len()=0 for all
+	Target  string          `json:"target_pattern"` // Glob pattern for matching targets.
 }
 
 // Copy returns a deep copy of the DomainConfig.
