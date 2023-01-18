@@ -5,6 +5,11 @@ parameters:
   - priority
   - target
   - modifiers...
+parameter_types:
+  name: string
+  priority: number
+  target: string
+  "modifiers...": RecordModifier[]
 ---
 
 MX adds an MX record to the domain.

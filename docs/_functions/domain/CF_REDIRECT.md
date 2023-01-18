@@ -1,9 +1,14 @@
 ---
 name: CF_REDIRECT
 parameters:
+  - source
   - destination
   - modifiers...
 provider: CLOUDFLAREAPI
+parameter_types:
+  source: string
+  destination: string
+  "modifiers...": RecordModifier[]
 ---
 
 `CF_REDIRECT` uses Cloudflare-specific features ("Forwarding URL" Page Rules) to

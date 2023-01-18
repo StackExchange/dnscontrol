@@ -1,7 +1,8 @@
 ---
-name: URL301
+name: CLOUDNS_WR
 parameters:
   - name
+  - target
   - modifiers...
 parameter_types:
   name: string

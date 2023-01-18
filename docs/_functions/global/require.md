@@ -2,6 +2,7 @@
 name: require
 parameters:
   - path
+ts_ignore: true
 ---
 
 `require(...)` loads the specified JavaScript or JSON file, allowing
@@ -41,14 +42,18 @@ function IncludeKubernetes() {
 ```js
 // kubernetes/clusters/prod.js
 function includeK8Sprod() {
-    return [ /* ... */ ];
+    return [
+        // ...
+    ];
 }
 ```
 
 ```js
 // kubernetes/clusters/dev.js
 function includeK8Sdev() {
-    return [ /* ... */ ];
+    return [
+        // ...
+    ];
 }
 ```
 {% endcapture %}
