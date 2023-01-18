@@ -228,7 +228,7 @@ func toRc(dc *models.DomainConfig, r *domainRecord) *models.RecordConfig {
 
 	switch rtype := r.Type; rtype { // #rtype_variations
 	case "TXT":
-		rc.SetTargetTXTString(r.Value)
+		rc.SetTargetTXT(r.Value)
 	case "SRV":
 		spl := strings.Split(r.Value, " ")
 		prio, _ := strconv.ParseUint(spl[0], 10, 16)

@@ -7,6 +7,13 @@ parameters:
   - digesttype
   - digest
   - modifiers...
+parameter_types:
+  name: string
+  keytag: number
+  algorithm: number
+  digesttype: number
+  digest: string
+  "modifiers...": RecordModifier[]
 ---
 
 DS adds a DS record to the domain.

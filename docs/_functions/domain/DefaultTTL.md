@@ -2,6 +2,8 @@
 name: DefaultTTL
 parameters:
   - ttl
+parameter_types:
+  ttl: Duration
 ---
 
 DefaultTTL sets the TTL for all records in a domain that do not explicitly set one with [TTL](#TTL). If neither `DefaultTTL` or `TTL` exist for a record,

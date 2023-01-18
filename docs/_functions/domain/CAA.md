@@ -5,6 +5,11 @@ parameters:
   - tag
   - value
   - modifiers...
+parameter_types:
+  name: string
+  tag: '"issue" | "issuewild" | "iodef"'
+  value: string
+  "modifiers...": RecordModifier[]
 ---
 
 CAA adds a CAA record to a domain. The name should be the relative label for the record. Use `@` for the domain apex.
