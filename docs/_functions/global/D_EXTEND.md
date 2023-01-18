@@ -3,6 +3,9 @@ name: D_EXTEND
 parameters:
   - name
   - modifiers...
+parameter_types:
+  name: string
+  "modifiers...": DomainModifier[]
 ---
 
 `D_EXTEND` adds records (and metadata) to a domain previously defined

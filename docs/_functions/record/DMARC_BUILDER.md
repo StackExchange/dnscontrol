@@ -14,9 +14,22 @@ parameters:
   - failureFormat
   - reportInterval
   - ttl
+parameters_object: true
+parameter_types:
+  label: string?
+  version: string?
+  policy: "'none' | 'quarantine' | 'reject'"
+  subdomainPolicy: "'none' | 'quarantine' | 'reject'?"
+  alignmentSPF: "'strict' | 's' | 'relaxed' | 'r'?"
+  alignmentDKIM: "'strict' | 's' | 'relaxed' | 'r'?"
+  percent: number?
+  rua: string[]?
+  ruf: string[]?
+  failureOptions: "{ SPF: boolean, DKIM: boolean } | string?"
+  failureFormat: string?
+  reportInterval: Duration?
+  ttl: Duration?
 ---
-
-# DMARC Builder
 
 DNSControl contains a `DMARC_BUILDER` which can be used to simply create
 DMARC policies for your domains.

@@ -12,10 +12,25 @@ CircleCI will do most of the work for you. You will need to edit the draft relea
 Please change the version number as appropriate.  Substitute (for example)
 `3.20.0` any place you see `VERSION` in this doc.
 
-## Step 1. Tag the commit in master that you want to release
+## Step 1. Rebuild generated files
 
 ```shell
 git checkout master
+git pull
+go generate
+go mod tidy
+git add -A
+git commit -m "Update generated files for VERSION"
+```
+
+This will update the following generated files:
+
+* `docs/_includes/matrix.md`
+* `commands/types/dnscontrol.d.ts`
+
+## Step 2. Tag the commit in master that you want to release
+
+```shell
 git tag -a v3.20.0
 git push origin --tags
 ```
@@ -27,7 +42,7 @@ CircleCI will start a [build](https://app.circleci.com/pipelines/github/StackExc
 
 ![CircleCI Release Screenshot](public/circleci_release.png)
 
-## Step 2. Create the release notes
+## Step 3. Create the release notes
 
 The draft release notes are created for you. In this step you'll edit them.
 
@@ -73,7 +88,7 @@ of bug fixes, and FILL IN.
 ### Deprecation warnings
 ```
 
-## Step 2. Announce it via email
+## Step 4. Announce it via email
 
 Email the release notes to the mailing list: (note the format of the Subject line and that the first line of the email is the URL of the release)
 
@@ -89,7 +104,7 @@ https://github.com/StackExchange/dnscontrol/releases/tag/v$VERSION
 NOTE: You won't be able to post to the mailing list unless you are on
 it.  [Click here to join](https://groups.google.com/forum/#!forum/dnscontrol-discuss).
 
-## Step 3. Announce it via chat
+## Step 5. Announce it via chat
 
 Mention on [https://gitter.im/dnscontrol/Lobby](https://gitter.im/dnscontrol/Lobby) that the new release has shipped.
 
@@ -97,7 +112,7 @@ Mention on [https://gitter.im/dnscontrol/Lobby](https://gitter.im/dnscontrol/Lob
 ANNOUNCEMENT: dnscontrol v$VERSION has been released! https://github.com/StackExchange/dnscontrol/releases/tag/v$VERSION
 ```
 
-## Step 4. Get credit
+## Step 6. Get credit
 
 Mention the fact that you did this release in your weekly accomplishments.
 
@@ -207,8 +222,8 @@ Verify that your tests are working properly by making a branch.  You'll see on t
 
 Some notes:
 
-* Tests that are skipped take 25-30 seconds to complete. In other words, if you look at a list of tests, you can tell which ones were skipped by looking at the completion time.
-* Free accounts don't have access to `2xlarge` instanace. You'll either need to upgrade your CCI account or change `2xlarge` to `large` in `.circleci/config.yml` in your fork. Please be careful to not include that file when you send a PR. (Anyone have tips on how to make that easier?)
+* Tests that are skipped take about 3 seconds to complete. In other words, if you look at a list of tests, you can tell which ones were skipped by looking at the completion time.
+* Free accounts don't have access to `2xlarge` instanace. You'll either need to upgrade your CCI account or change `2xlarge` to `large` in `.circleci/config.yml` in your fork. Please be careful to not include that file when you send a PR. See [#1935](https://github.com/StackExchange/dnscontrol/issues/1935) (Anyone have tips on how to make that easier?)
 
 ## Tip: How to rebuild flattener
 
