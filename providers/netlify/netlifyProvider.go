@@ -197,10 +197,10 @@ func (n *netlifyProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*mode
 	var create, del, modify diff.Changeset
 	if !diff2.EnableDiff2 {
 		differ := diff.New(dc)
-		_, create, del, modify, err := differ.IncrementalDiff(records)
+		_, create, del, modify, err = differ.IncrementalDiff(records)
 	} else {
 		differ := diff.NewCompat(dc)
-		_, create, del, modify, err := differ.IncrementalDiff(records)
+		_, create, del, modify, err = differ.IncrementalDiff(records)
 	}
 	if err != nil {
 		return nil, err
