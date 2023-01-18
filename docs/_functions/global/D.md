@@ -4,6 +4,10 @@ parameters:
   - name
   - registrar
   - modifiers...
+parameter_types:
+  name: string
+  registrar: string
+  "modifiers...": DomainModifier[]
 ---
 
 `D` adds a new Domain for DNSControl to manage. The first two arguments are required: the domain name (fully qualified `example.com` without a trailing dot), and the

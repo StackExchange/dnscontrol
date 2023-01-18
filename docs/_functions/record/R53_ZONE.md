@@ -2,6 +2,9 @@
 name: R53_ZONE
 parameters:
   - zone_id
+parameter_types:
+  zone_id: string
+ts_return: DomainModifier & RecordModifier
 provider: ROUTE53
 ---
 

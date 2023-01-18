@@ -11,15 +11,15 @@ Each new record type requires special handling by
 DNSControl.
 
 If a record simply has a single "target", then there is little to
-do because it is handled similarly to A, CNAME, and so on.  However
+do because it is handled similarly to A, CNAME, and so on. However
 if there are multiple fields within the record you have more work
 to do.
 
 Our general philosophy is:
 
-* Internally the individual fields of a record are kept separate. If a particular provider combines them into one big string, that kind of thing is done in the provider code at the end of the food chain.  For example, an MX record has a Target (`aspmx.l.google.com.`) and a preference (`10`).  Some systems combine this into one string (`10 aspmx.l.google.com.`).  We keep the two values separate in `RecordConfig` and leave it up to the individual providers to merge them when required. An earlier implementation kept everything combined and we found ourselves constantly parsing and re-parsing the target. It was inefficient and lead to many bugs.
-* Anywhere we have a special case for a particular Rtype, we use a `switch` statement and have a `case` for every single record type, usually with a `default:` case that calls `panic()`. This way developers adding a new record type will quickly find where they need to add code (the panic will tell them where).  Before we did this, missing implementation code would go unnoticed for months.
-* Keep things alphabetical. If you are adding your record type to a case statement, function library, or whatever, please list it alphabetically along with the others when possible.
+-   Internally the individual fields of a record are kept separate. If a particular provider combines them into one big string, that kind of thing is done in the provider code at the end of the food chain. For example, an MX record has a Target (`aspmx.l.google.com.`) and a preference (`10`). Some systems combine this into one string (`10 aspmx.l.google.com.`). We keep the two values separate in `RecordConfig` and leave it up to the individual providers to merge them when required. An earlier implementation kept everything combined and we found ourselves constantly parsing and re-parsing the target. It was inefficient and lead to many bugs.
+-   Anywhere we have a special case for a particular Rtype, we use a `switch` statement and have a `case` for every single record type, usually with a `default:` case that calls `panic()`. This way developers adding a new record type will quickly find where they need to add code (the panic will tell them where). Before we did this, missing implementation code would go unnoticed for months.
+-   Keep things alphabetical. If you are adding your record type to a case statement, function library, or whatever, please list it alphabetically along with the others when possible.
 
 ## Step 1: Update `RecordConfig` in `models/dns.go`
 
@@ -46,29 +46,29 @@ type RecordConfig struct {
 
 ## Step 2: Add a capability for the record
 
-You'll need to mark which providers support this record type.  The
+You'll need to mark which providers support this record type. The
 initial PR should implement this record for the `bind` provider at
 a minimum.
 
-* Add the capability to the file `dnscontrol/providers/capabilities.go` (look for `CanUseAlias` and add
-it to the end of the list.)
-* Add this feature to the feature matrix in `dnscontrol/build/generate/featureMatrix.go` (Add it to the variable `matrix` then add it later in the file with a `setCap()` statement.
-* Add the capability to the list of features that zones are validated
-  against (i.e. if you want DNSControl to report an error if this
-  feature is used with a DNS provider that doesn't support it). That's
-  in the `checkProviderCapabilities` function in
-  `pkg/normalize/validate.go`.
-* Mark the `bind` provider as supporting this record type by updating `dnscontrol/providers/bind/bindProvider.go` (look for `providers.CanUse` and you'll see what to do).
+-   Add the capability to the file `dnscontrol/providers/capabilities.go` (look for `CanUseAlias` and add
+    it to the end of the list.)
+-   Add this feature to the feature matrix in `dnscontrol/build/generate/featureMatrix.go` (Add it to the variable `matrix` then add it later in the file with a `setCap()` statement.
+-   Add the capability to the list of features that zones are validated
+    against (i.e. if you want DNSControl to report an error if this
+    feature is used with a DNS provider that doesn't support it). That's
+    in the `checkProviderCapabilities` function in
+    `pkg/normalize/validate.go`.
+-   Mark the `bind` provider as supporting this record type by updating `dnscontrol/providers/bind/bindProvider.go` (look for `providers.CanUse` and you'll see what to do).
 
 DNSControl will warn/error if this new record is used with a
 provider that does not support the capability.
 
-* Add the capability to the validations in `pkg/normalize/validate.go`
-  by adding it to `providerCapabilityChecks`
-* Some capabilities can't be tested for.  If
-  such testing can't be done, add it to the whitelist in function
-  `TestCapabilitiesAreFiltered` in
-  `pkg/normalize/capabilities_test.go`
+-   Add the capability to the validations in `pkg/normalize/validate.go`
+    by adding it to `providerCapabilityChecks`
+-   Some capabilities can't be tested for. If
+    such testing can't be done, add it to the whitelist in function
+    `TestCapabilitiesAreFiltered` in
+    `pkg/normalize/capabilities_test.go`
 
 If the capabilities testing is not configured correctly, `go test ./...`
 will report something like the `MISSING` message below. In this
@@ -84,9 +84,9 @@ example we removed `providers.CanUseCAA` from the
 
 ## Step 3: Add a helper function
 
-Add a function to `pkg/js/helpers.js` for the new record type.  This
+Add a function to `pkg/js/helpers.js` for the new record type. This
 is the JavaScript file that defines `dnsconfig.js`'s functions like
-`A()` and `MX()`.  Look at the definition of A, MX and CAA for good
+`A()` and `MX()`. Look at the definition of A, MX and CAA for good
 examples to use as a base.
 
 Please add the function alphabetically with the others. Also, please run
@@ -109,7 +109,7 @@ running `go generate` after any change, or using the `-dev` flag.
 ## Step 4: Search for `#rtype_variations`
 
 Anywhere a rtype requires special handling has been marked with a
-comment that includes the string `#rtype_variations`.  Search for
+comment that includes the string `#rtype_variations`. Search for
 this string and add your new type to this code.
 
 ## Step 5: Add a `parse_tests` test case
@@ -152,24 +152,24 @@ testgroup("MX",                                   <<< 1
   )
 ```
 
-Line 1: `testgroup()` gives a name to a group of tests.  It also tells
+Line 1: `testgroup()` gives a name to a group of tests. It also tells
 the system to delete all records for this domain so that the tests
 begin with a blank slate.
 
 Line 2:
-Each `tc()` encodes all the records of a zone.  The test framework
+Each `tc()` encodes all the records of a zone. The test framework
 will try to do the smallest changes to bring the zone up to date.
 In this case, we know the zone is empty, so this will add one MX
 record.
 
 Line 3: In this example, we just change one field of an existing
-record.  To get to this configuration, the provider will have to
+record. To get to this configuration, the provider will have to
 either change the priority on an existing record, or delete the old
 record and insert a new one. Either way, this test case assures us
 that the diff'ing functionality is working properly.
 
 If you look at the tests for `CAA`, it inserts a few records then
-attempts to modify each field of a record one at a time.  This test
+attempts to modify each field of a record one at a time. This test
 was useful because it turns out we hadn't written the code to
 properly see a change in priority. We fixed this bug before the
 code made it into production.
@@ -181,8 +181,8 @@ this kind of test because we're pretty sure that part of the diffing
 engine work fine. It is here as an example.
 
 Also notice that some tests include `requires()`, `not()` and `only()`
-statements.  This is how we restrict tests to certain providers.
-These options must be listed first in a `testgroup`.  More details are
+statements. This is how we restrict tests to certain providers.
+These options must be listed first in a `testgroup`. More details are
 in the source code.
 
 To run the integration test with the BIND provider:
@@ -200,7 +200,7 @@ Please do it for the kittens.
 
 ## Step 7: Support more providers
 
-Now add support in other providers.  Add the `providers.CanUse...`
+Now add support in other providers. Add the `providers.CanUse...`
 flag to the provider and re-run the integration tests:
 
 For example, this will run the tests on Amazon AWS Route53:
@@ -220,3 +220,15 @@ please add a test that demonstrates the bug (then fix the bug, of
 course). This
 will help all future contributors. If you need help with adding
 tests, please ask!
+
+## Step 8: Write documentation
+
+Add a new Markdown file to `docs/_functions/domain`. Copy an existing file (`CNAME.md` is a good example). The section between the lines of `---` is called the front matter and it has the following keys:
+
+-   `name`: The name of the record. This should match the file name and the name of the record in `helpers.js`.
+-   `parameters`: A list of parameter names, in order. Feel free to use spaces in the name if necessary. Your last parameter should be `modifiers...` to allow arbitrary modifiers like `TTL` to be applied to your record.
+-   `parameter_types`: an object with parameter names as keys and TypeScript type names as values. Check out existing record documentation if you’re not sure to put for a parameter. Note that this isn’t displayed on the website, it’s only used to generate the `.d.ts` file.
+
+{% raw %}
+The rest of the file is the documentation. You can use Markdown syntax to format the text. Use the `{% capture example %}` format to set up a collapsible code block. You can also use it multiple times to show multiple examples.
+{% endraw %}
