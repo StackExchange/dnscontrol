@@ -130,9 +130,9 @@ func (hp *hostingdeProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*m
 
 	var create, del, mod diff.Changeset
 	if !diff2.EnableDiff2 {
-		differ := diff.New(dc)
+		differ = diff.New(dc)
 	} else {
-		differ := diff.NewCompat(dc)
+		differ = diff.NewCompat(dc)
 	}
 	_, create, del, mod, err = differ.IncrementalDiff(records)
 	if err != nil {
