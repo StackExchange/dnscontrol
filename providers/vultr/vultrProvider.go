@@ -137,6 +137,16 @@ func (api *vultrProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*mode
 			})
 		}
 
+		for _, mod := range modify {
+			r := toVultrRecord(dc, mod.Desired, mod.Existing.Original.(govultr.DomainRecord).ID)
+			corrections = append(corrections, &models.Correction{
+				Msg: fmt.Sprintf("%s; Vultr RecordID: %v", mod.String(), r.ID),
+				F: func() error {
+					return api.client.DomainRecord.Update(context.Background(), dc.Name, r.ID, &govultr.DomainRecordReq{Name: r.Name, Type: r.Type, Data: r.Data, TTL: r.TTL, Priority: &r.Priority})
+				},
+			})
+		}
+
 		for _, mod := range create {
 			r := toVultrRecord(dc, mod.Desired, "0")
 			corrections = append(corrections, &models.Correction{
@@ -144,16 +154,6 @@ func (api *vultrProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*mode
 				F: func() error {
 					_, err := api.client.DomainRecord.Create(context.Background(), dc.Name, &govultr.DomainRecordReq{Name: r.Name, Type: r.Type, Data: r.Data, TTL: r.TTL, Priority: &r.Priority})
 					return err
-				},
-			})
-		}
-
-		for _, mod := range modify {
-			r := toVultrRecord(dc, mod.Desired, mod.Existing.Original.(govultr.DomainRecord).ID)
-			corrections = append(corrections, &models.Correction{
-				Msg: fmt.Sprintf("%s; Vultr RecordID: %v", mod.String(), r.ID),
-				F: func() error {
-					return api.client.DomainRecord.Update(context.Background(), dc.Name, r.ID, &govultr.DomainRecordReq{Name: r.Name, Type: r.Type, Data: r.Data, TTL: r.TTL, Priority: &r.Priority})
 				},
 			})
 		}
