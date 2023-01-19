@@ -238,6 +238,9 @@ func toRecordConfig(domain string, r govultr.DomainRecord) (*models.RecordConfig
 		return rc, rc.SetTargetMX(uint16(r.Priority), data)
 	case "SRV":
 		// Vultr returns SRV records in the format "[weight] [port] [target]".
+		if !strings.HasSuffix(data, ".") {
+			data = data + "."
+		}
 		return rc, rc.SetTargetSRVPriorityString(uint16(r.Priority), data)
 	case "TXT":
 		// TXT records from Vultr are always surrounded by quotes.
@@ -264,7 +267,7 @@ func toVultrRecord(dc *models.DomainConfig, rc *models.RecordConfig, vultrID str
 
 	data := rc.GetTargetField()
 
-	// Vultr does not use a period suffix for CNAME, NS, or MX.
+	// Vultr does not use a period suffix for CNAME, NS, MX or SRV.
 	data = strings.TrimSuffix(data, ".")
 
 	priority := 0
@@ -286,7 +289,7 @@ func toVultrRecord(dc *models.DomainConfig, rc *models.RecordConfig, vultrID str
 	}
 	switch rtype := rc.Type; rtype { // #rtype_variations
 	case "SRV":
-		r.Data = fmt.Sprintf("%v %v %s", rc.SrvWeight, rc.SrvPort, rc.GetTargetField())
+		r.Data = fmt.Sprintf("%v %v %s", rc.SrvWeight, rc.SrvPort, data)
 	case "CAA":
 		r.Data = fmt.Sprintf(`%v %s "%s"`, rc.CaaFlag, rc.CaaTag, rc.GetTargetField())
 	case "SSHFP":
