@@ -198,9 +198,6 @@ title: DNSControl
                     <a href="https://docs.dnscontrol.org/release/release-engineering">Release Engineering</a>: How to build and ship a release
                 </li>
                 <li>
-                    <a href="{{site.github.url}}/documentation">Edit Documentation</a>: How to edit these docs
-                </li>
-                <li>
                     <a href="https://docs.dnscontrol.org/developer-info/byo-secrets">Bring-Your-Own-Secrets</a>: Automate tests
                 </li>
                 <li>
