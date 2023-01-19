@@ -175,24 +175,6 @@ func (hp *hostingdeProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*m
 		},
 	}
 
-	msg = []string{}
-	for _, c := range append(del, append(create, mod...)...) {
-		msg = append(msg, c.String())
-	}
-
-	if len(create) == 0 && len(del) == 0 && len(mod) == 0 {
-		return nil, nil
-	}
-
-	corrections = []*models.Correction{
-		{
-			Msg: fmt.Sprintf("\n%s", strings.Join(msg, "\n")),
-			F: func() error {
-				return hp.updateRecords(dc.Name, create, del, mod)
-			},
-		},
-	}
-
 	return corrections, nil
 }
 
