@@ -130,11 +130,10 @@ func (hp *hostingdeProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*m
 
 	var create, del, mod diff.Changeset
 	if !diff2.EnableDiff2 {
-		differ = diff.New(dc)
+		_, create, del, mod, err = diff.New(dc).IncrementalDiff(records)
 	} else {
-		differ = diff.NewCompat(dc)
+		_, create, del, mod, err = diff.NewCompat(dc).IncrementalDiff(records)
 	}
-	_, create, del, mod, err = differ.IncrementalDiff(records)
 	if err != nil {
 		return nil, err
 	}
@@ -153,7 +152,7 @@ func (hp *hostingdeProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*m
 		return nil, nil
 	}
 
-	corrections = []*models.Correction{
+	corrections := []*models.Correction{
 		{
 			Msg: fmt.Sprintf("\n%s", strings.Join(msg, "\n")),
 			F: func() error {
@@ -176,7 +175,7 @@ func (hp *hostingdeProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*m
 		},
 	}
 
-	msg := []string{}
+	msg = []string{}
 	for _, c := range append(del, append(create, mod...)...) {
 		msg = append(msg, c.String())
 	}
@@ -185,7 +184,7 @@ func (hp *hostingdeProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*m
 		return nil, nil
 	}
 
-	corrections := []*models.Correction{
+	corrections = []*models.Correction{
 		{
 			Msg: fmt.Sprintf("\n%s", strings.Join(msg, "\n")),
 			F: func() error {
