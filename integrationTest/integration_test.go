@@ -485,12 +485,6 @@ func txt(name, target string) *models.RecordConfig {
 	return r
 }
 
-func txtmulti(name string, target []string) *models.RecordConfig {
-	r := makeRec(name, "", "TXT")
-	r.SetTargetTXTs(target)
-	return r
-}
-
 func caa(name string, tag string, flag uint8, target string) *models.RecordConfig {
 	r := makeRec(name, target, "CAA")
 	r.SetTargetCAA(flag, tag, target)
@@ -700,6 +694,11 @@ func makeTests(t *testing.T) []*TestGroup {
 			tc("Change it", a("@", "1.2.3.4")),
 			tc("Add another", a("@", "1.2.3.4"), a("www", "1.2.3.4")),
 			tc("Add another(same name)", a("@", "1.2.3.4"), a("www", "1.2.3.4"), a("www", "5.6.7.8")),
+		),
+
+		testgroup("Protocol-TTL",
+			not("NETCUP"), // NETCUP does not support TTLs.
+			tc("Start", a("@", "1.2.3.4"), a("www", "1.2.3.4"), a("www", "5.6.7.8")),
 			tc("Change a ttl", ttl(a("@", "1.2.3.4"), 1000), a("www", "1.2.3.4"), a("www", "5.6.7.8")),
 			tc("Change single target from set", ttl(a("@", "1.2.3.4"), 1000), a("www", "2.2.2.2"), a("www", "5.6.7.8")),
 			tc("Change all ttls", ttl(a("@", "1.2.3.4"), 500), ttl(a("www", "2.2.2.2"), 400), ttl(a("www", "5.6.7.8"), 400)),

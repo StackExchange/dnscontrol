@@ -54,7 +54,7 @@ var returnTypes = map[string]string{
 func generateFunctionTypes() (string, error) {
 	funcs := []Function{}
 
-	srcRoot := join("docs", "_functions")
+	srcRoot := join("docs", "functions")
 	types, err := os.ReadDir(srcRoot)
 	if err != nil {
 		return "", err
@@ -89,13 +89,13 @@ func generateFunctionTypes() (string, error) {
 			}
 
 			body = body + "\n"
-			body = strings.ReplaceAll(body, "{{site.github.url}}", "https://dnscontrol.org/")
-			body = strings.ReplaceAll(body, "{% capture example %}", "")
-			body = strings.ReplaceAll(body, "{% capture example2 %}", "")
-			body = strings.ReplaceAll(body, "{% endcapture %}", "")
-			body = strings.ReplaceAll(body, "{% include example.html content=example %}", "")
-			body = strings.ReplaceAll(body, "{% include example.html content=example2 %}", "")
-			body = strings.ReplaceAll(body, "](#", "](https://dnscontrol.org/js#")
+			body = strings.ReplaceAll(body, "{% hint style=\"danger\" %}", "")
+			body = strings.ReplaceAll(body, "{% hint style=\"info\" %}", "")
+			body = strings.ReplaceAll(body, "{% hint style=\"success\" %}", "")
+			body = strings.ReplaceAll(body, "{% hint style=\"warning\" %}", "")
+			body = strings.ReplaceAll(body, "{% endhint %}", "")
+			body = strings.ReplaceAll(body, "**NOTE**", "NOTE")
+			body = strings.ReplaceAll(body, "**WARNING**", "WARNING")
 			body = fixRuns(body)
 
 			paramNames := []string{}

@@ -29,7 +29,7 @@ func main() {
 
 	log.SetFlags(log.LstdFlags | log.Lshortfile)
 	if info, ok := debug.ReadBuildInfo(); !ok && info == nil {
-		fmt.Fprint(os.Stderr, "Warning: dnscontrol was built without Go modules. See https://github.com/StackExchange/dnscontrol#from-source for more information on how to build dnscontrol correctly.\n\n")
+		fmt.Fprint(os.Stderr, "Warning: dnscontrol was built without Go modules. See https://docs.dnscontrol.org/getting-started/getting-started#source for more information on how to build dnscontrol correctly.\n\n")
 	}
 	os.Exit(commands.Run("dnscontrol " + version.Banner()))
 }
