@@ -50,16 +50,19 @@ This method is enabled by setting the `apitoken` value in `creds.json`:
 ```
 
 * `accountid` is found in the Cloudflare portal ("Account ID") on any "Website" page.  Click on any site and you'll see the "Account ID" on the lower right side of the page.
-* `apitoken` is something you must create. See [Cloudflare's documentation](https://support.cloudflare.com/hc/en-us/articles/200167836-Managing-API-Tokens-and-Keys) for instructions on how to generate and configure permissions on API tokens.  The token must be granted rights (authorization to do certain tasks) at a very granular level.  DNSControl requires the token to have the following rights:
+* `apitoken` is something you must create. See [Cloudflare's documentation](https://support.cloudflare.com/hc/en-us/articles/200167836-Managing-API-Tokens-and-Keys) for instructions on how to generate and configure permissions on API tokens.  (Spoiler alert: [link](https://dash.cloudflare.com/profile/api-tokens). The token must be granted rights (authorization to do certain tasks) at a very granular level.
 
-* Read zones (`Zone → Zone → Read`)
-* Edit DNS records (`Zone → DNS → Edit`)
-* Edit Page Rules (`Zone → Page Rules → Edit`) (Only required if `manage_redirects` is true for any dommain.)
-* Enable SSL controls (`Zone → SSL and Certificates → Edit`)
-* If Cloudflare Workers are being managed: (if `manage_workers`: set to `true` or `CF_WORKER_ROUTE()` is in use.)
-  * Edit Worker Scripts (`Account → Workers Scripts → Edit`)
-  * Edit Worker Scripts (`Zone → Workers Routes → Edit`)
-* FYI: [An example permissions configuration](https://user-images.githubusercontent.com/210250/136301050-1fd430bf-21b6-428b-aa54-f6009964031d.png)
+DNSControl requires the token to have the following permissions:
+
+* Add: Read zones (`Zone → Zone → Read`)
+* Add: Edit DNS records (`Zone → DNS → Edit`)
+* Add: Enable SSL controls (`Zone → SSL and Certificates → Edit`)
+* Editing Page Rules?
+  * Add: Edit Page Rules (`Zone → Page Rules → Edit`)
+* Managing Cloudflare Workers? (if `manage_workers`: set to `true` or `CF_WORKER_ROUTE()` is in use.)
+  * Add: Edit Worker Scripts (`Account → Workers Scripts → Edit`)
+  * Add: Edit Worker Scripts (`Zone → Workers Routes → Edit`)
+* [Example permissions configuration](https://user-images.githubusercontent.com/210250/136301050-1fd430bf-21b6-428b-aa54-f6009964031d.png)
 
 ## Username+Key (not recommended)
 
