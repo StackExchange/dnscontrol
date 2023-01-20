@@ -1,11 +1,11 @@
 package main
 
 import (
-	"fmt"
+	"sort"
+
 	"github.com/StackExchange/dnscontrol/v3/providers"
 	_ "github.com/StackExchange/dnscontrol/v3/providers/_all"
 	"github.com/fbiville/markdown-table-formatter/pkg/markdown"
-	"sort"
 )
 
 func generateFeatureMatrix() error {
@@ -16,7 +16,7 @@ func generateFeatureMatrix() error {
 		return err
 	}
 
-	fmt.Print(markdownTable)
+	_ = markdownTable
 
 	return nil
 }
