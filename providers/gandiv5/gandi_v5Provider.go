@@ -100,25 +100,31 @@ func newHelper(m map[string]string, metadata json.RawMessage) (*gandiv5Provider,
 
 // Section 3: Domain Service Provider (DSP) related functions
 
-// ListZones lists the zones on this account.
-func (client *gandiv5Provider) ListZones() ([]string, error) {
-	g := gandi.NewLiveDNSClient(config.Config{
-		APIKey:    client.apikey,
-		SharingID: client.sharingid,
-		Debug:     client.debug,
-	})
+// // ListZones lists the zones on this account.
+// This no longer works. Until we can figure out why, we're removing this
+// feature for Gandi.
+// func (client *gandiv5Provider) ListZones() ([]string, error) {
+// 	g := gandi.NewLiveDNSClient(config.Config{
+// 		APIKey:    client.apikey,
+// 		SharingID: client.sharingid,
+// 		Debug:     client.debug,
+// 	})
 
-	listResp, err := g.ListDomains()
-	if err != nil {
-		return nil, err
-	}
+// 	listResp, err := g.ListDomains()
+// 	if err != nil {
+// 		return nil, err
+// 	}
 
-	zones := make([]string, len(listResp))
-	for i, zone := range listResp {
-		zones[i] = zone.FQDN
-	}
-	return zones, nil
-}
+// 	zones := make([]string, len(listResp))
+// 	fmt.Printf("DEBUG: HERE START\n")
+// 	for i, zone := range listResp {
+// 	fmt.Printf("DEBUG: HERE %d: %v\n", i, zone.FQDN)
+// 		zone := zone
+// 		zones[i] = zone.FQDN
+// 	}
+// 	fmt.Printf("DEBUG: HERE END\n")
+// 	return zones, nil
+// }
 
 // NB(tal): To future-proof your code, all new providers should
 // implement GetDomainCorrections exactly as you see here
