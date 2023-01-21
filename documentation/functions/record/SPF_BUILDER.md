@@ -224,7 +224,7 @@ else, please do the appropriate equivalent command.
 
 ## Caveats
 
-1. Dnscontrol 'gives up' if it sees SPF records it can't understand.
+1. DNSControl 'gives up' if it sees SPF records it can't understand.
 This includes: syntax errors, features that our spflib doesn't know
 about, overly complex SPF settings, and anything else that we we
 didn't feel like implementing.
@@ -239,7 +239,7 @@ TXT record (not an SPF record, perhaps a TXT record used to verify
 domain ownership), the total packet size of all the TXT records
 could exceed 512 bytes, and will require EDNS or a TCP request.
 
-3. Dnscontrol does not warn if the number of lookups exceeds 10.
+3. DNSControl does not warn if the number of lookups exceeds 10.
 We hope to implement this some day.
 
 4. The `redirect=` directive is only partially implemented.  We only

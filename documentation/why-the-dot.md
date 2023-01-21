@@ -47,7 +47,7 @@ How are they ambiguous?
 
 Yes, we could layer rule upon rule upon rule.  Eventually we'd get
 all the rules right.  However, now a user would have to know all the
-rules to be able to use Dnscontrol.  The point of the Dnscontrol DSL
+rules to be able to use DNSControl.  The point of the DNSControl DSL
 is to enable the casual user to be able to make DNS updates. By
 "casual user" we do not mean someone someone that lives and breathes DNS
 like you and I do.  In fact, we mean someone that hasn't memorized

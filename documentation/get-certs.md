@@ -139,7 +139,7 @@ This command is intended to be just a small part of a full certificate automatio
 This command is intended to be run as frequently as you desire. One workflow would be to check all certificates into a git repository and run a nightly build that:
 
 1. Clones the cert repo, and the dns config repo (if separate).
-2. Decrypt or otherwise obtain the *Let's Encrypt* account private key. Dnscontrol does not need to read any certificate private keys to check or issue certificates.
+2. Decrypt or otherwise obtain the *Let's Encrypt* account private key. DNSControl does not need to read any certificate private keys to check or issue certificates.
 3. Run `dnscontrol get-certs` with appropriate flags.
 4. Encrypt or store any new or updated private keys.
 5. Commit and push any changes to the cert repo.
