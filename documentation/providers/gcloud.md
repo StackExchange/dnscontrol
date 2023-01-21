@@ -69,10 +69,7 @@ D("example.tld", REG_NONE, DnsProvider(DSP_GCLOUD),
 ## Activation
 1. Go to your app-engine console and select the appropriate project.
 2. Go to "API Manager > Credentials", and create a new "Service Account Key"
-   <figure>
-       <img src="https://raw.githubusercontent.com/stackexchange/dnscontrol/master/docs/assets/gcloud-json-screen.png" alt="New Service Account">
-       <figcaption><p>New Service Account</p></figcaption>
-   </figure>
+   ![Create new Service Accoun](../assets/gcloud/create-credentials-service-account-key.png)
 3. Choose an existing user, or create a new one. The user requires the "DNS Administrator" role.
 4. Download the JSON key and copy it into your `creds.json` under the name of your gcloud provider.
 
