@@ -77,7 +77,7 @@ Registrar if needed.
 If you have any questions, please discuss them in the GitHub issue
 related to the request for this provider. Please let us know what
 was confusing so we can update this document with advice for future
-authors (or even better, update [this document](https://github.com/StackExchange/dnscontrol/blob/master/docs/writing-providers.md)
+authors (or even better, update [this document](https://github.com/StackExchange/dnscontrol/blob/master/documentation/writing-providers.md)
 yourself.)
 
 
@@ -204,7 +204,7 @@ an automated way to test for this bug.  The manual steps are here in
 ## Step 9: Update docs
 
 * Edit [README.md](https://github.com/StackExchange/dnscontrol): Add the provider to the bullet list.
-* Edit [docs/providers.md](https://github.com/StackExchange/dnscontrol/blob/master/docs/providers.md): Add the provider to the provider list.
+* Edit [docs/providers.md](https://github.com/StackExchange/dnscontrol/blob/master/documentation/providers.md): Add the provider to the provider list.
 * Create `docs/providers/PROVIDERNAME.md`: Use one of the other files in that directory as a base.
 * Edit [OWNERS](https://github.com/StackExchange/dnscontrol/blob/master/OWNERS): Add the directory name and your GitHub username.
 

@@ -201,7 +201,7 @@ This example requires the [1Password command-line tool](https://developer.1passw
 but works with any shell command that returns a properly formatted `creds.json`.
 In this case, the 1Password CLI is used to inject the secrets from
 a 1Password vault, rather than storing them in environment variables.
-An example of a template file containing Linode and Cloudflare API credentials is available here: [creds.json](https://github.com/StackExchange/dnscontrol/blob/master/docs/assets/1password/creds.json).
+An example of a template file containing Linode and Cloudflare API credentials is available here: [creds.json](https://github.com/StackExchange/dnscontrol/blob/master/documentation/assets/1password/creds.json).
 
 ```json
 {
