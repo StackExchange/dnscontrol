@@ -34,7 +34,7 @@ See [Git Docs](https://git-scm.com/book/en/v2/Git-Basics-Tagging) for more examp
 Soon after
 CircleCI will start a [build](https://app.circleci.com/pipelines/github/StackExchange/dnscontrol) Workflow and produce all of the artifacts for the release.
 
-![CircleCI Release Screenshot](assets/circleci_release.png)
+![CircleCI Release Screenshot](assets/release-engineering/circleci_release.png)
 
 ## Step 3. Create the release notes
 
