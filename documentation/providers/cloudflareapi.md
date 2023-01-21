@@ -62,7 +62,8 @@ DNSControl requires the token to have the following permissions:
 * Managing Cloudflare Workers? (if `manage_workers`: set to `true` or `CF_WORKER_ROUTE()` is in use.)
   * Add: Edit Worker Scripts (`Account → Workers Scripts → Edit`)
   * Add: Edit Worker Scripts (`Zone → Workers Routes → Edit`)
-* [Example permissions configuration](https://user-images.githubusercontent.com/210250/136301050-1fd430bf-21b6-428b-aa54-f6009964031d.png)
+
+![Example permissions configuration](../assets/providers/cloudflareapi/example-permissions-configuration.png)
 
 ## Username+Key (not recommended)
 
