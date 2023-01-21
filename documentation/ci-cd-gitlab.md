@@ -56,15 +56,9 @@ hY/gnT/MmXXko3YAcI4eQL8=
 
 _Example of variable `$TRANSIP_PRIVATE_KEY` contents._
 
-<figure>
-    <img src="https://raw.githubusercontent.com/stackexchange/dnscontrol/master/docs/assets/ci-cd-gitlab/settings-ci-cd-variables.png" alt="Gitlab CI/CD variables">
-    <figcaption><p>Gitlab CI/CD variables</p></figcaption>
-</figure>
+![Gitlab CI/CD variables](assets/ci-cd-gitlab/settings-ci-cd-variables.png)
 
-<figure>
-    <img src="https://raw.githubusercontent.com/stackexchange/dnscontrol/master/docs/assets/ci-cd-gitlab/settings-ci-cd-variables-insert.png" alt="Insert Gitlab CI/CD variable TRANSIP_PRIVATE_KEY">
-    <figcaption><p>Insert Gitlab CI/CD variable TRANSIP_PRIVATE_KEY</p></figcaption>
-</figure>
+![Insert Gitlab CI/CD variable TRANSIP_PRIVATE_KEY](assets/ci-cd-gitlab/settings-ci-cd-variables-insert.png)
 
 ## Gitlab CI - DNSControl preview
 
@@ -135,15 +129,7 @@ $ /usr/local/bin/dnscontrol preview
 Done. 1 corrections.
 ```
 
-<figure>
-    <img src="https://raw.githubusercontent.com/stackexchange/dnscontrol/master/docs/assets/ci-cd-gitlab/ci-cd-job-output-dnscontrol-preview.png" alt="CI/CD job output for DNSControl preview">
-    <figcaption>
-      <p>
-        <a href="https://gitlab.com/cafferata/dnscontrol/-/jobs/3115895010">https://gitlab.com/cafferata/dnscontrol/-/jobs/3115895010</a><br>
-        CI/CD job output for DNSControl preview
-      </p>
-    </figcaption>
-</figure>
+![CI/CD job output for DNSControl preview](assets/ci-cd-gitlab/ci-cd-job-output-dnscontrol-preview.png)
 
 ## Gitlab CI - DNSControl push
 
@@ -173,10 +159,7 @@ What does this (new) YAML configuration mean?
 - The `dnscontrol push` is run within the Gitlab CI [predefined stage](https://docs.gitlab.com/ee/ci/yaml/#stages) `deploy`.
 - This only happens when you start a Gitlab pipeline from the [Gitlab web interface](https://gitlab.com/cafferata/dnscontrol/-/pipelines/new) for the default branch (e.g. `main`).
 
-<figure>
-    <img src="https://raw.githubusercontent.com/stackexchange/dnscontrol/master/docs/assets/ci-cd-gitlab/ci-cd-pipelines-new.png" alt="Start new CI/CD pipeline from the Gitlab web interface">
-    <figcaption><p>Start new CI/CD pipeline from the Gitlab web interface</p></figcaption>
-</figure>
+![Start new CI/CD pipeline from the Gitlab web interface](assets/ci-cd-gitlab/ci-cd-pipelines-new.png)
 
 When we start the new [Gitlab pipeline](https://gitlab.com/cafferata/dnscontrol/-/pipelines/656368384) from the [Gitlab web interface](https://gitlab.com/cafferata/dnscontrol/-/pipelines/new), we see the Gitlab job [dnscontrol-push](https://gitlab.com/cafferata/dnscontrol/-/jobs/3115896199) which makes the changes within the DNS provider TransIP.
 
@@ -197,15 +180,7 @@ SUCCESS!
 Done. 1 corrections.
 ```
 
-<figure>
-    <img src="https://raw.githubusercontent.com/stackexchange/dnscontrol/master/docs/assets/ci-cd-gitlab/ci-cd-job-output-dnscontrol-push.png" alt="CI/CD job output for DNSControl push">
-    <figcaption>
-      <p>
-        <a href="https://gitlab.com/cafferata/dnscontrol/-/jobs/3115896199">https://gitlab.com/cafferata/dnscontrol/-/jobs/3115896199</a><br>
-        CI/CD job output for DNSControl push
-      </p>
-    </figcaption>
-</figure>
+![CI/CD job output for DNSControl push](assets/ci-cd-gitlab/ci-cd-job-output-dnscontrol-push.png)
 
 ## Gitlab CI - Duplicate YAML configuration
 
