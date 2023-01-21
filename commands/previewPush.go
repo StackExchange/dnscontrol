@@ -148,6 +148,9 @@ DomainLoop:
 						return err
 					}
 					if !slices.Contains(zones, domain.Name) {
+						out.Warnf("DEBUG: zones: %v\n", zones)
+						out.Warnf("DEBUG: Name: %v\n", domain.Name)
+
 						out.Warnf("Domain '%s' does not exist in the '%s' profile and will be added automatically.\n", domain.Name, provider.Name)
 						continue // continue with next provider, as we can not determine corrections without an existing zone
 					}
