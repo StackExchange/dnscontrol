@@ -47,7 +47,9 @@ The parameters are:
 
 `CAA_BUILDER()` returns multiple records (when configured as example above):
 
-  * `CAA("@", "iodef", "mailto:test@domain.tld", CAA_CRITICAL)`
-  * `CAA("@", "issue", "letsencrypt.org")`
-  * `CAA("@", "issue", "comodoca.com")`
-  * `CAA("@", "issuewild", ";")`
+```javascript
+CAA("@", "iodef", "mailto:test@domain.tld", CAA_CRITICAL)
+CAA("@", "issue", "letsencrypt.org")
+CAA("@", "issue", "comodoca.com")
+CAA("@", "issuewild", ";")
+```
