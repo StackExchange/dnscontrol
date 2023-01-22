@@ -12,15 +12,14 @@ parameter_types:
   "modifiers...": RecordModifier[]
 ---
 
-CAA adds a CAA record to a domain. The name should be the relative label for the record. Use `@` for the domain apex.
+`CAA()` adds a CAA record to a domain. The name should be the relative label for the record. Use `@` for the domain apex.
 
 Tag can be one of "issue", "issuewild" or "iodef".
 
 Value is a string. The format of the contents is different depending on the tag. DNSControl will handle any escaping or quoting required, similar to TXT records. For example use `CAA("@", "issue", "letsencrypt.org")` rather than `CAA("@", "issue", "\"letsencrypt.org\"")`.
 
 Flags are controlled by modifier:
-
-- CAA_CRITICAL: Issuer critical flag. CA that does not understand this tag will refuse to issue certificate for this domain.
+- `CAA_CRITICAL`: Issuer critical flag. CA that does not understand this tag will refuse to issue certificate for this domain.
 
 ```javascript
 D("example.com", REGISTRAR, DnsProvider("GCLOUD"),
