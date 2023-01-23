@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"strings"
 
+	"golang.org/x/net/idna"
 	"golang.org/x/oauth2"
 
 	"github.com/StackExchange/dnscontrol/v3/models"
@@ -111,6 +112,20 @@ func (api *vultrProvider) GetZoneRecords(domain string) (models.Records, error) 
 func (api *vultrProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Correction, error) {
 	dc.Punycode()
 
+	for _, rec := range dc.Records {
+		switch rec.Type { // #rtype_variations
+		case "ALIAS", "MX", "NS", "CNAME", "PTR", "SRV", "URL", "URL301", "FRAME", "R53_ALIAS", "NS1_URLFWD", "AKAMAICDN", "CLOUDNS_WR":
+			// These rtypes are hostnames, therefore need to be converted (unlike, for example, an AAAA record)
+			t, err := idna.ToUnicode(rec.GetTargetField())
+			if err != nil {
+				return nil, err
+			}
+			rec.SetTarget(t)
+		default:
+			// Nothing to do.
+		}
+	}
+
 	curRecords, err := api.GetZoneRecords(dc.Name)
 	if err != nil {
 		return nil, err
@@ -119,49 +134,48 @@ func (api *vultrProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*mode
 	models.PostProcessRecords(curRecords)
 
 	var corrections []*models.Correction
-	if !diff2.EnableDiff2 || true { // Remove "|| true" when diff2 version arrives
-
+	var create, delete, modify diff.Changeset
+	if !diff2.EnableDiff2 {
 		differ := diff.New(dc)
-		_, create, delete, modify, err := differ.IncrementalDiff(curRecords)
-		if err != nil {
-			return nil, err
-		}
-
-		for _, mod := range delete {
-			id := mod.Existing.Original.(govultr.DomainRecord).ID
-			corrections = append(corrections, &models.Correction{
-				Msg: fmt.Sprintf("%s; Vultr RecordID: %v", mod.String(), id),
-				F: func() error {
-					return api.client.DomainRecord.Delete(context.Background(), dc.Name, id)
-				},
-			})
-		}
-
-		for _, mod := range modify {
-			r := toVultrRecord(dc, mod.Desired, mod.Existing.Original.(govultr.DomainRecord).ID)
-			corrections = append(corrections, &models.Correction{
-				Msg: fmt.Sprintf("%s; Vultr RecordID: %v", mod.String(), r.ID),
-				F: func() error {
-					return api.client.DomainRecord.Update(context.Background(), dc.Name, r.ID, &govultr.DomainRecordReq{Name: r.Name, Type: r.Type, Data: r.Data, TTL: r.TTL, Priority: &r.Priority})
-				},
-			})
-		}
-
-		for _, mod := range create {
-			r := toVultrRecord(dc, mod.Desired, "0")
-			corrections = append(corrections, &models.Correction{
-				Msg: mod.String(),
-				F: func() error {
-					_, err := api.client.DomainRecord.Create(context.Background(), dc.Name, &govultr.DomainRecordReq{Name: r.Name, Type: r.Type, Data: r.Data, TTL: r.TTL, Priority: &r.Priority})
-					return err
-				},
-			})
-		}
-
-		return corrections, nil
+		_, create, delete, modify, err = differ.IncrementalDiff(curRecords)
+	} else {
+		differ := diff.NewCompat(dc)
+		_, create, delete, modify, err = differ.IncrementalDiff(curRecords)
+	}
+	if err != nil {
+		return nil, err
 	}
 
-	// Insert Future diff2 version here.
+	for _, mod := range delete {
+		id := mod.Existing.Original.(govultr.DomainRecord).ID
+		corrections = append(corrections, &models.Correction{
+			Msg: fmt.Sprintf("%s; Vultr RecordID: %v", mod.String(), id),
+			F: func() error {
+				return api.client.DomainRecord.Delete(context.Background(), dc.Name, id)
+			},
+		})
+	}
+
+	for _, mod := range modify {
+		r := toVultrRecord(dc, mod.Desired, mod.Existing.Original.(govultr.DomainRecord).ID)
+		corrections = append(corrections, &models.Correction{
+			Msg: fmt.Sprintf("%s; Vultr RecordID: %v", mod.String(), r.ID),
+			F: func() error {
+				return api.client.DomainRecord.Update(context.Background(), dc.Name, r.ID, &govultr.DomainRecordReq{Name: r.Name, Type: r.Type, Data: r.Data, TTL: r.TTL, Priority: &r.Priority})
+			},
+		})
+	}
+
+	for _, mod := range create {
+		r := toVultrRecord(dc, mod.Desired, "0")
+		corrections = append(corrections, &models.Correction{
+			Msg: mod.String(),
+			F: func() error {
+				_, err := api.client.DomainRecord.Create(context.Background(), dc.Name, &govultr.DomainRecordReq{Name: r.Name, Type: r.Type, Data: r.Data, TTL: r.TTL, Priority: &r.Priority})
+				return err
+			},
+		})
+	}
 
 	return corrections, nil
 }
@@ -219,6 +233,16 @@ func toRecordConfig(domain string, r govultr.DomainRecord) (*models.RecordConfig
 		Original: r,
 	}
 	rc.SetLabel(r.Name, domain)
+
+	switch rtype := r.Type; rtype {
+	case "ALIAS", "MX", "NS", "CNAME", "PTR", "SRV", "URL", "URL301", "FRAME", "R53_ALIAS", "NS1_URLFWD", "AKAMAICDN", "CLOUDNS_WR":
+		var err error
+		data, err = idna.ToUnicode(data)
+		if err != nil {
+			return nil, err
+		}
+	default:
+	}
 
 	switch rtype := r.Type; rtype {
 	case "CNAME", "NS":
@@ -289,6 +313,9 @@ func toVultrRecord(dc *models.DomainConfig, rc *models.RecordConfig, vultrID str
 	}
 	switch rtype := rc.Type; rtype { // #rtype_variations
 	case "SRV":
+		if data == "" {
+			data = "."
+		}
 		r.Data = fmt.Sprintf("%v %v %s", rc.SrvWeight, rc.SrvPort, data)
 	case "CAA":
 		r.Data = fmt.Sprintf(`%v %s "%s"`, rc.CaaFlag, rc.CaaTag, rc.GetTargetField())
