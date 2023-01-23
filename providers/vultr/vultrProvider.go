@@ -137,6 +137,16 @@ func (api *vultrProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*mode
 			})
 		}
 
+		for _, mod := range modify {
+			r := toVultrRecord(dc, mod.Desired, mod.Existing.Original.(govultr.DomainRecord).ID)
+			corrections = append(corrections, &models.Correction{
+				Msg: fmt.Sprintf("%s; Vultr RecordID: %v", mod.String(), r.ID),
+				F: func() error {
+					return api.client.DomainRecord.Update(context.Background(), dc.Name, r.ID, &govultr.DomainRecordReq{Name: r.Name, Type: r.Type, Data: r.Data, TTL: r.TTL, Priority: &r.Priority})
+				},
+			})
+		}
+
 		for _, mod := range create {
 			r := toVultrRecord(dc, mod.Desired, "0")
 			corrections = append(corrections, &models.Correction{
@@ -144,16 +154,6 @@ func (api *vultrProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*mode
 				F: func() error {
 					_, err := api.client.DomainRecord.Create(context.Background(), dc.Name, &govultr.DomainRecordReq{Name: r.Name, Type: r.Type, Data: r.Data, TTL: r.TTL, Priority: &r.Priority})
 					return err
-				},
-			})
-		}
-
-		for _, mod := range modify {
-			r := toVultrRecord(dc, mod.Desired, mod.Existing.Original.(govultr.DomainRecord).ID)
-			corrections = append(corrections, &models.Correction{
-				Msg: fmt.Sprintf("%s; Vultr RecordID: %v", mod.String(), r.ID),
-				F: func() error {
-					return api.client.DomainRecord.Update(context.Background(), dc.Name, r.ID, &govultr.DomainRecordReq{Name: r.Name, Type: r.Type, Data: r.Data, TTL: r.TTL, Priority: &r.Priority})
 				},
 			})
 		}
@@ -238,6 +238,9 @@ func toRecordConfig(domain string, r govultr.DomainRecord) (*models.RecordConfig
 		return rc, rc.SetTargetMX(uint16(r.Priority), data)
 	case "SRV":
 		// Vultr returns SRV records in the format "[weight] [port] [target]".
+		if !strings.HasSuffix(data, ".") {
+			data = data + "."
+		}
 		return rc, rc.SetTargetSRVPriorityString(uint16(r.Priority), data)
 	case "TXT":
 		// TXT records from Vultr are always surrounded by quotes.
@@ -264,7 +267,7 @@ func toVultrRecord(dc *models.DomainConfig, rc *models.RecordConfig, vultrID str
 
 	data := rc.GetTargetField()
 
-	// Vultr does not use a period suffix for CNAME, NS, or MX.
+	// Vultr does not use a period suffix for CNAME, NS, MX or SRV.
 	data = strings.TrimSuffix(data, ".")
 
 	priority := 0
@@ -286,7 +289,7 @@ func toVultrRecord(dc *models.DomainConfig, rc *models.RecordConfig, vultrID str
 	}
 	switch rtype := rc.Type; rtype { // #rtype_variations
 	case "SRV":
-		r.Data = fmt.Sprintf("%v %v %s", rc.SrvWeight, rc.SrvPort, rc.GetTargetField())
+		r.Data = fmt.Sprintf("%v %v %s", rc.SrvWeight, rc.SrvPort, data)
 	case "CAA":
 		r.Data = fmt.Sprintf(`%v %s "%s"`, rc.CaaFlag, rc.CaaTag, rc.GetTargetField())
 	case "SSHFP":
