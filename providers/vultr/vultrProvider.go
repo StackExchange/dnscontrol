@@ -313,6 +313,9 @@ func toVultrRecord(dc *models.DomainConfig, rc *models.RecordConfig, vultrID str
 	}
 	switch rtype := rc.Type; rtype { // #rtype_variations
 	case "SRV":
+		if data == "" {
+			data = "."
+		}
 		r.Data = fmt.Sprintf("%v %v %s", rc.SrvWeight, rc.SrvPort, data)
 	case "CAA":
 		r.Data = fmt.Sprintf(`%v %s "%s"`, rc.CaaFlag, rc.CaaTag, rc.GetTargetField())
