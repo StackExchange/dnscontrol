@@ -3,6 +3,7 @@ package transip
 import (
 	"encoding/json"
 	"fmt"
+	"sort"
 	"strings"
 
 	"github.com/StackExchange/dnscontrol/v3/models"
@@ -77,6 +78,19 @@ func init() {
 		RecordAuditor: AuditRecords,
 	}
 	providers.RegisterDomainServiceProviderType("TRANSIP", fns, features)
+}
+
+func (n *transipProvider) ListZones() ([]string, error) {
+	var domains []string
+
+	domainsMap, _ := n.domains.GetAll()
+	for _, domainname := range domainsMap {
+		domains = append(domains, domainname.Name)
+	}
+
+	sort.Strings(domains)
+
+	return domains, nil
 }
 
 func (n *transipProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Correction, error) {
