@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"strings"
 
+	"golang.org/x/net/idna"
 	"golang.org/x/oauth2"
 
 	"github.com/StackExchange/dnscontrol/v3/models"
@@ -111,6 +112,20 @@ func (api *vultrProvider) GetZoneRecords(domain string) (models.Records, error) 
 func (api *vultrProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Correction, error) {
 	dc.Punycode()
 
+	for _, rec := range dc.Records {
+		switch rec.Type { // #rtype_variations
+		case "ALIAS", "MX", "NS", "CNAME", "PTR", "SRV", "URL", "URL301", "FRAME", "R53_ALIAS", "NS1_URLFWD", "AKAMAICDN", "CLOUDNS_WR":
+			// These rtypes are hostnames, therefore need to be converted (unlike, for example, an AAAA record)
+			t, err := idna.ToUnicode(rec.GetTargetField())
+			if err != nil {
+				return nil, err
+			}
+			rec.SetTarget(t)
+		default:
+			// Nothing to do.
+		}
+	}
+
 	curRecords, err := api.GetZoneRecords(dc.Name)
 	if err != nil {
 		return nil, err
@@ -121,7 +136,7 @@ func (api *vultrProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*mode
 	var corrections []*models.Correction
 	var create, delete, modify diff.Changeset
 	if !diff2.EnableDiff2 {
-    	differ := diff.New(dc)
+		differ := diff.New(dc)
 		_, create, delete, modify, err = differ.IncrementalDiff(curRecords)
 	} else {
 		differ := diff.NewCompat(dc)
@@ -129,7 +144,7 @@ func (api *vultrProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*mode
 	}
 	if err != nil {
 		return nil, err
-	}	
+	}
 
 	for _, mod := range delete {
 		id := mod.Existing.Original.(govultr.DomainRecord).ID
@@ -218,6 +233,16 @@ func toRecordConfig(domain string, r govultr.DomainRecord) (*models.RecordConfig
 		Original: r,
 	}
 	rc.SetLabel(r.Name, domain)
+
+	switch rtype := r.Type; rtype {
+	case "ALIAS", "MX", "NS", "CNAME", "PTR", "SRV", "URL", "URL301", "FRAME", "R53_ALIAS", "NS1_URLFWD", "AKAMAICDN", "CLOUDNS_WR":
+		var err error
+		data, err = idna.ToUnicode(data)
+		if err != nil {
+			return nil, err
+		}
+	default:
+	}
 
 	switch rtype := r.Type; rtype {
 	case "CNAME", "NS":
