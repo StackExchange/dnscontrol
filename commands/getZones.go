@@ -172,7 +172,7 @@ func GetZone(args GetZoneArgs) error {
 	if len(args.ZoneNames) == 1 && args.ZoneNames[0] == "all" {
 		lister, ok := provider.(providers.ZoneLister)
 		if !ok {
-			return fmt.Errorf("provider type %s cannot list zones to use the 'all' feature", args.ProviderName)
+			return fmt.Errorf("provider type %s:%s cannot list zones to use the 'all' feature", args.CredName, args.ProviderName)
 		}
 		zones, err = lister.ListZones()
 		if err != nil {
