@@ -205,7 +205,6 @@ func (g *gcloudProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*model
 	models.PostProcessRecords(existingRecords)
 	txtutil.SplitSingleLongTxt(dc.Records) // Autosplit long TXT records
 
-	var create, delete, modify diff.Changeset
 	// first collect keys that have changed
 	var differ diff.Differ
 	if !diff2.EnableDiff2 {
@@ -213,7 +212,7 @@ func (g *gcloudProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*model
 	} else {
 		differ = diff.NewCompat(dc)
 	}
-	_, create, delete, modify, err = differ.IncrementalDiff(existingRecords)
+	_, create, delete, modify, err := differ.IncrementalDiff(existingRecords)
 	if err != nil {
 		return nil, err
 	}
