@@ -689,6 +689,16 @@ func makeTests(t *testing.T) []*TestGroup {
 		// These are tested on "@" and "www".
 		// When these tests pass, you've implemented the basics correctly.
 
+		testgroup("basic1",
+			tc("Create an A record", a("one", "1.1.1.1"), a("two", "1.1.1.1")),
+			tc("Delete one", a("two", "1.1.1.1")),
+		),
+
+		testgroup("basic2",
+			tc("Create an A record", a("one", "2.2.2.2"), a("two", "2.2.2.2")),
+			tc("Delete one", a("two", "1.1.1.1")),
+		),
+
 		testgroup("Protocol-Plain",
 			tc("Create an A record", a("@", "1.1.1.1")),
 			tc("Change it", a("@", "1.2.3.4")),

@@ -288,43 +288,51 @@ func (g *gcloudProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*model
 	if err != nil {
 		return nil, err
 	}
+	fmt.Printf("DEBUG: instructions=XXX\n%s\nXXX\n", instructions)
 
 	chg := &gdns.Change{Kind: "dns#change"}
-	const maxGroup = 2000
-	var count int
+	//const maxGroup = 2000
+	//var count int
 	var msgs []string
 	for _, inst := range instructions {
 		switch inst.Type {
 
 		case diff2.CREATE:
-			fmt.Printf("DEBUG: gcloud CREATE\n")
+			fmt.Printf("DEBUG: gcloud CREATE i.e. ")
 			fallthrough
 		case diff2.CHANGE:
+			fmt.Printf("DEBUG: gcloud CHANGE\n")
 			// collect records to replace at name:rtype
-			fmt.Printf("DEBUG: gcloud msgs=%v\n", inst.Msgs)
+			//fmt.Printf("DEBUG: gcloud msgs=%v\n", inst.Msgs)
 			msgs = append(msgs, inst.Msgs...)
-			fmt.Printf("DEBUG: gcloud name:type=%v:%v\n", inst.Key.NameFQDN+".", inst.Key.Type)
+			//fmt.Printf("DEBUG: gcloud name:type=%v:%v\n", inst.Key.NameFQDN+".", inst.Key.Type)
 			newRRs := &gdns.ResourceRecordSet{
 				Name: inst.Key.NameFQDN + ".",
 				Type: inst.Key.Type,
 				Kind: "dns#resourceRecordSet",
 			}
 			for _, r := range inst.New {
-				count++
+				//count++
 				newRRs.Rrdatas = append(newRRs.Rrdatas, r.GetTargetRFC1035Quoted())
 				newRRs.Ttl = int64(r.TTL)
 			}
 			chg.Additions = append(chg.Additions, newRRs)
 
 		case diff2.DELETE:
+			fmt.Printf("DEBUG: gcloud DELETE\n")
 			msgs = append(msgs, inst.Msgs...)
 			for _, v := range inst.Old {
-				count++
+				//count++
+				fmt.Printf("DEBUG: chg.Deletions append\n")
 				chg.Deletions = append(chg.Deletions, v.Original.(*gdns.ResourceRecordSet))
 			}
+		default:
+			panic("DEFAULT")
 		}
 
 	}
+
+	fmt.Printf("DEBUG: chg=XXX\n%s\nXXX\n", prettyPrint(chg))
 
 	corrections = append(corrections, &models.Correction{
 		Msg: strings.Join(msgs, "\n"),
@@ -342,6 +350,11 @@ func (g *gcloudProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*model
 	})
 
 	return corrections, nil
+}
+
+func prettyPrint(i interface{}) string {
+	s, _ := json.MarshalIndent(i, "", "\t")
+	return string(s)
 }
 
 func nativeToRecord(set *gdns.ResourceRecordSet, rec, origin string) (*models.RecordConfig, error) {
