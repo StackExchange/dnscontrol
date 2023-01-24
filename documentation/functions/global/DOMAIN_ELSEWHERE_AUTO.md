@@ -1,10 +1,12 @@
 ---
 name: DOMAIN_ELSEWHERE_AUTO
 parameters:
+  - name
   - domain
   - registrar
   - dns provider
 parameter_types:
+  name: string
   domain: string
   registrar: string
   dns provider: string

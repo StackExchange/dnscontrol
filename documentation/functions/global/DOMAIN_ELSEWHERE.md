@@ -1,9 +1,11 @@
 ---
 name: DOMAIN_ELSEWHERE
 parameters:
+  - name
   - registrar
   - nameserver_names
 parameter_types:
+  name: string
   registrar: string
   nameserver_names: string[]
 ---

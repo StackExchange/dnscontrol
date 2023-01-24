@@ -16,7 +16,7 @@ parameter_types:
 ---
 
 DNSControl contains a `CAA_BUILDER` which can be used to simply create
-CAA records for your domains. Instead of creating each CAA record
+[`CAA()`](../domain/CAA.md) records for your domains. Instead of creating each [`CAA()`](../domain/CAA.md) record
 individually, you can simply configure your report mail address, the
 authorized certificate authorities and the builder cares about the rest.
 
@@ -47,7 +47,9 @@ The parameters are:
 
 `CAA_BUILDER()` returns multiple records (when configured as example above):
 
-  * `CAA("@", "iodef", "mailto:test@domain.tld", CAA_CRITICAL)`
-  * `CAA("@", "issue", "letsencrypt.org")`
-  * `CAA("@", "issue", "comodoca.com")`
-  * `CAA("@", "issuewild", ";")`
+```javascript
+CAA("@", "iodef", "mailto:test@domain.tld", CAA_CRITICAL)
+CAA("@", "issue", "letsencrypt.org")
+CAA("@", "issue", "comodoca.com")
+CAA("@", "issuewild", ";")
+```
