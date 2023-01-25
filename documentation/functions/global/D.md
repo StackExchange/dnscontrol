@@ -85,7 +85,7 @@ and `domain.tld!external` you now require humans to remember that
 may have noticed this mistake, but will your coworkers?  Will you in
 six months? You get the idea.
 
-DNSControl command line flag `--domains` is an exact match.  If you
+DNSControl command line flag `--domains` matches the full name (with the "!").  If you
 define domains `example.com!george` and `example.com!john` then:
 
 * `--domains=example.com` will not match either domain.
