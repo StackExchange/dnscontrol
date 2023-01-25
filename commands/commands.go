@@ -294,10 +294,7 @@ func (args *FilterArgs) shouldRunDomain(d string) bool {
 	if args.Domains == "" {
 		return true
 	}
-	return domainInList(
-		d,
-		strings.Split(args.Domains, ","),
-	)
+	return domainInList(d, strings.Split(args.Domains, ","))
 }
 
 func domainInList(domain string, list []string) bool {
