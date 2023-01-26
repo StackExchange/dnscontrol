@@ -14,15 +14,15 @@ require (
 	github.com/akamai/AkamaiOPEN-edgegrid-golang v1.2.1
 	github.com/andreyvit/diff v0.0.0-20170406064948-c7f18ee00883
 	github.com/aws/aws-sdk-go-v2 v1.17.3
-	github.com/aws/aws-sdk-go-v2/config v1.18.8
-	github.com/aws/aws-sdk-go-v2/credentials v1.13.8
-	github.com/aws/aws-sdk-go-v2/service/route53 v1.26.0
+	github.com/aws/aws-sdk-go-v2/config v1.18.10
+	github.com/aws/aws-sdk-go-v2/credentials v1.13.10
+	github.com/aws/aws-sdk-go-v2/service/route53 v1.27.0
 	github.com/aws/aws-sdk-go-v2/service/route53domains v1.14.0
 	github.com/babolivier/go-doh-client v0.0.0-20201028162107-a76cff4cb8b6
 	github.com/bhendo/go-powershell v0.0.0-20190719160123-219e7fb4e41e
 	github.com/billputer/go-namecheap v0.0.0-20210108011502-994a912fb7f9
 	github.com/cloudflare/cloudflare-go v0.55.0
-	github.com/digitalocean/godo v1.93.0
+	github.com/digitalocean/godo v1.95.0
 	github.com/ditashi/jsbeautifier-go v0.0.0-20141206144643-2520a8026a9c
 	github.com/dnsimple/dnsimple-go v1.0.0
 	github.com/exoscale/egoscale v0.90.2
@@ -31,7 +31,7 @@ require (
 	github.com/gobwas/glob v0.2.4-0.20181002190808-e7a84e9525fe
 	github.com/google/go-github/v35 v35.3.0
 	github.com/gopherjs/jquery v0.0.0-20191017083323-73f4c7416038
-	github.com/hashicorp/vault/api v1.8.2
+	github.com/hashicorp/vault/api v1.8.3
 	github.com/hexonet/go-sdk/v3 v3.5.4
 	github.com/jarcoal/httpmock v1.0.8 // indirect
 	github.com/jinzhu/copier v0.3.5
@@ -49,11 +49,11 @@ require (
 	github.com/softlayer/softlayer-go v1.0.6
 	github.com/stretchr/testify v1.8.1
 	github.com/transip/gotransip/v6 v6.17.0
-	github.com/urfave/cli/v2 v2.23.7
+	github.com/urfave/cli/v2 v2.24.1
 	github.com/xddxdd/ottoext v0.0.0-20221109171055-210517fa4419
 	golang.org/x/net v0.5.0
 	golang.org/x/oauth2 v0.4.0
-	google.golang.org/api v0.107.0
+	google.golang.org/api v0.108.0
 	gopkg.in/ns1/ns1-go.v2 v2.7.2
 )
 
@@ -64,7 +64,7 @@ require (
 	github.com/kylelemons/godebug v1.1.0
 	github.com/mattn/go-isatty v0.0.17
 	github.com/vultr/govultr/v2 v2.17.2
-	golang.org/x/exp v0.0.0-20230111222715-75897c7a292a
+	golang.org/x/exp v0.0.0-20230124195608-d38c7dcee874
 	golang.org/x/text v0.6.0
 )
 
@@ -85,7 +85,7 @@ require (
 	github.com/aws/aws-sdk-go-v2/service/internal/presigned-url v1.9.21 // indirect
 	github.com/aws/aws-sdk-go-v2/service/sso v1.12.0 // indirect
 	github.com/aws/aws-sdk-go-v2/service/ssooidc v1.14.0 // indirect
-	github.com/aws/aws-sdk-go-v2/service/sts v1.18.0 // indirect
+	github.com/aws/aws-sdk-go-v2/service/sts v1.18.2 // indirect
 	github.com/aws/smithy-go v1.13.5 // indirect
 	github.com/boombuler/barcode v1.0.1 // indirect
 	github.com/cenkalti/backoff v2.2.1+incompatible // indirect
@@ -123,7 +123,7 @@ require (
 	github.com/hashicorp/go-version v1.6.0 // indirect
 	github.com/hashicorp/golang-lru v0.5.4 // indirect
 	github.com/hashicorp/hcl v1.0.0 // indirect
-	github.com/hashicorp/vault/sdk v0.6.0 // indirect
+	github.com/hashicorp/vault/sdk v0.7.0 // indirect
 	github.com/hashicorp/yamux v0.0.0-20181012175058-2f1d1f20f75d // indirect
 	github.com/jhump/protoreflect v1.6.1 // indirect
 	github.com/jmespath/go-jmespath v0.4.0 // indirect
