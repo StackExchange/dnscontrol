@@ -255,7 +255,7 @@ func getTargetRecordContent(rc *models.RecordConfig) string {
 	case "DS":
 		return fmt.Sprintf("%d %d %d %s", rc.DsKeyTag, rc.DsAlgorithm, rc.DsDigestType, rc.DsDigest)
 	case "SRV":
-		return fmt.Sprintf("%d %d %s", rc.SrvWeight, rc.SrvPort, rc.GetTargetField())
+		return fmt.Sprintf("%d %d %d %s", rc.SrvPriority, rc.SrvWeight, rc.SrvPort, rc.GetTargetField())
 	default:
 		return models.StripQuotes(rc.GetTargetCombined())
 	}
