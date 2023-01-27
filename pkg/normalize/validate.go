@@ -132,7 +132,7 @@ func checkLabel(label string, rType string, target, domain string, meta map[stri
 
 	// Otherwise, warn.
 	if strings.ContainsRune(label, '_') {
-		return Warning{fmt.Errorf("label %s.%s contains an underscore", label, domain)}
+		return Warning{fmt.Errorf("label %s.%s contains \"_\" (can't be used in a URL)", label, domain)}
 	}
 
 	return nil
@@ -606,7 +606,7 @@ func checkLabelHasMultipleTTLs(records []*models.RecordConfig) (errs []error) {
 		// means we have multiple TTLs for that label.
 		u := uniq(m[label])
 		if len(u) > 1 {
-			errs = append(errs, Warning{fmt.Errorf("One label with multipe TTLs: %s (%v)", label, u)})
+			errs = append(errs, Warning{fmt.Errorf("label with multipe TTLs: %s (%v)", label, u)})
 		}
 	}
 	return errs
