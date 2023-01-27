@@ -31,7 +31,7 @@ docker run --rm \
   -v $(pwd)/dnsconfig.js:/dns/dnsconfig.js \
   -v $(pwd)/creds.json:/dns/creds.json \
   -v $(pwd)/zones/:/dns/zones/ \
-  -u 1000:1000 \
+  -u $(id -u ${USER}):$(id -g ${USER}) \
   stackexchange/dnscontrol \
   preview
 ```
