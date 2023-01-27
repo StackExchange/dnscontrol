@@ -1,6 +1,6 @@
 # Service Providers
 
-## Provider Features {#features}
+## Provider Features
 
 The table below shows various features supported, or not supported by DNSControl providers.
 This table is automatically generated from metadata supplied by the provider when they register themselves inside dnscontrol.
