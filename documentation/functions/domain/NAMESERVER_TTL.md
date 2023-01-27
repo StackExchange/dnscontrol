@@ -8,7 +8,7 @@ parameter_types:
   modifiers...: RecordModifier[]
 ---
 
-TTL sets the TTL on the domain apex NS RRs defined by [NAMESERVER](NAMESERVER.md).
+NAMESERVER_TTL sets the TTL on the domain apex NS RRs defined by [NAMESERVER](NAMESERVER.md).
 
 The value can be an integer or a string. See [TTL](../record/TTL.md) for examples.
 
