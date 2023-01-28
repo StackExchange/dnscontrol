@@ -252,8 +252,6 @@ func filterBy(s []targetConfig, m map[string]*targetConfig) []targetConfig {
 			// copy and increment index
 			s[i] = x
 			i++
-		} else {
-			//fmt.Printf("DEBUG: comp %q YES\n", x.compareable)
 		}
 	}
 	// // Prevent memory leak by erasing truncated values
