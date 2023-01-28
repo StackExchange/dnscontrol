@@ -208,9 +208,8 @@ func (c *hednsProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*models
 	// Fallback to legacy mode if diff2 is not enabled, remove when diff1 is deprecated.
 	if !diff2.EnableDiff2 {
 		return c.getDiff1DomainCorrections(dc, zoneID, prunedRecords)
-	} else {
-		return c.getDiff2DomainCorrections(dc, zoneID, prunedRecords)
 	}
+	return c.getDiff2DomainCorrections(dc, zoneID, prunedRecords)
 }
 
 func (c *hednsProvider) getDiff1DomainCorrections(dc *models.DomainConfig, zoneID uint64, records models.Records) ([]*models.Correction, error) {
