@@ -385,8 +385,8 @@ func (r *route53Provider) GetDomainCorrections(dc *models.DomainConfig) ([]*mode
 					if len(recs) != 1 {
 						log.Fatal("Only one R53_ALIAS_ permitted on a label")
 					}
-					for _, r := range recs {
-						rrset := aliasToRRSet(zone, r)
+					for _, rec := range recs {
+						rrset := aliasToRRSet(zone, rec)
 						rrset.Name = aws.String(currentKey.NameFQDN)
 						// Assemble the change and add it to the list:
 						chg := r53Types.Change{
@@ -402,13 +402,13 @@ func (r *route53Provider) GetDomainCorrections(dc *models.DomainConfig) ([]*mode
 						Name: aws.String(currentKey.NameFQDN),
 						Type: r53Types.RRType(currentKey.Type),
 					}
-					for _, r := range recs {
-						val := r.GetTargetCombined()
+					for _, rec := range recs {
+						val := rec.GetTargetCombined()
 						rr := r53Types.ResourceRecord{
 							Value: aws.String(val),
 						}
 						rrset.ResourceRecords = append(rrset.ResourceRecords, rr)
-						i := int64(r.TTL)
+						i := int64(rec.TTL)
 						rrset.TTL = &i // TODO: make sure that ttls are consistent within a set
 					}
 					// Assemble the change and add it to the list:
