@@ -17,14 +17,23 @@ For each step, it will run the config once and expect changes. It will run it ag
 
 Example:
 
-```bash
+```shell
 egrep ROUTE53 providers.json
+```
+
+```text
     "KeyId": "$ROUTE53_KEY_ID",
     "SecretKey": "$ROUTE53_KEY",
     "domain": "$ROUTE53_DOMAIN"
+```
+
+```shell
 export ROUTE53_KEY_ID="redacted"
 export ROUTE53_KEY="also redacted"
 export ROUTE53_DOMAIN="testdomain.tld"
+```
+
+```shell
 go test -v -verbose -provider ROUTE53
 ```
 
