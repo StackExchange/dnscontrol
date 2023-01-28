@@ -11,7 +11,7 @@
     <licenseUrl>https://github.com/StackExchange/dnscontrol/blob/master/LICENSE</licenseUrl>
     <requireLicenseAcceptance>true</requireLicenseAcceptance>
     <projectSourceUrl>https://github.com/stackexchange/dnscontrol</projectSourceUrl>
-    <docsUrl>https://stackexchange.github.io/dnscontrol/</docsUrl>
+    <docsUrl>https://docs.dnscontrol.org/</docsUrl>
     <tags>dns</tags>
     <summary>Synchronize your DNS to multiple providers from a simple DSL</summary>
     <description>This package simply installs the dnscontrol tool on your system</description>
