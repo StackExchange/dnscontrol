@@ -152,6 +152,7 @@
 * [Creating new DNS Resource Types (rtypes)](adding-new-rtypes.md)
 * [TXT record testing](testing-txt-records.md)
 * [Unit Testing DNS Data](unittests.md)
+* [Integration Tests](integration-tests.md)
 * [DNSControl is an opinionated system](opinions.md)
 
 ## Release
