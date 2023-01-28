@@ -30,9 +30,9 @@ For example these two statements are equivalent:
 
 ```javascript
 DOMAIN_ELSEWHERE_AUTO("example.com", REG_NAMEDOTCOM, DSP_AZURE);
+```
 
-// ...is equivalent to...
-
+```javascript
 D("example.com", REG_NAMEDOTCOM,
     NO_PURGE,
     DnsProvider(DSP_AZURE)
