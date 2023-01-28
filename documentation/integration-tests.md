@@ -37,14 +37,18 @@ export ROUTE53_DOMAIN="testdomain.tld"
 go test -v -verbose -provider ROUTE53
 ```
 
-WARNING: The records in the test domain will be deleted.  Only use
+{% hint style="warning" %}
+**WARNING**: The records in the test domain will be deleted.  Only use
 a domain that is not used in production. Some providers have a way
 to run tests on domains that aren't registered (often a test
 environment or a side-effect of the company not being a registrar).
 In other cases we use a domain we squat on, or we register a domain
 called `dnscontrol-$provider.com` just for testing.
+{% endhint %}
 
-ProTip: If you run these tests frequently (and we hope you do), you
+{% hint style="info" %}
+**ProTip**: If you run these tests frequently (and we hope you do), you
 should create a script that you can `source` to set these
 variables. Be careful not to check this script into Git since it
 contains credentials.
+{% endhint %}
