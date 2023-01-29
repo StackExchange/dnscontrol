@@ -28,7 +28,7 @@ func analyzeByRecordSet(cc *CompareConfig) ChangeList {
 				instructions = append(instructions, mkAdd(lc.label, rt.rType, msgs, rt.desiredRecs))
 			} else if len(dts) == 0 { // Delete that label and all its records.
 				//fmt.Printf("DEBUG: delete\n")
-				instructions = append(instructions, mkDelete(lc.label, rt.rType, rt.existingRecs, msgs))
+				instructions = append(instructions, mkDelete(lc.label, rt.rType, msgs, rt.existingRecs))
 			} else { // Change the records at that label
 				//fmt.Printf("DEBUG: change\n")
 				instructions = append(instructions, mkChange(lc.label, rt.rType, msgs, rt.existingRecs, rt.desiredRecs))
@@ -70,7 +70,7 @@ func analyzeByLabel(cc *CompareConfig) ChangeList {
 			//fmt.Printf("DEBUG: analyzeByLabel: %02d: no change\n", i)
 		} else if len(accDesired) == 0 { // No new records at the label? This must be a delete.
 			//fmt.Printf("DEBUG: analyzeByLabel: %02d: delete\n", i)
-			instructions = append(instructions, mkDelete(label, "", accExisting, accMsgs))
+			instructions = append(instructions, mkDelete(label, "", accMsgs, accExisting))
 		} else if len(accExisting) == 0 { // No old records at the label? This must be a change.
 			//fmt.Printf("DEBUG: analyzeByLabel: %02d: create\n", i)
 			//fmt.Printf("DEBUG: analyzeByLabel mkAdd msgs=%d\n", len(accMsgs))
@@ -111,7 +111,8 @@ func analyzeByRecord(cc *CompareConfig) ChangeList {
 // NB(tlim): there is no analyzeByZone.  ByZone calls anayzeByRecords().
 
 func mkAdd(l string, t string, msgs []string, recs models.Records) Change {
-	c := Change{Type: CREATE, Msgs: msgs}
+	//fmt.Printf("DEBUG mkAdd called: (%v, %v, %v, %v)\n", l, t, msgs, recs)
+	c := Change{Type: CREATE, Msgs: msgs, MsgsJoined: strings.Join(msgs, "\n")}
 	c.Key.NameFQDN = l
 	c.Key.Type = t
 	c.New = recs
@@ -121,8 +122,7 @@ func mkAdd(l string, t string, msgs []string, recs models.Records) Change {
 // TODO(tlim): Clean these up. Some of them are exact duplicates!
 
 func mkAddByLabel(l string, t string, msgs []string, newRecs models.Records) Change {
-	//fmt.Printf("DEBUG: mkAddByLabel: len(o)=%d len(m)=%d\n", len(newRecs), len(msgs))
-	//fmt.Printf("DEBUG: mkAddByLabel: msgs = %v\n", msgs)
+	//fmt.Printf("DEBUG mkAddByLabel called: (%v, %v, %v, %v)\n", l, t, msgs, newRecs)
 	c := Change{Type: CREATE, Msgs: msgs, MsgsJoined: strings.Join(msgs, "\n")}
 	c.Key.NameFQDN = l
 	c.Key.Type = t
@@ -131,6 +131,7 @@ func mkAddByLabel(l string, t string, msgs []string, newRecs models.Records) Cha
 }
 
 func mkChange(l string, t string, msgs []string, oldRecs, newRecs models.Records) Change {
+	//fmt.Printf("DEBUG mkChange called: (%v, %v, %v, %v, %v)\n", l, t, msgs, oldRecs, newRecs)
 	c := Change{Type: CHANGE, Msgs: msgs, MsgsJoined: strings.Join(msgs, "\n")}
 	c.Key.NameFQDN = l
 	c.Key.Type = t
@@ -140,7 +141,7 @@ func mkChange(l string, t string, msgs []string, oldRecs, newRecs models.Records
 }
 
 func mkChangeLabel(l string, t string, msgs []string, oldRecs, newRecs models.Records, msgsByKey map[models.RecordKey][]string) Change {
-	//fmt.Printf("DEBUG: mkChangeLabel: len(o)=%d\n", len(oldRecs))
+	//fmt.Printf("DEBUG mkChangeLabel called: (%v, %v, %v, %v, %v, %v)\n", l, t, msgs, oldRecs, newRecs, msgsByKey)
 	c := Change{Type: CHANGE, Msgs: msgs, MsgsJoined: strings.Join(msgs, "\n")}
 	c.Key.NameFQDN = l
 	c.Key.Type = t
@@ -150,7 +151,11 @@ func mkChangeLabel(l string, t string, msgs []string, oldRecs, newRecs models.Re
 	return c
 }
 
-func mkDelete(l string, t string, oldRecs models.Records, msgs []string) Change {
+func mkDelete(l string, t string, msgs []string, oldRecs models.Records) Change {
+	//fmt.Printf("DEBUG mkDelete called: (%v, %v, %v, %v)\n", l, t, msgs, oldRecs)
+	if len(msgs) == 0 {
+		panic("mkDelete with no msg")
+	}
 	c := Change{Type: DELETE, Msgs: msgs, MsgsJoined: strings.Join(msgs, "\n")}
 	c.Key.NameFQDN = l
 	c.Key.Type = t
@@ -158,6 +163,7 @@ func mkDelete(l string, t string, oldRecs models.Records, msgs []string) Change 
 	return c
 }
 func mkDeleteRec(l string, t string, msgs []string, rec *models.RecordConfig) Change {
+	//fmt.Printf("DEBUG mkDeleteREc called: (%v, %v, %v, %v)\n", l, t, msgs, rec)
 	c := Change{Type: DELETE, Msgs: msgs, MsgsJoined: strings.Join(msgs, "\n")}
 	c.Key.NameFQDN = l
 	c.Key.Type = t
@@ -252,8 +258,6 @@ func filterBy(s []targetConfig, m map[string]*targetConfig) []targetConfig {
 			// copy and increment index
 			s[i] = x
 			i++
-		} else {
-			//fmt.Printf("DEBUG: comp %q YES\n", x.compareable)
 		}
 	}
 	// // Prevent memory leak by erasing truncated values
