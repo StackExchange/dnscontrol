@@ -24,9 +24,7 @@ func generateFeatureMatrix() error {
 func markdownTable(matrix *FeatureMatrix) (string, error) {
 	var tableHeaders []string
 	tableHeaders = append(tableHeaders, "Provider name")
-	for _, featureName := range matrix.Features {
-		tableHeaders = append(tableHeaders, featureName)
-	}
+	tableHeaders = append(tableHeaders, matrix.Features...)
 
 	var tableData [][]string
 	for _, providerName := range allProviderNames() {
@@ -58,9 +56,9 @@ func featureEmoji(
 		return "❔"
 	}
 
-	if featureMap[featureName].HasFeature == true {
+	if featureMap[featureName].HasFeature {
 		return "✅"
-	} else if featureMap[featureName].Unimplemented == true {
+	} else if featureMap[featureName].Unimplemented {
 		return "❔"
 	}
 	return "❌"
@@ -69,7 +67,7 @@ func featureEmoji(
 func matrixData() *FeatureMatrix {
 	const (
 		OfficialSupport      = "Official Support"
-		ProviderDnsProvider  = "DNS Provider"
+		ProviderDNSProvider  = "DNS Provider"
 		ProviderRegistrar    = "Registrar"
 		DomainModifierAlias  = "ALIAS"
 		DomainModifierDnssec = "AUTODNSSEC"
@@ -91,7 +89,7 @@ func matrixData() *FeatureMatrix {
 		Providers: map[string]FeatureMap{},
 		Features: []string{
 			OfficialSupport,
-			ProviderDnsProvider,
+			ProviderDNSProvider,
 			ProviderRegistrar,
 			DomainModifierAlias,
 			DomainModifierDnssec,
@@ -152,7 +150,7 @@ func matrixData() *FeatureMatrix {
 			true,
 		)
 		featureMap.SetSimple(
-			ProviderDnsProvider,
+			ProviderDNSProvider,
 			false,
 			func() bool { return providers.DNSProviderTypes[providerName].Initializer != nil },
 		)
