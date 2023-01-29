@@ -222,7 +222,7 @@ func makeChanges(t *testing.T, prv providers.DNSServiceProvider, dc *models.Doma
 			if *verbose {
 				t.Logf("line 232 -- %q", c.Msg)
 				if c.Msg == "" {
-					//panic("I found it!")
+					panic("c.Msg empty in integratointest")
 				}
 			}
 			err = c.F()
@@ -701,6 +701,8 @@ func makeTests(t *testing.T) []*TestGroup {
 		testgroup("Protocol-Plain",
 			tc("Create an A record", a("@", "1.1.1.1")),
 			tc("Change it", a("@", "1.2.3.4")),
+			clear(), // Extra clear required or only the first run passes.
+			tc("Set it", a("@", "1.2.3.4")),
 			tc("Add another", a("@", "1.2.3.4"), a("www", "2.3.4.5")),
 			tc("Add another", a("@", "1.2.3.4"), a("www", "2.3.4.5"), a("zzz", "3.4.5.6")),
 		),

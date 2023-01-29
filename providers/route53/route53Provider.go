@@ -482,6 +482,12 @@ func (r *route53Provider) GetDomainCorrections(dc *models.DomainConfig) ([]*mode
 		nameFQDN := inst.Key.NameFQDN
 		kType := inst.Key.Type
 
+		if inst.MsgsJoined == "" {
+			fmt.Printf("DEBUG: inst=%v\n", inst)
+			fmt.Printf("CHANGE=%v\n", inst)
+			//panic("empty message")
+		}
+
 		switch inst.Type {
 
 		case diff2.DELETE:
@@ -568,6 +574,7 @@ func (r *route53Provider) GetDomainCorrections(dc *models.DomainConfig) ([]*mode
 					Msg: inst.MsgsJoined,
 					F: func() error {
 						var err error
+						fmt.Printf("DEBUG: 571: joined=%v\n", inst.MsgsJoined)
 						req.HostedZoneId = zone.Id
 						withRetry(func() error {
 							_, err = r.client.ChangeResourceRecordSets(context.Background(), req)
@@ -580,6 +587,10 @@ func (r *route53Provider) GetDomainCorrections(dc *models.DomainConfig) ([]*mode
 		}
 	}
 
+	fmt.Printf("DEBUG: CORRECTIONS COMPLETE!\nCORRECTIONS=%v\n", corrections[:])
+	for i, j := range corrections {
+		fmt.Printf(" [%d] = %+v\n", i, *j)
+	}
 	return corrections, nil
 }
 
