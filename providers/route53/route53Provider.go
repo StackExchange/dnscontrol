@@ -564,6 +564,25 @@ func (r *route53Provider) GetDomainCorrections(dc *models.DomainConfig) ([]*mode
 	return corrections, nil
 }
 
+// reorderInstructions returns changes reordered to comply with AWS's requirements:
+//   - The R43_ALIAS updates must come after records they refer to.  To handle
+//     this, we simply move all R53_ALIAS instructions to the end of the list, thus
+//     guaranteeing they will happen after the records they refer to have been
+//     reated.
+func reorderInstructions(changes diff2.ChangeList) diff2.ChangeList {
+	var main, tail diff2.ChangeList
+	for _, change := range changes {
+		if change.Key.Type == "R53_ALIAS" {
+			tail = append(tail, change)
+		} else {
+			main = append(main, change)
+		}
+	}
+	return append(main, tail...)
+	// NB(tlim): This algorithm is O(n*2) but it is simple and usually only
+	// operates on very small lists.
+}
+
 func nativeToRecords(set r53Types.ResourceRecordSet, origin string) ([]*models.RecordConfig, error) {
 	results := []*models.RecordConfig{}
 	if set.AliasTarget != nil {
