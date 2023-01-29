@@ -196,6 +196,10 @@ func checkTargets(rec *models.RecordConfig, domain string) (errs []error) {
 		if label == "@" {
 			check(fmt.Errorf("cannot create NS record for bare domain. Use NAMESERVER instead"))
 		}
+	case "URLFWD":
+		if len(strings.Fields(target)) != 5 {
+			check(fmt.Errorf("record should follow format: \"from to redirectType pathForwardingMode queryForwarding\""))
+		}
 	case "PTR":
 		check(checkTarget(target))
 	case "SOA":
@@ -331,6 +335,7 @@ func ValidateAndNormalizeConfig(config *models.DNSConfig) (errs []error) {
 		// Normalize Records.
 		models.PostProcessRecords(domain.Records)
 		for _, rec := range domain.Records {
+
 			if rec.TTL == 0 {
 				rec.TTL = models.DefaultTTL
 			}
@@ -364,6 +369,7 @@ func ValidateAndNormalizeConfig(config *models.DNSConfig) (errs []error) {
 			if err := checkLabel(rec.GetLabel(), rec.Type, rec.GetTargetField(), domain.Name, rec.Metadata); err != nil {
 				errs = append(errs, err)
 			}
+
 			if errs2 := checkTargets(rec, domain.Name); errs2 != nil {
 				errs = append(errs, errs2...)
 			}
