@@ -220,7 +220,10 @@ func makeChanges(t *testing.T, prv providers.DNSServiceProvider, dc *models.Doma
 		}
 		for _, c := range corrections {
 			if *verbose {
-				t.Log(c.Msg)
+				t.Logf("line 232 -- %q", c.Msg)
+				if c.Msg == "" {
+					//panic("I found it!")
+				}
 			}
 			err = c.F()
 			if err != nil {
@@ -693,6 +696,13 @@ func makeTests(t *testing.T) []*TestGroup {
 			tc("Change it", a("@", "1.2.3.4")),
 			tc("Add another", a("@", "1.2.3.4"), a("www", "1.2.3.4")),
 			tc("Add another(same name)", a("@", "1.2.3.4"), a("www", "1.2.3.4"), a("www", "5.6.7.8")),
+		),
+
+		testgroup("Protocol-Plain",
+			tc("Create an A record", a("@", "1.1.1.1")),
+			tc("Change it", a("@", "1.2.3.4")),
+			tc("Add another", a("@", "1.2.3.4"), a("www", "2.3.4.5")),
+			tc("Add another", a("@", "1.2.3.4"), a("www", "2.3.4.5"), a("zzz", "3.4.5.6")),
 		),
 
 		testgroup("Protocol-TTL",
