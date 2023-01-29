@@ -149,3 +149,4 @@ code to support this provider, we'd be glad to help in any way.
 * [Knot DNS](https://github.com/StackExchange/dnscontrol/issues/436) (#436)
 * [RRPPRoxy](https://github.com/StackExchange/dnscontrol/issues/1656) (#1656)
 * [RcodeZero](https://github.com/StackExchange/dnscontrol/issues/884) (#884)
+* [SynergyWholesale](https://github.com/StackExchange/dnscontrol/issues/1605) (#1605)
