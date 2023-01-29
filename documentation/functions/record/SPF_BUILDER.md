@@ -25,10 +25,12 @@ DNSControl can optimize the SPF settings on a domain by flattening
 (inlining) includes and removing duplicates. DNSControl also makes
 it easier to document your SPF configuration.
 
-**Warning:** Flattening SPF includes is risky.  Only flatten an SPF
+{% hint style="warning" %}
+**WARNING**: Flattening SPF includes is risky.  Only flatten an SPF
 setting if it is absolutely needed to bring the number of "lookups"
 to be less than 10. In fact, it is debatable whether or not ISPs
 enforce the "10 lookup rule".
+{% endhint %}
 
 
 ## The old way
