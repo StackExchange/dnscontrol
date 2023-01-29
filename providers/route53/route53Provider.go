@@ -490,41 +490,35 @@ func (r *route53Provider) GetDomainCorrections(dc *models.DomainConfig) ([]*mode
 		case diff2.CHANGE:
 			// To CREATE/CHANGE, build a new record set from the desired state and UPSERT it.
 
-			var chg r53Types.Change
+			// Make the rrset to be UPSERTed:
+			var rrset *r53Types.ResourceRecordSet
 			if instType == "R53_ALIAS" {
 				// A R53_ALIAS_* requires ResourceRecordSet to a a single item, not a list.
 				if len(inst.New) != 1 {
 					log.Fatal("Only one R53_ALIAS_ permitted on a label")
 				}
-				rec := inst.New[0]
-				rrset := aliasToRRSet(zone, rec)
+				rrset = aliasToRRSet(zone, inst.New[0])
 				rrset.Name = aws.String(instNameFQDN)
-				chg = r53Types.Change{
-					Action:            r53Types.ChangeActionUpsert,
-					ResourceRecordSet: rrset,
-				}
 			} else {
 				// Make a list of all the records to be installed at label:rtype
-				rrset := &r53Types.ResourceRecordSet{
+				rrset = &r53Types.ResourceRecordSet{
 					Name: aws.String(instNameFQDN),
 					Type: r53Types.RRType(instType),
 				}
 
 				for _, r := range inst.New {
-					val := r.GetTargetCombined()
 					rr := r53Types.ResourceRecord{
-						Value: aws.String(val),
+						Value: aws.String(r.GetTargetCombined()),
 					}
 					rrset.ResourceRecords = append(rrset.ResourceRecords, rr)
 					i := int64(r.TTL)
 					rrset.TTL = &i
 				}
-				chg = r53Types.Change{
-					Action:            r53Types.ChangeActionUpsert,
-					ResourceRecordSet: rrset,
-				}
 			}
-
+			chg := r53Types.Change{
+				Action:            r53Types.ChangeActionUpsert,
+				ResourceRecordSet: rrset,
+			}
 			r53rec = &r53.ChangeResourceRecordSetsInput{
 				ChangeBatch: &r53Types.ChangeBatch{
 					Changes: []r53Types.Change{chg},
