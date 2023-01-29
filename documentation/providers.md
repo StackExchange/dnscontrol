@@ -113,7 +113,7 @@ Providers in this category and their maintainers are:
 |`GCORE`|@xddxdd|
 |`HEDNS`|@rblenkinsopp|
 |`HETZNER`|@das7pad|
-|`HEXONET`|@papakai|
+|`HEXONET`|@KaiSchwarz-cnic|
 |`HOSTINGDE`|@membero|
 |`INTERNETBS`|@pragmaton|
 |`INWX`|@svenpeter42|
