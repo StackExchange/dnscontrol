@@ -479,40 +479,36 @@ func (r *route53Provider) GetDomainCorrections(dc *models.DomainConfig) ([]*mode
 	}
 	instructions = reorderInstructions(instructions)
 	for _, inst := range instructions {
-		nameFQDN := inst.Key.NameFQDN
-		kType := inst.Key.Type
-		var req *r53.ChangeResourceRecordSetsInput
+		instNameFQDN := inst.Key.NameFQDN
+		instType := inst.Key.Type
+		var r53rec *r53.ChangeResourceRecordSetsInput
 
 		switch inst.Type {
 
 		case diff2.CREATE:
 			fallthrough
 		case diff2.CHANGE:
-			// To CREATE/DELETE, build a new record set from the desired state and UPSERT it.
+			// To CREATE/CHANGE, build a new record set from the desired state and UPSERT it.
 
 			var chg r53Types.Change
-			if kType == "R53_ALIAS" {
-				// Each R53_ALIAS_* is changed one at a time.
+			if instType == "R53_ALIAS" {
+				// A R53_ALIAS_* requires ResourceRecordSet to a a single item, not a list.
 				if len(inst.New) != 1 {
 					log.Fatal("Only one R53_ALIAS_ permitted on a label")
 				}
 				rec := inst.New[0]
 				rrset := aliasToRRSet(zone, rec)
-				rrset.Name = aws.String(nameFQDN)
-				// Assemble the change and add it to the list:
+				rrset.Name = aws.String(instNameFQDN)
 				chg = r53Types.Change{
 					Action:            r53Types.ChangeActionUpsert,
 					ResourceRecordSet: rrset,
 				}
 			} else {
-				// All other keys combine their updates into one rrset:
+				// Make a list of all the records to be installed at label:rtype
 				rrset := &r53Types.ResourceRecordSet{
-					Name: aws.String(nameFQDN),
-					Type: r53Types.RRType(kType),
+					Name: aws.String(instNameFQDN),
+					Type: r53Types.RRType(instType),
 				}
-
-				//rrset.Name = aws.String(nameFQDN)
-				//rrset.Type = r53Types.RRType(kType)
 
 				for _, r := range inst.New {
 					val := r.GetTargetCombined()
@@ -521,16 +517,15 @@ func (r *route53Provider) GetDomainCorrections(dc *models.DomainConfig) ([]*mode
 					}
 					rrset.ResourceRecords = append(rrset.ResourceRecords, rr)
 					i := int64(r.TTL)
-					rrset.TTL = &i // TODO: make sure that ttls are consistent within a set
+					rrset.TTL = &i
 				}
-
 				chg = r53Types.Change{
 					Action:            r53Types.ChangeActionUpsert,
 					ResourceRecordSet: rrset,
 				}
 			}
 
-			req = &r53.ChangeResourceRecordSetsInput{
+			r53rec = &r53.ChangeResourceRecordSetsInput{
 				ChangeBatch: &r53Types.ChangeBatch{
 					Changes: []r53Types.Change{chg},
 				},
@@ -540,9 +535,9 @@ func (r *route53Provider) GetDomainCorrections(dc *models.DomainConfig) ([]*mode
 					Msg: inst.MsgsJoined,
 					F: func() error {
 						var err error
-						req.HostedZoneId = zone.Id
+						r53rec.HostedZoneId = zone.Id
 						withRetry(func() error {
-							_, err = r.client.ChangeResourceRecordSets(context.Background(), req)
+							_, err = r.client.ChangeResourceRecordSets(context.Background(), r53rec)
 							return err
 						})
 						return err
@@ -552,14 +547,14 @@ func (r *route53Provider) GetDomainCorrections(dc *models.DomainConfig) ([]*mode
 
 		case diff2.DELETE:
 
-			rrset := inst.Old[0].Original.(r53Types.ResourceRecordSet)
+			rrset := inst.Old[0].Original.(r53Types.ResourceRecordSet) // The native record as downloaded via the API
 			chg := r53Types.Change{
 				Action:            r53Types.ChangeActionDelete,
 				ResourceRecordSet: &rrset,
 			}
-			req = &r53.ChangeResourceRecordSetsInput{
+			r53rec = &r53.ChangeResourceRecordSetsInput{
 				ChangeBatch: &r53Types.ChangeBatch{
-					// Comment: aws.String("Managed by DNSControl"),
+					Comment: aws.String("Managed by DNSControl"),
 					Changes: []r53Types.Change{chg},
 				},
 			}
@@ -568,9 +563,9 @@ func (r *route53Provider) GetDomainCorrections(dc *models.DomainConfig) ([]*mode
 					Msg: inst.MsgsJoined,
 					F: func() error {
 						var err error
-						req.HostedZoneId = zone.Id
+						r53rec.HostedZoneId = zone.Id
 						withRetry(func() error {
-							_, err = r.client.ChangeResourceRecordSets(context.Background(), req)
+							_, err = r.client.ChangeResourceRecordSets(context.Background(), r53rec)
 							return err
 						})
 						return err
