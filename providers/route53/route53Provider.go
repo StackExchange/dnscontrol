@@ -521,23 +521,10 @@ func (r *route53Provider) GetDomainCorrections(dc *models.DomainConfig) ([]*mode
 			}
 			r53rec = &r53.ChangeResourceRecordSetsInput{
 				ChangeBatch: &r53Types.ChangeBatch{
+					Comment: aws.String("Managed by DNSControl"),
 					Changes: []r53Types.Change{chg},
 				},
 			}
-			corrections = append(corrections,
-				&models.Correction{
-					Msg: inst.MsgsJoined,
-					F: func() error {
-						var err error
-						r53rec.HostedZoneId = zone.Id
-						withRetry(func() error {
-							_, err = r.client.ChangeResourceRecordSets(context.Background(), r53rec)
-							return err
-						})
-						return err
-					},
-				},
-			)
 
 		case diff2.DELETE:
 
@@ -552,22 +539,23 @@ func (r *route53Provider) GetDomainCorrections(dc *models.DomainConfig) ([]*mode
 					Changes: []r53Types.Change{chg},
 				},
 			}
-			corrections = append(corrections,
-				&models.Correction{
-					Msg: inst.MsgsJoined,
-					F: func() error {
-						var err error
-						r53rec.HostedZoneId = zone.Id
-						withRetry(func() error {
-							_, err = r.client.ChangeResourceRecordSets(context.Background(), r53rec)
-							return err
-						})
-						return err
-					},
-				},
-			)
 
 		}
+
+		corrections = append(corrections,
+			&models.Correction{
+				Msg: inst.MsgsJoined,
+				F: func() error {
+					var err error
+					r53rec.HostedZoneId = zone.Id
+					withRetry(func() error {
+						_, err = r.client.ChangeResourceRecordSets(context.Background(), r53rec)
+						return err
+					})
+					return err
+				},
+			},
+		)
 
 	}
 
