@@ -7,7 +7,7 @@
 
 [![CircleCI](https://dl.circleci.com/insights-snapshot/gh/StackExchange/dnscontrol/master/build/badge.svg?window=30d)](https://app.circleci.com/insights/github/StackExchange/dnscontrol/workflows/build/overview?branch=master&reporting-window=last-30-days&insights-snapshot=true)
 
-[DNSControl](https://stackexchange.github.io/dnscontrol/) is a system
+[DNSControl](https://docs.dnscontrol.org/) is a system
 for maintaining DNS zones.  It has two parts:
 a domain specific language (DSL) for describing DNS zones plus
 software that processes the DSL and pushes the resulting zones to
@@ -155,6 +155,6 @@ See [dnscontrol-action](https://github.com/koenrh/dnscontrol-action) or [gacts/i
 
 ## More info at our website
 
-The website: [https://stackexchange.github.io/dnscontrol/](https://stackexchange.github.io/dnscontrol/)
+The website: [https://docs.dnscontrol.org/](https://docs.dnscontrol.org/)
 
 The getting started guide: [https://docs.dnscontrol.org/getting-started/getting-started](https://docs.dnscontrol.org/getting-started/getting-started)

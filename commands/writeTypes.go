@@ -1,7 +1,7 @@
 package commands
 
 import (
-	_ "embed"
+	_ "embed" // Required by go:embed
 	"os"
 
 	versionInfo "github.com/StackExchange/dnscontrol/v3/pkg/version"
@@ -40,6 +40,7 @@ func (args *TypesArgs) flags() []cli.Flag {
 //go:embed types/dnscontrol.d.ts
 var dtsContent string
 
+// WriteTypes creates the types file.
 func WriteTypes(args TypesArgs) error {
 	file, err := os.Create(args.DTSFile)
 	if err != nil {
