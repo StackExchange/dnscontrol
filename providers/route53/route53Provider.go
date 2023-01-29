@@ -395,6 +395,8 @@ func (r *route53Provider) GetDomainCorrections(dc *models.DomainConfig) ([]*mode
 						}
 						changes = append(changes, chg)
 						changeDesc = append(changeDesc, strings.Join(namesToUpdate[currentKey], "\n"))
+						fmt.Printf("DEBUG: chg=%+v\n", chg)
+						fmt.Printf("DEBUG: ResourceRecordSet=%+v\n", chg.ResourceRecordSet)
 					}
 				} else {
 					// All other keys combine their updates into one rrset:
@@ -478,29 +480,99 @@ func (r *route53Provider) GetDomainCorrections(dc *models.DomainConfig) ([]*mode
 		return nil, err
 	}
 	for _, inst := range instructions {
-		fmt.Printf("CHANGE=%v\n", inst)
 		nameFQDN := inst.Key.NameFQDN
 		kType := inst.Key.Type
-
-		if inst.MsgsJoined == "" {
-			fmt.Printf("DEBUG: inst=%v\n", inst)
-			fmt.Printf("CHANGE=%v\n", inst)
-			//panic("empty message")
-		}
+		var req *r53.ChangeResourceRecordSetsInput
 
 		switch inst.Type {
+
+		case diff2.CREATE:
+			fallthrough
+		case diff2.CHANGE:
+			// To CREATE/DELETE, build a new record set from the desired state and UPSERT it.
+
+			//rrset, _ := r.findOriginal(nameFQDN, kType)
+			var chg r53Types.Change
+			fmt.Printf("DEBUG: ktype=%v\n", kType)
+			//if strings.HasPrefix(kType, "R53_ALIAS_") {
+			if kType == "R53_ALIAS" {
+				// Each R53_ALIAS_* is changed one at a time.
+				if len(inst.New) != 1 {
+					log.Fatal("Only one R53_ALIAS_ permitted on a label")
+				}
+				rec := inst.New[0]
+				rrset := aliasToRRSet(zone, rec)
+				rrset.Name = aws.String(nameFQDN)
+				//rrset.Type = r53Types.RRType(kType)
+				// Assemble the change and add it to the list:
+				chg = r53Types.Change{
+					Action:            r53Types.ChangeActionUpsert,
+					ResourceRecordSet: rrset,
+				}
+				fmt.Printf("DEBUG: chg=%+v\n", chg)
+				fmt.Printf("DEBUG: ResourceRecordSet=%+v\n", chg.ResourceRecordSet)
+
+			} else {
+				// All other keys combine their updates into one rrset:
+				rrset := &r53Types.ResourceRecordSet{
+					Name: aws.String(nameFQDN),
+					Type: r53Types.RRType(kType),
+				}
+
+				//rrset.Name = aws.String(nameFQDN)
+				//rrset.Type = r53Types.RRType(kType)
+
+				for _, r := range inst.New {
+					val := r.GetTargetCombined()
+					rr := r53Types.ResourceRecord{
+						Value: aws.String(val),
+					}
+					rrset.ResourceRecords = append(rrset.ResourceRecords, rr)
+					i := int64(r.TTL)
+					rrset.TTL = &i // TODO: make sure that ttls are consistent within a set
+				}
+
+				chg = r53Types.Change{
+					Action:            r53Types.ChangeActionUpsert,
+					ResourceRecordSet: rrset,
+				}
+			}
+
+			req = &r53.ChangeResourceRecordSetsInput{
+				ChangeBatch: &r53Types.ChangeBatch{
+					Changes: []r53Types.Change{chg},
+				},
+			}
+			corrections = append(corrections,
+				&models.Correction{
+					Msg: inst.MsgsJoined,
+					F: func() error {
+						var err error
+						req.HostedZoneId = zone.Id
+						withRetry(func() error {
+							_, err = r.client.ChangeResourceRecordSets(context.Background(), req)
+							return err
+						})
+						return err
+					},
+				},
+			)
 
 		case diff2.DELETE:
 
 			// To delete, we submit the original resource set we got from r53.
-			rrset, _ := r.findOriginal(nameFQDN, kType)
+			//rrset, err := r.findOriginal(nameFQDN, kType)
+			//if err != nil {
+			//	return nil, err
+			//}
 			// FIXME(tlim) findOriginal could be... rec.Original ?
 			// Assemble the change and add it to the list:
+			rrset := inst.Old[0].Original.(r53Types.ResourceRecordSet)
 			chg := r53Types.Change{
 				Action:            r53Types.ChangeActionDelete,
 				ResourceRecordSet: &rrset,
 			}
-			req := &r53.ChangeResourceRecordSetsInput{
+			req = &r53.ChangeResourceRecordSetsInput{
 				ChangeBatch: &r53Types.ChangeBatch{
 					// Comment: aws.String("Managed by DNSControl"),
 					Changes: []r53Types.Change{chg},
@@ -521,76 +593,14 @@ func (r *route53Provider) GetDomainCorrections(dc *models.DomainConfig) ([]*mode
 				},
 			)
 
-		case diff2.CREATE:
-			fallthrough
-		case diff2.CHANGE:
-			// To CREATE/DELETE, build a new record set from the desired state and UPSERT it.
-
-			//rrset, _ := r.findOriginal(nameFQDN, kType)
-			var chg r53Types.Change
-			if strings.HasPrefix(kType, "R53_ALIAS_") {
-				// Each R53_ALIAS_* requires an individual change.
-				if len(inst.New) != 1 {
-					log.Fatal("Only one R53_ALIAS_ permitted on a label")
-				}
-				rec := inst.New[0]
-				rrset := aliasToRRSet(zone, rec)
-				rrset.Name = aws.String(nameFQDN)
-				// Assemble the change and add it to the list:
-				chg = r53Types.Change{
-					Action:            r53Types.ChangeActionUpsert,
-					ResourceRecordSet: rrset,
-				}
-
-			} else {
-				// All other keys combine their updates into one rrset:
-				rrset := &r53Types.ResourceRecordSet{
-					Name: aws.String(nameFQDN),
-					Type: r53Types.RRType(kType),
-				}
-				for _, r := range inst.New {
-					val := r.GetTargetCombined()
-					rr := r53Types.ResourceRecord{
-						Value: aws.String(val),
-					}
-					rrset.ResourceRecords = append(rrset.ResourceRecords, rr)
-					i := int64(r.TTL)
-					rrset.TTL = &i // TODO: make sure that ttls are consistent within a set
-				}
-				// Assemble the change and add it to the list:
-				chg = r53Types.Change{
-					Action:            r53Types.ChangeActionUpsert,
-					ResourceRecordSet: rrset,
-				}
-			}
-
-			req := &r53.ChangeResourceRecordSetsInput{
-				ChangeBatch: &r53Types.ChangeBatch{
-					Changes: []r53Types.Change{chg},
-				},
-			}
-			corrections = append(corrections,
-				&models.Correction{
-					Msg: inst.MsgsJoined,
-					F: func() error {
-						var err error
-						fmt.Printf("DEBUG: 571: joined=%v\n", inst.MsgsJoined)
-						req.HostedZoneId = zone.Id
-						withRetry(func() error {
-							_, err = r.client.ChangeResourceRecordSets(context.Background(), req)
-							return err
-						})
-						return err
-					},
-				},
-			)
 		}
+
 	}
 
-	fmt.Printf("DEBUG: CORRECTIONS COMPLETE!\nCORRECTIONS=%v\n", corrections[:])
-	for i, j := range corrections {
-		fmt.Printf(" [%d] = %+v\n", i, *j)
-	}
+	//fmt.Printf("DEBUG: CORRECTIONS COMPLETE!\nCORRECTIONS=%v\n", corrections[:])
+	//for i, j := range corrections {
+	//	fmt.Printf(" [%d] = %+v\n", i, *j)
+	//}
 	return corrections, nil
 }
 
@@ -607,6 +617,7 @@ func nativeToRecords(set r53Types.ResourceRecordSet, origin string) ([]*models.R
 		}
 		rc.SetLabelFromFQDN(unescape(set.Name), origin)
 		rc.SetTarget(aws.ToString(set.AliasTarget.DNSName))
+		rc.Original = set
 		results = append(results, rc)
 	} else if set.TrafficPolicyInstanceId != nil {
 		// skip traffic policy records
@@ -653,6 +664,7 @@ func nativeToRecords(set r53Types.ResourceRecordSet, origin string) ([]*models.R
 				if err := rc.PopulateFromString(string(rtype), val, origin); err != nil {
 					return nil, fmt.Errorf("unparsable record received from R53: %w", err)
 				}
+				rc.Original = set
 				results = append(results, rc)
 			}
 		}

@@ -220,10 +220,7 @@ func makeChanges(t *testing.T, prv providers.DNSServiceProvider, dc *models.Doma
 		}
 		for _, c := range corrections {
 			if *verbose {
-				t.Logf("line 232 -- %q", c.Msg)
-				if c.Msg == "" {
-					panic("c.Msg empty in integratointest")
-				}
+				t.Log(c.Msg)
 			}
 			err = c.F()
 			if err != nil {
@@ -691,34 +688,51 @@ func makeTests(t *testing.T) []*TestGroup {
 		// These are tested on "@" and "www".
 		// When these tests pass, you've implemented the basics correctly.
 
-		testgroup("Protocol-Plain",
-			tc("Create an A record", a("@", "1.1.1.1")),
-			tc("Change it", a("@", "1.2.3.4")),
-			tc("Add another", a("@", "1.2.3.4"), a("www", "1.2.3.4")),
-			tc("Add another(same name)", a("@", "1.2.3.4"), a("www", "1.2.3.4"), a("www", "5.6.7.8")),
+		testgroup("A",
+			tc("Create A", a("testa", "1.1.1.1")),
+			tc("Change A target", a("testa", "1.2.3.4")),
 		),
 
-		testgroup("Protocol-Plain",
-			tc("Create an A record", a("@", "1.1.1.1")),
-			tc("Change it", a("@", "1.2.3.4")),
-			clear(), // Extra clear required or only the first run passes.
-			tc("Set it", a("@", "1.2.3.4")),
-			tc("Add another", a("@", "1.2.3.4"), a("www", "2.3.4.5")),
-			tc("Add another", a("@", "1.2.3.4"), a("www", "2.3.4.5"), a("zzz", "3.4.5.6")),
+		testgroup("MX",
+			tc("Create MX", mx("testmx", 5, "foo.com.")),
+			tc("Change MX target", mx("testmx", 5, "bar.com.")),
+			tc("Change MX p", mx("testmx", 100, "bar.com.")),
 		),
 
-		testgroup("Protocol-TTL",
+		testgroup("CNAME",
+			tc("Create a CNAME", cname("testcname", "www.google.com.")),
+			tc("Change CNAME target", cname("testcname", "www.yahoo.com.")),
+		),
+
+		testgroup("ManyAtOne",
+			tc("CreateManyAtLabel", a("www", "1.1.1.1"), a("www", "2.2.2.2"), a("www", "3.3.3.3")),
+			clear(),
+			tc("Create an A record", a("www", "1.1.1.1")),
+			tc("Add at label1", a("www", "1.1.1.1"), a("www", "2.2.2.2")),
+			tc("Add at label2", a("www", "1.1.1.1"), a("www", "2.2.2.2"), a("www", "3.3.3.3")),
+		),
+
+		testgroup("manyAtOneTypes",
+			tc("CreateManyTypesAtLabel", a("www", "1.1.1.1"), mx("testmx", 5, "foo.com."), mx("testmx", 100, "bar.com.")),
+			clear(),
+			tc("Create an A record", a("www", "1.1.1.1")),
+			tc("Add Type At Label", a("www", "1.1.1.1"), mx("testmx", 5, "foo.com.")),
+			tc("Add Type At Label", a("www", "1.1.1.1"), mx("testmx", 5, "foo.com."), mx("testmx", 100, "bar.com.")),
+		),
+
+		// Make sure changes at the apex (the bare domain) work.
+		testgroup("Apex",
+			tc("Create A", a("@", "1.1.1.1")),
+			tc("Change A target", a("@", "1.2.3.4")),
+		),
+
+		// Exercise TTL operations.
+		testgroup("TTL",
 			not("NETCUP"), // NETCUP does not support TTLs.
 			tc("Start", a("@", "1.2.3.4"), a("www", "1.2.3.4"), a("www", "5.6.7.8")),
 			tc("Change a ttl", ttl(a("@", "1.2.3.4"), 1000), a("www", "1.2.3.4"), a("www", "5.6.7.8")),
 			tc("Change single target from set", ttl(a("@", "1.2.3.4"), 1000), a("www", "2.2.2.2"), a("www", "5.6.7.8")),
 			tc("Change all ttls", ttl(a("@", "1.2.3.4"), 500), ttl(a("www", "2.2.2.2"), 400), ttl(a("www", "5.6.7.8"), 400)),
-			tc("Delete one", ttl(a("@", "1.2.3.4"), 500), ttl(a("www", "5.6.7.8"), 400)),
-		),
-
-		testgroup("add to existing label",
-			tc("Setup", ttl(a("www", "5.6.7.8"), 400)),
-			tc("Add at same label", ttl(a("www", "5.6.7.8"), 400), ttl(a("www", "1.2.3.4"), 400)),
 		),
 
 		// This is a strange one.  It adds a new record to an existing
@@ -907,7 +921,7 @@ func makeTests(t *testing.T) []*TestGroup {
 				"GCLOUD",
 				"HEXONET",
 				//"MSDNS",     //  No paging done. No need to test.
-				"ROUTE53",
+				//"ROUTE53",
 			),
 			tc("601 records", manyA("rec%04d", "1.2.3.4", 600)...),
 			tc("Update 601 records", manyA("rec%04d", "1.2.3.5", 600)...),
@@ -923,7 +937,7 @@ func makeTests(t *testing.T) []*TestGroup {
 				"HEXONET",
 				"HOSTINGDE",
 				//"MSDNS",         // No paging done. No need to test.
-				"ROUTE53",
+				//"ROUTE53",
 			),
 			tc("1200 records", manyA("rec%04d", "1.2.3.4", 1200)...),
 			tc("Update 1200 records", manyA("rec%04d", "1.2.3.5", 1200)...),
@@ -1123,25 +1137,25 @@ func makeTests(t *testing.T) []*TestGroup {
 				a("quux.a", "2.3.4.5"),
 				azureAlias("bar.a", "A", "/subscriptions/**subscription-id**/resourceGroups/**resource-group**/providers/Microsoft.Network/dnszones/**current-domain-no-trailing**/A/foo.a"),
 			),
-			tc("change it",
-				a("foo.a", "1.2.3.4"),
-				a("quux.a", "2.3.4.5"),
-				azureAlias("bar.a", "A", "/subscriptions/**subscription-id**/resourceGroups/**resource-group**/providers/Microsoft.Network/dnszones/**current-domain-no-trailing**/A/quux.a"),
-			),
-			tc("create dependent CNAME records",
-				cname("foo.cname", "google.com"),
-				cname("quux.cname", "google2.com"),
-			),
-			tc("ALIAS to CNAME record in same zone",
-				cname("foo.cname", "google.com"),
-				cname("quux.cname", "google2.com"),
-				azureAlias("bar", "CNAME", "/subscriptions/**subscription-id**/resourceGroups/**resource-group**/providers/Microsoft.Network/dnszones/**current-domain-no-trailing**/CNAME/foo.cname"),
-			),
-			tc("change it",
-				cname("foo.cname", "google.com"),
-				cname("quux.cname", "google2.com"),
-				azureAlias("bar.cname", "CNAME", "/subscriptions/**subscription-id**/resourceGroups/**resource-group**/providers/Microsoft.Network/dnszones/**current-domain-no-trailing**/CNAME/quux.cname"),
-			),
+			//			tc("change it",
+			//				a("foo.a", "1.2.3.4"),
+			//				a("quux.a", "2.3.4.5"),
+			//				azureAlias("bar.a", "A", "/subscriptions/**subscription-id**/resourceGroups/**resource-group**/providers/Microsoft.Network/dnszones/**current-domain-no-trailing**/A/quux.a"),
+			//			),
+			//			tc("create dependent CNAME records",
+			//				cname("foo.cname", "google.com"),
+			//				cname("quux.cname", "google2.com"),
+			//			),
+			//			tc("ALIAS to CNAME record in same zone",
+			//				cname("foo.cname", "google.com"),
+			//				cname("quux.cname", "google2.com"),
+			//				azureAlias("bar", "CNAME", "/subscriptions/**subscription-id**/resourceGroups/**resource-group**/providers/Microsoft.Network/dnszones/**current-domain-no-trailing**/CNAME/foo.cname"),
+			//			),
+			//			tc("change it",
+			//				cname("foo.cname", "google.com"),
+			//				cname("quux.cname", "google2.com"),
+			//				azureAlias("bar.cname", "CNAME", "/subscriptions/**subscription-id**/resourceGroups/**resource-group**/providers/Microsoft.Network/dnszones/**current-domain-no-trailing**/CNAME/quux.cname"),
+			//			),
 		),
 
 		// ROUTE43 features

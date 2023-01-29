@@ -361,7 +361,7 @@ func genmsgs(existing, desired []targetConfig) []string {
 	cl := diffTargets(existing, desired)
 
 	x := justMsgs(cl)
-	fmt.Printf("DEBUG: genmsgs result=%v\n", x)
+	//fmt.Printf("DEBUG: genmsgs result=%v\n", x)
 	return x
 }
 
