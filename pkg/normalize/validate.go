@@ -44,7 +44,7 @@ func checkTarget(target string) error {
 	}
 	// If it contains a ".", it must end in a ".".
 	if strings.ContainsRune(target, '.') && target[len(target)-1] != '.' {
-		return fmt.Errorf("target (%v) must end with a (.) [https://stackexchange.github.io/dnscontrol/why-the-dot]", target)
+		return fmt.Errorf("target (%v) must end with a (.) [https://docs.dnscontrol.org/language-reference/why-the-dot]", target)
 	}
 	return nil
 }

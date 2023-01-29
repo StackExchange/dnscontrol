@@ -290,7 +290,7 @@ func InitializeProviders(cfg *models.DNSConfig, providerConfigs map[string]map[s
 const providerTypeFieldName = "TYPE"
 
 // url is the documentation URL to list in the warnings related to missing provider type ids.
-const url = "https://stackexchange.github.io/dnscontrol/creds-json"
+const url = "https://docs.dnscontrol.org/commands/creds-json"
 
 // populateProviderTypes scans a DNSConfig for blank provider types and fills them in based on providerConfigs.
 // That is, if the provider type is "-" or "", we take that as an flag
