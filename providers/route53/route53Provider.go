@@ -481,7 +481,7 @@ func (r *route53Provider) GetDomainCorrections(dc *models.DomainConfig) ([]*mode
 	for _, inst := range instructions {
 		instNameFQDN := inst.Key.NameFQDN
 		instType := inst.Key.Type
-		var r53rec *r53.ChangeResourceRecordSetsInput
+		var chg r53Types.Change
 
 		switch inst.Type {
 
@@ -515,33 +515,35 @@ func (r *route53Provider) GetDomainCorrections(dc *models.DomainConfig) ([]*mode
 					rrset.TTL = &i
 				}
 			}
-			chg := r53Types.Change{
+			chg = r53Types.Change{
 				Action:            r53Types.ChangeActionUpsert,
 				ResourceRecordSet: rrset,
 			}
-			r53rec = &r53.ChangeResourceRecordSetsInput{
-				ChangeBatch: &r53Types.ChangeBatch{
-					Comment: aws.String("Managed by DNSControl"),
-					Changes: []r53Types.Change{chg},
-				},
-			}
 
 		case diff2.DELETE:
-
 			rrset := inst.Old[0].Original.(r53Types.ResourceRecordSet) // The native record as downloaded via the API
-			chg := r53Types.Change{
+			chg = r53Types.Change{
 				Action:            r53Types.ChangeActionDelete,
 				ResourceRecordSet: &rrset,
-			}
-			r53rec = &r53.ChangeResourceRecordSetsInput{
-				ChangeBatch: &r53Types.ChangeBatch{
-					Comment: aws.String("Managed by DNSControl"),
-					Changes: []r53Types.Change{chg},
-				},
 			}
 
 		}
 
+		// Use the change to create a request.
+		r53rec := &r53.ChangeResourceRecordSetsInput{
+			ChangeBatch: &r53Types.ChangeBatch{
+				Comment: aws.String("Managed by DNSControl"),
+				Changes: []r53Types.Change{chg},
+			},
+		}
+		// NB(tlim): Easy optimization: Batch the requests.  If you notice the
+		// Changes: field is populated by a single chg.  Instead, we can store a
+		// list of changes.  Sadly there are rules and limits about how big a
+		// batch can be.  The code for checking those limits is in the "Batcher"
+		// code used by the old pkg/diff implementation. It might be easier to
+		// just batch up every 10 chg into a request. Its likely to stay below the limit.
+
+		// Use the request to make a correction.
 		corrections = append(corrections,
 			&models.Correction{
 				Msg: inst.MsgsJoined,
