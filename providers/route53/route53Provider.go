@@ -577,6 +577,9 @@ func nativeToRecords(set r53Types.ResourceRecordSet, origin string) ([]*models.R
 		}
 		rc.SetLabelFromFQDN(unescape(set.Name), origin)
 		rc.SetTarget(aws.ToString(set.AliasTarget.DNSName))
+		// rc.Original stores a pointer to the original set for use by
+		// r53Types.ChangeActionDelete and anything else that needs the
+		// native record verbatim.
 		rc.Original = set
 		results = append(results, rc)
 	} else if set.TrafficPolicyInstanceId != nil {

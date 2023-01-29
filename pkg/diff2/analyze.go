@@ -360,9 +360,7 @@ func diffTargets(existing, desired []targetConfig) ChangeList {
 func genmsgs(existing, desired []targetConfig) []string {
 	cl := diffTargets(existing, desired)
 
-	x := justMsgs(cl)
-	//fmt.Printf("DEBUG: genmsgs result=%v\n", x)
-	return x
+	return justMsgs(cl)
 }
 
 func justMsgs(cl ChangeList) []string {
