@@ -421,7 +421,7 @@ func (c *cloudflareProvider) preprocessConfig(dc *models.DomainConfig) error {
 			rec.TTL = 1
 		}
 		if rec.TTL != 1 && rec.TTL < 60 {
-			rec.TTL = 60 
+			rec.TTL = 60
 		}
 
 		if rec.Type != "A" && rec.Type != "CNAME" && rec.Type != "AAAA" && rec.Type != "ALIAS" {
