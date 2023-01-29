@@ -496,11 +496,9 @@ func tlsa(name string, usage, selector, matchingtype uint8, target string) *mode
 	return r
 }
 
-
 func urlfwd(name, target string) *models.RecordConfig {
 	return makeRec(name, target, "URLFWD")
 }
-
 
 func ignoreName(name string) *models.RecordConfig {
 	r := &models.RecordConfig{
