@@ -346,8 +346,8 @@ func (r *route53Provider) GetDomainCorrections(dc *models.DomainConfig) ([]*mode
 		changes := []r53Types.Change{}
 		changeDesc := []string{}
 
-		for _, k := range updateOrder {
-			recs := updates[k]
+		for _, currentKey := range updateOrder {
+			recs := updates[currentKey]
 			// If there are no records in our desired state for a key, this
 			// indicates we should delete all records at that key.
 			if len(recs) == 0 {
@@ -357,16 +357,16 @@ func (r *route53Provider) GetDomainCorrections(dc *models.DomainConfig) ([]*mode
 					found bool
 				)
 				// Find the original resource set:
-				for _, r := range r.originalRecords {
-					if unescape(r.Name) == k.NameFQDN && (string(r.Type) == k.Type || k.Type == "R53_ALIAS_"+string(r.Type)) {
-						rrset = r
+				for _, orec := range r.originalRecords {
+					if unescape(orec.Name) == currentKey.NameFQDN && (string(orec.Type) == currentKey.Type || currentKey.Type == "R53_ALIAS_"+string(orec.Type)) {
+						rrset = orec
 						found = true
 						break
 					}
 				}
 				if !found {
 					// This should not happen.
-					return nil, fmt.Errorf("no record set found to delete. Name: '%s'. Type: '%s'", k.NameFQDN, k.Type)
+					return nil, fmt.Errorf("no record set found to delete. Name: '%s'. Type: '%s'", currentKey.NameFQDN, currentKey.Type)
 				}
 				// Assemble the change and add it to the list:
 				chg := r53Types.Change{
@@ -374,41 +374,41 @@ func (r *route53Provider) GetDomainCorrections(dc *models.DomainConfig) ([]*mode
 					ResourceRecordSet: &rrset,
 				}
 				dels = append(dels, chg)
-				delDesc = append(delDesc, strings.Join(namesToUpdate[k], "\n"))
+				delDesc = append(delDesc, strings.Join(namesToUpdate[currentKey], "\n"))
 			} else {
 				// If it isn't a delete, it must be either a change or create. In
 				// either case, we build a new record set from the desired state and
 				// UPSERT it.
 
-				if strings.HasPrefix(k.Type, "R53_ALIAS_") {
+				if strings.HasPrefix(currentKey.Type, "R53_ALIAS_") {
 					// Each R53_ALIAS_* requires an individual change.
 					if len(recs) != 1 {
 						log.Fatal("Only one R53_ALIAS_ permitted on a label")
 					}
-					for _, r := range recs {
-						rrset := aliasToRRSet(zone, r)
-						rrset.Name = aws.String(k.NameFQDN)
+					for _, rec := range recs {
+						rrset := aliasToRRSet(zone, rec)
+						rrset.Name = aws.String(currentKey.NameFQDN)
 						// Assemble the change and add it to the list:
 						chg := r53Types.Change{
 							Action:            r53Types.ChangeActionUpsert,
 							ResourceRecordSet: rrset,
 						}
 						changes = append(changes, chg)
-						changeDesc = append(changeDesc, strings.Join(namesToUpdate[k], "\n"))
+						changeDesc = append(changeDesc, strings.Join(namesToUpdate[currentKey], "\n"))
 					}
 				} else {
 					// All other keys combine their updates into one rrset:
 					rrset := &r53Types.ResourceRecordSet{
-						Name: aws.String(k.NameFQDN),
-						Type: r53Types.RRType(k.Type),
+						Name: aws.String(currentKey.NameFQDN),
+						Type: r53Types.RRType(currentKey.Type),
 					}
-					for _, r := range recs {
-						val := r.GetTargetCombined()
+					for _, rec := range recs {
+						val := rec.GetTargetCombined()
 						rr := r53Types.ResourceRecord{
 							Value: aws.String(val),
 						}
 						rrset.ResourceRecords = append(rrset.ResourceRecords, rr)
-						i := int64(r.TTL)
+						i := int64(rec.TTL)
 						rrset.TTL = &i // TODO: make sure that ttls are consistent within a set
 					}
 					// Assemble the change and add it to the list:
@@ -417,7 +417,7 @@ func (r *route53Provider) GetDomainCorrections(dc *models.DomainConfig) ([]*mode
 						ResourceRecordSet: rrset,
 					}
 					changes = append(changes, chg)
-					changeDesc = append(changeDesc, strings.Join(namesToUpdate[k], "\n"))
+					changeDesc = append(changeDesc, strings.Join(namesToUpdate[currentKey], "\n"))
 				}
 
 			}
