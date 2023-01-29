@@ -395,8 +395,6 @@ func (r *route53Provider) GetDomainCorrections(dc *models.DomainConfig) ([]*mode
 						}
 						changes = append(changes, chg)
 						changeDesc = append(changeDesc, strings.Join(namesToUpdate[currentKey], "\n"))
-						fmt.Printf("DEBUG: chg=%+v\n", chg)
-						fmt.Printf("DEBUG: ResourceRecordSet=%+v\n", chg.ResourceRecordSet)
 					}
 				} else {
 					// All other keys combine their updates into one rrset:
@@ -479,6 +477,7 @@ func (r *route53Provider) GetDomainCorrections(dc *models.DomainConfig) ([]*mode
 	if err != nil {
 		return nil, err
 	}
+	instructions = reorderInstructions(instructions)
 	for _, inst := range instructions {
 		nameFQDN := inst.Key.NameFQDN
 		kType := inst.Key.Type
@@ -491,10 +490,7 @@ func (r *route53Provider) GetDomainCorrections(dc *models.DomainConfig) ([]*mode
 		case diff2.CHANGE:
 			// To CREATE/DELETE, build a new record set from the desired state and UPSERT it.
 
-			//rrset, _ := r.findOriginal(nameFQDN, kType)
 			var chg r53Types.Change
-			fmt.Printf("DEBUG: ktype=%v\n", kType)
-			//if strings.HasPrefix(kType, "R53_ALIAS_") {
 			if kType == "R53_ALIAS" {
 				// Each R53_ALIAS_* is changed one at a time.
 				if len(inst.New) != 1 {
@@ -503,15 +499,11 @@ func (r *route53Provider) GetDomainCorrections(dc *models.DomainConfig) ([]*mode
 				rec := inst.New[0]
 				rrset := aliasToRRSet(zone, rec)
 				rrset.Name = aws.String(nameFQDN)
-				//rrset.Type = r53Types.RRType(kType)
 				// Assemble the change and add it to the list:
 				chg = r53Types.Change{
 					Action:            r53Types.ChangeActionUpsert,
 					ResourceRecordSet: rrset,
 				}
-				fmt.Printf("DEBUG: chg=%+v\n", chg)
-				fmt.Printf("DEBUG: ResourceRecordSet=%+v\n", chg.ResourceRecordSet)
-
 			} else {
 				// All other keys combine their updates into one rrset:
 				rrset := &r53Types.ResourceRecordSet{
@@ -560,13 +552,6 @@ func (r *route53Provider) GetDomainCorrections(dc *models.DomainConfig) ([]*mode
 
 		case diff2.DELETE:
 
-			// To delete, we submit the original resource set we got from r53.
-			//rrset, err := r.findOriginal(nameFQDN, kType)
-			//if err != nil {
-			//	return nil, err
-			//}
-			// FIXME(tlim) findOriginal could be... rec.Original ?
-			// Assemble the change and add it to the list:
 			rrset := inst.Old[0].Original.(r53Types.ResourceRecordSet)
 			chg := r53Types.Change{
 				Action:            r53Types.ChangeActionDelete,
@@ -597,10 +582,6 @@ func (r *route53Provider) GetDomainCorrections(dc *models.DomainConfig) ([]*mode
 
 	}
 
-	//fmt.Printf("DEBUG: CORRECTIONS COMPLETE!\nCORRECTIONS=%v\n", corrections[:])
-	//for i, j := range corrections {
-	//	fmt.Printf(" [%d] = %+v\n", i, *j)
-	//}
 	return corrections, nil
 }
 
