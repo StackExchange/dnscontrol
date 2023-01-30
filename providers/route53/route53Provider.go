@@ -471,6 +471,9 @@ func (r *route53Provider) GetDomainCorrections(dc *models.DomainConfig) ([]*mode
 
 	}
 
+	changes := []r53Types.Change{}
+	changeDesc := []string{}
+
 	// Amazon Route53 is a "ByRecordSet" API.
 	// At each label:rtype pair, we either delete all records or UPSERT the desired records.
 	instructions, err := diff2.ByRecordSet(existingRecords, dc, nil)
@@ -526,42 +529,46 @@ func (r *route53Provider) GetDomainCorrections(dc *models.DomainConfig) ([]*mode
 				Action:            r53Types.ChangeActionDelete,
 				ResourceRecordSet: &rrset,
 			}
-
 		}
 
-		// Use the change to create a request.
-		r53rec := &r53.ChangeResourceRecordSetsInput{
-			ChangeBatch: &r53Types.ChangeBatch{
-				Comment: aws.String("Managed by DNSControl"),
-				Changes: []r53Types.Change{chg},
-			},
-		}
-		// NB(tlim): Easy optimization: Batch the requests.  If you notice the
-		// Changes: field is populated by a single chg.  Instead, we can store a
-		// list of changes.  Sadly there are rules and limits about how big a
-		// batch can be.  The code for checking those limits is in the "Batcher"
-		// code used by the old pkg/diff implementation. It might be easier to
-		// just batch up every 10 chg into a request. Its likely to stay below the limit.
+		changes = append(changes, chg)
+		changeDesc = append(changeDesc, inst.Msgs...)
 
-		// Use the request to make a correction.
+	}
+
+	addCorrection := func(msg string, req *r53.ChangeResourceRecordSetsInput) {
 		corrections = append(corrections,
 			&models.Correction{
-				Msg: inst.MsgsJoined,
+				Msg: msg,
 				F: func() error {
 					var err error
-					r53rec.HostedZoneId = zone.Id
+					req.HostedZoneId = zone.Id
 					withRetry(func() error {
-						_, err = r.client.ChangeResourceRecordSets(context.Background(), r53rec)
+						_, err = r.client.ChangeResourceRecordSets(context.Background(), req)
 						return err
 					})
 					return err
 				},
-			},
-		)
+			})
 
 	}
 
+	batcher := newChangeBatcher(changes)
+	for batcher.Next() {
+		start, end := batcher.Batch()
+		batch := changes[start:end]
+		descBatchStr := strings.Join(changeDesc[start:end], "\n")
+		req := &r53.ChangeResourceRecordSetsInput{
+			ChangeBatch: &r53Types.ChangeBatch{Changes: batch},
+		}
+		addCorrection(descBatchStr, req)
+	}
+	if err := batcher.Err(); err != nil {
+		return nil, err
+	}
+
 	return corrections, nil
+
 }
 
 // reorderInstructions returns changes reordered to comply with AWS's requirements:

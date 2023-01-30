@@ -910,7 +910,7 @@ func makeTests(t *testing.T) []*TestGroup {
 				"MSDNS",         //  No paging done. No need to test.
 				"NAMEDOTCOM",    // Their API is so damn slow. We'll add it back as needed.
 				"NS1",           // Free acct only allows 50 records, therefore we skip
-				"ROUTE53",       // Doesn't page.
+				//"ROUTE53",       // Batches up changes in pages.
 			),
 			tc("99 records", manyA("rec%04d", "1.2.3.4", 99)...),
 			tc("100 records", manyA("rec%04d", "1.2.3.4", 100)...),
@@ -926,7 +926,7 @@ func makeTests(t *testing.T) []*TestGroup {
 				"GCLOUD",
 				"HEXONET",
 				//"MSDNS",     //  No paging done. No need to test.
-				//"ROUTE53",
+				"ROUTE53", // Batches up changes in pages.
 			),
 			tc("601 records", manyA("rec%04d", "1.2.3.4", 600)...),
 			tc("Update 601 records", manyA("rec%04d", "1.2.3.5", 600)...),
@@ -942,7 +942,7 @@ func makeTests(t *testing.T) []*TestGroup {
 				"HEXONET",
 				"HOSTINGDE",
 				//"MSDNS",         // No paging done. No need to test.
-				//"ROUTE53",
+				"ROUTE53", // Batches up changes in pages.
 			),
 			tc("1200 records", manyA("rec%04d", "1.2.3.4", 1200)...),
 			tc("Update 1200 records", manyA("rec%04d", "1.2.3.5", 1200)...),
