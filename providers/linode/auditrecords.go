@@ -14,5 +14,7 @@ func AuditRecords(records []*models.RecordConfig) []error {
 
 	a.Add("CAA", rejectif.CaaFlagIsNonZero) // Last verified 2022-03-25
 
+	a.Add("CAA", rejectif.CaaTargetContainsWhitespace) // Last verified 2023-01-15
+
 	return a.Audit(records)
 }
