@@ -1,6 +1,6 @@
 # Service Providers
 
-## Provider Features {#features}
+## Provider Features
 
 The table below shows various features supported, or not supported by DNSControl providers.
 This table is automatically generated from metadata supplied by the provider when they register themselves inside dnscontrol.
@@ -113,7 +113,7 @@ Providers in this category and their maintainers are:
 |`GCORE`|@xddxdd|
 |`HEDNS`|@rblenkinsopp|
 |`HETZNER`|@das7pad|
-|`HEXONET`|@papakai|
+|`HEXONET`|@KaiSchwarz-cnic|
 |`HOSTINGDE`|@membero|
 |`INTERNETBS`|@pragmaton|
 |`INWX`|@svenpeter42|
@@ -147,4 +147,6 @@ code to support this provider, we'd be glad to help in any way.
 * [Infoblox DNS](https://github.com/StackExchange/dnscontrol/issues/1077) (#1077)
 * [Joker.com](https://github.com/StackExchange/dnscontrol/issues/854) (#854)
 * [Knot DNS](https://github.com/StackExchange/dnscontrol/issues/436) (#436)
+* [RRPPRoxy](https://github.com/StackExchange/dnscontrol/issues/1656) (#1656)
 * [RcodeZero](https://github.com/StackExchange/dnscontrol/issues/884) (#884)
+* [SynergyWholesale](https://github.com/StackExchange/dnscontrol/issues/1605) (#1605)

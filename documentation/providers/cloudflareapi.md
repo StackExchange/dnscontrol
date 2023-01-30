@@ -256,13 +256,13 @@ which as far as we can tell means 300 seconds (5 minutes) with the option that
 CloudFlare may dynamically adjust the actual TTL. In the Cloudflare API,
 setting the TTL to 300 results in the TTL being set to 1.
 
-If the TTL isn't set to 1, Cloudflare has a minimum of 2 minutes.
+If the TTL isn't set to 1, Cloudflare has a minimum of 1 minutes.
 
 A TTL of 0 tells DNSControl to use the default TTL for that provider, which is 1.
 
 In summary:
 * TTL of 0, 1 and 300 are all the same ("auto TTL").
-* TTL of 2-120 are all the same as 120.
-* TTL of 121-299, and 301 to infinity are not magic.
+* TTL of 2-60 are all the same as 60.
+* TTL of 61-299, and 301 to infinity are not magic.
 
 Some of this is documented on the Cloudflare website's [Time to Live (TTL)](https://developers.cloudflare.com/dns/manage-dns-records/reference/ttl/) page.

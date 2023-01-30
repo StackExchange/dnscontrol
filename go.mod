@@ -38,7 +38,7 @@ require (
 	github.com/miekg/dns v1.1.50
 	github.com/mittwald/go-powerdns v0.6.2
 	github.com/namedotcom/go v0.0.0-20180403034216-08470befbe04
-	github.com/nrdcg/goinwx v0.8.1
+	github.com/nrdcg/goinwx v0.8.2
 	github.com/oracle/oci-go-sdk/v32 v32.0.0
 	github.com/ovh/go-ovh v1.1.0
 	github.com/philhug/opensrs-go v0.0.0-20171126225031-9dfa7433020d
@@ -129,7 +129,7 @@ require (
 	github.com/jmespath/go-jmespath v0.4.0 // indirect
 	github.com/juju/errors v0.0.0-20200330140219-3fe23663418f // indirect
 	github.com/juju/testing v0.0.0-20210324180055-18c50b0c2098 // indirect
-	github.com/kolo/xmlrpc v0.0.0-20201022064351-38db28db192b // indirect
+	github.com/kolo/xmlrpc v0.0.0-20220921171641-a4b6fa1dd06b // indirect
 	github.com/mattn/go-colorable v0.1.12 // indirect
 	github.com/mitchellh/copystructure v1.2.0 // indirect
 	github.com/mitchellh/go-homedir v1.1.0 // indirect

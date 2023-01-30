@@ -155,6 +155,7 @@ func generateFunctionTypes() (string, error) {
 	return content, nil
 }
 
+// Function is a struct the stores information about functions.
 type Function struct {
 	Name        string
 	Params      []Param
@@ -164,6 +165,7 @@ type Function struct {
 	Description string
 }
 
+// Param is a struct that stores a parameter.
 type Param struct {
 	Name string
 	Type string
@@ -193,9 +195,8 @@ func (f Function) formatParams() string {
 	}
 	if f.ObjectParam {
 		return "opts: { " + strings.Join(params, "; ") + " }"
-	} else {
-		return strings.Join(params, ", ")
 	}
+	return strings.Join(params, ", ")
 }
 
 func (f Function) docs() string {
