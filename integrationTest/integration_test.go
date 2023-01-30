@@ -484,12 +484,6 @@ func txt(name, target string) *models.RecordConfig {
 	return r
 }
 
-func txtmulti(name string, target []string) *models.RecordConfig {
-	r := makeRec(name, "", "TXT")
-	r.SetTargetTXTs(target)
-	return r
-}
-
 func caa(name string, tag string, flag uint8, target string) *models.RecordConfig {
 	r := makeRec(name, target, "CAA")
 	r.SetTargetCAA(flag, tag, target)
@@ -500,6 +494,10 @@ func tlsa(name string, usage, selector, matchingtype uint8, target string) *mode
 	r := makeRec(name, target, "TLSA")
 	r.SetTargetTLSA(usage, selector, matchingtype, target)
 	return r
+}
+
+func urlfwd(name, target string) *models.RecordConfig {
+	return makeRec(name, target, "URLFWD")
 }
 
 func ignoreName(name string) *models.RecordConfig {
@@ -699,6 +697,11 @@ func makeTests(t *testing.T) []*TestGroup {
 			tc("Change it", a("@", "1.2.3.4")),
 			tc("Add another", a("@", "1.2.3.4"), a("www", "1.2.3.4")),
 			tc("Add another(same name)", a("@", "1.2.3.4"), a("www", "1.2.3.4"), a("www", "5.6.7.8")),
+		),
+
+		testgroup("Protocol-TTL",
+			not("NETCUP"), // NETCUP does not support TTLs.
+			tc("Start", a("@", "1.2.3.4"), a("www", "1.2.3.4"), a("www", "5.6.7.8")),
 			tc("Change a ttl", ttl(a("@", "1.2.3.4"), 1000), a("www", "1.2.3.4"), a("www", "5.6.7.8")),
 			tc("Change single target from set", ttl(a("@", "1.2.3.4"), 1000), a("www", "2.2.2.2"), a("www", "5.6.7.8")),
 			tc("Change all ttls", ttl(a("@", "1.2.3.4"), 500), ttl(a("www", "2.2.2.2"), 400), ttl(a("www", "5.6.7.8"), 400)),
@@ -916,6 +919,12 @@ func makeTests(t *testing.T) []*TestGroup {
 			),
 			tc("1200 records", manyA("rec%04d", "1.2.3.4", 1200)...),
 			tc("Update 1200 records", manyA("rec%04d", "1.2.3.5", 1200)...),
+		),
+
+		testgroup("NS1_URLFWD tests",
+			only("NS1"),
+			tc("Add a urlfwd", urlfwd("urlfwd1", "/ http://example.com 302 2 0")),
+			tc("Update a urlfwd", urlfwd("urlfwd1", "/ http://example.org 301 2 0")),
 		),
 
 		//

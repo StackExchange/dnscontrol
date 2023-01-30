@@ -44,7 +44,7 @@ func checkTarget(target string) error {
 	}
 	// If it contains a ".", it must end in a ".".
 	if strings.ContainsRune(target, '.') && target[len(target)-1] != '.' {
-		return fmt.Errorf("target (%v) must end with a (.) [https://stackexchange.github.io/dnscontrol/why-the-dot]", target)
+		return fmt.Errorf("target (%v) must end with a (.) [https://docs.dnscontrol.org/language-reference/why-the-dot]", target)
 	}
 	return nil
 }
@@ -126,13 +126,13 @@ func checkLabel(label string, rType string, target, domain string, meta map[stri
 	}
 	// Don't warn for records that start with _
 	// See https://github.com/StackExchange/dnscontrol/issues/829
-	if strings.HasPrefix(label, "_") || strings.Contains(label, "._") {
+	if strings.HasPrefix(label, "_") || strings.Contains(label, "._") || strings.HasPrefix(label, "sql-") {
 		return nil
 	}
 
 	// Otherwise, warn.
 	if strings.ContainsRune(label, '_') {
-		return Warning{fmt.Errorf("label %s.%s contains an underscore", label, domain)}
+		return Warning{fmt.Errorf("label %s.%s contains \"_\" (can't be used in a URL)", label, domain)}
 	}
 
 	return nil
@@ -195,6 +195,10 @@ func checkTargets(rec *models.RecordConfig, domain string) (errs []error) {
 		check(checkTarget(target))
 		if label == "@" {
 			check(fmt.Errorf("cannot create NS record for bare domain. Use NAMESERVER instead"))
+		}
+	case "URLFWD":
+		if len(strings.Fields(target)) != 5 {
+			check(fmt.Errorf("record should follow format: \"from to redirectType pathForwardingMode queryForwarding\""))
 		}
 	case "PTR":
 		check(checkTarget(target))
@@ -331,6 +335,7 @@ func ValidateAndNormalizeConfig(config *models.DNSConfig) (errs []error) {
 		// Normalize Records.
 		models.PostProcessRecords(domain.Records)
 		for _, rec := range domain.Records {
+
 			if rec.TTL == 0 {
 				rec.TTL = models.DefaultTTL
 			}
@@ -364,6 +369,7 @@ func ValidateAndNormalizeConfig(config *models.DNSConfig) (errs []error) {
 			if err := checkLabel(rec.GetLabel(), rec.Type, rec.GetTargetField(), domain.Name, rec.Metadata); err != nil {
 				errs = append(errs, err)
 			}
+
 			if errs2 := checkTargets(rec, domain.Name); errs2 != nil {
 				errs = append(errs, errs2...)
 			}
@@ -598,9 +604,15 @@ func checkLabelHasMultipleTTLs(records []*models.RecordConfig) (errs []error) {
 	}
 
 	for label := range m {
-		// if after the uniq() pass we still have more than one ttl, it means we have multiple TTLs for that label
-		if len(uniq(m[label])) > 1 {
-			errs = append(errs, Warning{fmt.Errorf("multiple TTLs detected for: %s. This should be avoided", label)})
+		// The RFCs say that all records at a particular label should have
+		// the same TTL.  Most providers don't care, and if they do the
+		// code usually picks the lowest TTL for all of them.
+		//
+		// If after the uniq() pass we still have more than one ttl, it
+		// means we have multiple TTLs for that label.
+		u := uniq(m[label])
+		if len(u) > 1 {
+			errs = append(errs, Warning{fmt.Errorf("label with multipe TTLs: %s (%v)", label, u)})
 		}
 	}
 	return errs
