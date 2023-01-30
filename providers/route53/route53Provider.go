@@ -552,7 +552,7 @@ func (r *route53Provider) GetDomainCorrections(dc *models.DomainConfig) ([]*mode
 
 	}
 
-	// Send the changes in as few API callls as possible.
+	// Send the changes in as few API calls as possible.
 	batcher := newChangeBatcher(changes)
 	for batcher.Next() {
 		start, end := batcher.Batch()
