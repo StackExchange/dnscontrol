@@ -496,6 +496,10 @@ func tlsa(name string, usage, selector, matchingtype uint8, target string) *mode
 	return r
 }
 
+func urlfwd(name, target string) *models.RecordConfig {
+	return makeRec(name, target, "URLFWD")
+}
+
 func ignoreName(name string) *models.RecordConfig {
 	r := &models.RecordConfig{
 		Type: "IGNORE_NAME",
@@ -915,6 +919,12 @@ func makeTests(t *testing.T) []*TestGroup {
 			),
 			tc("1200 records", manyA("rec%04d", "1.2.3.4", 1200)...),
 			tc("Update 1200 records", manyA("rec%04d", "1.2.3.5", 1200)...),
+		),
+
+		testgroup("NS1_URLFWD tests",
+			only("NS1"),
+			tc("Add a urlfwd", urlfwd("urlfwd1", "/ http://example.com 302 2 0")),
+			tc("Update a urlfwd", urlfwd("urlfwd1", "/ http://example.org 301 2 0")),
 		),
 
 		//
