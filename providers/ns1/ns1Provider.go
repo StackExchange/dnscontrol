@@ -280,7 +280,7 @@ func buildRecord(recs models.Records, domain string, id string) *dns.Record {
 	}
 	for _, r := range recs {
 		if r.Type == "MX" {
-			rec.AddAnswer(&dns.Answer{Rdata: strings.Split(fmt.Sprintf("%d %v", r.MxPreference, r.GetTargetField()), " ")})
+			rec.AddAnswer(&dns.Answer{Rdata: strings.Fields(fmt.Sprintf("%d %v", r.MxPreference, r.GetTargetField()))})
 		} else if r.Type == "TXT" {
 			rec.AddAnswer(&dns.Answer{Rdata: r.TxtStrings})
 		} else if r.Type == "CAA" {
@@ -291,7 +291,7 @@ func buildRecord(recs models.Records, domain string, id string) *dns.Record {
 					r.GetTargetField(),
 				}})
 		} else if r.Type == "SRV" {
-			rec.AddAnswer(&dns.Answer{Rdata: strings.Split(fmt.Sprintf("%d %d %d %v", r.SrvPriority, r.SrvWeight, r.SrvPort, r.GetTargetField()), " ")})
+			rec.AddAnswer(&dns.Answer{Rdata: strings.Fields(fmt.Sprintf("%d %d %d %v", r.SrvPriority, r.SrvWeight, r.SrvPort, r.GetTargetField()))})
 		} else if r.Type == "NAPTR" {
 			rec.AddAnswer(&dns.Answer{Rdata: []string{
 				strconv.Itoa(int(r.NaptrOrder)),
@@ -307,7 +307,7 @@ func buildRecord(recs models.Records, domain string, id string) *dns.Record {
 				strconv.Itoa(int(r.DsDigestType)),
 				r.DsDigest}})
 		} else {
-			rec.AddAnswer(&dns.Answer{Rdata: strings.Split(r.GetTargetField(), " ")})
+			rec.AddAnswer(&dns.Answer{Rdata: strings.Fields(r.GetTargetField())})
 		}
 	}
 	return rec

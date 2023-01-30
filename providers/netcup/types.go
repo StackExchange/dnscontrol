@@ -71,6 +71,17 @@ type responseLogin struct {
 	SessionID string `json:"apisessionid"`
 }
 
+// addTailingDot adds a dot if it's missing from what the netcup api has returned to us.
+func addTailingDot(destination string) string {
+	if destination == "@" || len(destination) == 0 {
+		return destination
+	}
+	if destination[len(destination)-1:] != "." {
+		return destination + "."
+	}
+	return destination
+}
+
 func toRecordConfig(domain string, r *record) *models.RecordConfig {
 	priority, _ := strconv.ParseUint(r.Priority, 10, 16)
 
@@ -89,7 +100,7 @@ func toRecordConfig(domain string, r *record) *models.RecordConfig {
 	case "TXT":
 		_ = rc.SetTargetTXT(r.Destination)
 	case "NS", "ALIAS", "CNAME", "MX":
-		_ = rc.SetTarget(dnsutil.AddOrigin(r.Destination+".", domain))
+		_ = rc.SetTarget(dnsutil.AddOrigin(addTailingDot(r.Destination), domain))
 	case "SRV":
 		parts := strings.Split(r.Destination, " ")
 		priority, _ := strconv.ParseUint(parts[0], 10, 16)
@@ -108,7 +119,6 @@ func toRecordConfig(domain string, r *record) *models.RecordConfig {
 	default:
 		_ = rc.SetTarget(r.Destination)
 	}
-
 	return rc
 }
 

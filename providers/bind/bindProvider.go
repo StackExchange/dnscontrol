@@ -75,7 +75,7 @@ func initBind(config map[string]string, providermeta json.RawMessage) (providers
 		}
 		// If it contains a ".", it must end in a ".".
 		if strings.ContainsRune(ns, '.') && ns[len(ns)-1] != '.' {
-			return nil, fmt.Errorf("default_ns (%v) must end with a (.) [https://stackexchange.github.io/dnscontrol/why-the-dot]", ns)
+			return nil, fmt.Errorf("default_ns (%v) must end with a (.) [https://docs.dnscontrol.org/language-reference/why-the-dot]", ns)
 		}
 		// This is one of the (increasingly rare) cases where we store a
 		// name without the trailing dot to indicate a FQDN.

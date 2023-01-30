@@ -217,7 +217,7 @@ func (c *cloudflareProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*m
 	//txtutil.SplitSingleLongTxt(dc.Records) // Autosplit long TXT records
 	// Don't split.
 	// Cloudflare's API only supports one TXT string of any non-zero length. No
-	// multiple strings (TXTMulti).
+	// multiple strings.
 	// When serving the DNS record, it splits strings >255 octets into
 	// individual segments of 255 each. However that is hidden from the API.
 	// Therefore, whether the string is 1 octet or thousands, just store it as
@@ -420,8 +420,8 @@ func (c *cloudflareProvider) preprocessConfig(dc *models.DomainConfig) error {
 		if rec.TTL == 0 || rec.TTL == 300 {
 			rec.TTL = 1
 		}
-		if rec.TTL != 1 && rec.TTL < 120 {
-			rec.TTL = 120
+		if rec.TTL != 1 && rec.TTL < 60 {
+			rec.TTL = 60
 		}
 
 		if rec.Type != "A" && rec.Type != "CNAME" && rec.Type != "AAAA" && rec.Type != "ALIAS" {

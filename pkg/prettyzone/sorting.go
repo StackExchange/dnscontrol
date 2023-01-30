@@ -105,6 +105,8 @@ func (z *ZoneGenData) Less(i, j int) bool {
 	return a.String() < b.String()
 }
 
+// LabelLess provides a "Less" function for two labels as needed for sorting. It
+// sorts labels in prefix order, to make output pretty.
 func LabelLess(a, b string) bool {
 	// Compare two zone labels for the purpose of sorting the RRs in a Zone.
 
