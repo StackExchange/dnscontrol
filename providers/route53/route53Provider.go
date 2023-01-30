@@ -533,7 +533,6 @@ func (r *route53Provider) GetDomainCorrections(dc *models.DomainConfig) ([]*mode
 
 		changes = append(changes, chg)
 		changeDesc = append(changeDesc, inst.Msgs...)
-
 	}
 
 	addCorrection := func(msg string, req *r53.ChangeResourceRecordSetsInput) {
@@ -553,6 +552,7 @@ func (r *route53Provider) GetDomainCorrections(dc *models.DomainConfig) ([]*mode
 
 	}
 
+	// Send the changes in as few API callls as possible.
 	batcher := newChangeBatcher(changes)
 	for batcher.Next() {
 		start, end := batcher.Batch()
