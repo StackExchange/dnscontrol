@@ -25,9 +25,9 @@ For example these two statements are equivalent:
 
 ```javascript
 DOMAIN_ELSEWHERE("example.com", REG_NAMEDOTCOM, ["ns1.foo.com", "ns2.foo.com"]);
+```
 
-// ...is equivalent to...
-
+```javascript
 D("example.com", REG_NAMEDOTCOM,
     NO_PURGE,
     NAMESERVER("ns1.foo.com"),

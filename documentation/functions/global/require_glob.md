@@ -30,17 +30,17 @@ require_glob("./domains/", false);
 One more important thing to note: `require_glob()` is as smart as `require()` is. It loads files always relative to the JavaScript
 file where it's being executed in. Let's go with an example, as it describes it better:
 
-`dnscontrol.js`:
-
+{% code title="dnsconfig.js" %}
 ```javascript
 require("domains/index.js");
 ```
+{% endcode %}
 
-`domains/index.js`:
-
+{% code title="domains/index.js" %}
 ```javascript
 require_glob("./user1/");
 ```
+{% endcode %}
 
 This will now load files being present underneath `./domains/user1/` and **NOT** at below `./domains/`, as `require_glob()`
 is called in the subfolder `domains/`.
