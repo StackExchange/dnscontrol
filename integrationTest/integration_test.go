@@ -692,25 +692,51 @@ func makeTests(t *testing.T) []*TestGroup {
 		// These are tested on "@" and "www".
 		// When these tests pass, you've implemented the basics correctly.
 
-		testgroup("Protocol-Plain",
-			tc("Create an A record", a("@", "1.1.1.1")),
-			tc("Change it", a("@", "1.2.3.4")),
-			tc("Add another", a("@", "1.2.3.4"), a("www", "1.2.3.4")),
-			tc("Add another(same name)", a("@", "1.2.3.4"), a("www", "1.2.3.4"), a("www", "5.6.7.8")),
+		testgroup("A",
+			tc("Create A", a("testa", "1.1.1.1")),
+			tc("Change A target", a("testa", "1.2.3.4")),
 		),
 
-		testgroup("Protocol-TTL",
+		testgroup("MX",
+			tc("Create MX", mx("testmx", 5, "foo.com.")),
+			tc("Change MX target", mx("testmx", 5, "bar.com.")),
+			tc("Change MX p", mx("testmx", 100, "bar.com.")),
+		),
+
+		testgroup("CNAME",
+			tc("Create a CNAME", cname("testcname", "www.google.com.")),
+			tc("Change CNAME target", cname("testcname", "www.yahoo.com.")),
+		),
+
+		testgroup("ManyAtOne",
+			tc("CreateManyAtLabel", a("www", "1.1.1.1"), a("www", "2.2.2.2"), a("www", "3.3.3.3")),
+			clear(),
+			tc("Create an A record", a("www", "1.1.1.1")),
+			tc("Add at label1", a("www", "1.1.1.1"), a("www", "2.2.2.2")),
+			tc("Add at label2", a("www", "1.1.1.1"), a("www", "2.2.2.2"), a("www", "3.3.3.3")),
+		),
+
+		testgroup("manyAtOneTypes",
+			tc("CreateManyTypesAtLabel", a("www", "1.1.1.1"), mx("testmx", 5, "foo.com."), mx("testmx", 100, "bar.com.")),
+			clear(),
+			tc("Create an A record", a("www", "1.1.1.1")),
+			tc("Add Type At Label", a("www", "1.1.1.1"), mx("testmx", 5, "foo.com.")),
+			tc("Add Type At Label", a("www", "1.1.1.1"), mx("testmx", 5, "foo.com."), mx("testmx", 100, "bar.com.")),
+		),
+
+		// Make sure changes at the apex (the bare domain) work.
+		testgroup("Apex",
+			tc("Create A", a("@", "1.1.1.1")),
+			tc("Change A target", a("@", "1.2.3.4")),
+		),
+
+		// Exercise TTL operations.
+		testgroup("TTL",
 			not("NETCUP"), // NETCUP does not support TTLs.
 			tc("Start", a("@", "1.2.3.4"), a("www", "1.2.3.4"), a("www", "5.6.7.8")),
 			tc("Change a ttl", ttl(a("@", "1.2.3.4"), 1000), a("www", "1.2.3.4"), a("www", "5.6.7.8")),
 			tc("Change single target from set", ttl(a("@", "1.2.3.4"), 1000), a("www", "2.2.2.2"), a("www", "5.6.7.8")),
 			tc("Change all ttls", ttl(a("@", "1.2.3.4"), 500), ttl(a("www", "2.2.2.2"), 400), ttl(a("www", "5.6.7.8"), 400)),
-			tc("Delete one", ttl(a("@", "1.2.3.4"), 500), ttl(a("www", "5.6.7.8"), 400)),
-		),
-
-		testgroup("add to existing label",
-			tc("Setup", ttl(a("www", "5.6.7.8"), 400)),
-			tc("Add at same label", ttl(a("www", "5.6.7.8"), 400), ttl(a("www", "1.2.3.4"), 400)),
 		),
 
 		// This is a strange one.  It adds a new record to an existing
@@ -884,6 +910,7 @@ func makeTests(t *testing.T) []*TestGroup {
 				"MSDNS",         //  No paging done. No need to test.
 				"NAMEDOTCOM",    // Their API is so damn slow. We'll add it back as needed.
 				"NS1",           // Free acct only allows 50 records, therefore we skip
+				//"ROUTE53",       // Batches up changes in pages.
 			),
 			tc("99 records", manyA("rec%04d", "1.2.3.4", 99)...),
 			tc("100 records", manyA("rec%04d", "1.2.3.4", 100)...),
@@ -899,7 +926,7 @@ func makeTests(t *testing.T) []*TestGroup {
 				"GCLOUD",
 				"HEXONET",
 				//"MSDNS",     //  No paging done. No need to test.
-				"ROUTE53",
+				"ROUTE53", // Batches up changes in pages.
 			),
 			tc("601 records", manyA("rec%04d", "1.2.3.4", 600)...),
 			tc("Update 601 records", manyA("rec%04d", "1.2.3.5", 600)...),
@@ -915,7 +942,7 @@ func makeTests(t *testing.T) []*TestGroup {
 				"HEXONET",
 				"HOSTINGDE",
 				//"MSDNS",         // No paging done. No need to test.
-				"ROUTE53",
+				"ROUTE53", // Batches up changes in pages.
 			),
 			tc("1200 records", manyA("rec%04d", "1.2.3.4", 1200)...),
 			tc("Update 1200 records", manyA("rec%04d", "1.2.3.5", 1200)...),
@@ -1190,12 +1217,10 @@ func makeTests(t *testing.T) []*TestGroup {
 			tc("remove cnames",
 				r53alias("dev-system", "CNAME", "dev-system19.**current-domain**"),
 			),
-			clear(),
-			tc("create cname+alias in one step",
-				cname("dev-system18", "ec2-54-91-33-155.compute-1.amazonaws.com."),
-				r53alias("dev-system", "CNAME", "dev-system18.**current-domain**"),
-			),
-			clear(),
+		),
+
+		testgroup("R53_ALIAS_CNAME",
+			requires(providers.CanUseRoute53Alias),
 			tc("create alias+cname in one step",
 				r53alias("dev-system", "CNAME", "dev-system18.**current-domain**"),
 				cname("dev-system18", "ec2-54-91-33-155.compute-1.amazonaws.com."),
