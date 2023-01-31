@@ -44,6 +44,10 @@ func (c *cloudflareProvider) getRecordsForDomain(id string, domain string) ([]*m
 	return records, nil
 }
 
+func (c *cloudflareProvider) deleteDNSRecord(rec cloudflare.DNSRecord, domainID string) error {
+	return c.cfClient.DeleteDNSRecord(context.Background(), domainID, rec.ID)
+}
+
 // create a correction to delete a record
 func (c *cloudflareProvider) deleteRec(rec cloudflare.DNSRecord, domainID string) *models.Correction {
 	return &models.Correction{
@@ -109,6 +113,11 @@ func cfSshfpData(rec *models.RecordConfig) *cfRecData {
 }
 
 func (c *cloudflareProvider) createRec(rec *models.RecordConfig, domainID string) []*models.Correction {
+	return c.createRecWithMsg(rec, domainID, "")
+}
+
+func (c *cloudflareProvider) createRecWithMsg(rec *models.RecordConfig, domainID string, msg string) []*models.Correction {
+
 	var id string
 	content := rec.GetTargetField()
 	if rec.Metadata[metaOriginalIP] != "" {
@@ -124,8 +133,11 @@ func (c *cloudflareProvider) createRec(rec *models.RecordConfig, domainID string
 	if rec.Type == "DS" {
 		content = fmt.Sprintf("%d %d %d %s", rec.DsKeyTag, rec.DsAlgorithm, rec.DsDigestType, rec.DsDigest)
 	}
+	if msg == "" {
+		msg = fmt.Sprintf("CREATE record: %s %s %d%s %s", rec.GetLabel(), rec.Type, rec.TTL, prio, content)
+	}
 	arr := []*models.Correction{{
-		Msg: fmt.Sprintf("CREATE record: %s %s %d%s %s", rec.GetLabel(), rec.Type, rec.TTL, prio, content),
+		Msg: msg,
 		F: func() error {
 			cf := cloudflare.DNSRecord{
 				Name:     rec.GetLabel(),
