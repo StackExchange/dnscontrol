@@ -14,10 +14,11 @@ import (
 const endpoint = "%s/api/%s/v1/json/%s"
 
 type hostingdeProvider struct {
-	authToken      string
-	ownerAccountID string
-	baseURL        string
-	nameservers    []string
+	authToken       string
+	ownerAccountID  string
+	filterAccountId string
+	baseURL         string
+	nameservers     []string
 }
 
 func (hp *hostingdeProvider) getDomainConfig(domain string) (*domainConfig, error) {
@@ -271,6 +272,12 @@ func (hp *hostingdeProvider) get(service, method string, params request) (*respo
 func (hp *hostingdeProvider) getAllZoneConfigs() ([]*zoneConfig, error) {
 	params := request{
 		Limit: 10000,
+	}
+	if hp.filterAccountId != "" {
+		params.Filter = &filter{
+			Field: "accountId",
+			Value: hp.filterAccountId,
+		}
 	}
 
 	resp, err := hp.get("dns", "zoneConfigsFind", params)
