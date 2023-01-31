@@ -3,6 +3,6 @@ Before you submit a pull request, please make sure you've run the following comm
 
 go fmt ./...
 go generate
-go tidy
+go mod tidy
 !-->
 
