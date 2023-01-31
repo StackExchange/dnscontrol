@@ -71,6 +71,11 @@ type zoneConfig struct {
 	ZoneTransferWhitelist []string `json:"zoneTransferWhitelist"`
 }
 
+type zone struct {
+	ZoneConfig zoneConfig `json:"zoneConfig"`
+	Records    []record   `json:"records"`
+}
+
 type record struct {
 	ID       string `json:"id"`
 	Name     string `json:"name"`
