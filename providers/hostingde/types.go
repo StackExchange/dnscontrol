@@ -54,21 +54,23 @@ type domainConfig struct {
 }
 
 type zoneConfig struct {
-	ID           string `json:"id"`
-	DNSSECMode   string `json:"dnsSecMode"`
-	EmailAddress string `json:"emailAddress,omitempty"`
-	MasterIP     string `json:"masterIp"`
-	Name         string `json:"name"` // Not required per docs, but required IRL
-	NameUnicode  string `json:"nameUnicode"`
-	// SOAValues    struct {
-	// 	Refresh     uint32 `json:"refresh"`
-	// 	Retry       uint32 `json:"retry"`
-	// 	Expire      uint32 `json:"expire"`
-	// 	TTL         uint32 `json:"ttl"`
-	// 	NegativeTTL uint32 `json:"negativeTtl"`
-	// } `json:"soaValues,omitempty"`
-	Type                  string   `json:"type"`
-	ZoneTransferWhitelist []string `json:"zoneTransferWhitelist"`
+	ID                    string    `json:"id"`
+	DNSSECMode            string    `json:"dnsSecMode"`
+	EmailAddress          string    `json:"emailAddress,omitempty"`
+	MasterIP              string    `json:"masterIp"`
+	Name                  string    `json:"name"` // Not required per docs, but required IRL
+	NameUnicode           string    `json:"nameUnicode"`
+	SOAValues             soaValues `json:"soaValues,omitempty"`
+	Type                  string    `json:"type"`
+	ZoneTransferWhitelist []string  `json:"zoneTransferWhitelist"`
+}
+
+type soaValues struct {
+	Refresh     uint32 `json:"refresh"`
+	Retry       uint32 `json:"retry"`
+	Expire      uint32 `json:"expire"`
+	NegativeTTL uint32 `json:"negativeTtl"`
+	TTL         uint32 `json:"ttl"`
 }
 
 type zone struct {

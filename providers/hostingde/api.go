@@ -18,6 +18,7 @@ type hostingdeProvider struct {
 	ownerAccountID string
 	baseURL        string
 	nameservers    []string
+	defaultSoa     soaValues
 }
 
 func (hp *hostingdeProvider) getDomainConfig(domain string) (*domainConfig, error) {
