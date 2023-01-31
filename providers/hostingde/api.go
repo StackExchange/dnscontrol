@@ -22,7 +22,7 @@ type hostingdeProvider struct {
 
 func (hp *hostingdeProvider) getDomainConfig(domain string) (*domainConfig, error) {
 	params := request{
-		Filter: filter{
+		Filter: &filter{
 			Field: "domainName",
 			Value: domain,
 		},
@@ -135,7 +135,7 @@ func (hp *hostingdeProvider) getRecords(domain string) ([]*record, error) {
 	page := uint(1)
 	for {
 		params := request{
-			Filter: filter{
+			Filter: &filter{
 				Field: "ZoneConfigId",
 				Value: zc.ID,
 			},
@@ -210,7 +210,7 @@ func (hp *hostingdeProvider) getZoneConfig(domain string) (*zoneConfig, error) {
 	}
 
 	params := request{
-		Filter: filter{
+		Filter: &filter{
 			Field: "ZoneName",
 			Value: t,
 		},
@@ -266,4 +266,22 @@ func (hp *hostingdeProvider) get(service, method string, params request) (*respo
 	}
 
 	return respData.Response, nil
+}
+
+func (hp *hostingdeProvider) getAllZoneConfigs() ([]*zoneConfig, error) {
+	params := request{
+		Limit: 10000,
+	}
+
+	resp, err := hp.get("dns", "zoneConfigsFind", params)
+	if err != nil {
+		return nil, fmt.Errorf("could not get zones: %w", err)
+	}
+
+	zc := []*zoneConfig{}
+	if err := json.Unmarshal(resp.Data, &zc); err != nil {
+		return nil, fmt.Errorf("could not parse response: %w", err)
+	}
+
+	return zc, nil
 }
