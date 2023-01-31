@@ -46,7 +46,7 @@ type providerMeta struct {
 }
 
 func newHostingde(m map[string]string, providermeta json.RawMessage) (*hostingdeProvider, error) {
-	authToken, ownerAccountID, baseURL := m["authToken"], m["ownerAccountId"], m["baseURL"]
+	authToken, ownerAccountID, filterAccountId, baseURL := m["authToken"], m["ownerAccountId"], m["filterAccountId"], m["baseURL"]
 
 	if authToken == "" {
 		return nil, fmt.Errorf("hosting.de: authtoken must be provided")
@@ -58,10 +58,11 @@ func newHostingde(m map[string]string, providermeta json.RawMessage) (*hostingde
 	baseURL = strings.TrimSuffix(baseURL, "/")
 
 	hp := &hostingdeProvider{
-		authToken:      authToken,
-		ownerAccountID: ownerAccountID,
-		baseURL:        baseURL,
-		nameservers:    defaultNameservers,
+		authToken:       authToken,
+		ownerAccountID:  ownerAccountID,
+		filterAccountId: filterAccountId,
+		baseURL:         baseURL,
+		nameservers:     defaultNameservers,
 	}
 
 	if len(providermeta) > 0 {
