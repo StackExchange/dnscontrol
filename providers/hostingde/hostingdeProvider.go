@@ -125,11 +125,12 @@ func (hp *hostingdeProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*m
 			r.TTL = 31556926
 		}
 	}
-
-	records, err := hp.GetZoneRecords(dc.Name)
+	zone, err := hp.getZone(dc.Name)
 	if err != nil {
 		return nil, err
 	}
+
+	records := hp.ApiRecordsToStandardRecordsModel(dc.Name, zone.Records)
 
 	var create, del, mod diff.Changeset
 	if !diff2.EnableDiff2 {
@@ -160,7 +161,7 @@ func (hp *hostingdeProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*m
 			Msg: fmt.Sprintf("\n%s", strings.Join(msg, "\n")),
 			F: func() error {
 				for i := 0; i < 10; i++ {
-					err := hp.updateRecords(dc.Name, create, del, mod)
+					err := hp.updateZone(&zone.ZoneConfig, create, del, mod)
 					if err == nil {
 						return nil
 					}
