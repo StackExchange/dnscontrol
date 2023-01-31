@@ -31,6 +31,13 @@ type ZoneLister interface {
 	ListZones() ([]string, error)
 }
 
+// DomainLister should be implemented by providers that have the
+// ability to list the domains they manage. This facilitates using the
+// "list-unmanaged" command.
+type DomainLister interface {
+	ListDomains() ([]string, error)
+}
+
 // RegistrarInitializer is a function to create a registrar. Function will be passed the unprocessed json payload from the configuration file for the given provider.
 type RegistrarInitializer func(map[string]string) (Registrar, error)
 
