@@ -91,11 +91,14 @@ func (hp *hostingdeProvider) GetNameservers(domain string) ([]*models.Nameserver
 }
 
 func (hp *hostingdeProvider) GetZoneRecords(domain string) (models.Records, error) {
-	src, err := hp.getRecords(domain)
+	zone, err := hp.getZone(domain)
 	if err != nil {
 		return nil, err
 	}
+	return hp.ApiRecordsToStandardRecordsModel(domain, zone.Records), nil
+}
 
+func (hp *hostingdeProvider) ApiRecordsToStandardRecordsModel(domain string, src []record) models.Records {
 	records := []*models.RecordConfig{}
 	for _, r := range src {
 		if r.Type == "SOA" {
@@ -104,7 +107,7 @@ func (hp *hostingdeProvider) GetZoneRecords(domain string) (models.Records, erro
 		records = append(records, r.nativeToRecord(domain))
 	}
 
-	return records, nil
+	return records
 }
 
 func (hp *hostingdeProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Correction, error) {
