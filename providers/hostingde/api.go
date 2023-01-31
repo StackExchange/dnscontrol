@@ -125,50 +125,7 @@ func (hp *hostingdeProvider) updateNameservers(nss []string, domain string) func
 	}
 }
 
-func (hp *hostingdeProvider) getRecords(domain string) ([]*record, error) {
-	zc, err := hp.getZoneConfig(domain)
-	if err != nil {
-		return nil, err
-	}
-
-	records := []*record{}
-	page := uint(1)
-	for {
-		params := request{
-			Filter: &filter{
-				Field: "ZoneConfigId",
-				Value: zc.ID,
-			},
-			Limit: 1000,
-			Page:  page,
-		}
-
-		resp, err := hp.get("dns", "recordsFind", params)
-		if err != nil {
-			return nil, err
-		}
-
-		newRecords := []*record{}
-		if err := json.Unmarshal(resp.Data, &newRecords); err != nil {
-			return nil, err
-		}
-
-		records = append(records, newRecords...)
-
-		if page >= resp.TotalPages {
-			break
-		}
-		page++
-	}
-	return records, nil
-}
-
-func (hp *hostingdeProvider) updateRecords(domain string, create, del, mod diff.Changeset) error {
-	zc, err := hp.getZoneConfig(domain)
-	if err != nil {
-		return err
-	}
-
+func (hp *hostingdeProvider) updateZone(zc *zoneConfig, DnsSecOptions *dnsSecOptions, create, del, mod diff.Changeset) error {
 	toAdd := []*record{}
 	for _, c := range create {
 		r := recordToNative(c.Desired)
@@ -194,13 +151,44 @@ func (hp *hostingdeProvider) updateRecords(domain string, create, del, mod diff.
 		RecordsToAdd:    toAdd,
 		RecordsToDelete: toDelete,
 		RecordsToModify: toModify,
+		DNSSECOptions:   DnsSecOptions,
 	}
 
-	_, err = hp.get("dns", "zoneUpdate", params)
+	_, err := hp.get("dns", "zoneUpdate", params)
 	if err != nil {
 		return err
 	}
 	return nil
+}
+
+func (hp *hostingdeProvider) getZone(domain string) (*zone, error) {
+	t, err := idna.ToASCII(domain)
+	if err != nil {
+		return nil, err
+	}
+
+	params := request{
+		Filter: &filter{
+			Field: "ZoneName",
+			Value: t,
+		},
+	}
+
+	resp, err := hp.get("dns", "zonesFind", params)
+	if err != nil {
+		return nil, fmt.Errorf("could not get zone config: %w", err)
+	}
+
+	zones := []*zone{}
+	if err := json.Unmarshal(resp.Data, &zones); err != nil {
+		return nil, fmt.Errorf("could not parse response: %w", err)
+	}
+
+	if len(zones) == 0 {
+		return nil, errZoneNotFound
+	}
+
+	return zones[0], nil
 }
 
 func (hp *hostingdeProvider) getZoneConfig(domain string) (*zoneConfig, error) {
@@ -231,6 +219,31 @@ func (hp *hostingdeProvider) getZoneConfig(domain string) (*zoneConfig, error) {
 	}
 
 	return zc[0], nil
+}
+
+func (hp *hostingdeProvider) getDNSSECOptions(zoneConfigId string) (*dnsSecOptions, error) {
+	params := request{
+		Filter: &filter{
+			Field: "zoneConfigId",
+			Value: zoneConfigId,
+		},
+	}
+
+	resp, err := hp.get("dns", "dnsSecOptionsFind", params)
+	if err != nil {
+		return nil, fmt.Errorf("could not get dnssec options: %w", err)
+	}
+
+	dnsSecOptions := []*dnsSecOptions{}
+	if err := json.Unmarshal(resp.Data, &dnsSecOptions); err != nil {
+		return nil, fmt.Errorf("could not parse response: %w", err)
+	}
+
+	if len(dnsSecOptions) == 0 {
+		return nil, nil
+	}
+
+	return dnsSecOptions[0], nil
 }
 
 func (hp *hostingdeProvider) get(service, method string, params request) (*responseData, error) {

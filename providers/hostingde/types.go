@@ -33,6 +33,8 @@ type request struct {
 
 	// Domain
 	Domain *domainConfig `json:"domain"`
+
+	DNSSECOptions *dnsSecOptions `json:"dnsSecOptions,omitempty"`
 }
 
 type filter struct {
@@ -69,6 +71,25 @@ type zoneConfig struct {
 	// } `json:"soaValues,omitempty"`
 	Type                  string   `json:"type"`
 	ZoneTransferWhitelist []string `json:"zoneTransferWhitelist"`
+}
+
+type zone struct {
+	ZoneConfig zoneConfig `json:"zoneConfig"`
+	Records    []record   `json:"records"`
+}
+
+type dnsSecOptions struct {
+	Keys       []dnsSecKey `json:"flags,omitempty"`
+	Algorithms []string    `json:"algorithms,omitempty"`
+	NSECMode   string      `json:"nsecMode"`
+	PublishKSK bool        `json:"publishKsk"`
+}
+
+type dnsSecKey struct {
+	Flags     uint32 `json:"flags"`
+	Protocol  uint32 `json:"protocol"`
+	Algorithm uint32 `json:"algorithm"`
+	PublicKey string `json:"publicKey"`
 }
 
 type record struct {
