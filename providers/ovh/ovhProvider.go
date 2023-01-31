@@ -201,6 +201,8 @@ func (c *ovhProvider) getDiff2DomainCorrections(dc *models.DomainConfig, actual 
 
 	for _, inst := range instructions {
 		switch inst.Type {
+		case diff2.REPORT:
+			corrections = append(corrections, &models.Correction{Msg: inst.MsgsJoined})
 		case diff2.CHANGE:
 			corrections = append(corrections, &models.Correction{
 				Msg: inst.Msgs[0],
@@ -217,6 +219,8 @@ func (c *ovhProvider) getDiff2DomainCorrections(dc *models.DomainConfig, actual 
 				Msg: inst.Msgs[0],
 				F:   c.deleteRecordFunc(rec.ID, dc.Name),
 			})
+		default:
+			panic(fmt.Sprintf("unhandled inst.Type %s", inst.Type))
 		}
 	}
 	return corrections, nil

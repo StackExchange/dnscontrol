@@ -1,6 +1,8 @@
 package diff
 
 import (
+	"fmt"
+
 	"github.com/StackExchange/dnscontrol/v3/models"
 	"github.com/StackExchange/dnscontrol/v3/pkg/diff2"
 )
@@ -62,6 +64,9 @@ func (d *differCompat) IncrementalDiff(existing []*models.RecordConfig) (unchang
 	for _, inst := range instructions {
 		cor := Correlation{d: d.OldDiffer}
 		switch inst.Type {
+		case diff2.REPORT:
+			// Sadly the NewCompat function doesn't have a way to do this.
+			// Purge reports are silently skipped.
 		case diff2.CREATE:
 			cor.Desired = inst.New[0]
 			create = append(create, cor)
@@ -72,6 +77,8 @@ func (d *differCompat) IncrementalDiff(existing []*models.RecordConfig) (unchang
 		case diff2.DELETE:
 			cor.Existing = inst.Old[0]
 			toDelete = append(toDelete, cor)
+		default:
+			panic(fmt.Sprintf("unhandled inst.Type %s", inst.Type))
 		}
 	}
 

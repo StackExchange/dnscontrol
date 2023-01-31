@@ -488,6 +488,9 @@ func (r *route53Provider) GetDomainCorrections(dc *models.DomainConfig) ([]*mode
 
 		switch inst.Type {
 
+		case diff2.REPORT:
+			corrections = append(corrections, &models.Correction{Msg: inst.MsgsJoined})
+
 		case diff2.CREATE:
 			fallthrough
 		case diff2.CHANGE:
@@ -529,6 +532,10 @@ func (r *route53Provider) GetDomainCorrections(dc *models.DomainConfig) ([]*mode
 				Action:            r53Types.ChangeActionDelete,
 				ResourceRecordSet: &rrset,
 			}
+
+		default:
+			panic(fmt.Sprintf("unhandled inst.Type %s", inst.Type))
+
 		}
 
 		changes = append(changes, chg)

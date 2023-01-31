@@ -259,6 +259,8 @@ func (c *hednsProvider) getDiff2DomainCorrections(dc *models.DomainConfig, zoneI
 	var corrections []*models.Correction
 	for _, change := range changes {
 		switch change.Type {
+		case diff2.REPORT:
+			corrections = append(corrections, &models.Correction{Msg: change.MsgsJoined})
 		case diff2.CREATE:
 			record := change.New[0]
 			corrections = append(corrections, &models.Correction{
@@ -284,6 +286,8 @@ func (c *hednsProvider) getDiff2DomainCorrections(dc *models.DomainConfig, zoneI
 					return c.deleteZoneRecord(zoneID, recordID)
 				},
 			})
+		default:
+			panic(fmt.Sprintf("unhandled change.Type %s", change.Type))
 		}
 	}
 
