@@ -125,12 +125,7 @@ func (hp *hostingdeProvider) updateNameservers(nss []string, domain string) func
 	}
 }
 
-func (hp *hostingdeProvider) updateRecords(domain string, create, del, mod diff.Changeset) error {
-	zc, err := hp.getZoneConfig(domain)
-	if err != nil {
-		return err
-	}
-
+func (hp *hostingdeProvider) updateZone(zc *zoneConfig, create, del, mod diff.Changeset) error {
 	toAdd := []*record{}
 	for _, c := range create {
 		r := recordToNative(c.Desired)
@@ -158,7 +153,7 @@ func (hp *hostingdeProvider) updateRecords(domain string, create, del, mod diff.
 		RecordsToModify: toModify,
 	}
 
-	_, err = hp.get("dns", "zoneUpdate", params)
+	_, err := hp.get("dns", "zoneUpdate", params)
 	if err != nil {
 		return err
 	}
