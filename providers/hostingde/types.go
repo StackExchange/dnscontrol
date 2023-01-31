@@ -16,11 +16,11 @@ var (
 )
 
 type request struct {
-	AuthToken      string `json:"authToken"`
-	OwnerAccountID string `json:"ownerAccountId,omitempty"`
-	Filter         filter `json:"filter,omitempty"`
-	Limit          uint   `json:"limit,omitempty"`
-	Page           uint   `json:"page,omitempty"`
+	AuthToken      string  `json:"authToken"`
+	OwnerAccountID string  `json:"ownerAccountId,omitempty"`
+	Filter         *filter `json:"filter,omitempty"`
+	Limit          uint    `json:"limit,omitempty"`
+	Page           uint    `json:"page,omitempty"`
 
 	// Update Zone
 	ZoneConfig      *zoneConfig `json:"zoneConfig"`
