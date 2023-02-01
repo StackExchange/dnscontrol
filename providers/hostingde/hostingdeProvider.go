@@ -268,3 +268,15 @@ func (hp *hostingdeProvider) ListZones() ([]string, error) {
 	return zones, nil
 
 }
+
+func (hp *hostingdeProvider) ListDomains() ([]string, error) {
+	domainConfigs, err := hp.getAllDomainConfigs()
+	if err != nil {
+		return nil, err
+	}
+	zones := make([]string, 0, len(domainConfigs))
+	for _, config := range domainConfigs {
+		zones = append(zones, config.Name)
+	}
+	return zones, nil
+}
