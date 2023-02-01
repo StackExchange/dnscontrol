@@ -69,8 +69,9 @@ type zoneConfig struct {
 	// 	TTL         uint32 `json:"ttl"`
 	// 	NegativeTTL uint32 `json:"negativeTtl"`
 	// } `json:"soaValues,omitempty"`
-	Type                  string   `json:"type"`
-	ZoneTransferWhitelist []string `json:"zoneTransferWhitelist"`
+	Type                  string          `json:"type"`
+	TemplateValues        json.RawMessage `json:"templateValues,omitempty"`
+	ZoneTransferWhitelist []string        `json:"zoneTransferWhitelist"`
 }
 
 type zone struct {
