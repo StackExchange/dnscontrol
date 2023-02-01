@@ -159,7 +159,7 @@ func (hp *hostingdeProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*m
 	var DnsSecOptions *dnsSecOptions = nil
 
 	// ensure that publishKsk is set for domains with AutoDNSSec
-	if existingAutoDNSSecEnabled == desiredAutoDNSSecEnabled == true {
+	if existingAutoDNSSecEnabled && desiredAutoDNSSecEnabled {
 		CurrentDnsSecOptions, err := hp.getDNSSECOptions(zone.ZoneConfig.ID)
 		if err != nil {
 			return nil, err
