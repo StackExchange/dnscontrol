@@ -191,11 +191,15 @@ func (cc *CompareConfig) String() string {
 
 // Generate a string that can be used to compare this record to others
 // for equality.
-func comparable(rc *models.RecordConfig, f func(*models.RecordConfig) string) string {
+func mkCompareBlob(rc *models.RecordConfig, f func(*models.RecordConfig) string) string {
 	if f == nil {
 		return rc.ToDiffable()
 	}
-	return rc.ToDiffable() + " " + f(rc)
+	addOn := f(rc)
+	if addOn != "" {
+		return rc.ToDiffable() + " " + f(rc)
+	}
+	return rc.ToDiffable()
 }
 
 func (cc *CompareConfig) addRecords(recs models.Records, storeInExisting bool) {
@@ -213,7 +217,7 @@ func (cc *CompareConfig) addRecords(recs models.Records, storeInExisting bool) {
 
 		label := rec.NameFQDN
 		rtype := rec.Type
-		comp := comparable(rec, cc.compareableFunc)
+		comp := mkCompareBlob(rec, cc.compareableFunc)
 
 		// Are we seeing this label for the first time?
 		var labelIdx int
