@@ -6,7 +6,6 @@ dnscontrol
 /dnsconfig.js
 /creds.json
 ExternalDNS
-docs/_site
 powershell.log
 integrationTest/env.sh
 integrationTest/.env
