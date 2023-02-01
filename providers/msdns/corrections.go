@@ -1,6 +1,8 @@
 package msdns
 
 import (
+	"fmt"
+
 	"github.com/StackExchange/dnscontrol/v3/models"
 	"github.com/StackExchange/dnscontrol/v3/pkg/diff"
 	"github.com/StackExchange/dnscontrol/v3/pkg/diff2"
@@ -20,26 +22,74 @@ func (client *msdnsProvider) GenerateDomainCorrections(dc *models.DomainConfig, 
 	if !diff2.EnableDiff2 {
 		differ := diff.New(dc)
 		_, creates, dels, modifications, err = differ.IncrementalDiff(foundRecords)
-	} else {
-		differ := diff.NewCompat(dc)
-		_, creates, dels, modifications, err = differ.IncrementalDiff(foundRecords)
+		if err != nil {
+			return nil, err
+		}
+
+		// Generate changes.
+		for _, del := range dels {
+			corrections = append(corrections, client.deleteRec(client.dnsserver, dc.Name, del))
+		}
+		for _, cre := range creates {
+			corrections = append(corrections, client.createRec(client.dnsserver, dc.Name, cre)...)
+		}
+		for _, m := range modifications {
+			corrections = append(corrections, client.modifyRec(client.dnsserver, dc.Name, m))
+		}
+		return corrections, nil
 	}
+
+	changes, err := diff2.ByRecord(foundRecords, dc, nil)
 	if err != nil {
 		return nil, err
 	}
 
-	// Generate changes.
-	for _, del := range dels {
-		corrections = append(corrections, client.deleteRec(client.dnsserver, dc.Name, del))
-	}
-	for _, cre := range creates {
-		corrections = append(corrections, client.createRec(client.dnsserver, dc.Name, cre)...)
-	}
-	for _, m := range modifications {
-		corrections = append(corrections, client.modifyRec(client.dnsserver, dc.Name, m))
-	}
-	return corrections, nil
+	var corr *models.Correction
+	for _, change := range changes {
+		switch change.Type {
+		case diff2.REPORT:
+			corr = &models.Correction{Msg: change.MsgsJoined}
+		case diff2.CREATE:
+			corr = &models.Correction{
+				Msg: change.MsgsJoined,
+				F: func() error {
+					return client.createOneRecord(dc.Name, change.New[0])
+				},
+			}
+		case diff2.CHANGE:
+			corr = &models.Correction{
+				Msg: change.MsgsJoined,
+				F: func() error {
+					return client.modifyOneRecord(dc.Name, change.Old[0], change.New[0])
+				},
+			}
+		case diff2.DELETE:
+			corr = &models.Correction{
+				Msg: change.MsgsJoined,
+				F: func() error {
+					return client.deleteOneRecord(dc.Name, change.Old[0])
+				},
+			}
+		default:
+			panic(fmt.Sprintf("unhandled change.Type %s", change.Type))
+		}
 
+		corrections = append(corrections, corr)
+	}
+
+	return corrections, nil
+}
+
+func (client *msdnsProvider) deleteOneRecord(zonename string, oldrec *models.RecordConfig) error {
+	return client.shell.RecordDelete(client.dnsserver, zonename, oldrec)
+}
+
+func (client *msdnsProvider) createOneRecord(zonename string, newrec *models.RecordConfig) error {
+	return client.shell.RecordCreate(client.dnsserver, zonename, newrec)
+}
+
+func (client *msdnsProvider) modifyOneRecord(zonename string, oldrec, newrec *models.RecordConfig) error {
+	return client.shell.RecordModify(client.dnsserver, zonename, oldrec, newrec)
 }
 
 func (client *msdnsProvider) deleteRec(dnsserver, domainname string, cor diff.Correlation) *models.Correction {
