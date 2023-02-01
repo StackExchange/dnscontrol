@@ -25,7 +25,7 @@ var _ = cmd(catUtils, func() *cli.Command {
 	}
 }())
 
-// CreateDomainsArgs args required for the create-domain subcommand.
+// CreateDomaimap[string]providers.Registrar{}nsArgs args required for the create-domain subcommand.
 type CreateDomainsArgs struct {
 	GetDNSConfigArgs
 	GetCredentialsArgs
@@ -47,7 +47,7 @@ func CreateDomains(args CreateDomainsArgs) error {
 	if err != nil {
 		return err
 	}
-	_, err = InitializeProviders(cfg, providerConfigs, false)
+	_, _, _, err = InitializeProviders(cfg, providerConfigs, false)
 	if err != nil {
 		return err
 	}

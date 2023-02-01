@@ -320,3 +320,27 @@ func (hp *hostingdeProvider) getAllZoneConfigs() ([]*zoneConfig, error) {
 
 	return zc, nil
 }
+
+func (hp *hostingdeProvider) getAllDomainConfigs() ([]*domainConfig, error) {
+	params := request{
+		Limit: 10000,
+	}
+	if hp.filterAccountId != "" {
+		params.Filter = &filter{
+			Field: "accountId",
+			Value: hp.filterAccountId,
+		}
+	}
+
+	resp, err := hp.get("domain", "domainsFind", params)
+	if err != nil {
+		return nil, fmt.Errorf("could not domains zones: %w", err)
+	}
+
+	zc := []*domainConfig{}
+	if err := json.Unmarshal(resp.Data, &zc); err != nil {
+		return nil, fmt.Errorf("could not parse response: %w", err)
+	}
+
+	return zc, nil
+}

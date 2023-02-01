@@ -146,7 +146,7 @@ func GetCerts(args GetCertsArgs) error {
 	if err != nil {
 		return err
 	}
-	notifier, err := InitializeProviders(cfg, providerConfigs, args.Notify)
+	_, _, notifier, err := InitializeProviders(cfg, providerConfigs, args.Notify)
 	if err != nil {
 		return err
 	}
