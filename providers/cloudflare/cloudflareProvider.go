@@ -327,7 +327,6 @@ func (c *cloudflareProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*m
 
 	// Cloudflare is a "ByRecord" API.
 	instructions, err := diff2.ByRecord(records, dc, genComparable)
-	//instructions, err := diff2.ByRecord(records, dc, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -387,10 +386,11 @@ func (c *cloudflareProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*m
 
 func genComparable(rec *models.RecordConfig) string {
 	//fmt.Printf("DEBUG: genComparable called %v:%v meta=%+v\n", rec.Type, rec.GetLabel(), rec.Metadata)
-	if rec.Type == "A" || rec.Type == "CNAME" {
+	if rec.Type == "A" || rec.Type != "AAAA" || rec.Type == "CNAME" {
 		proxy := rec.Metadata[metaProxy]
 		if proxy != "" {
-			return "proxy=" + rec.Metadata[metaProxy]
+			//return "proxy=" + rec.Metadata[metaProxy]
+			return "proxy=" + proxy
 		}
 	}
 	return ""
@@ -807,6 +807,7 @@ func (c *cloudflareProvider) nativeToRecord(domain string, cr cloudflare.DNSReco
 	rc := &models.RecordConfig{
 		TTL:      uint32(cr.TTL),
 		Original: cr,
+		Metadata: map[string]string{},
 	}
 	rc.SetLabelFromFQDN(cr.Name, domain)
 
@@ -816,10 +817,6 @@ func (c *cloudflareProvider) nativeToRecord(domain string, cr cloudflare.DNSReco
 	}
 
 	if cr.Type == "A" || cr.Type == "CNAME" || cr.Type == "AAAA" {
-		//fmt.Printf("DEBUG: nativeToRecord PROXIED=%v\n", *cr.Proxied)
-		if rc.Metadata == nil {
-			rc.Metadata = map[string]string{}
-		}
 		if cr.Proxied != nil {
 			if *(cr.Proxied) {
 				rc.Metadata[metaProxy] = "on"
