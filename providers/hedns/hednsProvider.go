@@ -156,20 +156,20 @@ func (c *hednsProvider) ListZones() ([]string, error) {
 	return domains, err
 }
 
-// EnsureDomainExists creates the domain if it does not exist.
-func (c *hednsProvider) EnsureDomainExists(domain string) error {
+// EnsureZoneExists creates a zone if it does not exist
+func (c *hednsProvider) EnsureZoneExists(zoneName string) error {
 	domains, err := c.ListZones()
 	if err != nil {
 		return err
 	}
 
 	for _, d := range domains {
-		if d == domain {
+		if d == zoneName {
 			return nil
 		}
 	}
 
-	return c.createDomain(domain)
+	return c.createDomain(zoneName)
 }
 
 // GetNameservers returns the default HEDNS nameservers.

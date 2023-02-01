@@ -84,13 +84,13 @@ func (o *oracleProvider) ListZones() ([]string, error) {
 	return zones, nil
 }
 
-// EnsureDomainExists creates the domain if it does not exist.
-func (o *oracleProvider) EnsureDomainExists(domain string) error {
+// EnsureZoneExists creates a zone if it does not exist
+func (o *oracleProvider) EnsureZoneExists(zoneName string) error {
 	ctx, cancel := context.WithTimeout(context.Background(), time.Minute)
 	defer cancel()
 
 	getResp, err := o.client.GetZone(ctx, dns.GetZoneRequest{
-		ZoneNameOrId:  &domain,
+		ZoneNameOrId:  &zoneName,
 		CompartmentId: &o.compartment,
 	})
 	if err == nil {
@@ -103,7 +103,7 @@ func (o *oracleProvider) EnsureDomainExists(domain string) error {
 	_, err = o.client.CreateZone(ctx, dns.CreateZoneRequest{
 		CreateZoneDetails: dns.CreateZoneDetails{
 			CompartmentId: &o.compartment,
-			Name:          &domain,
+			Name:          &zoneName,
 			ZoneType:      dns.CreateZoneDetailsZoneTypePrimary,
 		},
 	})
@@ -119,7 +119,7 @@ func (o *oracleProvider) EnsureDomainExists(domain string) error {
 		return true
 	}
 	_, err = o.client.GetZone(ctx, dns.GetZoneRequest{
-		ZoneNameOrId:    &domain,
+		ZoneNameOrId:    &zoneName,
 		CompartmentId:   &o.compartment,
 		RequestMetadata: helpers.GetRequestMetadataWithCustomizedRetryPolicy(pollUntilAvailable),
 	})
