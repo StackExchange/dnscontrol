@@ -31,8 +31,8 @@ func makeSoa(origin string, defSoa *SoaDefaults, existing, desired *models.Recor
 		user_part = strings.ReplaceAll(user_part, ".", "\\.")
 		soaMail = user_part + "." + domain_part
 	} else {
-		fmt.Println("Note: SOA hostmaster address must be in the format hostmaster@example.com")
-		fmt.Println("Note: hostmaster.example.com is deprecated and will be dropped in a future version")
+		fmt.Println("WARNING: SOA hostmaster address must be in the format hostmaster@example.com")
+		fmt.Println("WARNING: hostmaster.example.com is deprecated and will be dropped in a future version")
 	}
 
 	soaRec.TTL = firstNonZero(desired.TTL, defSoa.TTL, existing.TTL, models.DefaultTTL)
