@@ -407,7 +407,7 @@ func mkTargetConfig(x ...*models.RecordConfig) []targetConfig {
 	var tc []targetConfig
 	for _, r := range x {
 		tc = append(tc, targetConfig{
-			compareable: comparable(r, nil),
+			compareBlob: mkCompareBlob(r, nil),
 			rec:         r,
 		})
 	}
@@ -417,7 +417,7 @@ func mkTargetConfig(x ...*models.RecordConfig) []targetConfig {
 func mkTargetConfigMap(x ...*models.RecordConfig) map[string]*targetConfig {
 	var m = map[string]*targetConfig{}
 	for _, v := range mkTargetConfig(x...) {
-		m[v.compareable] = &v
+		m[v.compareBlob] = &v
 	}
 	return m
 }
@@ -584,7 +584,7 @@ func Test_removeCommon(t *testing.T) {
 func comparables(s []targetConfig) []string {
 	var r []string
 	for _, j := range s {
-		r = append(r, j.compareable)
+		r = append(r, j.compareBlob)
 	}
 	return r
 }
