@@ -305,7 +305,11 @@ func diffTargets(existing, desired []targetConfig) ChangeList {
 	var instructions ChangeList
 
 	// remove the exact matches.
+	//fmt.Printf("DEBUG: diffTargets BEFORE existing=%+v\n", existing)
+	//fmt.Printf("DEBUG: diffTargets BEFORE desired=%+v\n", desired)
 	existing, desired = removeCommon(existing, desired)
+	//fmt.Printf("DEBUG: diffTargets AFTER existing=%+v\n", existing)
+	//fmt.Printf("DEBUG: diffTargets AFTER desired=%+v\n", desired)
 
 	// At this point the exact matches are removed. However there may be
 	// records that have the same GetTargetCombined() but different

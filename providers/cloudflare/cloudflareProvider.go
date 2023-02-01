@@ -386,11 +386,12 @@ func (c *cloudflareProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*m
 
 func genComparable(rec *models.RecordConfig) string {
 	//fmt.Printf("DEBUG: genComparable called %v:%v meta=%+v\n", rec.Type, rec.GetLabel(), rec.Metadata)
-	if rec.Type == "A" || rec.Type != "AAAA" || rec.Type == "CNAME" {
+	if rec.Type == "A" || rec.Type == "AAAA" || rec.Type == "CNAME" {
 		proxy := rec.Metadata[metaProxy]
 		if proxy != "" {
 			//return "proxy=" + rec.Metadata[metaProxy]
 			return "proxy=" + proxy
+			//return fmt.Sprintf("proxy:%v=%s", rec.Type, proxy)
 		}
 	}
 	return ""
