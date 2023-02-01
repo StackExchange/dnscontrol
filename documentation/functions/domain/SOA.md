@@ -24,12 +24,12 @@ parameter_types:
 
 ```javascript
 D("example.com", REG_THIRDPARTY, DnsProvider("DNS_BIND"),
-  SOA("@", "ns3.example.org.", "hostmaster.example.org.", 3600, 600, 604800, 1440),
+  SOA("@", "ns3.example.org.", "hostmaster@example.org", 3600, 600, 604800, 1440),
 );
 ```
 
 ## Notes
-
+* Previously, the accepted format for the SOA mailbox field was `hostmaster.example.org`. This has been changed to `hostmaster@example.org`
 * The serial number is managed automatically.  It isn't even a field in `SOA()`.
 * Most providers automatically generate SOA records.  They will ignore any `SOA()` statements.
 
