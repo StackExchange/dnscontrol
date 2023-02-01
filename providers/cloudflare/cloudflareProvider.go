@@ -816,7 +816,7 @@ func (c *cloudflareProvider) nativeToRecord(domain string, cr cloudflare.DNSReco
 		cr.Type = "TXT"
 	}
 
-	if cr.Type == "A" || cr.Type == "CNAME" || cr.Type == "AAAA" {
+	if cr.Type == "A" || cr.Type == "AAAA" || cr.Type == "CNAME" {
 		if cr.Proxied != nil {
 			if *(cr.Proxied) {
 				rc.Metadata[metaProxy] = "on"
