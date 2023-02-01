@@ -182,12 +182,12 @@ func removeCommon(existing, desired []targetConfig) ([]targetConfig, []targetCon
 	eKeys := map[string]*targetConfig{}
 	for _, v := range existing {
 		v := v
-		eKeys[v.compareable] = &v
+		eKeys[v.compareBlob] = &v
 	}
 	dKeys := map[string]*targetConfig{}
 	for _, v := range desired {
 		v := v
-		dKeys[v.compareable] = &v
+		dKeys[v.compareBlob] = &v
 	}
 
 	return filterBy(existing, dKeys), filterBy(desired, eKeys)
@@ -206,6 +206,10 @@ func splitTTLOnly(existing, desired []targetConfig) (
 		dr := desired[di].rec
 		ecomp := er.GetTargetCombined()
 		dcomp := dr.GetTargetCombined()
+		eblob := existing[ei].compareBlob
+		dblob := desired[di].compareBlob
+		fmt.Printf("DEBUG: splitTTLOnly: ecomp=%q eblob=%v\n", ecomp, eblob)
+		fmt.Printf("DEBUG: splitTTLOnly: dcomp=%q dblob=%v\n", dcomp, dblob)
 
 		if ecomp == dcomp && er.TTL == dr.TTL {
 			fmt.Printf("DEBUG: ecomp=%q dcomp=%q er.TTL=%v dr.TTL=%v\n", ecomp, dcomp, er.TTL, dr.TTL)
@@ -254,7 +258,7 @@ func filterBy(s []targetConfig, m map[string]*targetConfig) []targetConfig {
 	// }
 	i := 0 // output index
 	for _, x := range s {
-		if _, ok := m[x.compareable]; !ok {
+		if _, ok := m[x.compareBlob]; !ok {
 			//fmt.Printf("DEBUG: comp %q NO\n", x.compareable)
 			// copy and increment index
 			s[i] = x
@@ -287,6 +291,24 @@ func humanDiff(a, b *models.RecordConfig) string {
 	return fmt.Sprintf("%s (ttl %d->%d)", acombined, a.TTL, b.TTL)
 }
 
+func humanDiffTarg(a, b targetConfig) string {
+	aTTL := a.rec.TTL
+	bTTL := b.rec.TTL
+	acombined := a.compareBlob
+	bcombined := b.compareBlob
+	combinedDiff := acombined != bcombined
+	ttlDiff := a.rec.TTL != b.rec.TTL
+	// TODO(tlim): It would be nice if we included special cases for MX
+	// records and others.  For example if only the MX priority changes, highlight that.
+	if combinedDiff && ttlDiff {
+		return fmt.Sprintf("(%s ttl=%d) -> (%s ttl=%d)", acombined, aTTL, bcombined, bTTL)
+	}
+	if combinedDiff {
+		return fmt.Sprintf("(%s) -> (%s)", acombined, bcombined)
+	}
+	return fmt.Sprintf("%s (ttl %d->%d)", acombined, aTTL, bTTL)
+}
+
 func diffTargets(existing, desired []targetConfig) ChangeList {
 	//fmt.Printf("DEBUG: diffTargets called with len(e)=%d len(d)=%d\n", len(existing), len(desired))
 
@@ -297,8 +319,8 @@ func diffTargets(existing, desired []targetConfig) ChangeList {
 	}
 
 	// Sort to make comparisons easier
-	sort.Slice(existing, func(i, j int) bool { return existing[i].compareable < existing[j].compareable })
-	sort.Slice(desired, func(i, j int) bool { return desired[i].compareable < desired[j].compareable })
+	sort.Slice(existing, func(i, j int) bool { return existing[i].compareBlob < existing[j].compareBlob })
+	sort.Slice(desired, func(i, j int) bool { return desired[i].compareBlob < desired[j].compareBlob })
 
 	var instructions ChangeList
 
@@ -310,12 +332,19 @@ func diffTargets(existing, desired []targetConfig) ChangeList {
 	// TTLs.
 
 	// Find TTL changes:
-	existing, desired, existingTTL, desiredTTL := splitTTLOnly(existing, desired)
-	for i := range desiredTTL {
-		er := existingTTL[i]
-		dr := desiredTTL[i]
+	//existing, desired, existingTTL, desiredTTL := splitTTLOnly(existing, desired)
+	existing, desired, _, _ = splitTTLOnly(existing, desired)
+	//	for i := range desiredTTL {
+	//		er := existingTTL[i]
+	//		dr := desiredTTL[i]
+	//
+	//		m := fmt.Sprintf("CHANGE %s %s ", dr.NameFQDN, dr.Type) + humanDiff(er, dr)
 
-		m := fmt.Sprintf("CHANGE %s %s ", dr.NameFQDN, dr.Type) + humanDiff(er, dr)
+	for i := range desired {
+		er := existing[i].rec
+		dr := desired[i].rec
+
+		m := fmt.Sprintf("CHANGE %s %s ", dr.NameFQDN, dr.Type) + humanDiffTarg(existing[i], desired[i])
 
 		instructions = append(instructions, mkChange(dr.NameFQDN, dr.Type, []string{m},
 			models.Records{er},
@@ -330,6 +359,7 @@ func diffTargets(existing, desired []targetConfig) ChangeList {
 		//fmt.Println(i, "CHANGE")
 		er := existing[i].rec
 		dr := desired[i].rec
+		fmt.Printf("DEBUG: create combined=%q erblob=%q", dr.GetTargetCombined(), desired[i].compareBlob)
 
 		m := fmt.Sprintf("CHANGE %s %s ", dr.NameFQDN, dr.Type) + humanDiff(existing[i].rec, desired[i].rec)
 
