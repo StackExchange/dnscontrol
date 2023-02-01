@@ -211,11 +211,17 @@ func splitTTLOnly(existing, desired []targetConfig) (
 		fmt.Printf("DEBUG: splitTTLOnly: ecomp=%q eblob=%v\n", ecomp, eblob)
 		fmt.Printf("DEBUG: splitTTLOnly: dcomp=%q dblob=%v\n", dcomp, dblob)
 
-		if ecomp == dcomp && er.TTL == dr.TTL {
-			fmt.Printf("DEBUG: ecomp=%q dcomp=%q er.TTL=%v dr.TTL=%v\n", ecomp, dcomp, er.TTL, dr.TTL)
+		// if ecomp == dcomp && er.TTL == dr.TTL {
+		// 	fmt.Printf("DEBUG: ecomp=%q dcomp=%q er.TTL=%v dr.TTL=%v\n", ecomp, dcomp, er.TTL, dr.TTL)
+		// 	panic("Should not happen. There should be some difference!")
+		// }
+		if eblob == dblob && er.TTL == dr.TTL {
+			fmt.Printf("DEBUG: eblob=%q dblob=%q er.TTL=%v dr.TTL=%v\n", eblob, dblob, er.TTL, dr.TTL)
 			panic("Should not happen. There should be some difference!")
 		}
 
+		ecomp = eblob
+		dcomp = dblob
 		//fmt.Printf("DEBUG ecomp=%q dcomp=%q ettl=%d dttl=%d\n", ecomp, dcomp, er.TTL, dr.TTL)
 		if ecomp == dcomp && er.TTL != dr.TTL {
 			//fmt.Printf("DEBUG: equal\n")
@@ -325,26 +331,28 @@ func diffTargets(existing, desired []targetConfig) ChangeList {
 	var instructions ChangeList
 
 	// remove the exact matches.
+	fmt.Printf("DEBUG: diffTargets BEFORE existing=%v\n", existing)
+	fmt.Printf("DEBUG: diffTargets BEFORE desired=%v\n", desired)
 	existing, desired = removeCommon(existing, desired)
+	fmt.Printf("DEBUG: diffTargets AFTER existing=%v\n", existing)
+	fmt.Printf("DEBUG: diffTargets AFTER desired=%v\n", desired)
 
 	// At this point the exact matches are removed. However there may be
 	// records that have the same GetTargetCombined() but different
 	// TTLs.
 
 	// Find TTL changes:
-	//existing, desired, existingTTL, desiredTTL := splitTTLOnly(existing, desired)
-	existing, desired, _, _ = splitTTLOnly(existing, desired)
-	//	for i := range desiredTTL {
-	//		er := existingTTL[i]
-	//		dr := desiredTTL[i]
-	//
-	//		m := fmt.Sprintf("CHANGE %s %s ", dr.NameFQDN, dr.Type) + humanDiff(er, dr)
+	existing, desired, existingTTL, desiredTTL := splitTTLOnly(existing, desired)
+	for i := range desiredTTL {
+		er := existingTTL[i]
+		dr := desiredTTL[i]
+		m := fmt.Sprintf("CHANGE %s %s ", dr.NameFQDN, dr.Type) + humanDiff(er, dr)
 
-	for i := range desired {
-		er := existing[i].rec
-		dr := desired[i].rec
-
-		m := fmt.Sprintf("CHANGE %s %s ", dr.NameFQDN, dr.Type) + humanDiffTarg(existing[i], desired[i])
+		//existing, desired, _, _ = splitTTLOnly(existing, desired)
+		//for i := range desired {
+		//	er := existing[i].rec
+		//	dr := desired[i].rec
+		//	m := fmt.Sprintf("CHANGE %s %s ", dr.NameFQDN, dr.Type) + humanDiffTarg(existing[i], desired[i])
 
 		instructions = append(instructions, mkChange(dr.NameFQDN, dr.Type, []string{m},
 			models.Records{er},
@@ -359,7 +367,7 @@ func diffTargets(existing, desired []targetConfig) ChangeList {
 		//fmt.Println(i, "CHANGE")
 		er := existing[i].rec
 		dr := desired[i].rec
-		fmt.Printf("DEBUG: create combined=%q erblob=%q", dr.GetTargetCombined(), desired[i].compareBlob)
+		fmt.Printf("DEBUG: create combined=%q erblob=%q\n", dr.GetTargetCombined(), desired[i].compareBlob)
 
 		m := fmt.Sprintf("CHANGE %s %s ", dr.NameFQDN, dr.Type) + humanDiff(existing[i].rec, desired[i].rec)
 
@@ -374,8 +382,7 @@ func diffTargets(existing, desired []targetConfig) ChangeList {
 		//fmt.Println(i, "DEL")
 		er := existing[i].rec
 		m := fmt.Sprintf("DELETE %s %s %s", er.NameFQDN, er.Type, er.GetTargetCombined())
-		//ecomp := existing[i].compareable
-		//m := fmt.Sprintf("DELETE %s %s %s", er.NameFQDN, er.Type, ecomp)
+		//m := fmt.Sprintf("DELETE %s %s %s", er.NameFQDN, er.Type, existing[i].compareable)
 		instructions = append(instructions, mkDeleteRec(er.NameFQDN, er.Type, []string{m}, er))
 	}
 
