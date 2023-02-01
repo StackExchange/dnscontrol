@@ -163,7 +163,6 @@ func (c *cloudflareProvider) createRec(rec *models.RecordConfig, domainID string
 			return nil
 		},
 	}}
-	//fmt.Printf("DEBUG: createRecWithMsg type=%v label=%v metaProxy=%v id=%v\n", rec.Type, rec.GetLabel(), rec.Metadata[metaProxy], id)
 	if rec.Metadata[metaProxy] != "off" {
 		arr = append(arr, &models.Correction{
 			Msg: fmt.Sprintf("ACTIVATE PROXY for new record %s %s %d %s", rec.GetLabel(), rec.Type, rec.TTL, rec.GetTargetField()),
@@ -192,9 +191,9 @@ func (c *cloudflareProvider) createRecDiff2(rec *models.RecordConfig, domainID s
 	if msg == "" {
 		msg = fmt.Sprintf("CREATE record: %s %s %d%s %s", rec.GetLabel(), rec.Type, rec.TTL, prio, content)
 	}
-	//if rec.Metadata[metaProxy] != "off" {
-	msg = msg + fmt.Sprintf("\nACTIVATE PROXY for new record %s %s %d %s", rec.GetLabel(), rec.Type, rec.TTL, rec.GetTargetField())
-	//}
+	if rec.Metadata[metaProxy] == "on" {
+		msg = msg + fmt.Sprintf("\nACTIVATE PROXY for new record %s %s %d %s", rec.GetLabel(), rec.Type, rec.TTL, rec.GetTargetField())
+	}
 	arr := []*models.Correction{{
 		Msg: msg,
 		F: func() error {
@@ -225,19 +224,15 @@ func (c *cloudflareProvider) createRecDiff2(rec *models.RecordConfig, domainID s
 			if err != nil {
 				return err
 			}
-			// Updating id (from the outer scope) by side-effect, required for updating proxy mode
-			id := resp.Result.ID
-			//fmt.Printf("DEBUG d2 resp.Result.Id=%v\n", id)
-			if rec.Metadata[metaProxy] == "off" {
-				return c.modifyRecord(domainID, id, false, rec)
-			}
+			// Records are created with the proxy off. If proxy should be
+			// enabled, we do a second API call.
+			resultID := resp.Result.ID
 			if rec.Metadata[metaProxy] == "on" {
-				return c.modifyRecord(domainID, id, true, rec)
+				return c.modifyRecord(domainID, resultID, true, rec)
 			}
 			return nil
 		},
 	}}
-	//fmt.Printf("DEBUG: createRecWithMsg type=%v label=%v metaProxy=%v id=%v\n", rec.Type, rec.GetLabel(), rec.Metadata[metaProxy], id)
 	return arr
 }
 

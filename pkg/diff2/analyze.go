@@ -271,31 +271,15 @@ func filterBy(s []targetConfig, m map[string]*targetConfig) []targetConfig {
 	return s
 }
 
-func humanDiff(a, b *models.RecordConfig) string {
-	acombined := a.GetTargetCombined()
-	bcombined := b.GetTargetCombined()
-	combinedDiff := acombined != bcombined
-	ttlDiff := a.TTL != b.TTL
-	// TODO(tlim): It would be nice if we included special cases for MX
-	// records and others.
-	if combinedDiff && ttlDiff {
-		return fmt.Sprintf("(%s ttl=%d) -> (%s ttl=%d)", acombined, a.TTL, bcombined, b.TTL)
-	}
-	if combinedDiff {
-		return fmt.Sprintf("(%s) -> (%s)", acombined, bcombined)
-	}
-	return fmt.Sprintf("%s (ttl %d->%d)", acombined, a.TTL, b.TTL)
-}
-
-func humanDiffTarg(a, b targetConfig) string {
+func humanDiff(a, b targetConfig) string {
 	aTTL := a.rec.TTL
 	bTTL := b.rec.TTL
 	acombined := a.compareable
 	bcombined := b.compareable
 	combinedDiff := acombined != bcombined
-	ttlDiff := a.rec.TTL != b.rec.TTL
-	// TODO(tlim): It would be nice if we included special cases for MX
-	// records and others.  For example if only the MX priority changes, highlight that.
+	ttlDiff := aTTL != bTTL
+	// TODO(tlim): Records like MX and SRV should have more clever output.
+	// For example if only the MX priority changes, show that.
 	if combinedDiff && ttlDiff {
 		return fmt.Sprintf("(%s ttl=%d) -> (%s ttl=%d)", acombined, aTTL, bcombined, bTTL)
 	}
@@ -321,11 +305,7 @@ func diffTargets(existing, desired []targetConfig) ChangeList {
 	var instructions ChangeList
 
 	// remove the exact matches.
-	//fmt.Printf("DEBUG: diffTargets BEFORE existing=%+v\n", existing)
-	//fmt.Printf("DEBUG: diffTargets BEFORE desired=%+v\n", desired)
 	existing, desired = removeCommon(existing, desired)
-	//fmt.Printf("DEBUG: diffTargets AFTER existing=%+v\n", existing)
-	//fmt.Printf("DEBUG: diffTargets AFTER desired=%+v\n", desired)
 
 	// At this point the exact matches are removed. However there may be
 	// records that have the same GetTargetCombined() but different
@@ -337,7 +317,7 @@ func diffTargets(existing, desired []targetConfig) ChangeList {
 		er := existingTTL[i]
 		dr := desiredTTL[i]
 
-		m := fmt.Sprintf("CHANGE %s %s ", dr.NameFQDN, dr.Type) + humanDiff(er, dr)
+		m := fmt.Sprintf("CHANGE %s %s ", dr.NameFQDN, dr.Type) + humanDiff(existing[i], desired[i])
 
 		instructions = append(instructions, mkChange(dr.NameFQDN, dr.Type, []string{m},
 			models.Records{er},
@@ -353,7 +333,7 @@ func diffTargets(existing, desired []targetConfig) ChangeList {
 		er := existing[i].rec
 		dr := desired[i].rec
 
-		m := fmt.Sprintf("CHANGE %s %s ", dr.NameFQDN, dr.Type) + humanDiff(existing[i].rec, desired[i].rec)
+		m := fmt.Sprintf("CHANGE %s %s ", dr.NameFQDN, dr.Type) + humanDiff(existing[i], desired[i])
 
 		instructions = append(instructions, mkChange(dr.NameFQDN, dr.Type, []string{m},
 			models.Records{er},

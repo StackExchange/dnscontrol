@@ -196,14 +196,10 @@ func mkCompareBlob(rc *models.RecordConfig, f func(*models.RecordConfig) string)
 		return rc.ToDiffable()
 	}
 	addOn := f(rc)
-	var r string
-	if addOn == "" {
-		r = rc.ToDiffable()
-	} else {
-		r = rc.ToDiffable() + " " + f(rc)
+	if addOn != "" {
+		return rc.ToDiffable() + " " + f(rc)
 	}
-	//fmt.Printf("DEBUG: mkCompareBlob %q old=%q new=%q\n", rc.Type, rc.ToDiffable(), r)
-	return r
+	return rc.ToDiffable()
 }
 
 func (cc *CompareConfig) addRecords(recs models.Records, storeInExisting bool) {
