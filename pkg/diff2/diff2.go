@@ -19,6 +19,7 @@ const (
 	CREATE             // Create a record/recordset/label where none existed before.
 	CHANGE             // Change existing record/recordset/label
 	DELETE             // Delete existing record/recordset/label
+	REPORT             // No change, but boy do I have something to say!
 )
 
 type ChangeList []Change
@@ -48,28 +49,33 @@ General instructions:
 
   for _, change := range changes {
     switch change.Type {
+    case diff2.REPORT:
+      corr = &models.Correction{Msg: change.MsgsJoined}
     case diff2.CREATE:
       corr = &models.Correction{
         Msg: change.MsgsJoined,
         F: func() error {
-          return c.createRecord(FILL IN)
+          return c.createRecord(FILL_IN)
         },
       }
     case diff2.CHANGE:
       corr = &models.Correction{
         Msg: change.MsgsJoined,
         F: func() error {
-          return c.modifyRecord(FILL IN)
+          return c.modifyRecord(FILL_IN)
         },
       }
     case diff2.DELETE:
       corr = &models.Correction{
         Msg: change.MsgsJoined,
         F: func() error {
-          return c.deleteRecord(FILL IN)
+          return c.deleteRecord(FILL_IN)
         },
       }
+	  default:
+		  panic("unhandled change.TYPE %s", change.Type)
     }
+
     corrections = append(corrections, corr)
   }
 
