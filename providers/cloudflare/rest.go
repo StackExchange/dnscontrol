@@ -113,11 +113,6 @@ func cfSshfpData(rec *models.RecordConfig) *cfRecData {
 }
 
 func (c *cloudflareProvider) createRec(rec *models.RecordConfig, domainID string) []*models.Correction {
-	return c.createRecWithMsg(rec, domainID, "")
-}
-
-func (c *cloudflareProvider) createRecWithMsg(rec *models.RecordConfig, domainID string, msg string) []*models.Correction {
-
 	var id string
 	content := rec.GetTargetField()
 	if rec.Metadata[metaOriginalIP] != "" {
@@ -133,11 +128,8 @@ func (c *cloudflareProvider) createRecWithMsg(rec *models.RecordConfig, domainID
 	if rec.Type == "DS" {
 		content = fmt.Sprintf("%d %d %d %s", rec.DsKeyTag, rec.DsAlgorithm, rec.DsDigestType, rec.DsDigest)
 	}
-	if msg == "" {
-		msg = fmt.Sprintf("CREATE record: %s %s %d%s %s", rec.GetLabel(), rec.Type, rec.TTL, prio, content)
-	}
 	arr := []*models.Correction{{
-		Msg: msg,
+		Msg: fmt.Sprintf("CREATE record: %s %s %d%s %s", rec.GetLabel(), rec.Type, rec.TTL, prio, content),
 		F: func() error {
 			cf := cloudflare.DNSRecord{
 				Name:     rec.GetLabel(),
@@ -171,12 +163,81 @@ func (c *cloudflareProvider) createRecWithMsg(rec *models.RecordConfig, domainID
 			return nil
 		},
 	}}
+	//fmt.Printf("DEBUG: createRecWithMsg type=%v label=%v metaProxy=%v id=%v\n", rec.Type, rec.GetLabel(), rec.Metadata[metaProxy], id)
 	if rec.Metadata[metaProxy] != "off" {
 		arr = append(arr, &models.Correction{
 			Msg: fmt.Sprintf("ACTIVATE PROXY for new record %s %s %d %s", rec.GetLabel(), rec.Type, rec.TTL, rec.GetTargetField()),
 			F:   func() error { return c.modifyRecord(domainID, id, true, rec) },
 		})
 	}
+	return arr
+}
+
+func (c *cloudflareProvider) createRecDiff2(rec *models.RecordConfig, domainID string, msg string) []*models.Correction {
+
+	content := rec.GetTargetField()
+	if rec.Metadata[metaOriginalIP] != "" {
+		content = rec.Metadata[metaOriginalIP]
+	}
+	prio := ""
+	if rec.Type == "MX" {
+		prio = fmt.Sprintf(" %d ", rec.MxPreference)
+	}
+	if rec.Type == "TXT" {
+		content = rec.GetTargetTXTJoined()
+	}
+	if rec.Type == "DS" {
+		content = fmt.Sprintf("%d %d %d %s", rec.DsKeyTag, rec.DsAlgorithm, rec.DsDigestType, rec.DsDigest)
+	}
+	if msg == "" {
+		msg = fmt.Sprintf("CREATE record: %s %s %d%s %s", rec.GetLabel(), rec.Type, rec.TTL, prio, content)
+	}
+	//if rec.Metadata[metaProxy] != "off" {
+	msg = msg + fmt.Sprintf("\nACTIVATE PROXY for new record %s %s %d %s", rec.GetLabel(), rec.Type, rec.TTL, rec.GetTargetField())
+	//}
+	arr := []*models.Correction{{
+		Msg: msg,
+		F: func() error {
+			cf := cloudflare.DNSRecord{
+				Name:     rec.GetLabel(),
+				Type:     rec.Type,
+				TTL:      int(rec.TTL),
+				Content:  content,
+				Priority: &rec.MxPreference,
+			}
+			if rec.Type == "SRV" {
+				cf.Data = cfSrvData(rec)
+				cf.Name = rec.GetLabelFQDN()
+			} else if rec.Type == "CAA" {
+				cf.Data = cfCaaData(rec)
+				cf.Name = rec.GetLabelFQDN()
+				cf.Content = ""
+			} else if rec.Type == "TLSA" {
+				cf.Data = cfTlsaData(rec)
+				cf.Name = rec.GetLabelFQDN()
+			} else if rec.Type == "SSHFP" {
+				cf.Data = cfSshfpData(rec)
+				cf.Name = rec.GetLabelFQDN()
+			} else if rec.Type == "DS" {
+				cf.Data = cfDSData(rec)
+			}
+			resp, err := c.cfClient.CreateDNSRecord(context.Background(), domainID, cf)
+			if err != nil {
+				return err
+			}
+			// Updating id (from the outer scope) by side-effect, required for updating proxy mode
+			id := resp.Result.ID
+			//fmt.Printf("DEBUG d2 resp.Result.Id=%v\n", id)
+			if rec.Metadata[metaProxy] == "off" {
+				return c.modifyRecord(domainID, id, false, rec)
+			}
+			if rec.Metadata[metaProxy] == "on" {
+				return c.modifyRecord(domainID, id, true, rec)
+			}
+			return nil
+		},
+	}}
+	//fmt.Printf("DEBUG: createRecWithMsg type=%v label=%v metaProxy=%v id=%v\n", rec.Type, rec.GetLabel(), rec.Metadata[metaProxy], id)
 	return arr
 }
 

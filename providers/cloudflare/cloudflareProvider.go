@@ -326,8 +326,8 @@ func (c *cloudflareProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*m
 	}
 
 	// Cloudflare is a "ByRecord" API.
-	//instructions, err := diff2.ByRecord(records, dc, genComparable)
-	instructions, err := diff2.ByRecord(records, dc, nil)
+	instructions, err := diff2.ByRecord(records, dc, genComparable)
+	//instructions, err := diff2.ByRecord(records, dc, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -386,6 +386,7 @@ func (c *cloudflareProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*m
 }
 
 func genComparable(rec *models.RecordConfig) string {
+	//fmt.Printf("DEBUG: genComparable called %v:%v meta=%+v\n", rec.Type, rec.GetLabel(), rec.Metadata)
 	if rec.Type == "A" || rec.Type == "CNAME" {
 		proxy := rec.Metadata[metaProxy]
 		if proxy != "" {
@@ -408,7 +409,7 @@ func (c *cloudflareProvider) mkCreateCorrection(newrec *models.RecordConfig, dom
 			F:   func() error { return c.createWorkerRoute(domainID, newrec.GetTargetField()) },
 		}}
 	default:
-		return c.createRec(newrec, domainID)
+		return c.createRecDiff2(newrec, domainID, msg)
 	}
 }
 
@@ -812,6 +813,20 @@ func (c *cloudflareProvider) nativeToRecord(domain string, cr cloudflare.DNSReco
 	// workaround for https://github.com/StackExchange/dnscontrol/issues/446
 	if cr.Type == "SPF" {
 		cr.Type = "TXT"
+	}
+
+	if cr.Type == "A" || cr.Type == "CNAME" || cr.Type == "AAAA" {
+		//fmt.Printf("DEBUG: nativeToRecord PROXIED=%v\n", *cr.Proxied)
+		if rc.Metadata == nil {
+			rc.Metadata = map[string]string{}
+		}
+		if cr.Proxied != nil {
+			if *(cr.Proxied) {
+				rc.Metadata[metaProxy] = "on"
+			} else {
+				rc.Metadata[metaProxy] = "off"
+			}
+		}
 	}
 
 	switch rType := cr.Type; rType { // #rtype_variations

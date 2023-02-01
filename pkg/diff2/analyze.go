@@ -182,12 +182,12 @@ func removeCommon(existing, desired []targetConfig) ([]targetConfig, []targetCon
 	eKeys := map[string]*targetConfig{}
 	for _, v := range existing {
 		v := v
-		eKeys[v.compareBlob] = &v
+		eKeys[v.compareable] = &v
 	}
 	dKeys := map[string]*targetConfig{}
 	for _, v := range desired {
 		v := v
-		dKeys[v.compareBlob] = &v
+		dKeys[v.compareable] = &v
 	}
 
 	return filterBy(existing, dKeys), filterBy(desired, eKeys)
@@ -204,24 +204,14 @@ func splitTTLOnly(existing, desired []targetConfig) (
 	for (ei < len(existing)) && (di < len(desired)) {
 		er := existing[ei].rec
 		dr := desired[di].rec
-		ecomp := er.GetTargetCombined()
-		dcomp := dr.GetTargetCombined()
-		eblob := existing[ei].compareBlob
-		dblob := desired[di].compareBlob
-		fmt.Printf("DEBUG: splitTTLOnly: ecomp=%q eblob=%v\n", ecomp, eblob)
-		fmt.Printf("DEBUG: splitTTLOnly: dcomp=%q dblob=%v\n", dcomp, dblob)
+		ecomp := existing[ei].compareable
+		dcomp := desired[di].compareable
 
-		// if ecomp == dcomp && er.TTL == dr.TTL {
-		// 	fmt.Printf("DEBUG: ecomp=%q dcomp=%q er.TTL=%v dr.TTL=%v\n", ecomp, dcomp, er.TTL, dr.TTL)
-		// 	panic("Should not happen. There should be some difference!")
-		// }
-		if eblob == dblob && er.TTL == dr.TTL {
-			fmt.Printf("DEBUG: eblob=%q dblob=%q er.TTL=%v dr.TTL=%v\n", eblob, dblob, er.TTL, dr.TTL)
+		if ecomp == dcomp && er.TTL == dr.TTL {
+			fmt.Printf("DEBUG: ecomp=%q dcomp=%q er.TTL=%v dr.TTL=%v\n", ecomp, dcomp, er.TTL, dr.TTL)
 			panic("Should not happen. There should be some difference!")
 		}
 
-		ecomp = eblob
-		dcomp = dblob
 		//fmt.Printf("DEBUG ecomp=%q dcomp=%q ettl=%d dttl=%d\n", ecomp, dcomp, er.TTL, dr.TTL)
 		if ecomp == dcomp && er.TTL != dr.TTL {
 			//fmt.Printf("DEBUG: equal\n")
@@ -264,7 +254,7 @@ func filterBy(s []targetConfig, m map[string]*targetConfig) []targetConfig {
 	// }
 	i := 0 // output index
 	for _, x := range s {
-		if _, ok := m[x.compareBlob]; !ok {
+		if _, ok := m[x.compareable]; !ok {
 			//fmt.Printf("DEBUG: comp %q NO\n", x.compareable)
 			// copy and increment index
 			s[i] = x
@@ -300,8 +290,8 @@ func humanDiff(a, b *models.RecordConfig) string {
 func humanDiffTarg(a, b targetConfig) string {
 	aTTL := a.rec.TTL
 	bTTL := b.rec.TTL
-	acombined := a.compareBlob
-	bcombined := b.compareBlob
+	acombined := a.compareable
+	bcombined := b.compareable
 	combinedDiff := acombined != bcombined
 	ttlDiff := a.rec.TTL != b.rec.TTL
 	// TODO(tlim): It would be nice if we included special cases for MX
@@ -325,17 +315,17 @@ func diffTargets(existing, desired []targetConfig) ChangeList {
 	}
 
 	// Sort to make comparisons easier
-	sort.Slice(existing, func(i, j int) bool { return existing[i].compareBlob < existing[j].compareBlob })
-	sort.Slice(desired, func(i, j int) bool { return desired[i].compareBlob < desired[j].compareBlob })
+	sort.Slice(existing, func(i, j int) bool { return existing[i].compareable < existing[j].compareable })
+	sort.Slice(desired, func(i, j int) bool { return desired[i].compareable < desired[j].compareable })
 
 	var instructions ChangeList
 
 	// remove the exact matches.
-	fmt.Printf("DEBUG: diffTargets BEFORE existing=%v\n", existing)
-	fmt.Printf("DEBUG: diffTargets BEFORE desired=%v\n", desired)
+	//fmt.Printf("DEBUG: diffTargets BEFORE existing=%+v\n", existing)
+	//fmt.Printf("DEBUG: diffTargets BEFORE desired=%+v\n", desired)
 	existing, desired = removeCommon(existing, desired)
-	fmt.Printf("DEBUG: diffTargets AFTER existing=%v\n", existing)
-	fmt.Printf("DEBUG: diffTargets AFTER desired=%v\n", desired)
+	//fmt.Printf("DEBUG: diffTargets AFTER existing=%+v\n", existing)
+	//fmt.Printf("DEBUG: diffTargets AFTER desired=%+v\n", desired)
 
 	// At this point the exact matches are removed. However there may be
 	// records that have the same GetTargetCombined() but different
@@ -346,13 +336,8 @@ func diffTargets(existing, desired []targetConfig) ChangeList {
 	for i := range desiredTTL {
 		er := existingTTL[i]
 		dr := desiredTTL[i]
-		m := fmt.Sprintf("CHANGE %s %s ", dr.NameFQDN, dr.Type) + humanDiff(er, dr)
 
-		//existing, desired, _, _ = splitTTLOnly(existing, desired)
-		//for i := range desired {
-		//	er := existing[i].rec
-		//	dr := desired[i].rec
-		//	m := fmt.Sprintf("CHANGE %s %s ", dr.NameFQDN, dr.Type) + humanDiffTarg(existing[i], desired[i])
+		m := fmt.Sprintf("CHANGE %s %s ", dr.NameFQDN, dr.Type) + humanDiff(er, dr)
 
 		instructions = append(instructions, mkChange(dr.NameFQDN, dr.Type, []string{m},
 			models.Records{er},
@@ -367,7 +352,6 @@ func diffTargets(existing, desired []targetConfig) ChangeList {
 		//fmt.Println(i, "CHANGE")
 		er := existing[i].rec
 		dr := desired[i].rec
-		fmt.Printf("DEBUG: create combined=%q erblob=%q\n", dr.GetTargetCombined(), desired[i].compareBlob)
 
 		m := fmt.Sprintf("CHANGE %s %s ", dr.NameFQDN, dr.Type) + humanDiff(existing[i].rec, desired[i].rec)
 
@@ -381,8 +365,7 @@ func diffTargets(existing, desired []targetConfig) ChangeList {
 	for i := mi; i < len(existing); i++ {
 		//fmt.Println(i, "DEL")
 		er := existing[i].rec
-		m := fmt.Sprintf("DELETE %s %s %s", er.NameFQDN, er.Type, er.GetTargetCombined())
-		//m := fmt.Sprintf("DELETE %s %s %s", er.NameFQDN, er.Type, existing[i].compareable)
+		m := fmt.Sprintf("DELETE %s %s %s", er.NameFQDN, er.Type, existing[i].compareable)
 		instructions = append(instructions, mkDeleteRec(er.NameFQDN, er.Type, []string{m}, er))
 	}
 
@@ -390,9 +373,7 @@ func diffTargets(existing, desired []targetConfig) ChangeList {
 	for i := mi; i < len(desired); i++ {
 		//fmt.Println(i, "CREATE")
 		dr := desired[i].rec
-		m := fmt.Sprintf("CREATE %s %s %s", dr.NameFQDN, dr.Type, dr.GetTargetCombined())
-		//dcomp := desired[i].compareable
-		//m := fmt.Sprintf("CREATE %s %s %s", dr.NameFQDN, dr.Type, dcomp)
+		m := fmt.Sprintf("CREATE %s %s %s", dr.NameFQDN, dr.Type, desired[i].compareable)
 		instructions = append(instructions, mkAdd(dr.NameFQDN, dr.Type, []string{m}, models.Records{dr}))
 	}
 

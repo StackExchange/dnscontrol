@@ -82,7 +82,7 @@ type rTypeConfig struct {
 }
 
 type targetConfig struct {
-	compareBlob string               // A string that can be used to compare two rec's for equality.
+	compareable string               // A string that can be used to compare two rec's for equality.
 	rec         *models.RecordConfig // The RecordConfig itself.
 }
 
@@ -195,8 +195,14 @@ func mkCompareBlob(rc *models.RecordConfig, f func(*models.RecordConfig) string)
 	if f == nil {
 		return rc.ToDiffable()
 	}
-	r := rc.ToDiffable() + " " + f(rc)
-	fmt.Printf("DEBUG: comparable %v %v %v\n", rc.Type, rc.GetTargetCombined(), r)
+	addOn := f(rc)
+	var r string
+	if addOn == "" {
+		r = rc.ToDiffable()
+	} else {
+		r = rc.ToDiffable() + " " + f(rc)
+	}
+	//fmt.Printf("DEBUG: mkCompareBlob %q old=%q new=%q\n", rc.Type, rc.ToDiffable(), r)
 	return r
 }
 
@@ -259,11 +265,11 @@ func (cc *CompareConfig) addRecords(recs models.Records, storeInExisting bool) {
 		if storeInExisting {
 			cc.ldata[labelIdx].tdata[rtIdx].existingRecs = append(cc.ldata[labelIdx].tdata[rtIdx].existingRecs, rec)
 			cc.ldata[labelIdx].tdata[rtIdx].existingTargets = append(cc.ldata[labelIdx].tdata[rtIdx].existingTargets,
-				targetConfig{compareBlob: comp, rec: rec})
+				targetConfig{compareable: comp, rec: rec})
 		} else {
 			cc.ldata[labelIdx].tdata[rtIdx].desiredRecs = append(cc.ldata[labelIdx].tdata[rtIdx].desiredRecs, rec)
 			cc.ldata[labelIdx].tdata[rtIdx].desiredTargets = append(cc.ldata[labelIdx].tdata[rtIdx].desiredTargets,
-				targetConfig{compareBlob: comp, rec: rec})
+				targetConfig{compareable: comp, rec: rec})
 		}
 		//fmt.Printf("AFTER  L: %v\n", len(cc.ldata))
 		//fmt.Printf("AFTER  E/D: %v/%v\n", len(td.existingRecs), len(td.desiredRecs))
