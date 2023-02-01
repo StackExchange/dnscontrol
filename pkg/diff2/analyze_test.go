@@ -407,7 +407,7 @@ func mkTargetConfig(x ...*models.RecordConfig) []targetConfig {
 	var tc []targetConfig
 	for _, r := range x {
 		tc = append(tc, targetConfig{
-			compareable: comparable(r, nil),
+			compareable: mkCompareBlob(r, nil),
 			rec:         r,
 		})
 	}

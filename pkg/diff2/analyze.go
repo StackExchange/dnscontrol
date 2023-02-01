@@ -208,6 +208,7 @@ func splitTTLOnly(existing, desired []targetConfig) (
 		dcomp := dr.GetTargetCombined()
 
 		if ecomp == dcomp && er.TTL == dr.TTL {
+			fmt.Printf("DEBUG: ecomp=%q dcomp=%q er.TTL=%v dr.TTL=%v\n", ecomp, dcomp, er.TTL, dr.TTL)
 			panic("Should not happen. There should be some difference!")
 		}
 
@@ -343,6 +344,8 @@ func diffTargets(existing, desired []targetConfig) ChangeList {
 		//fmt.Println(i, "DEL")
 		er := existing[i].rec
 		m := fmt.Sprintf("DELETE %s %s %s", er.NameFQDN, er.Type, er.GetTargetCombined())
+		//ecomp := existing[i].compareable
+		//m := fmt.Sprintf("DELETE %s %s %s", er.NameFQDN, er.Type, ecomp)
 		instructions = append(instructions, mkDeleteRec(er.NameFQDN, er.Type, []string{m}, er))
 	}
 
@@ -351,6 +354,8 @@ func diffTargets(existing, desired []targetConfig) ChangeList {
 		//fmt.Println(i, "CREATE")
 		dr := desired[i].rec
 		m := fmt.Sprintf("CREATE %s %s %s", dr.NameFQDN, dr.Type, dr.GetTargetCombined())
+		//dcomp := desired[i].compareable
+		//m := fmt.Sprintf("CREATE %s %s %s", dr.NameFQDN, dr.Type, dcomp)
 		instructions = append(instructions, mkAdd(dr.NameFQDN, dr.Type, []string{m}, models.Records{dr}))
 	}
 

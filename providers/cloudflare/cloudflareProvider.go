@@ -326,7 +326,7 @@ func (c *cloudflareProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*m
 	}
 
 	// Cloudflare is a "ByRecord" API.
-	instructions, err := diff2.ByRecord(records, dc, nil)
+	instructions, err := diff2.ByRecord(records, dc, genComparable)
 	if err != nil {
 		return nil, err
 	}
@@ -382,6 +382,16 @@ func (c *cloudflareProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*m
 	}
 
 	return corrections, nil
+}
+
+func genComparable(rec *models.RecordConfig) string {
+	if rec.Type == "A" || rec.Type == "CNAME" {
+		proxy := rec.Metadata[metaProxy]
+		if proxy != "" {
+			return "proxy=" + rec.Metadata[metaProxy]
+		}
+	}
+	return ""
 }
 
 func (c *cloudflareProvider) mkCreateCorrection(newrec *models.RecordConfig, domainID, msg string) []*models.Correction {
