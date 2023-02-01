@@ -16,11 +16,11 @@ var (
 )
 
 type request struct {
-	AuthToken      string `json:"authToken"`
-	OwnerAccountID string `json:"ownerAccountId,omitempty"`
-	Filter         filter `json:"filter,omitempty"`
-	Limit          uint   `json:"limit,omitempty"`
-	Page           uint   `json:"page,omitempty"`
+	AuthToken      string  `json:"authToken"`
+	OwnerAccountID string  `json:"ownerAccountId,omitempty"`
+	Filter         *filter `json:"filter,omitempty"`
+	Limit          uint    `json:"limit,omitempty"`
+	Page           uint    `json:"page,omitempty"`
 
 	// Update Zone
 	ZoneConfig      *zoneConfig `json:"zoneConfig"`
@@ -33,6 +33,8 @@ type request struct {
 
 	// Domain
 	Domain *domainConfig `json:"domain"`
+
+	DNSSECOptions *dnsSecOptions `json:"dnsSecOptions,omitempty"`
 }
 
 type filter struct {
@@ -67,8 +69,28 @@ type zoneConfig struct {
 	// 	TTL         uint32 `json:"ttl"`
 	// 	NegativeTTL uint32 `json:"negativeTtl"`
 	// } `json:"soaValues,omitempty"`
-	Type                  string   `json:"type"`
-	ZoneTransferWhitelist []string `json:"zoneTransferWhitelist"`
+	Type                  string          `json:"type"`
+	TemplateValues        json.RawMessage `json:"templateValues,omitempty"`
+	ZoneTransferWhitelist []string        `json:"zoneTransferWhitelist"`
+}
+
+type zone struct {
+	ZoneConfig zoneConfig `json:"zoneConfig"`
+	Records    []record   `json:"records"`
+}
+
+type dnsSecOptions struct {
+	Keys       []dnsSecKey `json:"flags,omitempty"`
+	Algorithms []string    `json:"algorithms,omitempty"`
+	NSECMode   string      `json:"nsecMode"`
+	PublishKSK bool        `json:"publishKsk"`
+}
+
+type dnsSecKey struct {
+	Flags     uint32 `json:"flags"`
+	Protocol  uint32 `json:"protocol"`
+	Algorithm uint32 `json:"algorithm"`
+	PublicKey string `json:"publicKey"`
 }
 
 type record struct {
@@ -129,6 +151,9 @@ func (r *record) nativeToRecord(domain string) *models.RecordConfig {
 		err = rc.PopulateFromString("MX", "0 .", domain)
 	case "MX":
 		err = rc.SetTargetMX(uint16(r.Priority), r.Content)
+	case "PTR":
+		rc.Type = r.Type
+		err = rc.SetTarget(r.Content + ".")
 	case "SRV":
 		err = rc.SetTargetSRVPriorityString(uint16(r.Priority), r.Content)
 	default:
@@ -155,15 +180,15 @@ func recordToNative(rc *models.RecordConfig) *record {
 	case "A", "AAAA", "ALIAS", "CAA", "CNAME", "DNSKEY", "DS", "NS", "NSEC", "NSEC3", "NSEC3PARAM", "PTR", "RRSIG", "SSHFP", "TSLA":
 		// Nothing special.
 	case "TXT":
-		if cap(rc.TxtStrings) == 1 {
-			record.Content = "\"" + rc.TxtStrings[0] + "\""
-		} else if cap(rc.TxtStrings) > 1 {
-			record.Content = ""
-			for _, str := range rc.TxtStrings {
-				record.Content = record.Content + " \"" + str + "\""
-			}
-			record.Content = record.Content[1:len(record.Content)]
+		txtStrings := make([]string, len(rc.TxtStrings))
+		copy(txtStrings, rc.TxtStrings)
+
+		// Escape quotes
+		for i := range txtStrings {
+			txtStrings[i] = fmt.Sprintf(`"%s"`, strings.ReplaceAll(txtStrings[i], `"`, `\"`))
 		}
+
+		record.Content = strings.Join(txtStrings, " ")
 	case "MX":
 		record.Priority = rc.MxPreference
 		record.Content = strings.TrimSuffix(rc.GetTargetField(), ".")

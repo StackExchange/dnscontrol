@@ -1,6 +1,8 @@
 package diff
 
 import (
+	"fmt"
+
 	"github.com/StackExchange/dnscontrol/v3/models"
 	"github.com/StackExchange/dnscontrol/v3/pkg/diff2"
 )
@@ -41,13 +43,13 @@ type differCompat struct {
 // IncrementalDiff generates the diff using the pkg/diff2 code.
 // NOTE: While this attempts to be backwards compatible, it does not
 // support all features of the old system:
-// * The IncrementalDiff() `unchanged` return value is always empty.
-//   Most providers ignore this return value. If a provider depends on
-//   that result, please consider one of the pkg/diff2/By*() functions
-//   instead.  (ByZone() is likely to be what you need)
-// * The NewCompat() feature `extraValues` is not supported. That
-//   parameter must be set to nil.  If you use that feature, consider
-//   one of the pkg/diff2/By*() functions.
+//   - The IncrementalDiff() `unchanged` return value is always empty.
+//     Most providers ignore this return value. If a provider depends on
+//     that result, please consider one of the pkg/diff2/By*() functions
+//     instead.  (ByZone() is likely to be what you need)
+//   - The NewCompat() feature `extraValues` is not supported. That
+//     parameter must be set to nil.  If you use that feature, consider
+//     one of the pkg/diff2/By*() functions.
 func (d *differCompat) IncrementalDiff(existing []*models.RecordConfig) (unchanged, create, toDelete, modify Changeset, err error) {
 	unchanged = Changeset{}
 	create = Changeset{}
@@ -62,6 +64,9 @@ func (d *differCompat) IncrementalDiff(existing []*models.RecordConfig) (unchang
 	for _, inst := range instructions {
 		cor := Correlation{d: d.OldDiffer}
 		switch inst.Type {
+		case diff2.REPORT:
+			// Sadly the NewCompat function doesn't have a way to do this.
+			// Purge reports are silently skipped.
 		case diff2.CREATE:
 			cor.Desired = inst.New[0]
 			create = append(create, cor)
@@ -72,6 +77,8 @@ func (d *differCompat) IncrementalDiff(existing []*models.RecordConfig) (unchang
 		case diff2.DELETE:
 			cor.Existing = inst.Old[0]
 			toDelete = append(toDelete, cor)
+		default:
+			panic(fmt.Sprintf("unhandled inst.Type %s", inst.Type))
 		}
 	}
 

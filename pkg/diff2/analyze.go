@@ -28,7 +28,7 @@ func analyzeByRecordSet(cc *CompareConfig) ChangeList {
 				instructions = append(instructions, mkAdd(lc.label, rt.rType, msgs, rt.desiredRecs))
 			} else if len(dts) == 0 { // Delete that label and all its records.
 				//fmt.Printf("DEBUG: delete\n")
-				instructions = append(instructions, mkDelete(lc.label, rt.rType, rt.existingRecs, msgs))
+				instructions = append(instructions, mkDelete(lc.label, rt.rType, msgs, rt.existingRecs))
 			} else { // Change the records at that label
 				//fmt.Printf("DEBUG: change\n")
 				instructions = append(instructions, mkChange(lc.label, rt.rType, msgs, rt.existingRecs, rt.desiredRecs))
@@ -70,7 +70,7 @@ func analyzeByLabel(cc *CompareConfig) ChangeList {
 			//fmt.Printf("DEBUG: analyzeByLabel: %02d: no change\n", i)
 		} else if len(accDesired) == 0 { // No new records at the label? This must be a delete.
 			//fmt.Printf("DEBUG: analyzeByLabel: %02d: delete\n", i)
-			instructions = append(instructions, mkDelete(label, "", accExisting, accMsgs))
+			instructions = append(instructions, mkDelete(label, "", accMsgs, accExisting))
 		} else if len(accExisting) == 0 { // No old records at the label? This must be a change.
 			//fmt.Printf("DEBUG: analyzeByLabel: %02d: create\n", i)
 			//fmt.Printf("DEBUG: analyzeByLabel mkAdd msgs=%d\n", len(accMsgs))
@@ -111,7 +111,8 @@ func analyzeByRecord(cc *CompareConfig) ChangeList {
 // NB(tlim): there is no analyzeByZone.  ByZone calls anayzeByRecords().
 
 func mkAdd(l string, t string, msgs []string, recs models.Records) Change {
-	c := Change{Type: CREATE, Msgs: msgs}
+	//fmt.Printf("DEBUG mkAdd called: (%v, %v, %v, %v)\n", l, t, msgs, recs)
+	c := Change{Type: CREATE, Msgs: msgs, MsgsJoined: strings.Join(msgs, "\n")}
 	c.Key.NameFQDN = l
 	c.Key.Type = t
 	c.New = recs
@@ -121,8 +122,7 @@ func mkAdd(l string, t string, msgs []string, recs models.Records) Change {
 // TODO(tlim): Clean these up. Some of them are exact duplicates!
 
 func mkAddByLabel(l string, t string, msgs []string, newRecs models.Records) Change {
-	//fmt.Printf("DEBUG: mkAddByLabel: len(o)=%d len(m)=%d\n", len(newRecs), len(msgs))
-	//fmt.Printf("DEBUG: mkAddByLabel: msgs = %v\n", msgs)
+	//fmt.Printf("DEBUG mkAddByLabel called: (%v, %v, %v, %v)\n", l, t, msgs, newRecs)
 	c := Change{Type: CREATE, Msgs: msgs, MsgsJoined: strings.Join(msgs, "\n")}
 	c.Key.NameFQDN = l
 	c.Key.Type = t
@@ -131,6 +131,7 @@ func mkAddByLabel(l string, t string, msgs []string, newRecs models.Records) Cha
 }
 
 func mkChange(l string, t string, msgs []string, oldRecs, newRecs models.Records) Change {
+	//fmt.Printf("DEBUG mkChange called: (%v, %v, %v, %v, %v)\n", l, t, msgs, oldRecs, newRecs)
 	c := Change{Type: CHANGE, Msgs: msgs, MsgsJoined: strings.Join(msgs, "\n")}
 	c.Key.NameFQDN = l
 	c.Key.Type = t
@@ -140,7 +141,7 @@ func mkChange(l string, t string, msgs []string, oldRecs, newRecs models.Records
 }
 
 func mkChangeLabel(l string, t string, msgs []string, oldRecs, newRecs models.Records, msgsByKey map[models.RecordKey][]string) Change {
-	//fmt.Printf("DEBUG: mkChangeLabel: len(o)=%d\n", len(oldRecs))
+	//fmt.Printf("DEBUG mkChangeLabel called: (%v, %v, %v, %v, %v, %v)\n", l, t, msgs, oldRecs, newRecs, msgsByKey)
 	c := Change{Type: CHANGE, Msgs: msgs, MsgsJoined: strings.Join(msgs, "\n")}
 	c.Key.NameFQDN = l
 	c.Key.Type = t
@@ -150,7 +151,11 @@ func mkChangeLabel(l string, t string, msgs []string, oldRecs, newRecs models.Re
 	return c
 }
 
-func mkDelete(l string, t string, oldRecs models.Records, msgs []string) Change {
+func mkDelete(l string, t string, msgs []string, oldRecs models.Records) Change {
+	//fmt.Printf("DEBUG mkDelete called: (%v, %v, %v, %v)\n", l, t, msgs, oldRecs)
+	if len(msgs) == 0 {
+		panic("mkDelete with no msg")
+	}
 	c := Change{Type: DELETE, Msgs: msgs, MsgsJoined: strings.Join(msgs, "\n")}
 	c.Key.NameFQDN = l
 	c.Key.Type = t
@@ -158,6 +163,7 @@ func mkDelete(l string, t string, oldRecs models.Records, msgs []string) Change 
 	return c
 }
 func mkDeleteRec(l string, t string, msgs []string, rec *models.RecordConfig) Change {
+	//fmt.Printf("DEBUG mkDeleteREc called: (%v, %v, %v, %v)\n", l, t, msgs, rec)
 	c := Change{Type: DELETE, Msgs: msgs, MsgsJoined: strings.Join(msgs, "\n")}
 	c.Key.NameFQDN = l
 	c.Key.Type = t
@@ -198,10 +204,11 @@ func splitTTLOnly(existing, desired []targetConfig) (
 	for (ei < len(existing)) && (di < len(desired)) {
 		er := existing[ei].rec
 		dr := desired[di].rec
-		ecomp := er.GetTargetCombined()
-		dcomp := dr.GetTargetCombined()
+		ecomp := existing[ei].compareable
+		dcomp := desired[di].compareable
 
 		if ecomp == dcomp && er.TTL == dr.TTL {
+			fmt.Printf("DEBUG: ecomp=%q dcomp=%q er.TTL=%v dr.TTL=%v\n", ecomp, dcomp, er.TTL, dr.TTL)
 			panic("Should not happen. There should be some difference!")
 		}
 
@@ -252,8 +259,6 @@ func filterBy(s []targetConfig, m map[string]*targetConfig) []targetConfig {
 			// copy and increment index
 			s[i] = x
 			i++
-		} else {
-			//fmt.Printf("DEBUG: comp %q YES\n", x.compareable)
 		}
 	}
 	// // Prevent memory leak by erasing truncated values
@@ -266,20 +271,22 @@ func filterBy(s []targetConfig, m map[string]*targetConfig) []targetConfig {
 	return s
 }
 
-func humanDiff(a, b *models.RecordConfig) string {
-	acombined := a.GetTargetCombined()
-	bcombined := b.GetTargetCombined()
+func humanDiff(a, b targetConfig) string {
+	aTTL := a.rec.TTL
+	bTTL := b.rec.TTL
+	acombined := a.compareable
+	bcombined := b.compareable
 	combinedDiff := acombined != bcombined
-	ttlDiff := a.TTL != b.TTL
-	// TODO(tlim): It would be nice if we included special cases for MX
-	// records and others.
+	ttlDiff := aTTL != bTTL
+	// TODO(tlim): Records like MX and SRV should have more clever output.
+	// For example if only the MX priority changes, show that.
 	if combinedDiff && ttlDiff {
-		return fmt.Sprintf("(%s ttl=%d) -> (%s ttl=%d)", acombined, a.TTL, bcombined, b.TTL)
+		return fmt.Sprintf("(%s ttl=%d) -> (%s ttl=%d)", acombined, aTTL, bcombined, bTTL)
 	}
 	if combinedDiff {
 		return fmt.Sprintf("(%s) -> (%s)", acombined, bcombined)
 	}
-	return fmt.Sprintf("%s (ttl %d->%d)", acombined, a.TTL, b.TTL)
+	return fmt.Sprintf("%s (ttl %d->%d)", acombined, aTTL, bTTL)
 }
 
 func diffTargets(existing, desired []targetConfig) ChangeList {
@@ -298,7 +305,11 @@ func diffTargets(existing, desired []targetConfig) ChangeList {
 	var instructions ChangeList
 
 	// remove the exact matches.
+	//fmt.Printf("DEBUG: diffTargets BEFORE existing=%+v\n", existing)
+	//fmt.Printf("DEBUG: diffTargets BEFORE desired=%+v\n", desired)
 	existing, desired = removeCommon(existing, desired)
+	//fmt.Printf("DEBUG: diffTargets AFTER existing=%+v\n", existing)
+	//fmt.Printf("DEBUG: diffTargets AFTER desired=%+v\n", desired)
 
 	// At this point the exact matches are removed. However there may be
 	// records that have the same GetTargetCombined() but different
@@ -310,7 +321,7 @@ func diffTargets(existing, desired []targetConfig) ChangeList {
 		er := existingTTL[i]
 		dr := desiredTTL[i]
 
-		m := fmt.Sprintf("CHANGE %s %s ", dr.NameFQDN, dr.Type) + humanDiff(er, dr)
+		m := fmt.Sprintf("CHANGE %s %s ", dr.NameFQDN, dr.Type) + humanDiff(existing[i], desired[i])
 
 		instructions = append(instructions, mkChange(dr.NameFQDN, dr.Type, []string{m},
 			models.Records{er},
@@ -326,7 +337,7 @@ func diffTargets(existing, desired []targetConfig) ChangeList {
 		er := existing[i].rec
 		dr := desired[i].rec
 
-		m := fmt.Sprintf("CHANGE %s %s ", dr.NameFQDN, dr.Type) + humanDiff(existing[i].rec, desired[i].rec)
+		m := fmt.Sprintf("CHANGE %s %s ", dr.NameFQDN, dr.Type) + humanDiff(existing[i], desired[i])
 
 		instructions = append(instructions, mkChange(dr.NameFQDN, dr.Type, []string{m},
 			models.Records{er},
@@ -338,7 +349,7 @@ func diffTargets(existing, desired []targetConfig) ChangeList {
 	for i := mi; i < len(existing); i++ {
 		//fmt.Println(i, "DEL")
 		er := existing[i].rec
-		m := fmt.Sprintf("DELETE %s %s %s", er.NameFQDN, er.Type, er.GetTargetCombined())
+		m := fmt.Sprintf("DELETE %s %s %s", er.NameFQDN, er.Type, existing[i].compareable)
 		instructions = append(instructions, mkDeleteRec(er.NameFQDN, er.Type, []string{m}, er))
 	}
 
@@ -346,7 +357,7 @@ func diffTargets(existing, desired []targetConfig) ChangeList {
 	for i := mi; i < len(desired); i++ {
 		//fmt.Println(i, "CREATE")
 		dr := desired[i].rec
-		m := fmt.Sprintf("CREATE %s %s %s", dr.NameFQDN, dr.Type, dr.GetTargetCombined())
+		m := fmt.Sprintf("CREATE %s %s %s", dr.NameFQDN, dr.Type, desired[i].compareable)
 		instructions = append(instructions, mkAdd(dr.NameFQDN, dr.Type, []string{m}, models.Records{dr}))
 	}
 

@@ -161,6 +161,8 @@ func (c *porkbunProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*mode
 	for _, change := range changes {
 		var corr *models.Correction
 		switch change.Type {
+		case diff2.REPORT:
+			corr = &models.Correction{Msg: change.MsgsJoined}
 		case diff2.CREATE:
 			req, err := toReq(change.New[0])
 			if err != nil {
@@ -192,6 +194,8 @@ func (c *porkbunProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*mode
 					return c.deleteRecord(dc.Name, id)
 				},
 			}
+		default:
+			panic(fmt.Sprintf("unhandled change.Type %s", change.Type))
 		}
 		corrections = append(corrections, corr)
 	}
