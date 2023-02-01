@@ -326,7 +326,8 @@ func (c *cloudflareProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*m
 	}
 
 	// Cloudflare is a "ByRecord" API.
-	instructions, err := diff2.ByRecord(records, dc, genComparable)
+	//instructions, err := diff2.ByRecord(records, dc, genComparable)
+	instructions, err := diff2.ByRecord(records, dc, nil)
 	if err != nil {
 		return nil, err
 	}
