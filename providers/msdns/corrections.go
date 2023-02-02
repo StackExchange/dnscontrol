@@ -46,29 +46,33 @@ func (client *msdnsProvider) GenerateDomainCorrections(dc *models.DomainConfig, 
 
 	var corr *models.Correction
 	for _, change := range changes {
+		msgsJoined := change.MsgsJoined
 		switch change.Type {
 		case diff2.REPORT:
-			corr = &models.Correction{Msg: change.MsgsJoined}
+			corr = &models.Correction{Msg: msgsJoined}
 		case diff2.CREATE:
+			newrec := change.New[0]
 			corr = &models.Correction{
-				Msg: change.MsgsJoined,
+				Msg: msgsJoined,
 				F: func() error {
-					return client.createOneRecord(client.dnsserver, dc.Name, change.New[0])
+					return client.createOneRecord(client.dnsserver, dc.Name, newrec)
 				},
 			}
 		case diff2.CHANGE:
+			oldrec := change.Old[0]
+			newrec := change.New[0]
 			corr = &models.Correction{
-				Msg: change.MsgsJoined,
+				Msg: msgsJoined,
 				F: func() error {
-					//fmt.Printf("DEBUG: change:\nOLD: %v\nNEW: %v\n", change.Old, change.New)
-					return client.modifyOneRecord(client.dnsserver, dc.Name, change.Old[0], change.New[0])
+					return client.modifyOneRecord(client.dnsserver, dc.Name, oldrec, newrec)
 				},
 			}
 		case diff2.DELETE:
+			oldrec := change.Old[0]
 			corr = &models.Correction{
-				Msg: change.MsgsJoined,
+				Msg: msgsJoined,
 				F: func() error {
-					return client.deleteOneRecord(client.dnsserver, dc.Name, change.Old[0])
+					return client.deleteOneRecord(client.dnsserver, dc.Name, oldrec)
 				},
 			}
 		default:
