@@ -335,7 +335,7 @@ func generatePSCreate(dnsserver, domain string, rec *models.RecordConfig) string
 		// We panic so that we quickly find any switch statements
 		// that have not been updated for a new RR type.
 	}
-	printer.Printf("DEBUG PSCreate CMD = (DEBUG-START\n%s\nDEBUG-END)\n", b.String())
+	//printer.Printf("DEBUG PSCreate CMD = (DEBUG-START\n%s\nDEBUG-END)\n", b.String())
 	return b.String()
 }
 
