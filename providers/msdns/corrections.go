@@ -62,6 +62,7 @@ func (client *msdnsProvider) GenerateDomainCorrections(dc *models.DomainConfig, 
 			corr = &models.Correction{
 				Msg: change.MsgsJoined,
 				F: func() error {
+					time.Sleep(1 * time.Second)
 					return client.modifyOneRecord(dc.Name, change.Old[0], change.New[0])
 				},
 			}
@@ -69,6 +70,7 @@ func (client *msdnsProvider) GenerateDomainCorrections(dc *models.DomainConfig, 
 			corr = &models.Correction{
 				Msg: change.MsgsJoined,
 				F: func() error {
+					time.Sleep(1 * time.Second)
 					return client.deleteOneRecord(dc.Name, change.Old[0])
 				},
 			}
