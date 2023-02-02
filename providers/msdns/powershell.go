@@ -216,8 +216,8 @@ func (psh *psHandle) RecordDelete(dnsserver, domain string, rec *models.RecordCo
 func generatePSDelete(dnsserver, domain string, rec *models.RecordConfig) string {
 
 	var b bytes.Buffer
-	//fmt.Fprintf(&b, `echo DELETE "%s" "%s" "[target]"`, rec.Type, rec.Name)
-	//fmt.Fprintf(&b, " ; ")
+	fmt.Fprintf(&b, `echo DELETE "%s" "%s" "[target]"`, rec.Type, rec.Name)
+	fmt.Fprintf(&b, " ; ")
 
 	if rec.Type == "NAPTR" {
 		x := b.String() + generatePSDeleteNaptr(dnsserver, domain, rec)
@@ -274,8 +274,8 @@ func (psh *psHandle) RecordCreate(dnsserver, domain string, rec *models.RecordCo
 
 func generatePSCreate(dnsserver, domain string, rec *models.RecordConfig) string {
 	var b bytes.Buffer
-	//fmt.Fprintf(&b, `echo CREATE "%s" "%s" "[target]"`, rec.Type, rec.Name)
-	//fmt.Fprintf(&b, " ; ")
+	fmt.Fprintf(&b, `echo CREATE "%s" "%s" "[target]"`, rec.Type, rec.Name)
+	fmt.Fprintf(&b, " ; ")
 
 	if rec.Type == "NAPTR" {
 		return b.String() + generatePSCreateNaptr(dnsserver, domain, rec)

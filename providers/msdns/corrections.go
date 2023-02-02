@@ -2,7 +2,6 @@ package msdns
 
 import (
 	"fmt"
-	"time"
 
 	"github.com/StackExchange/dnscontrol/v3/models"
 	"github.com/StackExchange/dnscontrol/v3/pkg/diff"
@@ -54,7 +53,6 @@ func (client *msdnsProvider) GenerateDomainCorrections(dc *models.DomainConfig, 
 			corr = &models.Correction{
 				Msg: change.MsgsJoined,
 				F: func() error {
-					time.Sleep(4 * time.Second)
 					return client.createOneRecord(dc.Name, change.New[0])
 				},
 			}
@@ -62,7 +60,7 @@ func (client *msdnsProvider) GenerateDomainCorrections(dc *models.DomainConfig, 
 			corr = &models.Correction{
 				Msg: change.MsgsJoined,
 				F: func() error {
-					time.Sleep(4 * time.Second)
+					fmt.Printf("DEBUG: change:\nOLD: %v\nNEW: %v\n", change.Old, change.New)
 					return client.modifyOneRecord(dc.Name, change.Old[0], change.New[0])
 				},
 			}
@@ -70,7 +68,6 @@ func (client *msdnsProvider) GenerateDomainCorrections(dc *models.DomainConfig, 
 			corr = &models.Correction{
 				Msg: change.MsgsJoined,
 				F: func() error {
-					time.Sleep(4 * time.Second)
 					return client.deleteOneRecord(dc.Name, change.Old[0])
 				},
 			}
