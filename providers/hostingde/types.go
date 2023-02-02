@@ -16,11 +16,11 @@ var (
 )
 
 type request struct {
-	AuthToken      string `json:"authToken"`
-	OwnerAccountID string `json:"ownerAccountId,omitempty"`
-	Filter         filter `json:"filter,omitempty"`
-	Limit          uint   `json:"limit,omitempty"`
-	Page           uint   `json:"page,omitempty"`
+	AuthToken      string  `json:"authToken"`
+	OwnerAccountID string  `json:"ownerAccountId,omitempty"`
+	Filter         *filter `json:"filter,omitempty"`
+	Limit          uint    `json:"limit,omitempty"`
+	Page           uint    `json:"page,omitempty"`
 
 	// Update Zone
 	ZoneConfig      *zoneConfig `json:"zoneConfig"`
@@ -33,6 +33,8 @@ type request struct {
 
 	// Domain
 	Domain *domainConfig `json:"domain"`
+
+	DNSSECOptions *dnsSecOptions `json:"dnsSecOptions,omitempty"`
 }
 
 type filter struct {
@@ -67,8 +69,28 @@ type zoneConfig struct {
 	// 	TTL         uint32 `json:"ttl"`
 	// 	NegativeTTL uint32 `json:"negativeTtl"`
 	// } `json:"soaValues,omitempty"`
-	Type                  string   `json:"type"`
-	ZoneTransferWhitelist []string `json:"zoneTransferWhitelist"`
+	Type                  string          `json:"type"`
+	TemplateValues        json.RawMessage `json:"templateValues,omitempty"`
+	ZoneTransferWhitelist []string        `json:"zoneTransferWhitelist"`
+}
+
+type zone struct {
+	ZoneConfig zoneConfig `json:"zoneConfig"`
+	Records    []record   `json:"records"`
+}
+
+type dnsSecOptions struct {
+	Keys       []dnsSecKey `json:"flags,omitempty"`
+	Algorithms []string    `json:"algorithms,omitempty"`
+	NSECMode   string      `json:"nsecMode"`
+	PublishKSK bool        `json:"publishKsk"`
+}
+
+type dnsSecKey struct {
+	Flags     uint32 `json:"flags"`
+	Protocol  uint32 `json:"protocol"`
+	Algorithm uint32 `json:"algorithm"`
+	PublicKey string `json:"publicKey"`
 }
 
 type record struct {

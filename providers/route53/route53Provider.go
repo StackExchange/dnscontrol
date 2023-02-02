@@ -272,8 +272,8 @@ func (r *route53Provider) GetDomainCorrections(dc *models.DomainConfig) ([]*mode
 		return nil, err
 	}
 
+	// update zone_id to current zone.id if not specified by the user
 	for _, want := range dc.Records {
-		// update zone_id to current zone.id if not specified by the user
 		if want.Type == "R53_ALIAS" && want.R53Alias["zone_id"] == "" {
 			want.R53Alias["zone_id"] = getZoneID(zone, want)
 		}
@@ -284,7 +284,7 @@ func (r *route53Provider) GetDomainCorrections(dc *models.DomainConfig) ([]*mode
 	txtutil.SplitSingleLongTxt(dc.Records) // Autosplit long TXT records
 
 	var corrections []*models.Correction
-	if !diff2.EnableDiff2 || true { // Remove "|| true" when diff2 version arrives
+	if !diff2.EnableDiff2 {
 
 		// diff
 		differ := diff.New(dc, getAliasMap)
@@ -471,9 +471,130 @@ func (r *route53Provider) GetDomainCorrections(dc *models.DomainConfig) ([]*mode
 
 	}
 
-	// Insert Future diff2 version here.
+	changes := []r53Types.Change{}
+	changeDesc := []string{}
+
+	// Amazon Route53 is a "ByRecordSet" API.
+	// At each label:rtype pair, we either delete all records or UPSERT the desired records.
+	instructions, err := diff2.ByRecordSet(existingRecords, dc, nil)
+	if err != nil {
+		return nil, err
+	}
+	instructions = reorderInstructions(instructions)
+	for _, inst := range instructions {
+		instNameFQDN := inst.Key.NameFQDN
+		instType := inst.Key.Type
+		var chg r53Types.Change
+
+		switch inst.Type {
+
+		case diff2.REPORT:
+			corrections = append(corrections, &models.Correction{Msg: inst.MsgsJoined})
+
+		case diff2.CREATE:
+			fallthrough
+		case diff2.CHANGE:
+			// To CREATE/CHANGE, build a new record set from the desired state and UPSERT it.
+
+			// Make the rrset to be UPSERTed:
+			var rrset *r53Types.ResourceRecordSet
+			if instType == "R53_ALIAS" {
+				// A R53_ALIAS_* requires ResourceRecordSet to a a single item, not a list.
+				if len(inst.New) != 1 {
+					log.Fatal("Only one R53_ALIAS_ permitted on a label")
+				}
+				rrset = aliasToRRSet(zone, inst.New[0])
+				rrset.Name = aws.String(instNameFQDN)
+			} else {
+				// Make a list of all the records to be installed at label:rtype
+				rrset = &r53Types.ResourceRecordSet{
+					Name: aws.String(instNameFQDN),
+					Type: r53Types.RRType(instType),
+				}
+
+				for _, r := range inst.New {
+					rr := r53Types.ResourceRecord{
+						Value: aws.String(r.GetTargetCombined()),
+					}
+					rrset.ResourceRecords = append(rrset.ResourceRecords, rr)
+					i := int64(r.TTL)
+					rrset.TTL = &i
+				}
+			}
+			chg = r53Types.Change{
+				Action:            r53Types.ChangeActionUpsert,
+				ResourceRecordSet: rrset,
+			}
+
+		case diff2.DELETE:
+			rrset := inst.Old[0].Original.(r53Types.ResourceRecordSet) // The native record as downloaded via the API
+			chg = r53Types.Change{
+				Action:            r53Types.ChangeActionDelete,
+				ResourceRecordSet: &rrset,
+			}
+
+		default:
+			panic(fmt.Sprintf("unhandled inst.Type %s", inst.Type))
+
+		}
+
+		changes = append(changes, chg)
+		changeDesc = append(changeDesc, inst.Msgs...)
+	}
+
+	addCorrection := func(msg string, req *r53.ChangeResourceRecordSetsInput) {
+		corrections = append(corrections,
+			&models.Correction{
+				Msg: msg,
+				F: func() error {
+					var err error
+					req.HostedZoneId = zone.Id
+					withRetry(func() error {
+						_, err = r.client.ChangeResourceRecordSets(context.Background(), req)
+						return err
+					})
+					return err
+				},
+			})
+
+	}
+
+	// Send the changes in as few API calls as possible.
+	batcher := newChangeBatcher(changes)
+	for batcher.Next() {
+		start, end := batcher.Batch()
+		batch := changes[start:end]
+		descBatchStr := strings.Join(changeDesc[start:end], "\n")
+		req := &r53.ChangeResourceRecordSetsInput{
+			ChangeBatch: &r53Types.ChangeBatch{Changes: batch},
+		}
+		addCorrection(descBatchStr, req)
+	}
+	if err := batcher.Err(); err != nil {
+		return nil, err
+	}
 
 	return corrections, nil
+
+}
+
+// reorderInstructions returns changes reordered to comply with AWS's requirements:
+//   - The R43_ALIAS updates must come after records they refer to.  To handle
+//     this, we simply move all R53_ALIAS instructions to the end of the list, thus
+//     guaranteeing they will happen after the records they refer to have been
+//     reated.
+func reorderInstructions(changes diff2.ChangeList) diff2.ChangeList {
+	var main, tail diff2.ChangeList
+	for _, change := range changes {
+		if change.Key.Type == "R53_ALIAS" {
+			tail = append(tail, change)
+		} else {
+			main = append(main, change)
+		}
+	}
+	return append(main, tail...)
+	// NB(tlim): This algorithm is O(n*2) but it is simple and usually only
+	// operates on very small lists.
 }
 
 func nativeToRecords(set r53Types.ResourceRecordSet, origin string) ([]*models.RecordConfig, error) {
@@ -489,6 +610,10 @@ func nativeToRecords(set r53Types.ResourceRecordSet, origin string) ([]*models.R
 		}
 		rc.SetLabelFromFQDN(unescape(set.Name), origin)
 		rc.SetTarget(aws.ToString(set.AliasTarget.DNSName))
+		// rc.Original stores a pointer to the original set for use by
+		// r53Types.ChangeActionDelete and anything else that needs the
+		// native record verbatim.
+		rc.Original = set
 		results = append(results, rc)
 	} else if set.TrafficPolicyInstanceId != nil {
 		// skip traffic policy records
@@ -535,6 +660,7 @@ func nativeToRecords(set r53Types.ResourceRecordSet, origin string) ([]*models.R
 				if err := rc.PopulateFromString(string(rtype), val, origin); err != nil {
 					return nil, fmt.Errorf("unparsable record received from R53: %w", err)
 				}
+				rc.Original = set
 				results = append(results, rc)
 			}
 		}

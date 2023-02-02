@@ -88,12 +88,15 @@ func generateFunctionTypes() (string, error) {
 				continue
 			}
 
-			body = body + "\n"
-			body = strings.ReplaceAll(body, "{% hint style=\"danger\" %}", "")
-			body = strings.ReplaceAll(body, "{% hint style=\"info\" %}", "")
-			body = strings.ReplaceAll(body, "{% hint style=\"success\" %}", "")
-			body = strings.ReplaceAll(body, "{% hint style=\"warning\" %}", "")
-			body = strings.ReplaceAll(body, "{% endhint %}", "")
+			lines := strings.Split(body, "\n")
+			body = ""
+			for _, line := range lines {
+				if strings.HasPrefix(line, "{%") && strings.HasSuffix(line, "%}") {
+					continue
+				}
+				body += line + "\n"
+			}
+
 			body = strings.ReplaceAll(body, "**NOTE**", "NOTE")
 			body = strings.ReplaceAll(body, "**WARNING**", "WARNING")
 			body = fixRuns(body)

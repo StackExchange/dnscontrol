@@ -17,7 +17,7 @@ import (
 var defaultNameservers = []string{"ns1.hosting.de.", "ns2.hosting.de.", "ns3.hosting.de."}
 
 var features = providers.DocumentationNotes{
-	providers.CanAutoDNSSEC:          providers.Unimplemented("Supported but not implemented yet."),
+	providers.CanAutoDNSSEC:          providers.Can(),
 	providers.CanGetZones:            providers.Can(),
 	providers.CanUseAlias:            providers.Can(),
 	providers.CanUseCAA:              providers.Can(),
@@ -46,7 +46,7 @@ type providerMeta struct {
 }
 
 func newHostingde(m map[string]string, providermeta json.RawMessage) (*hostingdeProvider, error) {
-	authToken, ownerAccountID, baseURL := m["authToken"], m["ownerAccountId"], m["baseURL"]
+	authToken, ownerAccountID, filterAccountId, baseURL := m["authToken"], m["ownerAccountId"], m["filterAccountId"], m["baseURL"]
 
 	if authToken == "" {
 		return nil, fmt.Errorf("hosting.de: authtoken must be provided")
@@ -58,10 +58,11 @@ func newHostingde(m map[string]string, providermeta json.RawMessage) (*hostingde
 	baseURL = strings.TrimSuffix(baseURL, "/")
 
 	hp := &hostingdeProvider{
-		authToken:      authToken,
-		ownerAccountID: ownerAccountID,
-		baseURL:        baseURL,
-		nameservers:    defaultNameservers,
+		authToken:       authToken,
+		ownerAccountID:  ownerAccountID,
+		filterAccountId: filterAccountId,
+		baseURL:         baseURL,
+		nameservers:     defaultNameservers,
 	}
 
 	if len(providermeta) > 0 {
@@ -91,11 +92,14 @@ func (hp *hostingdeProvider) GetNameservers(domain string) ([]*models.Nameserver
 }
 
 func (hp *hostingdeProvider) GetZoneRecords(domain string) (models.Records, error) {
-	src, err := hp.getRecords(domain)
+	zone, err := hp.getZone(domain)
 	if err != nil {
 		return nil, err
 	}
+	return hp.ApiRecordsToStandardRecordsModel(domain, zone.Records), nil
+}
 
+func (hp *hostingdeProvider) ApiRecordsToStandardRecordsModel(domain string, src []record) models.Records {
 	records := []*models.RecordConfig{}
 	for _, r := range src {
 		if r.Type == "SOA" {
@@ -104,7 +108,7 @@ func (hp *hostingdeProvider) GetZoneRecords(domain string) (models.Records, erro
 		records = append(records, r.nativeToRecord(domain))
 	}
 
-	return records, nil
+	return records
 }
 
 func (hp *hostingdeProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Correction, error) {
@@ -122,11 +126,12 @@ func (hp *hostingdeProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*m
 			r.TTL = 31556926
 		}
 	}
-
-	records, err := hp.GetZoneRecords(dc.Name)
+	zone, err := hp.getZone(dc.Name)
 	if err != nil {
 		return nil, err
 	}
+
+	records := hp.ApiRecordsToStandardRecordsModel(dc.Name, zone.Records)
 
 	var create, del, mod diff.Changeset
 	if !diff2.EnableDiff2 {
@@ -148,7 +153,37 @@ func (hp *hostingdeProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*m
 		msg = append(msg, c.String())
 	}
 
-	if len(create) == 0 && len(del) == 0 && len(mod) == 0 {
+	existingAutoDNSSecEnabled := zone.ZoneConfig.DNSSECMode == "automatic"
+	desiredAutoDNSSecEnabled := dc.AutoDNSSEC == "on"
+
+	var DnsSecOptions *dnsSecOptions = nil
+
+	// ensure that publishKsk is set for domains with AutoDNSSec
+	if existingAutoDNSSecEnabled && desiredAutoDNSSecEnabled {
+		CurrentDnsSecOptions, err := hp.getDNSSECOptions(zone.ZoneConfig.ID)
+		if err != nil {
+			return nil, err
+		}
+		if !CurrentDnsSecOptions.PublishKSK {
+			msg = append(msg, "Enabling publishKsk for AutoDNSSec")
+			DnsSecOptions = CurrentDnsSecOptions
+			DnsSecOptions.PublishKSK = true
+		}
+	}
+
+	if !existingAutoDNSSecEnabled && desiredAutoDNSSecEnabled {
+		msg = append(msg, "Enable AutoDNSSEC")
+		DnsSecOptions = &dnsSecOptions{
+			NSECMode:   "nsec3",
+			PublishKSK: true,
+		}
+		zone.ZoneConfig.DNSSECMode = "automatic"
+	} else if existingAutoDNSSecEnabled && !desiredAutoDNSSecEnabled {
+		msg = append(msg, "Disable AutoDNSSEC")
+		zone.ZoneConfig.DNSSECMode = "off"
+	}
+
+	if len(create) == 0 && len(del) == 0 && len(mod) == 0 && existingAutoDNSSecEnabled == desiredAutoDNSSecEnabled && DnsSecOptions == nil {
 		return nil, nil
 	}
 
@@ -157,7 +192,7 @@ func (hp *hostingdeProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*m
 			Msg: fmt.Sprintf("\n%s", strings.Join(msg, "\n")),
 			F: func() error {
 				for i := 0; i < 10; i++ {
-					err := hp.updateRecords(dc.Name, create, del, mod)
+					err := hp.updateZone(&zone.ZoneConfig, DnsSecOptions, create, del, mod)
 					if err == nil {
 						return nil
 					}
@@ -209,8 +244,6 @@ func (hp *hostingdeProvider) GetRegistrarCorrections(dc *models.DomainConfig) ([
 	}
 
 	return nil, nil
-
-	// TODO: Handle AutoDNSSEC
 }
 
 func (hp *hostingdeProvider) EnsureDomainExists(domain string) error {
@@ -221,4 +254,17 @@ func (hp *hostingdeProvider) EnsureDomainExists(domain string) error {
 		}
 	}
 	return nil
+}
+
+func (hp *hostingdeProvider) ListZones() ([]string, error) {
+	zcs, err := hp.getAllZoneConfigs()
+	if err != nil {
+		return nil, err
+	}
+	zones := make([]string, 0, len(zcs))
+	for _, zoneConfig := range zcs {
+		zones = append(zones, zoneConfig.Name)
+	}
+	return zones, nil
+
 }

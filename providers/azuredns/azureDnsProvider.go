@@ -340,6 +340,9 @@ func (a *azurednsProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*mod
 	for _, inst := range instructions {
 		switch inst.Type {
 
+		case diff2.REPORT:
+			corrections = append(corrections, &models.Correction{Msg: inst.MsgsJoined})
+
 		case diff2.CHANGE, diff2.CREATE:
 			var rrset *adns.RecordSet
 			var recordName string
@@ -390,6 +393,10 @@ func (a *azurednsProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*mod
 						return nil
 					},
 				})
+
+		default:
+			panic(fmt.Sprintf("unhandled inst.Type %s", inst.Type))
+
 		}
 
 	}
