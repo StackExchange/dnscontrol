@@ -46,7 +46,7 @@ require (
 	github.com/pquerna/otp v1.4.0
 	github.com/qdm12/reprint v0.0.0-20200326205758-722754a53494
 	github.com/robertkrimen/otto v0.2.1
-	github.com/softlayer/softlayer-go v1.0.6
+	github.com/softlayer/softlayer-go v1.1.0
 	github.com/stretchr/testify v1.8.1
 	github.com/transip/gotransip/v6 v6.17.0
 	github.com/urfave/cli/v2 v2.24.2
@@ -54,7 +54,7 @@ require (
 	golang.org/x/net v0.5.0
 	golang.org/x/oauth2 v0.4.0
 	google.golang.org/api v0.109.0
-	gopkg.in/ns1/ns1-go.v2 v2.7.2
+	gopkg.in/ns1/ns1-go.v2 v2.7.4
 )
 
 require (
