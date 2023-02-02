@@ -53,7 +53,7 @@ func (client *msdnsProvider) GenerateDomainCorrections(dc *models.DomainConfig, 
 			corr = &models.Correction{
 				Msg: change.MsgsJoined,
 				F: func() error {
-					return client.createOneRecord(dc.Name, change.New[0])
+					return client.createOneRecord(client.dnsserver, dc.Name, change.New[0])
 				},
 			}
 		case diff2.CHANGE:
@@ -61,14 +61,14 @@ func (client *msdnsProvider) GenerateDomainCorrections(dc *models.DomainConfig, 
 				Msg: change.MsgsJoined,
 				F: func() error {
 					fmt.Printf("DEBUG: change:\nOLD: %v\nNEW: %v\n", change.Old, change.New)
-					return client.modifyOneRecord(dc.Name, change.Old[0], change.New[0])
+					return client.modifyOneRecord(client.dnsserver, dc.Name, change.Old[0], change.New[0])
 				},
 			}
 		case diff2.DELETE:
 			corr = &models.Correction{
 				Msg: change.MsgsJoined,
 				F: func() error {
-					return client.deleteOneRecord(dc.Name, change.Old[0])
+					return client.deleteOneRecord(client.dnsserver, dc.Name, change.Old[0])
 				},
 			}
 		default:
@@ -81,16 +81,16 @@ func (client *msdnsProvider) GenerateDomainCorrections(dc *models.DomainConfig, 
 	return corrections, nil
 }
 
-func (client *msdnsProvider) deleteOneRecord(zonename string, oldrec *models.RecordConfig) error {
-	return client.shell.RecordDelete(client.dnsserver, zonename, oldrec)
+func (client *msdnsProvider) deleteOneRecord(dnsserver, zonename string, oldrec *models.RecordConfig) error {
+	return client.shell.RecordDelete(dnsserver, zonename, oldrec)
 }
 
-func (client *msdnsProvider) createOneRecord(zonename string, newrec *models.RecordConfig) error {
-	return client.shell.RecordCreate(client.dnsserver, zonename, newrec)
+func (client *msdnsProvider) createOneRecord(dnsserver, zonename string, newrec *models.RecordConfig) error {
+	return client.shell.RecordCreate(dnsserver, zonename, newrec)
 }
 
-func (client *msdnsProvider) modifyOneRecord(zonename string, oldrec, newrec *models.RecordConfig) error {
-	return client.shell.RecordModify(client.dnsserver, zonename, oldrec, newrec)
+func (client *msdnsProvider) modifyOneRecord(dnsserver, zonename string, oldrec, newrec *models.RecordConfig) error {
+	return client.shell.RecordModify(dnsserver, zonename, oldrec, newrec)
 }
 
 func (client *msdnsProvider) deleteRec(dnsserver, domainname string, cor diff.Correlation) *models.Correction {
