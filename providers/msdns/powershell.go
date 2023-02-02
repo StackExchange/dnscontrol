@@ -340,7 +340,6 @@ func generatePSCreate(dnsserver, domain string, rec *models.RecordConfig) string
 }
 
 func (psh *psHandle) RecordModify(dnsserver, domain string, old, rec *models.RecordConfig) error {
-
 	c := generatePSModify(dnsserver, domain, old, rec)
 	_, stderr, err := psh.shell.Execute(c)
 	if err != nil {

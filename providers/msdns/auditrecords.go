@@ -29,5 +29,7 @@ func AuditRecords(records []*models.RecordConfig) []error {
 
 	a.Add("TXT", rejectif.TxtIsExactlyLen255) // Last verified 2023-02-02
 
+	a.Add("TXT", rejectif.TxtIsExactlyLen255) // Last verified 2023-02-02
+
 	return a.Audit(records)
 }
