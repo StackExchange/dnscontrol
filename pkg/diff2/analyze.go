@@ -204,10 +204,11 @@ func splitTTLOnly(existing, desired []targetConfig) (
 	for (ei < len(existing)) && (di < len(desired)) {
 		er := existing[ei].rec
 		dr := desired[di].rec
-		ecomp := er.GetTargetCombined()
-		dcomp := dr.GetTargetCombined()
+		ecomp := existing[ei].compareable
+		dcomp := desired[di].compareable
 
 		if ecomp == dcomp && er.TTL == dr.TTL {
+			fmt.Printf("DEBUG: ecomp=%q dcomp=%q er.TTL=%v dr.TTL=%v\n", ecomp, dcomp, er.TTL, dr.TTL)
 			panic("Should not happen. There should be some difference!")
 		}
 
@@ -270,20 +271,22 @@ func filterBy(s []targetConfig, m map[string]*targetConfig) []targetConfig {
 	return s
 }
 
-func humanDiff(a, b *models.RecordConfig) string {
-	acombined := a.GetTargetCombined()
-	bcombined := b.GetTargetCombined()
+func humanDiff(a, b targetConfig) string {
+	aTTL := a.rec.TTL
+	bTTL := b.rec.TTL
+	acombined := a.compareable
+	bcombined := b.compareable
 	combinedDiff := acombined != bcombined
-	ttlDiff := a.TTL != b.TTL
-	// TODO(tlim): It would be nice if we included special cases for MX
-	// records and others.
+	ttlDiff := aTTL != bTTL
+	// TODO(tlim): Records like MX and SRV should have more clever output.
+	// For example if only the MX priority changes, show that.
 	if combinedDiff && ttlDiff {
-		return fmt.Sprintf("(%s ttl=%d) -> (%s ttl=%d)", acombined, a.TTL, bcombined, b.TTL)
+		return fmt.Sprintf("(%s ttl=%d) -> (%s ttl=%d)", acombined, aTTL, bcombined, bTTL)
 	}
 	if combinedDiff {
 		return fmt.Sprintf("(%s) -> (%s)", acombined, bcombined)
 	}
-	return fmt.Sprintf("%s (ttl %d->%d)", acombined, a.TTL, b.TTL)
+	return fmt.Sprintf("%s (ttl %d->%d)", acombined, aTTL, bTTL)
 }
 
 func diffTargets(existing, desired []targetConfig) ChangeList {
@@ -302,7 +305,11 @@ func diffTargets(existing, desired []targetConfig) ChangeList {
 	var instructions ChangeList
 
 	// remove the exact matches.
+	//fmt.Printf("DEBUG: diffTargets BEFORE existing=%+v\n", existing)
+	//fmt.Printf("DEBUG: diffTargets BEFORE desired=%+v\n", desired)
 	existing, desired = removeCommon(existing, desired)
+	//fmt.Printf("DEBUG: diffTargets AFTER existing=%+v\n", existing)
+	//fmt.Printf("DEBUG: diffTargets AFTER desired=%+v\n", desired)
 
 	// At this point the exact matches are removed. However there may be
 	// records that have the same GetTargetCombined() but different
@@ -314,7 +321,7 @@ func diffTargets(existing, desired []targetConfig) ChangeList {
 		er := existingTTL[i]
 		dr := desiredTTL[i]
 
-		m := fmt.Sprintf("CHANGE %s %s ", dr.NameFQDN, dr.Type) + humanDiff(er, dr)
+		m := fmt.Sprintf("CHANGE %s %s ", dr.NameFQDN, dr.Type) + humanDiff(existing[i], desired[i])
 
 		instructions = append(instructions, mkChange(dr.NameFQDN, dr.Type, []string{m},
 			models.Records{er},
@@ -330,7 +337,7 @@ func diffTargets(existing, desired []targetConfig) ChangeList {
 		er := existing[i].rec
 		dr := desired[i].rec
 
-		m := fmt.Sprintf("CHANGE %s %s ", dr.NameFQDN, dr.Type) + humanDiff(existing[i].rec, desired[i].rec)
+		m := fmt.Sprintf("CHANGE %s %s ", dr.NameFQDN, dr.Type) + humanDiff(existing[i], desired[i])
 
 		instructions = append(instructions, mkChange(dr.NameFQDN, dr.Type, []string{m},
 			models.Records{er},
@@ -342,7 +349,7 @@ func diffTargets(existing, desired []targetConfig) ChangeList {
 	for i := mi; i < len(existing); i++ {
 		//fmt.Println(i, "DEL")
 		er := existing[i].rec
-		m := fmt.Sprintf("DELETE %s %s %s", er.NameFQDN, er.Type, er.GetTargetCombined())
+		m := fmt.Sprintf("DELETE %s %s %s", er.NameFQDN, er.Type, existing[i].compareable)
 		instructions = append(instructions, mkDeleteRec(er.NameFQDN, er.Type, []string{m}, er))
 	}
 
@@ -350,7 +357,7 @@ func diffTargets(existing, desired []targetConfig) ChangeList {
 	for i := mi; i < len(desired); i++ {
 		//fmt.Println(i, "CREATE")
 		dr := desired[i].rec
-		m := fmt.Sprintf("CREATE %s %s %s", dr.NameFQDN, dr.Type, dr.GetTargetCombined())
+		m := fmt.Sprintf("CREATE %s %s %s", dr.NameFQDN, dr.Type, desired[i].compareable)
 		instructions = append(instructions, mkAdd(dr.NameFQDN, dr.Type, []string{m}, models.Records{dr}))
 	}
 

@@ -212,25 +212,28 @@ func (n *nsone) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Correct
 		recs := change.New
 		desc := strings.Join(change.Msgs, "\n")
 
-		if change.Type == diff2.CREATE {
+		switch change.Type {
+		case diff2.REPORT:
+			corrections = append(corrections, &models.Correction{Msg: change.MsgsJoined})
+		case diff2.CREATE:
 			corrections = append(corrections, &models.Correction{
 				Msg: desc,
 				F:   func() error { return n.add(recs, dc.Name) },
 			})
-		}
-		if change.Type == diff2.CHANGE {
+		case diff2.CHANGE:
 			corrections = append(corrections, &models.Correction{
 				Msg: desc,
 				F:   func() error { return n.modify(recs, dc.Name) },
 			})
-
-		}
-		if change.Type == diff2.DELETE {
+		case diff2.DELETE:
 			corrections = append(corrections, &models.Correction{
 				Msg: desc,
 				F:   func() error { return n.remove(key, dc.Name) },
 			})
+		default:
+			panic(fmt.Sprintf("unhandled inst.Type %s", change.Type))
 		}
+
 	}
 	return corrections, nil
 }
