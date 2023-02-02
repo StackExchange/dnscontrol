@@ -241,7 +241,7 @@ func generatePSDelete(dnsserver, domain string, rec *models.RecordConfig) string
 		// https://www.gitmemory.com/issue/MicrosoftDocs/windows-powershell-docs/1149/511916884
 		fmt.Fprintf(&b, ` -RecordData %d,%d,%d,"%s"`, rec.SrvPriority, rec.SrvWeight, rec.SrvPort, rec.GetTargetField())
 	} else {
-		fmt.Fprintf(&b, ` -RecordData "%q"`, rec.GetTargetField())
+		fmt.Fprintf(&b, ` -RecordData %q`, rec.GetTargetField())
 	}
 	//printer.Printf("DEBUG PSDelete CMD = (\n%s\n)\n", b.String())
 	return b.String()
