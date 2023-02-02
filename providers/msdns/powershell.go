@@ -19,12 +19,12 @@ type psHandle struct {
 	shell ps.Shell
 }
 
-func eLog(s string) {
-	f, _ := os.OpenFile("text.log", os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
-	f.WriteString(s)
-	f.WriteString("\n")
-	f.Close()
-}
+// func eLog(s string) {
+// 	f, _ := os.OpenFile("powershell.log", os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
+// 	f.WriteString(s)
+// 	f.WriteString("\n")
+// 	f.Close()
+// }
 
 func newPowerShell(config map[string]string) (*psHandle, error) {
 
@@ -207,7 +207,7 @@ func (psh *psHandle) RecordDelete(dnsserver, domain string, rec *models.RecordCo
 		c = generatePSDelete(dnsserver, domain, rec)
 	}
 
-	eLog(c)
+	//eLog(c)
 	_, stderr, err := psh.shell.Execute(c)
 	if err != nil {
 		printer.Printf("PowerShell code was:\nSTART\n%s\nEND\n", c)
@@ -266,7 +266,7 @@ func (psh *psHandle) RecordCreate(dnsserver, domain string, rec *models.RecordCo
 		//printer.Printf("DEBUG: PScreate\n")
 	}
 
-	eLog(c)
+	//eLog(c)
 	stdout, stderr, err := psh.shell.Execute(c)
 	if err != nil {
 		printer.Printf("PowerShell code was:\nSTART\n%s\nEND\n", c)
@@ -350,7 +350,7 @@ func generatePSCreate(dnsserver, domain string, rec *models.RecordConfig) string
 
 func (psh *psHandle) RecordModify(dnsserver, domain string, old, rec *models.RecordConfig) error {
 	c := generatePSModify(dnsserver, domain, old, rec)
-	eLog(c)
+	//eLog(c)
 	_, stderr, err := psh.shell.Execute(c)
 	if err != nil {
 		printer.Printf("PowerShell code was:\nSTART\n%s\nEND\n", c)
