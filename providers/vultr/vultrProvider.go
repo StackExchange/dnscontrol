@@ -183,6 +183,8 @@ func (api *vultrProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*mode
 
 	for _, change := range changes {
 		switch change.Type {
+		case diff2.REPORT:
+			corrections = append(corrections, &models.Correction{Msg: change.MsgsJoined})
 		case diff2.CREATE:
 			r := toVultrRecord(dc, change.New[0], "0")
 			corrections = append(corrections, &models.Correction{
@@ -208,6 +210,8 @@ func (api *vultrProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*mode
 					return api.client.DomainRecord.Delete(context.Background(), dc.Name, id)
 				},
 			})
+		default:
+			panic(fmt.Sprintf("unhandled change.Type %s", change.Type))
 		}
 	}
 
