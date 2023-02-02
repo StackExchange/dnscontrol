@@ -60,7 +60,7 @@ func (client *msdnsProvider) GenerateDomainCorrections(dc *models.DomainConfig, 
 			corr = &models.Correction{
 				Msg: change.MsgsJoined,
 				F: func() error {
-					fmt.Printf("DEBUG: change:\nOLD: %v\nNEW: %v\n", change.Old, change.New)
+					//fmt.Printf("DEBUG: change:\nOLD: %v\nNEW: %v\n", change.Old, change.New)
 					return client.modifyOneRecord(client.dnsserver, dc.Name, change.Old[0], change.New[0])
 				},
 			}
