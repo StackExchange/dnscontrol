@@ -376,17 +376,19 @@ func (a *azurednsProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*mod
 		case diff2.DELETE:
 			fmt.Printf("DEBUG: azure inst=%s\n", inst)
 			rrset := inst.Old[0].Original.(*adns.RecordSet)
+			rt, err := nativeToRecordType(rrset.Type)
+			aResourceGroup := *a.resourceGroup
+			zoneName := zoneName
 			corrections = append(corrections,
 				&models.Correction{
 					Msg: strings.Join(inst.Msgs, "\n"),
 					F: func() error {
 						ctx, cancel := context.WithTimeout(context.Background(), 6000*time.Second)
 						defer cancel()
-						rt, err := nativeToRecordType(rrset.Type)
 						if err != nil {
 							return err
 						}
-						_, err = a.recordsClient.Delete(ctx, *a.resourceGroup, zoneName, *rrset.Name, rt, nil)
+						_, err = a.recordsClient.Delete(ctx, aResourceGroup, zoneName, *rrset.Name, rt, nil)
 						if err != nil {
 							return err
 						}
