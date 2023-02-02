@@ -115,7 +115,7 @@ func nativeToRecords(nr nativeRecord, origin string) (*models.RecordConfig, erro
 		//	uprops["ExpireLimit"], uprops["MinimumTimeToLive"])
 	case "TXT":
 		//rc.SetTargetTXTString(sprops["DescriptiveText"])
-		rc.SetTargetTXTfromRFC1035Quoted(sprops["DescriptiveText"])
+		rc.SetTargetTXT(sprops["DescriptiveText"])
 	default:
 		return nil, fmt.Errorf(
 			"msdns/convert.go:nativeToRecord rtype=%q unknown: props=%+v and %+v",
