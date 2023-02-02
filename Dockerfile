@@ -1,6 +1,6 @@
 # syntax = docker/dockerfile:1.4
 
-FROM alpine:3.17.0@sha256:8914eb54f968791faf6a8638949e480fef81e697984fba772b3976835194c6d4 as RUN
+FROM alpine:3.17.1@sha256:f271e74b17ced29b915d351685fd4644785c6d1559dd1f2d4189a5e851ef753a as RUN
 
 #RUN --mount=type=cache,target=/var/cache/apk \
 #    apk update \
