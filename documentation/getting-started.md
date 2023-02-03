@@ -328,3 +328,8 @@ If you are going to use this in production, we highly recommend the following:
   API keys or other credentials without encrypting them.
 * Use a CI/CD tool like [Gitlab](ci-cd-gitlab.md), Jenkins, CircleCI, [GitHub Actions](https://github.com/StackExchange/dnscontrol#via-github-actions-gha), etc. to automatically push DNS changes.
 * Join the DNSControl community. File [issues](https://github.com/StackExchange/dnscontrol/issues) and [PRs](https://github.com/StackExchange/dnscontrol/pulls).
+
+## 9. Fully manage your domains and zones through dnscontrol
+Once you have configured all your domains and zones in dnscontrol, you can use the `dnscontrol preview --delete-unmanaged` and `dnscontrol push --delete-unmanaged` (or just `--delete-unmanaged-domains`/`--delete-unmanaged-zones`) to automatically delete domains/zones you have deleted in your `dnsconfig.js` from your provider.
+
+When first using this, make sure to first check with preview that you didn't forget any domains/zones! Otherwise, deleted domains/zones might be irreversibly lost.
