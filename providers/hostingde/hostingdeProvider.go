@@ -371,7 +371,6 @@ func (hp *hostingdeProvider) ListZones() ([]string, error) {
 		zones = append(zones, zoneConfig.Name)
 	}
 	return zones, nil
-
 }
 
 func (hp *hostingdeProvider) ListDomains() ([]string, error) {
