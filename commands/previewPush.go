@@ -229,28 +229,20 @@ DomainLoop:
 		anyErrors = printOrRunCorrections(domain.Name, domain.RegistrarName, corrections, out, push, interactive, notifier) || anyErrors
 	}
 
-	managedDomains := make([]string, 0, len(cfg.Domains))
-	for _, zone := range cfg.Domains {
-		managedDomains = append(managedDomains, zone.Name)
-	}
-
 	if args.DeleteUnmanagedDomains {
 		fmt.Printf("Checking Domain Removal:\n")
-		if len(createdRegistrars) != 1 {
-			return fmt.Errorf("To delete unmanaged domains, exactly one registrar must be used")
-		}
-		for name, registrar := range createdRegistrars {
+		for registrarName, registrar := range createdRegistrars {
 			domainLister, ok := registrar.(providers.DomainLister)
 			if !ok {
-				fmt.Errorf("provider type of %s cannot list zones\n", name)
+				fmt.Errorf("provider type of %s cannot list zones\n", registrarName)
 			}
 			deployedDomains, err := domainLister.ListDomains()
 			if err != nil {
 				return fmt.Errorf("failed ListZones: %w\n", err)
 			}
 			for _, domain := range deployedDomains {
-				if !slices.Contains(managedDomains, domain) {
-					fmt.Printf("Removing domain %s from provider %s\n", domain, name)
+				if !IsDomainManagedByRegistrar(cfg, domain, registrarName) {
+					fmt.Printf("Removing domain %s from provider %s\n", domain, registrarName)
 					totalCorrections += 1
 					if remover, ok := registrar.(providers.DomainRemover); ok && push {
 						if err := remover.EnsureDomainAbsent(domain); err != nil {
@@ -265,18 +257,18 @@ DomainLoop:
 	if args.DeleteUnmanagedZones {
 		fmt.Printf("Checking Zone Removal:\n")
 
-		for name, provider := range createdProviders {
+		for providerName, provider := range createdProviders {
 			zoneLister, ok := provider.(providers.ZoneLister)
 			if !ok {
-				fmt.Errorf("provider type of %s cannot list zones\n", name)
+				fmt.Errorf("provider type of %s cannot list zones\n", providerName)
 			}
 			deployedZones, err := zoneLister.ListZones()
 			if err != nil {
 				return fmt.Errorf("failed ListZones: %w\n", err)
 			}
 			for _, zone := range deployedZones {
-				if !slices.Contains(managedDomains, zone) {
-					fmt.Printf("Removing zone %s from provider %s\n", zone, name)
+				if !IsZoneManagedByProvider(cfg, zone, providerName) {
+					fmt.Printf("Removing zone %s from provider %s\n", zone, providerName)
 					totalCorrections += 1
 					if remover, ok := provider.(providers.ZoneRemover); ok && push {
 						if err := remover.EnsureZoneAbsent(zone); err != nil {
@@ -299,6 +291,38 @@ DomainLoop:
 		return fmt.Errorf("there are pending changes")
 	}
 	return nil
+}
+
+func GetDomainCfg(cfg *models.DNSConfig, domain string) *models.DomainConfig {
+	for _, domainCfg := range cfg.Domains {
+		if domainCfg.Name == domain {
+			return domainCfg
+		}
+	}
+	return nil
+}
+
+func IsDomainManagedByRegistrar(cfg *models.DNSConfig, zone string, registrarName string) bool {
+	domainCfg := GetDomainCfg(cfg, zone)
+
+	if domainCfg == nil || domainCfg.RegistrarName != registrarName {
+		return false
+	}
+	return true
+}
+
+func IsZoneManagedByProvider(cfg *models.DNSConfig, zone string, dnsProviderName string) bool {
+	domainCfg := GetDomainCfg(cfg, zone)
+
+	if domainCfg == nil {
+		return false
+	}
+	for managedProviderName, _ := range domainCfg.DNSProviderNames {
+		if managedProviderName == dnsProviderName {
+			return true
+		}
+	}
+	return false
 }
 
 // InitializeProviders takes (fully processed) configuration and instantiates all providers and returns them.
