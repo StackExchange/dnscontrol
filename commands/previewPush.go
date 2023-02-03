@@ -38,6 +38,7 @@ type PreviewArgs struct {
 	WarnChanges            bool
 	NoPopulate             bool
 	Full                   bool
+	DeleteUnmanaged        bool
 	DeleteUnmanagedDomains bool
 	DeleteUnmanagedZones   bool
 }
@@ -66,6 +67,12 @@ func (args *PreviewArgs) flags() []cli.Flag {
 		Destination: &args.DeleteUnmanagedDomains,
 		Usage:       `Use this flag to delete unmanaged domains`,
 	})
+	flags = append(flags, &cli.BoolFlag{
+		Name:        "delete-unmanaged",
+		Destination: &args.DeleteUnmanaged,
+		Usage:       `Use this flag to delete unmanaged domains and zones`,
+	})
+
 	flags = append(flags, &cli.BoolFlag{
 		Name:        "delete-unmanaged-zones",
 		Destination: &args.DeleteUnmanagedZones,
@@ -229,7 +236,7 @@ DomainLoop:
 		anyErrors = printOrRunCorrections(domain.Name, domain.RegistrarName, corrections, out, push, interactive, notifier) || anyErrors
 	}
 
-	if args.DeleteUnmanagedDomains {
+	if args.DeleteUnmanaged || args.DeleteUnmanagedDomains {
 		fmt.Printf("Checking Domain Removal:\n")
 		for registrarName, registrar := range createdRegistrars {
 			domainLister, ok := registrar.(providers.DomainLister)
@@ -254,7 +261,7 @@ DomainLoop:
 		}
 	}
 
-	if args.DeleteUnmanagedZones {
+	if args.DeleteUnmanaged || args.DeleteUnmanagedZones {
 		fmt.Printf("Checking Zone Removal:\n")
 
 		for providerName, provider := range createdProviders {
