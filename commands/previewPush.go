@@ -241,7 +241,8 @@ DomainLoop:
 		for registrarName, registrar := range createdRegistrars {
 			domainLister, ok := registrar.(providers.DomainLister)
 			if !ok {
-				fmt.Errorf("provider type of %s cannot list domains\n", registrarName)
+				out.Warnf("provider type of %s cannot list domains\n", registrarName)
+				continue
 			}
 			deployedDomains, err := domainLister.ListDomains()
 			if err != nil {
@@ -267,7 +268,8 @@ DomainLoop:
 		for providerName, provider := range createdProviders {
 			zoneLister, ok := provider.(providers.ZoneLister)
 			if !ok {
-				fmt.Errorf("provider type of %s cannot list zones\n", providerName)
+				out.Warnf("provider type of %s cannot list zones\n", providerName)
+				continue
 			}
 			deployedZones, err := zoneLister.ListZones()
 			if err != nil {
