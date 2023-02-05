@@ -139,7 +139,7 @@ func run(args PreviewArgs, push bool, interactive bool, out printer.CLI) error {
 	if err != nil {
 		return err
 	}
-	createdRegistrars, createdProviders, notifier, err := InitializeProviders(cfg, providerConfigs, args.Notify)
+	providerInitResult := InitializeProviders(cfg, providerConfigs, args.Notify)
 	if err != nil {
 		return err
 	}
@@ -211,7 +211,7 @@ DomainLoop:
 				continue DomainLoop
 			}
 			totalCorrections += len(corrections)
-			anyErrors = printOrRunCorrections(domain.Name, provider.Name, corrections, out, push, interactive, notifier) || anyErrors
+			anyErrors = printOrRunCorrections(domain.Name, provider.Name, corrections, out, push, interactive, providerInitResult.notifier) || anyErrors
 		}
 		run := args.shouldRunProvider(domain.RegistrarName, domain)
 		out.StartRegistrar(domain.RegistrarName, !run)
@@ -233,18 +233,18 @@ DomainLoop:
 			continue
 		}
 		totalCorrections += len(corrections)
-		anyErrors = printOrRunCorrections(domain.Name, domain.RegistrarName, corrections, out, push, interactive, notifier) || anyErrors
+		anyErrors = printOrRunCorrections(domain.Name, domain.RegistrarName, corrections, out, push, interactive, providerInitResult.notifier) || anyErrors
 	}
 
 	if args.DeleteUnmanaged || args.DeleteUnmanagedDomains {
-		err := DeleteUnmanagedDomains(cfg, createdRegistrars, push, out, &totalCorrections)
+		err := DeleteUnmanagedDomains(cfg, providerInitResult.createdRegistrars, push, out, &totalCorrections)
 		if err != nil {
 			return err
 		}
 	}
 
 	if args.DeleteUnmanaged || args.DeleteUnmanagedZones {
-		err := DeleteUnmanagedZones(cfg, createdProviders, push, out, &totalCorrections)
+		err := DeleteUnmanagedZones(cfg, providerInitResult.createdDnsProviders, push, out, &totalCorrections)
 		if err != nil {
 			return err
 		}
@@ -253,7 +253,7 @@ DomainLoop:
 	if os.Getenv("TEAMCITY_VERSION") != "" {
 		fmt.Fprintf(os.Stderr, "##teamcity[buildStatus status='SUCCESS' text='%d corrections']", totalCorrections)
 	}
-	notifier.Done()
+	providerInitResult.notifier.Done()
 	out.Printf("Done. %d corrections.\n", totalCorrections)
 	if anyErrors {
 		return fmt.Errorf("completed with errors")
@@ -352,11 +352,19 @@ func IsZoneManagedByProvider(cfg *models.DNSConfig, zone string, dnsProviderName
 	return false
 }
 
+type ProviderInitResult struct {
+	createdRegistrars   map[string]providers.Registrar
+	createdDnsProviders map[string]providers.DNSServiceProvider
+	notifier            notifications.Notifier
+	err                 error
+}
+
 // InitializeProviders takes (fully processed) configuration and instantiates all providers and returns them.
-func InitializeProviders(cfg *models.DNSConfig, providerConfigs map[string]map[string]string, notifyFlag bool) (createdRegistrars map[string]providers.Registrar, createdDnsProviders map[string]providers.DNSServiceProvider, notify notifications.Notifier, err error) {
+func InitializeProviders(cfg *models.DNSConfig, providerConfigs map[string]map[string]string, notifyFlag bool) ProviderInitResult {
 	var notificationCfg map[string]string
+	result := ProviderInitResult{}
 	defer func() {
-		notify = notifications.Init(notificationCfg)
+		result.notifier = notifications.Init(notificationCfg)
 	}()
 	if notifyFlag {
 		notificationCfg = providerConfigs["notifications"]
@@ -376,7 +384,8 @@ func InitializeProviders(cfg *models.DNSConfig, providerConfigs map[string]map[s
 		fmt.Fprintln(os.Stderr, strings.Join(msgs, "\n"))
 	}
 	if err != nil {
-		return
+		result.err = err
+		return result
 	}
 
 	registrars := map[string]providers.Registrar{}
@@ -386,7 +395,8 @@ func InitializeProviders(cfg *models.DNSConfig, providerConfigs map[string]map[s
 			rCfg := cfg.RegistrarsByName[d.RegistrarName]
 			r, err := providers.CreateRegistrar(rCfg.Type, providerConfigs[d.RegistrarName])
 			if err != nil {
-				return nil, nil, nil, err
+				result.err = err
+				return result
 			}
 			registrars[d.RegistrarName] = r
 		}
@@ -397,7 +407,8 @@ func InitializeProviders(cfg *models.DNSConfig, providerConfigs map[string]map[s
 				dCfg := cfg.DNSProvidersByName[pInst.Name]
 				prov, err := providers.CreateDNSProvider(dCfg.Type, providerConfigs[dCfg.Name], dCfg.Metadata)
 				if err != nil {
-					return nil, nil, nil, err
+					result.err = err
+					return result
 				}
 				dnsProviders[pInst.Name] = prov
 			}
@@ -405,7 +416,7 @@ func InitializeProviders(cfg *models.DNSConfig, providerConfigs map[string]map[s
 			pInst.IsDefault = !isNonDefault[pInst.Name]
 		}
 	}
-	return registrars, dnsProviders, notify, nil
+	return result
 }
 
 // providerTypeFieldName is the name of the field in creds.json that specifies the provider type id.
