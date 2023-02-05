@@ -139,7 +139,7 @@ func run(args PreviewArgs, push bool, interactive bool, out printer.CLI) error {
 	if err != nil {
 		return err
 	}
-	providerInitResult := InitializeProviders(cfg, providerConfigs, args.Notify)
+	providerState := InitializeProviders(cfg, providerConfigs, args.Notify)
 	if err != nil {
 		return err
 	}
@@ -211,7 +211,7 @@ DomainLoop:
 				continue DomainLoop
 			}
 			totalCorrections += len(corrections)
-			anyErrors = printOrRunCorrections(domain.Name, provider.Name, corrections, out, push, interactive, providerInitResult.notifier) || anyErrors
+			anyErrors = printOrRunCorrections(domain.Name, provider.Name, corrections, out, push, interactive, providerState.notifier) || anyErrors
 		}
 		run := args.shouldRunProvider(domain.RegistrarName, domain)
 		out.StartRegistrar(domain.RegistrarName, !run)
@@ -233,18 +233,18 @@ DomainLoop:
 			continue
 		}
 		totalCorrections += len(corrections)
-		anyErrors = printOrRunCorrections(domain.Name, domain.RegistrarName, corrections, out, push, interactive, providerInitResult.notifier) || anyErrors
+		anyErrors = printOrRunCorrections(domain.Name, domain.RegistrarName, corrections, out, push, interactive, providerState.notifier) || anyErrors
 	}
 
 	if args.DeleteUnmanaged || args.DeleteUnmanagedDomains {
-		err := DeleteUnmanagedDomains(cfg, providerInitResult.createdRegistrars, push, out, &totalCorrections)
+		err := DeleteUnmanagedDomains(cfg, providerState.createdRegistrars, push, out, &totalCorrections)
 		if err != nil {
 			return err
 		}
 	}
 
 	if args.DeleteUnmanaged || args.DeleteUnmanagedZones {
-		err := DeleteUnmanagedZones(cfg, providerInitResult.createdDnsProviders, push, out, &totalCorrections)
+		err := DeleteUnmanagedZones(cfg, providerState.createdDnsProviders, push, out, &totalCorrections)
 		if err != nil {
 			return err
 		}
@@ -253,7 +253,7 @@ DomainLoop:
 	if os.Getenv("TEAMCITY_VERSION") != "" {
 		fmt.Fprintf(os.Stderr, "##teamcity[buildStatus status='SUCCESS' text='%d corrections']", totalCorrections)
 	}
-	providerInitResult.notifier.Done()
+	providerState.notifier.Done()
 	out.Printf("Done. %d corrections.\n", totalCorrections)
 	if anyErrors {
 		return fmt.Errorf("completed with errors")
@@ -352,7 +352,7 @@ func IsZoneManagedByProvider(cfg *models.DNSConfig, zone string, dnsProviderName
 	return false
 }
 
-type ProviderInitResult struct {
+type ProviderState struct {
 	createdRegistrars   map[string]providers.Registrar
 	createdDnsProviders map[string]providers.DNSServiceProvider
 	notifier            notifications.Notifier
@@ -360,9 +360,9 @@ type ProviderInitResult struct {
 }
 
 // InitializeProviders takes (fully processed) configuration and instantiates all providers and returns them.
-func InitializeProviders(cfg *models.DNSConfig, providerConfigs map[string]map[string]string, notifyFlag bool) ProviderInitResult {
+func InitializeProviders(cfg *models.DNSConfig, providerConfigs map[string]map[string]string, notifyFlag bool) ProviderState {
 	var notificationCfg map[string]string
-	result := ProviderInitResult{}
+	result := ProviderState{}
 	defer func() {
 		result.notifier = notifications.Init(notificationCfg)
 	}()
