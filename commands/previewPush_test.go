@@ -1,6 +1,7 @@
 package commands
 
 import (
+	"github.com/StackExchange/dnscontrol/v3/pkg/credsfile"
 	"strings"
 	"testing"
 )
@@ -55,4 +56,64 @@ func Test_refineProviderType(t *testing.T) {
 			}
 		})
 	}
+}
+
+func TestIsDomainOrZoneManaged(t *testing.T) {
+	DNSConfigArgs := GetDNSConfigArgs{
+		ExecuteDSLArgs: ExecuteDSLArgs{
+			JSFile: "test_data/dnsconfig.js",
+		},
+	}
+
+	cfg, err := GetDNSConfig(DNSConfigArgs)
+	if err != nil {
+		t.Errorf("failed getting dns config. err: %s", err)
+	}
+
+	providerConfigs, err := credsfile.LoadProviderConfigs("test_data/bind-creds.json")
+	if err != nil {
+		t.Errorf("failed loading provider config. err: %s", err)
+	}
+
+	_, _, _, err = InitializeProviders(cfg, providerConfigs, false)
+
+	if err != nil {
+		t.Errorf("error initializing providers. err: %s", err)
+	}
+	tests := []struct {
+		name          string
+		domainOrZone  string
+		providerName  string
+		domain        string
+		wantIsManaged bool
+	}{
+		{"domain/0", "domain", "registrar1", "example.org", true},
+		{"domain/1", "domain", "registrar1", "example.com", false},
+		{"domain/2", "domain", "registrar2", "example.org", false},
+		{"domain/3", "domain", "registrar2", "example.com", true},
+
+		{"zone/0", "zone", "dsp1", "example.org", true},
+		{"zone/1", "zone", "dsp1", "example.com", false},
+		{"zone/2", "zone", "dsp2", "example.org", false},
+		{"zone/3", "zone", "dsp2", "example.com", true},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if tt.domainOrZone == "domain" {
+				gotIsManaged := IsDomainManagedByRegistrar(cfg, tt.domain, tt.providerName)
+				if gotIsManaged != tt.wantIsManaged {
+					t.Errorf("IsDomainManagedByRegistrar() gotIsManaged = %v, want %v", gotIsManaged, tt.wantIsManaged)
+				}
+
+			}
+			if tt.domainOrZone == "zone" {
+				gotIsManaged := IsZoneManagedByProvider(cfg, tt.domain, tt.providerName)
+				if gotIsManaged != tt.wantIsManaged {
+					t.Errorf("IsZoneManagedByProvider() gotIsManaged = %v, want %v", gotIsManaged, tt.wantIsManaged)
+				}
+			}
+		})
+	}
+
 }
