@@ -44,6 +44,10 @@ func (c *cloudflareProvider) getRecordsForDomain(id string, domain string) ([]*m
 	return records, nil
 }
 
+func (c *cloudflareProvider) deleteDNSRecord(rec cloudflare.DNSRecord, domainID string) error {
+	return c.cfClient.DeleteDNSRecord(context.Background(), domainID, rec.ID)
+}
+
 // create a correction to delete a record
 func (c *cloudflareProvider) deleteRec(rec cloudflare.DNSRecord, domainID string) *models.Correction {
 	return &models.Correction{
@@ -165,6 +169,70 @@ func (c *cloudflareProvider) createRec(rec *models.RecordConfig, domainID string
 			F:   func() error { return c.modifyRecord(domainID, id, true, rec) },
 		})
 	}
+	return arr
+}
+
+func (c *cloudflareProvider) createRecDiff2(rec *models.RecordConfig, domainID string, msg string) []*models.Correction {
+
+	content := rec.GetTargetField()
+	if rec.Metadata[metaOriginalIP] != "" {
+		content = rec.Metadata[metaOriginalIP]
+	}
+	prio := ""
+	if rec.Type == "MX" {
+		prio = fmt.Sprintf(" %d ", rec.MxPreference)
+	}
+	if rec.Type == "TXT" {
+		content = rec.GetTargetTXTJoined()
+	}
+	if rec.Type == "DS" {
+		content = fmt.Sprintf("%d %d %d %s", rec.DsKeyTag, rec.DsAlgorithm, rec.DsDigestType, rec.DsDigest)
+	}
+	if msg == "" {
+		msg = fmt.Sprintf("CREATE record: %s %s %d%s %s", rec.GetLabel(), rec.Type, rec.TTL, prio, content)
+	}
+	if rec.Metadata[metaProxy] == "on" {
+		msg = msg + fmt.Sprintf("\nACTIVATE PROXY for new record %s %s %d %s", rec.GetLabel(), rec.Type, rec.TTL, rec.GetTargetField())
+	}
+	arr := []*models.Correction{{
+		Msg: msg,
+		F: func() error {
+			cf := cloudflare.DNSRecord{
+				Name:     rec.GetLabel(),
+				Type:     rec.Type,
+				TTL:      int(rec.TTL),
+				Content:  content,
+				Priority: &rec.MxPreference,
+			}
+			if rec.Type == "SRV" {
+				cf.Data = cfSrvData(rec)
+				cf.Name = rec.GetLabelFQDN()
+			} else if rec.Type == "CAA" {
+				cf.Data = cfCaaData(rec)
+				cf.Name = rec.GetLabelFQDN()
+				cf.Content = ""
+			} else if rec.Type == "TLSA" {
+				cf.Data = cfTlsaData(rec)
+				cf.Name = rec.GetLabelFQDN()
+			} else if rec.Type == "SSHFP" {
+				cf.Data = cfSshfpData(rec)
+				cf.Name = rec.GetLabelFQDN()
+			} else if rec.Type == "DS" {
+				cf.Data = cfDSData(rec)
+			}
+			resp, err := c.cfClient.CreateDNSRecord(context.Background(), domainID, cf)
+			if err != nil {
+				return err
+			}
+			// Records are created with the proxy off. If proxy should be
+			// enabled, we do a second API call.
+			resultID := resp.Result.ID
+			if rec.Metadata[metaProxy] == "on" {
+				return c.modifyRecord(domainID, resultID, true, rec)
+			}
+			return nil
+		},
+	}}
 	return arr
 }
 
