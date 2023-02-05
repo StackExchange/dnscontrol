@@ -47,9 +47,9 @@ func CreateDomains(args CreateDomainsArgs) error {
 	if err != nil {
 		return err
 	}
-	_, _, _, err = InitializeProviders(cfg, providerConfigs, false)
-	if err != nil {
-		return err
+	providerInitResult := InitializeProviders(cfg, providerConfigs, false)
+	if providerInitResult.err != nil {
+		return providerInitResult.err
 	}
 	for _, domain := range cfg.Domains {
 		fmt.Println("*** ", domain.Name)
