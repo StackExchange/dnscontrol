@@ -206,10 +206,6 @@ func (hp *hostingdeProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*m
 		var desiredMail string = ""
 		if desiredSoa.SoaMbox[len(desiredSoa.SoaMbox)-1] != '.' {
 			desiredMail = desiredSoa.SoaMbox + "@" + dc.Name
-		} else {
-			// TODO: either convert bind-type SoaMbox to email, or
-			// (better) internally store SoaMbox in rfc5322 format , and only
-			// convert to bind-format for bind
 		}
 		if desiredMail != "" && zone.ZoneConfig.EmailAddress != desiredMail {
 			msg = append(msg, fmt.Sprintf("Changing SOA Mail from %s to %s", zone.ZoneConfig.EmailAddress, desiredMail))
