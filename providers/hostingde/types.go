@@ -56,13 +56,13 @@ type domainConfig struct {
 }
 
 type zoneConfig struct {
-	ID           string `json:"id"`
-	DNSSECMode   string `json:"dnsSecMode"`
-	EmailAddress string `json:"emailAddress,omitempty"`
-	MasterIP     string `json:"masterIp"`
-	Name         string `json:"name"` // Not required per docs, but required IRL
-	NameUnicode  string `json:"nameUnicode"`
-	SOAValues             soaValues `json:"soaValues,omitempty"`
+	ID                    string          `json:"id"`
+	DNSSECMode            string          `json:"dnsSecMode"`
+	EmailAddress          string          `json:"emailAddress,omitempty"`
+	MasterIP              string          `json:"masterIp"`
+	Name                  string          `json:"name"` // Not required per docs, but required IRL
+	NameUnicode           string          `json:"nameUnicode"`
+	SOAValues             soaValues       `json:"soaValues,omitempty"`
 	Type                  string          `json:"type"`
 	TemplateValues        json.RawMessage `json:"templateValues,omitempty"`
 	ZoneTransferWhitelist []string        `json:"zoneTransferWhitelist"`
@@ -93,7 +93,6 @@ type dnsSecKey struct {
 	Protocol  uint32 `json:"protocol"`
 	Algorithm uint32 `json:"algorithm"`
 	PublicKey string `json:"publicKey"`
->>>>>>> master
 }
 
 type record struct {
