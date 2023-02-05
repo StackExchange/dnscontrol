@@ -237,57 +237,19 @@ DomainLoop:
 	}
 
 	if args.DeleteUnmanaged || args.DeleteUnmanagedDomains {
-		fmt.Printf("Checking Domain Removal:\n")
-		for registrarName, registrar := range createdRegistrars {
-			domainLister, ok := registrar.(providers.DomainLister)
-			if !ok {
-				out.Warnf("provider type of %s cannot list domains\n", registrarName)
-				continue
-			}
-			deployedDomains, err := domainLister.ListDomains()
-			if err != nil {
-				return fmt.Errorf("failed ListZones: %w\n", err)
-			}
-			for _, domain := range deployedDomains {
-				if !IsDomainManagedByRegistrar(cfg, domain, registrarName) {
-					fmt.Printf("Removing domain %s from provider %s\n", domain, registrarName)
-					totalCorrections += 1
-					if remover, ok := registrar.(providers.DomainRemover); ok && push {
-						if err := remover.EnsureDomainAbsent(domain); err != nil {
-							out.Errorf("Error deleting domain: %s\n", err)
-						}
-					}
-				}
-			}
+		err := DeleteUnmanagedDomains(cfg, createdRegistrars, push, out, &totalCorrections)
+		if err != nil {
+			return err
 		}
 	}
 
 	if args.DeleteUnmanaged || args.DeleteUnmanagedZones {
-		fmt.Printf("Checking Zone Removal:\n")
-
-		for providerName, provider := range createdProviders {
-			zoneLister, ok := provider.(providers.ZoneLister)
-			if !ok {
-				out.Warnf("provider type of %s cannot list zones\n", providerName)
-				continue
-			}
-			deployedZones, err := zoneLister.ListZones()
-			if err != nil {
-				return fmt.Errorf("failed ListZones: %w\n", err)
-			}
-			for _, zone := range deployedZones {
-				if !IsZoneManagedByProvider(cfg, zone, providerName) {
-					fmt.Printf("Removing zone %s from provider %s\n", zone, providerName)
-					totalCorrections += 1
-					if remover, ok := provider.(providers.ZoneRemover); ok && push {
-						if err := remover.EnsureZoneAbsent(zone); err != nil {
-							out.Errorf("Error deleting zone: %s\n", err)
-						}
-					}
-				}
-			}
+		err := DeleteUnmanagedZones(cfg, createdProviders, push, out, &totalCorrections)
+		if err != nil {
+			return err
 		}
 	}
+
 	if os.Getenv("TEAMCITY_VERSION") != "" {
 		fmt.Fprintf(os.Stderr, "##teamcity[buildStatus status='SUCCESS' text='%d corrections']", totalCorrections)
 	}
@@ -298,6 +260,62 @@ DomainLoop:
 	}
 	if totalCorrections != 0 && args.WarnChanges {
 		return fmt.Errorf("there are pending changes")
+	}
+	return nil
+}
+
+func DeleteUnmanagedDomains(cfg *models.DNSConfig, createdRegistrars map[string]providers.Registrar, push bool, out printer.CLI, totalCorrections *int) error {
+	fmt.Printf("Checking Domain Removal:\n")
+	for registrarName, registrar := range createdRegistrars {
+		domainLister, ok := registrar.(providers.DomainLister)
+		if !ok {
+			out.Warnf("--purge-unmanaged-domains not implemented: provider %s\n", registrarName)
+			continue
+		}
+		deployedDomains, err := domainLister.ListDomains()
+		if err != nil {
+			return fmt.Errorf("failed ListDomains for provider %s: %w\n", registrarName, err)
+		}
+		for _, domain := range deployedDomains {
+			if !IsDomainManagedByRegistrar(cfg, domain, registrarName) {
+				fmt.Printf("Removing from provider %s: domain %s\n", registrarName, domain)
+				*totalCorrections += 1
+				if domainRemover, ok := registrar.(providers.DomainRemover); ok && push {
+					err := domainRemover.EnsureDomainAbsent(domain)
+					if err != nil {
+						out.Errorf("Error deleting domain: %s\n", err)
+					}
+				}
+			}
+		}
+	}
+	return nil
+}
+
+func DeleteUnmanagedZones(cfg *models.DNSConfig, createdProviders map[string]providers.DNSServiceProvider, push bool, out printer.CLI, totalCorrections *int) error {
+	fmt.Printf("Checking Zone Removal:\n")
+	for providerName, provider := range createdProviders {
+		zoneLister, ok := provider.(providers.ZoneLister)
+		if !ok {
+			out.Warnf("--purge-unmanaged-zones not implemented: provider %s\n", providerName)
+			continue
+		}
+		deployedZones, err := zoneLister.ListZones()
+		if err != nil {
+			return fmt.Errorf("failed ListZones for provider %s: %w\n", providerName, err)
+		}
+		for _, zone := range deployedZones {
+			if !IsZoneManagedByProvider(cfg, zone, providerName) {
+				fmt.Printf("Removing from provider %s: zone %s\n", providerName, zone)
+				*totalCorrections += 1
+				if zoneRemover, ok := provider.(providers.ZoneRemover); ok && push {
+					err := zoneRemover.EnsureZoneAbsent(zone)
+					if err != nil {
+						out.Errorf("Error deleting zone: %s\n", err)
+					}
+				}
+			}
+		}
 	}
 	return nil
 }
