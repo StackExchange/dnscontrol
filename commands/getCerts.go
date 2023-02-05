@@ -146,9 +146,9 @@ func GetCerts(args GetCertsArgs) error {
 	if err != nil {
 		return err
 	}
-	providerInitResult := InitializeProviders(cfg, providerConfigs, args.Notify)
-	if providerInitResult.err != nil {
-		return providerInitResult.err
+	providerState := InitializeProviders(cfg, providerConfigs, args.Notify)
+	if providerState.err != nil {
+		return providerState.err
 	}
 
 	for _, skip := range strings.Split(args.IgnoredProviders, ",") {
@@ -184,9 +184,9 @@ func GetCerts(args GetCertsArgs) error {
 	var client acme.Client
 
 	if args.Vault {
-		client, err = acme.NewVault(cfg, args.VaultPath, args.Email, acmeServer, providerInitResult.notifier)
+		client, err = acme.NewVault(cfg, args.VaultPath, args.Email, acmeServer, providerState.notifier)
 	} else {
-		client, err = acme.New(cfg, args.CertDirectory, args.Email, acmeServer, providerInitResult.notifier)
+		client, err = acme.New(cfg, args.CertDirectory, args.Email, acmeServer, providerState.notifier)
 	}
 	if err != nil {
 		return err
@@ -199,7 +199,7 @@ func GetCerts(args GetCertsArgs) error {
 		v := args.Verbose || printer.DefaultPrinter.Verbose
 		issued, err := client.IssueOrRenewCert(cert, args.RenewUnderDays, v)
 		if issued || err != nil {
-			providerInitResult.notifier.Notify(cert.CertName, "certificate", "Issued new certificate", err, false)
+			providerState.notifier.Notify(cert.CertName, "certificate", "Issued new certificate", err, false)
 		}
 		if err != nil {
 			if manyerr == nil {
@@ -209,7 +209,7 @@ func GetCerts(args GetCertsArgs) error {
 			}
 		}
 	}
-	providerInitResult.notifier.Done()
+	providerState.notifier.Done()
 	return manyerr
 }
 
