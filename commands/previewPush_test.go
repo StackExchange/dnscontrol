@@ -75,10 +75,10 @@ func TestIsDomainOrZoneManaged(t *testing.T) {
 		t.Errorf("failed loading provider config. err: %s", err)
 	}
 
-	_, _, _, err = InitializeProviders(cfg, providerConfigs, false)
+	providerState := InitializeProviders(cfg, providerConfigs, false)
 
-	if err != nil {
-		t.Errorf("error initializing providers. err: %s", err)
+	if providerState.err != nil {
+		t.Errorf("error initializing providers. err: %s", providerState.err)
 	}
 	tests := []struct {
 		name          string
