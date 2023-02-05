@@ -3,6 +3,7 @@ package bind
 import (
 	"fmt"
 	"github.com/StackExchange/dnscontrol/v3/models"
+	"github.com/StackExchange/dnscontrol/v3/pkg/soautil"
 	"strings"
 )
 
@@ -25,11 +26,7 @@ func makeSoa(origin string, defSoa *SoaDefaults, existing, desired *models.Recor
 
 	soaMail := firstNonNull(desired.SoaMbox, existing.SoaMbox, defSoa.Mbox, "DEFAULT_NOT_SET.")
 	if strings.Contains(soaMail, "@") {
-		res := strings.SplitN(soaMail, "@", 2)
-		user_part, domain_part := res[0], res[1]
-		// RFC-1035 [Section-8]
-		user_part = strings.ReplaceAll(user_part, ".", "\\.")
-		soaMail = user_part + "." + domain_part
+		soaMail = soautil.RFC5322MailToBind(soaMail)
 	} else {
 		fmt.Println("WARNING: SOA hostmaster address must be in the format hostmaster@example.com")
 		fmt.Println("WARNING: hostmaster.example.com is deprecated and will be dropped in a future version")
