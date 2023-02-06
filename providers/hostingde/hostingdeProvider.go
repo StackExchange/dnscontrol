@@ -156,7 +156,8 @@ func (hp *hostingdeProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*m
 	existingAutoDNSSecEnabled := zone.ZoneConfig.DNSSECMode == "automatic"
 	desiredAutoDNSSecEnabled := dc.AutoDNSSEC == "on"
 
-	var DnsSecOptions *dnsSecOptions = nil
+	var DnsSecOptions *dnsSecOptions
+	var removeDNSSecEntries []dnsSecEntry
 
 	// ensure that publishKsk is set for domains with AutoDNSSec
 	if existingAutoDNSSecEnabled && desiredAutoDNSSecEnabled {
@@ -179,8 +180,24 @@ func (hp *hostingdeProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*m
 		}
 		zone.ZoneConfig.DNSSECMode = "automatic"
 	} else if existingAutoDNSSecEnabled && !desiredAutoDNSSecEnabled {
+		CurrentDnsSecOptions, err := hp.getDNSSECOptions(zone.ZoneConfig.ID)
+		if err != nil {
+			return nil, err
+		}
 		msg = append(msg, "Disable AutoDNSSEC")
 		zone.ZoneConfig.DNSSECMode = "off"
+		// Remove auto dnssec keys from domain
+		DomainConfig, err := hp.getDomainConfig(dc.Name)
+		if err != nil {
+			return nil, err
+		}
+		for _, entry := range DomainConfig.DNSSecEntries {
+			for _, autoDNSKey := range CurrentDnsSecOptions.Keys {
+				if entry.KeyData.PublicKey == autoDNSKey.KeyData.PublicKey {
+					removeDNSSecEntries = append(removeDNSSecEntries, entry)
+				}
+			}
+		}
 	}
 
 	if len(create) == 0 && len(del) == 0 && len(mod) == 0 && existingAutoDNSSecEnabled == desiredAutoDNSSecEnabled && DnsSecOptions == nil {
@@ -208,6 +225,20 @@ func (hp *hostingdeProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*m
 				return fmt.Errorf("retry exhaustion: zone blocked for 10 attempts")
 			},
 		},
+	}
+
+	if removeDNSSecEntries != nil {
+		correction := models.Correction{
+			Msg: "Removing AutoDNSSEC Keys from Domain",
+			F: func() error {
+				err := hp.dnsSecKeyModify(dc.Name, nil, removeDNSSecEntries)
+				if err != nil {
+					return err
+				}
+				return nil
+			},
+		}
+		corrections = append(corrections, &correction)
 	}
 
 	return corrections, nil
