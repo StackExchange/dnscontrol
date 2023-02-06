@@ -21,6 +21,7 @@ var features = providers.DocumentationNotes{
 	providers.CanGetZones:            providers.Can(),
 	providers.CanUseAlias:            providers.Can(),
 	providers.CanUseCAA:              providers.Can(),
+	providers.CanUseSOA:              providers.Can(),
 	providers.CanUseDS:               providers.Can(),
 	providers.CanUseNAPTR:            providers.Cannot(),
 	providers.CanUsePTR:              providers.Can(),
@@ -111,11 +112,17 @@ func (hp *hostingdeProvider) ApiRecordsToStandardRecordsModel(domain string, src
 	return records
 }
 
+func soaToString(s soaValues) string {
+	return fmt.Sprintf("refresh=%d retry=%d expire=%d negativettl=%d ttl=%d", s.Refresh, s.Retry, s.Expire, s.NegativeTTL, s.TTL)
+}
+
 func (hp *hostingdeProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Correction, error) {
 	err := dc.Punycode()
 	if err != nil {
 		return nil, err
 	}
+
+	zoneChanged := false
 
 	// TTL must be between (inclusive) 1m and 1y (in fact, a little bit more)
 	for _, r := range dc.Records {
@@ -148,9 +155,63 @@ func (hp *hostingdeProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*m
 		del = []diff.Correlation{}
 	}
 
+	// remove SOA record from corrections as it is handled separately
+	for i, r := range create {
+		if r.Desired.Type == "SOA" {
+			create = append(create[:i], create[i+1:]...)
+			break
+		}
+	}
+
+	if len(create) != 0 || len(del) != 0 || len(mod) != 0 {
+		zoneChanged = true
+	}
+
 	msg := []string{}
 	for _, c := range append(del, append(create, mod...)...) {
 		msg = append(msg, c.String())
+	}
+
+	var desiredSoa *models.RecordConfig
+	for _, r := range dc.Records {
+		if r.Type == "SOA" && r.Name == "@" {
+			desiredSoa = r
+			break
+		}
+	}
+	if desiredSoa == nil {
+		desiredSoa = &models.RecordConfig{}
+	}
+
+	defaultSoa := &hp.defaultSoa
+	if defaultSoa == nil {
+		defaultSoa = &soaValues{}
+	}
+
+	newSOA := soaValues{
+		Refresh:     firstNonZero(desiredSoa.SoaRefresh, defaultSoa.Refresh, 86400),
+		Retry:       firstNonZero(desiredSoa.SoaRetry, defaultSoa.Retry, 7200),
+		Expire:      firstNonZero(desiredSoa.SoaExpire, defaultSoa.Expire, 3600000),
+		NegativeTTL: firstNonZero(desiredSoa.SoaMinttl, defaultSoa.NegativeTTL, 900),
+		TTL:         firstNonZero(desiredSoa.TTL, defaultSoa.TTL, 86400),
+	}
+
+	if zone.ZoneConfig.SOAValues != newSOA {
+		msg = append(msg, fmt.Sprintf("Updating SOARecord from (%s) to (%s)", soaToString(zone.ZoneConfig.SOAValues), soaToString(newSOA)))
+		zone.ZoneConfig.SOAValues = newSOA
+		zoneChanged = true
+	}
+
+	if desiredSoa.SoaMbox != "" {
+		var desiredMail string = ""
+		if desiredSoa.SoaMbox[len(desiredSoa.SoaMbox)-1] != '.' {
+			desiredMail = desiredSoa.SoaMbox + "@" + dc.Name
+		}
+		if desiredMail != "" && zone.ZoneConfig.EmailAddress != desiredMail {
+			msg = append(msg, fmt.Sprintf("Changing SOA Mail from %s to %s", zone.ZoneConfig.EmailAddress, desiredMail))
+			zone.ZoneConfig.EmailAddress = desiredMail
+			zoneChanged = true
+		}
 	}
 
 	existingAutoDNSSecEnabled := zone.ZoneConfig.DNSSECMode == "automatic"
@@ -169,6 +230,7 @@ func (hp *hostingdeProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*m
 			msg = append(msg, "Enabling publishKsk for AutoDNSSec")
 			DnsSecOptions = CurrentDnsSecOptions
 			DnsSecOptions.PublishKSK = true
+			zoneChanged = true
 		}
 	}
 
@@ -179,6 +241,7 @@ func (hp *hostingdeProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*m
 			PublishKSK: true,
 		}
 		zone.ZoneConfig.DNSSECMode = "automatic"
+		zoneChanged = true
 	} else if existingAutoDNSSecEnabled && !desiredAutoDNSSecEnabled {
 		CurrentDnsSecOptions, err := hp.getDNSSECOptions(zone.ZoneConfig.ID)
 		if err != nil {
@@ -186,6 +249,7 @@ func (hp *hostingdeProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*m
 		}
 		msg = append(msg, "Disable AutoDNSSEC")
 		zone.ZoneConfig.DNSSECMode = "off"
+
 		// Remove auto dnssec keys from domain
 		DomainConfig, err := hp.getDomainConfig(dc.Name)
 		if err != nil {
@@ -198,9 +262,10 @@ func (hp *hostingdeProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*m
 				}
 			}
 		}
+		zoneChanged = true
 	}
 
-	if len(create) == 0 && len(del) == 0 && len(mod) == 0 && existingAutoDNSSecEnabled == desiredAutoDNSSecEnabled && DnsSecOptions == nil {
+	if !zoneChanged {
 		return nil, nil
 	}
 
@@ -242,6 +307,15 @@ func (hp *hostingdeProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*m
 	}
 
 	return corrections, nil
+}
+
+func firstNonZero(items ...uint32) uint32 {
+	for _, item := range items {
+		if item != 0 {
+			return item
+		}
+	}
+	return 999
 }
 
 func (hp *hostingdeProvider) GetRegistrarCorrections(dc *models.DomainConfig) ([]*models.Correction, error) {
