@@ -88,10 +88,10 @@ func init() {
 }
 
 // EnsureZoneExists creates a zone if it does not exist
-func (api *digitaloceanProvider) EnsureZoneExists(zoneName string) error {
+func (api *digitaloceanProvider) EnsureZoneExists(domain string) error {
 retry:
 	ctx := context.Background()
-	_, resp, err := api.client.Domains.Get(ctx, zoneName)
+	_, resp, err := api.client.Domains.Get(ctx, domain)
 	if err != nil {
 		if pauseAndRetry(resp) {
 			goto retry
@@ -100,7 +100,7 @@ retry:
 	}
 	if resp.StatusCode == http.StatusNotFound {
 		_, _, err := api.client.Domains.Create(ctx, &godo.DomainCreateRequest{
-			Name:      zoneName,
+			Name:      domain,
 			IPAddress: "",
 		})
 		return err

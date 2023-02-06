@@ -207,15 +207,15 @@ func (c *cloudnsProvider) GetZoneRecords(domain string) (models.Records, error) 
 }
 
 // EnsureZoneExists creates a zone if it does not exist
-func (c *cloudnsProvider) EnsureZoneExists(zoneName string) error {
+func (c *cloudnsProvider) EnsureZoneExists(domain string) error {
 	if err := c.fetchDomainList(); err != nil {
 		return err
 	}
 	// zone already exists
-	if _, ok := c.domainIndex[zoneName]; ok {
+	if _, ok := c.domainIndex[domain]; ok {
 		return nil
 	}
-	return c.createDomain(zoneName)
+	return c.createDomain(domain)
 }
 
 // parses the ClouDNS format into our standard RecordConfig

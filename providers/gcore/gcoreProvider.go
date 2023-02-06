@@ -115,19 +115,19 @@ func (c *gcoreProvider) GetZoneRecords(domain string) (models.Records, error) {
 }
 
 // EnsureZoneExists creates a zone if it does not exist
-func (c *gcoreProvider) EnsureZoneExists(zoneName string) error {
+func (c *gcoreProvider) EnsureZoneExists(domain string) error {
 	zones, err := c.provider.Zones(c.ctx)
 	if err != nil {
 		return err
 	}
 
 	for _, zone := range zones {
-		if zone.Name == zoneName {
+		if zone.Name == domain {
 			return nil
 		}
 	}
 
-	_, err = c.provider.CreateZone(c.ctx, zoneName)
+	_, err = c.provider.CreateZone(c.ctx, domain)
 	return err
 }
 

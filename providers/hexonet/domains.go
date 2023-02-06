@@ -5,24 +5,24 @@ import "fmt"
 // EnsureZoneExists returns an error
 // * if access to dnszone is not allowed (not authorized) or
 // * if it doesn't exist and creating it fails
-func (n *HXClient) EnsureZoneExists(zoneName string) error {
+func (n *HXClient) EnsureZoneExists(domain string) error {
 	r := n.client.Request(map[string]interface{}{
 		"COMMAND": "StatusDNSZone",
-		"DNSZONE": zoneName + ".",
+		"DNSZONE": domain + ".",
 	})
 	code := r.GetCode()
 	if code == 545 {
 		r = n.client.Request(map[string]interface{}{
 			"COMMAND": "CreateDNSZone",
-			"DNSZONE": zoneName + ".",
+			"DNSZONE": domain + ".",
 		})
 		if !r.IsSuccess() {
-			return n.GetHXApiError("Failed to create not existing zone ", zoneName, r)
+			return n.GetHXApiError("Failed to create not existing zone ", domain, r)
 		}
 	} else if code == 531 {
-		return n.GetHXApiError("Not authorized to manage dnszone", zoneName, r)
+		return n.GetHXApiError("Not authorized to manage dnszone", domain, r)
 	} else if r.IsError() || r.IsTmpError() {
-		return n.GetHXApiError("Error while checking status of dnszone", zoneName, r)
+		return n.GetHXApiError("Error while checking status of dnszone", domain, r)
 	}
 	return nil
 }

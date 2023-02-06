@@ -178,8 +178,8 @@ func (api *dnsMadeEasyProvider) GetDomainCorrections(dc *models.DomainConfig) ([
 }
 
 // EnsureZoneExists creates a zone if it does not exist
-func (api *dnsMadeEasyProvider) EnsureZoneExists(zoneName string) error {
-	exists, err := api.domainExists(zoneName)
+func (api *dnsMadeEasyProvider) EnsureZoneExists(domain string) error {
+	exists, err := api.domainExists(domain)
 	if err != nil {
 		return err
 	}
@@ -189,7 +189,7 @@ func (api *dnsMadeEasyProvider) EnsureZoneExists(zoneName string) error {
 		return nil
 	}
 
-	return api.createDomain(zoneName)
+	return api.createDomain(domain)
 }
 
 // GetNameservers returns the nameservers for a domain.

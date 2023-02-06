@@ -224,15 +224,15 @@ func (api *vultrProvider) GetNameservers(domain string) ([]*models.Nameserver, e
 }
 
 // EnsureZoneExists creates a zone if it does not exist
-func (api *vultrProvider) EnsureZoneExists(zoneName string) error {
-	if ok, err := api.isDomainInAccount(zoneName); err != nil {
+func (api *vultrProvider) EnsureZoneExists(domain string) error {
+	if ok, err := api.isDomainInAccount(domain); err != nil {
 		return err
 	} else if ok {
 		return nil
 	}
 
 	// Vultr requires an initial IP, use a dummy one.
-	_, err := api.client.Domain.Create(context.Background(), &govultr.DomainReq{Domain: zoneName, IP: "0.0.0.0", DNSSec: "disabled"})
+	_, err := api.client.Domain.Create(context.Background(), &govultr.DomainReq{Domain: domain, IP: "0.0.0.0", DNSSec: "disabled"})
 	return err
 }
 

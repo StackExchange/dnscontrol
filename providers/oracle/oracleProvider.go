@@ -85,12 +85,12 @@ func (o *oracleProvider) ListZones() ([]string, error) {
 }
 
 // EnsureZoneExists creates a zone if it does not exist
-func (o *oracleProvider) EnsureZoneExists(zoneName string) error {
+func (o *oracleProvider) EnsureZoneExists(domain string) error {
 	ctx, cancel := context.WithTimeout(context.Background(), time.Minute)
 	defer cancel()
 
 	getResp, err := o.client.GetZone(ctx, dns.GetZoneRequest{
-		ZoneNameOrId:  &zoneName,
+		ZoneNameOrId:  &domain,
 		CompartmentId: &o.compartment,
 	})
 	if err == nil {
@@ -103,7 +103,7 @@ func (o *oracleProvider) EnsureZoneExists(zoneName string) error {
 	_, err = o.client.CreateZone(ctx, dns.CreateZoneRequest{
 		CreateZoneDetails: dns.CreateZoneDetails{
 			CompartmentId: &o.compartment,
-			Name:          &zoneName,
+			Name:          &domain,
 			ZoneType:      dns.CreateZoneDetailsZoneTypePrimary,
 		},
 	})
@@ -119,7 +119,7 @@ func (o *oracleProvider) EnsureZoneExists(zoneName string) error {
 		return true
 	}
 	_, err = o.client.GetZone(ctx, dns.GetZoneRequest{
-		ZoneNameOrId:    &zoneName,
+		ZoneNameOrId:    &domain,
 		CompartmentId:   &o.compartment,
 		RequestMetadata: helpers.GetRequestMetadataWithCustomizedRetryPolicy(pollUntilAvailable),
 	})

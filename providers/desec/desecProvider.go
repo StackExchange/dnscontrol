@@ -113,13 +113,13 @@ func (c *desecProvider) GetZoneRecords(domain string) (models.Records, error) {
 }
 
 // EnsureZoneExists creates a zone if it does not exist
-func (c *desecProvider) EnsureZoneExists(zoneName string) error {
+func (c *desecProvider) EnsureZoneExists(domain string) error {
 	c.mutex.Lock()
 	defer c.mutex.Unlock()
-	if _, ok := c.domainIndex[zoneName]; ok {
+	if _, ok := c.domainIndex[domain]; ok {
 		return nil
 	}
-	return c.createDomain(zoneName)
+	return c.createDomain(domain)
 }
 
 // PrepFoundRecords munges any records to make them compatible with
