@@ -4,7 +4,6 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"os"
 	"sort"
 	"strings"
 	"time"
@@ -251,7 +250,7 @@ func (a *azurednsProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*mod
 								if err != nil {
 									return err
 								}
-								fmt.Fprintf(os.Stderr, "DEBUG: 1 a.recordsClient.Delete(ctx, %v, %v, %v, %v)\n", *a.resourceGroup, zoneName, *rrset.Name, rt)
+								//fmt.Fprintf(os.Stderr, "DEBUG: 1 a.recordsClient.Delete(ctx, %v, %v, %v, %v)\n", *a.resourceGroup, zoneName, *rrset.Name, rt)
 								_, err = a.recordsClient.Delete(ctx, *a.resourceGroup, zoneName, *rrset.Name, rt, nil)
 								if err != nil {
 									return err
@@ -291,7 +290,7 @@ func (a *azurednsProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*mod
 									F: func() error {
 										ctx, cancel := context.WithTimeout(context.Background(), 6000*time.Second)
 										defer cancel()
-										fmt.Fprintf(os.Stderr, "DEBUG: 2 a.recordsClient.Delete(ctx, %v, %v, %v, %v, nil)\n", *a.resourceGroup, zoneName, recordName, existingRecordType)
+										//fmt.Fprintf(os.Stderr, "DEBUG: 2 a.recordsClient.Delete(ctx, %v, %v, %v, %v, nil)\n", *a.resourceGroup, zoneName, recordName, existingRecordType)
 										_, err := a.recordsClient.Delete(ctx, *a.resourceGroup, zoneName, recordName, existingRecordType, nil)
 										if err != nil {
 											return err
@@ -309,7 +308,7 @@ func (a *azurednsProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*mod
 						F: func() error {
 							ctx, cancel := context.WithTimeout(context.Background(), 6000*time.Second)
 							defer cancel()
-							fmt.Fprintf(os.Stderr, "DEBUG: 3 a.recordsClient.CreateOrUpdate(ctx, %v, %v, %v, %v, %+v, nil)\n", *a.resourceGroup, zoneName, recordName, recordType, *rrset)
+							//fmt.Fprintf(os.Stderr, "DEBUG: 3 a.recordsClient.CreateOrUpdate(ctx, %v, %v, %v, %v, %+v, nil)\n", *a.resourceGroup, zoneName, recordName, recordType, *rrset)
 							_, err := a.recordsClient.CreateOrUpdate(ctx, *a.resourceGroup, zoneName, recordName, recordType, *rrset, nil)
 							if err != nil {
 								return err
@@ -341,6 +340,10 @@ func (a *azurednsProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*mod
 		return nil, err
 	}
 
+	// for i, j := range changes {
+	// 	fmt.Fprintf(os.Stderr, "DEBUG: CHANGE[%v] = %+v\n", i, j)
+	// }
+
 	for _, change := range changes {
 
 		// Copy all param values to local variables to avoid overwrites
@@ -353,18 +356,20 @@ func (a *azurednsProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*mod
 			corrections = append(corrections, &models.Correction{Msg: change.MsgsJoined})
 		case diff2.CHANGE, diff2.CREATE:
 
+			changeNew := change.New
+
 			// for i, j := range change.Old {
-			// 	fmt.Fprintf(os.Stderr, "DEBUG: OLD[%d] = %+v\n", i, j)
+			// 	fmt.Fprintf(os.Stderr, "DEBUG: OLD[%d] = %+v ttl=%d\n", i, j, j.TTL)
 			// }
 			// for i, j := range change.New {
-			// 	fmt.Fprintf(os.Stderr, "DEBUG: NEW[%d] = %+v\n", i, j)
+			// 	fmt.Fprintf(os.Stderr, "DEBUG: NEW[%d] = %+v ttl=%d\n", i, j, j.TTL)
 			// }
 			// fmt.Fprintf(os.Stderr, "DEBUG: CHANGE = \n%v\n", change)
 
 			corrections = append(corrections, &models.Correction{
 				Msg: msgs,
 				F: func() error {
-					return a.recordCreate(dcn, chaKey, change.New)
+					return a.recordCreate(dcn, chaKey, changeNew)
 				},
 			})
 
@@ -376,6 +381,7 @@ func (a *azurednsProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*mod
 			// for i, j := range change.New {
 			// 	fmt.Fprintf(os.Stderr, "DEBUG: NEW[%d] = %+v\n", i, j)
 			// }
+			//fmt.Fprintf(os.Stderr, "DEBUG: CHANGE = \n%v\n", change)
 
 			corrections = append(corrections, &models.Correction{
 				Msg: msgs,
@@ -405,15 +411,17 @@ func (a *azurednsProvider) recordCreate(zoneName string, reckey models.RecordKey
 	}
 
 	var recordName string
+	var i int64
 	for _, r := range recs {
-		i := int64(r.TTL)
-		rrset.Properties.TTL = &i // TODO: make sure that ttls are consistent within a set
+		i = int64(r.TTL)
 		recordName = r.Name
+		//fmt.Fprintf(os.Stderr, "DEBUG: rn=%v ttl=%d\n", recordName, i)
 	}
+	rrset.Properties.TTL = &i
 
 	ctx, cancel := context.WithTimeout(context.Background(), 6000*time.Second)
 	defer cancel()
-	fmt.Fprintf(os.Stderr, "DEBUG: a.recordsClient.CreateOrUpdate(%v, %v, %v, %v, %+v)\n", *a.resourceGroup, zoneName, recordName, azRecType, *rrset)
+	//fmt.Fprintf(os.Stderr, "DEBUG: a.recordsClient.CreateOrUpdate(%v, %v, %v, %v, %+v)\n", *a.resourceGroup, zoneName, recordName, azRecType, *rrset)
 	_, err = a.recordsClient.CreateOrUpdate(ctx, *a.resourceGroup, zoneName, recordName, azRecType, *rrset, nil)
 	return err
 }
@@ -433,7 +441,7 @@ func (a *azurednsProvider) recordDelete(zoneName string, reckey models.RecordKey
 
 	ctx, cancel := context.WithTimeout(context.Background(), 6000*time.Second)
 	defer cancel()
-	fmt.Fprintf(os.Stderr, "DEBUG: a.recordsClient.Delete(%v, %v, %v,  %v)\n", *a.resourceGroup, zoneName, shortName, azRecType)
+	//fmt.Fprintf(os.Stderr, "DEBUG: a.recordsClient.Delete(%v, %v, %v,  %v)\n", *a.resourceGroup, zoneName, shortName, azRecType)
 	_, err = a.recordsClient.Delete(ctx, *a.resourceGroup, zoneName, shortName, azRecType, nil)
 	return err
 }

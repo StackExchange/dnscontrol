@@ -697,6 +697,11 @@ func makeTests(t *testing.T) []*TestGroup {
 			tc("Change A target", a("testa", "1.2.3.4")),
 		),
 
+		testgroup("A",
+			tc("Create Arc", ttl(a("testa", "1.1.1.1"), 111)),
+			tc("Change TTL", ttl(a("testa", "1.1.1.1"), 999)),
+		),
+
 		testgroup("MX",
 			tc("Create MX", mx("testmx", 5, "foo.com.")),
 			tc("Change MX target", mx("testmx", 5, "bar.com.")),
@@ -733,10 +738,10 @@ func makeTests(t *testing.T) []*TestGroup {
 		// Exercise TTL operations.
 		testgroup("TTL",
 			not("NETCUP"), // NETCUP does not support TTLs.
-			tc("Start", a("@", "1.2.3.4"), a("www", "1.2.3.4"), a("www", "5.6.7.8")),
-			tc("Change a ttl", ttl(a("@", "1.2.3.4"), 1000), a("www", "1.2.3.4"), a("www", "5.6.7.8")),
-			tc("Change single target from set", ttl(a("@", "1.2.3.4"), 1000), a("www", "2.2.2.2"), a("www", "5.6.7.8")),
-			tc("Change all ttls", ttl(a("@", "1.2.3.4"), 500), ttl(a("www", "2.2.2.2"), 400), ttl(a("www", "5.6.7.8"), 400)),
+			tc("Start", ttl(a("@", "8.8.8.8"), 666), a("www", "1.2.3.4"), a("www", "5.6.7.8")),
+			tc("Change a ttl", ttl(a("@", "8.8.8.8"), 1000), a("www", "1.2.3.4"), a("www", "5.6.7.8")),
+			tc("Change single target from set", ttl(a("@", "8.8.8.8"), 1000), a("www", "2.2.2.2"), a("www", "5.6.7.8")),
+			tc("Change all ttls", ttl(a("@", "8.8.8.8"), 500), ttl(a("www", "2.2.2.2"), 400), ttl(a("www", "5.6.7.8"), 400)),
 		),
 
 		// This is a strange one.  It adds a new record to an existing
