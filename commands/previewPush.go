@@ -140,8 +140,8 @@ func run(args PreviewArgs, push bool, interactive bool, out printer.CLI) error {
 		return err
 	}
 	providerState := InitializeProviders(cfg, providerConfigs, args.Notify)
-	if err != nil {
-		return err
+	if providerState.err != nil {
+		return providerState.err
 	}
 
 	errs := normalize.ValidateAndNormalizeConfig(cfg)
@@ -416,6 +416,8 @@ func InitializeProviders(cfg *models.DNSConfig, providerConfigs map[string]map[s
 			pInst.IsDefault = !isNonDefault[pInst.Name]
 		}
 	}
+	result.createdRegistrars = registrars
+	result.createdDnsProviders = dnsProviders
 	return result
 }
 
