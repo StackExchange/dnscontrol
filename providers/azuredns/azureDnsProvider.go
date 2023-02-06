@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"os"
 	"sort"
 	"strings"
 	"time"
@@ -250,7 +251,7 @@ func (a *azurednsProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*mod
 								if err != nil {
 									return err
 								}
-								//fmt.Fprintf(os.Stderr, "DEBUG: 1 a.recordsClient.Delete(ctx, %v, %v, %v, %v)\n", *a.resourceGroup, zoneName, *rrset.Name, rt)
+								fmt.Fprintf(os.Stderr, "DEBUG: 1 a.recordsClient.Delete(ctx, %v, %v, %v, %v)\n", *a.resourceGroup, zoneName, *rrset.Name, rt)
 								_, err = a.recordsClient.Delete(ctx, *a.resourceGroup, zoneName, *rrset.Name, rt, nil)
 								if err != nil {
 									return err
@@ -290,7 +291,7 @@ func (a *azurednsProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*mod
 									F: func() error {
 										ctx, cancel := context.WithTimeout(context.Background(), 6000*time.Second)
 										defer cancel()
-										//fmt.Fprintf(os.Stderr, "DEBUG: 2 a.recordsClient.Delete(ctx, %v, %v, %v, %v, nil)\n", *a.resourceGroup, zoneName, recordName, existingRecordType)
+										fmt.Fprintf(os.Stderr, "DEBUG: 2 a.recordsClient.Delete(ctx, %v, %v, %v, %v, nil)\n", *a.resourceGroup, zoneName, recordName, existingRecordType)
 										_, err := a.recordsClient.Delete(ctx, *a.resourceGroup, zoneName, recordName, existingRecordType, nil)
 										if err != nil {
 											return err
@@ -434,14 +435,15 @@ func (a *azurednsProvider) recordDelete(zoneName string, reckey models.RecordKey
 		shortName = "@"
 	}
 
-	_, azRecType, err := a.recordToNative(reckey, recs)
+	//azRecType, err := nativeToRecordType(to.StringPtr(*recordSet.Type))
+	azRecType, err := nativeToRecordType(to.StringPtr(reckey.Type))
 	if err != nil {
-		return err
+		return nil
 	}
 
 	ctx, cancel := context.WithTimeout(context.Background(), 6000*time.Second)
 	defer cancel()
-	//fmt.Fprintf(os.Stderr, "DEBUG: a.recordsClient.Delete(%v, %v, %v,  %v)\n", *a.resourceGroup, zoneName, shortName, azRecType)
+	fmt.Fprintf(os.Stderr, "DEBUG: a.recordsClient.Delete(%v, %v, %v,  %v)\n", *a.resourceGroup, zoneName, shortName, azRecType)
 	_, err = a.recordsClient.Delete(ctx, *a.resourceGroup, zoneName, shortName, azRecType, nil)
 	return err
 }
@@ -471,7 +473,9 @@ func nativeToRecordType(recordType *string) (adns.RecordType, error) {
 		return adns.RecordTypeSOA, nil
 	default:
 		// Unimplemented type. Return adns.A as a decoy, but send an error.
-		return adns.RecordTypeA, fmt.Errorf("rc.String rtype %v unimplemented", *recordType)
+		//fmt.Fprintf(os.Stderr, "DEBUG: NativeToRecordType backtrace=\n")
+		//debug.PrintStack()
+		return adns.RecordTypeA, fmt.Errorf("rc.String rtype 474 %v unimplemented", *recordType)
 	}
 }
 
@@ -611,14 +615,26 @@ func nativeToRecords(set *adns.RecordSet, origin string) []*models.RecordConfig 
 		}
 	case "Microsoft.Network/dnszones/SOA":
 	default:
-		panic(fmt.Errorf("rc.String rtype %v unimplemented", *set.Type))
+		panic(fmt.Errorf("rc.String rtype 614 %v unimplemented", *set.Type))
 	}
 	return results
 }
 
-func (a *azurednsProvider) recordToNative(recordKey models.RecordKey, recordConfig []*models.RecordConfig) (*adns.RecordSet, adns.RecordType, error) {
+func (a *azurednsProvider) recordToNativeDiff2(recordKey models.RecordKey, recordConfig []*models.RecordConfig) (*adns.RecordSet, adns.RecordType, error) {
 	recordSet := &adns.RecordSet{Type: to.StringPtr(recordKey.Type), Properties: &adns.RecordSetProperties{}}
 	for _, rec := range recordConfig {
+
+		if recordKey.Type == "AZURE_ALIAS" {
+			//fmt.Fprintf(os.Stderr, "DEBUG: XXXXXXXX rec=%+v\n", rec)
+			//fmt.Fprintf(os.Stderr, "DEBUG: XXXXXXXX recA=%+v\n", rec.AzureAlias)
+			aliasType := rec.AzureAlias["type"]
+			//fmt.Fprintf(os.Stderr, "DEBUG: XXXXXXXX aliasType=%+v\n", aliasType)
+			if aliasType != "" {
+				newType := recordKey.Type + "_" + aliasType
+				recordKey.Type = newType
+			}
+		}
+
 		switch recordKey.Type {
 		case "A":
 			if recordSet.Properties.ARecords == nil {
@@ -673,7 +689,87 @@ func (a *azurednsProvider) recordToNative(recordKey models.RecordKey, recordConf
 			*recordSet.Type = rec.AzureAlias["type"]
 			recordSet.Properties.TargetResource = &adns.SubResource{ID: to.StringPtr(rec.GetTargetField())}
 		default:
-			return nil, adns.RecordTypeA, fmt.Errorf("rc.String rtype %v unimplemented", recordKey.Type) // ands.A is a placeholder
+			return nil, adns.RecordTypeA, fmt.Errorf("rc.String rtype 690 %v unimplemented", recordKey.Type) // ands.A is a placeholder
+		}
+	}
+
+	rt, err := nativeToRecordType(to.StringPtr(*recordSet.Type))
+	if err != nil {
+		return nil, adns.RecordTypeA, err // adns.A is a placeholder
+	}
+	return recordSet, rt, nil
+}
+
+func (a *azurednsProvider) recordToNative(recordKey models.RecordKey, recordConfig []*models.RecordConfig) (*adns.RecordSet, adns.RecordType, error) {
+	recordSet := &adns.RecordSet{Type: to.StringPtr(recordKey.Type), Properties: &adns.RecordSetProperties{}}
+	for _, rec := range recordConfig {
+
+		if recordKey.Type == "AZURE_ALIAS" {
+			//fmt.Fprintf(os.Stderr, "DEBUG: XXXXXXXX rec=%+v\n", rec)
+			//fmt.Fprintf(os.Stderr, "DEBUG: XXXXXXXX recA=%+v\n", rec.AzureAlias)
+			aliasType := rec.AzureAlias["type"]
+			//fmt.Fprintf(os.Stderr, "DEBUG: XXXXXXXX aliasType=%+v\n", aliasType)
+			if aliasType != "" {
+				newType := recordKey.Type + "_" + aliasType
+				recordKey.Type = newType
+			}
+		}
+
+		switch recordKey.Type {
+		case "A":
+			if recordSet.Properties.ARecords == nil {
+				recordSet.Properties.ARecords = []*adns.ARecord{}
+			}
+			recordSet.Properties.ARecords = append(recordSet.Properties.ARecords, &adns.ARecord{IPv4Address: to.StringPtr(rec.GetTargetField())})
+		case "AAAA":
+			if recordSet.Properties.AaaaRecords == nil {
+				recordSet.Properties.AaaaRecords = []*adns.AaaaRecord{}
+			}
+			recordSet.Properties.AaaaRecords = append(recordSet.Properties.AaaaRecords, &adns.AaaaRecord{IPv6Address: to.StringPtr(rec.GetTargetField())})
+		case "CNAME":
+			recordSet.Properties.CnameRecord = &adns.CnameRecord{Cname: to.StringPtr(rec.GetTargetField())}
+		case "NS":
+			if recordSet.Properties.NsRecords == nil {
+				recordSet.Properties.NsRecords = []*adns.NsRecord{}
+			}
+			recordSet.Properties.NsRecords = append(recordSet.Properties.NsRecords, &adns.NsRecord{Nsdname: to.StringPtr(rec.GetTargetField())})
+		case "PTR":
+			if recordSet.Properties.PtrRecords == nil {
+				recordSet.Properties.PtrRecords = []*adns.PtrRecord{}
+			}
+			recordSet.Properties.PtrRecords = append(recordSet.Properties.PtrRecords, &adns.PtrRecord{Ptrdname: to.StringPtr(rec.GetTargetField())})
+		case "TXT":
+			if recordSet.Properties.TxtRecords == nil {
+				recordSet.Properties.TxtRecords = []*adns.TxtRecord{}
+			}
+			// Empty TXT record needs to have no value set in it's properties
+			if !(len(rec.TxtStrings) == 1 && rec.TxtStrings[0] == "") {
+				var txts []*string
+				for _, txt := range rec.TxtStrings {
+					txts = append(txts, to.StringPtr(txt))
+				}
+				recordSet.Properties.TxtRecords = append(recordSet.Properties.TxtRecords, &adns.TxtRecord{Value: txts})
+			}
+		case "MX":
+			if recordSet.Properties.MxRecords == nil {
+				recordSet.Properties.MxRecords = []*adns.MxRecord{}
+			}
+			recordSet.Properties.MxRecords = append(recordSet.Properties.MxRecords, &adns.MxRecord{Exchange: to.StringPtr(rec.GetTargetField()), Preference: to.Int32Ptr(int32(rec.MxPreference))})
+		case "SRV":
+			if recordSet.Properties.SrvRecords == nil {
+				recordSet.Properties.SrvRecords = []*adns.SrvRecord{}
+			}
+			recordSet.Properties.SrvRecords = append(recordSet.Properties.SrvRecords, &adns.SrvRecord{Target: to.StringPtr(rec.GetTargetField()), Port: to.Int32Ptr(int32(rec.SrvPort)), Weight: to.Int32Ptr(int32(rec.SrvWeight)), Priority: to.Int32Ptr(int32(rec.SrvPriority))})
+		case "CAA":
+			if recordSet.Properties.CaaRecords == nil {
+				recordSet.Properties.CaaRecords = []*adns.CaaRecord{}
+			}
+			recordSet.Properties.CaaRecords = append(recordSet.Properties.CaaRecords, &adns.CaaRecord{Value: to.StringPtr(rec.GetTargetField()), Tag: to.StringPtr(rec.CaaTag), Flags: to.Int32Ptr(int32(rec.CaaFlag))})
+		case "AZURE_ALIAS_A", "AZURE_ALIAS_AAAA", "AZURE_ALIAS_CNAME":
+			*recordSet.Type = rec.AzureAlias["type"]
+			recordSet.Properties.TargetResource = &adns.SubResource{ID: to.StringPtr(rec.GetTargetField())}
+		default:
+			return nil, adns.RecordTypeA, fmt.Errorf("rc.String rtype 770 %v unimplemented", recordKey.Type) // ands.A is a placeholder
 		}
 	}
 
