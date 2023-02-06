@@ -1174,7 +1174,7 @@ func makeTests(t *testing.T) []*TestGroup {
 			tc("ALIAS to CNAME record in same zone",
 				cname("foo.cname", "google.com"),
 				cname("quux.cname", "google2.com"),
-				azureAlias("bar", "CNAME", "/subscriptions/**subscription-id**/resourceGroups/**resource-group**/providers/Microsoft.Network/dnszones/**current-domain-no-trailing**/CNAME/foo.cname"),
+				azureAlias("bar.cname", "CNAME", "/subscriptions/**subscription-id**/resourceGroups/**resource-group**/providers/Microsoft.Network/dnszones/**current-domain-no-trailing**/CNAME/foo.cname"),
 			),
 			tc("change aliasCNAME",
 				cname("foo.cname", "google.com"),
