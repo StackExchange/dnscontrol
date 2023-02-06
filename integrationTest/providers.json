@@ -13,6 +13,7 @@
     "update-key": "$AXFRDDNS_UPDATE_KEY"
   },
   "AZURE_DNS": {
+    "TYPE": "AZURE_DNS",
     "ClientID": "$AZURE_DNS_CLIENT_ID",
     "ClientSecret": "$AZURE_DNS_CLIENT_SECRET",
     "ResourceGroup": "$AZURE_DNS_RESOURCE_GROUP",

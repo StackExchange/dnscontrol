@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"os"
 	"sort"
 	"strings"
 	"time"
@@ -250,6 +251,7 @@ func (a *azurednsProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*mod
 								if err != nil {
 									return err
 								}
+								fmt.Fprintf(os.Stderr, "DEBUG: 1 a.recordsClient.Delete(ctx, %v, %v, %v, %v)\n", *a.resourceGroup, zoneName, *rrset.Name, rt)
 								_, err = a.recordsClient.Delete(ctx, *a.resourceGroup, zoneName, *rrset.Name, rt, nil)
 								if err != nil {
 									return err
@@ -289,6 +291,7 @@ func (a *azurednsProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*mod
 									F: func() error {
 										ctx, cancel := context.WithTimeout(context.Background(), 6000*time.Second)
 										defer cancel()
+										fmt.Fprintf(os.Stderr, "DEBUG: 2 a.recordsClient.Delete(ctx, %v, %v, %v, %v, nil)\n", *a.resourceGroup, zoneName, recordName, existingRecordType)
 										_, err := a.recordsClient.Delete(ctx, *a.resourceGroup, zoneName, recordName, existingRecordType, nil)
 										if err != nil {
 											return err
@@ -306,6 +309,7 @@ func (a *azurednsProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*mod
 						F: func() error {
 							ctx, cancel := context.WithTimeout(context.Background(), 6000*time.Second)
 							defer cancel()
+							fmt.Fprintf(os.Stderr, "DEBUG: 3 a.recordsClient.CreateOrUpdate(ctx, %v, %v, %v, %v, %+v, nil)\n", *a.resourceGroup, zoneName, recordName, recordType, *rrset)
 							_, err := a.recordsClient.CreateOrUpdate(ctx, *a.resourceGroup, zoneName, recordName, recordType, *rrset, nil)
 							if err != nil {
 								return err
@@ -332,78 +336,106 @@ func (a *azurednsProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*mod
 
 	// Azure is a "ByRSet" API.
 
-	instructions, err := diff2.ByLabel(existingRecords, dc, nil)
+	changes, err := diff2.ByRecordSet(existingRecords, dc, nil)
 	if err != nil {
 		return nil, err
 	}
 
-	for _, inst := range instructions {
-		switch inst.Type {
+	for _, change := range changes {
 
+		// Copy all param values to local variables to avoid overwrites
+		msgs := change.MsgsJoined
+		dcn := dc.Name
+		chaKey := change.Key
+
+		switch change.Type {
 		case diff2.REPORT:
-			corrections = append(corrections, &models.Correction{Msg: inst.MsgsJoined})
-
+			corrections = append(corrections, &models.Correction{Msg: change.MsgsJoined})
 		case diff2.CHANGE, diff2.CREATE:
-			var rrset *adns.RecordSet
-			var recordName string
-			var recordType adns.RecordType
-			if len(inst.Old) == 0 { // Create
-				rrset = &adns.RecordSet{Type: to.StringPtr(inst.Key.Type), Properties: &adns.RecordSetProperties{}}
-				recordType, _ = nativeToRecordType(to.StringPtr(inst.Key.Type))
-				recordName = inst.Key.NameFQDN
-			} else { // Change
-				rrset = inst.Old[0].Original.(*adns.RecordSet)
-				recordType, _ = nativeToRecordType(to.StringPtr(*rrset.Type))
-				recordName = *rrset.Name
-			}
-			// ^^^ this is broken and can probably be cleaned up significantly by
-			// someone that understands Azure's API.
 
-			corrections = append(corrections,
-				&models.Correction{
-					Msg: strings.Join(inst.Msgs, "\n"),
-					F: func() error {
-						ctx, cancel := context.WithTimeout(context.Background(), 6000*time.Second)
-						defer cancel()
-						_, err := a.recordsClient.CreateOrUpdate(ctx, *a.resourceGroup, zoneName, recordName, recordType, *rrset, nil)
-						if err != nil {
-							return err
-						}
-						return nil
-					},
-				})
+			// for i, j := range change.Old {
+			// 	fmt.Fprintf(os.Stderr, "DEBUG: OLD[%d] = %+v\n", i, j)
+			// }
+			// for i, j := range change.New {
+			// 	fmt.Fprintf(os.Stderr, "DEBUG: NEW[%d] = %+v\n", i, j)
+			// }
+			// fmt.Fprintf(os.Stderr, "DEBUG: CHANGE = \n%v\n", change)
+
+			corrections = append(corrections, &models.Correction{
+				Msg: msgs,
+				F: func() error {
+					return a.recordCreate(dcn, chaKey, change.New)
+				},
+			})
 
 		case diff2.DELETE:
-			fmt.Printf("DEBUG: azure inst=%s\n", inst)
-			rrset := inst.Old[0].Original.(*adns.RecordSet)
-			rt, err := nativeToRecordType(rrset.Type)
-			aResourceGroup := *a.resourceGroup
-			zoneName := zoneName
-			corrections = append(corrections,
-				&models.Correction{
-					Msg: strings.Join(inst.Msgs, "\n"),
-					F: func() error {
-						ctx, cancel := context.WithTimeout(context.Background(), 6000*time.Second)
-						defer cancel()
-						if err != nil {
-							return err
-						}
-						_, err = a.recordsClient.Delete(ctx, aResourceGroup, zoneName, *rrset.Name, rt, nil)
-						if err != nil {
-							return err
-						}
-						return nil
-					},
-				})
 
+			// for i, j := range change.Old {
+			// 	fmt.Fprintf(os.Stderr, "DEBUG: OLD[%d] = %+v\n", i, j)
+			// }
+			// for i, j := range change.New {
+			// 	fmt.Fprintf(os.Stderr, "DEBUG: NEW[%d] = %+v\n", i, j)
+			// }
+
+			corrections = append(corrections, &models.Correction{
+				Msg: msgs,
+				F: func() error {
+					//return a.recordDelete(dc.Name, change.Key, change.Old)
+					return a.recordDelete(dcn, chaKey, change.Old)
+				},
+			})
 		default:
-			panic(fmt.Sprintf("unhandled inst.Type %s", inst.Type))
-
+			panic(fmt.Sprintf("unhandled change.Type %s", change.Type))
 		}
-
 	}
 
 	return corrections, nil
+}
+
+func (a *azurednsProvider) recordCreate(zoneName string, reckey models.RecordKey, recs models.Records) error {
+
+	_, azRecType, err := a.recordToNative(reckey, recs)
+	if err != nil {
+		return err
+	}
+
+	rrset, _, err := a.recordToNative(reckey, recs)
+	if err != nil {
+		return err
+	}
+
+	var recordName string
+	for _, r := range recs {
+		i := int64(r.TTL)
+		rrset.Properties.TTL = &i // TODO: make sure that ttls are consistent within a set
+		recordName = r.Name
+	}
+
+	ctx, cancel := context.WithTimeout(context.Background(), 6000*time.Second)
+	defer cancel()
+	fmt.Fprintf(os.Stderr, "DEBUG: a.recordsClient.CreateOrUpdate(%v, %v, %v, %v, %+v)\n", *a.resourceGroup, zoneName, recordName, azRecType, *rrset)
+	_, err = a.recordsClient.CreateOrUpdate(ctx, *a.resourceGroup, zoneName, recordName, azRecType, *rrset, nil)
+	return err
+}
+
+func (a *azurednsProvider) recordDelete(zoneName string, reckey models.RecordKey, recs models.Records) error {
+
+	shortName := strings.TrimSuffix(reckey.NameFQDN, "."+zoneName)
+	//_, azRecType, err := a.recordToNative(reckey, recs)
+	if shortName == zoneName {
+		shortName = "@"
+	}
+
+	_, azRecType, err := a.recordToNative(reckey, recs)
+	if err != nil {
+		return err
+	}
+
+	ctx, cancel := context.WithTimeout(context.Background(), 6000*time.Second)
+	defer cancel()
+	fmt.Fprintf(os.Stderr, "DEBUG: a.recordsClient.Delete(%v, %v, %v,  %v)\n", *a.resourceGroup, zoneName, shortName, azRecType)
+	_, err = a.recordsClient.Delete(ctx, *a.resourceGroup, zoneName, shortName, azRecType, nil)
+	return err
 }
 
 func nativeToRecordType(recordType *string) (adns.RecordType, error) {
