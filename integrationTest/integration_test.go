@@ -1158,6 +1158,12 @@ func makeTests(t *testing.T) []*TestGroup {
 				a("quux.a", "2.3.4.5"),
 				azureAlias("bar.a", "A", "/subscriptions/**subscription-id**/resourceGroups/**resource-group**/providers/Microsoft.Network/dnszones/**current-domain-no-trailing**/A/quux.a"),
 			),
+			clear(),
+		),
+
+		testgroup("Atemp1",
+			tc("Create A", a("testa", "1.1.1.1")),
+			tc("Change A target", a("testa", "1.2.3.4")),
 		),
 
 		testgroup("AZURE_ALIAS_CNAME",
@@ -1175,6 +1181,12 @@ func makeTests(t *testing.T) []*TestGroup {
 				cname("quux.cname", "google2.com"),
 				azureAlias("bar.cname", "CNAME", "/subscriptions/**subscription-id**/resourceGroups/**resource-group**/providers/Microsoft.Network/dnszones/**current-domain-no-trailing**/CNAME/quux.cname"),
 			),
+			clear(),
+		),
+
+		testgroup("Atemp2",
+			tc("Create A", a("testa", "1.1.1.1")),
+			tc("Change A target", a("testa", "1.2.3.4")),
 		),
 
 		// ROUTE43 features
