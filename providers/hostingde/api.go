@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"github.com/StackExchange/dnscontrol/v3/models"
 	"io"
 	"net/http"
 
@@ -46,6 +47,23 @@ func (hp *hostingdeProvider) getDomainConfig(domain string) (*domainConfig, erro
 	return domainConf[0], nil
 }
 
+func (hp *hostingdeProvider) deleteDomain(domain string) error {
+	t, err := idna.ToASCII(domain)
+	if err != nil {
+		return err
+	}
+
+	params := request{
+		DomainName: t,
+	}
+
+	_, err = hp.get("dns", "domainDelete", params)
+	if err != nil {
+		return fmt.Errorf("error deleting domain: %w", err)
+	}
+	return nil
+}
+
 func (hp *hostingdeProvider) createZone(domain string) error {
 	t, err := idna.ToASCII(domain)
 	if err != nil {
@@ -74,6 +92,29 @@ func (hp *hostingdeProvider) createZone(domain string) error {
 	if err != nil {
 		return fmt.Errorf("error creating zone: %w", err)
 	}
+	return nil
+}
+
+func (hp *hostingdeProvider) deleteZone(domain string) error {
+	t, err := idna.ToASCII(domain)
+	if err != nil {
+		return err
+	}
+
+	params := request{
+		ZoneName: t,
+	}
+
+	_, err = hp.get("dns", "zoneDelete", params)
+	if err != nil {
+		return fmt.Errorf("error deleting zone: %w", err)
+	}
+
+	_, err = hp.get("dns", "zonePurgeRestorable", params)
+	if err != nil {
+		return fmt.Errorf("error purging restorable zone: %w", err)
+	}
+
 	return nil
 }
 
