@@ -363,9 +363,6 @@ type ProviderState struct {
 func InitializeProviders(cfg *models.DNSConfig, providerConfigs map[string]map[string]string, notifyFlag bool) ProviderState {
 	var notificationCfg map[string]string
 	result := ProviderState{}
-	defer func() {
-		result.notifier = notifications.Init(notificationCfg)
-	}()
 	if notifyFlag {
 		notificationCfg = providerConfigs["notifications"]
 	}
@@ -418,6 +415,7 @@ func InitializeProviders(cfg *models.DNSConfig, providerConfigs map[string]map[s
 	}
 	result.createdRegistrars = registrars
 	result.createdDnsProviders = dnsProviders
+	result.notifier = notifications.Init(notificationCfg)
 	return result
 }
 
