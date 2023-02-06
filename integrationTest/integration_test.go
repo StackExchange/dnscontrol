@@ -220,7 +220,7 @@ func makeChanges(t *testing.T, prv providers.DNSServiceProvider, dc *models.Doma
 		}
 		for _, c := range corrections {
 			if *verbose {
-				t.Log(c.Msg)
+				t.Log("\n" + c.Msg)
 			}
 			err = c.F()
 			if err != nil {
@@ -697,7 +697,7 @@ func makeTests(t *testing.T) []*TestGroup {
 			tc("Change A target", a("testa", "1.2.3.4")),
 		),
 
-		testgroup("A",
+		testgroup("Attl",
 			tc("Create Arc", ttl(a("testa", "1.1.1.1"), 111)),
 			tc("Change TTL", ttl(a("testa", "1.1.1.1"), 999)),
 		),
@@ -1142,7 +1142,7 @@ func makeTests(t *testing.T) []*TestGroup {
 
 		// AZURE features
 
-		testgroup("AZURE_ALIAS",
+		testgroup("AZURE_ALIAS_A",
 			requires(providers.CanUseAzureAlias),
 			tc("create dependent A records",
 				a("foo.a", "1.2.3.4"),
@@ -1158,6 +1158,9 @@ func makeTests(t *testing.T) []*TestGroup {
 				a("quux.a", "2.3.4.5"),
 				azureAlias("bar.a", "A", "/subscriptions/**subscription-id**/resourceGroups/**resource-group**/providers/Microsoft.Network/dnszones/**current-domain-no-trailing**/A/quux.a"),
 			),
+		),
+
+		testgroup("AZURE_ALIAS_CNAME",
 			tc("create dependent CNAME records",
 				cname("foo.cname", "google.com"),
 				cname("quux.cname", "google2.com"),

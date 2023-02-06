@@ -347,6 +347,8 @@ func (a *azurednsProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*mod
 
 	for _, change := range changes {
 
+		fmt.Fprintf(os.Stderr, "\n\nCHANGE=%v\n\n", change)
+
 		// Copy all param values to local variables to avoid overwrites
 		msgs := change.MsgsJoined
 		dcn := dc.Name
@@ -401,12 +403,12 @@ func (a *azurednsProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*mod
 
 func (a *azurednsProvider) recordCreate(zoneName string, reckey models.RecordKey, recs models.Records) error {
 
-	_, azRecType, err := a.recordToNative(reckey, recs)
+	_, azRecType, err := a.recordToNativeDiff2(reckey, recs)
 	if err != nil {
 		return err
 	}
 
-	rrset, _, err := a.recordToNative(reckey, recs)
+	rrset, _, err := a.recordToNativeDiff2(reckey, recs)
 	if err != nil {
 		return err
 	}
@@ -422,7 +424,7 @@ func (a *azurednsProvider) recordCreate(zoneName string, reckey models.RecordKey
 
 	ctx, cancel := context.WithTimeout(context.Background(), 6000*time.Second)
 	defer cancel()
-	//fmt.Fprintf(os.Stderr, "DEBUG: a.recordsClient.CreateOrUpdate(%v, %v, %v, %v, %+v)\n", *a.resourceGroup, zoneName, recordName, azRecType, *rrset)
+	fmt.Fprintf(os.Stderr, "DEBUG: a.recordsClient.CreateOrUpdate(%v, %v, %v, %v, %+v)\n", *a.resourceGroup, zoneName, recordName, azRecType, *rrset)
 	_, err = a.recordsClient.CreateOrUpdate(ctx, *a.resourceGroup, zoneName, recordName, azRecType, *rrset, nil)
 	return err
 }
@@ -481,6 +483,7 @@ func nativeToRecordType(recordType *string) (adns.RecordType, error) {
 
 func safeTarget(t *string) string {
 	if t == nil {
+		//panic("no TARGET")
 		return "foundnil"
 	}
 	return *t
@@ -507,6 +510,10 @@ func nativeToRecords(set *adns.RecordSet, origin string) []*models.RecordConfig 
 				},
 				Original: set,
 			}
+			fmt.Fprintf(os.Stderr, "DEBUG: set %+v\n", set.Properties)
+			fmt.Fprintf(os.Stderr, "DEBUG: set.Fqdn %v\n", set.Properties.Fqdn)
+			fmt.Fprintf(os.Stderr, "DEBUG: set.TargetResource %+v\n", set.Properties.TargetResource)
+			fmt.Fprintf(os.Stderr, "DEBUG: set.TargetResource.ID %+v\n", set.Properties.TargetResource.ID)
 			rc.SetLabelFromFQDN(*set.Properties.Fqdn, origin)
 			_ = rc.SetTarget(safeTarget(set.Properties.TargetResource.ID))
 			results = append(results, rc)
@@ -550,6 +557,13 @@ func nativeToRecords(set *adns.RecordSet, origin string) []*models.RecordConfig 
 				Original: set,
 			}
 			rc.SetLabelFromFQDN(*set.Properties.Fqdn, origin)
+			fmt.Fprintf(os.Stderr, "DEBUG: XXXXXXXX rc label    =%q\n", rc.GetLabel())
+			fmt.Fprintf(os.Stderr, "DEBUG: XXXXXXXX rc labelfqdn=%q\n", rc.GetLabelFQDN())
+			fmt.Fprintf(os.Stderr, "DEBUG: XXXXXXXX set=%+v\n", set)
+			fmt.Fprintf(os.Stderr, "DEBUG: XXXXXXXX set.Properties=%+v\n", *set.Properties)
+			fmt.Fprintf(os.Stderr, "DEBUG: XXXXXXXX set.Properties.TTL=%+v\n", *set.Properties.TTL)
+			fmt.Fprintf(os.Stderr, "DEBUG: XXXXXXXX set.Properties.TargetResource=%+v\n", *set.Properties.TargetResource)
+			fmt.Fprintf(os.Stderr, "DEBUG: XXXXXXXX set.Properties.ProvisioningState=%+v\n", *set.Properties.ProvisioningState)
 			_ = rc.SetTarget(safeTarget(set.Properties.TargetResource.ID))
 			results = append(results, rc)
 		}
@@ -627,12 +641,14 @@ func (a *azurednsProvider) recordToNativeDiff2(recordKey models.RecordKey, recor
 		if recordKey.Type == "AZURE_ALIAS" {
 			//fmt.Fprintf(os.Stderr, "DEBUG: XXXXXXXX rec=%+v\n", rec)
 			//fmt.Fprintf(os.Stderr, "DEBUG: XXXXXXXX recA=%+v\n", rec.AzureAlias)
+			panic("FOO")
 			aliasType := rec.AzureAlias["type"]
 			//fmt.Fprintf(os.Stderr, "DEBUG: XXXXXXXX aliasType=%+v\n", aliasType)
 			if aliasType != "" {
 				newType := recordKey.Type + "_" + aliasType
 				recordKey.Type = newType
 			}
+			fmt.Fprintf(os.Stderr, "DEBUG: XXXXXXXX recordKey.Type=%v\n", recordKey.Type)
 		}
 
 		switch recordKey.Type {
@@ -689,7 +705,7 @@ func (a *azurednsProvider) recordToNativeDiff2(recordKey models.RecordKey, recor
 			*recordSet.Type = rec.AzureAlias["type"]
 			recordSet.Properties.TargetResource = &adns.SubResource{ID: to.StringPtr(rec.GetTargetField())}
 		default:
-			return nil, adns.RecordTypeA, fmt.Errorf("rc.String rtype 690 %v unimplemented", recordKey.Type) // ands.A is a placeholder
+			return nil, adns.RecordTypeA, fmt.Errorf("rc.String rtype 707 %v unimplemented", recordKey.Type) // ands.A is a placeholder
 		}
 	}
 
