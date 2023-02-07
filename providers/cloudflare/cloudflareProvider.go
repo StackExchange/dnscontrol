@@ -870,8 +870,8 @@ func getProxyMetadata(r *models.RecordConfig) map[string]string {
 	}
 }
 
-// EnsureDomainExists returns an error of domain does not exist.
-func (c *cloudflareProvider) EnsureDomainExists(domain string) error {
+// EnsureZoneExists creates a zone if it does not exist
+func (c *cloudflareProvider) EnsureZoneExists(domain string) error {
 	if c.domainIndex == nil {
 		if err := c.fetchDomainList(); err != nil {
 			return err

@@ -18,10 +18,10 @@ type DNSServiceProvider interface {
 	models.DNSProvider
 }
 
-// DomainCreator should be implemented by providers that have the ability to add domains to an account. the create-domains command
-// can be run to ensure all domains are present before running preview/push.  Implement this only if the provider supoprts the `dnscontrol create-domain` command.
-type DomainCreator interface {
-	EnsureDomainExists(domain string) error
+// ZoneCreator should be implemented by providers that have the ability to create zones
+// (used for automatically creating zones if they don't exist)
+type ZoneCreator interface {
+	EnsureZoneExists(domain string) error
 }
 
 // ZoneRemover should be implemented by providers that have the ability to add domains to an account. the create-domains command
