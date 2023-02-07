@@ -819,7 +819,7 @@ func unescape(s *string) string {
 	return name
 }
 
-func (r *route53Provider) EnsureDomainExists(domain string) error {
+func (r *route53Provider) EnsureZoneExists(domain string) error {
 	if err := r.getZones(); err != nil {
 		return err
 	}

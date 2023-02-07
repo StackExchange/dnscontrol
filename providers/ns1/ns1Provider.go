@@ -50,7 +50,7 @@ func newProvider(creds map[string]string, meta json.RawMessage) (providers.DNSSe
 	return &nsone{rest.NewClient(http.DefaultClient, rest.SetAPIKey(creds["api_token"]))}, nil
 }
 
-func (n *nsone) EnsureDomainExists(domain string) error {
+func (n *nsone) EnsureZoneExists(domain string) error {
 	// This enables the create-domains subcommand
 
 	zone := dns.NewZone(domain)

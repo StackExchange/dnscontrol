@@ -23,13 +23,17 @@ type request struct {
 	Page           uint    `json:"page,omitempty"`
 
 	// Update Zone
-	ZoneConfig      *zoneConfig `json:"zoneConfig"`
-	RecordsToAdd    []*record   `json:"recordsToAdd"`
-	RecordsToModify []*record   `json:"recordsToModify"`
-	RecordsToDelete []*record   `json:"recordsToDelete"`
+	ZoneConfig      *zoneConfig `json:"zoneConfig,omitempty"`
+	RecordsToAdd    []*record   `json:"recordsToAdd,omitempty"`
+	RecordsToModify []*record   `json:"recordsToModify,omitempty"`
+	RecordsToDelete []*record   `json:"recordsToDelete,omitempty"`
 
 	// Create Zone
-	Records []*record `json:"records"`
+	Records []*record `json:"records,omitempty"`
+
+	DomainName string        `json:"domainName,omitempty"`
+	Add        []dnsSecEntry `json:"add,omitempty"`
+	Remove     []dnsSecEntry `json:"remove,omitempty"`
 
 	// Domain
 	Domain *domainConfig `json:"domain"`
@@ -52,7 +56,14 @@ type domainConfig struct {
 	Name                string          `json:"name"`
 	Contacts            json.RawMessage `json:"contacts"`
 	Nameservers         []nameserver    `json:"nameservers"`
+	DNSSecEntries       []dnsSecEntry   `json:"dnsSecEntries"`
 	TransferLockEnabled bool            `json:"transferLockEnabled"`
+}
+
+type dnsSecEntry struct {
+	KeyData dnsSecKey `json:"keyData"`
+	Comment string    `json:"comment"`
+	KeyTag  uint32    `json:"keyTag"`
 }
 
 type zoneConfig struct {
@@ -82,10 +93,10 @@ type zone struct {
 }
 
 type dnsSecOptions struct {
-	Keys       []dnsSecKey `json:"flags,omitempty"`
-	Algorithms []string    `json:"algorithms,omitempty"`
-	NSECMode   string      `json:"nsecMode"`
-	PublishKSK bool        `json:"publishKsk"`
+	Keys       []dnsSecEntry `json:"keys,omitempty"`
+	Algorithms []string      `json:"algorithms,omitempty"`
+	NSECMode   string        `json:"nsecMode"`
+	PublishKSK bool          `json:"publishKsk"`
 }
 
 type dnsSecKey struct {

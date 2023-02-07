@@ -223,8 +223,8 @@ func (api *vultrProvider) GetNameservers(domain string) ([]*models.Nameserver, e
 	return models.ToNameservers(defaultNS)
 }
 
-// EnsureDomainExists adds a domain to the Vutr DNS service if it does not exist
-func (api *vultrProvider) EnsureDomainExists(domain string) error {
+// EnsureZoneExists creates a zone if it does not exist
+func (api *vultrProvider) EnsureZoneExists(domain string) error {
 	if ok, err := api.isDomainInAccount(domain); err != nil {
 		return err
 	} else if ok {

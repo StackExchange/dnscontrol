@@ -54,9 +54,9 @@ func CreateDomains(args CreateDomainsArgs) error {
 	for _, domain := range cfg.Domains {
 		fmt.Println("*** ", domain.Name)
 		for _, provider := range domain.DNSProviderInstances {
-			if creator, ok := provider.Driver.(providers.DomainCreator); ok {
+			if creator, ok := provider.Driver.(providers.ZoneCreator); ok {
 				fmt.Println("  -", provider.Name)
-				err := creator.EnsureDomainExists(domain.Name)
+				err := creator.EnsureZoneExists(domain.Name)
 				if err != nil {
 					fmt.Printf("Error creating domain: %s\n", err)
 				}
