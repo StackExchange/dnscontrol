@@ -294,7 +294,7 @@ func runTests(t *testing.T, prv providers.DNSServiceProvider, domainName string,
 		}
 
 		// Remove all records so next group starts with a clean slate.
-		makeChanges(t, prv, dc, tc("Empty"), "Post cleanup", false, nil)
+		makeChanges(t, prv, dc, tc("Empty"), "Post cleanup", true, nil)
 
 		elapsed := time.Since(start)
 		if *printElapsed {
