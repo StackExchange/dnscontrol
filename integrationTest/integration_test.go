@@ -700,6 +700,11 @@ func makeTests(t *testing.T) []*TestGroup {
 			tc("Change A target", a("testa", "1.2.3.4")),
 		),
 
+		testgroup("Attl",
+			tc("Create Arc", ttl(a("testa", "1.1.1.1"), 333)), 
+			tc("Change TTL", ttl(a("testa", "1.1.1.1"), 999)),
+		),
+
 		testgroup("MX",
 			tc("Create MX", mx("testmx", 5, "foo.com.")),
 			tc("Change MX target", mx("testmx", 5, "bar.com.")),
