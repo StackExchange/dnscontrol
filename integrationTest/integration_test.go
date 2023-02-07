@@ -22,8 +22,8 @@ import (
 )
 
 var providerToRun = flag.String("provider", "", "Provider to run")
-var startIdx = flag.Int("start", 0, "Test number to begin with")
-var endIdx = flag.Int("end", 0, "Test index to stop after")
+var startIdx = flag.Int("start", -1, "Test number to begin with")
+var endIdx = flag.Int("end", -1, "Test index to stop after")
 var verbose = flag.Bool("verbose", false, "Print corrections as you run them")
 var printElapsed = flag.Bool("elapsed", false, "Print elapsed time for each testgroup")
 var enableCFWorkers = flag.Bool("cfworkers", true, "Set false to disable CF worker tests")
@@ -254,8 +254,11 @@ func runTests(t *testing.T, prv providers.DNSServiceProvider, domainName string,
 	testGroups := makeTests(t)
 
 	firstGroup := *startIdx
+	if firstGroup == -1 {
+		firstGroup = 0
+	}
 	lastGroup := *endIdx
-	if lastGroup == 0 {
+	if lastGroup == -1 {
 		lastGroup = len(testGroups)
 	}
 
@@ -291,7 +294,7 @@ func runTests(t *testing.T, prv providers.DNSServiceProvider, domainName string,
 		}
 
 		// Remove all records so next group starts with a clean slate.
-		makeChanges(t, prv, dc, tc("Empty"), "Post cleanup", false, nil)
+		makeChanges(t, prv, dc, tc("Empty"), "Post cleanup", true, nil)
 
 		elapsed := time.Since(start)
 		if *printElapsed {
