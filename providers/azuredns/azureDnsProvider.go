@@ -4,7 +4,6 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"os"
 	"sort"
 	"strings"
 	"time"
@@ -251,7 +250,7 @@ func (a *azurednsProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*mod
 								if err != nil {
 									return err
 								}
-								fmt.Fprintf(os.Stderr, "DEBUG: 1 a.recordsClient.Delete(ctx, %v, %v, %v, %v)\n", *a.resourceGroup, zoneName, *rrset.Name, rt)
+								//fmt.Fprintf(os.Stderr, "DEBUG: 1 a.recordsClient.Delete(ctx, %v, %v, %v, %v)\n", *a.resourceGroup, zoneName, *rrset.Name, rt)
 								_, err = a.recordsClient.Delete(ctx, *a.resourceGroup, zoneName, *rrset.Name, rt, nil)
 								if err != nil {
 									return err
@@ -291,7 +290,7 @@ func (a *azurednsProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*mod
 									F: func() error {
 										ctx, cancel := context.WithTimeout(context.Background(), 6000*time.Second)
 										defer cancel()
-										fmt.Fprintf(os.Stderr, "DEBUG: 2 a.recordsClient.Delete(ctx, %v, %v, %v, %v, nil)\n", *a.resourceGroup, zoneName, recordName, existingRecordType)
+										//fmt.Fprintf(os.Stderr, "DEBUG: 2 a.recordsClient.Delete(ctx, %v, %v, %v, %v, nil)\n", *a.resourceGroup, zoneName, recordName, existingRecordType)
 										_, err := a.recordsClient.Delete(ctx, *a.resourceGroup, zoneName, recordName, existingRecordType, nil)
 										if err != nil {
 											return err
@@ -309,7 +308,7 @@ func (a *azurednsProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*mod
 						F: func() error {
 							ctx, cancel := context.WithTimeout(context.Background(), 6000*time.Second)
 							defer cancel()
-							fmt.Fprintf(os.Stderr, "DEBUG: 3 a.recordsClient.CreateOrUpdate(ctx, %v, %v, %v, %v, %+v, nil)\n", *a.resourceGroup, zoneName, recordName, recordType, *rrset)
+							//fmt.Fprintf(os.Stderr, "DEBUG: 3 a.recordsClient.CreateOrUpdate(ctx, %v, %v, %v, %v, %+v, nil)\n", *a.resourceGroup, zoneName, recordName, recordType, *rrset)
 							// fmt.Fprintf(os.Stderr, "DEBUG: 3 rrset: %+v\n", *rrset)
 							// fmt.Fprintf(os.Stderr, "DEBUG: 3 properties: %+v\n", rrset.Properties)
 							// fmt.Fprintf(os.Stderr, "DEBUG: 3 TargetResource: %+v\n", rrset.Properties.TargetResource)

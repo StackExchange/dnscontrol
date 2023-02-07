@@ -1168,11 +1168,6 @@ func makeTests(t *testing.T) []*TestGroup {
 			),
 		),
 
-		testgroup("Atemp1",
-			tc("Create A", a("testa", "1.1.1.1")),
-			tc("Change A target", a("testa", "1.2.3.4")),
-		),
-
 		testgroup("AZURE_ALIAS_CNAME",
 			requires(providers.CanUseAzureAlias),
 			tc("create dependent CNAME records",
@@ -1194,11 +1189,6 @@ func makeTests(t *testing.T) []*TestGroup {
 				cname("quux.cname", "google2.com"),
 				azureAlias("bar.cname", "CNAME", "/subscriptions/**subscription-id**/resourceGroups/**resource-group**/providers/Microsoft.Network/dnszones/**current-domain-no-trailing**/CNAME/foo.cname"),
 			),
-		),
-
-		testgroup("Atemp2",
-			tc("Create A", a("testa", "1.1.1.1")),
-			tc("Change A target", a("testa", "1.2.3.4")),
 		),
 
 		// ROUTE43 features
