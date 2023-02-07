@@ -5,7 +5,7 @@ import (
 	"testing"
 )
 
-func Test_splitChunks(t *testing.T) {
+func Test_RFC5322MailToBind(t *testing.T) {
 	type args struct {
 		rfc5322Mail string
 	}
@@ -21,7 +21,7 @@ func Test_splitChunks(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			if got := RFC5322MailToBind(tt.rfc5322Mail); !reflect.DeepEqual(got, tt.bindMail) {
-				t.Errorf("splitChunks() = %v, want %v", got, tt.bindMail)
+				t.Errorf("RFC5322MailToBind(%v) = %v, want %v", tt.rfc5322Mail, got, tt.bindMail)
 			}
 		})
 	}
