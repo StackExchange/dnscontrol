@@ -297,51 +297,48 @@ func DeleteUnmanagedDomains(cfg *models.DNSConfig, createdRegistrars map[string]
 }
 
 func DeleteUnmanagedZones(cfg *models.DNSConfig, createdProviders map[string]providers.DNSServiceProvider, push bool, out printer.CLI) (int, error) {
-	/*
-		A zone is unmanaged if it appears on the Provider but does not appear
-		in the configuration (a D() with a DnsProvider(provider)).
-
-		for each provider {
-			zonesInConfig = which zones in dnsconfig.js have DnsProvider(provider)
-			zonesAtProvider = what zones are at this provider (gathered via the API).
-			unmanaged = providerZones - configZones
-			for each unmanaged, remove if "push"
-		}
-
-	*/
+	// A zone is unmanaged if it appears on the Provider but does not appear
+	// in the configuration (a D() with a DnsProvider(provider)).
+	//		for each provider:
+	//			zonesAtProvider = what zones are at this provider (gathered via the API).
+	//			zonesInConfig = which zones in dnsconfig.js have DnsProvider(provider)
+	//			unmanaged = providerZones - configZones
+	//			for each unmanaged, remove if "push"
 
 	var numberOfCorrections int
 
-	// "deployedZones" are the zones existing on the DNS provider.
 	fmt.Printf("Checking Zone Removal:\n")
 
 	for _, dnsProviderConfig := range cfg.DNSProviders {
 		providerName := dnsProviderConfig.Name
-		fmt.Printf("Checking for unmanaged zones in %q\n", providerName)
-
-		// List the dnsconfig.js zones that are managed by providerName
-		// (i.e. has a DnsProvider() statement in the zone)
-		zonesInConfig := zonesUpdatedVia(providerName, cfg)
-		zonesInConfigSet := setFromStrings(zonesInConfig)
-		//fmt.Printf("   DEBUG: zonesInConfig=%v\n", p(zonesInConfigSet))
 
 		// List the existing zones at this provider:
-		zonesAtProvider, err := getZonesAtProvider(out, createdProviders[providerName], providerName)
+		skip, zonesAtProvider, err := getZonesAtProvider(createdProviders[providerName], providerName)
+		if skip {
+			out.Warnf("Skipping provider %s (ListZones not implemented)\n", providerName)
+			continue
+		}
 		if err != nil {
 			return numberOfCorrections, err
 		}
-		zonesAtProviderSet := setFromStrings(zonesAtProvider)
-		//fmt.Printf("   DEBUG: zonesAtProvider=%v\n", p(zonesAtProviderSet))
+		zps := setFromStrings(zonesAtProvider)
+		//fmt.Printf("   DEBUG: zonesAtProvider=%v\n", p(zps))
+
+		// List the dnsconfig.js zones that are managed by providerName (i.e. listed as DnsProvider())
+		zonesInConfig := zonesUpdatedVia(providerName, cfg)
+		zcs := setFromStrings(zonesInConfig)
+		//fmt.Printf("   DEBUG: zonesInConfig=%v\n", p(zcs))
 
 		// The unmanaged zones are existingZones - configZones
-		unmanagedSet := zonesInConfigSet.Difference(zonesAtProviderSet)
+		unmanagedSet := zps.Difference(zcs)
 		//fmt.Printf("   DEBUG: unmanaged=%v\n", p(unmanagedSet))
 
 		for _, zone := range unmanagedSet.ToSlice() {
 			fmt.Printf("Removing from provider %s: zone %s\n", providerName, zone)
 			numberOfCorrections += 1
 			if push {
-				zoneRemover := getZoneRemover(cfg, providerName)
+				provider := createdProviders[providerName]
+				zoneRemover := provider.(providers.ZoneRemover)
 				err := zoneRemover.EnsureZoneAbsent(zone)
 				if err != nil {
 					out.Errorf("Error deleting zone: %s\n", err)
@@ -351,15 +348,6 @@ func DeleteUnmanagedZones(cfg *models.DNSConfig, createdProviders map[string]pro
 	}
 
 	return numberOfCorrections, nil
-}
-func getZoneRemover(cfg models.DNSConfig, name string) int {
-	//for i, j := range cfg.
-	// if zoneRemover, ok := provider.(providers.ZoneRemover); ok && push {
-	provider := getProvider(cfg, name)
-	return provider.(providers.ZoneRemover)
-}
-
-func getProvider(cfg, name) {}
 }
 
 func setFromStrings(l []string) mapset.Set[string] {
@@ -376,17 +364,16 @@ func p(s mapset.Set[string]) []string {
 	return r
 }
 
-func getZonesAtProvider(out printer.CLI, provider providers.DNSServiceProvider, providerName string) ([]string, error) {
+func getZonesAtProvider(provider providers.DNSServiceProvider, providerName string) (bool, []string, error) {
 	zoneLister, ok := provider.(providers.ZoneLister)
 	if !ok {
-		out.Warnf("--purge-unmanaged-zones not implemented: provider %s\n", providerName)
-		return nil, nil
+		return true, nil, nil
 	}
 	existingZones, err := zoneLister.ListZones()
 	if err != nil {
-		return nil, fmt.Errorf("failed ListZones for provider %s: %w", providerName, err)
+		return true, nil, fmt.Errorf("failed ListZones for provider %s: %w", providerName, err)
 	}
-	return existingZones, nil
+	return false, existingZones, nil
 }
 
 func zonesUpdatedVia(name string, cfg *models.DNSConfig) []string {
@@ -418,70 +405,6 @@ func IsDomainManagedByRegistrar(cfg *models.DNSConfig, zone string, registrarNam
 	}
 	return true
 }
-
-// func IsZoneManagedByProvider(cfg *models.DNSConfig, zone string, dnsProviderName string) bool {
-// 	domainCfg := GetDomainCfg(cfg, zone)
-
-// 	if domainCfg == nil {
-// 		return false
-// 	}
-// 	fmt.Printf("      DEBUG: is zone %q managed by provider? %q\n", zone, dnsProviderName)
-// 	fmt.Printf("      DEBUG: looping through: %v\n", domainCfg.DNSProviderNames)
-// 	if len(domainCfg.DNSProviderNames) == 0 {
-// 		fmt.Printf("         DEBUG: DNSProviderNames is empty.\n")
-// 		return true // Not really. Should return an error
-// 	}
-// 	for managedProviderName := range domainCfg.DNSProviderNames {
-// 		fmt.Printf("         DEBUG: Checking %q ?? %q\n", managedProviderName, dnsProviderName)
-// 		if managedProviderName == dnsProviderName {
-// 			fmt.Printf("         DEBUG: YES\n")
-// 			return true
-// 		}
-// 	}
-// 	fmt.Printf("         DEBUG: NO\n")
-// 	return false
-// }
-
-// func GetDomainCfg(cfg *models.DNSConfig, domain string) *models.DomainConfig {
-// 	for _, domainCfg := range cfg.Domains {
-// 		if domainCfg.Name == domain {
-// 			return domainCfg
-// 		}
-// 	}
-// 	return nil
-// }
-
-// func IsDomainManagedByRegistrar(cfg *models.DNSConfig, zone string, registrarName string) bool {
-// 	domainCfg := GetDomainCfg(cfg, zone)
-
-// 	if domainCfg == nil || domainCfg.RegistrarName != registrarName {
-// 		return false
-// 	}
-// 	return true
-// }
-
-// func IsZoneManagedByProvider(cfg *models.DNSConfig, zone string, dnsProviderName string) bool {
-// 	domainCfg := GetDomainCfg(cfg, zone)
-
-// 	if domainCfg == nil {
-// 		return false
-// 	}
-// 	fmt.Printf("      DEBUG: is zone %q managed by provider? %q\n", zone, dnsProviderName)
-// 	fmt.Printf("      DEBUG: looping through: %v\n", domainCfg.DNSProviderNames)
-// 	if len(domainCfg.DNSProviderNames) == 0 {
-// 		fmt.Printf("         DEBUG: DNSProviderNames is empty.\n")
-// 		return true // Not really. Should return an error
-// 	}
-// 	for managedProviderName := range domainCfg.DNSProviderNames {
-// 		fmt.Printf("         DEBUG: Checking %q ?? %q\n", managedProviderName, dnsProviderName)
-// 		if managedProviderName == dnsProviderName {
-// 			fmt.Printf("         DEBUG: YES\n")
-// 			return true
-// 		}
-// 	}
-// 	fmt.Printf("         DEBUG: NO\n")
-// 	return false
-// }
 
 type ProviderState struct {
 	createdRegistrars   map[string]providers.Registrar
