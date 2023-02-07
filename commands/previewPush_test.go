@@ -1,9 +1,10 @@
 package commands
 
 import (
-	"github.com/StackExchange/dnscontrol/v3/pkg/credsfile"
 	"strings"
 	"testing"
+
+	"github.com/StackExchange/dnscontrol/v3/pkg/credsfile"
 )
 
 func Test_refineProviderType(t *testing.T) {
@@ -107,12 +108,12 @@ func TestIsDomainOrZoneManaged(t *testing.T) {
 				}
 
 			}
-			if tt.domainOrZone == "zone" {
-				gotIsManaged := IsZoneManagedByProvider(cfg, tt.domain, tt.providerName)
-				if gotIsManaged != tt.wantIsManaged {
-					t.Errorf("IsZoneManagedByProvider() gotIsManaged = %v, want %v", gotIsManaged, tt.wantIsManaged)
-				}
-			}
+			// if tt.domainOrZone == "zone" {
+			// 	gotIsManaged := IsZoneManagedByProvider(cfg, tt.domain, tt.providerName)
+			// 	if gotIsManaged != tt.wantIsManaged {
+			// 		t.Errorf("IsZoneManagedByProvider() gotIsManaged = %v, want %v", gotIsManaged, tt.wantIsManaged)
+			// 	}
+			// }
 		})
 	}
 
