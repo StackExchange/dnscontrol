@@ -340,7 +340,8 @@ func DeleteUnmanagedZones(cfg *models.DNSConfig, createdProviders map[string]pro
 		for _, zone := range unmanagedSet.ToSlice() {
 			fmt.Printf("Removing from provider %s: zone %s\n", providerName, zone)
 			numberOfCorrections += 1
-			if zoneRemover, ok := provider.(providers.ZoneRemover); ok && push {
+			if push {
+				zoneRemover := getZoneRemover(cfg, providerName)
 				err := zoneRemover.EnsureZoneAbsent(zone)
 				if err != nil {
 					out.Errorf("Error deleting zone: %s\n", err)
@@ -350,6 +351,15 @@ func DeleteUnmanagedZones(cfg *models.DNSConfig, createdProviders map[string]pro
 	}
 
 	return numberOfCorrections, nil
+}
+func getZoneRemover(cfg models.DNSConfig, name string) int {
+	//for i, j := range cfg.
+	// if zoneRemover, ok := provider.(providers.ZoneRemover); ok && push {
+	provider := getProvider(cfg, name)
+	return provider.(providers.ZoneRemover)
+}
+
+func getProvider(cfg, name) {}
 }
 
 func setFromStrings(l []string) mapset.Set[string] {
