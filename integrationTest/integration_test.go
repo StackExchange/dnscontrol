@@ -294,7 +294,7 @@ func runTests(t *testing.T, prv providers.DNSServiceProvider, domainName string,
 		}
 
 		// Remove all records so next group starts with a clean slate.
-		makeChanges(t, prv, dc, tc("Empty"), "Post cleanup", true, nil)
+		makeChanges(t, prv, dc, tc("Empty"), "Post cleanup", false, nil)
 
 		elapsed := time.Since(start)
 		if *printElapsed {
@@ -1161,7 +1161,11 @@ func makeTests(t *testing.T) []*TestGroup {
 				a("quux.a", "2.3.4.5"),
 				azureAlias("bar.a", "A", "/subscriptions/**subscription-id**/resourceGroups/**resource-group**/providers/Microsoft.Network/dnszones/**current-domain-no-trailing**/A/quux.a"),
 			),
-			clear(),
+			tc("change backA",
+				a("foo.a", "1.2.3.4"),
+				a("quux.a", "2.3.4.5"),
+				azureAlias("bar.a", "A", "/subscriptions/**subscription-id**/resourceGroups/**resource-group**/providers/Microsoft.Network/dnszones/**current-domain-no-trailing**/A/foo.a"),
+			),
 		),
 
 		testgroup("Atemp1",
@@ -1170,6 +1174,7 @@ func makeTests(t *testing.T) []*TestGroup {
 		),
 
 		testgroup("AZURE_ALIAS_CNAME",
+			requires(providers.CanUseAzureAlias),
 			tc("create dependent CNAME records",
 				cname("foo.cname", "google.com"),
 				cname("quux.cname", "google2.com"),
@@ -1184,7 +1189,11 @@ func makeTests(t *testing.T) []*TestGroup {
 				cname("quux.cname", "google2.com"),
 				azureAlias("bar.cname", "CNAME", "/subscriptions/**subscription-id**/resourceGroups/**resource-group**/providers/Microsoft.Network/dnszones/**current-domain-no-trailing**/CNAME/quux.cname"),
 			),
-			clear(),
+			tc("change backCNAME",
+				cname("foo.cname", "google.com"),
+				cname("quux.cname", "google2.com"),
+				azureAlias("bar.cname", "CNAME", "/subscriptions/**subscription-id**/resourceGroups/**resource-group**/providers/Microsoft.Network/dnszones/**current-domain-no-trailing**/CNAME/foo.cname"),
+			),
 		),
 
 		testgroup("Atemp2",

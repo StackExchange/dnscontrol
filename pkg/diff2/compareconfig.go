@@ -215,8 +215,11 @@ func (cc *CompareConfig) addRecords(recs models.Records, storeInExisting bool) {
 
 	for _, rec := range z.Records {
 
-		label := rec.NameFQDN
-		rtype := rec.Type
+		//label := rec.NameFQDN
+		//rtype := rec.Type
+		key := rec.Key()
+		label := key.NameFQDN
+		rtype := key.Type
 		comp := mkCompareBlob(rec, cc.compareableFunc)
 
 		// Are we seeing this label for the first time?
@@ -237,7 +240,7 @@ func (cc *CompareConfig) addRecords(recs models.Records, storeInExisting bool) {
 		}
 
 		// Are we seeing this label+rtype for the first time?
-		key := rec.Key()
+		//key := rec.Key()
 		if _, ok := cc.keyMap[key]; !ok {
 			//fmt.Printf("DEBUG: I haven't see key=%v before. Adding.\n", key)
 			cc.keyMap[key] = true

@@ -498,7 +498,7 @@ func (r *route53Provider) GetDomainCorrections(dc *models.DomainConfig) ([]*mode
 
 			// Make the rrset to be UPSERTed:
 			var rrset *r53Types.ResourceRecordSet
-			if instType == "R53_ALIAS" {
+			if instType == "R53_ALIAS" || strings.HasPrefix(instType, "R53_ALIAS") {
 				// A R53_ALIAS_* requires ResourceRecordSet to a a single item, not a list.
 				if len(inst.New) != 1 {
 					log.Fatal("Only one R53_ALIAS_ permitted on a label")
