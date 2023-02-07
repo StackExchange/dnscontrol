@@ -87,8 +87,8 @@ func init() {
 	providers.RegisterDomainServiceProviderType("DIGITALOCEAN", fns, features)
 }
 
-// EnsureDomainExists returns an error if domain doesn't exist.
-func (api *digitaloceanProvider) EnsureDomainExists(domain string) error {
+// EnsureZoneExists creates a zone if it does not exist
+func (api *digitaloceanProvider) EnsureZoneExists(domain string) error {
 retry:
 	ctx := context.Background()
 	_, resp, err := api.client.Domains.Get(ctx, domain)

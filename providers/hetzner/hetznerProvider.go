@@ -61,8 +61,8 @@ func New(settings map[string]string, _ json.RawMessage) (providers.DNSServicePro
 	return api, nil
 }
 
-// EnsureDomainExists creates the domain if it does not exist.
-func (api *hetznerProvider) EnsureDomainExists(domain string) error {
+// EnsureZoneExists creates a zone if it does not exist
+func (api *hetznerProvider) EnsureZoneExists(domain string) error {
 	domains, err := api.ListZones()
 	if err != nil {
 		return err

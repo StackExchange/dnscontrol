@@ -662,7 +662,7 @@ func (a *azurednsProvider) fetchRecordSets(zoneName string) ([]*adns.RecordSet, 
 	return records, nil
 }
 
-func (a *azurednsProvider) EnsureDomainExists(domain string) error {
+func (a *azurednsProvider) EnsureZoneExists(domain string) error {
 	if _, ok := a.zones[domain]; ok {
 		return nil
 	}

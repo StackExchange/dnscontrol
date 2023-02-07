@@ -399,8 +399,8 @@ func (api *inwxAPI) fetchNameserverDomains() error {
 	return nil
 }
 
-// EnsureDomainExists returns an error if domain does not exist.
-func (api *inwxAPI) EnsureDomainExists(domain string) error {
+// EnsureZoneExists creates a zone if it does not exist
+func (api *inwxAPI) EnsureZoneExists(domain string) error {
 	if api.domainIndex == nil { // only pull the data once.
 		if err := api.fetchNameserverDomains(); err != nil {
 			return err
@@ -408,10 +408,10 @@ func (api *inwxAPI) EnsureDomainExists(domain string) error {
 	}
 
 	if _, ok := api.domainIndex[domain]; ok {
-		return nil // domain exists.
+		return nil // zone exists.
 	}
 
-	// creating the domain.
+	// creating the zone.
 	request := &goinwx.NameserverCreateRequest{
 		Domain:      domain,
 		Type:        "MASTER",

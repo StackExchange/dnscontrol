@@ -131,15 +131,15 @@ func (dsp *powerdnsProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*m
 	return corrections, nil
 }
 
-// EnsureDomainExists adds a domain to the DNS service if it does not exist
-func (dsp *powerdnsProvider) EnsureDomainExists(domain string) error {
+// EnsureZoneExists creates a zone if it does not exist
+func (dsp *powerdnsProvider) EnsureZoneExists(domain string) error {
 	if _, err := dsp.client.Zones().GetZone(context.Background(), dsp.ServerName, domain+"."); err != nil {
 		if e, ok := err.(pdnshttp.ErrUnexpectedStatus); ok {
 			if e.StatusCode != http.StatusNotFound {
 				return err
 			}
 		}
-	} else { // domain seems to be there
+	} else { // zone seems to exist
 		return nil
 	}
 
