@@ -95,8 +95,8 @@ func newEdgeDNSDSP(config map[string]string, metadata json.RawMessage) (provider
 	return api, nil
 }
 
-// EnsureDomainExists configures a new zone if the zone does not already exist.
-func (a *edgeDNSProvider) EnsureDomainExists(domain string) error {
+// EnsureZoneExists creates a zone if it does not exist
+func (a *edgeDNSProvider) EnsureZoneExists(domain string) error {
 	if zoneDoesExist(domain) {
 		printer.Debugf("Zone %s already exists\n", domain)
 		return nil
