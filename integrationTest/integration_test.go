@@ -701,7 +701,7 @@ func makeTests(t *testing.T) []*TestGroup {
 		),
 
 		testgroup("Attl",
-			tc("Create Arc", ttl(a("testa", "1.1.1.1"), 111)),
+			tc("Create Arc", ttl(a("testa", "1.1.1.1"), 333)),
 			tc("Change TTL", ttl(a("testa", "1.1.1.1"), 999)),
 		),
 
