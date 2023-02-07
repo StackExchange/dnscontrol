@@ -248,6 +248,20 @@ func (hp *hostingdeProvider) getDNSSECOptions(zoneConfigId string) (*dnsSecOptio
 	return dnsSecOptions[0], nil
 }
 
+func (hp *hostingdeProvider) dnsSecKeyModify(domain string, add []dnsSecEntry, remove []dnsSecEntry) error {
+	params := request{
+		DomainName: domain,
+		Add:        add,
+		Remove:     remove,
+	}
+
+	_, err := hp.get("domain", "dnsSecKeyModify", params)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
 func (hp *hostingdeProvider) get(service, method string, params request) (*responseData, error) {
 	params.AuthToken = hp.authToken
 	params.OwnerAccountID = hp.ownerAccountID
