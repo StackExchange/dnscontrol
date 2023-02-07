@@ -38,9 +38,6 @@ type request struct {
 	// various zone operations
 	ZoneName string `json:"zoneName"`
 
-	// various domain operations
-	DomainName string `json:"domainName"`
-
 	// Domain
 	Domain *domainConfig `json:"domain"`
 
