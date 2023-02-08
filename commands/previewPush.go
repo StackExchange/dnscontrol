@@ -281,7 +281,7 @@ func DeleteUnmanagedDomains(cfg *models.DNSConfig, createdRegistrars map[string]
 		for _, domain := range deployedDomains {
 			if !IsDomainManagedByRegistrar(cfg, domain, registrarName) {
 
-				fmt.Printf("Removing from provider %s: domain %s\n", registrarName, domain)
+				fmt.Printf("Removing domain from provider %s: %s\n", registrarName, domain)
 				*totalCorrections += 1
 				if domainRemover, ok := registrar.(providers.DomainRemover); ok && push {
 					err := domainRemover.EnsureDomainAbsent(domain)
@@ -311,7 +311,7 @@ func DeleteUnmanagedZones(cfg *models.DNSConfig, createdProviders map[string]pro
 		}
 		for _, zone := range deployedZones {
 			if !IsZoneManagedByProvider(cfg, zone, providerName) {
-				fmt.Printf("Removing from provider %s: zone %s\n", providerName, zone)
+				fmt.Printf("Removing zone from provider %s: %s\n", providerName, zone)
 				*totalCorrections += 1
 				if zoneRemover, ok := provider.(providers.ZoneRemover); ok && push {
 					err := zoneRemover.EnsureZoneAbsent(zone)
