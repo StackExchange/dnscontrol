@@ -324,6 +324,7 @@ func DeleteUnmanagedZones(cfg *models.DNSConfig, createdProviders map[string]pro
 	return nil
 }
 
+// GetDomainCfg returns the configuration defined for a domain within dnscontrol, or nil if the domain is not configured
 func GetDomainCfg(cfg *models.DNSConfig, domain string) *models.DomainConfig {
 	for _, domainCfg := range cfg.Domains {
 		if domainCfg.Name == domain {
