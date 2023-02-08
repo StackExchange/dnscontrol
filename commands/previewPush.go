@@ -267,8 +267,8 @@ DomainLoop:
 // DeleteUnmanagedDomains iterates over all registrars and their respective deployed domains, and removes those, which
 // are not configured within dnscontrol
 func DeleteUnmanagedDomains(cfg *models.DNSConfig, createdRegistrars map[string]providers.Registrar, push bool, out printer.CLI, totalCorrections *int) error {
-	fmt.Printf("Checking Domain Removal:\n")
 	for registrarName, registrar := range createdRegistrars {
+		out.StartUnmanagedDomainCheck(registrarName)
 		domainLister, ok := registrar.(providers.DomainLister)
 		if !ok {
 			out.Warnf("--purge-unmanaged-domains not implemented: provider %s\n", registrarName)
@@ -280,6 +280,7 @@ func DeleteUnmanagedDomains(cfg *models.DNSConfig, createdRegistrars map[string]
 		}
 		for _, domain := range deployedDomains {
 			if !IsDomainManagedByRegistrar(cfg, domain, registrarName) {
+
 				fmt.Printf("Removing from provider %s: domain %s\n", registrarName, domain)
 				*totalCorrections += 1
 				if domainRemover, ok := registrar.(providers.DomainRemover); ok && push {
@@ -297,8 +298,8 @@ func DeleteUnmanagedDomains(cfg *models.DNSConfig, createdRegistrars map[string]
 // DeleteUnmanagedZones iterates over all providers and their respective deployed zones, and removes those, which
 // are not configured within dnscontrol
 func DeleteUnmanagedZones(cfg *models.DNSConfig, createdProviders map[string]providers.DNSServiceProvider, push bool, out printer.CLI, totalCorrections *int) error {
-	fmt.Printf("Checking Zone Removal:\n")
 	for providerName, provider := range createdProviders {
+		out.StartUnmanagedDomainCheck(providerName)
 		zoneLister, ok := provider.(providers.ZoneLister)
 		if !ok {
 			out.Warnf("--purge-unmanaged-zones not implemented: provider %s\n", providerName)

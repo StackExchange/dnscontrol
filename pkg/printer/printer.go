@@ -17,6 +17,8 @@ type CLI interface {
 	StartDNSProvider(name string, skip bool)
 	EndProvider(numCorrections int, err error)
 	StartRegistrar(name string, skip bool)
+	StartUnmanagedDomainCheck(registrar string)
+	StartUnmanagedZonesCheck(provider string)
 
 	PrintCorrection(n int, c *models.Correction)
 	EndCorrection(err error)
@@ -114,6 +116,16 @@ func (c ConsolePrinter) EndCorrection(err error) {
 	} else {
 		fmt.Fprintln(c.Writer, "SUCCESS!")
 	}
+}
+
+// StartUnmanagedDomainCheck is called at the start of each new registrar.
+func (c ConsolePrinter) StartUnmanagedDomainCheck(registrar string) {
+	fmt.Fprintf(c.Writer, "******************** Checking for unmanaged domains on registrar: %s\n", registrar)
+}
+
+// StartUnmanagedZonesCheck is called at the start of each new dns provider.
+func (c ConsolePrinter) StartUnmanagedZonesCheck(provider string) {
+	fmt.Fprintf(c.Writer, "******************** Checking for unmanaged zones on provider: %s\n", provider)
 }
 
 // StartDNSProvider is called at the start of each new provider.
