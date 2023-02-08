@@ -146,9 +146,9 @@ func GetCerts(args GetCertsArgs) error {
 	if err != nil {
 		return err
 	}
-	providerState := InitializeProviders(cfg, providerConfigs, args.Notify)
-	if providerState.err != nil {
-		return providerState.err
+	providerState, err := InitializeProviders(cfg, providerConfigs, args.Notify)
+	if err != nil {
+		return err
 	}
 
 	for _, skip := range strings.Split(args.IgnoredProviders, ",") {
