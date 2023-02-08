@@ -299,7 +299,7 @@ func DeleteUnmanagedDomains(cfg *models.DNSConfig, createdRegistrars map[string]
 // are not configured within dnscontrol
 func DeleteUnmanagedZones(cfg *models.DNSConfig, createdProviders map[string]providers.DNSServiceProvider, push bool, out printer.CLI, totalCorrections *int) error {
 	for providerName, provider := range createdProviders {
-		out.StartUnmanagedDomainCheck(providerName)
+		out.StartUnmanagedZonesCheck(providerName)
 		zoneLister, ok := provider.(providers.ZoneLister)
 		if !ok {
 			out.Warnf("--purge-unmanaged-zones not implemented: provider %s\n", providerName)
