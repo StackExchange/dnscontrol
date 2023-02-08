@@ -329,27 +329,35 @@ func GetDomainCfg(cfg *models.DNSConfig, domain string) *models.DomainConfig {
 	return nil
 }
 
-func IsDomainManagedByRegistrar(cfg *models.DNSConfig, zone string, registrarName string) bool {
-	domainCfg := GetDomainCfg(cfg, zone)
+// IsDomainManagedByRegistrar checks whether `domain` is configured to be managed by `registrarName`
+func IsDomainManagedByRegistrar(cfg *models.DNSConfig, domain string, registrarName string) bool {
+	domainCfg := GetDomainCfg(cfg, domain)
 
-	if domainCfg == nil || domainCfg.RegistrarName != registrarName {
+	// domain is not configured in dnscontrol at all
+	if domainCfg == nil {
+		return false
+	}
+	// domain is configured within dnscontrol, but with a different registrar
+	if domainCfg.RegistrarName != registrarName {
 		return false
 	}
 	return true
 }
 
+// IsZoneManagedByProvider checks whether `zone` is configured to be managed by `dnsProviderName
 func IsZoneManagedByProvider(cfg *models.DNSConfig, zone string, dnsProviderName string) bool {
 	domainCfg := GetDomainCfg(cfg, zone)
 
+	// domain is not configured in dnscontrol at all
 	if domainCfg == nil {
 		return false
 	}
-	for managedProviderName, _ := range domainCfg.DNSProviderNames {
-		if managedProviderName == dnsProviderName {
-			return true
-		}
+	_, ok := domainCfg.DNSProviderNames[dnsProviderName]
+	// domain is configured within dnscontrol, but not for this dns provider
+	if !ok {
+		return false
 	}
-	return false
+	return true
 }
 
 type ProviderState struct {
