@@ -47,6 +47,23 @@ func (hp *hostingdeProvider) getDomainConfig(domain string) (*domainConfig, erro
 	return domainConf[0], nil
 }
 
+func (hp *hostingdeProvider) deleteDomain(domain string) error {
+	t, err := idna.ToASCII(domain)
+	if err != nil {
+		return err
+	}
+
+	params := request{
+		DomainName: t,
+	}
+
+	_, err = hp.get("dns", "domainDelete", params)
+	if err != nil {
+		return fmt.Errorf("error deleting domain: %w", err)
+	}
+	return nil
+}
+
 func (hp *hostingdeProvider) createZone(domain string) error {
 	t, err := idna.ToASCII(domain)
 	if err != nil {
@@ -75,6 +92,29 @@ func (hp *hostingdeProvider) createZone(domain string) error {
 	if err != nil {
 		return fmt.Errorf("error creating zone: %w", err)
 	}
+	return nil
+}
+
+func (hp *hostingdeProvider) deleteZone(domain string) error {
+	t, err := idna.ToASCII(domain)
+	if err != nil {
+		return err
+	}
+
+	params := request{
+		ZoneName: t,
+	}
+
+	_, err = hp.get("dns", "zoneDelete", params)
+	if err != nil {
+		return fmt.Errorf("error deleting zone: %w", err)
+	}
+
+	_, err = hp.get("dns", "zonePurgeRestorable", params)
+	if err != nil {
+		return fmt.Errorf("error purging restorable zone: %w", err)
+	}
+
 	return nil
 }
 
@@ -314,6 +354,30 @@ func (hp *hostingdeProvider) getAllZoneConfigs() ([]*zoneConfig, error) {
 	}
 
 	zc := []*zoneConfig{}
+	if err := json.Unmarshal(resp.Data, &zc); err != nil {
+		return nil, fmt.Errorf("could not parse response: %w", err)
+	}
+
+	return zc, nil
+}
+
+func (hp *hostingdeProvider) getAllDomainConfigs() ([]*domainConfig, error) {
+	params := request{
+		Limit: 10000,
+	}
+	if hp.filterAccountId != "" {
+		params.Filter = &filter{
+			Field: "accountId",
+			Value: hp.filterAccountId,
+		}
+	}
+
+	resp, err := hp.get("domain", "domainsFind", params)
+	if err != nil {
+		return nil, fmt.Errorf("could not domains zones: %w", err)
+	}
+
+	zc := []*domainConfig{}
 	if err := json.Unmarshal(resp.Data, &zc); err != nil {
 		return nil, fmt.Errorf("could not parse response: %w", err)
 	}

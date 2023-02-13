@@ -311,6 +311,52 @@ type domainsResult struct {
 	//	} `json:"links"`
 }
 
+// zonesResult is the JSON returned by "/zones".  Fields we don't
+// use are commented out.
+type zonesResult struct {
+	Meta struct {
+		NumResults int `json:"numResults"`
+		Pages      int `json:"pages"`
+	} `json:"meta"`
+	Zones []struct {
+		ZoneName string `json:"zoneName"`
+	} `json:"zones"`
+	//	Links struct {
+	//		Self string `json:"self"`
+	//	} `json:"links"`
+}
+
+func (client *providerClient) getZones() ([]string, error) {
+	var bodyString, err = client.get("/zones")
+	if err != nil {
+		return nil, err
+	}
+	// TODO(tlim): This query downloads all the info about a zone, including all
+	// DNS records. Modify the query to just get the names.
+
+	//printer.Printf("------------------\n")
+	//printer.Printf("DEBUG: GETZONES bodystring  = %s\n", bodyString)
+	//printer.Printf("------------------\n")
+
+	var dr zonesResult
+	json.Unmarshal(bodyString, &dr)
+
+	if dr.Meta.Pages > 1 {
+		return nil, fmt.Errorf("cscglobal getZones: unimplemented paganation")
+	}
+
+	var r []string
+	for _, d := range dr.Zones {
+		r = append(r, d.ZoneName)
+	}
+
+	//printer.Printf("------------------\n")
+	//printer.Printf("DEBUG: GETDOMAINS dr = %+v\n", dr)
+	//printer.Printf("------------------\n")
+
+	return r, nil
+}
+
 func (client *providerClient) getDomains() ([]string, error) {
 	var bodyString, err = client.get("/domains")
 	if err != nil {

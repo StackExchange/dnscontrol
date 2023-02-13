@@ -35,6 +35,9 @@ type request struct {
 	Add        []dnsSecEntry `json:"add,omitempty"`
 	Remove     []dnsSecEntry `json:"remove,omitempty"`
 
+	// various zone operations
+	ZoneName string `json:"zoneName"`
+
 	// Domain
 	Domain *domainConfig `json:"domain"`
 
