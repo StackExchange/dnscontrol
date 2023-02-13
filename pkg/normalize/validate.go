@@ -615,8 +615,6 @@ func checkLabelHasMultipleTTLs(records []*models.RecordConfig) (errs []error) {
 		ttl := r.TTL
 		rtype := r.Type
 
-		// I wish I could just do this:
-		// m[label][ttl] = append(m[label][ttl], rtype)
 		if _, ok := m[label]; !ok {
 			m[label] = make(map[uint32]map[string]bool)
 		}
@@ -691,6 +689,7 @@ func formatInconsistency(r map[string]map[uint32]bool) string {
 
 		rtypeResult = append(rtypeResult, fmt.Sprintf("%s:%v", rtype, commaSepInts(ttlList)))
 	}
+	sort.Strings(rtypeResult)
 	return strings.Join(rtypeResult, " ")
 }
 
