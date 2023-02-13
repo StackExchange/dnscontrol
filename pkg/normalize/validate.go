@@ -11,6 +11,7 @@ import (
 	"github.com/StackExchange/dnscontrol/v3/providers"
 	"github.com/miekg/dns"
 	"github.com/miekg/dns/dnsutil"
+	"golang.org/x/exp/slices"
 )
 
 // Returns false if target does not validate.
@@ -598,28 +599,107 @@ func uniq(s []string) []string {
 }
 
 func checkLabelHasMultipleTTLs(records []*models.RecordConfig) (errs []error) {
-	m := make(map[string][]string)
-	for _, r := range records {
-		label := fmt.Sprintf("%s %s", r.GetLabelFQDN(), r.Type)
-		ttlinfo := fmt.Sprintf("%s:%d", r.Type, r.TTL)
+	// The RFCs say that all records at a particular label should have
+	// the same TTL.  Most providers don't care, and if they do the
+	// dnscontrol provider code usually picks the lowest TTL for all of them.
 
-		// collect the TTLs at this label.
-		m[label] = append(m[label], ttlinfo)
+	// General algorithm:
+	// gather all records at a particular label.
+	//     has[label] -> ttl -> type(s)
+	// for each label, if there is more than one ttl, output ttl:A/TXT ttl:TXT/NS
+
+	// Find the inconsistencies:
+	m := make(map[string]map[uint32]map[string]bool)
+	for _, r := range records {
+		label := r.GetLabelFQDN()
+		ttl := r.TTL
+		rtype := r.Type
+
+		// I wish I could just do this:
+		// m[label][ttl] = append(m[label][ttl], rtype)
+		if _, ok := m[label]; !ok {
+			m[label] = make(map[uint32]map[string]bool)
+		}
+		if _, ok := m[label][ttl]; !ok {
+			m[label][ttl] = make(map[string]bool)
+		}
+		m[label][ttl][rtype] = true
 	}
 
-	for label := range m {
-		// The RFCs say that all records at a particular label should have
-		// the same TTL.  Most providers don't care, and if they do the
-		// dnscontrol provider code usually picks the lowest TTL for all of them.
-		//
-		// If after the uniq() pass we still have more than one ttl, it
-		// means we have multiple TTLs for that label.
-		u := uniq(m[label])
-		if len(u) > 1 {
-			errs = append(errs, Warning{fmt.Errorf("label with multiple TTLs: %s (%v)", label, u)})
+	labels := make([]string, len(m))
+	i := 0
+	for k := range m {
+		labels[i] = k
+		i++
+	}
+
+	sort.Strings(labels)
+	slices.Compact(labels)
+
+	// Less clear error message:
+	// for _, label := range labels {
+	// 	if len(m[label]) > 1 {
+	// 		result := ""
+	// 		for ttl, v := range m[label] {
+	// 			result += fmt.Sprintf(" %d:", ttl)
+
+	// 			rtypes := make([]string, len(v))
+	// 			i := 0
+	// 			for k := range v {
+	// 				rtypes[i] = k
+	// 				i++
+	// 			}
+
+	// 			result += strings.Join(rtypes, "/")
+	// 		}
+	// 		errs = append(errs, Warning{fmt.Errorf("inconsistent TTLs at %q:%v", label, result)})
+	// 	}
+	// }
+
+	// Invert for a more clear error message:
+	for _, label := range labels {
+		if len(m[label]) > 1 {
+			r := make(map[string]map[uint32]bool)
+			for ttl, rtypes := range m[label] {
+				for rtype := range rtypes {
+					if _, ok := r[rtype]; !ok {
+						r[rtype] = make(map[uint32]bool)
+					}
+					r[rtype][ttl] = true
+				}
+			}
+			result := formatInconsistency(r)
+			errs = append(errs, Warning{fmt.Errorf("inconsistent TTLs at %q: %s", label, result)})
 		}
 	}
+
 	return errs
+}
+
+func formatInconsistency(r map[string]map[uint32]bool) string {
+	var rtypeResult []string
+	for rtype, ttlsMap := range r {
+
+		ttlList := make([]int, len(ttlsMap))
+		i := 0
+		for k := range ttlsMap {
+			ttlList[i] = int(k)
+			i++
+		}
+
+		sort.Ints(ttlList)
+
+		rtypeResult = append(rtypeResult, fmt.Sprintf("%s:%v", rtype, commaSepInts(ttlList)))
+	}
+	return strings.Join(rtypeResult, " ")
+}
+
+func commaSepInts(list []int) string {
+	slist := make([]string, len(list))
+	for i, v := range list {
+		slist[i] = fmt.Sprintf("%d", v)
+	}
+	return strings.Join(slist, ",")
 }
 
 // We pull this out of checkProviderCapabilities() so that it's visible within
