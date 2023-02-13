@@ -123,6 +123,8 @@ type RecordConfig struct {
 	TxtStrings       []string          `json:"txtstrings,omitempty"` // TxtStrings stores all strings (including the first). Target stores all the strings joined.
 	R53Alias         map[string]string `json:"r53_alias,omitempty"`
 	AzureAlias       map[string]string `json:"azure_alias,omitempty"`
+
+	EnsureAbsent bool `json:"ensure_absent,omitempty"` // In NO_PURGE mode, delete this record
 }
 
 // MarshalJSON marshals RecordConfig.
@@ -186,6 +188,8 @@ func (rc *RecordConfig) UnmarshalJSON(b []byte) error {
 		AzureAlias       map[string]string `json:"azure_alias,omitempty"`
 		// NB(tlim): If anyone can figure out how to do this without listing all
 		// the fields, please let us know!
+
+		EnsureAbsent bool `json:"ensure_absent,omitempty"` // In NO_PURGE mode, delete this record
 	}{}
 	if err := json.Unmarshal(b, &recj); err != nil {
 		return err

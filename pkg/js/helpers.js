@@ -660,6 +660,14 @@ function NO_PURGE(d) {
     d.KeepUnknown = true;
 }
 
+// ENSURE_ABSENT_HELPER()
+// Usage: A("foo", "1.2.3.4", ENSURE_ABSENT_HELPER())
+function ENSURE_ABSENT_HELPER() {
+    return function (r) {
+        r.ensure_absent = true;
+    };
+}
+
 // AUTODNSSEC
 // Permitted values are:
 // ""  Do not modify the setting (the default)
