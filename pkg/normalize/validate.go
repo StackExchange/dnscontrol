@@ -3,6 +3,7 @@ package normalize
 import (
 	"fmt"
 	"net"
+	"sort"
 	"strings"
 
 	"github.com/StackExchange/dnscontrol/v3/models"
@@ -581,9 +582,10 @@ func checkDuplicates(records []*models.RecordConfig) (errs []error) {
 	return errs
 }
 
-func uniq(s []uint32) []uint32 {
-	seen := make(map[uint32]struct{})
-	var result []uint32
+// uniq returns the unique values in a map. The result is sorted lexigraphically.
+func uniq(s []string) []string {
+	seen := make(map[string]struct{})
+	var result []string
 
 	for _, k := range s {
 		if _, ok := seen[k]; !ok {
@@ -591,28 +593,30 @@ func uniq(s []uint32) []uint32 {
 			result = append(result, k)
 		}
 	}
+	sort.Strings(result)
 	return result
 }
 
 func checkLabelHasMultipleTTLs(records []*models.RecordConfig) (errs []error) {
-	m := make(map[string][]uint32)
+	m := make(map[string][]string)
 	for _, r := range records {
 		label := fmt.Sprintf("%s %s", r.GetLabelFQDN(), r.Type)
+		ttlinfo := fmt.Sprintf("%s:%d", r.Type, r.TTL)
 
 		// collect the TTLs at this label.
-		m[label] = append(m[label], r.TTL)
+		m[label] = append(m[label], ttlinfo)
 	}
 
 	for label := range m {
 		// The RFCs say that all records at a particular label should have
 		// the same TTL.  Most providers don't care, and if they do the
-		// code usually picks the lowest TTL for all of them.
+		// dnscontrol provider code usually picks the lowest TTL for all of them.
 		//
 		// If after the uniq() pass we still have more than one ttl, it
 		// means we have multiple TTLs for that label.
 		u := uniq(m[label])
 		if len(u) > 1 {
-			errs = append(errs, Warning{fmt.Errorf("label with multipe TTLs: %s (%v)", label, u)})
+			errs = append(errs, Warning{fmt.Errorf("label with multiple TTLs: %s (%v)", label, u)})
 		}
 	}
 	return errs
