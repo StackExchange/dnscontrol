@@ -1360,7 +1360,7 @@ declare function D(name: string, registrar: string, ...modifiers: DomainModifier
  * 
  * @see https://dnscontrol.org/js#DEFAULTS
  */
-declare function DEFAULTS(...modifiers: RecordModifier[]): void;
+declare function DEFAULTS(...modifiers: DomainModifier[]): void;
 
 /**
  * `DOMAIN_ELSEWHERE()` is a helper macro that lets you easily indicate that
