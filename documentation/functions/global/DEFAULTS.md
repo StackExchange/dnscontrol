@@ -3,7 +3,7 @@ name: DEFAULTS
 parameters:
   - modifiers...
 parameter_types:
-  "modifiers...": RecordModifier[]
+  "modifiers...": DomainModifier[]
 ---
 
 `DEFAULTS` allows you to declare a set of default arguments to apply to all subsequent domains. Subsequent calls to [`D`](D.md) will have these
