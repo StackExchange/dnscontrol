@@ -843,7 +843,11 @@ function recordBuilder(type, opts) {
                 }
             }
 
-            d.records.push(record);
+            if record.ensure_absent {
+              d.absentrecords.push(record);
+            } else {
+              d.records.push(record);
+            }
             return record;
         };
     };

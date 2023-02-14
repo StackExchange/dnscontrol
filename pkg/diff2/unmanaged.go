@@ -12,9 +12,23 @@ import (
 
 func handsoff(
 	existing, desired models.Records,
+	absent models.Records,
 	unmanaged []*models.UnmanagedConfig,
 	beSafe bool,
 ) (models.Records, error) {
+
+	/*
+
+				cat existing |
+		        if no_purge
+		            if seen_in(absent)
+		                remove from desired // ENSURE_ABSENT
+		            else
+		                add to desired // NO_PURGE
+		        if matches one of the "unmanaged" patterns, keep. // UNMANAGED/INGORE*
+		        > new_existing
+
+	*/
 
 	// What foreign items should we ignore?
 	foreign, err := manyQueries(existing, unmanaged)

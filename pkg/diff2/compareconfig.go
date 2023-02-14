@@ -100,6 +100,9 @@ func NewCompareConfig(origin string, existing, desired models.Records, compFn Co
 	cc.addRecords(existing, true) // Must be called first so that CNAME manipulations happen in the correct order.
 	cc.addRecords(desired, false)
 	cc.VerifyCNAMEAssertions()
+	if !nopurge {
+		// Delete any records with ensure_absent = true
+	}
 	sort.Slice(cc.ldata, func(i, j int) bool {
 		return prettyzone.LabelLess(cc.ldata[i].label, cc.ldata[j].label)
 	})
