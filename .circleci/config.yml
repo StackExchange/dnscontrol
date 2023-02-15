@@ -148,7 +148,7 @@ jobs:
           name: Install goreleaser
           command: go install github.com/goreleaser/goreleaser@latest
 
-      - run: goreleaser release
+      - run: goreleaser release --rm-dist
 
       - store_artifacts:
           path: dist
