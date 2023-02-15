@@ -342,10 +342,7 @@ func (c Correlation) String() string {
 	if c.Desired == nil {
 		return color.RedString(fmt.Sprintf("- DELETE %s %s %s", c.Existing.Type, c.Existing.GetLabelFQDN(), c.d.content(c.Existing)))
 	}
-	return fmt.Sprintf("%s\n\t%s\n\t%s",
-		color.YellowString("± MODIFY %s %s:", c.Existing.Type, c.Existing.GetLabelFQDN()),
-		color.RedString("- %s", c.d.content(c.Existing)),
-		color.GreenString("+ %s", c.d.content(c.Desired)))
+	return color.YellowString("± MODIFY %s %s: (%s) -> (%s)", c.Existing.Type, c.Existing.GetLabelFQDN(), c.d.content(c.Existing), c.d.content(c.Desired))
 }
 
 func sortedKeys(m map[string]*models.RecordConfig) []string {
