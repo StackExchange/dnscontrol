@@ -19,11 +19,13 @@ type DomainConfig struct {
 	Records     Records           `json:"records"`
 	Nameservers []*Nameserver     `json:"nameservers,omitempty"`
 
-	KeepUnknown     bool               `json:"keepunknown,omitempty"`
+	EnsureAbsent Records `json:"ensure_absent,omitempty"` // ENSURE_ABSENT
+	KeepUnknown  bool    `json:"keepunknown,omitempty"`   // NO_PURGE
+
 	IgnoredNames    []*IgnoreName      `json:"ignored_names,omitempty"`
 	IgnoredTargets  []*IgnoreTarget    `json:"ignored_targets,omitempty"`
-	Unmanaged       []*UnmanagedConfig `json:"unmanaged,omitempty"`
-	UnmanagedUnsafe bool               `json:"unmanaged_disable_safety_check,omitempty"`
+	Unmanaged       []*UnmanagedConfig `json:"unmanaged,omitempty"`                      // UNMANAGED()
+	UnmanagedUnsafe bool               `json:"unmanaged_disable_safety_check,omitempty"` // DISABLE_UNMANAGED_SAFETY_CHECK
 
 	AutoDNSSEC string `json:"auto_dnssec,omitempty"` // "", "on", "off"
 	//DNSSEC        bool              `json:"dnssec,omitempty"`
@@ -34,14 +36,6 @@ type DomainConfig struct {
 	// 2. Final driver instances are loaded after we load credentials. Any actual provider interaction requires that.
 	RegistrarInstance    *RegistrarInstance     `json:"-"`
 	DNSProviderInstances []*DNSProviderInstance `json:"-"`
-}
-
-// UnmanagedConfig describes an UNMANAGED() rule.
-type UnmanagedConfig struct {
-	Label   string          `json:"label_pattern"` // Glob pattern for matching labels.
-	RType   string          `json:"rType_pattern"` // Comma-separated list of DNS Resource Types.
-	typeMap map[string]bool // map of RTypes or len()=0 for all
-	Target  string          `json:"target_pattern"` // Glob pattern for matching targets.
 }
 
 // Copy returns a deep copy of the DomainConfig.

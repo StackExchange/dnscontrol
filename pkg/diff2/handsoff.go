@@ -1,0 +1,295 @@
+package diff2
+
+import (
+	"fmt"
+	"strings"
+
+	"github.com/StackExchange/dnscontrol/v3/models"
+	"github.com/StackExchange/dnscontrol/v3/pkg/printer"
+	"github.com/gobwas/glob"
+)
+
+/*
+
+# How do NO_PURGE, IGNORE_*, ENSURE_ABSENT and friends work?
+
+
+## Terminology:
+
+* "existing" refers to the records downloaded from the provider via the API.
+* "desired" refers to the records generated from dnsconfig.js.
+* "ensure_absent" refers to a list of records tagged with ASSURE_ABSENT.
+
+## What are the features?
+
+There are 2 ways to tell DNSControl not to touch existing records in a domain,
+and 1 way to make exceptions.
+
+* NO_PURGE: Tells DNSControl not to delete records in a domain.
+	* New records can be created; existing records (matched on label:rtype) can
+	    be modified.
+	* FYI: This means you can't have a label with two A records, one controlled
+	    by DNSControl and one controlled by an external system.
+* UNMANAGED( labelglob, typelist, targetglob):
+    * "If an existing record matches this pattern, don't touch it!""
+    * IGNORE_NAME(foo) is the same as UNMANAGED(foo, "*", "*")
+    * IGNORE_TARGET(foo) is the same as UNMANAGED("*", "*", foo)
+    * FYI: You CAN have a label with two A records, one controlled by
+	    DNSControl and one controlled by an external system.  DNSControl would
+		need to have an UNMANAGED() statement with a targetglob that matches
+		the external system's target values.
+* ASSURE_ABSENT: Override NO_PURGE for specific records. i.e. delete them even
+    though NO_PURGE is enabled.
+    * If any of these records are in desired (matched on
+        label:rtype:target), remove them.  This takes priority over
+		all of the above.
+
+## Implementation premise
+
+The fundamental premise is "if you don't want it deleted, put it in the
+'desired' list." So, for example, if you want to IGNORE_NAME("www"), then you
+find any records with the label "www" in "existing" and copy them to "desired".
+As a result, the diff2 algorithm won't delete them because they are desired!
+
+This is different than in the old system (pkg/diff) which would generate the
+diff but but then do a bunch of checking to see if the record was one that
+shouldn't be deleted.  Or, in the case of NO_PURGE, would simply not do the
+deletions.  This was complex because there were many edge cases to deal with.
+It was often also wrong. For example, if a provider updates all records in a
+RecordSet at once, you shouldn't NOT update the record.
+
+## Implementation
+
+Here is how we intend to implement these features:
+
+  UNMANAGED is implemented as:
+  * Take the list of existing records. If any match one of the UNMANAGED glob
+      patterns, add it to the "ignored list".
+  * If any item on the "ignored list" is also in "desired" (match on
+      label:rtype), output a warning (defeault) or declare an error (if
+      DISABLE_UNMANAGED_SAFETY_CHECK is true).
+  * Add the "ignore list" records to desired.
+
+  NO_PURGE + ENSURE_ABSENT is implemented as:
+  * Take the list of existing records. If any do not appear in desired, add them
+      to desired UNLESS they appear in absent_list.
+  * "appear in desired" is done by matching on label:type.
+  * "appear in absent-list" is done by matching on label:type:target.
+
+  However the actual changes are implemented as:
+    foreach rec in existing:
+	    if rec matches_any_unmanaged_pattern:
+	        if rec in desired:
+		    	if "DISABLE_UNMANAGED_SAFETY_CHECK" is false:
+					Display a warning.
+		     	else
+			   		Return an error.
+		  	add rec to "foreign list"
+	    else:
+	     	if NO_PURGE:
+		 		if rec NOT in desired: (matched on label:type)
+		 		    if rec NOT in absent_list: (matched on label:type:combinedtarget)
+		      			Add rec to "foreign list"
+	Append "foreign list" to "desired"
+
+*/
+
+func handsoff(
+	existing, desired, ensureAbsent models.Records,
+	unmanagedConfigs []*models.UnmanagedConfig,
+	unmanagedSafely bool,
+	noPurge bool,
+) (models.Records, error) {
+
+	err := compileUnmanagedConfigs(unmanagedConfigs)
+	if err != nil {
+		return nil, err
+	}
+
+	ignorable, foreign := ignoreOrNoPurge(existing, desired, ensureAbsent, unmanagedConfigs, noPurge)
+	if len(foreign) != 0 {
+		printer.Printf("INFO: Records not being deleted because of NO_PURGE: (%d)\n", len(foreign))
+		for i, r := range foreign {
+			printer.Printf("- % 4d: %s %s %s\n", i, r.GetLabelFQDN(), r.Type, r.GetTargetRFC1035Quoted())
+		}
+	}
+	if len(ignorable) != 0 {
+		printer.Printf("INFO: Records not being deleted because of IGNORE*(): (%d)\n", len(ignorable))
+		for i, r := range ignorable {
+			printer.Printf("- % 4d: %s %s %s\n", i, r.GetLabelFQDN(), r.Type, r.GetTargetRFC1035Quoted())
+		}
+	}
+
+	conflicts := findConflicts(unmanagedConfigs, desired)
+	if len(conflicts) != 0 {
+		printer.Printf("INFO: Records that are both IGNORE*()'d and not ignored: (%d)\n", len(conflicts))
+		for i, r := range conflicts {
+			printer.Printf("- % 4d: %s %s %s\n", i, r.GetLabelFQDN(), r.Type, r.GetTargetRFC1035Quoted())
+		}
+		if unmanagedSafely {
+			return nil, fmt.Errorf("ERROR: Unsafe to continue. Add DISABLE_UNMANAGED_SAFETY_CHECK to D() to override")
+		}
+	}
+
+	// Add the ignored/foreign items to the desired list so they are not deleted:
+	desired = append(desired, ignorable...)
+	desired = append(desired, foreign...)
+	return desired, nil
+}
+
+func ignoreOrNoPurge(existing, desired, ensureAbsent models.Records, unmanagedConfigs []*models.UnmanagedConfig, noPurge bool) (models.Records, models.Records) {
+	var ignorable, foreign models.Records
+	desiredDB := models.NewRecordDBFromRecords(desired)
+	absentDB := models.NewRecordDBFromRecords(ensureAbsent)
+	for _, rec := range existing {
+		if matchAny(unmanagedConfigs, rec) {
+			ignorable = append(ignorable, rec)
+		} else {
+			if noPurge {
+				// Is this a canddiate for purging?
+				if !desiredDB.ContainsLT(rec) {
+					// Yes, but not if it is an exception!
+					if !absentDB.ContainsLT(rec) {
+						foreign = append(foreign, rec)
+					}
+				}
+			}
+		}
+	}
+	return ignorable, foreign
+}
+
+func findConflicts(uconfigs []*models.UnmanagedConfig, recs models.Records) models.Records {
+	var conflicts models.Records
+	for _, rec := range recs {
+		if matchAny(uconfigs, rec) {
+			conflicts = append(conflicts, rec)
+		}
+	}
+	return conflicts
+}
+
+func compileUnmanagedConfigs(configs []*models.UnmanagedConfig) error {
+	var err error
+
+	for _, c := range configs {
+
+		if c.LabelPattern == "" {
+			c.LabelPattern = "*"
+		}
+		c.LabelGlob, err = glob.Compile(c.LabelPattern)
+		if err != nil {
+			return err
+		}
+
+		if c.RTypePattern != "*" && c.RTypePattern != "" {
+			for _, part := range strings.Split(c.RTypePattern, ",") {
+				part = strings.TrimSpace(part)
+				c.RTypeMap[part] = struct{}{}
+			}
+		}
+
+		if c.TargetPattern == "" {
+			c.TargetPattern = "*"
+		}
+		c.TargetGlob, err = glob.Compile(c.TargetPattern)
+		if err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+func matchAny(uconfigs []*models.UnmanagedConfig, rec *models.RecordConfig) bool {
+	for _, uc := range uconfigs {
+		if !uc.LabelGlob.Match(rec.GetLabel()) {
+			continue
+		}
+		if _, ok := uc.RTypeMap[rec.Type]; !ok {
+			continue
+		}
+		if rec.Type == "TXT" {
+			if !uc.TargetGlob.Match(rec.GetTargetField()) {
+				continue
+			}
+		} else {
+			if !uc.TargetGlob.Match(rec.GetTargetTXTJoined()) {
+				continue
+			}
+		}
+	}
+	return false
+}
+
+// func manyQueries(rcs models.Records, queries []*models.UnmanagedConfig) (result models.Records, err error) {
+
+// 	for _, q := range queries {
+
+// 		lab := q.Label
+// 		if lab == "" {
+// 			lab = "*"
+// 		}
+// 		glabel, err := glob.Compile(lab)
+// 		if err != nil {
+// 			return nil, err
+// 		}
+
+// 		targ := q.Target
+// 		if targ == "" {
+// 			targ = "*"
+// 		}
+// 		gtarget, err := glob.Compile(targ)
+// 		if err != nil {
+// 			return nil, err
+// 		}
+
+// 		hasRType := compileTypeGlob(q.RType)
+
+// 		for _, rc := range rcs {
+// 			if match(rc, glabel, gtarget, hasRType) {
+// 				result = append(result, rc)
+// 			}
+// 		}
+// 	}
+// 	return result, nil
+// }
+
+// func compileTypeGlob(g string) map[string]bool {
+// 	m := map[string]bool{}
+// 	for _, j := range strings.Split(g, ",") {
+// 		m[strings.TrimSpace(j)] = true
+// 	}
+// 	return m
+// }
+
+// func match(rc *models.RecordConfig, glabel, gtarget glob.Glob, hasRType map[string]bool) bool {
+// 	//printer.Printf("DEBUG: match(%v, %v, %v, %v)\n", rc.NameFQDN, glabel, gtarget, hasRType)
+
+// 	// _ = glabel.Match(rc.NameFQDN)
+// 	// _ = matchType(rc.Type, hasRType)
+// 	// x := rc.GetTargetField()
+// 	// _ = gtarget.Match(x)
+
+// 	if !glabel.Match(rc.NameFQDN) {
+// 		//printer.Printf("DEBUG: REJECTED LABEL: %s:%v\n", rc.NameFQDN, glabel)
+// 		return false
+// 	} else if !matchType(rc.Type, hasRType) {
+// 		//printer.Printf("DEBUG: REJECTED TYPE: %s:%v\n", rc.Type, hasRType)
+// 		return false
+// 	} else if gtarget == nil {
+// 		return true
+// 	} else if !gtarget.Match(rc.GetTargetField()) {
+// 		//printer.Printf("DEBUG: REJECTED TARGET: %v:%v\n", rc.GetTargetField(), gtarget)
+// 		return false
+// 	}
+// 	return true
+// }
+
+// func matchType(s string, hasRType map[string]bool) bool {
+// 	//printer.Printf("DEBUG: matchType map=%v\n", hasRType)
+// 	if len(hasRType) == 0 {
+// 		return true
+// 	}
+// 	_, ok := hasRType[s]
+// 	return ok
+// }

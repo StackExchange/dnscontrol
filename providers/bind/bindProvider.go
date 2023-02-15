@@ -153,7 +153,6 @@ func (c *bindProvider) ListZones() ([]string, error) {
 
 // GetZoneRecords gets the records of a zone and returns them in RecordConfig format.
 func (c *bindProvider) GetZoneRecords(domain string) (models.Records, error) {
-	foundRecords := models.Records{}
 
 	if _, err := os.Stat(c.directory); os.IsNotExist(err) {
 		printer.Printf("\nWARNING: BIND directory %q does not exist!\n", c.directory)
@@ -177,10 +176,17 @@ func (c *bindProvider) GetZoneRecords(domain string) (models.Records, error) {
 	}
 	c.zoneFileFound = true
 
-	zp := dns.NewZoneParser(strings.NewReader(string(content)), domain, c.zonefile)
+	zonefileName := c.zonefile
 
+	return ParseZoneContents(string(content), domain, zonefileName)
+}
+
+func ParseZoneContents(content string, zoneName string, zonefileName string) (models.Records, error) {
+	zp := dns.NewZoneParser(strings.NewReader(content), zoneName, zonefileName)
+
+	foundRecords := models.Records{}
 	for rr, ok := zp.Next(); ok; rr, ok = zp.Next() {
-		rec, err := models.RRtoRC(rr, domain)
+		rec, err := models.RRtoRC(rr, zoneName)
 		if err != nil {
 			return nil, err
 		}
@@ -188,7 +194,7 @@ func (c *bindProvider) GetZoneRecords(domain string) (models.Records, error) {
 	}
 
 	if err := zp.Err(); err != nil {
-		return nil, fmt.Errorf("error while parsing '%v': %w", c.zonefile, err)
+		return nil, fmt.Errorf("error while parsing '%v': %w", zonefileName, err)
 	}
 	return foundRecords, nil
 }
