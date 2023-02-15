@@ -50,7 +50,7 @@ jobs:
 
       - run:
           name: Build binaries
-          command: goreleaser build
+          command: goreleaser build --snapshot
 
       - run:
           name: Enforce Go Formatted Code
