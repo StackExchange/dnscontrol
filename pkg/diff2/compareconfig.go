@@ -109,10 +109,8 @@ func NewCompareConfig(origin string, existing, desired models.Records, compFn Co
 func (cc *CompareConfig) VerifyCNAMEAssertions() {
 
 	// In theory these assertions do not need to be tested as they test
-	// something that can not happen. In my head I've proved this to be
-	// true.  That said, a little paranoia is healthy.  Those familiar
-	// with the Therac-25 accident will agree:
-	// https://hackaday.com/2015/10/26/killed-by-a-machine-the-therac-25/
+	// something that can not happen. In my  I've proved this to be
+	// true.  That said, a little paranoia is healthy.
 
 	// According to the RFCs if a label has a CNAME, it can not have any other
 	// records at that label... even other CNAMEs.  Therefore, we need to be
@@ -139,8 +137,10 @@ func (cc *CompareConfig) VerifyCNAMEAssertions() {
 	// That said, since we addRecords existing first, and desired last, the data
 	// should already be in the right order.
 
+	fmt.Printf("DEBUG: compareconfig =\n%s\n\n", cc)
 	for _, ld := range cc.ldata {
 		for j, td := range ld.tdata {
+
 			if td.rType == "CNAME" {
 				if len(td.existingTargets) != 0 {
 					//fmt.Printf("DEBUG: cname in existing: index=%d\n", j)
@@ -149,7 +149,7 @@ func (cc *CompareConfig) VerifyCNAMEAssertions() {
 					}
 				}
 				if len(td.desiredTargets) != 0 {
-					//fmt.Printf("DEBUG: cname in desired: index=%d\n", j)
+					//fmt.Fprintf(os.Stdout, "DEBUG: cname in desired: index=%d\n", j)
 					if j != highest(ld.tdata) {
 						panic("should not happen: (CNAME not in last position)")
 					}

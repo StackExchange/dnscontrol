@@ -154,6 +154,9 @@ func ByRecord(existing models.Records, dc *models.DomainConfig, compFunc Compara
 	if err != nil {
 		return nil, err
 	}
+	for i, j := range desired {
+		fmt.Printf("%03d: %v     %v\n", i, j.GetLabelFQDN(), j.String())
+	}
 
 	cc := NewCompareConfig(dc.Name, existing, desired, compFunc)
 	instructions := analyzeByRecord(cc)
