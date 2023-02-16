@@ -3,6 +3,7 @@ package diff2
 import (
 	"bytes"
 	"fmt"
+	"os"
 	"sort"
 
 	"github.com/StackExchange/dnscontrol/v3/models"
@@ -149,7 +150,8 @@ func (cc *CompareConfig) VerifyCNAMEAssertions() {
 					}
 				}
 				if len(td.desiredTargets) != 0 {
-					//fmt.Fprintf(os.Stdout, "DEBUG: cname in desired: index=%d\n", j)
+					fmt.Fprintf(os.Stdout, "DEBUG: cname in desired: index=%d\n", j)
+					fmt.Fprintf(os.Stdout, "DEBUG: highest: index=%d\n", j)
 					if j != highest(ld.tdata) {
 						panic("should not happen: (CNAME not in last position)")
 					}
