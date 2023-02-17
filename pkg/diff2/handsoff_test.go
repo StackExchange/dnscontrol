@@ -121,25 +121,6 @@ D("f.com", "none",
 	A("foo2", "2.2.2.2"),
 {})
 `
-
-	handsoffHelper(t, existingZone, desiredJs, false, `
-IGNORED:
-FOREIGN:
-	`)
-}
-
-func Test_purge_1(t *testing.T) {
-	existingZone := `
-foo1 IN A 1.1.1.1
-foo2 IN A 2.2.2.2
-foo3 IN A 3.3.3.3
-`
-	desiredJs := `
-D("f.com", "none",
-	A("foo1", "1.1.1.1"),
-	A("foo2", "2.2.2.2"),
-{})
-`
 	handsoffHelper(t, existingZone, desiredJs, false, `
 IGNORED:
 FOREIGN:
@@ -178,10 +159,52 @@ D("f.com", "none",
 	A("foo3", "3.3.3.3", ENSURE_ABSENT_HELPER()),
 {})
 `
-
 	handsoffHelper(t, existingZone, desiredJs, true, `
 IGNORED:
-foo3 A 3.3.3.3
+FOREIGN:
+	`)
+}
+
+func Test_ignore_labAndType(t *testing.T) {
+	existingZone := `
+foo1 IN A 1.1.1.1
+foo2 IN A 2.2.2.2
+foo3 IN A 3.3.3.3
+foo3 IN MX 10 3.3.3.3
+`
+	desiredJs := `
+D("f.com", "none",
+	A("foo1", "1.1.1.1"),
+	A("foo2", "2.2.2.2"),
+	IGNORE_NAME("foo3", "MX"),
+{})
+`
+	handsoffHelper(t, existingZone, desiredJs, true, `
+IGNORED:
+foo3 IN MX 10 3.3.3.3
+FOREIGN:
+	`)
+}
+
+func Test_ignore_target(t *testing.T) {
+	existingZone := `
+foo1 IN A 1.1.1.1
+foo2 IN A 2.2.2.2
+foo3 IN A 3.3.3.3
+foo3 IN MX 10 3.3.3.3
+_2222222222222222222222222222222b.cr IN CNAME _33333333333333333333333333333333.nnnnnnnnnn.acm-validations.aws.
+`
+	desiredJs := `
+D("f.com", "none",
+	A("foo1", "1.1.1.1"),
+	A("foo2", "2.2.2.2"),
+	MX("foo3", 10, "3.3.3.3"),
+	IGNORE_TARGET('*.acm-validations.aws.', 'CNAME'),
+{})
+`
+	handsoffHelper(t, existingZone, desiredJs, true, `
+IGNORED:
+_2222222222222222222222222222222b.cr IN CNAME "_33333333333333333333333333333333.nnnnnnnnnn.acm-validations.aws."
 FOREIGN:
 	`)
 }
