@@ -100,7 +100,7 @@ func ByRecordSet(existing models.Records, dc *models.DomainConfig, compFunc Comp
 
 	desired := dc.Records
 	var err error
-	desired, err = handsoff(dc.Name, existing, desired, dc.EnsureAbsent, dc.Unmanaged, dc.UnmanagedUnsafe, dc.KeepUnknown) // Handle UNMANAGED(), NO_PURGE, ASSURE_ABSENT
+	desired, err = handsoff(dc.Name, existing, desired, dc.EnsureAbsent, dc.Unmanaged, dc.UnmanagedUnsafe, dc.KeepUnknown) // Handle UNMANAGED(), NO_PURGE, ENSURE_ABSENT
 	if err != nil {
 		return nil, err
 	}
@@ -123,7 +123,7 @@ func ByLabel(existing models.Records, dc *models.DomainConfig, compFunc Comparab
 
 	desired := dc.Records
 	var err error
-	desired, err = handsoff(dc.Name, existing, desired, dc.EnsureAbsent, dc.Unmanaged, dc.UnmanagedUnsafe, dc.KeepUnknown) // Handle UNMANAGED(), NO_PURGE, ASSURE_ABSENT
+	desired, err = handsoff(dc.Name, existing, desired, dc.EnsureAbsent, dc.Unmanaged, dc.UnmanagedUnsafe, dc.KeepUnknown) // Handle UNMANAGED(), NO_PURGE, ENSURE_ABSENT
 	if err != nil {
 		return nil, err
 	}
@@ -150,7 +150,7 @@ func ByRecord(existing models.Records, dc *models.DomainConfig, compFunc Compara
 
 	desired := dc.Records
 	var err error
-	desired, err = handsoff(dc.Name, existing, desired, dc.EnsureAbsent, dc.Unmanaged, dc.UnmanagedUnsafe, dc.KeepUnknown) // Handle UNMANAGED(), NO_PURGE, ASSURE_ABSENT
+	desired, err = handsoff(dc.Name, existing, desired, dc.EnsureAbsent, dc.Unmanaged, dc.UnmanagedUnsafe, dc.KeepUnknown) // Handle UNMANAGED(), NO_PURGE, ENSURE_ABSENT
 	if err != nil {
 		return nil, err
 	}
@@ -193,7 +193,7 @@ func ByZone(existing models.Records, dc *models.DomainConfig, compFunc Comparabl
 
 	desired := dc.Records
 	var err error
-	desired, err = handsoff(dc.Name, existing, desired, dc.EnsureAbsent, dc.Unmanaged, dc.UnmanagedUnsafe, dc.KeepUnknown) // Handle UNMANAGED(), NO_PURGE, ASSURE_ABSENT
+	desired, err = handsoff(dc.Name, existing, desired, dc.EnsureAbsent, dc.Unmanaged, dc.UnmanagedUnsafe, dc.KeepUnknown) // Handle UNMANAGED(), NO_PURGE, ENSURE_ABSENT
 	if err != nil {
 		return nil, false, err
 	}

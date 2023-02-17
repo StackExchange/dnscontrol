@@ -34,7 +34,7 @@ func parseZoneContents(content string, zoneName string, zonefileName string) (mo
 func showRecs(recs models.Records) string {
 	result := ""
 	for _, rec := range recs {
-		result += (rec.GetLabelFQDN() +
+		result += (rec.GetLabel() +
 			" " + rec.Type +
 			" " + rec.GetTargetRFC1035Quoted() +
 			"\n")
@@ -57,19 +57,32 @@ func handsoffHelper(t *testing.T, existingZone, desiredJs string, noPurge bool, 
 	if err != nil {
 		panic(err)
 	}
-	fmt.Printf("DEBUG: existing=%s\n", showRecs(existing))
+	//fmt.Printf("DEBUG: existing=%s\n", showRecs(existing))
 
 	dnsconfig, err := js.ExecuteJavascriptString([]byte(desiredJs), false, nil)
 	if err != nil {
 		panic(err)
 	}
-
 	dc := dnsconfig.FindDomain("f.com")
 	desired := dc.Records
+	//fmt.Printf("DEBUG: OLD desired ... %s\n", showRecs(desired))
+	// BUG(tlim): For some reason ExecuteJavascriptString() isn't setting the NameFQDN on records.
+	//            This fixes up the records. It is a crass workaround. We should find the real
+	//            cause and fix it.
+	for i, j := range desired {
+		desired[i].SetLabel(j.GetLabel(), "f.com")
+	}
+	//fmt.Printf("DEBUG: FIXED desired ... %s\n", showRecs(desired))
 	ensureAbsent := dc.EnsureAbsent
 	unmanagedConfigs := dc.Unmanaged
 
-	ignored, purged := ignoreOrNoPurge("f.com", existing, desired, ensureAbsent, unmanagedConfigs, noPurge)
+	ignored, purged := ignoreOrNoPurge(
+		"f.com",
+		existing, desired,
+		ensureAbsent,
+		unmanagedConfigs,
+		noPurge,
+	)
 
 	ignoredRecs := showRecs(ignored)
 	purgedRecs := showRecs(purged)
@@ -120,6 +133,26 @@ foo3 IN A 3.3.3.3
 D("f.com", "none",
 	A("foo1", "1.1.1.1"),
 	A("foo2", "2.2.2.2"),
+{})
+`
+
+	handsoffHelper(t, existingZone, desiredJs, true, `
+IGNORED:
+FOREIGN:
+foo3 A 3.3.3.3
+	`)
+}
+
+func Test_nopurge_2(t *testing.T) {
+	existingZone := `
+foo1 IN A 1.1.1.1
+foo2 IN A 2.2.2.2
+foo3 IN A 3.3.3.3
+`
+	desiredJs := `
+D("f.com", "none",
+	A("foo1", "1.1.1.1"),
+	A("foo2", "2.2.2.2", ESSURE_),
 {})
 `
 

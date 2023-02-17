@@ -140,8 +140,11 @@ func handsoff(
 
 func ignoreOrNoPurge(domain string, existing, desired, ensureAbsent models.Records, unmanagedConfigs []*models.UnmanagedConfig, noPurge bool) (models.Records, models.Records) {
 	var ignorable, foreign models.Records
+	//fmt.Printf("DEBUG: start desired\n")
 	desiredDB := models.NewRecordDBFromRecords(desired, domain)
+	//fmt.Printf("DEBUG: start absent\n")
 	absentDB := models.NewRecordDBFromRecords(ensureAbsent, domain)
+	//fmt.Printf("DEBUG: setup done\n")
 	for _, rec := range existing {
 		if matchAny(unmanagedConfigs, rec) {
 			ignorable = append(ignorable, rec)
