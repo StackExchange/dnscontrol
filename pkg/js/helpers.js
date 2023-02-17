@@ -104,6 +104,7 @@ function newDomain(name, registrar) {
         registrar: registrar,
         meta: {},
         records: [],
+        recordsabsent: [],
         dnsProviders: {},
         defaultTTL: 0,
         nameservers: [],
@@ -660,6 +661,14 @@ function NO_PURGE(d) {
     d.KeepUnknown = true;
 }
 
+// ENSURE_ABSENT_HELPER()
+// Usage: A("foo", "1.2.3.4", ENSURE_ABSENT_HELPER())
+function ENSURE_ABSENT_HELPER() {
+    return function (r) {
+        r.ensure_absent = true;
+    };
+}
+
 // AUTODNSSEC
 // Permitted values are:
 // ""  Do not modify the setting (the default)
@@ -835,7 +844,15 @@ function recordBuilder(type, opts) {
                 }
             }
 
-            d.records.push(record);
+            // Now we finally have the record. If it is a normal record, we add
+            // it to "records". If it is an ENSURE_ABSENT record, we add it to
+            // the ensure_absent list.
+            if (record.ensure_absent) {
+                d.recordsabsent.push(record);
+            } else {
+                d.records.push(record);
+            }
+
             return record;
         };
     };

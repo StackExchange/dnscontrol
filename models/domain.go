@@ -19,7 +19,7 @@ type DomainConfig struct {
 	Records     Records           `json:"records"`
 	Nameservers []*Nameserver     `json:"nameservers,omitempty"`
 
-	EnsureAbsent Records `json:"ensure_absent,omitempty"` // ENSURE_ABSENT
+	EnsureAbsent Records `json:"recordsabsent,omitempty"` // ENSURE_ABSENT
 	KeepUnknown  bool    `json:"keepunknown,omitempty"`   // NO_PURGE
 
 	IgnoredNames    []*IgnoreName      `json:"ignored_names,omitempty"`

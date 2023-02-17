@@ -73,13 +73,18 @@ func handsoffHelper(t *testing.T, existingZone, desiredJs string, noPurge bool, 
 		desired[i].SetLabel(j.GetLabel(), "f.com")
 	}
 	//fmt.Printf("DEBUG: FIXED desired ... %s\n", showRecs(desired))
-	ensureAbsent := dc.EnsureAbsent
+	absences := dc.EnsureAbsent
+	for i, j := range absences {
+		absences[i].SetLabel(j.GetLabel(), "f.com")
+	}
+	fmt.Printf("DEBUG: FIXED ABSENT ... %s\n", showRecs(absences))
+
 	unmanagedConfigs := dc.Unmanaged
 
 	ignored, purged := ignoreOrNoPurge(
 		"f.com",
 		existing, desired,
-		ensureAbsent,
+		absences,
 		unmanagedConfigs,
 		noPurge,
 	)
@@ -123,6 +128,24 @@ FOREIGN:
 	`)
 }
 
+func Test_purge_1(t *testing.T) {
+	existingZone := `
+foo1 IN A 1.1.1.1
+foo2 IN A 2.2.2.2
+foo3 IN A 3.3.3.3
+`
+	desiredJs := `
+D("f.com", "none",
+	A("foo1", "1.1.1.1"),
+	A("foo2", "2.2.2.2"),
+{})
+`
+	handsoffHelper(t, existingZone, desiredJs, false, `
+IGNORED:
+FOREIGN:
+	`)
+}
+
 func Test_nopurge_1(t *testing.T) {
 	existingZone := `
 foo1 IN A 1.1.1.1
@@ -135,7 +158,6 @@ D("f.com", "none",
 	A("foo2", "2.2.2.2"),
 {})
 `
-
 	handsoffHelper(t, existingZone, desiredJs, true, `
 IGNORED:
 FOREIGN:
@@ -143,7 +165,7 @@ foo3 A 3.3.3.3
 	`)
 }
 
-func Test_nopurge_2(t *testing.T) {
+func Test_absent_1(t *testing.T) {
 	existingZone := `
 foo1 IN A 1.1.1.1
 foo2 IN A 2.2.2.2
@@ -152,13 +174,14 @@ foo3 IN A 3.3.3.3
 	desiredJs := `
 D("f.com", "none",
 	A("foo1", "1.1.1.1"),
-	A("foo2", "2.2.2.2", ESSURE_),
+	A("foo2", "2.2.2.2"),
+	A("foo3", "3.3.3.3", ENSURE_ABSENT_HELPER()),
 {})
 `
 
 	handsoffHelper(t, existingZone, desiredJs, true, `
 IGNORED:
-FOREIGN:
 foo3 A 3.3.3.3
+FOREIGN:
 	`)
 }

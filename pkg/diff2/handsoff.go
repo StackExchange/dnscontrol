@@ -18,7 +18,7 @@ import (
 
 * "existing" refers to the records downloaded from the provider via the API.
 * "desired" refers to the records generated from dnsconfig.js.
-* "ensure_absent" refers to a list of records tagged with ASSURE_ABSENT.
+* "absences" refers to a list of records tagged with ASSURE_ABSENT.
 
 ## What are the features?
 
@@ -72,9 +72,9 @@ Here is how we intend to implement these features:
 
   NO_PURGE + ENSURE_ABSENT is implemented as:
   * Take the list of existing records. If any do not appear in desired, add them
-      to desired UNLESS they appear in absent_list.
+      to desired UNLESS they appear in absences.
   * "appear in desired" is done by matching on label:type.
-  * "appear in absent-list" is done by matching on label:type:target.
+  * "appear in absences" is done by matching on label:type:target.
 
   However the actual changes are implemented as:
     foreach rec in existing:
@@ -88,7 +88,7 @@ Here is how we intend to implement these features:
 	    else:
 	     	if NO_PURGE:
 		 		if rec NOT in desired: (matched on label:type)
-		 		    if rec NOT in absent_list: (matched on label:type:combinedtarget)
+		 		    if rec NOT in absences: (matched on label:type:combinedtarget)
 		      			Add rec to "foreign list"
 	Append "foreign list" to "desired"
 
@@ -96,7 +96,7 @@ Here is how we intend to implement these features:
 
 func handsoff(
 	domain string,
-	existing, desired, ensureAbsent models.Records,
+	existing, desired, absences models.Records,
 	unmanagedConfigs []*models.UnmanagedConfig,
 	unmanagedSafely bool,
 	noPurge bool,
@@ -107,7 +107,7 @@ func handsoff(
 		return nil, err
 	}
 
-	ignorable, foreign := ignoreOrNoPurge(domain, existing, desired, ensureAbsent, unmanagedConfigs, noPurge)
+	ignorable, foreign := ignoreOrNoPurge(domain, existing, desired, absences, unmanagedConfigs, noPurge)
 	if len(foreign) != 0 {
 		printer.Printf("INFO: %d records not being deleted because of NO_PURGE:\n", len(foreign))
 		for _, r := range foreign {
@@ -138,13 +138,12 @@ func handsoff(
 	return desired, nil
 }
 
-func ignoreOrNoPurge(domain string, existing, desired, ensureAbsent models.Records, unmanagedConfigs []*models.UnmanagedConfig, noPurge bool) (models.Records, models.Records) {
+func ignoreOrNoPurge(domain string, existing, desired, absences models.Records, unmanagedConfigs []*models.UnmanagedConfig, noPurge bool) (models.Records, models.Records) {
 	var ignorable, foreign models.Records
-	//fmt.Printf("DEBUG: start desired\n")
 	desiredDB := models.NewRecordDBFromRecords(desired, domain)
-	//fmt.Printf("DEBUG: start absent\n")
-	absentDB := models.NewRecordDBFromRecords(ensureAbsent, domain)
-	//fmt.Printf("DEBUG: setup done\n")
+	fmt.Printf("DEBUG: start absent\n")
+	absentDB := models.NewRecordDBFromRecords(absences, domain)
+	fmt.Printf("DEBUG: setup done\n")
 	for _, rec := range existing {
 		if matchAny(unmanagedConfigs, rec) {
 			ignorable = append(ignorable, rec)
