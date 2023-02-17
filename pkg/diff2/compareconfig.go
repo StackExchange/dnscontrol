@@ -3,7 +3,6 @@ package diff2
 import (
 	"bytes"
 	"fmt"
-	"os"
 	"sort"
 
 	"github.com/StackExchange/dnscontrol/v3/models"
@@ -138,20 +137,31 @@ func (cc *CompareConfig) VerifyCNAMEAssertions() {
 	// That said, since we addRecords existing first, and desired last, the data
 	// should already be in the right order.
 
-	fmt.Printf("DEBUG: compareconfig =\n%s\n\n", cc)
+	//	fmt.Printf("DEBUG: compareconfig =\n%s\n\n", cc)
 	for _, ld := range cc.ldata {
 		for j, td := range ld.tdata {
 
 			if td.rType == "CNAME" {
+
+				// This assertion doesn't hold for a site that permits a
+				// recordset with both CNAMEs and other records, such as
+				// Cloudflare.
+				// Therefore, we skip the test if we aren't deleting
+				// everything or creating from scratch.
+				if len(td.existingTargets) != 0 && len(td.desiredTargets) != 0 {
+					continue
+				}
+
 				if len(td.existingTargets) != 0 {
 					//fmt.Printf("DEBUG: cname in existing: index=%d\n", j)
 					if j != 0 {
 						panic("should not happen: (CNAME not in first position)")
 					}
 				}
+
 				if len(td.desiredTargets) != 0 {
-					fmt.Fprintf(os.Stdout, "DEBUG: cname in desired: index=%d\n", j)
-					fmt.Fprintf(os.Stdout, "DEBUG: highest: index=%d\n", j)
+					//fmt.Fprintf(os.Stdout, "DEBUG: cname in desired: index=%d\n", j)
+					//fmt.Fprintf(os.Stdout, "DEBUG: highest: index=%d\n", j)
 					if j != highest(ld.tdata) {
 						panic("should not happen: (CNAME not in last position)")
 					}

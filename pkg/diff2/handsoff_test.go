@@ -1,21 +1,19 @@
 package diff2
 
 import (
-	"bytes"
 	"fmt"
 	"strings"
 	"testing"
 
 	"github.com/StackExchange/dnscontrol/v3/models"
 	"github.com/StackExchange/dnscontrol/v3/pkg/js"
-	"github.com/StackExchange/dnscontrol/v3/pkg/prettyzone"
 	"github.com/miekg/dns"
 	testifyrequire "github.com/stretchr/testify/require"
 )
 
-// ParseZoneContents is copied verbatium from providers/bind/bindProvider.go
+// parseZoneContents is copied verbatium from providers/bind/bindProvider.go
 // because import cycles and... tests shouldn't depend on huge modules.
-func ParseZoneContents(content string, zoneName string, zonefileName string) (models.Records, error) {
+func parseZoneContents(content string, zoneName string, zonefileName string) (models.Records, error) {
 	zp := dns.NewZoneParser(strings.NewReader(content), zoneName, zonefileName)
 
 	foundRecords := models.Records{}
@@ -33,33 +31,64 @@ func ParseZoneContents(content string, zoneName string, zonefileName string) (mo
 	return foundRecords, nil
 }
 
-func handsoffHelper(t *testing.T, existingZone, desiredJs string, noPurge bool, wantedZone string) {
+func showRecs(recs models.Records) string {
+	result := ""
+	for _, rec := range recs {
+		result += (rec.GetLabelFQDN() +
+			" " + rec.Type +
+			" " + rec.GetTargetRFC1035Quoted() +
+			"\n")
+	}
+	return result
+}
+
+// var buf bytes.Buffer
+// err = prettyzone.WriteZoneFileRC(&buf, dnsconfig.FindDomain("f.com").Records, "f.com", 300, nil)
+// if err != nil {
+// 	t.Fatal(err)
+// }
+// actualZone := strings.TrimSpace(buf.String())
+//wantedZone = strings.TrimSpace(wantedZone)
+
+func handsoffHelper(t *testing.T, existingZone, desiredJs string, noPurge bool, resultWanted string) {
 	t.Helper()
 
-	existing, err := ParseZoneContents(existingZone, "f.com", "no_file_name")
+	existing, err := parseZoneContents(existingZone, "f.com", "no_file_name")
 	if err != nil {
 		panic(err)
 	}
+	fmt.Printf("DEBUG: existing=%s\n", showRecs(existing))
 
 	dnsconfig, err := js.ExecuteJavascriptString([]byte(desiredJs), false, nil)
 	if err != nil {
 		panic(err)
 	}
 
-	var buf bytes.Buffer
-	err = prettyzone.WriteZoneFileRC(&buf, dnsconfig.FindDomain("f.com").Records, "f.com", 300, nil)
-	if err != nil {
-		t.Fatal(err)
-	}
-	actualZone := strings.TrimSpace(buf.String())
+	dc := dnsconfig.FindDomain("f.com")
+	desired := dc.Records
+	ensureAbsent := dc.EnsureAbsent
+	unmanagedConfigs := dc.Unmanaged
 
-	wantedZone = strings.TrimSpace(wantedZone)
+	ignored, purged := ignoreOrNoPurge("f.com", existing, desired, ensureAbsent, unmanagedConfigs, noPurge)
 
-	ignored, purged := ignoreOrNoPurge(existing, existing, ensureAbsent, unmanagedConfigs, noPurge)
+	ignoredRecs := showRecs(ignored)
+	purgedRecs := showRecs(purged)
+	resultActual := "IGNORED:\n" + ignoredRecs + "FOREIGN:\n" + purgedRecs
+	resultWanted = strings.TrimSpace(resultWanted) + "\n"
+	resultActual = strings.TrimSpace(resultActual) + "\n"
 
-	if wantedZone != actualZone {
-		testifyrequire.Equal(t, wantedZone, actualZone, "EXPECTING =\n```\n%s```", actualZone)
+	existingTxt := showRecs(existing)
+	desiredTxt := showRecs(desired)
+	debugTxt := "EXISTING:\n" + existingTxt + "DESIRED:\n" + desiredTxt
 
+	if resultWanted != resultActual {
+		testifyrequire.Equal(t,
+			resultActual,
+			resultWanted,
+			"GOT =\n```\n%s```\nWANT=\n```%s```\nINPUTS=\n```\n%s\n```\n",
+			resultActual,
+			resultWanted,
+			debugTxt)
 	}
 }
 
@@ -76,14 +105,27 @@ D("f.com", "none",
 `
 
 	handsoffHelper(t, existingZone, desiredJs, false, `
-$TTL 300
-foo1             IN A     1.1.1.1
-foo2             IN A     2.2.2.2
-`)
+IGNORED:
+FOREIGN:
+	`)
+}
 
-	handsoffHelper(t, existingZone, desiredJs, true, `
+func Test_nopurge_1(t *testing.T) {
+	existingZone := `
 foo1 IN A 1.1.1.1
 foo2 IN A 2.2.2.2
-`)
+foo3 IN A 3.3.3.3
+`
+	desiredJs := `
+D("f.com", "none",
+	A("foo1", "1.1.1.1"),
+	A("foo2", "2.2.2.2"),
+{})
+`
 
+	handsoffHelper(t, existingZone, desiredJs, true, `
+IGNORED:
+FOREIGN:
+foo3 A 3.3.3.3
+	`)
 }

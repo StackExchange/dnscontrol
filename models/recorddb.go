@@ -1,5 +1,7 @@
 package models
 
+import "fmt"
+
 // Functions that make it easier to deal with a group of records.
 
 type RecordDB struct {
@@ -7,7 +9,7 @@ type RecordDB struct {
 }
 
 // NewRecordDBFromRecords creates a RecordDB from a list of RecordConfig.
-func NewRecordDBFromRecords(recs Records) *RecordDB {
+func NewRecordDBFromRecords(recs Records, zone string) *RecordDB {
 	result := &RecordDB{}
 
 	result.labelAndTypeMap = make(map[RecordKey]struct{}, len(recs))
@@ -22,5 +24,7 @@ func NewRecordDBFromRecords(recs Records) *RecordDB {
 // on the record's label and type (i.e. the RecordKey)
 func (recdb *RecordDB) ContainsLT(rec *RecordConfig) bool {
 	_, ok := recdb.labelAndTypeMap[rec.Key()]
+	fmt.Printf("DEBUG: ContainsLT(%q) = %v (%v)\n",
+		rec.Key(), ok, recdb)
 	return ok
 }
