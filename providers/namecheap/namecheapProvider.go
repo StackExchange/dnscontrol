@@ -99,7 +99,7 @@ func doWithRetry(f func() error) {
 		if err == nil {
 			return
 		}
-		if strings.Contains(err.Error(), "Error 500000: Too many requests") {
+		if strings.Contains(err.Error(), "unexpected status code from api: 405") {
 			currentRetry++
 			if currentRetry >= maxRetries {
 				return
