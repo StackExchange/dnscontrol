@@ -77,7 +77,7 @@ func handsoffHelper(t *testing.T, existingZone, desiredJs string, noPurge bool, 
 	for i, j := range absences {
 		absences[i].SetLabel(j.GetLabel(), "f.com")
 	}
-	fmt.Printf("DEBUG: FIXED ABSENT ... %s\n", showRecs(absences))
+	//fmt.Printf("DEBUG: FIXED ABSENT ... %s\n", showRecs(absences))
 
 	unmanagedConfigs := dc.Unmanaged
 
@@ -110,10 +110,28 @@ func handsoffHelper(t *testing.T, existingZone, desiredJs string, noPurge bool, 
 	}
 }
 
-func Test_normal(t *testing.T) {
+func Test_purge_empty(t *testing.T) {
 	existingZone := `
 foo1 IN A 1.1.1.1
 foo2 IN A 2.2.2.2
+`
+	desiredJs := `
+D("f.com", "none",
+	A("foo1", "1.1.1.1"),
+	A("foo2", "2.2.2.2"),
+{})
+`
+	handsoffHelper(t, existingZone, desiredJs, false, `
+IGNORED:
+FOREIGN:
+	`)
+}
+
+func Test_purge_1(t *testing.T) {
+	existingZone := `
+foo1 IN A 1.1.1.1
+foo2 IN A 2.2.2.2
+foo3 IN A 2.2.2.2
 `
 	desiredJs := `
 D("f.com", "none",
@@ -165,23 +183,46 @@ FOREIGN:
 	`)
 }
 
-func Test_ignore_labAndType(t *testing.T) {
+func Test_ignore_lab(t *testing.T) {
 	existingZone := `
 foo1 IN A 1.1.1.1
 foo2 IN A 2.2.2.2
 foo3 IN A 3.3.3.3
-foo3 IN MX 10 3.3.3.3
+foo3 IN MX 10 mymx.example.com.
 `
 	desiredJs := `
 D("f.com", "none",
 	A("foo1", "1.1.1.1"),
 	A("foo2", "2.2.2.2"),
+	IGNORE_NAME("foo3"),
+{})
+`
+	handsoffHelper(t, existingZone, desiredJs, true, `
+IGNORED:
+foo3 A 3.3.3.3
+foo3 MX 10 mymx.example.com.
+FOREIGN:
+	`)
+}
+
+func Test_ignore_labAndType(t *testing.T) {
+	existingZone := `
+foo1 IN A 1.1.1.1
+foo2 IN A 2.2.2.2
+foo3 IN A 3.3.3.3
+foo3 IN MX 10 mymx.example.com.
+`
+	desiredJs := `
+D("f.com", "none",
+	A("foo1", "1.1.1.1"),
+	A("foo2", "2.2.2.2"),
+	A("foo3", "3.3.3.3"),
 	IGNORE_NAME("foo3", "MX"),
 {})
 `
 	handsoffHelper(t, existingZone, desiredJs, true, `
 IGNORED:
-foo3 IN MX 10 3.3.3.3
+foo3 MX 10 mymx.example.com.
 FOREIGN:
 	`)
 }
@@ -190,21 +231,19 @@ func Test_ignore_target(t *testing.T) {
 	existingZone := `
 foo1 IN A 1.1.1.1
 foo2 IN A 2.2.2.2
-foo3 IN A 3.3.3.3
-foo3 IN MX 10 3.3.3.3
-_2222222222222222222222222222222b.cr IN CNAME _33333333333333333333333333333333.nnnnnnnnnn.acm-validations.aws.
+_2222222222222222.cr IN CNAME _333333.nnn.acm-validations.aws.
 `
 	desiredJs := `
 D("f.com", "none",
 	A("foo1", "1.1.1.1"),
 	A("foo2", "2.2.2.2"),
-	MX("foo3", 10, "3.3.3.3"),
-	IGNORE_TARGET('*.acm-validations.aws.', 'CNAME'),
+	MX("foo3", 10, "mymx.example.com."),
+	IGNORE_TARGET('**.acm-validations.aws.', 'CNAME'),
 {})
 `
 	handsoffHelper(t, existingZone, desiredJs, true, `
 IGNORED:
-_2222222222222222222222222222222b.cr IN CNAME "_33333333333333333333333333333333.nnnnnnnnnn.acm-validations.aws."
 FOREIGN:
+_2222222222222222.cr CNAME _333333.nnn.acm-validations.aws.
 	`)
 }

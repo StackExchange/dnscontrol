@@ -141,18 +141,21 @@ func handsoff(
 func ignoreOrNoPurge(domain string, existing, desired, absences models.Records, unmanagedConfigs []*models.UnmanagedConfig, noPurge bool) (models.Records, models.Records) {
 	var ignorable, foreign models.Records
 	desiredDB := models.NewRecordDBFromRecords(desired, domain)
-	fmt.Printf("DEBUG: start absent\n")
+	//fmt.Printf("DEBUG: start absent\n")
 	absentDB := models.NewRecordDBFromRecords(absences, domain)
-	fmt.Printf("DEBUG: setup done\n")
+	compileUnmanagedConfigs(unmanagedConfigs)
+	//fmt.Printf("DEBUG: setup done\n")
 	for _, rec := range existing {
 		if matchAny(unmanagedConfigs, rec) {
+			//fmt.Printf("DEBUG: IGNORING: %v %v\n", rec.GetLabelFQDN(), rec)
 			ignorable = append(ignorable, rec)
 		} else {
 			if noPurge {
-				// Is this a canddiate for purging?
+				// Is this a candidate for purging?
 				if !desiredDB.ContainsLT(rec) {
 					// Yes, but not if it is an exception!
 					if !absentDB.ContainsLT(rec) {
+						//fmt.Printf("DEBUG: FOREIGN: %v %v\n", rec.GetLabelFQDN(), rec)
 						foreign = append(foreign, rec)
 					}
 				}
@@ -173,28 +176,36 @@ func findConflicts(uconfigs []*models.UnmanagedConfig, recs models.Records) mode
 }
 
 func compileUnmanagedConfigs(configs []*models.UnmanagedConfig) error {
+	//fmt.Printf("DEBUG: compileUnmanagedConfigs(%v)\n", configs)
 	var err error
 
-	for _, c := range configs {
+	for i := range configs {
+		c := configs[i]
 
 		if c.LabelPattern == "" {
 			c.LabelPattern = "*"
 		}
+		//fmt.Printf("DEBUG: compiling labelPattern: %q\n", c.LabelPattern)
 		c.LabelGlob, err = glob.Compile(c.LabelPattern)
 		if err != nil {
 			return err
 		}
 
+		//fmt.Printf("DEBUG: compiling type: %q\n", c.RTypePattern)
+		c.RTypeMap = make(map[string]struct{})
 		if c.RTypePattern != "*" && c.RTypePattern != "" {
 			for _, part := range strings.Split(c.RTypePattern, ",") {
 				part = strings.TrimSpace(part)
+				//fmt.Printf("    DEBUG: part=%q\n", part)
 				c.RTypeMap[part] = struct{}{}
 			}
 		}
+		//fmt.Printf("DEBUG: compiling type DONE\n")
 
 		if c.TargetPattern == "" {
 			c.TargetPattern = "*"
 		}
+		//fmt.Printf("DEBUG: compiling targetPattern: %q\n", c.TargetPattern)
 		c.TargetGlob, err = glob.Compile(c.TargetPattern)
 		if err != nil {
 			return err
@@ -204,24 +215,39 @@ func compileUnmanagedConfigs(configs []*models.UnmanagedConfig) error {
 }
 
 func matchAny(uconfigs []*models.UnmanagedConfig, rec *models.RecordConfig) bool {
+	//fmt.Printf("DEBUG: matchAny: rec: %v %v\n", rec.GetLabel(), rec)
+	//for _, j := range uconfigs {
+	//	fmt.Printf("    DEBUG: uconfig = %+v\n", j)
+	//}
 	for _, uc := range uconfigs {
-		if !uc.LabelGlob.Match(rec.GetLabel()) {
-			continue
-		}
-		if _, ok := uc.RTypeMap[rec.Type]; !ok {
-			continue
-		}
-		if rec.Type == "TXT" {
-			if !uc.TargetGlob.Match(rec.GetTargetField()) {
-				continue
-			}
-		} else {
-			if !uc.TargetGlob.Match(rec.GetTargetTXTJoined()) {
-				continue
-			}
+		if matchLabel(uc.LabelGlob, rec.GetLabel()) &&
+			matchType(uc.RTypeMap, rec.Type) &&
+			matchTarget(uc.TargetGlob, rec.GetLabel()) {
+			//fmt.Printf(" true\n")
+			return true
 		}
 	}
+	//fmt.Printf(" false\n")
 	return false
+}
+func matchLabel(labelGlob glob.Glob, labelName string) bool {
+	if labelGlob == nil {
+		return true
+	}
+	return labelGlob.Match(labelName)
+}
+func matchType(typeMap map[string]struct{}, typeName string) bool {
+	if len(typeMap) == 0 {
+		return true
+	}
+	_, ok := typeMap[typeName]
+	return ok
+}
+func matchTarget(targetGlob glob.Glob, targetName string) bool {
+	if targetGlob == nil {
+		return true
+	}
+	return targetGlob.Match(targetName)
 }
 
 // func manyQueries(rcs models.Records, queries []*models.UnmanagedConfig) (result models.Records, err error) {
