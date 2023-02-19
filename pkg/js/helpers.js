@@ -661,9 +661,9 @@ function NO_PURGE(d) {
     d.KeepUnknown = true;
 }
 
-// ENSURE_ABSENT_HELPER()
-// Usage: A("foo", "1.2.3.4", ENSURE_ABSENT_HELPER())
-function ENSURE_ABSENT_HELPER() {
+// ENSURE_ABSENT_REC()
+// Usage: A("foo", "1.2.3.4", ENSURE_ABSENT_REC())
+function ENSURE_ABSENT_REC() {
     return function (r) {
         r.ensure_absent = true;
     };

@@ -162,7 +162,7 @@ foo3 IN A 3.3.3.3
 D("f.com", "none",
 	A("foo1", "1.1.1.1"),
 	A("foo2", "2.2.2.2"),
-	A("foo3", "3.3.3.3", ENSURE_ABSENT_HELPER()),
+	A("foo3", "3.3.3.3", ENSURE_ABSENT_REC()),
 {})
 `
 	handsoffHelper(t, existingZone, desiredJs, true, `
