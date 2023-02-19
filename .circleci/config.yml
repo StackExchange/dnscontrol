@@ -116,7 +116,7 @@ jobs:
           no_output_timeout: 32m
           command: |
             if [ -n "$<< parameters.provider >>_DOMAIN" ] ; then
-              gotestsum --junitfile ${TEST_RESULTS}/gotestsum-report.xml -- -timeout 30m -v -verbose -provider << parameters.provider >> -cfworkers=false
+              gotestsum --junitfile ${TEST_RESULTS}/gotestsum-report.xml -- -timeout 30m -v -verbose -provider << parameters.provider >> -cfworkers=false -diff2
             else
               echo "Skip test for << parameters.provider >> provider"
             fi
