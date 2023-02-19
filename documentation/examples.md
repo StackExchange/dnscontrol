@@ -92,28 +92,26 @@ D('example.com', REG, DnsProvider('R53'),
 )
 ```
 
-## Add comments along complex SPF records
-
-You normally can't put comments in the middle of a string,
-but with a little bit of creativity you can document
-each element of an SPF record this way.
+## Use SPF_BUILDER to add comments along SPF records
 
 ```javascript
-var SPF_RECORDS = TXT('@', [
-    'v=spf1',
-    'ip4:1.2.3.0/24',           // NY mail server
-    'ip4:4.3.2.0/24',           // CO mail server
-    'include:_spf.google.com',  // Google Apps
-    'include:mailgun.org',      // Mailgun (requested by Ticket#12345)
-    'include:servers.mcsv.net', // MailChimp (requested by Ticket#54321)
-    'include:sendgrid.net',     // SendGrid (requested by Ticket#23456)
-    'include:spf.mtasv.net',    // Desk.com (needed by IT team)
-    '~all'
-].join(' '));
-
-D('example.com', REG, DnsProvider('R53'),
-   SPF_RECORDS,
-)
+D("example.tld", REG, DSP, ...
+  A("@", "10.2.2.2"),
+  MX("@", "example.tld."),
+  SPF_BUILDER({
+    label: "@",
+    overflow: "_spf%d",
+    raw: "_rawspf",
+    ttl: "5m",
+    parts: [
+      "v=spf1",
+      "ip4:198.252.206.0/24", // ny-mail*
+      "ip4:192.111.0.0/24", // co-mail*
+      "include:_spf.google.com", // GSuite
+      "~all"
+    ]
+  }),
+);
 ```
 
 ## Dual DNS Providers
