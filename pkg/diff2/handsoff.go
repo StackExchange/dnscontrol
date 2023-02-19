@@ -97,6 +97,7 @@ The actual implementation combines this all into one loop:
     Append "foreign list" to "desired".
 */
 
+// handsoff processes the IGNORE_*/UNMANAGED/NO_PURGE/ENSURE_ABSENT features.
 func handsoff(
 	domain string,
 	existing, desired, absences models.Records,
@@ -146,6 +147,7 @@ func handsoff(
 	return desired, msgs, nil
 }
 
+// processIgnoreAndNoPurge processes the IGNORE_*()/UNMANAGED() and NO_PURGE/ENSURE_ABSENT_REC() features.
 func processIgnoreAndNoPurge(domain string, existing, desired, absences models.Records, unmanagedConfigs []*models.UnmanagedConfig, noPurge bool) (models.Records, models.Records) {
 	var ignorable, foreign models.Records
 	desiredDB := models.NewRecordDBFromRecords(desired, domain)
@@ -169,6 +171,8 @@ func processIgnoreAndNoPurge(domain string, existing, desired, absences models.R
 	return ignorable, foreign
 }
 
+// findConflicts takes a list of recs and a list of (compiled) UnmanagedConfigs
+// and reports if any of the recs match any of the configs.
 func findConflicts(uconfigs []*models.UnmanagedConfig, recs models.Records) models.Records {
 	var conflicts models.Records
 	for _, rec := range recs {
@@ -179,45 +183,43 @@ func findConflicts(uconfigs []*models.UnmanagedConfig, recs models.Records) mode
 	return conflicts
 }
 
+// compileUnmanagedConfigs prepares a slice of UnmanagedConfigs so they can be used.
 func compileUnmanagedConfigs(configs []*models.UnmanagedConfig) error {
-	//fmt.Printf("DEBUG: compileUnmanagedConfigs(%v)\n", configs)
 	var err error
 
 	for i := range configs {
 		c := configs[i]
 
-		if c.LabelPattern == "" {
-			c.LabelPattern = "*"
-		}
-		//fmt.Printf("DEBUG: compiling labelPattern: %q\n", c.LabelPattern)
-		c.LabelGlob, err = glob.Compile(c.LabelPattern)
-		if err != nil {
-			return err
+		if c.LabelPattern == "" || c.LabelPattern == "*" {
+			c.LabelGlob = nil // nil indicates "always match"
+		} else {
+			c.LabelGlob, err = glob.Compile(c.LabelPattern)
+			if err != nil {
+				return err
+			}
 		}
 
-		//fmt.Printf("DEBUG: compiling type: %q\n", c.RTypePattern)
 		c.RTypeMap = make(map[string]struct{})
 		if c.RTypePattern != "*" && c.RTypePattern != "" {
 			for _, part := range strings.Split(c.RTypePattern, ",") {
 				part = strings.TrimSpace(part)
-				//fmt.Printf("    DEBUG: part=%q\n", part)
 				c.RTypeMap[part] = struct{}{}
 			}
 		}
-		//fmt.Printf("DEBUG: compiling type DONE\n")
 
-		if c.TargetPattern == "" {
-			c.TargetPattern = "*"
-		}
-		//fmt.Printf("DEBUG: compiling targetPattern: %q\n", c.TargetPattern)
-		c.TargetGlob, err = glob.Compile(c.TargetPattern)
-		if err != nil {
-			return err
+		if c.TargetPattern == "" || c.TargetPattern == "*" {
+			c.TargetGlob = nil // nil indicates "always match"
+		} else {
+			c.TargetGlob, err = glob.Compile(c.TargetPattern)
+			if err != nil {
+				return err
+			}
 		}
 	}
 	return nil
 }
 
+// matchAll returns true if rec matches any of the uconfigs.
 func matchAll(uconfigs []*models.UnmanagedConfig, rec *models.RecordConfig) bool {
 	for _, uc := range uconfigs {
 		if matchLabel(uc.LabelGlob, rec.GetLabel()) &&
