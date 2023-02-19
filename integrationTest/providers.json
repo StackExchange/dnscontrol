@@ -206,6 +206,8 @@
     "token": "$VULTR_TOKEN"
   },
   "TRANSIP": {
+    "AccountName": "$TRANSIP_ACCOUNT_NAME",
+    "PrivateKey": "$TRANSIP_PRIVATE_KEY",
     "AccessToken": "$TRANSIP_ACCESS_TOKEN",
     "domain": "$TRANSIP_DOMAIN"
   },
