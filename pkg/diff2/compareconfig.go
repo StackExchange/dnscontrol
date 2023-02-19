@@ -109,10 +109,8 @@ func NewCompareConfig(origin string, existing, desired models.Records, compFn Co
 func (cc *CompareConfig) VerifyCNAMEAssertions() {
 
 	// In theory these assertions do not need to be tested as they test
-	// something that can not happen. In my head I've proved this to be
-	// true.  That said, a little paranoia is healthy.  Those familiar
-	// with the Therac-25 accident will agree:
-	// https://hackaday.com/2015/10/26/killed-by-a-machine-the-therac-25/
+	// something that can not happen. In my  I've proved this to be
+	// true.  That said, a little paranoia is healthy.
 
 	// According to the RFCs if a label has a CNAME, it can not have any other
 	// records at that label... even other CNAMEs.  Therefore, we need to be
@@ -141,15 +139,28 @@ func (cc *CompareConfig) VerifyCNAMEAssertions() {
 
 	for _, ld := range cc.ldata {
 		for j, td := range ld.tdata {
+
 			if td.rType == "CNAME" {
+
+				// This assertion doesn't hold for a site that permits a
+				// recordset with both CNAMEs and other records, such as
+				// Cloudflare.
+				// Therefore, we skip the test if we aren't deleting
+				// everything at the recordset or creating it from scratch.
+				if len(td.existingTargets) != 0 && len(td.desiredTargets) != 0 {
+					continue
+				}
+
 				if len(td.existingTargets) != 0 {
 					//fmt.Printf("DEBUG: cname in existing: index=%d\n", j)
 					if j != 0 {
 						panic("should not happen: (CNAME not in first position)")
 					}
 				}
+
 				if len(td.desiredTargets) != 0 {
 					//fmt.Printf("DEBUG: cname in desired: index=%d\n", j)
+					//fmt.Printf("DEBUG: highest: index=%d\n", j)
 					if j != highest(ld.tdata) {
 						panic("should not happen: (CNAME not in last position)")
 					}
@@ -215,8 +226,6 @@ func (cc *CompareConfig) addRecords(recs models.Records, storeInExisting bool) {
 
 	for _, rec := range z.Records {
 
-		//label := rec.NameFQDN
-		//rtype := rec.Type
 		key := rec.Key()
 		label := key.NameFQDN
 		rtype := key.Type
@@ -225,12 +234,10 @@ func (cc *CompareConfig) addRecords(recs models.Records, storeInExisting bool) {
 		// Are we seeing this label for the first time?
 		var labelIdx int
 		if _, ok := cc.labelMap[label]; !ok {
-			//fmt.Printf("DEBUG: I haven't see label=%v before. Adding.\n", label)
 			cc.labelMap[label] = true
 			cc.ldata = append(cc.ldata, &labelConfig{label: label})
 			labelIdx = highest(cc.ldata)
 		} else {
-			// find label in cc.ldata:
 			for k, v := range cc.ldata {
 				if v.label == label {
 					labelIdx = k
@@ -240,12 +247,9 @@ func (cc *CompareConfig) addRecords(recs models.Records, storeInExisting bool) {
 		}
 
 		// Are we seeing this label+rtype for the first time?
-		//key := rec.Key()
 		if _, ok := cc.keyMap[key]; !ok {
-			//fmt.Printf("DEBUG: I haven't see key=%v before. Adding.\n", key)
 			cc.keyMap[key] = true
 			x := cc.ldata[labelIdx]
-			//fmt.Printf("DEBUG: appending rtype=%v\n", rtype)
 			x.tdata = append(x.tdata, &rTypeConfig{rType: rtype})
 		}
 		var rtIdx int
@@ -256,7 +260,6 @@ func (cc *CompareConfig) addRecords(recs models.Records, storeInExisting bool) {
 				break
 			}
 		}
-		//fmt.Printf("DEBUG: found rtype=%v at index %d\n", rtype, rtIdx)
 
 		// Now it is safe to add/modify the records.
 

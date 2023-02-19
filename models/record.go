@@ -184,6 +184,9 @@ func (rc *RecordConfig) UnmarshalJSON(b []byte) error {
 		TxtStrings       []string          `json:"txtstrings,omitempty"` // TxtStrings stores all strings (including the first). Target stores only the first one.
 		R53Alias         map[string]string `json:"r53_alias,omitempty"`
 		AzureAlias       map[string]string `json:"azure_alias,omitempty"`
+
+		EnsureAbsent bool `json:"ensure_absent,omitempty"` // Override NO_PURGE and delete this record
+
 		// NB(tlim): If anyone can figure out how to do this without listing all
 		// the fields, please let us know!
 	}{}
