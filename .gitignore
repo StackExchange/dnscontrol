@@ -6,7 +6,6 @@ dnscontrol
 /dnsconfig.js
 /creds.json
 ExternalDNS
-docs/_site
 powershell.log
 integrationTest/env.sh
 integrationTest/.env
@@ -24,5 +23,6 @@ stack.sh
 .DS_Store
 .vscode/launch.json
 .jekyll-cache
+types-dnscontrol.d.ts
 
 dist/

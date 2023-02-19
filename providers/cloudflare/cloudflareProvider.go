@@ -154,11 +154,11 @@ func (c *cloudflareProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*m
 		return nil, err
 	}
 
-	id, err := c.getDomainID(dc.Name)
+	domainID, err := c.getDomainID(dc.Name)
 	if err != nil {
 		return nil, err
 	}
-	records, err := c.getRecordsForDomain(id, dc.Name)
+	records, err := c.getRecordsForDomain(domainID, dc.Name)
 	if err != nil {
 		return nil, err
 	}
@@ -176,7 +176,7 @@ func (c *cloudflareProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*m
 	}
 
 	if c.manageRedirects {
-		prs, err := c.getPageRules(id, dc.Name)
+		prs, err := c.getPageRules(domainID, dc.Name)
 		//printer.Printf("GET PAGE RULES:\n")
 		//for i, p := range prs {
 		//	printer.Printf("%03d: %q\n", i, p.GetTargetField())
@@ -188,7 +188,7 @@ func (c *cloudflareProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*m
 	}
 
 	if c.manageWorkers {
-		wrs, err := c.getWorkerRoutes(id, dc.Name)
+		wrs, err := c.getWorkerRoutes(domainID, dc.Name)
 		if err != nil {
 			return nil, err
 		}
@@ -217,14 +217,14 @@ func (c *cloudflareProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*m
 	//txtutil.SplitSingleLongTxt(dc.Records) // Autosplit long TXT records
 	// Don't split.
 	// Cloudflare's API only supports one TXT string of any non-zero length. No
-	// multiple strings (TXTMulti).
+	// multiple strings.
 	// When serving the DNS record, it splits strings >255 octets into
 	// individual segments of 255 each. However that is hidden from the API.
 	// Therefore, whether the string is 1 octet or thousands, just store it as
 	// one string in the first element of .TxtStrings.
 
 	var corrections []*models.Correction
-	if !diff2.EnableDiff2 || true { // Remove "|| true" when diff2 version arrives
+	if !diff2.EnableDiff2 {
 
 		differ := diff.New(dc, getProxyMetadata)
 		_, create, del, mod, err := differ.IncrementalDiff(records)
@@ -239,15 +239,15 @@ func (c *cloudflareProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*m
 			if ex.Type == "PAGE_RULE" {
 				corrections = append(corrections, &models.Correction{
 					Msg: d.String(),
-					F:   func() error { return c.deletePageRule(ex.Original.(cloudflare.PageRule).ID, id) },
+					F:   func() error { return c.deletePageRule(ex.Original.(cloudflare.PageRule).ID, domainID) },
 				})
 			} else if ex.Type == "WORKER_ROUTE" {
 				corrections = append(corrections, &models.Correction{
 					Msg: d.String(),
-					F:   func() error { return c.deleteWorkerRoute(ex.Original.(cloudflare.WorkerRoute).ID, id) },
+					F:   func() error { return c.deleteWorkerRoute(ex.Original.(cloudflare.WorkerRoute).ID, domainID) },
 				})
 			} else {
-				corr := c.deleteRec(ex.Original.(cloudflare.DNSRecord), id)
+				corr := c.deleteRec(ex.Original.(cloudflare.DNSRecord), domainID)
 				// DS records must always have a corresponding NS record.
 				// Therefore, we remove DS records before any NS records.
 				if d.Existing.Type == "DS" {
@@ -262,15 +262,15 @@ func (c *cloudflareProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*m
 			if des.Type == "PAGE_RULE" {
 				corrections = append(corrections, &models.Correction{
 					Msg: d.String(),
-					F:   func() error { return c.createPageRule(id, des.GetTargetField()) },
+					F:   func() error { return c.createPageRule(domainID, des.GetTargetField()) },
 				})
 			} else if des.Type == "WORKER_ROUTE" {
 				corrections = append(corrections, &models.Correction{
 					Msg: d.String(),
-					F:   func() error { return c.createWorkerRoute(id, des.GetTargetField()) },
+					F:   func() error { return c.createWorkerRoute(domainID, des.GetTargetField()) },
 				})
 			} else {
-				corr := c.createRec(des, id)
+				corr := c.createRec(des, domainID)
 				// DS records must always have a corresponding NS record.
 				// Therefore, we create NS records before any DS records.
 				if d.Desired.Type == "NS" {
@@ -287,13 +287,15 @@ func (c *cloudflareProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*m
 			if rec.Type == "PAGE_RULE" {
 				corrections = append(corrections, &models.Correction{
 					Msg: d.String(),
-					F:   func() error { return c.updatePageRule(ex.Original.(cloudflare.PageRule).ID, id, rec.GetTargetField()) },
+					F: func() error {
+						return c.updatePageRule(ex.Original.(cloudflare.PageRule).ID, domainID, rec.GetTargetField())
+					},
 				})
 			} else if rec.Type == "WORKER_ROUTE" {
 				corrections = append(corrections, &models.Correction{
 					Msg: d.String(),
 					F: func() error {
-						return c.updateWorkerRoute(ex.Original.(cloudflare.WorkerRoute).ID, id, rec.GetTargetField())
+						return c.updateWorkerRoute(ex.Original.(cloudflare.WorkerRoute).ID, domainID, rec.GetTargetField())
 					},
 				})
 			} else {
@@ -301,13 +303,13 @@ func (c *cloudflareProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*m
 				proxy := e.Proxiable && rec.Metadata[metaProxy] != "off"
 				corrections = append(corrections, &models.Correction{
 					Msg: d.String(),
-					F:   func() error { return c.modifyRecord(id, e.ID, proxy, rec) },
+					F:   func() error { return c.modifyRecord(domainID, e.ID, proxy, rec) },
 				})
 			}
 		}
 
 		// Add universalSSL change to corrections when needed
-		if changed, newState, err := c.checkUniversalSSL(dc, id); err == nil && changed {
+		if changed, newState, err := c.checkUniversalSSL(dc, domainID); err == nil && changed {
 			var newStateString string
 			if newState {
 				newStateString = "enabled"
@@ -316,17 +318,154 @@ func (c *cloudflareProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*m
 			}
 			corrections = append(corrections, &models.Correction{
 				Msg: fmt.Sprintf("Universal SSL will be %s for this domain.", newStateString),
-				F:   func() error { return c.changeUniversalSSL(id, newState) },
+				F:   func() error { return c.changeUniversalSSL(domainID, newState) },
 			})
 		}
 
 		return corrections, nil
 	}
 
-	// Insert Future diff2 version here.
+	// Cloudflare is a "ByRecord" API.
+	instructions, err := diff2.ByRecord(records, dc, genComparable)
+	if err != nil {
+		return nil, err
+	}
+
+	for _, inst := range instructions {
+
+		addToFront := false
+		var corrs []*models.Correction
+
+		domainID := domainID
+		msg := inst.Msgs[0]
+
+		switch inst.Type {
+		case diff2.CREATE:
+			createRec := inst.New[0]
+			corrs = c.mkCreateCorrection(createRec, domainID, msg)
+			// DS records must always have a corresponding NS record.
+			// Therefore, we create NS records before any DS records.
+			addToFront = createRec.Type == "NS"
+		case diff2.CHANGE:
+			newrec := inst.New[0]
+			oldrec := inst.Old[0]
+			corrs = c.mkChangeCorrection(oldrec, newrec, domainID, msg)
+		case diff2.DELETE:
+			deleteRec := inst.Old[0]
+			deleteRecType := deleteRec.Type
+			deleteRecOrig := deleteRec.Original
+			corrs = c.mkDeleteCorrection(deleteRecType, deleteRecOrig, domainID, msg)
+			// DS records must always have a corresponding NS record.
+			// Therefore, we remove DS records before any NS records.
+			addToFront = deleteRecType == "DS"
+		}
+
+		if addToFront {
+			corrections = append(corrs, corrections...)
+		} else {
+			corrections = append(corrections, corrs...)
+		}
+	}
+
+	// Add universalSSL change when needed
+	if changed, newState, err := c.checkUniversalSSL(dc, domainID); err == nil && changed {
+		var newStateString string
+		if newState {
+			newStateString = "enabled"
+		} else {
+			newStateString = "disabled"
+		}
+		corrections = append(corrections, &models.Correction{
+			Msg: fmt.Sprintf("Universal SSL will be %s for this domain.", newStateString),
+			F:   func() error { return c.changeUniversalSSL(domainID, newState) },
+		})
+	}
 
 	return corrections, nil
+}
 
+func genComparable(rec *models.RecordConfig) string {
+	//fmt.Printf("DEBUG: genComparable called %v:%v meta=%+v\n", rec.Type, rec.GetLabel(), rec.Metadata)
+	if rec.Type == "A" || rec.Type == "AAAA" || rec.Type == "CNAME" {
+		proxy := rec.Metadata[metaProxy]
+		if proxy != "" {
+			//return "proxy=" + rec.Metadata[metaProxy]
+			return "proxy=" + proxy
+			//return fmt.Sprintf("proxy:%v=%s", rec.Type, proxy)
+		}
+	}
+	return ""
+}
+
+func (c *cloudflareProvider) mkCreateCorrection(newrec *models.RecordConfig, domainID, msg string) []*models.Correction {
+	switch newrec.Type {
+	case "PAGE_RULE":
+		return []*models.Correction{{
+			Msg: msg,
+			F:   func() error { return c.createPageRule(domainID, newrec.GetTargetField()) },
+		}}
+	case "WORKER_ROUTE":
+		return []*models.Correction{{
+			Msg: msg,
+			F:   func() error { return c.createWorkerRoute(domainID, newrec.GetTargetField()) },
+		}}
+	default:
+		return c.createRecDiff2(newrec, domainID, msg)
+	}
+}
+
+func (c *cloudflareProvider) mkChangeCorrection(oldrec, newrec *models.RecordConfig, domainID string, msg string) []*models.Correction {
+	switch newrec.Type {
+	case "PAGE_RULE":
+		return []*models.Correction{{
+			Msg: msg,
+			F: func() error {
+				return c.updatePageRule(oldrec.Original.(cloudflare.PageRule).ID, domainID, newrec.GetTargetField())
+			},
+		}}
+	case "WORKER_ROUTE":
+		return []*models.Correction{{
+			Msg: msg,
+			F: func() error {
+				return c.updateWorkerRoute(oldrec.Original.(cloudflare.WorkerRoute).ID, domainID, newrec.GetTargetField())
+			},
+		}}
+	default:
+		e := oldrec.Original.(cloudflare.DNSRecord)
+		proxy := e.Proxiable && newrec.Metadata[metaProxy] != "off"
+		return []*models.Correction{{
+			Msg: msg,
+			F:   func() error { return c.modifyRecord(domainID, e.ID, proxy, newrec) },
+		}}
+	}
+}
+
+func (c *cloudflareProvider) mkDeleteCorrection(recType string, origRec any, domainID string, msg string) []*models.Correction {
+	var idTxt string
+	switch recType {
+	case "PAGE_RULE":
+		idTxt = origRec.(cloudflare.PageRule).ID
+	case "WORKER_ROUTE":
+		idTxt = origRec.(cloudflare.WorkerRoute).ID
+	default:
+		idTxt = origRec.(cloudflare.DNSRecord).ID
+	}
+	msg = msg + fmt.Sprintf(" id=%v", idTxt)
+
+	correction := &models.Correction{
+		Msg: msg,
+		F: func() error {
+			switch recType {
+			case "PAGE_RULE":
+				return c.deletePageRule(origRec.(cloudflare.PageRule).ID, domainID)
+			case "WORKER_ROUTE":
+				return c.deleteWorkerRoute(origRec.(cloudflare.WorkerRoute).ID, domainID)
+			default:
+				return c.deleteDNSRecord(origRec.(cloudflare.DNSRecord), domainID)
+			}
+		},
+	}
+	return []*models.Correction{correction}
 }
 
 func checkNSModifications(dc *models.DomainConfig) {
@@ -420,8 +559,8 @@ func (c *cloudflareProvider) preprocessConfig(dc *models.DomainConfig) error {
 		if rec.TTL == 0 || rec.TTL == 300 {
 			rec.TTL = 1
 		}
-		if rec.TTL != 1 && rec.TTL < 120 {
-			rec.TTL = 120
+		if rec.TTL != 1 && rec.TTL < 60 {
+			rec.TTL = 60
 		}
 
 		if rec.Type != "A" && rec.Type != "CNAME" && rec.Type != "AAAA" && rec.Type != "ALIAS" {
@@ -669,12 +808,23 @@ func (c *cloudflareProvider) nativeToRecord(domain string, cr cloudflare.DNSReco
 	rc := &models.RecordConfig{
 		TTL:      uint32(cr.TTL),
 		Original: cr,
+		Metadata: map[string]string{},
 	}
 	rc.SetLabelFromFQDN(cr.Name, domain)
 
 	// workaround for https://github.com/StackExchange/dnscontrol/issues/446
 	if cr.Type == "SPF" {
 		cr.Type = "TXT"
+	}
+
+	if cr.Type == "A" || cr.Type == "AAAA" || cr.Type == "CNAME" {
+		if cr.Proxied != nil {
+			if *(cr.Proxied) {
+				rc.Metadata[metaProxy] = "on"
+			} else {
+				rc.Metadata[metaProxy] = "off"
+			}
+		}
 	}
 
 	switch rType := cr.Type; rType { // #rtype_variations
@@ -720,8 +870,8 @@ func getProxyMetadata(r *models.RecordConfig) map[string]string {
 	}
 }
 
-// EnsureDomainExists returns an error of domain does not exist.
-func (c *cloudflareProvider) EnsureDomainExists(domain string) error {
+// EnsureZoneExists creates a zone if it does not exist
+func (c *cloudflareProvider) EnsureZoneExists(domain string) error {
 	if c.domainIndex == nil {
 		if err := c.fetchDomainList(); err != nil {
 			return err

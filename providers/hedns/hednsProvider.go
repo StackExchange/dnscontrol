@@ -156,8 +156,8 @@ func (c *hednsProvider) ListZones() ([]string, error) {
 	return domains, err
 }
 
-// EnsureDomainExists creates the domain if it does not exist.
-func (c *hednsProvider) EnsureDomainExists(domain string) error {
+// EnsureZoneExists creates a zone if it does not exist
+func (c *hednsProvider) EnsureZoneExists(domain string) error {
 	domains, err := c.ListZones()
 	if err != nil {
 		return err
@@ -208,9 +208,8 @@ func (c *hednsProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*models
 	// Fallback to legacy mode if diff2 is not enabled, remove when diff1 is deprecated.
 	if !diff2.EnableDiff2 {
 		return c.getDiff1DomainCorrections(dc, zoneID, prunedRecords)
-	} else {
-		return c.getDiff2DomainCorrections(dc, zoneID, prunedRecords)
 	}
+	return c.getDiff2DomainCorrections(dc, zoneID, prunedRecords)
 }
 
 func (c *hednsProvider) getDiff1DomainCorrections(dc *models.DomainConfig, zoneID uint64, records models.Records) ([]*models.Correction, error) {
@@ -260,6 +259,8 @@ func (c *hednsProvider) getDiff2DomainCorrections(dc *models.DomainConfig, zoneI
 	var corrections []*models.Correction
 	for _, change := range changes {
 		switch change.Type {
+		case diff2.REPORT:
+			corrections = append(corrections, &models.Correction{Msg: change.MsgsJoined})
 		case diff2.CREATE:
 			record := change.New[0]
 			corrections = append(corrections, &models.Correction{
@@ -285,6 +286,8 @@ func (c *hednsProvider) getDiff2DomainCorrections(dc *models.DomainConfig, zoneI
 					return c.deleteZoneRecord(zoneID, recordID)
 				},
 			})
+		default:
+			panic(fmt.Sprintf("unhandled change.Type %s", change.Type))
 		}
 	}
 

@@ -3,6 +3,7 @@ package normalize
 import (
 	"fmt"
 	"net"
+	"sort"
 	"strings"
 
 	"github.com/StackExchange/dnscontrol/v3/models"
@@ -10,6 +11,7 @@ import (
 	"github.com/StackExchange/dnscontrol/v3/providers"
 	"github.com/miekg/dns"
 	"github.com/miekg/dns/dnsutil"
+	"golang.org/x/exp/slices"
 )
 
 // Returns false if target does not validate.
@@ -44,7 +46,7 @@ func checkTarget(target string) error {
 	}
 	// If it contains a ".", it must end in a ".".
 	if strings.ContainsRune(target, '.') && target[len(target)-1] != '.' {
-		return fmt.Errorf("target (%v) must end with a (.) [https://stackexchange.github.io/dnscontrol/why-the-dot]", target)
+		return fmt.Errorf("target (%v) must end with a (.) [https://docs.dnscontrol.org/language-reference/why-the-dot]", target)
 	}
 	return nil
 }
@@ -126,13 +128,13 @@ func checkLabel(label string, rType string, target, domain string, meta map[stri
 	}
 	// Don't warn for records that start with _
 	// See https://github.com/StackExchange/dnscontrol/issues/829
-	if strings.HasPrefix(label, "_") || strings.Contains(label, "._") {
+	if strings.HasPrefix(label, "_") || strings.Contains(label, "._") || strings.HasPrefix(label, "sql-") {
 		return nil
 	}
 
 	// Otherwise, warn.
 	if strings.ContainsRune(label, '_') {
-		return Warning{fmt.Errorf("label %s.%s contains an underscore", label, domain)}
+		return Warning{fmt.Errorf("label %s.%s contains \"_\" (can't be used in a URL)", label, domain)}
 	}
 
 	return nil
@@ -195,6 +197,10 @@ func checkTargets(rec *models.RecordConfig, domain string) (errs []error) {
 		check(checkTarget(target))
 		if label == "@" {
 			check(fmt.Errorf("cannot create NS record for bare domain. Use NAMESERVER instead"))
+		}
+	case "URLFWD":
+		if len(strings.Fields(target)) != 5 {
+			check(fmt.Errorf("record should follow format: \"from to redirectType pathForwardingMode queryForwarding\""))
 		}
 	case "PTR":
 		check(checkTarget(target))
@@ -331,6 +337,7 @@ func ValidateAndNormalizeConfig(config *models.DNSConfig) (errs []error) {
 		// Normalize Records.
 		models.PostProcessRecords(domain.Records)
 		for _, rec := range domain.Records {
+
 			if rec.TTL == 0 {
 				rec.TTL = models.DefaultTTL
 			}
@@ -364,6 +371,7 @@ func ValidateAndNormalizeConfig(config *models.DNSConfig) (errs []error) {
 			if err := checkLabel(rec.GetLabel(), rec.Type, rec.GetTargetField(), domain.Name, rec.Metadata); err != nil {
 				errs = append(errs, err)
 			}
+
 			if errs2 := checkTargets(rec, domain.Name); errs2 != nil {
 				errs = append(errs, errs2...)
 			}
@@ -575,9 +583,10 @@ func checkDuplicates(records []*models.RecordConfig) (errs []error) {
 	return errs
 }
 
-func uniq(s []uint32) []uint32 {
-	seen := make(map[uint32]struct{})
-	var result []uint32
+// uniq returns the unique values in a map. The result is sorted lexigraphically.
+func uniq(s []string) []string {
+	seen := make(map[string]struct{})
+	var result []string
 
 	for _, k := range s {
 		if _, ok := seen[k]; !ok {
@@ -585,25 +594,111 @@ func uniq(s []uint32) []uint32 {
 			result = append(result, k)
 		}
 	}
+	sort.Strings(result)
 	return result
 }
 
 func checkLabelHasMultipleTTLs(records []*models.RecordConfig) (errs []error) {
-	m := make(map[string][]uint32)
-	for _, r := range records {
-		label := fmt.Sprintf("%s %s", r.GetLabelFQDN(), r.Type)
+	// The RFCs say that all records at a particular label should have
+	// the same TTL.  Most providers don't care, and if they do the
+	// dnscontrol provider code usually picks the lowest TTL for all of them.
 
-		// collect the TTLs at this label.
-		m[label] = append(m[label], r.TTL)
+	// General algorithm:
+	// gather all records at a particular label.
+	//     has[label] -> ttl -> type(s)
+	// for each label, if there is more than one ttl, output ttl:A/TXT ttl:TXT/NS
+
+	// Find the inconsistencies:
+	m := make(map[string]map[uint32]map[string]bool)
+	for _, r := range records {
+		label := r.GetLabelFQDN()
+		ttl := r.TTL
+		rtype := r.Type
+
+		if _, ok := m[label]; !ok {
+			m[label] = make(map[uint32]map[string]bool)
+		}
+		if _, ok := m[label][ttl]; !ok {
+			m[label][ttl] = make(map[string]bool)
+		}
+		m[label][ttl][rtype] = true
 	}
 
-	for label := range m {
-		// if after the uniq() pass we still have more than one ttl, it means we have multiple TTLs for that label
-		if len(uniq(m[label])) > 1 {
-			errs = append(errs, Warning{fmt.Errorf("multiple TTLs detected for: %s. This should be avoided", label)})
+	labels := make([]string, len(m))
+	i := 0
+	for k := range m {
+		labels[i] = k
+		i++
+	}
+
+	sort.Strings(labels)
+	slices.Compact(labels)
+
+	// Less clear error message:
+	// for _, label := range labels {
+	// 	if len(m[label]) > 1 {
+	// 		result := ""
+	// 		for ttl, v := range m[label] {
+	// 			result += fmt.Sprintf(" %d:", ttl)
+
+	// 			rtypes := make([]string, len(v))
+	// 			i := 0
+	// 			for k := range v {
+	// 				rtypes[i] = k
+	// 				i++
+	// 			}
+
+	// 			result += strings.Join(rtypes, "/")
+	// 		}
+	// 		errs = append(errs, Warning{fmt.Errorf("inconsistent TTLs at %q:%v", label, result)})
+	// 	}
+	// }
+
+	// Invert for a more clear error message:
+	for _, label := range labels {
+		if len(m[label]) > 1 {
+			r := make(map[string]map[uint32]bool)
+			for ttl, rtypes := range m[label] {
+				for rtype := range rtypes {
+					if _, ok := r[rtype]; !ok {
+						r[rtype] = make(map[uint32]bool)
+					}
+					r[rtype][ttl] = true
+				}
+			}
+			result := formatInconsistency(r)
+			errs = append(errs, Warning{fmt.Errorf("inconsistent TTLs at %q: %s", label, result)})
 		}
 	}
+
 	return errs
+}
+
+func formatInconsistency(r map[string]map[uint32]bool) string {
+	var rtypeResult []string
+	for rtype, ttlsMap := range r {
+
+		ttlList := make([]int, len(ttlsMap))
+		i := 0
+		for k := range ttlsMap {
+			ttlList[i] = int(k)
+			i++
+		}
+
+		sort.Ints(ttlList)
+
+		rtypeResult = append(rtypeResult, fmt.Sprintf("%s:%v", rtype, commaSepInts(ttlList)))
+	}
+	sort.Strings(rtypeResult)
+	return strings.Join(rtypeResult, " ")
+}
+
+func commaSepInts(list []int) string {
+	slist := make([]string, len(list))
+	for i, v := range list {
+		slist[i] = fmt.Sprintf("%d", v)
+	}
+	return strings.Join(slist, ",")
 }
 
 // We pull this out of checkProviderCapabilities() so that it's visible within

@@ -19,13 +19,13 @@ providers/gcore @xddxdd
 providers/gcloud @riyadhalnur
 providers/hedns @rblenkinsopp
 providers/hetzner @das7pad
-providers/hexonet @papakai
+providers/hexonet @KaiSchwarz-cnic
 providers/hostingde @juliusrickert
 providers/internetbs @pragmaton
 providers/inwx @patschi
 providers/msdns @tlimoncelli
 providers/linode @koesie10
-providers/namecheap @captncraig
+providers/namecheap @willpower232
 # providers/namedotcom NEEDS VOLUNTEER
 providers/netcup @kordianbruck
 providers/netlify @SphericalKat
