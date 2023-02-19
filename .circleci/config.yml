@@ -50,7 +50,8 @@ jobs:
 
       - run:
           name: Build binaries
-          command: goreleaser build --snapshot
+          # If there is no tag run a snapshot build
+          command: goreleaser build<<^pipeline.git.tag>> --snapshot<</pipeline.git.tag>>
 
       - run:
           name: Enforce Go Formatted Code
