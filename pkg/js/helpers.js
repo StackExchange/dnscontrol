@@ -615,7 +615,7 @@ function IGNORE_NAME(name, rTypes) {
         d.unmanaged.push({
             label_pattern: name,
             rType_pattern: rTypes,
-            target_pattern: '*',
+            target_pattern: '*', // TODO(tlim): Comment this out. Fix tests.
         });
     };
 }
@@ -633,7 +633,7 @@ function IGNORE_TARGET(target, rType) {
     return function (d) {
         d.ignored_targets.push({ pattern: target, type: rType });
         d.unmanaged.push({
-            label_pattern: '*',
+            label_pattern: '*', // TODO(tlim): Comment this out. Fix tests.
             rType_pattern: rType,
             target_pattern: target,
         });
@@ -667,6 +667,13 @@ function ENSURE_ABSENT_HELPER() {
     return function (r) {
         r.ensure_absent = true;
     };
+}
+
+// ENSURE_ABSENT()
+// Usage: ENSURE_ABSENT(A("foo", "1.2.3.4"))
+function ENSURE_ABSENT(r) {
+  //console.log(r);
+  return r;
 }
 
 // AUTODNSSEC
