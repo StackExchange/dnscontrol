@@ -250,7 +250,7 @@ func (c *axfrddnsProvider) FetchZoneRecords(domain string) ([]dns.RR, error) {
 			if err == "dns: bad xfr rcode: 9" {
 				err = "NOT AUTH (9)"
 			}
-			return nil, fmt.Errorf("[Error] AXFRDDNS: nameserver refused to transfer the zone: %s", err)
+			return nil, fmt.Errorf("[Error] AXFRDDNS: nameserver refused to transfer the zone %s: %s", domain, err)
 		}
 		rawRecords = append(rawRecords, msg.RR...)
 	}
