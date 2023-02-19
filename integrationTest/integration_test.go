@@ -1022,6 +1022,12 @@ func makeTests(t *testing.T) []*TestGroup {
 			tc("Null Target", srv("_sip._tcp", 15, 65, 75, ".")),
 		),
 
+		// https://github.com/StackExchange/dnscontrol/issues/2066
+		testgroup("SRV", requires(providers.CanUseSRV),
+			tc("Create SRV333", ttl(srv("_sip._tcp", 5, 6, 7, "foo.com."), 333)),
+			tc("Change TTL999", ttl(srv("_sip._tcp", 5, 6, 7, "foo.com."), 999)),
+		),
+
 		testgroup("SSHFP",
 			requires(providers.CanUseSSHFP),
 			tc("SSHFP record",

@@ -48,7 +48,7 @@ require (
 	github.com/robertkrimen/otto v0.2.1
 	github.com/softlayer/softlayer-go v1.1.0
 	github.com/stretchr/testify v1.8.1
-	github.com/transip/gotransip/v6 v6.17.0
+	github.com/transip/gotransip/v6 v6.18.0
 	github.com/urfave/cli/v2 v2.24.4
 	github.com/xddxdd/ottoext v0.0.0-20221109171055-210517fa4419
 	golang.org/x/net v0.7.0
@@ -59,6 +59,7 @@ require (
 
 require (
 	github.com/G-Core/gcore-dns-sdk-go v0.2.3
+	github.com/fatih/color v1.13.0
 	github.com/fbiville/markdown-table-formatter v0.3.0
 	github.com/google/shlex v0.0.0-20191202100458-e7afc7fbc510
 	github.com/kylelemons/godebug v1.1.0
@@ -115,6 +116,7 @@ require (
 	github.com/juju/errors v0.0.0-20200330140219-3fe23663418f // indirect
 	github.com/juju/testing v0.0.0-20210324180055-18c50b0c2098 // indirect
 	github.com/kolo/xmlrpc v0.0.0-20220921171641-a4b6fa1dd06b // indirect
+	github.com/mattn/go-colorable v0.1.12 // indirect
 	github.com/mitchellh/go-homedir v1.1.0 // indirect
 	github.com/mitchellh/mapstructure v1.5.0 // indirect
 	github.com/patrickmn/go-cache v2.1.0+incompatible // indirect
