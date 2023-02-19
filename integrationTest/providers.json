@@ -142,7 +142,8 @@
   "NAMECHEAP": {
     "apikey": "$NAMECHEAP_KEY",
     "apiuser": "$NAMECHEAP_USER",
-    "domain": "$NAMECHEAP_DOMAIN"
+    "domain": "$NAMECHEAP_DOMAIN",
+    "BaseURL": "$NAMECHEAP_BASEURL"
   },
   "NAMEDOTCOM": {
     "apikey": "$NAMEDOTCOM_KEY",
