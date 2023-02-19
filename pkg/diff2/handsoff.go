@@ -142,13 +142,10 @@ func handsoff(
 func ignoreOrNoPurge(domain string, existing, desired, absences models.Records, unmanagedConfigs []*models.UnmanagedConfig, noPurge bool) (models.Records, models.Records) {
 	var ignorable, foreign models.Records
 	desiredDB := models.NewRecordDBFromRecords(desired, domain)
-	//fmt.Printf("DEBUG: start absent\n")
 	absentDB := models.NewRecordDBFromRecords(absences, domain)
 	compileUnmanagedConfigs(unmanagedConfigs)
-	//fmt.Printf("DEBUG: setup done\n")
 	for _, rec := range existing {
 		if matchAny(unmanagedConfigs, rec) {
-			//fmt.Printf("DEBUG: IGNORING: %v %v\n", rec.GetLabelFQDN(), rec)
 			ignorable = append(ignorable, rec)
 		} else {
 			if noPurge {
@@ -156,7 +153,6 @@ func ignoreOrNoPurge(domain string, existing, desired, absences models.Records, 
 				if !desiredDB.ContainsLT(rec) {
 					// Yes, but not if it is an exception!
 					if !absentDB.ContainsLT(rec) {
-						//fmt.Printf("DEBUG: FOREIGN: %v %v\n", rec.GetLabelFQDN(), rec)
 						foreign = append(foreign, rec)
 					}
 				}
@@ -216,19 +212,13 @@ func compileUnmanagedConfigs(configs []*models.UnmanagedConfig) error {
 }
 
 func matchAny(uconfigs []*models.UnmanagedConfig, rec *models.RecordConfig) bool {
-	//fmt.Printf("DEBUG: matchAny: rec: %v %v\n", rec.GetLabel(), rec)
-	//for _, j := range uconfigs {
-	//	fmt.Printf("    DEBUG: uconfig = %+v\n", j)
-	//}
 	for _, uc := range uconfigs {
 		if matchLabel(uc.LabelGlob, rec.GetLabel()) &&
 			matchType(uc.RTypeMap, rec.Type) &&
 			matchTarget(uc.TargetGlob, rec.GetLabel()) {
-			//fmt.Printf(" true\n")
 			return true
 		}
 	}
-	//fmt.Printf(" false\n")
 	return false
 }
 func matchLabel(labelGlob glob.Glob, labelName string) bool {
@@ -250,76 +240,3 @@ func matchTarget(targetGlob glob.Glob, targetName string) bool {
 	}
 	return targetGlob.Match(targetName)
 }
-
-// func manyQueries(rcs models.Records, queries []*models.UnmanagedConfig) (result models.Records, err error) {
-
-// 	for _, q := range queries {
-
-// 		lab := q.Label
-// 		if lab == "" {
-// 			lab = "*"
-// 		}
-// 		glabel, err := glob.Compile(lab)
-// 		if err != nil {
-// 			return nil, err
-// 		}
-
-// 		targ := q.Target
-// 		if targ == "" {
-// 			targ = "*"
-// 		}
-// 		gtarget, err := glob.Compile(targ)
-// 		if err != nil {
-// 			return nil, err
-// 		}
-
-// 		hasRType := compileTypeGlob(q.RType)
-
-// 		for _, rc := range rcs {
-// 			if match(rc, glabel, gtarget, hasRType) {
-// 				result = append(result, rc)
-// 			}
-// 		}
-// 	}
-// 	return result, nil
-// }
-
-// func compileTypeGlob(g string) map[string]bool {
-// 	m := map[string]bool{}
-// 	for _, j := range strings.Split(g, ",") {
-// 		m[strings.TrimSpace(j)] = true
-// 	}
-// 	return m
-// }
-
-// func match(rc *models.RecordConfig, glabel, gtarget glob.Glob, hasRType map[string]bool) bool {
-// 	//printer.Printf("DEBUG: match(%v, %v, %v, %v)\n", rc.NameFQDN, glabel, gtarget, hasRType)
-
-// 	// _ = glabel.Match(rc.NameFQDN)
-// 	// _ = matchType(rc.Type, hasRType)
-// 	// x := rc.GetTargetField()
-// 	// _ = gtarget.Match(x)
-
-// 	if !glabel.Match(rc.NameFQDN) {
-// 		//printer.Printf("DEBUG: REJECTED LABEL: %s:%v\n", rc.NameFQDN, glabel)
-// 		return false
-// 	} else if !matchType(rc.Type, hasRType) {
-// 		//printer.Printf("DEBUG: REJECTED TYPE: %s:%v\n", rc.Type, hasRType)
-// 		return false
-// 	} else if gtarget == nil {
-// 		return true
-// 	} else if !gtarget.Match(rc.GetTargetField()) {
-// 		//printer.Printf("DEBUG: REJECTED TARGET: %v:%v\n", rc.GetTargetField(), gtarget)
-// 		return false
-// 	}
-// 	return true
-// }
-
-// func matchType(s string, hasRType map[string]bool) bool {
-// 	//printer.Printf("DEBUG: matchType map=%v\n", hasRType)
-// 	if len(hasRType) == 0 {
-// 		return true
-// 	}
-// 	_, ok := hasRType[s]
-// 	return ok
-// }
