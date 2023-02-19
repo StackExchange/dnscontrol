@@ -11,6 +11,7 @@ a provider that supports it, we'd love your contribution to ensure it works corr
 
 If a feature is definitively not supported for whatever reason, we would also like a PR to clarify why it is not supported, and fill in this entire matrix.
 
+<!-- provider-matrix-start -->
 | Provider name | Official Support | DNS Provider | Registrar | ALIAS | AUTODNSSEC | CAA | PTR | NAPTR | SOA | SRV | SSHFP | TLSA | DS | dual host | create-domains | NO_PURGE | get-zones |
 | ------------- | ---------------- | ------------ | --------- | ----- | ---------- | --- | --- | ----- | --- | --- | ----- | ---- | -- | --------- | -------------- | -------- | --------- |
 | `AKAMAIEDGEDNS` | ❌ | ✅ | ❌ | ❌ | ✅ | ✅ | ✅ | ✅ | ❌ | ✅ | ✅ | ✅ | ❌ | ✅ | ✅ | ❌ | ✅ |
@@ -35,7 +36,7 @@ If a feature is definitively not supported for whatever reason, we would also li
 | `HEDNS` | ❌ | ✅ | ❌ | ✅ | ❌ | ✅ | ✅ | ✅ | ❌ | ✅ | ✅ | ❌ | ❌ | ✅ | ✅ | ✅ | ✅ |
 | `HETZNER` | ❌ | ✅ | ❌ | ❌ | ❔ | ✅ | ❌ | ❔ | ❔ | ✅ | ❌ | ❌ | ❌ | ✅ | ✅ | ✅ | ✅ |
 | `HEXONET` | ❌ | ✅ | ✅ | ❌ | ❔ | ✅ | ✅ | ❔ | ❔ | ✅ | ❔ | ✅ | ❔ | ✅ | ✅ | ✅ | ❔ |
-| `HOSTINGDE` | ❌ | ✅ | ✅ | ✅ | ❔ | ✅ | ✅ | ❌ | ❔ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
+| `HOSTINGDE` | ❌ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ❌ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
 | `INTERNETBS` | ❌ | ❌ | ✅ | ❔ | ❔ | ❔ | ❔ | ❔ | ❔ | ❔ | ❔ | ❔ | ❔ | ❔ | ❌ | ✅ | ❔ |
 | `INWX` | ❌ | ✅ | ✅ | ❌ | ❔ | ✅ | ✅ | ✅ | ❔ | ✅ | ✅ | ✅ | ❔ | ✅ | ✅ | ✅ | ✅ |
 | `LINODE` | ❌ | ✅ | ❌ | ❔ | ❔ | ✅ | ❔ | ❔ | ❔ | ❔ | ❔ | ❔ | ❔ | ❌ | ❌ | ✅ | ✅ |
@@ -56,6 +57,7 @@ If a feature is definitively not supported for whatever reason, we would also li
 | `SOFTLAYER` | ❌ | ✅ | ❌ | ❔ | ❔ | ❔ | ❔ | ❔ | ❔ | ✅ | ❔ | ❔ | ❔ | ❔ | ❌ | ✅ | ❔ |
 | `TRANSIP` | ❌ | ✅ | ❌ | ✅ | ❌ | ✅ | ❔ | ✅ | ❔ | ✅ | ✅ | ✅ | ❌ | ❔ | ❌ | ✅ | ✅ |
 | `VULTR` | ❌ | ✅ | ❌ | ❌ | ❔ | ✅ | ❌ | ❔ | ❔ | ✅ | ✅ | ❌ | ❔ | ❔ | ✅ | ✅ | ✅ |
+<!-- provider-matrix-end -->
 
 ### Providers with "official support"
 
@@ -118,7 +120,7 @@ Providers in this category and their maintainers are:
 |`INTERNETBS`|@pragmaton|
 |`INWX`|@svenpeter42|
 |`LINODE`|@koesie10|
-|`NAMECHEAP`|VOLUNTEER NEEDED|
+|`NAMECHEAP`|@willpower232|
 |`NETCUP`|@kordianbruck|
 |`NETLIFY`|@SphericalKat|
 |`NS1`|@costasd|
