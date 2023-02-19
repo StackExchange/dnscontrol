@@ -42,14 +42,6 @@ func showRecs(recs models.Records) string {
 	return result
 }
 
-// var buf bytes.Buffer
-// err = prettyzone.WriteZoneFileRC(&buf, dnsconfig.FindDomain("f.com").Records, "f.com", 300, nil)
-// if err != nil {
-// 	t.Fatal(err)
-// }
-// actualZone := strings.TrimSpace(buf.String())
-//wantedZone = strings.TrimSpace(wantedZone)
-
 func handsoffHelper(t *testing.T, existingZone, desiredJs string, noPurge bool, resultWanted string) {
 	t.Helper()
 
@@ -65,21 +57,17 @@ func handsoffHelper(t *testing.T, existingZone, desiredJs string, noPurge bool, 
 	}
 	dc := dnsconfig.FindDomain("f.com")
 	desired := dc.Records
-	//fmt.Printf("DEBUG: OLD desired ... %s\n", showRecs(desired))
+	absences := dc.EnsureAbsent
+	unmanagedConfigs := dc.Unmanaged
 	// BUG(tlim): For some reason ExecuteJavascriptString() isn't setting the NameFQDN on records.
 	//            This fixes up the records. It is a crass workaround. We should find the real
 	//            cause and fix it.
 	for i, j := range desired {
 		desired[i].SetLabel(j.GetLabel(), "f.com")
 	}
-	//fmt.Printf("DEBUG: FIXED desired ... %s\n", showRecs(desired))
-	absences := dc.EnsureAbsent
 	for i, j := range absences {
 		absences[i].SetLabel(j.GetLabel(), "f.com")
 	}
-	//fmt.Printf("DEBUG: FIXED ABSENT ... %s\n", showRecs(absences))
-
-	unmanagedConfigs := dc.Unmanaged
 
 	ignored, purged := ignoreOrNoPurge(
 		"f.com",

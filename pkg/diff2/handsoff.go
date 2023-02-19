@@ -102,11 +102,13 @@ func handsoff(
 ) (models.Records, []string, error) {
 	var msgs []string
 
+	// Prep the globs:
 	err := compileUnmanagedConfigs(unmanagedConfigs)
 	if err != nil {
 		return nil, nil, err
 	}
 
+	// Process UNMANAGE/IGNORE_* and NO_PURGE features:
 	ignorable, foreign := ignoreOrNoPurge(domain, existing, desired, absences, unmanagedConfigs, noPurge)
 	if len(foreign) != 0 {
 		msgs = append(msgs, fmt.Sprintf("INFO: %d records not being deleted because of NO_PURGE:", len(foreign)))
@@ -121,6 +123,7 @@ func handsoff(
 		}
 	}
 
+	// Check for wrong use of IGNORE_*.
 	conflicts := findConflicts(unmanagedConfigs, desired)
 	if len(conflicts) != 0 {
 		msgs = append(msgs, fmt.Sprintf("INFO: %d records that are both IGNORE*()'d and not ignored:", len(conflicts)))
@@ -145,7 +148,7 @@ func ignoreOrNoPurge(domain string, existing, desired, absences models.Records, 
 	absentDB := models.NewRecordDBFromRecords(absences, domain)
 	compileUnmanagedConfigs(unmanagedConfigs)
 	for _, rec := range existing {
-		if matchAny(unmanagedConfigs, rec) {
+		if matchAll(unmanagedConfigs, rec) {
 			ignorable = append(ignorable, rec)
 		} else {
 			if noPurge {
@@ -165,7 +168,7 @@ func ignoreOrNoPurge(domain string, existing, desired, absences models.Records, 
 func findConflicts(uconfigs []*models.UnmanagedConfig, recs models.Records) models.Records {
 	var conflicts models.Records
 	for _, rec := range recs {
-		if matchAny(uconfigs, rec) {
+		if matchAll(uconfigs, rec) {
 			conflicts = append(conflicts, rec)
 		}
 	}
@@ -211,7 +214,7 @@ func compileUnmanagedConfigs(configs []*models.UnmanagedConfig) error {
 	return nil
 }
 
-func matchAny(uconfigs []*models.UnmanagedConfig, rec *models.RecordConfig) bool {
+func matchAll(uconfigs []*models.UnmanagedConfig, rec *models.RecordConfig) bool {
 	for _, uc := range uconfigs {
 		if matchLabel(uc.LabelGlob, rec.GetLabel()) &&
 			matchType(uc.RTypeMap, rec.Type) &&

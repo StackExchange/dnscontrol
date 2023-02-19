@@ -137,7 +137,6 @@ func (cc *CompareConfig) VerifyCNAMEAssertions() {
 	// That said, since we addRecords existing first, and desired last, the data
 	// should already be in the right order.
 
-	//	fmt.Printf("DEBUG: compareconfig =\n%s\n\n", cc)
 	for _, ld := range cc.ldata {
 		for j, td := range ld.tdata {
 
@@ -227,8 +226,6 @@ func (cc *CompareConfig) addRecords(recs models.Records, storeInExisting bool) {
 
 	for _, rec := range z.Records {
 
-		//label := rec.NameFQDN
-		//rtype := rec.Type
 		key := rec.Key()
 		label := key.NameFQDN
 		rtype := key.Type
@@ -237,12 +234,10 @@ func (cc *CompareConfig) addRecords(recs models.Records, storeInExisting bool) {
 		// Are we seeing this label for the first time?
 		var labelIdx int
 		if _, ok := cc.labelMap[label]; !ok {
-			//fmt.Printf("DEBUG: I haven't see label=%v before. Adding.\n", label)
 			cc.labelMap[label] = true
 			cc.ldata = append(cc.ldata, &labelConfig{label: label})
 			labelIdx = highest(cc.ldata)
 		} else {
-			// find label in cc.ldata:
 			for k, v := range cc.ldata {
 				if v.label == label {
 					labelIdx = k
@@ -252,12 +247,9 @@ func (cc *CompareConfig) addRecords(recs models.Records, storeInExisting bool) {
 		}
 
 		// Are we seeing this label+rtype for the first time?
-		//key := rec.Key()
 		if _, ok := cc.keyMap[key]; !ok {
-			//fmt.Printf("DEBUG: I haven't see key=%v before. Adding.\n", key)
 			cc.keyMap[key] = true
 			x := cc.ldata[labelIdx]
-			//fmt.Printf("DEBUG: appending rtype=%v\n", rtype)
 			x.tdata = append(x.tdata, &rTypeConfig{rType: rtype})
 		}
 		var rtIdx int
@@ -268,7 +260,6 @@ func (cc *CompareConfig) addRecords(recs models.Records, storeInExisting bool) {
 				break
 			}
 		}
-		//fmt.Printf("DEBUG: found rtype=%v at index %d\n", rtype, rtIdx)
 
 		// Now it is safe to add/modify the records.
 

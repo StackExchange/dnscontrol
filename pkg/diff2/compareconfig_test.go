@@ -1,18 +1,12 @@
 package diff2
 
 import (
-	"encoding/json"
 	"strings"
 	"testing"
 
 	"github.com/StackExchange/dnscontrol/v3/models"
 	"github.com/kylelemons/godebug/diff"
 )
-
-func prettyPrint(i interface{}) string {
-	s, _ := json.MarshalIndent(i, "", "\t")
-	return string(s)
-}
 
 func TestNewCompareConfig(t *testing.T) {
 	type args struct {
