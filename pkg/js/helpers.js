@@ -687,15 +687,6 @@ function AUTODNSSEC(d) {
 }
 
 function UNMANAGED(label_pattern, rType_pattern, target_pattern) {
-    if (rType_pattern === undefined) {
-        rType_pattern = '*';
-    }
-    if (rType_pattern === "") {
-        rType_pattern = '*';
-    }
-    if (target_pattern === undefined) {
-        target_pattern = '*';
-    }
     return function (d) {
         d.unmanaged.push({
             label_pattern: label_pattern,
