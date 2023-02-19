@@ -120,7 +120,7 @@ Providers in this category and their maintainers are:
 |`INTERNETBS`|@pragmaton|
 |`INWX`|@svenpeter42|
 |`LINODE`|@koesie10|
-|`NAMECHEAP`|VOLUNTEER NEEDED|
+|`NAMECHEAP`|@willpower232|
 |`NETCUP`|@kordianbruck|
 |`NETLIFY`|@SphericalKat|
 |`NS1`|@costasd|
