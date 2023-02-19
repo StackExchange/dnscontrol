@@ -18,32 +18,3 @@ type UnmanagedConfig struct {
 	TargetPattern string    `json:"target_pattern,omitempty"`
 	TargetGlob    glob.Glob `json:"-"` // Compiled version
 }
-
-// func NewUnmanagedConfig(label, rtype, target string) (*UnmanagedConfig, error) {
-// 	var err error
-
-// 	result := &UnmanagedConfig{
-// 		LabelPattern:  label,
-// 		RTypePattern:  rtype,
-// 		TargetPattern: target,
-// 	}
-
-// 	result.LabelGlob, err = glob.Compile(label)
-// 	if err != nil {
-// 		return nil, err
-// 	}
-
-// 	if rtype != "*" && rtype != "" {
-// 		for _, part := range strings.Split(rtype, ",") {
-// 			part = strings.TrimSpace(part)
-// 			result.RTypeMap[part] = struct{}{}
-// 		}
-// 	}
-
-// 	result.TargetGlob, err = glob.Compile(target)
-// 	if err != nil {
-// 		return nil, err
-// 	}
-
-// 	return result, nil
-// }

@@ -66,7 +66,7 @@ func (d *differCompat) IncrementalDiff(existing []*models.RecordConfig) (unchang
 		switch inst.Type {
 		case diff2.REPORT:
 			// Sadly the NewCompat function doesn't have a way to do this.
-			// Purge reports are silently skipped.
+			fmt.Println(inst.MsgsJoined)
 		case diff2.CREATE:
 			cor.Desired = inst.New[0]
 			create = append(create, cor)

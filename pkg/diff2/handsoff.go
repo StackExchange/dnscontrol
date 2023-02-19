@@ -5,7 +5,6 @@ import (
 	"strings"
 
 	"github.com/StackExchange/dnscontrol/v3/models"
-	"github.com/StackExchange/dnscontrol/v3/pkg/printer"
 	"github.com/gobwas/glob"
 )
 
@@ -100,42 +99,44 @@ func handsoff(
 	unmanagedConfigs []*models.UnmanagedConfig,
 	unmanagedSafely bool,
 	noPurge bool,
-) (models.Records, error) {
+) (models.Records, []string, error) {
+	var msgs []string
 
 	err := compileUnmanagedConfigs(unmanagedConfigs)
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 
 	ignorable, foreign := ignoreOrNoPurge(domain, existing, desired, absences, unmanagedConfigs, noPurge)
 	if len(foreign) != 0 {
-		printer.Printf("INFO: %d records not being deleted because of NO_PURGE:\n", len(foreign))
+		msgs = append(msgs, fmt.Sprintf("INFO: %d records not being deleted because of NO_PURGE:", len(foreign)))
 		for _, r := range foreign {
-			printer.Printf("    %s. %s %s\n", r.GetLabelFQDN(), r.Type, r.GetTargetRFC1035Quoted())
+			msgs = append(msgs, fmt.Sprintf("    %s. %s %s", r.GetLabelFQDN(), r.Type, r.GetTargetRFC1035Quoted()))
 		}
 	}
 	if len(ignorable) != 0 {
-		printer.Printf("INFO: %d records not being deleted because of IGNORE*():\n", len(ignorable))
+		msgs = append(msgs, fmt.Sprintf("INFO: %d records not being deleted because of IGNORE*():", len(ignorable)))
 		for _, r := range ignorable {
-			printer.Printf("    %s %s %s\n", r.GetLabelFQDN(), r.Type, r.GetTargetRFC1035Quoted())
+			msgs = append(msgs, fmt.Sprintf("    %s %s %s", r.GetLabelFQDN(), r.Type, r.GetTargetRFC1035Quoted()))
 		}
 	}
 
 	conflicts := findConflicts(unmanagedConfigs, desired)
 	if len(conflicts) != 0 {
-		printer.Printf("INFO: %d records that are both IGNORE*()'d and not ignored:\n", len(conflicts))
+		msgs = append(msgs, fmt.Sprintf("INFO: %d records that are both IGNORE*()'d and not ignored:", len(conflicts)))
 		for _, r := range conflicts {
-			printer.Printf("    %s %s %s\n", r.GetLabelFQDN(), r.Type, r.GetTargetRFC1035Quoted())
+			msgs = append(msgs, fmt.Sprintf("    %s %s %s", r.GetLabelFQDN(), r.Type, r.GetTargetRFC1035Quoted()))
 		}
 		if unmanagedSafely {
-			return nil, fmt.Errorf("ERROR: Unsafe to continue. Add DISABLE_UNMANAGED_SAFETY_CHECK to D() to override")
+			return nil, nil, fmt.Errorf(strings.Join(msgs, "\n") +
+				"ERROR: Unsafe to continue. Add DISABLE_UNMANAGED_SAFETY_CHECK to D() to override")
 		}
 	}
 
 	// Add the ignored/foreign items to the desired list so they are not deleted:
 	desired = append(desired, ignorable...)
 	desired = append(desired, foreign...)
-	return desired, nil
+	return desired, msgs, nil
 }
 
 func ignoreOrNoPurge(domain string, existing, desired, absences models.Records, unmanagedConfigs []*models.UnmanagedConfig, noPurge bool) (models.Records, models.Records) {

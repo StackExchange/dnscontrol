@@ -147,7 +147,7 @@ func (cc *CompareConfig) VerifyCNAMEAssertions() {
 				// recordset with both CNAMEs and other records, such as
 				// Cloudflare.
 				// Therefore, we skip the test if we aren't deleting
-				// everything or creating from scratch.
+				// everything at the recordset or creating it from scratch.
 				if len(td.existingTargets) != 0 && len(td.desiredTargets) != 0 {
 					continue
 				}
@@ -160,8 +160,8 @@ func (cc *CompareConfig) VerifyCNAMEAssertions() {
 				}
 
 				if len(td.desiredTargets) != 0 {
-					//fmt.Fprintf(os.Stdout, "DEBUG: cname in desired: index=%d\n", j)
-					//fmt.Fprintf(os.Stdout, "DEBUG: highest: index=%d\n", j)
+					//fmt.Printf("DEBUG: cname in desired: index=%d\n", j)
+					//fmt.Printf("DEBUG: highest: index=%d\n", j)
 					if j != highest(ld.tdata) {
 						panic("should not happen: (CNAME not in last position)")
 					}
