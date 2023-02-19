@@ -1,5 +1,9 @@
 package diff2
 
+// This file implements the features that tell DNSControl "hands off"
+// foreign-controlled (or shared-control) DNS records.  i.e. the
+// NO_PURGE, ENSURE_ABSENT, IGNORE_*, and UNMANAGED features.
+
 import (
 	"fmt"
 	"strings"
@@ -25,27 +29,27 @@ There are 2 ways to tell DNSControl not to touch existing records in a domain,
 and 1 way to make exceptions.
 
 * NO_PURGE: Tells DNSControl not to delete records in a domain.
-	* New records can be created; existing records (matched on label:rtype) can
-	    be modified.
+	* New records will be created
+	* Existing records (matched on label:rtype) will be modified.
 	* FYI: This means you can't have a label with two A records, one controlled
 	    by DNSControl and one controlled by an external system.
-* UNMANAGED( labelglob, typelist, targetglob):
+* UNMANAGED(labelglob, typelist, targetglob):
     * "If an existing record matches this pattern, don't touch it!""
-    * IGNORE_NAME(foo) is the same as UNMANAGED(foo, "*", "*")
+    * IGNORE_NAME(foo, bar) is the same as UNMANAGED(foo, bar, "*")
     * IGNORE_TARGET(foo) is the same as UNMANAGED("*", "*", foo)
     * FYI: You CAN have a label with two A records, one controlled by
 	    DNSControl and one controlled by an external system.  DNSControl would
-		need to have an UNMANAGED() statement with a targetglob that matches
-		the external system's target values.
+		  need to have an UNMANAGED() statement with a targetglob that matches
+	    the external system's target values.
 * ASSURE_ABSENT: Override NO_PURGE for specific records. i.e. delete them even
     though NO_PURGE is enabled.
     * If any of these records are in desired (matched on
-        label:rtype:target), remove them.  This takes priority over
-		all of the above.
+      label:rtype:target), remove them.  This takes priority over
+      NO_PURGE/UNMANAGED/IGNORE*.
 
 ## Implementation premise
 
-The fundamental premise is "if you don't want it deleted, put it in the
+The fundamental premise is "if you don't want it deleted, copy it to the
 'desired' list." So, for example, if you want to IGNORE_NAME("www"), then you
 find any records with the label "www" in "existing" and copy them to "desired".
 As a result, the diff2 algorithm won't delete them because they are desired!
@@ -67,7 +71,7 @@ Here is how we intend to implement these features:
   * If any item on the "ignored list" is also in "desired" (match on
       label:rtype), output a warning (defeault) or declare an error (if
       DISABLE_UNMANAGED_SAFETY_CHECK is true).
-  * Add the "ignore list" records to desired.
+  * When we're done, add the "ignore list" records to desired.
 
   NO_PURGE + ENSURE_ABSENT is implemented as:
   * Take the list of existing records. If any do not appear in desired, add them
@@ -75,22 +79,22 @@ Here is how we intend to implement these features:
   * "appear in desired" is done by matching on label:type.
   * "appear in absences" is done by matching on label:type:target.
 
-  However the actual changes are implemented as:
+The actual implementation combines this all into one loop:
     foreach rec in existing:
-	    if rec matches_any_unmanaged_pattern:
-	        if rec in desired:
-		    	if "DISABLE_UNMANAGED_SAFETY_CHECK" is false:
-					Display a warning.
-		     	else
-			   		Return an error.
-		  	add rec to "foreign list"
-	    else:
-	     	if NO_PURGE:
-		 		if rec NOT in desired: (matched on label:type)
-		 		    if rec NOT in absences: (matched on label:type:combinedtarget)
-		      			Add rec to "foreign list"
-	Append "foreign list" to "desired"
-
+        if rec matches_any_unmanaged_pattern:
+            if rec in desired:
+                if "DISABLE_UNMANAGED_SAFETY_CHECK" is false:
+                    Display a warning.
+                else
+                    Return an error.
+            Add rec to "ignored list"
+        else:
+            if NO_PURGE:
+                if rec NOT in desired: (matched on label:type)
+                    if rec NOT in absences: (matched on label:type:target)
+                        Add rec to "foreign list"
+    Append "ignored list" to "desired".
+    Append "foreign list" to "desired".
 */
 
 func handsoff(
@@ -109,7 +113,7 @@ func handsoff(
 	}
 
 	// Process UNMANAGE/IGNORE_* and NO_PURGE features:
-	ignorable, foreign := ignoreOrNoPurge(domain, existing, desired, absences, unmanagedConfigs, noPurge)
+	ignorable, foreign := processIgnoreAndNoPurge(domain, existing, desired, absences, unmanagedConfigs, noPurge)
 	if len(foreign) != 0 {
 		msgs = append(msgs, fmt.Sprintf("INFO: %d records not being deleted because of NO_PURGE:", len(foreign)))
 		for _, r := range foreign {
@@ -123,7 +127,7 @@ func handsoff(
 		}
 	}
 
-	// Check for wrong use of IGNORE_*.
+	// Check for invalid use of IGNORE_*.
 	conflicts := findConflicts(unmanagedConfigs, desired)
 	if len(conflicts) != 0 {
 		msgs = append(msgs, fmt.Sprintf("INFO: %d records that are both IGNORE*()'d and not ignored:", len(conflicts)))
@@ -142,7 +146,7 @@ func handsoff(
 	return desired, msgs, nil
 }
 
-func ignoreOrNoPurge(domain string, existing, desired, absences models.Records, unmanagedConfigs []*models.UnmanagedConfig, noPurge bool) (models.Records, models.Records) {
+func processIgnoreAndNoPurge(domain string, existing, desired, absences models.Records, unmanagedConfigs []*models.UnmanagedConfig, noPurge bool) (models.Records, models.Records) {
 	var ignorable, foreign models.Records
 	desiredDB := models.NewRecordDBFromRecords(desired, domain)
 	absentDB := models.NewRecordDBFromRecords(absences, domain)

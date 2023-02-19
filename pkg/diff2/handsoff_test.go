@@ -69,7 +69,7 @@ func handsoffHelper(t *testing.T, existingZone, desiredJs string, noPurge bool, 
 		absences[i].SetLabel(j.GetLabel(), "f.com")
 	}
 
-	ignored, purged := ignoreOrNoPurge(
+	ignored, purged := processIgnoreAndNoPurge(
 		"f.com",
 		existing, desired,
 		absences,

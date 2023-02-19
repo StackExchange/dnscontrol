@@ -65,7 +65,8 @@ func (d *differCompat) IncrementalDiff(existing []*models.RecordConfig) (unchang
 		cor := Correlation{d: d.OldDiffer}
 		switch inst.Type {
 		case diff2.REPORT:
-			// Sadly the NewCompat function doesn't have a way to do this.
+			// Sadly the NewCompat function doesn't have an equivalent. We
+			// just output the messages now.
 			fmt.Println(inst.MsgsJoined)
 		case diff2.CREATE:
 			cor.Desired = inst.New[0]

@@ -129,23 +129,25 @@ func ByRecord(existing models.Records, dc *models.DomainConfig, compFunc Compara
 }
 
 // ByZone takes two lists of records (existing and desired) and
-// returns text one would output to users describing the change.
+// returns text to output to users describing the change, a bool
+// indicating if there were any changes, and a possible err value.
 //
 // Use this with DNS providers whose API updates the entire zone at a
-// time. That is, to make any change (1 record or many) the entire DNS
+// time. That is, to make any change (even just 1 record) the entire DNS
 // zone is uploaded.
 //
-// The user should see a list of changes as if individual records were
-// updated.
+// The user should see a list of changes as if individual records were updated.
 //
-// The caller of this function should:
+// Example usage:
 //
-//	changed, msgs := diff2.ByZone(existing, desired, origin, nil
-//		fmt.Sprintf("CREATING ZONEFILE FOR THE FIRST TIME: dir/example.com.zone"))
-//	if changed {
-//		// output msgs
-//		// generate the zone using the "desired" records
-//	}
+// msgs, changes, err := diff2.ByZone(foundRecords, dc, nil)
+// if err != nil {
+//   return nil, err
+// }
+// if changes {
+// 	// Generate a "correction" that uploads the entire zone.
+// 	// (dc.Records are the new records for the zone).
+// }
 //
 // Example providers include: BIND
 func ByZone(existing models.Records, dc *models.DomainConfig, compFunc ComparableFunc) ([]string, bool, error) {
