@@ -250,6 +250,7 @@ func (a *azurednsProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*mod
 								if err != nil {
 									return err
 								}
+								//fmt.Fprintf(os.Stderr, "DEBUG: 1 a.recordsClient.Delete(ctx, %v, %v, %v, %v)\n", *a.resourceGroup, zoneName, *rrset.Name, rt)
 								_, err = a.recordsClient.Delete(ctx, *a.resourceGroup, zoneName, *rrset.Name, rt, nil)
 								if err != nil {
 									return err
@@ -289,6 +290,7 @@ func (a *azurednsProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*mod
 									F: func() error {
 										ctx, cancel := context.WithTimeout(context.Background(), 6000*time.Second)
 										defer cancel()
+										//fmt.Fprintf(os.Stderr, "DEBUG: 2 a.recordsClient.Delete(ctx, %v, %v, %v, %v, nil)\n", *a.resourceGroup, zoneName, recordName, existingRecordType)
 										_, err := a.recordsClient.Delete(ctx, *a.resourceGroup, zoneName, recordName, existingRecordType, nil)
 										if err != nil {
 											return err
@@ -306,6 +308,13 @@ func (a *azurednsProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*mod
 						F: func() error {
 							ctx, cancel := context.WithTimeout(context.Background(), 6000*time.Second)
 							defer cancel()
+							//fmt.Fprintf(os.Stderr, "DEBUG: 3 a.recordsClient.CreateOrUpdate(ctx, %v, %v, %v, %v, %+v, nil)\n", *a.resourceGroup, zoneName, recordName, recordType, *rrset)
+							// fmt.Fprintf(os.Stderr, "DEBUG: 3 rrset: %+v\n", *rrset)
+							// fmt.Fprintf(os.Stderr, "DEBUG: 3 properties: %+v\n", rrset.Properties)
+							// fmt.Fprintf(os.Stderr, "DEBUG: 3 TargetResource: %+v\n", rrset.Properties.TargetResource)
+							// if rrset.Properties.TargetResource != nil {
+							// 	fmt.Fprintf(os.Stderr, "DEBUG: 3 TargetResourceID: %+v\n", *rrset.Properties.TargetResource.ID)
+							// }
 							_, err := a.recordsClient.CreateOrUpdate(ctx, *a.resourceGroup, zoneName, recordName, recordType, *rrset, nil)
 							if err != nil {
 								return err
@@ -332,76 +341,126 @@ func (a *azurednsProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*mod
 
 	// Azure is a "ByRSet" API.
 
-	instructions, err := diff2.ByLabel(existingRecords, dc, nil)
+	changes, err := diff2.ByRecordSet(existingRecords, dc, nil)
 	if err != nil {
 		return nil, err
 	}
 
-	for _, inst := range instructions {
-		switch inst.Type {
+	// for i, j := range changes {
+	// 	fmt.Fprintf(os.Stderr, "DEBUG: CHANGE[%v] = %+v\n", i, j)
+	// }
 
+	for _, change := range changes {
+
+		//fmt.Fprintf(os.Stderr, "\n\nCHANGE=%v\n", change)
+
+		// Copy all param values to local variables to avoid overwrites
+		msgs := change.MsgsJoined
+		dcn := dc.Name
+		chaKey := change.Key
+
+		switch change.Type {
 		case diff2.REPORT:
-			corrections = append(corrections, &models.Correction{Msg: inst.MsgsJoined})
-
+			corrections = append(corrections, &models.Correction{Msg: change.MsgsJoined})
 		case diff2.CHANGE, diff2.CREATE:
-			var rrset *adns.RecordSet
-			var recordName string
-			var recordType adns.RecordType
-			if len(inst.Old) == 0 { // Create
-				rrset = &adns.RecordSet{Type: to.StringPtr(inst.Key.Type), Properties: &adns.RecordSetProperties{}}
-				recordType, _ = nativeToRecordType(to.StringPtr(inst.Key.Type))
-				recordName = inst.Key.NameFQDN
-			} else { // Change
-				rrset = inst.Old[0].Original.(*adns.RecordSet)
-				recordType, _ = nativeToRecordType(to.StringPtr(*rrset.Type))
-				recordName = *rrset.Name
-			}
-			// ^^^ this is broken and can probably be cleaned up significantly by
-			// someone that understands Azure's API.
 
-			corrections = append(corrections,
-				&models.Correction{
-					Msg: strings.Join(inst.Msgs, "\n"),
-					F: func() error {
-						ctx, cancel := context.WithTimeout(context.Background(), 6000*time.Second)
-						defer cancel()
-						_, err := a.recordsClient.CreateOrUpdate(ctx, *a.resourceGroup, zoneName, recordName, recordType, *rrset, nil)
-						if err != nil {
-							return err
-						}
-						return nil
-					},
-				})
+			changeNew := change.New
+
+			// for i, j := range change.Old {
+			// 	fmt.Fprintf(os.Stderr, "DEBUG: OLD[%d] = %+v ttl=%d\n", i, j, j.TTL)
+			// }
+			// for i, j := range change.New {
+			// 	fmt.Fprintf(os.Stderr, "DEBUG: NEW[%d] = %+v ttl=%d\n", i, j, j.TTL)
+			// }
+			// fmt.Fprintf(os.Stderr, "DEBUG: CHANGE = \n%v\n", change)
+
+			corrections = append(corrections, &models.Correction{
+				Msg: msgs,
+				F: func() error {
+					return a.recordCreate(dcn, chaKey, changeNew)
+				},
+			})
 
 		case diff2.DELETE:
-			fmt.Printf("DEBUG: azure inst=%s\n", inst)
-			rrset := inst.Old[0].Original.(*adns.RecordSet)
-			corrections = append(corrections,
-				&models.Correction{
-					Msg: strings.Join(inst.Msgs, "\n"),
-					F: func() error {
-						ctx, cancel := context.WithTimeout(context.Background(), 6000*time.Second)
-						defer cancel()
-						rt, err := nativeToRecordType(rrset.Type)
-						if err != nil {
-							return err
-						}
-						_, err = a.recordsClient.Delete(ctx, *a.resourceGroup, zoneName, *rrset.Name, rt, nil)
-						if err != nil {
-							return err
-						}
-						return nil
-					},
-				})
 
+			// for i, j := range change.Old {
+			// 	fmt.Fprintf(os.Stderr, "DEBUG: OLD[%d] = %+v\n", i, j)
+			// }
+			// for i, j := range change.New {
+			// 	fmt.Fprintf(os.Stderr, "DEBUG: NEW[%d] = %+v\n", i, j)
+			// }
+			//fmt.Fprintf(os.Stderr, "DEBUG: CHANGE = \n%v\n", change)
+
+			corrections = append(corrections, &models.Correction{
+				Msg: msgs,
+				F: func() error {
+					//return a.recordDelete(dc.Name, change.Key, change.Old)
+					return a.recordDelete(dcn, chaKey, change.Old)
+				},
+			})
 		default:
-			panic(fmt.Sprintf("unhandled inst.Type %s", inst.Type))
-
+			panic(fmt.Sprintf("unhandled change.Type %s", change.Type))
 		}
-
 	}
 
 	return corrections, nil
+}
+
+func (a *azurednsProvider) recordCreate(zoneName string, reckey models.RecordKey, recs models.Records) error {
+
+	rrset, azRecType, err := a.recordToNativeDiff2(reckey, recs)
+	if err != nil {
+		return err
+	}
+
+	//	rrset, _, err := a.recordToNativeDiff2(reckey, recs)
+	//	if err != nil {
+	//		return err
+	//	}
+
+	var recordName string
+	var i int64
+	for _, r := range recs {
+		i = int64(r.TTL)
+		recordName = r.Name
+		//fmt.Fprintf(os.Stderr, "DEBUG: rn=%v ttl=%d\n", recordName, i)
+	}
+	rrset.Properties.TTL = &i
+
+	ctx, cancel := context.WithTimeout(context.Background(), 6000*time.Second)
+	defer cancel()
+	//fmt.Fprintf(os.Stderr, "DEBUG: a.recordsClient.CreateOrUpdate(%v, %v, %v, %v, %+v)\n", *a.resourceGroup, zoneName, recordName, azRecType, *rrset)
+	//fmt.Fprintf(os.Stderr, "DEBUG: rrset.Properties=%+v\n", *rrset.Properties)
+	//fmt.Fprintf(os.Stderr, "DEBUG: recordCreate a.recordsClient.CreateOrUpdate(ctx, %v, %v, %v, %v, %+v, nil)\n", *a.resourceGroup, zoneName, recordName, azRecType, *rrset)
+	//fmt.Fprintf(os.Stderr, "DEBUG: recordCreate rrset: %+v\n", *rrset)
+	//fmt.Fprintf(os.Stderr, "DEBUG: recordCreate properties: %+v\n", rrset.Properties)
+	//fmt.Fprintf(os.Stderr, "DEBUG: recordCreate TargetResource: %+v\n", rrset.Properties.TargetResource)
+	// if rrset.Properties.TargetResource != nil {
+	// 	fmt.Fprintf(os.Stderr, "DEBUG: recordCreate TargetResourceID: %+v\n", *rrset.Properties.TargetResource.ID)
+	// }
+	_, err = a.recordsClient.CreateOrUpdate(ctx, *a.resourceGroup, zoneName, recordName, azRecType, *rrset, nil)
+	return err
+}
+
+func (a *azurednsProvider) recordDelete(zoneName string, reckey models.RecordKey, recs models.Records) error {
+
+	shortName := strings.TrimSuffix(reckey.NameFQDN, "."+zoneName)
+	//_, azRecType, err := a.recordToNative(reckey, recs)
+	if shortName == zoneName {
+		shortName = "@"
+	}
+
+	//azRecType, err := nativeToRecordType(to.StringPtr(*recordSet.Type))
+	azRecType, err := nativeToRecordTypeDiff2(to.StringPtr(reckey.Type))
+	if err != nil {
+		return nil
+	}
+
+	ctx, cancel := context.WithTimeout(context.Background(), 6000*time.Second)
+	defer cancel()
+	//fmt.Fprintf(os.Stderr, "DEBUG: a.recordsClient.Delete(%v, %v, %v,  %v)\n", *a.resourceGroup, zoneName, shortName, azRecType)
+	_, err = a.recordsClient.Delete(ctx, *a.resourceGroup, zoneName, shortName, azRecType, nil)
+	return err
 }
 
 func nativeToRecordType(recordType *string) (adns.RecordType, error) {
@@ -429,12 +488,42 @@ func nativeToRecordType(recordType *string) (adns.RecordType, error) {
 		return adns.RecordTypeSOA, nil
 	default:
 		// Unimplemented type. Return adns.A as a decoy, but send an error.
-		return adns.RecordTypeA, fmt.Errorf("rc.String rtype %v unimplemented", *recordType)
+		return adns.RecordTypeA, fmt.Errorf("nativeToRecordType rtype %v unimplemented", *recordType)
+	}
+}
+
+func nativeToRecordTypeDiff2(recordType *string) (adns.RecordType, error) {
+	recordTypeStripped := strings.TrimPrefix(*recordType, "Microsoft.Network/dnszones/")
+	switch recordTypeStripped {
+	case "A", "AZURE_ALIAS_A":
+		return adns.RecordTypeA, nil
+	case "AAAA", "AZURE_ALIAS_AAAA":
+		return adns.RecordTypeAAAA, nil
+	case "CAA":
+		return adns.RecordTypeCAA, nil
+	case "CNAME", "AZURE_ALIAS_CNAME":
+		return adns.RecordTypeCNAME, nil
+	case "MX":
+		return adns.RecordTypeMX, nil
+	case "NS":
+		return adns.RecordTypeNS, nil
+	case "PTR":
+		return adns.RecordTypePTR, nil
+	case "SRV":
+		return adns.RecordTypeSRV, nil
+	case "TXT":
+		return adns.RecordTypeTXT, nil
+	case "SOA":
+		return adns.RecordTypeSOA, nil
+	default:
+		// Unimplemented type. Return adns.A as a decoy, but send an error.
+		return adns.RecordTypeA, fmt.Errorf("nativeToRecordTypeDiff2 RTYPE %v UNIMPLEMENTED", *recordType)
 	}
 }
 
 func safeTarget(t *string) string {
 	if t == nil {
+		//panic("no TARGET")
 		return "foundnil"
 	}
 	return *t
@@ -445,6 +534,7 @@ func nativeToRecords(set *adns.RecordSet, origin string) []*models.RecordConfig 
 	switch rtype := *set.Type; rtype {
 	case "Microsoft.Network/dnszones/A":
 		if set.Properties.ARecords != nil {
+			// This is an A recordset. Process all the targets there.
 			for _, rec := range set.Properties.ARecords {
 				rc := &models.RecordConfig{TTL: uint32(*set.Properties.TTL), Original: set}
 				rc.SetLabelFromFQDN(*set.Properties.Fqdn, origin)
@@ -453,6 +543,7 @@ func nativeToRecords(set *adns.RecordSet, origin string) []*models.RecordConfig 
 				results = append(results, rc)
 			}
 		} else {
+			// This is an AZURE_ALIAS of an "A" record.
 			rc := &models.RecordConfig{
 				Type: "AZURE_ALIAS",
 				TTL:  uint32(*set.Properties.TTL),
@@ -467,6 +558,7 @@ func nativeToRecords(set *adns.RecordSet, origin string) []*models.RecordConfig 
 		}
 	case "Microsoft.Network/dnszones/AAAA":
 		if set.Properties.AaaaRecords != nil {
+			// This is an AAAA recordset. Process all the targets there.
 			for _, rec := range set.Properties.AaaaRecords {
 				rc := &models.RecordConfig{TTL: uint32(*set.Properties.TTL), Original: set}
 				rc.SetLabelFromFQDN(*set.Properties.Fqdn, origin)
@@ -475,6 +567,7 @@ func nativeToRecords(set *adns.RecordSet, origin string) []*models.RecordConfig 
 				results = append(results, rc)
 			}
 		} else {
+			// This is an AZURE_ALIAS of an "AAAA" record.
 			rc := &models.RecordConfig{
 				Type: "AZURE_ALIAS",
 				TTL:  uint32(*set.Properties.TTL),
@@ -489,12 +582,14 @@ func nativeToRecords(set *adns.RecordSet, origin string) []*models.RecordConfig 
 		}
 	case "Microsoft.Network/dnszones/CNAME":
 		if set.Properties.CnameRecord != nil {
+			// This is a CNAME recordset. Process the targets. (there can only be one)
 			rc := &models.RecordConfig{TTL: uint32(*set.Properties.TTL), Original: set}
 			rc.SetLabelFromFQDN(*set.Properties.Fqdn, origin)
 			rc.Type = "CNAME"
 			_ = rc.SetTarget(*set.Properties.CnameRecord.Cname)
 			results = append(results, rc)
 		} else {
+			// This is an AZURE_ALIAS of a "CNAME" record.
 			rc := &models.RecordConfig{
 				Type: "AZURE_ALIAS",
 				TTL:  uint32(*set.Properties.TTL),
@@ -525,12 +620,14 @@ func nativeToRecords(set *adns.RecordSet, origin string) []*models.RecordConfig 
 		}
 	case "Microsoft.Network/dnszones/TXT":
 		if len(set.Properties.TxtRecords) == 0 { // Empty String Record Parsing
+			// This is a null TXT record.
 			rc := &models.RecordConfig{TTL: uint32(*set.Properties.TTL), Original: set}
 			rc.SetLabelFromFQDN(*set.Properties.Fqdn, origin)
 			rc.Type = "TXT"
 			_ = rc.SetTargetTXT("")
 			results = append(results, rc)
 		} else {
+			// This is a normal TXT record. Collect all its segments.
 			for _, rec := range set.Properties.TxtRecords {
 				rc := &models.RecordConfig{TTL: uint32(*set.Properties.TTL), Original: set}
 				rc.SetLabelFromFQDN(*set.Properties.Fqdn, origin)
@@ -569,7 +666,7 @@ func nativeToRecords(set *adns.RecordSet, origin string) []*models.RecordConfig 
 		}
 	case "Microsoft.Network/dnszones/SOA":
 	default:
-		panic(fmt.Errorf("rc.String rtype %v unimplemented", *set.Type))
+		panic(fmt.Errorf("nativeToRecords rtype %v unimplemented", *set.Type))
 	}
 	return results
 }
@@ -631,11 +728,114 @@ func (a *azurednsProvider) recordToNative(recordKey models.RecordKey, recordConf
 			*recordSet.Type = rec.AzureAlias["type"]
 			recordSet.Properties.TargetResource = &adns.SubResource{ID: to.StringPtr(rec.GetTargetField())}
 		default:
-			return nil, adns.RecordTypeA, fmt.Errorf("rc.String rtype %v unimplemented", recordKey.Type) // ands.A is a placeholder
+			return nil, adns.RecordTypeA, fmt.Errorf("recordToNative rtype %v unimplemented", recordKey.Type) // ands.A is a placeholder
 		}
 	}
 
 	rt, err := nativeToRecordType(to.StringPtr(*recordSet.Type))
+	if err != nil {
+		return nil, adns.RecordTypeA, err // adns.A is a placeholder
+	}
+	return recordSet, rt, nil
+}
+
+// NOTE recordToNativeDiff2 is really "convert []RecordConfig to rrset".
+
+func (a *azurednsProvider) recordToNativeDiff2(recordKey models.RecordKey, recordConfig []*models.RecordConfig) (*adns.RecordSet, adns.RecordType, error) {
+
+	recordKeyType := recordKey.Type
+	//	if recordKeyType == "AZURE_ALIAS" {
+	//		fmt.Fprintf(os.Stderr, "DEBUG: XXXXXXXXXXXXXXXXXXXXXXX %v\n", recordKeyType)
+	//	}
+
+	recordSet := &adns.RecordSet{Type: to.StringPtr(recordKeyType), Properties: &adns.RecordSetProperties{}}
+	for _, rec := range recordConfig {
+		switch recordKeyType {
+		case "A":
+			if recordSet.Properties.ARecords == nil {
+				recordSet.Properties.ARecords = []*adns.ARecord{}
+			}
+			recordSet.Properties.ARecords = append(recordSet.Properties.ARecords, &adns.ARecord{IPv4Address: to.StringPtr(rec.GetTargetField())})
+		case "AAAA":
+			if recordSet.Properties.AaaaRecords == nil {
+				recordSet.Properties.AaaaRecords = []*adns.AaaaRecord{}
+			}
+			recordSet.Properties.AaaaRecords = append(recordSet.Properties.AaaaRecords, &adns.AaaaRecord{IPv6Address: to.StringPtr(rec.GetTargetField())})
+		case "CNAME":
+			recordSet.Properties.CnameRecord = &adns.CnameRecord{Cname: to.StringPtr(rec.GetTargetField())}
+		case "NS":
+			if recordSet.Properties.NsRecords == nil {
+				recordSet.Properties.NsRecords = []*adns.NsRecord{}
+			}
+			recordSet.Properties.NsRecords = append(recordSet.Properties.NsRecords, &adns.NsRecord{Nsdname: to.StringPtr(rec.GetTargetField())})
+		case "PTR":
+			if recordSet.Properties.PtrRecords == nil {
+				recordSet.Properties.PtrRecords = []*adns.PtrRecord{}
+			}
+			recordSet.Properties.PtrRecords = append(recordSet.Properties.PtrRecords, &adns.PtrRecord{Ptrdname: to.StringPtr(rec.GetTargetField())})
+		case "TXT":
+			if recordSet.Properties.TxtRecords == nil {
+				recordSet.Properties.TxtRecords = []*adns.TxtRecord{}
+			}
+			// Empty TXT record needs to have no value set in it's properties
+			if !(len(rec.TxtStrings) == 1 && rec.TxtStrings[0] == "") {
+				var txts []*string
+				for _, txt := range rec.TxtStrings {
+					txts = append(txts, to.StringPtr(txt))
+				}
+				recordSet.Properties.TxtRecords = append(recordSet.Properties.TxtRecords, &adns.TxtRecord{Value: txts})
+			}
+		case "MX":
+			if recordSet.Properties.MxRecords == nil {
+				recordSet.Properties.MxRecords = []*adns.MxRecord{}
+			}
+			recordSet.Properties.MxRecords = append(recordSet.Properties.MxRecords, &adns.MxRecord{Exchange: to.StringPtr(rec.GetTargetField()), Preference: to.Int32Ptr(int32(rec.MxPreference))})
+		case "SRV":
+			if recordSet.Properties.SrvRecords == nil {
+				recordSet.Properties.SrvRecords = []*adns.SrvRecord{}
+			}
+			recordSet.Properties.SrvRecords = append(recordSet.Properties.SrvRecords, &adns.SrvRecord{Target: to.StringPtr(rec.GetTargetField()), Port: to.Int32Ptr(int32(rec.SrvPort)), Weight: to.Int32Ptr(int32(rec.SrvWeight)), Priority: to.Int32Ptr(int32(rec.SrvPriority))})
+		case "CAA":
+			if recordSet.Properties.CaaRecords == nil {
+				recordSet.Properties.CaaRecords = []*adns.CaaRecord{}
+			}
+			recordSet.Properties.CaaRecords = append(recordSet.Properties.CaaRecords, &adns.CaaRecord{Value: to.StringPtr(rec.GetTargetField()), Tag: to.StringPtr(rec.CaaTag), Flags: to.Int32Ptr(int32(rec.CaaFlag))})
+		case "AZURE_ALIAS_A", "AZURE_ALIAS_AAAA", "AZURE_ALIAS_CNAME":
+			//case "AZURE_ALIAS":
+			// fmt.Fprintf(os.Stderr, "DEBUG: AZURE_ALIAS recordToNativeDiff2 rec=%+v\n", rec)
+			// fmt.Fprintf(os.Stderr, "DEBUG: AZURE_ALIAS rec.Type=%v\n", rec.Type)
+			// fmt.Fprintf(os.Stderr, "DEBUG: AZURE_ALIAS rec.TTL=%v\n", rec.TTL)
+			// fmt.Fprintf(os.Stderr, "DEBUG: AZURE_ALIAS rec.Label=%v\n", rec.GetLabel())
+			// fmt.Fprintf(os.Stderr, "DEBUG: AZURE_ALIAS rec.Target=%v\n", rec.GetTargetField())
+			// fmt.Fprintf(os.Stderr, "DEBUG: AZURE_ALIAS rec.AzureAlias=%v\n", rec.AzureAlias)
+
+			// OLD *recordSet.Type = rec.AzureAlias["type"]
+			// NEW:
+			aatype := rec.AzureAlias["type"]
+			recordSet.Type = &aatype
+			// if aatype == "CNAME" {
+			// 	fmt.Fprintf(os.Stderr, "DEBUG: AZURE_ALIAS Cname -> MS.n.dnszones.CNAME\n")
+			// 	aatype = "Microsoft.Network/dnszones/CNAME"
+			// 	recordSet.Properties.CnameRecord = adns.CnameRecord{Cname: to.StringPtr(rec.GetTargetField())}
+			// 	//				recordSet.Properties.CnameRecord.Cname
+			// 	//recordSet.Properties.CnameRecord = &adns.CnameRecord{Cname: to.StringPtr(rec.GetTargetField())}
+			// }
+
+			// OLD: recordSet.Properties.TargetResource = &adns.SubResource{ID: to.StringPtr(rec.GetTargetField())}
+			// NEW:
+			aatarg := to.StringPtr(rec.GetTargetField())
+			aasub := adns.SubResource{ID: aatarg}
+			recordSet.Properties.TargetResource = &aasub
+			// fmt.Fprintf(os.Stderr, "DEBUG: AZURE_ALIAS rrset.Type=%v\n", *recordSet.Type)
+			// fmt.Fprintf(os.Stderr, "DEBUG: AZURE_ALIAS rrset.Target=%v\n", *aatarg)
+			// fmt.Fprintf(os.Stderr, "DEBUG: AZURE_ALIAS rrset.TargetRes=%+v\n", aasub)
+
+		default:
+			return nil, adns.RecordTypeA, fmt.Errorf("recordToNativeDiff2 RTYPE %v UNIMPLEMENTED", recordKeyType) // ands.A is a placeholder
+		}
+	}
+
+	rt, err := nativeToRecordTypeDiff2(to.StringPtr(*recordSet.Type))
 	if err != nil {
 		return nil, adns.RecordTypeA, err // adns.A is a placeholder
 	}
@@ -662,7 +862,7 @@ func (a *azurednsProvider) fetchRecordSets(zoneName string) ([]*adns.RecordSet, 
 	return records, nil
 }
 
-func (a *azurednsProvider) EnsureDomainExists(domain string) error {
+func (a *azurednsProvider) EnsureZoneExists(domain string) error {
 	if _, ok := a.zones[domain]; ok {
 		return nil
 	}

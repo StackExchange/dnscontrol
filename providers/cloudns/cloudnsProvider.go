@@ -205,12 +205,12 @@ func (c *cloudnsProvider) GetZoneRecords(domain string) (models.Records, error) 
 	return existingRecords, nil
 }
 
-// EnsureDomainExists returns an error if domain doesn't exist.
-func (c *cloudnsProvider) EnsureDomainExists(domain string) error {
+// EnsureZoneExists creates a zone if it does not exist
+func (c *cloudnsProvider) EnsureZoneExists(domain string) error {
 	if err := c.fetchDomainList(); err != nil {
 		return err
 	}
-	// domain already exists
+	// zone already exists
 	if _, ok := c.domainIndex[domain]; ok {
 		return nil
 	}

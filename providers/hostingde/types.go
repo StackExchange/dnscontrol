@@ -23,13 +23,17 @@ type request struct {
 	Page           uint    `json:"page,omitempty"`
 
 	// Update Zone
-	ZoneConfig      *zoneConfig `json:"zoneConfig"`
-	RecordsToAdd    []*record   `json:"recordsToAdd"`
-	RecordsToModify []*record   `json:"recordsToModify"`
-	RecordsToDelete []*record   `json:"recordsToDelete"`
+	ZoneConfig      *zoneConfig `json:"zoneConfig,omitempty"`
+	RecordsToAdd    []*record   `json:"recordsToAdd,omitempty"`
+	RecordsToModify []*record   `json:"recordsToModify,omitempty"`
+	RecordsToDelete []*record   `json:"recordsToDelete,omitempty"`
 
 	// Create Zone
-	Records []*record `json:"records"`
+	Records []*record `json:"records,omitempty"`
+
+	DomainName string        `json:"domainName,omitempty"`
+	Add        []dnsSecEntry `json:"add,omitempty"`
+	Remove     []dnsSecEntry `json:"remove,omitempty"`
 
 	// Domain
 	Domain *domainConfig `json:"domain"`
@@ -52,26 +56,35 @@ type domainConfig struct {
 	Name                string          `json:"name"`
 	Contacts            json.RawMessage `json:"contacts"`
 	Nameservers         []nameserver    `json:"nameservers"`
+	DNSSecEntries       []dnsSecEntry   `json:"dnsSecEntries"`
 	TransferLockEnabled bool            `json:"transferLockEnabled"`
 }
 
+type dnsSecEntry struct {
+	KeyData dnsSecKey `json:"keyData"`
+	Comment string    `json:"comment"`
+	KeyTag  uint32    `json:"keyTag"`
+}
+
 type zoneConfig struct {
-	ID           string `json:"id"`
-	DNSSECMode   string `json:"dnsSecMode"`
-	EmailAddress string `json:"emailAddress,omitempty"`
-	MasterIP     string `json:"masterIp"`
-	Name         string `json:"name"` // Not required per docs, but required IRL
-	NameUnicode  string `json:"nameUnicode"`
-	// SOAValues    struct {
-	// 	Refresh     uint32 `json:"refresh"`
-	// 	Retry       uint32 `json:"retry"`
-	// 	Expire      uint32 `json:"expire"`
-	// 	TTL         uint32 `json:"ttl"`
-	// 	NegativeTTL uint32 `json:"negativeTtl"`
-	// } `json:"soaValues,omitempty"`
+	ID                    string          `json:"id"`
+	DNSSECMode            string          `json:"dnsSecMode"`
+	EmailAddress          string          `json:"emailAddress,omitempty"`
+	MasterIP              string          `json:"masterIp"`
+	Name                  string          `json:"name"` // Not required per docs, but required IRL
+	NameUnicode           string          `json:"nameUnicode"`
+	SOAValues             soaValues       `json:"soaValues,omitempty"`
 	Type                  string          `json:"type"`
 	TemplateValues        json.RawMessage `json:"templateValues,omitempty"`
 	ZoneTransferWhitelist []string        `json:"zoneTransferWhitelist"`
+}
+
+type soaValues struct {
+	Refresh     uint32 `json:"refresh"`
+	Retry       uint32 `json:"retry"`
+	Expire      uint32 `json:"expire"`
+	NegativeTTL uint32 `json:"negativeTtl"`
+	TTL         uint32 `json:"ttl"`
 }
 
 type zone struct {
@@ -80,10 +93,10 @@ type zone struct {
 }
 
 type dnsSecOptions struct {
-	Keys       []dnsSecKey `json:"flags,omitempty"`
-	Algorithms []string    `json:"algorithms,omitempty"`
-	NSECMode   string      `json:"nsecMode"`
-	PublishKSK bool        `json:"publishKsk"`
+	Keys       []dnsSecEntry `json:"keys,omitempty"`
+	Algorithms []string      `json:"algorithms,omitempty"`
+	NSECMode   string        `json:"nsecMode"`
+	PublishKSK bool          `json:"publishKsk"`
 }
 
 type dnsSecKey struct {

@@ -1,6 +1,11 @@
 package bind
 
-import "github.com/StackExchange/dnscontrol/v3/models"
+import (
+	"fmt"
+	"github.com/StackExchange/dnscontrol/v3/models"
+	"github.com/StackExchange/dnscontrol/v3/pkg/soautil"
+	"strings"
+)
 
 func makeSoa(origin string, defSoa *SoaDefaults, existing, desired *models.RecordConfig) (*models.RecordConfig, uint32) {
 	// Create a SOA record.  Take data from desired, existing, default,
@@ -19,10 +24,18 @@ func makeSoa(origin string, defSoa *SoaDefaults, existing, desired *models.Recor
 		desired = &models.RecordConfig{}
 	}
 
+	soaMail := firstNonNull(desired.SoaMbox, existing.SoaMbox, defSoa.Mbox, "DEFAULT_NOT_SET.")
+	if strings.Contains(soaMail, "@") {
+		soaMail = soautil.RFC5322MailToBind(soaMail)
+	} else {
+		fmt.Println("WARNING: SOA hostmaster address must be in the format hostmaster@example.com")
+		fmt.Println("WARNING: hostmaster.example.com is deprecated and will be dropped in a future version")
+	}
+
 	soaRec.TTL = firstNonZero(desired.TTL, defSoa.TTL, existing.TTL, models.DefaultTTL)
 	soaRec.SetTargetSOA(
 		firstNonNull(desired.GetTargetField(), existing.GetTargetField(), defSoa.Ns, "DEFAULT_NOT_SET."),
-		firstNonNull(desired.SoaMbox, existing.SoaMbox, defSoa.Mbox, "DEFAULT_NOT_SET."),
+		soaMail,
 		firstNonZero(desired.SoaSerial, existing.SoaSerial, defSoa.Serial, 1),
 		firstNonZero(desired.SoaRefresh, existing.SoaRefresh, defSoa.Refresh, 3600),
 		firstNonZero(desired.SoaRetry, existing.SoaRetry, defSoa.Retry, 600),
