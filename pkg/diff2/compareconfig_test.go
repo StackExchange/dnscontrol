@@ -206,3 +206,36 @@ compFn: <nil>
 		})
 	}
 }
+
+func Test_mkCompareBlobs(t *testing.T) {
+	type args struct {
+		rc *models.RecordConfig
+		f  func(*models.RecordConfig) string
+	}
+	tests := []struct {
+		name  string
+		args  args
+		want  string
+		want1 string
+	}{
+		{
+			name: "simple",
+			args: args{
+				rc: makeRec("label", "A", "1.1.1.1"),
+			},
+			want:  "1.1.1.1",
+			want1: "1.1.1.1 ttl=300",
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got, got1 := mkCompareBlobs(tt.args.rc, tt.args.f)
+			if got != tt.want {
+				t.Errorf("mkCompareBlobs() got = %q, want %q", got, tt.want)
+			}
+			if got1 != tt.want1 {
+				t.Errorf("mkCompareBlobs() got1 = %q, want %q", got1, tt.want1)
+			}
+		})
+	}
+}

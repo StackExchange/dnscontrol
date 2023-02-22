@@ -18,6 +18,8 @@ func analyzeByRecordSet(cc *CompareConfig) ChangeList {
 			ets := rt.existingTargets
 			dts := rt.desiredTargets
 			msgs := genmsgs(ets, dts)
+			//cl := diffTargets(ets, dts)
+			//msgs := justMsgs(cl)
 			if len(msgs) == 0 { // No differences?
 				//fmt.Printf("DEBUG: done. Records are the same\n")
 				// The records at this rset are the same. No work to be done.
@@ -179,58 +181,70 @@ func removeCommon(existing, desired []targetConfig) ([]targetConfig, []targetCon
 	// On the other hand, this function typically receives lists of 1-3 elements
 	// and any optimization is probably fruitless.
 
+	// Sort to make comparisons easier
+	sort.Slice(existing, func(i, j int) bool { return existing[i].comparableFull < existing[j].comparableFull })
+	sort.Slice(desired, func(i, j int) bool { return desired[i].comparableFull < desired[j].comparableFull })
+
 	eKeys := map[string]*targetConfig{}
 	for _, v := range existing {
 		v := v
-		eKeys[v.compareable] = &v
+		eKeys[v.comparableFull] = &v
 	}
 	dKeys := map[string]*targetConfig{}
 	for _, v := range desired {
 		v := v
-		dKeys[v.compareable] = &v
+		dKeys[v.comparableFull] = &v
 	}
 
 	return filterBy(existing, dKeys), filterBy(desired, eKeys)
 }
 
-// Find the changes that are exclusively changes in TTL.
-func splitTTLOnly(existing, desired []targetConfig) (
-	existDiff []targetConfig, desireDiff []targetConfig,
-	existTTL models.Records, desireTTL models.Records,
-) {
+// findTTLChanges finds the records that ONLY change their TTL. For those, generate a Change.
+// Remove such items from the list.
+func findTTLChanges(existing, desired []targetConfig) ([]targetConfig, []targetConfig, ChangeList) {
+	//fmt.Printf("DEBUG: findTTLChanges(%v,\n%v)\n", existing, desired)
+
+	if (len(existing) == 0) || (len(desired) == 0) {
+		return existing, desired, nil
+	}
+
+	// Sort to make comparisons easier
+	sort.Slice(existing, func(i, j int) bool { return existing[i].comparableNoTTL < existing[j].comparableNoTTL })
+	sort.Slice(desired, func(i, j int) bool { return desired[i].comparableNoTTL < desired[j].comparableNoTTL })
+
+	var instructions ChangeList
+	var existDiff, desiredDiff []targetConfig
 	ei := 0
 	di := 0
-
 	for (ei < len(existing)) && (di < len(desired)) {
 		er := existing[ei].rec
 		dr := desired[di].rec
-		ecomp := existing[ei].compareable
-		dcomp := desired[di].compareable
+		ecomp := existing[ei].comparableNoTTL
+		dcomp := desired[di].comparableNoTTL
 
 		if ecomp == dcomp && er.TTL == dr.TTL {
 			fmt.Printf("DEBUG: ecomp=%q dcomp=%q er.TTL=%v dr.TTL=%v\n", ecomp, dcomp, er.TTL, dr.TTL)
 			panic("Should not happen. There should be some difference!")
 		}
 
-		//fmt.Printf("DEBUG ecomp=%q dcomp=%q ettl=%d dttl=%d\n", ecomp, dcomp, er.TTL, dr.TTL)
 		if ecomp == dcomp && er.TTL != dr.TTL {
-			//fmt.Printf("DEBUG: equal\n")
-			existTTL = append(existTTL, er)
-			desireTTL = append(desireTTL, dr)
+			//m := fmt.Sprintf("CHANGE-TTL %s %s %s ttl=%d->%d", dr.NameFQDN, dr.Type, dr.GetTargetRFC1035Quoted(), er.TTL, dr.TTL)
+			m := fmt.Sprintf("CHANGE-TTL %s %s ", dr.NameFQDN, dr.Type) + humanDiff(existing[ei], desired[di])
+			instructions = append(instructions, mkChange(dr.NameFQDN, dr.Type, []string{m},
+				models.Records{er},
+				models.Records{dr},
+			))
 			ei++
 			di++
 		} else if ecomp < dcomp {
-			//fmt.Printf("DEBUG: less\n")
 			existDiff = append(existDiff, existing[ei])
 			ei++
 		} else if ecomp > dcomp {
-			//fmt.Printf("DEBUG: greater\n")
-			desireDiff = append(desireDiff, desired[di])
+			desiredDiff = append(desiredDiff, desired[di])
 			di++
 		} else {
-			panic("Should not happen. e and d can not be both equal, less and greater")
+			panic("shoudl not happen. ecomp != ")
 		}
-
 	}
 
 	// Any remainder goes to the *Diff result:
@@ -240,10 +254,10 @@ func splitTTLOnly(existing, desired []targetConfig) (
 	}
 	if di < len(desired) {
 		//fmt.Printf("DEBUG: append d len()=%d\n", di)
-		desireDiff = append(desireDiff, desired[di:]...)
+		desiredDiff = append(desiredDiff, desired[di:]...)
 	}
 
-	return
+	return existDiff, desiredDiff, instructions
 }
 
 // Return s but remove any items that can be found in m.
@@ -254,8 +268,8 @@ func filterBy(s []targetConfig, m map[string]*targetConfig) []targetConfig {
 	// }
 	i := 0 // output index
 	for _, x := range s {
-		if _, ok := m[x.compareable]; !ok {
-			//fmt.Printf("DEBUG: comp %q NO\n", x.compareable)
+		if _, ok := m[x.comparableFull]; !ok {
+			//fmt.Printf("DEBUG: comp %q NO\n", x.comparable)
 			// copy and increment index
 			s[i] = x
 			i++
@@ -272,21 +286,29 @@ func filterBy(s []targetConfig, m map[string]*targetConfig) []targetConfig {
 }
 
 func humanDiff(a, b targetConfig) string {
-	aTTL := a.rec.TTL
-	bTTL := b.rec.TTL
-	acombined := a.compareable
-	bcombined := b.compareable
-	combinedDiff := acombined != bcombined
-	ttlDiff := aTTL != bTTL
-	// TODO(tlim): Records like MX and SRV should have more clever output.
-	// For example if only the MX priority changes, show that.
-	if combinedDiff && ttlDiff {
-		return fmt.Sprintf("(%s ttl=%d) -> (%s ttl=%d)", acombined, aTTL, bcombined, bTTL)
+	if a.comparableNoTTL != b.comparableNoTTL {
+		// The recorddata is different.
+		return fmt.Sprintf("(%s) -> (%s)", a.comparableFull, b.comparableFull)
 	}
-	if combinedDiff {
-		return fmt.Sprintf("(%s) -> (%s)", acombined, bcombined)
-	}
-	return fmt.Sprintf("%s (ttl %d->%d)", acombined, aTTL, bTTL)
+
+	// The recordata is equal; just the TTLs are different:
+	return fmt.Sprintf("%s ttl=(%d->%d)", a.comparableNoTTL, a.rec.TTL, b.rec.TTL)
+
+	// aTTL := a.rec.TTL
+	// bTTL := b.rec.TTL
+	// acombined := a.comparableFull
+	// bcombined := b.comparableFull
+	// combinedDiff := acombined != bcombined
+	// ttlDiff := aTTL != bTTL
+	// // TODO(tlim): Records like MX and SRV should have more clever output.
+	// // For example if only the MX priority changes, show that.
+	// if combinedDiff && ttlDiff {
+	// 	return fmt.Sprintf("(%s ttl=%d) -> (%s ttl=%d)", acombined, aTTL, bcombined, bTTL)
+	// }
+	// if combinedDiff {
+	// 	return fmt.Sprintf("(%s) -> (%s)", acombined, bcombined)
+	// }
+	// return fmt.Sprintf("%s (ttl %d->%d)", acombined, aTTL, bTTL)
 }
 
 func diffTargets(existing, desired []targetConfig) ChangeList {
@@ -298,15 +320,11 @@ func diffTargets(existing, desired []targetConfig) ChangeList {
 		return nil
 	}
 
-	// Sort to make comparisons easier
-	sort.Slice(existing, func(i, j int) bool { return existing[i].compareable < existing[j].compareable })
-	sort.Slice(desired, func(i, j int) bool { return desired[i].compareable < desired[j].compareable })
-
 	var instructions ChangeList
 
-	// remove the exact matches.
 	//fmt.Printf("DEBUG: diffTargets BEFORE existing=%+v\n", existing)
 	//fmt.Printf("DEBUG: diffTargets BEFORE desired=%+v\n", desired)
+	// remove the exact matches.
 	existing, desired = removeCommon(existing, desired)
 	//fmt.Printf("DEBUG: diffTargets AFTER existing=%+v\n", existing)
 	//fmt.Printf("DEBUG: diffTargets AFTER desired=%+v\n", desired)
@@ -315,23 +333,26 @@ func diffTargets(existing, desired []targetConfig) ChangeList {
 	// records that have the same GetTargetCombined() but different
 	// TTLs.
 
-	// Find TTL changes:
-	existing, desired, existingTTL, desiredTTL := splitTTLOnly(existing, desired)
-	for i := range desiredTTL {
-		er := existingTTL[i]
-		dr := desiredTTL[i]
+	existing, desired, newChanges := findTTLChanges(existing, desired)
+	instructions = append(instructions, newChanges...)
 
-		m := fmt.Sprintf("CHANGE %s %s ", dr.NameFQDN, dr.Type) + humanDiff(existing[i], desired[i])
-
-		instructions = append(instructions, mkChange(dr.NameFQDN, dr.Type, []string{m},
-			models.Records{er},
-			models.Records{dr},
-		))
-	}
+	// Sort to make comparisons easier
+	//sort.Slice(existing, func(i, j int) bool { return existing[i].comparableFull < existing[j].comparableFull })
+	//sort.Slice(desired, func(i, j int) bool { return desired[i].comparableFull < desired[j].comparableFull })
 
 	// the common chunk are changes (regardless of TTL)
 	mi := min(len(existing), len(desired))
-	//fmt.Printf("DEBUG: min=%d\n", mi)
+	// fmt.Printf("DEBUG: min=%d\n", mi)
+
+	// fmt.Printf("DEBUG: existing\n")
+	// for i, j := range existing {
+	// 	fmt.Printf("     DEBUG: %03d: %+v\n", i, j)
+	// }
+	// fmt.Printf("DEBUG: desired\n")
+	// for i, j := range desired {
+	// 	fmt.Printf("     DEBUG: %03d: %+v\n", i, j)
+	// }
+
 	for i := 0; i < mi; i++ {
 		//fmt.Println(i, "CHANGE")
 		er := existing[i].rec
@@ -349,7 +370,7 @@ func diffTargets(existing, desired []targetConfig) ChangeList {
 	for i := mi; i < len(existing); i++ {
 		//fmt.Println(i, "DEL")
 		er := existing[i].rec
-		m := fmt.Sprintf("DELETE %s %s %s", er.NameFQDN, er.Type, existing[i].compareable)
+		m := fmt.Sprintf("DELETE %s %s %s", er.NameFQDN, er.Type, existing[i].comparableFull)
 		instructions = append(instructions, mkDeleteRec(er.NameFQDN, er.Type, []string{m}, er))
 	}
 
@@ -357,7 +378,7 @@ func diffTargets(existing, desired []targetConfig) ChangeList {
 	for i := mi; i < len(desired); i++ {
 		//fmt.Println(i, "CREATE")
 		dr := desired[i].rec
-		m := fmt.Sprintf("CREATE %s %s %s", dr.NameFQDN, dr.Type, desired[i].compareable)
+		m := fmt.Sprintf("CREATE %s %s %s", dr.NameFQDN, dr.Type, desired[i].comparableFull)
 		instructions = append(instructions, mkAdd(dr.NameFQDN, dr.Type, []string{m}, models.Records{dr}))
 	}
 
