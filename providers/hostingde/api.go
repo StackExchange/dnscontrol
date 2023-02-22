@@ -137,14 +137,14 @@ func (hp *hostingdeProvider) updateZone(zc *zoneConfig, DnsSecOptions *dnsSecOpt
 	toDelete := []*record{}
 	for _, d := range del {
 		r := recordToNative(d.Existing)
-		r.ID = d.Existing.Original.(*record).ID
+		r.ID = d.Existing.Original.(record).ID
 		toDelete = append(toDelete, r)
 	}
 
 	toModify := []*record{}
 	for _, m := range mod {
 		r := recordToNative(m.Desired)
-		r.ID = m.Existing.Original.(*record).ID
+		r.ID = m.Existing.Original.(record).ID
 		toModify = append(toModify, r)
 	}
 
