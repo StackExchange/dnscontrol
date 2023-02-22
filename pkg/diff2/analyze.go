@@ -18,8 +18,6 @@ func analyzeByRecordSet(cc *CompareConfig) ChangeList {
 			ets := rt.existingTargets
 			dts := rt.desiredTargets
 			msgs := genmsgs(ets, dts)
-			//cl := diffTargets(ets, dts)
-			//msgs := justMsgs(cl)
 			if len(msgs) == 0 { // No differences?
 				//fmt.Printf("DEBUG: done. Records are the same\n")
 				// The records at this rset are the same. No work to be done.
@@ -243,7 +241,7 @@ func findTTLChanges(existing, desired []targetConfig) ([]targetConfig, []targetC
 			desiredDiff = append(desiredDiff, desired[di])
 			di++
 		} else {
-			panic("shoudl not happen. ecomp != ")
+			panic("should not happen. ecomp cant be both == and != dcomp")
 		}
 	}
 
@@ -285,30 +283,19 @@ func filterBy(s []targetConfig, m map[string]*targetConfig) []targetConfig {
 	return s
 }
 
+// humanDiff returns a human-friendly string showing what changed
+// between a and b.
 func humanDiff(a, b targetConfig) string {
+	// TODO(tlim): Records like MX and SRV should have more clever output.
+	// For example if only the MX priority changes, show just that.
+
 	if a.comparableNoTTL != b.comparableNoTTL {
-		// The recorddata is different.
+		// The recorddata is different:
 		return fmt.Sprintf("(%s) -> (%s)", a.comparableFull, b.comparableFull)
 	}
 
-	// The recordata is equal; just the TTLs are different:
+	// Just the TTLs are different:
 	return fmt.Sprintf("%s ttl=(%d->%d)", a.comparableNoTTL, a.rec.TTL, b.rec.TTL)
-
-	// aTTL := a.rec.TTL
-	// bTTL := b.rec.TTL
-	// acombined := a.comparableFull
-	// bcombined := b.comparableFull
-	// combinedDiff := acombined != bcombined
-	// ttlDiff := aTTL != bTTL
-	// // TODO(tlim): Records like MX and SRV should have more clever output.
-	// // For example if only the MX priority changes, show that.
-	// if combinedDiff && ttlDiff {
-	// 	return fmt.Sprintf("(%s ttl=%d) -> (%s ttl=%d)", acombined, aTTL, bcombined, bTTL)
-	// }
-	// if combinedDiff {
-	// 	return fmt.Sprintf("(%s) -> (%s)", acombined, bcombined)
-	// }
-	// return fmt.Sprintf("%s (ttl %d->%d)", acombined, aTTL, bTTL)
 }
 
 func diffTargets(existing, desired []targetConfig) ChangeList {
@@ -337,21 +324,11 @@ func diffTargets(existing, desired []targetConfig) ChangeList {
 	instructions = append(instructions, newChanges...)
 
 	// Sort to make comparisons easier
-	//sort.Slice(existing, func(i, j int) bool { return existing[i].comparableFull < existing[j].comparableFull })
-	//sort.Slice(desired, func(i, j int) bool { return desired[i].comparableFull < desired[j].comparableFull })
+	sort.Slice(existing, func(i, j int) bool { return existing[i].comparableFull < existing[j].comparableFull })
+	sort.Slice(desired, func(i, j int) bool { return desired[i].comparableFull < desired[j].comparableFull })
 
-	// the common chunk are changes (regardless of TTL)
+	// the remaining chunks are changes (regardless of TTL)
 	mi := min(len(existing), len(desired))
-	// fmt.Printf("DEBUG: min=%d\n", mi)
-
-	// fmt.Printf("DEBUG: existing\n")
-	// for i, j := range existing {
-	// 	fmt.Printf("     DEBUG: %03d: %+v\n", i, j)
-	// }
-	// fmt.Printf("DEBUG: desired\n")
-	// for i, j := range desired {
-	// 	fmt.Printf("     DEBUG: %03d: %+v\n", i, j)
-	// }
 
 	for i := 0; i < mi; i++ {
 		//fmt.Println(i, "CHANGE")
