@@ -547,9 +547,6 @@ func processSplitHorizonDomains(config *models.DNSConfig) error {
 //}
 
 func checkAutoDNSSEC(dc *models.DomainConfig) (errs []error) {
-	if dc.AutoDNSSEC != "" && dc.AutoDNSSEC != "on" && dc.AutoDNSSEC != "off" {
-		errs = append(errs, fmt.Errorf("domain %q AutoDNSSEC=%q is invalid (expecting \"\", \"off\", or \"on\")", dc.Name, dc.AutoDNSSEC))
-	}
 	return
 }
 
