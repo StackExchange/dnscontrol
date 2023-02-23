@@ -547,6 +547,13 @@ func processSplitHorizonDomains(config *models.DNSConfig) error {
 //}
 
 func checkAutoDNSSEC(dc *models.DomainConfig) (errs []error) {
+	if dc.AutoDNSSEC == "on" {
+		for providerName, _ := range dc.DNSProviderNames {
+			if dc.RegistrarName != providerName {
+				errs = append(errs, fmt.Errorf("AutoDNSSEC is enabled, but DNS provider %s does not match registrar %s", providerName, dc.RegistrarName))
+			}
+		}
+	}
 	return
 }
 
