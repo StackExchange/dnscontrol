@@ -48,7 +48,7 @@ require (
 	github.com/robertkrimen/otto v0.2.1
 	github.com/softlayer/softlayer-go v1.1.0
 	github.com/stretchr/testify v1.8.1
-	github.com/transip/gotransip/v6 v6.18.0
+	github.com/transip/gotransip/v6 v6.19.0
 	github.com/urfave/cli/v2 v2.24.4
 	github.com/xddxdd/ottoext v0.0.0-20221109171055-210517fa4419
 	golang.org/x/net v0.7.0
