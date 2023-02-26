@@ -22,8 +22,8 @@ import (
 )
 
 var providerToRun = flag.String("provider", "", "Provider to run")
-var startIdx = flag.Int("start", 0, "Test number to begin with")
-var endIdx = flag.Int("end", 0, "Test index to stop after")
+var startIdx = flag.Int("start", -1, "Test number to begin with")
+var endIdx = flag.Int("end", -1, "Test index to stop after")
 var verbose = flag.Bool("verbose", false, "Print corrections as you run them")
 var printElapsed = flag.Bool("elapsed", false, "Print elapsed time for each testgroup")
 var enableCFWorkers = flag.Bool("cfworkers", true, "Set false to disable CF worker tests")
@@ -220,7 +220,7 @@ func makeChanges(t *testing.T, prv providers.DNSServiceProvider, dc *models.Doma
 		}
 		for _, c := range corrections {
 			if *verbose {
-				t.Log(c.Msg)
+				t.Log("\n" + c.Msg)
 			}
 			err = c.F()
 			if err != nil {
@@ -254,8 +254,11 @@ func runTests(t *testing.T, prv providers.DNSServiceProvider, domainName string,
 	testGroups := makeTests(t)
 
 	firstGroup := *startIdx
+	if firstGroup == -1 {
+		firstGroup = 0
+	}
 	lastGroup := *endIdx
-	if lastGroup == 0 {
+	if lastGroup == -1 {
 		lastGroup = len(testGroups)
 	}
 
@@ -291,7 +294,7 @@ func runTests(t *testing.T, prv providers.DNSServiceProvider, domainName string,
 		}
 
 		// Remove all records so next group starts with a clean slate.
-		makeChanges(t, prv, dc, tc("Empty"), "Post cleanup", false, nil)
+		makeChanges(t, prv, dc, tc("Empty"), "Post cleanup", true, nil)
 
 		elapsed := time.Since(start)
 		if *printElapsed {
@@ -697,6 +700,11 @@ func makeTests(t *testing.T) []*TestGroup {
 			tc("Change A target", a("testa", "1.2.3.4")),
 		),
 
+		testgroup("Attl",
+			tc("Create Arc", ttl(a("testa", "1.1.1.1"), 333)),
+			tc("Change TTL", ttl(a("testa", "1.1.1.1"), 999)),
+		),
+
 		testgroup("MX",
 			tc("Create MX", mx("testmx", 5, "foo.com.")),
 			tc("Change MX target", mx("testmx", 5, "bar.com.")),
@@ -733,10 +741,10 @@ func makeTests(t *testing.T) []*TestGroup {
 		// Exercise TTL operations.
 		testgroup("TTL",
 			not("NETCUP"), // NETCUP does not support TTLs.
-			tc("Start", a("@", "1.2.3.4"), a("www", "1.2.3.4"), a("www", "5.6.7.8")),
-			tc("Change a ttl", ttl(a("@", "1.2.3.4"), 1000), a("www", "1.2.3.4"), a("www", "5.6.7.8")),
-			tc("Change single target from set", ttl(a("@", "1.2.3.4"), 1000), a("www", "2.2.2.2"), a("www", "5.6.7.8")),
-			tc("Change all ttls", ttl(a("@", "1.2.3.4"), 500), ttl(a("www", "2.2.2.2"), 400), ttl(a("www", "5.6.7.8"), 400)),
+			tc("Start", ttl(a("@", "8.8.8.8"), 666), a("www", "1.2.3.4"), a("www", "5.6.7.8")),
+			tc("Change a ttl", ttl(a("@", "8.8.8.8"), 1000), a("www", "1.2.3.4"), a("www", "5.6.7.8")),
+			tc("Change single target from set", ttl(a("@", "8.8.8.8"), 1000), a("www", "2.2.2.2"), a("www", "5.6.7.8")),
+			tc("Change all ttls", ttl(a("@", "8.8.8.8"), 500), ttl(a("www", "2.2.2.2"), 400), ttl(a("www", "5.6.7.8"), 400)),
 		),
 
 		// This is a strange one.  It adds a new record to an existing
@@ -1014,6 +1022,12 @@ func makeTests(t *testing.T) []*TestGroup {
 			tc("Null Target", srv("_sip._tcp", 15, 65, 75, ".")),
 		),
 
+		// https://github.com/StackExchange/dnscontrol/issues/2066
+		testgroup("SRV", requires(providers.CanUseSRV),
+			tc("Create SRV333", ttl(srv("_sip._tcp", 5, 6, 7, "foo.com."), 333)),
+			tc("Change TTL999", ttl(srv("_sip._tcp", 5, 6, 7, "foo.com."), 999)),
+		),
+
 		testgroup("SSHFP",
 			requires(providers.CanUseSSHFP),
 			tc("SSHFP record",
@@ -1137,7 +1151,7 @@ func makeTests(t *testing.T) []*TestGroup {
 
 		// AZURE features
 
-		testgroup("AZURE_ALIAS",
+		testgroup("AZURE_ALIAS_A",
 			requires(providers.CanUseAzureAlias),
 			tc("create dependent A records",
 				a("foo.a", "1.2.3.4"),
@@ -1148,11 +1162,20 @@ func makeTests(t *testing.T) []*TestGroup {
 				a("quux.a", "2.3.4.5"),
 				azureAlias("bar.a", "A", "/subscriptions/**subscription-id**/resourceGroups/**resource-group**/providers/Microsoft.Network/dnszones/**current-domain-no-trailing**/A/foo.a"),
 			),
-			tc("change it",
+			tc("change aliasA",
 				a("foo.a", "1.2.3.4"),
 				a("quux.a", "2.3.4.5"),
 				azureAlias("bar.a", "A", "/subscriptions/**subscription-id**/resourceGroups/**resource-group**/providers/Microsoft.Network/dnszones/**current-domain-no-trailing**/A/quux.a"),
 			),
+			tc("change backA",
+				a("foo.a", "1.2.3.4"),
+				a("quux.a", "2.3.4.5"),
+				azureAlias("bar.a", "A", "/subscriptions/**subscription-id**/resourceGroups/**resource-group**/providers/Microsoft.Network/dnszones/**current-domain-no-trailing**/A/foo.a"),
+			),
+		),
+
+		testgroup("AZURE_ALIAS_CNAME",
+			requires(providers.CanUseAzureAlias),
 			tc("create dependent CNAME records",
 				cname("foo.cname", "google.com"),
 				cname("quux.cname", "google2.com"),
@@ -1160,12 +1183,17 @@ func makeTests(t *testing.T) []*TestGroup {
 			tc("ALIAS to CNAME record in same zone",
 				cname("foo.cname", "google.com"),
 				cname("quux.cname", "google2.com"),
-				azureAlias("bar", "CNAME", "/subscriptions/**subscription-id**/resourceGroups/**resource-group**/providers/Microsoft.Network/dnszones/**current-domain-no-trailing**/CNAME/foo.cname"),
+				azureAlias("bar.cname", "CNAME", "/subscriptions/**subscription-id**/resourceGroups/**resource-group**/providers/Microsoft.Network/dnszones/**current-domain-no-trailing**/CNAME/foo.cname"),
 			),
-			tc("change it",
+			tc("change aliasCNAME",
 				cname("foo.cname", "google.com"),
 				cname("quux.cname", "google2.com"),
 				azureAlias("bar.cname", "CNAME", "/subscriptions/**subscription-id**/resourceGroups/**resource-group**/providers/Microsoft.Network/dnszones/**current-domain-no-trailing**/CNAME/quux.cname"),
+			),
+			tc("change backCNAME",
+				cname("foo.cname", "google.com"),
+				cname("quux.cname", "google2.com"),
+				azureAlias("bar.cname", "CNAME", "/subscriptions/**subscription-id**/resourceGroups/**resource-group**/providers/Microsoft.Network/dnszones/**current-domain-no-trailing**/CNAME/foo.cname"),
 			),
 		),
 

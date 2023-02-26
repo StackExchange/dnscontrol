@@ -156,8 +156,8 @@ func (c *hednsProvider) ListZones() ([]string, error) {
 	return domains, err
 }
 
-// EnsureDomainExists creates the domain if it does not exist.
-func (c *hednsProvider) EnsureDomainExists(domain string) error {
+// EnsureZoneExists creates a zone if it does not exist
+func (c *hednsProvider) EnsureZoneExists(domain string) error {
 	domains, err := c.ListZones()
 	if err != nil {
 		return err

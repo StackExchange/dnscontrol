@@ -19,6 +19,7 @@ type hostingdeProvider struct {
 	filterAccountId string
 	baseURL         string
 	nameservers     []string
+	defaultSoa      soaValues
 }
 
 func (hp *hostingdeProvider) getDomainConfig(domain string) (*domainConfig, error) {
@@ -136,14 +137,14 @@ func (hp *hostingdeProvider) updateZone(zc *zoneConfig, DnsSecOptions *dnsSecOpt
 	toDelete := []*record{}
 	for _, d := range del {
 		r := recordToNative(d.Existing)
-		r.ID = d.Existing.Original.(*record).ID
+		r.ID = d.Existing.Original.(record).ID
 		toDelete = append(toDelete, r)
 	}
 
 	toModify := []*record{}
 	for _, m := range mod {
 		r := recordToNative(m.Desired)
-		r.ID = m.Existing.Original.(*record).ID
+		r.ID = m.Existing.Original.(record).ID
 		toModify = append(toModify, r)
 	}
 
@@ -245,6 +246,20 @@ func (hp *hostingdeProvider) getDNSSECOptions(zoneConfigId string) (*dnsSecOptio
 	}
 
 	return dnsSecOptions[0], nil
+}
+
+func (hp *hostingdeProvider) dnsSecKeyModify(domain string, add []dnsSecEntry, remove []dnsSecEntry) error {
+	params := request{
+		DomainName: domain,
+		Add:        add,
+		Remove:     remove,
+	}
+
+	_, err := hp.get("domain", "dnsSecKeyModify", params)
+	if err != nil {
+		return err
+	}
+	return nil
 }
 
 func (hp *hostingdeProvider) get(service, method string, params request) (*responseData, error) {

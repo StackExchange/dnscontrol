@@ -489,7 +489,7 @@ func (r *route53Provider) GetDomainCorrections(dc *models.DomainConfig) ([]*mode
 		switch inst.Type {
 
 		case diff2.REPORT:
-			corrections = append(corrections, &models.Correction{Msg: inst.MsgsJoined})
+			chg = r53Types.Change{}
 
 		case diff2.CREATE:
 			fallthrough
@@ -498,7 +498,7 @@ func (r *route53Provider) GetDomainCorrections(dc *models.DomainConfig) ([]*mode
 
 			// Make the rrset to be UPSERTed:
 			var rrset *r53Types.ResourceRecordSet
-			if instType == "R53_ALIAS" {
+			if instType == "R53_ALIAS" || strings.HasPrefix(instType, "R53_ALIAS_") {
 				// A R53_ALIAS_* requires ResourceRecordSet to a a single item, not a list.
 				if len(inst.New) != 1 {
 					log.Fatal("Only one R53_ALIAS_ permitted on a label")
@@ -586,7 +586,9 @@ func (r *route53Provider) GetDomainCorrections(dc *models.DomainConfig) ([]*mode
 func reorderInstructions(changes diff2.ChangeList) diff2.ChangeList {
 	var main, tail diff2.ChangeList
 	for _, change := range changes {
-		if change.Key.Type == "R53_ALIAS" {
+		// Reports should be early in the list.
+		// R53_ALIAS_ records should go to the tail.
+		if change.Type != diff2.REPORT && strings.HasPrefix(change.Key.Type, "R53_ALIAS_") {
 			tail = append(tail, change)
 		} else {
 			main = append(main, change)
@@ -818,7 +820,7 @@ func unescape(s *string) string {
 	return name
 }
 
-func (r *route53Provider) EnsureDomainExists(domain string) error {
+func (r *route53Provider) EnsureZoneExists(domain string) error {
 	if err := r.getZones(); err != nil {
 		return err
 	}
@@ -888,6 +890,11 @@ func (b *changeBatcher) Next() bool {
 		c := &b.changes[end]
 
 		// Check that we won't exceed 1000 ResourceRecords in the request.
+		if c.ResourceRecordSet == nil {
+			end++
+			continue
+		}
+
 		rrsetSize := len(c.ResourceRecordSet.ResourceRecords)
 		if c.Action == r53Types.ChangeActionUpsert {
 			// "When the value of the Action element is UPSERT, each ResourceRecord element is counted twice."

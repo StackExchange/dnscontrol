@@ -83,8 +83,8 @@ func Test_analyzeByRecordSet(t *testing.T) {
 	}
 
 	origin := "f.com"
-	existing := models.Records{testDataAA1234, testDataAMX10a, testDataCCa, testDataEA15, e4, e5, e6, e7, e8, e9, e10, e11}
-	desired := models.Records{testDataAA1234clone, testDataAA12345, testDataAMX20b, d3, d4, d5, d6, d7, d8, d9, d10, d11, d12}
+	existingSample := models.Records{testDataAA1234, testDataAMX10a, testDataCCa, testDataEA15, e4, e5, e6, e7, e8, e9, e10, e11}
+	desiredSample := models.Records{testDataAA1234clone, testDataAA12345, testDataAMX20b, d3, d4, d5, d6, d7, d8, d9, d10, d11, d12}
 
 	tests := []struct {
 		name            string
@@ -227,8 +227,8 @@ ChangeList: len=2
 			name: "big",
 			args: args{
 				origin:   origin,
-				existing: existing,
-				desired:  desired,
+				existing: existingSample,
+				desired:  desiredSample,
 			},
 			wantMsgs: `
 CREATE laba.f.com A 1.2.3.5 ttl=300
@@ -406,9 +406,11 @@ ChangeList: len=12
 func mkTargetConfig(x ...*models.RecordConfig) []targetConfig {
 	var tc []targetConfig
 	for _, r := range x {
+		ct, cf := mkCompareBlobs(r, nil)
 		tc = append(tc, targetConfig{
-			compareable: mkCompareBlob(r, nil),
-			rec:         r,
+			comparableNoTTL: ct,
+			comparableFull:  cf,
+			rec:             r,
 		})
 	}
 	return tc
@@ -417,7 +419,7 @@ func mkTargetConfig(x ...*models.RecordConfig) []targetConfig {
 func mkTargetConfigMap(x ...*models.RecordConfig) map[string]*targetConfig {
 	var m = map[string]*targetConfig{}
 	for _, v := range mkTargetConfig(x...) {
-		m[v.compareable] = &v
+		m[v.comparableFull] = &v
 	}
 	return m
 }
@@ -445,8 +447,8 @@ func Test_diffTargets(t *testing.T) {
 					Key: models.RecordKey{NameFQDN: "laba.f.com", Type: "A"},
 					New: models.Records{testDataAA5678ttl700, testDataAA1234ttl700},
 					Msgs: []string{
-						"CHANGE laba.f.com A (5.6.7.8 ttl=300 ttl=300) -> (1.2.3.4 ttl=700 ttl=700)",
-						"CREATE laba.f.com A 5.6.7.8 ttl=700",
+						"CHANGE-TTL laba.f.com A 5.6.7.8 ttl=(300->700)",
+						"CREATE laba.f.com A 1.2.3.4 ttl=700",
 					},
 				},
 			},
@@ -527,9 +529,11 @@ func Test_diffTargets(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			//fmt.Printf("DEBUG: Test %02d\n", i)
 			got := diffTargets(tt.args.existing, tt.args.desired)
-			d := diff.Diff(strings.TrimSpace(justMsgString(got)), strings.TrimSpace(justMsgString(tt.want)))
+			g := strings.TrimSpace(justMsgString(got))
+			w := strings.TrimSpace(justMsgString(tt.want))
+			d := diff.Diff(g, w)
 			if d != "" {
-				//fmt.Printf("DEBUG: %d %d\n", len(got), len(tt.want))
+				//fmt.Printf("DEBUG: fail %q %q\n", g, w)
 				t.Errorf("diffTargets()\n diff=%s", d)
 			}
 		})
@@ -584,7 +588,7 @@ func Test_removeCommon(t *testing.T) {
 func comparables(s []targetConfig) []string {
 	var r []string
 	for _, j := range s {
-		r = append(r, j.compareable)
+		r = append(r, j.comparableFull)
 	}
 	return r
 }
@@ -646,8 +650,7 @@ func Test_splitTTLOnly(t *testing.T) {
 		args           args
 		wantExistDiff  []targetConfig
 		wantDesireDiff []targetConfig
-		wantExistTTL   models.Records
-		wantDesireTTL  models.Records
+		wantChanges    string
 	}{
 
 		{
@@ -656,10 +659,9 @@ func Test_splitTTLOnly(t *testing.T) {
 				existing: mkTargetConfig(testDataAA1234),
 				desired:  mkTargetConfig(testDataAA1234ttl700),
 			},
-			wantExistDiff:  mkTargetConfig(testDataAA1234),
-			wantDesireDiff: mkTargetConfig(testDataAA1234ttl700),
-			wantExistTTL:   models.Records{testDataAA1234},
-			wantDesireTTL:  models.Records{testDataAA1234ttl700},
+			wantExistDiff:  nil,
+			wantDesireDiff: nil,
+			wantChanges:    "ChangeList: len=1\n00: Change: verb=CHANGE\n    key={laba.f.com A}\n    old=[1.2.3.4]\n    new=[1.2.3.4]\n    msg=[\"CHANGE-TTL laba.f.com A 1.2.3.4 ttl=(300->700)\"]\n",
 		},
 
 		{
@@ -670,24 +672,21 @@ func Test_splitTTLOnly(t *testing.T) {
 			},
 			wantExistDiff:  mkTargetConfig(testDataAA1234),
 			wantDesireDiff: mkTargetConfig(testDataAA5678),
-			wantExistTTL:   models.Records{},
-			wantDesireTTL:  models.Records{},
+			wantChanges:    "ChangeList: len=0\n",
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			gotExistDiff, gotDesireDiff, gotExistTTL, gotDesireTTL := splitTTLOnly(tt.args.existing, tt.args.desired)
+			gotExistDiff, gotDesireDiff, gotChanges := findTTLChanges(tt.args.existing, tt.args.desired)
 			if !reflect.DeepEqual(gotExistDiff, tt.wantExistDiff) {
 				t.Errorf("splitTTLOnly() gotExistDiff = %v, want %v", gotExistDiff, tt.wantExistDiff)
 			}
 			if !reflect.DeepEqual(gotDesireDiff, tt.wantDesireDiff) {
 				t.Errorf("splitTTLOnly() gotDesireDiff = %v, want %v", gotDesireDiff, tt.wantDesireDiff)
 			}
-			if ((len(tt.wantExistTTL) != 0) && len(gotExistTTL) != 0) && !reflect.DeepEqual(gotExistTTL, tt.wantExistTTL) {
-				t.Errorf("splitTTLOnly() gotExistTTL = %v, want %v (len=%d %d)", gotExistTTL, tt.wantExistTTL, len(gotExistTTL), len(tt.wantExistTTL))
-			}
-			if ((len(tt.wantDesireTTL) != 0) && len(gotDesireTTL) != 0) && !reflect.DeepEqual(gotDesireTTL, tt.wantDesireTTL) {
-				t.Errorf("splitTTLOnly() gotDesireTTL = %v, want %v", gotDesireTTL, tt.wantDesireTTL)
+			gotChangesString := gotChanges.String()
+			if gotChangesString != tt.wantChanges {
+				t.Errorf("splitTTLOnly() gotChanges=\n%q, want=\n%q", gotChangesString, tt.wantChanges)
 			}
 		})
 	}

@@ -16,8 +16,7 @@
       "unmanaged": [
         {
           "label_pattern": "\\*.testignore",
-          "rType_pattern": "*",
-          "target_pattern": "*"
+          "rType_pattern": "*"
         }
       ]
     }

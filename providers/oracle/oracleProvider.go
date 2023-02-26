@@ -84,8 +84,8 @@ func (o *oracleProvider) ListZones() ([]string, error) {
 	return zones, nil
 }
 
-// EnsureDomainExists creates the domain if it does not exist.
-func (o *oracleProvider) EnsureDomainExists(domain string) error {
+// EnsureZoneExists creates a zone if it does not exist
+func (o *oracleProvider) EnsureZoneExists(domain string) error {
 	ctx, cancel := context.WithTimeout(context.Background(), time.Minute)
 	defer cancel()
 

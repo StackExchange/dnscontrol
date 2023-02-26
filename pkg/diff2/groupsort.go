@@ -18,7 +18,7 @@ func groupbyRSet(recs models.Records, origin string) []recset {
 
 	// Sort the NameFQDN to a consistent order. The actual sort methodology
 	// doesn't matter as long as equal values are adjacent.
-	// Use the PrettySort ordering so that the records are in a nice order.
+	// Use the PrettySort ordering so that the records are extra pretty.
 	pretty := prettyzone.PrettySort(recs, origin, 0, nil)
 	recs = pretty.Records
 
