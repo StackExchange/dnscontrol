@@ -141,13 +141,15 @@ func ByRecord(existing models.Records, dc *models.DomainConfig, compFunc Compara
 // Example usage:
 //
 // msgs, changes, err := diff2.ByZone(foundRecords, dc, nil)
-// if err != nil {
-//   return nil, err
-// }
-// if changes {
-// 	// Generate a "correction" that uploads the entire zone.
-// 	// (dc.Records are the new records for the zone).
-// }
+//
+//	if err != nil {
+//	  return nil, err
+//	}
+//
+//	if changes {
+//		// Generate a "correction" that uploads the entire zone.
+//		// (dc.Records are the new records for the zone).
+//	}
 //
 // Example providers include: BIND
 func ByZone(existing models.Records, dc *models.DomainConfig, compFunc ComparableFunc) ([]string, bool, error) {
