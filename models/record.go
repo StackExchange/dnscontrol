@@ -307,6 +307,8 @@ func (rc *RecordConfig) GetLabelFQDN() string {
 
 // ToDiffable returns a string that is comparable by a differ.
 // extraMaps: a list of maps that should be included in the comparison.
+// NB(tlim): This will be deprecated when pkg/diff is replaced by pkg/diff2.
+// Use // ToComparableNoTTL() instead.
 func (rc *RecordConfig) ToDiffable(extraMaps ...map[string]string) string {
 	var content string
 	switch rc.Type {
@@ -335,6 +337,16 @@ func (rc *RecordConfig) ToDiffable(extraMaps ...map[string]string) string {
 		}
 	}
 	return content
+}
+
+// ToComparableNoTTL returns a comparison string. If you need to compare two
+// RecordConfigs, you can simply compare the string returned by this function.
+// THe comparison includes all fields except TTL and any provider-specific
+// metafields.  Provider-specific metafields like CF_PROXY are not the same as
+// pseudo-records like ANAME or R53_ALIAS
+// This replaces ToDiff()
+func (rc *RecordConfig) ToComparableNoTTL() string {
+	return rc.GetTargetCombined()
 }
 
 // ToRR converts a RecordConfig to a dns.RR.

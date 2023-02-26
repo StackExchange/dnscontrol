@@ -750,7 +750,6 @@ func makeTests(t *testing.T) []*TestGroup {
 		// This is a strange one.  It adds a new record to an existing
 		// label but the pre-existing label has its TTL change.
 		testgroup("add to label and change orig ttl",
-			not("NAMEDOTCOM"), // Known bug:  https://github.com/StackExchange/dnscontrol/issues/2088
 			tc("Setup", ttl(a("www", "5.6.7.8"), 400)),
 			tc("Add at same label, new ttl", ttl(a("www", "5.6.7.8"), 700), ttl(a("www", "1.2.3.4"), 700)),
 		),

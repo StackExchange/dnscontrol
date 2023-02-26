@@ -82,8 +82,10 @@ type rTypeConfig struct {
 }
 
 type targetConfig struct {
-	compareable string               // A string that can be used to compare two rec's for equality.
-	rec         *models.RecordConfig // The RecordConfig itself.
+	comparableFull  string // A string that can be used to compare two rec's for equality.
+	comparableNoTTL string // A string that can be used to compare two rec's for equality, ignoring the TTL
+
+	rec *models.RecordConfig // The RecordConfig itself.
 }
 
 func NewCompareConfig(origin string, existing, desired models.Records, compFn ComparableFunc) *CompareConfig {
@@ -202,15 +204,23 @@ func (cc *CompareConfig) String() string {
 
 // Generate a string that can be used to compare this record to others
 // for equality.
-func mkCompareBlob(rc *models.RecordConfig, f func(*models.RecordConfig) string) string {
-	if f == nil {
-		return rc.ToDiffable()
+func mkCompareBlobs(rc *models.RecordConfig, f func(*models.RecordConfig) string) (string, string) {
+
+	// Start with the comparable string
+	comp := rc.ToComparableNoTTL()
+
+	// If the custom function exists, add its output
+	if f != nil {
+		addOn := f(rc)
+		if addOn != "" {
+			comp += " " + f(rc)
+		}
 	}
-	addOn := f(rc)
-	if addOn != "" {
-		return rc.ToDiffable() + " " + f(rc)
-	}
-	return rc.ToDiffable()
+
+	lenWithoutTTL := len(comp)
+	compFull := comp + fmt.Sprintf(" ttl=%d", rc.TTL)
+
+	return compFull[:lenWithoutTTL], compFull
 }
 
 func (cc *CompareConfig) addRecords(recs models.Records, storeInExisting bool) {
@@ -229,7 +239,7 @@ func (cc *CompareConfig) addRecords(recs models.Records, storeInExisting bool) {
 		key := rec.Key()
 		label := key.NameFQDN
 		rtype := key.Type
-		comp := mkCompareBlob(rec, cc.compareableFunc)
+		compNoTTL, compFull := mkCompareBlobs(rec, cc.compareableFunc)
 
 		// Are we seeing this label for the first time?
 		var labelIdx int
@@ -267,11 +277,11 @@ func (cc *CompareConfig) addRecords(recs models.Records, storeInExisting bool) {
 		if storeInExisting {
 			cc.ldata[labelIdx].tdata[rtIdx].existingRecs = append(cc.ldata[labelIdx].tdata[rtIdx].existingRecs, rec)
 			cc.ldata[labelIdx].tdata[rtIdx].existingTargets = append(cc.ldata[labelIdx].tdata[rtIdx].existingTargets,
-				targetConfig{compareable: comp, rec: rec})
+				targetConfig{comparableNoTTL: compNoTTL, comparableFull: compFull, rec: rec})
 		} else {
 			cc.ldata[labelIdx].tdata[rtIdx].desiredRecs = append(cc.ldata[labelIdx].tdata[rtIdx].desiredRecs, rec)
 			cc.ldata[labelIdx].tdata[rtIdx].desiredTargets = append(cc.ldata[labelIdx].tdata[rtIdx].desiredTargets,
-				targetConfig{compareable: comp, rec: rec})
+				targetConfig{comparableNoTTL: compNoTTL, comparableFull: compFull, rec: rec})
 		}
 		//fmt.Printf("AFTER  L: %v\n", len(cc.ldata))
 		//fmt.Printf("AFTER  E/D: %v/%v\n", len(td.existingRecs), len(td.desiredRecs))
