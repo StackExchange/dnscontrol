@@ -183,6 +183,8 @@ func (api *vultrProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*mode
 
 	for _, change := range changes {
 		switch change.Type {
+		case diff2.REPORT:
+			corrections = append(corrections, &models.Correction{Msg: change.MsgsJoined})
 		case diff2.CREATE:
 			r := toVultrRecord(dc, change.New[0], "0")
 			corrections = append(corrections, &models.Correction{
@@ -208,6 +210,8 @@ func (api *vultrProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*mode
 					return api.client.DomainRecord.Delete(context.Background(), dc.Name, id)
 				},
 			})
+		default:
+			panic(fmt.Sprintf("unhandled change.Type %s", change.Type))
 		}
 	}
 
@@ -219,8 +223,8 @@ func (api *vultrProvider) GetNameservers(domain string) ([]*models.Nameserver, e
 	return models.ToNameservers(defaultNS)
 }
 
-// EnsureDomainExists adds a domain to the Vutr DNS service if it does not exist
-func (api *vultrProvider) EnsureDomainExists(domain string) error {
+// EnsureZoneExists creates a zone if it does not exist
+func (api *vultrProvider) EnsureZoneExists(domain string) error {
 	if ok, err := api.isDomainInAccount(domain); err != nil {
 		return err
 	} else if ok {

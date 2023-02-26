@@ -105,10 +105,11 @@ func checkNSModifications(dc *models.DomainConfig) {
 }
 
 func toRecord(r *namecom.Record, origin string) *models.RecordConfig {
+	heapr := r // NB(tlim): Unsure if this is actually needed.
 	rc := &models.RecordConfig{
 		Type:     r.Type,
 		TTL:      r.TTL,
-		Original: r,
+		Original: heapr,
 	}
 	if !strings.HasSuffix(r.Fqdn, ".") {
 		panic(fmt.Errorf("namedotcom suddenly changed protocol. Bailing. (%v)", r.Fqdn))

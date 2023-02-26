@@ -104,6 +104,7 @@ function newDomain(name, registrar) {
         registrar: registrar,
         meta: {},
         records: [],
+        recordsabsent: [],
         dnsProviders: {},
         defaultTTL: 0,
         nameservers: [],
@@ -614,7 +615,6 @@ function IGNORE_NAME(name, rTypes) {
         d.unmanaged.push({
             label_pattern: name,
             rType_pattern: rTypes,
-            target_pattern: '*',
         });
     };
 }
@@ -632,7 +632,6 @@ function IGNORE_TARGET(target, rType) {
     return function (d) {
         d.ignored_targets.push({ pattern: target, type: rType });
         d.unmanaged.push({
-            label_pattern: '*',
             rType_pattern: rType,
             target_pattern: target,
         });
@@ -660,6 +659,22 @@ function NO_PURGE(d) {
     d.KeepUnknown = true;
 }
 
+// ENSURE_ABSENT_REC()
+// Usage: A("foo", "1.2.3.4", ENSURE_ABSENT_REC())
+function ENSURE_ABSENT_REC() {
+    return function (r) {
+        r.ensure_absent = true;
+    };
+}
+
+// ENSURE_ABSENT()
+// Usage: ENSURE_ABSENT(A("foo", "1.2.3.4"))
+// (BROKEN. COMMENTED OUT UNTIL IT IS FIXED.)
+// function ENSURE_ABSENT(r) {
+//   //console.log(r);
+//   return r;
+// }
+
 // AUTODNSSEC
 // Permitted values are:
 // ""  Do not modify the setting (the default)
@@ -678,15 +693,6 @@ function AUTODNSSEC(d) {
 }
 
 function UNMANAGED(label_pattern, rType_pattern, target_pattern) {
-    if (rType_pattern === undefined) {
-        rType_pattern = '*';
-    }
-    if (rType_pattern === "") {
-        rType_pattern = '*';
-    }
-    if (target_pattern === undefined) {
-        target_pattern = '*';
-    }
     return function (d) {
         d.unmanaged.push({
             label_pattern: label_pattern,
@@ -835,7 +841,15 @@ function recordBuilder(type, opts) {
                 }
             }
 
-            d.records.push(record);
+            // Now we finally have the record. If it is a normal record, we add
+            // it to "records". If it is an ENSURE_ABSENT record, we add it to
+            // the ensure_absent list.
+            if (record.ensure_absent) {
+                d.recordsabsent.push(record);
+            } else {
+                d.records.push(record);
+            }
+
             return record;
         };
     };

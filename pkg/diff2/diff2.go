@@ -8,6 +8,7 @@ package diff2
 import (
 	"bytes"
 	"fmt"
+	"strings"
 
 	"github.com/StackExchange/dnscontrol/v3/models"
 )
@@ -19,6 +20,7 @@ const (
 	CREATE             // Create a record/recordset/label where none existed before.
 	CHANGE             // Change existing record/recordset/label
 	DELETE             // Delete existing record/recordset/label
+	REPORT             // No change, but boy do I have something to say!
 )
 
 type ChangeList []Change
@@ -48,28 +50,33 @@ General instructions:
 
   for _, change := range changes {
     switch change.Type {
+    case diff2.REPORT:
+      corr = &models.Correction{Msg: change.MsgsJoined}
     case diff2.CREATE:
       corr = &models.Correction{
         Msg: change.MsgsJoined,
         F: func() error {
-          return c.createRecord(FILL IN)
+          return c.createRecord(FILL_IN)
         },
       }
     case diff2.CHANGE:
       corr = &models.Correction{
         Msg: change.MsgsJoined,
         F: func() error {
-          return c.modifyRecord(FILL IN)
+          return c.modifyRecord(FILL_IN)
         },
       }
     case diff2.DELETE:
       corr = &models.Correction{
         Msg: change.MsgsJoined,
         F: func() error {
-          return c.deleteRecord(FILL IN)
+          return c.deleteRecord(FILL_IN)
         },
       }
+	  default:
+		  panic("unhandled change.TYPE %s", change.Type)
     }
+
     corrections = append(corrections, corr)
   }
 
@@ -90,18 +97,7 @@ General instructions:
 //
 // Examples include:
 func ByRecordSet(existing models.Records, dc *models.DomainConfig, compFunc ComparableFunc) (ChangeList, error) {
-	// dc stores the desired state.
-
-	desired := dc.Records
-	var err error
-	desired, err = handsoff(existing, desired, dc.Unmanaged, dc.UnmanagedUnsafe) // Handle UNMANAGED()
-	if err != nil {
-		return nil, err
-	}
-
-	cc := NewCompareConfig(dc.Name, existing, desired, compFunc)
-	instructions := analyzeByRecordSet(cc)
-	return processPurge(instructions, !dc.KeepUnknown), nil
+	return byHelper(analyzeByRecordSet, existing, dc, compFunc)
 }
 
 // ByLabel takes two lists of records (existing and desired) and
@@ -113,18 +109,7 @@ func ByRecordSet(existing models.Records, dc *models.DomainConfig, compFunc Comp
 //
 // Examples include:
 func ByLabel(existing models.Records, dc *models.DomainConfig, compFunc ComparableFunc) (ChangeList, error) {
-	// dc stores the desired state.
-
-	desired := dc.Records
-	var err error
-	desired, err = handsoff(existing, desired, dc.Unmanaged, dc.UnmanagedUnsafe) // Handle UNMANAGED()
-	if err != nil {
-		return nil, err
-	}
-
-	cc := NewCompareConfig(dc.Name, existing, desired, compFunc)
-	instructions := analyzeByLabel(cc)
-	return processPurge(instructions, !dc.KeepUnknown), nil
+	return byHelper(analyzeByLabel, existing, dc, compFunc)
 }
 
 // ByRecord takes two lists of records (existing and desired) and
@@ -140,60 +125,81 @@ func ByLabel(existing models.Records, dc *models.DomainConfig, compFunc Comparab
 //
 // Examples include: INWX
 func ByRecord(existing models.Records, dc *models.DomainConfig, compFunc ComparableFunc) (ChangeList, error) {
-	// dc stores the desired state.
-
-	desired := dc.Records
-	var err error
-	desired, err = handsoff(existing, desired, dc.Unmanaged, dc.UnmanagedUnsafe) // Handle UNMANAGED()
-	if err != nil {
-		return nil, err
-	}
-
-	cc := NewCompareConfig(dc.Name, existing, desired, compFunc)
-	instructions := analyzeByRecord(cc)
-	return processPurge(instructions, !dc.KeepUnknown), nil
+	return byHelper(analyzeByRecord, existing, dc, compFunc)
 }
 
 // ByZone takes two lists of records (existing and desired) and
-// returns text one would output to users describing the change.
+// returns text to output to users describing the change, a bool
+// indicating if there were any changes, and a possible err value.
 //
 // Use this with DNS providers whose API updates the entire zone at a
-// time. That is, to make any change (1 record or many) the entire DNS
+// time. That is, to make any change (even just 1 record) the entire DNS
 // zone is uploaded.
 //
-// The user should see a list of changes as if individual records were
-// updated.
+// The user should see a list of changes as if individual records were updated.
 //
-// The caller of this function should:
+// Example usage:
 //
-//	changed, msgs := diff2.ByZone(existing, desired, origin, nil
-//		fmt.Sprintf("CREATING ZONEFILE FOR THE FIRST TIME: dir/example.com.zone"))
-//	if changed {
-//		// output msgs
-//		// generate the zone using the "desired" records
+//	msgs, changes, err := diff2.ByZone(foundRecords, dc, nil)
+//	if err != nil {
+//	  return nil, err
+//	}
+//	if changes {
+//		// Generate a "correction" that uploads the entire zone.
+//		// (dc.Records are the new records for the zone).
 //	}
 //
 // Example providers include: BIND
 func ByZone(existing models.Records, dc *models.DomainConfig, compFunc ComparableFunc) ([]string, bool, error) {
-	// dc stores the desired state.
 
 	if len(existing) == 0 {
 		// Nothing previously existed. No need to output a list of individual changes.
 		return nil, true, nil
 	}
 
-	desired := dc.Records
-	var err error
-	desired, err = handsoff(existing, desired, dc.Unmanaged, dc.UnmanagedUnsafe) // Handle UNMANAGED()
+	// Only return the messages.
+	instructions, err := byHelper(analyzeByRecord, existing, dc, compFunc)
+	return justMsgs(instructions), len(instructions) != 0, err
+}
+
+//
+
+// byHelper does 90% of the work for the By*() calls.
+func byHelper(fn func(cc *CompareConfig) ChangeList, existing models.Records, dc *models.DomainConfig, compFunc ComparableFunc) (ChangeList, error) {
+
+	// Process NO_PURGE/ENSURE_ABSENT and UNMANAGED/IGNORE_*.
+	desired, msgs, err := handsoff(
+		dc.Name,
+		existing, dc.Records, dc.EnsureAbsent,
+		dc.Unmanaged,
+		dc.UnmanagedUnsafe,
+		dc.KeepUnknown,
+	)
 	if err != nil {
-		return nil, false, err
+		return nil, err
 	}
 
+	// Regroup existing/desiredd for easy comparison:
 	cc := NewCompareConfig(dc.Name, existing, desired, compFunc)
-	instructions := analyzeByRecord(cc)
-	instructions = processPurge(instructions, !dc.KeepUnknown)
-	return justMsgs(instructions), len(instructions) != 0, nil
+
+	// Analyze and generate the instructions:
+	instructions := fn(cc)
+
+	// If we have msgs, create a change to output them:
+	if len(msgs) != 0 {
+		chg := Change{
+			Type:       REPORT,
+			Msgs:       msgs,
+			MsgsJoined: strings.Join(msgs, "\n"),
+		}
+		_ = chg
+		instructions = append([]Change{chg}, instructions...)
+	}
+
+	return instructions, nil
 }
+
+// Stringify the datastructures for easier debugging
 
 func (c Change) String() string {
 	var buf bytes.Buffer

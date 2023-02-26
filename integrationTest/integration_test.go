@@ -22,8 +22,8 @@ import (
 )
 
 var providerToRun = flag.String("provider", "", "Provider to run")
-var startIdx = flag.Int("start", 0, "Test number to begin with")
-var endIdx = flag.Int("end", 0, "Test index to stop after")
+var startIdx = flag.Int("start", -1, "Test number to begin with")
+var endIdx = flag.Int("end", -1, "Test index to stop after")
 var verbose = flag.Bool("verbose", false, "Print corrections as you run them")
 var printElapsed = flag.Bool("elapsed", false, "Print elapsed time for each testgroup")
 var enableCFWorkers = flag.Bool("cfworkers", true, "Set false to disable CF worker tests")
@@ -220,7 +220,7 @@ func makeChanges(t *testing.T, prv providers.DNSServiceProvider, dc *models.Doma
 		}
 		for _, c := range corrections {
 			if *verbose {
-				t.Log(c.Msg)
+				t.Log("\n" + c.Msg)
 			}
 			err = c.F()
 			if err != nil {
@@ -254,8 +254,11 @@ func runTests(t *testing.T, prv providers.DNSServiceProvider, domainName string,
 	testGroups := makeTests(t)
 
 	firstGroup := *startIdx
+	if firstGroup == -1 {
+		firstGroup = 0
+	}
 	lastGroup := *endIdx
-	if lastGroup == 0 {
+	if lastGroup == -1 {
 		lastGroup = len(testGroups)
 	}
 
@@ -291,7 +294,7 @@ func runTests(t *testing.T, prv providers.DNSServiceProvider, domainName string,
 		}
 
 		// Remove all records so next group starts with a clean slate.
-		makeChanges(t, prv, dc, tc("Empty"), "Post cleanup", false, nil)
+		makeChanges(t, prv, dc, tc("Empty"), "Post cleanup", true, nil)
 
 		elapsed := time.Since(start)
 		if *printElapsed {
@@ -692,25 +695,56 @@ func makeTests(t *testing.T) []*TestGroup {
 		// These are tested on "@" and "www".
 		// When these tests pass, you've implemented the basics correctly.
 
-		testgroup("Protocol-Plain",
-			tc("Create an A record", a("@", "1.1.1.1")),
-			tc("Change it", a("@", "1.2.3.4")),
-			tc("Add another", a("@", "1.2.3.4"), a("www", "1.2.3.4")),
-			tc("Add another(same name)", a("@", "1.2.3.4"), a("www", "1.2.3.4"), a("www", "5.6.7.8")),
+		testgroup("A",
+			tc("Create A", a("testa", "1.1.1.1")),
+			tc("Change A target", a("testa", "1.2.3.4")),
 		),
 
-		testgroup("Protocol-TTL",
+		testgroup("Attl",
+			tc("Create Arc", ttl(a("testa", "1.1.1.1"), 333)),
+			tc("Change TTL", ttl(a("testa", "1.1.1.1"), 999)),
+		),
+
+		testgroup("MX",
+			tc("Create MX", mx("testmx", 5, "foo.com.")),
+			tc("Change MX target", mx("testmx", 5, "bar.com.")),
+			tc("Change MX p", mx("testmx", 100, "bar.com.")),
+		),
+
+		testgroup("CNAME",
+			tc("Create a CNAME", cname("testcname", "www.google.com.")),
+			tc("Change CNAME target", cname("testcname", "www.yahoo.com.")),
+		),
+
+		testgroup("ManyAtOne",
+			tc("CreateManyAtLabel", a("www", "1.1.1.1"), a("www", "2.2.2.2"), a("www", "3.3.3.3")),
+			clear(),
+			tc("Create an A record", a("www", "1.1.1.1")),
+			tc("Add at label1", a("www", "1.1.1.1"), a("www", "2.2.2.2")),
+			tc("Add at label2", a("www", "1.1.1.1"), a("www", "2.2.2.2"), a("www", "3.3.3.3")),
+		),
+
+		testgroup("manyAtOneTypes",
+			tc("CreateManyTypesAtLabel", a("www", "1.1.1.1"), mx("testmx", 5, "foo.com."), mx("testmx", 100, "bar.com.")),
+			clear(),
+			tc("Create an A record", a("www", "1.1.1.1")),
+			tc("Add Type At Label", a("www", "1.1.1.1"), mx("testmx", 5, "foo.com.")),
+			tc("Add Type At Label", a("www", "1.1.1.1"), mx("testmx", 5, "foo.com."), mx("testmx", 100, "bar.com.")),
+		),
+
+		// Make sure changes at the apex (the bare domain) work.
+		testgroup("Apex",
+			tc("Create A", a("@", "1.1.1.1")),
+			tc("Change A target", a("@", "1.2.3.4")),
+		),
+
+		// Exercise TTL operations.
+		testgroup("TTL",
 			not("NETCUP"), // NETCUP does not support TTLs.
-			tc("Start", a("@", "1.2.3.4"), a("www", "1.2.3.4"), a("www", "5.6.7.8")),
-			tc("Change a ttl", ttl(a("@", "1.2.3.4"), 1000), a("www", "1.2.3.4"), a("www", "5.6.7.8")),
-			tc("Change single target from set", ttl(a("@", "1.2.3.4"), 1000), a("www", "2.2.2.2"), a("www", "5.6.7.8")),
-			tc("Change all ttls", ttl(a("@", "1.2.3.4"), 500), ttl(a("www", "2.2.2.2"), 400), ttl(a("www", "5.6.7.8"), 400)),
-			tc("Delete one", ttl(a("@", "1.2.3.4"), 500), ttl(a("www", "5.6.7.8"), 400)),
-		),
-
-		testgroup("add to existing label",
-			tc("Setup", ttl(a("www", "5.6.7.8"), 400)),
-			tc("Add at same label", ttl(a("www", "5.6.7.8"), 400), ttl(a("www", "1.2.3.4"), 400)),
+			tc("Start", ttl(a("@", "8.8.8.8"), 666), a("www", "1.2.3.4"), a("www", "5.6.7.8")),
+			tc("Change a ttl", ttl(a("@", "8.8.8.8"), 1000), a("www", "1.2.3.4"), a("www", "5.6.7.8")),
+			tc("Change single target from set", ttl(a("@", "8.8.8.8"), 1000), a("www", "2.2.2.2"), a("www", "5.6.7.8")),
+			tc("Change all ttls", ttl(a("@", "8.8.8.8"), 500), ttl(a("www", "2.2.2.2"), 400), ttl(a("www", "5.6.7.8"), 400)),
 		),
 
 		// This is a strange one.  It adds a new record to an existing
@@ -884,6 +918,7 @@ func makeTests(t *testing.T) []*TestGroup {
 				"MSDNS",         //  No paging done. No need to test.
 				"NAMEDOTCOM",    // Their API is so damn slow. We'll add it back as needed.
 				"NS1",           // Free acct only allows 50 records, therefore we skip
+				//"ROUTE53",       // Batches up changes in pages.
 			),
 			tc("99 records", manyA("rec%04d", "1.2.3.4", 99)...),
 			tc("100 records", manyA("rec%04d", "1.2.3.4", 100)...),
@@ -899,7 +934,7 @@ func makeTests(t *testing.T) []*TestGroup {
 				"GCLOUD",
 				"HEXONET",
 				//"MSDNS",     //  No paging done. No need to test.
-				"ROUTE53",
+				"ROUTE53", // Batches up changes in pages.
 			),
 			tc("601 records", manyA("rec%04d", "1.2.3.4", 600)...),
 			tc("Update 601 records", manyA("rec%04d", "1.2.3.5", 600)...),
@@ -915,7 +950,7 @@ func makeTests(t *testing.T) []*TestGroup {
 				"HEXONET",
 				"HOSTINGDE",
 				//"MSDNS",         // No paging done. No need to test.
-				"ROUTE53",
+				"ROUTE53", // Batches up changes in pages.
 			),
 			tc("1200 records", manyA("rec%04d", "1.2.3.4", 1200)...),
 			tc("Update 1200 records", manyA("rec%04d", "1.2.3.5", 1200)...),
@@ -985,6 +1020,12 @@ func makeTests(t *testing.T) []*TestGroup {
 			tc("Change Port", srv("_sip._tcp", 52, 62, 72, "foo.com."), srv("_sip._tcp", 15, 65, 75, "foo4.com.")),
 			clear(),
 			tc("Null Target", srv("_sip._tcp", 15, 65, 75, ".")),
+		),
+
+		// https://github.com/StackExchange/dnscontrol/issues/2066
+		testgroup("SRV", requires(providers.CanUseSRV),
+			tc("Create SRV333", ttl(srv("_sip._tcp", 5, 6, 7, "foo.com."), 333)),
+			tc("Change TTL999", ttl(srv("_sip._tcp", 5, 6, 7, "foo.com."), 999)),
 		),
 
 		testgroup("SSHFP",
@@ -1110,7 +1151,7 @@ func makeTests(t *testing.T) []*TestGroup {
 
 		// AZURE features
 
-		testgroup("AZURE_ALIAS",
+		testgroup("AZURE_ALIAS_A",
 			requires(providers.CanUseAzureAlias),
 			tc("create dependent A records",
 				a("foo.a", "1.2.3.4"),
@@ -1121,11 +1162,20 @@ func makeTests(t *testing.T) []*TestGroup {
 				a("quux.a", "2.3.4.5"),
 				azureAlias("bar.a", "A", "/subscriptions/**subscription-id**/resourceGroups/**resource-group**/providers/Microsoft.Network/dnszones/**current-domain-no-trailing**/A/foo.a"),
 			),
-			tc("change it",
+			tc("change aliasA",
 				a("foo.a", "1.2.3.4"),
 				a("quux.a", "2.3.4.5"),
 				azureAlias("bar.a", "A", "/subscriptions/**subscription-id**/resourceGroups/**resource-group**/providers/Microsoft.Network/dnszones/**current-domain-no-trailing**/A/quux.a"),
 			),
+			tc("change backA",
+				a("foo.a", "1.2.3.4"),
+				a("quux.a", "2.3.4.5"),
+				azureAlias("bar.a", "A", "/subscriptions/**subscription-id**/resourceGroups/**resource-group**/providers/Microsoft.Network/dnszones/**current-domain-no-trailing**/A/foo.a"),
+			),
+		),
+
+		testgroup("AZURE_ALIAS_CNAME",
+			requires(providers.CanUseAzureAlias),
 			tc("create dependent CNAME records",
 				cname("foo.cname", "google.com"),
 				cname("quux.cname", "google2.com"),
@@ -1133,12 +1183,17 @@ func makeTests(t *testing.T) []*TestGroup {
 			tc("ALIAS to CNAME record in same zone",
 				cname("foo.cname", "google.com"),
 				cname("quux.cname", "google2.com"),
-				azureAlias("bar", "CNAME", "/subscriptions/**subscription-id**/resourceGroups/**resource-group**/providers/Microsoft.Network/dnszones/**current-domain-no-trailing**/CNAME/foo.cname"),
+				azureAlias("bar.cname", "CNAME", "/subscriptions/**subscription-id**/resourceGroups/**resource-group**/providers/Microsoft.Network/dnszones/**current-domain-no-trailing**/CNAME/foo.cname"),
 			),
-			tc("change it",
+			tc("change aliasCNAME",
 				cname("foo.cname", "google.com"),
 				cname("quux.cname", "google2.com"),
 				azureAlias("bar.cname", "CNAME", "/subscriptions/**subscription-id**/resourceGroups/**resource-group**/providers/Microsoft.Network/dnszones/**current-domain-no-trailing**/CNAME/quux.cname"),
+			),
+			tc("change backCNAME",
+				cname("foo.cname", "google.com"),
+				cname("quux.cname", "google2.com"),
+				azureAlias("bar.cname", "CNAME", "/subscriptions/**subscription-id**/resourceGroups/**resource-group**/providers/Microsoft.Network/dnszones/**current-domain-no-trailing**/CNAME/foo.cname"),
 			),
 		),
 
@@ -1190,12 +1245,10 @@ func makeTests(t *testing.T) []*TestGroup {
 			tc("remove cnames",
 				r53alias("dev-system", "CNAME", "dev-system19.**current-domain**"),
 			),
-			clear(),
-			tc("create cname+alias in one step",
-				cname("dev-system18", "ec2-54-91-33-155.compute-1.amazonaws.com."),
-				r53alias("dev-system", "CNAME", "dev-system18.**current-domain**"),
-			),
-			clear(),
+		),
+
+		testgroup("R53_ALIAS_CNAME",
+			requires(providers.CanUseRoute53Alias),
 			tc("create alias+cname in one step",
 				r53alias("dev-system", "CNAME", "dev-system18.**current-domain**"),
 				cname("dev-system18", "ec2-54-91-33-155.compute-1.amazonaws.com."),
@@ -1275,10 +1328,13 @@ func makeTests(t *testing.T) []*TestGroup {
 			only("CLOUDFLAREAPI"),
 			tc("proxyon", cfProxyA("proxyme", "1.2.3.4", "on")),
 			tc("proxychangetarget", cfProxyA("proxyme", "1.2.3.5", "on")),
-			tc("proxychangeproxy", cfProxyA("proxyme", "1.2.3.5", "off")),
+			tc("proxychangeonoff", cfProxyA("proxyme", "1.2.3.5", "off")),
+			tc("proxychangeoffon", cfProxyA("proxyme", "1.2.3.5", "on")),
 			clear(),
 			tc("proxycname", cfProxyCNAME("anewproxy", "example.com.", "on")),
 			tc("proxycnamechange", cfProxyCNAME("anewproxy", "example.com.", "off")),
+			tc("proxycnameoffon", cfProxyCNAME("anewproxy", "example.com.", "on")),
+			tc("proxycnameonoff", cfProxyCNAME("anewproxy", "example.com.", "off")),
 			clear(),
 		),
 

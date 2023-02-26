@@ -83,8 +83,8 @@ func Test_analyzeByRecordSet(t *testing.T) {
 	}
 
 	origin := "f.com"
-	existing := models.Records{testDataAA1234, testDataAMX10a, testDataCCa, testDataEA15, e4, e5, e6, e7, e8, e9, e10, e11}
-	desired := models.Records{testDataAA1234clone, testDataAA12345, testDataAMX20b, d3, d4, d5, d6, d7, d8, d9, d10, d11, d12}
+	existingSample := models.Records{testDataAA1234, testDataAMX10a, testDataCCa, testDataEA15, e4, e5, e6, e7, e8, e9, e10, e11}
+	desiredSample := models.Records{testDataAA1234clone, testDataAA12345, testDataAMX20b, d3, d4, d5, d6, d7, d8, d9, d10, d11, d12}
 
 	tests := []struct {
 		name            string
@@ -116,14 +116,14 @@ func Test_analyzeByRecordSet(t *testing.T) {
 				existing: models.Records{testDataAA1234, testDataAMX10a},
 				desired:  models.Records{testDataAA1234clone, testDataAMX20b},
 			},
-			wantMsgs: "CHANGE laba.f.com MX (10 laba) -> (20 labb)",
+			wantMsgs: "CHANGE laba.f.com MX (10 laba ttl=300) -> (20 labb ttl=300)",
 			wantChangeRSet: `
 ChangeList: len=1
 00: Change: verb=CHANGE
     key={laba.f.com MX}
     old=[10 laba]
     new=[20 labb]
-    msg=["CHANGE laba.f.com MX (10 laba) -> (20 labb)"]
+    msg=["CHANGE laba.f.com MX (10 laba ttl=300) -> (20 labb ttl=300)"]
 `,
 			wantChangeLabel: `
 ChangeList: len=1
@@ -131,7 +131,7 @@ ChangeList: len=1
     key={laba.f.com }
     old=[1.2.3.4 10 laba]
     new=[1.2.3.4 20 labb]
-    msg=["CHANGE laba.f.com MX (10 laba) -> (20 labb)"]
+    msg=["CHANGE laba.f.com MX (10 laba ttl=300) -> (20 labb ttl=300)"]
 `,
 			wantChangeRec: `
 ChangeList: len=1
@@ -139,7 +139,7 @@ ChangeList: len=1
     key={laba.f.com MX}
     old=[10 laba]
     new=[20 labb]
-    msg=["CHANGE laba.f.com MX (10 laba) -> (20 labb)"]
+    msg=["CHANGE laba.f.com MX (10 laba ttl=300) -> (20 labb ttl=300)"]
 `,
 		},
 
@@ -150,14 +150,14 @@ ChangeList: len=1
 				existing: models.Records{testDataAA1234, testDataApexMX1aaa},
 				desired:  models.Records{testDataAA1234clone, testDataApexMX22bbb},
 			},
-			wantMsgs: "CHANGE f.com MX (1 aaa) -> (22 bbb)",
+			wantMsgs: "CHANGE f.com MX (1 aaa ttl=300) -> (22 bbb ttl=300)",
 			wantChangeRSet: `
 ChangeList: len=1
 00: Change: verb=CHANGE
     key={f.com MX}
     old=[1 aaa]
     new=[22 bbb]
-    msg=["CHANGE f.com MX (1 aaa) -> (22 bbb)"]
+    msg=["CHANGE f.com MX (1 aaa ttl=300) -> (22 bbb ttl=300)"]
 `,
 			wantChangeLabel: `
 ChangeList: len=1
@@ -165,7 +165,7 @@ ChangeList: len=1
     key={f.com }
     old=[1 aaa]
     new=[22 bbb]
-    msg=["CHANGE f.com MX (1 aaa) -> (22 bbb)"]
+    msg=["CHANGE f.com MX (1 aaa ttl=300) -> (22 bbb ttl=300)"]
 `,
 			wantChangeRec: `
 ChangeList: len=1
@@ -173,7 +173,7 @@ ChangeList: len=1
     key={f.com MX}
     old=[1 aaa]
     new=[22 bbb]
-    msg=["CHANGE f.com MX (1 aaa) -> (22 bbb)"]
+    msg=["CHANGE f.com MX (1 aaa ttl=300) -> (22 bbb ttl=300)"]
 `,
 		},
 
@@ -185,8 +185,8 @@ ChangeList: len=1
 				desired:  models.Records{testDataAA1234clone, testDataAA12345, testDataAMX20b},
 			},
 			wantMsgs: `
-CREATE laba.f.com A 1.2.3.5
-CHANGE laba.f.com MX (10 laba) -> (20 labb)
+CREATE laba.f.com A 1.2.3.5 ttl=300
+CHANGE laba.f.com MX (10 laba ttl=300) -> (20 labb ttl=300)
 		`,
 			wantChangeRSet: `
 ChangeList: len=2
@@ -194,12 +194,12 @@ ChangeList: len=2
     key={laba.f.com A}
     old=[1.2.3.4]
     new=[1.2.3.4 1.2.3.5]
-    msg=["CREATE laba.f.com A 1.2.3.5"]
+    msg=["CREATE laba.f.com A 1.2.3.5 ttl=300"]
 01: Change: verb=CHANGE
     key={laba.f.com MX}
     old=[10 laba]
     new=[20 labb]
-    msg=["CHANGE laba.f.com MX (10 laba) -> (20 labb)"]
+    msg=["CHANGE laba.f.com MX (10 laba ttl=300) -> (20 labb ttl=300)"]
 		`,
 			wantChangeLabel: `
 ChangeList: len=1
@@ -207,19 +207,19 @@ ChangeList: len=1
     key={laba.f.com }
     old=[1.2.3.4 10 laba]
     new=[1.2.3.4 1.2.3.5 20 labb]
-    msg=["CREATE laba.f.com A 1.2.3.5" "CHANGE laba.f.com MX (10 laba) -> (20 labb)"]
+    msg=["CREATE laba.f.com A 1.2.3.5 ttl=300" "CHANGE laba.f.com MX (10 laba ttl=300) -> (20 labb ttl=300)"]
 		`,
 			wantChangeRec: `
 ChangeList: len=2
 00: Change: verb=CREATE
     key={laba.f.com A}
     new=[1.2.3.5]
-    msg=["CREATE laba.f.com A 1.2.3.5"]
+    msg=["CREATE laba.f.com A 1.2.3.5 ttl=300"]
 01: Change: verb=CHANGE
     key={laba.f.com MX}
     old=[10 laba]
     new=[20 labb]
-    msg=["CHANGE laba.f.com MX (10 laba) -> (20 labb)"]
+    msg=["CHANGE laba.f.com MX (10 laba ttl=300) -> (20 labb ttl=300)"]
 `,
 		},
 
@@ -227,22 +227,22 @@ ChangeList: len=2
 			name: "big",
 			args: args{
 				origin:   origin,
-				existing: existing,
-				desired:  desired,
+				existing: existingSample,
+				desired:  desiredSample,
 			},
 			wantMsgs: `
-CREATE laba.f.com A 1.2.3.5
-CHANGE laba.f.com MX (10 laba) -> (20 labb)
-DELETE labc.f.com CNAME laba
-CHANGE labe.f.com A (10.10.10.15) -> (10.10.10.95)
-CHANGE labe.f.com A (10.10.10.16) -> (10.10.10.96)
-CHANGE labe.f.com A (10.10.10.17) -> (10.10.10.97)
-CHANGE labe.f.com A (10.10.10.18) -> (10.10.10.98)
-CREATE labf.f.com TXT "foo"
-CHANGE labg.f.com NS (10.10.10.17) -> (10.10.10.10)
-CHANGE labg.f.com NS (10.10.10.18) -> (10.10.10.97)
-DELETE labh.f.com CNAME labd
-CREATE labh.f.com A 1.2.3.4
+CREATE laba.f.com A 1.2.3.5 ttl=300
+CHANGE laba.f.com MX (10 laba ttl=300) -> (20 labb ttl=300)
+DELETE labc.f.com CNAME laba ttl=300
+CHANGE labe.f.com A (10.10.10.15 ttl=300) -> (10.10.10.95 ttl=300)
+CHANGE labe.f.com A (10.10.10.16 ttl=300) -> (10.10.10.96 ttl=300)
+CHANGE labe.f.com A (10.10.10.17 ttl=300) -> (10.10.10.97 ttl=300)
+CHANGE labe.f.com A (10.10.10.18 ttl=300) -> (10.10.10.98 ttl=300)
+CREATE labf.f.com TXT "foo" ttl=300
+CHANGE labg.f.com NS (10.10.10.17 ttl=300) -> (10.10.10.10 ttl=300)
+CHANGE labg.f.com NS (10.10.10.18 ttl=300) -> (10.10.10.97 ttl=300)
+DELETE labh.f.com CNAME labd ttl=300
+CREATE labh.f.com A 1.2.3.4 ttl=300
 		`,
 			wantChangeRSet: `
 ChangeList: len=8
@@ -250,38 +250,38 @@ ChangeList: len=8
     key={laba.f.com A}
     old=[1.2.3.4]
     new=[1.2.3.4 1.2.3.5]
-    msg=["CREATE laba.f.com A 1.2.3.5"]
+    msg=["CREATE laba.f.com A 1.2.3.5 ttl=300"]
 01: Change: verb=CHANGE
     key={laba.f.com MX}
     old=[10 laba]
     new=[20 labb]
-    msg=["CHANGE laba.f.com MX (10 laba) -> (20 labb)"]
+    msg=["CHANGE laba.f.com MX (10 laba ttl=300) -> (20 labb ttl=300)"]
 02: Change: verb=DELETE
     key={labc.f.com CNAME}
     old=[laba]
-    msg=["DELETE labc.f.com CNAME laba"]
+    msg=["DELETE labc.f.com CNAME laba ttl=300"]
 03: Change: verb=CHANGE
     key={labe.f.com A}
     old=[10.10.10.15 10.10.10.16 10.10.10.17 10.10.10.18]
     new=[10.10.10.95 10.10.10.96 10.10.10.97 10.10.10.98]
-    msg=["CHANGE labe.f.com A (10.10.10.15) -> (10.10.10.95)" "CHANGE labe.f.com A (10.10.10.16) -> (10.10.10.96)" "CHANGE labe.f.com A (10.10.10.17) -> (10.10.10.97)" "CHANGE labe.f.com A (10.10.10.18) -> (10.10.10.98)"]
+    msg=["CHANGE labe.f.com A (10.10.10.15 ttl=300) -> (10.10.10.95 ttl=300)" "CHANGE labe.f.com A (10.10.10.16 ttl=300) -> (10.10.10.96 ttl=300)" "CHANGE labe.f.com A (10.10.10.17 ttl=300) -> (10.10.10.97 ttl=300)" "CHANGE labe.f.com A (10.10.10.18 ttl=300) -> (10.10.10.98 ttl=300)"]
 04: Change: verb=CREATE
     key={labf.f.com TXT}
     new=["foo"]
-    msg=["CREATE labf.f.com TXT \"foo\""]
+    msg=["CREATE labf.f.com TXT \"foo\" ttl=300"]
 05: Change: verb=CHANGE
     key={labg.f.com NS}
     old=[10.10.10.15 10.10.10.16 10.10.10.17 10.10.10.18]
     new=[10.10.10.10 10.10.10.15 10.10.10.16 10.10.10.97]
-    msg=["CHANGE labg.f.com NS (10.10.10.17) -> (10.10.10.10)" "CHANGE labg.f.com NS (10.10.10.18) -> (10.10.10.97)"]
+    msg=["CHANGE labg.f.com NS (10.10.10.17 ttl=300) -> (10.10.10.10 ttl=300)" "CHANGE labg.f.com NS (10.10.10.18 ttl=300) -> (10.10.10.97 ttl=300)"]
 06: Change: verb=DELETE
     key={labh.f.com CNAME}
     old=[labd]
-    msg=["DELETE labh.f.com CNAME labd"]
+    msg=["DELETE labh.f.com CNAME labd ttl=300"]
 07: Change: verb=CREATE
     key={labh.f.com A}
     new=[1.2.3.4]
-    msg=["CREATE labh.f.com A 1.2.3.4"]
+    msg=["CREATE labh.f.com A 1.2.3.4 ttl=300"]
 		`,
 			wantChangeLabel: `
 ChangeList: len=6
@@ -289,88 +289,88 @@ ChangeList: len=6
     key={laba.f.com }
     old=[1.2.3.4 10 laba]
     new=[1.2.3.4 1.2.3.5 20 labb]
-    msg=["CREATE laba.f.com A 1.2.3.5" "CHANGE laba.f.com MX (10 laba) -> (20 labb)"]
+    msg=["CREATE laba.f.com A 1.2.3.5 ttl=300" "CHANGE laba.f.com MX (10 laba ttl=300) -> (20 labb ttl=300)"]
 01: Change: verb=DELETE
     key={labc.f.com }
     old=[laba]
-    msg=["DELETE labc.f.com CNAME laba"]
+    msg=["DELETE labc.f.com CNAME laba ttl=300"]
 02: Change: verb=CHANGE
     key={labe.f.com }
     old=[10.10.10.15 10.10.10.16 10.10.10.17 10.10.10.18]
     new=[10.10.10.95 10.10.10.96 10.10.10.97 10.10.10.98]
-    msg=["CHANGE labe.f.com A (10.10.10.15) -> (10.10.10.95)" "CHANGE labe.f.com A (10.10.10.16) -> (10.10.10.96)" "CHANGE labe.f.com A (10.10.10.17) -> (10.10.10.97)" "CHANGE labe.f.com A (10.10.10.18) -> (10.10.10.98)"]
+    msg=["CHANGE labe.f.com A (10.10.10.15 ttl=300) -> (10.10.10.95 ttl=300)" "CHANGE labe.f.com A (10.10.10.16 ttl=300) -> (10.10.10.96 ttl=300)" "CHANGE labe.f.com A (10.10.10.17 ttl=300) -> (10.10.10.97 ttl=300)" "CHANGE labe.f.com A (10.10.10.18 ttl=300) -> (10.10.10.98 ttl=300)"]
 03: Change: verb=CREATE
     key={labf.f.com }
     new=["foo"]
-    msg=["CREATE labf.f.com TXT \"foo\""]
+    msg=["CREATE labf.f.com TXT \"foo\" ttl=300"]
 04: Change: verb=CHANGE
     key={labg.f.com }
     old=[10.10.10.15 10.10.10.16 10.10.10.17 10.10.10.18]
     new=[10.10.10.10 10.10.10.15 10.10.10.16 10.10.10.97]
-    msg=["CHANGE labg.f.com NS (10.10.10.17) -> (10.10.10.10)" "CHANGE labg.f.com NS (10.10.10.18) -> (10.10.10.97)"]
+    msg=["CHANGE labg.f.com NS (10.10.10.17 ttl=300) -> (10.10.10.10 ttl=300)" "CHANGE labg.f.com NS (10.10.10.18 ttl=300) -> (10.10.10.97 ttl=300)"]
 05: Change: verb=CHANGE
     key={labh.f.com }
     old=[labd]
     new=[1.2.3.4]
-    msg=["DELETE labh.f.com CNAME labd" "CREATE labh.f.com A 1.2.3.4"]
+    msg=["DELETE labh.f.com CNAME labd ttl=300" "CREATE labh.f.com A 1.2.3.4 ttl=300"]
 		`,
 			wantChangeRec: `
 ChangeList: len=12
 00: Change: verb=CREATE
     key={laba.f.com A}
     new=[1.2.3.5]
-    msg=["CREATE laba.f.com A 1.2.3.5"]
+    msg=["CREATE laba.f.com A 1.2.3.5 ttl=300"]
 01: Change: verb=CHANGE
     key={laba.f.com MX}
     old=[10 laba]
     new=[20 labb]
-    msg=["CHANGE laba.f.com MX (10 laba) -> (20 labb)"]
+    msg=["CHANGE laba.f.com MX (10 laba ttl=300) -> (20 labb ttl=300)"]
 02: Change: verb=DELETE
     key={labc.f.com CNAME}
     old=[laba]
-    msg=["DELETE labc.f.com CNAME laba"]
+    msg=["DELETE labc.f.com CNAME laba ttl=300"]
 03: Change: verb=CHANGE
     key={labe.f.com A}
     old=[10.10.10.15]
     new=[10.10.10.95]
-    msg=["CHANGE labe.f.com A (10.10.10.15) -> (10.10.10.95)"]
+    msg=["CHANGE labe.f.com A (10.10.10.15 ttl=300) -> (10.10.10.95 ttl=300)"]
 04: Change: verb=CHANGE
     key={labe.f.com A}
     old=[10.10.10.16]
     new=[10.10.10.96]
-    msg=["CHANGE labe.f.com A (10.10.10.16) -> (10.10.10.96)"]
+    msg=["CHANGE labe.f.com A (10.10.10.16 ttl=300) -> (10.10.10.96 ttl=300)"]
 05: Change: verb=CHANGE
     key={labe.f.com A}
     old=[10.10.10.17]
     new=[10.10.10.97]
-    msg=["CHANGE labe.f.com A (10.10.10.17) -> (10.10.10.97)"]
+    msg=["CHANGE labe.f.com A (10.10.10.17 ttl=300) -> (10.10.10.97 ttl=300)"]
 06: Change: verb=CHANGE
     key={labe.f.com A}
     old=[10.10.10.18]
     new=[10.10.10.98]
-    msg=["CHANGE labe.f.com A (10.10.10.18) -> (10.10.10.98)"]
+    msg=["CHANGE labe.f.com A (10.10.10.18 ttl=300) -> (10.10.10.98 ttl=300)"]
 07: Change: verb=CREATE
     key={labf.f.com TXT}
     new=["foo"]
-    msg=["CREATE labf.f.com TXT \"foo\""]
+    msg=["CREATE labf.f.com TXT \"foo\" ttl=300"]
 08: Change: verb=CHANGE
     key={labg.f.com NS}
     old=[10.10.10.17]
     new=[10.10.10.10]
-    msg=["CHANGE labg.f.com NS (10.10.10.17) -> (10.10.10.10)"]
+    msg=["CHANGE labg.f.com NS (10.10.10.17 ttl=300) -> (10.10.10.10 ttl=300)"]
 09: Change: verb=CHANGE
     key={labg.f.com NS}
     old=[10.10.10.18]
     new=[10.10.10.97]
-    msg=["CHANGE labg.f.com NS (10.10.10.18) -> (10.10.10.97)"]
+    msg=["CHANGE labg.f.com NS (10.10.10.18 ttl=300) -> (10.10.10.97 ttl=300)"]
 10: Change: verb=DELETE
     key={labh.f.com CNAME}
     old=[labd]
-    msg=["DELETE labh.f.com CNAME labd"]
+    msg=["DELETE labh.f.com CNAME labd ttl=300"]
 11: Change: verb=CREATE
     key={labh.f.com A}
     new=[1.2.3.4]
-    msg=["CREATE labh.f.com A 1.2.3.4"]
+    msg=["CREATE labh.f.com A 1.2.3.4 ttl=300"]
 `,
 		},
 	}
@@ -406,9 +406,11 @@ ChangeList: len=12
 func mkTargetConfig(x ...*models.RecordConfig) []targetConfig {
 	var tc []targetConfig
 	for _, r := range x {
+		ct, cf := mkCompareBlobs(r, nil)
 		tc = append(tc, targetConfig{
-			compareable: comparable(r, nil),
-			rec:         r,
+			comparableNoTTL: ct,
+			comparableFull:  cf,
+			rec:             r,
 		})
 	}
 	return tc
@@ -417,7 +419,7 @@ func mkTargetConfig(x ...*models.RecordConfig) []targetConfig {
 func mkTargetConfigMap(x ...*models.RecordConfig) map[string]*targetConfig {
 	var m = map[string]*targetConfig{}
 	for _, v := range mkTargetConfig(x...) {
-		m[v.compareable] = &v
+		m[v.comparableFull] = &v
 	}
 	return m
 }
@@ -445,8 +447,8 @@ func Test_diffTargets(t *testing.T) {
 					Key: models.RecordKey{NameFQDN: "laba.f.com", Type: "A"},
 					New: models.Records{testDataAA5678ttl700, testDataAA1234ttl700},
 					Msgs: []string{
-						"CHANGE laba.f.com A 5.6.7.8 (ttl 300->700)",
-						"CREATE laba.f.com A 1.2.3.4",
+						"CHANGE-TTL laba.f.com A 5.6.7.8 ttl=(300->700)",
+						"CREATE laba.f.com A 1.2.3.4 ttl=700",
 					},
 				},
 			},
@@ -471,7 +473,7 @@ func Test_diffTargets(t *testing.T) {
 				Change{Type: CREATE,
 					Key:  models.RecordKey{NameFQDN: "laba.f.com", Type: "MX"},
 					New:  models.Records{testDataAMX10a},
-					Msgs: []string{"CREATE laba.f.com MX 10 laba"},
+					Msgs: []string{"CREATE laba.f.com MX 10 laba ttl=300"},
 				},
 			},
 		},
@@ -486,7 +488,7 @@ func Test_diffTargets(t *testing.T) {
 				Change{Type: DELETE,
 					Key:  models.RecordKey{NameFQDN: "laba.f.com", Type: "MX"},
 					Old:  models.Records{testDataAMX10a},
-					Msgs: []string{"DELETE laba.f.com MX 10 laba"},
+					Msgs: []string{"DELETE laba.f.com MX 10 laba ttl=300"},
 				},
 			},
 		},
@@ -502,7 +504,7 @@ func Test_diffTargets(t *testing.T) {
 					Key:  models.RecordKey{NameFQDN: "laba.f.com", Type: "MX"},
 					Old:  models.Records{testDataAMX10a},
 					New:  models.Records{testDataAMX20b},
-					Msgs: []string{"CHANGE laba.f.com MX (10 laba) -> (20 labb)"},
+					Msgs: []string{"CHANGE laba.f.com MX (10 laba ttl=300) -> (20 labb ttl=300)"},
 				},
 			},
 		},
@@ -518,7 +520,7 @@ func Test_diffTargets(t *testing.T) {
 					Key:  models.RecordKey{NameFQDN: "laba.f.com", Type: "A"},
 					Old:  models.Records{testDataAA1234, testDataAA5678},
 					New:  models.Records{testDataAA1234},
-					Msgs: []string{"DELETE laba.f.com A 5.6.7.8"},
+					Msgs: []string{"DELETE laba.f.com A 5.6.7.8 ttl=300"},
 				},
 			},
 		},
@@ -527,9 +529,11 @@ func Test_diffTargets(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			//fmt.Printf("DEBUG: Test %02d\n", i)
 			got := diffTargets(tt.args.existing, tt.args.desired)
-			d := diff.Diff(strings.TrimSpace(justMsgString(got)), strings.TrimSpace(justMsgString(tt.want)))
+			g := strings.TrimSpace(justMsgString(got))
+			w := strings.TrimSpace(justMsgString(tt.want))
+			d := diff.Diff(g, w)
 			if d != "" {
-				//fmt.Printf("DEBUG: %d %d\n", len(got), len(tt.want))
+				//fmt.Printf("DEBUG: fail %q %q\n", g, w)
 				t.Errorf("diffTargets()\n diff=%s", d)
 			}
 		})
@@ -584,7 +588,7 @@ func Test_removeCommon(t *testing.T) {
 func comparables(s []targetConfig) []string {
 	var r []string
 	for _, j := range s {
-		r = append(r, j.compareable)
+		r = append(r, j.comparableFull)
 	}
 	return r
 }
@@ -646,8 +650,7 @@ func Test_splitTTLOnly(t *testing.T) {
 		args           args
 		wantExistDiff  []targetConfig
 		wantDesireDiff []targetConfig
-		wantExistTTL   models.Records
-		wantDesireTTL  models.Records
+		wantChanges    string
 	}{
 
 		{
@@ -656,10 +659,9 @@ func Test_splitTTLOnly(t *testing.T) {
 				existing: mkTargetConfig(testDataAA1234),
 				desired:  mkTargetConfig(testDataAA1234ttl700),
 			},
-			wantExistDiff:  mkTargetConfig(),
-			wantDesireDiff: mkTargetConfig(),
-			wantExistTTL:   models.Records{testDataAA1234},
-			wantDesireTTL:  models.Records{testDataAA1234ttl700},
+			wantExistDiff:  nil,
+			wantDesireDiff: nil,
+			wantChanges:    "ChangeList: len=1\n00: Change: verb=CHANGE\n    key={laba.f.com A}\n    old=[1.2.3.4]\n    new=[1.2.3.4]\n    msg=[\"CHANGE-TTL laba.f.com A 1.2.3.4 ttl=(300->700)\"]\n",
 		},
 
 		{
@@ -670,24 +672,21 @@ func Test_splitTTLOnly(t *testing.T) {
 			},
 			wantExistDiff:  mkTargetConfig(testDataAA1234),
 			wantDesireDiff: mkTargetConfig(testDataAA5678),
-			wantExistTTL:   models.Records{},
-			wantDesireTTL:  models.Records{},
+			wantChanges:    "ChangeList: len=0\n",
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			gotExistDiff, gotDesireDiff, gotExistTTL, gotDesireTTL := splitTTLOnly(tt.args.existing, tt.args.desired)
+			gotExistDiff, gotDesireDiff, gotChanges := findTTLChanges(tt.args.existing, tt.args.desired)
 			if !reflect.DeepEqual(gotExistDiff, tt.wantExistDiff) {
 				t.Errorf("splitTTLOnly() gotExistDiff = %v, want %v", gotExistDiff, tt.wantExistDiff)
 			}
 			if !reflect.DeepEqual(gotDesireDiff, tt.wantDesireDiff) {
 				t.Errorf("splitTTLOnly() gotDesireDiff = %v, want %v", gotDesireDiff, tt.wantDesireDiff)
 			}
-			if ((len(tt.wantExistTTL) != 0) && len(gotExistTTL) != 0) && !reflect.DeepEqual(gotExistTTL, tt.wantExistTTL) {
-				t.Errorf("splitTTLOnly() gotExistTTL = %v, want %v (len=%d %d)", gotExistTTL, tt.wantExistTTL, len(gotExistTTL), len(tt.wantExistTTL))
-			}
-			if ((len(tt.wantDesireTTL) != 0) && len(gotDesireTTL) != 0) && !reflect.DeepEqual(gotDesireTTL, tt.wantDesireTTL) {
-				t.Errorf("splitTTLOnly() gotDesireTTL = %v, want %v", gotDesireTTL, tt.wantDesireTTL)
+			gotChangesString := gotChanges.String()
+			if gotChangesString != tt.wantChanges {
+				t.Errorf("splitTTLOnly() gotChanges=\n%q, want=\n%q", gotChangesString, tt.wantChanges)
 			}
 		})
 	}

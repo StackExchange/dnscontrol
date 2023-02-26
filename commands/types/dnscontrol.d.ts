@@ -782,7 +782,7 @@ declare function MX(name: string, priority: number, target: string, ...modifiers
 declare function NAMESERVER(name: string, ...modifiers: RecordModifier[]): DomainModifier;
 
 /**
- * TTL sets the TTL on the domain apex NS RRs defined by [NAMESERVER](NAMESERVER.md).
+ * NAMESERVER_TTL sets the TTL on the domain apex NS RRs defined by [NAMESERVER](NAMESERVER.md).
  * 
  * The value can be an integer or a string. See [TTL](../record/TTL.md) for examples.
  * 
@@ -1032,12 +1032,14 @@ declare function R53_ALIAS(name: string, target: string, zone_idModifier: Domain
  * 
  * ```javascript
  * D("example.com", REG_THIRDPARTY, DnsProvider("DNS_BIND"),
- *   SOA("@", "ns3.example.org.", "hostmaster.example.org.", 3600, 600, 604800, 1440),
+ *   SOA("@", "ns3.example.org.", "hostmaster@example.org", 3600, 600, 604800, 1440),
  * );
  * ```
  * 
- * ## Notes
+ * The email address should be specified like a normal RFC822/RFC5322 address (user@hostname.com). It will be converted into the required format (e.g. BIND format: `user.hostname.com`) by the provider as required. This has the benefit of being more human-readable plus DNSControl can properly handle escaping and other issues.
  * 
+ * ## Notes
+ * * Previously, the accepted format for the SOA mailbox field was `hostmaster.example.org`. This has been changed to `hostmaster@example.org`
  * * The serial number is managed automatically.  It isn't even a field in `SOA()`.
  * * Most providers automatically generate SOA records.  They will ignore any `SOA()` statements.
  * 
@@ -1358,7 +1360,7 @@ declare function D(name: string, registrar: string, ...modifiers: DomainModifier
  * 
  * @see https://dnscontrol.org/js#DEFAULTS
  */
-declare function DEFAULTS(...modifiers: RecordModifier[]): void;
+declare function DEFAULTS(...modifiers: DomainModifier[]): void;
 
 /**
  * `DOMAIN_ELSEWHERE()` is a helper macro that lets you easily indicate that
@@ -1376,9 +1378,9 @@ declare function DEFAULTS(...modifiers: RecordModifier[]): void;
  * 
  * ```javascript
  * DOMAIN_ELSEWHERE("example.com", REG_NAMEDOTCOM, ["ns1.foo.com", "ns2.foo.com"]);
+ * ```
  * 
- * // ...is equivalent to...
- * 
+ * ```javascript
  * D("example.com", REG_NAMEDOTCOM,
  *     NO_PURGE,
  *     NAMESERVER("ns1.foo.com"),
@@ -1412,9 +1414,9 @@ declare function DOMAIN_ELSEWHERE(name: string, registrar: string, nameserver_na
  * 
  * ```javascript
  * DOMAIN_ELSEWHERE_AUTO("example.com", REG_NAMEDOTCOM, DSP_AZURE);
+ * ```
  * 
- * // ...is equivalent to...
- * 
+ * ```javascript
  * D("example.com", REG_NAMEDOTCOM,
  *     NO_PURGE,
  *     DnsProvider(DSP_AZURE)
@@ -1758,13 +1760,9 @@ declare function getConfiguredDomains(): string[];
  * One more important thing to note: `require_glob()` is as smart as `require()` is. It loads files always relative to the JavaScript
  * file where it's being executed in. Let's go with an example, as it describes it better:
  * 
- * `dnscontrol.js`:
- * 
  * ```javascript
  * require("domains/index.js");
  * ```
- * 
- * `domains/index.js`:
  * 
  * ```javascript
  * require_glob("./user1/");
@@ -1925,7 +1923,7 @@ declare function R53_ZONE(zone_id: string): DomainModifier & RecordModifier;
  * (inlining) includes and removing duplicates. DNSControl also makes
  * it easier to document your SPF configuration.
  * 
- * **Warning:** Flattening SPF includes is risky.  Only flatten an SPF
+ * WARNING: Flattening SPF includes is risky.  Only flatten an SPF
  * setting if it is absolutely needed to bring the number of "lookups"
  * to be less than 10. In fact, it is debatable whether or not ISPs
  * enforce the "10 lookup rule".

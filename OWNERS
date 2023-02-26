@@ -25,7 +25,7 @@ providers/internetbs @pragmaton
 providers/inwx @patschi
 providers/msdns @tlimoncelli
 providers/linode @koesie10
-providers/namecheap @captncraig
+providers/namecheap @willpower232
 # providers/namedotcom NEEDS VOLUNTEER
 providers/netcup @kordianbruck
 providers/netlify @SphericalKat

@@ -74,9 +74,9 @@ func init() {
 	providers.RegisterDomainServiceProviderType("EXOSCALE", fns, features)
 }
 
-// EnsureDomainExists returns an error if domain doesn't exist.
-func (c *exoscaleProvider) EnsureDomainExists(domainName string) error {
-	_, err := c.findDomainByName(domainName)
+// EnsureZoneExists creates a zone if it does not exist
+func (c *exoscaleProvider) EnsureZoneExists(domain string) error {
+	_, err := c.findDomainByName(domain)
 
 	return err
 }

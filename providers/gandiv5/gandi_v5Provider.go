@@ -361,6 +361,9 @@ func (client *gandiv5Provider) GenerateDomainCorrections(dc *models.DomainConfig
 	for _, inst := range instructions {
 		switch inst.Type {
 
+		case diff2.REPORT:
+			corrections = append(corrections, &models.Correction{Msg: inst.MsgsJoined})
+
 		case diff2.CREATE:
 			// We have to create the label one rtype at a time.
 			natives := recordsToNative(inst.New, dc.Name)
@@ -420,6 +423,9 @@ func (client *gandiv5Provider) GenerateDomainCorrections(dc *models.DomainConfig
 						return nil
 					},
 				})
+
+		default:
+			panic(fmt.Sprintf("unhandled inst.Type %s", inst.Type))
 		}
 
 	}
