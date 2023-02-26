@@ -138,7 +138,7 @@ type responseData struct {
 	TotalPages uint `json:"totalPages"`
 }
 
-func (r *record) nativeToRecord(domain string) *models.RecordConfig {
+func (r record) nativeToRecord(domain string) *models.RecordConfig {
 	// normalize cname,mx,ns records with dots to be consistent with our config format.
 	if r.Type == "ALIAS" || r.Type == "CNAME" || r.Type == "MX" || r.Type == "NS" || r.Type == "SRV" {
 		if r.Content != "." {

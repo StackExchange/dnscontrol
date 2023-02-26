@@ -1,34 +1,40 @@
 {
-  "registrars": [],
   "dns_providers": [],
   "domains": [
     {
-      "name": "foo.com",
-      "registrar": "none",
       "dnsProviders": {},
+      "name": "foo.com",
       "records": [],
+      "registrar": "none",
       "unmanaged": [
         {
-          "label_pattern": "one",
-          "rType_pattern": "*",
-          "target_pattern": "*"
+          "target_pattern": "targetGlob1"
         },
         {
-          "label_pattern": "two",
-          "rType_pattern": "A, CNAME",
-          "target_pattern": "*"
+          "rType_pattern": "CNAME"
         },
         {
-          "label_pattern": "three",
-          "rType_pattern": "TXT",
-          "target_pattern": "findme"
+          "rType_pattern": "A",
+          "target_pattern": "targetGlob3"
+        },
+        {
+          "label_pattern": "lab4"
         },
         {
           "label_pattern": "notype",
-          "rType_pattern": "*",
-          "target_pattern": "targglob"
+          "target_pattern": "targetGlob5"
+        },
+        {
+          "label_pattern": "lab6",
+          "rType_pattern": "A, CNAME"
+        },
+        {
+          "label_pattern": "lab7",
+          "rType_pattern": "TXT",
+          "target_pattern": "targetGlob7"
         }
       ]
     }
-  ]
+  ],
+  "registrars": []
 }
