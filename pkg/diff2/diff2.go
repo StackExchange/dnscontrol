@@ -144,7 +144,6 @@ func ByRecord(existing models.Records, dc *models.DomainConfig, compFunc Compara
 //	if err != nil {
 //	  return nil, err
 //	}
-//
 //	if changes {
 //		// Generate a "correction" that uploads the entire zone.
 //		// (dc.Records are the new records for the zone).
