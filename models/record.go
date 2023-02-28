@@ -52,33 +52,32 @@ import (
 //
 // Name:
 //
-//	This is the shortname i.e. the NameFQDN without the origin suffix.
-//	It should never have a trailing "."
-//	It should never be null. The apex (naked domain) is stored as "@".
-//	If the origin is "foo.com." and Name is "foo.com", this means
-//	    the intended FQDN is "foo.com.foo.com." (which may look odd)
+// This is the shortname i.e. the NameFQDN without the origin suffix. It should
+// never have a trailing "." It should never be null. The apex (naked domain) is
+// stored as "@". If the origin is "foo.com." and Name is "foo.com", this means
+// the intended FQDN is "foo.com.foo.com." (which may look odd)
 //
 // NameFQDN:
 //
-//	This is the FQDN version of Name.
-//	It should never have a trailing ".".
-//	NOTE: Eventually we will unexport Name/NameFQDN. Please start using
-//	  the setters (SetLabel/SetLabelFromFQDN) and getters (GetLabel/GetLabelFQDN).
-//	  as they will always work.
+// This is the FQDN version of Name. It should never have a trailing ".".
+//
+// NOTE: Eventually we will unexport Name/NameFQDN. Please start using
+// the setters (SetLabel/SetLabelFromFQDN) and getters (GetLabel/GetLabelFQDN).
+// as they will always work.
 //
 // target:
 //
-//	This is the host or IP address of the record, with
-//	  the other related parameters (weight, priority, etc.) stored in individual
-//	  fields.
-//	NOTE: Eventually we will unexport Target. Please start using the
-//	  setters (SetTarget*) and getters (GetTarget*) as they will always work.
+// This is the host or IP address of the record, with the other related
+// parameters (weight, priority, etc.) stored in individual fields.
+//
+// NOTE: Eventually we will unexport Target. Please start using the
+// setters (SetTarget*) and getters (GetTarget*) as they will always work.
 //
 // SubDomain:
 //
-//	This is the subdomain path, if any, imported from the configuration. If
-//	    present at the time of canonicalization it is inserted between the
-//	    Name and origin when constructing a canonical (FQDN) target.
+// This is the subdomain path, if any, imported from the configuration. If
+// present at the time of canonicalization it is inserted between the
+// Name and origin when constructing a canonical (FQDN) target.
 //
 // Idioms:
 //

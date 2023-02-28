@@ -154,8 +154,9 @@ func (rc *RecordConfig) GetTargetTXTJoined() string {
 
 // SetTargetTXTString is like SetTargetTXTs but accepts one big string,
 // which is parsed into individual strings.
-// Ex: foo             << 1 string
+// Ex:
 //
+//	foo             << 1 string
 //	foo bar         << 1 string
 //	"foo bar"       << 1 string
 //	"foo" "bar"     << 2 strings
@@ -182,8 +183,9 @@ func (rc *RecordConfig) SetTargetTXTString(s string) error {
 // SetTargetTXTfromRFC1035Quoted parses a series of quoted strings
 // and sets .TxtStrings based on the result.
 // Note: Most APIs do notThis is rarely used. Try using SetTargetTXT() first.
-// Ex: "foo"        << 1 string
+// Ex:
 //
+//	"foo"        << 1 string
 //	"foo bar"    << 1 string
 //	"foo" "bar"  << 2 strings
 //	foo          << error. No quotes! Did you intend to use SetTargetTXT?

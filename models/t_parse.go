@@ -17,7 +17,7 @@ import (
 //
 //		  var err error
 //		  switch rType {
-//	   case "MX":
+//		  case "MX":
 //	       // MX priority in a separate field.
 //	       if err := rc.SetTargetMX(cr.Priority, target); err != nil {
 //	         return nil, fmt.Errorf("unparsable MX record received from cloudflare: %w", err)
