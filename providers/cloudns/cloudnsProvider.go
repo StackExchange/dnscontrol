@@ -105,14 +105,13 @@ func (c *cloudnsProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*mode
 	}
 
 	var corrections []*models.Correction
-	var create, del, mod diff.Changeset
+	var differ diff.Differ
 	if !diff2.EnableDiff2 {
-		differ := diff.New(dc)
-		_, create, del, modify, err := differ.IncrementalDiff(existingRecords)
+		differ = diff.New(dc)
 	} else {
-		differ := diff.NewCompat(dc)
-		_, create, del, mod, err = differ.IncrementalDiff(actual)
+		differ = diff.NewCompat(dc)
 	}
+	_, create, del, modify, err := differ.IncrementalDiff(existingRecords)
 	if err != nil {
 		return nil, err
 	}
