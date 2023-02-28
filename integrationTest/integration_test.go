@@ -326,7 +326,7 @@ func TestDualProviders(t *testing.T) {
 			t.Fatal(err)
 		}
 		for i, c := range cs {
-			t.Logf("#%d: %s", i+1, c.Msg)
+			t.Logf("#%d:\n%s", i+1, c.Msg)
 			if err = c.F(); err != nil {
 				t.Fatal(err)
 			}
