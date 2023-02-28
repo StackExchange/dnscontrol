@@ -177,10 +177,6 @@ func (c *dnsimpleProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*mod
 		return nil, err
 	}
 
-	if err != nil {
-		return nil, err
-	}
-
 	for _, del := range del {
 		rec := del.Existing.Original.(dnsimpleapi.ZoneRecord)
 		corrections = append(corrections, &models.Correction{

@@ -366,6 +366,8 @@ func (client *gandiv5Provider) GenerateDomainCorrections(dc *models.DomainConfig
 
 		case diff2.CREATE:
 			// We have to create the label one rtype at a time.
+			// In other words, this is a ByRecordSet API for creation, even though
+			// this is a ByLabel() API for everything else.
 			natives := recordsToNative(inst.New, dc.Name)
 			for _, n := range natives {
 				label := inst.Key.NameFQDN

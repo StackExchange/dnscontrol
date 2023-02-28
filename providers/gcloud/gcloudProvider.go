@@ -214,25 +214,21 @@ func (g *gcloudProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*model
 	}
 	_, create, delete, modify, err := differ.IncrementalDiff(existingRecords)
 	if err != nil {
-		return nil, err
-	}
-
-	if err != nil {
 		return nil, fmt.Errorf("incdiff error: %w", err)
 	}
 
 	changedKeys := map[key]bool{}
-	desc := ""
+	var msgs []string
 	for _, c := range create {
-		desc += fmt.Sprintln(c)
+		msgs = append(msgs, fmt.Sprint(c))
 		changedKeys[keyForRec(c.Desired)] = true
 	}
 	for _, d := range delete {
-		desc += fmt.Sprintln(d)
+		msgs = append(msgs, fmt.Sprint(d))
 		changedKeys[keyForRec(d.Existing)] = true
 	}
 	for _, m := range modify {
-		desc += fmt.Sprintln(m)
+		msgs = append(msgs, fmt.Sprint(m))
 		changedKeys[keyForRec(m.Existing)] = true
 	}
 	if len(changedKeys) == 0 {
@@ -282,7 +278,7 @@ func (g *gcloudProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*model
 	}
 
 	return []*models.Correction{{
-		Msg: desc,
+		Msg: strings.Join(msgs, "\n"),
 		F:   runChange,
 	}}, nil
 

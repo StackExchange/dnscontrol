@@ -25,6 +25,7 @@ func makeRecSet(recs ...*models.RecordConfig) *recset {
 	result.Recs = append(result.Recs, recs...)
 	return &result
 }
+
 func Test_groupbyRSet(t *testing.T) {
 
 	wwwa1 := makeRec("www", "A", "1.1.1.1")

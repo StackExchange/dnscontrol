@@ -16,12 +16,11 @@ import (
 
 # How do NO_PURGE, IGNORE_*, ENSURE_ABSENT and friends work?
 
-
 ## Terminology:
 
 * "existing" refers to the records downloaded from the provider via the API.
 * "desired" refers to the records generated from dnsconfig.js.
-* "absences" refers to a list of records tagged with ASSURE_ABSENT.
+* "absences" refers to a list of records tagged with ENSURE_ABSENT.
 
 ## What are the features?
 
@@ -39,9 +38,9 @@ and 1 way to make exceptions.
     * IGNORE_TARGET(foo) is the same as UNMANAGED("*", "*", foo)
     * FYI: You CAN have a label with two A records, one controlled by
 	    DNSControl and one controlled by an external system.  DNSControl would
-		  need to have an UNMANAGED() statement with a targetglob that matches
+		need to have an UNMANAGED() statement with a targetglob that matches
 	    the external system's target values.
-* ASSURE_ABSENT: Override NO_PURGE for specific records. i.e. delete them even
+* ENSURE_ABSENT: Override NO_PURGE for specific records. i.e. delete them even
     though NO_PURGE is enabled.
     * If any of these records are in desired (matched on
       label:rtype:target), remove them.  This takes priority over
@@ -53,8 +52,9 @@ The fundamental premise is "if you don't want it deleted, copy it to the
 'desired' list." So, for example, if you want to IGNORE_NAME("www"), then you
 find any records with the label "www" in "existing" and copy them to "desired".
 As a result, the diff2 algorithm won't delete them because they are desired!
+(Of course "desired" can't have duplicate records. Check before you add.)
 
-This is different than in the old system (pkg/diff) which would generate the
+This is different than in the old implementation (pkg/diff) which would generate the
 diff but but then do a bunch of checking to see if the record was one that
 shouldn't be deleted.  Or, in the case of NO_PURGE, would simply not do the
 deletions.  This was complex because there were many edge cases to deal with.
@@ -75,7 +75,7 @@ Here is how we intend to implement these features:
 
   NO_PURGE + ENSURE_ABSENT is implemented as:
   * Take the list of existing records. If any do not appear in desired, add them
-      to desired UNLESS they appear in absences.
+      to desired UNLESS they appear in absences. (Yes, that's complex!)
   * "appear in desired" is done by matching on label:type.
   * "appear in absences" is done by matching on label:type:target.
 
@@ -154,7 +154,7 @@ func processIgnoreAndNoPurge(domain string, existing, desired, absences models.R
 	absentDB := models.NewRecordDBFromRecords(absences, domain)
 	compileUnmanagedConfigs(unmanagedConfigs)
 	for _, rec := range existing {
-		if matchAll(unmanagedConfigs, rec) {
+		if matchAny(unmanagedConfigs, rec) {
 			ignorable = append(ignorable, rec)
 		} else {
 			if noPurge {
@@ -176,7 +176,7 @@ func processIgnoreAndNoPurge(domain string, existing, desired, absences models.R
 func findConflicts(uconfigs []*models.UnmanagedConfig, recs models.Records) models.Records {
 	var conflicts models.Records
 	for _, rec := range recs {
-		if matchAll(uconfigs, rec) {
+		if matchAny(uconfigs, rec) {
 			conflicts = append(conflicts, rec)
 		}
 	}
@@ -219,8 +219,8 @@ func compileUnmanagedConfigs(configs []*models.UnmanagedConfig) error {
 	return nil
 }
 
-// matchAll returns true if rec matches any of the uconfigs.
-func matchAll(uconfigs []*models.UnmanagedConfig, rec *models.RecordConfig) bool {
+// matchAny returns true if rec matches any of the uconfigs.
+func matchAny(uconfigs []*models.UnmanagedConfig, rec *models.RecordConfig) bool {
 	for _, uc := range uconfigs {
 		if matchLabel(uc.LabelGlob, rec.GetLabel()) &&
 			matchType(uc.RTypeMap, rec.Type) &&

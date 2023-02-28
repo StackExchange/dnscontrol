@@ -14,6 +14,7 @@ import (
 	"github.com/StackExchange/dnscontrol/v3/pkg/transform"
 	"github.com/StackExchange/dnscontrol/v3/providers"
 	"github.com/cloudflare/cloudflare-go"
+	"github.com/fatih/color"
 	"github.com/miekg/dns/dnsutil"
 )
 
@@ -415,6 +416,17 @@ func (c *cloudflareProvider) mkCreateCorrection(newrec *models.RecordConfig, dom
 }
 
 func (c *cloudflareProvider) mkChangeCorrection(oldrec, newrec *models.RecordConfig, domainID string, msg string) []*models.Correction {
+	var idTxt string
+	switch oldrec.Type {
+	case "PAGE_RULE":
+		idTxt = oldrec.Original.(cloudflare.PageRule).ID
+	case "WORKER_ROUTE":
+		idTxt = oldrec.Original.(cloudflare.WorkerRoute).ID
+	default:
+		idTxt = oldrec.Original.(cloudflare.DNSRecord).ID
+	}
+	msg = msg + color.YellowString(" id=%v", idTxt)
+
 	switch newrec.Type {
 	case "PAGE_RULE":
 		return []*models.Correction{{
@@ -441,6 +453,7 @@ func (c *cloudflareProvider) mkChangeCorrection(oldrec, newrec *models.RecordCon
 }
 
 func (c *cloudflareProvider) mkDeleteCorrection(recType string, origRec any, domainID string, msg string) []*models.Correction {
+
 	var idTxt string
 	switch recType {
 	case "PAGE_RULE":
@@ -450,7 +463,7 @@ func (c *cloudflareProvider) mkDeleteCorrection(recType string, origRec any, dom
 	default:
 		idTxt = origRec.(cloudflare.DNSRecord).ID
 	}
-	msg = msg + fmt.Sprintf(" id=%v", idTxt)
+	msg = msg + color.RedString(" id=%v", idTxt)
 
 	correction := &models.Correction{
 		Msg: msg,

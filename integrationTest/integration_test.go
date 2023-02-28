@@ -326,7 +326,7 @@ func TestDualProviders(t *testing.T) {
 			t.Fatal(err)
 		}
 		for i, c := range cs {
-			t.Logf("#%d: %s", i+1, c.Msg)
+			t.Logf("#%d:\n%s", i+1, c.Msg)
 			if err = c.F(); err != nil {
 				t.Fatal(err)
 			}
@@ -913,6 +913,7 @@ func makeTests(t *testing.T) []*TestGroup {
 			not(
 				"AZURE_DNS",     // Removed because it is too slow
 				"CLOUDFLAREAPI", // Infinite pagesize but due to slow speed, skipping.
+				"DIGITALOCEAN",  // No paging. Why bother?
 				"CSCGLOBAL",     // Doesn't page. Works fine.  Due to the slow API we skip.
 				"GANDI_V5",      // Their API is so damn slow. We'll add it back as needed.
 				"MSDNS",         //  No paging done. No need to test.

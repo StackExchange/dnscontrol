@@ -203,9 +203,9 @@ func (n *namecheapProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*mo
 		return nil, err
 	}
 
-	// // because namecheap doesn't have selective create, delete, modify,
-	// // we bundle them all up to send at once.  We *do* want to see the
-	// // changes though
+	// because namecheap doesn't have selective create, delete, modify,
+	// we bundle them all up to send at once.  We *do* want to see the
+	// changes though
 
 	var desc []string
 	for _, i := range create {
