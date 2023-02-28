@@ -334,7 +334,7 @@ func diffTargets(existing, desired []targetConfig) ChangeList {
 		er := existing[i].rec
 		dr := desired[i].rec
 
-		m := color.YellowString("± MODIFY %s %s ", dr.NameFQDN, dr.Type) + humanDiff(existing[i], desired[i])
+		m := color.YellowString("± MODIFY %s %s %s", dr.NameFQDN, dr.Type, humanDiff(existing[i], desired[i]))
 
 		instructions = append(instructions, mkChange(dr.NameFQDN, dr.Type, []string{m},
 			models.Records{er},
