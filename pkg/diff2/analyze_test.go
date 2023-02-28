@@ -398,7 +398,7 @@ ChangeList: len=12
 			compareCL(t, "analyzeByRecord", tt.name, "Rec", cl, tt.wantChangeRec)
 		})
 
-		// NB(tlim): There is no analyzeByZone().  ByZone() uses analyzeByRecord().
+		// NB(tlim): There is no analyzeByZone().  diff2.ByZone() uses analyzeByRecord().
 
 	}
 }
