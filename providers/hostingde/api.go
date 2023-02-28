@@ -16,7 +16,7 @@ const endpoint = "%s/api/%s/v1/json/%s"
 type hostingdeProvider struct {
 	authToken       string
 	ownerAccountID  string
-	filterAccountId string
+	filterAccountID string
 	baseURL         string
 	nameservers     []string
 	defaultSoa      soaValues
@@ -127,7 +127,7 @@ func (hp *hostingdeProvider) updateNameservers(nss []string, domain string) func
 	}
 }
 
-func (hp *hostingdeProvider) updateZone(zc *zoneConfig, DnsSecOptions *dnsSecOptions, create, del, mod diff.Changeset) error {
+func (hp *hostingdeProvider) updateZone(zc *zoneConfig, options *dnsSecOptions, create, del, mod diff.Changeset) error {
 	toAdd := []*record{}
 	for _, c := range create {
 		r := recordToNative(c.Desired)
@@ -153,7 +153,7 @@ func (hp *hostingdeProvider) updateZone(zc *zoneConfig, DnsSecOptions *dnsSecOpt
 		RecordsToAdd:    toAdd,
 		RecordsToDelete: toDelete,
 		RecordsToModify: toModify,
-		DNSSECOptions:   DnsSecOptions,
+		DNSSECOptions:   options,
 	}
 
 	_, err := hp.get("dns", "zoneUpdate", params)
@@ -223,11 +223,11 @@ func (hp *hostingdeProvider) getZoneConfig(domain string) (*zoneConfig, error) {
 	return zc[0], nil
 }
 
-func (hp *hostingdeProvider) getDNSSECOptions(zoneConfigId string) (*dnsSecOptions, error) {
+func (hp *hostingdeProvider) getDNSSECOptions(zoneConfigID string) (*dnsSecOptions, error) {
 	params := request{
 		Filter: &filter{
 			Field: "zoneConfigId",
-			Value: zoneConfigId,
+			Value: zoneConfigID,
 		},
 	}
 
@@ -301,10 +301,10 @@ func (hp *hostingdeProvider) getAllZoneConfigs() ([]*zoneConfig, error) {
 	params := request{
 		Limit: 10000,
 	}
-	if hp.filterAccountId != "" {
+	if hp.filterAccountID != "" {
 		params.Filter = &filter{
 			Field: "accountId",
-			Value: hp.filterAccountId,
+			Value: hp.filterAccountID,
 		}
 	}
 

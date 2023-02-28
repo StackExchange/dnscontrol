@@ -2,10 +2,11 @@ package soautil
 
 import "strings"
 
+// RFC5322MailToBind converts a user@host email address to BIND format.
 func RFC5322MailToBind(rfc5322Mail string) string {
 	res := strings.SplitN(rfc5322Mail, "@", 2)
-	user_part, domain_part := res[0], res[1]
+	user, domain := res[0], res[1]
 	// RFC-1035 [Section-8]
-	user_part = strings.ReplaceAll(user_part, ".", "\\.")
-	return user_part + "." + domain_part
+	user = strings.ReplaceAll(user, ".", "\\.")
+	return user + "." + domain
 }

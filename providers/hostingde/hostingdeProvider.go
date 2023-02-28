@@ -47,7 +47,7 @@ type providerMeta struct {
 }
 
 func newHostingde(m map[string]string, providermeta json.RawMessage) (*hostingdeProvider, error) {
-	authToken, ownerAccountID, filterAccountId, baseURL := m["authToken"], m["ownerAccountId"], m["filterAccountId"], m["baseURL"]
+	authToken, ownerAccountID, filterAccountID, baseURL := m["authToken"], m["ownerAccountId"], m["filterAccountId"], m["baseURL"]
 
 	if authToken == "" {
 		return nil, fmt.Errorf("hosting.de: authtoken must be provided")
@@ -61,7 +61,7 @@ func newHostingde(m map[string]string, providermeta json.RawMessage) (*hostingde
 	hp := &hostingdeProvider{
 		authToken:       authToken,
 		ownerAccountID:  ownerAccountID,
-		filterAccountId: filterAccountId,
+		filterAccountID: filterAccountID,
 		baseURL:         baseURL,
 		nameservers:     defaultNameservers,
 	}
@@ -97,10 +97,10 @@ func (hp *hostingdeProvider) GetZoneRecords(domain string) (models.Records, erro
 	if err != nil {
 		return nil, err
 	}
-	return hp.ApiRecordsToStandardRecordsModel(domain, zone.Records), nil
+	return hp.APIRecordsToStandardRecordsModel(domain, zone.Records), nil
 }
 
-func (hp *hostingdeProvider) ApiRecordsToStandardRecordsModel(domain string, src []record) models.Records {
+func (hp *hostingdeProvider) APIRecordsToStandardRecordsModel(domain string, src []record) models.Records {
 	records := []*models.RecordConfig{}
 	for _, r := range src {
 		if r.Type == "SOA" {
@@ -138,7 +138,7 @@ func (hp *hostingdeProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*m
 		return nil, err
 	}
 
-	records := hp.ApiRecordsToStandardRecordsModel(dc.Name, zone.Records)
+	records := hp.APIRecordsToStandardRecordsModel(dc.Name, zone.Records)
 
 	var create, del, mod diff.Changeset
 	if !diff2.EnableDiff2 {
@@ -203,7 +203,7 @@ func (hp *hostingdeProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*m
 	}
 
 	if desiredSoa.SoaMbox != "" {
-		var desiredMail string = ""
+		desiredMail := ""
 		if desiredSoa.SoaMbox[len(desiredSoa.SoaMbox)-1] != '.' {
 			desiredMail = desiredSoa.SoaMbox + "@" + dc.Name
 		}
@@ -217,33 +217,33 @@ func (hp *hostingdeProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*m
 	existingAutoDNSSecEnabled := zone.ZoneConfig.DNSSECMode == "automatic"
 	desiredAutoDNSSecEnabled := dc.AutoDNSSEC == "on"
 
-	var DnsSecOptions *dnsSecOptions
+	var DNSSecOptions *dnsSecOptions
 	var removeDNSSecEntries []dnsSecEntry
 
 	// ensure that publishKsk is set for domains with AutoDNSSec
 	if existingAutoDNSSecEnabled && desiredAutoDNSSecEnabled {
-		CurrentDnsSecOptions, err := hp.getDNSSECOptions(zone.ZoneConfig.ID)
+		currentDNSSecOptions, err := hp.getDNSSECOptions(zone.ZoneConfig.ID)
 		if err != nil {
 			return nil, err
 		}
-		if !CurrentDnsSecOptions.PublishKSK {
+		if !currentDNSSecOptions.PublishKSK {
 			msg = append(msg, "Enabling publishKsk for AutoDNSSec")
-			DnsSecOptions = CurrentDnsSecOptions
-			DnsSecOptions.PublishKSK = true
+			DNSSecOptions = currentDNSSecOptions
+			DNSSecOptions.PublishKSK = true
 			zoneChanged = true
 		}
 	}
 
 	if !existingAutoDNSSecEnabled && desiredAutoDNSSecEnabled {
 		msg = append(msg, "Enable AutoDNSSEC")
-		DnsSecOptions = &dnsSecOptions{
+		DNSSecOptions = &dnsSecOptions{
 			NSECMode:   "nsec3",
 			PublishKSK: true,
 		}
 		zone.ZoneConfig.DNSSECMode = "automatic"
 		zoneChanged = true
 	} else if existingAutoDNSSecEnabled && !desiredAutoDNSSecEnabled {
-		CurrentDnsSecOptions, err := hp.getDNSSECOptions(zone.ZoneConfig.ID)
+		currentDNSSecOptions, err := hp.getDNSSECOptions(zone.ZoneConfig.ID)
 		if err != nil {
 			return nil, err
 		}
@@ -256,7 +256,7 @@ func (hp *hostingdeProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*m
 			return nil, err
 		}
 		for _, entry := range DomainConfig.DNSSecEntries {
-			for _, autoDNSKey := range CurrentDnsSecOptions.Keys {
+			for _, autoDNSKey := range currentDNSSecOptions.Keys {
 				if entry.KeyData.PublicKey == autoDNSKey.KeyData.PublicKey {
 					removeDNSSecEntries = append(removeDNSSecEntries, entry)
 				}
@@ -274,7 +274,7 @@ func (hp *hostingdeProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*m
 			Msg: fmt.Sprintf("\n%s", strings.Join(msg, "\n")),
 			F: func() error {
 				for i := 0; i < 10; i++ {
-					err := hp.updateZone(&zone.ZoneConfig, DnsSecOptions, create, del, mod)
+					err := hp.updateZone(&zone.ZoneConfig, DNSSecOptions, create, del, mod)
 					if err == nil {
 						return nil
 					}

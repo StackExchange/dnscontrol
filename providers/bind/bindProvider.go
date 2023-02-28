@@ -181,6 +181,7 @@ func (c *bindProvider) GetZoneRecords(domain string) (models.Records, error) {
 	return ParseZoneContents(string(content), domain, zonefileName)
 }
 
+// ParseZoneContents parses a string as a BIND zone and returns the records.
 func ParseZoneContents(content string, zoneName string, zonefileName string) (models.Records, error) {
 	zp := dns.NewZoneParser(strings.NewReader(content), zoneName, zonefileName)
 

@@ -6,10 +6,12 @@ import "github.com/StackExchange/dnscontrol/v3/models"
 // a group of records.
 //
 
+// RecordDB is a container of many model.RecordConfig
 type RecordDB = struct {
 	labelAndTypeMap map[models.RecordKey]struct{}
 }
 
+// NewFromRecords creates a RecordDB from a list of model.RecordConfig.
 func NewFromRecords(recs models.Records) *RecordDB {
 	result := &RecordDB{}
 
