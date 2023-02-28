@@ -214,10 +214,6 @@ func (g *gcloudProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*model
 	}
 	_, create, delete, modify, err := differ.IncrementalDiff(existingRecords)
 	if err != nil {
-		return nil, err
-	}
-
-	if err != nil {
 		return nil, fmt.Errorf("incdiff error: %w", err)
 	}
 
