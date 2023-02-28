@@ -93,7 +93,7 @@ func (api *autoDNSProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*mo
 	txtutil.SplitSingleLongTxt(dc.Records) // Autosplit long TXT records
 
 	var corrections []*models.Correction
-	if !diff2.EnableDiff2 || true { // Remove "|| true" when diff2 version arrives
+	if !diff2.EnableDiff2 {
 
 		differ := diff.New(dc)
 		unchanged, create, del, modify, err := differ.IncrementalDiff(existingRecords)
@@ -182,10 +182,83 @@ func (api *autoDNSProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*mo
 		return corrections, nil
 	}
 
-	// Insert Future diff2 version here.
+	msgs, changed, err := diff2.ByZone(existingRecords, dc, nil)
+	if err != nil {
+		return nil, err
+	}
+	if changed {
+
+		msgs = append(msgs, "Zone update for "+domain)
+		msg := strings.Join(msgs, "\n")
+
+		nameServers, zoneTTL, resourceRecords := recordsToNative(dc.Records)
+
+		corrections = append(corrections,
+			&models.Correction{
+				Msg: msg,
+				F: func() error {
+
+					nameServers := nameServers
+					zoneTTL := zoneTTL
+					resourceRecords := resourceRecords
+
+					err := api.updateZone(domain, resourceRecords, nameServers, zoneTTL)
+					if err != nil {
+						return fmt.Errorf(err.Error())
+					}
+
+					return nil
+				},
+			})
+
+	}
 
 	return corrections, nil
+}
 
+func recordsToNative(recs models.Records) ([]*models.Nameserver, uint32, []*ResourceRecord) {
+	var nameServers []*models.Nameserver
+	var zoneTTL uint32
+	var resourceRecords []*ResourceRecord
+
+	for _, record := range recs {
+
+		if record.Type == "NS" && record.Name == "@" {
+			// NS records for the APEX should be handled differently
+			nameServers = append(nameServers, &models.Nameserver{
+				Name: strings.TrimSuffix(record.GetTargetField(), "."),
+			})
+
+			zoneTTL = record.TTL
+		} else {
+			resourceRecord := &ResourceRecord{
+				Name:  record.Name,
+				TTL:   int64(record.TTL),
+				Type:  record.Type,
+				Value: record.GetTargetField(),
+			}
+
+			if resourceRecord.Name == "@" {
+				resourceRecord.Name = ""
+			}
+
+			if record.Type == "MX" {
+				resourceRecord.Pref = int32(record.MxPreference)
+			}
+
+			if record.Type == "SRV" {
+				resourceRecord.Value = fmt.Sprintf("%d %d %d %s",
+					record.SrvPriority,
+					record.SrvWeight,
+					record.SrvPort,
+					record.GetTargetField(),
+				)
+			}
+
+			resourceRecords = append(resourceRecords, resourceRecord)
+		}
+	}
+	return nameServers, zoneTTL, resourceRecords
 }
 
 // GetNameservers returns the nameservers for a domain.
