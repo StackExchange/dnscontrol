@@ -337,10 +337,10 @@ func DebugKeyMapMap(note string, m map[models.RecordKey][]string) {
 
 func (c Correlation) String() string {
 	if c.Existing == nil {
-		return color.GreenString(fmt.Sprintf("+ CREATE %s %s %s", c.Desired.Type, c.Desired.GetLabelFQDN(), c.d.content(c.Desired)))
+		return color.GreenString("+ CREATE %s %s %s", c.Desired.Type, c.Desired.GetLabelFQDN(), c.d.content(c.Desired))
 	}
 	if c.Desired == nil {
-		return color.RedString(fmt.Sprintf("- DELETE %s %s %s", c.Existing.Type, c.Existing.GetLabelFQDN(), c.d.content(c.Existing)))
+		return color.RedString("- DELETE %s %s %s", c.Existing.Type, c.Existing.GetLabelFQDN(), c.d.content(c.Existing))
 	}
 	return color.YellowString("± MODIFY %s %s: (%s) -> (%s)", c.Existing.Type, c.Existing.GetLabelFQDN(), c.d.content(c.Existing), c.d.content(c.Desired))
 }

@@ -6,6 +6,7 @@ import (
 	"strings"
 
 	"github.com/StackExchange/dnscontrol/v3/models"
+	"github.com/fatih/color"
 )
 
 func analyzeByRecordSet(cc *CompareConfig) ChangeList {
@@ -83,7 +84,7 @@ func analyzeByLabel(cc *CompareConfig) ChangeList {
 			// 	accMsgs,
 			// )
 			//fmt.Printf("DEBUG: analyzeByLabel mkchange msgs=%d\n", len(accMsgs))
-			instructions = append(instructions, mkChangeLabel(label, "", accMsgs, accExisting, accDesired, msgsByKey))
+			instructions = append(instructions, mkChangeByLabel(label, "", accMsgs, accExisting, accDesired, msgsByKey))
 		}
 	}
 
@@ -140,7 +141,7 @@ func mkChange(l string, t string, msgs []string, oldRecs, newRecs models.Records
 	return c
 }
 
-func mkChangeLabel(l string, t string, msgs []string, oldRecs, newRecs models.Records, msgsByKey map[models.RecordKey][]string) Change {
+func mkChangeByLabel(l string, t string, msgs []string, oldRecs, newRecs models.Records, msgsByKey map[models.RecordKey][]string) Change {
 	//fmt.Printf("DEBUG mkChangeLabel called: (%v, %v, %v, %v, %v, %v)\n", l, t, msgs, oldRecs, newRecs, msgsByKey)
 	c := Change{Type: CHANGE, Msgs: msgs, MsgsJoined: strings.Join(msgs, "\n")}
 	c.Key.NameFQDN = l
@@ -162,7 +163,7 @@ func mkDelete(l string, t string, msgs []string, oldRecs models.Records) Change 
 	c.Old = oldRecs
 	return c
 }
-func mkDeleteRec(l string, t string, msgs []string, rec *models.RecordConfig) Change {
+func mkDeleteByRecord(l string, t string, msgs []string, rec *models.RecordConfig) Change {
 	//fmt.Printf("DEBUG mkDeleteREc called: (%v, %v, %v, %v)\n", l, t, msgs, rec)
 	c := Change{Type: DELETE, Msgs: msgs, MsgsJoined: strings.Join(msgs, "\n")}
 	c.Key.NameFQDN = l
@@ -226,8 +227,7 @@ func findTTLChanges(existing, desired []targetConfig) ([]targetConfig, []targetC
 		}
 
 		if ecomp == dcomp && er.TTL != dr.TTL {
-			//m := fmt.Sprintf("CHANGE-TTL %s %s %s ttl=%d->%d", dr.NameFQDN, dr.Type, dr.GetTargetRFC1035Quoted(), er.TTL, dr.TTL)
-			m := fmt.Sprintf("CHANGE-TTL %s %s ", dr.NameFQDN, dr.Type) + humanDiff(existing[ei], desired[di])
+			m := color.YellowString("± MODIFY-TTL %s %s %s", dr.NameFQDN, dr.Type, humanDiff(existing[ei], desired[di]))
 			instructions = append(instructions, mkChange(dr.NameFQDN, dr.Type, []string{m},
 				models.Records{er},
 				models.Records{dr},
@@ -251,7 +251,6 @@ func findTTLChanges(existing, desired []targetConfig) ([]targetConfig, []targetC
 		existDiff = append(existDiff, existing[ei:]...)
 	}
 	if di < len(desired) {
-		//fmt.Printf("DEBUG: append d len()=%d\n", di)
 		desiredDiff = append(desiredDiff, desired[di:]...)
 	}
 
@@ -335,7 +334,7 @@ func diffTargets(existing, desired []targetConfig) ChangeList {
 		er := existing[i].rec
 		dr := desired[i].rec
 
-		m := fmt.Sprintf("CHANGE %s %s ", dr.NameFQDN, dr.Type) + humanDiff(existing[i], desired[i])
+		m := color.YellowString("± MODIFY %s %s ", dr.NameFQDN, dr.Type) + humanDiff(existing[i], desired[i])
 
 		instructions = append(instructions, mkChange(dr.NameFQDN, dr.Type, []string{m},
 			models.Records{er},
@@ -347,15 +346,15 @@ func diffTargets(existing, desired []targetConfig) ChangeList {
 	for i := mi; i < len(existing); i++ {
 		//fmt.Println(i, "DEL")
 		er := existing[i].rec
-		m := fmt.Sprintf("DELETE %s %s %s", er.NameFQDN, er.Type, existing[i].comparableFull)
-		instructions = append(instructions, mkDeleteRec(er.NameFQDN, er.Type, []string{m}, er))
+		m := color.RedString("- DELETE %s %s %s", er.NameFQDN, er.Type, existing[i].comparableFull)
+		instructions = append(instructions, mkDeleteByRecord(er.NameFQDN, er.Type, []string{m}, er))
 	}
 
 	// any left-over desired are creates
 	for i := mi; i < len(desired); i++ {
 		//fmt.Println(i, "CREATE")
 		dr := desired[i].rec
-		m := fmt.Sprintf("CREATE %s %s %s", dr.NameFQDN, dr.Type, desired[i].comparableFull)
+		m := color.GreenString("+ CREATE %s %s %s", dr.NameFQDN, dr.Type, desired[i].comparableFull)
 		instructions = append(instructions, mkAdd(dr.NameFQDN, dr.Type, []string{m}, models.Records{dr}))
 	}
 
