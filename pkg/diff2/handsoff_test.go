@@ -49,7 +49,6 @@ func handsoffHelper(t *testing.T, existingZone, desiredJs string, noPurge bool, 
 	if err != nil {
 		panic(err)
 	}
-	//fmt.Printf("DEBUG: existing=%s\n", showRecs(existing))
 
 	dnsconfig, err := js.ExecuteJavascriptString([]byte(desiredJs), false, nil)
 	if err != nil {

@@ -50,12 +50,7 @@ type differCompat struct {
 //   - The NewCompat() feature `extraValues` is not supported. That
 //     parameter must be set to nil.  If you use that feature, consider
 //     one of the pkg/diff2/By*() functions.
-func (d *differCompat) IncrementalDiff(existing []*models.RecordConfig) (unchanged, create, toDelete, modify Changeset, err error) {
-	unchanged = Changeset{}
-	create = Changeset{}
-	toDelete = Changeset{}
-	modify = Changeset{}
-
+func (d *differCompat) IncrementalDiff(existing []*models.RecordConfig) (unchanged, toCreate, toDelete, toModify Changeset, err error) {
 	instructions, err := diff2.ByRecord(existing, d.dc, nil)
 	if err != nil {
 		return nil, nil, nil, nil, err
@@ -70,11 +65,11 @@ func (d *differCompat) IncrementalDiff(existing []*models.RecordConfig) (unchang
 			fmt.Println(inst.MsgsJoined)
 		case diff2.CREATE:
 			cor.Desired = inst.New[0]
-			create = append(create, cor)
+			toCreate = append(toCreate, cor)
 		case diff2.CHANGE:
 			cor.Existing = inst.Old[0]
 			cor.Desired = inst.New[0]
-			modify = append(modify, cor)
+			toModify = append(toModify, cor)
 		case diff2.DELETE:
 			cor.Existing = inst.Old[0]
 			toDelete = append(toDelete, cor)
@@ -89,17 +84,17 @@ func (d *differCompat) IncrementalDiff(existing []*models.RecordConfig) (unchang
 // ChangedGroups provides the same results as IncrementalDiff but grouped by key.
 func (d *differCompat) ChangedGroups(existing []*models.RecordConfig) (map[models.RecordKey][]string, error) {
 	changedKeys := map[models.RecordKey][]string{}
-	_, create, toDelete, modify, err := d.IncrementalDiff(existing)
+	_, toCreate, toDelete, toModify, err := d.IncrementalDiff(existing)
 	if err != nil {
 		return nil, err
 	}
-	for _, c := range create {
+	for _, c := range toCreate {
 		changedKeys[c.Desired.Key()] = append(changedKeys[c.Desired.Key()], c.String())
 	}
 	for _, d := range toDelete {
 		changedKeys[d.Existing.Key()] = append(changedKeys[d.Existing.Key()], d.String())
 	}
-	for _, m := range modify {
+	for _, m := range toModify {
 		changedKeys[m.Desired.Key()] = append(changedKeys[m.Desired.Key()], m.String())
 	}
 	return changedKeys, nil

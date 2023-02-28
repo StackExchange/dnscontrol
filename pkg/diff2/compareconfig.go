@@ -82,7 +82,7 @@ type rTypeConfig struct {
 }
 
 type targetConfig struct {
-	comparableFull  string // A string that can be used to compare two rec's for equality.
+	comparableFull  string // A string that can be used to compare two rec's for exact equality.
 	comparableNoTTL string // A string that can be used to compare two rec's for equality, ignoring the TTL
 
 	rec *models.RecordConfig // The RecordConfig itself.
@@ -110,10 +110,6 @@ func NewCompareConfig(origin string, existing, desired models.Records, compFn Co
 
 func (cc *CompareConfig) VerifyCNAMEAssertions() {
 
-	// In theory these assertions do not need to be tested as they test
-	// something that can not happen. In my  I've proved this to be
-	// true.  That said, a little paranoia is healthy.
-
 	// According to the RFCs if a label has a CNAME, it can not have any other
 	// records at that label... even other CNAMEs.  Therefore, we need to be
 	// careful with changes at a label that involve a CNAME.
@@ -131,7 +127,7 @@ func (cc *CompareConfig) VerifyCNAMEAssertions() {
 	//   there is already an A record at that label.
 	//
 	// To assure that DNS providers don't have to think about this, we order
-	// the tdata items so that we generate the instructions in the best order.
+	// the tdata items so that we generate the instructions in the correct order.
 	// In other words:
 	//     If there is a CNAME in existing, it should be in front.
 	//     If there is a CNAME in desired, it should be at the end.
@@ -154,15 +150,12 @@ func (cc *CompareConfig) VerifyCNAMEAssertions() {
 				}
 
 				if len(td.existingTargets) != 0 {
-					//fmt.Printf("DEBUG: cname in existing: index=%d\n", j)
 					if j != 0 {
 						panic("should not happen: (CNAME not in first position)")
 					}
 				}
 
 				if len(td.desiredTargets) != 0 {
-					//fmt.Printf("DEBUG: cname in desired: index=%d\n", j)
-					//fmt.Printf("DEBUG: highest: index=%d\n", j)
 					if j != highest(ld.tdata) {
 						panic("should not happen: (CNAME not in last position)")
 					}
@@ -273,7 +266,6 @@ func (cc *CompareConfig) addRecords(recs models.Records, storeInExisting bool) {
 
 		// Now it is safe to add/modify the records.
 
-		//fmt.Printf("BEFORE E/D: %v/%v\n", len(td.existingRecs), len(td.desiredRecs))
 		if storeInExisting {
 			cc.ldata[labelIdx].tdata[rtIdx].existingRecs = append(cc.ldata[labelIdx].tdata[rtIdx].existingRecs, rec)
 			cc.ldata[labelIdx].tdata[rtIdx].existingTargets = append(cc.ldata[labelIdx].tdata[rtIdx].existingTargets,
@@ -283,8 +275,5 @@ func (cc *CompareConfig) addRecords(recs models.Records, storeInExisting bool) {
 			cc.ldata[labelIdx].tdata[rtIdx].desiredTargets = append(cc.ldata[labelIdx].tdata[rtIdx].desiredTargets,
 				targetConfig{comparableNoTTL: compNoTTL, comparableFull: compFull, rec: rec})
 		}
-		//fmt.Printf("AFTER  L: %v\n", len(cc.ldata))
-		//fmt.Printf("AFTER  E/D: %v/%v\n", len(td.existingRecs), len(td.desiredRecs))
-		//fmt.Printf("\n")
 	}
 }

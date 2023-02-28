@@ -128,7 +128,6 @@ func (a *edgeDNSProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*mode
 		keysToUpdate, err = (diff.New(dc)).ChangedGroups(existingRecords)
 	} else {
 		keysToUpdate, err = (diff.NewCompat(dc)).ChangedGroups(existingRecords)
-		// TODO(tlim): In the future please adopt `pkg/diff2/By*()`
 	}
 	if err != nil {
 		return nil, err

@@ -20,7 +20,7 @@ const (
 	CREATE             // Create a record/recordset/label where none existed before.
 	CHANGE             // Change existing record/recordset/label
 	DELETE             // Delete existing record/recordset/label
-	REPORT             // No change, but boy do I have something to say!
+	REPORT             // No change, but I have something to say!
 )
 
 type ChangeList []Change
@@ -83,7 +83,6 @@ General instructions:
   return corrections, nil
 }
 
-
 */
 
 // ByRecordSet takes two lists of records (existing and desired) and
@@ -95,7 +94,7 @@ General instructions:
 // record, if A records are added, changed, or removed, the API takes
 // www.example.com, A, and a list of all the desired IP addresses.
 //
-// Examples include:
+// Examples include: AZURE_DNS, GCORE, NS1, ROUTE53
 func ByRecordSet(existing models.Records, dc *models.DomainConfig, compFunc ComparableFunc) (ChangeList, error) {
 	return byHelper(analyzeByRecordSet, existing, dc, compFunc)
 }
@@ -107,7 +106,7 @@ func ByRecordSet(existing models.Records, dc *models.DomainConfig, compFunc Comp
 // time. That is, updates are done by sending a list of DNS records
 // to be served at a particular label, or the label itself is deleted.
 //
-// Examples include:
+// Examples include: GANDI_V5
 func ByLabel(existing models.Records, dc *models.DomainConfig, compFunc ComparableFunc) (ChangeList, error) {
 	return byHelper(analyzeByLabel, existing, dc, compFunc)
 }
@@ -123,7 +122,7 @@ func ByLabel(existing models.Records, dc *models.DomainConfig, compFunc Comparab
 // A change always has exactly 1 old and 1 new: .Old[0] and .New[0]
 // A delete always has exactly 1 old: .Old[0]
 //
-// Examples include: INWX
+// Examples include: CLOUDFLAREAPI, HEDNS, INWX, MSDNS, OVH, PORKBUN, VULTR
 func ByRecord(existing models.Records, dc *models.DomainConfig, compFunc ComparableFunc) (ChangeList, error) {
 	return byHelper(analyzeByRecord, existing, dc, compFunc)
 }
@@ -149,7 +148,7 @@ func ByRecord(existing models.Records, dc *models.DomainConfig, compFunc Compara
 //		// (dc.Records are the new records for the zone).
 //	}
 //
-// Example providers include: BIND
+// Example providers include: BIND, AUTODNS
 func ByZone(existing models.Records, dc *models.DomainConfig, compFunc ComparableFunc) ([]string, bool, error) {
 
 	if len(existing) == 0 {
@@ -157,7 +156,7 @@ func ByZone(existing models.Records, dc *models.DomainConfig, compFunc Comparabl
 		return nil, true, nil
 	}
 
-	// Only return the messages.
+	// Only return the messages.  The caller has the list of records needed to build the new zone.
 	instructions, err := byHelper(analyzeByRecord, existing, dc, compFunc)
 	return justMsgs(instructions), len(instructions) != 0, err
 }
@@ -199,7 +198,7 @@ func byHelper(fn func(cc *CompareConfig) ChangeList, existing models.Records, dc
 	return instructions, nil
 }
 
-// Stringify the datastructures for easier debugging
+// Stringify the datastructures (for debugging)
 
 func (c Change) String() string {
 	var buf bytes.Buffer

@@ -147,20 +147,19 @@ func (api *digitaloceanProvider) GetDomainCorrections(dc *models.DomainConfig) (
 	txtutil.SplitSingleLongTxt(dc.Records) // Autosplit long TXT records
 
 	var corrections []*models.Correction
-	var create, delete, modify diff.Changeset
+	var differ diff.Differ
 	if !diff2.EnableDiff2 {
-		differ := diff.New(dc)
-		_, create, delete, modify, err = differ.IncrementalDiff(existingRecords)
+		differ = diff.New(dc)
 	} else {
-		differ := diff.NewCompat(dc)
-		_, create, delete, modify, err = differ.IncrementalDiff(existingRecords)
+		differ = diff.NewCompat(dc)
 	}
+	_, toCreate, toDelete, toModify, err := differ.IncrementalDiff(existingRecords)
 	if err != nil {
 		return nil, err
 	}
 
 	// Deletes first so changing type works etc.
-	for _, m := range delete {
+	for _, m := range toDelete {
 		id := m.Existing.Original.(*godo.DomainRecord).ID
 		corr := &models.Correction{
 			Msg: fmt.Sprintf("%s, DO ID: %d", m.String(), id),
@@ -177,7 +176,7 @@ func (api *digitaloceanProvider) GetDomainCorrections(dc *models.DomainConfig) (
 		}
 		corrections = append(corrections, corr)
 	}
-	for _, m := range create {
+	for _, m := range toCreate {
 		req := toReq(dc, m.Desired)
 		corr := &models.Correction{
 			Msg: m.String(),
@@ -194,7 +193,7 @@ func (api *digitaloceanProvider) GetDomainCorrections(dc *models.DomainConfig) (
 		}
 		corrections = append(corrections, corr)
 	}
-	for _, m := range modify {
+	for _, m := range toModify {
 		id := m.Existing.Original.(*godo.DomainRecord).ID
 		req := toReq(dc, m.Desired)
 		corr := &models.Correction{
@@ -281,7 +280,7 @@ func toRc(domain string, r *godo.DomainRecord) *models.RecordConfig {
 	t.SetTarget(target)
 	switch rtype := r.Type; rtype {
 	case "TXT":
-		t.SetTargetTXTString(target)
+		t.SetTargetTXTfromRFC1035Quoted(target)
 	default:
 		// nothing additional required
 	}

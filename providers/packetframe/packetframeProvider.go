@@ -137,10 +137,6 @@ func (api *packetframeProvider) GetDomainCorrections(dc *models.DomainConfig) ([
 		return nil, err
 	}
 
-	if err != nil {
-		return nil, err
-	}
-
 	for _, m := range create {
 		req, err := toReq(zone.ID, dc, m.Desired)
 		if err != nil {
