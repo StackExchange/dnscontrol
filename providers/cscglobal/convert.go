@@ -38,7 +38,7 @@ func nativeToRecordCNAME(nr nativeRecordCNAME, origin string, defaultTTL uint32)
 	return rc
 }
 
-// nativeToRecordA takes an AAAA record from DNS and returns a native RecordConfig struct.
+// nativeToRecordAAAA takes an AAAA record from DNS and returns a native RecordConfig struct.
 func nativeToRecordAAAA(nr nativeRecordAAAA, origin string, defaultTTL uint32) *models.RecordConfig {
 	ttl := nr.TTL
 	if ttl == 0 {
