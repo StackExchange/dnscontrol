@@ -55,7 +55,7 @@ import (
 //	This is the shortname i.e. the NameFQDN without the origin suffix.
 //	It should never have a trailing "."
 //	It should never be null. The apex (naked domain) is stored as "@".
-//	If the origin is "foo.com." and Name is "foo.com", this literally means
+//	If the origin is "foo.com." and Name is "foo.com", this means
 //	    the intended FQDN is "foo.com.foo.com." (which may look odd)
 //
 // NameFQDN:
@@ -224,14 +224,11 @@ func (rc *RecordConfig) Copy() (*RecordConfig, error) {
 }
 
 // SetLabel sets the .Name/.NameFQDN fields given a short name and origin.
-// origin must not have a trailing dot: The entire code base
+// origin must not have a trailing dot: The entire code base maintains dc.Name
+// without the trailig dot. Finding a dot here means something is very wrong.
 //
-//	maintains dc.Name without the trailig dot. Finding a dot here means
-//	something is very wrong.
-//
-// short must not have a training dot: That would mean you have
-//
-//	a FQDN, and shouldn't be using SetLabel().  Maybe SetLabelFromFQDN()?
+// short must not have a training dot: That would mean you have a FQDN, and
+// shouldn't be using SetLabel().  Maybe SetLabelFromFQDN()?
 func (rc *RecordConfig) SetLabel(short, origin string) {
 
 	// Assertions that make sure the function is being used correctly:
@@ -289,12 +286,9 @@ func (rc *RecordConfig) SetLabelFromFQDN(fqdn, origin string) {
 }
 
 // GetLabel returns the shortname of the label associated with this RecordConfig.
-// It will never end with "."
-// It does not need further shortening (i.e. if it returns "foo.com" and the
-//
-//	domain is "foo.com" then the FQDN is actually "foo.com.foo.com").
-//
-// It will never be "" (the apex is returned as "@").
+// It will never end with ".". It does not need further shortening (i.e. if it
+// returns "foo.com" and the domain is "foo.com" then the FQDN is actually
+// "foo.com.foo.com"). It will never be "" (the apex is returned as "@").
 func (rc *RecordConfig) GetLabel() string {
 	return rc.Name
 }
