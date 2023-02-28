@@ -20,18 +20,14 @@ func analyzeByRecordSet(cc *CompareConfig) ChangeList {
 			dts := rt.desiredTargets
 			msgs := genmsgs(ets, dts)
 			if len(msgs) == 0 { // No differences?
-				//fmt.Printf("DEBUG: done. Records are the same\n")
 				// The records at this rset are the same. No work to be done.
 				continue
 			}
 			if len(ets) == 0 { // Create a new label.
-				//fmt.Printf("DEBUG: add\n")
 				instructions = append(instructions, mkAdd(lc.label, rt.rType, msgs, rt.desiredRecs))
 			} else if len(dts) == 0 { // Delete that label and all its records.
-				//fmt.Printf("DEBUG: delete\n")
 				instructions = append(instructions, mkDelete(lc.label, rt.rType, msgs, rt.existingRecs))
 			} else { // Change the records at that label
-				//fmt.Printf("DEBUG: change\n")
 				instructions = append(instructions, mkChange(lc.label, rt.rType, msgs, rt.existingRecs, rt.desiredRecs))
 			}
 		}
@@ -41,22 +37,20 @@ func analyzeByRecordSet(cc *CompareConfig) ChangeList {
 
 func analyzeByLabel(cc *CompareConfig) ChangeList {
 	var instructions ChangeList
-	//fmt.Printf("DEBUG: START: analyzeByLabel\n")
-	// Accumulate if there are any changes and collect the info needed to generate instructions.
-	for i, lc := range cc.ldata {
-		//fmt.Printf("DEBUG: START LABEL = %q\n", lc.label)
+	// Accumulate any changes and collect the info needed to generate instructions.
+	for _, lc := range cc.ldata {
+		// for each type at that label...
 		label := lc.label
 		var accMsgs []string
 		var accExisting models.Records
 		var accDesired models.Records
 		msgsByKey := map[models.RecordKey][]string{}
 		for _, rt := range lc.tdata {
-			//fmt.Printf("DEBUG: START RTYPE = %q\n", rt.rType)
+			// for each type at that label...
 			ets := rt.existingTargets
 			dts := rt.desiredTargets
 			msgs := genmsgs(ets, dts)
 			msgsByKey[models.RecordKey{NameFQDN: label, Type: rt.rType}] = msgs
-			//fmt.Printf("DEBUG:    appending msgs=%v\n", msgs)
 			accMsgs = append(accMsgs, msgs...)                    // Accumulate the messages
 			accExisting = append(accExisting, rt.existingRecs...) // Accumulate records existing at this label.
 			accDesired = append(accDesired, rt.desiredRecs...)    // Accumulate records desired at this label.
@@ -68,22 +62,11 @@ func analyzeByLabel(cc *CompareConfig) ChangeList {
 		// Based on that info, we can generate the instructions.
 
 		if len(accMsgs) == 0 { // Nothing changed.
-			//fmt.Printf("DEBUG: analyzeByLabel: %02d: no change\n", i)
 		} else if len(accDesired) == 0 { // No new records at the label? This must be a delete.
-			//fmt.Printf("DEBUG: analyzeByLabel: %02d: delete\n", i)
 			instructions = append(instructions, mkDelete(label, "", accMsgs, accExisting))
 		} else if len(accExisting) == 0 { // No old records at the label? This must be a change.
-			//fmt.Printf("DEBUG: analyzeByLabel: %02d: create\n", i)
-			//fmt.Printf("DEBUG: analyzeByLabel mkAdd msgs=%d\n", len(accMsgs))
 			instructions = append(instructions, mkAddByLabel(label, "", accMsgs, accDesired))
 		} else { // If we get here, it must be a change.
-			_ = i
-			// fmt.Printf("DEBUG: analyzeByLabel: %02d: change %d{%v} %d{%v} msgs=%v\n", i,
-			// 	len(accExisting), accExisting,
-			// 	len(accDesired), accDesired,
-			// 	accMsgs,
-			// )
-			//fmt.Printf("DEBUG: analyzeByLabel mkchange msgs=%d\n", len(accMsgs))
 			instructions = append(instructions, mkChangeByLabel(label, "", accMsgs, accExisting, accDesired, msgsByKey))
 		}
 	}
@@ -92,38 +75,31 @@ func analyzeByLabel(cc *CompareConfig) ChangeList {
 }
 
 func analyzeByRecord(cc *CompareConfig) ChangeList {
-	//fmt.Printf("DEBUG: analyzeByRecord: cc=%v\n", cc)
 
 	var instructions ChangeList
 	// For each label, for each type at that label, see if there are any changes.
 	for _, lc := range cc.ldata {
-		//fmt.Printf("DEBUG: analyzeByRecord: next lc=%v\n", lc)
 		for _, rt := range lc.tdata {
 			ets := rt.existingTargets
 			dts := rt.desiredTargets
 			cs := diffTargets(ets, dts)
-			//fmt.Printf("DEBUG: analyzeByRecord: cs=%v\n", cs)
 			instructions = append(instructions, cs...)
 		}
 	}
 	return instructions
 }
 
-// NB(tlim): there is no analyzeByZone.  ByZone calls anayzeByRecords().
+// FYI: there is no analyzeByZone.  ByZone calls anayzeByRecords().
 
-func mkAdd(l string, t string, msgs []string, recs models.Records) Change {
-	//fmt.Printf("DEBUG mkAdd called: (%v, %v, %v, %v)\n", l, t, msgs, recs)
+func mkAdd(l string, t string, msgs []string, newRecs models.Records) Change {
 	c := Change{Type: CREATE, Msgs: msgs, MsgsJoined: strings.Join(msgs, "\n")}
 	c.Key.NameFQDN = l
 	c.Key.Type = t
-	c.New = recs
+	c.New = newRecs
 	return c
 }
 
-// TODO(tlim): Clean these up. Some of them are exact duplicates!
-
 func mkAddByLabel(l string, t string, msgs []string, newRecs models.Records) Change {
-	//fmt.Printf("DEBUG mkAddByLabel called: (%v, %v, %v, %v)\n", l, t, msgs, newRecs)
 	c := Change{Type: CREATE, Msgs: msgs, MsgsJoined: strings.Join(msgs, "\n")}
 	c.Key.NameFQDN = l
 	c.Key.Type = t
