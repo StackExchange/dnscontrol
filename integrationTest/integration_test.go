@@ -1256,6 +1256,16 @@ func makeTests(t *testing.T) []*TestGroup {
 			),
 		),
 
+		testgroup("R53_ALIAS_Loop",
+			// This will always be skipped because rejectifTargetEqualsLabel
+			// will always flag it as not permitted.
+			// See https://github.com/StackExchange/dnscontrol/issues/2107
+			requires(providers.CanUseRoute53Alias),
+			tc("loop should fail",
+				r53alias("test-islandora", "CNAME", "test-islandora.**current-domain**"),
+			),
+		),
+
 		// CLOUDFLAREAPI features
 
 		testgroup("CF_REDIRECT",
