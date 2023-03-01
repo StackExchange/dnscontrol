@@ -2,6 +2,7 @@ package commands
 
 import (
 	"fmt"
+	"golang.org/x/net/idna"
 	"log"
 	"os"
 	"strings"
@@ -147,7 +148,9 @@ DomainLoop:
 					if err != nil {
 						return err
 					}
-					if !slices.Contains(zones, domain.Name) {
+					aceZoneName, _ := idna.ToASCII(domain.Name)
+
+					if !slices.Contains(zones, aceZoneName) {
 						out.Warnf("DEBUG: zones: %v\n", zones)
 						out.Warnf("DEBUG: Name: %v\n", domain.Name)
 
