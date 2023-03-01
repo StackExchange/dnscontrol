@@ -65,7 +65,7 @@ D('example.com', REG, DnsProvider('R53'),
 )
 ```
 
-## Macro to for repeated records
+## Macro for repeated records
 
 ```javascript
 var GOOGLE_APPS_MX_RECORDS = [
@@ -92,7 +92,7 @@ D('example.com', REG, DnsProvider('R53'),
 )
 ```
 
-## Use SPF_BUILDER to add comments along SPF records
+## Use SPF_BUILDER to add comments to SPF records
 
 ```javascript
 D("example.tld", REG, DSP, ...
