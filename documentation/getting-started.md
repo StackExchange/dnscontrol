@@ -63,7 +63,7 @@ If these don't work, more info is in [#805](https://github.com/StackExchange/dns
 
 ## 2. Create a place for the config files
 
-Create a directory where you'll be storing your configuration files.
+Create a directory where you'll store your configuration files.
 We highly recommend storing these files in a Git repo, but for
 simple tests anything will do.
 
@@ -97,7 +97,7 @@ D('example.com', REG_NONE, DnsProvider(DNS_BIND),
 );
 ```
 
-Modify this file to match your particular providers and domains. See [the DNSConfig docs](js.md) and  [the provider docs](providers.md) for more details.
+Modify this file to match your particular providers and domains. See [the DNSConfig docs](js.md) and [the provider docs](providers.md) for more details.
 
 Create a file called `creds.json` for storing provider configurations (API tokens and other account information).
 For example, to use both name.com and Cloudflare, you would have:
@@ -127,13 +127,13 @@ like [git-crypt](https://www.agwa.name/projects/git-crypt) or
 
 There are 2 types of providers:
 
-A "Registrar" is who you register the domain with.  Start with
+A "Registrar" is with whom you register the domain.  Start with
 `NONE`, which is a provider that never talks to or updates the
 registrar.  You can define your registrar later when you want to
 use advanced features.
 
 A "DnsProvider" is the service that actually provides DNS service
-(port 53) and may be the same or different as the registrar. Even if both
+(port 53) and may be the same or a different registrar. Even if both
 your Registrar and DnsProvider are the same company, two different
 definitions must be included in `dnsconfig.js`.
 
@@ -193,8 +193,8 @@ FYI: `creds.json` fields can be read from an environment variable. The field mus
 
 Before you edit the sample files, verify that the system is working.
 
-First run `dnscontrol preview` and make sure that it completes with
-no errors.  The preview command is the "dry run" mode that shows
+First run `dnscontrol preview` and ensure it completes without
+error(s).  The preview command is the "dry run" mode that shows only
 what changes need to be made and never makes any actual changes.
 It will use APIs if needed to find out what DNS entries currently
 exist.
@@ -218,7 +218,7 @@ Initialized 1 registrars and 1 dns service providers.
 Done. 1 corrections.
 ```
 
-Next run `dnscontrol push` to actually make the changes. In this
+Next, run `dnscontrol push` to actually make the changes. In this
 case, the change will be to create a zone file where one didn't
 previously exist.
 
@@ -270,7 +270,7 @@ was being created from scratch.
 
 Run `dnscontrol push` to see the system generate a new zone file.
 
-Other providers use an API do do updates. In those cases the
+Other providers use an API to do updates. In those cases the
 individual changes will translate into API calls that update the
 specific records.
 
@@ -304,8 +304,8 @@ records as needed.  Remember that the first parameter to `D()` is
 always a Registrar.
 
 Run `dnscontrol preview` to test your work. It may take a few tries
-to list all the DNS records that make up the domain.  When preview
-shows no changes required, then you know you are at feature parity.
+to list all the DNS records that make up the domain.  When `preview`
+shows no changes required, then you know you are at record parity.
 
 The [Migrating](migrating.md) doc has advice
 about converting from other systems.
@@ -316,7 +316,7 @@ command to import the zone from (most) providers and output it as code
 that can be added to `dnsconfig.js` and used with very little
 modification.
 
-Now you can make change to the domain(s)  and run `dnscontrol preview`
+Now you can make changes to the domain(s)  and run `dnscontrol preview`
 
 
 ## 8. Production Advice
