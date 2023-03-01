@@ -187,6 +187,11 @@ func checkTargets(rec *models.RecordConfig, domain string) (errs []error) {
 		if label == "@" {
 			check(fmt.Errorf("cannot create CNAME record for bare domain"))
 		}
+		labelFQDN := dnsutil.AddOrigin(label, domain)
+		targetFQDN := dnsutil.AddOrigin(target, domain)
+		if labelFQDN == targetFQDN {
+			check(fmt.Errorf("CNAME loop (target points at itself)"))
+		}
 	case "MX":
 		check(checkTarget(target))
 	case "NAPTR":
