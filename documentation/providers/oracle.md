@@ -8,6 +8,7 @@ The OCID of the compartment DNS resources should be put in can also optionally b
 
 Example:
 
+{% code title="creds.json" %}
 ```json
 {
   "oracle": {
@@ -21,6 +22,7 @@ Example:
   }
 }
 ```
+{% endcode %}
 
 ## Metadata
 This provider does not recognize any special metadata fields unique to Oracle Cloud.

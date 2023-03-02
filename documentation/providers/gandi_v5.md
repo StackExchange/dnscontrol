@@ -28,6 +28,7 @@ https://admin.gandi.net/organizations/[not this hex string]/PLTS/[sharing id]/pr
 
 Example:
 
+{% code title="creds.json" %}
 ```json
 {
   "gandi": {
@@ -37,6 +38,7 @@ Example:
   }
 }
 ```
+{% endcode %}
 
 ## Metadata
 This provider does not recognize any special metadata fields unique to Gandi.

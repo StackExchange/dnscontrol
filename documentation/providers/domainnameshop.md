@@ -5,6 +5,7 @@ along with your [Domainnameshop Token and Secret](https://www.domeneshop.no/admi
 
 Example:
 
+{% code title="creds.json" %}
 ```json
 {
   "mydomainnameshop": {
@@ -14,6 +15,7 @@ Example:
   }
 }
 ```
+{% endcode %}
 
 ## Metadata
 This provider does not recognize any special metadata fields unique to Domainnameshop.

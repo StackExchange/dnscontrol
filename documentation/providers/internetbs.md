@@ -7,6 +7,7 @@ along with an API key and account password.
 
 Example:
 
+{% code title="creds.json" %}
 ```json
 {
   "internetbs": {
@@ -16,6 +17,7 @@ Example:
   }
 }
 ```
+{% endcode %}
 
 ## Metadata
 This provider does not recognize any special metadata fields unique to Internet.bs.

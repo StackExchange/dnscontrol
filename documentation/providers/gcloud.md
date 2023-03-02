@@ -9,6 +9,7 @@ Copy the full JSON object into your `creds.json`. Newlines in the private key ne
 
 Example:
 
+{% code title="creds.json" %}
 ```json
 {
   "gcloud": {
@@ -27,6 +28,7 @@ Example:
   }
 }
 ```
+{% endcode %}
 
 **Note**:
 

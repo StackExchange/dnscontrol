@@ -7,6 +7,7 @@ You can also set the `baseurl` to use [DNSimple's free sandbox](https://develope
 
 Examples:
 
+{% code title="creds.json" %}
 ```json
 {
   "dnsimple": {
@@ -20,6 +21,7 @@ Examples:
   }
 }
 ```
+{% endcode %}
 
 ## Metadata
 This provider does not recognize any special metadata fields unique to DNSimple.

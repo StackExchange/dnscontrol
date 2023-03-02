@@ -5,6 +5,7 @@ along with your [Api user ID and password](https://www.cloudns.net/wiki/article/
 
 Example:
 
+{% code title="creds.json" %}
 ```json
 {
   "cloudns": {
@@ -15,6 +16,7 @@ Example:
   }
 }
 ```
+{% endcode %}
 
 Current version of provider doesn't support `sub-auth-user`.
 

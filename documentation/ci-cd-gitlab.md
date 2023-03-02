@@ -13,31 +13,34 @@ This is based on:
 
 For convenience, both configuration files are shown below.
 
-- `dnsconfig.js`
-  ```javascript
-  var PROVIDER_NONE = NewRegistrar('none');
-  var PROVIDER_TRANSIP = NewDnsProvider('transip', '-');
+{% code title="dnsconfig.js" %}
+```javascript
+var PROVIDER_NONE = NewRegistrar('none');
+var PROVIDER_TRANSIP = NewDnsProvider('transip', '-');
 
-  D('cafferata.dev',
-      PROVIDER_NONE,
-      DnsProvider(PROVIDER_TRANSIP),
-      DefaultTTL('1d'),
-      TXT('spf', [
-          'v=spf1',
-          '-all'
-      ].join(' '))
-  );
-  ```
-- `creds.json`
-  ```json
-  {
-      "transip": {
-          "TYPE": "TRANSIP",
-          "AccountName": "cafferatax",
-          "PrivateKey": "$TRANSIP_PRIVATE_KEY"
-      }
-  }
-  ```
+D('cafferata.dev',
+    PROVIDER_NONE,
+    DnsProvider(PROVIDER_TRANSIP),
+    DefaultTTL('1d'),
+    TXT('spf', [
+        'v=spf1',
+        '-all'
+    ].join(' '))
+);
+```
+{% endcode %}
+
+{% code title="creds.json" %}
+```json
+{
+    "transip": {
+        "TYPE": "TRANSIP",
+        "AccountName": "cafferatax",
+        "PrivateKey": "$TRANSIP_PRIVATE_KEY"
+    }
+}
+```
+{% endcode %}
 
 ## Gitlab CI - Preparation
 

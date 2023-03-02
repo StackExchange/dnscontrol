@@ -6,6 +6,7 @@ In most cases the Server id is `localhost`.
 
 Example:
 
+{% code title="creds.json" %}
 ```json
 {
   "powerdns": {
@@ -16,6 +17,7 @@ Example:
   }
 }
 ```
+{% endcode %}
 
 ## Metadata
 Following metadata are available:
