@@ -1479,7 +1479,7 @@ declare function DOMAIN_ELSEWHERE_AUTO(name: string, domain: string, registrar: 
  * );
  * ```
  * 
- * This will end up in the following modifications: (This output assumes the `--verbose` flag)
+ * This will end up in the following modifications: (This output assumes the `--full` flag)
  * 
  * ```text
  * ******************** Domain: domain.tld
@@ -1692,7 +1692,7 @@ declare function REV(address: string): string;
  * }
  * ```
  * 
- * This will end up in following modifications: (All output assumes the `--verbose` flag)
+ * This will end up in following modifications: (All output assumes the `--full` flag)
  * 
  * ```text
  * ******************** Domain: domain1.tld
