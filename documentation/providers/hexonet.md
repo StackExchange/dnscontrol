@@ -14,6 +14,7 @@ along with your HEXONET login data.
 
 Example:
 
+{% code title="creds.json" %}
 ```json
 {
   "hexonet": {
@@ -26,9 +27,11 @@ Example:
   }
 }
 ```
+{% endcode %}
 
 Here a working example for our OT&E System:
 
+{% code title="creds.json" %}
 ```json
 {
   "hexonet": {
@@ -40,6 +43,7 @@ Here a working example for our OT&E System:
   }
 }
 ```
+{% endcode %}
 
 {% hint style="info" %}
 **NOTE**: The above credentials are known to the public.

@@ -11,6 +11,7 @@ along with your name.com API username and access token:
 
 Example:
 
+{% code title="creds.json" %}
 ```json
 {
   "name.com": {
@@ -20,6 +21,7 @@ Example:
   }
 }
 ```
+{% endcode %}
 
 There is another key name `apiurl` but it is optional and defaults to the correct value. If you want to use the test environment ("OT&E"), then add this:
 

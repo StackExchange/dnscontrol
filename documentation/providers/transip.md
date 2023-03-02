@@ -9,6 +9,7 @@ You can login with your `AccountName` and a `PrivateKey` which can be generated 
 
 Example:
 
+{% code title="creds.json" %}
 ```json
 {
   "transip": {
@@ -18,12 +19,13 @@ Example:
   }
 }
 ```
+{% endcode %}
 
 ### Access tokens
 
 Or you can choose to have an `AccessToken` as credential. These can be generated in the [TransIP control panel](https://www.transip.nl/cp/account/api/) and have a limited lifetime
 
-
+{% code title="creds.json" %}
 ```json
 {
   "transip": {
@@ -32,7 +34,7 @@ Or you can choose to have an `AccessToken` as credential. These can be generated
   }
 }
 ```
-
+{% endcode %}
 
 
 ## Metadata

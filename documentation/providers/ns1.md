@@ -5,6 +5,7 @@ along with your NS1 api key.
 
 Example:
 
+{% code title="creds.json" %}
 ```json
 {
   "ns1": {
@@ -13,6 +14,7 @@ Example:
   }
 }
 ```
+{% endcode %}
 
 ## Metadata
 This provider does not recognize any special metadata fields unique to NS1.

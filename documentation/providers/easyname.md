@@ -7,6 +7,7 @@ along with [API-Access](https://my.easyname.com/en/account/api) information
 
 Example:
 
+{% code title="creds.json" %}
 ```json
 {
   "easyname": {
@@ -19,6 +20,7 @@ Example:
   }
 }
 ```
+{% endcode %}
 
 ## Metadata
 This provider does not recognize any special metadata fields unique to easyname.

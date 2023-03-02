@@ -19,6 +19,7 @@ To use this provider, add an entry to `creds.json` with `TYPE` set to `AKAMAIEDG
 
 Example:
 
+{% code title="creds.json" %}
 ```json
 "akamaiedgedns": {
     "TYPE": "AKAMAIEDGEDNS",
@@ -30,6 +31,7 @@ Example:
     "group_id": "NNNNNN"
 }
 ```
+{% endcode %}
 
 ## Usage
 

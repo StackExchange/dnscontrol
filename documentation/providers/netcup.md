@@ -5,6 +5,7 @@ along with your [api key, password and your customer number](https://www.netcup-
 
 Example:
 
+{% code title="creds.json" %}
 ```json
 {
   "netcup": {
@@ -15,6 +16,7 @@ Example:
   }
 }
 ```
+{% endcode %}
 
 ## Usage
 An example `dnsconfig.js` configuration:

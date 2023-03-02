@@ -7,6 +7,7 @@ along with your INWX username and password.
 
 Example:
 
+{% code title="creds.json" %}
 ```json
 {
   "inwx": {
@@ -16,6 +17,7 @@ Example:
   }
 }
 ```
+{% endcode %}
 
 ### Two factor authentication
 
@@ -31,6 +33,7 @@ See issue [issue 848](https://github.com/StackExchange/dnscontrol/issues/848#iss
 If two factor authentication has been enabled you will also need to provide a valid TOTP number.
 This can also be done via an environment variable:
 
+{% code title="creds.json" %}
 ```json
 {
   "inwx": {
@@ -41,6 +44,7 @@ This can also be done via an environment variable:
   }
 }
 ```
+{% endcode %}
 
 and then you can run
 
@@ -55,6 +59,7 @@ This secret is only shown once when two factor authentication is enabled and you
 * Anyone with access to this `creds.json` file will have *full* access to your INWX account and will be able to transfer and/or delete your domains
 * Storing the shared secret together with the password weakens two factor authentication because both factors are stored in a single place.
 
+{% code title="creds.json" %}
 ```json
 {
   "inwx": {
@@ -65,12 +70,13 @@ This secret is only shown once when two factor authentication is enabled and you
   }
 }
 ```
-
+{% endcode %}
 
 ### Sandbox
 You can optionally also specify sandbox with a value of 1 to
 redirect all requests to the sandbox API instead:
 
+{% code title="creds.json" %}
 ```json
 {
   "inwx":{
@@ -80,6 +86,7 @@ redirect all requests to the sandbox API instead:
   }
 }
 ```
+{% endcode %}
 
 If sandbox is omitted or set to any other value the production
 API will be used.

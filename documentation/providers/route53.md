@@ -5,6 +5,7 @@ along with API credentials.
 
 Example:
 
+{% code title="creds.json" %}
 ```json
 {
   "r53_main": {
@@ -16,6 +17,7 @@ Example:
   }
 }
 ```
+{% endcode %}
 
 Alternatively you can also use environment variables.  This is discouraged unless your environment provides them already.
 
@@ -25,6 +27,7 @@ export AWS_SECRET_ACCESS_KEY=YYYYYYYYY
 export AWS_SESSION_TOKEN=ZZZZZZZZ
 ```
 
+{% code title="creds.json" %}
 ```json
 {
   "r53_main": {
@@ -34,6 +37,7 @@ export AWS_SESSION_TOKEN=ZZZZZZZZ
   }
 }
 ```
+{% endcode %}
 
 Alternatively, this provider supports [named profiles](https://docs.aws.amazon.com/cli/latest/userguide/cli-configure-profiles.html). In that case export the following variable:
 
@@ -45,6 +49,7 @@ and provide a minimal entry in `creds.json`:
 
 Example:
 
+{% code title="creds.json" %}
 ```json
 {
   "r53_main": {
@@ -52,6 +57,7 @@ Example:
   }
 }
 ```
+{% endcode %}
 
 You can find some other ways to authenticate to Route53 in the [go sdk configuration](https://docs.aws.amazon.com/sdk-for-go/v1/developer-guide/configuring-sdk.html).
 

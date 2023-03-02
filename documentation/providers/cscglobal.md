@@ -15,6 +15,7 @@ In your `creds.json` file, you must provide your API key and user/client token. 
 
 Example:
 
+{% code title="creds.json" %}
 ```json
 {
   "cscglobal": {
@@ -25,6 +26,7 @@ Example:
   }
 }
 ```
+{% endcode %}
 
 ## Usage
 An example `dnsconfig.js` configuration:

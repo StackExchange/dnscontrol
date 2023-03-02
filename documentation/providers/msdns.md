@@ -34,6 +34,7 @@ along with other settings:
 
 Example:
 
+{% code title="creds.json" %}
 ```json
 {
   "msdns": {
@@ -43,6 +44,7 @@ Example:
   }
 }
 ```
+{% endcode %}
 
 An example DNS configuration:
 
