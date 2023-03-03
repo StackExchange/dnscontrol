@@ -9,6 +9,7 @@ new types or destinations.
 
 Notifications are set up in your credentials JSON file. They will use the `notifications` key to look for keys or configuration needed for various notification types.
 
+{% code title="creds.json" %}
 ```json
   "r53": {
       ...
@@ -21,6 +22,7 @@ Notifications are set up in your credentials JSON file. They will use the `notif
       "teams_url": "https://outlook.office.com/webhook/00000000-0000-0000-0000-000000000000@00000000-0000-0000-0000-000000000000/IncomingWebhook/00000000000000000000000000000000/00000000-0000-0000-0000-000000000000"
   }
 ```
+{% endcode %}
 
 You also must run `dnscontrol preview` or `dnscontrol push` with the `-notify` flag to enable notification sending at all.
 

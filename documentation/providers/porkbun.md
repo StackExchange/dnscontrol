@@ -5,6 +5,7 @@ along with your `api_key` and `secret_key`. More info about authentication can b
 
 Example:
 
+{% code title="creds.json" %}
 ```json
 {
   "porkbun": {
@@ -14,6 +15,7 @@ Example:
   }
 }
 ```
+{% endcode %}
 
 ## Metadata
 

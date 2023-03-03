@@ -4,6 +4,7 @@ This is a read-only/monitoring "registrar". It does a DNS NS lookup to confirm t
 
 To use this provider, add an entry to `creds.json` with `TYPE` set to `DNSOVERHTTPS`.
 
+{% code title="creds.json" %}
 ```json
 {
   "dohdefault": {
@@ -11,11 +12,13 @@ To use this provider, add an entry to `creds.json` with `TYPE` set to `DNSOVERHT
   }
 }
 ```
+{% endcode %}
 
 The DNS-over-HTTPS provider defaults to using Google Public DNS however you may configure an alternative RFC 8484 DoH provider using the `host` parameter.
 
 Example:
 
+{% code title="creds.json" %}
 ```json
 {
   "dohcloudflare": {
@@ -24,6 +27,7 @@ Example:
   }
 }
 ```
+{% endcode %}
 
 Some common DoH providers are:
 

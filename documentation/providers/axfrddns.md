@@ -33,6 +33,7 @@ the provider:
 
 For instance, your `creds.json` might looks like:
 
+{% code title="creds.json" %}
 ```json
 {
   "axfrddns": {
@@ -42,6 +43,7 @@ For instance, your `creds.json` might looks like:
   }
 }
 ```
+{% endcode %}
 
 If either key is missing, DNSControl defaults to IP-based ACL
 authentication for that function. Including both keys is the most
@@ -58,6 +60,7 @@ var DSP_AXFRDDNS_B = NewDnsProvider("axfrddns-b");
 
 And update `creds.json` accordingly:
 
+{% code title="creds.json" %}
 ```json
 {
     "axfrddns-a": {
@@ -70,6 +73,7 @@ And update `creds.json` accordingly:
     }
 }
 ```
+{% endcode %}
 
 ### Default nameservers
 
