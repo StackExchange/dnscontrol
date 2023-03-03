@@ -205,6 +205,14 @@ func (g *gcloudProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*model
 	models.PostProcessRecords(existingRecords)
 	txtutil.SplitSingleLongTxt(dc.Records) // Autosplit long TXT records
 
+	return GetZoneRecordsCorrections(dc, existingRecords)
+}
+
+func (g *gcloudProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, existingRecords models.Records) ([]*models.Correction, error) {
+
+	// oldRRs :=
+	// zoneName :=
+
 	// first collect keys that have changed
 	var differ diff.Differ
 	if !diff2.EnableDiff2 {

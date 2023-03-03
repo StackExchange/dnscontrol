@@ -15,6 +15,7 @@ import (
 	"github.com/StackExchange/dnscontrol/v3/pkg/diff2"
 	"github.com/StackExchange/dnscontrol/v3/pkg/nameservers"
 	"github.com/StackExchange/dnscontrol/v3/pkg/normalize"
+	"github.com/StackExchange/dnscontrol/v3/pkg/zonerecs"
 	"github.com/StackExchange/dnscontrol/v3/providers"
 	_ "github.com/StackExchange/dnscontrol/v3/providers/_all"
 	"github.com/StackExchange/dnscontrol/v3/providers/cloudflare"
@@ -211,7 +212,7 @@ func makeChanges(t *testing.T, prv providers.DNSServiceProvider, dc *models.Doma
 		}
 
 		// get and run corrections for first time
-		corrections, err := prv.GetDomainCorrections(dom)
+		corrections, err := zonerecs.CorrectZoneRecords(prv, dom)
 		if err != nil {
 			t.Fatal(fmt.Errorf("runTests: %w", err))
 		}

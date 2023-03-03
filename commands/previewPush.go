@@ -2,10 +2,11 @@ package commands
 
 import (
 	"fmt"
-	"golang.org/x/net/idna"
 	"log"
 	"os"
 	"strings"
+
+	"golang.org/x/net/idna"
 
 	"github.com/StackExchange/dnscontrol/v3/models"
 	"github.com/StackExchange/dnscontrol/v3/pkg/credsfile"
@@ -13,6 +14,7 @@ import (
 	"github.com/StackExchange/dnscontrol/v3/pkg/normalize"
 	"github.com/StackExchange/dnscontrol/v3/pkg/notifications"
 	"github.com/StackExchange/dnscontrol/v3/pkg/printer"
+	"github.com/StackExchange/dnscontrol/v3/pkg/zonerecs"
 	"github.com/StackExchange/dnscontrol/v3/providers"
 	"github.com/urfave/cli/v2"
 	"golang.org/x/exp/slices"
@@ -188,7 +190,7 @@ DomainLoop:
 
 			/// This is where we should audit?
 
-			corrections, err := provider.Driver.GetDomainCorrections(dc)
+			corrections, err := zonerecs.CorrectZoneRecords(provider.Driver, dc)
 			out.EndProvider(len(corrections), err)
 			if err != nil {
 				anyErrors = true
