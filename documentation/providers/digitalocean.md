@@ -5,6 +5,7 @@ along with your [DigitalOcean OAuth Token](https://cloud.digitalocean.com/settin
 
 Example:
 
+{% code title="creds.json" %}
 ```json
 {
   "mydigitalocean": {
@@ -13,6 +14,7 @@ Example:
   }
 }
 ```
+{% endcode %}
 
 ## Metadata
 This provider does not recognize any special metadata fields unique to DigitalOcean.

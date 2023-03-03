@@ -5,6 +5,7 @@ along with a OVH app-key, app-secret-key and consumer-key.
 
 Example:
 
+{% code title="creds.json" %}
 ```json
 {
   "ovh": {
@@ -15,6 +16,7 @@ Example:
   }
 }
 ```
+{% endcode %}
 
 See [the Activation section](#activation) for details on obtaining these credentials.
 
@@ -95,6 +97,7 @@ curl -XPOST -H"X-Ovh-Application: <you-app-key>" -H "Content-type: application/j
 
 It should return something akin to:
 
+{% code title="creds.json" %}
 ```json
 {
   "validationUrl": "https://eu.api.ovh.com/auth/?credentialToken=<long-token>",
@@ -102,6 +105,7 @@ It should return something akin to:
   "state": "pendingValidation"
 }
 ```
+{% endcode %}
 
 Open the "validationUrl" in a browser and log in with your OVH account. This will link the app with your account,
 authorizing it to access your zones and domains.

@@ -5,6 +5,7 @@ configuration parameters required are stored in `creds.json`.   The file contain
 
 Here's a sample file:
 
+{% code title="creds.json" %}
 ```json
 {
   "cloudflare_tal": {
@@ -26,6 +27,7 @@ Here's a sample file:
   }
 }
 ```
+{% endcode %}
 
 ## Format
 
@@ -79,6 +81,7 @@ For a smooth transition, please update your `creds.json` file now.
 
 Here is the minimal entry required:
 
+{% code title="creds.json" %}
 ```json
 {
   "entryName": {
@@ -86,6 +89,7 @@ Here is the minimal entry required:
   }
 }
 ```
+{% endcode %}
 
 ### cleanup
 
@@ -203,6 +207,7 @@ In this case, the 1Password CLI is used to inject the secrets from
 a 1Password vault, rather than storing them in environment variables.
 An example of a template file containing Linode and Cloudflare API credentials is available here: [creds.json](https://github.com/StackExchange/dnscontrol/blob/master/documentation/assets/1password/creds.json).
 
+{% code title="creds.json" %}
 ```json
 {
   "bind": {
@@ -219,6 +224,7 @@ An example of a template file containing Linode and Cloudflare API credentials i
   }
 }
 ```
+{% endcode %}
 
 ## Don't store secrets in a Git repo!
 

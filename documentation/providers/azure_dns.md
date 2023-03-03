@@ -5,6 +5,7 @@ along with the API credentials.
 
 Example:
 
+{% code title="creds.json" %}
 ```json
 {
   "azuredns_main": {
@@ -17,6 +18,7 @@ Example:
   }
 }
 ```
+{% endcode %}
 
 You can also use environment variables:
 
@@ -28,6 +30,7 @@ export AZURE_CLIENT_ID=AAAAAAAAA
 export AZURE_CLIENT_SECRET=BBBBBBBBB
 ```
 
+{% code title="creds.json" %}
 ```json
 {
   "azuredns_main": {
@@ -40,6 +43,7 @@ export AZURE_CLIENT_SECRET=BBBBBBBBB
   }
 }
 ```
+{% endcode %}
 
 ## Metadata
 This provider does not recognize any special metadata fields unique to Azure DNS.

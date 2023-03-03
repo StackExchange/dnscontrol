@@ -5,6 +5,7 @@ along with a Gcore account API token.
 
 Example:
 
+{% code title="creds.json" %}
 ```json
 {
   "gcore": {
@@ -13,6 +14,7 @@ Example:
   }
 }
 ```
+{% endcode %}
 
 ## Metadata
 This provider does not recognize any special metadata fields unique to Gcore.

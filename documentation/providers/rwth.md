@@ -5,6 +5,7 @@ along with your [API Token](https://noc-portal.rz.rwth-aachen.de/dns-admin/en/ap
 
 Example:
 
+{% code title="creds.json" %}
 ```json
 {
   "rwth": {
@@ -13,6 +14,7 @@ Example:
   }
 }
 ```
+{% endcode %}
 
 ## Metadata
 This provider does not recognize any special metadata fields unique to it.
