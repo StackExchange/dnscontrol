@@ -5,6 +5,7 @@ To use this provider, add an entry to `creds.json` with `TYPE` set to `AUTODNS` 
 
 Example:
 
+{% code title="creds.json" %}
 ```json
 {
   "autodns": {
@@ -15,6 +16,7 @@ Example:
   }
 }
 ```
+{% endcode %}
 
 ## Usage
 

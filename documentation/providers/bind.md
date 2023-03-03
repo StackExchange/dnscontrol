@@ -17,6 +17,7 @@ Optional fields include:
 
 Example:
 
+{% code title="creds.json" %}
 ```json
 {
   "bind": {
@@ -25,7 +26,7 @@ Example:
   }
 }
 ```
-
+{% endcode %}
 
 ## Meta configuration
 

@@ -5,6 +5,7 @@ along with your [Linode Personal Access Token](https://cloud.linode.com/profile/
 
 Example:
 
+{% code title="creds.json" %}
 ```json
 {
   "linode": {
@@ -13,6 +14,7 @@ Example:
   }
 }
 ```
+{% endcode %}
 
 ## Metadata
 This provider does not recognize any special metadata fields unique to Linode.
