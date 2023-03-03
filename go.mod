@@ -46,7 +46,7 @@ require (
 	github.com/pquerna/otp v1.4.0
 	github.com/qdm12/reprint v0.0.0-20200326205758-722754a53494
 	github.com/robertkrimen/otto v0.2.1
-	github.com/softlayer/softlayer-go v1.1.0
+	github.com/softlayer/softlayer-go v1.1.2
 	github.com/stretchr/testify v1.8.2
 	github.com/transip/gotransip/v6 v6.19.0
 	github.com/urfave/cli/v2 v2.24.4
