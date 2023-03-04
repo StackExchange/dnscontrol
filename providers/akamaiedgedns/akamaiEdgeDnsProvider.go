@@ -104,6 +104,10 @@ func (a *edgeDNSProvider) EnsureZoneExists(domain string) error {
 	return createZone(domain, a.contractID, a.groupID)
 }
 
+func (a *edgeDNSProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, existingRecords models.Records) ([]*models.Correction, error) {
+
+}
+
 // GetDomainCorrections return a list of corrections. Each correction is a text string describing the change
 // and a function that, if called, will make the change.
 // “dnscontrol preview” simply prints the text strings.
