@@ -49,7 +49,7 @@ require (
 	github.com/softlayer/softlayer-go v1.1.2
 	github.com/stretchr/testify v1.8.2
 	github.com/transip/gotransip/v6 v6.19.1
-	github.com/urfave/cli/v2 v2.24.4
+	github.com/urfave/cli/v2 v2.25.0
 	github.com/xddxdd/ottoext v0.0.0-20221109171055-210517fa4419
 	golang.org/x/net v0.7.0
 	golang.org/x/oauth2 v0.5.0
