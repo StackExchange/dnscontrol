@@ -280,7 +280,7 @@ func toRc(domain string, r *godo.DomainRecord) *models.RecordConfig {
 	t.SetTarget(target)
 	switch rtype := r.Type; rtype {
 	case "TXT":
-		t.SetTargetTXTfromRFC1035Quoted(target)
+		t.SetTargetTXT(target)
 	default:
 		// nothing additional required
 	}
@@ -304,7 +304,7 @@ func toReq(dc *models.DomainConfig, rc *models.RecordConfig) *godo.DomainRecordE
 		priority = int(rc.SrvPriority)
 	case "TXT":
 		// TXT records are the one place where DO combines many items into one field.
-		target = rc.GetTargetField()
+		target = rc.GetTargetTXTJoined()
 	default:
 		// no action required
 	}
