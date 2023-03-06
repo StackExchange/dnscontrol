@@ -304,7 +304,7 @@ func toReq(dc *models.DomainConfig, rc *models.RecordConfig) *godo.DomainRecordE
 		priority = int(rc.SrvPriority)
 	case "TXT":
 		// TXT records are the one place where DO combines many items into one field.
-		target = rc.GetTargetTXTJoined()
+		target = rc.GetTargetField()
 	default:
 		// no action required
 	}
