@@ -280,7 +280,7 @@ func toRc(domain string, r *godo.DomainRecord) *models.RecordConfig {
 	t.SetTarget(target)
 	switch rtype := r.Type; rtype {
 	case "TXT":
-		t.t.SetTargetTXTString(target)
+		t.SetTargetTXTString(target)
 	default:
 		// nothing additional required
 	}
