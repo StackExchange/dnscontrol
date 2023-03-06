@@ -104,10 +104,6 @@ func (a *edgeDNSProvider) EnsureZoneExists(domain string) error {
 	return createZone(domain, a.contractID, a.groupID)
 }
 
-func (a *edgeDNSProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, existingRecords models.Records) ([]*models.Correction, error) {
-
-}
-
 // GetDomainCorrections return a list of corrections. Each correction is a text string describing the change
 // and a function that, if called, will make the change.
 // “dnscontrol preview” simply prints the text strings.
@@ -124,10 +120,15 @@ func (a *edgeDNSProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*mode
 	}
 
 	models.PostProcessRecords(existingRecords)
-	txtutil.SplitSingleLongTxt(dc.Records)
+
+	return a.GetZoneRecordsCorrections(dc, existingRecords)
+}
+
+func (a *edgeDNSProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, existingRecords models.Records) ([]*models.Correction, error) {
 
 	var corrections []*models.Correction
 	var keysToUpdate map[models.RecordKey][]string
+	var err error
 	if !diff2.EnableDiff2 {
 		keysToUpdate, err = (diff.New(dc)).ChangedGroups(existingRecords)
 	} else {
@@ -245,6 +246,7 @@ func (a *edgeDNSProvider) GetZoneRecords(domain string) (models.Records, error) 
 	if err != nil {
 		return nil, err
 	}
+	txtutil.SplitSingleLongTxt(records)
 	return records, nil
 }
 

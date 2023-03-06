@@ -463,6 +463,7 @@ func ValidateAndNormalizeConfig(config *models.DNSConfig) (errs []error) {
 	}
 
 	for _, d := range config.Domains {
+
 		// Check that CNAMES don't have to co-exist with any other records
 		errs = append(errs, checkCNAMEs(d)...)
 		// Check that if any advanced record types are used in a domain, every provider for that domain supports them

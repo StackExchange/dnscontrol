@@ -224,6 +224,71 @@ func (c *cloudflareProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*m
 	// Therefore, whether the string is 1 octet or thousands, just store it as
 	// one string in the first element of .TxtStrings.
 
+	return c.GetZoneRecordsCorrections(dc, records)
+}
+
+func (c *cloudflareProvider) GetZoneRecordsCorrections(dc *models.DomainConfig) ([]*models.Correction, error) {
+
+	if err := c.preprocessConfig(dc); err != nil {
+		return nil, err
+	}
+	for i := len(records) - 1; i >= 0; i-- {
+		rec := records[i]
+		// Delete ignore labels
+		if labelMatches(dnsutil.TrimDomainName(rec.Original.(cloudflare.DNSRecord).Name, dc.Name), c.ignoredLabels) {
+			printer.Debugf("ignored_label: %s\n", rec.Original.(cloudflare.DNSRecord).Name)
+			records = append(records[:i], records[i+1:]...)
+		}
+	}
+
+	if c.manageRedirects {
+		prs, err := c.getPageRules(domainID, dc.Name)
+		//printer.Printf("GET PAGE RULES:\n")
+		//for i, p := range prs {
+		//	printer.Printf("%03d: %q\n", i, p.GetTargetField())
+		//}
+		if err != nil {
+			return nil, err
+		}
+		records = append(records, prs...)
+	}
+
+	if c.manageWorkers {
+		wrs, err := c.getWorkerRoutes(domainID, dc.Name)
+		if err != nil {
+			return nil, err
+		}
+		records = append(records, wrs...)
+	}
+
+	for _, rec := range dc.Records {
+		if rec.Type == "ALIAS" {
+			rec.Type = "CNAME"
+		}
+		// As per CF-API documentation proxied records are always forced to have a TTL of 1.
+		// When not forcing this property change here, dnscontrol tries each time to update
+		// the TTL of a record which simply cannot be changed anyway.
+		if rec.Metadata[metaProxy] != "off" {
+			rec.TTL = 1
+		}
+		if labelMatches(rec.GetLabel(), c.ignoredLabels) {
+			log.Fatalf("FATAL: dnsconfig contains label that matches ignored_labels: %#v is in %v)\n", rec.GetLabel(), c.ignoredLabels)
+		}
+	}
+
+	checkNSModifications(dc)
+
+	// Normalize
+	models.PostProcessRecords(records)
+	//txtutil.SplitSingleLongTxt(dc.Records) // Autosplit long TXT records
+	// Don't split.
+	// Cloudflare's API only supports one TXT string of any non-zero length. No
+	// multiple strings.
+	// When serving the DNS record, it splits strings >255 octets into
+	// individual segments of 255 each. However that is hidden from the API.
+	// Therefore, whether the string is 1 octet or thousands, just store it as
+	// one string in the first element of .TxtStrings.
+
 	var corrections []*models.Correction
 	if !diff2.EnableDiff2 {
 

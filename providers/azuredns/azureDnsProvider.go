@@ -9,6 +9,7 @@ import (
 	"time"
 
 	aauth "github.com/Azure/azure-sdk-for-go/sdk/azidentity"
+	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/dns/armdns"
 	adns "github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/dns/armdns"
 	"github.com/Azure/go-autorest/autorest/to"
 	"github.com/StackExchange/dnscontrol/v3/models"
@@ -25,6 +26,8 @@ type azurednsProvider struct {
 	zones          map[string]*adns.Zone
 	resourceGroup  *string
 	subscriptionID *string
+	rawRecords     map[string][]*armdns.RecordSet
+	zoneName       map[string]string
 }
 
 func newAzureDNSDsp(conf map[string]string, metadata json.RawMessage) (providers.DNSServiceProvider, error) {
@@ -47,7 +50,14 @@ func newAzureDNS(m map[string]string, metadata json.RawMessage) (*azurednsProvid
 		return nil, recordErr
 	}
 
-	api := &azurednsProvider{zonesClient: zonesClient, recordsClient: recordsClient, resourceGroup: to.StringPtr(rg), subscriptionID: to.StringPtr(subID)}
+	api := &azurednsProvider{
+		zonesClient:    zonesClient,
+		recordsClient:  recordsClient,
+		resourceGroup:  to.StringPtr(rg),
+		subscriptionID: to.StringPtr(subID),
+		rawRecords:     map[string][]*armdns.RecordSet{},
+		zoneName:       map[string]string{},
+	}
 	err := api.getZones()
 	if err != nil {
 		return nil, err
@@ -156,6 +166,9 @@ func (a *azurednsProvider) GetZoneRecords(domain string) (models.Records, error)
 	if err != nil {
 		return nil, err
 	}
+
+	models.PostProcessRecords(existingRecords)
+
 	return existingRecords, nil
 }
 
@@ -165,21 +178,18 @@ func (a *azurednsProvider) getExistingRecords(domain string) (models.Records, []
 		return nil, nil, "", errNoExist{domain}
 	}
 	zoneName := *zone.Name
-	records, err := a.fetchRecordSets(zoneName)
+	rawRecords, err := a.fetchRecordSets(zoneName)
 	if err != nil {
 		return nil, nil, "", err
 	}
 
 	var existingRecords models.Records
-	for _, set := range records {
+	for _, set := range rawRecords {
 		existingRecords = append(existingRecords, nativeToRecords(set, zoneName)...)
 	}
 
-	// FIXME(tlim): PostProcessRecords is usually called in GetDomainCorrections.
-	models.PostProcessRecords(existingRecords)
-
 	// FIXME(tlim): The "records" return value is usually stored in RecordConfig.Original.
-	return existingRecords, records, zoneName, nil
+	return existingRecords, rawRecords, zoneName, nil
 }
 
 func (a *azurednsProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Correction, error) {
@@ -189,15 +199,23 @@ func (a *azurednsProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*mod
 		return nil, err
 	}
 
-	existingRecords, records, zoneName, err := a.getExistingRecords(dc.Name)
+	existingRecords, rawRecords, zoneName, err := a.getExistingRecords(dc.Name)
 	if err != nil {
 		return nil, err
 	}
+	a.rawRecords[dc.Name] = rawRecords
+	a.zoneName[dc.Name] = zoneName
 
-	txtutil.SplitSingleLongTxt(dc.Records) // Autosplit long TXT records
+	txtutil.SplitSingleLongTxt(existingRecords) // Autosplit long TXT records
+	return a.GetZoneRecordsCorrections(dc, existingRecords)
+}
 
+func (a *azurednsProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, existingRecords models.Records) ([]*models.Correction, error) {
 	var corrections []*models.Correction
 	if !diff2.EnableDiff2 {
+
+		records := a.rawRecords[dc.Name]
+		zoneName := a.zoneName[dc.Name]
 
 		differ := diff.New(dc)
 		namesToUpdate, err := differ.ChangedGroups(existingRecords)
