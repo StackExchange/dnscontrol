@@ -148,6 +148,10 @@ func (api *linodeProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*mod
 	// Normalize
 	models.PostProcessRecords(existingRecords)
 
+	return api.GetZoneRecordsCorrections(dc, existingRecords)
+}
+
+func (api *linodeProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, existingRecords models.Records) ([]*models.Correction, error) {
 	// Linode doesn't allow selecting an arbitrary TTL, only a set of predefined values
 	// We need to make sure we don't change it every time if it is as close as it's going to get
 	// By experimentation, Linode always rounds up. 300 -> 300, 301 -> 3600.
@@ -156,8 +160,19 @@ func (api *linodeProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*mod
 		record.TTL = fixTTL(record.TTL)
 	}
 
+	if api.domainIndex == nil {
+		if err := api.fetchDomainList(); err != nil {
+			return nil, err
+		}
+	}
+	domainID, ok := api.domainIndex[dc.Name]
+	if !ok {
+		return nil, fmt.Errorf("'%s' not a zone in Linode account", dc.Name)
+	}
+
 	var corrections []*models.Correction
 	var create, del, modify diff.Changeset
+	var err error
 	if !diff2.EnableDiff2 {
 		differ := diff.New(dc)
 		_, create, del, modify, err = differ.IncrementalDiff(existingRecords)

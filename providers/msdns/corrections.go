@@ -10,7 +10,7 @@ import (
 )
 
 // GetDomainCorrections gets existing records, diffs them against existing, and returns corrections.
-func (client *msdnsProvider) GenerateDomainCorrections(dc *models.DomainConfig, foundRecords models.Records) ([]*models.Correction, error) {
+func (client *msdnsProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, foundRecords models.Records) ([]*models.Correction, error) {
 
 	// Normalize
 	models.PostProcessRecords(foundRecords)

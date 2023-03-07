@@ -237,7 +237,12 @@ func (api *inwxAPI) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Cor
 	models.PostProcessRecords(foundRecords)
 	txtutil.SplitSingleLongTxt(dc.Records) // Autosplit long TXT records
 
-	err = checkRecords(dc.Records)
+	return api.GetZoneRecordsCorrections(dc, foundRecords)
+}
+
+func (api *inwxAPI) GetZoneRecordsCorrections(dc *models.DomainConfig, foundRecords models.Records) ([]*models.Correction, error) {
+
+	err := checkRecords(dc.Records)
 	if err != nil {
 		return nil, err
 	}

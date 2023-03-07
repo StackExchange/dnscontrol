@@ -91,7 +91,7 @@ func (client *msdnsProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*m
 
 	clean := PrepFoundRecords(existing)
 	PrepDesiredRecords(dc)
-	return client.GenerateDomainCorrections(dc, clean)
+	return client.GetZoneRecordsCorrections(dc, clean)
 }
 
 // GetZoneRecords gathers the DNS records and converts them to

@@ -122,8 +122,6 @@ func (hp *hostingdeProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*m
 		return nil, err
 	}
 
-	zoneChanged := false
-
 	// TTL must be between (inclusive) 1m and 1y (in fact, a little bit more)
 	for _, r := range dc.Records {
 		if r.TTL < 60 {
@@ -139,6 +137,19 @@ func (hp *hostingdeProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*m
 	}
 
 	records := hp.APIRecordsToStandardRecordsModel(dc.Name, zone.Records)
+
+	return hp.GetZoneRecordsCorrections(dc, records)
+}
+
+func (hp *hostingdeProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, records models.Records) ([]*models.Correction, error) {
+	var err error
+
+	zoneChanged := false
+
+	zone, err := hp.getZone(dc.Name)
+	if err != nil {
+		return nil, err
+	}
 
 	var create, del, mod diff.Changeset
 	if !diff2.EnableDiff2 {
