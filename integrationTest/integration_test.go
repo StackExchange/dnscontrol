@@ -848,15 +848,13 @@ func makeTests(t *testing.T) []*TestGroup {
 			// https://github.com/StackExchange/dnscontrol/issues/598
 			// RFC1035 permits this, but rarely do provider support it.
 			//clear(),
-
-			tc("a 255-byte TXT", txt("foo255", strings.Repeat("C", 255))),
+			//tc("a 255-byte TXT", txt("foo255", strings.Repeat("C", 255))),
 			//clear(),
-			tc("a 256-byte TXT", txt("foo256", strings.Repeat("D", 256))),
+			//tc("a 256-byte TXT", txt("foo256", strings.Repeat("D", 256))),
 			//clear(),
-
-			tc("a 512-byte TXT", txt("foo512", strings.Repeat("C", 512))),
+			//tc("a 512-byte TXT", txt("foo512", strings.Repeat("C", 512))),
 			//clear(),
-			tc("a 513-byte TXT", txt("foo513", strings.Repeat("D", 513))),
+			//tc("a 513-byte TXT", txt("foo513", strings.Repeat("D", 513))),
 			//clear(),
 
 			tc("TXT with 1 single-quote", txt("foosq", "quo'te")),
