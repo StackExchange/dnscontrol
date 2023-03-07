@@ -277,12 +277,11 @@ func toRc(domain string, r *godo.DomainRecord) *models.RecordConfig {
 		CaaFlag:      uint8(r.Flags),
 	}
 	t.SetLabelFromFQDN(name, domain)
-	t.SetTarget(target)
 	switch rtype := r.Type; rtype {
 	case "TXT":
-		t.SetTargetTXTString(target)
+		t.SetTargetTXT(target)
 	default:
-		// nothing additional required
+		t.SetTarget(target)
 	}
 	return t
 }
