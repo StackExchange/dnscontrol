@@ -84,7 +84,7 @@ func (c *cloudnsProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*mode
 			return nil, err
 		}
 	}
-	domainID, ok := c.domainIndex[dc.Name]
+	_, ok := c.domainIndex[dc.Name]
 	if !ok {
 		return nil, fmt.Errorf("'%s' not a zone in ClouDNS account", dc.Name)
 	}
@@ -102,6 +102,15 @@ func (c *cloudnsProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*mode
 	// ClouDNS can only be specified from a specific TTL list, so change the TTL in advance.
 	for _, record := range dc.Records {
 		record.TTL = fixTTL(record.TTL)
+	}
+
+	return c.GetZoneRecordsCorrections(dc, existingRecords)
+}
+
+func (c *cloudnsProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, existingRecords models.Records) ([]*models.Correction, error) {
+	domainID, ok := c.domainIndex[dc.Name]
+	if !ok {
+		return nil, fmt.Errorf("'%s' not a zone in ClouDNS account", dc.Name)
 	}
 
 	var corrections []*models.Correction

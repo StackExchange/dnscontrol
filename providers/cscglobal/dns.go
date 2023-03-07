@@ -89,7 +89,12 @@ func (client *providerClient) GetDomainCorrections(dc *models.DomainConfig) ([]*
 
 	clean := PrepFoundRecords(existing)
 	PrepDesiredRecords(dc)
-	return client.GenerateDomainCorrections(dc, clean)
+
+	// Normalize
+	models.PostProcessRecords(clean)
+	//txtutil.SplitSingleLongTxt(dc.Records) // Autosplit long TXT records
+
+	return client.GetZoneRecordsCorrections(dc, clean)
 }
 
 // PrepFoundRecords munges any records to make them compatible with
@@ -111,11 +116,7 @@ func PrepDesiredRecords(dc *models.DomainConfig) {
 }
 
 // GetDomainCorrections gets existing records, diffs them against existing, and returns corrections.
-func (client *providerClient) GenerateDomainCorrections(dc *models.DomainConfig, foundRecords models.Records) ([]*models.Correction, error) {
-
-	// Normalize
-	models.PostProcessRecords(foundRecords)
-	//txtutil.SplitSingleLongTxt(dc.Records) // Autosplit long TXT records
+func (client *providerClient) GetZoneRecordsCorrections(dc *models.DomainConfig, foundRecords models.Records) ([]*models.Correction, error) {
 
 	var corrections []*models.Correction
 	var err error

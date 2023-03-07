@@ -51,6 +51,9 @@ type gcloudProvider struct {
 	project       string
 	nameServerSet *string
 	zones         map[string]*gdns.ManagedZone
+	// diff1
+	oldRRsMap   map[string]map[key]*gdns.ResourceRecordSet
+	zoneNameMap map[string]string
 }
 
 type errNoExist struct {
@@ -200,18 +203,26 @@ func (g *gcloudProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*model
 	if err != nil {
 		return nil, fmt.Errorf("getzonesets error: %w", err)
 	}
+	g.oldRRsMap[dc.Name] = oldRRs
+	g.zoneNameMap[dc.Name] = zoneName
 
 	// Normalize
 	models.PostProcessRecords(existingRecords)
 	txtutil.SplitSingleLongTxt(dc.Records) // Autosplit long TXT records
 
-	return GetZoneRecordsCorrections(dc, existingRecords)
+	return g.GetZoneRecordsCorrections(dc, existingRecords)
 }
 
 func (g *gcloudProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, existingRecords models.Records) ([]*models.Correction, error) {
 
-	// oldRRs :=
-	// zoneName :=
+	oldRRs, ok := g.oldRRsMap[dc.Name]
+	if !ok {
+		return nil, fmt.Errorf("oldRRsMap: no zone named %q", dc.Name)
+	}
+	zoneName, ok := g.zoneNameMap[dc.Name]
+	if !ok {
+		return nil, fmt.Errorf("zoneNameMap: no zone named %q", dc.Name)
+	}
 
 	// first collect keys that have changed
 	var differ diff.Differ

@@ -190,6 +190,11 @@ func (c *hednsProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*models
 		return nil, err
 	}
 
+	return c.GetZoneRecordsCorrections(dc, records)
+}
+
+func (c *hednsProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, records models.Records) ([]*models.Correction, error) {
+
 	// Get the SOA record to get the ZoneID, then remove it from the list.
 	zoneID := uint64(0)
 	var prunedRecords models.Records

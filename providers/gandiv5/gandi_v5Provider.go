@@ -146,7 +146,7 @@ func (client *gandiv5Provider) GetDomainCorrections(dc *models.DomainConfig) ([]
 	models.PostProcessRecords(existing)
 	clean := PrepFoundRecords(existing)
 	PrepDesiredRecords(dc)
-	return client.GenerateDomainCorrections(dc, clean)
+	return client.GetZoneRecordsCorrections(dc, clean)
 }
 
 // GetZoneRecords gathers the DNS records and converts them to
@@ -228,7 +228,7 @@ func PrepDesiredRecords(dc *models.DomainConfig) {
 // a list of functions to call to actually make the desired
 // correction, and a message to output to the user when the change is
 // made.
-func (client *gandiv5Provider) GenerateDomainCorrections(dc *models.DomainConfig, existing models.Records) ([]*models.Correction, error) {
+func (client *gandiv5Provider) GetZoneRecordsCorrections(dc *models.DomainConfig, existing models.Records) ([]*models.Correction, error) {
 	if client.debug {
 		debugRecords("GenDC input", existing)
 	}

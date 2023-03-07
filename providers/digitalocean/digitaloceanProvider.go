@@ -134,7 +134,6 @@ func (api *digitaloceanProvider) GetZoneRecords(domain string) (models.Records, 
 
 // GetDomainCorrections returns a list of corretions for the  domain.
 func (api *digitaloceanProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Correction, error) {
-	ctx := context.Background()
 	dc.Punycode()
 
 	existingRecords, err := api.GetZoneRecords(dc.Name)
@@ -145,6 +144,12 @@ func (api *digitaloceanProvider) GetDomainCorrections(dc *models.DomainConfig) (
 	// Normalize
 	models.PostProcessRecords(existingRecords)
 	txtutil.SplitSingleLongTxt(dc.Records) // Autosplit long TXT records
+
+	return api.GetZoneRecordsCorrections(dc, existingRecords)
+}
+
+func (api *digitaloceanProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, existingRecords models.Records) ([]*models.Correction, error) {
+	ctx := context.Background()
 
 	var corrections []*models.Correction
 	var differ diff.Differ

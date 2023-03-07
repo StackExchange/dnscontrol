@@ -47,8 +47,14 @@ func (api *domainNameShopProvider) GetDomainCorrections(dc *models.DomainConfig)
 		record.TTL = fixTTL(record.TTL)
 	}
 
+	return api.GetZoneRecordsCorrections(dc, existingRecords)
+}
+
+func (api *domainNameShopProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, existingRecords models.Records) ([]*models.Correction, error) {
+
 	var corrections []*models.Correction
 	var create, delete, modify diff.Changeset
+	var err error
 	if !diff2.EnableDiff2 {
 		differ := diff.New(dc)
 		_, create, delete, modify, err = differ.IncrementalDiff(existingRecords)

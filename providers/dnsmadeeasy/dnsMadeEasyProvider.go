@@ -86,11 +86,6 @@ func (api *dnsMadeEasyProvider) GetDomainCorrections(dc *models.DomainConfig) ([
 
 	domainName := dc.Name
 
-	domain, err := api.findDomain(domainName)
-	if err != nil {
-		return nil, err
-	}
-
 	// Get existing records
 	existingRecords, err := api.GetZoneRecords(domainName)
 	if err != nil {
@@ -100,6 +95,17 @@ func (api *dnsMadeEasyProvider) GetDomainCorrections(dc *models.DomainConfig) ([
 	// Normalize
 	models.PostProcessRecords(existingRecords)
 	txtutil.SplitSingleLongTxt(dc.Records) // Autosplit long TXT records
+
+	return api.GetZoneRecordsCorrections(dc, existingRecords)
+}
+
+func (api *dnsMadeEasyProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, existingRecords models.Records) ([]*models.Correction, error) {
+
+	domainName := dc.Name
+	domain, err := api.findDomain(domainName)
+	if err != nil {
+		return nil, err
+	}
 
 	var corrections []*models.Correction
 	var create, del, modify diff.Changeset

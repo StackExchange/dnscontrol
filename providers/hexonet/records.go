@@ -74,8 +74,14 @@ func (n *HXClient) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Corr
 	models.PostProcessRecords(actual)
 	txtutil.SplitSingleLongTxt(dc.Records)
 
+	return n.GetZoneRecordsCorrections(dc, actual)
+}
+
+func (n *HXClient) GetZoneRecordsCorrections(dc *models.DomainConfig, actual models.Records) ([]*models.Correction, error) {
+
 	var corrections []*models.Correction
 	var create, del, mod diff.Changeset
+	var err error
 	if !diff2.EnableDiff2 {
 		differ := diff.New(dc)
 		_, create, del, mod, err = differ.IncrementalDiff(actual)

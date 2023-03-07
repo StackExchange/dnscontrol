@@ -87,22 +87,13 @@ func (c *exoscaleProvider) GetNameservers(domain string) ([]*models.Nameserver, 
 }
 
 // GetZoneRecords gets the records of a zone and returns them in RecordConfig format.
-func (c *exoscaleProvider) GetZoneRecords(domain string) (models.Records, error) {
-	return nil, fmt.Errorf("not implemented")
-	// This enables the get-zones subcommand.
-	// Implement this by extracting the code from GetDomainCorrections into
-	// a single function.  For most providers this should be relatively easy.
-}
+func (c *exoscaleProvider) GetZoneRecords(domainName string) (models.Records, error) {
+	//dc.Punycode()
 
-// GetDomainCorrections returns a list of corretions for the  domain.
-func (c *exoscaleProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Correction, error) {
-	dc.Punycode()
-
-	domain, err := c.findDomainByName(dc.Name)
+	domain, err := c.findDomainByName(domainName)
 	if err != nil {
 		return nil, err
 	}
-
 	domainID := *domain.ID
 
 	ctx := context.Background()
@@ -164,7 +155,7 @@ func (c *exoscaleProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*mod
 		if record.TTL != nil {
 			rc.TTL = uint32(*record.TTL)
 		}
-		rc.SetLabel(rname, dc.Name)
+		rc.SetLabel(rname, domainName)
 
 		switch rtype {
 		case "ALIAS", "URL":
@@ -177,7 +168,7 @@ func (c *exoscaleProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*mod
 			}
 			err = rc.SetTargetMX(prio, rcontent)
 		default:
-			err = rc.PopulateFromString(rtype, rcontent, dc.Name)
+			err = rc.PopulateFromString(rtype, rcontent, domainName)
 		}
 		if err != nil {
 			return nil, fmt.Errorf("unparsable record received from exoscale: %w", err)
@@ -185,10 +176,31 @@ func (c *exoscaleProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*mod
 
 		existingRecords = append(existingRecords, rc)
 	}
-	removeOtherNS(dc)
 
 	// Normalize
 	models.PostProcessRecords(existingRecords)
+
+	return existingRecords, nil
+}
+
+// GetDomainCorrections returns a list of corretions for the  domain.
+func (c *exoscaleProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Correction, error) {
+	existingRecords, err := c.GetZoneRecords(dc.Name)
+	if err != nil {
+		return nil, err
+	}
+
+	removeOtherNS(dc)
+	return c.GetZoneRecordsCorrections(dc, existingRecords)
+}
+
+func (c *exoscaleProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, existingRecords models.Records) ([]*models.Correction, error) {
+
+	domain, err := c.findDomainByName(dc.Name)
+	if err != nil {
+		return nil, err
+	}
+	domainID := *domain.ID
 
 	var corrections []*models.Correction
 	var create, delete, modify diff.Changeset

@@ -83,7 +83,7 @@ func (c *gcoreProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*models
 	models.PostProcessRecords(existing)
 	clean := PrepFoundRecords(existing)
 	PrepDesiredRecords(dc)
-	return c.GenerateDomainCorrections(dc, clean)
+	return c.GetZoneRecordsCorrections(dc, clean)
 }
 
 // GetZoneRecords gets the records of a zone and returns them in RecordConfig format.
@@ -153,7 +153,7 @@ func generateChangeMsg(updates []string) string {
 // a list of functions to call to actually make the desired
 // correction, and a message to output to the user when the change is
 // made.
-func (c *gcoreProvider) GenerateDomainCorrections(dc *models.DomainConfig, existing models.Records) ([]*models.Correction, error) {
+func (c *gcoreProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, existing models.Records) ([]*models.Correction, error) {
 
 	// Make delete happen earlier than creates & updates.
 	var corrections []*models.Correction

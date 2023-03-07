@@ -93,7 +93,7 @@ func (c *desecProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*models
 	}
 	c.mutex.Unlock()
 	PrepDesiredRecords(dc, minTTL)
-	return c.GenerateDomainCorrections(dc, clean)
+	return c.GetZoneRecordsCorrections(dc, clean)
 }
 
 // GetZoneRecords gets the records of a zone and returns them in RecordConfig format.
@@ -162,7 +162,7 @@ func PrepDesiredRecords(dc *models.DomainConfig, minTTL uint32) {
 // a list of functions to call to actually make the desired
 // correction, and a message to output to the user when the change is
 // made.
-func (c *desecProvider) GenerateDomainCorrections(dc *models.DomainConfig, existing models.Records) ([]*models.Correction, error) {
+func (c *desecProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, existing models.Records) ([]*models.Correction, error) {
 
 	var corrections []*models.Correction
 	var err error

@@ -227,7 +227,7 @@ func (c *cloudflareProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*m
 	return c.GetZoneRecordsCorrections(dc, records)
 }
 
-func (c *cloudflareProvider) GetZoneRecordsCorrections(dc *models.DomainConfig) ([]*models.Correction, error) {
+func (c *cloudflareProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, records models.Records) ([]*models.Correction, error) {
 
 	if err := c.preprocessConfig(dc); err != nil {
 		return nil, err
@@ -239,6 +239,11 @@ func (c *cloudflareProvider) GetZoneRecordsCorrections(dc *models.DomainConfig) 
 			printer.Debugf("ignored_label: %s\n", rec.Original.(cloudflare.DNSRecord).Name)
 			records = append(records[:i], records[i+1:]...)
 		}
+	}
+
+	domainID, err := c.getDomainID(dc.Name)
+	if err != nil {
+		return nil, err
 	}
 
 	if c.manageRedirects {
