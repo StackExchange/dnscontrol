@@ -843,7 +843,8 @@ func makeTests(t *testing.T) []*TestGroup {
 			// of record. When the provider fixes the bug or changes behavior,
 			// update the AuditRecords().
 
-			tc("TXT with 0-octel string", txt("foo1", "")),
+			// NB(tlim) 2023-03-07: Removing this test. Nobody does this.
+			//tc("TXT with 0-octel string", txt("foo1", "")),
 			// https://github.com/StackExchange/dnscontrol/issues/598
 			// RFC1035 permits this, but rarely do provider support it.
 			//clear(),
