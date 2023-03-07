@@ -40,6 +40,7 @@ If a feature is definitively not supported for whatever reason, we would also li
 | `INTERNETBS` | ❌ | ❌ | ✅ | ❔ | ❔ | ❔ | ❔ | ❔ | ❔ | ❔ | ❔ | ❔ | ❔ | ❔ | ❌ | ✅ | ❔ |
 | `INWX` | ❌ | ✅ | ✅ | ❌ | ❔ | ✅ | ✅ | ✅ | ❔ | ✅ | ✅ | ✅ | ❔ | ✅ | ✅ | ✅ | ✅ |
 | `LINODE` | ❌ | ✅ | ❌ | ❔ | ❔ | ✅ | ❔ | ❔ | ❔ | ❔ | ❔ | ❔ | ❔ | ❌ | ❌ | ✅ | ✅ |
+| `LUADNS` | ✅ | ✅ | ❌ | ✅ | ❔ | ✅ | ✅ | ❔ | ❔ | ✅ | ✅ | ✅ | ❔ | ✅ | ✅ | ✅ | ✅ |
 | `MSDNS` | ✅ | ✅ | ❌ | ❌ | ❔ | ❌ | ✅ | ✅ | ❔ | ✅ | ❔ | ❔ | ❔ | ❌ | ❌ | ✅ | ✅ |
 | `NAMECHEAP` | ❌ | ✅ | ✅ | ✅ | ❔ | ✅ | ❌ | ❔ | ❔ | ❌ | ❔ | ❌ | ❔ | ❌ | ❌ | ❌ | ✅ |
 | `NAMEDOTCOM` | ✅ | ✅ | ✅ | ✅ | ❔ | ❔ | ❌ | ❔ | ❔ | ✅ | ❔ | ❔ | ❔ | ✅ | ❌ | ✅ | ✅ |
@@ -120,6 +121,7 @@ Providers in this category and their maintainers are:
 |`INTERNETBS`|@pragmaton|
 |`INWX`|@svenpeter42|
 |`LINODE`|@koesie10|
+|`LUADNS`|@riku22|
 |`NAMECHEAP`|@willpower232|
 |`NETCUP`|@kordianbruck|
 |`NETLIFY`|@SphericalKat|
