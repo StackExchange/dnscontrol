@@ -7,6 +7,7 @@ along with your Namecheap API username and key:
 
 Example:
 
+{% code title="creds.json" %}
 ```json
 {
   "namecheap": {
@@ -16,10 +17,12 @@ Example:
   }
 }
 ```
+{% endcode %}
 
 You can optionally specify BaseURL to use a different endpoint - typically the
 sandbox:
 
+{% code title="creds.json" %}
 ```json
 {
   "namecheapSandbox": {
@@ -30,6 +33,7 @@ sandbox:
   }
 }
 ```
+{% endcode %}
 
 if BaseURL is omitted, the production namecheap URL is assumed.
 

@@ -5,6 +5,7 @@ along with a Vultr personal access token.
 
 Example:
 
+{% code title="creds.json" %}
 ```json
 {
   "vultr": {
@@ -13,6 +14,7 @@ Example:
   }
 }
 ```
+{% endcode %}`
 
 ## Metadata
 

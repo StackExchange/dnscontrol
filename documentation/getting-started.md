@@ -102,6 +102,7 @@ Modify this file to match your particular providers and domains. See [the DNSCon
 Create a file called `creds.json` for storing provider configurations (API tokens and other account information).
 For example, to use both name.com and Cloudflare, you would have:
 
+{% code title="creds.json" %}
 ```json
 {
   "cloudflare": {                               // The provider name used in dnsconfig.js
@@ -117,6 +118,7 @@ For example, to use both name.com and Cloudflare, you would have:
   "none": { "TYPE": "NONE" }                    // The no-op provider
 }
 ```
+{% endcode %}
 
 Note: Do **not** store your `creds.json` file in Git unencrypted.
 That is unsafe. Add `creds.json` to your
@@ -150,6 +152,7 @@ and renaming it.
 
 The file looks like:
 
+{% code title="creds.json" %}
 ```json
 {
   "bind": {
@@ -162,6 +165,7 @@ The file looks like:
   }
 }
 ```
+{% endcode %}
 
 Ignore the `r53_accountname` section.  It is a placeholder and will be ignored. You
 can use it later when you define your first set of API credentials.
@@ -183,11 +187,13 @@ jq . < creds.json
 
 FYI: `creds.json` fields can be read from an environment variable. The field must begin with a `$` followed by the variable name. No other text. For example:
 
+{% code title="creds.json" %}
 ```json
 {
     "apikey": "$GANDI_V5_APIKEY"
 }
 ```
+{% endcode %}
 
 ## 5. Test the sample files
 
@@ -199,7 +205,7 @@ what changes need to be made and never makes any actual changes.
 It will use APIs if needed to find out what DNS entries currently
 exist.
 
-(All output assumes the `--verbose` flag)
+(All output assumes the `--full` flag)
 
 It should look something like this:
 

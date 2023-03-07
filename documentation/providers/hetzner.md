@@ -5,6 +5,7 @@ along with a [Hetzner API Key](https://dns.hetzner.com/settings/api-token).
 
 Example:
 
+{% code title="creds.json" %}
 ```json
 {
   "hetzner": {
@@ -13,6 +14,7 @@ Example:
   }
 }
 ```
+{% endcode %}
 
 ## Metadata
 
@@ -81,6 +83,7 @@ Example: Your per minute quota is 60 requests and in your settings you
 
 In your `creds.json` for all `HETZNER` provider entries:
 
+{% code title="creds.json" %}
 ```json
 {
   "hetzner": {
@@ -90,6 +93,7 @@ In your `creds.json` for all `HETZNER` provider entries:
   }
 }
 ```
+{% endcode %}
 
 Every response from the Hetzner DNS Console API includes your limits:
 
@@ -114,6 +118,7 @@ With `start_with_default_rate_limit` DNSControl uses a quota equivalent to
 
 In your `creds.json` for all `HETZNER` provider entries:
 
+{% code title="creds.json" %}
 ```json
 {
   "hetzner": {
@@ -123,3 +128,4 @@ In your `creds.json` for all `HETZNER` provider entries:
   }
 }
 ```
+{% endcode %}

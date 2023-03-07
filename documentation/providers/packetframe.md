@@ -5,6 +5,7 @@ along with your Packetframe Token which can be extracted from the `token` cookie
 
 Example:
 
+{% code title="creds.json" %}
 ```json
 {
   "packetframe": {
@@ -13,6 +14,7 @@ Example:
   }
 }
 ```
+{% endcode %}
 
 ## Metadata
 This provider does not recognize any special metadata fields unique to Packetframe.

@@ -10,6 +10,7 @@ along with
 your `dns.he.net` account username and password. These are the same username
 and password used to login to the [web interface](https://dns.he.net).
 
+{% code title="creds.json" %}
 ```json
 {
   "hedns": {
@@ -19,12 +20,14 @@ and password used to login to the [web interface](https://dns.he.net).
   }
 }
 ```
+{% endcode %}
 
 ### Two factor authentication
 
 If two-factor authentication has been enabled on your account you will also need to provide a valid TOTP code.
 This can also be done via an environment variable:
 
+{% code title="creds.json" %}
 ```json
 {
   "hedns": {
@@ -35,6 +38,7 @@ This can also be done via an environment variable:
   }
 }
 ```
+{% endcode %}
 
 and then you can run
 
@@ -51,6 +55,7 @@ only available when first enabling two-factor authentication.
 * Storing the shared secret together with the password weakens two factor authentication because both factors are stored
   in a single place.
 
+{% code title="creds.json" %}
 ```json
 {
   "hedns":{
@@ -60,6 +65,7 @@ only available when first enabling two-factor authentication.
   }
 }
 ```
+{% endcode %}
 
 ### Persistent Sessions
 
@@ -78,6 +84,7 @@ This option is disabled by default when this key is not present,
   *full* access to your Hurrican Electric account and will be able to modify and delete your DNS entries.
 * It should be stored in a location only trusted users can access.
 
+{% code title="creds.json" %}
 ```json
 {
   "hedns":{
@@ -88,7 +95,7 @@ This option is disabled by default when this key is not present,
   }
 }
 ```
-
+{% endcode %}
 
 ## Metadata
 This provider does not recognize any special metadata fields unique to Hurricane Electric DNS.

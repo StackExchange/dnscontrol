@@ -6,6 +6,7 @@ account slug. This is _typically_ your username on Netlify.
 
 Examples:
 
+{% code title="creds.json" %}
 ```json
 {
   "netlify": {
@@ -15,6 +16,7 @@ Examples:
   }
 }
 ```
+{% endcode %}
 
 ## Metadata
 This provider does not recognize any special metadata fields unique to Netlify.

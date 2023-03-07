@@ -12,6 +12,7 @@ Authenticating with SoftLayer requires at least a `username` and `api_key` for a
 
 Example:
 
+{% code title="creds.json" %}
 ```json
 {
   "softlayer": {
@@ -21,6 +22,7 @@ Example:
   }
 }
 ```
+{% endcode %}
 
 To maintain compatibility with existing softlayer CLI services these can also be provided by the `SL_USERNAME` and `SL_API_KEY` environment variables or specified in the `~/.softlayer`, but this is discouraged. More information about these methods can be found at [the softlayer-go library documentation](https://github.com/softlayer/softlayer-go#sessions).
 

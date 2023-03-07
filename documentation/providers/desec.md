@@ -5,6 +5,7 @@ along with a deSEC account auth token.
 
 Example:
 
+{% code title="creds.json" %}
 ```json
 {
   "desec": {
@@ -13,6 +14,7 @@ Example:
   }
 }
 ```
+{% endcode %}
 
 ## Metadata
 This provider does not recognize any special metadata fields unique to deSEC.

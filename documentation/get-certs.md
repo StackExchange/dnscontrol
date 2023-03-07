@@ -53,6 +53,7 @@ specify any number of certificates, with up to 100 SAN entries each. Subject nam
 
 The format of the file is a simple JSON array of objects:
 
+{% code title="certs.json" %}
 ```json
 [
     {
@@ -74,6 +75,7 @@ The format of the file is a simple JSON array of objects:
     }
 ]
 ```
+{% endcode %}
 
 `dnscontrol get-certs` will attempt to issue any certificates referenced by this file, and will renew or re-issue if the certificate we already have is
 close to expiry or if the set of subject names changes for a cert.

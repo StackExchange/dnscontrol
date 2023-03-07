@@ -5,6 +5,7 @@ along with your [`authToken` and optionally an `ownerAccountId`](https://www.hos
 
 Example:
 
+{% code title="creds.json" %}
 ```json
 {
   "hosting.de": {
@@ -13,6 +14,7 @@ Example:
   }
 }
 ```
+{% endcode %}
 
 ## Usage
 
@@ -36,6 +38,7 @@ Using them requires setting the `baseURL` and (optionally) overriding the defaul
 
 An example `creds.json` configuration:
 
+{% code title="creds.json" %}
 ```json
 {
   "http.net": {
@@ -45,6 +48,7 @@ An example `creds.json` configuration:
   }
 }
 ```
+{% endcode %}
 
 An example `dnsconfig.js` configuration:
 
