@@ -205,7 +205,7 @@ what changes need to be made and never makes any actual changes.
 It will use APIs if needed to find out what DNS entries currently
 exist.
 
-(All output assumes the `--verbose` flag)
+(All output assumes the `--full` flag)
 
 It should look something like this:
 
