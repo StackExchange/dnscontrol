@@ -5,6 +5,7 @@ along with your [email and API key](https://www.luadns.com/api.html#authenticati
 
 Example:
 
+{% code title="creds.json" %}
 ```json
 {
   "luadns": {
@@ -14,6 +15,7 @@ Example:
   }
 }
 ```
+{% endcode %}
 
 ## Metadata
 This provider does not recognize any special metadata fields unique to LuaDNS.
@@ -34,5 +36,7 @@ D("example.tld", REG_NONE, DnsProvider(DSP_LUADNS),
 [Create API key](https://api.luadns.com/api_keys).
 
 ## Caveats
-- LuaDNS cannot change the TTL of the default nameservers.
+- LuaDNS cannot change the default nameserver TTL in `nameserver_ttl`, it is forced to fixed at 86400("1d").
+This is not the case if you are using vanity nameservers.
 - This provider does not currently support the "FORWARD" and "REDIRECT" record types.
+- The API is available on the LuaDNS free plan, but due to the limit of 30 records, some tests will fail when doing integration tests.
