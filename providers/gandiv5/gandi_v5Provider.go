@@ -145,7 +145,6 @@ func (client *gandiv5Provider) GetDomainCorrections(dc *models.DomainConfig) ([]
 	}
 	models.PostProcessRecords(existing)
 	clean := PrepFoundRecords(existing)
-	PrepDesiredRecords(dc)
 	return client.GetZoneRecordsCorrections(dc, clean)
 }
 
@@ -233,6 +232,7 @@ func (client *gandiv5Provider) GetZoneRecordsCorrections(dc *models.DomainConfig
 		debugRecords("GenDC input", existing)
 	}
 
+	PrepDesiredRecords(dc)
 	txtutil.SplitSingleLongTxt(dc.Records) // Autosplit long TXT records
 
 	var corrections []*models.Correction

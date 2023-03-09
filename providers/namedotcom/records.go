@@ -49,8 +49,6 @@ func (n *namedotcomProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*m
 		}
 	}
 
-	checkNSModifications(dc)
-
 	// Normalize
 	models.PostProcessRecords(actual)
 
@@ -58,6 +56,8 @@ func (n *namedotcomProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*m
 }
 
 func (n *namedotcomProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, actual models.Records) ([]*models.Correction, error) {
+
+	checkNSModifications(dc)
 
 	var corrections []*models.Correction
 	var differ diff.Differ
