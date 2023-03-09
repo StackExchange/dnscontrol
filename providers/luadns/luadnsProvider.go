@@ -47,7 +47,7 @@ func NewLuaDNS(m map[string]string, metadata json.RawMessage) (providers.DNSServ
 	l := &luadnsProvider{}
 	l.creds.email, l.creds.apikey = m["email"], m["apikey"]
 	if l.creds.email == "" || l.creds.apikey == "" {
-		return nil, fmt.Errorf("Missing LuaDNS email or apikey")
+		return nil, fmt.Errorf("missing LuaDNS email or apikey")
 	}
 
 	// Get a domain to validate authentication
@@ -125,19 +125,18 @@ func (l *luadnsProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*model
 		}
 
 		corrections := []*models.Correction{}
-		corrs := []*models.Correction{}
 		for _, d := range del {
-			corrs = l.makeDeleteCorrection(d.Existing, domainID, d.String())
+			corrs := l.makeDeleteCorrection(d.Existing, domainID, d.String())
 			corrections = append(corrections, corrs...)
 		}
 
 		for _, d := range create {
-			corrs = l.makeCreateCorrection(d.Desired, domainID, d.String())
+			corrs := l.makeCreateCorrection(d.Desired, domainID, d.String())
 			corrections = append(corrections, corrs...)
 		}
 
 		for _, d := range mod {
-			corrs = l.makeChangeCorrection(d.Existing, d.Desired, domainID, d.String())
+			corrs := l.makeChangeCorrection(d.Existing, d.Desired, domainID, d.String())
 			corrections = append(corrections, corrs...)
 		}
 

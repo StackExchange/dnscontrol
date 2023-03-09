@@ -160,21 +160,22 @@ func (l *luadnsProvider) get(endpoint string, method string, params any) ([]byte
 	time.Sleep(250 * time.Millisecond)
 	resp, err := client.Do(req)
 	if err != nil {
-		return []byte{}, err
+		return nil, err
 	}
 
-	bodyString, _ := io.ReadAll(resp.Body)
 	if resp.StatusCode == 200 {
+		bodyString, _ := io.ReadAll(resp.Body)
 		return bodyString, nil
 	}
 
+	bodyString, _ := io.ReadAll(resp.Body)
+
 	var errResp errorResponse
 	err = json.Unmarshal(bodyString, &errResp)
-	if err == nil {
-		return bodyString, fmt.Errorf("LuaDNS API error: %s URL:%s%s", errResp.Message, req.Host, req.URL.RequestURI())
-	} else {
+	if err != nil {
 		return bodyString, fmt.Errorf("LuaDNS API Error: %s URL:%s%s", string(bodyString), req.Host, req.URL.RequestURI())
 	}
+	return bodyString, fmt.Errorf("LuaDNS API error: %s URL:%s%s", errResp.Message, req.Host, req.URL.RequestURI())
 }
 
 func (l *luadnsProvider) makeRequest(endpoint string, method string, params any) (*http.Request, error) {
@@ -202,7 +203,7 @@ func (l *luadnsProvider) makeRequest(endpoint string, method string, params any)
 		req.Header.Set("Content-Type", "application/json")
 		return req, nil
 	default:
-		return nil, fmt.Errorf("Invalid request type")
+		return nil, fmt.Errorf("invalid request type")
 	}
 }
 
