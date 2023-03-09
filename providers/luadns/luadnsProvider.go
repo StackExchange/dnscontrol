@@ -47,7 +47,7 @@ func NewLuaDNS(m map[string]string, metadata json.RawMessage) (providers.DNSServ
 	l := &luadnsProvider{}
 	l.creds.email, l.creds.apikey = m["email"], m["apikey"]
 	if l.creds.email == "" || l.creds.apikey == "" {
-		return nil, fmt.Errorf("Missing LuaDNS email and API key")
+		return nil, fmt.Errorf("Missing LuaDNS email or apikey")
 	}
 
 	// Get a domain to validate authentication
