@@ -235,7 +235,8 @@ func makeChanges(t *testing.T, prv providers.DNSServiceProvider, dc *models.Doma
 		}
 
 		// run a second time and expect zero corrections
-		corrections, err = prv.GetDomainCorrections(dom2)
+		//corrections, err = prv.GetDomainCorrections(dom2)
+		corrections, err = zonerecs.CorrectZoneRecords(prv, dom2)
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -322,7 +323,9 @@ func TestDualProviders(t *testing.T) {
 	// clear everything
 	run := func() {
 		dom, _ := dc.Copy()
-		cs, err := p.GetDomainCorrections(dom)
+
+		// cs, err := p.GetDomainCorrections(dom)
+		cs, err := zonerecs.CorrectZoneRecords(p, dom)
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -344,7 +347,8 @@ func TestDualProviders(t *testing.T) {
 	run()
 	// run again to make sure no corrections
 	t.Log("Running again to ensure stability")
-	cs, err := p.GetDomainCorrections(dc)
+	//cs, err := p.GetDomainCorrections(dc)
+	cs, err := zonerecs.CorrectZoneRecords(p, dc)
 	if err != nil {
 		t.Fatal(err)
 	}

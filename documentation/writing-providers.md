@@ -14,6 +14,12 @@ you designate someone else as the maintainer). More details
 
 I'll ignore all the small stuff and get to the point.
 
+A typical provider implements 3 methods and DNSControl takes care of the rest:
+
+* GetZoneRecords() -- Download the list of DNS records and return them as a list of RecordConfig structs.
+* GetZoneRecordsCorrections() -- Generate a list of corrections.
+* GetNameservers() -- Query the API and return the list of parent nameservers.
+
 A provider's `GetDomainCorrections()` function is the workhorse
 of the provider.  It is what gets called by `dnscontrol preview`
 and `dnscontrol push`.
