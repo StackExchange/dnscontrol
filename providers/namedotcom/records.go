@@ -43,12 +43,6 @@ func (n *namedotcomProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*m
 		return nil, err
 	}
 
-	for _, rec := range dc.Records {
-		if rec.Type == "ALIAS" {
-			rec.Type = "ANAME"
-		}
-	}
-
 	// Normalize
 	models.PostProcessRecords(actual)
 
@@ -58,6 +52,12 @@ func (n *namedotcomProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*m
 func (n *namedotcomProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, actual models.Records) ([]*models.Correction, error) {
 
 	checkNSModifications(dc)
+
+	for _, rec := range dc.Records {
+		if rec.Type == "ALIAS" {
+			rec.Type = "ANAME"
+		}
+	}
 
 	var corrections []*models.Correction
 	var differ diff.Differ

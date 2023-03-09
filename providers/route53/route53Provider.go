@@ -276,13 +276,6 @@ func (r *route53Provider) GetDomainCorrections(dc *models.DomainConfig) ([]*mode
 		return nil, err
 	}
 
-	// update zone_id to current zone.id if not specified by the user
-	for _, want := range dc.Records {
-		if want.Type == "R53_ALIAS" && want.R53Alias["zone_id"] == "" {
-			want.R53Alias["zone_id"] = getZoneID(zone, want)
-		}
-	}
-
 	// Normalize
 	models.PostProcessRecords(existingRecords)
 
@@ -295,6 +288,13 @@ func (r *route53Provider) GetZoneRecordsCorrections(dc *models.DomainConfig, exi
 	zone, err := r.getZone(dc)
 	if err != nil {
 		return nil, err
+	}
+
+	// update zone_id to current zone.id if not specified by the user
+	for _, want := range dc.Records {
+		if want.Type == "R53_ALIAS" && want.R53Alias["zone_id"] == "" {
+			want.R53Alias["zone_id"] = getZoneID(zone, want)
+		}
 	}
 
 	var corrections []*models.Correction
