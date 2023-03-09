@@ -188,7 +188,9 @@ func (a *azurednsProvider) getExistingRecords(domain string) (models.Records, []
 		existingRecords = append(existingRecords, nativeToRecords(set, zoneName)...)
 	}
 
-	// FIXME(tlim): The "records" return value is usually stored in RecordConfig.Original.
+	a.rawRecords[domain] = rawRecords
+	a.zoneName[domain] = zoneName
+
 	return existingRecords, rawRecords, zoneName, nil
 }
 
@@ -199,12 +201,12 @@ func (a *azurednsProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*mod
 		return nil, err
 	}
 
-	existingRecords, rawRecords, zoneName, err := a.getExistingRecords(dc.Name)
+	existingRecords, _, _, err := a.getExistingRecords(dc.Name)
 	if err != nil {
 		return nil, err
 	}
-	a.rawRecords[dc.Name] = rawRecords
-	a.zoneName[dc.Name] = zoneName
+	//a.rawRecords[dc.Name] = rawRecords
+	//a.zoneName[dc.Name] = zoneName
 
 	txtutil.SplitSingleLongTxt(existingRecords) // Autosplit long TXT records
 	return a.GetZoneRecordsCorrections(dc, existingRecords)

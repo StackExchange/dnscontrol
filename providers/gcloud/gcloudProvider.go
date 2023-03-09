@@ -171,14 +171,14 @@ func keyForRec(r *models.RecordConfig) key {
 
 // GetZoneRecords gets the records of a zone and returns them in RecordConfig format.
 func (g *gcloudProvider) GetZoneRecords(domain string) (models.Records, error) {
-	existingRecords, _, _, err := g.getZoneSets(domain)
+	existingRecords, err := g.getZoneSets(domain)
 	return existingRecords, err
 }
 
-func (g *gcloudProvider) getZoneSets(domain string) (models.Records, map[key]*gdns.ResourceRecordSet, string, error) {
+func (g *gcloudProvider) getZoneSets(domain string) (models.Records, error) {
 	rrs, zoneName, err := g.getRecords(domain)
 	if err != nil {
-		return nil, nil, "", err
+		return nil, err
 	}
 	// convert to dnscontrol RecordConfig format
 	existingRecords := []*models.RecordConfig{}
@@ -188,7 +188,7 @@ func (g *gcloudProvider) getZoneSets(domain string) (models.Records, map[key]*gd
 		for _, rec := range set.Rrdatas {
 			rt, err := nativeToRecord(set, rec, domain)
 			if err != nil {
-				return nil, nil, "", err
+				return nil, err
 			}
 
 			existingRecords = append(existingRecords, rt)
@@ -198,15 +198,14 @@ func (g *gcloudProvider) getZoneSets(domain string) (models.Records, map[key]*gd
 	g.oldRRsMap[domain] = oldRRs
 	g.zoneNameMap[domain] = zoneName
 
-	return existingRecords, oldRRs, zoneName, err
+	return existingRecords, err
 }
 
 func (g *gcloudProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Correction, error) {
 	if err := dc.Punycode(); err != nil {
 		return nil, fmt.Errorf("punycode error: %w", err)
 	}
-	existingRecords, oldRRs, zoneName, err := g.getZoneSets(dc.Name)
-	_, _ = oldRRs, zoneName
+	existingRecords, err := g.getZoneSets(dc.Name)
 	if err != nil {
 		return nil, fmt.Errorf("getzonesets error: %w", err)
 	}
