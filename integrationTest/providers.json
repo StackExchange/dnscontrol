@@ -134,6 +134,11 @@
     "domain": "$LINODE_DOMAIN",
     "token": "$LINODE_TOKEN"
   },
+  "LUADNS": {
+    "domain": "$LUADNS_DOMAIN",
+    "email": "$LUADNS_EMAIL",
+    "apikey": "$LUADNS_APIKEY"
+  },
   "MSDNS": {
     "domain": "$MSDNS_DOMAIN",
     "dnsserver": "$MSDNS_DNSSERVER",
