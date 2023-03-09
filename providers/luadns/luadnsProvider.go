@@ -7,6 +7,7 @@ import (
 	"github.com/StackExchange/dnscontrol/v3/models"
 	"github.com/StackExchange/dnscontrol/v3/pkg/diff"
 	"github.com/StackExchange/dnscontrol/v3/pkg/diff2"
+
 	//	"github.com/StackExchange/dnscontrol/v3/pkg/transform"
 	"github.com/StackExchange/dnscontrol/v3/providers"
 	// "github.com/miekg/dns/dnsutil"
@@ -101,19 +102,25 @@ func (l *luadnsProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*model
 	if err != nil {
 		return nil, err
 	}
-	domainID, err := l.getDomainID(dc.Name)
-	if err != nil {
-		return nil, err
-	}
 	records, err := l.GetZoneRecords(dc.Name)
 	if err != nil {
 		return nil, err
 	}
 
-	checkNS(dc)
-
 	// Normalize
 	models.PostProcessRecords(records)
+
+	return l.GetZoneRecordsCorrections(dc, records)
+}
+
+func (l *luadnsProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, records models.Records) ([]*models.Correction, error) {
+
+	checkNS(dc)
+
+	domainID, err := l.getDomainID(dc.Name)
+	if err != nil {
+		return nil, err
+	}
 
 	var corrections []*models.Correction
 	var corrs []*models.Correction
