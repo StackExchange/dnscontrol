@@ -218,7 +218,7 @@ tests, please ask!
 
 ## Step 8: Write documentation
 
-Add a new Markdown file to `docs/functions/domain`. Copy an existing file (`CNAME.md` is a good example). The section between the lines of `---` is called the front matter and it has the following keys:
+Add a new Markdown file to `documentation/functions/domain`. Copy an existing file (`CNAME.md` is a good example). The section between the lines of `---` is called the front matter and it has the following keys:
 
 -   `name`: The name of the record. This should match the file name and the name of the record in `helpers.js`.
 -   `parameters`: A list of parameter names, in order. Feel free to use spaces in the name if necessary. Your last parameter should be `modifiers...` to allow arbitrary modifiers like `TTL` to be applied to your record.
