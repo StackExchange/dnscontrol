@@ -2,10 +2,11 @@ package commands
 
 import (
 	"fmt"
-	"golang.org/x/net/idna"
 	"log"
 	"os"
 	"strings"
+
+	"golang.org/x/net/idna"
 
 	"github.com/StackExchange/dnscontrol/v3/models"
 	"github.com/StackExchange/dnscontrol/v3/pkg/credsfile"
@@ -495,10 +496,12 @@ func printOrRunCorrections(domain string, provider string, corrections []*models
 			if interactive && !out.PromptToRun() {
 				continue
 			}
-			err = correction.F()
-			out.EndCorrection(err)
-			if err != nil {
-				anyErrors = true
+			if correction.F != nil {
+				err = correction.F()
+				out.EndCorrection(err)
+				if err != nil {
+					anyErrors = true
+				}
 			}
 		}
 		notifier.Notify(domain, provider, correction.Msg, err, !push)
