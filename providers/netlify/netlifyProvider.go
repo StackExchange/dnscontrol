@@ -191,8 +191,14 @@ func (n *netlifyProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*mode
 	models.PostProcessRecords(records)
 	removeOtherApexNS(dc)
 
+	return n.GetZoneRecordsCorrections(dc, records)
+}
+
+func (n *netlifyProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, records models.Records) ([]*models.Correction, error) {
+
 	var corrections []*models.Correction
 	var create, del, modify diff.Changeset
+	var err error
 	if !diff2.EnableDiff2 {
 		differ := diff.New(dc)
 		_, create, del, modify, err = differ.IncrementalDiff(records)

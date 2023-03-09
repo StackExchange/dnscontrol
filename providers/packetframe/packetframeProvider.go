@@ -19,7 +19,7 @@ type packetframeProvider struct {
 	client      *http.Client
 	baseURL     *url.URL
 	token       string
-	domainIndex map[string]zone
+	domainIndex map[string]zoneInfo
 }
 
 // newPacketframe creates the provider.
@@ -60,17 +60,26 @@ func (api *packetframeProvider) GetNameservers(domain string) ([]*models.Nameser
 	return models.ToNameservers(defaultNameServerNames)
 }
 
-// GetZoneRecords gets the records of a zone and returns them in RecordConfig format.
-func (api *packetframeProvider) GetZoneRecords(domain string) (models.Records, error) {
-
+func (api *packetframeProvider) getZone(domain string) (*zoneInfo, error) {
 	if api.domainIndex == nil {
 		if err := api.fetchDomainList(); err != nil {
 			return nil, err
 		}
 	}
-	zone, ok := api.domainIndex[domain+"."]
+	z, ok := api.domainIndex[domain+"."]
 	if !ok {
 		return nil, fmt.Errorf("%q not a zone in Packetframe account", domain)
+	}
+
+	return &z, nil
+}
+
+// GetZoneRecords gets the records of a zone and returns them in RecordConfig format.
+func (api *packetframeProvider) GetZoneRecords(domain string) (models.Records, error) {
+
+	zone, err := api.getZone(domain)
+	if err != nil {
+		return nil, fmt.Errorf("no such zone %q in Packetframe account", domain)
 	}
 
 	records, err := api.getRecords(zone.ID)
@@ -100,13 +109,8 @@ func (api *packetframeProvider) GetDomainCorrections(dc *models.DomainConfig) ([
 
 	dc.Punycode()
 
-	if api.domainIndex == nil {
-		if err := api.fetchDomainList(); err != nil {
-			return nil, err
-		}
-	}
-	zone, ok := api.domainIndex[dc.Name+"."]
-	if !ok {
+	zone, err := api.getZone(dc.Name)
+	if err != nil {
 		return nil, fmt.Errorf("no such zone %q in Packetframe account", dc.Name)
 	}
 
@@ -123,6 +127,15 @@ func (api *packetframeProvider) GetDomainCorrections(dc *models.DomainConfig) ([
 
 	// Normalize
 	models.PostProcessRecords(existingRecords)
+
+	return api.GetZoneRecordsCorrections(dc, existingRecords)
+}
+
+func (api *packetframeProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, existingRecords models.Records) ([]*models.Correction, error) {
+	zone, err := api.getZone(dc.Name)
+	if err != nil {
+		return nil, fmt.Errorf("no such zone %q in Packetframe account", dc.Name)
+	}
 
 	var corrections []*models.Correction
 	var create, dels, modify diff.Changeset

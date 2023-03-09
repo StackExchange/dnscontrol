@@ -143,7 +143,6 @@ func (n *nsone) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Correct
 	//dc.CombineMXs()
 
 	domain := dc.Name
-	corrections := []*models.Correction{}
 
 	// Get existing records
 	existingRecords, err := n.GetZoneRecords(domain)
@@ -153,6 +152,13 @@ func (n *nsone) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Correct
 
 	//  Normalize
 	models.PostProcessRecords(existingRecords)
+
+	return n.GetZoneRecordsCorrections(dc, existingRecords)
+}
+
+func (n *nsone) GetZoneRecordsCorrections(dc *models.DomainConfig, existingRecords models.Records) ([]*models.Correction, error) {
+	corrections := []*models.Correction{}
+	domain := dc.Name
 
 	// add DNSSEC-related corrections
 	if dnssecCorrections := n.getDomainCorrectionsDNSSEC(domain, dc.AutoDNSSEC); dnssecCorrections != nil {

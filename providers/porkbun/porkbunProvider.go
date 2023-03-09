@@ -88,11 +88,16 @@ func (c *porkbunProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*mode
 		return nil, err
 	}
 
-	// Block changes to NS records for base domain
-	checkNSModifications(dc)
-
 	// Normalize
 	models.PostProcessRecords(existingRecords)
+
+	return c.GetZoneRecordsCorrections(dc, existingRecords)
+}
+
+func (c *porkbunProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, existingRecords models.Records) ([]*models.Correction, error) {
+
+	// Block changes to NS records for base domain
+	checkNSModifications(dc)
 
 	// Make sure TTL larger than the minimum TTL
 	for _, record := range dc.Records {

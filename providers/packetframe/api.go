@@ -19,7 +19,7 @@ var defaultNameServerNames = []string{
 	"ns2.packetframe.com",
 }
 
-type zone struct {
+type zoneInfo struct {
 	ID         string   `json:"id"`
 	Zone       string   `json:"zone"`
 	Users      []string `json:"users"`
@@ -28,7 +28,7 @@ type zone struct {
 
 type domainResponse struct {
 	Data struct {
-		Zones []zone `json:"zones"`
+		Zones []zoneInfo `json:"zones"`
 	} `json:"data"`
 	Message string `json:"message"`
 	Success bool   `json:"success"`
@@ -58,7 +58,7 @@ type domainRecord struct {
 }
 
 func (api *packetframeProvider) fetchDomainList() error {
-	api.domainIndex = map[string]zone{}
+	api.domainIndex = map[string]zoneInfo{}
 	dr := &domainResponse{}
 	endpoint := "dns/zones"
 	if err := api.get(endpoint, dr); err != nil {

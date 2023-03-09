@@ -178,6 +178,7 @@ DomainLoop:
 		nameservers.AddNSRecords(domain)
 
 		for _, provider := range providersWithExistingZone {
+			// FIXME(tlim): Test this without the copying.  Just dc := domain
 			dc, err := domain.Copy()
 			if err != nil {
 				return err

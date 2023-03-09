@@ -118,9 +118,7 @@ func (c *ovhProvider) GetZoneRecords(domain string) (models.Records, error) {
 }
 
 func (c *ovhProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Correction, error) {
-	var err error
-
-	err = dc.Punycode()
+	err := dc.Punycode()
 	if err != nil {
 		return nil, err
 	}
@@ -133,7 +131,13 @@ func (c *ovhProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*models.C
 	// Normalize
 	models.PostProcessRecords(actual)
 
+	return c.GetZoneRecordsCorrections(dc, actual)
+}
+
+func (c *ovhProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, actual models.Records) ([]*models.Correction, error) {
+
 	var corrections []*models.Correction
+	var err error
 	if !diff2.EnableDiff2 {
 		corrections, err = c.getDiff1DomainCorrections(dc, actual)
 	} else {

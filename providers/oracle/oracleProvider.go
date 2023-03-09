@@ -222,6 +222,12 @@ func (o *oracleProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*model
 	models.PostProcessRecords(existingRecords)
 	txtutil.SplitSingleLongTxt(dc.Records) // Autosplit long TXT records
 
+	return o.GetZoneRecordsCorrections(dc, existingRecords)
+}
+
+func (o *oracleProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, existingRecords models.Records) ([]*models.Correction, error) {
+	var err error
+
 	// Ensure we don't emit changes for attempted modification of built-in apex NSs
 	for _, rec := range dc.Records {
 		if rec.Type != "NS" {
@@ -293,7 +299,7 @@ func (o *oracleProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*model
 		return []*models.Correction{{
 			Msg: desc,
 			F: func() error {
-				return o.patch(createRecords, deleteRecords, domain)
+				return o.patch(createRecords, deleteRecords, dc.Name)
 			},
 		}}, nil
 	}

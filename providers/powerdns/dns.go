@@ -62,8 +62,13 @@ func (dsp *powerdnsProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*m
 	}
 	models.PostProcessRecords(curRecords)
 
+	return dsp.GetZoneRecordsCorrections(dc, curRecords)
+}
+
+func (dsp *powerdnsProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, curRecords models.Records) ([]*models.Correction, error) {
 	// create record diff by group
 	var keysToUpdate map[models.RecordKey][]string
+	var err error
 	if !diff2.EnableDiff2 {
 		keysToUpdate, err = (diff.New(dc)).ChangedGroups(curRecords)
 	} else {
