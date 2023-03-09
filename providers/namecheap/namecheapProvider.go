@@ -191,7 +191,13 @@ func (n *namecheapProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*mo
 	// Normalize
 	models.PostProcessRecords(actual)
 
+	return n.GetZoneRecordsCorrections(dc, actual)
+}
+
+func (n *namecheapProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, actual models.Records) ([]*models.Correction, error) {
+
 	var create, delete, modify diff.Changeset
+	var err error
 	if !diff2.EnableDiff2 {
 		differ := diff.New(dc)
 		_, create, delete, modify, err = differ.IncrementalDiff(actual)
