@@ -177,9 +177,6 @@ func (c *exoscaleProvider) GetZoneRecords(domainName string) (models.Records, er
 		existingRecords = append(existingRecords, rc)
 	}
 
-	// Normalize
-	models.PostProcessRecords(existingRecords)
-
 	return existingRecords, nil
 }
 
@@ -189,6 +186,9 @@ func (c *exoscaleProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*mod
 	if err != nil {
 		return nil, err
 	}
+
+	// Normalize
+	models.PostProcessRecords(existingRecords)
 
 	return c.GetZoneRecordsCorrections(dc, existingRecords)
 }

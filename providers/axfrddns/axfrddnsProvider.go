@@ -308,7 +308,6 @@ func (c *axfrddnsProvider) GetZoneRecords(domain string) (models.Records, error)
 		foundRecords = append(foundRecords, foundDNSSecRecords)
 	}
 
-	txtutil.SplitSingleLongTxt(foundRecords) // Autosplit long TXT records
 	return foundRecords, nil
 
 }
@@ -354,6 +353,8 @@ func (c *axfrddnsProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*mod
 }
 
 func (c *axfrddnsProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, foundRecords models.Records) ([]*models.Correction, error) {
+	txtutil.SplitSingleLongTxt(foundRecords) // Autosplit long TXT records
+
 	var corrections []*models.Correction
 	var create, del, mod diff.Changeset
 	var err error

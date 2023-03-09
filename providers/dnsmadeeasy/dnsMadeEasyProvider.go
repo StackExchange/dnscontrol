@@ -94,12 +94,12 @@ func (api *dnsMadeEasyProvider) GetDomainCorrections(dc *models.DomainConfig) ([
 
 	// Normalize
 	models.PostProcessRecords(existingRecords)
-	txtutil.SplitSingleLongTxt(dc.Records) // Autosplit long TXT records
 
 	return api.GetZoneRecordsCorrections(dc, existingRecords)
 }
 
 func (api *dnsMadeEasyProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, existingRecords models.Records) ([]*models.Correction, error) {
+	txtutil.SplitSingleLongTxt(dc.Records) // Autosplit long TXT records
 
 	domainName := dc.Name
 	domain, err := api.findDomain(domainName)

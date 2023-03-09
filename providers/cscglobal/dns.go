@@ -85,14 +85,12 @@ func (client *providerClient) GetDomainCorrections(dc *models.DomainConfig) ([]*
 		return nil, err
 	}
 	models.PostProcessRecords(existing)
-	//txtutil.SplitSingleLongTxt(dc.Records) // Autosplit long TXT records
 
 	clean := PrepFoundRecords(existing)
 	PrepDesiredRecords(dc)
 
 	// Normalize
 	models.PostProcessRecords(clean)
-	//txtutil.SplitSingleLongTxt(dc.Records) // Autosplit long TXT records
 
 	return client.GetZoneRecordsCorrections(dc, clean)
 }
@@ -117,6 +115,7 @@ func PrepDesiredRecords(dc *models.DomainConfig) {
 
 // GetDomainCorrections gets existing records, diffs them against existing, and returns corrections.
 func (client *providerClient) GetZoneRecordsCorrections(dc *models.DomainConfig, foundRecords models.Records) ([]*models.Correction, error) {
+	//txtutil.SplitSingleLongTxt(dc.Records) // Autosplit long TXT records
 
 	var corrections []*models.Correction
 	var err error

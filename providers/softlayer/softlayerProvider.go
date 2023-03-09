@@ -79,7 +79,24 @@ func (s *softlayerProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*mo
 		return nil, err
 	}
 
+	// Normalize
+	models.PostProcessRecords(actual)
+
 	return s.GetZoneRecordsCorrections(dc, actual)
+}
+
+func (s *softlayerProvider) GetZoneRecords(domain string) (*models.records, error) {
+	domain, err := s.getDomain(&dc.Name)
+	if err != nil {
+		return nil, err
+	}
+
+	actual, err := s.getExistingRecords(domain)
+	if err != nil {
+		return nil, err
+	}
+
+	return actual, nil
 }
 
 func (s *softlayerProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, actual models.Records) ([]*models.Correction, error) {
@@ -197,9 +214,6 @@ func (s *softlayerProvider) getExistingRecords(domain *datatypes.Dns_Domain) ([]
 
 		actual = append(actual, recConfig)
 	}
-
-	// Normalize
-	models.PostProcessRecords(actual)
 
 	return actual, nil
 }

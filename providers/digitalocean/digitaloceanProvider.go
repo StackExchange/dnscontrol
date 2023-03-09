@@ -143,12 +143,13 @@ func (api *digitaloceanProvider) GetDomainCorrections(dc *models.DomainConfig) (
 
 	// Normalize
 	models.PostProcessRecords(existingRecords)
-	txtutil.SplitSingleLongTxt(dc.Records) // Autosplit long TXT records
 
 	return api.GetZoneRecordsCorrections(dc, existingRecords)
 }
 
 func (api *digitaloceanProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, existingRecords models.Records) ([]*models.Correction, error) {
+	txtutil.SplitSingleLongTxt(dc.Records) // Autosplit long TXT records
+
 	ctx := context.Background()
 
 	var corrections []*models.Correction

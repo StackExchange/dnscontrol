@@ -114,6 +114,7 @@ func (c *ovhProvider) GetZoneRecords(domain string) (models.Records, error) {
 			actual = append(actual, rec)
 		}
 	}
+
 	return actual, nil
 }
 

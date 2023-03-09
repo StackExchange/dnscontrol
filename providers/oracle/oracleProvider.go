@@ -220,13 +220,13 @@ func (o *oracleProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*model
 
 	//  Normalize
 	models.PostProcessRecords(existingRecords)
-	txtutil.SplitSingleLongTxt(dc.Records) // Autosplit long TXT records
 
 	return o.GetZoneRecordsCorrections(dc, existingRecords)
 }
 
 func (o *oracleProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, existingRecords models.Records) ([]*models.Correction, error) {
 	var err error
+	txtutil.SplitSingleLongTxt(dc.Records) // Autosplit long TXT records
 
 	// Ensure we don't emit changes for attempted modification of built-in apex NSs
 	for _, rec := range dc.Records {

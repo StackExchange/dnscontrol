@@ -214,12 +214,13 @@ func (g *gcloudProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*model
 
 	// Normalize
 	models.PostProcessRecords(existingRecords)
-	txtutil.SplitSingleLongTxt(dc.Records) // Autosplit long TXT records
 
 	return g.GetZoneRecordsCorrections(dc, existingRecords)
 }
 
 func (g *gcloudProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, existingRecords models.Records) ([]*models.Correction, error) {
+
+	txtutil.SplitSingleLongTxt(dc.Records) // Autosplit long TXT records
 
 	oldRRs, ok := g.oldRRsMap[dc.Name]
 	if !ok {

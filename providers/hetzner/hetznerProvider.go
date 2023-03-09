@@ -100,13 +100,14 @@ func (api *hetznerProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*mo
 
 	// Normalize
 	models.PostProcessRecords(existingRecords)
-	txtutil.SplitSingleLongTxt(dc.Records) // Autosplit long TXT records
 
 	return api.GetZoneRecordsCorrections(dc, existingRecords)
 }
 
 func (api *hetznerProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, existingRecords models.Records) ([]*models.Correction, error) {
 	domain := dc.Name
+
+	txtutil.SplitSingleLongTxt(dc.Records) // Autosplit long TXT records
 
 	var corrections []*models.Correction
 	var create, del, modify diff.Changeset

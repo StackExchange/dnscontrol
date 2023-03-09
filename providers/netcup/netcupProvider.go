@@ -52,6 +52,7 @@ func (api *netcupProvider) GetZoneRecords(domain string) (models.Records, error)
 	for i := range records {
 		existingRecords[i] = toRecordConfig(domain, &records[i])
 	}
+
 	return existingRecords, nil
 }
 
@@ -82,14 +83,15 @@ func (api *netcupProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*mod
 
 	// Normalize
 	models.PostProcessRecords(existingRecords)
-	// no need for txtutil.SplitSingleLongTxt in function GetDomainCorrections
-	// txtutil.SplitSingleLongTxt(dc.Records) // Autosplit long TXT records
 
 	return api.GetDomainCorrections(dc)
 }
 
 func (api *netcupProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, existingRecords models.Records) ([]*models.Correction, error) {
 	domain := dc.Name
+
+	// no need for txtutil.SplitSingleLongTxt in function GetDomainCorrections
+	// txtutil.SplitSingleLongTxt(dc.Records) // Autosplit long TXT records
 
 	// Setting the TTL is not supported for netcup
 	for _, r := range dc.Records {

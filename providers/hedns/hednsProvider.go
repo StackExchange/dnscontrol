@@ -189,6 +189,7 @@ func (c *hednsProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*models
 	if err != nil {
 		return nil, err
 	}
+	models.PostProcessRecords(prunedRecords)
 
 	return c.GetZoneRecordsCorrections(dc, records)
 }
@@ -207,7 +208,6 @@ func (c *hednsProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, recor
 	}
 
 	// Normalize
-	models.PostProcessRecords(prunedRecords)
 	txtutil.SplitSingleLongTxt(dc.Records) // Autosplit long TXT records
 
 	// Fallback to legacy mode if diff2 is not enabled, remove when diff1 is deprecated.

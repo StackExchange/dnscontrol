@@ -138,7 +138,6 @@ func PrepDesiredRecords(dc *models.DomainConfig, minTTL uint32) {
 	// confusing.
 
 	dc.Punycode()
-	txtutil.SplitSingleLongTxt(dc.Records)
 	recordsToKeep := make([]*models.RecordConfig, 0, len(dc.Records))
 	for _, rec := range dc.Records {
 		if rec.Type == "ALIAS" {
@@ -163,6 +162,7 @@ func PrepDesiredRecords(dc *models.DomainConfig, minTTL uint32) {
 // correction, and a message to output to the user when the change is
 // made.
 func (c *desecProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, existing models.Records) ([]*models.Correction, error) {
+	txtutil.SplitSingleLongTxt(dc.Records)
 
 	var corrections []*models.Correction
 	var err error

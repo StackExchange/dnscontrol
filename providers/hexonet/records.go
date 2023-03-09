@@ -72,12 +72,12 @@ func (n *HXClient) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Corr
 
 	// Normalize
 	models.PostProcessRecords(actual)
-	txtutil.SplitSingleLongTxt(dc.Records)
 
 	return n.GetZoneRecordsCorrections(dc, actual)
 }
 
 func (n *HXClient) GetZoneRecordsCorrections(dc *models.DomainConfig, actual models.Records) ([]*models.Correction, error) {
+	txtutil.SplitSingleLongTxt(dc.Records)
 
 	var corrections []*models.Correction
 	var create, del, mod diff.Changeset
