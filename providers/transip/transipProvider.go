@@ -104,9 +104,14 @@ func (n *transipProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*mode
 		return nil, err
 	}
 
-	removeOtherNS(dc)
-
 	models.PostProcessRecords(curRecords)
+
+	return n.GetZoneRecordsCorrections(dc, curRecords)
+}
+
+func (n *transipProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, curRecords models.Records) ([]*models.Correction, error) {
+
+	removeOtherNS(dc)
 
 	var corrections []*models.Correction
 	if !diff2.EnableDiff2 || true { // Remove "|| true" when diff2 version arrives

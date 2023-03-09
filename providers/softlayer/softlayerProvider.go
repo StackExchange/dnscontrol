@@ -70,13 +70,20 @@ func (s *softlayerProvider) GetZoneRecords(domain string) (models.Records, error
 func (s *softlayerProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Correction, error) {
 
 	domain, err := s.getDomain(&dc.Name)
-
 	if err != nil {
 		return nil, err
 	}
 
 	actual, err := s.getExistingRecords(domain)
+	if err != nil {
+		return nil, err
+	}
 
+	return s.GetZoneRecordsCorrections(dc, actual)
+}
+
+func (s *softlayerProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, actual models.Records) ([]*models.Correction, error) {
+	domain, err := s.getDomain(&dc.Name)
 	if err != nil {
 		return nil, err
 	}
@@ -119,6 +126,8 @@ func (s *softlayerProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*mo
 }
 
 func (s *softlayerProvider) getDomain(name *string) (*datatypes.Dns_Domain, error) {
+	// FIXME(tlim) Memoize this
+
 	domains, err := services.GetAccountService(s.Session).
 		Filter(filter.Path("domains.name").Eq(name).Build()).
 		Mask("resourceRecords").

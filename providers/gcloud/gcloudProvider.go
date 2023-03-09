@@ -106,6 +106,8 @@ func New(cfg map[string]string, metadata json.RawMessage) (providers.DNSServiceP
 		client:        dcli,
 		nameServerSet: nss,
 		project:       cfg["project_id"],
+		oldRRsMap:     map[string]map[key]*gdns.ResourceRecordSet{},
+		zoneNameMap:   map[string]string{},
 	}
 	return g, g.loadZoneInfo()
 }
@@ -192,6 +194,10 @@ func (g *gcloudProvider) getZoneSets(domain string) (models.Records, map[key]*gd
 			existingRecords = append(existingRecords, rt)
 		}
 	}
+
+	g.oldRRsMap[domain] = oldRRs
+	g.zoneNameMap[domain] = zoneName
+
 	return existingRecords, oldRRs, zoneName, err
 }
 
@@ -200,11 +206,12 @@ func (g *gcloudProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*model
 		return nil, fmt.Errorf("punycode error: %w", err)
 	}
 	existingRecords, oldRRs, zoneName, err := g.getZoneSets(dc.Name)
+	_, _ = oldRRs, zoneName
 	if err != nil {
 		return nil, fmt.Errorf("getzonesets error: %w", err)
 	}
-	g.oldRRsMap[dc.Name] = oldRRs
-	g.zoneNameMap[dc.Name] = zoneName
+	//g.oldRRsMap[dc.Name] = oldRRs
+	//g.zoneNameMap[dc.Name] = zoneName
 
 	// Normalize
 	models.PostProcessRecords(existingRecords)
