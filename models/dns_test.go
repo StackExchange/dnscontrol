@@ -54,7 +54,7 @@ func TestDowncase(t *testing.T) {
 		&RecordConfig{Type: "MX", Name: "lower", target: "targetmx"},
 		&RecordConfig{Type: "MX", Name: "UPPER", target: "TARGETMX"},
 	}}
-	downcase(dc.Records)
+	Downcase(dc.Records)
 	if !dc.Records.HasRecordTypeName("MX", "lower") {
 		t.Errorf("%v: expected (%v) got (%v)\n", dc.Records, false, true)
 	}
