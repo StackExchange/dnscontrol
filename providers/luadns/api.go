@@ -181,6 +181,9 @@ func (l *luadnsProvider) makeRequest(endpoint string, method string, params any)
 	switch v := params.(type) {
 	case requestParams:
 		req, _ := http.NewRequest(method, apiURL+endpoint, nil)
+		if err != nil {
+			return nil, err
+		}
 		q := req.URL.Query()
 		for pName, pValue := range v {
 			q.Add(pName, pValue)
@@ -192,7 +195,10 @@ func (l *luadnsProvider) makeRequest(endpoint string, method string, params any)
 		if err != nil {
 			return nil, err
 		}
-		req, _ := http.NewRequest(method, apiURL+endpoint, bytes.NewBuffer(requestJSON))
+		req, err := http.NewRequest(method, apiURL+endpoint, bytes.NewBuffer(requestJSON))
+		if err != nil {
+			return nil, err
+		}
 		req.Header.Set("Content-Type", "application/json")
 		return req, nil
 	default:
