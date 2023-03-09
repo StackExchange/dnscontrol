@@ -125,7 +125,7 @@ func (a *edgeDNSProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*mode
 }
 
 func (a *edgeDNSProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, existingRecords models.Records) ([]*models.Correction, error) {
-	txtutil.SplitSingleLongTxt(records)
+	txtutil.SplitSingleLongTxt(existingRecords)
 
 	var corrections []*models.Correction
 	var keysToUpdate map[models.RecordKey][]string

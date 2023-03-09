@@ -189,7 +189,7 @@ func (c *hednsProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*models
 	if err != nil {
 		return nil, err
 	}
-	models.PostProcessRecords(prunedRecords)
+	models.PostProcessRecords(records)
 
 	return c.GetZoneRecordsCorrections(dc, records)
 }
