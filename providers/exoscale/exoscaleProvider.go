@@ -190,12 +190,12 @@ func (c *exoscaleProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*mod
 		return nil, err
 	}
 
-	removeOtherNS(dc)
 	return c.GetZoneRecordsCorrections(dc, existingRecords)
 }
 
 func (c *exoscaleProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, existingRecords models.Records) ([]*models.Correction, error) {
 
+	removeOtherNS(dc)
 	domain, err := c.findDomainByName(dc.Name)
 	if err != nil {
 		return nil, err

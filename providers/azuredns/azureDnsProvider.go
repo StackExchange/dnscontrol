@@ -168,6 +168,7 @@ func (a *azurednsProvider) GetZoneRecords(domain string) (models.Records, error)
 	}
 
 	models.PostProcessRecords(existingRecords)
+	txtutil.SplitSingleLongTxt(existingRecords) // Autosplit long TXT records
 
 	return existingRecords, nil
 }
@@ -205,10 +206,7 @@ func (a *azurednsProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*mod
 	if err != nil {
 		return nil, err
 	}
-	//a.rawRecords[dc.Name] = rawRecords
-	//a.zoneName[dc.Name] = zoneName
 
-	txtutil.SplitSingleLongTxt(existingRecords) // Autosplit long TXT records
 	return a.GetZoneRecordsCorrections(dc, existingRecords)
 }
 
