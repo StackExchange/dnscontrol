@@ -180,7 +180,7 @@ func (l *luadnsProvider) get(endpoint string, method string, params any) ([]byte
 func (l *luadnsProvider) makeRequest(endpoint string, method string, params any) (*http.Request, error) {
 	switch v := params.(type) {
 	case requestParams:
-		req, _ := http.NewRequest(method, apiURL+endpoint, nil)
+		req, err := http.NewRequest(method, apiURL+endpoint, nil)
 		if err != nil {
 			return nil, err
 		}
