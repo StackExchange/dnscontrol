@@ -24,7 +24,7 @@ A provider's `GetDomainCorrections()` function is the workhorse
 of the provider.  It is what gets called by `dnscontrol preview`
 and `dnscontrol push`.
 
-How does a provider's `GetDomainCorrections()` function work?
+How does a provider's `GetZoneRecordsCorrections()` function work?
 
 The goal of `GetDomainCorrections()` is to return a list of
 corrections.  Each correction is a text string describing the change
