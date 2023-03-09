@@ -1,6 +1,8 @@
 package zonerecs
 
-import "github.com/StackExchange/dnscontrol/v3/models"
+import (
+	"github.com/StackExchange/dnscontrol/v3/models"
+)
 
 // CorrectZoneRecords calls both GetZoneRecords, does any
 // post-processing, and then calls GetZoneRecordsCorrections.  The
@@ -12,7 +14,7 @@ func CorrectZoneRecords(driver models.DNSProvider, dc *models.DomainConfig) ([]*
 	}
 
 	// downcase
-	models.PostProcessRecords(existingRecords)
+	models.Downcase(existingRecords)
 
 	// Copy dc so that any corrections code that wants to
 	// modify the records may. For example, if the provider only
