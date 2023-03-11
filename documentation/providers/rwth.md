@@ -20,8 +20,9 @@ Example:
 This provider does not recognize any special metadata fields unique to it.
 
 ## Usage
-An example `dnsconfig.js` configuration:
+An example configuration:
 
+{% code title="dnsconfig.js" %}
 ```javascript
 var REG_NONE = NewRegistrar("none");
 var DSP_RWTH = NewDnsProvider("rwth");
@@ -30,6 +31,7 @@ D("example.rwth-aachen.de", REG_NONE, DnsProvider(DSP_RWTH),
     A("test", "1.2.3.4")
 );
 ```
+{% endcode %}
 
 ## Caveats
 The default TTL is not automatically fetched, as the API does not provide such an endpoint.

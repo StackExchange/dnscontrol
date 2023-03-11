@@ -53,10 +53,12 @@ operations, which is the least secure option.
 If distinct zones require distinct keys, you will need to instantiate the
 provider once for each key:
 
+{% code title="dnsconfig.js" %}
 ```javascript
 var DSP_AXFRDDNS_A = NewDnsProvider("axfrddns-a");
 var DSP_AXFRDDNS_B = NewDnsProvider("axfrddns-b");
 ```
+{% endcode %}
 
 And update `creds.json` accordingly:
 
@@ -84,6 +86,7 @@ provider.
 This list can be provided either as metadata or in `creds.json`. Only
 the later allows `get-zones` to work properly.
 
+{% code title="dnsconfig.js" %}
 ```javascript
 var DSP_AXFRDDNS = NewDnsProvider("axfrddns", {
         "default_ns": [
@@ -95,6 +98,7 @@ var DSP_AXFRDDNS = NewDnsProvider("axfrddns", {
     }
 }
 ```
+{% endcode %}
 
 ```json
 {
