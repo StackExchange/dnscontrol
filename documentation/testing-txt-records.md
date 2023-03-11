@@ -1,14 +1,14 @@
 # TXT record testing
 
 We recently discovered a strange but with processing TXT records and
-double-quotes.  Sadly we haven't been able to determine a way to test this
-automatically.  Therefore, I've written up this methodology.
+double-quotes. Sadly we haven't been able to determine a way to test this
+automatically. Therefore, I've written up this methodology.
 
 # The problem
 
 The problem relates to TXT records that have a string with quotes in them.
 
-If a user creates a TXT record who's contents are `"something"` (yes, with
+If a user creates a TXT record whose contents are `"something"` (yes, with
 double quotes), some APIs get confused.
 
 This bug is most likely to appear in a provider that uses
@@ -28,7 +28,7 @@ in your `auditrecords.go` file.
 
 ## Step 1: Create the test records
 
-Log into your DNS provider's web UI (portal) and create these 4 TXT records.  (Don't use DNSControl!) Yes, include the double-quotes on test 1 and 3!
+Log into your DNS provider's web UI (portal) and create these 4 TXT records.  (Don't use DNSControl!) Yes, include the double-quotes on test 2 and 3!
 
 | Hostname      | TXT       |
 |---------------|-----------|
