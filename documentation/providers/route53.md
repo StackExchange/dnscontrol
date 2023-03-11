@@ -67,6 +67,7 @@ This provider does not recognize any special metadata fields unique to route 53.
 ## Usage
 An example `dnsconfig.js` configuration:
 
+{% code title="dnsconfig.js" %}
 ```javascript
 var REG_NONE = NewRegistrar("none");
 var DSP_R53 = NewDnsProvider("r53_main");
@@ -75,6 +76,7 @@ D("example.tld", REG_NONE, DnsProvider(DSP_R53),
     A("test", "1.2.3.4")
 );
 ```
+{% endcode %}
 
 ## Activation
 DNSControl depends on a standard [AWS access key](https://aws.amazon.com/developers/access-keys/) with permission to list, create and update hosted zones. If you do not have the permissions required you will receive the following error message `Check your credentials, your not authorized to perform actions on Route 53 AWS Service`.

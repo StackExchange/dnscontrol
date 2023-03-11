@@ -20,6 +20,7 @@ Example:
 
 An example `dnsconfig.js` configuration:
 
+{% code title="dnsconfig.js" %}
 ```javascript
 var REG_HOSTINGDE = NewRegistrar("hosting.de");
 var DSP_HOSTINGDE = NewDnsProvider("hosting.de");
@@ -28,6 +29,7 @@ D("example.tld", REG_HOSTINGDE, DnsProvider(DSP_HOSTINGDE),
     A("test", "1.2.3.4")
 );
 ```
+{% endcode %}
 
 ## Using this provider with http.net and others
 
@@ -52,6 +54,7 @@ An example `creds.json` configuration:
 
 An example `dnsconfig.js` configuration:
 
+{% code title="dnsconfig.js" %}
 ```javascript
 var REG_HTTPNET = NewRegistrar("http.net");
 
@@ -63,6 +66,7 @@ var DSP_HTTPNET = NewDnsProvider("http.net", {
   ],
 });
 ```
+{% endcode %}
 
 #### Why this works
 

@@ -53,6 +53,7 @@ names.
 ## Usage
 An example `dnsconfig.js` configuration:
 
+{% code title="dnsconfig.js" %}
 ```javascript
 var REG_GANDI = NewRegistrar("gandi");
 var DSP_GANDI = NewDnsProvider("gandi");
@@ -61,6 +62,7 @@ D("example.tld", REG_GANDI, DnsProvider(DSP_GANDI),
     A("test", "1.2.3.4")
 );
 ```
+{% endcode %}
 
 If you are converting from the old "GANDI" provider,
 simply change "GANDI" to "GANDI_V5" in `dnsconfig.js`.

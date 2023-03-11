@@ -22,6 +22,7 @@ Example:
 
 An example `dnsconfig.js` configuration:
 
+{% code title="dnsconfig.js" %}
 ```javascript
 var REG_NONE = NewRegistrar("none");
 var DSP_AUTODNS = NewDnsProvider("autodns");
@@ -30,3 +31,4 @@ D("example.tld", REG_NONE, DnsProvider(DSP_AUTODNS),
     A("test", "1.2.3.4")
 );
 ```
+{% endcode %}

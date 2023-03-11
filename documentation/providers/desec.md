@@ -22,6 +22,7 @@ This provider does not recognize any special metadata fields unique to deSEC.
 ## Usage
 An example `dnsconfig.js` configuration:
 
+{% code title="dnsconfig.js" %}
 ```javascript
 var REG_NONE = NewRegistrar("none");    // No registrar.
 var DSP_DESEC = NewDnsProvider("desec");  // deSEC
@@ -30,6 +31,7 @@ D("example.tld", REG_NONE, DnsProvider(DSP_DESEC),
     A("test", "1.2.3.4")
 );
 ```
+{% endcode %}
 
 ## Activation
 DNSControl depends on a deSEC account auth token.

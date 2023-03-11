@@ -31,6 +31,7 @@ Example:
 ## Usage
 An example `dnsconfig.js` configuration:
 
+{% code title="dnsconfig.js" %}
 ```javascript
 var REG_CSCGLOBAL = NewRegistrar("cscglobal");
 var DSP_BIND = NewDnsProvider("bind");
@@ -39,6 +40,7 @@ D("example.tld", REG_CSCGLOBAL, DnsProvider(DSP_BIND),
   A("test", "1.2.3.4")
 );
 ```
+{% endcode %}
 
 ## Activation
 To get access to the [CSC Global API](https://www.cscglobal.com/cscglobal/docs/dbs/domainmanager/api-v2/) contact your account manager.

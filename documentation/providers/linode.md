@@ -22,6 +22,7 @@ This provider does not recognize any special metadata fields unique to Linode.
 ## Usage
 An example `dnsconfig.js` configuration:
 
+{% code title="dnsconfig.js" %}
 ```javascript
 var REG_NONE = NewRegistrar("none");
 var DSP_LINODE = NewDnsProvider("linode");
@@ -30,6 +31,7 @@ D("example.tld", REG_NONE, DnsProvider(DSP_LINODE),
     A("test", "1.2.3.4")
 );
 ```
+{% endcode %}
 
 ## Activation
 [Create Personal Access Token](https://cloud.linode.com/profile/tokens)

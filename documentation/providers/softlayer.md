@@ -30,6 +30,7 @@ To maintain compatibility with existing softlayer CLI services these can also be
 
 An example `dnsconfig.js` configuration:
 
+{% code title="dnsconfig.js" %}
 ```javascript
 var REG_NONE = NewRegistrar("none"); // no registrar
 var DSP_SOFTLAYER = NewDnsProvider("softlayer");
@@ -38,11 +39,13 @@ D("example.tld", registrary, DnsProvider(DSP_SOFTLAYER),
     A("test", "1.2.3.4")
 );
 ```
+{% endcode %}
 
 ## Metadata
 This provider does not recognize any special metadata fields unique to SoftLayer dns.
 For compatibility with the pre-generated NAMESERVER fields it's recommended to set the NS TTL to 86400 such as:
 
+{% code title="dnsconfig.js" %}
 ```javascript
 D("example.tld", REG_NONE, DnsProvider(SOFTLAYER),
     NAMESERVER_TTL(86400),
@@ -50,3 +53,4 @@ D("example.tld", REG_NONE, DnsProvider(SOFTLAYER),
     A("test", "1.2.3.4")
 );
 ```
+{% endcode %}

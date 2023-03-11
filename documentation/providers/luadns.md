@@ -23,6 +23,7 @@ This provider does not recognize any special metadata fields unique to LuaDNS.
 ## Usage
 An example `dnsconfig.js` configuration:
 
+{% code title="dnsconfig.js" %}
 ```javascript
 var REG_NONE = NewRegistrar("none");
 var DSP_LUADNS = NewDnsProvider("luadns");
@@ -31,6 +32,7 @@ D("example.tld", REG_NONE, DnsProvider(DSP_LUADNS),
     A("test", "1.2.3.4")
 );
 ```
+{% endcode %}
 
 ## Activation
 [Create API key](https://api.luadns.com/api_keys).

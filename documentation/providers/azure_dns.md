@@ -51,6 +51,7 @@ This provider does not recognize any special metadata fields unique to Azure DNS
 ## Usage
 An example `dnsconfig.js` configuration:
 
+{% code title="dnsconfig.js" %}
 ```javascript
 var REG_NONE = NewRegistrar("none");
 var DSP_AZURE_MAIN = NewDnsProvider("azuredns_main");
@@ -59,6 +60,7 @@ D("example.tld", REG_NONE, DnsProvider(DSP_AZURE_MAIN),
     A("test", "1.2.3.4")
 );
 ```
+{% endcode %}
 
 ## Activation
 DNSControl depends on a standard [Client credentials Authentication](https://docs.microsoft.com/en-us/cli/azure/create-an-azure-service-principal-azure-cli?view=azure-cli-latest) with permission to list, create and update hosted zones.

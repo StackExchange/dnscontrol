@@ -45,6 +45,7 @@ This provider does not recognize any special metadata fields unique to TransIP.
 
 An example `dnsconfig.js` configuration:
 
+{% code title="dnsconfig.js" %}
 ```javascript
 var DSP_TRANSIP = NewDnsProvider("transip");
 
@@ -52,6 +53,7 @@ D("example.tld", REG_DNSIMPLE, DnsProvider(DSP_TRANSIP),
     A("test", "1.2.3.4")
 );
 ```
+{% endcode %}
 
 ## Activation
 

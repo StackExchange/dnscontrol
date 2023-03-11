@@ -59,6 +59,7 @@ This provider does not recognize any special metadata fields unique to google cl
 ## Usage
 An example `dnsconfig.js` configuration:
 
+{% code title="dnsconfig.js" %}
 ```javascript
 var REG_NONE = NewRegistrar("name.com");
 var DSP_GCLOUD = NewDnsProvider("gcloud");
@@ -67,6 +68,7 @@ D("example.tld", REG_NONE, DnsProvider(DSP_GCLOUD),
     A("test", "1.2.3.4")
 );
 ```
+{% endcode %}
 
 ## Activation
 1. Go to your app-engine console and select the appropriate project.
