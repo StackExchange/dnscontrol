@@ -140,16 +140,16 @@ list.
 
 Each `testgroup()` is a named list of tests.
 
-{% code title="integration_test.go" %}
+{% code title="integration_test.go" lineNumbers="true" %}
 ```go
-testgroup("MX",                                   <<< 1
-  tc("MX record", mx("@", 5, "foo.com.")),        <<< 2
-  tc("Change MX pref", mx("@", 10, "foo.com.")),  <<< 3
-  tc("MX record",                                 <<< 4
+testgroup("MX",
+  tc("MX record", mx("@", 5, "foo.com.")),
+  tc("Change MX pref", mx("@", 10, "foo.com.")),
+  tc("MX record",
       mx("@", 10, "foo.com."),
       mx("@", 20, "bar.com."),
   ),
-  )
+)
 ```
 {% endcode %}
 
