@@ -43,7 +43,7 @@ This provider does not recognize any special metadata fields unique to TransIP.
 
 ## Usage
 
-An example `dnsconfig.js` configuration:
+An example configuration:
 
 {% code title="dnsconfig.js" %}
 ```javascript

@@ -28,7 +28,7 @@ To maintain compatibility with existing softlayer CLI services these can also be
 
 ## Usage
 
-An example `dnsconfig.js` configuration:
+An example configuration:
 
 {% code title="dnsconfig.js" %}
 ```javascript

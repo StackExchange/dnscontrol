@@ -39,7 +39,7 @@ Some common DoH providers are:
 This provider does not recognize any special metadata fields unique to DOH.
 
 ## Usage
-An example `dnsconfig.js` configuration:
+An example configuration:
 
 {% code title="dnsconfig.js" %}
 ```javascript

@@ -65,7 +65,7 @@ You can find some other ways to authenticate to Route53 in the [go sdk configura
 This provider does not recognize any special metadata fields unique to route 53.
 
 ## Usage
-An example `dnsconfig.js` configuration:
+An example configuration:
 
 {% code title="dnsconfig.js" %}
 ```javascript

@@ -29,7 +29,7 @@ SPF records are ignored by this provider. Use TXT records instead.
 This provider does not recognize any special metadata fields unique to DNS Made Easy.
 
 ## Usage
-An example `dnsconfig.js` configuration:
+An example configuration:
 
 {% code title="dnsconfig.js" %}
 ```javascript

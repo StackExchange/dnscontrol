@@ -18,7 +18,7 @@ Example:
 
 ## Usage
 
-An example `dnsconfig.js` configuration:
+An example configuration:
 
 {% code title="dnsconfig.js" %}
 ```javascript
@@ -52,7 +52,7 @@ An example `creds.json` configuration:
 ```
 {% endcode %}
 
-An example `dnsconfig.js` configuration:
+An example configuration:
 
 {% code title="dnsconfig.js" %}
 ```javascript

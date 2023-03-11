@@ -20,7 +20,7 @@ Example:
 This provider does not recognize any special metadata fields unique to DigitalOcean.
 
 ## Usage
-An example `dnsconfig.js` configuration:
+An example configuration:
 
 {% code title="dnsconfig.js" %}
 ```javascript

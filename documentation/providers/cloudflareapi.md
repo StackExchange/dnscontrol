@@ -164,7 +164,7 @@ D("example.tld", REG_NONE, DnsProvider(DSP_CLOUDFLARE),
 {% endcode %}
 
 ## Usage
-An example `dnsconfig.js` configuration:
+An example configuration:
 
 {% code title="dnsconfig.js" %}
 ```javascript

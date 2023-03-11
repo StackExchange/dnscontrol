@@ -51,7 +51,7 @@ This provider only supports `ALIAS` on the `"@"` zone apex, not on any other
 names.
 
 ## Usage
-An example `dnsconfig.js` configuration:
+An example configuration:
 
 {% code title="dnsconfig.js" %}
 ```javascript

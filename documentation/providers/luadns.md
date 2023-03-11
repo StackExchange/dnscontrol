@@ -21,7 +21,7 @@ Example:
 This provider does not recognize any special metadata fields unique to LuaDNS.
 
 ## Usage
-An example `dnsconfig.js` configuration:
+An example configuration:
 
 {% code title="dnsconfig.js" %}
 ```javascript

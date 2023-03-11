@@ -26,7 +26,7 @@ This provider does not recognize any special metadata fields unique to OVH.
 
 ## Usage
 
-An example `dnsconfig.js` configuration: (DNS hosted with OVH):
+An example configuration: (DNS hosted with OVH):
 
 {% code title="dnsconfig.js" %}
 ```javascript
@@ -39,7 +39,7 @@ D("example.tld", REG_OVH, DnsProvider(DSP_OVH),
 ```
 {% endcode %}
 
-An example `dnsconfig.js` configuration: (Registrar only. DNS hosted elsewhere)
+An example configuration: (Registrar only. DNS hosted elsewhere)
 
 {% code title="dnsconfig.js" %}
 ```javascript

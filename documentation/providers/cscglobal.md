@@ -29,7 +29,7 @@ Example:
 {% endcode %}
 
 ## Usage
-An example `dnsconfig.js` configuration:
+An example configuration:
 
 {% code title="dnsconfig.js" %}
 ```javascript

@@ -38,7 +38,7 @@ Following metadata are available:
 - `dnssec_on_create` specifies if DNSSEC should be enabled when creating zones
 
 ## Usage
-An example `dnsconfig.js` configuration:
+An example configuration:
 
 {% code title="dnsconfig.js" %}
 ```javascript
