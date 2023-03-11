@@ -101,6 +101,7 @@ An example `dnsconfig.js` configuration file
 for `example.tld` registered with INWX
 and delegated to Cloudflare:
 
+{% code title="dnsconfig.js" %}
 ```javascript
 var REG_INWX = NewRegistrar("inwx");
 var DSP_CF = NewDnsProvider("cloudflare");
@@ -109,3 +110,4 @@ D("example.tld", REG_INWX, DnsProvider(DSP_CF),
     A("test", "1.2.3.4")
 );
 ```
+{% endcode %}
