@@ -88,8 +88,10 @@ Please add the function alphabetically with the others. Also, please run
 [prettier](https://github.com/prettier/prettier) on the file to ensure
 your code conforms to our coding standard:
 
-    npm install prettier
-    node_modules/.bin/prettier --write pkg/js/helpers.js
+```shell
+npm install prettier
+node_modules/.bin/prettier --write pkg/js/helpers.js
+```
 
 Any time you change `pkg/js/helpers.js`, run `go generate` to regenerate `pkg/js/static.go`.
 
@@ -114,8 +116,10 @@ Test `013-mx.js` is a very simple one and is good for cloning.
 
 Run these tests via:
 
-    cd dnscontrol/pkg/js
-    go test ./...
+```shell
+cd dnscontrol/pkg/js
+go test ./...
+```
 
 If this works, then you know the `dnsconfig.js` and `helpers.js`
 code is working correctly.
@@ -136,7 +140,8 @@ list.
 
 Each `testgroup()` is a named list of tests.
 
-```javascript
+{% code title="integration_test.go" %}
+```go
 testgroup("MX",                                   <<< 1
   tc("MX record", mx("@", 5, "foo.com.")),        <<< 2
   tc("Change MX pref", mx("@", 10, "foo.com.")),  <<< 3
@@ -146,6 +151,7 @@ testgroup("MX",                                   <<< 1
   ),
   )
 ```
+{% endcode %}
 
 Line 1: `testgroup()` gives a name to a group of tests. It also tells
 the system to delete all records for this domain so that the tests
@@ -182,8 +188,10 @@ in the source code.
 
 To run the integration test with the BIND provider:
 
-    cd dnscontrol/integrationTest
-    go test -v -verbose -provider BIND
+```shell
+cd dnscontrol/integrationTest
+go test -v -verbose -provider BIND
+```
 
 Once the code works for BIND, consider submitting a PR at this point.
 (The earlier you submit a PR, the earlier we can provide feedback.)
@@ -200,10 +208,12 @@ flag to the provider and re-run the integration tests:
 
 For example, this will run the tests on Amazon AWS Route53:
 
-    export R53_DOMAIN=dnscontroltest-r53.com  # Use a test domain.
-    export R53_KEY_ID=CHANGE_TO_THE_ID
-    export R53_KEY='CHANGE_TO_THE_KEY'
-    go test -v -verbose -provider ROUTE53
+```shell
+export R53_DOMAIN=dnscontroltest-r53.com  # Use a test domain.
+export R53_KEY_ID=CHANGE_TO_THE_ID
+export R53_KEY='CHANGE_TO_THE_KEY'
+go test -v -verbose -provider ROUTE53
+```
 
 The test should reveal any bugs. Keep iterating between fixing the
 code and running the tests. When the tests all work, you are done.
