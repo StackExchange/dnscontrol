@@ -253,20 +253,13 @@ the documentation.
 
 ## Step 12: Clean up
 
-Run "go vet" and "golint" and clean up any errors found.
+Run "go vet", then clean up any errors found.
 
 ```shell
 go vet ./...
-golint ./...
 ```
 
 Please use `go vet` from the [newest release of Go](https://golang.org/doc/devel/release.html#policy).
-
-If [golint](https://github.com/golang/lint) isn't installed on your machine:
-
-```shell
-go get -u golang.org/x/lint/golint
-```
 
 
 ## Step 13: Dependencies
