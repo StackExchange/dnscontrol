@@ -20,8 +20,9 @@ Example:
 This provider does not recognize any special metadata fields unique to Packetframe.
 
 ## Usage
-An example `dnsconfig.js` configuration:
+An example configuration:
 
+{% code title="dnsconfig.js" %}
 ```javascript
 var REG_NONE = NewRegistrar("none");
 var DSP_PACKETFRAME = NewDnsProvider("packetframe");
@@ -30,3 +31,4 @@ D("example.tld", REG_NONE, DnsProvider(DSP_PACKETFRAME),
     A("test", "1.2.3.4")
 );
 ```
+{% endcode %}

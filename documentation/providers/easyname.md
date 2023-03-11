@@ -26,8 +26,9 @@ Example:
 This provider does not recognize any special metadata fields unique to easyname.
 
 ## Usage
-An example `dnsconfig.js` configuration:
+An example configuration:
 
+{% code title="dnsconfig.js" %}
 ```javascript
 var REG_EASYNAME = NewRegistrar("easyname");
 
@@ -36,6 +37,7 @@ D("example.com", REG_EASYNAME,
   NAMESERVER("ns2.example.com."),
 );
 ```
+{% endcode %}
 
 ## Activation
 

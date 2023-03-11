@@ -19,8 +19,9 @@ Example:
 {% endcode %}
 
 ## Usage
-An example `dnsconfig.js` configuration:
+An example configuration:
 
+{% code title="dnsconfig.js" %}
 ```javascript
 var REG_NONE = NewRegistrar("none");
 var DSP_NETCUP = NewDnsProvider("netcup");
@@ -29,7 +30,7 @@ D("example.tld", REG_NONE, DnsProvider(DSP_NETCUP),
     A("test", "1.2.3.4")
 );
 ```
-
+{% endcode %}
 
 ## Caveats
 Netcup does not allow any TTLs to be set for individual records. Thus in
