@@ -101,8 +101,9 @@ This option is disabled by default when this key is not present,
 This provider does not recognize any special metadata fields unique to Hurricane Electric DNS.
 
 ## Usage
-An example `dnsconfig.js` configuration:
+An example configuration:
 
+{% code title="dnsconfig.js" %}
 ```javascript
 var REG_NONE = NewRegistrar("none");
 var DSP_HEDNS = NewDnsProvider("hedns");
@@ -111,3 +112,4 @@ D("example.tld", REG_NONE, DnsProvider(DSP_HEDNS),
     A("test", "1.2.3.4")
 );
 ```
+{% endcode %}

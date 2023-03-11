@@ -43,8 +43,9 @@ This provider does not recognize any special metadata fields unique to
 Namecheap.
 
 ## Usage
-An example `dnsconfig.js` configuration:
+An example configuration:
 
+{% code title="dnsconfig.js" %}
 ```javascript
 var REG_NAMECHEAP = NewRegistrar("namecheap");
 var DSP_BIND = NewDnsProvider("bind");
@@ -53,10 +54,12 @@ D("example.tld", REG_NAMECHEAP, DnsProvider(DSP_BIND),
     A("test", "1.2.3.4")
 );
 ```
+{% endcode %}
 
 Namecheap provides custom redirect records URL, URL301, and FRAME.  These
 records can be used like any other record:
 
+{% code title="dnsconfig.js" %}
 ```javascript
 var REG_NAMECHEAP = NewRegistrar("namecheap");
 var DSP_NAMECHEAP = NewDnsProvider("namecheap");
@@ -67,6 +70,7 @@ D("example.tld", REG_NAMECHEAP, DnsProvider(DSP_NAMECHEAP),
   URL301("backup", "http://backup.example.com/")
 )
 ```
+{% endcode %}
 
 ## Activation
 In order to activate API functionality on your Namecheap account, you must

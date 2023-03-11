@@ -23,8 +23,9 @@ Example:
 This provider does not recognize any special metadata fields unique to Internet.bs.
 
 ## Usage
-An example `dnsconfig.js` configuration:
+An example configuration:
 
+{% code title="dnsconfig.js" %}
 ```javascript
 var REG_INTERNETBS = NewRegistrar("internetbs");
 
@@ -33,6 +34,7 @@ D("example.com", REG_INTERNETBS,
   NAMESERVER("ns2.example.com."),
 );
 ```
+{% endcode %}
 
 ## Activation
 

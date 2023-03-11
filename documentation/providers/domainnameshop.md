@@ -21,8 +21,9 @@ Example:
 This provider does not recognize any special metadata fields unique to Domainnameshop.
 
 ## Usage
-An example `dnsconfig.js` configuration:
+An example configuration:
 
+{% code title="dnsconfig.js" %}
 ```javascript
 var REG_NONE = NewRegistrar("none");
 var DSP_DOMAINNAMESHOP = NewDnsProvider("mydomainnameshop");
@@ -31,6 +32,7 @@ D("example.tld", REG_NONE, DnsProvider(DSP_DOMAINNAMESHOP),
     A("test", "1.2.3.4")
 );
 ```
+{% endcode %}
 
 ## Activation
 [Create API Token and secret](https://www.domeneshop.no/admin?view=api)

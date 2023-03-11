@@ -48,6 +48,7 @@ Example:
 
 An example DNS configuration:
 
+{% code title="dnsconfig.js" %}
 ```javascript
 var REG_NONE = NewRegistrar("none");
 var DSP_MSDNS = NewDnsProvider("msdns");
@@ -56,3 +57,4 @@ D("example.tld", REG_NONE, DnsProvider(DSP_MSDNS),
       A("test", "1.2.3.4")
 )
 ```
+{% endcode %}
