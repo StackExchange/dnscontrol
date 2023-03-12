@@ -8,9 +8,9 @@ parameter_types:
   modifiers...: RecordModifier[]
 ---
 
-NAMESERVER_TTL sets the TTL on the domain apex NS RRs defined by [NAMESERVER](NAMESERVER.md).
+NAMESERVER_TTL sets the TTL on the domain apex NS RRs defined by [`NAMESERVER`](NAMESERVER.md).
 
-The value can be an integer or a string. See [TTL](../record/TTL.md) for examples.
+The value can be an integer or a string. See [`TTL`](../record/TTL.md) for examples.
 
 ```javascript
 D('example.com', REGISTRAR, DnsProvider('R53'),
@@ -18,3 +18,17 @@ D('example.com', REGISTRAR, DnsProvider('R53'),
   NAMESERVER('ns')
 );
 ```
+
+Use `NAMESERVER_TTL('3600'),` or `NAMESERVER_TTL('1h'),` for a 1h default TTL for all subsequent `NS` entries:
+```javascript
+D('example.com', REGISTRAR, DnsProvider('xyz'),
+  DefaultTTL("4h"),
+  NAMESERVER_TTL('3600'),
+  NAMESERVER('ns1.provider.com.'), //inherits NAMESERVER_TTL
+  NAMESERVER('ns2.provider.com.'), //inherits NAMESERVER_TTL
+  A('@','1.2.3.4'), // inherits DefaultTTL
+  A('foo', '2.3.4.5', TTL(600)) // overrides DefaultTTL for this record only
+);
+```
+
+To apply a default TTL to all other record types, see [`DefaultTTL`](../domain/DefaultTTL.md)
