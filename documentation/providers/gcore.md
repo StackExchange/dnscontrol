@@ -20,8 +20,9 @@ Example:
 This provider does not recognize any special metadata fields unique to Gcore.
 
 ## Usage
-An example `dnsconfig.js` configuration:
+An example configuration:
 
+{% code title="dnsconfig.js" %}
 ```javascript
 var REG_NONE = NewRegistrar("none");    // No registrar.
 var DSP_GCORE = NewDnsProvider("gcore");  // Gcore
@@ -30,6 +31,7 @@ D("example.tld", REG_NONE, DnsProvider(DSP_GCORE),
     A("test", "1.2.3.4")
 );
 ```
+{% endcode %}
 
 ## Activation
 
