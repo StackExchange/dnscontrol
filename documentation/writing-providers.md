@@ -253,19 +253,26 @@ the documentation.
 
 ## Step 12: Clean up
 
-Run "go vet" and "golint" and clean up any errors found.
+Run "go vet" and ["staticcheck"](https://staticcheck.io/) and clean up any errors found.
 
 ```shell
 go vet ./...
-golint ./...
+staticcheck ./...
 ```
 
 Please use `go vet` from the [newest release of Go](https://golang.org/doc/devel/release.html#policy).
 
-If [golint](https://github.com/golang/lint) isn't installed on your machine:
+golint is deprecated and frozen but it is still useful as it does a few checks that haven't been
+re-implemented in staticcheck.
+However golink fails on any file that uses generics, so
+be prepared to ignore errors about `expected '(', found '[' (and 1 more errors)`
+
+How to install and run [golint](https://github.com/golang/lint):
 
 ```shell
-go get -u golang.org/x/lint/golint
+$ go get -u golang.org/x/lint/golint
+$ go install golang.org/x/lint/golint
+$ golint ./...
 ```
 
 
