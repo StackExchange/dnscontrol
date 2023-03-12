@@ -117,13 +117,13 @@ D('cafferata.dev',
 From that moment everything comes together! Within the [Gitlab merge request #1](https://gitlab.com/cafferata/dnscontrol/-/merge_requests/1), a [Gitlab pipeline](https://gitlab.com/cafferata/dnscontrol/-/pipelines/656368053) with a [Gitlab job](https://gitlab.com/cafferata/dnscontrol/-/jobs/3115895010) starts running containing the command `dnscontrol preview`. The outcome of this job? The desired change that will be made within TransIP. Wow this is cool!
 
 ```shell
-$ /usr/local/bin/dnscontrol version
+/usr/local/bin/dnscontrol version
 ```
 ```shell
 dnscontrol "3.20.0" ("8bb63be8f5ed996a7ae0a21091954fcab996621b") built 26 Aug 22 14:59 UTC
 ```
 ```shell
-$ /usr/local/bin/dnscontrol preview
+/usr/local/bin/dnscontrol preview
 ```
 ```shell
 ******************** Domain: cafferata.dev
@@ -167,13 +167,13 @@ What does this (new) YAML configuration mean?
 When we start the new [Gitlab pipeline](https://gitlab.com/cafferata/dnscontrol/-/pipelines/656368384) from the [Gitlab web interface](https://gitlab.com/cafferata/dnscontrol/-/pipelines/new), we see the Gitlab job [dnscontrol-push](https://gitlab.com/cafferata/dnscontrol/-/jobs/3115896199) which makes the changes within the DNS provider TransIP.
 
 ```shell
-$ /usr/local/bin/dnscontrol version
+/usr/local/bin/dnscontrol version
 ```
 ```shell
 dnscontrol "3.20.0" ("8bb63be8f5ed996a7ae0a21091954fcab996621b") built 26 Aug 22 14:59 UTC
 ```
 ```shell
-$ /usr/local/bin/dnscontrol push
+/usr/local/bin/dnscontrol push
 ```
 ```shell
 ******************** Domain: cafferata.dev
