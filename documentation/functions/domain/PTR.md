@@ -60,6 +60,7 @@ and A, B, C are the first 3 octets of the IP address. For example
 `172.20.18.130/27` is located in a zone named
 `128/27.18.20.172.in-addr.arpa`
 
+{% code title="dnsconfig.js" %}
 ```javascript
 D(REV('1.2.3.0/24'), REGISTRAR, DnsProvider(BIND),
   PTR('1', 'foo.example.com.'),
@@ -68,11 +69,19 @@ D(REV('1.2.3.0/24'), REGISTRAR, DnsProvider(BIND),
   // If the first parameter is a valid IP address, DNSControl will generate the correct name:
   PTR('1.2.3.10', 'ten.example.com.'),    // '10'
 );
+```
+{% endcode %}
 
+{% code title="dnsconfig.js" %}
+```javascript
 D(REV('9.9.9.128/25'), REGISTRAR, DnsProvider(BIND),
   PTR('9.9.9.129', 'first.example.com.'),
 );
+```
+{% endcode %}
 
+{% code title="dnsconfig.js" %}
+```javascript
 D(REV('2001:db8:302::/48'), REGISTRAR, DnsProvider(BIND),
   PTR('1.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0', 'foo.example.com.'),  // 2001:db8:302::1
   // If the first parameter is a valid IP address, DNSControl will generate the correct name:
@@ -80,6 +89,7 @@ D(REV('2001:db8:302::/48'), REGISTRAR, DnsProvider(BIND),
   PTR('2001:db8:302::3', 'three.example.com.'),                        // '3.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0'
 );
 ```
+{% endcode %}
 
 In the future we plan on adding a flag to `A()` which will insert
 the correct PTR() record if the appropriate `.arpa` domain has been

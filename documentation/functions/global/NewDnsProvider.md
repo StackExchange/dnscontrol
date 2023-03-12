@@ -25,6 +25,7 @@ This function will return an opaque string that should be assigned to a variable
 
 Prior to [v3.16](../../v316.md):
 
+{% code title="dnsconfig.js" %}
 ```javascript
 var REG_MYNDC = NewRegistrar("mynamedotcom", "NAMEDOTCOM");
 var DNS_MYAWS = NewDnsProvider("myaws", "ROUTE53");
@@ -33,9 +34,11 @@ D("example.com", REG_MYNDC, DnsProvider(DNS_MYAWS),
   A("@","1.2.3.4")
 );
 ```
+{% endcode %}
 
 In [v3.16](../../v316.md) and later:
 
+{% code title="dnsconfig.js" %}
 ```javascript
 var REG_MYNDC = NewRegistrar("mynamedotcom");
 var DNS_MYAWS = NewDnsProvider("myaws");
@@ -44,3 +47,4 @@ D("example.com", REG_MYNDC, DnsProvider(DNS_MYAWS),
   A("@","1.2.3.4")
 );
 ```
+{% endcode %}
