@@ -27,8 +27,9 @@ Examples:
 This provider does not recognize any special metadata fields unique to DNSimple.
 
 ## Usage
-An example `dnsconfig.js` configuration:
+An example configuration:
 
+{% code title="dnsconfig.js" %}
 ```javascript
 var REG_DNSIMPLE = NewRegistrar("dnsimple");
 var DSP_DNSIMPLE = NewDnsProvider("dnsimple");
@@ -37,6 +38,7 @@ D("example.tld", REG_DNSIMPLE, DnsProvider(DSP_DNSIMPLE),
     A("test", "1.2.3.4")
 );
 ```
+{% endcode %}
 
 ## Activation
 DNSControl depends on a DNSimple account access token.

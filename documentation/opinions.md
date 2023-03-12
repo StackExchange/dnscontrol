@@ -73,7 +73,7 @@ the DNS names are downcased.
 This reduces code complexity, reduces the number of edge-cases that must
 be tested, and makes the system safer to operate.
 
-Yes, we know that DNS is case insensitive.  See [Opinion #3](#opinion-3--dnsconfigjs-are-not-zonefiles).
+Yes, we know that DNS is case insensitive.  See [Opinion #3](#opinion-3-dnsconfig.js-are-not-zonefiles).
 
 
 # Opinion #5: Users should state what they want, and DNSControl should do the rest
@@ -93,7 +93,7 @@ Some examples:
 # Opinion #6 If it is ambiguous in DNS, it is forbidden in DNSControl
 
 When there is ambiguity an expert knows what the system will do.
-Your coworkers should not be expected to be experts. (See [Opinion #2](#opinion-2--non-experts-should-be-able-to-safely-make-dns-changes)).
+Your coworkers should not be expected to be experts. (See [Opinion #2](#opinion-2-non-experts-should-be-able-to-safely-make-dns-changes)).
 
 We would rather DNSControl error out than require users to be DNS experts.
 

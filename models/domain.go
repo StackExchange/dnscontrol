@@ -7,7 +7,7 @@ import (
 	"golang.org/x/net/idna"
 )
 
-// DomainConfig describes a DNS domain (tecnically a  DNS zone).
+// DomainConfig describes a DNS domain (technically a DNS zone).
 type DomainConfig struct {
 	Name             string         `json:"name"` // NO trailing "."
 	Tag              string         `json:"-"`    // split horizon tag
