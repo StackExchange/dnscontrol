@@ -43,6 +43,7 @@ bar.com:
 
 Here's how you'd implement this in DNSControl:
 
+{% code title="dnsconfig.js" %}
 ```javascript
 var TRANSFORM_INT = [
     // RANGE_START, RANGE_END, NEW_BASE
@@ -62,6 +63,7 @@ D("bar.com", .... ,
   IMPORT_TRANSFORM(TRANSFORM_INT, 'foo.com', 300),
 );
 ```
+{% endcode %}
 
 Transform rules are: RANGE_START, RANGE_END, NEW_BASE.  NEW_BASE may be:
 

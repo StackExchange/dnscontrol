@@ -20,6 +20,7 @@ delegations. `NAMESERVER()` is for informing upstream delegations.
 
 For more information, refer to [this page](../../nameservers.md).
 
+{% code title="dnsconfig.js" %}
 ```javascript
 D("example.com", REGISTRAR, .... ,
   DnsProvider(route53, 0),
@@ -34,6 +35,7 @@ D("example2.com", REGISTRAR, .... ,
   NAMESERVER("ns2.myserver.com."),
 );
 ```
+{% endcode %}
 
 
 # The difference between NS() and NAMESERVER()
@@ -64,7 +66,7 @@ Some providers restrict the names to hosts they control.
 Others may require you to add the `NS` records to the parent domain
 manually.
 
-# How to not change the parent NS records?
+# How to prevent changing the parent NS records?
 
 If dnsconfig.js has zero `NAMESERVER()` commands for a domain, it will
 use the API to remove all non-default nameservers.
@@ -78,9 +80,11 @@ special Registrar called "NONE". It makes no changes.
 
 It looks like this:
 
+{% code title="dnsconfig.js" %}
 ```javascript
 var REG_THIRDPARTY = NewRegistrar('ThirdParty', 'NONE')
 D("mydomain.com", REG_THIRDPARTY,
   ...
 )
 ```
+{% endcode %}
