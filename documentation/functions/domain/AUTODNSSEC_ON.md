@@ -19,6 +19,7 @@ data model.
 correct syntax is `AUTODNSSEC_ON` not `AUTODNSSEC_ON()`
 {% endhint %}
 
+{% code title="dnsconfig.js" %}
 ```javascript
 D("example.com", .... ,
   AUTODNSSEC_ON,  // Enable AutoDNSSEC.
@@ -30,6 +31,7 @@ D("insecure.com", .... ,
   A("@", "10.2.2.2")
 );
 ```
+{% endcode %}
 
 If neither `AUTODNSSEC_ON` or `AUTODNSSEC_OFF` is specified for a
 domain no changes will be requested.

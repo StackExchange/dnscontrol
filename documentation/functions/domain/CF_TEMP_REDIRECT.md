@@ -26,8 +26,10 @@ backups and manually verifying `dnscontrol preview` output before running
 managed by DNSControl and those that aren't.
 {% endhint %}
 
+{% code title="dnsconfig.js" %}
 ```javascript
 D("foo.com", .... ,
   CF_TEMP_REDIRECT("example.mydomain.com/*", "https://otherplace.yourdomain.com/$1"),
 );
 ```
+{% endcode %}

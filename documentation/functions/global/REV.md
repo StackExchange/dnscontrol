@@ -32,6 +32,7 @@ Note that the lower bits (the ones outside the netmask) must be zeros. They are 
 zeroed out automatically. Thus, `REV('1.2.3.4/24')` is an error.  This is done
 to catch typos.
 
+{% code title="dnsconfig.js" %}
 ```javascript
 D(REV('1.2.3.0/24'), REGISTRAR, DnsProvider(BIND),
   PTR("1", 'foo.example.com.'),
@@ -48,6 +49,7 @@ D(REV('2001:db8:302::/48'), REGISTRAR, DnsProvider(BIND),
   PTR("2001:db8:302::3", 'three.example.com.'),                        // 3.0.0...
 );
 ```
+{% endcode %}
 
 In the future we plan on adding a flag to `A()` which will insert
 the correct PTR() record if the appropriate `D(REV()` domain (i.e. `.arpa` domain) has been

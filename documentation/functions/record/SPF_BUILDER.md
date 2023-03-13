@@ -37,11 +37,13 @@ enforce the "10 lookup rule".
 
 Here is an example of how SPF settings are normally done:
 
+{% code title="dnsconfig.js" %}
 ```javascript
 D("example.tld", REG, DNS, ...
   TXT("v=spf1 ip4:198.252.206.0/24 ip4:192.111.0.0/24 include:_spf.google.com include:mailgun.org include:spf-basic.fogcreek.com include:mail.zendesk.com include:servers.mcsv.net include:sendgrid.net include:450622.spf05.hubspotemail.net ~all")
 )
 ```
+{% endcode %}
 
 This has a few problems:
 
@@ -51,6 +53,7 @@ This has a few problems:
 
 ## The DNSControl way
 
+{% code title="dnsconfig.js" %}
 ```javascript
 D("example.tld", REG, DSP, ...
   A("@", "10.2.2.2"),
@@ -80,6 +83,7 @@ D("example.tld", REG, DSP, ...
   }),
 );
 ```
+{% endcode %}
 
 By using the `SPF_BUILDER()` we gain many benefits:
 
@@ -92,6 +96,7 @@ By using the `SPF_BUILDER()` we gain many benefits:
 When you want to specify SPF settings for a domain, use the
 `SPF_BUILDER()` function.
 
+{% code title="dnsconfig.js" %}
 ```javascript
 D("example.tld", REG, DSP, ...
   ...
@@ -115,6 +120,7 @@ D("example.tld", REG, DSP, ...
   ...
 );
 ```
+{% endcode %}
 
 The parameters are:
 
@@ -283,6 +289,7 @@ record an include is added.
 In some situations we define an SPF setting once and want to re-use
 it on many domains. Here's how to do this:
 
+{% code title="dnsconfig.js" %}
 ```javascript
 var SPF_MYSETTINGS = SPF_BUILDER({
   label: "@",
@@ -306,3 +313,4 @@ D("example2.tld", REG, DSP, ...
      SPF_MYSETTINGS
 );
 ```
+{% endcode %}
