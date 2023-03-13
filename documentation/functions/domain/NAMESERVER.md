@@ -64,7 +64,7 @@ Some providers restrict the names to hosts they control.
 Others may require you to add the `NS` records to the parent domain
 manually.
 
-# How to not change the parent NS records?
+# How to prevent changing the parent NS records?
 
 If dnsconfig.js has zero `NAMESERVER()` commands for a domain, it will
 use the API to remove all non-default nameservers.
