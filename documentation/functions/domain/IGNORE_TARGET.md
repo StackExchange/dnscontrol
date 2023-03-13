@@ -24,12 +24,14 @@ IGNORE_TARGET is generally used in very specific situations:
 
 In this example, DNSControl will insert/update the "baz.example.com" record but will leave unchanged a CNAME to "foo.acm-validations.aws" record.
 
+{% code title="dnsconfig.js" %}
 ```javascript
 D("example.com",
   IGNORE_TARGET('**.acm-validations.aws.', 'CNAME'),
   A("baz", "1.2.3.4")
 );
 ```
+{% endcode %}
 
 IGNORE_TARGET also supports glob patterns in the style of the [gobwas/glob](https://github.com/gobwas/glob#example) library. Some example patterns:
 

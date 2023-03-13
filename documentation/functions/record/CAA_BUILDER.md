@@ -24,6 +24,7 @@ authorized certificate authorities and the builder cares about the rest.
 
 For example you can use:
 
+{% code title="dnsconfig.js" %}
 ```javascript
 CAA_BUILDER({
   label: "@",
@@ -36,6 +37,7 @@ CAA_BUILDER({
   issuewild: "none",
 })
 ```
+{% endcode %}
 
 The parameters are:
 
@@ -47,9 +49,11 @@ The parameters are:
 
 `CAA_BUILDER()` returns multiple records (when configured as example above):
 
+{% code title="dnsconfig.js" %}
 ```javascript
 CAA("@", "iodef", "mailto:test@domain.tld", CAA_CRITICAL)
 CAA("@", "issue", "letsencrypt.org")
 CAA("@", "issue", "comodoca.com")
 CAA("@", "issuewild", ";")
 ```
+{% endcode %}

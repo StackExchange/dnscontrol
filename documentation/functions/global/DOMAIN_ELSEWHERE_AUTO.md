@@ -28,16 +28,20 @@ hard-code them in your dnsconfig.js file.
 
 For example these two statements are equivalent:
 
+{% code title="dnsconfig.js" %}
 ```javascript
 DOMAIN_ELSEWHERE_AUTO("example.com", REG_NAMEDOTCOM, DSP_AZURE);
 ```
+{% endcode %}
 
+{% code title="dnsconfig.js" %}
 ```javascript
 D("example.com", REG_NAMEDOTCOM,
     NO_PURGE,
     DnsProvider(DSP_AZURE)
 );
 ```
+{% endcode %}
 
 {% hint style="info" %}
 **NOTE**: The `NO_PURGE` is used to prevent DNSControl from changing the records.

@@ -22,6 +22,7 @@ will be done for you.
 
 Modifiers can be any number of [record modifiers](https://docs.dnscontrol.org/language-reference/record-modifiers) or JSON objects, which will be merged into the record's metadata.
 
+{% code title="dnsconfig.js" %}
 ```javascript
     D("example.com", REGISTRAR, ....,
       TXT('@', '598611146-3338560'),
@@ -32,6 +33,7 @@ Modifiers can be any number of [record modifiers](https://docs.dnscontrol.org/la
       TXT('long', 'X'.repeat(300)) // Long strings are split automatically.
     );
 ```
+{% endcode %}
 
 {% hint style="info" %}
 **NOTE**: In the past, long strings had to be annotated with the keyword
