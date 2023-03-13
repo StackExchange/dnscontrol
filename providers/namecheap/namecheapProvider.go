@@ -192,13 +192,13 @@ func (n *namecheapProvider) GetDomainCorrections(dc *models.DomainConfig) ([]*mo
 	models.PostProcessRecords(actual)
 
 	var create, delete, modify diff.Changeset
+	var differ diff.Differ
 	if !diff2.EnableDiff2 {
-		differ := diff.New(dc)
-		_, create, delete, modify, err = differ.IncrementalDiff(actual)
+		differ = diff.New(dc)
 	} else {
-		differ := diff.NewCompat(dc)
-		_, create, delete, modify, err = differ.IncrementalDiff(actual)
+		differ = diff.NewCompat(dc)
 	}
+	_, create, delete, modify, err = differ.IncrementalDiff(actual)
 	if err != nil {
 		return nil, err
 	}
