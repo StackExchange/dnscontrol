@@ -169,11 +169,9 @@ func (c *desecProvider) GenerateDomainCorrections(dc *models.DomainConfig, exist
 	var keysToUpdate map[models.RecordKey][]string
 	if !diff2.EnableDiff2 {
 		// diff existing vs. current.
-		differ := diff.New(dc)
-		keysToUpdate, err = differ.ChangedGroups(existing)
+		keysToUpdate, err = (diff.New(dc)).ChangedGroups(existing)
 	} else {
-		differ := diff.NewCompat(dc)
-		keysToUpdate, err = differ.ChangedGroups(existing)
+		keysToUpdate, err = (diff.NewCompat(dc)).ChangedGroups(existing)
 	}
 	if err != nil {
 		return nil, err
