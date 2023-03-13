@@ -59,7 +59,7 @@ require (
 
 require (
 	github.com/G-Core/gcore-dns-sdk-go v0.2.3
-	github.com/fatih/color v1.14.1
+	github.com/fatih/color v1.15.0
 	github.com/fbiville/markdown-table-formatter v0.3.0
 	github.com/google/shlex v0.0.0-20191202100458-e7afc7fbc510
 	github.com/kylelemons/godebug v1.1.0
