@@ -35,4 +35,4 @@ D("example.tld", REG_NONE, DnsProvider(DSP_DESEC),
 
 ## Activation
 DNSControl depends on a deSEC account auth token.
-This token can be obtained by logging in via the deSEC API: https://desec.readthedocs.io/en/latest/auth/account.html#log-in
+This token can be obtained by [logging in via the deSEC API](https://desec.readthedocs.io/en/latest/auth/account.html#log-in).
