@@ -841,8 +841,8 @@ declare const NO_PURGE: DomainModifier;
 /**
  * NS adds a NS record to the domain. The name should be the relative label for the domain.
  * 
- * The name may not be `@` (the bare domain), as that is controlled via `NAMESERVER()`.
- * The difference between `NS()` and `NAMESERVER()` is explained in the `NAMESERVER()` description.
+ * The name may not be `@` (the bare domain), as that is controlled via [`NAMESERVER()`](NAMESERVER.md).
+ * The difference between `NS()` and [`NAMESERVER()`](NAMESERVER.md) is explained in the [`NAMESERVER()` description](NAMESERVER.md).
  * 
  * Target should be a string representing the NS target. If it is a single label we will assume it is a relative name on the current domain. If it contains *any* dots, it should be a fully qualified domain name, ending with a `.`.
  * 
