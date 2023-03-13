@@ -192,4 +192,4 @@ provider.)
 Implementing the `ListZones` function also activates the `check-creds`
 subcommand for that provider. Please add to the provider documentation
 a list of error messages that people might see if the credentials are
-invalid.  See `docs/providers/gcloud.md` for examples.
+invalid.  See `documentation/providers/gcloud.md` for examples.

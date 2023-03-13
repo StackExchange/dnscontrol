@@ -198,14 +198,14 @@ Some useful `go test` flags:
 
 There is a potential bug in how TXT records are handled. Sadly we haven't found
 an automated way to test for this bug.  The manual steps are here in
-[docs/testing-txt-records.md](testing-txt-records.md)
+[documentation/testing-txt-records.md](testing-txt-records.md)
 
 
 ## Step 9: Update docs
 
 * Edit [README.md](https://github.com/StackExchange/dnscontrol): Add the provider to the bullet list.
-* Edit [docs/providers.md](https://github.com/StackExchange/dnscontrol/blob/master/documentation/providers.md): Add the provider to the provider list.
-* Create `docs/providers/PROVIDERNAME.md`: Use one of the other files in that directory as a base.
+* Edit [documentation/providers.md](https://github.com/StackExchange/dnscontrol/blob/master/documentation/providers.md): Add the provider to the provider list.
+* Create `documentation/providers/PROVIDERNAME.md`: Use one of the other files in that directory as a base.
 * Edit [OWNERS](https://github.com/StackExchange/dnscontrol/blob/master/OWNERS): Add the directory name and your GitHub username.
 
 ## Step 10: Submit a PR
@@ -253,25 +253,32 @@ the documentation.
 
 ## Step 12: Clean up
 
-Run "go vet" and "golint" and clean up any errors found.
+Run "go vet" and ["staticcheck"](https://staticcheck.io/) and clean up any errors found.
 
 ```shell
 go vet ./...
-golint ./...
+staticcheck ./...
 ```
 
 Please use `go vet` from the [newest release of Go](https://golang.org/doc/devel/release.html#policy).
 
-If [golint](https://github.com/golang/lint) isn't installed on your machine:
+golint is deprecated and frozen but it is still useful as it does a few checks that haven't been
+re-implemented in staticcheck.
+However golink fails on any file that uses generics, so
+be prepared to ignore errors about `expected '(', found '[' (and 1 more errors)`
+
+How to install and run [golint](https://github.com/golang/lint):
 
 ```shell
-go get -u golang.org/x/lint/golint
+$ go get -u golang.org/x/lint/golint
+$ go install golang.org/x/lint/golint
+$ golint ./...
 ```
 
 
 ## Step 13: Dependencies
 
-See [docs/release-engineering.md](release-engineering.md)
+See [documentation/release-engineering.md](release-engineering.md)
 for tips about managing modules and checking for outdated
 dependencies.
 
@@ -288,4 +295,4 @@ Here are some last-minute things to check before you submit your PR.
 ## Step 15: After the PR is merged
 
 1. Remove the "provider-request" label from the PR.
-2. Verify that [docs/providers.md](providers.md) no longer shows the provider as "requested"
+2. Verify that [documentation/providers.md](providers.md) no longer shows the provider as "requested"
