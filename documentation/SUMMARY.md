@@ -47,6 +47,7 @@
     * [MX](functions/domain/MX.md)
     * [NAMESERVER](functions/domain/NAMESERVER.md)
     * [NAMESERVER_TTL](functions/domain/NAMESERVER_TTL.md)
+    * [NAPTR](functions/domain/NAPTR.md)
     * [NO_PURGE](functions/domain/NO_PURGE.md)
     * [NS](functions/domain/NS.md)
     * [PTR](functions/domain/PTR.md)
