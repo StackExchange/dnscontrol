@@ -141,7 +141,8 @@ Here is a sample `named.conf` example for an authauritative server on
 zone `example.tld`. It uses a simple IP-based ACL for the AXFR
 transfer and a conjunction of TSIG and IP-based ACL for the updates.
 
-```javascript
+{% code title="named.conf" %}
+```text
 options {
 
     listen-on { any; };
@@ -184,6 +185,7 @@ key update-key-id {
   secret "AnotherSecret=";
 };
 ```
+{% endcode %}
 
 ## FYI: get-zones
 

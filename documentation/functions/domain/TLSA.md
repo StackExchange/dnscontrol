@@ -22,9 +22,11 @@ Usage, selector, and type are ints.
 
 Certificate is a hex string.
 
+{% code title="dnsconfig.js" %}
 ```javascript
 D("example.com", REGISTRAR, DnsProvider("GCLOUD"),
   // Create TLSA record for certificate used on TCP port 443
   TLSA("_443._tcp", 3, 1, 1, "abcdef0"),
 );
 ```
+{% endcode %}

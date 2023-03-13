@@ -12,21 +12,26 @@ These three examples all are equivalent.
 
 PURGE is the default:
 
+{% code title="dnsconfig.js" %}
 ```javascript
 D("example.com", .... ,
 );
 ```
+{% endcode %}
 
 Purge is the default, but we set it anyway:
 
+{% code title="dnsconfig.js" %}
 ```javascript
 D("example.com", .... ,
   PURGE,
 );
 ```
+{% endcode %}
 
 Since the "last command wins", this is the same as `PURGE`:
 
+{% code title="dnsconfig.js" %}
 ```javascript
 D("example.com", .... ,
   PURGE,
@@ -36,3 +41,4 @@ D("example.com", .... ,
   PURGE,
 );
 ```
+{% endcode %}

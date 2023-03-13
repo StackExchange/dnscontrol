@@ -16,6 +16,7 @@ The address should be an IPv6 address as a string.
 
 Modifiers can be any number of [record modifiers](https://docs.dnscontrol.org/language-reference/record-modifiers) or JSON objects, which will be merged into the record's metadata.
 
+{% code title="dnsconfig.js" %}
 ```javascript
 var addrV6 = "2001:0db8:85a3:0000:0000:8a2e:0370:7334"
 
@@ -26,3 +27,4 @@ D("example.com", REGISTRAR, DnsProvider("R53"),
   AAAA("*", addrV6, {foo: 42})
 );
 ```
+{% endcode %}

@@ -17,15 +17,19 @@ Possible parameters are:
 
 Example to load `.js` files recursively:
 
+{% code title="dnsconfig.js" %}
 ```javascript
 require_glob("./domains/");
 ```
+{% endcode %}
 
 Example to load `.js` files only in `domains/`:
 
+{% code title="dnsconfig.js" %}
 ```javascript
 require_glob("./domains/", false);
 ```
+{% endcode %}
 
 One more important thing to note: `require_glob()` is as smart as `require()` is. It loads files always relative to the JavaScript
 file where it's being executed in. Let's go with an example, as it describes it better:
