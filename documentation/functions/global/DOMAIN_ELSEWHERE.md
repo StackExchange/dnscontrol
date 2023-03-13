@@ -23,10 +23,13 @@ point (delegate) the domain at a specific list of DNS servers.
 
 For example these two statements are equivalent:
 
+{% code title="dnsconfig.js" %}
 ```javascript
 DOMAIN_ELSEWHERE("example.com", REG_NAMEDOTCOM, ["ns1.foo.com", "ns2.foo.com"]);
 ```
+{% endcode %}
 
+{% code title="dnsconfig.js" %}
 ```javascript
 D("example.com", REG_NAMEDOTCOM,
     NO_PURGE,
@@ -34,6 +37,7 @@ D("example.com", REG_NAMEDOTCOM,
     NAMESERVER("ns2.foo.com")
 );
 ```
+{% endcode %}
 
 {% hint style="info" %}
 **NOTE**: The `NO_PURGE` is used out of abundance of caution but since no

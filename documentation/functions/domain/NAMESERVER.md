@@ -20,6 +20,7 @@ delegations. `NAMESERVER()` is for informing upstream delegations.
 
 For more information, refer to [this page](../../nameservers.md).
 
+{% code title="dnsconfig.js" %}
 ```javascript
 D("example.com", REGISTRAR, .... ,
   DnsProvider(route53, 0),
@@ -34,6 +35,7 @@ D("example2.com", REGISTRAR, .... ,
   NAMESERVER("ns2.myserver.com."),
 );
 ```
+{% endcode %}
 
 
 # The difference between NS() and NAMESERVER()
@@ -78,9 +80,11 @@ special Registrar called "NONE". It makes no changes.
 
 It looks like this:
 
+{% code title="dnsconfig.js" %}
 ```javascript
 var REG_THIRDPARTY = NewRegistrar('ThirdParty', 'NONE')
 D("mydomain.com", REG_THIRDPARTY,
   ...
 )
 ```
+{% endcode %}

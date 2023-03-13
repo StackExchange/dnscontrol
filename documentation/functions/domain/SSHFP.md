@@ -36,6 +36,8 @@ SSHFP contains a fingerprint of a SSH server which can be validated before SSH c
 
 `value` is the fingerprint as a string.
 
+{% code title="dnsconfig.js" %}
 ```javascript
 SSHFP('@', 1, 1, '00yourAmazingFingerprint00'),
 ```
+{% endcode %}

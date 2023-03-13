@@ -15,6 +15,7 @@ Using `@` or `*` for CNAME records is not recommended, as different providers su
 
 Target should be a string representing the CNAME target. If it is a single label we will assume it is a relative name on the current domain. If it contains *any* dots, it should be a fully qualified domain name, ending with a `.`.
 
+{% code title="dnsconfig.js" %}
 ```javascript
 D("example.com", REGISTRAR, DnsProvider("R53"),
   CNAME("foo", "google.com."), // foo.example.com -> google.com
@@ -22,3 +23,4 @@ D("example.com", REGISTRAR, DnsProvider("R53"),
   CNAME("def", "test"), // def.example.com -> test.example.com
 );
 ```
+{% endcode %}

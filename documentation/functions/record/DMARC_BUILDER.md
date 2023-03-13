@@ -39,6 +39,7 @@ DMARC policies for your domains.
 
 ### Simple example
 
+{% code title="dnsconfig.js" %}
 ```javascript
 DMARC_BUILDER({
   policy: 'reject',
@@ -47,6 +48,7 @@ DMARC_BUILDER({
   ],
 })
 ```
+{% endcode %}
 
 This yield the following record:
 
@@ -56,6 +58,7 @@ This yield the following record:
 
 ### Advanced example
 
+{% code title="dnsconfig.js" %}
 ```javascript
 DMARC_BUILDER({
   policy: 'reject',
@@ -72,8 +75,12 @@ DMARC_BUILDER({
   ],
   failureOptions: '1',
   reportInterval: '1h',
-}),
+});
+```
+{% endcode %}
 
+{% code title="dnsconfig.js" %}
+```javascript
 DMARC_BUILDER({
   label: 'insecure',
   policy: 'none',
@@ -84,8 +91,9 @@ DMARC_BUILDER({
       SPF: false,
       DKIM: true,
   },
-})
+});
 ```
+{% endcode %}
 
 This yields the following records:
 

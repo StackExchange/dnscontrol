@@ -14,7 +14,7 @@ Example:
   }
 }
 ```
-{% endcode %}`
+{% endcode %}
 
 ## Metadata
 
