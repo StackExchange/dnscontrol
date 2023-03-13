@@ -190,7 +190,7 @@ DomainLoop:
 			/// This is where we should audit?
 
 			corrections, err := provider.Driver.GetDomainCorrections(dc)
-			out.EndProvider(len(corrections), err)
+			out.EndProvider(provider.Name, len(corrections), err)
 			if err != nil {
 				anyErrors = true
 				continue DomainLoop
@@ -212,7 +212,7 @@ DomainLoop:
 			log.Fatal(err)
 		}
 		corrections, err := domain.RegistrarInstance.Driver.GetRegistrarCorrections(dc)
-		out.EndProvider(len(corrections), err)
+		out.EndProvider(domain.RegistrarName, len(corrections), err)
 		if err != nil {
 			anyErrors = true
 			continue
