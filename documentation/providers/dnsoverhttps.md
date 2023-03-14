@@ -39,8 +39,9 @@ Some common DoH providers are:
 This provider does not recognize any special metadata fields unique to DOH.
 
 ## Usage
-An example `dnsconfig.js` configuration:
+An example configuration:
 
+{% code title="dnsconfig.js" %}
 ```javascript
 var REG_MONITOR = NewRegistrar("dohcloudflare");
 
@@ -49,6 +50,7 @@ D("example.com", REG_MONITOR,
   NAMESERVER("ns2.example.com."),
 );
 ```
+{% endcode %}
 
 {% hint style="info" %}
 **NOTE**: This checks the NS records via a DNS query.  It does not check the

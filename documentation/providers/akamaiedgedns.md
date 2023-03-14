@@ -50,14 +50,17 @@ The NS records for these authorities have a TTL of 86400.
 
 Add:
 
+{% code title="dnsconfig.js" %}
 ```javascript
 NAMESERVER_TTL(86400)
 ```
+{% endcode %}
 
 modifier to the dnscontrol.js D() function so that DNSControl does not change the TTL of the authoritative NS records.
 
 Example `dnsconfig.js`:
 
+{% code title="dnsconfig.js" %}
 ```javascript
 var REG_NONE = NewRegistrar("none");
 var DSP_AKAMAIEDGEDNS = NewDnsProvider("akamaiedgedns");
@@ -69,6 +72,7 @@ D("example.com", REG_NONE, DnsProvider(DSP_AKAMAIEDGEDNS),
   A("foo", "1.2.3.4")
 );
 ```
+{% endcode %}
 
 AKAMAICDN is a proprietary record type that is used to configure [Zone Apex Mapping](https://www.akamai.com/blog/security/edge-dns--zone-apex-mapping---dnssec).
 The AKAMAICDN target must be preconfigured in the Akamai network.

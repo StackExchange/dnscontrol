@@ -250,13 +250,13 @@ func (api *inwxAPI) GetZoneRecordsCorrections(dc *models.DomainConfig, foundReco
 
 	var corrections []*models.Correction
 	var create, del, mod diff.Changeset
+	var differ diff.Differ
 	if !diff2.EnableDiff2 {
-		differ := diff.New(dc)
-		_, create, del, mod, err = differ.IncrementalDiff(foundRecords)
+		differ = diff.New(dc)
 	} else {
-		differ := diff.NewCompat(dc)
-		_, create, del, mod, err = differ.IncrementalDiff(foundRecords)
+		differ = diff.NewCompat(dc)
 	}
+	_, create, del, mod, err = differ.IncrementalDiff(foundRecords)
 	if err != nil {
 		return nil, err
 	}

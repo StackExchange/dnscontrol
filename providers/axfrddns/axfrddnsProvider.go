@@ -359,13 +359,13 @@ func (c *axfrddnsProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, fo
 	var create, del, mod diff.Changeset
 	var err error
 
+	var differ diff.Differ
 	if !diff2.EnableDiff2 {
-		differ := diff.New(dc)
-		_, create, del, mod, err = differ.IncrementalDiff(foundRecords)
+		differ = diff.New(dc)
 	} else {
-		differ := diff.NewCompat(dc)
-		_, create, del, mod, err = differ.IncrementalDiff(foundRecords)
+		differ = diff.NewCompat(dc)
 	}
+	_, create, del, mod, err = differ.IncrementalDiff(foundRecords)
 	if err != nil {
 		return nil, err
 	}

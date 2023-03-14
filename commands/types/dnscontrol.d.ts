@@ -499,8 +499,10 @@ declare function CNAME(name: string, target: string, ...modifiers: RecordModifie
 declare function DS(name: string, keytag: number, algorithm: number, digesttype: number, digest: string, ...modifiers: RecordModifier[]): DomainModifier;
 
 /**
- * DefaultTTL sets the TTL for all records in a domain that do not explicitly set one with [TTL](../record/TTL.md). If neither `DefaultTTL` or `TTL` exist for a record,
- * it will use the DNSControl global default of 300 seconds.
+ * DefaultTTL sets the TTL for all subsequent records following it in a domain that do not explicitly set one with [`TTL`](../record/TTL.md). If neither `DefaultTTL` or `TTL` exist for a record,
+ * the record will inherit the DNSControl global internal default of 300 seconds. See also [`DEFAULTS`](../global/DEFAULTS.md) to override the internal defaults.
+ * 
+ * NS records are currently a special case, and do not inherit from `DefaultTTL`. See [`NAMESERVER_TTL`](../domain/NAMESERVER_TTL.md) to set a default TTL for all NS records.
  * 
  * ```javascript
  * D('example.com', REGISTRAR, DnsProvider('R53'),
@@ -510,7 +512,7 @@ declare function DS(name: string, keytag: number, algorithm: number, digesttype:
  * );
  * ```
  * 
- * The DefaultTTL duration is the same format as [TTL](../record/TTL.md), an integer number of seconds
+ * The DefaultTTL duration is the same format as [`TTL`](../record/TTL.md), an integer number of seconds
  * or a string with a unit such as `'4d'`.
  * 
  * @see https://dnscontrol.org/js#DefaultTTL
@@ -782,9 +784,9 @@ declare function MX(name: string, priority: number, target: string, ...modifiers
 declare function NAMESERVER(name: string, ...modifiers: RecordModifier[]): DomainModifier;
 
 /**
- * NAMESERVER_TTL sets the TTL on the domain apex NS RRs defined by [NAMESERVER](NAMESERVER.md).
+ * NAMESERVER_TTL sets the TTL on the domain apex NS RRs defined by [`NAMESERVER`](NAMESERVER.md).
  * 
- * The value can be an integer or a string. See [TTL](../record/TTL.md) for examples.
+ * The value can be an integer or a string. See [`TTL`](../record/TTL.md) for examples.
  * 
  * ```javascript
  * D('example.com', REGISTRAR, DnsProvider('R53'),
@@ -792,6 +794,20 @@ declare function NAMESERVER(name: string, ...modifiers: RecordModifier[]): Domai
  *   NAMESERVER('ns')
  * );
  * ```
+ * 
+ * Use `NAMESERVER_TTL('3600'),` or `NAMESERVER_TTL('1h'),` for a 1h default TTL for all subsequent `NS` entries:
+ * ```javascript
+ * D('example.com', REGISTRAR, DnsProvider('xyz'),
+ *   DefaultTTL("4h"),
+ *   NAMESERVER_TTL('3600'),
+ *   NAMESERVER('ns1.provider.com.'), //inherits NAMESERVER_TTL
+ *   NAMESERVER('ns2.provider.com.'), //inherits NAMESERVER_TTL
+ *   A('@','1.2.3.4'), // inherits DefaultTTL
+ *   A('foo', '2.3.4.5', TTL(600)) // overrides DefaultTTL for this record only
+ * );
+ * ```
+ * 
+ * To apply a default TTL to all other record types, see [`DefaultTTL`](../domain/DefaultTTL.md)
  * 
  * @see https://dnscontrol.org/js#NAMESERVER_TTL
  */
@@ -841,8 +857,8 @@ declare const NO_PURGE: DomainModifier;
 /**
  * NS adds a NS record to the domain. The name should be the relative label for the domain.
  * 
- * The name may not be `@` (the bare domain), as that is controlled via `NAMESERVER()`.
- * The difference between `NS()` and `NAMESERVER()` is explained in the `NAMESERVER()` description.
+ * The name may not be `@` (the bare domain), as that is controlled via [`NAMESERVER()`](NAMESERVER.md).
+ * The difference between `NS()` and [`NAMESERVER()`](NAMESERVER.md) is explained in the [`NAMESERVER()` description](NAMESERVER.md).
  * 
  * Target should be a string representing the NS target. If it is a single label we will assume it is a relative name on the current domain. If it contains *any* dots, it should be a fully qualified domain name, ending with a `.`.
  * 

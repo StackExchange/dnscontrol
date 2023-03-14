@@ -120,17 +120,20 @@ What does on/off/full mean?
 
 You can also set the default proxy mode using `DEFAULTS()` function. For example:
 
+{% code title="dnsconfig.js" %}
 ```javascript
 DEFAULTS(
   CF_PROXY_DEFAULT_OFF // turn proxy off when not specified otherwise
 );
 ```
+{% endcode %}
 
 **Aliases:**
 
 To make configuration files more readable and less prone to errors,
 the following aliases are *pre-defined*:
 
+{% code title="dnsconfig.js" %}
 ```javascript
 // Meta settings for individual records.
 var CF_PROXY_OFF = {"cloudflare_proxy": "off"};     // Proxy disabled.
@@ -146,9 +149,11 @@ var CF_UNIVERSALSSL_OFF = { cloudflare_universalssl: "off" };
 // UniversalSSL on for entire domain:
 var CF_UNIVERSALSSL_ON = { cloudflare_universalssl: "on" };
 ```
+{% endcode %}
 
 The following example shows how to set meta variables with and without aliases:
 
+{% code title="dnsconfig.js" %}
 ```javascript
 D("example.tld", REG_NONE, DnsProvider(DSP_CLOUDFLARE),
     A("www1","1.2.3.11", CF_PROXY_ON),        // turn proxy ON.
@@ -156,10 +161,12 @@ D("example.tld", REG_NONE, DnsProvider(DSP_CLOUDFLARE),
     A("www3","1.2.3.13", {"cloudflare_proxy": "on"}) // Old format.
 );
 ```
+{% endcode %}
 
 ## Usage
-An example `dnsconfig.js` configuration:
+An example configuration:
 
+{% code title="dnsconfig.js" %}
 ```javascript
 var REG_NONE = NewRegistrar("none");
 var DSP_CLOUDFLARE = NewDnsProvider("cloudflare");
@@ -183,7 +190,7 @@ D("example2.tld", REG_NONE, DnsProvider(DSP_CLOUDFLARE),
     CNAME("myalias", "www.example2.tld.")
 );
 ```
-
+{% endcode %}
 
 ## New domains
 If a domain does not exist in your Cloudflare account, DNSControl
@@ -194,6 +201,7 @@ control panel manually or via the `dnscontrol create-domains` command.
 ## Redirects
 The Cloudflare provider can manage "Forwarding URL" Page Rules (redirects) for your domains. Simply use the `CF_REDIRECT` and `CF_TEMP_REDIRECT` functions to make redirects:
 
+{% code title="dnsconfig.js" %}
 ```javascript
 // chiphacker.com should redirect to electronics.stackexchange.com
 
@@ -214,6 +222,7 @@ D("chiphacker.com", REG_NONE, DnsProvider(DSP_CLOUDFLARE),
     // ...
 );
 ```
+{% endcode %}
 
 Notice a few details:
 
@@ -225,6 +234,7 @@ Notice a few details:
 ## Worker routes
 The Cloudflare provider can manage Worker Routes for your domains. Simply use the `CF_WORKER_ROUTE` function passing the route pattern and the worker name:
 
+{% code title="dnsconfig.js" %}
 ```javascript
 var DSP_CLOUDFLARE = NewDnsProvider("cloudflare", {"manage_workers": true}); // enable managing worker routes
 
@@ -234,6 +244,7 @@ D("foo.com", REG_NONE, DnsProvider(DSP_CLOUDFLARE),
     CF_WORKER_ROUTE("foo.com/api/*", "my-worker"),
 );
 ```
+{% endcode %}
 
 The API key you use must be enabled to edit workers.  In the portal, edit the API key,
 under "Permissions" add "Account", "Workers Scripts", "Edit". Without this permission you may see errors that mention "failed fetching worker route list from cloudflare: bad status code from cloudflare: 403 not 200"

@@ -22,8 +22,9 @@ Examples:
 This provider does not recognize any special metadata fields unique to Netlify.
 
 ## Usage
-An example `dnsconfig.js` configuration:
+An example configuration:
 
+{% code title="dnsconfig.js" %}
 ```javascript
 var REG_NETLIFY = NewRegistrar("netlify");
 var DSP_NETLIFY = NewDnsProvider("netlify");
@@ -32,6 +33,7 @@ D("example.tld", REG_NETLIFY, DnsProvider(DSP_NETLIFY),
     A("test", "1.2.3.4")
 );
 ```
+{% endcode %}
 
 ## Activation
 DNSControl depends on a Netlify account personal access token.

@@ -20,8 +20,9 @@ Example:
 This provider does not recognize any special metadata fields unique to deSEC.
 
 ## Usage
-An example `dnsconfig.js` configuration:
+An example configuration:
 
+{% code title="dnsconfig.js" %}
 ```javascript
 var REG_NONE = NewRegistrar("none");    // No registrar.
 var DSP_DESEC = NewDnsProvider("desec");  // deSEC
@@ -30,7 +31,8 @@ D("example.tld", REG_NONE, DnsProvider(DSP_DESEC),
     A("test", "1.2.3.4")
 );
 ```
+{% endcode %}
 
 ## Activation
 DNSControl depends on a deSEC account auth token.
-This token can be obtained by logging in via the deSEC API: https://desec.readthedocs.io/en/latest/auth/account.html#log-in
+This token can be obtained by [logging in via the deSEC API](https://desec.readthedocs.io/en/latest/auth/account.html#log-in).
