@@ -15,7 +15,7 @@ type CLI interface {
 	Printer
 	StartDomain(domain string)
 	StartDNSProvider(name string, skip bool)
-	EndProvider(numCorrections int, err error)
+	EndProvider(name string, numCorrections int, err error)
 	StartRegistrar(name string, skip bool)
 
 	PrintCorrection(n int, c *models.Correction)
@@ -139,10 +139,10 @@ func (c ConsolePrinter) StartRegistrar(provider string, skip bool) {
 }
 
 // EndProvider is called at the end of each provider.
-func (c ConsolePrinter) EndProvider(numCorrections int, err error) {
+func (c ConsolePrinter) EndProvider(name string, numCorrections int, err error) {
 	if err != nil {
 		fmt.Fprintln(c.Writer, "ERROR")
-		fmt.Fprintf(c.Writer, "Error getting corrections: %s\n", err)
+		fmt.Fprintf(c.Writer, "Error getting corrections (%s): %s\n", name, err)
 	} else {
 		plural := "s"
 		if numCorrections == 1 {
@@ -151,7 +151,7 @@ func (c ConsolePrinter) EndProvider(numCorrections int, err error) {
 		if (SkinnyReport) && (numCorrections == 0) {
 			return
 		}
-		fmt.Fprintf(c.Writer, "%d correction%s\n", numCorrections, plural)
+		fmt.Fprintf(c.Writer, "%d correction%s (%s)\n", numCorrections, plural, name)
 	}
 }
 
