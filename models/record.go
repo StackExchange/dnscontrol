@@ -334,7 +334,7 @@ func (rc *RecordConfig) ToDiffable(extraMaps ...map[string]string) string {
 
 // ToComparableNoTTL returns a comparison string. If you need to compare two
 // RecordConfigs, you can simply compare the string returned by this function.
-// THe comparison includes all fields except TTL and any provider-specific
+// The comparison includes all fields except TTL and any provider-specific
 // metafields.  Provider-specific metafields like CF_PROXY are not the same as
 // pseudo-records like ANAME or R53_ALIAS
 // This replaces ToDiff()
@@ -351,7 +351,7 @@ func (rc *RecordConfig) ToRR() dns.RR {
 		log.Fatalf("No such DNS type as (%#v)\n", rc.Type)
 	}
 
-	// Magicallly create an RR of the correct type.
+	// Magically create an RR of the correct type.
 	rr := dns.TypeToRR[rdtype]()
 
 	// Fill in the header.
