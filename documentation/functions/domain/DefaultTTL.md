@@ -12,6 +12,7 @@ the record will inherit the DNSControl global internal default of 300 seconds. S
 NS records are currently a special case, and do not inherit from `DefaultTTL`. See [`NAMESERVER_TTL`](../domain/NAMESERVER_TTL.md) to set a default TTL for all NS records.
 
 
+{% code title="dnsconfig.js" %}
 ```javascript
 D('example.com', REGISTRAR, DnsProvider('R53'),
   DefaultTTL("4h"),
@@ -19,6 +20,7 @@ D('example.com', REGISTRAR, DnsProvider('R53'),
   A('foo', '2.3.4.5', TTL(600)) // overrides default
 );
 ```
+{% endcode %}
 
 The DefaultTTL duration is the same format as [`TTL`](../record/TTL.md), an integer number of seconds
 or a string with a unit such as `'4d'`.
