@@ -289,9 +289,9 @@ be prepared to ignore errors about `expected '(', found '[' (and 1 more errors)`
 How to install and run [golint](https://github.com/golang/lint):
 
 ```shell
-$ go get -u golang.org/x/lint/golint
-$ go install golang.org/x/lint/golint
-$ golint ./...
+go get -u golang.org/x/lint/golint
+go install golang.org/x/lint/golint
+golint ./...
 ```
 
 

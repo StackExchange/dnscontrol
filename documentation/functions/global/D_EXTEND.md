@@ -32,6 +32,7 @@ Some operators only act on an apex domain (e.g.
 `CF_REDIRECT` and `CF_TEMP_REDIRECT`). Using them
 in a `D_EXTEND` subdomain may not be what you expect.
 
+{% code title="dnsconfig.js" %}
 ```javascript
 D("domain.tld", REG, DnsProvider(DNS),
   A("@", "127.0.0.1"), // domain.tld
@@ -56,6 +57,7 @@ D_EXTEND("sub.domain.tld",
   CNAME("i", "j") // i.sub.domain.tld -> j.sub.domain.tld
 );
 ```
+{% endcode %}
 
 This will end up in the following modifications: (This output assumes the `--full` flag)
 

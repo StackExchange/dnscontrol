@@ -8,7 +8,7 @@ Electric changes their interface, and you should be willing to accept this possi
 To use this provider, add an entry to `creds.json` with `TYPE` set to `HEDNS`
 along with
 your `dns.he.net` account username and password. These are the same username
-and password used to login to the [web interface](https://dns.he.net).
+and password used to log in to the [web interface](https://dns.he.net).
 
 {% code title="creds.json" %}
 ```json

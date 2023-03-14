@@ -24,6 +24,7 @@ Value is a string. The format of the contents is different depending on the tag.
 Flags are controlled by modifier:
 - `CAA_CRITICAL`: Issuer critical flag. CA that does not understand this tag will refuse to issue certificate for this domain.
 
+{% code title="dnsconfig.js" %}
 ```javascript
 D("example.com", REGISTRAR, DnsProvider("GCLOUD"),
   // Allow letsencrypt to issue certificate for this domain
@@ -35,5 +36,6 @@ D("example.com", REGISTRAR, DnsProvider("GCLOUD"),
   CAA("@", "iodef", "mailto:test@example.com", CAA_CRITICAL)
 );
 ```
+{% endcode %}
 
 DNSControl contains a [`CAA_BUILDER`](../record/CAA_BUILDER.md) which can be used to simply create `CAA()` records for your domains. Instead of creating each CAA record individually, you can simply configure your report mail address, the authorized certificate authorities and the builder cares about the rest.

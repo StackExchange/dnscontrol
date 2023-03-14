@@ -16,6 +16,7 @@ The address should be an ip address, either a string, or a numeric value obtaine
 
 Modifiers can be any number of [record modifiers](https://docs.dnscontrol.org/language-reference/record-modifiers) or JSON objects, which will be merged into the record's metadata.
 
+{% code title="dnsconfig.js" %}
 ```javascript
 D("example.com", REGISTRAR, DnsProvider("R53"),
   A("@", "1.2.3.4"),
@@ -24,3 +25,4 @@ D("example.com", REGISTRAR, DnsProvider("R53"),
   A("*", "1.2.3.4", {foo: 42})
 );
 ```
+{% endcode %}
