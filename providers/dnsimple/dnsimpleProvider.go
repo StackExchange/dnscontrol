@@ -168,14 +168,13 @@ func (c *dnsimpleProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, ac
 	}
 	corrections = append(corrections, dnssecFixes...)
 
-	var create, del, modify diff.Changeset
 	var differ diff.Differ
 	if !diff2.EnableDiff2 {
 		differ = diff.New(dc)
 	} else {
 		differ = diff.NewCompat(dc)
 	}
-	_, create, del, modify, err = differ.IncrementalDiff(actual)
+	_, create, del, modify, err := differ.IncrementalDiff(actual)
 	if err != nil {
 		return nil, err
 	}

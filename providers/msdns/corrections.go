@@ -17,11 +17,9 @@ func (client *msdnsProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, 
 	txtutil.SplitSingleLongTxt(dc.Records) // Autosplit long TXT records
 
 	var corrections []*models.Correction
-	var creates, dels, modifications diff.Changeset
-	var err error
 	if !diff2.EnableDiff2 {
 		differ := diff.New(dc)
-		_, creates, dels, modifications, err = differ.IncrementalDiff(foundRecords)
+		_, creates, dels, modifications, err := differ.IncrementalDiff(foundRecords)
 		if err != nil {
 			return nil, err
 		}

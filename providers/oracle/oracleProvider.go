@@ -246,14 +246,13 @@ func (o *oracleProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, exis
 		}
 	}
 
-	var create, dels, modify diff.Changeset
 	var differ diff.Differ
 	if !diff2.EnableDiff2 {
 		differ = diff.New(dc)
 	} else {
 		differ = diff.NewCompat(dc)
 	}
-	_, create, dels, modify, err = differ.IncrementalDiff(existingRecords)
+	_, create, dels, modify, err := differ.IncrementalDiff(existingRecords)
 	if err != nil {
 		return nil, err
 	}

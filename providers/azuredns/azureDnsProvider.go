@@ -9,7 +9,6 @@ import (
 	"time"
 
 	aauth "github.com/Azure/azure-sdk-for-go/sdk/azidentity"
-	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/dns/armdns"
 	adns "github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/dns/armdns"
 	"github.com/Azure/go-autorest/autorest/to"
 	"github.com/StackExchange/dnscontrol/v3/models"
@@ -26,7 +25,7 @@ type azurednsProvider struct {
 	zones          map[string]*adns.Zone
 	resourceGroup  *string
 	subscriptionID *string
-	rawRecords     map[string][]*armdns.RecordSet
+	rawRecords     map[string][]*adns.RecordSet
 	zoneName       map[string]string
 }
 
@@ -55,7 +54,7 @@ func newAzureDNS(m map[string]string, metadata json.RawMessage) (*azurednsProvid
 		recordsClient:  recordsClient,
 		resourceGroup:  to.StringPtr(rg),
 		subscriptionID: to.StringPtr(subID),
-		rawRecords:     map[string][]*armdns.RecordSet{},
+		rawRecords:     map[string][]*adns.RecordSet{},
 		zoneName:       map[string]string{},
 	}
 	err := api.getZones()

@@ -160,8 +160,9 @@ func (api *linodeProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, ex
 		record.TTL = fixTTL(record.TTL)
 	}
 
+	var err error
 	if api.domainIndex == nil {
-		if err := api.fetchDomainList(); err != nil {
+		if err = api.fetchDomainList(); err != nil {
 			return nil, err
 		}
 	}

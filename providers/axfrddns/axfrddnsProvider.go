@@ -356,8 +356,6 @@ func (c *axfrddnsProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, fo
 	txtutil.SplitSingleLongTxt(foundRecords) // Autosplit long TXT records
 
 	var corrections []*models.Correction
-	var create, del, mod diff.Changeset
-	var err error
 
 	var differ diff.Differ
 	if !diff2.EnableDiff2 {
@@ -365,7 +363,7 @@ func (c *axfrddnsProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, fo
 	} else {
 		differ = diff.NewCompat(dc)
 	}
-	_, create, del, mod, err = differ.IncrementalDiff(foundRecords)
+	_, create, del, mod, err := differ.IncrementalDiff(foundRecords)
 	if err != nil {
 		return nil, err
 	}

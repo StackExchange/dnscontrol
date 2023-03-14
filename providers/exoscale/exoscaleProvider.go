@@ -203,19 +203,18 @@ func (c *exoscaleProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, ex
 	domainID := *domain.ID
 
 	var corrections []*models.Correction
-	var create, delete, modify diff.Changeset
 	var differ diff.Differ
 	if !diff2.EnableDiff2 {
 		differ = diff.New(dc)
 	} else {
 		differ = diff.NewCompat(dc)
 	}
-	_, create, delete, modify, err = differ.IncrementalDiff(existingRecords)
+	_, create, toDelete, modify, err := differ.IncrementalDiff(existingRecords)
 	if err != nil {
 		return nil, err
 	}
 
-	for _, del := range delete {
+	for _, del := range toDelete {
 		record := del.Existing.Original.(*egoscale.DNSDomainRecord)
 		corrections = append(corrections, &models.Correction{
 			Msg: del.String(),

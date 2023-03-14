@@ -110,7 +110,6 @@ func (api *hetznerProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, e
 	txtutil.SplitSingleLongTxt(dc.Records) // Autosplit long TXT records
 
 	var corrections []*models.Correction
-	var create, del, modify diff.Changeset
 	var differ diff.Differ
 	if !diff2.EnableDiff2 {
 		differ = diff.New(dc)

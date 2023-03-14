@@ -219,7 +219,6 @@ func (c *hednsProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, recor
 
 func (c *hednsProvider) getDiff1DomainCorrections(dc *models.DomainConfig, zoneID uint64, records models.Records) ([]*models.Correction, error) {
 	var corrections []*models.Correction
-	var toCreate, toDelete, toModify diff.Changeset
 
 	differ := diff.New(dc)
 	_, toCreate, toDelete, toModify, err := differ.IncrementalDiff(records)

@@ -80,7 +80,6 @@ func (n *HXClient) GetZoneRecordsCorrections(dc *models.DomainConfig, actual mod
 	txtutil.SplitSingleLongTxt(dc.Records)
 
 	var corrections []*models.Correction
-	var create, del, mod diff.Changeset
 	var differ diff.Differ
 	if !diff2.EnableDiff2 {
 		differ = diff.New(dc)
