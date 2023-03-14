@@ -120,8 +120,8 @@ func (c *cloudflareProvider) GetZoneRecords(domain string) (models.Records, erro
 		return nil, err
 	}
 	for _, rec := range records {
-		if rec.TTL == 1 {
-			rec.TTL = 0
+		if rec.TTL == 0 {
+			rec.TTL = 1
 		}
 		// Store the proxy status ("orange cloud") for use by get-zones:
 		m := getProxyMetadata(rec)
@@ -462,6 +462,12 @@ func genComparable(rec *models.RecordConfig) string {
 		proxy := rec.Metadata[metaProxy]
 		if proxy != "" {
 			//return "proxy=" + rec.Metadata[metaProxy]
+			if proxy == "on" {
+				proxy = "true"
+			}
+			if proxy == "off" {
+				proxy = "false"
+			}
 			return "proxy=" + proxy
 			//return fmt.Sprintf("proxy:%v=%s", rec.Type, proxy)
 		}
