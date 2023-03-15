@@ -14,8 +14,8 @@ For some registrars this will also add NS records to the zone itself.
 This takes exactly one argument: the name of the nameserver. It must end with
 a "." if it is a FQDN, just like all targets.
 
-This is different than the `NS()` function, which inserts NS records
-in the current zone and accepts a label. `NS()` is useful for downward
+This is different than the [`NS()`](NS.md) function, which inserts NS records
+in the current zone and accepts a label. [`NS()`](NS.md) is useful for downward
 delegations. `NAMESERVER()` is for informing upstream delegations.
 
 For more information, refer to [this page](../../nameservers.md).
@@ -43,7 +43,7 @@ D("example2.com", REGISTRAR, .... ,
 Nameservers are one of the least
 understood parts of DNS, so a little extra explanation is required.
 
-* `NS()` lets you add an NS record to a zone, just like A() adds an A
+* [`NS()`](NS.md) lets you add an NS record to a zone, just like [`A()`](A.md) adds an A
   record to the zone. This is generally used to delegate a subzone.
 
 * The `NAMESERVER()` directive speaks to the Registrar about how the parent should delegate the zone.

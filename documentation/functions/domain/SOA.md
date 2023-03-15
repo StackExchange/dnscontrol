@@ -37,4 +37,4 @@ The email address should be specified like a normal RFC822/RFC5322 address (user
 * The serial number is managed automatically.  It isn't even a field in `SOA()`.
 * Most providers automatically generate SOA records.  They will ignore any `SOA()` statements.
 
-There is more info about SOA in the documentation for the [BIND provider](../../providers/bind.md).
+There is more info about `SOA` in the documentation for the [BIND provider](../../providers/bind.md).

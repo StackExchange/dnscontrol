@@ -14,7 +14,7 @@ parameter_types:
 `CF_REDIRECT` uses Cloudflare-specific features ("Forwarding URL" Page Rules) to
 generate a HTTP 301 permanent redirect.
 
-If _any_ `CF_REDIRECT` or `CF_TEMP_REDIRECT` functions are used then
+If _any_ `CF_REDIRECT` or [`CF_TEMP_REDIRECT`](CF_TEMP_REDIRECT.md) functions are used then
 `dnscontrol` will manage _all_ "Forwarding URL" type Page Rules for the domain.
 Page Rule types other than "Forwarding URL” will be left alone.
 

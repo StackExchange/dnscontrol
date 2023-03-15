@@ -36,9 +36,12 @@ type checking (i.e. red squiggly underlines when you misuse APIs), there is one 
 
 Add this comment to the top of your `dnsconfig.js` file:
 
+{% code title="dnsconfig.js" %}
 ```javascript
 // @ts-check
 ```
+{% endcode %}
+
 
 That should be all you need to do!
 
@@ -58,9 +61,12 @@ Bug: Values passed to `CLI_DEFAULTS` (and the corresponding `-v` command-line op
 
 Workaround: create a new `.d.ts` file in the same folder as your `dnsconfig.js` file. In that file, add the following line for each variable you want to use (replacing `VARIABLE_NAME` with the name of the variable).
 
+{% code title=".d.ts" %}
 ```javascript
 declare const VARIABLE_NAME: string;
 ```
+{% endcode %}
+
 
 This will tell TypeScript that the variable exists, and that it’s a string.
 
