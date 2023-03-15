@@ -375,7 +375,7 @@ declare function CAA(name: string, tag: "issue" | "issuewild" | "iodef", value: 
  * `CF_REDIRECT` uses Cloudflare-specific features ("Forwarding URL" Page Rules) to
  * generate a HTTP 301 permanent redirect.
  * 
- * If _any_ `CF_REDIRECT` or `CF_TEMP_REDIRECT` functions are used then
+ * If _any_ `CF_REDIRECT` or [`CF_TEMP_REDIRECT`](CF_TEMP_REDIRECT.md) functions are used then
  * `dnscontrol` will manage _all_ "Forwarding URL" type Page Rules for the domain.
  * Page Rule types other than "Forwarding URL” will be left alone.
  * 
@@ -406,7 +406,7 @@ declare function CF_REDIRECT(source: string, destination: string, ...modifiers: 
  * `CF_TEMP_REDIRECT` uses Cloudflare-specific features ("Forwarding URL" Page
  * Rules) to generate a HTTP 302 temporary redirect.
  * 
- * If _any_ `CF_REDIRECT` or `CF_TEMP_REDIRECT` functions are used then
+ * If _any_ [`CF_REDIRECT`](CF_REDIRECT.md) or `CF_TEMP_REDIRECT` functions are used then
  * `dnscontrol` will manage _all_ "Forwarding URL" type Page Rules for the domain.
  * Page Rule types other than "Forwarding URL” will be left alone.
  * 
@@ -709,8 +709,8 @@ declare function MX(name: string, priority: number, target: string, ...modifiers
  * This takes exactly one argument: the name of the nameserver. It must end with
  * a "." if it is a FQDN, just like all targets.
  * 
- * This is different than the `NS()` function, which inserts NS records
- * in the current zone and accepts a label. `NS()` is useful for downward
+ * This is different than the [`NS()`](NS.md) function, which inserts NS records
+ * in the current zone and accepts a label. [`NS()`](NS.md) is useful for downward
  * delegations. `NAMESERVER()` is for informing upstream delegations.
  * 
  * For more information, refer to [this page](../../nameservers.md).
@@ -735,7 +735,7 @@ declare function MX(name: string, priority: number, target: string, ...modifiers
  * Nameservers are one of the least
  * understood parts of DNS, so a little extra explanation is required.
  * 
- * * `NS()` lets you add an NS record to a zone, just like A() adds an A
+ * * [`NS()`](NS.md) lets you add an NS record to a zone, just like [`A()`](A.md) adds an A
  *   record to the zone. This is generally used to delegate a subzone.
  * 
  * * The `NAMESERVER()` directive speaks to the Registrar about how the parent should delegate the zone.
@@ -1007,13 +1007,13 @@ declare function NAMESERVER_TTL(ttl: Duration): DomainModifier;
 declare function NAPTR(subdomain: string, order: number, preference: number, terminalflag: string, service: string, regexp: string, target: string): DomainModifier;
 
 /**
- * NO_PURGE indicates that records should not be deleted from a domain.
+ * `NO_PURGE` indicates that records should not be deleted from a domain.
  * Records will be added and updated, but not removed.
  * 
- * NO_PURGE is generally used in very specific situations:
+ * `NO_PURGE` is generally used in very specific situations:
  * 
- * * A domain is managed by some other system and DNSControl is only used to insert a few specific records and/or keep them updated. For example a DNS Zone that is managed by Active Directory, but DNSControl is used to update a few, specific, DNS records. In this case we want to specify the DNS records we are concerned with but not delete all the other records.  This is a risky use of NO_PURGE since, if NO_PURGE was removed (or buggy) there is a chance you could delete all the other records in the zone, which could be a disaster. That said, domains with some records updated using Dynamic DNS have no other choice.
- * * To work-around a pseudo record type that is not supported by DNSControl. For example some providers have a fake DNS record type called "URL" which creates a redirect. DNSControl normally deletes these records because it doesn't understand them. NO_PURGE will leave those records alone.
+ * * A domain is managed by some other system and DNSControl is only used to insert a few specific records and/or keep them updated. For example a DNS Zone that is managed by Active Directory, but DNSControl is used to update a few, specific, DNS records. In this case we want to specify the DNS records we are concerned with but not delete all the other records.  This is a risky use of `NO_PURGE` since, if `NO_PURGE` was removed (or buggy) there is a chance you could delete all the other records in the zone, which could be a disaster. That said, domains with some records updated using Dynamic DNS have no other choice.
+ * * To work-around a pseudo record type that is not supported by DNSControl. For example some providers have a fake DNS record type called "URL" which creates a redirect. DNSControl normally deletes these records because it doesn't understand them. `NO_PURGE` will leave those records alone.
  * 
  * In this example DNSControl will insert "foo.example.com" into the
  * zone, but otherwise leave the zone alone.  Changes to "foo"'s IP
@@ -1026,21 +1026,21 @@ declare function NAPTR(subdomain: string, order: number, preference: number, ter
  * );
  * ```
  * 
- * The main caveat of NO_PURGE is that intentionally deleting records
- * becomes more difficult. Suppose a NO_PURGE zone has an record such
+ * The main caveat of `NO_PURGE` is that intentionally deleting records
+ * becomes more difficult. Suppose a `NO_PURGE` zone has an record such
  * as A("ken", "1.2.3.4"). Removing the record from dnsconfig.js will
  * not delete "ken" from the domain. DNSControl has no way of knowing
  * the record was deleted from the file  The DNS record must be removed
- * manually.  Users of NO_PURGE are prone to finding themselves with
+ * manually.  Users of `NO_PURGE` are prone to finding themselves with
  * an accumulation of orphaned DNS records. That's easy to fix for a
  * small zone but can be a big mess for large zones.
  * 
- * Not all providers support NO_PURGE. For example the BIND provider
+ * Not all providers support `NO_PURGE`. For example the BIND provider
  * rewrites zone files from scratch each time, which precludes supporting
- * NO_PURGE.  DNSControl will exit with an error if NO_PURGE is used
+ * `NO_PURGE`.  DNSControl will exit with an error if `NO_PURGE` is used
  * on a driver that does not support it.
  * 
- * There is also `PURGE` command for completeness. `PURGE` is the
+ * There is also [`PURGE`](PURGE.md) command for completeness. [`PURGE`](PURGE.md) is the
  * default, thus this command is a no-op.
  * 
  * @see https://dnscontrol.org/js#NO_PURGE
@@ -1119,7 +1119,7 @@ declare function NS1_URLFWD(name: string, target: string, ...modifiers: RecordMo
  * * `PTR('4.3',`    // Assuming the domain is `2.1.in-addr.arpa`
  * 
  * All magic is RFC2317-aware. We use the first format listed in the
- * RFC for both `REV()` and `PTR()`. The format is
+ * RFC for both [`REV()`](../global/REV.md) and `PTR()`. The format is
  * `FIRST/MASK.C.B.A.in-addr.arpa` where `FIRST` is the first IP address
  * of the zone, `MASK` is the netmask of the zone (25-31 inclusive),
  * and A, B, C are the first 3 octets of the IP address. For example
@@ -1151,7 +1151,7 @@ declare function NS1_URLFWD(name: string, target: string, ...modifiers: RecordMo
  * );
  * ```
  * 
- * In the future we plan on adding a flag to `A()` which will insert
+ * In the future we plan on adding a flag to [`A()`](A.md)which will insert
  * the correct PTR() record if the appropriate `.arpa` domain has been
  * defined.
  * 
@@ -1160,15 +1160,15 @@ declare function NS1_URLFWD(name: string, target: string, ...modifiers: RecordMo
 declare function PTR(name: string, target: string, ...modifiers: RecordModifier[]): DomainModifier;
 
 /**
- * PURGE is the default setting for all domains.  Therefore PURGE is
+ * `PURGE` is the default setting for all domains.  Therefore `PURGE` is
  * a no-op. It is included for completeness only.
  * 
- * A domain with a mixture of NO_PURGE and PURGE parameters will abide
+ * A domain with a mixture of `NO_PURGE` and `PURGE` parameters will abide
  * by the last one.
  * 
  * These three examples all are equivalent.
  * 
- * PURGE is the default:
+ * `PURGE` is the default:
  * 
  * ```javascript
  * D("example.com", .... ,
@@ -1200,9 +1200,9 @@ declare function PTR(name: string, target: string, ...modifiers: RecordModifier[
 declare const PURGE: DomainModifier;
 
 /**
- * R53_ALIAS is a Route53 specific virtual record type that points a record at either another record or an AWS entity (like a Cloudfront distribution, an ELB, etc...). It is analogous to a CNAME, but is usually resolved at request-time and served as an A record. Unlike CNAMEs, ALIAS records can be used at the zone apex (`@`)
+ * `R53_ALIAS` is a Route53 specific virtual record type that points a record at either another record or an AWS entity (like a Cloudfront distribution, an ELB, etc...). It is analogous to a `CNAME`, but is usually resolved at request-time and served as an `A` record. Unlike `CNAME` records, `ALIAS` records can be used at the zone apex (`@`)
  * 
- * Unlike the regular ALIAS directive, R53_ALIAS is only supported on Route53. Attempting to use R53_ALIAS on another provider than Route53 will result in an error.
+ * Unlike the regular [`ALIAS`](ALIAS.md) directive, `R53_ALIAS` is only supported on Route53. Attempting to use `R53_ALIAS` on another provider than Route53 will result in an error.
  * 
  * The name should be the relative label for the domain.
  * 
@@ -1211,7 +1211,7 @@ declare const PURGE: DomainModifier;
  * The Target can be any of:
  * 
  * * _CloudFront distribution_: in this case specify the domain name that CloudFront assigned when you created your distribution (note that your CloudFront distribution must include an alternate domain name that matches the record you're adding)
- * * _Elastic Beanstalk environment_: specify the CNAME attribute for the environment. The environment must have a regionalized domain name. To get the CNAME, you can use either the [AWS Console](http://docs.aws.amazon.com/elasticbeanstalk/latest/dg/customdomains.html), [AWS Elastic Beanstalk API](http://docs.aws.amazon.com/elasticbeanstalk/latest/api/API_DescribeEnvironments.html), or the [AWS CLI](http://docs.aws.amazon.com/cli/latest/reference/elasticbeanstalk/describe-environments.html).
+ * * _Elastic Beanstalk environment_: specify the `CNAME` attribute for the environment. The environment must have a regionalized domain name. To get the `CNAME`, you can use either the [AWS Console](http://docs.aws.amazon.com/elasticbeanstalk/latest/dg/customdomains.html), [AWS Elastic Beanstalk API](http://docs.aws.amazon.com/elasticbeanstalk/latest/api/API_DescribeEnvironments.html), or the [AWS CLI](http://docs.aws.amazon.com/cli/latest/reference/elasticbeanstalk/describe-environments.html).
  * * _ELB load balancer_: specify the DNS name that is associated with the load balancer. To get the DNS name you can use either the AWS Console (on the EC2 page, choose Load Balancers, select the right one, choose the description tab), [ELB API](http://docs.aws.amazon.com/elasticloadbalancing/latest/APIReference/API_DescribeLoadBalancers.html), the [AWS ELB CLI](http://docs.aws.amazon.com/cli/latest/reference/elb/describe-load-balancers.html), or the [AWS ELBv2 CLI](http://docs.aws.amazon.com/cli/latest/reference/elbv2/describe-load-balancers.html).
  * * _S3 bucket_ (configured as website): specify the domain name of the Amazon S3 website endpoint in which you configured the bucket (for instance s3-website-us-east-2.amazonaws.com). For the available values refer to the [Amazon S3 Website Endpoints](http://docs.aws.amazon.com/general/latest/gr/rande.html#s3_region).
  * * _Another Route53 record_: specify the value of the name of another record in the same hosted zone.
@@ -1256,7 +1256,7 @@ declare function R53_ALIAS(name: string, target: string, zone_idModifier: Domain
  * * The serial number is managed automatically.  It isn't even a field in `SOA()`.
  * * Most providers automatically generate SOA records.  They will ignore any `SOA()` statements.
  * 
- * There is more info about SOA in the documentation for the [BIND provider](../../providers/bind.md).
+ * There is more info about `SOA` in the documentation for the [BIND provider](../../providers/bind.md).
  * 
  * @see https://dnscontrol.org/js#SOA
  */
@@ -1281,7 +1281,7 @@ declare function SOA(name: string, ns: string, mbox: string, refresh: number, re
 declare function SRV(name: string, priority: number, weight: number, port: number, target: string, ...modifiers: RecordModifier[]): DomainModifier;
 
 /**
- * SSHFP contains a fingerprint of a SSH server which can be validated before SSH clients are establishing the connection.
+ * `SSHFP` contains a fingerprint of a SSH server which can be validated before SSH clients are establishing the connection.
  * 
  * **Algorithm** (type of the key)
  * 
@@ -1312,7 +1312,7 @@ declare function SRV(name: string, priority: number, weight: number, port: numbe
 declare function SSHFP(name: string, algorithm: 0 | 1 | 2 | 3 | 4, type: 0 | 1 | 2, value: string, ...modifiers: RecordModifier[]): DomainModifier;
 
 /**
- * TLSA adds a TLSA record to a domain. The name should be the relative label for the record.
+ * `TLSA` adds a `TLSA` record to a domain. The name should be the relative label for the record.
  * 
  * Usage, selector, and type are ints.
  * 
@@ -1330,7 +1330,7 @@ declare function SSHFP(name: string, algorithm: 0 | 1 | 2 | 3 | 4, type: 0 | 1 |
 declare function TLSA(name: string, usage: number, selector: number, type: number, certificate: string, ...modifiers: RecordModifier[]): DomainModifier;
 
 /**
- * TXT adds an TXT record To a domain. The name should be the relative
+ * `TXT` adds an `TXT` record To a domain. The name should be the relative
  * label for the record. Use `@` for the domain apex.
  * 
  * The contents is either a single or multiple strings.  To
@@ -1364,7 +1364,7 @@ declare function TLSA(name: string, usage: number, selector: number, type: numbe
  * 
  * ### TXT record edge cases
  * 
- * Most providers do not support the full possibilities of what a TXT
+ * Most providers do not support the full possibilities of what a `TXT`
  * record can store.  DNSControl can not handle all the edge cases
  * and incompatibles that providers have introduced.  Instead, it
  * stores the string(s) that you provide and passes them to the provider
@@ -1372,14 +1372,14 @@ declare function TLSA(name: string, usage: number, selector: number, type: numbe
  * reject it. This happens early in the processing, long before
  * the DNSControl talks to the provider's API.
  * 
- * The RFCs specify that a TXT record stores one or more strings,
+ * The RFCs specify that a `TXT` record stores one or more strings,
  * each is up to 255 octets (bytes) long. We call these individual
  * strings *chunks*.  Each chunk may be zero to 255 octets long.
- * There is no limit to the number of chunks in a TXT record,
+ * There is no limit to the number of chunks in a `TXT` record,
  * other than IP packet length restrictions.  The contents of each chunk
  * may be octets of value from 0x00 to 0xff.
  * 
- * In reality DNS Service Providers (DSPs) place many restrictions on TXT
+ * In reality DNS Service Providers (DSPs) place many restrictions on `TXT`
  * records.
  * 
  * Some DSPs only support a single string of 255 octets or fewer.
@@ -1402,7 +1402,7 @@ declare function TLSA(name: string, usage: number, selector: number, type: numbe
  * 
  * #### How can you tell if a provider will support a particular `TXT()` record?
  * 
- * Include the `TXT()` record in a `D()` as usual, along
+ * Include the `TXT()` record in a [`D()`](../global/D.md) as usual, along
  * with the `DnsProvider()` for that provider.  Run `dnscontrol check` to
  * see if any errors are produced.  The check command does not talk to
  * the provider's API, thus permitting you to do this without having an
@@ -1601,7 +1601,7 @@ declare function DEFAULTS(...modifiers: DomainModifier[]): void;
  * );
  * ```
  * 
- * NOTE: The `NO_PURGE` is used out of abundance of caution but since no
+ * NOTE: The [`NO_PURGE`](../domain/NO_PURGE.md) is used out of abundance of caution but since no
  * `DnsProvider()` statements exist, no updates would be performed.
  * 
  * @see https://dnscontrol.org/js#DOMAIN_ELSEWHERE
@@ -1636,7 +1636,7 @@ declare function DOMAIN_ELSEWHERE(name: string, registrar: string, nameserver_na
  * );
  * ```
  * 
- * NOTE: The `NO_PURGE` is used to prevent DNSControl from changing the records.
+ * NOTE: The [`NO_PURGE`](../domain/NO_PURGE.md) is used to prevent DNSControl from changing the records.
  * 
  * @see https://dnscontrol.org/js#DOMAIN_ELSEWHERE_AUTO
  */
@@ -1644,13 +1644,13 @@ declare function DOMAIN_ELSEWHERE_AUTO(name: string, domain: string, registrar: 
 
 /**
  * `D_EXTEND` adds records (and metadata) to a domain previously defined
- * by `D()`. It can also be used to add subdomain records (and metadata)
+ * by [`D()`](D.md). It can also be used to add subdomain records (and metadata)
  * to a previously defined domain.
  * 
  * The first argument is a domain name. If it exactly matches a
- * previously defined domain, `D_EXTEND()` behaves the same as `D()`,
+ * previously defined domain, `D_EXTEND()` behaves the same as [`D()`](D.md),
  * simply adding records as if they had been specified in the original
- * `D()`.
+ * [`D()`](D.md).
  * 
  * If the domain name does not match an existing domain, but could be a
  * (non-delegated) subdomain of an existing domain, the new records (and
@@ -1659,12 +1659,12 @@ declare function DOMAIN_ELSEWHERE_AUTO(name: string, domain: string, registrar: 
  * 
  * Matching the domain name to previously-defined domains is done using a
  * `longest match` algorithm.  If `domain.tld` and `sub.domain.tld` are
- * defined as separate domains via separate `D()` statements, then
+ * defined as separate domains via separate [`D()`](D.md) statements, then
  * `D_EXTEND('sub.sub.domain.tld', ...)` would match `sub.domain.tld`,
  * not `domain.tld`.
  * 
  * Some operators only act on an apex domain (e.g.
- * `CF_REDIRECT` and `CF_TEMP_REDIRECT`). Using them
+ * [`CF_REDIRECT`](../domain/CF_REDIRECT.md) and [`CF_TEMP_REDIRECT`](../domain/CF_TEMP_REDIRECT.md)). Using them
  * in a `D_EXTEND` subdomain may not be what you expect.
  * 
  * ```javascript
@@ -1716,7 +1716,7 @@ declare function DOMAIN_ELSEWHERE_AUTO(name: string, domain: string, registrar: 
  * sophisticated configurations, but you shouldn't. Be nice to the next
  * person that edits the file, who may not be as expert as yourself.
  * Enhance readability by putting any `D_EXTEND()` statements immediately
- * after the original `D()`, like in above example.  Avoid the temptation
+ * after the original [`D()`](D.md), like in above example.  Avoid the temptation
  * to obscure the addition of records to existing domains with randomly
  * placed `D_EXTEND()` statements. Don't build up a domain using loops of
  * `D_EXTEND()` statements. You'll be glad you didn't.
@@ -1842,7 +1842,7 @@ declare function PANIC(message: string): never;
  * `REV` returns the reverse lookup domain for an IP network. For
  * example `REV('1.2.3.0/24')` returns `3.2.1.in-addr.arpa.` and
  * `REV('2001:db8:302::/48)` returns `2.0.3.0.8.b.d.0.1.0.0.2.ip6.arpa.`.
- * This is used in `D()` functions to create reverse DNS lookup zones.
+ * This is used in [`D()`](D.md) functions to create reverse DNS lookup zones.
  * 
  * This is a convenience function. You could specify `D('3.2.1.in-addr.arpa',
  * ...` if you like to do things manually but why would you risk making
@@ -1881,8 +1881,8 @@ declare function PANIC(message: string): never;
  * );
  * ```
  * 
- * In the future we plan on adding a flag to `A()` which will insert
- * the correct PTR() record if the appropriate `D(REV()` domain (i.e. `.arpa` domain) has been
+ * In the future we plan on adding a flag to [`A()`](../domain/A.md)which will insert
+ * the correct PTR() record in the appropriate `D(REV())` domain (i.e. `.arpa` domain) has been
  * defined.
  * 
  * @see https://dnscontrol.org/js#REV

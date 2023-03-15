@@ -106,7 +106,7 @@ example we removed `providers.CanUseCAA` from the
 
 Add a function to `pkg/js/helpers.js` for the new record type. This
 is the JavaScript file that defines `dnsconfig.js`'s functions like
-`A()` and `MX()`. Look at the definition of A, MX and CAA for good
+[`A()`](functions/domain/A.md) and [`MX()`](functions/domain/MX.md). Look at the definition of `A`, `MX` and `CAA` for good
 examples to use as a base.
 
 Please add the function alphabetically with the others. Also, please run
