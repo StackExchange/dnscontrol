@@ -112,6 +112,7 @@
     * [Internet.bs](providers/internetbs.md)
     * [INWX](providers/inwx.md)
     * [Linode](providers/linode.md)
+    * [Loopia](providers/loopia.md)
     * [LuaDNS](providers/luadns.md)
     * [Microsoft DNS Server on Microsoft Windows Server](providers/msdns.md)
     * [Namecheap](providers/namecheap.md)

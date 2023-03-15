@@ -16,7 +16,13 @@ Our general philosophy is:
 -   Anywhere we have a special case for a particular Rtype, we use a `switch` statement and have a `case` for every single record type, usually with a `default:` case that calls `panic()`. This way developers adding a new record type will quickly find where they need to add code (the panic will tell them where). Before we did this, missing implementation code would go unnoticed for months.
 -   Keep things alphabetical. If you are adding your record type to a case statement, function library, or whatever, please list it alphabetically along with the others when possible.
 
-## Step 1: Update `RecordConfig` in `models/dns.go`
+Step 2 requires `stringer`. 
+```shell
+go install golang.org/x/tools/cmd/stringer@latest
+```
+You may need to symlink stringer into your PATH.
+
+## Step 1: Update `RecordConfig` in `models/record.go`
 
 If the record has any unique fields, add them to `RecordConfig`.
 The field name should be the record type, then the field name as
@@ -39,6 +45,10 @@ type RecordConfig struct {
 }
 ```
 
+It is important to leave the `omitempty` flag present so that tests for
+other record types do not start to fail because your new record types insist on
+being present.
+
 ## Step 2: Add a capability for the record
 
 You'll need to mark which providers support this record type. The
@@ -47,7 +57,22 @@ a minimum.
 
 -   Add the capability to the file `dnscontrol/providers/capabilities.go` (look for `CanUseAlias` and add
     it to the end of the list.)
--   Add this feature to the feature matrix in `dnscontrol/build/generate/featureMatrix.go` (Add it to the variable `matrix` then add it later in the file with a `setCap()` statement.
+-   Run stringer to auto-update the file `dnscontrol/providers/capability_string.go`
+
+```shell
+pushd; cd providers;
+stringer -type=Capability
+popd
+```
+alternatively
+
+```shell
+pushd; cd providers;
+go generate
+popd
+```
+
+-   Add this feature to the feature matrix in `dnscontrol/build/generate/featureMatrix.go` (Add it to the variable `matrix` then add it later in the file with a `setCapability()` statement.
 -   Add the capability to the list of features that zones are validated
     against (i.e. if you want DNSControl to report an error if this
     feature is used with a DNS provider that doesn't support it). That's
@@ -93,19 +118,9 @@ npm install prettier
 node_modules/.bin/prettier --write pkg/js/helpers.js
 ```
 
-Any time you change `pkg/js/helpers.js`, run `go generate` to regenerate `pkg/js/static.go`.
-
-The dnscontrol `-dev` flag ignores `pkg/js/static.go` and reads
-`pkg/js/helpers.js` directly. This is useful when debugging since it
-is one less step.
-
-Likewise, if you are debugging `helpers.js` and you can't figure out why
-your changes aren't making a difference, it usually means you aren't
-running `go generate` after any change, or using the `-dev` flag.
-
 ## Step 4: Search for `#rtype_variations`
 
-Anywhere a rtype requires special handling has been marked with a
+Anywhere a `rtype` requires special handling has been marked with a
 comment that includes the string `#rtype_variations`. Search for
 this string and add your new type to this code.
 
@@ -113,6 +128,7 @@ this string and add your new type to this code.
 
 Add at least one test case to the `pkg/js/parse_tests` directory.
 Test `013-mx.js` is a very simple one and is good for cloning.
+See also `017-txt.js`.
 
 Run these tests via:
 
@@ -176,10 +192,10 @@ properly see a change in priority. We fixed this bug before the
 code made it into production.
 
 Line 4: In this example, the next zone adds a second MX record.
-To get to this configuration, the provider will have add an
+To get to this configuration, the provider will add an
 additional MX record to the same label. New tests don't need to do
-this kind of test because we're pretty sure that part of the diffing
-engine work fine. It is here as an example.
+this kind of test because we're pretty sure that that part of the diffing
+engine works fine. It is here as an example.
 
 Also notice that some tests include `requires()`, `not()` and `only()`
 statements. This is how we restrict tests to certain providers.
