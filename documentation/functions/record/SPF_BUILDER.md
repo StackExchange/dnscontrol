@@ -136,7 +136,7 @@ The parameters are:
 [multi-string]: https://tools.ietf.org/html/rfc4408#section-3.1.3
 [record-size]: https://tools.ietf.org/html/rfc4408#section-3.1.4
 
-`SPR_BUILDER()` returns multiple `TXT()` records:
+`SPF_BUILDER()` returns multiple `TXT()` records:
 
   * `TXT("@", "v=spf1 .... ~all")`
     *  This is the optimized configuration.

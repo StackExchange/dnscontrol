@@ -34,15 +34,19 @@ var delimiterRegex = regexp.MustCompile(`(?m)^---\n`)
 
 func parseFrontMatter(content string) (map[string]interface{}, string, error) {
 	delimiterIndices := delimiterRegex.FindAllStringIndex(content, 2)
-	startIndex := delimiterIndices[0][0]
-	endIndex := delimiterIndices[1][0]
-	yamlString := content[startIndex+4 : endIndex]
-	var frontMatter map[string]interface{}
-	err := yaml.Unmarshal([]byte(yamlString), &frontMatter)
-	if err != nil {
-		return nil, "", err
+	if len(delimiterIndices) > 0 {
+		startIndex := delimiterIndices[0][0]
+		endIndex := delimiterIndices[1][0]
+		yamlString := content[startIndex+4 : endIndex]
+		var frontMatter map[string]interface{}
+		err := yaml.Unmarshal([]byte(yamlString), &frontMatter)
+		if err != nil {
+			return nil, "", err
+		}
+		return frontMatter, content[endIndex+4:], nil
+	} else {
+		return nil, "", fmt.Errorf("Failed to parse file. Remove it and try again.")
 	}
-	return frontMatter, content[endIndex+4:], nil
 }
 
 var returnTypes = map[string]string{
@@ -81,8 +85,8 @@ func generateFunctionTypes() (string, error) {
 			}
 			frontMatter, body, err := parseFrontMatter(string(content))
 			if err != nil {
-				println("Error parsing front matter in", fPath)
-				return "", err
+				println("Error parsing front matter in", fPath, "error: ", err.Error())
+				continue
 			}
 			if frontMatter["ts_ignore"] == true {
 				continue

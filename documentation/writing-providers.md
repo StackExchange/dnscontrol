@@ -310,6 +310,7 @@ Here are some last-minute things to check before you submit your PR.
 2. Make sure all appropriate documentation is current. (See [Step 8](#step-8-manual-tests))
 3. Check that dependencies are current (See [Step 13](#step-13-dependencies))
 4. Re-run the integration test one last time (See [Step 7](#step-7-integration-test))
+5. Re-read the [maintainer's responsibilities](providers.md) bullet list.  By submitting a provider you agree to maintain it, respond to bugs, perioidically re-run the integration test to verify nothing has broken, and if we don't hear from you for 2 months we may disable the provider.
 
 ## Step 15: After the PR is merged
 

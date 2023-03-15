@@ -27,7 +27,7 @@ var features = providers.DocumentationNotes{
 	providers.CanUseSRV:              providers.Can("SRV records with empty targets are not supported"),
 	providers.DocCreateDomains:       providers.Cannot("New domains require registration"),
 	providers.DocDualHost:            providers.Can(),
-	providers.DocOfficiallySupported: providers.Can(),
+	providers.DocOfficiallySupported: providers.Cannot(),
 }
 
 func newReg(conf map[string]string) (providers.Registrar, error) {
