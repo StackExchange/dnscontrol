@@ -1,5 +1,6 @@
-## Typical DNS Records
+## Typical DNS Records ##
 
+{% code title="dnsconfig.js" %}
 ```javascript
 D('example.com', REG, DnsProvider('GCLOUD'),
     A('@', '1.2.3.4'),  // The naked or 'apex' domain.
@@ -14,9 +15,11 @@ D('example.com', REG, DnsProvider('GCLOUD'),
     NS('department2', 'ns2.dnsexample.com.') // for department2.example.com
 )
 ```
+{% endcode %}
 
-## Set TTLs
 
+## Set TTLs ##
+{% code title="dnsconfig.js" %}
 ```javascript
 var mailTTL = TTL('1h');
 
@@ -31,9 +34,10 @@ D('example.com', registrar,
     CNAME('mail', 'mx01') // TTL of 5m, as defined per DefaultTTL()
 );
 ```
+{% endcode %}
 
-## Variables for common IP Addresses
-
+## Variables for common IP Addresses ##
+{% code title="dnsconfig.js" %}
 ```javascript
 var addrA = IP('1.2.3.4')
 
@@ -42,17 +46,19 @@ D('example.com', REG, DnsProvider('R53'),
     A('www', addrA + 1), // 1.2.3.5
 )
 ```
+{% endcode %}
 
 {% hint style="info" %}
-**NOTE**: The `IP()` function doesn't currently support IPv6 (PRs welcome!).  IPv6 addresses are strings.
+**NOTE**: The [`IP()`](functions/global/IP.md) function doesn't currently support IPv6 (PRs welcome!).  IPv6 addresses are strings.
 {% endhint %}
-
+{% code title="dnsconfig.js" %}
 ```javascript
 var addrAAAA = "0:0:0:0:0:0:0:0";
 ```
+{% endcode %}
 
-## Variables to swap active Data Center
-
+## Variables to swap active Data Center ##
+{% code title="dnsconfig.js" %}
 ```javascript
 var dcA = IP('5.5.5.5');
 var dcB = IP('6.6.6.6');
@@ -64,9 +70,10 @@ D('example.com', REG, DnsProvider('R53'),
     A('@', activeDC + 5), // fixed address based on activeDC
 )
 ```
+{% endcode %}
 
-## Macro for repeated records
-
+## Macro for repeated records ##
+{% code title="dnsconfig.js" %}
 ```javascript
 var GOOGLE_APPS_MX_RECORDS = [
     MX('@', 1, 'aspmx.l.google.com.'),
@@ -91,9 +98,10 @@ D('example.com', REG, DnsProvider('R53'),
    A('@', '1.2.3.4')
 )
 ```
+{% endcode %}
 
-## Use SPF_BUILDER to add comments to SPF records
-
+## Use SPF_BUILDER to add comments to SPF records ##
+{% code title="dnsconfig.js" %}
 ```javascript
 D("example.tld", REG, DSP, ...
   A("@", "10.2.2.2"),
@@ -113,9 +121,10 @@ D("example.tld", REG, DSP, ...
   }),
 );
 ```
+{% endcode %}
 
-## Dual DNS Providers
-
+## Dual DNS Providers ##
+{% code title="dnsconfig.js" %}
 ```javascript
 D('example.com', REG, DnsProvider('R53'), DnsProvider('GCLOUD'),
    A('@', '1.2.3.4')
@@ -133,9 +142,10 @@ D('example3.com', REG, DnsProvider('R53'), DnsProvider('GCLOUD',0),
    A('@', '1.2.3.4')
 )
 ```
+{% endcode %}
 
-## Set default records modifiers
-
+## Set default records modifiers ##
+{% code title="dnsconfig.js" %}
 ```javascript
 DEFAULTS(
     NAMESERVER_TTL('24h'),
@@ -143,26 +153,27 @@ DEFAULTS(
     CF_PROXY_DEFAULT_OFF
 );
 ```
-# Advanced Examples
+# Advanced Examples #
 
-## Automate Fastmail DKIM records
+## Automate Fastmail DKIM records ##
 
 In this example we need a macro that can dynamically change for each domain.
 
 Suppose you have many domains that use Fastmail as an MX. Here's a macro that sets the MX records.
-
+{% code title="dnsconfig.js" %}
 ```javascript
 var FASTMAIL_MX = [
   MX('@', 10, 'in1-smtp.messagingengine.com.'),
   MX('@', 20, 'in2-smtp.messagingengine.com.'),
 ]
 ```
+{% endcode %}
 
 Fastmail also supplied CNAMES to implement DKIM, and they all match a pattern
 that includes the domain name. We can't use a simple macro. Instead, we use
 a function that takes the domain name as a parameter to generate the right
 records dynamically.
-
+{% code title="dnsconfig.js" %}
 ```javascript
 var FASTMAIL_DKIM = function(the_domain){
   return [
@@ -172,9 +183,10 @@ var FASTMAIL_DKIM = function(the_domain){
   ]
 }
 ```
+{% endcode %}
 
 We can then use the macros as such:
-
+{% code title="dnsconfig.js" %}
 ```javascript
 D("example.com", REG_NONE, DnsProvider(DSP_R53_MAIN),
     FASTMAIL_MX,

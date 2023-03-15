@@ -14,7 +14,7 @@ parameter_types:
   "modifiers...": RecordModifier[]
 ---
 
-SSHFP contains a fingerprint of a SSH server which can be validated before SSH clients are establishing the connection.
+`SSHFP` contains a fingerprint of a SSH server which can be validated before SSH clients are establishing the connection.
 
 **Algorithm** (type of the key)
 

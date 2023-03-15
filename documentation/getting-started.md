@@ -84,6 +84,7 @@ and renaming it.
 
 The file looks like:
 
+{% code title="dnsconfig.js" %}
 ```javascript
 // Providers:
 
@@ -96,6 +97,7 @@ D('example.com', REG_NONE, DnsProvider(DNS_BIND),
     A('@', '1.2.3.4')
 );
 ```
+{% endcode %}
 
 Modify this file to match your particular providers and domains. See [the DNSConfig docs](js.md) and [the provider docs](providers.md) for more details.
 
