@@ -29,7 +29,7 @@ var features = providers.DocumentationNotes{
 	providers.CanUseTLSA:             providers.Can(),
 	providers.DocCreateDomains:       providers.Can(),
 	providers.DocDualHost:            providers.Can(),
-	providers.DocOfficiallySupported: providers.Can(),
+	providers.DocOfficiallySupported: providers.Cannot(),
 }
 
 func init() {
